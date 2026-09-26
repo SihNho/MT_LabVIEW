@@ -791,6 +791,16 @@ the lesson is the one this file already encodes — an identity restated in a se
 **False** (UI thread) on every node it creates (`tools/bench/t0_clfn_thread_92.json`); a CLFN meant to run in any thread
 must be SET afterwards with `OpCLFNThreadSet_v0`. Not yet wrapped in `gscript.py` (use `run_op` in `diag_c92b_anythread.py`).
 
+## ✅ ForLoop parallelism WRITER — `OpForLoopParSet_v0` / `gscript.loop_par_set` (2026-09-26, card 95-4)
+
+| op | what | measured |
+|---|---|---|
+| `claudeDev\OpForLoopParSet_v0.vi` md5 `868e1f42…` 15,390 B (labels `claudeDev\OpForLoopParSet_v0_labels.json`; value control `Is Parallelism Enabled?`) | WRITE ForLoop `Is Parallelism Enabled?` 6362004 on `Traverse(Class Name, index)` of `vi path` (donor `OpLoopCast_v0`: ForLoop-typed TMSC #683), then READ 6362004 + `Number of Static Parallel Instances` 6362005 through the write PN's `reference out`; write `error out` → read `error in`, so the read runs strictly after the write. P is NEVER written. Built by `tools/bench/diag_c95_opbuild.py` (plan `tools/bench/par1359_95_opplan.json`, dry+prerun PASS on `tools/bench/graph_oploopcast_v0_c95.json`) | build 31/0, ES 1 warm and COLD (`tools/bench/diag_c95_opbuild.log`); self-test 18/0 on a byte copy of `HARNESS_copyloop.vi` (`tools/bench/selftest_opforlooppar_v0.log`): set True → op True + separate reader `OpLoopCast_v1` True, set False → False/False, `WhileLoop[0]` and `Diagram[0]` → `error 1055` (refused, loop unchanged), 20 calls handles 34,235 → 34,229 after 20 s idle |
+
+`gscript.loop_par_set(target, index, enable, class_name='ForLoop')` → `{loop_uid, parallel_enabled, static_instances, err}`;
+the edit is IN MEMORY on `target` (the caller saves or discards). ⚠️ Enabling by this property on a loop never configured
+in the dialog leaves `static_instances` **0** (harness #239: ES stays 1) — what LabVIEW compiles for P = 0 is NOT measured.
+
 ## The rule this file encodes
 
 Before a plan depends on a capability, it must name **where that capability was last exercised**. If the answer is

@@ -1,0 +1,17 @@
+{
+ "schema_note": "card 95-4 PD202(d) step 2: FINALIZED row plan of tools/bench/diag_c95_par1359.py. D1_s1_par1359_<ts>.vi = byte copy of S1 with ONLY ForLoop #1359 'Is Parallelism Enabled?' written True (OpForLoopParSet_v0, gscript.loop_par_set); 'Number of Static Parallel Instances' is NOT written (LabVIEW default, recorded). Uids from docs/d1-loop12-17-split-plan.md PD202(b) and tools/bench/par1359_95_graph.json (17 ForLoop; #28233 FIR Filter (DBL) call site 'init/cont (init:F)' wire_uid 0 offline). No wire rows.",
+ "input": {"vi": "D1_s1_copy.vi", "md5": "3e3d23cefd3a334001aa9d6156bf1aee"},
+ "output_prefix": "D1_s1_par1359",
+ "loop": {"class": "ForLoop", "uid": 1359, "body_diagram": 7911},
+ "n_forloops": 17,
+ "fir_call": {"uid": 28233, "init_term": "init/cont (init:F)", "offline_wire": 0},
+ "census": ["Node", "Wire", "ForLoop", "WhileLoop", "SubVI", "Diagram", "LoopTunnel", "LeftShiftRegister", "Property"],
+ "decisions": [
+  {"id": "R1", "action": "read", "what": "loop_cast of every ForLoop (17): uid, parallel_enabled, static P - BEFORE"},
+  {"id": "S1", "action": "set", "what": "loop_par_set(ForLoop #1359, True) via OpForLoopParSet_v0; P not written"},
+  {"id": "R2", "action": "read", "what": "loop_cast of every ForLoop AFTER: #1359 True + P recorded; the other 16 identical to BEFORE"},
+  {"id": "R3", "action": "read", "what": "read_live of the copy -> computation_diff(S1, copy); FIR call site #28233 'init/cont (init:F)' wire; census S1 vs copy"},
+  {"id": "V1", "action": "save", "what": "scripted save at ExecState 1 (warm)"},
+  {"id": "R4", "action": "read", "what": "fresh LabVIEW: ExecState COLD; loop_cast #1359 COLD"}
+ ]
+}

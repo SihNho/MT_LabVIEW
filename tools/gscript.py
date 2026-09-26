@@ -691,6 +691,30 @@ def loop_cast(target, index, class_name="ForLoop"):
     return out
 
 
+def loop_par_set(target, index, enable, class_name="ForLoop"):
+    """WRITE ForLoop 'Is Parallelism Enabled?' (6362004) on the `index`-th loop of Traverse class `class_name` of
+    `target`, then READ BACK 6362004 and 'Number of Static Parallel Instances' (6362005) through the write node's
+    `reference out` (dataflow: the read runs strictly after the write). OpForLoopParSet_v0 md5 868e1f42... (card 95-4,
+    built by tools/bench/diag_c95_opbuild.py on donor OpLoopCast_v0, 31/0, ES 1 warm + cold; self-test
+    tools/bench/selftest_opforlooppar_v0.py 18/0: True/False round trip confirmed by OpLoopCast_v1, 20 calls handle-flat).
+    The change is made IN MEMORY on `target` - the caller saves it (or discards the scratch). A non-ForLoop class
+    (WhileLoop, Diagram) makes the ForLoop-seeded TMSC fail and the write node refuses: `err` = 'error 1055: ...'.
+    P (6362005) is never written: a loop never configured in the dialog reads static_instances 0 after the write.
+    Returns {loop_uid, parallel_enabled, static_instances, err}."""
+    import json
+    ensure_loaded(target)   # edits are silently declined on a target that is not fully loaded
+    with open(os.path.join(CLAUDEDEV, "OpForLoopParSet_v0_labels.json"), encoding="utf-8") as f:
+        lab = {v: k for k, v in json.load(f).items()}
+    vi = op(os.path.join(CLAUDEDEV, "OpForLoopParSet_v0.vi"))
+    vi.SetControlValue("vi path", target); vi.SetControlValue("Class Name", class_name)
+    vi.SetControlValue("index", index); vi.SetControlValue(lab["SetEnable"], bool(enable))
+    _run(vi)
+    return {"loop_uid": int(vi.GetControlValue(lab["LoopUID"])),
+            "parallel_enabled": bool(vi.GetControlValue(lab["ParEnabled"])),
+            "static_instances": int(vi.GetControlValue(lab["ParInstances"])),
+            "err": _err(vi, lab["SetErr"]) or ""}
+
+
 OP_ADD_SHIFT_REG = os.path.join(CLAUDEDEV, "OpAddShiftReg_v0.vi")
 _ADD_SHIFT_REG_LABELS = None
 

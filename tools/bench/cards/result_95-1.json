@@ -1,0 +1,26 @@
+{"schema":"result/1","id":"95-1","status":"PASS","gates":{"pass":6,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+{"path":"tools/stage_prerun.py","md5":"56697c5cfe553f3e0aa758b728be86b8"},
+{"path":"tools/bench/selftest_stage_prerun_graphload.py","md5":"7cbffbb5a93943612090a6ad2f934f0e"},
+{"path":"tools/bench/selftest_stage_prerun_graphload.log","md5":"29fa59a72ab2568d8e9e9131c7c99a58"},
+{"path":"tools/bench/prerun_fix95_rerun.log","md5":"586359c042394835de36f8909fd54e66"},
+{"path":"tools/bench/prerun_fix95_selftests_before.log","md5":"e59cc94592a594b7bfba34d93900658f"},
+{"path":"tools/bench/prerun_fix95_selftests_after.log","md5":"9b23f9a5d89bf2b3626aeca543bf88e2"},
+{"path":"tools/bench/selftest_stage_prerun_stageplan_95.log","md5":"8dd340ed1f293e60519ab37e00aa80b5"},
+{"path":"archive/peer/2026-09-26-fix95-launchgate-nested.md","md5":null}],
+"facts":[
+"ROOT CAUSE: find_graph matched graph_*.json by header md5 only, newest wins, any shape; OfflineGraph did d['terminals'] (old stage_prerun.py:135)",
+"graph_s1_20260924.json is the EDGE graph {cls,edges,flags,method}; no terminal-list graph exists for S1 md5 3e3d23ce (prerun_fix95_survey.log)",
+"rec 24/33: graph_loops_k_s4 (loop census {loops,by}) is 2 s newer than graph_k_s4 with the same md5, so it was picked (prerun_fix95_survey.log)",
+"FIX: graph_shape_error/GraphShapeError (stage_prerun.py:123-147); find_graph returns terminal-list shape only (:150); _graph catches, sets D.graph_error (:417); gate detail :632",
+"--dry diag_c94c_f7911 --graph graph_s1_20260924: rc=1, clean FAIL 'graph ...graph_s1_20260924.json: no terminals/objs key(s)', no KeyError (prerun_fix95_rerun.log)",
+"re-runs: rec17 stage_replay_swap DRY PASS (graph_s3_loop15); rec24/33 stage_d1_k DRY PASS (graph_k_s4); rec65 diag_c94c rc=1 GATE DRY graph (no S1 terminal graph); 0 KeyError",
+"new self-test selftest_stage_prerun_graphload.py 18/0: 3 accepted-shape, 7 refused-shape/malformed, 5 find_graph, 2 _graph (selftest_stage_prerun_graphload.log)",
+"existing self-tests before->after: stageplan 12/0->12/0 (standalone rerun), headcmp 2/0->2/0, launch_gate 28/0->28/0, prerun_diag 9/0->9/0, control-lint 10/0->10/0",
+"one nested launch_gate rc!=0 inside stageplan in prerun_fix95_selftests_after.log; did not reproduce (stageplan_95.log:75,78); cause UNMEASURED (detail cut by harness)",
+"JEV-LADDER on that log: our-script-bug p=0.558 -> old path; hypothesis review archive/peer/2026-09-26-fix95-launchgate-nested.md ANSWERED, disposition written"],
+"open":[
+"S1 has NO terminal-list graph (md5 3e3d23ce): any stage/diag on S1 will FAIL gate DRY until a terminals+objs graph of S1 is extracted - build it for (d)?",
+"the flaky nested launch_gate failure (1 of 3 nested runs) is unexplained; run the review's 3x worktree-vs-HEAD flake test or accept?"],
+"cost":{"usd":1.83,"minutes":14,"labview_runs":0},
+"note":"offline only. Gates untouched: check_launch/control_path_lint code not edited; launch_gate 28/0 and control-lint 10/0 unchanged. usd = the peer review only. --no-record used for re-runs (no launch evidence written)."}

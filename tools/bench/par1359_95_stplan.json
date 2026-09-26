@@ -1,0 +1,20 @@
+{
+ "schema_note": "card 95-4: FINALIZED row plan of tools/bench/selftest_opforlooppar_v0.py (FUNCTIONAL self-test of OpForLoopParSet_v0 via gscript.loop_par_set on its OWN scratch byte copy of HARNESS_copyloop.vi; never saved). Harness graph tools/bench/graph_harness_copyloop_c95.json (diag_c95_graphs.py): 1 ForLoop #239, 0 WhileLoop. Independent cross-check reader: OpLoopCast_v1 (gscript.loop_cast). No wire rows.",
+ "input": {"vi": "HARNESS_copyloop.vi", "md5": "eb8dad78209440fbbb9d87afad3d8ad6"},
+ "work_prefix": "scratch_c95_st",
+ "loop": {"class": "ForLoop", "index": 0, "uid": 239},
+ "negative": [{"class": "WhileLoop", "index": 0}, {"class": "Diagram", "index": 0}],
+ "calls": 20,
+ "handle_tolerance": 100,
+ "decisions": [
+  {"id": "R0", "action": "read", "what": "loop_cast ForLoop[0]: uid echo #239, parallel False before"},
+  {"id": "S1", "action": "set", "what": "loop_par_set(ForLoop[0], True): op read-back True + P, uid echo, err ''"},
+  {"id": "R1", "action": "read", "what": "independent reader loop_cast reads True"},
+  {"id": "S2", "action": "set", "what": "loop_par_set(ForLoop[0], False): op read-back False, err ''"},
+  {"id": "R2", "action": "read", "what": "independent reader loop_cast reads False"},
+  {"id": "N1", "action": "set", "what": "NEGATIVE: loop_par_set(WhileLoop[0], True) refused (err non-empty)"},
+  {"id": "N2", "action": "set", "what": "NEGATIVE: loop_par_set(Diagram[0], True) refused (err non-empty)"},
+  {"id": "R3", "action": "read", "what": "the For loop still False after the refused calls"},
+  {"id": "H1", "action": "read", "what": "20 loop_par_set calls: no errors, handles flat +-100 after 20 s idle"}
+ ]
+}

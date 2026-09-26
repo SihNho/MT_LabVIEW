@@ -1363,3 +1363,57 @@ no PID line are left alone as `undecidable`); `tools/cycle_runner.py` `bgrun_rea
 (`tools/bench/selftest_bgrun_reap.log`): real taskkill /T /F of a bgrun on a sleep child -> KILLED, live run untouched and
 ends rc=0, idempotent, plus final_line 8/0, fail_scan 8/0, jev_exempt 9/0, cycle_runner 10/0, audit_c7 8/0,
 audit_c4c_split 33/0, audit_cost_window 7/0.
+
+## device-failed — 2026-09-26 13:47 (cycle 95 judgement, after archive/peer/2026-09-26-retrospective-cycle94.md:274)
+
+`VIOLATION: device-failed | loss_min=1 | evidence=tools/bench/prerun_records.jsonl:65`: `stage_prerun --dry` crashed
+(`KeyError 'terminals'`) on the S1 edge graph, the 5th such crash on record.
+
+DECISION: device (repair, threshold 1). OUTCOME (card 95-1, PASS 6/0): BUILT. `tools/stage_prerun.py` md5 `56697c5c…`
+now checks graph shape (`graph_shape_error`, :123-147), `find_graph` returns only terminal-list graphs, and a wrong-shape
+graph is a clean gate FAIL, not a crash. Self-test `tools/bench/selftest_stage_prerun_graphload.py` 18/0 including
+malformed-graph negatives; launch_gate 28/0 and control-lint 10/0 are unchanged; the four earlier crashers re-run with 0 KeyError.
+
+## repeated-failure-class — 2026-09-26 13:47 (cycle 95 judgement, after archive/peer/2026-09-26-retrospective-cycle88.md:256)
+
+`VIOLATION: repeated-failure-class | loss_min=7 | evidence=tools/bench/cycle_87.log:129` — the cycle-87 Error List
+MISMATCH class. The retrospective's own verdict is `refuted` (cycle 87's waste, not cycle 88's).
+
+DECISION: no-device. The class was closed in cycle 88 by an explicit expected list,
+`tools/bench/errorlist_expected_D1_l2_a1_20260925_235224.json` (35 items, exact counts; self-tests 18/0 and 5/0, including
+a negative case). Every cycle since (89–95) has had errorlist verdict OK. There is no second occurrence to justify a new device.
+
+## inference-over-measurement — 2026-09-26 13:47 (cycle 95 judgement, after archive/peer/2026-09-26-retrospective-cycle92.md:268)
+
+`VIOLATION: inference-over-measurement | loss_min=20 | evidence=tools/bench/m8_unstamped8_92.log:15` — a result-unpack
+slip in a material card. The retrospective's own verdict is `refuted`: the card still delivered both measurements.
+
+DECISION: no-device. The existing devices already covered it: the card's pass list, and the failed-prediction review that
+the slip triggered, which ran. A 20-min slip inside a delivering card is not a structural gap.
+
+## wrong-ordering — 2026-09-26 13:47 (cycle 95 judgement, after archive/peer/2026-09-26-retrospective-cycle89.md:265)
+
+`VIOLATION: wrong-ordering | loss_min=30 | evidence=tools/bench/cards/brief_89-4.md:11` — the profiler GUI route was tried
+before the scriptable routes. The retrospective's own verdict is `refuted`.
+
+DECISION: no-device. The route was dropped in the same cycle (PD196). Since then, card `requires` (chat-N1 4a, 2026-09-26)
+and the leg dry run (PD199(h)) put the offline check first, and that is the mechanical ordering device for this class.
+
+## wrong-ordering — 2026-09-26 14:10 (cycle 95 judgement, after archive/peer/2026-09-26-retrospective-cycle95.md:257)
+
+`VIOLATION: wrong-ordering | loss_min=22 | evidence=tools/bench/cards/result_95-6.json:3`: the DUE slugs and the DUE
+outcome review were visible at 12:55, yet 95-5 and 95-6 were dispatched into the gates they would trip.
+
+DECISION: device. `tools/cycle_runner.py` runs `violations.py --due` and `outcome_review.py --due` before spawning the
+judgement session and writes the result into the cycle card (`gates_due`). It is to be built in a tooling slot after cycle
+96's deliverable run (steer_95, deliverable-first). Until it exists, STATUS NEXT carries the manual form: run both `--due`
+checks before the first card.
+
+## device-failed — 2026-09-26 14:10 (cycle 95 judgement, after archive/peer/2026-09-26-retrospective-cycle95.md:258)
+
+`VIOLATION: device-failed | loss_min=2 | evidence=tools/recipes/build_opforlooppar_v0.py:1`: card 95-4 moved the op build
+to `tools/bench` because `guard_cycle` refused `tools/recipes`, so the op was built around the gate.
+
+DECISION: no-device. The gate did not fail; the brief was scoped too narrowly. Its rule "never move a script to dodge a
+gate" was written about the launch gate only. It now names every gate (`docs/d1-loop12-17-split-plan.md` PD203(e)), and
+the slugs that caused the refusal were answered at 13:47. The built op keeps its 84/0 gates and is not rebuilt.

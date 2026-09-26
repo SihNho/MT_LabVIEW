@@ -1,0 +1,124 @@
+BGRUN START 2026-09-26 13:30:52 limit 20.0 min: py -u tools/bench/diag_c95_opbuild.py
+BGRUN PID 20600
+BGRUN STAGE-RUN recorded diag_c95_opbuild.py cycle='cycle 95' card=None pid=7752 -> stage_runs.jsonl
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 268 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 89452a9a87b147bc23f5de34f1a22f4c  got 89452a9a87b147bc23f5de34f1a22f4c
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33952
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  OpForLoopParSet_v0.vi
+  FACT  ExecState [after open] OpForLoopParSet_v0.vi = 1
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so OpForLoopParSet_v0.vi is deleted at close
+  FACT  ExecState [donor] OpForLoopParSet_v0.vi = 1
+  PASS  A donor copy ExecState 1
+  PASS  A2 plan TMSC #683 (Function) carries ONE source 'specific class reference'  [('specific class reference', True, 'Function'), ('error out', True, 'Function'), ('target class', False, 'Function'), ('reference', False, 'Function'), ('error in', False, 'Function')]
+  FACT  CENSUS donor OpForLoopParSet_v0.vi: {'Property': 7, 'Wire': 22, 'ControlTerminal': 16, 'Invoke': 0}
+  FACT  create B1 node census: 13 rows
+  FACT  OP create B1 PN_W = Property node VI Server:ForLoop [6362004 WRITE] on the top diagram -> err '' (3.2 s)
+  FACT  B1: stray Invokes deleted []
+  PASS  E B1 no error (PN_W = Property node VI Server:ForLoop [6362004 WRITE] on th)
+  FACT  ExecState [B1] OpForLoopParSet_v0.vi = 0
+  FACT  wire B2 node census: 14 rows
+  FACT  OP wire B2 TMSC #683 'specific class reference' -> PN_W 'reference' (branch) -> err '' (1.2 s)
+  FACT  B2: stray Invokes deleted []
+  PASS  E B2 no error (TMSC #683 'specific class reference' -> PN_W 'reference' (br)
+  FACT  ExecState [B2] OpForLoopParSet_v0.vi = 0
+  FACT  create B3 node census: 14 rows
+  FACT  OP create B3 PN_R = Property node VI Server:ForLoop [6362004, 6362005 READ] -> err '' (1.3 s)
+  FACT  B3: stray Invokes deleted []
+  PASS  E B3 no error (PN_R = Property node VI Server:ForLoop [6362004, 6362005 REA)
+  FACT  ExecState [B3] OpForLoopParSet_v0.vi = 0
+  FACT  wire B4 node census: 15 rows
+  FACT  OP wire B4 PN_W 'reference out' -> PN_R 'reference' (read strictly after the write) -> err '' (5.8 s)
+  FACT  B4: stray Invokes deleted []
+  PASS  E B4 no error (PN_W 'reference out' -> PN_R 'reference' (read strictly afte)
+  FACT  ExecState [B4] OpForLoopParSet_v0.vi = 0
+  FACT  wire B5 node census: 15 rows
+  FACT  OP wire B5 PN_W 'error out' -> PN_R 'error in (no error)' -> err '' (0.7 s)
+  FACT  B5: stray Invokes deleted []
+  PASS  E B5 no error (PN_W 'error out' -> PN_R 'error in (no error)')
+  FACT  ExecState [B5] OpForLoopParSet_v0.vi = 0
+  FACT  PN_W #978 terminals [(0, 'reference', False, 366), (1, 'reference out', True, 1046), (2, 'error in (no error)', False, 0), (3, 'error out', True, 1067), (4, 'IsParallelismEnabled', False, 0)]
+  FACT  PN_R #1021 terminals [(0, 'reference', False, 1046), (1, 'reference out', True, 0), (2, 'error in (no error)', False, 1067), (3, 'error out', True, 0), (4, 'IsParallelismEnabled', True, 0), (5, 'NumStaticParWorkers', True, 0)]
+  PASS  B PN_W has exactly one data SINK  ['IsParallelismEnabled']
+  PASS  B' PN_R has exactly two data outputs  ['IsParallelismEnabled', 'NumStaticParWorkers']
+  FACT  create B6 node census: 15 rows
+  FACT  OP create B6 control on PN_W's one data sink -> err '' (2.3 s)
+  FACT  B6: stray Invokes deleted []
+  PASS  E B6 no error (control on PN_W's one data sink)
+  FACT  ExecState [B6] OpForLoopParSet_v0.vi = 1
+  PASS  L B6 control on 'IsParallelismEnabled': exactly one new panel object  [('Is Parallelism Enabled?', False)]
+  FACT  create B7 node census: 15 rows
+  FACT  OP create B7 indicator on PN_R data out 0 -> err '' (1.9 s)
+  FACT  B7: stray Invokes deleted []
+  PASS  E B7 no error (indicator on PN_R data out 0)
+  FACT  ExecState [B7] OpForLoopParSet_v0.vi = 1
+  PASS  L B7 indicator on 'IsParallelismEnabled': exactly one new panel object  [('Is Parallelism Enabled? 2', True)]
+  FACT  create B8 node census: 15 rows
+  FACT  OP create B8 indicator on PN_R data out 1 -> err '' (0.2 s)
+  FACT  B8: stray Invokes deleted []
+  PASS  E B8 no error (indicator on PN_R data out 1)
+  FACT  ExecState [B8] OpForLoopParSet_v0.vi = 1
+  PASS  L B8 indicator on 'NumStaticParWorkers': exactly one new panel object  [('Number of Static Parallel Instances', True)]
+  FACT  create B9 node census: 15 rows
+  FACT  OP create B9 indicator on PN_R 'error out' -> err '' (0.3 s)
+  FACT  B9: stray Invokes deleted []
+  PASS  E B9 no error (indicator on PN_R 'error out')
+  FACT  ExecState [B9] OpForLoopParSet_v0.vi = 1
+  PASS  L B9 indicator on 'error out': exactly one new panel object  [('error out 5', True)]
+  FACT  set B10 node census: 15 rows
+  FACT  OP set B10 auto error handling OFF -> err '' (0.0 s)
+  FACT  B10: stray Invokes deleted []
+  PASS  E B10 no error (auto error handling OFF)
+  FACT  ExecState [B10] OpForLoopParSet_v0.vi = 1
+  FACT  CENSUS assembled OpForLoopParSet_v0.vi: {'Property': 9, 'Wire': 28, 'ControlTerminal': 20, 'Invoke': 0}
+  FACT  ExecState [assembled] OpForLoopParSet_v0.vi = 1
+  PASS  C assembled ExecState 1
+  FACT  LABEL MAP {"Array": "ShiftRegUIDs", "UID": "LoopUID", "UID 2": "NWireUID", "error out 2": "LoopCountErr", "error out 3": "ConnWireErr", "error out 4": "ShiftRegsErr", "reference": "seed", "Is Parallelism Enabled?": "SetEnable", "Is Parallelism Enabled? 2": "ParEnabled", "Number of Static Parallel Instances": "ParInstances", "error out 5": "SetErr"}
+
+---------- [SAVE] OpForLoopParSet_v0.vi
+  FACT  ExecState [before the save] OpForLoopParSet_v0.vi = 1
+  PASS  S1 the save returned without raising (scripted route)
+  FACT  SAVED ARTEFACT: OpForLoopParSet_v0.vi md5 868e1f42004a1c3c5a9997c3c822899d size 15390 B; version bytes [38, 128]
+  PASS  S2 the artefact is on disk and non-empty  15390 B
+  FACT  ExecState [re-read AFTER the save] OpForLoopParSet_v0.vi = 1
+  PASS  S3 ExecState 1 re-read AFTER the save  ExecState 1
+  PASS  D saved by script, md5 recorded  '868e1f42004a1c3c5a9997c3c822899d'
+  FACT  LabVIEW handle count BEFORE the restart: 30846
+  FACT  LabVIEW handle count AFTER the restart: 34000
+  FACT  ExecState [cold] OpForLoopParSet_v0.vi = 1
+  PASS  D2 op ExecState 1 COLD (fresh LabVIEW)
+
+---------- [H] HYGIENE
+  FACT  close_panel(OpForLoopParSet_v0.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 20, 'closed': 20, 'live': 0, 'cached_op_vis': 0}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 20, 'closed': 20, 'live': 0, 'cached_op_vis': 0}
+  FACT  LabVIEW handle count AFTER the work: 34094
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 89452a9a87b147bc23f5de34f1a22f4c / after 89452a9a87b147bc23f5de34f1a22f4c
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: ['OpForLoopParSet_v0.vi']  (removed: [])
+  PASS  H6 the files left on disk == ['OpForLoopParSet_v0.vi'] and nothing was removed  added ['OpForLoopParSet_v0.vi'] removed []
+  FACT  LabVIEW handle count at exit: 34094
+
+====================================================================================================
+=== GATES: 31 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\par1359_95_build.json   elapsed 230.7 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":31,"fail":0},"first_fail":null,"artefacts":[{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpForLoopParSet_v0.vi","md5":"868e1f42004a1c3c5a9997c3c822899d"}]}
+LabVIEW gone at exit: True
+BGRUN END rc=0 after 241s

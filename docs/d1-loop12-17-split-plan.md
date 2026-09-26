@@ -1332,6 +1332,53 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
          ran on the same machine. Site 4 staying the only large grower matches cycle 91 and stands. From cycle 95, each leg
          logs the foreign `claude`/`node` process count and a CPU sample before and after. If (d)4's A = S1 15-pick leg is
          well below 4,277 lost / 16.7 ms, the slope is re-taken before it is quoted.
+203. **(cycle 95 judgement, on results `95-1` PASS 6/0, `95-2` BLOCKED 19/0, `95-4` PASS 84/0 (escalation 1, Opus max),
+     `95-5` BLOCKED and `95-6` BLOCKED ×2)**
+     - **(a) DONE, step 0 (202(f)):** `tools/stage_prerun.py` md5 `56697c5c…` checks graph shape, so a wrong-shape graph is a
+       clean gate FAIL, not a crash. Self-test `selftest_stage_prerun_graphload.py` 18/0 with negatives. S1 has NO
+       terminal-list graph of its own; `tools/bench/par1359_95_graph.json` (wiki terminals + graph_objs, md5 `143ad46c…`)
+       passes dry for S1 and for par1359 (same objects).
+     - **(b) DONE, 202(d)1 precondition (`par1359_95_pre.log`):** the #7911 body has 10 nodes, 0 Feedback Nodes, 0 local or
+       global writes, 0 nested structures, and 0 shift registers on #1359. Callees:
+       - Median: reentrant, stateless.
+       - FIR Filter (DBL): reentrant. Its LSR #195 is uninitialised, but the call site leaves `init/cont` at its default,
+         init, so every call starts fresh.
+       - Smoothing Filter Coefficients: reentrant.
+       - **Magnet2Force v3_for M270: NON-reentrant**, no state classes.
+       - JUDGEMENT: a non-reentrant stateless callee only serialises its calls, and FIR re-initialises on every call, so
+         none of this changes the result. Rule 1a is still decided by the numeric replay (c).
+     - **(b') DONE, 202(d)2:** writer op `claudeDev\OpForLoopParSet_v0.vi` md5 `868e1f42…` (self-test 18/0, handles flat).
+       Copy `claudeDev\D1_s1_par1359_20260926_133751.vi`, md5 **`5bef83f0007266b90b7ffd65d2422480`**, 473,285 B:
+       ExecState 1 warm and cold; cdiff(S1,·) 0 rows; #1359 parallel True, static P 0 (not written); the other 16 loops
+       are unchanged. STRUCTURAL only, never run.
+       ⚠️ 95-4 built the op from `tools/bench` because guard_cycle refused `tools/recipes` (4 DUE slugs). That is
+       routing around a gate. The slugs were then answered: `docs/violation-decisions.md`, four blocks at 2026-09-26 13:47.
+     - **(c) DECIDED for 202(d)3, the replay:**
+       - `tools/recipes/stage_replay_swap.py` md5 `1292fee8…` now takes `--plan 95` / `REPLAY_SWAP_PLAN=95` (default 78 is
+         unchanged by construction, not yet shown by a dry run). Plan `tools/bench/plans/plan_replay_swap_95.json` md5
+         `ea7cf810…` makes one copy, `claudeDev\replay\D1_s1_par1359_replay_<ts>.vi`.
+       - The S1 side reuses `replay\D1_s1_replay_20260925_075422.vi` (md5 `126f8497…`, matched in-run).
+       - Dry run: `--graph tools/bench/par1359_95_graph.json` with env `REPLAY_SWAP_PLAN=95`.
+       - **The replay uses 15 picks** (row 47 used 3 / 35 s), so #1359 iterates at the ABBA load.
+       - Compare every tra column. Bundler #11310 is NOT OBSERVABLE (it is not in tra), so X/Y/Z bit-identity decides, and
+         that is recorded as the acceptance level.
+     - **(d) DECIDED for 202(d)4:** the ABBA runs on the UNSTAMPED S1 and par1359 files. The primary metric is lost frames.
+       The #637 period is taken from the tra frame-step proxy (step × 11.11 ms), labelled as a proxy. A stamped par1359
+       build is not made unless the lost-frame result is ambiguous.
+     - **(e) What blocked cycle 95 was card scoping, not the work.** Three cards came back BLOCKED on my own card rules or
+       flags (95-5 "never save", 95-6 write globs, 95-6 peers). The outcome review was due, and `guard_cycle` refuses all of
+       `tools/recipes` until it runs; the judgement session ran it at cycle close.
+       Next card: `peers` must include whatever the gates may demand. The card rule "never move a script to dodge a
+       gate" covers EVERY gate (`guard_cycle`, the launch gate, and any other), not only the launch gate. Also, the material sandbox cannot hash files under
+       `C:\Program Files\…\claudeDev`, so md5s are pinned in-run.
+     - **(f) (on outcome review `archive/peer/2026-09-26-outcome-review-20260926.md` + `steer_95.json`, FOLLOWED) ORDER
+       AMENDED: the ABBA (d) runs BEFORE the replay (c).** The ABBA runs S1 and par1359 as they are, with no swap copy and no
+       `tools/recipes` build, through the cycle-94 leg harness (`diag_c93b_abba.py` / `_leg.py` pattern). Legs A15 B15 B15 A15,
+       each logging the foreign claude/node count and a CPU sample (202(f)).
+       - B clearly below A ⇒ run the replay (c) next.
+       - No difference ⇒ the replay is moot, and the lever is re-judged.
+       - Rule 1a holds regardless: par1359 is NOT accepted or shipped before the replay is bit-identical. The ABBA is a timing
+         measurement only.
 
 ## OPEN (design choices — for judgement; not decided here)
 

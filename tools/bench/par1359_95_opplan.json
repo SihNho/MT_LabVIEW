@@ -1,0 +1,29 @@
+{
+ "schema_note": "card 95-4 (retry of 95-2): FINALIZED row plan of tools/recipes/build_opforlooppar_v0.py (decision 8: the recipe types no uid, terminal name, property id or position). Donor graph tools/bench/graph_oploopcast_v0_c95.json (diag_c95_graphs.py, md5 of OpLoopCast_v0.vi 89452a9a...). Property ids: docs/NAMES.md:258 (ForLoop 'Is Parallelism Enabled?' 6362004, 'Number of Static Parallel Instances' 6362005, both READ-verified by OpLoopCast_v1). Shape copied from build_oploopcast_v1.py (read PN on the TMSC output branch) and diag_c92b_anythread.py:90-105 (write PN on the TMSC branch, control on its one data sink, write error out -> read PN error in).",
+ "input": {"vi": "OpLoopCast_v0.vi", "md5": "89452a9a87b147bc23f5de34f1a22f4c"},
+ "output": "OpForLoopParSet_v0.vi",
+ "labels_in": "oploopcast_labels.json",
+ "labels_out": "OpForLoopParSet_v0_labels.json",
+ "prop_class": "VI Server:ForLoop",
+ "write_prop": "6362004",
+ "read_props": ["6362004", "6362005"],
+ "tmsc": {"uid": 683, "class": "Function"},
+ "terms": {"cast_out": "specific class reference", "cast_in": "target class", "ref_in": "reference", "ref_out": "reference out",
+           "err_in": "error in (no error)", "err_out": "error out"},
+ "std_terms": ["reference", "reference out", "error in (no error)", "error out"],
+ "pos": {"pn_w": [900, 1150], "pn_r": [1150, 1150]},
+ "decisions": [
+  {"id": "B1", "action": "create", "what": "PN_W = Property node VI Server:ForLoop [6362004 WRITE] on the top diagram", "node": "pn_w"},
+  {"id": "B2", "action": "wire", "what": "TMSC #683 'specific class reference' -> PN_W 'reference' (branch)",
+   "exec": {"src": {"uid": 683, "term": "specific class reference"}}},
+  {"id": "B3", "action": "create", "what": "PN_R = Property node VI Server:ForLoop [6362004, 6362005 READ]", "node": "pn_r"},
+  {"id": "B4", "action": "wire", "what": "PN_W 'reference out' -> PN_R 'reference' (read strictly after the write)"},
+  {"id": "B5", "action": "wire", "what": "PN_W 'error out' -> PN_R 'error in (no error)'"},
+  {"id": "B6", "action": "create", "kind": "control", "node": "pn_w", "term": "$sink0", "meaning": "SetEnable", "what": "control on PN_W's one data sink"},
+  {"id": "B7", "action": "create", "kind": "indicator", "node": "pn_r", "term": "$out0", "meaning": "ParEnabled", "what": "indicator on PN_R data out 0"},
+  {"id": "B8", "action": "create", "kind": "indicator", "node": "pn_r", "term": "$out1", "meaning": "ParInstances", "what": "indicator on PN_R data out 1"},
+  {"id": "B9", "action": "create", "kind": "indicator", "node": "pn_r", "term": "err_out", "meaning": "SetErr", "what": "indicator on PN_R 'error out'"},
+  {"id": "B10", "action": "set", "what": "auto error handling OFF"},
+  {"id": "B11", "action": "save", "what": "scripted save (ExecState 1), labels -> claudeDev OpForLoopParSet_v0_labels.json, cold ExecState in a fresh LabVIEW"}
+ ]
+}

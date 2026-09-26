@@ -1,0 +1,60 @@
+{
+ "schema": "task/1",
+ "id": "95-3",
+ "kind": "build",
+ "goal": "PD202(d)2: save claudeDev D1_s1_par1359_<ts>.vi = byte copy of D1_s1_copy.vi with ONLY ForLoop #1359 parallelism enabled (LabVIEW default instances), via OpForLoopParSet_v0",
+ "why": "PD202(c) lever = #1359, scheduling-only change. 95-1: S1 (md5 3e3d23ce) has NO terminal-list graph, so gate DRY fails on any S1 stage until one is extracted with the extractor that made graph_k_s4 / graph_k_80_owners",
+ "inputs": [
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"},
+  {"path": "tools/bench/cards/result_95-1.json"},
+  {"path": "tools/bench/cards/result_95-2.json"},
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/stage_prerun.py", "md5": "56697c5cfe553f3e0aa758b728be86b8"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"},
+  {"kind": "op", "name": "OpForLoopParSet_v0", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "op", "name": "OpLoopCast_v1", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "tools/bench/cards/result_95-2.json"}
+ ],
+ "pass": [
+  "S1 terminal-list graph (terminals+objs shape) extracted read-only with the EXISTING extractor; path + md5; stage_prerun --dry on the stage script PASS (no gate hidden)",
+  "D1_s1_par1359_<ts>.vi saved by script; md5 + size",
+  "ExecState 1 warm and cold (fresh instance); computation_diff(S1, copy) 0 rows",
+  "read-back: #1359 parallel True + P/static instances recorded; other 16 For loops' parallel flag identical to S1 (table)",
+  "S1 md5 unchanged (3e3d23ce...), scratches deleted, handles before/after, LabVIEW gone"
+ ],
+ "outputs": ["C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_par1359_*", "tools/bench/graph_s1_terms*", "tools/bench/par1359_95*", "tools/bench/cards/result_95-3.json"],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_par1359_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c95*",
+   "tools/bench/graph_s1_terms*",
+   "tools/bench/par1359_95*",
+   "tools/bench/diag_c95*",
+   "tools/recipes/stage_par1359*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "never save or edit D1_s1_copy.vi or any original; the copy is a byte copy first",
+  "change ONLY #1359 parallel enable at LabVIEW default instances; no other node touched",
+  "each bgrun --max-min <= 30; hold your turn until BGRUN END/TIMEOUT; stage script <=120 lines on stagekit",
+  "facts only, <=10; OPEN <=3; do not judge rule-1a equivalence"
+ ],
+ "advances": ["M8", "M3", "R1"]
+}

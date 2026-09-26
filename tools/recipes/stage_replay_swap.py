@@ -8,15 +8,23 @@ PREDICTION per copy (s1, s3): A1 copy md5 == source; A2 BEFORE census: each swap
 A3 each replace_object: no error, a new uid; A4 callee diff == exactly the two swaps -> the replay VIs (path read back);
 A5 wire-edge diff(before, after) == 0 after new->old remap; A6 ES 1 -> scripted save; COLD (fresh LabVIEW): C1 ES 1,
 C2 census == warm; H pins: S1, S3, 3 replay VIs, original md5 unchanged; LabVIEW gone. No VI is run.
-    py tools/bgrun.py --material --max-min 45 --log tools/bench/stage_replay_swap_78.log -- py -u tools/recipes/stage_replay_swap.py"""
+    py tools/bgrun.py --material --max-min 45 --log tools/bench/stage_replay_swap_78.log -- py -u tools/recipes/stage_replay_swap.py
+CARD 95-6 (PD202(d)3): PLAN SELECTION by `--plan <tag>` (argv) or env REPLAY_SWAP_PLAN; default "78" = the plan above,
+unchanged. Only plans listed in PLANS load (named literals, so stage_prerun keys the records on every plan's md5). A plan
+WITHOUT `second_input` makes ONE copy (the input's). Optional plan keys (defaults = plan 78's behaviour): input_tag "s3",
+second_tag "s1", input_pin "S3", stage_name "stage_replay_swap_78", task "78-3", out_json "stage_replay_swap_78.json".
+    py tools/bgrun.py --material --max-min 45 --log tools/bench/replay_c95_swap.log -- py -u tools/recipes/stage_replay_swap.py --plan 95"""
 import json, os, shutil, sys, time                                                       # noqa: E401
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "bench"))
 import diag_replay_lib as L                                                              # noqa: E402
 K, g = L.K, L.g
-P = json.load(open(os.path.join(K.BENCH, "plans/plan_replay_swap_78.json"), encoding="utf-8"))
+PLANS = {"78": "plans/plan_replay_swap_78.json", "95": "plans/plan_replay_swap_95.json"}
+PLAN_TAG = sys.argv[sys.argv.index("--plan") + 1] if "--plan" in sys.argv else (os.environ.get("REPLAY_SWAP_PLAN") or "78")
+P = json.load(open(os.path.join(K.BENCH, PLANS[PLAN_TAG]), encoding="utf-8"))
 cd = lambda rel: os.path.join(K.CLAUDEDEV, rel)                                          # noqa: E731
-IN, IN_MD5 = cd(P["input"]["vi"].split("\\", 1)[1]), P["input"]["md5"]            # S3: the only dry-shape graph
-S2, S2_MD5 = cd(P["second_input"]["vi"].split("\\", 1)[1]), P["second_input"]["md5"]  # S1
+IN, IN_MD5 = cd(P["input"]["vi"].split("\\", 1)[1]), P["input"]["md5"]            # plan 78: S3, the only dry-shape graph
+TAG1, TAG2 = P.get("input_tag", "s3"), P.get("second_tag", "s1")
+S2, S2_MD5 = (cd(P["second_input"]["vi"].split("\\", 1)[1]), P["second_input"]["md5"]) if "second_input" in P else (None, None)
 SW = [(int(r["uid"]), r["old_callee"], cd(r["new"]), r["new_md5"]) for r in P["swaps"]]
 WB, TS = K.mod("wiki_build"), time.strftime("%Y%m%d_%H%M%S")
 H = lambda p: "dry" if L.DRY else K.md5(p)                                               # noqa: E731  (dry: no copy on disk)
@@ -50,11 +58,12 @@ def one(s, tag, path):
 
 def body(s):
     s.start(); R = s.R; ts = TS
-    cp = {"s3": s.work, "s1": cd(P["copies"]["s1"].format(ts=ts))}                     # beside the replay VIs
-    shutil.copyfile(S2, cp["s1"])
-    s.gate("A1 copies md5 == sources", L.DRY or (H(cp["s3"]) == IN_MD5 and H(cp["s1"]) == S2_MD5), cp, fatal=True)
+    cp = {TAG1: s.work}                                                                 # beside the replay VIs
+    if S2:
+        cp[TAG2] = cd(P["copies"][TAG2].format(ts=ts)); shutil.copyfile(S2, cp[TAG2])
+    s.gate("A1 copies md5 == sources", L.DRY or (H(cp[TAG1]) == IN_MD5 and (not S2 or H(cp[TAG2]) == S2_MD5)), cp, fatal=True)
     R["copies"] = {}
-    for tag in ("s3", "s1"):
+    for tag in (TAG1, TAG2) if S2 else (TAG1,):
         R["copies"][tag] = one(s, tag, cp[tag]); s.dump()
     s.head("[C] COLD: fresh LabVIEW"); s.restart()
     for tag, rec in R["copies"].items():
@@ -75,9 +84,9 @@ class St(K.Stage):
 
 
 if __name__ == "__main__":
-    pins = tuple(K.DEFAULT_PINS[:1]) + (("S3", IN, IN_MD5), ("S1", S2, S2_MD5)) + tuple(
+    pins = tuple(K.DEFAULT_PINS[:1]) + ((P.get("input_pin", "S3"), IN, IN_MD5),) + ((("S1", S2, S2_MD5),) if S2 else ()) + tuple(
         (os.path.basename(n), n, m) for _u, _o, n, m in SW) + tuple((a, cd(b), c) for a, b, c in P["extra_pins"])
-    st = St(IN, IN_MD5, "stage_replay_swap_78", preload=False, deadline_min=40, work_dir=L.RP,
-            work_name=os.path.basename(P["copies"]["s3"]).format(ts=TS), pins=pins,
-            task="78-3", out_json=os.path.join(K.BENCH, "stage_replay_swap_78.json"))
+    st = St(IN, IN_MD5, P.get("stage_name", "stage_replay_swap_78"), preload=False, deadline_min=40, work_dir=L.RP,
+            work_name=os.path.basename(P["copies"][TAG1]).format(ts=TS), pins=pins,
+            task=P.get("task", "78-3"), out_json=os.path.join(K.BENCH, P.get("out_json", "stage_replay_swap_78.json")))
     sys.exit(K.run(body, st))

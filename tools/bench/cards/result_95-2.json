@@ -1,0 +1,32 @@
+{"schema":"result/1","id":"95-2","status":"BLOCKED","gates":{"pass":19,"fail":0},
+"first_fail":null,
+"blocked_by":{"device":"launch-gate","message":"prerun_gate: build_opforlooppar_v0.py (stagekit+save) needs dry+prerun PASS; dry needs a terminal-list graph for donor OpLoopCast_v0 md5 (none; docs/wiki not in write globs); prerun X2/X5/X6 need a plan with stagekit wire rows. Not attempted; minutes 65/60"},
+"artefacts":[
+ {"path":"tools/bench/par1359_95_pre.py","md5":"30dfa5ae0fd6793d43f77d7dcc8ea696"},
+ {"path":"tools/bench/par1359_95_pre.log","md5":"1d5f71ddfdb8a3aea3560f16faef565a"},
+ {"path":"tools/bench/par1359_95_pre.json","md5":"abf33a347bfe198af99ee3e7df216520"},
+ {"path":"tools/bench/par1359_95_plan.json","md5":"9c948dcb4ba5f017e7d0c7582325c51a"},
+ {"path":"tools/bench/par1359_95_graph.json","md5":"143ad46ced0a85b2309863062e64caeb"},
+ {"path":"tools/recipes/build_opforlooppar_v0.py","md5":"dd3ef07bc286b2accc9ab3c0ecd83d42"},
+ {"path":"tools/bench/selftest_opforlooppar_v0.py","md5":"cef2a47dd3528e38a8e1d7e94b970542"},
+ {"path":"tools/gscript.py","md5":"e3265d5786f9e16dca40a29e0839836a"}
+],
+"facts":[
+ "#7911 Diagram.Nodes[] = 10: 8566 8634 8741 8764 11310 27716 28083 28180 28233 29009; consts 8775/8795 not in Nodes[] (par1359_95_pre.log:12,28)",
+ "on #7911: FeedbackNode 0 (0 in whole VI), Local 0 (8 in VI), Global 0 (7 in VI), nested structures 0 -> local/global writes 0 (par1359_95_pre.log:13-29)",
+ "#1359 loop_cast: shift registers 0, N wire 0, parallel_enabled False, static P 0 (par1359_95_pre.log:30)",
+ "subVIs on #7911 = 4: Median Filter #29009, FIR Filter (DBL) #28233, Smoothing Filter Coefficients #28180 (vi.lib 3filter.llb), Magnet2Force v3_for M270 #28083 (DY) (par1359_95_pre.log:31-34)",
+ "COM raw: Median ReentrancyType 1 IsReentrant True, 0 SR/FB/Global, 1 node, no subVIs; FIR (DBL) ReentrancyType 1 IsReentrant True, LeftShiftRegister 2 (init NOT READ), 0 FB/Global (log:36-39)",
+ "Smoothing Filter Coefficients ReentrancyType 0 IsReentrant True, 0 state classes; Magnet2Force v3_for M270 ReentrancyType 1 IsReentrant FALSE (non-reentrant), 0 state classes (log:42,45)",
+ "all 4 callee md5 unchanged, S1 md5 3e3d23ce unchanged, scratch deleted, refs 8/8 closed, pre run 19/0, BGRUN END rc=0 after 116s (log:38-60)",
+ "pre script passed the launch gate honestly: dry+prerun 8/0 after uids moved to plan par1359_95_plan.json and a merged S1 graph par1359_95_graph.json (wiki terminals + graph_objs objects)",
+ "OpForLoopParSet_v0 NOT built: build recipe + self-test written (py_compile OK), never launched; gscript.loop_par_set wrapper added, docstring marks it NOT YET BUILT (gscript.py:694-716)",
+ "LabVIEW left RUNNING (pid 7984, idle, no VI open): this session's Stop-Process/taskkill were permission-denied; runner end hook must close it"
+],
+"open":[
+ "Magnet2Force v3_for M270.vi (inside #7911) is NON-reentrant: with parallelism on #1359 its calls serialise - does PD202(c)'s +760 us/bead lever still pay, or must the judgement weigh it first?",
+ "How should an op-VI build (donor copy + save) pass the stage launch gate: generate a donor graph via a read-only wiki_build-style reader + a decisions plan with stagekit wiring verbs, or exempt op builds from is_vi_modifying?",
+ "FIR Filter (DBL).vi holds 2 LeftShiftRegisters: whether they are initialised (no cross-call state) was not read; needed to call it stateless"
+],
+"cost":{"usd":null,"minutes":65,"labview_runs":1},
+"note":"Card pass: precondition + callee reentrancy DONE; op build, self-test, docs NOT done (blocked). No STATUS edit (status_edit false)."}

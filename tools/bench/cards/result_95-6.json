@@ -1,0 +1,29 @@
+{"schema":"result/1","id":"95-6","status":"BLOCKED","gates":{"pass":6,"fail":1},
+"first_fail":"stage_prerun --dry tools/recipes/stage_replay_swap.py refused by guard_cycle: outcome review DUE (8 retrospectives since 2026-09-25-outcome-review-20260925.md)",
+"blocked_by":{"device":"guard_cycle+card","message":"guard_cycle.py:566-575 blocks every tools/recipes command (dry run included) until outcome_review.py runs; guard_bash refused `py tools/outcome_review.py --due`: CARD 95-6 flags.peers ['hypothesis'] does not include 'outcome'"},
+"artefacts":[
+ {"path":"tools/recipes/stage_replay_swap.py","md5":"1292fee8e00ec92ec9665602a2430bed"},
+ {"path":"tools/bench/plans/plan_replay_swap_95.json","md5":"ea7cf810390ef601ba0314172ad26346"},
+ {"path":"tools/bench/diag_c95_astcheck.py","md5":"e4e0e319b59efb243ac5938d0ac530c1"},
+ {"path":"tools/bench/diag_c95_astcheck.log","md5":"084aef24cc56a170750a4e4cd3364d47"},
+ {"path":"tools/bench/cards/requires_95-6.json","md5":"1864d77e6da475c5887b3aede1d16cb6"}
+],
+"facts":[
+ "requires 5/5 FOUND offline (tools/bench/cards/requires_95-6.json)",
+ "stage_replay_swap.py EDITED: plan by --plan <tag> or env REPLAY_SWAP_PLAN from PLANS {78,95} (named literals); default 78; no second_input -> one copy",
+ "Plan-78 path unchanged by construction: same pins order S3,S1, loop order s3,s1, name/task/out_json defaults (stage_replay_swap.py:77-82); dry-run proof NOT run (blocked)",
+ "plan_replay_swap_95.json: input par1359 5bef83f0, one copy replay\\D1_s1_par1359_replay_{ts}.vi, out_json par1359_95_replay_swap.json, S1 replay + S1 as stage pins",
+ "S1 replay copy md5 126f84975fca9f6124432a7e4decd0c8 == stage_replay_swap_78.log:50 (read in-run, diag_c95_astcheck.log:5); all 7 plan pins match (C5)",
+ "Offline check 5/0: recipe parses, both plans well-formed, plan 78 carries no new keys (tools/bench/diag_c95_astcheck.log:8-12)",
+ "Dry run for launch: plan 95 must use --graph tools/bench/par1359_95_graph.json (S1's graph; no graph_* carries md5 5bef83f0) and REPLAY_SWAP_PLAN=95 in env (stage_prerun argparse rejects --plan)",
+ "#637 period cannot come from stamps on A=S1/B=par1359 (unstamped); tra col 0 is the camera frame number (m8_out/replay_s1_20260926_115922 tra: 13,14,15,23...), so only a frame-step proxy exists",
+ "Bundler #11310 is not in the tra file (header: time, trans, rot, x1,y1,z1...); not observable without a new sink",
+ "No LabVIEW launch, motor session, GUI act or VI save; no replay or ABBA run; LabVIEW not running at end (tasklist 0)"
+],
+"open":[
+ "Run the due outcome review (judgement/runner) or widen 95-6 flags.peers to 'outcome' so guard_cycle releases tools/recipes; then re-issue 95-6 from the dry run",
+ "ABBA '#637 period median/p95' on unstamped S1/par1359: accept the tra frame-step proxy (step x 11.11 ms), or run the ABBA on stamped copies (t0at + a par1359 t0at build)?",
+ "Replay pick count: row 47 used 3 picks / 35 s; #1359 iterates one row per history entry, so 15 picks would exercise the parallel loop at the ABBA load. Which?"
+],
+"cost":{"usd":null,"minutes":8,"labview_runs":0},
+"note":"Second attempt of 95-6 (the first, agent abcd5cab, was BLOCKED at 13:50 by flags.write; its plan file was rewritten here). No failed run, so no JEV ladder or peer. STATUS not edited (status_edit false)."}

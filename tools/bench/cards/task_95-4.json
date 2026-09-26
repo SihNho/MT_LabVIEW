@@ -1,0 +1,74 @@
+{
+ "schema": "task/1",
+ "id": "95-4",
+ "kind": "build",
+ "escalation": 1,
+ "retry_of_card": "95-2",
+ "goal": "Build OpForLoopParSet_v0 (writer: ForLoop 'Is Parallelism Enabled?' 6362004), read FIR Filter (DBL) SR init, then save claudeDev D1_s1_par1359_<ts>.vi with ONLY #1359 parallel",
+ "why": "95-2 BLOCKED at the launch gate (op build needs dry+prerun) after 65/60 min. Precedent: cycle 92 built OpCLFNThreadSet_v0 through the same gate (result_92-2.json, diag_c92b_anythread.py). 95-2 made an S1 graph that passes dry: par1359_95_graph.json",
+ "inputs": [
+  {"path": "tools/bench/cards/result_95-2.json"},
+  {"path": "tools/bench/cards/result_92-2.json"},
+  {"path": "tools/bench/diag_c92b_anythread.py"},
+  {"path": "tools/recipes/build_opforlooppar_v0.py", "md5": "dd3ef07bc286b2accc9ab3c0ecd83d42"},
+  {"path": "tools/bench/selftest_opforlooppar_v0.py", "md5": "cef2a47dd3528e38a8e1d7e94b970542"},
+  {"path": "tools/bench/par1359_95_graph.json", "md5": "143ad46ced0a85b2309863062e64caeb"},
+  {"path": "tools/bench/par1359_95_plan.json", "md5": "9c948dcb4ba5f017e7d0c7582325c51a"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"},
+  {"kind": "file", "name": "tools/bench/diag_c92b_anythread.py"},
+  {"kind": "file", "name": "tools/bench/par1359_95_graph.json"},
+  {"kind": "op", "name": "OpLoopCast_v1", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"}
+ ],
+ "pass": [
+  "LabVIEW pid 7984 left by 95-2 closed (or restarted via bench_prep) before work; handle count read",
+  "op built via the SAME gate path cycle 92 used; dry+prerun PASS, no gate hidden or exempted; self-test incl. negative case, 20 calls handles flat +-100",
+  "FIR Filter (DBL).vi (the callee at #28233): its 2 LeftShiftRegisters initialised or not (read) + whether the call site wires any init/reset input",
+  "D1_s1_par1359_<ts>.vi saved by script: ExecState 1 warm + cold; computation_diff(S1, copy) 0 rows; md5 + size",
+  "read-back: #1359 parallel True + static P recorded; other 16 For loops' parallel flag identical to S1 (table)",
+  "op documented in toolkit-capabilities + NAMES; S1 md5 3e3d23ce unchanged; scratches deleted; LabVIEW gone (verify)"
+ ],
+ "outputs": ["C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpForLoopParSet_v0.vi", "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_par1359_*", "tools/bench/par1359_95*", "tools/bench/cards/result_95-4.json"],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpForLoopPar*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_par1359_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c95*",
+   "tools/bench/par1359_95*",
+   "tools/bench/diag_c95*",
+   "tools/bench/graph_*",
+   "tools/bench/selftest_opforlooppar*",
+   "tools/recipes/build_opforlooppar*",
+   "tools/recipes/stage_par1359*",
+   "tools/gscript.py",
+   "docs/toolkit-capabilities.md",
+   "docs/NAMES.md",
+   "docs/wiki/**",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 75},
+ "rules": [
+  "never save or edit D1_s1_copy.vi or any original; the copy starts as a byte copy",
+  "change ONLY #1359 parallel enable at LabVIEW default instances; no other node touched",
+  "a refusing gate is satisfied honestly (graph + plan), never by hiding or exempting a script",
+  "each bgrun --max-min <= 30; hold your turn until BGRUN END/TIMEOUT; facts only <=10; OPEN <=3"
+ ],
+ "advances": ["M8", "M3", "R1"]
+}

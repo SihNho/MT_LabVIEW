@@ -1,0 +1,64 @@
+{
+ "schema": "task/1",
+ "id": "95-2",
+ "kind": "build",
+ "goal": "PD202(d)1 read-only precondition on For #1359 body #7911 in a scratch of S1, and build the missing WRITER op for an existing ForLoop's parallelism (OpForLoopParSet_v0)",
+ "why": "PD202(c): the lever is ForLoop #1359 (+760 us/bead), change = enable parallelism only. No writer for an EXISTING loop's parallelism: toolkit has only the reader OpLoopCast parallel_enabled; OpForLoopIn_v0 sets P only on a NEW loop",
+ "inputs": [
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"},
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "docs/NAMES.md"},
+  {"path": "docs/toolkit-capabilities.md"},
+  {"path": "tools/bench/cards/result_94-3.json"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"},
+  {"kind": "op", "name": "OpLoopCast_v1", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "tools/bench/cards/result_94-3.json"},
+  {"kind": "file", "name": "docs/NAMES.md"}
+ ],
+ "pass": [
+  "precondition (scratch copy, read-only): #7911 subtree Feedback Node / local write / global write / SR counts, each = n; list of subVI calls inside",
+  "Median Filter.vi and FIR Filter (DBL).vi: reentrancy type + whether each holds state (uninit SR / feedback node / global) read from the callee; unreadable -> NOT READABLE",
+  "OpForLoopParSet_v0.vi: writes 'Is Parallelism Enabled?' 6362004 on a ForLoop ref (docs/NAMES.md:258), reads back it + 6362005; saved in claudeDev",
+  "op self-test on a scratch VI with a For loop: set True read True, set False read False, negative case (WhileLoop/non-loop ref refused), 20 calls handles flat +-100",
+  "op documented in docs/toolkit-capabilities.md + docs/NAMES.md with the self-test log path",
+  "S1 md5 unchanged (3e3d23ce...), scratches deleted, LabVIEW gone"
+ ],
+ "outputs": ["C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpForLoopParSet_v0.vi", "tools/bench/par1359_95*", "tools/bench/cards/result_95-2.json"],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpForLoopPar*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c95*",
+   "tools/bench/par1359_95*",
+   "tools/bench/diag_c95*",
+   "tools/bench/selftest_opforlooppar*",
+   "tools/recipes/build_opforlooppar*",
+   "tools/gscript.py",
+   "docs/toolkit-capabilities.md",
+   "docs/NAMES.md",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "never save or edit D1_s1_copy.vi or any original; reads on a byte-copy scratch only",
+  "do NOT build the par1359 copy in this card; the op is exercised only on its own scratch VI",
+  "each bgrun --max-min <= 30; hold your turn until BGRUN END/TIMEOUT; scripts <=120 lines on stagekit",
+  "facts only, <=10; OPEN <=3; do not judge rule-1a equivalence"
+ ],
+ "advances": ["M8", "M3", "R1"]
+}

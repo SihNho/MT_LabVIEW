@@ -109,12 +109,52 @@ def rel(p):
 
 
 # ---------------------------------------------------------------------------------------------- graph JSON
+# Card 95-1: tools/bench holds SEVERAL graph_*.json shapes that carry the same top-level `md5` - the terminal list
+# ({terminals, objs}: graph_s3_loop15/graph_k_s4/graph_replay_pane_base/sim graph_k_80_owners) and three that are
+# NOT readable by OfflineGraph: the edge graph ({cls, edges, flags, method}: graph_s1_*/graph_bed_*), the loop
+# census ({loops, by|errors}: graph_loops_*) and the object census ({objects, n}: graph_objs_*). find_graph used to
+# pick the NEWEST header match whatever its shape, so graph_s1_20260924.json (edge graph) and
+# graph_loops_k_s4_20260925.json (loop census, 2 s newer than graph_k_s4) crashed the dry run with KeyError
+# 'terminals' (prerun_records.jsonl:17,24,33,65). Only the terminal-list shape is ever returned or loaded now.
+GRAPH_TERM_KEYS = ("owner_uid", "term_uid", "term_name", "is_source", "wire_uid")
+GRAPH_OBJ_KEYS = ("uid", "class")
+
+
+class GraphShapeError(ValueError):
+    """A graph JSON that is not the terminal-list shape OfflineGraph reads."""
+
+
+def graph_shape_error(d):
+    """None when `d` is the terminal-list graph ({md5, terminals:[...], objs:[...]} with the row fields the readers
+    use), else a one-line reason naming what is there."""
+    if not isinstance(d, dict):
+        return "top level is a {0}, not an object".format(type(d).__name__)
+    miss = [k for k in ("terminals", "objs") if k not in d]
+    if miss:
+        return "no {0} key(s) - keys present {1} (not the terminal-list graph shape)".format(
+            "/".join(miss), sorted(d))
+    for k, need in (("terminals", GRAPH_TERM_KEYS), ("objs", GRAPH_OBJ_KEYS)):
+        rows = d[k]
+        if not isinstance(rows, list) or not rows:
+            return "{0} is {1}, not a non-empty list".format(k, type(rows).__name__ if not isinstance(rows, list)
+                                                              else "an empty list")
+        for i, r in enumerate(rows):
+            if not isinstance(r, dict) or any(f not in r for f in need):
+                return "{0}[{1}] lacks {2}".format(k, i, [f for f in need if not isinstance(r, dict) or f not in r])
+    return None
+
+
+FIND_SKIPPED = []                       # (path, reason) of md5-matching graph files find_graph refused, last call
+
+
 def find_graph(input_md5):
     """The newest tools/bench/graph_*.json OR tools/bench/sim/<stage>/graph_*.json whose top-level `md5` is
-    `input_md5` (header read only). The sim/ subtree was added by the cycle-87 firefighter (PD194(c)): the L2-A1
-    graph lives in sim/l2a1/, so every `--prerun` launched without `--graph` failed gate X1 in cycles 85 and 86
-    (prerun_l2a1_85.log:29, prerun_l2a1_86-5.log:29) and was re-launched by hand with `--graph`."""
+    `input_md5` AND whose shape is the terminal-list graph (graph_shape_error None; card 95-1). The sim/ subtree was
+    added by the cycle-87 firefighter (PD194(c)): the L2-A1 graph lives in sim/l2a1/, so every `--prerun` launched
+    without `--graph` failed gate X1 in cycles 85 and 86 (prerun_l2a1_85.log:29, prerun_l2a1_86-5.log:29) and was
+    re-launched by hand with `--graph`. Header md5 matches of another shape are listed in FIND_SKIPPED."""
     hits = []
+    del FIND_SKIPPED[:]
     for p in glob.glob(os.path.join(BENCH, "graph_*.json")) + glob.glob(os.path.join(BENCH, "sim", "*", "graph_*.json")):
         try:
             with open(p, encoding="utf-8", errors="replace") as f:
@@ -123,15 +163,29 @@ def find_graph(input_md5):
             continue
         m = re.search(r'"md5"\s*:\s*"([0-9a-f]{32})"', head)
         if m and m.group(1) == input_md5:
+            try:
+                why = graph_shape_error(json.load(open(p, encoding="utf-8")))
+            except ValueError as e:
+                why = "not JSON: {0}".format(e)
+            if why:
+                FIND_SKIPPED.append((rel(p), why))
+                continue
             hits.append((os.path.getmtime(p), p))
     return sorted(hits)[-1][1] if hits else None
 
 
 class OfflineGraph(object):
-    """The readers stagekit addresses with, answered from one graph JSON ({vi, md5, terminals, objs})."""
+    """The readers stagekit addresses with, answered from one graph JSON ({vi, md5, terminals, objs}). Any other
+    shape raises GraphShapeError naming the file and the keys it has (card 95-1), never a bare KeyError."""
 
     def __init__(self, path):
-        d = json.load(open(path, encoding="utf-8"))
+        try:
+            d = json.load(open(path, encoding="utf-8"))
+        except ValueError as e:
+            raise GraphShapeError("graph {0}: not JSON: {1}".format(rel(path), e))
+        why = graph_shape_error(d)
+        if why:
+            raise GraphShapeError("graph {0}: {1}".format(rel(path), why))
         self.path, self.md5, self.terms, self.objs = path, d.get("md5"), d["terminals"], d["objs"]
         self.cls = dict((int(o["uid"]), o["class"]) for o in self.objs)
         self.by_owner = collections.OrderedDict()
@@ -221,6 +275,7 @@ class DryState(object):
         self.graph = None
         self.graph_path = None
         self.graph_override = None
+        self.graph_error = None              # card 95-1: why no graph could be loaded (shape / not found)
         self.input_md5 = None
         self.input_vi = None
         self.ops = []                        # Stage._op verbs
@@ -353,7 +408,14 @@ def _graph():
     if D.graph is None:
         p = D.graph_override or (find_graph(D.input_md5) if D.input_md5 else None)
         D.graph_path = p
-        D.graph = OfflineGraph(p) if p else False
+        D.graph_error = None
+        if not p and not D.graph_override and FIND_SKIPPED:
+            D.graph_error = "no terminal-list graph JSON carries md5 {0}; skipped other shapes: {1}".format(
+                D.input_md5, "; ".join("{0}: {1}".format(a, b) for a, b in FIND_SKIPPED))
+        try:
+            D.graph = OfflineGraph(p) if p else False
+        except GraphShapeError as e:                   # card 95-1: a wrong-shape --graph is refused, not a crash
+            D.graph, D.graph_error = False, str(e)
     return D.graph or None
 
 
@@ -567,7 +629,8 @@ def patch_stagekit():
         self.gate("K1 input md5 == {0}".format(self.input_md5), got == self.input_md5, "got {0}".format(got), fatal=True)
         G = _graph()
         self.gate("DRY graph JSON for input md5 {0}".format(self.input_md5), G is not None,
-                  D.graph_path or "no tools/bench/graph_*.json carries this md5", fatal=True)
+                  getattr(D, "graph_error", None) or D.graph_path or "no tools/bench/graph_*.json carries this md5",
+                  fatal=True)
         self.started = True
         return self.work
 

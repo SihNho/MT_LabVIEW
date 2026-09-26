@@ -1,0 +1,23 @@
+ATTACK this claim (card 95-1, offline only, no LabVIEW).
+
+CHANGE: tools/stage_prerun.py find_graph() now returns only graph JSONs of the terminal-list shape ({terminals, objs});
+OfflineGraph raises GraphShapeError on any other shape; _graph() catches it and sets D.graph_error (new DryState field).
+Nothing else in stage_prerun.py changed (launch gate check_launch, records, control_path_lint untouched).
+
+OBSERVED (tools/bench/prerun_fix95_selftests_before.log vs tools/bench/prerun_fix95_selftests_after.log, harness
+tools/bench/prerun_fix95_selftests.py, which sets PRERUN_RECORDS to a %TEMP% file per tag and runs each test as a child):
+- BEFORE the change: selftest_stage_prerun_stageplan.py 12/0, its child EX selftest_launch_gate.py rc 0 PASS.
+- AFTER the change: selftest_stage_prerun_stageplan.py 11/1, failing "EX selftest_launch_gate.py rc 0" (the child
+  selftest_launch_gate.py returned rc != 0 inside stageplan's subprocess). The harness did not keep the child's detail.
+- In the SAME after-run: selftest_launch_gate.py run directly = 28/0 PASS; selftest_stage_prerun_headcmp_79-6.py runs
+  selftest_launch_gate.py again in a HEAD-vs-worktree sandbox = 28/0; selftest_prerun_diag 9/0; --selftest-control-lint
+  10/0; the new selftest_stage_prerun_graphload.py 18/0.
+
+CLAIM: the stageplan-nested launch_gate failure is NOT caused by the graph-loader change; it is an environment/timing
+interaction of selftest_launch_gate.py when nested (inherited PRERUN_RECORDS / PRERUN_LOG_DIR env, or a same-second
+record-time comparison), because the same test passes 28/0 twice in the same run and the loader is not on the
+launch-gate path.
+
+Read tools/bench/selftest_launch_gate.py, tools/bench/selftest_stage_prerun_stageplan.py (lines 61-64) and
+tools/stage_prerun.py (find_graph, OfflineGraph, _graph, check_launch). Give the strongest reason the claim is wrong,
+an alternative cause, and the cheapest discriminating test.

@@ -1,0 +1,76 @@
+{
+ "schema": "task/1",
+ "id": "95-6",
+ "kind": "measure",
+ "retry_of_card": "95-5",
+ "goal": "PD202(d)3+4: build par1359 replay copy (stage_replay_swap, new plan), replay-compare vs the existing S1 replay copy, then ABBA 15 picks 120 s A=S1 B=par1359 order ABBA",
+ "why": "95-5 BLOCKED on its own card rule: whole-VI replay (INDEX row 47) needs a swapped+saved copy (stage_replay_swap.py:34,46). Judgement: saving that claudeDev replay copy is allowed; S1 side reuses claudeDev replay D1_s1_replay_20260925_075422.vi (S1 unchanged)",
+ "inputs": [
+  {"path": "tools/bench/cards/result_95-5.json"},
+  {"path": "tools/bench/cards/result_95-4.json"},
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "archive/benchmarks/INDEX.md"},
+  {"path": "tools/recipes/stage_replay_swap.py"},
+  {"path": "tools/bench/drive_m8.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_par1359_20260926_133751.vi", "md5": "5bef83f0007266b90b7ffd65d2422480"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\D1_s1_replay_20260925_075422.vi"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/recipes/stage_replay_swap.py"},
+  {"kind": "file", "name": "tools/bench/drive_m8.py"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\D1_s1_replay_20260925_075422.vi"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_par1359_20260926_133751.vi"},
+  {"kind": "file", "name": "tools/bench/diag_c93b_abba.py"}
+ ],
+ "pass": [
+  "S1 replay copy md5 == 126f8497... (stage_replay_swap_78.log:50), checked by an in-run stage pin; mismatch -> report, no rebuild",
+  "stage_replay_swap.py: env/argv plan override + one copy when no second_input; default (plan 78) unchanged, shown by dry run",
+  "par1359 replay copy: stage_replay_swap from tools/recipes with a new plan pinned to par1359 md5; dry+prerun PASS through the gate; same swap as S1; ES 1; saved claudeDev replay",
+  "replay both on the SAME recorded frames + picks (drive_m8 replay leg); every saved X/Y/Z/force column: differing count + max abs diff; Bundler #11310 if observable",
+  "PRE-DECIDED STOP (PD202(d)3): any replay difference -> no ABBA; report and return",
+  "ABBA A15 B15 B15 A15 on the NON-replay files (S1, par1359), 120 s, panel normal, picks == 15 (mismatch -> rerun once); lost frames + #637 period median/p95",
+  "per leg before/after: foreign claude/node count + CPU %; numbers in tools/bench/par1359_95_abba.json + INDEX row; LabVIEW gone; PI TMX 39 read back"
+ ],
+ "outputs": ["C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\D1_s1_par1359_replay_*", "tools/bench/par1359_95*", "tools/bench/cards/result_95-6.json"],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "gate",
+  "run_vi": true,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\D1_s1_par1359_replay_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c95*",
+   "tools/bench/plans/plan_replay_swap_95*",
+   "tools/recipes/stage_replay_swap.py",
+   "tools/bench/selftest_stage_replay_swap*",
+   "tools/bench/par1359_95*",
+   "tools/bench/diag_c95*",
+   "tools/bench/replay_c95*",
+   "tools/bench/t0_legs/**",
+   "tools/bench/m8_*",
+   "tools/bench/graph_*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/gui_shots/**",
+   "tools/gui_actions.log",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**",
+   "archive/benchmarks/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 85},
+ "rules": [
+  "never edit S1, par1359 or any original; the ONLY save allowed is the new par1359 replay copy in claudeDev replay",
+  "build from tools/recipes through guard_cycle + launch gate honestly; never move a script to dodge a gate",
+  "GUI via lv_gui.ps1 -Exception Approved -Evidence 'user 2026-09-17 bead-pick option 1'",
+  "leg dry run first (PD199h); one bgrun per step; hold turn until BGRUN END/TIMEOUT",
+  "report numbers only; do not judge equivalence; LabVIEW verified gone; facts <=10; OPEN <=3"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

@@ -1,0 +1,21 @@
+{"schema":"result/1","id":"95-5","status":"BLOCKED","gates":{"pass":1,"fail":1},
+"first_fail":"step 3 replay: no swapped replay copy of D1_s1_par1359 exists, and making one is a VI edit+save the card forbids",
+"blocked_by":{"device":"card-rule","message":"task_95-5.json:59 'never save or edit any VI; run copies only as they are' vs the only whole-VI replay path (INDEX row 47), which needs #6810/#22692 swapped by replace_object and saved (stage_replay_swap.py:34,46)"},
+"artefacts":[{"path":"tools/bench/cards/requires_95-5.json","md5":"099c64296782b637d6ea3debf3989172"}],
+"facts":[
+ "requires 5/5 FOUND offline (tools/bench/cards/requires_95-5.json)",
+ "Rows 12/17/40 are KERNEL-only fixture replays (archive/benchmarks/INDEX.md:33,38,61); none runs ForLoop #1359 or Bundler #11310, so they cannot give the step-3 numbers",
+ "The whole-VI replay path is INDEX row 47 (INDEX.md:68, m8-real-run-plan.md:308-331): stage_replay_swap.py swaps #6810/#22692 for stand-ins and saves a copy (stage_replay_swap.py:34,46)",
+ "drive_m8 --leg replay_s1 runs its --src exactly as given and does no swap (tools/bench/drive_m8.py:68-72)",
+ "claudeDev\\replay\\ contains D1_s1_replay_20260925_075422.vi (S1 side, INDEX.md:68) but NO par1359 replay copy (Glob of claudeDev/replay/*.vi)",
+ "Swap plan pins only S3/S1 (plans/plan_replay_swap_78.json:4,6), so par1359 needs a new plan; the recipe is under tools/recipes, refused by guard_cycle (result_95-4.json:29)",
+ "PD202(d) runs step 4 after step 3 and stops on any difference (d1-loop12-17-split-plan.md:1317-1319). Step 3 did not run, so the step-4 ABBA was NOT run",
+ "No LabVIEW launch, motor session or GUI act here; LabVIEW not running at end (tasklist); no VI touched; md5 re-read refused by sandbox (outside repo)"
+],
+"open":[
+ "Allow building the par1359 replay copy (stage_replay_swap on D1_s1_par1359 with a new plan json, saved as claudeDev\\replay\\D1_s1_par1359_replay_<ts>.vi)? Also: from tools/recipes (blocked by guard_cycle's 4 DUE slugs) or from tools/bench?",
+ "For A, reuse the 2026-09-25 S1 replay copy, or re-swap S1 in the same stage run so both sides are built the same day?",
+ "May step 4 (ABBA) run before step 3, or only after a bit-identical replay (PD202(d) order)?"
+],
+"cost":{"usd":null,"minutes":12,"labview_runs":0},
+"note":"No JEV ladder applied because no run failed. BLOCKED is from the card rule, not from a hook. PI TMX was not read because no motor session was opened."}

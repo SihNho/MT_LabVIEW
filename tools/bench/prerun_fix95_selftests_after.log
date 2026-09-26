@@ -1,0 +1,41 @@
+BGRUN START 2026-09-26 12:59:45 limit 12.0 min: py -u tools/bench/prerun_fix95_selftests.py after withnew
+BGRUN PID 16736
+=== tools/bench/selftest_stage_prerun_stageplan.py rc=1
+      PASS  EX selftest_retry_cap.py rc 0  === GATES: 8 pass / 0 fail | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":8,"fail":0},"first_fail":null,"artefacts":[]}
+      PASS  EX selftest_stagexec_gate.py rc 0  === GATES: 13 pass / 0 fail | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":null,"artefacts":[]}
+    === GATES: 11 pass / 1 fail; failing: EX selftest_launch_gate.py rc 0
+    RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":11,"fail":1},"first_fail":"EX selftest_launch_gate.py rc 0","artefacts":[]}
+=== tools/bench/selftest_stage_prerun_headcmp_79-6.py rc=0
+    RUN C:\Users\KimLab\AppData\Local\Temp\headcmp_79_6_26532\tools\bench\selftest_launch_gate.py rc 0 ['=== GATES: 28 pass / 0 fail'] FAILS [] 
+      PASS  H1 working-tree failing set == HEAD failing set  work [] head []
+      PASS  H2 failing set == the predicted (empty since chat-L2)  work [] head []
+    RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":2,"fail":0},"first_fail":null,"artefacts":[]}
+=== tools/bench/selftest_launch_gate.py rc=0
+      PASS  R3 the main session's real retrospective still sets retro_done  ['selftest']
+    === GATES: 28 pass / 0 fail
+      FACT  tested the INSTALLED guard_bash.py (no .new staged) - nothing to install
+    RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":28,"fail":0},"first_fail":null,"artefacts":[]}
+=== tools/bench/selftest_prerun_diag.py rc=0
+      ok   D8 the gate's own tooling is not classified  
+      ok   D9 MODIFY_VERBS listed (20 verbs)  ['add_shift_reg', 'add_sr_row', 'cfw_second_pass', 'connect', 'connect_from_wire', 'const_row', 'copy_in', 'create_local_read', 'delete_object', 'delete_wire', 'discard_work', 'from_decision', 'fs_inner_tunnel_connect', 'junk_purge', 'move_in', 'plan_rows', 
+    SUMMARY 9/9 gates pass
+    RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":9,"fail":0},"first_fail":null,"artefacts":[]}
+=== tools/stage_prerun.py --selftest-control-lint rc=0
+      PASS  C8 same shape on a declared u32 counter passes (the 1c'' prescribed reader)  []
+      PASS  C9 logic consumer (And of current, previous) refuses even when a type is declared  ["E shift register SRP (sr_prev): new:LV 'value' from a local/tunnel is compared with its previous value by ['new:NE'] - an edge detector on a polled boolean across loops (CLAUDE.md 1c'': publish a counter/val
+      PASS  C10 edge detector on BASE-graph uids (Local #501, Not Equal? by terminal names) refuses  ["E shift register SRP (sr): 501 'Focus Request' from a local/tunnel is compared with its previous value by [502] - an edge detector on a polled boolean across loops; source type undeclared - declare typ
+    RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":10,"fail":0},"first_fail":null,"artefacts":[]}
+=== tools/bench/selftest_stage_prerun_graphload.py rc=0
+      PASS  G15 _graph() with --graph graph_s1 -> None + graph_error  graph tools/bench/graph_s1_20260924.json: no terminals/objs key(s) - keys present ['cls', 'edges', 'flags', 'md5', 'method', 'note', 'vi'] (not the terminal-list graph shape)
+      PASS  G16 _graph() without --graph on S1 md5 -> None + graph_error listing skipped shapes  no terminal-list graph JSON carries md5 3e3d23cefd3a334001aa9d6156bf1aee; skipped other shapes: tools/bench/graph_loops_s1_20260923.json: no terminals/objs key(s) - keys present ['errors', 'loops', 'md5', 'r
+    === GATES: 18 pass / 0 fail
+    RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":18,"fail":0},"first_fail":null,"artefacts":[]}
+SUMMARY after
+  rc=1  tools/bench/selftest_stage_prerun_stageplan.py  | RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":11,"fail":1},"first_fail":"EX selftest_launch_gate.py rc 0","artefacts":[]}
+  rc=0  tools/bench/selftest_stage_prerun_headcmp_79-6.py  | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":2,"fail":0},"first_fail":null,"artefacts":[]}
+  rc=0  tools/bench/selftest_launch_gate.py  | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":28,"fail":0},"first_fail":null,"artefacts":[]}
+  rc=0  tools/bench/selftest_prerun_diag.py  | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":9,"fail":0},"first_fail":null,"artefacts":[]}
+  rc=0  tools/stage_prerun.py --selftest-control-lint  | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":10,"fail":0},"first_fail":null,"artefacts":[]}
+  rc=0  tools/bench/selftest_stage_prerun_graphload.py  | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":18,"fail":0},"first_fail":null,"artefacts":[]}
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":5,"fail":1},"first_fail":"tools/bench/selftest_stage_prerun_stageplan.py","artefacts":[]}
+BGRUN END rc=1 after 12s (RESULT: status=FAIL gates 5/1 first_fail=tools/bench/selftest_stage_prerun_stageplan.py; the process itself said 0)

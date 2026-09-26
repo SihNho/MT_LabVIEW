@@ -1268,3 +1268,16 @@ an ancestor here.
 
 The PN's fixed terminals are `reference`, `reference out`, `error in (no error)`, `error out`. `Traverse` class name is
 `CallLibrary` (12 on the t0 copy, uids `t0_clfn_thread_92.json`).
+
+## ForLoop parallelism property node terminals (measured 2026-09-26, `tools/bench/diag_c95_opbuild.log:52-53`, card 95-4)
+
+| property id | PN terminal label (exact) | `OpForLoopParSet_v0` control / indicator (`claudeDev\OpForLoopParSet_v0_labels.json`) |
+|---|---|---|
+| `6362004` Is Parallelism Enabled? (WRITE) | `IsParallelismEnabled` (sink, write PN) | control `Is Parallelism Enabled?` (meaning `SetEnable`) |
+| `6362004` Is Parallelism Enabled? (READ) | `IsParallelismEnabled` (source, read PN) | indicator `Is Parallelism Enabled? 2` (`ParEnabled`) |
+| `6362005` Number of Static Parallel Instances (READ) | `NumStaticParWorkers` | indicator `Number of Static Parallel Instances` (`ParInstances`) |
+| read PN `error out` (chains the write PN's error) | `error out` | indicator `error out 5` (`SetErr`) |
+
+Class string `VI Server:ForLoop`; the WRITE of 6362004 is now machine-verified (the ids in the Loop/ForLoop paragraph
+above were Wiki-sourced). Inputs inherited from the donor `OpLoopCast_v0`: `vi path`, `Class Name`, `index`; loop uid echo
+indicator `UID` (`LoopUID`). A non-ForLoop ref (`WhileLoop`, `Diagram`) → `error 1055: Property Node in OpForLoopParSet_v0.vi`.

@@ -1,0 +1,54 @@
+{
+ "schema": "task/1",
+ "id": "95-1",
+ "kind": "build",
+ "goal": "Fix tools/stage_prerun.py --dry crashing with KeyError 'terminals' when loading tools/bench/graph_s1_20260924.json (PD202(f), step 0 of cycle 95)",
+ "why": "retrospective-cycle94 device-failed (accepted): 5th crash of the same loader on record (tools/bench/prerun_records.jsonl lines 17,24,33,65); (d)'s build passes through the same launch gate on the S1 graph; 94-3 passed the gate by hiding the script from its classifier, which is forbidden",
+ "inputs": [
+  {"path": "tools/stage_prerun.py"},
+  {"path": "tools/bench/graph_s1_20260924.json"},
+  {"path": "tools/bench/prerun_records.jsonl"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/bench/graph_s1_20260924.json"},
+  {"kind": "file", "name": "tools/bench/prerun_records.jsonl"}
+ ],
+ "pass": [
+  "root cause stated from the code + the graph file (which graph schema lacks 'terminals', which loader path assumes it), file:line",
+  "py tools/stage_prerun.py --dry on graph_s1_20260924.json completes (rc and last lines quoted); no KeyError",
+  "each earlier crashing invocation named in prerun_records.jsonl lines 17,24,33,65 re-run offline (same args where recoverable): no KeyError; any other outcome reported as-is",
+  "self-test tools/bench/selftest_stage_prerun_graphload.py: a positive case per graph shape + a negative case (malformed graph refused with a clear message); counts quoted",
+  "existing stage_prerun self-tests still pass (counts before/after)",
+  "the fix loosens no gate: the launch-gate classifier and control_path_lint behave as before on their self-tests"
+ ],
+ "outputs": ["tools/stage_prerun.py", "tools/bench/selftest_stage_prerun*", "tools/bench/prerun_fix95*", "tools/bench/cards/result_95-1.json"],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_prerun.py",
+   "tools/bench/selftest_stage_prerun*",
+   "tools/bench/prerun_fix95*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 35},
+ "rules": [
+  "offline only; no LabVIEW",
+  "never satisfy a refusing gate by renaming or hiding a script from its classifier",
+  "facts only, <=10; OPEN <=3"
+ ],
+ "unblocks": "M8"
+}
