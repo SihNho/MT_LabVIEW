@@ -1,0 +1,43 @@
+{
+ "schema": "task/1",
+ "id": "mb-T6",
+ "kind": "read-log",
+ "goal": "Read-only: the FIRST failing gate line of tools/bench/diag_c90_t0_step3b.log (label, op, error, values, line) + its ExecState-per-site table",
+ "why": "replay of the log-reader role on a real failing bgrun log with a known first failing gate",
+ "inputs": [
+  {
+   "path": "tools/bench/diag_c90_t0_step3b.log"
+  }
+ ],
+ "pass": [
+  "first failing gate: label, op, error code, log line",
+  "<= 25 lines of facts; no diagnosis beyond the log"
+ ],
+ "outputs": [
+  "tools/bench/cards/result_mb-T6.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/cards/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 1,
+  "minutes": 10
+ },
+ "rules": [
+  "REPLAY chat-N2: LabVIEW/GUI/hardware/peers/git forbidden (hook); do all offline, report the rest",
+  "read-only: the only file you write is your result card",
+  "facts only, each with file:line"
+ ],
+ "advances": [
+  "M8"
+ ]
+}

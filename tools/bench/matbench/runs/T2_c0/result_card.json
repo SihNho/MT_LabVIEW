@@ -1,0 +1,22 @@
+{"schema":"result/1","id":"mb-T2","status":"PASS","gates":{"pass":3,"fail":0},
+ "first_fail":null,
+ "blocked_by":null,
+ "artefacts":[{"path":"tools/bench/cards/result_mb-T2.json","md5":null}],
+ "facts":[
+  "RUN1 first ExecState 0 = site 3 (For #29874, Diagram[50], wire w25157): OpCreateConstOnTerm_v0 on 'ForLoop[5].N[5].t6' raised error 1055 Invoke Node (diag_c90_t0_step3b.log:172-176)",
+  "RUN1 site 3: CLFN t6 left bare (wire 0) after the 1055; returned const uid #23441 is site 2's stale uid, not a new node (step3b.log:114,172-173)",
+  "RUN1 same 1055 + bare t6 on every For site 4,5 (ForLoop[6], Diagram[74]) and 16,17 (ForLoop[10], Diagram[137]) (step3b.log:213-214,253-254,573-574,613-614)",
+  "RUN1 While sites 0,2 end ExecState 1 (step3b.log:78-79,134-135); 8,10-13,20 const+wire+branch all PASS but ExecState stays 0, inherited from the bare For CLFNs (step3b.log:310-312,347-348,673)",
+  "RUN2 dropped all For sites (step3b_r2.log:23); new probe: a lone bare CLFN (t6 unwired) gives ExecState 0 at top level AND in body (r2.log:42,45) -> any unwired CLFN breaks the VI",
+  "RUN2 fault: site 0 const addressed N[74] (run1: N[73]); const 'PASS' #23202 but CLFN t6 wire 0 (r2.log:61-62) -> ExecState 0 from site 0 on (r2.log:63-65)",
+  "RUN2 why: node order in Diagram[43] shifted by one vs run1 - junk Invoke at nodes_index 73 of 75 (r2.log:49) vs 74 of 75 (step3b.log:46); script used a positional N[i], wrong by 1",
+  "RUN2 same off-by-one at site 11: N[24] vs run1 N[23], t6 wire 0 (r2.log:280-281 vs step3b.log:403-404); sites 2,10,20 wired OK (r2.log:104,222,440)",
+  "RUN2 the misplaced constants landed on some other node's t6 index; cdiff still rows 0 / removed 0 / added 16 (r2.log:465) - target node not identified in the log",
+  "Route worked: While-body sites 0,2,8,10,11,12,13,20 (run1 all PASS); For-body 3,4,5,16,17 never (1055 in OpCreateConstOnTerm_v0); case 6,7,14,15 never attempted"
+ ],
+ "open":[
+  "Address the CLFN by uid (not positional N[i]) before the const op? run2 shows index order is not stable across runs",
+  "For-body const route: OpCreateConstOnTerm_v0 ForLoop path 1055 needs a fix or review §5's const-top-then-move route"
+ ],
+ "cost":{"usd":null,"minutes":8,"labview_runs":0},
+ "note":"offline log read only; diag_c90_t0_step3b.py not present in this tree, so the index-selection code was not inspected - the off-by-one cause is read from log positions."}

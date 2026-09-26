@@ -1,0 +1,31 @@
+{
+ "schema": "result/1",
+ "id": "mb-T3",
+ "status": "PASS",
+ "gates": {"pass": 5, "fail": 0},
+ "first_fail": null,
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/p2check_l2a1_88_desk.log", "md5": "38d3c19cd19598c9de1f3524c5454231"},
+  {"path": "tools/bench/p2check_l2a1_88_desk.py", "md5": "0a1864d7a34b975ee677db0855e22d70"},
+  {"path": "tools/bench/p2check_l2a1_88_owners.py", "md5": "356e412200e30c74a7fd98a1e5fe9d1e"},
+  {"path": "tools/bench/p2check_l2a1_88_schema.py", "md5": "b613200ab5807ca496f69111ea2bd111"}
+ ],
+ "facts": [
+  "sr1_L0: sim/l2a1/step_18_wire.json:1 effect wire -8; src term -6 owner -2 LeftShiftRegister inner; sink 5883 on 5825 SelectorTunnel OuterTerminal; 1 src/1 sink in step 18 and step_46",
+  "sr2_L0: step_22_wire.json:1 wire -16; src -14 owner -10 LeftShiftRegister; sink 6038 on 5702 SelectorTunnel OuterTerminal; 1 src/1 sink (own step + step_46)",
+  "sr3_L0: step_26_wire.json:1 wire -24; src -22 owner -18 LeftShiftRegister; sink 10760 'Value' on 10750 SelectorTunnel OuterTerminal; 1 src/1 sink (own step + step_46)",
+  "tun1(_in): step_29_wire.json:1 wire -28; src -27 owner -25 LoopTunnel inner; sink 5741 on 5725 SelectorTunnel OuterTerminal; 1 src/1 sink (own step + step_46)",
+  "tun2(_in): step_32_wire.json:1 wire -32; src -31 owner -29 LoopTunnel inner; sink 5976 on 5967 SelectorTunnel OuterTerminal; 1 src/1 sink (own step + step_46)",
+  "All 5 sinks are SelectorTunnels owned by a CaseStructure (step_46 state.objs), not nodes of loop diagram 23166; effect.detached_from null, joined [] on all 5",
+  "stage_d1_l2a1.json AGREES: owners bound -2->25240 (:2549), -10->25344 (:2662), -18->25382 (:2775), -25->25422 (:2891), -29->25428 (:2929)",
+  "Per-row diff is skipped on the wire ops (:2636-2639, :2749-2752, :2862-2865); sim-vs-real diff n 0, unbound [] at checkpoints k=19 (:2664-2673), 23 (:2777-2786), 27 (:2893-2902), 28 (:2931-2940)",
+  "Run P2 2nd pass: '#5825/#5702/#10750/#5725/#5967 not in Diagram[21].Nodes[]' (stage_d1_l2a1.json:819-833); recipe stage_d1_l2a1.py:89-91 addresses sinks with owner_class/term_class '' via loop nodes",
+  "Sim final state is on the INPUT bed D1_k md5 6cf5b077... (step_46 state.vi/md5); the sim has no record of the saved D1_l2_a1_20260925_235224.vi (md5 51d9b8a3...) itself"
+ ],
+ "open": [
+  "Parts (B) and (C) of brief_88-1.md not run (out of this replay); the LabVIEW P2 read of the bed (PD194(a)) is still owed - offline evidence says the 5 nets are 1-source/1-sink and the real owners are bound"
+ ],
+ "cost": {"usd": null, "minutes": 12, "labview_runs": 0},
+ "note": "Offline only, labview=none. bgrun/MATERIAL=1 launches were approval-gated in this replay; scripts ran directly in PowerShell (no LabVIEW touched). Sim step files are single-line JSON, so file:line cites are :1 with key paths."
+}

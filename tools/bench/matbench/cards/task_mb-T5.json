@@ -1,0 +1,63 @@
+{
+ "schema": "task/1",
+ "id": "mb-T5",
+ "kind": "build",
+ "goal": "AUTHOR stage K's stageplan/1 (design brief_mb-T5.md) and simulate it with tools/stagesim.py to the rows the design leaves open",
+ "why": "replay of cycle 79's stage-K plan authoring: the plan file is the only thing a stage run executes (PD178(f))",
+ "inputs": [
+  {
+   "path": "tools/bench/cards/brief_mb-T5.md"
+  },
+  {
+   "path": "docs/protocol/stageplan.json"
+  },
+  {
+   "path": "tools/bench/stageplan_l7_split.json"
+  },
+  {
+   "path": "tools/bench/graph_k_s4_20260925.json"
+  },
+  {
+   "path": "tools/bench/graph_loops_k_s4_20260925.json"
+  },
+  {
+   "path": "tools/stagesim.py"
+  }
+ ],
+ "pass": [
+  "tools/bench/matbench_out/stageplan_k_split.json exists and is valid stageplan/1 (example: tools/bench/stageplan_l7_split.json)",
+  "py tools/stagesim.py simulate <it> tools/bench/graph_k_s4_20260925.json --out-root tools/bench/matbench_out/sim --plan-out tools/bench/matbench_out: no failed action",
+  "every end_cdiff row is one the design leaves open (PD177(e), 178(c)) or already in the base graph; list them in facts"
+ ],
+ "outputs": [
+  "tools/bench/matbench_out/**",
+  "tools/bench/cards/result_mb-T5.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/matbench_out/**",
+   "tools/bench/cards/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 30
+ },
+ "rules": [
+  "REPLAY chat-N2: LabVIEW/GUI/hardware/peers/git forbidden (hook); do all offline, report the rest",
+  "write the plan with the Write tool, never a heredoc",
+  "uids and terminal names come from the graph files, never guessed",
+  "result/1 <=10 facts <=3 open"
+ ],
+ "advances": [
+  "M3",
+  "R1"
+ ]
+}

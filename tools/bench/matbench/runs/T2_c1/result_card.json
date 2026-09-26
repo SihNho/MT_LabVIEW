@@ -1,0 +1,27 @@
+{
+ "schema": "result/1",
+ "id": "mb-T2",
+ "status": "PASS",
+ "gates": {"pass": 3, "fail": 0},
+ "first_fail": null,
+ "blocked_by": null,
+ "artefacts": [],
+ "facts": [
+  "run1 first ExecState-0 site = site 3 (For-body, Diagram[50], owner ForLoop #29874): OpCreateConstOnTerm_v0 'error 1055: Invoke Node' on N[5].t6, CLFN t6 wire 0 -> ExecState 0 (step3b.log:172-176)",
+  "run1: all 5 For-body sites (3,4,5,16,17) failed identically: S*.2 1055 from OpCreateConstOnTerm_v0, S*.3 t6 wire 0 (step3b.log:172,213,253,573,613); no While-body site raised an op error",
+  "run1: While-body sites 0,2 passed every gate incl. ExecState 1 (step3b.log:77-79,133-135); 8,10-13,20 passed .2/.3/.4 but read ExecState 0 inherited from site 3 (ES TABLE step3b.log:673)",
+  "run1 tally 47/23, E1 8/13, CD added 21 = 2x8 + 5 unwired For-body CLFNs (step3b.log:675-677); '#23441' in every failing S*.2 is a stale uid echo of the op's last success (:172,213,253)",
+  "run2 first ExecState-0 site = site 0 (While-body Diagram[43]): S00.2 const 'PASS' on N[74] yet S00.3 CLFN t6 wire 0, no op error (step3b_r2.log:61-65)",
+  "run2 cause = node-index shift: junk Invoke landed at Nodes[73] of 75, BEFORE the CLFN (r2.log:49); purge removed it (:58); CLFN slid to N[73] but the script used pre-purge N[74] -> const on wrong node",
+  "run2 same fault at site 11: junk at Nodes[23] of 25 (r2.log:268), purged (:277), const N[24] 'PASS' (:280), t6 wire 0 (:281); every passing site had the junk LAST (:91,150,209,309,368,427)",
+  "run1 escaped this by luck: its site-0 junk landed at Nodes[74] of 75 (last), so N[73] stayed valid after the purge (step3b.log:41-57)",
+  "run2 While-body sites 2,8,10,12,13,20 passed .2/.3/.4 (r2.log:103-122,162-181,221-240,321-340,380-399,439-458); ExecState 0 inherited from site 0 (:461); For-body sites skipped by design (:23)",
+  "route summary: While-body works iff the CLFN index is re-resolved after the purge; For-body never worked - OpCreateConstOnTerm_v0 gives 1055 whenever the owner is a ForLoop (5/5 sites, run 1)"
+ ],
+ "open": [
+  "PD needed: (a) re-resolve the CLFN's N index by uid AFTER the junk purge in diag_c90_t0_step3b; (b) why OpCreateConstOnTerm_v0's Invoke Node raises 1055 on a ForLoop-owned diagram while While-owned works",
+  "diag_c90_t0_step3b.py is absent from this worktree (only step3.py), so the index-computation line is not cited; the shift is read from the logged Nodes indices only"
+ ],
+ "cost": {"usd": null, "minutes": 11, "labview_runs": 0},
+ "note": "log-only diagnosis, no rerun; run 2's ExecState 0 at the 'bare CLFN' probes is the expected transient (unwired required inputs), not a fault"
+}

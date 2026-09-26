@@ -1,0 +1,29 @@
+{
+ "schema": "result/1",
+ "id": "mb-T1",
+ "status": "BLOCKED",
+ "gates": {"pass": 0, "fail": 0},
+ "first_fail": null,
+ "blocked_by": {"device": "card flags + permission layer", "message": "flags labview=none/run_vi=false/hardware=none forbid the t0 build and both real legs; the offline mapper diag_c89_t0map.py could not launch either: bgrun+MATERIAL=1 (fg/bg), PowerShell $env:MATERIAL and plain py all returned 'requires approval' (non-interactive session)"},
+ "artefacts": [
+  {"path": "tools/bench/diag_c89_t0map.py", "md5": "39e06a5d90aef004e0113b11d51c88d5"}
+ ],
+ "facts": [
+  "Card flags forbid LabVIEW, run_vi, hardware: pass criteria 1-3 (t0 copy, cdiff 0, ExecState, 15/8-pick legs) cannot be met in this session (task_mb-T1.json:43-46)",
+  "No t0 stage or timing-stamp helper exists yet: tools/bench/sim/t0 was empty; tools/recipes has no *t0*/*stamp* file (ls, this session)",
+  "Offline input for the group->loop map exists: tools/bench/graph_s1_20260924.json (S1 graph, contains uid 5058) + tools/bench/loop_contents.json",
+  "Written: tools/bench/diag_c89_t0map.py (5 groups by label regex -> owning While loop/Case via owners chain; writes tools/bench/sim/t0/t0_groups_s1.json; C6 RESULT line) - NOT RUN",
+  "Launch refused 4x: bgrun fg timeout 150000 (guard_bash 2b), bgrun fg/bg with MATERIAL=1 and plain py all 'requires approval'; PowerShell $env: 'modifies environment variables'",
+  "A Bash command merely naming tools/recipes/stage_d1_l2a1.py was BLOCKED by the prior-art launch gate: on-disk sha edd27358dce6 != released sha ac1d101830c0 (guard_bash/stop_record)",
+  "LabVIEW.exe PID 25728 (694,892 K) is running in the main checkout at card time (tasklist); untouched",
+  "Uninstrumented 15-pick references for the perturbation fact: 3,776 (c88), 3,331/3,161 (c83) lost frames (brief_89-1.md:36-37) - no instrumented number produced",
+  "Pins D1_s1_copy / kswap / L2-A1 bed untouched (no LabVIEW, no writes outside the card's write globs)"
+ ],
+ "open": [
+  "Re-issue the card with labview=build, run_vi=true, hardware=gate (the goal is a LabVIEW build + two real legs; the current flags make it a replay-only card)",
+  "Grant the launch shape `MATERIAL=1 py tools/bgrun.py ... -- py -u tools/bench/diag_c89_*.py` in the permission allowlist so the offline mapper can run unattended",
+  "stage_d1_l2a1.py on disk differs from its reviewed sha (edd27358dce6 vs ac1d101830c0); any command citing that path is refused until a FIXED: line post-dates the edit"
+ ],
+ "cost": {"usd": null, "minutes": 11, "labview_runs": 0},
+ "note": "Offline preparation only. The mapper's prediction contract (G1 #5058 found, G2 5 groups populated, G3 one While per node, G4 one shared frame loop) is unverified."
+}

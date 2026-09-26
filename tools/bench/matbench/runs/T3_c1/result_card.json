@@ -1,0 +1,29 @@
+{
+ "schema": "result/1",
+ "id": "mb-T3",
+ "status": "PASS",
+ "gates": {"pass": 5, "fail": 0},
+ "first_fail": null,
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/p2check_l2a1_88_desk.py", "md5": "179b44961f386a91bae45cbec4d9ceb4"},
+  {"path": "tools/bench/p2check_l2a1_88_desk.log", "md5": "4ed782e411c0b41fdbdc53182f7a34dd"}
+ ],
+ "facts": [
+  "sr1_L0: src term -6 (owner -2 LeftShiftRegister) -> sink term 5883 on SelectorTunnel #5825; 1 src/1 sink; sim/l2a1/step_18_wire.json effect (wire -8); stageplan_l2a1.json:209-215",
+  "sr2_L0: src -14 (owner -10 LeftShiftRegister) -> sink 6038 on SelectorTunnel #5702; 1/1; step_22_wire.json effect (wire -16); stageplan_l2a1.json:244-250",
+  "sr3_L0: src -22 (owner -18 LeftShiftRegister) -> sink 10760 'Value' on SelectorTunnel #10750; 1/1; step_26_wire.json effect (wire -24); stageplan_l2a1.json:279-285",
+  "tun1: tunnel step_27 makes T1 outer -26/inner -27 (owner -25 LoopTunnel); tun1_in step_29_wire.json: -27 -> sink 5741 on SelectorTunnel #5725; 1/1; stageplan_l2a1.json:306-313",
+  "tun2: step_30 makes T2 outer -30/inner -31 (owner -29 LoopTunnel); tun2_in step_32_wire.json: -31 -> sink 5976 on SelectorTunnel #5967; 1/1; stageplan_l2a1.json:334-341",
+  "All 5 sinks are SelectorTunnel terminals (term_class OuterTerminal per archive/peer/2026-09-26-hyp-l2a1-p2-86-5.md:83-85), not nodes; all 5 sim steps error=null",
+  "stage_d1_l2a1.json binding: sr owners -2->25240 (:2547-2550), -10->25344 (:2660-2663), -18->25382 (:2773-2776), T1 -25->25422 (:2890-2892), T2 -29->25428 (:2928-2930); agrees with sim owner ids",
+  "stage_d1_l2a1.json k=18/22/26 (sr*_L0) and k=27/28 (tun) record err '' , bound {} and diff skipped for the wire rows (:2624-2640, :2737-2753, :2850-2866) - no per-wire diff",
+  "stage_d1_l2a1.json:819-834: every P2 ordered 2nd pass raised RuntimeError '#<sink> not in Diagram[21].Nodes[]', Is Broken? None - the 5 P2 gates were never read on the bed",
+  "plan_l2a1.json md5 046237e1... differs from stageplan_l2a1.json md5 329d89ee... (card pins stageplan); rows cited from stageplan"
+ ],
+ "open": [
+  "brief (A) step 2 (LabVIEW read of the bed, SelectorTunnel OUTER-face addressing) and (B)/(C) are out of this replay per the card; the 5 P2 Is Broken? reads remain unmeasured"
+ ],
+ "cost": {"usd": null, "minutes": 9, "labview_runs": 0},
+ "note": "Offline desk check only. Sim predicts each of the 5 rows as a 1-source/1-sink net onto a SelectorTunnel sink matching the stageplan dst; stage record agrees on structure uids but holds no P2 readback."
+}

@@ -1,0 +1,67 @@
+{
+ "schema": "task/1",
+ "id": "mb-T2",
+ "kind": "diagnose",
+ "goal": "From the logs only (no rerun): why did card 90-6's two runs both end ExecState 0? Name each run's fault",
+ "why": "replay of card 90-6's diagnosis: the faults must be read from the machine's logs, not inferred",
+ "inputs": [
+  {
+   "path": "tools/bench/cards/task_90-6.json"
+  },
+  {
+   "path": "tools/bench/cards/result_90-5.json"
+  },
+  {
+   "path": "tools/bench/diag_c90_t0_step3b.log"
+  },
+  {
+   "path": "tools/bench/diag_c90_t0_step3b_r2.log"
+  },
+  {
+   "path": "tools/bench/diag_c90_t0_step3.py"
+  },
+  {
+   "path": "tools/bench/diag_c90_t0_step3.log"
+  },
+  {
+   "path": "tools/bench/t0_sites_s1.json"
+  },
+  {
+   "path": "archive/peer/2026-09-26-c90-t0step3-movewire.md"
+  }
+ ],
+ "pass": [
+  "run 1 (diag_c90_t0_step3b.log): first site whose ExecState went 0, the op, the error it raised, log:line",
+  "run 2 (diag_c90_t0_step3b_r2.log): what went wrong and why, log:line",
+  "which sites (While-body vs For-body) the route worked on, from the logs"
+ ],
+ "outputs": [
+  "tools/bench/cards/result_mb-T2.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c90_*",
+   "tools/bench/cards/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 20
+ },
+ "rules": [
+  "REPLAY chat-N2: LabVIEW/GUI/hardware/peers/git forbidden (hook); do all offline, report the rest",
+  "no rerun of any script; the logs are the evidence",
+  "facts only; result/1 <=10 facts <=3 open"
+ ],
+ "advances": [
+  "M8",
+  "M3"
+ ]
+}

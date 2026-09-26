@@ -1,0 +1,18 @@
+{"schema":"result/1","id":"mb-T3","status":"PASS","gates":{"pass":3,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/bench/p2check_l2a1_88_table.md","md5":"2a113b396e0dec3788e65a678559c199"},{"path":"tools/bench/p2check_l2a1_88_peek.py","md5":"42080da8350842e4c35e232ed11450a3"}],
+"facts":[
+"sr1_L0 sim sink: SelectorTunnel 5825 OuterTerminal 5883, src LSR -2 term -6, net -8 = 1 src/1 sink (step_18_wire.json:1; step_46_wire.json:1)",
+"sr2_L0 sim sink: SelectorTunnel 5702 OuterTerminal 6038, src LSR -10 term -14, net -16 = 1/1 (step_22_wire.json:1; step_46_wire.json:1)",
+"sr3_L0 sim sink: SelectorTunnel 10750 OuterTerminal 10760 'Value', src LSR -18 term -22, net -24 = 1/1 (step_26_wire.json:1; step_46)",
+"tun1 sim: 2886/2892 -> LoopTunnel -25 (inner -27) -> SelectorTunnel 5725 OuterTerminal 5741, net -28 = 1/1 (step_29_wire.json:1; step_46)",
+"tun2 sim: 5818/5820 -> LoopTunnel -29 (inner -31) -> SelectorTunnel 5967 OuterTerminal 5976, net -32 = 1/1 (step_32_wire.json:1; step_46)",
+"All 5 sinks in frame_diagram 23166 at step_46; base had 4 of them in 639 on wires 6041/10763/5746/5979 (step_00_base.json:1)",
+"tun1/tun2 stage: cfw #2892->#5741 = D[21].N[2].t4, #5820->#5976 = D[21].N[2].t1, bound -25->25422/-29->25428, graph diff n=0 (stage_d1_l2a1.json:779-780,2893-2929)",
+"sr*_L0 stage: wire_sr LeftIn by {node,term} index (2,5)/(2,3)/(5,2), 'cached index', diff SKIPPED; sink uid not recorded (stage_d1_l2a1.json:770-778,2615-2866)",
+"Stage P2 2nd pass: all 5 raised '#<sink owner> not in Diagram[21].Nodes[]'; Is Broken? None; 5 gates fail (stage_d1_l2a1.json:735-739,819-834)",
+"Parts (B) scratch RBW Error List and (C) c87 review are OUT of this replay; no LabVIEW, peers, git used"],
+"open":[
+"sr1/2/3_L0 real sinks are not recorded in stage_d1_l2a1.json (diff skipped), so stage-vs-sim agreement for those 3 rows needs a LabVIEW read of the bed as SelectorTunnel outer faces",
+"The 2nd-pass failure looks like addressing SelectorTunnel owners as Diagram.Nodes[] members; whether that alone explains the 5 P2 fails is a judgement call"],
+"cost":{"usd":null,"minutes":12,"labview_runs":0},
+"note":"Python runs needed approval in this session, so the check used Grep on the step JSON; peek.py was written but never run"}

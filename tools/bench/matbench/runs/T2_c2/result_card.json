@@ -1,0 +1,22 @@
+{"schema":"result/1","id":"mb-T2","status":"PASS","gates":{"pass":3,"fail":0},
+ "first_fail":null,"blocked_by":null,
+ "artefacts":[{"path":"tools/bench/cards/result_mb-T2.json","md5":null}],
+ "facts":[
+  "RUN1 first ExecState-0 site = 3 (For body Diagram[50], ForLoop #29874): OpCreateConstOnTerm_v0 'error 1055: Invoke Node in OpCreateConstOnTerm_v0.vi', t6 wire 0, ExecState 1->0 (step3b.log:172-176)",
+  "RUN1 cause: CLFN already moved into Diagram[50] (:157), no constant, no branch attempted (no S03.4 line) -> left bare; a bare CLFN alone gives ExecState 0 (r2.log:42 'CLFN bare at top level' = 0)",
+  "RUN1 same 1055 on all For-body sites 4 (:213), 5 (:253), 16 (:573), 17 (:613) -> 5 bare CLFNs; ExecState stayed 0 at every later site (:311..:671); CD added 21 = 13 CLFN + 8 const, 0 Invoke (:677)",
+  "RUN1 While-body sites 0,2,8,10,11,12,13,20: const + t6 wire + branch PASS 8/8 (:58-77,:114-133,:291-310,:347-366,:403-422,:459-478,:515-534,:651-670); ExecState 1 after sites 0,2 (:78,:134)",
+  "RUN2 (For sites skipped :23): site 0 const #23202 PASS on N[74] (:61) but 'CLFN N[74] t6 wire 0' FAIL (:62) -> branch skipped, t8 bare -> ExecState 0 from site 0 (:63-65); later reads all 0",
+  "RUN2 site-0 fault = stale node index across the junk purge: Invoke at nodes_index 73, CLFN at 74 (:49); purge removed 1 node (:58); N[74] re-read (:62). Run 1: Invoke 74 / CLFN 73 (:46,:58), no shift",
+  "RUN2 same shift at site 11: Invoke index 23 of 25 (:268), const PASS N[24] (:280), CLFN N[24] t6 wire 0 (:281); sites 2,8,10,12,13,20 (Invoke index above the CLFN) PASS .2/.3/.4 (:103-122..:439-458)",
+  "RUN2 tally: E1 6/8 (:463), CD added 16 = 8 CLFN + 8 const, 0 Invoke (:465): all 8 constants exist; RESULT FAIL 38/12 S00.3 (:507), rc=1 333 s (:508). RUN1: FAIL 49/23 S03.2 (:719), rc=1 428 s (:720)",
+  "Route worked on While bodies (Diagram[43]/[99]/[20]) 8/8 run 1, 6/8 run 2; For bodies (Diagram[50]/[74]/[137]) 0/5 run 1, not tried run 2; case sites 6/7/14/15 never attempted (both :23)",
+  "Both runs: scratch deleted, input/pins md5 unchanged, LabVIEW gone (run1 :686-714, run2 :474-502). No JEV-LADDER line for either log in tools/bench/jev_gate.log (grep c90_t0: 0 hits)"
+ ],
+ "open":[
+  "r2.log:42 shows a bare CLFN alone gives ExecState 0, so the per-site read is meaningful only after a site is fully wired and never recovers after one bare CLFN - read node error text or delete the failed CLFN before continuing?",
+  "For bodies need a constant route other than OpCreateConstOnTerm_v0's Loop cast (1055 on ForLoop 5/5); review §5 (const at top, move both, OpConnectNested) is untested - judgement's choice",
+  "Both runs take the node index for the t6 readback before the junk purge; fix = re-find the CLFN by uid after every purge (review 'side hazard' + r2 :49/:62)"
+ ],
+ "cost":{"usd":null,"minutes":10,"labview_runs":0},
+ "note":"Offline log read only; no script rerun. Run 1's per-site ExecState is clean evidence up to site 3; run 2's is not evidence after site 0."}
