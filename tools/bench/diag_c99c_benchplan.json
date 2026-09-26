@@ -1,0 +1,28 @@
+{
+ "schema_note": "card 99-3 (escalation rung 1 of 99-2 F3/F4): FINALIZED row plan of tools/bench/diag_c99c_bench.py. Two scratch benches built from nothing (a stripped HARNESS_copyloop copy for F3, an EMPTY_v0 copy for F4); no row touches an existing uid; wiring by gscript name/index verbs on fresh objects. Timing is Python perf_counter around one COM Run (the copyloop T(N) method, copyloop_bench.json), no t0stamp CLFN in any timed path. Numbers live here so the recipe types no uid-shaped literal (decision 8).",
+ "input": {"vi": "HARNESS_copyloop.vi", "md5": "eb8dad78209440fbbb9d87afad3d8ad6", "graph": "tools/bench/graph_harness_copyloop_c95.json"},
+ "sizes": {"NB": 15, "D1": 2, "NPT": 20000, "NITER": 5000, "NCALL": 300, "REP": 3, "FILL": 0.1, "HW": 1, "EXP_BASELINE": -1000.0,
+           "HW_DISC": 50, "NCALL_DISC": 60},
+ "sources": {"D1": "#8984 const 2 (diag_c99b_lvread.json)", "NPT": "'# FD points' default 20000 (facts_c99_display.json:17)",
+             "HW": "both half-width panel defaults = 1 (facts_c99_display.json:17)", "EXP_BASELINE": "'Exp Baseline' -1000.0 (drive_original_copy_v4.json:144)"},
+ "pos": {"temp3": [300, 700], "for3": [700, 200], "ctl3_in": [720, 300], "ind3_in": [860, 300], "temp4": [300, 900], "for4": [500, 200],
+         "median": [560, 240], "coef": [560, 330], "fir": [700, 330]},
+ "decisions": [
+  {"id": "F3-0", "action": "delete", "what": "strip every Node then every ControlTerminal of the HARNESS_copyloop work copy; RBW; gate 0/0/0/0"},
+  {"id": "F3-1", "action": "create", "what": "temp CLFN (ret, ring arr DBL dims 3 handle) -> create_control t6 'ring', create_indicator t7; delete temp CLFN; RBW"},
+  {"id": "F3-2", "action": "create", "what": "empty top-level For loop; N constant = NITER via create_const_loop_term('for_n'); ExecState 1 gate (variant A)"},
+  {"id": "F3-3", "action": "run", "what": "set 'ring' [NB][D1][NPT], read back; A-open, A-closed: REP COM runs each, perf_counter"},
+  {"id": "F3-4", "action": "move", "what": "B1 (run 1's route, review c99c-bench-t4 s4): the indicator ControlTerminal (right of the deleted temp CLFN) move_in to the For body"},
+  {"id": "F3-5", "action": "ctl-ind", "what": "B1: connect_ctl_ind 'ring' -> indicator (border tunnel); tunnel IndexMode READ, set 0, READ again; ExecState read twice 0.5 s apart (claim-1 test, recorded, not gated)"},
+  {"id": "F3-5b", "action": "create", "what": "B2 only if B1 did not read ExecState 1: fresh EMPTY_v0 copy scratch_c99c_f3b_*; temp CLFN ring ctl + ind; For + N const; BOTH terminals move_in (build_d1_v0.move_in); connect_ctl_ind on the body (one wire, 0 tunnels) = UPPER bound on the L1 write"},
+  {"id": "F3-5c", "action": "gate", "what": "T4 the chosen B route reads ExecState 1"},
+  {"id": "F3-6", "action": "run", "what": "B-open, B-open with a 1-bead ring (copy-size discriminator), B-closed: REP COM runs each"},
+  {"id": "F4-1", "action": "create", "what": "EMPTY_v0 byte copy; temp CLFN (rowZ,rowF arr DBL 2 handle, hw I32) -> 3 controls; delete temp CLFN; RBW"},
+  {"id": "F4-2", "action": "create", "what": "empty For; drop Median Filter.vi, Smoothing Filter Coefficients.vi, FIR Filter (DBL).vi into its body"},
+  {"id": "F4-3", "action": "name-wire", "what": "wire_control rowZ->Median X, rowF->FIR X, hw->Median left rank (+right rank, Coef half-width as branches); g.wire Coef forward coefficients -> FIR FIR Coefficients; read the body terminals back"},
+  {"id": "F4-4", "action": "index", "what": "rowZ/rowF tunnels IndexMode 1, hw tunnels 0 (matched by outer wire = the control's wire); ExecState 1 gate"},
+  {"id": "F4-5", "action": "run", "what": "hw=1; panel CLOSED (run 1: open panel = ~25 ms UI-bound per COM Run, n15 == n1); for REP repeats: n1-full, n15-full, n1-fill10, n15-fill10, NCALL COM runs each; per call(15) = (T15-T1)*15/14"},
+  {"id": "F4-6", "action": "run", "what": "RUN 2 dead-code discriminator (outputs unwired): hw=HW_DISC, n1 and n15 full, NCALL_DISC runs each; the filters run iff T15-T1 grows with the window; hw back to 1"},
+  {"id": "H-1", "action": "quit", "what": "stagekit close (restart, delete both scratches, pins incl. S1 3e3d23ce, H6 nothing left); kill LabVIEW; Z gone"}
+ ]
+}

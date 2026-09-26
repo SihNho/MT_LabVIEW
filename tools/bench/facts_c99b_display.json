@@ -1,0 +1,47 @@
+{
+ "schema": "facts/1",
+ "card": "99-2",
+ "vi": "claudeDev\\D1_s1_copy.vi md5 3e3d23cefd3a334001aa9d6156bf1aee (start and end: diag_c99b_lvread.log H2, diag_c99b_bench2.log PIN AFTER S1, certutil at close)",
+ "level": "F1/F2/F5/F6 file-read (par1359_95_graph.json = S1) + COM reads of constants/panel value on a deleted byte copy (diag_c99b_lvread.log). F3/F4 NOT MEASURED (scratch bench did not reach ExecState 1).",
+ "F1": {
+  "ring_carrier": "LeftShiftRegister #9025 (outer <- Initialize Array #8953 on 686) -> w9097 -> LoopTunnel #9087 (INDEXING input of For #1359) -> #8634 'array'; #8634 'output array' w8811 -> IndexArray #8741 'array' AND LoopTunnel #9227 (INDEXING output, index_mode 1) -> outer w9215 -> RightShiftRegister #9018 inner on 639",
+  "type": "3-D DBL: element const #8972 = 0, Representation 1 (DBL); dims = (x-1 #9179 of size, const #8984 = 2, '# FD points' 20000 default) -> at 15 beads [15][2][20000] = 4.8 MB",
+  "rows": "#8741 row consts: #8775 = 0 (-> Subtract #8764 -> Median #29009), #8795 = 1 (-> FIR #28233)",
+  "w8811_vs_ring": "w8811 is the per-bead 2-D page [2][20000]; #9227 indexes it, so page i of w9215 == w8811 of iteration i (structural, from the tunnel mode; not run)",
+  "L1_source_candidates": "whole ring after this frame = w9215 (#9227 outer -> #9018); before = w9097",
+  "evidence": "diag_c99b_files.log (NODE #8634/#9227/#9087/#9025/#8953/#9018), diag_c99b_lvread.log CONST #8972/#8984/#8775/#8795"
+ },
+ "F2": {
+  "inbound": [
+   "w8811 8634:output array -> 8741:array (fd7911)",
+   "w7931 'Exp Baseline' terminal (#8476, owner diagram 7911) -> 8764:y",
+   "w12256 11608:output cluster (fd639) -> 11261:element",
+   "w31059 control terminal 'Force smoothing half-width' (fd639) -> LoopTunnel 31051 (-> #27716 index, #28180 half-width)",
+   "w31166 control terminal 'Extension median filter half-width' (fd639) -> LoopTunnel 31137 (-> #29009 left/right rank); the same wire also feeds LoopTunnel #30896 (Ext-vs-Time loop)"
+  ],
+  "outbound": ["11261:appended array -w10908-> #8323 'Force (pN) vs Extension (nm) ' (fd639)"],
+  "verdict_on_claim": "REFUTED as stated: besides w8811 + #8476 + #11608, two panel controls cross in (the two half-width controls via tunnels 31051/31137). #11363 counted inside the set.",
+  "evidence": "diag_c99b_files.log [F2] IN lines"
+ },
+ "F3": {"status": "NOT MEASURED", "why": "scratch F3-A (ring ctl -> For SR, non-const t0stamp `any` in the body) read ExecState 0 on both runs; run 1 wired `site` t6/t7 (script bug, confirmed by run 2's table); run 2 wired `any` t8/t9 (w327/w334) and still read 0", "evidence": "diag_c99b_bench.log:32-33, diag_c99b_bench2.log (stamp terminals line, T2)"},
+ "F4": {"status": "NOT MEASURED", "why": "same script; F4 runs after F3 and was never reached", "prior_in_situ": "facts_c99_display.json F4: site4-site3 = 10255-10400 us at 15 picks (real VI, t0_step4v2_94.json)"},
+ "F5": {
+  "type": "Boolean indicator 'TurnOff', terminal #24444 on 639; saved/load-time value False (GetControlValue on the byte copy)",
+  "writers": ["terminal #24444 <- w3457 <- CompoundArithmetic #11639 (every #637 iteration)", "implicit Property #8603 'Value' WRITE on diagram #4866 (owner FlatSequenceFrame) <- BooleanConstant #25261 (value NOT read: no Boolean-constant reader; OpConstValueN_v1 returned class Constant, text '')"],
+  "readers": ["implicit Property #25116 'Value' READ on diagram #25392 (body of WhileLoop #25380) -> w1737 -> #25380's conditional terminal (toolkit-capabilities.md:66: #25380 cond wire 1737)"],
+  "not_found": "no Local names TurnOff; no Reinit/other Invoke labelled TurnOff in the c97 label sweep (only #8603, #25116)",
+  "evidence": "diag_c99b_files2.log [F5]/[F5b], diag_c99b_lvread.log 'TurnOff saved'"
+ },
+ "F6": {
+  "new While": "gscript.while_loop tools/gscript.py:1285 (top level); loop_in('while') :1249 (any diagram)",
+  "new For": "gscript.for_loop :1304; loop_in('for') :1249",
+  "hidden indicator": "create_indicator :2633 exists; a 'Visible'=False write has no measured verb (build_property :2404 generic; toolkit-capabilities.md has no Visible/Hidden write row) -> MISSING as a measured verb",
+  "I32 control": "create_control :2605 on an I32 sink, or on a temp typed CLFN (diag_c90_t0stamp_scratch.py pattern, used here: T1/T6a)",
+  "Wait(ms)": "MISSING (no creator/op; toolkit-capabilities.md has no 'Wait' line)",
+  "local READ creator": "stagekit.create_local_read tools/stagekit.py:676 (OpCreateLocalRead_v0, toolkit-capabilities.md:76)",
+  "cross-loop move": "stagekit.move_in tools/stagekit.py:595 (OpMoveIn_v0), gscript.move_out :2970 (OpMoveOut_v0), stagekit.copy_in :779",
+  "evidence": "diag_c99b_files.log [F6]"
+ },
+ "hygiene": "D1_s1_copy md5 3e3d23ce start+end; nothing saved (bench scratches deleted, H6 [] in bench2; run-1 scratch removed by run 2); LabVIEW gone (Z PASS x3, tasklist 0); handles lvread 63227->63347 over reads, bench2 34003 after restart, 31586 after work, 34011 at exit",
+ "reviews": "archive/peer/2026-09-26-c99b-bench-t2.md (hypothesis, ANSWERED, disposition written)"
+}

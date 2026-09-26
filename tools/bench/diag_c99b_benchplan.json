@@ -1,0 +1,25 @@
+{
+ "schema_note": "card 99-2: FINALIZED row plan of tools/bench/diag_c99b_bench.py (two scratch benches built from nothing on a stripped HARNESS_copyloop copy and an EMPTY_v0 copy; no row touches an existing uid; wiring is by gscript name/index verbs on fresh objects, not by stagekit connect ops). Positions and sizes live here so the recipe types no uid-shaped literal (decision 8).",
+ "input": {"vi": "HARNESS_copyloop.vi", "md5": "eb8dad78209440fbbb9d87afad3d8ad6", "graph": "tools/bench/graph_harness_copyloop_c95.json"},
+ "sizes": {"NB": 15, "NPT": 20000, "NITER": 5000, "NCALL": 300},
+ "pos": {"temp3": [300, 700], "for3": [700, 200], "stamp3": [200, 900], "stamp3_in": [760, 260], "ind3_in": [900, 300],
+         "temp4": [300, 900], "stampA": [200, 300], "stampB": [1400, 300], "for4": [500, 200],
+         "median": [560, 240], "coef": [560, 330], "fir": [700, 330], "sr_y": [0, 120]},
+ "decisions": [
+  {"id": "F3-0", "action": "delete", "what": "strip every Node then every ControlTerminal of the HARNESS_copyloop work copy; RBW; gate 0/0/0"},
+  {"id": "F3-1", "action": "create", "what": "temp CLFN t0stamp.stamp(ret, ring arr DBL dims 3) -> create_control t6 'ring', create_indicator t7; delete temp CLFN"},
+  {"id": "F3-2", "action": "create", "what": "empty For loop; For N constant = NITER via create_const_loop_term('for_n')"},
+  {"id": "F3-3", "action": "create", "what": "add_shift_reg ForLoop[0]; wire_sr LeftOutCtl <- panel 'ring'"},
+  {"id": "F3-4", "action": "create", "what": "stamp CLFN (site unwired = 0, any NON-const) built top-level, move_in to the For body"},
+  {"id": "F3-5", "action": "sr", "what": "wire_sr LeftIn -> stamp t6 (any in); wire_sr RightIn <- stamp t7 (any out); ExecState 1 gate"},
+  {"id": "F3-6", "action": "run", "what": "blocks A-open, A-closed: 1 COM run each = NITER iterations"},
+  {"id": "F3-7", "action": "move", "what": "the bare indicator ControlTerminal move_in to the body; wire_sr LeftIn -> its t0 (branch of the left SR); ExecState 1 gate"},
+  {"id": "F3-8", "action": "run", "what": "blocks B-open, B-closed"},
+  {"id": "F4-1", "action": "create", "what": "EMPTY_v0 byte copy; temp CLFN (rowZ,rowF arr DBL 2, hw I32) -> 3 controls; delete temp"},
+  {"id": "F4-2", "action": "create", "what": "stamps A (site ctl=1, any const <- hw) and B (site ctl=2); empty For; drop Median Filter.vi, Smoothing Filter Coefficients.vi, FIR Filter (DBL).vi into its body"},
+  {"id": "F4-3", "action": "name-wire", "what": "wire_control rowZ->Median X, rowF->FIR X; g.wire A.any->Median left/right rank, ->Coef half-width; Coef forward coefficients->FIR Coefficients; Median Filtered X->B.any (tunnels auto-created)"},
+  {"id": "F4-4", "action": "index", "what": "set_index_mode 1 on the rowZ/rowF tunnels (fallback: search the pair giving ExecState 1); gate ExecState 1"},
+  {"id": "F4-5", "action": "run", "what": "NCALL COM runs; handles at first/middle/last"},
+  {"id": "Q-1", "action": "quit", "what": "graceful COM Quit (flushes t0stamp at DLL_PROCESS_DETACH); read t0_site00/01/02; delete both scratches"}
+ ]
+}

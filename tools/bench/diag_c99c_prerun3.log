@@ -1,0 +1,78 @@
+BGRUN START 2026-09-26 20:46:24 limit 3.0 min: py -u tools/stage_prerun.py --prerun tools/bench/diag_c99c_bench.py
+BGRUN PID 4432
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == eb8dad78209440fbbb9d87afad3d8ad6  got eb8dad78209440fbbb9d87afad3d8ad6
+  PASS  DRY graph JSON for input md5 eb8dad78209440fbbb9d87afad3d8ad6  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_harness_copyloop_c95.json
+
+---------- [F3] strip the HARNESS_copyloop copy, ring control + indicator, empty For(N)
+  UNVERIFIED  T0 stripped: no node, no panel object, no wire  (dry: after mutation g.remove_bad_wires_scripted)
+  UNVERIFIED  T1 ring control + ONE indicator from the temp CLFN (DBL [15][2][20000])  (dry: after mutation g.remove_bad_wires_scripted)
+  FACT  For #0 N const <dry:g.create_const_loop_term>
+  FACT  ExecState [F3-A built] scratch_c99c_f3_20260926_204624.vi = <dry:g.exec_state>
+  UNVERIFIED  T2 F3-A (empty For, N const) ExecState 1  (dry: after mutation g.remove_bad_wires_scripted)
+  PASS  T3 'ring' read back [15][2][20000] = 4.8 MB  ()
+  FACT  TIME F3 A-open: {'runs': 3, 'per_run_units': 5000, 'mean_ms': 0.0058, 'median_ms': 0.0038, 'min_ms': 0.0033, 'max_ms': 0.0103, 'p10_ms': 0.0033, 'p90_ms': 0.0103, 'mean_per_unit_us': 0.001}
+  FACT  TIME F3 A-closed: {'runs': 3, 'per_run_units': 5000, 'mean_ms': 0.0033, 'median_ms': 0.0032, 'min_ms': 0.0032, 'max_ms': 0.0035, 'p10_ms': 0.0032, 'p90_ms': 0.0035, 'mean_per_unit_us': 0.001}
+
+---------- [F3] B1 = run 1's route RE-READ (review c99c-bench-t4 s4): indicator into the body, outside control -> it
+  FACT  ControlTerminals (uid, pos) [] -> indicator #0
+  FACT  OP move_in #0 -> Diagram[1] at (860, 300) -> err '' (0.0 s)
+  FACT  connect_ctl_ind ring -> dry: err <dry:g.connect_ctl_ind>
+  FACT  ExecState [B1 after IndexMode 0] scratch_c99c_f3_20260926_204624.vi = <dry:g.exec_state>
+  FACT  ExecState [B1 +0.5 s] scratch_c99c_f3_20260926_204624.vi = <dry:g.exec_state>
+  FACT  B1 (claim-1 test): 0 tunnel(s), IndexMode before None -> after None, ExecState <dry:g.exec_state> / <dry:g.exec_state>
+
+---------- [F3] B2 = both ring terminals INTO a fresh For body, wired there (B1 did not read ExecState 1)
+  UNVERIFIED  T1b ring control + ONE indicator on scratch_c99c_f3b_20260926_204624.vi  (dry: after mutation g.remove_bad_wires_scripted)
+  FACT  B2 For #0 N const <dry:g.create_const_loop_term>
+  FACT  B2 ControlTerminals (uid, pos) [] -> control #0, indicator #0
+  FACT  B2 move_in #0: <dry:build_d1_v0.move_in>
+  FACT  B2 move_in #0: <dry:build_d1_v0.move_in>
+  FACT  B2 connect_ctl_ind ring -> dry: err <dry:g.connect_ctl_ind>
+  FACT  B2 wires {}, 0 tunnel(s)
+  PASS  T4b B2: 'ring' -> indicator on ONE wire, 0 tunnels  {}
+  PASS  T4 F3-B runnable (route inside): ExecState 1
+  FACT  TIME F3 B-open (inside): {'runs': 3, 'per_run_units': 5000, 'mean_ms': 0.0037, 'median_ms': 0.0034, 'min_ms': 0.0033, 'max_ms': 0.0045, 'p10_ms': 0.0033, 'p90_ms': 0.0045, 'mean_per_unit_us': 0.001}
+  FACT  TIME F3 B-open-1bead (inside): {'runs': 3, 'per_run_units': 5000, 'mean_ms': 0.0037, 'median_ms': 0.0033, 'min_ms': 0.0032, 'max_ms': 0.0047, 'p10_ms': 0.0032, 'p90_ms': 0.0047, 'mean_per_unit_us': 0.001}
+  FACT  TIME F3 B-closed (inside): {'runs': 3, 'per_run_units': 5000, 'mean_ms': 0.0033, 'median_ms': 0.0033, 'min_ms': 0.0031, 'max_ms': 0.0035, 'p10_ms': 0.0031, 'p90_ms': 0.0035, 'mean_per_unit_us': 0.001}
+  FACT  F3 handles before/after the runs [<dry:bench_prep.labview_handles>, <dry:bench_prep.labview_handles>]
+
+---------- [F4] the moved set on scratch_c99c_f4_20260926_204624.vi
+  UNVERIFIED  T6 rowZ/rowF/hw controls created  (dry: after mutation g.remove_bad_wires_scripted)
+  FACT  F4 subVIs {'med': 0, 'coef': 0, 'fir': 0} Traverse idx {'med': 0, 'coef': 0, 'fir': 0}
+  PASS  T7 F4 body terminals wired (bare [('med', 'X'), ('med', 'left rank'), ('med', 'right rank'), ('coef', 'half-width'), ('fir', 'X'), ('fir', 'FIR Coefficients')]; tunnels {}) and ExecState 1
+  FACT  TIME F4 n1 fill1.00 r0: {'runs': 300, 'per_run_units': 1, 'mean_ms': 0.0363, 'median_ms': 0.0032, 'min_ms': 0.0031, 'max_ms': 9.8898, 'p10_ms': 0.0032, 'p90_ms': 0.0033, 'mean_per_unit_us': 36.252}
+  FACT  TIME F4 n15 fill1.00 r0: {'runs': 300, 'per_run_units': 1, 'mean_ms': 0.0034, 'median_ms': 0.0031, 'min_ms': 0.003, 'max_ms': 0.04, 'p10_ms': 0.0031, 'p90_ms': 0.0032, 'mean_per_unit_us': 3.392}
+  FACT  TIME F4 n1 fill0.10 r0: {'runs': 300, 'per_run_units': 1, 'mean_ms': 0.0032, 'median_ms': 0.0032, 'min_ms': 0.003, 'max_ms': 0.0056, 'p10_ms': 0.0031, 'p90_ms': 0.0033, 'mean_per_unit_us': 3.226}
+  FACT  TIME F4 n15 fill0.10 r0: {'runs': 300, 'per_run_units': 1, 'mean_ms': 0.0032, 'median_ms': 0.0031, 'min_ms': 0.0029, 'max_ms': 0.0139, 'p10_ms': 0.003, 'p90_ms': 0.0032, 'mean_per_unit_us': 3.167}
+  FACT  TIME F4 n1 fill1.00 r1: {'runs': 300, 'per_run_units': 1, 'mean_ms': 0.0032, 'median_ms': 0.0031, 'min_ms': 0.003, 'max_ms': 0.0111, 'p10_ms': 0.003, 'p90_ms': 0.0032, 'mean_per_unit_us': 3.151}
+  FACT  TIME F4 n15 fill1.00 r1: {'runs': 300, 'per_run_units': 1, 'mean_ms': 0.0033, 'median_ms': 0.0031, 'min_ms': 0.003, 'max_ms': 0.025, 'p10_ms': 0.0031, 'p90_ms': 0.0032, 'mean_per_unit_us': 3.33}
+  FACT  TIME F4 n1 fill0.10 r1: {'runs': 300, 'per_run_units': 1, 'mean_ms': 0.0031, 'median_ms': 0.0031, 'min_ms': 0.003, 'max_ms': 0.0053, 'p10_ms': 0.003, 'p90_ms': 0.0032, 'mean_per_unit_us': 3.122}
+  FACT  TIME F4 n15 fill0.10 r1: {'runs': 300, 'per_run_units': 1, 'mean_ms': 0.0032, 'median_ms': 0.0031, 'min_ms': 0.003, 'max_ms': 0.0141, 'p10_ms': 0.0031, 'p90_ms': 0.0032, 'mean_per_unit_us': 3.19}
+  FACT  TIME F4 n1 fill1.00 r2: {'runs': 300, 'per_run_units': 1, 'mean_ms': 0.0031, 'median_ms': 0.0031, 'min_ms': 0.003, 'max_ms': 0.005, 'p10_ms': 0.003, 'p90_ms': 0.0032, 'mean_per_unit_us': 3.123}
+  FACT  TIME F4 n15 fill1.00 r2: {'runs': 300, 'per_run_units': 1, 'mean_ms': 0.0031, 'median_ms': 0.0031, 'min_ms': 0.003, 'max_ms': 0.004, 'p10_ms': 0.003, 'p90_ms': 0.0032, 'mean_per_unit_us': 3.112}
+  FACT  TIME F4 n1 fill0.10 r2: {'runs': 300, 'per_run_units': 1, 'mean_ms': 0.0037, 'median_ms': 0.0031, 'min_ms': 0.003, 'max_ms': 0.0269, 'p10_ms': 0.003, 'p90_ms': 0.0033, 'mean_per_unit_us': 3.659}
+  FACT  TIME F4 n15 fill0.10 r2: {'runs': 300, 'per_run_units': 1, 'mean_ms': 0.0031, 'median_ms': 0.0031, 'min_ms': 0.003, 'max_ms': 0.0125, 'p10_ms': 0.0031, 'p90_ms': 0.0032, 'mean_per_unit_us': 3.143}
+  FACT  TIME F4DISC hw50 n1 fill1.00: {'runs': 60, 'per_run_units': 1, 'mean_ms': 0.0036, 'median_ms': 0.0031, 'min_ms': 0.003, 'max_ms': 0.0271, 'p10_ms': 0.0031, 'p90_ms': 0.0032, 'mean_per_unit_us': 3.575}
+  FACT  TIME F4DISC hw50 n15 fill1.00: {'runs': 60, 'per_run_units': 1, 'mean_ms': 0.0096, 'median_ms': 0.0031, 'min_ms': 0.003, 'max_ms': 0.39, 'p10_ms': 0.003, 'p90_ms': 0.0032, 'mean_per_unit_us': 9.578}
+  FACT  F4 handles before/after the runs [<dry:bench_prep.labview_handles>, <dry:bench_prep.labview_handles>]
+  (exit kill skipped: dry run: subprocess.run is blocked)
+
+====================================================================================================
+=== GATES: 6 pass / 0 fail
+JSON: C:\Users\KimLab\AppData\Local\Temp\stage_dry\diag_c99c_bench.json   elapsed 3.0 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":6,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  PASS  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['tools/bench/diag_c99c_benchplan.json']
+  PASS  X3 every plan row decided  16 rows + 0 stageplan actions
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  0 stageplan(s)
+  PASS  X4 every end addressable offline (0 ends)  []
+  PASS  X5 wiring ops executed in the dry run == plan wire rows  ops 0 vs plan wire rows 0 + stageplan wiring real ops 0 (covering 0/0 wire actions)
+  PASS  X6 ast lint: no re-typed uid / terminal name  uids []; names []
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+
+=== DRY PASS: first_fail=None coverage 200/225 lines, first mutation g.remove_bad_wires_scripted, unverified 5, graph tools/bench/graph_harness_copyloop_c95.json
+=== PRERUN PASS: 8 pass / 0 fail; first None
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":8,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 4s

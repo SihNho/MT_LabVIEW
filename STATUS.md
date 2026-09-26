@@ -54,19 +54,35 @@ rig-state: 조립   <!-- 2026-09-24 20:xx USER GRANT: "당분간 내가 말하�
 🟡 **CARRY (from the 2026-09-25 verification review `archive/peer/2026-09-25-hyp-lintverify-20260925.md`, not blocking): card flags are checked only on the top-level command (a child process could reach LabVIEW under labview=none); a stage run launched outside bgrun is not counted by the retry cap; a bgrun record failure is only logged (`tools/bgrun.py:219-220`). Close in a tooling cycle, deliverable-first.**
 current-bed: D1_l2_a1_20260925_235224.vi
 <!-- ^ machine key read by tools/errorlist_check.py current_bed_text(); without it the bed is chosen by mtime among D1_*.vi names in this file, and the newer D1_s1_kswap_* would silently take over (review archive/peer/2026-09-26-c88-reuse-stalepin.md). Change it only when a new bed is accepted. -->
-🔴🔴🔴 **FIRST ACT (cycle 99) = `docs/d1-loop12-17-split-plan.md` Pre-decided 210(f) + (d), read with 211: the SEPARATE DISPLAY LOOP (user 2026-09-26 18:0x). The fgate is DROPPED.**
-- **Card 1 is read-only facts only, not a design.** It collects:
-  - #8323's source: the array on w10908, its owner:term, its type, and its size at 15 picks;
-  - every writer of #8323, #6085 and #5696, with owner diagram;
-  - the S3 stop carrier by uid (PD154), and how the S3 loop reads it;
-  - the cycle-94 per-site cost of each candidate plot (say "not measured" where it was not);
-  - the per-frame cost of a local-variable WRITE of the plot array (PD210(d): a stamp site or the t0 harness; if it cannot be measured offline, a plan for measuring it).
-- **Then judgement writes the design page:** the locals list, the indicator list, the stop carrier and the rows, with `requires` filled.
-- **After that, the stage path:** simulator (dry, pre-run, cdiff 0), one LabVIEW run, then the ABBA against `D1_s1_copy.vi` (15 picks, 120 s) and the replay (PD210(c)).
+🔴🔴🔴 **FIRST ACT (cycle 100) = `docs/d1-loop12-17-split-plan.md` Pre-decided 212, read (a)→(i); the order is 212(i)5.**
+- **(a) Rows card, offline (no LabVIEW):** write the display-loop stage plan rows on `D1_s1_copy.vi` (md5 `3e3d23ce…`), then run `py tools/protocol.py requires`. The rows are:
+  - a new While + For display loop in #25380's owner diagram;
+  - the PD206(b) set moved with **no control terminal moved** (212(i)3);
+  - L1 from w9215 (4.8 MB ring), L2 from #11608;
+  - local READs of `Exp Baseline`, both half-width controls and TurnOff;
+  - a `Display period (ms)` control and a `Wait (ms)`.
+- **(b) Build the missing verbs** the rows need: `Wait (ms)` creator, `Visible = False`, and a local WRITE or indicator move for #8323. Each gets a negative case and a handle-flat test.
+- **(c) Then** simulator dry + pre-run (read #25261 as a gate); **(d)** one LabVIEW run → `claudeDev\D1_s1_disp_<ts>.vi`; then the ABBA vs S1 (15 picks, 120 s), which measures the net gain (212(i)2), and the replay.
 - **Carry from PD211(b)/(c):**
-  - Any row that MOVES an existing terminal must read the termless and loose-end wires and ExecState after the move. `move_into_frame` left the old severed wires behind in cycle 98.
-  - `gscript.move_into_frame` (md5 `b3d9f373…`) now refuses unless ExecState is 1 before the edit, so it fails closed. A design that uses it on a bed that is broken by design must say how it passes that check; never loosen it silently.
-- Card `peers` must be `hypothesis`, `outcome` and `priorart` (the card-scoping fault of 95-5, 95-6 and 97-4).
+  - Any row that MOVES an existing object must read the termless and loose-end wires after the move batch, and ExecState once at the end (PD209(c)).
+  - `gscript.move_into_frame` is not used here (212(f)).
+- Card `peers` must be `hypothesis`, `outcome` and `priorart`.
+- **Retrospective-cycle99 (`archive/peer/2026-09-26-retrospective-cycle99.md`, accepted), `repeated-failure-class`:** every card that builds or edits a VI carries `gui: true` for the Error List reader (`tools/lv_errorlist.py`). On ExecState 0, the Error List is read before any second construction; never escalate the model to rebuild blind.
+
+🟡 **CYCLE 99 (PD212): the display-loop DESIGN is written and judged GO. No VI yet.**
+- 99-1 FAIL 6/1 (`tools/bench/facts_c99_display.json`):
+  - #8323 ← w10908 ← BuildArray #11261 ← For #1359 + WLC #11608.
+  - #6085/#5696 are NOT display; they feed the ring.
+  - The Force path costs 10.3 ms at 15 picks, and it is COMPUTATION. Moving only the indicator would miss 210(c), so the computation set moves too (212(b)).
+- 99-2 FAIL 5/2 (`facts_c99b_display.json`):
+  - The ring is w9215, 3-D DBL [15][2][20000], 4.8 MB.
+  - There are five inbound edges, not three.
+  - TurnOff is already a stop carrier for loop #25380 (Value property read).
+  - `Wait (ms)` and `Visible = False` verbs are MISSING.
+- 99-3 FAIL 23/2 at escalation rung 1 (`facts_c99c_bench.json`):
+  - The moved set costs **≥ 7.94 ms per frame at 15 beads** (scratch bench, a lower bound).
+  - The ring-write cost is UNMEASURED: both bench routes went ExecState 0 when a panel terminal was moved into a For body. So no control terminal moves (212(i)3).
+  - GO under a named ASSUMPTION; the ABBA measures the net gain.
 - **Owed tooling card** (retrospective-cycle96 `device-failed`): `peer.ps1 -ReviewCard` must map `loss_usd="?"` to null; audit A1/A3 must stop counting `jev_gate.log`; cards must not demand a foreground peer dispatch.
 - Unreviewed standing fail: gate `run1.L8` (bandpass panel) has failed in every leg since 92-3. Pick registration is not affected.
 - D-2026-09-26-02 is ANSWERED by PD210. Do not start benchmarks on this PC while a cycle runs legs.

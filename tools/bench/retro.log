@@ -3149,3 +3149,66 @@ VIOLATION: device-failed | loss_min=1 | loss_usd=? | evidence=material-marker-re
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle98","verdict":"refuted","alternative":"98-3 was a legitimate measurement of in-memory RBW, not a fix by inference, and its negative result is the prior art PD211(b) now carries; the fault is then only the 12-min stale-plan card 98-4.","discriminating_test":"Compare card 98-3's pass list with the 18:37 review's cheapest test: 98-3 asks for a fixed verb and a stage run, not a post-A Error List / RBW-on-scratch read; if it had asked for the read, the verdict is none.","violations":[{"slug":"inference-over-measurement","loss_min":20,"loss_usd":4.69,"evidence":"docs/d1-loop12-17-split-plan.md:1543"},{"slug":"device-failed","loss_min":1,"loss_usd":null,"evidence":"tools/hooks/material_marker.log:2054"}],"sources":["docs/d1-loop12-17-split-plan.md:1543","tools/bench/selftest_c98_rbw.log:380","tools/bench/selftest_c98_stage.log:384","archive/peer/2026-09-26-c98-selftest-f4e.md:77","tools/bench/cards/result_98-3.json:28","tools/bench/cards/result_98-4.json:9","tools/hooks/material_marker.log:2054","tools/bench/peer_c98-rbw-scope.log:4","tools/bench/priorart_c98-fgate-rbw.log:6","tools/bench/peer_c98-rbw-f4e.log:4"],"note":"98-1 was a clean 53/0 diagnosis; the loss is confined to 98-3 and the stale 98-4 card. Audit A6 is wrong: GUI was used and recorded (59 gui_actions lines)."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle98.md
 BGRUN END rc=0 after 356s
+BGRUN START 2026-09-26 20:54:51 limit 10.0 min: py tools/retrospective.py --cycle 99
+BGRUN PID 15220
+   window 2026-09-26 19:25:08 .. 2026-09-26 20:54:51 (90 min); 22 build logs, 9 machinery logs, 27 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle99.txt (24436 chars)
+   review card tools\bench\cards\review_retrospective-cycle99.json
+OUTCOME: ANSWERED (248s)  model: fable (effort medium; peer.ps1 default for role outcome)  archived: archive\peer\2026-09-26-retrospective-cycle99.md
+COST: $4.1601  in 130 / out 18837 / cache-create 156888 / cache-read 316781  (246s, 35 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle99 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle99.json
+--- ANSWER ---
+**Fault named first.** Cycle 99 ended with its go/no-go quantity unmeasured after four consecutive `ExecState 0` failures on a scratch bench, each explained by inference, with the project's own Error List reader never used. Details, findings and device check follow.
+
+## Structural fault
+
+**Repeated failure class: ExecState 0 on a scripted scratch VI, diagnosed by guessing four times in one cycle, while a reader existed.**
+
+The four attempts, all inside the window:
+
+| attempt | log | construction | guessed cause |
+|---|---|---|---|
+| 1 | `tools/bench/diag_c99b_bench.log:32-33` | CLFN moved into For body, SR wired t6/t7 | t6/t7 were `site` |
+| 2 | `tools/bench/diag_c99b_bench2.log:33-35` | same, wired t8/t9 | none read; card stopped |
+| 3 | `tools/bench/diag_c99c_bench.log:38-39` | indicator into For body, tunnel | auto-indexed tunnel, 2-D page |
+| 4 | `tools/bench/diag_c99c_bench2.log:38-52` | tunnel re-read, then both terminals inside | "a panel terminal moved into a For body" |
+
+Attempt 4 falsified the attempt-3 story by the review's own read-back (IndexMode 1→0, ExecState still 0, `diag_c99c_bench2.log:40`) and then went straight to another construction on a fresh scratch, which also read 0 (`:51`). The cycle then closed with the cause of all four still a guess (`docs/d1-loop12-17-split-plan.md:1671-1672`, `:1677-1678`) and the go/no-go quantity (1) replaced by a named assumption (`:1672-1676`).
+
+Two rules already say what attempt 3 should have been. CLAUDE.md "When a diagnosis is GUESSED twice, build the reader" (CLAUDE.md:444-451), and the standing change cycle 98's judgement accepted minutes before this cycle began: "when a fix card FAILS on a gate whose premise was never measured, the next card is the READ, not a re-designed fix" (`archive/peer/2026-09-26-retrospective-cycle98.md:271-272`). The reader exists: `tools/lv_errorlist.py` reads every Error List item of a broken VI through the GUI and is run by the runner at every cycle start (`tools/bench/cycle_runner_main_20260926c.log:5`). All three cards carried `"gui": false` (`tools/bench/cards/task_99-3.json:41`), so the one instrument that answers "why is this VI broken" was excluded by flag, and card 99-3 was issued as an escalated re-run of the same bench (`task_99-3.json:5-8`) instead of a read.
+
+The c99b review's cheapest test was also skipped: it asked for a read-only terminal read of run 1's scratch, still on disk (`archive/peer/2026-09-26-c99b-bench-t2.md:71`, `diag_c99b_bench.log:47`); run 2 deleted that file at start (`diag_c99b_bench2.log:4`) and re-ran the fix. The disposition line nevertheless reads "ACCEPTED as the test plan" (`c99b-bench-t2.md:91`).
+
+**Loss.** The 99-3 F3 arc after the rule had already triggered: two bench runs (265 s and 228 s, `diag_c99c_bench.log:93`, `diag_c99c_bench2.log:110`, F3 portions plus LabVIEW restarts), one hypothesis review at $1.8853 (`tools/bench/peer_c99c_bench.log:4`, 280 s), and the patch time between 20:39 and 20:46 (`tools/bench/jev_gate.log:1520-1522`). About 25 minutes. The c99b review ($1.1482, `peer_c99b_bench.log:4`) was the legitimate first review and is not counted.
+
+**Counterfactual.** Card 99-2 returned FAIL at about 20:18 (`jev_gate.log:1510-1512`). Had 99-3, cut at about 20:20, been a read card with `gui: true` (rebuild F3-A in 90 s as run 1 did, then one `lv_errorlist` read), the Error List item would have been on disk by about 20:35, F4 alone (ExecState 1, four minutes) would still have run, and the cycle would have ended at the same 20:54 with (1) either measured or its blocker named. Instead it ended with GO on an assumption and a written promise that "no third bench attempt is made" (`d1-loop12-17-split-plan.md:1675`), which is the fourth guess declared final.
+
+## Findings
+
+**1. Repeated failure.** Covered above. The approach should have changed at attempt 3, at the cut of card 99-3, to a read. Note that the four constructions differ (CLFN in body with SR; FP indicator in body via tunnel; both FP terminals in body), so the closing explanation "a panel terminal moved into a For body" (`STATUS.md:83`) covers only attempts 3 and 4, not 1 and 2.
+
+**2. Missing tool.** No stand-alone read-only `Wire.Is Broken?` op exists (CLAUDE.md:451, "ONLY inside the connect ops"). In attempt 4, B2 made one wire 288 on both terminals with 0 tunnels (`diag_c99c_bench2.log:49-50`) and still read ExecState 0. A broken-wire read on 288 would have split "the wire is bad" from "the VI is broken elsewhere" in one call. The Error List reader answers the same question, but only with `gui: true`.
+
+**3. Unmeasured steps.** (a) The go/no-go quantity (1), the per-frame L1 write cost, was replaced by "0.5–1 ms per 4.8 MB copy at memory bandwidth" (`plan:1672-1674`). The threshold needs (1) ≤ 2.94 ms against a lower-bound (2) of 7.94 ms; both halves are open, and GO was written anyway. It is flagged as an assumption and the ABBA measures the net gain, so I count it as a finding, not a second fault. (b) The c99c review noted the 4.8 MB control copy at run start as an alternative for the T15−T1 gap (`c99c-bench-t4.md:100`); the per-call estimate (T15−T1)×15/14 still carries that copy. (c) Panel open tripled every F4 run (`diag_c99c_bench.log:48-62` vs `bench2.log:61-75`); the real display loop will have its plot visible, and no measurement addresses that.
+
+**4. Rule compliance.** Broken: "guessed twice, build the reader" (CLAUDE.md:444-451) and the cycle-98 standing change (retrospective-cycle98.md:271-272). Satisfied only formally: §3's "what to accept from a review" is judgement, yet all three reviews were accepted inside material sessions (`c99-files-p5.md:84`, `c99b-bench-t2.md:91`, `c99c-bench-t4.md:127`), routed by the Jev ladder's "review owed" row. Held: rule 1 (every pin intact, every scratch deleted, LabVIEW gone in every log), rule 1b (motor session start and end verified), dispatch count 3 of 6, failure budget 2 per card, escalation rung used exactly once. What the audit does not cover: whether an accepted review's cheapest test was executed (A4 checks only that the annotation is non-empty); that the four stage runs were recorded with `card=None` (`tools/bench/stage_runs.jsonl:24-27`), so the retry cap cannot tie a run to card 99-2 or 99-3; whether a go/no-go threshold written in the plan was met before GO; and its C7 list includes `docs/GLOSSARY.md`, which came from the chat commit `cdcaa0b`, not from this cycle.
+
+**5. Ordering.** Facts first (99-1), design (PD212 a–g), then the bench, is the PD210(f) order and is defensible. The single misordering is card 99-3: an escalated re-run before a read. Escalating the model (Opus max) does not change what the bench can see.
+
+**6. Not reported.** (a) The judgement session's own cost is absent (audit C4c: no cost line), so the cycle's real cost is unknown; the $4.29 in C4 is reviews only. (b) STATUS.md:82 reports "≥ 7.94 ms per frame at 15 beads" without saying the number omits IndexArray, Subtract, Split, Bundler, BuildArray and the indicator draw, which the result card does say (`result_99-3.json` F4 fact 4). (c) The `diag_c99_peek.py` launch at 19:28 was tried five ways in 30 seconds across shells before the marker refused it (`tools/hooks/material_marker.log:2055-2061`); harmless, but it is the pattern of a session probing a gate rather than reading it.
+
+**7. Judgement inside a material session.** Yes, three times, all review acceptances (citations in finding 4). The most consequential is inside card 99-3: the material session pre-scripted "only if B1 is not ExecState 1 does B2 run, on a FRESH scratch" (`c99c-bench-t4.md:130-132`), which is the "if X then do Y" form CLAUDE.md:344-351 forbids, and it chose the second construction itself. The judgement session's plan section then took the material session's explanation over as fact (`plan:1677-1678`).
+
+## Device effect
+
+Devices whose fault did not occur or that fired correctly in the window: bgrun rc=1 on every FAIL line (all four bench logs end `rc=1`); cost regex 3/3 parsed (audit C4b); A2 all runs ended; A3 every failing log reviewed; A4 54/54 annotated, so the "empty What was done with it" refusal had nothing to refuse; the material marker refused four non-bgrun launches and the sessions complied (`material_marker.log:2060-2061`, `2073-2074`, `2081-2082`); RULE-SAME-ROW discharged run 2 of each bench without a second review (`jev_gate.log:1510`); prerun gate refused a bench launch once and it was satisfied honestly (`material_marker.log:2076-2077`); stop record, prior-art and premature-build gates had no recipe to act on; guard_session had no SendMessage to refuse (three fresh dispatches).
+
+One device fired on the wrong thing again: audit A1 counts `jev_gate.log` as a build log and reads FAIL (audit header, "NO BGRUN line in ['jev_gate.log']"). This is the third cycle it has done so and it is already on the owed tooling card from retrospective-cycle96 (`STATUS.md:85`). It costs nothing and the fault it guards against (a LabVIEW run outside bgrun) did not occur, so I record it here rather than as a second fault of equal magnitude.
+
+The scope counter C7 fired with 24 files, 20 of them the cycle's own `diag_c99*` scripts and facts; it is a counter by design and the verdict is "no scope creep". The Jev ladder classified all four bench failures correctly (two `new-problem`, `jev_gate.log:1507`, `:1520`), which is what let the same-row rule work.
+
+VIOLATION: repeated-failure-class | loss_min=25 | loss_usd=1.8853 | evidence=tools/bench/diag_c99c_bench2.log:51
+
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle99","verdict":"refuted","alternative":"Card 99-3 was a legitimate escalation: F4 (7.94 ms) was delivered there and F3 failed on bench construction that no read could have fixed in the same cycle.","discriminating_test":"Rebuild F3-A (90 s) and run tools/lv_errorlist.py on it with gui:true; if the Error List names a cause in under 10 min, the read card was the cheaper step.","violations":[{"slug":"repeated-failure-class","loss_min":25,"loss_usd":1.8853,"evidence":"tools/bench/diag_c99c_bench2.log:51"}],"sources":["tools/bench/diag_c99b_bench.log:32-33","tools/bench/diag_c99b_bench2.log:4","tools/bench/diag_c99c_bench.log:38-39","tools/bench/diag_c99c_bench2.log:38-52","tools/bench/peer_c99c_bench.log:4","archive/peer/2026-09-26-retrospective-cycle98.md:271-272","archive/peer/2026-09-26-c99b-bench-t2.md:71","tools/bench/cards/task_99-3.json:41","docs/d1-loop12-17-split-plan.md:1671-1676","tools/lv_errorlist.py:1-5"],"note":"Four ExecState-0 guesses in one cycle with the Error List reader excluded by gui:false; cycle closed with the go/no-go quantity assumed. Audit A1 misfire on jev_gate.log is a known owed item, not a second fault."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle99.md
+BGRUN END rc=0 after 252s

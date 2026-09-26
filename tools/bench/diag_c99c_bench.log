@@ -1,0 +1,93 @@
+BGRUN START 2026-09-26 20:32:17 limit 50.0 min: py -u tools/bench/diag_c99c_bench.py
+BGRUN PID 19932
+BGRUN STAGE-RUN recorded diag_c99c_bench.py cycle='cycle 99' card=None pid=24316 -> stage_runs.jsonl
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 274 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == eb8dad78209440fbbb9d87afad3d8ad6  got eb8dad78209440fbbb9d87afad3d8ad6
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33990
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_c99c_f3_20260926_203218.vi
+  FACT  ExecState [after open] scratch_c99c_f3_20260926_203218.vi = 1
+
+---------- [F3] strip the HARNESS_copyloop copy, ring control + indicator, empty For(N)
+  PASS  T0 stripped: no node, no panel object, no wire  {'Node': 0, 'ControlTerminal': 0, 'Wire': 0, 'ForLoop': 0}
+  PASS  T1 ring control + ONE indicator from the temp CLFN (DBL [15][2][20000])  (['ring'], ['ring 2'])
+  FACT  For #6 N const {'err': '', 'inv_err': '', 'created_uid': 205}
+  FACT  ExecState [F3-A built] scratch_c99c_f3_20260926_203218.vi = 1
+  PASS  T2 F3-A (empty For, N const) ExecState 1
+  PASS  T3 'ring' read back [15][2][20000] = 4.8 MB  (15, 2, 20000)
+  FACT  TIME F3 A-open: {'runs': 3, 'per_run_units': 5000, 'mean_ms': 16.9161, 'median_ms': 19.7507, 'min_ms': 10.3834, 'max_ms': 20.6141, 'mean_per_unit_us': 3.383}
+  FACT  TIME F3 A-closed: {'runs': 3, 'per_run_units': 5000, 'mean_ms': 2.1136, 'median_ms': 1.4611, 'min_ms': 1.2944, 'max_ms': 3.5853, 'mean_per_unit_us': 0.423}
+
+---------- [F3] B: the indicator terminal INTO the For body, wired from 'ring' (non-indexed tunnel)
+  FACT  ControlTerminals (uid, pos) [(102, (254, 711)), (153, (348, 711))] -> indicator #153
+  FACT  move_in node census: 1 rows
+  FACT  OP move_in #153 -> Diagram[1] at (800, 300) -> err '' (0.0 s)
+  FACT  connect_ctl_ind ring -> ring 2: err None
+  FACT  ExecState [F3-B built] scratch_c99c_f3_20260926_203218.vi = 0
+  FAIL  T4 F3-B: ONE INPUT tunnel (outer = sink) [(296, 1, False)] set non-indexed, 'ring' and the indicator wired {'ring': 331, 'ring 2': 267}, ExecState 1
+  FAIL  F3 completed (Stop)  T4 F3-B: ONE INPUT tunnel (outer = sink) [(296, 1, False)] set non-indexed, 'ring' and the
+
+---------- [F4] the moved set on scratch_c99c_f4_20260926_203218.vi
+  PASS  T6 rowZ/rowF/hw controls created  ['rowZ', 'rowF', 'hw']
+  FACT  F4 subVIs {'fir': 47, 'coef': 46, 'med': 45} Traverse idx {'fir': 0, 'coef': 1, 'med': 2}
+  FACT  ExecState [F4 built] scratch_c99c_f4_20260926_203218.vi = 1
+  PASS  T7 F4 body terminals wired (bare []; tunnels {0: ('rowZ', 1, 1), 1: ('rowF', 1, 1), 2: ('hw', 0, 0)}) and ExecState 1
+  PASS  T8 rows read back n=1 fill=1.00: [1][20000] x2, hw 1  (1, 20000, 1)
+  FACT  TIME F4 n1 fill1.00 r0: {'runs': 300, 'per_run_units': 1, 'mean_ms': 25.22, 'median_ms': 25.1977, 'min_ms': 9.9769, 'max_ms': 28.1184, 'mean_per_unit_us': 25220.049}
+  PASS  T8 rows read back n=15 fill=1.00: [15][20000] x2, hw 1  (15, 20000, 1)
+  FACT  TIME F4 n15 fill1.00 r0: {'runs': 300, 'per_run_units': 1, 'mean_ms': 25.3156, 'median_ms': 25.2035, 'min_ms': 14.8472, 'max_ms': 36.0713, 'mean_per_unit_us': 25315.609}
+  PASS  T8 rows read back n=1 fill=0.10: [1][20000] x2, hw 1  (1, 20000, 1)
+  FACT  TIME F4 n1 fill0.10 r0: {'runs': 300, 'per_run_units': 1, 'mean_ms': 25.2162, 'median_ms': 25.2032, 'min_ms': 10.3801, 'max_ms': 30.081, 'mean_per_unit_us': 25216.159}
+  PASS  T8 rows read back n=15 fill=0.10: [15][20000] x2, hw 1  (15, 20000, 1)
+  FACT  TIME F4 n15 fill0.10 r0: {'runs': 300, 'per_run_units': 1, 'mean_ms': 24.5502, 'median_ms': 24.5627, 'min_ms': 15.8595, 'max_ms': 28.4953, 'mean_per_unit_us': 24550.23}
+  FACT  TIME F4 n1 fill1.00 r1: {'runs': 300, 'per_run_units': 1, 'mean_ms': 25.3034, 'median_ms': 25.2887, 'min_ms': 10.1661, 'max_ms': 36.4469, 'mean_per_unit_us': 25303.397}
+  FACT  TIME F4 n15 fill1.00 r1: {'runs': 300, 'per_run_units': 1, 'mean_ms': 25.223, 'median_ms': 25.1949, 'min_ms': 16.5298, 'max_ms': 28.1186, 'mean_per_unit_us': 25223.005}
+  FACT  TIME F4 n1 fill0.10 r1: {'runs': 300, 'per_run_units': 1, 'mean_ms': 25.0889, 'median_ms': 25.0664, 'min_ms': 9.4251, 'max_ms': 27.066, 'mean_per_unit_us': 25088.875}
+  FACT  TIME F4 n15 fill0.10 r1: {'runs': 300, 'per_run_units': 1, 'mean_ms': 24.4601, 'median_ms': 24.4873, 'min_ms': 15.8688, 'max_ms': 26.303, 'mean_per_unit_us': 24460.118}
+  FACT  TIME F4 n1 fill1.00 r2: {'runs': 300, 'per_run_units': 1, 'mean_ms': 25.2338, 'median_ms': 25.2182, 'min_ms': 10.7688, 'max_ms': 36.5957, 'mean_per_unit_us': 25233.76}
+  FACT  TIME F4 n15 fill1.00 r2: {'runs': 300, 'per_run_units': 1, 'mean_ms': 25.2865, 'median_ms': 25.192, 'min_ms': 17.0566, 'max_ms': 32.7938, 'mean_per_unit_us': 25286.546}
+  FACT  TIME F4 n1 fill0.10 r2: {'runs': 300, 'per_run_units': 1, 'mean_ms': 25.1788, 'median_ms': 25.1856, 'min_ms': 9.3956, 'max_ms': 27.283, 'mean_per_unit_us': 25178.827}
+  FACT  TIME F4 n15 fill0.10 r2: {'runs': 300, 'per_run_units': 1, 'mean_ms': 24.4455, 'median_ms': 24.3704, 'min_ms': 15.3076, 'max_ms': 29.9854, 'mean_per_unit_us': 24445.513}
+  FACT  F4 handles before/after the runs [31584, 31575]
+
+---------- [H] HYGIENE
+  FACT  close_panel(scratch_c99c_f3_20260926_203218.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 15, 'closed': 15, 'live': 0, 'cached_op_vis': 24}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 15, 'closed': 15, 'live': 0, 'cached_op_vis': 24}
+  FACT  LabVIEW handle count AFTER the work: 31571
+  PASS  H4 scratch deleted: scratch_c99c_f3_20260926_203218.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c99c_f3_20260926_203218.vi
+  PASS  H4 scratch deleted: scratch_c99c_f4_20260926_203218.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c99c_f4_20260926_203218.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before eb8dad78209440fbbb9d87afad3d8ad6 / after eb8dad78209440fbbb9d87afad3d8ad6
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33997
+
+====================================================================================================
+=== GATES: 19 pass / 2 fail; failing: T4 F3-B: ONE INPUT tunnel (outer = sink) [(296, 1, False)] set non-indexed, 'ring' and the indicator wired {'ring': 331, 'ring 2': 267}, ExecState 1, F3 completed (Stop)
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c99c_bench.json   elapsed 259.6 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":19,"fail":2},"first_fail":"T4 F3-B: ONE INPUT tunnel (outer = sink) [(296, 1, False)] set non-indexed, 'ring' and the indicator wired {'ring': 331, 'ring 2': 267}, ExecState 1","artefacts":[]}
+  PASS  Z LabVIEW gone at exit
+
+====================================================================================================
+=== GATES: 20 pass / 2 fail; failing: T4 F3-B: ONE INPUT tunnel (outer = sink) [(296, 1, False)] set non-indexed, 'ring' and the indicator wired {'ring': 331, 'ring 2': 267}, ExecState 1, F3 completed (Stop)
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c99c_bench.json   elapsed 264.0 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":20,"fail":2},"first_fail":"T4 F3-B: ONE INPUT tunnel (outer = sink) [(296, 1, False)] set non-indexed, 'ring' and the indicator wired {'ring': 331, 'ring 2': 267}, ExecState 1","artefacts":[]}
+BGRUN END rc=1 after 265s

@@ -1,0 +1,79 @@
+{
+ "schema": "task/1",
+ "id": "99-1",
+ "kind": "measure",
+ "goal": "PD210(f) card 1: FACTS for the display-loop design (split plan PD210+211). Read-only on D1_s1_copy.vi; one timing measurement on a SCRATCH VI. No design, no stage script, no bed edit.",
+ "why": "User 2026-09-26 18:0x: the Force-vs-Extension plot #8323 moves to a separate display loop fed by a local variable. Judgement writes the design page (locals, indicators, stop carrier, rows, requires) only from measured facts; PD209(b) inference-over-measurement is the fault this card avoids.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/par1359_95_graph.json"},
+  {"path": "tools/bench/t0_step4v2_94.json"},
+  {"path": "tools/bench/t0_sites_s1.json"},
+  {"path": "tools/bench/diag_c96_cons_trace.log"},
+  {"path": "tools/bench/f1359_gate_facts_97.json"},
+  {"path": "tools/bench/cards/result_98-1.json"},
+  {"path": "docs/connectivity-map-plan.md"},
+  {"path": "docs/NAMES.md"},
+  {"path": "docs/toolkit-capabilities.md"},
+  {"path": "tools/gscript.py"},
+  {"path": "tools/stagekit.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"},
+  {"kind": "file", "name": "tools/bench/par1359_95_graph.json"},
+  {"kind": "file", "name": "tools/bench/t0_step4v2_94.json"},
+  {"kind": "file", "name": "tools/bench/t0_sites_s1.json"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\t0stamp.dll"}
+ ],
+ "pass": [
+  "F1a #8323 source in D1_s1_copy.vi: feeding wire uid (w10908?), source owner uid:term + class, owner diagram/loop of source and of #8323",
+  "F1b that array's data type (element type, dims) and its size at 15 picks (from a recorded/offline source, else 'not measured' + how)",
+  "F2 every WRITER and READER of #8323, #6085 (Z) and #5696 (dZ): terminal, locals, Value property nodes, Reinit To Dflt - uid, class, owner diagram",
+  "F3 the S3 stop carrier (PD154): uid, label, class, where written, how the S3 loop in D1_s3_loop15.vi reads it; mark each fact file-read or LabVIEW-read",
+  "F4 cycle-94 per-site cost at 11 and 15 picks for #8323's path, #6085, #5696 and any other pure-display site in #637 (t0_step4v2_94.json); 'not measured' where none",
+  "F5 local-variable WRITE cost of an F1b-sized array on a SCRATCH VI: median+p99 per write, >=5000 iters, 100 ms reader loop on/off; or a measuring plan + OPEN",
+  "D1_s1_copy.vi md5 3e3d23ce unchanged (start and end); LabVIEW gone at exit; handle count before/after the LabVIEW part"
+ ],
+ "outputs": [
+  "tools/bench/facts_c99_display.json",
+  "tools/bench/diag_c99*",
+  "tools/bench/cards/result_99-1.json",
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c99_*"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": true,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c99*",
+   "tools/recipes/diag_c99*",
+   "tools/bench/diag_c99*",
+   "tools/bench/facts_c99*",
+   "tools/bench/graph_*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/priorart*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "outcome", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "MEASURE ONLY: no design choice, no stage script, no row list; facts <= 10 + OPEN",
+  "files first (graphs, logs, t0 json); LabVIEW only for what files cannot answer",
+  "LabVIEW: D1_s1_copy.vi read-only + the scratch VI only",
+  "run_vi ONLY for the scratch micro-benchmark; never run D1_s1_copy.vi, a bed, or any instrument subVI",
+  "never save/edit D1_s1_copy.vi, a bed or an original; scratch only as claudeDev\\scratch_c99_*",
+  "bgrun --max-min 45 for any LabVIEW part; hold your turn until BGRUN END/TIMEOUT; close every reference",
+  "never move a script to dodge a gate; satisfy a refusal honestly or return BLOCKED"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

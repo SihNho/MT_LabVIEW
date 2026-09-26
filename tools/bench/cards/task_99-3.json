@@ -1,0 +1,73 @@
+{
+ "schema": "task/1",
+ "id": "99-3",
+ "kind": "measure",
+ "goal": "PD212(e)/(h)5 go/no-go on a SCRATCH VI (escalation rung 1 of 99-2 F3/F4): per-frame cost of branching the 4.8 MB ring to an indicator, and the moved set's cost on a full ring.",
+ "why": "99-2 passed F1/F2/F5/F6 but its scratch bench stayed ExecState 0 twice (t0stamp adapt-to-type any on 3-D DBL). The stage is built only if set cost - L1 write cost >= 5 ms at 15 beads.",
+ "escalation": 1,
+ "retry_of_card": "99-2",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/cards/result_99-2.json"},
+  {"path": "tools/bench/facts_c99b_display.json", "md5": "e27d226f6d0abce7d156f061a4ea8a0f"},
+  {"path": "tools/bench/diag_c99b_bench.py", "md5": "f5000f265ae57eca33c9477f28f8a994"},
+  {"path": "tools/bench/diag_c99b_benchplan.json"},
+  {"path": "archive/peer/2026-09-26-c99b-bench-t2.md"},
+  {"path": "tools/gscript.py"},
+  {"path": "tools/stagekit.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/facts_c99b_display.json"},
+  {"kind": "file", "name": "tools/bench/diag_c99b_bench.py"},
+  {"kind": "file", "name": "tools/bench/diag_c99b_benchplan.json"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "pass": [
+  "scratch bench VI(s) reach ExecState 1 before any run (read, not assumed)",
+  "F3 per-iteration cost, in-place 3-D DBL [15][2][20000] SR update, WITH vs WITHOUT a branch to an indicator: mean over >= 5000 iters, 3 repeats each",
+  "F4 cost of the moved set (S1's own Median #29009 / FIR #28233 subVIs, rows 0/1, S1's half-width + Exp Baseline defaults) over a FULL ring at 15 beads: mean per call, >= 200 calls, 3 repeats",
+  "F4b same as F4 with the ring 10% full (the cost grows as the ring fills, 94-3)",
+  "D1_s1_copy.vi md5 3e3d23ce unchanged start+end; no subVI or original saved; LabVIEW gone at exit; handles before/after"
+ ],
+ "outputs": [
+  "tools/bench/facts_c99c_bench.json",
+  "tools/bench/diag_c99c*",
+  "tools/bench/cards/result_99-3.json",
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c99*"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": true,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c99*",
+   "tools/recipes/diag_c99*",
+   "tools/bench/diag_c99*",
+   "tools/bench/facts_c99*",
+   "tools/bench/graph_*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/priorart*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "outcome", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "MEASURE ONLY: report numbers; the go/no-go verdict is judgement's (PD212(e))",
+  "timing need not use t0stamp: loop-level HiRes Relative Seconds before/after N iters is enough (PD212(h)5)",
+  "run_vi ONLY for scratch_c99_* benches; never run D1_s1_copy.vi, a bed or an instrument subVI",
+  "subVIs the scratch calls are never saved (Don't Save; rule 1); scratch only as claudeDev\\scratch_c99_*",
+  "bgrun --max-min 50 for LabVIEW parts; hold your turn until BGRUN END/TIMEOUT; close every reference",
+  "facts <= 10 + OPEN <= 3"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

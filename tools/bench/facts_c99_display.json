@@ -1,0 +1,48 @@
+{
+ "schema": "facts/1",
+ "card": "99-1",
+ "vi": "claudeDev\\D1_s1_copy.vi md5 3e3d23cefd3a334001aa9d6156bf1aee (start and end, certutil + diag_c99_lvread2.log:43)",
+ "level": "file-read (par1359_95_graph.json = S1 md5, graph_s3_loop15_20260924.json = bed md5 1a11d92a) + LabVIEW COM read of saved panel defaults (scratch byte copy, deleted); nothing run, nothing saved",
+ "F1a": {
+  "indicator": "#8323 ControlTerminal 'Force (pN) vs Extension (nm) ' (trailing blank), owner Diagram #639 = WhileLoop #637 body",
+  "feeding_wire": 10908,
+  "source": "#11261 BuildArray, terminal t11267 'appended array', owner Diagram #639",
+  "source_inputs": {"array": "w11352 <- LoopTunnel #11363 (out of ForLoop #1359, body 7911; inner <- Bundler #11310 'output cluster')", "element": "w12256 <- Bundler #11608 <- Unbundler #11576 <- SubVI #1114 'WLC function sub.vi' 'F-x out' (w8319, also to RightSR #862)"},
+  "bundler_11310_inputs": {"Filtered X": "w24106 <- Median #29009 (site 4)", "element": "w9407 <- Function #27716 'second subarray' (split of FIR #28233 output at 'Force smoothing half-width')"},
+  "evidence": "diag_c99_files.log:11-18, diag_c99_files2.log:14-35"
+ },
+ "F1b": {
+  "type": "1D array of clusters {1D DBL (Median-filtered row), 1D DBL (split FIR row)} = XY-graph plots; length = #1359 iterations + 1 (the #11608 WLC element). Element types inferred from node classes (DBL not read); not machine-read as a type string",
+  "ring": "Initialize Array #8953 on 686 (3 dims: size(s)#9342 - 1, const #8984, '# FD points') -> LeftSR #9025 -> ring rows indexed by #8741",
+  "panel_defaults_read": {"# FD points": 20000, "# DT points": 2000, "Force smoothing half-width": 1, "Extension median filter half-width": 1, "Z/dZ": false, "Frame rate": 25, "Force graph saved value": "empty array"},
+  "size_at_15_picks": "NOT MEASURED. Estimate only: rows up to '# FD points' = 20000 DBL each, 2 per plot -> ~320 kB/plot; x (15-1?) plots -> ~4.5 MB per write. Measuring route: read #8323 after a 15-pick replay/real run by COM (GetControlValue), or a t0 stamp of the array size",
+  "evidence": "diag_c99_files4.log:3-19, diag_c99_lvread2.log:23-30"
+ },
+ "F2": {
+  "8323_writers": ["terminal via w10908 (BuildArray #11261, diagram 639, every #637 iteration)", "Invoke #10313 'Reinit To Dflt', implicit, diagram 3628, all terminals unwired (c97 G4)"],
+  "8323_readers": "none found: no Local names it (P5b), terminal records with its name == {8323} (P5c), no Property node labelled with it (c97 145 labels), no Value(Signaling); EventStructure #10153/#15544 registrations NOT READ",
+  "6085_5696": "NOT indicators: SubVI nodes 'N bead plot Z.vi' #6085 (frame 2235) / 'N bead plot dZ.vi' #5696 (frame 2265) of one case on 639, frame chosen by 'Z/dZ' #403 (default False; cycle 94 stamped site 6 = Z every iteration). No refnum input. Outputs: 'X out' -> SelectorTunnel #7091 -> IndexArray #6104 (subarray UNWIRED, dead); 'Z out' -> #2451 -> IndexArray #9833 -> Multiply #8885 -> LoopTunnel #10004 into #1359 (BuildArray #8566 -> ring #8634) AND LoopTunnel #30135 into the Extension-vs-Time For body 29894; 'Y out' unwired",
+  "other_display_in_637": "ControlTerminal #28786 'Extension (nm) vs Time (Frame #)' on 639 <- LoopTunnel #29172 <- Bundler #29005 in For body 29894 (site 3 Median #30306 is in that body); 4 implicit Property nodes #30549/#30617/#50177/#50244 write its X/Y scale limits on diagram 11936 (not Value)",
+  "evidence": "diag_c99_files2.log:3-11,37-73, diag_c99_files3.log:67-84, diag_c99_files4.log:25-76"
+ },
+ "F3": {
+  "finding": "the bed's S3 loop has NO stop local. WhileLoop #23032 (body 23058) conditional terminal #23080 <- w23145 <- Comparison #23035 'x = y?' with x AND y both from LoopTunnel #23172, whose outer is Increment #8486 'x+1' on 686 (the S2 x==x scaffold). Bed Locals #23523 ('index') and #23499 ('Automatic Error Handling') are S3's data carriers read in 23058, not stop",
+  "frame_loop_stop": "#637 cond #648 <- CompoundArithmetic #11639 (inputs: 'stop (end)' #642, SelectorTunnel #12081, Comparison #10019); the same result also writes indicator 'TurnOff' #24444 on 639 (S1 and bed); no Local reads 'TurnOff' in either graph",
+  "read_level": "all file-read (graph_s3_loop15_20260924.json md5 1a11d92a); no LabVIEW read of the bed",
+  "evidence": "diag_c99_files2.log:124, diag_c99_files3.log:4-19, diag_c99_files5.log:3-8"
+ },
+ "F4": {
+  "source": "t0_step4v2_94.json, arm B, delta_med_us from the i stamp; site-minus-site = difference of medians, an upper bound on a node's own time, not a per-node cost",
+  "site6_plotZ_minus_site2_kernel_us": {"11": [2.0, 2.15], "15": [2.45, 5.3]},
+  "site3_ExtVsTime_Median30306_minus_site2_us": {"11": [772.6, 738.3], "15": [1310.95, 1174.9]},
+  "site4_Force_Median29009_minus_site3_us": {"11": [8763.2, 8297.05], "15": [10400.45, 10255.4]},
+  "site8_save_trace_minus_site2_us": {"11": [42.9, 46.25], "15": [41.0, 44.5]},
+  "period_med_us": {"11": [13123.05, 12527.8], "15": [16747.2, 16682.8]},
+  "not_measured": "site 5 FIR #28233 and site 7 plot dZ #5696 (no rows in t0_step4v2_94.json; dZ frame never ran at Z/dZ=False); BuildArray #11261 + the #8323 terminal write (no site); Extension-vs-Time Bundler/indicator write after #30306 (no site)"
+ },
+ "F5": {
+  "status": "NOT MEASURED",
+  "why": "no local-WRITE creator in the fleet (stagekit.create_local_read only, stagekit.py:676-683; toolkit-capabilities.md:759) and no creator for a typed array-of-cluster constant on a fresh scratch VI; building them is a tool decision",
+  "plan": "scratch = byte copy of D1_s1_copy.vi as claudeDev\\scratch_c99_*; create_local_read('Force (pN) vs Extension (nm) ') on 639 + NEW verb 'Local -> Change To Write' (invoke), wire w10908's source branch to it; t0stamp CLFN sites on its input and on a successor wire (t0stamp.dll exists, 0.30-1.40 us/stamp, split plan 197(a)); replay the recorded fixture at 11/15 picks, >=5000 iterations, display loop on/off = a second While with Wait 100 ms reading the local; report median/p99 of (after - before)"
+ }
+}

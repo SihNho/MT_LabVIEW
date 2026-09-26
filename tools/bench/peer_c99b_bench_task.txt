@@ -1,0 +1,20 @@
+ATTACK this claim about a failed prediction in tools/bench/diag_c99b_bench.log (script tools/bench/diag_c99b_bench.py, card 99-2).
+
+WHAT FAILED: gate T2 "F3-A ExecState 1" (diag_c99b_bench.log:32-33). The scratch VI (a stripped copy of HARNESS_copyloop.vi) had:
+a 3-D DBL control 'ring' -> a For loop's shift register (wire_sr LeftOutCtl), For N = a constant 5000 (create_const_loop_term 'for_n',
+created_uid 205, err ''), and a t0stamp CLFN `int32 stamp(int32 site, void* any)` moved into the For body (move_in err '').
+Then wire_sr('LeftIn', term_index=6) and wire_sr('RightIn', term_index=7) on that CLFN node. ExecState read 0.
+
+CLAIM (our script bug): the CLFN terminal layout is t2 error in / t3 error out / parameter k at in 4+2k, out 5+2k, with
+parameters (0 return value, 1 site, 2 any) - evidence tools/bench/diag_c90_t0stamp_scratch.py:4 and :94,:106 (create_control(.., 6)
+made the SITE control there). So t6/t7 are `site` (I32) and the script wired the 3-D DBL shift register into `site` and `site`
+out into the right register: two type-mismatched wires -> ExecState 0. Fix: `any` in = t8, out = t9. No other change.
+
+Already ruled out: the For N constant (err '' and created uid 205); the move_in (err '', census 2 rows); the ring control's type
+(T1 PASS: 'ring' + 'ring 2' made by create_control/create_indicator on the temp CLFN's t6/t7, where that CLFN's params were
+(0 return value, 1 ring) so t6/t7 WERE the ring there).
+
+Give: the strongest reason this explanation is wrong; an alternative cause of ExecState 0 in this build (e.g. the SR left
+uninitialised type, the For body index, wire_sr ForLoop ops semantics, CLFN 'any' Adapt-to-Type with a non-const 3-D array);
+what would falsify the claim; the cheapest discriminating test (the re-run prints the stamp node's terminal table if ExecState
+is still 0).

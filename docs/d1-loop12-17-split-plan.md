@@ -1604,6 +1604,89 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
        precondition silently.**
      - **(d) `claudeDev\D1_s1_fgate_BROKEN_20260926_175556.vi` (md5 `b114bb1b…`) is kept** as a saved intermediate. 210(e)
        allows deleting it; nothing needs it deleted.
+212. **(cycle 99 judgement, on `99-1` FAIL 6/1 (only F5 missing), `tools/bench/cards/result_99-1.json`, facts
+     `tools/bench/facts_c99_display.json`) — THE DISPLAY-LOOP DESIGN**
+     - **(a) MEASURED (99-1):** #8323 ← w10908 ← BuildArray #11261 (on 639) ← #11363 (For #1359 / Bundler #11310) + element
+       #11608 (Bundle, from WLC #1114). The only other object naming #8323 is Invoke #10313 `Reinit To Dflt`. #6085/#5696
+       are SubVIs whose `Z out` feeds the #1359 ring and the Ext-vs-Time path, so they are **NOT display: out of scope**.
+       The one other pure-display candidate in #637 is indicator #28786 `Extension (nm) vs Time (Frame #)` (site 3−2:
+       ~1.2 ms at 15 picks). Force path site 4−3 = **8.3–8.8 ms (11 picks), 10.3–10.4 ms (15 picks)**. #637 stops on
+       CompoundArith #11639 → cond #648 + indicator `TurnOff` #24444. The bed's S3 loop has NO stop local (x==x scaffold).
+     - **(b) JUDGED — 210(a) read literally misses 210(c):** the 10 ms is For #1359's COMPUTATION, not the indicator write.
+       Moving only #8323 (frame loop writes w10908's array to a local) leaves the 10 ms in the frame loop. The user's
+       intent (*"데이터 플롯은 별도 루프로"*, and 210(c)'s "drop by the plot's 10 ms share") is met only if the
+       plot's computation moves too. The movable set is fixed by data dependencies, not chosen: **PD206(b)'s 11363-only
+       set** (#8741 IndexArray, #8764 Subtract + `Exp Baseline` terminal #8476, constants #8775/#8795/#27716/#28180,
+       FIR #28233, Median #29009, Bundler #11310, tunnels 31051/31137) **plus BuildArray #11261 and #8323's terminal.**
+       Ring insert #8634 and `Magnet2Force` #28083 STAY in the frame loop (they feed the ring history, PD206(b)).
+     - **(c) Structure:** a new While loop (the display loop) on #637's owner diagram, parallel to #637, holding a For
+       loop over beads with the moved set, then #11261 and #8323. Crossings are LOCALS (1c''), each via a new hidden
+       indicator the frame loop writes every frame:
+       **L1 `plot ring (display)`** = the history array that w8811 (#8634 `output array` → #8741) takes per bead,
+       i.e. #1359's ring output as a whole array (the source tunnel/wire is fact 99-2 F1);
+       **L2 `plot WLC (display)`** = #11608's output.
+       The display loop reads L1 (auto-indexed into the For) and L2, waits `Display period (ms)` (new I32 control,
+       default 100, clamped ≥ 1), and stops on a **local read of `TurnOff` #24444** (written every #637 iteration by
+       the same value that stops #637). ⚠️ ASSUMPTION (2c), fact 99-2 F4: TurnOff starts False. If it can start True
+       (default, or left from a previous run), the display loop needs a False write before the loops start.
+     - **(d) Rule 1a:** Median is reentrant and FIR re-initialises on every call (95-2), so the set holds no state. Its
+       output at a display tick equals the original's output for the frame whose ring it read. The saved data is
+       untouched (96-3: #1359's outputs reach only #11261 → #8323 and its own SR). `Exp Baseline` is read in the display loop instead of per frame,
+       which gives the same value at the same time. ⚠️ ASSUMPTION (2c), display only: L1 and L2 may come from adjacent
+       frames (tearing of ≤ 1 frame in what is DRAWN). This goes in the report to the user, not a stop.
+     - **(e) Go/no-go before any LabVIEW stage run (99-2, scratch, no rig):** (1) the per-frame cost of writing L1
+       (a ring-sized array branched off the SR path forces a copy); (2) the cost of the moved set on a synthetic full
+       ring of L1's type at 15 beads. Predicted gain = (2) − (1). The stage is built only if (2) − (1) ≥ 5 ms at 15 beads.
+       Otherwise the design returns to judgement.
+     - **(f) Verbs:** moves out of For body 7911 / diagram 639 to the new loop use the S3-split move route (stagexec),
+       NOT `move_into_frame` (case frames only; left as PD211(c)). S1 is ExecState 1, so every precondition holds.
+       Per PD211(b) and PD209(c), after the move batch read the termless and loose-end wires, then run RBW (only
+       pre-existing uids may be removed, no data edge may be lost), then ExecState must be 1, once, at the end.
+     - **(g) Base = `claudeDev\D1_s1_copy.vi` (md5 `3e3d23ce…`)**, output `claudeDev\D1_s1_disp_<ts>.vi`, saved by
+       script at ExecState 1. The acceptance is 210(c): ABBA vs S1 at 15 picks, 120 s, plus the replay. #28786 comes
+       later, as a separate stage, after this one is measured (210(b)).
+     - **(h) Amended on `99-2` FAIL 5/2 (`tools/bench/cards/result_99-2.json`, facts `tools/bench/facts_c99b_display.json`):**
+       1. **L1 source = w9215** (index-out tunnel #9227 → RightSR #9018 on 639). Its type is 3-D DBL [beads][2][`# FD points`],
+          i.e. **4.8 MB at 15 beads**. Page i equals w8811 of iteration i, so the display For auto-indexes L1 and gets the
+          same per-bead input. Rows #8775 = 0 (Median) and #8795 = 1 (FIR) are constants in the set.
+       2. **Inbound edges are FIVE, not three:** w8811, `Exp Baseline` w7931, #11608 w12256, and the half-width controls
+          w31059 → tunnel 31051 and w31166 → tunnel 31137. A control terminal whose only reader is the set MOVES with the
+          set (w31059's control, like `Exp Baseline`). The control on w31166 also feeds #30896 in the frame loop, so its
+          terminal STAYS and the display loop reads a **local of it** (latest value; same value at the same time, as in (d)).
+       3. **Stop carrier = the existing precedent:** loop #25380 already stops on a Property #25116 `Value` READ of
+          TurnOff, and Property #8603 writes TurnOff from BoolConst #25261 before the loops. The display loop copies that
+          pattern and sits in #25380's owner diagram, so it is sequenced after #8603. (c)'s init ASSUMPTION is settled if
+          #25261 == False. The stage pre-run READS #25261 as a gate; it is not assumed.
+       4. **Missing verbs (99-2 F6):** `Wait (ms)` creator and indicator `Visible = False`. The stage needs both (a visible
+          4.8 MB array indicator on the panel is a new draw cost), so they are BUILT (tool rule 2026-09-24), each
+          self-tested with a negative case and handle-flat. This is done AFTER the go/no-go, not before.
+       5. **The go/no-go (e) stands.** 99-2's bench failed on the bench's OWN construction: `t0stamp`'s adapt-to-type
+          `any` input on a 3-D DBL left the scratch at ExecState 0. The question itself is unanswered. It is re-issued at
+          escalation rung 1 (card 99-3). The bench's timing need not use stamps: a loop-level High Resolution Relative
+          Seconds before/after N iterations answers median-free mean cost, which is enough for a ≥ 5 ms threshold.
+     - **(i) GO — judged on `99-3` FAIL 23/2 (rung 1; `tools/bench/cards/result_99-3.json`, `tools/bench/facts_c99c_bench.json`):**
+       1. **MEASURED (2):** Median + Coef + FIR over a full [15][2][20000] ring, panel closed, cost **7.94 ms per 15-bead
+          call** (repeats 7.90–8.00), and 7.15 ms at 10 % fill. This is a LOWER bound for the set: it leaves out IndexArray,
+          Subtract, Split, Bundler, #11261 and the #8323 write/draw. In the running VI the cost is 10.3–10.4 ms (94).
+       2. **(1) is NOT measured.** Both bench routes went ExecState 0 at the same step, when a panel terminal was moved into
+          a For body (`diag_c99c_bench2.log:38-52`). The go threshold holds if (1) ≤ 2.9 ms. ⚠️ ASSUMPTION (2c, named as
+          an inference, not a measurement): (1) is at most a few whole-array copies of 4.8 MB, about 0.5–1 ms each at
+          memory bandwidth. **The ABBA acceptance (210(c)) measures the net gain directly.** If the gain there is under
+          5 ms, (1) is the first thing read; no third bench attempt is made. The reason: a third attempt fails on a bench
+          construction step, not on the question.
+       3. **(h)2 is REVISED by the same bench fact:** moving a panel terminal into a loop body is the step that broke both
+          bench routes, twice. So **NO control terminal moves.** The display loop reads `Exp Baseline` and both half-width
+          controls through **local READs** (stagekit.py:676). Their terminals stay where they are, left unwired where the
+          set was their only reader, which is legal LabVIEW. #8323's terminal is an indicator; whether it moves or is
+          written through a local write (a verb that does not exist yet) is decided by the rows card from that same fact.
+       4. Also measured: at 10 % → 100 % fill the bench set grows only from 7.15 to 7.94 ms, so ring fill does NOT explain
+          94-3's in-situ rise from 1.3 to ~10 ms. With the panel open, the bench roughly tripled (~25 ms). This is recorded
+          for the ABBA reading and is not acted on now.
+       5. **Next (cycle 100), in order:** (a) a rows card: the stage plan rows for (c)/(h)/(i)3 on the S1 graph, plus
+          `py tools/protocol.py requires`, with no LabVIEW; (b) build the missing verbs the rows need (`Wait (ms)`,
+          `Visible = False`, and a local WRITE or indicator move for #8323 if the rows need one), each self-tested with a
+          negative case and handle-flat; (c) simulator dry + pre-run with cdiff 0 other than the added objects;
+          (d) one LabVIEW stage run.
 
 ## OPEN (design choices — for judgement; not decided here)
 

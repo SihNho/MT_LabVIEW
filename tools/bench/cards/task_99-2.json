@@ -1,0 +1,78 @@
+{
+ "schema": "task/1",
+ "id": "99-2",
+ "kind": "measure",
+ "goal": "PD212(e) go/no-go + open facts for the display-loop design: ring-output identity, L1 write cost and moved-set cost on a SCRATCH VI, TurnOff init, verb census. Facts only.",
+ "why": "PD212 moves PD206(b)'s 11363-only set + #11261 + #8323 into a separate display loop fed by locals L1 (ring) and L2 (WLC element). Build only if set cost minus L1-write cost >= 5 ms at 15 beads.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/facts_c99_display.json", "md5": "d485262c9cf09fe3cd5830ec0741f44a"},
+  {"path": "tools/bench/cards/result_99-1.json"},
+  {"path": "tools/bench/f1359_gate_facts_97.json"},
+  {"path": "tools/bench/par1359_95_graph.json"},
+  {"path": "tools/bench/t0_step4v2_94.json"},
+  {"path": "docs/toolkit-capabilities.md"},
+  {"path": "docs/NAMES.md"},
+  {"path": "tools/gscript.py"},
+  {"path": "tools/stagekit.py"},
+  {"path": "tools/stagexec.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"},
+  {"kind": "file", "name": "tools/bench/facts_c99_display.json"},
+  {"kind": "file", "name": "tools/bench/f1359_gate_facts_97.json"},
+  {"kind": "file", "name": "tools/bench/par1359_95_graph.json"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "docs/toolkit-capabilities.md"}
+ ],
+ "pass": [
+  "F1 ring identity: the wire/tunnel carrying #8634 'output array' out of #1359 (uid, indexed/SR/other), its sink on 639, type + dims; say if w8811's per-bead value == that array's row",
+  "F2 on D1_s1_copy.vi: every wire INTO {PD206(b) set, #11261, #8323} from outside it (src uid:term, class, diagram); confirm or refute 'w8811 + #8476 + #11608 only'",
+  "F3 scratch: per-iteration cost of branching an F1-typed 15-bead ring (in-place SR update) to an indicator vs no branch; median+p99, >=5000 iters",
+  "F4 scratch: cost of the moved set (same Median/FIR subVIs + constants as S1) over a FULL synthetic F1 ring at 15 beads; median+p99 per call, >=200 calls",
+  "F5 TurnOff #24444: type, default value, every writer/reader (terminal, locals, property, Reinit), owner diagram",
+  "F6 verb census for PD212(c)/(f) rows: new While/For, hidden indicator, I32 control, Wait(ms), local READ creator, cross-loop move; name+file or MISSING",
+  "D1_s1_copy.vi md5 3e3d23ce unchanged start+end; no subVI or original saved; LabVIEW gone at exit; handles before/after"
+ ],
+ "outputs": [
+  "tools/bench/facts_c99b_display.json",
+  "tools/bench/diag_c99b*",
+  "tools/bench/cards/result_99-2.json",
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c99*"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": true,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c99*",
+   "tools/recipes/diag_c99*",
+   "tools/bench/diag_c99*",
+   "tools/bench/facts_c99*",
+   "tools/bench/graph_*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/priorart*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "outcome", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 75},
+ "rules": [
+  "MEASURE ONLY: no design choice, no go/no-go verdict, no stage script; facts <= 10 + OPEN",
+  "files first for F1/F2/F5/F6; LabVIEW only for what files cannot answer",
+  "run_vi ONLY for scratch_c99_* benches; never run D1_s1_copy.vi, a bed or an instrument subVI",
+  "subVIs opened by the scratch are never saved (Don't Save; rule 1); scratch only as claudeDev\\scratch_c99_*",
+  "a missing verb for the scratch bench may be built only if it is one F6 names; else report OPEN",
+  "bgrun --max-min 60 for LabVIEW parts; hold your turn until BGRUN END/TIMEOUT; close every reference"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

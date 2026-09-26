@@ -1,0 +1,67 @@
+BGRUN START 2026-09-26 20:04:40 limit 60.0 min: py -u tools/bench/diag_c99b_bench.py
+BGRUN PID 26028
+BGRUN STAGE-RUN recorded diag_c99b_bench.py cycle='cycle 99' card=None pid=25296 -> stage_runs.jsonl
+  FACT  removed a previous run's scratch scratch_c99b_f3_20260926_195930.vi
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 274 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == eb8dad78209440fbbb9d87afad3d8ad6  got eb8dad78209440fbbb9d87afad3d8ad6
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 34003
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_c99b_f3_20260926_200440.vi
+  FACT  ExecState [after open] scratch_c99b_f3_20260926_200440.vi = 1
+  FACT  ring DBL [15][2][20000] = 4.8 MB; D1 from #8984 '2', elem repr 1
+
+---------- [F3] strip the HARNESS_copyloop copy (every node, then every panel object)
+  PASS  T0 stripped: no node, no panel object, no wire  {'Node': 0, 'ControlTerminal': 0, 'Wire': 0, 'ForLoop': 0}
+
+---------- [F3] build: ring ctl + indicator, For(N) + SR, NON-const stamp in the body
+  PASS  T1 typed ring control + indicator from the temp CLFN (DBL [15][2][20000])  ctl 'ring' ind ['ring 2']
+  FACT  For #6 N const {'err': '', 'inv_err': '', 'created_uid': 205}
+  FACT  move_in node census: 2 rows
+  FACT  OP move_in #9 -> Diagram[1] at (760, 260) -> err '' (0.1 s)
+  FACT  ExecState [F3 variant A built] scratch_c99b_f3_20260926_200440.vi = 0
+  FACT  stamp terminals in the body: [(0, 'path in', False, 0), (1, 'path out', True, 0), (2, 'error in (no error)', False, 0), (3, 'error out', True, 0), (4, '', False, 0), (5, '', True, 0), (6, 'site', False, 0), (7, 'site', True, 0), (8, 'any', False, 327), (9, 'any', True, 334)]
+  FAIL  T2 F3-A ExecState 1 (For N, SR init from ring, stamp in body)  body D[1] stamp node 0
+  FAIL  STOP at gate: T2 F3-A ExecState 1 (For N, SR init from ring, stamp in body)
+
+---------- [H] HYGIENE
+  FACT  close_panel(scratch_c99b_f3_20260926_200440.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  close_panel(scratch_c99b_f4_20260926_200440.vi) raised com_error: (-2147352567, '??? ??????.', (5507, 'LabVIEW', 'LabVIEW: (Hex 0x7) File not found. The file might be in a different location or deleted. Use the command prompt or the file explorer to verify that the path is correct.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 8, 'closed': 8, 'live': 0, 'cached_op_vis': 18}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 8, 'closed': 8, 'live': 0, 'cached_op_vis': 18}
+  FACT  LabVIEW handle count AFTER the work: 31586
+  PASS  H4 scratch deleted: scratch_c99b_f3_20260926_200440.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c99b_f3_20260926_200440.vi
+  PASS  H4 scratch deleted: scratch_c99b_f4_20260926_200440.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c99b_f4_20260926_200440.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before eb8dad78209440fbbb9d87afad3d8ad6 / after eb8dad78209440fbbb9d87afad3d8ad6
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 34011
+
+====================================================================================================
+=== GATES: 11 pass / 2 fail; failing: T2 F3-A ExecState 1 (For N, SR init from ring, stamp in body), STOP at gate: T2 F3-A ExecState 1 (For N, SR init from ring, stamp in body)
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c99b_bench.json   elapsed 139.7 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":11,"fail":2},"first_fail":"T2 F3-A ExecState 1 (For N, SR init from ring, stamp in body)","artefacts":[]}
+  PASS  Z LabVIEW gone at exit
+
+====================================================================================================
+=== GATES: 12 pass / 2 fail; failing: T2 F3-A ExecState 1 (For N, SR init from ring, stamp in body), STOP at gate: T2 F3-A ExecState 1 (For N, SR init from ring, stamp in body)
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c99b_bench.json   elapsed 144.1 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":12,"fail":2},"first_fail":"T2 F3-A ExecState 1 (For N, SR init from ring, stamp in body)","artefacts":[]}
+BGRUN END rc=1 after 145s

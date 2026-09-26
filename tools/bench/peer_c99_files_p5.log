@@ -1,0 +1,46 @@
+BGRUN START 2026-09-26 19:31:00 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c99-files-p5 -TaskFile tools/bench/peer_c99_files_p5_task.txt
+BGRUN PID 19452
+OUTCOME: ANSWERED (133s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-26-c99-files-p5.md
+COST: $1.2515  in 36 / out 10995 / cache-create 85413 / cache-read 1628785  (129s, 23 turn(s))
+--- ANSWER ---
+**Verdict:** the script-defect reading is right about why the gate tripped, but it names the wrong defect. The fact itself holds. It is supported by the graph's terminal names, not by the label data the gate used.
+
+**1. Strongest reason the claim is wrong.** The problem is not only the broad filter. The gate at `diag_c99_files.py:79` tests a different statement from the contract's P5 (`diag_c99_files.py:12`: "no Local object in the graph resolves to #8323"). The label data it reads also cannot answer that question at all. All 8 Local nodes are labelled `"D1_s1_copy.vi"` in cycle 97's data (`diag_c97_gatefacts.json:357-358`, `:747-748`, `:2022-2023`, `:2122-2146`, `:2592-2593`, `:3407-3408`). The label reader returns the owning VI's name for a Local, not the control it points to. So "8 locals, none named Force" was empty from the start, and a PASS on line 79 would have meant nothing either.
+
+The fallback, "the fact already measured in cycle 97 (G4) stands", also covers less than it says. G4 (`diag_c97_gatefacts.py:49-54`) only works where a node's label equals its bound panel object. That is true for implicitly linked property/invoke nodes (LabVIEW shows the linked control's name in their label, [labviewwiki](https://labviewwiki.org/wiki/Control_References)) and for control-reference constants (for example `#72 "Image"`, `#399 "Focus Step (F1)"`, `diag_c97_gatefacts.json:692-983`). It is not true for Locals, so G4 never spoke about them.
+
+- **Minor point:** the "17 uids" in the log is the whole hit list. `gate()` prints `[h[0] for h in hits]`, not the failing uids. Only 3 of the 17 contain "Force": 10313, 28490 and 28083 (`diag_c99_files.log:41-57`).
+
+**2. An alternative explanation of the same evidence.** The gate is broken in two ways. It uses the wrong substring rule, and it reads from a source that is blind to the object class P5 is about. Any label-based P5, pass or fail, is uninformative. Checked from the files, the underlying fact survives by a different route:
+- The terminal names of the 8 Locals in `par1359_95_graph.json` are:
+  - `Total Lost Frames` (twice)
+  - `File # Saved`
+  - `Focus Pos (Track)`
+  - `Rot pos (deg)`
+  - `Trans Pos (mm)`
+  - `Picture`
+  - `Color table`
+
+  (lines 1967, 8337, 24077, 28907, 28917, 28947, 41727, 56357). None is the Force graph.
+- Across the whole graph there is exactly one terminal record named `'Force (pN) vs Extension (nm) '`: #8323, the sink of wire 10908 (`par1359_95_graph.json:27577-27581`).
+
+**Can a SubVI called "Magnet2Force…" be a hidden reader or writer of #8323?** Not through its connector. Both instances have three terminals: inputs `Magnet position` and `Mag pos when touched to glass`, and output `Force`. None of them is a refnum (`par1359_95_graph.json:14386-14413`, `:25046-25073`). Their `Force` outputs go to LoopTunnel #29823 (diagram 28686) and BuildArray #8566 `element` (diagram 7911). They produce data; they do not receive a reference.
+
+What remains open: code inside the SubVI could reach the caller's panel by name through VI Server. The files do not settle this. The wiki has five `Magnet2Force*` variants with no Property/Reference text (0 matches), but **not** `Magnet2Force v3_for M270.vi`, the one actually called. So that absence says nothing about v3. The SubVI's name is also irrelevant: any SubVI could do this.
+
+**3. What would falsify the claim** (that #8323 has exactly one writer and no hidden reader or writer):
+- a Local whose terminal name is `Force (pN) vs Extension (nm) `;
+- an explicitly wired Property or Invoke node whose reference comes from `Controls[]`, Open VI Reference or Call Chain;
+- a case of either EventStructure registered on #8323;
+- VI Server nodes inside `Magnet2Force v3_for M270.vi`.
+
+**4. Cheapest discriminating test, files only.** Rewrite P5 to match its contract. For every object of class `Local` in `par1359_95_graph.json`, collect the `term_name` of the terminals it owns, and pass only if none equals `'Force (pN) vs Extension (nm) '`. Add a second gate: the set of terminal records with that name is exactly `{8323}`. By my reading of the file, both pass today.
+
+Checking the v3 SubVI's internals needs one LabVIEW read (`node_labels` on the `background VIs_COPY` copy, looking for Property, Invoke or Open VI Reference nodes). Only the manager can run that. I'd do it only if the rule-1a argument depends on #8323 having a single writer.
+
+**What would change my mind:** v3's diagram containing VI Server or Property nodes, or an event case bound to #8323. Either one reopens the question.
+
+Sources:
+- [Control References – LabVIEW Wiki](https://labviewwiki.org/wiki/Control_References)
+- [Control class/Create.Local Variable method – LabVIEW Wiki](https://labviewwiki.org/wiki/Control_class/Create.Local_Variable_method)
+BGRUN END rc=0 after 133s

@@ -1,0 +1,64 @@
+BGRUN START 2026-09-26 20:31:53 limit 3.0 min: py -u tools/stage_prerun.py --prerun tools/bench/diag_c99c_bench.py
+BGRUN PID 18508
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == eb8dad78209440fbbb9d87afad3d8ad6  got eb8dad78209440fbbb9d87afad3d8ad6
+  PASS  DRY graph JSON for input md5 eb8dad78209440fbbb9d87afad3d8ad6  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_harness_copyloop_c95.json
+
+---------- [F3] strip the HARNESS_copyloop copy, ring control + indicator, empty For(N)
+  UNVERIFIED  T0 stripped: no node, no panel object, no wire  (dry: after mutation g.remove_bad_wires_scripted)
+  UNVERIFIED  T1 ring control + ONE indicator from the temp CLFN (DBL [15][2][20000])  (dry: after mutation g.remove_bad_wires_scripted)
+  FACT  For #0 N const <dry:g.create_const_loop_term>
+  FACT  ExecState [F3-A built] scratch_c99c_f3_20260926_203153.vi = <dry:g.exec_state>
+  UNVERIFIED  T2 F3-A (empty For, N const) ExecState 1  (dry: after mutation g.remove_bad_wires_scripted)
+  PASS  T3 'ring' read back [15][2][20000] = 4.8 MB  ()
+  FACT  TIME F3 A-open: {'runs': 3, 'per_run_units': 5000, 'mean_ms': 0.0058, 'median_ms': 0.0036, 'min_ms': 0.0033, 'max_ms': 0.0104, 'mean_per_unit_us': 0.001}
+  FACT  TIME F3 A-closed: {'runs': 3, 'per_run_units': 5000, 'mean_ms': 0.0035, 'median_ms': 0.0033, 'min_ms': 0.0033, 'max_ms': 0.0039, 'mean_per_unit_us': 0.001}
+
+---------- [F3] B: the indicator terminal INTO the For body, wired from 'ring' (non-indexed tunnel)
+  FACT  ControlTerminals (uid, pos) [] -> indicator #0
+  FACT  OP move_in #0 -> Diagram[1] at (800, 300) -> err '' (0.0 s)
+  FACT  connect_ctl_ind ring -> dry: err <dry:g.connect_ctl_ind>
+  FACT  ExecState [F3-B built] scratch_c99c_f3_20260926_203153.vi = <dry:g.exec_state>
+  PASS  T4 F3-B: ONE INPUT tunnel (outer = sink) [] set non-indexed, 'ring' and the indicator wired {}, ExecState 1
+  FACT  TIME F3 B-open: {'runs': 3, 'per_run_units': 5000, 'mean_ms': 0.0039, 'median_ms': 0.0035, 'min_ms': 0.0033, 'max_ms': 0.005, 'mean_per_unit_us': 0.001}
+  FACT  TIME F3 B-open-1bead: {'runs': 3, 'per_run_units': 5000, 'mean_ms': 0.0035, 'median_ms': 0.0033, 'min_ms': 0.0033, 'max_ms': 0.0039, 'mean_per_unit_us': 0.001}
+  FACT  TIME F3 B-closed: {'runs': 3, 'per_run_units': 5000, 'mean_ms': 0.0035, 'median_ms': 0.0036, 'min_ms': 0.0033, 'max_ms': 0.0036, 'mean_per_unit_us': 0.001}
+  FACT  F3 handles before/after the runs [<dry:bench_prep.labview_handles>, <dry:bench_prep.labview_handles>]
+
+---------- [F4] the moved set on scratch_c99c_f4_20260926_203153.vi
+  UNVERIFIED  T6 rowZ/rowF/hw controls created  (dry: after mutation g.remove_bad_wires_scripted)
+  FACT  F4 subVIs {'med': 0, 'coef': 0, 'fir': 0} Traverse idx {'med': 0, 'coef': 0, 'fir': 0}
+  PASS  T7 F4 body terminals wired (bare [('med', 'X'), ('med', 'left rank'), ('med', 'right rank'), ('coef', 'half-width'), ('fir', 'X'), ('fir', 'FIR Coefficients')]; tunnels {}) and ExecState 1
+  FACT  TIME F4 n1 fill1.00 r0: {'runs': 300, 'per_run_units': 1, 'mean_ms': 0.0374, 'median_ms': 0.0032, 'min_ms': 0.0031, 'max_ms': 10.1949, 'mean_per_unit_us': 37.412}
+  FACT  TIME F4 n15 fill1.00 r0: {'runs': 300, 'per_run_units': 1, 'mean_ms': 0.0033, 'median_ms': 0.0032, 'min_ms': 0.0031, 'max_ms': 0.0181, 'mean_per_unit_us': 3.329}
+  FACT  TIME F4 n1 fill0.10 r0: {'runs': 300, 'per_run_units': 1, 'mean_ms': 0.0033, 'median_ms': 0.0032, 'min_ms': 0.0031, 'max_ms': 0.0175, 'mean_per_unit_us': 3.321}
+  FACT  TIME F4 n15 fill0.10 r0: {'runs': 300, 'per_run_units': 1, 'mean_ms': 0.0032, 'median_ms': 0.0032, 'min_ms': 0.003, 'max_ms': 0.0142, 'mean_per_unit_us': 3.223}
+  FACT  TIME F4 n1 fill1.00 r1: {'runs': 300, 'per_run_units': 1, 'mean_ms': 0.0032, 'median_ms': 0.0032, 'min_ms': 0.003, 'max_ms': 0.0045, 'mean_per_unit_us': 3.171}
+  FACT  TIME F4 n15 fill1.00 r1: {'runs': 300, 'per_run_units': 1, 'mean_ms': 0.0032, 'median_ms': 0.0032, 'min_ms': 0.003, 'max_ms': 0.0133, 'mean_per_unit_us': 3.195}
+  FACT  TIME F4 n1 fill0.10 r1: {'runs': 300, 'per_run_units': 1, 'mean_ms': 0.0033, 'median_ms': 0.0032, 'min_ms': 0.003, 'max_ms': 0.0091, 'mean_per_unit_us': 3.255}
+  FACT  TIME F4 n15 fill0.10 r1: {'runs': 300, 'per_run_units': 1, 'mean_ms': 0.0032, 'median_ms': 0.0032, 'min_ms': 0.0031, 'max_ms': 0.0133, 'mean_per_unit_us': 3.24}
+  FACT  TIME F4 n1 fill1.00 r2: {'runs': 300, 'per_run_units': 1, 'mean_ms': 0.0032, 'median_ms': 0.0032, 'min_ms': 0.003, 'max_ms': 0.0041, 'mean_per_unit_us': 3.185}
+  FACT  TIME F4 n15 fill1.00 r2: {'runs': 300, 'per_run_units': 1, 'mean_ms': 0.0032, 'median_ms': 0.0032, 'min_ms': 0.003, 'max_ms': 0.0085, 'mean_per_unit_us': 3.197}
+  FACT  TIME F4 n1 fill0.10 r2: {'runs': 300, 'per_run_units': 1, 'mean_ms': 0.0032, 'median_ms': 0.0032, 'min_ms': 0.003, 'max_ms': 0.0128, 'mean_per_unit_us': 3.213}
+  FACT  TIME F4 n15 fill0.10 r2: {'runs': 300, 'per_run_units': 1, 'mean_ms': 0.0032, 'median_ms': 0.0032, 'min_ms': 0.003, 'max_ms': 0.004, 'mean_per_unit_us': 3.157}
+  FACT  F4 handles before/after the runs [<dry:bench_prep.labview_handles>, <dry:bench_prep.labview_handles>]
+  (exit kill skipped: dry run: subprocess.run is blocked)
+
+====================================================================================================
+=== GATES: 5 pass / 0 fail
+JSON: C:\Users\KimLab\AppData\Local\Temp\stage_dry\diag_c99c_bench.json   elapsed 2.2 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  PASS  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['tools/bench/diag_c99c_benchplan.json']
+  PASS  X3 every plan row decided  13 rows + 0 stageplan actions
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  0 stageplan(s)
+  PASS  X4 every end addressable offline (0 ends)  []
+  PASS  X5 wiring ops executed in the dry run == plan wire rows  ops 0 vs plan wire rows 0 + stageplan wiring real ops 0 (covering 0/0 wire actions)
+  FAIL  X6 ast lint: no re-typed uid / terminal name  uids [(200, 231)]; names []
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+
+=== DRY PASS: first_fail=None coverage 165/192 lines, first mutation g.remove_bad_wires_scripted, unverified 4, graph tools/bench/graph_harness_copyloop_c95.json
+=== PRERUN FAIL: 7 pass / 1 fail; first X6 ast lint: no re-typed uid / terminal name: uids [(200, 231)]; names []
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":7,"fail":1},"first_fail":"X6 ast lint: no re-typed uid / terminal name: uids [(200, 231)]; names []","artefacts":[]}
+BGRUN END rc=1 after 3s

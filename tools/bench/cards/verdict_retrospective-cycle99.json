@@ -1,0 +1,28 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle99",
+ "verdict": "refuted",
+ "alternative": "Card 99-3 was a legitimate escalation: F4 (7.94 ms) was delivered there and F3 failed on bench construction that no read could have fixed in the same cycle.",
+ "discriminating_test": "Rebuild F3-A (90 s) and run tools/lv_errorlist.py on it with gui:true; if the Error List names a cause in under 10 min, the read card was the cheaper step.",
+ "violations": [
+  {
+   "slug": "repeated-failure-class",
+   "loss_min": 25,
+   "loss_usd": 1.8853,
+   "evidence": "tools/bench/diag_c99c_bench2.log:51"
+  }
+ ],
+ "sources": [
+  "tools/bench/diag_c99b_bench.log:32-33",
+  "tools/bench/diag_c99b_bench2.log:4",
+  "tools/bench/diag_c99c_bench.log:38-39",
+  "tools/bench/diag_c99c_bench2.log:38-52",
+  "tools/bench/peer_c99c_bench.log:4",
+  "archive/peer/2026-09-26-retrospective-cycle98.md:271-272",
+  "archive/peer/2026-09-26-c99b-bench-t2.md:71",
+  "tools/bench/cards/task_99-3.json:41",
+  "docs/d1-loop12-17-split-plan.md:1671-1676",
+  "tools/lv_errorlist.py:1-5"
+ ],
+ "note": "Four ExecState-0 guesses in one cycle with the Error List reader excluded by gui:false; cycle closed with the go/no-go quantity assumed. Audit A1 misfire on jev_gate.log is a known owed item, not a second fault."
+}

@@ -1,0 +1,86 @@
+BGRUN START 2026-09-26 19:34:14 limit 2.0 min: py -u tools/bench/diag_c99_files3.py
+BGRUN PID 25496
+[F3] bed: the S3 loop's stop and the S3 locals
+  NODE #23035 Comparison 
+     t23114 'x = y?' SRC ParameterTerminal fd23058 w23145 -> [(23080, '', 'sink', 23058, 'Diagram', 23058), (23080, '', 'sink', 23058, 'Diagram', 23058)]
+     t23121 'y' sink ParameterTerminal fd23058 w23047 -> [(23202, '', 'SRC', 23172, 'LoopTunnel', 23058)]
+     t23130 'x' sink ParameterTerminal fd23058 w23047 -> [(23202, '', 'SRC', 23172, 'LoopTunnel', 23058)]
+  NODE #23523 Local 
+     t23550 'index' SRC Terminal fd23058 w23856 -> [(10987, 'index', 'sink', 10978, 'SelectorTunnel', 23058)]
+  NODE #23499 Local 
+     t23511 'Automatic Error Handling' SRC Terminal fd23058 w23466 -> [(23540, 'x', 'sink', 9996, 'Function', 23058), (23801, 'Automatic Error Handling', 'sink', 23469, 'RightShiftRegister', 23058)]
+  NODE #11639 CompoundArithmetic 
+     t11654 'result' SRC Terminal fd639 w3457 -> [(648, '', 'sink', 639, 'Diagram', 639), (648, '', 'sink', 639, 'Diagram', 639), (24444, 'TurnOff', 'sink', 639, 'Diagram', 639)]
+     t11657 'value' sink Terminal fd639 w12070 -> [(12091, '', 'SRC', 12081, 'SelectorTunnel', 639)]
+     t11661 'value' sink Terminal fd639 w6929 -> [(642, 'stop (end)', 'SRC', 639, 'Diagram', 639)]
+     t11744 'value' sink Terminal fd639 w10249 -> [(10033, 'x = y?', 'SRC', 10019, 'Comparison', 639)]
+  PASS  P9 #23080 <- #23035  got [(23114, 'x = y?', 'SRC', 23035, 'Comparison', 23058)]
+   bed ControlTerminals named TurnOff / stop: [(7739, 'Stop Trans', 3628, 0), (642, 'stop (end)', 639, 6929), (19603, 'stop (end) 2', 639, 15230), (24444, 'TurnOff', 639, 3457)]
+   bed Local terminals: {2991: [('Total Lost Frames', 'sink', 3628, 3152)], 4277: [('File # Saved', 'sink', 1817, 4485)], 23523: [('index', 'SRC', 23058, 23856)], 23499: [('Automatic Error Handling', 'SRC', 23058, 23466)], 11574: [('Focus Pos (Track)', 'sink', 10423, 13848)], 3160: [('Rot pos (deg)', 'SRC', 759, 3324)], 3097: [('Trans Pos (mm)', 'SRC', 759, 3359)], 2143: [('Total Lost Frames', 'sink', 759, 2271)], 16942: [('Picture', 'sink', 15266, 19441)], 25805: [('Color table', 'SRC', 25769, 26104)]}
+   S1 Local terminals with fd/wire: {2991: [('Total Lost Frames', 'sink', 3628, 3152)], 4277: [('File # Saved', 'sink', 1817, 4485)], 11574: [('Focus Pos (Track)', 'sink', 10423, 13848)], 3160: [('Rot pos (deg)', 'SRC', 759, 3324)], 3097: [('Trans Pos (mm)', 'SRC', 759, 3359)], 2143: [('Total Lost Frames', 'sink', 759, 2271)], 16942: [('Picture', 'sink', 15266, 19441)], 25805: [('Color table', 'SRC', 25769, 26104)]}
+
+[F1b] S1 ring + loop count of #1359
+   obj 1359: {'uid': 1359, 'class': 'ForLoop', 'pos': [5102, 1336], 'owner': 'Diagram'}
+  PASS  P10 #1359 obj class ForLoop  got {'uid': 1359, 'class': 'ForLoop', 'pos': [5102, 1336], 'owner': 'Diagram'}
+  NODE #8634 GrowableFunction 
+     t8640 'array' sink Terminal fd7911 w9076 -> [(9089, '', 'SRC', 9087, 'LoopTunnel', 7911)]
+     t8643 'output array' SRC Terminal fd7911 w8811 -> [(8747, 'array', 'sink', 8741, 'IndexArray', 7911), (9230, '', 'sink', 9227, 'LoopTunnel', 7911)]
+     t8647 'new element/subarray' sink Terminal fd7911 w10043 -> [(8572, 'appended array', 'SRC', 8566, 'BuildArray', 7911)]
+     t8653 'disabled index (row)' sink Terminal fd7911 w0 -> UNWIRED
+     t9196 'index (col)' sink Terminal fd7911 w10166 -> [(10179, '', 'SRC', 10177, 'LoopTunnel', 7911)]
+  NODE #9018 RightShiftRegister 
+     t9032 '' SRC OuterTerminal fd686 w0 -> UNWIRED
+     t9028 '' sink InnerTerminal fd639 w9215 -> [(9234, '', 'SRC', 9227, 'LoopTunnel', 639)]
+  NODE #9025 LeftShiftRegister 
+     t9035 '' sink OuterTerminal fd686 w9051 -> [(8958, 'initialized array', 'SRC', 8953, 'GrowableFunction', 686)]
+     t9034 '' SRC InnerTerminal fd639 w9097 -> [(9092, '', 'sink', 9087, 'LoopTunnel', 639)]
+  NODE #8566 BuildArray 
+     t8572 'appended array' SRC Terminal fd7911 w10043 -> [(8647, 'new element/subarray', 'sink', 8634, 'GrowableFunction', 7911)]
+     t8575 'element' sink Terminal fd7911 w9993 -> [(10006, '', 'SRC', 10004, 'LoopTunnel', 7911)]
+     t8578 'element' sink Terminal fd7911 w28732 -> [(28092, 'Force', 'SRC', 28083, 'SubVI', 7911)]
+  NODE #8741 IndexArray 
+     t8747 'array' sink Terminal fd7911 w8811 -> [(8643, 'output array', 'SRC', 8634, 'GrowableFunction', 7911), (9230, '', 'sink', 9227, 'LoopTunnel', 7911)]
+     t8750 'subarray' SRC Terminal fd7911 w33062 -> [(8790, 'x', 'sink', 8764, 'Function', 7911)]
+     t8753 'index (row)' sink Terminal fd7911 w8804 -> [(8774, 'index (row)', 'SRC', 8775, 'DigitalNumericConstant', 7911)]
+     t10401 'disabled index (col)' sink Terminal fd7911 w0 -> UNWIRED
+     t8759 'subarray' SRC Terminal fd7911 w28443 -> [(28291, 'X', 'sink', 28233, 'PolymorphicSubVI', 7911)]
+     t8762 'index (row)' sink Terminal fd7911 w8808 -> [(8794, 'index (row)', 'SRC', 8795, 'DigitalNumericConstant', 7911)]
+     t10413 'disabled index (col)' sink Terminal fd7911 w0 -> UNWIRED
+  NODE #27716 Function 
+     t27784 'second subarray' SRC ParameterTerminal fd7911 w9407 -> [(11323, 'element', 'sink', 11310, 'Bundler', 7911)]
+     t27800 'first subarray' SRC ParameterTerminal fd7911 w0 -> UNWIRED
+     t27818 'index' sink ParameterTerminal fd7911 w31064 -> [(28223, 'half-width', 'sink', 28180, 'SubVI', 7911), (31053, 'Force\nsmoothing\nhalf-width', 'SRC', 31051, 'LoopTunnel', 7911)]
+     t27827 'array' sink ParameterTerminal fd7911 w28509 -> [(28251, 'Filtered X', 'SRC', 28233, 'PolymorphicSubVI', 7911)]
+  NODE #11374 Wire 
+   terminals in fd 7911 owned by 7911 (N / i of #1359): [(7921, '', 'SRC', 0, 'UNWIRED'), (7921, '', 'SRC', 0, 'UNWIRED'), (8476, 'Exp Baseline', 'SRC', 7931, [(8777, 'y', 'sink', 8764, 'Function', 7911)])]
+   LoopTunnels with an InnerTerminal in fd 7911:
+      9087 LoopTunnel '' in-w 9076 | outer [('', 'sink', 9097, [(9034, '', 'SRC', 9025, 'LeftShiftRegister', 639)])]
+      9227 LoopTunnel '' in-w 8811 | outer [('', 'SRC', 9215, [(9028, '', 'sink', 9018, 'RightShiftRegister', 639)])]
+      9503 LoopTunnel 'Value' in-w 28684 | outer [('Value', 'sink', 30592, [(4160, 'element', 'sink', 2626, 'BuildArray', 639), (30145, 'Value', 'SRC', 30117, 'Property', 639), (20496, 'Value', 'sink', 20497, 'SelectorTunnel', 639)])]
+      10004 LoopTunnel '' in-w 9993 | outer [('', 'sink', 28847, [(30144, '', 'sink', 30135, 'LoopTunnel', 639), (8891, 'x*y', 'SRC', 8885, 'Function', 639)])]
+      10177 LoopTunnel '' in-w 10166 | outer [('', 'sink', 10187, [(10077, 'x-y*floor(x/y)', 'SRC', 10068, 'Function', 639)])]
+      11363 LoopTunnel '' in-w 11374 | outer [('', 'SRC', 11352, [(11270, 'array', 'sink', 11261, 'BuildArray', 639)])]
+      31051 LoopTunnel 'Force\nsmoothing\nhalf-width' in-w 31064 | outer [('Force\nsmoothing\nhalf-width', 'sink', 31059, [(28170, 'Force\nsmoothing\nhalf-width', 'SRC', 639, 'Diagram', 639)])]
+      31137 LoopTunnel 'Extension\nmedian filter\nhalf-width' in-w 31128 | outer [('Extension\nmedian filter\nhalf-width', 'sink', 31166, [(30901, 'Extension\nmedian filter\nhalf-width', 'sink', 30896, 'LoopTunnel', 639), (29091, 'Extension\nmedian filter\nhalf-width', 'SRC', 639, 'Diagram', 639)])]
+      28370 LoopTunnel 'Magnet position output' in-w 28365 | outer [('Magnet position output', 'sink', 28338, [(28345, 'Magnet position output', 'SRC', 28343, 'LoopTunnel', 639)])]
+
+[F2/F4] where the Z/dZ plot outputs go, and the 'Extension vs Time' indicator's source
+  NODE #6104 IndexArray 
+     t6261 'array' sink Terminal fd639 w6363 -> [(7105, 'X out', 'SRC', 7091, 'SelectorTunnel', 639)]
+     t6282 'subarray' SRC Terminal fd639 w0 -> UNWIRED
+     t6297 'disabled index (row)' sink Terminal fd639 w0 -> UNWIRED
+     t6400 'index (col)' sink Terminal fd639 w6427 -> [(6421, 'disabled index (col)', 'SRC', 6404, 'DigitalNumericConstant', 639)]
+  NODE #9833 IndexArray 
+     t9839 'array' sink Terminal fd639 w4906 -> [(2593, 'Z out', 'SRC', 2451, 'SelectorTunnel', 639)]
+     t9842 'subarray' SRC Terminal fd639 w9012 -> [(8898, 'x', 'sink', 8885, 'Function', 639)]
+     t9845 'index (row)' sink Terminal fd639 w9924 -> [(9920, 'index (row)', 'SRC', 9906, 'DigitalNumericConstant', 639)]
+     t9902 'disabled index (col)' sink Terminal fd639 w0 -> UNWIRED
+  NODE #29172 LoopTunnel 
+     t29178 '' SRC OuterTerminal fd639 w32890 -> [(28786, 'Extension (nm) vs Time (Frame #)', 'sink', 639, 'Diagram', 639)]
+     t29174 '' sink InnerTerminal fd29894 w29183 -> [(29012, 'output cluster', 'SRC', 29005, 'Bundler', 29894)]
+  NODE #2276 Tunnel 
+     t2282 '' sink OuterTerminal fd639 w730 -> [(403, 'Z/dZ', 'SRC', 639, 'Diagram', 639)]
+     t2280 '' SRC InnerTerminal fd2265 w0 -> UNWIRED
+     t2279 '' SRC InnerTerminal fd2235 w0 -> UNWIRED
+RESULT {"schema": "result-line/1", "status": "PASS", "gates": {"pass": 2, "fail": 0}, "first_fail": null, "artefacts": []}
+BGRUN END rc=0 after 1s

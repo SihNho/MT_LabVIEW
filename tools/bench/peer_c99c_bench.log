@@ -1,0 +1,66 @@
+BGRUN START 2026-09-26 20:39:48 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c99c-bench-t4 -TaskFile tools/bench/peer_c99c_bench_task.txt
+BGRUN PID 15208
+OUTCOME: ANSWERED (279s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-26-c99c-bench-t4.md
+COST: $1.8853  in 30 / out 24094 / cache-create 116761 / cache-read 1677366  (276s, 25 turn(s))
+--- ANSWER ---
+Neither claim holds up as stated. Claim 1 was never tested, because nobody read the tunnel's mode after the write. Claim 2's "the filters do run" does not rule out LabVIEW deleting the filter calls whose outputs are unwired. The log, the script and the web do not settle that. A test with no rebuild would. Nothing was run or edited; I could not write the plan file because Write is disabled here, so the full review is below.
+
+## Claim 1 — T4, F3-B ExecState 0
+
+**1. Strongest reason it is wrong.** The "2-D page" story explains ExecState 0 *before* `set_index_mode`. The 0 that was recorded (log line 38) came *after* it.
+- If IndexMode=0 had landed, the wire would be 3-D to 3-D, which is legal. LabVIEW re-checks wire types every time types change, so there is nothing left to "heal".
+- So the claim really joins two different faults with "or": either the write did not land, or something else is broken. It does not tell them apart.
+- A read-back already exists. `gscript.tunnels()` returns `index_mode` (`tools/gscript.py:1036`). The docstring of `set_index_mode` still says "there is no scripted read-back op yet" (`tools/gscript.py:1956`), which is out of date. Skipping the read was a choice, not a missing tool.
+- The planned run 2 goes around the question instead of answering it. That is the "guessed twice, build the reader" pattern, except here the reader already exists.
+
+**2. Alternative explanations.**
+- **(a) The write landed and something else is broken.** The claim is falsified.
+- **(b) The write was silently declined.** `ensure_loaded` runs only once per path per session (`tools/gscript.py:1418`). This VI's panel had been closed and reopened in the A-closed step (`tools/bench/diag_c99c_bench.py:140-145`). The op returns no error either way, and the project has recorded writes being declined without any error before (the `ensure_loaded` docstring).
+- **(c) ExecState was read before LabVIEW finished re-checking types.** Less likely, since other gates read 1 right after edits.
+
+Two different wire numbers on 'ring' (331) and 'ring 2' (267) are normal for a wire that passes through a tunnel. They do not show whether the inner wire is broken.
+
+**3. What falsifies it.** `tunnels(W,0)["index_mode"]` reads 0 after the write while ExecState is still 0.
+
+**4. Cheapest test inside run 2** (existing functions only):
+1. Before moving the control in, repeat run 1's route: `connect_ctl_ind`, then `tunnels(W,0)`, then `set_index_mode(W,0,0)`, then `tunnels(W,0)` again.
+2. Read ExecState twice, 0.5 s apart.
+3. Only then remove the wire and continue with the both-inside route.
+
+index_mode=1 means OpSetIndexMode_v0 is at fault. index_mode=0 with ExecState 0 means the 2-D story is wrong.
+
+**Risk in the planned fix:** `connect_ctl_ind`'s docstring says both terminals sit on the top-level diagram (`tools/gscript.py:1076-1077`). Run 2 uses it with both terminals inside a For loop body, which has never been checked. T4 can fail again for a new reason.
+
+## Claim 2 — F4 timing hidden by the open panel
+
+**1. Strongest reason it is wrong.**
+- The means for n=1 and n=15 are the same (25.2 vs 25.3 ms, log lines 48–62). A constant extra cost from the open panel would add to the filter work, not hide it. Only a completion that snaps to a fixed tick hides work, and that is a stronger claim than the one being made.
+- The only direct evidence for the panel effect is F3: 3 runs per arm, with the open arm always measured first (log lines 30–31).
+- "The filters run" rests on the minimum of 300 runs, the least stable statistic there is.
+- Comparing fill 0.1 with fill 1.0 shows nothing, because filters with a 3-point window cost the same whatever the data.
+
+**2. Alternative explanation: dead-code elimination.**
+- LabVIEW removes code whose outputs are unused ([labviewwiki](https://labviewwiki.org/wiki/LabVIEW_Compiler_optimizations)).
+- A subVI's diagram enters the caller's compile only when the subVI is marked inline ([NI, Compiler Under the Hood](https://www.ni.com/en/support/documentation/supplemental/10/ni-labview-compiler--under-the-hood.html)). "SubVIs with unwired outputs" appears as a *reason to inline* ([NI forum](https://forums.ni.com/t5/LabVIEW/Inline-subvi/td-p/1279078)), which suggests calls that are not inlined are kept.
+- **Not settled:** nothing I found says whether Median Filter.vi or FIR Filter (DBL).vi are inlined in LabVIEW 2026. Nothing says whether they end in a Call Library node into lvanlys.dll, which the compiler would not remove. The project docs have no record either.
+- The ~5 ms gap in the minimums can be explained without the filters. At run start LabVIEW copies the control data: 4.8 MB at n=15 against 0.32 MB at n=1.
+
+**3. What falsifies it.** With the panel closed, raising the filter work without changing the data size leaves the time unchanged.
+
+**4. Cheapest test** (control values only, no rebuild, no new op):
+- **The test:** with the panel closed and n=15, time `SetControlValue("hw", 1)` against `SetControlValue("hw", 50)`. That takes the median window from 3 to 101 points and the FIR from 3 taps to 101, with the same data size.
+- **Filters running:** a jump of tens of ms.
+- **Calls removed:** no change.
+- **Also:** time hw=1 at n=1 and n=15 with the panel closed. Report the minimum, median and a histogram, not only the mean.
+- **Before trusting the per-call estimate:** use `(T15−T1)×15/14` only if the closed-panel times are spread out smoothly, not in steps. Subtracting means is not valid on stepped timings, which is exactly what run 1 showed.
+
+**Already ruled out:** F3's panel really was open during A-open. The "closed front panel" error at log line 66 is harmless. `body()` adds `s.work` to the scratch list a second time (`tools/bench/diag_c99c_bench.py:225`, `tools/stagekit.py:1101`), so the second close call fails.
+
+**What would change my mind:** if hw=50 raises the n=15 time by tens of ms with the panel closed, the filters run and claim 2 mostly stands. Claim 1 stays open until `tunnels()` is read after the write.
+
+Sources:
+- [NI LabVIEW Compiler: Under the Hood](https://www.ni.com/en/support/documentation/supplemental/10/ni-labview-compiler--under-the-hood.html)
+- [LabVIEW Compiler optimizations – LabVIEW Wiki](https://labviewwiki.org/wiki/LabVIEW_Compiler_optimizations)
+- [Inline subvi – NI Community](https://forums.ni.com/t5/LabVIEW/Inline-subvi/td-p/1279078)
+- [How to change tunnel mode using VI scripting – NI Community](https://forums.ni.com/t5/LabVIEW/How-to-change-tunnel-mode-using-vi-scripting/td-p/3969392)
+BGRUN END rc=0 after 280s

@@ -1,0 +1,119 @@
+BGRUN START 2026-09-26 19:51:43 limit 5.0 min: py -u tools/bench/diag_c99b_files.py
+BGRUN PID 26312
+keys: ['vi', 'md5', 'terminals', 'objs', 'graph_summary', 'note'] objs: 9981 terminals: 5748
+  PASS  P5 graph md5 is S1  got 3e3d23cefd3a334001aa9d6156bf1aee
+  obj sample: {'uid': 536, 'class': 'TopLevelDiagram', 'pos': [-17474, 102], 'owner': ''}
+
+[F1] ring: #8634 output -> w8811 -> ?
+  NODE #8634 GrowableFunction 
+     t8640 'array' sink Terminal fd7911 w9076 -> [(9087, 'LoopTunnel', '', 'SRC', 'fd7911')]
+     t8643 'output array' SRC Terminal fd7911 w8811 -> [(8741, 'IndexArray', 'array', 'sink', 'fd7911'), (9227, 'LoopTunnel', '', 'sink', 'fd7911')]
+     t8647 'new element/subarray' sink Terminal fd7911 w10043 -> [(8566, 'BuildArray', 'appended array', 'SRC', 'fd7911')]
+     t8653 'disabled index (row)' sink Terminal fd7911 w0 -> UNWIRED
+     t9196 'index (col)' sink Terminal fd7911 w10166 -> [(10177, 'LoopTunnel', '', 'SRC', 'fd7911')]
+  NODE #9227 LoopTunnel 
+     t9234 '' SRC OuterTerminal fd639 w9215 -> [(9018, 'RightShiftRegister', '', 'sink', 'fd639')]
+     t9230 '' sink InnerTerminal fd7911 w8811 -> [(8741, 'IndexArray', 'array', 'sink', 'fd7911'), (8634, 'GrowableFunction', 'output array', 'SRC', 'fd7911')]
+  NODE #9087 LoopTunnel 
+     t9092 '' sink OuterTerminal fd639 w9097 -> [(9025, 'LeftShiftRegister', '', 'SRC', 'fd639')]
+     t9089 '' SRC InnerTerminal fd7911 w9076 -> [(8634, 'GrowableFunction', 'array', 'sink', 'fd7911')]
+  NODE #9025 LeftShiftRegister 
+     t9035 '' sink OuterTerminal fd686 w9051 -> [(8953, 'GrowableFunction', 'initialized array', 'SRC', 'fd686')]
+     t9034 '' SRC InnerTerminal fd639 w9097 -> [(9087, 'LoopTunnel', '', 'sink', 'fd639')]
+  NODE #8953 GrowableFunction 
+     t8955 'element' sink Terminal fd686 w8997 -> [(8972, 'DigitalNumericConstant', 'element', 'SRC', 'fd686')]
+     t8958 'initialized array' SRC Terminal fd686 w9051 -> [(9025, 'LeftShiftRegister', '', 'sink', 'fd686')]
+     t8961 'dimension size' sink Terminal fd686 w9166 -> [(28124, 'GrowableFunction', 'dimension size', 'sink', 'fd686'), (9179, 'Function', 'x-1', 'SRC', 'fd686')]
+     t8964 'dimension size' sink Terminal fd686 w9788 -> [(8984, 'DigitalNumericConstant', 'dimension size', 'SRC', 'fd686')]
+     t9662 'dimension size' sink Terminal fd686 w9000 -> [(10114, 'LoopTunnel', '# FD points', 'sink', 'fd686'), (686, 'Diagram', '# FD points', 'SRC', 'fd686')]
+  NODE #8984 DigitalNumericConstant 
+     t8983 'dimension size' SRC Terminal fd686 w9788 -> [(8953, 'GrowableFunction', 'dimension size', 'sink', 'fd686')]
+  NODE #8741 IndexArray 
+     t8747 'array' sink Terminal fd7911 w8811 -> [(8634, 'GrowableFunction', 'output array', 'SRC', 'fd7911'), (9227, 'LoopTunnel', '', 'sink', 'fd7911')]
+     t8750 'subarray' SRC Terminal fd7911 w33062 -> [(8764, 'Function', 'x', 'sink', 'fd7911')]
+     t8753 'index (row)' sink Terminal fd7911 w8804 -> [(8775, 'DigitalNumericConstant', 'index (row)', 'SRC', 'fd7911')]
+     t10401 'disabled index (col)' sink Terminal fd7911 w0 -> UNWIRED
+     t8759 'subarray' SRC Terminal fd7911 w28443 -> [(28233, 'PolymorphicSubVI', 'X', 'sink', 'fd7911')]
+     t8762 'index (row)' sink Terminal fd7911 w8808 -> [(8795, 'DigitalNumericConstant', 'index (row)', 'SRC', 'fd7911')]
+     t10413 'disabled index (col)' sink Terminal fd7911 w0 -> UNWIRED
+  NODE #8775 DigitalNumericConstant 
+     t8774 'index (row)' SRC Terminal fd7911 w8804 -> [(8741, 'IndexArray', 'index (row)', 'sink', 'fd7911')]
+  NODE #8795 DigitalNumericConstant 
+     t8794 'index (row)' SRC Terminal fd7911 w8808 -> [(8741, 'IndexArray', 'index (row)', 'sink', 'fd7911')]
+  NODE #8566 BuildArray 
+     t8572 'appended array' SRC Terminal fd7911 w10043 -> [(8634, 'GrowableFunction', 'new element/subarray', 'sink', 'fd7911')]
+     t8575 'element' sink Terminal fd7911 w9993 -> [(10004, 'LoopTunnel', '', 'SRC', 'fd7911')]
+     t8578 'element' sink Terminal fd7911 w28732 -> [(28083, 'SubVI', 'Force', 'SRC', 'fd7911')]
+  NODE #10177 LoopTunnel 
+     t10182 '' sink OuterTerminal fd639 w10187 -> [(10068, 'Function', 'x-y*floor(x/y)', 'SRC', 'fd639')]
+     t10179 '' SRC InnerTerminal fd7911 w10166 -> [(8634, 'GrowableFunction', 'index (col)', 'sink', 'fd7911')]
+  PASS  P1 w8811 sinks == {#8741 array, #9227}  got [(8741, 'array'), (9227, '')]
+  #9227 source terminals: [(9234, 639, 9215, [(9018, 'RightShiftRegister', '', 'sink', 'fd639')])]
+  PASS  P2 #9227 outer wire ends on diagram 639  got [(9018, 'RightShiftRegister', '', 'sink', 'fd639')]
+  NODE #9018 RightShiftRegister (sink of #9227's outer wire)
+     t9032 '' SRC OuterTerminal fd686 w0 -> UNWIRED
+     t9028 '' sink InnerTerminal fd639 w9215 -> [(9227, 'LoopTunnel', '', 'SRC', 'fd639')]
+
+[F2] inbound wires into the moved set (PD212(b) set + #11261 + #8323)
+   IN  w8811  8634:output array [GrowableFunction fd7911] -> 8741:array fd7911
+   IN  w7931  7911:Exp Baseline [Diagram fd7911] -> 8764:y fd7911
+   IN  w12256  11608:output cluster [Bundler fd639] -> 11261:element fd639
+   IN  w31059  639:Force
+smoothing
+half-width [Diagram fd639] -> 31051:Force
+smoothing
+half-width fd639
+   IN  w31166  639:Extension
+median filter
+half-width [Diagram fd639] -> 31137:Extension
+median filter
+half-width fd639
+   source owners: [639, 7911, 8634, 11608]
+   OUTBOUND: ['11261:appended array -w10908-> 639:Force (pN) vs Extension (nm)  [Diagram fd639]']
+  NODE #31051 LoopTunnel 
+     t31055 'Force\nsmoothing\nhalf-width' sink OuterTerminal fd639 w31059 -> [(639, 'Diagram', 'Force\nsmoothing\nhalf-width', 'SRC', 'fd639')]
+     t31053 'Force\nsmoothing\nhalf-width' SRC InnerTerminal fd7911 w31064 -> [(27716, 'Function', 'index', 'sink', 'fd7911'), (28180, 'SubVI', 'half-width', 'sink', 'fd7911')]
+  NODE #31137 LoopTunnel 
+     t31158 'Extension\nmedian filter\nhalf-width' sink OuterTerminal fd639 w31166 -> [(30896, 'LoopTunnel', 'Extension\nmedian filter\nhalf-width', 'sink', 'fd639'), (639, 'Diagram', 'Extension\nmedian filter\nhalf-width', 'SRC', 'fd639')]
+     t31152 'Extension\nmedian filter\nhalf-width' SRC InnerTerminal fd7911 w31128 -> [(29009, 'SubVI', 'right rank', 'sink', 'fd7911'), (29009, 'SubVI', 'left rank', 'sink', 'fd7911')]
+  NODE #8476 ControlTerminal 
+
+[F5] TurnOff #24444 in the S1 graph
+    {'term_uid': 25291, 'term_name': 'TurnOff', 'is_source': True, 'wire_uid': 25298, 'owner_uid': 25261, 'owner_class': 'BooleanConstant', 'frame_diagram': 4866, 'term_class': 'Terminal'} -> [(8603, 'Property', 'Value', 'sink', 'fd4866')]
+    {'term_uid': 24444, 'term_name': 'TurnOff', 'is_source': False, 'wire_uid': 3457, 'owner_uid': 639, 'owner_class': 'Diagram', 'frame_diagram': 639, 'term_class': 'ControlTerminal'} -> [(11639, 'CompoundArithmetic', 'result', 'SRC', 'fd639')]
+  PASS  P4 TurnOff terminal rows exist and no Local names it  got (2, {2991: ['Total Lost Frames'], 4277: ['File # Saved'], 11574: ['Focus Pos (Track)'], 3160: ['Rot pos (deg)'], 3097: ['Trans Pos (mm)'], 2143: ['Total Lost Frames'], 16942: ['Picture'], 25805: ['Color table']})
+   c97 label sweep objects labelled TurnOff: {'8603': {'label': 'TurnOff', 'diag_index': 18, 'diag_uid': 4866}, '25116': {'label': 'TurnOff', 'diag_index': 20, 'diag_uid': 25392}}
+
+[F6] verb census
+   def while_loop               tools/gscript.py:1285
+   def for_loop                 tools/gscript.py:1304
+   def loop_in                  tools/gscript.py:1249
+   def create_indicator         tools/gscript.py:2633
+   def create_control           tools/gscript.py:2605
+   def create_local_read        tools/stagekit.py:676
+   def build_property           tools/gscript.py:2404
+   def create_const_loop_term   tools/gscript.py:2658
+   def move_in                  tools/stagekit.py:595
+   def move_out                 tools/gscript.py:2970
+   def copy_in                  tools/stagekit.py:779
+   def wire_indicators          tools/gscript.py:1850
+   def build_clfn               tools/gscript.py:2992
+   def drop_subvi               tools/gscript.py:1319
+   def set_index_mode           tools/gscript.py:1949
+   toolkit-capabilities 'Wait' lines: []
+   toolkit-capabilities 'Visible' lines: [215]
+   toolkit-capabilities 'hidden' lines: [226, 314]
+   toolkit-capabilities 'Hidden' lines: []
+   toolkit-capabilities 'Change To Write' lines: []
+   toolkit-capabilities 'Create:Local' lines: [76]
+   toolkit-capabilities 'OpCreateLocalRead' lines: [76]
+   toolkit-capabilities 'move_in' lines: [79, 282, 283, 759, 817, 818, 819, 820]
+   toolkit-capabilities 'OpMoveIn' lines: [815]
+   toolkit-capabilities 'loop_in' lines: [34, 287, 828]
+   toolkit-capabilities 'Representation' lines: [63, 70]
+   toolkit-capabilities 'I32' lines: [35]
+   op VIs matching Wait|Local|Visible|Hidden|Loop|Move|Prop|Indicator|Control: ['OpCreateConstLoopEnd_v0.vi', 'OpCreateControl_v0.vi', 'OpCreateControl_v1.vi', 'OpCreateIndicator_v0.vi', 'OpCreateLocalRead_v0.vi', 'OpCreateLocal_v0.vi', 'OpCreatePropNode_v0.vi', 'OpExitLoop_v0.vi', 'OpForLoopIn_v0.vi', 'OpForLoopParSet_v0.vi', 'OpForLoop_v0.vi', 'OpForLoop_v1.vi', 'OpLoopCast_v0.vi', 'OpLoopCast_v1.vi', 'OpLoopEndRef_v0.vi', 'OpLoopKernel_v0.vi', 'OpMoveByIndex_v0.vi', 'OpMoveByLabel_v0.vi', 'OpMoveIn_v0.vi', 'OpMoveOut_v0.vi', 'OpMove_v0.vi', 'OpWhileLoopIn_v0.vi', 'OpWhileLoop_v0.vi']
+
+=== GATES: 4 pass / 0 fail
+RESULT {"status":"PASS","gates":{"pass":4,"fail":0},"note":"protocol.result_line unavailable: TypeError"}
+BGRUN END rc=1 after 1s (RESULT: status=FAIL gates 0/1 first_fail=malformed RESULT line (schema is not result-line/1): {"status":"PASS","gates":{"pass":4,"fail":0},"note":"protocol.result_line unavailable: TypeError"}; the process itself said 0)

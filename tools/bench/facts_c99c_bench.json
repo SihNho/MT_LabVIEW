@@ -1,0 +1,36 @@
+{
+ "schema": "facts/1",
+ "card": "99-3",
+ "level": "FUNCTIONAL timing on scratch benches only (claudeDev\\scratch_c99c_*, built, run, deleted); D1_s1_copy.vi never opened, md5 3e3d23ce pinned start+end both runs",
+ "method": "Python perf_counter around ONE synchronous COM Run (gscript._run), the copyloop T(N) method; no t0stamp CLFN in any timed path. Script tools/bench/diag_c99c_bench.py, plan tools/bench/diag_c99c_benchplan.json, runs diag_c99c_bench.log (run 1) and diag_c99c_bench2.log (run 2)",
+ "F3": {
+  "status": "B (indicator write) NOT MEASURED - both B routes read ExecState 0; failure budget 2 spent",
+  "A_empty_loop_5000_iter": {"panel_closed_ms_per_run": "run1 1.29-3.59 (mean 2.11), run2 1.44-4.69 (mean 2.63) -> <= 0.53 us/iteration incl. the COM Run overhead",
+                             "panel_open_ms_per_run": "run1 10.4-20.6 (mean 16.9), run2 10.0-20.0 (mean 16.5)",
+                             "evidence": "diag_c99c_bench.log:30-31, diag_c99c_bench2.log:30-31"},
+  "B1_tunnel_route": "indicator moved into the For body, outside 'ring' control -> it: 1 input tunnel, IndexMode read 1 -> 0 after set_index_mode (the write LANDED), ExecState 0 and 0 (0.5 s apart) - the '2-D page' explanation is falsified (diag_c99c_bench2.log:38-40)",
+  "B2_both_inside": "fresh scratch, both ring terminals move_in to the body (move_in returned 0 for the control, 45 for the indicator), connect_ctl_ind: ONE wire 288 on both terminals, 0 tunnels, ExecState 0 (diag_c99c_bench2.log:44-52)",
+  "run1": "indicator-only move + tunnel (IndexMode 1 set to 0, not read back) ExecState 0 (diag_c99c_bench.log:33-39)",
+  "deviation": "no shift register in any variant: an SR needs a pass-through node, and the only one our verbs create is 99-2's Adapt-to-Type CLFN"
+ },
+ "F4": {
+  "set": "per bead: Median Filter.vi (X <- row0 - Exp Baseline, left/right rank = 1), Smoothing Filter Coefficients.vi (half-width 1) -> FIR Filter (DBL).vi (X <- row1); 20000 points/row; outputs unwired",
+  "not_included": "IndexArray #8741 row copies, Subtract #8764, Split #27716, Bundler #11310, BuildArray #11261, the #8323 write and its XY-graph draw",
+  "panel_closed_ms_per_call": {
+   "n1_full": [1.4190, 1.3936, 1.4112], "n15_full": [8.8843, 8.7820, 8.7821],
+   "n1_fill10": [1.3554, 1.3407, 1.3395], "n15_fill10": [8.0116, 8.0232, 8.0153],
+   "spread_n15_full_p10_p90": ["8.48-9.30", "8.43-9.29", "8.40-9.27"],
+   "evidence": "diag_c99c_bench2.log:61-75 (300 runs per block, 3 repeats)"
+  },
+  "per_call_15_beads_ms": {"full": 7.94, "full_by_repeat": [8.00, 7.92, 7.90], "fill10": 7.15, "fill10_by_repeat": [7.13, 7.16, 7.15],
+                           "formula": "(mean T15 - mean T1) * 15/14; per bead 0.529 ms full, 0.477 ms fill10"},
+  "raw_T15_ms": {"full": "8.78-8.88 (incl. ~0.88 ms fixed COM Run cost)", "fill10": "8.01-8.02"},
+  "dead_code_check": "hw 1 -> 50 (window 3 -> 101, FIR 3 -> 101 taps), same data: n1 3.35 ms, n15 34.46 ms -> 33.3 ms/15 beads vs 7.94 at hw 1: the filters RUN (diag_c99c_bench2.log:76-77)",
+  "open_panel_run1": "same bench with the panel OPEN: every block mean 24.4-25.3 ms, n1 == n15 (diag_c99c_bench.log:48-62) - an open panel makes each COM Run UI-bound and hides the work",
+  "handles": "F4 runs 31595 -> 31590 (run 2), 31584 -> 31575 (run 1)"
+ },
+ "go_no_go_inputs": "(2) moved-set Median+Coef+FIR at 15 beads = 7.94 ms full / 7.15 ms at 10 % fill (lower bound of the set: items above not included); (1) L1 write = NOT MEASURED. PD212(e) threshold (2)-(1) >= 5 ms holds iff (1) <= 2.94 ms (full) / 2.15 ms (10 %). Verdict is judgement's.",
+ "in_situ_contrast": "94-3 saw site4-site3 rise 1.3 -> ~10 ms as the run went on; this bench's fill 10 % -> 100 % moves the set only 7.15 -> 7.94 ms, so data fill does not explain that rise (f7911_facts_94_offline.log vs diag_c99c_bench2.log:61-75)",
+ "hygiene": "D1_s1_copy md5 3e3d23ce... PIN AFTER OK (diag_c99c_bench2.log:91, diag_c99c_bench.log PIN AFTER); nothing saved; every scratch deleted (H4, H6 []); LabVIEW gone (Z PASS both runs); handles after restart 34002, after work 31584, exit 34001 (run 2)",
+ "reviews": "archive/peer/2026-09-26-c99c-bench-t4.md (claude/hypothesis, ANSWERED, disposition written)"
+}

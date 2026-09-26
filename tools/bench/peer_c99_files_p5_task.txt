@@ -1,0 +1,9 @@
+ATTACK this claim about a failed prediction in tools/bench/diag_c99_files.py (log tools/bench/diag_c99_files.log, line 59).
+
+Prediction P5: "among the 145 COM-read labels of cycle 97 (tools/bench/diag_c97_gatefacts.json 'labels'), the only label containing 'Force' belongs to #10313". Observed FAIL: the gate listed 17 uids.
+
+Claimed explanation (ours): the FAILURE IS A DEFECT OF OUR SCRIPT, not a new fact about the VI. (1) The hit list was built with a broad substring filter ('Force','plot','Plot',' Z','dZ','graph','Graph','Extension'), so it includes '+ Cal Zero', 'N bead plot Z.vi', 'Extension (nm) vs Time (Frame #)'; (2) the gate expression `all(('Force' not in s) or uid=='10313')` then fails only on the two 'Magnet2Force v3_for M270.vi' SubVI labels (#28490 on diagram 28686, #28083 on diagram 7911), which are SubVI names, not references to the indicator 'Force (pN) vs Extension (nm)' #8323. The underlying fact already measured in cycle 97 (diag_c97_gatefacts.log:27-28, G4 PASS) stands: the only node labelled 'Force (pN) vs Extension' is Invoke #10313.
+
+Already ruled out: the graph json par1359_95_graph.json has md5 3e3d23ce (= D1_s1_copy.vi, P1 PASS); wire 10908 = BuildArray #11261 'appended array' -> ControlTerminal #8323 (P2 PASS).
+
+Questions: strongest reason this explanation is wrong; could a SubVI named 'Magnet2Force...' be a hidden reader/writer of #8323 (e.g. through a control reference passed in); what would falsify the script-defect reading; the cheapest discriminating test (file-only if possible).

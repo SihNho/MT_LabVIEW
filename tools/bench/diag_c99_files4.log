@@ -1,0 +1,78 @@
+BGRUN START 2026-09-26 19:34:57 limit 2.0 min: py -u tools/bench/diag_c99_files4.py
+BGRUN PID 3328
+[F1b] ring initialiser and its size inputs
+  NODE #8953 GrowableFunction 
+     t8955 'element' sink Terminal fd686 w8997 -> [(8971, 'element', 'SRC', 8972, 'DigitalNumericConstant', 686)]
+     t8958 'initialized array' SRC Terminal fd686 w9051 -> [(9035, '', 'sink', 9025, 'LeftShiftRegister', 686)]
+     t8961 'dimension size' sink Terminal fd686 w9166 -> [(28175, 'dimension size', 'sink', 28124, 'GrowableFunction', 686), (9185, 'x-1', 'SRC', 9179, 'Function', 686)]
+     t8964 'dimension size' sink Terminal fd686 w9788 -> [(8983, 'dimension size', 'SRC', 8984, 'DigitalNumericConstant', 686)]
+     t9662 'dimension size' sink Terminal fd686 w9000 -> [(10119, '# FD points', 'sink', 10114, 'LoopTunnel', 686), (8936, '# FD points', 'SRC', 686, 'Diagram', 686)]
+  PASS  P11 #9025 <- #8953  got [(8958, 'initialized array', 'SRC', 8953, 'GrowableFunction', 686), (9035, '', 'sink', 9025, 'LeftShiftRegister', 686)]
+  NODE #8972 DigitalNumericConstant (feeds #8953 'element')
+     t8971 'element' SRC Terminal fd686 w8997 -> [(8955, 'element', 'sink', 8953, 'GrowableFunction', 686)]
+  NODE #9179 Function (feeds #8953 'dimension size')
+     t9185 'x-1' SRC OverridableParameterTerminal fd686 w9166 -> [(28175, 'dimension size', 'sink', 28124, 'GrowableFunction', 686), (8961, 'dimension size', 'sink', 8953, 'GrowableFunction', 686)]
+     t9188 'x' sink ParameterTerminal fd686 w9211 -> [(9348, 'size(s)', 'SRC', 9342, 'Function', 686)]
+  NODE #8984 DigitalNumericConstant (feeds #8953 'dimension size')
+     t8983 'dimension size' SRC Terminal fd686 w9788 -> [(8964, 'dimension size', 'sink', 8953, 'GrowableFunction', 686)]
+  NODE #686 Diagram (feeds #8953 'dimension size')
+     t8936 '# FD points' SRC ControlTerminal fd686 w9000 -> [(9662, 'dimension size', 'sink', 8953, 'GrowableFunction', 686), (10119, '# FD points', 'sink', 10114, 'LoopTunnel', 686)]
+     t10225 'Auto-reset zero' SRC ControlTerminal fd686 w11253 -> [(11014, 'Value', 'sink', 11001, 'LeftShiftRegister', 686)]
+     t9850 'SubCycle' sink ControlTerminal fd686 w16421 -> [(15214, 'System no.', 'sink', 15204, 'LeftShiftRegister', 686), (20330, 'System no.', 'SRC', 20333, 'DigitalNumericConstant', 686)]
+     t28844 '# DT points' SRC ControlTerminal fd686 w29006 -> [(28185, 'dimension size', 'sink', 28124, 'GrowableFunction', 686), (29421, '# DT points', 'sink', 29415, 'LoopTunnel', 686)]
+     t24016 'Mp measure freq' SRC ControlTerminal fd686 w31575 -> [(31570, 'Mp measure freq', 'sink', 31494, 'LoopTunnel', 686)]
+   SubVI #1114 (F-x out source): {'uid': 1114, 'class': 'SubVI', 'pos': [5529, 2646], 'owner': 'Diagram'} c97 label: {'label': 'WLC function sub.vi', 'diag_index': 43, 'diag_uid': 639}
+  NODE #10004 LoopTunnel 
+     t10009 '' sink OuterTerminal fd639 w28847 -> [(30144, '', 'sink', 30135, 'LoopTunnel', 639), (8891, 'x*y', 'SRC', 8885, 'Function', 639)]
+     t10006 '' SRC InnerTerminal fd7911 w9993 -> [(8575, 'element', 'sink', 8566, 'BuildArray', 7911)]
+  NODE #10177 LoopTunnel 
+     t10182 '' sink OuterTerminal fd639 w10187 -> [(10077, 'x-y*floor(x/y)', 'SRC', 10068, 'Function', 639)]
+     t10179 '' SRC InnerTerminal fd7911 w10166 -> [(9196, 'index (col)', 'sink', 8634, 'GrowableFunction', 7911)]
+  NODE #8885 Function 
+     t8891 'x*y' SRC OverridableParameterTerminal fd639 w28847 -> [(30144, '', 'sink', 30135, 'LoopTunnel', 639), (10009, '', 'sink', 10004, 'LoopTunnel', 639)]
+     t8894 'y' sink ParameterTerminal fd639 w9164 -> [(9049, 'index (row)', 'SRC', 9050, 'DigitalNumericConstant', 639)]
+     t8898 'x' sink ParameterTerminal fd639 w9012 -> [(9842, 'subarray', 'SRC', 9833, 'IndexArray', 639)]
+  NODE #30135 LoopTunnel 
+     t30144 '' sink OuterTerminal fd639 w28847 -> [(8891, 'x*y', 'SRC', 8885, 'Function', 639), (10009, '', 'sink', 10004, 'LoopTunnel', 639)]
+     t30140 '' SRC InnerTerminal fd29894 w30636 -> [(29693, 'element', 'sink', 29973, 'BuildArray', 29894)]
+
+[F4] the Extension-vs-Time chain: For-loop tunnels with an inner terminal in body 29894
+      29172 LoopTunnel '' sink | outer [('', 'SRC', 32890, [(28786, 'Extension (nm) vs Time (Frame #)', 'sink', 639, 'Diagram', 639)])]
+      29777 LoopTunnel '' SRC | outer [('', 'sink', 29787, [(29250, 'x-y*floor(x/y)', 'SRC', 29240, 'Function', 639)])]
+      29911 LoopTunnel '' SRC | outer [('', 'sink', 28039, [(29527, '', 'SRC', 29512, 'LeftShiftRegister', 639)])]
+      30135 LoopTunnel '' SRC | outer [('', 'sink', 28847, [(8891, 'x*y', 'SRC', 8885, 'Function', 639), (10009, '', 'sink', 10004, 'LoopTunnel', 639)])]
+      29616 LoopTunnel '' sink | outer [('', 'SRC', 29591, [(29516, '', 'sink', 29505, 'RightShiftRegister', 639)])]
+      30896 LoopTunnel 'Extension\nmedian filter\nhalf-width' SRC | outer [('Extension\nmedian filter\nhalf-width', 'sink', 31166, [(31158, 'Extension\nmedian filter\nhalf-width', 'sink', 31137, 'LoopTunnel', 639), (29091, 'Extension\nmedian filter\nhalf-width', 'SRC', 639, 'Diagram', 639)])]
+
+[F2] diagram 11936 / 3628 in diagram_tree_main.json
+   11936 not in tree
+   3628 not in tree
+   29894 not in tree
+   7911 not in tree
+   2235 equence", "uids": [22073, 22086]}, "151": {"owner": "CaseStructure", "uids": [22179, 34822, 26515, 22963]}, "152": {"owner": "CaseStructure", "uids": []}, "153": {"owner": "Sequence", "uids": [22343, 22351]}, "154": {"owner": "Sequence", "uids": [22388]}, "155": {"owner": "Sequence", "uids": [22433]}, "156": {"owner": "ForLoop", "uids": [22541]}, "157": {"owner": "Sequence", "uids": [22681, 22692,
+  NODE #30549 Property (label 'Extension (nm) vs Time (Frame #)')
+     t30559 'reference' sink Terminal fd11936 w0 -> UNWIRED
+     t30562 'reference out' SRC Terminal fd11936 w0 -> UNWIRED
+     t30565 'error in (no error)' sink Terminal fd11936 w0 -> UNWIRED
+     t30568 'error out' SRC Terminal fd11936 w0 -> UNWIRED
+     t30571 'YScale.Maximum' sink Terminal fd11936 w14973 -> [(14969, 'Y Scale.Range:Maximum', 'SRC', 14955, 'DigitalNumericConstant', 11936)]
+  NODE #30617 Property (label 'Extension (nm) vs Time (Frame #)')
+     t30624 'reference' sink Terminal fd11936 w0 -> UNWIRED
+     t30627 'reference out' SRC Terminal fd11936 w0 -> UNWIRED
+     t30630 'error in (no error)' sink Terminal fd11936 w0 -> UNWIRED
+     t30633 'error out' SRC Terminal fd11936 w0 -> UNWIRED
+     t30637 'YScale.Minimum' sink Terminal fd11936 w49653 -> [(12618, '-x', 'SRC', 12605, 'Function', 11936)]
+  NODE #50177 Property (label 'Extension (nm) vs Time (Frame #)')
+     t50184 'reference' sink Terminal fd11936 w0 -> UNWIRED
+     t50187 'reference out' SRC Terminal fd11936 w0 -> UNWIRED
+     t50190 'error in (no error)' sink Terminal fd11936 w0 -> UNWIRED
+     t50193 'error out' SRC Terminal fd11936 w0 -> UNWIRED
+     t50196 'XScale.Maximum' sink Terminal fd11936 w24414 -> [(50794, '# DT points', 'SRC', 50788, 'SelectorTunnel', 11936)]
+  NODE #50244 Property (label 'Extension (nm) vs Time (Frame #)')
+     t50251 'reference' sink Terminal fd11936 w0 -> UNWIRED
+     t50254 'reference out' SRC Terminal fd11936 w0 -> UNWIRED
+     t50257 'error in (no error)' sink Terminal fd11936 w0 -> UNWIRED
+     t50260 'error out' SRC Terminal fd11936 w0 -> UNWIRED
+     t50263 'XScale.Minimum' sink Terminal fd11936 w25229 -> [(50465, 'X Scale.Range:Maximum', 'SRC', 50442, 'DigitalNumericConstant', 11936)]
+RESULT {"schema": "result-line/1", "status": "PASS", "gates": {"pass": 1, "fail": 0}, "first_fail": null, "artefacts": []}
+BGRUN END rc=0 after 1s

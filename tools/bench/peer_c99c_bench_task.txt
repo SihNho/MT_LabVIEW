@@ -1,0 +1,32 @@
+ATTACK two claims about failed predictions in tools/bench/diag_c99c_bench.log (script tools/bench/diag_c99c_bench.py, card 99-3,
+a scratch timing bench; plan tools/bench/diag_c99c_benchplan.json). Both scratch VIs were built by VI Scripting from nothing.
+
+FAILURE 1 - gate T4, diag_c99c_bench.log:33-39. Scratch F3: an empty top-level For loop with N = constant 5000 read ExecState 1
+(:27). Then the 3-D DBL indicator 'ring 2' terminal (uid 153) was moved INTO the For body (stagekit.move_in, err ''), and
+gscript.connect_ctl_ind wired the top-level 3-D DBL CONTROL 'ring' (uid 102) into it (Terminal.Connect Wire on the indicator's
+terminal, Wire Source = the control's terminal; returned no error). LabVIEW made ONE input LoopTunnel (uid 296) with
+IndexMode 1 (auto-indexed) and outer terminal a sink. The script then called gscript.set_index_mode(W, 0, 0) (OpSetIndexMode_v0,
+Traverse('LoopTunnel')[0] -> IndexMode write) WITHOUT reading the mode back, and ExecState read 0. panel_wiring: 'ring' wire 331,
+'ring 2' wire 267 (both non-zero).
+CLAIM 1: the auto-indexed tunnel handed the indicator a 2-D page; the set_index_mode write either did not land or did not heal
+the typed wire, so the inner wire stayed broken. PLANNED FIX (run 2): move BOTH terminals into the body and wire control ->
+indicator on the same diagram (no tunnel), gate: one wire uid on both terminals, 0 LoopTunnels, ExecState 1. B then measures
+one control-terminal read + one indicator write of a 4.8 MB array per iteration (reported as an UPPER bound).
+
+FAILURE 2 (implicit; gates passed) - diag_c99c_bench.log:48-62. Scratch F4: For loop auto-indexing rowZ/rowF [n][20000] DBL
+controls into vi.lib Median Filter.vi (X, left/right rank <- hw=1), Smoothing Filter Coefficients.vi (half-width <- hw) ->
+FIR Filter (DBL).vi (X, FIR Coefficients); both 'Filtered X' outputs UNWIRED; ExecState 1; tunnels rowZ/rowF IndexMode 1,
+hw 0. One COM Run (Python perf_counter around the synchronous Run, gscript._run, panel OPEN) per call, 300 calls x 3 repeats:
+mean ~25.2 ms for BOTH n=1 and n=15 (full or 10 % data), n15-fill10 ~24.5 ms; MIN n=1 9.4-10.8 ms vs MIN n=15 14.8-17.1 ms.
+The same machine's F3 empty-loop VI read 1.3-3.6 ms per Run with the panel CLOSED and 10-20 ms with it OPEN (:30-31).
+CLAIM 2: an OPEN front panel makes each COM Run cost ~10-25 ms (bound to a UI/message tick), which hides the per-bead work;
+the min difference (~5 ms for 14 more beads) says the filters DO run. PLANNED FIX (run 2): close the F4 panel before the
+timed runs; per call(15 beads) = (mean T15 - mean T1) * 15/14.
+
+Already ruled out: the F4 bench is ExecState 1 and its body terminals are all wired (T7, :46); the row values read back with the
+right shapes (T8); D1_s1_copy.vi md5 unchanged; nothing saved.
+
+Give for EACH claim: the strongest reason it is wrong; an alternative explanation of the same evidence (for claim 2 in
+particular: LabVIEW dead-code elimination of inlined vi.lib subVIs whose outputs are unwired - would it apply to Median Filter.vi
+/ FIR Filter (DBL).vi in LabVIEW 2026?); what would falsify it; and the cheapest discriminating test that fits inside the
+planned run 2 (same script, no new op).

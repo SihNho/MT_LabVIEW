@@ -1,0 +1,287 @@
+BGRUN START 2026-09-26 19:33:40 limit 2.0 min: py -u tools/bench/diag_c99_files2.py
+BGRUN PID 23648
+[P5b/P5c] review c99-files-p5 point 4
+   Local terminal names: {2991: ['Total Lost Frames'], 4277: ['File # Saved'], 11574: ['Focus Pos (Track)'], 3160: ['Rot pos (deg)'], 3097: ['Trans Pos (mm)'], 2143: ['Total Lost Frames'], 16942: ['Picture'], 25805: ['Color table']}
+  PASS  P5b no Local's terminal is the Force graph  got {2991: ['Total Lost Frames'], 4277: ['File # Saved'], 11574: ['Focus Pos (Track)'], 3160: ['Rot pos (deg)'], 3097: ['Trans Pos (mm)'], 2143: ['Total Lost Frames'], 16942: ['Picture'], 25805: ['Color table']}
+  PASS  P5c terminal records named the Force graph == {8323}  got [8323]
+   c97 exact-label objects: ['10313']
+   label 10313 {'label': 'Force (pN) vs Extension (nm) ', 'diag_index': 1, 'diag_uid': 3628}
+   label 22542 {'label': 'Mag Position', 'diag_index': 43, 'diag_uid': 639}
+   label 22560 {'label': 'CycleSchedule', 'diag_index': 43, 'diag_uid': 639}
+   labels 'Extension (nm) vs Time (Frame #)': [('30549', 11936), ('30617', 11936), ('50177', 11936), ('50244', 11936)] [('30549', 'Property'), ('30617', 'Property'), ('50177', 'Property'), ('50244', 'Property')]
+
+[F1a/F1b] the #8323 feed chain
+  NODE #11261 BuildArray 
+     t11267 'appended array' SRC Terminal fd639 w10908 -> [(8323, 'Force (pN) vs Extension (nm) ', 'sink', 639, 'Diagram', 639)]
+     t11270 'array' sink Terminal fd639 w11352 -> [(11369, '', 'SRC', 11363, 'LoopTunnel', 639)]
+     t11273 'element' sink Terminal fd639 w12256 -> [(11614, 'output cluster', 'SRC', 11608, 'Bundler', 639)]
+  NODE #11363 LoopTunnel 
+     t11369 '' SRC OuterTerminal fd639 w11352 -> [(11270, 'array', 'sink', 11261, 'BuildArray', 639)]
+     t11365 '' sink InnerTerminal fd7911 w11374 -> [(11316, 'output cluster', 'SRC', 11310, 'Bundler', 7911)]
+  NODE #11608 Bundler 
+     t11614 'output cluster' SRC Terminal fd639 w12256 -> [(11273, 'element', 'sink', 11261, 'BuildArray', 639)]
+     t11617 'cluster' sink Terminal fd639 w0 -> UNWIRED
+     t11618 'element' sink Terminal fd639 w11931 -> [(11585, 'element', 'SRC', 11576, 'Unbundler', 639)]
+     t11621 'element' sink Terminal fd639 w11957 -> [(11588, 'element', 'SRC', 11576, 'Unbundler', 639)]
+  NODE #11576 Unbundler 
+     t11582 'cluster' sink Terminal fd639 w8319 -> [(8119, 'F-x out', 'SRC', 1114, 'SubVI', 639), (2943, 'F-x out', 'sink', 862, 'RightShiftRegister', 639)]
+     t11585 'element' SRC Terminal fd639 w11931 -> [(11618, 'element', 'sink', 11608, 'Bundler', 639)]
+     t11588 'element' SRC Terminal fd639 w11957 -> [(11621, 'element', 'sink', 11608, 'Bundler', 639)]
+  NODE #11310 Bundler 
+     t11316 'output cluster' SRC Terminal fd7911 w11374 -> [(11365, '', 'sink', 11363, 'LoopTunnel', 7911)]
+     t11319 'cluster' sink Terminal fd7911 w0 -> UNWIRED
+     t11320 'Filtered X' sink Terminal fd7911 w24106 -> [(29025, 'Filtered X', 'SRC', 29009, 'SubVI', 7911)]
+     t11323 'element' sink Terminal fd7911 w9407 -> [(27784, 'second subarray', 'SRC', 27716, 'Function', 7911)]
+  PASS  P6 #11261 array<-#11363, element<-#11608  got {'array': [(11369, '', 'SRC', 11363, 'LoopTunnel', 639)], 'element': [(11614, 'output cluster', 'SRC', 11608, 'Bundler', 639)]}
+
+[F2] indicators near the plots: ControlTerminals whose name mentions Z / Extension / Force / graph / chart
+   CT t403 'Z/dZ' SRC(control) fd639 w730 -> [(2282, '', 'sink', 2276, 'Tunnel', 639)]
+   CT t8323 'Force (pN) vs Extension (nm) ' sink(indicator) fd639 w10908 -> [(11267, 'appended array', 'SRC', 11261, 'BuildArray', 639)]
+   CT t28786 'Extension (nm) vs Time (Frame #)' sink(indicator) fd639 w32890 -> [(29178, '', 'SRC', 29172, 'LoopTunnel', 639)]
+   CT t28170 'Force\nsmoothing\nhalf-width' SRC(control) fd639 w31059 -> [(31055, 'Force\nsmoothing\nhalf-width', 'sink', 31051, 'LoopTunnel', 639)]
+   CT t29091 'Extension\nmedian filter\nhalf-width' SRC(control) fd639 w31166 -> [(30901, 'Extension\nmedian filter\nhalf-width', 'sink', 30896, 'LoopTunnel', 639), (31158, 'Extension\nmedian filter\nhalf-width', 'sink', 31137, 'LoopTunnel', 639)]
+   CT t31964 'Cal Zero' sink(indicator) fd13236 w23207 -> [(32297, 'x-y', 'SRC', 1491, 'Function', 13236)]
+   CT t11756 '+ Cal Zero' SRC(control) fd16964 w19327 -> [(17412, '', 'sink', 17414, 'Tunnel', 16964)]
+   CT t11727 '- Cal Zero' SRC(control) fd16964 w19323 -> [(17724, '', 'sink', 17725, 'Tunnel', 16964)]
+   CT t12159 'Waveform Graph' sink(indicator) fd21134 w25559 -> [(21542, '', 'SRC', 21544, 'LoopTunnel', 21134)]
+
+[F2] the Z/dZ case: selector tunnels shared by frames 2235/2265
+  NODE #7091 SelectorTunnel 
+     t7105 'X out' SRC OuterTerminal fd639 w6363 -> [(6261, 'array', 'sink', 6104, 'IndexArray', 639)]
+     t7093 'X out' sink InnerTerminal fd2265 w7109 -> [(5882, 'dX out', 'SRC', 5696, 'SubVI', 2265)]
+     t7101 'X out' sink InnerTerminal fd2235 w363 -> [(6163, 'X out', 'SRC', 6085, 'SubVI', 2235)]
+  NODE #2451 SelectorTunnel 
+     t2593 'Z out' SRC OuterTerminal fd639 w4906 -> [(9839, 'array', 'sink', 9833, 'IndexArray', 639)]
+     t2592 'Z out' sink InnerTerminal fd2265 w6386 -> [(5886, 'dZ out', 'SRC', 5696, 'SubVI', 2265)]
+     t2569 'Z out' sink InnerTerminal fd2235 w6263 -> [(6172, 'Z out', 'SRC', 6085, 'SubVI', 2235)]
+  NODE #2765 SelectorTunnel 
+     t2811 'x,y,z array out' sink OuterTerminal fd639 w505 -> [(4168, 'array', 'sink', 2626, 'BuildArray', 639), (5124, 'x,y,z array out', 'SRC', 5058, 'SubVI', 639), (1148, 'x,y,z array out', 'sink', 1147, 'RightShiftRegister', 639)]
+     t2792 'x,y,z array out' SRC InnerTerminal fd2265 w2924 -> [(5910, 'x,y,z array', 'sink', 5696, 'SubVI', 2265)]
+     t2789 'x,y,z array out' SRC InnerTerminal fd2235 w3472 -> [(6253, 'x,y,z array', 'sink', 6085, 'SubVI', 2235)]
+  NODE #3176 SelectorTunnel 
+     t3193 '' sink OuterTerminal fd639 w1773 -> [(5330, '', 'SRC', 5328, 'LoopTunnel', 639)]
+     t3189 '' SRC InnerTerminal fd2265 w3210 -> [(5899, 'z indices of all exp', 'sink', 5696, 'SubVI', 2265)]
+     t3186 '' SRC InnerTerminal fd2235 w3413 -> [(6223, 'z indices of all exp', 'sink', 6085, 'SubVI', 2235)]
+  NODE #2992 SelectorTunnel 
+     t2996 '' sink OuterTerminal fd639 w628 -> [(5148, '', 'SRC', 5129, 'LoopTunnel', 639)]
+     t2995 '' SRC InnerTerminal fd2265 w3148 -> [(5906, 'z index of first ref', 'sink', 5696, 'SubVI', 2265)]
+     t2994 '' SRC InnerTerminal fd2235 w3513 -> [(6241, 'z index of first ref', 'sink', 6085, 'SubVI', 2235)]
+  NODE #6132 SelectorTunnel 
+     t6142 'Correction Factor' sink OuterTerminal fd639 w6096 -> [(9306, 'Correction Factor', 'SRC', 639, 'Diagram', 639)]
+     t6134 'Correction Factor' SRC InnerTerminal fd2265 w6176 -> [(5894, 'Correction Factor', 'sink', 5696, 'SubVI', 2265)]
+     t6138 'Correction Factor' SRC InnerTerminal fd2235 w6145 -> [(6180, 'Correction Factor', 'sink', 6085, 'SubVI', 2235)]
+  PASS  P7 7091/2451 have terminals in both 2235 and 2265  got [639, 2235, 2265]
+   CaseSelector terminals in 2235/2265: []
+
+[F3] S1: loop #637 conditional terminal (known #648/w3457) as a naming probe
+    {'term_uid': 11654, 'term_name': 'result', 'is_source': True, 'wire_uid': 3457, 'owner_uid': 11639, 'owner_class': 'CompoundArithmetic', 'frame_diagram': 639, 'term_class': 'Terminal'}
+    {'term_uid': 648, 'term_name': '', 'is_source': False, 'wire_uid': 3457, 'owner_uid': 639, 'owner_class': 'Diagram', 'frame_diagram': 639, 'term_class': 'Terminal'}
+    {'term_uid': 648, 'term_name': '', 'is_source': False, 'wire_uid': 3457, 'owner_uid': 639, 'owner_class': 'Diagram', 'frame_diagram': 639, 'term_class': 'Terminal'}
+    {'term_uid': 24444, 'term_name': 'TurnOff', 'is_source': False, 'wire_uid': 3457, 'owner_uid': 639, 'owner_class': 'Diagram', 'frame_diagram': 639, 'term_class': 'ControlTerminal'}
+  PASS  P8 bed graph md5  got 1a11d92aacabf7ec844d65b8af19f39f
+
+[F3] bed: every terminal record on the same class as #648, owned by a loop, per loop body
+   #648 owner_class set: {'Diagram'}
+    3667 Diagram 3697 'error out' sink fd 3667 w 4907 -> [(3863, 'error out', 'SRC', 3864, 'SelectorTunnel', 3667)]
+    3667 Diagram 3702 'If no: current pos z?' sink fd 3667 w 4892 -> [(3857, 'If no: current pos z?', 'sink', 3858, 'SelectorTunnel', 3667)]
+    3667 Diagram 10502 'Autoreference? 1=Y' SRC fd 3667 w 4981 -> [(3819, 'y', 'sink', 3812, 'Comparison', 3667)]
+    3667 Diagram 10667 'If no: current pos z?' SRC fd 3667 w 4892 -> [(3857, 'If no: current pos z?', 'sink', 3858, 'SelectorTunnel', 3667)]
+    3667 Diagram 10841 'Current pos rot?' SRC fd 3667 w 7559 -> [(7544, 'Current pos rot?', 'sink', 7542, 'Tunnel', 3667)]
+    3667 Diagram 11038 'Set Focus  (0->50)' SRC fd 3667 w 6119 -> [(3459, 'Set Focus  (0->50)', 'sink', 3445, 'Tunnel', 3667)]
+    5038 Diagram 3700 'error out' SRC fd 5038 w 5869 -> [(5428, 'error in', 'sink', 5403, 'SubVI', 5038)]
+    5038 Diagram 3706 'If no: current pos z?' SRC fd 5038 w 0 -> UNWIRED
+    3628 Diagram 5856 'Rot step (turns)' SRC fd 3628 w 0 -> UNWIRED
+    3628 Diagram 5722 'Send' SRC fd 3628 w 0 -> UNWIRED
+    3628 Diagram 7739 'Stop Trans' SRC fd 3628 w 0 -> UNWIRED
+    27537 Diagram 27543 '' SRC fd 27537 w 0 -> UNWIRED
+    27537 Diagram 27543 '' SRC fd 27537 w 0 -> UNWIRED
+    113 Diagram 6178 'Rot pos (deg)' sink fd 113 w 7152 -> [(3250, 'Rot position', 'sink', 3242, 'Global', 113), (7513, 'Current pos rot?', 'SRC', 7511, 'FlatSequenceInnerTunnel', 113), (7142, 'Current pos rot?', 'sink', 7130, 'FlatSequenceInnerTunnel', 113)]
+    113 Diagram 10048 '# of Points' SRC fd 113 w 1150 -> [(2608, 'Scale.Maximum', 'sink', 8, 'Property', 113), (1985, 'number', 'sink', 1766, 'Function', 113)]
+    124 Diagram 893 'continue tracking' SRC fd 124 w 0 -> UNWIRED
+    124 Diagram 27971 'Cal File Path' sink fd 124 w 3769 -> [(30014, 'string', 'sink', 30005, 'Function', 124), (29751, 'string', 'sink', 29716, 'Function', 124), (3761, '', 'sink', 3728, 'FlatSequenceInnerTunnel', 124), (3778, '', 'SRC', 3775, 'FlatSequenceInnerTunnel', 124)]
+    124 Diagram 28473 'Track File Path' sink fd 124 w 5303 -> [(29557, 'path', 'SRC', 29551, 'Function', 124), (5275, '', 'sink', 4637, 'FlatSequenceInnerTunnel', 124)]
+    3121 Diagram 5292 'exp/ref \narray' sink fd 3121 w 2332 -> [(6008, 'exp/ref array', 'sink', 5987, 'SubVI', 3121), (5008, 'exp/ref array', 'SRC', 5000, 'FlatSequenceInnerTunnel', 3121), (5289, 'exp/ref array', 'sink', 5269, 'FlatSequenceInnerTunnel', 3121)]
+    1817 Diagram 3366 'File Size' sink fd 1817 w 3266 -> [(3212, '', 'sink', 4528, 'FlatSequenceInnerTunnel', 1817), (3321, '', 'SRC', 3299, 'FlatSequenceInnerTunnel', 1817)]
+    4866 Diagram 172 '+ Inc (PgUp)' SRC fd 4866 w 0 -> UNWIRED
+    4866 Diagram 152 'Focus Step (F1)' SRC fd 4866 w 0 -> UNWIRED
+    4866 Diagram 353 '- Inc (PgDn)' SRC fd 4866 w 0 -> UNWIRED
+    4866 Diagram 1539 'File # Saved' sink fd 4866 w 0 -> UNWIRED
+    4866 Diagram 9559 'Reached clamp' sink fd 4866 w 10819 -> [(14640, 'Value', 'sink', 10894, 'Property', 4866), (10508, 'Max pos?', 'SRC', 10511, 'BooleanConstant', 4866)]
+    4866 Diagram 7127 'Start Moving?' sink fd 4866 w 10820 -> [(10519, 'Max pos?', 'SRC', 10522, 'BooleanConstant', 4866)]
+    4866 Diagram 26751 'CycleSchedule' SRC fd 4866 w 31742 -> [(31731, 'CycleSchedule', 'sink', 31691, 'FlatSequenceInnerTunnel', 4866)]
+    23405 Diagram 23444 '' SRC fd 23405 w 0 -> UNWIRED
+    23405 Diagram 23444 '' SRC fd 23405 w 0 -> UNWIRED
+    23405 Diagram 23456 '' sink fd 23405 w 23489 -> [(23472, 'x = y?', 'SRC', 23042, 'Comparison', 23405)]
+    23405 Diagram 23456 '' sink fd 23405 w 23489 -> [(23472, 'x = y?', 'SRC', 23042, 'Comparison', 23405)]
+    23166 Diagram 23225 '' SRC fd 23166 w 0 -> UNWIRED
+    23166 Diagram 23225 '' SRC fd 23166 w 0 -> UNWIRED
+    23166 Diagram 23246 '' sink fd 23166 w 23310 -> [(23276, 'x = y?', 'SRC', 10171, 'Comparison', 23166)]
+    23166 Diagram 23246 '' sink fd 23166 w 23310 -> [(23276, 'x = y?', 'SRC', 10171, 'Comparison', 23166)]
+    10417 Diagram 9762 'Focus Pos (Track)' sink fd 10417 w 5773 -> [(11350, 'Out position', 'SRC', 11348, 'SelectorTunnel', 10417), (2486, 'position [internal units]', 'sink', 2017, 'SelectorTunnel', 10417)]
+    10423 Diagram 9420 'Focus Deviation from the Center' SRC fd 10423 w 9797 -> [(9637, 'y', 'sink', 9621, 'Function', 10423)]
+    23058 Diagram 23073 '' SRC fd 23058 w 0 -> UNWIRED
+    23058 Diagram 23073 '' SRC fd 23058 w 0 -> UNWIRED
+    23058 Diagram 23080 '' sink fd 23058 w 23145 -> [(23114, 'x = y?', 'SRC', 23035, 'Comparison', 23058)]
+    23058 Diagram 23080 '' sink fd 23058 w 23145 -> [(23114, 'x = y?', 'SRC', 23035, 'Comparison', 23058)]
+    25392 Diagram 25406 '' SRC fd 25392 w 34066 -> [(30903, 'running index in', 'sink', 30846, 'SubVI', 25392)]
+    25392 Diagram 25406 '' SRC fd 25392 w 34066 -> [(30903, 'running index in', 'sink', 30846, 'SubVI', 25392)]
+    25392 Diagram 25410 '' sink fd 25392 w 1737 -> [(35111, 'Value', 'SRC', 25116, 'Property', 25392)]
+    25392 Diagram 25410 '' sink fd 25392 w 1737 -> [(35111, 'Value', 'SRC', 25116, 'Property', 25392)]
+    25392 Diagram 5995 'HOME' SRC fd 25392 w 24619 -> [(31149, 'Home', 'sink', 30846, 'SubVI', 25392)]
+    28686 Diagram 28711 '' SRC fd 28686 w 28924 -> [(28914, 'y', 'sink', 28893, 'Function', 28686)]
+    28686 Diagram 28711 '' SRC fd 28686 w 28924 -> [(28914, 'y', 'sink', 28893, 'Function', 28686)]
+    2603 Diagram 2632 '' SRC fd 2603 w 31169 -> [(23757, 'x', 'sink', 23731, 'Function', 2603), (30746, 'index', 'sink', 30714, 'IndexArray', 2603)]
+    2603 Diagram 2632 '' SRC fd 2603 w 31169 -> [(23757, 'x', 'sink', 23731, 'Function', 2603), (30746, 'index', 'sink', 30714, 'IndexArray', 2603)]
+    32067 Diagram 29686 'NumCol' SRC fd 32067 w 32901 -> [(32789, 'length', 'sink', 32664, 'GrowableFunction', 32067)]
+    24642 Diagram 24670 '' SRC fd 24642 w 0 -> UNWIRED
+    24642 Diagram 24670 '' SRC fd 24642 w 0 -> UNWIRED
+    32166 Diagram 29336 'Mag Position' sink fd 32166 w 30272 -> [(30180, '', 'SRC', 30173, 'LoopTunnel', 32166)]
+    29629 Diagram 29649 '' SRC fd 29629 w 31193 -> [(31184, 'y', 'sink', 31174, 'Function', 29629)]
+    29629 Diagram 29649 '' SRC fd 29629 w 31193 -> [(31184, 'y', 'sink', 31174, 'Function', 29629)]
+    29894 Diagram 29913 '' SRC fd 29894 w 0 -> UNWIRED
+    29894 Diagram 29913 '' SRC fd 29894 w 0 -> UNWIRED
+    16565 Diagram 19733 'Lc' SRC fd 16565 w 16585 -> [(16581, 'Lc', 'sink', 16579, 'FlatSequenceOuterTunnel', 16565)]
+    16565 Diagram 12368 '+ -> Lc' SRC fd 16565 w 12383 -> [(11561, 'y', 'sink', 11548, 'Function', 16565)]
+    16565 Diagram 11164 'x -> Lc' SRC fd 16565 w 11178 -> [(11890, 'y', 'sink', 10439, 'Function', 16565)]
+    18730 Diagram 19532 'Cycle Start Time' sink fd 18730 w 18828 -> [(10974, 'millisecond timer value', 'SRC', 10972, 'Function', 18730), (18820, 'millisecond timer value', 'sink', 18814, 'SelectorTunnel', 18730)]
+    21871 Diagram 10067 'Initial Time at Start' sink fd 21871 w 21918 -> [(21889, 'millisecond timer value', 'SRC', 21887, 'Function', 21871)]
+    20774 Diagram 5118 'Target' sink fd 20774 w 6492 -> [(28514, 'x', 'sink', 3783, 'Function', 20774), (26811, 'element', 'SRC', 2536, 'IndexArray', 20774), (21114, 'element', 'sink', 21109, 'BuildArray', 20774)]
+    20530 Diagram 10960 'Time span after start (min)' sink fd 20530 w 17688 -> [(17600, 'floor(x): largest int <= x', 'SRC', 17594, 'Function', 20530)]
+    20530 Diagram 20947 'x < y?' sink fd 20530 w 22045 -> [(21930, 'y', 'sink', 21925, 'Function', 20530), (22019, 'x < y?', 'SRC', 22017, 'Comparison', 20530)]
+    20530 Diagram 25267 'Value' sink fd 20530 w 22072 -> [(20565, 'Value', 'sink', 20566, 'SelectorTunnel', 20530), (20500, 'Value', 'SRC', 20497, 'SelectorTunnel', 20530)]
+    20530 Diagram 600 'abs(x)' sink fd 20530 w 22054 -> [(22025, 'x', 'sink', 22017, 'Comparison', 20530), (22011, 'abs(x)', 'SRC', 22009, 'Function', 20530)]
+    10459 Diagram 9808 '# of Auto-Reset' sink fd 10459 w 10205 -> [(10156, 'x+1', 'SRC', 10150, 'Function', 10459), (11342, 'Value', 'sink', 11336, 'SelectorTunnel', 10459)]
+    7911 Diagram 7921 '' SRC fd 7911 w 0 -> UNWIRED
+    7911 Diagram 7921 '' SRC fd 7911 w 0 -> UNWIRED
+    7911 Diagram 8476 'Exp Baseline' SRC fd 7911 w 7931 -> [(8777, 'y', 'sink', 8764, 'Function', 7911)]
+    3292 Diagram 4195 'Total Lost Frames' sink fd 3292 w 27824 -> [(3164, 'x-y', 'SRC', 3162, 'Function', 3292)]
+    639 Diagram 644 '' SRC fd 639 w 3268 -> [(29256, 'x', 'sink', 29240, 'Function', 639), (12200, '', 'sink', 12195, 'FlatSequenceOuterTunnel', 639), (3509, 'index i', 'sink', 1114, 'SubVI', 639), (10083, 'x', 'sink', 10068, 'Function', 639), (3272, '', 'sink', 3045, 'SelectorTunnel', 639), (3211, 'x', 'sink', 2136, 'Function', 639), (5763, 'frame index', 'sink', 376, 'SubVI', 639), (2218, '', 'sink', 2213, 'LoopTunnel', 639)]
+    639 Diagram 644 '' SRC fd 639 w 3268 -> [(29256, 'x', 'sink', 29240, 'Function', 639), (12200, '', 'sink', 12195, 'FlatSequenceOuterTunnel', 639), (3509, 'index i', 'sink', 1114, 'SubVI', 639), (10083, 'x', 'sink', 10068, 'Function', 639), (3272, '', 'sink', 3045, 'SelectorTunnel', 639), (3211, 'x', 'sink', 2136, 'Function', 639), (5763, 'frame index', 'sink', 376, 'SubVI', 639), (2218, '', 'sink', 2213, 'LoopTunnel', 639)]
+    639 Diagram 648 '' sink fd 639 w 3457 -> [(11654, 'result', 'SRC', 11639, 'CompoundArithmetic', 639)]
+    639 Diagram 648 '' sink fd 639 w 3457 -> [(11654, 'result', 'SRC', 11639, 'CompoundArithmetic', 639)]
+    639 Diagram 642 'stop (end)' SRC fd 639 w 6929 -> [(11661, 'value', 'sink', 11639, 'CompoundArithmetic', 639)]
+    639 Diagram 3173 'Pos within cal image' sink fd 639 w 121 -> [(10975, 'array', 'sink', 10969, 'Function', 639), (10871, 'array', 'sink', 10757, 'IndexArray', 639), (5171, 'pos in cal image out', 'SRC', 5058, 'SubVI', 639), (3064, 'pos in cal image out', 'sink', 119, 'RightShiftRegister', 639)]
+    639 Diagram 3453 'file progress' sink fd 639 w 5274 -> [(5704, 'file progress', 'SRC', 376, 'SubVI', 639), (1931, 'file progress', 'sink', 1929, 'LoopTunnel', 639)]
+    639 Diagram 1924 'Missing Frames?' sink fd 639 w 3689 -> [(276, '', 'sink', 270, 'Tunnel', 639), (6884, 'Missed frames?', 'SRC', 6810, 'SubVI', 639)]
+    639 Diagram 4837 'Image' sink fd 639 w 0 -> UNWIRED
+    639 Diagram 5634 'Reset Tracking' SRC fd 639 w 10312 -> [(10256, 'y', 'sink', 10247, 'Function', 639)]
+    639 Diagram 403 'Z/dZ' SRC fd 639 w 730 -> [(2282, '', 'sink', 2276, 'Tunnel', 639)]
+    639 Diagram 9306 'Correction Factor' SRC fd 639 w 6096 -> [(6142, 'Correction Factor', 'sink', 6132, 'SelectorTunnel', 639)]
+    639 Diagram 8323 'Force (pN) vs Extension (nm) ' sink fd 639 w 10908 -> [(11267, 'appended array', 'SRC', 11261, 'BuildArray', 639)]
+    639 Diagram 19771 'Baseline' SRC fd 639 w 8254 -> [(8099, 'Baseline', 'sink', 1114, 'SubVI', 639)]
+    639 Diagram 9519 'Pos: Diffraction Pattern' sink fd 639 w 121 -> [(10975, 'array', 'sink', 10969, 'Function', 639), (10871, 'array', 'sink', 10757, 'IndexArray', 639), (5171, 'pos in cal image out', 'SRC', 5058, 'SubVI', 639), (3064, 'pos in cal image out', 'sink', 119, 'RightShiftRegister', 639)]
+    639 Diagram 10244 'Fix to a Certain Pattern' SRC fd 639 w 3362 -> [(10843, 'x', 'sink', 10825, 'Function', 639)]
+    639 Diagram 17272 'min value' sink fd 639 w 17287 -> [(10988, 'min value', 'SRC', 10969, 'Function', 639)]
+    639 Diagram 17487 'Auto-Reset' SRC fd 639 w 9806 -> [(9676, 'y', 'sink', 9647, 'Function', 639)]
+    639 Diagram 24281 'Auto-Focus' SRC fd 639 w 7527 -> [(10898, 'value', 'sink', 10886, 'CompoundArithmetic', 639)]
+    639 Diagram 9723 'Limit of Program' SRC fd 639 w 10142 -> [(10037, 'y', 'sink', 10019, 'Comparison', 639)]
+    639 Diagram 10204 'Limit of Auto-Focus' SRC fd 639 w 11527 -> [(11593, 'y', 'sink', 11529, 'Comparison', 639)]
+    639 Diagram 9939 'Start Cycles' SRC fd 639 w 15302 -> [(18918, 'x', 'sink', 18900, 'Function', 639), (20476, '', 'sink', 20477, 'Tunnel', 639)]
+    639 Diagram 9888 'Set # of Cycles' SRC fd 639 w 15283 -> [(29975, 'x', 'sink', 29956, 'Function', 639), (31519, 'y', 'sink', 31509, 'Function', 639), (11699, 'x', 'sink', 11685, 'Function', 639)]
+    639 Diagram 19603 'stop (end) 2' SRC fd 639 w 15230 -> [(17939, 'value', 'sink', 17883, 'CompoundArithmetic', 639)]
+    639 Diagram 10785 'Estimated end time (min)' sink fd 639 w 17447 -> [(17240, 'x/y', 'SRC', 17046, 'Function', 639)]
+    639 Diagram 18994 'Switch' SRC fd 639 w 19078 -> [(18915, 'y', 'sink', 18900, 'Function', 639)]
+    639 Diagram 19756 'Lp' SRC fd 639 w 5959 -> [(4111, 'Lp', 'sink', 1114, 'SubVI', 639)]
+    639 Diagram 28786 'Extension (nm) vs Time (Frame #)' sink fd 639 w 32890 -> [(29178, '', 'SRC', 29172, 'LoopTunnel', 639)]
+    639 Diagram 28170 'Force\nsmoothing\nhalf-width' SRC fd 639 w 31059 -> [(31055, 'Force\nsmoothing\nhalf-width', 'sink', 31051, 'LoopTunnel', 639)]
+    639 Diagram 29091 'Extension\nmedian filter\nhalf-width' SRC fd 639 w 31166 -> [(30901, 'Extension\nmedian filter\nhalf-width', 'sink', 30896, 'LoopTunnel', 639), (31158, 'Extension\nmedian filter\nhalf-width', 'sink', 31137, 'LoopTunnel', 639)]
+    639 Diagram 30349 'Total cycle #' sink fd 639 w 31687 -> [(31515, 'x*y', 'SRC', 31509, 'Function', 639), (22292, 'x', 'sink', 22284, 'Comparison', 639)]
+    639 Diagram 34217 'current image number' sink fd 639 w 3747 -> [(7680, 'x', 'sink', 5119, 'Function', 639), (3312, 'current image number', 'sink', 3078, 'SelectorTunnel', 639), (2194, 'current image number', 'sink', 2179, 'SelectorTunnel', 639), (6897, 'current image number', 'SRC', 6810, 'SubVI', 639), (1607, 'current image number', 'sink', 1605, 'LoopTunnel', 639)]
+    639 Diagram 24444 'TurnOff' sink fd 639 w 3457 -> [(11654, 'result', 'SRC', 11639, 'CompoundArithmetic', 639)]
+    639 Diagram 23396 'Value 2' sink fd 639 w 31717 -> [(30093, 'Value', 'SRC', 30079, 'RightShiftRegister', 639), (28431, 'Value', 'sink', 28416, 'SelectorTunnel', 639)]
+    639 Diagram 22498 'Value 3' sink fd 639 w 29233 -> [(22685, 'Value', 'SRC', 22542, 'Property', 639), (8944, 'Value', 'sink', 8917, 'LoopTunnel', 639), (33961, 'array', 'sink', 28393, 'Function', 639), (29146, 'array', 'sink', 29119, 'Function', 639), (30096, 'Value', 'sink', 30086, 'LeftShiftRegister', 639), (31508, 'Value', 'sink', 31502, 'LoopTunnel', 639)]
+    639 Diagram 23541 'index' sink fd 639 w 23556 -> [(10874, 'element', 'SRC', 10757, 'IndexArray', 639)]
+    639 Diagram 23576 'Automatic Error Handling' sink fd 639 w 23526 -> [(10692, 'x .and. y?', 'SRC', 10686, 'Function', 639)]
+    686 Diagram 8936 '# FD points' SRC fd 686 w 9000 -> [(9662, 'dimension size', 'sink', 8953, 'GrowableFunction', 686), (10119, '# FD points', 'sink', 10114, 'LoopTunnel', 686)]
+    686 Diagram 10225 'Auto-reset zero' SRC fd 686 w 11253 -> [(11014, 'Value', 'sink', 11001, 'LeftShiftRegister', 686)]
+    686 Diagram 9850 'SubCycle' sink fd 686 w 16421 -> [(15214, 'System no.', 'sink', 15204, 'LeftShiftRegister', 686), (20330, 'System no.', 'SRC', 20333, 'DigitalNumericConstant', 686)]
+    686 Diagram 28844 '# DT points' SRC fd 686 w 29006 -> [(28185, 'dimension size', 'sink', 28124, 'GrowableFunction', 686), (29421, '# DT points', 'sink', 29415, 'LoopTunnel', 686)]
+    686 Diagram 24016 'Mp measure freq' SRC fd 686 w 31575 -> [(31570, 'Mp measure freq', 'sink', 31494, 'LoopTunnel', 686)]
+    1610 Diagram 11501 'Lost Frame Message' sink fd 1610 w 11520 -> [(1627, 'message', 'SRC', 1652, 'StringConstant', 1610)]
+    759 Diagram 5034 'error out 2' sink fd 759 w 4800 -> [(4778, 'error out', 'SRC', 4774, 'FlatSequenceInnerTunnel', 759)]
+    12960 Diagram 11318 '# images in stack' SRC fd 12960 w 13123 -> [(13065, '# images in stack', 'sink', 13059, 'NamedBundler', 12960)]
+    12960 Diagram 11286 '# to avg per image' SRC fd 12960 w 13120 -> [(13068, '# to avg per image', 'sink', 13059, 'NamedBundler', 12960)]
+    12960 Diagram 11249 'z step (um)' SRC fd 12960 w 13117 -> [(13071, 'z step between images', 'sink', 13059, 'NamedBundler', 12960)]
+    12960 Diagram 11214 'Cross length (pixels)' SRC fd 12960 w 13114 -> [(13056, 'x', 'sink', 13048, 'Function', 12960), (13074, 'cross length', 'sink', 13059, 'NamedBundler', 12960)]
+    12960 Diagram 11190 'pixel distance (nm)' SRC fd 12960 w 13111 -> [(12953, 'pixel distance (nm)', 'sink', 12954, 'FlatSequenceInnerTunnel', 12960)]
+    18402 Diagram 11364 'Focus Pos (Start)' SRC fd 18402 w 42795 -> [(41749, 'x', 'sink', 41725, 'InRangeAndCoerce', 18402)]
+    14037 Diagram 7516 'Trans Speed (mm/s)' SRC fd 14037 w 14421 -> [(14264, 'element', 'sink', 14259, 'BuildArray', 14037)]
+    14037 Diagram 33595 'Max Travel Limit' sink fd 14037 w 33805 -> [(31144, 'Maximum travel limit', 'SRC', 31090, 'SubVI', 14037)]
+    13706 Diagram 13712 '' SRC fd 13706 w 0 -> UNWIRED
+    13706 Diagram 13712 '' SRC fd 13706 w 0 -> UNWIRED
+    13404 Diagram 13410 '' SRC fd 13404 w 13486 -> [(13430, 'number', 'sink', 13425, 'Function', 13404)]
+    13404 Diagram 13410 '' SRC fd 13404 w 13486 -> [(13430, 'number', 'sink', 13425, 'Function', 13404)]
+    13236 Diagram 11514 'Color table' sink fd 13236 w 14729 -> [(13514, '', 'sink', 13515, 'SelectorTunnel', 13236), (13496, 'array', 'sink', 13491, 'Function', 13236), (13396, '', 'SRC', 13397, 'LoopTunnel', 13236), (13174, '', 'sink', 13175, 'FlatSequenceInnerTunnel', 13236)]
+    13236 Diagram 11446 'color table string' sink fd 13236 w 14726 -> [(13524, 'data string', 'SRC', 13525, 'SelectorTunnel', 13236), (13182, 'data string', 'sink', 13183, 'FlatSequenceInnerTunnel', 13236)]
+    13236 Diagram 31964 'Cal Zero' sink fd 13236 w 23207 -> [(32297, 'x-y', 'SRC', 1491, 'Function', 13236)]
+    13236 Diagram 11620 'Rot \nSpeed' SRC fd 13236 w 0 -> UNWIRED
+    13236 Diagram 9699 'Width' sink fd 13236 w 32938 -> [(9796, 'Width', 'SRC', 9775, 'Property', 13236)]
+    13236 Diagram 10190 'Height' sink fd 13236 w 32937 -> [(9790, 'Height', 'SRC', 9775, 'Property', 13236)]
+    18317 Diagram 11581 'Rot Step (deg) ' SRC fd 18317 w 34401 -> [(33901, 'Numeric', 'sink', 33882, 'SubVI', 18317)]
+    18240 Diagram 30749 'Trans Pos (mm)' sink fd 18240 w 31134 -> [(18091, 'Numeric', 'SRC', 18089, 'FlatSequenceInnerTunnel', 18240)]
+    17020 Diagram 11802 'Trans Step (mm)' SRC fd 17020 w 17274 -> [(17087, 'element', 'sink', 17085, 'GrowableFunction', 17020)]
+    16964 Diagram 11817 'Send to Trans' SRC fd 16964 w 19311 -> [(16972, '', 'sink', 16973, 'Tunnel', 16964)]
+    16964 Diagram 11756 '+ Cal Zero' SRC fd 16964 w 19327 -> [(17412, '', 'sink', 17414, 'Tunnel', 16964)]
+    16964 Diagram 11727 '- Cal Zero' SRC fd 16964 w 19323 -> [(17724, '', 'sink', 17725, 'Tunnel', 16964)]
+    16964 Diagram 11652 'Send to Rot' SRC fd 16964 w 19302 -> [(18269, '', 'sink', 18270, 'Tunnel', 16964)]
+    16964 Diagram 11549 '1 R-Turn' SRC fd 16964 w 19296 -> [(18668, '', 'sink', 18669, 'Tunnel', 16964)]
+    16964 Diagram 11532 '1 L-Turn' SRC fd 16964 w 19293 -> [(18977, '', 'sink', 18978, 'Tunnel', 16964)]
+    16964 Diagram 6227 'Max Trans Pos' sink fd 16964 w 31920 -> [(27687, 'Magnet position output', 'SRC', 27683, 'FlatSequenceOuterTunnel', 16964)]
+    16355 Diagram 16364 '' SRC fd 16355 w 0 -> UNWIRED
+    16355 Diagram 16364 '' SRC fd 16355 w 0 -> UNWIRED
+    16621 Diagram 16636 '' SRC fd 16621 w 16880 -> [(16754, 'number', 'sink', 16746, 'Function', 16621)]
+    16621 Diagram 16636 '' SRC fd 16621 w 16880 -> [(16754, 'number', 'sink', 16746, 'Function', 16621)]
+    15683 Diagram 11885 'Bead Pos' sink fd 15683 w 15789 -> [(15734, 'cluster', 'sink', 15732, 'Unbundler', 15683), (15725, 'Mouse Position', 'SRC', 15720, 'Unbundler', 15683)]
+    15795 Diagram 28068 'Count' SRC fd 15795 w 30530 -> [(29123, 'x', 'sink', 29111, 'Comparison', 15795), (31938, 'Count', 'sink', 31929, 'SelectorTunnel', 15795)]
+    15266 Diagram 15273 '' SRC fd 15266 w 19372 -> [(19347, 'x', 'sink', 19333, 'Function', 15266)]
+    15266 Diagram 15273 '' SRC fd 15266 w 19372 -> [(19347, 'x', 'sink', 19333, 'Function', 15266)]
+    15266 Diagram 15276 '' sink fd 15266 w 19456 -> []
+    15266 Diagram 15276 '' sink fd 15266 w 19456 -> []
+    15266 Diagram 11829 'Done Picking \nBeads?' SRC fd 15266 w 19456 -> []
+    15266 Diagram 28848 'Frame rate' SRC fd 15266 w 28882 -> [(19344, 'y', 'sink', 19333, 'Function', 15266)]
+    19687 Diagram 25964 'RotationVISA' sink fd 19687 w 26006 -> [(29492, 'VISA resource name out', 'SRC', 29485, 'FlatSequenceInnerTunnel', 19687)]
+    22160 Diagram 12239 'Focus Pos (Cal)' sink fd 22160 w 22269 -> [(26551, 'x', 'sink', 26515, 'Function', 22160), (22185, 'x+y', 'SRC', 22179, 'Function', 22160), (22148, 'position [internal units]', 'sink', 22143, 'SelectorTunnel', 22160)]
+    22013 Diagram 22029 'Session Out' sink fd 22013 w 0 -> UNWIRED
+    22013 Diagram 22043 'error out' sink fd 22013 w 0 -> UNWIRED
+    22013 Diagram 22053 'LastBufferNumber' sink fd 22013 w 0 -> UNWIRED
+    22013 Diagram 22064 '' sink fd 22013 w 0 -> UNWIRED
+    22325 Diagram 22037 'Session Out' sink fd 22325 w 0 -> UNWIRED
+    22325 Diagram 22047 'error out' sink fd 22325 w 0 -> UNWIRED
+    22325 Diagram 22058 'LastBufferNumber' sink fd 22325 w 0 -> UNWIRED
+    22325 Diagram 22068 '' sink fd 22325 w 0 -> UNWIRED
+    22382 Diagram 22038 'Session Out' sink fd 22382 w 22412 -> [(22393, 'IMAQdx Session', 'SRC', 22388, 'Property', 22382)]
+    22382 Diagram 22049 'error out' sink fd 22382 w 22418 -> [(22399, 'error out', 'SRC', 22388, 'Property', 22382)]
+    22382 Diagram 22059 'LastBufferNumber' sink fd 22382 w 22415 -> [(22402, 'LastBufferNumber', 'SRC', 22388, 'Property', 22382)]
+    22382 Diagram 22069 '' sink fd 22382 w 0 -> UNWIRED
+    22650 Diagram 22656 'Image Out' sink fd 22650 w 22756 -> [(22701, 'Image Out', 'SRC', 22692, 'SubVI', 22650)]
+    22847 Diagram 22853 '' SRC fd 22847 w 23614 -> [(22969, 'y', 'sink', 22964, 'Function', 22847)]
+    22847 Diagram 22853 '' SRC fd 22847 w 23614 -> [(22969, 'y', 'sink', 22964, 'Function', 22847)]
+    22780 Diagram 22659 'Image Out' SRC fd 22780 w 25102 -> [(23698, 'Image Out', 'sink', 23699, 'SelectorTunnel', 22780), (22792, 'Image Out', 'sink', 22793, 'LoopTunnel', 22780)]
+    22780 Diagram 12561 'Intensity vs Radius' sink fd 22780 w 25117 -> [(23649, '', 'SRC', 23650, 'SelectorTunnel', 22780), (22627, '', 'sink', 22624, 'Tunnel', 22780)]
+    22780 Diagram 12283 'Picture' sink fd 22780 w 25108 -> [(23684, 'Picture out', 'SRC', 23685, 'SelectorTunnel', 22780)]
+    22532 Diagram 22538 '' SRC fd 22532 w 25186 -> [(22553, '', 'sink', 22554, 'Tunnel', 22532), (22573, '', 'sink', 22574, 'Tunnel', 22532)]
+    22532 Diagram 22538 '' SRC fd 22532 w 25186 -> [(22553, '', 'sink', 22554, 'Tunnel', 22532), (22573, '', 'sink', 22574, 'Tunnel', 22532)]
+    22427 Diagram 22040 'Session Out' SRC fd 22427 w 25254 -> [(22459, 'Session Out', 'sink', 22456, 'LeftShiftRegister', 22427)]
+    22427 Diagram 22050 'error out' SRC fd 22427 w 25218 -> [(22468, 'error out', 'sink', 22465, 'LeftShiftRegister', 22427)]
+    22427 Diagram 22061 'LastBufferNumber' SRC fd 22427 w 25251 -> [(22469, 'LastBufferNumber', 'sink', 22470, 'LoopTunnel', 22427)]
+    22427 Diagram 22070 '' sink fd 22427 w 25227 -> [(22506, '', 'SRC', 22507, 'LoopTunnel', 22427)]
+    25345 Diagram 25351 '' SRC fd 25345 w 0 -> UNWIRED
+    25345 Diagram 25351 '' SRC fd 25345 w 0 -> UNWIRED
+    25290 Diagram 25296 '' SRC fd 25290 w 25404 -> [(25310, 'index (row)', 'sink', 25299, 'IndexArray', 25290)]
+    25290 Diagram 25296 '' SRC fd 25290 w 25404 -> [(25310, 'index (row)', 'sink', 25299, 'IndexArray', 25290)]
+    25266 Diagram 22041 'Session Out' SRC fd 25266 w 0 -> UNWIRED
+    25266 Diagram 22052 'error out' SRC fd 25266 w 0 -> UNWIRED
+    25266 Diagram 22062 'LastBufferNumber' SRC fd 25266 w 0 -> UNWIRED
+    25266 Diagram 22071 '' SRC fd 25266 w 25414 -> [(25284, '', 'sink', 25285, 'LoopTunnel', 25266)]
+    21577 Diagram 21586 '' SRC fd 21577 w 25478 -> [(21690, '', 'sink', 21693, 'Tunnel', 21577)]
+    21577 Diagram 21586 '' SRC fd 21577 w 25478 -> [(21690, '', 'sink', 21693, 'Tunnel', 21577)]
+    21134 Diagram 12159 'Waveform Graph' sink fd 21134 w 25559 -> [(21542, '', 'SRC', 21544, 'LoopTunnel', 21134)]
+    25890 Diagram 25896 '' SRC fd 25890 w 26025 -> [(25945, 'input 1', 'sink', 25928, 'FormatScanString', 25890), (25921, 'index (row)', 'sink', 25910, 'IndexArray', 25890)]
+    25890 Diagram 25896 '' SRC fd 25890 w 26025 -> [(25945, 'input 1', 'sink', 25928, 'FormatScanString', 25890), (25921, 'index (row)', 'sink', 25910, 'IndexArray', 25890)]
+    25769 Diagram 12635 'size(s)' sink fd 25769 w 26074 -> [(25799, 'size(s)', 'SRC', 25797, 'Function', 25769)]
+    26117 Diagram 12936 'output cluster' sink fd 26117 w 26668 -> [(26638, 'data', 'sink', 26615, 'ReadWriteFile', 26117), (26448, 'output cluster', 'SRC', 26446, 'NamedBundler', 26117), (57294, 'input cluster', 'sink', 57292, 'FlatSequenceOuterTunnel', 26117)]
+    26117 Diagram 34982 'IMAQimage' sink fd 26117 w 26665 -> [(25653, 'New Image', 'SRC', 25651, 'FlatSequenceInnerTunnel', 26117)]
+    26117 Diagram 35414 'CamSessionOut' sink fd 26117 w 26656 -> [(25661, 'Session Out', 'SRC', 25659, 'FlatSequenceInnerTunnel', 26117)]
+   bed locals: [(2991, 'Local'), (4277, 'Local'), (23523, 'Local'), (23499, 'Local'), (11574, 'Local'), (3160, 'Local'), (3097, 'Local'), (2143, 'Local'), (16942, 'Local'), (25805, 'Local')]
+RESULT {"schema": "result-line/1", "status": "PASS", "gates": {"pass": 5, "fail": 0}, "first_fail": null, "artefacts": []}
+BGRUN END rc=0 after 1s
