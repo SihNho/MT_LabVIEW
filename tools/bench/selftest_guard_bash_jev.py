@@ -82,11 +82,41 @@ def run_main(cmd, background=False, timeout=None):
     return rc, buf.getvalue()
 
 
-BG = ("py tools/bgrun.py --material --max-min 5 --log tools/bench/x.log "
-      "-- py -u tools/bench/diag_c88_brokenwires.py")
+# FIXTURE REPAIRED, card 106-4 (the 7/4 of selftest_guard_bash_jev_c103d.log). The launched script used to be
+# tools/bench/diag_c88_brokenwires.py, which imports stagekit and calls discard_work; since card chat-N1 the stage
+# launch gate classifies it VI-modifying (tools/stage_prerun.py:1281-1289 is_vi_modifying / launched_vi_modifying) and
+# prerun_gate refuses it without a dry + pre-run record (tools/bench/diag_c106d_jevrc2.log: "LAUNCH GATE ... has no dry +
+# prerun PASS record"). So C2/C3/C5 read rc=2 from a BLOCKING gate that is right to refuse, not from the advisories.
+# The fix is the fixture, not the hook: the launch now names a throwaway plain script (no stagekit) written under
+# tools/bench for the run and deleted after it, and C11 asserts that the old VI-modifying launch is STILL refused.
+OLD_VI_MOD = "tools/bench/diag_c88_brokenwires.py"
+FIXTURE = None      # set in main(): tools/bench/tmpfixture_jev_<pid>.py
+
+
+def bg(script=None):
+    return ("py tools/bgrun.py --material --max-min 5 --log tools/bench/x.log "
+            "-- py -u %s" % (script or FIXTURE))
 
 
 def main():
+    global FIXTURE
+    # Under %TEMP%, never in the project: the gates key on a `tools/bench/<x>.py` path segment, which a temp tree
+    # carries too. The name must not contain `jev` (MATERIAL_EXEMPT_RE and _JEV_SELF_RE would skip the readings).
+    base = tempfile.mkdtemp(prefix="c106_fixture_")
+    os.makedirs(os.path.join(base, "tools", "bench"))
+    path = os.path.join(base, "tools", "bench", "fixture_launch.py")
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write('"""throwaway launch target of selftest_guard_bash_jev (no stagekit, no LabVIEW)."""\n'
+                 'print("fixture")\n')
+    FIXTURE = path.replace("\\", "/")
+    try:
+        return _cases()
+    finally:
+        import shutil
+        shutil.rmtree(base, ignore_errors=True)
+
+
+def _cases():
     real_ask = jev.ask
     jev_drift.GATE_LOG = os.path.join(tempfile.gettempdir(), "jev_gate_selftest.log")
     jev_preflight.GATE_LOG = jev_drift.GATE_LOG
@@ -108,7 +138,7 @@ def main():
     fresh_state()
     CALLS.clear()
     stub(p_on=0.05, cls="missing-guard")
-    rc, err = run_main(BG, background=True)
+    rc, err = run_main(bg(), background=True)
     gate("C2 an off-task launch prints JEV-DRIFT and does not block",
          rc == 0 and "JEV-DRIFT" in err, "rc=%s calls=%d" % (rc, len(CALLS)))
     gate("C2b the same launch prints JEV-PREFLIGHT for the script after the `--`",
@@ -118,7 +148,7 @@ def main():
     fresh_state()
     CALLS.clear()
     stub(p_on=0.95, cls="ready")
-    rc, err = run_main(BG, background=True)
+    rc, err = run_main(bg(), background=True)
     gate("C3 an on-task launch prints NO JEV-DRIFT line and does not block",
          rc == 0 and "JEV-DRIFT" not in err, "rc=%s" % rc)
 
@@ -126,9 +156,9 @@ def main():
     fresh_state()
     stub(p_on=0.05)
     CALLS.clear()
-    run_main(BG, background=True)
+    run_main(bg(), background=True)
     first = len(CALLS)
-    run_main(BG, background=True)
+    run_main(bg(), background=True)
     gate("C4 a second launch within 60 s adds no Jev call", len(CALLS) == first,
          "%d then %d" % (first, len(CALLS)))
 
@@ -136,10 +166,10 @@ def main():
     fresh_state()
     CALLS.clear()
     stub(err="HTTP 500 boom")
-    rc1, err1 = run_main(BG, background=True)
+    rc1, err1 = run_main(bg(), background=True)
     fresh_state()
     stub(raise_it=True)
-    rc2, err2 = run_main(BG, background=True)
+    rc2, err2 = run_main(bg(), background=True)
     gate("C5 a failed or raising reading changes nothing (no line, rc unchanged)",
          rc1 == 0 and rc2 == 0 and "JEV-" not in err1 and "JEV-" not in err2,
          "rc=%s/%s" % (rc1, rc2))
@@ -148,12 +178,11 @@ def main():
     fresh_state()
     CALLS.clear()
     stub(p_on=0.99)
-    rc, err = run_main("py tools/bgrun.py --max-min 5 --log tools/bench/x.log "
-                       "-- py -u tools/bench/diag_c88_brokenwires.py", background=True)
+    rc, err = run_main(bg().replace(" --material", ""), background=True)
     # The detail says "code 2", never "rc=2": bgrun's inner-failure scanner matches `rc=<nonzero>` anywhere in
     # a line, so a test that correctly REPORTS a refusal would mark its own passing run as failed.
     gate("C6 an unmarked material run is still blocked (code 2) and costs no Jev call",
-         rc == 2 and not CALLS, "code %s calls=%d" % (rc, len(CALLS)))
+         rc == 2 and not CALLS and "judgement vs material" in err, "code %s calls=%d" % (rc, len(CALLS)))
 
     # C7 a Jev script of our own never asks about itself
     fresh_state()
@@ -185,14 +214,25 @@ def main():
          "%d findings, %d lines, stagekit=%s" % (len(findings), res.get("lines"), res.get("stagekit")))
 
     # C10 is_run_command separates runs from reads
-    ok = (jev_drift.is_run_command(BG)
+    ok = (jev_drift.is_run_command(bg())
           and not jev_drift.is_run_command("grep -n foo tools/bench/diag_c88_brokenwires.py")
           and not jev_drift.is_run_command("git log --oneline -3")
           and jev_drift.is_run_command("powershell -Command \"& 'tools/peer.ps1' -Agent claude\""))
     gate("C10 is_run_command() accepts launches and rejects reads", ok)
 
+    # C11 (card 106-4) no gate weakened: the OLD fixture's launch - a VI-modifying script with no dry/pre-run record -
+    # is still refused by the stage launch gate, and the refusal costs no Jev call.
+    fresh_state()
+    CALLS.clear()
+    stub(p_on=0.05)
+    rc, err = run_main(bg(OLD_VI_MOD), background=True)
+    gate("C11 the old VI-modifying fixture launch is still refused by the LAUNCH GATE (code 2), no Jev call",
+         rc == 2 and "LAUNCH GATE" in err and not CALLS, "code %s calls=%d" % (rc, len(CALLS)))
+
     jev.ask = real_ask
     print("\n=== %d PASS / %d FAIL%s" % (len(PASS), len(FAIL), (": " + ", ".join(FAIL)) if FAIL else ""))
+    import protocol
+    print(protocol.result_line(protocol.make_result(len(PASS), len(FAIL), FAIL[0] if FAIL else None)))
     return 1 if FAIL else 0
 
 

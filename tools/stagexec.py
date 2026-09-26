@@ -104,6 +104,44 @@ class Meter(object):
                 "warned_at": self.warned}
 
 
+METER_LINE_RE = re.compile(r"METER (\w+)\s+k\s+(-?\d+|None)\s+private (-?[\d.]+|None) MB")
+
+
+def meter_rows_from_log(path):
+    """card 106-3: the recorded per-op meter of one run, read back from its log's `METER <tag> k <k> private <mb> MB` lines
+    (Meter.__call__'s own format) -> [{tag, k, mb}] in run order; rows whose mb is None are skipped."""
+    rows = []
+    with open(path, encoding="utf-8", errors="replace") as f:
+        for line in f:
+            m = METER_LINE_RE.search(line)
+            if m and m.group(3) != "None":
+                rows.append({"tag": m.group(1), "k": 0 if m.group(2) == "None" else int(m.group(2)), "mb": float(m.group(3))})
+    return rows
+
+
+def mem_predict(rows, stop_after=None, from_step=None, start_mb=None, memstop=MEM_STOP_MB, margin_mb=0.0):
+    """card 106-3 (retrospective-cycle103 `inference-over-measurement`, PD216(f)): the private-MB peak a run over ops
+    (from_step, stop_after] is predicted to reach, from ONE recorded per-op meter curve (meter_rows_from_log / Meter.rows).
+    entry = the last stamp at k <= from_step (a Part-B record's own start/read k 0, or a full record's read at k); window =
+    the stamps with from_step < k <= stop_after. start_mb (a fresh-load estimate) shifts the curve by start_mb - entry;
+    None = the recorded values stand (the record ran the same mode). ok = peak < memstop - margin_mb; covered = the record
+    reaches stop_after. Pure."""
+    lo = int(from_step or 0)
+    ks = [r["k"] for r in rows]
+    hi = int(stop_after) if stop_after is not None else (max(ks) if ks else 0)
+    pre = [r for r in rows if r["k"] <= lo]
+    win = [r for r in rows if lo < r["k"] <= hi]
+    if not rows or not win:
+        return {"ok": None, "covered": False, "peak_mb": None, "why": "no recorded stamp inside ops {0}..{1}".format(lo + 1, hi)}
+    entry = pre[-1]["mb"] if pre else win[0]["mb"]
+    shift = round(start_mb - entry, 1) if start_mb is not None else 0.0
+    top = max(win, key=lambda r: r["mb"])
+    peak = round(max([entry] + [r["mb"] for r in win]) + shift, 1)
+    return {"ok": peak < memstop - margin_mb, "covered": max(ks) >= hi, "peak_mb": peak, "at": (top["tag"], top["k"]),
+            "entry_mb": entry, "shift_mb": shift, "window": [lo + 1, hi], "n_window": len(win), "memstop": memstop,
+            "margin_mb": margin_mb, "headroom_mb": round(memstop - margin_mb - peak, 1)}
+
+
 def md5(p):
     return SS.md5_file(p)
 
@@ -200,6 +238,34 @@ def verbs_missing(route):
             txt = ""
         if not re.search(r"^\s*def {0}\(".format(re.escape(name)), txt, re.M):
             out.append("{0}.{1}".format(mod_, name))
+    return out
+
+
+def _pre_copy_in(ctx):
+    w, d = ctx.get("work"), ctx.get("move_dst")
+    return bool(w) and bool(d) and os.path.normcase(os.path.abspath(w)) == os.path.normcase(os.path.abspath(d))
+
+
+# card 106-3 (retrospective-cycle102 `wrong-ordering`; stage_d1_disp_r7.log:807 stopped IN op 41 on it): a route whose verb
+# holds a PRECONDITION on the stage's own work file, which the simulated / dry backend never exercises (SimBackend applies
+# the step, it does not call the verb). stage_prerun X9 evaluates these OFFLINE for every op the run will dispatch.
+ROUTE_PRECONDITIONS = {
+    "copy_in": ("the stage work file IS gscript.MOVE_DST (stagekit.copy_in raises Stop otherwise: stagekit.py:813-814)",
+                _pre_copy_in),
+}
+
+
+def precondition_failures(plan, ctx, stop_after=None, from_step=None):
+    """card 106-3: [{k, route, acts, ids, needs, work}] - every op the run DISPATCHES (from_step < k <= stop_after) whose
+    route precondition fails in ctx ({"work": the Stage's work path, "move_dst": gscript.MOVE_DST}). Pure."""
+    ops = compile_plan(plan)
+    hi = int(stop_after) if stop_after is not None else len(ops)
+    out = []
+    for k, o in enumerate(ops, 1):
+        pre = ROUTE_PRECONDITIONS.get(o.get("route"))
+        if pre and int(from_step or 0) < k <= hi and not pre[1](ctx):
+            out.append({"k": k, "route": o["route"], "acts": o["acts"], "ids": [plan["actions"][i - 1].get("id") for i in o["acts"]],
+                        "needs": pre[0], "work": ctx.get("work")})
     return out
 
 
@@ -2146,6 +2212,127 @@ def from_step_state(plan_path, from_step, binding):
     return st
 
 
+# ============================================================================================ recipe helpers (card 106-3)
+# Moved out of tools/recipes/stage_d1_disp.py (PD216(c)/(g): the recipe is <= 120 lines, helpers live here). Each one is
+# the recipe's code unchanged, parameterised by the plan / Stage / executor it used to read from module globals.
+REC_WIRING = ("tunnel", "connect", "wire_sr", "branch")
+CUT = 10 ** 3
+
+
+class DryPlanBE(SimBackend):
+    """stage_prerun's dry backend for a plan-executing recipe (stage_d1_disp.DryBE, after stage_d1_l2a1.DryBE): the plan's
+    own simulated ops + ONE Stage op record per real op, so the pre-run's X5 counts the dispatched wiring ops.
+    PART-B (from_step): the simulated start is step from_step bound through the Part-A JSON (from_step_state)."""
+
+    def __init__(self, s, plan, plan_path, base, from_step=None, binding=None, models=None):
+        st = SS.base_state(base, plan.get("context")) if from_step is None else from_step_state(plan_path, from_step, binding)
+        SimBackend.__init__(self, plan, st, SS.load_models() if models is None else models)
+        self.s = s
+
+    def _apply(self, op, check=None):
+        self.s._op(("wire_" if op["kind"] in REC_WIRING else "") + op["kind"], lambda: {"err": None}, str(op["acts"]))
+        return SimBackend._apply(self, op, check)
+
+
+def w0_wires(s, base, from_step, dry):
+    """W0: the pre-existing Wire uids W1 judges RBW against - S1's from the plan base graph for a PART-B run (== Part A's
+    W0), none in a dry run, else the live read of the work copy (allterms.all_wire_uids)."""
+    if from_step:
+        return set(r["wire_uid"] for r in base["terminals"] if r["wire_uid"])
+    if dry:
+        return set()
+    import allterms as AT
+    return set(int(u) for u in AT.all_wire_uids(s.work)[0])
+
+
+def report_stop(s, x, be, e):
+    """An ExecStop inside Executor.run: record the report / meter / step diffs, list every unroutable row, FAIL E1 fatally."""
+    s.R["stagexec"] = x.report
+    s.R["meter"] = getattr(getattr(be, "meter", None), "rows", None)
+    s.R["step_diffs"] = x.diffs
+    for d in x.diffs:
+        s.fact("STEP-DIFF k {0} {1} ids {2} ops since last read {3}: {4}".format(d["k"], d["op"], d["ids"], d["ops_since_last_read"],
+               json.dumps(d["new_since_last_diff"], default=str)[:CUT]))
+    for u in getattr(be, "unroutable", None) or []:
+        s.fact("UNROUTABLE acts {0} ids {1}: {2}".format(u["acts"], u["ids"], u["err"]))
+    s.gate("E1 the run reached its last op (record mode; stopped IN op {0})".format(x.cur), False, str(e)[:CUT], fatal=True)
+
+
+def log_step_diffs(s, x):
+    """Every recorded step diff as a STEP-WARN / STEP-DIFF fact; returns the FAIL-class ones (PD214(c): WARN = dangling only,
+    no later uid reference)."""
+    for d in x.diffs:
+        s.fact("STEP-{0} k {1} {2} ids {3} ops since last read {4} later_refs {5}: new {6} | whole {7}".format(
+            "WARN" if d.get("class") == "warn" else "DIFF", d["k"], d["op"], d["ids"], d["ops_since_last_read"], d.get("later_refs"),
+            json.dumps(d["new_since_last_diff"], default=str)[:CUT],
+            json.dumps(dict((a, b) for a, b in d["diff"].items() if b and a not in ("n", "who")), default=str)[:CUT]))
+    return [d for d in x.diffs if d.get("class") != "warn"]
+
+
+def b1_gate(s, x, from_step):
+    """PART-B entry gate (card 103-4): the entry read == simulated step from_step (or a WARN), gates re-read, parity, PRIME,
+    first op == from_step + 1."""
+    r0 = x.report[0]
+    s.gate("B1 PART-B entry: read == simulated step {0} (or a WARN), gates re-read, parity {1}, PRIME ok; first op {2}".format(
+        from_step, r0.get("parity", {}).get("n"), x.report[1]["k"] if len(x.report) > 1 else None), r0["op"] == "from_step" and
+        (r0["diff"]["n"] == 0 or all(d["class"] == "warn" for d in x.diffs if d["k"] == from_step)) and x.report[1]["k"] == from_step + 1,
+        {"diff_n": r0["diff"]["n"], "regate": r0.get("regate"), "primed": r0.get("primed")})
+
+
+def part_a_gates(s, x, be, stop):
+    """card 103-1 PART-A (PD215(b)): ops 1..stop only, step stop real == sim (WARN only), gui_save, md5 + binding JSON."""
+    a1, a2, det, bind = x.part_a_record()
+    s.gate("A1 PART-A: ops 1..{0} of {1} executed, NO op > {0} dispatched".format(stop, len(x.ops)), a1, det, fatal=True)
+    s.gate("A2 E1 through op {0} WARN-class only; step {0} real read == simulated step {0} (or a WARN)".format(stop), a2, det, fatal=True)
+    m = s.save(broken_ok=True)                                                     # gui_save route at ExecState 0 (stagekit.save_route)
+    s.gate("AS Part-A artefact saved, md5 != input; input unchanged", m and m != s.input_md5 and md5(s.input_vi) == s.input_md5, m)
+    s.R["partA"] = dict(bind, file=s.work, md5=m, meter=getattr(getattr(be, "meter", None), "rows", None), level="STRUCTURAL, broken by design")
+    s.dump()
+
+
+def w1_rbw(s, be, w_pre):
+    """W1 (PD211(b) / PD212(f)): termless wires after the batch, then RBW on the work copy - it may remove only pre-existing
+    wire uids and lose no data edge, and leave no termless wire. Returns the backend's own read after RBW."""
+    import allterms as AT
+    import gscript as g
+    rows0 = AT.read_terms(s.work, AT.OP_ALLTERMS_V1)[0]
+    wh = g.wire_health(s.work, rows=rows0)
+    s.fact("W1 termless after the batch: {0} (new-uid termless {1})".format(wh["termless"], sorted(set(wh["termless"]) - w_pre)))
+    e0 = g._edge_pairs(rows0)
+    rb = s.broken_wire_count(allow_mutation=True, tag="RBW work")
+    rows1 = AT.read_terms(s.work, AT.OP_ALLTERMS_V1)[0]
+    w1 = set(int(u) for u in AT.all_wire_uids(s.work)[0])
+    gone, lost = sorted((wh["wires"] - w1)), sorted(e0 - g._edge_pairs(rows1))
+    s.fact("W1 RBW removed {0}; lost edges {1}".format(gone, lost[:20]))
+    s.gate("W1 RBW removed only pre-existing wire uids and lost no data edge; no termless wire left",
+           set(gone) <= w_pre and not lost and not g.wire_health(s.work, rows=rows1)["termless"],
+           {"new_uid_removed": sorted(set(gone) - w_pre), "lost": lost[:20], "rbw": rb}, fatal=True)
+    return be.read()
+
+
+def e3_gate(s, plan, x, be, real, wiki, dry, tag):
+    """PD217(c) E3 (FATAL, before save) on the executor's end - also in the dry run, where a failing E3 is a FAIL
+    (raised as ExecStop), never UNVERIFIED. Returns the e3_check dict."""
+    e3 = e3_check(plan, x, getattr(be, "last_objs", None) or be.st["objs"], real, wiki, tag)
+    s.fact("E3 detail {0}".format(json.dumps(e3, default=str)[:CUT]))
+    if dry and not e3["ok"]:
+        raise ExecStop("E3 dry: " + e3_line(e3))
+    s.gate("E3 (PD217(c), FATAL, before save) " + e3_line(e3), e3["ok"], {k: e3[k] for k in
+           ("extra", "missing", "unclassed", "c4_bad", "bad_added", "bad_removed")}, fatal=True)
+    return e3
+
+
+def kill_labview_at_exit():
+    """A live recipe's last act: taskkill LabVIEW and report whether it is gone (CLAUDE.md 1b grant: every cycle ends with
+    LabVIEW closed and verified gone)."""
+    import subprocess
+    subprocess.run(["taskkill", "/F", "/IM", "LabVIEW.exe"], capture_output=True, text=True, timeout=60)
+    time.sleep(4.0)
+    gone = "labview.exe" not in subprocess.run(["tasklist"], capture_output=True, text=True, timeout=60).stdout.lower()
+    print("LabVIEW gone at exit:", gone, flush=True)
+    return gone
+
+
 def dry_run(plan_path, fault=None, log=print, model_dir=None, require_final=True, from_step=None, binding=None):
     """(status, first_fail, executor). No LabVIEW. require_final=False = the DIAGNOSTIC routability run (card 100-3).
     card 103-4: from_step=k + binding = the Part-B dry run, on the bound step-k state (from_step_state)."""
@@ -2197,20 +2384,10 @@ def prerun_plan(plan_path, log=print, model_dir=None):
 
 
 # ============================================================================================ E3 (shared)
-E3_CLASS_RE = re.compile(r"PD213\(d\)\((\d)\)")
-
-
-def open_row_class(r):
-    """PD217(c): a plan open row's PD213(d) class, read from the row itself - a `class` field, else the class the finalizer
-    wrote into `why` ("PD213(d)(4): ..."). None when the row names none; e3_eval then FAILS (a class is never guessed)."""
-    c = r.get("class")
-    if c is None:
-        m = E3_CLASS_RE.search(str(r.get("why") or ""))
-        c = m.group(1) if m else None
-    try:
-        return int(c)
-    except (TypeError, ValueError):
-        return None
+E3_CLASS_RE = SS.E3_CLASS_RE
+# PD217(c): a plan open row's PD213(d) class (a `class` field, else "PD213(d)(N)" in `why`; None = e3_eval FAILS, a class is
+# never guessed). Card 106-3 moved it into stagesim (the finalize rule uses it too); the same function, one copy.
+open_row_class = SS.open_row_class
 
 
 def e3_wiki(plan):
@@ -2248,17 +2425,7 @@ def e3_eval(plan, S1, G, created, deleted):
     unclassed = sorted(set((n, t) for n, t, c in cls if c not in (1, 2, 3, 4)))
     want = sorted(set((n, t) for n, t, c in cls if c in (1, 2, 3)))
     c4 = sorted(set((n, t) for n, t, c in cls if c == 4))
-    ma, mb, c4_bad, c4_keys = {}, {}, [], 0
-    for n, t in c4:
-        keys = sorted(set(k for gg in (S1, G) for k in V.terminals(gg, node=n, is_source=False) if V.key_parts(k)[2] == t))
-        if not keys:
-            c4_bad.append({"row": (n, t), "why": "no sink key in S1 or the end graph"})
-        for k in keys:
-            c4_keys += 1
-            sa = sorted(V.effective_sources(S1, k, ma)) if k in S1["rows"] else None
-            sb = sorted(V.effective_sources(G, k, mb)) if k in G["rows"] else None
-            if sa != sb:
-                c4_bad.append({"row": (n, t), "sink": k, "S1": sa, "end": sb})
+    c4_bad, c4_keys = SS.c4_check(S1, G, c4)                  # card 106-3: shared with the stagesim finalize rule
     added = [(a["node"], a["class"]) for a in cd["computation_nodes_added"]]
     removed = [(a["node"], a["class"]) for a in cd["computation_nodes_removed"]]
     bad_added = [a for a in added if a[0] not in set(created)]
@@ -2867,6 +3034,7 @@ def selftest():
         gate("T40d NEGATIVE: stop_after beyond the last op stops before op 1", str(e).startswith("STOP-AFTER"), str(e)[:160])
     _selftest_from_step(gate, fin, pl_, md, opsx, q)
     _selftest_create(gate, tmp, q)
+    _selftest_c106c(gate, fin, opsx, md, q)
     gate("T14 nothing LabVIEW-side imported",not any(m in sys.modules for m in ("gscript", "win32com", "pythoncom", "stagekit")),
          [m for m in ("gscript", "win32com", "pythoncom", "stagekit") if m in sys.modules])
     n_pass = sum(1 for _l, ok in gates if ok)
@@ -2946,6 +3114,59 @@ def _selftest_from_step(gate, fin, pl_, md, opsx, q):
             gate(lab, str(e).startswith("FROM-STEP") and want in str(e), str(e)[:200])
     if st == "PASS":
         _selftest_e3(gate, rp, ex, q)
+
+
+def _selftest_c106c(gate, fin, opsx, md, q):
+    """card 106-3: route preconditions (X9's pure half), the recorded-meter memory prediction (X10's pure half) on the real
+    103-2 r1 / 104-2 Part-B logs, and the recipe dry backend moved here (DryPlanBE)."""
+    fx = os.path.join(BENCH, "sim", "disp", "fixture_c106c_plan_disp_r7.json")
+    rp = os.path.join(BENCH, "sim", "disp", "plan_disp.json")
+    md = r"C:\x\NIScriptingExamples\Moving Objects\Test - Moving Objects Target.vi"
+    w7 = r"C:\x\claudeDev\D1_s1_disp_20260927_012948.vi"
+    if not (os.path.exists(fx) and os.path.exists(rp)):
+        gate("T45 fixture (cycle-102 plan_disp, r7's) + plan_disp present", False, (fx, rp))
+    else:
+        f1 = precondition_failures(_j(fx), {"work": w7, "move_dst": md})
+        f2 = precondition_failures(_j(fx), {"work": md, "move_dst": md})
+        f3 = precondition_failures(_j(rp), {"work": w7, "move_dst": md})
+        f4 = precondition_failures(_j(fx), {"work": w7, "move_dst": md}, stop_after=40)
+        f5 = precondition_failures(_j(fx), {"work": w7, "move_dst": md}, from_step=33)
+        gate("T45 NEGATIVE: r7's plan dispatches op 41 copy_in (r7_wait) on a non-MOVE_DST work file -> 1 failure; the same "
+             "plan with work == MOVE_DST, or Part A to op 40, -> none; Part B from 33 -> the same op 41 failure",
+             [(f["k"], f["route"], f["ids"]) for f in f1] == [(41, "copy_in", ["r7_wait"])] and f2 == [] and f4 == [] and
+             [f["k"] for f in f5] == [41], (f1, f2, f4, [f["k"] for f in f5]))
+        gate("T45b plan_disp (r7_wait = the Wait (ms) primitive, PD216(a)) has NO precondition failure", f3 == [], f3)
+    r1, b2 = os.path.join(BENCH, "stage_d1_dispA_r1.log"), os.path.join(BENCH, "stage_d1_disp_c104B2.log")
+    if not (os.path.exists(r1) and os.path.exists(b2)):
+        gate("T46 recorded meter logs (103-2 r1, 104-2 Part-B run 2) present", False, (r1, b2))
+    else:
+        rr1, rb2 = meter_rows_from_log(r1), meter_rows_from_log(b2)
+        p1, p2, p3 = mem_predict(rr1, 40, None), mem_predict(rb2, None, 33), mem_predict(rr1, 33, None)
+        gate("T46 NEGATIVE: the 103-2 r1 curve (Part A to op 40) predicts {0} MB at {1} >= MEMSTOP {2} -> refused".format(
+            p1["peak_mb"], p1["at"], MEM_STOP_MB), p1["ok"] is False and p1["peak_mb"] == 703.8 and p1["covered"], p1)
+        gate("T46b the 104-2 Part-B curve (ops 34..47) predicts {0} MB -> passes; r1's curve cut at op 33 predicts {1} MB -> "
+             "passes (the PD216(f) cut)".format(p2["peak_mb"], p3["peak_mb"]),
+             p2["ok"] is True and p2["peak_mb"] == 616.7 and p2["window"] == [34, 47] and p3["ok"] is True, (p2, p3))
+        syn = [{"tag": "start", "k": 0, "mb": 500.0}, {"tag": "read", "k": 0, "mb": 510.0}, {"tag": "op", "k": 1, "mb": 600.0},
+               {"tag": "read", "k": 1, "mb": 690.0}]
+        p4, p5 = mem_predict(syn, 1, None, start_mb=525.0), mem_predict(rb2, 50, 33)
+        gate("T46c NEGATIVE: a fresh-start shift (+15 MB) lifts 690 over 700 -> refused; a window past the record -> not covered",
+             p4["ok"] is False and p4["peak_mb"] == 705.0 and p5["covered"] is False, (p4, p5.get("covered")))
+    pl = _j(fin)
+    base = _j(_abs(pl["finalized"]["base"]["path"]))
+
+    class _S(object):
+        def __init__(self):
+            self.ops = []
+
+        def _op(self, verb, fn, detail=""):
+            self.ops.append(verb)
+            return fn()
+    s_ = _S()
+    ex = Executor(fin, DryPlanBE(s_, pl, fin, base, models=SS.load_models(md)), log=q)
+    ex.run()
+    gate("T47 DryPlanBE (moved from stage_d1_disp.py): one Stage op record per real op, wiring kinds prefixed 'wire_'",
+         len(s_.ops) == len(opsx) and s_.ops == [("wire_" if o["kind"] in REC_WIRING else "") + o["kind"] for o in opsx], s_.ops)
 
 
 def _selftest_e3(gate, rp, ex, q):

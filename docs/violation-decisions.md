@@ -1487,3 +1487,38 @@ computed from files, is ≤ 685 MB (retrospective-cycle103 annotation).
 
 DECISION: no new device. The repair is the device, and it landed in this cycle. If a read-only refusal shows up in cycle 104, the
 repair failed: that is device-failed round 2, and that refusal line becomes the added negative case.
+
+## repeated-failure-class — 2026-09-27 07:4x (cycle 106 judgement, after archive/peer/2026-09-27-retrospective-cycle104.md:341)
+
+`VIOLATION: repeated-failure-class | loss_min=17 | evidence=tools/bench/diag_c104_abba.log:27`: legs 2–4 of the 104-5 ABBA ran after
+the known-good A leg had already stopped before pick 1 on the same rotor dialog.
+
+DECISION: device — BUILT in cycle 106 (card 106-2, `tools/bench/cards/result_106-2.json`, PASS 47/0). `tools/bench/drive_legguard.py`
+(md5 `0e6a743e…`) is called from `diag_c104_abba.py` and `drive_original_copy_v5.py`: (1) a NI-VISA open/close of `Rotor` and
+`ASRL5::INSTR` before any leg starts LabVIEW, refusing the leg on a nonzero status; (2) the leg loop ends on a refused leg or an A leg
+that fails before pick 1 (v5 no longer starts run2 after a failed run1); (3) a modal-dialog watch from Run to L2 that captures the
+dialog by PrintWindow and kills the process directly. Offline self-test 30/0 with negatives; live: the real ABBA refused leg 1 with
+LabVIEW never started, and one bypassed S1 leg caught the real VISA dialog and killed LabVIEW 1.46 s after detection
+(`tools/bench/diag_c106b_live.log`). Decided in 106: ANY refused leg ends the ABBA, not only an A leg — every leg opens the same port.
+
+## inference-over-measurement — 2026-09-27 07:4x (cycle 106 judgement, after archive/peer/2026-09-27-retrospective-cycle105.md:287)
+
+`VIOLATION: inference-over-measurement | loss_min=28 | evidence=tools/bench/cards/task_105-3.json:5`: 105-3 assumed an OS-level
+holder of COM5 before the 12 s VISA-only open had been run.
+
+DECISION: no new device beyond 106-2's VISA precheck, which is the mechanical form of PD218(e) for the one resource that has failed
+this way. The general rule (an error naming a resource layer ⇒ open that resource through the same layer outside LabVIEW first) stays
+written in `docs/d1-loop12-17-split-plan.md` PD218(e); if it is skipped again for another resource, that is the device trigger.
+
+## device-failed — 2026-09-27 07:5x (cycle 106 judgement, after archive/peer/2026-09-27-retrospective-cycle106.md:317)
+
+`VIOLATION: device-failed | loss_min=5 | evidence=tools/hooks/material_marker.log:2335`: the stop record refused the checker
+`stage_prerun.py --dry tools/recipes/stage_d1_disp.py` twice (`:2335`, `:2338`), and card 106-5 then ran the identical argv as a
+self-test child (`tools/bench/selftest_stage_prerun_c106e.py:97-100`), so the dry left no record.
+
+DECISION: device (repair, threshold 1) — the FIRST card of cycle 107, beside the ABBA launch: the stop record lets
+`stage_prerun --dry|--prerun <recipe>` through (they are offline checks that precede a release) and still refuses every launch;
+negatives `material_marker.log:2335`/`:2338` must pass, a real launch argv must still be refused; acceptance = a RECORDED
+top-level dry of the display recipe (sha `d62f876d`). Plus a card rule (no hook): a gate refusal is returned as BLOCKED, never
+re-run through a self-test child or any other exempt route. If an exempt-route workaround recurs, the self-test exemption itself
+gets the device (it must not run an argv the gate refused in the same session).

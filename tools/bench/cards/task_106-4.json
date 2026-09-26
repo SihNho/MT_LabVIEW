@@ -1,0 +1,64 @@
+{
+ "schema": "task/1",
+ "id": "106-4",
+ "kind": "build",
+ "goal": "Owed small tool repairs PD216(g)+cycle-99 NEXT: gui_save Evidence wording, stop_record wc -l twin, selftest_guard_bash_jev 7/4, peer.ps1 loss_usd '?'->null, audit A1/A3 vs jev_gate.log",
+ "why": "Carried since cycles 96-103 (STATUS NEXT, PD216(f)/(g)); each is a known defect in a gate or reviewer path that has cost refusals or parse failures; offline, no LabVIEW.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/gscript.py"},
+  {"path": "tools/hooks/guard_bash.py"},
+  {"path": "tools/peer.ps1"},
+  {"path": "tools/audit_cycle.py"},
+  {"path": "CLAUDE.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/hooks/guard_bash.py"},
+  {"kind": "file", "name": "tools/peer.ps1"},
+  {"kind": "file", "name": "tools/audit_cycle.py"}
+ ],
+ "pass": [
+  "H1: gscript.gui_save Evidence = the user's approval wording 'user 2026-09-22 broken-intermediate save' (CLAUDE.md split rule 6); shown by a no-LabVIEW test",
+  "H2: stop_record wc -l twin (PD216(g)): a read-only 'wc -l' on a stopped recipe is not refused; a real launch still is; test fails on old code, passes on new",
+  "H3: selftest_guard_bash_jev 7/4 -> all pass, cause named (fixture or hook) with file:line; no gate weakened",
+  "H4: peer.ps1 -ReviewCard maps loss_usd='?' to null; tested with '?' and a number, the verdict card validates",
+  "H5: audit_cycle A1/A3 no longer count tools/bench/jev_gate.log; self-test with a negative case"
+ ],
+ "outputs": [
+  "tools/bench/diag_c106d_*",
+  "tools/bench/facts_c106d.json",
+  "tools/bench/cards/result_106-4.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/gscript.py",
+   "tools/hooks/**",
+   "tools/peer.ps1",
+   "tools/audit_cycle.py",
+   "tools/bench/selftest_*",
+   "tools/bench/diag_c106d*",
+   "tools/bench/facts_c106d*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 45},
+ "rules": [
+  "offline only: no LabVIEW, no VI, no peer.ps1 real dispatch for H4 (use -DryRun or a local parse test)",
+  "tools/stage*.py and tools/recipes/** are owned by card 106-3 running in parallel: do not edit them",
+  "an item whose fix needs a file outside this card's write list goes to open, not done around",
+  "facts <=10 with file:line; OPEN <=3"
+ ],
+ "unblocks": "M8"
+}

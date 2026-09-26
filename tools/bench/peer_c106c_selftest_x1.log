@@ -1,0 +1,64 @@
+BGRUN START 2026-09-27 07:18:17 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c106c-selftest-x1 -TaskFile tools/bench/peer_c106c_selftest_task.txt
+BGRUN PID 23836
+OUTCOME: ANSWERED (100s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-27-c106c-selftest-x1.md
+COST: $1.1246  in 22 / out 8781 / cache-create 93199 / cache-read 1016699  (96s, 22 turn(s))
+--- ANSWER ---
+**Verdict: the mechanism is very likely right, but it was never observed, and calling it "only a fixture defect" is wrong. This is the third time the same tool gap has failed gate X1.**
+
+## 1. Strongest reason the claim is wrong
+
+The tool can't find the recipe's own base graph, and this has happened before.
+- `find_graph` only searches `tools/bench/graph_*.json` and `tools/bench/sim/*/graph_*.json` (`tools/stage_prerun.py:165`).
+- The graph that belongs to the Part-A input is `tools/bench/par1359_95_graph.json`. Its header carries the S1 md5 `3e3d23ce…` (`par1359_95_graph.json:2-3`), but its file name doesn't start with `graph_`, so `find_graph` never sees it.
+- The recipe's plan already names this graph as its base (`diag_c106c_peek.log:125`), and the recipe says its input is "named by the plan's base graph" (`tools/recipes/stage_d1_disp.py:1`). The pre-run still ignores that.
+- The function's own docstring records the same failure twice before: "every `--prerun` launched without `--graph` failed gate X1 in cycles 85 and 86 … re-launched by hand with `--graph`" (`stage_prerun.py:160-162`).
+- Every past Part-A or full pre-run of this recipe was launched by hand with `--graph tools/bench/par1359_95_graph.json` (`diag_c103_prerunA.log:1`, `diag_c103b_prerunA.log:1`, `diag_c103c_prerunA.log:1`, `stage_d1_disp_prerun*.log:1`).
+
+Case 106 is the third occurrence of the "`--prerun` without `--graph` fails X1" pattern. Passing `--graph` in the test hides the gap instead of closing it. Under CLAUDE.md this counts as `repeated-failure-class`, not a one-off test bug.
+
+## 2. The cause was inferred, not read from the machine
+
+The failing log never recorded why X1 failed:
+- The child's stdout, which contains the prerun's `FAIL X1 … <first_fail>` line, is thrown away except for the `CASEOUT` line (`selftest_stage_prerun_c106c.py:70`).
+- The parent prints detail only for X9 and X10 (`selftest_stage_prerun_c106c.py:74`).
+- `selftest_stage_prerun_c106c.log:4-5` shows `X1: False` with no reason.
+- No c106 log contains the "DRY graph JSON" gate line. The only match is the peer task text itself.
+
+## 3. Alternative explanations
+
+The code path makes the graph gate the most likely cause:
+- With `graph=None`, `_graph()` calls `find_graph(3e3d23ce…)`, which returns `None` (`selftest_stage_prerun_graphload.py:89`).
+- The `start()` gate then fails as fatal (`stage_prerun.py:639-642`).
+- The Part-B cases pass because the Part-B input's md5 does match `sim/disp/graph_dispA_step33.json`.
+
+But the c103 control is not a clean control. It differs from c106c in two ways, not one:
+- It passes the graph to `prerun()`.
+- It also puts `--graph GRAPH` into `sys.argv` (`selftest_stage_prerun_c103.py:30`); c106c does not (`c106c.py:41`).
+
+So these causes are not yet ruled out:
+- (a) Something in the dry run or the refactored `stagexec` Part-A path reads `sys.argv`.
+- (b) A STUB-LIMIT or "body did not reach its end" failure that only appears in Part-A mode without a graph.
+
+I find both unlikely, but the recorded evidence doesn't exclude them.
+
+## 4. What would falsify the claim
+
+The claim is false if C2 or C3 is run with `graph=None` and X1's `first_fail` names anything other than `DRY graph JSON for input md5 3e3d23ce… : no terminal-list graph JSON carries md5 … skipped …`. The claim is also incomplete if, with `par1359_95_graph.json` passed, X1 still fails or X10 moves away from 703.8 / 677.1 MB.
+
+The fixed script has not been re-run: `selftest_stage_prerun_c106c.log` holds only the 07:15:18 run. The fix is currently unverified.
+
+## Cheapest discriminating test (about 60 s, offline)
+
+1. Change the parent's output line to also print X1's detail:
+   `for k in ("X1","X9","X10")` at `c106c.py:74`
+2. Run the self-test twice:
+   - once with `gr=None` for the A modes;
+   - once with `gr=par1359_95_graph.json`.
+3. Read the result:
+   - **The claim holds** if the first run prints the "DRY graph JSON … skipped" reason, and the second run gives X1 True with X9/X10 unchanged (C2 X10 False at 703.8 MB, C3 X10 True at 677.1 MB).
+   - **An alternative from section 3 holds** if the first run shows any other `first_fail`.
+
+**Would change my mind about the tool-defect framing:** a pointer showing that `find_graph` is intentionally limited, and that launches must always pass `--graph` by contract, enforced by the launch gate rather than remembered by hand. I found no such enforcement: `guard_bash.py` has no `--graph` handling. Otherwise the root fix is either to have `find_graph` also consult the plan's base graph path (the `par1359_95_graph.json` the plan already records), or to rename that file to `graph_*.json`.
+
+No web search was needed: every claim here is about this project's own Python, and each one is cited to a local file and line.
+BGRUN END rc=0 after 101s

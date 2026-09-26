@@ -1,0 +1,41 @@
+
+== cycle audit, last 8 h (a TIME WINDOW, not a cycle boundary - scope the quote accordingly): 137 build logs, 30 peer logs, 88 archived reviews
+   (A4 scopes reviews by the DATE in the filename, so it is day-granular even inside a tight window)
+
+  FAIL  A1 every build log came from bgrun: 136/137 ok; NO BGRUN line in ['jev_gate.log']
+  FAIL  A2 every bgrun ended (END or TIMEOUT): unfinished: ['diag_c106c_base_stagexec.log']
+  FAIL  A3 every failing log is followed by an archived review: 39 logs recorded a failure; unreviewed: ['diag_c106d_jevrc2.log', 'jev_gate.log']
+  FAIL  A4 every archived review says what was done with it: 87/88 annotated; blank: ['2026-09-27-c103-scratch-selftest.md']
+  PASS  A5 the main VI was not modified in this window: md5 2a78e17c449c…, mtime 2026-09-01 12:07
+  PASS  A7 no archive note wikilinks into the active set: archive links stay inside archive
+  n-a   A6 state-changing GUI actions are recorded: 4138 lines in gui_actions.log (all time); this cycle used no GUI if the retrospective agrees
+  WARN  A8 recipe/bench runs ended with a RESULT line (C6): 9 log(s) with a run that printed none: ['diag_c101_peek.log', 'diag_c101c_resim2.log', 'diag_c103d_graph.log', 'diag_c104_md5.log', 'diag_c104_md5_after.log', 'diag_c104_md5_b2.log']…
+
+  C1 builds run 147, failure markers 40, logs carrying a failure 39
+  C2 peer reviews dispatched 30, archived 88
+  C3 wall-clock inside bgrun, BUILDS ONLY 194 min 12 s
+  C4 wall-clock inside bgrun, REVIEWS 65 min 16 s; cost $43.3971 from 25 log(s) that report one
+  C4b cost lines seen 25 / parsed 25
+  C4c judgement session (cycle_runner's own `claude -p`), NOT a review: 461 min 16 s; cost $135.4777 from 5 log(s) - cycle_101.log, cycle_102.log, cycle_103.log, cycle_104.log, cycle_105.log
+  C5 total wall-clock 720 min 44 s  (builds 26%, reviews 9%, judgement session 63%)
+
+  C6 material-marked recipe/bench runs 121, judgement-session attempts refused 22  <- delegate to the `material` agent instead
+
+  C7 files modified in the window but NOT named in docs/d1-loop12-17-split-plan.md [tools/bench/next.json plan.path]: 148 - STATUS.md, tools/bench/.stall_samples.txt, tools/bench/cards/brief_103-1.md, tools/bench/cards/brief_chat-N4.md, tools/bench/cards/hyp_c103_wait_donor.txt, tools/bench/cards/hyp_c103d_guard_bash_jev.txt, tools/bench/cards/hyp_c103d_hooks_before.txt, tools/bench/cards/partB_entry_103-4.md, tools/bench/cards/peer_c104_5_h1_task.md, tools/bench/cards/peer_c104_6_h1_task.md, tools/bench/cards/peer_task_c101-4-syntax.md, tools/bench/cards/peer_task_c101-5-onlysource.md…
+
+
+== document lint (tools/doc_lint.py; CLAUDE.md section 4)
+
+  WARN  L1 frontmatter present and valid: 341/810 ok; 469 missing, 0 incomplete. Fix with `py tools/frontmatter.py`. first: ['archive/peer/2026-09-15-priorart-ownerchain.md', 'archive/peer/2026-09-16-delete-object-noop-failed-prediction.md', 'archive/peer/2026-09-16-delete-silent-noop2.md', 'archive/peer/2026-09-16-flatseq-frame-unreachable.md', 'archive/peer/2026-09-16-load-vs-editmode-23c-r2.md']
+  PASS  L2 every cited project path exists: 2403 citations checked, none dangling
+  WARN  L2c plan documents cite files that do not exist yet: 18 forward reference(s) in plan documents (expected while the cycle is open): ['docs/cycle14-plan.md:95 -> tools/recipes/build_opflatseqdiagrams_v0.py', 'docs/cycle14-plan.md:106 -> tools/bench/opflatseqdiagrams_labels.json', 'docs/cycle14-plan.md:168 -> tools/recipes/build_opflatseqdiagrams_v0.py', 'docs/cycle14-plan.md:169 -> tools/bench/build_opflatseqdiagrams_v0.log', 'docs/cycle14-plan.md:169 -> tools/bench/opflatseqdiagrams_labels.json', 'docs/cycle14-plan.md:170 -> tools/bench/diag_a3_complete.py']
+  PASS  L2b cited line numbers are in range: no citation points past a file's end
+  WARN  L3 STATUS.md stays one screen: STATUS.md:313 lines > 110. CLAUDE.md rule 4: move the narrative to archive/<date>-status-<topic>.md, keep lock, hardware, state, OPEN, NEXT.
+  PASS  L4 at most one current plan per family: ['docs/cycle27-plan.md'] current
+  PASS  L8 the current plan has a `## Pre-decided` section: docs/cycle27-plan.md ok
+  PASS  L5 superseded documents are not still current: no `supersedes:` target is still marked current
+  PASS  L6 archived reviews are disposed: skipped - audit_cycle A4 owns this condition
+  WARN  L7 decision/measurement sentences carry a mark: 629 unmarked line(s); a fact stated without `DECIDED:`/`MEASURED:`/`DECISION:` has to be inferred rather than extracted. first: ['docs/NAMES.md:404', 'docs/NAMES.md:421', 'docs/NAMES.md:455', 'docs/NAMES.md:594', 'docs/NAMES.md:716']
+
+AUDIT VIOLATIONS: A1 every build log came from bgrun, A2 every bgrun ended (END or TIMEOUT), A3 every failing log is followed by an archived review, A4 every archived review says what was done with it
+

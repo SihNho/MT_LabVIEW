@@ -1,0 +1,95 @@
+BGRUN START 2026-09-27 07:11:22 limit 15.0 min: py -u tools/bench/diag_c106b_live.py
+BGRUN PID 25220
+GATE P0 LabVIEW absent, S1 md5 3e3d23ce                                 PASS 3e3d23cefd3a334001aa9d6156bf1aee
+[c106b] PRECHECK {"ok": false, "bypassed": false, "dry": false, "names": ["Rotor", "ASRL5::INSTR"], "trials": [{"name": "Rotor", "status": -1073807246, "hex": "0xBFFF0072", "text": "\u00b8\u00ae\u00bc\u00d2\u00bd\u00ba\u00b4\u00c2 \u00c0\u00af\u00c8\u00bf\u00c7\u00cf\u00c1\u00f6\u00b8\u00b8 VISA\u00b0\u00a1 \u00c7\u00f6\u00c0\u00e7 \u00c1\u00a2\u00b1\u00d9\u00c7\u00d2 \u00bc\u00f6 \u00be\u00f8\u00bd\u00c0\u00b4\u00cf\u00b4\u00d9.", "close": null, "ms": 0.3}, {"name": "ASRL5::INSTR", "status": -1073807246, "hex": "0xBFFF0072", "text": "\u00b8\u00ae\u00bc\u00d2\u00bd\u00ba\u00b4\u00c2 \u00c0\u00af\u00c8\u00bf\u00c7\u00cf\u00c1\u00f6\u00b8\u00b8 VISA\u00b0\u00a1 \u00c7\u00f6\u00c0\u00e7 \u00c1\u00a2\u00b1\u00d9\u00c7\u00d2 \u00bc\u00f6 \u00be\u00f8\u00bd\u00c0\u00b4\u00cf\u00b4\u00d9.", "close": null, "ms": 0.1}], "t": "07:11:23", "rm_status": 0}
+GATE S stand-alone precheck: ASRL5 status != 0                          PASS 0xBFFF0072
+  | PRELAUNCH readers: {'R1 tra rule on INDEX-51 leg == (True@8, False@7)': True, 'R2 lost reader on INDEX-51 leg == 144': True, "R3 capture reader on INDEX-51 leg == ['723452']": True, 'R5 proxy reader on saved 94-1 A15 == (6854, 1.0, 3.0)': True}  R5=(6854, 1.0, 3.0)
+  | MD5 BEFORE {'S1': '3e3d23cefd3a334001aa9d6156bf1aee', 'disp': '245a10206b565cba0ba186bd891f5cb8'}
+  |   PRECHECK {"ok": false, "bypassed": false, "dry": false, "names": ["Rotor", "ASRL5::INSTR"], "trials": [{"name": "Rotor", "status": -1073807246, "hex": "0xBFFF0072", "text": "\u00b8\u00ae\u00bc\u00d2\u00bd\u00ba\u00b4\u00c2 \u00c0\u00af\u00c8\u00bf\u00c7\u00cf\u00c1\u00f6\u00b8\u00b8 VISA\u00b0\u00a1 \u00c7\u00f6\u00c0\u00e7 \u00c1\u00a2\u00b1\u00d9\u00c7\u00d2 \u00bc\u00f6 \u00be\u00f8\u00bd\u00c0\u00b4\u00cf\u00b4\u00d9.", "close": null, "ms": 0.3}, {"name": "ASRL5::INSTR", "status": -1073807246, "hex": "0xBFFF0072", "text": "\u00b8\u00ae\u00bc\u00d2\u00bd\u00ba\u00b4\u00c2 \u00c0\u00af\u00c8\u00bf\u00c7\u00cf\u00c1\u00f6\u00b8\u00b8 VISA\u00b0\u00a1 \u00c7\u00f6\u00c0\u00e7 \u00c1\u00a2\
+  | === LEG leg1 A@15 REFUSED by the VISA precheck: [('Rotor', '0xBFFF0072'), ('ASRL5::INSTR', '0xBFFF0072')]; LabVIEW running=False; leg script NOT launched
+  | ROW {"leg": "leg1 A@15", "arm": "A", "picks": 15, "slot": 1, "attempt": 1, "rc": "REFUSED", "refused": true, "labview_running_at_refusal": false, "registered_ok": false, "picks_clicked": 0, "picks_registered_tra": null, "lost_frames": null, "tracking_iterations_tra_rows": null, "plot_before_stop": {}, "plot_after_stop": {}, "sysload_before": {}, "sysload_after": {}, "motor_tmx_after": null, "capture_class_before_pick1": null, "releases": null, "dir": "tools\\bench\\t0_legs\\c104_disp_20260927_071123\\leg1_A_p15_a1"}
+  | LEGLOOP STOP at slot 1 (A): leg refused by the VISA precheck (LabVIEW not started) -> no later leg is called
+  | camera restored: {"camera": "cam1", "set_rc": 0, "hz": 90.0}
+  | MD5 AFTER {'S1': '3e3d23cefd3a334001aa9d6156bf1aee', 'disp': '245a10206b565cba0ba186bd891f5cb8'}
+  | INDEX row SKIPPED: no leg produced numbers (leg loop stop: {'slot': 1, 'arm': 'A', 'reason': 'leg refused by the VISA precheck (LabVIEW not started)'})
+  | GATE R1 tra rule on INDEX-51 leg == (True@8, False@7)           PASS
+  | GATE R2 lost reader on INDEX-51 leg == 144                      PASS
+  | GATE R3 capture reader on INDEX-51 leg == ['723452']            PASS
+  | GATE R5 proxy reader on saved 94-1 A15 == (6854, 1.0, 3.0)      PASS
+  | GATE M1 disp == 245a1020 and S1 == 3e3d23ce before leg 1 (in-run) PASS
+  | GATE T2 leg1 A@15 LabVIEW gone before                           PASS
+  | GATE V1 leg1 A@15 VISA precheck Rotor+ASRL5 status 0            FAIL
+  | GATE T12 slot1 A@15 registered == target (<= 1 rerun)           FAIL
+  | GATE T17 leg loop ran every slot (stopped: leg refused by the VISA precheck (LabVIEW not started)) FAIL
+  | GATE T7 camera restored 90 Hz                                   PASS
+  | GATE M2 S1 + disp md5 after last leg == before                  PASS
+  | GATE T13 disp_104_abba.json written                             PASS
+  | SUMMARY {"leg1 A@15": {"lost": null, "iters": null, "reg": null, "plot": [null, null, null, null], "plot_after": [null, null], "foreign": [null, null], "cpu": [null, null], "tmx": null, "cap1": null, "rel": null}}
+  | COUNTED BY ARM {}
+  | RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":9,"fail":3},"first_fail":"V1 leg1 A@15 VISA precheck Rotor+ASRL5 status 0","artefacts":[{"path":"tools\\bench\\diag_c106b_abba_l5.json","md5":"7eb873f3ceeb104004ea04fd1bc2545f"}]}
+[c106b] ABBA l5 rc=1 secs=13 labview_seen=[]
+GATE L5a 1 row, refused, ASRL5 status != 0                              PASS 0xBFFF0072 ¸®¼Ò½º´Â À¯È¿ÇÏÁö¸¸ VISA°¡ ÇöÀç Á¢±ÙÇÒ ¼ö ¾ø½À´Ï´Ù.
+GATE L5b leg loop stop = refused                                        PASS {'slot': 1, 'arm': 'A', 'reason': 'leg refused by the VISA precheck (LabVIEW not started)'}
+GATE L5c labview.exe never seen during the L5 run                       PASS []
+GATE L5d leg script never launched (no leg.json)                        PASS tools\bench\t0_legs\c104_disp_20260927_071123\leg1_A_p15_a1
+  | PRELAUNCH readers: {'R1 tra rule on INDEX-51 leg == (True@8, False@7)': True, 'R2 lost reader on INDEX-51 leg == 144': True, "R3 capture reader on INDEX-51 leg == ['723452']": True, 'R5 proxy reader on saved 94-1 A15 == (6854, 1.0, 3.0)': True}  R5=(6854, 1.0, 3.0)
+  | MD5 BEFORE {'S1': '3e3d23cefd3a334001aa9d6156bf1aee', 'disp': '245a10206b565cba0ba186bd891f5cb8'}
+  |   PRECHECK {"ok": true, "bypassed": true, "dry": false, "names": ["Rotor", "ASRL5::INSTR"], "trials": [], "t": "07:11:36", "why": "TEST BYPASS LEGGUARD_TEST_BYPASS_VISA=1 (not opened)"}
+  | SYSLOAD {"tag": "before leg1 A@15", "claude_node_total": 15, "foreign": 12, "foreign_claude": 12, "foreign_node": 0, "cpu_pct_samples": [4.0, 9.0, 10.0], "cpu_pct_mean": 7.7}
+  | === LEG leg1 A@15 start 0.3 min; camera {"camera": "cam1", "set_rc": 0, "hz": 90.0}
+  | Exception in thread Thread-5 (_readerthread):
+  | Traceback (most recent call last):
+  |   File "C:\Users\KimLab\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+  |     self.run()
+  |   File "C:\Users\KimLab\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+  |     self._target(*self._args, **self._kwargs)
+  |   File "C:\Users\KimLab\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1499, in _readerthread
+  |     buffer.append(fh.read())
+  | UnicodeDecodeError: 'cp949' codec can't decode byte 0xec in position 12538: illegal multibyte sequence
+  | SYSLOAD {"tag": "after leg1 A@15", "claude_node_total": 15, "foreign": 12, "foreign_claude": 12, "foreign_node": 0, "cpu_pct_samples": [6.0, 8.0, 5.0], "cpu_pct_mean": 6.3}
+  | ROW {"leg": "leg1 A@15", "arm": "A", "picks": 15, "slot": 1, "attempt": 1, "rc": 1, "secs": 78, "dir": "tools\\bench\\t0_legs\\c104_disp_20260927_071136\\leg1_A_p15_a1", "lost_frames": null, "frames_delta": null, "measured_hz": null, "tracking_iterations_tra_rows": null, "period637_proxy": {"label": "proxy", "median_ms": null, "p95_ms": null, "max_ms": null, "step_median": null, "step_p95": null, "step_max": null, "steps": null, "steps_gt1": null, "rows": null, "cols": null, "parsed": null, "err": "FileNotFoundError(2, '\uc9c0\uc815\ub41c \uacbd\ub85c\ub97c \ucc3e\uc744 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4')"}, "plot_before_stop": {"type": null, "err": null, "dims_first": null, "elements": null, 
+  |   crashed leg (no tra) -> harness fault, no rerun
+  | LEGLOOP STOP at slot 1 (A): A leg failed before pick 1 (rc 1) -> no later leg is called
+  | camera restored: {"camera": "cam1", "set_rc": 0, "hz": 90.0}
+  | MD5 AFTER {'S1': '3e3d23cefd3a334001aa9d6156bf1aee', 'disp': '245a10206b565cba0ba186bd891f5cb8'}
+  | INDEX row SKIPPED: no leg produced numbers (leg loop stop: {'slot': 1, 'arm': 'A', 'reason': 'A leg failed before pick 1 (rc 1)'})
+  | GATE R1 tra rule on INDEX-51 leg == (True@8, False@7)           PASS
+  | GATE R2 lost reader on INDEX-51 leg == 144                      PASS
+  | GATE R3 capture reader on INDEX-51 leg == ['723452']            PASS
+  | GATE R5 proxy reader on saved 94-1 A15 == (6854, 1.0, 3.0)      PASS
+  | GATE M1 disp == 245a1020 and S1 == 3e3d23ce before leg 1 (in-run) PASS
+  | GATE T2 leg1 A@15 LabVIEW gone before                           PASS
+  | GATE V1 leg1 A@15 VISA precheck Rotor+ASRL5 status 0            PASS
+  | GATE T4 leg1 A@15 camera 90 Hz before                           PASS
+  | GATE T6 leg1 A@15 LabVIEW gone after                            PASS
+  | GATE T1 leg1 A@15 rc 0                                          FAIL
+  | GATE T3 leg1 A@15 0 TIFFs                                       FAIL
+  | GATE T5 leg1 A@15 fps within 15%                                FAIL
+  | GATE T10 leg1 A@15 TMX 39                                       FAIL
+  | GATE H2 leg1 A@15 no capture before pick 1                      FAIL
+  | GATE L1 leg1 A@15 period proxy parsed                           FAIL
+  | GATE S1 leg1 A@15 sysload before+after read                     PASS
+  | GATE D1 leg1 A@15 plot read recorded                            FAIL
+  | GATE T12 slot1 A@15 registered == target (<= 1 rerun)           FAIL
+  | GATE T17 leg loop ran every slot (stopped: A leg failed before pick 1 (rc 1)) FAIL
+  | GATE T7 camera restored 90 Hz                                   PASS
+  | GATE M2 S1 + disp md5 after last leg == before                  PASS
+  | GATE T13 disp_104_abba.json written                             PASS
+  | SUMMARY {"leg1 A@15": {"lost": null, "iters": null, "reg": null, "plot": [null, null, null, null], "plot_after": [null, null], "foreign": [12, 12], "cpu": [7.7, 6.3], "tmx": null, "cap1": null, "rel": 0}}
+  | COUNTED BY ARM {}
+  | RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":13,"fail":9},"first_fail":"T1 leg1 A@15 rc 0","artefacts":[{"path":"tools\\bench\\diag_c106b_abba_l6.json","md5":"f622d9121380960e6f2ff6ef9977759e"}]}
+[c106b] ABBA l6 rc=1 secs=99 labview_seen=[21.7, 22.3, 23.0]
+[c106b] L6 modal {"t_visible_rel_watch": 0.52, "abs_visible": 1790460773.186633, "win": [146737316, "", "LVDChild", true, true], "others": [[146737316, "", "LVDChild", true, true], [70518824, "LabVIEW", "LVDChild", true, false], [193005610, "D1_s1_copy_run_20260927_071242.vi", "LVDChild", true, false], [29297050, "LabVIEW", "LVFrame", true, false]], "shotwin": {"rc": 0, "out": "saved G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\m8_shots\\dialogs\\dialog_v5_run1_20260927_071253_h146737316.png (hwnd 146737316, window rect left=786 top=405 right=1134 bottom=635 (w=348 h=230)  -> screen = image + (786,405))", "secs": 0.52, "png": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\m8_shots\\dialogs\\dialog_v5_run1_20260927_071253_h146737316.png", "exists": true}, "kill": {"gone": true, "secs": 0.94}, "abs_killed": 1790460774.6465461, "kill_after_visible_s": 1.46, "ocr": {"engine": "rapidocr-onnxruntime", "text": "Error -1073807246 occurred at VISA Open in | Configure.vi- | >D1_s1_copy_run_20260927_071242.vi | Possible reason(s): | VISA: (Hex OxBFFF0072) The resource is valid, but VISA | cannot currently access it. | Stop | Search ni.com for error | Continue", "lines": [["Error -1073807246 occurred at VISA Open in", 0.979], ["Configure.vi-", 0.997], [">D1_s1_copy_run_20260927_071242.vi", 0.992], ["Possible reason(s):", 0.997], ["VISA: (Hex OxBFFF0072) The resource is valid, but VISA", 0.96], ["cannot currently access it.", 0.985], ["Stop", 0.988], ["Search ni.com for error", 0.999], ["Continue", 0.999]]}}
+GATE L6a modal dialog seen by the watch (Run->L2)                       PASS ([146737316, '', 'LVDChild', True, True], 0.261, 3)
+GATE L6b shotwin -Hwnd rc 0, png exists                                 PASS G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\m8_shots\dialogs\dialog_v5_run1_20260927_071253_h146737316.png
+GATE L6c dialog text logged (OCR non-empty)                             PASS Error -1073807246 occurred at VISA Open in | Configure.vi- | >D1_s1_copy_run_20260927_071242.vi | Possible reason(s): | VISA: (Hex OxBFFF0072) The resource is valid, but VISA | cannot currently access it. | Stop | Search ni.com for error | Continue
+GATE L6d LabVIEW killed <= 15 s after detection (no COM Abort)          PASS (1.46, {'gone': True, 'secs': 0.94})
+GATE L6e ONE leg: rows == 1, stop 'A leg failed before pick 1'          PASS {'slot': 1, 'arm': 'A', 'reason': 'A leg failed before pick 1 (rc 1)'}
+GATE L6f no pick clicked                                                PASS 0
+GATE L6g v5 run2 NOT started                                            PASS 
+GATE L6h precheck bypass recorded (ABBA row + v5)                       PASS 
+GATE L7a LabVIEW gone after L6                                          PASS 
+GATE L7b S1 md5 unchanged                                               PASS 3e3d23cefd3a334001aa9d6156bf1aee
+GATE L7c test flags default off in this process                         PASS 
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":17,"fail":0},"first_fail":null,"artefacts":[{"path":"tools\\bench\\facts_c106b.json","md5":"87b0c751575b6c9bc3e182731f820026"}]}
+BGRUN END rc=0 after 113s

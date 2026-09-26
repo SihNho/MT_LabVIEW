@@ -19,8 +19,15 @@ HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(os.pat
 sys.path.insert(0, os.path.join(ROOT, "tools")); sys.path.insert(0, HERE)
 import protocol as P                                                            # noqa: E402
 import imaqdx_limits as L                                                       # noqa: E402
+import drive_legguard as LG                                                     # noqa: E402  card 106-2
+# card 106-2 (PD218(d)/PD217(g)): every leg starts with LG.visa_precheck() BEFORE LabVIEW is started (nonzero -> leg REFUSED,
+# nothing launched); the slot loop is LG.leg_loop (a refused leg or an A leg failing before pick 1 ends it); the dialog watch +
+# direct kill live in drive_original_copy_v5.leg. Optional: --json <path> (output name; default unchanged), --max-legs N.
+# The INDEX row is appended only when at least one leg produced numbers (104-5's all-null row had to be marked by hand).
 CD = r"C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev"
 DRY = "--dry" in sys.argv; HZ, RUN_S = 90, 120
+_A = sys.argv[1:]; JSON_OUT = _A[_A.index("--json") + 1] if "--json" in _A else None
+MAX_LEGS = int(_A[_A.index("--max-legs") + 1]) if "--max-legs" in _A else None
 S1 = os.path.join(CD, "D1_s1_copy.vi"); DSP = os.path.join(CD, "D1_s1_disp_20260927_041648.vi")
 PIN = {"S1": (S1, "3e3d23cefd3a334001aa9d6156bf1aee"), "disp": (DSP, "245a10206b565cba0ba186bd891f5cb8")}
 KNOWN = os.path.join(HERE, "t0_legs", "step4_20260926_071816", "leg2_ctl_p8_a1", "leg.json")
@@ -113,13 +120,24 @@ def run_leg(slot, arm, src, attempt, NPICK):
     tag = "leg%d %s@%d%s" % (slot, arm, NPICK, "" if attempt == 1 else " rerun")
     out = os.path.join(LEGDIR, "leg%d_%s_p%d_a%d" % (slot, arm, NPICK, attempt)); os.makedirs(out, exist_ok=True)
     gates["T2 %s LabVIEW gone before" % tag] = DRY or not lv_running()
+    pc = LG.visa_precheck(dry=DRY, log=lambda s: print("  " + s, flush=True))   # card 106-2 L2: before LabVIEW is started
+    gates["V1 %s VISA precheck Rotor+ASRL5 status 0" % tag] = pc["ok"]
+    if not pc["ok"]:
+        lv = lv_running(); print("=== LEG %s REFUSED by the VISA precheck: %s; LabVIEW running=%s; leg script NOT launched" % (
+            tag, [(t["name"], t["hex"]) for t in pc.get("trials") or []] or pc.get("why"), lv), flush=True)
+        row = {"leg": tag, "arm": arm, "picks": NPICK, "slot": slot, "attempt": attempt, "rc": "REFUSED", "refused": True, "precheck": pc,
+               "labview_running_at_refusal": lv, "registered_ok": False, "picks_clicked": 0, "picks_registered_tra": None, "lost_frames": None,
+               "tracking_iterations_tra_rows": None, "plot_before_stop": {}, "plot_after_stop": {}, "sysload_before": {}, "sysload_after": {},
+               "motor_tmx_after": None, "capture_class_before_pick1": None, "releases": None, "dir": os.path.relpath(out, ROOT)}
+        rows.append(row); print("ROW " + json.dumps({k: v for k, v in row.items() if k != "precheck"}, default=str), flush=True)
+        return row
     s_before = sysload("before " + tag)
     cb = camera(HZ); print("=== LEG %s start %.1f min; camera %s" % (tag, (time.time() - T0) / 60, json.dumps(cb)), flush=True)
     gates["T4 %s camera 90 Hz before" % tag] = bool(cb) and cb.get("hz") is not None and abs(cb["hz"] - HZ) <= 0.5
     cmd = [sys.executable, "-u", os.path.join(HERE, "diag_c104_leg.py"), "--src", src, "--picks", str(NPICK), "--run-s", str(RUN_S), "--out", out] + (["--dry"] if DRY else [])
     t = time.time()
     try:                                                                        # PD199(h): the dry run EXECUTES the leg script
-        r = subprocess.run(cmd, capture_output=True, text=True, timeout=LEG_MAX_MIN * 60 + 180); rc, o, err = r.returncode, r.stdout or "", r.stderr or ""
+        r = subprocess.run(cmd, capture_output=True, text=True, errors="replace", timeout=LEG_MAX_MIN * 60 + 180); rc, o, err = r.returncode, r.stdout or "", r.stderr or ""   # 106-2: cp949 decode crash seen
     except subprocess.TimeoutExpired as e:
         rc, o, err = "TIMEOUT", (e.stdout.decode(errors="replace") if isinstance(e.stdout, bytes) else (e.stdout or "")), ""
     for ln in o.splitlines():
@@ -143,6 +161,7 @@ def run_leg(slot, arm, src, attempt, NPICK):
            "pm": pm, "v5_failing": F.get("v5_failing"), "stop_latency_s": (F.get("stop") or {}).get("latency_s"), "motor_tmx_after": F.get("motor_tmx_after"),
            "tiffs": F.get("tiffs"), "source_md5": F.get("source_md5"), "run_dir": F.get("run_dir")}
     row["registered_ok"] = True if DRY else registered_ok(F.get("tra"), NPICK)
+    row["picks_clicked"] = len(F.get("clicks") or []); row["precheck"] = pc
     rows.append(row); print("ROW " + json.dumps({k: v for k, v in row.items() if k not in ("release", "pre_pick_capture", "sysload_before", "sysload_after")}, default=str)[:1800], flush=True)
     gates["T1 %s rc 0" % tag] = rc == 0
     gates["T3 %s 0 TIFFs" % tag] = DRY or row["tiffs"] == 0
@@ -159,15 +178,12 @@ def run_leg(slot, arm, src, attempt, NPICK):
     return row
 
 
-try:
-    for slot, (arm, src, _st, npk) in enumerate(ORDER, 1):
-        for attempt in (1, 2):
-            row = run_leg(slot, arm, src, attempt, npk)
-            if row["registered_ok"]: break
-            if row["rc"] != 0 and row.get("picks_registered_tra") is None:
-                print("  crashed leg (no tra) -> harness fault, no rerun", flush=True); break
-            print("  REGISTERED %r != %d -> %s" % (row["picks_registered_tra"], npk, "rerun once" if attempt == 1 else "logged, no third run"), flush=True)
+LOOP_STOP = None
+try:                                                                            # card 106-2: the slot loop is LG.leg_loop
+    finals, LOOP_STOP = LG.leg_loop(ORDER, run_leg, log=lambda s: print(s, flush=True), max_legs=MAX_LEGS)
+    for slot, arm, npk, row in finals:
         gates["T12 slot%d %s@%d registered == target (<= 1 rerun)" % (slot, arm, npk)] = bool(row.get("registered_ok"))
+    if LOOP_STOP: gates["T17 leg loop ran every slot (stopped: %s)" % LOOP_STOP["reason"]] = False
 finally:
     restore = camera(90)
 print("camera restored: %s" % json.dumps(restore), flush=True)
@@ -181,10 +197,14 @@ for r in rows:
 out = {"schema": "disp-abba/1", "card": "104-5 PD210(c)/PD217(f)", "A": S1, "B": DSP, "md5_before": MD5_BEFORE, "md5_after": MD5_AFTER, "run_s": RUN_S, "hz": HZ,
        "picks": 15, "panel": "normal", "order": "A15 B15 B15 A15", "counted_by_arm": counted, "rows": rows, "gates": gates, "camera_restore": restore,
        "lv_running_at_end": lv_running(), "minutes": round((time.time() - T0) / 60, 1), "legdir": os.path.relpath(LEGDIR, ROOT),
-       "proxy_note": "#637 period PROXY = tra col-0 frame-number step x 11.11 ms; not a timer", "judgement_not_applied": "PD217(f)"}
-jp = os.path.join(HERE, "disp_104_abba%s.json" % ("_dry" if DRY else "")); json.dump(out, open(jp, "w"), indent=1, default=str)
+       "proxy_note": "#637 period PROXY = tra col-0 frame-number step x 11.11 ms; not a timer", "judgement_not_applied": "PD217(f)",
+       "leg_loop_stop": LOOP_STOP, "max_legs": MAX_LEGS}
+jp = os.path.join(ROOT, JSON_OUT) if JSON_OUT else os.path.join(HERE, "disp_104_abba%s.json" % ("_dry" if DRY else ""))
+json.dump(out, open(jp, "w"), indent=1, default=str)
 gates["T13 disp_104_abba.json written"] = os.path.isfile(jp)
-if not DRY:
+if not DRY and not any(r.get("registered_ok") for r in rows):
+    print("INDEX row SKIPPED: no leg produced numbers (leg loop stop: %s)" % (LOOP_STOP,), flush=True)
+elif not DRY:
     ix = os.path.join(ROOT, "archive", "benchmarks", "INDEX.md"); last = [ln for ln in open(ix, encoding="utf-8").read().splitlines() if ln.startswith("| ")][-1]
     n = int(last.split("|")[1]) + 1
     cell = "; ".join("%s: lost %s, tra rows %s, #8323 elements %s (dims %s), Display period %s, foreign claude+node %s->%s, CPU %% %s->%s" % (

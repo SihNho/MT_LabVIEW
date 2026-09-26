@@ -1,0 +1,19 @@
+ATTACK this claim about a failed self-test (card 106-3, offline, no LabVIEW).
+
+Failing log: tools/bench/selftest_stage_prerun_c106c.log (script tools/bench/selftest_stage_prerun_c106c.py).
+Cases C2 (`--stop-after 40`) and C3 (`--stop-after 33`) got X1 False (the recipe's dry run FAILED) where the
+contract predicted X1 True; C1/C4/C5 (Part-B, `--from-step 33 --base <dispA>`) passed 10/10, and the new gates under
+test behaved as predicted in every case (C2: X10 False at 703.8 MB from stage_d1_dispA_r1.log; C3: X10 True 677.1 MB;
+C4: X9 False naming op 41 copy_in; C5: X9 True).
+
+CLAIM: the X1 failure is a defect of MY TEST FIXTURE, not of the tools: the child calls
+`stage_prerun.prerun(RECIPE, None, ...)` with no graph for the Part-A cases. The Part-A input is D1_s1_copy.vi
+(md5 3e3d23ce...), and stage_prerun.find_graph maps that md5 to no graph (tools/bench/selftest_stage_prerun_graphload.py
+pins "S1 -> None + skipped list"), so the dry Stage's "DRY graph JSON for input md5" gate fails. The existing test
+tools/bench/selftest_stage_prerun_c103.py passes the plan base graph tools/bench/par1359_95_graph.json explicitly and
+its P1/P3 (the same recipe, Part-A 40 and full) got x1 PASS on the edited code in this session
+(tools/bench/diag_c106c_after_prerun_c103.log, 4/0). Part-B needs no graph argument because find_graph matches the
+dispA md5 to tools/bench/sim/disp/graph_dispA_step33.json. The fix applied: pass par1359_95_graph.json for the A modes.
+
+Already ruled out: the recipe refactor (tools/recipes/stage_d1_disp.py now 90 lines; helpers moved to tools/stagexec.py)
+breaking the Part-A path - c103 P1 runs exactly that path with x1 PASS.

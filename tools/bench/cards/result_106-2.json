@@ -1,0 +1,33 @@
+{"schema":"result/1","id":"106-2","status":"PASS","gates":{"pass":47,"fail":0},
+"first_fail":null,
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/drive_legguard.py","md5":"0e6a743e8ddbcdce0e22a760af9e2737"},
+ {"path":"tools/bench/drive_original_copy_v5.py","md5":"3bf137c12e4b1ec064f867dae433c2e7"},
+ {"path":"tools/bench/drive_m8.py","md5":"e03929f9f4c6710a0388737720397e35"},
+ {"path":"tools/bench/diag_c104_abba.py","md5":"89ff49345f8535bfdeef81fa68e103b1"},
+ {"path":"tools/bench/selftest_leg_guard.py","md5":"736d0bdd7550ed9bb73e673fffad65ca"},
+ {"path":"tools/bench/diag_c106b_selftest3.log","md5":"3d3a77e6c58ad9630087b1ca1cb32590"},
+ {"path":"tools/bench/diag_c106b_live.py","md5":"c0c3f59e3e3aa99098bd2754882a9806"},
+ {"path":"tools/bench/diag_c106b_live.log","md5":"4a360b96cc84c0d3e712b1d59849d3d7"},
+ {"path":"tools/bench/facts_c106b.json","md5":"87b0c751575b6c9bc3e182731f820026"},
+ {"path":"tools/bench/m8_shots/dialogs/dialog_v5_run1_20260927_071253_h146737316.png","md5":"1ca355a35a2db455fb9e26fccfcfa65e"}
+],
+"facts":[
+ "L1: 104-5 chain = diag_c104_abba.py (leg loop was :163, now LG.leg_loop :183) -> diag_c104_leg.py (not writable, unchanged) -> drive_m8.py -> drive_original_copy_v5.py; new module drive_legguard.py",
+ "L2: diag_c104_abba.py:123 LG.visa_precheck (Rotor + ASRL5::INSTR open/close) before LabVIEW starts; also v5.main:540 before G0. Bypass only by env LEGGUARD_TEST_BYPASS_VISA=1",
+ "L3: v5:612 run2 not started when run1 failed before pick 1; drive_legguard.py:156-178 stop_reason/leg_loop end the loop on a refused leg or an A leg failing before pick 1",
+ "L4: v5:288 DialogWatch (0.25 s poll) runs Run->end of L2; a new modal window -> shotwin -Hwnd, taskkill /F, OCR text; cleanup skips all COM calls after a kill (v5:648)",
+ "L7 offline self-test 30/0 (diag_c106b_selftest3.log): precheck on a fake dll (4 negative cases), 6 loop stubs, v5.main run2 +/-, fake-window watch +/-, OCR on the 105-2 png, ABBA --dry 4 legs",
+ "L5 live: standalone Rotor and ASRL5 both 0xBFFF0072; the real ABBA refused leg 1, 1 row, loop stopped, LabVIEW never seen, no leg.json (diag_c106b_live.log:4-18)",
+ "L6 live (bypass + STOP_AT_L2, --max-legs 1): modal LVDChild seen 0.52 s after watch start; shotwin rc 0; killed 1.46 s after detection, no COM Abort; max poll gap 0.261 s (facts_c106b.json)",
+ "L6 OCR text: 'Error -1073807246 occurred at VISA Open in Configure.vi ... (Hex 0xBFFF0072) The resource is valid, but VISA cannot currently access it.' (diag_c106b_live.log)",
+ "L6/L7: one leg, 0 picks, loop stop 'A leg failed before pick 1', v5 step 30 'NOT started', G93 TMX 39, S1 md5 3e3d23ce before/after, LabVIEW 0 at end (diag_c106b_out/m8_l6/m8_v5_*.json)",
+ "Also changed: diag_c104_abba.py:140 errors='replace' (L6 hit a cp949 UnicodeDecodeError while reading the leg's output, diag_c106b_live.log:41-48); INDEX row skipped when no leg has numbers (:205-206)"
+],
+"open":[
+ "Test runs set M8_OUT_DIR so jsons stay out of tools/bench. That made the ABBA's T10/lost reads null in L6 (leg script reads m8 json from tools/bench). The real ABBA leaves it unset, so its behaviour is unchanged.",
+ "Also decided in this card: any refused leg (not only an A leg) ends the ABBA loop, following L5's wording. PD217(g) itself names only the A-before-pick-1 rule."
+],
+"cost":{"usd":null,"minutes":38,"labview_runs":1},
+"note":"diag_c106b_selftest.log | our-script-bug p=0.95 | patch and rerun | restored the CD line, reran | 30/0. Live 17/0 (L5 no LabVIEW; L6 one leg). No VI edited or saved; VISA open/close only, no attribute or byte. STATUS untouched, no commit, no peer."}

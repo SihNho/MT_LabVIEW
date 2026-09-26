@@ -1,0 +1,27 @@
+BGRUN START 2026-09-27 07:08:27 limit 6.0 min: py -u tools/bench/diag_c106c_resim.py
+BGRUN PID 18428
+diag_c106c_resim - card 106-3 T1: re-simulate the EXECUTED display plan tools/bench/sim/disp/plan_disp.json with the
+card-106-3 stagesim (finalize cdiff graph = the E3 inputs: node_labels_default + the S1 wiki fs pairs, stagesim.cdiff_inputs;
+classed open-row rule, stagesim.open_rows_classed). OFFLINE, no LabVIEW, nothing in tools/bench/sim/disp is written: the
+step files go to %TEMP%\c106c_resim, a compact summary to tools/bench/sim/c106c_resim_summary.json.
+PRIOR ART: diag_c103_resim.py / diag_c104c_e3rows.py (same simulate call; the 104-3 E3 row census). No new op.
+PREDICTION CONTRACT:
+  R1 the simulation reaches the last action with no failed step
+  R2 end cdiff rows (node, term) == the plan's PD213(d) class 1-3 open rows (6 rows, read from each row's `why`)
+  R3 final True through the classed rule; the legacy all-21-rows rule is False; class-4 sources == S1 for all 15 rows
+  R4 every re-simulated step STATE == the pinned step file's state (the ops are untouched; only the finalize graph changed)
+  R5 plan_disp.json and its pinned step files are byte-unchanged (md5 before == after == the pins)
+    py tools/bgrun.py --material --max-min 5 --log tools/bench/diag_c106c_resim.log -- py -u tools/bench/diag_c106c_resim.py
+  FACT  cdiff_inputs {'labels': 'node_labels_default', 'labels_n': 626, 'fs_pairs': 'docs/wiki/subvi/D1_s1_copy.json', 'fs_pairs_n': 576}
+  FACT  step-0 (unedited S1 base) cdiff rows: 0 (the 104-3 finalize read 15 class-4 rows at step 0)
+  FACT  end rows [(8323, 'Force (pN) vs Extension (nm) '), (8764, 'y'), (27716, 'index'), (28180, 'half-width'), (29009, 'left rank'), (29009, 'right rank')]
+  PASS  R1 simulation reached the last action (57) with no failed step  None
+  PASS  R2 end cdiff rows == the plan's class 1-3 open rows (6 of 21)  {'extra': [], 'missing': []}
+  PASS  R3 final via the classed rule (legacy all-rows rule False; class-4 sources == S1 15/15 rows, 15 keys)  {'ok': True, 'want': [[8323, 'Force (pN) vs Extension (nm) '], [8764, 'y'], [27716, 'index'], [28180, 'half-width'], [29009, 'left rank'], [29009, 'right rank']], 'c4_n': 15, 'c4_keys': 15, 'c4_bad': [], 'unclassed': []}
+  PASS  R4 every re-simulated step state == its pinned step file state (58 steps)  []
+  PASS  R5 plan_disp.json + its 58 pinned step files byte-unchanged  c7d80fc93279f4ea5efd21c068e7efa6
+  FACT  stagexec.open_row_class is stagesim.open_row_class: True
+=== GATES: 5 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/sim/c106c_resim_summary.json","md5":"aa3a3c3858b33e2c478ea6f43986fdbb"}]}
+BGRUN END rc=0 after 62s
+BGRUN KILLED (external) pid=18428 marked 2026-09-27 07:09:30 by bgrun pid=17468: no END/TIMEOUT and the runner process is gone

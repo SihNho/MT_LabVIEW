@@ -833,6 +833,28 @@ moved case node's `Terminals[]` = `[(0, 'index', sink, 0)]` — the selector ter
 fed it (`:15`). The route that 97-2 planned for T1 (`loop_in` fixture) needs an existing source object:
 `archive/peer/2026-09-26-c97-loopin1055.md`.
 
+## ✅ Card 106-3 — offline stage checks, pure Python (2026-09-27, PD216(g) / PD217(d); no LabVIEW)
+
+- **`stagesim.cdiff_inputs(plan, st)`**: the FINALIZE cdiff graph of a plan whose context names the S1 wiki (`s1_key` /
+  `fs_pairs_wiki`) is built with `JC.node_labels_default()` + the wiki `fs_tunnel_pairs` — the E3 inputs
+  (`stagexec.e3_graph`); the ops keep their inputs, so step states are unchanged. Finalize also accepts the PD217(c)
+  CLASSED rule (`stagesim.open_rows_classed`: end rows == class 1-3 rows, class-4 sources == S1's). Re-sim of
+  `plan_disp.json`: end rows 6 == the class 1-3 rows, step 0 has 0 rows (was 15), 58/58 step states identical
+  (`tools/bench/diag_c106c_resim.log`, `tools/bench/sim/c106c_resim_summary.json`).
+- **`stage_prerun` X9** — every dispatched op whose verb holds a precondition on the work file
+  (`stagexec.ROUTE_PRECONDITIONS`, `precondition_failures`: `copy_in` needs work == `gscript.MOVE_DST`) is checked against
+  the Stage the dry run built. **X10** — predicted private-MB peak from the RECORDED per-op meter of an earlier run of the
+  same recipe (`stagexec.meter_rows_from_log`, `mem_predict`; same mode first, else a fresh-start record shifted) must be
+  < `MEM_STOP_MB`; no covering record = UNMEASURED (reported, passes). Self-test `tools/bench/selftest_stage_prerun_c106c.py`.
+  **Card 106-5 (PD219(c)):** X10 fails at a predicted checkpoint **>= 690 MB** (`stage_prerun.X10_FAIL_MB`; 690.0 fails,
+  689.9 passes); UNMEASURED prints `X10 WARN unmeasured` and puts it in the RESULT line's `first_fail` of a PASS
+  (`result_first`; result-line/1 has no other text field). Without `--graph` the dry takes the recipe's **plan base graph**
+  (`plan_base_graphs` -> `find_graph(md5, plan_graphs)`, pinned by the plan's `base.md5`; `plan_disp` -> `par1359_95_graph.json`).
+  `launched_py` splits on newlines (after joining `\`/backtick continuations); `launched_plan_runs` does not yet.
+  Self-test `tools/bench/selftest_stage_prerun_c106e.py`.
+- **Recipe helpers in `stagexec`** (moved from `tools/recipes/stage_d1_disp.py`, now 90 lines): `DryPlanBE`, `w0_wires`,
+  `report_stop`, `log_step_diffs`, `b1_gate`, `part_a_gates`, `w1_rbw`, `e3_gate`, `kill_labview_at_exit`.
+
 ## The rule this file encodes
 
 Before a plan depends on a capability, it must name **where that capability was last exercised**. If the answer is

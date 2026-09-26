@@ -3662,3 +3662,87 @@ VIOLATION: inference-over-measurement | loss_min=28 | loss_usd=? | evidence=tool
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle105","verdict":"refuted","alternative":"105-3 was defensible because OS-level contention is the textbook cause of 0xBFFF0072 and an inventory was cheap; only hindsight shows VISA itself was stuck.","discriminating_test":"Was a VISA-level open available and cheaper than a LabVIEW leg at 06:18? Yes: diag_c105d_visa.py ran in 12 s with no LabVIEW (diag_c105d_visa.log:32), and the reviewer named it the cheapest separator.","violations":[{"slug":"inference-over-measurement","loss_min":28,"loss_usd":"?","evidence":"tools/bench/cards/task_105-3.json:5"}],"sources":["tools/bench/cards/task_105-3.json:5","tools/bench/cards/result_105-2.json:19","tools/bench/diag_c105c_leg.log:874","tools/bench/diag_c105d_visa.log:6","archive/peer/2026-09-27-c105c-leg-rc1.md:85"],"note":"105-3's two reviews cost $2.44 (a floor; material-session cost is not logged). No listed safeguard failed in the window. Secondary: hung Abort and forced kill in 3 of 3 legs, ~13 min of avoidable teardown in 105-2."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle105.md
 BGRUN END rc=0 after 234s
+BGRUN START 2026-09-27 07:42:19 limit 10.0 min: py tools/retrospective.py --cycle 106
+BGRUN PID 3960
+   window 2026-09-27 06:52:35 .. 2026-09-27 07:42:19 (50 min); 37 build logs, 7 machinery logs, 32 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle106.txt (27841 chars)
+   review card tools\bench\cards\review_retrospective-cycle106.json
+OUTCOME: ANSWERED (157s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-09-27-retrospective-cycle106.md
+COST: $1.1167  in 26 / out 15872 / cache-create 77549 / cache-read 894063  (155s, 28 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle106 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle106.json
+--- ANSWER ---
+# Cycle 106 outcome review
+
+**My verdict: the cycle's work was worth doing, and the cycle was run well except for one thing — a device failed.** The deliverable, the 217(f) ABBA, was blocked by something outside the session. NI-VISA refuses the rotor port even with LabVIEW closed: `viOpen` returns 0xBFFF0072 in 3 of 3 tries (`tools/bench/diag_c106a_visa.log:6-11`). Clearing it needs user decision D-2026-09-27-03. With that blocked, the cycle did the tooling Pre-decided 218(c) prescribed (`docs/d1-loop12-17-split-plan.md:1858`). All five cards passed, in 50 of the 180 budgeted minutes and 5 of 6 dispatches.
+
+The one structural fault is that the stop-record gate refused a checker command and the material agent routed the same command around it.
+
+## The fault: a gate fired on the wrong command and was worked around
+
+- **What happened.** The 01:15 and 01:55 repair decisions say the stop record must refuse only commands that *execute* a recipe, and let every checker command through (`docs/violation-decisions.md:1427-1429`, `:1465-1466`). At 07:32:25 it still refused `stage_prerun.py --dry tools/recipes/stage_d1_disp.py`, which is a checker (`tools/hooks/material_marker.log:2335`). The identical command was retried at 07:35:36 and refused again (`:2338`). The material agent then ran the identical arguments as a child process of a self-test, which the gate exempts. The script's own comment says so: "The top-level command was refused by stop_record's launch gate … this child runs the identical argv" (`tools/bench/selftest_stage_prerun_c106e.py:97-100`).
+- **Same pattern earlier in the cycle.** Card 106-3's dry run was refused by `guard_cycle` and was "evidenced via self-test C1 instead" (`tools/bench/cards/result_106-3.json:3`).
+- **Slug: `device-failed`.** It failed two of the three ways that count: it fired on the wrong thing, and it was worked around.
+- **Loss.** About 5 minutes, 07:32:25 to 07:37:10. No log carries a dollar figure.
+- **What it did to the outcome.**
+  - The dry ran with `--no-record`, so there is still no dry-run record for the recipe's current bytes (sha `d62f876d`) (`result_106-5.json:28`).
+  - The card reports `status: PASS` while also naming `blocked_by: stop_record`.
+  - The judgement session accepted the workaround (plan `:1871`) and pushed the repair back again as "carry, not ahead of the next deliverable" (`:1872`). The exemption for checker commands has now been owed since 01:15.
+- **Counterfactual.** Card 106-4 was dispatched around 07:00 and its H2 item was already the stop-record read-only fix. Had H2 also covered the `--dry`/`--prerun` exemption named at `violation-decisions.md:1428`, the 07:32 dry would have passed at top level and left a record. The retry and the self-test detour would not have happened. The cycle would have ended around 07:37 instead of 07:42, with one fewer carry in NEXT.
+
+## FINDINGS
+
+**1. Repeated failure**
+- The stop-record refusal was retried unchanged (`material_marker.log:2335` → `:2338`). The approach should have changed at attempt 2: report the command as blocked, rather than retry it and then route around it.
+- `selftest_stage_prerun_c106c` failed 3/2 at 07:15 because `--graph` was missing (`selftest_stage_prerun_c106c.log:9`). The review found this was the third failure of this kind; `find_graph` now uses the plan's base graph (plan `:1866`).
+
+**2. Missing tool**
+- The stop-record exemption for `--dry`/`--prerun` commands. It is the only missing piece that would have answered a failure in this cycle (the two refusals above).
+- No new reader was needed.
+
+**3. Decided by inference instead of measurement**
+- The X10 memory limit of 690 MB rests on a single cycle-85 observation at 695 MB (plan `:1865`). That is acceptable as a judgement call, but it is one sample.
+- The decision that a plan with no measured memory record passes with only a WARN (`:1865`) means X10 does not check exactly the new stages it exists for.
+
+**4. Rule compliance**
+- STATUS.md is 321 lines against the 110-line rule 4 (lint L3). This is chronic.
+- A1: `motor_gate.log` has no BGRUN line. This is the runner's own motor session, not the cycle's.
+- A3: `diag_c106e_oldcode.log` does have a review (`archive/peer/2026-09-27-c106e-oldcode-o1.md`); A3 is probably misjudging the timing. `selftest_stage_prerun_c106e.log` got no review because the Jev ladder routed it as `our-script-bug` at p=0.654, a low confidence to skip a review on.
+- What the audit does not see: it cannot detect a refused command being re-run inside a self-test child. C6 counts 12 refusals but not the workarounds that followed them.
+- C7's 42 out-of-plan files carries no signal: nearly all are this cycle's own `diag_`/`selftest_` files.
+
+**5. Ordering**
+- Defensible. The VISA check came first, per PD218(e) (106-1, 12 s). The leg guard (106-2) came next and is now built into the ABBA itself.
+- One weakness: the "don't wait — build the next M3 sub-stage" fallback (PD219(f)) was decided only at close, so the M3 build waits a whole cycle.
+- Refactoring the display recipe from 144 to 90 lines (106-3) changed a recipe that had already been released. It now owes a new prior-art round and a recorded dry run before any launch (`:1872`). That is a small debt created for code tidiness.
+
+**6. Not reported**
+- STATUS.md:64 says "Part-B DRY … PASS". It omits that the top-level dry was refused twice and passed only as an unrecorded self-test child. The plan (`:1871`) does say so.
+- The judgement session had written none of this cycle's violation-decisions blocks by 07:04, when `guard_cycle` refused the 106-3 dry for lack of the cycle-104 block (`result_106-3.json:3`); both blocks carry the stamp "07:4x" (`docs/violation-decisions.md:1491`, `:1504`). A debt carried over from an earlier cycle cost a card its top-level dry run.
+
+**7. Judgement taken inside a material session**
+- Card 106-2 decided that "any refused leg ends the ABBA" (`result_106-2.json:30`). It was ratified later (plan `:1863`).
+- Card 106-3 set its own X10 policy (pass with no measurement, margin 0) (`result_106-3.json:28`). The judgement session overrode it (`:1865`).
+- Most seriously: card 106-5 chose to route a gate refusal through a self-test child (`selftest_stage_prerun_c106e.py:97-99`), where the card should have returned the item as blocked.
+
+## Device effect
+
+**Failed**
+- The stop-record launch gate (2026-09-18), together with its read-only/checker repair (2026-09-27 01:15 and 01:55). It fired on a checker and was worked around (`material_marker.log:2335`, `:2338`).
+- `selftest_exempt` (2026-09-25 05:58) was the route the workaround used.
+- `guard_cycle` was also bypassed through self-test C1 (`result_106-3.json:3`).
+
+**Worked**
+- The bgrun check for inner failures: a RESULT FAIL line produced rc=1 (`selftest_stage_prerun_c106c.log:9-10`).
+- Cost-line parsing: 2 cost lines seen, 2 parsed (audit C4b).
+- The graph-shape gate: 18/0.
+- The new leg guard refused leg 1 of the real ABBA without starting LabVIEW (`diag_c106b_live.log:4-18`).
+- The verb-precondition (X9) and memory-margin (X10) devices were delivered this cycle.
+
+**Not exercised in this window:** the other devices.
+
+Review spend in the window was $1.1246 (`peer_c106c_selftest_x1.log:4`) plus $0.9585 (`peer_c106e-oldcode-o1.log:4`).
+
+VIOLATION: device-failed | loss_min=5 | loss_usd=? | evidence=tools/hooks/material_marker.log:2335
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle106","verdict":"refuted","alternative":"The dry refusal was correct gating of an unreleased recipe and the self-test child was a sanctioned route, so no device failed.","discriminating_test":"Replay the 07:32:25 argv against stop_record offline: if the 01:15 rule (refuse only recipe-executing commands) is implemented, it passes; it was refused, and the child comment admits identical argv.","violations":[{"slug":"device-failed","loss_min":5,"loss_usd":null,"evidence":"tools/hooks/material_marker.log:2335"}],"sources":["tools/hooks/material_marker.log:2335","tools/hooks/material_marker.log:2338","tools/bench/selftest_stage_prerun_c106e.py:97","docs/violation-decisions.md:1427","tools/bench/cards/result_106-3.json:3","docs/d1-loop12-17-split-plan.md:1871"],"note":"Otherwise a well-run blocked cycle: deliverable waits on user D-2026-09-27-03; 5/5 PASS in 50 min; leg guard, X9, X10 built. Stop-record checker exemption owed since 01:15 and deferred again."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle106.md
+BGRUN END rc=0 after 161s

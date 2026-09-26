@@ -196,13 +196,46 @@ def _drop_lint_segments(cmd, sr):
     return cmd if len(keep) == len(segs) else " ; ".join(keep)
 
 
-def stop_gate(cmd):
+# card 106-4 (PD216(g), the `wc -l` TWIN of archive/peer/2026-09-27-c103d-hooks-before.md s1): stop_record.split_segments
+# knows no backslash escapes, so in BASH `wc -l \"x<NL>py -u <recipe><NL>\"` looked like ONE quote-balanced read-only
+# segment while bash ran line 2. Before the check, a Bash command's escaped quote characters (outside single quotes -
+# where bash has no escapes) are replaced by `_`, so the splitter sees the quotes bash sees. Only `\"` and `\'` change;
+# every other byte, and every PowerShell command (no backslash escapes there), reaches stop_record unchanged.
+# Self-test: tools/bench/selftest_c106d_tools.py H2 (fails on the pre-106-4 hook, passes now).
+def _bash_escaped_quotes(cmd):
+    out, q, i, s = [], None, 0, cmd or ""
+    while i < len(s):
+        ch = s[i]
+        if q == "'":
+            out.append(ch)
+            q = None if ch == "'" else q
+        elif ch == "\\" and i + 1 < len(s):        # an escape pair: consumed whole (so `\\"` still closes)
+            nxt = s[i + 1]
+            out.append("_" if nxt == '"' or (nxt == "'" and q is None) else ch + nxt)
+            i += 2
+            continue
+        else:
+            out.append(ch)
+            if ch in ("\"", "'") and q is None:
+                q = ch
+            elif ch == '"' and q == '"':
+                q = None
+        i += 1
+    return "".join(out)
+
+
+_CUR_TOOL = [None]     # set by _main(); stop_gate keeps its one-argument call shape (selftest_launch_gate patches it)
+
+
+def stop_gate(cmd, shell=None):
     """0 = pass, 2 = refuse. One call, no logic duplicated - see tools/stop_record.py."""
     try:
         import stop_record
     except Exception:
         return 0                     # a missing/broken module must not wedge every command in the session
-    allow, why = stop_record.check_command(_drop_lint_segments(cmd, stop_record))
+    shell = shell or _CUR_TOOL[0] or "Bash"
+    seen = _bash_escaped_quotes(cmd) if shell == "Bash" else cmd
+    allow, why = stop_record.check_command(_drop_lint_segments(seen, stop_record))
     if allow:
         return 0
     note(False, "STOPPED-RECIPE " + cmd)
@@ -452,6 +485,7 @@ def _main():
     if rc:
         return rc
     # THE LAUNCH GATE, checked before any env-var escape for the same reason as the motor gate (FOURTH RULE).
+    _CUR_TOOL[0] = data.get("tool_name")
     rc = stop_gate(cmd)
     if rc:
         return rc

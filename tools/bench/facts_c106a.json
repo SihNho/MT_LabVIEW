@@ -1,0 +1,27 @@
+{
+ "card": "106-1",
+ "V1_visa_rerun": {
+  "script": "tools/bench/diag_c106a_visa.py = diag_c105d_visa.py byte copy, one line changed (OUTJ -> facts_c106a_visa.json) so the 105 artefacts stay unchanged",
+  "log": "tools/bench/diag_c106a_visa.log (BGRUN START 2026-09-27 06:56:03, END rc=0 after 12s, 6/0)",
+  "labview_before_after": "absent/absent (log:3,24,25,30)",
+  "Rotor": "3x -1073807246 0xBFFF0072 (log:6-8)",
+  "ASRL5::INSTR": "3x -1073807246 0xBFFF0072 (log:9-11); V2 A,B same (log:12)",
+  "CreateFileW_COM5": "err 0, handle closed, then viOpen ASRL5 0xBFFF0072 at 0/100/1000 ms (log:13-15); rev: cf_got_handle true (log:16); child hold HOLD True 0 -> viOpen same 0xBFFF0072 (log:17)",
+  "control_ASRL6": "COM6 x3 and ASRL6::INSTR x3 status 0, viClose 0 (log:18-23)",
+  "vs_105": "identical status per trial to diag_c105d_visa.log:6-23 (105 log md5 f899bd30... unchanged)"
+ },
+ "R1_replay_rotor": {
+  "replay_copies_keep_rotor_Configure": "Autonics instr.lib Configure.vi uid 30064 in census_after of BOTH replay copies (stage_replay_swap_78.json:439 s3, :565 s1)",
+  "swap_touches_only_camera": "callee_diff = #6810 get buff image-lost frames -> replay_get_buff_image, #22692 IMAQdx Get Image -> replay_get_image_cal (stage_replay_swap_78.json:478-495; plan_replay_swap_95.json swaps)",
+  "S1_run_hits_it": "S1 run: VISA Open in Configure.vi error 0xBFFF0072 at 0.41 s after Run (d1-loop12-17-split-plan.md:1854)",
+  "replay_run_logs": "no replay drive log names rotor/ASRL5/Configure/VISA (grep count 0 over tools/bench/*replay*.log); drive_m8_replay_s3_78.log:4 says running the copy executes the original's device init (PI, ASI named)",
+  "plan_95": "never executed: no replay_c95_swap.log, no par1359_95_replay_swap.json on disk",
+  "direct_record_of_VISA_Open_in_a_replay_run": "UNKNOWN (files silent)"
+ },
+ "R2_newest_replay_run": {
+  "log": "tools/bench/drive_m8_replay_s3_78.log",
+  "wall_clock": "BGRUN START 2026-09-25 08:13:51 (log:1), END rc=0 after 173s (log:768), 8/0 (log:759-767)",
+  "frames": "recorded frames via replay_get_image_cal/replay_get_buff_image swaps (stage_replay_swap_78.json:478-495); M3 frames >= 2000 PASS (log:761)",
+  "camera": "IMAQdx Configure Grab uid 13962 still in the replay copy census (stage_replay_swap_78.json:429); whether the real camera session opened in that run is not recorded (UNKNOWN)"
+ }
+}

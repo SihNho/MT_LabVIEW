@@ -1,0 +1,71 @@
+{
+ "schema": "task/1",
+ "id": "106-2",
+ "kind": "build",
+ "goal": "PD218(d)+217(g) as code in the leg drivers the 217(f) ABBA uses: VISA precheck of ASRL5 before each leg, stop-on-A-fail, modal-dialog fail-fast with PrintWindow text + direct kill",
+ "why": "106-1: viOpen ASRL5 still 0xBFFF0072 (diag_c106a_visa.log:6-11), so the ABBA cannot run; when the user clears it the ABBA must run at once and must not lose legs to a dialog again (104-5 lost 17 min).",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/cards/result_106-1.json"},
+  {"path": "tools/bench/cards/result_104-5.json"},
+  {"path": "tools/bench/cards/result_105-2.json"},
+  {"path": "tools/bench/drive_original_copy_v5.py"},
+  {"path": "tools/bench/diag_c106a_visa.py", "md5": "ec84d91eb349cf2bd9b2785f60db86a3"},
+  {"path": "archive/peer/2026-09-27-c105b-leg-rc1.md"},
+  {"path": "tools/lv_gui.ps1"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/drive_original_copy_v5.py"},
+  {"kind": "file", "name": "tools/bench/diag_c106a_visa.py"},
+  {"kind": "file", "name": "tools/lv_gui.ps1"}
+ ],
+ "pass": [
+  "L1: name the driver file(s) 104-5's ABBA used (file:line of its leg loop); patch only those and drive_original_copy_v5.py",
+  "L2: before each leg starts LabVIEW, NI-VISA open+close of 'Rotor' and ASRL5::INSTR; nonzero => leg refused, LabVIEW not started, status logged",
+  "L3: an A leg failing before pick 1 ends the whole leg loop (v5:560-565 and the ABBA loop); offline stub test proves no later leg is called",
+  "L4: poll <=0.5 s from Run to L2; a new modal LabVIEW dialog => shotwin -Hwnd capture + text logged, process killed directly (no COM Abort), leg FAIL",
+  "L5 live, no LabVIEW: the real ABBA entry run now stops at leg 1's VISA precheck (ASRL5 refused); LabVIEW never starts",
+  "L6 live, ONE leg: D1_s1_copy.vi, precheck bypassed by an explicit test flag (default off): dialog seen, text logged, killed <=15 s after it appears",
+  "L7: LabVIEW gone after L6; D1_s1_copy.vi md5 same before/after; no bytes to COM5; offline self-test of L2-L4 with negative cases"
+ ],
+ "outputs": [
+  "tools/bench/diag_c106b_*",
+  "tools/bench/facts_c106b.json",
+  "tools/bench/cards/result_106-2.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "gate",
+  "run_vi": true,
+  "write": [
+   "tools/bench/drive_*.py",
+   "tools/bench/abba_*.py",
+   "tools/bench/diag_c104_abba*.py",
+   "tools/bench/diag_c106b*",
+   "tools/bench/facts_c106b*",
+   "tools/bench/selftest_leg*",
+   "tools/bench/t0_legs/**",
+   "tools/bench/m8_shots/**",
+   "tools/bench/gui_shots/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/gui_actions.log",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "no picks, no ABBA legs beyond L5/L6, no rotor motion, no bytes to COM5, no VISA attribute set",
+  "never edit or save any VI; never touch visaconf, NI MAX, drivers or services",
+  "each LabVIEW step under bgrun (--max-min <= 15); hold the turn until its BGRUN END",
+  "GUI only via lv_gui.ps1 (-Exception Approved -Evidence 'user 2026-09-17 bead-pick option 1' if it changes state)",
+  "facts <=10 with file:line; OPEN <=3; do not judge the ABBA and do not propose design changes"
+ ],
+ "unblocks": "M8"
+}

@@ -2146,6 +2146,14 @@ def exec_state(target):
         return int(r.ExecState)
 
 
+# The -Evidence of EVERY GUI act gui_save performs (clickprobe, Ctrl+E, Ctrl+S) is the user's own approval wording
+# (CLAUDE.md split rule 6, user 2026-09-22 "저장 허용함."), so tools/gui_actions.log names the permission that
+# authorises the act. Card 106-4 (PD216(f)/(g)): the three strings used to be ad-hoc descriptions ("COM
+# SaveInstrument hangs on broken VIs", ...), which differed from the wording every card cites. The technical why
+# stays in the comments below. Test: tools/bench/selftest_c106d_tools.py H1 (no LabVIEW).
+GUI_SAVE_EVIDENCE = "user 2026-09-22 broken-intermediate save"
+
+
 def gui_save(target):
     """Save a BROKEN VI by focusing its window and sending Ctrl+S.
 
@@ -2199,8 +2207,8 @@ def gui_save(target):
         for _try in (1, 2):
             pj = _lv_gui("-Action", "clickprobe", "-Title", '"%s"' % title,
                          "-X", str(min(L + 300, R - 120)), "-Y", str(T + 10),
-                         "-Exception", "Approved",
-                         "-Evidence", "gui_save: title-bar clickprobe, foreground MEASURED before Ctrl+S (save repair 2026-09-22)")
+                         "-Exception", "Approved",     # title-bar clickprobe, foreground MEASURED before Ctrl+S
+                         "-Evidence", GUI_SAVE_EVIDENCE)
             line = next((l for l in pj.splitlines() if l.lstrip().startswith('{"probe"')), "")
             try:
                 pr = _json.loads(line)
@@ -2221,8 +2229,9 @@ def gui_save(target):
             time.sleep(0.8)
             ok, fg = _fg_click(fp_title)
             if ok:
+                # open the Block Diagram window - Ctrl+S on a Front Panel saves nothing (2026-08-30, 2026-09-15)
                 _lv_gui("-Action", "keys", "-Key", "^e", "-WaitMs", "1500", "-Exception", "Approved",
-                        "-Evidence", "gui_save: open the Block Diagram window - Ctrl+S on a Front Panel saves nothing (2026-08-30, 2026-09-15)")
+                        "-Evidence", GUI_SAVE_EVIDENCE)
                 time.sleep(0.8)
             else:
                 attempts.append("Ctrl+E to open the BD was NOT DISPATCHED - foreground stayed %r" % fg)
@@ -2239,7 +2248,8 @@ def gui_save(target):
         if not ok:
             attempts.append("%r: NO Ctrl+S DISPATCHED - foreground after the activating click was %r" % (title, fg))
             continue
-        _lv_gui("-Action", "keys", "-Key", "^s", "-WaitMs", "2500", "-Exception", "Approved", "-Evidence", "gui_save: COM SaveInstrument hangs on broken VIs (skill com-driving.md)")
+        # Ctrl+S because COM SaveInstrument hangs on broken VIs (skill com-driving.md)
+        _lv_gui("-Action", "keys", "-Key", "^s", "-WaitMs", "2500", "-Exception", "Approved", "-Evidence", GUI_SAVE_EVIDENCE)
         # SendKeys '^s' leaves the File MENU ACTIVATED (it renders highlighted). While a
         # menu is active LabVIEW's UI is modal and EVERY subsequent COM call blocks until
         # the 180s watchdog fires - twice mistaken for a wedged LabVIEW on 2026-08-30.

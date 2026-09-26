@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"106-4","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+ {"path":"tools/gscript.py","md5":"d530050a4ba9e46d64907f19bec71685"},
+ {"path":"tools/hooks/guard_bash.py","md5":"9cb88088aab0c6b7726c4709f87b568b"},
+ {"path":"tools/peer.ps1","md5":"681a46a08a246011b147c93d58339b26"},
+ {"path":"tools/audit_cycle.py","md5":"5d2f1bc906ec355bea39ed5771263884"},
+ {"path":"tools/bench/selftest_guard_bash_jev.py","md5":"814272928924f07c9f0ecaa4b92eee1d"},
+ {"path":"tools/bench/selftest_c106d_tools.py","md5":"2615c9b7983d5bb1f45fa0e021f40086"},
+ {"path":"tools/bench/selftest_c106d_tools.log","md5":"47d5451b2ca67d03cd6388285c1ac7e0"},
+ {"path":"tools/bench/selftest_c106d_tools_old.log","md5":"83cfce0e58637f92c40d1867073b28fe"},
+ {"path":"tools/bench/selftest_guard_bash_jev_c106d.log","md5":"8e6b1aa84a68980a2d55820e06eb6ad0"},
+ {"path":"tools/bench/facts_c106d.json","md5":"a8351efafbcec3001af4582b6f80412d"}],
+"facts":[
+ "H1: gui_save's 3 Approved GUI acts now send -Evidence GUI_SAVE_EVIDENCE='user 2026-09-22 broken-intermediate save' (gscript.py:2154,2211,2234,2252); AST test H1a-c",
+ "H1 test reads gui_save by AST: a stubbed call was refused by the card guard (flags.gui false, protocol.py:389 GUI_SRC_RE matches gui_save( )",
+ "H2: Bash escaped quotes outside single quotes become '_' before stop_record (guard_bash.py:205-243,488); twin wc -l \\\"x<NL>py -u R<NL>\\\" code 0 old -> 2 new",
+ "H2 test uses the REAL stop_record with a planted undisposed record in a temp store: 10/10, read-only wc/grep/Get-Content pass, 6 launch shapes refused (selftest_c106d_tools.log)",
+ "H3 cause = FIXTURE: diag_c88_brokenwires.py is VI-modifying (stage_prerun.py:1281-1289), prerun_gate refused it (diag_c106d_jevrc2.log:3-7); hook unchanged for this, 12/0 with C11",
+ "H4: peer.ps1:700-708 ConvertTo-VerdictNulls maps quoted ? to null for loss_usd/loss_min on VERDICT lines only; 2 archived answers now validate, 'about 3' still fails",
+ "H5: audit_cycle.py:234-256,483 drops tools/bench/jev_*.log|jsonl (path rule, same as guard_peer.py:299-307); real data A1 136/137 FAIL -> 145/145 PASS (diag_c106d_audit_after.txt:5)",
+ "Old-code run (--old, pre-edit copies): 11/8, fails exactly H1b H2d H4a-e H5 (selftest_c106d_tools_old.log:5,42,113-118)",
+ "Regression sweep caught selftest_launch_gate breaking (1-arg lambda patch); stop_gate call kept 1-arg via _CUR_TOOL, rerun 28/0 (selftest_launch_gate_c106d.log)",
+ "Ladder: diag_c106d_jevrc2.log | our-script-bug p=1.000 (jev_gate.log:1878) | patch+rerun | fixed result_line call | PASS; sweep's other 2 fails unrelated (diag_c106d_regress.log:7-11)"],
+"open":[
+ "selftest_protocol_wiring D3 (3 outcome review cards match today) and selftest_stage_prerun_headcmp_79-6 (stage_prerun working tree, card 106-3) fail independently of this card - who owns them?",
+ "stage_prerun.launched_py still does not split on newlines (review c103d-hooks-before s1); stage_prerun.py is outside this card's write list"],
+"cost":{"usd":null,"minutes":24,"labview_runs":0},
+"note":"offline only; no LabVIEW, no GUI, no peer dispatch; stop_record.py and stage_prerun.py untouched"}

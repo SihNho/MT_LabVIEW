@@ -692,11 +692,20 @@ if (-not $done) {
 # violations.py all glob archive\peer\*.md (verified 2026-09-16) - a proofreading exchange landing there would
 # lift a failed-prediction gate and be counted as a review by the audit, for work it never looked at.
 # C5: parse the peer's VERDICT line into tools/bench/cards/verdict_<id>.json (gates read that; the archive keeps prose).
+# card 106-4 (cycle-99 NEXT): the retrospective contract asks for `loss_usd=<n or ?>`, and peers carry the `?` into the
+# VERDICT JSON ("loss_usd":"?"), which verdict/1 rejects ("expected number/null, got str" - 16 archived answers, e.g.
+# archive/peer/2026-09-25-retrospective-cycle74.md:10,370). "Unknown" IS null in verdict/1, so on VERDICT lines only a
+# quoted `?` for loss_usd / loss_min becomes null before the parse. Any other string still fails validation; the
+# archived answer keeps the peer's own text. Test: tools/bench/selftest_c106d_tools.py H4 (extracts this function by AST).
+function ConvertTo-VerdictNulls([string]$Text) {
+    $eval = { param($m) $m.Value -replace '("loss_(?:usd|min)"\s*:\s*)"\?"', '${1}null' }
+    return [regex]::Replace($Text, '(?m)^.*\bVERDICT\s+\{.*$', $eval)
+}
 $verdictLine = ''
 if ($verdictId) {
     if ($outcome -eq 'ANSWERED') {
         $ansFile = Join-Path $env:TEMP ("peer_answer_{0}.txt" -f (Get-Random))
-        Set-Content -Path $ansFile -Value $answer -Encoding utf8
+        Set-Content -Path $ansFile -Value (ConvertTo-VerdictNulls $answer) -Encoding utf8
         $vOut = Join-Path $PSScriptRoot ("bench\cards\verdict_{0}.json" -f $verdictId)
         $verdictLine = (& py (Join-Path $PSScriptRoot 'protocol.py') parse-verdict $ansFile --id $verdictId --out $vOut | Out-String).Trim()
         Remove-Item $ansFile -Force -ErrorAction SilentlyContinue

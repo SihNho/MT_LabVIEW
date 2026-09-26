@@ -1,0 +1,65 @@
+{
+ "schema": "task/1",
+ "id": "106-5",
+ "kind": "build",
+ "goal": "PD219(c)-(e) leftovers: X10 690 MB + WARN unmeasured, find_graph plan base graph, launched_py newline split, 2 failing self-tests, Part-B dry of the 90-line recipe",
+ "why": "106-3/106-4 opens; decisions in docs/d1-loop12-17-split-plan.md PD219(c),(e). guard_cycle's retrospective-cycle104 block is answered in docs/violation-decisions.md (07:4x).",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "docs/violation-decisions.md"},
+  {"path": "tools/bench/cards/result_106-3.json"},
+  {"path": "tools/bench/cards/result_106-4.json"},
+  {"path": "tools/stage_prerun.py", "md5": "ec8f8c066023f2092193d56cc21a9bff"},
+  {"path": "tools/stagexec.py", "md5": "ac0e44fd95eb1ed97dc8b0390d0e9c38"},
+  {"path": "tools/recipes/stage_d1_disp.py", "md5": "1d1784ab0d9b714189e52f27d02ab2e4"},
+  {"path": "archive/peer/2026-09-27-c106c-selftest-x1.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_disp.py"},
+  {"kind": "file", "name": "archive/peer/2026-09-27-c106c-selftest-x1.md"}
+ ],
+ "pass": [
+  "F1: X10 fails a predicted checkpoint >= 690 MB (test: 690.0 fails, 689.9 passes); no covering record => 'X10 WARN unmeasured' in output and RESULT, pass",
+  "F2: find_graph uses the plan's base graph when --graph is absent; the three X1 cases of review c106c-selftest-x1 pass without --graph",
+  "F3: stage_prerun.launched_py splits on newlines (negative: a two-line command with the stage on line 2 is found)",
+  "F4: selftest_protocol_wiring D3 and selftest_stage_prerun_headcmp_79-6: cause read with file:line; fixed if our script, else open",
+  "F5: stage_prerun --dry tools/recipes/stage_d1_disp.py --from-step 33 PASS (entry diff 0, E3 6==6); all touched self-tests pass with counts"
+ ],
+ "outputs": [
+  "tools/bench/diag_c106e_*",
+  "tools/bench/facts_c106e.json",
+  "tools/bench/cards/result_106-5.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_prerun.py",
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/protocol.py",
+   "tools/bench/selftest_*",
+   "tools/bench/diag_c106e*",
+   "tools/bench/facts_c106e*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**",
+   "docs/toolkit-capabilities.md"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 45},
+ "rules": [
+  "offline only: stubbed COM, no LabVIEW, no VI; the recipe is not edited and not launched",
+  "do not change plan_disp.json rows or any md5 pin",
+  "facts <=10 with file:line; OPEN <=3; do not judge design"
+ ],
+ "unblocks": "M8"
+}

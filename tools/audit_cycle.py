@@ -222,6 +222,40 @@ def _self_test():
 _self_test()
 
 
+# THE JEV LEDGERS ARE NOT BUILD LOGS (card 106-4; the same rule as tools/hooks/guard_peer.py:292-307 is_jev_ledger,
+# card 101-2). tools/bench/jev_gate.log is the ledger guard_peer / jev_gate.py APPEND to - JEV-LADDER lines, and
+# JEV-GATEROW lines that quote a gated log's failure rows verbatim. It has no BGRUN START, so A1 called it a bgrun
+# bypass, and its quoted rows made A3 call it an unreviewed failing log (retrospective-cycle101 finding 4,
+# tools/bench/retro.log:3293; tools/bench/diag_c106d_audit_before.txt:5,7). Keyed on the PATH - a file directly in
+# BENCH whose basename is jev_*.log / jev_*.jsonl - never on content, so no other log is affected.
+JEV_LEDGER_RE = re.compile(r"^jev_[\w.-]*\.(?:log|jsonl)$", re.I)
+
+
+def drop_jev_ledgers(paths, bench=None):
+    """(kept, dropped): the Jev ledgers directly in `bench` (default BENCH, resolved at call time) are dropped."""
+    b = os.path.normcase(os.path.abspath(bench or BENCH))
+    kept, dropped = [], []
+    for p in paths:
+        led = (JEV_LEDGER_RE.match(os.path.basename(p))
+               and os.path.normcase(os.path.dirname(os.path.abspath(p))) == b)
+        (dropped if led else kept).append(p)
+    return kept, dropped
+
+
+def a1_bypass(build_logs):
+    """A1's reading: basenames of build logs carrying no `BGRUN START` line."""
+    return [os.path.basename(p) for p in build_logs if "BGRUN START" not in read(p)]
+
+
+def a3_unreviewed(build_logs, reviews_glob=None):
+    """A3's reading: (failing, unreviewed) - a failing log with no archived review newer than it."""
+    failing = [p for p in build_logs if log_failed(read(p))]
+    revs = glob.glob(reviews_glob or os.path.join(PEER, "*.md"))
+    unrev = [os.path.basename(p) for p in failing
+             if not any(os.path.getmtime(r) > os.path.getmtime(p) for r in revs)]
+    return failing, unrev
+
+
 def a2_state(body):
     """A2's reading of one log body (card 92-4): "" (no bgrun run at all), "ended" (END or TIMEOUT present),
     "killed" (no END/TIMEOUT but a `BGRUN KILLED` line from tools/bgrun_reap.py), "unfinished" (START only)."""
@@ -446,6 +480,7 @@ def main():
     # diverged (2026-09-16 lint). This copy was two terms behind guard_cycle's and counted `stall_pid*.log` as
     # builds, which is what made A1 report "NO BGRUN line" for two watchdog RECORDS.
     build_logs, peer_logs = logclass.split(logs)
+    build_logs, ledgers = drop_jev_ledgers(build_logs)
     # Scope reviews by the DATE IN THE FILENAME/frontmatter, not by mtime: a bulk edit (the 2026-09-15 frontmatter
     # pass touched all 216 peer files) rewrites every mtime and would drag years of history into the window.
     day_cut = time.strftime("%Y-%m-%d", time.localtime(cutoff))
@@ -454,12 +489,12 @@ def main():
                if (re.match(r"(\d{4}-\d{2}-\d{2})", os.path.basename(p)) or [None])[0] is not None
                and day_cut <= re.match(r"(\d{4}-\d{2}-\d{2})", os.path.basename(p)).group(1) <= day_end]
     print(f"\n== cycle audit, {window}: {len(build_logs)} build logs, {len(peer_logs)} peer logs, "
-          f"{len(reviews)} archived reviews\n"
+          f"{len(reviews)} archived reviews, {len(ledgers)} Jev ledger(s) not counted as builds\n"
           f"   (A4 scopes reviews by the DATE in the filename, so it is day-granular even inside a tight window)\n",
           flush=True)
 
     # A1 - bgrun discipline
-    bypass = [os.path.basename(p) for p in build_logs if "BGRUN START" not in read(p)]
+    bypass = a1_bypass(build_logs)
     say("A1 every build log came from bgrun", not bypass, f"{len(build_logs) - len(bypass)}/{len(build_logs)} ok"
         + (f"; NO BGRUN line in {bypass}" if bypass else ""))
 
@@ -483,12 +518,7 @@ def main():
         + (f"; KILLED from outside, closed by bgrun_reap (flagged): {killed}" if killed else ""))
 
     # A3 - a failing log must be followed by an archived review
-    failing = [p for p in build_logs if log_failed(read(p))]
-    unreviewed = []
-    for p in failing:
-        t = os.path.getmtime(p)
-        if not any(os.path.getmtime(r) > t for r in glob.glob(os.path.join(PEER, "*.md"))):
-            unreviewed.append(os.path.basename(p))
+    failing, unreviewed = a3_unreviewed(build_logs)
     say("A3 every failing log is followed by an archived review", not unreviewed,
         f"{len(failing)} logs recorded a failure; unreviewed: {unreviewed or 'none'}")
 

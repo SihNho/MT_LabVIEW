@@ -112,8 +112,15 @@ sys.path.insert(0, HERE)
 import drive_original_copy_v4 as d4                                            # noqa: E402
 import d0_locate as L                                                          # noqa: E402
 from bench_prep import labview_handles                                         # noqa: E402
+import drive_legguard as LG                                                    # noqa: E402  card 106-2
 
 d0 = d4.d0
+
+# card 106-2 (PD218(d)/PD217(g)): VISA precheck before Run (drive_m8 --dry replaces it), dialog watch Run->L2 with a direct
+# kill, run2 never started when run1 did not reach pick 1, cleanup skips every COM call after a guard kill.
+VISA_PRECHECK = LG.visa_precheck
+GUARD = {"killed": None, "picks_started": {}}
+DIALOG_GRACE_S = 3.0          # after L1, keep watching this long before L2's focus (focus taps Esc, 104-6)
 
 ORIGINAL, ORIGINAL_MD5, COPY = d4.ORIGINAL, d4.ORIGINAL_MD5, d4.COPY
 
@@ -277,22 +284,47 @@ def leg(tag, n, base_path, cal_wait):
     rec("%d %s.pre reset+readback of the 3 control-flow booleans" % (n, tag), "VISERVER", True,
         "%r (no panel PARAMETER is written)" % resets)
 
-    # ---- L1 run ---------------------------------------------------------------------------------
+    # ---- L1 run (card 106-2: a DialogWatch runs from before Run to the end of L2) -----------------
+    watch = LG.DialogWatch("v5_%s" % tag, os.path.join(SHOTS, "dialogs"), log=log)
+    watch.start()
+
+    def watch_fired(where):
+        rw = watch.stop()
+        FACTS["dialog_watch_%s" % tag] = rw
+        if not watch.fired:
+            return False
+        GUARD["killed"] = "dialog %s" % where
+        md = rw.get("modal") or {}
+        rec("%d %s.L1d modal LabVIEW dialog between Run and L2 (%s) -> shotwin + LabVIEW killed directly, no COM Abort"
+            % (n + 1, tag, where), "GUI", False,
+            "window %s; shotwin rc=%s png=%s; kill %s %.2fs after visible; text: %s"
+            % (md.get("win"), (md.get("shotwin") or {}).get("rc"), (md.get("shotwin") or {}).get("png"), md.get("kill"),
+               md.get("kill_after_visible_s") or -1, ((md.get("ocr") or {}).get("text") or "")[:600]))
+        return True
+
     rt = d0.RunThread(COPY, "v5_%s" % tag)
     rt.start()
     t0 = time.time()
     left = False
     while time.time() - t0 < RUN_SETTLE:
-        time.sleep(2.0)
+        time.sleep(0.5)
+        if watch.fired:
+            break
         if state() not in (1, -1):
             left = True
             break
+    tg = time.time()
+    while left and not watch.fired and time.time() - tg < DIALOG_GRACE_S:
+        time.sleep(0.25)
+    if watch.fired and watch_fired("L1"):
+        return False
     rec("%d %s.L1 VI left idle" % (n + 1, tag), "COM", left,
         "ExecState=%s after %.0fs; Run returned=%s" % (state(), time.time() - t0,
                                                        rt.returned is not None))
     ok &= left
     if not left:
         capture("v5_%s_run_fail" % tag)
+        watch_fired("L1 not left")
         return ok
 
     # ---- L2 LOCATE the image display -------------------------------------------------------------
@@ -300,14 +332,23 @@ def leg(tag, n, base_path, cal_wait):
     time.sleep(1.5)
     prect = panel_rect()
     before_png = capture("v5_%s_before_picks" % tag)
+    if watch_fired("L2"):
+        return False
     img, iwhy = (None, "no capture") if not before_png else \
         L.locate_image_display(before_png, prect or (0, 0, 1920, 1080))
     rec("%d %s.L2 IMAQ display LOCATED in this leg's own capture" % (n + 2, tag), "GUI", bool(img),
         "panel rect=%s; %s; (v3's V6 rect, NOT used: %s)" % (prect, iwhy, V6_IMAGE_RECT))
     ok &= bool(img)
+    if LG.test_stop_at_l2():
+        gone, secs = LG.kill_labview()
+        GUARD["killed"] = "test stop at L2"
+        rec("%d %s.L2x TEST STOP at L2 (%s=1): no picks, LabVIEW killed directly" % (n + 2, tag, LG.STOP_L2_ENV),
+            "PROC", False, "gone=%s after %.1fs" % (gone, secs))
+        return False
     if not img:
         return ok
     LOC["image_%s" % tag] = img
+    GUARD["picks_started"][tag] = True
 
     # ---- L3 the 3 picks, at fractions of the LOCATED rect, verified by the markers ---------------
     m_before = L.count_red_markers(before_png, img)
@@ -496,6 +537,15 @@ def main():
     log("LabVIEW handles BEFORE %s" % FACTS["handles_before"])
     log("reference patch: %s (exists=%s)" % (L.REF_DONE, os.path.isfile(L.REF_DONE)))
 
+    pc = VISA_PRECHECK(log=log)                                                # card 106-2 L2 (PD218(d))
+    FACTS["visa_precheck"] = pc
+    rec("0p VISA precheck: open+close %s before Run (no byte, no attribute)" % "/".join(pc.get("names") or []), "VISA",
+        pc["ok"], "bypassed=%s dry=%s %s" % (pc.get("bypassed"), pc.get("dry"),
+                                             [(t["name"], t["hex"]) for t in pc.get("trials") or []] or pc.get("why")))
+    if not pc["ok"]:
+        rec("0q LEG REFUSED", "VISA", False, "a nonzero VISA status: the VI is NOT opened or run")
+        return False
+
     rc0, txt0 = d4.motor_gate("cycle27-plan Pre-decided 4: running the copy executes the "
                               "original's device init, which drives the PI stage and the ASI")
     p0 = d4.parse_motor(txt0)
@@ -557,7 +607,12 @@ def main():
             % (pr, d4.V6_PANEL_RECT))
         ok &= bool(pr)
 
-        ok &= leg("run1", 10, os.path.join(RUN_DIR, "cal001"), CAL_WAIT_1)
+        ok1 = leg("run1", 10, os.path.join(RUN_DIR, "cal001"), CAL_WAIT_1)
+        ok &= ok1
+        if not ok1 and not GUARD["picks_started"].get("run1"):              # card 106-2 L3 (PD217(g))
+            rec("30 run2 RESTART LEG", "COM", False,
+                "NOT started: run1 failed before pick 1 (%s) - stop-on-fail, PD217(g)" % (GUARD["killed"] or "no kill"))
+            return False
 
         el = time.time() - d0._t0
         st = state()
@@ -590,6 +645,12 @@ def cleanup():
     if "cleanup" in _once:
         return
     _once.add("cleanup")
+    if GUARD["killed"]:                                                        # card 106-2: no COM after a guard kill
+        log("cleanup: LabVIEW was killed by the leg guard (%s) - stop, panel record, resets, closepanel, release SKIPPED"
+            % GUARD["killed"])
+        FACTS["cleanup_skipped_com"] = GUARD["killed"]
+        _cleanup_files_and_motor()
+        return
     try:
         if state() not in (0, 1, -1):
             stopped, mech, lat, det = stop_with_fallback("cleanup")
@@ -618,7 +679,10 @@ def cleanup():
         d0.com.call("release", timeout=10.0)
     except Exception:                                                          # noqa: BLE001
         pass
+    _cleanup_files_and_motor()
 
+
+def _cleanup_files_and_motor():
     n, tot, by, other = d0.listdir_stats(RUN_DIR)
     FACTS["run_dir"] = {"path": RUN_DIR, "files": n, "bytes": tot, "by_ext": by, "non_tiff": other}
     dn, db = d0.delete_tiffs(RUN_DIR)

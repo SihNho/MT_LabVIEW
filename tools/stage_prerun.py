@@ -47,6 +47,15 @@ PRE-RUN (decision 2, 3, 8), all offline, on the same graph JSON + the dry run's 
      value goes only to a compare/logic node that also gets the current value (an edge detector) unless the source is
      a DECLARED non-boolean (`type`) compared by a comparison (a counter reader). Also on --prerun of a plan.
      `--control-lint <plan>` (exit 0/2) · `--selftest-control-lint` (log tools/bench/selftest_control_path_lint.log)
+  X9 (card 106-3, retrospective-cycle102 wrong-ordering) every op/row the run dispatches whose verb holds a precondition
+     on the stage's work file (stagexec.ROUTE_PRECONDITIONS - copy_in: work == gscript.MOVE_DST) holds for the Stage
+     the dry run built (r7 stopped IN op 41 on it: stage_d1_disp_r7.log:807)
+  X10 (card 106-3, retrospective-cycle103 inference-over-measurement) the predicted LabVIEW private-MB peak over the
+     dispatched ops, from the RECORDED per-op meter of an earlier run of the same recipe (stagexec.mem_predict), is
+     below X10_FAIL_MB 690 (card 106-5, PD219(c): error 2 was seen at 695 MB; MEMSTOP stagexec.MEM_STOP_MB 700 stays
+     the run-time guard); no covering record = UNMEASURED: `X10 WARN unmeasured` in the output and the RESULT line, pass.
+     Without --graph the dry uses the recipe's plan base graph (find_graph / plan_base_graphs, card 106-5).
+     Self-test of X9/X10: tools/bench/selftest_stage_prerun_c106c.py
 Records: tools/bench/prerun_records.jsonl, one line per dry/prerun, keyed by the script's sha256 + the plan files'
 md5s. Launch gate (decisions 1/2/4): a `tools/recipes/stage_*.py` launch needs a dry PASS and a prerun PASS for the
 script's CURRENT sha256 and plan md5s, both newer than the newest failing run of that script (a failed run
@@ -147,14 +156,60 @@ def graph_shape_error(d):
 FIND_SKIPPED = []                       # (path, reason) of md5-matching graph files find_graph refused, last call
 
 
-def find_graph(input_md5):
-    """The newest tools/bench/graph_*.json OR tools/bench/sim/<stage>/graph_*.json whose top-level `md5` is
-    `input_md5` AND whose shape is the terminal-list graph (graph_shape_error None; card 95-1). The sim/ subtree was
+def plan_base_graphs(recipe):
+    """card 106-5 (PD219(c)): [(path, md5 pin or None)] of the base graph every plan the recipe names records
+    (`base.path` / `finalized.base.path`; plan_disp.json -> tools/bench/par1359_95_graph.json). [] when unreadable."""
+    out = []
+    try:
+        plans = plan_files(recipe)[0]
+    except Exception:                                                              # noqa: BLE001
+        return out
+    for p in plans:
+        try:
+            d = json.load(REAL_OPEN(p, encoding="utf-8"))
+        except Exception:                                                          # noqa: BLE001
+            continue
+        for b in (d.get("base"), (d.get("finalized") or {}).get("base")):
+            if isinstance(b, dict) and isinstance(b.get("path"), str) and b["path"]:
+                ap = b["path"] if os.path.isabs(b["path"]) else os.path.join(ROOT, b["path"])
+                item = (os.path.normpath(ap), b.get("md5"))
+                if item not in out:
+                    out.append(item)
+    return out
+
+
+def find_graph(input_md5, plan_graphs=()):
+    """The terminal-list graph (graph_shape_error None; card 95-1) whose top-level `md5` is `input_md5`:
+    FIRST the plan's own base graph (`plan_graphs` = plan_base_graphs(recipe); card 106-5, PD219(c): the plan was finalized
+    against it, so it wins when its header md5 is the input's AND its file md5 equals the plan's pin - the recipe's
+    base graph par1359_95_graph.json is not named graph_*, and three X1 failures were the missing `--graph`, review
+    archive/peer/2026-09-27-c106c-selftest-x1.md s1); ELSE the newest tools/bench/graph_*.json OR
+    tools/bench/sim/<stage>/graph_*.json. The sim/ subtree was
     added by the cycle-87 firefighter (PD194(c)): the L2-A1 graph lives in sim/l2a1/, so every `--prerun` launched
     without `--graph` failed gate X1 in cycles 85 and 86 (prerun_l2a1_85.log:29, prerun_l2a1_86-5.log:29) and was
-    re-launched by hand with `--graph`. Header md5 matches of another shape are listed in FIND_SKIPPED."""
+    re-launched by hand with `--graph`. Header md5 matches of another shape (or a plan base graph whose bytes moved off
+    the plan's pin) are listed in FIND_SKIPPED."""
     hits = []
     del FIND_SKIPPED[:]
+    for p, pin in plan_graphs or ():
+        if not os.path.isfile(p):
+            FIND_SKIPPED.append((rel(p), "plan base graph missing"))
+            continue
+        with REAL_OPEN(p, encoding="utf-8", errors="replace") as f:
+            m = re.search(r'"md5"\s*:\s*"([0-9a-f]{32})"', f.read(800))
+        if not m or m.group(1) != input_md5:
+            continue                                   # the plan's base is another VI (a PART-B input): not a match
+        if pin and md5(p) != pin:
+            FIND_SKIPPED.append((rel(p), "plan base graph file md5 {0} != the plan's pin {1}".format(md5(p), pin)))
+            continue
+        try:
+            why = graph_shape_error(json.load(REAL_OPEN(p, encoding="utf-8")))
+        except ValueError as e:
+            why = "not JSON: {0}".format(e)
+        if why:
+            FIND_SKIPPED.append((rel(p), why))
+            continue
+        return p
     for p in glob.glob(os.path.join(BENCH, "graph_*.json")) + glob.glob(os.path.join(BENCH, "sim", "*", "graph_*.json")):
         try:
             with open(p, encoding="utf-8", errors="replace") as f:
@@ -286,6 +341,8 @@ class DryState(object):
         self.stub_limit = None
         self.reached_end = False
         self.blocked = []                    # subprocess / file ops refused
+        self.works = []                      # card 106-3: every Stage's work path (X9 verb preconditions)
+        self.recipe = None                   # card 106-5: the recipe under dry run (find_graph reads its plans' base)
 
 
 D = DryState()
@@ -406,7 +463,8 @@ def _stub(name):
 
 def _graph():
     if D.graph is None:
-        p = D.graph_override or (find_graph(D.input_md5) if D.input_md5 else None)
+        p = D.graph_override or (find_graph(D.input_md5, plan_base_graphs(D.recipe) if D.recipe else ())
+                                 if D.input_md5 else None)                       # card 106-5: the plan's base graph
         D.graph_path = p
         D.graph_error = None
         if not p and not D.graph_override and FIND_SKIPPED:
@@ -585,6 +643,7 @@ def patch_stagekit():
         orig["__init__"](self, *a, **k)
         self.out_json = os.path.join(SINK, os.path.basename(self.out_json))
         D.input_md5, D.input_vi = self.input_md5, self.input_vi
+        D.works.append(self.work)
 
     def gate(self, label, ok, detail="", fatal=False):
         if isinstance(ok, Fake):
@@ -707,6 +766,7 @@ def dry(recipe, graph=None):
     install(graph)
     import runpy
     path = os.path.abspath(recipe)
+    D.recipe = path
     code_lines = set()
     try:
         co = compile(open(path, encoding="utf-8").read(), path, "exec")
@@ -743,7 +803,7 @@ def dry(recipe, graph=None):
             "coverage": [len(hit & code_lines), len(code_lines)], "ops": D.ops, "addresses": D.addresses,
             "jev": D.jev, "graph": rel(D.graph_path) if D.graph_path else None, "input_md5": D.input_md5,
             "input_vi": D.input_vi, "blocked": sorted(set(D.blocked)), "secs": round(time.time() - t0, 1),
-            "calls": len(D.calls)}
+            "calls": len(D.calls), "works": list(D.works)}
 
 
 # ---------------------------------------------------------------------------------------------- the pre-run
@@ -1067,6 +1127,100 @@ def lint(recipe, OG):
     return ints, strs
 
 
+# ------------------------------------------------------------------ card 106-3: X9 verb preconditions, X10 memory margin
+def verb_preconditions(plans, sps, work, move_dst, stop_after=None, from_step=None):
+    """X9 (retrospective-cycle102 `wrong-ordering`): every op / row the run DISPATCHES whose verb holds a precondition on
+    the stage's own work file (stagexec.ROUTE_PRECONDITIONS: copy_in needs work == gscript.MOVE_DST) is checked OFFLINE
+    against the Stage the dry run built. stageplan/1 files are read raw (checked even when stageplan_check refused them);
+    decisions-row plans: every `copy` row (stagekit.run_rows -> copy_in). -> list of failure strings."""
+    import stagexec as SX
+    ctx = {"work": work, "move_dst": move_dst}
+    bad = []
+    for p in plans:
+        try:
+            pl = json.load(open(p, encoding="utf-8"))
+        except Exception as e:                                                     # noqa: BLE001
+            bad.append("{0}: unreadable ({1})".format(rel(p), e))
+            continue
+        if p in sps:
+            try:
+                fl = SX.precondition_failures(pl, ctx, stop_after, from_step)
+            except Exception as e:                                                 # noqa: BLE001
+                bad.append("{0}: compile_plan failed, preconditions not evaluable ({1})".format(rel(p), str(e)[:160]))
+                continue
+            bad += ["{0}: op {1} {2} acts {3} ids {4}: needs {5}; work = {6}".format(
+                os.path.basename(p), f["k"], f["route"], f["acts"], f["ids"], f["needs"], f["work"]) for f in fl]
+        else:
+            need, chk = SX.ROUTE_PRECONDITIONS["copy_in"]
+            bad += ["{0}: row {1} copy: needs {2}; work = {3}".format(os.path.basename(p), r.get("id"), need, work)
+                    for r in pl.get("decisions") or [] if r.get("action") == "copy" and not chk(ctx)]
+    return bad
+
+
+MODE_SA_RE = re.compile(r"--stop-after[\s=]+(\d+)")
+MODE_FS_RE = re.compile(r"--from-step[\s=]+(\d+)")
+
+
+def meter_records(recipe, log_dir=None):
+    """X10's evidence: every run log of THIS recipe that carries a recorded per-op meter (stagexec.Meter's METER lines),
+    newest first: [{path, mtime, stop_after, from_step, rows}]. A log is a run of the recipe when its first line is bgrun's
+    `BGRUN START ...: <command>` and that command LAUNCHES the recipe (launched_stage_scripts; a dry/prerun names it only
+    as an argument)."""
+    import stagexec as SX
+    base = os.path.basename(recipe).lower()
+    out = []
+    for p in glob.glob(os.path.join(log_dir or LOG_DIR, "*.log")):
+        try:
+            with REAL_OPEN(p, encoding="utf-8", errors="replace") as f:
+                first = f.readline()
+        except OSError:
+            continue
+        if not first.startswith("BGRUN START") or " min: " not in first:
+            continue
+        cmd = first.split(" min: ", 1)[1].strip()
+        if not any(os.path.basename(x).lower() == base for x in launched_stage_scripts(cmd)):
+            continue
+        rows = SX.meter_rows_from_log(p)
+        if rows:
+            sa, fs = MODE_SA_RE.search(cmd), MODE_FS_RE.search(cmd)
+            out.append({"path": p, "mtime": os.path.getmtime(p), "rows": rows,
+                        "stop_after": int(sa.group(1)) if sa else None, "from_step": int(fs.group(1)) if fs else None})
+    return sorted(out, key=lambda r: -r["mtime"])
+
+
+# card 106-5 (PD219(c) DECIDED): a predicted checkpoint >= 690 MB FAILS X10 - LabVIEW error 2 was seen at 695 MB in cycle
+# 85, so margin 0 against MEMSTOP 700 would pass a value above the error-2 point. mem_predict's rule is
+# ok = peak < memstop - margin_mb, hence the default margin = MEMSTOP - 690 (700.0 - 10.0 = 690.0 exactly).
+X10_FAIL_MB = 690.0
+
+
+def mem_margin(recipe, stop_after=None, from_step=None, log_dir=None, records=None, margin_mb=None):
+    """X10 (retrospective-cycle103 `inference-over-measurement`; PD216(f): 103-2 r1 crossed MEMSTOP 700 at 703.8 MB): the
+    predicted private-MB peak of the planned run from the RECORDED per-op meter (stagexec.mem_predict). Evidence order:
+    the newest record of the SAME mode (--stop-after / --from-step) that covers the window, recorded values; else the
+    newest fresh-start record (no --from-step) that covers it, shifted to that record's own fresh-load read at k 0
+    (`transfer`). ok None = no record covers the window (UNMEASURED - reported, not refused)."""
+    import stagexec as SX
+    if margin_mb is None:
+        margin_mb = SX.MEM_STOP_MB - X10_FAIL_MB
+    recs = meter_records(recipe, log_dir) if records is None else records
+    for r in recs:
+        if r["stop_after"] == stop_after and r["from_step"] == from_step:
+            pr = SX.mem_predict(r["rows"], stop_after, from_step, None, SX.MEM_STOP_MB, margin_mb)
+            if pr.get("covered"):
+                return dict(pr, source=rel(r["path"]), how="same mode, recorded values")
+    for r in recs:
+        if r["from_step"] is None:
+            k0 = [x["mb"] for x in r["rows"] if x["k"] == 0 and x["tag"] == "read"]
+            pr = SX.mem_predict(r["rows"], stop_after, from_step, k0[0] if (from_step and k0) else None, SX.MEM_STOP_MB, margin_mb)
+            if pr.get("covered"):
+                return dict(pr, source=rel(r["path"]), how="transfer from a fresh-start record" + (
+                    ", shifted to its fresh read k 0" if from_step else ""))
+    return {"ok": None, "covered": False, "peak_mb": None, "memstop": SX.MEM_STOP_MB, "margin_mb": margin_mb,
+            "why": "UNMEASURED: no recorded meter of {0} covers ops {1}..{2} ({3} record(s))".format(
+                os.path.basename(recipe), int(from_step or 0) + 1, stop_after or "end", len(recs))}
+
+
 def prerun(recipe, graph=None, stop_after=None, from_step=None):
     """card 103-2 (PD216(b)): stop_after=k (the recipe's own `--stop-after k`, PART-A mode) makes X5 expect only the
     stageplan wiring real ops 1..k - exactly the ops the run dispatches; the wire-action COVERAGE check stays over the
@@ -1196,12 +1350,41 @@ def prerun(recipe, graph=None, stop_after=None, from_step=None):
              not hits, hits[:6])
     except Exception as e:                                                         # noqa: BLE001
         gate("X7 no Jev row on a RULE-CHAIN-S1 chain terminal", False, "chain check raised {0}".format(e))
+    # card 106-3: X9 verb preconditions on the stage's own work file (retrospective-cycle102 wrong-ordering, r7 op 41)
+    wk = (tr.get("works") or [None])[-1]
+    mdst = getattr(sys.modules.get("gscript"), "MOVE_DST", None)
+    vp = verb_preconditions(plans, sps, wk, mdst, stop_after, from_step)
+    gate("X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)", plans and not vp,
+         vp[:6] or "work {0}".format(wk))
+    # card 106-3: X10 memory margin from the recorded per-op meter (retrospective-cycle103 inference-over-measurement)
+    mm = mem_margin(recipe, stop_after, from_step)
+    tr["mem_margin"] = mm
+    # card 106-5 (PD219(c)): fail at a predicted checkpoint >= X10_FAIL_MB (690); no covering record = WARN, pass
+    gate("X10 predicted LabVIEW private MB < {0} (error-2 point; MEMSTOP {1}) over the ops this run dispatches ({2})".format(
+        round(mm.get("memstop") - mm.get("margin_mb"), 1), mm.get("memstop"),
+        "UNMEASURED - no covering record" if mm["ok"] is None else mm.get("how")), mm["ok"] is not False,
+        dict((k, mm.get(k)) for k in ("peak_mb", "at", "headroom_mb", "window", "source", "why") if mm.get(k) is not None))
+    warn = "X10 WARN unmeasured: {0}".format(mm.get("why")) if mm["ok"] is None else None
+    if warn:
+        print("  WARN  {0}".format(warn), flush=True)
     npass = sum(1 for g_ in gates if g_[1])
     first = next((g_[0] + ": " + str(g_[2])[:120] for g_ in gates if not g_[1]), None)
     tr["prerun"] = {"status": "PASS" if npass == len(gates) else "FAIL", "gates": [[a, b, str(c)[:600]] for a, b, c in gates],
                     "first_fail": first, "plans": dict((rel(p), md5(p)) for p in plans), "pass": npass,
-                    "fail": len(gates) - npass}
+                    "fail": len(gates) - npass, "warn": warn}
     return tr
+
+
+def result_first(first, warn):
+    """card 106-5 (PD219(c)): the RESULT line's first_fail carrying the X10 WARN (result-line/1 has no other free-text
+    field, docs/protocol/result-line.json additionalProperties false; protocol.result_failed reads status + gates only,
+    so a PASS line that names the WARN stays a PASS). FAIL keeps its failing gate first, the WARN appended in 200."""
+    if not warn:
+        return first
+    if not first:
+        return warn[:200]
+    tag = " [X10 WARN unmeasured]"
+    return str(first)[:200 - len(tag)] + tag
 
 
 # ---------------------------------------------------------------------------------------------- records + launch gate
@@ -1290,9 +1473,13 @@ def launched_vi_modifying(cmd):
 
 
 def launched_py(cmd):
-    """argv only: every script path a python token RUNS (past interpreter flags), directly or after bgrun's `--`."""
+    """argv only: every script path a python token RUNS (past interpreter flags), directly or after bgrun's `--`.
+    card 106-5 (review archive/peer/2026-09-27-c103d-hooks-before.md s1): a NEWLINE separates commands too (a two-line
+    Bash/PowerShell command with the stage on line 2 was not found); a line continuation (bash `\\`, PowerShell backtick)
+    is joined first, so a continued command stays one."""
     out = []
-    segs = re.split(r"\s*(?:&&|\|\||;|\|)\s*", cmd or "")
+    joined = re.sub(r"(?:\\|`)[ \t]*\r?\n", " ", cmd or "")
+    segs = re.split(r"\s*(?:&&|\|\||;|\||\r?\n)\s*", joined)
     for seg in segs:
         try:
             toks = shlex.split(seg, posix=False)
@@ -1756,8 +1943,8 @@ def main(argv=None):
         print("=== PRERUN {0}: {1} pass / {2} fail; first {3}".format(pr["status"], pr["pass"], pr["fail"], pr["first_fail"]))
         if not a.no_record:
             write_record("prerun", recipe, pr["status"], pr["first_fail"], {"input_md5": tr["input_md5"], "graph": tr["graph"],
-                                                                         "stop_after": sa, "from_step": fk})
-        status, npass, nfail, first = pr["status"], pr["pass"], pr["fail"], pr["first_fail"]
+                                                                         "stop_after": sa, "from_step": fk, "warn": pr.get("warn")})
+        status, npass, nfail, first = pr["status"], pr["pass"], pr["fail"], result_first(pr["first_fail"], pr.get("warn"))
     if a.json_out:
         with REAL_OPEN(a.json_out, "w", encoding="utf-8") as f:
             json.dump(tr, f, indent=1, default=str)

@@ -1,0 +1,17 @@
+{
+ "card": "106-4",
+ "labview_runs": 0,
+ "H1": {"status": "PASS", "where": "tools/gscript.py:2154,2211,2234,2252", "test": "tools/bench/selftest_c106d_tools.py H1a-c (AST read, gui_save never called)",
+        "note": "a stubbed CALL of gui_save was refused by the card guard (flags.gui false, protocol.py:389 GUI_SRC_RE), so the test reads the function by AST"},
+ "H2": {"status": "PASS", "where": "tools/hooks/guard_bash.py:205-243,488", "test": "selftest_c106d_tools.py H2a-j; --old run H2d code 0 (FAIL) vs current code 2",
+        "mechanism": "Bash only: escaped quote chars outside single quotes -> '_' before stop_record.check_command; stop_record.py (not writable) unchanged"},
+ "H3": {"status": "PASS 12/0", "cause": "fixture: diag_c88_brokenwires.py imports stagekit + discard_work, so stage_prerun.is_vi_modifying (stage_prerun.py:1281-1289) makes prerun_gate refuse it (diag_c106d_jevrc2.log:3-7)",
+        "fix": "selftest_guard_bash_jev.py launches a throwaway plain script under %TEMP%/.../tools/bench; new C11 asserts the old launch is still refused by LAUNCH GATE; C6 now asserts the material gate's own text"},
+ "H4": {"status": "PASS", "where": "tools/peer.ps1:700-708", "test": "selftest_c106d_tools.py H4a-e (function extracted by PowerShell AST; archived answers retrospective-cycle74 and hyp-meter86b-prefix now validate)",
+        "scope": "VERDICT lines only; '?' for loss_usd/loss_min -> null; other strings still fail"},
+ "H5": {"status": "PASS", "where": "tools/audit_cycle.py:234-256,483", "real_data": "A1 136/137 FAIL (jev_gate.log) -> 145/145 PASS; jev_gate.log gone from A3 (diag_c106d_audit_before.txt:5,7 vs diag_c106d_audit_after.txt:5,7)"},
+ "old_code_run": "selftest_c106d_tools_old.log: 11/8, fails H1b H2d H4a-e H5 as predicted",
+ "regression": {"log": "tools/bench/diag_c106d_regress.log", "caught": "selftest_launch_gate patches stop_gate with a 1-arg lambda; fixed by keeping the 1-arg call (_CUR_TOOL), rerun 28/0 selftest_launch_gate_c106d.log",
+                "unrelated_fails": ["selftest_protocol_wiring D3: 3 outcome review cards match the pattern (pre-existing cards today)", "selftest_stage_prerun_headcmp_79-6: stage_prerun working tree vs HEAD (card 106-3's file)"]},
+ "jev_ladder": "diag_c106d_jevrc2.log | our-script-bug p=1.000 (jev_gate.log:1878) | patch the script and rerun | fixed result_line call | rerun PASS"
+}

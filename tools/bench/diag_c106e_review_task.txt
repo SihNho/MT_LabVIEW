@@ -1,0 +1,18 @@
+ATTACK this claim about a failed negative-control diagnostic (card 106-5, offline, no LabVIEW).
+
+Failing log: tools/bench/diag_c106e_oldcode.log (script tools/bench/diag_c106e_oldcode.py). Gate O1 predicted that the
+HEAD (pre-edit) version of tools/stage_prerun.py launched_py does NOT find the stage recipe in the two-line command
+`wc -l x<NEWLINE>py -u tools/recipes/stage_d1_disp.py --stop-after 40`; it DID find it (O1 FAIL). The same input is case L1
+of the new self-test tools/bench/selftest_stage_prerun_c106e.py, which passed on the edited code.
+
+CLAIM: the prediction was wrong, not the edit. HEAD launched_py (git show HEAD:tools/stage_prerun.py, lines 1292-1317)
+splits only on && || ; | and then tokenises each segment with shlex.split(posix=False), which treats a newline as plain
+whitespace - so an UNQUOTED two-line command yields the tokens `wc -l x py -u tools/...` and the `py` token is found by
+accident. The shape the old code really misses is the one in archive/peer/2026-09-27-c103d-hooks-before.md section 1: a
+quote that SPANS the newline (bash `wc -l \"x<NL>py -u R<NL>\"`), where shlex(posix=False) groups `"x<NL>py -u R<NL>"`
+into one token so no `py` token exists. Therefore L1 is not a discriminating negative and must be replaced by the
+quote-spanning shape; the new code (tools/stage_prerun.py launched_py: joins bash `\`/PowerShell backtick continuations,
+then splits on newlines too) finds R in that shape because the newline split happens before shlex.
+
+Already ruled out: O2/O3 behaved as predicted (HEAD has no mem_margin - X10 is uncommitted 106-3 work - and HEAD's
+find_graph takes one argument).

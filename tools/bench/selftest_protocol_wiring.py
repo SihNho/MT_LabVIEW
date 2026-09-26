@@ -329,6 +329,10 @@ def main():
         except OSError:
             pass
     outs = []
+    # card 106-5 (F4): D3 counted EVERY review_outcome-review-<date>.json on disk - the committed cards of earlier days
+    # (20260925, 20260926) matched the same pattern and made the roles list carry 'outcome' three times. Only a card
+    # this block WROTE (absent before, or rewritten since t_d3) is counted.
+    t_d3 = __import__("time").time() - 1.0
     for cmd in ([sys.executable, os.path.join(TOOLS, "outcome_review.py"), "--dry-run"],
                 [sys.executable, os.path.join(TOOLS, "doc_ingest.py"), "--full", "--dry-run", "--slug",
                  "ingest-wiring-selftest"],
@@ -340,7 +344,8 @@ def main():
                            timeout=300)
         outs.append(r.stdout + r.stderr)
     pat = r"review_(outcome-review-\d+|ingest-wiring-selftest|priorart-wiring-selftest|retrospective-wiring-selftest)\.json$"
-    new = sorted(p for p in glob.glob(os.path.join(P.CARDS_DIR, "review_*.json")) if re.search(pat, p))
+    new = sorted(p for p in glob.glob(os.path.join(P.CARDS_DIR, "review_*.json")) if re.search(pat, p)
+                 and (p not in before or os.path.getmtime(p) >= t_d3))
     roles = sorted(P.load_card(p, None)["role"] for p in new if os.path.exists(p))
     gate("D3 the 4 review callers --dry-run write valid review/1 cards",
          roles == ["ingest", "outcome", "priorart", "retrospective"], roles)

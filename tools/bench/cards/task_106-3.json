@@ -1,0 +1,73 @@
+{
+ "schema": "task/1",
+ "id": "106-3",
+ "kind": "build",
+ "goal": "Owed stage tooling PD216(g)+217(d): stagesim graph with labels+fs pairs; stage_d1_disp.py <=120 lines; pre-run verb-precondition and memory-margin checks",
+ "why": "Retrospective-cycle102 wrong-ordering and -cycle103 inference-over-measurement devices, owed since 01:55; 104-3 showed E3 noise from the unlabelled sim graph. Offline only, needed before the next stage build.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/stagesim.py"},
+  {"path": "tools/stagexec.py"},
+  {"path": "tools/stagekit.py"},
+  {"path": "tools/stage_prerun.py"},
+  {"path": "tools/recipes/stage_d1_disp.py"},
+  {"path": "tools/bench/facts_c104c_e3.json"},
+  {"path": "tools/bench/facts_c103b_partA.json"},
+  {"path": "tools/bench/stage_d1_disp_r7.log"},
+  {"path": "docs/violation-decisions.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_disp.py"},
+  {"kind": "file", "name": "tools/bench/facts_c104c_e3.json"}
+ ],
+ "pass": [
+  "T1: stagesim builds with node labels + wiki fs pairs (the E3 inputs, stagexec.py:2243-2248); re-sim of plan_disp: finalize open rows == the 6 class 1-3 rows",
+  "T2: stage_d1_disp.py <=120 lines, helpers moved to stagekit/stagexec; Part-B dry from dispA still PASS (entry diff 0, E3 6==6); stagexec self-test >=98/0",
+  "T3: pre-run verb-precondition check: refuses r7's op-41 copy_in on a non-MOVE_DST work file (negative), passes plan_disp (positive)",
+  "T4: pre-run memory-margin check from the recorded per-op meter: refuses the 103-2 r1 curve (703.8 MB), passes Part-B (616.7 MB), MEMSTOP 700",
+  "T5: every touched self-test passes (stagesim, stagexec, stage_prerun, stagekit); results listed with counts; no LabVIEW started"
+ ],
+ "outputs": [
+  "tools/bench/diag_c106c_*",
+  "tools/bench/facts_c106c.json",
+  "tools/bench/cards/result_106-3.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagesim.py",
+   "tools/stagexec.py",
+   "tools/stagekit.py",
+   "tools/stage_prerun.py",
+   "tools/recipes/stage_d1_disp.py",
+   "tools/bench/selftest_stage*",
+   "tools/bench/sim/**",
+   "tools/bench/plans/**",
+   "tools/bench/diag_c106c*",
+   "tools/bench/facts_c106c*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**",
+   "docs/toolkit-capabilities.md"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 90},
+ "rules": [
+  "offline only: stubbed COM, no LabVIEW, no VI touched",
+  "do not change plan_disp.json's rows or any plan md5 pin; a changed sim result is reported, not re-planned",
+  "tools/hooks/** and tools/gscript.py are owned by card 106-4 running in parallel: do not edit them",
+  "facts <=10 with file:line; OPEN <=3; design findings from reviews go to open, not accepted in the card"
+ ],
+ "unblocks": "M8"
+}

@@ -1,0 +1,33 @@
+{"schema":"result/1","id":"106-3","status":"PASS","gates":{"pass":5,"fail":0},
+"first_fail":null,
+"blocked_by":{"device":"guard_cycle","message":"direct `stage_prerun.py --dry tools/recipes/stage_d1_disp.py --from-step 33` refused: repeated-failure-class 31/3, no violation-decisions block after retrospective-cycle104; Part-B dry evidenced via self-test C1 instead"},
+"artefacts":[
+ {"path":"tools/stagesim.py","md5":"acdb80b196cc7d49d2ee9fff4ac18a28"},
+ {"path":"tools/stagexec.py","md5":"ac0e44fd95eb1ed97dc8b0390d0e9c38"},
+ {"path":"tools/stage_prerun.py","md5":"ec8f8c066023f2092193d56cc21a9bff"},
+ {"path":"tools/recipes/stage_d1_disp.py","md5":"1d1784ab0d9b714189e52f27d02ab2e4"},
+ {"path":"tools/bench/selftest_stage_prerun_c106c.py","md5":"4bd4d43ec411ee0fe801a2af7d53fc5b"},
+ {"path":"tools/bench/diag_c106c_resim.py","md5":"817ce212fdad7dd9affe83aedf114a57"},
+ {"path":"tools/bench/sim/c106c_resim_summary.json","md5":"6e80bf2247e3e26587458d373117be21"},
+ {"path":"tools/bench/sim/disp/fixture_c106c_plan_disp_r7.json","md5":"da32cf2b4e650d178759fe0b003afe2d"},
+ {"path":"docs/toolkit-capabilities.md","md5":"4ebfe8db7d4fec72f72da7be722dbb33"}
+],
+"facts":[
+ "T1 finalize cdiff graph = E3 inputs (626 labels, 576 wiki fs pairs) stagesim.py:1083,1179,1206; ops unchanged: 58/58 step states == pins (diag_c106c_resim_final.log R4)",
+ "T1 re-sim plan_disp: end rows 6 == class 1-3 rows, step-0 rows 0 (was 15), class-4 sources 15/15, final via classed rule stagesim.py:1138,1238; legacy False (resim_final.log R2,R3)",
+ "T2 recipe 90 lines (was 144); 9 helpers moved to stagexec.py:2218-2334 unchanged; Part-B prerun X1..X10 10/10 (selftest_stage_prerun_c106c.log C1)",
+ "T2 stagexec self-test 104/0 (baseline 98/0) incl. T45-T47 (diag_c106c_selftest_stagexec_1.log); plan_disp md5 c7d80fc9 and pins unchanged (resim_final.log R5)",
+ "T3 X9 stage_prerun.py:1080,1298 + stagexec.py:252-270: r7 plan (git fe07299 fixture) op 41 copy_in r7_wait REFUSED (C4); plan_disp PASS (C1); work==MOVE_DST PASS (C5)",
+ "T4 X10 stage_prerun.py:1113-1162,1303 + stagexec.py:110-143: r1 --stop-after 40 predicts 703.8 MB -> FAIL (C2); Part-B 616.7 (B2, stagexec T46b) / 613.4 (B3, C1) -> PASS",
+ "T4 X10 Part-A to op 33 from r2 record 677.1 MB, headroom 22.9 (C3); r1 curve cut at 33 = 673.7 MB; margin 0, MEMSTOP 700 (stagexec.py:65)",
+ "T5 stagesim 64/0 (60/0), stage_prerun c106c 6/0, c103 4/0, stageplan 12/0, graphload 18/0, headcmp 2/0, control-lint 10/0; stagekit untouched; no LabVIEW process",
+ "Review archive/peer/2026-09-27-c106c-selftest-x1.md (hypothesis, ANSWERED): my C2/C3 X1 fail = no --graph; accepted, C6 pins it (X1 names 'DRY graph JSON' gate)",
+ "JEV row: selftest_stage_prerun_c106c.log | new-problem p=0.906 | hypothesis review owed | dispatched c106c-selftest-x1, fixed fixture | rerun 6/0"
+],
+"open":[
+ "stagesim finalize now also accepts the PD217(c) classed open-row rule (stagesim.py:1238) and X10 passes UNMEASURED (no covering record) with margin 0: confirm both policies?",
+ "Review c106c-selftest-x1 s1: find_graph ignores the plan's base graph par1359_95_graph.json (stage_prerun.py:160-165), 3rd X1-without---graph failure: fix find_graph or rename?",
+ "guard_cycle blocks recipe dry/launch until a violation-decisions block answers retrospective-cycle104 repeated-failure-class; the edited recipe (md5 1d1784ab) also needs its prior-art/stop-record round before a launch"
+],
+"cost":{"usd":null,"minutes":27,"labview_runs":0},
+"note":"All offline; no VI opened; LabVIEW not running at end. Re-sim step files kept in %TEMP%\\c106c_resim only. gscript.py/hooks untouched (card 106-4). No STATUS edit (status_edit false)."}

@@ -1,0 +1,360 @@
+BGRUN START 2026-09-27 07:09:19 limit 15.0 min: py -u tools/bench/selftest_leg_guard.py
+BGRUN PID 24416
+GATE C compile drive_legguard.py                                            PASS 
+GATE C compile drive_original_copy_v5.py                                    PASS 
+GATE C compile drive_m8.py                                                  PASS 
+GATE C compile diag_c104_abba.py                                            PASS 
+GATE V all 0 -> ok                                                          PASS 
+GATE V [ASRL5 0xBFFF0072 -> refused]                                        PASS 
+GATE V [RM fail -> refused]                                                 PASS 
+GATE V [raise -> refused]                                                   PASS 
+GATE V bypass env -> ok, bypassed, nothing opened                           PASS 
+GATE V dry -> ok, nothing opened                                            PASS 
+GATE V default bypass OFF                                                   PASS 
+GATE S A fails before pick 1 at slot 1 -> 1 call, stop                      PASS [(1, 'A', 1)]
+GATE S [refused slot 1 -> 1 call, stop]                                     PASS [(1, 'A', 1)]
+GATE S all good -> 4 calls, no stop                                         PASS [(1, 'A', 1), (2, 'B', 1), (3, 'B', 1), (4, 'A', 1)]
+GATE S B fails before pick 1 at slot 2 -> 4 calls (A-only rule)             PASS [(1, 'A', 1), (2, 'B', 1), (3, 'B', 1), (4, 'A', 1)]
+GATE S A fails AFTER picks -> rerun once, continue (5 calls)                PASS [(1, 'A', 1), (1, 'A', 2), (2, 'B', 1), (3, 'B', 1), (4, 'A', 1)]
+GATE S max_legs 1 -> 1 call                                                 PASS [(1, 'A', 1)]
+[   0.1s] LabVIEW handles BEFORE 0
+[   0.1s] reference patch: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\ref_done_yes_button.png (exists=True)
+[   0.1s] STEP 0p VISA precheck: open+close Rotor/ASRL5::INSTR before Run (no byte, no attribute) VISA     PASS bypassed=None dry=None stub
+[   0.1s] STEP 0 G0 motor gate --session start (BEFORE LabVIEW opens COM3/COM4) MOTOR    PASS exit=0; LIMITS TMN=0 TMX=39; (no REFSTATE); SESSION START OK (DRY)
+[   0.1s] STEP 1 G1 md5(ORIGINAL) before      FILE     FAIL ea3ebf363ee27006e72da6b1029ad76f
+[   0.1s] STEP 2 G2 the D0 copy exists (nothing copied, saved or deleted) FILE     PASS C:\Users\KimLab\AppData\Local\Temp\c106b_st_5te2zdbu\fake_copy.vi (100 B) md5=aed563ecafb4bcc5654c597a421547b2
+[   0.1s] STEP 3 G3a apartment2 attach        COM      PASS DRY app ok
+[   0.1s] STEP 4 G3b ORIGINAL resident READ-ONLY COM      PASS DRY preload ok
+[   0.1s] STEP 5 G3c copy loads, idle, unblocked COM      PASS ExecState=1; VERDICT: CLEAR
+[   0.1s] STEP 6 G4 panel parameters RECORDED (never set) VISERVER PASS 60 of 60 controls returned a value, 0 errors
+[   0.1s] STEP 7 G5 panel window rect read LIVE (recorded; NO click is derived from it) GUI      PASS rect=(0, 0, 1920, 1080); v3's V6 rect (-6, 51, 1930, 1107) is printed for contrast only - v4's gate 7 compared these two and passed while the control positions differed
+[   0.1s] STEP 30 run2 RESTART LEG            COM      FAIL NOT started: run1 failed before pick 1 (no kill) - stop-on-fail, PD217(g)
+[   0.1s] LabVIEW handles AFTER 0 (before 0)
+[   0.1s] cleanup: run folder 0 files / 0 bytes; TIFFs deleted 0 / 0 bytes
+[   0.1s] STEP 90 G90 md5(COPY) unchanged - RUN, never saved, never deleted FILE     PASS aed563ecafb4bcc5654c597a421547b2 -> aed563ecafb4bcc5654c597a421547b2 (exists=True)
+[   0.1s] STEP 91 G91 md5(ORIGINAL) after     FILE     FAIL ea3ebf363ee27006e72da6b1029ad76f
+[   0.1s] STEP 92 G92 LabVIEW exited before the motor port is touched PROC     PASS waited 0s; forced kill used=False; running now=False
+[   0.1s] STEP 93 G93 post-run TMX? still 39  MOTOR    FAIL TMX?=None from "(no TMX line in the gate's output)"; gate exit=0; LIMITS TMN=0 TMX=39; (no REFSTATE)
+[   0.1s] click records -> C:\Users\KimLab\AppData\Local\Temp\c106b_st_5te2zdbu\probe.json
+
+| step | method | result | detail |
+|---|---|---|---|
+| 0p VISA precheck: open+close Rotor/ASRL5::INSTR before Run (no byte, no attribute) | VISA | PASS | bypassed=None dry=None stub |
+| 0 G0 motor gate --session start (BEFORE LabVIEW opens COM3/COM4) | MOTOR | PASS | exit=0; LIMITS TMN=0 TMX=39; (no REFSTATE); SESSION START OK (DRY) |
+| 1 G1 md5(ORIGINAL) before | FILE | FAIL | ea3ebf363ee27006e72da6b1029ad76f |
+| 2 G2 the D0 copy exists (nothing copied, saved or deleted) | FILE | PASS | C:\Users\KimLab\AppData\Local\Temp\c106b_st_5te2zdbu\fake_copy.vi (100 B) md5=aed563ecafb4bcc5654c597a421547b2 |
+| 3 G3a apartment2 attach | COM | PASS | DRY app ok |
+| 4 G3b ORIGINAL resident READ-ONLY | COM | PASS | DRY preload ok |
+| 5 G3c copy loads, idle, unblocked | COM | PASS | ExecState=1; VERDICT: CLEAR |
+| 6 G4 panel parameters RECORDED (never set) | VISERVER | PASS | 60 of 60 controls returned a value, 0 errors |
+| 7 G5 panel window rect read LIVE (recorded; NO click is derived from it) | GUI | PASS | rect=(0, 0, 1920, 1080); v3's V6 rect (-6, 51, 1930, 1107) is printed for contrast only - v4's gate 7 compared these two and passed while the control positions differed |
+| 30 run2 RESTART LEG | COM | FAIL | NOT started: run1 failed before pick 1 (no kill) - stop-on-fail, PD217(g) |
+| 90 G90 md5(COPY) unchanged - RUN, never saved, never deleted | FILE | PASS | aed563ecafb4bcc5654c597a421547b2 -> aed563ecafb4bcc5654c597a421547b2 (exists=True) |
+| 91 G91 md5(ORIGINAL) after | FILE | FAIL | ea3ebf363ee27006e72da6b1029ad76f |
+| 92 G92 LabVIEW exited before the motor port is touched | PROC | PASS | waited 0s; forced kill used=False; running now=False |
+| 93 G93 post-run TMX? still 39 | MOTOR | FAIL | TMX?=None from "(no TMX line in the gate's output)"; gate exit=0; LIMITS TMN=0 TMX=39; (no REFSTATE) |
+
+LOCATED: {}
+
+FACTS: {
+ "handles_before": 0,
+ "visa_precheck": {
+  "ok": true,
+  "names": [
+   "Rotor",
+   "ASRL5::INSTR"
+  ],
+  "trials": [],
+  "why": "stub"
+ },
+ "motor_start": {
+  "rc": 0,
+  "parsed": {
+   "limits_lines": [
+    "LIMITS TMN=0 TMX=39"
+   ],
+   "session_lines": [
+    "SESSION START OK (DRY)"
+   ]
+  }
+ },
+ "md5_original_before": "ea3ebf363ee27006e72da6b1029ad76f",
+ "md5_copy_before": "aed563ecafb4bcc5654c597a421547b2",
+ "handles_after_open": 0,
+ "panel_rect": [
+  0,
+  0,
+  1920,
+  1080
+ ],
+ "handles_after": 0,
+ "run_dir": {
+  "path": "C:\\Users\\KimLab\\AppData\\Local\\Temp\\c106b_st_5te2zdbu\\run",
+  "files": 0,
+  "bytes": 0,
+  "by_ext": {},
+  "non_tiff": []
+ },
+ "tiffs_deleted": {
+  "count": 0,
+  "bytes": 0
+ },
+ "md5_copy_after": "aed563ecafb4bcc5654c597a421547b2",
+ "md5_original_after": "ea3ebf363ee27006e72da6b1029ad76f",
+ "motor_after": {
+  "rc": 0,
+  "tmx": null,
+  "parsed": {
+   "limits_lines": [
+    "LIMITS TMN=0 TMX=39"
+   ],
+   "session_lines": [
+    "SESSION START OK (DRY)"
+   ]
+  }
+ },
+ "gui_actions": 0,
+ "located": {}
+}
+json: C:\Users\KimLab\AppData\Local\Temp\c106b_st_5te2zdbu\d0.json
+
+=== D0 v5: 10 pass, 4 fail ===
+FAILING: 1 G1 md5(ORIGINAL) before, 30 run2 RESTART LEG, 91 G91 md5(ORIGINAL) after, 93 G93 post-run TMX? still 39
+GATE M run1 fails before pick 1 -> leg called once, run2 NOT started        PASS ['run1']
+[   0.1s] LabVIEW handles BEFORE 0
+[   0.1s] reference patch: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\ref_done_yes_button.png (exists=True)
+[   0.1s] STEP 0p VISA precheck: open+close Rotor/ASRL5::INSTR before Run (no byte, no attribute) VISA     PASS bypassed=None dry=None stub
+[   0.1s] STEP 0 G0 motor gate --session start (BEFORE LabVIEW opens COM3/COM4) MOTOR    PASS exit=0; LIMITS TMN=0 TMX=39; (no REFSTATE); SESSION START OK (DRY)
+[   0.1s] STEP 1 G1 md5(ORIGINAL) before      FILE     FAIL ea3ebf363ee27006e72da6b1029ad76f
+[   0.1s] STEP 2 G2 the D0 copy exists (nothing copied, saved or deleted) FILE     PASS C:\Users\KimLab\AppData\Local\Temp\c106b_st_5te2zdbu\fake_copy.vi (100 B) md5=aed563ecafb4bcc5654c597a421547b2
+[   0.1s] STEP 3 G3a apartment2 attach        COM      PASS DRY app ok
+[   0.1s] STEP 4 G3b ORIGINAL resident READ-ONLY COM      PASS DRY preload ok
+[   0.1s] STEP 5 G3c copy loads, idle, unblocked COM      PASS ExecState=1; VERDICT: CLEAR
+[   0.1s] STEP 6 G4 panel parameters RECORDED (never set) VISERVER PASS 60 of 60 controls returned a value, 0 errors
+[   0.1s] STEP 7 G5 panel window rect read LIVE (recorded; NO click is derived from it) GUI      PASS rect=(0, 0, 1920, 1080); v3's V6 rect (-6, 51, 1930, 1107) is printed for contrast only - v4's gate 7 compared these two and passed while the control positions differed
+[   0.1s] LabVIEW handles AFTER 0 (before 0)
+[   0.1s] cleanup: run folder 0 files / 0 bytes; TIFFs deleted 0 / 0 bytes
+[   0.1s] STEP 90 G90 md5(COPY) unchanged - RUN, never saved, never deleted FILE     PASS aed563ecafb4bcc5654c597a421547b2 -> aed563ecafb4bcc5654c597a421547b2 (exists=True)
+[   0.1s] STEP 91 G91 md5(ORIGINAL) after     FILE     FAIL ea3ebf363ee27006e72da6b1029ad76f
+[   0.1s] STEP 92 G92 LabVIEW exited before the motor port is touched PROC     PASS waited 0s; forced kill used=False; running now=False
+[   0.1s] STEP 93 G93 post-run TMX? still 39  MOTOR    FAIL TMX?=None from "(no TMX line in the gate's output)"; gate exit=0; LIMITS TMN=0 TMX=39; (no REFSTATE)
+[   0.1s] click records -> C:\Users\KimLab\AppData\Local\Temp\c106b_st_5te2zdbu\probe.json
+
+| step | method | result | detail |
+|---|---|---|---|
+| 0p VISA precheck: open+close Rotor/ASRL5::INSTR before Run (no byte, no attribute) | VISA | PASS | bypassed=None dry=None stub |
+| 0 G0 motor gate --session start (BEFORE LabVIEW opens COM3/COM4) | MOTOR | PASS | exit=0; LIMITS TMN=0 TMX=39; (no REFSTATE); SESSION START OK (DRY) |
+| 1 G1 md5(ORIGINAL) before | FILE | FAIL | ea3ebf363ee27006e72da6b1029ad76f |
+| 2 G2 the D0 copy exists (nothing copied, saved or deleted) | FILE | PASS | C:\Users\KimLab\AppData\Local\Temp\c106b_st_5te2zdbu\fake_copy.vi (100 B) md5=aed563ecafb4bcc5654c597a421547b2 |
+| 3 G3a apartment2 attach | COM | PASS | DRY app ok |
+| 4 G3b ORIGINAL resident READ-ONLY | COM | PASS | DRY preload ok |
+| 5 G3c copy loads, idle, unblocked | COM | PASS | ExecState=1; VERDICT: CLEAR |
+| 6 G4 panel parameters RECORDED (never set) | VISERVER | PASS | 60 of 60 controls returned a value, 0 errors |
+| 7 G5 panel window rect read LIVE (recorded; NO click is derived from it) | GUI | PASS | rect=(0, 0, 1920, 1080); v3's V6 rect (-6, 51, 1930, 1107) is printed for contrast only - v4's gate 7 compared these two and passed while the control positions differed |
+| 90 G90 md5(COPY) unchanged - RUN, never saved, never deleted | FILE | PASS | aed563ecafb4bcc5654c597a421547b2 -> aed563ecafb4bcc5654c597a421547b2 (exists=True) |
+| 91 G91 md5(ORIGINAL) after | FILE | FAIL | ea3ebf363ee27006e72da6b1029ad76f |
+| 92 G92 LabVIEW exited before the motor port is touched | PROC | PASS | waited 0s; forced kill used=False; running now=False |
+| 93 G93 post-run TMX? still 39 | MOTOR | FAIL | TMX?=None from "(no TMX line in the gate's output)"; gate exit=0; LIMITS TMN=0 TMX=39; (no REFSTATE) |
+
+LOCATED: {}
+
+FACTS: {
+ "handles_before": 0,
+ "visa_precheck": {
+  "ok": true,
+  "names": [
+   "Rotor",
+   "ASRL5::INSTR"
+  ],
+  "trials": [],
+  "why": "stub"
+ },
+ "motor_start": {
+  "rc": 0,
+  "parsed": {
+   "limits_lines": [
+    "LIMITS TMN=0 TMX=39"
+   ],
+   "session_lines": [
+    "SESSION START OK (DRY)"
+   ]
+  }
+ },
+ "md5_original_before": "ea3ebf363ee27006e72da6b1029ad76f",
+ "md5_copy_before": "aed563ecafb4bcc5654c597a421547b2",
+ "handles_after_open": 0,
+ "panel_rect": [
+  0,
+  0,
+  1920,
+  1080
+ ],
+ "handles_after": 0,
+ "run_dir": {
+  "path": "C:\\Users\\KimLab\\AppData\\Local\\Temp\\c106b_st_5te2zdbu\\run",
+  "files": 0,
+  "bytes": 0,
+  "by_ext": {},
+  "non_tiff": []
+ },
+ "tiffs_deleted": {
+  "count": 0,
+  "bytes": 0
+ },
+ "md5_copy_after": "aed563ecafb4bcc5654c597a421547b2",
+ "md5_original_after": "ea3ebf363ee27006e72da6b1029ad76f",
+ "motor_after": {
+  "rc": 0,
+  "tmx": null,
+  "parsed": {
+   "limits_lines": [
+    "LIMITS TMN=0 TMX=39"
+   ],
+   "session_lines": [
+    "SESSION START OK (DRY)"
+   ]
+  }
+ },
+ "gui_actions": 0,
+ "located": {}
+}
+json: C:\Users\KimLab\AppData\Local\Temp\c106b_st_5te2zdbu\d0.json
+
+=== D0 v5: 10 pass, 3 fail ===
+FAILING: 1 G1 md5(ORIGINAL) before, 91 G91 md5(ORIGINAL) after, 93 G93 post-run TMX? still 39
+GATE M [run1 fails after picks started -> run2 called]                      PASS ['run1', 'run2']
+[   0.1s] LabVIEW handles BEFORE 0
+[   0.1s] reference patch: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\ref_done_yes_button.png (exists=True)
+[   0.1s] STEP 0p VISA precheck: open+close Rotor/ASRL5::INSTR before Run (no byte, no attribute) VISA     PASS bypassed=None dry=None stub
+[   0.1s] STEP 0 G0 motor gate --session start (BEFORE LabVIEW opens COM3/COM4) MOTOR    PASS exit=0; LIMITS TMN=0 TMX=39; (no REFSTATE); SESSION START OK (DRY)
+[   0.1s] STEP 1 G1 md5(ORIGINAL) before      FILE     FAIL ea3ebf363ee27006e72da6b1029ad76f
+[   0.1s] STEP 2 G2 the D0 copy exists (nothing copied, saved or deleted) FILE     PASS C:\Users\KimLab\AppData\Local\Temp\c106b_st_5te2zdbu\fake_copy.vi (100 B) md5=aed563ecafb4bcc5654c597a421547b2
+[   0.1s] STEP 3 G3a apartment2 attach        COM      PASS DRY app ok
+[   0.1s] STEP 4 G3b ORIGINAL resident READ-ONLY COM      PASS DRY preload ok
+[   0.1s] STEP 5 G3c copy loads, idle, unblocked COM      PASS ExecState=1; VERDICT: CLEAR
+[   0.1s] STEP 6 G4 panel parameters RECORDED (never set) VISERVER PASS 60 of 60 controls returned a value, 0 errors
+[   0.1s] STEP 7 G5 panel window rect read LIVE (recorded; NO click is derived from it) GUI      PASS rect=(0, 0, 1920, 1080); v3's V6 rect (-6, 51, 1930, 1107) is printed for contrast only - v4's gate 7 compared these two and passed while the control positions differed
+[   0.1s] LabVIEW handles AFTER 0 (before 0)
+[   0.1s] cleanup: run folder 0 files / 0 bytes; TIFFs deleted 0 / 0 bytes
+[   0.1s] STEP 90 G90 md5(COPY) unchanged - RUN, never saved, never deleted FILE     PASS aed563ecafb4bcc5654c597a421547b2 -> aed563ecafb4bcc5654c597a421547b2 (exists=True)
+[   0.1s] STEP 91 G91 md5(ORIGINAL) after     FILE     FAIL ea3ebf363ee27006e72da6b1029ad76f
+[   0.1s] STEP 92 G92 LabVIEW exited before the motor port is touched PROC     PASS waited 0s; forced kill used=False; running now=False
+[   0.1s] STEP 93 G93 post-run TMX? still 39  MOTOR    FAIL TMX?=None from "(no TMX line in the gate's output)"; gate exit=0; LIMITS TMN=0 TMX=39; (no REFSTATE)
+[   0.1s] click records -> C:\Users\KimLab\AppData\Local\Temp\c106b_st_5te2zdbu\probe.json
+
+| step | method | result | detail |
+|---|---|---|---|
+| 0p VISA precheck: open+close Rotor/ASRL5::INSTR before Run (no byte, no attribute) | VISA | PASS | bypassed=None dry=None stub |
+| 0 G0 motor gate --session start (BEFORE LabVIEW opens COM3/COM4) | MOTOR | PASS | exit=0; LIMITS TMN=0 TMX=39; (no REFSTATE); SESSION START OK (DRY) |
+| 1 G1 md5(ORIGINAL) before | FILE | FAIL | ea3ebf363ee27006e72da6b1029ad76f |
+| 2 G2 the D0 copy exists (nothing copied, saved or deleted) | FILE | PASS | C:\Users\KimLab\AppData\Local\Temp\c106b_st_5te2zdbu\fake_copy.vi (100 B) md5=aed563ecafb4bcc5654c597a421547b2 |
+| 3 G3a apartment2 attach | COM | PASS | DRY app ok |
+| 4 G3b ORIGINAL resident READ-ONLY | COM | PASS | DRY preload ok |
+| 5 G3c copy loads, idle, unblocked | COM | PASS | ExecState=1; VERDICT: CLEAR |
+| 6 G4 panel parameters RECORDED (never set) | VISERVER | PASS | 60 of 60 controls returned a value, 0 errors |
+| 7 G5 panel window rect read LIVE (recorded; NO click is derived from it) | GUI | PASS | rect=(0, 0, 1920, 1080); v3's V6 rect (-6, 51, 1930, 1107) is printed for contrast only - v4's gate 7 compared these two and passed while the control positions differed |
+| 90 G90 md5(COPY) unchanged - RUN, never saved, never deleted | FILE | PASS | aed563ecafb4bcc5654c597a421547b2 -> aed563ecafb4bcc5654c597a421547b2 (exists=True) |
+| 91 G91 md5(ORIGINAL) after | FILE | FAIL | ea3ebf363ee27006e72da6b1029ad76f |
+| 92 G92 LabVIEW exited before the motor port is touched | PROC | PASS | waited 0s; forced kill used=False; running now=False |
+| 93 G93 post-run TMX? still 39 | MOTOR | FAIL | TMX?=None from "(no TMX line in the gate's output)"; gate exit=0; LIMITS TMN=0 TMX=39; (no REFSTATE) |
+
+LOCATED: {}
+
+FACTS: {
+ "handles_before": 0,
+ "visa_precheck": {
+  "ok": true,
+  "names": [
+   "Rotor",
+   "ASRL5::INSTR"
+  ],
+  "trials": [],
+  "why": "stub"
+ },
+ "motor_start": {
+  "rc": 0,
+  "parsed": {
+   "limits_lines": [
+    "LIMITS TMN=0 TMX=39"
+   ],
+   "session_lines": [
+    "SESSION START OK (DRY)"
+   ]
+  }
+ },
+ "md5_original_before": "ea3ebf363ee27006e72da6b1029ad76f",
+ "md5_copy_before": "aed563ecafb4bcc5654c597a421547b2",
+ "handles_after_open": 0,
+ "panel_rect": [
+  0,
+  0,
+  1920,
+  1080
+ ],
+ "handles_after": 0,
+ "run_dir": {
+  "path": "C:\\Users\\KimLab\\AppData\\Local\\Temp\\c106b_st_5te2zdbu\\run",
+  "files": 0,
+  "bytes": 0,
+  "by_ext": {},
+  "non_tiff": []
+ },
+ "tiffs_deleted": {
+  "count": 0,
+  "bytes": 0
+ },
+ "md5_copy_after": "aed563ecafb4bcc5654c597a421547b2",
+ "md5_original_after": "ea3ebf363ee27006e72da6b1029ad76f",
+ "motor_after": {
+  "rc": 0,
+  "tmx": null,
+  "parsed": {
+   "limits_lines": [
+    "LIMITS TMN=0 TMX=39"
+   ],
+   "session_lines": [
+    "SESSION START OK (DRY)"
+   ]
+  }
+ },
+ "gui_actions": 0,
+ "located": {}
+}
+json: C:\Users\KimLab\AppData\Local\Temp\c106b_st_5te2zdbu\d0.json
+
+=== D0 v5: 10 pass, 3 fail ===
+FAILING: 1 G1 md5(ORIGINAL) before, 91 G91 md5(ORIGINAL) after, 93 G93 post-run TMX? still 39
+GATE M [run1 ok -> run2 called]                                             PASS ['run1', 'run2']
+[   0.1s] LabVIEW handles BEFORE 0
+[   0.1s] reference patch: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\ref_done_yes_button.png (exists=True)
+[   0.1s] STEP 0p VISA precheck: open+close Rotor/ASRL5::INSTR before Run (no byte, no attribute) VISA     FAIL bypassed=None dry=None stub
+[   0.1s] STEP 0q LEG REFUSED                 VISA     FAIL a nonzero VISA status: the VI is NOT opened or run
+GATE M [precheck refused -> no leg, no motor gate]                          PASS ([], [])
+GATE W modal LVDChild -> fired, shot+kill+ocr on hwnd 555, gap <= 0.5       PASS gap=0.255 polls=3 kill_after=0.0
+GATE W [new non-modal window -> not fired, logged]                          PASS 
+GATE W [dialog hwnd already in baseline -> not fired]                       PASS 
+GATE W #32770 modal -> fired                                                PASS 
+[   8.2s] STEP 10 run1.pre reset+readback of the 3 control-flow booleans VISERVER PASS {'stop (end)': 0, 'stop (end) 2': 0, 'Done Picking \nBeads?': 0} (no panel PARAMETER is written)
+[   8.7s] STEP 11 run1.L1d modal LabVIEW dialog between Run and L2 (L1) -> shotwin + LabVIEW killed directly, no COM Abort GUI      FAIL window [9, '', 'LVDChild', True, True]; shotwin rc=0 png=p; kill {'gone': True, 'secs': 0.2} 1.60s after visible; text: Error -1073807246
+[   8.7s] cleanup: LabVIEW was killed by the leg guard (dialog L1) - stop, panel record, resets, closepanel, release SKIPPED
+[   8.7s] cleanup: run folder 0 files / 0 bytes; TIFFs deleted 0 / 0 bytes
+[   8.7s] STEP 90 G90 md5(COPY) unchanged - RUN, never saved, never deleted FILE     PASS aed563ecafb4bcc5654c597a421547b2 -> aed563ecafb4bcc5654c597a421547b2 (exists=True)
+[   8.7s] STEP 91 G91 md5(ORIGINAL) after     FILE     FAIL ea3ebf363ee27006e72da6b1029ad76f
+[   8.7s] STEP 92 G92 LabVIEW exited before the motor port is touched PROC     PASS waited 0s; forced kill used=False; running now=False
+[   8.7s] STEP 93 G93 post-run TMX? still 39  MOTOR    FAIL TMX?=None from "(no TMX line in the gate's output)"; gate exit=0; LIMITS TMN=0 TMX=39; (no REFSTATE)
+[   8.7s] click records -> C:\Users\KimLab\AppData\Local\Temp\c106b_st_5te2zdbu\probe.json
+GATE L v5.leg with a firing watch -> False, run1.L1d recorded, GUARD killed PASS 
+GATE L cleanup after a guard kill makes NO COM call                         PASS com calls 6->6
+[   8.7s] STEP 10 run1.pre reset+readback of the 3 control-flow booleans VISERVER PASS {'stop (end)': 0, 'stop (end) 2': 0, 'Done Picking \nBeads?': 0} (no panel PARAMETER is written)
+[  12.3s] STEP 11 run1.L1 VI left idle        COM      PASS ExecState=2 after 4s; Run returned=False
+[  19.8s] STEP 12 run1.L2 IMAQ display LOCATED in this leg's own capture GUI      FAIL panel rect=(0, 0, 1920, 1080); no capture; (v3's V6 rect, NOT used: (232, 500, 873, 1013))
+[  19.8s] STEP 12 run1.L2x TEST STOP at L2 (LEGGUARD_TEST_STOP_AT_L2=1): no picks, LabVIEW killed directly PROC     FAIL gone=True after 0.1s
+GATE L STOP_AT_L2 -> False, run1.L2x recorded, direct kill, no pick         PASS 
+GATE O ocr_text on the 105-2 dialog capture has 0xBFFF0072 + VISA Open      PASS 2.3s × | Error-1073807246occurredat ViSAOpenin | Configure.vi- | >scratch_c105b_s1_20260927_055929_run_202 | 60927_060020.vi | Possible reason(s): | VISA: (Hex 0xBFFF0072) The resource is valid, but VISA |
+GATE D ABBA --dry exits 0, 4 legs, every V1 precheck gate True, no loop stop FAIL rc=1 rows=0 v1=[] 0s; stderr 
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c104_abba.py", line 30, in <module>
+    S1 = os.path.join(CD, "D1_s1_copy.vi"); DSP = os.path.join(CD, "D1_s1_disp_20260927_041648.vi")
+NameError: name 'CD' is not defined. Did you mean: 'C'?
+
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":29,"fail":1},"first_fail":"D ABBA --dry exits 0, 4 legs, every V1 precheck gate True, no loop stop","artefacts":[{"path":"tools\\bench\\diag_c106b_selftest.json","md5":"f301244a0c77e8259fba4d2e167a5c60"}]}
+BGRUN END rc=1 after 23s

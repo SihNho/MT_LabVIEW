@@ -1,13 +1,14 @@
 {
  "schema": "next/1",
- "cycle": 105,
- "act": "PD218(c): first re-run tools/bench/diag_c105d_visa.py (no LabVIEW). If viOpen ASRL5 == 0 (user fixed D-2026-09-27-03) run the 217(f) ABBA unchanged; else the 216(g)/217(d)/218(d) tooling card.",
- "task_kind": "build",
- "plan": {"path": "docs/d1-loop12-17-split-plan.md", "md5": "121f0c674a5fd2f81018145230579fa7"},
+ "cycle": 106,
+ "act": "PD219(f): run the 217(f) ABBA via diag_c104_abba.py (VISA precheck built in); if leg 1 is refused, the next M3 build sub-stage from bed D1_l2_a1 per plan section 2, structural only.",
+ "task_kind": "measure",
+ "plan": {"path": "docs/d1-loop12-17-split-plan.md", "md5": "b0eda3d0ed272405c1440927e91804cf"},
  "pass": [
-  "VISA precondition: diag_c105d_visa.py V1 status for 'Rotor' and ASRL5 recorded before any leg",
-  "if ASRL5 opens: ABBA A15 B15 B15 A15 per 217(f), legs stop on an A-leg failure before pick 1, dialogs logged by shotwin -Hwnd",
-  "else tooling card: stagesim labels+fs pairs, recipe <=120 lines, pre-run verb-precondition + memory-margin checks, gui_save Evidence, leg driver fail-fast on a modal dialog"
+  "ABBA A15 B15 B15 A15 per 217(f) with leg guard (VISA precheck, stop on refused/A-fail, dialog fail-fast) - or leg 1 refused with LabVIEW never started",
+  "same first card: stop_record lets stage_prerun --dry/--prerun through (negatives material_marker.log:2335,2338), still refuses launches; recorded top-level dry of stage_d1_disp.py",
+  "if refused: the next M3 sub-stage is named from plan section 2 with its saved-file name and pass criteria, and its card is dispatched (structural only)",
+  "every material card carries: a gate refusal is returned BLOCKED, never re-run through a self-test child or other exempt route"
  ],
  "blocked_by": null,
  "stop_requested": false,

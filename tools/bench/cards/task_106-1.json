@@ -1,0 +1,56 @@
+{
+ "schema": "task/1",
+ "id": "106-1",
+ "kind": "diagnose",
+ "goal": "Re-run diag_c105d_visa.py (viOpen Rotor/ASRL5, no LabVIEW) per PD218(c); plus an offline read: does the replay route (stage_replay_swap.py) open the rotor on its run path?",
+ "why": "D-2026-09-27-03 (PC-level fix of the ASRL5 VISA refusal) is still open in decisions_pending.json; the ABBA of PD217(f) needs viOpen ASRL5 == 0 first (PD218(c)). The second part is a fact judgement needs to decide whether the rule-1a replay (PD210(c)) can run while the rotor port is refused.",
+ "inputs": [
+  {"path": "tools/bench/diag_c105d_visa.py"},
+  {"path": "tools/bench/diag_c105d_visa.log"},
+  {"path": "tools/bench/cards/result_105-4.json"},
+  {"path": "tools/recipes/stage_replay_swap.py"},
+  {"path": "tools/bench/plans/plan_replay_swap_95.json"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c105d_visa.py"},
+  {"kind": "file", "name": "tools/recipes/stage_replay_swap.py"},
+  {"kind": "file", "name": "tools/bench/plans/plan_replay_swap_95.json"}
+ ],
+ "pass": [
+  "P0: LabVIEW not running (tasklist) before and after the VISA run",
+  "V1: diag_c105d_visa.py re-run unchanged under bgrun; per resource ('Rotor', 'ASRL5::INSTR', 'ASRL6::INSTR' control) the status code of each open, and CreateFileW(COM5) result, with log file:line",
+  "R1: offline: does the replay run path call rotor Configure.vi / VISA Open on Rotor/ASRL5? cite plan/recipe/newest replay log lines; UNKNOWN where files are silent",
+  "R2: the newest replay run's wall-clock and whether it ran with the real camera or recorded frames (file:line)"
+ ],
+ "outputs": [
+  "tools/bench/diag_c106a_*",
+  "tools/bench/facts_c106a.json",
+  "tools/bench/cards/result_106-1.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "gate",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c106a*",
+   "tools/bench/diag_c105d_visa.log",
+   "tools/bench/facts_c106a*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/cards/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 20},
+ "rules": [
+  "VISA: open/close only, never write or read bytes, never set attributes, no rotor command",
+  "never change visaconf.ini, NI MAX, drivers or services; never start LabVIEW",
+  "VISA script under bgrun --max-min<=10, bgrun log tools/bench/diag_c106a_visa.log; keep the 105 log unchanged",
+  "facts <=10 with file:line; OPEN <=3; do not judge the cause and do not propose the fix"
+ ],
+ "unblocks": "M8"
+}

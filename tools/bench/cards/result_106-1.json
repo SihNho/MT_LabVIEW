@@ -1,0 +1,27 @@
+{"schema":"result/1","id":"106-1","status":"PASS","gates":{"pass":4,"fail":0},
+"first_fail":null,
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/diag_c106a_visa.py","md5":"ec84d91eb349cf2bd9b2785f60db86a3"},
+ {"path":"tools/bench/diag_c106a_visa.log","md5":"b0fc94cda47770bc4bbb3e61d5f33747"},
+ {"path":"tools/bench/facts_c106a_visa.json","md5":"9787eeb3ebb269c8695b0e0afc75788b"},
+ {"path":"tools/bench/facts_c106a.json","md5":"6537b8a83fb9a7352ef700c6c4869ab7"}
+],
+"facts":[
+ "P0: LabVIEW absent before and after the VISA run; only nimxs.exe + runner/bgrun python listed (diag_c106a_visa.log:3,24,25,30)",
+ "V1: viOpen('Rotor') x3 and viOpen('ASRL5::INSTR') x3 all -1073807246 (0xBFFF0072), 0.6-0.8 ms each (diag_c106a_visa.log:6-11); V2 A and B same (:12)",
+ "V1: CreateFileW(COM5) err 0 + closed, viOpen ASRL5 after 0/100/1000 ms still 0xBFFF0072 (:13-15); child holds COM5 -> same 0xBFFF0072 (:17)",
+ "V1 control: viOpen 'COM6' x3 and 'ASRL6::INSTR' x3 status 0, viClose 0 (diag_c106a_visa.log:18-23). Every status identical to 105 (diag_c105d_visa.log:6-23)",
+ "Run: bgrun 2026-09-27 06:56:03, END rc=0 after 12s, 6/0 (diag_c106a_visa.log:1,31-32). Script = 105 copy, only OUTJ changed so 105 log/json md5 stay f899bd30/18354ce3",
+ "R1: both replay copies keep Autonics rotor Configure.vi uid 30064 (stage_replay_swap_78.json:439 s3, :565 s1); swaps touch only #6810/#22692 camera callees (:478-495)",
+ "R1: S1 (source of the replay copies) hits VISA Open in Configure.vi, 0xBFFF0072, 0.41 s after Run (docs/d1-loop12-17-split-plan.md:1854)",
+ "R1: no replay log names rotor/ASRL5/Configure/VISA (grep 0 over tools/bench/*replay*.log): a VISA Open inside a replay run is UNKNOWN from files; plan 95 never ran (no replay_c95_swap.log)",
+ "R2: newest replay run drive_m8_replay_s3_78.log: start 2026-09-25 08:13:51 (:1), END rc=0 after 173s (:768), 8/0, M3 frames>=2000 (:761)",
+ "R2: frames = recorded (replay_get_image_cal/replay_get_buff_image swapped in, stage_replay_swap_78.json:478-495); IMAQdx Configure Grab uid 13962 still in copy (:429), camera open UNKNOWN"
+],
+"open":[
+ "PD218(c) precondition viOpen('ASRL5::INSTR') == 0 is NOT met at 06:56 (0xBFFF0072 3/3); D-2026-09-27-03 stays open",
+ "Whether the replay run path (S1-derived copies still carrying rotor Configure.vi #30064) can run while ASRL5 is refused is not measurable offline; files show the call is present, not that it is reached"
+],
+"cost":{"usd":null,"minutes":12,"labview_runs":0},
+"note":"diag_c106a_visa.log | ladder: n/a (rc=0, 6/0, no failed gate) | none | one bgrun run, 12 s | PASS. Open/close only, no byte, no attribute, visaconf/NI MAX untouched, no LabVIEW, STATUS untouched, no commit."}

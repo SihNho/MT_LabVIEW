@@ -41,6 +41,7 @@ import glob
 import hashlib
 import json
 import os
+import re
 import sys
 import time
 
@@ -323,9 +324,12 @@ def resolve_addr(st, a, want_source):
     return list(uniq.values())[0]
 
 
-def graph(st, labels=None):
+def graph(st, labels=None, fs_pairs=None):
+    """fs_pairs (card 106-3): an override for the state's own `fs_pairs` (None = the state's) - the finalize cdiff graph
+    passes the S1 wiki pairs here (cdiff_inputs) without writing them into the step state."""
     rec = {"terminals": st["terminals"], "graph_summary": st.get("graph_summary") or {}}
-    G = JC.from_parts(rec, st["objs"], st["loops"], labels if labels is not None else {}, st.get("fs_pairs"), "sim")
+    G = JC.from_parts(rec, st["objs"], st["loops"], labels if labels is not None else {},
+                      fs_pairs if fs_pairs is not None else st.get("fs_pairs"), "sim")
     for body, parent in st["diagrams"].items():
         G["tree"]["parent"].setdefault(int(body), int(parent))
     return G
@@ -1076,6 +1080,74 @@ def load_s1(plan):
     return None
 
 
+def cdiff_inputs(plan, st, labels=None):
+    """card 106-3 (PD217(d), facts_c104c_e3.json): the node labels + fs tunnel pairs the FINALIZE cdiff graph is built
+    with = the E3 inputs (stagexec.e3_graph: JC.node_labels_default() and the S1 wiki's fs_tunnel_pairs, context
+    fs_pairs_wiki else s1_key). Before this the cdiff graph had NO labels and the base graph's (0) fs pairs, which made
+    the 15 PD213(d) class-(4) rows of plan_disp look open. Explicit `labels` win; the fs pairs are used only when the
+    state carries none. A plan with no wiki S1 (the synthetic self-tests, context s1_graph) -> the old inputs.
+    Returns (labels, fs_pairs_or_None, record)."""
+    ctx = plan.get("context") or {}
+    wiki_p = _abs(ctx["fs_pairs_wiki"]["path"]) if ctx.get("fs_pairs_wiki") else \
+        os.path.join(JC.WIKI, ctx["s1_key"] + ".json") if ctx.get("s1_key") else None
+    if wiki_p is None:
+        lab = labels if labels is not None else {}
+        return lab, None, {"labels": "explicit" if labels is not None else "none", "labels_n": len(lab),
+                           "fs_pairs": "state", "fs_pairs_n": len(st.get("fs_pairs") or [])}
+    lab = labels if labels is not None else JC.node_labels_default()
+    fs = None if st.get("fs_pairs") else (_j(wiki_p).get("fs_tunnel_pairs") or None)
+    return lab, fs, {"labels": "explicit" if labels is not None else "node_labels_default", "labels_n": len(lab),
+                     "fs_pairs": _rel(wiki_p) if fs is not None else "state",
+                     "fs_pairs_n": len(fs if fs is not None else st.get("fs_pairs") or [])}
+
+
+E3_CLASS_RE = re.compile(r"PD213\(d\)\((\d)\)")
+
+
+def open_row_class(r):
+    """PD217(c): a plan open row's PD213(d) class - a `class` field, else the class the finalizer wrote into `why`
+    ("PD213(d)(4): ..."). None when the row names none (a class is never guessed). Shared with stagexec.e3_eval
+    (moved here from stagexec.py by card 106-3, unchanged)."""
+    c = r.get("class")
+    if c is None:
+        m = E3_CLASS_RE.search(str(r.get("why") or ""))
+        c = m.group(1) if m else None
+    try:
+        return int(c)
+    except (TypeError, ValueError):
+        return None
+
+
+def c4_check(S1, G, c4):
+    """PD217(c): for every class-(4) (node, term) row, the end graph's effective sources == S1's, on every sink key of
+    that name in either graph. Returns (bad list, n keys compared). Shared by stagexec.e3_eval and the finalize rule."""
+    ma, mb, bad, n = {}, {}, [], 0
+    for node, t in c4:
+        keys = sorted(set(k for gg in (S1, G) for k in V.terminals(gg, node=node, is_source=False) if V.key_parts(k)[2] == t))
+        if not keys:
+            bad.append({"row": (node, t), "why": "no sink key in S1 or the end graph"})
+        for k in keys:
+            n += 1
+            sa = sorted(V.effective_sources(S1, k, ma)) if k in S1["rows"] else None
+            sb = sorted(V.effective_sources(G, k, mb)) if k in G["rows"] else None
+            if sa != sb:
+                bad.append({"row": (node, t), "sink": k, "S1": sa, "end": sb})
+    return bad, n
+
+
+def open_rows_classed(plan, S1, G, end_pairs):
+    """card 106-3: the finalize open-row rule under PD217(c)'s classes (the E3 rule applied at plan time): every declared
+    open row carries a class 1-4, the end rows == the class 1-3 rows, and every class-(4) row's end sources == S1's."""
+    cls = [(int(r["node"]), r["term"], open_row_class(r)) for r in plan.get("open_rows") or []]
+    unclassed = sorted(set((n, t) for n, t, c in cls if c not in (1, 2, 3, 4)))
+    want = sorted(set((n, t) for n, t, c in cls if c in (1, 2, 3)))
+    c4 = sorted(set((n, t) for n, t, c in cls if c == 4))
+    bad, nk = c4_check(S1, G, c4) if (S1 is not None and G is not None and not unclassed) else ([], 0)
+    ok = bool(cls) and not unclassed and end_pairs is not None and list(end_pairs) == want and not bad
+    return {"ok": ok, "want": [list(x) for x in want], "c4_n": len(c4), "c4_keys": nk, "c4_bad": bad[:10],
+            "unclassed": [list(x) for x in unclassed]}
+
+
 def simulate(plan_path, graph_path, out_root=SIM_ROOT, plan_out_dir=BENCH, model_dir=OPMODEL_DIR, labels=None,
              log=print):
     plan = _j(plan_path)
@@ -1091,7 +1163,8 @@ def simulate(plan_path, graph_path, out_root=SIM_ROOT, plan_out_dir=BENCH, model
     S1 = load_s1(plan)
     st = base_state(_j(graph_path), plan.get("context"))
     base_nodes = set(V.node_of(r) for r in st["terminals"])
-    labels = labels if labels is not None else {}
+    cd_lab, cd_fs, cd_rec = cdiff_inputs(plan, st, labels)          # card 106-3: the finalize graph = the E3 inputs
+    labels = labels if labels is not None else {}                   # the ops keep their old inputs (step states unchanged)
     steps, all_cands, cls_new = [], [], {}
 
     def write_step(n, name, action, effect, src, prev, err=None):
@@ -1103,7 +1176,8 @@ def simulate(plan_path, graph_path, out_root=SIM_ROOT, plan_out_dir=BENCH, model
         return {"path": p, "md5": md5_file(p)}
 
     prev = write_step(0, "base", None, {"graph": _rel(graph_path), "graph_md5": md5_file(graph_path)}, "input", None)
-    cd0 = V.computation_diff(S1, graph(st, labels)) if S1 is not None else None
+    g_end = graph(st, cd_lab, cd_fs) if S1 is not None else None
+    cd0 = V.computation_diff(S1, g_end) if S1 is not None else None
     steps.append({"n": 0, "op": "base", "file": prev, "cdiff_rows": cdiff_keys(cd0) if cd0 else None})
     failed = None
     for n, a in enumerate(plan["actions"], 1):
@@ -1129,7 +1203,8 @@ def simulate(plan_path, graph_path, out_root=SIM_ROOT, plan_out_dir=BENCH, model
             if "reconnect" in effect:
                 rec["reconnect"] = effect["reconnect"]
         if err is None and S1 is not None:
-            cd = V.computation_diff(S1, graph(st, labels))
+            g_end = graph(st, cd_lab, cd_fs)
+            cd = V.computation_diff(S1, g_end)
             rec["cdiff_rows"] = cdiff_keys(cd)
             rec["cdiff_detail"] = cd["rows"]
         steps.append(rec)
@@ -1160,7 +1235,10 @@ def simulate(plan_path, graph_path, out_root=SIM_ROOT, plan_out_dir=BENCH, model
     # 376 'current frame data array in', Pre-decided 175). Final iff the end rows are EXACTLY those, no more, no fewer.
     open_rows = sorted(set((int(r["node"]), r["term"]) for r in plan.get("open_rows") or []))
     end_pairs = sorted(set((V.key_parts(k)[0], V.key_parts(k)[2]) for k in end_rows)) if end_rows is not None else None
-    open_match = end_pairs is not None and end_pairs == open_rows
+    open_legacy = end_pairs is not None and end_pairs == open_rows
+    # card 106-3: OR the PD217(c) classed rule (end rows == the class 1-3 rows, class-4 sources == S1's) - the E3 rule
+    classed = open_rows_classed(plan, S1, g_end if not failed else None, end_pairs)
+    open_match = open_legacy or classed["ok"]
     final = bool(S1 is not None and not failed and open_match and not undecided)
     cands_path = os.path.join(out_dir, "candidates.json")
     with open(cands_path, "w", encoding="utf-8") as f:
@@ -1172,6 +1250,7 @@ def simulate(plan_path, graph_path, out_root=SIM_ROOT, plan_out_dir=BENCH, model
                "models_loaded": dict((k, {"path": _rel(v["path"]), "md5": v.get("md5")}) for k, v in models.items()),
                "steps": steps, "failed": failed, "final": final, "end_cdiff_rows": end_rows,
                "open_rows": [list(x) for x in open_rows], "open_rows_match": open_match,
+               "open_rows_match_legacy": open_legacy, "open_rows_classed": classed, "cdiff_inputs": cd_rec,
                "first_divergent": first_div, "n_candidates": len(all_cands), "undecided": len(undecided),
                "candidates": {"path": _rel(cands_path), "md5": md5_file(cands_path)}, "sym": st["sym"],
                "new_classes": dict((str(k), v) for k, v in cls_new.items())}
@@ -1187,6 +1266,8 @@ def simulate(plan_path, graph_path, out_root=SIM_ROOT, plan_out_dir=BENCH, model
                              "summary": {"path": _rel(sp), "md5": md5_file(sp)},
                              "end_cdiff_rows": end_rows, "failed": failed, "first_divergent": first_div,
                              "open_rows": [list(x) for x in open_rows], "open_rows_match": open_match,
+                             "open_rows_match_legacy": open_legacy, "open_rows_classed": classed,
+                             "cdiff_inputs": cd_rec,
                              "step_files": [{"n": s["n"], "op": s["op"], "path": _rel(s["file"]["path"]),
                                              "md5": s["file"]["md5"]} for s in steps if s.get("file")],
                              "undecided": len(undecided), "at": time.strftime("%Y-%m-%d %H:%M:%S")}
@@ -1453,6 +1534,36 @@ def selftest():
     S14 = run(po3, "openfewer", log=quiet)
     gate("G35 more end rows than declared open => not final", not S14["final"] and len(S14["end_cdiff_rows"]) == 2,
          S14["end_cdiff_rows"])
+    # card 106-3: the classed finalize rule (PD217(c) at plan time) - end rows [4 x]; 2 'in' is reconnected (== S1)
+    r4x1 = {"node": 4, "term": "x", "why": "PD213(d)(1): left for a later stage (self-test)"}
+    r2in4 = {"node": 2, "term": "in", "why": "PD213(d)(4): already open at the base (self-test)"}
+    pc1 = copy.deepcopy(pe)
+    pc1["open_rows"] = [r4x1, r2in4]
+    S15 = run(pc1, "classed", log=quiet)
+    gate("G57 classed rule: end rows == the class 1-3 rows [4 x] and the class-4 row 2 'in' has S1's sources => final "
+         "(the legacy all-rows rule alone would refuse it)", S15["final"] and not S15["open_rows_match_legacy"] and
+         S15["open_rows_classed"]["ok"] and S15["open_rows_classed"]["c4_keys"] >= 1, (S15["final"], S15["open_rows_classed"]))
+    pc2 = copy.deepcopy(pe)
+    pc2["open_rows"] = [dict(r4x1, why="PD213(d)(4): claimed already open (self-test)"), r2in4]    # legacy refuses too
+    S16 = run(pc2, "classed_c4bad", log=quiet)
+    gate("G58 NEGATIVE: an open row (4 x) declared class 4 is extra AND its sources differ from S1 => not final",
+         not S16["final"] and not S16["open_rows_classed"]["ok"] and S16["open_rows_classed"]["c4_bad"],
+         S16["open_rows_classed"])
+    pc3 = copy.deepcopy(pe)
+    pc3["open_rows"] = [r4x1, {"node": 2, "term": "in", "why": "no class named (self-test)"}]
+    S17 = run(pc3, "classed_unclassed", log=quiet)
+    gate("G59 NEGATIVE: a declared row without a PD213(d) class => the classed rule refuses (a class is never guessed), not final",
+         not S17["final"] and S17["open_rows_classed"]["unclassed"] == [[2, "in"]], S17["open_rows_classed"])
+    st_s = base_state(_synthetic())
+    l0, f0, c0 = cdiff_inputs(pf, st_s)
+    st_n = dict(st_s, fs_pairs=None)
+    l1, f1, c1_ = cdiff_inputs({"context": {"s1_key": JC.S1_KEY}}, st_n)
+    l2, f2, c2_ = cdiff_inputs({"context": {"s1_key": JC.S1_KEY}}, dict(st_s, fs_pairs=[{"x": 1}]))
+    gate("G60 cdiff_inputs: a synthetic (s1_graph) plan keeps the old inputs; an s1_key plan gets node_labels_default + the "
+         "S1 wiki fs pairs when the state has none, and keeps the state's pairs when it has some",
+         l0 == {} and f0 is None and c0["fs_pairs"] == "state" and len(l1) == len(JC.node_labels_default()) > 0 and f1
+         and c1_["fs_pairs"].endswith(JC.S1_KEY + ".json") and f2 is None and c2_["fs_pairs"] == "state",
+         (c0, c1_, c2_))
     # card chat-S3: only-sink fates (const #1 'v' -> tunnel #60 is branched; #3 'err' -> #51 outer is a sole sink)
     pdel = {"schema": "stageplan/1", "stage": "onlysink", "context": {"s1_graph": {"path": s1p}},
             "actions": [{"op": "delete_object", "uid": 51}]}

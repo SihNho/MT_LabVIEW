@@ -77,8 +77,11 @@ def main():
         m.COPY, m.ORIGINAL, m.ORIGINAL_MD5, m.RUN_DIR = copy, ORIG, ORIG_MD5, run_dir
         m.SHOTS = os.path.join(HERE, "m8_shots")
     d0.COPY_TITLE = name; v5.EVID = os.path.join(HERE, "m8_shots")
-    v5.D0_JSON = d0.D0_JSON = os.path.join(HERE, "m8_v5_%s%s%s.json" % (LEG, SUF, "_dry" if DRY else ""))
-    v5.PROBE_JSON = os.path.join(HERE, "m8_v5_%s%s_clicks.json" % (LEG, SUF))
+    OUTD = os.environ.get("M8_OUT_DIR") or HERE               # card 106-2: a test run may keep its jsons out of tools/bench
+    os.makedirs(OUTD, exist_ok=True)
+    v5.D0_JSON = d0.D0_JSON = os.path.join(OUTD, "m8_v5_%s%s%s.json" % (LEG, SUF, "_dry" if DRY else ""))
+    v5.PROBE_JSON = os.path.join(OUTD, "m8_v5_%s%s_clicks.json" % (LEG, SUF))
+    if DRY: v5.VISA_PRECHECK = lambda log=print: v5.LG.visa_precheck(dry=True, log=log)   # card 106-2: no port in --dry
     v5.RUN_S = RUN_S_ARG                                      # 35 s: ~84 Hz measured -> ~2900 frames (>= 2000)
     if NPICK:
         v5.PICK_FRACS = FRACS_ALL[:NPICK]                     # v5's L3 (>=3 markers) / L8 (==3 panels) are v5's
@@ -130,7 +133,7 @@ def main():
            "tra_rows": {f: tra_rows(os.path.join(run_dir, f), 3 + 3 * (NPICK or 3)) for f in files
                         if f.lower().startswith("tra")},
            "npicks": NPICK or 3, "v5_steps": S}
-    jp = os.path.join(HERE, "m8_%s%s%s.json" % (LEG, SUF, "_dry" if DRY else ""))
+    jp = os.path.join(OUTD, "m8_%s%s%s.json" % (LEG, SUF, "_dry" if DRY else ""))
     json.dump(out, open(jp, "w"), indent=1, default=str)
     for k, v in G.items(): print("GATE %-40s %s" % (k, "PASS" if v else "FAIL"))
     bad = [k for k, v in G.items() if not v]
