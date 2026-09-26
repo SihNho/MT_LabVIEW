@@ -1498,6 +1498,75 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
        **Donor unload** (`CloseFrontPanel` → 0x47D) did not happen; peak private bytes 622 MB < 700, so it is not needed now. ⚠️ ASSUMPTION (2c): LabVIEW's
        int-÷-0 rule as stated; the stage's smoke check is not asked to measure it. If it is wrong, it faults only at N = 0,
        never at the default.
+207. **(cycle 98 judgement, on `98-1` PASS 53/0, `tools/bench/cards/result_98-1.json`, log `tools/bench/diag_c98_fgate.log`)
+     — WHY THE GATED COPY BREAKS: MEASURED, and the fix**
+     - **(a) MEASURED:** ExecState E1 1 → after move A **0** → after move B 0 → E3 0 (`diag_c98_fgate.log:289,362,417,437`).
+       After move A, 8 wires have NO terminal at all (7931 9407 15847 24106 28139 28443 28509 33062, owner diagram 7911); after
+       move B, 1 more (10908, owner 639). All 9 are OLD uids present at E1, and none is in the new-wire lists
+       (`:364-391,419-423,440-456`). Error List of the saved broken file `claudeDev\D1_s1_fgate_BROKEN_20260926_175556.vi`
+       (md5 `b114bb1b…`, never run) = 15 wire items only (7 loose ends, 8 not connected). **Remove Bad Wires on a scratch
+       removed exactly those 9, ExecState 0 → 1, Error List 0 items** (`:469-480,633,640`); no member-edge wire was removed.
+     - **(b) JUDGED:** explanation (i) of 206(h) (orphaned severed wires) is CONFIRMED; (ii) (illegal final structure) is
+       REFUTED by measurement, since the E3 structure minus those 9 wires is ExecState 1. A per-item Error List ↔ uid mapping
+       is NOT needed. The retrospective-cycle97 gap is the tool's: T2's self-test never read ExecState or leftover wires.
+     - **(c) THE FIX (tool change, `gscript.move_into_frame`):** after the move, delete every wire that (1) existed before the
+       move (uid in the pre-move wire set of the source AND target diagrams) and (2) now has ZERO terminals. Targeted deletion
+       by uid only; **never a whole-VI Remove Bad Wires** (it would also hide breaks the verb did not cause). Then the verb
+       reads ExecState and the termless-wire count and FAILS if ExecState is 0 or a termless wire remains, unless the caller
+       passes an explicit `expect_broken=True` (the retrospective-cycle97 rule: a diagram-editing verb is gated on ExecState
+       after the edit). Rule 1a: a wire with no terminal carries no data, so deleting it changes no computation.
+     - **(d) Self-test before use:** the T2 self-test is re-run on a scratch S1 with the new gates (ExecState 1 and 0 termless
+       after the move, edge tables equal), plus a negative case (`expect_broken` False on a deliberately left orphan →
+       the verb fails). Handles flat over 20 calls.
+     - **(e) Then the stage run (205(e) 2) in the same card:** `stage_d1_fgate.py` with the patched verb, dry + prerun
+       first, RETRY_CAP 2, saved BY SCRIPT as `claudeDev\D1_s1_fgate_<ts>.vi`, ExecState 1 warm AND cold, cdiff = the 97-5
+       rows (Q&R #22968, Eq0 #10280, control #23136 added, 0 changed rows), edge tables A 16 / B 3 equal, 0 termless wires.
+       Still NOT accepted before 205(e) 3 (ABBA) and 4 (rule-1a replay at N = 1).
+     - **(f) Rule 1a on A's False frame** stays as judged in 206(h); the replay decides.
+208. **(cycle 98 judgement, on `98-2` FAIL 45/2, `tools/bench/cards/result_98-2.json`, log `tools/bench/selftest_c98_stage.log`)
+     — 207(c) AMENDED: termless-only deletion is NOT enough**
+     - **(a) MEASURED:** the patched verb deleted exactly 98-1's 8 orphans after move A (all Diagram 7911, `:302-312`), 0
+       termless left, edges 16 = 16, and ExecState was still **0** after A + UseDefault (`:320-321`). Stage not launched.
+     - **(b) JUDGED:** 98-1's Error List had **7 "Wire has loose ends"** items besides 8 "not connected to anything"
+       (`diag_c98_fgate.log:558-572`). "Loose ends" is a KEPT wire with a dangling branch. It is not termless, so 207(c)'s
+       filter cannot see it (review `c98-selftest-f4e` names w7913/w10430). The one operation MEASURED to give ExecState 1
+       on this structure is Remove Bad Wires (98-1: 9 wires removed, ExecState 0 → 1, 0 Error List items, no member edge lost).
+     - **(c) THE FIX, amended:** after each move, `move_into_frame` runs **Remove Bad Wires**. It is scoped to the source
+       diagram and the frame's diagram when LabVIEW exposes it per diagram, otherwise to the VI. It is fenced by gates that
+       answer 207(c)'s objection ("hides breaks the verb did not cause"):
+       (1) PRECONDITION: ExecState read 1 BEFORE the move, else refuse. So no break existed that the move did not cause.
+       (2) Every removed wire uid was present before the move (the wire sets diffed before/after RBW).
+       (3) The moved set's edge table is equal before/after, and no data edge is lost.
+       (4) ExecState 1 after, 0 termless wires. Else raise, unless `expect_broken=True`.
+       Rule 1a: RBW removes only wires that carry no data (broken or dangling); (3) proves no data edge was removed.
+       The 207(c) termless deletion may stay as a first pass or be dropped; the gates decide.
+     - **(d) Per-move gate stays:** after A alone the graph is legal LabVIEW (B's nodes are simply still outside a case), so
+       ExecState 1 is required after EACH move, not only at E3.
+     - **(e) Escalation:** 98-2 spent its failure budget → card 98-3 = rung 1 (`material-opus-max`), same pass list, this
+       method. Then the stage run per 207(e).
+
+209. **(USER DIRECTION 2026-09-26 18:0x, chat; answers D-2026-09-26-02 — supersedes 205/206/207/208's N-frame GATE)**
+     *"그래프 플롯 기능을 혹시 별도 루프로 두는 것은 어떤지? 로컬 변수에 데이터들은 다 입력하고 데이터 플롯은 별도 루프로"* →
+     *"이대로 진행"*. The speed-up is taken, but NOT as a Quotient&Remainder gate inside the frame loop:
+     - (a) **The `Force (pN) vs Extension (nm)` plot (#8323) moves to a SEPARATE DISPLAY LOOP.** The frame loop only
+       WRITES the plot data to a local variable (the array that fed #8323, w10908's source); the display loop runs on
+       its own clock (a panel control `Display period (ms)`, default 100 = ~10 Hz, ≥ 1 ms), reads the local, writes
+       #8323. No queue (CLAUDE.md 1c''), no edge detection, no schedule boolean in the frame loop. Stop: the display
+       loop reads the same stop local the S3 stage uses (Pre-decided 154 carrier), exits after the frame loop.
+     - (b) The other indicators fed from inside #637 (Z / dZ plots #6085/#5696 and any cycle-94 timing site that is a
+       pure display) are candidates for the SAME display loop; take them in the same stage only if their cycle-94
+       per-site cost is measured; otherwise one plot first, measure, then the rest.
+     - (c) Rule 1a: scheduling change only — the values reaching #8323 are the same arrays, later. Saved data untouched.
+       Acceptance = real ABBA run (15 picks, 120 s) vs `D1_s1_copy.vi`: lost frames must drop by about the plot's
+       measured 10 ms/frame share; plus recorded-frame replay bit-identity on X/Y/Z as for every stage.
+     - (d) Measure first, offline where possible: the cost of a local-variable WRITE of the plot array per frame
+       (stamp site around the write, or the t0 harness) so (b) can be summed before it is built.
+     - (e) **The fgate work stops here**: `stage_d1_fgate.py`, `D1_s1_fgate_BROKEN_*` and PD206(h)'s diagnosis are
+       DROPPED (the broken intermediate may be deleted; its Error List facts stay in the 98 cards as prior art on
+       what breaks when a case frame is built around #1359).
+     - (f) Order for cycle 99: design page (display-loop stage: locals list, indicator list, stop carrier, rows) →
+       `requires` on the card → simulator (dry, pre-run, computation_diff 0) → one LabVIEW execution → ABBA. The
+       same "big work split into saved steps" rule as every stage.
 
 ## OPEN (design choices — for judgement; not decided here)
 
