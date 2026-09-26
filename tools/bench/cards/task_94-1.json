@@ -1,0 +1,76 @@
+{
+ "schema": "task/1",
+ "id": "94-1",
+ "kind": "measure",
+ "goal": "PD201 (amended): per-site timing on the CLEARED instrument - 6 legs A11 B11 B15 A15 B15 B11, A = unstamped D1_s1_copy.vi, B = t0at on t0stamp v2; panel normal, 120 s",
+ "why": "PD200(d) cleared t0stamp v2 at 8 picks (thin, retro-c93 F3 keeps the control arm); t0_step4_91.json (v1) is unusable; judgement needs per-site ordering + slope us/bead at two non-frame-bound pick counts to name the per-bead lever (candidate For #7911, site 4)",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "63d7ba4123fda2210a63cd33f7d74ebb"},
+  {"path": "tools/bench/cards/result_93-2.json"},
+  {"path": "tools/bench/m8_flushfree8_93.json"},
+  {"path": "tools/bench/t0_sites_s1.json"},
+  {"path": "tools/bench/diag_c93b_abba.py", "md5": "a56924a8443cf46d3904473a5f052f7e"},
+  {"path": "tools/bench/diag_c93b_leg.py", "md5": "316ca5c29dfcaf7b1d76b901a291d1b3"},
+  {"path": "tools/bench/diag_c91_step4.py"},
+  {"path": "tools/bench/diag_c91_step4_summary.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\t0stamp.dll", "md5": "b35b398d59b35743e2669d043f701fe6"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_t0at_20260926_090833.vi", "md5": "30a15c6772d5ef3336ed274abc4c2f40"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c93b_abba.py"},
+  {"kind": "file", "name": "tools/bench/diag_c93b_leg.py"},
+  {"kind": "file", "name": "tools/bench/diag_c91_step4_summary.py"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\t0stamp.dll"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_t0at_20260926_090833.vi"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "pass": [
+  "leg dry run EXECUTES the leg script (new diag_c94_* copies) with GUI/COM stubbed to saved real returns, all 6 legs incl. pick counts 11 and 15, before the first launch (PD199h)",
+  "6 legs in order A11 B11 B15 A15 B15 B11, 120 s, panel normal; registered picks == target per leg (a mismatch is logged and that leg rerun once, never half-counted); lost frames per leg",
+  "per B leg, per site: stamp count, overflow (must be reported, 0 expected), median and p95 of (stamp - own i) in us; tracking-loop period median/p95/max; per A and B leg: lost frames",
+  "per site: slope us/bead = (mean over B15 legs - mean over B11 legs)/4, plus the B15-vs-B15 and B11-vs-B11 repeat spread; stamped/unstamped lost-frame ratio at 11 and at 15",
+  "numbers in tools/bench/t0_step4v2_94.json + archive/benchmarks/INDEX.md row; S1/t0/t0at/kswap/bed + v2 dll md5 unchanged; LabVIEW gone; PI TMX 39 read back"
+ ],
+ "outputs": [
+  "tools/bench/t0_step4v2_94*",
+  "tools/bench/diag_c94_*",
+  "tools/bench/t0_legs/**",
+  "tools/bench/cards/result_94-1.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "gate",
+  "run_vi": true,
+  "write": [
+   "tools/bench/t0_step4v2_94*",
+   "tools/bench/diag_c94_*",
+   "tools/bench/t0_legs/**",
+   "tools/bench/m8_*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/gui_shots/**",
+   "tools/gui_actions.log",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**",
+   "archive/benchmarks/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 110},
+ "rules": [
+  "never save or edit any VI; t0at CLFN path must be claudeDev t0stamp.dll md5 b35b398d..., else BLOCKED",
+  "copy diag_c93b_abba/leg to diag_c94_*: keep pick-1 capture release + tra rerun rule; picks as a parameter",
+  "<=120 lines new code; per-site analysis may reuse diag_c91_step4_summary logic",
+  "GUI acts via lv_gui.ps1 -Exception Approved -Evidence 'user 2026-09-17 bead-pick option 1'",
+  "the run is one bgrun (--max-min <= 100) chaining all 6 legs + analysis; hold your turn until BGRUN END/TIMEOUT",
+  "do not name a lever or judge equivalence: report numbers only; judgement applies PD201",
+  "LabVIEW verified gone before return; facts only, <=10; OPEN <=3"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

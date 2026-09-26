@@ -1,0 +1,39 @@
+{
+ "schema": "task/1",
+ "id": "94-2",
+ "kind": "read-log",
+ "goal": "Offline facts for naming the per-bead lever: stamp site numbers -> node/terminal/group, and the contents of For #7911 in S1",
+ "why": "94-1: tracking period +972 us/bead; site 4 (For #7911 output) +760 us/bead, sites 2/6/8 +188, site 3 +310; attribution needs which stamped site feeds For #7911 and what the loop does per iteration",
+ "inputs": [
+  {"path": "tools/bench/t0_step4v2_94.json", "md5": "eeee1d0b3a96dfd2389c886ae811d987"},
+  {"path": "tools/bench/t0_sites_s1.json"},
+  {"path": "docs/wiki/subvi/D1_s1_copy.json"},
+  {"path": "tools/bench/cards/result_91-1.json"},
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "63d7ba4123fda2210a63cd33f7d74ebb"}
+ ],
+ "pass": [
+  "table: stamp site number (0..20 as used in t0_step4v2_94.json) -> stamped node uid, terminal name, group, loop; cite the file:line that assigns each number",
+  "For #7911: iteration count source (N / auto-index of which array), shift register count, parallelism setting if recorded",
+  "For #7911: every node inside (uid, VI/class) and constants wired to Median/FIR (window, order, coefficient length)",
+  "the arrays Median #29009 / FIR #28233 filter: their source node and whether its length depends on bead count, frame count (history) or a constant",
+  "which stamped site (if any) is upstream of For #7911's inputs on the dataflow path; cite the wire uids",
+  "each fact cites file:line; unknowns stated as NOT IN FILES, never inferred"
+ ],
+ "outputs": ["tools/bench/cards/result_94-2.json"],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": ["tools/bench/cards/result_94-2.json"],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 25},
+ "rules": [
+  "read-only, offline, no LabVIEW; targeted greps/JSON queries, never dump whole files",
+  "do not name a lever or propose a change; facts only, <=25 lines"
+ ],
+ "advances": ["M8", "M3", "R1"]
+}

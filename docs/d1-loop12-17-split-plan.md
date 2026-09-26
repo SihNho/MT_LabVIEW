@@ -1278,6 +1278,60 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
      - The leg dry run follows 199(h). The harness is `tools/bench/diag_c93b_abba.py` / `…_leg.py`.
      - Judgement then names the per-bead lever (198(b)'s candidate is For #7911, site 4). The acceptance of any change
        to that group stays numeric (rule 1a).
+202. **(cycle 94 judgement, on results `94-1` PASS 65/0, `94-2` PASS 4/2 (two NOT IN FILES, closed by 94-3) and `94-3` PASS 32/0)**
+     - **(a) MEASURED (`tools/bench/t0_step4v2_94.json`, INDEX row 55; 6 legs, all picks registered first time):**
+       - Lost frames: A11 **1,672** · B11 2,137 / 1,588 · A15 **4,277** · B15 4,049 / 4,070. Stamped/unstamped = 1.11 at 11 and
+         0.95 at 15, inside the B11 repeat spread (549) ⇒ **the v2 instrument does not perturb at 11/15.**
+       - The 94-1 open "is 11 already frame-bound?" is answered NO. Frame-bound means the period sits at the camera period
+         with ~0 loss (8 picks: 11.16 ms, 14/19 lost). At 11/15 the tracking period median is **13.1 / 16.7 ms**, above
+         11.1 ms, so the loop is compute-bound. That is the regime a slope needs. 11/15 are valid.
+       - Tracking loop #637 period: **+972 µs/bead** (median). Per-site slope of (stamp − own `i`): site 2 = kernel
+         #5058 output **+188**; site 3 = Median #30306 tunnel +310; **site 4 = ForLoop #1359 (diagram #7911) output
+         +760 µs/bead**; sites 6/8 +189/+188. Display sites 11–16: −21…+56 µs/bead.
+     - **(b) MEASURED (`tools/bench/diag_c94c_f7911.log`, `f7911_facts_94_offline.log`, `build_d1_v0.json:62-63`):**
+       - ForLoop **#1359** (index 6 of 17 on #637's body #639) owns diagram #7911. N is unwired (the count comes from
+         auto-indexing); **0 shift registers; parallelism disabled**, static P 0.
+       - It auto-indexes the history array carried by #637's shift register (in: tunnel 9087 ← LeftSR #9025; out: tunnel
+         9227 → RightSR #9018) and tunnel 10004. Per iteration: Insert #8634 at index `x − y·floor(x/y)` (a ring
+         position from #10068) → IndexArray #8741 rows 0/1 → Subtract (Exp Baseline) → **Median #29009** (half-width
+         'Extension median filter half-width') and **FIR #28233** (half-width 'Force smoothing half-width') → Bundler #11310.
+       - Its cost rises as the history ring fills: B15 (site 4 − site 3) is 1.3 ms in the first tenth of the run, then
+         ~6 ms, then flat at 9.4–10.9 ms. B11 alternates between ~4.8 and ~9 ms by time bin (cause not measured).
+       - The D1 plan already moves #1359 to loop 1.2 (`build_d1_v0.json:62-63`). Moving it does not make it cheaper.
+     - **(c) DECIDED — THE PER-BEAD LEVER IS ForLoop #1359, and the change is SCHEDULING ONLY: enable loop-iteration
+       parallelism on it.** Why this is rule-1a-safe by construction: the iterations share no state (0 shift registers,
+       N from auto-indexing), each iteration runs the same nodes on its own row, and output auto-indexing keeps the row
+       order. The maths (ring insert, baseline subtract, Median, FIR, their half-widths) is untouched. Rewriting the
+       filter to compute only the newest point would be a computation change and is NOT done (rule 1a). Such a rewrite
+       would need the user's decision.
+     - **(d) DECIDED — build and acceptance (next cycle), in this order:**
+       1. Read-only precondition on a scratch: the nodes inside #7911 include no Feedback Node, no local/global write
+          and no shift register; record the reentrancy of Median Filter.vi and FIR Filter (DBL).vi. A non-reentrant callee
+          only serialises, and the result stays identical, so it is recorded, not blocking.
+       2. `claudeDev\D1_s1_par1359_<ts>.vi` = a byte copy of `D1_s1_copy.vi` with ONLY #1359's parallelism enabled, using
+          LabVIEW's default instance count (record the P values). The verb for an EXISTING loop's parallelism
+          (write `ForLoop` parallel enable + instances) is NOT in `docs/toolkit-capabilities.md`. The card lists it in
+          `requires`, and if it is missing it is built first (tools allowed, user 2026-09-24).
+          Gates: ExecState 1 warm and cold; `computation_diff(S1,·)` 0 rows; `parallel_enabled` read back True on #1359
+          and unchanged on the other 16 For loops; saved by script.
+       3. Rule 1a, numeric: run S1 and the copy on the SAME recorded frames through the existing replay path. Compare
+          X/Y/Z and the #1359 output (Bundler #11310 array) for bit-identity. Any difference ⇒ stop and report; not accepted.
+       4. ABBA, 120 s, panel normal, 15 picks: A = S1, B = the copy, order A B B A, lost frames and #637 period.
+          If there is time, repeat at 11 picks.
+     - **(e) Recorded, not acted on:** `stage_prerun --dry` crashed on its own graph (`KeyError 'terminals'`,
+       `graph_s1_20260924.json`) in 94-3. A read-only script also kept its scratch via `scratches.append` instead of
+       `discard_work()`, deleted all the same. A tooling carry, not ahead of the deliverable.
+       ⚠️ SUPERSEDED by (f).
+     - **(f) (on retrospective-cycle94, accepted: `device-failed`, and the load confound)**
+       - The `stage_prerun --dry` loader crash (`KeyError 'terminals'`) is the 5th on record (`prerun_records.jsonl:17,24,33,65`).
+         It is **cycle 95's step 0, BEFORE (d)**, because (d)'s build passes through the same gate on the S1 graph.
+         Pass: `--dry` on `graph_s1_20260924.json` completes, the earlier crashers re-run without the KeyError, and there
+         is a self-test with a negative case. A refusing launch gate is never again satisfied by editing a script so the
+         classifier does not see it.
+       - Cycle 94's absolute numbers are **LOAD-UNCONTROLLED**: a 40-cell Claude benchmark (`matbench_v1.log`, 11:11–12:24)
+         ran on the same machine. Site 4 staying the only large grower matches cycle 91 and stands. From cycle 95, each leg
+         logs the foreign `claude`/`node` process count and a CPU sample before and after. If (d)4's A = S1 15-pick leg is
+         well below 4,277 lost / 16.7 ms, the slope is re-taken before it is quoted.
 
 ## OPEN (design choices — for judgement; not decided here)
 

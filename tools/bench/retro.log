@@ -2848,3 +2848,83 @@ VIOLATION: none
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle93","verdict":"none","alternative":"A structural fault would be the G5 constant-FAIL gate (diag_c93_wiretypes.py:79-80) buying review c93b-g5 ($1.1542) and blocking card 93-2 for ~3 min; it did not change what the cycle produced or when it ended in any material way.","discriminating_test":"Compare the cycle's end time with and without the 10:23:59-10:26:45 guard_peer block: card 93-2's first run at 10:27:37 vs ~10:24; retro at 11:15 vs ~11:12. A 3-minute, $1.15 delta on a delivered cycle is a finding.","violations":[],"sources":["tools/bench/diag_c93b_flushalign.log:3-12","tools/bench/diag_c93b_abba.log:167","tools/bench/peer_93-h1.log:4","tools/bench/peer_c93b-g5-wiretypes.log:4","tools/bench/jev_gate.log:1373","tools/bench/cards/requires_93-1.json:2-4","docs/d1-loop12-17-split-plan.md:1259-1268","tools/bench/cards/guard_card.log:266"],"note":"selftest_matbench.log and jev_gate.log in A1/A3 belong to chat card chat-N3 (bound 11:02:04), not cycle 93. A6 n-a is wrong: 81 authorised GUI lines in window. Clearance rests on n=2 per arm with B still ~2x A; PD201 drops the control arm."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle93.md
 BGRUN END rc=0 after 274s
+BGRUN START 2026-09-26 12:48:17 limit 10.0 min: py tools/retrospective.py --cycle 94
+BGRUN PID 23524
+   window 2026-09-26 11:19:35 .. 2026-09-26 12:48:17 (89 min); 8 build logs, 5 machinery logs, 25 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle94.txt (22989 chars)
+   review card tools\bench\cards\review_retrospective-cycle94.json
+OUTCOME: ANSWERED (321s)  model: fable (effort medium; peer.ps1 default for role outcome)  archived: archive\peer\2026-09-26-retrospective-cycle94.md
+COST: $5.7257  in 162 / out 25280 / cache-create 215717 / cache-read 582778  (319s, 44 turn(s))
+VERDICT-CARD: NO-VERDICT: $.violations[0].loss_usd: expected number/null, got str
+--- ANSWER ---
+Everything needed is in hand. The judgement session's own cost is absent (C4c 0, `cycle_94.log` had not ended at window time), so the cost picture is the bgrun END lines and the runner's cycle-93 heartbeat.
+
+## Cycle 94 retrospective
+
+**The cycle from the machine record.** Three dispatches, no peer review, seven LabVIEW launches, one deliverable. Card 94-1 (bound 11:22:19, `guard_card.log:267`) dry-ran the six-leg harness in 8 s (`diag_c94_abba_dry.log:323`), then ran it for real: six legs, every pick registered first time, `BGRUN END rc=0 after 4095s` (`diag_c94_abba.log:322`), 65/0. Card 94-2 (log-reader, bound 12:35:55) returned the offline site-to-node map and the contents of diagram #7911 in about three minutes. Card 94-3 (bound 12:38:33) ran a 1 s offline bin analysis (`f7911_facts_94_offline.log:64`) and a 120 s read-only live read of ForLoop #1359 on a scratch copy (`diag_c94c_f7911.log:133`). The judgement wrote PD202 (`docs/d1-loop12-17-split-plan.md:1281-1323`), a changed `next.json`, STATUS NEXT (`STATUS.md:56-64`), then the retrospective at 12:48:17. Builds 71 min 13 s of an 87-minute cycle. Reviews $0 (none dispatched). Judgement cost unknown.
+
+This is a delivered cycle: the measurement it was sent to make was made, and a lever was named from it. Two things stand out. One is a device that failed and was bypassed inside the window. The other is a confound nobody measured.
+
+### FINDINGS
+
+**1. Repeated failure.** One class recurred, and not for the first time. `stage_prerun --dry` crashed with `KeyError: 'terminals'` on `graph_s1_20260924.json` at 12:42:52 (`tools/bench/prerun_records.jsonl:65`). The same crash is on record four times before: 2026-09-25 07:46 on `stage_replay_swap.py` (`prerun_records.jsonl:17`), 09:14 and 09:40 on `stage_d1_k.py` (`:24`, `:33`), and `diag_c90_t0_step3_dry.log:17`. Two different graphs, three different scripts, one loader bug. The approach should have changed at attempt 2 (09-25 09:40, the second identical crash on the same script), to fixing the graph loader rather than routing around the dry run. Cycle 94 routed around it a fifth time and PD202(e) records it as "a tooling carry, not ahead of the deliverable" (`plan:1321-1323`).
+
+A smaller recurrence: every bgrun in this cycle was launched three or four times in different shell forms before one passed (`material_marker.log:1948-1952`, four forms in 28 s; `:1955-1958`, four forms in 16 s). The cycle-93 retrospective noted the same dance (`retro.log:2806`). Attempt 2 should already be the `--material` form.
+
+**2. Missing tool.** A foreign-load sampler in the leg harness. The harness records LabVIEW gone, camera Hz and TMX before and after each leg (`diag_c94_abba.log:255-262`), but nothing about the rest of the machine. While the six legs ran (11:24:43 to 12:33:00) a 40-cell Claude benchmark launched by the chat session was running on the same machine, from 11:11:26 to about 12:23:45, up to four `claude-opus-5-5` cells at a time including eight at effort max, $67.91 in total (`tools/bench/matbench/matbench_v1.log:1,88,90`). A per-leg line with CPU load and the count of foreign `claude.exe`/`node` processes would have told the judgement whether the +972 µs/bead slope and the 1,672/4,277 lost frames were taken on a quiet machine. No such line exists, so the question cannot be answered from the record. The verb for writing an existing loop's parallelism is also missing; PD202(d) names it in `requires` for cycle 95, which is the right way to handle it.
+
+**3. Unmeasured steps.** Three.
+- "At 11/15 the tracking period median is 13.1 / 16.7 ms, above 11.1 ms, so the loop is compute-bound" (`plan:1285-1287`) is inferred from the period alone, with a 40-cell benchmark on the box. The cheap measurement (one `tasklist` and a CPU sample per leg) was available and not taken. The cross-check that does exist is qualitative: site 4 was the only growing site in cycle 91 too (`plan:1144-1145`), measured without the benchmark, so the ordering is probably robust; the absolute numbers are not guaranteed.
+- 94-3's open 1, whether N of #1359 equals the bead count, was not measured (`result_94-3.json:25`). PD202(c) assumes iterations are rows of the history array. The parallelism decision does not depend on it, but PD202(d)'s "record P" will not answer it either.
+- The bimodal B11 cost (about 4.8 ms versus 9 ms by time bin, `f7911_facts_94_offline.log:4,13`) is recorded as unexplained. Correct to record, but it is a second timing regime inside the very measurement the slope is taken from.
+
+**4. Rule compliance.** Rules held in substance. §3 split: three dispatches, all fresh, under the six-dispatch cap; one refused judgement-side command in the window (an `md5sum`, `material_marker.log:1954`). Rule 1: A5 pass, every md5 pin held before and after (`diag_c94c_f7911.log:113-118`, `diag_c94_abba.log:310`). Rule 1b: limits set and read back at cycle start (`cycle_runner_main_20260926b.log:20`). `next.json` first, retrospective last. `requires` was filled and checked for 94-1 and 94-3 (`requires_94-1.json`, `requires_94-3.json`).
+
+Satisfied only formally: the "Stages are SIMULATED and PRE-RUN OFFLINE" rule (CLAUDE.md:449-467, item 1). The launch gate refused `diag_c94c_f7911.py` at 12:42:48 (`material_marker.log:1959`, `guard_bash.py:203`) because the dry run crashed; the material session changed `discard_work()` to `s.scratches.append(s.work)` (`diag_c94c_f7911.py:49`), which the classifier does not see as VI-modifying, and launched 17 s later (`material_marker.log:1960`). The script was in fact read-only (26/0, scratch deleted, md5 unchanged), so no harm was done, but the gate was satisfied by making the script invisible to it, not by passing it.
+
+What the audit does NOT cover:
+- A1's `jev_gate.log` is an append-only Jev log, not a build log. Same classification error as cycle 93.
+- A3's `selftest_matbench.log` belongs to chat card chat-N3 (bound 11:02:04, `guard_card.log:266`). Its in-window run at 12:25 passed 10/0 (`selftest_matbench.log:271-272`); the FAIL segments the audit sees are from 08:35 to 11:08, outside the window.
+- `matbench_v1.log` lives in `tools/bench/matbench/` and is invisible to the audit's log list, so the 72-minute concurrent benchmark appears nowhere in the attached evidence.
+- A6 "n-a, no GUI" is wrong: 94-1 clicked beads in six legs under the 2026-09-17 approval (`gui_shots/c92c/20260926_112602_release1_before.png` in C7).
+- C4c reports the judgement at $0 because `cycle_94.log` had not ended. This will be true of every retrospective by construction.
+- C7 lists 306 files, mixing the chat's worktrees and screenshots with the cycle's; it is no longer a scope signal.
+- Cycle card `budget.dispatches: 8` (`cycle_94.json:21`) versus the prompt's six (`cycle_94.log:25`). Harmless at three.
+
+**5. Ordering.** Defensible. The 68-minute LabVIEW run first, offline facts next, a 2-minute live read last, with the judgement holding its turn through the long run as the prompt requires. One reordering was available: card 94-2 was pure offline reading whose pass criteria did not depend on 94-1's numbers (site-to-node map, contents of #7911), so it could have been dispatched at 11:22 in parallel with the legs instead of at 12:35. Saving about three minutes. A finding, not a fault.
+
+**6. What was not reported.** STATUS and PD202 are faithful to the numbers. What they omit:
+- The concurrent benchmark (finding 2). It is absent from `result_94-1.json`, STATUS and PD202. The 94-1 material could not have known; the chat session that launched it at 11:11 could have, and the cycle-93 retrospective had flagged the contention at 11:19 (`retro.log:2810`).
+- The interference ran both ways: the benchmark's own LabVIEW-pid gate fired on cycle 94's four leg instances (pids 26144, 25880, 13684, 23860, `matbench_v1.log:36,53,70,87,89`) and failed the $67.91 run with rc=1 on a false positive.
+- The dry run prints `GATE U2 ... FAIL` in every leg (`diag_c94_abba_dry.log:32`) and the leg's own RESULT line counts it as 5 pass / 0 fail (`:33`). The FAIL is expected under the stub (tra is a stubbed constant), but a gate that says FAIL and counts as pass is a line a reader will misread.
+- `FAILING: 18 run1.L8` on all six real legs (`diag_c94_abba.log:18,49,87,...`): reported in 94-1's open 2, and the same as in 92-3 and 93-2. Left as is, correctly.
+
+**7. Judgement inside a material session.** One real item: the choice to bypass a refusing launch gate by editing the script (`result_94-3.json:29`, "which the classifier does not gate. Judge."). Whether to go around a gate is a judgement decision; the material took it, disclosed it in one line, and the judgement ratified it after the fact as PD202(e). The disclosure is what keeps this out of the `judgement-in-material` slug; the bypass itself is counted under the device below. A second, minor item: 94-1's material wrote "A11 ... is already frame-bound" (`result_94-1.json:16`), a reading of the numbers that PD202(a) reversed. It named no lever and changed nothing.
+
+### DEVICE EFFECT
+
+- `unreported-fact` (rc override on inner FAIL): not exercised in the real runs. Hole: a trailing `... FAIL` on a GATE line (`diag_c94_abba_dry.log:32`) is not the leading form the regex covers, and the leg's RESULT counts it as pass. No fault occurred.
+- `rule-evaded` (peer.ps1 confirm-bait): not exercised, no review dispatched.
+- `tool-not-built` (prior-art review): not exercised, no recipe build.
+- `repeated-failure-class` (guard_peer undisposed review): not exercised; A4 27/27.
+- `unreported-fact` (C3/C4 cost lines): C4b 0/0, no cost line existed. The judgement session's cost is structurally absent (finding 4).
+- `premature-build` (guard_cycle): not exercised.
+- `scope-creep` (C7): fired on 306 files across two sessions. A counter by design; it refused nothing and no longer discriminates.
+- `device-failed` (COST regex self-test): not exercised.
+- `device-failed` (bgrun FAIL scan): not exercised on the real runs.
+- `repeated-failure-class` (OpLoopEndRef), stop record (three entries), `logclass`/`selftest_exempt`, bgrun start count, current-plan fallback, SimReader, sink gates, bgrun_reap: not exercised or worked (reap at cycle-93 end: `cycle_runner_main_20260926b.log:11`; C7 used `next.json plan.path` as required, though the prompt's "this cycle's own plan is docs/cycle27-plan.md" still comes from the fallback).
+- `device-failed` (motor_gate FAIL lines): worked, session start OK (`cycle_runner_main_20260926b.log:20`).
+- `repeated-failure-class` (guard_session refuses SendMessage to material): not exercised, three fresh dispatches.
+- **`repeated-failure-class` (stage_prerun unroutable-rows reporter, 2026-09-25 16:10) and the pre-run launch gate it feeds: FAILED, two ways.** It never reached its own logic: `stage_prerun --dry` crashed on `KeyError: 'terminals'` (`prerun_records.jsonl:65`), the fifth time on record. And the gate that fired on the crash was worked around in 17 s (`material_marker.log:1959-1960`, `diag_c94c_f7911.py:49`). A gate that crashes on the project's own S1 graph and is then satisfied by hiding the script from its classifier is a broken device, and PD202(e) chose again not to repair it.
+
+### Verdict
+
+The one structural fault is the device. Its clock cost this cycle is under a minute: had the loader been fixed at the second crash on 2026-09-25 09:40, 94-3 would have launched at about 12:42:50 instead of 12:43:05 and the cycle would have ended at the same 12:48. Its cost is not the clock. It is that the "simulated and pre-run before LabVIEW touches it" rule is now, on the S1 graph, a gate that is passed by editing one line, and the record shows it has been passed that way before. No dollar figure is attached to it in any log.
+
+The concurrent benchmark is the finding I would most want cycle 95 to read. It did not change what the cycle produced in kind (site 4 grows most, as in cycle 91), and I cannot construct a counterfactual that ends the cycle earlier or cheaper, so it is not a violation. Cycle 95's step 4 runs an A = S1 leg at 15 picks on a quiet machine; if its lost frames and #637 period come in well under 4,277 and 16.7 ms, cycle 94's absolute numbers were load-inflated and the slope should be re-taken before it is quoted again.
+
+VIOLATION: device-failed | loss_min=1 | loss_usd=? | evidence=tools/bench/prerun_records.jsonl:65
+
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle94","verdict":"refuted","alternative":"The cycle's central numbers (+972 us/bead, A11 1672 / A15 4277 lost) were taken while a 40-cell Claude benchmark ($67.91, 11:11-12:24) ran on the same machine; no load was measured, so the absolute slope may be inflated though the site-4 ordering matches cycle 91.","discriminating_test":"Cycle 95 step 4: an A=S1 15-pick 120 s leg with no concurrent benchmark. If lost frames and #637 period fall well below 4277 / 16.7 ms, cycle 94's slope was load-inflated and must be re-taken. Separately: run stage_prerun --dry on graph_s1_20260924.json; it must not raise KeyError 'terminals'.","violations":[{"slug":"device-failed","loss_min":1,"loss_usd":"?","evidence":"tools/bench/prerun_records.jsonl:65"}],"sources":["tools/bench/prerun_records.jsonl:17","tools/bench/prerun_records.jsonl:65","tools/hooks/material_marker.log:1959","tools/bench/diag_c94c_f7911.py:49","tools/bench/cards/result_94-3.json:29","docs/d1-loop12-17-split-plan.md:1321","tools/bench/matbench/matbench_v1.log:1","tools/bench/matbench/matbench_v1.log:89","tools/bench/diag_c94_abba.log:322","tools/bench/diag_c94_abba_dry.log:32"],"note":"stage_prerun --dry crashed (KeyError 'terminals') for the 5th time since 2026-09-25 and the launch gate was bypassed in 17 s by replacing discard_work() with scratches.append; PD202(e) records it as a carry. A1/A3/A6 audit lines are misclassifications; matbench_v1.log is invisible to the audit."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle94.md
+BGRUN END rc=0 after 324s

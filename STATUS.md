@@ -53,15 +53,33 @@ rig-state: 조립   <!-- 2026-09-24 20:xx USER GRANT: "당분간 내가 말하�
 🟡 **CARRY (from the 2026-09-25 verification review `archive/peer/2026-09-25-hyp-lintverify-20260925.md`, not blocking): card flags are checked only on the top-level command (a child process could reach LabVIEW under labview=none); a stage run launched outside bgrun is not counted by the retry cap; a bgrun record failure is only logged (`tools/bgrun.py:219-220`). Close in a tooling cycle, deliverable-first.**
 current-bed: D1_l2_a1_20260925_235224.vi
 <!-- ^ machine key read by tools/errorlist_check.py current_bed_text(); without it the bed is chosen by mtime among D1_*.vi names in this file, and the newer D1_s1_kswap_* would silently take over (review archive/peer/2026-09-26-c88-reuse-stalepin.md). Change it only when a new bed is accepted. -->
-🔴🔴🔴 **FIRST ACT (cycle 94) = `docs/d1-loop12-17-split-plan.md` Pre-decided 201: per-site timing on the CLEARED instrument.**
-- Legs: B = `claudeDev\D1_s1_t0at_20260926_090833.vi` (md5 `30a15c67…`) with `claudeDev\t0stamp.dll` v2 (md5 `b35b398d…`), and A = unstamped `D1_s1_copy.vi` as the control. Panel normal, 120 s, order A11 B11 B15 A15 B15 B11. The control arm is kept because of retrospective-cycle93 finding 3: the clearance is thin.
-- Harness: `tools/bench/diag_c93b_abba.py` / `…_leg.py`.
-- Per site: median and p95 of (stamp − own `i`), and the slope µs/bead = (mean15 − mean11) / 4.
-- Every leg card's dry run must EXECUTE the leg script with GUI/COM stubbed (PD199(h)).
-- The next judgement names the per-bead lever from the table. The candidate is For #7911, site 4; any change there is accepted numerically (rule 1a).
-- `t0_step4_91.json` (v1 DLL) stays unusable.
+🔴🔴🔴 **FIRST ACT (cycle 95) = `docs/d1-loop12-17-split-plan.md` Pre-decided 202(f), then 202(d): turn on loop-iteration parallelism for ForLoop #1359 (diagram #7911) in a copy of S1.**
+- **Step 0 (PD202(f); retrospective-cycle94 `device-failed`, accepted):** fix `tools/stage_prerun.py --dry` crashing with `KeyError 'terminals'` on `tools/bench/graph_s1_20260924.json`. This is the 5th crash on record (`prerun_records.jsonl:17,24,33,65`).
+  - Pass: the dry run completes on that graph, the earlier crashers re-run clean, and there is a self-test with a negative case.
+  - Never pass a refusing launch gate by hiding the script from its classifier again (94-3 did this).
+- Step 1: a read-only precondition check on a scratch copy. The loop body #7911 must contain no Feedback Node, no local or global variable write and no shift register. Record whether Median Filter.vi and FIR Filter (DBL).vi are reentrant.
+- Step 2: `claudeDev\D1_s1_par1359_<ts>.vi` is a byte copy of `D1_s1_copy.vi` with ONLY #1359's parallelism enabled, at LabVIEW's default instance count (record P).
+  - There is no recorded writer for an EXISTING loop's parallelism: `docs/toolkit-capabilities.md` has only the reader `OpLoopCast_v1` `parallel_enabled`. Put it in the card's `requires`. If it is missing, build it first.
+  - Gates: ExecState 1 warm and cold; `computation_diff(S1,·)` 0 rows; read-back True on #1359 and unchanged on the other 16 For loops; saved by script.
+- Step 3, rule 1a: run S1 and the copy on the same recorded frames through the replay path. X/Y/Z and the Bundler #11310 output must be bit-identical, otherwise stop.
+- Step 4: ABBA at 15 picks, 120 s, panel normal (A = S1, B = the copy). Record lost frames and the #637 period.
+  - Also log, per leg, the number of foreign `claude`/`node` processes and a CPU sample.
+  - Cycle 94's numbers were taken while a 40-cell benchmark ran on the same machine, so they are load-uncontrolled (PD202(f)).
+  - If A15 comes in well below 4,277 lost frames / 16.7 ms, re-take the slope before quoting it.
+  - 🟡 FOR THE CHAT: do not start benchmarks on this PC while a cycle is running legs.
 - User decision **D-2026-09-26-01** (loop-level timers only) is still OPEN; the work proceeds under its recommendation.
 - Machine copy: `tools/bench/next.json`.
+
+🟢 **CYCLE 94 (PD202): THE PER-BEAD LEVER IS NAMED.**
+- 94-1 passed 65/0 (INDEX 55, `tools/bench/t0_step4v2_94.json`). Six legs ran, and every one registered all its picks on the first try.
+  - Lost frames: A11 1,672 · B11 2,137 / 1,588 · A15 4,277 · B15 4,049 / 4,070. The stamps do not perturb at 11 or 15 picks.
+  - The tracking loop #637 is compute-bound at 11 and 15 picks (period 13.1 / 16.7 ms, against the 11.1 ms camera period). Its period grows **+972 µs/bead**.
+  - Site 4, the output of ForLoop #1359, grows **+760 µs/bead**. The kernel (#5058) grows only +188.
+- 94-3 passed 32/0. #1359 has 0 shift registers, gets its count from auto-indexing, and has parallelism OFF.
+  - Each iteration processes one history row: ring insert #8634, then Median #29009 and FIR #28233.
+  - Its cost rises as the history ring fills: at 15 picks it goes from 1.3 ms to about 10 ms.
+- ⇒ The change is scheduling only (PD202(c)). Changing the filter maths would need the user's decision.
+- Carry: `stage_prerun --dry` crashed with `KeyError 'terminals'` on `graph_s1_20260924.json` (PD202(e)).
 
 🟢 **CYCLE 93 (PD200).**
 - **The stamps' ~110 lost frames are EXPLAINED AND FIXED.**

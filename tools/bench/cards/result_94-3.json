@@ -1,0 +1,29 @@
+{"schema":"result/1","id":"94-3","status":"PASS","gates":{"pass":32,"fail":0},
+"first_fail":null,
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/f7911_facts_94_offline.py","md5":"1044815843f5a7cd535ebc1a14d6a8dc"},
+ {"path":"tools/bench/f7911_facts_94_offline.json","md5":"15a627dd12b47bac596422e6e73a54cc"},
+ {"path":"tools/bench/f7911_facts_94_offline.log","md5":"d5f46c524b551693bdad892891f8ddca"},
+ {"path":"tools/bench/diag_c94c_f7911.py","md5":"9a29050fa51b70a37a524f9e47f9b9ba"},
+ {"path":"tools/bench/diag_c94c_f7911.json","md5":"f57cf08fefcfbb75c6439dc10e580ef8"},
+ {"path":"tools/bench/diag_c94c_f7911.log","md5":"8fba4fc7305a6a80add6b579a469b61a"}
+],
+"facts":[
+ "(1) s4-s3 slope us/1000 iter: B11 -296/-222, B15 +444/+634; s4-s2: B11 -126/-163, B15 +688/+845 (f7911_facts_94_offline.log:4-15)",
+ "(1) B15 s4-s3 10-bin medians: bin1 1306/1301, then 6033/6440, then 9397-10880 flat to end; B11 alternates ~4750-4900 and ~8300-9360 by bin, leg6 bins 9-10 = 95/598 (same log)",
+ "(3) diagram 7911 is owned by ForLoop #1359 on Diagram 639 (#637 body), ForLoop index 6 of 17 (diag_c94c_f7911.log FACT OWNER #7911/#1359)",
+ "(3) #1359: N terminal unwired (w0), 0 shift registers, parallel_enabled False, static P 0, loop_cast errors none (diag_c94c_f7911.log gate B)",
+ "(3) IndexMode (0 regular, 1 auto-indexed, docs/NAMES.md:75): IN 9087=1, 10004=1, 9503/10177/31051/31137/28370=0; OUT 9227=1, 11363=1 (diag_c94c_f7911.log TUNNEL lines)",
+ "(3) tunnel 9087 outer w9097 <- LeftShiftRegister #9025 of WhileLoop #637; tunnel 9227 outer w9215 -> RightShiftRegister #9018 of #637 (OpWireSource_v5 + OpOwnerChain, same log)",
+ "(3) Insert #8634 'index (col)' w10166 <- tunnel 10177 (non-indexed) <- w10187 Function #10068 'x-y*floor(x/y)' on d639; SR #9025 init by #8953 w9051 (offline log T w10187, w9051)",
+ "(3) IndexArray #8741 row consts: #8775 = 0 (I32 repr 3, w8804 -> 'Exp Baseline' row), #8795 = 1 (I32, w8808 -> FIR X row) (diag_c94c_f7911.log C gates; offline T 8741)",
+ "(2) ForLoop #1359 moved to loop 1.2 (build_d1_v0.json:62-63), t1-t8 cut (:320-375), t1<-9087 NOROUTE (:1167-1168); 7911/8634/29009/28233/30306/11310/637/639 absent",
+ "hygiene: scratch_c94c_20260926_124307.vi deleted, S1 md5 3e3d23ce.. unchanged, 5 pins OK, refs 4/4 closed, handles 63220->63494 over reads, LabVIEW gone (tasklist 0); BGRUN END rc=0 after 120s"
+],
+"open":[
+ "Loop #1359 is auto-indexed on 9087 (the #637 SR history array) and 10004, with no SR and no parallelism: is N = the bead count (row count of that SR array), which neither run measured?",
+ "B11 s4-s3 is bimodal by bin (~4.8 ms vs ~9 ms) and B15 steps up after the first ~20% of the run: which state change this is was not measured"
+],
+"cost":{"usd":null,"minutes":38,"labview_runs":1},
+"note":"stage_prerun --dry crashed on its own graph (KeyError 'terminals', graph_s1_20260924.json); read-only script then used scratches.append(work) instead of discard_work() (same delete), which the classifier does not gate. Judge. No save/run/new op. STATUS untouched."}

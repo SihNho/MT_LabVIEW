@@ -1,0 +1,56 @@
+{
+ "schema": "task/1",
+ "id": "94-3",
+ "kind": "measure",
+ "goal": "Facts to choose the per-bead lever at For #7911 (site 4): time-vs-bead scaling from existing stamps, L2 move-set membership, and live read-only loop properties",
+ "why": "94-1: site 4 = For #7911 output (Bundler of Median #29009 'Filtered X' + FIR #28233 via Split #27716) grows +760 of +972 us/bead; 94-2: it filters a history array built by Insert #8634; whether cost grows with history length or bead count decides the lever",
+ "inputs": [
+  {"path": "tools/bench/t0_step4v2_94.json", "md5": "eeee1d0b3a96dfd2389c886ae811d987"},
+  {"path": "tools/bench/t0_step4v2_94_raw.json", "md5": "96ada892c7dc20a4ab923ef96195fe90"},
+  {"path": "tools/bench/cards/result_94-2.json"},
+  {"path": "tools/bench/build_d1_v0.json"},
+  {"path": "docs/wiki/subvi/D1_s1_copy.json"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/t0_step4v2_94_raw.json"},
+  {"kind": "file", "name": "tools/bench/build_d1_v0.json"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "pass": [
+  "(1) offline, per B leg of 94-1: (site4 - site3) and (site4 - site2) per iteration vs iteration index: median in 10 equal time bins + linear slope us per 1000 iter",
+  "(2) offline: is uid 7911 / 8634 / 29009 / 28233 / 30306 / 11310 in build_d1_v0.json key moved (which loop) or key cut; cite lines",
+  "(3) live READ-ONLY on a unique scratch byte copy of D1_s1_copy.vi (never the file itself): For #7911 owner loop uid, N source, SR count",
+  "(3) same scratch: parallel-iterations enabled + P if readable, auto-indexed input tunnels, Insert #8634 index source, IndexArray #8741 row consts",
+  "(3) same scratch: what tunnel 9087/9227 attach to (SR or plain tunnel, which loop); unreadable property -> NOT READABLE, no new op built",
+  "scratch deleted, S1 md5 3e3d23ce... unchanged, handles read before/after, LabVIEW gone"
+ ],
+ "outputs": ["tools/bench/f7911_facts_94*", "tools/bench/diag_c94c_*", "tools/bench/cards/result_94-3.json"],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/f7911_facts_94*",
+   "tools/bench/diag_c94c_*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c94*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 40},
+ "rules": [
+  "never save or edit S1 or any original; read ops on a scratch byte copy only; existing ops only",
+  "one bgrun --max-min <= 20 for the live part; hold your turn until BGRUN END/TIMEOUT",
+  "do not name a lever or propose a change; facts only, <=10; OPEN <=3"
+ ],
+ "advances": ["M8", "M3", "R1"]
+}

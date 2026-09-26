@@ -1,0 +1,29 @@
+{"schema":"result/1","id":"94-1","status":"PASS","gates":{"pass":65,"fail":0},
+ "first_fail":null,
+ "blocked_by":null,
+ "artefacts":[
+  {"path":"tools/bench/t0_step4v2_94.json","md5":"eeee1d0b3a96dfd2389c886ae811d987"},
+  {"path":"tools/bench/t0_step4v2_94_raw.json","md5":"96ada892c7dc20a4ab923ef96195fe90"},
+  {"path":"tools/bench/diag_c94_abba.py","md5":"d17e17c6c8c10e26e9daff95a1db6aae"},
+  {"path":"tools/bench/diag_c94_leg.py","md5":"1cdbbfa275ca5aa1d836121a75884a93"},
+  {"path":"tools/bench/diag_c94_sites.py","md5":"449d455e716bc04cd16e406fb55d65fb"},
+  {"path":"tools/bench/t0_legs/c94_step4v2_20260926_112444","md5":null}
+ ],
+ "facts":[
+  "dry run executed diag_c94_leg.py 6x (picks 11/15, saved 92-3 clicks + 93-2 v2 stamps incl. meta) 65/0 (diag_c94_abba_dry.log)",
+  "real run: all 6 legs registered target picks 1st attempt, no rerun; BGRUN END rc=0 after 4095 s, 65/0 (diag_c94_abba.log)",
+  "Lost: A11 1672, B11 2137/1588, A15 4277, B15 4049/4070; B/A ratio 1.11 @11, 0.95 @15; frames delta 10671-10686 (t0_step4v2_94.json)",
+  "A11 lost 1672 = 11 picks is already frame-bound on the UNSTAMPED copy (vs A8 14/19 in row 54)",
+  "tracking #637 period med/p95/max us: B11 13123/22953/69306, 12528/20580/61267; B15 16747/26642/55041, 16683/26626/48265 -> slope +972 us/bead (med)",
+  "site delta med us B11a,b->B15a,b (slope/bead): #2 2607,2741->3316,3540 (+188); #3 3380,3479->4626,4714 (+310); #4 12143,11776->15027,14970 (+760)",
+  "#6 +189, #8 +188 us/bead (track #2 within ~50 us); repeat spread B11 99-367 us, B15 57-228 us per site; site #4 p95 16458-25599 us",
+  "display #15173 sites 11/12/13/16 slopes -21..+56 us/bead; #25380 period med 41.7->43.0 ms (+302 us/bead)",
+  "stamps 1 per iteration all tracking sites (8983/7066/7041/9528 iters), overflow 0 all sites all B legs (T14)",
+  "TMX 39 each leg, LabVIEW gone after each + at end (tasklist 0), camera 90 Hz restored, S1/t0/t0at/kswap/bed + v2 dll md5 unchanged (T8/T9/T9b); INDEX row 55"
+ ],
+ "open":[
+  "card premise 'two non-frame-bound pick counts': unstamped A11 already lost 1672 frames and A15 4277 - are 11/15 usable for the per-bead slope, or is a lower pair (e.g. 8/10) needed?",
+  "run1.L8 (three choose-bandpass panels) reported FAILING in every leg, as in all 4 legs of 92-3 and 93-2; bandpass_answered == picks; left as is"
+ ],
+ "cost":{"usd":null,"minutes":75,"labview_runs":6},
+ "note":"opus material. No failure, no JEV-LADDER needed. No VI saved/edited. New code: diag_c94_sites.py (~75 lines) + ~20 changed lines in the two copies. STATUS not edited."}
