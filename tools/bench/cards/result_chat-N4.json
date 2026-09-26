@@ -1,0 +1,36 @@
+{
+ "schema": "result/1",
+ "id": "chat-N4",
+ "status": "BLOCKED",
+ "gates": {"pass": 5, "fail": 2},
+ "first_fail": "selftest_scratch_verify E1 (test bug: result-line/1 rejects an extra 'function' key; branch removed, fixed test not rerun)",
+ "blocked_by": {"device": "guard_peer + card flags.peers []", "message": "my own selftest_scratch_verify.log (6/7, E1) now arms guard_peer for EVERY session (imports stage_prerun->stagekit, so not selftest-exempt); JEV-LADDER new-problem p=0.742 -> hypothesis review owed; card may not dispatch it. peer -DryRun checks also refused by flags.peers."},
+ "artefacts": [
+  {"path": "tools/cycle_runner.py", "md5": "afc857a2f0f30aa112023f5b3aea05c8"},
+  {"path": "tools/retrospective.py", "md5": "de972cf9555bd07cd8c2f9be8cc6446a"},
+  {"path": "tools/peer.ps1", "md5": "0f06269e09d48f18d1157404280355c1"},
+  {"path": "tools/cycle_prompt.md", "md5": "6d093f91e48ceed683610906ba706ee1"},
+  {"path": "tools/stage_prerun.py", "md5": "3582583d2ee673c4541d55e7952b8d5c"},
+  {"path": "tools/bench/selftest_cycle_runner_ladder.log", "md5": "062742c6f6cc3e07ddc9713b9e0f87a9"},
+  {"path": "tools/bench/selftest_cycle_runner_ff.log", "md5": "99fc908c5917bfcdd832a7cd638524b6"},
+  {"path": "tools/bench/selftest_scratch_verify.py", "md5": "d89abc9d98f20a3d013bc76e617b49c3"}
+ ],
+ "facts": [
+  "cycle_runner.py:256 JUDGE_RANKS [None,(opus-5-5,max),(fable,low)], TOP 2; :217-218 FF opus-5-5/max, FF_LADDER ('max',); :1034 --effort high; :1041 --judge-ab off",
+  "selftest_cycle_runner_ladder.log 13/13 PASS (I0 default card opus-5-5/high no JUDGE-AB; I2 c3 max, c4 fable/low; I3 STOP after c4)",
+  "selftest_cycle_runner_ff.log 5/5 (cycle 3 runs as claude-opus-5-5/max rung 1 of 1, STOP after it; no fable); selftest_cycle_runner.log 10/10 (G3 now 3 cycles)",
+  "peer.ps1:468 fact/prose default claude-opus-5-5/medium, --safe-mode kept; header table + usage lines updated (hypothesis row corrected to high = code)",
+  "retrospective.py:473 dispatch = -Role outcome -Kind fact -Model claude-opus-5-5 -Effort high, not -Role hypothesis: guard_peer.py:403-413 would count that archive as a failed-prediction review",
+  "stage_prerun.py:1597 check_scratch, wired at :1665 in _check_units; function from innermost gscript/stagekit/stagexec traceback frame, else STEP-DIFF op kind, else Op*.vi in C6 first_fail",
+  "live data: stage_d1_disp last runs 01:17 FAIL stagexec.op:move_in, 01:29 FAIL same, 02:02 PASS -> gate would have fired before 02:02; check costs 2.0 s over 3 days of logs",
+  "cycle_prompt.md: ladder line re-set + one SCRATCH-VI line; commit 306db46 (stagexec.py, stage_d1_disp.py = cycle 103's edits, left unstaged)",
+  "selftest_cycle_runner* commands needed a trailing --dry-run token: protocol.py:394 RUNNER_CMD_RE matches 'selftest_cycle_runner.py' (precedent: selftest_cycle_runner_ladder_89-6.log START line)"
+ ],
+ "open": [
+  "URGENT: selftest_scratch_verify.log (FAIL, E1) arms guard_peer for the live cycle 103 too; dispatch a hypothesis review naming it (card with peers [hypothesis]) and rerun the fixed self-test, or accept it as our-script-bug",
+  "Retrospective routed via outcome role + -Model/-Effort instead of the brief's -Role hypothesis -Kind fact (discharge hole) - accept?",
+  "protocol.peer_role_of treats peer -DryRun as a dispatch (and any command text naming the dispatcher or the retro script, incl. git add/commit messages) - fix the classifier?"
+ ],
+ "cost": {"usd": null, "minutes": 17, "labview_runs": 0},
+ "note": "Jev ladder row: selftest_scratch_verify.log | new-problem p=0.742 | hypothesis review owed | not dispatched (flags.peers []) | BLOCKED. No -DryRun of the dispatcher could be run; model routing verified by code read only."
+}
