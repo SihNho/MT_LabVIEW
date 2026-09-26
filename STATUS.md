@@ -53,25 +53,33 @@ rig-state: 조립   <!-- 2026-09-24 20:xx USER GRANT: "당분간 내가 말하�
 🟡 **CARRY (from the 2026-09-25 verification review `archive/peer/2026-09-25-hyp-lintverify-20260925.md`, not blocking): card flags are checked only on the top-level command (a child process could reach LabVIEW under labview=none); a stage run launched outside bgrun is not counted by the retry cap; a bgrun record failure is only logged (`tools/bgrun.py:219-220`). Close in a tooling cycle, deliverable-first.**
 current-bed: D1_l2_a1_20260925_235224.vi
 <!-- ^ machine key read by tools/errorlist_check.py current_bed_text(); without it the bed is chosen by mtime among D1_*.vi names in this file, and the newer D1_s1_kswap_* would silently take over (review archive/peer/2026-09-26-c88-reuse-stalepin.md). Change it only when a new bed is accepted. -->
-🔴🔴🔴 **FIRST ACT (cycle 97) = `docs/d1-loop12-17-split-plan.md` Pre-decided 205(e): BUILD the display-rate-gated copy of S1, then ABBA it. This is a deliverable build and run, following the outcome steer `steer_95.json`.**
-- **Before the first card:** run `py tools/violations.py --due` and `py tools/outcome_review.py --due`. Both were clear at the start of cycle 96.
-- **No card may move a script to get around ANY gate.** A card's `peers` must include `hypothesis` and `outcome`.
-- **Why:** 96-3 measured that ForLoop #1359 (~10 ms per frame at 15 beads) feeds ONLY the panel graph `#8323 'Force (pN) vs Extension (nm)'`. Nothing reaches the tra file, the motors or the kernel.
-- **Step 0, read-only COM on a scratch:** list every property node or reference linked to #8323. If any of them feeds a non-display path, STOP and re-judge.
-- **Steps 1–2:**
-  - Design the gate and fill `requires`. The ring insert #8634 and its SR chain run on every frame. The graph chain, BuildArray #11261 and #8323 run only when `i mod N = 0`.
-  - N is a new panel control, default 9. N = 1 is the original behaviour.
-  - Then dry run → pre-run → one real run. Save `claudeDev\D1_s1_fgate_<ts>.vi` by script. It must be ExecState 1 warm and cold, and cdiff must equal exactly the gate objects plus the moved edges.
-- **Step 3:** ABBA A15 B15 B15 A15, 120 s, panel normal, with the 96-1 harness (`tools/bench/diag_c96_abba.py` / `_leg.py`). The PD204(a) criterion applies. Add LabVIEW %CPU sampled DURING each leg (retrospective-cycle96 finding 2).
-- **After the build dispatch** (retrospective-cycle96 `device-failed`, threshold 1): a small tooling card.
-  - `peer.ps1 -ReviewCard`'s verdict parser must map `loss_usd="?"` to null. It has refused the contract's own form twice.
-  - audit A1/A3 must stop counting `jev_gate.log` as a build log.
-  - Cards must not demand a foreground peer dispatch; `guard_bash` refuses one.
-- Unreviewed standing fail: gate `run1.L8` (bandpass panel) has FAILED in every leg since 92-3 (`diag_c96_abba.log:24`). Pick registration is not affected.
-- **Step 4, rule 1a:** replay at N = 1. Every tra column and #8323's final value must be bit-identical to S1. It is not accepted before that.
-- **Assumption, under CLAUDE.md 2c:** default N = 9. The user is asked in **D-2026-09-26-02** (OPEN). If the answer is no, the default becomes 1.
-- 🟡 FOR THE CHAT: report D-2026-09-26-02. D-2026-09-26-01 is ANSWERED (the "still OPEN" note in cycle 95 was stale). Do not start benchmarks on this PC while a cycle runs legs.
+🔴🔴🔴 **FIRST ACT (cycle 98) = `docs/d1-loop12-17-split-plan.md` Pre-decided 206(h): READ why the gated copy breaks. Diagnosis card, facts only. Deliverable path: the display-rate gate of #1359.**
+- **One card:**
+  - Re-run `tools/recipes/stage_d1_fgate.py` (md5 `690269c0…`, plan `tools/bench/plans/plan_fgate_97.json`) up to E3 on a fresh S1 byte copy. Do the dry run and pre-run first, with `--graph tools/bench/par1359_95_graph.json`, because `find_graph` only globs `graph_*`.
+  - Save the broken intermediate by `gui_save` as `claudeDev\D1_s1_fgate_BROKEN_<ts>.vi` (user 2026-09-22 broken-intermediate save).
+  - Read three things: (1) LabVIEW's Error List items for that file, with their object uids (the `errorlist_check` GUI reader); (2) the broken wires with their owner diagrams; (3) Remove Bad Wires on a SCRATCH copy, then ExecState.
+- The card's `peers` must be `hypothesis`, `outcome` and `priorart`. 97-4 lost a dispatch by leaving out `priorart`, the same card-scoping fault as 95-5/95-6.
+- Retrospective-cycle97 (`archive/peer/2026-09-26-retrospective-cycle97.md`, both accepted): `inference-over-measurement`. T2 was accepted without an ExecState read after the move. **From now on, any verb that edits a diagram is gated on ExecState read after the edit.** It also found `device-failed` (audit counting `jev_gate.log`), which is already owed below.
+- **Then judgement chooses:** a `move_into_frame` fix (delete the severed wires it leaves behind; its T2 self-test never checked ExecState or leftover wires) or a structure change. After that come the stage run, the ABBA (A15 B15 B15 A15 at N = 9, the 96-1 harness plus %CPU during legs, PD204(a)), and the rule-1a replay at N = 1 (205(e) 4). The copy is not accepted before the replay.
+- **Owed tooling card** (retrospective-cycle96 `device-failed`): `peer.ps1 -ReviewCard` must map `loss_usd="?"` to null; audit A1/A3 must stop counting `jev_gate.log`; cards must not demand a foreground peer dispatch.
+- Unreviewed standing fail: gate `run1.L8` (bandpass panel) has failed in every leg since 92-3. Pick registration is not affected.
+- **Assumption (2c):** default N = 9, asked in **D-2026-09-26-02** (OPEN). If the answer is no, the default becomes 1.
+- 🟡 FOR THE CHAT: report D-2026-09-26-02. Do not start benchmarks on this PC while a cycle runs legs.
 - Machine copy: `tools/bench/next.json`.
+
+🟡 **CYCLE 97 (PD206): the gate is designed and its tools exist, but there is NO FILE yet.**
+- 97-1 PASS 5/0 (`tools/bench/f1359_gate_facts_97.json`):
+  - Nothing reads #8323 except a `Reinit To Dflt` writer, so step 0 passed.
+  - **Magnet2Force #28083 feeds the ring history, so it stays UNGATED.** The gated set is the 11363-only nodes: IndexArray, Subtract, Median, FIR, Bundler (PD206(b)).
+- 97-2 FAIL: the synthetic test fixture failed to build (loop_in 1055).
+- 97-3 PASS 64/1 on escalation rung 1 (Opus max), with a scratch copy of S1 as the fixture:
+  - `gscript.case_in`, `gscript.move_into_frame`, `set_control_label` (`claudeDev\OpLabelSet_v0.vi`), `tunnel_use_default` (`OpTunnelUseDefault_v0.vi`), `OpCaseFrames_v1.vi`;
+  - documented in toolkit-capabilities and NAMES.
+- 97-4 BLOCKED: my card's `peers` left out `priorart`.
+- 97-5 FAIL 45/2 (`tools/bench/fgate_97_stage2.log`):
+  - prior-art review came back novel twice; cdiff 0 rows, with 3 added objects; A's 16 and B's 3 edge tables are equal;
+  - **ExecState is 1 after the wiring and 0 after `move_into_frame` A+B (`:395`).** Nothing was saved.
+  - Reviews `archive/peer/2026-09-26-c97-fgate-es0.md` / `-r2.md` suspect orphaned severed wires (arithmetic only, unmeasured).
 
 🟢/🔴 **CYCLE 96 (PD204–205): the parallel For loop is REJECTED. The real per-bead cost is a DISPLAY graph.**
 - 96-1 PASS 53/0 (INDEX row 56, `tools/bench/par1359_96_abba.json`), 15 picks, all legs 15/15:

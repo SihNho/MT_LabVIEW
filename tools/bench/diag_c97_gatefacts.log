@@ -1,0 +1,75 @@
+BGRUN START 2026-09-26 15:40:21 limit 20.0 min: py -u tools/bench/diag_c97_gatefacts.py
+BGRUN PID 18928
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 270 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 3e3d23cefd3a334001aa9d6156bf1aee  got 3e3d23cefd3a334001aa9d6156bf1aee
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33984
+  FACT  PRELOAD: the ORIGINAL is resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened, nothing saved
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_c97_20260926_154021.vi
+  FACT  ExecState [after open] scratch_c97_20260926_154021.vi = 1
+  FACT  HANDLES before reads: 63210
+  FACT  Traverse('Diagram') = 170 diagrams
+  PASS  G1 node_labels on every diagram, op error ''  errors {}
+  PASS  G2 all 145 candidate uids read  missing []
+  FAIL  G3 candidate labels == 2026-09-14 sweep  diffs [(2143, 'Min_Track N beads V6_ParallelLoop.vi', 'D1_s1_copy.vi'), (2991, 'Min_Track N beads V6_ParallelLoop.vi', 'D1_s1_copy.vi'), (3097, 'Min_Track N beads V6_ParallelLoop.vi', 'D1_s1_copy.vi'), (3160, 'Min_Track N beads V6_ParallelLoop.vi', 'D1_s1_copy.vi'), (4277, 'Min_Track N beads V6_ParallelLoop.vi', 'D1_s1_copy.vi'), (11574, 'Min_Track N beads V6_ParallelLoop.vi', 'D1_s1_copy.vi'), (16942, 'Min_Track N beads V6_ParallelLoop.vi', 'D1_s1_copy.vi'), (25805, 'Min_Track N beads V6_ParallelLoop.vi', 'D1_s1_copy.vi')]
+  FACT  LABEL HIT #10313 class Invoke label 'Force (pN) vs Extension (nm) ' on diagram index 1 uid 3628
+  PASS  G4 nodes labelled 'Force (pN) vs Extension' == {10313}  [10313]
+  OBSERVED uid 10313 -> owner 'Diagram' uid 3628 | self 'Invoke'#10313 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OWNER #10313 -> Diagram#3628
+  PASS  O owner of #10313 is #3628  ('Diagram', 3628)
+  OBSERVED uid 639 -> owner 'WhileLoop' uid 637 | self 'Diagram'#639 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  FACT  OWNER #639 -> WhileLoop#637
+  PASS  O owner of #639 is #637  ('WhileLoop', 637)
+  OBSERVED uid 11261 -> owner 'Diagram' uid 639 | self 'BuildArray'#11261 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OWNER #11261 -> Diagram#639
+  PASS  O owner of #11261 is #639  ('Diagram', 639)
+  OBSERVED uid 3628 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#3628 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  FACT  owner_of(3628) raised RuntimeError: owner_of(3628) is not an answer: echoed 'Diagram'#3628, errors 'error 1055: Property Node in OpOwnerChain_v1.vi'
+  FACT  OWNER #3628 -> NOT READABLE (RuntimeError: owner_of(3628) is not an answer: echoed 'Diagram'#3628, errors 'error 1055: Property N)
+  OBSERVED uid 7921 -> owner 'Diagram' uid 7911 | self 'Terminal'#7921 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OWNER #7921 -> Diagram#7911
+  OBSERVED uid 644 -> owner 'Diagram' uid 639 | self 'Terminal'#644 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OWNER #644 -> Diagram#639
+  FACT  HANDLES after reads: 63358
+
+---------- [H] HYGIENE
+  FACT  close_panel(scratch_c97_20260926_154021.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  PRELOAD references released; refs {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 3}
+  FACT  gscript ref_counts: {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 3}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 3}
+  FACT  LabVIEW handle count AFTER the work: 54545
+  PASS  H4 scratch deleted: scratch_c97_20260926_154021.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c97_20260926_154021.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 3e3d23cefd3a334001aa9d6156bf1aee / after 3e3d23cefd3a334001aa9d6156bf1aee
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33995
+
+====================================================================================================
+=== GATES: 14 pass / 1 fail; failing: G3 candidate labels == 2026-09-14 sweep
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c97_gatefacts.json   elapsed 129.5 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":14,"fail":1},"first_fail":"G3 candidate labels == 2026-09-14 sweep","artefacts":[]}
+  PASS  Z LabVIEW gone after the run
+
+====================================================================================================
+=== GATES: 15 pass / 1 fail; failing: G3 candidate labels == 2026-09-14 sweep
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c97_gatefacts.json   elapsed 133.9 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":15,"fail":1},"first_fail":"G3 candidate labels == 2026-09-14 sweep","artefacts":[]}
+BGRUN END rc=1 after 135s

@@ -1435,6 +1435,69 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
      - **(f) Carries, not ahead of (e):** `peer.ps1` cannot parse `loss_usd=?` in a verdict (96-2 hand-transcribed ? → null).
        96-3's owner-tree parser leaves 17 diagrams ownerless (G7, `diag_c96_cons_trace.log:234`); its terminal/wire answer
        stands, and the parser is not reused until fixed.
+206. **(cycle 97 judgement, on `97-1` PASS 5/0, `tools/bench/cards/result_97-1.json`, facts `tools/bench/f1359_gate_facts_97.json`)
+     — the gate design, amending 205(d)/(e)**
+     - **(a) Step 0 PASSED:** the only object naming #8323 is Invoke #10313 `Reinit To Dflt` (a writer, `diag_c97_gatefacts.log:27-31`).
+       The event-structure registrations (#10153, #15544) were NOT read (no op). **Accepted without a reader:** a Value Change
+       event fires only on user edits or a `Value (Signaling)` write, never on a terminal write, and no `Value (Signaling)` node
+       on #8323 exists; so the rate at which the terminal is written cannot change what an event case sees. No reader is built.
+     - **(b) 205(d) CORRECTED: `Magnet2Force` #28083 is NOT gated.** It feeds BuildArray #8566 → Replace Array Subset #8634
+       (not "Insert") → tunnel 9227 → the ring history, so it must run every frame. The gated set inside #1359 is EXACTLY the
+       11363-only set: #8741 IndexArray, #8764 Subtract (with `Exp Baseline` terminal #8476), constants #8775/#8795, #27716,
+       #28180, #28233 FIR, #29009 Median, #11310 Bundler, and the tunnels 31051/31137 (`f1359_gate_facts_97_offline` / `off.log:5-33`).
+       The ONLY wire into this set from the ungated part is w8811 (#8634 `output array` → #8741 `array`). The Median+FIR cost
+       is in the gated set, so (b) removes nothing the lever needed.
+     - **(c) Structure:** Case **A** inside #1359's body (diagram 7911) holds the (b) set; its selector is a boolean entering #1359
+       through a NON-indexed input tunnel; its output tunnel to 11363 uses **default if unwired** in the False frame. Case **B** on
+       #637's body (diagram 639) holds ONLY BuildArray #11261 and #8323's block-diagram terminal; its False frame is empty, so
+       #8323 is not written that frame and keeps its last value. **#11576 Unbundle and #11608 Bundle stay OUTSIDE B** (they are
+       cheap, and WLC #1114's other output also feeds SR #862). One boolean `upd` feeds both A and B:
+       `upd = (Q&R(i #644, N).remainder == 0)`, with i = #637's iteration (term #644, wire w3268) and N = a new I32 panel
+       control `Force graph: update every N frames`, default 9, **coerced to ≥ 1** (Max(N,1)) so N = 0 cannot divide by zero.
+       At N = 1, `upd` is True on every frame, so every gated node runs on the same inputs as S1 → rule-1a anchor.
+     - **(d) Tools first (allowed 2026-09-24; the deliverable needs them):** from 97-1 (C), MISSING or unmeasured: (1) create a
+       Case Structure whose owner is a loop BODY diagram (build_case is top-level only, `gscript.py:3173`); (2) move a node set
+       into a case FRAME with every wire re-established and read back (move_in severs wires, `cycle27-plan.md:846-851`);
+       (3) the same for a control terminal (ctlterm move_in, `d1-build-plan.md:213-222`); (4) a label writer for a new control
+       (`cycle27-plan.md:2084`); (5) the output-tunnel `use default if unwired` setter (property id 5D251C00, `NAMES.md:1036`).
+       Existing: loop-`i` wiring via connect_from_wire w3268; Q&R/Equal-0 donors via stagekit copy_in (`stagekit.py:779`);
+       set_index_mode (`gscript.py:1949`). Each new tool is self-tested on a scratch with a negative case, handles flat.
+     - **(e) Order this cycle:** 97-2 tools (d) → 97-3 stage (205(e) 2) → 97-4 ABBA (205(e) 3) → rule-1a replay 205(e) 4 is next
+       cycle unless time remains. Nothing is accepted before 205(e) 4.
+     - **(f) (on `97-3` PASS 64/1, escalation rung 1 Opus max; 97-2 FAILED on its synthetic fixture) TOOLS DONE:** `gscript.case_in`
+       (T1), `gscript.move_into_frame` (T2/T3), `set_control_label` = `claudeDev\OpLabelSet_v0.vi` (T4), `tunnel_use_default` =
+       `claudeDev\OpTunnelUseDefault_v0.vi` (T5), plus `OpCaseFrames_v1.vi` (`tools/bench/selftest_c97_tools.log`,
+       `diag_c97_tools_opbuild.log:77-82`, `diag_c97_tools_handles.log`). Its three OPENs are decided:
+       1. **Polarity:** keep the Boolean selector (`Equal To 0?` on Q&R's remainder). The gated nodes go into the frame whose
+          name reads ` True ` AFTER the Boolean is wired (measured: numeric-born frame `1` becomes ` True `, same uid,
+          `selftest_c97_tools.log:11,17,28`). The build gate reads the frame name, not an index.
+       2. T2/T3's 20-call criterion is met by their writers' 20-call runs plus one warm T2 (−13). Accepted.
+       3. The stage carries a MEMSTOP of 700 MB private bytes (connect calls climb ~0.5–0.75 MB each; cycle 85 hit error 2 at
+          ~695 MB).
+     - **(g) 206(c) AMENDED: no `Max(N,1)`.** LabVIEW's integer Quotient & Remainder by 0 returns remainder = x, so N = 0 gives
+       `upd` True only at i = 0 (the graph freezes after frame 0). No division fault, so no coercion node is added (one object fewer
+       in the cdiff). Documented behaviour: N ≤ 0 = "never refresh after the first frame".
+     - **(h) (on `97-5` FAIL 45/2, RETRY_CAP and failure budget spent, nothing saved) ExecState 0 AFTER THE MOVES — READ IT, DO NOT
+       GUESS.** Run 2 (`tools/bench/fgate_97_stage2.log`): ExecState 1 after all the wiring (E1), **0 after `move_into_frame` A+B and
+       UseDefault (E3, `:395`)**. cdiff 0 rows, added only Q&R #22968 / Eq0 #10280 / control #23136; A's 16 and B's 3 edge tables
+       equal. Reviews `archive/peer/2026-09-26-c97-fgate-es0.md` + `-r2.md` offer (i) orphaned severed wires left by
+       `move_into_frame` (surplus +12 vs +4 in A, +3 vs +2 in B, arithmetic only) and (ii) an illegal final structure. **Judged:**
+       (ii) is weak — a control terminal, an indicator terminal and a default-valued output tunnel inside a case frame are all
+       ordinary LabVIEW — but it is not refuted by a measurement, so the next act separates them by READING, not by a third
+       inference. 97-3's T2 self-test gated edge tables only, never ExecState or leftover wires after the move: that is the tool's
+       gap (record for the retrospective).
+       **Next cycle, first act (one card):** re-run `stage_d1_fgate.py` to E3 on a fresh byte copy, then **save that broken
+       intermediate by `gui_save`** as `claudeDev\D1_s1_fgate_BROKEN_<ts>.vi` (rule "big work saves intermediates" 6, user
+       2026-09-22) and read (1) LabVIEW's Error List for it (the `errorlist_check` GUI reader the runner already uses; each item's
+       object uid), (2) the broken-wire list with owners (bad wires in A/B frames vs elsewhere), (3) `Remove Bad Wires` on a
+       SCRATCH copy of the broken file → ExecState. Facts only. Judgement then decides between a `move_into_frame` fix
+       (delete severed wires) and a structure change.
+       **Rule 1a on A's False frame (97-5 OPEN 3):** the default value from tunnel #23927 flows into #11363 on non-update frames
+       but reaches nothing, because BuildArray #11261 and #8323 sit in B's True frame, which runs only on the same `upd`. So it
+       is intended and computation-neutral; the replay 205(e) 4 still decides.
+       **Donor unload** (`CloseFrontPanel` → 0x47D) did not happen; peak private bytes 622 MB < 700, so it is not needed now. ⚠️ ASSUMPTION (2c): LabVIEW's
+       int-÷-0 rule as stated; the stage's smoke check is not asked to measure it. If it is wrong, it faults only at N = 0,
+       never at the default.
 
 ## OPEN (design choices — for judgement; not decided here)
 

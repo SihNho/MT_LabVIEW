@@ -1,0 +1,29 @@
+{"schema":"result/1","id":"97-2","status":"FAIL","gates":{"pass":4,"fail":1},
+"first_fail":"fixture build: loop_in(for) error 1055 To More Specific Class in OpForLoopIn_v0.vi (diag_c97_tools_t124b.log:14); failure budget 2 spent",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/diag_c97_tools_t124.py","md5":"3928e4090883bebe19f0b80625db0b4c"},
+ {"path":"tools/bench/diag_c97_tools_t124.log","md5":"2bc63bc42814f98ec4aa7cc9d9e516b5"},
+ {"path":"tools/bench/diag_c97_tools_t124b.log","md5":"cf7737a51e0962f2681321e6d689ec34"},
+ {"path":"tools/bench/diag_c97_tools_fixprobe.py","md5":"2776c7d1e969ed1200de7b90b5096956"},
+ {"path":"tools/bench/diag_c97_tools_fixprobe.log","md5":"aa620b1925b4f2203f44de4c96b87cfb"}
+],
+"facts":[
+ "NONE of T1-T5 built: no op VI, no gscript/stagekit edit, no docs entry; protocol.py requires for the 5 names NOT run (no names exist)",
+ "Run 1 died in our script: g.uids() returns a SET, indexed [0] (diag_c97_tools_t124.log:12); JEV-LADDER our-script-bug p=0.986 -> patched, rerun",
+ "Run 2 died building the fixture: loop_in('for') -> error 1055 TMSC in OpForLoopIn_v0 (t124b.log:14) before any tool step ran",
+ "Likely cause: loop_in with src_cls=None sets Class Name 'SubVI' index 0 (gscript.py:1266); the fixture had no SubVI yet -> empty source cast. Alt: wrong Diagram index",
+ "No existing small VI has For-inside-While + a node chain: NI targets have 3 top Cases / While-in-For only (diag_c97_tools_fixprobe.log:3-29)",
+ "Planned routes (unmeasured): T1 = build_case (top only, gscript.py:3173) + move_in (build_d1_v0.py:318); T2/T3 = move_in + connect_nested_v1 re-wire, LabVIEW makes tunnels",
+ "T5 needs a NEW op (UID -> Tunnel cast, 5D251C00 UseDefault on ConditionalTunnel, NAMES.md:1035-1036); donor candidate OpTunnelRead_v0; not started",
+ "OpCaseFrames_v0 has no labels file (tools/bench/opcaseframes_labels.json absent) -> no frame-name reader; T1 True/False polarity unread",
+ "stagekit.Stage.connect calls connect_nested_v2, which raises (op never built, gscript.py:3235); use connect_nested_v1",
+ "Hygiene: LabVIEW gone, scratch_c97_* deleted, S1 md5 3e3d23ce unchanged (t124b.log:15-17); labview_runs 3"
+],
+"open":[
+ "Re-issue on the escalation rung with the fixture fixed (drop a subVI on top level before loop_in, or pass src_cls of an existing node) and T5 as its own op-build card?",
+ "The self-test script avoids stagekit (gscript-level, scratch-only), so stage_prerun's classifier does not gate it; acceptable, or must tool self-tests go through dry+prerun?",
+ "Budget: 5 tools with 20-call handle tests and docs in 75 min looks infeasible; split T1-T3 (composition) from T4/T5 (ops)?"
+],
+"cost":{"usd":null,"minutes":68,"labview_runs":3},
+"note":"JEV-LADDER for run 1: our-script-bug -> patched and reran (1 row: diag_c97_tools_t124.log | p=0.986 | patch+rerun | fixed uids set index | run 2 failed elsewhere). Run 2 is the 2nd failure: stopped per budget, no review dispatched."}

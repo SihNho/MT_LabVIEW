@@ -1,0 +1,56 @@
+BGRUN START 2026-09-26 15:44:10 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c97-g3-locallabel -TaskFile tools/bench/cards/peer_task_97-1_g3.md
+BGRUN PID 24504
+OUTCOME: ANSWERED (166s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-26-c97-g3-locallabel.md
+COST: $1.5728  in 38 / out 13684 / cache-create 104868 / cache-read 2039597  (163s, 28 turn(s))
+--- ANSWER ---
+**Verdict: the mechanism in the claim is right, and it was already known. The conclusion does not follow from the evidence the brief cites, and there is still one gap nobody has read.**
+
+**1. The strongest reason the claim is wrong as written: the evidence for "no Local names the indicator" covers only 3 of the 8 Locals.**
+- `diag_c97_gatefacts_off2.py:32` builds `outs` from output terminals that have a wire attached. So its CAND lines show a name only for the three read-mode Locals: 3160, 3097 and 25805.
+- The other five show `outs []` (`off2.log:13,29,101,111,140`). That is not evidence about their linkage.
+- The gap closes, but from a different file. `par1359_95_graph.json` gives every Local exactly one terminal:
+  - 2991 and 2143 → `Total Lost Frames` (lines 1967 and 28947)
+  - 4277 → `File # Saved` (8337)
+  - 11574 → `Focus Pos (Track)` (24077)
+  - 16942 → `Picture` (41727)
+- The only terminal in the whole graph named `Force (pN) vs Extension (nm) ` is #8323 itself (line 27577).
+- So all 8 Locals are accounted for and none is linked to #8038, but the argument has to cite the graph file, not the CAND lines.
+
+**Q1: does a Local's `Node.Label` read the VI name? Yes. This was measured before, and G3's failure is a missed-prior-art fault.**
+- `docs/cycle27-plan.md:2300-2315` (from `diag_c60_n4_localbinding.log`) records it. `node_terms` on these same eight Locals gave one control-named terminal each, matching `main-vi-panel-map.md:409-416` 8/8. A newly created Local's `Node.Label` read the VI file name.
+- My likely cause for the wrong contract: `docs/frame-loop-wire-graph.md:13` says "a Local's is its control". That line is stale and contradicts the measurement. It should be corrected, or G3-style contracts will fail the same way again.
+- The label reliably tracks the file name. The name of the control a Local points to is available through `Local.Control Name` (property 6355400, [labviewwiki](https://labviewwiki.org/wiki/Local_class/Control_Name_property)) or through the Local's terminal name. The label never gives it.
+- **The alternative explanation of the same 8 differences** is that `OpNodeLabels_v0` falls back to the owning VI's name whenever `Label.Text` is empty or hidden. That produces identical evidence, and nothing measured so far separates the two. It also does not matter: under either one, the label says nothing about what the Local is linked to.
+
+**Q2: what could reach #8038 without carrying its name in `Node.Label`?**
+- **Explicit property/invoke nodes:** ruled out. The three generic `Property Node`s (250, 9775, 22388) are IMAQdx session nodes (`off2.log:62,115,147`). Every other Property/Invoke node has its `reference` input unwired, which means it is implicitly linked and its label names its control.
+- **Control reference constants:** ruled out. All of them name other controls.
+- **Event structures #10153 and #15544: NOT ruled out. This is the real gap.**
+  - The static event sources of each case appear nowhere in labels or in the terminal graph.
+  - Event Data Node #15628 exposes `CtlRef` and `Coords` (`par1359_95_graph.json:42617-42630`), so some mouse event is registered on a control that has not been identified.
+  - A mouse event on the XY graph would couple that event loop to #8038 even though no value is read from it.
+  - A static Value Change event on an indicator fires only on a `Value (Signaling)` write, and none was seen, so a Value Change reader is unlikely.
+- **Lookup by name through VI Server** (Controls[] or Get Control Value with a string): not checked.
+  - The graph has about 20 `StringConstant` nodes whose values were never read.
+  - My class grep found no This-VI or VI-server constant class, but that grep used a guessed class-name pattern, so I don't count it as negative evidence.
+
+**Q3: what would falsify "no non-display reader of #8323"?**
+- An event case whose selector names `Force (pN) vs Extension (nm)`, or
+- a string constant with that text feeding a VI Server call, or
+- a subVI that receives a VI or panel reference and walks `Controls[]`.
+
+**Cheapest test that separates the claim from the alternative:**
+- Read `EventStructure.Event Selectors` on #10153 and #15544: two property reads, about 1 second in total. The property returns each case's human-readable name ([labviewwiki EventStructure class](https://labviewwiki.org/wiki/EventStructure_class)). `Get Handled Events` gives the full per-case detail if the selector names are ambiguous.
+- Second, read the values of all `StringConstant` nodes and search them for `Force`.
+- If both come back clean, the STOP-gate conclusion holds. It then rests on the graph file plus these two reads, not on G3 or G4.
+- If either shows #8038, the conclusion is falsified.
+
+**Still unverified:**
+- Whether LabVIEW lets two panel objects share the label `Force (pN) vs Extension (nm) `, which would weaken G4's match of Invoke #10313 by label.
+- Whether this project has an op that can read `Event Selectors`. I did not check `docs/vi-server-ids.json`.
+
+Sources:
+- [Local class / Control Name property – LabVIEW Wiki](https://labviewwiki.org/wiki/Local_class/Control_Name_property)
+- [EventStructure class – LabVIEW Wiki](https://labviewwiki.org/wiki/EventStructure_class)
+- [Event structure – LabVIEW Wiki](https://labviewwiki.org/wiki/Event_structure)
+BGRUN END rc=0 after 167s

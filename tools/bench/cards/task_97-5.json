@@ -1,0 +1,79 @@
+{
+ "schema": "task/1",
+ "id": "97-5",
+ "kind": "build",
+ "goal": "Stage claudeDev D1_s1_fgate_<ts>.vi from a byte copy of S1: #1359's graph chain and #8323 gated by i mod N = 0 (N panel control, default 9), per brief_97-4.md",
+ "why": "97-4 BLOCKED only because its peers omitted priorart (guard_cycle wants a prior-art review of stage_d1_fgate.py). Dry run + prerun PASS already recorded.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_97-4.md"},
+  {"path": "tools/bench/cards/result_97-4.json"},
+  {"path": "tools/recipes/stage_d1_fgate.py", "md5": "d90864b6b4b379187a07f9a5de9d0e17"},
+  {"path": "tools/bench/plans/plan_fgate_97.json", "md5": "18d827b6c17ca0fc90cf7da6a3bc6c66"},
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/f1359_gate_facts_97.json", "md5": "adf30c48546299036c2302c6b0b00476"},
+  {"path": "tools/bench/par1359_95_graph.json"},
+  {"path": "tools/gscript.py"},
+  {"path": "tools/stagekit.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_fgate.py"},
+  {"kind": "file", "name": "tools/bench/plans/plan_fgate_97.json"},
+  {"kind": "op", "name": "OpLabelSet_v0", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "op", "name": "OpTunnelUseDefault_v0", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "op", "name": "OpCaseFrames_v1", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "verb", "name": "case_in", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "move_into_frame", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "set_control_label", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "tunnel_use_default", "where": "tools/gscript.py"}
+ ],
+ "pass": [
+  "prior_art_review.py --recipe tools/recipes/stage_d1_fgate.py run (background bgrun), answered, disposition written in the review",
+  "ONE real run (RETRY_CAP 2), MEMSTOP 700 MB; if the script is changed, dry + prerun are redone first",
+  "claudeDev D1_s1_fgate_<ts>.vi saved by script; md5 + size; ExecState 1 warm AND after cold reload",
+  "computation_diff(S1, fgate) listed by row = brief items 1-4 + tunnels only; every moved edge same src uid:term -> sink uid:term",
+  "A/B share one upd wire; gated nodes in frame ' True '; A out tunnels use-default True; label + default 9 read back; LabVIEW gone"
+ ],
+ "outputs": ["C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_fgate_*", "tools/recipes/stage_d1_fgate*", "tools/bench/fgate_97*", "tools/bench/cards/result_97-5.json"],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_fgate_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c97*",
+   "tools/recipes/stage_d1_fgate*",
+   "tools/bench/plans/**",
+   "tools/bench/sim/**",
+   "tools/bench/fgate_97*",
+   "tools/bench/diag_c97_fgate*",
+   "tools/bench/graph_*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/priorart*",
+   "tools/gscript.py",
+   "tools/stagekit.py",
+   "tools/stagexec.py",
+   "docs/wiki/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "outcome", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 50},
+ "rules": [
+  "never save or edit D1_s1_copy.vi, the bed, or any original; touch ONLY brief_97-4.md items 1-4",
+  "cdiff rows beyond items 1-4: still save, list every row (judgement c97); never run the VI",
+  "unload the Source/donor VI after the copy_in calls, before the MEMSTOP-metered edits (judgement c97)",
+  "never move a script to dodge ANY gate; a refusal is satisfied honestly or returned BLOCKED",
+  "bgrun --max-min 45; hold your turn until BGRUN END/TIMEOUT; background peer dispatches; facts <=10"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

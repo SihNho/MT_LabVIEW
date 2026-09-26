@@ -1,10 +1,9 @@
-{"schema": "next/1", "cycle": 96, "act": "PD205(e): build the display-rate-gated copy D1_s1_fgate_<ts>.vi from S1 (step 0 read-only #8323 link check, then design+requires, dry/prerun/run), then ABBA A15 S1 vs gated N=9 via diag_c96_* harness", "task_kind": "build",
- "plan": {"path": "docs/d1-loop12-17-split-plan.md", "md5": "0b904e5f2c973ab6d8a7fe9af01db6d6"},
- "pass": ["step 0: no property node/reference of indicator #8323 feeds anything but a display (else STOP, re-judge)",
-  "gated copy: ring insert #8634 + SR chain every frame; graph chain + BuildArray #11261 + #8323 only when i mod N = 0; N = new panel control, default 9 (D-2026-09-26-02 assumption)",
-  "ExecState 1 warm+cold; computation_diff(S1,.) = exactly the new gate objects + moved edges, listed by row; saved by script in claudeDev",
-  "ABBA A15 B15 B15 A15 120 s panel normal, PD204(a) criterion; md5 pinned in-run; LabVIEW gone; PI TMX 39 read back",
-  "not accepted before PD205(e)4: N=1 replay bit-identical on every tra column and #8323 final value"],
+{"schema": "next/1", "cycle": 97, "act": "PD206(h): rerun stage_d1_fgate.py to E3, gui_save D1_s1_fgate_BROKEN_<ts>.vi, read its Error List (uids), broken wires + owners, RBW->ExecState on a scratch; facts only", "task_kind": "diagnose",
+ "plan": {"path": "docs/d1-loop12-17-split-plan.md", "md5": "d5d3a5b36e80fd879c88bfb3b5b19faa"},
+ "pass": ["dry + prerun PASS for the unchanged script (records valid only while md5 690269c0 holds)",
+  "claudeDev D1_s1_fgate_BROKEN_<ts>.vi saved by gui_save (Approved, user 2026-09-22 broken-intermediate save), md5 + size; never run",
+  "Error List items for that file listed with object uid + owner diagram (errorlist_check GUI reader)",
+  "broken-wire list: uid, owner diagram (A frame / B frame / 7911 / 639 / other), ends; Remove Bad Wires on a scratch copy -> ExecState and count",
+  "card peers include hypothesis, outcome, priorart; S1 md5 3e3d23ce unchanged; LabVIEW gone"],
  "blocked_by": null, "stop_requested": false, "advances": ["M8", "M3", "R1", "R3"],
- "steer": {"item": "outcome:decision-starved+goal-requirement-not-advanced+tooling-over-delivery", "response": "follow"},
- "note": "C96: 96-1 PASS 53/0 ABBA S1 3435/3389 vs par1359 3867/3863 lost (+13 %) -> par1359 rejected, replay moot; 96-2 review refuted (archive/peer/2026-09-26-c96-par1359-h1.md); 96-3: #1359 feeds ONLY indicator #8323 (display) -> PD205 display-rate gate; user asked D-2026-09-26-02."}
+ "note": "C97: 97-1 PASS (PD206); 97-2 FAIL fixture; 97-3 PASS 64/1 rung 1: 5 gate tools; 97-4 BLOCKED (my card peers); 97-5 FAIL 45/2: ExecState 0 only after move_into_frame, nothing saved. After a fix: stage run, ABBA N=9, replay N=1."}

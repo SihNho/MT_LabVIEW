@@ -1,0 +1,25 @@
+{"schema":"result/1","id":"97-4","status":"BLOCKED","gates":{"pass":2,"fail":0},
+"first_fail":null,
+"blocked_by":{"device":"guard_cycle.py + card flags.peers","message":"real run refused: stage_d1_fgate.py has no prior-art review newer than itself (newest archive/peer/2026-09-25-priorart-c86-l2a1-checkpoints.md); dispatching prior_art_review.py refused by guard_bash: card 97-4 flags.peers ['hypothesis','outcome'] excludes 'priorart'"},
+"artefacts":[
+ {"path":"tools/recipes/stage_d1_fgate.py","md5":"d90864b6b4b379187a07f9a5de9d0e17"},
+ {"path":"tools/bench/plans/plan_fgate_97.json","md5":"18d827b6c17ca0fc90cf7da6a3bc6c66"},
+ {"path":"tools/bench/diag_c97_fgate_q1.py","md5":"984f59fcb7a3bd46cd289d697c69cb04"},
+ {"path":"tools/bench/diag_c97_fgate_q1.log","md5":"1797a8455c1cfa6bbedf9d11ae5ba8d4"}
+],
+"facts":[
+ "stage_d1_fgate.py is 120 lines on stagekit; all uids/terms come from plans/plan_fgate_97.json (21 decision rows, 5 wire rows)",
+ "Dry run PASS (coverage 100/107, 16 UNVERIFIED after the first mutation) and prerun PASS 8/0 (X5 5 ops == 5 wire rows, X6 lint clean); check-launch ALLOW; prerun_records.jsonl 16:57:46",
+ "Both need --graph tools/bench/par1359_95_graph.json: it is S1's graph (md5 3e3d23ce), but find_graph globs only graph_*.json, so it is never found without the flag (stage_prerun.py:158)",
+ "Donors picked from S1's own i-mod-Frame-rate chain on 639: Q&R #2136 (x <- w3268, remainder w2344) -> Equal To 0? #3057 (diag_c97_fgate_q1.log: 2136, EQ0 rows)",
+ "copy_in needs work == MOVE_DST (stagekit.py:785), so the stage edits S1's bytes at the Moving-Objects Target, then saves and byte-copies them to claudeDev\\D1_s1_fgate_<ts>.vi (stage_d1_m4b.py pattern)",
+ "N control route: carrier IA + create_control -> case_in selector label -> label/default 9 -> delete L's wire + carrier -> move terminal into 639 -> wire_control to Q&R.y",
+ "Real run NOT launched: guard_cycle wants a prior-art review of the recipe, and the card's flags.peers does not allow 'priorart'. LabVIEW never started; no VI opened; S1 untouched"
+],
+"open":[
+ "Re-issue 97-4 with flags.peers including 'priorart' (or a separate priorart card) so prior_art_review.py --recipe tools/recipes/stage_d1_fgate.py can run; the dry and prerun records stay valid while the script is unchanged",
+ "F5c (cdiff: 0 rows, added only new objects) is NOT fatal, so if rows appear the artefact is still saved and the rows are listed for judgement. Should it stop before the save, as L2-A1's PB gate did?",
+ "MEMSTOP 700 MB is measured after every op, with S1 loaded twice (Target + Source donor). If it trips early, should the Source be unloaded after the two copy_in calls?"
+],
+"cost":{"usd":null,"minutes":50,"labview_runs":0},
+"note":"requires 9/9 FOUND (cards/requires_97-4.json). No LabVIEW process was started, and tasklist shows none. No STATUS edit (status_edit false)."}

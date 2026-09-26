@@ -1281,3 +1281,29 @@ The PN's fixed terminals are `reference`, `reference out`, `error in (no error)`
 Class string `VI Server:ForLoop`; the WRITE of 6362004 is now machine-verified (the ids in the Loop/ForLoop paragraph
 above were Wiki-sourced). Inputs inherited from the donor `OpLoopCast_v0`: `vi path`, `Class Name`, `index`; loop uid echo
 indicator `UID` (`LoopUID`). A non-ForLoop ref (`WhileLoop`, `Diagram`) → `error 1055: Property Node in OpForLoopParSet_v0.vi`.
+
+## Card 97-3 op terminals and case/tunnel names (measured 2026-09-26, `tools/bench/diag_c97_tools_opbuild.log`, `tools/bench/selftest_c97_tools.log`)
+
+Data terminal names CENSUSED on the built property nodes (never assumed):
+
+| class string / property id | PN data terminal (exact) | op control / indicator (`tools/bench/diag_c97_tools_oplabels.json`) |
+|---|---|---|
+| `VI Server:CaseStructure` `6365002` Frame Names (READ) | `FrameNames` | `OpCaseFrames_v1` indicator `Frame Names` |
+| `VI Server:MultiFrameStructure` `6363801` Frames[] (READ, fed from the CaseStructure PN's `reference out`) | `Frames[]` | → Index Array[`index 3`] → `GObject.UID` indicator `UID` (frame uid); errors `error out 2`; case uid echo `UID 2` / `error out 3` |
+| `VI Server:ConditionalTunnel` `5D251C00` Use Default if Unwired (READ / WRITE / READ) | `UseDefault` | `OpTunnelUseDefault_v0` control `Use Default if Unwired`; indicators `Use Default if Unwired 2` (before), `… 3` (after), `error out 2`; tunnel uid echo `UID` / `error out 3` |
+| `VI Server:Text` `632D800` Text (WRITE on a branch of `Control.Label`, then READ) | `Text` | `OpLabelSet_v0` control `Text 2` (new label); indicators `Text 3` (read-back), `error out 2` |
+
+Inputs: the OpSetIndexMode_v0-donor ops take `vi path`, `vi path 2`, `Class Name`, `index` (Traverse), `index 2` (set 0);
+`OpLabelSet_v0` takes `vi path`, `index` (= `Panel.Controls[]` = `panel_wiring` row order), `Names`/`Names 2` = [],
+`Class Name`/`Class Name 2` = "". Every op's auto error handling is OFF; a wrong class or index → `error 1055: Property Node in <op>`.
+
+- **`Frame Names` strings are PADDED with one space each side**: `' 0, Default '`, `' 1 '`, `' False '`, `' True '` — compare
+  with `.strip()`. A case born with a numeric selector (build_case contract `("0, Default","1")`) whose selector is then
+  wired from a Boolean reads `' False '`,`' True '` with the SAME two frame uids in the same `Frames[]` order: "0, Default"
+  became False, "1" became True (`selftest_c97_tools.log:11,17`).
+- A case STRUCTURE moved into a nested diagram has `Node.Terminals[]` = `[(0, 'index', sink, wire 0)]`: the selector's
+  outer terminal, named after the control that fed it before the move (`:15`).
+- Case data tunnels created by `Terminal.Connect Wire` across a case border are Traverse class **`SelectorTunnel`**
+  (census `+4`/`+2`, `:119`, `:146`); `ConditionalTunnel` is the class that owns `UseDefault`.
+- A front-panel terminal in the whole-VI terminal table (`allterms.read_terms`) has owner class **`Diagram`** and
+  `term_uid` == the ControlTerminal's own uid (#8476 `Exp Baseline`, #8323).

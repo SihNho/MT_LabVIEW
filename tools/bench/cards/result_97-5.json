@@ -1,0 +1,34 @@
+{"schema":"result/1","id":"97-5","status":"FAIL","gates":{"pass":45,"fail":2},
+"first_fail":"F6a ExecState 1 warm (run 2, tools/bench/fgate_97_stage2.log): E1=1 after wiring, E3=0 after the two moves; nothing saved",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/recipes/stage_d1_fgate.py","md5":"690269c0c14410eee2dc3c093515c594"},
+ {"path":"tools/stagekit.py","md5":"81513a7ca57d2d31866d779f97f55677"},
+ {"path":"tools/bench/fgate_97_stage.log","md5":"c3a4ffd485a385b6617eabee0ed89eab"},
+ {"path":"tools/bench/fgate_97_stage2.log","md5":"85195cf0296d91f319880ae7c8a0019a"},
+ {"path":"tools/bench/fgate_97_stage.json","md5":"14103ed267af5db118709501dbf0eb73"},
+ {"path":"tools/bench/fgate_97_stage_run1.json","md5":"bebdff744f3107d1ad30231f934bf0ba"},
+ {"path":"archive/peer/2026-09-26-priorart-c97-fgate.md","md5":"44fbbd7c045041c093f07bb53be1255e"},
+ {"path":"archive/peer/2026-09-26-priorart-c97-fgate-r2.md","md5":"baa3021764bbdf778627808f20f93336"},
+ {"path":"archive/peer/2026-09-26-c97-fgate-es0.md","md5":"25bc1622c55486099a04ed123044ab55"},
+ {"path":"archive/peer/2026-09-26-c97-fgate-es0-r2.md","md5":"41b457a8594e70af7995078f9fb4e02d"}
+],
+"facts":[
+ "Prior-art reviews: novel twice (archive/peer/2026-09-26-priorart-c97-fgate.md:357, -r2.md:349); dispositions written; dry+prerun PASS 8/0 before each run (fgate_97_prerun2.log)",
+ "Run 1 (fgate_97_stage.log:207-210,378): s.connect_from_wire's junk Invoke was never purged -> Invoke 1->2, F5a/F5c/F6a FAIL. Fixed: junk_purge after it (stage_d1_fgate.py:63)",
+ "Run 2: F5a/F5c PASS, cdiff 0 rows, added only Q&R #22968, Eq0 #10280, ctl #23136 (fgate_97_stage2.log CDIFF line); F1b label+default 9 PASS; F3b-F4d PASS",
+ "Run 2 E1 ExecState 1 after all wiring (upd -> both selectors, non-indexed #1359 tunnel #23856); E3 ExecState 0 after move_into_frame A+B and UseDefault #23927 (fgate_97_stage2.log:395)",
+ "Edge tables equal (A 16, B 3); A has 3 input tunnels + 1 output #23927 (UseDefault True), B 2 inputs (fgate_97_stage.json:1969-2042, 2413-2432)",
+ "Review r2 (c97-fgate-es0-r2.md:56-66): wire-count surplus after moves A +12 vs +4 expected, B +3 vs +2 -> orphaned severed wires left by move_into_frame (arithmetic, unmeasured)",
+ "Competing explanation: the finished gate itself is illegal (control #8476 / indicator #8323 inside case frames, default tunnel into #11363); E1 cannot separate it (c97-fgate-es0-r2.md:37-42)",
+ "Donor unload did not happen: CloseFrontPanel -> LabVIEW 0x47D, ExportedVIs still lists the Source before and after; peak private 622 MB < MEMSTOP 700 (fgate_97_stage.log:92,366)",
+ "S1 md5 3e3d23ce unchanged (K1), pins hold (H3), Moving-Objects fixtures restored (FX 3/3), LabVIEW gone at exit both runs; RETRY_CAP 2 and failure budget 2 spent",
+ "Jev ladder for run 1: new-problem p=0.684, hypothesis review owed (jev_gate.log); both reviews dispatched and ANSWERED"
+],
+"open":[
+ "Run the r2 review's separator (c97-fgate-es0-r2.md:84-91): offline wire-count arithmetic, then a read-only scratch run with UseDefault right after move A and a per-move orphan-wire list, then Remove Bad Wires on the scratch?",
+ "If orphans are confirmed, fix move_into_frame (delete severed old wires / loose-end removal) as a tool change - judgement's call, not done here",
+ "Rule 1a: case A's False frame feeds #23927's default value into #11363 on non-update frames (c97-fgate-es0.md:69) - is that the intended brief item 3 behaviour?"
+],
+"cost":{"usd":null,"minutes":32,"labview_runs":2},
+"note":"Reviews cost ~$1.67 + r2 (see archive headers). requires 10/10 FOUND. No STATUS edit (status_edit false). No file saved in claudeDev."}

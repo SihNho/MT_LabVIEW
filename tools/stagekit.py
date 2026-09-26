@@ -1211,6 +1211,31 @@ def fixture_listing():
     return sorted(os.path.basename(p) for p in glob.glob(os.path.join(os.path.dirname(g.MOVE_DST), "*.vi")))
 
 
+def unload_donor(path=None):
+    """Card 97-5 (judgement c97): after the copy_in calls, drop the donor (default `g.MOVE_SRC`) from LabVIEW's memory
+    before the MEMSTOP-metered edits. An open front panel keeps a VI resident (gscript.close_panel), so its panel is
+    closed; residency is READ before/after from `Application.ExportedVIs` (NI 'All VIs in Memory'), and private MB
+    before/after. FACTS ONLY: returns a dict, never raises - a failed read is recorded, not gated."""
+    path = path or g.MOVE_SRC
+    name = os.path.basename(path).lower()
+
+    def resident():
+        try:
+            return any(os.path.basename(str(n)).lower() == name for n in (g.lv().ExportedVIs or ()))
+        except Exception as e:                                                     # noqa: BLE001
+            return "unread: {0}".format(str(e)[:60])
+    out = {"mb_before": round((private_bytes() or 0) / 1e6, 1), "resident_before": resident()}
+    try:
+        g.close_panel(path)
+        out["close_panel"] = "ok"
+    except Exception as e:                                                         # noqa: BLE001
+        out["close_panel"] = "err: {0}".format(str(e)[:80])
+    time.sleep(1.0)
+    out["resident_after"] = resident()
+    out["mb_after"] = round((private_bytes() or 0) / 1e6, 1)
+    return out
+
+
 def run(fn, stage):
     """The standard main(): run `fn(stage)`, never let an exception skip the hygiene tail."""
     try:

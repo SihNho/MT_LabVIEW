@@ -3044,3 +3044,68 @@ VIOLATION: device-failed | loss_min=3 | loss_usd=? | evidence=verdict-card-parse
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle96","verdict":"refuted","alternative":"The cycle had no fault that changed its cost or output; the line is emitted under the device rule (threshold 1), not the structural-fault rule. A reviewer applying only the structural rule would answer none.","discriminating_test":"Feed peer.ps1 -ReviewCard a verdict line with loss_usd \"?\" exactly as tools/retrospective.py:423 prescribes; if it still returns NO-VERDICT, the device is broken as named. Also run audit_cycle on a window containing only jev_gate.log and see whether A1/A3 fire.","violations":[{"slug":"device-failed","loss_min":3,"loss_usd":null,"evidence":"tools/bench/peer_c96-par1359-h1.log:5"}],"sources":["tools/bench/peer_c96-par1359-h1.log:5","tools/bench/cards/verdict_96-h1.json:1","tools/bench/retro.log:2938","tools/retrospective.py:423","archive/peer/2026-09-26-retrospective-cycle95.md:278","tools/bench/diag_c96_abba.log:217","tools/bench/diag_c96_cons_trace.log:234","archive/peer/2026-09-26-c96-cons-trace-g2.md:126","docs/d1-loop12-17-split-plan.md:1400","tools/bench/retro.log:2967","tools/gui_actions.log:3937","STATUS.md:57"],"note":"Second device failure of the same slug folded in: audit A1/A3 flag jev_gate.log (a hook ledger) as an unreviewed failing build log, sixth cycle running. Findings: CPU never sampled during a leg; h1 review disposition not in its archive file; run1.L8 failing in every leg since 92-3."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle96.md
 BGRUN END rc=0 after 377s
+BGRUN START 2026-09-26 17:31:36 limit 10.0 min: py tools/retrospective.py --cycle 97
+BGRUN PID 19176
+   window 2026-09-26 15:31:12 .. 2026-09-26 17:31:37 (120 min); 26 build logs, 12 machinery logs, 27 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle97.txt (25177 chars)
+   review card tools\bench\cards\review_retrospective-cycle97.json
+OUTCOME: ANSWERED (370s)  model: fable (effort medium; peer.ps1 default for role outcome)  archived: archive\peer\2026-09-26-retrospective-cycle97.md
+COST: $4.9830  in 194 / out 27964 / cache-create 171679 / cache-read 597244  (368s, 49 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle97 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle97.json
+--- ANSWER ---
+Reading done. I'm now writing the verdict from the cards, the stage logs, the self-test log and the peer cost lines.
+
+## Verdict summary
+
+The cycle delivered five gate tools (97-3) and a recipe, but no staged file. The one structural fault is that the tool the whole deliverable rests on, `move_into_frame`, was accepted on an edge-table gate with no ExecState read, although the read was one line and its raw value was already sitting in the self-test log. The two failed stage runs and three reviews that followed bought what that read would have shown at 16:33.
+
+## FINDINGS
+
+**1. Repeated failure.** Three recurrences, two of them of recorded classes.
+- The junk `Invoke` node left by a connect op, settled in cycle 64 as the cause of ExecState 0 (`docs/NAMES.md:1105-1113`), recurred at stage run 1 (`tools/bench/fgate_97_stage.log:379`, F5a Invoke 1 to 2). The recipe was written without `junk_purge` after `connect_from_wire`. The approach should have changed at attempt 0, in authoring: the purge belongs in stagekit after every connect op, not in each recipe. Cost of the recurrence: run 1 (328 s, `fgate_97_stage.log:418`), review es0 ($1.6657, `tools/bench/peer_c97-fgate-es0.log:4`), prior-art r2 ($1.0815, `tools/bench/priorart_c97-fgate-r2.log:6`), a repeated dry and pre-run, 13 minutes from 17:04 to 17:17.
+- Card 97-4 omitted `priorart` from `flags.peers` and returned BLOCKED (`tools/bench/cards/result_97-4.json:3`). STATUS itself names it the same card-scoping fault as 95-5/95-6 (`STATUS.md:61`). Cost about 4 minutes and one of the six dispatches.
+- Card 97-2 failed twice building a synthetic fixture (`tools/bench/diag_c97_tools_t124.log:18`, `diag_c97_tools_t124b.log:14`). The brief demanded a scratch VI that is not S1 (`tools/bench/cards/brief_97-2.md:21`). The fix-probe at 15:55 had already shown no suitable small VI exists (`result_97-2.json:16`). That was the moment to return BLOCKED, attempt 1, instead of building a loop with `loop_in`. The judgement reversed its own constraint in 97-3 (`task_97-3.json:8`), which then passed.
+
+**2. Missing tool.** An orphan or loose-wire reader per diagram: wires that appear in no terminal row, or have only a source or only sinks. Its absence is why the cycle ends with an unverified arithmetic hypothesis (`archive/peer/2026-09-26-c97-fgate-es0-r2.md:57-67`) and why cycle 98's whole first act is a diagnosis card (`STATUS.md:56-60`). Second: an automatic junk purge inside stagekit's connect wrappers, which would have removed run 1 entirely. Third, accepted as OPEN by 97-1: no reader for Event-structure registrations (`result_97-1.json:27`).
+
+**3. Unmeasured steps.** The T2 acceptance is the fault named below. Two more: the 97-2 cause is stated as "likely" and the 60-second discriminating test was not run (`archive/peer/2026-09-26-c97-loopin1055.md:94`). And the orphan-wire explanation, explicitly "not a measurement" in the review, is carried into STATUS NEXT as a mechanism to fix, "delete the severed wires it leaves behind" (`STATUS.md:62`).
+
+**4. Rule compliance.** Failure budget 2 and RETRY_CAP 2 were honoured (`tools/bench/stage_runs.jsonl:20-21`). The cycle prompt's escalation text says rung 1 is `material-fable-low` (`tools/bench/cycle_97.log:79-84`) while CLAUDE.md says rung 1 is Opus max (`CLAUDE.md:392-404`). STATUS says Opus max was used (`STATUS.md:74`), but no card or log names the agent: `result_97-3.json` carries no escalation field, so the Opus-versus-Fable datum the user asked for is not recorded. The user-approved broken-intermediate GUI save (`CLAUDE.md:493`) was available and not used because the card set `gui: false` (`task_97-5.json:41`), so the cycle left no file for anyone to open. STATUS is 232 lines against the 110 limit (doc lint L3), as in every recent cycle. What the audit does not cover: the judgement session's own cost (C4c reads zero because `cycle_97.log` has no COST line yet), the six-dispatch limit (five used), whether a PASS card met its own pass list (97-3 is PASS with one FAIL gate and a substituted criterion, `result_97-3.json:1-2,36`), and card attribution of stage runs (`stage_runs.jsonl:20-21` both say `card: null` although card 97-5 was bound).
+
+**5. Ordering.** Facts, then tools, then stage is the right order. Two steps were placed wrong. The tool's acceptance gate did not include the stage's own F6a gate, ExecState 1, so the stage was the first place the tool's output was checked. And the prior-art review could have run alongside recipe writing had 97-4's card allowed it.
+
+**6. Not reported.** The self-test's per-op return tuples show a second value of 0 on every re-wiring op inside T2 (`tools/bench/selftest_c97_tools.log:74,87,90,93,96`), which the r2 reviewer identifies as the op's exec_state (`c97-fgate-es0-r2.md:45`). Nothing in the result card mentions it. The donor unload failed (0x47D) and was reported (`result_97-5.json:24`). The `find_graph` glob misses `par1359_95_graph.json`, so every dry and pre-run needs a manual flag (`result_97-4.json:13`), a standing trap.
+
+**7. Judgement inside a material session.** Two borderline cases, neither a violation. Card 97-3 declared PASS with its T2 handle gate failing, substituting a warm measurement for the card's 20-consecutive-calls criterion and putting the substitution under OPEN (`result_97-3.json:2,36`); the judgement then took "PASS 64/1" as delivered (`tools/bench/next.json:9`). Card 97-5 declined the es0 review's proposed tunnel-direction gate and GUI save (`archive/peer/2026-09-26-c97-fgate-es0.md:106-108`), by card scope, and listed it for judgement. Both were disclosed. No pre-scripted "if X then Y" appears in briefs 97-1, 97-2 or 97-4.
+
+## DEVICE EFFECT
+
+- Prior-art gate, stop record, novel record: worked. The launch at 16:57:50 was refused until a review existed (`result_97-4.json:3`), the patched recipe was refused as `STOPPED-RECIPE` until the r2 novel review landed (`tools/hooks/material_marker.log:2031-2033`, `tools/bench/stop_records.json:1071-1090`). Note the refusal hit a COM-stubbed dry run, which the 2026-09-24 05:54 repair said should pass as read-only. Cost 0 this time, because the hypothesis review was still running.
+- bgrun FAIL scan and rc forcing: worked twice ("the process itself said 0", `diag_c97_tools_t124.log:18`, `t124b.log:20`).
+- Cost regex and C3/C4: 7 of 7 cost lines parsed, $9.3514 matches the seven peer logs.
+- Retry cap at child start: counted (cap 2 held) but card attribution is null (`stage_runs.jsonl:20-21`).
+- Jev exemption by command, not filename: FAILED in `audit_cycle`. Both audit violations this cycle, A1 and A3, come solely from `jev_gate.log`, a Jev log with no bgrun line by design. `logclass.split` (`tools/audit_cycle.py:448`) still classifies it by name. STATUS already lists this as an owed fix (`STATUS.md:63`). It fired on the wrong thing and is now routinely dismissed. Loss this cycle: 0 minutes, no dollars.
+- `gates_due` writer (wrong-ordering, 09-26 14:10): not built; the cycle card has no such field (`cycle_97.json`), so whether the manual form ran is unverifiable.
+- The remaining devices (confirm-bait refusal, SendMessage refusal, sink gates, unroutable rows, bgrun_reap) were not exercised in this window.
+
+## The structural fault
+
+`move_into_frame` was accepted at 16:33 on "edge table equal, only tunnels added" (`task_97-3.json:30`, `selftest_c97_tools.log:117-119`) with the only ExecState read in the whole self-test taken after load (`selftest_c97_tools.log:5`). ExecState is the project's own settled signal for a real break (`docs/NAMES.md:1105-1110`), the read costs one second, and the ops were already returning 0 into the log. Counterfactual: had the self-test read ExecState after T2 plus T5 on the S1 scratch at 16:33, the 0 would have been known with 42 minutes of card 97-3's budget left, and the per-move wire cross-check now scheduled for cycle 98 would have run there. Instead, from 17:02 to 17:29 the cycle paid two failing stage runs, two hypothesis reviews and one repeat prior-art review to learn the same 0, and ended with no file and no verified cause.
+
+| item | evidence | cost |
+|---|---|---|
+| stage run 1 | `fgate_97_stage.log:418` | 328 s |
+| stage run 2 | `fgate_97_stage2.log:436` | 337 s |
+| review es0 | `peer_c97-fgate-es0.log:4` | $1.6657 |
+| review es0-r2 | `peer_c97-fgate-es0-r2.log:4` | $1.6737 |
+| prior-art r2 | `priorart_c97-fgate-r2.log:6` | $1.0815 |
+| window 17:02 to 17:29 | `priorart_c97-fgate.log:1`, `peer_c97-fgate-es0-r2.log:71` | 27 min |
+
+The junk-purge omission (Finding 1) is inside that same window and is not of the same magnitude on its own, so it is not a second slug. The audit misfire is emitted because the device contract sets its threshold at 1, with its loss stated honestly as zero.
+
+VIOLATION: inference-over-measurement | loss_min=27 | loss_usd=4.42 | evidence=tools/bench/selftest_c97_tools.log:5
+VIOLATION: device-failed | loss_min=0 | loss_usd=0 | evidence=tools/audit_cycle.py:448
+
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle97","verdict":"refuted","alternative":"The ExecState 0 comes from the gate design itself (control/indicator terminals inside case frames), not from move_into_frame, in which case an ExecState read in the T2 self-test would also have read 0 and the diagnosis, not the stage runs, was the unavoidable cost.","discriminating_test":"On a fresh S1 scratch run T2 then T5 exactly as selftest_c97_tools.py does, read ExecState; then list wires with no source or no sink per diagram; Remove Bad Wires on the scratch and re-read ExecState.","violations":[{"slug":"inference-over-measurement","loss_min":27,"loss_usd":4.42,"evidence":"tools/bench/selftest_c97_tools.log:5"},{"slug":"device-failed","loss_min":0,"loss_usd":0,"evidence":"tools/audit_cycle.py:448"}],"sources":["tools/bench/selftest_c97_tools.log:5","tools/bench/selftest_c97_tools.log:74","tools/bench/cards/task_97-3.json:30","tools/bench/fgate_97_stage.log:379","tools/bench/fgate_97_stage2.log:394","tools/bench/peer_c97-fgate-es0.log:4","tools/bench/peer_c97-fgate-es0-r2.log:4","tools/bench/priorart_c97-fgate-r2.log:6","docs/NAMES.md:1105","STATUS.md:62","tools/audit_cycle.py:448","tools/bench/stage_runs.jsonl:20"],"note":"Second violation is the known audit_cycle jev_gate.log misclassification, loss 0, already owed in STATUS NEXT:63; the junk-purge recurrence (13 min, $2.75) is a finding inside the same window."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle97.md
+BGRUN END rc=0 after 384s

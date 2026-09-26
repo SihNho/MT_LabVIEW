@@ -1,0 +1,11 @@
+ATTACK this claim about a failed prediction in tools/bench/diag_c97_gatefacts.log (script tools/bench/diag_c97_gatefacts.py, card 97-1).
+
+The run read Node.Label of every node on all 170 diagrams of a scratch byte copy of D1_s1_copy.vi (OpNodeLabels_v0, gscript.node_labels, docs/toolkit-capabilities.md:26) and compared the 145 Property/Invoke/ControlReferenceConstant/Local/Global/EventStructure nodes with an older sweep of a sibling VI file 'Min_Track N beads V6_ParallelLoop.vi' (tools/bench/main_vi_node_labels.json, 2026-09-14).
+
+Prediction G3 was: all 145 labels equal. Observed (log line 26): 137 equal, 8 differ, and the 8 are exactly the 8 `Local` nodes (2143, 2991, 3097, 3160, 4277, 11574, 16942, 25805); each old label is 'Min_Track N beads V6_ParallelLoop.vi', each new label is 'D1_s1_copy.vi'.
+
+CLAIM: G3's contract was wrong, not the machine: a Local node's Node.Label text reads the OWNING VI's file name (not the linked control), so it changes with the file name and is uninformative about linkage. Therefore G3 says nothing about which objects link to indicator 'Force (pN) vs Extension (nm) ' (terminal #8323, panel object #8038), and the STOP-gate conclusion stands: G4 found exactly one node labelled with that name, Invoke #10313 'Reinit To Dflt' on diagram #3628 (a flat-sequence frame), all 6 terminals unwired (tools/bench/par1359_95_graph.json rows for owner 10313); no Local names the indicator by its terminal names (tools/bench/diag_c97_gatefacts_off2.log CAND lines: Local outputs name 'Rot pos (deg)', 'Trans Pos (mm)', 'Color table').
+
+Already ruled out: a LabVIEW crash (ExecState 1, handles flat, H2-H6 PASS, log lines 20-62); a wrong input file (K1 md5 3e3d23ce... PASS).
+
+Questions: (1) Is it true that a Local variable's Node.Label reads the VI name? If not, what else explains exactly these 8 differences? (2) Could a Local, Property node, Invoke node or control reference link to #8323 WITHOUT carrying the indicator's name in Node.Label (e.g. an explicitly referenced property node fed by a reference wire, a Local whose label is not shown, an event-structure registration on the indicator, a VI Server 'Controls[]' lookup by name)? Name the cheapest read that would expose one in this VI. (3) What would falsify "no non-display reader of #8323"?

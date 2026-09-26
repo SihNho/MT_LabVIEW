@@ -1,0 +1,57 @@
+{
+ "schema": "task/1",
+ "id": "97-1",
+ "kind": "measure",
+ "goal": "Read-only facts for gating #1359's graph chain (PD205(e) 0-1): (A) readers of indicator #8323; (B) #1359 body nodes feeding only 11363 vs 9227; (C) which gate-build verbs exist",
+ "why": "PD205(d)/(e): the graph chain is gated by i mod N = 0 while the ring insert runs every frame. Step 0 is a STOP gate (a non-display reader of #8323 re-opens the decision). Case frames need the exact graph-only node set; a missing verb is found now, not in the build.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_97-1.md"},
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/f1359_consumers_96.json"},
+  {"path": "tools/bench/par1359_95_graph.json"},
+  {"path": "tools/bench/diag_c94c_f7911.json"},
+  {"path": "tools/bench/cards/result_96-3.json"},
+  {"path": "docs/NAMES.md"},
+  {"path": "docs/toolkit-capabilities.md"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/par1359_95_graph.json"},
+  {"kind": "file", "name": "tools/bench/f1359_consumers_96.json"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "pass": [
+  "(A) table of every object linked to #8323 and its sinks, ending 'NON-DISPLAY READER OF #8323: yes|no' (detail: brief_97-1.md A)",
+  "(B) table of #1359 body nodes: 11363-only / 9227-only / both, plus crossing wires; #8741's input source (brief B)",
+  "(B') #637 i terminal uid, graph-only input tunnels, 11363 indexing, owner diagrams of #11261 and #8323's terminal (brief B')",
+  "(C) the 8 verb classes of brief C: each named op/function with path, or MISSING",
+  "facts <= 10, each with file:line; OPEN <= 3"
+ ],
+ "outputs": ["tools/bench/f1359_gate_facts_97*", "tools/bench/diag_c97_gatefacts*", "tools/bench/cards/result_97-1.json"],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/f1359_gate_facts_97*",
+   "tools/bench/diag_c97_gatefacts*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c97*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "outcome"]
+ },
+ "budget": {"failures": 2, "minutes": 45},
+ "rules": [
+  "offline first (graph JSONs); headless read-only COM only on a scratch byte copy, never saved, deleted before return",
+  "never save or edit any original or bed; never move a script to get around ANY gate; a refusal = BLOCKED",
+  "do not design the gate or propose an action; facts only; LabVIEW gone at end"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

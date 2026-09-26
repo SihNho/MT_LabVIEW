@@ -1,0 +1,77 @@
+{
+ "schema": "task/1",
+ "id": "97-4",
+ "kind": "build",
+ "goal": "Stage claudeDev D1_s1_fgate_<ts>.vi from a byte copy of S1: #1359's graph chain and #8323 gated by i mod N = 0 (N panel control, default 9), per brief_97-4.md",
+ "why": "PD205(d)-(e)2, PD206(b)(c)(f)(g): #1359's graph chain costs ~10 ms/frame at 15 beads and feeds only a display. Tools for the gate exist since 97-3.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_97-4.md"},
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/f1359_gate_facts_97.json", "md5": "adf30c48546299036c2302c6b0b00476"},
+  {"path": "tools/bench/cards/result_97-1.json"},
+  {"path": "tools/bench/cards/result_97-3.json"},
+  {"path": "tools/bench/selftest_c97_tools.py", "md5": "a1c5987a5181443b739491b90bdb6d77"},
+  {"path": "tools/bench/par1359_95_graph.json"},
+  {"path": "tools/gscript.py", "md5": "4ab0eb3a1dc8afbb1a560ba1d6fd3003"},
+  {"path": "tools/stagekit.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"},
+  {"kind": "op", "name": "OpLabelSet_v0", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "op", "name": "OpTunnelUseDefault_v0", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "op", "name": "OpCaseFrames_v1", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "verb", "name": "case_in", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "move_into_frame", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "set_control_label", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "tunnel_use_default", "where": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/bench/f1359_gate_facts_97.json"}
+ ],
+ "pass": [
+  "stage_d1_fgate.py <=120 lines on stagekit; dry run PASS; offline pre-run PASS; ONE real run (RETRY_CAP 2), MEMSTOP 700 MB",
+  "claudeDev D1_s1_fgate_<ts>.vi saved by script; md5 + size; ExecState 1 warm AND after cold reload",
+  "computation_diff(S1, fgate) listed by row = brief items 1-4 + tunnels only; every moved edge same src uid:term -> sink uid:term",
+  "A in 7911 and B in 639 share one upd wire; gated nodes owned by the frame named ' True '; A's out tunnels use-default True",
+  "new control label + default 9 read back; S1 md5 3e3d23ce unchanged; scratches deleted; LabVIEW gone (verified)"
+ ],
+ "outputs": ["C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_fgate_*", "tools/recipes/stage_d1_fgate*", "tools/bench/fgate_97*", "tools/bench/cards/result_97-4.json"],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_fgate_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c97*",
+   "tools/recipes/stage_d1_fgate*",
+   "tools/bench/plans/**",
+   "tools/bench/sim/**",
+   "tools/bench/fgate_97*",
+   "tools/bench/diag_c97_fgate*",
+   "tools/bench/graph_*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/gscript.py",
+   "tools/stagekit.py",
+   "tools/stagexec.py",
+   "docs/wiki/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "outcome"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "never save or edit D1_s1_copy.vi, the bed, or any original; the target starts as a byte copy",
+  "touch ONLY the objects of brief_97-4.md items 1-4; never run the VI",
+  "never move a script to dodge ANY gate; a refusal is satisfied honestly or returned BLOCKED",
+  "bgrun --max-min 45; hold your turn until BGRUN END/TIMEOUT; background peer dispatches only",
+  "facts only <=10; OPEN <=3"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

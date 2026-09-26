@@ -1,0 +1,36 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle97",
+ "verdict": "refuted",
+ "alternative": "The ExecState 0 comes from the gate design itself (control/indicator terminals inside case frames), not from move_into_frame, in which case an ExecState read in the T2 self-test would also have read 0 and the diagnosis, not the stage runs, was the unavoidable cost.",
+ "discriminating_test": "On a fresh S1 scratch run T2 then T5 exactly as selftest_c97_tools.py does, read ExecState; then list wires with no source or no sink per diagram; Remove Bad Wires on the scratch and re-read ExecState.",
+ "violations": [
+  {
+   "slug": "inference-over-measurement",
+   "loss_min": 27,
+   "loss_usd": 4.42,
+   "evidence": "tools/bench/selftest_c97_tools.log:5"
+  },
+  {
+   "slug": "device-failed",
+   "loss_min": 0,
+   "loss_usd": 0,
+   "evidence": "tools/audit_cycle.py:448"
+  }
+ ],
+ "sources": [
+  "tools/bench/selftest_c97_tools.log:5",
+  "tools/bench/selftest_c97_tools.log:74",
+  "tools/bench/cards/task_97-3.json:30",
+  "tools/bench/fgate_97_stage.log:379",
+  "tools/bench/fgate_97_stage2.log:394",
+  "tools/bench/peer_c97-fgate-es0.log:4",
+  "tools/bench/peer_c97-fgate-es0-r2.log:4",
+  "tools/bench/priorart_c97-fgate-r2.log:6",
+  "docs/NAMES.md:1105",
+  "STATUS.md:62",
+  "tools/audit_cycle.py:448",
+  "tools/bench/stage_runs.jsonl:20"
+ ],
+ "note": "Second violation is the known audit_cycle jev_gate.log misclassification, loss 0, already owed in STATUS NEXT:63; the junk-purge recurrence (13 min, $2.75) is a finding inside the same window."
+}

@@ -1,0 +1,43 @@
+BGRUN START 2026-09-26 17:02:12 limit 20.0 min: py tools/prior_art_review.py --plan-file tools/bench/cards/brief_97-4.md --slug c97-fgate --trigger new-op --recipe tools/recipes/stage_d1_fgate.py
+BGRUN PID 25244
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c97-fgate.txt (43502 chars)
+   review card tools\bench\cards\review_priorart-c97-fgate.json
+OUTCOME: ANSWERED (65s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-26-priorart-c97-fgate.md
+COST: $1.1488  in 16 / out 5793 / cache-create 107992 / cache-read 844798  (61s, 11 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c97-fgate verdict=novel -> tools\bench\cards\verdict_priorart-c97-fgate.json
+--- ANSWER ---
+**Verdict: novel.** Nothing in the project's files has already built, measured, tried or refuted a display-rate gate on #1359's graph chain. The recipe uses the toolkit's existing helpers throughout and does not rebuild any of them.
+
+**PART A: the direction**
+
+- **A1, settled already: none.** The direction was decided only in the current cycle's plan. `docs/d1-loop12-17-split-plan.md:1410-1420` (PD205(d), cycle 96) adopted it, and `:1438-1481` (PD206, cycle 97) set the design. No earlier cycle made this decision.
+  - The closest earlier decision is the user's 2026-09-14 display policy: live display at 10 Hz as a runtime control. PD205(d) (`:1418-1420`) already cites it as an assumption and sends it to the user as D-2026-09-26-02. That covers the setting of N, not whether the gate exists.
+- **A2, refuted already: none.**
+  - Cycle 89's display measurement (STATUS "CYCLE 89 DONE": panel minimised, about 16 % fewer frames lost at 15 picks) tested the cost of drawing the panel. It did not test #1359's per-frame computation.
+  - Cycle 96 rejected the parallel For loop (`split-plan.md:1391-1394`). That result is the reason for this direction, not a refutation of it.
+- **A3, contradicted: none that blocks.** I checked the brief against PD206(b)/(c)/(g) and against `tools/bench/plans/plan_fgate_97.json`:
+  - `set_a` (`plan_fgate_97.json:11`) = {8741, 8775, 8795, 8476, 8764, 28180, 29009, 28233, 27716, 11310}. This is PD206(b) (`split-plan.md:1446-1447`). The tunnels 31051/31137 that 206(b) also lists are not movable members.
+  - `untouched` (`:13`) includes #28083, #8566, #8634, 9227/#9018/#9025 and #11576/#11608. This matches 206(b) (`:1444`) and 206(c) (`:1453`).
+  - No `Max(N,1)` node appears in the recipe, which matches 206(g) (`:1477-1481`).
+  - The input graph `par1359_95_graph.json` looks as if it belongs to the rejected parallel copy, but it is S1's graph (`tools/bench/cards/result_95-2.json:22`, `result_97-4.json:13`). The name is misleading; the content is not.
+- **A4, unread evidence: none that changes the plan.**
+  - `docs/camera-acquisition-facts.md:679` describes a built-in display-rate gate (`IMAQdx Calculate Frames per Second`, `Minimum Display Update Interval`). It applies only to the live image. #1359's cost is the computation that feeds a waveform graph, so it does not cover this case.
+  - `camera-acquisition-facts.md:258` documents S1's own `(frame counter mod N)==0` autofocus chain. The plan already uses that chain as its donor: Q&R #2136 and Equal To 0? #3057 (`plan_fgate_97.json:6-7`).
+
+**PART B: the artefact**
+
+- **B1, already built: none.** No `*fgate*` VI exists. The only earlier `stage_d1_fgate` result is the blocked card `tools/bench/cards/result_97-4.json:3`. It was refused precisely because this review was missing, so it is not a build.
+- **B2, already failed: none.** No run of this build has been attempted.
+- **B3, helper exists: they are all used.**
+  - The recipe calls `gscript.case_in`, `move_into_frame`, `case_frames`, `set_control_label`, `tunnel_use_default`, `stagekit.copy_in`, `connect_from_wire`, `connect_nested_v1`, `wire_control`, `set_index_mode` and `computation_diff`.
+  - Each of these is documented in `docs/toolkit-capabilities.md:818` and PD206(d)/(f) (`split-plan.md:1458-1470`).
+  - The recipe hand-rolls nothing that the toolkit already provides.
+- **B4, already measured: no.** Nobody has measured the per-frame cost of a gated #1359, or the rule-1a replay at N = 1.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c97-fgate","verdict":"novel","alternative":"IMAQdx's built-in display-rate gate (camera-acquisition-facts.md:679) applies to the live image only, not to #1359's computation feeding graph #8323, so it does not replace this gate.","discriminating_test":"Grep claudeDev and tools/bench for any *fgate* VI or stage log older than 2026-09-26 17:00; none exists besides blocked card result_97-4.json.","violations":[],"sources":["docs/d1-loop12-17-split-plan.md:1410-1481","tools/bench/plans/plan_fgate_97.json:6-13","tools/bench/cards/result_97-4.json:3","docs/toolkit-capabilities.md:818","docs/camera-acquisition-facts.md:258","docs/camera-acquisition-facts.md:679"],"note":"par1359_95_graph.json is S1's graph despite its name (result_95-2.json:22). Donors #2136/#3057 are S1's autofocus mod chain; this is reuse, not prior art."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c97-fgate.md
+   STOP RECORD: none - 2026-09-26-priorart-c97-fgate.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_fgate.py sha a277cc37de32 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 68s

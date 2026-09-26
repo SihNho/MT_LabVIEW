@@ -1,0 +1,42 @@
+BGRUN START 2026-09-26 15:39:05 limit 2.0 min: py -u tools/bench/diag_c97_gatefacts_off4.py
+BGRUN PID 25892
+NODE 11576 Unbundle
+  11576 in  cluster                      w8319   -> [(1114, 'SubVI', 'F-x out', 'WLC function sub.vi', 639)]
+  11576 out element                      w11931  -> [(11608, 'Bundler', 'element', 'Bundle', 639)]
+  11576 out element                      w11957  -> [(11608, 'Bundler', 'element', 'Bundle', 639)]
+NODE 11608 Bundle
+  11608 out output cluster               w12256  -> [(11261, 'BuildArray', 'element', 'Build Array', 639)]
+  11608 in  cluster                      w0      -> []
+  11608 in  element                      w11931  -> [(11576, 'Unbundler', 'element', 'Unbundle', 639)]
+  11608 in  element                      w11957  -> [(11576, 'Unbundler', 'element', 'Unbundle', 639)]
+NODE 8566 Build Array
+  8566 out appended array               w10043  -> [(8634, 'GrowableFunction', 'new element/subarray', 'Replace Array Subset', 7911)]
+  8566 in  element                      w9993   -> [(10004, 'LoopTunnel', '', None, 7911)]
+  8566 in  element                      w28732  -> [(28083, 'SubVI', 'Force', 'Magnet2Force v3_for M270.vi', 7911)]
+NODE 28083 Magnet2Force v3_for M270.vi
+  28083 out Force                        w28732  -> [(8566, 'BuildArray', 'element', 'Build Array', 7911)]
+  28083 in  Magnet position              w28684  -> [(9503, 'LoopTunnel', 'Value', None, 7911)]
+  28083 in  Mag pos when touched to glas w28365  -> [(28370, 'LoopTunnel', 'Magnet position output', None, 7911)]
+NODE 9087 None
+  9087 in                               w9097   -> [(9025, 'LeftShiftRegister', '', None, 639)]
+  9087 out                              w9076   -> [(8634, 'GrowableFunction', 'array', 'Replace Array Subset', 7911)]
+NODE 10004 None
+  10004 in                               w28847  -> [(8885, 'Function', 'x*y', 'Multiply', 639)]
+  10004 out                              w9993   -> [(8566, 'BuildArray', 'element', 'Build Array', 7911)]
+NODE 10177 None
+  10177 in                               w10187  -> [(10068, 'Function', 'x-y*floor(x/y)', 'Quotient & Remainder', 639)]
+  10177 out                              w10166  -> [(8634, 'GrowableFunction', 'index (col)', 'Replace Array Subset', 7911)]
+NODE 9503 None
+  9503 in  Value                        w30592  -> [(30117, 'Property', 'Value', 'Trans Pos (mm)', 639)]
+  9503 out Value                        w28684  -> [(28083, 'SubVI', 'Magnet position', 'Magnet2Force v3_for M270.vi', 7911)]
+NODE 28370 None
+  28370 in  Magnet position output       w28338  -> [(28343, 'LoopTunnel', 'Magnet position output', None, 639)]
+  28370 out Magnet position output       w28365  -> [(28083, 'SubVI', 'Mag pos when touched to glass', 'Magnet2Force v3_for M270.vi', 7911)]
+NODE 31051 None
+  31051 in  Force|smoothing|half-width   w31059  -> [(639, 'Diagram', 'Force|smoothing|half-width', None, 639)]
+  31051 out Force|smoothing|half-width   w31064  -> [(27716, 'Function', 'index', 'Split 1D Array', 7911), (28180, 'SubVI', 'half-width', 'Smoothing Filter Coefficients.vi', 7911)]
+NODE 31137 None
+  31137 in  Extension|median filter|half w31166  -> [(639, 'Diagram', 'Extension|median filter|half-width', None, 639)]
+  31137 out Extension|median filter|half w31128  -> [(29009, 'SubVI', 'right rank', 'Median Filter.vi', 7911), (29009, 'SubVI', 'left rank', 'Median Filter.vi', 7911)]
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

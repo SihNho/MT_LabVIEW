@@ -1,0 +1,45 @@
+{
+ "schema": "task/1",
+ "id": "97-3tools",
+ "kind": "build",
+ "escalation": 1,
+ "retry_of_card": "97-2",
+ "goal": "REQUIRES-ONLY card (never bound, never dispatched): lists the five PD206(d) tools of card 97-3 by their final names so card 97-4 can cite `py tools/protocol.py requires` output",
+ "why": "brief_97-2.md last paragraph: run protocol.py requires on a card that lists the five by their final names",
+ "inputs": [
+  {"path": "tools/gscript.py"},
+  {"path": "tools/bench/diag_c97_tools_oplabels.json"}
+ ],
+ "requires": [
+  {"kind": "verb", "name": "case_in", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "case_frames", "where": "tools/gscript.py"},
+  {"kind": "op", "name": "OpCaseFrames_v1"},
+  {"kind": "verb", "name": "move_into_frame", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "set_control_label", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "set_default_in_memory", "where": "tools/gscript.py"},
+  {"kind": "op", "name": "OpLabelSet_v0"},
+  {"kind": "verb", "name": "tunnel_use_default", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "tunnel_use_default_at", "where": "tools/gscript.py"},
+  {"kind": "op", "name": "OpTunnelUseDefault_v0"},
+  {"kind": "file", "name": "tools/bench/diag_c97_tools_oplabels.json"}
+ ],
+ "pass": [
+  "every requires item FOUND"
+ ],
+ "outputs": ["tools/bench/cards/requires_97-3tools.json"],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": ["tools/bench/cards/**"],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 1, "minutes": 5},
+ "rules": [
+  "requires-only: offline file checks, no LabVIEW"
+ ],
+ "unblocks": "M8"
+}

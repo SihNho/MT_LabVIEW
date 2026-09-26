@@ -1,0 +1,83 @@
+{
+ "schema": "task/1",
+ "id": "97-3",
+ "kind": "build",
+ "escalation": 1,
+ "retry_of_card": "97-2",
+ "goal": "Build and self-test the 5 scripting tools of plan PD206(d): nested case create, move nodes into a case frame with wires kept, same for a ctl terminal, label writer, use-default setter",
+ "why": "97-2 FAIL, budget spent; both failures were in building a synthetic fixture (loop_in 1055), no tool step reached. Judgement: fixture = scratch byte copy of S1 (real For #1359 in While #637).",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_97-2.md"},
+  {"path": "tools/bench/cards/result_97-2.json"},
+  {"path": "tools/bench/cards/result_97-1.json"},
+  {"path": "tools/bench/f1359_gate_facts_97.json"},
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "docs/toolkit-capabilities.md"},
+  {"path": "docs/NAMES.md"},
+  {"path": "tools/gscript.py"},
+  {"path": "tools/stagekit.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/bench/cards/brief_97-2.md"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "pass": [
+  "T1-T5 of brief_97-2.md each built, documented in toolkit-capabilities + NAMES, with its path/function name",
+  "each self-test on a scratch VI (For inside While), incl. one negative case per tool; pass/fail counts per tool",
+  "T2/T3: before/after (src uid:term -> sink uid:term) tables match; only tunnels added",
+  "20 consecutive calls per tool: handle count flat +-100; every reference closed",
+  "protocol.py requires output for the 5 final names (FOUND each); S1 md5 3e3d23ce unchanged; scratch deleted; LabVIEW gone"
+ ],
+ "outputs": ["C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\Op*_v0.vi", "tools/bench/selftest_c97*", "tools/bench/diag_c97_tools*", "tools/bench/cards/result_97-3.json"],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpCase*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpMove*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpLabel*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpTunnel*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpCtl*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c97*",
+   "tools/gscript.py",
+   "tools/stagekit.py",
+   "tools/stagexec.py",
+   "tools/recipes/build_op*",
+   "tools/bench/selftest_c97*",
+   "tools/bench/selftest_op*",
+   "tools/bench/diag_c97_tools*",
+   "tools/bench/graph_*",
+   "tools/bench/plans/**",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "docs/toolkit-capabilities.md",
+   "docs/NAMES.md",
+   "docs/wiki/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "outcome"]
+ },
+ "budget": {"failures": 2, "minutes": 90},
+ "rules": [
+  "FIXTURE = byte copy of D1_s1_copy.vi as scratch_c97*, never saved, deleted at end",
+  "fixture targets: diagram 7911 (For #1359 body) and 639 (#637 body)",
+  "never save or edit D1_s1_copy.vi, the bed, or any original; do NOT build the gated VI",
+  "self-tests on a never-saved scratch may skip stagekit dry/prerun (judgement c97)",
+  "never move a script to dodge ANY gate",
+  "use connect_nested_v1 (v2 raises, gscript.py:3235); T5 may be a new op from OpTunnelRead_v0",
+  "each bgrun --max-min <= 30; hold your turn until BGRUN END/TIMEOUT",
+  "background peer dispatches only; facts <=10, OPEN <=3"
+ ],
+ "unblocks": "M8"
+}

@@ -1,0 +1,41 @@
+BGRUN START 2026-09-26 15:37:21 limit 2.0 min: py -u tools/bench/diag_c97_gatefacts_off.py
+BGRUN PID 24132
+GATE G1 md5 PASS 3e3d23cefd3a334001aa9d6156bf1aee
+GATE G3 tunnels inner on 7911 PASS inner-side tunnels [7922, 9087, 9227, 9503, 10004, 10177, 11363, 28370, 31051, 31137]
+NESTED-STRUCTURE TERMS ON 7911 []
+GATE G2 both paths non-empty PASS 11363:13 9227:3
+ROW 11363-only 7911 Diagram [('', 'out', 0), ('', 'out', 0), ('Exp Baseline', 'out', 7931)] 
+ROW both 8566 BuildArray [('appended array', 'out', 10043), ('element', 'in', 9993), ('element', 'in', 28732)] 
+ROW both 8634 GrowableFunction [('array', 'in', 9076), ('output array', 'out', 8811), ('new element/subarray', 'in', 10043), ('disabled index (row)', 'in', 0), ('index (col)', 'in', 10166)] 
+ROW 11363-only 8741 IndexArray [('array', 'in', 8811), ('subarray', 'out', 33062), ('index (row)', 'in', 8804), ('disabled index (col)', 'in', 0), ('subarray', 'out', 28443), ('index (row)', 'in', 8808), ('disabled index (col)', 'in', 0)] 
+ROW 11363-only 8764 Function [('x-y', 'out', 15847), ('y', 'in', 7931), ('x', 'in', 33062)] 
+ROW 11363-only 8775 DigitalNumericConstant [('index (row)', 'out', 8804)] 
+ROW 11363-only 8795 DigitalNumericConstant [('index (row)', 'out', 8808)] 
+ROW 11363-only 11310 Bundler [('output cluster', 'out', 11374), ('cluster', 'in', 0), ('Filtered X', 'in', 24106), ('element', 'in', 9407)] 
+ROW 11363-only 27716 Function [('second subarray', 'out', 9407), ('first subarray', 'out', 0), ('index', 'in', 31064), ('array', 'in', 28509)] 
+ROW both 28083 SubVI [('Force', 'out', 28732), ('Magnet position', 'in', 28684), ('Mag pos when touched to glass', 'in', 28365)] 
+ROW 11363-only 28180 SubVI [('error', 'out', 0), ('', 'in', 0), ('forward coefficients', 'out', 28139), ('reverse coefficients', 'out', 0), ('', 'in', 0), ('', 'in', 0), ('fs', 'in', 0), ('', 'in', 0)] 
+ROW 11363-only 28233 PolymorphicSubVI [('error', 'out', 0), ('Filtered X', 'out', 28509), ('init/cont (init:F)', 'in', 0), ('FIR Coefficients', 'in', 28139), ('', 'in', 0), ('X', 'in', 28443)] 
+ROW 11363-only 29009 SubVI [('error', 'out', 0), ('', 'in', 0), ('', 'in', 0), ('Filtered X', 'out', 24106), ('', 'in', 0), ('', 'in', 0), ('', 'in', 0), ('', 'in', 0)] 
+ROW neither 7922 Tunnel [('', 'in', 0), ('', 'out', 0)] TUN
+ROW both 9087 LoopTunnel [('', 'in', 9097), ('', 'out', 9076)] TUN
+ROW neither 9227 LoopTunnel [('', 'out', 9215), ('', 'in', 8811)] TUN
+ROW both 9503 LoopTunnel [('Value', 'in', 30592), ('Value', 'out', 28684)] TUN
+ROW both 10004 LoopTunnel [('', 'in', 28847), ('', 'out', 9993)] TUN
+ROW both 10177 LoopTunnel [('', 'in', 10187), ('', 'out', 10166)] TUN
+ROW neither 11363 LoopTunnel [('', 'out', 11352), ('', 'in', 11374)] TUN
+ROW both 28370 LoopTunnel [('Magnet position output', 'in', 28338), ('Magnet position output', 'out', 28365)] TUN
+ROW 11363-only 31051 LoopTunnel [('Force\nsmoothing\nhalf-width', 'in', 31059), ('Force\nsmoothing\nhalf-width', 'out', 31064)] TUN
+ROW 11363-only 31137 LoopTunnel [('Extension\nmedian filter\nhalf-width', 'in', 31166), ('Extension\nmedian filter\nhalf-width', 'out', 31128)] TUN
+CROSS {'wire': 11374, 'src': '11310:output cluster', 'src_set': '11363-only', 'sink': '11363:', 'sink_set': 'neither'}
+CROSS {'wire': 8811, 'src': '8634:output array', 'src_set': 'both', 'sink': '8741:array', 'sink_set': '11363-only'}
+CROSS {'wire': 8811, 'src': '8634:output array', 'src_set': 'both', 'sink': '9227:', 'sink_set': 'neither'}
+8741 SOURCES [(8634, 'output array', 8643, 'array', 8747, 8811), (8775, 'index (row)', 8774, 'index (row)', 8753, 8804), (8795, 'index (row)', 8794, 'index (row)', 8762, 8808)]
+9227 inner wire [8811] 8634 terms [('array', False, 9076), ('output array', True, 8811), ('new element/subarray', False, 10043), ('disabled index (row)', False, 0), ('index (col)', False, 10166)]
+GATE G5 one row for term 8323 PASS [{'term_uid': 8323, 'term_name': 'Force (pN) vs Extension (nm) ', 'is_source': False, 'wire_uid': 10908, 'owner_uid': 639, 'owner_class': 'Diagram', 'frame_diagram': 639, 'term_class': 'ControlTerminal'}]
+11261 frame diagrams [639] | tunnel outer diagrams [(7922, 639), (9087, 639), (9227, 639), (9503, 639), (10004, 639), (10177, 639), (11363, 639), (28370, 639), (31051, 639), (31137, 639)]
+OBJ 637/639/644 [{'uid': 637, 'class': 'WhileLoop', 'pos': [2633, 927], 'owner': 'Diagram'}, {'uid': 639, 'class': 'Diagram', 'pos': [2633, 931], 'owner': 'WhileLoop'}, {'uid': 644, 'class': 'Terminal', 'pos': [3613, 1285], 'owner': 'Diagram'}] [(644, '', True, 3268, 639, 'Diagram', 639), (644, '', True, 3268, 639, 'Diagram', 639)]
+A candidates 145 unlabelled in 09-14 sweep 0 []
+A HIT {'uid': 10313, 'class': 'Invoke', 'label_0914': 'Force (pN) vs Extension (nm) ', 'frame_diagram': [3628], 'terms': [('reference', 'in', 0), ('reference out', 'out', 0), ('error in (no error)', 'in', 0), ('error out', 'out', 0), ('Reinit To Dflt', 'in', 0), ('Reinit To Dflt', 'out', 0)]}
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/f1359_gate_facts_97_offline.json"}]}
+BGRUN END rc=0 after 1s

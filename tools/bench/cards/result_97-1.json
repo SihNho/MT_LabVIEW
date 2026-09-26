@@ -1,0 +1,32 @@
+{"schema":"result/1","id":"97-1","status":"PASS","gates":{"pass":5,"fail":0},
+"first_fail":null,
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/f1359_gate_facts_97.json","md5":"adf30c48546299036c2302c6b0b00476"},
+ {"path":"tools/bench/f1359_gate_facts_97_offline.json","md5":"b45eb05bec88f579fcc15e8a19d745b1"},
+ {"path":"tools/bench/diag_c97_gatefacts.json","md5":"a1f5e767b28f2adf91ef4edf3bd6f3c9"},
+ {"path":"tools/bench/diag_c97_gatefacts.log","md5":"540c92dd38025cdbb722cc624172db12"},
+ {"path":"tools/bench/diag_c97_gatefacts.py","md5":"60d2004d4dd2f1ef23af6e860b06534e"},
+ {"path":"tools/bench/diag_c97_gatefacts_off.py","md5":"c8b300220b7f7a9a6eec24f57dd4a807"},
+ {"path":"tools/bench/diag_c97_gatefacts_final.py","md5":"852940105eb1329c06cd00d8a93c6e33"},
+ {"path":"archive/peer/2026-09-26-c97-g3-locallabel.md","md5":"a7ee2c56fca8c3f8c207314ab5d3e723"}
+],
+"facts":[
+ "A: COM label sweep, 170 diags: only node named for #8323 is Invoke #10313 'Reinit To Dflt' on diag 3628 (flat-seq frame), 6 terms unwired, writer (diag_c97_gatefacts.log:27-31). NON-DISPLAY READER: no",
+ "A: 21 CtlRefConst, 106 Property, 7 Global name other controls; 8 Locals by terminal name too (diag_c97_gatefacts_final.log:3-10). Event-structure registrations #10153/#15544 NOT READ (no op)",
+ "B 11363-only: #8741,#8764(x-y, y=ctlterm #8476 'Exp Baseline' inside 7911),#8775,#8795,#27716,#28180,#28233,#29009,#11310, tunnels 31051/31137. 9227-only: none (diag_c97_gatefacts_off.log:5-29)",
+ "B both: #8566 BuildArray, #8634 'Replace Array Subset' (not Insert), #28083 Magnet2Force, tunnels 9087/10004/10177/9503/28370 (off.log:8-26); plan PD205(d) puts Magnet2Force in the gated chain",
+ "B cross: only w8811, #8634 'output array' -> #8741 'array' AND -> tunnel 9227 (off.log:31-33). #8741 reads the #8634 output (confirmed), indices from consts #8775/#8795",
+ "B': #637 i = term #644 on 639, w3268, 8 sinks incl. Q&R #2136/#10068/#29240 (off2.log:158); #1359 i = #7921 on 7911, unwired (diag_c97_gatefacts.log:42); graph-only inputs 31051/31137 idx 0",
+ "B': 11363 index_mode 1 = auto-indexed (diag_c94c_f7911.json:513-521); #11261 and #8323's terminal both on Diagram 639 = #637 body (COM, diag_c97_gatefacts.log:33-37). No #639 frame involved",
+ "B': #11261 2nd input w12256 <- Bundle #11608 <- Unbundle #11576 <- WLC #1114 'F-x out' w8319, which also feeds SR #862 (off4.log:3-12; off5.log:10)",
+ "C: 1 nested Case MISSING (build_case top-level only gscript.py:3173); 2 move_in severs wires (cycle27-plan.md:846-851), case-frame dest unmeasured; 3 ctlterm move_in (d1-build-plan.md:213-222)",
+ "C: 4 connect_from_wire w3268 (diag_c91_t0_step3c.log:81); 5 copy_in S1 Q&R/Eq0 donors (stagekit.py:779); 6 label writer MISSING (cycle27-plan.md:2084); 7 set_index_mode gscript.py:1949; 8 MISSING"
+],
+"open":[
+ "Event-structure registrations (#10153 on #637 body, #15544) are unreadable by any op; build an Event Selectors reader before the gate, or accept 'no non-display reader' without it?",
+ "PD205(d) lists Magnet2Force #28083 in the gated chain, but it also feeds the ring history (#8566 -> #8634 -> 9227); should it stay ungated?",
+ "#11261 also plots #11608 (from WLC #1114, whose SR #862 must keep running): gate only #11576/#11608/#11261 with the 11363 chain?"
+],
+"cost":{"usd":null,"minutes":16,"labview_runs":1},
+"note":"COM script 15/1: G3 = our contract (Local label = VI name); JEV-LADDER new-problem p=0.856 -> review c97-g3-locallabel ANSWERED, disposition written. Verb 8: only id 5D251C00 (NAMES.md:1036). Stale docs/frame-loop-wire-graph.md:13. LabVIEW gone, scratch deleted, S1 md5 same."}

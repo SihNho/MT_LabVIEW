@@ -1,0 +1,40 @@
+{"schema":"result/1","id":"97-3","status":"PASS","gates":{"pass":64,"fail":1},
+"first_fail":"selftest_c97_tools.log:120 T2 handles +113 over ONE cold invocation = op first-load cost (review c97-t2handles); superseded by diag_c97_tools_handles.log:101 warm T2 -13 (13/0)",
+"blocked_by":null,
+"artefacts":[
+ {"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpCaseFrames_v1.vi","md5":"5770209cbbfa6349a10fb85e50050b60"},
+ {"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpTunnelUseDefault_v0.vi","md5":"d823b5efe520683801322543a4ccd1ae"},
+ {"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpLabelSet_v0.vi","md5":"985f71bbfa2fe7050d5c933b4ccb9b45"},
+ {"path":"tools/gscript.py","md5":"4ab0eb3a1dc8afbb1a560ba1d6fd3003"},
+ {"path":"tools/bench/diag_c97_tools_oplabels.json","md5":"79720577417d2fd21022b0447327f832"},
+ {"path":"tools/bench/diag_c97_tools_opbuild.py","md5":"ddf1b66d4e1735d3f1457f5e8aa131d4"},
+ {"path":"tools/bench/diag_c97_tools_opbuild.log","md5":"7515ef2d77ec5f18571f1d7ab1d38735"},
+ {"path":"tools/bench/selftest_c97_tools.py","md5":"a1c5987a5181443b739491b90bdb6d77"},
+ {"path":"tools/bench/selftest_c97_tools.log","md5":"9b0fc51d939cfe143ab82832e3f454e4"},
+ {"path":"tools/bench/diag_c97_tools_handles.py","md5":"5bf9766a7f040efaa217c6a077bf657a"},
+ {"path":"tools/bench/diag_c97_tools_handles.log","md5":"00ecf72c0993c4632ee67f01c9f32000"},
+ {"path":"tools/bench/cards/requires_97-3tools.json","md5":"0e76ab2c9944b74d7c1d3ab3656023c5"},
+ {"path":"docs/toolkit-capabilities.md","md5":"9c07f1da0bb5a81e0f1a9a8ca2119761"},
+ {"path":"docs/NAMES.md","md5":"47bbd45612c5c06ebf47d9b12cc95b52"},
+ {"path":"archive/peer/2026-09-26-c97-loopin1055.md","md5":"4ea5dcf79a38388404c3c6eeef3ce20b"},
+ {"path":"archive/peer/2026-09-26-c97-t2handles.md","md5":"b9a2ffe432df9ff9c4d350c9d2c7dafa"}
+],
+"facts":[
+ "3 new ops built 18/0, cold ExecState 1: OpCaseFrames_v1, OpTunnelUseDefault_v0, OpLabelSet_v0 (tools/bench/diag_c97_tools_opbuild.log:77-82); labels diag_c97_tools_oplabels.json",
+ "T1 gscript.case_in: #22989 owned by 7911, #9083 by 639, 2 frames each owned by the case; NEG unknown diagram refused; 20 calls handles -5 (selftest_c97_tools.log:11-51)",
+ "Polarity MEASURED: numeric-born case '0, Default'/'1' reads ' False '/' True ' (names padded) with the SAME frame uids once a Boolean feeds the selector (selftest_c97_tools.log:11,17,28)",
+ "T2 gscript.move_into_frame, PD206(b) set: 10 objects, 16 edges re-made, src->sink uid table equal, only SelectorTunnel +4; NEG refused (selftest_c97_tools.log:70-124)",
+ "T3 same verb: ctl #8476 via wire_control (:85); case B #11261 + indicator #8323 via tunouter/ctlsink: 3 edges equal, +2 tunnels; NEG refused (selftest_c97_tools.log:133-151)",
+ "T4 set_control_label (OpLabelSet_v0): 20 writes read back, handles +18; PD206(c) label read by op+panel_wiring; NEG err 1055; default 9 after reinit (selftest_c97_tools.log:159-163)",
+ "T5 tunnel_use_default (OpTunnelUseDefault_v0): 20 writes read back, handles -1; case A's 4 new tunnels set True; NEG LoopTunnel err 1055 (selftest_c97_tools.log:153-157)",
+ "Only FAIL = cold first-load: warm T2 -13, 20 OpConnectNested_v1 +1, 20 OpConnectFromWire_v0 -1, 5 OpAllTerms_v0 -4 (diag_c97_tools_handles.log:35,101-130)",
+ "Private bytes still climb ~0.5-0.75 MB per connect call, 585.8->610.4 MB over 40 calls (diag_c97_tools_handles.log:102-126); cycle 85 hit error 2 at ~695 MB",
+ "LADDER: t124b.log | new-problem p=0.600 | review owed | c97-loopin1055 ANSWERED, loop_in caveat doc'd | done ; selftest log | no line | old path | c97-t2handles + its test | 13/0"
+],
+"open":[
+ "PD206(c) polarity is now known (frame '1' -> ' True '): gated nodes go into the ' True ' frame, or feed Q&R's remainder straight into a numeric selector ('0' / '1, Default') and drop Equal?",
+ "T2/T3 could not run as 20 consecutive TOOL calls (a move is not repeatable); their writers ran 20 each flat plus one warm T2 (-13). Accept that as the 20-call criterion?",
+ "97-4 will make ~25 connect calls on S1 (~+15 MB private bytes): add a MEMSTOP like L2-A1's 700 MB?"
+],
+"cost":{"usd":null,"minutes":48,"labview_runs":3},
+"note":"requires 11/11 FOUND (cards/requires_97-3tools.json; task_97-3tools.json is requires-only, never bound). Tests: gscript only, never-saved S1 scratches, deleted; S1 md5 3e3d23ce same; LabVIEW gone. Gates opbuild 18/0 + selftest 33/1 + handles 13/0."}

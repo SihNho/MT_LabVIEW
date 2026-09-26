@@ -3284,3 +3284,359 @@ def _connect_nested_v2_body_UNREACHABLE(target, sink_diag, sink_node, sink_term,
     except RuntimeError as e:
         err = "modal dialog (dismissed)" if "modal dialog" in str(e) else f"EXC {str(e)[:140]}"
     return count(target, "Wire") - w0, exec_state(target), err
+
+
+# ==== CARD 97-3 (docs/d1-loop12-17-split-plan.md Pre-decided 206(d)): the five display-gate tools ======================
+# T1 case_in + case_frames   T2/T3 move_into_frame   T4 set_control_label (+ set_default_in_memory)   T5 tunnel_use_default
+# Three new op VIs, built by tools/bench/diag_c97_tools_opbuild.py (typed-control-seed route, 18/0, cold ES 1):
+# OpCaseFrames_v1, OpTunnelUseDefault_v0, OpLabelSet_v0; label map tools/bench/diag_c97_tools_oplabels.json.
+# Self-test on a never-saved scratch of D1_s1_copy.vi: tools/bench/selftest_c97_tools.py.
+C97_LABELS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench", "diag_c97_tools_oplabels.json")
+C97_CENSUS = ("CaseStructure", "Diagram", "SubVI", "ControlTerminal", "Constant", "LoopTunnel", "SelectorTunnel",
+              "Wire", "Node", "Invoke", "Property")
+_C97 = {}
+
+
+def _c97(key):
+    if not _C97:
+        with open(C97_LABELS, encoding="utf-8") as f:
+            _C97.update(json.load(f))
+    return _C97[key]
+
+
+def _c97_paths():
+    here = os.path.dirname(os.path.abspath(__file__))
+    for p in (os.path.join(here, "recipes"), os.path.join(here, "bench")):
+        if p not in sys.path:
+            sys.path.insert(0, p)
+
+
+def _uid_index(target, cls, uid):
+    """Traverse index of `uid` in class `cls`, RE-READ at the call site (never carried across a mutation)."""
+    order = [int(o["uid"]) for o in report_all(target, cls)]
+    if int(uid) not in order:
+        raise ValueError("#%s is not a %s of %s" % (uid, cls, os.path.basename(target)))
+    return order.index(int(uid))
+
+
+def _node_index(target, diagram_index, uid):
+    order = [int(r["uid"]) for r in node_labels(target, diagram_index)]
+    if int(uid) not in order:
+        raise ValueError("#%s is not in Diagram[%s].Nodes[]" % (uid, diagram_index))
+    return order.index(int(uid))
+
+
+def _set_common(vi, target, lab, cls, index):
+    """The OpSetIndexMode_v0-donor controls (tools/bench/diag_c92_clfn_thread.py read())."""
+    vi.SetControlValue("vi path", target)
+    ctl = set(lab.get("controls") or [])
+    if "vi path 2" in ctl:
+        vi.SetControlValue("vi path 2", target)
+    vi.SetControlValue("Class Name", cls)
+    vi.SetControlValue("index", int(index))
+    if "index 2" in ctl:
+        vi.SetControlValue("index 2", 0)
+
+
+def case_frames(target, case_uid):
+    """T1 READER (OpCaseFrames_v1): CaseStructure #case_uid -> {'echo', 'names' (Frame Names 6365002, frame order),
+    'frames' (Frames[k] 6363801 -> GObject.UID, same order), 'err'}. Read-only. The uid echo must equal case_uid."""
+    lab = _c97("OpCaseFrames_v1")
+    i = _uid_index(target, "CaseStructure", case_uid)
+    vi = op(os.path.join(CLAUDEDEV, "OpCaseFrames_v1.vi"))
+    out = {"echo": None, "names": [], "frames": [], "err": ""}
+    k = 0
+    while True:
+        _set_common(vi, target, lab, "CaseStructure", i)
+        vi.SetControlValue(lab["k"], k)
+        vi.SetControlValue(lab["FrameUID"], 0)
+        _run(vi)
+        e = _err(vi, lab["FrameErr"]) or _err(vi, lab["UIDErr"]) or ""
+        if k == 0:
+            out["echo"] = int(vi.GetControlValue(lab["UID"]))
+            out["names"] = [str(x) for x in vi.GetControlValue(lab["FrameNames"])]
+        if e:
+            out["err"] = e
+            break
+        out["frames"].append(int(vi.GetControlValue(lab["FrameUID"])))
+        k += 1
+        if k >= max(1, len(out["names"])):
+            break
+    if out["echo"] != int(case_uid):
+        out["err"] = (out["err"] + " | " if out["err"] else "") + "uid echo %r != #%s" % (out["echo"], case_uid)
+    return out
+
+
+def case_in(target, diagram_uid, location, selector_label, frame_names=("0, Default", "1"), position=None):
+    """T1: a Case Structure OWNED BY a nested diagram (a For/While body), addressed by the diagram's UID.
+    Route (composition, no new op): `build_case` on the TOP-LEVEL diagram (its selector = the top-level panel control
+    `selector_label`; `frame_names` per build_case's contract) -> `OpMoveIn_v0` (build_d1_v0.move_in) into Diagram
+    #diagram_uid -> owner read back (OpOwnerChain_v1) -> frames read back (case_frames). The move SEVERS the selector wire
+    (docs/cycle27-plan.md:846-851): wire the real selector afterwards (connect_nested_v1 on the case node's Terminals[]).
+    Refuses BEFORE any edit when #diagram_uid is not a Diagram of `target`. Returns {case, owner_class, owner, names,
+    frames, err}."""
+    _c97_paths()
+    import build_d1_v0 as B
+    di = _uid_index(target, "Diagram", diagram_uid)          # raises ValueError first: nothing created yet
+    # build_case's own body (:3173) with its per-object `report()` snapshots replaced by the one-run `uids()` (report_all,
+    # rows verified identical, :1111) - on the main VI new_since(CaseStructure) costs ~1 s PER CASE (37+), i.e. ~40 s/call.
+    ensure_loaded(target)
+    before, inv0 = uids(target, "CaseStructure"), uids(target, "Invoke")
+    vi = op(OP_BUILD_CASE)
+    for lab, val in (("vi path", target), ("vi path 2", target), ("Class Name", "Terminal"), ("index", 0),
+                     ("location (0, 0)", list(location)), ("Frames", list(frame_names)),
+                     ("Control Names", [selector_label]), ("Control Names 2", [])):
+        vi.SetControlValue(lab, val)
+    _run(vi)
+    errs = tuple(vi.GetControlValue(l) for l in ("error out", "error out 2"))
+    junk = [u for u in uids(target, "Invoke") if u not in inv0]
+    if junk:
+        order = [o["uid"] for o in report_all(target, "Invoke")]
+        for i in sorted((order.index(u) for u in junk if u in order), reverse=True):
+            delete_object(target, "Invoke", i, verify=False)
+    new = sorted(uids(target, "CaseStructure") - before)
+    if len(new) != 1 or any(e and e[0] for e in errs):
+        raise RuntimeError("case_in: %d new CaseStructure; errors %r" % (len(new), errs))
+    c = int(new[0])
+    di = _uid_index(target, "Diagram", diagram_uid)          # re-read: build_case added two frame Diagrams
+    B.move_in(target, c, di, tuple(position or location))
+    ocls, ouid = B.owner_of(target, c, strict=False)
+    fr = case_frames(target, c)
+    return {"case": c, "owner_class": ocls, "owner": ouid, "names": fr["names"], "frames": fr["frames"], "err": fr["err"]}
+
+
+def tunnel_use_default_at(target, cls, index, value):
+    """T5 by Traverse (cls, index): OpTunnelUseDefault_v0 casts to ConditionalTunnel, READS 5D251C00, WRITES `value`,
+    READS again (one run, dataflow-ordered by reference + error). A non-ConditionalTunnel (a LoopTunnel) fails the cast
+    and writes nothing. Returns {echo, before, after, err, uid_err}."""
+    lab = _c97("OpTunnelUseDefault_v0")
+    ensure_loaded(target)
+    vi = op(os.path.join(CLAUDEDEV, "OpTunnelUseDefault_v0.vi"))
+    _set_common(vi, target, lab, cls, index)
+    vi.SetControlValue(lab["value_ctl"], bool(value))
+    vi.SetControlValue(lab["UID"], 0)
+    _run(vi)
+    return {"echo": int(vi.GetControlValue(lab["UID"])), "before": bool(vi.GetControlValue(lab["Before"])),
+            "after": bool(vi.GetControlValue(lab["After"])), "err": _err(vi, lab["Err"]) or "",
+            "uid_err": _err(vi, lab["UIDErr"]) or ""}
+
+
+def tunnel_use_default(target, tunnel_uid, value, cls="SelectorTunnel"):
+    """T5: set `Use Default if Unwired` (ConditionalTunnel 5D251C00, NAMES.md:1036) on case tunnel #tunnel_uid and read
+    it back; the op's uid echo must equal tunnel_uid (else err)."""
+    r = tunnel_use_default_at(target, cls, _uid_index(target, cls, tunnel_uid), value)
+    if r["echo"] != int(tunnel_uid):
+        r["err"] = (r["err"] + " | " if r["err"] else "") + "uid echo %r != #%s" % (r["echo"], tunnel_uid)
+    return r
+
+
+def set_control_label(target, panel_index, text):
+    """T4: write the LABEL of front-panel object Panel.Controls[panel_index] (= panel_wiring row order) through
+    OpLabelSet_v0 (Control.Label 6332005 -> Text.Text 632D800 WRITE, then a Text.Text READ chained after it) and return
+    {text_back, err}. An out-of-range index returns an error and renames nothing."""
+    lab = _c97("OpLabelSet_v0")
+    ensure_loaded(target)
+    vi = op(os.path.join(CLAUDEDEV, "OpLabelSet_v0.vi"))
+    vi.SetControlValue("vi path", target)
+    vi.SetControlValue("Names", []); vi.SetControlValue("Names 2", [])
+    vi.SetControlValue("Class Name", ""); vi.SetControlValue("Class Name 2", "")
+    vi.SetControlValue("index", int(panel_index)); vi.SetControlValue("index 2", 0)
+    vi.SetControlValue(lab["text_ctl"], str(text))
+    vi.SetControlValue(lab["TextBack"], "")
+    _run(vi)
+    return {"text_back": str(vi.GetControlValue(lab["TextBack"])), "err": _err(vi, lab["Err"]) or ""}
+
+
+def set_default_in_memory(target, label, value, probe_value):
+    """T4 default: SetControlValue(label, value) -> OpMakeDefault_v0 (VI 'Make Current Values Default' 3F3, ALL controls)
+    -> SetControlValue(label, probe_value) -> ActiveX ReinitializeAllToDefault -> read. NOTHING IS SAVED (make_default
+    saves; this does not - for a never-saved scratch). Returns {'after_reinit': value read, 'err'}."""
+    with vi_ref(target) as v:
+        v.SetControlValue(label, value)
+    o = op(OP_MAKE_DEFAULT); o.SetControlValue("vi path", target); _run(o)
+    err = _err(o) or ""
+    with vi_ref(target) as v:
+        v.SetControlValue(label, probe_value)
+        _invoke(v, "ReinitializeAllToDefault")
+        got = v.GetControlValue(label)
+    return {"after_reinit": got, "err": err}
+
+
+def _c97_pairs(rows):
+    """[(source row, sink row)] of every wire in an allterms table."""
+    byw = {}
+    for r in rows:
+        if int(r["wire_uid"] or 0):
+            byw.setdefault(int(r["wire_uid"]), []).append(r)
+    out = []
+    for rs in byw.values():
+        for s in [r for r in rs if r["is_source"]]:
+            out.extend((s, k) for k in rs if not k["is_source"])
+    return out
+
+
+def c97_collapsed(rows, tunnel_uids):
+    """{(source term uid, sink term uid)} with each tunnel in `tunnel_uids` collapsed to a pass-through."""
+    E = set((int(s["term_uid"]), int(k["term_uid"])) for s, k in _c97_pairs(rows))
+    own = dict((int(r["term_uid"]), int(r["owner_uid"])) for r in rows)
+    for t in tunnel_uids:
+        ins = set(e for e in E if own.get(e[1]) == int(t))
+        outs = set(e for e in E if own.get(e[0]) == int(t))
+        E -= ins | outs
+        E |= set((a, d) for a, _b in ins for _c, d in outs)
+    return E
+
+
+def move_into_frame(target, frame_uid, members, spot=(0, 0), log=None):
+    """T2 + T3 (PD206(d)(2)(3)): move `members` - node, constant and control/indicator-TERMINAL uids, all on ONE diagram
+    D - into case frame #frame_uid of a Case Structure that sits on D, and RE-MAKE every wire that touched them, read
+    back. OpMoveIn_v0 severs wires (docs/cycle27-plan.md:846-851), so each edge (source terminal -> sink terminal,
+    recorded BEFORE the move from the whole-VI terminal table, allterms.read_terms) is re-made by the writer its endpoint
+    classes need: node->node connect_nested_v1 (build_opconnectnested_v1.py:418; LabVIEW makes the case tunnel on a
+    crossing) · constant->node wire_const · control terminal->node wire_control (by label, on the frame) · node->indicator
+    terminal wire_ctlsink · loop-tunnel OUTER->node wire_tunouter · loop-tunnel INNER->node connect_from_wire from the
+    original wire (build_opconnectfromwire_v0.py:381; members are moved ONE AT A TIME and re-wired at once, so the wire
+    still has an end) · a second sink of an already-crossed source branches from the new INNER wire (one tunnel per
+    source) · node->loop-tunnel INNER (out-crossing) = connect_from_wire INVERTED (the op invoked on the member's output,
+    `Wire Source` = the tunnel's terminal on the stub). Junk Invokes the connect ops mint in the target are deleted.
+    REFUSES BEFORE ANY EDIT (ValueError) when #frame_uid is not a frame of a CaseStructure on D or any member is not on D.
+    Returns {edges_before, edges_after, missing, extra, new_tunnels, census_before, census_after, ops, moved}."""
+    _c97_paths()
+    import allterms as A
+    import build_d1_v0 as B
+    import build_opconnectnested_v1 as CN
+    import build_opconnectfromwire_v0 as CF
+    say = log or (lambda s: print("  FACT  " + str(s)[:400], flush=True))
+    members = [int(u) for u in members]
+    oc = {}
+
+    def owner(u):
+        if int(u) not in oc:
+            oc[int(u)] = B.owner_of(target, int(u), strict=False)
+        return oc[int(u)]
+    fcls, case = owner(frame_uid)
+    ccls, D = owner(case) if fcls == "CaseStructure" else (None, None)
+    if fcls != "CaseStructure":
+        raise ValueError("refused before any edit: #%s is owned by %s, not a CaseStructure" % (frame_uid, fcls))
+    off = [(u, owner(u)) for u in members if owner(u)[1] != D]
+    if off:
+        raise ValueError("refused before any edit: member(s) not on the case's diagram #%s: %r" % (D, off))
+    ensure_loaded(target)
+    CNL = json.load(open(CN.MAP_OUT, encoding="utf-8")); CFL = json.load(open(CF.MAP_OUT, encoding="utf-8"))
+    rows0, _t = A.read_terms(target)
+    mem_of = dict((int(r["term_uid"]), (int(r["term_uid"]) if int(r["term_uid"]) in members else int(r["owner_uid"])))
+                  for r in rows0 if int(r["owner_uid"]) in members or int(r["term_uid"]) in members)
+    E0 = [(s, k) for s, k in _c97_pairs(rows0) if int(s["term_uid"]) in mem_of or int(k["term_uid"]) in mem_of]
+    census0 = dict((c, count(target, c)) for c in C97_CENSUS)
+    tun0 = uids(target, "Tunnel")
+    inv0 = uids(target, "Invoke")
+
+    def kind(r):
+        c, ou, tu = str(r["owner_class"]), int(r["owner_uid"]), int(r["term_uid"])
+        if c in ("Diagram", "TopLevelDiagram"):
+            return "ctl", tu
+        if "Constant" in c:
+            return "const", ou
+        if "Tunnel" in c or "ShiftRegister" in c:
+            return ("tout" if owner(owner(ou)[1])[1] == D else "tin"), ou
+        return "node", ou
+    K = dict((int(r["term_uid"]), kind(r)) for e in E0 for r in e)
+    addr = {}
+    for n in sorted(set(v[1] for v in K.values() if v[0] == "node")):
+        di = _uid_index(target, "Diagram", owner(n)[1])
+        _u, rows_n = node_terms_uid(target, di, _node_index(target, di, n))
+        for r in rows0:
+            if int(r["owner_uid"]) == n and int(r["term_uid"]) in K:
+                c = [x for x in rows_n if int(x.get("wire") or 0) == int(r["wire_uid"]) and bool(x["is_source"]) == r["is_source"]]
+                if len(c) > 1:
+                    c = [x for x in c if x["name"] == r["term_name"]]
+                if len(c) != 1:
+                    raise RuntimeError("terminal #%s %r of #%s: %d matches" % (r["term_uid"], r["term_name"], n, len(c)))
+                addr[int(r["term_uid"])] = int(c[0]["i"])
+    say("T2 before: %d member terminal(s), %d edge(s), endpoint kinds %r" % (len(mem_of), len(E0), sorted(set(v[0] for v in K.values()))))
+    ops, moved, inner, done = [], set(), {}, set()
+
+    def purge():
+        new = [u for u in uids(target, "Invoke") if u not in inv0]
+        if new:
+            order = [o["uid"] for o in report_all(target, "Invoke")]
+            for i in sorted((order.index(u) for u in new if u in order), reverse=True):
+                delete_object(target, "Invoke", i, verify=False)
+        return len(new)
+
+    def wterm(w, pred):
+        walk = CF.wire_source_owner(target, int(w), n=10)
+        hit = [x for x in walk if "owner_uid" in x and pred(x)]
+        return int(hit[0]["i"]) if hit else None
+
+    def triple(u, tu, where=None):
+        di = _uid_index(target, "Diagram", where or owner(u)[1])
+        return di, _node_index(target, di, u), addr[tu]
+
+    def make(s, k):
+        (sk, su), (kk, ku) = K[int(s["term_uid"])], K[int(k["term_uid"])]
+        ts, tk, w = int(s["term_uid"]), int(k["term_uid"]), int(s["wire_uid"])
+        s_in, k_in, F = ts in mem_of, tk in mem_of, frame_uid
+        scls, kcls = str(s["owner_class"]), str(k["owner_class"])
+        if kk == "ctl" and k_in and s_in and sk == "node":
+            return "wire_ctlsink", wire_ctlsink(target, _uid_index(target, "ControlTerminal", ku), scls,
+                                                _uid_index(target, scls, su), addr[ts])
+        if kk == "node":
+            if s_in and sk == "const":
+                return "wire_const", wire_const(target, scls, _uid_index(target, scls, su), kcls,
+                                                _uid_index(target, kcls, ku), addr[tk])
+            if s_in and sk == "ctl":
+                return "wire_control", wire_control(target, [str(s["term_name"])], kcls, _uid_index(target, kcls, ku),
+                                                    [str(k["term_name"])], src_diagram_index=_uid_index(target, "Diagram", F))
+            sink = triple(ku, tk, F if k_in else None)
+            if s_in and sk == "node":
+                return ("connect_nested_v1" if k_in else "connect_nested_v1(out)"), CN.connect_nested_v1(
+                    target, *(sink + triple(su, ts, F) + (CNL,)))
+            if w in inner:
+                iw = inner[w]
+                return "connect_from_wire(inner w%s)" % iw, CF.connect_from_wire(
+                    target, iw, wterm(iw, lambda x: x["is_source"]), sink[0], sink[1], sink[2], CFL)
+            if sk == "node":
+                r, verb = CN.connect_nested_v1(target, *(sink + triple(su, ts) + (CNL,))), "connect_nested_v1(cross)"
+            elif sk == "tout":
+                r, verb = wire_tunouter(target, scls, _uid_index(target, scls, su), kcls, _uid_index(target, kcls, ku),
+                                        addr[tk]), "wire_tunouter"
+            else:
+                r = CF.connect_from_wire(target, w, wterm(w, lambda x: x["is_source"]), sink[0], sink[1], sink[2], CFL)
+                verb = "connect_from_wire(w%s)" % w
+            _u, rk = node_terms_uid(target, sink[0], sink[1])
+            inner[w] = int([x for x in rk if int(x["i"]) == sink[2]][0]["wire"] or 0)
+            return verb, r
+        if kk == "tin" and s_in and sk == "node":
+            src = triple(su, ts, F)
+            return "connect_from_wire INVERTED(w%s)" % w, CF.connect_from_wire(
+                target, w, wterm(w, lambda x: int(x["owner_uid"]) == ku and not x["is_source"]), src[0], src[1], src[2], CFL)
+        return "UNSUPPORTED %s->%s" % (sk, kk), None
+
+    for j, m in enumerate(members):
+        B.move_in(target, m, _uid_index(target, "Diagram", frame_uid), (spot[0] + 20 + 45 * (j % 5), spot[1] + 30 + 45 * (j // 5)))
+        oc.pop(m, None)
+        moved.add(m)
+        purge()
+        say("T2 moved #%s -> owner %r" % (m, owner(m)))
+        for s, k in E0:
+            key = (int(s["term_uid"]), int(k["term_uid"]))
+            ends = [mem_of[t] for t in key if t in mem_of]
+            if key in done or m not in ends or any(e not in moved for e in ends):
+                continue
+            try:
+                verb, r = make(s, k)
+            except Exception as e:                                                        # noqa: BLE001
+                verb, r = "EXC", "%s: %s" % (type(e).__name__, str(e)[:160])
+            done.add(key)
+            ops.append({"edge": key, "src": K[key[0]], "sink": K[key[1]], "verb": verb, "result": str(r)[:200], "junk": purge()})
+            say("T2 edge #%s(%s) -> #%s(%s) via %s -> %s" % (key[0], K[key[0]][0], key[1], K[key[1]][0], verb, str(r)[:160]))
+    rows1, _t = A.read_terms(target)
+    newT = sorted(uids(target, "Tunnel") - tun0)
+    E1 = c97_collapsed(rows1, newT)
+    before = set((int(s["term_uid"]), int(k["term_uid"])) for s, k in E0)
+    after = set(e for e in E1 if e[0] in mem_of or e[1] in mem_of)
+    census1 = dict((c, count(target, c)) for c in C97_CENSUS)
+    return {"edges_before": sorted(before), "edges_after": sorted(after), "missing": sorted(before - after),
+            "extra": sorted(after - before), "new_tunnels": newT, "census_before": census0, "census_after": census1,
+            "ops": ops, "moved": sorted(moved), "owners_after": dict((m, owner(m)) for m in members)}
