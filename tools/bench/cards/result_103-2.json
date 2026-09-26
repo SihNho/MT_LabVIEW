@@ -1,0 +1,27 @@
+{"schema":"result/1","id":"103-2","status":"FAIL","gates":{"pass":2,"fail":1},
+"first_fail":"Part-A run: MEMSTOP 703.8 MB >= 700 at the op-40 checkpoint read, before part_a/gui_save; nothing saved (stage_d1_dispA_r1.log:799)",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/stage_prerun.py","md5":"a21a6de2654e6cb0f30a27e4c452e656"},
+ {"path":"tools/bench/selftest_stage_prerun_c103.py","md5":"b2e5a891ba9c26cf6145f0b428440186"},
+ {"path":"tools/bench/facts_c103b_partA.json","md5":"52cb4a9957db7844c823628275e9705d"}
+],
+"facts":[
+ "X5 patch: prerun(stop_after=k) counts stageplan wiring ops with index <= k; coverage check stays whole-plan; main passes --stop-after (tools/stage_prerun.py:1071,1140,1730)",
+ "Self-test 4/0: P1 Part-A 18==18 PASS, P2 full-mode on Part-A trace 18 vs 19 FAIL, P3 full 19==19 PASS, P4 op dropped 17 vs 18 FAIL (selftest_stage_prerun_c103.log)",
+ "Part-A dry PASS; Part-A prerun 8/0 (X5 18 among ops 1..40); full prerun 8/0 (X5 19); launch gate ALLOW (diag_c103b_prerunA.log, diag_c103b_prerunFull.log)",
+ "ONE Part-A run, 780 s: ops 1..40 dispatched; only step diff = k12 move_in mv_11310 WARN dangling_sim_only [11365] (stage_d1_dispA_r1.log:245,798)",
+ "STOP: ExecStop MEMSTOP 703.8 MB >= 700 on the whole-VI read after op 40 (connect r6_force_write, acts [50]); step-40 compare never ran (stage_d1_dispA_r1.log:797-799; tools/stagexec.py:87)",
+ "Memory private MB: start 570.7, read k12 619.4, k33 673.7, k37 695.0, k39 699.8, op40 699.7, read40 703.8 = max; handles 54467 -> max 55099, 55097 at read 40 (stage_d1_dispA_r1.log:38-797)",
+ "r7 same ops: read k37 686.2, op k40 690.4 and no read at k40 (stage_d1_disp_r7.log:738-804); r1 runs ~9 MB higher from k37 and Part A adds a k40 read (+4.1 MB)",
+ "No save: part_a/gui_save not reached (recipe returns at stage_d1_disp.py:78); S1 md5 3e3d23ce unchanged (H2, log:806); LabVIEW gone at exit (log:821)",
+ "Left on disk: claudeDev\\D1_s1_dispA_20260927_022749.vi = unsaved work copy, md5 3e3d23ce == S1 (H6, log:814); NOT a Part-A artefact despite the name",
+ "stage_d1_dispA_r1.log | no JEV-LADDER line; same script stage_d1_disp discharged by RULE-SAME-ROW 2026-09-26-c100-6-r2.md (jev_gate.log:1727) | no review dispatched | reported"
+],
+"open":[
+ "PD216(e): MEMSTOP fired before the save - a finer split (e.g. A1 ops 1-33 / A2 34-40), fewer checkpoint reads in Part A, or a MEMSTOP change is judgement's call.",
+ "Delete or keep the misleading unsaved copy claudeDev\\D1_s1_dispA_20260927_022749.vi (== S1 bytes)?",
+ "gscript.gui_save logs -Evidence 'gui_save: COM SaveInstrument hangs on broken VIs', not the card's 'user 2026-09-22 broken-intermediate save' (gscript.py:2242); align before the next save attempt?"
+],
+"cost":{"usd":null,"minutes":30,"labview_runs":1},
+"note":"Gates: pass = X5 patch+self-test, pre-runs; fail = Part-A run (MEMSTOP). No STATUS edit (status_edit false). No finer split decided here per card rules."}

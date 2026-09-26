@@ -1,0 +1,11 @@
+BGRUN START 2026-09-27 02:14:09 limit 5.0 min: py -u tools/bench/diag_c103_resim.py
+BGRUN PID 13020
+  PASS  R0 plan input: r7_wait carries prim 'Wait (ms)' and no donor_uid  {'op': 'create', 'id': 'r7_wait', 'class': 'Function', 'diagram': 'new:DL1.body', 'as': 'WAIT1', 'prim': 'Wait (ms)', 'terminals': [{'name': 'milliseconds to wait', 'is_source': False, 'term_class': 'ParameterTerminal'}, {'name': 'millisecond timer value', 'is_source': True, 'term_class': 'ParameterTerminal'}], 'why': 'R7 Wait (ms); card 103-1 (PD215(b) op 41 route): by DONOR COPY inside gscript.create_primitive_nested (OpPrimCopyNested_v0) from claudeDev\\OpWaitDonor_v0.vi #163 (byte copy of examples\\...\\Running Average with Shift Registers.vi), class Function + terminal names MEASURED (tools/bench/facts_c103_donor.json, diag_c103_wait_donor2.log); was stagekit.copy_in from S1 #44143 (MOVE_DST-only, r7 stop)'}
+  PASS  R3 re-simulation FINAL, 0 failed, 0 undecided  (None, 0, {'n': 0, 'op': 'base', 'id': None, 'rows_from_here': 21})
+  PASS  R4 end cdiff rows == the 21 declared open_rows, the SAME set as the old plan's  {'extra': [], 'missing': [], 'vs_old': []}
+  PASS  R5 steps 0..50 (every act before op 41, r7_wait) CONTENT-IDENTICAL to the old plan (Part A unchanged); ops 1..40 same kinds  []
+  PASS  R6 op 41 = r7_wait compiles to route `primitive`; Wait (ms) donor registered in facts_c100_oplabels.json  (41, {'kind': 'create', 'route': 'primitive', 'acts': [51]})
+  PASS  R7 WAIT1 (#-61) after act 51: class Function, terminals == plan  ('Function', [('millisecond timer value', True), ('milliseconds to wait', False)])
+  FACT r7_wait = op 41 of 47 (first act 51); old plan md5 052ab3d5646ae1b8f39cfa9506bed082 -> new c7d80fc93279f4ea5efd21c068e7efa6
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":6,"fail":0},"first_fail":null,"artefacts":[{"path":"tools\\bench\\sim\\disp\\stageplan_disp_r4_open.json","md5":"7eec1754c5cc58ebf5759142781de873"},{"path":"tools\\bench\\sim\\disp\\plan_disp.json","md5":"c7d80fc93279f4ea5efd21c068e7efa6"}]}
+BGRUN END rc=0 after 66s

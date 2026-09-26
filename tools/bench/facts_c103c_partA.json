@@ -1,0 +1,35 @@
+{
+ "card": "103-3",
+ "log": "tools/bench/stage_d1_dispA_r2.log",
+ "outcome": "PASS 14/0: ops 1..33 executed, step-33 real == sim, gui_save of the broken-by-design Part-A artefact",
+ "pre": {
+  "deleted_copy": {"path": "claudeDev\\D1_s1_dispA_20260927_022749.vi", "md5": "3e3d23cefd3a334001aa9d6156bf1aee", "size": 474202,
+                   "deleted": true, "log": "tools/bench/diag_c103c_delcopy.log"},
+  "prerun": {"log": "tools/bench/diag_c103c_prerunA.log", "stop_after": 33, "gates": "8/0", "X5": "12 wiring ops among ops 1..33 (25/25 wire actions covered)"},
+  "launch_gate": "ALLOW (run started, stage_d1_dispA_r2.log:1-3)"
+ },
+ "run": {
+  "seconds": 665, "ops_dispatched": "1..33", "not_dispatched": "34..47 (log:653)",
+  "reads": [2, 3, 4, 5, 12, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33],
+  "step_diffs": [{"k": 12, "op": "move_in", "ids": ["mv_11310"], "class": "warn", "detail": "dangling_sim_only [11365]", "log_line": 245}],
+  "step33_real_vs_sim": "equal (A2 PASS, step_diff_n 0 at k33, log:658)",
+  "binding_obj": {"-1": 23047, "-5": 23295, "-8": 23403, "-20": 23538, "-21": 23775, "-22": 23620, "-24": 23623, "-26": 23781,
+                  "-28": 23796, "-30": 23811, "-32": 23886, "-37": 23910, "-42": 23982}
+ },
+ "memory_private_mb": {"start_k0": 578.6, "read_k0": 586.5, "read_k12": 623.6, "read_k24": 643.2, "read_k28": 664.6,
+                        "read_k32": 677.1, "op_k33": 673.5, "read_k33": 675.8, "max": 677.1, "after_save": null,
+                        "note": "the meter covers ops/reads only; no private-MB reading exists after the save (log:655)"},
+ "handles": {"meter_start_k0": 54480, "meter_max": 55038, "meter_read_k33": 55034,
+             "labview_handles_after_restart": 33999, "labview_handles_after_work": 34176, "labview_handles_at_exit": 34176,
+             "note": "two counters: stagexec meter (log:38-651) vs bench_prep.labview_handles (log:30,672,682)"},
+ "save": {"route": "gui_save (clickprobe foreground -> Ctrl+E -> clickprobe -> Ctrl+S), tools/gui_actions.log:4135-4138",
+          "artefact": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_dispA_20260927_024535.vi",
+          "md5": "16c2ca00a114a227a81612dd49d111cc", "size": 303583, "exec_state_before_save": 0,
+          "binding_json": "tools/bench/stage_d1_dispA.json", "binding_json_md5": "d5393162848fef90d099efa7f0439140",
+          "evidence_string_logged": "gui_save: COM SaveInstrument hangs on broken VIs (gui_actions.log:4138), not the card wording (PD216(f) defers alignment)"},
+ "files": {"S1": {"md5": "3e3d23cefd3a334001aa9d6156bf1aee", "unchanged": true, "log_line": 673}, "pins_hold": true,
+           "left_on_disk": ["D1_s1_dispA_20260927_024535.vi"], "removed": []},
+ "hygiene": {"refs_opened": 16, "refs_closed": 16},
+ "labview_gone_at_exit": true,
+ "level": "STRUCTURAL, broken by design, never run"
+}

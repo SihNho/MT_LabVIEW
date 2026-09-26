@@ -982,6 +982,65 @@ class Addr(object):
         return (didx, nidx, int(hits[0]["i"])), "unique-match"
 
 
+# ============================================================================================ card 103-4: PART-B entry
+def load_binding(src, plan_path, from_step):
+    """card 103-4 (PD215(b) Part B): the Part-A binding -> {bind, loop_of, sym_real} with INT keys. `src` = the dict
+    part_a_record returned, or a path to it / to the Part-A stage JSON (its `partA` key). STOPS (ExecStop 'FROM-STEP')
+    when the plan md5 differs from the one Part A ran, when its stop_after is not `from_step`, or when Part A created
+    shift registers (Addr's register-face tracking is in-memory and is not carried across LabVIEW sessions)."""
+    b = _j(_abs(src)) if isinstance(src, str) else dict(src or {})
+    b = b.get("partA", b)
+    want = SS.md5_file(_abs(plan_path))
+    if b.get("plan_md5") != want:
+        raise ExecStop("FROM-STEP: binding plan md5 {0} != plan {1} md5 {2} - Part A ran another plan".format(
+            b.get("plan_md5"), os.path.basename(plan_path), want))
+    if b.get("stop_after") != int(from_step):
+        raise ExecStop("FROM-STEP: binding stop_after {0!r} != from_step {1}".format(b.get("stop_after"), from_step))
+    if not isinstance(b.get("bind"), dict) or set(b["bind"]) != {"obj", "term", "diag"}:
+        raise ExecStop("FROM-STEP: binding has no bind.obj/term/diag ({0})".format(sorted(b.get("bind") or {})))
+    iv = lambda m: dict((int(k), int(v)) for k, v in (m or {}).items())            # noqa: E731
+    if b.get("loop_of"):
+        raise ExecStop("FROM-STEP: Part A created shift registers {0}; their outer-face tracking is not carried across "
+                       "sessions - no Part-B entry for such a plan".format(sorted(b["loop_of"])))
+    return {"bind": dict((x, iv(y)) for x, y in b["bind"].items()), "loop_of": iv(b.get("loop_of")),
+            "sym_real": dict(b.get("sym_real") or {})}
+
+
+def bind_state(st, bind):
+    """card 103-4: a simulated step state with every created (negative) uid replaced by its Part-A real uid - owner,
+    terminal, frame diagram, objs, diagrams, owners, loops, sym (wire uids are never compared and stay as they are).
+    Returns (state, unbound): unbound = the negative uids no binding covers (a Part-B entry must stop on any)."""
+    M = {}
+    for kind in ("obj", "term", "diag"):
+        for k, v in (bind.get(kind) or {}).items():
+            if int(k) in M and M[int(k)] != int(v):
+                raise ExecStop("FROM-STEP: binding maps #{0} to both {1} and {2}".format(k, M[int(k)], v))
+            M[int(k)] = int(v)
+    miss = set()
+
+    def m(v):
+        if isinstance(v, int) and not isinstance(v, bool) and v < 0:
+            if v in M:
+                return M[v]
+            miss.add(v)
+        return v
+    s = copy.deepcopy(st)
+    for r in s["terminals"]:
+        for k in ("owner_uid", "term_uid", "frame_diagram"):
+            r[k] = m(r[k])
+    for o in s.get("objs") or []:
+        o["uid"] = m(int(o["uid"]))
+    s["diagrams"] = dict((str(m(int(k))), m(int(v))) for k, v in (s.get("diagrams") or {}).items())
+    s["owners"] = dict((str(m(int(k))), [v[0], m(int(v[1] or 0))]) for k, v in (s.get("owners") or {}).items())
+    for L in s.get("loops") or []:
+        L["loop_uid"] = m(int(L["loop_uid"]))
+        L["right_uids"] = [m(int(u)) for u in L.get("right_uids") or []]
+        L["left_of"] = dict((str(m(int(k))), [m(int(x)) for x in (v if isinstance(v, list) else [v])])
+                            for k, v in (L.get("left_of") or {}).items())
+    s["sym"] = dict((k, m(v)) for k, v in (s.get("sym") or {}).items())
+    return s, sorted(miss)
+
+
 # ============================================================================================ the executor
 BIND_KINDS = ("add_sr", "tunnel", "create")         # ops that make objects: a fresh read is required after each
 
@@ -994,10 +1053,15 @@ class Executor(object):
     addressing ExecStop on a reused read gets ONE fresh read + one retry (connect/tunnel/wire_sr), as meter_l2a1_86d.py."""
     RETRY_KINDS = ("connect", "tunnel", "wire_sr")
 
-    def __init__(self, plan_path, backend, log=print, checkpoints=None, require_final=True, record=False):
+    def __init__(self, plan_path, backend, log=print, checkpoints=None, require_final=True, record=False, stop_after=None,
+                 from_step=None, binding=None):
         # card 101-4 RECORD MODE: a STEP-DIFF is logged into self.diffs and the run CONTINUES on the (unsaved) scratch;
         # any other ExecStop (binding, addressing, op error, MEMSTOP) still stops, and self.cur names the op it stopped
         # in. The caller saves nothing unless self.diffs is empty.
+        # card 103-1 PART-A MODE (PD215(b)): stop_after=k runs real ops 1..k ONLY (op k must be a checkpoint, so the
+        # returned read is compared with simulated step k) and dispatches NO op > k; self.stopped_after records k.
+        self.stop_after = None if stop_after is None else int(stop_after)
+        self.stopped_after = None
         self.record = bool(record)
         self.diffs, self.cur = [], None
         self.checkpoints = None if checkpoints is None else set(int(k) for k in checkpoints)
@@ -1012,9 +1076,33 @@ class Executor(object):
         self.allow = set()
         self.report = []
         self.sym_real = {}
+        # card 103-4 PART-B ENTRY (PD215(b)): from_step=k binds Part A's recorded uids (load_binding: plan md5 pinned,
+        # stop_after == k) instead of re-executing ops 1..k; run() compares the entry read with simulated step k (through
+        # the binding), re-reads the value gates of ops <= k, then parity/PRIME on step k and dispatches ops k+1.. only.
+        self.from_step = None if from_step is None else int(from_step)
+        if self.from_step is not None:
+            if not 1 <= self.from_step < len(self.ops):
+                raise ExecStop("FROM-STEP: {0} is outside 1..{1} - stop before any op".format(self.from_step, len(self.ops) - 1))
+            b = load_binding(binding, plan_path, self.from_step)
+            self.bind, self.loop_of, self.sym_real = b["bind"], b["loop_of"], b["sym_real"]
 
     def step(self, n):
         return _j(_abs(self.step_paths[n]))
+
+    def part_a_record(self):
+        """card 103-1 PART-A (PD215(b)), after run() with stop_after=k: (a1, a2, detail, binding).
+        a1 = ops 1..k executed and nothing after; a2 = every recorded diff is a PD214(c) WARN and step k was READ and equals the
+        simulated step k (or its own diff is a WARN); binding = what Part B binds instead of re-executing (JSON-safe keys)."""
+        k, last = self.stop_after, (self.report[-1] if self.report else {})
+        fails = [d for d in self.diffs if d.get("class") != "warn"]
+        a1 = k is not None and self.stopped_after == k and (self.cur or {}).get("k") == k and last.get("k") == k
+        a2 = bool(a1 and not fails and not last["diff"].get("skipped") and (last["diff"]["n"] == 0 or self.diffs[-1]["k"] == k))
+        detail = {"stopped_after": self.stopped_after, "cur": self.cur, "step_diff_n": last.get("diff", {}).get("n"),
+                  "diffs": [(d["k"], d["diff"]["n"], d.get("class")) for d in self.diffs], "reads": self.reads_real}
+        s = lambda m: dict((str(a), b) for a, b in m.items())                     # noqa: E731
+        binding = {"stop_after": k, "plan": self.plan_path, "plan_md5": SS.md5_file(_abs(self.plan_path)),
+                   "bind": dict((x, s(y)) for x, y in self.bind.items()), "loop_of": s(self.loop_of), "sym_real": s(self.sym_real)}
+        return a1, a2, detail, binding
 
     def sim_uid(self, st, ref):
         if isinstance(ref, int):
@@ -1060,18 +1148,46 @@ class Executor(object):
         meter("start", 0)
         real = be.read()
         meter("read", 0)
-        st0 = self.step(0)["state"]
-        d = compare(st0["terminals"], real, self.bind)
-        self.report.append({"op": "base", "acts": [0], "diff": d})
-        self.log("  STEPX 00 base read vs step_00: diff {0}".format(d["n"]))
-        if d["n"]:
-            raise ExecStop("BASE: the scratch copy's graph differs from the plan's base graph: {0}".format(
-                {k: v[:6] for k, v in d.items() if isinstance(v, list) and v}))
+        fs, s_act = self.from_step, 0
+        if fs is None:
+            st0 = self.step(0)["state"]
+            d = compare(st0["terminals"], real, self.bind)
+            self.report.append({"op": "base", "acts": [0], "diff": d})
+            self.log("  STEPX 00 base read vs step_00: diff {0}".format(d["n"]))
+            if d["n"]:
+                raise ExecStop("BASE: the scratch copy's graph differs from the plan's base graph: {0}".format(
+                    {k: v[:6] for k, v in d.items() if isinstance(v, list) and v}))
+        else:                                              # card 103-4 PART-B ENTRY: the loaded Part-A file == step k
+            s_act = self.ops[fs - 1]["acts"][-1]
+            st0, unb = bind_state(self.step(s_act)["state"], self.bind)
+            if unb:
+                raise ExecStop("FROM-STEP: simulated step {0} (after op {1}) holds {2} created uid(s) the Part-A binding "
+                               "does not bind: {3} - stop before op {4}".format(s_act, fs, len(unb), unb[:12], fs + 1))
+            for n in range(1, s_act + 1):
+                self.allow.update((self.step(n).get("effect") or {}).get("allow_either") or [])
+            d = compare(self.step(s_act)["state"]["terminals"], real, self.bind, self.allow)
+            self.report.append({"op": "from_step", "k": fs, "acts": [s_act], "diff": d})
+            self.log("  STEPX {0:02d} FROM-STEP entry read vs step_{1:02d} (through the Part-A binding): diff {2}".format(
+                fs, s_act, d["n"]))
+            if d["n"]:
+                cls, hit = classify_step_diff(self.plan, s_act, d)
+                if not (self.record and cls == "warn"):
+                    raise ExecStop("FROM-STEP BASE: the Part-A file's graph differs from simulated step {0} ({1}): {2}".format(
+                        s_act, cls, json.dumps({k: v[:6] for k, v in d.items() if isinstance(v, list) and v}, default=str)[:1200]))
+                self.diffs.append({"k": fs, "op": "from_step", "acts": [s_act], "ids": [], "diff": d, "class": cls,
+                                   "later_refs": hit, "new_since_last_diff": {}, "ops_since_last_read": []})
+            rg = []
+            for k0, o0 in enumerate(self.ops[:fs], 1):     # the value gates Part A passed are READ again (no edit)
+                if o0["kind"] == "gate":
+                    a0 = A[o0["acts"][0] - 1]
+                    rg.append({"k": k0, "id": a0.get("id"), "res": be.recheck_gate(self.obj_real(st0, a0["uid"]), a0, o0)})
+            self.report[0]["regate"] = rg
+            self.log("  FROM-STEP value gates of ops <= {0} re-read: {1}".format(fs, rg))
         # PRIME: every plan end on a BASE node whose terminal is wired now gets its Terminals[] index proved by its
         # wire uid, before any edit (the stage_d1_l7_r A0 anchor for #2048 'length', generalised)
         be.addr.owners = st0.get("owners") or be.addr.owners
         # PD187(a): reader parity at base, per touched diagram, BEFORE any address is proved
-        diags = touched_diagrams(self.plan, st0)
+        diags = touched_diagrams(self.plan if fs is None else dict(self.plan, actions=A[s_act:]), st0)
         rows, npar = reader_parity(be.addr.rd, SimReader(_StateHolder(st0)), diags, be.obj_classes(real),
                                    classes_of(st0["terminals"], st0.get("objs")))
         self.report[0]["parity"] = {"diagrams": diags, "n": npar, "rows": rows}
@@ -1082,6 +1198,8 @@ class Executor(object):
         rightin = set(o["acts"][0] for o in self.ops if o["kind"] == "wire_sr" and o["variant"] == "RightIn")
         primed, why, ct_primed = 0, [], 0
         for i, a in enumerate(A, 1):
+            if i <= s_act:                                 # card 103-4: a Part-B entry primes the ends of ops > k only
+                continue
             for side, src in (("src", True), ("dst", False), ("at", None)):
                 e = a.get(side)
                 if e is None or _sym_of(e)[0]:
@@ -1111,16 +1229,23 @@ class Executor(object):
         if why:                                            # PD185(3): an unprovable end STOPS before op 1
             raise ExecStop("PRIME: {0} wired end(s) not addressable at base - stop before op 1: {1}".format(len(why), why[:6]))
         cp = self.checkpoints
+        last_k = len(self.ops) if self.stop_after is None else self.stop_after
+        if not (fs or 0) + 1 <= last_k <= len(self.ops):
+            raise ExecStop("STOP-AFTER: {0} is outside {2}..{1} - stop before op {2}".format(last_k, len(self.ops), (fs or 0) + 1))
         if cp is not None:
-            need = set(k for k, o in enumerate(self.ops, 1) if o["kind"] in BIND_KINDS) | {len(self.ops)}
+            need = set(k for k, o in enumerate(self.ops, 1) if o["kind"] in BIND_KINDS and (fs or 0) < k <= last_k) | {last_k}
             bad = sorted(need - cp) + sorted(k for k in cp if not 0 <= k <= len(self.ops))
             if bad:
                 raise ExecStop("CHECKPOINT: set {0} lacks binding/last op(s) or is out of range: {1} (need {2}) - stop before op 1".format(
                     sorted(cp), bad, sorted(need)))
             self.log("  CHECKPOINTS whole-VI read+diff after ops {0} of {1}".format(sorted(k for k in cp if k), len(self.ops)))
         stale = False
-        last_read_k = 0
+        last_read_k = fs or 0
         for k, op in enumerate(self.ops, 1):
+            if k > last_k:                         # card 103-1 PART-A MODE: no op > stop_after is ever dispatched
+                break
+            if fs is not None and k <= fs:         # card 103-4 PART-B ENTRY: ops 1..k are Part A's, bound, not re-run
+                continue
             self.cur = {"k": k, "op": op["kind"], "acts": op["acts"], "ids": [A[n - 1].get("id") for n in op["acts"]]}
             first, last = op["acts"][0], op["acts"][-1]
             prev = self.step(first - 1)["state"]
@@ -1211,6 +1336,10 @@ class Executor(object):
                                                 "STEP-DIFF" + (" later refs {0}".format(hit) if hit else "")) + msg[:1600])
             last_read_k = k
             real = real_new
+        if self.stop_after is not None:
+            self.stopped_after = last_k
+            self.log("  STOP-AFTER op {0} of {1}: ops {2}..{1} NOT dispatched (PART-A mode)".format(
+                last_k, len(self.ops), last_k + 1))
         un = getattr(be, "unroutable", None)      # a collecting (dry) backend: every unroutable row, reported at the end
         if un:
             raise ExecStop("UNROUTABLE {0} row(s): {1}".format(len(un), "; ".join(
@@ -1666,6 +1795,10 @@ class LVBackend(object):
             raise ExecStop("VALUE-GATE {0}: #{1} is {2!r} - the plan says stop".format(a.get("id"), uid, r["value"]))
         return {"err": None, "value": r["value"], "how": "read_bool_const"}
 
+    def recheck_gate(self, uid, a, op):
+        """card 103-4 PART-B ENTRY: the value gate Part A passed, READ again on the loaded file (same read, no edit)."""
+        return self.value_gate(uid, a, op)
+
     def branch(self, tun, dst, real, loop_of, op, side="outer"):
         face = "InnerTerminal" if side == "inner" else "OuterTerminal"     # card 100-3: an INPUT tunnel branches inside
         outer = [r for r in real if r["owner_uid"] == tun and r["term_class"] == face and r["is_source"]]
@@ -1923,6 +2056,13 @@ class SimBackend(object):
         out["value"] = None
         return out
 
+    def recheck_gate(self, uid, a, op):
+        """card 103-4: the dry side of a Part-B entry's gate re-read - the constant must still be a BooleanConstant of
+        the graph; nothing is applied (the gate op changed nothing in Part A)."""
+        if int(uid) not in self.addr.rd.obj_uids("BooleanConstant"):
+            raise ExecStop("FROM-STEP gate {0}: #{1} not in report_all('BooleanConstant')".format(a.get("id"), uid))
+        return {"err": None, "value": None, "how": "dry: presence only"}
+
     def wire_sr(self, variant, loop, right, term, real, op):
         try:
             chk = self._check(real, term, variant == "RightIn")
@@ -1978,13 +2118,25 @@ class SimBackend(object):
         return self._apply(op)
 
 
-def dry_run(plan_path, fault=None, log=print, model_dir=None, require_final=True):
-    """(status, first_fail, executor). No LabVIEW. require_final=False = the DIAGNOSTIC routability run (card 100-3)."""
+def from_step_state(plan_path, from_step, binding):
+    """card 103-4: the offline stand-in for the saved Part-A file - simulated step (last act of op k) with every created
+    uid replaced by its Part-A real uid (bind_state). ExecStop when the binding does not load or leaves a uid unbound."""
+    plan, paths = load_final_plan(plan_path)
+    s_act = compile_plan(plan)[int(from_step) - 1]["acts"][-1]
+    st, unb = bind_state(_j(_abs(paths[s_act]))["state"], load_binding(binding, plan_path, from_step)["bind"])
+    if unb:
+        raise ExecStop("FROM-STEP: step {0} holds created uid(s) the binding does not bind: {1}".format(s_act, unb[:12]))
+    return st
+
+
+def dry_run(plan_path, fault=None, log=print, model_dir=None, require_final=True, from_step=None, binding=None):
+    """(status, first_fail, executor). No LabVIEW. require_final=False = the DIAGNOSTIC routability run (card 100-3).
+    card 103-4: from_step=k + binding = the Part-B dry run, on the bound step-k state (from_step_state)."""
     plan, _paths = load_final_plan(plan_path, require_final)
     base = _j(_abs(plan["finalized"]["base"]["path"]))
-    st = SS.base_state(base, plan.get("context"))
+    st = SS.base_state(base, plan.get("context")) if from_step is None else from_step_state(plan_path, from_step, binding)
     be = SimBackend(plan, st, SS.load_models(model_dir or SS.OPMODEL_DIR), fault)
-    ex = Executor(plan_path, be, log, require_final=require_final)
+    ex = Executor(plan_path, be, log, require_final=require_final, from_step=from_step, binding=binding)
     ex.unroutable = be.unroutable
     try:
         ex.run()                                       # raises UNROUTABLE at the end when any row was unroutable
@@ -2573,6 +2725,40 @@ def selftest():
         gate("T39d NEGATIVE: record mode does NOT swallow a BINDING stop", False, "ran clean")
     except ExecStop as e:
         gate("T39d NEGATIVE: record mode does NOT swallow a BINDING stop", "BINDING" in str(e), str(e)[:160])
+    # card 103-1 PART-A MODE (PD215(b)): stop_after=k dispatches ops 1..k only, op k read + compared, nothing after it
+    ksa = max(1, len(opsx) // 2)
+    exa = Executor(fin, mkbe(), log=q, record=True, stop_after=ksa)
+    exa.run()
+    gate("T40 stop_after={0}: ops 1..{0} run, step {0} read+compared (diff 0), NO op > {0} dispatched".format(ksa),
+         exa.stopped_after == ksa and exa.cur["k"] == ksa and len(exa.report) == ksa + 1 and
+         exa.report[-1]["k"] == ksa and exa.report[-1]["diff"]["n"] == 0 and not exa.report[-1]["diff"].get("skipped") and
+         exa.diffs == [], (exa.stopped_after, exa.cur, len(exa.report)))
+    pa1, pa2, _pd, pbind = exa.part_a_record()
+    gate("T40e part_a_record on the clean stop_after run: a1 and a2 True, binding JSON-serialisable with str keys, plan md5 pinned",
+         pa1 and pa2 and json.loads(json.dumps(pbind))["stop_after"] == ksa and set(pbind["bind"]) == {"obj", "term", "diag"} and
+         pbind["plan_md5"] == SS.md5_file(_abs(fin)), (pa1, pa2, sorted(pbind)))
+    exf = Executor(fin, mkbe({"at": 5, "kind": "drop_edge"}), log=q, record=True, stop_after=kd)   # T39's fault, stopped AT its op
+    exf.run()
+    fa1, fa2, fd, _fb = exf.part_a_record()
+    gate("T40f NEGATIVE: an edge dropped AT op k (a FAIL-class diff) -> part_a_record a1 True, a2 False",
+         fa1 and not fa2 and exf.diffs and exf.diffs[-1]["class"] == "fail", fd)
+    cpa = set(k for k in bindk if k <= ksa) | {0, len(opsx)}
+    try:
+        Executor(fin, mkbe(), log=q, checkpoints=cpa - {ksa}, stop_after=ksa).run()
+        gate("T40b NEGATIVE: stop_after op not in the checkpoint set stops before op 1", False, "ran")
+    except ExecStop as e:
+        gate("T40b NEGATIVE: stop_after op not in the checkpoint set stops before op 1", str(e).startswith("CHECKPOINT"), str(e)[:200])
+    exb = Executor(fin, mkbe(), log=q, checkpoints=cpa | {ksa}, stop_after=ksa)
+    exb.run()
+    gate("T40c stop_after with a checkpoint set holding a LATER last op: reads only at the set's ops <= k, ends at k",
+         exb.stopped_after == ksa and exb.reads_real == sorted(k for k in (cpa | {ksa}) - {0} if k <= ksa) and exb.cur["k"] == ksa,
+         (exb.reads_real, exb.cur))
+    try:
+        Executor(fin, mkbe(), log=q, stop_after=len(opsx) + 1).run()
+        gate("T40d NEGATIVE: stop_after beyond the last op stops before op 1", False, "ran")
+    except ExecStop as e:
+        gate("T40d NEGATIVE: stop_after beyond the last op stops before op 1", str(e).startswith("STOP-AFTER"), str(e)[:160])
+    _selftest_from_step(gate, fin, pl_, md, opsx, q)
     _selftest_create(gate, tmp, q)
     gate("T14 nothing LabVIEW-side imported",not any(m in sys.modules for m in ("gscript", "win32com", "pythoncom", "stagekit")),
          [m for m in ("gscript", "win32com", "pythoncom", "stagekit") if m in sys.modules])
@@ -2582,6 +2768,75 @@ def selftest():
     print("=== GATES: {0} pass / {1} fail{2}".format(n_pass, n_fail, "; failing: " + first if first else ""))
     print(protocol.result_line(protocol.make_result(n_pass, n_fail, first)))
     return 0 if n_fail == 0 else 1
+
+
+def _selftest_from_step(gate, fin, pl_, md, opsx, q):
+    """card 103-4: PART-B ENTRY. (a) synthetic plan: Part A stop_after=k on a SimBackend, then Part B on a NEW backend
+    holding Part A's end state, bound from the JSON-round-tripped part_a_record -> reaches the last op with no diff and
+    dispatches only ops k+1..; (b) the real display plan + the Part-A JSON (when present): Part-B dry PASS from its step;
+    (c) negatives: plan md5 mismatch, a missing uid, stop_after != from_step, from_step out of range, registers."""
+    models = SS.load_models(md)
+    mk = lambda st=None: SimBackend(pl_, st if st is not None else SS.base_state(_j(_abs(pl_["finalized"]["base"]["path"])),   # noqa: E731
+                                                                               pl_.get("context")), models)
+    first_sr = min([k for k, o in enumerate(opsx, 1) if o["kind"] == "add_sr"] or [len(opsx) + 1])
+    cands = [k for k, o in enumerate(opsx, 1) if k < first_sr and k < len(opsx) and any(p["kind"] in BIND_KINDS for p in opsx[:k])]
+    kb = cands[-1] if cands else (first_sr - 1 if first_sr > 1 else None)
+    q("  T41 synthetic Part-A/B split at op {0} (first add_sr op {1}, {2} ops)".format(kb, first_sr, len(opsx)))
+    if kb:
+        exa = Executor(fin, mk(), log=q, record=True, stop_after=kb)
+        exa.run()
+        a1, a2, _d, pb = exa.part_a_record()
+        pb = json.loads(json.dumps(pb))
+        beB = mk(copy.deepcopy(exa.be.st))
+        beB.next = exa.be.next                        # the saved file's uids stay taken, as LabVIEW's would
+        exB = Executor(fin, beB, log=q, record=True, from_step=kb, binding=pb)
+        try:
+            exB.run()
+            gate("T41 Part-B entry from_step={0}: entry diff 0, ops {1}..{2} dispatched only, last op reached, no diff".format(
+                kb, kb + 1, len(opsx)), a1 and a2 and exB.report[0]["op"] == "from_step" and exB.report[0]["diff"]["n"] == 0 and
+                 [r["k"] for r in exB.report[1:]] == list(range(kb + 1, len(opsx) + 1)) and exB.diffs == [] and
+                 len(beB.calls) == len(opsx) - kb, (a1, a2, [r.get("k") for r in exB.report][:6], exB.diffs[:2], len(beB.calls)))
+        except ExecStop as e:
+            gate("T41 Part-B entry from_step={0} on the synthetic plan".format(kb), False, str(e)[:300])
+        try:
+            Executor(fin, mk(copy.deepcopy(exa.be.st)), log=q, from_step=kb, binding=dict(pb, stop_after=kb + 1))
+            gate("T41e NEGATIVE: binding stop_after != from_step stops", False, "constructed")
+        except ExecStop as e:
+            gate("T41e NEGATIVE: binding stop_after != from_step stops", "stop_after" in str(e), str(e)[:160])
+    else:
+        gate("T41 Part-B entry: the synthetic plan has a split point before its first add_sr", False, (first_sr, len(opsx)))
+    try:
+        Executor(fin, mk(), log=q, from_step=len(opsx), binding={})
+        gate("T41f NEGATIVE: from_step = the last op (nothing left) stops", False, "constructed")
+    except ExecStop as e:
+        gate("T41f NEGATIVE: from_step = the last op (nothing left) stops", str(e).startswith("FROM-STEP"), str(e)[:160])
+    ksr = next((k for k, o in enumerate(opsx, 1) if o["kind"] == "add_sr" and k < len(opsx)), None)
+    if ksr:
+        exs = Executor(fin, mk(), log=q, record=True, stop_after=ksr)
+        exs.run()
+        try:
+            Executor(fin, mk(copy.deepcopy(exs.be.st)), log=q, from_step=ksr, binding=exs.part_a_record()[3])
+            gate("T41g NEGATIVE: a Part A that created shift registers has no Part-B entry", False, "constructed")
+        except ExecStop as e:
+            gate("T41g NEGATIVE: a Part A that created shift registers has no Part-B entry", "shift registers" in str(e), str(e)[:160])
+    rp, rb = os.path.join(BENCH, "sim", "disp", "plan_disp.json"), os.path.join(BENCH, "stage_d1_dispA.json")
+    if not (os.path.exists(rp) and os.path.exists(rb)):
+        gate("T42 real display plan + Part-A JSON present", False, (rp, rb))
+        return
+    pa = _j(rb)["partA"]
+    k = int(pa["stop_after"])
+    st, ff, ex = dry_run(rp, log=q, from_step=k, binding=rb)
+    gate("T42 real plan: Part-B dry from_step={0} with the Part-A JSON PASS, ops {1}..{2} only, entry diff 0".format(
+        k, k + 1, len(ex.ops)), st == "PASS" and ex.report[0]["op"] == "from_step" and ex.report[0]["diff"]["n"] == 0 and
+         ex.report[1]["k"] == k + 1 and ex.report[-1]["k"] == len(ex.ops), (st, ff and ff[:300], [r.get("k") for r in ex.report][:3]))
+    for lab, bad, want in (("T42b NEGATIVE: plan md5 mismatch", dict(pa, plan_md5="0" * 32), "plan md5"),
+                           ("T42c NEGATIVE: a missing uid (one term binding dropped)",
+                            dict(pa, bind=dict(pa["bind"], term=dict(list(pa["bind"]["term"].items())[1:]))), "does not bind")):
+        try:
+            st2, ff2, _e = dry_run(rp, log=q, from_step=k, binding=bad)
+            gate(lab, False, (st2, ff2))
+        except ExecStop as e:
+            gate(lab, str(e).startswith("FROM-STEP") and want in str(e), str(e)[:200])
 
 
 PROPOSED_SCHEMA = os.path.join(BENCH, "sim", "disp", "stageplan_schema_proposed.json")
@@ -2723,8 +2978,13 @@ def main(argv):
         return selftest()
     if len(argv) >= 3 and argv[1] in ("dry", "prerun", "run"):
         plan = os.path.abspath(argv[2])
-        if argv[1] == "dry":
-            st, ff, ex = dry_run(plan, require_final="--nonfinal" not in argv)
+        if argv[1] == "dry":                       # card 103-4: `dry <plan> --from-step k --binding <Part-A json>`
+            fsk = int(argv[argv.index("--from-step") + 1]) if "--from-step" in argv else None
+            try:
+                st, ff, ex = dry_run(plan, require_final="--nonfinal" not in argv, from_step=fsk,
+                                     binding=argv[argv.index("--binding") + 1] if "--binding" in argv else None)
+            except ExecStop as e:
+                st, ff = "FAIL", str(e)[:4000]
             print(protocol.result_line(protocol.make_result(int(st == "PASS"), int(st != "PASS"), ff)))
             return 0 if st == "PASS" else 1
         if argv[1] == "prerun":

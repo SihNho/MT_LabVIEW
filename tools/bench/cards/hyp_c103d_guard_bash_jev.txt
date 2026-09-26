@@ -1,0 +1,19 @@
+ATTACK this claim. Log: tools/bench/selftest_guard_bash_jev_c103d.log (script tools/bench/selftest_guard_bash_jev.py), run by card
+tools/bench/cards/task_103-4.json as a regression check after two edits: tools/hooks/guard_bash.py (_drop_lint_segments / LINT_SEG_RE in
+stop_gate: drops `py -m pyflakes|pycodestyle <plain args> [2>&1]` segments before stop_record.check_command) and tools/stage_prerun.py
+(VI_MOD_EXEMPT_PATHS: tools/bench/selftest_stagekit.py exempt from the VI-modifying launch classifier only at its pinned sha256).
+
+Observed: C2, C2b, C3, C5 FAIL with rc=2 (earlier logs tools/bench/selftest_chatl1_selftest_guard_bash_jev.log and
+selftest_chatl2_selftest_guard_bash_jev.log were 11/0 with rc=0). The C2b detail shows the last stderr line
+"py tools/stage_prerun.py --prerun tools/bench/diag_c88_brokenwires.py", i.e. the stage launch gate's own refusal text.
+
+CLAIM: the four FAILs are NOT caused by the card 103-4 edits. The test's fixture command BG =
+`py tools/bgrun.py --material --max-min 5 --log tools/bench/x.log -- py -u tools/bench/diag_c88_brokenwires.py`
+(selftest_guard_bash_jev.py:85-86) is refused by prerun_gate because card chat-N1 (2) (2026-09-26, stage_prerun.launched_vi_modifying /
+is_vi_modifying) classes diag_c88_brokenwires.py as VI-modifying (it imports stagekit and calls a MODIFY_VERBS name) and it has no dry +
+prerun PASS record; the chatl1/chatl2 11/0 logs predate chat-N1. Neither edit can change this: the lint drop only removes lint segments
+from the string handed to stop_record, and the exemption matches only tools/bench/selftest_stagekit.py at sha256 82ab60d4...
+
+Attack it: could either edit produce rc=2 here? Is there a newer 11/0 run of this test AFTER chat-N1 that contradicts the claim? Name the
+cheapest discriminating test (e.g. stage_prerun.vi_modifying_calls('tools/bench/diag_c88_brokenwires.py') non-empty, and
+stage_prerun.check_launch(BG) refusing with the LAUNCH GATE text, both independent of guard_bash).

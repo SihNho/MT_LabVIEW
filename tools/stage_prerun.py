@@ -1067,7 +1067,10 @@ def lint(recipe, OG):
     return ints, strs
 
 
-def prerun(recipe, graph=None):
+def prerun(recipe, graph=None, stop_after=None, from_step=None):
+    """card 103-2 (PD216(b)): stop_after=k (the recipe's own `--stop-after k`, PART-A mode) makes X5 expect only the
+    stageplan wiring real ops 1..k - exactly the ops the run dispatches; the wire-action COVERAGE check stays over the
+    whole compiled plan. stop_after=None: X5 unchanged."""
     tr = dry(recipe, graph)
     gates = []
 
@@ -1134,11 +1137,18 @@ def prerun(recipe, graph=None):
         wa = set(i for i, a in enumerate(A, 1) if a.get("op") == "wire")
         wo = [o for o in (ops_ or []) if o["kind"] in SP_WIRING]
         so = [o for o in (ops_ or []) if o["kind"] in SP_WIRE_OTHER]
-        sp_wops, sp_wact = sp_wops + len(wo), sp_wact + len(wa)
+        # card 103-2: PART-A mode expects only the wiring ops the run dispatches (op index k <= stop_after)
+        # card 103-4: PART-B mode (`--from-step k`) expects only the wiring ops k+1.. the run dispatches
+        wk = wo if stop_after is None and from_step is None else [
+            o for k, o in enumerate(ops_ or [], 1) if o["kind"] in SP_WIRING and k <= int(stop_after or len(ops_ or []))
+            and k > int(from_step or 0)]
+        sp_wops, sp_wact = sp_wops + len(wk), sp_wact + len(wa)
         sp_cov += len(wa & set(x for o in wo + so for x in o["acts"]))
     gate("X5 wiring ops executed in the dry run == plan wire rows", plans and not sp_bad and len(ops) == len(wires) + sp_wops
-         and sp_cov == sp_wact, "ops {0} vs plan wire rows {1} + stageplan wiring real ops {2} (covering {3}/{4} wire actions)"
-         .format(len(ops), len(wires), sp_wops, sp_cov, sp_wact))
+         and sp_cov == sp_wact, "ops {0} vs plan wire rows {1} + stageplan wiring real ops {2}{5} (covering {3}/{4} wire actions)"
+         .format(len(ops), len(wires), sp_wops, sp_cov, sp_wact,
+                 ("" if stop_after is None else " among ops 1..{0} (PART-A stop_after)".format(int(stop_after))) +
+                 ("" if from_step is None else " among ops {0}.. (PART-B from_step)".format(int(from_step) + 1))))
     if OG is not None:
         ints, strs = lint(recipe, OG)
         gate("X6 ast lint: no re-typed uid / terminal name", not ints and not strs,
@@ -1235,9 +1245,19 @@ MODIFY_VERBS = frozenset((
 VI_MOD_EXEMPT = frozenset(("stage_prerun.py", "stagekit.py", "stagexec.py", "stagesim.py"))
 
 
+# card 103-4: stagekit's own OFFLINE self-test (docstring: "Nothing here opens COM, touches claudeDev or reads a .vi") calls
+# save_route / create_local_read on a fake Stage and was refused as a VI-modifying launch (material_marker.log:2185).
+# Exempt BY PROJECT PATH AND BYTES (sha256 pin, archive/peer/2026-09-27-c103d-hooks-before.md s3, accepted): the same bytes
+# under any other path, or other bytes at this path, are still classified.
+VI_MOD_EXEMPT_PATHS = {"tools/bench/selftest_stagekit.py": "82ab60d432900ae916a6ad67a2aad47951a66a3aca98d85b82d3d271bede8b67"}
+
+
 def vi_modifying_calls(path):
     """[] or the sorted MODIFY_VERBS names the file calls, when it imports stagekit (ast; never text search)."""
     if os.path.basename(path).lower() in VI_MOD_EXEMPT:
+        return []
+    pin = VI_MOD_EXEMPT_PATHS.get(rel(os.path.abspath(path)).replace("\\", "/").lower())
+    if pin and os.path.isfile(path) and sha256(path) == pin:
         return []
     try:
         tree = ast.parse(REAL_OPEN(path, encoding="utf-8", errors="replace").read(), filename=path)
@@ -1679,7 +1699,11 @@ def main(argv=None):
     ap.add_argument("--check-launch")
     ap.add_argument("--control-lint", help="control_path_lint one stageplan/1 JSON (exit 0 clean / 2 refused)")
     ap.add_argument("--selftest-control-lint", action="store_true")
-    a = ap.parse_args(argv)
+    # card 103-1: unknown arguments pass through to the recipe's own sys.argv (e.g. stage_d1_disp.py `--stop-after 40`,
+    # PART-A mode), so a recipe mode can be dry-run / pre-run exactly as it will be launched; they must follow the recipe.
+    a, rest = ap.parse_known_args(argv)
+    if rest and not (a.dry or a.prerun):
+        ap.error("unrecognized arguments: %s" % " ".join(rest))
     if a.selftest_control_lint:
         return _selftest_control_lint()
     if a.control_lint is not None:
@@ -1716,7 +1740,9 @@ def main(argv=None):
         print(P.result_line(P.make_result(npass, nfail, ff, status=st)), flush=True)
         return 0 if st == "PASS" else 1
     real_stdout = sys.stdout
-    tr = prerun(recipe, a.graph) if a.prerun else dry(recipe, a.graph)
+    sa = int(rest[rest.index("--stop-after") + 1]) if "--stop-after" in rest else None   # card 103-2: PART-A X5
+    fk = int(rest[rest.index("--from-step") + 1]) if "--from-step" in rest else None     # card 103-4: PART-B X5
+    tr = prerun(recipe, a.graph, stop_after=sa, from_step=fk) if a.prerun else dry(recipe, a.graph)
     sys.stdout = real_stdout
     import protocol as P
     print("\n=== DRY {0}: first_fail={1} coverage {2}/{3} lines, first mutation {4}, unverified {5}, graph {6}".format(
@@ -1729,7 +1755,8 @@ def main(argv=None):
         pr = tr["prerun"]
         print("=== PRERUN {0}: {1} pass / {2} fail; first {3}".format(pr["status"], pr["pass"], pr["fail"], pr["first_fail"]))
         if not a.no_record:
-            write_record("prerun", recipe, pr["status"], pr["first_fail"], {"input_md5": tr["input_md5"], "graph": tr["graph"]})
+            write_record("prerun", recipe, pr["status"], pr["first_fail"], {"input_md5": tr["input_md5"], "graph": tr["graph"],
+                                                                         "stop_after": sa, "from_step": fk})
         status, npass, nfail, first = pr["status"], pr["pass"], pr["fail"], pr["first_fail"]
     if a.json_out:
         with REAL_OPEN(a.json_out, "w", encoding="utf-8") as f:

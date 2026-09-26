@@ -1,0 +1,22 @@
+{
+ "card": "103-2",
+ "log": "tools/bench/stage_d1_dispA_r1.log",
+ "outcome": "MEMSTOP at the step-40 checkpoint read, before part_a/gui_save; nothing saved",
+ "stop": {"op_k": 40, "kind": "connect", "acts": [50], "ids": ["r6_force_write"], "class": "ExecStop MEMSTOP",
+          "message": "LabVIEW private bytes 703.8 MB >= 700.0 MB at read k 40", "raised_at": "tools/stagexec.py:87",
+          "gate": "tools/recipes/stage_d1_disp.py:78", "log_line": 799},
+ "ops_dispatched": "1..40 (op 40 executed; its whole-VI read is the one that crossed MEMSTOP)",
+ "step_diffs": [{"k": 12, "op": "move_in", "ids": ["mv_11310"], "class": "warn", "detail": "dangling_sim_only [11365]", "log_line": 245}],
+ "step40_real_vs_sim": "not compared: MEMSTOP raised on the read itself (stagexec meter before diff)",
+ "memory_private_mb": {"start_k0": 570.7, "read_k0": 578.6, "read_k12": 619.4, "read_k24": 639.2, "read_k33": 673.7,
+                        "read_k37": 695.0, "read_k39": 699.8, "op_k40": 699.7, "read_k40": 703.8, "max": 703.8,
+                        "after_save": null},
+ "handles": {"start_k0": 54467, "max": 55099, "read_k40": 55097, "after_save": null},
+ "r7_comparison": {"r7_read_k0": 573.6, "r7_read_k37": 686.2, "r7_op_k40": 690.4,
+                   "note": "r1 runs ~9 MB above r7 from k37 on; r7 had no read at k40 (full mode), Part A adds one (+4.1 MB)"},
+ "files": {"S1": {"path": "claudeDev\\D1_s1_copy.vi", "md5": "3e3d23cefd3a334001aa9d6156bf1aee", "unchanged": true},
+           "left_on_disk": {"path": "claudeDev\\D1_s1_dispA_20260927_022749.vi", "md5": "3e3d23cefd3a334001aa9d6156bf1aee",
+                            "what": "the stage's work copy, never saved: byte-identical to S1, NOT a Part-A artefact"}},
+ "labview_gone_at_exit": true,
+ "gates": {"pass": 9, "fail": 2}
+}

@@ -1,0 +1,31 @@
+{"schema":"result/1","id":"103-1","status":"PASS","gates":{"pass":6,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/cards/split_plan_103.md","md5":"59152b0314580d4596202a61f0e6977e"},
+ {"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpWaitDonor_v0.vi","md5":"6fc80d600cac1608c4dc77229b6e969d"},
+ {"path":"tools/bench/facts_c103_donor.json","md5":"aa883dbc30b104b2b58e034a5dcab6d3"},
+ {"path":"tools/bench/facts_c100_oplabels.json","md5":"0ebb349b7a4f4df97bf0faf04184120b"},
+ {"path":"tools/bench/sim/disp/stageplan_disp_r4_open.json","md5":"7eec1754c5cc58ebf5759142781de873"},
+ {"path":"tools/bench/sim/disp/plan_disp.json","md5":"c7d80fc93279f4ea5efd21c068e7efa6"},
+ {"path":"tools/stagexec.py","md5":"d1e290e8a95041bca0a10cf955a8eef7"},
+ {"path":"tools/stage_prerun.py","md5":"8488060b538b368daa3366349d77fb44"},
+ {"path":"tools/recipes/stage_d1_disp.py","md5":"7863e134b44cfd30e127e56ad05105bd"}
+],
+"facts":[
+ "P3 donor OpWaitDonor_v0.vi = byte copy of examples Running Average with Shift Registers.vi; Wait (ms) uid 163, Diagram #55, class Function (diag_c103_wait_donor2.log:4-9)",
+ "Donor terminals sink 'milliseconds to wait' + source 'millisecond timer value' == plan; registered donors['Wait (ms)'] md5 6fc80d60 (diag_c103_wait_donor2.log:9-10)",
+ "P4 r7_wait -> prim 'Wait (ms)'; re-sim FINAL, same 21 open rows, steps 0..50 content-identical, op 41 route primitive; plan_disp 052ab3d5->c7d80fc9 (diag_c103_resim.log:4-9)",
+ "Full-mode prerun PASS 8/0 (X1 dry PASS, 0 unroutable, E1 0 warns at 24 reads); protocol requires 7/0 (diag_c103_prerun2.log end; requires_103-1.json)",
+ "P5 Part-A dry (--stop-after 40): STOP-AFTER op 40, A1/A2/AS PASS; its prerun X5 FAILs 18 vs 19 wiring ops since op 45 is not dispatched (diag_c103_prerunA.log end)",
+ "stagexec: Executor(stop_after=k) + part_a_record() (binding with str keys + plan md5); self-test 84/0 incl. T40, T40b-f (selftest_stagexec_c103.log)",
+ "stage_prerun main uses parse_known_args so recipe args (--stop-after 40) reach the dry/pre-run recipe (tools/stage_prerun.py:1681-1686)",
+ "P2 prior-art novel (archive/peer/2026-09-27-priorart-c103-split-plan.md); recipe edit re-armed stop_record, 2nd review novel per gate text (...-split-plan-recipe.md)",
+ "diag_c103_wait_donor.log | new-problem p=0.614 | hypothesis review owed | review ANSWERED, close_panel calls deleted | rerun PASS 8/0 (archive/peer/2026-09-27-c103-wait-donor-closepanel.md)",
+ "S1 md5 3e3d23ce unchanged, no dispA/cand files, LabVIEW not running (diag_c103_close.log:3-6); recipe is 129 lines vs the 120 rule (127 before this card)"
+],
+"open":[
+ "The Part-A launch has only a full-mode prerun PASS on record (the Part-A-mode prerun fails X5 by construction, 18/19 wiring ops); should X5 count only ops <= stop_after?",
+ "stage_d1_disp.py is 129 lines vs the <=120 stage rule (127 before); accept, or move the Part-A/cdiff helpers into stagekit (not in this card's write flags)?",
+ "Prior-art A3: PD215(b)'s 'copy_in can never run on a claudeDev file' is overstated (stage_d1_m4b.py:29,103 ran it at MOVE_DST); correct the plan text?"
+],
+"cost":{"usd":null,"minutes":24,"labview_runs":2},
+"note":"Part-B --from-step entry NOT built (not a pass line). Peers: 2 priorart ($1.36+$1.15), 1 hypothesis. Also failing but superseded: diag_c103_dry.log (no --graph)."}

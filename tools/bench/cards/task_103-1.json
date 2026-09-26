@@ -1,0 +1,86 @@
+{
+ "schema": "task/1",
+ "id": "103-1",
+ "kind": "build",
+ "goal": "PD215(b) split prep: decomposition page (prior-art once), Wait (ms) donor + r7_wait -> prim, re-sim/dry/prerun, recipe Part-A mode (stop after op 40, gui_save, binding JSON). No stage run.",
+ "why": "Cycle 102 r7 ran ops 1-40 of 47 diff 0 and stopped in op 41 (stagekit.copy_in is MOVE_DST-only); private memory 690 MB vs MEMSTOP 700 at op 40 -> the stage is split (docs/d1-loop12-17-split-plan.md PD215(b)). The Part-A run is a separate card (103-2) that I dispatch after reading this card's result.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_103-1.md"},
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/stage_d1_disp_r7.log"},
+  {"path": "tools/bench/sim/disp/stageplan_disp_r4_open.json"},
+  {"path": "tools/bench/sim/disp/plan_disp.json"},
+  {"path": "tools/bench/facts_c100_oplabels.json"},
+  {"path": "tools/stagexec.py"},
+  {"path": "tools/stagesim.py"},
+  {"path": "tools/stagekit.py"},
+  {"path": "tools/recipes/stage_d1_disp.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpPrimCopyNested_v0.vi"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpPrimDonor_v0.vi"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "requires": [
+  {"kind": "op", "name": "OpPrimCopyNested_v0", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpPrimDonor_v0.vi"},
+  {"kind": "file", "name": "tools/bench/stage_d1_disp_r7.log"},
+  {"kind": "file", "name": "tools/bench/sim/disp/stageplan_disp_r4_open.json"},
+  {"kind": "file", "name": "tools/bench/facts_c100_oplabels.json"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_disp.py"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "pass": [
+  "P1 split_plan_103.md (<=1 page): Part A ops 1-40 -> D1_s1_dispA_<ts>.vi gui_save + binding JSON; Part B ops 41-47 fresh LabVIEW -> D1_s1_disp_<ts>.vi; brief_103-1.md P1",
+  "P2 prior_art_review.py ONCE on split_plan_103.md; non-novel released only by REFUTED:/FIXED:, else FAIL with the verdict",
+  "P3 Wait (ms) donor MEASURED (uid, class, owner diagram, terminals) in an existing claudeDev NI copy or a new byte copy; md5 pinned; registered in facts_c100_oplabels donors",
+  "P4 r7_wait row -> prim Wait (ms); re-sim FINAL same 21 open rows; dry 0 unroutable; stage_prerun all PASS; protocol requires green",
+  "P5 recipe Part-A mode: stop after op 40, step-40 real==sim (WARN only), gui_save dispA, md5+binding JSON, no op>40 dispatched; proven dry; stagexec selftest green",
+  "P6 no stage run; D1_s1_copy.vi md5 unchanged; LabVIEW gone at exit; handle-flat for any new read op; RESULT line; result_103-1.json"
+ ],
+ "outputs": [
+  "tools/bench/cards/split_plan_103.md",
+  "tools/bench/cards/result_103-1.json",
+  "tools/bench/facts_c103_donor.json",
+  "tools/bench/facts_c100_oplabels.json",
+  "tools/bench/sim/disp/**",
+  "tools/stagexec.py",
+  "tools/recipes/stage_d1_disp*.py",
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpWaitDonor_*"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpWaitDonor_*",
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/stage_prerun.py",
+   "tools/recipes/stage_d1_disp*",
+   "tools/bench/sim/disp/**",
+   "tools/bench/facts_c100_oplabels.json",
+   "tools/bench/facts_c103*",
+   "tools/bench/diag_c103*",
+   "tools/bench/selftest_stage*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/cards/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/priorart*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 50},
+ "rules": [
+  "PD215(b) as written; stagekit.copy_in NOT used/changed; the S1 file is NOT a donor (+300 MB)",
+  "rule 1: never edit vi.lib/examples or any original; donor is a byte copy under claudeDev",
+  "no stage run in this card; stage script <= 120 lines on stagekit, content only from the plan file",
+  "measure, do not decide: a pass line not reached -> FAIL with facts (gate, values), stop",
+  "any LabVIEW read: bgrun --max-min <=20, hold the turn to BGRUN END"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

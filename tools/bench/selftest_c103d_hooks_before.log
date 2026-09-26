@@ -1,0 +1,22 @@
+BGRUN START 2026-09-27 03:08:39 limit 2.0 min: py -u tools/bench/selftest_c103d_hooks.py
+BGRUN PID 23988
+fake-refusal
+  FAIL  S1 marker:2175 wc + pyflakes piped to head passes  rc 2
+fake-refusal
+  FAIL  S2 py -m pycodestyle alone passes  rc 2
+fake-refusal
+  PASS  S3 NEGATIVE direct launch refused  rc 2
+fake-refusal
+  PASS  S4 NEGATIVE bgrun launch refused  rc 2
+fake-refusal
+  PASS  S5 NEGATIVE lint then launch refused  rc 2
+fake-refusal
+  PASS  S6 NEGATIVE lint piped into py - refused  rc 2
+fake-refusal
+  PASS  S7 NEGATIVE unknown module refused  rc 2
+  FAIL  L1 selftest_stagekit.py is not a VI-modifying launch  ['create_local_read', 'save_route']
+  PASS  L2 NEGATIVE the same bytes under another path are still VI-modifying  ['create_local_read', 'save_route']
+  PASS  L3 NEGATIVE a real stage recipe is still a stage launch  tools/recipes/stage_d1_disp.py
+=== GATES: 7 pass / 3 fail
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":7,"fail":3},"first_fail":"S1 marker:2175 wc + pyflakes piped to head passes","artefacts":[]}
+BGRUN END rc=1 after 1s

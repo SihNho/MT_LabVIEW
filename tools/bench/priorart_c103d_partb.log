@@ -1,0 +1,34 @@
+BGRUN START 2026-09-27 03:08:01 limit 20.0 min: py tools/prior_art_review.py --plan-file tools/bench/cards/partB_entry_103-4.md --slug c103-partb-entry --trigger new-op --recipe tools/recipes/stage_d1_disp.py
+BGRUN PID 24304
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c103-partb-entry.txt (50551 chars)
+   review card tools\bench\cards\review_priorart-c103-partb-entry.json
+OUTCOME: ANSWERED (65s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-27-priorart-c103-partb-entry.md
+COST: $1.0495  in 14 / out 5483 / cache-create 99984 / cache-read 699777  (62s, 12 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c103-partb-entry verdict=novel -> tools\bench\cards\verdict_priorart-c103-partb-entry.json
+--- ANSWER ---
+**Verdict: novel.** Nothing in the project's files already provides a stagexec entry that resumes a plan at step k from a saved Part-A file through a uid binding. The files do contain evidence that lowers the plan's one named risk (below), but none of it blocks the build.
+
+**PART A: the direction**
+- **A1, already decided?** Only as an instruction, not as something already built. STATUS `## NEXT` item 1 orders exactly this route: "Part B = ops 41–47 from that file in a FRESH LabVIEW (`stagexec --from-step 40` …)". The one change is the boundary, which moved from 40 to 33 by the amendment `split_plan_103.md` cites. That order is the reason for this work, so it does not block it.
+- **A2, already tried and killed?** No. The nearest relative is route-B phasing across two LabVIEW instances (`archive/2026-09-19-status-cycle42-run10.md:31-32`): *"nothing in these files has tried, refuted or decided against phasing a route-B build across two LabVIEW instances"*. What failed there was that recipe's error-2-then-save order (F2, `:36`), which this plan does not repeat.
+- **A3, contradicted?** No. The plan says the file is "never cold-loaded headless", yet Part B opens it through `Stage.start → ensure_loaded`. That looks like the measured >8-minute recompile spin (`cycle42-run10.md:38`, F1). It is not the same case:
+  - The measured hang is a cold `GetVIReference` right after an error-2 save and restart.
+  - The plan's route, `K.Stage(..., preload=False)` (`tools/recipes/stage_d1_disp.py:144`), is the same one cycle 86 used to open the broken-by-design `D1_k_20260925_100155.vi` (ExecState 0) in a fresh LabVIEW. That run finished in 594 s and saved `D1_l2_a1` (`tools/recipes/stage_d1_l2a1.py:124`; STATUS "CYCLE 86 DONE").
+  - So the risk is real but has been survived once, on this exact route.
+- **A4, unread evidence?** Worth reading, but not blocking:
+  - The cycle-86 load above, which the plan's risk line should cite.
+  - `cycle42-run10.md:41` (F6), which records an older checkpoint → reopen → continue pattern (`build_gpu_kernel.py:140-148` plus `finish_gpu_kernel.py:24-27`) with two guards. That was a different mechanism (a GPU-kernel build, no plan-step binding), so it does not cover this card.
+
+**PART B: the code being changed**
+- **B1, already built?** No. This cycle's earlier review searched stagexec, stagekit and stagesim for any resume or from-step entry and found none (`archive/peer/2026-09-27-priorart-c103-split-plan.md:408`). Every `from_step`/`load_binding` match in the repo is this cycle's own work (103-x cards, `stagexec.py`, `stage_d1_disp.py`).
+- **B2, already failed?** No earlier Part-B attempt exists. The two c103 reviews before this one both returned novel (`…c103-split-plan.md:413`, `…c103-split-plan-recipe.md:416`).
+- **B3, existing helper?** The code already reuses the earlier review's B3 suggestion, the binding record in `s.R["partA"]` written by `s.dump()` (`…c103-split-plan.md:424-430`), as well as `stagekit.save_route`/`gui_save` (`tools/stagekit.py:1075-1084`). I found no hand-rolled duplicate.
+- **B4, already measured?** No. Resuming from a bound Part-A state has not been measured. Only the loading step has a precedent: cycle 86, see A3.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c103-partb-entry","verdict":"novel","alternative":"Part-B cold load of the broken dispA file could hit the measured recompile spin (cycle42 F1); cycle 86 loaded broken D1_k via the same K.Stage(preload=False) route without it.","discriminating_test":"Time Stage.start on the dispA file in a fresh LabVIEW with a short bgrun deadline, entry gate B1 only, before ops 34+; log load seconds vs cycle-86 D1_k load.","violations":[],"sources":["tools/recipes/stage_d1_disp.py:144","tools/recipes/stage_d1_l2a1.py:124","archive/2026-09-19-status-cycle42-run10.md:38","archive/2026-09-19-status-cycle42-run10.md:41","archive/peer/2026-09-27-priorart-c103-split-plan.md:408"],"note":"No existing from-step/binding entry anywhere; plan's risk line should cite the cycle-86 broken-bed load as the precedent."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c103-partb-entry.md
+   STOP RECORD: none - 2026-09-27-priorart-c103-partb-entry.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_disp.py sha eaeee62786df -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 68s

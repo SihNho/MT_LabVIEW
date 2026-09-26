@@ -1,0 +1,79 @@
+{
+ "schema": "task/1",
+ "id": "103-4",
+ "kind": "build",
+ "goal": "Part-B entry: stagexec/recipe --from-step 33 binds Part A's uids from stage_d1_dispA.json (no re-exec), Part-B dry + pre-run PASS offline; then owed hook repairs. No LabVIEW stage run.",
+ "why": "103-3 PASS: D1_s1_dispA_20260927_024535.vi (ops 1-33) + binding JSON saved. Retry cap spent this cycle, so Part B runs next cycle; its entry is built and checked offline now (PD215(b), PD216(f)).",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/cards/split_plan_103.md", "md5": "a016590b70acb2d3fb18c1d70c7a6ae2"},
+  {"path": "tools/bench/cards/result_103-3.json"},
+  {"path": "tools/bench/stage_d1_dispA.json", "md5": "d5393162848fef90d099efa7f0439140"},
+  {"path": "tools/bench/stage_d1_dispA_r2.log"},
+  {"path": "tools/bench/sim/disp/plan_disp.json", "md5": "c7d80fc93279f4ea5efd21c068e7efa6"},
+  {"path": "tools/stagexec.py", "md5": "d1e290e8a95041bca0a10cf955a8eef7"},
+  {"path": "tools/stage_prerun.py", "md5": "a21a6de2654e6cb0f30a27e4c452e656"},
+  {"path": "tools/recipes/stage_d1_disp.py", "md5": "7863e134b44cfd30e127e56ad05105bd"},
+  {"path": "docs/violation-decisions.md"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_dispA_20260927_024535.vi", "md5": "16c2ca00a114a227a81612dd49d111cc"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/stage_d1_dispA.json"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_dispA_20260927_024535.vi"},
+  {"kind": "file", "name": "tools/bench/sim/disp/plan_disp.json"},
+  {"kind": "file", "name": "tools/hooks/material_marker.log"}
+ ],
+ "pass": [
+  "1 stagexec from_step=k: binds obj/term/diag from the Part-A JSON (plan md5 must match), dispatches ops k+1.. only; self-test incl. negatives (plan md5 mismatch, missing uid)",
+  "1 recipe --from-step 33 --base <dispA file>: opens the dispA file, prime/parity read vs sim step 33 before op 34; end gates W1/E2/E3/#25261/PS unchanged",
+  "1 Part-B dry PASS and pre-run (from 33) all PASS; launch gate would ALLOW; stagexec self-test green; recipe line count reported",
+  "2 stop record refuses only commands that EXECUTE a stopped recipe, not read-only ones (material_marker.log:2175 case); self-test both cases",
+  "2 launch gate no longer classes selftest_stagekit.py as a stage; self-test positive + negative",
+  "no LabVIEW stage run; dispA + S1 md5 unchanged; RESULT line; result_103-4.json; items not reached listed in open"
+ ],
+ "outputs": [
+  "tools/stagexec.py",
+  "tools/stage_prerun.py",
+  "tools/recipes/stage_d1_disp*.py",
+  "tools/hooks/*.py",
+  "tools/bench/facts_c103d_partB.json",
+  "tools/bench/cards/result_103-4.json"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagexec.py",
+   "tools/stage_prerun.py",
+   "tools/recipes/stage_d1_disp*",
+   "tools/hooks/guard_bash.py",
+   "tools/hooks/guard_card.py",
+   "tools/hooks/material_marker.py",
+   "tools/bench/selftest_*",
+   "tools/bench/sim/disp/**",
+   "tools/bench/facts_c103*",
+   "tools/bench/diag_c103*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/cards/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/priorart*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 45},
+ "rules": [
+  "order: pass lines marked 1 first (the deliverable path), then 2; stop at 45 min and list what is not done",
+  "no LabVIEW stage run (cap spent); a LabVIEW read only if a pre-run needs it, bgrun --max-min 15",
+  "Part-B content only from plan_disp.json + the Part-A JSON; never re-type a uid",
+  "hook edits: self-test before and after; never loosen a refusal beyond the read-only case",
+  "stagekit.copy_in and gscript are not edited in this card"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

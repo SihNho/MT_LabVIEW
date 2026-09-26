@@ -1,0 +1,46 @@
+BGRUN START 2026-09-27 02:04:57 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c103-wait-donor-closepanel -TaskFile tools/bench/cards/hyp_c103_wait_donor.txt
+BGRUN PID 19300
+OUTCOME: ANSWERED (88s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-27-c103-wait-donor-closepanel.md
+COST: $1.1291  in 18 / out 6971 / cache-create 99323 / cache-read 855851  (84s, 17 turn(s))
+--- ANSWER ---
+**Verdict: your diagnosis holds, but the fix has a flaw.** I could not break the explanation for the 0x47D error. The fix, though, swallows more than the one error it was written for, and the calls it guards do nothing useful.
+
+**1. Strongest reason the claim is wrong: the fix, not the diagnosis**
+- `shut()` (`tools/bench/diag_c103_wait_donor.py:55-60`) catches every exception. That includes "RPC server unavailable" and the watchdog's modal-dialog `RuntimeError` (`tools/gscript.py:454`).
+- This project already settled how to handle this error. `tools/bench/build_op_const_loopterm_77.py:114-118` swallows only `0x47D` and re-raises anything else. It was narrowed that way after the peer review in `archive/peer/2026-09-25-const-loopterm-77c.md`.
+- The prior art you cited, `diag_c100_verbs_build.py:224-227`, is the weaker precedent. Its catch-all left no trace: `diag_c100_verbs_build4.log:6-10` shows no close_panel line at all. So it neither supports nor refutes anything.
+- The close calls have no job in this script:
+  - It kills LabVIEW before the re-copy (`K1`, line 98) and at exit, so no unload is needed.
+  - `close_panel` opens a new reference with `GetVIReference` (`gscript.py:264`). If the VI had already left memory, that call loads it again. It can only load the VI, never usefully unload it.
+- The better fix is to delete those calls, or to swallow only `0x47D`, as the loopterm_77 script does.
+
+**2. Alternative explanation (same outcome, different mechanism)**
+- The read ops never opened a panel and never held the target. Once each op's own reference closed, `OpPrimDonor_v0.vi` probably dropped out of memory. `close_panel` then loaded a fresh, panel-less copy and asked it to close its panel, which raised `0x47D`.
+- Your wording, "loaded without opening its front panel", doesn't separate these two cases. It doesn't need to: in both, the panel was closed and the error is expected.
+- "The panel was open and something closed it" has no support:
+  - Nothing in `report_all` or `node_labels` (`gscript.py:513-543`, `612-643`) calls `OpenFrontPanel` or `ensure_loaded`.
+  - The log shows no modal-dialog line.
+  - `vi_ref` is a new reference on every call (`gscript.py:255-271`), so a stale reference is ruled out.
+- External check: NI documents error 1149 as exactly "the panel was never open" (NI error-code list; the Error 1149 NI forum thread below).
+
+**3. What would falsify it**
+Either of these would:
+- `0x47D` on a VI whose panel you opened with `open_panel()` just before, or
+- the panel-open property reading True right before the failing close.
+
+Against that, the machine has recorded this error many times after read-only ops. Examples: `tools/bench/allterms_s3.log:265`, `bench_map_a1.log:97`, `build_d1_m3a3b_d3.log:382-385`, `build_opfsinnertunnelconnect_v0.log:346-347`. None of those runs showed any other failure mode.
+
+**4. Cheapest test that separates the two**
+This is optional, since nothing in the card depends on the answer. Run it in a fresh LabVIEW on `OpPrimDonor_v0.vi`:
+- **Arm A:** `report_all` → `close_panel`. Expect `0x47D`.
+- **Arm B:** `open_panel` → `close_panel`. Expect no exception.
+
+If Arm B also raises, the claim is wrong. Otherwise the claim stands, and the only change I'd make before the rerun is the narrower catch or deleting the calls.
+
+**What would change my mind:** Arm B raising `0x47D`, or any logged `0x47D` on a VI that `open_panel` had just opened.
+
+Sources:
+- [General LabVIEW Error Codes (NI)](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/general-labview-error-codes.html)
+- [Error 1149 and Error 1000 at Invoke Node (NI Community)](https://forums.ni.com/t5/LabVIEW/Error-1149-and-Error-1000-occurred-at-Invode-Node-vi/td-p/4426143)
+- [Maximizing/minimizing clone VI front panel windows (NI Community)](https://forums.ni.com/t5/LabVIEW/Maximizing-minimizing-clone-VI-front-panel-windows/td-p/731175)
+BGRUN END rc=0 after 89s

@@ -1,0 +1,33 @@
+{
+ "schema": "facts/c103d",
+ "card": "tools/bench/cards/task_103-4.json",
+ "level": "OFFLINE (dry backend + pre-run); no LabVIEW stage run, no VI opened",
+ "part_b_command_next_cycle": "py tools/bgrun.py --material --max-min 40 --log tools/bench/stage_d1_dispB_r1.log -- py -u tools/recipes/stage_d1_disp.py --from-step 33 --base \"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_dispA_20260927_024535.vi\"",
+ "stagexec": {
+  "load_binding": "tools/stagexec.py:986 (plan md5 pinned, stop_after == from_step, refuses Part A with shift registers)",
+  "bind_state": "tools/stagexec.py:1009 (sim step state -> real uids; unbound created uid -> FROM-STEP stop)",
+  "entry": "tools/stagexec.py:1170 (entry read vs simulated step through the binding; value gates of ops <= k re-read; parity/PRIME on the bound step-k state; ops k+1.. only)",
+  "from_step_state": "tools/stagexec.py:2121",
+  "selftest": "tools/bench/selftest_stagexec_c103d.log:94 91/0 (T41 synthetic split, T41e/f/g, T42 real plan dry, T42b plan md5, T42c missing uid)"
+ },
+ "recipe": {
+  "file": "tools/recipes/stage_d1_disp.py",
+  "lines": 149,
+  "sha256_prefix": "eaeee62786df",
+  "released_by": "archive/peer/2026-09-27-priorart-c103-partb-entry.md (PRIOR-ART: novel, NOVEL RECORD written)",
+  "B0": "tools/recipes/stage_d1_disp.py:71",
+  "W0_S1_wires": "tools/recipes/stage_d1_disp.py:76 (1899 == Part A W0, stage_d1_dispA_r2.log:35)",
+  "B1": "tools/recipes/stage_d1_disp.py:97"
+ },
+ "offline_graph": "tools/bench/sim/disp/graph_dispA_step33.json (SIMULATED stand-in for md5 16c2ca00..., written by tools/bench/diag_c103d_graph.py)",
+ "dry": "tools/bench/diag_c103d_dryB.log:71 DRY PASS; :27 entry diff 0; :29 parity 0 on [23073, 23432]; :61 B1 PASS; E3 UNVERIFIED (dry, after mutation)",
+ "prerun": "tools/bench/diag_c103d_prerunB.log:80 PRERUN PASS 8/0; :75 X5 7 wiring ops among ops 34.., 25/25 wire actions",
+ "launch_gate": "tools/bench/diag_c103d_launch.log: REFUSE only by RETRY CAP (cycle 103, 2 runs); dry + prerun PASS records exist for sha eaeee627",
+ "md5": {"dispA": "16c2ca00a114a227a81612dd49d111cc unchanged", "S1": "3e3d23cefd3a334001aa9d6156bf1aee unchanged"},
+ "hooks": {
+  "stop_gate_lint": "tools/hooks/guard_bash.py:179 LINT_SEG_RE / :185 _drop_lint_segments",
+  "selftest_stagekit_exempt": "tools/stage_prerun.py:1252 VI_MOD_EXEMPT_PATHS (path + sha256 pin)",
+  "selftest": "tools/bench/selftest_c103d_hooks_before.log 7/3 (the defects) -> tools/bench/selftest_c103d_hooks_after.log:30 17/0",
+  "review": "archive/peer/2026-09-27-c103d-hooks-before.md (claim fails -> tightening ACCEPTED and applied)"
+ }
+}

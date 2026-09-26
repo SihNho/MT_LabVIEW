@@ -1465,3 +1465,25 @@ read-only repair below. Until then, PD215(b) names op 41's route change explicit
 DECISION: device (repair, threshold 1) - unchanged from the 01:15 block: refuse only commands that EXECUTE the recipe, let
 read-only commands through, `selftest_stagekit.py` classed a self-test; negatives = `material_marker.log:2175` and `:2192`.
 Same owed tooling card as above (first after Part A). No new device beyond that one.
+
+## inference-over-measurement — 2026-09-27 03:3x (cycle 103 judgement, after archive/peer/2026-09-27-retrospective-cycle103.md:83)
+
+`VIOLATION: inference-over-measurement | loss_min=18 | loss_usd=? | evidence=docs/d1-loop12-17-split-plan.md:1828`: the cycle-103
+judgement kept Part A's cut at op 40 although r7's meter lines (690.4 MB at op 40, a +13.3 MB read at k37, 668.5 MB at k33) already
+put the op-40 read within 0–13 MB of MEMSTOP 700. r1 spent 780 s and one of the cycle's two stage slots to show it.
+
+DECISION: device. `stage_prerun --prerun` gets a MEMORY-MARGIN check. The predicted private MB at every checkpoint read up to the
+stop (or the save) = the start MB of the most recent run of the same recipe + that run's per-op deltas + the largest per-read cost
+measured in it, for every read the plan makes that the run did not make. If any predicted value is ≥ MEMSTOP, the row fails. Ops
+the last run never reached are charged the worst measured read cost and flagged `extrapolated`. Negative case: r1's op-40 cut
+(`stage_d1_dispA_r1.log:797-799`); positive case: r2's op-33 cut. Built in the SAME tooling card as the verb-precondition check
+(2026-09-27 01:55), which runs immediately after Part B's run in cycle 104. It is not built ahead of Part B: Part B's worst case,
+computed from files, is ≤ 685 MB (retrospective-cycle103 annotation).
+
+## device-failed — 2026-09-27 03:3x (cycle 103 judgement, after archive/peer/2026-09-27-retrospective-cycle103.md:84)
+
+`VIOLATION: device-failed | loss_min=2 | evidence=tools/hooks/material_marker.log:2211`: stop-record read-only refusals at
+`:2205`, `:2211-2212` and `:2233`, all before the 103-4 repair landed at 03:14 (`selftest_c103d_hooks_after.log:30`, 17/0).
+
+DECISION: no new device. The repair is the device, and it landed in this cycle. If a read-only refusal shows up in cycle 104, the
+repair failed: that is device-failed round 2, and that refusal line becomes the added negative case.

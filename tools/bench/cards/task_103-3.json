@@ -1,0 +1,73 @@
+{
+ "schema": "task/1",
+ "id": "103-3",
+ "kind": "build",
+ "goal": "PD216(f): Part A cut at op 33 - pre-run --stop-after 33 PASS, then ONE Part-A run ops 1-33 -> claudeDev\\D1_s1_dispA_<ts>.vi by gui_save + binding JSON",
+ "why": "103-2 r1: ops 1-40 diff 0 (k12 WARN only) but MEMSTOP 703.8 MB at the step-40 read; k33 read was 673.7 MB. PD216(f) moves the cut to op 33.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/cards/result_103-2.json"},
+  {"path": "tools/bench/facts_c103b_partA.json", "md5": "52cb4a9957db7844c823628275e9705d"},
+  {"path": "tools/bench/stage_d1_dispA_r1.log"},
+  {"path": "tools/bench/cards/split_plan_103.md"},
+  {"path": "tools/bench/sim/disp/plan_disp.json", "md5": "c7d80fc93279f4ea5efd21c068e7efa6"},
+  {"path": "tools/stage_prerun.py", "md5": "a21a6de2654e6cb0f30a27e4c452e656"},
+  {"path": "tools/recipes/stage_d1_disp.py", "md5": "7863e134b44cfd30e127e56ad05105bd"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/stage_d1_dispA_r1.log"},
+  {"kind": "file", "name": "tools/bench/sim/disp/plan_disp.json"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpWaitDonor_v0.vi"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "pass": [
+  "before the run: delete claudeDev\\D1_s1_dispA_20260927_022749.vi ONLY after its md5 reads 3e3d23ce... (== S1); report md5 and deletion",
+  "split_plan_103.md amended in place: Part A = ops 1-33, Part B = ops 34-47 (PD216(f)); one line, old text kept struck",
+  "Part-A-mode pre-run --stop-after 33 all PASS; launch gate ALLOW",
+  "ONE run: E1 ops 1-33 WARN-class only; real step-33 read == sim step 33; no op > 33 dispatched; gui_save dispA; md5 + binding JSON path",
+  "private MB + handles per checkpoint (max, at op 33, after the save); S1 md5 unchanged; LabVIEW gone at exit",
+  "else: stop op, class, uids, memory at stop, file:line; nothing saved over S1"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_dispA_*",
+  "tools/bench/cards/split_plan_103.md",
+  "tools/bench/facts_c103c_partA.json",
+  "tools/bench/cards/result_103-3.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_dispA_*",
+   "tools/bench/selftest_stage*",
+   "tools/bench/stage_d1_disp*",
+   "tools/bench/sim/disp/**",
+   "tools/bench/facts_c103*",
+   "tools/bench/diag_c103*",
+   "tools/bench/errorlist_*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/cards/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/priorart*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "outcome", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 50},
+ "rules": [
+  "exactly ONE Part-A LabVIEW run (2nd stage launch this cycle, within RETRY_CAP 2); no code edits",
+  "recipe NOT edited (PD216(c)); MEMSTOP stays 700; the cut is op 33, not chosen in-run",
+  "any stop before the save: report facts and stop; no further split decided here",
+  "gui_save: capture-locate-act-capture-confirm (PD 9); never save S1; never run the VI",
+  "bgrun --max-min 60; hold the turn to BGRUN END; ExecState 0 is by design here"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

@@ -1,0 +1,23 @@
+BGRUN START 2026-09-27 02:17:29 limit 10.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_disp.py
+BGRUN PID 25784
+stage_d1_disp - card 100-6, PD213(f)4(iv) / PD212: THE DISPLAY-LOOP STAGE, executed, not re-decided. INPUT claudeDev\D1_s1_copy.vi
+(named by the plan's base graph), FRESH LabVIEW -> claudeDev\D1_s1_disp_<ts>.vi saved BY SCRIPT at ExecState 1. ROWS ONLY FROM THE
+FINALIZED PLAN tools/bench/sim/disp/plan_disp.json (from stageplan_disp_r4_open.json); no uid and no terminal name is typed here.
+PRIOR ART: stage_d1_l2a1.py (DryBE), stagexec.lv_run (E1/E2/E3, cdiff), gscript.wire_health/_edge_pairs, stagekit RBW. No new op.
+PREDICTION: L1 one real op per action; E1 each checkpoint read == its simulated step (#25261 gate False first); RECORD MODE (101-4):
+a diff is logged, the run goes on, nothing saved unless every diff is a PD214(c) WARN (dangling only, no later uid reference,
+stagexec.classify_step_diff); reads only at CHECKPOINTS = binding ops + 4, 5, 12, last (PD193(a), memory: r4.log:88, r7.log:804);
+W1 RBW removes only pre-existing wire uids, no lost edge; E2 ExecState 1; E3 cdiff(S1, end) == the 21 open_rows; PS saved by script.
+PART-A MODE (card 103-1, PD215(b)): `--stop-after N` runs ops 1..N only (Executor stop_after, N a checkpoint): A1 no op > N, A2 step N
+real == sim (WARN only), gui_save claudeDev\D1_s1_dispA_<ts>.vi (broken by design, never run), md5 + binding (bind.obj/term/diag,
+loop_of, sym_real) -> tools/bench/stage_d1_dispA.json. History of cards 100-6..102: docs/d1-loop12-17-split-plan.md PD213-PD215.
+    py tools/bgrun.py --material --max-min 40 --log tools/bench/stage_d1_dispA_r1.log -- py -u tools/recipes/stage_d1_disp.py --stop-after 40
+  PASS  L0 the executed plan is FINAL, open_rows_match, plan_in = stageplan_disp_r4_open.json  ('c7d80fc93279f4ea5efd21c068e7efa6', {'path': 'tools/bench/sim/disp/stageplan_disp_r4_open.json', 'md5': '7eec1754c5cc58ebf5759142781de873'})
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 3e3d23cefd3a334001aa9d6156bf1aee  got 3e3d23cefd3a334001aa9d6156bf1aee
+  FAIL  DRY graph JSON for input md5 3e3d23cefd3a334001aa9d6156bf1aee  no terminal-list graph JSON carries md5 3e3d23cefd3a334001aa9d6156bf1aee; skipped other shapes: tools/bench/graph_loops_s1_20260923.json: no terminals/objs key(s) - keys present ['errors', 'loops', 'md5', 'right_uids', 'vi'] (not the terminal-list graph shape); tools/bench/graph_loops_s1_20260924.json: no terminals/objs key(s) - keys present ['by', 'loops', 'md5', 'unread_rights', 'vi'] (not the terminal-list graph shape); tools/bench/graph_objs_s1_20260923.json: no terminals/objs key(s) - keys present ['md5', 'n', 'objects', 'vi'] (not the terminal-list graph shape); tools/bench/graph_s1_20260923.json: no terminals/objs key(s) - keys present ['cls', 'edges', 'flags', 'md5', 'method', 'note', 'vi'] (not the terminal-list graph shape); tools/bench/graph_s1_20260924.json: no terminals/objs key(s) - keys present ['cls', 'edges', 'flags', 'md5', 'method', 'note', 'vi'] (not the terminal-list graph shape)
+
+=== DRY FAIL: first_fail=GATE DRY graph JSON for input md5 3e3d23cefd3a334001aa9d6156bf1aee coverage 29/105 lines, first mutation None, unverified 0, graph None
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"GATE DRY graph JSON for input md5 3e3d23cefd3a334001aa9d6156bf1aee","artefacts":[]}
+BGRUN END rc=1 after 1s

@@ -166,13 +166,43 @@ def motor_gate_check(cmd):
 # release form. It fails closed for `tools/recipes/` paths and cannot wedge anything else (its own try/except).
 # Deliberately NOT disabled by LV_GUARD_OFF or BENCH_CELL, for the motor gate's reason: a benchmark cell has no
 # more right to run a stopped recipe than the session that spawned it.
+# card 103-4: a STATIC LINTER segment (`py -m pyflakes|pycodestyle|flake8 <file>`) only parses the file - it never runs it -
+# yet stop_record classes any `py -m <module>` outside its py_compile/ast list as "build" and refused the READ
+# `wc -l <recipe> && py -m pyflakes <recipe> 2>&1 | head` (material_marker.log:2175). Such segments are dropped before
+# the check; nothing else is: a command that pipes into an executor keeps every segment (EXEC_PIPE_RE), and any
+# other segment naming the recipe is judged by stop_record unchanged. Self-test: tools/bench/selftest_c103d_hooks.py.
+# TIGHTENED after archive/peer/2026-09-27-c103d-hooks-before.md (ACCEPTED): program exactly py/python[N.N] with no env
+# prefix and no flags, pyflakes/pycodestyle only (flake8 loads plugins from config files), blank = space/tab only (a
+# newline inside a quote-balanced segment ran the recipe), plain path-ish arguments only (no quote, '=', '$'); and no drop
+# at all when a segment cd's anywhere but the project root or a pyflakes/pycodestyle shadow sits at the root (`-m` puts
+# the working directory first on sys.path).
+LINT_SEG_RE = re.compile(r"^[ \t]*py(?:thon[\d.]*)?(?:\.exe)?[ \t]+-m[ \t]+(?:pyflakes|pycodestyle)"
+                         r"(?:[ \t]+[\w./\\:-]+)*(?:[ \t]+2>&1)?[ \t]*$", re.I)
+CD_SEG_RE = re.compile(r"^[ \t]*cd[ \t]+(\"[^\"\n]*\"|'[^'\n]*'|[^\s\"']+)[ \t]*$", re.I)
+PROJECT_ROOT = os.path.dirname(os.path.dirname(HERE))
+
+
+def _drop_lint_segments(cmd, sr):
+    if sr.EXEC_PIPE_RE.search(cmd or ""):
+        return cmd
+    segs = sr.split_segments(cmd or "")
+    for s in segs:
+        m = CD_SEG_RE.match(s)
+        if m and os.path.normcase(os.path.abspath(m.group(1).strip("'\""))) != os.path.normcase(PROJECT_ROOT):
+            return cmd
+    if any(os.path.exists(os.path.join(PROJECT_ROOT, n)) for n in ("pyflakes", "pyflakes.py", "pycodestyle", "pycodestyle.py")):
+        return cmd
+    keep = [s for s in segs if not LINT_SEG_RE.match(s)]
+    return cmd if len(keep) == len(segs) else " ; ".join(keep)
+
+
 def stop_gate(cmd):
     """0 = pass, 2 = refuse. One call, no logic duplicated - see tools/stop_record.py."""
     try:
         import stop_record
     except Exception:
         return 0                     # a missing/broken module must not wedge every command in the session
-    allow, why = stop_record.check_command(cmd)
+    allow, why = stop_record.check_command(_drop_lint_segments(cmd, stop_record))
     if allow:
         return 0
     note(False, "STOPPED-RECIPE " + cmd)

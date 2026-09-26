@@ -3378,3 +3378,90 @@ VIOLATION: device-failed | loss_min=3 | loss_usd=? | evidence=tools/hooks/materi
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle102","verdict":"refuted","alternative":"The firefighter did its job: ops 1-40 matched for the first time and the split is now decided. Under that reading the op-41 stop is the price of discovery, not a fault.","discriminating_test":"Open tools/bench/diag_c100_rows.py:214 and tools/stagekit.py:813. If the MOVE_DST precondition was on file before cycle 102, r7 could never pass op 41 and the split (CLAUDE.md:486-490) was due before r6, not after r7.","violations":[{"slug":"wrong-ordering","loss_min":13,"loss_usd":null,"evidence":"tools/bench/stage_d1_disp_r7.log:807"},{"slug":"device-failed","loss_min":3,"loss_usd":null,"evidence":"tools/hooks/material_marker.log:2192"}],"sources":["tools/bench/stage_d1_disp_r7.log:807","tools/bench/diag_c100_rows.py:214","tools/stagekit.py:813","docs/d1-loop12-17-split-plan.md:1817","tools/bench/stage_runs.jsonl:34","tools/hooks/material_marker.log:2192","tools/bench/stop_records.json:1191","tools/bench/stage_d1_disp_prerun9.log:150"],"note":"device-failed is the already-owed stop-record read-only refusal (decided 2026-09-24 05:54 and 2026-09-27 01:15) recurring; smaller than the first item. No judgement-session cost line exists in the window, so loss_usd is unknown."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle102.md
 BGRUN END rc=0 after 294s
+BGRUN START 2026-09-27 03:23:04 limit 10.0 min: py tools/retrospective.py --cycle 103
+BGRUN PID 4488
+   window 2026-09-27 01:51:48 .. 2026-09-27 03:23:04 (91 min); 36 build logs, 12 machinery logs, 30 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle103.txt (27015 chars)
+   review card tools\bench\cards\review_retrospective-cycle103.json
+OUTCOME: ANSWERED (200s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-09-27-retrospective-cycle103.md
+COST: $1.5081  in 36 / out 19097 / cache-create 103193 / cache-read 1502443  (199s, 28 turn(s))
+VERDICT-CARD: NO-VERDICT: $.violations[0].loss_usd: expected number/null, got str
+--- ANSWER ---
+# Retrospective, cycle 103 (window 01:51:48 to 03:23:04)
+
+**Result:** there was a costly structural fault, so the claim is refuted. Part A was cut at op 40, even though the last run's memory readings (r7) already showed op 40 would sit at the 700 MB limit (MEMSTOP). The run failed, which used one of the cycle's two stage-run slots, so Part B could not run this cycle.
+
+**What the cycle produced.** Part A was saved: `claudeDev\D1_s1_dispA_20260927_024535.vi`, md5 `16c2ca00…` (`docs/d1-loop12-17-split-plan.md:1837`). The Part-B entry was also built and checked offline (`:1838`). Part B itself did not run: the launch gate "refuses ONLY on this cycle's retry cap" (`:1838`), because both slots went to Part A (`tools/bench/stage_runs.jsonl:35-36`, runs r1 and r2).
+
+## The one most costly structural fault
+
+**Slug: inference-over-measurement.** The judgement session kept Part A = ops 1–40 and ran it "as the measurement" (PD216(e), `docs/d1-loop12-17-split-plan.md:1828`). The r7 log on file already made that run likely to fail:
+
+- **Memory at op 40 in r7:** 690.4 MB against MEMSTOP 700 (`tools/bench/stage_d1_disp_r7.log:783`, `:804`).
+- **The extra read at op 40:** r7 took no read at op 40 ("not a checkpoint", `:805`). The Part-A pass line added one (`tools/bench/cards/split_plan_103.md:23`).
+- **Cost of one read:** anywhere from +0.1 to +13.3 MB; the +13.3 MB read was at k37 (`r7.log:739`).
+- **Start drift between runs:** r7 started at 566.2 MB (`r7.log:46`), r1 at 570.7 MB (`stage_d1_dispA_r1.log:38`).
+
+So the expected end point was 690 + (0 to 13) MB, before `gui_save` even started. That range straddles 700. The split page's list of risks never mentions Part A's memory margin (`split_plan_103.md:29-33`).
+
+r1 then did exactly that: 699.7 MB at op 40, then 703.8 MB at the op-40 read, and MEMSTOP fired (`stage_d1_dispA_r1.log:796-799`). It ran 780 s and saved nothing (`:822`).
+
+The fix, PD216(f), cut at op 33, where r7 had read 668.5 MB (`r7.log:659`). That number was on file before r1 launched.
+
+- **Loss:** about 18 min. That is r1's 780 s plus the judgement turn and re-dispatch before r2 launched at 02:45:32 (`tools/hooks/material_marker.log:2231`). No build log carries a dollar figure, so `loss_usd=?`.
+- **Bigger effect:** Part B could not run, because r2 was the second and last stage slot (`task_103-3.json:66`).
+- **Counterfactual:** had the split page (written about 02:0x) put the cut at op 33 using `r7.log:659/739/783`, r1 at 02:27:47 would have saved Part A by about 02:39.
+  - Card 103-4 (about 23 min) would have finished by about 03:03.
+  - Part B, as the cycle's second stage launch (about 13 min), would have ended by about 03:20.
+  - The cycle would have closed at about 03:25 with Part B's file or its measured failure, instead of at 03:23 with Part B deferred to cycle 104.
+
+**Second item (the device rule, not equal magnitude): device-failed, the stop record.** Its read-only refusal fired on read-only checkers inside the window: `material_marker.log:2211-2212` (`stage_prerun --dry`, cleared at 02:17:26), `:2205` (a read-only heredoc) and `:2233` (dry B, 03:06:50). Its repair only landed at 03:14 (`selftest_c103d_hooks_after.log:30`, 17/0).
+
+The direct loss is about 2 min. I list it only because the device threshold is 1. It is the last in-window occurrence of a failure retrospectives 101 and 102 already named. If the repair holds, cycle 104 should show zero.
+
+## Findings
+
+**1. Repeated failure.** No stage failure repeated: r1 stopped on memory and r2 passed. Checker commands were refused by the stop record at three separate times (`material_marker.log:2205, 2211-2212, 2233`). The approach should have changed at the second refusal, 02:15:42, by building the owed repair first. Instead, card 103-4 did it after Part A, as planned.
+
+**2. Missing tool.** No step computed, before launch, the predicted memory at the cut point: the checkpoint curve from the last run, plus the largest measured cost of one read, plus the save. It would have caught r1's failure offline, in seconds. The meter data already exists in every log.
+
+**3. Unmeasured steps.** This is the main fault above. Separately, the claim that ops 34–47 of Part B cost "about 26 MB" from a fresh load (`:1833`) is an extrapolation. Part B's fresh-load baseline is still unmeasured, which the cycle says itself.
+
+**4. Rule compliance.**
+- **Split rule (CLAUDE.md:478-495):** followed; Part A left a file.
+- **Retry cap:** followed; r2 was the second of 2.
+- **Owed tooling card:** satisfied only in form. Decision 01:55 put the pre-run verb-precondition check in the first tooling card after Part A. PD216(g) moved it to after Part B (`:1841`). The same entry accepted a 149-line recipe against the 120-line limit (`:1841`).
+- **One session at a time (STATUS.md:11):** the chat ran its own bgrun jobs inside the window (`selftest_cycle_runner*.log` at 02:08, `selftest_scratch_verify.log` at 02:13; a `git add` refused at `material_marker.log:2209`). That inflates C3 and C7 and produced the unannotated review behind the A4 fail (`archive/peer/2026-09-27-c103-scratch-selftest.md`, a chat review).
+- **A1/A3 on `jev_gate.log`:** this is the audit's own known defect, owed since retrospective 96 (STATUS.md:115) and still unfixed.
+- **What the audit does not cover:** who accepted each review (see Q7), concurrency between the chat and the cycle, whether a cut had enough memory margin, and whether owed devices stayed owed.
+
+**5. Ordering.** Mostly defensible: donor, then re-sim, then prior-art review, then Part A, then the Part-B entry. The weak points:
+- The owed stop-record repair ran after the checkers it was blocking.
+- The cut point was chosen before anyone read the r7 memory curve, not after.
+
+**6. What the summary understated.**
+- `next.json:9` says "Cap spent" but not why: one of the two slots went on a run whose failure the r7 data predicted.
+- STATUS.md:62 says "The cut moved to op 33", not that op 33's margin was already visible in r7.
+- The `guard_bash_jev` self-test log has no RESULT line (audit A8), and its fixture still fails 7/4 (`:1841`).
+
+**7. Judgement inside material sessions.** Several review findings were accepted inside material sessions:
+- `archive/peer/2026-09-27-c103-wait-donor-closepanel.md:91` (103-1).
+- `archive/peer/2026-09-27-priorart-c103-split-plan.md:423-430` (103-1). B3 was "TAKEN", which is a design choice about the binding-record format.
+- `archive/peer/2026-09-27-c103d-hooks-before.md:133` and `c103d-guard-bash-jev.md:95` (103-4).
+
+The judgement session ratified the hooks review only afterwards (`:1839`). The cost was low, but the pattern repeats. The briefs themselves were clean: "no finer split decided here" (`task_103-2.json:71`). The only if-then line in a brief was the RETRY_CARD fallback (`:69`), which is minor.
+
+## Device effect
+- **Stop record:** failed; see the second item above.
+- **bgrun rc/FAIL scan:** worked. r1 ended rc=1 (`stage_d1_dispA_r1.log:822`).
+- **guard_cycle prior-art-before-build:** worked. The prior-art logs ended at 02:03 and 02:17, before r1 at 02:27, and at 03:09 for Part B.
+- **guard_peer "What was done with it":** held for prior-art reviews. The one blank review is a chat hypothesis review, outside this device's scope.
+- **C4b cost parse:** worked, 7 of 7.
+- **C7 scope counter:** fired (37 files) but includes the chat's files, so it cannot tell the cycle's scope from the chat's.
+- **The 01:55 pre-run precondition check:** not built, so it could not fail. No precondition-class stop happened in the window.
+
+VIOLATION: inference-over-measurement | loss_min=18 | loss_usd=? | evidence=docs/d1-loop12-17-split-plan.md:1828
+VIOLATION: device-failed | loss_min=2 | loss_usd=? | evidence=tools/hooks/material_marker.log:2211
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle103","verdict":"refuted","alternative":"Part A at op 40 was a fair gamble as a first memory measurement; r7 showed 690.4 MB with no op-40 read, and the per-read cost was not yet known to be up to 13 MB.","discriminating_test":"r7.log:739 (+13.3 MB read at k37) and :783 (690.4 at op 40) predate r1; 690.4 plus the 0-13.3 MB read range straddles 700 before gui_save, so the op-33 cut (r7.log:659, 668.5 MB) was available before 02:27.","violations":[{"slug":"inference-over-measurement","loss_min":18,"loss_usd":"?","evidence":"docs/d1-loop12-17-split-plan.md:1828"},{"slug":"device-failed","loss_min":2,"loss_usd":"?","evidence":"tools/hooks/material_marker.log:2211"}],"sources":["tools/bench/stage_d1_disp_r7.log:659","tools/bench/stage_d1_disp_r7.log:739","tools/bench/stage_d1_disp_r7.log:783","tools/bench/stage_d1_dispA_r1.log:799","tools/bench/stage_runs.jsonl:35","docs/d1-loop12-17-split-plan.md:1838","tools/hooks/material_marker.log:2233"],"note":"Cycle delivered Part A (16c2ca00) and the Part-B entry; the fault cost one of two stage slots and deferred Part B to cycle 104. The device item is the last pre-repair tail of a known failure, repaired at 03:14."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle103.md
+BGRUN END rc=0 after 204s

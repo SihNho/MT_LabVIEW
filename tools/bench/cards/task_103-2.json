@@ -1,0 +1,76 @@
+{
+ "schema": "task/1",
+ "id": "103-2",
+ "kind": "build",
+ "goal": "PD216(b)+(e): pre-run X5 counts only ops <= stop_after in Part-A mode (self-tested), Part-A pre-run PASS, then ONE Part-A run -> claudeDev\\D1_s1_dispA_<ts>.vi by gui_save + binding JSON",
+ "why": "103-1 PASS 6/0: donor, re-sim, full pre-run 8/0 and recipe --stop-after 40 are ready; the Part-A-mode pre-run fails X5 18 vs 19 only because op 45 is not dispatched (PD216(b)).",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/cards/split_plan_103.md", "md5": "59152b0314580d4596202a61f0e6977e"},
+  {"path": "tools/bench/cards/result_103-1.json"},
+  {"path": "tools/bench/sim/disp/plan_disp.json", "md5": "c7d80fc93279f4ea5efd21c068e7efa6"},
+  {"path": "tools/stage_prerun.py", "md5": "8488060b538b368daa3366349d77fb44"},
+  {"path": "tools/stagexec.py", "md5": "d1e290e8a95041bca0a10cf955a8eef7"},
+  {"path": "tools/recipes/stage_d1_disp.py", "md5": "7863e134b44cfd30e127e56ad05105bd"},
+  {"path": "tools/bench/stage_d1_disp_r7.log"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/cards/split_plan_103.md"},
+  {"kind": "file", "name": "tools/bench/sim/disp/plan_disp.json"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpWaitDonor_v0.vi"},
+  {"kind": "op", "name": "OpPrimCopyNested_v0", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "pass": [
+  "X5 patch: with stop_after, X5 counts only ops <= stop_after; without it unchanged; self-test positive (Part-A 18) + negative (full run skipping an op fails)",
+  "Part-A-mode pre-run (--stop-after 40) all PASS; full-mode pre-run still PASS; protocol requires green",
+  "ONE Part-A run from D1_s1_copy.vi: E1 ops 1-40 WARN-class diffs only; real step-40 read == sim step 40; no op > 40 dispatched",
+  "gui_save -> claudeDev\\D1_s1_dispA_<ts>.vi (Approved, 'user 2026-09-22 broken-intermediate save'); md5 + binding JSON path in result",
+  "per-checkpoint private MB + handles reported (max, and value at op 40 and after the save); S1 md5 3e3d23ce unchanged; LabVIEW gone at exit",
+  "else: stop op, class, uids, memory at stop, file:line; nothing saved over S1"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_dispA_*",
+  "tools/stage_prerun.py",
+  "tools/bench/stage_d1_disp*",
+  "tools/bench/facts_c103b_partA.json",
+  "tools/bench/cards/result_103-2.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_dispA_*",
+   "tools/stage_prerun.py",
+   "tools/bench/selftest_stage*",
+   "tools/bench/stage_d1_disp*",
+   "tools/bench/sim/disp/**",
+   "tools/bench/facts_c103*",
+   "tools/bench/diag_c103*",
+   "tools/bench/errorlist_*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/cards/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/priorart*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "outcome", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 70},
+ "rules": [
+  "exactly ONE Part-A LabVIEW run; RETRY_CARD=this card only if the retry cap refuses the first launch",
+  "recipe NOT edited (129 lines accepted, PD216(c)); MEMSTOP stays 700 (PD216(e))",
+  "MEMSTOP or any stop before the save: report facts and stop; no finer split decided here",
+  "gui_save: capture-locate-act-capture-confirm (PD 9); never save S1; never run the VI",
+  "bgrun --max-min 60; hold the turn to BGRUN END; ExecState 0 is by design here"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

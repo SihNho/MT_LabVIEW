@@ -1,0 +1,31 @@
+{"schema":"result/1","id":"103-4","status":"PASS","gates":{"pass":6,"fail":0},
+"first_fail":null,
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/stagexec.py","md5":"75cfd689b0b52ca04cc3e96eab0b76e6"},
+ {"path":"tools/recipes/stage_d1_disp.py","md5":"42541bc818dd22951bf60636d1f46485"},
+ {"path":"tools/stage_prerun.py","md5":"ba0f2b772d8d0d6c3308450fdba9e574"},
+ {"path":"tools/hooks/guard_bash.py","md5":"c300ff18b5263691e5bce884f00f09f6"},
+ {"path":"tools/bench/sim/disp/graph_dispA_step33.json","md5":"e46192585474648859f31a4507616c5a"},
+ {"path":"tools/bench/facts_c103d_partB.json","md5":"01348f202763953f44a4c4f4cde0cf94"},
+ {"path":"tools/bench/selftest_c103d_hooks.py","md5":"47fd97e61d23365dc2bfe83353f68e62"}
+],
+"facts":[
+ "stagexec from_step: load_binding (plan md5, stop_after==k, no shift registers) :986, bind_state :1009, entry compare+gate re-read+parity/PRIME :1170; self-test 91/0 (selftest_stagexec_c103d.log:94)",
+ "Negatives pass: plan md5 mismatch, missing uid (term -3 dropped), stop_after!=from_step, from_step=last op, Part A with registers (selftest_stagexec_c103d.log:72-79)",
+ "Recipe --from-step 33 --base <dispA>: B0 binding gate :71, W0=S1's 1899 wires from base graph :76 (==Part A W0), B1 entry gate :97; end gates E1/W1/E2/E3/PS untouched; 149 lines",
+ "Part-B dry PASS: entry read vs step_39 diff 0, parity 0 on [23073,23432], ops 34..47 only, B1 PASS; E3 UNVERIFIED in dry (diag_c103d_dryB.log:27,29,61,71)",
+ "Pre-run 8/0 from 33: X5 7 wiring ops among ops 34.., 25/25 wire actions (diag_c103d_prerunB.log:75,80); dry uses SIMULATED graph_dispA_step33.json (bound step 39)",
+ "Launch gate: dry+prerun records present for sha eaeee627; refuses ONLY by RETRY CAP (cycle 103, 2 runs) - resets next cycle (diag_c103d_launch.log)",
+ "Recipe edit released by prior-art 'novel' (archive/peer/2026-09-27-priorart-c103-partb-entry.md); dispA 16c2ca00 and S1 3e3d23ce md5 unchanged (diag_c103d_launch.log)",
+ "Hooks: guard_bash.py:179 lint segments (pyflakes/pycodestyle, tightened per review) dropped before stop_record; stage_prerun.py:1252 selftest_stagekit exempt by path+sha256",
+ "Hook self-test before 7/3 (the two defects) -> after 17/0 incl. N1-N5, L2, L4 negatives (selftest_c103d_hooks_after.log:30); review archive/peer/2026-09-27-c103d-hooks-before.md ACCEPTED",
+ "selftest_guard_bash_jev 7/4 is pre-existing (chat-N1 classifier refuses fixture diag_c88_brokenwires.py), shown independent of 103-4 edits (diag_c103d_jevfix.log); review c103d-guard-bash-jev"
+],
+"open":[
+ "Part B opens a file saved broken (split_plan_103.md risk 1, recompile spin); prior-art alternative: time Stage.start on dispA in fresh LabVIEW under short bgrun deadline first?",
+ "selftest_guard_bash_jev fixture BG targets a VI-modifying script since chat-N1: C2/C2b/C3/C5 fail, C4/C6 pass vacuously - repair the fixture (review s5)? not in 103-4 scope",
+ "stop_record.py (not writable here) still passes `wc -l \\\"x<NL>py -u <recipe><NL>\\\"` (review s1 older twin); stage_prerun records are argv-agnostic (dry record carries no from_step)"
+],
+"cost":{"usd":null,"minutes":30,"labview_runs":0},
+"note":"All offline; no VI opened, LabVIEW not running. Two hypothesis reviews (hooks-before tightening applied; guard-bash-jev claim held) + one prior-art (novel). JEV-LADDER both logs: new-problem/old path -> review dispatched. No STATUS edit (status_edit false)."}

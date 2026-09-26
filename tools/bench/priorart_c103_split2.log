@@ -1,0 +1,32 @@
+BGRUN START 2026-09-27 02:16:20 limit 15.0 min: py -u tools/prior_art_review.py --plan-file tools/bench/cards/split_plan_103.md --slug c103-split-plan-recipe --recipe tools/recipes/stage_d1_disp.py
+BGRUN PID 24484
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c103-split-plan-recipe.txt (52146 chars)
+   review card tools\bench\cards\review_priorart-c103-split-plan-recipe.json
+OUTCOME: ANSWERED (40s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-27-priorart-c103-split-plan-recipe.md
+COST: $1.1456  in 8 / out 3261 / cache-create 124819 / cache-read 409205  (37s, 7 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c103-split-plan-recipe verdict=novel -> tools\bench\cards\verdict_priorart-c103-split-plan-recipe.json
+--- ANSWER ---
+**Verdict: novel.** The Part-A change to `tools/recipes/stage_d1_disp.py` (md5 `7863e134…`) is not already built elsewhere, and nothing on file shows it tried and failed.
+
+**PART A — the direction**
+- **A1 (already decided?)** Yes, but the plan carries that decision out rather than repeating it. PD215(b) decided the split (`docs/d1-loop12-17-split-plan.md:1817-1821`, 2026-09-27). The same plan, reviewed at the previous md5 `e580f68d…`, came back `novel` (`archive/peer/2026-09-27-priorart-c103-split-plan.md:399-415`). The change since then is exactly the FIXED release recorded in that review (`:423-430`): the recipe gained `--stop-after` and records its uid binding through the Stage's own JSON file. This review checks that change and does not reopen the direction.
+- **A2 (already refuted?)** None. The route-B failure was work done in memory with nothing saved between steps. Part A saves a file, which answers that failure rather than repeating it (earlier review `:403`).
+- **A3 (contradiction)** The only one on file does not block. PD215(b) `:1815` says `copy_in` can never run on a claudeDev file, but `stage_d1_m4b.py:29,43,103-104` did run it that way (earlier review `:404`). This recipe does not call `copy_in`.
+- **A4 (unread evidence)** None. The Wait (ms) output-terminal name that the earlier review flagged as unmeasured has since been measured (`tools/bench/diag_c103_wait_donor2.log`, cited at `:427-428`).
+
+**PART B — the file**
+- **B1 (already built?)** No. The only other stop-early mode on file is `stop_after_a` in `tools/recipes/stage_d1_s2.py:248,1410`. It skips phases C and D after a legality check (rule 32(d)); it does not stop after op N and save a broken file. `Executor(stop_after=)` and `part_a_record()` in `tools/stagexec.py:997-1034,1133-1146` are this card's own new code, with self-tests T40/T40b–e at `:2604-2636`.
+- **B2 (already failed?)** No. Runs r6 and r7 stopped for other reasons: r6 created locals in write mode instead of read mode, and in r7 `copy_in` only works with the file at `MOVE_DST`. Neither was a partial run.
+- **B3 (hand-rolling an existing helper?)** No. The recipe uses the helpers that already exist:
+  - broken-file save: `stagekit.save(broken_ok=True)` → `save_route` (`tools/stagekit.py:1075-1097`)
+  - binding record: `s.R` + `s.dump()` (`tools/recipes/stage_d1_disp.py:56`), which is the earlier review's own B3 suggestion
+  - Wait (ms) donor: registered in `tools/bench/facts_c100_oplabels.json:266`
+- **B4 (already measured?)** No. The memory ceiling's cause (the reads or growth over the session) is still open (`docs/d1-loop12-17-split-plan.md:1822`).
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c103-split-plan-recipe","verdict":"novel","alternative":"The only similar mode is stage_d1_s2.py stop_after_a (:248,:1410): a phase skip after a legality check, not op-N stop + broken save. Part A reuses stagekit.save_route and the s.R/dump channel instead of hand-rolling them.","discriminating_test":"stagexec self-test T40/T40b-e (stagexec.py:2604-2636) must pass on the current md5 before the Part-A LabVIEW run.","violations":[],"sources":["archive/peer/2026-09-27-priorart-c103-split-plan.md:399","archive/peer/2026-09-27-priorart-c103-split-plan.md:430","tools/stagexec.py:997","tools/stagekit.py:1075","tools/recipes/stage_d1_s2.py:1410","tools/bench/facts_c100_oplabels.json:266"],"note":"Re-review after the FIXED release of the earlier novel verdict; the change is the release's own implementation."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c103-split-plan-recipe.md
+   STOP RECORD: none - 2026-09-27-priorart-c103-split-plan-recipe.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_disp.py sha d807c26207c6 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 43s

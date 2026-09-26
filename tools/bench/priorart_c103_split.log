@@ -1,0 +1,29 @@
+BGRUN START 2026-09-27 02:02:19 limit 15.0 min: py -u tools/prior_art_review.py --plan-file tools/bench/cards/split_plan_103.md --slug c103-split-plan --recipe tools/recipes/stage_d1_disp.py
+BGRUN PID 26184
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c103-split-plan.txt (52146 chars)
+   review card tools\bench\cards\review_priorart-c103-split-plan.json
+OUTCOME: ANSWERED (94s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-27-priorart-c103-split-plan.md
+COST: $1.3577  in 20 / out 8487 / cache-create 119761 / cache-read 1149058  (91s, 19 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c103-split-plan verdict=novel -> tools\bench\cards\verdict_priorart-c103-split-plan.json
+--- ANSWER ---
+**Verdict: novel.** Nothing in the project's files already does what this split plan builds, and no earlier work tried it and failed.
+
+**PART A — the direction**
+- **A1 (already decided?)** The split was decided before this plan: `docs/d1-loop12-17-split-plan.md:1817-1821` (PD215(b), cycle 102, 2026-09-27). But the plan carries out that decision and does not repeat it: Part A = ops 1–40 saved with `gui_save`, Part B = ops 41–47 in a fresh LabVIEW, and a Wait (ms) donor for `OpPrimCopyNested_v0` registered like Max & Min. That is not a `settled-already` case.
+- **A2 (already refuted?)** None. The route-B failure (Pre-decided 162, `:258-260`) was re-wiring in memory with nothing saved. Saving a file between the parts is the fix for that failure, not a repeat of it.
+- **A3 (contradiction, does not block)** PD215(b) `:1815` says `stagekit.copy_in` "can never run on a claudeDev work file". But `tools/recipes/stage_d1_m4b.py:29,43,103-104` (cycle 68) put the Wait (ms) of loop 1.5 in with `copy_in`: it copied the donor file's bytes into `MOVE_SRC` and ran the whole stage with its working file set to `MOVE_DST` (`work_dir`/`work_name`). So the helper can run on claudeDev content. PD215(b) actually ruled out the S1-as-donor idea on memory grounds (+300 MB), which is a different point. The plan does not use `copy_in` at all, so this changes nothing in the plan. PD215(b)'s wording should be corrected.
+- **A4 (unread evidence)** None that affects the plan. `docs/toolkit-capabilities.md:77` and `tools/bench/diag_c100_verbs_build4.log:59` have already measured Wait (ms)'s sink name `milliseconds to wait` (on `#44143`). That agrees with step 0's pass line. The source name `millisecond timer value` is still unmeasured, so step 0 is right to read it.
+
+**PART B — the file it builds**
+- **B1 (already built?)** No Wait (ms) donor is registered. `tools/bench/facts_c100_oplabels.json:257-266` lists only Max & Min, from `OpPrimDonor_v0.vi` (a copy of `examples\Comparison\Max and Min.vi`). `diag_c103_wait_donor.py` is this cycle's own script. `tools/stagexec.py`, `stagekit.py` and `stagesim.py` have no `--from-step`, resume or bind-from-JSON entry; the grep for `resume|from_json|bind_from|start_step|--from` found nothing.
+- **B2 (already failed?)** None. r6 and r7 stopped for other reasons: the local was born in write mode, and `copy_in` needs `MOVE_DST` (`:1814-1815`). Neither was a split run.
+- **B3 (existing helper, suggestion only)** Recording one stage's IDs and reloading them in the next stage already has a pattern: `stagekit` `s.R[...]["sym"]` + `s.dump()` → `stage_d1_m4b.py:31,38,91-92` read `stage_d1_m4a.json`'s `sym`. It does not fill `stagexec`'s `bind.obj/term/diag`, so it does not replace the planned entry. Reusing that JSON channel for `stage_d1_dispA.json` would stop a second record format appearing.
+- **B4 (already measured?)** No. The memory cause (reads vs accumulation) is still OPEN (`:963`, `:1822`), and the plan says so.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c103-split-plan","verdict":"novel","alternative":"Op 41 could use the existing copy_in route with the working file at MOVE_DST and a small donor at MOVE_SRC (stage_d1_m4b.py:29,43,103-104); PD215(b)'s 'never on a claudeDev file' overstates it. The plan's OpPrimCopyNested donor route is still valid.","discriminating_test":"Step 0 reads the donor's 2 Wait (ms) terminals; the sink name 'milliseconds to wait' is already measured (diag_c100_verbs_build4.log:59), the source name is not.","violations":[],"sources":["docs/d1-loop12-17-split-plan.md:1815-1821","tools/recipes/stage_d1_m4b.py:29","tools/recipes/stage_d1_m4b.py:103","tools/bench/facts_c100_oplabels.json:257","tools/bench/diag_c100_verbs_build4.log:59","docs/toolkit-capabilities.md:77"],"note":"Suggestion, not a slug: reuse stagekit's s.R sym + dump JSON channel (stage_d1_m4b.py:31,91) for Part A's binding record."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c103-split-plan.md
+   STOP RECORD: none - 2026-09-27-priorart-c103-split-plan.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_disp.py sha bb6ee9fa2623 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 97s

@@ -1,0 +1,17 @@
+BGRUN START 2026-09-27 03:17:55 limit 3.0 min: py -u tools/bench/selftest_guard_bash_jev.py
+BGRUN PID 15056
+=== selftest_guard_bash_jev  (stubbed, no network)
+  PASS  C1 a read-only command triggers NO Jev call and no advisory  rc=0 calls=0
+  FAIL  C2 an off-task launch prints JEV-DRIFT and does not block  rc=2 calls=0
+  FAIL  C2b the same launch prints JEV-PREFLIGHT for the script after the `--`    py tools/stage_prerun.py --prerun tools/bench/diag_c88_brokenwires.py
+  FAIL  C3 an on-task launch prints NO JEV-DRIFT line and does not block  rc=2
+  PASS  C4 a second launch within 60 s adds no Jev call  0 then 0
+  FAIL  C5 a failed or raising reading changes nothing (no line, rc unchanged)  rc=2/2
+  PASS  C6 an unmarked material run is still blocked (code 2) and costs no Jev call  code 2 calls=0
+  PASS  C7 a jev_* command triggers no reading  rc=0 calls=0
+  PASS  C8 next_block() carries the whole NEXT section in order and stops at the next heading  \U0001f534 **STATE: the bed is unchanged and nothing was saved.** | \U0001f534 **FIRST ACT
+  PASS  C9 static_checks() returns the five findings with no Jev call  5 findings, 157 lines, stagekit=True
+  PASS  C10 is_run_command() accepts launches and rejects reads  
+
+=== 7 PASS / 4 FAIL: C2 an off-task launch prints JEV-DRIFT and does not block, C2b the same launch prints JEV-PREFLIGHT for the script after the `--`, C3 an on-task launch prints NO JEV-DRIFT line and does not block, C5 a failed or raising reading changes nothing (no line, rc unchanged)
+BGRUN END rc=1 after 2s (NO RESULT LINE)

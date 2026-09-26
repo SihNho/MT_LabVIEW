@@ -1,23 +1,18 @@
-r"""stage_d1_disp - card 100-6, PD213(f)4(iv) / PD212: THE DISPLAY-LOOP STAGE, executed, not re-decided.
-INPUT claudeDev\D1_s1_copy.vi (3e3d23ce..., named by the plan's base graph), FRESH LabVIEW -> claudeDev\D1_s1_disp_<ts>.vi,
-saved BY SCRIPT at ExecState 1. ROWS ONLY FROM THE FINALIZED PLAN tools/bench/sim/disp/plan_disp.json (stageplan_disp_r4_open =
-r3_open + the MEASURED Max & Min names/class, diag_c100_6_resim.log); no uid and no terminal name is typed here.
-PRIOR ART: stage_d1_l2a1.py (skeleton, DryBE), stagexec.lv_run (E1/E2/E3 and the cdiff on the real end, :1965-2027),
-gscript.wire_health + _edge_pairs (PD211(b) readers, card 98-2/98-3), stagekit.broken_wire_count (RBW). No new op.
-PREDICTION: L1 every action compiles to exactly one real op; E1 each real op == its simulated step (the #25261 value gate
-reads False first, else the plan stops); W1 after the batch: termless wires are all RECORDED, RBW (VI-level, on the work copy,
-PD212(f)) removes ONLY wire uids that existed before the stage, and loses NO data edge; E2 ExecState 1 after RBW;
-E3 computation_diff(S1, real end) == the plan's 21 open_rows (FATAL, before save); PS saved by script, md5 != input, input
-unchanged; LabVIEW gone at exit. Level: STRUCTURAL (the VI is never run: card flag run_vi false).
-CARD 101-4: RECORD MODE (Executor record=True) - a STEP-DIFF is logged and the run goes on on the unsaved scratch; any
-diff => every diff listed + the E3 cdiff of the last read, E1 FAILS, NOTHING saved. READS only at CHECKPOINTS (PD193(a)) =
-binding ops + 4, 5 (the moved constants, stagesim only_source) + 12 + last: every-op reads cost ~3.4 MB (meter_l2a1_86c.log,
-error 2 at 695 MB) and r4 was at 594.6 MB after op 4 of 47 (stage_d1_disp_r4.log:88) - 47 reads would cross MEMSTOP 700.
-CARD 101-5: create_local_read resolves the panel index by label (r5 stop); the k12 only_source gap is OPEN (review c101-5-onlysource).
-CYCLE 102 (firefighter, PD214(c)): a step difference made ONLY of dangling terminals that no later plan action names by uid is a
-WARN (stagexec.classify_step_diff, read from the plan) - logged, not a save blocker; any other difference still FAILS E1 and saves
-nothing. The end gates (W1 RBW, E2 ExecState 1, E3 cdiff == open_rows) decide the save as before.
-    py tools/bgrun.py --material --max-min 40 --log tools/bench/stage_d1_disp_r6.log -- py -u tools/recipes/stage_d1_disp.py"""
+r"""stage_d1_disp - card 100-6, PD213(f)4(iv) / PD212: THE DISPLAY-LOOP STAGE, executed, not re-decided. INPUT claudeDev\D1_s1_copy.vi
+(named by the plan's base graph), FRESH LabVIEW -> claudeDev\D1_s1_disp_<ts>.vi saved BY SCRIPT at ExecState 1. ROWS ONLY FROM THE
+FINALIZED PLAN tools/bench/sim/disp/plan_disp.json (from stageplan_disp_r4_open.json); no uid and no terminal name is typed here.
+PRIOR ART: stage_d1_l2a1.py (DryBE), stagexec.lv_run (E1/E2/E3, cdiff), gscript.wire_health/_edge_pairs, stagekit RBW. No new op.
+PREDICTION: L1 one real op per action; E1 each checkpoint read == its simulated step (#25261 gate False first); RECORD MODE (101-4):
+a diff is logged, the run goes on, nothing saved unless every diff is a PD214(c) WARN (dangling only, no later uid reference,
+stagexec.classify_step_diff); reads only at CHECKPOINTS = binding ops + 4, 5, 12, last (PD193(a), memory: r4.log:88, r7.log:804);
+W1 RBW removes only pre-existing wire uids, no lost edge; E2 ExecState 1; E3 cdiff(S1, end) == the 21 open_rows; PS saved by script.
+PART-A MODE (card 103-1, PD215(b)): `--stop-after N` runs ops 1..N only (Executor stop_after, N a checkpoint): A1 no op > N, A2 step N
+real == sim (WARN only), gui_save claudeDev\D1_s1_dispA_<ts>.vi (broken by design, never run), md5 + binding (bind.obj/term/diag,
+loop_of, sym_real) -> tools/bench/stage_d1_dispA.json. History of cards 100-6..102: docs/d1-loop12-17-split-plan.md PD213-PD215.
+PART-B MODE (card 103-4, PD215(b)/PD216(f)): `--from-step N --base <dispA file>`: input = the Part-A file (md5 from its JSON), binding
+loaded by stagexec (plan md5 pinned, stop_after == N), B0 entry read == sim step N + gate re-read + parity/PRIME before op N+1, ops
+N+1.. only; W1 pre-existing wires = S1's (the plan base graph, 1899 == Part A's W0); end gates E1/W1/E2/E3/PS unchanged.
+    py tools/bgrun.py --material --max-min 40 --log tools/bench/stage_d1_dispA_r1.log -- py -u tools/recipes/stage_d1_disp.py --stop-after 40"""
 import copy, json, os, subprocess, sys, time                                       # noqa: E401
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import stagekit as K, gscript as g, vigraph as V, stagesim as SS, stagexec as SX, jev_candidates as JC, allterms as AT  # noqa: E401,E402
@@ -26,13 +21,18 @@ PLAN = os.path.join(K.BENCH, "sim/disp/plan_disp.json")                         
 P = J(PLAN); BASE = J(K.ROOT, P["finalized"]["base"]["path"]); A = P["actions"]   # noqa: E702
 WIKI = J(JC.WIKI, P["context"]["s1_key"] + ".json")
 DRY, CUT = bool(getattr(g.report_all, "_dry", False)), 10 ** 3
+AV = sys.argv[1:]; STOP = int(AV[AV.index("--stop-after") + 1]) if "--stop-after" in AV else None   # noqa: E702  card 103-1 PART-A
+FROM = int(AV[AV.index("--from-step") + 1]) if "--from-step" in AV else None       # card 103-4 PART-B
+PARTA = os.path.join(K.BENCH, "stage_d1_dispA.json"); PA = J(PARTA)["partA"] if FROM else None   # noqa: E702
 WIRING = ("tunnel", "connect", "wire_sr", "branch")
 
 
 class DryBE(SX.SimBackend):
-    """stage_prerun's dry run: the plan's own simulated ops + one Stage op record per real op (stage_d1_l2a1.DryBE)."""
+    """stage_prerun's dry run: the plan's own simulated ops + one Stage op record per real op (stage_d1_l2a1.DryBE).
+    PART-B: the simulated start is step FROM bound through the Part-A JSON (stagexec.from_step_state)."""
     def __init__(self, s):
-        SX.SimBackend.__init__(self, P, SS.base_state(BASE, P.get("context")), SS.load_models()); self.s = s   # noqa: E702
+        st = SS.base_state(BASE, P.get("context")) if FROM is None else SX.from_step_state(PLAN, FROM, PA)
+        SX.SimBackend.__init__(self, P, st, SS.load_models()); self.s = s   # noqa: E702
 
     def _apply(self, op, check=None):
         self.s._op(("wire_" if op["kind"] in WIRING else "") + op["kind"], lambda: {"err": None}, str(op["acts"]))
@@ -53,21 +53,36 @@ def cdiff(x, be, real):
             sorted(set((int(r["node"]), r["term"]) for r in P["open_rows"])))
 
 
+def part_a(s, x, be):
+    """card 103-1 PART-A (PD215(b)): ops 1..STOP only, step STOP real == sim (WARN only), gui_save, md5 + binding JSON."""
+    a1, a2, det, bind = x.part_a_record()
+    s.gate("A1 PART-A: ops 1..{0} of {1} executed, NO op > {0} dispatched".format(STOP, len(x.ops)), a1, det, fatal=True)
+    s.gate("A2 E1 through op {0} WARN-class only; step {0} real read == simulated step {0} (or a WARN)".format(STOP), a2, det, fatal=True)
+    m = s.save(broken_ok=True)                                                     # gui_save route at ExecState 0 (stagekit.save_route)
+    s.gate("AS Part-A artefact saved, md5 != input; input unchanged", m and m != s.input_md5 and K.md5(s.input_vi) == s.input_md5, m)
+    s.R["partA"] = dict(bind, file=s.work, md5=m, meter=getattr(getattr(be, "meter", None), "rows", None), level="STRUCTURAL, broken by design"); s.dump()   # noqa: E702
+
+
 def body(s):
     print(__doc__, flush=True)
     s.gate("L0 the executed plan is FINAL, open_rows_match, plan_in = stageplan_disp_r4_open.json", P.get("final") is True and
            P["finalized"].get("open_rows_match") is True and P["finalized"]["plan_in"]["path"].endswith("stageplan_disp_r4_open.json"),
            (K.md5(PLAN), P["finalized"]["plan_in"]), fatal=True)
+    FROM and s.gate("B0 PART-B binding: stop_after == --from-step {0}, file == --base, plan md5 == the executed plan's".format(FROM),
+                    PA["stop_after"] == FROM and os.path.normcase(PA["file"]) == os.path.normcase(s.input_vi) and PA["plan_md5"] == K.md5(PLAN),
+                    (PA["stop_after"], PA["file"], PA["plan_md5"]), fatal=True)
     s.start(); bp = K.mod("bench_prep"); h0 = bp.labview_handles()                 # noqa: E702
-    w_pre = set() if DRY else set(int(u) for u in AT.all_wire_uids(s.work)[0])   # PD211(b): the pre-existing wire uids
-    s.fact("W0 pre-existing Wire uids: {0}".format(len(w_pre)))
+    w_pre = set(r["wire_uid"] for r in BASE["terminals"] if r["wire_uid"]) if FROM else set() if DRY else set(int(u) for u in AT.all_wire_uids(s.work)[0])
+    s.fact("W0 pre-existing Wire uids: {0}{1}".format(len(w_pre), " (S1's, from the plan base graph - PART-B)" if FROM else ""))
     be = DryBE(s) if DRY else SX.LVBackend(s, WIKI["fs_tunnel_pairs"])
-    ops0 = SX.compile_plan(P); cps = {0, 4, 5, 12, len(ops0)} | set(k for k, o in enumerate(ops0, 1) if o["kind"] in SX.BIND_KINDS)   # noqa: E702
-    x = SX.Executor(PLAN, be, log=lambda m: print(m, flush=True), checkpoints=cps, record=True)
+    ops0 = SX.compile_plan(P); cps = {0, 4, 5, 12, len(ops0)} | {STOP or 0} | set(k for k, o in enumerate(ops0, 1) if o["kind"] in SX.BIND_KINDS)   # noqa: E702
+    try:
+        x = SX.Executor(PLAN, be, log=lambda m: print(m, flush=True), checkpoints=cps, record=True, stop_after=STOP, from_step=FROM, binding=PA)
+    except SX.ExecStop as e:
+        return s.gate("B0 PART-B binding loads (stagexec.load_binding)", False, str(e)[:CUT], fatal=True)
     OPS = [dict(o, id=A[o["acts"][0] - 1]["id"]) for o in x.ops]; acts = sorted(n for o in OPS for n in o["acts"])   # noqa: E702
-    s.gate("L1 every plan action compiled into exactly one real op ({0} -> {1})".format(len(A), len(OPS)),
-           acts == list(range(1, len(A) + 1)), acts, fatal=True)
-    s.fact("CHECKPOINTS {0} of {1} ops (record mode)".format(sorted(cps - {0}), len(OPS)))
+    s.gate("L1 every plan action compiled into exactly one real op ({0} -> {1})".format(len(A), len(OPS)), acts == list(range(1, len(A) + 1)), acts, fatal=True)
+    s.fact("CHECKPOINTS {0} of {1} ops (record mode{2})".format(sorted(cps - {0}), len(OPS), ", PART-A stop after {0}".format(STOP) if STOP else ""))
     try:
         real = x.run()
     except SX.ExecStop as e:
@@ -78,13 +93,18 @@ def body(s):
         [s.fact("UNROUTABLE acts {0} ids {1}: {2}".format(u["acts"], u["ids"], u["err"])) for u in getattr(be, "unroutable", None) or []]
         return
     s.R["stagexec"] = x.report; s.R["step_diffs"] = x.diffs; s.fact("BINDING obj {0}".format(x.bind["obj"]))   # noqa: E702
-    if not DRY:
-        s.fact("METER SUMMARY {0}".format(json.dumps(be.meter.summary(), default=str)))
+    r0 = x.report[0]
+    FROM and s.gate("B1 PART-B entry: read == simulated step {0} (or a WARN), gates re-read, parity {1}, PRIME ok; first op {2}".format(
+        FROM, r0.get("parity", {}).get("n"), x.report[1]["k"] if len(x.report) > 1 else None), r0["op"] == "from_step" and
+        (r0["diff"]["n"] == 0 or all(d["class"] == "warn" for d in x.diffs if d["k"] == FROM)) and x.report[1]["k"] == FROM + 1,
+        {"diff_n": r0["diff"]["n"], "regate": r0.get("regate"), "primed": r0.get("primed")})
+    DRY or s.fact("METER SUMMARY {0}".format(json.dumps(be.meter.summary(), default=str)))
     fails = [d for d in x.diffs if d.get("class") != "warn"]                    # PD214(c): WARN = dangling only, no later uid ref
     [s.fact("STEP-{0} k {1} {2} ids {3} ops since last read {4} later_refs {5}: new {6} | whole {7}".format(
         "WARN" if d.get("class") == "warn" else "DIFF", d["k"], d["op"], d["ids"], d["ops_since_last_read"], d.get("later_refs"),
-        json.dumps(d["new_since_last_diff"], default=str)[:CUT],
-        json.dumps(dict((a, b) for a, b in d["diff"].items() if b and a not in ("n", "who")), default=str)[:CUT])) for d in x.diffs]
+        json.dumps(d["new_since_last_diff"], default=str)[:CUT], json.dumps(dict((a, b) for a, b in d["diff"].items() if b and a not in ("n", "who")), default=str)[:CUT])) for d in x.diffs]
+    if STOP:
+        return part_a(s, x, be)
     if fails:                                                                      # card 101-4: record, report, never save
         got, want = cdiff(x, be, real)                                             # the LAST checkpoint read, no LabVIEW call
         s.fact("E3-INFO cdiff(S1, last read) vs open_rows: extra {0} missing {1}".format(sorted(set(got) - set(want)), sorted(set(want) - set(got))))
@@ -119,7 +139,9 @@ def body(s):
 
 
 if __name__ == "__main__":
-    st = K.Stage(BASE["vi"], BASE["md5"], "D1_s1_disp", preload=False, deadline_min=36, out_json=os.path.join(K.BENCH, "stage_d1_disp.json"), task="cycle 102 firefighter")
+    nm = "D1_s1_dispA" if STOP else "D1_s1_disp"
+    vi, vm = (AV[AV.index("--base") + 1], PA["md5"]) if FROM else (BASE["vi"], BASE["md5"])   # PART-B: the input is the Part-A file
+    st = K.Stage(vi, vm, nm, preload=False, deadline_min=36, out_json=os.path.join(K.BENCH, "stage_d1_disp{0}.json".format("A" if STOP else "")), task="card 103")
     rc = K.run(body, st)
     if not DRY:
         subprocess.run(["taskkill", "/F", "/IM", "LabVIEW.exe"], capture_output=True, text=True, timeout=60); time.sleep(4.0)   # noqa: E702

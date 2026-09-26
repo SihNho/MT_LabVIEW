@@ -1,0 +1,16 @@
+ATTACK this claim about a failed read-only diagnostic (card 103-1 P3).
+
+Script: tools/bench/diag_c103_wait_donor.py ; log: tools/bench/diag_c103_wait_donor.log (run 1).
+Prediction: the script scans claudeDev\OpPrimDonor_v0.vi (report_all Diagram + node_labels + report_all Node), then byte-copied NI
+example candidates, for a node labelled `Wait (ms)`; no exception.
+Observed (log line 4): after the D0 scan (0 hits) the call `g.close_panel(prim)` raised com_error 0x47D "Cannot close or set the
+state of a closed front panel. The front panel must already be open before you close it". The whole try block aborted -> gate X FAIL.
+
+MY CLAIM: this is a bug in MY script, not in LabVIEW or the ops. gscript.report_all / node_labels load the target VI through
+VI Server WITHOUT opening its front panel, so FP.Close on it is illegal (0x47D). The fix is to treat close_panel as best-effort
+(try/except) - the patched script now wraps every close_panel in `shut()`. Prior art: diag_c100_verbs_build.py:224-227 wrapped the
+same call in try/except for the Max & Min donor, which supports the claim.
+
+Please give: the strongest reason this claim is wrong; an alternative explanation (e.g. the panel WAS open and something else
+closed it, or the reference was stale); what would falsify it; the cheapest discriminating test. Relevant code: tools/gscript.py
+def close_panel (~line 1351), def report_all (~513), def node_labels (~612).

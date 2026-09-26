@@ -1,0 +1,47 @@
+BGRUN START 2026-09-27 03:18:38 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c103d-guard-bash-jev -TaskFile tools/bench/cards/hyp_c103d_guard_bash_jev.txt
+BGRUN PID 26308
+OUTCOME: ANSWERED (97s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-27-c103d-guard-bash-jev.md
+COST: $1.1089  in 24 / out 8591 / cache-create 88935 / cache-read 1127655  (93s, 24 turn(s))
+--- ANSWER ---
+**Verdict: I could not refute the claim. Neither card 103-4 edit can produce these rc=2 results.** What the claim leaves out is that the test is now broken in a second way: two of its seven PASS lines pass vacuously.
+
+**1. Strongest attack, and why it fails.** If either edit raised or misclassified, the rc=2 could come from `stop_gate` rather than `prerun_gate`. The evidence rules that out:
+- The last stderr line of C2b is `py tools/stage_prerun.py --prerun tools/bench/diag_c88_brokenwires.py`. Only the "missing records" branch of `check_launch` writes that line (`tools/stage_prerun.py:1674-1676`). `tools/stop_record.py` never contains `--prerun`. So the refusal comes from `prerun_gate` (`tools/hooks/guard_bash.py:461`), which runs only after `stop_gate` has already passed the command (`guard_bash.py:455-457`).
+- The lint drop cannot fire on BG. BG has no segment matching `LINT_SEG_RE` (`guard_bash.py:179-180`), so `_drop_lint_segments` returns `cmd` unchanged (`guard_bash.py:196`). Had it raised, `main()` would have crashed the test, not returned 2.
+- The exemption can only take scripts out of the gate, never add one. It returns `[]` only for `tools/bench/selftest_stagekit.py` at the pinned hash (`stage_prerun.py:1259-1261`).
+
+**2. The claim's own cause, confirmed from the files:**
+- `diag_c88_brokenwires.py:35` imports `stagekit`, and line 50 calls `discard_work()`.
+- `discard_work` is one of the original 20 `MODIFY_VERBS` from chat-N1 (`stage_prerun.py:1236-1240`, and `result_chat-N1.json:11` says "20 MODIFY_VERBS").
+- `prerun_records.jsonl` has no dry or prerun record at all for `diag_c88_brokenwires`.
+
+**3. Chronology — is there an 11/0 run after chat-N1? No.**
+- chat-L2 was bound on 2026-09-25 19:49–20:21 (`tools/bench/cards/guard_card.log:167-204`). `lint_verify_20260925b.json:87-91` (11/0) is also from 09-25.
+- chat-N1 was bound on 2026-09-26 07:58 (`guard_card.log:255`). Its result card lists no rerun of this test (`result_chat-N1.json:10-17`).
+- The only run of this test after chat-N1 is `_c103d`. No log contradicts the claim.
+
+**4. Alternative explanations the evidence does not separate:**
+- It is not proven that chat-N1 is the change that broke the test. Anything that landed between 09-25 20:21 and 09-27 03:17 is also a candidate, including card 100-6's verb additions and chat-N4's `check_scratch`.
+- On the text shape alone, the failing branch is the missing-records one. `check_scratch` (`stage_prerun.py:1685`) runs after that branch and cannot be the refuser here. chat-N1 is still the most likely cause; the logs just don't pin it by bisection.
+
+**5. What the claim misses: the regression is wider than four FAILs.**
+- **C6 now passes for the wrong reason.** Its command has no `--material`, so it was meant to be refused by `material_gate` (`guard_bash.py:484`). It is now refused earlier by `prerun_gate`, so its "code 2" no longer tests the material gate.
+- **C4 is vacuous too.** It shows `0 then 0`, against `7 then 7` in `selftest_chatl2_selftest_guard_bash_jev.log:6`, because the Jev readings never run.
+- Since chat-N1, the test has been checking nothing about the advisory wiring. The fix belongs in the test's fixture: BG needs a launch target that is not VI-modifying, or its records. Don't change the gate to fit the test.
+
+**6. What would falsify the claim:**
+- Reverting both 103-4 edits in a copy of the tree and rerunning gives 11/0.
+- Or `check_launch(BG)` allows the command on the current tree, which would mean the refusal came from somewhere else.
+
+**7. Cheapest discriminating test.** Run this offline, with no hook and no LabVIEW:
+```
+py -c "import sys; sys.path.insert(0,'tools'); import stage_prerun as s; print(s.vi_modifying_calls('tools/bench/diag_c88_brokenwires.py')); print(s.check_launch('py tools/bgrun.py --material --max-min 5 --log tools/bench/x.log -- py -u tools/bench/diag_c88_brokenwires.py'))"
+```
+- **Claim holds** if it prints `['discard_work']` and then `(False, '[classifier ... chat-N1] LAUNCH GATE ... decisions 1/2 ...')`. That output does not depend on `guard_bash.py`, so the lint edit is cleared.
+- **To also clear the exemption edit:** set `s.VI_MOD_EXEMPT_PATHS = {}` before the call. The output should be identical.
+- **To clear chat-N4 and card 100-6 as well:** run the same call against `git show 23d7136~N:tools/stage_prerun.py`, the pre-chat-N4 version.
+
+**What would change my mind:** an 11/0 run of this test dated after 2026-09-26 07:58, or `check_launch(BG)` returning `True`.
+
+No web search was needed. Every claim here is about this project's own code and logs, and each one is cited to a file and line.
+BGRUN END rc=0 after 98s

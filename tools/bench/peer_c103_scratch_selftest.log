@@ -1,0 +1,67 @@
+BGRUN START 2026-09-27 02:12:23 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c103-scratch-selftest -TaskFile tools/bench/peer_task_c103_scratch_selftest.md
+BGRUN PID 2500
+OUTCOME: ANSWERED (77s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-27-c103-scratch-selftest.md
+COST: $0.8537  in 12 / out 6804 / cache-create 77787 / cache-read 476297  (73s, 11 turn(s))
+--- ANSWER ---
+**The claim is wrong as stated.** The mechanism it names is probably real, but it points it at the wrong test and the wrong code. E1 never wrote or read a scratch_verify record. The fix also changed the code under test, not only the fixture.
+
+## 1. Strongest reason it is wrong
+
+- **E1 tests `failure_function`, not ALLOW vs REFUSE.**
+  - The logged failure prints a tuple of extracted function names: `('stagexec.op:tunnel', 'op:OpWireConnect', 'gscript.wire_terminals')` (`tools/bench/selftest_scratch_verify.log:7`).
+  - The self-test's own prediction says E1 is an extraction check: "E1 extraction: STEP-DIFF line -> stagexec.op:<kind>; Op VI in RESULT first_fail -> op:<Name>…" (`selftest_scratch_verify.py:9-10`, gate at `:92-96`).
+  - The scratch-record ALLOW/REFUSE tests are S1–S3 (`:72-84`). All three passed (`log:3-5`).
+- **Scratch records are never checked against result-line/1.**
+  - `scratch_pass_after` reads each record with plain `json.load` and filters on `d.get("function") != function or d.get("status") != "PASS"` (`tools/stage_prerun.py:1586-1589`).
+  - No schema check runs on that path. An extra key in a record cannot cause a rejection there.
+- **"The function name is carried by the file name, as check_scratch reads it" is false.**
+  - `scratch_pass_after` ignores the file name completely. It matches only the JSON `"function"` field (`:1589`).
+  - The fixture still writes that key: `json.dump({"function": function, ...})` (`selftest_scratch_verify.py:65`).
+  - Removing that key from a record would make the gate refuse forever.
+- **"Nothing in check_scratch itself was changed" hides a code change.**
+  - The card's own result says "branch removed, fixed test not rerun" (`tools/bench/cards/result_chat-N4.json:6`).
+  - `stage_prerun.py:1507` now reads: "No `"function"` field in the RESULT line: result-line/1 validation rejects extra keys - measured by the self-test."
+  - So `failure_function` lost an extraction branch. That is a change to the code under test, not only to the test.
+
+## 2. Alternative explanation that fits the same evidence
+
+- An earlier `failure_function` read a `"function"` key from the run's RESULT line.
+- The E1 fixture's RESULT line carried that key. `protocol.all_result_lines` failed validation because result-line/1 has `additionalProperties: false` (`docs/protocol/result-line.json:5`; check at `protocol.py:159-162`). It replaced the line with `_malformed(...)` (`protocol.py:250-252`).
+- The malformed line's `first_fail` embeds the raw text, which still contains `OpWireConnect.vi`. So `OPVI_RE` returned `op:OpWireConnect` instead of the expected value (`stage_prerun.py:1536-1539`).
+- This fits the logged second element. It also fits the fact that the logged tuple has 3 elements while the current E1 builds 4, so the test changed after the logged run.
+- In this reading the schema mechanism is right. But the failing unit is RESULT-line extraction, and the fix removed a feature of the code (the RESULT-line branch), not a key from a scratch fixture.
+- **Limit:** I cannot see the pre-fix script or code. Nothing in the log rules out a different old expected tuple.
+
+## 3. Latent defect the framing hides
+
+- `stage_prerun.py:1509` says a record is "written with a RESULT line by a <=120-line stagekit script".
+- If a real scratch script writes the record file with a `RESULT ` prefix, `json.load` raises `ValueError`. The record is skipped silently (`:1587-1588`) and the gate refuses forever, with no message saying why.
+- The same happens if a script follows the claim and carries the function only in the file name.
+- A smaller point: the "newer than the failure" comparison uses the second failure's **BGRUN START** time (`segments`, `protocol.py:267-277`). A record written while that failing run was still going would already count as newer.
+
+## 4. What would falsify the claim
+
+- Any of these falsifies it:
+  - The pre-fix E1 never built a scratch_verify record.
+  - The pre-fix `failure_function` had a RESULT-`function` branch that the fix removed.
+- The code comment at `:1507` and the card's "branch removed" (`result_chat-N4.json:6`) already point that way.
+
+## 5. Cheapest discriminating test (no LabVIEW)
+
+1. Rerun `py tools/bench/selftest_scratch_verify.py` as it stands. It was never rerun ("fixed test not rerun"). By my reading of the code, E1 should now pass: `stagekit.move_in` is the last fleet traceback frame, and `OpWireConnect.vi` is found in a valid `first_fail`. If E1 still fails, the claim is dead.
+2. Pin down what the gate keys on, with two fixtures under S2's setup:
+   - **(a)** file name `wrongname_<ts>.json` containing `{"function":"gscript.wire_terminals","status":"PASS","t":now}`. **Expect ALLOW.**
+   - **(b)** file name `gscript.wire_terminals_<ts>.json` with no `function` key. **Expect REFUSE.**
+   
+   If (a) allows and (b) refuses, the "keyed by file name" part of the claim is refuted.
+3. Optional: a record file whose first line starts with `RESULT `. **Expect REFUSE with no reason given**, which confirms the silent skip in section 3.
+
+**Verdict.** "The test was wrong, not the gate" does not hold as written. The schema-rejection mechanism is plausible for the old RESULT-line branch, but:
+- It did not affect a scratch record.
+- The file-name keying it states is false.
+- The fix removed a code branch.
+
+Record this as a design change to `failure_function` plus a test update. Do not close it as our-script-bug in the test until step 1 passes 7/7 and step 2 behaves as predicted.
+
+(I made no external web claims. Everything here comes from local code, cited by file and line.)
+BGRUN END rc=0 after 78s

@@ -1,0 +1,18 @@
+ATTACK this claim. Log: tools/bench/selftest_c103d_hooks_before.log (script tools/bench/selftest_c103d_hooks.py, card tools/bench/cards/task_103-4.json pass lines 2).
+
+CLAIM: the three FAIL lines in selftest_c103d_hooks_before.log (S1, S2, L1) are the PRE-FIX state of the two defects card 103-4 names, run
+deliberately BEFORE the edit ("hook edits: self-test before and after"), not a new problem:
+ (1) tools/stop_record.py segment_class() classes `py -m <module>` as "build" unless the module is in PY_READONLY_MODULES
+     {py_compile, ast, tokenize, tabnanny}; so `wc -l tools/recipes/stage_d1_disp.py && py -m pyflakes tools/recipes/stage_d1_disp.py 2>&1 | head`
+     (tools/hooks/material_marker.log:2175, REFUSED STOPPED-RECIPE) was refused although pyflakes only parses the file.
+     The fix is in tools/hooks/guard_bash.py stop_gate(): LINT_SEG_RE drops `py -m pyflakes|pycodestyle|flake8 <args> [2>&1]` segments
+     before stop_record.check_command(), unless EXEC_PIPE_RE matches the whole command.
+ (2) tools/stage_prerun.py vi_modifying_calls() classes tools/bench/selftest_stagekit.py (offline: "Nothing here opens COM, touches claudeDev
+     or reads a .vi") as VI-modifying because it imports stagekit and calls save_route/create_local_read on a fake Stage
+     (material_marker.log:2185 REFUSED PRERUN-GATE). Fix: VI_MOD_EXEMPT_PATHS = {"tools/bench/selftest_stagekit.py"} by project path.
+The seven negatives (S3-S7, L2, L3) passed before the edit and must pass after.
+
+Attack: is any of the three fails NOT explained by these defects? Does the guard_bash change open a way to EXECUTE a stopped recipe
+(e.g. a crafted `py -m pyflakes` segment that runs code, a quoting trick through split_segments, `python -m flake8 --config` plugins,
+a `-m pyflakes` segment whose arguments include `&&`-free exec)? Is dropping lint segments ever a loosening beyond the read-only case?
+Is exempting selftest_stagekit.py by path unsafe? Name the cheapest discriminating test.
