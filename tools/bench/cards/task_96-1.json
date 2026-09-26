@@ -1,0 +1,72 @@
+{
+ "schema": "task/1",
+ "id": "96-1",
+ "kind": "measure",
+ "goal": "PD203(f)/PD204: ABBA A=D1_s1_copy.vi, B=D1_s1_par1359_20260926_133751.vi (#1359 parallel); 15 picks, 120 s, panel normal, A15 B15 B15 A15; files run as they are",
+ "why": "PD202(c) named ForLoop #1359 (+760 us/bead) as the per-bead lever; the scheduling-only change is built (95-4, STRUCTURAL, never run). Measures whether it cuts frame loss at 15 beads (R1/R3, M8). The rule-1a replay is a later card (PD204).",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/cards/result_95-4.json"},
+  {"path": "tools/bench/cards/result_95-6.json"},
+  {"path": "tools/bench/cards/result_94-1.json"},
+  {"path": "tools/bench/diag_c94_abba.py"},
+  {"path": "tools/bench/diag_c94_leg.py"},
+  {"path": "archive/benchmarks/INDEX.md"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_par1359_20260926_133751.vi", "md5": "5bef83f0007266b90b7ffd65d2422480"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c94_abba.py"},
+  {"kind": "file", "name": "tools/bench/diag_c94_leg.py"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_par1359_20260926_133751.vi"}
+ ],
+ "pass": [
+  "leg dry run EXECUTES the new diag_c96_leg script with GUI/COM stubbed to saved real returns, all 4 legs at 15 picks, before the first launch (PD199h)",
+  "4 legs in order A15 B15 B15 A15, 120 s, panel normal; registered picks == 15 per leg (a mismatch is logged and that leg rerun once, never half-counted)",
+  "per leg: lost frames; #637 period PROXY from the tra frame-step (step x 11.11 ms) median / p95 / max, labelled 'proxy'; foreign claude/node process count and a CPU % sample before AND after the leg",
+  "S1 and par1359 md5 read IN-RUN before the first and after the last leg (par1359 must be 5bef83f0...; S1 recorded in full) and unchanged",
+  "numbers in tools/bench/par1359_96_abba.json + one archive/benchmarks/INDEX.md row; LabVIEW verified gone at the end; PI TMX 39 read back"
+ ],
+ "outputs": [
+  "tools/bench/par1359_96*",
+  "tools/bench/diag_c96_*",
+  "tools/bench/t0_legs/**",
+  "tools/bench/cards/result_96-1.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "gate",
+  "run_vi": true,
+  "write": [
+   "tools/bench/par1359_96*",
+   "tools/bench/diag_c96_*",
+   "tools/bench/t0_legs/**",
+   "tools/bench/m8_*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/gui_shots/**",
+   "tools/gui_actions.log",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**",
+   "archive/benchmarks/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "outcome"]
+ },
+ "budget": {"failures": 2, "minutes": 80},
+ "rules": [
+  "never save or edit any VI (S1, par1359, originals); the files run as they are",
+  "copy diag_c94_abba/leg to diag_c96_*: keep pick-1 capture release + rerun rule; <=120 lines new code",
+  "never move a script to get around ANY gate (guard_cycle, launch gate, other); a refusal = BLOCKED",
+  "GUI via lv_gui.ps1 -Exception Approved -Evidence 'user 2026-09-17 bead-pick option 1'",
+  "one bgrun (--max-min <= 70) chaining 4 legs + summary; hold the turn until BGRUN END/TIMEOUT",
+  "numbers only; do not judge (judgement applies PD204(a)); LabVIEW verified gone; facts <=10; OPEN <=3"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

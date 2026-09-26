@@ -53,28 +53,34 @@ rig-state: 조립   <!-- 2026-09-24 20:xx USER GRANT: "당분간 내가 말하�
 🟡 **CARRY (from the 2026-09-25 verification review `archive/peer/2026-09-25-hyp-lintverify-20260925.md`, not blocking): card flags are checked only on the top-level command (a child process could reach LabVIEW under labview=none); a stage run launched outside bgrun is not counted by the retry cap; a bgrun record failure is only logged (`tools/bgrun.py:219-220`). Close in a tooling cycle, deliverable-first.**
 current-bed: D1_l2_a1_20260925_235224.vi
 <!-- ^ machine key read by tools/errorlist_check.py current_bed_text(); without it the bed is chosen by mtime among D1_*.vi names in this file, and the newer D1_s1_kswap_* would silently take over (review archive/peer/2026-09-26-c88-reuse-stalepin.md). Change it only when a new bed is accepted. -->
-🔴🔴🔴 **FIRST ACT (cycle 96) = `docs/d1-loop12-17-split-plan.md` Pre-decided 203(f): the ABBA timing run of the parallel copy. This follows the outcome steer `steer_95.json`: a deliverable run, not tooling.**
-- **Before the first card** (retrospective-cycle95 `wrong-ordering`; the device is not built yet): run `py tools/violations.py --due` and `py tools/outcome_review.py --due`. Both are clear as of 14:10.
-- **No card may move a script to get around ANY gate** (`guard_cycle`, launch gate, or any other).
-- The files: A = `claudeDev\D1_s1_copy.vi` (S1). B = `claudeDev\D1_s1_par1359_20260926_133751.vi`, md5 `5bef83f0…`. They differ only in that ForLoop #1359 has parallelism on; ExecState 1 warm and cold, cdiff 0 rows.
-- The run: 15 picks, 120 s, panel normal, legs in the order A B B A. The files run AS THEY ARE through the cycle-94 leg harness (`diag_c93b_abba.py` / `_leg.py`), after a leg dry run (PD199(h)).
-  - No `tools/recipes` build is needed.
-  - The card's `peers` must include `hypothesis` and `outcome`; its flags are gui, run_vi and hardware gate.
-- Per leg, record:
-  - lost frames;
-  - the #637 period from the tra frame-step proxy (PD203(d)), labelled as a proxy;
-  - the foreign claude/node process count and a CPU % sample, before and after the leg.
-  - Pin the md5s in-run: the material sandbox cannot hash files under `C:\Program Files`.
-- Then the rule-1a replay (PD203(c)), if B is clearly below A:
-  - `tools/recipes/stage_replay_swap.py --plan 95` (or env `REPLAY_SWAP_PLAN=95`), dry run with `--graph tools/bench/par1359_95_graph.json`, at 15 picks;
-  - bit-identity of every tra column against `replay\D1_s1_replay_20260925_075422.vi` (md5 `126f8497…`).
-  - **par1359 is not accepted until the replay is bit-identical** (rule 1a).
-- 🟡 FOR THE CHAT: do not start benchmarks on this PC while a cycle is running legs.
-- Carries:
-  - user decision **D-2026-09-26-01** is still OPEN;
-  - the plain-language description owed since D-04 (outcome review 2026-09-26);
-  - retrospective-cycle95 debt, if unrun.
+🔴🔴🔴 **FIRST ACT (cycle 97) = `docs/d1-loop12-17-split-plan.md` Pre-decided 205(e): BUILD the display-rate-gated copy of S1, then ABBA it. This is a deliverable build and run, following the outcome steer `steer_95.json`.**
+- **Before the first card:** run `py tools/violations.py --due` and `py tools/outcome_review.py --due`. Both were clear at the start of cycle 96.
+- **No card may move a script to get around ANY gate.** A card's `peers` must include `hypothesis` and `outcome`.
+- **Why:** 96-3 measured that ForLoop #1359 (~10 ms per frame at 15 beads) feeds ONLY the panel graph `#8323 'Force (pN) vs Extension (nm)'`. Nothing reaches the tra file, the motors or the kernel.
+- **Step 0, read-only COM on a scratch:** list every property node or reference linked to #8323. If any of them feeds a non-display path, STOP and re-judge.
+- **Steps 1–2:**
+  - Design the gate and fill `requires`. The ring insert #8634 and its SR chain run on every frame. The graph chain, BuildArray #11261 and #8323 run only when `i mod N = 0`.
+  - N is a new panel control, default 9. N = 1 is the original behaviour.
+  - Then dry run → pre-run → one real run. Save `claudeDev\D1_s1_fgate_<ts>.vi` by script. It must be ExecState 1 warm and cold, and cdiff must equal exactly the gate objects plus the moved edges.
+- **Step 3:** ABBA A15 B15 B15 A15, 120 s, panel normal, with the 96-1 harness (`tools/bench/diag_c96_abba.py` / `_leg.py`). The PD204(a) criterion applies. Add LabVIEW %CPU sampled DURING each leg (retrospective-cycle96 finding 2).
+- **After the build dispatch** (retrospective-cycle96 `device-failed`, threshold 1): a small tooling card.
+  - `peer.ps1 -ReviewCard`'s verdict parser must map `loss_usd="?"` to null. It has refused the contract's own form twice.
+  - audit A1/A3 must stop counting `jev_gate.log` as a build log.
+  - Cards must not demand a foreground peer dispatch; `guard_bash` refuses one.
+- Unreviewed standing fail: gate `run1.L8` (bandpass panel) has FAILED in every leg since 92-3 (`diag_c96_abba.log:24`). Pick registration is not affected.
+- **Step 4, rule 1a:** replay at N = 1. Every tra column and #8323's final value must be bit-identical to S1. It is not accepted before that.
+- **Assumption, under CLAUDE.md 2c:** default N = 9. The user is asked in **D-2026-09-26-02** (OPEN). If the answer is no, the default becomes 1.
+- 🟡 FOR THE CHAT: report D-2026-09-26-02. D-2026-09-26-01 is ANSWERED (the "still OPEN" note in cycle 95 was stale). Do not start benchmarks on this PC while a cycle runs legs.
 - Machine copy: `tools/bench/next.json`.
+
+🟢/🔴 **CYCLE 96 (PD204–205): the parallel For loop is REJECTED. The real per-bead cost is a DISPLAY graph.**
+- 96-1 PASS 53/0 (INDEX row 56, `tools/bench/par1359_96_abba.json`), 15 picks, all legs 15/15:
+  - lost frames: A (S1) **3,435 / 3,389** · B (par1359) **3,867 / 3,863**, i.e. +13 %, worse;
+  - tracking iterations: A 7.7k · B 7.25k;
+  - ⇒ par1359 is rejected and the replay is moot. The file is kept, never shipped.
+- 96-2: review `archive/peer/2026-09-26-c96-par1359-h1.md`, verdict refuted, accepted. Its likely causes are serialisation on the non-reentrant `Magnet2Force`, oversubscription (P unwired) and ring-fill memory work. It names `inference-over-measurement` for PD203(b)'s "only serialises" claim.
+- 96-3 PASS 5/0 (`tools/bench/diag_c96_cons_trace.log:235-260`): #1359 → BuildArray #11261 → indicator #8323 only. Its other output feeds only its own history SR. No case gates it, so it runs every frame.
+- Carries: `peer.ps1` fails to parse `loss_usd=?`; the 96-3 owner-tree parser has a G7 fail (not reused).
 
 🟡 **CYCLE 95 (PD203): THE PARALLEL COPY EXISTS; the replay and the ABBA did not run.**
 - 95-1 PASS 6/0: `stage_prerun` rejects a wrong-shape graph cleanly instead of crashing (md5 `56697c5c…`, self-test 18/0).

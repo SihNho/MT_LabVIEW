@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"96-1","status":"PASS","gates":{"pass":53,"fail":0},
+"first_fail":null,
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/par1359_96_abba.json","md5":"a3590184fbfc4507e545e69b4a9e8136"},
+ {"path":"tools/bench/diag_c96_abba.py","md5":"e7423069688c93509973a70e787b37cb"},
+ {"path":"tools/bench/diag_c96_leg.py","md5":"78fcce8b3ae542fa1a1a7f5c768ab881"},
+ {"path":"tools/bench/diag_c96_abba.log","md5":"a2a436c9e3ff828b4aabe8590ba46167"},
+ {"path":"tools/bench/diag_c96_abba_dry.log","md5":"18577d5adc23e247d196263fd796f43b"},
+ {"path":"tools/bench/t0_legs/c96_par1359_20260926_141843","md5":null}
+],
+"facts":[
+ "dry run executed diag_c96_leg.py 4x at 15 picks on saved returns, 52/0; R5 proxy reader on saved 94-1 A15 tra = (6854,1.0,3.0) (diag_c96_abba_dry.log:3,217)",
+ "real run BGRUN END rc=0 after 2873 s, 53/0; all 4 legs registered 15 of 15 on the 1st attempt, no rerun (diag_c96_abba.log:35,73,112,151,217-218)",
+ "Total Lost Frames: A15 3435 / 3389, B15 3867 / 3863; frames delta 10671-10678, 88.9-89.0 Hz (par1359_96_abba.json:59-61,437-439,788-790,1166-1168)",
+ "tra rows (tracking iterations) A 7670 / 7728, B 7243 / 7251; frame steps >1: A 1644 / 1620, B 1880 / 1881 (par1359_96_abba.json:70-71,448-449,799-800,1177-1178)",
+ "#637 period PROXY (tra frame-step x 11.11 ms) med/p95/max ms: A 11.111/33.333/88.889 both; B 11.111/33.333/44.444 and 11.111/33.333/88.889 (diag_c96_abba.log:215)",
+ "proxy is quantised to whole frames: median step 1 and p95 step 3 in every leg, so med/p95 do not separate A and B (diag_c96_abba.log:216)",
+ "claude/node before/after every leg: 16 total, 13 foreign (all claude.exe, 0 node); CPU LoadPercentage means 0.3-4.0 % (diag_c96_abba.log:5,42,44,80,82,119,121,158)",
+ "md5 in-run before leg 1 and after leg 4: S1 3e3d23cefd3a334001aa9d6156bf1aee, par1359 5bef83f0007266b90b7ffd65d2422480, unchanged (diag_c96_abba.log:4,161,166,212)",
+ "TMX 39 read back each leg; camera 90 Hz restored; LabVIEW gone after every leg and at end (tasklist 0); run copies deleted (M8) (diag_c96_abba.log:160,215)",
+ "INDEX row 56 appended by the script (archive/benchmarks/INDEX.md, gate T16 diag_c96_abba.log:214); run1.L8 bandpass step FAILING in all 4 legs as in 92-3..94-1"
+],
+"open":[
+ "The frame-step proxy saturates at whole-frame resolution (med 1 / p95 3 steps in all legs); if PD204 needs the #637 period to separate A and B, a stamped par1359 build (t0at-style) is the only finer measure"
+],
+"cost":{"usd":null,"minutes":62,"labview_runs":4},
+"note":"Opus 5.5 material. No failed gate, so no JEV ladder or peer. No VI saved/edited. New code ~95 lines over the c94 copies. STATUS not edited (status_edit false). Numbers only; PD204(a) not applied."}

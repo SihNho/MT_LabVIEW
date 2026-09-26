@@ -1,10 +1,10 @@
-{"schema": "next/1", "cycle": 95, "act": "PD203(f): ABBA timing run, D1_s1_par1359_20260926_133751.vi (B) vs D1_s1_copy.vi (A), 15 picks 120 s panel normal, order A B B A, unmodified files via the cycle-94 leg harness; replay (PD203c) after", "task_kind": "measure",
- "plan": {"path": "docs/d1-loop12-17-split-plan.md", "md5": "66282f0541edeb97c2c7453463e03b36"},
- "pass": ["leg dry run first (PD199h); 4 legs A15 B15 B15 A15 120 s, registered picks == 15 (mismatch -> rerun once)",
-  "per leg: lost frames, #637 period via tra frame-step proxy (labelled proxy), foreign claude/node count + CPU % before/after",
-  "numbers in tools/bench/par1359_95_abba.json (or _96) + INDEX row; S1 and par1359 md5 pinned in-run unchanged; LabVIEW gone; PI TMX 39 read back",
-  "card flags: gui true, run_vi true, hardware gate, peers include hypothesis+outcome; no tools/recipes build needed",
-  "par1359 is NOT accepted before the PD203(c) replay is bit-identical (rule 1a)"],
+{"schema": "next/1", "cycle": 96, "act": "PD205(e): build the display-rate-gated copy D1_s1_fgate_<ts>.vi from S1 (step 0 read-only #8323 link check, then design+requires, dry/prerun/run), then ABBA A15 S1 vs gated N=9 via diag_c96_* harness", "task_kind": "build",
+ "plan": {"path": "docs/d1-loop12-17-split-plan.md", "md5": "0b904e5f2c973ab6d8a7fe9af01db6d6"},
+ "pass": ["step 0: no property node/reference of indicator #8323 feeds anything but a display (else STOP, re-judge)",
+  "gated copy: ring insert #8634 + SR chain every frame; graph chain + BuildArray #11261 + #8323 only when i mod N = 0; N = new panel control, default 9 (D-2026-09-26-02 assumption)",
+  "ExecState 1 warm+cold; computation_diff(S1,.) = exactly the new gate objects + moved edges, listed by row; saved by script in claudeDev",
+  "ABBA A15 B15 B15 A15 120 s panel normal, PD204(a) criterion; md5 pinned in-run; LabVIEW gone; PI TMX 39 read back",
+  "not accepted before PD205(e)4: N=1 replay bit-identical on every tra column and #8323 final value"],
  "blocked_by": null, "stop_requested": false, "advances": ["M8", "M3", "R1", "R3"],
  "steer": {"item": "outcome:decision-starved+goal-requirement-not-advanced+tooling-over-delivery", "response": "follow"},
- "note": "C95: 95-1 PASS (stage_prerun graph-shape fix, 18/0); 95-4 PASS 84/0 (escalation 1): OpForLoopParSet_v0 + D1_s1_par1359 md5 5bef83f0 ES1 cdiff 0; 95-5/95-6 BLOCKED on card scoping + due outcome review (run at close). 4 DUE slugs answered 13:47."}
+ "note": "C96: 96-1 PASS 53/0 ABBA S1 3435/3389 vs par1359 3867/3863 lost (+13 %) -> par1359 rejected, replay moot; 96-2 review refuted (archive/peer/2026-09-26-c96-par1359-h1.md); 96-3: #1359 feeds ONLY indicator #8323 (display) -> PD205 display-rate gate; user asked D-2026-09-26-02."}

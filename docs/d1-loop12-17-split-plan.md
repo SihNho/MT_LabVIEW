@@ -1379,6 +1379,62 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
        - No difference ⇒ the replay is moot, and the lever is re-judged.
        - Rule 1a holds regardless: par1359 is NOT accepted or shipped before the replay is bit-identical. The ABBA is a timing
          measurement only.
+204. **(cycle 96 judgement, BEFORE the numbers exist) the ABBA criterion and the card split**
+     - **(a) "B clearly below A" is fixed now:** both B15 legs lose fewer frames than both A15 legs, AND mean(B) ≤ 0.8 ×
+       mean(A). Why 0.8: repeat spreads at 15 picks run up to ~10 % of the mean (B15 4,049 / 4,070; cycle 83 3,331 / 3,161;
+       cycle 88 3,410 / 3,490), so a 20 % gap is outside two spreads. B above A, or inside the band, = "no difference"
+       ⇒ 203(f)'s re-judge branch. Nothing between: a result that meets only one condition is "no difference" too.
+     - **(b) Card split (§3 "measurement, not action"):** card `96-1` is the ABBA only (unstamped S1 vs par1359, the
+       cycle-94 harness copied to `diag_c96_*`). The replay (203(c)) is a separate card that judgement writes after reading
+       96-1's numbers against (a). The replay card's `peers` must include `outcome` and `hypothesis` (203(e)).
+205. **(cycle 96 judgement, on results `96-1` PASS 53/0, `96-2` PASS 3/0 and `96-3` PASS 5/0)**
+     - **(a) MEASURED, 96-1 (`tools/bench/par1359_96_abba.json`, INDEX row 56):** 15 picks, 120 s, panel normal, all legs
+       15/15 on the first attempt. Lost frames: **A (S1) 3,435 / 3,389 · B (par1359) 3,867 / 3,863**, i.e. +13 %. Tracking
+       iterations: A 7,670 / 7,728 · B 7,243 / 7,251. By 204(a) this is "no difference" (B is above A) ⇒ **the replay is
+       MOOT. par1359 is REJECTED as a lever.** It is not accepted and not shipped; the file is kept.
+       The frame-step proxy saturates at whole frames (median 1, p95 3 steps in every leg), so it cannot separate A and B.
+     - **(b) Review `archive/peer/2026-09-26-c96-par1359-h1.md` (verdict refuted) is ACCEPTED as a disposition.** It gives three
+       alternatives, none measured: (1) serialisation on the non-reentrant `Magnet2Force` (203(b)'s "only serialises" was
+       asserted, not measured, and the reviewer names that as `inference-over-measurement`); (2a) the +760 µs/bead is cumulative
+       (site deltas), so #1359's own slope is about +450, part of it ring-fill memory work that does not scale with cores;
+       (2b) oversubscription, because unwired P takes every logical CPU. **We do not buy the discriminating CPU-during-leg test**,
+       because (c) makes the question moot.
+     - **(c) MEASURED, 96-3 (`tools/bench/diag_c96_cons_trace.log:235-260`, `tools/bench/f1359_consumers_96.json`):** #1359 has
+       exactly two out tunnels. 11363 (← Bundler #11310) → BuildArray #11261 → **indicator #8323 'Force (pN) vs Extension (nm)'**
+       on #639, and nothing else. 9227 (← Insert #8634) → RightSR #9018 → LeftSR #9025 → #1359's own input, and nothing else.
+       **No path reaches the tra/file writer, a motor/instrument call or any input of kernel #5058.** No case gates either path, so
+       it runs on every #637 iteration. No local or global names the indicator. Implicitly linked PROPERTY NODES of #8323 were
+       not resolvable offline (OPEN; closed by (e) step 0).
+       ⇒ At 15 beads the frame loop spends ~9.4–10.9 ms per frame (202(b), site 4 − site 3 once the ring is full) computing ONE
+       live graph.
+     - **(d) DECIDED — the next lever is DISPLAY-RATE GATING of #1359's graph chain, scheduling only:**
+       - The ring insert #8634 and its SR chain (9227 → #9018 → #9025) run on EVERY frame, unchanged, so the history is identical.
+       - The graph chain (per row: IndexArray #8741, Subtract (Exp Baseline), Median #29009, FIR #28233, `Magnet2Force`, Bundler
+         #11310; then BuildArray #11261 and indicator #8323) runs only when `i mod N = 0`, where `i` is #637's iteration and N is a
+         new front-panel control, "Force graph: update every N frames", default **9** (about 10 Hz at 90 Hz).
+       - **N = 1 reproduces the original exactly.** That is the rule-1a anchor.
+       - Why this is rule-1a-safe: the same nodes run on the same inputs at the frames where they run; the output feeds only a
+         display; saved data, motor commands and the kernel are untouched (c). Only how often a display is refreshed changes.
+       - **ASSUMPTION (CLAUDE.md 2c):** the user's 2026-09-14 display policy (live display 10 Hz is enough and must be a runtime
+         control) covers this graph as well as the live image. It is put to the user as **D-2026-09-26-02**. If the answer is no,
+         the default becomes 1 and this lever is lost; nothing else changes.
+     - **(e) Build and acceptance (next cycle), in this order, from a byte copy of `D1_s1_copy.vi` (S1, md5 `3e3d23ce…`):**
+       0. Read-only COM, on a scratch: list every property node, reference or control-reference linked to #8323. Gate: none reads
+          its Value into anything other than a display. If one does, STOP and report; this decision is re-judged.
+       1. Design the gate structure (where the case frames sit, how the per-row chain inside #1359 and the #639 BuildArray +
+          indicator share ONE boolean, what the false frames output), with `requires` filled, and verbs checked by
+          `py tools/protocol.py requires`. Missing verbs are built first (tools allowed, 2026-09-24).
+       2. Stage: dry run → offline pre-run → one real run (CLAUDE.md "Stages are SIMULATED"). Gates: ExecState 1 warm and cold;
+          `computation_diff(S1,·)` = exactly the new case/control/modulo objects plus the moved edges, listed by row; saved by
+          script as `claudeDev\D1_s1_fgate_<ts>.vi`.
+       3. Timing: ABBA, 15 picks, 120 s, panel normal, A = S1, B = the gated copy at N = 9, the 96-1 harness (`diag_c96_*`).
+          204(a)'s criterion applies unchanged.
+       4. Rule 1a, numeric: replay of the SAME recorded frames through S1 and the gated copy at **N = 1**. Pass: every tra column
+          bit-identical, AND #8323's final value read by COM after the run bit-identical. Then N = 9 on a replay whose last frame
+          is a multiple of 9: #8323's final value equals the N = 1 value. It is not accepted before both.
+     - **(f) Carries, not ahead of (e):** `peer.ps1` cannot parse `loss_usd=?` in a verdict (96-2 hand-transcribed ? → null).
+       96-3's owner-tree parser leaves 17 diagrams ownerless (G7, `diag_c96_cons_trace.log:234`); its terminal/wire answer
+       stands, and the parser is not reused until fixed.
 
 ## OPEN (design choices — for judgement; not decided here)
 

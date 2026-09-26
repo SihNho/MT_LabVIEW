@@ -1,0 +1,30 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle96",
+ "verdict": "refuted",
+ "alternative": "The cycle had no fault that changed its cost or output; the line is emitted under the device rule (threshold 1), not the structural-fault rule. A reviewer applying only the structural rule would answer none.",
+ "discriminating_test": "Feed peer.ps1 -ReviewCard a verdict line with loss_usd \"?\" exactly as tools/retrospective.py:423 prescribes; if it still returns NO-VERDICT, the device is broken as named. Also run audit_cycle on a window containing only jev_gate.log and see whether A1/A3 fire.",
+ "violations": [
+  {
+   "slug": "device-failed",
+   "loss_min": 3,
+   "loss_usd": null,
+   "evidence": "tools/bench/peer_c96-par1359-h1.log:5"
+  }
+ ],
+ "sources": [
+  "tools/bench/peer_c96-par1359-h1.log:5",
+  "tools/bench/cards/verdict_96-h1.json:1",
+  "tools/bench/retro.log:2938",
+  "tools/retrospective.py:423",
+  "archive/peer/2026-09-26-retrospective-cycle95.md:278",
+  "tools/bench/diag_c96_abba.log:217",
+  "tools/bench/diag_c96_cons_trace.log:234",
+  "archive/peer/2026-09-26-c96-cons-trace-g2.md:126",
+  "docs/d1-loop12-17-split-plan.md:1400",
+  "tools/bench/retro.log:2967",
+  "tools/gui_actions.log:3937",
+  "STATUS.md:57"
+ ],
+ "note": "Second device failure of the same slug folded in: audit A1/A3 flag jev_gate.log (a hook ledger) as an unreviewed failing build log, sixth cycle running. Findings: CPU never sampled during a leg; h1 review disposition not in its archive file; run1.L8 failing in every leg since 92-3."
+}

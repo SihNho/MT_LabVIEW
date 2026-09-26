@@ -1,0 +1,27 @@
+ATTACK this claim about a failed prediction in tools/bench/diag_c96_cons_trace.py (log tools/bench/diag_c96_cons_trace.log).
+
+Context: an OFFLINE Python tracer (no LabVIEW) over tools/bench/par1359_95_graph.json (terminals with wire_uid/owner_uid/
+frame_diagram/term_class, plus 'objs' = every GObject in LabVIEW pre-order: a Diagram's nodes, then that diagram's tunnels
+(InnerTerminal + tunnel object), then its Wires). Goal: find every consumer of ForLoop #1359's out tunnels (9227, 11363).
+
+Failed gates: G2 "tunnels [] outs []" (no tunnel attributed to structure 1359) and G4 "outer diagrams []".
+
+CLAIM (our explanation): a script bug in the pre-order parse. In the loop over objs, a tunnel's diagram was taken from
+obj_diag(), which returns the tunnel's OUTER terminal diagram (639) - but the pre-order lists a tunnel inside its
+structure's INNER frame listing (log shows 9087/9227/11363 LoopTunnels after Diagram 7911's nodes). So the parse popped
+ForLoop 1359 off the stack and attributed the tunnels to WhileLoop 637. Fix: position LoopTunnel/Tunnel/SelectorTunnel by
+the frame_diagram of their InnerTerminal. Second bug seen in the same log: terminals whose owner_class is 'Diagram' (front
+panel terminals on a diagram) were expanded as a node with all-in -> all-out pass-through, which exploded the trace
+across the whole #637 body (e.g. 'save trace.vi', 'WLC function sub.vi' reached). Fix: treat a Diagram-owned sink
+terminal as a terminal sink, never expand it. Also the SR pairing by equal pos[1] matched shift registers of OTHER loops;
+fix restricts to the same loop body (shared InnerTerminal frame diagram).
+
+Evidence the parse is otherwise sound: gate G5 PASS (0 of 112 tunnel-derived inner->outer diagram edges contradict the
+reconstructed tree), G1 md5 PASS, G3 PASS (9227 outer wire 9215 -> RightShiftRegister 9018 as measured by COM in
+result_94-3), and the pre-order excerpt in tools/bench/diag_c96_cons_keys.log.
+
+Attack: is there an alternative reason G2/G4 failed? Could the Diagram-owned terminals be something other than
+front-panel terminals (e.g. loop i/N, case selector internals) so that NOT expanding them would hide a real data path?
+Could pos-equal SR pairing be wrong even within one loop? Name the cheapest check that would falsify the fix.
+Files you may read: tools/bench/diag_c96_cons_trace.py, tools/bench/diag_c96_cons_trace.log, tools/bench/diag_c96_cons_keys.log,
+tools/bench/cards/result_94-3.json, docs/NAMES.md.

@@ -1,0 +1,39 @@
+BGRUN START 2026-09-26 15:10:38 limit 18.0 min: powershell -NoProfile -File tools\peer.ps1 -Agent claude -Role hypothesis -Kind review -Slug c96-par1359-h1 -ReviewCard tools\bench\cards\review_96-h1.json -TimeoutSec 900
+BGRUN PID 19600
+OUTCOME: ANSWERED (171s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-26-c96-par1359-h1.md
+COST: $1.7464  in 24 / out 12983 / cache-create 131018 / cache-read 1485760  (168s, 20 turn(s))
+VERDICT-CARD: NO-VERDICT: $.violations[0].loss_usd: expected number/null, got str
+--- ANSWER ---
+Still reviewing: the web checks are done and I'm writing up the verdict now.
+
+**Refuted.** The claim does not hold for this build. Parallelism on #1359 made the tracking loop slower, and this record gives no reason to expect a well-built parallel #1359 to fix it.
+
+**1. Strongest reason the claim is wrong: the loop almost certainly never ran its iterations in parallel.**
+- The body of #1359 calls `Magnet2Force v3_for M270`, which is non-reentrant (`tools/bench/cards/result_95-2.json:20,27`).
+- NI's position is that non-reentrant subVIs inside a parallelised For loop "prohibit parallel execution", and that parallel instances must wait on each other for such a call ([NI KB](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000000x3QZCAY&l=en-GB), [LabVIEW Wiki](https://labviewwiki.org/wiki/Parallelizable_Loops), [NI forum](https://forums.ni.com/t5/LabVIEW/parallel-for-loops-not-working/td-p/2828876)).
+- The cycle-95 judgement recorded this callee as "only serialises … not blocking" (`docs/d1-loop12-17-split-plan.md:1347-1349`). That was decided by inference; nobody measured it. It also skipped the cost that serialising adds: iterations queue on the callee, and the loop pays the split/reassemble overhead on top ([NI forum, altenbach](https://forums.ni.com/t5/LabVIEW/Enabling-Loop-Parallelism-seems-to-take-longer/td-p/3221901)).
+- A second sign: the parallel instance count read back as **`static_instances 0`**, a value never set in the dialog (`tools/gscript.py:702`, `docs/d1-loop12-17-split-plan.md:1352`). NI's documentation says LabVIEW generates min(dialog field, P) instances ([doc mirror](https://rajsite.github.io/unofficial-lvdocs/lvhowto/Configuring_Parallel_For_Loop_Iterations.html)). What a field of 0 compiles to is **not settled** by anything I found.
+
+The numbers fit a loop that gained nothing and added overhead:
+- Tracking iterations fell from about 7,699 to about 7,247, i.e. the #637 period rose from ≈15.6 ms to ≈16.6 ms, about **+1 ms per frame** (`par1359_96_abba.json:70,448,799,1177`).
+- In cycle 94, #1359 cost about 10 ms per iteration at 15 beads (`split-plan.md:1298`). With real 4–8-way parallelism that should have dropped by several ms. It did not.
+
+**2. Alternative explanations of the same evidence**
+- **(a) The premise was mis-attributed.** Each site's "delta" is (stamp − own `i`), so it is cumulative from the start of the iteration. The +760 µs/bead at site 4 therefore includes site 3's +310 (`t0_step4v2_94.json:798-874`), which leaves roughly +450 µs/bead that belongs to #1359 itself. Its cost also rises with how full the history ring is (1.3 ms → 10 ms over the run, `split-plan.md:1298`). That points to O(history length) array and memory work: `Insert Into Array` allocates a new array on every call. Memory-bound work does not scale with cores. Parallelism may also stop LabVIEW reusing the shift-register buffer between input and output in place, which would add a copy of the whole history array every frame. I found no NI source on that last point, so treat it as a hypothesis.
+- **(b) Oversubscription.** With P unwired, the loop uses every logical processor. It then competes with the display loop 15173, loop 25380 and the bead kernel running at the same time. NI's documentation says to undersubscribe when other heavy code runs alongside (same doc mirror).
+- **"Idle machine" is weaker evidence than it sounds.** The CPU samples were taken before and after each leg, never during one (`par1359_96_abba.json:172-177`). They say nothing about how many cores LabVIEW used in A versus B.
+- **Baseline drift is not the explanation.** A15 lost 4,277 frames in cycle 94 and about 3,412 now (−20 %), which is more than the A/B gap. The ABBA order handles that drift, and the within-arm spread is ≤ 46 frames, so the B-is-worse result itself stands.
+
+**3. What would falsify "parallelism cannot help here"**
+- A leg where LabVIEW's CPU use during the run is clearly higher in B than in A **and** the stamped (site 4 − site 3) cost is well below about 10 ms. That would show real concurrency, and #1359 would then be a lever again once the overhead is fixed.
+- If instead the CPU use during B looks like A's (about one core's worth of extra work) and site 4 − site 3 stays at or above 10 ms, the loop was serialised and the claim is dead as built.
+
+**4. Cheapest test that separates these explanations (no new build)**
+Rerun one A15 and one B15 leg, sampling per-process CPU for LabVIEW every 5 s *during* the leg (`typeperf "\Process(LabVIEW)\% Processor Time"`).
+- **B ≈ A** → serialised: the non-reentrant Magnet2Force or the 0 instance count. Read the instance count in the dialog next.
+- **B ≫ A but still slower** → contention or memory traffic, i.e. alternative (a) or (b).
+
+The next step would be a stamped par1359 build to get the site 4 − site 3 cost directly.
+
+VERDICT {"schema":"verdict/1","id":"96-h1","verdict":"refuted","alternative":"#1359 never ran in parallel: non-reentrant Magnet2Force inside it serialises the iterations (NI says it prohibits parallel execution) and static instances read 0, so overhead was added with no speedup; or the cost is ring-fill memory work that cores cannot speed up.","discriminating_test":"Rerun one A15 and one B15 leg sampling LabVIEW per-process CPU every 5 s DURING the leg. B about equal to A means serialised; B much higher yet slower means contention/memory. Then a stamped par1359 build to read site4-site3.","violations":[{"slug":"inference-over-measurement","loss_min":62,"loss_usd":"?","evidence":"docs/d1-loop12-17-split-plan.md:1347"}],"sources":["https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000000x3QZCAY&l=en-GB","https://labviewwiki.org/wiki/Parallelizable_Loops","https://forums.ni.com/t5/LabVIEW/Enabling-Loop-Parallelism-seems-to-take-longer/td-p/3221901","https://rajsite.github.io/unofficial-lvdocs/lvhowto/Configuring_Parallel_For_Loop_Iterations.html","tools/bench/cards/result_95-2.json:20","tools/bench/par1359_96_abba.json:70","tools/bench/t0_step4v2_94.json:798","tools/gscript.py:702"],"note":"The site deltas are cumulative from iteration start, so #1359's own slope is about +450 us/bead, not 760. CPU was sampled only before/after legs. What a static instance count of 0 compiles to is unverified."}
+BGRUN END rc=0 after 173s

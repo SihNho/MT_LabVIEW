@@ -1,0 +1,39 @@
+{
+ "schema": "task/1",
+ "id": "96-2",
+ "kind": "review-dispatch",
+ "goal": "Dispatch the failed-prediction review review_96-h1.json (par1359 lost MORE frames than S1) to peer.ps1 -Agent claude -Role hypothesis -ReviewCard; return its verdict facts",
+ "why": "PD202(c) predicted #1359 parallelism cuts frame loss; 96-1 measured +13 % loss. CLAUDE.md s5: a failed prediction owes a hypothesis review before the next hypothesis drives work.",
+ "inputs": [
+  {"path": "tools/bench/cards/review_96-h1.json"},
+  {"path": "tools/bench/cards/result_96-1.json"},
+  {"path": "tools/bench/par1359_96_abba.json"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/peer.ps1"},
+  {"kind": "file", "name": "tools/bench/cards/review_96-h1.json"}
+ ],
+ "pass": [
+  "review card validates; peer.ps1 -Agent claude -Role hypothesis -ReviewCard dispatched in the FOREGROUND (-TimeoutSec >= 780), outcome ANSWERED",
+  "archived under archive/peer/ with the verdict/1 card in tools/bench/cards/verdict_96-h1.json",
+  "result facts: verdict, the strongest alternative explanation(s), what would falsify the claim, the cheapest discriminating test, each quoted with archive file:line"
+ ],
+ "outputs": ["archive/peer/**", "tools/bench/cards/verdict_96-h1.json", "tools/bench/cards/result_96-2.json"],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": ["archive/peer/**", "tools/bench/peer_*", "tools/bench/cards/**"],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 25},
+ "rules": [
+  "do not edit the claim; attach nothing but the listed files (never .vi)",
+  "a TIMEOUT/QUOTA/ERROR exchange is not a review: report it as FAIL",
+  "numbers and quotes only; do not decide the next experiment; facts <=10; OPEN <=3"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

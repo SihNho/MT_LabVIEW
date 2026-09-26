@@ -1,0 +1,53 @@
+{
+ "schema": "task/1",
+ "id": "96-3",
+ "kind": "measure",
+ "goal": "Read-only: trace every consumer of ForLoop #1359's outputs (Bundler #11310 and any other out tunnel) in D1_s1_copy.vi to its final sinks, and the execution condition of #1359 on #637",
+ "why": "#1359 (+760 us/bead, PD202) is not in the saved tra file (95-6). Where its output goes (display, saved data, motor command, feedback into tracking) decides which rule-1a-safe schedule it may get.",
+ "inputs": [
+  {"path": "tools/bench/par1359_95_graph.json"},
+  {"path": "tools/bench/diag_c94c_f7911.json"},
+  {"path": "tools/bench/cards/result_94-3.json"},
+  {"path": "tools/bench/cards/result_95-2.json"},
+  {"path": "docs/NAMES.md"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/par1359_95_graph.json"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "pass": [
+  "offline first (graph/wiki JSON); a headless read-only COM read of D1_s1_copy.vi only if the offline data lack edges, on a scratch byte copy, never saved",
+  "table: each #1359 out tunnel -> every path to a sink: sink uid, class, label, owner loop, kind (indicator/chart, file write, motor call, SR into next #637 iter, other)",
+  "per path: inside a case gated by a counter/boolean (e.g. display rate)? name the selector source uid/label",
+  "state whether ANY path reaches the tra/file writer, a motor/instrument call, or an input of kernel #5058",
+  "#1359: enclosing case on #639 (runs every #637 iter?); where its history input is written (SR #9025/#9018)"
+ ],
+ "outputs": ["tools/bench/f1359_consumers_96*", "tools/bench/diag_c96_cons*", "tools/bench/cards/result_96-3.json"],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/f1359_consumers_96*",
+   "tools/bench/diag_c96_cons*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c96*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 40},
+ "rules": [
+  "never save or edit any VI; a scratch copy is deleted before return",
+  "never move a script to get around ANY gate; a refusal = BLOCKED",
+  "facts from files/machine only, each with file:line; do not propose a schedule; facts <=10; OPEN <=3; LabVIEW gone at end"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

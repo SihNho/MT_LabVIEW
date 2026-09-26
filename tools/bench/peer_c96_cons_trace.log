@@ -1,0 +1,70 @@
+BGRUN START 2026-09-26 15:15:17 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c96-cons-trace-g2 -TaskFile tools/bench/peer_c96_cons_trace_task.txt
+BGRUN PID 15668
+OUTCOME: ANSWERED (205s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-26-c96-cons-trace-g2.md
+COST: $1.4965  in 18 / out 19369 / cache-create 111734 / cache-read 957749  (201s, 14 turn(s))
+--- ANSWER ---
+**Verdict: your explanation of why G2 and G4 failed in the logged run is right, but the claim as a whole does not hold.** The fix has never been run. The evidence for "the parse is otherwise sound" is blind to exactly this class of bug. And the "Diagram-owned = front-panel terminal" premise is false for 72 of the 186 terminals.
+
+## 1. Strongest reason the claim is wrong
+
+**The log comes from the script before the fix, and G5 cannot see the bug you are fixing.**
+- The fixes are already in the file (`diag_c96_cons_trace.py:83-86`, `:138-140`, `:165-170`). The fixed code would print `FPTerminal` rows (`:198`). The log instead prints `REACH 639 Diagram`, `3292 Diagram` and `759 Diagram` (`diag_c96_cons_trace.log:20-22`), so no run exists with the fix in place.
+- G5 skips every diagram whose owner is None: `diag_owner.get(i) is not None` (`:95`). A diagram whose owner was lost therefore never counts as a mismatch, so "0 of 112" does not show the parse is sound. The log shows owners being lost:
+  - Case 2222 is reported as `f0/1`, one frame (`log:97`). The pre-order lists two frames, 2265 and 2235 (`diag_c96_cons_keys.log:85`).
+  - Node 6085 in frame 2235 shows `loop=None` (`log:98`).
+  - Diagram 3292, the second frame of case 3191, shows `loop=None` (`log:21`).
+  - `chain(639)` stops at 637 (`log:6`), so diagram 686 has no owner.
+- How the stack empties: a tunnel pops 2222. The next Wire, whose first terminal is in 2265, then fails the test `X not in struct_diags[stack[-1]]` against every structure and pops the whole stack (`:87-89`). Every diagram after that gets `S=None`.
+
+## 2. The tunnel fix adds a failure of its own on case structures
+
+`inn[0]` is the first InnerTerminal in terminal-list order. A case tunnel has one InnerTerminal per frame; tunnel 2276, for example, has 2280 in frame 2265 and 2279 in frame 2235 (`keys.log:85`). The pre-order lists the tunnel under its first frame. If `inn[0]` points at a frame not yet listed, that frame is in no `struct_diags` entry and the stack empties again. ForLoop #1359 has only one frame, so **G2 will probably pass after the fix while case-frame ownership stays wrong**. The `cases`/`selector_*` columns you use to classify consumers come from exactly that ownership. The fix should prefer `cur` when `cur in inn`.
+
+## 3. Alternative reading of the Diagram-owned terminals: not all are front-panel terminals
+
+The 186 Diagram-owned records are 114 with `term_class "ControlTerminal"` (matching the 114 ControlTerminal objects, `keys.log:54`) plus **72 with `term_class "Terminal"`**. Those 72 are:
+- **Loop terminals, each recorded twice.**
+  - On 639 (the #637 body): two unnamed sources on wire 3268 and two unnamed sinks on wire 3457 (`par1359_95_graph.json:27047-27083`). These fit the while loop's `i` terminal and its **conditional (stop) terminal**.
+  - On 7911: two unwired sources (`:25297-25313`).
+  - NI's scripting exposes these through the loop's own properties, not as nodes ([NI forum](https://forums.ni.com/t5/LabVIEW/VI-Scripting-locate-loop-iteration-and-conditional-terminals/td-p/4344904), [NI forum](https://forums.ni.com/t5/LabVIEW/Wiring-the-conditional-terminal-of-a-while-loop-created-by/td-p/2115512)). That is consistent with them having no node owner.
+- **Terminals of nodes whose owner never resolved.**
+  - `Session Out` / `error out` / `LastBufferNumber` / `Image Out` on 22013, 22325, 22382, 22427, 22650, 22780 and 25266 (`:46717-54683`).
+  - A sink named `If no: current pos z?` on 3667 (`:1197-1203`), fed by the same-named control on wire 4892.
+
+What this means:
+- **Stop terminal:** if an output of #1359 reaches #637's stop terminal, that is a real control consumer. Treating it as a sink is fine, but the fix labels it `front-panel terminal (indicator)` (`:198`).
+- **Unresolved nodes:** "never expand" does hide the path through them. There is no node uid to expand, so neither the old code nor the fix is right for these.
+- **The old run may have hidden more sinks:** it keyed `seen` by 639, so only the first Diagram-owned sink on 639 was ever recorded.
+
+## 4. Shift-register pairing by equal pos[1]
+
+The graph's own summary says `right 36, paired 38, unpaired_right 0` (`keys.log:55`), so two right shift registers each had two same-height partners across the VI. Two left shift registers of one loop cannot share a height on the same border, so restricting pairing to one loop body is probably correct. But it is untested, and stacked left elements are the remaining risk.
+
+## 5. G2's own contract may be incomplete
+
+#1359 has **10** outer terminals (`keys.log:68`), and one belongs to 7922, class `Tunnel`, inner 7927 / outer 7928 (`keys.log:85`). result_94-3 lists only 9 tunnels (`result_94-3.json:17`). If 7922 is a source, G2 fails after the fix for a real reason.
+
+## What would falsify the claim
+
+After the fix runs, the claim is falsified by any one of these:
+- a diagram other than a top-level one still has owner None;
+- `len(struct_diags[2222]) != 2`;
+- G2 includes 7922.
+
+G2 passing alone does **not** confirm the claim: section 2 predicts G2 passes either way.
+
+## Cheapest test that separates them (offline, under 1 s)
+
+Add these assertions to the same script and rerun under bgrun:
+1. Count diagrams with owner None in G5 instead of skipping them. Assert `diag_owner[2235]==2222`, `diag_owner[3292]==3191` and `len(struct_diags[2222])==2`.
+2. For each Tunnel/SelectorTunnel, count cases where `inn[0]` differs from the frame it is listed under.
+3. Assert `len(sr_partner(r))==1` for all 36 right shift registers.
+4. Print `is_source` for terminals 7927 and 7928.
+5. Tag Diagram-owned sinks by `term_class` (`ControlTerminal` versus `Terminal`), and report any `Terminal` one reached as "loop/unresolved", not "indicator".
+
+If check 1 gives 0 owner losses and checks 2–3 are clean, I accept the fix. If check 1 gives any, the diagnosis is "stack empties on a frame not yet listed", and the tunnel rule is only one trigger for it.
+
+Sources:
+- [NI forum: VI Scripting – locate loop iteration and conditional terminals](https://forums.ni.com/t5/LabVIEW/VI-Scripting-locate-loop-iteration-and-conditional-terminals/td-p/4344904)
+- [NI forum: Wiring the conditional terminal of a while loop created by scripting](https://forums.ni.com/t5/LabVIEW/Wiring-the-conditional-terminal-of-a-while-loop-created-by/td-p/2115512)
+BGRUN END rc=0 after 206s

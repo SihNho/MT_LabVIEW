@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"96-3","status":"PASS","gates":{"pass":5,"fail":0},
+"first_fail":null,
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/f1359_consumers_96.json","md5":"6cae5305f572fb906da1e469e8cde908"},
+ {"path":"tools/bench/diag_c96_cons_trace.py","md5":"d62a96ffbd11b452ffd8bd89a976ce47"},
+ {"path":"tools/bench/diag_c96_cons_trace.log","md5":"b5b6c443849a1a688853604a4534bf1d"},
+ {"path":"tools/bench/diag_c96_cons_keys.py","md5":"d5863e262afb5743568275170dd1e9d7"},
+ {"path":"archive/peer/2026-09-26-c96-cons-trace-g2.md","md5":"9b58b8d58c3a995183302417faef395c"}
+],
+"facts":[
+ "#1359 out tunnels = exactly 2: 9227 (inner <- #8634 Insert 'output array') and 11363 (inner <- Bundler #11310); 7922 = N terminal, unwired (diag_c96_cons_trace.log:235-236,239,254)",
+ "11363 -> w11352 -> BuildArray #11261 (diag 639) -> w10908 -> indicator #8323 'Force (pN) vs Extension (nm)' (diag 639); nothing else (log:254-256; par1359_95_graph.json:27576-27583)",
+ "9227 -> w9215 -> RightSR #9018 only; 9018 outer terminal unwired (w0); next iter LeftSR #9025 inner -> w9097 -> only tunnel 9087 = #1359's own auto-indexed input (log:257-260)",
+ "History init: LeftSR #9025 outer <- w9051 <- #8953 'initialized array' (Initialize Array) on diag 686, outside #637 (log:259)",
+ "Bundler #11310: 'Filtered X' <- Median #29009 (w24106); 'element' <- #27716 'second subarray' (w9407); 'cluster' unwired; out w11374 -> only 11363 (graph.json:24826,25106; log:239-256)",
+ "Case gating: all reached nodes on diag 7911 (#1359 body) or 639 (#637 body, result_94-3.json:15) by raw frame_diagram; no case on either path; #1359 on 639 -> runs every #637 iter (log:237-256)",
+ "Reaches tra/file writer: NO; motor/instrument call: NO; any input of kernel #5058: NO; no local/global names the indicator (8 locals, 7 globals) (log:258)",
+ "Tracer self-gate G7 FAIL (run 2): owner tree leaves 17 diagrams ownerless, gives 639 to WhileLoop 25380; owner_loop/cases columns of f1359_consumers_96.json unreliable, NOT used (log:234,237)",
+ "JEV: diag_c96_cons_trace.log | new-problem p=0.712 | review owed | claude/hypothesis c96-cons-trace-g2 ANSWERED, fixes applied, rerun | G7 FAIL, budget spent (jev_gate.log:1431)",
+ "No LabVIEW started, no COM, no VI opened/saved; D1_s1_copy.vi md5 3e3d23ce.. = graph md5; tasklist shows no LabVIEW (log:232)"
+],
+"open":[
+ "Property nodes implicitly linked to the indicator (e.g. a Value read of 'Force (pN) vs Extension (nm)') cannot be resolved from the offline graph; a COM read of the indicator's linked property nodes would close it - needed?",
+ "The pre-order owner-tree parser (diag_c96_cons_trace.py) is wrong for 17 diagrams; worth fixing as a reusable tool, or is the terminal/wire graph enough for such traces?"
+],
+"cost":{"usd":null,"minutes":17,"labview_runs":0},
+"note":"Card gates 5/5 answered from raw terminal/wire data. The tracer script itself ended 6 pass / 1 fail (G7, an auxiliary owner-tree check) on its 2nd run; failure budget spent, no 3rd run. Peer review disposition written."}
