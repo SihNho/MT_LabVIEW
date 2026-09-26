@@ -1,0 +1,74 @@
+{
+ "schema": "task/1",
+ "id": "chat-N3",
+ "kind": "build",
+ "goal": "matbench v1 (user 2026-09-26): fix v0's T1 wording / T4 env / T5 metric, then Opus 5.5 effort ladder low/medium/high/max, n=2, report_v1.md with variance; re-score v0 Fable cells with the v1 scorer",
+ "why": "v0 (report_v0.md) showed Fable at 3x cost with no score gain; the user now asks whether Opus effort level changes the score or only minutes/usd. Detail: brief_chat-N3.md",
+ "inputs": [
+  {
+   "path": "tools/bench/cards/brief_chat-N3.md",
+   "md5": "73bf2c6f08dea4d811a577d8598b48d8"
+  },
+  {
+   "path": "tools/bench/matbench/matbench.py",
+   "md5": "46218a1c109ba625f9c451298b2c068b"
+  },
+  {
+   "path": "tools/bench/matbench/score.py",
+   "md5": "d034c3f3fa12b6c46e01fda082f45fd8"
+  },
+  {
+   "path": "tools/bench/matbench/truth_v0.json",
+   "md5": "7f2c277b5ccfff87696699dbdc857f35"
+  },
+  {
+   "path": "tools/bench/matbench/report_v0.md",
+   "md5": "10bf17f1610d2df5b08df7f31b9b59e5"
+  },
+  {
+   "path": "tools/bench/matbench/results_v0.json",
+   "md5": "faeb1c663bccf6f2d5cfa23847053ad6"
+  }
+ ],
+ "pass": [
+  "truth_v1.json + score.py: T1 behaviour group (labview_runs == 0), '9 of 11' partial-only, workaround rule kept; T5 = t5_struct equal/jaccard; T2/T3/T6 unchanged (brief 1,3,4)",
+  "T4 env fixed per brief 2 (mtimes from git, gate-release files copied) and verified reachable by one dry cell; else T4 dropped and the reason written in report_v1.md",
+  "conditions: claude-opus-5-5 low/medium/high/max, material shape; n=2 per task x condition, fresh worktree per repeat, <= 3 parallel, cost guard $120 cumulative",
+  "no LabVIEW.exe from any cell (cell_guard + tasklist before/after batches); live runner pids attributed as in v0",
+  "report_v1.md: task x condition x repeat table, per-condition means/totals, repeat variance per task, 0-score notes, the facts paragraph (score vs minutes/usd; T3 uid group)",
+  "extra table: v0 fable/low and fable/medium cells re-scored with the v1 scorer; results_v1.json raw",
+  "selftest_matbench.py extended for the v1 scorer (T1 behaviour group, T5 jaccard) and green; worktrees pruned; RESULT line; commit"
+ ],
+ "outputs": [
+  "tools/bench/matbench/truth_v1.json",
+  "tools/bench/matbench/results_v1.json",
+  "tools/bench/matbench/report_v1.md",
+  "tools/bench/matbench/score.py",
+  "tools/bench/selftest_matbench.log"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/matbench/**",
+   "tools/bench/selftest_matbench.py",
+   "tools/bench/selftest_matbench.log",
+   "tools/bench/cards/**"
+  ],
+  "status_edit": false,
+  "git_commit": true,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 240
+ },
+ "unblocks": "M8",
+ "rules": [
+  "judgement vs material",
+  "Usage discipline",
+  "hooks judge STRUCTURE"
+ ]
+}
