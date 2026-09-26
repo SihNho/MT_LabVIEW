@@ -1,8 +1,9 @@
 """Self-test of cycle_runner's FIREFIGHTER trigger (2026-09-18). Dry: no claude session, no LabVIEW.
-PREDICTION: with a stand-in session that writes a failing bgrun log for tools/recipes/build_fake_v0.py every
-cycle, the runner logs FAILED-RECIPES for cycles 1-2, FIREFIGHTER cycle 3 (fable/low), FIREFIGHTER cycle 4
-(fable/medium), then RUNNER STOP asking the user. With a stand-in that fails only in cycles 1-2, cycle 3 is the
-low firefighter, it clears, no escalation and no STOP.
+PREDICTION (user model table 2026-09-27, card chat-N4: the firefighter is ONE Opus 5.5 max cycle, then STOP): with a
+stand-in session that writes a failing bgrun log for tools/recipes/build_fake_v0.py every cycle, the runner logs
+FAILED-RECIPES for cycles 1-2, FIREFIGHTER cycle 3 (claude-opus-5-5/max, rung 1 of 1), then RUNNER STOP asking the
+user after cycle 3 - no cycle 4. With a stand-in that fails only in cycles 1-2, cycle 3 is the firefighter, it
+clears, no STOP and cycle 4 runs as a normal cycle.
 Usage: py tools/bench/selftest_cycle_runner_ff.py            (as the runner's --dry-cmd it is called with a mode)"""
 import os
 import subprocess
@@ -69,8 +70,12 @@ for mode, cycles, want_ff, want_stop in MODES:
                         "--dry-cmd", "py tools/bench/selftest_cycle_runner_ff.py %s" % mode],
                        capture_output=True, text=True, env=env, cwd=ROOT)
     log = open(os.path.join(bench, "cycle_runner.log"), encoding="utf-8").read()
-    got_ff = "FIREFIGHTER |" in log and "fable/low" in log and "cycle 3 runs" in log
-    got_stop = "user's judgement is requested" in log and "fable/medium" in log and "cycle 4 runs" in log
+    got_ff = "FIREFIGHTER |" in log and "cycle 3 runs as claude-opus-5-5/max (rung 1 of 1)" in log
+    got_stop = ("user's judgement is requested" in log and "cycle 4 runs" not in log
+                and "CYCLE-CARD | " in log and "cycle 4 | wrote" not in log)
+    if "fable" in log:
+        print("FAIL: a fable model appeared in a firefighter self-test (the table has no fable rung for it)")
+        got_ff = False
     if "build_other_v0" in log:
         print("FAIL: a diagnostic naming a recipe as an argument was counted as a failed recipe")
         got_ff = False

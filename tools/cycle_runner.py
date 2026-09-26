@@ -25,16 +25,18 @@ STOP CONDITIONS (all four, each written to the runner log, the last three also a
      the loop. Checked BEFORE every cycle. Exit 0.
   2. the session exited non-zero twice in a row. Exit 3.
   3. REPLACED 2026-09-26 (card chat-M1b) by the JUDGEMENT LADDER: `tools/bench/next.json` (C7, next/1) absent,
-     invalid or byte-identical after a cycle raises the ladder one level (x1 opus high, x2 fable low, x3 fable
-     medium); the FOURTH consecutive unchanged cycle is RUNNER STOP + a decisions_pending item. Exit 3. (Until
+     invalid or byte-identical after a cycle raises the ladder one level (x1 opus max, x2 fable low - user table
+     2026-09-27, card chat-N4); the THIRD consecutive unchanged cycle is RUNNER STOP + a decisions_pending item. Exit 3. (Until
      2026-09-26 two unchanged cycles stopped the runner; until 2026-09-24 the comparison was STATUS.md's prose
      `## NEXT`.) `stop_requested: true` in next.json stops the runner with exit 0.
   4. `--cycles N` exhausted. Exit 0.
   (2026-09-24, card chat-D) also: LabVIEW not verified gone at cycle end (labview_close_hook), and a steer/1 card
   refused twice (protocol.steer_after_cycle -> a decisions_pending item). Exit 3.
-  (2026-09-26, card chat-M1) also: the JUDGEMENT LADDER (opus medium -> opus high -> fable low -> fable medium,
-  state in <bench>/judge_ladder.json) triggered again at fable/medium -> a decisions_pending item. Exit 3.
-  JUDGE A/B: until 2026-09-28 07:00 KST the level-0 effort is medium on odd cycles, high on even (--judge-ab).
+  (2026-09-26, card chat-M1; rungs re-set 2026-09-27, card chat-N4) also: the JUDGEMENT LADDER (opus high ->
+  opus max -> fable low, state in <bench>/judge_ladder.json) triggered again at fable/low -> a decisions_pending
+  item. Exit 3.
+  JUDGE A/B: OFF by default since 2026-09-27 (user table, card chat-N4: level 0 = Opus 5.5 high fixed); the flag
+  --judge-ab on|auto keeps the parity experiment (odd medium, even high) available.
 USAGE LIMIT (CLAUDE.md's protocol): a rate/usage-limit message in the session's output is NOT a failure - the
 runner sleeps until the renewal time + 2 min and RERUNS THE SAME CYCLE from the beginning ("rerun, don't resume";
 a cycle interrupted mid-run is void). The partial attempt is logged as a non-result.
@@ -207,11 +209,13 @@ def last_cycle_number(runner_log):
 # FIREFIGHTER (user, 2026-09-18: "기존 구조로 처리가 잘 안되는 부분은 Fable, low로 소방수 파견" ... "단순히 판단만으로는
 # 부족한게 아닌가" ... "트리거링 걸리면 발동하도록"). The trigger is MECHANICAL and read from bgrun logs, never from a
 # session's feeling of being stuck: when the SAME recipe (tools/recipes/<name>.py) ended `BGRUN END rc!=0` or
-# `BGRUN TIMEOUT` in TWO CONSECUTIVE cycles, the NEXT cycle runs with the firefighter model (fable, low) instead of
-# opus/max - a whole cycle, so it can execute, not only advise. Exactly ONE firefighter cycle per trigger; if the
-# same recipe still fails in that cycle the runner STOPS and hands it to the user (never a second firefighter).
-FF_MODEL, FF_EFFORT = "fable", "low"
-FF_LADDER = ("low", "medium")     # user 2026-09-18: low first, then medium, then ask the user
+# `BGRUN TIMEOUT` in TWO CONSECUTIVE cycles, the NEXT cycle runs with the firefighter model instead of the base
+# judgement model - a whole cycle, so it can execute, not only advise. Exactly ONE firefighter cycle per trigger; if
+# the same recipe still fails in that cycle the runner STOPS and hands it to the user (never a second firefighter).
+# USER TABLE 2026-09-27 (card chat-N4, "테이블대로 적용해서 차기 싸이클 부터는 변경된걸로 돌리자"): the firefighter is ONE
+# Opus 5.5 MAX cycle, then STOP (was fable low -> fable medium -> STOP since 2026-09-18; weekly Fable at 75 %).
+FF_MODEL, FF_EFFORT = "claude-opus-5-5", "max"
+FF_LADDER = ("max",)              # one rung: an Opus max cycle, then ask the user
 # the command follows "limit N min:" - a lazy `.*?:` stopped at the first colon of the TIMESTAMP (self-test, 11:38)
 BGRUN_START_RE = re.compile(r"^BGRUN START .*? min:\s*(.*)$", re.M)
 BGRUN_FAIL_RE = re.compile(r"^BGRUN (?:END rc=([1-9]\d*)|TIMEOUT)", re.M)
@@ -222,7 +226,7 @@ RECIPE_RE = re.compile(r"^\s*(?:MATERIAL=1\s+)?(?:\S*[\\/])?py(?:thon)?(?:\.exe)
                        r"(?:\S*[\\/])?tools[\\/]recipes[\\/]([\w.\-]+\.py)", re.I)
 # the first failing gate line of a run: `**FAIL B4 [...] ...`, `FAIL P4 ...`, or bgrun's own `first: ...`
 GATE_FAIL_RE = re.compile(r"^\**\s*(FAIL\b[^\n]{0,120})|^BGRUN INNER FAILURE:.*?first:\s*([^\n]{0,120})", re.M)
-FF_PROMPT = ("\n\n## FIREFIGHTER CYCLE (runner-triggered, model fable/low)\n"
+FF_PROMPT = ("\n\n## FIREFIGHTER CYCLE (runner-triggered, model Opus 5.5 max, one rung)\n"
              "The recipe `%s` is the block (it failed in previous cycles, or the user ordered a firefighter on it "
              "- see STATUS.md). This cycle exists to clear THAT block "
              "and nothing else. You MAY read the failing logs and the recipe yourself and patch the recipe or "
@@ -240,17 +244,19 @@ FF_PROMPT = ("\n\n## FIREFIGHTER CYCLE (runner-triggered, model fable/low)\n"
 
 
 # JUDGEMENT LADDER (user 2026-09-26, card chat-M1): the judgement model is raised BY RULE, from files only, never by
-# a session's own feeling. Level 0 = --model/--effort (opus 5.5 medium; A/B below); +1 after a cycle whose next.json
-# came out UNCHANGED, or whose retrospective (archived in that cycle) names a judgement-quality VIOLATION slug; a
-# cycle that DELIVERS (a PASS result card with artefacts, or a goalmap milestone newly `done`) resets to 0. A trigger
-# at level 3 is RUNNER STOP + a decisions_pending item. Data: fable/low delivered L7-1b (cycles 71/72) after Opus failed
-# twice; cycle 87 fable/low judgement produced nothing in 6 min - so fable is a rung, not the default.
-# The recipe FIREFIGHTER ladder is unchanged; both map onto the same RANK scale and the higher rank wins, so the two
-# never stack above rank 3 = fable/medium.
-JUDGE_RANKS = [None, ("claude-opus-5-5", "high"), ("fable", "low"), ("fable", "medium")]   # rank 0 = --model/--effort
+# a session's own feeling. Level 0 = --model/--effort (opus 5.5 HIGH fixed since 2026-09-27; A/B below, default off);
+# +1 after a cycle whose next.json came out UNCHANGED, or whose retrospective (archived in that cycle) names a
+# judgement-quality VIOLATION slug; a cycle that DELIVERS (a PASS result card with artefacts, or a goalmap milestone
+# newly `done`) resets to 0. A trigger at the TOP level is RUNNER STOP + a decisions_pending item.
+# USER TABLE 2026-09-27 (card chat-N4): 0 opus high -> 1 opus MAX -> 2 fable low -> STOP (was opus medium -> opus high
+# -> fable low -> fable medium). Data: judge A/B cycles 89-97 (high PASS 2.5 vs 2.0, $33 vs $39); cycle 87 fable/low
+# judgement produced nothing in 6 min - so fable is the last rung, not the default.
+# The recipe FIREFIGHTER (one Opus max cycle) maps onto rank 1 of the same scale and the higher rank wins, so the two
+# never stack above rank 2 = fable/low.
+JUDGE_RANKS = [None, ("claude-opus-5-5", "max"), ("fable", "low")]   # rank 0 = --model/--effort
 JUDGE_TOP = len(JUDGE_RANKS) - 1
 JUDGE_SLUGS = ("inference-over-measurement", "wrong-ordering", "judgement-in-material")
-FF_RANK = {"low": 2, "medium": 3}
+FF_RANK = {"max": 1}
 VIOLATION_SLUG_RE = re.compile(r"^VIOLATION:\s*([a-z][\w-]*)", re.M)
 # JUDGE A/B (user 2026-09-26, "Opus 5.5도 기본을 medium이 좋을지 high가 좋을지도 판단 필요"): until 2026-09-28 07:00 KST
 # the LEVEL-0 effort alternates by cycle parity (odd = medium, even = high); a raised ladder level overrides it.
@@ -267,10 +273,10 @@ def judge_ab_effort(n, mode, now=None):
 
 
 def judge_choice(level, ff_recipe, ff_rung, base_model, base_effort):
-    """(rank, model, effort): the higher of the judgement-ladder level and the firefighter rung, capped at fable/medium."""
+    """(rank, model, effort): the higher of the judgement-ladder level and the firefighter rung, capped at JUDGE_TOP."""
     rank = max(0, min(int(level), JUDGE_TOP))
     if ff_recipe:
-        rank = max(rank, FF_RANK.get(FF_LADDER[min(ff_rung, len(FF_LADDER) - 1)], 2))
+        rank = max(rank, FF_RANK.get(FF_LADDER[min(ff_rung, len(FF_LADDER) - 1)], 1))
     rank = min(rank, JUDGE_TOP)
     if rank == 0:
         return 0, base_model, base_effort
@@ -291,7 +297,8 @@ def judge_ladder_step(level, next_moved, slugs, delivered):
     if not trig:
         return level, "no trigger - level %d kept" % level, False
     if level >= JUDGE_TOP:
-        return level, "level %d (fable/medium) triggered again: %s" % (level, "; ".join(trig)), True
+        return level, "level %d (%s/%s) triggered again: %s" % (level, JUDGE_RANKS[JUDGE_TOP][0], JUDGE_RANKS[JUDGE_TOP][1],
+                                                               "; ".join(trig)), True
     return level + 1, "+1: %s" % "; ".join(trig), False
 
 
@@ -366,12 +373,12 @@ def judge_state_save(bench, level, reason, n):
 
 
 def add_judge_decision(n, reason, blocks, path):
-    """One open decisions-pending/1 item for a judgement ladder exhausted at fable/medium. (id, None) | (None, why)."""
+    """One open decisions-pending/1 item for a judgement ladder exhausted at its top rung. (id, None) | (None, why)."""
     d = protocol._json_load(path, {"schema": "decisions-pending/1", "items": []})
     items = d.setdefault("items", [])
     day = time.strftime("%Y-%m-%d")
     did = "D-%s-%02d" % (day, 1 + sum(1 for it in items if str(it.get("id", "")).startswith("D-%s-" % day)))
-    q = ("Judgement ladder exhausted in cycle %d (opus medium -> opus high -> fable low -> fable medium): %s. "
+    q = ("Judgement ladder exhausted in cycle %d (opus high -> opus max -> fable low): %s. "
          "How should the work continue?" % (n, reason))
     items.append({"id": did, "asked": time.strftime("%Y-%m-%dT%H:%M"), "by": "cycle %d" % n, "question": q[:300],
                   "options": ["re-plan the current item", "restart the ladder at level 0", "discuss"],
@@ -1024,15 +1031,16 @@ def main():
                          "cycle in progress always finishes (user, 2026-09-21: never cut a cycle mid-way). Pair it with "
                          "a bgrun cap >= budget + the longest cycle, so bgrun's kill is only the last resort.")
     ap.add_argument("--model", default="claude-opus-5-5")  # user 2026-09-23: Opus 5.5 pinned by id (alias 'opus' resolved to claude-opus-5)
-    ap.add_argument("--effort", default="medium")  # user 2026-09-23 14:xx: medium on Opus 5.5 (its medium ~= Opus 5 max on the index); earlier today high (max = +4 pts at 3.3x cost, news.hada.io/topic?id=34142); was max since 2026-09-17
+    ap.add_argument("--effort", default="high")  # user table 2026-09-27 (card chat-N4): Opus 5.5 HIGH fixed (A/B 89-97: high PASS 2.5 vs 2.0, $33 vs $39). Before: user 2026-09-23 14:xx: medium on Opus 5.5 (its medium ~= Opus 5 max on the index); earlier today high (max = +4 pts at 3.3x cost, news.hada.io/topic?id=34142); was max since 2026-09-17
     ap.add_argument("--permission-mode", default="acceptEdits")
-    ap.add_argument("--ff-model", default=FF_MODEL, help="firefighter cycle model (user 2026-09-18: fable)")
+    ap.add_argument("--ff-model", default=FF_MODEL,
+                    help="firefighter cycle model (user table 2026-09-27: claude-opus-5-5 at effort max)")
     ap.add_argument("--firefighter", default="", metavar="RECIPE",
-                    help="USER-ORDERED: start the FIRST cycle as a firefighter on this recipe basename (the ladder "
-                         "low -> medium -> user then applies as usual)")
-    ap.add_argument("--judge-ab", default="auto", choices=("auto", "on", "off"),
-                    help="level-0 judgement effort A/B by cycle parity (odd medium, even high); auto = on until "
-                         "2026-09-28 07:00 KST (user 2026-09-26)")
+                    help="USER-ORDERED: start the FIRST cycle as a firefighter on this recipe basename (one Opus max "
+                         "cycle, then the user)")
+    ap.add_argument("--judge-ab", default="off", choices=("auto", "on", "off"),
+                    help="level-0 judgement effort A/B by cycle parity (odd medium, even high); default OFF since "
+                         "2026-09-27 (user table, card chat-N4); auto = on until 2026-09-28 07:00 KST")
     ap.add_argument("--peer-dir", default=os.path.join(ROOT, "archive", "peer"),
                     help="self-test only: where retrospectives are read for the judgement ladder")
     ap.add_argument("--goalmap", default=os.path.join(ROOT, "docs", "goalmap.json"),
@@ -1148,8 +1156,8 @@ def _loop(a, status_path, bench, runner_log, prompt, run_t0, hb):
         ab_eff, ab_why = judge_ab_effort(n, a.judge_ab)
         base_effort = ab_eff or a.effort
         j_rank, model, effort = judge_choice(j_level, ff_recipe, ff_rung, a.model, base_effort)
-        if ff_recipe and model == "fable":
-            model = a.ff_model          # --ff-model still names the firefighter's fable build
+        if ff_recipe and j_rank == FF_RANK.get(FF_LADDER[min(ff_rung, len(FF_LADDER) - 1)], 1):
+            model = a.ff_model          # --ff-model names the firefighter's model when its rung decided the rank
         if ab_eff:
             log_line(runner_log, "JUDGE-AB | cycle %d | %s | %s" % (n, ab_eff, ab_why if j_rank == 0 else
                                                                    "%s, OVERRIDDEN by rank %d (%s/%s)"
@@ -1370,7 +1378,7 @@ def _loop(a, status_path, bench, runner_log, prompt, run_t0, hb):
             note_in_status(status_path, reason)
             return 3
         # stop condition 3 (next.json unchanged twice) was REPLACED 2026-09-26 (card chat-M1b) by the judgement
-        # ladder above: unchanged x1 -> opus high, x2 -> fable low, x3 -> fable medium, x4 -> RUNNER STOP.
+        # ladder above: unchanged x1 -> opus max, x2 -> fable low, x3 -> RUNNER STOP (user table 2026-09-27).
         if unchanged_streak >= 2:
             log_line(runner_log, "NEXT-UNCHANGED | %s | cycle %d | %d consecutive cycles without a new next.json - "
                                  "handled by the judgement ladder" % (time.strftime("%Y-%m-%d %H:%M:%S"), n, unchanged_streak))

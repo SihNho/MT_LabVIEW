@@ -84,10 +84,14 @@ whole cycle needs LabVIEW you write that in NEXT and exit rather than deciding t
   `tools/bench/decisions_pending.json` and the card stops. Two rungs per card, never more; the result card records which
   rung solved it. Same flags, same rules, same peers. `material` itself is Opus 5.5 HIGH (bench: high catches the
   uid-precision task, max costs 3x the minutes). `material-fable-medium` is no longer dispatched (no gain over low).
-- **JUDGEMENT LADDER (runner-decided, user 2026-09-26, card chat-M1).** Your model/effort is chosen by
-  `tools/cycle_runner.py` from files (opus medium -> opus high -> fable low -> fable medium -> RUNNER STOP) and
+- **JUDGEMENT LADDER (runner-decided, user 2026-09-26, card chat-M1; rungs re-set by the user's model table
+  2026-09-27, card chat-N4).** Your model/effort is chosen by `tools/cycle_runner.py` from files (opus high ->
+  opus max -> fable low -> RUNNER STOP; a recipe firefighter cycle is one Opus max cycle) and
   recorded in the cycle card's `note` as `judge-ladder level N: <reason>`. Do not change it; deliver something
   (a PASS result card with artefacts, or a goalmap milestone done) and the next cycle drops back to level 0.
+- **SCRATCH-VI VERIFICATION (user 2026-09-27).** After two stage runs failed on the SAME scripting function, write
+  the scratch-verification card first (a <=120-line stagekit script on a minimal scratch VI, record under
+  `tools/bench/scratch_verify/`); `stage_prerun.check_launch` refuses a third stage run until that record PASSes.
 - **Answer from the plan first.** If the plan's `## Pre-decided` section already settles a question, apply it and
   say which line — do not re-open it, and do not ask the user.
 - **Decide** the things only judgement can decide: design, what to accept from a review, rule-1a equivalence,

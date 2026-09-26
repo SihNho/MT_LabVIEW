@@ -465,7 +465,12 @@ def main():
            # learned. -Kind fact because this prompt carries its own instruction set and has no claim to refute.
            # 2026-09-18: codex quota at 9 % (user) - the retrospective goes to the thin claude `outcome` role
            # (fable/medium, --safe-mode, reads the attached audit/logs). Codex stays one flag away.
-           f"& '{os.path.join(HERE, 'peer.ps1')}' -Agent claude -Role outcome -Kind fact -TimeoutSec 600 "
+           # 2026-09-27 (user model table, card chat-N4): ON OPUS 5.5 HIGH - the fable/medium outcome role cost $196 in
+           # 37 retrospective calls this week. Same thin role and prompt, model pinned by -Model/-Effort. NOT
+           # `-Role hypothesis`: that archive's role line is what guard_peer accepts as a failed-prediction review,
+           # and a retrospective attaches (and so names) every failing log of the cycle.
+           f"& '{os.path.join(HERE, 'peer.ps1')}' -Agent claude -Role outcome -Kind fact "
+           f"-Model claude-opus-5-5 -Effort high -TimeoutSec 600 "
            f"-Slug {slug} -ReviewCard '{rcard}' -Task (Get-Content -Raw '{scratch}')"]
     r = subprocess.run(cmd, cwd=ROOT, text=True, timeout=900)
     print(f"   peer.ps1 rc {r.returncode}; archived as archive/peer/<date>-{slug}.md", flush=True)

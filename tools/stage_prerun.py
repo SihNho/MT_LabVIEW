@@ -1496,6 +1496,125 @@ def record_started(cmdline, log=None, pid=None):
     return out
 
 
+# ------------------------------------------------------------------------------------ SCRATCH-VI VERIFICATION
+# User 2026-09-27 02:2x ("도구 결함 관련하여 스크래치 vi 검증 부분도 적용"; card chat-N4, brief last section): when a stage's
+# LAST TWO runs both failed on the SAME scripting function, the next LabVIEW act is a scratch-VI verification of that
+# function, not a third stage run. The function is read from each run's own machine output, never from prose:
+#   1. the innermost Python traceback frame inside gscript.py / stagekit.py / stagexec.py (stagekit.run prints the
+#      traceback of any exception in the stage) -> "<module>.<function>";
+#   2. else a stagexec `STEP-DIFF after real op K (<kind>, ...)` line -> "stagexec.op:<kind>";
+#   3. else an op VI named in the C6 RESULT line's first_fail (`Op<Name>.vi`) -> "op:<Name>".
+#   (No `"function"` field in the RESULT line: result-line/1 validation rejects extra keys - measured by the self-test.)
+# A verification record is tools/bench/scratch_verify/<function>_<ts>.json, {"function": F, "status": "PASS", "t": epoch}
+# (written with a RESULT line by a <=120-line stagekit script); it releases the stage only when NEWER than the second
+# failure. Runs are grouped by stage key (`_vN` stripped), as the retry cap groups them.
+SCRATCH_DIR = os.environ.get("SCRATCH_VERIFY_DIR") or os.path.join(BENCH, "scratch_verify")
+SCRATCH_WINDOW_S = 3 * 24 * 3600      # logs older than this are not "the last two runs"
+FLEET_MODULES = ("gscript", "stagekit", "stagexec")
+TB_FRAME_RE = re.compile(r'File "([^"]+)", line \d+, in ([\w<>]+)')
+STEPDIFF_RE = re.compile(r"STEP-DIFF after real op \d+ \((\w+)")
+OPVI_RE = re.compile(r"\b(Op\w+)\.vi\b", re.I)
+UNIT_TOKEN_RE = re.compile(r"([\w.\-]+\.(?:py|json))\b", re.I)
+
+
+def unit_key(path):
+    """Stage key of a script OR a stagexec plan: basename, lower case, `_vN` stripped (stage_key for .py)."""
+    return re.sub(r"_v\d+(?=\.(?:py|json)$)", "", os.path.basename(path).lower())
+
+
+def failure_function(seg):
+    """The scripting function a failed run died in, from that run's own segment (see the block comment), or None."""
+    import protocol as P
+    res = P.all_result_lines(seg)
+    frames = [(os.path.splitext(os.path.basename(f))[0], fn) for f, fn in TB_FRAME_RE.findall(seg or "")]
+    fleet = [(m, fn) for m, fn in frames if m in FLEET_MODULES]
+    if fleet:
+        return "%s.%s" % fleet[-1]
+    m = STEPDIFF_RE.search(seg or "")
+    if m:
+        return "stagexec.op:%s" % m.group(1)
+    for d in reversed(res):
+        m = OPVI_RE.search(str(d.get("first_fail") or ""))
+        if m:
+            return "op:%s" % m.group(1)
+    return None
+
+
+def stage_run_segments(key, now=None):
+    """[(start_ts, failed, function)] of every bgrun run of stage `key` in LOG_DIR within SCRATCH_WINDOW_S, oldest
+    first. A stage_prerun --dry/--prerun of the stage is not a run of it."""
+    import protocol as P
+    now = now or time.time()
+    out = []
+    try:
+        entries = list(os.scandir(LOG_DIR))
+    except OSError:
+        return out
+    for de in entries:
+        if not de.name.endswith(".log"):
+            continue
+        try:
+            if now - de.stat().st_mtime > SCRATCH_WINDOW_S:
+                continue
+            text = REAL_OPEN(de.path, encoding="utf-8", errors="replace").read()
+        except OSError:
+            continue
+        for ts, line, seg in P.segments(text):
+            if ts is None or "stage_prerun" in line:
+                continue
+            if key not in {unit_key(t) for t in UNIT_TOKEN_RE.findall(line)}:
+                continue
+            v = P.run_verdict(seg)
+            if v["source"] == "none":
+                continue                                       # still running: not a finished record
+            out.append((ts, bool(v["failed"]), failure_function(seg) if v["failed"] else None))
+    return sorted(out, key=lambda r: r[0])
+
+
+def scratch_pass_after(function, t_after):
+    """Newest scratch_verify PASS record for `function` newer than t_after: its path, or None."""
+    best = None
+    try:
+        names = os.listdir(SCRATCH_DIR)
+    except OSError:
+        return None
+    for fn in names:
+        if not fn.endswith(".json"):
+            continue
+        p = os.path.join(SCRATCH_DIR, fn)
+        try:
+            d = json.load(REAL_OPEN(p, encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if not isinstance(d, dict) or d.get("function") != function or d.get("status") != "PASS":
+            continue
+        t = d.get("t") if isinstance(d.get("t"), (int, float)) else os.path.getmtime(p)
+        if t > t_after and (best is None or t > best[0]):
+            best = (t, p)
+    return best[1] if best else None
+
+
+def check_scratch(unit, now=None):
+    """(allow, why) - refuse a stage run whose last two runs failed on the same function with no newer scratch PASS."""
+    key = unit_key(unit)
+    runs = stage_run_segments(key, now)
+    if len(runs) < 2:
+        return True, ""
+    (t1, f1, fn1), (t2, f2, fn2) = runs[-2], runs[-1]
+    if not (f1 and f2 and fn1 and fn1 == fn2):
+        return True, ""
+    hit = scratch_pass_after(fn1, t2)
+    if hit:
+        return True, ""
+    return False, ("SCRATCH-VI GATE (user 2026-09-27, card chat-N4): the last two runs of {0} both FAILED in `{1}` "
+                   "({2} and {3}). The next LabVIEW act is a scratch-VI verification of `{1}`, not a third stage run: a "
+                   "<=120-line stagekit script on a minimal scratch VI that runs `{1}`, reads the graph back and writes "
+                   "{4}/<function>_<ts>.json with {{\"function\": \"{1}\", \"status\": \"PASS\", \"t\": <epoch>}}. "
+                   "No PASS record newer than the second failure exists.\n").format(
+                       key, fn1, time.strftime("%m-%d %H:%M:%S", time.localtime(t1)),
+                       time.strftime("%m-%d %H:%M:%S", time.localtime(t2)), rel(SCRATCH_DIR))
+
+
 def check_launch(cmd):
     """(allow, why). Refuses a stage-recipe launch without a dry PASS and a prerun PASS for its CURRENT sha256 and
     plan md5s, both newer than the newest failing run of it (decision 4), and past RETRY_CAP runs in this cycle
@@ -1543,6 +1662,9 @@ def _check_units(units, cmd):
         ok_cap, why_cap, _cid = check_cap(cmd, plan or s, runs, ck)
         if not ok_cap:
             return False, why_cap
+        ok_sv, why_sv = check_scratch(plan or s)          # card chat-N4: two failures on one function -> scratch VI
+        if not ok_sv:
+            return False, why_sv
     return True, ""
 
 

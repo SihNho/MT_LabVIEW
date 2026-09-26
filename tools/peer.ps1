@@ -31,8 +31,8 @@
       .\tools\peer.ps1 -Agent claude -Task "..."                     # sonnet; -Model opus if it earns it
       .\tools\peer.ps1 -Agent claude -Role hypothesis -Slug x -Task "..."  # FAILED-PREDICTION reviewer:
                                                                            # opus / effort max, WEB SEARCH ALLOWED
-      .\tools\peer.ps1 -Kind fact  -Slug x -Task "..."      # no -Agent => claude / role fact  (fable, low, thin)
-      .\tools\peer.ps1 -Kind prose -Slug x -TaskFile f.md   # no -Agent => claude / role prose (fable, low, thin)
+      .\tools\peer.ps1 -Kind fact  -Slug x -Task "..."      # no -Agent => claude / role fact  (opus-5-5, medium, thin)
+      .\tools\peer.ps1 -Kind prose -Slug x -TaskFile f.md   # no -Agent => claude / role prose (opus-5-5, medium, thin)
       .\tools\peer.ps1 -Dual -Slug x -TaskFile q.md   # the SAME task to codex AND the hypothesis role,
                                                       # archived as <date>-x-codex.md and <date>-x-opus.md
       .\tools\peer.ps1 -Agent codex  -Kind prose -Slug x -TaskFile fact-list.md  # codex AUTHORS the report from
@@ -56,10 +56,13 @@
       audit       sonnet           no    AGENTS.md brief + CLAUDE.md    -Agent claude, no -Role
       priorart    opus / high      no    AGENTS.md brief + CLAUDE.md    prior_art_review.py
       ingest      sonnet           no    AGENTS.md brief + CLAUDE.md    doc_ingest.py
-      hypothesis  opus / max       YES   AGENTS.md brief + CLAUDE.md    failed-prediction reviews (SINGLE arm)
-      fact        fable / low      YES   THIN (task only)               -Kind fact with no -Agent
-      outcome     fable / medium   YES   THIN (task only)               outcome_review.py
-      prose       fable / low      no    THIN (REPORT WRITER preamble)  -Kind prose with no -Agent
+      hypothesis  opus-5-5 / high  YES   AGENTS.md brief + CLAUDE.md    failed-prediction reviews (SINGLE arm)
+      fact        opus-5-5 / med   YES   THIN (task only)               -Kind fact with no -Agent
+      outcome     fable / medium   YES   THIN (task only)               outcome_review.py; the retrospective
+                                                                        uses this role pinned -Model claude-opus-5-5
+                                                                        -Effort high (user table 2026-09-27)
+      prose       opus-5-5 / med   no    THIN (REPORT WRITER preamble)  -Kind prose with no -Agent
+    (fact/prose were fable/low 2026-09-18 .. 2026-09-27; moved by the user's model table, card chat-N4.)
 
     THIN = the cell runs with `--safe-mode`, which skips CLAUDE.md auto-discovery, skills, plugins, hooks and
     MCP servers while leaving auth, model selection, built-in tools and permissions normal (claude --help).
@@ -458,11 +461,12 @@ if ($Agent -eq 'codex') {
         $usedModel = if ($Model) { $Model } else { 'claude-opus-5-5' }
         $usedEffort = if ($Effort) { $Effort } else { 'high' }
     } elseif ($Role -eq 'fact' -or $Role -eq 'prose') {
-        # FABLE at LOW (user, 2026-09-18). A pure fact lookup and a report written from a fact list are the two
-        # jobs where the cell's own reasoning is cheapest to buy - the cost that mattered was the fixed context
-        # load, and --safe-mode removes that, not the effort dial.
-        $usedModel = if ($Model) { $Model } else { 'fable' }
-        $usedEffort = if ($Effort) { $Effort } else { 'low' }
+        # OPUS 5.5 at MEDIUM, still THIN (user model table 2026-09-27, card chat-N4; weekly Fable at 75 %). Was
+        # fable/low from 2026-09-18. A pure fact lookup and a report written from a fact list are the two jobs
+        # where the cell's own reasoning is cheapest to buy - the cost that mattered was the fixed context load,
+        # and --safe-mode removes that, not the effort dial.
+        $usedModel = if ($Model) { $Model } else { 'claude-opus-5-5' }
+        $usedEffort = if ($Effort) { $Effort } else { 'medium' }
     } elseif ($Role -eq 'outcome') {
         # FABLE at MEDIUM (user, 2026-09-18): one notch up from fact, because this reviewer has to weigh a whole
         # project's output against the user's requirements, and it is the layer that stopped the work twice.

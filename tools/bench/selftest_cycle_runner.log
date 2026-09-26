@@ -8,3 +8,18 @@ BGRUN START 2026-09-17 20:04:15 limit 8.0 min: py -u tools/bench/selftest_cycle_
   ok   G7 usage-limit waits parse (epoch / clock / bare / none) epoch 720s, clock 3703s, bare 2400s, none None
 SUMMARY 7/7 gates pass
 BGRUN END rc=0 after 2s
+BGRUN START 2026-09-27 02:08:46 limit 15.0 min: py -u tools/bench/selftest_cycle_runner.py --dry-run
+BGRUN PID 23804
+  ok   G1 STOP marker stops before any cycle                exit 0
+  ok   G2 three moving cycles complete                      exit 0, 3 CYCLE lines, 3 ended
+  ok   G8 a valid cycle/1 card is written for every cycle   3/3 cards valid
+  ok   G9 next.json is read after every cycle (C7)          3 CHANGED readings
+  ok   G10 next.json stop_requested stops the runner        exit 0, 1 cycles
+  ok   G6 cycle numbering continues across invocations      CYCLE 4 | 2026-09-27 02:08:50 | 2026-09-27 02:08:51 | exit 0
+  ok   G3 unchanged NEXT three times stops the loop (judgement ladder, user table 2026-09-27) exit 3, 3 cycles
+  ok   G4 the stop notice is APPENDED to STATUS             STATUS is 328 bytes
+  ok   G5 two non-zero sessions stop the loop               exit 3, 2 cycles
+  ok   G7 usage-limit waits parse (epoch / clock / bare / none) epoch 720s, clock 3665s, bare 2400s, none None
+SUMMARY 10/10 gates pass
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":10,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 9s
