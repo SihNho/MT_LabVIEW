@@ -68,13 +68,23 @@ PROVISIONAL = {
                            # tools/bench/sim/l2a1_real_80.json): closure / sequential / moved-input flips / S2 no-flip /
                            # bare half-wires deleted - see op_move_in's docstring for each rule's evidence
                            "closure": True, "sequential": True, "flip_moved_inputs": True, "flip_needs_wired": True,
-                           "bare_half_wire": "delete"},
+                           "bare_half_wire": "delete",
+                           # card 101-4: a moved CONSTANT that was a cut wire's only source takes the wire with it
+                           # (stage_d1_disp_r4.log:89-90, 1 sample); a node source keeps the outside half-wire
+                           # (diag_c71_l7_1a_tunnels.log:60,64,70) - see only_source_fate
+                           # card 101-5 TRIED AND REVERTED: {"node": "delete", "subvi": "keep"} (Bundler #11310, r5 k12)
+                           # diverged from the r5 REAL reads at k24/k25 (ControlTerminal 8323 kept its half-wire after
+                           # BuildArray #11261 moved) and dropped edge 11369->11270 at k12 (diag_c101c_resim.log:33,57);
+                           # the fate is not a function of the source class alone - review owed, rule unchanged
+                           "only_source": {"constant": "delete", "default": "keep"}},
                 "evidence": "tools/bench/diag_c71_l7_1a_tunnels.log (TERM 2043/5050 is_source True->False, FLAG w4337/w5073 "
                             "n_src 0 after move_in #376); tools/bench/stage_d1_l7_1b_r3.log:207-214 (#376's cut terminals read "
                             "wire=0); tools/bench/l2a1_tunflip_80.log:195-196,215-216,235-236 (card 80-5 joint + singles)",
                 "gaps": ["SR pair names reset on a cut (15/51 -> '' but 24/1108 kept 'error out') NOT modelled: names only, "
                          "computation_diff collapses registers", "the junk Invoke node each op leaves is NOT modelled "
-                                                                     "(stagekit.junk_purge deletes it)"]},
+                                                                     "(stagekit.junk_purge deletes it)",
+                         "only_source 'delete' for a constant rests on ONE sample (r4 #8775) and on the single-sink "
+                         "shape only; a constant feeding 2+ outside sinks keeps the old rule (unmeasured)"]},
     "add_shift_reg": {"params": {"names": ""},
                       "evidence": "tools/bench/stage_d1_l7_1a.json l7_1a.sr (a Right+Left pair per call); "
                                   "jev_candidates.rule_chain_s1 docstring (new register terminals unnamed)",
@@ -102,7 +112,10 @@ PROVISIONAL = {
     "create": {"params": {}, "evidence": "plan-declared terminal list (no measurement yet); card 100-3: a WhileLoop/"
                                          "ForLoop owns NO row in the terminal read (0 WhileLoop/ForLoop-owned rows among "
                                          "the 5,061 of tools/bench/par1359_95_graph.json, which holds loops #637/#25380/"
-                                         "#1359), a ControlTerminal row is its own node owned by its Diagram "
+                                         "#1359) - BUT (card 101-3) its BODY Diagram owns the unnamed i source row and, for a "
+                                         "While, the unnamed cond sink row (#639: #644/#648, #25392: #25406/#25410, For "
+                                         "#27537: #27543 only; stage_d1_disp_r2.log:57 real {'Diagram': 1}), "
+                                         "a ControlTerminal row is its own node owned by its Diagram "
                                          "(vigraph.node_of), a Local's one terminal carries the control's label "
                                          "(par1359_95_graph.json #2991 'Total Lost Frames')",
                "gaps": ["terminal list must come from an op model or the subVI wiki",
@@ -431,17 +444,54 @@ def _unflip_restored_tunnels(st, seeds, cascade=False):
     return out
 
 
+def _fate_by_class(rule, src_class):
+    if isinstance(rule, dict):
+        # card 101-5: a SubVI source is its own kind ('subvi'; falls back to 'node' when a rule has no 'subvi' key)
+        # because the measured fates differ - SubVI #376 KEPT its half-wire (diag_c71_l7_1a_tunnels.log:60,64),
+        # primitive Bundler #11310 LOST it (stage_d1_disp_r5.log:249, dangling_sim_only [11365]).
+        sc = str(src_class)
+        kind = "constant" if sc.endswith("Constant") else ("tunnel" if "Tunnel" in sc else (
+            "subvi" if sc == "SubVI" else "node"))
+        rule = rule.get(kind, rule.get("node" if kind == "subvi" else kind, rule.get("default", "keep")))
+    return rule if rule in ONLY_SINK_FATES else "keep"
+
+
 def only_sink_fate(P, src_class):
     """The only-sink sub-rule (card chat-S3; tools/bench/opmodels_onlysink.log): what happens to a wire whose ONLY
     sink(s) sat on the moved / deleted node. `P['only_sink']` is 'keep' (a source-side half-wire), 'delete', 'ambiguous'
     (kept in the simulation, and the executor accepts either outcome), or {'constant': fate, 'tunnel': fate,
     'node': fate} by the SOURCE's class. Missing => 'keep' (the provisional rule)."""
-    rule = P.get("only_sink", "keep")
-    if isinstance(rule, dict):
-        kind = "constant" if str(src_class).endswith("Constant") else (
-            "tunnel" if "Tunnel" in str(src_class) else "node")
-        rule = rule.get(kind, rule.get("default", "keep"))
-    return rule if rule in ONLY_SINK_FATES else "keep"
+    return _fate_by_class(P.get("only_sink", "keep"), src_class)
+
+
+def only_source_fate(P, src_class):
+    """card 101-4, the MIRROR of only_sink_fate: a CUT wire whose ONLY source sat on the MOVED node and whose one other
+    terminal is a sink OUTSIDE the moved set. 'keep' = the outside sink stays on a sourceless half-wire (MEASURED for a
+    SubVI source: move_in #376 + junk purge left 1931 on w5274 and 5044 on w5056, diag_c71_l7_1a_tunnels.log:60,64,70);
+    'delete' = the whole wire goes, the outside sink reads wire 0 (MEASURED for a DigitalNumericConstant source: move_in
+    #8775 -> sink 8753 of #8741 read neither dangling nor on an edge, stage_d1_disp_r4.log:89-90, 1 sample); 'ambiguous'.
+    `P['only_source']` like `P['only_sink']` (a fate or a by-source-class dict). Missing => 'keep' (the pre-101-4 rule)."""
+    return _fate_by_class(P.get("only_source", "keep"), src_class)
+
+
+def _apply_only_source(st, P, cut):
+    """card 101-4: for each cut wire (w -> (moved rows, outside rows)) with exactly ONE row on the moved side, a source,
+    and exactly ONE outside row, a sink (the r4 shape; a constant feeding 2+ outside sinks is UNMEASURED and keeps the
+    pre-101-4 rule), apply only_source_fate to the OUTSIDE row. Runs before the cut clears the moved side and before the
+    tunnel flips, so a deleted wire has no rows left to flip. Returns the records (`allow_either` reads 'ambiguous')."""
+    out = []
+    for w in sorted(cut):
+        ins, outs = cut[w]
+        if len(ins) != 1 or not ins[0]["is_source"] or len(outs) != 1 or outs[0]["is_source"]:
+            continue
+        fate = only_source_fate(P, ins[0]["owner_class"])
+        if fate == "keep":
+            continue
+        if fate == "delete":
+            outs[0]["wire_uid"] = 0
+        out.append({"wire": w, "src_term_uid": ins[0]["term_uid"], "src_uid": V.node_of(ins[0]),
+                    "src_class": ins[0]["owner_class"], "sink_term_uid": outs[0]["term_uid"], "fate": fate})
+    return out
 
 
 def _apply_only_sink(st, P, wires, gone):
@@ -502,7 +552,7 @@ def op_move_in(st, a, P, S1, labels):
                 "moved": sorted(set(cat("moved"))), "dest_diagram": dest, "cut_set": sorted(set(cat("cut_set"))),
                 "n_cut": sum(e["n_cut"] for e in effs), "reconnect": cat("reconnect"),
                 "cleared_term_uids": sorted(set(cat("cleared_term_uids"))), "tunnel_flips": cat("tunnel_flips"),
-                "rule_rows": cat("rule_rows"), "only_sink": cat("only_sink"),
+                "rule_rows": cat("rule_rows"), "only_sink": cat("only_sink"), "only_source": cat("only_source"),
                 "allow_either": sorted(set(cat("allow_either"))), "bare_deleted": cat("bare_deleted")}, cands
     return _move_one(st, tops, dest, P, S1, labels)
 
@@ -544,6 +594,7 @@ def _move_one(st, tops, dest, P, S1, labels):
                               "s1": s1_partner(S1, G0, k) if (S1 is not None and k) else None})
     # apply
     only = _apply_only_sink(st, P, cut.keys(), moved)
+    only_src = _apply_only_source(st, P, cut)                     # card 101-4 (stage_d1_disp_r4.log:90)
     for r in inside:
         if int(r.get("frame_diagram") or 0) not in inner_d:      # rows on the structure's nested frames stay put
             r["frame_diagram"] = dest
@@ -610,8 +661,9 @@ def _move_one(st, tops, dest, P, S1, labels):
     return {"moved": sorted(moved), "tops": tops, "inner_diagrams": sorted(inner_d), "dest_diagram": dest,
             "cut_set": sorted(cut), "n_cut": len(cut),
             "reconnect": table, "cleared_term_uids": sorted(cleared), "tunnel_flips": flipped,
-            "bare_deleted": bare_deleted, "rule_rows": rule_rows, "only_sink": only,
-            "allow_either": sorted(x["src_term_uid"] for x in only if x["fate"] == "ambiguous")}, cands
+            "bare_deleted": bare_deleted, "rule_rows": rule_rows, "only_sink": only, "only_source": only_src,
+            "allow_either": sorted([x["src_term_uid"] for x in only if x["fate"] == "ambiguous"] +
+                                   [x["sink_term_uid"] for x in only_src if x["fate"] == "ambiguous"])}, cands
 
 
 def _parent_of(st, body, a, labels):
@@ -757,9 +809,20 @@ def op_delete_object(st, a, P, S1, labels):
             "tunnel_flips": flipped}, []
 
 
+def cond_row(st, loop):
+    """card 101-3: the conditional-terminal row of a While loop a `create` made = the body Diagram's one unnamed
+    'Terminal' SINK (op_create). Exactly one, else SimError."""
+    body = [int(b) for b, (c, u) in (st.get("owners") or {}).items() if int(u) == loop]
+    rs = [r for r in st["terminals"] if r["owner_uid"] in body and r["owner_class"] == "Diagram" and
+          r["term_class"] == "Terminal" and not r["is_source"]]
+    if len(rs) != 1:
+        raise SimError("the conditional terminal of While #{0}: {1} body sink row(s) on {2}".format(loop, len(rs), body))
+    return rs[0]
+
+
 def cond_target(st, ref):
     """'new:<alias>.cond' naming a WhileLoop an earlier `create` made -> that loop's uid, else None. The conditional
-    terminal owns no row in the terminal read (see PROVISIONAL['create'].evidence), so it is not a resolve_addr end."""
+    terminal is the body Diagram's unnamed sink row (cond_row; card 101-3 - it was modelled as absent until then)."""
     if isinstance(ref, dict):
         head, term = ref.get("uid"), ref.get("term")
     elif isinstance(ref, str) and ref.startswith("new:"):
@@ -778,20 +841,22 @@ def op_wire(st, a, P, S1, labels):
     s = resolve_addr(st, a["src"], True)
     loop = cond_target(st, a["dst"])
     if loop is not None:
-        # card 100-3 R8: a body node's source -> the loop's conditional terminal (OpStopFromNode_v0). The sink is not in
-        # the read, so the source's wire has no visible sink (dangling in the simulation and in the real read alike).
+        # card 100-3 R8: a body node's source -> the loop's conditional terminal (OpStopFromNode_v0). card 101-3: the
+        # conditional terminal IS in the read (the body's unnamed sink row, cond_row) and is wired like any sink.
         body = [int(b) for b, (c, u) in (st.get("owners") or {}).items() if int(u) == loop]
         if int(s["frame_diagram"] or 0) not in body:
             raise SimError("wire {0} -> {1}: the source is on diagram {2}, not on the loop's body {3}".format(
                 a["src"], a["dst"], s["frame_diagram"], body))
-        if st.setdefault("cond_wired", {}).get(str(loop)):
+        d = cond_row(st, loop)
+        if st.setdefault("cond_wired", {}).get(str(loop)) or d["wire_uid"]:
             raise SimError("wire -> {0}: the conditional terminal is already wired".format(a["dst"]))
         how = "branch" if s["wire_uid"] else "new"
         if not s["wire_uid"]:
             s["wire_uid"] = new_uid(st)
+        d["wire_uid"] = s["wire_uid"]
         st["cond_wired"][str(loop)] = s["term_uid"]
-        return {"wire": s["wire_uid"], "how": how, "src_term_uid": s["term_uid"], "cond_of": loop,
-                "note": "the conditional terminal is not in the terminal read"}, []
+        return {"wire": s["wire_uid"], "how": how, "src_term_uid": s["term_uid"], "dst_term_uid": d["term_uid"],
+                "cond_of": loop}, []
     d = resolve_addr(st, a["dst"], False)
     if P.get("same_diagram", True) and int(s["frame_diagram"] or 0) != int(d["frame_diagram"] or 0):
         raise SimError("wire {0} -> {1}: source on diagram {2}, sink on diagram {3} - a border needs a tunnel/"
@@ -881,7 +946,23 @@ def op_create(st, a, P, S1, labels):
         st["loops"].append({"loop_uid": u, "right_uids": [], "left_of": {}})
         key = _sym(st, name or "L{0}".format(-u), u)
         _sym(st, (name or "L{0}".format(-u)) + ".body", body)
-        eff.update(node=key, body=body, terminals=[])
+        # card 101-3 (PD213(h)(1)-(2), MEASURED in par1359_95_graph.json, result_101-1.json): the BODY Diagram owns the
+        # loop's own terminals as term_class 'Terminal' rows with an EMPTY name, owner = the body, frame = the body:
+        # While bodies #639 (#644 source i, #648 sink cond) and #25392 (#25406 source, #25410 sink); For body #27537 only
+        # #27543 (source i). Unwired rows are in the read too (#27543 wire 0). So: i for every loop, cond for a While.
+        rows = [_new_term(st, body, "Diagram", "Terminal", True, body)]
+        if cls == "WhileLoop":
+            rows.append(_new_term(st, body, "Diagram", "Terminal", False, body))
+        else:
+            # card 101-3, stage_d1_disp_r3.log:69 (real op 3 create For: new object {'Tunnel': 1} #23403) and
+            # diag_c101_forn.log (all 17 S1 ForLoops): a For loop's count terminal N is a 'Tunnel' object (objs owner
+            # 'ForLoop', same pos as the loop) with an unnamed OuterTerminal SINK on the PARENT diagram and an unnamed
+            # InnerTerminal SOURCE on the body (#27492: #27491 frame 81548 / #27494 frame 27537)
+            N = _new_obj(st, "Tunnel", "ForLoop")
+            rows.append(_new_term(st, N, "Tunnel", "OuterTerminal", False, dg))
+            rows.append(_new_term(st, N, "Tunnel", "InnerTerminal", True, body))
+            eff["count_terminal"] = N
+        eff.update(node=key, body=body, terminals=rows)
         return eff, []
     if cls == "ControlTerminal":
         if not a.get("label"):
@@ -1417,11 +1498,35 @@ def selftest():
     P0 = {}
     e1, _c = op_create(sc, {"class": "WhileLoop", "diagram": 10, "as": "DL1"}, P0, None, {})
     b1 = sc["sym"]["new:DL1.body"]
+    br1 = [r for r in sc["terminals"] if r["owner_uid"] == b1]
     gate("G43 create WhileLoop: object + NEW body diagram (sym new:DL1 / new:DL1.body), owners + diagrams + loops tables, "
-         "NO terminal row", b1 < 0 and sc["owners"][str(b1)] == ["WhileLoop", sc["sym"]["new:DL1"]] and
+         "NO loop-owned row", b1 < 0 and sc["owners"][str(b1)] == ["WhileLoop", sc["sym"]["new:DL1"]] and
          sc["diagrams"][str(b1)] == 10 and not [r for r in sc["terminals"] if r["owner_uid"] == sc["sym"]["new:DL1"]] and
          any(L["loop_uid"] == sc["sym"]["new:DL1"] for L in sc["loops"]), e1)
+    # card 101-3: the rows MEASURED on While bodies #639/#25392 (1 unnamed source + 1 unnamed sink, owner = the body
+    # Diagram, term_class Terminal, frame = the body) and For body #27537 (1 unnamed source only)
+    key_ = lambda rs: sorted((r["owner_class"], r["term_class"], r["term_name"], bool(r["is_source"]), r["frame_diagram"],  # noqa: E731
+                              r["wire_uid"]) for r in rs)
+    gate("G43b created While body owns EXACTLY the measured rows: 1 unnamed source + 1 unnamed sink, Diagram-owned, "
+         "Terminal, frame = body, unwired", key_(br1) == [("Diagram", "Terminal", "", False, b1, 0),
+                                                          ("Diagram", "Terminal", "", True, b1, 0)] and
+         sorted(e1["terminals"]) == sorted(r["term_uid"] for r in br1), br1)
     op_create(sc, {"class": "ForLoop", "diagram": "new:DL1.body", "as": "DF1"}, P0, None, {})
+    bf1 = sc["sym"]["new:DF1.body"]
+    gate("G43c created For body owns EXACTLY 1 unnamed Diagram-owned source (i), no sink",
+         key_([r for r in sc["terminals"] if r["owner_uid"] == bf1]) == [("Diagram", "Terminal", "", True, bf1, 0)],
+         [r for r in sc["terminals"] if r["owner_uid"] == bf1])
+    nf = [r for r in sc["terminals"] if r["owner_class"] == "Tunnel" and r["owner_uid"] < 0]
+    gate("G43e created For has ONE count-terminal 'Tunnel' object (objs owner ForLoop): unnamed OuterTerminal sink on the "
+         "parent (new:DL1.body) + unnamed InnerTerminal source on the For body (measured, diag_c101_forn.log)",
+         len(set(r["owner_uid"] for r in nf)) == 1 and
+         key_(nf) == sorted([("Tunnel", "InnerTerminal", "", True, bf1, 0), ("Tunnel", "OuterTerminal", "", False, b1, 0)]) and
+         any(int(o["uid"]) == nf[0]["owner_uid"] and o["class"] == "Tunnel" and o["owner"] == "ForLoop" for o in sc["objs"]), nf)
+    gate("G43f created While has NO count-terminal object (r3 op 2 real diff 0 with the body rows only)",
+         not [r for r in br1 if r["owner_class"] == "Tunnel"], "")
+    Gb = graph(sc)
+    gate("G43d the new body rows are one graph node each (node_of = the body, class Diagram), as bind_new groups them",
+         set(V.node_of(r) for r in br1) == {b1} and set(V.node_class(r) for r in br1) == {"Diagram"} and Gb is not None, "")
     op_move_in(sc, {"nodes": [4], "dest_diagram": "new:DF1.body"}, dict(PROVISIONAL["move_in"]["params"]), None, {})
     gate("G44 move_in into 'new:DF1.body' re-homes #4's rows onto the new For body (nested in the new While body)",
          all(r["frame_diagram"] == sc["sym"]["new:DF1.body"] for r in sc["terminals"] if r["owner_uid"] == 4) and
@@ -1432,9 +1537,11 @@ def selftest():
                    "terminals": [{"name": "Stop", "is_source": True}]}, P0, None, {})
     ew, _c = op_wire(sc, {"src": "new:LR1.value", "dst": "new:DL1.cond"}, dict(PROVISIONAL["wire"]["params"]), None, {})
     lr = [r for r in sc["terminals"] if r["owner_uid"] == sc["sym"]["new:LR1"]]
-    gate("G45 '.value' names a Local's one terminal; wire -> new:DL1.cond wires the source with NO visible sink row",
-         ew.get("cond_of") == sc["sym"]["new:DL1"] and len(lr) == 1 and lr[0]["wire_uid"] < 0 and
-         len(wire_rows(sc, lr[0]["wire_uid"])) == 1, ew)
+    cr_ = [r for r in br1 if not r["is_source"]]
+    gate("G45 '.value' names a Local's one terminal; wire -> new:DL1.cond wires it to the body's unnamed SINK row "
+         "(card 101-3: the cond row is in the read)", ew.get("cond_of") == sc["sym"]["new:DL1"] and len(lr) == 1 and
+         lr[0]["wire_uid"] < 0 and len(cr_) == 1 and ew.get("dst_term_uid") == cr_[0]["term_uid"] and
+         sorted(r["term_uid"] for r in wire_rows(sc, lr[0]["wire_uid"])) == sorted([lr[0]["term_uid"], cr_[0]["term_uid"]]), ew)
     e_i, _c = op_create(sc, {"class": "ControlTerminal", "diagram": 20, "as": "IND1", "label": "plot", "indicator": True,
                              "born_on": "2.out"}, P0, None, {})
     ct = [r for r in sc["terminals"] if r["term_uid"] == sc["sym"]["new:IND1"]]
@@ -1458,6 +1565,55 @@ def selftest():
          "each refused (SimError)", all(x[1].startswith("refused") for x in refs), refs)
     gate("G48 gate op: checks the object and changes nothing", op_gate(sc, {"uid": 3, "read": "bool_const", "stop_if": True},
                                                                        P0, None, {})[0]["class"] == "Constant", "")
+    # card 101-4: the only-SOURCE rule (stage_d1_disp_r4.log:90 constant; diag_c71_l7_1a_tunnels.log:60,64 SubVI)
+    def mv(uid, rule=None):
+        s_ = base_state(_synthetic())
+        p_ = dict(PROVISIONAL["move_in"]["params"])
+        if rule is not None:
+            p_["only_source"] = rule
+        e_, _c = op_move_in(s_, {"nodes": [uid], "dest_diagram": 30}, p_, None, {})
+        return s_, e_, dict((r["term_uid"], r["wire_uid"]) for r in s_["terminals"])
+    s49, e49, w49 = mv(3)
+    gate("G49 PROVISIONAL: a moved Constant that was the ONLY source of a single-sink cut wire takes it along: the outside "
+         "sink 1511 reads wire 0, the constant's 1003 wire 0, fate recorded 'delete'",
+         w49[1511] == 0 and w49[1003] == 0 and [(x["wire"], x["fate"], x["sink_term_uid"]) for x in e49["only_source"]] ==
+         [(3, "delete", 1511)] and 1511 not in e49["allow_either"], (e49["only_source"], w49[1511], w49[1003]))
+    s50, e50, w50 = mv(2)
+    gate("G50 a moved SubVI (a node) keeps the measured rule: its only-source wires w6/w5 stay on the outside sinks "
+         "1611/1501 as sourceless half-wires, no only_source record", w50[1611] == 6 and w50[1501] == 5 and
+         e50["only_source"] == [] and not has_source(s50, 6), (e50["only_source"], w50[1611], w50[1501]))
+    s51, e51, w51 = mv(1)
+    gate("G51 a moved Constant feeding TWO outside sinks (w1 -> 1601, 1701) is outside the measured shape: both keep w1",
+         w51[1601] == 1 and w51[1701] == 1 and e51["only_source"] == [], (e51["only_source"], w51[1601], w51[1701]))
+    s52, e52, w52 = mv(3, "ambiguous")
+    s53, e53, w53 = mv(3, "keep")
+    gate("G52 only_source 'ambiguous' keeps the half-wire and lists the outside sink in allow_either; 'keep' = the pre-101-4 "
+         "result (1511 on sourceless w3, no record)", w52[1511] == 3 and e52["allow_either"] == [1511] and
+         w53[1511] == 3 and e53["only_source"] == [] and 1511 not in e53["allow_either"], (e52["allow_either"], w53[1511]))
+    # card 101-5: a moved PRIMITIVE node (not a SubVI) that was the only source of single-sink cut wires takes them
+    # (the 'subvi' kind exists so a plan may state {"node": .., "subvi": ..}; PROVISIONAL keeps {"constant": delete} only)
+    def mv_prim(uid, cls, rule):
+        s_ = base_state(_synthetic())
+        for r in s_["terminals"]:
+            if r["owner_uid"] == uid:
+                r["owner_class"] = cls
+        for o in s_["objs"]:
+            if o["uid"] == uid:
+                o["class"] = cls
+        p_ = dict(PROVISIONAL["move_in"]["params"], only_source=rule)
+        e_, _c = op_move_in(s_, {"nodes": [uid], "dest_diagram": 30}, p_, None, {})
+        return s_, e_, dict((r["term_uid"], r["wire_uid"]) for r in s_["terminals"])
+    s54, e54, w54 = mv_prim(2, "Bundler", {"constant": "delete", "node": "delete", "subvi": "keep", "default": "keep"})
+    gate("G54 under an explicit {node: delete, subvi: keep} rule a moved PRIMITIVE (Bundler) only-source: w6/w5 are deleted, "
+         "outside sinks 1611/1501 read wire 0, two 'delete' records", w54[1611] == 0 and w54[1501] == 0 and
+         sorted((x["wire"], x["fate"], x["sink_term_uid"]) for x in e54["only_source"]) == [(5, "delete", 1501), (6, "delete", 1611)],
+         (e54["only_source"], w54[1611], w54[1501]))
+    s56, e56, w56 = mv_prim(2, "Bundler", PROVISIONAL["move_in"]["params"]["only_source"])
+    gate("G55 the SubVI rule is unchanged beside it (G50); a rule dict without 'subvi' falls back to 'node'; under the "
+         "PROVISIONAL rule a moved Bundler KEEPS its half-wires (the r5 k24/k25 real reads, diag_c101c_resim.log:57)",
+         _fate_by_class({"node": "delete"}, "SubVI") == "delete" and _fate_by_class({"node": "delete", "subvi": "keep"}, "SubVI") == "keep"
+         and _fate_by_class({"node": "delete", "subvi": "keep"}, "Bundler") == "delete" and w56[1611] == 6 and w56[1501] == 5
+         and e56["only_source"] == [], (w56[1611], w56[1501], e56["only_source"]))
     n_pass = sum(1 for _l, ok in gates if ok)
     n_fail = len(gates) - n_pass
     first = next((l for l, ok in gates if not ok), None)

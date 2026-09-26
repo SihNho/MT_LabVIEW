@@ -676,7 +676,14 @@ class Stage(object):
     def create_local_read(self, label, panel_index=None, tag=""):
         """The BUILT local-variable creator. Its measured implementation lives in the diagnostics that
         proved it (`tools/bench/diag_s3b_l0_localname_v2.create_local`:964 - label + panel index); this is
-        a thin binding to THAT function, never a re-implementation."""
+        a thin binding to THAT function, never a re-implementation. Card 101-5: `panel_index` None -> resolved
+        from `label` over panel_wiring exactly as create_local_write does (r5 passed None and the creator's
+        int(None) raised, stage_d1_disp_r5.log:452)."""
+        if panel_index is None:
+            rows = [i for i, r in enumerate(g.panel_wiring(self.work)) if r["label"] == label]
+            if len(rows) != 1:
+                raise Stop("create_local_read: label {0!r} matches {1} panel rows".format(label, len(rows)))
+            panel_index = rows[0]
         L = mod("diag_s3b_l0_localname_v2")
         return self._op("create_local_read",
                         lambda: L.create_local(self.work, label, panel_index, tag or self.name),

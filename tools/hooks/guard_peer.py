@@ -289,9 +289,29 @@ def in_prediction_scope(start_line):
     return any(_SCOPE_SCRIPT_RE.search(s) and not _JEV_SCRIPT_RE.search(s) for s in scripts)
 
 
+# THE JEV LEDGERS ARE NOT BUILD LOGS - EXCLUDED BY PATH (card 101-2, PD213(g)1, 2026-09-26). tools/bench/jev_gate.log
+# (and its jev_*.log / jev_*.jsonl siblings) is the ledger this very hook and jev_gate.py APPEND to: every refusal
+# writes a JEV-LADDER line, and JEV-GATEROW lines quote the gated log's `STOP` rows verbatim. The file has no
+# BGRUN START, so the command-scoped Jev exemption below never saw it, and it became the "newest failing log" -
+# re-arming the gate on the lines its own refusals had just written (tools/bench/cards/result_101-1.json: every
+# Bash call of card 101-1 refused, archive/peer/2026-09-26-c100-6-jevgate.md). Keyed on the PATH (a file directly
+# in BENCH whose basename starts `jev_`), never on content; no other log is affected.
+JEV_LEDGER_RE = re.compile(r"^jev_[\w.-]*\.(?:log|jsonl)$", re.I)
+
+
+def is_jev_ledger(p):
+    """True for tools/bench/jev_*.log|.jsonl (BENCH resolved at call time, so a self-test's redirected BENCH counts)."""
+    if not JEV_LEDGER_RE.match(os.path.basename(p)):
+        return False
+    return (os.path.normcase(os.path.dirname(os.path.abspath(p))) ==
+            os.path.normcase(os.path.abspath(BENCH)))
+
+
 def newest_failing_log():
     best = None
     for p in glob.glob(os.path.join(BENCH, "*.log")):
+        if is_jev_ledger(p):
+            continue
         # A peer-review transcript is not a build log. 2026-09-15 12:5x: `peer_wrong_owner_node.log` blocked the very
         # build its review had just approved, because the reviewer's own sentence "Fail the build on inequality..."
         # matched the failure pattern. Review logs are evidence, never the thing under test.

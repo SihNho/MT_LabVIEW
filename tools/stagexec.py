@@ -443,16 +443,30 @@ def bind_new(prev_real, real, sim_prev, sim_now, bind):
     # card 100-3: grouped by GRAPH NODE (vigraph.node_of), so a created ControlTerminal (its own node, owned by its
     # Diagram) binds like any object; for every other row node_of == owner_uid (the old grouping, unchanged)
     sp = set(V.node_of(r) for r in sim_prev)
+    # card 101-3 (c100-6-r2.md s2): a created loop's BODY Diagram is bound by the create op's return (bind['diag']), and
+    # its own unnamed i/cond rows (node = the body) are bound here by (term_class, direction, name) - never as an object
+    dg = bind.get("diag") or {}
     new_sim = collections.OrderedDict()
     for r in sim_now:
         n = V.node_of(r)
-        if n < 0 and n not in sp and n not in bind["obj"]:
+        if n < 0 and n not in sp and n not in bind["obj"] and n not in dg:
             new_sim.setdefault(n, []).append(r)
     old_t = set(r["term_uid"] for r in prev_real)
     new_real = collections.OrderedDict()
     for r in real:
-        if r["term_uid"] not in old_t and V.node_of(r) not in bind["obj"].values():
+        if r["term_uid"] not in old_t and V.node_of(r) not in bind["obj"].values() and V.node_of(r) not in dg.values():
             new_real.setdefault(V.node_of(r), []).append(r)
+    bkey = lambda r: (r["term_class"], bool(r["is_source"]), r["term_name"])        # noqa: E731
+    for sb, rb in dg.items():
+        s_b = [r for r in sim_now if V.node_of(r) == sb and sb not in sp and r["term_uid"] not in bind["term"]]
+        r_b = [r for r in real if V.node_of(r) == rb and r["term_uid"] not in old_t]
+        if not s_b and not r_b:
+            continue
+        ks, kr = collections.Counter(bkey(r) for r in s_b), collections.Counter(bkey(r) for r in r_b)
+        if ks != kr or any(v != 1 for v in ks.values()):
+            raise ExecStop("BINDING: body #{0} -> #{1} own rows sim {2} vs real {3}".format(sb, rb, dict(ks), dict(kr)))
+        for sr in s_b:
+            bind["term"][sr["term_uid"]] = next(x for x in r_b if bkey(x) == bkey(sr))["term_uid"]
     cs = collections.Counter(V.node_class(rs[0]) for rs in new_sim.values())
     cr = collections.Counter(V.node_class(rs[0]) for rs in new_real.values())
     if cs != cr:
@@ -948,7 +962,12 @@ class Executor(object):
     addressing ExecStop on a reused read gets ONE fresh read + one retry (connect/tunnel/wire_sr), as meter_l2a1_86d.py."""
     RETRY_KINDS = ("connect", "tunnel", "wire_sr")
 
-    def __init__(self, plan_path, backend, log=print, checkpoints=None, require_final=True):
+    def __init__(self, plan_path, backend, log=print, checkpoints=None, require_final=True, record=False):
+        # card 101-4 RECORD MODE: a STEP-DIFF is logged into self.diffs and the run CONTINUES on the (unsaved) scratch;
+        # any other ExecStop (binding, addressing, op error, MEMSTOP) still stops, and self.cur names the op it stopped
+        # in. The caller saves nothing unless self.diffs is empty.
+        self.record = bool(record)
+        self.diffs, self.cur = [], None
         self.checkpoints = None if checkpoints is None else set(int(k) for k in checkpoints)
         self.reads_skipped, self.reads_real, self.stale_retries = [], [], []
         self.plan_path = plan_path
@@ -1068,7 +1087,9 @@ class Executor(object):
                     sorted(cp), bad, sorted(need)))
             self.log("  CHECKPOINTS whole-VI read+diff after ops {0} of {1}".format(sorted(k for k in cp if k), len(self.ops)))
         stale = False
+        last_read_k = 0
         for k, op in enumerate(self.ops, 1):
+            self.cur = {"k": k, "op": op["kind"], "acts": op["acts"], "ids": [A[n - 1].get("id") for n in op["acts"]]}
             first, last = op["acts"][0], op["acts"][-1]
             prev = self.step(first - 1)["state"]
             after = self.step(last)
@@ -1141,9 +1162,19 @@ class Executor(object):
                 k, op["kind"], op["acts"], rec["ids"], made, d["n"],
                 "  CHECKPOINT " + ",".join(rec["checkpoint"]) if rec["checkpoint"] else ""))
             if d["n"]:
-                raise ExecStop("STEP-DIFF after real op {0} ({1}, plan actions {2} {3}): {4}".format(
+                msg = "STEP-DIFF after real op {0} ({1}, plan actions {2} {3}): {4}".format(
                     k, op["kind"], op["acts"], rec["ids"], json.dumps({x: y for x, y in d.items() if y and x != "n"},
-                                                                       default=str)[:1500]))
+                                                                       default=str)[:1500])
+                if not self.record:
+                    raise ExecStop(msg)
+                prev = self.diffs[-1]["diff"] if self.diffs else {}
+                new = dict((x, sorted(set(map(json.dumps, y)) - set(map(json.dumps, prev.get(x) or []))))
+                           for x, y in d.items() if isinstance(y, list) and y)
+                self.diffs.append({"k": k, "op": op["kind"], "acts": op["acts"], "ids": rec["ids"], "diff": d,
+                                   "new_since_last_diff": dict((x, [json.loads(v) for v in y]) for x, y in new.items() if y),
+                                   "ops_since_last_read": list(range(last_read_k + 1, k + 1))})
+                self.log("  RECORD " + msg[:1600])
+            last_read_k = k
             real = real_new
         un = getattr(be, "unroutable", None)      # a collecting (dry) backend: every unroutable row, reported at the end
         if un:
@@ -2473,6 +2504,27 @@ def selftest():
         gate("T35c NEGATIVE: a set missing a binding op (add_sr/tunnel) stops before op 1", False, "ran")
     except ExecStop as e:
         gate("T35c NEGATIVE: a set missing a binding op (add_sr/tunnel) stops before op 1", str(e).startswith("CHECKPOINT"), str(e)[:200])
+    # card 101-4: RECORD MODE - a STEP-DIFF is recorded and the run goes on; other stops still stop
+    kd = next(k for k, o in enumerate(opsx, 1) if o["acts"][-1] == 5)
+    exr = Executor(fin, mkbe({"at": 5, "kind": "drop_edge"}), log=q, record=True)
+    try:
+        exr.run()
+        gate("T39 record mode: the dropped edge (op {0}) is RECORDED and the run CONTINUES to the last op".format(kd),
+             exr.diffs and exr.diffs[0]["k"] == kd and exr.diffs[0]["diff"]["only_sim_edges"] and
+             exr.diffs[0]["new_since_last_diff"].get("only_sim_edges") and exr.cur["k"] == len(opsx) and
+             len(exr.report) == len(opsx) + 1, [(d["k"], d["diff"]["n"], d["new_since_last_diff"]) for d in exr.diffs][:4])
+        gate("T39b record mode attributes a persisting diff ONCE (later records carry no new entry for it)",
+             all("only_sim_edges" not in d["new_since_last_diff"] for d in exr.diffs[1:]), [d["k"] for d in exr.diffs])
+    except ExecStop as e:
+        gate("T39 record mode: the dropped edge is RECORDED and the run CONTINUES to the last op", False, str(e)[:200])
+    exr0 = Executor(fin, mkbe(), log=q, record=True)
+    exr0.run()
+    gate("T39c record mode on a clean run: no diff recorded", exr0.diffs == [] and exr0.cur["k"] == len(opsx), exr0.diffs)
+    try:
+        Executor(fin, mkbe({"at": 2, "kind": "extra_obj"}), log=q, record=True).run()
+        gate("T39d NEGATIVE: record mode does NOT swallow a BINDING stop", False, "ran clean")
+    except ExecStop as e:
+        gate("T39d NEGATIVE: record mode does NOT swallow a BINDING stop", "BINDING" in str(e), str(e)[:160])
     _selftest_create(gate, tmp, q)
     gate("T14 nothing LabVIEW-side imported",not any(m in sys.modules for m in ("gscript", "win32com", "pythoncom", "stagekit")),
          [m for m in ("gscript", "win32com", "pythoncom", "stagekit") if m in sys.modules])

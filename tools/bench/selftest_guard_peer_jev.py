@@ -226,7 +226,10 @@ def main():
         gate(failing2 is not None and os.path.basename(failing2[0]) == "fake_stage.log",
              "C7 a NEWER Jev-script log does not become the failing log the gate blocks on",
              "newest_failing_log() -> %r" % (os.path.basename(failing2[0]) if failing2 else None))
-        nonjev = os.path.join(bench, "jev_mentioning_build.log")
+        # Fixture RENAMED 2026-09-26 (card 101-2) from `jev_mentioning_build.log`: tools/bench/jev_* basenames are
+        # now excluded BY PATH (the jev ledgers, C10 below). The case's intent is unchanged - the CONTENT mentions a
+        # Jev script, the command is a recipe, so it gates.
+        nonjev = os.path.join(bench, "build_mentioning_jev.log")
         with open(nonjev, "w", encoding="utf-8") as f:
             f.write("BGRUN START 2026-09-22 09:11:00 limit 12.0 min: py -u tools/recipes/build_x.py\n"
                     "  FAIL  a real build failure that merely mentions tools/bench/jev_run_all.py\n"
@@ -234,7 +237,7 @@ def main():
         time.sleep(1.1)
         os.utime(nonjev, None)
         failing3 = guard_peer.newest_failing_log()
-        gate(failing3 is not None and os.path.basename(failing3[0]) == "jev_mentioning_build.log",
+        gate(failing3 is not None and os.path.basename(failing3[0]) == "build_mentioning_jev.log",
              "C7b a NON-Jev build that merely MENTIONS a Jev script still gates (scoped by the command, not the "
              "filename)", "newest_failing_log() -> %r" % (os.path.basename(failing3[0]) if failing3 else None))
         os.remove(jevp)
@@ -293,6 +296,32 @@ def main():
              "newest_failing_log() -> %r" % got)
         for p in made:
             os.remove(p)
+
+        # --- C10: THE JEV LEDGERS ARE EXCLUDED BY PATH (card 101-2, PD213(g)1, 2026-09-26). The live defect:
+        # tools/bench/jev_gate.log - no BGRUN START, a JEV-GATEROW line quoting a gated log's STOP row - became the
+        # newest failing log and re-armed the gate on the lines its own refusals append (result_101-1.json).
+        ledger = os.path.join(bench, "jev_gate.log")
+        with open(ledger, "a", encoding="utf-8") as f:
+            f.write("2026-09-26 22:45:44 JEV-GATEROW | stage_d1_disp.log | E1 defect p=0.9 | STOP: E1 fixture row\n"
+                    "2026-09-26 23:12:44 JEV-LADDER | new-problem p=0.40 | stage_d1_disp.log | NEXT-ACTION: "
+                    "hypothesis review owed (old path)\n")
+        time.sleep(1.1)
+        os.utime(ledger, None)
+        gate(guard_peer.log_failure(read(ledger))[0],
+             "C10 fixture check: the ledger text IS failure-shaped (so only the path rule can exclude it)")
+        got = newest()
+        gate(got == "fake_stage.log", "C10b NEGATIVE: a newer tools/bench/jev_gate.log with a JEV-GATEROW STOP line "
+             "does NOT become the failing log", "newest_failing_log() -> %r" % got)
+        real_build = flog("stage_real_build.log", "tools/recipes/stage_real.py")
+        got = newest()
+        gate(got == "stage_real_build.log", "C10c POSITIVE: a newer real build log with a STOP line still GATES",
+             "newest_failing_log() -> %r" % got)
+        gate(guard_peer.is_jev_ledger(os.path.join(bench, "jev_usage.jsonl"))
+             and not guard_peer.is_jev_ledger(os.path.join(tmp, "elsewhere", "jev_gate.log"))
+             and not guard_peer.is_jev_ledger(os.path.join(bench, "stage_jev_gate.log")),
+             "C10d keyed on PATH: bench/jev_*.jsonl yes; jev_gate.log outside BENCH no; non-jev_ prefix no")
+        os.remove(real_build)
+        os.remove(ledger)
 
         # --- C6: OPTIONAL live call, only if the key is really there
         jev.get_key, jev_gate.covers_failure = okey, ocf

@@ -1,0 +1,38 @@
+BGRUN START 2026-09-27 00:13:10 limit 20.0 min: py tools/prior_art_review.py --plan-file tools/bench/cards/priorart_plan_101-4.md --slug c101-4-disp-record2 --trigger cycle-start --recipe tools/recipes/stage_d1_disp.py
+BGRUN PID 26504
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c101-4-disp-record2.txt (48979 chars)
+   review card tools\bench\cards\review_priorart-c101-4-disp-record2.json
+OUTCOME: ANSWERED (30s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-27-priorart-c101-4-disp-record2.md
+COST: $0.8202  in 6 / out 2476 / cache-create 90406 / cache-read 237047  (26s, 6 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c101-4-disp-record2 verdict=novel -> tools\bench\cards\verdict_priorart-c101-4-disp-record2.json
+--- ANSWER ---
+**Verdict: novel.** The only change since the last prior-art review is the literal slice bounds, and nothing in these files already covers that change or the record-mode run it serves.
+
+## Part A: the direction
+
+- **A1, already decided?** No. The record-mode direction was reviewed as novel in `archive/peer/2026-09-27-priorart-c101-4-disp-record.md:389,425`, for sha a3b93ec1f3d0. Its disposition, at `:435-440`, accepts that verdict and records that the recipe was not touched afterwards. What is new here is the X6 fix. No doc or review has decided anything about it either way.
+- **A2, already tried and abandoned?** No.
+  - The one old `record=True` path is `tools/stage_prerun.py:1503`. That is the launch-record path used by the retry cap, which card chat-L2 removed. It shares the keyword with `Executor(record=True)` (`tools/stagexec.py:965-966`) but is a different mechanism. The previous review, at `:396`, reached the same conclusion.
+  - The X6 failure (`tools/bench/stage_d1_disp_prerun6.log:141,145`, `uids [(600, 82)]`) is a lint hit on a literal in the recipe. It was not an abandoned approach.
+- **A3, contradicted?** No.
+  - The card says the three bounds now read `[:CUT]`. That matches the recipe: `tools/recipes/stage_d1_disp.py:24` defines `CUT = 10 ** 3`, and grep finds no `[:600]`, `[:900]` or `[:1200]` left.
+  - The only numeric slices remaining are `lost[:20]` at `:97` and `:100`. According to the card's `diag_c101b_syntax3.log`, X6 passes with uids []. So 20 is not a node uid in the input graph, and nothing here contradicts that.
+  - The previous review's A3 note still stands as information, not as a block: the `only_source` rule is backed by a single sample for constants, and a non-constant source takes the measured `keep` rule.
+- **A4, unread evidence?** None. The card cites the failing pre-run log, the r4 log and the resim log.
+
+## Part B: the artifact
+
+- **B1, already built?** No.
+  - `Executor(record=True)` first appears in card 101-4, at `tools/stagexec.py:966` and in the self-test at `:2507-2527`.
+  - Using `CUT` for slices is this recipe's own existing constant (`stage_d1_disp.py:24`), so the edit reuses it rather than duplicating it.
+- **B2, already failed?** Only the pre-run of the previous bytes failed, on X6. The edit fixes that exact cause: literals that collided with a uid became `CUT`. No run of the new bytes exists.
+- **B3, hand-rolling an existing helper?** No. The checkpoints reuse PD193(a) through `stagexec.BIND_KINDS`, and `cdiff()` is the existing `lv_run` statements moved into a helper.
+- **B4, already measured?** No. The recorded run adds samples; it does not repeat an earlier measurement.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c101-4-disp-record2","verdict":"novel","alternative":"Only delta vs novel review 2026-09-27-priorart-c101-4-disp-record.md:425 is slice literals 600/900/1200 -> CUT (recipe :24). Old record=True in stage_prerun.py:1503 is the unrelated launch-record path.","discriminating_test":"Re-run stage_prerun X6 on these bytes: uids [] expected (lost[:20] at :97/:100 must not match a graph uid); then in the run, a moved non-constant only-source's outside sink should read wire!=0.","violations":[],"sources":["archive/peer/2026-09-27-priorart-c101-4-disp-record.md:425","archive/peer/2026-09-27-priorart-c101-4-disp-record.md:435-440","tools/bench/stage_d1_disp_prerun6.log:141","tools/recipes/stage_d1_disp.py:24","tools/stagexec.py:965-966","tools/stage_prerun.py:1503"],"note":"Delta is a lint-only literal fix reusing the recipe's own CUT constant; no prior build, measurement or refutation covers it."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c101-4-disp-record2.md
+   STOP RECORD: none - 2026-09-27-priorart-c101-4-disp-record2.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_disp.py sha 3c39722d3240 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 33s

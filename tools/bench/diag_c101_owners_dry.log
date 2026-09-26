@@ -1,0 +1,119 @@
+BGRUN START 2026-09-26 23:21:03 limit 3.0 min: py -u tools/stage_prerun.py --dry tools/bench/diag_c101_owners.py
+BGRUN PID 23888
+diag_c101_owners - card 101-3, PD213(g)3/(h)(3): the S1 OWNERS MAP, built READ-ONLY from claudeDev\D1_s1_copy.vi
+(md5 3e3d23ce...), replacing the D1_k stand-in (sim/l2a1/graph_k_80_owners.json, an inference: c100-6-jevgate2.md s1).
+PRIOR ART (reused, not rebuilt): tools/bench/l2a1_facts_80.py:57-66 (the owner walk: every Diagram, then each structure owning
+one, build_d1_v0.owner_of strict=False) - the exact routine that produced the stand-in on D1_k. stagekit.Stage + discard_work
+(dated scratch copy, deleted at close; the input is never opened for writing). No new op.
+OUTPUT tools/bench/sim/disp/s1_owners.json {"vi","md5","owners":{uid:[owner class, owner uid]}} (stagesim.base_state's
+context.owners format, key "owners").
+PREDICTION: O1 every Diagram uid of the live read gets an owner; O2 every Diagram of par1359_95_graph.json objs is in the map
+(the base graph IS S1's read); O3 bodies #639/#25392 are owned by While loops (#637/#25380 per stagesim PROVISIONAL evidence);
+H input md5 unchanged, refs opened==closed, scratch deleted, LabVIEW gone. Level: STRUCTURAL read, no VI run.
+    py tools/bgrun.py --material --max-min 20 --log tools/bench/diag_c101_owners.log -- py -u tools/bench/diag_c101_owners.py
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 3e3d23cefd3a334001aa9d6156bf1aee  got 3e3d23cefd3a334001aa9d6156bf1aee
+  FAIL  DRY graph JSON for input md5 3e3d23cefd3a334001aa9d6156bf1aee  no terminal-list graph JSON carries md5 3e3d23cefd3a334001aa9d6156bf1aee; skipped other shapes: tools/bench/graph_loops_s1_20260923.json: no terminals/objs key(s) - keys present ['errors', 'loops', 'md5', 'right_uids', 'vi'] (not the terminal-list graph shape); tools/bench/graph_loops_s1_20260924.json: no terminals/objs key(s) - keys present ['by', 'loops', 'md5', 'unread_rights', 'vi'] (not the terminal-list graph shape); tools/bench/graph_objs_s1_20260923.json: no terminals/objs key(s) - keys present ['md5', 'n', 'objects', 'vi'] (not the terminal-list graph shape); tools/bench/graph_s1_20260923.json: no terminals/objs key(s) - keys present ['cls', 'edges', 'flags', 'md5', 'method', 'note', 'vi'] (not the terminal-list graph shape); tools/bench/graph_s1_20260924.json: no terminals/objs key(s) - keys present ['cls', 'edges', 'flags', 'md5', 'method', 'note', 'vi'] (not the terminal-list graph shape)
+
+=== DRY FAIL: first_fail=GATE DRY graph JSON for input md5 3e3d23cefd3a334001aa9d6156bf1aee coverage 18/55 lines, first mutation None, unverified 0, graph None
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"GATE DRY graph JSON for input md5 3e3d23cefd3a334001aa9d6156bf1aee","artefacts":[]}
+BGRUN END rc=1 after 1s
+BGRUN START 2026-09-26 23:21:15 limit 3.0 min: py -u tools/stage_prerun.py --dry tools/bench/diag_c101_owners.py --graph tools/bench/par1359_95_graph.json
+BGRUN PID 18696
+diag_c101_owners - card 101-3, PD213(g)3/(h)(3): the S1 OWNERS MAP, built READ-ONLY from claudeDev\D1_s1_copy.vi
+(md5 3e3d23ce...), replacing the D1_k stand-in (sim/l2a1/graph_k_80_owners.json, an inference: c100-6-jevgate2.md s1).
+PRIOR ART (reused, not rebuilt): tools/bench/l2a1_facts_80.py:57-66 (the owner walk: every Diagram, then each structure owning
+one, build_d1_v0.owner_of strict=False) - the exact routine that produced the stand-in on D1_k. stagekit.Stage + discard_work
+(dated scratch copy, deleted at close; the input is never opened for writing). No new op.
+OUTPUT tools/bench/sim/disp/s1_owners.json {"vi","md5","owners":{uid:[owner class, owner uid]}} (stagesim.base_state's
+context.owners format, key "owners").
+PREDICTION: O1 every Diagram uid of the live read gets an owner; O2 every Diagram of par1359_95_graph.json objs is in the map
+(the base graph IS S1's read); O3 bodies #639/#25392 are owned by While loops (#637/#25380 per stagesim PROVISIONAL evidence);
+H input md5 unchanged, refs opened==closed, scratch deleted, LabVIEW gone. Level: STRUCTURAL read, no VI run.
+    py tools/bgrun.py --material --max-min 20 --log tools/bench/diag_c101_owners.log -- py -u tools/bench/diag_c101_owners.py
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 3e3d23cefd3a334001aa9d6156bf1aee  got 3e3d23cefd3a334001aa9d6156bf1aee
+  PASS  DRY graph JSON for input md5 3e3d23cefd3a334001aa9d6156bf1aee  tools/bench/par1359_95_graph.json
+  FACT  live Diagram objects: 170
+  FACT  OWNERS 170 objects resolved in 0 s; errors []
+  PASS  O1 every live Diagram uid has a resolved owner (class != '?')
+  PASS  O2 every Diagram of the base graph (par1359_95_graph.json objs, 169) is in the map
+  FACT  owners of #639 ('<dry:build_d1_v0.owner_of[]>', 0); #25392 ('<dry:build_d1_v0.owner_of[]>', 0); #686 ('<dry:build_d1_v0.owner_of[]>', 0); #7911 ('<dry:build_d1_v0.owner_of[]>', 0); #27537 ('<dry:build_d1_v0.owner_of[]>', 0)
+  FAIL  O3 bodies #639 and #25392 are owned by WhileLoops  (('<dry:build_d1_v0.owner_of[]>', 0), ('<dry:build_d1_v0.owner_of[]>', 0))
+  FACT  vs D1_k stand-in: common keys 169; differing 169: [(113, ('<dry:build_d1_v0.owner_of[]>', 0), ['FlatSequenceFrame', 0]), (124, ('<dry:build_d1_v0.owner_of[]>', 0), ['FlatSequenceFrame', 0]), (206, ('<dry:build_d1_v0.owner_of[]>', 0), ['CaseStructure', 57]), (253, ('<dry:build_d1_v0.owner_of[]>', 0), ['CaseStructure', 57]), (639, ('<dry:build_d1_v0.owner_of[]>', 0), ['WhileLoop', 637]), (686, ('<dry:build_d1_v0.owner_of[]>', 0), ['FlatSequenceFrame', 0]), (759, ('<dry:build_d1_v0.owner_of[]>', 0), ['FlatSequenceFrame', 0]), (1493, ('<dry:build_d1_v0.owner_of[]>', 0), ['CaseStructure', 195]), (1610, ('<dry:build_d1_v0.owner_of[]>', 0), ['CaseStructure', 195]), (1817, ('<dry:build_d1_v0.owner_of[]>', 0), ['FlatSequenceFrame', 0])]; S1-only 1; stand-in-only 83
+  FAIL  dry: unhandled exception FileNotFoundError: [Errno 2] No such file or directory: 'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\disp\\s1_owne
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stage_prerun.py", line 663, in run
+    fn(stage)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c101_owners.py", line 58, in body
+    s.fact("WROTE {0} md5 {1} ({2} keys)".format(OUT, K.md5(OUT), len(O)))
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagekit.py", line 163, in md5
+    with open(path, "rb") as f:
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stage_prerun.py", line 525, in dry_open
+    return real_open(file, mode, *a, **k)
+FileNotFoundError: [Errno 2] No such file or directory: 'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\disp\\s1_owners.json'
+
+
+=== DRY FAIL: first_fail=GATE O3 bodies #639 and #25392 are owned by WhileLoops coverage 48/55 lines, first mutation None, unverified 0, graph tools/bench/par1359_95_graph.json
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"GATE O3 bodies #639 and #25392 are owned by WhileLoops","artefacts":[]}
+BGRUN END rc=1 after 1s
+BGRUN START 2026-09-26 23:21:28 limit 3.0 min: py -u tools/stage_prerun.py --dry tools/bench/diag_c101_owners.py --graph tools/bench/par1359_95_graph.json
+BGRUN PID 15420
+diag_c101_owners - card 101-3, PD213(g)3/(h)(3): the S1 OWNERS MAP, built READ-ONLY from claudeDev\D1_s1_copy.vi
+(md5 3e3d23ce...), replacing the D1_k stand-in (sim/l2a1/graph_k_80_owners.json, an inference: c100-6-jevgate2.md s1).
+PRIOR ART (reused, not rebuilt): tools/bench/l2a1_facts_80.py:57-66 (the owner walk: every Diagram, then each structure owning
+one, build_d1_v0.owner_of strict=False) - the exact routine that produced the stand-in on D1_k. stagekit.Stage + discard_work
+(dated scratch copy, deleted at close; the input is never opened for writing). No new op.
+OUTPUT tools/bench/sim/disp/s1_owners.json {"vi","md5","owners":{uid:[owner class, owner uid]}} (stagesim.base_state's
+context.owners format, key "owners").
+PREDICTION: O1 every Diagram uid of the live read gets an owner; O2 every Diagram of par1359_95_graph.json objs is in the map
+(the base graph IS S1's read); O3 bodies #639/#25392 are owned by While loops (#637/#25380 per stagesim PROVISIONAL evidence);
+H input md5 unchanged, refs opened==closed, scratch deleted, LabVIEW gone. Level: STRUCTURAL read, no VI run.
+    py tools/bgrun.py --material --max-min 20 --log tools/bench/diag_c101_owners.log -- py -u tools/bench/diag_c101_owners.py
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 3e3d23cefd3a334001aa9d6156bf1aee  got 3e3d23cefd3a334001aa9d6156bf1aee
+  PASS  DRY graph JSON for input md5 3e3d23cefd3a334001aa9d6156bf1aee  tools/bench/par1359_95_graph.json
+  FACT  live Diagram objects: 170
+  FACT  OWNERS 170 objects resolved in 0 s; errors []
+  PASS  O1 every live Diagram uid has a resolved owner (class != '?')
+  PASS  O2 every Diagram of the base graph (par1359_95_graph.json objs, 169) is in the map
+  FACT  owners of #639 ('<dry:build_d1_v0.owner_of[]>', 0); #25392 ('<dry:build_d1_v0.owner_of[]>', 0); #686 ('<dry:build_d1_v0.owner_of[]>', 0); #7911 ('<dry:build_d1_v0.owner_of[]>', 0); #27537 ('<dry:build_d1_v0.owner_of[]>', 0)
+  PASS  O3 bodies #639 and #25392 are owned by WhileLoops  (('<dry:build_d1_v0.owner_of[]>', 0), ('<dry:build_d1_v0.owner_of[]>', 0))
+  FACT  vs D1_k stand-in: common keys 169; differing 169: [(113, ('<dry:build_d1_v0.owner_of[]>', 0), ['FlatSequenceFrame', 0]), (124, ('<dry:build_d1_v0.owner_of[]>', 0), ['FlatSequenceFrame', 0]), (206, ('<dry:build_d1_v0.owner_of[]>', 0), ['CaseStructure', 57]), (253, ('<dry:build_d1_v0.owner_of[]>', 0), ['CaseStructure', 57]), (639, ('<dry:build_d1_v0.owner_of[]>', 0), ['WhileLoop', 637]), (686, ('<dry:build_d1_v0.owner_of[]>', 0), ['FlatSequenceFrame', 0]), (759, ('<dry:build_d1_v0.owner_of[]>', 0), ['FlatSequenceFrame', 0]), (1493, ('<dry:build_d1_v0.owner_of[]>', 0), ['CaseStructure', 195]), (1610, ('<dry:build_d1_v0.owner_of[]>', 0), ['CaseStructure', 195]), (1817, ('<dry:build_d1_v0.owner_of[]>', 0), ['FlatSequenceFrame', 0])]; S1-only 1; stand-in-only 83
+  FACT  DRY: owners not written (170 keys would be)
+
+=== DRY FAIL: first_fail=PY RuntimeError: dry run: subprocess.run is blocked (module level) coverage 50/59 lines, first mutation None, unverified 0, graph tools/bench/par1359_95_graph.json
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"PY RuntimeError: dry run: subprocess.run is blocked (module level)","artefacts":[]}
+BGRUN END rc=1 after 1s
+BGRUN START 2026-09-26 23:21:35 limit 3.0 min: py -u tools/stage_prerun.py --dry tools/bench/diag_c101_owners.py --graph tools/bench/par1359_95_graph.json
+BGRUN PID 3524
+diag_c101_owners - card 101-3, PD213(g)3/(h)(3): the S1 OWNERS MAP, built READ-ONLY from claudeDev\D1_s1_copy.vi
+(md5 3e3d23ce...), replacing the D1_k stand-in (sim/l2a1/graph_k_80_owners.json, an inference: c100-6-jevgate2.md s1).
+PRIOR ART (reused, not rebuilt): tools/bench/l2a1_facts_80.py:57-66 (the owner walk: every Diagram, then each structure owning
+one, build_d1_v0.owner_of strict=False) - the exact routine that produced the stand-in on D1_k. stagekit.Stage + discard_work
+(dated scratch copy, deleted at close; the input is never opened for writing). No new op.
+OUTPUT tools/bench/sim/disp/s1_owners.json {"vi","md5","owners":{uid:[owner class, owner uid]}} (stagesim.base_state's
+context.owners format, key "owners").
+PREDICTION: O1 every Diagram uid of the live read gets an owner; O2 every Diagram of par1359_95_graph.json objs is in the map
+(the base graph IS S1's read); O3 bodies #639/#25392 are owned by While loops (#637/#25380 per stagesim PROVISIONAL evidence);
+H input md5 unchanged, refs opened==closed, scratch deleted, LabVIEW gone. Level: STRUCTURAL read, no VI run.
+    py tools/bgrun.py --material --max-min 20 --log tools/bench/diag_c101_owners.log -- py -u tools/bench/diag_c101_owners.py
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 3e3d23cefd3a334001aa9d6156bf1aee  got 3e3d23cefd3a334001aa9d6156bf1aee
+  PASS  DRY graph JSON for input md5 3e3d23cefd3a334001aa9d6156bf1aee  tools/bench/par1359_95_graph.json
+  FACT  live Diagram objects: 170
+  FACT  OWNERS 170 objects resolved in 0 s; errors []
+  PASS  O1 every live Diagram uid has a resolved owner (class != '?')
+  PASS  O2 every Diagram of the base graph (par1359_95_graph.json objs, 169) is in the map
+  FACT  owners of #639 ('<dry:build_d1_v0.owner_of[]>', 0); #25392 ('<dry:build_d1_v0.owner_of[]>', 0); #686 ('<dry:build_d1_v0.owner_of[]>', 0); #7911 ('<dry:build_d1_v0.owner_of[]>', 0); #27537 ('<dry:build_d1_v0.owner_of[]>', 0)
+  PASS  O3 bodies #639 and #25392 are owned by WhileLoops  (('<dry:build_d1_v0.owner_of[]>', 0), ('<dry:build_d1_v0.owner_of[]>', 0))
+  FACT  vs D1_k stand-in: common keys 169; differing 169: [(113, ('<dry:build_d1_v0.owner_of[]>', 0), ['FlatSequenceFrame', 0]), (124, ('<dry:build_d1_v0.owner_of[]>', 0), ['FlatSequenceFrame', 0]), (206, ('<dry:build_d1_v0.owner_of[]>', 0), ['CaseStructure', 57]), (253, ('<dry:build_d1_v0.owner_of[]>', 0), ['CaseStructure', 57]), (639, ('<dry:build_d1_v0.owner_of[]>', 0), ['WhileLoop', 637]), (686, ('<dry:build_d1_v0.owner_of[]>', 0), ['FlatSequenceFrame', 0]), (759, ('<dry:build_d1_v0.owner_of[]>', 0), ['FlatSequenceFrame', 0]), (1493, ('<dry:build_d1_v0.owner_of[]>', 0), ['CaseStructure', 195]), (1610, ('<dry:build_d1_v0.owner_of[]>', 0), ['CaseStructure', 195]), (1817, ('<dry:build_d1_v0.owner_of[]>', 0), ['FlatSequenceFrame', 0])]; S1-only 1; stand-in-only 83
+  FACT  DRY: owners not written (170 keys would be)
+
+=== DRY PASS: first_fail=None coverage 52/62 lines, first mutation None, unverified 0, graph tools/bench/par1359_95_graph.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

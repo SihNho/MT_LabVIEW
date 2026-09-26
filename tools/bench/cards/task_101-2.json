@@ -1,0 +1,57 @@
+{
+ "schema": "task/1",
+ "id": "101-2",
+ "kind": "build",
+ "goal": "PD213(g)1: guard_peer excludes the jev_* ledgers (tools/bench/jev_*.log/.jsonl) from its failing-log scan BY PATH; positive + negative self-test",
+ "why": "101-1 BLOCKED: guard_peer treats tools/bench/jev_gate.log as the latest failing build log and re-arms on the JEV lines its own refusals append (archive/peer/2026-09-26-c100-6-jevgate.md).",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/hooks/guard_peer.py"},
+  {"path": "tools/bench/cards/result_101-1.json"},
+  {"path": "archive/peer/2026-09-26-c100-6-jevgate.md"},
+  {"path": "archive/peer/2026-09-26-c100-6-jevgate2.md"},
+  {"path": "tools/bench/selftest_guard_peer_jev.py"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/hooks/guard_peer.py"},
+  {"kind": "file", "name": "tools/bench/selftest_guard_peer_jev.py"}
+ ],
+ "pass": [
+  "guard_peer skips any failing-log candidate whose basename matches jev_* under tools/bench, keyed on PATH, not on content",
+  "self-test: positive case (a real build log with a FAIL/STOP line still gates) PASS",
+  "self-test: negative case (a jev_gate.log JEV-GATEROW ... STOP line does not gate) PASS",
+  "existing selftest_guard_peer_jev.py cases still pass (no regression); counts reported",
+  "live check: a harmless read command (e.g. wc -l tools/stagesim.py) is no longer refused by guard_peer"
+ ],
+ "outputs": [
+  "tools/hooks/guard_peer.py",
+  "tools/bench/selftest_guard_peer*.py",
+  "tools/bench/selftest_guard_peer*.log",
+  "tools/bench/cards/result_101-2.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/hooks/guard_peer.py",
+   "tools/bench/selftest_guard_peer*",
+   "tools/bench/cards/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 30},
+ "rules": [
+  "exclusion by PATH (jev_* ledgers) only; do not widen to other logs, do not disable guard_peer",
+  "patch with Edit/Write tools, never a heredoc; a real build log must still gate (positive case)",
+  "if the guard refuses the patch/self-test itself, record the command+line and return BLOCKED"
+ ],
+ "unblocks": "M8"
+}

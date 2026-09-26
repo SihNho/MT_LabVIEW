@@ -1,0 +1,86 @@
+{
+ "schema": "task/1",
+ "id": "101-5",
+ "kind": "build",
+ "goal": "Rung 2 of 101-4: local_read panel index by label + node half-wire fate rule, re-sim/dry/prerun, ONE record-mode stage run -> D1_s1_disp_<ts>.vi if every step diff 0",
+ "why": "101-4 FAIL 6/1: r5 ops 1-25 ran (one healed diff k12), stopped IN op 26: create_local_read passes panel_index None (stagexec.py:1535, stagekit.py:676-683). Decisions are in the rules.",
+ "escalation": 2,
+ "retry_of_card": "101-4",
+ "retry_of": "stage_d1_disp.py",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/cards/task_101-4.json"},
+  {"path": "tools/bench/cards/result_101-4.json"},
+  {"path": "tools/bench/facts_c101b_stage.json", "md5": "f0f2477391a9fbf3d30ed83a18785413"},
+  {"path": "tools/bench/stage_d1_disp_r5.log"},
+  {"path": "tools/bench/sim/disp/plan_disp.json", "md5": "b535071ef8e62fdf045ecb30499f89ce"},
+  {"path": "tools/stagesim.py", "md5": "5115d5a71d8f55ca9731378225936143"},
+  {"path": "tools/stagexec.py", "md5": "0e319c791596daba36a73b87465ac2c8"},
+  {"path": "tools/stagekit.py"},
+  {"path": "tools/recipes/stage_d1_disp.py", "md5": "b65c0d725248e9c69f712f613d92f035"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/stage_d1_disp_r5.log"},
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_disp.py"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "pass": [
+  "create_local_read resolves the panel index by label as create_local_write does (stagekit.py:690-694); self-test incl. a negative case",
+  "stagesim only_source: primitive node -> delete half-wire, SubVI -> keep (evidence r5 k12 #11310, c71 #376); self-tests green",
+  "replay of r5 real sets k1-k25 == sim (the k12 diff gone); re-dry 0 unroutable; prerun all PASS",
+  "ONE run with RETRY_CARD=tools/bench/cards/task_101-5.json in record mode; S1 md5 3e3d23ce unchanged; LabVIEW gone",
+  "all-pass: ExecState 1, cdiff == 21 PD213(d) rows + added objects, #25261 False, no new termless wires, saved by script",
+  "else: every step diff (op, class, uids) and the stop op with file:line; nothing saved"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_disp_*.vi",
+  "tools/stagesim.py",
+  "tools/stagexec.py",
+  "tools/stagekit.py",
+  "tools/recipes/stage_d1_disp*.py",
+  "tools/bench/sim/disp/**",
+  "tools/bench/facts_c101c_stage.json",
+  "tools/bench/cards/result_101-5.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_disp_*",
+   "tools/stagesim.py",
+   "tools/stagexec.py",
+   "tools/stagekit.py",
+   "tools/stage_prerun.py",
+   "tools/recipes/stage_d1_disp*",
+   "tools/bench/sim/disp/**",
+   "tools/bench/selftest_stage*",
+   "tools/bench/stage_d1_disp*",
+   "tools/bench/errorlist_*",
+   "tools/bench/facts_c101*",
+   "tools/bench/diag_c101*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/cards/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "outcome", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 45},
+ "rules": [
+  "exactly ONE stage run (RETRY_CARD); record mode only on the unsaved scratch; never save S1",
+  "offline fixes + replay not green by minute 25: STOP before the run, return FAIL with facts",
+  "stagekit change limited to the local_read index route; stagekit self-test must stay green",
+  "stage script <=120 lines on stagekit; content only from plan_disp.json",
+  "ExecState 0: read Error List first; bgrun --max-min 35, hold turn to BGRUN END"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

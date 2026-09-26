@@ -1,0 +1,32 @@
+BGRUN START 2026-09-27 00:07:20 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c101-4-syntax -TaskFile tools/bench/cards/peer_task_c101-4-syntax.md
+BGRUN PID 23120
+OUTCOME: ANSWERED (86s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-27-c101-4-syntax.md
+COST: $0.8822  in 16 / out 7472 / cache-create 75409 / cache-read 647046  (82s, 16 turn(s))
+--- ANSWER ---
+**Verdict: the line count is right, but the claim is wrong about where the defect is, and the log shows a second problem the claim doesn't cover.** The file is too long because it copies logic that already exists elsewhere. Trimming the docstring passes the 120-line check without fixing that. Separately, S3 tested nothing.
+
+**1. Strongest reason the claim is wrong.** The 120-line rule is not about typing. CLAUDE.md gives the reason for it: stagekit exists "so a stage file is inputs only". The new 13-line `cdiff()` helper (`tools/recipes/stage_d1_disp.py:38-49`) is a copy of `tools/stagexec.py:2034-2044`, which is the E3 check inside `lv_run`. The recipe's own docstring says so ("stagexec.lv_run (E1/E2/E3 and the cdiff on the real end)", line 5). The copy has already drifted from the original in two places:
+- It reads the objects as `getattr(be,"last_objs",None) or be.st["objs"]`, where stagexec uses `be.last_objs`.
+- E3 compares `got == want`, where stagexec uses `got == [list(x) for x in want] or got == want` (`stagexec.py:2045`).
+
+So the 121st line was a real signal: the same logic is kept in two files and they are no longer identical. Trimming the docstring meets the rule as written and hides that signal. I'd file this under `rule-evaded` or `scope-creep`, not under a formatting fix.
+
+**2. Alternative explanation of the same evidence.** The checker is also partly at fault, in two ways.
+- **S3 passed without checking anything.** When pyflakes is missing, the checker puts the text "pyflakes not installed" into its message list. S3 only fails on messages containing "undefined name", so it passes automatically (`tools/bench/diag_c101b_syntax.py:25-29`). The log's `FACT pyflakes: ['pyflakes not installed']` (`diag_c101b_syntax.log:3`) shows this is what happened. "S1 and S3 passed" really means only S1 passed. I read the file by hand and found no undefined name in `cdiff` or `body`, but that is my reading, not a check. The checker should report SKIP or FAIL when pyflakes is absent.
+- **The rule has no permanent enforcement.** No 120-line check exists in `stage_prerun.py`, `stagekit.py` or `tools/hooks/*.py` (grep finds nothing). This one-off diagnostic script is the only thing that enforces it, so the next recipe edit will not be checked at all.
+
+**3. What would falsify the claim.** Two things:
+- If the rule is purely a line count (the recipe copying stagexec code is acceptable), the docstring trim is a valid repair and my point 1 falls.
+- If the trimmed file differs from the 121-line version in anything other than the docstring, "no statement changed" is false. That can't be checked from git: HEAD is cycle 100 and the card-101-4 edit is uncommitted, so the 121-line bytes may exist nowhere now. Note also that `body()` runs `print(__doc__)` (line 53), so the docstring appears in the run log and is not completely inert.
+
+Also, the checker's own docstring says it exists "so the reviewed bytes are the bytes that run". Its S1 result refers to the 121-line file. The trimmed 120-line file (which is what's on disk now; I read it at 120 lines) has not been parsed by the checker and has not been through the prior-art review.
+
+**4. Cheapest tests that separate the two readings**, all read-only and under 1 minute:
+- (a) `py -c "import pyflakes"`. An ImportError confirms S3 checked nothing.
+- (b) Re-run `diag_c101b_syntax.py` on the current 120-line file, with pyflakes installed or with S3 marked SKIP, so the file that will be reviewed is the file that was checked.
+- (c) Compare `stage_d1_disp.py:38-49` line by line with `stagexec.py:2034-2045`. I've already done this read and it shows the copy with the two differences above.
+
+**What would change my mind:** a statement from the user or the plan that stage recipes may copy stagexec logic as long as they stay under 120 lines. Without that, the repair that fixes the cause is to move the end-of-run cdiff into stagexec as one shared function called by both `lv_run` and the recipe. That also frees about 10 lines, with no docstring trim needed. Because stagexec is shared (and already modified in the working tree), that change needs its own check.
+
+I found no web sources for this: it is local code and `splitlines()` behaviour, and every claim above comes from this project's files.
+BGRUN END rc=0 after 87s

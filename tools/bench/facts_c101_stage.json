@@ -1,0 +1,26 @@
+{
+ "card": "101-3",
+ "level": "STRUCTURAL attempt, nothing saved, never run",
+ "step1_read": "result_101-1.json: #639 rows 644 src '' / 648 sink ''; #25392 rows 25406 src '' / 25410 sink '' (par1359_95_graph.json); For body #27537 only 27543 src ''",
+ "step2_model": {
+  "stagesim": "op_create loop: body Diagram owns unnamed Terminal i source (+ cond sink for While); For adds a count-terminal 'Tunnel' object (OuterTerminal sink on parent, InnerTerminal source on body); op_wire .cond wires cond_row",
+  "stagexec": "bind_new excludes bind['diag'] from object matching and binds the body's own rows by (term_class, direction, name)",
+  "selftests": {"stagesim": "53/0 tools/bench/selftest_stagesim_c101.log", "stagexec": "72/0 tools/bench/selftest_stagexec_c101b.log"},
+  "for_count_terminal_evidence": "tools/bench/diag_c101_forn.log: 17 ForLoop-owned Tunnel objects for 17 S1 ForLoops; #27492: #27491 OuterTerminal sink frame 81548, #27494 InnerTerminal source frame 27537"
+ },
+ "replay": {
+  "op2": {"sim": {"Diagram": 1}, "sim_rows": "[Terminal sink '', Terminal source '']", "real_r2": {"Diagram": 1}, "real_owners": [23073], "old_sim": {}, "log": "tools/bench/diag_c101_resim2.log"},
+  "op3": {"sim": {"Tunnel": 1}, "sim_rows": "[InnerTerminal source '', OuterTerminal sink '']", "real_r3": {"Tunnel": 1}, "real_owners": [23403], "old_sim": {}, "r3_stepx02_diff": 0}
+ },
+ "owners": {"path": "tools/bench/sim/disp/s1_owners.json", "md5": "a3b8f64589c51b402aa518aa1cd54b29", "keys": 233, "log": "tools/bench/diag_c101_owners.log",
+            "vs_standin": "232 common, 1 differing: #10407 S1 ['Diagram',639] vs D1_k ['Diagram',23058]; 20 stand-in-only"},
+ "plan": {"path": "tools/bench/sim/disp/plan_disp.json", "md5": "9e1e98c97d4e6980530b12b2b4d39fa4", "final": true, "open_rows": 21},
+ "offline": {"stagexec_dry": "0 unroutable, 48 STEPX diff 0 (tools/bench/diag_c101_dry2.log)", "stage_dry": "PASS (stage_d1_disp_dry5.log)", "prerun": "8/0 (stage_d1_disp_prerun5.log)"},
+ "runs": [
+  {"log": "tools/bench/stage_d1_disp_r3.log", "stop": "op 3 create For BINDING sim {} vs real {'Tunnel': 1} owners [23403]", "op2": "diff 0 (body 23073 bound)"},
+  {"log": "tools/bench/stage_d1_disp_r4.log", "stop": "op 4 move_in #8775 STEP-DIFF dangling_sim_only [8753] (#8741 IndexArray 'index (row)')", "ops_1_3": "diff 0"}
+ ],
+ "op4_sim_effect": "tools/bench/diag_c101_op4.log: #8775 DigitalNumericConstant, cut wire w8804 -> sim keeps #8753 on sourceless half-wire (cut_clears 'moved', only_sink_fate 'keep'); real 8753 not dangling",
+ "s1_md5": "3e3d23cefd3a334001aa9d6156bf1aee unchanged (r3/r4 H2, diag_c101_owners H)",
+ "unsaved_scratch_copies": ["claudeDev\\D1_s1_disp_20260926_233215.vi", "claudeDev\\D1_s1_disp_20260926_234019.vi"]
+}

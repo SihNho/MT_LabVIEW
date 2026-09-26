@@ -1,0 +1,87 @@
+{
+ "schema": "task/1",
+ "id": "101-4",
+ "kind": "build",
+ "goal": "Rung 1 of 101-3: settle op-4 half-wire fate (A/B) from r4 records, fix stagesim, then ONE authorised stage run in record mode -> D1_s1_disp_<ts>.vi if all steps diff 0",
+ "why": "101-3 FAIL 5/2: ops 1-3 diff 0, r4 stopped op 4 dangling_sim_only [8753]; budget + RETRY_CAP spent. One run per model gap is the costly pattern: this run records every remaining diff.",
+ "escalation": 1,
+ "retry_of_card": "101-3",
+ "retry_of": "stage_d1_disp.py",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/cards/task_101-3.json"},
+  {"path": "tools/bench/cards/result_101-3.json"},
+  {"path": "tools/bench/facts_c101_stage.json", "md5": "7fc99ad2690a1761bf3c560c9744788c"},
+  {"path": "tools/bench/stage_d1_disp_r4.log"},
+  {"path": "tools/bench/diag_c101_op4.log"},
+  {"path": "tools/bench/sim/disp/plan_disp.json", "md5": "9e1e98c97d4e6980530b12b2b4d39fa4"},
+  {"path": "tools/bench/sim/disp/s1_owners.json", "md5": "a3b8f64589c51b402aa518aa1cd54b29"},
+  {"path": "tools/stagesim.py", "md5": "33766ae8afed27b12a6cf8b908938707"},
+  {"path": "tools/stagexec.py", "md5": "0dcabc96f76d247eeabc660679f45014"},
+  {"path": "tools/recipes/stage_d1_disp.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/stage_d1_disp_r4.log"},
+  {"kind": "file", "name": "tools/bench/sim/disp/plan_disp.json"},
+  {"kind": "file", "name": "tools/bench/sim/disp/s1_owners.json"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_disp.py"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "pass": [
+  "FACT A-vs-B for op 4: which object removed the outside half-wire w8804 (LabVIEW move vs stage purge), cited file:line",
+  "stagesim models the measured fate; self-tests stagesim + stagexec green; replay of ops 1-4 == r4 real sets",
+  "record mode: on STEP-DIFF the run logs the diff and continues on the unsaved scratch; save only if every step diff 0",
+  "re-dry 0 unroutable, prerun all PASS; ONE run launched with RETRY_CARD=tools/bench/cards/task_101-4.json",
+  "all-pass: ExecState 1, cdiff == 21 PD213(d) rows + added objects, #25261 False, no new termless wires, saved by script",
+  "else: the list of EVERY step diff (op, class, uids) and the op where binding became impossible; nothing saved",
+  "D1_s1_copy.vi md5 3e3d23ce unchanged start+end; LabVIEW gone at exit; level stated (STRUCTURAL, never run)"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_disp_*.vi",
+  "tools/stagesim.py",
+  "tools/stagexec.py",
+  "tools/recipes/stage_d1_disp*.py",
+  "tools/bench/sim/disp/**",
+  "tools/bench/facts_c101b_stage.json",
+  "tools/bench/cards/result_101-4.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_disp_*",
+   "tools/stagesim.py",
+   "tools/stagexec.py",
+   "tools/stage_prerun.py",
+   "tools/recipes/stage_d1_disp*",
+   "tools/bench/sim/disp/**",
+   "tools/bench/selftest_stage*",
+   "tools/bench/stage_d1_disp*",
+   "tools/bench/errorlist_*",
+   "tools/bench/facts_c101*",
+   "tools/bench/diag_c101*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/cards/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "outcome", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 75},
+ "rules": [
+  "this card authorises exactly ONE stage run (RETRY_CARD); no second LabVIEW stage run",
+  "record mode acts only on the unsaved scratch; S1 never saved; save only when every step diff is 0",
+  "offline fix + replay not green by minute 45: STOP before the run, return FAIL with facts",
+  "stage script <=120 lines on stagekit; content only from plan_disp.json",
+  "ExecState 0: read Error List first; bgrun --max-min 40, hold turn to BGRUN END"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

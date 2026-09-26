@@ -1779,6 +1779,31 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
        - (3) Build the S1 owners map (read-only), re-dry, pre-run, and run the stage.
        The `guard_peer` jev-ledger exclusion (213(g)1) is a SEPARATE card dispatched AFTER the stage card. If it blocks the
        stage card's offline checks again, the material session records the block, and the stage card does not route around it.
+214. **(cycle 101 judgement; cards `101-1` BLOCKED, `101-2` PASS 5/0, `101-3` FAIL 5/2, `101-4` FAIL 6/1 (rung 1), `101-5` FAIL 1/2 (rung 2))**
+     - **(a) Done, measured:**
+       - `guard_peer` skips `tools/bench/jev_*` ledgers by PATH (`tools/hooks/guard_peer.py:299-313`, self-test 29/0). 213(g)1 is CLOSED. Accepted: any `tools/bench/jev_*` file is a Jev ledger by name.
+       - stagesim models a created While body (`i` source + `cond` sink) and a For body (`i` + count tunnel); `bind_new` excludes `bind['diag']`.
+       - The S1 owners map is `tools/bench/sim/disp/s1_owners.json` (a3b8f645…).
+       - `stagexec` record mode: a step difference is logged, the run continues on the unsaved scratch, and the file is saved only when every step matches.
+       - `stagekit.create_local_read` resolves the panel index by label (self-test 51/0).
+       - Real run r5 (`tools/bench/stage_d1_disp_r5.log`): ops 1–25 against LabVIEW. Its only step difference was at k12, and it healed by k24. It stopped IN op 26 on the local-read index bug, which is now fixed. S1 is unchanged; nothing was saved.
+     - **(b) OPEN model rule, which the next card MEASURES before any run.** When a moved node was the ONLY source of a wire that crosses the cut, what happens to the outside half-wire?
+       - Four real samples: constant #8775 → deleted; Bundler #11310 → tunnel-inner deleted; BuildArray #11261 → panel #8323 KEPT; SubVI #376 → tunnel-inners KEPT.
+       - My 101-4 rule "primitive deletes, SubVI keeps" was an inference from two samples and was REFUTED by r5's reads (`archive/peer/2026-09-27-c101-5-onlysource.md`, `inference-over-measurement`, a judgement fault).
+       - The review's three candidates A/B/C are confounded. Separate them first, offline, from the recorded reads of cycles 71–101. Only if they stay confounded, run ONE scripted move on a scratch copy of S1.
+     - **(c) DECIDED — a half-wire difference is not a save blocker in record mode.** A step difference whose uids are ONLY sourceless wires/terminals (`dangling_sim_only` / `dangling_real_only`) and that no later plan row references by uid is logged as WARN, not FAIL.
+       - Why: the per-step comparison exists to keep symbolic ids bound correctly. A sourceless half-wire carries no data, so it cannot change the computation (rule 1a).
+       - The end gates still decide the save: ExecState 1; cdiff == the 21 PD213(d) rows + added objects; no termless or loose-end wires beyond RBW's pre-existing uids. The recipe must check the "no later reference" condition from `plan_disp.json`, never by hand.
+       - Any other step difference still blocks the save.
+     - **(d) Before the next run:**
+       - fix the tunnel-flip seed bug (a sink cleared by an only-source delete seeds the flip; `stagesim._move_one:593-607`);
+       - decide `plan_disp.json` 7c432e1b vs r5's b535071e as provenance-only or content, by rerunning `diag_c101c_resim` with the k0 fix;
+       - re-dry, pre-run, then ONE record-mode stage run (a new cycle's retry count starts at 0).
+     - **(e) Carries (not ahead of the stage):**
+       - the launch gate classes `selftest_stagekit.py` as a stage, and its dry fails on the self-test's own intentional FAIL row;
+       - review c101-4-syntax: move the E3 cdiff into one shared stagexec function; gate the 120-line stage rule;
+       - l2a1_80 / unflip_81 self-tests fail only on stale count gates;
+       - retrospective-cycle101 `device-failed`: the stop record refuses READ-ONLY commands on a stopped recipe (`tools/hooks/material_marker.log:2175`). Refuse only commands that EXECUTE the recipe, and self-test both cases.
 
 ## OPEN (design choices — for judgement; not decided here)
 

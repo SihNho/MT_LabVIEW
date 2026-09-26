@@ -54,15 +54,17 @@ rig-state: 조립   <!-- 2026-09-24 20:xx USER GRANT: "당분간 내가 말하�
 🟡 **CARRY (from the 2026-09-25 verification review `archive/peer/2026-09-25-hyp-lintverify-20260925.md`, not blocking): card flags are checked only on the top-level command (a child process could reach LabVIEW under labview=none); a stage run launched outside bgrun is not counted by the retry cap; a bgrun record failure is only logged (`tools/bgrun.py:219-220`). Close in a tooling cycle, deliverable-first.**
 current-bed: D1_l2_a1_20260925_235224.vi
 <!-- ^ machine key read by tools/errorlist_check.py current_bed_text(); without it the bed is chosen by mtime among D1_*.vi names in this file, and the newer D1_s1_kswap_* would silently take over (review archive/peer/2026-09-26-c88-reuse-stalepin.md). Change it only when a new bed is accepted. -->
-🔴🔴🔴 **FIRST ACT (cycle 101) = `docs/d1-loop12-17-split-plan.md` Pre-decided 213(h), then (g).** The first card is the display-loop STAGE card, as `steer_100.json` requires (FOLLOWED in `next.json`). Inside it, in order:
-1. **READ, offline, the Diagram-owned Terminal rows** of While bodies #639 / #25392 in `par1359_95_graph.json` (retrospective-cycle100's discriminating test: expect 1 source + 1 sink each).
-2. **stagesim create-loop model.**
-   - Model exactly those rows for a created loop.
-   - `bind_new` excludes `bind['diag']` (review `archive/peer/2026-09-26-c100-6-r2.md`).
-   - Replay test: the sim of ops 1–2 must equal the real E1 new-object set in `tools/bench/stage_d1_disp_r2.log`.
-3. **An S1 owners map**, read-only from `claudeDev\D1_s1_copy.vi` (md5 `3e3d23ce…`). The D1_k stand-in is not accepted.
-4. Re-dry and pre-run `tools/bench/sim/disp/plan_disp.json` (md5 `9486143…`), then ONE stage run (`tools/recipes/stage_d1_disp.py`) → `claudeDev\D1_s1_disp_<ts>.vi`.
-5. AFTER the stage card, a separate card repairs `guard_peer`. It re-arms itself on `tools/bench/jev_gate.log` (the retrospective's `device-failed`): exclude the `jev_*` ledgers by PATH, with a positive and a negative self-test.
+🔴🔴🔴 **FIRST ACT (cycle 102) = `docs/d1-loop12-17-split-plan.md` Pre-decided 214(b)–(d): ONE display-loop STAGE card** (the steer is FOLLOWED in `next.json`). Inside it, in order:
+1. **Measure the only-source half-wire rule (214(b)).** Read it offline from the recorded reads of cycles 71–101 against the four real samples. Only if the samples stay confounded, make ONE scripted move on a scratch copy of S1. Then replay r5's k1–k25 (`tools/bench/stage_d1_disp_r5.log`) against the simulator.
+2. **Add 214(c)'s WARN rule to record mode.** A step difference made only of sourceless wires/terminals, whose uids no later plan row references (the recipe checks this from `plan_disp.json`), is logged as WARN. Fix the tunnel-flip seed bug (`stagesim._move_one:593-607`).
+3. **Settle `plan_disp.json`: 7c432e1b vs b535071e** (rerun `diag_c101c_resim`, k0 fix already in). Then re-dry, pre-run, and ONE record-mode run of `tools/recipes/stage_d1_disp.py` → `claudeDev\D1_s1_disp_<ts>.vi`.
+- **CYCLE 101 in brief:**
+  - `guard_peer` jev-ledger exclusion PASS (29/0).
+  - stagesim now models a created loop's body; record mode and the `create_local_read` index fix are in.
+  - Real run r5 did ops 1–25 of 47 and stopped IN op 26 (fixed). S1 is unchanged; NO FILE.
+  - Both escalation rungs are spent → **D-2026-09-27-01 is OPEN for the user** (continue as planned?).
+  - My "primitive deletes / SubVI keeps" rule was an unmeasured inference, and it was refuted.
+  - Retrospective-cycle101 (`archive/peer/2026-09-27-retrospective-cycle101.md`, both items accepted): `inference-over-measurement` (mine, card 101-5) and `device-failed`. The stop record refuses read-only commands on a stopped recipe (`material_marker.log:2175`), and the launch gate classes `selftest_stagekit.py` as a stage. → owed tooling card AFTER the stage card.
 Stage pass criteria:
    - ExecState 1;
    - cdiff equals the 21 PD213(d) open rows plus the added objects;

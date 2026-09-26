@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"101-5","status":"FAIL","gates":{"pass":1,"fail":2},
+"first_fail":"pass[2] REFUTED: only_source rule (primitive delete / SubVI keep) != r5 REAL reads at k24/k25 (8323 kept), cuts edge 11369->11270 at k12 (diag_c101c_resim.log:33,57); reverted; no stage run",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/stagekit.py","md5":"3e222f61f53c0b6a2c7da956290195a6"},
+ {"path":"tools/stagesim.py","md5":"e4bd44d8a1520359bd1e2cd24210bbb8"},
+ {"path":"tools/recipes/stage_d1_disp.py","md5":"04ed4f8f718f567c8971f8fb9e23e8c5"},
+ {"path":"tools/bench/diag_c101c_resim.py","md5":"659ebd9fdb7d0d6413924d368bae905e"},
+ {"path":"tools/bench/selftest_stagekit.py","md5":"468c965bfd7564d6d0579f8abbfff667"},
+ {"path":"tools/bench/sim/disp/plan_disp.json","md5":"7c432e1ba4d89626282d89f4017ef750"},
+ {"path":"archive/peer/2026-09-27-c101-5-onlysource.md","md5":"603158a03a64d2405f9ea6d409c022c7"}],
+"facts":[
+ "pass[1] DONE: stagekit.create_local_read resolves panel index by label, Stop on 0/2 rows (stagekit.py:680-685); selftest case J 4/4, 51/0 (selftest_stagekit_c101-5_dry2.log:73-79)",
+ "launch gate classes selftest_stagekit.py as a stage (chat-N1) and its DRY fails on the self-test's own intentional 'FAIL g-bad' row (selftest_stagekit_c101-5_dry.log:81): tooling clash",
+ "pass[2] TRIED: only_source {node: delete, subvi: keep}; resim FINAL, 21 open rows, but NEW != r5 REAL at k24/k25 (8323 kept) and k12 lost edge 11369->11270 (diag_c101c_resim.log:33,57-60)",
+ "the 4 REAL samples: const #8775->8753 deleted; Bundler #11310->tunnel-inner 11365 deleted; BuildArray #11261->panel 8323 KEPT; SubVI #376->tunnel-inners 1931/5044 KEPT (review §2 table)",
+ "sink-class rule also refuted: #376's kept sinks were LoopTunnel inners (diag_c71_l7_1a_tunnels.log:60,64,70); review names 3 confounded candidates A(from For interior) B(dest is For) C(parallel For)",
+ "separate model bug: a sink cleared by only_source delete seeds the tunnel flip (#11363 flipped, edge 11369->11270 cut; real kept it) - review §'separate model bug', unpatched",
+ "rule REVERTED to {constant: delete, default: keep} (stagesim.py:75-79); 'subvi' kind kept as plan-statable machinery; stagesim selftest 59/0 incl. G54/G55 (selftest_stagesim_c101-5b.log)",
+ "ladder: diag_c101c_resim.log | new-problem p=0.694 | hypothesis review owed | dispatched c101-5-onlysource, ANSWERED 281 s, disposition written | rule reverted, no run",
+ "resim run 2 (reverted): FINAL, 21 open rows, plan_disp.json md5 7c432e1b, NOT byte-equal to r5's b535071e; diag KeyError k0 before the compare (diag_c101c_resim2.log:11-16); k0 fix in, not rerun",
+ "NO LabVIEW run, LabVIEW not started this card; S1 untouched; STATUS not edited (status_edit false); recipe 120 lines, task tag 'card 101-5'"],
+"open":[
+ "Which rule decides a cut only-source wire's fate (review A/B/C, confounded on 4 real samples)? Cheapest separator: ONE scripted move While-interior -> For-interior on a scratch, or an offline search of c71-c100 reads.",
+ "plan_disp.json 7c432e1b vs r5's b535071e: provenance-only (stagesim md5/stamp) or content? Rerun diag_c101c_resim (k0 fix in) or diff step terminals before any dry/prerun/run.",
+ "Exclude a sink cleared by an only_source delete from the tunnel-flip seeds (stagesim._move_one:593-607) before the next display-stage run?"],
+"cost":{"usd":null,"minutes":50,"labview_runs":0},
+"note":"Peer $?: claude-opus-5-5 hypothesis 281 s. Prerun/dry for the stage NOT rerun (plan not verified). Failure budget spent on the diag (run 1 genuine prediction failure, run 2 script KeyError). Escalation 2."}

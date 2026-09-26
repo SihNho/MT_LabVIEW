@@ -1,0 +1,140 @@
+BGRUN START 2026-09-26 23:39:24 limit 8.0 min: py -u tools/stage_prerun.py --prerun tools/recipes/stage_d1_disp.py --graph tools/bench/par1359_95_graph.json
+BGRUN PID 24896
+stage_d1_disp - card 100-6, PD213(f)4(iv) / PD212: THE DISPLAY-LOOP STAGE, executed, not re-decided.
+INPUT claudeDev\D1_s1_copy.vi (3e3d23ce..., named by the plan's base graph), FRESH LabVIEW -> claudeDev\D1_s1_disp_<ts>.vi,
+saved BY SCRIPT at ExecState 1. ROWS ONLY FROM THE FINALIZED PLAN tools/bench/sim/disp/plan_disp.json (stageplan_disp_r4_open =
+r3_open + the MEASURED Max & Min names/class, diag_c100_6_resim.log); no uid and no terminal name is typed here.
+PRIOR ART: stage_d1_l2a1.py (skeleton, DryBE), stagexec.lv_run (E1/E2/E3 and the cdiff on the real end, :1965-2027),
+gscript.wire_health + _edge_pairs (PD211(b) readers, card 98-2/98-3), stagekit.broken_wire_count (RBW). No new op.
+PREDICTION: L1 every action compiles to exactly one real op; E1 each real op == its simulated step (the #25261 value gate
+reads False first, else the plan stops); W1 after the batch: termless wires are all RECORDED, RBW (VI-level, on the work copy,
+PD212(f)) removes ONLY wire uids that existed before the stage, and loses NO data edge; E2 ExecState 1 after RBW;
+E3 computation_diff(S1, real end) == the plan's 21 open_rows (FATAL, before save); PS saved by script, md5 != input, input
+unchanged; LabVIEW gone at exit. Level: STRUCTURAL (the VI is never run: card flag run_vi false).
+    py tools/bgrun.py --material --max-min 40 --log tools/bench/stage_d1_disp.log -- py -u tools/recipes/stage_d1_disp.py
+  PASS  L0 the executed plan is FINAL, open_rows_match, plan_in = stageplan_disp_r4_open.json  ('9e1e98c97d4e6980530b12b2b4d39fa4', {'path': 'tools/bench/sim/disp/stageplan_disp_r4_open.json', 'md5': '9270cb8c264724d926f483a58f2b318a'})
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 3e3d23cefd3a334001aa9d6156bf1aee  got 3e3d23cefd3a334001aa9d6156bf1aee
+  PASS  DRY graph JSON for input md5 3e3d23cefd3a334001aa9d6156bf1aee  tools/bench/par1359_95_graph.json
+  FACT  W0 pre-existing Wire uids: 0
+  PASS  L1 every plan action compiled into exactly one real op (57 -> 47)  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57]
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 3 touched diagram(s) [639, 686, 7911]: one-side-only Nodes[] entries 0
+  PRIME 17 terminal indexes proved at base; 0 ControlTerminal end(s) by 179(b); unprovable []
+  FACT  OP gate [1] -> err '' (0.0 s)
+  STEPX 01 gate           acts [1] ids ['g25261'] bound {} diff 0
+  FACT  OP create [2] -> err '' (0.0 s)
+  STEPX 02 create         acts [2] ids ['r1_dl'] bound {-1: 10000004, -2: 10000001} diff 0
+  FACT  OP create [3] -> err '' (0.0 s)
+  STEPX 03 create         acts [3] ids ['r2_dlf'] bound {-5: 10000010, -6: 10000005, -8: 10000007} diff 0
+  FACT  OP move_in [4] -> err '' (0.0 s)
+  STEPX 04 move_in        acts [4] ids ['mv_8775'] bound {} diff 0
+  FACT  OP move_in [5] -> err '' (0.0 s)
+  STEPX 05 move_in        acts [5] ids ['mv_8795'] bound {} diff 0
+  FACT  OP move_in [6] -> err '' (0.0 s)
+  STEPX 06 move_in        acts [6] ids ['mv_8741'] bound {} diff 0
+  FACT  OP move_in [7] -> err '' (0.0 s)
+  STEPX 07 move_in        acts [7] ids ['mv_8764'] bound {} diff 0
+  FACT  OP move_in [8] -> err '' (0.0 s)
+  STEPX 08 move_in        acts [8] ids ['mv_28180'] bound {} diff 0
+  FACT  OP move_in [9] -> err '' (0.0 s)
+  STEPX 09 move_in        acts [9] ids ['mv_28233'] bound {} diff 0
+  FACT  OP move_in [10] -> err '' (0.0 s)
+  STEPX 10 move_in        acts [10] ids ['mv_27716'] bound {} diff 0
+  FACT  OP move_in [11] -> err '' (0.0 s)
+  STEPX 11 move_in        acts [11] ids ['mv_29009'] bound {} diff 0
+  FACT  OP move_in [12] -> err '' (0.0 s)
+  STEPX 12 move_in        acts [12] ids ['mv_11310'] bound {} diff 0
+  FACT  OP wire_connect [13] -> err '' (0.0 s)
+  STEPX 13 connect        acts [13] ids ['rw_8774_8753'] bound {} diff 0
+  FACT  OP wire_connect [14] -> err '' (0.0 s)
+  STEPX 14 connect        acts [14] ids ['rw_8794_8762'] bound {} diff 0
+  FACT  OP wire_connect [15] -> err '' (0.0 s)
+  STEPX 15 connect        acts [15] ids ['rw_8750_8790'] bound {} diff 0
+  FACT  OP wire_connect [16] -> err '' (0.0 s)
+  STEPX 16 connect        acts [16] ids ['rw_8759_28291'] bound {} diff 0
+  FACT  OP wire_connect [17] -> err '' (0.0 s)
+  STEPX 17 connect        acts [17] ids ['rw_8770_29049'] bound {} diff 0
+  FACT  OP wire_connect [18] -> err '' (0.0 s)
+  STEPX 18 connect        acts [18] ids ['rw_28189_28281'] bound {} diff 0
+  FACT  OP wire_connect [19] -> err '' (0.0 s)
+  STEPX 19 connect        acts [19] ids ['rw_28251_27827'] bound {} diff 0
+  FACT  OP wire_connect [20] -> err '' (0.0 s)
+  STEPX 20 connect        acts [20] ids ['rw_29025_11320'] bound {} diff 0
+  FACT  OP wire_connect [21] -> err '' (0.0 s)
+  STEPX 21 connect        acts [21] ids ['rw_27784_11323'] bound {} diff 0
+  FACT  OP move_in [22] -> err '' (0.0 s)
+  STEPX 22 move_in        acts [22] ids ['mv_11261'] bound {} diff 0
+  FACT  OP delete_object [23] -> err '' (0.0 s)
+  STEPX 23 delete_object  acts [23] ids ['del_11363'] bound {} diff 0
+  FACT  OP create [24] -> err '' (0.0 s)
+  STEPX 24 create         acts [24] ids ['r5_ind_ring'] bound {-20: 10000020} diff 0
+  FACT  OP create [25] -> err '' (0.0 s)
+  STEPX 25 create         acts [25] ids ['r5_ind_wlc'] bound {-21: 10000021} diff 0
+  FACT  OP create [26] -> err '' (0.0 s)
+  STEPX 26 create         acts [26] ids ['r6_lr_ring'] bound {-22: 10000022} diff 0
+  FACT  OP create [27] -> err '' (0.0 s)
+  STEPX 27 create         acts [27] ids ['r6_lr_wlc'] bound {-24: 10000024} diff 0
+  FACT  OP create [28] -> err '' (0.0 s)
+  STEPX 28 create         acts [28] ids ['r6_lr_base'] bound {-26: 10000026} diff 0
+  FACT  OP create [29] -> err '' (0.0 s)
+  STEPX 29 create         acts [29] ids ['r6_lr_fhw'] bound {-28: 10000028} diff 0
+  FACT  OP create [30] -> err '' (0.0 s)
+  STEPX 30 create         acts [30] ids ['r6_lr_ehw'] bound {-30: 10000030} diff 0
+  FACT  OP wire_tunnel [31, 32, 33] -> err '' (0.0 s)
+  STEPX 31 tunnel         acts [31, 32, 33] ids ['t_ring', 't_ring_out', 't_ring_in'] bound {-32: 10000034} diff 0
+  FACT  OP wire_tunnel [34, 35, 36] -> err '' (0.0 s)
+  STEPX 32 tunnel         acts [34, 35, 36] ids ['t_base', 't_base_out', 't_base_in'] bound {-37: 10000039} diff 0
+  FACT  OP wire_tunnel [37, 38, 39] -> err '' (0.0 s)
+  STEPX 33 tunnel         acts [37, 38, 39] ids ['t_fhw', 't_fhw_out', 't_fhw_in'] bound {-42: 10000044} diff 0
+  FACT  OP wire_branch [40] -> err '' (0.0 s)
+  STEPX 34 branch         acts [40] ids ['t_fhw_br_28223'] bound {} diff 0
+  FACT  OP wire_tunnel [41, 42, 43] -> err '' (0.0 s)
+  STEPX 35 tunnel         acts [41, 42, 43] ids ['t_ehw', 't_ehw_out', 't_ehw_in'] bound {-47: 10000049} diff 0
+  FACT  OP wire_branch [44] -> err '' (0.0 s)
+  STEPX 36 branch         acts [44] ids ['t_ehw_br_29046'] bound {} diff 0
+  FACT  OP wire_tunnel [45, 46, 47] -> err '' (0.0 s)
+  STEPX 37 tunnel         acts [45, 46, 47] ids ['t_out', 't_out_in', 't_out_out'] bound {-52: 10000054} diff 0
+  FACT  OP wire_connect [48] -> err '' (0.0 s)
+  STEPX 38 connect        acts [48] ids ['r6_wlc_element'] bound {} diff 0
+  FACT  OP create [49] -> err '' (0.0 s)
+  STEPX 39 create         acts [49] ids ['r6_lw_force'] bound {-58: 10000058} diff 0
+  FACT  OP wire_connect [50] -> err '' (0.0 s)
+  STEPX 40 connect        acts [50] ids ['r6_force_write'] bound {} diff 0
+  FACT  OP create [51] -> err '' (0.0 s)
+  STEPX 41 create         acts [51] ids ['r7_wait'] bound {-61: 10000061} diff 0
+  FACT  OP create [52] -> err '' (0.0 s)
+  STEPX 42 create         acts [52] ids ['r7_max'] bound {-64: 10000064} diff 0
+  FACT  OP create [53] -> err '' (0.0 s)
+  STEPX 43 create         acts [53] ids ['r7_one'] bound {-69: 10000070} diff 0
+  FACT  OP create [54] -> err '' (0.0 s)
+  STEPX 44 create         acts [54] ids ['r7_ctl'] bound {-72: 10000073} diff 0
+  FACT  OP wire_connect [55] -> err '' (0.0 s)
+  STEPX 45 connect        acts [55] ids ['r7_max_wait'] bound {} diff 0
+  FACT  OP create [56] -> err '' (0.0 s)
+  STEPX 46 create         acts [56] ids ['r8_lr_turnoff'] bound {-75: 10000075} diff 0
+  FACT  OP stop [57] -> err '' (0.0 s)
+  STEPX 47 stop           acts [57] ids ['r8_stop'] bound {} diff 0
+  PASS  E1 every real op's graph == its simulated step (47 ops)
+  FACT  BINDING obj {-1: 10000004, -5: 10000010, -8: 10000007, -20: 10000020, -21: 10000021, -22: 10000022, -24: 10000024, -26: 10000026, -28: 10000028, -30: 10000030, -32: 10000034, -37: 10000039, -42: 10000044, -47: 10000049, -52: 10000054, -58: 10000058, -61: 10000061, -64: 10000064, -69: 10000070, -72: 10000073, -75: 10000075}
+  FACT  ExecState [after all rows, BEFORE RBW (recorded)] D1_s1_disp_20260926_233925.vi = <dry:g.exec_state>
+  FACT  ExecState [end (warm, after RBW)] D1_s1_disp_20260926_233925.vi = <dry:g.exec_state>
+  PASS  E2 ExecState 1 warm at the end  <dry:g.exec_state>
+  UNVERIFIED  E3 computation_diff(S1, real end) == the plan's 21 open_rows (FATAL, before save)  (dry: after mutation Stage._op gate)
+  FACT  CENSUS after display stage D1_s1_disp_20260926_233925.vi: {'Diagram': 170, 'WhileLoop': 3, 'SubVI': 92, 'Wire': 1899, 'LoopTunnel': 132, 'Local': 8, 'ControlTerminal': 114, 'Node': 0}
+  FACT  PH handles RECORDED: post-open <dry:bench_prep.labview_handles> -> before-save <dry:bench_prep.labview_handles>
+  PASS  PS saved by script, md5 differs from the input; input unchanged  dry0dry0dry0dry0dry0dry0dry0dry0
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  PASS  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['tools/bench/sim/disp/plan_disp.json']
+  PASS  X3 every plan row decided  0 rows + 57 stageplan actions
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  1 stageplan(s)
+  PASS  X4 every end addressable offline (0 ends)  []
+  PASS  X5 wiring ops executed in the dry run == plan wire rows  ops 19 vs plan wire rows 0 + stageplan wiring real ops 19 (covering 25/25 wire actions)
+  PASS  X6 ast lint: no re-typed uid / terminal name  uids []; names []
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+
+=== DRY PASS: first_fail=None coverage 61/79 lines, first mutation Stage._op gate, unverified 1, graph tools/bench/par1359_95_graph.json
+=== PRERUN PASS: 8 pass / 0 fail; first None
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":8,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 42s

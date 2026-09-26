@@ -1,0 +1,55 @@
+BGRUN START 2026-09-27 00:07:24 limit 20.0 min: py tools/prior_art_review.py --plan-file tools/bench/cards/priorart_plan_101-4.md --slug c101-4-disp-record --trigger cycle-start --recipe tools/recipes/stage_d1_disp.py
+BGRUN PID 23316
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c101-4-disp-record.txt (48329 chars)
+   review card tools\bench\cards\review_priorart-c101-4-disp-record.json
+OUTCOME: ANSWERED (65s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-27-priorart-c101-4-disp-record.md
+COST: $1.0502  in 14 / out 5719 / cache-create 99401 / cache-read 702873  (61s, 11 turn(s))
+VERDICT-CARD: NO-VERDICT: $.alternative: 327 chars > limit 300
+--- ANSWER ---
+I've finished the checks: the record mode and the constant-source move rule both first appear in card 101-4.
+
+# Prior-art review: card 101-4 edit of `stage_d1_disp.py`
+
+**Verdict: novel.** Nothing already built, measured or refuted in these files covers the three changes. Findings with citations are below. None of them is a blocking match.
+
+## Part A: the direction
+
+**A1, already decided?** No. A search of `docs/`, `archive/peer/` and the cards for "record mode" or "continue after a step difference" finds only card 101-4's own files: `tools/bench/cards/task_101-4.json:5,34,81`, `tools/stagexec.py:965-966,2507-2527` and the recipe. No earlier plan entry decides the matter either way.
+
+**A2, already tried and abandoned?** No.
+- `tools/stage_prerun.py:1503` mentions an "old `record=True` path" that card chat-L2 removed. That was the launch-record path (`check_launch(record=True)`), which counts runs for the retry cap. Its fault is described in `archive/peer/2026-09-25-hyp-lintverify-20260925.md:41,49`. It is a different mechanism from `Executor(record=True)`, only the same keyword, so it does not cover this card.
+- No review argues that a run must stop at the first step difference when nothing is saved.
+
+**A3, contradicted?** No contradiction, but one neighbouring measurement should be kept in mind:
+- `docs/d1-loop12-17-split-plan.md:815` (PD187) records that the moved ControlTerminal `#5634` "lost its half-wire in the move". That is a source-only object on the moved side.
+- The new `only_source` rule sends a non-constant source to `default: keep` (`tools/stagesim.py:75`).
+- These don't conflict. PD187 describes the moved side, which the existing `bare_half_wire: delete` rule handles (`stagesim.py:71`, card 80-6). `only_source` governs the outside sink.
+- If the display plan moves a ControlTerminal that is the only source of a single-sink cut wire, the rule for that case is still unmeasured. The model's own `gaps` field admits only one sample for constants (`stagesim.py:82-83`).
+
+**A4, unread evidence?** None of note. The card already cites the right sources: `diag_c71_l7_1a_tunnels.log:60,64,70`, `stage_d1_disp_r4.log:89-90`, and the meter and checkpoint history (PD193(a), `stage_d1_l2a1_86-5`).
+
+## Part B: the artifact
+
+**B1, already built?**
+- The `record` parameter in `stagexec.Executor` first appears with card 101-4 (`stagexec.py:966`).
+- `only_source_fate` and `_apply_only_source` (`stagesim.py:459-484`) are a new mirror of the existing `only_sink_fate` (`:451-456`). They are not a duplicate: `only_sink` covers a wire whose only sink moved, while `only_source` covers a wire whose only source moved.
+- The existing `bare_half_wire: delete` rule (`stagesim.py:71,572-612`) deletes only wires with a single row in total. That is the moved-side leftover, not the outside sink of a two-row cut wire, so it does not already produce the r4 result for `#8753`.
+
+**B2, already failed?** No earlier run of this exact edit exists. Run r4 stopped for the reason this card targets (`stage_d1_disp_r4.log:89-91`), and the model change reproduces r4's steps 1–4 (`tools/bench/diag_c101b_resim.log:17,21`).
+
+**B3, hand-rolling an existing helper?** No.
+- The checkpoints reuse the existing PD193(a) checkpoint set (`stagexec.BIND_KINDS`).
+- The `cdiff()` helper is described as a relocation of the existing `lv_run` statements, not a new implementation.
+
+**B4, already measured?** Only in part.
+- The constant-takes-the-wire behaviour rests on the single r4 sample. The only earlier related measurement is the SubVI keep case in `diag_c71`.
+- A constant feeding two or more sinks has not been measured, and the simulator says so itself (`stagesim.py:82-83`).
+- The recorded run will add samples; it does not repeat an existing measurement.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c101-4-disp-record","verdict":"novel","alternative":"The only old record=True was stage_prerun's launch-record path (stage_prerun.py:1503), which counts runs and is unrelated. only_source mirrors only_sink and differs from bare_half_wire (stagesim.py:71,451-484). PD187's ControlTerminal half-wire loss (d1-loop12-17-split-plan.md:815) is moved-side and covered by bare_half_wire.","discriminating_test":"In the record-mode run, check every moved ControlTerminal or other non-constant only-source of a single-sink cut wire: its outside sink should read wire!=0 (default keep). A wire=0 read means only_source must widen beyond constants.","violations":[],"sources":["tools/stagexec.py:965-966","tools/stagesim.py:64-83","tools/stagesim.py:451-484","tools/stage_prerun.py:1503","docs/d1-loop12-17-split-plan.md:650-655","docs/d1-loop12-17-split-plan.md:815","tools/bench/stage_d1_disp_r4.log:89-91","tools/bench/diag_c101b_resim.log:17-21"],"note":"No prior record-mode or only_source mechanism in docs/, archive/peer/ or tools/. The constant-delete fate rests on one sample, which the model's gaps field already declares."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c101-4-disp-record.md
+   STOP RECORD: none - 2026-09-27-priorart-c101-4-disp-record.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_disp.py sha a3b93ec1f3d0 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 68s

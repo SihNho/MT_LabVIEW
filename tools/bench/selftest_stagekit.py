@@ -311,12 +311,52 @@ def case_i_term_uid():
         K.mod = saved_mod
 
 
+def case_j_local_read_index():
+    """Card 101-5: `create_local_read(label)` resolves the panel index BY LABEL over panel_wiring (as
+    create_local_write does) and refuses a label that matches 0 or 2 rows. The creator (diag_s3b_l0_localname_v2
+    .create_local) and panel_wiring are stubbed; the real stagekit code runs. Run r5 passed None and the creator
+    raised int(None) (stage_d1_disp_r5.log:452)."""
+    saved_pw, saved_mod, saved_mark = K.g.panel_wiring, K.mod, K.Stage.node_mark
+    got = []
+
+    class _L(object):
+        @staticmethod
+        def create_local(_t, label, panel_index, tag=""):
+            got.append((label, panel_index))
+            return {"err": None}
+    try:
+        K.g.panel_wiring = lambda _t: [{"label": "a", "uid": 1}, {"label": "plot ring (display)", "uid": 2},
+                                       {"label": "dup", "uid": 3}, {"label": "dup", "uid": 4}]
+        K.mod = lambda name: _L if name == "diag_s3b_l0_localname_v2" else saved_mod(name)
+        K.Stage.node_mark = lambda self, tag="": []
+        s = new_stage()
+        s.work = "stub.vi"
+        rec = []
+        cap(lambda: rec.append(s.create_local_read("plot ring (display)")))
+        check("J1 a label matching ONE panel row resolves to its index (1) and reaches the creator as an int",
+              got == [("plot ring (display)", 1)] and rec and not rec[0]["err"], repr((got, rec)))
+        cap(lambda: rec.append(s.create_local_read("a", panel_index=0)))
+        check("J2 an explicit panel_index is passed through unchanged", got[-1] == ("a", 0), repr(got))
+        for lab, n in (("missing", 0), ("dup", 2)):
+            raised = ""
+            try:
+                cap(lambda: s.create_local_read(lab))
+            except K.Stop as e:
+                raised = str(e)
+            check("J3 NEGATIVE: label {0!r} ({1} rows) raises Stop before any creator call".format(lab, n),
+                  raised.startswith("create_local_read") and "{0} panel rows".format(n) in raised and len(got) == 2,
+                  repr(raised[:80]))
+    finally:
+        K.g.panel_wiring, K.mod, K.Stage.node_mark = saved_pw, saved_mod, saved_mark
+
+
 def main():
     print("=" * 90, flush=True)
     print("selftest_stagekit - tools/stagekit.py without LabVIEW", flush=True)
     print("=" * 90, flush=True)
     for fn in (case_a_rows, case_b_summary, case_c_md5_pin, case_d_save_route, case_e_mutating_reader,
-               case_f_format_safety, case_g_constants, case_h_creator_rows, case_i_term_uid):
+               case_f_format_safety, case_g_constants, case_h_creator_rows, case_i_term_uid,
+               case_j_local_read_index):
         print("\n---------- {0}".format(fn.__name__), flush=True)
         try:
             fn()

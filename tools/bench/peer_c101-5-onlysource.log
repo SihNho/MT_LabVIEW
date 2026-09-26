@@ -1,0 +1,68 @@
+BGRUN START 2026-09-27 00:37:48 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c101-5-onlysource -TaskFile tools/bench/cards/peer_task_c101-5-onlysource.md
+BGRUN PID 26428
+OUTCOME: ANSWERED (281s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-27-c101-5-onlysource.md
+COST: $1.9790  in 40 / out 25701 / cache-create 121605 / cache-read 2352092  (277s, 30 turn(s))
+--- ANSWER ---
+**The sink-class explanation is wrong, and a real LabVIEW read already on disk shows it.** I couldn't write the plan file (Write is disabled in this session), so the full verdict is below.
+
+## 1. Strongest reason it is wrong
+When SubVI #376 moved from diagram 639 to 23405, its outside sinks were **tunnel inner terminals**:
+- 1931 on #1929 and 5044 on #5020 (`tools/bench/diag_c71_l7_1a_tunnels.log:32,36,60,64`).
+- Both #1929 and #5020 are LoopTunnels (`tools/bench/c73_l7r_live.log:25`).
+- Both **kept** their sourceless half-wires, w5274 and w5056 (`diag_c71_l7_1a_tunnels.log:70`, `half_wires_only_in_b`).
+
+The sink-class rule predicts both should have been deleted. The constant case also counts against it:
+- Sink 8753 is an ordinary IndexArray node terminal (`index (row)`, `owner_class IndexArray`, `frame_diagram 7911` in `tools/bench/sim/disp/step_03_create.json`).
+- It was **deleted**, so the rule only survives with a special exception for constants.
+- A rule that needs an exception to fit two samples is fitted to the data, not explained by it.
+
+The source-class rule on the card fails too: BuildArray #11261 is a primitive, yet 8323 kept its half-wire at k24/k25.
+
+## 2. Alternatives that fit every real observation with one rule
+Only four observations are real LabVIEW reads.
+
+| move | from diagram | to diagram | sink | fate |
+|---|---|---|---|---|
+| constant #8775 | 7911 (inside For loop #1359) | 23432 (For loop inside the new While, on 686) | 8753, IndexArray | deleted |
+| Bundler #11310 (k12) | 7911 | 23432 | 11365, tunnel inner terminal | deleted |
+| BuildArray #11261 (k22, read at k24/k25) | 639 (inside While loop #637) | 23073 (new While loop, on 686) | 8323, panel terminal | kept |
+| SubVI #376 (c71) | 639 | 23405 (While loop #23041, on 686) | 1931 / 5044, tunnel inner terminals | kept |
+
+Nesting, from the owner map in `step_03_create.json`: flat sequence frame 686 contains While #637, whose inside is diagram 639. For #1359 sits on 639 and its inside is 7911. The new loops all sit on 686.
+
+Three single-rule alternatives, fully confounded in these four samples:
+- **A. Where the node came from:** moving out of the For #1359 interior (7911) deletes; moving out of the While #637 interior (639) keeps.
+- **B. Where the node went:** a destination that is a For loop two levels below 686 deletes; a While loop one level below keeps.
+- **C. What kind of loop held the wire:** the wire lived inside For #1359, which the graph file name `par1359` suggests is a parallel For loop.
+
+Clearing out the junk nodes (the stray Invoke Node each move leaves, purged afterwards) is ruled out. It runs identically after every move, and each deleted junk node had 0 wired terminals (`stage_d1_disp_r5.log:88,242,419`).
+
+## 3. What would falsify each
+- **Sink class:** already falsified by 1931 and 5044.
+- **A:** a move out of 639 into a For interior that deletes, or a move out of 7911 into a While interior that keeps.
+- **B:** the same two moves, with the opposite predictions.
+- **C:** a delete where the wire was not inside a For loop.
+
+## Two problems with the replay itself
+**Gate A2 is wrong.** `diag_c101c_resim.log:5` says every k from 1 to 25 has a real read. But r5 marks k6–k11 and k13–k23 "diff skipped (not a checkpoint)" (`stage_d1_disp_r5.log:133–228, 256–432`); the only real reads are k0, 2–5, 12, 24 and 25.
+- So the FAIL lines at those steps compare the new simulation with the old simulation, not with LabVIEW.
+- The "kept" list in the brief (8790, 28291, 29049, 27827, 11323) is not measured.
+- Those differences are also erased before k12: each sink's own node moves later, and the model's rule for a wire left with only one terminal deletes it.
+
+**A separate model bug at k12.** The new model set 11365 to wire 0. The tunnel-flip step then flipped #11363 and cut the edge 11369 → 11270. The real read kept that edge (`diag_c101c_resim.log:33`), and it still showed #11363's outer terminal 11369 as the source. Whatever rule wins, a sink cleared by a delete must not trigger the tunnel flip.
+
+**Weak spot in the one "kept" read in r5:** 8323 was read two steps after its move, with a delete of #11363 and an indicator creation in between (`stage_d1_disp_r5.log:425–440`). It holds only if neither step touches wire w10908, which the log doesn't show directly.
+
+## 4. Cheapest discriminating test
+1. **Offline, no LabVIEW:** search the existing real-read logs from cycles c71–c100 for a move where a single-sink wire was cut and the move went from a For interior to a While interior, or the reverse. One such row separates A from B.
+2. **If none exists, one LabVIEW read on a dated scratch copy:** move a primitive with exactly one outside node sink from 639 into 23432 (from a While interior into a For interior). A predicts kept; B predicts deleted.
+
+The source-class and sink-class rules don't need to be in this test; both are already refuted. What would change my mind: a sink-class exception explaining why tunnel inners #1929 and #5020 kept their wires, which would have to be a real difference such as auto-indexing on #11363.
+
+**Web check:** NI's page for the VI Scripting Move method doesn't say what happens to wires when a node moves to a different structure. It only covers the case of moving into another VI, where LabVIEW makes a copy instead. So only measurement can settle this.
+
+Sources:
+- [NI – GObject Move method](https://www.ni.com/docs/en-NR/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/move.html)
+- [LabVIEW Wiki – GObject class/Move method](https://labviewwiki.org/wiki/GObject_class/Move_method)
+- [NI Idea Exchange – Move: add "Moved Object Reference"](https://forums.ni.com/t5/LabVIEW-Idea-Exchange/Scripting-method-Move-add-quot-Moved-Object-Reference/idi-p/2676263)
+BGRUN END rc=0 after 282s

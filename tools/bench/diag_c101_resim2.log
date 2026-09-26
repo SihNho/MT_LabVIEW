@@ -1,0 +1,15 @@
+BGRUN START 2026-09-26 23:37:04 limit 5.0 min: py -u tools/bench/diag_c101_resim.py
+BGRUN PID 9436
+  PASS  R0 s1_owners.json is S1's (md5 field 3e3d23ce...)  3e3d23cefd3a334001aa9d6156bf1aee
+  PASS  R2 only context.owners changed (or already set by the first pass)  {'s1_key': 'D1_s1_copy', 'loops': {'path': 'tools/bench/graph_loops_s1_20260924.json'}, 'owners': {'path': 'tools/bench/sim/disp/s1_owners.json'}}
+  PASS  R1 validates under the installed schema  OK stageplan/1
+  PASS  R3 simulates FINAL  (None, 0, {'n': 0, 'op': 'base', 'id': None, 'rows_from_here': 21})
+  FACT end cdiff rows (21): ['10067|ControlTerminal|Initial Time at Start|0', '12236|ParameterTerminal|x|0', '12236|ParameterTerminal|y|0', '1566|Terminal|error in (no error)|0', '16184|Terminal|error in|0', '17164|Terminal|error in|0', '18136|Terminal|error in|0', '19532|ControlTerminal|Cycle Start Time|0', '21699|ParameterTerminal|x|0', '27165|Terminal|error in (no error)|0', '27466|Terminal|error in (no error)|0', '27716|ParameterTerminal|index|0', '28094|Terminal|error in (no error)|0', '28180|Terminal|half-width|0', '29009|Terminal|left rank|0', '29009|Terminal|right rank|0', '31870|Terminal|error in|0', '33114|Terminal|error in (no error)|0', '35648|Terminal|error in (no error)|0', '8323|ControlTerminal|Force (pN) vs Extension (nm) |0', '8764|ParameterTerminal|y|0']
+  PASS  R4 end cdiff rows == the 21 declared open_rows  {'extra': [], 'missing': []}
+  FACT REPLAY sim new objects ops 1-2 {'Diagram': 1} rows {-2: [('Terminal', False, ''), ('Terminal', True, '')]}; OLD sim (stage_d1_disp_r2.log:57) {}; REAL {'Diagram': 1} owners [23073]
+  PASS  REPLAY sim of plan ops 1-2 new-object set == real E1 set of stage_d1_disp_r2.log exactly  {'sim': {'Diagram': 1}, 'real': {'Diagram': 1}}
+  PASS  D1 bind_new with bind['diag'] (MODEL real rows on #23073): no object bound, both body rows bound  {'made': {}, 'term': {-3: 990000, -4: 990001}}
+  FACT REPLAY op 3 sim new objects {'Tunnel': 1} rows {-8: [('InnerTerminal', True, ''), ('OuterTerminal', False, '')]}; For body rows [('Terminal', True, '')]; OLD sim (stage_d1_disp_r3.log:69) {}; REAL {'Tunnel': 1} owners [23403]; r3 STEPX 02 diff 0
+  PASS  REPLAY3 sim of plan op 3 new-object set == real E1 set of stage_d1_disp_r3.log exactly; op 2 real diff 0 in r3  {'sim': {'Tunnel': 1}, 'real': {'Tunnel': 1}}
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":8,"fail":0},"first_fail":null,"artefacts":[{"path":"tools\\bench\\sim\\disp\\stageplan_disp_r4_open.json","md5":"9270cb8c264724d926f483a58f2b318a"},{"path":"tools\\bench\\sim\\disp\\plan_disp.json","md5":"9e1e98c97d4e6980530b12b2b4d39fa4"}]}
+BGRUN END rc=0 after 57s

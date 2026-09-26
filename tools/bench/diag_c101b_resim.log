@@ -1,0 +1,23 @@
+BGRUN START 2026-09-27 00:02:54 limit 5.0 min: py -u tools/bench/diag_c101b_resim.py
+BGRUN PID 18224
+  PASS  A0 OLD plan is the one r4 ran (md5 9e1e98c9...)  9e1e98c97d4e6980530b12b2b4d39fa4
+  PASS  A1 all 58 OLD step files intact (md5 == finalized)  58
+  PASS  A2 the r4 record is the r4 run (stamp 20260926_234019) with diffs for k 0-4  ('20260926_234019', [0, 1, 2, 3, 4])
+  PASS  R3 re-simulation FINAL  (None, 0, {'n': 0, 'op': 'base', 'id': None, 'rows_from_here': 21})
+  PASS  R4 end cdiff rows == the 21 declared open_rows  {'extra': [], 'missing': []}
+  FACT NEW plan_disp.json md5 b535071ef8e62fdf045ecb30499f89ce; 58 step files
+  FACT REPLAY k1: r4 real-vs-OLD {} | NEW-vs-OLD {}
+  PASS  REPLAY k1: NEW step == r4 REAL read on terminals, edges and dangling sets  {'r4': {'only_sim_terms': [], 'only_real_terms': [], 'only_sim_edges': [], 'only_real_edges': [], 'dangling_sim_only': [], 'dangling_real_only': []}, 'new': {'only_sim_terms': [], 'only_real_terms': [], 'only_sim_edges': [], 'only_real_edges': [], 'dangling_sim_only': [], 'dangling_real_only': []}}
+  FACT REPLAY k2: r4 real-vs-OLD {} | NEW-vs-OLD {}
+  PASS  REPLAY k2: NEW step == r4 REAL read on terminals, edges and dangling sets  {'r4': {'only_sim_terms': [], 'only_real_terms': [], 'only_sim_edges': [], 'only_real_edges': [], 'dangling_sim_only': [], 'dangling_real_only': []}, 'new': {'only_sim_terms': [], 'only_real_terms': [], 'only_sim_edges': [], 'only_real_edges': [], 'dangling_sim_only': [], 'dangling_real_only': []}}
+  FACT REPLAY k3: r4 real-vs-OLD {} | NEW-vs-OLD {}
+  PASS  REPLAY k3: NEW step == r4 REAL read on terminals, edges and dangling sets  {'r4': {'only_sim_terms': [], 'only_real_terms': [], 'only_sim_edges': [], 'only_real_edges': [], 'dangling_sim_only': [], 'dangling_real_only': []}, 'new': {'only_sim_terms': [], 'only_real_terms': [], 'only_sim_edges': [], 'only_real_edges': [], 'dangling_sim_only': [], 'dangling_real_only': []}}
+  FACT REPLAY k4: r4 real-vs-OLD {'dangling_sim_only': [8753]} | NEW-vs-OLD {'dangling_sim_only': [8753]}
+  PASS  REPLAY k4: NEW step == r4 REAL read on terminals, edges and dangling sets  {'r4': {'only_sim_terms': [], 'only_real_terms': [], 'only_sim_edges': [], 'only_real_edges': [], 'dangling_sim_only': [8753], 'dangling_real_only': []}, 'new': {'only_sim_terms': [], 'only_real_terms': [], 'only_sim_edges': [], 'only_real_edges': [], 'dangling_sim_only': [8753], 'dangling_real_only': []}}
+  PASS  R5 NEW step 4 effect: only_source w8804 #8775 DigitalNumericConstant -> 8753 fate delete; 8753/8774 wire 0  ([{'wire': 8804, 'src_term_uid': 8774, 'src_uid': 8775, 'src_class': 'DigitalNumericConstant', 'sink_term_uid': 8753, 'fate': 'delete'}], {8753: 0, 8774: 0})
+  FACT PREDICTION op 5 (mv_8795): only_source [{'wire': 8808, 'src_term_uid': 8794, 'src_uid': 8795, 'src_class': 'DigitalNumericConstant', 'sink_term_uid': 8762, 'fate': 'delete'}]
+  FACT OLD vs NEW step 04: {'dangling_sim_only': [8753]}
+  FACT OLD vs NEW step 05: {'dangling_sim_only': [8753, 8762]}
+  PASS  D1 the model change moves ONLY steps 4-5 (converged by step 6: #8741's move deletes the half-wires in both)  [4, 5]
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":11,"fail":0},"first_fail":null,"artefacts":[{"path":"tools\\bench\\sim\\disp\\stageplan_disp_r4_open.json","md5":"9270cb8c264724d926f483a58f2b318a"},{"path":"tools\\bench\\sim\\disp\\plan_disp.json","md5":"b535071ef8e62fdf045ecb30499f89ce"}]}
+BGRUN END rc=0 after 60s

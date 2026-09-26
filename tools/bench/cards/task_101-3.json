@@ -1,0 +1,91 @@
+{
+ "schema": "task/1",
+ "id": "101-3",
+ "kind": "build",
+ "goal": "PD213(h): read #639/#25392 body terminal rows offline; stagesim create-loop model + bind_new fix + replay vs run 2; S1 owners map; re-dry/prerun; ONE stage run -> claudeDev\\D1_s1_disp_<ts>.vi",
+ "why": "Re-issue of 101-1 (BLOCKED by guard_peer jev_gate.log re-arm; repaired by 101-2 PASS 5/0). Step 1 is DONE in result_101-1.json (1 source + 1 sink per body, rows listed there): start at step 2.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/cards/result_100-6.json"},
+  {"path": "tools/bench/facts_c100_stage.json"},
+  {"path": "archive/peer/2026-09-26-c100-6-r2.md"},
+  {"path": "archive/peer/2026-09-26-c100-6-jevgate2.md"},
+  {"path": "tools/bench/stage_d1_disp_r2.log"},
+  {"path": "tools/bench/sim/disp/plan_disp.json", "md5": "9486143097de5abc4295e26bc7f41f7b"},
+  {"path": "tools/bench/cards/result_101-1.json"},
+  {"path": "tools/bench/cards/result_101-2.json"},
+  {"path": "tools/stagesim.py"},
+  {"path": "tools/stagexec.py"},
+  {"path": "tools/stage_prerun.py"},
+  {"path": "tools/stagekit.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/sim/disp/plan_disp.json"},
+  {"kind": "file", "name": "tools/bench/stage_d1_disp_r2.log"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_disp.py"},
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpPrimCopyNested_v0.vi"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpPrimDonor_v0.vi"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpCreateIndicatorNested_v0.vi"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpVisibleSet_v0.vi"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpConstValueB_v0.vi"}
+ ],
+ "pass": [
+  "FACT: the Diagram-owned Terminal rows (class, source/sink, name) of bodies #639 and #25392 as read from par1359_95_graph.json (expected 1 source + 1 sink each; report what is read, whatever it is)",
+  "stagesim models exactly the rows read for a created While/For body; bind_new excludes bind['diag']; stagesim self-test green incl. a new case for a created loop",
+  "replay test: sim of plan ops 1-2 == real E1 new-object set of stage_d1_disp_r2.log, exactly (list both sets)",
+  "S1 owners map built read-only from D1_s1_copy.vi (not the D1_k stand-in); stagexec dry 0 unroutable; stage_prerun all PASS",
+  "stage run: ExecState 1; per-step comparison matches; cdiff == 21 PD213(d) open rows + added objects; #25261 False",
+  "no termless/loose-end wires beyond RBW's pre-existing uids; saved by script -> claudeDev\\D1_s1_disp_<ts>.vi with md5",
+  "D1_s1_copy.vi md5 3e3d23ce unchanged start+end; LabVIEW gone at exit; verification level stated (STRUCTURAL, never run)"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_disp_*.vi",
+  "tools/stagesim.py",
+  "tools/recipes/stage_d1_disp*.py",
+  "tools/bench/sim/disp/**",
+  "tools/bench/facts_c101_stage.json",
+  "tools/bench/cards/result_101-3.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_disp_*",
+   "tools/stagesim.py",
+   "tools/stagexec.py",
+   "tools/stage_prerun.py",
+   "tools/recipes/stage_d1_disp*",
+   "tools/bench/sim/disp/**",
+   "tools/bench/selftest_stage*",
+   "tools/bench/stage_d1_disp*",
+   "tools/bench/errorlist_*",
+   "tools/bench/facts_c101*",
+   "tools/bench/diag_c101*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/cards/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "outcome", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 90},
+ "rules": [
+  "order PD213(h): read -> stagesim model -> replay test -> owners map -> dry/prerun -> ONE stage run",
+  "no LabVIEW stage run before the replay test matches exactly",
+  "steps 1-4 not all green by minute 55: STOP before the LabVIEW run, return FAIL with facts",
+  "guard_peer jev_gate.log re-arm blocks a check: record command+line, return BLOCKED, never route around",
+  "stage script <=120 lines on stagekit; content only from plan_disp.json; RETRY_CAP 2",
+  "ExecState 0: read Error List first; bgrun --max-min 40, hold turn to BGRUN END; never save S1"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}
