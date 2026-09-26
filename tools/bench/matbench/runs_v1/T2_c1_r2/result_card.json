@@ -1,0 +1,22 @@
+{"schema":"result/1","id":"mb-T2","status":"PASS","gates":{"pass":3,"fail":0},
+ "first_fail":null,
+ "blocked_by":null,
+ "artefacts":[{"path":"tools/bench/cards/result_mb-T2.json","md5":null}],
+ "facts":[
+  "RUN1 first ExecState-0 site = 3 (For body Diagram[50]#29894, ForLoop #29874, wire w25157): ES 1 after S00/S02 (step3b.log:78,134), 0 after S03 (:174,176)",
+  "RUN1 site-3 op = OpCreateConstOnTerm_v0 on a ForLoop-owned node -> 'error 1055: Invoke Node in OpCreateConstOnTerm_v0.vi'; CLFN t6 left wire 0 (step3b.log:172-173)",
+  "RUN1 same 1055 + t6 wire 0 on every For-body site 4,5,16,17 (step3b.log:213-214,253-254,573-574,613-614); ES stays 0 to the end, E1 FAIL 8/13 (:673-675)",
+  "RUN1 While-body sites 0,2,8,10,11,12,13,20: branch ok=True in ES TABLE (step3b.log:673); ES-0 there is inherited from the bare For-body CLFNs, not caused by them",
+  "RUN2 measured: a bare CLFN (t6/t8 unwired) makes ExecState 0 by itself, at top level and in the body (step3b_r2.log:42,45) - explains RUN1's inherited 0",
+  "RUN2 fault: after the junk-Invoke purge the constant went to N[74] but the CLFN was not there -> S00.3 t6 wire 0, ES 0 from site 0 on (step3b_r2.log:61-65)",
+  "RUN2 why: junk Invoke landed at nodes_index 73 of 75 (r2:49) vs 74 in RUN1 (step3b.log:46; const N[73] PASS :58-59) - CLFN index taken before purge shifted -> stale node index",
+  "RUN2 same stale-index miss at site 11 (Diagram[99]#15266 N[24], step3b_r2.log:281); branch still landed on 2,8,10,12,13,20 (:122,181,240,340,399,458); For-body sites skipped (:23)",
+  "Both runs: cdiff rows 0, removed 0, added = CallLibrary+DigitalNumericConstant only, no Invoke left (step3b.log:677; r2:465); not saved; BGRUN END rc=1 (step3b.log:720, r2:508)",
+  "Route summary: While-body = works when the const hits the CLFN (RUN1 all 8 ok); For-body = OpCreateConstOnTerm_v0 raises 1055 on all 5 (RUN1); case sites 6/7/14/15 never attempted"
+ ],
+ "open":[
+  "Constant-on-terminal for For-body nodes needs another route (1055 on ForLoop owner) - review §5 const-at-top-then-move, or a ForLoop-aware op?",
+  "RUN2 fix: re-resolve the CLFN's node index by uid after each purge instead of the pre-purge index (script patch, the step3b script itself was not among the inputs)"
+ ],
+ "cost":{"usd":null,"minutes":6,"labview_runs":0},
+ "note":"Offline log read only; step3b.py was not an input, so the stale-index cause is read from the index numbers in the logs, not from the code."}

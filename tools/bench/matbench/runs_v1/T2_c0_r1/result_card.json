@@ -1,0 +1,14 @@
+{"schema":"result/1","id":"mb-T2","status":"PASS","gates":{"pass":3,"fail":0},"first_fail":null,"blocked_by":null,"artefacts":[],
+"facts":[
+"run1: sites 0,2 PASS ExecState 1 (diag_c90_t0_step3b.log:79,135); first 0 = site 3, For-body Diagram[50] (log:175-176)",
+"run1 site 3 fault: OpCreateConstOnTerm_v0 on ForLoop[5].N[5].t6 raised error 1055 (Invoke Node), so CLFN t6 unwired -> ExecState 0 (log:172-174)",
+"run1: the same 1055 on ForLoop targets at S04/S05 (log:213,253); the VI stayed broken, so every later site reads 0 (log:216-672)",
+"run1 While-body/other-diagram sites wired fine: S08 WhileLoop[1] t6 wire 23826, S10 WhileLoop[2] t6 wire 24069 (log:291-292,347-348); failed .5 only because the VI was already broken",
+"run2 skipped the For-body sites (r2.log:23) but broke at site 0: const PASS on WhileLoop[1].N[74].t6 yet CLFN N[74] t6 wire 0 (r2.log:61-62); run1 used N[73] and wired (log:58-59)",
+"run2 cause: the const junk Invoke sat at nodes_index 73 of 75 (r2.log:49) and was purged (r2.log:58), shifting the CLFN index; the constant was aimed at a stale N[74], not the CLFN",
+"run2 also: new ExecState probes show a bare unwired CLFN already reads 0 at top level and in the body (r2.log:42,45) - the probe is uninformative, not a fault",
+"run2: once site 0 was broken every later site read 0 (r2.log:64-460); RESULT pass 38 fail 12, first_fail S00.3 (r2.log:507)",
+"route verdict: While-body sites work (run1 S00,S02 ExecState 1); For-body sites fail at const creation with 1055 (run1 S03-S05)"
+],
+"open":["run2's index shift is inferred from nodes_index/purge lines, not read back; confirm by re-resolving CLFN by uid after purge"],
+"cost":{"usd":null,"minutes":5,"labview_runs":0},"note":"logs only, no rerun"}

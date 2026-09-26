@@ -1,0 +1,20 @@
+{"schema":"result/1","id":"mb-T3","status":"PASS","gates":{"pass":10,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/bench/p2check_l2a1_88_desk.json","md5":"05ea66d4fd8c5b1181fc88cc0d699f16"},{"path":"tools/bench/p2check_l2a1_88_desk.py","md5":"cb24320cf3957a8383afe1db9f248a89"},{"path":"tools/bench/p2check_l2a1_88_desk.log","md5":"8f0bd1a04e54ee652f4b08f03d10d0b1"},{"path":"tools/bench/p2check_l2a1_88_desk_r2.log","md5":"c70210a9c5dd003a971abd272b805dd9"}],
+"facts":[
+"sr1_L0: src SR1L LeftShiftRegister(-2) term -6 -> SelectorTunnel 5825 OuterTerminal 5883; net -8 1 src/1 sink at step 18 and 46. step_18_wire.json:1, p2check_l2a1_88_desk.json:6-190",
+"sr2_L0: src SR2L LeftShiftRegister(-10) term -14 -> SelectorTunnel 5702 OuterTerminal 6038; net -16 1/1 at step 22 and 46. step_22_wire.json:1, p2check_l2a1_88_desk.json:205-391",
+"sr3_L0: src SR3L LeftShiftRegister(-18) term -22 -> SelectorTunnel 10750 OuterTerminal 10760 'Value'; net -24 1/1 at step 26 and 46. step_26_wire.json:1, p2check_l2a1_88_desk.json:406-588",
+"tun1: T1 LoopTunnel(-25) inner -27 -> SelectorTunnel 5725 OuterTerminal 5741, net -28 1/1; outer net 2731 1 src 2886/2892, 4 sinks. step_27..29 .json:1, p2check_l2a1_88_desk.json:603-733,1068",
+"tun2: T2 LoopTunnel(-29) inner -31 -> SelectorTunnel 5967 OuterTerminal 5976, net -32 1/1; outer net 5812 1 src 5818/5820, 4 sinks. step_30..32 .json:1, p2check_l2a1_88_desk.json:798-929,1283",
+"All 5 sinks bare before their row: base wires 1681/6041/5746/5979 in step_01_move_in.json:1 cut_set, 10763 in step_04_move_in.json:1 cut_set (p2check_l2a1_88_desk.json:191,392,589,784,980)",
+"Binding keys = sim sym 8/8; row sources bind SR1L->25240 SR2L->25344 SR3L->25382 T1->25422 T2->25428, none a base uid. stage_d1_l2a1.json:795,2547,2660,2773,2890,2928; p2check json:1423-1522",
+"Stage sinks by index match sim grouping: sr1_L0/sr2_L0/tun1/tun2 -> D[21].N[2].t5/t3/t4/t1 (moved with #5540, step_01:1), sr3_L0 -> N[5].t2 (with #10445, step_04:1). stage_d1_l2a1.json:770-780",
+"Stage full-graph compare (stagexec.py:238-258) n=0 at k=27,28,40,41,42 (stage_d1_l2a1.json:2901,2939,3245,3278,3311); k=18/22/26 skipped (:2637,2750,2863); P2 fails name these 5 sinks (:819-834)",
+"p2check_l2a1_88_desk.log / _r2.log | no JEV-LADDER line (jev_gate.log) | old path: review | peers=[] so none; my RESULT-line bug patched, not re-run | rc=1 x2, gates 10/0 (_r2.log:18-27,36)"
+],
+"open":[
+"The LabVIEW half of PD194(a) (sole source/sink + ordered-pass Is Broken? read on the bed) is NOT done: card labview=none. It needs a labview=read card.",
+"p2check_l2a1_88_desk.log and _r2.log end rc=1 (my own RESULT line, no LabVIEW). Does the failing-log gate need a review or a discharge, given peers=[]?"
+],
+"cost":{"usd":null,"minutes":9,"labview_runs":0},
+"note":"(B),(C) out. Offline only. Source TERM uid bindings are not persisted, only obj (stage json:795). SR1R -1->10850 is a Wire uid in sim objs, but no sim terminal is on wire 10850 from step_12 on (_r2.log:9). stage json:752 'deleted at close' vs :443-445 gui_save md5 51d9b8a3."}

@@ -1,0 +1,23 @@
+{"schema":"result/1","id":"mb-T2","status":"PASS","gates":{"pass":3,"fail":0},
+ "first_fail":null,
+ "blocked_by":null,
+ "artefacts":[],
+ "facts":[
+  "RUN1 first ES 0 = site 3, For body D[50]#29894: OpCreateConstOnTerm_v0 on ForLoop[5].N[5].t6 raised 'error 1055: Invoke Node in OpCreateConstOnTerm_v0.vi', t6 wire 0 (step3b.log:172-176)",
+  "RUN1 step3b.log: ES 1 after sites 0,2 (:78,:134); before ES 0 at :174 the only lasting change: CLFN #22997 in D[50], t6 wire 0, t8 never branched (junk Invoke purged :169)",
+  "RUN1 all 5 For-body sites 3,4,5,16,17 hit the same 1055 at the constant op (step3b.log:172,213,253,573,613); uids #23441/#24551 shown there are stale (S02/S13's consts, :114,:515)",
+  "RUN1+2 CD: added 21 (13 CallLibrary + 8 DigitalNumericConstant) and 16, NO Invoke (step3b.log:677; r2.log:465) with ES 0 -> 90-5's junk-Invoke explanation does not fit these runs",
+  "RUN2 MEASURED: a bare t0stamp CLFN alone breaks the VI - ES 1 after open (r2.log:21-22), ES 0 with CLFN #22968 unwired at top level (:42) and still 0 after move_in to D[43] (:45)",
+  "RUN2 fault: stale node index. n was read while a junk Invoke sat at n-1 (73/75 r2.log:49; 23/25 :268); the purge (:58,:277) moved the CLFN to n-1, so t6 read at old n gave 0 (:62,:281)",
+  "RUN2: sites 0,11 constants were created, err '' (r2.log:61,280), but S00.3/S11.3 FAIL skipped the branch, so t8 stayed bare; ES 0 at every read from :42 to the end, E1 6/8 (:461-463)",
+  "Index check: the 6 passing RUN2 sites and all 13 RUN1 sites had the junk at the LAST index (after the CLFN), so the purge did not shift it (r2.log:91,150,209,309,368,427; step3b.log:46)",
+  "Route: While bodies 8/8 in RUN1 (ES table step3b.log:673), 6/8 in RUN2 (misses = index readback); For bodies 0/5 (1055), skipped in RUN2 (r2.log:23); case 6/7/14/15 never tried (step3b.log:23)",
+  "JEV: step3b.log, step3b_r2.log | no JEV-LADDER line (newest jev_gate.log:1228, 02:37) | none -> old path, hypothesis review owed | not dispatched: card peers=[] | open"
+ ],
+ "open":[
+  "For-body 1055 cause is not in the logs; toolkit-capabilities.md:70 has OpCreateConstOnTerm_v0 as Class Name='WhileLoop' (measured on a While only) and :101-102 says a class seed errors 1055 on the other class. ForLoop op variant, or review #5 route (const top, move both, OpConnectNested)?",
+  "Adapt-to-Type refusal on the display-body wires (w19372/19465/19468/19429) and on sites 8/20 is still unmeasured: only sites 0 and 2 were ever read fully wired with no other bare CLFN present (ES 1, step3b.log:78,134).",
+  "Run-2 fix not applied (result-dependent, judgement's): re-find the CLFN by uid after every purge before node_terms/connect. Why the junk landed before the CLFN only at run-2 sites 0 and 11 is not in the logs."
+ ],
+ "cost":{"usd":null,"minutes":15,"labview_runs":0},
+ "note":"Offline replay; no rerun, no LabVIEW, no peers. step3b.log=tools/bench/diag_c90_t0_step3b.log, r2.log=..._step3b_r2.log. diag_c90_t0_step3b.py is not on disk; step order read from log line order and its predecessor diag_c90_t0_step3.py:79-96."}

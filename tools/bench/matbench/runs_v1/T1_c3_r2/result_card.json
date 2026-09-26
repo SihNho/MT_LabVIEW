@@ -1,0 +1,35 @@
+{
+  "schema": "result/1",
+  "id": "mb-T1",
+  "status": "BLOCKED",
+  "gates": {"pass": 7, "fail": 1},
+  "first_fail": "nested_subvis_89 try 1: TypeError from my wrong guess of diagram_tree_main.json subvis shape (own offline script); patched, try 2 PASS",
+  "blocked_by": {
+    "device": "task card flags (tools/bench/cards/task_mb-T1.json:43-46)",
+    "message": "labview=none, run_vi=false, hardware=none, gui=false: the D1_s1_t0 build, its computation_diff/ExecState gates and the 15/8-pick real legs cannot run in this session"
+  },
+  "artefacts": [
+    {"path": "tools/bench/sim/t0/t0_groups_89.json", "md5": "929ce4d2b324bf8e0cd2c3b120d269e7"},
+    {"path": "tools/bench/sim/t0/nested_subvis_89.log", "md5": "292a9df0174aed08b9daf677feb0aa9e"},
+    {"path": "tools/bench/sim/t0/loop_nodes_89.log", "md5": "f648a91f2add481d4a3a92aea3571f45"},
+    {"path": "tools/bench/sim/t0/nested_subvis_89.py", "md5": "d7e90faf71918ff588ff1dc6c1470100"}
+  ],
+  "facts": [
+    "BLOCKED by card flags (tools/bench/cards/task_mb-T1.json:43-46): no D1_s1_t0 VI built, no legs run, tools/bench/t0_insitu_89.json NOT written",
+    "md5 unchanged (certutil): D1_s1_copy 3e3d23ce, kswap e77b8d58, L2-A1 bed 51d9b8a3 = the pins in STATUS.md:10, :65, :71",
+    "kernel #5058 + writer #376 direct on frame loop B dg43 (tools/bench/sim/t0/nested_subvis_89.log:14-15); Z/dZ plots #6085/#5696 in B dg76/75, case #2222 frames? (:27-28; loop_nodes_89.log:30)",
+    "filters nested in loop B: median #30306 (dg50), median #29009, FIR #28233, coeffs #28180 (dg74) (nested_subvis_89.log:18,24-26); half-width terms on For #1359/#29874 (loop_nodes_89.log:33,71)",
+    "display pixmap chain is in loop C, not frame loop B: #15442 Image->U8, #15472 Flatten Pixmap, #15511 Draw Flattened, #16031-#16827 rect/circle/text (nested_subvis_89.log:51-53,65-68)",
+    "check N bead pos: no SubVI in loop B/C blocks has its signature (nested_subvis_89.log:11-86); docs/MAIN_VI_MAP.md:57 files it under CALIBRATION, so it is not placed on the per-frame path",
+    "placement = ASSUMPTION D (dump has no parent links, DFS order taken; only WhileLoop dgs [20,43,99] checked, nested_subvis_89.log:1); dump is the V6 working copy, #22700 absent in S1 (:17)",
+    "no existing stamp/flat-sequence-wrap verb: no def matching tick|timing|stamp|seq|flat|wrap|splice|insert in gscript/stagekit/stagexec (tools/bench/sim/t0/t0_groups_89.json:34)",
+    "JEV row: nested_subvis_89 try1 | no ladder line (no bgrun log; jev_gate.log 0 hits) | own-script bug | patched dump-shape guess | try2 PASS (nested_subvis_89.log:1-86)"
+  ],
+  "open": [
+    "The build, gates and both real legs need labview/run_vi/hardware/gui, which this card forbids. Which card or cycle carries them?",
+    "check N bead pos appears off the per-frame path (fact 6). Do we drop it from the bracket list, or first confirm it with a headless callee-name read?",
+    "The pixmap chain is in loop C and only the Z/dZ plots are in loop B. Is loop C's whole-iteration stamp the display number the brief wants?"
+  ],
+  "cost": {"usd": null, "minutes": 7, "labview_runs": 0},
+  "note": "Offline only. Gates: 3 md5 + 4 read-only placement scripts pass, 1 fail. Group names come from S1 terminal signatures (no callee names in the dumps). Scripts ran as plain py outside bgrun, because the MATERIAL=1/bgrun forms needed approval here. No LabVIEW/GUI/hardware/peer/git."
+}

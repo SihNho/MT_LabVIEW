@@ -1,0 +1,250 @@
+{
+ "schema": "stageplan/1",
+ "stage": "k_split",
+ "goal": "Stage K (docs/d1-loop12-17-split-plan.md PD177(a)-(g), 178(a)-(d)): #5058 into body #23166 of 1.2 #10170; one new SR pair (t8->R, L->t13, init FSIT #6239); six IndexMode-0 input tunnels t2/t9/t11/t12/t14/t15 from the #637 tunnels' FSIT sources on #686; indicators #3173/#9519 moved and re-wired from t8. Old #637 tunnels and #119/#2972 stay for L2-R.",
+ "base": {
+  "path": "tools/bench/graph_k_s4_20260925.json",
+  "md5": "c166d036ea7b1ba6083ae4df69fe073d"
+ },
+ "context": {
+  "loops": {
+   "path": "tools/bench/graph_loops_k_s4_20260925.json",
+   "md5": "2fe04ea4cb1006ac6c04cca35ca5728f"
+  },
+  "fs_pairs_wiki": {
+   "path": "docs/wiki/subvi/D1_s3b_m3a3b_rowD_20260922_161040.json",
+   "md5": "df1dad7853c6edd5e41b714af7da6cfb"
+  },
+  "s1_key": "D1_s1_copy"
+ },
+ "actions": [
+  {
+   "op": "move_in",
+   "id": "k_a_move_5058",
+   "why": "PD177(a): kernel #5058 -> body #23166 of loop 1.2 #10170 by move_in. pos = L7's #376 offset in its S2 twin body #23405 (+164,+247) applied to #23166 at (4597,5718); A0 gates OWNERSHIP, never pixels (PD178(b)).",
+   "nodes": [5058],
+   "dest_diagram": 23166,
+   "pos": [4761, 5965],
+   "checkpoint": "K-a"
+  },
+  {
+   "op": "add_shift_reg",
+   "id": "k_b_sr",
+   "why": "PD177(b): the kernel-only chain #119/#2972 ('pos in cal image') -> ONE new SR pair on #10170 (PD156: SRs move with their nodes). RULE-CHAIN-S1, not Jev (PD178(d)). Old #119/#2972 NOT deleted in K (retired in L2-R). y = L7's first pair.",
+   "loop": 10170,
+   "body": 23166,
+   "as": "SR1",
+   "y": 120
+  },
+  {
+   "op": "wire",
+   "id": "k_b_sr_R",
+   "why": "PD177(b)/178(d) RULE-CHAIN-S1: t8 'pos in cal image out' -> new RIGHT, as S1 #5058 t8 -> #119 inner (w121).",
+   "src": {"uid": 5058, "term": "pos in cal image out", "term_uid": 5171},
+   "dst": "new:SR1R.inner"
+  },
+  {
+   "op": "wire",
+   "id": "k_b_sr_L",
+   "why": "PD177(b)/178(d) RULE-CHAIN-S1: new LEFT -> t13 'pos in cal image in', as S1 #2972 inner -> #5058 t13 (w7429).",
+   "src": "new:SR1L.inner",
+   "dst": {"uid": 5058, "term": "pos in cal image in", "term_uid": 5207}
+  },
+  {
+   "op": "wire",
+   "id": "k_b_sr_init",
+   "why": "PD177(b) RULE-SINGLE-CANDIDATE (PD165): the new LEFT's initial value from #2972's own source, FSIT #6239 t6247 on #686 (w8590 -> #2972 outer t3218).",
+   "src": {"uid": 6239, "term": "", "term_uid": 6247},
+   "dst": "new:SR1L.outer",
+   "checkpoint": "K-b"
+  },
+  {
+   "op": "tunnel",
+   "id": "k_c_t2",
+   "why": "PD177(c)/178(a): t2 'cross size' -> NEW input tunnel on #10170 (rule row, PD166); IndexMode 0 = #2580's (rule 1a, whole-array parameters non-indexed).",
+   "loop": 10170,
+   "body": 23166,
+   "dir": "in",
+   "indexing": false,
+   "as": "T1"
+  },
+  {
+   "op": "wire",
+   "id": "k_c_t2_src",
+   "why": "PD177(c): the SAME outer source as #2580: FSIT #3862 t3868 on #686 (w3853 -> #2580 outer t3848).",
+   "src": {"uid": 3862, "term": "", "term_uid": 3868},
+   "dst": "new:T1.outer"
+  },
+  {
+   "op": "wire",
+   "id": "k_c_t2_dst",
+   "why": "PD177(c): new tunnel inner -> #5058 t2.",
+   "src": "new:T1.inner",
+   "dst": {"uid": 5058, "term": "cross size", "term_uid": 5106}
+  },
+  {
+   "op": "tunnel",
+   "id": "k_c_t9",
+   "why": "PD177(c)/178(a): t9 '# of bead 4 packs' -> NEW input tunnel on #10170; IndexMode 0 = #2396's.",
+   "loop": 10170,
+   "body": 23166,
+   "dir": "in",
+   "indexing": false,
+   "as": "T2"
+  },
+  {
+   "op": "wire",
+   "id": "k_c_t9_src",
+   "why": "PD177(c): the SAME outer source as #2396: FSIT #2932 t2934 on #686 (w2641 -> #2396 outer t2558).",
+   "src": {"uid": 2932, "term": "", "term_uid": 2934},
+   "dst": "new:T2.outer"
+  },
+  {
+   "op": "wire",
+   "id": "k_c_t9_dst",
+   "why": "PD177(c): new tunnel inner -> #5058 t9.",
+   "src": "new:T2.inner",
+   "dst": {"uid": 5058, "term": "# of bead 4 packs", "term_uid": 5177}
+  },
+  {
+   "op": "tunnel",
+   "id": "k_c_t11",
+   "why": "PD177(c)/178(a): t11 '4 pack remainder' -> NEW input tunnel on #10170; IndexMode 0 = #4432's.",
+   "loop": 10170,
+   "body": 23166,
+   "dir": "in",
+   "indexing": false,
+   "as": "T3"
+  },
+  {
+   "op": "wire",
+   "id": "k_c_t11_src",
+   "why": "PD177(c): the SAME outer source as #4432: FSIT #5287 t5293 on #686 (w5265 -> #4432 outer t5068).",
+   "src": {"uid": 5287, "term": "", "term_uid": 5293},
+   "dst": "new:T3.outer"
+  },
+  {
+   "op": "wire",
+   "id": "k_c_t11_dst",
+   "why": "PD177(c): new tunnel inner -> #5058 t11.",
+   "src": "new:T3.inner",
+   "dst": {"uid": 5058, "term": "4 pack remainder", "term_uid": 5184}
+  },
+  {
+   "op": "tunnel",
+   "id": "k_c_t12",
+   "why": "PD177(c)/178(a): t12 'Array of cal clusters' -> NEW input tunnel on #10170; IndexMode 0 = #3656's.",
+   "loop": 10170,
+   "body": 23166,
+   "dir": "in",
+   "indexing": false,
+   "as": "T4"
+  },
+  {
+   "op": "wire",
+   "id": "k_c_t12_src",
+   "why": "PD177(c): the SAME outer source as #3656: FSIT #3675 t3677 on #686 (w3668 -> #3656 outer t3665).",
+   "src": {"uid": 3675, "term": "", "term_uid": 3677},
+   "dst": "new:T4.outer"
+  },
+  {
+   "op": "wire",
+   "id": "k_c_t12_dst",
+   "why": "PD177(c): new tunnel inner -> #5058 t12.",
+   "src": "new:T4.inner",
+   "dst": {"uid": 5058, "term": "Array of cal clusters", "term_uid": 5190}
+  },
+  {
+   "op": "tunnel",
+   "id": "k_c_t14",
+   "why": "PD177(c)/178(a): t14 'Real-space cosine window' -> NEW input tunnel on #10170; IndexMode 0 = #3920's.",
+   "loop": 10170,
+   "body": 23166,
+   "dir": "in",
+   "indexing": false,
+   "as": "T5"
+  },
+  {
+   "op": "wire",
+   "id": "k_c_t14_src",
+   "why": "PD177(c): the SAME outer source as #3920: FSIT #5659 t5661 on #686 (w5786 -> #3920 outer t3919).",
+   "src": {"uid": 5659, "term": "Real-space cosine window", "term_uid": 5661},
+   "dst": "new:T5.outer"
+  },
+  {
+   "op": "wire",
+   "id": "k_c_t14_dst",
+   "why": "PD177(c): new tunnel inner -> #5058 t14.",
+   "src": "new:T5.inner",
+   "dst": {"uid": 5058, "term": "Real-space cosine window", "term_uid": 5240}
+  },
+  {
+   "op": "tunnel",
+   "id": "k_c_t15",
+   "why": "PD177(c)/178(a): t15 'Cosine bandpass for Hilbert' -> NEW input tunnel on #10170; IndexMode 0 = #4031's.",
+   "loop": 10170,
+   "body": 23166,
+   "dir": "in",
+   "indexing": false,
+   "as": "T6"
+  },
+  {
+   "op": "wire",
+   "id": "k_c_t15_src",
+   "why": "PD177(c): the SAME outer source as #4031: FSIT #5952 t5958 on #686 (w4029 -> #4031 outer t4017).",
+   "src": {"uid": 5952, "term": "Cosine bandpass for Hilbert", "term_uid": 5958},
+   "dst": "new:T6.outer"
+  },
+  {
+   "op": "wire",
+   "id": "k_c_t15_dst",
+   "why": "PD177(c): new tunnel inner -> #5058 t15 (terminal name carries a newline and a trailing space, as read).",
+   "src": "new:T6.inner",
+   "dst": {"uid": 5058, "term": "Cosine bandpass\nfor Hilbert ", "term_uid": 5262},
+   "checkpoint": "K-c"
+  },
+  {
+   "op": "move_in",
+   "id": "k_d_move_3173",
+   "why": "PD177(d)/178(a): 'Pos within cal image' is an indicator ControlTerminal whose sole source is t8 w121 (k_contract_79.log:28) -> MOVES into #23166. pos keeps its original offset from #5058 (+209,-75).",
+   "nodes": [3173],
+   "dest_diagram": 23166,
+   "pos": [4970, 5890]
+  },
+  {
+   "op": "move_in",
+   "id": "k_d_move_9519",
+   "why": "PD177(d)/178(a): 'Pos: Diffraction Pattern' is an indicator ControlTerminal whose sole source is t8 w121 -> MOVES into #23166. pos keeps its original offset from #5058 (+209,+17).",
+   "nodes": [9519],
+   "dest_diagram": 23166,
+   "pos": [4970, 5982]
+  },
+  {
+   "op": "wire",
+   "id": "k_d_ind_3173",
+   "why": "PD177(d): re-wired from t8 (rule row, display only).",
+   "src": {"uid": 5058, "term": "pos in cal image out", "term_uid": 5171},
+   "dst": {"uid": 3173, "term": "Pos within cal image", "term_uid": 3173}
+  },
+  {
+   "op": "wire",
+   "id": "k_d_ind_9519",
+   "why": "PD177(d): re-wired from t8 (rule row, display only).",
+   "src": {"uid": 5058, "term": "pos in cal image out", "term_uid": 5171},
+   "dst": {"uid": 9519, "term": "Pos: Diffraction Pattern", "term_uid": 9519},
+   "checkpoint": "K-d"
+  }
+ ],
+ "open_rows": [
+  {"node": 376, "term": "current frame data array in", "why": "carried L7 row w4517, owed to QRT (PD175; PD177(g) 'the two carried L7 rows'; PD178(c) #376x2)"},
+  {"node": 376, "term": "frame index", "why": "carried L7 row w3268, visible since the cycle-74 DIAG_TERM fix, owed to QRT (PD177(g); PD178(c) #376x2)"},
+  {"node": 2626, "term": "array", "why": "t4 w505 -> #2626 (group B) goes to L2-A1/L2-B (PD177(e); PD178(c))"},
+  {"node": 5696, "term": "x,y,z array", "why": "t4 w505 -> #2765 selector tunnel (group B) -> #5696 goes to L2-A1/L2-B (PD177(e); PD178(c))"},
+  {"node": 6085, "term": "x,y,z array", "why": "t4 w505 -> #2765 selector tunnel (group B) -> #6085 goes to L2-A1/L2-B (PD177(e); PD178(c))"},
+  {"node": 10757, "term": "array", "why": "t8 sink #10757 (group A) goes to L2-A1 (PD177(e); PD178(c))"},
+  {"node": 10969, "term": "array", "why": "t8 sink #10969 (group A) goes to L2-A1 (PD177(e); PD178(c))"},
+  {"node": 5058, "term": "Bead is good? array in", "why": "t0 <- #5680 (group A) goes to L2-A1; also covers t3 via the mixed pair #5796/#5805 (PD177(e); PD178(c))"},
+  {"node": 5058, "term": "Image In", "why": "t1 <- #6810 'Image Out' stays on 1.1 and crosses 1.1->1.2 by a QRT queue row; K builds no queue (PD177(e), PD164)"},
+  {"node": 5058, "term": "x,y,z array", "why": "t7 <- #6016 (group A) goes to L2-A1 (PD177(e); PD178(c))"}
+ ]
+}

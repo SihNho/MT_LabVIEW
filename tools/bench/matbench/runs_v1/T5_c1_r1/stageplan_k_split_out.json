@@ -1,0 +1,68 @@
+{
+ "schema": "stageplan/1",
+ "stage": "k_split",
+ "goal": "stage K (Pre-decided 177/178): kernel #5058 into loop 1.2 body #23166 of #10170; one new SR pair (t8->R, L->t13, init from FSIT #6239), six new input tunnels (t2,t9,t11,t12,t14,t15, IndexMode 0), indicators #3173/#9519 moved and re-wired from t8",
+ "base": {
+  "path": "tools/bench/graph_k_s4_20260925.json",
+  "md5": "c166d036ea7b1ba6083ae4df69fe073d"
+ },
+ "context": {
+  "loops": {
+   "path": "tools/bench/graph_loops_k_s4_20260925.json",
+   "md5": "2fe04ea4cb1006ac6c04cca35ca5728f"
+  },
+  "fs_pairs_wiki": {
+   "path": "docs/wiki/subvi/D1_s3b_m3a3b_rowD_20260922_161040.json",
+   "md5": "df1dad7853c6edd5e41b714af7da6cfb"
+  },
+  "s1_key": "D1_s1_copy"
+ },
+ "actions": [
+  {"op": "move_in", "id": "k_move_5058", "why": "177(a)", "nodes": [5058], "dest_diagram": 23166, "pos": [4700, 5800]},
+  {"op": "move_in", "id": "k_move_ind", "why": "177(d)/178(a): #3173/#9519 indicator ControlTerminals, sole source t8 w121", "nodes": [3173, 9519], "dest_diagram": 23166, "pos": [4900, 5800], "checkpoint": "K-move"},
+
+  {"op": "add_shift_reg", "id": "k_sr_pos", "why": "177(b): one new SR pair for kernel-only #119/#2972 (RULE-CHAIN-S1, 178(d))", "loop": 10170, "body": 23166, "as": "SR1", "y": 120},
+  {"op": "wire", "id": "k_sr_R", "src": {"uid": 5058, "term_uid": 5171}, "dst": "new:SR1R.inner"},
+  {"op": "wire", "id": "k_sr_L", "src": "new:SR1L.inner", "dst": {"uid": 5058, "term_uid": 5207}},
+  {"op": "wire", "id": "k_sr_init", "why": "177(b) RULE-SINGLE-CANDIDATE: same source as #2972's init, FSIT #6239 t6247 on #686", "src": {"uid": 6239, "term_uid": 6247}, "dst": "new:SR1L.outer", "checkpoint": "K-sr"},
+
+  {"op": "tunnel", "id": "k_tun_t2", "loop": 10170, "body": 23166, "dir": "in", "indexing": false, "as": "T1"},
+  {"op": "wire", "id": "k_tun_t2_out", "src": {"uid": 3862, "term_uid": 3868}, "dst": "new:T1.outer"},
+  {"op": "wire", "id": "k_tun_t2_in", "src": "new:T1.inner", "dst": {"uid": 5058, "term_uid": 5106}},
+
+  {"op": "tunnel", "id": "k_tun_t9", "loop": 10170, "body": 23166, "dir": "in", "indexing": false, "as": "T2"},
+  {"op": "wire", "id": "k_tun_t9_out", "src": {"uid": 2932, "term_uid": 2934}, "dst": "new:T2.outer"},
+  {"op": "wire", "id": "k_tun_t9_in", "src": "new:T2.inner", "dst": {"uid": 5058, "term_uid": 5177}},
+
+  {"op": "tunnel", "id": "k_tun_t11", "loop": 10170, "body": 23166, "dir": "in", "indexing": false, "as": "T3"},
+  {"op": "wire", "id": "k_tun_t11_out", "src": {"uid": 5287, "term_uid": 5293}, "dst": "new:T3.outer"},
+  {"op": "wire", "id": "k_tun_t11_in", "src": "new:T3.inner", "dst": {"uid": 5058, "term_uid": 5184}},
+
+  {"op": "tunnel", "id": "k_tun_t12", "loop": 10170, "body": 23166, "dir": "in", "indexing": false, "as": "T4"},
+  {"op": "wire", "id": "k_tun_t12_out", "src": {"uid": 3675, "term_uid": 3677}, "dst": "new:T4.outer"},
+  {"op": "wire", "id": "k_tun_t12_in", "src": "new:T4.inner", "dst": {"uid": 5058, "term_uid": 5190}},
+
+  {"op": "tunnel", "id": "k_tun_t14", "loop": 10170, "body": 23166, "dir": "in", "indexing": false, "as": "T5"},
+  {"op": "wire", "id": "k_tun_t14_out", "src": {"uid": 5659, "term_uid": 5661}, "dst": "new:T5.outer"},
+  {"op": "wire", "id": "k_tun_t14_in", "src": "new:T5.inner", "dst": {"uid": 5058, "term_uid": 5240}},
+
+  {"op": "tunnel", "id": "k_tun_t15", "loop": 10170, "body": 23166, "dir": "in", "indexing": false, "as": "T6"},
+  {"op": "wire", "id": "k_tun_t15_out", "src": {"uid": 5952, "term_uid": 5958}, "dst": "new:T6.outer"},
+  {"op": "wire", "id": "k_tun_t15_in", "src": "new:T6.inner", "dst": {"uid": 5058, "term_uid": 5262}, "checkpoint": "K-tunnels"},
+
+  {"op": "wire", "id": "k_ind_3173", "why": "177(d) display row", "src": {"uid": 5058, "term_uid": 5171}, "dst": {"uid": 3173, "term_uid": 3173}},
+  {"op": "wire", "id": "k_ind_9519", "why": "177(d) display row", "src": {"uid": 5058, "term_uid": 5171}, "dst": {"uid": 9519, "term_uid": 9519}, "checkpoint": "K-end"}
+ ],
+ "open_rows": [
+  {"node": 376, "term": "current frame data array in", "why": "carried L7 row (177(g), 178(c)); QRT stage, Pre-decided 175"},
+  {"node": 376, "term": "frame index", "why": "carried L7 row w3268 (177(g), 178(c))"},
+  {"node": 2626, "term": "array", "why": "177(e): t4 w505 -> #2626 (group B), L2-A1/L2-B; 178(c)"},
+  {"node": 5696, "term": "x,y,z array", "why": "178(c) PB row, t4/mixed pair #1147/#1142 -> L2-A1"},
+  {"node": 6085, "term": "x,y,z array", "why": "178(c) PB row, t4/mixed pair -> L2-A1"},
+  {"node": 10757, "term": "array", "why": "177(e): t8 sink #10757 (group A) -> L2-A1; 178(c)"},
+  {"node": 10969, "term": "array", "why": "177(e): t8 sink #10969 (group A) -> L2-A1; 178(c)"},
+  {"node": 5058, "term": "Bead is good? array in", "why": "177(e): t0 <- #5680 (group A) -> L2-A1; covers t3 via #5796/#5805 (178(c))"},
+  {"node": 5058, "term": "Image In", "why": "177(e): t1 <- #6810 crosses 1.1->1.2, owed QRT queue row (164)"},
+  {"node": 5058, "term": "x,y,z array", "why": "177(e): t7 <- #6016 (group A) -> L2-A1; 178(c)"}
+ ]
+}

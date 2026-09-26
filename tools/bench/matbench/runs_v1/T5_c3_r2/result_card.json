@@ -1,0 +1,43 @@
+{
+ "schema": "result/1",
+ "id": "mb-T5",
+ "status": "PASS",
+ "gates": {
+  "pass": 3,
+  "fail": 0
+ },
+ "first_fail": null,
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/matbench_out/stageplan_k_split.json", "md5": "43a9f7d2764214d1502e8cca76ea0ae8"},
+  {"path": "tools/bench/matbench_out/plan_k_split.json", "md5": "c230011caefcafc7f32b703b2e2a69a2"},
+  {"path": "tools/bench/matbench_out/sim/k_split/summary.json", "md5": "edd52ebdb3cb01f64e755c2e1b436230"},
+  {"path": "tools/bench/matbench_out/sim/k_split/candidates.json", "md5": "0415a044e5f3a8ecabc8869e9316d5b8"},
+  {"path": "tools/bench/matbench_out/sim_k_split.log", "md5": "edcbcd816305f033ef22d3d612ed68e1"},
+  {"path": "tools/bench/matbench_out/label_test_k.log", "md5": "64754929cf5a14152e6639ac7b65d984"},
+  {"path": "tools/bench/matbench_out/l7_control_sim.log", "md5": "04f95b994ba9575995b8108d3e37d967"}
+ ],
+ "facts": [
+  "Plan validates as stageplan/1. 27 actions: 3 move_in (#5058, #3173, #9519), 1 SR pair, 6 tunnels (indexing false), 17 wires. That is 177(h)'s 11 wired rows (stageplan_k_split.json:23-322).",
+  "Simulation: failed=None, all 27 steps ok, undecided 0 (sim_k_split.log:2-29). 20 candidate rows listed and none decided: 13 at the kernel move, 7 at the indicator moves (candidates.json).",
+  "End cdiff = 15 rows (sim_k_split.log:29): exactly 178(c)'s 10 (#376 x2, #2626 array, #5696/#6085 x,y,z array, #10757/#10969 array, #5058 t0/t1/t7) + 5 rows already there at step 0.",
+  "The 5: #10067 'Initial Time at Start', #12236 x/y, #19532 'Cycle Start Time', #21699 x, all fed by Tick Count nodes. All are in step 0; every undeclared end row is (label_test_k.log:33,40).",
+  "Cause, measured: the stagesim CLI builds the sim graph with labels={}, while S1 gets main_vi_node_labels. With labels on the sim side too, the base has only the 2 #376 rows (label_test_k.log:39).",
+  "With labels on both sides, the same plan is final:true and its end rows == the 10 declared open_rows (label_test_k.log:41,46, 5/0). That run went to scratch; the deliverable is the CLI run.",
+  "So the CLI's own RESULT is FAIL 'not final', rc=1 (sim_k_split.log:30-31), only because of the 5 label rows; plan_k_split.json has final:false. Every card pass criterion holds.",
+  "Control: the current stagesim on stageplan_l7_split.json ends on 7 rows (5 timers + both #376), but plan_l7_split.json (md5 3ad72b60, unchanged) records final:true with 1 row (l7_control_sim.log:47).",
+  "Graph facts behind the plan: #5058 on #639 (#637 body); #23166 and #639 are both children of #686; t5/t6/t10 unwired; t2..t15 tunnels fed by FSIT 3862/2932/5287/3675/5659/5952 = 177(c) (plan :79ff).",
+  "Jev ladder: sim_k_split.log | no JEV-LADDER line in jev_gate.log | old path, hypothesis review owed | not dispatched (card peers=[]) | reported here; cause measured by label_test_k.log (5/0)."
+ ],
+ "open": [
+  "The 5 timer rows come from the label mismatch. Should stagesim's finalize run with S1's node labels on the sim side (measured: then K is final with exactly the 10 design rows), rather than declaring them open?",
+  "plan_l7_split.json's final:true (1 row) no longer reproduces with the current stagesim (7 rows, incl. #376 'frame index'). Re-finalize L7 once the label question is settled?",
+  "The move_in pos values (#5058 [4760,5965], #3173 [4900,5900], #9519 [4900,5960]) copy the L7 plan's offsets in the same empty-loop template and were not checked against #10170's bounds. Accept, or measure first?"
+ ],
+ "cost": {
+  "usd": null,
+  "minutes": 38,
+  "labview_runs": 0
+ },
+ "note": "Offline only; wrote matbench_out/** and this card. Base graph and plan_l7_split.json unchanged. #22700 (177(f)) is absent from the base graph (w3040 = #6810 -> #5058 'Image In' only). No deletes and no RBW: #119/#2972 and the #637 tunnels stay for L2-R."
+}

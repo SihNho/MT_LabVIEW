@@ -1,0 +1,17 @@
+{"schema":"result/1","id":"mb-T3","status":"PASS","gates":{"pass":3,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/bench/diag_c88_p2.py","md5":null}],
+"facts":[
+"Rows map to sim steps: sr1_L0=step_18, sr2_L0=step_22, sr3_L0=step_26, tun1=27-29, tun2=30-32 (plan_l2a1.json:209,244,279,288,316); all error:null",
+"sr1_L0: src LeftShiftRegister -2 InnerTerminal -6 -> sink SelectorTunnel 5825 OuterTerminal 5883, net -8: 1 src/1 sink (step_46_wire.json:1, step_18_wire.json:1)",
+"sr2_L0: LSR -10 term -14 -> SelTun 5702 Outer 6038, net -16 1/1; sr3_L0: LSR -18 term -22 -> SelTun 10750 Outer 10760 'Value', net -24 1/1 (step_46_wire.json:1)",
+"tun1_in: LoopTunnel -25 Inner -27 -> SelectorTunnel 5725 OuterTerminal 5741, net -28 1/1; tun2_in: LoopTunnel -29 Inner -31 -> SelectorTunnel 5967 OuterTerminal 5976, net -32 1/1 (step_46_wire.json:1)",
+"Outer feeds: tun1_out branches existing wire 2731 from 2892; tun2_out branches wire 5812 from 5820 (step_28_wire.json:1, step_31_wire.json:1)",
+"Stage file sr1/2/3_L0 rows: err '', how 'cached index', bound {} and diff SKIPPED - no sim-vs-real comparison recorded (stage_d1_l2a1.json:2616-2640,2729-2753,2842-2866)",
+"Stage file tun1/tun2 rows: diff n=0 (no only_sim/only_real terms or edges), bound -25->25422, -29->25428 - agrees with sim (stage_d1_l2a1.json:2868-2929)",
+"Stage file ordered 2nd pass for all 5 rows raised '#<sink> not in Diagram[21].Nodes[]' and read Is Broken? None - sinks addressed as nodes, not SelectorTunnel faces (stage_d1_l2a1.json:819-834)",
+"Bed connect #2892->#5741 and #5820->#5976 each created then purged an Invoke node reported as uid 2731, same number as the sim's branched wire 2731 (stage_d1_l2a1.json:1727-1766,1772-1784)",
+"Parts (B) RBW scratch and (C) peer review not run: out of this replay per card pass[2] and flags labview=none, peers=[]"
+],
+"open":["SR rows have no recorded sim-vs-real diff (skipped) and the 2nd-pass Is Broken? read is None for all 5: does PD194(a) P2 count as passed without a SelectorTunnel-outer-face LabVIEW read?"],
+"cost":{"usd":null,"minutes":12,"labview_runs":0},
+"note":"Desk check only; Python execution needed approval so the diag script was never run; facts come from Grep/Read of the step files."}

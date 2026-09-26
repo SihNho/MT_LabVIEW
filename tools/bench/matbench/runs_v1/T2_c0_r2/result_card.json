@@ -1,0 +1,14 @@
+{"schema":"result/1","id":"mb-T2","status":"PASS","gates":{"pass":3,"fail":0},"first_fail":null,"blocked_by":null,"artefacts":[],
+"facts":[
+"run1 sites 0,2 (WhileLoop) PASS: const+CLFN+branch, ExecState 1 (diag_c90_t0_step3b.log:79,135)",
+"run1 first ExecState 0 = site 3 (w25157, ForLoop Diagram[50]): OpCreateConstOnTerm_v0 on ForLoop[5].N[5].t6 -> error 1055 Invoke Node (step3b.log:172-176)",
+"run1: S03.2 failure left the CLFN with t6 unwired (wire 0) in the For body -> VI broken; ExecState stayed 0 for all later sites (step3b.log:173-175, 312..672)",
+"run1: every For-body site 3,4,5,16,17 fails the same way (1055 at .2); every While-body site 8,10-13,20 passes .2 but .5 inherits 0 (step3b.log:213,253,573,613 / 291-651)",
+"run2 excluded For sites but added a 'CLFN bare' probe: the new CLFN #22968 was left on the diagram unwired, ExecState 0 already at top level before any wiring (step3b_r2.log:41-42)",
+"run2: after move_in to the While body ExecState still 0 (r2.log:45); S00.2 const PASS but S00.3 CLFN t6 wire 0 (r2.log:61-62) -> first fail site 0, which PASSED in run1",
+"run2: fault is the script's own probe step (bare unwired CLFN checked for ExecState, then route diverged, t6 not wired); all later sites inherit 0 (r2.log:64-460, GATES r2.log:489)",
+"route works only on While-body sites (run1 0,2; .2/.4 pass on 8,10-13,20); never on For-body sites (1055 at OpCreateConstOnTerm_v0 'ForLoop')",
+"ExecState cause text unreadable in both runs: 'VI.Get Errors 452 unbuilt' (step3b.log:176, r2.log:65)"
+],
+"open":["Is 1055 on ForLoop a gap in OpCreateConstOnTerm_v0 (owner class ForLoop not handled) needing a tool fix, or a different route for For bodies?","Should run2's bare-CLFN probe be removed and run1's While-only route rerun with For sites excluded?"],
+"cost":{"usd":null,"minutes":4,"labview_runs":0},"note":"offline log read only; S11.3 in run2 also wire 0 (r2.log:281)"}

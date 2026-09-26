@@ -1,0 +1,43 @@
+{
+ "schema": "stageplan/1",
+ "stage": "k_split",
+ "goal": "stage K (PD177/178): kernel #5058 into 1.2 body #23166; kernel-only SR pair re-made on #10170; six rule tunnels; two t8 indicators moved",
+ "base": {"path": "tools/bench/graph_k_s4_20260925.json"},
+ "context": {
+  "loops": {"path": "tools/bench/graph_loops_k_s4_20260925.json"},
+  "fs_pairs_wiki": {"path": "docs/wiki/subvi/D1_s3b_m3a3b_rowD_20260922_161040.json"},
+  "s1_key": "D1_s1_copy"
+ },
+ "open_rows": [
+  {"node": 5058, "term": "Bead is good? array in", "why": "PD177(e) t0 <- #5680 goes to L2-A1; covers t3 via #5796/#5805 (PD178(c))"},
+  {"node": 5058, "term": "Image In", "why": "PD177(e) t1 <- #6810 crosses 1.1->1.2, owed QRT queue row"},
+  {"node": 5058, "term": "x,y,z array", "why": "PD177(e) t7 <- #6016 goes to L2-A1"}
+ ],
+ "actions": [
+  {"op": "move_in", "id": "k_move", "why": "PD177(a) + (d)/178(a): kernel and its two t8 indicators", "nodes": [5058, 3173, 9519], "dest_diagram": 23166},
+  {"op": "add_shift_reg", "id": "k_sr_pos", "why": "PD177(b) one new SR pair replacing kernel-only #119/#2972 (RULE-CHAIN-S1, 178(d))", "loop": 10170, "body": 23166, "as": "SR1", "checkpoint": "K-sr"},
+  {"op": "wire", "id": "pos_R", "src": {"uid": 5058, "term": "pos in cal image out"}, "dst": "new:SR1R.inner"},
+  {"op": "wire", "id": "pos_L", "src": "new:SR1L.inner", "dst": {"uid": 5058, "term": "pos in cal image in"}},
+  {"op": "wire", "id": "pos_init", "why": "same source as #2972 outer: FSIT #6239 on #686", "src": {"uid": 6239, "term": "", "term_uid": 6247}, "dst": "new:SR1L.outer"},
+  {"op": "wire", "id": "ind_3173", "why": "PD177(d) display row", "src": {"uid": 5058, "term": "pos in cal image out"}, "dst": {"uid": 3173, "term": "Pos within cal image"}},
+  {"op": "wire", "id": "ind_9519", "why": "PD177(d) display row", "src": {"uid": 5058, "term": "pos in cal image out"}, "dst": {"uid": 9519, "term": "Pos: Diffraction Pattern"}},
+  {"op": "tunnel", "id": "tun_t2", "loop": 10170, "body": 23166, "dir": "in", "as": "T1", "indexing": false},
+  {"op": "wire", "id": "tun_t2_out", "src": {"uid": 3862, "term": "", "term_uid": 3868}, "dst": "new:T1.outer"},
+  {"op": "wire", "id": "tun_t2_in", "src": "new:T1.inner", "dst": {"uid": 5058, "term": "cross size"}},
+  {"op": "tunnel", "id": "tun_t9", "loop": 10170, "body": 23166, "dir": "in", "as": "T2", "indexing": false},
+  {"op": "wire", "id": "tun_t9_out", "src": {"uid": 2932, "term": "", "term_uid": 2934}, "dst": "new:T2.outer"},
+  {"op": "wire", "id": "tun_t9_in", "src": "new:T2.inner", "dst": {"uid": 5058, "term": "# of bead 4 packs"}},
+  {"op": "tunnel", "id": "tun_t11", "loop": 10170, "body": 23166, "dir": "in", "as": "T3", "indexing": false},
+  {"op": "wire", "id": "tun_t11_out", "src": {"uid": 5287, "term": "", "term_uid": 5293}, "dst": "new:T3.outer"},
+  {"op": "wire", "id": "tun_t11_in", "src": "new:T3.inner", "dst": {"uid": 5058, "term": "4 pack remainder"}},
+  {"op": "tunnel", "id": "tun_t12", "loop": 10170, "body": 23166, "dir": "in", "as": "T4", "indexing": false},
+  {"op": "wire", "id": "tun_t12_out", "src": {"uid": 3675, "term": "", "term_uid": 3677}, "dst": "new:T4.outer"},
+  {"op": "wire", "id": "tun_t12_in", "src": "new:T4.inner", "dst": {"uid": 5058, "term": "Array of cal clusters"}},
+  {"op": "tunnel", "id": "tun_t14", "loop": 10170, "body": 23166, "dir": "in", "as": "T5", "indexing": false},
+  {"op": "wire", "id": "tun_t14_out", "src": {"uid": 5659, "term": "Real-space cosine window", "term_uid": 5661}, "dst": "new:T5.outer"},
+  {"op": "wire", "id": "tun_t14_in", "src": "new:T5.inner", "dst": {"uid": 5058, "term": "Real-space cosine window"}},
+  {"op": "tunnel", "id": "tun_t15", "loop": 10170, "body": 23166, "dir": "in", "as": "T6", "indexing": false},
+  {"op": "wire", "id": "tun_t15_out", "src": {"uid": 5952, "term": "Cosine bandpass for Hilbert", "term_uid": 5958}, "dst": "new:T6.outer"},
+  {"op": "wire", "id": "tun_t15_in", "src": "new:T6.inner", "dst": {"uid": 5058, "term": "Cosine bandpass\nfor Hilbert "}, "checkpoint": "K-final"}
+ ]
+}

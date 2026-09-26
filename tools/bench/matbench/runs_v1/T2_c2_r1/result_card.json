@@ -1,0 +1,21 @@
+{"schema":"result/1","id":"mb-T2","status":"PASS","gates":{"pass":3,"fail":0},"first_fail":null,"blocked_by":null,
+ "artefacts":[],
+ "facts":[
+  "RUN1 first ExecState 0 = site 3 (For #29874 body, Diagram[50]=#29894): OpCreateConstOnTerm_v0 via 'ForLoop' -> error 1055 Invoke Node; CLFN t6 wire 0 (diag_c90_t0_step3b.log:172-176)",
+  "RUN1 same 1055 at every For-body site 3,4,5,16,17 (step3b.log:172,213,253,573,613); sites 0,2 fully wired with ExecState 1 (step3b.log:77-79,133-135)",
+  "RUN1 While sites 8,10-13,20 passed const+CLFN+branch yet ExecState stayed 0 (ES table step3b.log:673); cdiff added 21 = 13 CLFN + 8 const, no Invoke (step3b.log:677)",
+  "RUN2 MEASURED: one bare (unwired) CLFN gives ExecState 0, at top level and after move_in (r2.log:42,45). Inference: the 5 bare For-body CLFNs held run 1 at 0",
+  "RUN2 skipped For sites (r2.log:23). First fail S00.3: const #23202 created err '' but CLFN N[74] t6 wire 0; no S00.4 branch run; ExecState 0 from site 0 on (r2.log:61-65)",
+  "RUN2 index fault: at failing sites 0/11 the junk Invoke sat at N-2 of N (r2.log:49 73/75, :268 23/25), at passing sites at N-1 (:91 75/76, :209 23/24); gate read CLFN index +1",
+  "RUN2 S12 later found its own CLFN at N[24] (r2.log:321-322), the index S11.3 checked (r2.log:280-281) -> S11's CLFN was at 23; the .3 gate read a stale index, the const target unverified",
+  "RUN1 site-0 CLFN index 73 (step3b.log:58-59), RUN2 74 (r2.log:61); run 2 added ExecState reads + 'UID 4 right after scrub -> 0' before const (r2.log:45-46); step3b.py absent here",
+  "Route worked only on While bodies: run1 0,2,8,10-13,20 all .2/.3/.4 PASS; run2 2,8,10,12,13,20 PASS, 0/11 index miss; For bodies never (1055); case sites 6/7/14/15 never tried",
+  "RUN1 S03/S04/S05 .2 lines echo created_uid #23441 = S02's constant (step3b.log:114,172,213,253): stale readback on failure. Both runs: input/pins unchanged, LabVIEW gone (step3b:687-714; r2:475-502)"
+ ],
+ "open":[
+  "Is 'bare CLFN => ExecState 0' the whole run-1 cause? bisect (review 2026-09-26-c90-t0step3-movewire §4) still not run",
+  "For bodies need a const route not via Loop.Diagram (1055); review §5 proposes OpCreateConstTop + move + OpConnectNested or a Traverse('Diagram')-headed op - judgement",
+  "Run-2 index shift: caused by the added ExecState reads/scrub or by Nodes[] order after purge? needs diag_c90_t0_step3b.py (not in this worktree)"
+ ],
+ "cost":{"usd":null,"minutes":9,"labview_runs":0},
+ "note":"Offline log read only; no rerun, no LabVIEW. diag_c90_t0_step3b.py is not present in the worktree, so the script-side cause of run 2's index offset is unread."}

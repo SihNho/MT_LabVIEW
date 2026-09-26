@@ -1,0 +1,25 @@
+{"schema":"result/1","id":"mb-T2","status":"PASS","gates":{"pass":3,"fail":0},
+ "first_fail":null,
+ "blocked_by":null,
+ "artefacts":[
+  {"path":"tools/bench/diag_c90_t0_step3b.log","md5":"9367d365592fbe46a337aeab16011722"},
+  {"path":"tools/bench/diag_c90_t0_step3b_r2.log","md5":"596415c3076fe950e3d4b935ae649cb2"}
+ ],
+ "facts":[
+  "RUN1 first ExecState 0 = site 3 (For body Diagram[50]=#29894, owner ForLoop #29874): OpCreateConstOnTerm_v0 as ForLoop[5].N[5].t6 -> 'error 1055: Invoke Node' (step3b.log:172-176)",
+  "RUN1 same 1055 at every For site 3,4,5,16,17 (step3b.log:213,253,573,613); created_uid echoes the previous site's constant (#23441, #24551), so no constant was made",
+  "RUN1 each failed For site returns before the branch (diag_c90_t0_step3.py:89-90): 5 CLFNs left with t6 AND t8 unwired; cdiff added 21 = 13 CLFN + 8 const (step3b.log:677)",
+  "RUN2 MEASURED: a bare CLFN alone gives ExecState 0 - at top level and after move_in, before any const (r2.log:42,45); after open it was 1 (r2.log:21)",
+  "RUN1 so ExecState 0 from site 3 on matches the bare For-body CLFNs; While sites 8-20 then read 0 even though const+branch passed (step3b.log:673)",
+  "RUN2 fault: junk Invoke landed BEFORE the new CLFN (Nodes[73] of 75, r2.log:49), so find_node gave n=74; purge then shifted the CLFN to 73 and t6 was read at stale N[74] -> 0 (r2.log:61-62)",
+  "RUN2 same index shift at site 11 (junk Nodes[23] of 25, r2.log:268; t6 read at N[24] -> 0, r2.log:280-281); n is taken before the purge (diag_c90_t0_step3.py:82-86)",
+  "RUN2 sites 0 and 11 skipped their branch -> CLFNs left with t8 bare, ExecState 0 to the end (r2.log:461-463); whether their t6 const landed is UNREAD (readback hit the wrong index)",
+  "Route worked on While bodies: run1 8/8 (0,2,8,10,11,12,13,20 const+branch PASS, step3b.log:673); run2 6/8 (r2.log:461). For bodies: 0/5, all 1055; case frames not attempted",
+  "Neither run saved a file (NOT SAVED, step3b.log:678, r2.log:466); input md5 and all pins unchanged, LabVIEW gone (step3b.log:687-714, r2.log:475-502)"
+ ],
+ "open":[
+  "Which ref is invalid in OpCreateConstOnTerm_v0's ForLoop[i].Diagram route (loop index from uid_index vs the Diagram route itself)? Not readable from logs",
+  "The step3b script is not in this worktree (only step3.py); run 2's index logic is read from step3.py:82-86 plus the log, not from step3b.py itself"
+ ],
+ "cost":{"usd":null,"minutes":12,"labview_runs":0},
+ "note":"Offline log read only; no JEV-LADDER line for step3b logs in jev_gate.log."}

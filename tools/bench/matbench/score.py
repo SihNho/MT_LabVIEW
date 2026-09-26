@@ -241,7 +241,8 @@ def score_cell_v1(rundir, tt):
     log = rd(os.path.join(rundir, "cell.log"))
     env = envelope(log)
     calls = [json.loads(ln) for ln in rd(os.path.join(rundir, "calls.jsonl")).splitlines() if ln.strip()]
-    timeout = "BGRUN TIMEOUT" in log
+    # bgrun's own line only: v1 T5/high cells QUOTED "BGRUN TIMEOUT" inside their result text and were mis-flagged
+    timeout = bool(re.search(r"^BGRUN TIMEOUT", log, re.M))
     minutes = round(env["duration_ms"] / 60000.0, 2) if env and env.get("duration_ms") else meta.get("wall_min")
     cond = meta.get("condition") or {}
     c = {"task": meta.get("task"), "cond": meta.get("cond"), "rep": meta.get("rep", 1), "condition": cond,

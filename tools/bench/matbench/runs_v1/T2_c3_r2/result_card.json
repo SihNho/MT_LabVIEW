@@ -1,0 +1,24 @@
+{"schema":"result/1","id":"mb-T2","status":"PASS","gates":{"pass":3,"fail":0},
+ "first_fail":null,
+ "blocked_by":null,
+ "artefacts":[{"path":"tools/bench/cards/result_mb-T2.json","md5":null}],
+ "facts":[
+  "RUN1 first ES 0 = site 3 (For #29874 body Diagram[50]=#29894, w25157 from SubVI #30306): OpCreateConstOnTerm_v0 on ForLoop[5].N[5].t6 -> 'error 1055: Invoke Node', t6 wire 0; 3b.log:172-176",
+  "RUN1 ES 1 after sites 0,2 (3b.log:78,134), 0 after site 3 (:174). Site 3's only change: CLFN #22997 left in the For body, t6+t8 unwired (junk purged :169, branch not tried :673)",
+  "RUN1 For sites 3,4,5,16,17: move_in err '', junk purged, CLFN index right (junk last :160,201,241,561,601), then 1055 at the const op x5 (:172,213,253,573,613); CD 21=13 CLFN+8 const (:677)",
+  "RUN1 For-site gate text '#23441'/'#24551' is a STALE uid (= S02/S13 constants, 3b.log:114,515); no constant was created at any For site",
+  "RUN1 While sites 0,2,8,10,11,12,13,20 (bodies #639,#15266,#25392): const in place, t6 wired, branch Is Broken? False & t8 == site wire: 8/8 PASS (3b.log:77,133,310,366,422,478,534,670)",
+  "1055 per docs, unmeasured here: op TMSC = donor's WhileLoop-typed #683 (build_opstopfromnode_v0.py:48; build_opcreateconstonterm_v0.py:17-21); a seed casts only its class (cycle14-plan.md:78-80)",
+  "RUN2 new probe: ES 1 after open (r2.log:21) -> 0 right after the first CLFN was built bare at top level (:42), census +1 CallLibrary only (:28): a bare CLFN alone breaks the VI, no junk needed",
+  "RUN2 first fail S00.3 (r2.log:62): junk Invoke at Nodes[73] BELOW the CLFN (:49; run 1 it was last, 3b:46); const put on N[74] (:61); purge shifted CLFN to 73; t6 re-read at stale N[74] -> 0",
+  "RUN2 same shift at site 11 (junk 23 of 25 r2.log:268, S11.3 :281); sites 0,11 skipped the branch (t8 bare) -> ES 0 to the end (:461-463). Other 6 While sites PASS (:122,181,240,340,399,458)",
+  "Neither run saved a file (3b.log:678-679, r2.log:466-467); pins held and LabVIEW gone (3b:706, r2:494). Site 1 and case sites 6,7,14,15 never tried; run 2 skipped For sites (r2:23)"
+ ],
+ "open":[
+  "For sites 3,4,5,16,17: OpCreateConstOnTerm_v0's ForLoop leg gave 1055 x5 (WhileLoop-typed TMSC per docs). Use review §5's Diagram[d] route (OpCreateConstTop_v0 + move both + OpConnectNested_v0; also fits case sites 6,7,14,15) or build a Diagram-indexed const op?",
+  "ES with every CLFN wired is measured only after sites 0,2 (3b.log:78,134); sites 8,10-13,20 incl. the Adapt-to-Type suspects w19372/19465/19468/19429 (review §2(b)) were masked by an earlier bare CLFN in both runs. Rerun While sites alone, CLFN re-found by uid after each purge, first?",
+  "Junk Invoke order after move_in is not stable: below the CLFN at r2 sites 0,11 (r2.log:49,268), last at the other 19 of 21 site moves; the cause is not in the logs. Measure OpMoveIn_v0's insertion order, or rule 'address by uid only, never a pre-purge index'?"
+ ],
+ "cost":{"usd":null,"minutes":16,"labview_runs":0},
+ "note":"Replay, logs only, no LabVIEW. 3b.log=tools/bench/diag_c90_t0_step3b.log md5 9367d365, r2.log=..._r2.log md5 596415c3. step3b.py is NOT on disk: op order read from step3.py:79-96 + log order. jev_gate.log: no JEV-LADDER line for either log; peers=[].",
+ "escalation":0}

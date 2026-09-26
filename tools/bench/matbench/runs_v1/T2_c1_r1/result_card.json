@@ -1,0 +1,16 @@
+{"schema":"result/1","id":"mb-T2","status":"PASS","gates":{"pass":3,"fail":0},"first_fail":null,"blocked_by":null,"artefacts":[],"facts":[
+"run1 first ExecState-0 site=3 (For body, Diagram[50]): OpCreateConstOnTerm_v0 raised 'error 1055: Invoke Node' on ForLoop[5].N[5].t6 -> CLFN t6 wire 0 -> ExecState 0 (diag_c90_t0_step3b.log:172-176)",
+"run1 same 1055 on EVERY For-body site: 4,5 (ForLoop[6], :213,:253), 16,17 (ForLoop[10], :573,:613); the FAIL line reuses a stale uid (#23441 = site 2's const, :114)",
+"run1 While-body sites all passed const+CLFN+branch: 0,2 (:58-79,:114-135), 8 (:291-310), 10-13 (:347-534), 20 (:651-670); ExecState 1 only after 0 and 2 (:79,:135)",
+"run1 ExecState stayed 0 at 8..20 though each passed: a CLFN left with t6 unwired breaks the whole VI (r2 reads bare CLFN = 0 at top level and in body, r2:42,45); E1 8/13 (:675)",
+"run2 excluded For-body sites (r2:23) and failed at site 0 (While #639): const PASSED on N[74].t6 but CLFN t6 wire 0 (r2:61-62) -> first ExecState 0 (r2:63-65)",
+"run2 cause visible in log: junk Invoke landed at nodes_index 73, BELOW the addressed N[74] (r2:49); purge shifted indices so the const went to a stale index, not the CLFN",
+"run2 site 11 repeats it: junk at nodes_index 23 < addressed N[24] (r2:268) -> CLFN t6 wire 0 (r2:281); passing sites 2,12 had junk at 75/25 ABOVE the index (r2:91,:309)",
+"run2 ES table: sites 2,8,10,12,13,20 branch ok, 0 and 11 failed; ExecState 0 throughout because site 0 left a bare CLFN (r2:461-463); NOT SAVED (r2:466)",
+"both runs: input md5, pins, scratch deleted, ref counter level, LabVIEW gone all PASS (step3b.log:684-714; r2:472-502); BGRUN rc=1 428 s / 333 s",
+"route summary: While-body = const op works when addressed node index is right; For-body = const op (Loop.Diagram route via ForLoop) returns 1055 every time"
+],"open":[
+"is the For-body 1055 the ForLoop-owner route of OpCreateConstOnTerm_v0 (peer 2026-09-26-c90-t0step3-movewire.md:35 names that route) - needs a judgement on switching to uid/Traverse addressing",
+"run2 fault is index addressing after a purge that removes a node below the target: address the CLFN by uid instead of Nodes[n]? (judgement)",
+"no JEV-LADDER line exists for diag_c90_t0_step3b in tools/bench/jev_gate.log"
+],"cost":{"usd":null,"minutes":8,"labview_runs":0},"note":"offline log read only; 1055 meaning (invalid object reference) is LabVIEW background knowledge, not read from these logs"}
