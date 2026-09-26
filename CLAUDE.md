@@ -377,17 +377,22 @@ background notification is a full turn over the whole conversation. Standing rul
   "Fable low until Monday" trial (cycles 89-91) was ended early by the user: 3x cost, no more deliveries, same failure
   classes; a live-cycle cost comparison is context only, the replay bench decides (user: "재료 세션이 사실 판단 및 생성까지
   관여하잖아 … 적절한 테스트가 필요").
-- **Judgement sessions:** level 0 `claude-opus-5-5` medium → 1 Opus high → 2 Fable low → 3 Fable medium → RUNNER STOP
-  + decision item. Up one level when the last cycle left `next.json` UNCHANGED or its retrospective named a
-  judgement fault (`inference-over-measurement`, `wrong-ordering`, `judgement-in-material`); back to 0 after a cycle
-  that delivers. The recipe firefighter (fable/low on a repeated recipe failure) stays; the two never stack above
-  Fable medium. The level and its reason are a `JUDGE-LADDER` runner-log line and a field of the cycle card.
-- **Judgement effort A/B until Monday** (user, 2026-09-26: *"Opus 5.5도 기본을 medium이 좋을지 high가 좋을지도 판단
-  필요"*): no cycle so far ran judgement at high, so there is no basis to choose; `cycle_runner --judge-ab` alternates
-  level-0 effort by cycle parity (odd medium, even high, `JUDGE-AB` log line, `effort` in the cycle card; a triggered
-  ladder level overrides it) until 2026-09-28 07:00, and the Monday comparison (minutes, cost, deliveries, judgement
-  slugs, unchanged-NEXT count) sets the default. External prior: Artificial Analysis index Opus 5.5 medium 51 / high
-  54 at $1.34 / $1.82 per task.
+- **Judgement sessions (user table 2026-09-27 02:1x, "테이블대로 적용해서 차기 싸이클 부터는 변경된걸로 돌리자"):** level 0
+  `claude-opus-5-5` **HIGH** fixed (the medium/high A/B, cycles 89-97: high PASS 2.5 vs 2.0 per cycle, $33 vs $39, n=4/5,
+  not decisive but never worse; `--judge-ab` is off) → 1 Opus **MAX** → 2 Fable low → RUNNER STOP + decision item. Up one
+  level when the last cycle left `next.json` UNCHANGED or its retrospective named a judgement fault; back to 0 after a
+  cycle that delivers. **The recipe firefighter is ONE Opus max cycle, then STOP** (was fable low → fable medium: the one
+  fable/low judgement cycle, 87, produced nothing; the card-level escalation already covers Fable). Fable medium is on no
+  ladder (matbench v0/v1: no gain over Fable low). Level and reason: `JUDGE-LADDER` log line + cycle card.
+- **Peers (same table):** retrospective on Opus 5.5 high (it ran on the fable/medium `outcome` role since 09-18 — 37 calls,
+  $196 in one week, the largest Fable item); `fact` / `prose` roles on Opus 5.5 medium thin; outcome review (every 5 cycles)
+  stays fable/medium thin; hypothesis Opus high, prior-art Opus medium, ingest/audit Sonnet unchanged.
+- **Scratch-VI verification before a third try (user, 2026-09-27: "도구 결함 관련하여 스크래치 vi 검증 부분도 적용"):** when a
+  stage run fails twice on the SAME scripting function, the next LabVIEW act is a ≤120-line scratch-VI check of that
+  function (build a minimal VI, run the function, read the graph back), not a third stage run; `stage_prerun.check_launch`
+  refuses the third launch until a newer `tools/bench/scratch_verify/` PASS record exists. Cycles 95-101 escalated almost
+  every cycle on tool defects (simulator/graph mismatch, node creation inside a loop), which no model change fixes.
+- **(history) Judgement effort A/B until Monday** — ran cycles 89-97, superseded by the table above.
 
 ### INTRA-CYCLE ESCALATION — a card that runs out of budget goes to Opus max, then Fable low, then to the user (user, 2026-09-25; rungs re-set 2026-09-26 on matbench v1)
 
