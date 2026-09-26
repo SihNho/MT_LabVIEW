@@ -75,15 +75,15 @@ whole cycle needs LabVIEW you write that in NEXT and exit rather than deciding t
   You receive it as one table row (log | class p | NEXT-ACTION | what was done | result), not as a log, and spend a
   judgement turn only on `review owed` rows and on a failure budget that ran out.
 - **INTRA-CYCLE ESCALATION (user, 2026-09-25: "한 싸이클 내부에서도 특정 프로세스가 과하게 오래 걸리거나 반복적으로
-  실패할 경우 Fable 5.1 낮음 (그래도 안된다면 Fable 5.1 중간) 높여보는 것").** When a card comes back FAIL with its
-  failure budget spent, or its `budget.minutes` is exceeded, do not re-dispatch it to `material` a third time and do
-  not wait for the next cycle: write a NEW card with the same `goal`/`pass`, `escalation: 1`, `retry_of_card:
-  <old id>`, and dispatch it to the **`material-fable-low`** agent; if that fails the same way, `escalation: 2` to
-  **`material-fable-medium`**; after that the item goes to `tools/bench/decisions_pending.json` and the card stops.
-  Two rungs per card, never more; the result card records which rung solved it (the Opus-vs-Fable data the user
-  wants). Same flags, same rules, same peers.
-  (The 2026-09-26 "material on fable/low until Monday" trial was ENDED EARLY by the user the same morning after cycles
-  89-91: `material` is back on Opus 5.5 medium and the two-rung ladder above applies.)
+  실패할 경우 … 높여보는 것"; rungs RE-SET 2026-09-26 by the user after matbench v1, `tools/bench/matbench/report_v1.md`).**
+  When a card comes back FAIL with its failure budget spent, or its `budget.minutes` is exceeded, do not re-dispatch it
+  to `material` a third time and do not wait for the next cycle: write a NEW card with the same `goal`/`pass`,
+  `escalation: 1`, `retry_of_card: <old id>`, and dispatch it to the **`material-opus-max`** agent (Opus 5.5 max: the
+  only level that reported the missing verb in the bench); if that fails the same way, `escalation: 2` to
+  **`material-fable-low`** (bench 5/5 at half of max's minutes); after that the item goes to
+  `tools/bench/decisions_pending.json` and the card stops. Two rungs per card, never more; the result card records which
+  rung solved it. Same flags, same rules, same peers. `material` itself is Opus 5.5 HIGH (bench: high catches the
+  uid-precision task, max costs 3x the minutes). `material-fable-medium` is no longer dispatched (no gain over low).
 - **JUDGEMENT LADDER (runner-decided, user 2026-09-26, card chat-M1).** Your model/effort is chosen by
   `tools/cycle_runner.py` from files (opus medium -> opus high -> fable low -> fable medium -> RUNNER STOP) and
   recorded in the cycle card's `note` as `judge-ladder level N: <reason>`. Do not change it; deliver something

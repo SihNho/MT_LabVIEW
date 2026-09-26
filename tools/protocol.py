@@ -365,7 +365,7 @@ def stagekit_result_from_gates(segment):
 # checked against the card's flags. Only the agent types that are DEFINED to take a card are bound; Explore/Plan/
 # bench-*/claude-code-guide carry no card and are not governed by this (they are not dispatched with task/1).
 ACTIVE = os.environ.get("PROTOCOL_ACTIVE") or os.path.join(CARDS_DIR, "active.json")   # env: self-tests only
-CARD_AGENT_TYPES = ("material", "log-reader", "motor-limit-checker")
+CARD_AGENT_TYPES = ("material", "material-opus-max", "material-fable-low", "material-fable-medium", "log-reader", "motor-limit-checker")
 
 # The WHOLE command must be the bind call (optionally after `cd <dir> &&`): an unbound agent may run nothing else, so
 # `py tools/protocol.py bind x; <anything>` is not a bind.

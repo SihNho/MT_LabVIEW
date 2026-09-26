@@ -37,7 +37,7 @@ MAX_DISPATCHES = 6          # card chat-N1 (4b), user-approved 2026-09-26 (was 8
 # The agents a cycle's material work goes through (.claude/agents/), incl. the Fable escalation rungs. Every other
 # subagent_type - the peer roles, Explore, a one-off general-purpose search - is never counted or refused; peer.ps1
 # runs through Bash and is never counted.
-COUNTED = {"material", "material-fable-low", "material-fable-medium", "log-reader"}
+COUNTED = {"material", "material-opus-max", "material-fable-low", "material-fable-medium", "log-reader"}
 # This harness names the sub-agent tool `Agent`; older Claude Code builds name it `Task`. Matching both costs
 # nothing and stops the hook from becoming silently inert after an upgrade (the defect guard_cycle's PRIOR_ART_RE
 # had for a day: a gate that never fires looks exactly like a gate that passes).

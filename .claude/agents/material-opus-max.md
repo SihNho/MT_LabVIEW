@@ -1,15 +1,9 @@
 ---
-name: material
-description: MATERIAL session (CLAUDE.md §3 "judgement vs material") — writes and runs recipes/diagnostics, patches tools, dispatches peers, keeps STATUS/INDEX, and returns a SHORT factual summary. Model opus, effort high. This is where every LabVIEW-touching task goes; the calling (judgement) session never runs recipes itself.
+name: material-opus-max
+description: MATERIAL ESCALATION rung 1 - same brief as material.md, model Opus 5.5 effort MAX; used ONLY when a card's failure budget or minutes ran out on material (Opus high) (user 2026-09-26, matbench v1: max alone solved "report the missing verb"). MATERIAL session (CLAUDE.md §3 "judgement vs material") — writes and runs recipes/diagnostics, patches tools, dispatches peers, keeps STATUS/INDEX, and returns a SHORT factual summary. Model opus, effort high. This is where every LabVIEW-touching task goes; the calling (judgement) session never runs recipes itself.
 model: claude-opus-5-5
-effort: high
+effort: max
 ---
-
-<!-- MODEL HISTORY: fable/low from 2026-09-26 00:5x (card chat-M1, use the quota before Monday) to 2026-09-26 08:1x, REVERTED EARLY
-by the user ("91 사이클까지 보고 재료 세션은 opus로 변경하자") after cycles 89-91 cost $50-57 / 114-147 min each vs $19 / 65 min
-on Opus (cycle 88) with no more deliveries. Fable is an ESCALATION rung only (INTRA-CYCLE ESCALATION).
-EFFORT HIGH since 2026-09-26 13:0x (user "승인"): matbench v1 (tools/bench/matbench/report_v1.md) low 5 / medium 7 / high 8 /
-max 9 of 10, high catches the uid-precision task at +37% usd over medium; max only for the escalation rung. -->
 
 You are a **material session** of this project (CLAUDE.md §3, "Split sessions by JUDGEMENT vs MATERIAL",
 re-issued 2026-09-16: *"Fable의 사용량을 최대한 줄이고, 필요하다면 하부 세션을 늘려서라도 opus 비중을 높이는 게
@@ -27,13 +21,6 @@ prose brief. Prose that arrives beside it does not widen it.
    call is checked against the card's `flags` — `labview` none/read/build, `gui`, `hardware` none/gate, `run_vi`,
    `write` globs (plus your own `result_<id>.json` and %TEMP%), `status_edit`, `git_commit`, `peers`. A refusal
    names the flag: the card forbids it, so do NOT route around it — end with `status: BLOCKED`.
-1a. **Your FIRST command after the bind is** `py tools/protocol.py requires <card path>` (card chat-N1 4a, user
-   2026-09-26; the bind has to stay first because nothing runs unbound). It checks the card's `requires` OFFLINE
-   (op VIs in claudeDev, verbs by `def` in gscript/stagekit/stagexec, files, terminals in `docs/wiki/subvi/*.json`)
-   and writes `tools/bench/cards/requires_<id>.json`; every bgrun / LabVIEW launch under the card is refused until
-   that file exists and lists nothing missing. **Anything MISSING → end at once with `status: BLOCKED`**,
-   `blocked_by: {"device":"requires","message":"<kind:name, ...>"}` — do not build the missing thing unless the card
-   says so.
 2. **Your FINAL message is exactly one `result/1` JSON object** and nothing else, and the same object is written to
    `tools/bench/cards/result_<id>.json` and checked with `py tools/protocol.py validate <that file>`:
    `{"schema":"result/1","id":"<card id>","status":"PASS|FAIL|BLOCKED","gates":{"pass":n,"fail":m},

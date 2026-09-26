@@ -370,11 +370,13 @@ background notification is a full turn over the whole conversation. Standing rul
 *"지금 3일 안에 사용량 다 써야하는데, 당분간 Fable 5.1 low 사용빈도를 높여보는 건"* · *"판정 세션은 필요에 따라서 medium
 상위 혹은 fable로 교체하는 것도 생각해보는게 어떨지"*. Two ladders, both mechanical (`tools/cycle_runner.py`), nobody
 "feels" a level:
-- **Material sessions:** default **Fable 5.1 low until 2026-09-28 07:00 KST** (the weekly renewal; a one-time app
-  reminder `revert-material-model-monday` fires then), escalation rungs Fable medium → `decisions_pending`. After
-  Monday the default returns to `claude-opus-5-5` medium unless the Fable-vs-Opus comparison (result cards carry
-  `escalation`) says otherwise. Data so far: fable/low delivered L7-1b after two Opus failures (cycles 71/72); a
-  fable/low JUDGEMENT cycle (87) produced nothing in 6 min.
+- **Material sessions:** default **`claude-opus-5-5` HIGH** (user "승인" 2026-09-26 13:0x, on the replay bench
+  `tools/bench/matbench/report_v1.md`: 5 replayed cards x 2, low 5 / medium 7 / high 8 / max 9 of 10 at $8 / $11 / $15 /
+  $33 and 1.1 / 2.0 / 2.6 / 7.6 min; effort changed the score only on the uid-precision check (high, max) and on "report
+  the missing verb" (max only)). Intra-cycle escalation rungs: Opus max -> Fable low -> `decisions_pending`. The
+  "Fable low until Monday" trial (cycles 89-91) was ended early by the user: 3x cost, no more deliveries, same failure
+  classes; a live-cycle cost comparison is context only, the replay bench decides (user: "재료 세션이 사실 판단 및 생성까지
+  관여하잖아 … 적절한 테스트가 필요").
 - **Judgement sessions:** level 0 `claude-opus-5-5` medium → 1 Opus high → 2 Fable low → 3 Fable medium → RUNNER STOP
   + decision item. Up one level when the last cycle left `next.json` UNCHANGED or its retrospective named a
   judgement fault (`inference-over-measurement`, `wrong-ordering`, `judgement-in-material`); back to 0 after a cycle
@@ -387,14 +389,16 @@ background notification is a full turn over the whole conversation. Standing rul
   slugs, unchanged-NEXT count) sets the default. External prior: Artificial Analysis index Opus 5.5 medium 51 / high
   54 at $1.34 / $1.82 per task.
 
-### INTRA-CYCLE ESCALATION — a card that runs out of budget goes to Fable low, then Fable medium, then to the user (user, 2026-09-25)
+### INTRA-CYCLE ESCALATION — a card that runs out of budget goes to Opus max, then Fable low, then to the user (user, 2026-09-25; rungs re-set 2026-09-26 on matbench v1)
 
 *"한 싸이클 내부에서도 특정 프로세스가 과하게 오래 걸리거나 반복적으로 실패할 경우 Fable 5.1 낮음 (그래도 안된다면 Fable
 5.1 중간) 높여보는 것이 유효할지"* — asked while cycle 85 spent 105 min building two missing verbs on Opus. The
 cycle-level firefighter (fable/low after two failing cycles) already exists; this is the same ladder inside a cycle,
 per card. Trigger: a `task/1` card returns FAIL with its failure budget spent, or exceeds `budget.minutes`. Rung 1:
-re-issue the card (`escalation: 1`, `retry_of_card`) to `.claude/agents/material-fable-low.md`; rung 2: `escalation:
-2` to `material-fable-medium.md`; then `decisions_pending.json` and stop. Two rungs per card, same flags, rules and
+re-issue the card (`escalation: 1`, `retry_of_card`) to `.claude/agents/material-opus-max.md`; rung 2: `escalation:
+2` to `material-fable-low.md`; then `decisions_pending.json` and stop. (Rungs were Fable low -> Fable medium until
+2026-09-26; re-set by the user on matbench v1: max alone reported the missing verb, Fable low 5/5 at half of max's
+minutes, Fable medium no gain over low.) Two rungs per card, same flags, rules and
 peers; the result card carries `escalation`, so Opus-vs-Fable outcomes accumulate as data. Evidence so far: cycles
 71/72 (fable/low) delivered L7-1b after two Opus failures. This does not relax the standing rule to minimise Fable —
 it bounds it to a card that Opus has already failed twice.
