@@ -1,0 +1,80 @@
+{
+ "schema": "task/1",
+ "id": "104-2",
+ "kind": "build",
+ "goal": "Fix stagexec live-path owner lookup (sim-keyed addr.owners read with a real uid, op 43 int(None)), self-test the live path, re-dry + pre-run --from-step 33, then Part-B run 2",
+ "why": "104-1 FAIL: stop IN op 43 r7_one const_on_term, stagexec.py:1253 fills owners with sim ids, :1756 reads real 23073 -> None (stage_d1_disp_c104B.log:227-233); Jev our-script-bug p=0.862 -> patch + rerun.",
+ "inputs": [
+  {"path": "tools/bench/cards/task_104-1.json"},
+  {"path": "tools/bench/cards/result_104-1.json"},
+  {"path": "tools/bench/stage_d1_disp_c104B.log", "md5": "4e674860aa9a984ae93785c38cd12c9e"},
+  {"path": "tools/stagexec.py", "md5": "75cfd689b0b52ca04cc3e96eab0b76e6"},
+  {"path": "tools/stagekit.py"},
+  {"path": "tools/recipes/stage_d1_disp.py", "md5": "42541bc818dd22951bf60636d1f46485"},
+  {"path": "tools/bench/stage_d1_dispA.json", "md5": "d5393162848fef90d099efa7f0439140"},
+  {"path": "tools/bench/sim/disp/plan_disp.json", "md5": "c7d80fc93279f4ea5efd21c068e7efa6"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_dispA_20260927_024535.vi", "md5": "16c2ca00a114a227a81612dd49d111cc"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_disp.py"},
+  {"kind": "file", "name": "tools/bench/stage_d1_dispA.json"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_dispA_20260927_024535.vi"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "pass": [
+  "census: every live-path read of a sim-keyed map in stagexec/stagekit (owners and any other) listed file:line, and which ops 34-47 hit each",
+  "patch: live-path owner lookup of a plan-created loop returns its REAL uid (translate through the bind map); the full-run path fixed the same way",
+  "self-test: stagexec selftest all PASS incl. a NEW live-path case (const_on_term in a created loop, real ids != sim ids) that FAILS on the old code",
+  "Part-B dry + pre-run --from-step 33 PASS again after the patch (the failed run invalidated the records); launch gate ALLOW",
+  "ONE run (2nd Part-B launch this cycle), held to BGRUN END; report exactly as task_104-1 pass lines 2-9 (entry, step diffs, W1, E2, #25261, E3, PS, MB/handles, md5s)",
+  "READ-ONLY stop-record refusals during this card: count (expected 0)",
+  "on failure: op, gate, class, uids, MB, log file:line, newest JEV-LADDER NEXT-ACTION; ExecState 0 -> Error List read first; no third run"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_disp_*",
+  "tools/stagexec.py",
+  "tools/stagekit.py",
+  "tools/bench/facts_c104b_partB.json",
+  "tools/bench/cards/result_104-2.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_disp_*",
+   "tools/stagexec.py",
+   "tools/stagekit.py",
+   "tools/bench/selftest_stage*",
+   "tools/bench/stage_d1_disp*",
+   "tools/bench/sim/disp/**",
+   "tools/bench/facts_c104*",
+   "tools/bench/diag_c104*",
+   "tools/bench/errorlist_*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/cards/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/priorart*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "outcome", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 90},
+ "rules": [
+  "recipe stage_d1_disp.py NOT edited; plan_disp.json NOT edited; MEMSTOP 700; the cut stays op 33",
+  "patch only the lookup defect and its twins found by the census; no refactor, no helper moves",
+  "exactly ONE LabVIEW run, only after self-test + dry + pre-run PASS; if any offline check fails, no run",
+  "save by script only (needs E2 ExecState 1); never save S1 or dispA; never run the VI",
+  "stop or failing gate: report facts and stop; review design findings go to open",
+  "bgrun --max-min 60; hold the turn to BGRUN END; LabVIEW verified gone at the end"
+ ],
+ "retry_of": "stage_d1_disp.py",
+ "advances": ["M8", "M3", "R1", "R3"]
+}

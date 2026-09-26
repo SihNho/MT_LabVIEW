@@ -1,0 +1,26 @@
+{"schema":"result/1","id":"104-1","status":"FAIL","gates":{"pass":10,"fail":2},
+"first_fail":"E1 run stopped IN op k=43 create const_on_term r7_one: TypeError int(None) (stage_d1_disp_c104B.log:233)",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/stage_d1_disp_c104B.log","md5":"4e674860aa9a984ae93785c38cd12c9e"},
+ {"path":"tools/bench/stage_d1_disp.json","md5":"059896932b325c8a4fde600aa3e2e4c3"},
+ {"path":"tools/bench/facts_c104a_partB.json","md5":null}
+],
+"facts":[
+ "Inputs md5 all as card; launch gate ALLOWed without new dry/pre-run records; ONE run, BGRUN END rc=1 after 265s (stage_d1_disp_c104B.log:256)",
+ "Entry OK: B0 PASS, entry read vs sim step 33 diff 0, #25261 False, parity 0 on [23073,23432] (log:44-47); ops 34..43 dispatched, none <=33",
+ "Step diffs at checkpoints 35/37/39/41/42 all 0 (log:89,129,174,208,224); no WARN/FAIL diffs; B1/W1/E2/E3/PS never reached",
+ "Stop op 43 r7_one const_on_term on Max&Min #24018 t2 'y' in body #23073: stagekit.const_row uid_index('WhileLoop',..) -> None -> int(None) (log:227; stagekit.py:867)",
+ "loop_uid comes from stagexec.py:1756 addr.owners.get(str(real 23073)) or 0; owners set from SIMULATED step state at :1253 (keys sim ids; 23073 = bound -2, stage_d1_dispA.json:2311)",
+ "Sim/dry path checks owners in sim ids (stagexec.py:2017), so dry+pre-run could not see this; op 43 is the first const_on_term in a plan-created loop run live",
+ "MB/handles (meter): start 569.5/45629, k0 578.1, k35 580.7, k37 573.5, k39 579.2, k41 583.7, max k42 593.5/46105; no save (log:42-223)",
+ "Nothing saved: dispA 16c2ca00 + S1 3e3d23ce unchanged; work copy D1_s1_disp_20260927_033102.vi == dispA bytes; LabVIEW gone (log:255, diag_c104_md5_after.log)",
+ "material_marker.log READ-ONLY refusals during this card: 0 (lines after 2236)",
+ "log | our-script-bug p=0.862 | patch the script and rerun | NOT done: card forbids code edits/rerun, stagexec.py outside write flags | reported (jev_gate.log 03:36:55)"
+],
+"open":[
+ "Fix owner lookup for const_on_term: translate addr.owners sim keys through self.bind (stagexec.py:1253/1756) - and does a full non-Part-B run share this defect (same :1253 path)?",
+ "Ladder says patch+rerun with no review; RETRY_CAP 2 leaves one Part-B run this cycle - authorise a stagexec patch card (plus a live-path self-test for const_on_term in a created loop)?"
+],
+"cost":{"usd":null,"minutes":10,"labview_runs":1},
+"note":"Error List not read: ExecState was never reached (python stop before E2; work copy is the broken-by-design dispA). No peer dispatched: ladder class our-script-bug = no review owed. No STATUS edit (status_edit false)."}

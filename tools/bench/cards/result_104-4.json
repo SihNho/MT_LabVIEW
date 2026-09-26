@@ -1,0 +1,30 @@
+{"schema":"result/1","id":"104-4","status":"PASS","gates":{"pass":8,"fail":0},
+"first_fail":null,
+"blocked_by":null,
+"artefacts":[
+ {"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_disp_20260927_041648.vi","md5":"245a10206b565cba0ba186bd891f5cb8"},
+ {"path":"tools/stagexec.py","md5":"e3dd7740f399bbc8709fba27512cbb7b"},
+ {"path":"tools/recipes/stage_d1_disp.py","md5":"8c7fe15f77c6242e2c169bdc9fe743ef"},
+ {"path":"tools/bench/facts_c104d_partB.json","md5":"5d5ee53be9346928244efe5c2c1a6327"},
+ {"path":"tools/bench/stage_d1_disp_c104B3.log","md5":"5b95635e36fde74ea9889f471627d8a4"},
+ {"path":"archive/peer/2026-09-27-priorart-priorart-c104d-e3.md","md5":"59a29118838805352150e358cf36e9de"}
+],
+"facts":[
+ "E3 shared in stagexec.py:2203-2297 (open_row_class/e3_graph/e3_eval/e3_created/e3_check); lv_run uses it :2338; recipe cdiff -> SX.e3_check stage_d1_disp.py:43, 144 lines",
+ "Class read from each open row's why 'PD213(d)(N)' (plan has no class key; not edited); want = 6 of 21 rows; dry E3 fail raises -> dry FAIL (stage_d1_disp.py:126)",
+ "Self-test 98/0 incl T44 + negatives T44b extra row, T44c class-4 source changed, T44d unclassed/old 21-row want, T44e added not created (diag_c104d_selftest.log:183-206)",
+ "1st self-test 96/2: added DiagramTerminals 23090/23447 = bind term -3/-7 (created loops' own terminals); e3_created now takes all sim<0 binding values (diag_c104d_e3.log)",
+ "Recipe edit re-armed the prior-art launch gate; review priorart-c104d-e3 verdict novel released sha e22f2b5010d0; disposition written (archive/peer/2026-09-27-priorart-priorart-c104d-e3.md:414)",
+ "Part-B dry PASS, E3 PASS 6==6, class-4 15/15, unverified 0 (diag_c104d_dryB.log:68,73); pre-run 8/0 (diag_c104d_prerunB.log:82); launch ALLOW, cap allow (diag_c104d_launch.log)",
+ "Run 3 BGRUN END rc=0 423s, 19/0: entry diff 0, #25261 False, ops 34..47 diffs 0 at 9 reads (0 WARN), W1 RBW 12 pre-existing 1921->1909, E2 ES 1 (stage_d1_disp_c104B3.log:46,303-312)",
+ "E3 PASS on real end: rows 6 == want 6, class-4 sources equal 15/15, added 8 all plan-created, removed 0 (stage_d1_disp_c104B3.log:314)",
+ "Saved by script D1_s1_disp_20260927_041648.vi md5 245a1020 479946 B ver byte 38; ES 1 re-read after save (stagekit S3, same instance after g.reset) (c104B3.log:320-325)",
+ "MB 570.3 start / 613.4 peak; handles 45635 open, 46232 before save, 47306 exit; refs 21/21; S1 3e3d23ce + orig pins OK, dispA 16c2ca00 unchanged; LabVIEW gone; READ-ONLY refusals 0"
+],
+"open":[
+ "Cold reload was stagekit's S3 (re-open after g.reset() in the SAME LabVIEW process), not a fresh-process load; a fresh-process ExecState read would be a second LabVIEW run, which this card forbade. Is S3 enough?",
+ "e3_created counts every binding value from a sim id < 0 (objects AND their terminals) as plan-created; judgement to confirm that definition for the 'added objects' clause of PD217(c).",
+ "Carries untouched: PD217(d) stagesim graph with labels + fs pairs (prior-art alternative); add_sr twin on created loops."
+],
+"cost":{"usd":null,"minutes":38,"labview_runs":1},
+"note":"Jev ladder n/a (no failed gate). STATUS not edited (status_edit false), no commit. Peer: priorart only (novel)."}

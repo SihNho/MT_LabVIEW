@@ -3465,3 +3465,121 @@ VIOLATION: device-failed | loss_min=2 | loss_usd=? | evidence=tools/hooks/materi
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle103","verdict":"refuted","alternative":"Part A at op 40 was a fair gamble as a first memory measurement; r7 showed 690.4 MB with no op-40 read, and the per-read cost was not yet known to be up to 13 MB.","discriminating_test":"r7.log:739 (+13.3 MB read at k37) and :783 (690.4 at op 40) predate r1; 690.4 plus the 0-13.3 MB read range straddles 700 before gui_save, so the op-33 cut (r7.log:659, 668.5 MB) was available before 02:27.","violations":[{"slug":"inference-over-measurement","loss_min":18,"loss_usd":"?","evidence":"docs/d1-loop12-17-split-plan.md:1828"},{"slug":"device-failed","loss_min":2,"loss_usd":"?","evidence":"tools/hooks/material_marker.log:2211"}],"sources":["tools/bench/stage_d1_disp_r7.log:659","tools/bench/stage_d1_disp_r7.log:739","tools/bench/stage_d1_disp_r7.log:783","tools/bench/stage_d1_dispA_r1.log:799","tools/bench/stage_runs.jsonl:35","docs/d1-loop12-17-split-plan.md:1838","tools/hooks/material_marker.log:2233"],"note":"Cycle delivered Part A (16c2ca00) and the Part-B entry; the fault cost one of two stage slots and deferred Part B to cycle 104. The device item is the last pre-repair tail of a known failure, repaired at 03:14."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle103.md
 BGRUN END rc=0 after 204s
+BGRUN START 2026-09-27 05:18:26 limit 10.0 min: py tools/retrospective.py --cycle 104
+BGRUN PID 23608
+   window 2026-09-27 03:26:27 .. 2026-09-27 05:18:27 (112 min); 27 build logs, 9 machinery logs, 31 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle104.txt (26606 chars)
+   review card tools\bench\cards\review_retrospective-cycle104.json
+OUTCOME: ANSWERED (285s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-09-27-retrospective-cycle104.md
+COST: $1.9157  in 50 / out 27603 / cache-create 112364 / cache-read 2322508  (284s, 41 turn(s))
+VERDICT-CARD: NO-VERDICT: $.violations[0].loss_usd: expected number/null, got str
+--- ANSWER ---
+# Retrospective, cycle 104 (03:26:27 – 05:18:27)
+
+**The claim is refuted.** The cycle has one costly structural fault. Everything else below is a finding.
+
+## The fault (ranked first; there is no second of the same size)
+
+**The ABBA harness kept running legs 2, 3 and 4 after leg 1 hit a failure that belongs to neither arm.**
+
+- **What happened.** Leg 1 is A, the same S1 file (md5 3e3d23ce) that ran cleanly on 09-26 in run 96-1. It stopped at v5 `run1.L2` before any pick (`tools/bench/diag_c104_abba.log:7`).
+  - The script recognised this: it printed `crashed leg (no tra) -> harness fault, no rerun` (`diag_c104_abba.log:27`).
+  - But the `break` at `tools/bench/diag_c104_abba.py:168` only leaves the rerun loop, not the leg loop. So legs 2, 3 and 4 each started LabVIEW, ran the VI, and failed at the same step (`:30`, `:53`, `:76`).
+- **Why it matters.**
+  - A failure on the A file that passed yesterday says the rig changed. The B legs could tell us nothing more about B after that.
+  - It also breaks CLAUDE.md:201-206: a scripted batch that hits an unpredicted result must stop state-changing actions and resume "as a NEW batch — never by continuing the failed one". Each of legs 2–4 ran the main VI, which calls the rotor's Configure.vi.
+- **Slug:** repeated-failure-class. The same failure ran four times, and the approach should have changed at attempt 2 (leg 2).
+- **Loss.**
+  - Leg 2 started at 6.0 min and the run ended at 1386 s (`diag_c104_abba.log:29`, `:163`), so legs 2–4 took about 17.1 min.
+  - That is a third of the cycle's build wall-clock (audit C3: 51 min 12 s), and it bought only three copies of one screenshot.
+  - No log carries a dollar figure for the material session, so the dollar loss is unknown.
+- **Counterfactual.** Suppose the leg loop had stopped on "harness fault" at the end of leg 1 (04:31:55 + 6.0 min ≈ 04:37:55).
+  - `BGRUN END` would have come at about 04:38 instead of 04:55:01.
+  - The review, the `rotorport` read and card 104-6 would each have started about 17 min earlier.
+  - The cycle would have ended at about 05:01 instead of 05:18.
+  - It would still have produced the same thing: no ABBA numbers, and the Configure.vi cause still open.
+
+## FINDINGS
+
+**1. Repeated failure.**
+- **Across legs:** the ABBA case above.
+- **Across stage runs:** there is a second, smaller repeat. Two Part-B runs in a row failed on something the dry run could not see:
+  - run 1 on the live-only owner lookup (`result_104-1.json:15`);
+  - run 2 on E3, which the dry run marks UNVERIFIED (`result_104-2.json:19`; `diag_c104_dryB.log:66`).
+- The E3 blind spot was already on file before any run: `docs/d1-loop12-17-split-plan.md:1838` says "E3 is unverified in a dry run".
+- The approach should have changed at attempt 2 (card 104-2). Its census was scoped to sim-keyed maps. It should also have listed every end gate the dry run leaves unverified. That change only came at attempt 3 (split-plan:1845, card 104-4).
+- Cost of the repeat: run 2's 420 s (`stage_d1_disp_c104B2.log`) plus about 2 min of pre-run, roughly 9 min. That is smaller than the ABBA loss.
+
+**2. Missing tool.** Three were missing:
+- **No per-leg abort.** The ABBA driver has no "stop the chain on a harness fault" gate. That alone would have prevented legs 2–4.
+- **No rig check before the chain.** There was no single-leg run to L2 before a 4-leg chain, on a rig that had not run this since 09-26 15:06. The ABBA dry run replayed saved 09-26 returns (`result_104-5.json:14`, "SYNTHETIC"), so it could not see a changed rig. Card 104-6's `diag_c104f_leg.py` is in effect that check, built after the loss.
+- **No dry-run E3 check until 104-4.** Built mid-cycle (`result_104-4.json:18`).
+
+**3. Unmeasured steps.**
+- **The E3 target of 21 rows (PD213(d)) was inferred.** It came from a simulator graph built with no labels and no flat-sequence pairs. It was measurable offline in 12 min with no LabVIEW (104-3: `result_104-3.json:13-18`, `cost.minutes` 12).
+- **"Saved VI is structurally valid" was accepted from a same-process reopen**, not a fresh-process load (`result_104-4.json:25`; accepted at split-plan:1847). This was flagged, but it is not measured.
+- **The plan overstates the COM5 result.** It says COM5 was "FREE before, during and after" (split-plan:1849). The probe actually read it before LabVIEW, after VI open but before Run, and after exit (`result_104-6.json:18`). "During" was never measured.
+
+**4. Rule compliance.** Broken or met only on paper:
+- **CLAUDE.md:201-206 (failed batch → new batch):** broken by the ABBA chain.
+- **Intra-cycle escalation (cycle_104.log:79-86):** 104-5 came back FAIL with its budget spent. The rule asks for the same goal and pass on `material-opus-max`. Judgement instead wrote a diagnostic card with a different goal (`task_104-6.json:5`). That choice is defensible, since an environment fault does not call for a stronger model. But 217(g) records no line saying the rule was set aside, or why.
+- **Owed tooling card skipped:** see finding 5.
+- **Rule 4 (STATUS one screen):** STATUS.md is 306 lines (audit L3).
+- **Six-dispatch cap:** met exactly (104-1 to 104-6).
+- **Retry cap:** met; run 3 went through retry card `task_104-4.json:80`.
+
+What the audit does not cover:
+- a batch that continues after a failure inside one script;
+- whether the escalation rule was applied;
+- whether owed devices were built on schedule;
+- whether a RULE-SAME-ROW release cites a review of the *same* failure.
+
+Its own FAILs are partly noise:
+- **A1 and A3:** they count `jev_gate.log`, which is the gate's own log, as an unreviewed build log.
+- **A4:** it flags `2026-09-27-c103-scratch-selftest.md`. That file belongs to cycle 103 or the chat; A4 only resolves dates to the day, so it lands in this window.
+
+**5. Ordering.**
+- Cards 104-1 → 104-4 were in a sound order: fix, measure the E3 disagreement offline, re-specify, then run.
+- After 104-4 PASSed at about 04:24, a recorded decision said the tooling card "runs immediately after Part B's run in cycle 104". That card carries the verb-precondition check, the memory-margin check, the helper moves and the `gui_save` evidence fix (`docs/violation-decisions.md:1480`; split-plan:1841).
+- Judgement went straight to the ABBA (104-5) instead, and 217 records no reason for the change.
+- That second deferral of two owed devices is the ordering fault. It cost no minutes this cycle, so it is not ranked as the violation.
+- A single-leg smoke run should also have come before the 4-leg chain.
+
+**6. What was not reported.**
+- 217(g) does not count the 17 min spent on legs 2–4 as a loss.
+- It says "during" for a COM5 read that was not taken during the run.
+- It leaves out the ~255 s forced LabVIEW kill in 104-6 (`result_104-6.json:21`, "G92 forced kill after 255 s wait").
+- The review owed for run 2's E3 failure was discharged by `RULE-SAME-ROW` (`jev_gate.log:1806`). That rule cited `2026-09-26-c100-6-r2.md`, a review of a *different* failure: the op-2 BINDING stop (`archive/peer/2026-09-26-c100-6-r2.md:11`). `result_104-2.json:28` reports the discharge, but not that the cited review was about something else.
+
+**7. Judgement inside material sessions.**
+- **104-4 changed the definition of "plan-created".** After a 96/2 self-test, the material session widened `e3_created` to every sim id below 0, terminals included (`result_104-4.json:16`). This is a design choice. It was flagged as open (`:26`) and judgement ratified it afterwards (split-plan:1847).
+- **104-5 made a choice between explanations.** The material session wrote H1 as "REFUTED ... (accepted)" and carried H2 as "the working hypothesis" (`archive/peer/2026-09-27-c104-5-configure-popup.md:84-88`). Refuting H1 on the disk read is a measurement. Picking H2 as the working hypothesis belonged to judgement.
+- **Card 104-6's "if COM5 BUSY, still run the leg"** (`task_104-6.json:58`) is not a result-dependent branch, since the action is the same either way.
+- **Card 104-1 was handled correctly.** Its material session refused the ladder's "patch + rerun" because the card forbade it (`result_104-1.json:19`).
+
+## DEVICE EFFECT
+
+None of the devices failed inside the window.
+
+- **bgrun rc and inner-FAIL scan (09-16, 09-17, 09-24 motor):** held. Failing runs ended rc=1: `stage_d1_disp_c104B.log:256`, `diag_c104_abba.log:163`.
+- **Confirm-bait refusal (09-16):** held. The peer task asks the reviewer to refute (`c104-5-configure-popup.md:26-31`).
+- **Prior-art review, premature-build guard and stop record (09-16, 09-18, 09-24):** held.
+  - The recipe edit re-armed the gate. It refused an executing dry run (`material_marker.log:2254`) until the prior-art review, which returned novel (`result_104-4.json:17`).
+  - READ-ONLY refusals were 0 (`result_104-1.json:18`, `result_104-4.json:22`). So the 03:3x "round 2" condition in violation-decisions.md:1488 was not met.
+- **guard_peer blank-disposition gate:** not challenged. The only blank review is a hypothesis review from cycle 103.
+- **Cost split and regex (C3/C4, 09-16 21:07):** held; audit C4b shows 3 seen, 3 parsed.
+- **Scope counter:** held; it listed 38 files.
+- **bgrun reap:** held; audit A2 PASS.
+- **Nodes-membership check, sink gates, graph-shape check, unroutable-row report, OpLoopEndRef:** not exercised. Entry diffs were 0 and no op error occurred.
+- **SendMessage refusal:** not exercised; no SendMessage appears in the evidence.
+- **gates_due manual form:** could not be checked from material logs.
+- **Verb-precondition and memory-margin checks (09-27 01:55 and 03:3x):** not built (finding 5). Their faults did not occur anyway:
+  - peak memory was 616.7 MB against MEMSTOP 700 (`result_104-2.json:20`);
+  - op 43's crash is a live owner-map bug that the declared precondition would not catch.
+- **RULE-SAME-ROW:** a weakness, but no device failure. It matches on script name, not on failure class, so it released on an unrelated review. The harm it guards against, a blind retry, did not happen: run 3 followed an offline measurement and a prior-art review.
+
+VIOLATION: repeated-failure-class | loss_min=17 | loss_usd=? | evidence=tools/bench/diag_c104_abba.log:27
+
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle104","verdict":"refuted","alternative":"Legs 2-4 were needed so the ABBA would be balanced across arms; but leg 1 was A, the S1 file that ran clean on 09-26, so its pre-pick L2 failure was a rig fault and later legs could not add information about B.","discriminating_test":"Add a break on 'harness fault' to the leg loop and rerun: BGRUN END should come at about 6 min with the same first_fail, the same Configure.vi evidence and no loss of information.","violations":[{"slug":"repeated-failure-class","loss_min":17,"loss_usd":"?","evidence":"tools/bench/diag_c104_abba.log:27"}],"sources":["tools/bench/diag_c104_abba.log:27","tools/bench/diag_c104_abba.py:168","CLAUDE.md:201","tools/bench/cards/result_104-2.json:19","docs/violation-decisions.md:1480","tools/bench/jev_gate.log:1806"],"note":"Findings: second dry-blind Part-B run (~9 min); owed tooling card skipped after Part B with no recorded reason; escalation rule not applied to 104-5; plan says COM5 FREE 'during' but it was not measured. No device failed."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle104.md
+BGRUN END rc=0 after 289s

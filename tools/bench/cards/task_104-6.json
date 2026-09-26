@@ -1,0 +1,62 @@
+{
+ "schema": "task/1",
+ "id": "104-6",
+ "kind": "diagnose",
+ "goal": "Why the rotor Configure.vi opened and stopped every ABBA leg at 04:33 (not on 09-26): COM5 holder + ONE A leg (S1) with ExecState/dialogs/Configure error-out read at the L2 point",
+ "why": "104-5: all 4 legs (A and B) stopped before picks, Configure.vi panel+diagram over the main panel, main VI in edit mode (diag_c104_abba.log:7,30,53,76); review H2 = Configure error (c104-5-configure-popup.md:35-54).",
+ "inputs": [
+  {"path": "tools/bench/cards/result_104-5.json"},
+  {"path": "archive/peer/2026-09-27-c104-5-configure-popup.md"},
+  {"path": "tools/bench/diag_c104_leg.py", "md5": "cfa31f0c2428bc72d1380ffc7027505b"},
+  {"path": "tools/bench/diag_c104_rotorport.log"},
+  {"path": "tools/bench/motor_session_start_cycle104.log"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c104_leg.py"},
+  {"kind": "file", "name": "tools/bench/motor_session_start_cycle104.log"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "pass": [
+  "before LabVIEW: processes alive (python/py/powershell/LabVIEW/NI) with command lines; COM5 open-exclusive probe (open+close, no bytes written): free or busy, and by whom if known",
+  "NI MAX / VISA alias 'Rotor' -> resource name read (file or registry), and the resource the S1 rotor Configure.vi call is wired to (constant/control value), file:line",
+  "did cycle 104's motor session start touch COM5? (motor_session_start_cycle104.log lines naming a port)",
+  "ONE leg A (D1_s1_copy.vi) to the L2 point only: main ExecState, window titles list, Configure.vi 'error out' (status, code, source) read by COM, capture; then stop, no picks",
+  "LabVIEW verified gone at the end; S1 md5 3e3d23ce unchanged; TMX 39 read back"
+ ],
+ "outputs": [
+  "tools/bench/diag_c104f_*",
+  "tools/bench/facts_c104f_rotor.json",
+  "tools/bench/cards/result_104-6.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "gate",
+  "run_vi": true,
+  "write": [
+   "tools/bench/diag_c104f_*",
+   "tools/bench/facts_c104f_*",
+   "tools/bench/t0_legs/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/gui_shots/**",
+   "tools/gui_actions.log",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 1, "minutes": 30},
+ "rules": [
+  "measure only: no fix, no retry of the ABBA, no rotor motion command, never write bytes to COM5",
+  "never save or edit any VI; one bgrun (--max-min <= 20) for the leg; hold the turn to BGRUN END",
+  "GUI via lv_gui.ps1 -Exception Approved -Evidence 'user 2026-09-17 bead-pick option 1'; capture-act-capture",
+  "if the COM5 probe shows BUSY, still run the leg (it is the discriminator); report both",
+  "facts <=10 with file:line; OPEN <=3; do not judge the cause"
+ ],
+ "unblocks": "M8"
+}

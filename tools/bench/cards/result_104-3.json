@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"104-3","status":"PASS","gates":{"pass":6,"fail":0},
+"first_fail":null,
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/facts_c104c_e3.json","md5":"1843b1f18b42ef3eeba6dcccf4c534c7"},
+ {"path":"tools/bench/diag_c104c_e3rows.py","md5":"9633e780b409dbac46d955147ac1e083"},
+ {"path":"tools/bench/diag_c104c_e3rows.log","md5":"8ef4a2cad68e92c0f0314f237dad8af8"},
+ {"path":"tools/bench/diag_c104c_fs.py","md5":"3b1cc9e3075625a7eb7a8d29b983c663"},
+ {"path":"tools/bench/diag_c104c_fs.log","md5":"d29bac67092b73e1db011285a31732eb"}
+],
+"facts":[
+ "F (open_rows producer): stagesim.py:1132 cdiff(S1, graph(st,labels)); graph() :326-328 = from_parts(st terms, labels {} (simulate called w/o labels, diag_c103_resim.py:42 -> :1094), st fs_pairs)",
+ "E (E3): stage_d1_disp.py:42-53 = stagexec.py:2243-2245: from_parts(real, be objs, step-57 loops bound, JC.node_labels_default() (626 labels), WIKI fs_tunnel_pairs (576)); S1 = JC.load, labels+fs",
+ "Plan base par1359_95_graph.json IS D1_s1_copy.vi md5 3e3d23ce (== S1) but carries 0 fs_tunnel_pairs (diag_c104c_fs.log:3,5); ctx has no fs_pairs_wiki (stagesim.py:211)",
+ "The 15 rows already appear at sim STEP 0, the unedited base (summary.json:87-103). Ablation: F+default labels 16 rows; E+labels{} 11; E+labels{}+base fs(0) = 21 == want (e3rows.log:10-14)",
+ "5 rows by LABELS: 10067 Initial Time at Start, 12236 x, 12236 y, 19532 Cycle Start Time, 21699 x. F adds a Tick Count (ms) source (21887/12096/10972/21710); scheduling in S1 (vigraph.py:229,637)",
+ "10 rows by FS PAIRS (no pairs -> heuristic fs edges): error-in of 1566,16184,17164,18136,27165,27466,28094,31870,33114,35648; F adds 1 source each, mostly its own 'error out' (diag_c104c_fs.log:9-23)",
+ "All 15: E sources == S1 sources (E_eq_S1 True); none in E added/removed buckets, no source node added -> E drops no row, the rows only exist in F (facts_c104c_e3.json rows[])",
+ "E 6 rows: 8323 Force, 8764 y, 27716 index, 28180 half-width, 29009 left+right rank. E added 8, removed 0: 10000002 10000006 10000020 10000021 10000061 10000064 10000070 10000073 (e3rows.log:12)",
+ "S1 deliverables: L2-A1 stage_d1_l2a1.py:18,99-100 and loop15/S3b-M4 stage_d1_m4b.py:72,81 via stagekit.py:906-907 both build with default labels + fs pairs = E's inputs, not F's",
+ "PD213(d) class (plan_disp.json:731-836): all 15 = (4) already open at base; (1) 8764 y, 27716, 28180, 29009 x2; (3) 8323; (2) none. Dry-end terms != step-57 terms by uid, 5755 each"
+],
+"open":[
+ "Which side is right is not decided here. Measured: F's graph differs from S1's build on the unedited S1 VI itself (default labels, fs pairs), and every S1 deliverable used E's inputs.",
+ "Latent: stage_d1_disp.py:43 cites stagexec.lv_run ':2004-2008'; the code is at stagexec.py:2243-2248. Stale citation, not patched (read-only)."
+],
+"cost":{"usd":null,"minutes":12,"labview_runs":0},
+"note":"OFFLINE only: 2 diag scripts (97 and 36 lines) under bgrun, rc 0, no LabVIEW, no patch, no STATUS edit, no peer. Jev ladder n/a (no failed gate in this card)."}

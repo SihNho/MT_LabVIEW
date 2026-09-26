@@ -1,0 +1,30 @@
+{"schema":"result/1","id":"104-5","status":"FAIL","gates":{"pass":33,"fail":28},
+"first_fail":"T1 leg1 A@15 rc 0 (all 4 legs stopped at v5 step run1.L2 'IMAQ display LOCATED', before any pick)",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/disp_104_abba.json","md5":"64d6e2bea16441a3754fbb9257252ee5"},
+ {"path":"tools/bench/diag_c104_abba.py","md5":"aa1f85d1e4186888bff1d0207afe2dfd"},
+ {"path":"tools/bench/diag_c104_leg.py","md5":"cfa31f0c2428bc72d1380ffc7027505b"},
+ {"path":"tools/bench/diag_c104_abba.log","md5":"970881238ef73d8b9d273aabd0282d71"},
+ {"path":"tools/bench/diag_c104_abba_dry.log","md5":"739229850a5b398c9b219f808aafe473"},
+ {"path":"tools/bench/diag_c104_rotorport.log","md5":"0df1cb15641891b28d9d7bff1362c123"},
+ {"path":"archive/peer/2026-09-27-c104-5-configure-popup.md","md5":"a94e2f618b908d2ef20e50d1e245a9ca"}
+],
+"facts":[
+ "Dry run executed diag_c104_leg.py 4x at 15 picks (saved 92-3 click/capture returns; #8323 read on a SYNTHETIC value, none saved) 60/0 (diag_c104_abba_dry.log:165)",
+ "Real run BGRUN END rc=1 after 1386 s, 33/28: every leg (A,B,B,A) failed v5 run1.L2, 'band (233,1017,233,1018) smaller than 200x150' (diag_c104_abba.log:7,30,53,76; m8_v5_replay_s1_p15_r120.json:79-83)",
+ "So NO frame-loss, tra-row or #8323 number exists: lost/iters/plot all null, F1/F2 FAIL on both B legs (diag_c104_abba.log:127-128,141-142); rerun rule not applied (crashed leg, no tra)",
+ "Shots 20260927_043303/043848_v5_run1_before_picks.png: rotor 'Configure.vi Front Panel' + 'Block Diagram' over the panel; main panel in EDIT mode, Width/Height 640/512, image white",
+ "96-1 shot 20260926_145534_v5_run1_before_picks.png (same A md5 3e3d23ce): run-mode toolbar, 1280/1024, grey camera image, no Configure.vi window",
+ "Review ANSWERED: H1 (breakpoint/suspend) unlikely, edit mode = VI already stopped; H2 = Configure.vi error, auto error handling stopped run (c104-5-configure-popup.md:35-54)",
+ "Separator read: instr.lib Autonics Configure.vi mtime 2026-08-21 21:04:15, md5 aff239b2, ver 26008000 -> H1 on-disk refuted; COM5 FTDI PnP Status OK (diag_c104_rotorport.log:3,6)",
+ "md5 in-run before leg 1 and after leg 4: S1 3e3d23cefd3a334001aa9d6156bf1aee, disp 245a10206b565cba0ba186bd891f5cb8, unchanged (diag_c104_abba.log:4,98)",
+ "Each leg: LabVIEW gone before/after, 0 TIFFs, TMX 39 read back; camera 90 Hz restored; tasklist LabVIEW 0 at end; foreign claude 12-13, CPU 2.0-6.3 % (diag_c104_abba.log:104-157)",
+ "INDEX row 57 appended by the script with null numbers, then prefixed NON-RESULT by hand (archive/benchmarks/INDEX.md:78); ladder: no JEV-LADDER line for this log -> old path, review dispatched"
+],
+"open":[
+ "What made the rotor Configure.vi open (and the run stop) at 04:33 when it did not at 09-26 14:18? Unread: which process held COM5 at run time, NI MAX alias 'Rotor', and ExecState + dialogs() at the L2 capture.",
+ "Rerun the ABBA after that cause is found, or add the review's L2 ExecState/dialogs read to the leg first? (both are new cards; failure budget of this card is spent)"
+],
+"cost":{"usd":null,"minutes":40,"labview_runs":4},
+"note":"Opus 5.5 material. log | ladder: none | NEXT-ACTION: old path (hypothesis review) | review dispatched, H1-on-disk refuted by a read | H2 open. No VI saved/edited; STATUS not edited; no commit. Leg scripts = c96 copies + a stop-time plot read (<=40 new lines)."}

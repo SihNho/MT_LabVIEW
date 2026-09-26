@@ -1,0 +1,33 @@
+{
+ "card": "104-2",
+ "census_sim_keyed_reads_live_path": [
+  {"site": "tools/stagexec.py:1263 (was :1253)", "what": "Executor.run sets be.addr.owners = prev step owners (sim uids) per op", "fixed": "bound_owners() through bind.diag/bind.obj", "hit_ops_34_47": [43]},
+  {"site": "tools/stagexec.py:1766 LVBackend.create const_on_term", "what": "addr.owners.get(real frame diagram)", "fixed": "via :1263; + ExecStop when no real WhileLoop owner", "hit_ops_34_47": [43]},
+  {"site": "tools/stagexec.py:931 Addr._triple tunnel_owner(real, node, self.owners)", "what": "owner-routed (Selector/case Tunnel) outer face", "fixed": "via :1263", "hit_ops_34_47": []},
+  {"site": "tools/stagexec.py:723 connect_route face_twins(real, rs, addr.owners)", "what": "owner-routed outer-face source", "fixed": "via :1263", "hit_ops_34_47": []},
+  {"site": "tools/stagexec.py:398 compare allow_either", "what": "sim term uids tested against translated/real uids", "fixed": "translated through bind.term", "hit_ops_34_47": [], "note": "plan allow_either all base uids (8476, 11614, 31053, 31152)"},
+  {"site": "tools/stagexec.py:1405 delete_wire ts <= self.allow", "what": "same allow set", "fixed": "translated through bind.term", "hit_ops_34_47": []},
+  {"site": "tools/stagexec.py:2031 SimBackend.create const_on_term", "what": "dry read its PRIVATE owners map (never the one live reads)", "fixed": "reads self.addr.owners like live", "hit_ops_34_47": [43]},
+  {"site": "tools/stagexec.py:1267,1309,1378 add_sr int(a['loop']) + after.diagrams[a.body]", "what": "raw plan loop id used live; a created-loop add_sr would int('new:..')", "fixed": "NOT patched (no add_sr in ops 34-47; Part-B refuses loop_of)", "hit_ops_34_47": []},
+  {"site": "tools/stagekit.py", "what": "no owners/bind/sim-keyed map read (grep)", "fixed": "n/a", "hit_ops_34_47": []}
+ ],
+ "selftest": {"patched": "93/0 incl T43,T43b", "reverted_owners_line": "90/3, T43 FAIL + T42 FAIL", "log": "tools/bench/diag_c104_selftest.log"},
+ "dry_partB": "PASS ops 34..47 diff 0 (tools/bench/diag_c104_dryB.log)",
+ "prerun_partB": "8/0 (tools/bench/diag_c104_prerunB.log:81)",
+ "launch": "ALLOW, cap cycle 104 allow, records 03:44:15 (tools/bench/diag_c104_launch.log)",
+ "run": {
+  "log": "tools/bench/stage_d1_disp_c104B2.log", "bgrun": "END rc=1 after 420s",
+  "entry": "B0 PASS, entry diff 0 vs step_39, #25261 False, parity 0 (log:20,44,302)",
+  "step_diffs": "k35,37,39,41,42,43,44,46,47 all 0; E1 PASS 0 warn at 9 reads (log:89-300,304)",
+  "W1": "PASS: RBW 12 pre-existing wires 1921->1909, new-uid removed [], lost [] (log:307-309)",
+  "E2": "ExecState 0 before RBW, 1 after (log:305,310)",
+  "E3": "FAIL extra [] missing 15 of 21 open_rows (log:312)",
+  "PS": "not reached, nothing saved",
+  "meter": {"start": [566.3, 45635], "k0": [574.4, 45728], "k35": [577.0, 45989], "k37": [577.7, 45981], "k39": [588.7, 46088], "k41": [588.6, 46108], "k42": [597.4, 46109], "k43": [601.4, 46141], "k44": [605.5, 46196], "k46": [604.6, 46196], "max_k47": [616.7, 46226]},
+  "md5": {"dispA": "16c2ca00a114a227a81612dd49d111cc", "S1": "3e3d23cefd3a334001aa9d6156bf1aee", "work_copy_034438": "16c2ca00a114a227a81612dd49d111cc (== dispA, never saved)"},
+  "labview_gone": true
+ },
+ "e3_offline": {"script": "tools/bench/diag_c104_e3.py", "partB_dry": "got 6 / want 21, same 15 missing", "full_dry": "got 6 / want 21, same 15 missing", "json": "tools/bench/diag_c104_e3.json"},
+ "jev": "no JEV-LADDER line for stage_d1_disp_c104B2.log; RULE-SAME-ROW discharge by 2026-09-26-c100-6-r2.md (jev_gate.log:1806)",
+ "readonly_refusals": 0
+}

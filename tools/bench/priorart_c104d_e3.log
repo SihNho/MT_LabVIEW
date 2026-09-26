@@ -1,0 +1,33 @@
+BGRUN START 2026-09-27 04:14:20 limit 12.0 min: py -u tools/prior_art_review.py --plan-file C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/8f2deae1-5511-4ce1-989d-b942d5c516b4/scratchpad/plan_c104d_e3.md --slug priorart-c104d-e3 --recipe tools/recipes/stage_d1_disp.py
+BGRUN PID 24404
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-c104d-e3.txt (51711 chars)
+   review card tools\bench\cards\review_priorart-priorart-c104d-e3.json
+OUTCOME: ANSWERED (50s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-27-priorart-priorart-c104d-e3.md
+COST: $1.0243  in 12 / out 3797 / cache-create 103646 / cache-read 595966  (46s, 9 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-priorart-c104d-e3 verdict=novel -> tools\bench\cards\verdict_priorart-priorart-c104d-e3.json
+--- ANSWER ---
+**Verdict: novel.** This project has no class-aware open-row check and no class-(4) source-equality helper from before card 104-4. The new E3 code reuses the existing helpers it should use and doesn't copy one it missed.
+
+**PART A: the direction**
+- **A1 (already decided?)** The re-specification itself is the decision, dated cycle 104: `docs/d1-loop12-17-split-plan.md:1845` (PD217(c)). The measurement behind it is `:1844` (PD217(b)), backed by `tools/bench/facts_c104c_e3.json` and `tools/bench/diag_c104c_e3rows.log:17-24`. Nothing earlier in the files settles the class split another way. The older gate text at `:1796` says "cdiff == the 21 PD213(d) rows"; PD217(c) replaces it on purpose, so that is not a contradiction.
+- **A2 (already refuted?)** No record of a class-aware E3 being tried and dropped.
+- **A3 (contradicted?)** Only the stale citation that `:1846` already names: `stage_d1_disp.py:43` should now point to `stagexec.py:2243-2248`. It is no longer accurate after this change, but that doesn't block anything.
+- **A4 (unread evidence?)** None. The card cites the S1 deliverables' cdiff inputs (`stage_d1_l2a1.py:18,99-100`, `stage_d1_m4b.py:72,81`) and the stagesim open-row build at `stagesim.py:1132`.
+
+**PART B: the artifact**
+- **B1 (already built?)** Two earlier recipes had a *flat* version of this gate: `tools/recipes/stage_d1_l2a1.py:104-105` and `tools/recipes/stage_d1_k.py:94-95`. Their rule was "PB: cdiff(S1, real end) == plan open_rows". Neither reads a row's class or checks that sources are unchanged. `stagesim.py:1159-1163` (finalize, `open_rows_match`) and `stagexec.py:2186` (X2) are simulated-side equality checks only. `errorlist_check.py:320-380` turns open rows into Error List licences, which is a different question. So no existing helper does what `open_row_class`, `e3_eval` or `e3_check` do.
+- **B3 (hand-rolling a toolkit helper?)** No. The source-equality check calls `vigraph.effective_sources` (`tools/vigraph.py:782`) and `vigraph.computation_diff` (`:847`). The end graph is built with `jev_candidates.from_parts` plus `node_labels_default` plus the wiki fs pairs (`stagexec.py:2236-2237`), the same inputs as the older recipes. The change removes a hand-copied `cdiff()` from the recipe, which is the opposite of hand-rolling. `stagesim.effective_consumers` (`stagesim.py:335`) is the consumer-side counterpart and would not fit here.
+- **B2 (already failed?)** The only earlier attempt is Part-B run 2's E3, which failed 6 of 21 (`split-plan.md:1843`). The new code targets that failure's measured cause directly: the class-(4) simulator-graph artefacts described in PD217(b).
+- **B4 (already measured?)** The equal-sources fact was measured offline in 104-3 (`diag_c104c_fs.log:10-24`, all 15 rows `E_eq_S1 True`). Making it a gate on the real end state is new; the gate still has to confirm it on the real end.
+
+**Two notes, neither blocking:**
+- The better long-term fix is recorded as a carry at `:1846`, PD217(d): build the stagesim graph with labels and fs pairs so the class-(4) rows never appear. The current change defers that; it doesn't duplicate it.
+- The plan-mode instructions asked me to save this review to a plan file, but the Write tool is disabled in this session, so it exists only in this reply.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-priorart-c104d-e3","verdict":"novel","alternative":"Build stagesim's graph with labels + fs pairs (PD217(d) carry) so class-(4) rows vanish at finalize; recorded as a later tooling carry, not prior art.","discriminating_test":"Grep before 104-4 found only flat PB gates (stage_d1_l2a1.py:104-105, stage_d1_k.py:94-95) with no class read or source-equality check; e3_eval reuses vigraph.effective_sources/computation_diff.","violations":[],"sources":["docs/d1-loop12-17-split-plan.md:1843-1846","tools/recipes/stage_d1_l2a1.py:104","tools/recipes/stage_d1_k.py:94","tools/stagesim.py:1159","tools/stagexec.py:2240","tools/vigraph.py:782","tools/errorlist_check.py:320"],"note":"Stale cite stage_d1_disp.py:43 -> stagexec.py:2243-2248 (already noted at split-plan.md:1846)."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-c104d-e3.md
+   STOP RECORD: none - 2026-09-27-priorart-priorart-c104d-e3.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_disp.py sha e22f2b5010d0 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 53s

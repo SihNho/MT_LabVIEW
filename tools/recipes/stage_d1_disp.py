@@ -5,7 +5,8 @@ PRIOR ART: stage_d1_l2a1.py (DryBE), stagexec.lv_run (E1/E2/E3, cdiff), gscript.
 PREDICTION: L1 one real op per action; E1 each checkpoint read == its simulated step (#25261 gate False first); RECORD MODE (101-4):
 a diff is logged, the run goes on, nothing saved unless every diff is a PD214(c) WARN (dangling only, no later uid reference,
 stagexec.classify_step_diff); reads only at CHECKPOINTS = binding ops + 4, 5, 12, last (PD193(a), memory: r4.log:88, r7.log:804);
-W1 RBW removes only pre-existing wire uids, no lost edge; E2 ExecState 1; E3 cdiff(S1, end) == the 21 open_rows; PS saved by script.
+W1 RBW removes only pre-existing wire uids, no lost edge; E2 ExecState 1; E3 (card 104-4, PD217(c), stagexec.e3_check): cdiff(S1, end)
+== the plan's class 1-3 open rows (6 of 21), class-4 sources == S1 (15/15), added objects plan-created; also in the dry; PS by script.
 PART-A MODE (card 103-1, PD215(b)): `--stop-after N` runs ops 1..N only (Executor stop_after, N a checkpoint): A1 no op > N, A2 step N
 real == sim (WARN only), gui_save claudeDev\D1_s1_dispA_<ts>.vi (broken by design, never run), md5 + binding (bind.obj/term/diag,
 loop_of, sym_real) -> tools/bench/stage_d1_dispA.json. History of cards 100-6..102: docs/d1-loop12-17-split-plan.md PD213-PD215.
@@ -13,9 +14,9 @@ PART-B MODE (card 103-4, PD215(b)/PD216(f)): `--from-step N --base <dispA file>`
 loaded by stagexec (plan md5 pinned, stop_after == N), B0 entry read == sim step N + gate re-read + parity/PRIME before op N+1, ops
 N+1.. only; W1 pre-existing wires = S1's (the plan base graph, 1899 == Part A's W0); end gates E1/W1/E2/E3/PS unchanged.
     py tools/bgrun.py --material --max-min 40 --log tools/bench/stage_d1_dispA_r1.log -- py -u tools/recipes/stage_d1_disp.py --stop-after 40"""
-import copy, json, os, subprocess, sys, time                                       # noqa: E401
+import json, os, subprocess, sys, time                                             # noqa: E401
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import stagekit as K, gscript as g, vigraph as V, stagesim as SS, stagexec as SX, jev_candidates as JC, allterms as AT  # noqa: E401,E402
+import stagekit as K, gscript as g, stagesim as SS, stagexec as SX, jev_candidates as JC, allterms as AT  # noqa: E401,E402
 J = lambda *p: json.load(open(os.path.join(*p), encoding="utf-8"))                 # noqa: E731
 PLAN = os.path.join(K.BENCH, "sim/disp/plan_disp.json")                             # ONE literal: stage_prerun.plan_files reads it
 P = J(PLAN); BASE = J(K.ROOT, P["finalized"]["base"]["path"]); A = P["actions"]   # noqa: E702
@@ -40,17 +41,9 @@ class DryBE(SX.SimBackend):
 
 
 def cdiff(x, be, real):
-    """computation_diff(S1, real) as (sink node, term) rows + the plan's open rows (stagexec.lv_run :2004-2008)."""
-    loops = copy.deepcopy(x.step(len(A))["state"]["loops"]); ob = x.bind["obj"]   # noqa: E702
-    for L in loops or []:
-        L["right_uids"] = [ob.get(int(u), int(u)) for u in L.get("right_uids") or []]
-        L["left_of"] = dict((str(ob.get(int(k), int(k))), [ob.get(int(y), int(y)) for y in (v if isinstance(v, list) else [v])])
-                            for k, v in (L.get("left_of") or {}).items())
-    Greal = JC.from_parts({"terminals": real, "graph_summary": WIKI["graph_summary"]}, getattr(be, "last_objs", None) or be.st["objs"],
-                          loops, JC.node_labels_default(), WIKI["fs_tunnel_pairs"], "stage_d1_disp end")
-    cd = V.computation_diff(SS.load_s1(P), Greal)
-    return (sorted(set((V.key_parts(r["sink"])[0], V.key_parts(r["sink"])[2]) for r in cd["rows"])),
-            sorted(set((int(r["node"]), r["term"]) for r in P["open_rows"])))
+    """card 104-4, PD217(c): E3 = stagexec.e3_check (want = the plan's class 1-3 open rows from each row's class; class-4 rows:
+    end sources == S1 sources; added objects plan-created). Same end graph as before (stagexec.e3_graph)."""
+    return SX.e3_check(P, x, getattr(be, "last_objs", None) or be.st["objs"], real, WIKI, "stage_d1_disp end")
 
 
 def part_a(s, x, be):
@@ -106,8 +99,8 @@ def body(s):
     if STOP:
         return part_a(s, x, be)
     if fails:                                                                      # card 101-4: record, report, never save
-        got, want = cdiff(x, be, real)                                             # the LAST checkpoint read, no LabVIEW call
-        s.fact("E3-INFO cdiff(S1, last read) vs open_rows: extra {0} missing {1}".format(sorted(set(got) - set(want)), sorted(set(want) - set(got))))
+        e3 = cdiff(x, be, real)                                                    # the LAST checkpoint read, no LabVIEW call
+        s.fact("E3-INFO {0}: extra {1} missing {2}".format(SX.e3_line(e3), e3["extra"], e3["missing"]))
         s.es("end (record mode, not saved)")
         s.gate("E1 every checkpoint's real graph == its simulated step (record mode, {0} FAIL diff(s), {1} WARN) - NOTHING SAVED".format(
             len(fails), len(x.diffs) - len(fails)), False, [(d["k"], d["diff"]["n"], d.get("class")) for d in x.diffs], fatal=True)
@@ -128,9 +121,11 @@ def body(s):
         real = be.read()                                                           # the backend's own reader, after RBW
     es = s.es("end (warm, after RBW)")
     s.gate("E2 ExecState 1 warm at the end", DRY or es == 1, es, fatal=True)
-    got, want = cdiff(x, be, real)
-    s.gate("E3 computation_diff(S1, real end) == the plan's {0} open_rows (FATAL, before save)".format(len(want)), got == want,
-           {"extra": sorted(set(got) - set(want)), "missing": sorted(set(want) - set(got))}, fatal=True)
+    e3 = cdiff(x, be, real); got = e3["got"]; s.fact("E3 detail {0}".format(json.dumps(e3, default=str)[:CUT]))   # noqa: E702
+    if DRY and not e3["ok"]:                                                       # PD217(c): a dry E3 fail is a FAIL, not UNVERIFIED
+        raise SX.ExecStop("E3 dry: " + SX.e3_line(e3))
+    s.gate("E3 (PD217(c), FATAL, before save) " + SX.e3_line(e3), e3["ok"], {k: e3[k] for k in
+           ("extra", "missing", "unclassed", "c4_bad", "bad_added", "bad_removed")}, fatal=True)
     s.census(tag="after display stage")
     h1 = bp.labview_handles(); s.fact("PH handles RECORDED: post-open {0} -> before-save {1}".format(h0, h1))   # noqa: E702
     m = s.save(broken_ok=False)

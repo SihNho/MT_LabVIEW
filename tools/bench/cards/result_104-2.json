@@ -1,0 +1,29 @@
+{"schema":"result/1","id":"104-2","status":"FAIL","gates":{"pass":6,"fail":1},
+"first_fail":"E3 computation_diff(S1, real end) == 21 open_rows: extra [] missing 15 (stage_d1_disp_c104B2.log:312); reproduces OFFLINE in both dry runs",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/stagexec.py","md5":"0070aa3db0aed3b4712dbbe4d3c60fb6"},
+ {"path":"tools/bench/stage_d1_disp_c104B2.log","md5":"7874a23b895655b7fedd055ebee3b283"},
+ {"path":"tools/bench/diag_c104_selftest.log","md5":"f0b7641de4da8ed68277a854587729ca"},
+ {"path":"tools/bench/diag_c104_e3.json","md5":"d5d8acf6386537ed34f7f884b0bf44e4"},
+ {"path":"tools/bench/facts_c104b_partB.json","md5":null}
+],
+"facts":[
+ "Census: one root, sim-keyed owners put on addr per op (stagexec.py:1263); read at :1766 (op 43), :931/:723 (no op 34-47); twin allow_either :398/:1405; stagekit none (facts_c104b_partB.json)",
+ "Patch: bound_owners() :1044 via bind.diag/obj at :1263 (full + Part-B); :1766 ExecStop if no real WhileLoop owner; dry :2031 reads addr.owners like live; allow translated",
+ "Self-test 93/0 incl new T43 (live const_on_term, created loop, loop_uid 10000004 vs sim -1) + T43b; owners line reverted: 90/3, T43+T42 FAIL (diag_c104_selftest.log)",
+ "Part-B dry PASS ops 34..47 diff 0 (diag_c104_dryB.log); pre-run 8/0 (diag_c104_prerunB.log:81); launch ALLOW, cap allow (diag_c104_launch.log)",
+ "Run 2 BGRUN END rc=1 420s: B0/B1 PASS, entry diff 0, #25261 False, ops 34..47 dispatched, diffs 0 at 9 reads, E1 PASS (stage_d1_disp_c104B2.log:20,44,302,304)",
+ "W1 PASS: RBW removed 12 pre-existing wires 1921->1909, new-uid [] lost []; E2 ExecState 0 before RBW, 1 after (stage_d1_disp_c104B2.log:305-311)",
+ "E3 FAIL: 6 of 21 open_rows; missing 15 = 9x error in, Initial Time at Start, Cycle Start Time, 12236 x/y, 21699 x (stage_d1_disp_c104B2.log:312); PS not reached, not saved",
+ "Recipe cdiff on Part-B dry end AND full dry end: 6/21, SAME 15 missing (diag_c104_e3.log) -> not LabVIEW-side; dry marks E3 UNVERIFIED (diag_c104_dryB.log:66)",
+ "MB/handles start 566.3/45635, k43 601.4/46141, max k47 616.7/46226; dispA 16c2ca00 + S1 3e3d23ce unchanged, work copy == dispA; LabVIEW gone (c104B2.log:42-334)",
+ "c104B2.log | ladder none, RULE-SAME-ROW (jev_gate.log:1806) | n/a | stopped, no 3rd run | FAIL. READ-ONLY refusals: 0 (material_marker.log)"
+],
+"open":[
+ "E3 want (plan open_rows, 21) vs the recipe's cdiff on the same simulated end (6): which side is right - the finalize-time open_rows or stage_d1_disp.cdiff (loops/objs built from step 57 + JC.from_parts)?",
+ "Should E3 be made checkable in the dry run (it is UNVERIFIED there) so this class stops offline, before a LabVIEW run?",
+ "Latent twin not patched: add_sr on a plan-CREATED loop uses int(a['loop']) and sim diagrams map (stagexec.py:1267,1309,1378) - patch when a plan needs it?"
+],
+"cost":{"usd":null,"minutes":20,"labview_runs":1},
+"note":"Error List not read: E2 reached ExecState 1. No peer dispatched: failure is an offline-reproducible E3 mismatch, ladder line absent, review discharged by RULE-SAME-ROW. No STATUS edit (status_edit false), no commit."}

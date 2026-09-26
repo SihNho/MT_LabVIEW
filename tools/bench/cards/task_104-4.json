@@ -1,0 +1,82 @@
+{
+ "schema": "task/1",
+ "id": "104-4",
+ "kind": "build",
+ "goal": "PD217(c): E3 want = PD213(d) class 1-3 rows from plan_disp.json + class-4 sources == S1; E3 evaluated in dry; then Part-B run 3 (retry card) -> claudeDev\\D1_s1_disp_<ts>.vi by script",
+ "why": "104-2 run 2 passed E1/W1/E2 but E3 6/21; 104-3 measured the 15 missing rows as class-4 simulator-graph artefacts (facts_c104c_e3.json). PD217(c) re-specifies E3.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/cards/result_104-2.json"},
+  {"path": "tools/bench/cards/result_104-3.json"},
+  {"path": "tools/bench/facts_c104c_e3.json", "md5": "1843b1f18b42ef3eeba6dcccf4c534c7"},
+  {"path": "tools/stagexec.py", "md5": "0070aa3db0aed3b4712dbbe4d3c60fb6"},
+  {"path": "tools/recipes/stage_d1_disp.py", "md5": "42541bc818dd22951bf60636d1f46485"},
+  {"path": "tools/bench/sim/disp/plan_disp.json", "md5": "c7d80fc93279f4ea5efd21c068e7efa6"},
+  {"path": "tools/bench/stage_d1_dispA.json", "md5": "d5393162848fef90d099efa7f0439140"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_dispA_20260927_024535.vi", "md5": "16c2ca00a114a227a81612dd49d111cc"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_disp.py"},
+  {"kind": "file", "name": "tools/bench/sim/disp/plan_disp.json"},
+  {"kind": "file", "name": "tools/bench/facts_c104c_e3.json"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_dispA_20260927_024535.vi"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "pass": [
+  "E3 in code: want = plan_disp.json open rows with class 1-3 (by the class field) + added objects; every class-4 row: end source == S1 source; no row typed by hand",
+  "E3 also runs in the Part-B dry on the simulated end; on the current plan it reports 6 == 6 and 15/15 class-4 sources equal",
+  "self-test PASS incl. negatives: an extra unexpected row FAILS; a class-4 row whose source changed FAILS; old 21-row want no longer used",
+  "Part-B dry + pre-run --from-step 33 PASS; launch with RETRY_CARD=tools/bench/cards/task_104-4.json; launch gate ALLOW",
+  "ONE run held to BGRUN END: entry diff 0, #25261 False, ops 34-47 step diffs WARN-class only, W1 PASS, E2 ExecState 1, E3 PASS (values)",
+  "PS saved by script -> claudeDev\\D1_s1_disp_<ts>.vi: md5 + size; ExecState 1 on a cold reload of the saved file",
+  "MB/handles at load, max, after save; S1 3e3d23ce + dispA 16c2ca00 unchanged; LabVIEW gone; READ-ONLY stop-record refusals count",
+  "on failure: op, gate, class, uids, MB, log file:line, newest JEV-LADDER NEXT-ACTION; ExecState 0 -> Error List first; no 4th run"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_disp_*",
+  "tools/stagexec.py",
+  "tools/recipes/stage_d1_disp.py",
+  "tools/bench/facts_c104d_partB.json",
+  "tools/bench/cards/result_104-4.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_disp_*",
+   "tools/stagexec.py",
+   "tools/recipes/stage_d1_disp.py",
+   "tools/bench/selftest_stage*",
+   "tools/bench/stage_d1_disp*",
+   "tools/bench/sim/disp/**",
+   "tools/bench/facts_c104*",
+   "tools/bench/diag_c104*",
+   "tools/bench/errorlist_*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/cards/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/priorart*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "outcome", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 75},
+ "rules": [
+  "E3 logic in stagexec's shared E3 function; recipe edited only where it builds the want list; recipe <= 155 lines",
+  "plan_disp.json NOT edited; MEMSTOP 700; the cut stays op 33; no other gate changed",
+  "exactly ONE LabVIEW run, only after self-test + dry (with E3) + pre-run PASS",
+  "save by script only (needs E2 ExecState 1 and E3 PASS); never save S1 or dispA; never run the VI",
+  "stop or failing gate: report facts and stop; review design findings go to open",
+  "bgrun --max-min 60; hold the turn to BGRUN END; LabVIEW verified gone at the end"
+ ],
+ "retry_of": "stage_d1_disp.py",
+ "advances": ["M8", "M3", "R1", "R3"]
+}

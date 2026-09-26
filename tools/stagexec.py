@@ -36,6 +36,7 @@ import copy
 import hashlib
 import json
 import os
+import re
 import sys
 import time
 
@@ -395,8 +396,8 @@ def compare(sim_terms, real_terms, bind, allow_either=()):
     er, dr = edges(R)
     wired_r = set(r["term_uid"] for r in R if r["wire_uid"])
     wired_s = set(r["term_uid"] for r in S if r["wire_uid"])
-    allow = set(allow_either)
-    d_sim = sorted(t for t in ds - dr if not (t in allow and t not in wired_r))
+    allow = set(bind["term"].get(t, t) for t in allow_either)       # card 104-2: sim uids -> the real ones S/R carry
+    d_sim =sorted(t for t in ds - dr if not (t in allow and t not in wired_r))
     d_real = sorted(t for t in dr - ds if not (t in allow and t not in wired_s))
     info = dict((r["term_uid"], (r["owner_uid"], r["owner_class"], r["term_name"])) for r in R + S)
     out = {"only_sim_terms": sorted(ts - tr), "only_real_terms": sorted(tr - ts),
@@ -1041,6 +1042,16 @@ def bind_state(st, bind):
     return s, sorted(miss)
 
 
+def bound_owners(owners, bind):
+    """card 104-2: a SIMULATED step's owners map (str(frame diagram uid) -> [structure class, structure uid]) with every
+    created (negative) uid replaced by its bound real uid - keys through bind['diag'], structure uids through bind['obj'].
+    The live read carries REAL uids, so a lookup of a plan-created loop body in the untranslated map returned None
+    (stage_d1_disp_c104B.log:227-233, op 43 const_on_term). Unbound negatives stay negative (not created yet)."""
+    D = dict((int(k), int(v)) for k, v in ((bind or {}).get("diag") or {}).items())
+    O = dict((int(k), int(v)) for k, v in ((bind or {}).get("obj") or {}).items())
+    return dict((str(D.get(int(k), int(k))), [v[0], O.get(int(v[1] or 0), int(v[1] or 0))]) for k, v in (owners or {}).items())
+
+
 # ============================================================================================ the executor
 BIND_KINDS = ("add_sr", "tunnel", "create")         # ops that make objects: a fresh read is required after each
 
@@ -1250,7 +1261,7 @@ class Executor(object):
             first, last = op["acts"][0], op["acts"][-1]
             prev = self.step(first - 1)["state"]
             after = self.step(last)
-            be.addr.owners = prev.get("owners") or be.addr.owners
+            be.addr.owners = bound_owners(prev.get("owners"), self.bind) or be.addr.owners   # card 104-2: sim -> real
             t0 = time.time()
             if op["kind"] == "add_sr":
                 a = A[first - 1]
@@ -1392,7 +1403,7 @@ class Executor(object):
             w = int(a["wire_uid"])
             ts = set(self.bind["term"].get(r["term_uid"], r["term_uid"]) for r in prev["terminals"] if r["wire_uid"] == w)
             live = set(r["wire_uid"] for r in real if r["term_uid"] in ts and r["wire_uid"])
-            if not live and ts and ts <= self.allow:
+            if not live and ts and ts <= set(self.bind["term"].get(t, t) for t in self.allow):   # card 104-2: sim -> real
                 return {"already_gone": "w{0}: every terminal is an allow_either only-sink source, bare in the live "
                                         "graph (LabVIEW deleted it with the node)".format(w)}
             if len(live) != 1:
@@ -1753,7 +1764,11 @@ class LVBackend(object):
             return {"err": None, "uid": u, "how": CREATE_ROUTES[route]}
         if route == "const_on_term":
             rs = next(r for r in real if r["term_uid"] == args["on"])
-            loop = int((self.addr.owners.get(str(int(rs["frame_diagram"]))) or [None, 0])[1] or 0)
+            own = self.addr.owners.get(str(int(rs["frame_diagram"])))
+            if not own or own[0] != "WhileLoop" or int(own[1] or 0) <= 0:      # card 104-2: stop here, not in int(None)
+                raise ExecStop("{0}: the sink's diagram #{1} has no REAL WhileLoop owner in the (bound) owners map ({2})".format(
+                    tag, rs["frame_diagram"], own))
+            loop = int(own[1])
             rec = s.const_row({"loop_uid": loop, "body_diagram": int(rs["frame_diagram"]), "node": V.node_of(rs),
                                "term": rs["term_name"], "value": a.get("value")}, tag=tag)
             out = self._done(rec, tag)
@@ -2014,8 +2029,10 @@ class SimBackend(object):
             elif route == "const_on_term":
                 chk.update(self._node_end(real, args["on"], False, "const_row (OpCreateConstOnTerm_v0)"))
                 rs = next(x for x in real if x["term_uid"] == args["on"])
-                own = (self.st.get("owners") or {}).get(str(int(rs["frame_diagram"])))
-                if not own or own[0] != "WhileLoop":
+                # card 104-2: the SAME map the real backend reads (Executor sets addr.owners, bound to real uids), not this
+                # backend's private state - the private map hid the sim-keyed lookup from every dry run and pre-run
+                own = (self.addr.owners or {}).get(str(int(rs["frame_diagram"])))
+                if not own or own[0] != "WhileLoop" or int(own[1] or 0) <= 0:
                     raise ExecStop("const_row: the sink's diagram #{0} is not a WhileLoop body ({1})".format(rs["frame_diagram"], own))
             elif route == "copy_in":
                 S0 = SS.base_state(_j(_abs(self.plan["finalized"]["base"]["path"])), self.plan.get("context"))
@@ -2179,10 +2196,110 @@ def prerun_plan(plan_path, log=print, model_dir=None):
     return gates, all(g_[1] for g_ in gates)
 
 
+# ============================================================================================ E3 (shared)
+E3_CLASS_RE = re.compile(r"PD213\(d\)\((\d)\)")
+
+
+def open_row_class(r):
+    """PD217(c): a plan open row's PD213(d) class, read from the row itself - a `class` field, else the class the finalizer
+    wrote into `why` ("PD213(d)(4): ..."). None when the row names none; e3_eval then FAILS (a class is never guessed)."""
+    c = r.get("class")
+    if c is None:
+        m = E3_CLASS_RE.search(str(r.get("why") or ""))
+        c = m.group(1) if m else None
+    try:
+        return int(c)
+    except (TypeError, ValueError):
+        return None
+
+
+def e3_wiki(plan):
+    """The S1 wiki record whose fs tunnel pairs + graph summary build the E3 end graph (context fs_pairs_wiki, else s1_key)."""
+    import jev_candidates as JC
+    ctx = plan.get("context") or {}
+    if ctx.get("fs_pairs_wiki"):
+        return _j(_abs(ctx["fs_pairs_wiki"]["path"]))
+    return _j(os.path.join(JC.WIKI, ctx["s1_key"] + ".json"))
+
+
+def e3_graph(plan, ex, objs, real, wiki, tag="E3 end"):
+    """The END graph E3 compares with S1: the real (or dry) end terminals + objects, the plan's last-step loops translated
+    through the executor's binding, default node labels and the wiki fs pairs - the inputs every S1 deliverable's cdiff
+    used (PD217(b); stage_d1_l2a1.py, stage_d1_m4b.py)."""
+    import jev_candidates as JC
+    loops = copy.deepcopy(ex.step(len(plan["actions"]))["state"]["loops"])
+    ob = ex.bind["obj"]
+    for L in loops or []:
+        L["right_uids"] = [ob.get(int(u), int(u)) for u in L.get("right_uids") or []]
+        L["left_of"] = dict((str(ob.get(int(k), int(k))), [ob.get(int(y), int(y)) for y in (v if isinstance(v, list) else [v])])
+                            for k, v in (L.get("left_of") or {}).items())
+    return JC.from_parts({"terminals": real, "graph_summary": wiki["graph_summary"]}, objs, loops,
+                         JC.node_labels_default(), wiki["fs_tunnel_pairs"], tag)
+
+
+def e3_eval(plan, S1, G, created, deleted):
+    """PD217(c) E3, pure: cdiff(S1, G) rows == the plan open rows of PD213(d) classes (1)-(3) (want derived from each row's
+    class, never typed); every class-(4) row's end sources == its S1 sources; every added computation node is a plan-created
+    object (`created` = real uids bound from the plan's new: symbols); every removed one is a plan delete_object uid.
+    Returns a dict; ok is its verdict."""
+    cd = V.computation_diff(S1, G)
+    got = sorted(set((V.key_parts(r["sink"])[0], V.key_parts(r["sink"])[2]) for r in cd["rows"]))
+    cls = [(int(r["node"]), r["term"], open_row_class(r)) for r in plan.get("open_rows") or []]
+    unclassed = sorted(set((n, t) for n, t, c in cls if c not in (1, 2, 3, 4)))
+    want = sorted(set((n, t) for n, t, c in cls if c in (1, 2, 3)))
+    c4 = sorted(set((n, t) for n, t, c in cls if c == 4))
+    ma, mb, c4_bad, c4_keys = {}, {}, [], 0
+    for n, t in c4:
+        keys = sorted(set(k for gg in (S1, G) for k in V.terminals(gg, node=n, is_source=False) if V.key_parts(k)[2] == t))
+        if not keys:
+            c4_bad.append({"row": (n, t), "why": "no sink key in S1 or the end graph"})
+        for k in keys:
+            c4_keys += 1
+            sa = sorted(V.effective_sources(S1, k, ma)) if k in S1["rows"] else None
+            sb = sorted(V.effective_sources(G, k, mb)) if k in G["rows"] else None
+            if sa != sb:
+                c4_bad.append({"row": (n, t), "sink": k, "S1": sa, "end": sb})
+    added = [(a["node"], a["class"]) for a in cd["computation_nodes_added"]]
+    removed = [(a["node"], a["class"]) for a in cd["computation_nodes_removed"]]
+    bad_added = [a for a in added if a[0] not in set(created)]
+    bad_removed = [a for a in removed if a[0] not in set(deleted)]
+    extra, missing = sorted(set(got) - set(want)), sorted(set(want) - set(got))
+    ok = bool(cls) and not unclassed and not extra and not missing and not c4_bad and not bad_added and not bad_removed
+    return {"ok": ok, "got": got, "want": want, "n_open_rows": len(cls), "extra": extra, "missing": missing,
+            "unclassed": unclassed, "c4_n": len(c4), "c4_keys": c4_keys, "c4_equal": len(c4) - len(set(b["row"] for b in c4_bad)),
+            "c4_bad": c4_bad[:10], "added": added, "bad_added": bad_added, "removed": removed, "bad_removed": bad_removed}
+
+
+def e3_created(plan, ex):
+    """(created, deleted) for e3_eval: created = the real uids the binding holds for SIMULATED-created ids (sim ids < 0:
+    the last step's new: objects AND their own terminals, e.g. a created loop's condition terminal, card 104-4
+    diag_c104d_e3.log); deleted = the plan's delete_object uids."""
+    sym = ex.step(len(plan["actions"]))["state"].get("sym") or {}
+    created = set(ex.bind["obj"].get(int(u), int(u)) for s, u in sym.items() if s.startswith("new:") and "." not in s[4:])
+    created |= set(int(b) for m in ("obj", "term") for a, b in (ex.bind.get(m) or {}).items() if int(a) < 0)
+    return created, set(int(a["uid"]) for a in plan["actions"] if a.get("op") == "delete_object")
+
+
+def e3_check(plan, ex, objs, real, wiki, tag="E3 end"):
+    """PD217(c) E3 on an executor's end (live or dry): builds the end graph (e3_graph), S1 (stagesim.load_s1), the created
+    and deleted sets (e3_created), then e3_eval."""
+    G = e3_graph(plan, ex, objs, real, wiki, tag)
+    created, deleted = e3_created(plan, ex)
+    r = e3_eval(plan, SS.load_s1(plan), G, created, deleted)
+    r["created_n"] = len(created)
+    return r
+
+
+def e3_line(r):
+    """One-line E3 verdict for a gate label/detail."""
+    return ("rows {0} == want {1} (classes 1-3 of {2} open rows); class-4 sources equal {3}/{4}; added {5} all plan-created: {6}; "
+            "removed {7}").format(len(r["got"]), len(r["want"]), r["n_open_rows"], r["c4_equal"], r["c4_n"], len(r["added"]),
+                                  not r["bad_added"], len(r["removed"]))
+
+
 # ============================================================================================ LabVIEW run
 def lv_run(plan_path, reference=None, max_min=60):
     import stagekit as K
-    import jev_candidates as JC
     plan, _p = load_final_plan(plan_path)
     base = _j(_abs(plan["finalized"]["base"]["path"]))
     vi, vi_md5 = base["vi"], base["md5"]
@@ -2217,19 +2334,9 @@ def lv_run(plan_path, reference=None, max_min=60):
         s.es("end (warm)")
         es = s.R["es_timeline"][-1]["exec_state"]
         s.gate("E2 ExecState 1 warm at the end", es == 1, es)
-        # computation_diff on the REAL end graph (register table = the simulation's, translated through the binding)
-        last = ex.step(len(plan["actions"]))["state"]
-        loops = copy.deepcopy(last["loops"])
-        for L in loops or []:
-            L["right_uids"] = [ex.bind["obj"].get(int(u), int(u)) for u in L.get("right_uids") or []]
-            L["left_of"] = dict((str(ex.bind["obj"].get(int(k), int(k))), [ex.bind["obj"].get(int(x), int(x)) for x in (v if isinstance(v, list) else [v])])
-                                for k, v in (L.get("left_of") or {}).items())
-        Greal = JC.from_parts({"terminals": real, "graph_summary": wiki["graph_summary"]}, be.last_objs, loops,
-                              JC.node_labels_default(), wiki["fs_tunnel_pairs"], "stagexec end")
-        cd = V.computation_diff(SS.load_s1(plan), Greal)
-        got = sorted(set((V.key_parts(r["sink"])[0], V.key_parts(r["sink"])[2]) for r in cd["rows"]))
-        want = sorted(set((int(r["node"]), r["term"]) for r in plan.get("open_rows") or []))
-        s.gate("E3 computation_diff(S1, real end) rows == the plan's open_rows {0}".format(want), got == [list(x) for x in want] or got == want, got)
+        # PD217(c) E3 on the REAL end graph (register table = the simulation's, translated through the binding)
+        e3 = e3_check(plan, ex, be.last_objs, real, wiki, "stagexec end")
+        s.gate("E3 (PD217(c)) " + e3_line(e3), e3["ok"], {k: e3[k] for k in ("extra", "missing", "unclassed", "c4_bad", "bad_added", "bad_removed")})
         if reference:
             sc = s.scratch("ref", source=reference[0])
             lv = K.mod("wiki_build").read_live(sc, fs_pairs=wiki["fs_tunnel_pairs"])
@@ -2837,6 +2944,41 @@ def _selftest_from_step(gate, fin, pl_, md, opsx, q):
             gate(lab, False, (st2, ff2))
         except ExecStop as e:
             gate(lab, str(e).startswith("FROM-STEP") and want in str(e), str(e)[:200])
+    if st == "PASS":
+        _selftest_e3(gate, rp, ex, q)
+
+
+def _selftest_e3(gate, rp, ex, q):
+    """card 104-4, PD217(c): E3 on the real display plan's Part-B dry end, plus negatives on the same end graph."""
+    P = _j(rp)
+    objs, real = ex.be.st["objs"], ex.be.read()
+    r = e3_check(P, ex, objs, real, e3_wiki(P), "selftest E3")
+    q("  T44 E3 detail {0}".format(json.dumps(r, default=str)[:600]))
+    gate("T44 E3 real plan, Part-B dry end: " + e3_line(r), r["ok"] and len(r["want"]) < r["n_open_rows"] and r["c4_n"] > 0 and
+         r["c4_equal"] == r["c4_n"] and r["added"], (len(r["want"]), r["n_open_rows"], r["c4_equal"], r["c4_n"], len(r["added"])))
+    G = e3_graph(P, ex, objs, real, e3_wiki(P), "selftest E3")
+    S1 = SS.load_s1(P)
+    created, deleted = e3_created(P, ex)
+    rows = P["open_rows"]
+    i13 = next(i for i, x in enumerate(rows) if open_row_class(x) in (1, 2, 3))
+    row13 = (int(rows[i13]["node"]), rows[i13]["term"])
+    p1 = dict(P, open_rows=rows[:i13] + rows[i13 + 1:])
+    r1 = e3_eval(p1, S1, G, created, deleted)
+    gate("T44b NEGATIVE: an unexpected row (a class 1-3 row not in the plan) FAILS as extra", not r1["ok"] and r1["extra"] == [row13],
+         r1["extra"])
+    p2 = dict(P, open_rows=[dict(x, **{"class": 4}) if i == i13 else x for i, x in enumerate(rows)])
+    r2 = e3_eval(p2, S1, G, created, deleted)
+    gate("T44c NEGATIVE: a class-4 row whose source changed FAILS", not r2["ok"] and any(tuple(b["row"]) == row13 for b in r2["c4_bad"]),
+         r2["c4_bad"][:2])
+    p3 = dict(P, open_rows=[dict((k, v) for k, v in x.items() if k != "why") for x in rows])
+    r3 = e3_eval(p3, S1, G, created, deleted)
+    gate("T44d NEGATIVE: rows without a class FAIL; the old all-rows want ({0}) is not E3's want ({1})".format(len(rows), len(r["want"])),
+         not r3["ok"] and len(r3["unclassed"]) == len(set((int(x["node"]), x["term"]) for x in rows)) and len(r["want"]) != len(rows),
+         len(r3["unclassed"]))
+    a0 = r["added"][0][0] if r["added"] else None
+    r4 = e3_eval(P, S1, G, created - {a0}, deleted)
+    gate("T44e NEGATIVE: an added computation node that the plan did not create FAILS", a0 is not None and not r4["ok"] and
+         [a[0] for a in r4["bad_added"]] == [a0], r4["bad_added"])
 
 
 PROPOSED_SCHEMA = os.path.join(BENCH, "sim", "disp", "stageplan_schema_proposed.json")
@@ -2922,6 +3064,7 @@ def _selftest_create(gate, tmp, q):
              len(cp_terms) == 2 and all(ex.bind["term"].get(t, -1) > 0 for t in cp_terms) and ex.bind["obj"].get(ind_t, -1) > 0
              and (rt.get("ind") or {}).get("route") == "indicator" and (rt.get("ind") or {}).get("resolved_name") == "out",
              (cp_terms, rt.get("ind")))
+        _selftest_live_const(gate, fin, md, q, len(acts))
         negs =(("T37a NEGATIVE: an unknown alias in a diagram field", [{"op": "move_in", "nodes": [4], "dest_diagram": "new:ZZ1.body",
                                                                          "pos": [0, 0]}], "no EARLIER action creates"),
                 ("T37b NEGATIVE: use before create", [acts[2], acts[1]], "no EARLIER action creates"),
@@ -2971,6 +3114,56 @@ def _selftest_create(gate, tmp, q):
              not verbs_missing("while") and mz == ["gscript.nope_verb_c100"], (verbs_missing("while"), mz))
     finally:
         proposed_schema(False)
+
+
+def _selftest_live_const(gate, fin, md, q, n_acts):
+    """card 104-2 T43: the LIVE const_on_term branch (LVBackend.create, the code op 43 ran) on the T36 plan, whose 'one' row
+    puts a constant on a node inside the CREATED loop DL1. The backend's ids are renumbered positive (as LabVIEW's), so real
+    ids != sim ids; stagekit.const_row is a recorder. PASS = the loop uid handed to const_row is DL1's REAL (bound) uid.
+    Before the fix the Executor put the sim-keyed owners map on addr, the lookup missed, loop_uid 0 reached const_row."""
+    cap = []
+
+    class _S(object):
+        work = "selftest_fake.vi"
+
+        def const_row(self, ex_, tag=""):
+            cap.append(dict(ex_))
+            return {"err": None}
+
+        def junk_purge(self, tag, hints=None):
+            return None
+
+    class _B(object):
+        def diag_index(self, W, d):
+            return 0
+
+    class _LiveConst(SimBackend):
+        _done = LVBackend._done
+
+        def create(self, route, a, args, real, op):
+            if route == "const_on_term":
+                self.g, self.s, self.B = None, _S(), _B()
+                try:
+                    LVBackend.create(self, route, a, args, real, op)
+                except ExecStop as e:
+                    cap.append({"stop": str(e)[:200]})
+            return SimBackend.create(self, route, a, args, real, op)
+    plx, _p = load_final_plan(fin, False)
+    bel = _LiveConst(plx, SS.base_state(_j(_abs(plx["finalized"]["base"]["path"])), plx.get("context")), SS.load_models(md))
+    exl = Executor(fin, bel, log=q, require_final=False)
+    try:
+        exl.run()
+        err = None
+    except ExecStop as e:
+        err = str(e)[:300]
+    sim_dl = exl.step(n_acts)["state"]["sym"]["new:DL1"]
+    real_dl = exl.bind["obj"].get(sim_dl)
+    gate("T43 card 104-2 LIVE const_on_term in a CREATED loop: const_row gets the loop's REAL uid (bound), not the sim id "
+         "nor 0", err is None and len(cap) == 1 and cap[0].get("loop_uid") == real_dl and isinstance(real_dl, int)
+         and real_dl > 0 and real_dl != sim_dl, (err, cap, sim_dl, real_dl))
+    ow = bound_owners({"-5": ["WhileLoop", -4], "639": ["CaseStructure", 600]}, {"diag": {"-5": 23073}, "obj": {"-4": 23070}})
+    gate("T43b bound_owners: created body key + loop uid -> real; a base entry unchanged",
+         ow == {"23073": ["WhileLoop", 23070], "639": ["CaseStructure", 600]}, ow)
 
 
 def main(argv):

@@ -1,0 +1,79 @@
+{
+ "schema": "task/1",
+ "id": "104-1",
+ "kind": "build",
+ "goal": "PD216(g): ONE Part-B run - stage_d1_disp.py --from-step 33 --base dispA_20260927_024535, fresh LabVIEW, ops 34-47, gates B0/B1 W1/E2/E3/#25261/PS -> claudeDev\\D1_s1_disp_<ts>.vi by script",
+ "why": "103-3 saved Part A (ops 1-33, md5 16c2ca00...); 103-4 built and dry/pre-ran the Part-B entry (8/0); the launch gate refused only on cycle 103's retry cap, which resets this cycle.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/cards/result_103-3.json"},
+  {"path": "tools/bench/cards/result_103-4.json"},
+  {"path": "tools/bench/cards/split_plan_103.md"},
+  {"path": "tools/recipes/stage_d1_disp.py", "md5": "42541bc818dd22951bf60636d1f46485"},
+  {"path": "tools/bench/stage_d1_dispA.json", "md5": "d5393162848fef90d099efa7f0439140"},
+  {"path": "tools/bench/sim/disp/plan_disp.json", "md5": "c7d80fc93279f4ea5efd21c068e7efa6"},
+  {"path": "tools/stagexec.py", "md5": "75cfd689b0b52ca04cc3e96eab0b76e6"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_dispA_20260927_024535.vi", "md5": "16c2ca00a114a227a81612dd49d111cc"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/recipes/stage_d1_disp.py"},
+  {"kind": "file", "name": "tools/bench/stage_d1_dispA.json"},
+  {"kind": "file", "name": "tools/bench/sim/disp/plan_disp.json"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_dispA_20260927_024535.vi"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpWaitDonor_v0.vi"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "pass": [
+  "inputs md5 as listed; launch gate ALLOW (re-run Part-B dry + pre-run --from-step 33 only if the gate demands fresh records; say which)",
+  "ONE run under bgrun --max-min 60, held to BGRUN END: B0/B1 entry PASS; ops 34-47 dispatched, none <= 33; step diffs WARN-class only (list any)",
+  "W1 RBW: termless/loose-end wires beyond RBW's pre-existing uids = 0; E2 ExecState 1; #25261 reads False (each with its value)",
+  "E3 cdiff == the 21 PD213(d) open rows + added objects (row counts both sides, any extra row listed by uid)",
+  "PS saved by script -> claudeDev\\D1_s1_disp_<ts>.vi, md5 + size reported",
+  "private MB + handles at the fresh load (baseline), at every checkpoint read, max, and after the save",
+  "D1_s1_copy.vi md5 3e3d23ce... and dispA md5 16c2ca00... unchanged; LabVIEW gone at exit (tasklist)",
+  "count of stop-record READ-ONLY refusals during this card (tools/hooks/material_marker.log lines of this card) - expected 0",
+  "on a stop or failing gate: op, gate, class, uids, MB at stop, log file:line, newest JEV-LADDER NEXT-ACTION; ExecState 0 -> Error List read first",
+  "on any failure: nothing saved over S1 or dispA; no second run"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_disp_*",
+  "tools/bench/facts_c104a_partB.json",
+  "tools/bench/cards/result_104-1.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_disp_*",
+   "tools/bench/stage_d1_disp*",
+   "tools/bench/sim/disp/**",
+   "tools/bench/facts_c104*",
+   "tools/bench/diag_c104*",
+   "tools/bench/errorlist_*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/cards/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/priorart*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "outcome", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 75},
+ "rules": [
+  "exactly ONE Part-B LabVIEW run (RETRY_CAP 2); no code edits; recipe NOT edited (149 lines accepted, PD216(g))",
+  "no separate open-probe (PD216(g)); MEMSTOP stays 700; the cut is op 33",
+  "stop or failing gate: report facts and stop; no fix, no rerun; review design findings go to open",
+  "save by script only (needs E2 ExecState 1); never save S1 or dispA; never run the VI",
+  "any GUI act (Error List read): capture-locate-act-capture-confirm (PD 9)",
+  "bgrun --max-min 60; hold the turn to BGRUN END; LabVIEW closed and verified gone at the end"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

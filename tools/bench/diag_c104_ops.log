@@ -1,0 +1,22 @@
+BGRUN START 2026-09-27 03:39:46 limit 2.0 min: py -u tools/bench/diag_c104_ops.py
+BGRUN PID 11300
+30 create local_read [30] {"id": "r6_lr_ehw", "op": "create", "diagram": "new:DL1.body", "as": "LREHW1"}
+31 tunnel None [31, 32, 33] {"id": "t_ring", "op": "tunnel", "loop": "new:DLF1", "body": "new:DLF1.body", "as": "TRING1"}
+32 tunnel None [34, 35, 36] {"id": "t_base", "op": "tunnel", "loop": "new:DLF1", "body": "new:DLF1.body", "as": "TBASE1"}
+33 tunnel None [37, 38, 39] {"id": "t_fhw", "op": "tunnel", "loop": "new:DLF1", "body": "new:DLF1.body", "as": "TFHW1"}
+34 branch None [40] {"id": "t_fhw_br_28223", "op": "wire", "src": "new:TFHW1.inner", "dst": {"uid": 28180, "term": "half-width", "term_uid": 28223}}
+35 tunnel None [41, 42, 43] {"id": "t_ehw", "op": "tunnel", "loop": "new:DLF1", "body": "new:DLF1.body", "as": "TEHW1"}
+36 branch None [44] {"id": "t_ehw_br_29046", "op": "wire", "src": "new:TEHW1.inner", "dst": {"uid": 29009, "term": "left rank", "term_uid": 29046}}
+37 tunnel None [45, 46, 47] {"id": "t_out", "op": "tunnel", "loop": "new:DLF1", "body": "new:DLF1.body", "as": "TOUT1"}
+38 connect None [48] {"id": "r6_wlc_element", "op": "wire", "src": "new:LRWLC1.value", "dst": {"uid": 11261, "term": "element", "term_uid": 11273}}
+39 create local_write [49] {"id": "r6_lw_force", "op": "create", "diagram": "new:DL1.body", "as": "LWFORCE1"}
+40 connect None [50] {"id": "r6_force_write", "op": "wire", "src": {"uid": 11261, "term": "appended array", "term_uid": 11267}, "dst": "new:LWFORCE1.value"}
+41 create primitive [51] {"id": "r7_wait", "op": "create", "diagram": "new:DL1.body", "prim": "Wait (ms)", "as": "WAIT1"}
+42 create primitive [52] {"id": "r7_max", "op": "create", "diagram": "new:DL1.body", "prim": "Max & Min", "as": "MAX1"}
+43 create const_on_term [53] {"id": "r7_one", "op": "create", "diagram": "new:DL1.body", "on": "new:MAX1.y", "value": 1, "as": "ONE1"}
+44 create control [54] {"id": "r7_ctl", "op": "create", "diagram": "new:DL1.body", "on": "new:MAX1.x", "as": "CTLPERIOD1"}
+45 connect None [55] {"id": "r7_max_wait", "op": "wire", "src": "new:MAX1.max(x,y)", "dst": "new:WAIT1.milliseconds to wait"}
+46 create local_read [56] {"id": "r8_lr_turnoff", "op": "create", "diagram": "new:DL1.body", "as": "LRTURNOFF1"}
+47 stop None [57] {"id": "r8_stop", "op": "wire", "src": "new:LRTURNOFF1.value", "dst": "new:DL1.cond"}
+RESULT {"schema": "result-line/1", "status": "PASS", "gates": {"pass": 1, "fail": 0}, "first_fail": null, "artefacts": []}
+BGRUN END rc=0 after 1s

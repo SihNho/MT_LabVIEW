@@ -1,0 +1,10 @@
+BGRUN START 2026-09-27 03:42:48 limit 15.0 min: py -u tools/bench/diag_c104_selftest.py
+BGRUN PID 9800
+PATCHED  rc 0  === GATES: 93 pass / 0 fail
+    PASS  T43 card 104-2 LIVE const_on_term in a CREATED loop: const_row gets the loop's REAL uid (bound), not the sim id nor 0  (None, [{'loop_uid': 10000004, 'body_diagram': 10000001, 'node': 10000022, 'term': 'x', 'value': 1}], -1, 10000004)
+    PASS  T43b bound_owners: created body key + loop uid -> real; a base entry unchanged  {'23073': ['WhileLoop', 23070], '639': ['CaseStructure', 600]}
+REVERTED rc 1  === GATES: 90 pass / 3 fail; failing: T42 real plan: Part-B dry from_step=33 with the Part-A JSON PASS, ops 34..47 only, entry diff 0
+    FAIL  T43 card 104-2 LIVE const_on_term in a CREATED loop: const_row gets the loop's REAL uid (bound), not the sim id nor 0  ("UNROUTABLE 1 row(s): acts [13] ['one']: const_row: the sink's diagram #10000001 is not a WhileLoop body (None)", [{'stop': "create const_on_term one: the sink's diagram #10000001 has no REAL WhileLoop owner in the (bound) owners map (None)"}], -1, 10000004)
+    PASS  T43b bound_owners: created body key + loop uid -> real; a base entry unchanged  {'23073': ['WhileLoop', 23070], '639': ['CaseStructure', 600]}
+RESULT {"schema": "result-line/1", "status": "PASS", "gates": {"pass": 2, "fail": 0}, "first_fail": null, "artefacts": []}
+BGRUN END rc=0 after 18s

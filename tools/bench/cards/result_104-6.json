@@ -1,0 +1,29 @@
+{"schema":"result/1","id":"104-6","status":"FAIL","gates":{"pass":11,"fail":1},
+"first_fail":"R3 Configure.vi error out read (no ERR): GetControlValue('error out') -> LabVIEW 5005 'parameter not found in the VI's connector pane' (diag_c104f_leg.log:175)",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/diag_c104f_leg.py","md5":"b517d3fd74c0b0c569d3fb560c698205"},
+ {"path":"tools/bench/diag_c104f_leg.log","md5":"d2ae84f15f95f34840a54abdb272b2ea"},
+ {"path":"tools/bench/facts_c104f_rotor.json","md5":"b17a20235a7ab5a2267d05ba0cdf927e"},
+ {"path":"tools/bench/m8_shots/20260927_050724_c104f_run1_L2.png","md5":"fd7f9d2ea7c6c631b4937cbff82401ba"},
+ {"path":"archive/peer/2026-09-27-c104-6-configure-empty-resource.md","md5":"996faf3e14d251f16d4bef4ef16c93fd"}
+],
+"facts":[
+ "Reproduced on 1 leg A (S1 3e3d23ce): Run(False) RETURNED after 4.0 s err=None; main ExecState 2 at t=2 s, 1 (idle) at t=5 s (diag_c104f_leg.log:172-173,178)",
+ "L2 windows: Configure.vi Block Diagram + Front Panel + main panel (edit mode, 640/512); dialogs(): 'VERDICT: clear (no modal dialog)'; no Configure window at t=2 s (log:172,179-180; L2.png)",
+ "Configure.vi (instr.lib Autonics) ExecState 1; 'VISA resource name' and 'VISA resource name out' both read ['',0]; it has no error cluster on its connector pane (log:175)",
+ "Configure.vi diagram: resource -> VISA Configure Serial Port (VISA Defaults, F) -> VISA Write 'PRG X00' -> resource out, no error terminals (m8_shots/20260927_050724_c104f_run1_L2.png)",
+ "S1 call #30064 'VISA resource name' is wired from VISAResourceNameConstant #30488; its error terminals unwired (docs/wiki/subvi/D1_s1_copy.json:87622-87632,41604-41622); #30488 value never read",
+ "NI-VISA alias 'Rotor' = ASRL5::INSTR = COM5, 9600 baud (C:/ProgramData/National Instruments/NIvisa/visaconf.ini:13,40-44)",
+ "COM5 exclusive open+close probe (no bytes): FREE before LabVIEW, FREE after VI open/before Run, FREE after LabVIEW gone (diag_c104f_leg.log:4,166,609)",
+ "T0 processes: only cycle_runner, its bgrun children and this script among python/powershell; no serial/VISA client (facts_c104f_rotor.json:166-226)",
+ "Cycle-104 motor session start names no port; session_start takes only pi_call/asi_call; rotor COM5 is only in PORTS (motor_session_start_cycle104.log:1-26; tools/motor_gate.py:59-61,374)",
+ "End: LabVIEW gone (G92 forced kill after 255 s wait), S1 md5 unchanged, TMX 39 read back; raw-byte scan for Rotor|ASRL5 finds 0 in S1 and in the source original (compressed) (log:317,341,620)"
+],
+"open":[
+ "Review c104-6 (ANSWERED): no dialog, no suspension and Run returning after 4.0 s contradict 'auto error handling in Configure.vi ended the run'; the empty resource may be the panel default (archive/peer/2026-09-27-c104-6-configure-empty-resource.md:47-59)",
+ "Review's separator not run (new card): read Constant.Value of VISAResourceNameConstant #30488 in S1 by script; the existing const reader is measured only on bool/numeric (review :64-69)",
+ "What else ended the main VI at 4 s on 09-27 but not on 09-26 14:18 is unmeasured: no error was returned to COM (Run err=None)"
+],
+"cost":{"usd":null,"minutes":24,"labview_runs":1},
+"note":"log | ladder: none | NEXT-ACTION: old path | hypothesis review ANSWERED, disposition written | separator left to judgement. No VI saved/edited; no bytes to COM5; no picks; STATUS untouched; no commit. bgrun via --material (MATERIAL=1 prefix refused by permissions)."}

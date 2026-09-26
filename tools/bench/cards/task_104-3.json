@@ -1,0 +1,56 @@
+{
+ "schema": "task/1",
+ "id": "104-3",
+ "kind": "diagnose",
+ "goal": "OFFLINE: why the finalize-time open_rows (21) and the recipe's E3 cdiff (6) differ on the SAME simulated end state - row by row, for the 15 missing rows",
+ "why": "104-2 run 2: ops 34-47 diff 0, W1 PASS, E2 ExecState 1, E3 FAIL 6/21 (c104B2.log:312); same 15 missing on Part-B dry end and full dry end (diag_c104_e3.log). E3 is the rule-1a gate.",
+ "inputs": [
+  {"path": "tools/bench/cards/result_104-2.json"},
+  {"path": "tools/bench/stage_d1_disp_c104B2.log", "md5": "7874a23b895655b7fedd055ebee3b283"},
+  {"path": "tools/bench/diag_c104_e3.json", "md5": "d5d8acf6386537ed34f7f884b0bf44e4"},
+  {"path": "tools/bench/sim/disp/plan_disp.json", "md5": "c7d80fc93279f4ea5efd21c068e7efa6"},
+  {"path": "tools/recipes/stage_d1_disp.py", "md5": "42541bc818dd22951bf60636d1f46485"},
+  {"path": "tools/stagexec.py", "md5": "0070aa3db0aed3b4712dbbe4d3c60fb6"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c104_e3.json"},
+  {"kind": "file", "name": "tools/bench/sim/disp/plan_disp.json"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_disp.py"}
+ ],
+ "pass": [
+  "name both cdiff implementations (file:line of each: the finalize-time open_rows producer and the recipe/E3 cdiff) and their inputs (graphs, loop/obj sets, filters)",
+  "for EACH of the 15 missing rows: its full row text on the want side, and the exact line/filter where the E3 side drops or re-classes it (e.g. counted as an added object)",
+  "is each missing row present anywhere in the E3 side's output (added objects, another bucket)? yes/no per row, with the bucket",
+  "the 6 matching rows listed; the added-objects list E3 computed (count + uids)",
+  "which side matches computation_diff as used for the S1 deliverables (D1_s3_loop15 PD147, L2-A1) - same function or not, file:line",
+  "the PD213(d) class of each of the 15 rows (1-4) as recorded in the plan"
+ ],
+ "outputs": [
+  "tools/bench/facts_c104c_e3.json",
+  "tools/bench/cards/result_104-3.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/facts_c104*",
+   "tools/bench/diag_c104*",
+   "tools/bench/cards/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 40},
+ "rules": [
+  "no LabVIEW; tools/*.py and plan files read-only; a <=120-line diag script under tools/bench/diag_c104* is allowed",
+  "measure and report; do NOT decide which side is right and do NOT patch the gate - return that as open",
+  "cite file:line for every claim"
+ ],
+ "advances": ["M8", "M3", "R3"]
+}
