@@ -1,0 +1,59 @@
+BGRUN START 2026-09-27 08:15:27 limit 10.0 min: py -u tools/stage_prerun.py --prerun tools/recipes/stage_d1_l2a2.py
+BGRUN PID 26256
+stage_d1_l2a2 - card 107-2, STAGE L2-A2 (docs/d1-loop12-17-split-plan.md §2 row L2-A2, PD219(f)(2b); split page
+tools/bench/cards/split_plan_107_l2a2.md). INPUT the L2-A1 bed claudeDev\D1_l2_a1_20260925_235224.vi (named by the plan's base graph),
+FRESH LabVIEW -> claudeDev\D1_l2_a2_<ts>.vi (rule-6 GUI save at ExecState 0 - the plan's open rows stay open by design, never run).
+ROWS ONLY FROM THE FINALIZED PLAN tools/bench/plan_l2a2.json (plan_in plan_l2a2_in.json, base graph_l2a1_bed_20260927.json); no uid and no
+terminal name is typed here; the ControlTerminal sink gates are derived from the plan + base graph classes.
+PRIOR ART: stage_d1_l2a1.py (the skeleton: DryBE, 179(b) CT reader, PB frame-keyed cdiff, RBW on a scratch of the saved file),
+stagexec (DryPlanBE, report_stop, kill_labview_at_exit, sink_gates), OpCtlSinkWire_v1 (PD191(a)/192, the rw_10988_17272 route). No new op.
+PREDICTION: L1 each plan action -> exactly one real op; E1 every checkpoint read == its simulated step; CT the 179(b) reader on every
+ControlTerminal sink: real wire partners == simulated; D the end adds exactly the plan's new wires, loses no base wire; FU the set of
+frame diagrams is unchanged; PB frame-keyed cdiff(S1, end) == the plan's open_rows (FATAL, before save); ES recorded (0 by design);
+PS saved, md5 != input, input unchanged; RBW on a scratch of the saved file deletes no wire of a re-wired sink; LabVIEW gone at exit.
+    py tools/bgrun.py --material --max-min 40 --log tools/bench/stage_d1_l2a2.log -- py -u tools/recipes/stage_d1_l2a2.py
+  PASS  L0 the executed plan is FINAL, open_rows_match, plan_in = plan_l2a2_in.json  ('f086df8bee04a49c677162ead64440b5', {'path': 'tools/bench/plan_l2a2_in.json', 'md5': '708c6e72f9d267073395b30b5cffce7a'})
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 51d9b8a3af5b4240cdc2ad193d9b4f41  got 51d9b8a3af5b4240cdc2ad193d9b4f41
+  PASS  DRY graph JSON for input md5 51d9b8a3af5b4240cdc2ad193d9b4f41  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_l2a1_bed_20260927.json
+  PASS  L1 every plan action compiled into exactly one real op (1 -> 1); sink_gates [{'gate': 'CT-rw_10874_23541', 'sink': [23541, 'index']}]  [1]
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 1 touched diagram(s) [23166]: one-side-only Nodes[] entries 0
+  PRIME 0 terminal indexes proved at base; 1 ControlTerminal end(s) by 179(b); unprovable []
+  FACT  OP wire_connect [1] -> err '' (0.0 s)
+  STEPX 01 connect        acts [1] ids ['rw_10874_23541'] bound {} diff 0
+  PASS  E1 every checkpoint's real graph == its simulated step (1 ops)
+  FACT  BINDING obj {} term {}
+  PASS  CT rw_10874_23541: ControlTerminal sink read by the 179(b) reader == simulated end  dry
+  PASS  D the end adds exactly the plan's 1 new wire(s) and loses no base wire  {'new': [10000001], 'lost': []}
+  PASS  FU the set of frame diagrams is unchanged
+  FACT  ExecState [after all rows (warm, RECORDED - the plan's open rows stay open by design)] D1_l2_a2_20260927_081527.vi = <dry:g.exec_state>
+  FACT  CDIFF ROW {'node': 376, 'class': 'SubVI', 'sink': "#376 Terminal 'current frame data array in'", 'before': ['2626|Terminal|appended array|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 376, 'class': 'SubVI', 'sink': "#376 Terminal 'frame index'", 'before': ['644|Terminal||0'], 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array'", 'before': ['5058|Terminal|x,y,z array out|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 5058, 'class': 'SubVI', 'sink': "#5058 Terminal 'Image In'", 'before': ['6810|Terminal|Image Out|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 5696, 'class': 'SubVI', 'sink': "#5696 Terminal 'x,y,z array'", 'before': ['5058|Terminal|x,y,z array out|0@2765/f1'], 'after': []}
+  FACT  CDIFF ROW {'node': 6085, 'class': 'SubVI', 'sink': "#6085 Terminal 'x,y,z array'", 'before': ['5058|Terminal|x,y,z array out|0@2765/f0'], 'after': []}
+  FACT  CDIFF ROW {'node': 10382, 'class': 'Function', 'sink': "#10382 ParameterTerminal 'x'", 'before': ['9647|ParameterTerminal|x .and. y?|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 11529, 'class': 'Comparison', 'sink': "#11529 ParameterTerminal 'x'", 'before': ['10150|OverridableParameterTerminal|x+1|0@11336/f1', '9907|Terminal|Value|0@11336/f0'], 'after': []}
+  PASS  PB frame-keyed cdiff(S1, real end) == the plan's 8 open_rows (FATAL, before save)  {'extra': [], 'missing': []}
+  FACT  CENSUS after L2-A2 D1_l2_a2_20260927_081527.vi: {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 92, 'Wire': 1938, 'LoopTunnel': 148, 'Local': 10, 'ControlTerminal': 116, 'Node': 0}
+  FACT  PH handles RECORDED: post-open <dry:bench_prep.labview_handles> -> before-save <dry:bench_prep.labview_handles>
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  dry0dry0dry0dry0dry0dry0dry0dry0
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  FAIL  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['tools/bench/plan_l2a2_in.json: load_final_plan: plan is not final (final=None, finalized=null)']
+  FAIL  X3 every plan row decided  [('tools/bench/plan_l2a2_in.json', 'actions not all compiled exactly once (0 of 0)')]
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  2 stageplan(s)
+  PASS  X4 every end addressable offline (0 ends)  []
+  FAIL  X5 wiring ops executed in the dry run == plan wire rows  ops 1 vs plan wire rows 0 + stageplan wiring real ops 1 (covering 1/1 wire actions)
+  PASS  X6 ast lint: no re-typed uid / terminal name  uids []; names []
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_l2_a2_20260927_081527.vi
+  PASS  X10 predicted LabVIEW private MB < 690.0 (error-2 point; MEMSTOP 700.0) over the ops this run dispatches (UNMEASURED - no covering record)  {'why': 'UNMEASURED: no recorded meter of stage_d1_l2a2.py covers ops 1..end (0 record(s))'}
+  WARN  X10 WARN unmeasured: UNMEASURED: no recorded meter of stage_d1_l2a2.py covers ops 1..end (0 record(s))
+
+=== DRY PASS: first_fail=None coverage 68/83 lines, first mutation Stage._op wire_connect, unverified 0, graph tools/bench/graph_l2a1_bed_20260927.json
+=== PRERUN FAIL: 7 pass / 3 fail; first X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe: ['tools/bench/plan_l2a2_in.json: load_final_plan: plan is not final (final=None, finalized=null)']
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":7,"fail":3},"first_fail":"X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe: ['tools/bench/plan_l2a2_in.json: load_final_plan: plan is not final (final=None, fi [X10 WARN unmeasured]","artefacts":[]}
+BGRUN END rc=1 after 7s

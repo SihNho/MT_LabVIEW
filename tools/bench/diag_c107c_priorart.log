@@ -1,0 +1,44 @@
+BGRUN START 2026-09-27 08:07:55 limit 12.0 min: py -u tools/prior_art_review.py --plan-file tools/bench/diag_c107c_plan.md --slug priorart-c107c-disp --recipe tools/recipes/stage_d1_disp.py
+BGRUN PID 23732
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-c107c-disp.txt (57587 chars)
+   review card tools\bench\cards\review_priorart-priorart-c107c-disp.json
+OUTCOME: ANSWERED (89s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-27-priorart-priorart-c107c-disp.md
+COST: $1.3753  in 20 / out 7332 / cache-create 123809 / cache-read 1190404  (85s, 16 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-priorart-c107c-disp verdict=novel -> tools\bench\cards\verdict_priorart-priorart-c107c-disp.json
+--- ANSWER ---
+The verdict is **novel**: this is not already built, tried or reverted here. The move put no second copy of an existing stagexec, stagekit or gscript helper into the toolkit. From the files I can read, no gate's condition changed. I could not compare against the pre-move bytes (git `e22f2b50` / `4dbc3fc`) because I had no git access, so "moved unchanged" is backed only by the recorded dry run below. Nothing here blocks the build.
+
+**PART A: the direction**
+- **A1, settled already (not a block).** The plan ordered this move and scheduled it for after Part B:
+  - `docs/d1-loop12-17-split-plan.md:1826` (PD216(c)): "The helpers move into stagekit/stagexec in the owed tooling card, after Part B."
+  - `:1841` (PD216(g)): the 149-line recipe is "ACCEPTED for the Part-B run only … The helpers move into stagekit/stagexec in the tooling card right after Part B".
+  - Card 106-3 carries out that decision, so this is not a competing earlier answer.
+- **A2, refuted already: none.** I found no record anywhere of a recipe body being moved into stagexec helpers and then reverted. What the earlier records show is a deferral, not a failure: PD216(c) held the move back only because editing the recipe right before a run re-arms the stop record and a prior-art round (`:1826`).
+- **A3, contradicted: only one stale citation, not a block.** The plan still points at `stagexec.py:2243-2248` as the E3 build side (`docs/d1-loop12-17-split-plan.md:1844`, and the correction at `:1846`). After the move, those lines are now `w0_wires` and `report_stop` (`tools/stagexec.py:2237-2258`); the E3 code is at `:2393-2460`. The citation should be updated, but nothing depends on it.
+- **A4, unread evidence: none.** The recipe header already names its sources: `stage_d1_l2a1.py` DryBE, `stagexec.lv_run`, `gscript.wire_health` / `_edge_pairs`, and stagekit RBW (`tools/recipes/stage_d1_disp.py:4-6`).
+
+**PART B: the artifact**
+- **B1 / B3, already built or helper exists: no duplicate added to the toolkit.**
+  - None of the nine helper names existed anywhere in `tools/*.py` before, apart from their new home at `tools/stagexec.py:2222-2333`.
+  - `w1_rbw` reuses `gscript.wire_health` (`gscript.py:3520`) and `gscript._edge_pairs` (`:3514`), plus stagekit's `broken_wire_count`. It does not re-implement them.
+  - Its before/after Remove Bad Wires bracketing looks like `gscript.move_into_frame_finish` (`gscript.py:3562-3594`), but that function works on one move's member set and runs its own RBW. It does not cover a check on a whole batch against a list of wires that existed beforehand.
+- **Side findings (outside what the review asks):**
+  - **Older recipe copies of DryBE.** `tools/recipes/stage_d1_k.py:30` and `tools/recipes/stage_d1_l2a1.py:30` still each define their own `class DryBE(SX.SimBackend)`. `DryPlanBE` is now the shared version of that pattern, so those two are candidates to switch over later. This is not a helper stagexec already had.
+  - **`kill_labview_at_exit` does not check the rig state.** It is a plain `taskkill`, then a `tasklist` check (`tools/stagexec.py:2325-2333`). The runner already has `labview_close_hook` (`tools/cycle_runner.py:677-694`), which tries a normal COM Quit first and skips the kill when the rig is in "experiment running" or an unknown state. The recipe's kill was already inline before the move, so this is not new, but the runner's version is the safer one.
+- **B2, already failed: none.** This refactor has no failed attempt on record.
+- **Did any gate change?** The Part-B dry run of the 90-line recipe gives this gate sequence:
+  - Passed: L0, B0, K1, "DRY graph", L1, B1 (diff 0, first op 34), E1, E2, PS (`tools/bench/diag_c106e_dryB.txt:18-70`).
+  - E3 passed with "rows 6 == want 6 … class-4 sources equal 15/15 … added 8 … removed 0" (`:67`). That matches PD217(c) (`docs/d1-loop12-17-split-plan.md:1845`) and the conditions released by the last prior-art round (`archive/peer/2026-09-27-priorart-priorart-c104d-e3.md:388`).
+  - **Not covered: W1 and the rest of Part A.** In a dry run `w1_rbw` is skipped (`stage_d1_disp.py:72`), and `part_a_gates` is not on the Part-B path. So the claim that these two are unchanged can only be proved against git.
+  - `w0_wires`' Part-B branch (the S1 wires from the plan's base graph) matches the recipe docstring's "1899 == Part A's W0" (`stage_d1_disp.py:16`).
+  - `e3_gate` raising `ExecStop` on a failed dry E3 matches PD217(c)'s "also evaluated in the dry run" (`:1845`).
+- **B4, already measured: none.** Part B (ops 34–47 on the Part-A file, ending in a saved file with E3 passing) is still unmeasured on the refactored recipe.
+- **Cheapest check if anyone doubts the "unchanged" claim:** diff `git show 4dbc3fc:tools/recipes/stage_d1_disp.py` against the new stagexec functions, especially the W1 condition `set(gone) <= w_pre and not lost and not termless` and the A1/A2 gates.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-priorart-c107c-disp","verdict":"novel","alternative":"The move could have altered W1 or Part-A gate conditions; the Part-B dry (diag_c106e_dryB.txt) skips W1 and never runs part_a_gates, so their equivalence rests only on git history I could not read.","discriminating_test":"git diff 4dbc3fc:tools/recipes/stage_d1_disp.py vs stagexec.py:2222-2333, checking the W1 condition (gone<=w_pre, no lost edge, no termless) and the A1/A2/AS gates token by token.","violations":[],"sources":["docs/d1-loop12-17-split-plan.md:1826","docs/d1-loop12-17-split-plan.md:1841","docs/d1-loop12-17-split-plan.md:1844","tools/stagexec.py:2215-2333","tools/bench/diag_c106e_dryB.txt:61-70","tools/recipes/stage_d1_l2a1.py:30","tools/recipes/stage_d1_k.py:30","tools/cycle_runner.py:677-694","gscript.py:3562-3594","archive/peer/2026-09-27-priorart-priorart-c104d-e3.md:388"],"note":"Move was ordered by PD216(c)/(g), no revert on record. Non-blocking: stale cite plan:1844/1846 stagexec.py:2243-2248 (now w0_wires); DryBE copies left in stage_d1_k/l2a1; kill_labview_at_exit ignores rig state unlike cycle_runner.labview_close_hook."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-c107c-disp.md
+   STOP RECORD: none - 2026-09-27-priorart-priorart-c107c-disp.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_disp.py sha d62f876d346c -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 92s

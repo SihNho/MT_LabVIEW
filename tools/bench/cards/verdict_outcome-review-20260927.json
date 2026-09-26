@@ -1,0 +1,49 @@
+{
+ "schema": "verdict/1",
+ "id": "outcome-review-20260927",
+ "verdict": "refuted",
+ "alternative": "The window did produce the display-loop file the last review demanded (D1_s1_disp, ExecState 1) and correctly diagnosed an external NI-VISA port fault; the deliverable moved to 'built, unrun', blocked by a PC-level act only the user can make.",
+ "discriminating_test": "After the user replugs the rotor FTDI adapter or restarts the PC: viOpen('ASRL5::INSTR') == 0, then ONE ABBA A15 B15 B15 A15 (120 s, 90 Hz) of D1_s1_copy.vi vs D1_s1_disp_20260927_041648.vi. B lost frames well below ~3,400 => replay + R8 + hand-off; else stop and re-plan.",
+ "violations": [
+  {
+   "slug": "wrong-ordering",
+   "loss_min": 52,
+   "loss_usd": 32,
+   "evidence": "tools/bench/cycle_runner.log:597; STATUS.md:58-66; tools/bench/decisions_pending.json:193-207"
+  },
+  {
+   "slug": "device-failed",
+   "loss_min": 29,
+   "loss_usd": null,
+   "evidence": "tools/bench/cards/result_107-1.json:20; tools/bench/cards/result_107-3.json:2"
+  }
+ ],
+ "sources": [
+  "STATUS.md:12",
+  "STATUS.md:58",
+  "STATUS.md:67",
+  "STATUS.md:71",
+  "STATUS.md:74",
+  "STATUS.md:282",
+  "archive/benchmarks/INDEX.md:78",
+  "tools/bench/disp_107_abba.json:19",
+  "tools/bench/cards/result_107-1.json:15",
+  "tools/bench/cards/result_107-3.json:2",
+  "tools/bench/cards/split_plan_107_l2a2.md:64",
+  "tools/bench/cycle_runner.log:525",
+  "tools/bench/cycle_runner.log:542",
+  "tools/bench/cycle_runner.log:556",
+  "tools/bench/cycle_runner.log:570",
+  "tools/bench/cycle_runner.log:583",
+  "tools/bench/cycle_runner.log:597",
+  "tools/bench/decisions_pending.json:161",
+  "tools/bench/decisions_pending.json:193",
+  "docs/goalmap.json:21",
+  "docs/goalmap.json:27",
+  "docs/goalmap.json:33",
+  "docs/goalmap.json:51",
+  "docs/goalmap.json:75",
+  "project-requirements/project-description.md:45"
+ ],
+ "note": "Display-loop VI exists but NEVER RUN; ABBA has no numbers (row 57 non-result, 107 refused). NI-VISA refuses rotor COM5 since ~04:30, so even the original copy cannot run on this PC. $167.65 / 514 min for cycles 101-106. Stop the runner, get D-03 answered, run one ABBA; do not fall back to L2-A2."
+}

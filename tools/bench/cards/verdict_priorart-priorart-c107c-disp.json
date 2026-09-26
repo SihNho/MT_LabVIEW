@@ -1,0 +1,21 @@
+{
+ "schema": "verdict/1",
+ "id": "priorart-priorart-c107c-disp",
+ "verdict": "novel",
+ "alternative": "The move could have altered W1 or Part-A gate conditions; the Part-B dry (diag_c106e_dryB.txt) skips W1 and never runs part_a_gates, so their equivalence rests only on git history I could not read.",
+ "discriminating_test": "git diff 4dbc3fc:tools/recipes/stage_d1_disp.py vs stagexec.py:2222-2333, checking the W1 condition (gone<=w_pre, no lost edge, no termless) and the A1/A2/AS gates token by token.",
+ "violations": [],
+ "sources": [
+  "docs/d1-loop12-17-split-plan.md:1826",
+  "docs/d1-loop12-17-split-plan.md:1841",
+  "docs/d1-loop12-17-split-plan.md:1844",
+  "tools/stagexec.py:2215-2333",
+  "tools/bench/diag_c106e_dryB.txt:61-70",
+  "tools/recipes/stage_d1_l2a1.py:30",
+  "tools/recipes/stage_d1_k.py:30",
+  "tools/cycle_runner.py:677-694",
+  "gscript.py:3562-3594",
+  "archive/peer/2026-09-27-priorart-priorart-c104d-e3.md:388"
+ ],
+ "note": "Move was ordered by PD216(c)/(g), no revert on record. Non-blocking: stale cite plan:1844/1846 stagexec.py:2243-2248 (now w0_wires); DryBE copies left in stage_d1_k/l2a1; kill_labview_at_exit ignores rig state unlike cycle_runner.labview_close_hook."
+}

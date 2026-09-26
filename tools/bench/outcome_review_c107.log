@@ -1,0 +1,139 @@
+BGRUN START 2026-09-27 08:10:40 limit 15.0 min: py tools/outcome_review.py
+BGRUN PID 26220
+   cadence: 7 cycle retrospectives since 2026-09-26-outcome-review-20260926.md (every 5)
+   task written to C:\Users\KimLab\AppData\Local\Temp\outcome-review-20260927.txt (7681 chars)
+   review card tools\bench\cards\review_outcome-review-20260927.json
+OUTCOME: ANSWERED (110s)  model: fable (effort medium; peer.ps1 default for role outcome)  archived: archive\peer\2026-09-27-outcome-review-20260927.md
+COST: $2.1203  in 10 / out 9420 / cache-create 78705 / cache-read 300591  (108s, 25 turn(s))
+VERDICT-CARD: VERDICT-CARD outcome-review-20260927 verdict=refuted -> tools\bench\cards\verdict_outcome-review-20260927.json
+--- ANSWER ---
+# OUTCOME REVIEW, 2026-09-27 (window: cycles 101–106 complete, cycle 107 in progress)
+
+**Verdict: refuted.** A new VI file exists, but it has never run, so the user can run nothing new. Since 04:30 today nothing runs on the rig PC at all, including the unchanged copy of the original.
+
+Two limits on this review: I could not check `claudeDev\` (it is outside the repository; the `Track_v6_CPU_*` glob found nothing), so VI md5s are as STATUS states them. I used no external sources.
+
+## 1. DELIVERABLE
+
+Nothing runnable was added.
+
+| Item | What it is | Evidence |
+|---|---|---|
+| `D1_s1_disp_20260927_041648.vi` | The display-loop VI the last review demanded. ExecState 1, E3 6 == 6, saved by script. **Never run.** | `STATUS.md:12`, `STATUS.md:74-78` |
+| INDEX row 57 | The ABBA that should have judged it. All 4 legs stopped before pick 1, every value `None`. Marked "NON-RESULT - never cite as data". | `archive/benchmarks/INDEX.md:78` |
+| Cycle 107 ABBA retry | Leg 1 refused at the VISA precheck in 13 s, `counted_by_arm: {}`, LabVIEW never started. | `tools/bench/disp_107_abba.json:19,27,40`, `result_107-1.json:15` |
+| Cycles 105–106 | The run stop was found: NI-VISA refuses the rotor port (`0xBFFF0072`) even with LabVIEW closed. A leg guard and stage tooling were then built. | `STATUS.md:59-73` |
+
+The file is real progress over the last review's "no file". It is a structural artefact with no number behind it. By this card's own standard, "a VI exists" is not evidence.
+
+## 2. GOAL ALIGNMENT
+
+Against `project-requirements/parallelization-requirement.md`, with status from `docs/goalmap.json`:
+
+| Requirement | Status | Movement this window |
+|---|---|---|
+| 1, split the post-pick loop | moving (`goalmap.json:9`) | One more loop exists on disk, unrun. |
+| 2.1 motor control | met | Unchanged; it was met in the original. |
+| 2.2 motor reading (the user's named bottleneck) | open (`:21`) | **Not moved.** |
+| 2.3 camera acquisition | open (`:27`) | **Not moved since 2026-08-24.** |
+| 2.4 scheduler | open (`:33`) | **Not moved since 2026-08-24.** |
+| 2.5 merge and save | moving (`:39`) | Nothing this window. |
+| 3, functions in parallel | moving | The only per-bead parallelism ever measured made loss 13 % worse (`STATUS.md:172-176`). |
+| R4, frame loss at 8 / 15 beads | open (`:51`) | **Not moved.** Last valid numbers are row 56: about 3,400 lost of ~10,680 at 15 picks. |
+| R8, frame rate set inside the VI | open (`:75`) | **Not moved, and absent from `STATUS.md` NEXT.** |
+
+Unmoved since the project began: 2.2, 2.3, 2.4 and R4. The user's pain sentence (`project-description.md:45`) is frame loss at high bead count and high frame rate. Thirty-four days in, the 15-bead number is unchanged and 150 Hz has never been run (`STATUS.md:283`).
+
+## 3. COST vs PRODUCT
+
+Counted delta since the last review: +13 op VIs, +35 peer exchanges, +1 INDEX row (a non-result), +7 retrospectives, 0 runnable VIs.
+
+| Cycle | Cost | Minutes | Source |
+|---|---|---|---|
+| 101 | $41.45 | 111 | `tools/bench/cycle_runner.log:525` |
+| 102 | $19.11 | 56 | `:542` |
+| 103 | $24.79 | 90 | `:556` |
+| 104 | $30.70 | 116 | `:570` |
+| 105 | $19.43 | 89 | `:583` |
+| 106 | $32.17 | 52 | `:597` |
+| **Total** | **$167.65** | **514** | Cycle 100's $58.53 (`:510`) was unlogged at the last review; 107 not yet logged. |
+
+That bought one unrun file and one diagnosis. It is not defensible. A competent engineer would have skipped:
+
+- **Scripting a roughly ten-node edit.** The build took seven real runs across cycles 100–104 (`STATUS.md:74-103`, `:113-118`), a stage split forced by a 700 MB memory stop, and new verbs. The last review priced the hand edit at under an hour.
+- **Cycle 106 entirely ($32).** Cycle 105 had already established that the block is outside our code and needs a physical act by the user (`STATUS.md:71-72`). Cycle 106 re-measured the refusal and built a guard that refuses faster.
+- **Legs 2–4 of the cycle-104 ABBA.** They ran after the known-good A leg had failed (`STATUS.md:82`).
+- **Seven retrospectives** on cycles of 52–116 minutes.
+- **Cycle 107's self-blocking.** Card 107-1 was stopped because a decision header read `07:4x` and the parser wants `HH:MM` (`result_107-1.json:20`). Card 107-3 was stopped by this review's own cadence gate (`result_107-3.json:2`). Two of three cards produced nothing because the project's guards refused the project's work.
+
+Credit: cycle 105's diagnosis is clean and decisive. It separated OS, VISA and LabVIEW layers in one card (`tools/bench/diag_c105d_visa.log:6-23`). The leg guard did save LabVIEW launches in 107.
+
+## 4. ORDERING AT PROJECT SCALE
+
+The work order is wrong in three places.
+
+1. **The fallback is the wrong fallback.** PD219(f)(2b) says that if leg 1 is refused, do not wait and build the next L2 sub-stage (`STATUS.md:58`). That target, L2-A2, is one wire on a bed that is ExecState 0 by design and never run (`tools/bench/cards/split_plan_107_l2a2.md:31,64`). It converts a blocked delivery cycle into more unrunnable structural work.
+2. **The user's one-minute act should come first.** Everything runnable is behind D-2026-09-27-03. The right first act is reaching the user, not a card.
+3. **R8 is still scheduled nowhere**, second review running. At the user's typical 8 beads, loss is already about 15 frames in two minutes (`STATUS.md:282`). 150 Hz is what would change their week.
+
+`docs/restructure-plan-4.6.md` stays last.
+
+## 5. STALE DECISIONS
+
+| Item | Open since | Blocks | Source |
+|---|---|---|---|
+| D-2026-09-27-03 (replug / restart / service restart) | 06:50 today | Every real run, M8 | `decisions_pending.json:193-207` |
+| D-2026-09-27-02 (did the rig change?) | 05:20 today | M8 | `:177-190` |
+| D-2026-09-27-01 (continue the display build?) | 01:30 today | M8 | `:161-174` |
+| D-2026-09-25-04 (plain-language description of `D1_s3_loop15.vi`) | 09-25 | The supervised bead run | `:104` |
+| OPEN 53 (controller zero vs physical zero) | 09-18 | Motor envelope trust | `STATUS.md:48` |
+| OPEN 58 | Answered 09-25 per the last review, still listed "FOR THE USER" | Nothing | `STATUS.md:52` |
+
+- **D-01 is moot.** Cycles 102–104 proceeded under its own recommendation and the file now exists (`STATUS.md:88`). Asking permission and then not waiting is not a decision process.
+- **D-03 is the serious one.** It sits in a JSON file while the runner goes "through the weekend" (`STATUS.md:8`). Nothing on disk shows the user has seen it.
+- **The user has not been told their rig PC is impaired.** STATUS records that whether our forced LabVIEW kills caused the VISA fault is unmeasured (`STATUS.md:67`). If the user walks in Monday to run an experiment, the original VI will stop at the rotor `Configure.vi` dialog.
+- **D-04:** the last review found the description unwritten; nothing in `STATUS.md` NEXT schedules it. I did not re-search the repository for it.
+
+## 6. THE EXPERIMENT TEST
+
+**The original.** No file this project produced has beaten it on frame loss:
+
+- S3 and kswap match it (rows 48–49).
+- par1359 is worse (row 56).
+- The display-loop copy has never run.
+
+Today the original also needs a replug or a PC restart first, because VISA refuses COM5 on this machine (`tools/bench/disp_107_abba.json:40-50`).
+
+## 7. TERMINATION
+
+Shortest path:
+
+1. **Stop the runner at the cycle-107 boundary.** Every further cycle before D-03 is answered is structural work or tooling by construction.
+2. **One message to the user, in plain words.** The rotor port is refused by NI-VISA since about 04:30; please replug the FTDI adapter or restart the PC; our LabVIEW kills may or may not be the cause. I recommend against the scripted NI service restart without the user present, as the project's own recommendation already says (`decisions_pending.json:203`).
+3. **After the fix, one ABBA** (A15 B15 B15 A15, 120 s, 90 Hz), exactly as PD217(f) defines it.
+4. **On gain:** replay for rule 1a, add the R8 frame-rate control, run 8 picks at 150 Hz once, then hand off with the D-04 description.
+5. **On no gain:** stop and re-plan with the user, including whether scripted stage builds remain the method.
+
+Abandon: L2-A2 as a fallback, further guard and stage-tool generalisation, retrospectives on sub-two-hour cycles, and D-01.
+
+This is the sixth consecutive review with `goal-requirement-not-advanced`. The last review said cycle 101 must end with a saved file and an ABBA number, or stop. The file arrived three cycles late and the number did not arrive. The repetition consequence applies: stop and re-plan with the user.
+
+Mapping notes:
+
+- `product-not-runnable`: the new VI has never run, and nothing runs on the rig PC now.
+- `tooling-over-delivery`: cycle 106, and 107's two guard-blocked cards.
+- `ordering-stale`: the L2-A2 fallback, and R8 unscheduled.
+- `decision-starved`: D-03 unseen while cycles continue, the user not told about the rig, D-04 unscheduled.
+- Not flagged: `measurement-without-product` (cycle 105's measurement was necessary and decisive) and `scope-inflation` (folded into tooling-over-delivery).
+
+OUTCOME-VIOLATION: goal-requirement-not-advanced
+OUTCOME-VIOLATION: product-not-runnable
+OUTCOME-VIOLATION: tooling-over-delivery
+OUTCOME-VIOLATION: ordering-stale
+OUTCOME-VIOLATION: decision-starved
+
+VERDICT {"schema":"verdict/1","id":"outcome-review-20260927","verdict":"refuted","alternative":"The window did produce the display-loop file the last review demanded (D1_s1_disp, ExecState 1) and correctly diagnosed an external NI-VISA port fault; the deliverable moved to 'built, unrun', blocked by a PC-level act only the user can make.","discriminating_test":"After the user replugs the rotor FTDI adapter or restarts the PC: viOpen('ASRL5::INSTR') == 0, then ONE ABBA A15 B15 B15 A15 (120 s, 90 Hz) of D1_s1_copy.vi vs D1_s1_disp_20260927_041648.vi. B lost frames well below ~3,400 => replay + R8 + hand-off; else stop and re-plan.","violations":[{"slug":"wrong-ordering","loss_min":52,"loss_usd":32,"evidence":"tools/bench/cycle_runner.log:597; STATUS.md:58-66; tools/bench/decisions_pending.json:193-207"},{"slug":"device-failed","loss_min":29,"loss_usd":null,"evidence":"tools/bench/cards/result_107-1.json:20; tools/bench/cards/result_107-3.json:2"}],"sources":["STATUS.md:12","STATUS.md:58","STATUS.md:67","STATUS.md:71","STATUS.md:74","STATUS.md:282","archive/benchmarks/INDEX.md:78","tools/bench/disp_107_abba.json:19","tools/bench/cards/result_107-1.json:15","tools/bench/cards/result_107-3.json:2","tools/bench/cards/split_plan_107_l2a2.md:64","tools/bench/cycle_runner.log:525","tools/bench/cycle_runner.log:542","tools/bench/cycle_runner.log:556","tools/bench/cycle_runner.log:570","tools/bench/cycle_runner.log:583","tools/bench/cycle_runner.log:597","tools/bench/decisions_pending.json:161","tools/bench/decisions_pending.json:193","docs/goalmap.json:21","docs/goalmap.json:27","docs/goalmap.json:33","docs/goalmap.json:51","docs/goalmap.json:75","project-requirements/project-description.md:45"],"note":"Display-loop VI exists but NEVER RUN; ABBA has no numbers (row 57 non-result, 107 refused). NI-VISA refuses rotor COM5 since ~04:30, so even the original copy cannot run on this PC. $167.65 / 514 min for cycles 101-106. Stop the runner, get D-03 answered, run one ABBA; do not fall back to L2-A2."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-outcome-review-20260927.md
+   STEER: tools\bench\cards\steer_107.json (repeated: ['decision-starved', 'goal-requirement-not-advanced', 'ordering-stale', 'tooling-over-delivery'])
+   Now annotate it: 'why asked' and 'verdict', and act on the OUTCOME-VIOLATION lines.
+BGRUN END rc=0 after 111s

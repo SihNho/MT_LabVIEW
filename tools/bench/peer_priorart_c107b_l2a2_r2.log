@@ -1,0 +1,37 @@
+BGRUN START 2026-09-27 08:16:07 limit 20.0 min: py tools/prior_art_review.py --plan-file tools/bench/cards/split_plan_107_l2a2.md --slug c107b-l2a2-r2 --trigger cycle-start --recipe tools/recipes/stage_d1_l2a2.py
+BGRUN PID 18844
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c107b-l2a2-r2.txt (61843 chars)
+   review card tools\bench\cards\review_priorart-c107b-l2a2-r2.json
+OUTCOME: ANSWERED (68s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-27-priorart-c107b-l2a2-r2.md
+COST: $1.4080  in 14 / out 5664 / cache-create 139713 / cache-read 884965  (64s, 14 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c107b-l2a2-r2 verdict=novel -> tools\bench\cards\verdict_priorart-c107b-l2a2-r2.json
+--- ANSWER ---
+**Verdict: novel.** Nothing earlier covers this work. This second round differs from round 1 only in how the recipe names its input file, and that change follows a convention two earlier recipes already use.
+
+**What changed since round 1** (`archive/peer/2026-09-27-priorart-c107b-l2a2.md:460-481`, verdict `novel`)
+- The recipe was released at sha `792a6f55` (`:497`).
+- It then failed the pre-run check (`tools/bench/diag_c107b_prerun.log:45-49`). Three of its checks (X2, X3, X5) failed because `stage_prerun.plan_files` treated the unfinished input file `plan_l2a2_in.json` as a plan: *"plan is not final (final=None, finalized=null)"*. The record is at `tools/bench/prerun_records.jsonl:209`, status FAIL.
+- The attachment (md5 `f00a7e53`) fixes this. Lines 28-29 now compare the input's path with `os.path.splitext(...)[0].endswith("plan_l2a2_in")`, so the recipe contains no `.json` literal for the input file. Line 17 keeps the one literal the pre-run should read.
+
+**PART A: the direction**
+- **A1 (decided earlier):** Plan items PD180(c) and PD181(c) ordered the wire `#10757 'element'` → `#23541` (`docs/d1-loop12-17-split-plan.md:669-677,708-711`). L2-A1 never made it: the simulator left that row unresolved, marked AMBIGUOUS (`tools/bench/sim_l2a1_81b.log:20`). The earlier decision is a reason to do this work, not proof it is done. No slug.
+- **A2 (tried and dropped):** Nothing found. No stage-run log contains `10874` (round 1, B2).
+- **A3 (contradiction):** This is still in the files, but the plan already quotes both sides and returns it as OPEN.
+  - PD183(c) (`docs/d1-loop12-17-split-plan.md:755-756`) still calls it "a 1.2→1.1 crossing". The wording has not been changed yet.
+  - The measurement disagrees: `tools/bench/ct23541_facts_80.log:7` shows `#10978` is read inside loop `#23032`, which is loop 1.5.
+  - Correcting PD183(c) is a job for the judgement session. It does not block this build, so no slug.
+- **A4 (unread evidence):** Nothing missing. The split page now cites `ct23541_facts_80.log:3-9`.
+
+**PART B: the recipe and the VI it will build**
+- **B1 (already built):** No `D1_l2_a2_*` VI and no earlier L2-A2 recipe exist.
+- **B2 (already failed):** The only failure on record is the pre-run X2/X3/X5 failure above. It came from how the recipe named its input file, not from the wiring, and this version fixes exactly that. No stage run has been attempted.
+- **B3 (existing helper):** The fix follows the existing "ONE literal: stage_prerun.plan_files reads it" convention (`tools/recipes/stage_d1_l2a1.py:16`, `tools/recipes/stage_d1_disp.py:22`). L2-A1 avoided the problem by checking the input file's md5 instead of its path (`stage_d1_l2a1.py:42-43`). The recipe also reuses `OpCtlSinkWire_v1` through stagexec. All of this is reuse; no slug.
+- **B4 (already measured):** Memory check X10 printed WARN because nothing has measured this recipe's memory use (`diag_c107b_prerun.log:53-54`). For context only: the L2-A1 run on the previous bed peaked at 638 MB over 42 operations (STATUS, cycle 86), and this plan has one operation. Nobody has measured whether the wire closes row 7. That is a prediction (`tools/bench/plan_l2a2_sim.log:3-4`), and the stage run's panel-terminal wire check (CT) and its computation-diff check against S1 (PB) will test it.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c107b-l2a2-r2","verdict":"novel","alternative":"The r2 delta is only the plan_in path check (no .json literal) after prerun X2/X3/X5 took plan_l2a2_in.json for the plan; it follows the ONE-literal convention of stage_d1_l2a1.py:16 and stage_d1_disp.py:22. PD183(c) 1.2->1.1 wording is still unamended and already returned OPEN.","discriminating_test":"Re-run the top-level stage_prerun --prerun on sha of md5 f00a7e53: X2/X3/X5 PASS; then the stage run: CT partners of #23541 == [#10874] and frame-keyed cdiff(S1,end) == the 8 open rows.","violations":[],"sources":["archive/peer/2026-09-27-priorart-c107b-l2a2.md:460-497","tools/bench/diag_c107b_prerun.log:45-49","tools/bench/prerun_records.jsonl:209","tools/recipes/stage_d1_l2a1.py:16","tools/recipes/stage_d1_disp.py:22","docs/d1-loop12-17-split-plan.md:755-756","tools/bench/ct23541_facts_80.log:7"],"note":"Round 1 was novel; the only change is a naming fix for the pre-run plan-file check. Judgement still owes the PD183(c) wording correction (not blocking)."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c107b-l2a2-r2.md
+   STOP RECORD: none - 2026-09-27-priorart-c107b-l2a2-r2.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_l2a2.py sha 852f7a4b2e73 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 71s

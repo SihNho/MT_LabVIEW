@@ -3746,3 +3746,83 @@ VIOLATION: device-failed | loss_min=5 | loss_usd=? | evidence=tools/hooks/materi
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle106","verdict":"refuted","alternative":"The dry refusal was correct gating of an unreleased recipe and the self-test child was a sanctioned route, so no device failed.","discriminating_test":"Replay the 07:32:25 argv against stop_record offline: if the 01:15 rule (refuse only recipe-executing commands) is implemented, it passes; it was refused, and the child comment admits identical argv.","violations":[{"slug":"device-failed","loss_min":5,"loss_usd":null,"evidence":"tools/hooks/material_marker.log:2335"}],"sources":["tools/hooks/material_marker.log:2335","tools/hooks/material_marker.log:2338","tools/bench/selftest_stage_prerun_c106e.py:97","docs/violation-decisions.md:1427","tools/bench/cards/result_106-3.json:3","docs/d1-loop12-17-split-plan.md:1871"],"note":"Otherwise a well-run blocked cycle: deliverable waits on user D-2026-09-27-03; 5/5 PASS in 50 min; leg guard, X9, X10 built. Stop-record checker exemption owed since 01:15 and deferred again."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle106.md
 BGRUN END rc=0 after 161s
+BGRUN START 2026-09-27 08:20:05 limit 10.0 min: py tools/retrospective.py --cycle 107
+BGRUN PID 13472
+   window 2026-09-27 07:45:00 .. 2026-09-27 08:20:05 (35 min); 12 build logs, 10 machinery logs, 33 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle107.txt (26637 chars)
+   review card tools\bench\cards\review_retrospective-cycle107.json
+OUTCOME: ANSWERED (267s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-09-27-retrospective-cycle107.md
+COST: $1.6830  in 40 / out 26603 / cache-create 100552 / cache-read 1731830  (265s, 31 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle107 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle107.json
+--- ANSWER ---
+**Verdict: cycle 107 had one costly structural fault.** A device decided on 2026-09-26 was never built, and its manual stand-in was dropped. So the outcome review, overdue since before the cycle began, ran only at 08:10. By then three cards were already out, and two of them were stopped by that review's gate and by another "due" gate. Everything else in the cycle was minor, and most devices worked.
+
+**Evidence window.** The attached evidence matches the 07:45–08:20 window. Two items in it belong to the close of cycle 106 and are not charged here: `tools/bench/cycle_106.log:147` (it ended at 07:46:03) and `motor_session_end_cycle106.log`.
+
+## The structural fault
+
+**Slug: `device-failed`.** The device that failed is the one from the 2026-09-26 14:10 `wrong-ordering` decision (`docs/violation-decisions.md:1407-1410`). It was meant to make `cycle_runner.py` run `violations.py --due` and `outcome_review.py --due` before the cycle and record the result in the cycle card. It was never built:
+- `tools/cycle_runner.py` contains no `gates_due`, and `tools/bench/cards/cycle_107.json` has no such field.
+- Until it existed, STATUS NEXT was supposed to say "run both `--due` checks before the first card". Cycle 107's first-act text (`STATUS.md:65`) does not say it.
+
+**What happened, in order:**
+- The outcome review was already due when the cycle started. `outcome_review.py:100-111` counts retrospectives newer than the last outcome review, and there were 7 (cycles 100–106), so it had been due since retrospective 104.
+- **107-2** was dispatched early: the L2-A2 plan, recipe, one LabVIEW read of the bed, and two prior-art reviews. It took 36 min, and its two prior-art reviews cost $2.64 (`result_107-2.json:25`; `peer_priorart_c107b_l2a2.log:6` $1.2301, `_r2.log:6` $1.4080).
+- **107-1 B2**, the recorded dry run, was refused at 08:04:40 by the `violations --due` gate (`material_marker.log:2357`, `result_107-1.json:2-3`).
+- The judgement session then fixed the decision-file headers. It checked only `violations --due` before sending **107-3** (`task_107-3.json:6`).
+- **107-3 D1** was refused at 08:07:15 by the outcome-review gate (`material_marker.log:2360`, `result_107-3.json:2-3`).
+- The outcome review then ran from 08:10:40 to 08:12:31 and cost $2.1203 (`outcome_review_c107.log:1,7,139`). Its first finding was that L2-A2 is "the wrong fallback" and should be abandoned (`archive/peer/2026-09-27-outcome-review-20260927.md:155,197`). The judgement session accepted that (`:226`), after 107-2 had already done the work.
+- The display recipe's recorded dry run was never produced. That dry run is the acceptance test for the 07:50 stop-record repair (`violation-decisions.md:1521-1522`). It is still owed (`STATUS.md:59`).
+
+**Loss.**
+- 36 material-minutes and $2.64 logged, on work the accepted outcome review said to drop. The L2-A2 files are kept, so this is at risk rather than certainly lost: user decision D-04 could revive them.
+- Plus 107-3's blocked D1 attempt, within its 12 min (`result_107-3.json:22`). Its $1.3753 prior-art review was owed anyway.
+- The dollar figure is a lower bound: the material sessions' own cost is not logged.
+
+**Counterfactual.** At about 07:47, both `--due` checks (seconds each) would have shown two gates due. Fix the headers, run the 111-second outcome review, and its verdict lands by about 07:50, before any dispatch:
+- 107-2 is not sent as L2-A2.
+- 107-1's B2 dry at 08:04 passes and is recorded; the same command took 6 s when it ran (`diag_c107b_dry2.log:47`).
+- 107-3 shrinks to its 92-second prior-art review.
+
+The cycle ends around 08:10 with the 07:50 repair accepted, instead of 08:20 with the acceptance still owed.
+
+## Findings
+
+1. **Repeated failure.**
+   - The same class hit twice: a card stopped by a `guard_cycle` "due" gate (`material_marker.log:2357`, then `:2360`).
+   - The approach should have changed at the second dispatch (107-3). `guard_cycle.py:551-582` stops at the first gate that blocks, so passing `violations --due` said nothing about the outcome gate behind it.
+   - Inside 107-2, the L2-A2 dry run was refused twice before it ran: tried at 08:13:14 and 08:16:02, started at 08:15:10 and 08:17:36 (`material_marker.log:2362,2365`; `diag_c107b_dry.log:1`, `dry2.log:1`). Each time a prior-art review started seconds later, which points to the premature-build gate working. It cost seconds.
+2. **Missing tool.** The pre-dispatch `gates_due` reader, in effect a dry run of every `guard_cycle` gate at once. It would have answered both refusals above. `guard_cycle` reports only the first gate that blocks, which is how the outcome gate stayed hidden behind the stop-record and violations gates for cycles 105–106.
+3. **Unmeasured steps.** 107-3 was sent on the belief that `violations --due` was the only blocker (`task_107-3.json:6`). `outcome_review.py --due` was one command away. That is the same fault as above.
+4. **Rule compliance.**
+   - The outcome layer ("every 5 cycles", `CLAUDE.md:580`) ran two cycles late. That was satisfied only formally: the gate enforces it only when a build command happens to reach it.
+   - STATUS.md is 328 lines against the one-screen limit (audit L3; CLAUDE.md §4).
+   - The audit's A4 blank belongs to an earlier cycle.
+   - What the audit does not cover:
+     - It cannot see gates that were due but untriggered.
+     - C6 counts hook self-test fixtures as judgement-session refusals (`material_marker.log:2354-2356` came from the regression run).
+     - C7 flags outputs that the cards authorised (e.g. `selftest_stoprecord_offline_c107.py`), because it does not read card write-globs.
+5. **Ordering.** Not defensible. The outcome review should have come first, since it was due and it overturned 107-2. The rest of the order (ABBA guard first, offline work before any LabVIEW read) was sound.
+6. **What was not reported.**
+   - `STATUS.md:63` says 107-3's dry run "was refused because the outcome review was due". It does not say that the gate was clear from 08:12:31, that the 6-second dry run was never re-issued, and that `next.json` leaves it out of `pass`.
+   - The rewritten header "07:50" on the cycle-106 decision (`violation-decisions.md:1513`) states a time after the cycle-106 session had exited (`cycle_106.log:147`, 07:46:03). It is labelled a lower bound, but it is factually impossible.
+7. **Judgement inside a material session.** The 107-1 material session wrote "ACCEPTED (card 107-1, material session)" on the c107a-l4 review (`archive/peer/2026-09-27-c107a-l4-selftest_stoprecord_offline_c107.md:113`), accepting a finding and changing the self-test's negative case. It was narrow: the decision that costs something (the newline false positive) went back to judgement (`result_107-1.json:27`). A finding, not a violation.
+
+## Device effect
+
+The `wrong-ordering` device of 2026-09-26 14:10 **failed**: never built, its manual form dropped, and the fault recurred twice (above).
+
+The devices that were exercised in this window worked:
+- **Leg guard (07:40):** refused leg 1 in 13 s with LabVIEW never started (`disp_107_abba.log:5-8,27`).
+- **Stop record `--dry` pass (07:50):** worked live (`result_107-1.json:19`), and gate refusals came back BLOCKED, not bypassed (`result_107-3.json:12`). Its acceptance is unmet because of the failure above, not its own.
+- **bgrun rc and cost parsing:** the rc=1 logs match their inner failures, and cost lines parsed 5/5 (audit C4b).
+- **Prior-art review gate:** ran 3 times with dispositions written.
+- **Verb-precondition check X9:** PASS (`diag_c107b_prerun2.log:52-57`).
+- **Stop-record read-only refusals:** none. The two REFUSED lines at `material_marker.log:2345,2361` are the material gate, not the stop record.
+
+The remaining devices on file were not exercised in this window.
+
+VIOLATION: device-failed | loss_min=36 | loss_usd=2.64 | evidence=tools/bench/cards/result_107-3.json:3
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle107","verdict":"refuted","alternative":"The late outcome review was unavoidable: guard_cycle checks it only when a build is attempted, and STATUS NEXT never told the session to check it, so the session could not have known it was due.","discriminating_test":"Run py tools/outcome_review.py --due against the file state at 07:46; if it prints due (7 retrospectives, cycles 100-106, >= 5), the 107-2 dispatch went ahead with a known, cheap check skipped.","violations":[{"slug":"device-failed","loss_min":36,"loss_usd":2.64,"evidence":"tools/bench/cards/result_107-3.json:3"}],"sources":["docs/violation-decisions.md:1407","tools/bench/cards/result_107-3.json:3","tools/bench/cards/result_107-1.json:3","tools/hooks/material_marker.log:2360","archive/peer/2026-09-27-outcome-review-20260927.md:155","tools/bench/outcome_review_c107.log:1","STATUS.md:65"],"note":"Device = the 2026-09-26 14:10 wrong-ordering gates_due device: never built in cycle_runner.py and its manual form was missing from STATUS NEXT. loss_usd = the two L2-A2 prior-art reviews only, a lower bound; the L2-A2 files are kept pending D-04."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle107.md
+BGRUN END rc=0 after 270s

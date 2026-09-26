@@ -1,0 +1,83 @@
+{
+ "schema": "task/1",
+ "id": "107-1",
+ "kind": "measure",
+ "goal": "PD219(f)(1)+(g): (A) run the 217(f) ABBA once via diag_c104_abba.py; (B) stop_record passes stage_prerun --dry/--prerun, still refuses launch, + recorded dry of stage_d1_disp; (C) newline split",
+ "why": "Display-loop VI (PD217(e)) never run; ABBA blocked by NI-VISA refusing ASRL5 (D-2026-09-27-03); the guard refuses in seconds. Retro-106 device-failed (threshold 1): the Part-B dry passed only as a self-test child after stop_record refused it twice.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "docs/violation-decisions.md"},
+  {"path": "tools/bench/cards/result_106-2.json"},
+  {"path": "tools/bench/cards/result_106-5.json"},
+  {"path": "tools/bench/diag_c104_abba.py"},
+  {"path": "tools/bench/drive_legguard.py"},
+  {"path": "tools/stop_record.py"},
+  {"path": "tools/stage_prerun.py"},
+  {"path": "tools/recipes/stage_d1_disp.py", "md5": "1d1784ab0d9b714189e52f27d02ab2e4"},
+  {"path": "tools/hooks/material_marker.log"},
+  {"path": "archive/peer/2026-09-27-retrospective-cycle106.md"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_disp_20260927_041648.vi", "md5": "245a10206b565cba0ba186bd891f5cb8"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c104_abba.py"},
+  {"kind": "file", "name": "tools/bench/drive_legguard.py"},
+  {"kind": "file", "name": "tools/stop_record.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_disp.py"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_disp_20260927_041648.vi"}
+ ],
+ "pass": [
+  "A1: diag_c104_abba.py launched ONCE under bgrun, no bypass var; outcome with log file:line: leg-1 VISA refusal (codes, seconds, LabVIEW count 0) OR 4 legs' numbers",
+  "A2 (if legs ran): per leg lost frames, iterations, picks 15; per B leg #8323 dims+count; md5s in-run; tools/bench/disp_107_abba.json + INDEX row; LabVIEW gone",
+  "B1: stop_record passes stage_prerun --dry/--prerun for an unreleased recipe and still refuses its launch; material_marker.log:2335/:2338 replayed as tests + launch negative",
+  "B2: TOP-LEVEL 'stage_prerun --dry tools/recipes/stage_d1_disp.py --from-step 33' PASS with its record line in tools/bench/prerun_records.jsonl; recipe not edited",
+  "C1: launched_plan_runs splits on newlines (negative: plan run on line 2 found); stage_prerun self-tests pass with counts"
+ ],
+ "outputs": [
+  "tools/bench/disp_107*",
+  "tools/bench/diag_c107a_*",
+  "tools/bench/cards/result_107-1.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "gate",
+  "run_vi": true,
+  "write": [
+   "tools/stop_record.py",
+   "tools/stage_prerun.py",
+   "tools/hooks/guard_bash.py",
+   "tools/bench/selftest_*",
+   "tools/bench/disp_107*",
+   "tools/bench/diag_c107a_*",
+   "tools/bench/diag_c104_*",
+   "tools/bench/t0_legs/**",
+   "tools/bench/m8_*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/gui_shots/**",
+   "tools/gui_actions.log",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**",
+   "archive/benchmarks/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 75},
+ "rules": [
+  "never save or edit any VI (S1, disp, originals); the files run as they are",
+  "never set LEGGUARD_TEST_BYPASS_VISA; a refused leg ends the ABBA (PD219(b)); record it, go on to B/C, no ABBA retry",
+  "a gate refusal is returned BLOCKED, never re-run through a self-test child, moved script or other exempt route",
+  "stage_d1_disp.py is NOT launched here (it owes its prior-art round); only its dry",
+  "GUI via lv_gui.ps1 -Exception Approved -Evidence 'user 2026-09-17 bead-pick option 1'; hold turn until BGRUN END",
+  "numbers only; do not judge the ABBA (PD217(f) is judgement's); LabVIEW verified gone; facts <=10; OPEN <=3"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

@@ -1,0 +1,25 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle107",
+ "verdict": "refuted",
+ "alternative": "The late outcome review was unavoidable: guard_cycle checks it only when a build is attempted, and STATUS NEXT never told the session to check it, so the session could not have known it was due.",
+ "discriminating_test": "Run py tools/outcome_review.py --due against the file state at 07:46; if it prints due (7 retrospectives, cycles 100-106, >= 5), the 107-2 dispatch went ahead with a known, cheap check skipped.",
+ "violations": [
+  {
+   "slug": "device-failed",
+   "loss_min": 36,
+   "loss_usd": 2.64,
+   "evidence": "tools/bench/cards/result_107-3.json:3"
+  }
+ ],
+ "sources": [
+  "docs/violation-decisions.md:1407",
+  "tools/bench/cards/result_107-3.json:3",
+  "tools/bench/cards/result_107-1.json:3",
+  "tools/hooks/material_marker.log:2360",
+  "archive/peer/2026-09-27-outcome-review-20260927.md:155",
+  "tools/bench/outcome_review_c107.log:1",
+  "STATUS.md:65"
+ ],
+ "note": "Device = the 2026-09-26 14:10 wrong-ordering gates_due device: never built in cycle_runner.py and its manual form was missing from STATUS NEXT. loss_usd = the two L2-A2 prior-art reviews only, a lower bound; the L2-A2 files are kept pending D-04."
+}

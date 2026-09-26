@@ -1,0 +1,32 @@
+BGRUN START 2026-09-27 08:13:22 limit 20.0 min: py tools/prior_art_review.py --plan-file tools/bench/cards/split_plan_107_l2a2.md --slug c107b-l2a2 --trigger cycle-start --recipe tools/recipes/stage_d1_l2a2.py
+BGRUN PID 24020
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c107b-l2a2.txt (61457 chars)
+   review card tools\bench\cards\review_priorart-c107b-l2a2.json
+OUTCOME: ANSWERED (78s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-27-priorart-c107b-l2a2.md
+COST: $1.2301  in 18 / out 6404 / cache-create 112542 / cache-read 1008117  (74s, 14 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c107b-l2a2 verdict=novel -> tools\bench\cards\verdict_priorart-c107b-l2a2.json
+--- ANSWER ---
+**Verdict: novel.** No earlier run tried the one wire L2-A2 makes, and no existing helper already covers it.
+
+**PART A: the direction**
+- **A1 (decided earlier, but not done).** PD180(c), `docs/d1-loop12-17-split-plan.md:669-677`, and PD181(c)/(d), `:708-718`, ordered "`#10757 'element'` → `#23541` wired (179(b) reader)" as part of L2-A1. L2-A1 never made that wire: `tools/bench/sim_l2a1_81b.log:20` marks it `AMBIGUOUS (not wired, stays open)`, and the bed read shows both ends bare with `wire_uid 0`, both inside 1.2's body `#23166` (`tools/bench/diag_c107b_bedgraph.log:263`). So the earlier decision tells the plan to do this work; it does not make the work redundant. No slug.
+- **A2 (tried and abandoned).** Nothing found. The row was never attempted. It was only reclassified by PD183(c), `:755-758`.
+- **A3 (contradiction).** There is a contradiction, but the plan already quotes both sides and returns it as OPEN (split page §2). Not a new finding:
+  - PD183(c), `docs/d1-loop12-17-split-plan.md:755-756`, calls `(9703,'x')` "a 1.2→1.1 crossing".
+  - The measurement says otherwise: `tools/bench/ct23541_facts_80.log:7` shows `#10978` is read by Local `#23523` in `WhileLoop#23032` (body `#23058`). `#23032` is the loop-1.5 While loop (`docs/cycle27-plan.md:959`, `docs/d1-loop12-17-split-plan.md:21`), not 1.1. `docs/autofocus-case-10407.md:32` gives the S1 chain as `#10757 element → w10990 → #10978 → #9703`.
+  - So the measured record supports the plan's reading over PD183(c)'s wording. The judgement session should still correct PD183(c) in the plan doc so later stages don't inherit "1.2→1.1".
+- **A4 (unread evidence).** Nothing blocking. The plan already cites `sim_l2a1_81b.log` and PD180–183. The loop-1.5 location is best supported by `ct23541_facts_80.log:3-9` (C1–C4), which the plan could cite directly.
+
+**PART B: the new VI file**
+- **B1 (already built).** No `D1_l2_a2_*` file and no earlier L2-A2 recipe exist. The only `stage_d1_l2a2.py` is the attachment itself.
+- **B2 (already failed).** No earlier attempt. `10874` appears only in reads and simulations (`l2a1_facts_80.log`, `sim_l2a1_81*.log`, `diag_c99_files2.log:193`, `diag_c107b_bedgraph.log:263`) and never in a stage-run log.
+- **B3 (helper exists).** The plan reuses the existing op `OpCtlSinkWire_v1` (PD191/192) rather than writing its own, and routes the row through stagexec. That is correct reuse, not a finding.
+- **B4 (already measured).** Nothing has measured whether this wire closes row 7. The plan's claim that it does is based on the `cdiff_frame(S1, D1_k)` replay, where the row is absent while w23556 exists (PD181(b), `:701-703`). The run's frame-keyed cdiff check is what will test it.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c107b-l2a2","verdict":"novel","alternative":"PD183(c) wording ('1.2->1.1 crossing') could be read as settling row 7 as QRT-owed; measured record (ct23541_facts_80.log:7, #10978 read in loop #23032 = 1.5) contradicts it and the plan already returns this as OPEN.","discriminating_test":"Stage run: CT reader on #23541 partners == [#10874] and frame-keyed cdiff(S1,end) drops (9703,'x') leaving exactly the 8 open rows.","violations":[],"sources":["docs/d1-loop12-17-split-plan.md:669-677","docs/d1-loop12-17-split-plan.md:708-718","docs/d1-loop12-17-split-plan.md:755-758","tools/bench/sim_l2a1_81b.log:20","tools/bench/ct23541_facts_80.log:7","tools/bench/diag_c107b_bedgraph.log:263","docs/cycle27-plan.md:959"],"note":"Wire #10757->#23541 ordered by PD180(c)/181(c) but never attempted; judgement should amend PD183(c)'s '1.2->1.1' wording (sink is in loop 1.5)."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c107b-l2a2.md
+   STOP RECORD: none - 2026-09-27-priorart-c107b-l2a2.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_l2a2.py sha 792a6f55388e -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 81s

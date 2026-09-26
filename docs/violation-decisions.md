@@ -1466,7 +1466,7 @@ DECISION: device (repair, threshold 1) - unchanged from the 01:15 block: refuse 
 read-only commands through, `selftest_stagekit.py` classed a self-test; negatives = `material_marker.log:2175` and `:2192`.
 Same owed tooling card as above (first after Part A). No new device beyond that one.
 
-## inference-over-measurement — 2026-09-27 03:3x (cycle 103 judgement, after archive/peer/2026-09-27-retrospective-cycle103.md:83)
+## inference-over-measurement — 2026-09-27 03:30 (time = lower bound of the '03:3x' window, rewritten cycle 107 so violations.py DEC_RE parses it; cycle 103 judgement, after archive/peer/2026-09-27-retrospective-cycle103.md:83)
 
 `VIOLATION: inference-over-measurement | loss_min=18 | loss_usd=? | evidence=docs/d1-loop12-17-split-plan.md:1828`: the cycle-103
 judgement kept Part A's cut at op 40 although r7's meter lines (690.4 MB at op 40, a +13.3 MB read at k37, 668.5 MB at k33) already
@@ -1480,7 +1480,7 @@ the last run never reached are charged the worst measured read cost and flagged 
 (2026-09-27 01:55), which runs immediately after Part B's run in cycle 104. It is not built ahead of Part B: Part B's worst case,
 computed from files, is ≤ 685 MB (retrospective-cycle103 annotation).
 
-## device-failed — 2026-09-27 03:3x (cycle 103 judgement, after archive/peer/2026-09-27-retrospective-cycle103.md:84)
+## device-failed — 2026-09-27 03:30 (time = lower bound of the '03:3x' window, rewritten cycle 107 so violations.py DEC_RE parses it; cycle 103 judgement, after archive/peer/2026-09-27-retrospective-cycle103.md:84)
 
 `VIOLATION: device-failed | loss_min=2 | evidence=tools/hooks/material_marker.log:2211`: stop-record read-only refusals at
 `:2205`, `:2211-2212` and `:2233`, all before the 103-4 repair landed at 03:14 (`selftest_c103d_hooks_after.log:30`, 17/0).
@@ -1488,7 +1488,7 @@ computed from files, is ≤ 685 MB (retrospective-cycle103 annotation).
 DECISION: no new device. The repair is the device, and it landed in this cycle. If a read-only refusal shows up in cycle 104, the
 repair failed: that is device-failed round 2, and that refusal line becomes the added negative case.
 
-## repeated-failure-class — 2026-09-27 07:4x (cycle 106 judgement, after archive/peer/2026-09-27-retrospective-cycle104.md:341)
+## repeated-failure-class — 2026-09-27 07:40 (time = lower bound of the '07:4x' window, rewritten cycle 107 so violations.py DEC_RE parses it; cycle 106 judgement, after archive/peer/2026-09-27-retrospective-cycle104.md:341)
 
 `VIOLATION: repeated-failure-class | loss_min=17 | evidence=tools/bench/diag_c104_abba.log:27`: legs 2–4 of the 104-5 ABBA ran after
 the known-good A leg had already stopped before pick 1 on the same rotor dialog.
@@ -1501,7 +1501,7 @@ dialog by PrintWindow and kills the process directly. Offline self-test 30/0 wit
 LabVIEW never started, and one bypassed S1 leg caught the real VISA dialog and killed LabVIEW 1.46 s after detection
 (`tools/bench/diag_c106b_live.log`). Decided in 106: ANY refused leg ends the ABBA, not only an A leg — every leg opens the same port.
 
-## inference-over-measurement — 2026-09-27 07:4x (cycle 106 judgement, after archive/peer/2026-09-27-retrospective-cycle105.md:287)
+## inference-over-measurement — 2026-09-27 07:40 (time = lower bound of the '07:4x' window, rewritten cycle 107 so violations.py DEC_RE parses it; cycle 106 judgement, after archive/peer/2026-09-27-retrospective-cycle105.md:287)
 
 `VIOLATION: inference-over-measurement | loss_min=28 | evidence=tools/bench/cards/task_105-3.json:5`: 105-3 assumed an OS-level
 holder of COM5 before the 12 s VISA-only open had been run.
@@ -1510,7 +1510,7 @@ DECISION: no new device beyond 106-2's VISA precheck, which is the mechanical fo
 this way. The general rule (an error naming a resource layer ⇒ open that resource through the same layer outside LabVIEW first) stays
 written in `docs/d1-loop12-17-split-plan.md` PD218(e); if it is skipped again for another resource, that is the device trigger.
 
-## device-failed — 2026-09-27 07:5x (cycle 106 judgement, after archive/peer/2026-09-27-retrospective-cycle106.md:317)
+## device-failed — 2026-09-27 07:46 (the header said '07:5x', which is impossible: the cycle-106 session exited at 07:46:03, `tools/bench/cycle_106.log:147`; 07:46 is that exit's minute, corrected cycle 107 after retrospective-cycle107 finding 6; cycle 106 judgement, after archive/peer/2026-09-27-retrospective-cycle106.md:317)
 
 `VIOLATION: device-failed | loss_min=5 | evidence=tools/hooks/material_marker.log:2335`: the stop record refused the checker
 `stage_prerun.py --dry tools/recipes/stage_d1_disp.py` twice (`:2335`, `:2338`), and card 106-5 then ran the identical argv as a
@@ -1522,3 +1522,18 @@ negatives `material_marker.log:2335`/`:2338` must pass, a real launch argv must 
 top-level dry of the display recipe (sha `d62f876d`). Plus a card rule (no hook): a gate refusal is returned as BLOCKED, never
 re-run through a self-test child or any other exempt route. If an exempt-route workaround recurs, the self-test exemption itself
 gets the device (it must not run an argv the gate refused in the same session).
+
+## device-failed — 2026-09-27 08:30 (cycle 107 judgement, after archive/peer/2026-09-27-retrospective-cycle107.md:292)
+
+`VIOLATION: device-failed | loss_min=36 | loss_usd=2.64 | evidence=tools/bench/cards/result_107-3.json:3`: the 2026-09-26
+14:10 `wrong-ordering` device (check every due gate before the first dispatch) was never built into `cycle_runner.py`, and its
+manual form was not in STATUS NEXT. Cycle 107 therefore dispatched 107-2/107-3 with the outcome review already due (7 ≥ 5).
+`guard_cycle.py:551-582` reports only the FIRST blocking gate, so the outcome gate stayed hidden behind the violations gate.
+
+DECISION: device (threshold 1). `cycle_runner.py` runs every `guard_cycle` "due" check at cycle start, before spawning the
+judgement session (`violations.py --due`, `outcome_review.py --due`, the retrospective-debt check, the prior-art/stop-record
+state of the recipe named in `next.json`), and writes the list into the cycle card (`gates_due`). A due outcome review runs
+BEFORE the judgement session, as the errorlist hook does. Owed as the FIRST card after the runner restarts (the runner is
+stopped on D-2026-09-27-03/-04), ahead of any build. Self-test: a fixture with 7 retrospectives since the last outcome review
+must produce `gates_due` containing the outcome review. Also accepted: decision-header times are always written HH:MM (a
+`HH:Mx` time silently parsed as 00:00 and kept a slug DUE; cycle 107 lost 107-1's B2 to it).

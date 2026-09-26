@@ -88,3 +88,6 @@ Sources:
 - H2 (Configure.vi raised an error → automatic error handling → run stopped, edit mode) is carried as the working hypothesis, unconfirmed.
 - The review's "also worth fixing" (ExecState + `dialogs()` at the L2 capture) is NOT applied: card 104-5's failure budget is spent
   (4 of 4 legs failed at the same step); the next act is judgement's (material session, card 104-5, 2026-09-27 05:0x).
+
+SAME-ROW: disp_107_abba.log (2026-09-27 07:51:24)
+  This later failure of the SAME script was released without buying a new peer review: one review per row per cycle (CLAUDE.md, user 2026-09-22). The review above is the evidence; this line records which re-run was charged to it.

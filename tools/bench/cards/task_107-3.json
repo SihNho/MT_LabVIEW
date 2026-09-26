@@ -1,0 +1,55 @@
+{
+ "schema": "task/1",
+ "id": "107-3",
+ "kind": "review-dispatch",
+ "goal": "Close 107-1's B2 + PD219(c) owed round: TOP-LEVEL recorded dry of stage_d1_disp.py --from-step 33, then the recipe's prior-art round (md5 1d1784ab). Offline, no launch.",
+ "why": "107-1 B2 was refused only by violations --due; the cycle-107 judgement rewrote the 5 'HH:Mx' headers in docs/violation-decisions.md as HH:M0 and violations --due is now empty.",
+ "inputs": [
+  {"path": "tools/bench/cards/result_107-1.json"},
+  {"path": "docs/violation-decisions.md"},
+  {"path": "tools/recipes/stage_d1_disp.py", "md5": "1d1784ab0d9b714189e52f27d02ab2e4"},
+  {"path": "tools/stage_prerun.py", "md5": "cb90389a3dc53bef3701033589d78828"},
+  {"path": "tools/stop_record.py", "md5": "6c4eaff8c398345b0c1fc9cc3438d766"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/recipes/stage_d1_disp.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/prior_art_review.py"}
+ ],
+ "pass": [
+  "D1: 'stage_prerun --dry tools/recipes/stage_d1_disp.py --from-step 33' (107-1 open 3 argv) run TOP-LEVEL, PASS, entry diff 0, E3 6==6; record line in prerun_records.jsonl cited",
+  "D2: prior_art_review.py on stage_d1_disp.py (1d1784ab) ANSWERED; verdict + each finding's disposition written in the review file",
+  "D3: violations.py --due output empty before D1 (cite); recipe md5 unchanged after"
+ ],
+ "outputs": [
+  "tools/bench/diag_c107c_*",
+  "tools/bench/cards/result_107-3.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c107c_*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 35},
+ "rules": [
+  "offline only; stage_d1_disp.py is NOT launched and NOT edited",
+  "a gate refusal is returned BLOCKED, never re-run through a self-test child, moved script or other exempt route",
+  "review findings that would change the recipe go to open; do not accept them in this card",
+  "facts <=10 with file:line; OPEN <=3"
+ ],
+ "advances": ["M8", "R1", "R3"]
+}

@@ -126,6 +126,30 @@ def exempt_program(command_string):
 BGRUN_PROGRAM = "tools/bgrun.py"
 BGRUN_SEP_RE = re.compile(r"\s--(?:\s+|$)")
 
+# THE OFFLINE CHECKER (card 107-1, docs/violation-decisions.md `## device-failed - 2026-09-27 07:5x`, PD219(g)): the
+# gate refused `py tools/stage_prerun.py --dry tools/recipes/stage_d1_disp.py` twice (material_marker.log:2335, :2338),
+# i.e. it refused the offline check that must PRECEDE a release, and card 106-5 then ran the same argv as a self-test child.
+# stage_prerun `--dry`/`--prerun` executes the recipe in its own sandbox (pythoncom/win32com stubbed, subprocess and
+# os.system refused - stage_prerun.py docstring :17), so it cannot reach LabVIEW. A segment whose command-position
+# program is tools/stage_prerun.py (directly or after bgrun's `--`) AND that carries `--dry` or `--prerun` is classed
+# "exempt"; judged AFTER EXEC_PIPE_RE (a pipe into an executor or a command substitution still makes it "build").
+# Any other stage_prerun argv, and every launch of the recipe itself, is judged as before.
+# Self-test: tools/bench/selftest_stoprecord_offline_c107.py.
+OFFLINE_CHECKER = "tools/stage_prerun.py"
+OFFLINE_FLAG_RE = re.compile(r"(?:^|\s)--(?:dry|prerun)(?:=|\s|$)")
+
+
+def offline_checker(segment):
+    """True when this SEGMENT runs tools/stage_prerun.py --dry|--prerun in command position (bgrun-wrapped or not)."""
+    m = COMMAND_POSITION_RE.match(segment or "")
+    if not m:
+        return False
+    prog = keys_for(m.group(1))
+    if prog & keys_for(BGRUN_PROGRAM):
+        parts = BGRUN_SEP_RE.split(segment[m.end():], maxsplit=1)
+        return len(parts) == 2 and offline_checker(parts[1])
+    return bool(prog & keys_for(OFFLINE_CHECKER)) and bool(OFFLINE_FLAG_RE.search(segment[m.end():]))
+
 
 # ==================================================================================================================
 # THE RELEASE TABLE (cycle 73, docs/violation-decisions.md "device-failed - 2026-09-24 06:2x": ONE repair, not a
@@ -142,7 +166,8 @@ BGRUN_SEP_RE = re.compile(r"\s--(?:\s+|$)")
 #   command class : "build"    - the segment may EXECUTE the path (python on it, or any program not known to be
 #                                read-only - fail closed: `other_tool.py --recipe X` stays here)
 #                   "readonly" - a program that only READS the file (wc, sed -n, Get-Content, grep, py -c ast.parse)
-#                   "exempt"   - EXEMPT_PROGRAMS in command position (they can only ADD a record or a review)
+#                   "exempt"   - EXEMPT_PROGRAMS in command position (they can only ADD a record or a review), or
+#                                stage_prerun --dry|--prerun (card 107-1, OFFLINE_CHECKER: offline, adds a prerun record)
 #   outcome       : "allow" | "refuse" | "skip" (this record does not decide; a later one does)
 #
 # Read-only and exempt ALLOW in every state: the gate exists to stop a LAUNCH, and it refused `wc -l`, `sed -n`
@@ -217,6 +242,8 @@ def segment_class(seg, whole_cmd=""):
         return "exempt"
     if EXEC_PIPE_RE.search(whole_cmd or seg):
         return "build"
+    if offline_checker(seg):                     # card 107-1: stage_prerun --dry|--prerun (offline, see OFFLINE_CHECKER)
+        return "exempt"
     m = _PROG_RE.match(seg or "")
     if not m:
         return "build"

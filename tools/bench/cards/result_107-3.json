@@ -1,0 +1,23 @@
+{"schema":"result/1","id":"107-3","status":"BLOCKED","gates":{"pass":2,"fail":1},
+"first_fail":"D1 top-level recorded dry refused by guard_cycle: outcome review due (7 retrospectives since 2026-09-26-outcome-review-20260926.md, every 5)",
+"blocked_by":{"device":"guard_cycle","message":"BLOCKED by tools/hooks/guard_cycle.py: the project's OUTCOMES are due for review. DUE: 7 cycle retrospectives since 2026-09-26-outcome-review-20260926.md (every 5). Run py tools/outcome_review.py (role outcome, not in this card's peers)"},
+"artefacts":[
+ {"path":"tools/bench/diag_c107c_plan.md","md5":"61c839700670196a0899b3fe4d60cdf2"},
+ {"path":"tools/bench/diag_c107c_priorart.log","md5":"9de1c0ee54cdbcafae81bbec6ed1ad17"},
+ {"path":"archive/peer/2026-09-27-priorart-priorart-c107c-disp.md","md5":"94e230a475d9e165474808cf643a08ae"},
+ {"path":"tools/recipes/stage_d1_disp.py","md5":"1d1784ab0d9b714189e52f27d02ab2e4"}],
+"facts":[
+ "D3: py tools/violations.py --due printed nothing (empty) before the D1 attempt; the HH:M0 header rewrite cleared the 107-1 block",
+ "D1 BLOCKED: bgrun stage_prerun --dry stage_d1_disp.py --from-step 33 --base claudeDev\\D1_s1_dispA_20260927_024535.vi refused by guard_cycle outcome-review-due, not by violations",
+ "D1: nothing launched, no dry record written to prerun_records.jsonl; no exempt/self-test route tried (card rule)",
+ "D2: prior-art ANSWERED 92s, verdict novel, NOVEL RECORD released recipe sha d62f876d346c (diag_c107c_priorart.log tail)",
+ "D2: review cites diag_c106e_dryB.txt:67 E3 rows 6==6, c4 15/15, B1 diff 0 first op 34 for the refactored recipe (unrecorded, --no-record)",
+ "D2 disc. test run: b1_gate/part_a_gates/w1_rbw/e3_gate/kill bodies (stagexec.py:2272-2333) token-identical to code removed in git 4dbc3fc..93c2bfe",
+ "D2: disposition per finding written, archive/peer/2026-09-27-priorart-priorart-c107c-disp.md '## What was done with it'",
+ "D3: recipe md5 1d1784ab unchanged after (not edited, not launched); LabVIEW not touched"],
+"open":[
+ "Outcome review is due (7 retros since 09-26) and guard_cycle blocks the D1 dry until it runs: dispatch outcome_review.py (role outcome) before re-issuing D1?",
+ "Stale cite docs/d1-loop12-17-split-plan.md:1844/1846 -> stagexec.py:2243-2248 (now w0_wires; E3 at :2313-2322): fix in docs?",
+ "kill_labview_at_exit (stagexec.py:2325) ignores rig state unlike cycle_runner.labview_close_hook (:677-694): switch the recipe to the hook's logic?"],
+"cost":{"usd":null,"minutes":12,"labview_runs":0},
+"note":"Peer used: priorart only (~$1). Review findings that would change code/docs left open, not accepted. No STATUS edit, no commit."}

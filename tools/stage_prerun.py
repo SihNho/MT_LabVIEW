@@ -1510,9 +1510,12 @@ STAGEXEC_RE = re.compile(r"(?:^|[\\/])tools[\\/]stagexec\.py$", re.I)
 
 def launched_plan_runs(cmd):
     """argv only (card chat-S3): every `tools/stagexec.py run <plan.json>` a command RUNS -> [(stagexec path, plan
-    path)]. A stagexec run executes a FINAL plan in LabVIEW, so it is a stage launch under the same gate."""
+    path)]. A stagexec run executes a FINAL plan in LabVIEW, so it is a stage launch under the same gate.
+    card 107-1 (review archive/peer/2026-09-27-c106e-oldcode-o1.md side finding 2): the same newline split and
+    line-continuation join as launched_py - a plan run on line 2 of a two-line command was not found."""
     out = []
-    for seg in re.split(r"\s*(?:&&|\|\||;|\|)\s*", cmd or ""):
+    joined = re.sub(r"(?:\\|`)[ \t]*\r?\n", " ", cmd or "")
+    for seg in re.split(r"\s*(?:&&|\|\||;|\||\r?\n)\s*", joined):
         try:
             toks = shlex.split(seg, posix=False)
         except ValueError:

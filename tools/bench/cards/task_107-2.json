@@ -1,0 +1,77 @@
+{
+ "schema": "task/1",
+ "id": "107-2",
+ "kind": "build",
+ "goal": "PD219(f)(2b): make sub-stage L2-A2 (plan §2, group A batch 2) launch-ready from bed D1_l2_a1_20260925_235224.vi: open rows, split page, finalized sim plan, recipe, recorded dry+prerun, prior-art",
+ "why": "Real runs wait on D-2026-09-27-03. The loop split (M3) needs no real run; L2-A2 follows L2-A1 (bed, PD195(a)). PD195(d)'s wait is discharged: lever placed (PD202), display loop built (PD217(e)).",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a1_20260925_235224.vi", "md5": "51d9b8a3af5b4240cdc2ad193d9b4f41"},
+  {"path": "tools/recipes/stage_d1_l2a1.py"},
+  {"path": "tools/bench/stage_d1_l2a1.json"},
+  {"path": "tools/bench/p2check_l2a1_88.json"},
+  {"path": "tools/bench/split_rows_l2l7.json"},
+  {"path": "tools/bench/errorlist_expected_D1_l2_a1_20260925_235224.json"},
+  {"path": "tools/stagesim.py"},
+  {"path": "tools/stagexec.py"},
+  {"path": "tools/stage_prerun.py"},
+  {"path": "docs/stage-simulator-plan.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a1_20260925_235224.vi"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_l2a1.py"},
+  {"kind": "file", "name": "tools/bench/stage_d1_l2a1.json"},
+  {"kind": "file", "name": "tools/bench/split_rows_l2l7.json"},
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"}
+ ],
+ "pass": [
+  "F1: bed open rows MEASURED: cdiff(S1,bed) rows (uid, terminal, S1 source) with file:line; each tagged with plan §1 group and verb-exists (X9)",
+  "F2: tools/bench/cards/split_plan_107_l2a2.md: group-A-remainder rows, sub-steps, output D1_l2_a2_<ts>.vi, §3 criteria with predicted cdiff/diff/ExecState",
+  "F3: stagesim plan for L2-A2 finalized: end cdiff == F2's prediction; X9 pass; X10 printed (value or WARN unmeasured)",
+  "F4: tools/recipes/stage_d1_l2a2.py <=120 lines, rows only from the plan file; TOP-LEVEL --dry and --prerun PASS with record lines cited",
+  "F5: prior-art review ANSWERED with dispositions; a missing verb/op is returned BLOCKED with the list, not built"
+ ],
+ "outputs": [
+  "tools/bench/cards/split_plan_107_l2a2.md",
+  "tools/bench/plan_l2a2*",
+  "tools/bench/diag_c107b_*",
+  "tools/bench/facts_c107b*",
+  "tools/recipes/stage_d1_l2a2.py",
+  "tools/bench/cards/result_107-2.json"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/recipes/stage_d1_l2a2.py",
+   "tools/bench/plan_l2a2*",
+   "tools/bench/graph_l2a1*",
+   "tools/bench/diag_c107b_*",
+   "tools/bench/facts_c107b*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "docs/wiki/subvi/D1_l2_a1*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 75},
+ "rules": [
+  "the bed is never edited or saved; a LabVIEW read uses a byte copy with a unique scratch name, deleted after",
+  "open LabVIEW ONLY after tools/bench/cards/result_107-1.json exists (107-1 may run legs); offline work first",
+  "do not launch stage_d1_l2a2.py (the launch is judgement's next card)",
+  "a gate refusal is returned BLOCKED, never re-run through a self-test child, moved script or other exempt route",
+  "rule 1a: rows re-make S1 edges only (same source uid+terminal); a row with no S1 edge goes to OPEN",
+  "facts <=10 with file:line; OPEN <=3; do not judge design (plan OPEN O2-O6 are judgement's)"
+ ],
+ "advances": ["M3"]
+}
