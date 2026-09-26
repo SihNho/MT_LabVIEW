@@ -1544,8 +1544,28 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
        ExecState 1 is required after EACH move, not only at E3.
      - **(e) Escalation:** 98-2 spent its failure budget → card 98-3 = rung 1 (`material-opus-max`), same pass list, this
        method. Then the stage run per 207(e).
+209. **(cycle 98 judgement, on `98-3` FAIL 48/2, `tools/bench/cards/result_98-3.json`, log `tools/bench/selftest_c98_rbw.log`)
+     — 208(d) WITHDRAWN: the ExecState gate belongs at the END of the move batch, not after each move**
+     - **(a) MEASURED:** No per-diagram RBW exists (AbstractDiagram has only `Remove Wire Loose Ends` 6375409; VI method 410
+       used, `archive/peer/2026-09-26-c98-rbw-scope.md:39-45`). In-memory VI RBW after move A removed exactly the 8 pre-existing
+       termless wires (1915 → 1907), with 0 edges lost and 0/2212 non-member wires lost. After UseDefault, ExecState was
+       **still 0** (`:360-383`). The negative case and the precondition refusal were both caught (`:355-359`). 98-1's
+       ExecState 1 came only after move B, and after a GUI save + fresh load (`diag_c98_fgate.log:461-479`).
+     - **(b) JUDGED:** 208(d)'s "after A alone the graph is legal" was an inference, never measured, and 98-2 + 98-3 both
+       contradict it. Slug for the retrospective: `inference-over-measurement` (mine). What 98-1 measured is the E3 state
+       (A + B + UseDefault) plus RBW. So the check goes where the evidence is.
+     - **(c) Verb contract, amended:** the ExecState-1 PRECONDITION applies to the FIRST move of a batch (E1 = 1 is measured). A
+       and B run with RBW + the uid/edge/termless gates after each move, but with `expect_broken=True` for ExecState. The
+       ExecState-1 gate is read ONCE, after the last move + UseDefault + a final RBW, **in memory**. The 98-3 verb change
+       (precondition + RBW + hard gates) is KEPT, extended with this batch form.
+     - **(d) Deciding cell = the self-test (card 98-4, rung 1 again):** scratch S1, the stage body to E1, then move A → move B →
+       UseDefault → RBW → ExecState in memory.
+       - **1:** the fix is proven. Run the 20-call handle test and the negative case, then the stage run per 207(e).
+       - **0:** a MEASUREMENT only. gui_save the scratch (the approved broken-intermediate route), fresh-load it, and read
+         ExecState. This separates "stale in-memory state" from "the structure itself". No stage run; return the facts.
+       Error List counts: 98-3 re-read them as 6 loose ends + 9 not connected (98-1 said 7 + 8); not material to the fix.
 
-209. **(USER DIRECTION 2026-09-26 18:0x, chat; answers D-2026-09-26-02 — supersedes 205/206/207/208's N-frame GATE)**
+210. **(USER DIRECTION 2026-09-26 18:0x, chat; answers D-2026-09-26-02 — supersedes 205–209's N-frame GATE; numbered 210 because cycle 98 wrote its own 209 at the same time)**
      *"그래프 플롯 기능을 혹시 별도 루프로 두는 것은 어떤지? 로컬 변수에 데이터들은 다 입력하고 데이터 플롯은 별도 루프로"* →
      *"이대로 진행"*. The speed-up is taken, but NOT as a Quotient&Remainder gate inside the frame loop:
      - (a) **The `Force (pN) vs Extension (nm)` plot (#8323) moves to a SEPARATE DISPLAY LOOP.** The frame loop only
@@ -1564,7 +1584,7 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
      - (e) **The fgate work stops here**: `stage_d1_fgate.py`, `D1_s1_fgate_BROKEN_*` and PD206(h)'s diagnosis are
        DROPPED (the broken intermediate may be deleted; its Error List facts stay in the 98 cards as prior art on
        what breaks when a case frame is built around #1359).
-     - (f) Order for cycle 99: design page (display-loop stage: locals list, indicator list, stop carrier, rows) →
+     - (f) Order for cycle 99 (PD210(f)): design page (display-loop stage: locals list, indicator list, stop carrier, rows) →
        `requires` on the card → simulator (dry, pre-run, computation_diff 0) → one LabVIEW execution → ABBA. The
        same "big work split into saved steps" rule as every stage.
 
