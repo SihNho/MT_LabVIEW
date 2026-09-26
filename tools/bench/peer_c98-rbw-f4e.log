@@ -1,0 +1,60 @@
+BGRUN START 2026-09-26 19:04:37 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c98-rbw-f4e -TaskFile tools/bench/peer_c98-rbw-f4e_task.txt
+BGRUN PID 24200
+OUTCOME: ANSWERED (209s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-26-c98-rbw-f4e.md
+COST: $1.3846  in 16 / out 18994 / cache-create 103512 / cache-read 775654  (205s, 14 turn(s))
+--- ANSWER ---
+**Verdict: the claim does not hold as written, and neither competitor does.** The logs do not show that the break is "not a bad wire." They also do not show that move B is what separates 98-1 from 98-3. One cell of the comparison was never measured, and it decides this.
+
+**1. Strongest reason the claim is wrong: its premise was never measured.** "Remove Bad Wires removed every wire it considers bad" rests only on two readings: which wire uids disappeared, and how many wires have no terminals. Neither can see a loose end trimmed off a wire that stays alive, because trimming leaves the wire count unchanged.
+- In 98-1, Remove Bad Wires took the wire count from 1918 to 1909 (9 objects) but cleared all 15 Error List items. Six of those were "Wire has loose ends" (`diag_c98_fgate.log:469-480`, `:558-572`, `:633`). So Remove Bad Wires fixes wires by trimming, not only by deleting them, and the uid diff at `selftest_c98_rbw.log:360` cannot tell you whether any trim happened in memory.
+- NI documents loose-end removal as separate methods from Remove Bad Wires: `Wire.Remove Loose Ends` and `AbstractDiagram.Remove Wire Loose Ends`. Remove Bad Wires is described only as "removes all the broken wires", the same as Edit » Remove Broken Wires. Nothing on those pages says it also trims loose ends when the VI has not been saved and reloaded ([NI RBW](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/vi/removebadwires.html), [NI Remove Wire Loose Ends](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/abstractdiagram/removewirelooseends.html), [Wiki Wire.Remove Loose Ends](https://labviewwiki.org/wiki/Wire_class/Remove_Loose_Ends_method)).
+- So "0 termless wires" was read as "0 bad wires". That is concluding absence from an instrument that cannot see the thing.
+
+Two more weaknesses:
+- **"98-1 differs only because move B had also run" is false.** 98-1 also saved through the GUI, reloaded the file fresh, and ran Remove Bad Wires on the loaded copy (`:461-479`). You have one run with move A only, cleaned in memory, which gave ExecState 0. You have one run with moves A and B, cleaned after a reload, which gave ExecState 1. Two factors changed at once, so move B cannot be credited.
+- **H1's "non-wire error on case A itself" is already contradicted.** In 98-1 at E3, case A held the same moved nodes plus the same Use Default, and its reloaded Error List had 15 items, all about wires (`:558-572`). There was no error on a node, tunnel or structure.
+
+**2. Alternative explanations**
+- **H2 as stated is also refuted by 98-1.** The broken file, opened fresh, still listed 6 loose ends. Loading did not drop them; Remove Bad Wires after the load cleared them. What survives of H2 is narrower (call it H2′): Remove Bad Wires run in memory, right after scripted edits, does not trim loose ends that it does trim on a freshly loaded VI.
+- **H4 (mine): a defect left by the re-wiring pass itself.** It would sit on the kept wires 7912 and 7914:
+  - The "new" inner connections report pre-existing uids. `connect_from_wire(w31128)` added one wire but reported `UID 2 = 7912`, and `(w31064)` reported 7914 (`selftest_c98_rbw.log:330,333`). In 98-2 the same connections reported 7913 and 10430.
+  - The two extra branches onto 7912 and 7914 then added no wire at all (`:334`, `:345`).
+  - Nobody read which diagram owns 7912 or 7914. If they belong to Diagram 7911 (outside the case), a sink inside frame #23240 joined with no new wire and no tunnel is not legal LabVIEW. Old segments from before the move could also still hang off these wires.
+  - The only "Is Broken? = False" readings come from the same call that made each connection. The project's own rule says that reading is not acceptance; only a separate idempotent re-connect counts (`docs/toolkit-capabilities.md:760`).
+  - The edge-table check (16 = 16, tunnels collapsed) can see neither problem.
+- **H3 (stale ExecState) is already weakened.** Use Default was a diagram edit made after Remove Bad Wires, and ExecState read afterwards was still 0 (`:373-379`). That does not refute H3, but a pure "not refreshed yet" story has to explain that.
+
+**3. What would falsify the claim (H1)**
+- An Error List read or a Remove Bad Wires run on the move-A-only state after a fresh load. If it shows only wire items, or Remove Bad Wires then gives ExecState 1 with no wire deleted, H1 is refuted.
+- Equally: moves A and B with Remove Bad Wires run in memory still giving ExecState 0. Then move B is not what made 98-1 pass.
+
+**4. Cheapest tests**
+
+*Without GUI, and cheapest overall: the missing cell.* Run move A (Remove Bad Wires in memory), then move B, then Remove Bad Wires in memory again, then Use Default on both output tunnels, then read ExecState. This uses only existing verbs.
+- **ExecState 1:** reloading is not needed. The difference is move B, so H1 gains support and H2′/H3 are refuted.
+- **ExecState 0:** in-memory cleanup differs from post-load cleanup. That refutes H1 as the explanation of 98-1 versus 98-3.
+
+Add two reads to the same run for almost nothing:
+- Which diagram owns wires 7912, 7914 and 23889 (the owner read 482 already used in this log).
+- An idempotent re-connect of the 16 moved edges, per rule 42(b), to get a real `Is Broken?` reading on each wire they use.
+
+A True reading, or 7912/7914 owned by 7911, puts the break on those wires (H4 or H2′) and refutes H1 without GUI. If the result is ExecState 0, the next step without GUI is to call `AbstractDiagram.Remove Wire Loose Ends` on Diagrams 7911 and 23240. That op is not built yet (`docs/cycle27-plan.md:212`); tool building has been allowed since 2026-09-24. ExecState going to 1 means H2′; staying at 0 means H3.
+
+*With GUI, cheapest:* rerun 98-1's own E3 procedure but stop after move A (in-memory Remove Bad Wires, then Use Default). Save through `gui_save`, then read the Error List on the fresh file with `errorlist_check`.
+- Only loose-end items: H2′ or H4.
+- Zero items and ExecState 1 on load: H3.
+- A non-wire item naming #11261, #8323, #11363 or case B: H1.
+
+**What the evidence does not settle:** with the four runs recorded, I cannot separate H1, H2′, H3 or H4. The missing cell, moves A and B with in-memory cleanup, is the deciding measurement.
+
+**Two doc errors to fix (not changed by me):** `docs/d1-loop12-17-split-plan.md:1507` and `:1530` say 7 loose ends and 8 unconnected wires. The log shows 6 loose ends (items 0–3, 12, 13) and 9 unconnected wires (items 4–11 and 14; `diag_c98_fgate.log:558-572`). This brief has it right.
+
+This is from logs and NI/Wiki documentation only; I ran nothing.
+
+Sources:
+- [NI – Block Diagram:Remove Bad Wires](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/vi/removebadwires.html)
+- [LabVIEW Wiki – Block Diagram.Remove Bad Wires](https://labviewwiki.org/wiki/VI_class/Block_Diagram.Remove_Bad_Wires_method)
+- [NI – AbstractDiagram Remove Wire Loose Ends](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/abstractdiagram/removewirelooseends.html)
+- [LabVIEW Wiki – Wire.Remove Loose Ends](https://labviewwiki.org/wiki/Wire_class/Remove_Loose_Ends_method)
+- [NI – Wire Remove Loose Ends](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/wire/removelooseends.html)
+BGRUN END rc=0 after 210s

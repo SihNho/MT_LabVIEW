@@ -1,0 +1,19 @@
+ATTACK this explanation of a failed prediction (card 98-3, self-test tools/bench/selftest_c98_rbw.py -> tools/bench/selftest_c98_rbw.log; plan docs/d1-loop12-17-split-plan.md Pre-decided 208).
+
+PREDICTION (selftest_c98_rbw.py docstring): after move A (10 nodes into case A's ' True ' frame #23240 inside For #1359's body, Diagram 7911), a VI-level Remove Bad Wires (VI method 410, OpRemoveBadWires_v0) followed by `Use Default if Unwired` on case A's one output tunnel gives ExecState 1 (gate F4e). OBSERVED: ExecState 0.
+
+FACTS (all from the machine):
+- selftest_c98_rbw.log:355 - move A with Remove Bad Wires SKIPPED: 8 termless wires [7931 9407 15847 24106 28139 28443 28509 33062], ExecState 1 -> 0, moved-edge table 16 = 16.
+- :360 - then Remove Bad Wires IN MEMORY: Wire 1915 -> 1907, removed exactly those 8 uids, nothing else; no (source term -> sink term) pair lost across it, 0 of 2212 non-member pairs lost since the move, moved edges equal, 0 termless; ExecState 0 (expected: the new output tunnel is unwired in ' False ').
+- :371-383 - UseDefault on output tunnel #23910 (feeds For #1359's output LoopTunnel #11363) reads back True; ExecState STILL 0 -> F4e FAIL, move B never ran.
+- card 98-2 (tools/bench/selftest_c98_stage.log:364-384): deleting the SAME 8 wires by uid instead of Remove Bad Wires, then UseDefault: ExecState 0. Same outcome.
+- card 98-1 (tools/bench/diag_c98_fgate.log:437-480, :558-572, :633-640): after move A AND move B AND UseDefault (E3) the file was saved by the GUI route; its Error List = 15 wire items (9 "not connected", 6 "loose ends"); a byte copy of that saved file, loaded FRESH, then Remove Bad Wires removed 9 termless wires (1918 -> 1909) -> ExecState 1, Error List 0 items.
+- Re-wiring detail (selftest_c98_rbw.log:300-354): two second sinks were branched onto new inner wires (connect_from_wire returned (0, ...) for 'left rank' on w7912 and 'index' on w7914); the out-crossing to #11363 was made by connect_from_wire INVERTED (new wire 23889).
+
+EXPLANATION TO ATTACK (mine): the post-A break is NOT a bad wire - Remove Bad Wires in memory removed every wire it considers bad and ExecState stayed 0 - so it is either (H1) an object error that only exists while case B's members (BuildArray #11261, indicator #8323 on the While #637 body, Diagram 639) are still outside case B, or a non-wire error on case A itself; and 98-1's "Remove Bad Wires -> ExecState 1" differs only because move B had also run.
+
+COMPETING explanations already on the table: (H2) the break IS wire debris (loose ends on KEPT wires) that Remove Bad Wires does not trim in memory, while 98-1's scratch went through a GUI save and a fresh LOAD before Remove Bad Wires, and the load dropped the dangling segments; (H3) a stale in-memory ExecState after scripted edits.
+
+Already ruled out: termless wires (0 left, read at :360); junk Invoke nodes (purged after every op); a lost data edge (0 across Remove Bad Wires, 0 non-member since the move); the precondition (ExecState 1 before move A, :23/E1).
+
+Constraint for the test you propose: the next material card may not have GUI rights (the Error List reader errorlist_check is a GUI read). Name the cheapest test that separates H1 / H2 / H3 WITHOUT GUI if one exists (e.g. an all-wires `Wire.Is Broken?` 6371004 read, a save-by-script route, running move B then an in-memory Remove Bad Wires at E3), and the cheapest WITH GUI.

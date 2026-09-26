@@ -1587,6 +1587,23 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
      - (f) Order for cycle 99 (PD210(f)): design page (display-loop stage: locals list, indicator list, stop carrier, rows) →
        `requires` on the card → simulator (dry, pre-run, computation_diff 0) → one LabVIEW execution → ABBA. The
        same "big work split into saved steps" rule as every stage.
+211. **(cycle 98 judgement, CLOSE — on PD210 arriving mid-cycle; card `98-4` BLOCKED by it, correctly, nothing run)**
+     - **(a) 209(c,d) is CANCELLED with the rest of the fgate work (210(e)).** 98-4 never ran, so its deciding cell stays
+       unmeasured. It is NOT re-run as prior art: 210 moves #8323 into a separate LOOP, not into a case frame of #637.
+     - **(b) Prior art that carries into 210's stage (measured, cycle 98):** after `move_into_frame` from S1,
+       (1) the verb left the OLD severed wires in place: 8 termless in 7911 and 1 in 639, plus dangling branches on kept
+       wires (Error List: loose ends + not connected, all wire items);
+       (2) VI-level RBW in memory after move A removed exactly the 8, and ExecState stayed 0 (`selftest_c98_rbw.log:360-383`);
+       (3) RBW on the saved A+B+UseDefault file gave ExecState 1 (`diag_c98_fgate.log:469-480`).
+       Any 210 row that MOVES an existing terminal must therefore read termless and loose-end wires and ExecState after the
+       move, per the retrospective-cycle97 rule.
+     - **(c) `gscript.move_into_frame` is LEFT AS 98-3 made it** (md5 `b3d9f373…`). It refuses unless ExecState is 1 before
+       the edit, runs VI-level RBW after, and raises on a new-uid removal, a lost edge, a termless wire, or ExecState 0
+       unless `expect_broken=True`. That fails closed. Its only caller was the dropped fgate stage. **A 210 design page that
+       uses it on a bed that is BROKEN BY DESIGN must say how it passes the precondition. It must never loosen the
+       precondition silently.**
+     - **(d) `claudeDev\D1_s1_fgate_BROKEN_20260926_175556.vi` (md5 `b114bb1b…`) is kept** as a saved intermediate. 210(e)
+       allows deleting it; nothing needs it deleted.
 
 ## OPEN (design choices — for judgement; not decided here)
 

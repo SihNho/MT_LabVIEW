@@ -1,0 +1,20 @@
+{"schema":"result/1","id":"98-4","status":"BLOCKED","gates":{"pass":0,"fail":0},
+"first_fail":null,
+"blocked_by":{"device":"docs/d1-loop12-17-split-plan.md:1568-1589 PD210 (user direction; commits 8f140e3, daf5d46)","message":"PD210 supersedes PD205-209's N-frame gate and drops the fgate work (PD210(e)); card 98-4 executes PD209(c,d), so nothing was run"},
+"artefacts":[],
+"facts":[
+ "PD210 (user, chat 18:0x) 'supersedes 205-209's N-frame GATE; numbered 210 because cycle 98 wrote its own 209 at the same time' (docs/d1-loop12-17-split-plan.md:1568)",
+ "PD210(e): 'The fgate work stops here: stage_d1_fgate.py, D1_s1_fgate_BROKEN_* and PD206(h)'s diagnosis are DROPPED' (docs/d1-loop12-17-split-plan.md:1584-1585)",
+ "This card executes PD209(c,d) (plan:1557-1565): batch verb, deciding self-test, on ES 1 the fgate stage run + D1_s1_fgate_<ts>.vi (tools/bench/cards/task_98-4.json:5,41-43)",
+ "STATUS redirect since commit 8f140e3 (19:00:50), 10.5 min before this card (19:11:26): 'fgate work dropped ... Cycle 98 (running) may finish its diagnosis card' (STATUS.md:8)",
+ "Card's plan input md5 a499793a (tools/bench/cards/task_98-4.json:10) is neither 8f140e3's ed25bb09 nor current 08c77fe2 (daf5d46 19:12:07, the user entry renumbered 209->210)",
+ "Nothing executed: no LabVIEW process (tasklist empty), no verb patch, no scratch VI, no GUI act, no peer; tools/gscript.py md5 still b3d9f373 (tools/bench/cards/result_98-3.json:5)",
+ "98-3's verb change is LIVE: move_into_frame refuses unless ExecState 1 before any edit (tools/gscript.py:3521-3544); a PD210 stage that moves nodes inherits that precondition",
+ "selftest_c98_rbw.log | no JEV-LADDER line (tools/bench/jev_gate.log) | old path, review done (archive/peer/2026-09-26-c98-rbw-f4e.md) | not diagnosed: card blocked | -"
+],
+"open":[
+ "PD210(e) drops the fgate work: is 98-4 cancelled, or should its deciding self-test (measurement only, no stage run) still run as prior art for moving #8323 into the PD210 display loop?",
+ "Keep 98-3's live move_into_frame precondition (ExecState 1 before every move, tools/gscript.py:3544) for cycle 99's display-loop stage, or revert it to 98-2's form?"
+],
+"cost":{"usd":null,"minutes":12,"labview_runs":0},
+"note":"BLOCKED by the plan's current Pre-decided, not by a hook: PD210 (user) answers 'continue the fgate stage?' with no, so the card's PD209(c,d) basis no longer holds. Budget 0/2 used; no STATUS edit (status_edit false)."}

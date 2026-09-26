@@ -3487,7 +3487,134 @@ def c97_collapsed(rows, tunnel_uids):
     return E
 
 
-def move_into_frame(target, frame_uid, members, spot=(0, 0), log=None):
+class MoveIntoFrameBroken(RuntimeError):
+    """move_into_frame's post-edit gate refused (card 98-2 PD207(c); card 98-3 PD208(c)); `.result` holds the full
+    return dict, INCLUDING the private pre-move keys, so `move_into_frame_finish(target, frame, e.result, ...)` can be
+    called on it again (the self-test's negative case: raised with _skip_rbw=True, then finished)."""
+    def __init__(self, msg, result):
+        RuntimeError.__init__(self, msg)
+        self.result = result
+
+
+class MoveIntoFrameRefused(ValueError):
+    """PD208(c)(1) PRECONDITION (card 98-3): ExecState was not 1 BEFORE the move, so the verb refused BEFORE ANY EDIT -
+    a break that existed before the move could otherwise be hidden by the post-move Remove Bad Wires."""
+
+
+def _edge_pairs(rows):
+    """{(source term uid, sink term uid)} of EVERY wire in an allterms table - raw, no tunnel collapsing (PD208(c)(3):
+    the whole-VI data edges, compared before/after Remove Bad Wires)."""
+    return set((int(s["term_uid"]), int(k["term_uid"])) for s, k in _c97_pairs(rows))
+
+
+def wire_health(target, rows=None):
+    """READER (card 98-2): {wires, wired, termless, exec_state} of `target`. termless = Wire objects that carry NO terminal
+    (all_wire_uids minus the wire uids of the whole-VI terminal table, allterms.join_wires' criterion). `rows` = a terminal
+    table already read (read_terms) to skip the ~20 s re-read. Read-only."""
+    import allterms as A
+    rows = rows if rows is not None else A.read_terms(target)[0]
+    w = set(int(u) for u in A.all_wire_uids(target)[0])
+    wired = set(int(r["wire_uid"]) for r in rows if int(r["wire_uid"] or 0))
+    return {"wires": w, "wired": wired, "termless": sorted(w - wired), "exec_state": exec_state(target)}
+
+
+def move_into_frame(target, frame_uid, members, spot=(0, 0), log=None, expect_broken=False, _skip_rbw=False):
+    """PD208(c) (card 98-3; AMENDS card 98-2's PD207(c) termless-only deletion, which left ExecState 0 after move A -
+    `selftest_c98_stage.log:364-384` - because 98-1's Error List also held 'Wire has loose ends' items on KEPT wires,
+    `diag_c98_fgate.log:558-572`, and only Remove Bad Wires was measured to clear them, `:469-480`).
+    (1) PRECONDITION: ExecState is read BEFORE ANY EDIT and must be 1, else MoveIntoFrameRefused (a ValueError) - so no
+        bad wire exists that the move did not make, and a VI-wide Remove Bad Wires can only remove the move's own breaks.
+    (2) the move + re-wire (_move_into_frame, unchanged), then (3) move_into_frame_finish: VI-level Remove Bad Wires
+        (VI method 410, OpRemoveBadWires_v0 = remove_bad_wires_scripted - the project records NO per-diagram Remove Bad
+        Wires: docs/vi-server-ids.json:43 is VI-level, docs/cycle27-plan.md:212 names only the diagram-scoped
+        'Remove Wire Loose Ends' 6375409, never built), bracketed by whole-VI reads that diff wire uids and data edges.
+    RAISES MoveIntoFrameBroken (HARD, even with expect_broken=True) when Remove Bad Wires removed a wire uid that did not
+    exist before the move, or any (source term -> sink term) pair anywhere in the VI, or a wire appeared, or any pair
+    with NO member endpoint that existed BEFORE THE MOVE is gone (review archive/peer/2026-09-26-c98-rbw-scope.md), or
+    the moved set's edge table (new tunnels collapsed) differs from before, or a termless wire is left; and (SOFT) when
+    ExecState after is not 1 - unless `expect_broken=True` (a caller whose edit is broken BY DESIGN until a later step,
+    e.g. a new case OUTPUT tunnel that needs Use Default). `_skip_rbw=True` is the self-test's negative case only (the
+    gates run without Remove Bad Wires, so the move's orphans are left and the verb must raise). Result gains
+    exec_state_before, rbw_ran, rbw_removed, rbw_new_uid_removed, rbw_appeared, lost_edges, lost_nonmember_since_move,
+    missing/extra (post-RBW; the pre-RBW pair is kept as missing_pre_rbw/extra_pre_rbw), termless_before, termless_left,
+    termless_total, exec_state, expect_broken.
+    Move / re-wire contract (edges, verbs, refusals before any edit): see _move_into_frame below."""
+    es0 = exec_state(target)
+    if es0 != 1:
+        raise MoveIntoFrameRefused("refused before any edit: ExecState %r before moving %r into frame #%s (PD208(c)(1): "
+                                   "a break that existed before the move could be hidden by the post-move Remove Bad "
+                                   "Wires)" % (es0, [int(u) for u in members], frame_uid))
+    r = _move_into_frame(target, frame_uid, members, spot, log)
+    r["exec_state_before"] = es0
+    return move_into_frame_finish(target, frame_uid, r, log, expect_broken, _skip_rbw=_skip_rbw)
+
+
+def move_into_frame_finish(target, frame_uid, r, log=None, expect_broken=False, _skip_rbw=False):
+    """PD208(c)(2)-(4), the post-move step of move_into_frame (see its docstring). `r` = _move_into_frame's result, or
+    the `.result` of a MoveIntoFrameBroken raised earlier (the private pre-move keys _wires0/_termless0/_mem_terms stay
+    in it until a call SUCCEEDS). Whole-VI terminal table + wire uids read, VI-level Remove Bad Wires, read again, then
+    the gates. Returns r; raises MoveIntoFrameBroken with r as `.result`."""
+    import allterms as A
+    say = log or (lambda s: print("  FACT  " + str(s)[:400], flush=True))
+    w0, t0, mem = set(r["_wires0"]), set(r["_termless0"]), set(r["_mem_terms"])
+    # review archive/peer/2026-09-26-c98-rbw-scope.md: bracket the data-edge check from BEFORE THE MOVE too - an edge with
+    # NO member endpoint (e.g. the other sink of a branch a member was cut from) is outside the moved-edge table
+    nonmem0 = set(tuple(e) for e in r["_pairs0"] if e[0] not in mem and e[1] not in mem)
+    rows1 = r.pop("_rows1", None)                     # _move_into_frame's post-rewire read; re-read on a second call
+    if rows1 is None:
+        rows1 = A.read_terms(target)[0]
+    w1 = set(int(u) for u in A.all_wire_uids(target)[0])
+    rbw = {}
+    if not _skip_rbw:
+        n_after, es_rbw = remove_bad_wires_scripted(target)
+        rbw = {"wire_count_after": n_after, "exec_state_readback": es_rbw}
+    rows2 = A.read_terms(target)[0]
+    w2 = set(int(u) for u in A.all_wire_uids(target)[0])
+    before = set(tuple(e) for e in r["edges_before"])
+    after = set(e for e in c97_collapsed(rows2, r["new_tunnels"]) if e[0] in mem or e[1] in mem)
+    wired2 = set(int(x["wire_uid"]) for x in rows2 if int(x["wire_uid"] or 0))
+    termless2 = sorted(w2 - wired2)
+    if "missing_pre_rbw" not in r:
+        r["missing_pre_rbw"], r["extra_pre_rbw"] = r.get("missing"), r.get("extra")
+    p2 = _edge_pairs(rows2)
+    r.update(rbw_ran=not _skip_rbw, rbw=rbw, wires_before_rbw=len(w1), wires_after_rbw=len(w2),
+             rbw_removed=sorted(w1 - w2), rbw_new_uid_removed=sorted((w1 - w2) - w0), rbw_appeared=sorted(w2 - w1),
+             lost_edges=sorted(_edge_pairs(rows1) - p2), lost_nonmember_since_move=sorted(nonmem0 - p2),
+             nonmember_edges_before=len(nonmem0), edges_after=sorted(after),
+             missing=sorted(before - after), extra=sorted(after - before), termless_before=sorted(t0),
+             termless_left=sorted(set(termless2) - t0), termless_total=len(termless2), exec_state=exec_state(target),
+             expect_broken=bool(expect_broken))
+    say("T2 post-move (PD208): Remove Bad Wires %s; wires %d -> %d; removed %r (not pre-existing %r); appeared %r; data "
+        "edges lost across RBW %d, non-member edges lost since the move %d of %d; moved edges missing %r extra %r; "
+        "termless left %r (total %d); ExecState %r -> %r" % (
+            "RAN" if not _skip_rbw else "SKIPPED (test)", len(w1), len(w2), r["rbw_removed"], r["rbw_new_uid_removed"],
+            r["rbw_appeared"], len(r["lost_edges"]), len(r["lost_nonmember_since_move"]), len(nonmem0), r["missing"],
+            r["extra"], r["termless_left"], r["termless_total"], r.get("exec_state_before"), r["exec_state"]))
+    hard = []
+    if r["rbw_new_uid_removed"]:
+        hard.append("Remove Bad Wires removed wire uid(s) that did not exist before the move %r" % r["rbw_new_uid_removed"])
+    if r["lost_edges"]:
+        hard.append("%d data edge(s) (source term -> sink term) lost across Remove Bad Wires %r" % (
+            len(r["lost_edges"]), r["lost_edges"][:12]))
+    if r["lost_nonmember_since_move"]:
+        hard.append("%d non-member data edge(s) lost since the move %r" % (
+            len(r["lost_nonmember_since_move"]), r["lost_nonmember_since_move"][:12]))
+    if r["rbw_appeared"]:
+        hard.append("wire(s) appeared during Remove Bad Wires %r" % r["rbw_appeared"])
+    if r["missing"] or r["extra"]:
+        hard.append("moved edge table differs: missing %r extra %r" % (r["missing"], r["extra"]))
+    if r["termless_left"]:
+        hard.append("termless wire(s) left %r" % r["termless_left"])
+    soft = [] if r["exec_state"] == 1 else ["ExecState %r" % r["exec_state"]]
+    if hard or (soft and not expect_broken):
+        raise MoveIntoFrameBroken("move_into_frame(#%s) post-edit gate: %s | Remove Bad Wires removed %r" % (
+            frame_uid, "; ".join(hard + soft), r["rbw_removed"]), r)
+    for k in ("_wires0", "_termless0", "_mem_terms", "_D", "_pairs0"):
+        r.pop(k, None)
+    return r
+
+
+def _move_into_frame(target, frame_uid, members, spot=(0, 0), log=None):
     """T2 + T3 (PD206(d)(2)(3)): move `members` - node, constant and control/indicator-TERMINAL uids, all on ONE diagram
     D - into case frame #frame_uid of a Case Structure that sits on D, and RE-MAKE every wire that touched them, read
     back. OpMoveIn_v0 severs wires (docs/cycle27-plan.md:846-851), so each edge (source terminal -> sink terminal,
@@ -3524,6 +3651,8 @@ def move_into_frame(target, frame_uid, members, spot=(0, 0), log=None):
     ensure_loaded(target)
     CNL = json.load(open(CN.MAP_OUT, encoding="utf-8")); CFL = json.load(open(CF.MAP_OUT, encoding="utf-8"))
     rows0, _t = A.read_terms(target)
+    wires0 = set(int(u) for u in A.all_wire_uids(target)[0])                     # PD207(c): pre-move wire set
+    termless0 = sorted(wires0 - set(int(r["wire_uid"]) for r in rows0 if int(r["wire_uid"] or 0)))
     mem_of = dict((int(r["term_uid"]), (int(r["term_uid"]) if int(r["term_uid"]) in members else int(r["owner_uid"])))
                   for r in rows0 if int(r["owner_uid"]) in members or int(r["term_uid"]) in members)
     E0 = [(s, k) for s, k in _c97_pairs(rows0) if int(s["term_uid"]) in mem_of or int(k["term_uid"]) in mem_of]
@@ -3639,4 +3768,6 @@ def move_into_frame(target, frame_uid, members, spot=(0, 0), log=None):
     census1 = dict((c, count(target, c)) for c in C97_CENSUS)
     return {"edges_before": sorted(before), "edges_after": sorted(after), "missing": sorted(before - after),
             "extra": sorted(after - before), "new_tunnels": newT, "census_before": census0, "census_after": census1,
-            "ops": ops, "moved": sorted(moved), "owners_after": dict((m, owner(m)) for m in members)}
+            "ops": ops, "moved": sorted(moved), "owners_after": dict((m, owner(m)) for m in members),
+            "_rows1": rows1, "_wires0": sorted(wires0), "_termless0": termless0, "_D": D, "_mem_terms": sorted(mem_of),
+            "_pairs0": sorted(_edge_pairs(rows0))}

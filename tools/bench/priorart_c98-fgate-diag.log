@@ -1,0 +1,36 @@
+BGRUN START 2026-09-26 17:52:14 limit 20.0 min: py tools/prior_art_review.py --plan-file docs/d1-loop12-17-split-plan.md --slug c98-fgate-diag --trigger cycle-start --recipe tools/recipes/diag_c98_fgate.py
+BGRUN PID 25236
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c98-fgate-diag.txt (200397 chars)
+   review card tools\bench\cards\review_priorart-c98-fgate-diag.json
+OUTCOME: ANSWERED (50s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-26-priorart-c98-fgate-diag.md
+COST: $1.5925  in 14 / out 3578 / cache-create 162569 / cache-read 1101537  (46s, 8 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c98-fgate-diag verdict=novel -> tools\bench\cards\verdict_priorart-c98-fgate-diag.json
+--- ANSWER ---
+**Verdict: novel.** Nothing in the project's files has already done this diagnostic. It carries out the next step that was decided and never run, and it reuses existing helpers instead of building new ones.
+
+**PART A: the direction**
+- **A1, already settled?** No. This card is the cycle-98 first act ordered by `docs/d1-loop12-17-split-plan.md` PD206(h) and STATUS `## NEXT`. The decision set the step; it did not answer the question. Why ExecState reads 1 at E1 and 0 at E3 is still open (`tools/bench/fgate_97_stage2.log:287,394`).
+- **A2, already refuted?** No. Both earlier reviews point to this test as the next thing to run: `archive/peer/2026-09-26-c97-fgate-es0-r2.md:89-91` names Remove Bad Wires on a scratch as the confirmation. Neither review ran it. Their "orphaned severed wires" explanation is arithmetic only (PD206(h)).
+- **A3, contradicted?** Only two small wording gaps. Neither blocks the work.
+  - NEXT asks for Error List items "with their object uids". `tools/errorlist_check.py:10-12` says the uid of the selected object cannot be read and is recorded as None. The recipe's docstring (`diag_c98_fgate.py:5-6`) states this limit and logs `uid None` (`:101`), so the card simply cannot deliver that sub-item.
+  - The docstring's "no read-only Is Broken? op (NAMES.md:1081)" agrees with STATUS NEXT, which also says that only the connect ops read it.
+- **A4, unread evidence?** None missing. The recipe relies on `docs/cycle27-plan.md:846-851` (`move_in` severs wires) and on the precedent for reading bad wires by RBW on a scratch: PD195(b), `diag_c88_p2rbw.log:171-241`.
+
+**PART B: the artifact**
+- **B1, already built?** No. `stage_d1_fgate.py` run 2 stopped at gate F6a and saved nothing (`fgate_97_stage2.log:410-431`). No Error List read, no bad-wire list with owners, and no RBW scratch exists for the gated copy.
+- **B2, already failed?** No. This exact build has never been attempted.
+- **B3, a helper already exists?** Yes, and the recipe uses them rather than writing its own:
+  - `errorlist_check --vi`
+  - `Stage.broken_wire_count`
+  - `allterms.read_terms`, `all_wire_uids` and `join_wires`
+  - `Stage.save(broken_ok)` for the GUI save
+  - `build_d1_v0.owner_of`
+- **B4, already measured?** No. 97-5 measured the edge tables and the cdiff; it did not measure bad wires or Error List items. `selftest_c97_tools.log` reads ExecState only once, at load (`:5`), never after a move.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c98-fgate-diag","verdict":"novel","alternative":"none in files; closest is c97-fgate-es0-r2 which only PRESCRIBED the RBW-on-scratch test, never ran it","discriminating_test":"RBW on scratch of the E3 file: removed wires all in A/B frames w/o member edges => severed leftovers; member edge removed => type/tunnel break (es0-r2.md:89-91)","violations":[],"sources":["tools/bench/fgate_97_stage2.log:287","tools/bench/fgate_97_stage2.log:394","archive/peer/2026-09-26-c97-fgate-es0-r2.md:89","tools/errorlist_check.py:10","docs/cycle27-plan.md:846","tools/bench/selftest_c97_tools.log:5"],"note":"Error List object uids are unreadable (errorlist_check.py:10-12), so that NEXT sub-item stays uid=None; the recipe says so itself. Helpers reused, none hand-rolled."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c98-fgate-diag.md
+   STOP RECORD: none - 2026-09-26-priorart-c98-fgate-diag.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/diag_c98_fgate.py sha 9dfb43529be9 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 53s

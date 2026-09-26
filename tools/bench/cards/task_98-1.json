@@ -1,0 +1,91 @@
+{
+ "schema": "task/1",
+ "id": "98-1",
+ "kind": "diagnose",
+ "goal": "PD206(h) READ why the gated copy breaks: rerun stage_d1_fgate to E3, gui_save D1_s1_fgate_BROKEN_<ts>.vi, read Error List uids, broken wires+owners, per-move checkpoints, RBW on scratch. Facts only.",
+ "why": "97-5 run 2: ExecState 1 after the wiring (E1), 0 after move_into_frame A+B + UseDefault (E3, fgate_97_stage2.log:395). Two unmeasured explanations (orphaned severed wires vs an illegal final structure, archive/peer/2026-09-26-c97-fgate-es0-r2.md). Judgement decides the fix only from measurements.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/cards/result_97-5.json"},
+  {"path": "tools/bench/cards/task_97-5.json"},
+  {"path": "tools/recipes/stage_d1_fgate.py", "md5": "690269c0c14410eee2dc3c093515c594"},
+  {"path": "tools/bench/plans/plan_fgate_97.json"},
+  {"path": "tools/bench/fgate_97_stage2.log", "md5": "85195cf0296d91f319880ae7c8a0019a"},
+  {"path": "tools/bench/par1359_95_graph.json"},
+  {"path": "archive/peer/2026-09-26-c97-fgate-es0-r2.md", "md5": "41b457a8594e70af7995078f9fb4e02d"},
+  {"path": "tools/errorlist_check.py"},
+  {"path": "tools/gscript.py"},
+  {"path": "tools/stagekit.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_fgate.py"},
+  {"kind": "file", "name": "tools/bench/plans/plan_fgate_97.json"},
+  {"kind": "file", "name": "tools/bench/par1359_95_graph.json"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "op", "name": "OpLabelSet_v0", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "op", "name": "OpTunnelUseDefault_v0", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "op", "name": "OpCaseFrames_v1", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "verb", "name": "case_in", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "move_into_frame", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "tunnel_use_default", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "gui_save", "where": "tools/gscript.py"}
+ ],
+ "pass": [
+  "dry + offline prerun PASS (--graph tools/bench/par1359_95_graph.json) for the launched script md5; redone first if the script changes",
+  "same run: ExecState, total + per-diagram wire counts (7911, 639, A T/F, B T/F) at E1, after move A, after move B, after UseDefault #23927 (E3)",
+  "D1_s1_fgate_BROKEN_<ts>.vi saved by gui_save (Approved, user 2026-09-22 broken-intermediate save); md5 + size; never run",
+  "Error List of that file via errorlist_check --vi: every item text, count, object uid + owner diagram",
+  "broken-wire list: wire uid, Is Broken?, owner diagram (A T/F, B T/F, 7911, 639, other), both ends (owner uid:term or none)",
+  "Remove Bad Wires on a SCRATCH copy of the broken file: removed wire uids + owners, ExecState after, Error List count after",
+  "S1 md5 3e3d23ce unchanged; LabVIEW gone at exit"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_fgate_BROKEN_*",
+  "tools/bench/fgate_98*",
+  "tools/bench/diag_c98*",
+  "tools/bench/errorlist_D1_s1_fgate_BROKEN_*",
+  "tools/bench/cards/result_98-1.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_fgate_BROKEN_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c98*",
+   "tools/recipes/stage_d1_fgate*",
+   "tools/recipes/diag_c98*",
+   "tools/bench/plans/**",
+   "tools/bench/sim/**",
+   "tools/bench/fgate_98*",
+   "tools/bench/diag_c98*",
+   "tools/bench/errorlist_*",
+   "tools/bench/graph_*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/priorart*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "tools/gui_actions.log",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "outcome", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "MEASURE ONLY: no move_into_frame patch, no fix attempt, no choice between explanations; facts + OPEN",
+  "never save/edit D1_s1_copy.vi, the bed or any original; BROKEN file saved only by gui_save, never run",
+  "a stop-at-E3/checkpoint switch must leave every earlier act identical (same plan rows)",
+  "RETRY_CAP 2; MEMSTOP 700 MB; bgrun --max-min 45; hold your turn until BGRUN END/TIMEOUT",
+  "GUI: capture-locate-act-capture-confirm (PD9); every GUI act via lv_gui.ps1 with -Exception/-Evidence",
+  "never move a script to dodge a gate; satisfy a refusal honestly or return BLOCKED; facts <= 10"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

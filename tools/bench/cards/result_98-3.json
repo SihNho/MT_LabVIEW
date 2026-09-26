@@ -1,0 +1,33 @@
+{"schema":"result/1","id":"98-3","status":"FAIL","gates":{"pass":48,"fail":2},
+"first_fail":"F4e ExecState 1 after move A + UseDefault (selftest_c98_rbw.log:383): in-memory VI-level RBW removed only the 8 termless wires; ExecState stayed 0",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/gscript.py","md5":"b3d9f3739988726400da43eca0f41277"},
+ {"path":"tools/recipes/stage_d1_fgate.py","md5":"99f73c8c6675d1de19bc078eaa7f858f"},
+ {"path":"tools/bench/selftest_c98_rbw.py","md5":"9025df4268c9d7646a6a2708c147a1ec"},
+ {"path":"tools/bench/selftest_c98_rbw.log","md5":"8699e91f2ef2ae0c7ee32f712b4d0b3e"},
+ {"path":"tools/bench/selftest_c98_rbw.json","md5":"ebbbe4e004f69d13a61ce111cee2434b"},
+ {"path":"docs/toolkit-capabilities.md","md5":"1f21c62bd91a5c96e66ed828bf04c183"},
+ {"path":"archive/peer/2026-09-26-c98-rbw-f4e.md","md5":"a1993ded7ad57a30eed36aae2eebb1fc"},
+ {"path":"archive/peer/2026-09-26-c98-rbw-scope.md","md5":"0f759fbffc557d25fae7a7a523753c73"},
+ {"path":"archive/peer/2026-09-26-priorart-c98-fgate-rbw.md","md5":"18d5385a176afbaf3f6fe764ace801fd"}
+],
+"facts":[
+ "move_into_frame now refuses unless ExecState 1 before any edit (MoveIntoFrameRefused), then runs VI-level RBW + HARD edge/uid/termless gates (tools/gscript.py:3521-3614)",
+ "No per-diagram Remove Bad Wires exists: AbstractDiagram's only wire method is Remove Wire Loose Ends 6375409; VI method 410 used (archive/peer/2026-09-26-c98-rbw-scope.md:39-45)",
+ "NEG caught: _skip_rbw -> MoveIntoFrameBroken, 8 termless left, ExecState 1->0 (tools/bench/selftest_c98_rbw.log:355-358)",
+ "PRECONDITION caught: verb on the ExecState-0 post-A state -> MoveIntoFrameRefused, Wire 1915->1915, Node 628->628 (tools/bench/selftest_c98_rbw.log:359)",
+ "RBW after A removed exactly the 8 pre-existing termless wires, 1915->1907; 0 pairs lost, 0/2212 non-member lost, edges 16=16 (tools/bench/selftest_c98_rbw.log:360-370)",
+ "UseDefault on #23910 read back True, ExecState still 0 -> F4e FAIL; move B, E3, cdiff and the 20-call handle test never ran (tools/bench/selftest_c98_rbw.log:378-383)",
+ "In-memory RBW = 98-2's uid delete: both leave post-A ExecState 0 (selftest_c98_stage.log:383). 98-1's ES 1 came after move B AND a GUI save + fresh load (diag_c98_fgate.log:461-479)",
+ "Stage NOT launched (card rule), no D1_s1_fgate file; stage_d1_fgate.py edited to the new fields (F4t/F4s/F5d), prior-art novel (archive/peer/2026-09-26-priorart-c98-fgate-rbw.md:1911)",
+ "Hygiene: S1 md5 3e3d23ce unchanged, Moving-Objects fixtures restored, nothing saved, LabVIEW gone (tools/bench/selftest_c98_rbw.log:402-407); VI never run",
+ "selftest_c98_rbw.log | no JEV-LADDER line | review owed (old path) | hypothesis c98-rbw-f4e ANSWERED | H1 withdrawn, 4 hypotheses open (archive/peer/2026-09-26-c98-rbw-f4e.md:47-89)"
+],
+"open":[
+ "Review's deciding cell (A, in-memory RBW, B, RBW, UseDefault, read ExecState) is refused at B by PD208(c)(1)'s precondition (post-A ExecState 0): override it, or run B via the old verb path?",
+ "Which read separates H1/H2'/H3/H4: no-GUI (owners of w7912/w7914/w23889, idempotent re-connect Is Broken?, new Remove Wire Loose Ends op) or GUI (gui_save post-A + errorlist_check)?",
+ "Keep the live verb change (precondition + RBW) or revert to 98-2's? Plan edits owed by judgement: PD208(d) vs A's expect_broken; PD207(a)/208(b) count is 6 loose ends + 9 unconnected."
+],
+"cost":{"usd":null,"minutes":23,"labview_runs":1},
+"note":"Budget 1 of 2 used; stopped by the card rule (failed self-test, no stage run). Peers $4.69, all 3 disposed, plus 98-2's undisposed priorart-c98-fgate-stage. Verb change LIVE in tools/gscript.py: every caller now needs ExecState 1 before a move. No STATUS edit."}

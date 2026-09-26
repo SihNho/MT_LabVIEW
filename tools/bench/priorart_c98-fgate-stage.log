@@ -1,0 +1,31 @@
+BGRUN START 2026-09-26 18:17:40 limit 20.0 min: py tools/prior_art_review.py --plan-file docs/d1-loop12-17-split-plan.md --slug c98-fgate-stage --trigger cycle-start --recipe tools/recipes/stage_d1_fgate.py
+BGRUN PID 14488
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c98-fgate-stage.txt (203259 chars)
+   review card tools\bench\cards\review_priorart-c98-fgate-stage.json
+OUTCOME: ANSWERED (46s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-26-priorart-c98-fgate-stage.md
+COST: $1.6009  in 14 / out 3350 / cache-create 163927 / cache-read 1111999  (41s, 9 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c98-fgate-stage verdict=novel -> tools\bench\cards\verdict_priorart-c98-fgate-stage.json
+--- ANSWER ---
+Verdict: **novel.** The attached recipe is the stage run from PD207(e), and it has not been done before. No saved `D1_s1_fgate_<ts>.vi` exists yet. The fix it depends on, `move_into_frame` with orphan deletion and an ExecState gate, is new code written in cycle 98 for this run, not something that was already there.
+
+**PART A: the direction**
+- **A1, settled already:** no. The direction (gating #1359's display graph at display rate) was decided at `docs/d1-loop12-17-split-plan.md` PD205(d)/(e). The gate design is PD206(b)/(c)/(g), and the cause and fix of the ExecState-0 break are PD207(a)–(e). This run is the next step those entries order, not a repeat of settled work.
+- **A2, refuted already:** no. The only earlier try is 97-5 (FAIL 45/2, nothing saved, `tools/bench/fgate_97_stage2.log:395`). PD207(a)/(b) measured why it failed: 9 old wires were left with no terminals, and Remove Bad Wires on those 9 brought ExecState from 0 to 1 (`tools/bench/diag_c98_fgate.log:469-480,633,640`). The recipe addresses exactly that cause (`tools/recipes/stage_d1_fgate.py:7-8`).
+- **A3, contradicted:** none found. The recipe header agrees with PD207(c)/(e): orphans deleted inside the verb, `expect_broken` used for case A only, UseDefault moved before B, ExecState 1 checked before B, 0 termless wires in the saved file.
+- **A4, unread evidence:** none that matters. The class "a move leaves half-wires or termless leftovers" was already known from earlier work: `tools/recipes/stage_d1_m3a4.py:16` (Remove Bad Wires removes 7 termless leftovers) and PD180(a)(4) (bare half-wires deleted on move). PD207(b) already concluded this was a tool gap and built the targeted delete-by-uid instead.
+
+**PART B: the artifact**
+- **B1, already built:** no. The orphan deletion is not duplicate code; it is the PD207(c) patch, implemented at `tools/gscript.py:3508-3551` together with the reader at `:3498-3505`.
+- **B2, already failed:** 97-5 failed, and its measured cause is what this run fixes (see A2). Nothing repeats the old failure.
+- **B3, helper exists:** the recipe reuses the existing toolkit calls: `case_in`, `move_into_frame`, `set_control_label`, `tunnel_use_default`, `stagekit.copy_in` and `junk_purge`. It does not hand-roll any of them (`stage_d1_fgate.py:3-4,40-59`).
+- **B4, already measured:** no. The result this run should produce (ExecState 1 warm and cold, and cdiff equal to the three added objects on a saved file) has never been produced.
+
+**One thing to check before the run (not a prior-art finding):** PD207(d) requires the self-test before the stage run. `tools/bench/selftest_c98_move.log` has no `BGRUN END` line yet; it stops at step S2 (`:1-8`). Either it is still running or it died. The stage run should not launch until it ends with rc=0 and shows the negative case (a left orphan without `expect_broken` makes the verb fail) and flat handles.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c98-fgate-stage","verdict":"novel","alternative":"Not prior art: the ExecState-0 break could come back through a severed wire that still has one terminal, which the termless-only delete would miss.","discriminating_test":"selftest_c98_move.log must end BGRUN END rc=0 with the negative case (orphan kept, expect_broken False -> raise) and flat handles; stage F6d then reads 0 termless and ExecState 1 cold.","violations":[],"sources":["docs/d1-loop12-17-split-plan.md PD207(a)-(e)","tools/bench/diag_c98_fgate.log:469-480","tools/gscript.py:3498-3551","tools/recipes/stage_d1_fgate.py:7-8","tools/bench/fgate_97_stage2.log:395","tools/bench/selftest_c98_move.log:1-8"],"note":"PD207(d) self-test log has no BGRUN END yet (stops at S2); run the stage only after it finishes green."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c98-fgate-stage.md
+   STOP RECORD: none - 2026-09-26-priorart-c98-fgate-stage.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_fgate.py sha 99a8878b596e -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 49s

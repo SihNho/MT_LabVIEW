@@ -1,0 +1,17 @@
+ATTACK this claim about the failed self-test tools/bench/selftest_c98_move.log (script tools/bench/selftest_c98_move.py, card 98-2).
+
+FACTS (from the log): scratch byte copy of S1 (D1_s1_copy.vi); carrier Index Array + create_control -> control L; case_in A on Diagram 7911
+and case_in B on Diagram 639 (selector label L); L's top-level wire and the carrier IA deleted; each case selector then fed from boolean
+node #11639 on 639 by connect_nested_v1 -> returns (wire delta, ExecState, err) = A (1, 0, '') and B (0, 0, ''); frame names became
+' False '/' True ' for both. Then gscript.wire_health: ExecState 0, 0 termless wires, 1900 wires. The gate "E1 ExecState 1 and 0 termless
+before the moves" FAILED; move_into_frame (the patched verb under test) was NEVER called.
+
+CLAIM: the ExecState 0 is a SETUP difference of this self-test from the stage it copies (tools/recipes/stage_d1_fgate.py body lines 41-67),
+not a defect of the patched verb: the stage feeds both selectors from its own upd chain (Q&R copy -> Equal To 0? copy on 639, one
+LoopTunnel across For #1359) and moves L's terminal into 639 and wires it, and that path read ExecState 1 at E1 twice
+(tools/bench/fgate_97_stage2.log, tools/bench/diag_c98_fgate.log:288). Therefore the next self-test (tools/bench/selftest_c98_stage.py)
+imports stage_d1_fgate.body UNCHANGED (as tools/recipes/diag_c98_fgate.py did) and wraps g.move_into_frame: call A = the real patched
+verb, call B = the negative case (_keep_orphans=1 -> must raise), then deletes the kept orphan and continues to E3, no save.
+
+Already ruled out: termless orphan wires at E1 (0 read); the verb itself (not called). Name the cheapest discriminating test if you think
+the ExecState 0 comes from something that would ALSO break the stage path.

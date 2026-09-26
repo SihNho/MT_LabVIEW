@@ -1,0 +1,40 @@
+BGRUN START 2026-09-26 18:56:54 limit 20.0 min: py tools/prior_art_review.py --plan-file docs/d1-loop12-17-split-plan.md --slug c98-fgate-rbw --trigger cycle-start --recipe tools/recipes/stage_d1_fgate.py
+BGRUN PID 25232
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c98-fgate-rbw.txt (205473 chars)
+   review card tools\bench\cards\review_priorart-c98-fgate-rbw.json
+OUTCOME: ANSWERED (89s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-26-priorart-c98-fgate-rbw.md
+COST: $1.8728  in 16 / out 8078 / cache-create 180436 / cache-read 1338242  (85s, 13 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c98-fgate-rbw verdict=novel -> tools\bench\cards\verdict_priorart-c98-fgate-rbw.json
+--- ANSWER ---
+**Verdict: novel.** None of the prior-art slugs applies. The only records close to this work are the project's earlier refusals of Remove Bad Wires, and PD208's gates and the recipe's gates already answer them (details under A2).
+
+**PART A: the direction**
+
+- **A1, settled already?** No. The central question is whether Remove Bad Wires can safely clean up the broken wires `move_into_frame` leaves behind. Two things answer it, both on this exact structure, and neither is an earlier decision that makes this work redundant:
+  - The run 98-1 measured it: `docs/d1-loop12-17-split-plan.md` 207(a), from `tools/bench/diag_c98_fgate.log:469-480,633,640`.
+  - PD208 decided it the same cycle.
+  - The code is already in `tools/gscript.py:3521-3614`: the ExecState-1 precondition at `:3542-3546`, Remove Bad Wires at `:3569`, and the gates at `:3593-3611`. That is this cycle's own card 98-3 work, not an older duplicate.
+- **A2, refuted already?** There are three records that argue against Remove Bad Wires. None of them kills this direction:
+  1. `archive/2026-09-17-status-d1-route-b-2.md:44-46`: deleting a wire and then running Remove Bad Wires "DELETES THE TUNNEL", which shifted terminal indices. `docs/cycle27-plan.md:1874-1876` then refused it as a rule-1a hazard for S3a, and `:3420-3424` repeats the doubt.
+     - Why it does not apply here: that tunnel had been made bare on purpose first. Here the verb refuses unless ExecState is 1 before the move (`gscript.py:3542`). The recipe addresses objects by uid, not by index. A deleted tunnel that carried data would trip the hard gates on lost edges and on the moved-edge table (`:3596-3605`). The recipe's own F5b (untouched objects keep their owners) and F5c (cdiff added-only) back this up (`stage_d1_fgate.py:103,113`).
+  2. `docs/cycle27-plan.md:3706-3712` (PD132): Remove Bad Wires can strip the only wire from a shift register's inside terminal, so a "Remove Bad Wires, then ExecState 1" prediction can be self-defeating.
+     - Why it does not apply here: PD208 does not treat ExecState 1 as proof on its own. It adds hard gates that no data edge is lost. Also, this ExecState 1 was not predicted at the desk: 98-1 measured it on the scratch.
+  3. `archive/peer/2026-09-19-routeb-run7-index-shift.md:115`: a whole-VI Remove Bad Wires fired mid-loop and took debris plus bare tunnels with it.
+     - Why it does not apply here: the precondition means no debris exists before the move. Gate (2), `rbw_new_uid_removed` at `gscript.py:3594`, catches any removed wire that was not there before.
+- **A3, contradicted?** Only a wording issue, which I don't slug. PD208(d) says ExecState 1 is required "after EACH move". But move A's case output tunnel needs Use Default first. PD208(a) itself measured ExecState after "A + UseDefault", and the `gscript.py:3535` docstring gives this very case as the reason `expect_broken` exists. The recipe settles it consistently: A runs with `expect_broken=True`, then F4e requires ExecState 1 after A + UseDefault and before B (`stage_d1_fgate.py:86,101`). This matches the disposition recorded at `archive/peer/2026-09-26-c98-rbw-scope.md:121-124`. I suggest rewording 208(d) so the text matches the code.
+- **A4, unread evidence?** Nothing blocking. PD208's text does not cite the earlier refusals in A2.1 (`cycle27-plan.md:1874-1876`, `route-b-2.md:44-46`). The review `c98-rbw-scope.md:73` did raise the related `docs/NAMES.md:1194-1197` hazard (untyped output leads Remove Bad Wires to delete downstream wires), and it was disposed. The gates cover the tunnel-deletion failure, so this is a citation gap, not missed evidence.
+
+**PART B: the artifact (`tools/recipes/stage_d1_fgate.py`)**
+
+- **B1, already built?** No other recipe or op builds this gated copy. The recipe reuses the existing verbs (`case_in`, `move_into_frame`, `tunnel_use_default`, `set_control_label`, stagekit `copy_in`), as its header states (`:3-4`).
+- **B2, already failed?** 97-5 (ExecState 0 after the moves) and 98-2 (deleting only termless wires was not enough) were earlier runs of this same stage. Both causes are addressed by the Remove Bad Wires step and its gates (PD207(a), PD208(a)/(b)). It is not a repeat.
+- **B3, helper exists?** It uses `remove_bad_wires_scripted` (`gscript.py:2779`) and the `allterms` readers. Nothing is hand-rolled.
+- **B4, already measured?** The measurement exists: Remove Bad Wires on a scratch of the broken file gave ExecState 1, removed 9 wires and lost no member edge (98-1). This run produces the saved deliverable file, which that scratch never did.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c98-fgate-rbw","verdict":"novel","alternative":"RBW could delete an object (tunnel) rather than a wire, as route-b-2.md:44-46 recorded; gates are wire/edge-based, object loss is caught only indirectly by F5b/F5c.","discriminating_test":"In the run log, compare per-class object census (LoopTunnel, SelectorTunnel, Tunnel) before move A and after RBW B; any pre-existing uid missing = RBW removed an object.","violations":[],"sources":["tools/gscript.py:3542-3611","archive/2026-09-17-status-d1-route-b-2.md:44-46","docs/cycle27-plan.md:1874-1876","docs/cycle27-plan.md:3706-3712","archive/peer/2026-09-26-c98-rbw-scope.md:121-124","tools/recipes/stage_d1_fgate.py:86,101,103,113"],"note":"PD208(d) 'ExecState 1 after EACH move' conflicts with A's expect_broken; the recipe resolves it (F4e after A+UseDefault). Reword 208(d)."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c98-fgate-rbw.md
+   STOP RECORD: none - 2026-09-26-priorart-c98-fgate-rbw.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_fgate.py sha 3da80c268ce6 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 92s

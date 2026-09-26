@@ -1,0 +1,35 @@
+BGRUN START 2026-09-26 17:54:33 limit 20.0 min: py tools/prior_art_review.py --plan-file docs/d1-loop12-17-split-plan.md --slug c98-fgate-diag-r2 --trigger cycle-start --recipe tools/recipes/diag_c98_fgate.py
+BGRUN PID 18228
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c98-fgate-diag-r2.txt (200397 chars)
+   review card tools\bench\cards\review_priorart-c98-fgate-diag-r2.json
+OUTCOME: ANSWERED (41s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-26-priorart-c98-fgate-diag-r2.md
+COST: $1.7322  in 10 / out 3373 / cache-create 187681 / cache-read 816444  (38s, 8 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c98-fgate-diag-r2 verdict=novel -> tools\bench\cards\verdict_priorart-c98-fgate-diag-r2.json
+--- ANSWER ---
+**Verdict: novel.** Nobody has run this diagnosis before. The only earlier review of this card was r1, `archive/peer/2026-09-26-priorart-c98-fgate-diag.md:1840-1863`, which also said `novel`. Since then the file changed only by a whitespace fix, recorded as released at `:1876`. The r1 findings still hold for the new bytes (md5 `0c050434…`).
+
+**PART A: the direction**
+- **A1, settled already?** No. This card carries out the step that `docs/d1-loop12-17-split-plan.md` PD206(h) and STATUS `## NEXT` ordered as the first act of cycle 98. The decision only ordered the read; it did not answer the question. The question itself, why ExecState is 1 at E1 but 0 at E3, is still open (`tools/bench/fgate_97_stage2.log:287,394`).
+- **A2, refuted already?** No. `archive/peer/2026-09-26-c97-fgate-es0-r2.md:89-91` recommends Remove Bad Wires on a scratch copy as the separating test, but it was never run. PD206(h) records that the "orphaned severed wires" explanation is arithmetic only.
+- **A3, contradicted?** No new contradiction. The known gap from r1 is still there: NEXT asks for the Error List objects' uids, but `tools/errorlist_check.py:10-12` cannot read them and records `uid=None`. The recipe says so itself (`tools/recipes/diag_c98_fgate.py:5-6`) and logs `uid None` at `:101`, so this is a stated limit, not a conflict.
+- **A4, unread evidence?** None. The recipe cites the right earlier work: the RBW-on-scratch precedent (PD195(b), `tools/bench/diag_c88_p2rbw.log:171-241`) and the E1/E3 predictions from `fgate_97_stage2.log`.
+
+**PART B: the artifact**
+- **B1, already built?** No. `D1_s1_fgate_BROKEN_*` does not exist. The only diag_c98 log on disk is the dry run that failed on the syntax error, `tools/bench/diag_c98_dry.log:4`. Nothing ran after it.
+- **B2, already failed?** Only that dry run, and the cause was the dropped space after `def`. That cause is FIXED (`archive/peer/2026-09-26-priorart-c98-fgate-diag.md:1876`), and the build itself has never been attempted.
+- **B3, helper exists?** Yes, and the recipe already uses the existing helpers instead of writing its own:
+  - `errorlist_check --vi` (`diag_c98_fgate.py:94`)
+  - `Stage.broken_wire_count` (`:75`)
+  - `allterms.read_terms`, `all_wire_uids` and `join_wires` (`:39-43`)
+  - `Stage.save(broken_ok=True)`, which saves through the GUI (`:67`)
+  - `build_d1_v0.owner_of` (`:61`)
+  - `stage_d1_fgate.body`, imported unchanged (`:89`)
+- **B4, already measured?** No. Run 97-5 measured the edge tables and cdiff, not the bad wires or the Error List. `tools/bench/selftest_c97_tools.log:5` reads ExecState only at load.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c98-fgate-diag-r2","verdict":"novel","alternative":"none in files; r1 (same card) returned novel; r2 bytes differ only by the whitespace fix recorded as FIXED at priorart-c98-fgate-diag.md:1876","discriminating_test":"RBW on a scratch of the E3 file: all removed wires in A/B frames with no member edge => severed leftovers; a member edge removed => structure break (c97-fgate-es0-r2.md:89-91)","violations":[],"sources":["archive/peer/2026-09-26-priorart-c98-fgate-diag.md:1863","archive/peer/2026-09-26-priorart-c98-fgate-diag.md:1876","tools/bench/diag_c98_dry.log:4","tools/bench/fgate_97_stage2.log:394","tools/errorlist_check.py:10","archive/peer/2026-09-26-c97-fgate-es0-r2.md:89"],"note":"Error List object uids are unreadable (errorlist_check.py:10-12); the recipe records uid None and says so. All helpers reused; nothing hand-rolled."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c98-fgate-diag-r2.md
+   STOP RECORD: none - 2026-09-26-priorart-c98-fgate-diag-r2.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/diag_c98_fgate.py sha 0feca0dc95c4 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 44s

@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"98-2","status":"FAIL","gates":{"pass":45,"fail":2},
+"first_fail":"F4e ExecState 1 after move A + UseDefault (selftest_c98_stage.log:322): 0 termless wires but ExecState 0",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/selftest_c98_stage.log","md5":"18e2c79132ce32b39830224630de880d"},
+ {"path":"tools/bench/selftest_c98_stage.json","md5":"6d3f15021257c3503c05dd1e5906ac67"},
+ {"path":"tools/bench/selftest_c98_move.log","md5":"f5028f9c1f49262533cfbea167b54a34"},
+ {"path":"tools/bench/selftest_c98_move.json","md5":"91d1883869b72badd2d4b7dbfe50edad"}
+],
+"facts":[
+ "gscript.move_into_frame patched (PD207(c)): deletes by uid wires termed pre-move, termless post-move, owned by D/frame; raises MoveIntoFrameBroken; new reader wire_health",
+ "Self-test 1 (gscript level) stopped at setup E1: ExecState 0, 0 termless (selftest_c98_move.log:17); review: junk Invokes unpurged outside stagekit (archive/peer/2026-09-26-c98-selftest-e1.md)",
+ "Self-test 2 runs stage_d1_fgate.body unchanged, move verb wrapped; dry + prerun 8/0 PASS (selftest_c98_prerun2.log); E1 ExecState 1 (selftest_c98_stage.log:269)",
+ "Move A deleted exactly 98-1's 8 orphans [7931 9407 15847 24106 28139 28443 28509 33062], all Diagram 7911; 0 termless left; edges 16=16 (log:302-312)",
+ "After A + UseDefault on out tunnel #23955 (read back True): ExecState 0 (log:320-321). F4e FAIL -> stop; B and the negative case were never reached",
+ "So deleting termless orphans does not make the post-A state run. Review c98-selftest-f4e: 98-1's RBW may also trim loose ends on kept wires; suspects w7913/w10430 (log:335,346)",
+ "Stage NOT launched (card rule: failed self-test). D1_s1_fgate_<ts>.vi not built. stage_d1_fgate.py patched (A expect_broken, UseDefault before B, F4e, F6d); prior-art novel, dry+prerun 8/0 PASS",
+ "Hygiene: S1 md5 3e3d23ce unchanged (selftest_c98_stage.log:348), LabVIEW gone (log:349), fixtures restored, no scratch file left, nothing saved",
+ "docs/toolkit-capabilities.md: row T2' documents the new verb contract and the F4e result (NOT accepted)",
+ "Jev | selftest_c98_move.log | already-reviewed p=0.512 | review owed | c98-selftest-e1 ANSWERED; selftest_c98_stage.log: no ladder line -> c98-selftest-f4e ANSWERED"
+],
+"open":[
+ "Judgement: should move_into_frame also remove loose ends (AbstractDiagram.Remove Wire Loose Ends on D + frame, or Wire.Remove Loose Ends per wire), or first read the post-A Error List / RBW-on-scratch to find the ExecState 0 cause?",
+ "Is ExecState-1-after-A the right gate, or only after the stage's last move (E3)? That is the review's claim-vs-alternative question.",
+ "Budget: failure budget 2 spent on the self-test (E1 setup, then F4e); escalate rung per INTRA-CYCLE ESCALATION?"
+],
+"cost":{"usd":null,"minutes":42,"labview_runs":2},
+"note":"No STATUS edit (status_edit false). The verb patch is live in tools/gscript.py. Any caller without expect_broken=True now raises when ExecState is 0 after the move. Two peer reviews are archived with 'What was done with it' filled in."}

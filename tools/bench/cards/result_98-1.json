@@ -1,0 +1,30 @@
+{"schema":"result/1","id":"98-1","status":"PASS","gates":{"pass":53,"fail":0},
+"first_fail":null,
+"blocked_by":null,
+"artefacts":[
+ {"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_fgate_BROKEN_20260926_175556.vi","md5":"b114bb1bf317f3e9df4d2baf562a2654"},
+ {"path":"tools/recipes/diag_c98_fgate.py","md5":"0c0504347c6a9af7d77536cc50940df5"},
+ {"path":"tools/bench/diag_c98_fgate.log","md5":"11978739cba4a98c680d31a9d1dc6e95"},
+ {"path":"tools/bench/diag_c98_fgate_20260926_175556.json","md5":"b7deea71065aaa56bf0083472bf5d1e1"},
+ {"path":"tools/bench/errorlist_D1_s1_fgate_BROKEN_20260926_175556_20260926_180329.json","md5":"4b93a7d0cfbc79dc20ff738064eafbca"},
+ {"path":"tools/bench/errorlist_scratch_c98_rbw_20260926_175556_20260926_180656.json","md5":"2ef321ede02383041e8c9b11a0682802"}
+],
+"facts":[
+ "stage_d1_fgate.body re-run unchanged (imported) to E3; dry PASS + prerun 8/0 (diag_c98_dry2.log:85, diag_c98_prerun.log:94); run 53/0 (diag_c98_fgate.log:648)",
+ "ExecState: E1 1, after move A 0, after move B 0, E3 (after UseDefault #23927) 0 (diag_c98_fgate.log:289,362,417,437)",
+ "Wires 1903 -> A 1915 (+16 new, -4 gone) -> B 1918 (+5, -2); for_body 22->12, A_True 0->14, loop_body 156->155, B_True 0->3, both False frames 0 (log:289,362-363,417-418)",
+ "Termless wires (no terminal at all): 0 at E1; 8 after move A (7931 9407 15847 24106 28139 28443 28509 33062, owner Diagram 7911); +1 after B (10908, owner 639) (log:363,418,440-456)",
+ "All 9 are OLD wire uids present at E1, none in the new-wire lists: move_into_frame re-makes the edges but leaves the severed old wires in place (log:364-391,419-423)",
+ "BROKEN saved by gui_save route: claudeDev\\D1_s1_fgate_BROKEN_20260926_175556.vi md5 b114bb1b, 303,964 B, never run (log:460-466)",
+ "Error List of BROKEN: 15 items, all wires: 7 'Wire has loose ends', 8 'This wire is not connected to anything'; no other item; uids unreadable (log:550,558-572)",
+ "RBW on a scratch of BROKEN removed exactly those 9 termless wires (9/9 in the E3 list), Wire 1918->1909, ExecState 0->1, Error List 0 items after (log:469-480,633,640)",
+ "So the E3 structure (8476 + 8323 inside True frames, UseDefault #23927 -> #11363) minus only those 9 wires reads ExecState 1; no member-edge wire was removed (log:470-479)",
+ "S1 md5 3e3d23ce unchanged, pins hold, fixtures restored, scratch deleted, H6 = BROKEN + scratch only, LabVIEW gone at exit (log:487-495,641-643)"
+],
+"open":[
+ "Judgement: fix move_into_frame by deleting the wires it leaves termless (e.g. RBW/loose-end removal on the case's owning diagram after each move), or another route? Not done here.",
+ "Error List shows 15 wire items for 9 termless wires (uids unreadable); is a per-item mapping needed, or is RBW 9 -> ExecState 1 / 0 items enough?",
+ "Rule 1a still open from 97-5: case A's False frame feeds #23927's default into #11363 on non-update frames (c97-fgate-es0.md:69)."
+],
+"cost":{"usd":null,"minutes":38,"labview_runs":1},
+"note":"Diagnostic runs are recorded in stage_runs.jsonl under diag_c98_fgate (log:3), not stage_d1_fgate. Two prior-art reviews (novel x2): the first saw bytes with a SyntaxError from my blank-line edit (diag_c98_dry.log:4), FIXED line + r2 review. No STATUS edit (status_edit false)."}

@@ -4,7 +4,13 @@ Rows ONLY from plans/plan_fgate_97.json. FOUND FIRST, no new op: gscript case_in
 tunnel_use_default (97-3 selftest), stagekit copy_in on the Moving-Objects pair (q_m4_copy_probe, stage_d1_m4b), carrier-IA ctl (T4a).
 PREDICTION = the F0..F6 gates below (each fatal where a later step depends on it); pins/S1 md5 same; fixtures restored; LabVIEW gone.
 card 97-5: copy_in FIRST, then K.unload_donor() (fact: donor resident False, MB drop) BEFORE the MEMSTOP-metered op() edits.
-    MATERIAL=1 py tools/bgrun.py --max-min 45 --log tools/bench/fgate_97_stage.log -- py -u tools/recipes/stage_d1_fgate.py"""
+card 98-2 (PD207(c)(e)): move_into_frame now deletes its termless orphans + gates ExecState; A passes expect_broken (its output
+tunnel needs Use Default first), UseDefault moved before B, F4e ExecState 1 before B, F6d 0 termless in the saved file.
+card 98-3 (PD208(c)(d)): the verb now REFUSES unless ExecState 1 before the move, runs VI-level Remove Bad Wires after it (no
+per-diagram method exists: archive/peer/2026-09-26-c98-rbw-scope.md) and RAISES on a new-uid removal / a lost data edge / a
+moved-edge mismatch / a termless wire left; F4t reads those fields and lists the removed uids per move; F4s ExecState 1
+after B (strict); F5d re-reads that each ' True ' frame holds its gated set at E3.
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/fgate_98_stage.log -- py -u tools/recipes/stage_d1_fgate.py"""
 import json, os, shutil, subprocess, sys, time; sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # noqa: E401,E702
 import stagekit as K, gscript as g, jev_candidates as JC, vigraph as V                           # noqa: E401,E402
 J = lambda *p: json.load(open(os.path.join(*p), encoding="utf-8"))                               # noqa: E731
@@ -76,17 +82,27 @@ def body(s):
     fr = dict((t, g.case_frames(W, cases[t])) for t in cases)
     tf = dict((t, first(f for n, f in zip(fr[t]["names"], fr[t]["frames"]) if str(n).strip() == "True")) for t in fr)
     s.gate("F3d frames ' False '/' True ' after the boolean selectors; True frames {0}".format(tf), all(sorted(str(n).strip() for n in fr[t]["names"]) == ["False", "True"] for t in fr), fr, fatal=True)
-    for t in ("A", "B"):
-        mv[t] = m = op("move_into_frame", lambda t=t: g.move_into_frame(W, tf[t], P["set_" + t.lower()], tuple(XY["case_" + t])), t); s.R["move_" + t] = m   # noqa: E702
+    for t in ("A", "B"):   # card 98-3 (PD208(c)): ExecState 1 before, Remove Bad Wires after, gated; A is broken BY DESIGN until F4d
+        mv[t] = m = op("move_into_frame", lambda t=t: g.move_into_frame(W, tf[t], P["set_" + t.lower()], tuple(XY["case_" + t]), expect_broken=(t == "A")), t); s.R["move_" + t] = m   # noqa: E702
+        s.fact("F4 {0} RBW REMOVED {1} (not pre-existing {2}); wires {3} -> {4}; data edges lost across RBW {5}, non-member since the move {6}; termless left {7} (total {8}); ExecState {9} -> {10}".format(
+            t, m["rbw_removed"], m["rbw_new_uid_removed"], m["wires_before_rbw"], m["wires_after_rbw"], len(m["lost_edges"]), len(m["lost_nonmember_since_move"]), m["termless_left"], m["termless_total"], m["exec_state_before"], m["exec_state"]))
         s.gate("F4 {0}: every member owned by the ' True ' frame #{1}".format(t, tf[t]), all(o[1] == tf[t] for o in m["owners_after"].values()), m["owners_after"], fatal=True)
-        s.gate("F4 {0}: edge table (src term uid -> sink term uid, new tunnels collapsed) == before ({1} edges)".format(t, len(m["edges_before"])), not m["missing"] and not m["extra"], {"missing": m["missing"], "extra": m["extra"]}, fatal=True)
-    rows = K.mod("allterms").read_terms(W)[0]; wo = first(x["wire_uid"] for x in ow(U["out_loop_tunnel"]) if not x["is_source"])   # noqa: E702
-    outA = sorted(set(int(x["owner_uid"]) for x in rows if x["wire_uid"] == wo and x["is_source"] and int(x["owner_uid"]) in mv["A"]["new_tunnels"]))
-    s.gate("F4c case A's output tunnel(s) {0}: {1} expected (feed LoopTunnel #{2})".format(outA, P["a_out_tunnels"], U["out_loop_tunnel"]), len(outA) == P["a_out_tunnels"], outA, fatal=True)
-    for tu in outA:
-        u = op("tunnel_use_default", lambda tu=tu: g.tunnel_use_default(W, tu, True), "#{0}".format(tu)); s.gate("F4d #{0} UseDefault reads True".format(tu), u["after"] is True and not u["err"], u)  # noqa: E702
+        s.gate("F4 {0}: edge table (src term uid -> sink term uid, new tunnels collapsed) == before ({1} edges), read AFTER Remove Bad Wires".format(t, len(m["edges_before"])), not m["missing"] and not m["extra"], {"missing": m["missing"], "extra": m["extra"]}, fatal=True)
+        s.gate("F4t {0}: Remove Bad Wires ran, removed only pre-existing wires, no data edge lost, 0 termless left".format(t), m["rbw_ran"] and not m["rbw_new_uid_removed"] and not m["rbw_appeared"] and not m["lost_edges"] and not m["lost_nonmember_since_move"] and not m["termless_left"],
+               (m["rbw_removed"], m["rbw_new_uid_removed"], m["rbw_appeared"], len(m["lost_edges"]), len(m["lost_nonmember_since_move"]), m["termless_left"]), fatal=True)
+        if t == "B":
+            s.gate("F4s B: ExecState 1 after move B (strict, PD208(d))", m["exec_state"] == 1, m["exec_state"], fatal=True)
+            continue
+        rows = K.mod("allterms").read_terms(W)[0]; wo = first(x["wire_uid"] for x in ow(U["out_loop_tunnel"]) if not x["is_source"])   # noqa: E702
+        outA = sorted(set(int(x["owner_uid"]) for x in rows if x["wire_uid"] == wo and x["is_source"] and int(x["owner_uid"]) in mv["A"]["new_tunnels"]))
+        s.gate("F4c case A's output tunnel(s) {0}: {1} expected (feed LoopTunnel #{2})".format(outA, P["a_out_tunnels"], U["out_loop_tunnel"]), len(outA) == P["a_out_tunnels"], outA, fatal=True)
+        for tu in outA:
+            u = op("tunnel_use_default", lambda tu=tu: g.tunnel_use_default(W, tu, True), "#{0}".format(tu)); s.gate("F4d #{0} UseDefault reads True".format(tu), u["after"] is True and not u["err"], u)  # noqa: E702
+        s.gate("F4e ExecState 1 after move A + UseDefault (so B's move is gated strict)", s.es("after A + UseDefault") == 1, fatal=True)
     s.fact("E3 ExecState {0} after use-default; new tunnels A {1} B {2}".format(s.es("E3"), mv["A"]["new_tunnels"], mv["B"]["new_tunnels"])); c1 = cen(); s.fact("CENSUS before {0} after {1}".format(c0, c1)); s.R["census"] = [c0, c1]; s.gate("F5a Invoke count unchanged (junk purged)", c1["Invoke"] == c0["Invoke"], (c0["Invoke"], c1["Invoke"]))  # noqa: E702
     un1 = dict((u, own(u)) for u in P["untouched"]); s.gate("F5b untouched objects keep their owners", un1 == un0, (un0, un1))   # noqa: E702
+    held = dict((t, dict((u, own(u)) for u in P["set_" + t.lower()])) for t in ("A", "B"))
+    s.gate("F5d each ' True ' frame holds its gated set at E3 (owners re-read): A #{0} B #{1}".format(tf["A"], tf["B"]), all(o[1] == tf[t] for t in held for o in held[t].values()), held)
     S1 = JC.load(JC.S1_KEY); lv = K.mod("wiki_build").read_live(W, fs_pairs=S1["wiki"]["fs_tunnel_pairs"])   # noqa: E702
     cd = V.computation_diff(S1, JC.from_parts({"terminals": lv["terminals"], "graph_summary": S1["wiki"]["graph_summary"]}, lv["objs"],
                             J(JC._newest("graph_loops_s1_*.json"))["loops"], JC.node_labels_default(), lv["fs_tunnel_pairs"], "fgate"))
@@ -99,8 +115,9 @@ def body(s):
     m = s.save(); shutil.copyfile(W, FINAL)                                                        # noqa: E702
     s.gate("F6b artefact {0} == the saved bytes".format(os.path.basename(FINAL)), DRY or (m and K.md5(FINAL) == m), m, fatal=True)
     s.restart(); s.gate("F6c ExecState 1 COLD in a fresh LabVIEW", s.es("cold reload", target=FINAL) == 1)   # noqa: E702
+    wh = {"termless": []} if DRY else g.wire_health(FINAL); s.gate("F6d 0 termless wires in the saved file (cold): {0}".format(wh["termless"]), not wh["termless"], wh["termless"])   # noqa: E702
     s.R["fgate"] = {"final": FINAL, "md5": m, "bytes": os.path.exists(FINAL) and os.path.getsize(FINAL), "qr": qr, "eq0": eq, "ctl": ct,
-                    "cases": cases, "true_frames": tf, "tunnel_1359": nl, "upd": upd, "outA": outA}; s.dump()   # noqa: E702
+                    "cases": cases, "true_frames": tf, "tunnel_1359": nl, "upd": upd, "outA": outA, "termless_final": wh["termless"]}; s.dump()   # noqa: E702
 
 
 class St(K.Stage):
@@ -111,7 +128,7 @@ class St(K.Stage):
 if __name__ == "__main__":
     g.restore_move_fixtures(); FXL = K.fixture_listing()                                           # noqa: E702
     st = St(os.path.join(K.CLAUDEDEV, P["input"]["vi"]), P["input"]["md5"], "stage_d1_fgate", preload=False, deadline_min=40,
-            work_dir=os.path.dirname(g.MOVE_DST), work_name=os.path.basename(g.MOVE_DST), task="card 97-4", out_json=os.path.join(K.BENCH, "fgate_97_stage.json"))
+            work_dir=os.path.dirname(g.MOVE_DST), work_name=os.path.basename(g.MOVE_DST), task="card 98-3", out_json=os.path.join(K.BENCH, "fgate_98_stage.json"))
     rc = K.run(body, st)
     if not DRY:
         K.mod("bench_prep").restart_labview(); g.reset(); g.restore_move_fixtures()                 # noqa: E702

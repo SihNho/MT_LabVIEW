@@ -54,19 +54,37 @@ rig-state: 조립   <!-- 2026-09-24 20:xx USER GRANT: "당분간 내가 말하�
 🟡 **CARRY (from the 2026-09-25 verification review `archive/peer/2026-09-25-hyp-lintverify-20260925.md`, not blocking): card flags are checked only on the top-level command (a child process could reach LabVIEW under labview=none); a stage run launched outside bgrun is not counted by the retry cap; a bgrun record failure is only logged (`tools/bgrun.py:219-220`). Close in a tooling cycle, deliverable-first.**
 current-bed: D1_l2_a1_20260925_235224.vi
 <!-- ^ machine key read by tools/errorlist_check.py current_bed_text(); without it the bed is chosen by mtime among D1_*.vi names in this file, and the newer D1_s1_kswap_* would silently take over (review archive/peer/2026-09-26-c88-reuse-stalepin.md). Change it only when a new bed is accepted. -->
-🔴🔴🔴 **FIRST ACT (cycle 98) = `docs/d1-loop12-17-split-plan.md` Pre-decided 206(h): READ why the gated copy breaks. Diagnosis card, facts only. Deliverable path: the display-rate gate of #1359.**
-- **One card:**
-  - Re-run `tools/recipes/stage_d1_fgate.py` (md5 `690269c0…`, plan `tools/bench/plans/plan_fgate_97.json`) up to E3 on a fresh S1 byte copy. Do the dry run and pre-run first, with `--graph tools/bench/par1359_95_graph.json`, because `find_graph` only globs `graph_*`.
-  - Save the broken intermediate by `gui_save` as `claudeDev\D1_s1_fgate_BROKEN_<ts>.vi` (user 2026-09-22 broken-intermediate save).
-  - Read three things: (1) LabVIEW's Error List items for that file, with their object uids (the `errorlist_check` GUI reader); (2) the broken wires with their owner diagrams; (3) Remove Bad Wires on a SCRATCH copy, then ExecState.
-- The card's `peers` must be `hypothesis`, `outcome` and `priorart`. 97-4 lost a dispatch by leaving out `priorart`, the same card-scoping fault as 95-5/95-6.
-- Retrospective-cycle97 (`archive/peer/2026-09-26-retrospective-cycle97.md`, both accepted): `inference-over-measurement`. T2 was accepted without an ExecState read after the move. **From now on, any verb that edits a diagram is gated on ExecState read after the edit.** It also found `device-failed` (audit counting `jev_gate.log`), which is already owed below.
-- **Then judgement chooses:** a `move_into_frame` fix (delete the severed wires it leaves behind; its T2 self-test never checked ExecState or leftover wires) or a structure change. After that come the stage run, the ABBA (A15 B15 B15 A15 at N = 9, the 96-1 harness plus %CPU during legs, PD204(a)), and the rule-1a replay at N = 1 (205(e) 4). The copy is not accepted before the replay.
+🔴🔴🔴 **FIRST ACT (cycle 99) = `docs/d1-loop12-17-split-plan.md` Pre-decided 210(f) + (d), read with 211: the SEPARATE DISPLAY LOOP (user 2026-09-26 18:0x). The fgate is DROPPED.**
+- **Card 1 is read-only facts only, not a design.** It collects:
+  - #8323's source: the array on w10908, its owner:term, its type, and its size at 15 picks;
+  - every writer of #8323, #6085 and #5696, with owner diagram;
+  - the S3 stop carrier by uid (PD154), and how the S3 loop reads it;
+  - the cycle-94 per-site cost of each candidate plot (say "not measured" where it was not);
+  - the per-frame cost of a local-variable WRITE of the plot array (PD210(d): a stamp site or the t0 harness; if it cannot be measured offline, a plan for measuring it).
+- **Then judgement writes the design page:** the locals list, the indicator list, the stop carrier and the rows, with `requires` filled.
+- **After that, the stage path:** simulator (dry, pre-run, cdiff 0), one LabVIEW run, then the ABBA against `D1_s1_copy.vi` (15 picks, 120 s) and the replay (PD210(c)).
+- **Carry from PD211(b)/(c):**
+  - Any row that MOVES an existing terminal must read the termless and loose-end wires and ExecState after the move. `move_into_frame` left the old severed wires behind in cycle 98.
+  - `gscript.move_into_frame` (md5 `b3d9f373…`) now refuses unless ExecState is 1 before the edit, so it fails closed. A design that uses it on a bed that is broken by design must say how it passes that check; never loosen it silently.
+- Card `peers` must be `hypothesis`, `outcome` and `priorart` (the card-scoping fault of 95-5, 95-6 and 97-4).
 - **Owed tooling card** (retrospective-cycle96 `device-failed`): `peer.ps1 -ReviewCard` must map `loss_usd="?"` to null; audit A1/A3 must stop counting `jev_gate.log`; cards must not demand a foreground peer dispatch.
 - Unreviewed standing fail: gate `run1.L8` (bandpass panel) has failed in every leg since 92-3. Pick registration is not affected.
-- **Assumption (2c):** default N = 9, asked in **D-2026-09-26-02** (OPEN). If the answer is no, the default becomes 1.
-- 🟡 FOR THE CHAT: report D-2026-09-26-02. Do not start benchmarks on this PC while a cycle runs legs.
+- D-2026-09-26-02 is ANSWERED by PD210. Do not start benchmarks on this PC while a cycle runs legs.
 - Machine copy: `tools/bench/next.json`.
+
+🟡 **CYCLE 98 (PD207–209, 211): the fgate break is EXPLAINED, and the fgate is then dropped by the user (PD210).**
+- 98-1 PASS 53/0 (`tools/bench/diag_c98_fgate.log`):
+  - ExecState is 1 at E1 and 0 after move A.
+  - `move_into_frame` leaves 9 OLD severed wires with no terminal (8 in 7911, 1 in 639).
+  - Remove Bad Wires on a scratch of the saved broken file gives ExecState 1 and 0 Error List items.
+  - Saved: `claudeDev\D1_s1_fgate_BROKEN_20260926_175556.vi`, md5 `b114bb1b…`, never run.
+- 98-2 FAIL 45/2: deleting only those termless wires after move A still leaves ExecState 0.
+- 98-3 FAIL 48/2 (rung 1, Opus max): an in-memory VI-level RBW after A removes the same 8 wires, and ExecState is still 0.
+  - So my PD208(d) gate after every move was an unmeasured inference: `inference-over-measurement`, a judgement fault.
+- 98-4 BLOCKED by PD210 (user): nothing was run.
+- Retrospective-cycle98 (`archive/peer/2026-09-26-retrospective-cycle98.md`), both items accepted:
+  - `inference-over-measurement`: when a fix card FAILS on a gate whose premise was never measured, the next card is the READ.
+  - `device-failed` (the material-marker read-only refusal; audit A6 misses GUI use): added to the owed tooling card.
 
 🟡 **CYCLE 97 (PD206): the gate is designed and its tools exist, but there is NO FILE yet.**
 - 97-1 PASS 5/0 (`tools/bench/f1359_gate_facts_97.json`):

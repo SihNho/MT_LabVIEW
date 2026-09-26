@@ -1,0 +1,62 @@
+BGRUN START 2026-09-26 18:33:59 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c98-selftest-f4e -TaskFile tools/bench/peer_c98-selftest-f4e_task.txt
+BGRUN PID 16624
+OUTCOME: ANSWERED (170s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-26-c98-selftest-f4e.md
+COST: $1.6206  in 24 / out 15309 / cache-create 129955 / cache-read 1269904  (166s, 17 turn(s))
+--- ANSWER ---
+**Verdict: the claim is wrong.** The E3 evidence it relies on does not show that move B cures anything. Remove Bad Wires at E3 did more than delete the 9 termless wires. In the 98-1 run it also cleared about 6 "Wire has loose ends" errors that were still present after both moves. Deleting wires by uid, as the self-test does, leaves loose ends in place. So moving the ExecState check to after B would most likely just move the failure to E3.
+
+**1. Strongest reason the claim is wrong**
+
+The E3 Error List had 15 items: `n_reported 15`, "15 errors and warnings" (`errorlist_D1_s1_fgate_BROKEN_20260926_175556_20260926_180329.json:57-58`, screenshot `errorlist_shots/errwin_180402_b0b.png`).
+- About 9 say "This wire is not connected to anything". These are the 9 termless wires.
+- About 6 say "Wire: Wire has loose ends" (items 0–3 and 12–13 in the JSON). The screenshot shows four of them directly; items 12–13 come from OCR after scrolling and are less certain.
+- NI's text for that error is "This wire segment is not connected to anything". It is about a dangling piece of a wire that may still be alive, not a whole orphaned wire ([NI: Wire has loose ends](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/wire-has-loose-ends.html)).
+
+Remove Bad Wires took the wire count from 1918 to 1909, i.e. it removed 9 wire objects. The Error List then went to 0 items and ExecState to 1 (`diag_c98_fgate.log:469-480,640`). That is consistent with Remove Bad Wires also trimming loose ends on wires it kept, which does not change the wire count. Remove Bad Wires is the scripting equivalent of Edit»Remove Broken Wires ([LabVIEW Wiki: Block Diagram.Remove Bad Wires](https://labviewwiki.org/wiki/VI_class/Block_Diagram.Remove_Bad_Wires_method)).
+
+So the premise "at E3, deleting 9 termless wires gave ExecState 1" is not what was measured. Remove Bad Wires is not the same operation as deleting 9 wires by uid. Nothing recorded shows that move B removed any fault.
+
+**2. Alternative explanation of the same evidence: loose ends left by move A on live wires**
+
+When a moved member was one of several sinks on an existing wire, the wire survives with a dangling segment where that member used to be. The recipe then attaches the moved member to that same surviving wire. Those connects return `(0, 0, …)` instead of `(1, …)`:
+- `connect_from_wire(inner w7913)` for 'left rank' (`selftest_c98_stage.log:335`)
+- `connect_from_wire(inner w10430)` for 'index' (`selftest_c98_stage.log:346`)
+
+Such a wire still has 1 source and at least 1 sink, so it is invisible to three checks:
+- the termless reader (`gscript.py:3497-3505`);
+- the broader "odd" reader (`diag_c98_fgate.py:51`, which flags termless / n_src≠1 / no sink). This is why the 98-1 post-A odd list at `diag_c98_fgate.log:363` holds only the E1 baseline wires plus the 8 termless ones;
+- the "edge table 16 == 16" check.
+
+The "termless left 0" result is also weaker than it looks. `h2` reuses `h1`'s terminal table instead of re-reading it (`gscript.py:3532`). So "0 left" is arithmetic on data taken before the deletes, not a fresh measurement.
+
+**Other candidates, weaker:**
+- A stale ExecState read immediately after the scripted deletes. The E3 value of 1 was read on a scratch copy after save, reload and Remove Bad Wires (`diag_c98_fgate.log:468-479`); the in-memory self-test state never went through that.
+- A B-dependent fault. There is no evidence for this. B's edges are Bundler#11608 and LoopTunnel#11363 into #11261 (`diag_c98_fgate.log:419-423`), and nothing on case A's side depends on them.
+
+**3. What would falsify the claim**
+
+Read the Error List, or run Remove Bad Wires on a scratch copy, at the self-test's post-A state (8 termless wires already deleted, Use Default already set). If it lists "Wire has loose ends" items, and Remove Bad Wires gives ExecState 1 with the wire count unchanged, the break is loose ends from move A, not something only B fixes.
+
+The claim is further weakened if E3 in the self-test also reads ExecState 0 after only B's termless wire (#10908) is deleted by uid.
+
+**4. Cheapest discriminating test**
+
+- **Zero cost, no LabVIEW:** open the existing `errorlist_shots/bd_*after{0,1,2,3,12,13}.png` screenshots, which show where "Show Error" jumped for each loose-end item. If the highlighted segments are in case A's True frame #23240 or on Diagram 7911 near the moved members, move A made them. The one I opened (`bd_180413_after0.png`) is scrolled too far to show the location, so this is not settled yet.
+- **One short LabVIEW read:** rerun the self-test up to F4d and, before F4e, do one of these:
+  - read the Error List with the existing errorlist hook (GUI Ctrl+L, same route as 98-1), or
+  - save a scratch copy, run Remove Bad Wires on it, and read wire count, ExecState and the Error List.
+
+  Loose ends present and cleared with the wire count unchanged means my alternative holds and the claim is refuted. Any non-wire item mentioning #11261, #8323 or case B means the claim survives.
+
+If my alternative holds, the fix stays inside `move_into_frame` and needs no reordering. After the by-uid deletes, call `AbstractDiagram.Remove Wire Loose Ends` on D and on the frame. It removes only unconnected wire ends ([NI: Remove Wire Loose Ends](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/abstractdiagram/removewirelooseends.html)), unlike Remove Bad Wires on the whole VI. Or call `Wire.Remove Loose Ends` on the specific surviving wires, starting with w7913 and w10430 ([LabVIEW Wiki](https://labviewwiki.org/wiki/Wire_class/Remove_Loose_Ends_method)). Then read ExecState again.
+
+**What would change my mind:** an Error List read at the post-A state that shows no "loose ends" items and a non-wire error tied to case B's members.
+
+**Level of evidence:** everything above is read from the recorded logs, the Error List JSON and one screenshot. I ran nothing. The 6-vs-9 split relies partly on OCR rows after scrolling (items 12–13), and it cannot rule out that some loose-end items belong to the 9 termless wires. The measurements so far do not settle between the claim and my alternative; the post-A Error List read does.
+
+Sources:
+- [NI: Wire has loose ends](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/wire-has-loose-ends.html)
+- [NI: Remove Wire Loose Ends](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/abstractdiagram/removewirelooseends.html)
+- [LabVIEW Wiki: Wire class/Remove Loose Ends method](https://labviewwiki.org/wiki/Wire_class/Remove_Loose_Ends_method)
+- [LabVIEW Wiki: VI class/Block Diagram.Remove Bad Wires method](https://labviewwiki.org/wiki/VI_class/Block_Diagram.Remove_Bad_Wires_method)
+BGRUN END rc=0 after 170s
