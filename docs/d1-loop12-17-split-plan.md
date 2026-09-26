@@ -1165,6 +1165,69 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
        rerun was a float-compare bug, now fixed.
      - **(e) The bgrun reaper card `task_91-2.json` (retrospective-cycle90 device-failed) is valid and was NOT
        dispatched:** the session cap ran out. It is owed right after (c).
+199. **(cycle 92 judgement, on result `92-1` FAIL 34/1 — both measurements delivered; the one fail is the pick-count gate)**
+     - **MEASURED (`tools/bench/t0_clfn_thread_92.json`, `tools/bench/m8_unstamped8_92.json`, INDEX row 52):**
+       - all 12 stamp CLFNs read `Any Thread?` (636D403) = **False, i.e. UI thread**. `build_clfn`'s
+         `reentrant=True` (`tools/gscript.py:2968`) does NOT set this property. Reader op
+         `claudeDev\OpCLFNThread_v0.vi` md5 `a7308101…` (self-test 9/0).
+       - Unstamped `D1_s1_copy.vi`, 8 picks targeted, both legs registered **7**: lost **27 / 19**. Stamped t0 at
+         7 registered beads (INDEX 51): **118**. At the same bead count, the UI-thread stamps cost about 100 frames
+         per 120 s. ⇒ **the step-4 table (198(b)) is instrument-contaminated and stays unusable** until the stamps are
+         shown not to perturb.
+       - First-click loss is **2/2 on UNSTAMPED legs today**, with the capture held by `LVDChild` inside LabVIEW's own
+         process. ⇒ the first-click loss is a harness/session fact, NOT a stamp effect. 198(c)'s "4/8 stamped vs 0/~16
+         unstamped" contrast is WITHDRAWN as evidence about the stamps.
+     - **(a) DECIDED: the any-thread copy is a byte copy of t0 with only the 12 `Any Thread?` properties set True**
+       (card `92-2`), not a rebuild from S1 by the step-3c route as 198(c) said. Reason: the only difference to be
+       tested is the thread setting, and t0's structure is already verified (198(a)). The acceptance is: 12/12 read
+       back True, the same counts as t0, `computation_diff(S1,·)` 0 rows with the same 24 added, and ExecState 1 warm and cold.
+       Thread safety is covered by 198(c): one buffer and one writer per site.
+     - **(b) DECIDED: 198(d)'s harness change is applied now** (card `92-3`). Before every pick, read the
+       capture-holding window. Before pick 1, release any capture and verify by a read that none is held. Every act
+       is logged through `lv_gui.ps1` under the 2026-09-17 bead-pick approval. The rerun rule is unchanged.
+     - **(c) DECIDED: the instrument-clearance legs are ABBA at 8 picks, panel normal, 120 s:** unstamped S1 (A)
+       against the any-thread copy (B). The clearance criterion is set NOW, before the numbers: **B is cleared when
+       its lost frames are within 2× A's mean + 20 frames**. Anything above that means the stamps still perturb, and
+       the next judgement decides on those numbers. Only a cleared B may be used for the 11/15-pick slope legs of 198(b).
+     - **(d)** 92-1's open 3 (accept the 7-bead comparison?) is answered by (c). With the harness fixed, both arms
+       must register 8.
+     - **(e) RESULTS (cycle 92, `92-2` PASS 23/0, `92-3` PASS 43/0, INDEX row 53, `tools/bench/m8_anythread8_92.json`):**
+       - Any-thread copy `claudeDev\D1_s1_t0at_20260926_090833.vi` md5 `30a15c67…`: 12/12 read back True warm and cold,
+         the same counts as t0, cdiff 0 rows with 24 added, ExecState 1. Writer op `claudeDev\OpCLFNThreadSet_v0.vi`
+         md5 `d084d43d…` (self-test incl. negative, handles flat).
+       - Harness fix WORKS: the pick-1 capture (`LVDChild`, LabVIEW pid) was held in 3 of 4 legs, freed by one title-bar
+         click, and read back as 0. **All 4 legs registered 8/8 on the first attempt.**
+       - ABBA, 8 picks, normal, 120 s: **A (unstamped S1) 20 / 22 · B (any-thread stamps) 130 / 131.** The criterion
+         (c) is B ≤ 62. **NOT CLEARED.** UI-thread stamps (INDEX 51) were 138 / 144, so the thread setting explains at
+         most ~10 frames. **198(c)'s UI-thread hypothesis is REFUTED as the main cause.**
+       - The stamped tracking period median is 11.16–11.18 ms, just above the 11.11 ms camera period. The stamps' own
+         call cost (≤ 1.4 µs × 12) cannot account for ~50 µs/iteration.
+     - **(f) DECIDED (next cycle):** the step-4 table stays unusable. The stamps are NOT used for per-group attribution
+       until an instrument passes (c)'s criterion. The next hypothesis is formed under a failed prediction, so it gets
+       a `-Role hypothesis` review FIRST (CLAUDE.md §5). The candidate: branching a large-array wire (image / kernel
+       arrays) into a CLFN makes the buffer shared, so a downstream in-place node must copy it every frame; scalar-wired
+       stamps (the `i` sites) would not do this. The discriminating measurement, ordered cheapest first:
+       (1) read-only: the data type (scalar / array + dimensions) of each of the 12 stamp wires;
+       (2) build `D1_s1_t0sc_<ts>.vi` from the t0at copy with ONLY the scalar-wired stamps kept (delete the others by
+           uid; cdiff 0 rows);
+       (3) ABBA 8 picks against S1 under (c)'s criterion.
+       If the scalar-only copy passes, the array-branch cost is the perturbation, and array sites are restamped
+       through a scalar derived inside the same group, a design for judgement then.
+     - **(g)** Pre-92-4 bgrun logs carry no PID line and stay listed as "unfinished" in audit A2. They are NEVER
+       closed by hand, because a hand-written KILLED line would be a record the machine did not make.
+     - **(h) From retrospective-cycle92 (accepted; `inference-over-measurement` count 2):**
+       - **Every leg card from cycle 93 has this PASS criterion:** the dry run EXECUTES the leg script, with GUI/COM
+         calls stubbed to saved real returns (e.g. `d4.clickprobe` → the saved attempt-2 dict), and every new line
+         between the sequencer and LabVIEW runs once offline before the first launch. A dry branch that writes a fake
+         leg.json without calling the leg script is not a dry run (`tools/bench/diag_c92_m2.py:93-94`).
+       - Recorded: 92-1's launch 1 COM-Aborted and then force-killed LabVIEW twice, so the VI never closed the camera.
+         Afterwards the camera read 90.0009 Hz.
+       - Recorded: at 8 picks the B legs are frame-bound (every site is 9.7–10.9 ms after `i` on an 11.16 ms period).
+         The 8-pick ABBA is a perturbation test only, never a per-site timing table.
+       - Reading applied to 92-1: a card whose FAIL is a single gate, with all its measurements delivered, is judged,
+         not escalated.
+       - The cycle-92 material model was mixed: 92-1 and 92-2 on fable/low, 92-3 on Opus after the mid-cycle agent
+         change. Keep this out of a single-condition Fable-vs-Opus row.
 
 ## OPEN (design choices — for judgement; not decided here)
 

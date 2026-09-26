@@ -1,0 +1,60 @@
+{
+ "schema": "task/1",
+ "id": "92-2",
+ "kind": "build",
+ "goal": "PD199(a): claudeDev\\D1_s1_t0at_<ts>.vi = byte copy of D1_s1_t0_20260926_055551.vi with Any Thread? (636D403) set True on its 12 CLFN stamp nodes and nothing else",
+ "why": "result_92-1: all 12 stamps are UI thread; stamped 7-bead leg lost 118 vs unstamped 19/27. The any-thread copy tests whether the UI-thread switch is the instrument's cost (PD198(c)).",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/cards/result_92-1.json"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_t0_20260926_055551.vi", "md5": "25ea4f7d10d91c41c4b5de64f850c945"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpCLFNThread_v0.vi", "md5": "a7308101be3a43eab60cbef3137ee376"},
+  {"path": "tools/bench/t0_clfn_thread_92.json", "md5": "dddcf1052f02ed2873533e6d65673c00"},
+  {"path": "tools/bench/opclfnthread_labels.json"},
+  {"path": "tools/bench/diag_c92_clfn_thread.py"}
+ ],
+ "pass": [
+  "copy made by file copy of the t0 file (md5 25ea4f7d before edit); t0 itself md5 unchanged at the end",
+  "Any Thread? read back True on all 12 CLFN uids of the copy (uid echo 12/12), by a read separate from the write",
+  "node and wire counts of the copy equal t0's; computation_diff(S1,copy) 0 rows with the same 24 added as t0",
+  "ExecState 1 on the copy, saved by script; reopened cold: ExecState 1 and Any Thread? still True 12/12",
+  "if a write verb is built for 636D403: self-test incl. a negative case, handles flat over 20 calls"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_t0at_*.vi",
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpCLFNThread*",
+  "tools/bench/diag_c92b_*",
+  "tools/bench/cards/result_92-2.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c92b_*",
+   "tools/bench/t0_clfn_thread_92*",
+   "tools/bench/opclfnthread*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**",
+   "docs/toolkit-capabilities.md",
+   "docs/NAMES.md"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 45},
+ "rules": [
+  "never save t0, S1, kswap, the bed or originals; the new copy is the only VI saved (plus a write op if built)",
+  "rule 1a: diagnostic copy, never delivered; the only change is the thread property",
+  "DLL thread safety is settled by PD198(c): one buffer per site, one writer per site",
+  "hold your turn until every bgrun you start has its END/TIMEOUT line; LabVIEW gone before return",
+  "facts only; result/1 <=10 facts <=3 open"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

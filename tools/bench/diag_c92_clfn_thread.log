@@ -1,0 +1,63 @@
+BGRUN START 2026-09-26 08:52:30 limit 30.0 min: py -u tools/bench/diag_c92_clfn_thread.py
+  donor controls ['vi path', 'Class Name', 'index', 'vi path 2', 'location (0, 0)', 'Properties', 'Class Name 2', 'index 2']
+GATE B1 donor copy ExecState 1                                    PASS  
+  donor Property nodes [220]
+net_map: node 0 uid 43 (0 s)
+net_map: node 1 uid 124 (1 s)
+net_map: node 2 uid 308 (2 s)
+net_map: node 3 uid 683 (4 s)
+net_map: node 4 uid 316 (4 s)
+net_map: node 5 uid 220 (6 s)
+net_map: node 6 uid 334 (7 s)
+net_map: purged 20/65 junk Invokes (1 s)
+net_map: purged 40/65 junk Invokes (3 s)
+net_map: purged 60/65 junk Invokes (4 s)
+net_map: 6 nodes walked in 7.0 s; 65 junk Invoke(s) purged in 4.8 s
+GATE B2 IndexMode write PN found + deleted, ES 1                  PASS  220
+net_map: node 0 uid 43 (0 s)
+net_map: node 1 uid 124 (0 s)
+net_map: node 2 uid 308 (1 s)
+net_map: node 3 uid 683 (1 s)
+net_map: node 4 uid 316 (1 s)
+net_map: node 5 uid 118 (1 s)
+net_map: purged 20/57 junk Invokes (0 s)
+net_map: purged 40/57 junk Invokes (1 s)
+net_map: 5 nodes walked in 1.4 s; 57 junk Invoke(s) purged in 1.1 s
+GATE B3 TMSC found with a wired target class                      PASS  (683, 772)
+  CallLibrary PN #118 Nodes[5] terminals [(0, 'reference', False, 0), (1, 'reference out', True, 0), (2, 'error in (no error)', False, 0), (3, 'error out', True, 0), (4, 'Re-entrant', True, 0), (5, 'LibPath', True, 0), (6, 'CallConvention', True, 0)]
+GATE B4 CallLibrary property node built (3 read items)            PASS  
+GATE B5 seed control created on `reference` (CallLibrary-typed)   PASS  ('reference', 390)
+  after wiring: PN terminals [(0, 'reference', 382), (1, 'reference out', 0), (2, 'error in (no error)', 0), (3, 'error out', 0), (4, 'Re-entrant', 0), (5, 'LibPath', 0), (6, 'CallConvention', 0)] ES 1
+GATE B6 seed -> target class, TMSC out -> reference: ES 1         PASS  1
+  PN data outputs ['Re-entrant', 'LibPath', 'CallConvention']
+GATE B7 indicators: 3 data + error out + UID + UID err            PASS  {'seed': 'reference', 'AnyThread': 'Any Thread?', 'LibraryPath': 'Library Path', 'CallingConvention': 'Calling Convention', 'PNErr': 'error out 2', 'UID': 'UID', 'UIDErr': 'error out 3'}
+GATE B8 ExecState 1 -> COM save                                   PASS  1
+  labels {'seed': 'reference', 'AnyThread': 'Any Thread?', 'LibraryPath': 'Library Path', 'CallingConvention': 'Calling Convention', 'PNErr': 'error out 2', 'UID': 'UID', 'UIDErr': 'error out 3', 'controls': ['vi path', 'Class Name', 'index', 'vi path 2', 'location (0, 0)', 'Properties', 'Class Name 2', 'index 2', 'reference']}
+GATE B9 ExecState 1 COLD in a fresh LabVIEW                       PASS  
+GATE R1 report_all(t0, CallLibrary) == 12 == step-3c uids         PASS  ([24309, 23258, 23076, 23004, 22997, 22989, 22968, 24015, 24012, 24008, 23534, 23466], [22968, 22989, 22997, 23004, 23076, 23258, 23466, 23534, 24008, 24012, 24015, 24309])
+ROW {"index": 0, "uid_report_all": 24309, "uid_echo": 24309, "err": null, "uid_err": null, "AnyThread": false, "LibraryPath": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\t0stamp.dll", "CallingConvention": 0, "property_ids": {"AnyThread": "636D403", "LibraryPath": "636D400", "CallingConvention": "636D402"}}
+ROW {"index": 1, "uid_report_all": 23258, "uid_echo": 23258, "err": null, "uid_err": null, "AnyThread": false, "LibraryPath": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\t0stamp.dll", "CallingConvention": 0, "property_ids": {"AnyThread": "636D403", "LibraryPath": "636D400", "CallingConvention": "636D402"}}
+ROW {"index": 2, "uid_report_all": 23076, "uid_echo": 23076, "err": null, "uid_err": null, "AnyThread": false, "LibraryPath": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\t0stamp.dll", "CallingConvention": 0, "property_ids": {"AnyThread": "636D403", "LibraryPath": "636D400", "CallingConvention": "636D402"}}
+ROW {"index": 3, "uid_report_all": 23004, "uid_echo": 23004, "err": null, "uid_err": null, "AnyThread": false, "LibraryPath": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\t0stamp.dll", "CallingConvention": 0, "property_ids": {"AnyThread": "636D403", "LibraryPath": "636D400", "CallingConvention": "636D402"}}
+ROW {"index": 4, "uid_report_all": 22997, "uid_echo": 22997, "err": null, "uid_err": null, "AnyThread": false, "LibraryPath": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\t0stamp.dll", "CallingConvention": 0, "property_ids": {"AnyThread": "636D403", "LibraryPath": "636D400", "CallingConvention": "636D402"}}
+ROW {"index": 5, "uid_report_all": 22989, "uid_echo": 22989, "err": null, "uid_err": null, "AnyThread": false, "LibraryPath": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\t0stamp.dll", "CallingConvention": 0, "property_ids": {"AnyThread": "636D403", "LibraryPath": "636D400", "CallingConvention": "636D402"}}
+ROW {"index": 6, "uid_report_all": 22968, "uid_echo": 22968, "err": null, "uid_err": null, "AnyThread": false, "LibraryPath": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\t0stamp.dll", "CallingConvention": 0, "property_ids": {"AnyThread": "636D403", "LibraryPath": "636D400", "CallingConvention": "636D402"}}
+ROW {"index": 7, "uid_report_all": 24015, "uid_echo": 24015, "err": null, "uid_err": null, "AnyThread": false, "LibraryPath": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\t0stamp.dll", "CallingConvention": 0, "property_ids": {"AnyThread": "636D403", "LibraryPath": "636D400", "CallingConvention": "636D402"}}
+ROW {"index": 8, "uid_report_all": 24012, "uid_echo": 24012, "err": null, "uid_err": null, "AnyThread": false, "LibraryPath": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\t0stamp.dll", "CallingConvention": 0, "property_ids": {"AnyThread": "636D403", "LibraryPath": "636D400", "CallingConvention": "636D402"}}
+ROW {"index": 9, "uid_report_all": 24008, "uid_echo": 24008, "err": null, "uid_err": null, "AnyThread": false, "LibraryPath": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\t0stamp.dll", "CallingConvention": 0, "property_ids": {"AnyThread": "636D403", "LibraryPath": "636D400", "CallingConvention": "636D402"}}
+ROW {"index": 10, "uid_report_all": 23534, "uid_echo": 23534, "err": null, "uid_err": null, "AnyThread": false, "LibraryPath": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\t0stamp.dll", "CallingConvention": 0, "property_ids": {"AnyThread": "636D403", "LibraryPath": "636D400", "CallingConvention": "636D402"}}
+ROW {"index": 11, "uid_report_all": 23466, "uid_echo": 23466, "err": null, "uid_err": null, "AnyThread": false, "LibraryPath": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\t0stamp.dll", "CallingConvention": 0, "property_ids": {"AnyThread": "636D403", "LibraryPath": "636D400", "CallingConvention": "636D402"}}
+GATE R2 uid echo == report_all uid for all 12                     PASS  
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c92_clfn_thread.py", line 158, in <module>
+    rows = read() if ok_build else []
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c92_clfn_thread.py", line 146, in read
+    [(r["uid_report_all"], r["AnyThread"], r["err"][:60]) for r in rows])
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c92_clfn_thread.py", line 146, in <listcomp>
+    [(r["uid_report_all"], r["AnyThread"], r["err"][:60]) for r in rows])
+TypeError: 'NoneType' object is not subscriptable
+GATE the run completed without an unhandled exception             FAIL  TypeError("'NoneType' object is not subscriptable")
+GATE R4 t0 md5 unchanged                                          PASS  25ea4f7d10d91c41c4b5de64f850c945
+GATE R5 LabVIEW gone at exit                                      PASS  
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":13,"fail":1},"first_fail":"the run completed without an unhandled exception","artefacts":[{"path":"tools\\bench\\t0_clfn_thread_92.json","md5":"d9aca0631c93da3148ea12e671575557"}]}
+BGRUN END rc=1 after 267s

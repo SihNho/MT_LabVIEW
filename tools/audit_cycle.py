@@ -222,6 +222,18 @@ def _self_test():
 _self_test()
 
 
+def a2_state(body):
+    """A2's reading of one log body (card 92-4): "" (no bgrun run at all), "ended" (END or TIMEOUT present),
+    "killed" (no END/TIMEOUT but a `BGRUN KILLED` line from tools/bgrun_reap.py), "unfinished" (START only)."""
+    if "BGRUN START" not in body:
+        return ""
+    if "BGRUN END" in body or "BGRUN TIMEOUT" in body:
+        return "ended"
+    if re.search(r"^BGRUN KILLED \(external\) pid=\d+", body, re.M):
+        return "killed"
+    return "unfinished"
+
+
 def say(check, ok, detail):
     RESULT.append(dict(check=check, ok=ok, detail=detail))
     mark = "PASS" if ok is True else ("FAIL" if ok is False else "n-a ")
@@ -454,15 +466,21 @@ def main():
     # A2 - every run terminated. SELF-MEASUREMENT: when this audit runs inside a bgrun (the retrospective does
     # exactly that), that log cannot have its END line yet, and the first retrospective duly reported A2 as failed
     # and called STATUS's "audit passed" inaccurate. The still-running log is therefore listed, not counted.
+    # KILLED (card 92-4): a runner taken down by an OUTSIDE tree kill cannot write END; `tools/bgrun_reap.py` appends
+    # `BGRUN KILLED (external) pid=<n>` once its pid is gone. Such a log is ENDED-BUT-FLAGGED here: A2 does not fail
+    # on it (the record is closed) but it is LISTED, never silent - a kill is a fact the retrospective must see.
     running = os.environ.get("BGRUN_LOG", "")
-    unfinished, in_flight = [], []
+    unfinished, in_flight, killed = [], [], []
     for p in build_logs:
-        body = read(p)
-        if "BGRUN START" in body and "BGRUN END" not in body and "BGRUN TIMEOUT" not in body:
+        st = a2_state(read(p))
+        if st == "unfinished":
             (in_flight if os.path.basename(p) == os.path.basename(running) else unfinished).append(os.path.basename(p))
+        elif st == "killed":
+            killed.append(os.path.basename(p))
     say("A2 every bgrun ended (END or TIMEOUT)", not unfinished,
         ("all runs accounted for" if not unfinished else f"unfinished: {unfinished}")
-        + (f"; still running (this audit's own runner): {in_flight}" if in_flight else ""))
+        + (f"; still running (this audit's own runner): {in_flight}" if in_flight else "")
+        + (f"; KILLED from outside, closed by bgrun_reap (flagged): {killed}" if killed else ""))
 
     # A3 - a failing log must be followed by an archived review
     failing = [p for p in build_logs if log_failed(read(p))]

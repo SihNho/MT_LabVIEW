@@ -8,8 +8,9 @@ PREDICTION CONTRACT (checked below, 18 gates; G15-G18 added 2026-09-24 cycle 73)
   G17     without CYCLE_SESSION (the interactive chat) the same SendMessage is ALLOWED and COUNTED (card chat-L2)
   G19-G20 a SendMessage resume past the cap / after the retrospective is REFUSED (card chat-L2; 20 gates)
   G18     under CYCLE_SESSION=1 a SendMessage to `main` is ALLOWED
-  G1-G8   dispatches 1..8 of `material` / `log-reader` are ALLOWED (exit 0) and the counter reaches 8
-  G9      the 9th dispatch is REFUSED (exit 2) with "CYCLE DISPATCH CAP"
+  G1-G6   dispatches 1..6 of material / its Fable rungs / log-reader are ALLOWED; G7 the counter reaches 6
+  G8-G9   the 7th dispatch (material or a Fable rung) is REFUSED with "CYCLE DISPATCH CAP" + "WRITE NEXT AND EXIT"
+          (card chat-N1 (4b): cap 8 -> 6)
   G10     an uncounted subagent_type (`Explore`) is ALLOWED even at the cap, and does not move the counter
   G11     a non-Agent tool name is ALLOWED (the hook only speaks about Agent/Task)
   G12     in a FRESH session, `py tools/bgrun.py ... -- py tools/retrospective.py --cycle 9` is allowed by
@@ -78,19 +79,23 @@ def main():
     if env_off is not None:
         print("  note: BENCH_CELL was set and is ignored for this run", flush=True)
 
-    # G1-G8 : the cap is 8, so eight dispatches pass
-    for i in range(1, 9):
-        rc, _ = agent_call(SID_A, "material" if i % 2 else "log-reader")
-        gate("G%d dispatch %d allowed" % (i, i), rc == 0, "exit %d" % rc)
+    # G1-G6 : the cap is 6 (card chat-N1 (4b), was 8), so six dispatches pass; a Fable rung counts too
+    kinds = ["material", "log-reader", "material-fable-low", "material", "material-fable-medium", "log-reader"]
+    for i in range(1, 7):
+        rc, _ = agent_call(SID_A, kinds[i - 1])
+        gate("G%d dispatch %d (%s) allowed" % (i, i, kinds[i - 1]), rc == 0, "exit %d" % rc)
     st = guard_session.load(guard_session.SAFE_RE.sub("_", SID_A))
-    # G9 : the ninth is refused
+    gate("G7 counter reached 6 (Fable rungs counted)", st.get("dispatches") == 6, "counter %s" % st.get("dispatches"))
+    # G9 : the seventh is refused, and the refusal says write NEXT and exit
     rc, err = agent_call(SID_A, "material")
-    gate("G9 ninth dispatch refused", rc == 2 and "CYCLE DISPATCH CAP" in err,
+    gate("G9 seventh dispatch refused", rc == 2 and "CYCLE DISPATCH CAP" in err and "WRITE NEXT AND EXIT" in err,
          "exit %d, counter %s" % (rc, st.get("dispatches")))
+    rc, err = agent_call(SID_A, "material-fable-low")
+    gate("G8 seventh as a Fable rung refused too", rc == 2 and "CYCLE DISPATCH CAP" in err, "exit %d" % rc)
     # G10 : an uncounted agent type passes even at the cap and does not move the counter
     rc, _ = agent_call(SID_A, "Explore")
     after = guard_session.load(guard_session.SAFE_RE.sub("_", SID_A))
-    gate("G10 uncounted subagent_type allowed", rc == 0 and after.get("dispatches") == 8,
+    gate("G10 uncounted subagent_type allowed", rc == 0 and after.get("dispatches") == 6,
          "exit %d, counter %s" % (rc, after.get("dispatches")))
     # G11 : not an Agent call at all
     rc, _ = call(GUARD_SESSION, {"session_id": SID_A, "tool_name": "Bash",

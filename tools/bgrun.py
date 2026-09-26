@@ -10,6 +10,10 @@ line-by-line into --log (unbuffered, so a monitor sees progress), and KILLS THE 
 to the log and stdout — so silence can never mean "still running" for longer than the limit.
 "Always" has had a MECHANISM only since 2026-09-18: the `try/finally` at the bottom of this file plus
 `_write_final`, which covers the exit paths the three explicit `out(...)` calls do not (see `_STATE`).
+An OUTSIDE tree kill of this runner is the one path no finally can cover: since 2026-09-26 (card 92-4) the line
+after START is `BGRUN PID <n>`, and `tools/bgrun_reap.py` (run at every bgrun start and at every cycle end) appends
+    BGRUN KILLED (external) pid=<n> ...
+to a log whose runner pid is gone with no END/TIMEOUT - so that record is closed too, by the next process that looks.
 The PreToolUse guard (tools/hooks/guard_bash.py) refuses a backgrounded LabVIEW command that does
 not go through this runner (user, 2026-09-05: a hung discovery job sat 3 h 48 min unnoticed).
 """
@@ -194,6 +198,22 @@ def main():
                 except Exception:
                     pass
         out(f"BGRUN START {time.strftime('%Y-%m-%d %H:%M:%S')} limit {a.max_min} min: {' '.join(cmd)}\n")
+        # THE RUNNER'S OWN PID, ON THE NEXT LINE (card 92-4; retrospective-cycle90 `device-failed`, threshold 1). The
+        # try/finally below covers every exit this process takes by itself; an OUTSIDE `taskkill /T /F` leaves the log
+        # at START with nobody to write END. `tools/bgrun_reap.py` closes such a record later - from THIS line, when the
+        # pid is no longer in tasklist. A separate line, not a START field: jev.py:222, jev_gaterow_q.py:57 and
+        # protocol.py:63 parse `BGRUN START <date> <time> limit <m> min: <cmd>` exactly, and the command runs to EOL.
+        out(f"BGRUN PID {os.getpid()}\n")
+        # REAP AT EVERY START: mark any dead runner's log in the bench (never this one, never a live pid). Silent when
+        # nothing is marked; a failure of the reaper itself is on the log and never fatal to this run.
+        try:
+            import bgrun_reap
+            _r = bgrun_reap.reap(exclude=[logp], who=f"bgrun pid={os.getpid()}")
+            if _r["marked"]:
+                out("BGRUN REAP marked KILLED: " + ", ".join(
+                    f"{os.path.basename(_p)} pid={_pid}" for _p, _pid in _r["marked"]) + "\n")
+        except Exception as e:                                                     # noqa: BLE001
+            out(f"BGRUN REAP FAILED: {type(e).__name__}: {str(e)[:200]}\n")
         # BGRUN_LOG - the ONE line that makes audit_cycle's own-log exemption reachable (STATUS OPEN 42;
         # archive/peer/2026-09-18-c20-audit-a1-motorgate-{codex,opus}.md, both ANSWERED, `device-failed`
         # threshold 1). `audit_cycle.py:242` has read `os.environ.get("BGRUN_LOG","")` since it was written, to

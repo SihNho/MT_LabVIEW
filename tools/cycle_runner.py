@@ -706,6 +706,26 @@ def labview_close_hook(n, a, bench, runner_log, status_text):
     return ok, verdict
 
 
+def bgrun_reap_hook(n, bench, runner_log):
+    """Card 92-4 (retrospective-cycle90 `device-failed`, threshold 1): at every cycle end, close the record of any
+    bgrun in `bench` that an OUTSIDE tree kill took down (START + `BGRUN PID`, no END/TIMEOUT, pid gone) by
+    appending `BGRUN KILLED (external)` through tools/bgrun_reap.py. Touches no live pid and no LabVIEW. Never
+    stops the runner: its outcome is one `BGRUN-REAP |` line. Returns the reap dict (or None on failure)."""
+    stamp = time.strftime("%Y-%m-%d %H:%M:%S")
+    try:
+        import bgrun_reap
+        r = bgrun_reap.reap(bench=bench, who="cycle_runner cycle %d" % n,
+                            exclude=[os.environ.get("BGRUN_LOG", "")] if os.environ.get("BGRUN_LOG") else ())
+    except Exception as e:  # noqa: BLE001
+        log_line(runner_log, "BGRUN-REAP | %s | cycle %d | FAILED: %s: %s" % (stamp, n, type(e).__name__, str(e)[:200]))
+        return None
+    log_line(runner_log, "BGRUN-REAP | %s | cycle %d | scanned %d, marked KILLED %s, live %d, undecidable %d, pids %s"
+             % (stamp, n, r["scanned"],
+                [("%s pid=%d" % (os.path.basename(p), pid)) for p, pid in r["marked"]] or "none",
+                len(r["open_live"]), len(r["undecidable"]), r["pids"]))
+    return r
+
+
 def errorlist_hook(n, a, bench, runner_log, status_text):
     """User decision 5, 2026-09-24 ("사이클 시작하기 전에 LabVIEW 컴파일 에러 창은 반드시 확인해야할듯"): before every
     cycle - and BEFORE the motor start hook (card chat-C2) - `tools/errorlist_check.py` reads the current bed's Error
@@ -1249,6 +1269,8 @@ def _loop(a, status_path, bench, runner_log, prompt, run_t0, hb):
         # LabVIEW CLOSED AND VERIFIED GONE at every cycle end, after the motor end hook and whatever it returned (the
         # camera must not keep acquiring - user 2026-09-24). Its failure stops the runner below.
         ok_lv, why_lv = labview_close_hook(n, a, bench, runner_log, read(status_path))
+        # BGRUN REAPER at cycle end (card 92-4): close the record of any bgrun killed from outside during the cycle.
+        bgrun_reap_hook(n, bench, runner_log)
         cost =("$%.4f" % env["total_cost_usd"]) if isinstance(env, dict) and isinstance(
             env.get("total_cost_usd"), (int, float)) else "?"
         # HEARTBEAT at cycle end (card chat-H1): after motor end + LabVIEW close, before any stop decision below

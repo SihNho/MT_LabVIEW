@@ -1257,3 +1257,14 @@ so the question is only ever WHICH terminal reference is obtainable — and for 
 ⚠️ Do not extend the shift-register line above (`LeftShiftRegister` 16442 **does** derive from `Tunnel`, so
 6356000/6356001 apply to it) to flat-sequence tunnels: the two classes look alike in this file and do not share
 an ancestor here.
+
+## CallLibrary property node terminals (measured 2026-09-26, `tools/bench/diag_c92_clfn_thread.log:27`, `diag_c92b_anythread.log:20`)
+
+| property id | PN terminal label (exact) | read op indicator / write op control |
+|---|---|---|
+| `636D403` Any Thread? | `Re-entrant` | reader indicator `Any Thread?` · writer control `Any Thread? 2` (`OpCLFNThreadSet_v0`) |
+| `636D400` Library Path | `LibPath` | `Library Path` |
+| `636D402` Calling Convention | `CallConvention` | `Calling Convention` |
+
+The PN's fixed terminals are `reference`, `reference out`, `error in (no error)`, `error out`. `Traverse` class name is
+`CallLibrary` (12 on the t0 copy, uids `t0_clfn_thread_92.json`).

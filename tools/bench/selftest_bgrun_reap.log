@@ -1,0 +1,24 @@
+BGRUN START 2026-09-26 09:10:00 limit 25.0 min: py -u tools/bench/selftest_bgrun_reap.py
+BGRUN PID 20524
+  -> PASS R1 PID line after START, START parses  pid_line=True cmd=True re=True | BGRUN PID 23120
+  -> PASS R2 outside kill leaves START+PID, no END  pid line 26344 == popen 26344, taskkill rc=0, alive=False, last=BGRUN PID 26344
+  -> PASS R3 reaper marks the killed log once, as last line  marked=['r2_killed.log'] killed_lines=1 last=BGRUN KILLED (external) pid=26344 marked 2026-09-26 09:10:02 by selftest: no END/TIMEOUT a
+  -> PASS R4 idempotent  marked=[] count=1
+  -> PASS R5a live run not marked, listed open_live  open_live=['r5_live.log'] pid=25648/25648
+  -> PASS R6 finished log untouched  BGRUN END rc=0 after 1s
+  -> PASS R7 pre-92-4 log undecidable, untouched  undecidable=['r7_old.log'] last=step 3 still working
+  -> PASS R5b live run then ends by itself, no KILLED  BGRUN END rc=0 after 9s
+  -> PASS R8 bgrun start reaps the fixture and says so  fixture_ok=True said=True ended=True | fixture last=BGRUN KILLED (external) pid=26344 marked 2026-09-26 09:10:11 by bgrun 
+  -> PASS R9 audit_cycle.a2_state four states  {'': '', 'ended': 'ended', 'killed': 'killed', 'unfinished': 'unfinished'}
+BGRUN-REAP | 2026-09-26 09:10:11 | cycle 92 | scanned 1, marked KILLED ['diag_x.log pid=26344'], live 0, undecidable 0, pids ok
+  -> PASS R10 cycle_runner hook marks + logs one BGRUN-REAP line  BGRUN-REAP | 2026-09-26 09:10:11 | cycle 92 | scanned 1, marked KILLED ['diag_x.log pid=26344'], live 0, undecidable 0, pids ok
+  -> PASS X1 selftest_bgrun_final_line.py rc 0  rc=0 7s | === selftest_bgrun_final_line: 8 pass, 0 fail ===
+  -> PASS X2 selftest_bgrun_fail_scan.py rc 0  rc=0 3s | === selftest_bgrun_fail_scan: 8 pass, 0 fail ===
+  -> PASS X3 selftest_bgrun_jev_exempt.py rc 0  rc=0 18s | === selftest_bgrun_jev_exempt: 9 pass, 0 fail ===
+  -> PASS X4 selftest_cycle_runner.py rc 0  rc=0 9s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":10,"fail":0},"first_fail":null,"artefacts":[]}
+  -> PASS X5 selftest_audit_c7.py rc 0  rc=0 0s | RESULT {"status":"PASS","gates":{"pass":8,"fail":0},"first_fail":null,"artefacts":[],"schema":"result-line/1"}
+  -> PASS X6 selftest_audit_c4c_split.py rc 0  rc=0 31s | === GATES: 33 pass / 0 fail
+  -> PASS X7 selftest_audit_cost_window.py rc 0  rc=0 0s | SELFTEST 7 pass / 0 fail
+=== selftest_bgrun_reap: 18 pass, 0 fail ===
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":18,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 80s

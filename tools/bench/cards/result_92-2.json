@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"92-2","status":"PASS","gates":{"pass":23,"fail":0},
+ "first_fail":null,
+ "blocked_by":null,
+ "artefacts":[
+  {"path":"C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_s1_t0at_20260926_090833.vi","md5":"30a15c6772d5ef3336ed274abc4c2f40"},
+  {"path":"C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/OpCLFNThreadSet_v0.vi","md5":"d084d43d3fcd90855270dc21c9c69ace"},
+  {"path":"tools/bench/diag_c92b_anythread.json","md5":"a0c61aeb050055982eccbf2eeec67a92"},
+  {"path":"tools/bench/diag_c92b_anythread.py","md5":null},
+  {"path":"tools/bench/opclfnthreadset_labels.json","md5":null},
+  {"path":"tools/bench/diag_c92b_md5.py","md5":null}
+ ],
+ "facts":[
+  "D1_s1_t0at_20260926_090833.vi = byte copy of t0 (md5 25ea4f7d before edit, diag_c92b_anythread.log:3-5); saved by script, 485,210 B, md5 30a15c67 (:85); t0 md5 unchanged at the end (:86,:101)",
+  "Any Thread? True 12/12 with uid echo 12/12 on the copy, by the SEPARATE reader OpCLFNThread_v0, warm (:80) and COLD in a fresh LabVIEW (:100); uids == t0's 12 CLFN uids",
+  "Counts copy == t0: Node 636, Wire 1911, CallLibrary 12, DigitalNumericConstant 192, WhileLoop 3, ForLoop 17, SubVI 97, Diagram 170, LoopTunnel 132 (:82)",
+  "computation_diff(S1, copy): 0 rows, 0 removed, 24 added == the same 24 nodes as t0's cdiff (t0_sites_s1_step3c_r2.json) (:83)",
+  "ExecState 1 warm (:84) and cold (:87); LabVIEW gone at exit (:102); BGRUN END rc=0 after 279 s, run 1 of 1",
+  "Writer op OpCLFNThreadSet_v0.vi = reader copy + write PN 636D403 off the TMSC, error chain into the read PN: A1-A6 6/0 incl. cold ES 1 (:6-27); sink `Re-entrant`, control `Any Thread? 2` (:20-22)",
+  "Writer self-test: negative index 12 -> `error 1055` no exception (:30); toggle uid 24309 False->False, True->True (:33); 20 calls handles 54,510 -> 54,510 (:54); 12/12 in-op readback (:67)",
+  "S1 md5 3e3d23ce unchanged (:101); no scratch made; only the copy and the writer op were saved",
+  "Docs: docs/toolkit-capabilities.md new section `CallLibrary (CLFN) property READER + WRITER`; docs/NAMES.md new table `CallLibrary property node terminals`"
+ ],
+ "open":[
+  "PD199(c) ABBA legs (unstamped S1 vs D1_s1_t0at_20260926_090833.vi, 8 picks, panel normal, 120 s) are not part of this card; the copy is ready for them",
+  "The writer is not yet wrapped as a gscript verb (run_op in diag_c92b_anythread.py); wrap only if a later card needs it"
+ ],
+ "cost":{"usd":null,"minutes":22,"labview_runs":1},
+ "note":"fable/low. One bgrun, 23/0 first run. No stagekit import (not a stage script; prerun classifier not triggered), gscript-only like diag_c92_clfn_thread.py. STATUS.md not edited."}

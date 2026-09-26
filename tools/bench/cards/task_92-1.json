@@ -1,0 +1,65 @@
+{
+ "schema": "task/1",
+ "id": "92-1",
+ "kind": "measure",
+ "goal": "PD198(c): (1) read-only thread setting of the 12 CLFN stamps in D1_s1_t0_20260926_055551.vi; (2) ONE unstamped D1_s1_copy.vi leg, 8 picks, panel normal, 120 s, 90 Hz",
+ "why": "PD198(c): at 8 picks the stamped copy lost 138-144 frames vs 15-16 for unstamped S1 (INDEX 48-50); first pick click lost under a foreign capture in 4/8 stamped legs vs 0/~16 unstamped. Hypothesis: UI-thread CLFNs serialise the loops; step-4 table provisional until measured.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_t0_20260926_055551.vi", "md5": "25ea4f7d10d91c41c4b5de64f850c945"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"},
+  {"path": "tools/bench/t0_sites_s1_step3c_r2.json", "md5": "d8358af4883b2791ee13845d551f282c"},
+  {"path": "tools/bench/t0_step4_91.json"},
+  {"path": "tools/bench/cards/result_91-3.json"},
+  {"path": "tools/bench/drive_m8_panelmin89_leg.py"},
+  {"path": "archive/peer/2026-09-26-c91-t0step3c-quit.md"},
+  {"path": "archive/peer/2026-09-26-retrospective-cycle91.md"}
+ ],
+ "pass": [
+  "M1: per CLFN (12 sites, by uid): thread setting as read from LabVIEW (property name + raw value), library path, calling convention; t0 copy md5 unchanged",
+  "M2 pre-launch: each leg-gating reader (exact tra picks rule, Lost Frames) run on an EXISTING leg with a known answer (e.g. INDEX 50) and returns it",
+  "M2: unstamped S1 leg, 8 picks, normal, 120 s: Total Lost Frames, registered picks, capture-holding window class read before pick 1",
+  "M2: registered picks != 8 -> leg logged and rerun once, never half-counted",
+  "leg numbers appended as an INDEX row in archive/benchmarks/INDEX.md, beside rows 48-51",
+  "S1 / t0 / kswap / bed md5 unchanged; LabVIEW process gone after the leg; PI TMX 39 read back after the real run"
+ ],
+ "outputs": [
+  "tools/bench/t0_clfn_thread_92.json",
+  "tools/bench/m8_unstamped8_92*",
+  "tools/bench/diag_c92_*",
+  "tools/bench/cards/result_92-1.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "gate",
+  "run_vi": true,
+  "write": [
+   "tools/bench/t0_clfn_thread_92*",
+   "tools/bench/m8_*",
+   "tools/bench/diag_c92_*",
+   "tools/bench/t0_legs/**",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/gui_shots/**",
+   "tools/gui_actions.log",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**",
+   "archive/benchmarks/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "M1 read-only: never save the t0 copy; never open-for-edit S1, kswap, the bed or originals",
+  "build no any-thread copy, change no harness GUI behaviour: judgement decides that on these numbers",
+  "rule 1a: diagnostic only",
+  "hold your turn until every bgrun you start has its END/TIMEOUT line; LabVIEW gone before return",
+  "facts only (numbers, raw property values, no cause); result/1 <=10 facts <=3 open"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

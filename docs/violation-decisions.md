@@ -1347,3 +1347,19 @@ op error now stops the run (`ExecStop`) unless the recipe passes `LVBackend(s, f
 Replay impact: stage_d1_k.py uses LVBackend with no declaration, so a replay now stops at its first indicator row
 until it declares gates for those two sinks; stage_d1_l7_r.py does not use stagexec (it calls `s.wire_indicators`
 itself and keeps its own tolerance at `tools/recipes/stage_d1_l7_r.py:92`, outside this repair).
+
+## device-failed — 2026-09-26 (cycle 90 retrospective, fault 2; repaired cycle 92, card 92-4 = re-issued 91-2)
+
+`VIOLATION: device-failed | loss_min=5 | evidence=tools/bench/diag_c90_t0stamp_scratch.log:17` (archive/peer/2026-09-26-retrospective-cycle90.md:250):
+bgrun's END guarantee does not survive an OUTSIDE tree kill; the log stayed at START.
+
+DECISION: device (threshold 1). OUTCOME (2026-09-26 09:1x, card 92-4): BUILT. `tools/bgrun.py` writes `BGRUN PID <own pid>`
+on the line after START (START's shape unchanged, because jev.py:222 / protocol.py:63 parse it exactly) and reaps at every
+start; `tools/bgrun_reap.py` appends `BGRUN KILLED (external) pid=<n>` to a log whose last segment has a PID line, no
+END/TIMEOUT/KILLED, and a pid absent from tasklist (never a live pid; tasklist failure => nothing touched; pre-92-4 logs with
+no PID line are left alone as `undecidable`); `tools/cycle_runner.py` `bgrun_reap_hook` runs it at every cycle end
+(`BGRUN-REAP |` line); `tools/audit_cycle.py` A2 lists KILLED logs as ended-but-flagged. The bgrun.py swap was atomic
+(os.replace, `tools/bench/selftest_bgrun_reap_install.log`). Self-test `tools/bench/selftest_bgrun_reap.py` 18/0
+(`tools/bench/selftest_bgrun_reap.log`): real taskkill /T /F of a bgrun on a sleep child -> KILLED, live run untouched and
+ends rc=0, idempotent, plus final_line 8/0, fail_scan 8/0, jev_exempt 9/0, cycle_runner 10/0, audit_c7 8/0,
+audit_c4c_split 33/0, audit_cost_window 7/0.

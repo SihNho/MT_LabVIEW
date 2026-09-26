@@ -1,0 +1,32 @@
+{"schema":"result/1","id":"92-1","status":"FAIL","gates":{"pass":34,"fail":1},
+ "first_fail":"m8_unstamped8_92b.log:93 T12 registered picks == 8 (<= 1 rerun): both unstamped legs registered 7 of 8 (first pick click lost under a foreign capture)",
+ "blocked_by":null,
+ "artefacts":[
+  {"path":"tools/bench/t0_clfn_thread_92.json","md5":"dddcf1052f02ed2873533e6d65673c00"},
+  {"path":"tools/bench/m8_unstamped8_92.json","md5":"c9f4fa5022a42996861642fa19fa6f59"},
+  {"path":"tools/bench/opclfnthread_labels.json","md5":"2871667a2c5a979eb00226e962bb7328"},
+  {"path":"C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/OpCLFNThread_v0.vi","md5":"a7308101be3a43eab60cbef3137ee376"},
+  {"path":"tools/bench/diag_c92_clfn_thread.py","md5":"feb1094ed316a18886a2c9bf199c1474"},
+  {"path":"tools/bench/diag_c92_m2.py","md5":"32c918a9cad05217cd38e459f375fe9c"},
+  {"path":"tools/bench/diag_c92_unstamped_leg.py","md5":"d91cf6f6dc869bd65b49bc14afe31e8f"},
+  {"path":"archive/peer/2026-09-26-c92-unstamped-clickprobe.md","md5":"4f50676a4130b8e498254f380e4c0d86"}
+ ],
+ "facts":[
+  "M1: all 12 CLFNs read `Any Thread?` (636D403) = False = UI THREAD; Library Path claudeDev\\t0stamp.dll, Calling Convention 0 (C); uid echo 12/12; diag_c92_clfn_thread_r2.log:2-16, t0 md5 unchanged :17",
+  "Reader op claudeDev\\OpCLFNThread_v0.vi built by the typed-seed route, B1-B9 9/0 incl. cold ExecState 1 (diag_c92_clfn_thread.log:3-36); property terminal for 636D403 is labelled `Re-entrant` (:27)",
+  "build_clfn's `reentrant=True` default (tools/gscript.py:2968, NI `Reentrant` global) left every stamp node at Any Thread? False - the value in t0_clfn_thread_92.json rows 0-11",
+  "M2: 2 unstamped S1 legs (a1 + rerun) BOTH registered 7 of 8: first pick click lost under foreign hwndCapture class LVDChild (title LabVIEW, LabVIEW's pid); 0 after click (m8_unstamped8_92b.log:32,68)",
+  "Lost frames at the resulting 7 beads: 27 (a1) / 19 (a2); frames delta 10666 / 10675 (89 fps); stop 1.0 s; TMX 39 and LabVIEW gone after both (m8_unstamped8_92b.log:37,73,79-92)",
+  "Compare INDEX 51 (stamped): 7-bead leg 118, 8-bead 138/144; INDEX 48-50 (unstamped, 8 beads) 15-16; first-click loss today 2/2 unstamped vs 4/8 stamped (row 51) vs 0/~16 earlier",
+  "Pre-launch readers on INDEX-51 leg2_ctl_p8_a1/leg.json: tra rule (True@8, False@7), lost 144, capture ['723452'] all PASS (m8_unstamped8_92b.log:76-78)",
+  "Launch 1 m8_unstamped8_92.log:7-16: both attempts died at the first pick click in our wrapper (d4.clickprobe returns one value); its attempt-2 first click had capture 24840136 non-zero (review s5)",
+  "Ladder: m8_unstamped8_92.log | new-problem p=0.750 | hypothesis review owed | c92-unstamped-clickprobe ANSWERED, fix + freshness + no-rerun-on-crash applied | rerun m8_unstamped8_92b.log 20/1",
+  "INDEX row 52 appended (archive/benchmarks/INDEX.md:73); S1 3e3d23ce / t0 25ea4f7d / kswap / bed md5 unchanged (T8, R4); camera restored 90 Hz; no LabVIEW process at return"
+ ],
+ "open":[
+  "First-click loss now 2/2 on UNSTAMPED legs (LVDChild capture inside LabVIEW's own process): apply PD198(d)'s capture-release harness change before any more legs, or run more unstamped legs as they are?",
+  "Any Thread? is False on all 12 stamps: PD198(c) says an any-thread copy is then built from S1 by the step-3c route and 8/15 ctl rerun - the reader can verify the setting; is the same build_clfn call (whose reentrant=True wrote False) to be used, so the property must be SET separately?",
+  "The unstamped losses are at 7 beads (27 / 19), not 8: is the 7-bead comparison (stamped 118) accepted for the step-4 table, or is an 8-registered unstamped leg required first?"
+ ],
+ "cost":{"usd":null,"minutes":72,"labview_runs":6},
+ "note":"fable/low. Budget 60 min exceeded (72): 14 min to launch 1's wrapper bug + needless rerun, 3 min review. New reusable reader op OpCLFNThread_v0 (labels tools/bench/opclfnthread_labels.json) not yet in gscript/toolkit-capabilities. STATUS.md not edited; only the new op was saved."}

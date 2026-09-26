@@ -1,0 +1,58 @@
+{
+ "schema": "task/1",
+ "id": "92-4",
+ "kind": "build",
+ "goal": "bgrun END guarantee under an outside tree kill: bgrun writes its pid in START; a reaper appends 'BGRUN KILLED' to any log whose bgrun pid is dead with no END/TIMEOUT",
+ "why": "task_91-2 re-issued (not dispatched in cycle 91: cap). retrospective-cycle90 device-failed (threshold 1): a killed process cannot write its own END",
+ "inputs": [
+  {"path": "tools/bench/cards/task_91-2.json"},
+  {"path": "tools/bgrun.py"},
+  {"path": "tools/audit_cycle.py"},
+  {"path": "tools/cycle_runner.py"},
+  {"path": "archive/peer/2026-09-26-retrospective-cycle90.md"},
+  {"path": "tools/bench/selftest_bgrun_final_line.py"}
+ ],
+ "pass": [
+  "bgrun START line carries its own pid; existing END/TIMEOUT behaviour and all bgrun self-tests unchanged (fail_scan, final_line, jev_exempt)",
+  "tools/bgrun_reap.py: for a log with START, no END/TIMEOUT, pid dead -> appends 'BGRUN KILLED (external) pid=<n>'; never touches a live pid",
+  "reaper runs at every bgrun start and in cycle_runner's cycle-end hook; audit A2 counts KILLED as ended-but-flagged (listed, not silent)",
+  "self-test: real bgrun on a sleep child, taskkill /T /F from outside, reaper -> KILLED line; live-run negative case untouched; >=6/0",
+  "selftest_cycle_runner and audit_cycle self-tests still pass"
+ ],
+ "outputs": [
+  "tools/bgrun.py",
+  "tools/bgrun_reap.py",
+  "tools/bench/selftest_bgrun_reap*",
+  "tools/bench/cards/result_92-4.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bgrun.py",
+   "tools/bgrun_reap.py",
+   "tools/audit_cycle.py",
+   "tools/cycle_runner.py",
+   "tools/bench/selftest_bgrun_reap*",
+   "tools/bench/selftest_*.log",
+   "tools/bench/cards/**",
+   "tools/bench/peer_*",
+   "archive/peer/**",
+   "docs/violation-decisions.md"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 40},
+ "rules": [
+  "a LabVIEW card runs bgrun concurrently: replace bgrun.py atomically (write temp, os.replace), never half-written",
+  "taskkill only processes your own self-test started; do not change how bgrun kills at --max-min",
+  "record the OUTCOME line under the cycle-90 device-failed entry in docs/violation-decisions.md",
+  "hold your turn until every bgrun you start has its END/TIMEOUT line",
+  "facts only; result/1 <=10 facts <=3 open"
+ ],
+ "unblocks": "M8"
+}

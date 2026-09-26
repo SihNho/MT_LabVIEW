@@ -780,6 +780,17 @@ the lesson is the one this file already encodes — an identity restated in a se
 | `tools/jev_chain.py` `build_chain()` · `true_next()` · `direct_successors()` | layer 1: "is subVI X the next link after Y toward Z?" one candidate at a time over the subVIs of the Y diagram's scope; ground truth `true_next` from the graph (direct subVI successor that reaches Z) | CHAIN 0.807 / Brier 0.128, recall 2/13 |
 | `tools/bench/decision_<stage>.json` | the record step 6 reads: intents, every candidate (keys = node uid + terminal name), per row `pair_p, op, op_p, risk_p, action (wire/llm/skip), decided_by (jev/python), evidence`, `jev_calls`, cost | `decision_m3a4.json`: 10 skip / 1 llm / 0 wire, 15 calls, 8.5 s |
 
+## ✅ CallLibrary (CLFN) property READER + WRITER — `OpCLFNThread_v0` / `OpCLFNThreadSet_v0` (2026-09-26, cards 92-1 / 92-2)
+
+| op | what | measured |
+|---|---|---|
+| `claudeDev\OpCLFNThread_v0.vi` md5 `a7308101…` (labels `tools/bench/opclfnthread_labels.json`) | READ `Any Thread?` 636D403, `Library Path` 636D400, `Calling Convention` 636D402 of `Traverse('CallLibrary', index)` + a `GObject.UID` echo. Built by the typed-control-seed route from donor `OpSetIndexMode_v0` (`tools/bench/diag_c92_clfn_thread.py`) | self-test 9/0 incl. cold ES 1; 12/12 uid echo on t0 (`diag_c92_clfn_thread_r2.log`) |
+| `claudeDev\OpCLFNThreadSet_v0.vi` md5 `d084d43d…` (labels `tools/bench/opclfnthreadset_labels.json`, value control `Any Thread? 2`) | WRITE 636D403 (a write PN branched off the TMSC output; its `error out` feeds the read PN's `error in`, so the SAME run reads the value back after the write). Built in `tools/bench/diag_c92b_anythread.py` | negative case index 12 → `error 1055`; toggle False→True read back; 20 calls handles flat (54,510 → 54,510); 12/12 on the copy, re-read by the separate reader warm and cold (`diag_c92b_anythread.log` 23/0) |
+
+**Fact behind it:** `gscript.build_clfn(reentrant=True)` goes to NI's import-wizard `Reentrant` global and leaves 636D403
+**False** (UI thread) on every node it creates (`tools/bench/t0_clfn_thread_92.json`); a CLFN meant to run in any thread
+must be SET afterwards with `OpCLFNThreadSet_v0`. Not yet wrapped in `gscript.py` (use `run_op` in `diag_c92b_anythread.py`).
+
 ## The rule this file encodes
 
 Before a plan depends on a capability, it must name **where that capability was last exercised**. If the answer is

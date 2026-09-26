@@ -53,13 +53,25 @@ rig-state: 조립   <!-- 2026-09-24 20:xx USER GRANT: "당분간 내가 말하�
 🟡 **CARRY (from the 2026-09-25 verification review `archive/peer/2026-09-25-hyp-lintverify-20260925.md`, not blocking): card flags are checked only on the top-level command (a child process could reach LabVIEW under labview=none); a stage run launched outside bgrun is not counted by the retry cap; a bgrun record failure is only logged (`tools/bgrun.py:219-220`). Close in a tooling cycle, deliverable-first.**
 current-bed: D1_l2_a1_20260925_235224.vi
 <!-- ^ machine key read by tools/errorlist_check.py current_bed_text(); without it the bed is chosen by mtime among D1_*.vi names in this file, and the newer D1_s1_kswap_* would silently take over (review archive/peer/2026-09-26-c88-reuse-stalepin.md). Change it only when a new bed is accepted. -->
-🔴🔴🔴 **FIRST ACT (cycle 92) = `docs/d1-loop12-17-split-plan.md` Pre-decided 198(c): test whether the stamp instrument itself is costing frames.** These are two MEASUREMENTS in one card:
-  1. Read-only: the thread setting ("run in UI thread" or "any thread") of all 12 CLFN stamps in `claudeDev\D1_s1_t0_20260926_055551.vi`, md5 `25ea4f7d…`.
-  2. ONE unstamped `D1_s1_copy.vi` leg: 8 picks, panel normal, 120 s, on today's harness. Report lost frames, registered picks (exact tra rule) and the first-click capture class.
-- The reason: at 8 picks the stamped copy lost 138–144 frames, against 15–16 for unstamped S1. Until that gap is explained, the step-4 table is provisional.
-- **Then, owed:** `tools/bench/cards/task_91-2.json` (the bgrun END reaper, retrospective-cycle90 `device-failed`). The card is valid and ready to dispatch as is.
+🔴🔴🔴 **FIRST ACT (cycle 93) = `docs/d1-loop12-17-split-plan.md` Pre-decided 199(f): find out why the stamps still cost ~110 frames.**
+  0. FIRST, a `-Role hypothesis` review of the candidate cause. The candidate: branching a large-array wire into a stamp makes that buffer shared, so a downstream in-place node copies the image every frame. This is owed because 198(c)'s UI-thread prediction failed.
+  1. Read-only: the data type of each of the 12 stamp wires (scalar, or array with its dimensions) in `claudeDev\D1_s1_t0at_20260926_090833.vi`, md5 `30a15c67…`.
+  2. Build `D1_s1_t0sc_<ts>.vi` from t0at, keeping only the scalar-wired stamps (the others deleted by uid, cdiff 0 rows, ExecState 1).
+  3. ABBA, 8 picks, panel normal, 120 s, against unstamped S1. It is cleared when B ≤ 2 × mean(A) + 20.
+- The step-4 table (`t0_step4_91.json`) stays UNUSABLE until some stamped copy passes that criterion.
+- 🔴 **NEW PASS criterion for every leg card (PD199(h), retrospective-cycle92 accepted, `inference-over-measurement` count 2):** the dry run must EXECUTE the leg script, with GUI/COM stubbed to saved real returns. A third occurrence triggers the device rule.
+- Recorded (retro-c92 6(a)): in 92-1's launch 1, LabVIEW was force-killed twice after a COM Abort, so the VI never closed the camera. It read 90.0009 Hz afterwards.
 - User decision **D-2026-09-26-01** (loop-level timers only) is still OPEN; the work proceeds under its recommendation.
 - Machine copy: `tools/bench/next.json`.
+
+🟢 **CYCLE 92 (PD199).**
+- **The UI-thread hypothesis is REFUTED.**
+  - All 12 stamps were UI thread (`Any Thread?` False; `build_clfn`'s `reentrant=True` does not set it).
+  - An any-thread copy was built: `claudeDev\D1_s1_t0at_20260926_090833.vi`, md5 `30a15c67…`, 12/12 True warm and cold, cdiff 0 rows with 24 added.
+  - ABBA at 8 picks: unstamped **20 / 22** lost against any-thread stamped **130 / 131** (UI-thread stamped was 138 / 144). So the instrument is NOT cleared (INDEX 53, `m8_anythread8_92.json`).
+- ✅ **The harness capture fix works.** LabVIEW's own `LVDChild` held the mouse capture before pick 1 in 3 of 4 legs. One title-bar click released it, and all 4 legs registered 8/8 picks.
+- ✅ **New ops:** `OpCLFNThread_v0.vi` (reader) and `OpCLFNThreadSet_v0.vi` (writer), documented in `docs/toolkit-capabilities.md` and `docs/NAMES.md`.
+- ✅ **The bgrun reaper is built** (92-4 PASS 18/0). bgrun now writes a `BGRUN PID` line. `tools/bgrun_reap.py` marks a dead run's log `BGRUN KILLED`, and it runs at every bgrun start and in the runner's cycle-end hook. This closes retrospective-cycle90's `device-failed`. Pre-92-4 logs stay listed as "unfinished" and are never closed by hand (PD199(g)).
 
 🟢 **CYCLE 91 (PD198).**
 - ✅ **Step 3 is DONE.** `claudeDev\D1_s1_t0_20260926_055551.vi`, md5 `25ea4f7d…`: 12 While-body stamps, with ExecState 1 read after every site. `computation_diff` is 0 rows with 24 added. It was saved by script, and the smoke run wrote 12 stamp files.

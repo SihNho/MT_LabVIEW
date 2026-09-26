@@ -1,0 +1,65 @@
+{
+ "schema": "task/1",
+ "id": "92-3",
+ "kind": "measure",
+ "goal": "PD199(b)+(c): harness capture release before pick 1, then ABBA legs at 8 picks, normal, 120 s: A = unstamped D1_s1_copy.vi, B = the any-thread copy D1_s1_t0at_*.vi",
+ "why": "result_92-1: first click lost 2/2 on unstamped legs (LVDChild capture, LabVIEW pid); UI-thread stamps cost ~100 frames at 7 beads. PD199(c) clears the instrument or not.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/cards/result_92-1.json"},
+  {"path": "tools/bench/cards/result_92-2.json"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_t0at_20260926_090833.vi", "md5": "30a15c6772d5ef3336ed274abc4c2f40"},
+  {"path": "tools/bench/diag_c92_unstamped_leg.py", "md5": "d91cf6f6dc869bd65b49bc14afe31e8f"},
+  {"path": "tools/bench/diag_c92_m2.py", "md5": "32c918a9cad05217cd38e459f375fe9c"},
+  {"path": "tools/bench/m8_unstamped8_92.json"},
+  {"path": "tools/bench/t0_step4_91.json"},
+  {"path": "archive/peer/2026-09-26-c92-unstamped-clickprobe.md"}
+ ],
+ "pass": [
+  "harness: capture-holding window class logged before every pick; before pick 1 any capture released and a read shows none held",
+  "reader pre-check on an existing leg with a known answer (as 92-1 did) passes before the first launch",
+  "4 legs in order A B B A, 8 picks, normal, 120 s, 90 Hz; per leg Total Lost Frames, registered picks (exact tra rule), capture class",
+  "B legs: fresh T0STAMP_DIR each, stamp file count per site; per-site median/p95 (stamp - own i), same method as t0_step4_91.json",
+  "numbers in tools/bench/m8_anythread8_92.json and an INDEX row; S1/t0/t0at/kswap/bed md5 unchanged; LabVIEW gone; TMX 39"
+ ],
+ "outputs": [
+  "tools/bench/m8_anythread8_92*",
+  "tools/bench/diag_c92c_*",
+  "tools/bench/t0_legs/**",
+  "tools/bench/cards/result_92-3.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "gate",
+  "run_vi": true,
+  "write": [
+   "tools/bench/m8_*",
+   "tools/bench/diag_c92c_*",
+   "tools/bench/diag_c92_unstamped_leg*",
+   "tools/bench/t0_legs/**",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/gui_shots/**",
+   "tools/gui_actions.log",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**",
+   "archive/benchmarks/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "a leg with registered picks != 8 is logged and rerun once, never half-counted",
+  "GUI acts via lv_gui.ps1 -Exception Approved -Evidence 'user 2026-09-17 bead-pick option 1', capture before/after",
+  "do not judge clearance: report the numbers; PD199(c) is applied by judgement",
+  "never save any VI; rule 1a diagnostic only",
+  "hold your turn until every bgrun you start has its END/TIMEOUT line; LabVIEW gone before return; facts only, <=10"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}
