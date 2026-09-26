@@ -75,3 +75,19 @@ subsystem. Not exhaustive — see ARCHITECTURE.md for sub-VI names.
   register.
 - **shift register** — a loop tunnel pair (drawn `▼`/`▲`) carrying a value from one iteration to the
   next. Creates a loop-carried dependency, which **forbids** iteration parallelism.
+
+## Internal project terms (coined in this project, 2026-09; explained here once so reports can use plain words)
+The user asked (2026-09-26) that reports use standard words. These terms stay in file names, logs and code because
+renaming working machinery is riskier than glossing them.
+- **verb / 동사** — one scripting FUNCTION: a Python function in `tools/gscript.py` or `tools/stagekit.py` (e.g. `move_into_frame`, `connect`) plus the op VIs (subVIs under `claudeDev\ops\`) it calls over COM. Plain word: 스크립팅 함수.
+- **op / op VI** — one of our scripting subVIs (`OpConnect…_v0.vi` etc.), called by a verb. Plain word: 스크립팅 subVI.
+- **leg** — ONE real measurement run of a VI (e.g. 15 beads, 120 s, 90 Hz). Plain word: 실측 1회 / 구동 1회.
+- **bed** — the current working VI a cycle builds on (e.g. `D1_l2_a1_….vi`). Plain word: 현재 작업 VI.
+- **stage** — one scripted build step that starts from a saved VI and saves a new one (`tools/recipes/stage_*.py`). Plain word: 빌드 단계.
+- **card** — one JSON file of the session protocol (`task/1`, `result/1`, `cycle/1`, `next/1`, `steer/1`). Plain word: 작업 지시 / 결과 파일.
+- **rung** — one step of an escalation ladder (which model/effort a retried card goes to). Plain word: 상승 단계.
+- **firefighter / 소방수** — a cycle or card re-run on a different model after repeated failure.
+- **material / judgement session** — sub-session that measures/builds vs the session that decides (CLAUDE.md §3).
+- **gate** — a check in a script or hook that refuses to continue (e.g. `guard_bash`, a `PASS/FAIL` line). Plain word: 검사 / 관문.
+- **pre-run** — the offline check of a stage plan against the VI's graph before LabVIEW runs it. Plain word: 사전 검사.
+- **ABBA** — run order original, new, new, original to cancel drift in a comparison.
