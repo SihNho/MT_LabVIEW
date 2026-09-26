@@ -5,6 +5,7 @@ date: 2026-09-20
 tags: [hand-off]
 ---
 Chat 2026-09-26 01:4x: the chat STOP (cycle-88 boundary, to relaunch on card chat-M1 code) was REMOVED after cycle 88 ended and the runner relaunched on the new cycle_runner.py (judgement ladder, judge A/B, material Fable low). Not a user start; the user said "lint 검증 이후 러너 재개" (2026-09-25).
+STOP — chat 2026-09-27 02:2x: graceful stop at the cycle-103 boundary ONLY to relaunch the runner on card chat-N4 code (judgement Opus high fixed, ladder high→max→fable low, firefighter Opus max, retrospective Opus high). Not a user stop; the chat removes it and relaunches.
 🔴 REDIRECT (user 2026-09-26 18:0x, chat): the plot speed-up is built as a SEPARATE DISPLAY LOOP fed by locals, not as an N-frame gate — `docs/d1-loop12-17-split-plan.md` Pre-decided 210 supersedes 205–209; fgate work dropped; D-2026-09-26-02 answered. Cycle 98 (running) may finish its diagnosis card; cycle 99 starts from PD210(f).
 
 # STATUS — read this first. One screen. Detail is one layer down, never appended here. ⚠️ **ONE SESSION AT A TIME** — re-read `CLAUDE.md` + this. Narrative → **`archive/2026-09-19-status-cycle47-relocate.md` (latest — T2's block diff and what it closes, the readable-ORIGINAL correction, the five killed retrospectives)** + `archive/2026-09-19-status-cycle39-judgement.md` + `archive/2026-09-18-status-cycle34-n1.md` + `…-cycle23-close.md` + the `archive/2026-09-1[678]-status-*.md` set.
