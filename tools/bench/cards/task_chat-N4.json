@@ -1,0 +1,67 @@
+{
+ "schema": "task/1",
+ "id": "chat-N4",
+ "kind": "build",
+ "goal": "Apply the user's 2026-09-27 model table: judgement Opus high fixed (A/B off), ladder high->max->fable low->STOP, firefighter = one Opus max cycle, retrospective on Opus high, fact/prose on Opus medium",
+ "why": "Weekly Fable at 75%: retrospectives on the fable/medium outcome role cost $196 in 37 calls; A/B and bench data favour Opus high; fable/low judgement cycles produce nothing. Detail: brief_chat-N4.md",
+ "inputs": [
+  {
+   "path": "tools/bench/cards/brief_chat-N4.md",
+   "md5": "e61f72eed509316d4be008b282dddd0c"
+  },
+  {
+   "path": "tools/cycle_runner.py",
+   "md5": "f14e51081e5d7f7d71d6870439302153"
+  },
+  {
+   "path": "tools/retrospective.py",
+   "md5": "c5a688e8610d94600d1e887a732a8599"
+  },
+  {
+   "path": "tools/peer.ps1",
+   "md5": "e48efd6158b4b7785ef0404d1ef01894"
+  },
+  {
+   "path": "tools/cycle_prompt.md",
+   "md5": "1a5982fa42ee2c4f27ee87e0967502c3"
+  }
+ ],
+ "pass": [
+  "cycle_runner.py: JUDGE_RANKS [None,(claude-opus-5-5,max),(fable,low)], JUDGE_TOP 2, level-2 repeat -> RUNNER STOP + decisions item; --effort default high; --judge-ab default off (flag kept)",
+  "cycle_runner.py: FF_MODEL/FF_EFFORT claude-opus-5-5/max, FF_LADDER one rung (max cycle -> STOP), FF_RANK maps onto rank 1; JUDGE-LADDER / FIREFIGHTER log lines and cycle card fields still written",
+  "retrospective.py dispatches on Opus 5.5 high (brief row 4); a -DryRun of that exact dispatch prints model claude-opus-5-5 effort high; archive header shows it on the next real call",
+  "peer.ps1: roles fact and prose -> claude-opus-5-5 / medium, still --safe-mode; -DryRun for -Kind fact and -Kind prose prints the new model; header comment table updated",
+  "cycle_prompt.md JUDGEMENT LADDER note updated to the new rungs; no other prompt text changed",
+  "self-tests green: selftest_cycle_runner_ladder (rewrite cases for 3 ranks), selftest_cycle_runner_ff (one rung), selftest_cycle_runner, peer -DryRun checks; logs under tools/bench; RESULT line; commit"
+ ],
+ "outputs": [
+  "tools/cycle_runner.py",
+  "tools/retrospective.py",
+  "tools/peer.ps1",
+  "tools/cycle_prompt.md",
+  "tools/bench/selftest_cycle_runner_ladder.log",
+  "tools/bench/selftest_cycle_runner_ff.log"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/**"
+  ],
+  "status_edit": false,
+  "git_commit": true,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 75
+ },
+ "unblocks": "M8",
+ "rules": [
+  "MODEL LADDERS",
+  "FIREFIGHTER cycles",
+  "Patch files with Edit/Write, never heredoc"
+ ]
+}
