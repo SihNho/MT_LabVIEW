@@ -1,0 +1,15 @@
+ATTACK this claim (card 100-6). Read the files; do not trust my framing.
+
+guard_peer.py blocked the second stage launch (tools/recipes/stage_d1_disp.py -> tools/bench/stage_d1_disp_r2.log) at
+22:53:22 on tools/bench/jev_gate.log, the SAME line as before ("22:45:44 | JEV-GATEROW | stage_d1_disp.log | STOP: defect ...").
+The review archive/peer/2026-09-26-c100-6-jevgate.md (ANSWERED 22:52) found that this line matches FAILURE_RE only through the
+`STOP:` alternative (a gate-row label collision), and that every hook call appends to jev_gate.log, so any review goes stale
+at the next append. Between that review and this block, the only hook call that appended was the stage_prerun --prerun launch
+of stage_d1_disp.py (JEV-PREFLIGHT line), which passed at 22:52:3x.
+
+CLAIM: nothing failed after tools/bench/stage_d1_disp.log's PARITY stop (reviewed: archive/peer/2026-09-26-c100-6-parity.md,
+disposition written; offline test diag_c100_6_parity.log V2 = 0; re-simulation diag_c100_6_resim2.log 4/0; dry
+stage_d1_disp_dry3.log PASS with PARITY 0; prerun stage_d1_disp_prerun3.log 8/0). The block is the self-refreshing
+jev_gate.log record, not a new failed prediction, and the stage run may proceed.
+Strongest counter-case: the dry PARITY is SimReader vs SimReader (tautological), so PARITY 0 in the dry run proves nothing
+about the real Nodes[]; the D1_k owners map used as a stand-in for S1 is unverified outside the three touched diagrams.

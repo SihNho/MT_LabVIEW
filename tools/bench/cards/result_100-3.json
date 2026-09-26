@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"100-3","status":"BLOCKED","gates":{"pass":6,"fail":1},
+"first_fail":"pass 6: dry run on the revised plan NOT RUN - `stagexec.py dry` refused under labview:none (only selftest exempt, guard_card.py:36-60); installed schema refuses the plan",
+"blocked_by":{"device":"card-flags","message":"flags.labview 'none' refuses `py tools/stagexec.py dry` (guard_bash: 'this command touches LabVIEW (tools\\stagexec.py)'); docs/protocol/stageplan.json is outside flags.write, so symbolic diagram fields stay invalid for every out-of-process run"},
+"artefacts":[
+ {"path":"tools/stagexec.py","md5":"40e6524ff4f049d4aca855ded3fe8f1c"},
+ {"path":"tools/stagesim.py","md5":"eb2c61ab7826ced39da05cbd84558c08"},
+ {"path":"tools/bench/sim/disp/stageplan_disp_r2.json","md5":"be6d7d40eccda01833f81953dfc1313e"},
+ {"path":"tools/bench/sim/disp/stageplan_schema_proposed.json","md5":"b17f49dc395f87b655b6520f5cc035a4"},
+ {"path":"tools/bench/sim/disp/plan_disp.json","md5":"e261663c9f4eecd573717b63305cb044"},
+ {"path":"tools/bench/facts_c100_exec.json","md5":"420e9aeef9e7a6065258f43a5f2bba90"},
+ {"path":"tools/bench/diag_c100_disp_sim.py","md5":"e9d7516e57a5f07254e21e2c18ffe491"}],
+"facts":[
+ "Self-tests: stagexec 70/0 (59 + T36-T38c, selftest_stagexec_c100.log), stagesim 48/0 (42 + G43-G48), stage_prerun stageplan 12/0 incl. stagexec_gate 13/0 (selftest_stage_prerun_c100.log)",
+ "compile_plan routes create -> while/for/local_read/local_write/indicator/control/primitive/copy_in/const_on_term (stagexec.py CREATE_ROUTES); new kinds gate, stop (-> new:X.cond)",
+ "check_symbols refuses unknown alias, use-before-create, '.body' of a non-loop, '.cond' of a For (T37a-d); stagesim.resolve_diag refuses the same (G47)",
+ "A loop owns no row in the read (0 WhileLoop/ForLoop rows in par1359_95_graph.json); executor binds loop + body from loop_in's uid + the new Diagram (T36c)",
+ "Installed docs/protocol/stageplan.json refuses the revised plan (integer diagram fields, op/field set); widening-only proposal: tools/bench/sim/disp/stageplan_schema_proposed.json",
+ "Proposed schema: revised plan (62 actions) simulates to the end, failed None, final False, 21 end cdiff rows, first_divergent n=0 (diag_c100_disp_sim.log)",
+ "End cdiff includes 27716 index, 28180 half-width, 29009 left/right rank: their sources are now locals, not wires (facts_c100_exec.json end_cdiff_rows)",
+ "R5 L1 born_on #9234 is a LoopTunnel #9227 face; create_indicator_nested finds only Traverse('Node') (gscript.py:3796): dry route refuses that shape (T38)",
+ "gscript.create_primitive_nested (100-2 V6) not defined yet, so verbs_missing('primitive') refuses R7 Max & Min; read_bool_const, create_*_nested, set_visible exist",
+ "Rows revised: gate #25261 first, delete #11363 after R4, Max & Min prim, nested L1/L2 + visible False, control on MAX1.x, #8323 local write; control lint CLEAN; S1 never opened"],
+"open":[
+ "Replace docs/protocol/stageplan.json with tools/bench/sim/disp/stageplan_schema_proposed.json (widening only)? Out-of-process simulate/dry/prerun of any create plan need it.",
+ "R5 L1: #9234 is a tunnel face, not a node, so create_indicator_nested cannot reach it. Use another creation point on w9215, or a tunnel-face creator?",
+ "Final needs open_rows for the 21 end rows (display inputs now come from locals, plus rows already present at base). Which rows are accepted as open by design (rule 1a)?"],
+"cost":{"usd":null,"minutes":78,"labview_runs":0},
+"note":"Offline only. stagexec dry has a --nonfinal diagnostic mode (dry_run require_final=False); prerun/lv_run still require final (T38b). stage_prerun.py unchanged. R7 control's I32 type is not set by any route: the Max x input sets its type (unmeasured)."}

@@ -682,6 +682,20 @@ class Stage(object):
                         lambda: L.create_local(self.work, label, panel_index, tag or self.name),
                         "{0!r} panel[{1}]".format(label, panel_index))
 
+    def create_local_write(self, label, panel_index=None, dest_diagram_uid=None, position=(40, 40), tag=""):
+        """The WRITE twin of create_local_read (card 100-2 V5): `gscript.create_local_write` = OpCreateLocalRead_v0
+        with `Write?` = True (toolkit-capabilities.md:76), then moved INTO Diagram #dest_diagram_uid. `panel_index`
+        None -> resolved from `label` over panel_wiring (exactly one row must carry it). Returns the op record; its
+        `result` is {uid, owner_class, owner, is_source (False = WRITE), err}."""
+        if panel_index is None:
+            rows = [i for i, r in enumerate(g.panel_wiring(self.work)) if r["label"] == label]
+            if len(rows) != 1:
+                raise Stop("create_local_write: label {0!r} matches {1} panel rows".format(label, len(rows)))
+            panel_index = rows[0]
+        return self._op("create_local_write",
+                        lambda: g.create_local_write(self.work, panel_index, dest_diagram_uid, position),
+                        "{0!r} panel[{1}] -> Diagram #{2}".format(label, panel_index, dest_diagram_uid))
+
     # ------------------------------------------------------------------ the ordered second pass
     def expect_is_broken_false(self, label, reconnect, wire_uid=None):
         """42(b): THE ORDERED SECOND PASS. The acceptance is asserted on a SEPARATE, idempotent re-connect,

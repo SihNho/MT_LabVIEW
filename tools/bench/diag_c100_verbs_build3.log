@@ -1,0 +1,107 @@
+BGRUN START 2026-09-26 22:06:14 limit 32.0 min: py -u tools/bench/diag_c100_verbs_build.py
+BGRUN PID 25868
+  GATE PASS  H0 S1 md5 pin at start  3e3d23cefd3a334001aa9d6156bf1aee
+  FACT  handles after restart: 33995
+  FACT  ops kept from runs 1-2 (not rebuilt): ['OpConstValueB_v0', 'OpCreateControlNested_v0', 'OpCreateIndicatorNested_v0', 'OpVisibleSet_v0']
+  GATE PASS  V6 D0 OpPrimDonor_v0.vi is a byte copy of examples\Comparison\Max and Min.vi  6e9580638a1134fab1765dd444f4c485
+  FACT  V6 donor node labels (diagram, uid, label): [(3, 337, 'Max & Min'), (3, 43, 'Max & Min'), (3, 116, 'Max & Min'), (3, 94, 'Max & Min'), (3, 1478, 'Max & Min'), (3, 705, 'Max & Min')]
+  GATE FAIL  V6 D1 exactly one `Max & Min` node in the donor, found by label  [(337, 3), (43, 3), (116, 3), (94, 3), (1478, 3), (705, 3)]
+  GATE PASS  OpTunnelInd_v0 C COLD ExecState 1 (fresh LabVIEW)  bdad067da400a1964f671491db0b01f9
+  GATE PASS  OpTunnels_v0 C COLD ExecState 1 (fresh LabVIEW)  ac194e7ab66165c3a9dc8965b3e7b29f
+  GATE PASS  OpCreateIndicatorNested_v0 C COLD ExecState 1 (fresh LabVIEW)  0e5a4739bdb6303febdbbe56dc1e6176
+  GATE PASS  OpCreateControlNested_v0 C COLD ExecState 1 (fresh LabVIEW)  ead0d7438ed448ad573345350f5ccd51
+  GATE PASS  OpVisibleSet_v0 C COLD ExecState 1 (fresh LabVIEW)  5405166375c2de62aa863828aeff64dc
+  GATE PASS  T0 scratch byte-identical to S1 at creation  3e3d23cefd3a334001aa9d6156bf1aee
+  FACT  T0 scratch ExecState: 1
+  GATE PASS  V4 regression: #25261 = False, echo ok  {'value': False, 'echo': 25261, 'err': ''}
+  OBSERVED uid 11608 -> owner 'Diagram' uid 639 | self 'Bundler'#11608 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  V1 #11608 t0: {'echo': 11608, 'created_uid': 23006, 'err': '', 'uid_err': '', 'new_terminals': [23261], 'new_panel': [{'label': 'output cluster 2', 'indicator': True, 'uid': 23006, 'is_source': False, 'wire': 12256, 'term_err': 0, 'wire_err': 0}]}
+  GATE PASS  V1 regression: indicator on #11608 t0 (Diagram #639) on w12256, echo ok  {'echo': 11608, 'created_uid': 23006, 'err': '', 'uid_err': '', 'new_terminals': [23261], 'new_panel': [{'label': 'output cluster 2', 'indicator': True, 'uid': 23006, 'is_source': False, 'wire': 12256, 'term_err': 0, 'wire_err': 0}]}
+  OBSERVED uid 9227 -> owner 'ForLoop' uid 1359 | self 'LoopTunnel'#9227 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 1359 -> owner 'Diagram' uid 639 | self 'ForLoop'#1359 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  V1b owner chain of #9227: [('ForLoop', 1359), ('Diagram', 639)]
+  GATE PASS  V1b harness READS #9227's owner chain = [ForLoop #1359, Diagram #639] (no Diagram[0] fallback)  [('ForLoop', 1359), ('Diagram', 639)]
+  OBSERVED uid 9227 -> owner 'ForLoop' uid 1359 | self 'LoopTunnel'#9227 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 1359 -> owner 'Diagram' uid 639 | self 'ForLoop'#1359 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  V1b term_index on a border node: #9227 is a border node (owner chain [('ForLoop', 1359), ('Diagram', 639)]): use the tunnel route
+  GATE PASS  V1b term_index REFUSES a border node  
+  FACT  V1b create_indicator_nested(#9234, None): {'echo': 9227, 'created_uid': 23130, 'err': '', 'uid_err': '', 'new_terminals': [23472], 'route': 'OpTunnelInd_v0', 'face': {'tunnel': 9227, 'index': 30, 'face_term': 9234, 'out_wire': 9215, 'echo': 9227}, 'new_panel': [{'label': 'Array', 'indicator': True, 'uid': 23130, 'is_source': False, 'wire': 9215, 'term_err': 0, 'wire_err': 0}]}
+  OBSERVED uid 23472 -> owner 'Diagram' uid 639 | self 'ControlTerminal'#23472 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  V1b new terminal #23472 owner chain: [('Diagram', 639)]
+  GATE PASS  V1b indicator on #9234 (#9227 outer face): one panel object on w9215, echo 9227, terminal on Diagram #639  {'echo': 9227, 'created_uid': 23130, 'err': '', 'uid_err': '', 'new_terminals': [23472], 'route': 'OpTunnelInd_v0', 'face': {'tunnel': 9227, 'index': 30, 'face_term': 9234, 'out_wire': 9215, 'echo': 9227}, 'new_panel': [{'label': 'Array', 'indicator': True, 'uid': 23130, 'is_source': False, 'wire': 9215, 'term_err': 0, 'wire_err': 0}]}
+  FACT  V1b create_indicator_nested(#9227, 'outer'): {'echo': 9227, 'created_uid': 23475, 'err': '', 'uid_err': '', 'new_terminals': [23546], 'route': 'OpTunnelInd_v0', 'face': {'tunnel': 9227, 'index': 30, 'face_term': None, 'out_wire': 9215, 'echo': 9227}, 'new_panel': [{'label': 'Array 2', 'indicator': True, 'uid': 23475, 'is_source': False, 'wire': 9215, 'term_err': 0, 'wire_err': 0}]}
+  OBSERVED uid 23546 -> owner 'Diagram' uid 639 | self 'ControlTerminal'#23546 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  V1b new terminal #23546 owner chain: [('Diagram', 639)]
+  GATE PASS  V1b alias (#9227, 'outer') -> the same face, same checks  {'echo': 9227, 'created_uid': 23475, 'err': '', 'uid_err': '', 'new_terminals': [23546], 'route': 'OpTunnelInd_v0', 'face': {'tunnel': 9227, 'index': 30, 'face_term': None, 'out_wire': 9215, 'echo': 9227}, 'new_panel': [{'label': 'Array 2', 'indicator': True, 'uid': 23475, 'is_source': False, 'wire': 9215, 'term_err': 0, 'wire_err': 0}]}
+  FACT  V1b negatives: [((9230, None), 'terminal #9230 is an INNER face of LoopTunnel #9227 (w8811) - OpTunnelInd_v0 reaches the outer face only'), ((9227, 'inner'), "terminal_index 'inner': an int (Node route) or None/'outer' (a LoopTunnel's outer face)"), ((9215, None), '#9215 is neither a LoopTunnel nor a terminal of scratch_c100_220614.vi (0 terminal rows)')]
+  GATE PASS  V1b negatives: inner face #9230, 'inner', a wire uid -> ValueError, nothing created  (117, [((9230, None), 'terminal #9230 is an INNER face of LoopTunnel #9227 (w8811) - OpTunnelInd_v0 reaches the outer face only'), ((9227, 'inner'), "terminal_index 'inner': an int (Node route) or None/'outer' (a LoopTunnel's outer face)"), ((9215, None), '#9215 is neither a LoopTunnel nor a terminal of scratch_c100_220614.vi (0 terminal rows)')])
+  GATE PASS  V1b 20 calls: 20 clean, handles flat (+-100)  (20, 54746, 54742)
+  FACT  V3 set_visible False/True/False on #23006: ({'visible_back': False, 'echo': 23006, 'err': ''}, {'visible_back': True, 'echo': 23006, 'err': ''}, {'visible_back': False, 'echo': 23006, 'err': ''})
+  GATE PASS  V3 Visible written and read back (F,T,F), echo ok  ({'visible_back': False, 'echo': 23006, 'err': ''}, {'visible_back': True, 'echo': 23006, 'err': ''}, {'visible_back': False, 'echo': 23006, 'err': ''})
+  GATE PASS  V3 negative: a non-panel uid is refused  
+  GATE PASS  V3 20 calls read back, handles flat  ([], 54762, 54761)
+  OBSERVED uid 44143 -> owner 'Diagram' uid 44125 | self 'Function'#44143 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  V2 #44143 owner ('Diagram', 44125), t1 wire 44151: [(0, 'millisecond timer value', True, 0), (1, 'milliseconds to wait', False, 44151)]
+  FACT  V2 negative (wired sink): {'echo': 44143, 'created_uid': 27387, 'err': '', 'uid_err': '', 'new_terminals': [27404], 'new_panel': [{'label': 'milliseconds to wait', 'indicator': False, 'uid': 27387, 'is_source': True, 'wire': 0, 'term_err': 0, 'wire_err': 1055}]}
+  GATE FAIL  V2 negative: a wired sink creates no control  {'echo': 44143, 'created_uid': 27387, 'err': '', 'uid_err': '', 'new_terminals': [27404], 'new_panel': [{'label': 'milliseconds to wait', 'indicator': False, 'uid': 27387, 'is_source': True, 'wire': 0, 'term_err': 0, 'wire_err': 1055}]}
+  OBSERVED uid 44143 -> owner 'Diagram' uid 44125 | self 'Function'#44143 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  V2 positive (value=100): {'echo': 44143, 'created_uid': 22997, 'err': '', 'uid_err': '', 'new_terminals': [27427], 'new_panel': [{'label': 'milliseconds to wait 2', 'indicator': False, 'uid': 22997, 'is_source': True, 'wire': 27509, 'term_err': 0, 'wire_err': 0}]}
+  OBSERVED uid 27427 -> owner 'Diagram' uid 44125 | self 'ControlTerminal'#27427 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  V2 created control 'milliseconds to wait 2' value read back (reported, not gated): 100
+  GATE PASS  V2 control created on Wait (ms) #44143 in Diagram #44125, wired, echo ok  {'echo': 44143, 'created_uid': 22997, 'err': '', 'uid_err': '', 'new_terminals': [27427], 'new_panel': [{'label': 'milliseconds to wait 2', 'indicator': False, 'uid': 22997, 'is_source': True, 'wire': 27509, 'term_err': 0, 'wire_err': 0}]}
+  OBSERVED uid 44143 -> owner 'Diagram' uid 44125 | self 'Function'#44143 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 44143 -> owner 'Diagram' uid 44125 | self 'Function'#44143 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 44143 -> owner 'Diagram' uid 44125 | self 'Function'#44143 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 44143 -> owner 'Diagram' uid 44125 | self 'Function'#44143 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 44143 -> owner 'Diagram' uid 44125 | self 'Function'#44143 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 44143 -> owner 'Diagram' uid 44125 | self 'Function'#44143 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 44143 -> owner 'Diagram' uid 44125 | self 'Function'#44143 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 44143 -> owner 'Diagram' uid 44125 | self 'Function'#44143 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 44143 -> owner 'Diagram' uid 44125 | self 'Function'#44143 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 44143 -> owner 'Diagram' uid 44125 | self 'Function'#44143 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 44143 -> owner 'Diagram' uid 44125 | self 'Function'#44143 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 44143 -> owner 'Diagram' uid 44125 | self 'Function'#44143 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 44143 -> owner 'Diagram' uid 44125 | self 'Function'#44143 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 44143 -> owner 'Diagram' uid 44125 | self 'Function'#44143 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 44143 -> owner 'Diagram' uid 44125 | self 'Function'#44143 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 44143 -> owner 'Diagram' uid 44125 | self 'Function'#44143 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 44143 -> owner 'Diagram' uid 44125 | self 'Function'#44143 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 44143 -> owner 'Diagram' uid 44125 | self 'Function'#44143 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 44143 -> owner 'Diagram' uid 44125 | self 'Function'#44143 | 482 says 'Diagram' cast 'Diagram' |  
+  GATE PASS  V2 19 more cut+create calls: 19 controls, handles flat  (19, 54831, 54823)
+  FACT  V5 panel rows for the plot (stagekit's exact-label resolution needs exactly one): [24]
+  FACT  V5 negative: #44143 is not a Diagram of scratch_c100_220614.vi
+  GATE PASS  V5 negative: a non-Diagram destination is refused BEFORE creating  (True, 8)
+  OBSERVED uid 28649 -> owner 'Diagram' uid 44125 | self 'Local'#28649 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  V5 positive: {'uid': 28649, 'owner_class': 'Diagram', 'owner': 44125, 'is_source': [False], 'err': '', 'new': [28649]}
+  GATE PASS  V5 WRITE local in nested Diagram #44125 (owner, all terminals sinks)  {'uid': 28649, 'owner_class': 'Diagram', 'owner': 44125, 'is_source': [False], 'err': '', 'new': [28649]}
+  OBSERVED uid 28816 -> owner 'Diagram' uid 44125 | self 'Local'#28816 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 28982 -> owner 'Diagram' uid 44125 | self 'Local'#28982 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 29071 -> owner 'Diagram' uid 44125 | self 'Local'#29071 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 29162 -> owner 'Diagram' uid 44125 | self 'Local'#29162 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 29275 -> owner 'Diagram' uid 44125 | self 'Local'#29275 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 29343 -> owner 'Diagram' uid 44125 | self 'Local'#29343 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 29401 -> owner 'Diagram' uid 44125 | self 'Local'#29401 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 29438 -> owner 'Diagram' uid 44125 | self 'Local'#29438 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 29484 -> owner 'Diagram' uid 44125 | self 'Local'#29484 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 29531 -> owner 'Diagram' uid 44125 | self 'Local'#29531 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 29593 -> owner 'Diagram' uid 44125 | self 'Local'#29593 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 29642 -> owner 'Diagram' uid 44125 | self 'Local'#29642 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 29697 -> owner 'Diagram' uid 44125 | self 'Local'#29697 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 29744 -> owner 'Diagram' uid 44125 | self 'Local'#29744 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 29789 -> owner 'Diagram' uid 44125 | self 'Local'#29789 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 29831 -> owner 'Diagram' uid 44125 | self 'Local'#29831 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 29877 -> owner 'Diagram' uid 44125 | self 'Local'#29877 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 29939 -> owner 'Diagram' uid 44125 | self 'Local'#29939 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 30018 -> owner 'Diagram' uid 44125 | self 'Local'#30018 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 30087 -> owner 'Diagram' uid 44125 | self 'Local'#30087 | 482 says 'Diagram' cast 'Diagram' |  
+  GATE PASS  V5 20 calls all placed, handles flat  (20, 54910, 54909)
+  GATE FAIL  V6 run (needs OpPrimCopyNested_v0)  
+  FACT  T9 scratch ExecState after the edits (not gated): 0
+  FACT  handles at end / start / refs: (54909, 33995, {'opened': 10, 'closed': 10, 'live': 0, 'cached_op_vis': 16})
+  GATE PASS  H LabVIEW gone  
+  GATE PASS  H scratch deleted  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c100_220614.vi
+  GATE PASS  H1 S1 md5 pin at end  3e3d23cefd3a334001aa9d6156bf1aee
+=== GATES: 27 pass / 3 fail; failing: ['V6 D1 exactly one `Max & Min` node in the donor, found by label', 'V2 negative: a wired sink creates no control', 'V6 run (needs OpPrimCopyNested_v0)']
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":27,"fail":3},"first_fail":"V6 D1 exactly one `Max & Min` node in the donor, found by label","artefacts":[{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpPrimDonor_v0.vi","md5":"6e9580638a1134fab1765dd444f4c485"}]}
+BGRUN END rc=1 after 259s

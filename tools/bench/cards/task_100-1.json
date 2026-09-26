@@ -1,0 +1,69 @@
+{
+ "schema": "task/1",
+ "id": "100-1",
+ "kind": "build",
+ "goal": "PD212(i)5(a): display-loop STAGE PLAN ROWS on D1_s1_copy.vi's graph (offline), a stage card whose `requires` cites every op/verb the rows use, and READ BoolConst #25261's value.",
+ "why": "Cycle 99 judged the display-loop design GO (PD212(i)). Order: rows -> missing verbs -> simulator dry+prerun -> one LabVIEW run. This card is step (a): no VI is edited.",
+ "inputs": [
+  {"path": "tools/bench/cards/rows_spec_100.md"},
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/facts_c99_display.json"},
+  {"path": "tools/bench/facts_c99b_display.json", "md5": "e27d226f6d0abce7d156f061a4ea8a0f"},
+  {"path": "tools/bench/facts_c99c_bench.json", "md5": "6558f3a34c5c67dc541a0e6c9dd0676d"},
+  {"path": "tools/bench/sim/l2a1/stageplan_l2a1.json"},
+  {"path": "tools/stagekit.py"},
+  {"path": "tools/stagexec.py"},
+  {"path": "tools/gscript.py"},
+  {"path": "docs/toolkit-capabilities.md"},
+  {"path": "docs/NAMES.md"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/cards/rows_spec_100.md"},
+  {"kind": "file", "name": "tools/bench/facts_c99b_display.json"},
+  {"kind": "file", "name": "tools/bench/facts_c99c_bench.json"},
+  {"kind": "file", "name": "tools/bench/sim/l2a1/stageplan_l2a1.json"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "pass": [
+  "tools/bench/sim/disp/stageplan_disp.json holds rows R1-R8 of rows_spec_100.md in stageplan_l2a1.json's format (stagexec-readable)",
+  "every row names its op VI / gscript or stagekit function and every uid/terminal it binds, from a named S1 graph file",
+  "stage card tools/bench/cards/stage_disp_requires.json lists every op/verb/terminal; `protocol.py requires` output recorded",
+  "each MISSING op/verb named with the smallest verb that would do it (expected: Wait (ms), Visible=False, local WRITE)",
+  "#25261 BoolConst value read and reported True/False (read-only COM, or the graph file if it carries values)",
+  "D1_s1_copy.vi md5 3e3d23ce unchanged start+end; LabVIEW gone at exit if it was opened"
+ ],
+ "outputs": [
+  "tools/bench/sim/disp/**",
+  "tools/bench/facts_c100_rows.json",
+  "tools/bench/cards/stage_disp_requires.json",
+  "tools/bench/cards/result_100-1.json"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/sim/disp/**",
+   "tools/bench/facts_c100*",
+   "tools/bench/diag_c100*",
+   "tools/bench/graph_*",
+   "tools/bench/cards/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "outcome", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 45},
+ "rules": [
+  "OFFLINE rows, no VI edited/saved; LabVIEW read only for #25261 + uids the graph lacks (bgrun, wait for BGRUN END)",
+  "design fixed by PD212 + rows_spec_100.md; a row not writable as specified is a FACT/OPEN, not a redesign",
+  "facts <= 10 + OPEN <= 3"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

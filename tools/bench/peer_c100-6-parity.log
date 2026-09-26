@@ -1,0 +1,55 @@
+BGRUN START 2026-09-26 22:45:12 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c100-6-parity -TaskFile tools/bench/cards/peer_c100-6_parity_task.txt
+BGRUN PID 25428
+OUTCOME: ANSWERED (150s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-26-c100-6-parity.md
+COST: $1.4683  in 38 / out 14293 / cache-create 99741 / cache-read 1921650  (146s, 37 turn(s))
+--- ANSWER ---
+**The diagnosis is mostly right, but the conclusion drawn from it is wrong.** The part that holds: the base has no structure placement, and that is why SimReader lists no structures. The part that does not hold: "the plan and the stage script are not at fault; re-base on an S1 graph that carries owners + loops". The missing data belongs in the plan's `context`, not in the base graph. Half of it already exists as a file for this exact VI. The S1 graph with owners that the proposed next step needs does not exist.
+
+**What checks out (from the files):**
+- `par1359_95_graph.json` has no top-level `loops` or `owners` key. The only `"loops"` hit is the count `"loops": 20` inside `graph_summary` (line 147323).
+- The stored base state `sim/disp/step_00_base.json` has `"loops":null` and `"owners":{}`.
+- No terminal row is owned by a CaseStructure, EventStructure, ForLoop or WhileLoop (0 hits). So in `node_uids` (`stagexec.py:1662-1677`) structures can only appear through `_routed`, which needs `owners` (`tunnel_owner`, `:709-716`), or through `st['loops']`. Both are empty.
+- The counts are consistent: on diagram 639, 73 − 58 = 15, which equals the 10 case structures + 1 event structure + 4 for-loops. Diagram 686 adds 3, for a total of 18.
+- The dry run's `PARITY 0` really is tautological. `SimBackend` builds `Addr(SimReader(self))` (`:1711`), and PRIME compares that with `SimReader(st0)` built from the same state (`:1024`).
+
+## 1. Strongest reason the claim is wrong
+
+`stagesim.base_state` takes structure placement from the plan's **context**: `ctx["loops"]` at `stagesim.py:196-197` and `ctx["owners"]` at `:205-207`. `plan_disp.json:9-11` passes only `{"s1_key": "D1_s1_copy"}`, and `base_state` never reads `s1_key`. So the omission is in the plan:
+- A loops file for this VI already exists: `tools/bench/graph_loops_s1_20260924.json`, with `"md5": "3e3d23ce…"` (line 3). It lists 20 loops, including 1359, 2457, 29617, 29874, 28670, 25380 and 637. Those are the same loops that showed up as only_real, and 20 matches the summary count. No re-base is needed for loops; `context.loops` should have pointed at this file.
+- The plan's builder knew at plan time. `diag_c100_rows.py:5-6` says "no `owners`", and `:243` says `"owners_from": "…graph_k_80_owners.json (D1_k; S1 carries no owners map)"`. It used D1_k's owners map for its own offline checks only and did not put it into the plan's `context`.
+- This is the same failure a second time. `sim_l2a1_81.py:6-7` records the identical gap ("stageplan/1 `context` has no `owners` field and l2a1_graph_k_80.json carries none") and worked around it inside that one script (`:39`). The fix never became a check, so this plan passed the offline pre-run without it.
+- The next step as written cannot be executed. There is no S1 graph that carries `owners`. Every `"owners"` file under `tools/bench` is either D1_k-derived (`l2a1_facts_80`, `graph_k_80_owners`) or a `sim/disp` step file with an empty `{}`. "Re-base on an S1 graph that carries owners" really means producing an owners map for S1, which is new work.
+
+## 2. Alternative explanation of the same evidence
+
+The same 18 real-only entries also fit a **SimReader model gap**, independent of the missing data. SimReader never lists a structure as a node in its own right. Case and event structures appear only if they have an owner-routed outer face (`OWNER_ROUTED = ("SelectorTunnel","Tunnel")`, `:492`) on that diagram. So even with a correct owners map:
+- EventStructure 10153 has no selector. If it has no `Tunnel`-class outer face on 639, it stays real-only.
+- Loops get placed only through `loop_parent` (`:537-551`). If owners is missing or incomplete, `loop_parent` returns None and the loop is listed on **every** diagram (`:1672-1676`). Adding loops without a complete owners map would turn 18 real-only entries into many sim-only ones, not zero.
+
+Either way, the missing data is necessary to explain the result, but the file evidence does not show it is sufficient.
+
+## 3. What would falsify the claim
+
+Supply the S1 loops file plus a correct S1 owners map and compare again. If some entries are still real-only (most likely 10153, or a case structure with no `Tunnel` face on its parent diagram), then the diagnosis "the base lacks placement" is incomplete. In that case re-basing will fail PRIME again at the cost of another LabVIEW run, which is exactly the class of failure the retry cap exists for.
+
+## 4. Cheapest test that separates the two (offline, no LabVIEW)
+
+The real Nodes[] listing for 639, 686 and 7911 can be rebuilt without LabVIEW:
+
+real = current SimReader listing ∪ only_real − only_sim
+
+only_sim is empty, and the rows are in `tools/bench/stage_d1_disp.json`. Then:
+1. Build `st0 = base_state(par1359_95_graph, {"loops": {"path": "tools/bench/graph_loops_s1_20260924.json"}, "owners": {"path": "tools/bench/sim/l2a1/graph_k_80_owners.json"}})`. D1_k's map is a stand-in: it keeps S1's uids only if D1_k is a copy of S1, which I did not verify.
+2. Run `reader_parity` with the rebuilt real listing against `SimReader(_StateHolder(st0))`.
+3. Read the result:
+   - **0 on all three diagrams:** the claim holds. The fix is a two-field `context` change plus an S1-valid owners map, not a re-base.
+   - **Real-only entries left, especially 10153:** the SimReader model gap is real. It needs a fit (for example, listing structures from `objs` + owners) before any further stage run.
+   - **Sim-only loops:** owners is incomplete. `loop_parent` fell back to "every diagram", so the owners map has to come from S1 itself.
+
+**Process findings for the retrospective:**
+- The offline pre-run had no check that the base carries owners + loops when a touched diagram hosts structures.
+- The dry-run PARITY comparison is SimReader against SimReader, so it can never fail. That is a device that let its own fault through (`device-failed`, threshold 1).
+- This is a repeat of the cycle-81 l2a1 gap (`repeated-failure-class`).
+
+I did no web search: every claim here is about this project's own code and files, and I cited `file:line` for each. Nothing was run, built or edited.
+BGRUN END rc=0 after 151s

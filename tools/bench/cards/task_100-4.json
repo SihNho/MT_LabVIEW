@@ -1,0 +1,80 @@
+{
+ "schema": "task/1",
+ "id": "100-4",
+ "kind": "build",
+ "goal": "Escalation rung 1 of 100-2 (PD213(e)): finish the display-loop verbs - self-test harness fix, V1b/V2/V3/V5 tests, tunnel-face indicator creation, V6 Max & Min by donor copy.",
+ "why": "100-2 built 4 ops (ES 1 cold) and passed V1/V4, then its own harness term_index() mis-resolved #9227's owner and the failure budget ran out; V6 had no creator. PD213(b) fixes the routes.",
+ "escalation": 1,
+ "retry_of_card": "100-2",
+ "inputs": [
+  {"path": "tools/bench/cards/result_100-2.json"},
+  {"path": "tools/bench/facts_c100_verbs.json", "md5": "49d650605d330c2ea80a97dd2931365c"},
+  {"path": "tools/bench/diag_c100_verbs_build.py", "md5": "cdd038f93bfd150707bcd4ec857af63d"},
+  {"path": "archive/peer/2026-09-26-c100-verbs-build.md"},
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/gscript.py", "md5": "c39b9f8b53f2fdba46f0906c15c7b8be"},
+  {"path": "tools/stagekit.py", "md5": "56852450a50d2e09202b51c907448ada"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c100_verbs_build.py"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpCreateIndicatorNested_v0.vi"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpCreateControlNested_v0.vi"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpVisibleSet_v0.vi"},
+  {"kind": "verb", "name": "gscript.copy_into"}
+ ],
+ "pass": [
+  "harness term_index resolves #9227's owner correctly (read, not fallback); the fix is in the harness, ops unchanged unless measured wrong",
+  "create_indicator_nested accepts a tunnel/terminal owner: indicator created on #9234 (#9227 face, w9215 source), echo verified",
+  "V2 create_control_nested, V3 set_visible (write + read back), V5 stagekit.create_local_write each PASS on a scratch of S1",
+  "V6 gscript.create_primitive_nested places `Max & Min` in a nested diagram by DONOR COPY (PD213(b)); uid echo verified",
+  "V1b/V2/V3/V5/V6: negative case caught + 20 calls handle-flat (+-100); toolkit-capabilities.md + NAMES.md updated",
+  "D1_s1_copy.vi md5 3e3d23ce unchanged start+end; only new/extended ops + scratch saved; LabVIEW gone at exit"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\Op*_v0.vi",
+  "tools/gscript.py",
+  "tools/stagekit.py",
+  "docs/toolkit-capabilities.md",
+  "docs/NAMES.md",
+  "tools/bench/facts_c100_verbs2.json",
+  "tools/bench/cards/result_100-4.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": true,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpCreateIndicatorNested_v*.vi",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpCreateControlNested_v*.vi",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpVisibleSet_v*.vi",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\Op*Prim*_v*.vi",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c100*",
+   "tools/gscript.py",
+   "tools/stagekit.py",
+   "tools/recipes/build_op*_c100*",
+   "tools/bench/selftest_c100*",
+   "tools/bench/diag_c100*",
+   "tools/bench/facts_c100*",
+   "docs/toolkit-capabilities.md",
+   "docs/NAMES.md",
+   "tools/bench/cards/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "outcome", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "card 100-5 edits stagexec/stagesim in parallel: do not touch them; keep existing gscript/stagekit signatures",
+  "run_vi only op self-tests and scratch_c100_*; never run S1, a bed or an instrument subVI; never save S1 or originals",
+  "on ExecState 0 read the Error List (tools/lv_errorlist.py) before any second construction",
+  "bgrun for LabVIEW parts; hold the turn until BGRUN END; close every reference; facts <= 10 + OPEN <= 3"
+ ],
+ "unblocks": "M8"
+}

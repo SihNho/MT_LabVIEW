@@ -1,0 +1,40 @@
+BGRUN START 2026-09-26 22:36:05 limit 20.0 min: py tools\prior_art_review.py --plan-file docs\d1-loop12-17-split-plan.md --slug c100-6-disp-stage --trigger cycle-start --recipe tools\recipes\stage_d1_disp.py
+BGRUN PID 19436
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c100-6-disp-stage.txt (229495 chars)
+   review card tools\bench\cards\review_priorart-c100-6-disp-stage.json
+OUTCOME: ANSWERED (39s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-26-priorart-c100-6-disp-stage.md
+COST: $1.5240  in 6 / out 3060 / cache-create 172845 / cache-read 399900  (35s, 6 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c100-6-disp-stage verdict=novel -> tools\bench\cards\verdict_priorart-c100-6-disp-stage.json
+--- ANSWER ---
+The display-loop stage in `tools/recipes/stage_d1_disp.py` has not been done before. No earlier attempt at it failed, and it does not duplicate any existing helper. This was a read-only review; I built, edited and ran nothing.
+
+**PART A: the direction**
+- **A1, already settled?** The direction was decided on purpose, and this recipe carries out that decision rather than repeating an old one.
+  - The user chose a separate display loop fed by locals, in `docs/d1-loop12-17-split-plan.md` Pre-decided 210.
+  - Pre-decided 212 set the design, and 213(f)4(iv) orders this exact run. `STATUS.md` NEXT (iv) says the same.
+- **A2, already refuted?** No. The earlier gated-plot attempt ("fgate", Pre-decided 205–209) was dropped by the user in 210(e). What killed it was `move_into_frame` breaking the VI when the plot was moved into a case frame of the frame loop. This recipe uses the stagexec move route instead, as 212(f) requires, so that cause does not carry over.
+  - `archive/peer/2026-09-26-c91-smoke-k1.md:66` uses the words "display loop" for #15173, which is the bead-pick loop. That is a different object, not an earlier attempt.
+- **A3, contradicted?** No contradiction strong enough to block.
+  - One small gap: 213(f)4(iv) and STATUS NEXT ask for "no termless **or loose-end** wires beyond RBW's pre-existing uids". Gate W1 (`stage_d1_disp.py:65-67`) checks termless wires only, not loose ends.
+  - Pre-decided 208(b) says loose ends are invisible to a termless check. They are still covered indirectly: Remove Bad Wires (RBW) may remove only pre-existing wire uids, no data edge may be lost, and E2 requires ExecState 1.
+  - This is a gate-precision point for the plan's own review, not prior art.
+- **A4, unread evidence?** None. The docstring cites the real prior art: 211(b), the 98-2/98-3 readers, and `stage_d1_l2a1.py`.
+  - Worth noting, not blocking: `archive/peer/2026-09-26-outcome-review-20260926.md:176` recommends building the loop by hand in the IDE if this run ends at ExecState 0. That is a fallback, not prior art.
+
+**PART B: the recipe**
+- **B1, already built?** No. `stage_d1_disp*` matches only this file, and no `D1_s1_disp_*` VI is recorded anywhere (`result_100-5.json` has no VI).
+- **B2, already failed?** No earlier run exists. The closest failure was fgate's ExecState 0 after its case-frame moves (`selftest_c98_rbw.log:360-383`). This recipe uses stagexec moves plus RBW on the whole VI with uid and edge checks, which is the combination 98-1 measured as giving ExecState 1.
+- **B3, a helper already exists?** Yes, and the recipe uses it instead of hand-rolling:
+  - `gscript.wire_health` / `_edge_pairs` (`tools/gscript.py:3504,3510`)
+  - `stagekit.broken_wire_count` (`tools/stagekit.py:449`)
+  - `allterms.all_wire_uids` (`tools/allterms.py:94`)
+  - `stagexec.Executor` / `LVBackend`
+- **B4, already measured?** No. The net frame-loss gain of this design is unmeasured; the bench for the ring-write cost failed twice on its own construction (212(i)2). This stage is structural, and the ABBA comparison comes after it.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c100-6-disp-stage","verdict":"novel","alternative":"Hand-build the display loop in the IDE under the GUI rule (outcome review 2026-09-26:176) if this stage ends at ExecState 0; that is a fallback, not prior art.","discriminating_test":"Glob tools/recipes/stage_*disp* and claudeDev D1_s1_disp_*: only this recipe exists, no VI; fgate's failure route (move_into_frame, PD209) is not used here (PD212(f)).","violations":[],"sources":["docs/d1-loop12-17-split-plan.md PD210/212/213(f)4","tools/recipes/stage_d1_disp.py:1-12,58-67","tools/gscript.py:3504-3510","tools/stagekit.py:449","archive/peer/2026-09-26-outcome-review-20260926.md:176"],"note":"Non-blocking: W1 gates termless only; PD213(f)4(iv) also names loose-end wires; covered indirectly by RBW pre-existing-uid + lost-edge + E2 ExecState 1."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c100-6-disp-stage.md
+   STOP RECORD: none - 2026-09-26-priorart-c100-6-disp-stage.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_disp.py sha ab062905e941 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 42s

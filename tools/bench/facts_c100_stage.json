@@ -1,0 +1,25 @@
+{
+ "card": "100-6",
+ "level": "STRUCTURAL attempt; no artefact saved (both runs stopped by E1 before any save)",
+ "steps": {
+  "i_reroute": {"stagexec": "tunnel_outer_face() + indicator create routes LoopTunnel OUTER source face -> gscript.create_indicator_nested(W, face, None), dry + real backends",
+                "selftest": "tools/bench/selftest_stagexec_c100-6.log 72/0 (T38d positive, T38e negatives, T38 unchanged)",
+                "modify_verbs": "stage_prerun MODIFY_VERBS + create_local_write, create_indicator_nested, create_control_nested, create_primitive_nested, set_visible, set_control_label, set_default_in_memory, loop_in (selftest_prerun_diag_c100-6.log 9/9)",
+                "x5_fix": "stage_prerun X5 counts a `stop` op as covering its wire action (SP_WIRE_OTHER); selftest_stage_prerun_stageplan_c100-6.log 12/0"},
+  "ii_maxmin": {"log": "tools/bench/diag_c100_6_maxmin.log", "names": ["x", "y", "max(x,y)", "min(x,y)"], "owner_class": "Comparison",
+                "plan_had": ["x", "y", "max(x, y)", "min(x, y)", "Function"]},
+  "iii_resim": {"r4_open": "tools/bench/sim/disp/stageplan_disp_r4_open.json", "logs": ["tools/bench/diag_c100_6_resim.log 9/0", "tools/bench/diag_c100_6_resim2.log 4/0 (context loops+owners)"],
+                "plan_disp_md5_final": "9486143097de5abc4295e26bc7f41f7b", "open_rows": 21,
+                "dry_prerun": ["stage_d1_disp_dry3.log PASS", "stage_d1_disp_prerun3.log 8/0", "diag_c100_6_dry.log stagexec dry PASS 0 unroutable"]}
+ },
+ "runs": [
+  {"log": "tools/bench/stage_d1_disp.log", "t": "22:42", "stop": "E1 PARITY at PRIME before op 1: 18 structures real-only on 639/686 (plan context had no loops/owners)",
+   "review": "archive/peer/2026-09-26-c100-6-parity.md", "offline_test": "tools/bench/diag_c100_6_parity.log V0 18 / V1 38 / V2 0"},
+  {"log": "tools/bench/stage_d1_disp_r2.log", "t": "22:55", "passed": ["STEPX 00 diff 0", "PARITY 0", "value gate #25261 False", "STEPX 01 diff 0"],
+   "stop": "op 2 create while r1_dl: BINDING simulated new objects {} != real new objects {'Diagram': 1} (real owners [23073]); new WhileLoop #23047 on #686, 0 terminals",
+   "review": "archive/peer/2026-09-26-c100-6-r2.md"}
+ ],
+ "leftover_unsaved_copies": ["claudeDev\\D1_s1_disp_20260926_224211.vi", "claudeDev\\D1_s1_disp_20260926_225529.vi"],
+ "s1_md5": "3e3d23cefd3a334001aa9d6156bf1aee unchanged (H2 both runs)",
+ "labview_gone": true
+}

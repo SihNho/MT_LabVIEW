@@ -3771,3 +3771,334 @@ def _move_into_frame(target, frame_uid, members, spot=(0, 0), log=None):
             "ops": ops, "moved": sorted(moved), "owners_after": dict((m, owner(m)) for m in members),
             "_rows1": rows1, "_wires0": sorted(wires0), "_termless0": termless0, "_D": D, "_mem_terms": sorted(mem_of),
             "_pairs0": sorted(_edge_pairs(rows0))}
+
+
+# ==== CARD 100-2 (display-loop stage, PD212(i)5(b)): nested create-indicator/control, Visible writer, Boolean-constant
+# reader, local WRITE. Op VIs built by tools/bench/diag_c100_verbs_build.py on the c97 typed-control-seed route
+# (donor OpSetIndexMode_v0 / OpFPLabels_v0); label map tools/bench/facts_c100_oplabels.json. Every verb addresses its
+# object by UID, resolves the Traverse index AT THE CALL, and checks the op's own uid echo.
+C100_LABELS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench", "facts_c100_oplabels.json")
+_C100 = {}
+
+
+def _c100(key):
+    if not _C100:
+        with open(C100_LABELS, encoding="utf-8") as f:
+            _C100.update(json.load(f))
+    return _C100[key]
+
+
+def _create_on_node_term(opname, target, node_uid, terminal_index, value=None):
+    """Traverse('Node')[i] -> TMSC(Node) -> Node.Terminals[] 6359000 -> IA[terminal_index] -> Invoke Terminal.<method>
+    -> GObject.UID of the created object. Any nesting depth: the node is found by UID among ALL nodes of the VI.
+    `value` goes to the method's optional `Value` parameter when the op has a control for it (6349C01)."""
+    lab = _c100(opname)
+    vctl = (lab.get("params") or {}).get("Value")
+    if value is not None and not vctl:
+        raise ValueError("%s has no `Value` control" % opname)
+    ensure_loaded(target)
+    i = _uid_index(target, "Node", node_uid)                 # ValueError before any edit
+    ct0 = uids(target, "ControlTerminal")
+    pw0 = set(int(r["uid"]) for r in panel_wiring(target))
+    vi = op(os.path.join(CLAUDEDEV, opname + ".vi"))
+    _set_common(vi, target, lab, "Node", i)
+    vi.SetControlValue(lab["k"], int(terminal_index))
+    if vctl and value is not None:
+        vi.SetControlValue(vctl, value)
+    vi.SetControlValue(lab["Created"], 0)
+    vi.SetControlValue(lab["UID"], 0)
+    run_err = ""
+    try:
+        _run(vi)
+    except RuntimeError as e:
+        run_err = "modal dialog (dismissed)" if "modal dialog" in str(e) else "EXC %s" % str(e)[:140]
+    out = {"echo": int(vi.GetControlValue(lab["UID"])), "created_uid": int(vi.GetControlValue(lab["Created"])),
+           "err": run_err or _err(vi, lab["Err"]) or "", "uid_err": _err(vi, lab["UIDErr"]) or "",
+           "new_terminals": sorted(uids(target, "ControlTerminal") - ct0)}
+    out["new_panel"] = [r for r in panel_wiring(target) if int(r["uid"]) not in pw0]
+    if out["echo"] != int(node_uid):
+        out["err"] = (out["err"] + " | " if out["err"] else "") + "uid echo %r != #%s" % (out["echo"], node_uid)
+    if len(out["new_panel"]) == 1 and not int(out["new_panel"][0].get("wire") or 0):
+        out["err"] = (out["err"] + " | " if out["err"] else "") + "the new panel object is NOT WIRED (dangling)"
+    return out
+
+
+def _node_term_row(target, node_uid, terminal_index):
+    """The live Terminals[terminal_index] row of node #node_uid (owner READ, never a Diagram[0] fallback)."""
+    _c97_paths()
+    import build_d1_v0 as B
+    c, o = B.owner_of(target, node_uid, strict=True)
+    if c != "Diagram":
+        raise ValueError("#%s is owned by %s #%s, not by a Diagram" % (node_uid, c, o))
+    d = _uid_index(target, "Diagram", o)
+    _u, rows = node_terms_uid(target, d, _node_index(target, d, node_uid))
+    hit = [r for r in rows if int(r["i"]) == int(terminal_index)]
+    if not hit:
+        raise ValueError("#%s has no terminal %s (%d terminals)" % (node_uid, terminal_index, len(rows)))
+    return hit[0]
+
+
+def create_indicator_nested(target, node_uid, terminal_index):
+    """V1: an INDICATOR wired to Terminals[terminal_index] of node #node_uid on ANY diagram (Terminal.Create Indicator
+    6349C02 through OpCreateIndicatorNested_v0). Returns {echo, created_uid, err, uid_err, new_terminals, new_panel}:
+    `new_panel` rows are panel_wiring rows ({label, uid, wire, ...}) - `uid` there is what set_visible takes.
+
+    CARD 100-4 (PD213(b)) - a TUNNEL / TERMINAL OWNER is accepted too, same return shape (+ `route`, `face`):
+      * `node_uid` = a LoopTunnel uid, `terminal_index` None or 'outer'  -> that tunnel's OUTER face;
+      * `node_uid` = the uid of a LoopTunnel's OUTER face TERMINAL (e.g. #9234 of #9227), `terminal_index` None.
+    A tunnel face is not in Traverse('Node') and a structure's Terminals[] are its own infrastructure terminals (a
+    sweep of a For loop's Terminals[] made DANGLING indicators - tunnel_indicator's docstring, measured 2026-09-13),
+    so this end goes through OpTunnelInd_v0 (Traverse('LoopTunnel')[i] -> cast -> Tunnel.Outside Terminal 6356001 ->
+    Terminal.Create Indicator 6349C02). The Traverse index is resolved from the uid AT THE CALL and ECHOED by
+    OpTunnels_v0 at the same index before anything is created; the effect check is the new panel row's wire == the
+    face's wire (an already-wired face gets a BRANCH: no new Wire object). An inner face, a non-LoopTunnel owner or
+    an unwired face whose side cannot be told -> ValueError before any edit."""
+    face = _tunnel_outer_face(target, node_uid, terminal_index)
+    if face is None:
+        return _create_on_node_term("OpCreateIndicatorNested_v0", target, node_uid, terminal_index)
+    return _create_on_tunnel_outer(target, face)
+
+
+def _tunnel_outer_face(target, uid, terminal_index):
+    """None = the Node route (an int terminal_index). Else {tunnel, index, face_term, out_wire, echo}."""
+    if isinstance(terminal_index, int) and not isinstance(terminal_index, bool):
+        return None
+    if terminal_index not in (None, "outer"):
+        raise ValueError("terminal_index %r: an int (Node route) or None/'outer' (a LoopTunnel's outer face)"
+                         % (terminal_index,))
+    ensure_loaded(target)
+    tun = [int(o["uid"]) for o in report_all(target, "LoopTunnel")]
+    face_term = None
+    if int(uid) in tun:
+        owner = int(uid)
+    else:
+        here = os.path.dirname(os.path.abspath(__file__))
+        if here not in sys.path:
+            sys.path.insert(0, here)
+        import allterms
+        rows, _dt = allterms.read_terms(target)
+        r = [x for x in rows if int(x["term_uid"]) == int(uid)]
+        if len(r) != 1:
+            raise ValueError("#%s is neither a LoopTunnel nor a terminal of %s (%d terminal rows)"
+                             % (uid, os.path.basename(target), len(r)))
+        r = r[0]
+        if r["owner_class"] != "LoopTunnel" or int(r["owner_uid"]) not in tun:
+            raise ValueError("terminal #%s belongs to %s #%s - only a LoopTunnel face is routed"
+                             % (uid, r["owner_class"], r["owner_uid"]))
+        owner, face_term = int(r["owner_uid"]), int(uid)
+    i = tun.index(owner)
+    t = tunnels(target, i)
+    if int(t["uid"]) != owner:
+        raise RuntimeError("OpTunnels_v0 echo #%s at LoopTunnel[%d] != #%s - index/uid binding broken, nothing created"
+                           % (t["uid"], i, owner))
+    if face_term is not None:
+        w = int(r["wire_uid"] or 0)
+        if w and w in [int(x) for x in t["in_wires"]]:
+            raise ValueError("terminal #%s is an INNER face of LoopTunnel #%s (w%s) - OpTunnelInd_v0 reaches the "
+                             "outer face only" % (uid, owner, w))
+        if not w or w != int(t["out_wire"]) or bool(r["is_source"]) != bool(t["out_is_source"]):
+            raise ValueError("terminal #%s (w%s, source %s) is not provably the OUTER face of #%s (out w%s, source %s)"
+                             % (uid, w, r["is_source"], owner, t["out_wire"], t["out_is_source"]))
+    return {"tunnel": owner, "index": i, "face_term": face_term, "out_wire": int(t["out_wire"]),
+            "echo": int(t["uid"])}
+
+
+def _create_on_tunnel_outer(target, face):
+    ct0 = uids(target, "ControlTerminal")
+    pw0 = set(int(r["uid"]) for r in panel_wiring(target))
+    vi = op(OP_TUNNEL_IND)
+    vi.SetControlValue("vi path", target)
+    vi.SetControlValue("vi path 2", target)
+    vi.SetControlValue("Class Name", "LoopTunnel")
+    vi.SetControlValue("index", int(face["index"]))
+    run_err = ""
+    try:
+        _run(vi)
+    except RuntimeError as e:
+        run_err = "modal dialog (dismissed)" if "modal dialog" in str(e) else "EXC %s" % str(e)[:140]
+    out = {"echo": face["echo"], "created_uid": 0, "err": run_err or _err(vi) or "", "uid_err": "",
+           "new_terminals": sorted(uids(target, "ControlTerminal") - ct0), "route": "OpTunnelInd_v0",
+           "face": dict(face)}
+    out["new_panel"] = [r for r in panel_wiring(target) if int(r["uid"]) not in pw0]
+    probs = []
+    if len(out["new_panel"]) != 1:
+        probs.append("%d new panel objects" % len(out["new_panel"]))
+    else:
+        out["created_uid"] = int(out["new_panel"][0]["uid"])
+        w = int(out["new_panel"][0].get("wire") or 0)
+        if not w:
+            probs.append("the new indicator is NOT WIRED (dangling)")
+        elif face["out_wire"] and w != face["out_wire"]:
+            probs.append("the new indicator is on w%s, not the face's w%s" % (w, face["out_wire"]))
+    if out["echo"] != face["tunnel"]:
+        probs.append("uid echo %r != #%s" % (out["echo"], face["tunnel"]))
+    if probs:
+        out["err"] = " | ".join(([out["err"]] if out["err"] else []) + probs)
+    return out
+
+
+def create_control_nested(target, node_uid, terminal_index, value=None):
+    """V2: a CONTROL wired to Terminals[terminal_index] of node #node_uid on ANY diagram (Terminal.Create Control
+    6349C01 through OpCreateControlNested_v0). Its data type is the SINK's (a Wait (ms) input gives its own type).
+    `value` = the method's optional `Value` (initial value; read back 100 for value=100, diag_c100_verbs_build3.log:50).
+    CORRECTED card 100-4: on an ALREADY-WIRED sink Terminal.Create Control does NOT fail - it creates a DANGLING control
+    (terminal wire 0, error '' - diag_c100_verbs_build3.log:45). So the sink is READ first and a wired sink or an
+    output terminal -> ValueError before any edit. Same return shape as V1."""
+    row = _node_term_row(target, node_uid, terminal_index)
+    if row["is_source"]:
+        raise ValueError("t%s %r of #%s is an OUTPUT - a control needs a sink" % (terminal_index, row["name"], node_uid))
+    if int(row["wire"] or 0):
+        raise ValueError("sink t%s %r of #%s is already wired (w%s) - Create Control would leave a DANGLING control"
+                         % (terminal_index, row["name"], node_uid, row["wire"]))
+    return _create_on_node_term("OpCreateControlNested_v0", target, node_uid, terminal_index, value)
+
+
+def set_visible(target, uid, visible):
+    """V3: write Control.Visible of front-panel object #uid (a panel_wiring row uid) and READ IT BACK in the same op
+    run (OpVisibleSet_v0: Panel.Controls[i] -> Control[Visible] WRITE -> Control[Visible, UID] READ, chained by
+    reference + error). Returns {visible_back, echo, err}; a uid that is not a top-level panel object -> ValueError."""
+    lab = _c100("OpVisibleSet_v0")
+    ensure_loaded(target)
+    order = [int(r["uid"]) for r in panel_wiring(target)]
+    if int(uid) not in order:
+        raise ValueError("#%s is not a top-level front-panel object of %s" % (uid, os.path.basename(target)))
+    vi = op(os.path.join(CLAUDEDEV, "OpVisibleSet_v0.vi"))
+    vi.SetControlValue("vi path", target)
+    for k, v in (("Names", []), ("Names 2", []), ("Class Name", ""), ("Class Name 2", ""), ("index 2", 0)):
+        if k in (lab.get("controls") or []):
+            vi.SetControlValue(k, v)
+    vi.SetControlValue("index", order.index(int(uid)))
+    vi.SetControlValue(lab["vis_ctl"], bool(visible))
+    vi.SetControlValue(lab["VisBack"], not bool(visible))
+    vi.SetControlValue(lab["UID"], 0)
+    _run(vi)
+    out = {"visible_back": bool(vi.GetControlValue(lab["VisBack"])), "echo": int(vi.GetControlValue(lab["UID"])),
+           "err": _err(vi, lab["Err"]) or ""}
+    if out["echo"] != int(uid):
+        out["err"] = (out["err"] + " | " if out["err"] else "") + "uid echo %r != #%s" % (out["echo"], uid)
+    return out
+
+
+def read_bool_const(target, uid):
+    """V4: the value of BooleanConstant #uid (Constant.Value 634AC00 on a BooleanConstant-TYPED node - the base class
+    returns a void variant, NAMES.md:1157-1165) through OpConstValueB_v0. Read-only. Returns {value, echo, err}."""
+    lab = _c100("OpConstValueB_v0")
+    ensure_loaded(target)
+    i = _uid_index(target, "BooleanConstant", uid)
+    vi = op(os.path.join(CLAUDEDEV, "OpConstValueB_v0.vi"))
+    _set_common(vi, target, lab, "BooleanConstant", i)
+    vi.SetControlValue(lab["UID"], 0)
+    _run(vi)
+    v = vi.GetControlValue(lab["Value"])
+    out = {"value": v, "echo": int(vi.GetControlValue(lab["UID"])), "err": _err(vi, lab["Err"]) or ""}
+    if out["echo"] != int(uid):
+        out["err"] = (out["err"] + " | " if out["err"] else "") + "uid echo %r != #%s" % (out["echo"], uid)
+    return out
+
+
+def create_local_write(target, panel_index, dest_diagram_uid=None, position=(40, 40)):
+    """V5 core: a Local Variable in WRITE mode bound to Panel.Controls[panel_index] (OpCreateLocalRead_v0 with
+    `Write?` = True, toolkit-capabilities.md:76), then - when dest_diagram_uid is given - moved INTO that nested
+    diagram (build_d1_v0.move_in). The destination is resolved BEFORE the local is created. Returns {uid, owner_class,
+    owner, is_source (False = WRITE), err}."""
+    _c97_paths()
+    import build_d1_v0 as B
+    ensure_loaded(target)
+    di = _uid_index(target, "Diagram", dest_diagram_uid) if dest_diagram_uid is not None else None
+    before = uids(target, "Local")
+    vi = op(os.path.join(CLAUDEDEV, "OpCreateLocalRead_v0.vi"))
+    vi.SetControlValue("vi path", target)
+    vi.SetControlValue("index", int(panel_index))
+    for k, v in (("Names", []), ("Names 2", []), ("Class Name", ""), ("Class Name 2", ""), ("index 2", 0)):
+        try:
+            vi.SetControlValue(k, v)
+        except Exception:                                                          # noqa: BLE001
+            pass
+    vi.SetControlValue("Write?", True)
+    err = ""
+    try:
+        _run(vi)
+        err = _err(vi, "error out") or ""
+    except RuntimeError as e:
+        err = "modal dialog (dismissed)" if "modal dialog" in str(e) else "EXC %s" % str(e)[:140]
+    new = sorted(uids(target, "Local") - before)
+    out = {"uid": None, "owner_class": None, "owner": None, "is_source": None, "err": err, "new": new}
+    if len(new) != 1:
+        out["err"] = (err + " | " if err else "") + "%d new Local(s)" % len(new)
+        return out
+    u = int(new[0])
+    out["uid"] = u
+    if di is not None:
+        di = _uid_index(target, "Diagram", dest_diagram_uid)     # re-read after the create
+        B.move_in(target, u, di, tuple(position))
+    out["owner_class"], out["owner"] = B.owner_of(target, u, strict=False)
+    try:
+        d = _uid_index(target, "Diagram", out["owner"]) if out["owner_class"] == "Diagram" else 0
+        _u, rows = node_terms_uid(target, d, _node_index(target, d, u))
+        out["is_source"] = [bool(r["is_source"]) for r in rows]
+    except Exception as e:                                                         # noqa: BLE001
+        out["err"] = (out["err"] + " | " if out["err"] else "") + "direction read: %s" % str(e)[:80]
+    return out
+
+
+def create_primitive_nested(target, diagram_uid, prim_name, pos):
+    """V6 (card 100-4, PD213(b)): place primitive `prim_name` on Diagram #diagram_uid of `target` (ANY nesting depth)
+    by DONOR COPY and return the new node's uid.
+    OpPrimCopyNested_v0 (built by tools/bench/diag_c100_verbs_build.py on an OpSetIndexMode_v0 copy, which carries
+    TWO Open VI References - tools/bench/inspect_setindexmode.log): TARGET side `vi path` -> Traverse('Diagram')
+    [index] -> To More Specific Class (Diagram seed) -> GObject.Move 632A400 `owner` (+ Diagram UID echo); DONOR
+    side `vi path 2` -> Open VI Reference -> `UID to GObject Reference.vi` (donor object UID) -> Move `reference`
+    (+ donor UID echo); `position`, `duplicate` = True. A Move whose owner belongs to ANOTHER VI duplicates
+    (archive/peer/2026-08-28-copy-nodes-between-vis.md:31-44). The donor is a registered byte copy of an NI
+    example (labels file key `OpPrimCopyNested_v0` -> `donors`), never an original.
+    Unknown primitive / donor file / diagram -> ValueError BEFORE any edit. Any op error, echo mismatch, a node
+    delta other than exactly one, or an owner read that is not Diagram #diagram_uid -> RuntimeError."""
+    lab = _c100("OpPrimCopyNested_v0")
+    reg = (lab.get("donors") or {}).get(prim_name)
+    if not reg:
+        raise ValueError("no donor registered for primitive %r (registered: %s)"
+                         % (prim_name, sorted(lab.get("donors") or {})))
+    if not os.path.exists(reg["donor"]):
+        raise ValueError("donor file for %r is missing: %s" % (prim_name, reg["donor"]))
+    ensure_loaded(target)
+    di = _uid_index(target, "Diagram", diagram_uid)              # ValueError before any edit
+    n0 = uids(target, "Node")
+    vi = op(os.path.join(CLAUDEDEV, "OpPrimCopyNested_v0.vi"))
+    vi.SetControlValue("vi path", target)
+    vi.SetControlValue("Class Name", "Diagram")
+    vi.SetControlValue("index", int(di))
+    vi.SetControlValue("vi path 2", reg["donor"])
+    if "index 2" in (lab.get("controls") or []):
+        vi.SetControlValue("index 2", 0)
+    vi.SetControlValue(lab["DonorUIDin"], int(reg["uid"]))
+    vi.SetControlValue(lab["position"], tuple(int(v) for v in pos))
+    if lab.get("duplicate"):
+        vi.SetControlValue(lab["duplicate"], True)
+    vi.SetControlValue(lab["DonorUID"], 0)
+    vi.SetControlValue(lab["DiagUID"], 0)
+    run_err = ""
+    try:
+        _run(vi)
+    except RuntimeError as e:
+        run_err = "modal dialog (dismissed)" if "modal dialog" in str(e) else "EXC %s" % str(e)[:140]
+    err = run_err or _err(vi, lab["Err"]) or ""
+    d_echo, g_echo = int(vi.GetControlValue(lab["DonorUID"])), int(vi.GetControlValue(lab["DiagUID"]))
+    new = sorted(uids(target, "Node") - n0)
+    probs = []
+    if err:
+        probs.append("op error %s" % err)
+    if d_echo != int(reg["uid"]):
+        probs.append("donor uid echo %r != #%s" % (d_echo, reg["uid"]))
+    if g_echo != int(diagram_uid):
+        probs.append("diagram uid echo %r != #%s" % (g_echo, diagram_uid))
+    if len(new) != 1:
+        probs.append("%d new Node(s) %r, expected 1" % (len(new), new[:8]))
+    else:
+        _c97_paths()
+        import build_d1_v0 as B
+        own = B.owner_of(target, new[0], strict=False)
+        if tuple(own) != ("Diagram", int(diagram_uid)):
+            probs.append("new node #%s is owned by %r, not Diagram #%s" % (new[0], own, diagram_uid))
+    if probs:
+        raise RuntimeError("create_primitive_nested(%r on #%s): %s" % (prim_name, diagram_uid, " | ".join(probs)))
+    return int(new[0])

@@ -618,3 +618,119 @@ Mapping notes: `goal-requirement-not-advanced` is requirements 1, 2.3, 2.4 unmov
    peer.ps1 rc 0; archived as archive/peer/<date>-outcome-review-20260924.md
    Now annotate it: 'why asked' and 'verdict', and act on the OUTCOME-VIOLATION lines.
 BGRUN END rc=0 after 175s
+BGRUN START 2026-09-26 22:31:55 limit 15.0 min: py tools/outcome_review.py
+BGRUN PID 26524
+   cadence: 5 cycle retrospectives since 2026-09-26-outcome-review-20260926.md (every 5)
+   task written to C:\Users\KimLab\AppData\Local\Temp\outcome-review-20260926.txt (7681 chars)
+   review card tools\bench\cards\review_outcome-review-20260926.json
+OUTCOME: ANSWERED (230s)  model: fable (effort medium; peer.ps1 default for role outcome)  archived: archive\peer\2026-09-26-outcome-review-20260926.md
+COST: $4.1303  in 194 / out 14949 / cache-create 162299 / cache-read 539850  (227s, 36 turn(s))
+VERDICT-CARD: VERDICT-CARD outcome-review-20260926 verdict=refuted -> tools\bench\cards\verdict_outcome-review-20260926.json
+--- ANSWER ---
+Evidence gathered. Writing the review now.
+
+# OUTCOME REVIEW, 2026-09-26 (fourteenth; previous `archive/peer/2026-09-26-outcome-review-20260926.md`, 14:00, 0.4 days ago)
+
+Window judged: cycles 96 through 99 complete, cycle 100 closed by judgement but not yet in the runner log (`tools/bench/cycle_runner.log:452-496`, `docs/d1-loop12-17-split-plan.md:1717`).
+
+## 1. DELIVERABLE
+
+Nothing. The user can run nothing today that they could not run at 14:00. The deliverable line in the counted output is unchanged, and STATUS says it in its own words for both live cycles: "There is no VI yet" (`STATUS.md:73`) and "No VI yet" (`STATUS.md:80`).
+
+What the window produced, with evidence:
+
+| item | what it is | evidence |
+|---|---|---|
+| INDEX row 56 | the ABBA the last review ordered. par1359 (For #1359 parallel) vs S1 at 15 picks: A 3,435 / 3,389 lost, B 3,867 / 3,863. The one-flag lever is 13 % WORSE. Rejected. | `archive/benchmarks/INDEX.md:77`, `tools/bench/par1359_96_abba.json:19-47` |
+| cycle 97–98 | `D1_s1_fgate_BROKEN_20260926_175556.vi`: an N-frame display gate, ExecState 0, never run, then DROPPED by the user's direction PD210 | `STATUS.md:100-108`, `docs/d1-loop12-17-split-plan.md:1584-1586` |
+| cycle 99 | a design page for a separate display loop, judged GO under a named assumption after its go/no-go bench failed twice on its own construction | `STATUS.md:80-93`, `d1-loop12-17-split-plan.md:1671-1676` |
+| cycle 100 | six new verbs, a widened stage-plan schema, a plan that simulates FINAL. No LabVIEW file. | `tools/bench/cards/result_100-5.json:13-22`, `STATUS.md:73-78` |
+
+Row 56 is a real, clean measurement and it answered the last review's discriminating test with a no. That is worth having. It is not a deliverable, and the card's claim is refuted.
+
+## 2. GOAL ALIGNMENT
+
+Against `project-requirements/parallelization-requirement.md`, with `docs/goalmap.json` status:
+
+- **Req 1, the post-'Done Picking Beads?' loop split into parallel loops.** One of seven loops runs for real (loop 1.5). The user descoped the .cal stage on 09-25 (R9 met, `goalmap.json:79-81`). This window added a design and verbs, no loop. Moved on paper only.
+- **Req 2.1 motor control.** Met in the original. Unchanged.
+- **Req 2.2 motor reading, the user's named bottleneck.** `goalmap.json:19-21` still "open". The loop-1.5 split is neutral at load (row 48). Not moved.
+- **Req 2.3 camera acquisition.** "open" (`goalmap.json:25-27`, M4 `:132`). NOT MOVED since 2026-08-24. The user's 09-25 choice that the frame rate be set inside the new VI (R8, `goalmap.json:72-75`) is scheduled nowhere in `STATUS.md` NEXT.
+- **Req 2.4 scheduler.** "open" (`goalmap.json:31-33`, M5). NOT MOVED since the project began.
+- **Req 2.5 merge and save.** "moving": loop 1.7 writes header-only files. No experimental trace written by a new VI.
+- **Req 3, functions in parallel.** The first per-bead parallelism was tested this window and made loss worse (row 56).
+- **R4, no frame loss at 8 / 15 beads.** "open" (`goalmap.json:48-51`). Every leg this window lost 3,389 to 3,867 of ~10,680 at 15 picks. Not reduced.
+
+Unmoved since the project began, twelfth review: requirements 2.2, 2.3, 2.4 and R4. The user's own pain sentence in `project-description.md:45` describes frame loss at high bead count and high frame rate. Thirty-two days later the number at 15 beads is what it was, and 150 Hz has never been run.
+
+## 3. COST vs PRODUCT
+
+Counted delta since 14:00: +10 op VIs, +3 recipes, +29 peer exchanges, +1 INDEX row, +5 retrospectives, 0 documents, 0 runnable VIs.
+
+Money the logs carry for the window:
+
+| item | cost | source |
+|---|---|---|
+| cycles 96–99 | $119.79 | `cycle_runner.log:452,467,481,496` |
+| cycle 100 | unlogged, closed by judgement | `d1-loop12-17-split-plan.md:1717` |
+| retrospectives 95–99 | $24.14 | `archive/peer/2026-09-26-retrospective-cycle9[5-9].md:7` |
+| 23 peer reviews c96–c100 | ~$33 | `cost:` lines, `archive/peer/2026-09-26-c9*.md:7`, `-c100*.md:7` |
+
+About $180 in 7 hours, plus cycle 100, for one negative measurement and a plan. Not defensible at the margin. What a competent engineer would have skipped, by name:
+
+- **Building the N-frame gate before the user answered.** D-2026-09-26-02 was asked at 16:00 (`decisions_pending.json:144`). Cycle 97 had started building it at 15:32 and ran to 17:42 (`cycle_runner.log:467`, $44.91); cycle 98 spent $30.87 diagnosing why it broke. The answer landed at 18:05: "NOT as an N-frame gate" (`decisions_pending.json:158`). About $76 of cycle time and eight peer and prior-art reviews (~$12, the `c97-fgate*` and `c98-fgate*` files) built and then autopsied a design the user rejected two hours after it was started. Waiting two hours would have cost nothing.
+- **The go/no-go bench that could not be built.** 99-2 and 99-3 both went ExecState 0 at the same step (`d1-loop12-17-split-plan.md:1671-1672`), and judgement then went GO on an inference about copy cost. The ABBA measures the net gain directly and was always going to be run. The bench bought nothing decisive.
+- **Scripting the display loop.** The edit is: add one While loop, drag about ten nodes into it, create two locals and a Wait. In the IDE under the user's own capture-locate-act rule (`STATUS.md:13`) that is under an hour. The scripted route has taken cycles 99 and 100, six new verbs, a schema change and 70 self-tests, and still has no file (`result_100-5.json:20-21`).
+- **Five retrospectives at $4–6 each on cycles of 80–130 minutes.**
+
+Credit: row 56 was exactly the test asked for, run cleanly, motors gated, LabVIEW closed after every leg, md5s unchanged (`par1359_96_abba.json:1536-1588`). The 96-2 review named plausible causes for the reverse result instead of papering over it (`STATUS.md:132`). The user's redirect was taken within the same cycle.
+
+## 4. ORDERING AT PROJECT SCALE
+
+The target is the user's own, so the direction is right: a separate display loop fed by locals, first act of cycle 101 (`STATUS.md:57-71`). Row 55 attributes +760 of +972 µs per bead to the For loop that feeds that plot, so the lever is real. I would not put anything ahead of one attempt at that stage run.
+
+Two ordering faults remain:
+
+1. **R8 is scheduled nowhere.** The user chose on 09-25 that the frame rate be set inside the new VI (`decisions_pending.json:121`). At the user's typical load of 8 beads both VIs already lose only ~15 frames in two minutes at 90 Hz (row 48). The thing that would change the user's week is 150 Hz at 8 beads, and that requires R8. It belongs in the same hand-off as the display loop, not after L2-A1.
+2. **Build-before-answer.** The window shows the pattern once at a cost of ~$88. The standing rule should be that a card whose design is the subject of an open user decision does not launch until the decision is answered.
+
+`docs/restructure-plan-4.6.md` stays at the end. Nothing in this window changed that.
+
+## 5. STALE DECISIONS
+
+- **D-2026-09-25-04: the plain-language description of `D1_s3_loop15.vi`.** Owed since 09-25 19:40 (`decisions_pending.json:104`). A repository-wide search for the phrase finds only the decisions file, two outcome reviews and two review logs. Nothing was written. Flagged by the last review, still unscheduled in NEXT.
+- **OPEN 58** (`STATUS.md:51`) was answered by D-03 on 09-25 (`decisions_pending.json:87`) and is still listed "FOR THE USER".
+- **OPEN 53** (controller zero, since 09-18), **OPEN 54** (repair deliberately not built, since 09-19), **OPEN 42/47** (audit false positives, since cycle 40), **OPEN 57** (ratification, since cycle 68): untouched again.
+- **FOR THE USER, still unanswered:** the `.claude/agents/material*.md` patch (`STATUS.md:187`) and the settings matcher (`STATUS.md:268`).
+
+Nothing waited on the user this window. The user answered D-02 in two hours and redirected the design. What waits is on the project: a one-paragraph description that has now been owed for 25 hours.
+
+## 6. THE EXPERIMENT TEST
+
+**The original.** Every file this project has run either matches the original's loss at 15 beads (S3, kswap, rows 48–49), loses more (par1359, row 56; the stamped copies, rows 51–55), or is broken and dropped (fgate). The display-loop copy that might change the number does not exist. The user has not been told what the one runnable new file does. Frame loss at 15 beads is what it was on 2026-08-24, and 150 Hz has never been attempted.
+
+## 7. TERMINATION
+
+Shortest path to something the user can use:
+
+1. **Cycle 101: one stage run for the display loop, as NEXT says.** If it ends at ExecState 0, read the Error List once. Then build it in the IDE by hand under the GUI rule rather than a third verb cycle. The file, not the verb, is the deliverable.
+2. **ABBA vs S1 at 15 picks, 120 s.** The gain must be near the plot's 10 ms share. If lost frames do not fall by roughly a thousand, the design returns to judgement and the L2-A1 bed is next.
+3. **If it falls:** the replay for rule 1a, then add the R8 frame-rate control inside the same copy, then run 8 picks at 150 Hz once.
+4. **One message to the user:** what the file is in plain words, what it changed, the two numbers, and "will you run it once with beads?"
+
+Abandon to get there: any further verb generalisation beyond what cycle 101's rows need; the go/no-go bench; retrospectives on cycles under two hours; further stamped legs; launching a build while its design is an open user question.
+
+Consequence: this is the fifth consecutive review with `goal-requirement-not-advanced` and the second in one day with an unchanged deliverable line. The window did the test it was told to do and the answer was no, which is legitimate. It then spent the rest of the day building a design the user had not yet approved and rejected, and scaffolding for the one the user did approve. Cycle 101 must end with a saved display-loop file and an ABBA number. If it ends with more verbs, stop and re-plan with the user, including whether the scripted-stage route is still the way this project builds VIs.
+
+OUTCOME-VIOLATION: goal-requirement-not-advanced
+OUTCOME-VIOLATION: tooling-over-delivery
+OUTCOME-VIOLATION: ordering-stale
+OUTCOME-VIOLATION: decision-starved
+
+Mapping notes: `goal-requirement-not-advanced` is requirements 2.2, 2.3, 2.4 and R4 unmoved, twelfth review. `tooling-over-delivery` is +10 op VIs, +3 recipes, a schema change and 70 self-tests for zero files, half of it for a dropped design. `ordering-stale` is the fgate built ahead of the user's pending answer and R8 scheduled nowhere. `decision-starved` is the plain-language description owed 25 hours and OPEN 58 answered but still listed. Not flagged: `product-not-runnable`, since S3 runs; `measurement-without-product`, since row 56 was the ordered discriminating test and it was decisive; `scope-inflation`, folded into tooling-over-delivery.
+
+VERDICT {"schema":"verdict/1","id":"outcome-review-20260926","verdict":"refuted","alternative":"Row 56 was the ordered discriminating test and it correctly killed the one-flag lever; the user then redirected to a display loop and cycles 99-100 built every verb it needs, so the window moved the deliverable to a plan that simulates FINAL with no file.","discriminating_test":"Cycle 101: one stage run producing a saved D1_s1_disp_<ts>.vi at ExecState 1, then ABBA vs D1_s1_copy.vi at 15 picks, 120 s, 90 Hz. Lost frames well below ~3,300 => replay, add R8 frame-rate control, hand off; otherwise L2-A1 next.","violations":[{"slug":"wrong-ordering","loss_min":234,"loss_usd":88,"evidence":"tools/bench/cycle_runner.log:467,481; tools/bench/decisions_pending.json:144,158"},{"slug":"repeated-failure-class","loss_min":60,"loss_usd":15,"evidence":"docs/d1-loop12-17-split-plan.md:1671-1676"}],"sources":["archive/benchmarks/INDEX.md:77","tools/bench/par1359_96_abba.json:19","STATUS.md:73","STATUS.md:80","STATUS.md:100","tools/bench/cards/result_100-5.json:20","docs/d1-loop12-17-split-plan.md:1584","docs/d1-loop12-17-split-plan.md:1671","tools/bench/cycle_runner.log:452","tools/bench/cycle_runner.log:467","tools/bench/cycle_runner.log:481","tools/bench/cycle_runner.log:496","tools/bench/decisions_pending.json:104","tools/bench/decisions_pending.json:121","tools/bench/decisions_pending.json:158","docs/goalmap.json:27","docs/goalmap.json:33","docs/goalmap.json:51","docs/goalmap.json:75","project-requirements/project-description.md:45"],"note":"No new runnable VI; par1359 rejected (+13% loss, row 56); fgate built before the user's answer then dropped (~$88); display loop has verbs and a FINAL plan but no file. ~$180 in 7 h. Plain-language description owed since D-04 still unwritten. Cycle 101 = stage run + ABBA or stop."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-outcome-review-20260926.md
+   STEER: tools\bench\cards\steer_100.json (repeated: ['decision-starved', 'goal-requirement-not-advanced', 'ordering-stale', 'tooling-over-delivery'])
+   Now annotate it: 'why asked' and 'verdict', and act on the OUTCOME-VIOLATION lines.
+BGRUN END rc=0 after 231s

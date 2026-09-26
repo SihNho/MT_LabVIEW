@@ -1,0 +1,20 @@
+ATTACK this claim about a failed stage run (card 100-6). Read the files named; do not trust my framing.
+
+FAILURE: tools/bench/stage_d1_disp.log (script tools/recipes/stage_d1_disp.py, plan tools/bench/sim/disp/plan_disp.json,
+md5 db950374) stopped at PRIME before op 1 with
+  "PARITY: SimReader vs real Nodes[] differ on 18 entr(ies)": diagram 639 n_real 73 n_sim 58, only_real = 10 CaseStructure
+  (57, 2222, 3191, 5540, 10407, 10445, 12589, 18716, 20474, 22082), EventStructure 10153, ForLoop 1359/2457/29617/29874;
+  diagram 686 only_real ForLoop 28670, WhileLoop 637/25380; only_sim empty everywhere.
+Code: tools/stagexec.py Executor.run PRIME parity (~lines 1019-1030), reader_parity (~591), SimReader.node_uids (~1662).
+
+CLAIM: the plan's base graph tools/bench/par1359_95_graph.json has only keys graph_summary, md5, note, objs, terminals, vi
+(no `owners`, no `loops`; its objs' `owner` is a CLASS NAME such as 'ForLoop', not a diagram uid). stagesim.base_state therefore
+gives SimReader no loops and no owners map, so SimReader.node_uids lists no structure at all (loops come only from st['loops'],
+case/event structures only via owner-routed tunnel faces that need st['owners']), while the real Diagram.Nodes[] lists every
+structure on the diagram. The plan and the stage script are not at fault; the base graph lacks the structure placement that
+earlier stage bases carried (e.g. tools/bench/sim/l2a1/graph_k_80_owners.json). Card 100-5's dry run showed PARITY 0 only
+because the dry backend compares SimReader with SimReader (tools/bench/diag_c100_plan_dry.log).
+Already ruled out: the tunnel-face re-route and the Max & Min rename of this card (the stop is before op 1, at the base).
+
+Implied next step (NOT taken; judgement's call): re-base plan_disp on an S1 graph that carries owners + loops for
+D1_s1_copy.vi (md5 3e3d23ce), re-simulate, re-dry, re-prerun, one more stage run.

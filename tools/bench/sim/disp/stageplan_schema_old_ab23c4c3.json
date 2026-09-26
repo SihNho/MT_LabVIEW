@@ -1,0 +1,78 @@
+{
+  "$id": "stageplan/1",
+  "description": "A stage plan for tools/stagesim.py (docs/stage-simulator-plan.md steps 1-4, card chat-S2). ORDERED actions applied one by one to the graph JSON; every address is an owner uid + terminal name (optionally term_uid / side), or a symbolic id new:<kind><n>[.<terminal>] for an object an earlier action of the SAME plan created ('as'). The simulator decides nothing: a 'decide' action is listed as a candidate row and blocks finalize.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "stage", "actions"],
+  "properties": {
+    "schema": {"const": "stageplan/1"},
+    "stage": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+$", "minLength": 1, "maxLength": 80},
+    "goal": {"type": "string", "maxLength": 400},
+    "base": {"$ref": "#/definitions/fileref"},
+    "context": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "loops": {"$ref": "#/definitions/fileref"},
+        "fs_pairs_wiki": {"$ref": "#/definitions/fileref"},
+        "subvi_wiki": {"$ref": "#/definitions/fileref"},
+        "s1_key": {"type": "string", "maxLength": 120},
+        "s1_graph": {"$ref": "#/definitions/fileref"}
+      }
+    },
+    "final": {"type": "boolean"},
+    "finalized": {"type": "object"},
+    "open_rows": {"type": "array", "description": "card chat-S3 finalize rule: computation_diff rows this plan LEAVES OPEN for a later stage by design (each with the decision that says so). The plan is final iff the end cdiff rows == exactly these.",
+                  "items": {"type": "object", "additionalProperties": false, "required": ["node", "term", "why"],
+                            "properties": {"node": {"type": "integer"}, "term": {"type": "string", "maxLength": 120},
+                                           "why": {"type": "string", "minLength": 3, "maxLength": 300}}}},
+    "actions": {"type": "array", "minItems": 1, "items": {"$ref": "#/definitions/action"}}
+  },
+  "definitions": {
+    "fileref": {"type": "object", "additionalProperties": false, "required": ["path"],
+                "properties": {"path": {"type": "string", "minLength": 1, "maxLength": 400},
+                               "md5": {"type": ["string", "null"], "pattern": "^[0-9a-f]{32}$"}}},
+    "uidref": {"anyOf": [{"type": "integer"}, {"type": "string", "pattern": "^new:[A-Za-z]+[0-9]+[LR]?$"}]},
+    "addr": {"anyOf": [
+      {"type": "string", "pattern": "^(new:[A-Za-z]+[0-9]+[LR]?|-?[0-9]+)\\.", "maxLength": 200},
+      {"type": "object", "additionalProperties": false, "required": ["uid"],
+       "properties": {"uid": {"$ref": "#/definitions/uidref"},
+                      "term": {"type": "string", "maxLength": 120},
+                      "term_uid": {"type": "integer"},
+                      "side": {"enum": ["inner", "outer"]}}}
+    ]},
+    "action": {
+      "type": "object", "additionalProperties": false, "required": ["op"],
+      "properties": {
+        "op": {"enum": ["move_in", "add_shift_reg", "tunnel", "delete_wire", "delete_object", "wire",
+                        "remove_bad_wires", "create", "decide"]},
+        "id": {"type": "string", "maxLength": 80},
+        "why": {"type": "string", "maxLength": 400},
+        "checkpoint": {"type": "string", "maxLength": 80},
+        "nodes": {"type": "array", "minItems": 1, "items": {"type": "integer"}},
+        "dest_diagram": {"type": "integer"},
+        "pos": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "integer"}},
+        "y": {"type": "integer"},
+        "loop": {"type": "integer"},
+        "body": {"type": "integer"},
+        "parent": {"type": "integer"},
+        "as": {"type": "string", "pattern": "^[A-Za-z]+[0-9]+$"},
+        "dir": {"enum": ["in", "out"]},
+        "indexing": {"type": "boolean"},
+        "missing_ok": {"type": "boolean"},
+        "wire_uid": {"type": "integer"},
+        "at": {"$ref": "#/definitions/addr"},
+        "uid": {"$ref": "#/definitions/uidref"},
+        "src": {"$ref": "#/definitions/addr"},
+        "dst": {"$ref": "#/definitions/addr"},
+        "class": {"type": "string", "maxLength": 80},
+        "diagram": {"type": "integer"},
+        "terminals": {"type": "array", "items": {
+          "type": "object", "additionalProperties": false, "required": ["name", "is_source"],
+          "properties": {"name": {"type": "string", "maxLength": 120}, "is_source": {"type": "boolean"},
+                         "term_class": {"type": "string", "maxLength": 60}}}},
+        "options": {"type": "array", "minItems": 2, "items": {"type": "string", "maxLength": 80}},
+        "row": {"type": "object"}
+      }
+    }
+  }
+}

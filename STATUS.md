@@ -54,20 +54,35 @@ rig-state: 조립   <!-- 2026-09-24 20:xx USER GRANT: "당분간 내가 말하�
 🟡 **CARRY (from the 2026-09-25 verification review `archive/peer/2026-09-25-hyp-lintverify-20260925.md`, not blocking): card flags are checked only on the top-level command (a child process could reach LabVIEW under labview=none); a stage run launched outside bgrun is not counted by the retry cap; a bgrun record failure is only logged (`tools/bgrun.py:219-220`). Close in a tooling cycle, deliverable-first.**
 current-bed: D1_l2_a1_20260925_235224.vi
 <!-- ^ machine key read by tools/errorlist_check.py current_bed_text(); without it the bed is chosen by mtime among D1_*.vi names in this file, and the newer D1_s1_kswap_* would silently take over (review archive/peer/2026-09-26-c88-reuse-stalepin.md). Change it only when a new bed is accepted. -->
-🔴🔴🔴 **FIRST ACT (cycle 100) = `docs/d1-loop12-17-split-plan.md` Pre-decided 212, read (a)→(i); the order is 212(i)5.**
-- **(a) Rows card, offline (no LabVIEW):** write the display-loop stage plan rows on `D1_s1_copy.vi` (md5 `3e3d23ce…`), then run `py tools/protocol.py requires`. The rows are:
-  - a new While + For display loop in #25380's owner diagram;
-  - the PD206(b) set moved with **no control terminal moved** (212(i)3);
-  - L1 from w9215 (4.8 MB ring), L2 from #11608;
-  - local READs of `Exp Baseline`, both half-width controls and TurnOff;
-  - a `Display period (ms)` control and a `Wait (ms)`.
-- **(b) Build the missing verbs** the rows need: `Wait (ms)` creator, `Visible = False`, and a local WRITE or indicator move for #8323. Each gets a negative case and a handle-flat test.
-- **(c) Then** simulator dry + pre-run (read #25261 as a gate); **(d)** one LabVIEW run → `claudeDev\D1_s1_disp_<ts>.vi`; then the ABBA vs S1 (15 picks, 120 s), which measures the net gain (212(i)2), and the replay.
-- **Carry from PD211(b)/(c):**
-  - Any row that MOVES an existing object must read the termless and loose-end wires after the move batch, and ExecState once at the end (PD209(c)).
-  - `gscript.move_into_frame` is not used here (212(f)).
-- Card `peers` must be `hypothesis`, `outcome` and `priorart`.
-- **Retrospective-cycle99 (`archive/peer/2026-09-26-retrospective-cycle99.md`, accepted), `repeated-failure-class`:** every card that builds or edits a VI carries `gui: true` for the Error List reader (`tools/lv_errorlist.py`). On ExecState 0, the Error List is read before any second construction; never escalate the model to rebuild blind.
+🔴🔴🔴 **FIRST ACT (cycle 101) = `docs/d1-loop12-17-split-plan.md` Pre-decided 213(h), then (g).** The first card is the display-loop STAGE card, as `steer_100.json` requires (FOLLOWED in `next.json`). Inside it, in order:
+1. **READ, offline, the Diagram-owned Terminal rows** of While bodies #639 / #25392 in `par1359_95_graph.json` (retrospective-cycle100's discriminating test: expect 1 source + 1 sink each).
+2. **stagesim create-loop model.**
+   - Model exactly those rows for a created loop.
+   - `bind_new` excludes `bind['diag']` (review `archive/peer/2026-09-26-c100-6-r2.md`).
+   - Replay test: the sim of ops 1–2 must equal the real E1 new-object set in `tools/bench/stage_d1_disp_r2.log`.
+3. **An S1 owners map**, read-only from `claudeDev\D1_s1_copy.vi` (md5 `3e3d23ce…`). The D1_k stand-in is not accepted.
+4. Re-dry and pre-run `tools/bench/sim/disp/plan_disp.json` (md5 `9486143…`), then ONE stage run (`tools/recipes/stage_d1_disp.py`) → `claudeDev\D1_s1_disp_<ts>.vi`.
+5. AFTER the stage card, a separate card repairs `guard_peer`. It re-arms itself on `tools/bench/jev_gate.log` (the retrospective's `device-failed`): exclude the `jev_*` ledgers by PATH, with a positive and a negative self-test.
+Stage pass criteria:
+   - ExecState 1;
+   - cdiff equals the 21 PD213(d) open rows plus the added objects;
+   - the #25261 gate reads False;
+   - no termless or loose-end wires beyond RBW's pre-existing uids;
+   - saved by script.
+   Then the ABBA vs S1 (15 picks, 120 s, 210(c)) and the replay.
+- Standing: card `peers` = hypothesis, outcome, priorart. Every card that builds or edits a VI carries `gui: true`; on ExecState 0, read the Error List first.
+
+🟡 **CYCLE 100 (PD213): every verb the display-loop stage needs exists, and its plan passes dry and pre-run. The stage run stopped at op 2 on a simulator-model gap. NO FILE.**
+- 100-6 FAIL 4/2:
+  - Max & Min names measured (`max(x,y)`, class Comparison); dry 0 unroutable; pre-run 8/0.
+  - Run 1 stopped at E1 PARITY (the plan context had no loops or owners).
+  - Run 2 got to PRIME parity 0, #25261 = False and STEPX 01 diff 0, then stopped at the op 2 BINDING check: the real run created a Diagram, and the simulation predicted nothing.
+  - Retry cap spent; S1 unchanged; the outcome review ran.
+- 100-1 (rows, 55 actions): stagexec could not execute `create` rows or nested (symbolic) diagrams.
+- 100-2: four new ops, ExecState 1 cold. **#25261 = False**, so TurnOff starts False (PD212(c) settled).
+- 100-3: stagexec `create` executor + `new:<alias>.body` diagrams; self-tests stagexec 70/0, stagesim 48/0.
+- 100-4 (rung 1, Opus max) PASS 60/3: tunnel-face indicator, `create_control_nested` (refuses a wired sink), `set_visible`, `create_local_write`, and Max & Min by donor copy (`OpPrimCopyNested_v0`).
+- 100-5 PASS: widened stageplan schema installed (0 regressions). The 21 end-cdiff rows are classified 15 / 5 / 0 / 1 into PD213(d) classes 4 / 1 / 2 / 3, with 0 unclassified. The pre-run's only failure is X4, on the 2 rows that 100-4 now covers.
 
 🟡 **CYCLE 99 (PD212): the display-loop DESIGN is written and judged GO. No VI yet.**
 - 99-1 FAIL 6/1 (`tools/bench/facts_c99_display.json`):

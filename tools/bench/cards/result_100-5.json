@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"100-5","status":"PASS","gates":{"pass":6,"fail":0},
+"first_fail":null,
+"blocked_by":null,
+"artefacts":[
+ {"path":"docs/protocol/stageplan.json","md5":"b17f49dc395f87b655b6520f5cc035a4"},
+ {"path":"tools/bench/sim/disp/stageplan_schema_old_ab23c4c3.json","md5":"ab23c4c31b1cb54785849f91ece5c320"},
+ {"path":"tools/bench/sim/disp/stageplan_disp_r3.json","md5":"3303e92019d002fe095900d2bdd3ab3c"},
+ {"path":"tools/bench/sim/disp/stageplan_disp_r3_open.json","md5":"c3417bd63157064f43eba137b79f7361"},
+ {"path":"tools/bench/sim/disp/plan_disp.json","md5":"e50ebc47a66730be79931bd5cc0cff4f"},
+ {"path":"tools/bench/facts_c100_plan.json","md5":"e6fe7af475bfe9c9531b5477f5bcc36e"},
+ {"path":"tools/bench/diag_c100_plan.py","md5":"f50aea9868c04ef83b2e06f128fc3cad"}],
+"facts":[
+ "Schema installed (cp proposed -> docs/protocol/stageplan.json, md5 b17f49dc). 21 stageplan/1 JSONs under tools/bench: 17 valid old, 20 valid new, 0 regressed (diag_c100_plan.log:5)",
+ "r3 = r2 + PD213(b): r5_ind_ring born_on #9234 (#9227 face), r7_max prim 'Max & Min' via create_primitive_nested (donor copy), r7_ctl on new:MAX1.x as DBL (was I32) (stageplan_disp_r3.json:36,79,83)",
+ "r3 simulates failed None with the SAME 21 end rows as 100-3 (diag_c100_plan.log:7)",
+ "PD213(d): 15 class 4 (open at base, before/after identical to base: 15/15), 5 class 1, 0 class 2, 1 class 3, 0 UNCLASSIFIED (diag_c100_plan.log:29; table facts_c100_plan.json)",
+ "Class 1: #8764 y <- local 'Exp Baseline'; #27716 index, #28180 half-width <- 'Force smoothing half-width'; #29009 left/right rank <- 'Extension median filter half-width' (diag_c100_plan.log:13-28)",
+ "Class 3 = #8323 (before 11261 appended array, after []; LWFORCE1 local write wired from #11261) (diag_c100_plan.log:27). Class 2 rows (8741 array, 11261 element) are not in the end diff at all",
+ "r3 + open_rows (21 rows, each why = its PD213(d) class) simulates FINAL, open_rows_match True -> plan_disp.json e50ebc47 (diag_c100_plan.log:30)",
+ "stagexec dry: 2 unroutable, both 100-4: r5_ind_ring (create_indicator_nested Node-only; #9234 is a tunnel face), r7_max (create_primitive_nested undefined) (diag_c100_plan_dry.log:54-55)",
+ "stage_prerun --prerun plan_disp.json: X1 X2 X3 (57 actions -> 47 real ops) X8 PASS; first fail X4 = the same 2 unroutable rows (diag_c100_plan_prerun.log:6-8)",
+ "Self-tests: stagexec 70/0, stagesim 48/0, stage_prerun 12/0 (selftest_*_c100-5*.log). D1_s1_copy.vi md5 3e3d23ce unchanged, no LabVIEW process; stagexec/stagesim unchanged"],
+"open":[
+ "selftest_retry_cap C4 fails when launched via bgrun --detach (BGRUN_DETACHED inherited, bgrun.py:185); first run here gave 11/1, foreground rerun 12/0; review archive/peer/2026-09-26-c100-5-retrycap-detach.md. Fix the self-test (outside my flags)?",
+ "When 100-4 lands tunnel-face create_indicator_nested + create_primitive_nested: only a re-dry/prerun of plan_disp.json is needed, unless Max & Min's measured terminal names differ from the plan's (x, y, max(x, y), min(x, y); UNMEASURED) -> then re-simulate",
+ "Installed schema's description text still says 'PROPOSED AMENDMENT ... card 100-3 may not write' (kept byte-identical to the proposal for md5 traceability). Reword it?"],
+"cost":{"usd":null,"minutes":24,"labview_runs":0},
+"note":"Jev ladder: selftest_stage_prerun_c100-5.log | new-problem p=0.742 | hypothesis review owed | claude/hypothesis ANSWERED $1.14, not refuted | foreground rerun 12/0, disposition written. sim/disp step files + plan_disp.json regenerated (old e261663c). gscript/stagekit not edited."}

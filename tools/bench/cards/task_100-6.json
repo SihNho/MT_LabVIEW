@@ -1,0 +1,81 @@
+{
+ "schema": "task/1",
+ "id": "100-6",
+ "kind": "build",
+ "goal": "PD213(f)4: re-route L1 + Max&Min rows, MODIFY_VERBS patch, read Max&Min terminals, re-dry + prerun plan_disp.json, then ONE stage run -> claudeDev\\D1_s1_disp_<ts>.vi.",
+ "why": "100-4/100-5 left every verb built and the plan simulating FINAL; the pre-run's only fail is X4 on the 2 rows now covered. This card is the display-loop deliverable (PD210/212).",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/cards/result_100-4.json"},
+  {"path": "tools/bench/cards/result_100-5.json"},
+  {"path": "tools/bench/sim/disp/plan_disp.json", "md5": "e50ebc47a66730be79931bd5cc0cff4f"},
+  {"path": "tools/bench/sim/disp/stageplan_disp_r3_open.json", "md5": "c3417bd63157064f43eba137b79f7361"},
+  {"path": "tools/bench/facts_c100_plan.json", "md5": "e6fe7af475bfe9c9531b5477f5bcc36e"},
+  {"path": "tools/bench/facts_c100_verbs2.json", "md5": "34196e76586a61d558ddb1b9aa59a30b"},
+  {"path": "tools/gscript.py", "md5": "aa5f5a42e64a2960ff1c1fd6a74d2778"},
+  {"path": "tools/stagexec.py"},
+  {"path": "tools/stage_prerun.py"},
+  {"path": "tools/stagekit.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/sim/disp/plan_disp.json"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpPrimCopyNested_v0.vi"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpPrimDonor_v0.vi"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpCreateIndicatorNested_v0.vi"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpVisibleSet_v0.vi"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpConstValueB_v0.vi"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "pass": [
+  "L1 routed to create_indicator_nested(W,9234,None), R7 to create_primitive_nested; create verbs in stage_prerun MODIFY_VERBS",
+  "Max & Min terminal names READ from the donor; plan re-simulated if they differ from x, y, max(x, y), min(x, y)",
+  "stagexec dry: 0 unroutable; stage_prerun: all gates PASS (records written)",
+  "stage run: ExecState 1; per-step comparison matches; cdiff == 21 PD213(d) open rows + added objects; #25261 gate False",
+  "after the move batch no termless/loose-end wires beyond RBW's pre-existing uids (PD211(b)); file saved by script",
+  "D1_s1_copy.vi md5 3e3d23ce unchanged start+end; LabVIEW gone at exit; STRUCTURAL level stated (never run)"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_disp_*.vi",
+  "tools/recipes/stage_d1_disp*.py",
+  "tools/bench/sim/disp/**",
+  "tools/bench/facts_c100_stage.json",
+  "tools/bench/cards/result_100-6.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_disp_*",
+   "tools/recipes/stage_d1_disp*",
+   "tools/stagexec.py",
+   "tools/stage_prerun.py",
+   "tools/bench/sim/disp/**",
+   "tools/bench/selftest_stage*",
+   "tools/bench/stage_d1_disp*",
+   "tools/bench/errorlist_*",
+   "tools/bench/facts_c100*",
+   "tools/bench/diag_c100*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/cards/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "outcome", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "stage script <=120 lines on stagekit; content only from plan_disp.json (never re-typed uids); RETRY_CAP 2",
+  "if (i)-(iii) are not all green by minute 35, STOP before the LabVIEW run and return FAIL with the facts",
+  "on ExecState 0 read the Error List (tools/lv_errorlist.py) before anything else; broken file only via gui_save",
+  "bgrun --max-min 40 for the run; hold the turn until BGRUN END; never save S1; facts <= 10 + OPEN <= 3"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

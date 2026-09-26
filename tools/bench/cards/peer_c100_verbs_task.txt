@@ -1,0 +1,9 @@
+ATTACK this claim about a failed build: tools/bench/diag_c100_verbs_build.log (script tools/bench/diag_c100_verbs_build.py).
+
+What happened: two op VIs (OpCreateIndicatorNested_v0, OpCreateControlNested_v0) are built by VI Scripting on a copy of OpSetIndexMode_v0: Traverse('Node')[i] -> To More Specific Class (Node seed) -> Node.Terminals[] -> Index Array -> Invoke Terminal.Create Indicator (6349C02) / Create Control (6349C01). The invoke's terminal census (log line 29) was:
+[(0,'reference',IN,wired),(1,'reference out',OUT),(2,'error in (no error)',IN,wired),(3,'error out',OUT),(4,'Create Indicator',IN,0),(5,'Create Indicator',OUT,0)].
+The script then called gscript.create_control on EVERY unwired, non-standard sink of the invoke (function build_nested, `params` list), i.e. on t4 'Create Indicator' IN. That call raised a modal dialog (log lines 42-44, 83-84: "run blocked behind a modal dialog (dismissed by watchdog after 9s)") and the op was not saved. The two other ops of the same run (OpConstValueB_v0, OpVisibleSet_v0) built, saved and read ExecState 1 cold.
+
+CLAIM: the cause is our own script: t4 is the IN half of the method's RETURN-VALUE terminal pair (same name as the OUT t5), not a parameter, and Terminal.Create Control on it is refused with a dialog. The fix is to exclude any sink whose name is also a source name on the node (applied in build_nested). Prior art: tools/recipes/build_opcreateconstonterm_v0.py censused 6349C00 as 'Create Constant' IN/OUT(4,5) plus 'Value' IN/OUT(6,7), where 'Value' is a real optional parameter.
+
+Attack it: is the IN half of a Create Indicator/Create Control return pair possibly a real input (e.g. a method with an optional parameter of the same name) that the op will need? Could the dialog come from something else (e.g. the invoke's `reference` type, the Index Array element type, the op being loaded twice)? What is the cheapest discriminating test?

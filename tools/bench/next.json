@@ -1,9 +1,9 @@
-{"schema": "next/1", "cycle": 99, "act": "PD212(i)5(a): rows card for the display-loop stage on D1_s1_copy.vi (offline, no LabVIEW): stage plan rows per PD212(c)/(h)/(i)3, requires check; then (b) build the missing verbs the rows need", "task_kind": "build",
- "plan": {"path": "docs/d1-loop12-17-split-plan.md", "md5": "6ac4f96c3fb19cb73e678c428de7a6b1"},
- "pass": ["PD212 rows file: While+For display loop in #25380's owner diagram, PD206(b) set moved (no control terminal), L1 w9215, L2 #11608",
-  "rows include local READs of Exp Baseline, both half-width controls, TurnOff; Display period (ms) control; Wait (ms)",
-  "py tools/protocol.py requires on the stage card lists every op/verb; each MISSING one is named (expected: Wait (ms) creator, Visible=False, #8323 local-write or indicator move)",
-  "missing verbs built, each self-tested with a negative case and handle-flat over 20 calls; documented in toolkit-capabilities + NAMES",
-  "#25261 BoolConst value READ (PD212(h)3 gate); S1 md5 3e3d23ce unchanged; LabVIEW gone"],
+{"schema": "next/1", "cycle": 100, "act": "PD213(h): display-loop STAGE card - read loop-body terminal rows offline, fix stagesim create-loop model, S1 owners map, re-dry/prerun, stage run -> D1_s1_disp_<ts>.vi", "task_kind": "build",
+ "plan": {"path": "docs/d1-loop12-17-split-plan.md", "md5": "ef41628826feeffc26b15c1523dc3abd"},
+ "pass": ["body Terminal rows of #639/#25392 read from par1359_95_graph.json; stagesim models them for a created loop; bind_new fixed",
+  "sim of ops 1-2 == real E1 new-object set of stage_d1_disp_r2.log; S1 owners map read-only from D1_s1_copy.vi",
+  "plan_disp re-dry 0 unroutable, prerun all PASS",
+  "stage run -> claudeDev\\D1_s1_disp_<ts>.vi: ES 1, cdiff == 21 PD213(d) rows + added objects, #25261 False, saved by script"],
  "blocked_by": null, "stop_requested": false, "advances": ["M8", "M3", "R1", "R3"],
- "note": "C99: 99-1 FAIL 6/1 (facts; #6085/#5696 not display); 99-2 FAIL 5/2 (ring w9215 3-D DBL 4.8 MB; 5 inbound edges; TurnOff precedent #25380); 99-3 rung 1 FAIL 23/2 (moved set >= 7.94 ms/15 beads measured; ring-write cost unmeasured, bench broke on terminal-into-For). PD212 design + GO."}
+ "steer": {"item": "outcome:decision-starved+goal-requirement-not-advanced+ordering-stale+tooling-over-delivery", "response": "follow"},
+ "note": "C100 (PD213): all display-loop verbs built; #25261=False; 21 end rows classified; prerun 8/0; stage run 2 stopped at op 2 BINDING (stagesim lacks new-loop body rows). guard_peer jev-ledger fix AFTER the stage card."}

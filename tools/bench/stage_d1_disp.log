@@ -1,0 +1,64 @@
+BGRUN START 2026-09-26 22:42:10 limit 40.0 min: py -u tools/recipes/stage_d1_disp.py
+BGRUN PID 17360
+BGRUN STAGE-RUN recorded stage_d1_disp.py cycle='cycle 100' card=None pid=24684 -> stage_runs.jsonl
+stage_d1_disp - card 100-6, PD213(f)4(iv) / PD212: THE DISPLAY-LOOP STAGE, executed, not re-decided.
+INPUT claudeDev\D1_s1_copy.vi (3e3d23ce..., named by the plan's base graph), FRESH LabVIEW -> claudeDev\D1_s1_disp_<ts>.vi,
+saved BY SCRIPT at ExecState 1. ROWS ONLY FROM THE FINALIZED PLAN tools/bench/sim/disp/plan_disp.json (stageplan_disp_r4_open =
+r3_open + the MEASURED Max & Min names/class, diag_c100_6_resim.log); no uid and no terminal name is typed here.
+PRIOR ART: stage_d1_l2a1.py (skeleton, DryBE), stagexec.lv_run (E1/E2/E3 and the cdiff on the real end, :1965-2027),
+gscript.wire_health + _edge_pairs (PD211(b) readers, card 98-2/98-3), stagekit.broken_wire_count (RBW). No new op.
+PREDICTION: L1 every action compiles to exactly one real op; E1 each real op == its simulated step (the #25261 value gate
+reads False first, else the plan stops); W1 after the batch: termless wires are all RECORDED, RBW (VI-level, on the work copy,
+PD212(f)) removes ONLY wire uids that existed before the stage, and loses NO data edge; E2 ExecState 1 after RBW;
+E3 computation_diff(S1, real end) == the plan's 21 open_rows (FATAL, before save); PS saved by script, md5 != input, input
+unchanged; LabVIEW gone at exit. Level: STRUCTURAL (the VI is never run: card flag run_vi false).
+    py tools/bgrun.py --material --max-min 40 --log tools/bench/stage_d1_disp.log -- py -u tools/recipes/stage_d1_disp.py
+  PASS  L0 the executed plan is FINAL, open_rows_match, plan_in = stageplan_disp_r4_open.json  ('db950374f6b3a702ee86cca8c84f9f5c', {'path': 'tools/bench/sim/disp/stageplan_disp_r4_open.json', 'md5': '194a7bed85fd03430b47ad03f016a725'})
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 280 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 3e3d23cefd3a334001aa9d6156bf1aee  got 3e3d23cefd3a334001aa9d6156bf1aee
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33987
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  D1_s1_disp_20260926_224211.vi
+  FACT  ExecState [after open] D1_s1_disp_20260926_224211.vi = 1
+  FACT  W0 pre-existing Wire uids: 1899
+  PASS  L1 every plan action compiled into exactly one real op (57 -> 47)  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57]
+  METER start  k   0  private 570.3 MB (d -)  handles 54467 (d -)
+  METER read   k   0  private 577.9 MB (d +7.6)  handles 54493 (d +26)
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 3 touched diagram(s) [639, 686, 7911]: one-side-only Nodes[] entries 18
+  FAIL  E1 every real op's graph == its simulated step  PARITY: SimReader vs real Nodes[] differ on 18 entr(ies) - stop before op 1: [{"diagram": 639, "n_real": 73, "n_sim": 58, "only_real": [["CaseStructure", 57], ["CaseStructure", 2222], ["CaseStructure", 3191], ["CaseStructure", 5540], ["CaseStructure", 10407], ["CaseStructure", 10445], ["CaseStructure", 12589], ["CaseStructure", 18716], ["CaseStructure", 20474], ["CaseStructure", 22082], ["EventStructure", 10153], ["ForLoop", 1359], ["ForLoop", 2457], ["ForLoop", 29617], ["ForLoop", 29874]], "only_sim": []}, {"diagram": 686, "n_real": 21, "n_sim": 18, "only_real": [["ForLoop", 28670], ["WhileLoop", 637], ["WhileLoop", 25380]], "only_sim": []}]
+  FAIL  STOP at gate: E1 every real op's graph == its simulated step
+
+---------- [H] HYGIENE
+  FACT  gscript ref_counts: {'opened': 3, 'closed': 3, 'live': 0, 'cached_op_vis': 3}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 3, 'closed': 3, 'live': 0, 'cached_op_vis': 3}
+  FACT  LabVIEW handle count AFTER the work: 38797
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 3e3d23cefd3a334001aa9d6156bf1aee / after 3e3d23cefd3a334001aa9d6156bf1aee
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: ['D1_s1_disp_20260926_224211.vi']  (removed: [])
+  PASS  H6 the files left on disk == ['D1_s1_disp_20260926_224211.vi'] and nothing was removed  added ['D1_s1_disp_20260926_224211.vi'] removed []
+  FACT  LabVIEW handle count at exit: 35818
+
+====================================================================================================
+=== GATES: 9 pass / 2 fail; failing: E1 every real op's graph == its simulated step, STOP at gate: E1 every real op's graph == its simulated step
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\stage_d1_disp.json   elapsed 92.9 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":9,"fail":2},"first_fail":"E1 every real op's graph == its simulated step","artefacts":[]}
+LabVIEW gone at exit: True
+BGRUN END rc=1 after 98s

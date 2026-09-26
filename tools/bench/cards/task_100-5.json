@@ -1,0 +1,71 @@
+{
+ "schema": "task/1",
+ "id": "100-5",
+ "kind": "build",
+ "goal": "100-3's remainder (PD213(c)(d)(e)): install the widened stageplan schema, classify the 21 end-cdiff rows by PD213(d), re-bind rows per PD213(b), stagexec dry + stage_prerun on the plan.",
+ "why": "100-3 built the create executor + symbolic diagrams (self-tests green) but my card's labview:none refused the stubbed dry run and left the schema out of flags.write.",
+ "inputs": [
+  {"path": "tools/bench/cards/result_100-3.json"},
+  {"path": "tools/bench/facts_c100_exec.json", "md5": "420e9aeef9e7a6065258f43a5f2bba90"},
+  {"path": "tools/bench/sim/disp/stageplan_disp_r2.json", "md5": "be6d7d40eccda01833f81953dfc1313e"},
+  {"path": "tools/bench/sim/disp/stageplan_schema_proposed.json", "md5": "b17f49dc395f87b655b6520f5cc035a4"},
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/stagexec.py", "md5": "40e6524ff4f049d4aca855ded3fe8f1c"},
+  {"path": "tools/stagesim.py", "md5": "eb2c61ab7826ced39da05cbd84558c08"},
+  {"path": "tools/stage_prerun.py"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/sim/disp/stageplan_disp_r2.json"},
+  {"kind": "file", "name": "tools/bench/sim/disp/stageplan_schema_proposed.json"},
+  {"kind": "file", "name": "docs/protocol/stageplan.json"}
+ ],
+ "pass": [
+  "docs/protocol/stageplan.json replaced by the proposed schema (widening only); every earlier stage plan still validates",
+  "each of the 21 end-cdiff rows classified by uid into PD213(d) class 1/2/3/4 or UNCLASSIFIED; table in facts_c100_plan.json",
+  "rows re-bound per PD213(b): Max & Min via create_primitive_nested (donor copy), L1 on tunnel face #9234, control on MAX x",
+  "stagexec dry on the plan run; every row routable except rows waiting on 100-4 verbs, each listed by row id",
+  "stage_prerun offline result recorded (pass, or first gate + value); self-tests stay green (stagexec 70/0, stagesim 48/0)",
+  "D1_s1_copy.vi never opened in LabVIEW (dry is COM-stubbed); no VI saved"
+ ],
+ "outputs": [
+  "docs/protocol/stageplan.json",
+  "tools/bench/sim/disp/**",
+  "tools/bench/facts_c100_plan.json",
+  "tools/bench/cards/result_100-5.json"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "docs/protocol/stageplan.json",
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/stage_prerun.py",
+   "tools/bench/sim/disp/**",
+   "tools/bench/selftest_stagexec*",
+   "tools/bench/selftest_stagesim*",
+   "tools/bench/selftest_stage_prerun*",
+   "tools/bench/selftest_c100*",
+   "tools/bench/facts_c100*",
+   "tools/bench/diag_c100*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/cards/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "outcome", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 50},
+ "rules": [
+  "no LabVIEW instance: dry run is COM-stubbed; do not edit gscript.py/stagekit.py (card 100-4 owns them, in parallel)",
+  "classification only per PD213(d); an UNCLASSIFIED row is reported, never accepted or re-designed here",
+  "facts <= 10 + OPEN <= 3"
+ ],
+ "unblocks": "M8"
+}

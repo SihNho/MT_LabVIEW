@@ -1,0 +1,73 @@
+{
+ "schema": "task/1",
+ "id": "100-3",
+ "kind": "build",
+ "goal": "PD212(i)5(b/c) OFFLINE: stagexec `create` executor + symbolic diagram ids (new:<alias>.body) in stagexec AND stagesim; rows revised per judgement; simulator dry + stage_prerun on the plan.",
+ "why": "100-1: compile_plan refuses op 'create' (stagexec.py:200-201) and stagesim/stagexec take only int diagrams, so no plan that builds a loop with contents can be simulated or run. Every future loop split needs this.",
+ "inputs": [
+  {"path": "tools/bench/cards/result_100-1.json"},
+  {"path": "tools/bench/sim/disp/stageplan_disp.json", "md5": "e5722b6c69153dad286c26736e317eb4"},
+  {"path": "tools/bench/facts_c100_rows.json", "md5": "dd9cbde34314d33e79bb95a1a86c85ac"},
+  {"path": "tools/bench/cards/stage_disp_requires_out.txt"},
+  {"path": "tools/bench/cards/rows_spec_100.md"},
+  {"path": "tools/stagexec.py"},
+  {"path": "tools/stagesim.py"},
+  {"path": "tools/stage_prerun.py"},
+  {"path": "tools/stagekit.py"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/sim/disp/stageplan_disp.json"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/stagesim.py"}
+ ],
+ "pass": [
+  "stagexec.exec_create routes create rows (While/For/Local read/Local write/indicator/control/primitive/copy_in) to their verbs",
+  "diagram fields accept `new:<alias>.body`, bound at run time from the create's returned uid; SimReader/stagesim bind a synthetic id",
+  "an unknown alias or a use-before-create is refused by compile_plan (negative case); stagexec + stagesim self-tests extended, all pass",
+  "rows revised: add a DELETE row for tunnel #11363 (both faces unwired after R3/R4); Max & Min via gscript.create_primitive_nested",
+  "rows revised: L1/L2 via gscript.create_indicator_nested + set_visible False; control via create_control_nested; #8323 via local write",
+  "stagexec dry run on the revised plan: every row routable, 0 unroutable; stage_prerun offline pre-run result recorded (pass or first gate)",
+  "the #25261 value gate is a row (read_bool_const via OpConstValueB_v0) that stops the stage if True; D1_s1_copy.vi never opened"
+ ],
+ "outputs": [
+  "tools/stagexec.py",
+  "tools/stagesim.py",
+  "tools/stage_prerun.py",
+  "tools/bench/sim/disp/**",
+  "tools/bench/facts_c100_exec.json",
+  "tools/bench/cards/result_100-3.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/stage_prerun.py",
+   "tools/bench/sim/disp/**",
+   "tools/bench/selftest_stagexec*",
+   "tools/bench/selftest_stagesim*",
+   "tools/bench/selftest_c100*",
+   "tools/bench/facts_c100*",
+   "tools/bench/diag_c100*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/cards/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "outcome", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 75},
+ "rules": [
+  "OFFLINE only; card 100-2 builds the LabVIEW ops IN PARALLEL, names as in stage_disp_requires_out.txt; route to them",
+  "do not edit gscript.py or stagekit.py (100-2 owns them); stagexec/stagesim/stage_prerun are yours",
+  "existing self-tests must stay green (stagexec 59/0, stage_prerun 18/0 baseline); facts <= 10 + OPEN <= 3"
+ ],
+ "unblocks": "M8"
+}

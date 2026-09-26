@@ -1,0 +1,34 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle100",
+ "verdict": "refuted",
+ "alternative": "The two stage stops were unavoidable first-contact defects of a new executor and the guard_peer block was a harmless hook artefact; the cycle then spent its runs and reviews as designed.",
+ "discriminating_test": "Offline: list Diagram-owned Terminal rows of While bodies #639/#25392 in par1359_95_graph.json (expect 1 source + 1 sink each, known at 21:08) and run guard_peer.newest_failing_log() with jev_*.log excluded (expect stage_d1_disp.log bound to the parity review).",
+ "violations": [
+  {
+   "slug": "inference-over-measurement",
+   "loss_min": 20,
+   "loss_usd": 3.13,
+   "evidence": "tools/stagesim.py:102"
+  },
+  {
+   "slug": "device-failed",
+   "loss_min": 7,
+   "loss_usd": 2.11,
+   "evidence": "guard_peer@tools/bench/jev_gate.log:1626"
+  }
+ ],
+ "sources": [
+  "tools/stagesim.py:102",
+  "archive/peer/2026-09-26-c100-probe-loops.md:49",
+  "tools/bench/stage_d1_disp.log:41",
+  "tools/bench/stage_d1_disp_r2.log:57",
+  "archive/peer/2026-09-26-c100-6-jevgate.md:108",
+  "tools/bench/jev_gate.log:1626",
+  "tools/bench/peer_c100-6-parity.log:4",
+  "tools/bench/peer_c100-6-r2.log:4",
+  "tools/bench/peer_c100-6-jevgate.log:4",
+  "tools/bench/peer_c100-6-jevgate2.log:4"
+ ],
+ "note": "Both capped runs stopped on simulator facts readable from the base graph; guard_peer self-armed on jev_gate.log and was bypassed by buying two reviews. Steer_100 unanswered in next.json."
+}

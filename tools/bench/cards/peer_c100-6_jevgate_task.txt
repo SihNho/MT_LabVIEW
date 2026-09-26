@@ -1,0 +1,13 @@
+ATTACK this claim (card 100-6). Read the files; do not trust my framing.
+
+guard_peer.py now blocks on tools/bench/jev_gate.log as "latest failing log", first failure line:
+  "2026-09-26 22:45:44 | JEV-GATEROW | stage_d1_disp.log | STOP: defect (p=0.79) | FAIL STOP at gate: E1 every real op's graph == its simulated step | gaterow-guard_peer"
+
+CLAIM: that line is not a new failure. It is the Jev gate-row classifier's own advisory record OF the stage_d1_disp.log
+PARITY stop (E1 at PRIME before op 1), written by guard_peer itself at 22:45:44. That failure already has an ANSWERED
+adversary review, archive/peer/2026-09-26-c100-6-parity.md, whose disposition is written (offline test
+tools/bench/diag_c100_6_parity.log: V2 context loops+owners gives 0 one-side-only entries; plan re-simulated FINAL with the
+same 21 open rows, tools/bench/diag_c100_6_resim2.log). jev_gate.log is a gate's log, not a build log, and treating it as
+a failing build (like the peer_*.log transcripts that CLAUDE.md already excludes) is a guard false positive.
+Already ruled out: a new LabVIEW run (none ran after stage_d1_disp.log; LabVIEW is not running).
+Strongest counter-case I can see: jev_gate.log is listed by guard_peer deliberately and one review per failing log is the rule.

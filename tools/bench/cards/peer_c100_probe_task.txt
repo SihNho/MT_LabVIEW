@@ -1,0 +1,16 @@
+ATTACK this claim about a failed prediction in tools/bench/diag_c100_probe.py (log tools/bench/diag_c100_probe.log).
+
+The script is OFFLINE (no LabVIEW): it reads tools/bench/par1359_95_graph.json (terminal table of claudeDev\D1_s1_copy.vi,
+md5 3e3d23ce) and gates, per uid, that the uid appears as an `owner_uid` or a `term_uid` in `terminals`.
+Result 36 pass / 3 fail. The 3 failures: U637, U25380, U1359 (log lines 11, 54, 83) - "as owner 0 rows; as term False".
+
+CLAIM: the failure is the script's own prediction bug, not a data defect. #637 and #25380 are WhileLoops and #1359 is a
+ForLoop (docs/toolkit-capabilities.md:66 names #637/#25380 as While loops; facts_c99_display.json F1a names For #1359).
+In this terminal table a loop never owns terminals: its body terminals are owned by its body Diagram (#639, #25392,
+#7911, all present, log lines 12, 55, 84) and its tunnels are owned by LoopTunnel / ShiftRegister objects (e.g. #9227,
+#9018, #11363, present). Loops live only in the `objs` list (log line 8: objs has 9981 entries with a class field).
+So the gate should have been "uid in objs", and the fix is to test loops against `objs`, not `terminals`.
+
+Strongest reason this could be wrong? An alternative explanation (e.g. those three uids really are absent from S1, or the
+file is not S1)? What would falsify it, and the cheapest discriminating test (the probe2 script about to run checks
+objs for 637/25380/1359 and the outer faces of each loop's tunnels)?

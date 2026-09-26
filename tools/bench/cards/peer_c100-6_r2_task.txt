@@ -1,0 +1,18 @@
+ATTACK this claim about the SECOND failed stage run of card 100-6. Read the files; do not trust my framing.
+
+FAILURE: tools/bench/stage_d1_disp_r2.log (tools/recipes/stage_d1_disp.py, plan tools/bench/sim/disp/plan_disp.json md5 9486143097de,
+context now carries loops = graph_loops_s1_20260924.json and owners = sim/l2a1/graph_k_80_owners.json). PRIME passed
+(STEPX 00 diff 0; PARITY 0 on 639/686/7911); op 1 value gate #25261 = False, STEPX 01 diff 0. Op 2 = create while r1_dl
+(gscript.loop_in('while') on Diagram[19] #686): the census found 1 new node #23047 WhileLoop with 0 terminals, then
+  "FAIL E1 ... BINDING: simulated new objects {} != real new objects {'Diagram': 1} (real owners [23073])".
+Code: tools/stagexec.py Executor.run binding of new objects after each op; SimBackend create('while'); stagesim's create
+model for a WhileLoop (new body in st['diagrams']/owners under a symbolic id); LVBackend.create while branch (~line 1481).
+
+CLAIM: the binding step counts new objects from the terminal/objs deltas. A new, EMPTY While loop and its body have no
+terminals, and the simulated step registers the new body only under the symbolic `new:DL1.body` diagram entry (not as an
+object), so the simulated "new objects" set is {} while the real read's objs gain one Diagram (the body). The per-step
+comparison was never exercised on a create-loop op against a real read before (card 100-3/100-5 dry runs compare the
+simulator with itself), so this is a binding-rule gap for create rows, not a plan or LabVIEW fault.
+Alternative I can see: the real body diagram's owner uid (23073) is not the new loop (#23047), i.e. something else on the
+real side (a different structure, a stale read) produced the new Diagram.
+Already ruled out: base/parity (PRIME passed), the #25261 gate (False as predicted).

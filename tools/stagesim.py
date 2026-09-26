@@ -99,10 +99,21 @@ PROVISIONAL = {
                          "evidence": "vigraph.build4 flags (a wire with n_src != 1 or no sink); stage_d1_l7_r_r2.log "
                                      "'RBW removed no live uid edge'",
                          "gaps": ["LabVIEW may also delete dangling tunnels on RBW - not modelled"]},
-    "create": {"params": {}, "evidence": "plan-declared terminal list (no measurement yet)",
-               "gaps": ["terminal list must come from an op model or the subVI wiki"]},
+    "create": {"params": {}, "evidence": "plan-declared terminal list (no measurement yet); card 100-3: a WhileLoop/"
+                                         "ForLoop owns NO row in the terminal read (0 WhileLoop/ForLoop-owned rows among "
+                                         "the 5,061 of tools/bench/par1359_95_graph.json, which holds loops #637/#25380/"
+                                         "#1359), a ControlTerminal row is its own node owned by its Diagram "
+                                         "(vigraph.node_of), a Local's one terminal carries the control's label "
+                                         "(par1359_95_graph.json #2991 'Total Lost Frames')",
+               "gaps": ["terminal list must come from an op model or the subVI wiki",
+                        "a created primitive's class string and terminal names are the plan's (Max & Min unmeasured)",
+                        "values / representation / Visible are recorded, never simulated (the graph carries none)"]},
     "decide": {"params": {}, "evidence": "never applied - listed as a candidate row", "gaps": []},
+    "gate": {"params": {}, "evidence": "card 100-3: a VALUE gate reads a constant's value at run time and stops the stage; "
+                                       "the graph carries no values, so the simulation only checks the object exists",
+             "gaps": ["the value itself is read only by the real run (OpConstValueB_v0)"]},
 }
+LOOP_CLS = ("WhileLoop", "ForLoop")
 MODEL_ALIASES = {"wire": ("wire", "connect_from_wire", "wire_sr", "connect_nested", "connect"),
                  "tunnel": ("tunnel", "tunnel_create", "create_tunnel"),
                  "create": ("create", "const_create", "primitive_create", "create_const", "create_primitive", "const",
@@ -240,6 +251,25 @@ def resolve_uid(st, ref):
         raise SimError("unaddressable uid reference {0!r}".format(ref))
 
 
+def resolve_diag(st, ref):
+    """A diagram field (dest_diagram / diagram / body / parent) -> a diagram uid. An int is a base diagram; the string
+    'new:<alias>.body' is the body of a loop an EARLIER `create` of this plan made (card 100-3). Anything else, an
+    alias no earlier action created, or '.body' of a non-loop is refused (SimError), exactly where a real stage stops."""
+    if isinstance(ref, int) and not isinstance(ref, bool):
+        return ref
+    if isinstance(ref, str) and ref.startswith("new:"):
+        if not ref.endswith(".body"):
+            raise SimError("diagram reference {0!r}: a symbolic diagram is 'new:<alias>.body'".format(ref))
+        if ref not in st["sym"]:
+            raise SimError("symbolic diagram {0} is not created by any earlier action of this plan (unknown alias or "
+                           "use before create)".format(ref))
+        return st["sym"][ref]
+    try:
+        return int(ref)
+    except (TypeError, ValueError):
+        raise SimError("unaddressable diagram reference {0!r}".format(ref))
+
+
 def parse_addr(a):
     if isinstance(a, dict):
         return dict(a)
@@ -265,6 +295,8 @@ def resolve_addr(st, a, want_source):
         named = [r for r in rows if r["term_name"] == a["term"]]
         if not named and a["term"] in ("inner", "outer"):
             side = a["term"]
+        elif not named and a["term"] == "value":
+            pass              # card 100-3: '.value' = the node's one terminal of the wanted direction (a Local's terminal)
         else:
             rows = named
     if side:
@@ -458,7 +490,7 @@ def op_move_in(st, a, P, S1, labels):
     R-BARE     a wire with exactly ONE terminal, that terminal on a moved node, is deleted - AFTER the flips (w5637/w5975 on
                #5680/#6016's outers; the half-wires an earlier sequential step left on #10253/#5634/#17487)."""
     tops = [resolve_uid(st, u) for u in a["nodes"]]
-    dest = int(a["dest_diagram"])
+    dest = resolve_diag(st, a["dest_diagram"])
     if len(tops) > 1 and P.get("sequential", True) and not a.get("joint"):
         effs, cands = [], []
         for u in tops:
@@ -584,7 +616,7 @@ def _move_one(st, tops, dest, P, S1, labels):
 
 def _parent_of(st, body, a, labels):
     if a.get("parent") is not None:
-        return int(a["parent"])
+        return resolve_diag(st, a["parent"])
     if str(body) in st["diagrams"] or body in st["diagrams"]:
         return int(st["diagrams"].get(str(body), st["diagrams"].get(body)))
     p = graph(st, labels)["tree"]["parent"].get(body)
@@ -616,7 +648,7 @@ def _sym(st, name, uid):
 
 
 def op_add_shift_reg(st, a, P, S1, labels):
-    loop, body = int(a["loop"]), int(a["body"])
+    loop, body = resolve_uid(st, a["loop"]), resolve_diag(st, a["body"])
     parent = _parent_of(st, body, a, labels)
     y = -len(st["sym"]) - 1
     R, L = _new_obj(st, "RightShiftRegister", "WhileLoop", y), _new_obj(st, "LeftShiftRegister", "WhileLoop", y)
@@ -640,9 +672,9 @@ def op_add_shift_reg(st, a, P, S1, labels):
 
 
 def op_tunnel(st, a, P, S1, labels):
-    loop, body = int(a["loop"]), int(a["body"])
+    loop, body = resolve_uid(st, a["loop"]), resolve_diag(st, a["body"])
     parent = _parent_of(st, body, a, labels)
-    T = _new_obj(st, "LoopTunnel", "WhileLoop")
+    T = _new_obj(st, "LoopTunnel", obj_class(st, loop) or "WhileLoop")
     din = a.get("dir", "in") == "in"
     o = _new_term(st, T, "LoopTunnel", "OuterTerminal", not din, parent)
     i = _new_term(st, T, "LoopTunnel", "InnerTerminal", din, body)
@@ -725,8 +757,41 @@ def op_delete_object(st, a, P, S1, labels):
             "tunnel_flips": flipped}, []
 
 
+def cond_target(st, ref):
+    """'new:<alias>.cond' naming a WhileLoop an earlier `create` made -> that loop's uid, else None. The conditional
+    terminal owns no row in the terminal read (see PROVISIONAL['create'].evidence), so it is not a resolve_addr end."""
+    if isinstance(ref, dict):
+        head, term = ref.get("uid"), ref.get("term")
+    elif isinstance(ref, str) and ref.startswith("new:"):
+        head, _d, term = ref.partition(".")
+    else:
+        return None
+    if term != "cond" or not (isinstance(head, str) and head.startswith("new:")):
+        return None
+    u = resolve_uid(st, head)
+    if obj_class(st, u) != "WhileLoop":
+        raise SimError("{0}: '.cond' names a While loop's conditional terminal; {1} is {2}".format(ref, head, obj_class(st, u)))
+    return u
+
+
 def op_wire(st, a, P, S1, labels):
     s = resolve_addr(st, a["src"], True)
+    loop = cond_target(st, a["dst"])
+    if loop is not None:
+        # card 100-3 R8: a body node's source -> the loop's conditional terminal (OpStopFromNode_v0). The sink is not in
+        # the read, so the source's wire has no visible sink (dangling in the simulation and in the real read alike).
+        body = [int(b) for b, (c, u) in (st.get("owners") or {}).items() if int(u) == loop]
+        if int(s["frame_diagram"] or 0) not in body:
+            raise SimError("wire {0} -> {1}: the source is on diagram {2}, not on the loop's body {3}".format(
+                a["src"], a["dst"], s["frame_diagram"], body))
+        if st.setdefault("cond_wired", {}).get(str(loop)):
+            raise SimError("wire -> {0}: the conditional terminal is already wired".format(a["dst"]))
+        how = "branch" if s["wire_uid"] else "new"
+        if not s["wire_uid"]:
+            s["wire_uid"] = new_uid(st)
+        st["cond_wired"][str(loop)] = s["term_uid"]
+        return {"wire": s["wire_uid"], "how": how, "src_term_uid": s["term_uid"], "cond_of": loop,
+                "note": "the conditional terminal is not in the terminal read"}, []
     d = resolve_addr(st, a["dst"], False)
     if P.get("same_diagram", True) and int(s["frame_diagram"] or 0) != int(d["frame_diagram"] or 0):
         raise SimError("wire {0} -> {1}: source on diagram {2}, sink on diagram {3} - a border needs a tunnel/"
@@ -784,12 +849,90 @@ def op_remove_bad_wires(st, a, P, S1, labels):
     return {"removed_wires": sorted(bad), "dropped_fsit": dropped}, []
 
 
+def _join(st, s, d):
+    """Wire source row s to sink row d (d must be unwired): s's wire is branched, else a new (negative) wire."""
+    if d["wire_uid"]:
+        raise SimError("create: the sink #{0} {1!r} is already wired (w{2})".format(d["term_uid"], d["term_name"], d["wire_uid"]))
+    if not s["wire_uid"]:
+        s["wire_uid"] = new_uid(st)
+    d["wire_uid"] = s["wire_uid"]
+    return s["wire_uid"]
+
+
 def op_create(st, a, P, S1, labels):
-    cls, dg = a["class"], int(a["diagram"])
+    """card 100-3: `diagram` may be 'new:<alias>.body'. By class:
+    WhileLoop / ForLoop - the loop object + a NEW body diagram (sym new:<as> and new:<as>.body; owners/diagrams/loops
+                          tables updated); NO terminal row (the read carries none for a loop).
+    ControlTerminal     - one row, its own node (term_class ControlTerminal, owner = its Diagram), named `label`;
+                          `indicator` true = a sink, else a source; `born_on` <source addr> joins the indicator to that
+                          source's wire; `on` <sink addr> wires the control to that (unwired) sink.
+    anything else       - the plan's `terminals` (a Local, a copied/created primitive); a constant with `on` and no
+                          `terminals` gets ONE source row named after that sink and is wired to it."""
+    cls, dg = a["class"], resolve_diag(st, a["diagram"])
+    name = a.get("as")
+    eff = {"class": cls, "diagram": dg}
+    if cls in LOOP_CLS:
+        u = _new_obj(st, cls, "Diagram")
+        body = new_uid(st)
+        st["diagrams"][str(body)] = dg
+        st.setdefault("owners", {})[str(body)] = [cls, u]
+        if st["loops"] is None:
+            st["loops"] = []
+        st["loops"].append({"loop_uid": u, "right_uids": [], "left_of": {}})
+        key = _sym(st, name or "L{0}".format(-u), u)
+        _sym(st, (name or "L{0}".format(-u)) + ".body", body)
+        eff.update(node=key, body=body, terminals=[])
+        return eff, []
+    if cls == "ControlTerminal":
+        if not a.get("label"):
+            raise SimError("create ControlTerminal: `label` is required (it is the row's name)")
+        t = new_uid(st)
+        ind = bool(a.get("indicator"))
+        st["terminals"].append({"term_uid": t, "term_name": a["label"], "is_source": not ind, "wire_uid": 0,
+                                "owner_uid": dg, "owner_class": "Diagram", "frame_diagram": dg,
+                                "term_class": "ControlTerminal"})
+        row = st["terminals"][-1]
+        if ind and a.get("born_on") is not None:
+            s = resolve_addr(st, a["born_on"], True)
+            if int(s["frame_diagram"] or 0) != dg:
+                raise SimError("create indicator on {0}: source on diagram {1}, indicator on {2}".format(
+                    a["born_on"], s["frame_diagram"], dg))
+            eff["wire"] = _join(st, s, row)
+        elif not ind and a.get("on") is not None:
+            d = resolve_addr(st, a["on"], False)
+            if int(d["frame_diagram"] or 0) != dg:
+                raise SimError("create control on {0}: sink on diagram {1}, control on {2}".format(a["on"], d["frame_diagram"], dg))
+            eff["wire"] = _join(st, row, d)
+        eff.update(node=_sym(st, name or "C{0}".format(-t), t), terminals=[t], visible=a.get("visible"))
+        return eff, []
     u = _new_obj(st, cls, "Diagram")
-    ts = [_new_term(st, u, cls, t.get("term_class") or "Terminal", t["is_source"], dg, t["name"])
-          for t in a.get("terminals") or []]
-    return {"node": _sym(st, a.get("as") or "N{0}".format(-u), u), "class": cls, "terminals": ts}, []
+    decl = list(a.get("terminals") or [])
+    d = None
+    if a.get("on") is not None:
+        d = resolve_addr(st, a["on"], False)
+        if int(d["frame_diagram"] or 0) != dg:
+            raise SimError("create {0} on {1}: sink on diagram {2}, object on {3}".format(cls, a["on"], d["frame_diagram"], dg))
+        if not decl:
+            decl = [{"name": d["term_name"], "is_source": True}]
+    ts = [_new_term(st, u, cls, t.get("term_class") or "Terminal", t["is_source"], dg, t["name"]) for t in decl]
+    if d is not None:
+        src = [r for r in st["terminals"] if r["owner_uid"] == u and r["is_source"]]
+        if len(src) != 1:
+            raise SimError("create {0} on {1}: {2} source terminals, need exactly 1".format(cls, a["on"], len(src)))
+        eff["wire"] = _join(st, src[0], d)
+    eff.update(node=_sym(st, name or "N{0}".format(-u), u), terminals=ts)
+    return eff, []
+
+
+def op_gate(st, a, P, S1, labels):
+    """card 100-3: a VALUE gate on a base constant (the real run reads it and stops when it equals `stop_if`). The graph
+    carries no values: the simulation checks the object exists with the expected class and changes nothing."""
+    u = resolve_uid(st, a["uid"])
+    cls = obj_class(st, u)
+    want = a.get("class")
+    if cls is None or (want and cls != want):
+        raise SimError("gate: #{0} is {1}, expected {2}".format(u, cls, want or "an object in the graph"))
+    return {"gate": a.get("read"), "uid": u, "class": cls, "stop_if": a.get("stop_if"), "value": "read by the real run only"}, []
 
 
 def op_decide(st, a, P, S1, labels):
@@ -801,7 +944,7 @@ def op_decide(st, a, P, S1, labels):
 
 OPS = {"move_in": op_move_in, "add_shift_reg": op_add_shift_reg, "tunnel": op_tunnel, "delete_wire": op_delete_wire,
        "delete_object": op_delete_object, "wire": op_wire, "remove_bad_wires": op_remove_bad_wires,
-       "create": op_create, "decide": op_decide}
+       "create": op_create, "decide": op_decide, "gate": op_gate}
 
 
 # ------------------------------------------------------------------------------------------------ compare
@@ -1269,6 +1412,52 @@ def selftest():
     fl2 = _flip_orphaned_output_tunnels({"terminals": lt}, [6])
     gate("G42 output LoopTunnel rule unchanged: orphaned inner sink flips ONLY its outer (outer_term_uid kept)",
          [(f["tunnel"], f.get("outer_term_uid")) for f in fl2] == [(61, 1612)] and lt[1]["is_source"] is True, fl2)
+    # card 100-3: create a loop with a symbolic body; move/tunnel/create into it; the cond wire; the refusals (direct OPS)
+    sc = base_state(_synthetic())
+    P0 = {}
+    e1, _c = op_create(sc, {"class": "WhileLoop", "diagram": 10, "as": "DL1"}, P0, None, {})
+    b1 = sc["sym"]["new:DL1.body"]
+    gate("G43 create WhileLoop: object + NEW body diagram (sym new:DL1 / new:DL1.body), owners + diagrams + loops tables, "
+         "NO terminal row", b1 < 0 and sc["owners"][str(b1)] == ["WhileLoop", sc["sym"]["new:DL1"]] and
+         sc["diagrams"][str(b1)] == 10 and not [r for r in sc["terminals"] if r["owner_uid"] == sc["sym"]["new:DL1"]] and
+         any(L["loop_uid"] == sc["sym"]["new:DL1"] for L in sc["loops"]), e1)
+    op_create(sc, {"class": "ForLoop", "diagram": "new:DL1.body", "as": "DF1"}, P0, None, {})
+    op_move_in(sc, {"nodes": [4], "dest_diagram": "new:DF1.body"}, dict(PROVISIONAL["move_in"]["params"]), None, {})
+    gate("G44 move_in into 'new:DF1.body' re-homes #4's rows onto the new For body (nested in the new While body)",
+         all(r["frame_diagram"] == sc["sym"]["new:DF1.body"] for r in sc["terminals"] if r["owner_uid"] == 4) and
+         sc["diagrams"][str(sc["sym"]["new:DF1.body"])] == b1, [r["frame_diagram"] for r in sc["terminals"] if r["owner_uid"] == 4])
+    sc["terminals"].append({"term_uid": 5001, "term_name": "Stop", "is_source": True, "wire_uid": 0, "owner_uid": 10,
+                            "owner_class": "Diagram", "frame_diagram": 10, "term_class": "ControlTerminal"})
+    op_create(sc, {"class": "Local", "diagram": "new:DL1.body", "as": "LR1", "label": "Stop",
+                   "terminals": [{"name": "Stop", "is_source": True}]}, P0, None, {})
+    ew, _c = op_wire(sc, {"src": "new:LR1.value", "dst": "new:DL1.cond"}, dict(PROVISIONAL["wire"]["params"]), None, {})
+    lr = [r for r in sc["terminals"] if r["owner_uid"] == sc["sym"]["new:LR1"]]
+    gate("G45 '.value' names a Local's one terminal; wire -> new:DL1.cond wires the source with NO visible sink row",
+         ew.get("cond_of") == sc["sym"]["new:DL1"] and len(lr) == 1 and lr[0]["wire_uid"] < 0 and
+         len(wire_rows(sc, lr[0]["wire_uid"])) == 1, ew)
+    e_i, _c = op_create(sc, {"class": "ControlTerminal", "diagram": 20, "as": "IND1", "label": "plot", "indicator": True,
+                             "born_on": "2.out"}, P0, None, {})
+    ct = [r for r in sc["terminals"] if r["term_uid"] == sc["sym"]["new:IND1"]]
+    gate("G46 create indicator born_on 2.out: its own node (term_class ControlTerminal, owner = diagram 20), joined to w6",
+         len(ct) == 1 and ct[0]["owner_uid"] == 20 and ct[0]["wire_uid"] == 6 and not ct[0]["is_source"] and
+         V.node_of(ct[0]) == ct[0]["term_uid"], ct)
+    refs = []
+    for lab_, fn in (("unknown alias", lambda: op_move_in(sc, {"nodes": [2], "dest_diagram": "new:ZZ1.body"},
+                                                           dict(PROVISIONAL["move_in"]["params"]), None, {})),
+                     ("'.body' spelled without body", lambda: resolve_diag(sc, "new:DL1")),
+                     ("'.cond' of a For loop", lambda: op_wire(sc, {"src": "new:LR1.value", "dst": "new:DF1.cond"},
+                                                               dict(PROVISIONAL["wire"]["params"]), None, {})),
+                     ("occupied sink for create-on", lambda: op_create(sc, {"class": "DigitalNumericConstant", "diagram": 20,
+                                                                            "on": "2.in"}, P0, None, {}))):
+        try:
+            fn()
+            refs.append((lab_, "applied"))
+        except SimError as e:
+            refs.append((lab_, "refused: " + str(e)[:60]))
+    gate("G47 NEGATIVE: unknown alias / malformed symbolic diagram / '.cond' of a For / create-on an occupied sink are "
+         "each refused (SimError)", all(x[1].startswith("refused") for x in refs), refs)
+    gate("G48 gate op: checks the object and changes nothing", op_gate(sc, {"uid": 3, "read": "bool_const", "stop_if": True},
+                                                                       P0, None, {})[0]["class"] == "Constant", "")
     n_pass = sum(1 for _l, ok in gates if ok)
     n_fail = len(gates) - n_pass
     first = next((l for l, ok in gates if not ok), None)

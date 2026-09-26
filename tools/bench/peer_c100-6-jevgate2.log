@@ -1,0 +1,63 @@
+BGRUN START 2026-09-26 22:53:47 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c100-6-jevgate2 -TaskFile tools/bench/cards/peer_c100-6_jevgate2_task.txt
+BGRUN PID 8704
+OUTCOME: ANSWERED (91s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-26-c100-6-jevgate2.md
+COST: $0.9996  in 14 / out 8345 / cache-create 88730 / cache-read 613997  (87s, 16 turn(s))
+--- ANSWER ---
+I'm checking the guard log, the run logs and the plan's context. Findings follow.
+
+**Verdict: the gate part of the claim holds. It is right that the 22:53:22 block on `jev_gate.log` is not a new failed prediction. But "the stage run may proceed" rests on an owners map taken from a different VI (D1_k), and nothing has checked that map against S1 beyond one listing check before the first op, on three diagrams.**
+
+## 1. Strongest reason the claim is wrong
+
+The PARITY stop was not fixed with S1's own data. It was fixed with D1_k's data.
+- `plan_disp.json:14-15` now sets `context.owners` to `tools/bench/sim/l2a1/graph_k_80_owners.json`.
+- That map was taken from `D1_k`. D1_k is not a copy of S1: it is built from `D1_s4_loop17.vi` (`docs/d1-loop12-17-split-plan.md:68`). That lineage includes the loop-1.7 split and the move of kernel `#5058` into the loop 1.2 body. So for every node those stages moved, D1_k's owner differs from S1's.
+- The parity review had already flagged this as an unchecked assumption (`archive/peer/2026-09-26-c100-6-parity.md:84`: "it keeps S1's uids only if D1_k is a copy of S1, which I did not verify").
+
+## 2. Alternative explanation of the same evidence
+
+Your offline V2 = 0 result is **not** tautological, so your own counter-case is weaker than you state it:
+- `diag_c100_6_parity.log:3-8` rebuilds the real listing from the failed run's E1 row: n_real 73 / 21 / 10.
+- V0 reproduces the failed run's 18 real-only entries (`:9`).
+- That makes V2 a real-data check for this state.
+
+But it only covers one moment: **the node listing before op 1, on diagrams 639, 686 and 7911.** E1 is "every real op's graph == its simulated step" (`stage_d1_disp.log:42`), so parity is checked again after every op. Owners feed placement through `tunnel_owner` and `loop_parent`, and a wrong or missing owner lists a loop on every diagram (parity review `:69`). So V2 = 0 fits both of these:
+- **(a)** The owners map is right wherever this plan touches.
+- **(b)** The owners map is wrong for nodes that are not structures listed on those three diagrams before op 1, which V2 cannot see. It would first show as an E1 failure **after** op k, with the VI already changed in LabVIEW's memory. (By the log's own E3 wording, nothing is saved, so this costs a run, not a file.)
+
+The dry and prerun passes (`stage_d1_disp_dry3.log:130`, `prerun3.log:139`) cannot tell (a) from (b) apart, because dry PARITY compares SimReader with SimReader.
+
+## 3. What would falsify the claim
+
+Either of these:
+- Any uid in `graph_k_80_owners.json` that the plan's ops touch, or that sits on 639, 686 or 7911, whose owner in D1_k differs from its placement in S1.
+- An owners key that does not exist in `par1359_95_graph.json` at all.
+
+## What checks out on the gate
+
+- **Nothing new failed.** Between the jevgate review (22:52:21) and the block (22:53:22), `jev_gate.log` gained only line 1628 (JEV-PREFLIGHT, 22:52:30) and the block itself (line 1629).
+- **Every c100-6 log after the failed run ends PASS rc=0:**
+  - `diag_c100_6_parity.log:10-11`
+  - `resim2:7-8`
+  - `dry3:130-131`
+  - `prerun3:139-140`
+- **The pre-run is fresh.** The pre-run record for the new plan md5 `9486…` comes after the failed run (`prerun_records.jsonl:155-157`).
+- **Nothing else changed.** The recipe sha is unchanged (`ab0629…`), and so is the input VI md5 (`3e3d23ce`).
+- **The run count is within the cap.** `stage_runs.jsonl:28` holds one counted run of `stage_d1_disp` in cycle 100, and `RETRY_CAP = 2` (`tools/stage_prerun.py:1387`). The next run is allowed, but it is **the last one without a judgement card**. So a mid-run E1 failure under (b) would use up the cycle's allowance.
+- **The jevgate2 review was never archived.** There is no `archive/peer/2026-09-26-c100-6-jevgate2.md`, only the task file. Its disposition therefore cannot be cited. This answer may be that review.
+
+## 4. Cheapest discriminating test
+
+This is offline, takes seconds and needs no LabVIEW:
+1. Load `graph_k_80_owners.json` and `par1359_95_graph.json`.
+2. For every owners key, check two things: that the uid exists in S1's `objs`, and that the class of the owner uid in S1 matches the `owner` class name recorded on that obj in S1.
+3. Then restrict the check to the uids named in `plan_disp.json`'s op rows, plus the structures on 639, 686 and 7911.
+
+How to read the result:
+- **The claim holds** if there are 0 mismatches in the touched set.
+- **Alternative (b) is live** if there is any mismatch in the touched set. Then the owners map has to come from S1 before the last capped run is spent.
+
+What would change my mind: a touched-set mismatch count of 0 from that check. With it, I would agree the run should go ahead. The gate side (label collision plus a self-refreshing log) is already settled and needs no further evidence.
+
+No web search was needed: every claim here is about this project's own files, cited by file:line. I did not run or edit anything.
+BGRUN END rc=0 after 92s

@@ -773,6 +773,10 @@ def plan_files(recipe):
 
 
 SP_WIRING = ("tunnel", "connect", "wire_sr", "branch")     # stagexec compiled-op kinds that make a wire
+# card 100-6: a `wire` action into a While loop's `new:X.cond` compiles to a `stop` op (stagexec compile_plan, self-test
+# T36b; OpStopFromNode_v0). It COVERS its wire action, but the dry trace records it as `stop`, not `wire_*`, so it is not
+# counted among the wiring ops executed (X5 first failed on plan_disp.json r8_stop: 24/25 covered).
+SP_WIRE_OTHER = ("stop",)
 
 
 def stageplan_check(path):
@@ -1129,8 +1133,9 @@ def prerun(recipe, graph=None):
         A = (pl or {}).get("actions") or []
         wa = set(i for i, a in enumerate(A, 1) if a.get("op") == "wire")
         wo = [o for o in (ops_ or []) if o["kind"] in SP_WIRING]
+        so = [o for o in (ops_ or []) if o["kind"] in SP_WIRE_OTHER]
         sp_wops, sp_wact = sp_wops + len(wo), sp_wact + len(wa)
-        sp_cov += len(wa & set(x for o in wo for x in o["acts"]))
+        sp_cov += len(wa & set(x for o in wo + so for x in o["acts"]))
     gate("X5 wiring ops executed in the dry run == plan wire rows", plans and not sp_bad and len(ops) == len(wires) + sp_wops
          and sp_cov == sp_wact, "ops {0} vs plan wire rows {1} + stageplan wiring real ops {2} (covering {3}/{4} wire actions)"
          .format(len(ops), len(wires), sp_wops, sp_cov, sp_wact))
@@ -1222,7 +1227,11 @@ MODIFY_VERBS = frozenset((
     "junk_purge", "delete_wire", "delete_object", "move_in", "connect", "connect_from_wire",
     "fs_inner_tunnel_connect", "wire_indicators", "add_shift_reg", "wire_sr", "create_local_read", "copy_in",
     "add_sr_row", "const_row", "cfw_second_pass", "from_decision", "save", "save_route", "plan_rows",
-    "discard_work"))
+    "discard_work",
+    # card 100-6 (PD213(f)3): the create verbs that edit the VI - stagekit.create_local_write and the gscript creators
+    # stagexec's create routes call (CREATE_ROUTES / ROUTE_VERBS), so a script importing stagekit and calling one is gated
+    "create_local_write", "create_indicator_nested", "create_control_nested", "create_primitive_nested",
+    "set_visible", "set_control_label", "set_default_in_memory", "loop_in"))
 VI_MOD_EXEMPT = frozenset(("stage_prerun.py", "stagekit.py", "stagexec.py", "stagesim.py"))
 
 

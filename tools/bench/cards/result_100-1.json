@@ -1,0 +1,27 @@
+{"schema":"result/1","id":"100-1","status":"FAIL","gates":{"pass":5,"fail":1},
+"first_fail":"#25261 BooleanConstant value NOT READ: graph carries no values and no BooleanConstant reader exists (NAMES.md:1157-1159)",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/sim/disp/stageplan_disp.json","md5":"e5722b6c69153dad286c26736e317eb4"},
+ {"path":"tools/bench/cards/stage_disp_requires.json","md5":"ae7ffc6805b82476ce97344a19cf1015"},
+ {"path":"tools/bench/cards/requires_disp-stage.json","md5":"cde9dbb5f373bb134051a9e53b9a0ba8"},
+ {"path":"tools/bench/cards/stage_disp_requires_out.txt","md5":"abe70a5936b6fdc86410f0e5f1cfcc9c"},
+ {"path":"tools/bench/facts_c100_rows.json","md5":"dd9cbde34314d33e79bb95a1a86c85ac"},
+ {"path":"tools/bench/diag_c100_rows.py","md5":"9ba5b5aa59c3bfa5dbf409df510f3242"}],
+"facts":[
+ "Rows R1-R8 = 55 actions (15 create, 10 move_in, 5 tunnel, 25 wire); every bound end re-read from par1359_95_graph.json, 81/0 gates (diag_c100_rows.log:92-175)",
+ "DL goes on diagram 686: owner of #25380 and #637 (tunnel outer faces on 686, K owners[25392]=[WhileLoop,25380]) (diag_c100_probe2.log)",
+ "stagexec cannot run the plan: compile_plan refuses op 'create' (stagexec.py:200-201, diag_c100_rows.log:172); stagesim/stagexec take int diagrams, rows need new:DL.body (stagesim.py:461,643,788)",
+ "requires: 44 found / 9 missing: OpCreateIndicatorNested, OpCreateControlNested, OpVisibleSet, OpConstValueB, create_local_write, set_visible, stagexec.exec_create (requires_disp-stage.json)",
+ "Local WRITE: op exists (OpCreateLocalRead_v0 Write?=True made a WRITE local, toolkit-capabilities.md:76); only the wrapper is missing (stagekit.create_local_read :676 drives OpCreateLocal_v0)",
+ "Wait (ms) is NOT missing: S1 has donors #44143 #32538 #22343 for stagekit.copy_in :779. Max & Min IS missing: no donor in S1, no creator (diag_c100_rows.log:167-168)",
+ "R5 hidden indicators and R7 control sit on nested diagrams; create_indicator/create_control address top-level Nodes[] only (gscript.py:2605-2649; nested op named cycle27-plan.md:1796-1800)",
+ "stagekit.connect :601 calls gscript.connect_nested_v2, which raises at entry (op never built, gscript.py:3224-3247); rows use stagexec's connect_from_wire / connect_nested_v1",
+ "Leftover: #11363 (For #1359 output tunnel) ends with both faces unwired (w11374 cut by R3, w11352 by R4); the spec keeps it (facts_c100_rows.json leftovers)",
+ "Jev row: diag_c100_probe.log | new-problem p=0.65 | review owed | hypothesis review ANSWERED, test 4 applied, disposition written (archive/peer/2026-09-26-c100-probe-loops.md) | probe2 PASS 3/0"],
+"open":[
+ "#25261 value is unread: should (b) build OpConstValueB_v0 (OpConstValueN_v1 with a BooleanConstant-typed seed, NAMES.md:1159-1165), or accept a GUI glance / run-time read of TurnOff?",
+ "#11363 ends with both faces unwired after R3+R4. Leave it for RBW/ExecState to judge, or add a delete row (not in rows_spec_100.md)?",
+ "(b) needs more than the expected 3 verbs: nested create-indicator/control, Visible writer, Max & Min source, a local-write wrapper, stagexec create executor and symbolic diagrams. Which are in scope?"],
+"cost":{"usd":null,"minutes":16,"labview_runs":0},
+"note":"D1_s1_copy.vi md5 3e3d23ce at start and end, LabVIEW never started (H0-H4). Pass criterion 5 (#25261) failed; criteria 1-4 and 6 passed."}

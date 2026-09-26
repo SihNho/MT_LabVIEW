@@ -1167,6 +1167,25 @@ appears among the windows). gscript's watchdog reports it correctly as a modal (
   scalar TDs have ODD lengths (7, 11, 17, 21, 23) with no pad byte (the even-rounding applies to the
   `Variant To Flattened String` form, not here). `NumericConstant.Representation` enum (NI doc): 1 DBL, 3 I32,
   6 U32 — cross-checks the TD low byte 0x0A/0x03/0x07.
+- **Card 100-2 (2026-09-26), measured names** (`tools/bench/diag_c100_verbs_build.log` / `…build2.log`):
+  `Control.Visible` = **6332000** (attached to a `VI Server:Control` PN, output terminal `Visible`); a
+  `VI Server:Node` PN on 6359000 names its output **`Terms[]`**; Invoke `Terminal.Create Indicator` 6349C02 terminals
+  `reference`, `reference out`, `error in (no error)`, `error out`, `Create Indicator` IN/OUT (t4/t5, the return
+  pair — never give t4 a control: modal dialog); `Terminal.Create Control` 6349C01 the same plus **`Value`** IN/OUT
+  (t6/t7). `VI Server:BooleanConstant` + `Constant.Value` 634AC00 output **`Value`** returns the Boolean (S1 `#25261`
+  = False). An indicator created on a WIRED output terminal is born as a BRANCH of that wire (w12256) with the
+  label `<terminal name> 2` (`output cluster 2`). Op label maps: `tools/bench/facts_c100_oplabels.json`.
+- **Card 100-4 (2026-09-26), measured names** (`tools/bench/diag_c100_verbs_build3.log` / `…build4.log`):
+  Invoke **`GObject.Move` 632A400** terminals: `reference`, `reference out`, `error in (no error)`, `error out`, **`Move`**
+  IN/OUT (t4/t5, the return pair), **`position`**, **`owner`**, **`duplicate`** (each an IN/OUT pair, t6-t11); a control
+  made on `duplicate` is labelled **`Duplicate? (F)`**. `Open VI Reference` terminals (OpSetIndexMode_v0 #316):
+  `error out`, `vi reference`, `password ("")`, `type specifier VI Refnum (for type only)`, `error in (no error)`,
+  `options`, `vi path`, `application reference (local)`. `OpPrimCopyNested_v0` labels: in `vi path`, `Class Name`, `index`,
+  `vi path 2` (DONOR), `UID` (donor object), `position`, `Duplicate? (F)`; out `UID 2` (donor echo), `UID 3` (diagram echo),
+  `error out 4` (Move), `error out 2`/`error out 3`. NI `examples\Comparison\Max and Min.vi` holds SIX `Max & Min` nodes
+  (uids 43 94 116 337 705 1478, all on Diagram #3); the node label reads **`Max & Min`**, scripting class **`Comparison`**.
+  An indicator made by `OpTunnelInd_v0` on a LoopTunnel's outer face is labelled **`Array`** (the face has no name).
+  `Terminal.Create Control` on an ALREADY-WIRED sink returns error `''` and a control whose terminal wire is 0.
 - **`VI Server:DigitalNumericConstant` property IDs (measured by attaching each, 2026-09-15 05:34 — the labviewwiki
   class table is shifted):** `634D001` Fmt&Prec · `634D002` Format · `634D003` Precision · `634D004` RadixVis ·
   `634D005` refused (error 107, private) · `634D006` FormatString · `634D007` **NumText** (the `Numeric Text`

@@ -1,0 +1,54 @@
+BGRUN START 2026-09-26 21:30:48 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c100-verbs-build -TaskFile tools/bench/cards/peer_c100_verbs_task.txt
+BGRUN PID 25164
+OUTCOME: ANSWERED (132s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-26-c100-verbs-build.md
+COST: $1.1306  in 18 / out 10469 / cache-create 89018 / cache-read 823855  (128s, 16 turn(s))
+--- ANSWER ---
+**The claim is only half right. t4 is almost certainly not a real input, but the fix as written is wrong: it also throws away `Value`, which is a real parameter of Create Control (6349C01).**
+
+## 1. Strongest reason the claim is wrong: the fix drops a real parameter
+
+The new filter in `tools/bench/diag_c100_verbs_build.py:160-162` excludes any sink whose name is also a source name on the node. But LabVIEW lists every invoke parameter as an IN/OUT pair with the same name, not only the return value:
+- The 6349C01 census at `diag_c100_verbs_build.log:69` shows `(6,'Value',IN)` and `(7,'Value',OUT)`.
+- Your own prior art shows the same for 6349C00: `build_opcreateconstonterm_v0.log:17` has `'Value'` at IN/OUT 6/7, and that `Value` input really took a control and worked (`:23`).
+
+So for OpCreateControlNested_v0 the new `params` list comes out empty. `Value` silently gets no control. ExecState will still read 1 because the input is optional, so no gate will catch it.
+
+This is the failure class the prior-art recipe already warned about (`tools/recipes/build_opcreateconstonterm_v0.py:254-260`: an optional input is invisible to a probe that stops at ExecState 1, and `Value` never got a control). The claim's own prior-art citation says `Value` is a real optional parameter, and the claim's rule removes it.
+
+A safer rule: exclude only the sink that shares its name with the method, i.e. the first pair after `error in`/`error out`. Better still, exclude by the census index measured for that method (t4). Do not exclude every same-named pair.
+
+## 2. Alternative explanation for the dialog: the mechanism is inferred, not read
+
+"The method refuses t4 with a dialog" was never read from the machine:
+- **The dialog text is not in the log.** Both screenshots (`gscript_dialog_1790425709.png` and `…725.png` in `%TEMP%`) no longer exist; I tried to read them and both are missing.
+- **gscript's own history points elsewhere.** Its note at `tools/gscript.py:2620-2626` says earlier create_control dialogs were *"Error 1055 … at Property Node in OpCreate{Control,Indicator}_v0 – Object reference is invalid"*. That is a failure in the step-by-step reference lookup (VI → block diagram → Nodes[] → Index Array → Terminals[] → Index Array), before Create Control ever runs. `docs/cycle27-plan.md:2462` records the same kind of null reference. So "a dialog appeared" does not tell a method refusal apart from an invalid reference in the lookup. An example: if Terminals[] in the lookup does not index t4 the way the census does, you get 1055, not a refusal.
+- **For OpCreateControlNested the failing parameter is unknown.** Before the fix, `params` held both `'Create Control'` (t4) and `'Value'` (t6). The traceback (`log:70-84`) prints no per-parameter line, so the log does not show whether t4 or t6 raised the dialog. The traceback also shows source lines from the already edited file (`:76` shows the `srcn` line where `ctl` ran), so the log's line numbers do not match the code that actually ran.
+
+Alternatives the evidence does rule out:
+- **The invoke's `reference` type or the Index Array element type.** Create Control acts on the op under construction, and in the 09-17 prior art `Value` got its control on the same kind of invoke with the same `element → reference` wiring (`build_opcreateconstonterm_v0.log:18,23`).
+- **The op VI being loaded twice or left in a bad state.** OpVisibleSet_v0 later in the same run used `b.ctl` → `create_control` successfully (`diag_c100_verbs_build.py:230`).
+
+## 3. What the prior art actually shows, in the claim's favour
+
+On 09-17, t4 `'Create Constant'` gave "no control created" (`build_opcreateconstonterm_v0.log:22`). On that date `create_control` still swallowed modal dialogs; that changed 09-20 (`gscript.py:2620-2622`). So that silent decline fits the same dialog on the IN half of the return pair. This is indirect, but it is the best evidence that t4 is a dead slot. No web source settled whether 6349C02 has any parameter; two searches returned nothing relevant. The claim that the method-name row's IN half is not a real terminal is therefore unsourced, though consistent with the census: 6349C02 lists no pair other than the method-name pair.
+
+## 4. What would falsify the claim
+
+- The dialog text for t4 reads "Error 1055 … Property Node", which is a reference-lookup failure, not a refusal by 6349C01/C02.
+- Or t6 `'Value'` on 6349C01 also raises a dialog when called alone.
+
+## 5. Cheapest test that tells the two apart
+
+In the next run of this script, before `b.ctl`:
+1. Print one `FACT` line per parameter.
+2. Move the watchdog screenshot directory out of `%TEMP%` into `tools/bench/`, and log the dialog text from `lv_gui -Action dialogs`.
+3. On a scratch copy with the 6349C01 invoke, call `create_control` on t4 alone, then on t6 `'Value'` alone.
+
+Reading the results:
+- t4 fails with a method error and t6 succeeds: the conclusion holds, and the rule must be "exclude t4, the method-name pair", not every same-named pair.
+- t4 fails with 1055 at a Property Node: the census indexes and the lookup's Terminals[] indexes disagree, and every index this script uses is suspect.
+
+**Verdict:** excluding t4 is right for 6349C02. The fix is wrong for 6349C01 because it silently drops `Value`. The explanation of why t4 fails (a method refusal) is still inference until the dialog text is read.
+
+Sources (searched; neither covers these methods): [LabVIEW Wiki – VI Scripting](https://labviewwiki.org/wiki/VI_Scripting), [Programmatically Scripting VIs in LabVIEW](https://rajsite.github.io/unofficial-lvdocs/lvconcepts/scripting_property_method.html), [LabVIEW Wiki – Block Diagram](https://labviewwiki.org/wiki/Block_Diagram)
+BGRUN END rc=0 after 133s

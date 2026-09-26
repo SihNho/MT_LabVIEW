@@ -1687,6 +1687,98 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
           `Visible = False`, and a local WRITE or indicator move for #8323 if the rows need one), each self-tested with a
           negative case and handle-flat; (c) simulator dry + pre-run with cdiff 0 other than the added objects;
           (d) one LabVIEW stage run.
+213. **(cycle 100 judgement, on `100-1` FAIL 5/1, `100-2` FAIL 23/1, `100-3` BLOCKED 6/1; rows spec `tools/bench/cards/rows_spec_100.md`)**
+     - **(a) MEASURED: `#25261` = False** (`OpConstValueB_v0`, `tools/bench/facts_c100_verbs.json`). TurnOff starts False, so
+       PD212(c)'s init ASSUMPTION is settled. The stage keeps the value as a gate row (it stops if True).
+     - **(b) Design details decided (rows_spec_100.md R1–R8 stand):** `#8323` is written by a local WRITE (its terminal stays,
+       from the PD212(i)3 fact). Tunnel `#11363` gets a DELETE row after R4 (both faces are unwired, and an output tunnel with no
+       inner source is an error). `Max & Min` comes from a **donor copy** (`gscript.copy_into` / vi.lib donor), not from a
+       New VI Object style sweep. The `Display period (ms)` control is created on Max&Min's `x`. It is DBL (Max&Min's default
+       type), coerced into `Wait (ms)`, which is functionally equal to PD212(c)'s I32. The L1 indicator is created on the
+       w9215 source **tunnel face** `#9234` of `#9227`: `create_indicator_nested` is extended to accept a tunnel/terminal owner.
+       The design is not changed.
+     - **(c) Schema:** `docs/protocol/stageplan.json` is replaced by `tools/bench/sim/disp/stageplan_schema_proposed.json`. It
+       is widening-only (100-3 F5), and every create plan needs it.
+     - **(d) Rule 1a: which end-cdiff rows are open BY DESIGN.** Of 100-3's 21 end rows, a row is accepted only if it is one
+       of these:
+       (1) an input of a moved node whose source changes from a wire or tunnel to a LOCAL READ of the SAME control/indicator
+       that fed it before (`Exp Baseline`, both half-width controls: same value at the same time, PD212(d)/(h)2);
+       (2) R2's per-bead page input from L1's auto-index in place of w8811, or `#11261`'s input from L2 in place of `#11608`'s
+       wire (same data, PD212(h)1);
+       (3) `#8323`'s source changing to the local WRITE;
+       (4) a row already open at the base.
+       Each row is classified individually, by uid. **A row that fits none of (1)–(4) is not accepted: the stage does not run,
+       and the row comes back to judgement.**
+     - **(e) Card status:** 100-2 is re-issued at escalation rung 1 (100-4, `material-opus-max`). Its remaining work is the
+       self-test harness fix (term_index owner), V1b/V2/V3/V5 with their negatives and handle tests, the tunnel-face extension,
+       and V6 by donor copy. 100-3's remainder (schema install, (d) classification, dry run, pre-run) is re-issued as 100-5 with
+       the flags corrected (`labview: read` allows the stubbed dry run). My 100-3 card was the fault. In 100-5, a dry run that
+       refuses ONLY the rows waiting on 100-4's verbs is the expected result.
+     - **(f) CLOSE, on `100-4` PASS 60/3 (rung 1; runs 3 and 4, `tools/bench/facts_c100_verbs2*.json`) and `100-5` PASS 6/0
+       (`tools/bench/facts_c100_plan.json`):**
+       1. All verbs now exist and are functionally tested on scratches of S1:
+          - `create_indicator_nested` (tunnel OUTER faces, via `OpTunnelInd_v0`), `create_control_nested` (it refuses a wired
+            sink; measured: Create Control on a wired sink leaves a dangling control), `set_visible`, `create_local_write`,
+            `OpConstValueB_v0`;
+          - `create_primitive_nested` = `OpPrimCopyNested_v0`, with donor `claudeDev\OpPrimDonor_v0.vi` (a byte copy of an NI
+            example). The donor is a COPY in claudeDev, so rule 1 holds. **It is accepted** in place of 213(b)'s "vi.lib".
+       2. The widened schema is installed (0 older plans regressed). `plan_disp.json` (md5 `e50ebc47…`) simulates FINAL with
+          21 open rows: 15 of class 4, 5 of class 1, 1 of class 3, 0 unclassified. **Rule 1a: accepted as open by design.**
+       3. The pre-run passes X1/X2/X3/X8. Its first fail is X4, the same 2 unroutable rows (L1 on tunnel face `#9234`, and
+          Max & Min). **Decided:** route L1 as `create_indicator_nested(W, 9234, None)` and R7 through `create_primitive_nested`.
+          Add `create_local_write` (and every create verb that edits the VI) to `stage_prerun` MODIFY_VERBS. Max & Min's
+          terminal names are UNMEASURED (the plan assumes x, y, max(x, y), min(x, y)): READ them from the donor first; if they
+          differ, re-simulate.
+       4. **Next (cycle 101), one card, in this order:**
+          (i) the re-route and the MODIFY_VERBS patch;
+          (ii) read the Max & Min terminal names;
+          (iii) re-dry, then pre-run to all-pass;
+          (iv) ONE LabVIEW stage run from `D1_s1_copy.vi` → `claudeDev\D1_s1_disp_<ts>.vi`. Pass criteria: ES 1, per-step
+          comparison, cdiff equal to the 21 open rows plus the added objects only, #25261 gate False, and after the move batch
+          no termless or loose-end wires beyond RBW's pre-existing uids (PD211(b)).
+          Then the ABBA (210(c)).
+       5. Carries, not ahead of the deliverable:
+          - `selftest_retry_cap` C4 fails under `bgrun --detach` (`BGRUN_DETACHED` inherited;
+            `archive/peer/2026-09-26-c100-5-retrycap-detach.md`);
+          - the installed schema's description still says "PROPOSED";
+          - a verb self-test that imports stagekit and saves is gated as a stage (the guard is right; self-tests avoid
+            the import).
+     - **(g) CLOSE 2, on `100-6` FAIL 4/2 (`tools/bench/cards/result_100-6.json`, `tools/bench/facts_c100_stage.json`):
+       (i)–(iii) DONE.**
+       - Max & Min is MEASURED: `x`, `y`, `max(x,y)`, `min(x,y)`, class Comparison.
+       - `plan_disp.json` is now md5 `9486143…` (r4_open, FINAL, the same 21 open rows).
+       - Results: dry 0 unroutable; pre-run 8/0; stagexec self-test 72/0.
+       - Two LabVIEW runs, nothing saved, S1 unchanged:
+         - run 1 stopped at E1 PARITY (the plan context had no loops or owners);
+         - run 2 passed PRIME parity 0, the #25261 gate (False) and STEPX 01 diff 0, then stopped at **op 2 (create While)
+           BINDING**. Real {Diagram: 1} was not the simulated {}. The review `archive/peer/2026-09-26-c100-6-r2.md` names the
+           cause: stagesim models a new loop with no body rows (the real body has `i` + `cond` terminal rows), and `bind_new`
+           does not exclude `bind['diag']`.
+       **Decided for cycle 101, in this order, all measured against the real run-2 record (`stage_d1_disp_r2.log`) before
+       any LabVIEW run:**
+       1. **Repair the device that blocked 100-6's offline check first.** `guard_peer` re-arms itself on
+          `tools/bench/jev_gate.log`: every hook appends to it, and its `JEV-GATEROW … STOP:` line matches FAILURE_RE
+          (`archive/peer/2026-09-26-c100-6-jevgate.md`). Exclude the `jev_*` ledgers from guard_peer's failing-log scan by
+          PATH. Self-test with a positive case (a real build log still gates) and a negative case (a jev ledger line does not).
+       2. **stagesim create-loop model:**
+          - a created While/For gets a body Diagram plus its `i` terminal row (and `cond` for a While), as the real run
+            shows;
+          - `bind_new` excludes `bind['diag']`;
+          - a replay test: the sim of ops 1–2 matches `stage_d1_disp_r2.log`'s real E1 new-object set exactly.
+       3. **Owners context = an S1 owners map** built read-only from `D1_s1_copy.vi`. D1_k's map is a STAND-IN from another
+          VI and is NOT accepted (it is an inference; `c100-6-jevgate2.md` s1).
+       4. Re-dry, pre-run, then the stage run under a `RETRY_CARD` judgement card if this cycle's cap is reached (a new
+          cycle's count starts at 0).
+       The unsaved byte copies `claudeDev\D1_s1_disp_20260926_224211.vi` / `_225529.vi` are scratch, not artefacts.
+     - **(h) RE-ORDERED at close by `steer_100.json` (FOLLOWED) and retrospective-cycle100 (accepted: `inference-over-measurement`,
+       `device-failed`).** The steer requires the next act to be a deliverable build or run, never tooling first. So cycle 101's
+       FIRST card is the display-loop STAGE card. Inside it, in order:
+       - (1) READ, offline, the Diagram-owned Terminal rows of existing While bodies #639 / #25392 in `par1359_95_graph.json`.
+         This is the retrospective's discriminating test; it expects 1 source + 1 sink each.
+       - (2) Model exactly those rows for a created loop in stagesim, fix `bind_new`, and replay against run 2's real E1 set.
+       - (3) Build the S1 owners map (read-only), re-dry, pre-run, and run the stage.
+       The `guard_peer` jev-ledger exclusion (213(g)1) is a SEPARATE card dispatched AFTER the stage card. If it blocks the
+       stage card's offline checks again, the material session records the block, and the stage card does not route around it.
 
 ## OPEN (design choices — for judgement; not decided here)
 
