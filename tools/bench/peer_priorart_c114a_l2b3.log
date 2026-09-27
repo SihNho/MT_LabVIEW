@@ -1,0 +1,34 @@
+BGRUN START 2026-09-28 03:25:07 limit 20.0 min: py tools/prior_art_review.py --plan-file tools/bench/cards/plan_114-1_l2b3.md --slug c114a-l2b3 --trigger new-op --recipe tools/recipes/stage_d1_l2b3.py
+BGRUN PID 10300
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c114a-l2b3.txt (82185 chars)
+   review card tools\bench\cards\review_priorart-c114a-l2b3.json
+OUTCOME: ANSWERED (81s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-28-priorart-c114a-l2b3.md
+COST: $1.4756  in 26 / out 6075 / cache-create 127015 / cache-read 1689278  (77s, 15 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c114a-l2b3 verdict=novel -> tools\bench\cards\verdict_priorart-c114a-l2b3.json
+--- ANSWER ---
+The work under review is **novel**: nothing blocks the L2-B3 build. The plan's open question does have a measured answer on file, and that answer supports the plan.
+
+**PART A: the direction**
+- **A1 (already decided):** Nothing decides against it. STATUS.md `## NEXT` names L2-B3 (rows B3-01..06, from the B2b bed) as the first act of cycle 114, under PD227(h).
+- **A2 (already refuted):** Nothing. The earlier failure of B3-03..06 was a routing refusal: route A addressed the flat-sequence inner tunnel's face as a node, and that is still refused at `tools/stagexec.py:1068-1070`. This plan avoids that by using the `cfw` (connect-from-wire) route, sourcing each row from its wire uid.
+- **A3 (contradicted):** None found.
+- **A4 (unread evidence):** The plan asks whether `cfw` through a source wire has ever been measured creating a WhileLoop border tunnel. It has, on the same loop:
+  - The L2-A1 plan (`tools/bench/sim/l2a1/plan_l2a1.json:287-339`) has two tunnel groups, `tun1` and `tun2`. Each is `loop 10170`, `body 23166`, `parent 686`, `dir in`, `indexing false`.
+  - They ran live in the stage that saved `D1_l2_a1_20260925_235224.vi` (`tools/bench/stage_d1_l2a1.json:2868-2942`). Both are `op: tunnel` with `how: ["cfw", "cached index (proved by its wire uid while wired)"]` and `err ""`. Each bound a new tunnel (25422 and 25428), and the step diff was `n 0` with no sim-only or real-only entries.
+  - That file became the accepted bed in cycle 88 (STATUS "CYCLE 88 DONE").
+  - What I did not check: whether the L2-A1 source wires (from 2886/t2892 and 5818/t5820) had already lost their sinks, as w5174, w5336 and w28392 have here. The mechanism and direction are measured; the dangling-source case is not confirmed from files.
+  - This is not a blocking slug. The evidence supports the plan rather than contradicting it, and the card should cite it.
+
+**PART B: the artifact**
+- **B1 (already built):** No. `stage_d1_l2b3.py` reuses the existing `stagexec` "tunnel" op, which calls `be.connect` (`tools/stagexec.py:1622-1626`), plus stagekit. No new op is added, and no file does the B3 rows.
+- **B2 (already failed):** No launch of this recipe is on record. Its dry run and pre-run logs are the first.
+- **B3 (existing helper):** The recipe already reuses the existing tools (`SX.Executor`, `K.d4_*`, `AT.read_terms`, `s.save`). It hand-rolls nothing.
+- **B4 (already measured):** The B3 outcome itself has not been measured. The routing sub-question is covered under A4 above.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c114a-l2b3","verdict":"novel","alternative":"The plan's open question is already measured: L2-A1 ran two tunnel groups on the same loop #10170/body #23166, dir in, non-indexing, route cfw, err '' and step diff n 0 (stage_d1_l2a1.json:2868-2942). The card should cite it.","discriminating_test":"Offline: check in graph_l2a1 or the K-bed graph whether the L2-A1 source wires from 2886/t2892 and 5818/t5820 had lost their sinks before tun1/tun2 ran. If yes, the dangling-source case is measured too.","violations":[],"sources":["tools/bench/stage_d1_l2a1.json:2868","tools/bench/sim/l2a1/plan_l2a1.json:287","tools/stagexec.py:1622","tools/stagexec.py:1068"],"note":"Not blocking. The A4 evidence supports the cfw tunnel route; it does not contradict it."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c114a-l2b3.md
+   STOP RECORD: none - 2026-09-28-priorart-c114a-l2b3.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_l2b3.py sha 971d9781b834 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 84s

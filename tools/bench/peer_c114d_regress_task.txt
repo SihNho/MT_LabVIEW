@@ -1,0 +1,12 @@
+ATTACK this claim about the failing regression run tools/bench/diag_c114d_regress.log (script tools/bench/diag_c114d_regress.py).
+
+Context: card 114-3 changed tools/stagesim.py (border-crossing connect_from_wire re-creates the source wire; op_wire how='recreate') and tools/stage_prerun.py (gate X12). The regression script ran every self-test of the two files. Result 12 pass / 2 fail.
+
+Claim: both failures are stale COUNT pins, not regressions. selftest_stagesim_l2a1_80.py line 140 (gate E1) and selftest_stagesim_unflip_81.py line 57 (gate U3) require `stagesim.py selftest` to report exactly "42 pass / 0 fail"; the simulator selftest has since grown (71 gates by cycle 112, 75 now) and reports 75 pass / 0 fail (selftest_stagesim_c114d.log:76). unflip_81's second U3 failure is a cascade: it requires selftest_stagesim_l2a1_80 to report 13/0, and that file reports 12/1 because of E1.
+
+Proposed disposition: change E1 and U3 (only those two stagesim pins) to assert "0 failing stagesim gates, count logged", rerun the regression and expect 14/0.
+
+Questions to answer:
+1. Is there any evidence in these files that a stagesim regression is hiding behind the count mismatch (e.g. a gate that should fail but was removed or renamed)?
+2. Does a 0-fail assertion lose a real protection that an exact count gave (a silently deleted gate, a selftest that exits early)? If so, what is the cheapest check that keeps it (e.g. count >= 42, or the RESULT line's status plus a minimum)?
+3. Is the l2a1_80 13/0 pin inside U3 also a count pin that will break again, and should it be left alone?

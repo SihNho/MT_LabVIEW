@@ -1,0 +1,64 @@
+{
+ "schema": "task/1",
+ "id": "114-4",
+ "kind": "review-dispatch",
+ "goal": "Discharge guard_peer for diag_c114d_regress.log (owed hypothesis review), re-pin the stale E1/U3 count pins, rerun the regression to 0 fails, report md5 of the 114-3 tool changes",
+ "why": "114-3 BLOCKED: JEV new-problem p=0.730 on diag_c114d_regress.log; its 2 fails are count pins 42/0 already failing pre-change (selftest_stagesim_l2a1_80_c112a.log:16, unflip_81_c112a.log:10). Judgement: pins check 0 fails, not a count.",
+ "inputs": [
+  {"path": "tools/bench/cards/result_114-3.json"},
+  {"path": "tools/bench/cards/task_114-3.json"},
+  {"path": "tools/bench/diag_c114d_regress.log"},
+  {"path": "tools/bench/diag_c114d_regress.py"},
+  {"path": "tools/stagesim.py"},
+  {"path": "tools/stage_prerun.py"},
+  {"path": "tools/bench/selftest_stagesim_l2a1_80_c112a.log"},
+  {"path": "tools/bench/selftest_stagesim_unflip_81_c112a.log"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c114d_regress.log"},
+  {"kind": "file", "name": "tools/bench/diag_c114d_regress.py"},
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"}
+ ],
+ "pass": [
+  "R1 hypothesis review (-ReviewCard, peer.ps1 -Agent claude -Role hypothesis) naming diag_c114d_regress.log ANSWERED, archived, annotated with a disposition",
+  "R2 the E1 (selftest_stagesim_l2a1_80) and U3 (selftest_stagesim_unflip_81) pins assert 0 failing stagesim cases and log the count, instead of an exact count",
+  "R3 diag_c114d_regress rerun: 0 fails across all listed self-tests; diag_c114d_replay_post verdict unchanged (plan_l2b3: 6 new / lost 5174,5336,28392)",
+  "R4 md5 after of tools/stagesim.py, tools/stage_prerun.py and every self-test file changed; guard_peer no longer refuses a plain md5sum",
+  "no LabVIEW"
+ ],
+ "outputs": [
+  "tools/bench/selftest_*",
+  "tools/bench/diag_c114d*",
+  "tools/bench/cards/result_114-4.json",
+  "archive/peer/**"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/selftest_*",
+   "tools/bench/diag_c114d*",
+   "tools/bench/sim/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 40},
+ "rules": [
+  "only the two count pins change, to a 0-fail assertion; no other check or gate is loosened",
+  "stagesim.py / stage_prerun.py not edited here; a real defect found by the review returns FAIL",
+  "review design findings return as open, not accepted in the card",
+  "a gate refusal is returned BLOCKED, never re-run via a self-test child or exempt route",
+  "facts <=10 file:line; OPEN <=3"
+ ],
+ "unblocks": "M3"
+}

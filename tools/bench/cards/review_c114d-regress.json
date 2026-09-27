@@ -1,0 +1,24 @@
+{
+ "schema": "review/1",
+ "id": "c114d-regress",
+ "role": "hypothesis",
+ "claim": "diag_c114d_regress.log failed 12/2 only because E1 (selftest_stagesim_l2a1_80.py:140) and U3 (selftest_stagesim_unflip_81.py:57) pin the stagesim selftest GATE COUNT at 42/0; the selftest grew to 75 gates, all passing. No simulator regression.",
+ "predicted": "diag_c114d_regress.py: every listed self-test RESULT PASS, fail 0 (14/0).",
+ "observed": "12/2: stagesim 75/0; l2a1_80 E1 got (75,0) want (42,0); unflip_81 U3 got (75,0) want (42,0) and cascade U3 l2a1_80 (12,1) want (13,0) (diag_c114d_regress.log:5-6).",
+ "ruled_out": [
+  "Caused by card 114-3: the same E1/U3 fails exist before it, at 71/0 (selftest_stagesim_l2a1_80_c112a.log:16, selftest_stagesim_unflip_81_c112a.log:10).",
+  "A failing stagesim case: selftest_stagesim_c114d.log:76 says 75 pass / 0 fail.",
+  "Other self-tests: control_path_lint 10/0, k79 4/0, all 9 stage_prerun bench self-tests 0 fail (diag_c114d_regress.log:4,7-16)."
+ ],
+ "attachments": [
+  {"path": "tools/bench/diag_c114d_regress.log"},
+  {"path": "tools/bench/diag_c114d_regress.py"},
+  {"path": "tools/bench/selftest_stagesim_l2a1_80_c114d.log"},
+  {"path": "tools/bench/selftest_stagesim_unflip_81_c114d.log"},
+  {"path": "tools/bench/selftest_stagesim_l2a1_80_c112a.log"},
+  {"path": "tools/bench/selftest_stagesim_l2a1_80.py"},
+  {"path": "tools/bench/selftest_stagesim_unflip_81.py"}
+ ],
+ "ask": "refute",
+ "note": "Proposed fix (card 114-4 R2): E1/U3 assert 0 failing stagesim gates and log the count. Attack: can a 0-fail assertion hide a deleted or skipped gate that an exact count would catch?"
+}

@@ -1,0 +1,16 @@
+BGRUN START 2026-09-28 03:10:26 limit 1.0 min: py -u tools/bench/selftest_stage_prerun_c114.py
+BGRUN PID 11948
+  PASS  T1 BA input 'array' wired, sibling 'element' open -> FLAG unlicensed  [{'row': 'r1', 'node': 1, 'wired': 'array', 'open': ['element'], 'licensed': None}]
+  PASS  T2 same row, no open row -> clean  []
+  PASS  T3 same with a licence covering #1 -> FLAG licensed  [{'row': 'r1', 'node': 1, 'wired': 'array', 'open': ['element'], 'licensed': 'lic.json'}]
+  PASS  T4 non-BuildArray node (Add) with open sibling -> clean  []
+  PASS  T5 open row on the OUTPUT only -> clean  []
+  PASS  T6 open row on ANOTHER node -> clean  []
+  PASS  T7 4 inputs all 'array', one wired, 'array' open -> FLAG (same name, sibling)  [{'row': 'r1', 'node': 1, 'wired': 'array', 'open': ['array'], 'licensed': None}]
+  PASS  T8 the only 'array' input is the wired one, open row names it -> clean (not a sibling)  []
+  PASS  R1 plan_l2b1* (['plan_l2b1.json', 'plan_l2b1_in.json']) flag #2626 only  {'plan_l2b1.json': [('rw_5124_4168', 2626, 'array', ['element'], 'tools/bench/plan_l2b1_licence.json')], 'plan_l2b1_in.json': [('rw_5124_4168', 2626, 'array', ['element'], None)]}
+  PASS  R2 plan_l2b2b_9row.json flags #11261 only, unlicensed  [('b2_03', 11261, 'array', ['element'], None)]
+  PASS  R3 delivered plan_l2b2b.json (8 rows) not flagged  []
+  FAIL  R4 every other stageplan/1 under tools/bench (12 files) flags nothing  [('plan_l2b2b_in_9row.json', 'b2_03', 11261, None)]
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":11,"fail":1},"first_fail":"R4 every other stageplan/1 under tools/bench (12 files) flags nothing","artefacts":[]}
+BGRUN END rc=1 after 2s (RESULT: status=FAIL gates 11/1 first_fail=R4 every other stageplan/1 under tools/bench (12 files) flags nothing; the process itself said 0)

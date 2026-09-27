@@ -195,10 +195,44 @@ def model_for(op, models):
         sim = (m.get("data") or {}).get("sim") if isinstance(m.get("data"), dict) else None
         if isinstance(sim, dict):
             params.update(sim)
+            if op == "wire" and "border_source_wire" not in sim:
+                rule = cfw_border_rule(m.get("data"))              # card 114-3 C2: read from the model's own samples
+                if rule:
+                    params["border_source_wire"] = rule
             return params, src, "opmodel file", []
         return params, "measured-file-present-no-sim-params:{0}@{1} (provisional rule ran)".format(
             _rel(m["path"]), m.get("md5")), base["evidence"], base["gaps"]
     return params, "provisional", base["evidence"], base["gaps"]
+
+
+def cfw_border_rule(data):
+    """card 114-3 C1/C2 (review archive/peer/2026-09-28-c114b-l2b3d.md s1): 'recreate' when the MEASURED connect_from_wire
+    model says a connect that CROSSES A BORDER (the sample made a tunnel, checks.new_tunnels) from an already-WIRED source
+    re-creates the source's wire under a new uid - every such sample records its own source terminal in
+    checks.source_wire_replaced (opmodels/connect_from_wire.json:266 removes_rule; cfw_1 :45-56 half-wire w9415 -> w24358,
+    cfw_2 :158-207 branched net w23519 -> w25348 with its 3 other sinks re-wired). None when the model has no such sample
+    or any border sample disagrees (then the old branch rule runs). A SAME-DIAGRAM connect is not covered: it keeps the
+    existing wire (stage_d1_l7_1b_r3.log:92,109 `UID 2` = 4969 / 3543), and the model has no same-diagram sample."""
+    if not isinstance(data, dict):
+        return None
+    border = [s for s in data.get("samples") or [] if isinstance(s, dict) and (s.get("checks") or {}).get("new_tunnels")]
+    if not border:
+        return None
+    for s in border:
+        src = (s.get("target") or {}).get("src")
+        rep = [x for x in (s["checks"].get("source_wire_replaced") or []) if isinstance(x, dict) and x.get("owner_uid") == src
+               and len((x.get("changed") or {}).get("wire_uid") or []) == 2]
+        if not rep:
+            return None
+    return "recreate"
+
+
+def plan_tunnel_face(st, row):
+    """True when `row` is a face of a tunnel an earlier `tunnel` action of THIS plan made (a symbolic LoopTunnel/Tunnel,
+    negative uid) - i.e. the wire into it is the border-crossing half of a stagexec tunnel group (compile_plan kind
+    'tunnel', executed as ONE connect_from_wire from the group's source to its sink)."""
+    u = row.get("owner_uid")
+    return isinstance(u, int) and u < 0 and row.get("owner_class") in TUN1 and u in st["sym"].values()
 
 
 # ------------------------------------------------------------------------------------------------ state
@@ -916,7 +950,20 @@ def op_wire(st, a, P, S1, labels):
         detached = d["wire_uid"]
         d["wire_uid"] = 0
     join = bool(detached and P.get("sourceless_sink") == "join")
-    if s["wire_uid"]:
+    recreated, rewired = None, []
+    if s["wire_uid"] and P.get("border_source_wire") == "recreate" and plan_tunnel_face(st, d):
+        # card 114-3 C2 (cfw_border_rule): the border-crossing connect from a WIRED source RE-CREATES the source's wire -
+        # the old uid is LOST (and may be re-issued at once to another object: the junk Invoke took 5174,
+        # stage_d1_l2b3.log:74,94), a new wire carries the source, every old sink (same (src, sink) pairs) and the new
+        # tunnel face. Measured: connect_from_wire.json:266; real B3 end = 6 new / lost [5174, 5336, 28392]
+        # (stage_d1_l2b3.log:103)
+        recreated = s["wire_uid"]
+        w, how = new_uid(st), "recreate"
+        for r in wire_rows(st, recreated):
+            r["wire_uid"] = w
+            if r is not s:
+                rewired.append(r["term_uid"])
+    elif s["wire_uid"]:
         w, how = s["wire_uid"], "branch"
     elif join:
         # card 109-3 (review archive/peer/2026-09-27-c109b-l2a3-dgate.md s1/s6): an UNWIRED source onto a sink on a
@@ -942,6 +989,8 @@ def op_wire(st, a, P, S1, labels):
             joined.append(r["term_uid"])
     eff = {"wire": w, "how": how, "src_term_uid": s["term_uid"], "dst_term_uid": d["term_uid"],
            "detached_from": detached, "joined": joined, "kept_stub_uid": how == "join_stub"}
+    if recreated:                                # only then: every other effect record stays byte-identical
+        eff.update(recreated_from=recreated, rewired=sorted(rewired))
     if st.get("unflip"):                         # card 81-5 F1 (measured l2a1_unflip_81_run1.log); absent = old behaviour
         eff["unflipped"] = _unflip_restored_tunnels(st, [d], st["unflip"].get("cascade", False))
     return eff, []
@@ -1910,6 +1959,54 @@ def selftest():
          any(x.get("unroutable") for x in rcb.get("rows") or []),
          # printed lower-case: selftest_stagesim_l2a1_80.py E1 counts every output line carrying the upper-case word
          (bad.get("open_rows_match"), bad.get("final"), str(rcb.get("status")).lower(), str(rcb.get("first_fail"))[:300].lower()))
+    # card 114-3 C2: a border-crossing connect from a WIRED source re-creates the source's wire (connect_from_wire.json:266)
+    cfw_path = os.path.join(OPMODEL_DIR, "connect_from_wire.json")
+    cfw = _j(cfw_path) if os.path.isfile(cfw_path) else None
+    nob = copy.deepcopy(cfw) if cfw else {"samples": []}
+    for s_ in nob.get("samples") or []:
+        s_["checks"]["new_tunnels"] = []
+    dis = copy.deepcopy(cfw) if cfw else {"samples": []}
+    if dis.get("samples"):
+        dis["samples"][0]["checks"]["source_wire_replaced"] = []
+    gate("G68 cfw_border_rule: the measured model -> 'recreate'; no border sample -> None; one border sample without its "
+         "source's wire change -> None",
+         cfw_border_rule(cfw) == "recreate" and cfw_border_rule(nob) is None and cfw_border_rule(dis) is None,
+         (cfw_border_rule(cfw), cfw_border_rule(nob), cfw_border_rule(dis)))
+    PR = dict(PROVISIONAL["wire"]["params"], border_source_wire="recreate")
+
+    def into_tunnel(P):
+        s_ = base_state(_synthetic())
+        et, _c = op_tunnel(s_, {"loop": 200, "body": 30, "dir": "in", "as": "TX"}, {}, None, {})
+        n0 = s_["neg"]
+        ew, _c = op_wire(s_, {"src": "1.v", "dst": "new:TX.outer"}, P, None, {})
+        return s_, et, ew, n0
+    s69, et69, e69, n69 = into_tunnel(PR)
+    on_new = sorted(r["term_uid"] for r in wire_rows(s69, e69["wire"]))
+    gate("G69 RECREATE: const 1.v (w1, sinks 1601/1701) -> a plan tunnel's outer: w1 LOST, one NEW negative wire carries "
+         "the source, both old sinks and the new outer; effect names recreated_from 1, rewired [1601, 1701]",
+         e69["how"] == "recreate" and e69["wire"] == n69 - 1 and not wire_rows(s69, 1) and
+         on_new == sorted([1001, 1601, 1701, et69["outer"]]) and e69.get("recreated_from") == 1 and
+         e69.get("rewired") == [1601, 1701], (e69, on_new))
+    s70, _et, e70, _n = into_tunnel(dict(PROVISIONAL["wire"]["params"]))
+    s70b = base_state(_synthetic())
+    e70b, _c = op_wire(s70b, {"src": "1.v", "dst": "4.y"}, PR, None, {})
+    gate("G70 unchanged beside it: without the measured rule (provisional) the same row BRANCHES w1; with the rule a "
+         "SAME-DIAGRAM sink (4.y, no plan tunnel) also branches w1 (stage_d1_l7_1b_r3.log:92,109 kept the uid)",
+         e70["how"] == "branch" and e70["wire"] == 1 and "recreated_from" not in e70 and
+         e70b["how"] == "branch" and e70b["wire"] == 1 and "recreated_from" not in e70b, (e70, e70b))
+    if cfw:
+        md = os.path.join(tmp, "models_cfw_only")
+        os.makedirs(md, exist_ok=True)
+        with open(os.path.join(md, "connect_from_wire.json"), "w", encoding="utf-8") as f:
+            json.dump(cfw, f)
+        S71 = run(pf, "full_cfw", log=quiet, model_dir=md)
+        e71 = _j(S71["steps"][4]["file"]["path"])["effect"]
+        gate("G71 full toy plan under the measured cfw model: step 4 (1.v -> T1.outer) RE-CREATES w1, every step still "
+             "applies and the end computation_diff(S1) is unchanged ({0} rows)".format(len(S["end_cdiff_rows"] or [])),
+             e71["how"] == "recreate" and e71.get("recreated_from") == 1 and S71["failed"] is None and
+             S71["end_cdiff_rows"] == S["end_cdiff_rows"], (e71, S71["failed"], S71["end_cdiff_rows"]))
+    else:
+        gate("G71 full toy plan under the measured cfw model", False, "no opmodels/connect_from_wire.json")
     n_pass = sum(1 for _l, ok in gates if ok)
     n_fail = len(gates) - n_pass
     first = next((l for l, ok in gates if not ok), None)

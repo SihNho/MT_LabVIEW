@@ -1,0 +1,34 @@
+BGRUN START 2026-09-28 03:11:12 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c114a-selftest -TaskFile tools/bench/peer_c114a_task.txt
+BGRUN PID 22044
+OUTCOME: ANSWERED (89s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-28-c114a-selftest.md
+COST: $1.0411  in 18 / out 7815 / cache-create 90703 / cache-read 795273  (85s, 17 turn(s))
+--- ANSWER ---
+The claim holds: the R4 failure is a mistake in the self-test's expectation, and the X11 check is correct. I tried hard to break it and could not. Four weaknesses remain that the proposed fix does not cover, and the self-test has already been changed since the failing run.
+
+No web search was needed. Every claim here is about local files, and each cites one.
+
+## 1. Strongest reason it could be wrong, and why it fails
+The best line of attack was: "the input plan is not the same set of rows, or it is a different case that happens to land on the same node." It does not stand up:
+- `plan_l2b2b_in_9row.json:1-207` and `plan_l2b2b_9row.json:1-207` are identical, compared by reading. Both have the same 9 `wire` actions, including `b2_03` #11363 t11369 → #11261 t11270 (lines 40-51). Both have the same 15 `open_rows`, including (11261, `element`) at lines 182-186.
+- The final plan records its input plan by checksum (md5). `plan_l2b2b_9row.json:214-216` gives `plan_in` as md5 `d13c0de4…`. `cards/result_113-4.json:10` gives exactly that md5 for `plan_l2b2b_in_9row.json`. So the pairing is recorded by the machine, not just inferred from the file names.
+- One could also argue the check should not run on non-final plans at all. Every launch path already requires a final plan: gate X2 at `stage_prerun.py:1382`, and `prerun_plan` for stageplans. X11 only reaches non-final plans through this self-test and `--buildarray-check`. So that is a question of what the test covers, not a defect in the check.
+
+## 2. Alternative explanation (not needed to explain this failure, but true)
+The in-plan is flagged because the check is path-blind about content but path-exact about licences. `pb_licences` matches the licence's `plan` field by absolute path (`stage_prerun.py:1099`), so an input plan is never covered by a licence. The log shows this already: R1 passed while `plan_l2b1_in.json` flagged #2626 with `licensed None` (`selftest_stage_prerun_c114.log:11`). That PASS happened only because R1 checks which nodes are flagged, never whether they are licensed. This does not explain the R4 failure, but it is a real hole in R1: if licence lookup broke, R1 would still pass.
+
+## 3. What would falsify the claim
+Either of these:
+- `plan_l2b2b_in_9row.json` on disk no longer has md5 `d13c0de4…`.
+- Its `actions` or `open_rows` differ from the final plan's, beyond the `final` and `finalized` fields.
+
+## 4. Cheapest discriminating test
+Hash `tools/bench/plan_l2b2b_in_9row.json` and expect `d13c0de4f260373ecde033d1e8a04a13`. Then JSON-diff the `actions` and `open_rows` of the two 9-row files and expect no difference. I did not run the hash; the diff above was done by reading the files.
+
+## Problems the proposed fix does not address
+1. **The self-test was already changed before this review.** `selftest_stage_prerun_c114.py:68-76` now loops over both 9-row files in R2 and both 8-row files in R3, and adds all four to `skip`. The failing log is from the older version. The PASS has to come from a new run, not be assumed.
+2. **The 9-row final points at the wrong input file.** `plan_l2b2b_9row.json:215` still says `plan_in.path = tools/bench/plan_l2b2b_in.json`. That path now holds the 8-row input plan, md5 `d655813e`. Anything that re-checks `finalized.plan_in` on the 9-row file will fail. It is harmless for X11, and the file is kept as a historical copy.
+3. **R1 does not check licensing.** It should require `plan_l2b1.json` to be licensed by `plan_l2b1_licence.json` and `plan_l2b1_in.json` to be unlicensed. Otherwise a broken `pb_licences` still passes.
+4. **R4's "every stageplan/1 under tools/bench" is false.** `glob(os.path.join(HERE, "*.json"))` at line 78 is not recursive. Stageplans in `tools/bench/sim/**` are never checked, for example `sim/l2b1/rehearsal/plan_l2b1.json` (`"final": false`, probably another #2626 case). Either use a recursive glob or narrow the gate's wording. A sturdier R4 would pair each input plan with its final automatically through `finalized.plan_in.md5` instead of hard-coding the four names, so the next `_in` copy does not break R4 again.
+
+I could not save this review to the plan file: the Write tool is disabled in this session.
+BGRUN END rc=0 after 90s

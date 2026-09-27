@@ -1,0 +1,35 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle114",
+ "verdict": "refuted",
+ "alternative": "Both losses are small against a cycle that delivered B3 as bed plus X11/X12 and the sim fix; the pin failure could be read as normal regression hygiene and the prior-art miss as within the reviewer's measured 6.5/8 accuracy.",
+ "discriminating_test": "Grep all archived reviews for a fix named in an accepted disposition and check the code for it: if c112a's E1/U3 re-pin is the only unapplied one, fault 1 is a one-off; if several recur, it is a missing check-that-fixes-landed device.",
+ "violations": [
+  {
+   "slug": "repeated-failure-class",
+   "loss_min": 12,
+   "loss_usd": 1.16,
+   "evidence": "tools/bench/peer_c112a_unflip81.log:28"
+  },
+  {
+   "slug": "device-failed",
+   "loss_min": 11,
+   "loss_usd": 2.02,
+   "evidence": "archive/peer/2026-09-28-priorart-c114a-l2b3.md:539"
+  }
+ ],
+ "sources": [
+  "tools/bench/diag_c114d_regress.log:5-6",
+  "tools/bench/cards/task_114-3.json:28",
+  "tools/bench/cards/task_114-3.json:54",
+  "archive/peer/2026-09-28-c114d-regress.md:92",
+  "archive/peer/2026-09-28-c114d-regress.md:103",
+  "archive/peer/2026-09-28-priorart-c114a-l2b3.md:544",
+  "archive/peer/2026-09-28-priorart-c114a-l2b3.md:566",
+  "archive/peer/2026-09-28-c114b-l2b3d.md:43-56",
+  "tools/bench/opmodels/connect_from_wire.json:266",
+  "tools/bench/jev_gate.log:2362",
+  "tools/bench/cards/result_114-4.json:31"
+ ],
+ "note": "Cycle delivered (B3 accepted, PD228). Device-failed = prior-art review (tool-not-built device) missed A3 contradiction vs graph_l2b2b and cfw_2 model; material declined its offline test. Material/judgement spend unlogged; USD figures are review cost only."
+}

@@ -4461,3 +4461,147 @@ VIOLATION: repeated-failure-class | loss_min=24 | loss_usd=2.71 | evidence=tools
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle113","verdict":"refuted","alternative":"The #11261 rename was not foreseeable: c113d-pb:69 read #2626 as pointing the other way, so no plan-time rule could have dropped b2_03 before launch 1, and the cycle was run well (verdict none).","discriminating_test":"Replay plan_l2b1 and plan_l2b2b_9row offline with a rule 'wiring one input of a BuildArray whose sibling input is an open row => predict a name change'; if it flags #2626 in L2-B1 and #11261 in B2b and nothing else, the class was knowable offline.","violations":[{"slug":"repeated-failure-class","loss_min":24,"loss_usd":2.71,"evidence":"tools/bench/stage_d1_l2b2b.log:214"}],"sources":["tools/bench/cards/split_plan_110.md:61-64","tools/bench/stage_d1_l2b2b.log:239","tools/bench/stage_d1_l2b2b_r2.log:252","tools/bench/peer_c113d_pb.log:4","tools/bench/peer_priorart_c113f_l2b2b.log:6","archive/peer/2026-09-28-priorart-c113f-l2b2b.md:499"],"note":"Deliverable met (result_113-4.json PASS). Loss_usd is a floor: material cost is null on every card. No device failed in the window."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle113.md
 BGRUN END rc=0 after 194s
+BGRUN START 2026-09-28 04:20:19 limit 10.0 min: py tools/retrospective.py --cycle 114
+BGRUN PID 20392
+   window 2026-09-28 02:19:04 .. 2026-09-28 04:20:20 (121 min); 48 build logs, 10 machinery logs, 38 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle114.txt (31954 chars)
+   review card tools\bench\cards\review_retrospective-cycle114.json
+OUTCOME: ANSWERED (321s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-09-28-retrospective-cycle114.md
+COST: $2.2511  in 40 / out 31525 / cache-create 152186 / cache-read 2014917  (319s, 38 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle114 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle114.json
+--- ANSWER ---
+**Retrospective of cycle 114 (02:19:04 – 04:20:20)**
+
+**Window check.** The window matches the evidence, but it has one idle stretch. From 02:20 to 03:04 nothing belongs to cycle 114. The runner stopped gracefully on its 480-min budget (`tools/bench/cycle_runner.log:709`) and was relaunched at 03:04 (`:711-715`). Cycle 114's judgement session started at 03:05:02 (`tools/bench/cycle_114.log:1`). Those 44 minutes are not charged here.
+
+A2's "unfinished `runner_supervisor.log`" is not a fault either. It is a supervisor with a 7-day limit that is still running (`tools/bench/runner_supervisor.log:1`).
+
+**Outcome.** The cycle delivered:
+- The device owed from cycle 113 (gate X11).
+- L2-B3, measured and accepted as the new bed (`docs/d1-loop12-17-split-plan.md:2023-2028`).
+- The simulator taught the rule that a `connect_from_wire` across a structure border re-creates the source wire, plus a new pre-run gate X12.
+- The L2-R inventory and its decisions (`:2035-2048`).
+
+That is good work for about 75 active minutes. Two faults of similar size cost roughly a third of it.
+
+---
+
+## The most costly structural fault: stale count checks, paid for a third time (repeated-failure-class)
+
+**What happened**
+- Card 114-3's regression run failed 12/2 at 03:53:08 (`tools/bench/diag_c114d_regress.log:5-6,17-18`).
+- The cause was two self-test checks, E1 and U3, that require the simulator self-test to report exactly 42 pass / 0 fail. The simulator had grown to 75 gates.
+- The same two failures are on record at cycle 101 and cycle 112 (`archive/peer/2026-09-28-c114d-regress.md:92`).
+- On 2026-09-27 the cycle-112 review said "the only fix needed is to replace the pinned counts with fail == 0 and pass ≥ the old count" (`tools/bench/peer_c112a_unflip81.log:28`). Its disposition accepted the diagnosis but never applied the fix (`archive/peer/2026-09-27-c112a-unflip81.md:81-88`).
+- The judgement session then wrote card 114-3 as follows:
+  - It required "stagesim and stage_prerun self-tests 0 failures" (`tools/bench/cards/task_114-3.json:28`).
+  - It set `peers: []` (`:54`), so the card could not dispatch a review.
+  - It said "no existing gate or check is loosened" (`:59`), so the card could not re-pin the checks either.
+- The failure was therefore certain before the card started, and the card could not clear it. 114-3 came back BLOCKED (`tools/bench/cards/result_114-3.json:1-3`).
+
+**What it cost**
+- Review c114d: $1.1637, 105 s (`archive/peer/2026-09-28-c114d-regress.md:7`).
+- A whole extra material card, 114-4, 27 min (`tools/bench/cards/result_114-4.json:31`). That was the 5th of 6 allowed material dispatches.
+- guard_peer refused 114-5's first run because of the other card's failing log (`tools/bench/cards/result_114-5.json:25`).
+- The review found nothing new. Its new-looking findings (no frozen label check, U3 never checks the exit code) came back as OPEN and were not applied (`tools/bench/cards/result_114-4.json:28`).
+
+**Counterfactual**
+- Suppose E1/U3 had been re-pinned when the cycle-112 review said so (2026-09-27 22:46), or 114-3's pass criterion had exempted the two failures already on record.
+- Then `diag_c114d_regress.log` would have passed at 03:53:08, and card 114-4 would not have existed.
+- 114-5 is a 1-second offline run (`tools/bench/diag_c114e_inventory2.log`). It could have been dispatched around 03:55 and finished beside 114-2, which ended at 04:04:41 (`tools/bench/diag_c114c_errorlist.log:127`).
+- The retrospective would have started around 04:08 instead of 04:20:19, about 12 minutes earlier.
+- `loss_usd` is 1.16, the review only. No material session logs a cost (`cost.usd: null` in all five result cards).
+
+## Second fault, of about the same size: the prior-art device missed a contradiction it exists to catch (device-failed)
+
+**What happened**
+- The L2-B3 plan asserted that the three source wires w28392, w5174 and w5336 were "source-only", having "lost their sinks" (`archive/peer/2026-09-28-priorart-c114a-l2b3.md:99`).
+- The graph the plan itself cites, `graph_l2b2b_20260928.json`, shows each of them still carrying sinks (`archive/peer/2026-09-28-c114b-l2b3d.md:43-49`).
+- The measured behaviour for exactly that case was already on file: `tools/bench/opmodels/connect_from_wire.json:266` records that "the SOURCE's wire is RE-CREATED under a new uid". The simulator ignored that and applied its own "join" rule (`connect_from_wire.json:4`).
+- The prior-art review reported no contradictions (A3, "None found", `priorart-c114a-l2b3.md:539`). It admitted "What I did not check: whether the … source wires had already lost their sinks" (`:544`) and still returned `novel` (`:553`).
+- The material session then declined the review's offline test. Its reason was that "the one launch's per-op step diff measures this case directly" (`:566`).
+- The launch at 03:27 failed gate D: 6 new / 3 lost wires against a prediction of 3 / 0 (`tools/bench/cards/result_114-1.json:2`). That used up 114-1's failure budget, so the Error List step (P7) did not run.
+
+**What it cost**
+- Review c114b: $2.0165, 276 s (`c114b-l2b3d.md:7`).
+- A verification read of the saved B3 file: 409 s (`tools/bench/diag_c114c_b3graph.log:317`).
+- Wall-clock at the end of the cycle barely moved, because 114-2 ran in parallel with the simulator fix, and that fix was needed either way.
+
+**Counterfactual**
+- At 03:26:31, a read of the plan's own graph for sinks on those three wires (seconds, offline) would have removed the premise.
+- The simulator fix (114-3, C1–C4) would have come first. The launch would have passed gate D and run P7 in the same card.
+- That would have saved about 11 minutes of machine time and $2.02, with the end of the cycle roughly unchanged.
+
+---
+
+## FINDINGS
+
+**1. Repeated failure.**
+- The count-check failure is at its third occurrence: cycle 101, cycle 112, and now 114 (`c114d-regress.md:92,103`).
+- The approach should have changed at occurrence 2, cycle 112. The fix was named there (`peer_c112a_unflip81.log:28`).
+- Inside this cycle, the card should have changed at the moment it was written. The material session saw the failure was pre-existing (`result_114-3.json:21`), but the card left no way to act on that.
+- The "wire uid changes after `connect_from_wire`" class is also a repeat. The retrospective of cycle 112 had already flagged the connect-from-wire purge as an unseparated confounder that "B2b will use" (`archive/peer/2026-09-28-retrospective-cycle112.md:344`).
+
+**2. Missing tool.**
+- Nothing checks that an accepted review's named fix was actually applied. A4 only checks that the "What was done" section is non-empty, and c112a's section is non-empty.
+- The simulator does not derive its rules from `opmodels/*.json`. The join rule at `connect_from_wire.json:4` contradicted `:266` in the same file. 114-3 fixed only this one op (`result_114-3.json:16`).
+- There is still no read-only `Wire.Is Broken?` reader. B3 was accepted without it, with other evidence standing in (`result_114-2.json:21`; `d1-loop12-17-split-plan.md:2029`).
+
+**3. Unmeasured steps.**
+- The source-wire sink check was declined (`priorart-c114a-l2b3.md:566`).
+- 114-3 predicted "0 failures" against logs that already showed two.
+- The review's two discriminating tests were not run: the git diff of G01–G42 and a real-graph replay of the new re-create path (`result_114-4.json:29-30`).
+- `border_source_wire` is now switched on for every real plan with no check against a real read (`c114d-regress.md:73`).
+
+**4. Rule compliance (CLAUDE.md).**
+- The devil's-advocate pass "must end in a discriminating test … run the cheapest separator" (CLAUDE.md:662-664). The prior-art review supplied one and it was not run.
+- Rule 4, STATUS stays one screen, is broken: 430 lines (audit L3).
+- Failed-prediction review was satisfied on every failure (c114a, c114b, c114d). All three used the attack framing.
+- RETRY_CAP held: one launch.
+- The verification level is stated as STRUCTURAL (`:2028`).
+- Audit false positives:
+  - A1's 14 files are child logs of a batch that did run under bgrun (`diag_c114d_regress.log:1`).
+  - A3's "unreviewed failure" `selftest_stage_prerun_stageplan_c114d.log` is a PASSING self-test (12/0, `:111-112`) whose FAIL rows are intended negative cases.
+- What the audit does not cover:
+  - Whether review fixes were applied.
+  - Declined discriminating tests.
+  - Material and judgement spend. C4's $5.70 is reviews only. C5's 60 min counts only time inside bgrun.
+  - Blocks that one parallel card causes another.
+  - C7 lists 230 files, mostly runner and Jev state files, so it cannot show scope.
+
+**5. Ordering.**
+- Doing the owed device first (S0) and running 114-2 and 114-3 in parallel were both good calls.
+- The indefensible order was launch-then-model. `connect_from_wire.json:266` was on disk, and the simulator's cfw rule should have been reconciled with it before a gate that compares wire uids went live.
+
+**6. What was not reported.**
+- `result_114-2.json` does not record that its own peek run failed: rc=1, malformed RESULT line (`tools/bench/diag_c114c_peek.log:20`). The Jev ladder classed it as our-script-bug (`jev_gate.log:2350`).
+- 114-4's rerun overwrote 114-3's failing per-child logs. This appears only in a note (`result_114-4.json:32`).
+- The Jev ladder classed the count-pin failure as `new-problem p=0.730` (`jev_gate.log:2362`) although the class had been reviewed at c112a. That misclassification is what forced the review and the block, and no summary says so.
+- `md5sum` over `tools/bench/*.py` was refused as a script run and worked around with Get-FileHash (`result_114-4.json:23`). This is a known carry (`STATUS.md:108`).
+
+**7. Judgement inside a material session.**
+- `priorart-c114a-l2b3.md:563-566`: the material session decided which discriminating experiment to run, and chose the launch itself. CLAUDE.md:327 reserves that decision for judgement. This is the root of the second fault.
+- `c114b-l2b3d.md:130`: the material session "accepted as the corrected explanation" a choice between explanations. Low consequence, because it took no action and returned the question as OPEN.
+- `c114a-selftest.md:74-75`: the material session narrowed the new device's own self-test (R4 limited to top-level files, `sim/**` reported as INFO only), although the reviewer said `sim/**` probably holds another #2626 case (`:62`). That is a design change to a device, taken inside material.
+- `task_114-1.json:105` pre-scripts a conditional: "contradicted ⇒ BLOCKED unless every fix only narrows an existing gate". Deciding whether a fix only narrows a gate is a judgement call left to the material session. It did not trigger this cycle.
+
+## DEVICE EFFECT
+- **unreported-fact (bgrun exit code):** held. `selftest_stage_prerun_c114.log:16` and `diag_c114c_peek.log:20` forced rc=1 over "the process itself said 0". `unflip_81` still exits 0 on failure (`c114d-regress.md:99`), but the batch caught it.
+- **rule-evaded (confirm-bait):** held. The attack set is present in all three hypothesis reviews.
+- **tool-not-built (prior-art review):** **failed.** It never fired when it should have: no contradiction reported and a `novel` verdict against the plan's own graph and `connect_from_wire.json:266` (`priorart-c114a-l2b3.md:539,553`). Its partial answer was then set aside (`:566`).
+- **repeated-failure-class (empty "What was done" block on dispatches):** held formally (A4 13/13). It cannot see that c112a's recorded fix was never applied.
+- **C3/C4 cost split and COST regex:** held (C4b 4/4).
+- **premature-build (guard_cycle):** held. Prior-art ended at 03:26:31 and the launch was at 03:27:02.
+- **scope-creep counter (C7):** fired on the wrong thing: 230 entries, mostly state files. It is noise, but no scope creep occurred.
+- **Stop record / launch gate, read-only pass-through:**
+  - The stop record held: released by the novel record (`:567`).
+  - The md5sum refusal (`result_114-4.json:23`) comes from guard_bash's material-exemption list, not from the stop_record/prerun code path that device covers. So it is a known carry here, not a device failure.
+- **The 2026-09-28 02:25 Build Array device (X11):** built and held. The replay flagged only #2626 and #11261 (`result_114-1.json:19-20`).
+- **The other devices** (motor fail-exit, the Jev scope, the SendMessage refusal, the graph-shape check, the other launch-gate carve-outs) had no occasion to fire in this window. No occurrence was found.
+
+VIOLATION: repeated-failure-class | loss_min=12 | loss_usd=1.16 | evidence=tools/bench/peer_c112a_unflip81.log:28
+VIOLATION: device-failed | loss_min=11 | loss_usd=2.02 | evidence=archive/peer/2026-09-28-priorart-c114a-l2b3.md:539
+
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle114","verdict":"refuted","alternative":"Both losses are small against a cycle that delivered B3 as bed plus X11/X12 and the sim fix; the pin failure could be read as normal regression hygiene and the prior-art miss as within the reviewer's measured 6.5/8 accuracy.","discriminating_test":"Grep all archived reviews for a fix named in an accepted disposition and check the code for it: if c112a's E1/U3 re-pin is the only unapplied one, fault 1 is a one-off; if several recur, it is a missing check-that-fixes-landed device.","violations":[{"slug":"repeated-failure-class","loss_min":12,"loss_usd":1.16,"evidence":"tools/bench/peer_c112a_unflip81.log:28"},{"slug":"device-failed","loss_min":11,"loss_usd":2.02,"evidence":"archive/peer/2026-09-28-priorart-c114a-l2b3.md:539"}],"sources":["tools/bench/diag_c114d_regress.log:5-6","tools/bench/cards/task_114-3.json:28","tools/bench/cards/task_114-3.json:54","archive/peer/2026-09-28-c114d-regress.md:92","archive/peer/2026-09-28-c114d-regress.md:103","archive/peer/2026-09-28-priorart-c114a-l2b3.md:544","archive/peer/2026-09-28-priorart-c114a-l2b3.md:566","archive/peer/2026-09-28-c114b-l2b3d.md:43-56","tools/bench/opmodels/connect_from_wire.json:266","tools/bench/jev_gate.log:2362","tools/bench/cards/result_114-4.json:31"],"note":"Cycle delivered (B3 accepted, PD228). Device-failed = prior-art review (tool-not-built device) missed A3 contradiction vs graph_l2b2b and cfw_2 model; material declined its offline test. Material/judgement spend unlogged; USD figures are review cost only."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle114.md
+BGRUN END rc=0 after 325s

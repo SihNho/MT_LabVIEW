@@ -1615,3 +1615,24 @@ DECISION: device. An offline `stage_prerun --prerun` check: a plan row wiring on
 open row at the stage's end is FLAGGED as a predicted name change. The card must then either declare the renamed pair or defer the row.
 Acceptance: replayed on `tools/bench/plan_l2b1*.json` and `tools/bench/plan_l2b2b_9row.json`, it flags `#2626` and `#11261` and nothing
 else. It is built first in cycle 114's card (`docs/d1-loop12-17-split-plan.md` PD227(j)).
+
+## device-failed — 2026-09-28 04:35 (cycle 114 judgement, after archive/peer/2026-09-28-retrospective-cycle114.md:396)
+
+`VIOLATION: device-failed | loss_min=11 | loss_usd=2.02 | evidence=archive/peer/2026-09-28-priorart-c114a-l2b3.md:539`: ACCEPTED
+(threshold 1). The prior-art review returned `novel` with "What I did not check" on the premise, while
+`tools/bench/opmodels/connect_from_wire.json:266` already recorded the source-wire re-creation that stagesim ignored.
+
+DECISION: device. An opmodel conformance check in `stage_prerun --prerun`. For every op a plan uses, the recorded samples in
+`tools/bench/opmodels/<op>.json` are replayed through stagesim's rule. The pre-run FAILS on any sample whose measured wire outcome
+(new/lost uids, sinks kept) stagesim does not reproduce. Acceptance: PASS on `connect_from_wire.json` with the current stagesim, FAIL with
+`cfw_border_rule` disabled. Built first in cycle 115's card (`docs/d1-loop12-17-split-plan.md` PD229(a)).
+
+## repeated-failure-class — 2026-09-28 04:35 (cycle 114 judgement, after archive/peer/2026-09-28-retrospective-cycle114.md:395)
+
+`VIOLATION: repeated-failure-class | loss_min=12 | loss_usd=1.16 | evidence=tools/bench/peer_c112a_unflip81.log:28`: ACCEPTED, mine.
+Card 114-3 required 0 regression fails while two stale count pins were on record, and it had no peer and no licence to re-pin them.
+
+DECISION: no new device beyond finishing the recorded fix. Card 114-4 re-pinned E1/U3 to 0-fail. Cycle 115's STEP 0 does three more things:
+- adds the pass-count floor, the frozen G01-G42 label check and the unflip_81 exit code;
+- runs the reviewer's test: find accepted dispositions whose named fix is absent from the code.
+If that search finds more than this one unapplied fix, the device is a check that an accepted disposition's named fix has landed.

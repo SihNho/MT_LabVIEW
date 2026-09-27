@@ -1,0 +1,75 @@
+{
+ "schema": "task/1",
+ "id": "114-2",
+ "kind": "measure",
+ "goal": "Read-only acceptance measurement of D1_l2_b3_20260928_032703.vi: re-created nets' terminals vs the bed's nets 5174/5336/28392, node-class diff vs bed, full Error List + expected file",
+ "why": "114-1 FAIL at launch gate D: real 6 new / lost [5174,5336,28392] vs sim 3/0. Review c114b-l2b3d: cfw re-creates the source wire (connect_from_wire.json:266). Whether the old sinks survived is unmeasured.",
+ "inputs": [
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_b3_20260928_032703.vi", "md5": "1b5c12d71ca48f22e3f4b80316c67e51"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_b2b_20260928_015450.vi", "md5": "4f51fd4cb93e9116dee1bc0b07281f12"},
+  {"path": "tools/bench/graph_l2b2b_20260928.json", "md5": "51b05cb9b4b8b8ac57ccb2c018b5a480"},
+  {"path": "tools/bench/plan_l2b3.json", "md5": "827be8f3d9fac5e36590544369eda1ca"},
+  {"path": "tools/bench/cards/result_114-1.json"},
+  {"path": "archive/peer/2026-09-28-c114b-l2b3d.md"},
+  {"path": "tools/bench/stage_d1_l2b3.log"},
+  {"path": "tools/bench/diag_c114_errorlist.py", "md5": "c6117b20320ab117e068794e3934f1b4"},
+  {"path": "tools/bench/errorlist_expected_D1_l2_b2b_20260928_015450.json"},
+  {"path": "docs/wiki/subvi/D1_s1_copy.json"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_b3_20260928_032703.vi"},
+  {"kind": "file", "name": "tools/bench/graph_l2b2b_20260928.json"},
+  {"kind": "file", "name": "tools/bench/plan_l2b3.json"},
+  {"kind": "file", "name": "tools/bench/diag_c114_errorlist.py"},
+  {"kind": "file", "name": "tools/bench/errorlist_expected_D1_l2_b2b_20260928_015450.json"},
+  {"kind": "file", "name": "tools/lv_errorlist.py"},
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "docs/wiki/subvi/D1_s1_copy.json"}
+ ],
+ "pass": [
+  "M1 on a BYTE COPY of the saved B3 file: for each of the 3 new nets replacing 5174/5336/28392, source owner+terminal and every sink owner+terminal, as a table vs the bed's net (graph_l2b2b)",
+  "M2 per net: old sinks present? (yes/no per sink uid), new tunnel sink present?, extra sinks listed; Wire.Is Broken? per net",
+  "M3 node census of the saved file vs graph_l2b2b by class: counts +/-, every added/removed node listed (uid, class, owner) - leftover Invoke/junk nodes named",
+  "M4 computation_diff(S1, saved B3) row count and rows, vs the bed's open rows + plan_l2b3's declared end state",
+  "M5 full Error List of the saved file (all_items_read), each item attributed to a class of errorlist_expected_D1_l2_b2b or a plan_l2b3 open row, or listed UNATTRIBUTED",
+  "M6 only if M5 has 0 UNATTRIBUTED: errorlist_expected_D1_l2_b3_20260928_032703.json written and reverdict run; else not written",
+  "saved file and bed md5 unchanged at the end; LabVIEW verified gone; handle count flat"
+ ],
+ "outputs": [
+  "tools/bench/diag_c114c_*",
+  "tools/bench/graph_l2b3_*",
+  "tools/bench/errorlist_*",
+  "tools/bench/cards/result_114-2.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c114c*",
+   "tools/bench/diag_c114c*",
+   "tools/bench/graph_l2b3*",
+   "tools/bench/errorlist_*",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "READ-ONLY on the saved B3 file and the bed: reads run on a byte copy; nothing is wired, deleted or saved",
+  "report the measurements; do not decide acceptance of the file and do not move current-bed",
+  "a hygiene gate (handles, memory) is never re-based inside the card; a first-load jump returns as open",
+  "scripts <=120 lines on stagekit; launch: py tools/bgrun.py --material --max-min N -- ...; hold turn to BGRUN END",
+  "a gate refusal is returned BLOCKED, never re-run via a self-test child or exempt route",
+  "delete the scratch copy at the end; facts <=10 file:line; OPEN <=3"
+ ],
+ "advances": ["M3", "R1"]
+}

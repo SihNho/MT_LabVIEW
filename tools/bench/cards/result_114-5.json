@@ -1,0 +1,25 @@
+{"schema":"result/1","id":"114-5","status":"PASS","gates":{"pass":5,"fail":0},
+"first_fail":null,
+"blocked_by":null,
+"artefacts":[
+{"path":"tools/bench/diag_c114e_inventory.py","md5":"e00576bacb40866db117f647df968610"},
+{"path":"tools/bench/diag_c114e_inventory2.log","md5":"4a69b3b64f9f6b71899172d185e6b3e6"},
+{"path":"tools/bench/facts_c114e_inventory.json","md5":"4bb29d06d16d7c4d1f4df3ae9d54bf58"},
+{"path":"tools/bench/facts_c114e_rows.json","md5":"79bb16be105a5164d1882a0d7b1f0b79"}],
+"facts":[
+"I1/I2 all 12 SR uids (9018/9025, 29505/29512, 1147/1142, 5796/5805, 119/2972, 7311/11001) found on #637; live consumers 0, direct sinks 0 each (stagesim.py:376; diag_c114e_inventory2.log CAND/RAW)",
+"Every old left SR's inner wire has only its own source (w9097 w28039 w1681 w6041 w7429 w10763); right inner w9215 w29591 w505 w5859 w121 are sink-only; all 6 right outers unwired (inventory2.log RAW)",
+"#7311's right inner is one sink on LIVE net w11389 (Local #25578 -> also #11529 Comparison). Deleting #7311 removes one sink; the source stays (inventory2.log RAW #7311)",
+"All 6 old left-SR init nets are shared: w9051 w/ LSR #10544, w29122 #25582, w25438 #25240/#5752/#25422, w25461 #25344/#5569/#25428, w8590 #23792, w11253 #25382 (inventory2.log RAW)",
+"S1 consumers of these 6 left SRs: #8634 array, #29625 array, #5058 x,y,z / Bead is good? / pos in cal image in, #10150 x (inventory2.log S1 lines)",
+"Tunnels: 29 LoopTunnels on #637; 13 have no sink on any source face: #2294 #3644 (PD166 :285), #2580 #2396 #4432 #3656 #3920 #4031 (PD177(c) :490-495), #5129 #5328 #28343 (B3), #5752 #5569",
+"Tunnel #32572 has 1 wired consumer (SelectorTunnel #24364) but 0 effective consumers. Relay/indicator transparency (vigraph.py:641-650) makes it read as dead; it is NOT consumer-less by wire",
+"I3: 16 rows/11 pairs at B3 end (diag_c114c_b3graph.json:507-547 = plan_l2b3.json:179-196); L2-R 0, QRT 11 (:74, split_plan_110.md:37, :1998); #11261 also in DISP-D1 (:1916)",
+"No §2 row names the stage that WIRES the 11 pairs: QRT is a document with rows 0 and no LabVIEW write (split plan :74), and STOP's rows are 'from QRT' (:75)",
+"I4 :158 met (12 SR+13 tun); :160 cdiff 0 no (16 rows, 0 L2-R); :159 ExecState 1 no (8/59 B3 Error List items on QRT rows, incl. required Image In); :161 n/a offline (facts_c114e_rows.json)"],
+"open":[
+"L2-R retire list: the 4 pairs of :73, or all 6 SR pairs + 13 consumer-less #637 tunnels (+ #32572?) as measured here?",
+"L2-R gates :159 (ExecState 1) and :160 (cdiff 0) cannot hold while the 11 QRT pairs stay open (8 Error List items incl. required 'Image In'). Re-state them for L2-R, or order QRT wiring first?",
+"Which stage wires the 11 QRT-owned pairs? §2 gives QRT as a doc (rows 0) and STOP rows 'from QRT'."],
+"cost":{"usd":null,"minutes":24,"labview_runs":0},
+"note":"Offline, no LabVIEW. First bgrun refused by guard_peer (another card's diag_c114d_regress.log); ran after its review landed. inventory2.log supersedes inventory.log (owner-map tunnel count 3 was wrong; 29 by body diagram). No tools/*.py edited."}

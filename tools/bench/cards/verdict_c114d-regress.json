@@ -1,0 +1,25 @@
+{
+ "schema": "verdict/1",
+ "id": "c114d-regress",
+ "verdict": "supported",
+ "alternative": "An original G01-G42 gate was weakened in place (same label, looser check); labels and pass counts cannot show that. Separately, 114-3's recreate path runs only on plan-made negative-uid tunnels, which no real-read gate in l2a1_80/unflip_81 wires into.",
+ "discriminating_test": "git diff tools/stagesim.py since the 2026-09-25 42/0 run, limited to gate(\"G01\"..\"G42\") conditions; then a pure-Python replay of one connect_from_wire border sample through simulate() compared with its recorded wire uids.",
+ "violations": [
+  {
+   "slug": "repeated-failure-class",
+   "loss_min": 12,
+   "loss_usd": null,
+   "evidence": "tools/bench/peer_c112a_unflip81.log:28"
+  }
+ ],
+ "sources": [
+  "tools/bench/selftest_stagesim_c114d.log:1-76",
+  "tools/bench/selftest_stagesim.log:137-179",
+  "tools/bench/selftest_stagesim_unflip_81.py:57-61",
+  "tools/stagesim.py:954",
+  "tools/stagesim.py:198-201",
+  "tools/bench/peer_c112a_unflip81.log:8-28",
+  "tools/bench/diag_c114d_regress.log:6"
+ ],
+ "note": "Replace pins with fail==0, rc==0, frozen G01-G42 labels all PASS, pass>=75; add an rc check to U3 and sys.exit(1) on failure in unflip_81. The 13/0 pin passes again once E1 is fixed, but should get the same floor treatment."
+}

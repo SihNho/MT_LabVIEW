@@ -1,0 +1,65 @@
+{
+ "schema": "task/1",
+ "id": "114-3",
+ "kind": "build",
+ "goal": "Offline: stagesim models connect_from_wire's source-wire re-creation (old uid lost, new uid made) so gate D predicts it; prerun refuses a row naming a wire uid an earlier connect re-created",
+ "why": "114-1 launch gate D: sim 3 new/0 lost vs real 6 new/lost [5174,5336,28392]; review c114b-l2b3d: connect_from_wire.json:266 re-creates the source wire; uid 5174 was re-issued to a junk Invoke (stage_d1_l2b3.log:64,84).",
+ "inputs": [
+  {"path": "tools/stagesim.py"},
+  {"path": "tools/stage_prerun.py", "md5": "eb64fe9aef41ba177d262e0eccfadb16"},
+  {"path": "tools/bench/plan_l2b3.json", "md5": "827be8f3d9fac5e36590544369eda1ca"},
+  {"path": "tools/bench/graph_l2b2b_20260928.json", "md5": "51b05cb9b4b8b8ac57ccb2c018b5a480"},
+  {"path": "tools/bench/stage_d1_l2b3.log"},
+  {"path": "archive/peer/2026-09-28-c114b-l2b3d.md"},
+  {"path": "tools/bench/cards/result_114-1.json"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/bench/plan_l2b3.json"},
+  {"kind": "file", "name": "tools/bench/graph_l2b2b_20260928.json"},
+  {"kind": "file", "name": "tools/bench/stage_d1_l2b3.log"}
+ ],
+ "pass": [
+  "C1 find where connect_from_wire's source-wire re-creation is recorded (op doc / wiki json :266) and in which cases it fires; cite file:line",
+  "C2 stagesim: a cfw op on an existing source wire marks the old wire uid lost and adds a re-created wire carrying the same source and old sinks",
+  "C3 replay plan_l2b3.json on graph_l2b2b_20260928.json: sim end = 6 new / lost {5174,5336,28392}, equal to the real launch log's D line",
+  "C4 prerun check: a row after a cfw that names the re-created (old) wire uid is FLAGGED; self-test +/- cases",
+  "C5 regressions: stagesim and stage_prerun self-tests 0 failures; replays of plan_l2b2b.json and plan_l2b2a.json unchanged in verdict",
+  "no LabVIEW; tools/stagesim.py and tools/stage_prerun.py md5 before/after reported"
+ ],
+ "outputs": [
+  "tools/stagesim.py",
+  "tools/stage_prerun.py",
+  "tools/bench/selftest_*",
+  "tools/bench/cards/result_114-3.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagesim.py",
+   "tools/stage_prerun.py",
+   "tools/bench/selftest_*",
+   "tools/bench/sim/**",
+   "tools/bench/diag_c114d*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/cards/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "offline only; no LabVIEW, no VI opened",
+  "only ADD modelling and checks; no existing gate or check is loosened",
+  "another card (114-2) reads LabVIEW in parallel: do not touch tools/stagexec.py, stagekit.py, recipes or claudeDev",
+  "a gate refusal is returned BLOCKED, never re-run via a self-test child or exempt route",
+  "facts <=10 file:line; OPEN <=3"
+ ],
+ "unblocks": "M3"
+}

@@ -57,10 +57,31 @@ rig-state: 조립   <!-- 2026-09-24 20:xx USER GRANT: "당분간 내가 말하�
 
 ## NEXT
 🟡 **CARRY (from the 2026-09-25 verification review `archive/peer/2026-09-25-hyp-lintverify-20260925.md`, not blocking): card flags are checked only on the top-level command (a child process could reach LabVIEW under labview=none); a stage run launched outside bgrun is not counted by the retry cap; a bgrun record failure is only logged (`tools/bgrun.py:219-220`). Close in a tooling cycle, deliverable-first.**
-current-bed: D1_l2_b2b_20260928_015450.vi
-<!-- ^ machine key read by tools/errorlist_check.py current_bed_text(); without it the bed is chosen by mtime among D1_*.vi names in this file, and the newer D1_s1_kswap_* would silently take over (review archive/peer/2026-09-26-c88-reuse-stalepin.md). Change it only when a new bed is accepted. Moved 2026-09-28 02:2x by cycle 113 (PD227(g)): L2-B2b accepted. -->
-🔵 **THE BED IS NOW `claudeDev\D1_l2_b2b_20260928_015450.vi`, md5 `4f51fd4cb93e9116dee1bc0b07281f12`** (L2-B2b, 8 rows; expected Error List file `tools/bench/errorlist_expected_D1_l2_b2b_20260928_015450.json`, 65 items, reverdict OK; PD227(g)). Its input `D1_l2_b2a_20260928_001426.vi` (md5 `107a3ef1…`) is kept.
-🟢🟢 **FIRST ACT of cycle 114 = `docs/d1-loop12-17-split-plan.md` Pre-decided 227(h): ONE material card (Opus high) delivers L2-B3** (rows B3-01..06: FS inner tunnel → new tunnel T1/T2/T3 → sink; `tools/bench/cards/split_plan_111_l2b2.md` §1 lines 34-36) from the B2b bed.
+current-bed: D1_l2_b3_20260928_032703.vi
+<!-- ^ machine key read by tools/errorlist_check.py current_bed_text(); without it the bed is chosen by mtime among D1_*.vi names in this file, and the newer D1_s1_kswap_* would silently take over (review archive/peer/2026-09-26-c88-reuse-stalepin.md). Change it only when a new bed is accepted. Moved 2026-09-28 04:2x by cycle 114 (PD228(d)): L2-B3 accepted. -->
+🔵 **THE BED IS NOW `claudeDev\D1_l2_b3_20260928_032703.vi`, md5 `1b5c12d71ca48f22e3f4b80316c67e51`** (L2-B3, 308,928 B; expected Error List file `tools/bench/errorlist_expected_D1_l2_b3_20260928_032703.json`, 59 items, reverdict OK; PD228(d)). STRUCTURAL, ExecState 0 by design, never run. Its input `D1_l2_b2b_20260928_015450.vi` (md5 `4f51fd4c…`) is kept.
+🟢🟢 **FIRST ACT of cycle 115 = `docs/d1-loop12-17-split-plan.md` Pre-decided 228(j): ONE material card (Opus high) delivers L2-R1**, retiring the 6 old shift-register pairs on `#637` (9018/9025, 29505/29512, 1147/1142, 5796/5805, 119/2972, 7311/11001; all measured with 0 live consumers, `tools/bench/facts_c114e_inventory.json`) from the B3 bed.
+   - **STEP 0 (owed DEVICE, PD229(a), retrospective-cycle114 `device-failed` ACCEPTED, `docs/violation-decisions.md` 04:35):** an opmodel conformance check in `stage_prerun --prerun`. It replays each used op's samples in `tools/bench/opmodels/<op>.json` through stagesim and FAILS on any sample stagesim does not reproduce. Acceptance: PASS on `connect_from_wire.json`; FAIL with `cfw_border_rule` disabled.
+   - **Also STEP 0 (PD229(b)):** the E1/U3 pins get a pass-count floor, the frozen G01-G42 label check and `sys.exit(1)` in unflip_81. Then grep accepted dispositions for named fixes missing from the code, and report the count.
+   - Card rules (PD229(c)): a regression pass criterion names the failures already on record, or the card carries its peer. A review's offline test marked "not checked" is run or returned `open`, never waived.
+   - Plan offline on `tools/bench/graph_l2b3_20260928.json`: `plan_l2r1.json`, stagesim FINAL, delete rows. The predicted end is B3's 16 cdiff rows, all QRT-owned.
+   - The live-consumer check (§3 :158) is re-read on the live file BEFORE each delete.
+   - Gates per PD228(h): cdiff == the 16 B3 rows exactly; the node census removes exactly the retire set; RBW deletes no other wire; the Error List has no new class; handles ±100. ExecState 1 / cdiff 0 are NOT L2-R gates (they moved to the QRT wiring stage).
+   - Recipe ≤ 120 lines, dry + prerun (X11/X12) + prior-art, ONE launch → `claudeDev\D1_l2_r1_<ts>.vi`, the Error List read and `errorlist_expected_D1_l2_r1_<ts>.json`.
+   - Then L2-R2 (the 13 consumer-less tunnels, PD228(g); `#32572` stays).
+   - After L2-R: a facts card per QRT pair (PD228(i)), then the QRT wiring stage (b2_03 together with `t11273`, 227(d)).
+- **CYCLE 114 in brief — L2-B3 DELIVERED, THE NEW BED (PD228):**
+  - 114-1 FAIL 7/1: the owed device X11 was built (Build Array half-wired next to an open sibling row; replay flags `#2626`/`#11261` only, self-test 16/0). L2-B3 made ONE launch and saved the file. Gate D failed: real 6 new / 3 lost vs sim 3 / 0.
+  - 114-2 PASS 20/0 (read-only): `connect_from_wire` across a border re-creates the source wire; every old sink was kept, with one new face per net and no junk nodes. cdiff 16 == plan; Error List 59, all attributed → **accepted**.
+  - 114-3 BLOCKED 4/1 + 114-4 PASS 5/0: stagesim models the re-creation (the replay now matches the real launch), and prerun X12 was added. Two stale count pins now assert 0 fails. Review `archive/peer/2026-09-28-c114d-regress.md` supported.
+  - 114-5 PASS 5/0: L2-R inventory → PD228(f)–(h).
+  - Retrospective-cycle114 (`archive/peer/2026-09-28-retrospective-cycle114.md`, annotated):
+    - `repeated-failure-class` 12 min ACCEPTED, mine: card 114-3 did not exempt the stale pins already on record.
+    - `device-failed` 11 min ACCEPTED: the prior-art review missed `connect_from_wire.json:266`.
+    - Both remedies are cycle 115's STEP 0 (PD229).
+  - Carries: `Wire.Is Broken?` on the 3 face nets is unread; the pins need a G-label check and a pass floor (review :94-107); `stage_runs` records `card=None`; the `--retry-card` argument order; 226(f)'s carries.
+  - User decisions: none open from this cycle.
+- (history) 🟢🟢 **FIRST ACT of cycle 114 = `docs/d1-loop12-17-split-plan.md` Pre-decided 227(h): ONE material card (Opus high) delivers L2-B3** (rows B3-01..06: FS inner tunnel → new tunnel T1/T2/T3 → sink; `tools/bench/cards/split_plan_111_l2b2.md` §1 lines 34-36) from the B2b bed.
    - STEP 0 (owed DEVICE, PD227(j), retrospective-cycle113 `repeated-failure-class` accepted): an offline `stage_prerun --prerun` check that flags a row wiring one Build Array input while a sibling input is an open row. Replayed on `plan_l2b1*` and `plan_l2b2b_9row.json` it must flag `#2626` and `#11261` only. Card rule: a hygiene gate (handles/memory) is never re-based inside a card.
    - FIRST, with no LabVIEW: dump the graph of the SAVED B2b file, write `plan_l2b3.json`, and run the stagesim finalize route check on ALL 6 rows before any recipe. B3-03..06 were NOROUTE in route A.
    - Any row with no route: add the route in `tools/stagexec.py` and scratch-check it on a byte copy of the bed in the same card, as 113-2 did.

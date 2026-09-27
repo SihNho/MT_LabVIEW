@@ -1,0 +1,55 @@
+{
+ "schema": "task/1",
+ "id": "114-5",
+ "kind": "measure",
+ "goal": "Offline L2-R inventory on graph_l2b3_20260928.json: retire candidates with live-consumer counts, and every open cdiff row / open pair at B3's end with the stage that owns it",
+ "why": "B3 accepted (114-2). Next per split plan §2 (:73) is L2-R -> D1_s5_loop12.vi with gates ExecState 1 and cdiff 0 (:158-161), while QRT-owned rows (b2_03, t11273; PD227(d)) stay open. Judgement needs the facts first.",
+ "inputs": [
+  {"path": "tools/bench/graph_l2b3_20260928.json", "md5": "e45f75ab751b7de6c25d5a18a6533e0b"},
+  {"path": "tools/bench/plan_l2b3.json", "md5": "827be8f3d9fac5e36590544369eda1ca"},
+  {"path": "tools/bench/diag_c114c_b3graph.json", "md5": "66ab0badc2a5bb630bd2d868121aed5a"},
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "docs/wiki/subvi/D1_s1_copy.json"},
+  {"path": "tools/bench/cards/split_plan_111_l2b2.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/graph_l2b3_20260928.json"},
+  {"kind": "file", "name": "tools/bench/plan_l2b3.json"},
+  {"kind": "file", "name": "docs/d1-loop12-17-split-plan.md"},
+  {"kind": "file", "name": "docs/wiki/subvi/D1_s1_copy.json"},
+  {"kind": "file", "name": "tools/stagesim.py"}
+ ],
+ "pass": [
+  "I1 plan's retire candidates (PD225(d) ring SRs, #9018/#9025, #29505/#29512, #119/#2972, #7311, old 1.2 carriers on #637, consumer-less tunnels): uid, class, owner, found y/n",
+  "I2 per candidate: live consumers on the B3 graph (sources_of/reach4 or equivalent, offline), count and uids; tool and file:line used",
+  "I3 the 16 cdiff rows and 11 open pairs at B3's end, each with the owning later stage per the plan (L2-R / QRT / STOP / ROT / FIN / DISP-D1) and the plan line that assigns it; unassigned listed",
+  "I4 which §3 gate lines for L2-R (:158-161) are reachable at L2-R's end given I3 (e.g. cdiff 0 while QRT rows are open), stated as counts only",
+  "no LabVIEW; outputs written under tools/bench/facts_c114e_*"
+ ],
+ "outputs": [
+  "tools/bench/facts_c114e_*",
+  "tools/bench/cards/result_114-5.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/facts_c114e*",
+   "tools/bench/diag_c114e*",
+   "tools/bench/sim/**",
+   "tools/bench/cards/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 40},
+ "rules": [
+  "offline only; no LabVIEW, no VI opened; do not edit tools/*.py (another card works on self-tests in parallel)",
+  "measure and report; do not write a plan, recipe or plan_l2r file and do not decide gate changes",
+  "facts <=10 file:line; OPEN <=3"
+ ],
+ "advances": ["M3", "R1"]
+}

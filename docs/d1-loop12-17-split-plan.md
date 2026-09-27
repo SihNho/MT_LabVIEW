@@ -2018,6 +2018,50 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
        - Acceptance: replayed on `plan_l2b1*` and `plan_l2b2b_9row.json`, it flags `#2626` and `#11261` only.
        - Then B3 per (h).
        - Card rule from 114: a hygiene gate (handles, memory) is never re-based inside a card; a first-load jump returns as `open`.
+228. **(cycle 114 judgement; cards `114-1` FAIL 7/1, `114-2` PASS 20/0, `114-3` BLOCKED 4/1, `114-4` PASS 5/0, `114-5` PASS 5/0 — `tools/bench/cards/result_114-{1..5}.json`)**
+     - **(a) Device of 227(j) BUILT:** `stage_prerun.py` X11 (`buildarray_open_sibling`, `:1107`, gate `:1409`) flags a row that wires one Build Array input while a sibling input stays an open row, unless the plan licenses the pair. Replay: `#2626` (plan_l2b1*) and `#11261` (*_9row) only; self-test 16/0.
+     - **(b) L2-B3 launched once (114-1):** 3 rows routed by `connect_from_wire` through the owner's Terminals[] (no new route was needed, because the FSIT sources are wired). The file was saved: `claudeDev\D1_l2_b3_20260928_032703.vi`, md5 `1b5c12d71ca48f22e3f4b80316c67e51`, 308,928 B. Gate D failed: real 6 new / lost {5174, 5336, 28392} vs sim 3 / 0.
+     - **(c) Cause MEASURED (114-2, read-only on a byte copy, `diag_c114c_b3graph.log:274-297`):** a border-crossing `connect_from_wire` re-creates the source wire under a new uid (`connect_from_wire.json:266`).
+       - Each of the 3 new nets carries its source, every old sink (t28334/t28348, t5170, t5333) and exactly one new tunnel face. No extra terminal.
+       - Class delta vs B2b: LoopTunnel/Outer/Inner +3, Wire +3. Invoke count unchanged, so there are no junk nodes.
+       - cdiff(S1, B3) = 16 rows == plan_l2b3's finalized end. Error List 59 items, 0 unattributed. `errorlist_expected_D1_l2_b3_20260928_032703.json` reverdicts OK.
+     - **(d) DECIDED — L2-B3 IS ACCEPTED AND IS THE NEW BED** (`current-bed:` moved). Gate D's mismatch was the simulator's wire-uid model, not the file: 114-3/114-4 taught stagesim the border re-creation rule, and the replay of plan_l2b3 now predicts 6 new / lost {5174, 5336, 28392} (`diag_c114d_replay_post2.log:3`). Level: STRUCTURAL, ExecState 0 by design, never run.
+       - Carry: `Wire.Is Broken?` on the 3 face-to-face nets is unread (no read-only route). Evidence standing in for it: RBW deleted none of the 6 new wires, and the Error List is fully attributed.
+     - **(e) Tools (114-3/114-4):**
+       - stagesim `cfw_border_rule`: a same-diagram connect keeps the uid; a border crossing re-creates it.
+       - prerun X12 flags a later row that names a re-created wire uid.
+       - The stale count pins E1/U3 now assert 0 failing cases. Regression 14/0. Review `archive/peer/2026-09-28-c114d-regress.md`, supported.
+       - Carry (review :94-107): add a frozen G01-G42 PASS-label check and a pass-count floor to those pins, and git-diff the G-gate conditions.
+     - **(f) L2-R inventory (114-5, offline on `graph_l2b3_20260928.json`, `tools/bench/facts_c114e_inventory.json`):**
+       - All 12 old SR uids on `#637` (9018/9025, 29505/29512, 1147/1142, 5796/5805, 119/2972, 7311/11001) have 0 live consumers.
+       - 13 LoopTunnels on `#637` have no sink on any source face: #2294 #3644 #2580 #2396 #4432 #3656 #3920 #4031 #5129 #5328 #28343 #5752 #5569.
+       - `#32572` has one wired consumer (SelectorTunnel `#24364`) and is NOT consumer-less by wire.
+       - The 16 open cdiff rows / 11 pairs at B3's end are ALL QRT-owned. 8 of the 59 Error List items sit on them, including the required `Image In`.
+     - **(g) DECIDED — L2-R's retire list = the 6 SR pairs + the 13 consumer-less tunnels of (f).** `#32572` stays, because it has a wired consumer. Deleting a sink-only or dead carrier removes no source and no live consumer, so rule 1a holds. The live-consumer gate (§3 :158) is re-read in the stage, on the live file, BEFORE each delete.
+       - `#7311`'s right inner is one sink on the live net w11389. Deleting it leaves the source and `#11529`.
+       - Split: **L2-R1 = the 6 SR pairs → `D1_l2_r1_<ts>.vi`**, then **L2-R2 = the 13 tunnels → `D1_l2_r2_<ts>.vi`**, one saved file each.
+     - **(h) DECIDED — L2-R's §3 gates :159 (ExecState 1) and :160 (cdiff 0) MOVE to the stage that wires the 11 QRT pairs.** They cannot hold while those pairs are open (f), and L2-R only deletes.
+       - L2-R's own gates: cdiff(S1, new) == B3's 16 rows exactly (no row added or removed); the node census removes exactly the retire list; the Error List has no new class and loses only items on retired objects; RBW deletes no wire outside the retire list; handles ±100.
+       - The name `D1_s5_loop12.vi` is reserved for the first file with ExecState 1 and cdiff 0, i.e. after the QRT wiring stage.
+       - Rule 1a: the final acceptance (cdiff 0, ExecState 1) is unchanged; only where it is checked moves.
+     - **(i) OPEN for a later judgement, not blocking L2-R:** QRT is a document with 0 rows (§2 :74), and STOP's rows come "from QRT" (:75). No stage wires the 11 pairs yet. Next after L2-R: a facts card per pair (source/sink loops, data stream vs control signal — CLAUDE.md 1c'': locals for control, queues for lossless data only), then a QRT-W build stage that wires b2_03 with `t11273` together (227(d), M1–M4 reads first).
+     - **(j) NEXT = L2-R1** per (g)/(h), from the B3 bed.
+       - Plan offline on `graph_l2b3_20260928.json` (stagesim FINAL, delete rows).
+       - Recipe ≤ 120 lines. Dry + prerun (X11/X12 included) + prior-art, then ONE launch, the Error List read and its expected file.
+229. **(cycle 114 close; retrospective `archive/peer/2026-09-28-retrospective-cycle114.md`, annotated; `docs/violation-decisions.md` 2026-09-28 04:35)**
+     - **(a) DEVICE owed FIRST in cycle 115's card (`device-failed`, ACCEPTED):** an opmodel conformance check in `stage_prerun --prerun`.
+       - Each op a plan uses has its recorded samples in `tools/bench/opmodels/<op>.json` replayed through stagesim.
+       - It FAILS on any sample whose measured wire outcome stagesim does not reproduce.
+       - Acceptance: PASS on `connect_from_wire.json` now; FAIL with `cfw_border_rule` disabled.
+     - **(b) Also in STEP 0 (`repeated-failure-class`, ACCEPTED, mine):** finish c112a/c114d's fix for the E1/U3 pins:
+       - a pass-count floor;
+       - the frozen G01-G42 label check;
+       - `sys.exit(1)` in unflip_81.
+       Then run the reviewer's test (accepted dispositions whose named fix is absent from the code) and report the count.
+     - **(c) Card rules from 115:**
+       - A regression pass criterion names the failures already on record, or the card carries the peer it needs.
+       - A review's offline test marked "not checked" is run, or returned `open` to judgement; it is never waived inside the card.
+     - **(d) Then L2-R1 per 228(j).**
 
 ## OPEN (design choices — for judgement; not decided here)
 

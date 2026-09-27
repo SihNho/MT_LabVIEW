@@ -1,0 +1,74 @@
+BGRUN START 2026-09-28 03:24:21 limit 10.0 min: py -u tools/stage_prerun.py --prerun tools/recipes/stage_d1_l2b3.py
+BGRUN PID 2000
+stage_d1_l2b3 - card 114-1: STAGE L2-B3 (d1-loop12-17-split-plan.md PD227(h); split page tools/bench/cards/split_plan_111_l2b2.md s1:34-36), the
+cut of stage_d1_l2b2b.py (card 113-4) with rule D4 ONE-WAY TOWARD S1 scoped by the OFFLINE name diff (tools/bench/plan_l2b3_d4.json; namediff_l2b3.json
+= 30 nodes, all equal to S1, so the scope is EMPTY and D4 grants nothing). INPUT the plan base graph's VI (B2b bed D1_l2_b2b_20260928_015450.vi, PD227(g)),
+FRESH LabVIEW -> claudeDev\D1_l2_b3_<ts>.vi (rule-6 GUI save, ExecState 0 by design, never run). ROWS ONLY FROM plan_l2b3.json (decision 8): three tunnel
+groups on loop 1.2 (#10170 body #23166) = rows B3-01..06, each `tunnel` + wire in + wire out compiled into ONE real op; route check cfw x3 (diag_c114_plan.log).
+No new op; RBW READS every re-wired sink BEFORE Remove Bad Wires (PD224(h)). PREDICTION: L1 3 real ops covering the 9 actions once, no CT end; E1 each
+checkpoint == its sim step; D new/lost == sim; FU unchanged; PB cdiff(S1, end) == the 11 open_rows (the 5 B3 pairs close); PS saved.
+    py tools/bgrun.py --material --max-min 60 --log tools/bench/stage_d1_l2b3.log -- py -u tools/recipes/stage_d1_l2b3.py
+  PASS  L0 the executed plan is FINAL, open_rows_match, plan_in = the plan_l2b3_in stageplan  ('827be8f3d9fac5e36590544369eda1ca', {'path': 'tools/bench/plan_l2b3_in.json', 'md5': 'd0b0893954eff7ec908ecd6da8b77ea4'})
+  PASS  L0b D4 cites S1's graph docs/wiki/subvi/D1_s1_copy.json md5 5de014fe580b938328fa8662cf2b0652; scope [] (empty = D4 grants nothing); plan md5 pinned  ('5de014fe580b938328fa8662cf2b0652', [])
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 4f51fd4cb93e9116dee1bc0b07281f12  got 4f51fd4cb93e9116dee1bc0b07281f12
+  PASS  DRY graph JSON for input md5 4f51fd4cb93e9116dee1bc0b07281f12  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_l2b2b_20260928.json
+  PASS  L1 the 9 plan actions compile into 3 real ops ['tunnel', 'tunnel', 'tunnel'], each action exactly once; checkpoints (0, 1, 2, 3); no ControlTerminal end ([])  [1, 2, 3, 4, 5, 6, 7, 8, 9]
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 2 touched diagram(s) [686, 23166]: one-side-only Nodes[] entries 0
+  PRIME 0 terminal indexes proved at base; 0 ControlTerminal end(s) by 179(b); unprovable []
+  CHECKPOINTS whole-VI read+diff after ops [1, 2, 3] of 3
+  FACT  OP wire_tunnel [1, 2, 3] -> err '' (0.0 s)
+  STEPX 01 tunnel         acts [1, 2, 3] ids ['b3_t1', 'b3_t1_out', 'b3_t1_in'] bound {-1: 10000002} diff 0
+  FACT  OP wire_tunnel [4, 5, 6] -> err '' (0.0 s)
+  STEPX 02 tunnel         acts [4, 5, 6] ids ['b3_t2', 'b3_t2_out', 'b3_t2_in'] bound {-5: 10000006} diff 0
+  FACT  OP wire_tunnel [7, 8, 9] -> err '' (0.0 s)
+  STEPX 03 tunnel         acts [7, 8, 9] ids ['b3_t3', 'b3_t3_out', 'b3_t3_in'] bound {-9: 10000010} diff 0
+  PASS  E1 every checkpoint's real graph == its simulated step (3 ops) up to D4: a real-only term passes ONLY on [] with its (node, name) in S1 (docs/wiki/subvi/D1_s1_copy.json md5 5de014fe580b938328fa8662cf2b0652)  {'bad': [], 'accepted': 0}
+  FACT  BINDING obj {-1: 10000002, -5: 10000006, -9: 10000010} term {-2: 10000003, -3: 10000004, -6: 10000007, -7: 10000008, -10: 10000011, -11: 10000012}
+  PASS  D the end adds the plan's 3 new wire(s) and loses exactly the simulated base wires (0)  {'new': [10000001, 10000005, 10000009], 'lost-extra': [], 'lost-missing': []}
+  PASS  FU the set of frame diagrams is unchanged
+  FACT  ExecState [after all rows (warm, RECORDED - the plan's open rows stay open by design)] D1_l2_b3_20260928_032421.vi = <dry:g.exec_state>
+  FACT  CDIFF ROW {'node': 376, 'class': 'SubVI', 'sink': "#376 Terminal 'current frame data array in'", 'before': ['2626|Terminal|appended array|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 376, 'class': 'SubVI', 'sink': "#376 Terminal 'frame index'", 'before': ['644|Terminal||0'], 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array'", 'before': ['5058|Terminal|x,y,z array out|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array' [1]", 'before': None, 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array' [2]", 'before': None, 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array' [3]", 'before': None, 'after': ['5058|Terminal|x,y,z array out|0']}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'element'", 'before': ['5119|OverridableParameterTerminal|x-y|0'], 'after': None}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'element' [1]", 'before': ['30117|Terminal|Value|0'], 'after': None}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'element' [2]", 'before': ['4580|Terminal|Value|0'], 'after': None}
+  FACT  CDIFF ROW {'node': 5058, 'class': 'SubVI', 'sink': "#5058 Terminal 'Image In'", 'before': ['6810|Terminal|Image Out|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 8634, 'class': 'GrowableFunction', 'sink': "#8634 Terminal 'index (col)'", 'before': ['10068|ParameterTerminal|x-y*floor(x/y)|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 11261, 'class': 'BuildArray', 'sink': "#11261 Terminal 'array'", 'before': ['11310|Terminal|output cluster|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 11261, 'class': 'BuildArray', 'sink': "#11261 Terminal 'element'", 'before': ['11608|Terminal|output cluster|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 28083, 'class': 'SubVI', 'sink': "#28083 Terminal 'Magnet position'", 'before': ['30117|Terminal|Value|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 29625, 'class': 'GrowableFunction', 'sink': "#29625 Terminal 'index (col)'", 'before': ['29240|ParameterTerminal|x-y*floor(x/y)|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 29973, 'class': 'BuildArray', 'sink': "#29973 Terminal 'element' [1]", 'before': ['29240|ParameterTerminal|x-y*floor(x/y)|0'], 'after': []}
+  PASS  PB frame-keyed cdiff(S1, real end) == the plan's 11 open_rows up to D4 ONE-WAY (closures on scope nodes only, no new pair, grown names in S1; FATAL, before save)  {'bad': [], 'closed': [], 'extra': []}
+  PASS  RBW-PRE every re-wired sink [2996, 3193, 28378] carries a wire in the end read (pre-save; DRY: simulated end rows)  {28378: 10000001, 2996: 10000005, 3193: 10000009}
+  FACT  IB b3_t1_in: sink #28370 is a LoopTunnel - face/register/panel sink: E1 + RBW only (PD184(a))
+  FACT  IB b3_t2_in: sink #2992 is a SelectorTunnel - face/register/panel sink: E1 + RBW only (PD184(a))
+  FACT  IB b3_t3_in: sink #3176 is a SelectorTunnel - face/register/panel sink: E1 + RBW only (PD184(a))
+  FACT  CENSUS after L2-B3 D1_l2_b3_20260928_032421.vi: {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 92, 'Wire': 1953, 'LoopTunnel': 148, 'Local': 12, 'ControlTerminal': 118, 'Node': 0}
+  FACT  PH handles RECORDED: post-open <dry:bench_prep.labview_handles> -> before-save <dry:bench_prep.labview_handles>
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  dry0dry0dry0dry0dry0dry0dry0dry0
+GATE RBW NOT RUNNABLE IN DRY: Remove Bad Wires (VI method 410) runs inside LabVIEW on a scratch copy of the saved file; its pre-read half ran above as RBW-PRE
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  PASS  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['tools/bench/plan_l2b3.json']
+  PASS  X3 every plan row decided  0 rows + 9 stageplan actions
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  1 stageplan(s)
+  PASS  X11 no row wires one Build Array input while a sibling input is an open row (unless pb-licence/1)  1 stageplan(s)
+  PASS  X4 every end addressable offline (0 ends)  []
+  PASS  X5 wiring ops executed in the dry run == plan wire rows  ops 3 vs plan wire rows 0 + stageplan wiring real ops 3 (covering 6/6 wire actions)
+  PASS  X6 ast lint: no re-typed uid / terminal name  uids []; names []
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_l2_b3_20260928_032421.vi; decisions rows NOT dispatched (recipe calls neither run_rows nor from_decision)
+  PASS  X10 predicted LabVIEW private MB < 690.0 (error-2 point; MEMSTOP 700.0) over the ops this run dispatches (UNMEASURED - no covering record)  {'why': 'UNMEASURED: no recorded meter of stage_d1_l2b3.py covers ops 1..end (0 record(s))'}
+  WARN  X10 WARN unmeasured: UNMEASURED: no recorded meter of stage_d1_l2b3.py covers ops 1..end (0 record(s))
+
+=== DRY PASS: first_fail=None coverage 84/93 lines, first mutation Stage._op wire_tunnel, unverified 0, graph tools/bench/graph_l2b2b_20260928.json
+=== PRERUN PASS: 11 pass / 0 fail; first None
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":11,"fail":0},"first_fail":"X10 WARN unmeasured: UNMEASURED: no recorded meter of stage_d1_l2b3.py covers ops 1..end (0 record(s))","artefacts":[]}
+BGRUN END rc=0 after 11s

@@ -1,0 +1,12 @@
+BGRUN START 2026-09-28 03:08:12 limit 1.0 min: py -u tools/bench/diag_c114_peek.py tools/bench/plan_l2b1_licence.json
+BGRUN PID 21752
+===== tools/bench/plan_l2b1_licence.json ['schema', 'stage', 'plan', 'decided_by', 'why_a_file', 'precedent', 'rename_by_uid']
+  schema "pb-licence/1"
+  stage "l2b1"
+  plan "tools/bench/plan_l2b1.json"
+  decided_by "tools/bench/cards/brief_110-4.md item 1 (cycle 110 judgement): the rename is LICENSED, keyed by terminal uid; no other row is licensed"
+  why_a_file "decision 8 / stage_prerun X6: a recipe never re-types a uid (tools/bench/plan_l2b1_prerun5.log:145); docs/protocol/stageplan.json has additionalProperties false, so the licence cannot be a field of plan_l2b1.json"
+  precedent "PD173 docs/d1-loop12-17-split-plan.md:360-363 (terminals addressed by uid after first resolution); archive/peer/2026-09-24-c68-m4a-p6b-rename.md:85,100-101 (name-keyed gates fail on renames on unchanged uids)"
+  rename_by_uid n= 1
+     {"node": 2626, "term_uids": [2832, 4160, 4165], "require": "all listed uids are UNWIRED inputs of the node in the real end read, else the licence is void", "why": "wiring #5058 onto #2626 input uid 4168 (row rw_5124_4168) makes LabVIEW rename these three unwired inputs 'element' -> 'array'; they are the per-frame data crossings owed to QRT (brief 110-1 D5), open row (2626, 'element') of plan_l2b1.json; measured tools/bench/stage_d1_l2b1.log:516-522,550"}
+BGRUN END rc=0 after 1s (NO RESULT LINE)

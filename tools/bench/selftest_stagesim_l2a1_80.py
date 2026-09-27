@@ -13,7 +13,7 @@ PREDICTIONS (contract):
   S4 sequential: the 6 member-to-member edges the real move lost are absent; bare half-wires w5637 and w5975 deleted.
   S5 joint replay == real over all 23 recorded compare rows (0 differ) AND over the full edge/dangling sets (diff 0);
      N1 negative control: the pre-refit rule (joint, no seeds, no S2, bare kept) against the same truth gives the recorded 23;
-     E1/E2 every existing selftest_stagesim* passes with its pre-refit count (stagesim selftest 42/0, k79 4/0).
+     E1/E2 every existing selftest_stagesim* passes with its pre-refit count (stagesim selftest 0 failing gates - was 42/0, re-pinned by card 114-4; k79 4/0).
     py tools/bgrun.py --material --max-min 5 --log tools/bench/selftest_stagesim_l2a1_80.log -- py -u tools/bench/selftest_stagesim_l2a1_80.py"""
 import collections, copy, json, os, re, subprocess, sys                          # noqa: E401
 HERE = os.path.dirname(os.path.abspath(__file__)); TOOLS = os.path.dirname(HERE); sys.path.insert(0, TOOLS)  # noqa: E702
@@ -137,12 +137,16 @@ S.op_move_in(s_old, {"nodes": TOPS, "dest_diagram": BODY, "joint": True}, Pold, 
 dn = diff(s_old, J)
 gate("N1 NEGATIVE: the pre-refit rules (joint, no moved-input seeds, no S2, bare kept) give the recorded 23 back",
      dn["n"] == 23, {k: v for k, v in dn.items() if v})
-for lbl, cmd, want in (("E1 stagesim selftest", [sys.executable, "-u", os.path.join(TOOLS, "stagesim.py"), "selftest"], (42, 0)),
+for lbl, cmd, want in (("E1 stagesim selftest", [sys.executable, "-u", os.path.join(TOOLS, "stagesim.py"), "selftest"], None),
                        ("E2 selftest_stagesim_k79", [sys.executable, "-u", os.path.join(HERE, "selftest_stagesim_k79.py")], (4, 0))):
     p = subprocess.run(cmd, capture_output=True, text=True, timeout=240)
     m = re.findall(r"=== GATES: (\d+) pass / (\d+) fail", p.stdout)
     got = tuple(int(x) for x in m[-1]) if m else None
-    gate("{0} still passes with its pre-refit count {1}/{2}".format(lbl, *want), got == want and p.returncode == 0,
+    # card 114-4 R2: E1 was an exact-count pin (42/0) that broke each time stagesim gained gates (57, 71, 75 - all 0 fail);
+    # it now asserts 0 failing stagesim gates (GATES line present, rc 0) and logs the count.
+    ok = (got is not None and got[1] == 0) if want is None else got == want
+    gate("{0} still passes with {1}".format(lbl, "0 failing gates, count {0}".format(got and got[0]) if want is None
+                                         else "its pre-refit count {0}/{1}".format(*want)), ok and p.returncode == 0,
          (got, p.returncode, [l for l in p.stdout.splitlines() if "FAIL" in l][:4]))
 n_pass = sum(1 for _l, ok in GATES if ok)
 first = next((l for l, ok in GATES if not ok), None)

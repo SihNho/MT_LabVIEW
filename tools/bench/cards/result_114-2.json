@@ -1,0 +1,27 @@
+{"schema":"result/1","id":"114-2","status":"PASS","gates":{"pass":20,"fail":0},
+"first_fail":null,
+"blocked_by":null,
+"artefacts":[
+{"path":"tools/bench/diag_c114c_b3graph.py","md5":"f360ce2d69c59b9b0bd20cb908f75e7f"},
+{"path":"tools/bench/graph_l2b3_20260928.json","md5":"e45f75ab751b7de6c25d5a18a6533e0b"},
+{"path":"tools/bench/diag_c114c_b3graph.json","md5":"66ab0badc2a5bb630bd2d868121aed5a"},
+{"path":"tools/bench/diag_c114c_b3graph.log","md5":"06ebb2e5520a566652942513342d36ac"},
+{"path":"tools/bench/errorlist_D1_l2_b3_20260928_032703_20260928_035208.json","md5":"85507ac33d675c3fd3d7062691e2f949"},
+{"path":"tools/bench/errorlist_expected_D1_l2_b3_20260928_032703.json","md5":"e97290f499fb676e7f3b71c84f2f3cb5"},
+{"path":"tools/bench/diag_c114c_errorlist.log","md5":"d34cb24e02527a721316dab20b4d154f"}],
+"facts":[
+"M1/M2 t27635: w28392 -> w25911 = {src t27635, old sinks t28334 + t28348, new T1 outer t25893}; T1 inner t25887 -> sink t28378 on w25833 only; extras none (diag_c114c_b3graph.log:274-280)",
+"M1/M2 t5186: w5174->w26021 {src, old t5170, T2 outer t26005}; t25903->t2996 w25819 only. t5671: w5336->w26064 {src, old t5333, T3 outer t26044}; t26012->t3193 w25782 only (log:281-292)",
+"Review c114b hypothesis A HOLDS on all 3 groups: every old sink kept, one new face per net, no extra terminal (log:280,286,292); the 6 new wires are exactly these nets = launch new set (log:293)",
+"M3 class delta vs graph_l2b2b: LoopTunnel +3, OuterTerminal +3, InnerTerminal +3, Wire +3 (6 new, 3 gone); no other object added or removed (log:294-296)",
+"M3 junk: Invoke objects B3 [10313] == bed [10313]; no leftover Invoke from the 3 cfw ops (log:297)",
+"M4 frame-keyed cdiff(S1, saved B3) = 16 rows == plan_l2b3 finalized end_cdiff_rows (16), extra/missing none; pairs == plan open_rows (11) (log:314)",
+"M5 Error List 59 items, all read, extra 0 => 0 UNATTRIBUTED; vs B2b 65: 'output tunnel wired to an input (open rows)' 5->0, 'undirected tunnel (open rows)' 4->3 (diag_c114c_errorlist.log:109,114-115)",
+"M6 errorlist_expected_D1_l2_b3_20260928_032703.json written (B2b licences, counts lowered, nothing new); reverdict OK (diag_c114c_errorlist.log:124)",
+"Wire.Is Broken? per net NOT read: no read-only op; cfw 2nd pass has no route to tunnel-face sinks (stage_d1_l2b3.log:124-126). RBW on a byte copy deleted none of the 6 (stage_d1_l2b3.log:141)",
+"End: B3 + bed md5 unchanged, scratch deleted, LabVIEW gone (b3graph log:273, errorlist log:125); handles 33990 -> 34703 on first load, 2nd census delta 0 (log:272)"],
+"open":[
+"Accept D1_l2_b3_20260928_032703.vi as the new bed (all M1-M6 measured as the plan predicts; gate D's mismatch is the simulator's wire-uid model only)?",
+"Wire.Is Broken? on the 6 face-to-face nets is unmeasured (no route); is RBW-survival + Error List attribution enough, or build a read-only Is Broken reader?"],
+"cost":{"usd":null,"minutes":33,"labview_runs":2},
+"note":"Measurement card, read-only on byte copies. Gates = 5 (b3graph) + 15 (errorlist). Handle first-load jump +713 recorded, not re-based (second read flat). STATUS not edited (status_edit false); current-bed not moved. Peek helper tools/bench/diag_c114c_peek.py (offline, no LabVIEW) left in place."}

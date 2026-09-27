@@ -1,0 +1,9 @@
+ATTACK this claim about the failed self-test tools/bench/selftest_stage_prerun_c114.py (log tools/bench/selftest_stage_prerun_c114.log).
+
+Context: card 114-1 S0 adds gate X11 to tools/stage_prerun.py (function buildarray_open_sibling, pb_licences): a stageplan/1 `wire` action into one INPUT of a Build Array node while another input of that node is listed in the plan's `open_rows` is flagged as a predicted input rename (the #2626 L2-B1 / #11261 L2-B2b launch-1 class, docs/violation-decisions.md 2026-09-28 02:25), unless a pb-licence/1 file naming the plan covers the node.
+
+Observation: the self-test passed T1..T8 (synthetic) and R1..R3 (replay: plan_l2b1*.json flags #2626 only, plan_l2b2b_9row.json flags #11261 only, plan_l2b2b.json flags nothing), then FAILED R4: "every other stageplan/1 under tools/bench flags nothing" -> hit ('plan_l2b2b_in_9row.json', 'b2_03', 11261, None).
+
+Claim: this is a defect of the SELF-TEST's expectation, not of the check. plan_l2b2b_in_9row.json is the INPUT plan (pre-finalize) of plan_l2b2b_9row.json (same row b2_03 #11363 -> #11261 t11270, same open row (11261,'element')); card 113-4 kept both as *_9row.json (tools/bench/cards/result_113-4.json artefacts). So the flag on it is the SAME #11261 case the acceptance requires, and the fix is to put both 9-row files in R2 and both 8-row files (plan_l2b2b.json, plan_l2b2b_in.json) in R3; the check code is unchanged.
+
+Please: give the strongest reason this claim is wrong (e.g. the in-plan is not the same row set, or the acceptance "flags #2626 and #11261 only" should be read per final plan only, or the check should not run on non-final plans at all), an alternative explanation, what would falsify the claim, and the cheapest discriminating test (files to compare). Read tools/bench/plan_l2b2b_in_9row.json, tools/bench/plan_l2b2b_9row.json, tools/stage_prerun.py (search buildarray_open_sibling) and tools/bench/selftest_stage_prerun_c114.py.

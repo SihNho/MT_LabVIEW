@@ -1,17 +1,18 @@
 {
  "schema": "next/1",
- "cycle": 114,
- "act": "PD227(j)+(h): ONE card: offline BuildArray open-sibling prerun check first, then L2-B3 (rows B3-01..06) from bed D1_l2_b2b_20260928_015450.vi: route check all rows, ONE launch",
+ "cycle": 115,
+ "act": "PD229(a)(b) STEP 0 (opmodel conformance prerun check; E1/U3 pin floor+labels) then PD228(j) L2-R1 (retire 6 old SR pairs on #637) from bed D1_l2_b3_20260928_032703.vi, ONE launch",
  "task_kind": "build",
  "plan": {
   "path": "docs/d1-loop12-17-split-plan.md",
-  "md5": "259d386741ffa894ea772d2910b000e0"
+  "md5": "216d2434fcbd219212507ed8b8aa0bd2"
  },
  "pass": [
-  "prerun check flags a row wiring one BuildArray input whose sibling input is an open row; replay on plan_l2b1* and plan_l2b2b_9row.json flags #2626 and #11261 only",
-  "graph of the SAVED B2b file (md5 4f51fd4c...) dumped; plan_l2b3.json stagesim FINAL with 6/6 rows routed (0 UNROUTABLE) before any recipe; any unroutable row gets a route + scratch_verify PASS",
-  "recipe tools/recipes/stage_d1_l2b3.py <=120 lines, D4 scope from an offline name diff vs D1_s1_copy.json; top-level dry + prerun PASS; prior-art ANSWERED",
-  "ONE launch -> claudeDev\\D1_l2_b3_<ts>.vi, step diffs == sim under D4, gui_save, input md5 unchanged, LabVIEW gone; full Error List read, errorlist_expected_D1_l2_b3_<ts>.json reverdict OK"
+  "STEP 0: prerun replays opmodels/<op>.json samples via stagesim: PASS on connect_from_wire.json, FAIL with cfw_border_rule off; E1/U3 pass floor + G01-G42 labels + unflip_81 rc",
+  "plan_l2r1.json stagesim FINAL on graph_l2b3_20260928.json: 6 SR-pair delete rows (9018/9025, 29505/29512, 1147/1142, 5796/5805, 119/2972, 7311/11001), predicted end = B3's 16 cdiff rows",
+  "recipe tools/recipes/stage_d1_l2r1.py <=120 lines; live-consumer check (0) read on the live file before each delete; top-level dry + prerun (X11/X12) PASS; prior-art ANSWERED",
+  "ONE launch -> claudeDev\\D1_l2_r1_<ts>.vi: cdiff(S1,new) == the 16 B3 rows exactly; census removes exactly the retire set; RBW deletes no other wire; input md5 unchanged; LabVIEW gone",
+  "full Error List read: no new class, only items on retired objects lost; errorlist_expected_D1_l2_r1_<ts>.json reverdict OK"
  ],
  "blocked_by": null,
  "stop_requested": false,

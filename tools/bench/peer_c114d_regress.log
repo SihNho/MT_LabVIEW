@@ -1,0 +1,57 @@
+BGRUN START 2026-09-28 04:08:31 limit 16.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 900 -Slug c114d-regress -TaskFile tools/bench/peer_c114d_regress_task.txt -ReviewCard tools/bench/cards/review_c114d-regress.json
+BGRUN PID 21144
+OUTCOME: ANSWERED (103s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-28-c114d-regress.md
+COST: $1.1637  in 18 / out 8893 / cache-create 101245 / cache-read 878947  (100s, 17 turn(s))
+VERDICT-CARD: VERDICT-CARD c114d-regress verdict=supported -> tools\bench\cards\verdict_c114d-regress.json
+--- ANSWER ---
+**Verdict: the claim mostly holds.** Both failures are stale count checks, and I found no hidden simulator regression. Two parts of it are overstated, though, and this is the third cycle the same failure has come up.
+
+**1. Strongest reason the claim is wrong or incomplete**
+
+- **"No simulator regression" is only shown on hand-built toy graphs.** Card 114-3's new behaviour only runs when the wire's destination is a tunnel that the plan itself creates. That tunnel has a negative uid (`tools/stagesim.py:954`, `:230-235`).
+- The real-read gates in the two files never wire into such a tunnel:
+  - `unflip_81` U1 wires into uid 10 (`selftest_stagesim_unflip_81.py:33`).
+  - U2c wires into 5702 and 5725 (`:51-53`).
+  - The logs confirm it: U1a's `op_wire` effect says `how: 'new'` with no `recreated_from` (`selftest_stagesim_unflip_81_c114d.log:1`).
+- So E1/U3 turning green would only show that the old behaviour still works. The new code is tested only by G68–G71 on a toy graph (`selftest_stagesim_c114d.log:72-75`).
+- This is the same gap the c112a review found for card 112-1 (`tools/bench/peer_c112a_unflip81.log:8-18`).
+- One more thing changed for everyone: `model_for("wire")` now switches `border_source_wire` on automatically from the measured model (`stagesim.py:198-201`). Every real stage-plan simulation that makes a border-crossing connect from an already-wired source now behaves differently. None of the self-tests in this run checks that against a real read.
+
+**2. Alternative explanation of the same evidence**
+
+- One of the original 42 gates could have been weakened in place: same label, looser check. That still shows as PASS and still adds up to 75/0.
+- The logs cannot rule this out. All 42 labels G01–G42 are present and PASS (`selftest_stagesim_c114d.log:1-35, 40-46` vs `selftest_stagesim.log:137-178`).
+- Some detail strings have changed:
+  - G02's op list now includes `'gate'`.
+  - G12 and G13 now carry `kept_stub_uid`.
+- So the test code around those gates has been edited. Whether any check got looser is not shown.
+- G53 is missing, but it has never existed (`peer_c112a_unflip81.log:21`; not defined in `stagesim.py`). No gate was dropped. The count is 42 + 6 (G43 group) + 9 (G44–G52) + 18 (G54–G71) = 75.
+
+**3. What would falsify the claim**
+
+- A diff of the G01–G42 `gate(...)` checks in `stagesim.py`, between the 42/0 run (2026-09-25 09:59, `selftest_stagesim.log:136`) and now, showing a looser condition.
+- Or, for the new code: a real-graph replay through a tunnel the plan creates that disagrees with the measured `connect_from_wire` samples.
+
+**Your three questions**
+
+1. **Is a regression hiding behind the count?** No evidence of one. Every original label is present and passing. Nothing was deleted or renamed. The failures have been identical at c101-4, c112a and c114d, and they differ only in the count (57, 71, 75) (`*_c101-4.log:16`, `*_c112a.log:16`, `*_c114d.log:14`). What the logs cannot show is whether a check was weakened in place.
+
+2. **Does a 0-fail check lose protection?** Yes. With 0-fail alone, a deleted gate or a self-test that quietly skips a block would pass. A crash is already caught, because the `=== GATES` line would be missing and `got` would be None. Cheapest replacement:
+   - require `fail == 0` and `rc == 0`;
+   - require every label in the frozen G01–G42 set to appear as a PASS line (one regex over stdout);
+   - optionally also require `pass >= 75`, the count today. A floor of 42 would drop 33 gates from the protection.
+
+   Separate defect: U3 never checks the return code (`selftest_stagesim_unflip_81.py:61`), and `unflip_81` never calls `sys.exit` with a failure code. That is why it shows `rc 0 … fail 2` (`diag_c114d_regress.log:6`; bgrun already noted "the process itself said 0" in `selftest_stagesim_unflip_81_c112a.log:15`). Fix that in the same edit.
+
+3. **The l2a1_80 13/0 check inside U3.** It is a count check too, and it will break the next time l2a1_80 gains a gate. It needs no change for the rerun: fixing E1 keeps 13 gates, so it will read 13/0 again. Better to give it the same treatment now (fail == 0, pass ≥ 13, rc == 0) than to hit this again.
+
+**Process fault:** the c112a review already recommended "fail == 0 and pass ≥ the old count" for these exact two checks (`peer_c112a_unflip81.log:28`). It was not applied, and card 114d still predicted 14/0 for a failure that is already in the logs. That is the third time the same failure has been paid for.
+
+**Cheapest test to tell the claim from the alternative (no LabVIEW)**
+- `git log -L` (or `git diff`) on `tools/stagesim.py` since the commit that recorded 42/0, limited to the `gate("G0`…`G42` calls. Unchanged conditions mean the claim stands.
+- Then, for the new code: a ~10-line pure-Python replay of one `connect_from_wire` sample from `opmodels/connect_from_wire.json` through `simulate()` with a plan-made tunnel, compared with that sample's recorded wire uids.
+
+**What would change my mind:** any loosened G01–G42 condition in that diff, or the replay disagreeing with the measured sample.
+
+VERDICT {"schema":"verdict/1","id":"c114d-regress","verdict":"supported","alternative":"An original G01-G42 gate was weakened in place (same label, looser check); labels and pass counts cannot show that. Separately, 114-3's recreate path runs only on plan-made negative-uid tunnels, which no real-read gate in l2a1_80/unflip_81 wires into.","discriminating_test":"git diff tools/stagesim.py since the 2026-09-25 42/0 run, limited to gate(\"G01\"..\"G42\") conditions; then a pure-Python replay of one connect_from_wire border sample through simulate() compared with its recorded wire uids.","violations":[{"slug":"repeated-failure-class","loss_min":12,"loss_usd":"?","evidence":"tools/bench/peer_c112a_unflip81.log:28"}],"sources":["tools/bench/selftest_stagesim_c114d.log:1-76","tools/bench/selftest_stagesim.log:137-179","tools/bench/selftest_stagesim_unflip_81.py:57-61","tools/stagesim.py:954","tools/stagesim.py:198-201","tools/bench/peer_c112a_unflip81.log:8-28","tools/bench/diag_c114d_regress.log:6"],"note":"Replace pins with fail==0, rc==0, frozen G01-G42 labels all PASS, pass>=75; add an rc check to U3 and sys.exit(1) on failure in unflip_81. The 13/0 pin passes again once E1 is fixed, but should get the same floor treatment."}
+BGRUN END rc=0 after 105s

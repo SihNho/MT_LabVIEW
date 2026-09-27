@@ -59,6 +59,9 @@ PRE-RUN (decision 2, 3, 8), all offline, on the same graph JSON + the dry run's 
      the run-time guard); no covering record = UNMEASURED: `X10 WARN unmeasured` in the output and the RESULT line, pass.
      Without --graph the dry uses the recipe's plan base graph (find_graph / plan_base_graphs, card 106-5).
      Self-test of X9/X10: tools/bench/selftest_stage_prerun_c106c.py
+  X11 (card 114-1 S0, PD227(j)) no stageplan `wire` row into one INPUT of a Build Array while a sibling input of that node
+     is an open row at the stage end (the #2626 / #11261 input-rename class), unless a pb-licence/1 file naming the plan
+     covers the node. Replay: `--buildarray-check <plan.json> ...`. Self-test: tools/bench/selftest_stage_prerun_c114.py
 Records: tools/bench/prerun_records.jsonl, one line per dry/prerun, keyed by the script's sha256 + the plan files'
 md5s. Launch gate (decisions 1/2/4): a `tools/recipes/stage_*.py` launch needs a dry PASS and a prerun PASS for the
 script's CURRENT sha256 and plan md5s, both newer than the newest failing run of that script (a failed run
@@ -1056,6 +1059,160 @@ def control_path_lint(plan, base=None):
     return bad
 
 
+# ------------------------------------------------------------------ card 114-1 S0: Build Array half-wired vs open sibling
+# PD227(j), docs/violation-decisions.md 2026-09-28 02:25 (retrospective-cycle113 `repeated-failure-class`, ACCEPTED): wiring
+# ONE input of a Build Array whose other input stays an OPEN row at the stage end made LabVIEW rename inputs - #2626 in
+# L2-B1 (stage_d1_l2b1.log:516-522, licensed by plan_l2b1_licence.json) and #11261 in B2b launch 1 (stage_d1_l2b2b.log:
+# 187-189,214). Existed first: plan_l2b1_licence.json (pb-licence/1, read only by stage_d1_l2b1.py), control_path_lint
+# (_base_graph reused); no check of this class anywhere in tools/. It only ADDS gate X11; no existing gate changes.
+BA_CLASSES = frozenset(("BuildArray",))
+
+
+def _base_terms(plan):
+    """(class by uid, [terminal rows] by owner uid) from the plan's base graph; ({}, {}) if unreadable."""
+    p = ((plan.get("base") or {}).get("path")) or ""
+    p = p if os.path.isabs(p) else os.path.join(ROOT, p)
+    try:
+        g = json.load(open(p, encoding="utf-8"))
+    except Exception:                                                              # noqa: BLE001
+        return {}, {}
+    cls = dict((o["uid"], o["class"]) for o in g.get("objs") or [] if isinstance(o, dict) and "uid" in o)
+    by = collections.defaultdict(list)
+    for t in g.get("terminals") or []:
+        by[t.get("owner_uid")].append(t)
+    return cls, by
+
+
+def pb_licences(plan_path, bench=None):
+    """{node uid: licence file} from every pb-licence/1 file under tools/bench whose `plan` names plan_path."""
+    out = {}
+    want = os.path.normcase(os.path.abspath(plan_path)) if plan_path else None
+    for f in glob.glob(os.path.join(bench or BENCH, "*licence*.json")):
+        try:
+            d = json.load(open(f, encoding="utf-8"))
+        except Exception:                                                          # noqa: BLE001
+            continue
+        if not isinstance(d, dict) or d.get("schema") != "pb-licence/1" or not want:
+            continue
+        pp = d.get("plan") or ""
+        pp = pp if os.path.isabs(pp) else os.path.join(ROOT, pp)
+        if os.path.normcase(os.path.abspath(pp)) != want:
+            continue
+        for r in d.get("rename_by_uid") or []:
+            if isinstance(r, dict) and isinstance(r.get("node"), int):
+                out[r["node"]] = rel(f)
+    return out
+
+
+def buildarray_open_sibling(plan, base=None, licences=None):
+    """-> [{row, node, wired, open, licensed}] : every `wire` action whose dst is an INPUT of a Build Array node while
+    another input of that node is an open row (plan open_rows) at the stage end. licensed = the pb-licence/1 file that
+    covers the node, else None. `base` = (cls, terms by owner) for tests; else read from plan['base']."""
+    cls, by = base if base is not None else _base_terms(plan)
+    lic = licences or {}
+    opens = collections.defaultdict(list)
+    for r in plan.get("open_rows") or []:
+        if isinstance(r, dict) and isinstance(r.get("node"), int):
+            opens[r["node"]].append(str(r.get("term") or ""))
+    out = []
+    for a in plan.get("actions") or []:
+        if not (isinstance(a, dict) and str(a.get("op")).lower() == "wire" and isinstance(a.get("dst"), dict)):
+            continue
+        n = a["dst"].get("uid")
+        if not isinstance(n, int) or cls.get(n) not in BA_CLASSES or not opens.get(n):
+            continue
+        ins = [t for t in by.get(n, []) if not t.get("is_source")]
+        tu = a["dst"].get("term_uid")
+        me = [t for t in ins if tu is not None and int(t.get("term_uid") or -1) == int(tu)]
+        wname = me[0]["term_name"] if me else a["dst"].get("term")
+        in_names = collections.Counter(t.get("term_name") or "" for t in ins)
+        sib = [o for o in opens[n] if in_names.get(o) and (o != wname or in_names[o] > 1)]
+        if sib:
+            out.append({"row": a.get("id"), "node": n, "wired": wname, "open": sorted(set(sib)),
+                        "licensed": lic.get(n)})
+    return out
+
+
+# card 114-3 C4 (review archive/peer/2026-09-28-c114b-l2b3d.md s3): a tunnel group (a `tunnel` action + the `wire` INTO its
+# face, executed by stagexec as ONE connect_from_wire across the border) from an already-WIRED source RE-CREATES that
+# source's wire - the old uid is LOST and LabVIEW may re-issue it at once to another object (stage_d1_l2b3.log:74,94: the
+# junk Invoke took 5174 twice; opmodels/connect_from_wire.json:10,266; stagesim.cfw_border_rule). A LATER row naming that
+# old uid (delete_wire wire_uid, a uid field, anything) would address a different object or nothing. Existed first:
+# _base_terms (reused), stagesim.plan_tunnel_face (the same group rule on a sim state); no check of this class in tools/.
+# It only ADDS gate X12; no existing gate changes.
+def _ints(o, out):
+    if isinstance(o, bool):
+        return out
+    if isinstance(o, int):
+        out.add(o)
+    elif isinstance(o, dict):
+        for v in o.values():
+            _ints(v, out)
+    elif isinstance(o, (list, tuple)):
+        for v in o:
+            _ints(v, out)
+    return out
+
+
+def _end_parts(e):
+    """(head, term_uid, term name) of a plan endpoint: a dict {uid, term_uid?, term?} or a string '<uid>.<term>'."""
+    if isinstance(e, dict):
+        return e.get("uid"), e.get("term_uid"), e.get("term")
+    if isinstance(e, str) and "." in e:
+        h, t = e.split(".", 1)
+        return h, None, t
+    return None, None, None
+
+
+def recreated_wire_refs(plan, base=None):
+    """-> (recreated, flags). recreated = [{wire, row, idx}]: every `wire` action whose dst is a face of a tunnel an
+    EARLIER `tunnel` action of the plan made and whose src is a base-graph terminal on a wire (the border-crossing cfw
+    from a wired source). flags = [{row, idx, wire, recreated_by}]: every LATER action (index > the re-creating one)
+    that carries that old wire uid anywhere in its fields. `base` = (cls, terms by owner) for tests."""
+    _cls, by = base if base is not None else _base_terms(plan)
+    wire_of_term, rows_of = {}, collections.defaultdict(list)
+    for owner, ts in by.items():
+        for t in ts:
+            if t.get("term_uid") is not None:
+                wire_of_term[int(t["term_uid"])] = int(t.get("wire_uid") or 0)
+            rows_of[str(owner)].append(t)
+    tunnels, recreated, gone = set(), [], {}
+    A = plan.get("actions") or []
+    for i, a in enumerate(A, 1):
+        if not isinstance(a, dict):
+            continue
+        op = str(a.get("op")).lower()
+        if op == "tunnel" and a.get("as"):
+            tunnels.add("new:" + str(a["as"]))
+            continue
+        if op != "wire":
+            continue
+        dh, _dt, _dn = _end_parts(a.get("dst"))
+        if not (isinstance(dh, str) and dh in tunnels):
+            continue
+        sh, stu, sname = _end_parts(a.get("src"))
+        if isinstance(sh, str) and sh.startswith("new:"):
+            continue
+        w = 0
+        if stu is not None:
+            w = wire_of_term.get(int(stu), 0)
+        elif sh is not None and sname is not None:
+            hit = [t for t in rows_of.get(str(sh), []) if t.get("term_name") == sname and t.get("is_source")]
+            w = int(hit[0].get("wire_uid") or 0) if len(hit) == 1 else 0
+        if w and w not in gone:
+            gone[w] = (a.get("id"), i)
+            recreated.append({"wire": w, "row": a.get("id"), "idx": i})
+    flags = []
+    for j, a in enumerate(A, 1):
+        if not isinstance(a, dict):
+            continue
+        named = _ints(dict((k, v) for k, v in a.items() if k not in ("pos", "checkpoint")), set())   # a position is no uid
+        hit = sorted(w for w in named if w in gone and j > gone[w][1])
+        for w in hit:
+            flags.append({"row": a.get("id"), "idx": j, "wire": w, "recreated_by": gone[w][0]})
+    return recreated, flags
+
+
 def _selftest_control_lint():
     """L7 plan passes; a synthetic queue plan refuses (and passes with data_stream+why); a synthetic edge-detector plan
     refuses (and a declared-counter variant passes). Prints gates + a RESULT line; returns rc."""
@@ -1324,6 +1481,21 @@ def prerun(recipe, graph=None, stop_after=None, from_step=None):
         cpl += ["{0}: {1}".format(rel(p), x) for x in control_path_lint(pl or json.load(open(p, encoding="utf-8")))]
     gate("X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)", not cpl,
          cpl[:6] or "{0} stageplan(s)".format(len(spc)))
+    # card 114-1 S0 (PD227(j)): a row wiring one Build Array input while a sibling input is an open row -> predicted rename
+    bao = []
+    for p, (_ok, _d, pl, _o) in spc.items():
+        bao += [dict(x, plan=rel(p)) for x in buildarray_open_sibling(pl or json.load(open(p, encoding="utf-8")),
+                                                                       licences=pb_licences(p))]
+    gate("X11 no row wires one Build Array input while a sibling input is an open row (unless pb-licence/1)",
+         not [x for x in bao if not x["licensed"]], bao[:6] or "{0} stageplan(s)".format(len(spc)))
+    # card 114-3 C4: a row naming a wire uid an EARLIER border-crossing connect re-created (the uid is lost / re-issued)
+    rwr, nrec = [], 0
+    for p, (_ok, _d, pl, _o) in spc.items():
+        rec_, fl_ = recreated_wire_refs(pl or json.load(open(p, encoding="utf-8")))
+        nrec += len(rec_)
+        rwr += [dict(x, plan=rel(p)) for x in fl_]
+    gate("X12 no row names a wire uid an earlier border-crossing connect re-created (connect_from_wire.json:266)",
+         not rwr, rwr[:6] or "{0} stageplan(s), {1} re-created source wire(s), none named later".format(len(spc), nrec))
     bad = []
     if OG is None:
         gate("X4 every end addressable offline", False, "no graph JSON for input md5 {0}".format(tr["input_md5"]))
@@ -1938,6 +2110,7 @@ def main(argv=None):
     ap.add_argument("--check-launch")
     ap.add_argument("--control-lint", help="control_path_lint one stageplan/1 JSON (exit 0 clean / 2 refused)")
     ap.add_argument("--selftest-control-lint", action="store_true")
+    ap.add_argument("--buildarray-check", nargs="+", help="card 114-1: X11 replay over stageplan/1 files (exit 0/2)")
     # card 103-1: unknown arguments pass through to the recipe's own sys.argv (e.g. stage_d1_disp.py `--stop-after 40`,
     # PART-A mode), so a recipe mode can be dry-run / pre-run exactly as it will be launched; they must follow the recipe.
     a, rest = ap.parse_known_args(argv)
@@ -1949,6 +2122,18 @@ def main(argv=None):
         b = control_path_lint(json.load(open(a.control_lint, encoding="utf-8")))
         print("\n".join(b) or "CLEAN")
         return 2 if b else 0
+    if a.buildarray_check:
+        # card 114-1 S0b: replay X11 over plan files; prints every flag (licensed ones marked), exit 2 on an unlicensed one
+        unl = 0
+        for p in a.buildarray_check:
+            fl = buildarray_open_sibling(json.load(open(p, encoding="utf-8")), licences=pb_licences(p))
+            for x in fl:
+                unl += not x["licensed"]
+                print("FLAG {0} row {1} node #{2} wired {3!r} open sibling {4} licensed {5}".format(
+                    rel(p), x["row"], x["node"], x["wired"], x["open"], x["licensed"]))
+            if not fl:
+                print("CLEAN {0}".format(rel(p)))
+        return 2 if unl else 0
     if a.check_launch is not None:
         ok, why = check_launch(a.check_launch)
         print("ALLOW" if ok else why)
@@ -1969,7 +2154,10 @@ def main(argv=None):
             g_, ok = SX.prerun_plan(recipe)
             cpl = control_path_lint(json.load(open(recipe, encoding="utf-8")))
             g_ = list(g_) + [("X8 control_path_lint (CLAUDE.md 1c'')", not cpl, "; ".join(cpl)[:600] or "clean")]
-            ok = ok and not cpl
+            bao = [x for x in buildarray_open_sibling(json.load(open(recipe, encoding="utf-8")),
+                                                      licences=pb_licences(recipe)) if not x["licensed"]]
+            g_ = g_ + [("X11 Build Array half-wired vs open sibling (card 114-1)", not bao, json.dumps(bao)[:600] or "clean")]
+            ok = ok and not cpl and not bao
             st = "PASS" if ok else "FAIL"
             npass, nfail = sum(1 for x in g_ if x[1]), sum(1 for x in g_ if not x[1])
             ff = next((x[0] + ": " + x[2] for x in g_ if not x[1]), None)
