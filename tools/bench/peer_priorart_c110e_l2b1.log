@@ -1,0 +1,29 @@
+BGRUN START 2026-09-27 19:28:37 limit 20.0 min: py tools/prior_art_review.py --plan-file tools/bench/cards/brief_110-4.md --slug c110e-l2b1 --trigger cycle-start --recipe tools/recipes/stage_d1_l2b1.py
+BGRUN PID 6028
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c110e-l2b1.txt (69248 chars)
+   review card tools\bench\cards\review_priorart-c110e-l2b1.json
+OUTCOME: ANSWERED (41s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-27-priorart-c110e-l2b1.md
+COST: $0.9846  in 10 / out 3233 / cache-create 102461 / cache-read 501200  (37s, 8 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c110e-l2b1 verdict=novel -> tools\bench\cards\verdict_priorart-c110e-l2b1.json
+--- ANSWER ---
+I found no earlier build, measurement or rejection that blocks card 110-4. The uid-keyed licence applies a rule the project already settled, and the last prior-art round (c110d) cleared an earlier version of this same recipe. The only change since then is the recipe's md5: c110d reviewed `7a162a51…` (`archive/peer/2026-09-27-priorart-c110d-l2b1.md:18`), and this round reviews `e13177d9…`. The licence code I checked is unchanged in substance.
+
+**Part A: the direction**
+- **A1, settled already (supports the plan, does not block it).** "Address terminals by uid after the first lookup, never by name" is Pre-decided 173, from 2026-09-24 (`docs/d1-loop12-17-split-plan.md:360-363`). The c68 review predicted exactly this kind of failure from name changes (`archive/peer/2026-09-24-c68-m4a-p6b-rename.md:85,100-101`). The card follows that decision. The only new part is narrowing the licence to three uids on `#2626`, which has no precedent to repeat.
+- **A2, refuted already.** Nothing found. Every related record argues for uid keying (c68 review, PD173).
+- **A3, contradicted.** Not a blocking contradiction. Brief item 2 asks to log each input's data type string, but the files say no reader for it exists (`docs/NAMES.md:477-485`, `docs/d1-loop12-17-split-plan.md:1238`). The recipe already handles this: it logs the type as "NOT READ" and cites that reason (`tools/recipes/stage_d1_l2b1.py:29`). Item 2 is logging only, with no pass condition.
+- **A4, unread evidence.** None this time. The recipe header now cites PD173 and the c68 review `:85` (`tools/recipes/stage_d1_l2b1.py:8`), which closes the gap c110d pointed out (`archive/peer/2026-09-27-priorart-c110d-l2b1.md:467`).
+
+**Part B: the recipe**
+- **B1, already built.** No. `stagekit.uid_edges` / `stagesim.uid_edges` compare wire edges by uid. No uid-keyed version of the computation-diff open-row comparison (the PB gate's check) exists. The mapping at recipe lines 23 and 75-83, fed from `plan_l2b1_licence.json`, is new.
+- **B2, already failed.** Only 110-3's launch 1 (`tools/bench/stage_d1_l2b1.log:516-522,550`). It failed on the one renamed row that this licence covers; every other gate passed at diff 0.
+- **B3, helper exists.** No usable one. `stagekit.match_term_uid` raises an error on an unwired terminal (`tools/stagekit.py:1214-1216`, as c110d found). The three licensed uids are unwired by definition, so the recipe's own `not r["wire_uid"]` filter at line 75 is the right choice.
+- **B4, already measured.** The rename on `#2626` was measured once, in 110-3, and nothing earlier covers it. The general case (terminals renamed when moved or wired) was measured in the c68 round (`tools/bench/q_m4a_diffuid.log`), but not for this node.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c110e-l2b1","verdict":"novel","alternative":"The uid-keyed PB licence applies PD173 (2026-09-24) and the c68 rename review; the 3-uid narrowing on #2626 is new. c110d cleared the earlier recipe md5 7a162a51 with the same licence logic.","discriminating_test":"After op 27, L3 should show #2626 uids 2832/4160/4165 unwired and named 'array', uid 4168 wired from #5058, and PB extra/missing empty with licence_applied True.","violations":[],"sources":["docs/d1-loop12-17-split-plan.md:360-363","archive/peer/2026-09-24-c68-m4a-p6b-rename.md:85","archive/peer/2026-09-27-priorart-c110d-l2b1.md:18,453-483","tools/recipes/stage_d1_l2b1.py:8,23,29,75-83","tools/stagekit.py:1214-1216","docs/NAMES.md:477-485","tools/bench/stage_d1_l2b1.log:516-522"],"note":"Only the md5 changed since c110d; the recipe now cites PD173 and c68 (the gap c110d flagged). Data type logged as NOT READ; no reader op exists."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c110e-l2b1.md
+   STOP RECORD: none - 2026-09-27-priorart-c110e-l2b1.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_l2b1.py sha 725c47875a29 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 43s

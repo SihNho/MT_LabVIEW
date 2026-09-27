@@ -1,0 +1,31 @@
+{
+ "schema": "stageplan-lite/1",
+ "stage": "stage_replay_swap (card 110-6; PD210(c), PD217(f)) - ONE display-loop replay copy; run as `tools/recipes/stage_replay_swap.py --plan 110`",
+ "input": {"vi": "claudeDev\\D1_s1_disp_20260927_041648.vi", "md5": "245a10206b565cba0ba186bd891f5cb8",
+           "graph": "tools/bench/graph_disp_20260927.json"},
+ "input_tag": "disp",
+ "input_pin": "disp",
+ "stage_name": "stage_replay_swap_110",
+ "task": "110-7",
+ "out_json": "stage_replay_swap_110.json",
+ "note": "Same two swaps as plan_replay_swap_78.json / _95.json. R0 (tools/bench/diag_c110f_dispgraph.log): the disp graph read live keeps #6810 -> get buff image-lost frames.vi and #22692 -> IMAQdx Get Image.vi and no other node calls either (plan_disp.json names neither uid). No second_input: S1's replay copy claudeDev\\replay\\D1_s1_replay_20260925_075422.vi (md5 126f8497..., stage_replay_swap_78.log) is REUSED and PINNED below (in-run md5 check).",
+ "swaps": [
+  {"uid": 6810, "old_callee": "get buff image-lost frames.vi", "new": "replay\\replay_get_buff_image.vi",
+   "new_md5": "842ecad9a6674a5060ebb3d5522751a9"},
+  {"uid": 22692, "old_callee": "IMAQdx Get Image.vi", "new": "replay\\replay_get_image_cal.vi",
+   "new_md5": "afce0d04346fc58234d28bcc0fc42e55"}
+ ],
+ "extra_pins": [["replay buf stand-in", "replay\\replay_imaqdx_get_image_buf.vi", "a89dafc1db03feef7b528f0dd4fcc692"],
+                ["S1 replay copy (reused)", "replay\\D1_s1_replay_20260925_075422.vi", "126f84975fca9f6124432a7e4decd0c8"],
+                ["S1", "D1_s1_copy.vi", "3e3d23cefd3a334001aa9d6156bf1aee"]],
+ "copies": {"disp": "replay\\D1_s1_disp_replay_{ts}.vi"},
+ "decisions": [
+  {"id": "R01", "action": "copy", "what": "dated byte copy of D1_s1_disp into claudeDev\\replay\\ (md5 == source), made by the Stage's work copy (stage_replay_swap.py work_dir/work_name); as in plans 78/95. Card 110-7 F1: X9 checks a row 'copy' only when the recipe calls run_rows/from_decision, which stage_replay_swap does not"},
+  {"id": "R02", "action": "read", "what": "BEFORE: callee census; #6810 -> get buff image-lost frames.vi, #22692 -> IMAQdx Get Image.vi; wire-edge set E0; ES 1"},
+  {"id": "R03", "action": "swap", "what": "replace_object #6810 -> replay_get_buff_image.vi"},
+  {"id": "R04", "action": "swap", "what": "replace_object #22692 -> replay_get_image_cal.vi"},
+  {"id": "R05", "action": "read", "what": "AFTER: callee diff == exactly the two swaps, wire-edge diff 0 after new->old uid remap, ES 1"},
+  {"id": "R06", "action": "save", "what": "scripted save (ES 1 route)"},
+  {"id": "R07", "action": "read", "what": "COLD (fresh LabVIEW): ES 1, census == warm; disp, S1, S1 replay copy and replay VIs md5 unchanged (stage pins)"}
+ ]
+}

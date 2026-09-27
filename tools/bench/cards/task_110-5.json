@@ -1,0 +1,73 @@
+{
+ "schema": "task/1",
+ "id": "110-5",
+ "kind": "measure",
+ "goal": "PD220(g)(2): run the PD217(f) ABBA ONCE via tools/bench/diag_c104_abba.py (A15 B15 B15 A15, 120 s, A = D1_s1_copy.vi, B = D1_s1_disp_20260927_041648.vi) and return the per-leg numbers",
+ "why": "The display-loop VI (PD217(e)) has never run. The ABBA was blocked by NI-VISA refusing ASRL5 (D-2026-09-27-03); the user rebooted 17:21, diag_c105d_visa post-reboot PASS 6/0 (tools/bench/diag_c105d_visa_postreboot.log), real runs allowed 17:3x. First act of the relaunched cycle 110 (STATUS NEXT).",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/cards/task_107-1.json"},
+  {"path": "tools/bench/cards/result_107-1.json"},
+  {"path": "tools/bench/diag_c104_abba.py"},
+  {"path": "tools/bench/drive_legguard.py"},
+  {"path": "tools/bench/drive_original_copy_v5.py"},
+  {"path": "tools/bench/diag_c105d_visa_postreboot.log"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_disp_20260927_041648.vi", "md5": "245a10206b565cba0ba186bd891f5cb8"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c104_abba.py"},
+  {"kind": "file", "name": "tools/bench/drive_legguard.py"},
+  {"kind": "file", "name": "tools/bench/drive_original_copy_v5.py"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_disp_20260927_041648.vi"}
+ ],
+ "pass": [
+  "A0: before the launch, both VI md5s read and equal to the pinned values (S1 3e3d23ce..., disp 245a1020...); LabVIEW process count 0",
+  "A1: diag_c104_abba.py launched ONCE under bgrun, no bypass var, A15 B15 B15 A15, 120 s; outcome with log file:line: the refusing leg (VISA code/dialog text/seconds) or 4 legs done",
+  "A2 (if legs ran): per leg lost frames, total frames, iterations, picks registered, seconds; per B leg #8323 dims + element count by COM at leg end",
+  "A2b: both VI md5s unchanged after; tools/bench/disp_110_abba.json + INDEX row + archive/benchmarks entry at report quality",
+  "A3: LabVIEW verified gone after the last leg (process count 0)"
+ ],
+ "outputs": [
+  "tools/bench/disp_110*",
+  "tools/bench/cards/result_110-5.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "gate",
+  "run_vi": true,
+  "write": [
+   "tools/bench/disp_110*",
+   "tools/bench/diag_c110e_*",
+   "tools/bench/diag_c104_*",
+   "tools/bench/t0_legs/**",
+   "tools/bench/m8_*",
+   "tools/bench/INDEX*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/gui_shots/**",
+   "tools/gui_actions.log",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**",
+   "archive/benchmarks/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 75},
+ "rules": [
+  "never save or edit any VI (S1 copy, disp, originals); both run exactly as they are",
+  "never set LEGGUARD_TEST_BYPASS_VISA; a refused leg ends the ABBA (PD219(b)); no retry",
+  "an A leg failing before pick 1 ends the ABBA (PD217(g)); report evidence, no diagnosis",
+  "GUI: lv_gui.ps1 -Exception Approved -Evidence 'user 2026-09-17 bead-pick option 1' (PD 9)",
+  "launch via py tools/bgrun.py --material ...; no env prefixes; hold turn until BGRUN END",
+  "a gate refusal is returned BLOCKED, never re-run via a self-test child or exempt route",
+  "numbers only: do NOT judge GAIN/NO DIFFERENCE (PD217(f)); facts <=10 file:line; OPEN <=3"
+ ],
+ "advances": ["M8", "R1", "R3"]
+}

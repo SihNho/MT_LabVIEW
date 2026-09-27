@@ -1,0 +1,44 @@
+BGRUN START 2026-09-27 16:13:13 limit 3.0 min: py -u tools/bench/diag_c110_xcheck.py
+BGRUN PID 8912
+BUILD_D1_V0 moved rows for B: [['1.2', 1359, True], ['1.2', 2222, True], ['1.2', 2626, True], ['1.2', 6104, True], ['1.2', 8885, True], ['1.2', 9833, True], ['1.2', 11261, True], ['1.2', 29874, True]]
+RS #1359 i1 '' src=False action=from-tunnel src=('tunnel', 9087, '') -> NOT IN BED-DERIVED SET
+RS #1359 i2 '' src=True action=source-side src=(None, None, None) -> NOT IN BED-DERIVED SET
+RS #1359 i3 'Value' src=False action=from-stay:30117 src=('node', 30117, 'Value') -> NOT IN BED-DERIVED SET
+RS #1359 i4 '' src=False action=same-loop src=('node', 8885, 'x*y') -> NOT IN BED-DERIVED SET
+RS #1359 i5 '' src=False action=from-stay:10068 src=('node', 10068, 'x-y*floor(x/y)') -> NOT IN BED-DERIVED SET
+RS #1359 i6 '' src=True action=source-side src=(None, None, None) -> NOT IN BED-DERIVED SET
+RS #1359 i7 'Force\nsmoothing\nhalf-width' src=False action=from-ctl src=('ctl', 28148, None) -> NOT IN BED-DERIVED SET
+RS #1359 i8 'Extension\nmedian filter\nhalf-width' src=False action=from-ctl src=('ctl', 28996, None) -> NOT IN BED-DERIVED SET
+RS #1359 i9 'Magnet position output' src=False action=from-tunnel src=('tunnel', 28343, 'Magnet position output') -> NOT IN BED-DERIVED SET
+RS #2222 i0 '' src=False action=from-ctl src=('ctl', 47, None) -> NOT IN BED-DERIVED SET
+RS #2222 i1 'Z out' src=True action=source-side src=(None, None, None) -> NOT IN BED-DERIVED SET
+RS #2222 i2 'x,y,z array out' src=False action=to-sr src=('sr', None, 'x,y,z array out') -> NOT IN BED-DERIVED SET
+RS #2222 i3 '' src=False action=from-tunnel src=('tunnel', 5129, '') -> NOT IN BED-DERIVED SET
+RS #2222 i4 '' src=False action=from-tunnel src=('tunnel', 5328, '') -> NOT IN BED-DERIVED SET
+RS #2222 i5 'Correction Factor' src=False action=from-ctl src=('ctl', 9289, None) -> NOT IN BED-DERIVED SET
+RS #2222 i6 'X out' src=True action=source-side src=(None, None, None) -> NOT IN BED-DERIVED SET
+RS #2626 i0 'appended array' src=True action=source-side src=(None, None, None) -> NOT IN BED-DERIVED SET
+RS #2626 i1 'element' src=False action=from-stay:5119 src=('node', 5119, 'x-y') -> COVERED
+RS #2626 i2 'element' src=False action=from-stay:30117 src=('node', 30117, 'Value') -> COVERED
+RS #2626 i3 'element' src=False action=from-stay:4580 src=('node', 4580, 'Value') -> COVERED
+RS #2626 i4 'array' src=False action=to-sr src=('sr', None, 'x,y,z array out') -> COVERED
+RS #6104 i0 'array' src=False action=same-loop src=('node', 2222, 'X out') -> COVERED
+RS #6104 i3 'index (col)' src=False action=from-const src=('const', 6404, None) -> COVERED
+RS #8885 i0 'x*y' src=True action=source-side src=(None, None, None) -> NOT IN BED-DERIVED SET
+RS #8885 i1 'y' src=False action=from-const src=('const', 9050, None) -> COVERED
+RS #8885 i2 'x' src=False action=same-loop src=('node', 9833, 'subarray') -> COVERED
+RS #9833 i0 'array' src=False action=same-loop src=('node', 2222, 'Z out') -> COVERED
+RS #9833 i1 'subarray' src=True action=source-side src=(None, None, None) -> NOT IN BED-DERIVED SET
+RS #9833 i2 'index (row)' src=False action=from-const src=('const', 9906, None) -> COVERED
+RS #11261 i0 'appended array' src=True action=source-side src=(None, None, None) -> NOT IN BED-DERIVED SET
+RS #11261 i1 'array' src=False action=same-loop src=('node', 1359, None) -> COVERED
+RS #11261 i2 'element' src=False action=from-stay:11608 src=('node', 11608, 'output cluster') -> COVERED
+RS #29874 i1 '' src=True action=source-side src=(None, None, None) -> NOT IN BED-DERIVED SET
+RS #29874 i2 '' src=False action=from-stay:29240 src=('node', 29240, 'x-y*floor(x/y)') -> NOT IN BED-DERIVED SET
+RS #29874 i3 '' src=False action=from-tunnel src=('tunnel', 29911, '') -> NOT IN BED-DERIVED SET
+RS #29874 i4 '' src=False action=same-loop src=('node', 8885, 'x*y') -> NOT IN BED-DERIVED SET
+RS #29874 i5 '' src=True action=source-side src=(None, None, None) -> NOT IN BED-DERIVED SET
+RS #29874 i6 'Extension\nmedian filter\nhalf-width' src=False action=from-ctl src=('ctl', 28996, None) -> NOT IN BED-DERIVED SET
+TOTAL rewire_sources B rows 38: covered 12, not covered 26: [(1359, ''), (1359, ''), (1359, 'Value'), (1359, ''), (1359, ''), (1359, ''), (1359, 'Force\nsmoothing\nhalf-width'), (1359, 'Extension\nmedian filter\nhalf-width'), (1359, 'Magnet position output'), (2222, ''), (2222, 'Z out'), (2222, 'x,y,z array out'), (2222, ''), (2222, ''), (2222, 'Correction Factor'), (2222, 'X out'), (2626, 'appended array'), (8885, 'x*y'), (9833, 'subarray'), (11261, 'appended array'), (29874, ''), (29874, ''), (29874, ''), (29874, ''), (29874, ''), (29874, 'Extension\nmedian filter\nhalf-width')]
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

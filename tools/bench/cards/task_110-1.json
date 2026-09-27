@@ -1,0 +1,86 @@
+{
+ "schema": "task/1",
+ "id": "110-1",
+ "kind": "build",
+ "goal": "PD223(b): plan L2-B1 offline from bed D1_l2_a3 (split page, finalized plan_l2b1.json, stagekit recipe, dry+prerun+prior-art; NO launch) + the owed launch-gate device (violation-decisions 15:49)",
+ "why": "L2-B (group B -> loop 1.2) is the next M3 split stage; B1 is its first saved artefact. The launch gate refused a read-only pyflakes lint in cycle 109 (device-failed, threshold 1). Judgement reviews the B1 plan before the one launch (card 110-2).",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_110-1.md"},
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "docs/violation-decisions.md"},
+  {"path": "tools/bench/facts_c108c_groupB.md", "md5": "d6a7088efa30bf9b7f8b619d75700c55"},
+  {"path": "tools/bench/facts_c108c_groupB.json"},
+  {"path": "tools/bench/d1_rewire_sources.json", "md5": "9ffc928f0f39d2fd1c241b6678944cab"},
+  {"path": "tools/bench/build_d1_v0.json", "md5": "cc449e0c426a1d1f52805762f4e4459c"},
+  {"path": "tools/bench/split_rows_l2l7.json"},
+  {"path": "tools/bench/plan_l2a3.json"},
+  {"path": "tools/recipes/stage_d1_l2a3.py"},
+  {"path": "tools/stage_prerun.py", "md5": "5cf9316f13508c047af85a2a0e214e48"},
+  {"path": "tools/hooks/guard_bash.py"},
+  {"path": "tools/hooks/material_marker.log"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a3_20260927_151224.vi", "md5": "14337cfda5780cb39d12deb5fe0d3db9"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/facts_c108c_groupB.json"},
+  {"kind": "file", "name": "tools/bench/d1_rewire_sources.json"},
+  {"kind": "file", "name": "tools/bench/build_d1_v0.json"},
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "verb", "name": "move_into_frame", "where": "tools/gscript.py"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a3_20260927_151224.vi"}
+ ],
+ "pass": [
+  "G1 device per brief G: launched_py `py -m` fix + prerun_gate lint strip; 3-case self-test PASS; stage_prerun and guard_bash self-tests 0 regressions",
+  "P1 bed graph (md5 14337cfd) read; group-B cut rows re-derived, build_d1_v0 cut vs d1_rewire_sources disagreements counted; each row classed per brief D/B, file:line",
+  "P2 #30117 / #4580 Property Value targets (uid + label) read on a SCRATCH copy; each crossing source classed data-stream vs control/trigger, with evidence",
+  "P3 tools/bench/cards/split_plan_110.md (B1/B2/B3 rows <=13 each, file names, pass criteria) + plan_l2b1.json stagesim-FINALIZED: predicted end cdiff open rows + X10 memory",
+  "P4 recipe stage_d1_l2b1.py <=120 lines on stagekit; every gate runs in dry or prints NOT RUNNABLE IN DRY; top-level --dry and --prerun PASS with records",
+  "P5 prior-art review ANSWERED and annotated; `py -m pyflakes` on the recipe passes the launch gate live (G1)"
+ ],
+ "outputs": [
+  "tools/bench/cards/split_plan_110.md",
+  "tools/bench/plan_l2b1.json",
+  "tools/recipes/stage_d1_l2b1.py",
+  "tools/bench/cards/result_110-1.json"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_prerun.py",
+   "tools/hooks/guard_bash.py",
+   "tools/recipes/stage_d1_l2b1.py",
+   "tools/bench/plan_l2b1*",
+   "tools/bench/sim/l2b1/**",
+   "tools/bench/graph_l2a3_bed*",
+   "tools/bench/facts_c110*",
+   "tools/bench/diag_c110*",
+   "tools/bench/selftest_*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "docs/wiki/subvi/D1_l2_a3*",
+   "archive/peer/**",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c110*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 90},
+ "rules": [
+  "brief_110-1.md sections D and B are DECIDED design; do not change them",
+  "NO launch of stage_d1_l2b1.py; LabVIEW only on a scratch copy of the bed; never run a VI; LabVIEW gone at end",
+  "scripts via `py tools/bgrun.py --material ... -- py -u <script>`; env-var prefixes are refused",
+  "hold the turn until every bgrun you start writes BGRUN END",
+  "a gate refusal is returned BLOCKED, never re-run via a self-test child or exempt route",
+  "a conditional write is a gate: report it, judgement decides",
+  "facts <=10 with file:line; OPEN <=3; do not judge design"
+ ],
+ "advances": ["M3", "R1"]
+}

@@ -1,0 +1,35 @@
+FAILED PREDICTION - the GUI Error List read of a newly saved, broken-by-design stage file stopped short (card 110-4, L4):
+  py -u tools/errorlist_check.py --vi "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_l2_b1_20260927_193100.vi"
+  log tools/bench/errorlist_check_c110d.log ; read JSON tools/bench/errorlist_D1_l2_b1_20260927_193100_20260927_194303.json (+ _raw.json)
+
+Prediction: every Error List item is read (items == the window's own count), so an explicit expected file can be written
+per PD223(a) (docs/d1-loop12-17-split-plan.md:1901) and re-verdicted by tools/bench/diag_c110_errorlist.py.
+
+Observed (machine records):
+- window's own count 99 ('99 errors and warnings', errorlist_check_c110d.log:26); items read 80; gate all_items_read False;
+  rc 2; bed md5 before == after == b705728ab0714dc8179fc955283800f9 (errorlist_check_c110d.log:113-116).
+- the reader stops at max_steps=80 (tools/lv_errorlist.py:581 `def read_by_capture(..., max_steps=80, ...)`); the last read
+  item is index 79 (errorlist_check_c110d.log:108); no "reached the window's own count" line (compare the L2-A3 read,
+  tools/bench/errorlist_check_c109c.log, 29 of 29).
+- the 80 read items split into 16 classes, 0 unclassified (tools/bench/diag_c110d_elcounts.log): buildarr 4, split1darr 1,
+  bundle 1, indexarr 1, replacearr 2, imagein 1, unwiredselector 1, SR unwired-inside 2, SR type-undefined 2,
+  tunnel_to_input 15, undirected_tunnel 11, different_types 4, different_dims 2, no_source 8, unconnected 15, loose_ends 10.
+- Remove Bad Wires on a scratch of the saved file deleted 72 wires (tools/bench/stage_d1_l2b1_c110d.log:746-747), classed
+  offline from the pre-save read (tools/bench/diag_c110d_rbwends.log): 22 source-only, 24 sink-only, 20 termless, 6 src+sink.
+  One of the 6 src+sink is wire 25618 = the stage's NEW row rw_11267_8323 (#11261 BuildArray 'appended array' -> indicator
+  #8323); both #11261 inputs are open rows of the plan (tools/bench/plan_l2b1.json:366-369,396-399).
+
+Already ruled out (3 lines):
+- the stage run itself: 39/0, E1 27/27 diff 0, PB PASS under the uid licence, gui_save md5 b705728a (stage_d1_l2b1_c110d.log:768-772).
+- LabVIEW state: the file md5 is unchanged by the read; LabVIEW is gone after it (tasklist empty).
+- OCR/classing: 0 of 80 read items is unclassified.
+
+Questions:
+1. Is the 80 cap the whole reason 19 items are missing, or could the stepping have stalled / skipped rows before the cap?
+   Name the record that separates the two.
+2. The count-level attribution PD223(a) accepts needs all 99 items. Which of these is the cheaper discriminating route:
+   raise the reader's cap and re-read (about 13 s per item, ~22 min at 99), or attribute the 19 unread items from the RBW
+   classes (e.g. 20 termless vs 15 'unconnected' read)? What would make the second route unsound?
+3. Wire 25618 (a re-wired row) is deleted by RBW, yet the recipe's RBW gate passed: it reads terminals AFTER Remove Bad Wires
+   (tools/recipes/stage_d1_l2b1.py:104-105,109), so a deleted wire can never be found on a sink. Is that gate vacuous as written,
+   and is "both #11261 inputs are open rows, so its output wire is untyped" measured or only inferred?

@@ -1,0 +1,26 @@
+BGRUN START 2026-09-27 16:14:12 limit 20.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_l2b1.py
+BGRUN PID 8184
+stage_d1_l2b1 - card 110-1 (planned, NOT launched; launch = card 110-2), STAGE L2-B1 (d1-loop12-17-split-plan.md PD223(b); brief_110-1.md
+D/B). INPUT the plan base graph's VI (the L2-A3 bed D1_l2_a3_20260927_151224.vi), FRESH LabVIEW -> claudeDev\D1_l2_b1_<ts>.vi (rule-6 GUI save,
+ExecState 0 by design, never run). ROWS ONLY FROM plan_l2b1.json: group B's 8 nodes + 4 control terminals moved into 1.2 body #23166, the 2
+group-B-only SR pairs re-created on #10170 (unwired here: B2), re-wire batch 1 = 11 B-internal rows + #5058 'x,y,z array out' -> #2765/#2626.
+PRIOR ART: stage_d1_l2a3.py (DryPlanBE, 179(b) CT reader, LB/PB/IB/RBW, every gate in dry), stage_d1_l2a1.py (moves + add_shift_reg +
+CHECKPOINTS, PD193(a)); stagexec Executor/LVBackend. No new op. PREDICTION: L1 one op per action; E1 every checkpoint == its sim step; CT each
+moved ControlTerminal: one row, partners == sim end; D new wires == sim, lost == sim; FU frame diagrams unchanged; PB cdiff(S1, end) == the
+plan's open_rows (FATAL, before save); PS saved, md5 != input, input unchanged; IB AFTER the save per re-wired NODE sink: wire_delta 0 +
+Is Broken? False (tunnel/register sinks: E1 + RBW, PD184(a)); RBW on a scratch deletes no re-wired sink's wire.
+    py tools/bgrun.py --material --max-min 90 --log tools/bench/stage_d1_l2b1.log -- py -u tools/recipes/stage_d1_l2b1.py
+  PASS  L0 the executed plan is FINAL, open_rows_match, plan_in = the plan_l2b1_in stageplan  ('a9a5b360d431916f9dba2da61d5b4a10', {'path': 'tools/bench/plan_l2b1_in.json', 'md5': 'f7d3c4257404fb92721ece5dcffe2764'})
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 14337cfda5780cb39d12deb5fe0d3db9  got 14337cfda5780cb39d12deb5fe0d3db9
+  PASS  DRY graph JSON for input md5 14337cfda5780cb39d12deb5fe0d3db9  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_l2a3_bed_20260927.json
+  PASS  L1 every plan action compiled into exactly one real op (26 -> 26); checkpoints (0, 4, 8, 12, 14, 16, 20, 24, 26); moved CTs [403, 9306, 28170, 29091]  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26]
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 3 touched diagram(s) [639, 686, 23166]: one-side-only Nodes[] entries 0
+  PRIME 7 terminal indexes proved at base; 5 ControlTerminal end(s) by 179(b); unprovable ['ADDRESS: node #10004 not in Diagram[5] (#639).Nodes[]', 'ADDRESS: node #30135 not in Diagram[5] (#639).Nodes[]', 'ADDRESS: node #31051 not in Diagram[5] (#639).Nodes[]', 'ADDRESS: node #31137 not in Diagram[5] (#639).Nodes[]']
+  FAIL  E1 the run reached its last op (record mode; stopped IN op None)  PRIME: 5 wired end(s) not addressable at base - stop before op 1: ['ADDRESS: node #10004 not in Diagram[5] (#639).Nodes[]', 'ADDRESS: node #30135 not in Diagram[5] (#639).Nodes[]', 'ADDRESS: node #31051 not in Diagram[5] (#639).Nodes[]', 'ADDRESS: node #31137 not in Diagram[5] (#639).Nodes[]', 'ADDRESS: node #30896 not in Diagram[5] (#639).Nodes[]']
+
+=== DRY FAIL: first_fail=GATE E1 the run reached its last op (record mode; stopped IN op None) coverage 39/102 lines, first mutation None, unverified 0, graph tools/bench/graph_l2a3_bed_20260927.json
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"GATE E1 the run reached its last op (record mode; stopped IN op None)","artefacts":[]}
+BGRUN END rc=1 after 6s

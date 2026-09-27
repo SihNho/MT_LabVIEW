@@ -1,0 +1,101 @@
+BGRUN START 2026-09-27 15:55:29 limit 5.0 min: py -u tools/bench/selftest_stage_prerun_stageplan.py
+BGRUN PID 1864
+--- case ok
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  PASS  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['C:/Users/KimLab/AppData/Local/Temp/spsp_selftest_5604/plan_ok.json']
+  PASS  X3 every plan row decided  0 rows + 27 stageplan actions
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  1 stageplan(s)
+  FAIL  X4 every end addressable offline  no graph JSON for input md5 None
+  PASS  X5 wiring ops executed in the dry run == plan wire rows  ops 11 vs plan wire rows 0 + stageplan wiring real ops 11 (covering 17/17 wire actions)
+  FAIL  X6 ast lint: no re-typed uid / terminal name  no graph JSON - the lint needs the input's uids
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work None
+  PASS  X10 predicted LabVIEW private MB < 690.0 (error-2 point; MEMSTOP 700.0) over the ops this run dispatches (UNMEASURED - no covering record)  {'why': 'UNMEASURED: no recorded meter of stage_ok.py covers ops 1..end (0 record(s))'}
+  WARN  X10 WARN unmeasured: UNMEASURED: no recorded meter of stage_ok.py covers ops 1..end (0 record(s))
+  PASS  S1 the valid K plan (final, finalized PASS) is accepted: X2 X3 X5 PASS  [['X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe', True, "['C:/Users/KimLab/AppData/Local/Temp/spsp_selftest_5604/plan_ok.json']"], ['X3 every plan row decided', True, '0 rows + 27 stageplan actions'], ["X8 control_path_lint (CLAUDE.md 1c'': no queue f
+  PASS  S2 X3 counts the 27 actions; X5 detail = 11 wiring real ops covering 17/17 wire actions  ['0 rows + 27 stageplan actions', 'ops 11 vs plan wire rows 0 + stageplan wiring real ops 11 (covering 17/17 wire actions)']
+  PASS  S3 plan_md5s keys the records on the stageplan's md5  {'C:/Users/KimLab/AppData/Local/Temp/spsp_selftest_5604/plan_ok.json': '30fee17f937b6ca351379444af6e4d45'}
+--- case opmis
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  PASS  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['C:/Users/KimLab/AppData/Local/Temp/spsp_selftest_5604/plan_opmis.json']
+  PASS  X3 every plan row decided  0 rows + 27 stageplan actions
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  1 stageplan(s)
+  FAIL  X4 every end addressable offline  no graph JSON for input md5 None
+  FAIL  X5 wiring ops executed in the dry run == plan wire rows  ops 10 vs plan wire rows 0 + stageplan wiring real ops 11 (covering 17/17 wire actions)
+  FAIL  X6 ast lint: no re-typed uid / terminal name  no graph JSON - the lint needs the input's uids
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work None
+  PASS  X10 predicted LabVIEW private MB < 690.0 (error-2 point; MEMSTOP 700.0) over the ops this run dispatches (UNMEASURED - no covering record)  {'why': 'UNMEASURED: no recorded meter of stage_opmis.py covers ops 1..end (0 record(s))'}
+  WARN  X10 WARN unmeasured: UNMEASURED: no recorded meter of stage_opmis.py covers ops 1..end (0 record(s))
+  PASS  S4 op-count mismatch (10 dry wiring ops vs 11) => X5 FAIL  [['X5 wiring ops executed in the dry run == plan wire rows', False, 'ops 10 vs plan wire rows 0 + stageplan wiring real ops 11 (covering 17/17 wire actions)']]
+--- case notfinal
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  FAIL  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['C:/Users/KimLab/AppData/Local/Temp/spsp_selftest_5604/plan_notfinal.json: load_final_plan: plan is not final (final=False, finalized={"n": 0, "op": "base", "id": null, "rows_from_here": 10})']
+  FAIL  X3 every plan row decided  [('C:/Users/KimLab/AppData/Local/Temp/spsp_selftest_5604/plan_notfinal.json', 'actions not all compiled exactly once (0 of 0)')]
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  1 stageplan(s)
+  FAIL  X4 every end addressable offline  no graph JSON for input md5 None
+  FAIL  X5 wiring ops executed in the dry run == plan wire rows  ops 11 vs plan wire rows 0 + stageplan wiring real ops 0 (covering 0/0 wire actions)
+  FAIL  X6 ast lint: no re-typed uid / terminal name  no graph JSON - the lint needs the input's uids
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work None
+  PASS  X10 predicted LabVIEW private MB < 690.0 (error-2 point; MEMSTOP 700.0) over the ops this run dispatches (UNMEASURED - no covering record)  {'why': 'UNMEASURED: no recorded meter of stage_notfinal.py covers ops 1..end (0 record(s))'}
+  WARN  X10 WARN unmeasured: UNMEASURED: no recorded meter of stage_notfinal.py covers ops 1..end (0 record(s))
+  PASS  S5 final=false => X2 FAIL and X5 FAIL  ['C:/Users/KimLab/AppData/Local/Temp/spsp_selftest_5604/plan_notfinal.json: load_final_plan: plan is not final (final=False, finalized={"n": 0, "op": "base", "id": null, "rows_from_here": 10})']
+--- case failed
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  FAIL  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['C:/Users/KimLab/AppData/Local/Temp/spsp_selftest_5604/plan_failed.json: load_final_plan: the simulation stopped at action 5: None']
+  FAIL  X3 every plan row decided  [('C:/Users/KimLab/AppData/Local/Temp/spsp_selftest_5604/plan_failed.json', 'actions not all compiled exactly once (0 of 0)')]
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  1 stageplan(s)
+  FAIL  X4 every end addressable offline  no graph JSON for input md5 None
+  FAIL  X5 wiring ops executed in the dry run == plan wire rows  ops 11 vs plan wire rows 0 + stageplan wiring real ops 0 (covering 0/0 wire actions)
+  FAIL  X6 ast lint: no re-typed uid / terminal name  no graph JSON - the lint needs the input's uids
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work None
+  PASS  X10 predicted LabVIEW private MB < 690.0 (error-2 point; MEMSTOP 700.0) over the ops this run dispatches (UNMEASURED - no covering record)  {'why': 'UNMEASURED: no recorded meter of stage_failed.py covers ops 1..end (0 record(s))'}
+  WARN  X10 WARN unmeasured: UNMEASURED: no recorded meter of stage_failed.py covers ops 1..end (0 record(s))
+  PASS  S6 finalized.failed set => X2 FAIL  ['C:/Users/KimLab/AppData/Local/Temp/spsp_selftest_5604/plan_failed.json: load_final_plan: the simulation stopped at action 5: None']
+--- case orm
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  FAIL  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['C:/Users/KimLab/AppData/Local/Temp/spsp_selftest_5604/plan_orm.json: finalized.open_rows_match=False']
+  FAIL  X3 every plan row decided  [('C:/Users/KimLab/AppData/Local/Temp/spsp_selftest_5604/plan_orm.json', 'actions not all compiled exactly once (27 of 27)')]
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  1 stageplan(s)
+  FAIL  X4 every end addressable offline  no graph JSON for input md5 None
+  FAIL  X5 wiring ops executed in the dry run == plan wire rows  ops 11 vs plan wire rows 0 + stageplan wiring real ops 11 (covering 17/17 wire actions)
+  FAIL  X6 ast lint: no re-typed uid / terminal name  no graph JSON - the lint needs the input's uids
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work None
+  PASS  X10 predicted LabVIEW private MB < 690.0 (error-2 point; MEMSTOP 700.0) over the ops this run dispatches (UNMEASURED - no covering record)  {'why': 'UNMEASURED: no recorded meter of stage_orm.py covers ops 1..end (0 record(s))'}
+  WARN  X10 WARN unmeasured: UNMEASURED: no recorded meter of stage_orm.py covers ops 1..end (0 record(s))
+  PASS  S7 open_rows_match false => X2 FAIL  ['C:/Users/KimLab/AppData/Local/Temp/spsp_selftest_5604/plan_orm.json: finalized.open_rows_match=False']
+--- case drop
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  FAIL  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['C:/Users/KimLab/AppData/Local/Temp/spsp_selftest_5604/plan_drop.json: load_final_plan: finalized.step_files has 28 entries for 26 actions + base']
+  FAIL  X3 every plan row decided  [('C:/Users/KimLab/AppData/Local/Temp/spsp_selftest_5604/plan_drop.json', 'actions not all compiled exactly once (0 of 0)')]
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  1 stageplan(s)
+  FAIL  X4 every end addressable offline  no graph JSON for input md5 None
+  FAIL  X5 wiring ops executed in the dry run == plan wire rows  ops 10 vs plan wire rows 0 + stageplan wiring real ops 0 (covering 0/0 wire actions)
+  FAIL  X6 ast lint: no re-typed uid / terminal name  no graph JSON - the lint needs the input's uids
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work None
+  PASS  X10 predicted LabVIEW private MB < 690.0 (error-2 point; MEMSTOP 700.0) over the ops this run dispatches (UNMEASURED - no covering record)  {'why': 'UNMEASURED: no recorded meter of stage_drop.py covers ops 1..end (0 record(s))'}
+  WARN  X10 WARN unmeasured: UNMEASURED: no recorded meter of stage_drop.py covers ops 1..end (0 record(s))
+  PASS  S8 an action removed after finalize (step files no longer match) => X2 FAIL  ['C:/Users/KimLab/AppData/Local/Temp/spsp_selftest_5604/plan_drop.json: load_final_plan: finalized.step_files has 28 entries for 26 actions + base']
+--- case dec
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  PASS  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['C:/Users/KimLab/AppData/Local/Temp/spsp_selftest_5604/plan_dec.json']
+  PASS  X3 every plan row decided  2 rows + 0 stageplan actions
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  0 stageplan(s)
+  FAIL  X4 every end addressable offline  no graph JSON for input md5 None
+  PASS  X5 wiring ops executed in the dry run == plan wire rows  ops 1 vs plan wire rows 1 + stageplan wiring real ops 0 (covering 0/0 wire actions)
+  FAIL  X6 ast lint: no re-typed uid / terminal name  no graph JSON - the lint needs the input's uids
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work None
+  PASS  X10 predicted LabVIEW private MB < 690.0 (error-2 point; MEMSTOP 700.0) over the ops this run dispatches (UNMEASURED - no covering record)  {'why': 'UNMEASURED: no recorded meter of stage_dec.py covers ops 1..end (0 record(s))'}
+  WARN  X10 WARN unmeasured: UNMEASURED: no recorded meter of stage_dec.py covers ops 1..end (0 record(s))
+  PASS  S9 decisions-row path unchanged: 2 rows, 1 wire row == 1 dry wiring op => X2 X3 X5 PASS  [['X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe', True, "['C:/Users/KimLab/AppData/Local/Temp/spsp_selftest_5604/plan_dec.json']"], ['X3 every plan row decided', True, '2 rows + 0 stageplan actions'], ["X8 control_path_lint (CLAUDE.md 1c'': no queue f
+  PASS  EX selftest_launch_gate.py rc 0  === GATES: 28 pass / 0 fail | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":28,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  EX selftest_retry_cap.py rc 0  === GATES: 8 pass / 0 fail | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":8,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  EX selftest_stagexec_gate.py rc 0  === GATES: 13 pass / 0 fail | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":null,"artefacts":[]}
+=== GATES: 12 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":12,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 16s

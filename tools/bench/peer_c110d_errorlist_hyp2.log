@@ -1,0 +1,55 @@
+BGRUN START 2026-09-27 20:04:51 limit 20.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug c110d-errorlist-cap -TaskFile tools/bench/peer_c110d_errorlist_task.txt -ReviewCard tools/bench/cards/review_c110d-errorlist-cap.json -TimeoutSec 900
+BGRUN PID 1592
+OUTCOME: ANSWERED (188s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-27-c110d-errorlist-cap.md
+COST: $1.5513  in 32 / out 15199 / cache-create 108426 / cache-read 1684992  (184s, 25 turn(s))
+VERDICT-CARD: VERDICT-CARD c110d-errorlist-cap verdict=unverified -> tools\bench\cards\verdict_c110d-errorlist-cap.json
+--- ANSWER ---
+**Verdict: unverified.** The recorded run supports half of the claim. The walk did stop at the 80-step cap, and it did not stall or skip rows before that. The other half is not shown: nothing recorded proves that the list has 99 rows to walk. If the cap were raised, the reader might still stop short of 99.
+
+**1. Strongest reason the claim is wrong.** "Nothing about the file or the stepping caused the shortfall" really bundles two claims:
+- **(a) The walk stopped at the cap.** The record supports this.
+- **(b) The list holds 99 rows the reader can walk.** Nothing supports this; it rests on the count text alone.
+
+What the record shows:
+- **Every step moved and none skipped.** The raw JSON has 80 "highlight moved one row down" confirmations. Its only `"confirmed": false` is the `{DOWN}` mechanism probe (`errorlist_…_raw.json:3389-3392`). All 25 wheel scrolls moved exactly `"rows": 3.0`.
+- **No other stop fired.** Neither "stopped moving" nor "will not scroll further" appears in the log.
+- **Step 79's advance was confirmed.** So a row 81 exists.
+
+Taken together, that proves at least 81 rows. It does not prove 99. The 99 comes from one OCR read of the text '99 errors and warnings' (`errorlist_check_c110d.log:26`). Before this run, the reader had only matched that text on counts of 35 or fewer: 22, 29 and 35 (`errorlist_check_cycle8x/109/c109c.log`). No earlier run ever tested whether the count matches the walkable rows at this size.
+
+NI's page says the middle list shows "errors and warnings" for the VI selected under "Items with errors", and warnings only appear when **Show Warnings** is ticked ([NI, Error List Window](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/dialog-boxes/error-list-window.html); [NI, Debugging and Handling Errors](http://www.ni.com/f/students/12/7067/en/)). I could not find NI stating whether the count includes hidden warnings; fetches of both NI doc pages returned only site navigation. That is unverified, not ruled out.
+
+**2. Alternative explanations for the same evidence.**
+- **Hidden warnings.** The count may include warnings the list does not show, for example if Show Warnings was off. Raising the cap would then end on "highlight stopped moving" somewhere between 81 and 98.
+- **OCR misattribution (a separate problem).** "0 unclassified" does not mean each item's class is correct:
+  - Item 26 reads `'t,oraddasource. Youhaveconnected…'` (`:55`), which is a neighbouring line bleeding into the highlighted row's text.
+  - Seven rows were never refined: `[13, 26, 31, 34, 38, 43, 45]` (`:110`).
+  - So even the 80 items read so far are not a sound basis for count-level attribution.
+
+**3. What would falsify the claim.** A read with a higher cap that ends before 99 on "highlight stopped moving" or "will not scroll further". Another falsifier: a capture showing the scrollbar thumb at the bottom well before row 99.
+
+**Answers to your questions**
+
+- **Q1 (cap or stall?).** The raw JSON's per-step `confirm` actions (`want_y == got_y` on all 80) and the `rows: 3.0` scroll records separate the two. They rule out a stall or skip. They do not settle whether 99 rows exist.
+- **Q2 (re-read or attribute from the Remove Bad Wires classes?).** Attributing from the Remove Bad Wires (RBW) classes is unsound. There is no one-to-one mapping between wires and Error List items:
+  - Items already read include 15 "unconnected" plus 10 "loose ends", which is 25 wire-level items against only 20 termless wires. The mapping is already not one-to-one.
+  - Some items belong to nodes, not wires: 4 "tunnel to input", 11 "undirected tunnel", 2 "shift register type undefined". RBW never touches these.
+  - The list's ordering is unknown, so assuming the 19 unread tail items continue the "unconnected" run seen at the end is a guess.
+  - Re-reading is sound, with one catch. At about 13.9 s per item (1112 s for 80), 99 items take about 23 min plus 20 s of LabVIEW start-up. That is too close to the 25-minute bgrun deadline (`:1`), so a re-read needs `--max-min ≥ 35` and a cap of at least 120.
+- **Q3 (is the RBW gate vacuous?).** Yes, as written. The gate at `stage_d1_l2b1.py:109` checks `rr`, the read taken after Remove Bad Wires (`:105`), for terminals whose `wire_uid` is in `gone`. A deleted wire can no longer sit on any terminal, so the check passes by construction unless LabVIEW re-uses uids. It passed while `gone` contained 25618 (`stage_d1_l2b1_c110d.log:749`). This matters most for `rw_11267_8323`:
+  - That row is a panel sink, so it skipped the Is Broken? pass (`:562`). The RBW gate was its only broken-wire check.
+  - The row therefore had no working broken-wire check at all.
+  - The fix is to test the pre-RBW `rows`, the same read `:108` already uses. Check that the sink's `term_uid` actually matches. The pre-RBW read reports that sink's owner as Diagram #23166, terminal 'Force (pN) vs Extension (nm)', not as #8323 (`diag_c110d_rbwends.log:57`).
+  - "Both #11261 inputs are open rows, so its output wire is untyped" is only inferred. The evidence is plan rows (`plan_l2b1.json:366-369,396-399`) plus the fact that RBW deleted the wire. No type or Is Broken? read of wire 25618 or of #11261's output exists.
+  - Another explanation fits equally well: the XY-graph indicator's type does not match whatever type Build Array now produces. Four "connected two terminals of different types" items were read, and none has been traced to a wire.
+
+**4. Cheapest discriminating test (no LabVIEW needed).** Open this run's existing captures in `tools/bench/errorlist_shots/`:
+- **First capture (`b0`):** check the Show Warnings checkbox state.
+- **Last capture (`b80_*`):** check the scrollbar thumb position and length. It gives the list's approximate total row count.
+
+If the thumb shows about 99 rows and Show Warnings is on, the claim stands, and the next step is a re-read with a cap of 120 or more and `--max-min 35`. If the thumb reaches the bottom well before 99, the count does not match the list and the explicit expected file for PD223(a) (`docs/d1-loop12-17-split-plan.md:1901`) cannot use 99.
+
+What would change my mind: a re-read that ends with "reached the window's own count of 99 items".
+
+VERDICT {"schema":"verdict/1","id":"c110d-errorlist-cap","verdict":"unverified","alternative":"Cap stopped the walk (80/80 moves confirmed, 25 scrolls of 3.0 rows, row 81 exists) but '99 errors and warnings' may count rows the list does not show, e.g. hidden warnings; never checked at a count above 35.","discriminating_test":"Offline: check the Show Warnings checkbox in the b0 capture and the scrollbar thumb in the last b80 capture in errorlist_shots/. Then re-read with max_steps>=120 and bgrun --max-min>=35; the read must end with 'reached the window's own count'.","violations":[{"slug":"device-failed","loss_min":"?","loss_usd":"?","evidence":"tools/recipes/stage_d1_l2b1.py:109"}],"sources":["errorlist_D1_l2_b1_20260927_193100_20260927_194303_raw.json:3389","tools/lv_errorlist.py:681","tools/bench/errorlist_check_c110d.log:1","tools/bench/stage_d1_l2b1_c110d.log:562","https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/dialog-boxes/error-list-window.html"],"note":"RBW gate reads terminals after RBW deleted the wires, so it passes by construction; rw_11267_8323 got no broken-wire check. 'Untyped output' for 25618 is inferred from plan rows, not measured."}
+BGRUN END rc=0 after 189s

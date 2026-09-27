@@ -1,0 +1,22 @@
+{
+ "schema": "review/1",
+ "id": "c110b-l2b1-dry",
+ "role": "hypothesis",
+ "claim": "Both top-level dry FAILs of stage_d1_l2b1.py are plan/recipe authoring bugs, not machine claims: dry1 = plan rows whose sink is a ForLoop LoopTunnel face (no stagexec owner route); dry2 = the recipe's checkpoint rule omits stagexec's BIND_KINDS op 13.",
+ "predicted": "stage_prerun --dry reaches the last op of plan_l2b1 in record mode: every PRIME end addressable, the recipe's checkpoint set accepted by stagexec (stagexec.py:1322), 0 unroutable rows.",
+ "observed": "dry1 (plan a9a5b360): PRIME stop, #10004 #30135 #31051 #31137 #30896 not in Diagram #639 Nodes[] (plan_l2b1_dry.log:22). dry2 (plan cd553209): PRIME 6/6 ok, CHECKPOINT [0,4,8,12,14,16,20] lacks binding op 13, need [13,14,20] (plan_l2b1_dry2.log:22).",
+ "ruled_out": [
+  "Base-graph drift: STEPX 00 diff 0 and PARITY 0 one-side entries in both dries (plan_l2b1_dry*.log:19-20); K1 input md5 14337cfd in both.",
+  "LabVIEW state: a --dry run opens no LabVIEW and copies nothing (plan_l2b1_dry*.log:15).",
+  "Simulator refusal: stagesim finalized the plan (final=True, open_rows_match) before each dry (plan_l2b1_sim3.log:23-24)."
+ ],
+ "attachments": [
+  {"path": "tools/bench/plan_l2b1_dry.log", "md5": "ec0963bb752140d1b60dba2299369d05"},
+  {"path": "tools/bench/plan_l2b1_dry2.log", "md5": "ae5223ef0b31a571ce84a455212a78b9"},
+  {"path": "tools/recipes/stage_d1_l2b1.py", "md5": "9671f90ff1a3f206d2cee4878d8fb0b6"},
+  {"path": "tools/bench/plan_l2b1.json", "md5": "cd553209be118d121e9c0b4c22287d62"},
+  {"path": "tools/stagexec.py", "md5": "c2e27c112a2210010a170a014e1fabf0"},
+  {"path": "tools/bench/cards/split_plan_110.md", "md5": "9d6d5854843b7c475b9888c7fbc68dbd"}
+ ],
+ "ask": "refute"
+}

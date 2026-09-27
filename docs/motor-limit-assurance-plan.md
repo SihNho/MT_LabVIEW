@@ -15,6 +15,9 @@ move made INSIDE a VI. The user approved all of the below (*"1~3번 모두 필�
 좋음"*) and asked that it run in **a separate session** (*"이를 위한 별도의 세션이 있는것이 좋지 않을까?"*).
 
 ## The envelope (user, 2026-09-17 — memory `motor_safe_motion_envelope.md`)
+**PI direction (user, 2026-09-27 18:2x, observed at the rig): 0 mm = ceiling, magnet farthest from the sample (the
+negative limit switch that the reference move `FNL 1` seeks); the number grows DOWNWARD, toward the sample.** A
+reference move is therefore the retreating (safe) direction; the 39 mm cap is the closest approach allowed.
 ASI up/down: no limit · ASI x/y: never home/origin, ≤ 1.0 mm from the anchor (`tools/bench/motor_anchor.json`) ·
 PI magnet: 0–39 mm (`Max Trans Pos` = 40.94, applied in the original by a **coerce**; the controller's own `TMX?`
 is **52**, measured — it protects nothing). Rotor: no envelope declared yet.

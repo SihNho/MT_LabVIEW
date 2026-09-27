@@ -1,0 +1,82 @@
+{
+ "schema": "task/1",
+ "id": "110-7",
+ "kind": "measure",
+ "goal": "Finish 110-6: fix pre-run X9's file-copy false positive (decided below), then ONE swap launch (plan 110), both replay legs, X/Y/Z compare",
+ "why": "110-6 BLOCKED: X9 reads decisions-row 'copy' as stagekit.copy_in (stage_prerun.py:1194-1196), but stage_replay_swap.py makes its copy with shutil.copyfile (:65) and never calls run_rows. Judgement: the gate is wrong, not the plan.",
+ "inputs": [
+  {"path": "tools/bench/cards/task_110-6.json"},
+  {"path": "tools/bench/cards/result_110-6.json"},
+  {"path": "tools/stage_prerun.py"},
+  {"path": "tools/recipes/stage_replay_swap.py"},
+  {"path": "tools/bench/plans/plan_replay_swap_110.json", "md5": "08c78238dd07d157009a0d4644378d28"},
+  {"path": "tools/bench/graph_disp_20260927.json", "md5": "3b60690ef343d874dc9f4cd08c81945f"},
+  {"path": "tools/bench/drive_m8_replay_110.py"},
+  {"path": "tools/bench/m8b_replay_compare.py"},
+  {"path": "tools/bench/m8b_replay_78.json"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_disp_20260927_041648.vi", "md5": "245a10206b565cba0ba186bd891f5cb8"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/recipes/stage_replay_swap.py"},
+  {"kind": "file", "name": "tools/bench/plans/plan_replay_swap_110.json"},
+  {"kind": "file", "name": "tools/bench/drive_m8_replay_110.py"},
+  {"kind": "file", "name": "tools/bench/m8b_replay_compare.py"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\D1_s1_replay_20260925_075422.vi"}
+ ],
+ "pass": [
+  "F1: X9 checks a decisions-row copy ONLY when the recipe AST calls stagekit.run_rows/from_decision; plans 78/95 untouched; plan 110 R01 back to 'copy'",
+  "F2: self-test: replay_swap + plans 78/95/110 pass X9; a run_rows recipe with a copy row on non-MOVE_DST work still fails; stage_prerun self-tests 0 regressions",
+  "R1: recorded dry (--plan 110) + pre-run PASS for the edited stage_prerun/plan; prior-art only if the launch gate asks",
+  "R2: ONE swap launch: ES 1 warm+cold, callee diff == {#6810,#22692}, wire diff 0 after remap, disp md5 unchanged; replay copy md5+size",
+  "R3/R4: S1 replay copy (126f8497...) and disp replay copy, own LabVIEW each, same frames, 15 picks; compare all tra cols: rows, max|d| XYZ, first diff; INDEX"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\D1_s1_disp_replay_*",
+  "tools/bench/m8b_replay_110*",
+  "tools/bench/cards/result_110-7.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "gate",
+  "run_vi": true,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\D1_s1_disp_replay_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c110*",
+   "tools/stage_prerun.py",
+   "tools/bench/selftest_*",
+   "tools/bench/plans/plan_replay_swap_110*",
+   "tools/bench/plans/priorart_replay_swap_110*",
+   "tools/bench/stage_replay_swap_110*",
+   "tools/bench/m8b_replay_110*",
+   "tools/bench/m8_*replay*110*",
+   "tools/bench/drive_m8_*110*",
+   "tools/bench/diag_c110g_*",
+   "tools/bench/t0_legs/**",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/gui_shots/**",
+   "tools/gui_actions.log",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**",
+   "archive/benchmarks/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 75},
+ "rules": [
+  "F1 is DECIDED by judgement; do not relabel plans 78/95 and do not bypass X9 any other way",
+  "never edit or save D1_s1_disp, S1 copies or originals; only the new replay copy is saved",
+  "GUI: lv_gui.ps1 -Exception Approved -Evidence 'user 2026-09-17 bead-pick option 1' (PD 9)",
+  "launch via py tools/bgrun.py --material ...; no env prefixes; hold turn until BGRUN END",
+  "a gate refusal is returned BLOCKED, never re-run via a self-test child or exempt route",
+  "numbers only: do not accept or reject the VI (judgement's); facts <=10 file:line; OPEN <=3"
+ ],
+ "advances": ["M8", "R1", "R3"]
+}

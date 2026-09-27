@@ -1,0 +1,87 @@
+{
+ "schema": "task/1",
+ "id": "110-2",
+ "kind": "build",
+ "escalation": 1,
+ "retry_of_card": "110-1",
+ "goal": "PD223(b) L2-B1 (escalation 1 of 110-1): discharge owed dry review, re-finalize plan per brief_110-2 J, fix recipe checkpoints, dry+prerun+prior-art, ONE launch -> D1_l2_b1_<ts>.vi",
+ "why": "110-1 FAILED 4/2 (dry: 5 ForLoop LoopTunnel rows unaddressable; missing checkpoint binding op 13), budget spent. B1 is the first L2-B artefact (M3). Escalation rule: rung 1 = Opus max.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_110-2.md"},
+  {"path": "tools/bench/cards/brief_110-1.md"},
+  {"path": "tools/bench/cards/result_110-1.json"},
+  {"path": "tools/bench/cards/split_plan_110.md", "md5": "9d6d5854843b7c475b9888c7fbc68dbd"},
+  {"path": "tools/bench/plan_l2b1.json", "md5": "cd553209be118d121e9c0b4c22287d62"},
+  {"path": "tools/bench/plan_l2b1_in.json", "md5": "56887e7af55b940c61187e836820018a"},
+  {"path": "tools/recipes/stage_d1_l2b1.py", "md5": "9671f90ff1a3f206d2cee4878d8fb0b6"},
+  {"path": "tools/bench/graph_l2a3_bed_20260927.json", "md5": "f01e719dae7136c0174f719f8c1dee3e"},
+  {"path": "archive/peer/2026-09-27-priorart-c110a-l2b1.md"},
+  {"path": "tools/bench/plan_l2b1_dry.log"},
+  {"path": "tools/bench/plan_l2b1_dry2.log"},
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a3_20260927_151224.vi", "md5": "14337cfda5780cb39d12deb5fe0d3db9"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/plan_l2b1.json"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_l2b1.py"},
+  {"kind": "file", "name": "tools/bench/graph_l2a3_bed_20260927.json"},
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "verb", "name": "move_into_frame", "where": "tools/gscript.py"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a3_20260927_151224.vi"}
+ ],
+ "pass": [
+  "R0 owed review for plan_l2b1_dry*.log discharged (JEV-LADDER line or ONE hypothesis review ANSWERED + annotated), cited",
+  "R1 plan re-finalized with brief J1 moves/rows (B1 <= 13 wires, no LoopTunnel-endpoint rows); predicted end open rows listed",
+  "R2 recipe <= 120 lines; checkpoint set computed from the plan (J3); top-level --dry and --prerun PASS with records",
+  "R3 prior-art on the changed recipe ANSWERED + annotated; `py -m pyflakes` on the recipe passes the launch gate",
+  "R4 ONE launch: STEPX diff 0, end cdiff == plan open rows, gui_save D1_l2_b1_<ts>.vi md5+size, input md5 unchanged, LabVIEW gone",
+  "R5 expected Error List file errorlist_expected_D1_l2_b1_<ts>.json written, reverdict OK (0 extra/0 missing) or mismatch reported"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_b1_*",
+  "tools/bench/plan_l2b1.json",
+  "tools/recipes/stage_d1_l2b1.py",
+  "tools/bench/cards/result_110-2.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_b1_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c110*",
+   "tools/recipes/stage_d1_l2b1.py",
+   "tools/bench/plan_l2b1*",
+   "tools/bench/sim/l2b1/**",
+   "tools/bench/stage_d1_l2b1*",
+   "tools/bench/diag_c110*",
+   "tools/bench/facts_c110*",
+   "tools/bench/errorlist_*",
+   "tools/bench/selftest_*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "docs/wiki/subvi/D1_l2_b1*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 90},
+ "rules": [
+  "brief_110-2.md J and R, and brief_110-1.md D and B, are DECIDED; do not change them",
+  "input never edited/saved; never run any VI; gui_save capture-locate-act-capture-confirm (PD 9)",
+  "scripts via `py tools/bgrun.py --material ... -- py -u <script>`; launch adds --retry-card only if asked",
+  "env-var prefixes (MATERIAL=1, RETRY_CARD=) are refused by the permission layer",
+  "hold the turn until every bgrun you start writes BGRUN END",
+  "a gate refusal is returned BLOCKED, never re-run via a self-test child or exempt route",
+  "a conditional write is a gate: report it, judgement decides; facts <=10 file:line; OPEN <=3"
+ ],
+ "advances": ["M3", "R1"]
+}

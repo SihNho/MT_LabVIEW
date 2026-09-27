@@ -1,0 +1,23 @@
+{
+ "schema": "verdict/1",
+ "id": "c110d-errorlist-cap",
+ "verdict": "unverified",
+ "alternative": "Cap stopped the walk (80/80 moves confirmed, 25 scrolls of 3.0 rows, row 81 exists) but '99 errors and warnings' may count rows the list does not show, e.g. hidden warnings; never checked at a count above 35.",
+ "discriminating_test": "Offline: check the Show Warnings checkbox in the b0 capture and the scrollbar thumb in the last b80 capture in errorlist_shots/. Then re-read with max_steps>=120 and bgrun --max-min>=35; the read must end with 'reached the window's own count'.",
+ "violations": [
+  {
+   "slug": "device-failed",
+   "loss_min": null,
+   "loss_usd": null,
+   "evidence": "tools/recipes/stage_d1_l2b1.py:109"
+  }
+ ],
+ "sources": [
+  "errorlist_D1_l2_b1_20260927_193100_20260927_194303_raw.json:3389",
+  "tools/lv_errorlist.py:681",
+  "tools/bench/errorlist_check_c110d.log:1",
+  "tools/bench/stage_d1_l2b1_c110d.log:562",
+  "https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/dialog-boxes/error-list-window.html"
+ ],
+ "note": "RBW gate reads terminals after RBW deleted the wires, so it passes by construction; rw_11267_8323 got no broken-wire check. 'Untyped output' for 25618 is inferred from plan rows, not measured."
+}

@@ -1,0 +1,83 @@
+{
+ "schema": "task/1",
+ "id": "110-4",
+ "kind": "build",
+ "escalation": 1,
+ "retry_of_card": "110-3",
+ "retry_of": "stage_d1_l2b1.py",
+ "goal": "PD223(b) L2-B1 relaunch: license #2626 unwired-input rename by term uid (brief_110-4), ONE launch -> D1_l2_b1_<ts>.vi, then its expected Error List file + reverdict",
+ "why": "110-3 launch 1 matched the sim at every checkpoint and failed PB only on a LabVIEW type-driven rename of #2626's 3 unwired (QRT-owed) inputs. Decided: licence by uid. B1 = first L2-B artefact (M3).",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_110-4.md"},
+  {"path": "tools/bench/cards/brief_110-3.md"},
+  {"path": "tools/bench/cards/result_110-3.json"},
+  {"path": "tools/bench/stage_d1_l2b1.log", "md5": "1cba99645bd494c67cf06d8a6107f0a4"},
+  {"path": "tools/bench/stage_d1_l2b1.json", "md5": "2bfe0215a6407524e727ee9e81f5fca1"},
+  {"path": "tools/bench/plan_l2b1.json", "md5": "9fb69b9b097603250ca3b9e2f87f322e"},
+  {"path": "tools/bench/plan_l2b1_in.json", "md5": "5df383251c6019c025f6b6387a579c22"},
+  {"path": "tools/recipes/stage_d1_l2b1.py", "md5": "4ef10fc4047dbe69e583730ca033ef18"},
+  {"path": "tools/bench/diag_c110_errorlist.py", "md5": "b309d5e014bd1dd5bbd6c4ccc0b7bb52"},
+  {"path": "tools/bench/graph_l2a3_bed_20260927.json", "md5": "f01e719dae7136c0174f719f8c1dee3e"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a3_20260927_151224.vi", "md5": "14337cfda5780cb39d12deb5fe0d3db9"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/plan_l2b1.json"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_l2b1.py"},
+  {"kind": "file", "name": "tools/bench/diag_c110_errorlist.py"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a3_20260927_151224.vi"}
+ ],
+ "pass": [
+  "L0 licence (brief_110-4 item 1) implemented, place named; only #2626 uids 2832/4160/4165 licensed; top-level --dry + --prerun PASS with records",
+  "L1 prior-art ANSWERED + annotated if the launch gate asks; ONE launch (2nd of cycle, cap 2)",
+  "L2 27/27 ops diff 0, PB PASS under the licence, gui_save D1_l2_b1_<ts>.vi md5+size, input md5 unchanged, LabVIEW gone",
+  "L3 #2626 inputs uid/name/type logged after op 27 and after the save (brief_110-4 item 2)",
+  "L4 errorlist_expected_D1_l2_b1_<ts>.json written, reverdict OK (0 extra/0 missing) or the mismatch reported"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_b1_*",
+  "tools/bench/errorlist_expected_D1_l2_b1_*",
+  "tools/bench/cards/result_110-4.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_b1_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c110*",
+   "tools/recipes/stage_d1_l2b1.py",
+   "tools/stagekit.py",
+   "tools/stagexec.py",
+   "tools/bench/plan_l2b1*",
+   "tools/bench/sim/l2b1/**",
+   "tools/bench/stage_d1_l2b1*",
+   "tools/bench/diag_c110*",
+   "tools/bench/errorlist_*",
+   "tools/bench/selftest_*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "docs/wiki/subvi/D1_l2_b1*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {"failures": 1, "minutes": 75},
+ "rules": [
+  "brief_110-4 and briefs 110-1..110-3 are DECIDED; do not change them",
+  "a shared-tool edit (stagekit/stagexec) keeps its self-tests at 0 regressions",
+  "input never edited/saved; never run any VI; gui_save capture-locate-act-capture-confirm (PD 9)",
+  "scripts via `py tools/bgrun.py --material ... -- py -u <script>`; env-var prefixes are refused",
+  "hold the turn until every bgrun you start writes BGRUN END",
+  "a gate refusal is returned BLOCKED, never re-run via a self-test child or exempt route",
+  "a conditional write is a gate: report it, judgement decides; facts <=10 file:line; OPEN <=3"
+ ],
+ "advances": ["M3", "R1"]
+}

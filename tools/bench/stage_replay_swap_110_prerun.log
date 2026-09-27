@@ -1,0 +1,42 @@
+BGRUN START 2026-09-27 18:29:23 limit 10.0 min: py -u tools/stage_prerun.py --prerun tools/recipes/stage_replay_swap.py --plan 110
+BGRUN PID 1592
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 245a10206b565cba0ba186bd891f5cb8  got 245a10206b565cba0ba186bd891f5cb8
+  PASS  DRY graph JSON for input md5 245a10206b565cba0ba186bd891f5cb8  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_disp_20260927.json
+  PASS  A1 copies md5 == sources  {'disp': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\D1_s1_disp_replay_20260927_182924.vi'}
+
+---------- [DISP] D1_s1_disp_replay_20260927_182924.vi
+  UNVERIFIED  A2 disp BEFORE: #6810 calls get buff image-lost frames.vi, #22692 calls IMAQdx Get Image.vi  (dry: read stub data)
+  FACT  ExecState [disp before] D1_s1_disp_replay_20260927_182924.vi = <dry:g.exec_state>
+  UNVERIFIED  A2 disp ExecState 1 before the swap  (dry: read stub data)
+  FACT  disp replace_object #6810 -> replay_get_buff_image.vi: <dry:g.replace_object>
+  UNVERIFIED  A3 disp replace #6810: no error, new uid  (dry: after mutation g.replace_object)
+  FACT  disp replace_object #22692 -> replay_get_image_cal.vi: <dry:g.replace_object>
+  UNVERIFIED  A3 disp replace #22692: no error, new uid  (dry: after mutation g.replace_object)
+  UNVERIFIED  A4 disp callee diff == exactly the two swaps -> replay VIs  (dry: after mutation g.replace_object)
+  PASS  A5 disp wire-edge diff 0 after remap (2226 edges before, 2226 after)  ([], [])
+  FACT  ExecState [disp after] D1_s1_disp_replay_20260927_182924.vi = <dry:g.exec_state>
+  UNVERIFIED  A6 disp ExecState 1 after the swaps  (dry: after mutation g.replace_object)
+  FACT  SAVED C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\replay\D1_s1_disp_replay_20260927_182924.vi md5 dry
+
+---------- [C] COLD: fresh LabVIEW
+  UNVERIFIED  C1 disp ExecState 1 COLD  (dry: after mutation g.replace_object)
+  PASS  C2 disp COLD callee census == warm
+  PASS  C3 disp md5 unchanged by the cold load
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  PASS  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['tools/bench/plans/plan_replay_swap_110.json', 'tools/bench/plans/plan_replay_swap_78.json', 'tools/bench/plans/plan_replay_swap_95.json']
+  PASS  X3 every plan row decided  21 rows + 0 stageplan actions
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  0 stageplan(s)
+  PASS  X4 every end addressable offline (0 ends)  []
+  PASS  X5 wiring ops executed in the dry run == plan wire rows  ops 0 vs plan wire rows 0 + stageplan wiring real ops 0 (covering 0/0 wire actions)
+  PASS  X6 ast lint: no re-typed uid / terminal name  uids []; names []
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  FAIL  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  ['plan_replay_swap_110.json: row R01 copy: needs the stage work file IS gscript.MOVE_DST (stagekit.copy_in raises Stop otherwise: stagekit.py:813-814); work = C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\D1_s1_disp_replay_20260927_182924.vi', 'plan_replay_swap_78.json: row R01 copy: needs the stage work file IS gscript.MOVE_DST (stagekit.copy_in raises Stop o
+  PASS  X10 predicted LabVIEW private MB < 690.0 (error-2 point; MEMSTOP 700.0) over the ops this run dispatches (UNMEASURED - no covering record)  {'why': 'UNMEASURED: no recorded meter of stage_replay_swap.py covers ops 1..end (0 record(s))'}
+  WARN  X10 WARN unmeasured: UNMEASURED: no recorded meter of stage_replay_swap.py covers ops 1..end (0 record(s))
+
+=== DRY PASS: first_fail=None coverage 64/68 lines, first mutation g.replace_object, unverified 7, graph tools/bench/graph_disp_20260927.json
+=== PRERUN FAIL: 9 pass / 1 fail; first X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST): ['plan_replay_swap_110.json: row R01 copy: needs the stage work file IS gscript.MOVE_DST (stagekit.copy_in raises Stop o
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":9,"fail":1},"first_fail":"X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST): ['plan_replay_swap_110.json: row R01 copy: needs the stage work file IS gscript.MOVE_DS [X10 WARN unmeasured]","artefacts":[]}
+BGRUN END rc=1 after 2s

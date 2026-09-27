@@ -1,0 +1,86 @@
+{
+ "schema": "task/1",
+ "id": "110-6",
+ "kind": "measure",
+ "goal": "PD210(c) rule-1a replay of the display-loop VI: swap copy of D1_s1_disp (stage_replay_swap, plan 110), run it + the S1 replay copy on the same frames, 15 picks; X/Y/Z identity",
+ "why": "ABBA 110-5 = GAIN under PD217(f) (A lost 3359/5860, B 16/12, tools/bench/disp_110_abba.log:29,54,79,104). 217(f): the VI is not accepted before the replay. Route = m8-real-run-plan items 22-23 (cycle 78) + PD203(c) --plan.",
+ "inputs": [
+  {"path": "docs/m8-real-run-plan.md"},
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/recipes/stage_replay_swap.py"},
+  {"path": "tools/bench/plans/plan_replay_swap_78.json"},
+  {"path": "tools/bench/plans/plan_replay_swap_95.json"},
+  {"path": "tools/bench/m8b_replay_78.json"},
+  {"path": "tools/bench/m8b_replay_compare.py"},
+  {"path": "tools/bench/drive_m8.py"},
+  {"path": "tools/bench/disp_110_abba.json", "md5": "400ad0b52140f5a5a0fbbc4da5e4178c"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_disp_20260927_041648.vi", "md5": "245a10206b565cba0ba186bd891f5cb8"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\D1_s1_replay_20260925_075422.vi"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/recipes/stage_replay_swap.py"},
+  {"kind": "file", "name": "tools/bench/plans/plan_replay_swap_95.json"},
+  {"kind": "file", "name": "tools/bench/m8b_replay_compare.py"},
+  {"kind": "file", "name": "tools/bench/drive_m8.py"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\D1_s1_replay_20260925_075422.vi"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_buff_image.vi"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_image_cal.vi"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_disp_20260927_041648.vi"}
+ ],
+ "pass": [
+  "R0: disp's camera callee uids read from the disp graph (is #6810/#22692 still there?); plan_replay_swap_110.json, one copy claudeDev\\replay\\D1_s1_disp_replay_<ts>.vi",
+  "R1: swap stage dry + pre-run PASS with records, prior-art ANSWERED+annotated if asked; the default plan-78 path shown unchanged by a dry",
+  "R2: ONE launch: ES 1 warm+cold, callee diff == the two camera nodes, wire-edge diff 0 after remap, disp md5 unchanged; copy md5+size",
+  "R3: S1 replay copy (md5 read == 126f8497...) and disp replay copy each run in own LabVIEW via drive_m8, same recorded frames, 15 picks",
+  "R4: m8b_replay_compare over all tra columns: common rows, row counts, max |d| X/Y/Z, first differing row; json + INDEX row; LabVIEW gone"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\D1_s1_disp_replay_*",
+  "tools/bench/plans/plan_replay_swap_110*",
+  "tools/bench/m8b_replay_110*",
+  "tools/bench/cards/result_110-6.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "gate",
+  "run_vi": true,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\D1_s1_disp_replay_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c110*",
+   "tools/recipes/stage_replay_swap.py",
+   "tools/bench/plans/plan_replay_swap_110*",
+   "tools/bench/plans/priorart_replay_swap_110*",
+   "tools/bench/stage_replay_swap_110*",
+   "tools/bench/m8b_replay_110*",
+   "tools/bench/m8_*replay*110*",
+   "tools/bench/drive_m8_*110*",
+   "tools/bench/diag_c110f_*",
+   "tools/bench/graph_disp_*",
+   "tools/bench/t0_legs/**",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/gui_shots/**",
+   "tools/gui_actions.log",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**",
+   "archive/benchmarks/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 90},
+ "rules": [
+  "never edit or save D1_s1_disp, S1 copies or originals; only the new replay copy is saved",
+  "a stage script is dry-run and pre-run before launch (CLAUDE.md Stages are SIMULATED)",
+  "GUI: lv_gui.ps1 -Exception Approved -Evidence 'user 2026-09-17 bead-pick option 1' (PD 9)",
+  "launch via py tools/bgrun.py --material ...; no env prefixes; hold turn until BGRUN END",
+  "a gate refusal is returned BLOCKED, never re-run via a self-test child or exempt route",
+  "numbers only: do not accept or reject the VI (judgement's); facts <=10 file:line; OPEN <=3"
+ ],
+ "advances": ["M8", "R1", "R3"]
+}

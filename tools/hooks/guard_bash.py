@@ -246,6 +246,20 @@ def stop_gate(cmd, shell=None):
 _PENDING_STAGE = []     # the stage launch prerun_gate allowed in THIS hook call (card chat-D, retry cap)
 
 
+def _lint_stripped(cmd, shell=None):
+    """card 110-1 (docs/violation-decisions.md device-failed 15:49): the command prerun_gate judges, with the read-only
+    lint segments dropped exactly as stop_gate drops them (same escape view, same _drop_lint_segments). A command with
+    no droppable segment reaches check_launch byte-for-byte unchanged."""
+    try:
+        import stop_record
+    except Exception:                                                              # noqa: BLE001
+        return cmd
+    shell = shell or _CUR_TOOL[0] or "Bash"
+    seen = _bash_escaped_quotes(cmd) if shell == "Bash" else cmd
+    out = _drop_lint_segments(seen, stop_record)
+    return cmd if out == seen else out
+
+
 def prerun_gate(cmd):
     """0 = pass, 2 = refuse. The decision lives in tools/stage_prerun.py check_launch() (argv parsing + records).
     Fails CLOSED only for a command that launches a stage script; anything else passes if the module is broken."""
@@ -257,10 +271,11 @@ def prerun_gate(cmd):
                              "tools/stage_prerun.py (%s); a stage script is not launched unchecked.\n" % e)
             return 2
         return 0
-    allow, why = stage_prerun.check_launch(cmd)
+    c = _lint_stripped(cmd)           # card 110-1: the same lint-segment drop as stop_gate (violation-decisions 15:49)
+    allow, why = stage_prerun.check_launch(c)
     if allow:
-        if (stage_prerun.launched_stage_scripts(cmd) or stage_prerun.launched_plan_runs(cmd)     # card chat-S3
-                or getattr(stage_prerun, "launched_vi_modifying", lambda _c: [])(cmd)):        # card chat-N1 (2)
+        if (stage_prerun.launched_stage_scripts(c) or stage_prerun.launched_plan_runs(c)       # card chat-S3
+                or getattr(stage_prerun, "launched_vi_modifying", lambda _c: [])(c)):          # card chat-N1 (2)
             _PENDING_STAGE[:] = [cmd]      # kept for callers; RECORDING moved to tools/bgrun.py (card 78-2)
         return 0
     note(False, "PRERUN-GATE " + cmd)

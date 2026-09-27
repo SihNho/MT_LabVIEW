@@ -1,0 +1,43 @@
+BGRUN START 2026-09-27 19:22:14 limit 20.0 min: py tools/prior_art_review.py --plan-file tools/bench/cards/brief_110-4.md --slug c110d-l2b1 --trigger cycle-start --recipe tools/recipes/stage_d1_l2b1.py
+BGRUN PID 13388
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c110d-l2b1.txt (69248 chars)
+   review card tools\bench\cards\review_priorart-c110d-l2b1.json
+OUTCOME: ANSWERED (91s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-27-priorart-c110d-l2b1.md
+COST: $1.5208  in 20 / out 7144 / cache-create 139177 / cache-read 1322320  (88s, 18 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c110d-l2b1 verdict=novel -> tools\bench\cards\verdict_priorart-c110d-l2b1.json
+--- ANSWER ---
+No, this has not already been done here. The rename licence in card 110-4 applies a rule the project settled on 2026-09-24. No existing helper already does this PB comparison by uid, and no earlier attempt failed on this build. Nothing below blocks the launch.
+
+**PART A — the direction**
+
+- **A1, settled already (supports the plan, does not block it).** The central question, "LabVIEW renames terminals when they are moved or wired, so identify them by uid and not by name", was decided twice before:
+  - Pre-decided 173 (cycle 71, 2026-09-24), `docs/d1-loop12-17-split-plan.md:360-363`: *"Terminals are addressed by TERMINAL UID after their first resolution, never by name again"*. It is built at `tools/stagekit.py:1201-1221` (`match_term_uid`).
+  - Review `archive/peer/2026-09-24-c68-m4a-p6b-rename.md:85` predicted this failure: *"name-keyed P6 gates will keep failing on harmless name churn along any edited net"*. `:100-101` measured it: *"The 13/12 name-keyed rows are renames on unchanged terminal uids."* `docs/cycle27-plan.md:3778-3779` records the same thing.
+
+  Brief 110-4 item 1 follows that decision; it does not repeat it. The one new part is limiting the licence to three uids on `#2626`. That limit is a choice made for this card and has no earlier precedent. No blocking slug.
+- **A2, refuted already.** None found. Nothing in `archive/peer/` rejects comparing by uid; every relevant record argues for it (c68 §4, PD173).
+- **A3, contradicted.** None.
+  - Brief item 2 asks for each `#2626` input's "data type string". The files already say this cannot be read: `docs/NAMES.md:477-485` (*"Reading `Coerce Dot?` / `Data Type` for a real terminal therefore needs … a new op"*) and `docs/d1-loop12-17-split-plan.md:1238` (*"no reader for `Terminal.Data Type` … judged, not escalated"*).
+  - The recipe cites this and logs the type as "NOT READ" (`tools/recipes/stage_d1_l2b1.py:29`).
+  - Item 2 is logging only, with no pass condition, so this is not a contradiction.
+- **A4, unread evidence.** Neither the brief nor the recipe cites PD173 or the c68 review. They should have: those are where the reason for the uid keying is written down. It changes nothing in the build, so I am not giving it a blocking slug.
+
+**PART B — the recipe**
+
+- **B1, already built.** No.
+  - `stagekit.uid_edges` (`tools/stagekit.py:1224-1235`) and `stagesim.uid_edges` (`tools/stagesim.py:1056-1063`) compare wire edges by uid. The recipe's E1 and D gates already use them.
+  - PB compares the computation diff's open sink rows. Those rows are keyed by sink name plus index, as `result_110-3.json:20` notes, citing `stagesim.py:1056-1074`. No uid-keyed version of that comparison exists.
+  - So the 3-uid remapping at recipe lines 23 and 75-76 is not duplicating an existing helper.
+- **B2, already failed.** Only 110-3's launch 1 (`result_110-3.json:2,19`). That run failed on exactly the name-keyed row this licence covers. Every other gate passed at diff 0: 27/27 ops, D 7 new / 14 lost equal to the simulation, peak 625.1 MB.
+- **B3, helper exists.** Partly.
+  - `stagekit.match_term_uid` handles uid addressing, but it raises an error on an unwired terminal (`tools/stagekit.py:1214-1216`). The licensed uids 2832, 4160 and 4165 are unwired by definition, so that helper cannot be used here.
+  - The recipe's own filter (`not r["wire_uid"]`) is the right one. No slug.
+- **B4, already measured.** The rename itself was measured once, in 110-3 (`stage_d1_l2b1.log:516-522`). Nothing earlier covers renames on a Build Array. `docs/frame-loop-wire-graph.md:50,71` shows only the original names, "appended array, element, element, element, array". The general class of renames on moved or wired terminals is already measured (`tools/bench/q_m4a_diffuid.log`, via c68), but not for this node.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c110d-l2b1","verdict":"novel","alternative":"The uid keying applies PD173 and c68 §4 (2026-09-24, name churn fails name-keyed gates). The 3-uid licence narrows that rule for this card; it does not repeat work. No uid-keyed computation-diff helper exists.","discriminating_test":"After op 27, the L3 line should show #2626 uids 2832/4160/4165 unwired and named 'array', uid 4168 carrying #5058's wire, and PB extra/missing empty with licence_applied True.","violations":[],"sources":["docs/d1-loop12-17-split-plan.md:360-379","archive/peer/2026-09-24-c68-m4a-p6b-rename.md:85,100-101","docs/cycle27-plan.md:3778-3779","tools/stagekit.py:1201-1235","docs/NAMES.md:477-485","docs/d1-loop12-17-split-plan.md:1238","tools/bench/cards/result_110-3.json:19-20"],"note":"Brief item 2 asks for a data type the files say is unreadable (NAMES.md:477-485); the recipe logs NOT READ, which is correct. Brief and recipe should cite PD173 and c68 as the reason for uid keying."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c110d-l2b1.md
+   STOP RECORD: none - 2026-09-27-priorart-c110d-l2b1.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_l2b1.py sha 0682c1087b00 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 94s

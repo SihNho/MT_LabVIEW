@@ -1,0 +1,38 @@
+FAILED PREDICTION - two top-level dry runs of ONE stage script, reviewed together (same script, card 110-1 -> 110-2):
+  py tools/stage_prerun.py --dry tools/recipes/stage_d1_l2b1.py   (logs tools/bench/plan_l2b1_dry.log, tools/bench/plan_l2b1_dry2.log)
+
+The script (tools/recipes/stage_d1_l2b1.py, 116 lines) executes the finalized plan tools/bench/plan_l2b1.json through
+tools/stagexec.py's Executor. In --dry mode the backend is stagexec.DryPlanBE (the simulated plan states, no LabVIEW).
+Prediction (script docstring + stagexec contract): the dry run reaches the last op, every PRIME end is addressable at base,
+the recipe's checkpoint set is accepted, 0 unroutable rows.
+
+Observed:
+- dry 1 (plan md5 a9a5b360, 26 actions): PRIME stopped before op 1: "5 wired end(s) not addressable at base":
+  nodes #10004 #30135 #31051 #31137 #30896 "not in Diagram[5] (#639).Nodes[]" (plan_l2b1_dry.log:21-22).
+  These five uids are ForLoop LoopTunnels (sinks of rows #8885 'x*y' -> #10004/#30135, #28170 -> #31051, #29091 -> #31137/#30896).
+  stagexec routes a tunnel end through its owner structure only for OWNER_ROUTED = ("SelectorTunnel", "Tunnel") (stagexec.py:614).
+  The plan was re-cut to 20 actions (6 wires) with those rows moved to a later stage.
+- dry 2 (plan md5 cd553209, 20 actions): PRIME 6/6 + 2 ControlTerminal ends proved, then
+  "CHECKPOINT: set [0, 4, 8, 12, 14, 16, 20] lacks binding/last op(s) or is out of range: [13] (need [13, 14, 20])" (plan_l2b1_dry2.log:22).
+  The recipe derives its set at stage_d1_l2b1.py:18-19 as {0, len(A)} | {i+1 where op kind changes after action i} | range(4, len(A), 4);
+  stagexec requires every op whose kind is in BIND_KINDS = ("add_sr", "tunnel", "create") plus the last op (stagexec.py:1131, :1322).
+  Actions 13 and 14 are the two add_shift_reg ops; the kind-change rule marks only the LAST op of a run of one kind (14), not op 13.
+
+My hypothesis (attack it): both stops are OUR authoring bugs, caught offline as designed, and neither says anything about LabVIEW:
+(1) the plan carried rows whose sink is a ForLoop LoopTunnel face, which the executor has no owner route for (the simulator accepted
+them because it addresses by uid); (2) the recipe's hand-written checkpoint rule ignores stagexec's BIND_KINDS contract.
+The fix the judgement session has already decided (tools/bench/cards/brief_110-2.md J): LoopTunnel-endpoint rows stay out of this stage;
+the checkpoint set becomes the recipe's existing rule UNION {k : compile_plan(plan)[k-1].kind in BIND_KINDS} UNION {last op}.
+In the same re-plan, 5 more objects move with the group (indicator terminals #8323/#28786, constants #6404/#9050/#9906) and 4 more
+wire rows are made (#11261 -> #8323, #6404 -> #6104 'index (col)', #9050 -> #8885 'y', #9906 -> #9833 'index (row)'); the row
+#29172 -> #28786 stays out because #29172 is a LoopTunnel of ForLoop #29874.
+
+What I need from you: the strongest reason this reading is wrong - e.g. a way the LoopTunnel PRIME stop signals a WRONG ADDRESS MODEL
+that will also bite rows kept in the stage (a tunnel of a MOVED ForLoop whose owner diagram changes during the moves), or a way
+the BIND_KINDS union still leaves a checkpoint gap (for example a move_in op that creates objects, or a wire op that creates a
+tunnel implicitly and so should be a binding op), and the cheapest offline test that separates the two readings.
+
+Already ruled out (do not spend time here):
+- base-graph drift: STEPX 00 diff 0 and PARITY 0 in both dries; K1 input md5 14337cfd in both (plan_l2b1_dry*.log:16-20).
+- LabVIEW state: --dry opens no LabVIEW (plan_l2b1_dry*.log:15).
+- simulator refusal: stagesim finalized each plan (plan_l2b1_sim3.log:23-24).

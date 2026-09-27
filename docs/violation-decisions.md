@@ -1554,3 +1554,21 @@ the same lint-segment stripping as the stop_record path. The self-test must hold
 `py tools/bgrun.py --material … -- py -u tools/recipes/stage_x.py` is still a launch. Accepted with it (a finding, not a
 slug): `.claude/agents/material.md:61-62` still prescribes the refused `MATERIAL=1` prefix. The permission layer refused
 that edit before (STATUS "FOR THE USER", cycle 91), so it stays a user item and every card states the `--material` form.
+
+## device-failed — 2026-09-27 20:20 (cycle 110 judgement, after archive/peer/2026-09-27-retrospective-cycle110.md:380)
+
+`VIOLATION: device-failed | loss_min=13 | loss_usd=? | evidence=tools/bench/plan_l2b1_dry.log:22`: ACCEPTED. The dry-run
+device decided 2026-09-25 16:10 ("collect every unroutable row, report them all, then fail") did not fire: dry 1 reported
+5 unaddressable ends and stopped BEFORE op 1 (`plan_l2b1_dry.log:22`), dry 2 stopped before op 1 on the checkpoint set
+(`plan_l2b1_dry2.log:22`), so the two dead rows `rw_403_2282` / `rw_9306_6142` surfaced only in dry 3 and cost one extra
+Opus-max card (110-3). The same retrospective's device-effect list also names: the `py -m <module>` repair (15:49 above)
+landed on one of three code paths (card flags `guard_card.log:371` and stop record `material_marker.log:2434` still refused
+the same read-only lint); X9's file-copy false positive (repaired in 110-7, self-test 8/0, no further act).
+
+DECISION: device (threshold 1), ONE tooling card in cycle 111 AFTER the deliverable's Error List read (PD224(h)) and
+BEFORE any L2-B2 dry: (1) the dry run's address/checkpoint phase no longer stops before op 1 — every address,
+checkpoint and routing failure is collected across all ops and reported together, then the dry FAILs (no PASS record);
+negative case = replay of plan_l2b1's cycle-110 input (`plan_l2b1_in.json` before the re-cut) must report all 7 failing
+rows (5 ends + the 2 dead rows) in ONE dry; (2) the `py -m` launch-unit rule is applied on the card-flag path and the
+stop-record path too (one shared helper, not three copies); self-test holds the literal commands at `guard_card.log:371`
+and `material_marker.log:2434` as passes and `py -u tools/recipes/stage_x.py` as a launch.

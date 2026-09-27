@@ -1,0 +1,32 @@
+BGRUN START 2026-09-27 16:12:50 limit 20.0 min: py tools/prior_art_review.py --plan-file tools/bench/cards/split_plan_110.md --slug c110a-l2b1 --trigger cycle-start --recipe tools/recipes/stage_d1_l2b1.py
+BGRUN PID 19944
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c110a-l2b1.txt (70320 chars)
+   review card tools\bench\cards\review_priorart-c110a-l2b1.json
+OUTCOME: ANSWERED (66s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-27-priorart-c110a-l2b1.md
+COST: $1.1276  in 14 / out 5225 / cache-create 108715 / cache-read 766704  (62s, 16 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c110a-l2b1 verdict=novel -> tools\bench\cards\verdict_priorart-c110a-l2b1.json
+--- ANSWER ---
+I checked the files. My verdict is **novel**: L2-B1 has not been built, tried or measured before, and no existing tool already covers it.
+
+**Part A: the direction**
+- **A1, already decided?** Yes, and the plan follows that decision rather than repeating it. `docs/d1-loop12-17-split-plan.md:1902`, cycle 109 decision (b), dated 2026-09-27, says: "L2-B's destination … is loop 1.2 for all 8 nodes, as the §2 table already says … L2-B1 is planned next … rows from `d1_rewire_sources.json` cross-checked against `build_d1_v0.json` (PD158) … split into B1..B3 at ≤ 13 rows each … `#30117`/`#4580`'s Property targets are read in its planning card." This plan is the planning step that decision asks for.
+- **A2, already rejected?** No. Nothing in `archive/peer/` or the retrospectives argues against sending group B to loop 1.2. The only competing option was a separate display loop. Decision 223(b) (`:1902`) postpones that until the ABBA timing test (A-B-B-A leg order) has run; it does not rule out loop 1.2.
+- **A3, contradicted?** No real contradiction. One naming difference might look like one: the §2 row (`docs/d1-loop12-17-split-plan.md:72`) names the indicator `#8038`, while the plan uses `#8323`. `tools/bench/diag_c110_bedgraph.log:197` shows `#8038` is the front-panel XYGraph object and `#8323` is its block-diagram terminal, so both refer to the same indicator. The §2 row calls that indicator a "sink row fed by `#11261`" and says nothing about moving it. The plan's §5 item 1 already flags that question for judgement, so it is not left unstated.
+- **A4, evidence not read?** None missing. The plan cites `tools/bench/facts_c108c_groupB.md` (lines 15, 16 and 26 list the same indicators and constants), `docs/camera-acquisition-facts.md:310-314` and `docs/NAMES.md:785`. On `Linked Control` it agrees with `archive/peer/2026-09-14-implicit-property-node-linked-object.md:26-43`: the class ID `636F806` needs a cast, and the label route needs none.
+
+**Part B: the file this plan builds**
+- **B1, already built?** No. `claudeDev` has no `D1_l2_b*` file. The only L2-B file in `tools/recipes/` is the attachment itself, `stage_d1_l2b1.py`, and the only `tools/bench/*l2b*` files are this cycle's plan and simulator output.
+- **B2, already failed?** No earlier L2-B attempt exists. The plan's §4 limitation is accurate:
+  - `tools/stagesim.py:434` reads `flip_reg` only from the current simulation.
+  - `flip_reg` is written only at `tools/stagesim.py:617-619`.
+  - No code fills it from the base graph. The PD214(d)1 flip fix (`:1748-1754`) handles deleted sinks, not flips inherited from an earlier stage.
+- **B3, a tool already does this?** No. The plan identifies the Property targets by label, which is the route the docs endorse. Its other operations (moves, shift-register additions, wiring) go through the existing stagekit/stagexec functions.
+- **B4, already measured?** No. The destination and the consumer table are already measured and cited (`facts_c108c_groupB.md`), but no row-level cut set or saved result for L2-B exists anywhere.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c110a-l2b1","verdict":"novel","alternative":"The indicator #8323 (panel XYGraph #8038) may belong as a sink row rather than a move (split-plan §2:72); the plan already lists this as OPEN §5.1 for judgement, so it does not block.","discriminating_test":"Glob claudeDev for D1_l2_b* (none found); grep stagesim.py for code that fills flip_reg from the base graph (none: only :434, :617-619).","violations":[],"sources":["docs/d1-loop12-17-split-plan.md:1902","docs/d1-loop12-17-split-plan.md:72","tools/stagesim.py:426-451","tools/stagesim.py:617-619","tools/bench/diag_c110_bedgraph.log:197","tools/bench/facts_c108c_groupB.md:15-26","archive/peer/2026-09-14-implicit-property-node-linked-object.md:26"],"note":"The plan applies the direction already decided in PD223(b); no earlier build, failure or equivalent helper exists."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c110a-l2b1.md
+   STOP RECORD: none - 2026-09-27-priorart-c110a-l2b1.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_l2b1.py sha 0797ed268d72 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 69s

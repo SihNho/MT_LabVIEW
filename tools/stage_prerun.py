@@ -49,7 +49,10 @@ PRE-RUN (decision 2, 3, 8), all offline, on the same graph JSON + the dry run's 
      `--control-lint <plan>` (exit 0/2) · `--selftest-control-lint` (log tools/bench/selftest_control_path_lint.log)
   X9 (card 106-3, retrospective-cycle102 wrong-ordering) every op/row the run dispatches whose verb holds a precondition
      on the stage's work file (stagexec.ROUTE_PRECONDITIONS - copy_in: work == gscript.MOVE_DST) holds for the Stage
-     the dry run built (r7 stopped IN op 41 on it: stage_d1_disp_r7.log:807)
+     the dry run built (r7 stopped IN op 41 on it: stage_d1_disp_r7.log:807). Card 110-7 (judgement F1): a decisions-row
+     `copy` is checked ONLY when the recipe's AST calls run_rows / from_decision (the only dispatchers of a row's `copy`
+     to copy_in); a recipe that calls neither (stage_replay_swap: shutil byte copy) dispatches no row. Self-test:
+     tools/bench/selftest_stage_prerun_c110g.py
   X10 (card 106-3, retrospective-cycle103 inference-over-measurement) the predicted LabVIEW private-MB peak over the
      dispatched ops, from the RECORDED per-op meter of an earlier run of the same recipe (stagexec.mem_predict), is
      below X10_FAIL_MB 690 (card 106-5, PD219(c): error 2 was seen at 695 MB; MEMSTOP stagexec.MEM_STOP_MB 700 stays
@@ -1168,11 +1171,33 @@ def lint(recipe, OG):
 
 
 # ------------------------------------------------------------------ card 106-3: X9 verb preconditions, X10 memory margin
-def verb_preconditions(plans, sps, work, move_dst, stop_after=None, from_step=None):
+ROW_DISPATCHERS = ("run_rows", "from_decision")      # card 110-7: the stagekit calls that turn a row's `copy` into copy_in
+
+
+def recipe_dispatches_rows(recipe):
+    """card 110-7 (F1, decided by judgement): True when the recipe's AST CALLS stagekit.run_rows / from_decision (as an
+    attribute `x.run_rows(...)` or a bare name). Only such a recipe dispatches a decisions-row `copy` to copy_in; a recipe
+    that calls neither (stage_replay_swap.py makes its byte copy with shutil.copyfile) dispatches no row. Unparsable
+    recipe -> True (checked, never exempted)."""
+    try:
+        tree = ast.parse(REAL_OPEN(recipe, encoding="utf-8", errors="replace").read(), filename=recipe)
+    except (OSError, SyntaxError, ValueError):
+        return True
+    for n in ast.walk(tree):
+        if isinstance(n, ast.Call):
+            f = n.func
+            nm = f.attr if isinstance(f, ast.Attribute) else (f.id if isinstance(f, ast.Name) else None)
+            if nm in ROW_DISPATCHERS:
+                return True
+    return False
+
+
+def verb_preconditions(plans, sps, work, move_dst, stop_after=None, from_step=None, rows_dispatched=True):
     """X9 (retrospective-cycle102 `wrong-ordering`): every op / row the run DISPATCHES whose verb holds a precondition on
     the stage's own work file (stagexec.ROUTE_PRECONDITIONS: copy_in needs work == gscript.MOVE_DST) is checked OFFLINE
     against the Stage the dry run built. stageplan/1 files are read raw (checked even when stageplan_check refused them);
-    decisions-row plans: every `copy` row (stagekit.run_rows -> copy_in). -> list of failure strings."""
+    decisions-row plans: every `copy` row (stagekit.run_rows -> copy_in) - only when rows_dispatched (card 110-7:
+    recipe_dispatches_rows(recipe)); stageplan/1 ops are checked either way. -> list of failure strings."""
     import stagexec as SX
     ctx = {"work": work, "move_dst": move_dst}
     bad = []
@@ -1190,7 +1215,7 @@ def verb_preconditions(plans, sps, work, move_dst, stop_after=None, from_step=No
                 continue
             bad += ["{0}: op {1} {2} acts {3} ids {4}: needs {5}; work = {6}".format(
                 os.path.basename(p), f["k"], f["route"], f["acts"], f["ids"], f["needs"], f["work"]) for f in fl]
-        else:
+        elif rows_dispatched:
             need, chk = SX.ROUTE_PRECONDITIONS["copy_in"]
             bad += ["{0}: row {1} copy: needs {2}; work = {3}".format(os.path.basename(p), r.get("id"), need, work)
                     for r in pl.get("decisions") or [] if r.get("action") == "copy" and not chk(ctx)]
@@ -1393,9 +1418,12 @@ def prerun(recipe, graph=None, stop_after=None, from_step=None):
     # card 106-3: X9 verb preconditions on the stage's own work file (retrospective-cycle102 wrong-ordering, r7 op 41)
     wk = (tr.get("works") or [None])[-1]
     mdst = getattr(sys.modules.get("gscript"), "MOVE_DST", None)
-    vp = verb_preconditions(plans, sps, wk, mdst, stop_after, from_step)
+    rdisp = recipe_dispatches_rows(recipe)                     # card 110-7 F1: row `copy` counts only if rows dispatched
+    vp = verb_preconditions(plans, sps, wk, mdst, stop_after, from_step, rows_dispatched=rdisp)
     gate("X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)", plans and not vp,
-         vp[:6] or "work {0}".format(wk))
+         vp[:6] or "work {0}; decisions rows {1}".format(
+             wk, "dispatched (run_rows/from_decision called)" if rdisp else
+             "NOT dispatched (recipe calls neither run_rows nor from_decision)"))
     # card 106-3: X10 memory margin from the recorded per-op meter (retrospective-cycle103 inference-over-measurement)
     mm = mem_margin(recipe, stop_after, from_step)
     tr["mem_margin"] = mm
@@ -1531,8 +1559,18 @@ def launched_py(cmd):
             b = os.path.basename(toks[i]).lower()
             if re.match(r"^py(thon)?[\d.]*(\.exe)?$", b):
                 j = i + 1
+                mod = None
                 while j < len(toks) and toks[j].startswith("-"):
-                    j += 2 if toks[j] in ("-X", "-W", "-m") else 1
+                    # card 110-1 (violation-decisions device-failed 15:49): `py -m <module> ...` launches the MODULE;
+                    # every later token is an argument of it, never a launch unit (a `py` token later in the segment,
+                    # e.g. after bgrun's `--`, is still scanned by the outer loop)
+                    if toks[j] == "-m" or (toks[j].startswith("-m") and len(toks[j]) > 2):
+                        mod = j + (2 if toks[j] == "-m" else 1)
+                        break
+                    j += 2 if toks[j] in ("-X", "-W") else 1
+                if mod is not None:
+                    i = mod
+                    continue
                 if j < len(toks):
                     p = toks[j]
                     ap = p if os.path.isabs(p) else os.path.join(ROOT, p)

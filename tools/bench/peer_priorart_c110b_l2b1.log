@@ -1,0 +1,37 @@
+BGRUN START 2026-09-27 16:31:59 limit 20.0 min: py tools/prior_art_review.py --plan-file tools/bench/cards/split_plan_110.md --slug c110b-l2b1 --trigger cycle-start --recipe tools/recipes/stage_d1_l2b1.py
+BGRUN PID 17116
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c110b-l2b1.txt (71801 chars)
+   review card tools\bench\cards\review_priorart-c110b-l2b1.json
+OUTCOME: ANSWERED (47s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-27-priorart-c110b-l2b1.md
+COST: $1.2398  in 8 / out 3779 / cache-create 134552 / cache-read 438829  (43s, 8 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c110b-l2b1 verdict=novel -> tools\bench\cards\verdict_priorart-c110b-l2b1.json
+--- ANSWER ---
+**Verdict: novel.** Nobody has built, measured or refuted this revision of L2-B1 before, and no existing helper covers it. The two earlier dry-run stops on this recipe were reviewed, and this revision deals with both causes.
+
+**Part A: the direction**
+- **A1 (already decided): the plan follows an existing decision; it does not reopen one.** `docs/d1-loop12-17-split-plan.md:1902` (PD223(b), 2026-09-27) sends all of group B to loop 1.2 in chunks B1..B3 of at most 13 rows each, and says the `#30117`/`#4580` targets are read in the planning card. This page is that planning card. The first prior-art round on the same page, `archive/peer/2026-09-27-priorart-c110a-l2b1.md:481`, returned novel on the same grounds.
+- **A2 (already refuted): no.** Nothing argues against loop 1.2. The display loop (DISP-D1) is only deferred until after the ABBA test (PD223(b)).
+- **A3 (contradicted): no real conflict.**
+  - The `#8038`/`#8323` naming looks like a mismatch but is one indicator: `#8038` is the panel object and `#8323` its diagram terminal (`tools/bench/diag_c110_bedgraph.log:197`, as c110a `:483` found).
+  - The one item that could look contradicted is the flip seed. STATUS says the PD214(d)1 flip seed was "fixed" in cycle 102. That fix only makes a sink cleared by a delete seed the flip (`tools/stagesim.py:1748`). It does not seed `flip_reg` from flips inherited from the base graph: `flip_reg` is read only at `:434` and written only at `:617-619`. So §4's limitation is still true, and "fixed" does not cover this case.
+- **A4 (unread evidence): none.** The plan cites `facts_c108c_groupB.md`, `camera-acquisition-facts.md:310-314` and `NAMES.md:785`, plus the dry-run hypothesis review.
+
+**Part B: the file it builds**
+- **B1 (already built): no.** `claudeDev` has no `D1_l2_b*` file (glob empty). The only L2-B recipe is the attachment.
+- **B2 (already failed): yes, twice in dry runs of this same recipe, and both causes are addressed.**
+  - Dry 1 stopped because 5 plan rows end on ForLoop LoopTunnel faces, which the executor cannot address: `stagexec.OWNER_ROUTED` holds only SelectorTunnel/Tunnel (`tools/stagexec.py:614`), and LoopTunnel is excluded from diagram nodes (`:634`). This revision puts no LoopTunnel-end row in B1. `29172→28786` and the 8885/28170/29091 rows are moved to B2, behind their own card (J2).
+  - Dry 2 stopped because the recipe's checkpoint set lacked binding op 13. The checkpoint set is now the recipe's old rule plus every op whose kind is in `stagexec.BIND_KINDS` (`tools/stagexec.py:1131`). That mirrors the executor's own requirement at `:1322`.
+  - Both stops were discharged by `archive/peer/2026-09-27-c110b-l2b1-dry.md:141-147` (verdict supported). That review also pointed out that the LoopTunnel stop was the same kind of error for a fourth time (`:92`). The plan answers it with J2's owner-route card rather than a retry.
+- **B3 (a helper already does this): no.** The Property targets are found by label, the route the docs endorse (`Linked Control` is not built, `docs/NAMES.md:785`). Moves, `add_shift_reg` and wiring go through the existing stagekit/stagexec functions. The checkpoint rule reuses `BIND_KINDS` rather than a hand-written list.
+- **B4 (already measured): no.**
+  - The consumer table and the destination are already measured (`facts_c108c_groupB.md`), and the plan cites them.
+  - Moving a constant has already been done in a real run (L2-A1 `#10739`/`#10929`, `tools/bench/stage_d1_l2a1_86-5.log:268,287`), as the plan says.
+  - No row-level result for L2-B exists.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c110b-l2b1","verdict":"novel","alternative":"STATUS says 'PD214(d)1 flip seed fixed' (cycle 102), which could read as covering §4; it does not: that fix seeds from delete-cleared sinks (stagesim.py:1748), and flip_reg is still filled only by the current sim (:434, :617-619).","discriminating_test":"Glob claudeDev D1_l2_b* (none); grep stagesim.py for base-graph seeding of flip_reg (none); B1 plan rows contain no LoopTunnel end (J1) and checkpoints include BIND_KINDS ops (stagexec.py:1131,1322).","violations":[],"sources":["docs/d1-loop12-17-split-plan.md:1902","archive/peer/2026-09-27-priorart-c110a-l2b1.md:481","archive/peer/2026-09-27-c110b-l2b1-dry.md:141","tools/stagexec.py:614","tools/stagexec.py:1322","tools/stagesim.py:617","tools/stagesim.py:1748"],"note":"Revision of an already-novel plan; both dry stops (LoopTunnel sinks, missing bind checkpoint) were reviewed and are addressed, not repeated."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c110b-l2b1.md
+   STOP RECORD: none - 2026-09-27-priorart-c110b-l2b1.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_l2b1.py sha 94f04e63cd6d -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 50s

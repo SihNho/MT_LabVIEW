@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"110-2","status":"FAIL","gates":{"pass":3,"fail":2},
+"first_fail":"R2 top-level dry 3 FAIL: UNROUTABLE acts 23 rw_403_2282 / 24 rw_9306_6142, bare ControlTerminal source -> CaseStructure #2222 tunnel face (plan_l2b1_dry3.log:84-85)",
+"blocked_by":{"device":"card 110-2 rule 'a conditional write is a gate: report it, judgement decides'","message":"the only fix without a new tool is re-cutting B1 (the 2 rows to B2), a plan write conditional on dry 3; not made. J2 forbids a new route in this card"},
+"artefacts":[
+{"path":"tools/bench/plan_l2b1_in.json","md5":"8b9cb7cbe9fde224028eba579d1f6715"},
+{"path":"tools/bench/plan_l2b1.json","md5":"24904e75eb8e7ae46eecaaa4c8c95fa7"},
+{"path":"tools/recipes/stage_d1_l2b1.py","md5":"4ef10fc4047dbe69e583730ca033ef18"},
+{"path":"tools/bench/cards/split_plan_110.md","md5":"c1665b9f975092d28b780a4684b067b4"},
+{"path":"archive/peer/2026-09-27-c110b-l2b1-dry.md","md5":"6bb450d5f7678c99e5f614cef326d39e"},
+{"path":"archive/peer/2026-09-27-priorart-c110c-l2b1.md","md5":"e41900c34630a6a568126d7649f48d80"},
+{"path":"tools/bench/plan_l2b1_dry3.log","md5":"dee7cf5900bed85e5ebee8c08fdf697e"}],
+"facts":[
+"R0: plan_l2b1_dry*.log | no JEV-LADDER line (guard_peer scopes by command script stage_prerun.py, guard_peer.py:280-289) | old path | 1 hypothesis review | supported, annotated (c110b-l2b1-dry.md:139)",
+"R1 J1 plan FINAL: 17 moves (+#8323 #28786 #6404 #9050 #9906), 2 SR, 10 wires, no LoopTunnel-end row; 27 open pairs, open_rows_match (plan_l2b1_sim4.log:32-33)",
+"Review s4 tests run: all 10 wires have both ends on #23166 before their step, no object added; a constant move exists in a real run (stage_d1_l2a1_86-5.log:268,287)",
+"R2 recipe 119 lines; checkpoints = old rule + BIND_KINDS ops = (0,4,8,12,16,17,18,19,20,24,28,29), accepted by stagexec; L1 29->29, 6 moved CTs (plan_l2b1_dry3.log:19,23)",
+"R3 prior-art: c110b novel (recipe sha 94f04e63), one evidence line added (RBW ENDS), c110c novel on launch bytes sha c6cc78ff; both annotated (priorart-c110c-l2b1.md:512)",
+"dry 3: PARITY 0, PRIME 9+3 CT, 27/29 ops routed; UNROUTABLE rw_403_2282, rw_9306_6142: no connect_route verb for bare CT source -> owner-routed face (stagexec.py:778-782)",
+"Both rows were already in 110-1's 6-wire plan; dry 2 stopped before op 1 (plan_l2b1_dry2.log:22), so they were never routed. Ladder: same script, c110b review < 6 h discharges (RULE-SAME-ROW)",
+"Sim effect: rw_403_2282 closes 0 cdiff rows (#2276 inner faces unwired, bed graph); rw_9306_6142 closes 5696/6085 'Correction Factor' (sim/l2b1/summary.json steps 23-24)",
+"Re-cut B1 without the 2 rows = 8 wires, 29 open pairs; the recipe derives rows/checkpoints/CTs from the plan, so its released bytes need no edit (stage_d1_l2b1.py:17-25)",
+"py -m pyflakes passed the launch gate but the only Python (3.10) has no pyflakes module (diag_c110_pyflakes.log:3). Bed md5 14337cfd unchanged; LabVIEW never started; no D1_l2_b1 file"],
+"open":[
+"rw_403_2282 (Z/dZ -> dead-end Tunnel #2276) and rw_9306_6142 (Correction Factor -> SelectorTunnel #6132) have no executor verb: move both to B2 with the LoopTunnel rows (B1 = 8 wires), or build the CT-source-to-face route first?",
+"Review c110b (accepted findings not taken in this card): Executor should union its required checkpoints itself; stagesim finalize should run connect_route so UNROUTABLE rows fail at plan time (5th class now)",
+"pyflakes is not installed in py 3.10: install it (system change) or drop the pyflakes criterion from stage cards?"],
+"cost":{"usd":null,"minutes":24,"labview_runs":0},
+"note":"R4/R5 not reached (no launch without a dry PASS). Failure budget: 1 of 2 used (dry 3). Hypothesis review $1.90; prior-art x2. STATUS not edited (flag)."}

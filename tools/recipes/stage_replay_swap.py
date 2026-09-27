@@ -13,12 +13,14 @@ CARD 95-6 (PD202(d)3): PLAN SELECTION by `--plan <tag>` (argv) or env REPLAY_SWA
 unchanged. Only plans listed in PLANS load (named literals, so stage_prerun keys the records on every plan's md5). A plan
 WITHOUT `second_input` makes ONE copy (the input's). Optional plan keys (defaults = plan 78's behaviour): input_tag "s3",
 second_tag "s1", input_pin "S3", stage_name "stage_replay_swap_78", task "78-3", out_json "stage_replay_swap_78.json".
-    py tools/bgrun.py --material --max-min 45 --log tools/bench/replay_c95_swap.log -- py -u tools/recipes/stage_replay_swap.py --plan 95"""
+    py tools/bgrun.py --material --max-min 45 --log tools/bench/replay_c95_swap.log -- py -u tools/recipes/stage_replay_swap.py --plan 95
+CARD 110-6 (PD210(c)/217(f)): `--plan 110` = one copy of the display-loop VI D1_s1_disp_20260927_041648.vi, same two swaps."""
 import json, os, shutil, sys, time                                                       # noqa: E401
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "bench"))
 import diag_replay_lib as L                                                              # noqa: E402
 K, g = L.K, L.g
-PLANS = {"78": "plans/plan_replay_swap_78.json", "95": "plans/plan_replay_swap_95.json"}
+PLANS = {"78": "plans/plan_replay_swap_78.json", "95": "plans/plan_replay_swap_95.json",
+         "110": "plans/plan_replay_swap_110.json"}                                     # card 110-6: the display-loop VI
 PLAN_TAG = sys.argv[sys.argv.index("--plan") + 1] if "--plan" in sys.argv else (os.environ.get("REPLAY_SWAP_PLAN") or "78")
 P = json.load(open(os.path.join(K.BENCH, PLANS[PLAN_TAG]), encoding="utf-8"))
 cd = lambda rel: os.path.join(K.CLAUDEDEV, rel)                                          # noqa: E731

@@ -4041,3 +4041,109 @@ VIOLATION: device-failed | loss_min=1 | loss_usd=? | evidence=tools/hooks/materi
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle109","verdict":"refuted","alternative":"Cycle work itself had no structural fault (bed delivered, gate D replayed PASS); refutation rests only on the threshold-1 device rule: PRERUN-GATE refused a read-only pyflakes/wc on the recipe.","discriminating_test":"Run stage_prerun.check_launch on 'py -m pyflakes tools/recipes/stage_d1_l2a3.py' offline: returns a launch unit (refuse) => device still broken; returns no units => repaired.","violations":[{"slug":"device-failed","loss_min":1,"loss_usd":"?","evidence":"tools/hooks/material_marker.log:2422"}],"sources":["tools/hooks/material_marker.log:2422","tools/hooks/guard_bash.py:238","tools/hooks/guard_bash.py:260","tools/stage_prerun.py:1534","docs/violation-decisions.md:1488","tools/bench/cards/result_109-1.json:3",".claude/agents/material.md:61","tools/bench/opmodels/tunnel.json:200"],"note":"Largest cost paid in window: pre-existing stagesim op_wire vs opmodel contradiction (~12 min, $2.29), fixed in-cycle. Recurrent MATERIAL=1 mandate in material.md:61-62 still unfixed (cards carry it)."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle109.md
 BGRUN END rc=0 after 320s
+BGRUN START 2026-09-27 20:11:32 limit 10.0 min: py tools/retrospective.py --cycle 110
+BGRUN PID 14684
+   window 2026-09-27 15:48:43 .. 2026-09-27 20:11:33 (263 min); 68 build logs, 14 machinery logs, 35 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle110.txt (31458 chars)
+   review card tools\bench\cards\review_retrospective-cycle110.json
+OUTCOME: ANSWERED (427s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-09-27-retrospective-cycle110.md
+COST: $2.5818  in 48 / out 42338 / cache-create 148284 / cache-read 2742851  (425s, 42 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle110 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle110.json
+--- ANSWER ---
+# Retrospective of cycle 110 (15:48:43 to 20:11:33)
+
+**Verdict: one structural fault, a device failure, costing about 13 minutes.** No other fault changed how the cycle ended. The cycle ran as two judgement sessions. The user killed the first at 17:18 (`tools/bench/cycle_110.log:146`), and the second started at 17:31. The 13-minute stop is the user's and is not charged here. Nothing in the evidence contradicts the window.
+
+The cycle produced three results:
+- The ABBA measured a gain (`result_110-5.json`).
+- The display-loop VI was accepted on the replay (`result_110-7.json`, PD224(d)).
+- L2-B1 was saved but is not yet the bed (`result_110-4.json`).
+
+## The one structural fault: the "dry run reports every unroutable row" device did not fire
+
+The device decided on 2026-09-25 at 16:10 (`docs/violation-decisions.md:1304-1306`) says the dry run "collects every row whose end has no route (CONNECT-NO-VERB / ADDRESS) and reports them all, then fails."
+
+- **Dry 1 did not do that.** At 16:14 it reported 5 unaddressable ends and then stopped "before op 1" (`tools/bench/plan_l2b1_dry.log:22`). Routing never ran.
+- **Dry 2 stopped before op 1 too**, this time on the checkpoint set (`plan_l2b1_dry2.log:22`).
+- **So two dead rows were never reported.** `rw_403_2282` and `rw_9306_6142` were in 110-1's plan all along (`result_110-2.json:19`). They surfaced only in dry 3, inside the next escalated card (`plan_l2b1_dry3.log:84-85`). A third escalated card, 110-3, was then needed to re-cut B1 to 8 wires (`guard_card.log:373`).
+
+**Loss:** about 13 minutes and one extra Opus-max dispatch. No log carries a dollar figure for it: the prior-art and hypothesis reviews in 110-2 were owed anyway.
+
+**Counterfactual:** had dry 1 at 16:14 routed every row after the PRIME failure, 110-1 would have returned both kinds of failure. Card 110-2 would then have carried the 8-wire cut, dry 3 would have passed at 16:35, and launch 1 would have started around 16:37 instead of 16:50:28 (`tools/hooks/material_marker.log:2442`). The cycle's ending would not have changed: the 17:18 user stop would still have interrupted 110-4.
+
+## Findings
+
+**1. Repeated failure.**
+- **The simulator accepts plans the executor cannot run.** Dry 1's LoopTunnel failure is the 4th "not in Nodes[]" class, per `archive/peer/2026-09-27-c110b-l2b1-dry.md:92-97`. Dry 3's CONNECT-NO-VERB is the 5th. Launch 1's PB failure is the same gap: LabVIEW renamed the Build Array inputs and stagesim does not model that (`stage_d1_l2b1.log:516-522`, 744 s of LabVIEW).
+- **The approach should have changed at dry 1 (16:14).** The fix is for stagesim's finalize step to run the executor's addressability and route rules. The review returned exactly that to judgement (`c110b-l2b1-dry.md:156-158`). Neither session decided it, and PD224 is silent on it.
+- **Read-only lint refusals also recurred.** The same `py -m pyflakes` command on the recipe was refused three times after the 15:49 repair (`guard_card.log:371`, `material_marker.log:2434`, `:2437`).
+- **The lint could never run.** Python 3.10 has no pyflakes module (`diag_c110_pyflakes.log:3`). At 16:11 (attempt 1) the right move was to check `import pyflakes` and drop the criterion.
+
+**2. Missing tool.**
+- **The Error List reader has a hard-coded cap and no fail-fast.** `read_by_capture` defaults to `max_steps=80`, and nothing exposes it as a parameter (`tools/lv_errorlist.py:581`). The window reported 99 items at line 26 of the log, yet the reader ran 1,112 s to a result that was bound to be incomplete (`errorlist_check_c110d.log:26,113,116`). That is about 18 minutes, and the next cycle has to repeat the read.
+- **Two missing simulator rules** would have caught dry 1, dry 3 and launch 1 offline: plan-time addressability in stagesim, and a Build Array rename rule (`brief_110-4.md:25`).
+
+**3. Unmeasured steps.**
+- **pyflakes was never checked.** Its absence went unnoticed before the 15:49 repair was built at 15:55 (`selftest_c110_launchgate.log`).
+- **The replay differences were labelled, not measured.** PD224(c) calls the trans (114 rows) and rot (1 row, 192,118) differences "live motor READBACK" (`d1-loop12-17-split-plan.md:1913`). Card 110-7 said they were "Not diagnosed here" (`result_110-7.json`, open item 2).
+- **The Error List size was predictable.** Remove Bad Wires had already deleted 72 wires (`stage_d1_l2b1_c110d.log:746-747`) before a reader capped at 80 was launched.
+
+**4. Rule compliance.**
+- **A standing failure has never been reviewed.** The step "run1.L8 choose bandpass" failed on every leg (`disp_110_abba.log:10,35,60,85`), and has been open since 92-3 (`STATUS.md:175`). CLAUDE.md:641-646 requires a review for a recurring error.
+- **The PB failure's review was satisfied only formally.** It was a new failure class, released by a review of the dry runs through the same-row rule (`c110b-l2b1-dry.md:167`). Judgement ratified that release as "fully read from the machine" (`brief_110-4.md:18-19`). CLAUDE.md:654-656 says your own discriminating test does not discharge a review.
+- **A card rule was broken.** Card 110-2's rule forbids re-running a refused command by another route (`task_110-2.json:83`). The refused command at `:2437` was re-run through bgrun 11 s later (`:2438`).
+- **STATUS.md is 358 lines** against the one-screen rule (audit L3).
+- **What the audit does not cover:**
+  - Hook refusals in `material_marker.log` and `guard_card.log`, which is where every device failure in this cycle appears.
+  - Any cost for the material agents or the judgement sessions. Session 1 was killed and left no cost line (C4c).
+  - Its A1 failure is a gate log, not a build.
+  - Its A4 blank belongs to cycle 103.
+  - Its C7 check lists 460 files, which is noise.
+
+**5. Ordering.** The order was defensible. The user ordered the ABBA first and L2-B1 after (commit 144c92d, `STATUS.md:67`), and session 2 re-issued 110-4 rather than re-planning.
+
+**6. What STATUS does not say.**
+- **The bit-identical claim covers about half of B's rows.** STATUS reports "bit-identical 4,443/4,443" (`STATUS.md:65`), but B wrote 8,548 rows against A's 4,443. The other 4,105 of B's rows were never compared (`result_110-7.json`).
+- **The 72 deleted wires are not in STATUS.** Remove Bad Wires deleted 72, against 27 on L2-A3 (PD223(c)). The recipe's Remove Bad Wires gate was vacuous (`result_110-4.json:29`). STATUS says only that wire 25618 is bad.
+- **The legs' failing step is missing from the ABBA summary.** Every leg printed "FAILING: 18 run1.L8" while the gates read 65/0.
+- **The result cards' `minutes` fields are wrong.** Card 110-1 reports 98, but its dispatches at 15:53:22 and 16:19:46 (`guard_card.log:370,372`) show 26.
+
+**7. Judgement inside material sessions.**
+- **Card 110-6 edited a plan to get past the X9 check.** The material session relabelled R01 `copy` to `file_copy` (`result_110-6.json`, open item 2). It disclosed the change, and 110-7 reverted it.
+- **Card 110-2 routed around a refusal** at `:2438`.
+- **Everything else was returned to judgement.** The c110b review's findings were handed back, not decided in material (`c110b-l2b1-dry.md:156-165`).
+- **The next card carries a pre-scripted action.** next.json's pass list includes "B1 becomes the bed if the criterion is met, then write the expected file and move `current-bed`" (`next.json:13`). That is an if-X-then-do-Y write for the next cycle.
+
+## Device effect
+
+**Failed in this window:**
+- **Dry run reports every unroutable row (2026-09-25 16:10):** never fired (`plan_l2b1_dry.log:22`). This is the fault named above.
+- **Stop record should pass read-only commands** (repair decisions 09-24 05:54, 09-27 01:15, 01:55 and 03:30): fired on a read-only lint (`material_marker.log:2434`).
+- **`py -m <module>` is not a recipe launch (09-27 15:49):** repaired at 15:55 on only one of three code paths. Card flags refused the same command at 16:11 (`guard_card.log:371`) and the stop record at 16:28 (`:2434`).
+- **Verb-precondition check X9 (09-27 01:55):** fired on the wrong thing, a file-copy row (`stage_replay_swap_110_prerunb.log:35`), costing about 9 minutes. It was repaired in 110-7 with a self-test (8/0).
+- **Card rule "never re-run a refused command by another route" (09-27 07:46):** worked around at `:2438`.
+
+**Degraded:** the out-of-plan file counter (C7) lists 460 files and can no longer tell scope creep from ordinary log churn.
+
+**Held, with evidence:**
+
+| Device | Evidence |
+|---|---|
+| bgrun return codes | `diag_c110_pyflakes.log:4`, `errorlist_check_c110d.log:116` |
+| Adversarial review cards | `c110b-l2b1-dry.md:71-77` |
+| Prior-art before any launch | c110c before 16:50, c110e before 19:30, c110f before 18:38 |
+| Cost-line parsing | C4b 7/7 |
+| bgrun FAIL scan | `plan_l2b1_dry2.log:26` |
+| Retry cap | "launch 2 of 2", `result_110-4.json:25` |
+| Reaping of killed runs | `cycle_110.log:146` |
+| Due gates in the cycle card | `cycle_110.json:28-44` |
+| VISA precheck | `disp_110_abba.log:5` |
+| Dry and pre-run allowed through | `material_marker.log:2431-2436` |
+| No SendMessage re-dispatch | `guard_card.log:370-378` |
+
+The remaining devices had no occasion to fire in this window.
+
+VIOLATION: device-failed | loss_min=13 | loss_usd=? | evidence=tools/bench/plan_l2b1_dry.log:22
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle110","verdict":"refuted","alternative":"The PRIME/CHECKPOINT stops before op 1 are fail-fast by design; 13 min is ordinary iteration and the 17:18 user stop fixed the cycle's end, so no structural fault.","discriminating_test":"Re-dry plan a9a5b360 with PRIME failures collected, not stopped: if rw_403_2282/rw_9306_6142 appear as UNROUTABLE in the same pass, the 09-25 16:10 device had a scope gap.","violations":[{"slug":"device-failed","loss_min":13,"loss_usd":"?","evidence":"tools/bench/plan_l2b1_dry.log:22"}],"sources":["tools/bench/plan_l2b1_dry.log:22","tools/bench/plan_l2b1_dry2.log:22","tools/bench/plan_l2b1_dry3.log:84","tools/bench/cards/result_110-2.json:19","docs/violation-decisions.md:1304","tools/hooks/material_marker.log:2434","tools/bench/stage_replay_swap_110_prerunb.log:35"],"note":"Also failed, each <=10 min: read-only pyflakes refusals after the 15:49 repair (guard_card.log:371, material_marker.log:2434; pyflakes absent), X9 false positive (result_110-6.json). Error List cap 80 cost 18 min (finding)."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle110.md
+BGRUN END rc=0 after 431s

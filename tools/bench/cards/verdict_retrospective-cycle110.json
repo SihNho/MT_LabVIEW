@@ -1,0 +1,25 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle110",
+ "verdict": "refuted",
+ "alternative": "The PRIME/CHECKPOINT stops before op 1 are fail-fast by design; 13 min is ordinary iteration and the 17:18 user stop fixed the cycle's end, so no structural fault.",
+ "discriminating_test": "Re-dry plan a9a5b360 with PRIME failures collected, not stopped: if rw_403_2282/rw_9306_6142 appear as UNROUTABLE in the same pass, the 09-25 16:10 device had a scope gap.",
+ "violations": [
+  {
+   "slug": "device-failed",
+   "loss_min": 13,
+   "loss_usd": null,
+   "evidence": "tools/bench/plan_l2b1_dry.log:22"
+  }
+ ],
+ "sources": [
+  "tools/bench/plan_l2b1_dry.log:22",
+  "tools/bench/plan_l2b1_dry2.log:22",
+  "tools/bench/plan_l2b1_dry3.log:84",
+  "tools/bench/cards/result_110-2.json:19",
+  "docs/violation-decisions.md:1304",
+  "tools/hooks/material_marker.log:2434",
+  "tools/bench/stage_replay_swap_110_prerunb.log:35"
+ ],
+ "note": "Also failed, each <=10 min: read-only pyflakes refusals after the 15:49 repair (guard_card.log:371, material_marker.log:2434; pyflakes absent), X9 false positive (result_110-6.json). Error List cap 80 cost 18 min (finding)."
+}

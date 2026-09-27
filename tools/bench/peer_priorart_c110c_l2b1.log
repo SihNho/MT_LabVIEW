@@ -1,0 +1,31 @@
+BGRUN START 2026-09-27 16:33:51 limit 20.0 min: py tools/prior_art_review.py --plan-file tools/bench/cards/split_plan_110.md --slug c110c-l2b1 --trigger cycle-start --recipe tools/recipes/stage_d1_l2b1.py
+BGRUN PID 25740
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c110c-l2b1.txt (71801 chars)
+   review card tools\bench\cards\review_priorart-c110c-l2b1.json
+OUTCOME: ANSWERED (65s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-27-priorart-c110c-l2b1.md
+COST: $1.5003  in 20 / out 4967 / cache-create 140843 / cache-read 1370796  (62s, 15 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c110c-l2b1 verdict=novel -> tools\bench\cards\verdict_priorart-c110c-l2b1.json
+--- ANSWER ---
+**Verdict: novel.** This third round covers one new read-only line in the recipe. Nothing in the project's files already does that job, and none of the earlier findings on this recipe has changed.
+
+**What changed since round c110b.** The recipe was novel in c110b (`archive/peer/2026-09-27-priorart-c110b-l2b1.md:488-512`), which reviewed recipe md5 `159758e9…`. According to that file's own disposition (`:520-525`), the only change since is a single printed fact, the `RBW ENDS` line at `tools/recipes/stage_d1_l2b1.py:108`. For each wire that Remove Bad Wires deleted, it prints that wire's ends from the pre-save terminal read. The rows, gates, checkpoints and plan (`plan_l2b1.json`) are the ones c110b already cleared.
+
+**Part A: the direction**
+- **A1 (already decided):** the plan follows existing decisions and reopens none. The new line serves `docs/d1-loop12-17-split-plan.md:1901` (PD223(a), 2026-09-27): every bed gets its explicit expected Error List file in the card that delivers it. That file needs its RBW leftovers accounted for, as `:1907` did for L2-A3 ("13 source-only RBW wires", "9 termless"). The destination and the B1–B3 split are already decided in PD223(b) (`:1902`), and the plan applies them.
+- **A2 (already refuted):** no. Nothing argues against printing RBW end rows. `:1907` accepted exactly this count-level attribution.
+- **A3 (contradicted):** no new conflict. c110b's flip-seed note still holds, and split page §4 agrees with it.
+- **A4 (unread evidence):** none that matters. The line is evidence for the expected-file step, and PD223(a)/(c) are its source.
+
+**Part B: the file it builds**
+- **B1 (already built):** no. There is no `D1_l2_b*` file in `claudeDev` (c110b `:499`), and no stage log for L2-B1 exists (a glob of `tools/bench/stage_d1_*.log` finds nothing for l2b1). No other stage recipe prints `RBW ENDS`. The only match for that string in `tools/` is the attachment's line 108.
+- **B2 (already failed):** only the two dry-run stops that c110b already found addressed (`:500-503`). The new line cannot re-arm either cause.
+- **B3 (a helper already does this):** close, but it does not block. `tools/allterms.py:110-140` (`join_wires`) already groups terminal rows by wire and marks termless wires (`termless: True`). The new line does the same grouping inline for a printed fact only; no gate reads it, and an empty list stands for "termless". `tools/bench/c109_errorlist_reverdict.py:60` only parses the `RBW deleted [...]` list and records no ends. So nothing hand-rolls a gate or a verdict. Switching to `join_wires` is optional tidying, not grounds to stop the launch.
+- **B4 (already measured):** no. L2-A3's RBW attribution is recorded for the L2-A3 bed only (`:1905`, `:1907`). No L2-B1 run has measured RBW on the L2-B1 file.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c110c-l2b1","verdict":"novel","alternative":"The one new line (stage_d1_l2b1.py:108, RBW ENDS fact) re-groups terminal rows by wire, as allterms.join_wires (allterms.py:110-140) already does; it is a printed fact that no gate reads, so it is optional tidying, not prior art that blocks.","discriminating_test":"Diff recipe 159758e9 vs 4ef10fc4: only line 108 differs (c110b disposition :520-525); grep tools/ for 'RBW ENDS' finds only this line; no D1_l2_b* in claudeDev and no stage_d1_l2b1 log.","violations":[],"sources":["archive/peer/2026-09-27-priorart-c110b-l2b1.md:512","archive/peer/2026-09-27-priorart-c110b-l2b1.md:520","docs/d1-loop12-17-split-plan.md:1901","docs/d1-loop12-17-split-plan.md:1907","tools/recipes/stage_d1_l2b1.py:108","tools/allterms.py:110","tools/bench/c109_errorlist_reverdict.py:60"],"note":"Third round on an already-novel plan; the only change is one read-only evidence line for PD223(a) Error List attribution."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c110c-l2b1.md
+   STOP RECORD: none - 2026-09-27-priorart-c110c-l2b1.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_l2b1.py sha c6cc78ffde83 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 68s
