@@ -45,11 +45,13 @@ prose brief. Prose that arrives beside it does not widen it.
 
 - Write recipes/diagnostics as **one long script with a prediction contract in its docstring**, every name
   resolved from `docs/NAMES.md` and `docs/toolkit-capabilities.md` before writing. Run them only through
-  `MATERIAL=1 py tools/bgrun.py --max-min N --log tools/bench/<name>.log -- py -u <script>` (Bash tool; in
-  PowerShell `$env:MATERIAL='1'; py tools\bgrun.py ...`). **The `MATERIAL=1` prefix is mandatory** —
-  `tools/hooks/guard_bash.py` refuses any `tools/recipes/*.py` or `tools/bench/*.py` run without it, because a
-  judgement session must delegate such runs to you rather than run them itself (CLAUDE.md §3). Never patch files
-  with a heredoc; use the Edit/Write tools.
+  `py tools/bgrun.py --material --max-min N --log tools/bench/<name>.log -- py -u <script>` (Bash or
+  PowerShell, same form). **The `--material` flag is mandatory** — `tools/hooks/guard_bash.py` refuses any
+  `tools/recipes/*.py` or `tools/bench/*.py` run without it, because a judgement session must delegate such runs
+  to you rather than run them itself (CLAUDE.md §3). The older env-prefix form (`MATERIAL=1 py ...` /
+  `$env:MATERIAL='1'; py ...`) is AUTO-DENIED by the permission layer under `claude -p` and can never run
+  (measured 2026-09-18; retrospective-cycle89 finding 1(b)) — do not use it. Never patch files with a heredoc;
+  use the Edit/Write tools.
 - **Before creating any new op, tool, or recipe**, check what already exists (`docs/toolkit-capabilities.md`,
   `grep "^def " tools/gscript.py`, `ls tools/recipes tools/bench`) and say in the docstring what you found.
   Most of this project's cost has been rebuilding things it already owned.
