@@ -1,0 +1,26 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle109",
+ "verdict": "refuted",
+ "alternative": "Cycle work itself had no structural fault (bed delivered, gate D replayed PASS); refutation rests only on the threshold-1 device rule: PRERUN-GATE refused a read-only pyflakes/wc on the recipe.",
+ "discriminating_test": "Run stage_prerun.check_launch on 'py -m pyflakes tools/recipes/stage_d1_l2a3.py' offline: returns a launch unit (refuse) => device still broken; returns no units => repaired.",
+ "violations": [
+  {
+   "slug": "device-failed",
+   "loss_min": 1,
+   "loss_usd": null,
+   "evidence": "tools/hooks/material_marker.log:2422"
+  }
+ ],
+ "sources": [
+  "tools/hooks/material_marker.log:2422",
+  "tools/hooks/guard_bash.py:238",
+  "tools/hooks/guard_bash.py:260",
+  "tools/stage_prerun.py:1534",
+  "docs/violation-decisions.md:1488",
+  "tools/bench/cards/result_109-1.json:3",
+  ".claude/agents/material.md:61",
+  "tools/bench/opmodels/tunnel.json:200"
+ ],
+ "note": "Largest cost paid in window: pre-existing stagesim op_wire vs opmodel contradiction (~12 min, $2.29), fixed in-cycle. Recurrent MATERIAL=1 mandate in material.md:61-62 still unfixed (cards carry it)."
+}

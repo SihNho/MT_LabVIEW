@@ -105,7 +105,10 @@ PROVISIONAL = {
     "wire": {"params": {"same_diagram": True, "detach_sourceless_sink": True},
              "evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink "
                          "wired to an already-wired source joins that wire",
-             "gaps": ["a sink on a sourceless half-wire is detached from it (not measured)"]},
+             "gaps": ["PROVISIONAL (no opmodel): a sink on a sourceless half-wire is detached from it; the MEASURED rule is "
+                      "opmodels/connect_from_wire.json `sourceless_sink: join` - with an UNWIRED source the half-wire "
+                      "is joined and keeps its uid (opmodels/tunnel.json:200; stage_d1_l2a3_c109b.log:172, card 109-3)",
+                      "an ALREADY-WIRED source onto a sink on a sourceless half-wire: not measured (modelled as branch)"]},
     "remove_bad_wires": {"params": {},
                          "evidence": "vigraph.build4 flags (a wire with n_src != 1 or no sink); stage_d1_l7_r_r2.log "
                                      "'RBW removed no live uid edge'",
@@ -879,21 +882,33 @@ def op_wire(st, a, P, S1, labels):
             raise SimError("wire: sink on a sourceless half-wire {0}".format(d["wire_uid"]))
         detached = d["wire_uid"]
         d["wire_uid"] = 0
+    join = bool(detached and P.get("sourceless_sink") == "join")
     if s["wire_uid"]:
         w, how = s["wire_uid"], "branch"
+    elif join:
+        # card 109-3 (review archive/peer/2026-09-27-c109b-l2a3-dgate.md s1/s6): an UNWIRED source onto a sink on a
+        # sourceless half-wire JOINS that half-wire and the wire KEEPS ITS UID - measured, opmodels/tunnel.json:200
+        # ("a sink-side half-wire is JOINED and keeps its uid", tunnel_2: the outer took w2160) and the c109b run
+        # (stage_d1_l2a3_c109b.log:120,:141 connect readback `UID 2` = 9921 / 11389; :172 real new [] lost []).
+        # An ALREADY-WIRED source onto such a stub is NOT measured and keeps the branch rule above (tunnel_1 went the
+        # other way on the source side, tunnel.json:200).
+        w, how = detached, "join_stub"
+        s["wire_uid"] = w
     else:
         w, how = new_uid(st), "new"
         s["wire_uid"] = w
     d["wire_uid"] = w
     joined = []
-    if detached and P.get("sourceless_sink") == "join":
+    if join:
         # measured (opmodels/tunnel.json tunnel_2): a sink on a sourceless half-wire is JOINED - every other terminal
-        # still on that half-wire ends up on the new net as well
+        # still on that half-wire ends up on the resulting net as well (on the same uid when how == 'join_stub')
         for r in wire_rows(st, detached):
+            if r is s or r is d:
+                continue
             r["wire_uid"] = w
             joined.append(r["term_uid"])
     eff = {"wire": w, "how": how, "src_term_uid": s["term_uid"], "dst_term_uid": d["term_uid"],
-           "detached_from": detached, "joined": joined}
+           "detached_from": detached, "joined": joined, "kept_stub_uid": how == "join_stub"}
     if st.get("unflip"):                         # card 81-5 F1 (measured l2a1_unflip_81_run1.log); absent = old behaviour
         eff["unflipped"] = _unflip_restored_tunnels(st, [d], st["unflip"].get("cascade", False))
     return eff, []
@@ -1737,6 +1752,31 @@ def selftest():
          "wire 0 AND 11369 flipped); under keep the sourceless half-wire flips it the same way - the two rules agree on the tunnel",
          src54[1612] is False and any(f["tunnel"] == 61 and f["term_uid"] == 1612 for f in e54["tunnel_flips"]) and
          src56[1612] is False and any(f["tunnel"] == 61 for f in e56["tunnel_flips"]), (e54["tunnel_flips"], e56["tunnel_flips"]))
+    # card 109-3: connect onto a SOURCELESS STUB (tunnel.json:200 keep-uid; stage_d1_l2a3_c109b.log:172 real new [] lost [])
+    def stub():
+        s_ = base_state(_synthetic())
+        for r in s_["terminals"]:
+            if r["term_uid"] == 1023:                    # 2.out leaves w6 -> w6 = sourceless stub {1611}, 2.out unwired
+                r["wire_uid"] = 0
+        s_["terminals"].append({"term_uid": 9001, "term_name": "z", "is_source": False, "wire_uid": 6, "owner_uid": 9,
+                                "owner_class": "SubVI", "frame_diagram": 20, "term_class": "Terminal"})
+        return s_
+    PJ = dict(PROVISIONAL["wire"]["params"], sourceless_sink="join")
+    s61 = stub(); n61 = s61["neg"]                                                 # noqa: E702
+    e61, _c = op_wire(s61, {"src": "2.out", "dst": {"uid": 61, "term_uid": 1611}}, PJ, None, {})
+    gate("G61 join: an UNWIRED source onto a sink on a sourceless stub KEEPS the stub uid (w6): no new uid, source + sink + "
+         "the stub's other sink 9001 all on w6 (opmodels/tunnel.json:200)",
+         e61["how"] == "join_stub" and e61["wire"] == 6 and e61["kept_stub_uid"] and s61["neg"] == n61 and
+         sorted(r["term_uid"] for r in wire_rows(s61, 6)) == [1023, 1611, 9001] and e61["joined"] == [9001], e61)
+    s62 = stub()
+    e62, _c = op_wire(s62, {"src": "2.err out", "dst": {"uid": 61, "term_uid": 1611}}, PJ, None, {})
+    s63 = stub(); n63 = s63["neg"]                                                 # noqa: E702
+    e63, _c = op_wire(s63, {"src": "2.out", "dst": {"uid": 61, "term_uid": 1611}}, dict(PROVISIONAL["wire"]["params"]), None, {})
+    gate("G62 unchanged beside it: an ALREADY-WIRED source (2.err out, w5) onto the stub BRANCHES w5 and takes 9001 along "
+         "(unmeasured, old rule); with no opmodel (provisional detach) the sink gets a NEW uid and 9001 stays on w6",
+         e62["how"] == "branch" and e62["wire"] == 5 and sorted(r["term_uid"] for r in wire_rows(s62, 6)) == [] and
+         e63["how"] == "new" and e63["wire"] == n63 - 1 and [r["term_uid"] for r in wire_rows(s63, 6)] == [9001],
+         (e62, e63))
     n_pass = sum(1 for _l, ok in gates if ok)
     n_fail = len(gates) - n_pass
     first = next((l for l, ok in gates if not ok), None)

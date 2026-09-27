@@ -1,0 +1,71 @@
+BGRUN START 2026-09-27 15:31:54 limit 10.0 min: py -u tools/stagesim.py selftest
+BGRUN PID 12916
+  PASS  G01 full plan validates as stageplan/1  OK stageplan/1
+  PASS  G02 an unknown op is refused by the schema  $.actions[0].op: 'teleport' not in ['move_in', 'add_shift_reg', 'tunnel', 'delete_wire', 'delete_object', 'wire', 'remove_bad_wires', 'create', 'decide', 'gate']
+  PASS  G03 move_in cut set == exactly the 4 wires crossing #2's boundary {2,4,5,6}  [2, 4, 5, 6]
+  PASS  G04 moved node's terminals now sit on the destination diagram 30  
+  PASS  G05 provisional cut rule: moved-side terminals unwired, outside keep their (half-)wires  ([0, 0, 0, 0], [2, 6, 5, 4])
+  PASS  G06 orphaned output tunnel #61 flips its outer to a sink (diag_c71 rule)  [{'tunnel': 61, 'term_uid': 1612, 'side': 'OuterTerminal', 'wire': 7, 'outer_term_uid': 1612}]
+  PASS  G07 reconnect table: #2 'in' -> S1 partner = const #1 'v' (collapsed through tunnel #60)  {'s1_key': '2|Terminal|in|0', 'how': 'same key', 'direct': ['60|InnerTerminal|v|0'], 'effective': ['1|Terminal|v|0']}
+  PASS  G08 reconnect: #2 'out' (source) -> S1 consumer #4 'x'  {'s1_key': '2|Terminal|out|0', 'how': 'same key', 'direct': ['61|InnerTerminal|out|0'], 'effective': ['4|Terminal|x|0']}
+  PASS  G09 the error-chain ends are tagged RULE-CHAIN-S1, not candidates  
+  PASS  G10 the 2 non-chain cut rows go to candidates with >=2 mechanisms, jev_candidates shape  [(2, ['tunnel', 'tunnel_indexing', 'shift_register']), (6, ['tunnel', 'tunnel_indexing', 'shift_register'])]
+  PASS  G11 add_shift_reg: 2 new objects, 4 unnamed terminals, symbolic ids, loop table updated  {'new:SR1R': -1, 'new:SR1L': -2}
+  PASS  G12 wiring a sink to an already-wired source BRANCHES that wire (T1.outer joins wire 1)  {'wire': 1, 'how': 'branch', 'src_term_uid': 1001, 'dst_term_uid': -8, 'detached_from': None, 'joined': [], 'kept_stub_uid': False}
+  PASS  G13 wiring from an unwired source makes a NEW (negative, symbolic) wire  {'wire': -10, 'how': 'new', 'src_term_uid': -9, 'dst_term_uid': 1021, 'detached_from': None, 'joined': [], 'kept_stub_uid': False}
+  PASS  G14 delete_object on a RightShiftRegister deletes its Left pair too (stage_d1_l7_r rule)  {'deleted': [50, 51], 'class': 'RightShiftRegister', 'terminals_removed': 4, 'only_sink': [], 'allow_either': [], 'tunnel_flips': []}
+  PASS  G15 full plan: every step applied, end computation_diff(S1) == 0 rows, plan marked final  (None, [])
+  PASS  G16 finalized plan carries base / plan / last-step / summary md5s  {'path': 'C:\\Users\\KimLab\\AppData\\Local\\Temp\\stagesim_selftest_hazwihyy\\sim\\full\\step_16_remove_bad_wires.json', 'md5': '837c770e419d51279dfb0c7c011d700c'}
+  PASS  G17 one step file per action + base, named step_NN_<op>, each chained to the previous file's md5  ['step_00_base.json', 'step_01_move_in.json', 'step_02_add_shift_reg.json']
+  PASS  G18 every step records its model source ('provisional' with no opmodels dir)  provisional
+  PASS  G19 a late break: not final, first divergent step == the last action (#17 delete_wire)  {'n': 17, 'op': 'delete_wire', 'id': None, 'rows_from_here': 1}
+  PASS  G20 never reconnecting #4 'x': first divergent step == 1 (move_in), row stays to the end  ({'n': 1, 'op': 'move_in', 'id': None, 'rows_from_here': 1}, ['4|Terminal|x|0'])
+  PASS  G21 wiring into a sink whose wire HAS a source stops the simulation at that step  {'n': 1, 'op': 'wire', 'id': None, 'error': 'wire 1.v -> 4.x: the sink is occupied by wire 7, which has a source'}
+  PASS  G22 a symbolic id used before any action creates it is refused  {'n': 1, 'op': 'wire', 'id': None, 'error': 'symbolic id new:T9 is not created by any earlier action of this plan'}
+  PASS  G23 an ambiguous terminal name (two sinks 'a') is unaddressable without term_uid  {'n': 2, 'op': 'wire', 'id': None, 'error': "address {'uid': 'new:C1', 'term': 'a'} (-1) resolves to 2 sink terminal(s): [(-3, 'a', 'Terminal'), (-2, 'a', 'Terminal')]"}
+  PASS  G24 a plain wire across a structure border (diagram 20 -> 10) is refused  {'n': 2, 'op': 'wire', 'id': None, 'error': 'wire 2.out -> 4.x: source on diagram 20, sink on diagram 10 - a border needs a tunnel/register action first'}
+  PASS  G25 a 'decide' row is listed as a candidate, never applied, and blocks finalize  (1, False)
+  PASS  G26 a LoopTunnel left with no wire after delete_wire is removed (tunnel #61)  {'wire': 7, 'n_terminals': 2, 'auto_removed_tunnels': [61]}
+  PASS  G27 remove_bad_wires clears exactly the sourceless / sinkless wires the move left (2,4,5,6,7)  {'removed_wires': [2, 4, 5, 6, 7], 'dropped_fsit': []}
+  PASS  G28 a measured model with `sim` params is used and recorded as measured:<file>@md5 (flip rule off)  measured:C:\Users\KimLab\AppData\Local\Temp\stagesim_selftest_hazwihyy\opmodels\move_in.json@8a66e0e7f637db4cf9b9e9587395d015
+  PASS  G29 a measured model file with no `sim` params is recorded as such, never silently  measured-file-present-no-sim-params:C:\Users\KimLab\AppData\Local\Temp\stagesim_selftest_hazwihyy\opmodels\wire_sr.json@d55d14301a08bced08e49d86e3fa92d7 (provisional rule ran)
+  PASS  G30 comparison up to new-uid naming: renumbered new objects compare equal (0 diff)  0
+  PASS  G31 ... and one missing edge is 1 diff  
+  PASS  G32 nothing LabVIEW-side was imported (gscript / win32com / pythoncom absent)  []
+  PASS  G33 open_rows == the end rows => final (the #4 'x' row declared open)  (True, ['4|Terminal|x|0'], [[4, 'x']])
+  PASS  G34 a declared open row that is NOT open (end rows []) => not final  (False, [])
+  PASS  G35 more end rows than declared open => not final  ['2|Terminal|in|0', '4|Terminal|x|0']
+  PASS  G57 classed rule: end rows == the class 1-3 rows [4 x] and the class-4 row 2 'in' has S1's sources => final (the legacy all-rows rule alone would refuse it)  (True, {'ok': True, 'want': [[4, 'x']], 'c4_n': 1, 'c4_keys': 1, 'c4_bad': [], 'unclassed': []})
+  PASS  G58 NEGATIVE: an open row (4 x) declared class 4 is extra AND its sources differ from S1 => not final  {'ok': False, 'want': [], 'c4_n': 2, 'c4_keys': 2, 'c4_bad': [{'row': (4, 'x'), 'sink': '4|Terminal|x|0', 'S1': ['2|Terminal|out|0'], 'end': []}], 'unclassed': []}
+  PASS  G59 NEGATIVE: a declared row without a PD213(d) class => the classed rule refuses (a class is never guessed), not final  {'ok': False, 'want': [[4, 'x']], 'c4_n': 0, 'c4_keys': 0, 'c4_bad': [], 'unclassed': [[2, 'in']]}
+  PASS  G60 cdiff_inputs: a synthetic (s1_graph) plan keeps the old inputs; an s1_key plan gets node_labels_default + the S1 wiki fs pairs when the state has none, and keeps the state's pairs when it has some  ({'labels': 'none', 'labels_n': 0, 'fs_pairs': 'state', 'fs_pairs_n': 0}, {'labels': 'node_labels_default', 'labels_n': 626, 'fs_pairs': 'docs/wiki/subvi/D1_s1_copy.json', 'fs_pairs_n': 576}, {'labels': 'node_labels_default', 'labels_n': 626, 'fs_pairs': 'state', 'fs_pairs_n': 1})
+  PASS  G36 only_sink keep: the constant's wire 3 survives as a source-side half-wire  ([{'wire': 3, 'src_term_uid': 1003, 'src_uid': 3, 'src_class': 'Constant', 'fate': 'keep'}], [], [3])
+  PASS  G37 only_sink delete: the constant's terminal reads wire 0  ([{'wire': 3, 'src_term_uid': 1003, 'src_uid': 3, 'src_class': 'Constant', 'fate': 'delete'}], [], [0])
+  PASS  G38 only_sink ambiguous: kept, and its source terminal is listed in allow_either for the executor  ([{'wire': 3, 'src_term_uid': 1003, 'src_uid': 3, 'src_class': 'Constant', 'fate': 'ambiguous'}], [1003], [3])
+  PASS  G39 only_sink by source class: a constant source takes the 'constant' fate  ([{'wire': 3, 'src_term_uid': 1003, 'src_uid': 3, 'src_class': 'Constant', 'fate': 'delete'}], [], [0])
+  PASS  G40 input SelectorTunnel whose outer sink lost its source: EVERY inner flips to a sink, wires kept (M1 read)  [{'tunnel': 80, 'term_uid': 1802, 'side': 'InnerTerminal', 'wire': 2}, {'tunnel': 80, 'term_uid': 1803, 'side': 'InnerTerminal', 'wire': 3}]
+  PASS  G41 output SelectorTunnel with ONE frame still sourced stays directed (outer stays a source)  []
+  PASS  G42 output LoopTunnel rule unchanged: orphaned inner sink flips ONLY its outer (outer_term_uid kept)  [{'tunnel': 61, 'term_uid': 1612, 'side': 'OuterTerminal', 'wire': 7, 'outer_term_uid': 1612}]
+  PASS  G43 create WhileLoop: object + NEW body diagram (sym new:DL1 / new:DL1.body), owners + diagrams + loops tables, NO loop-owned row  {'class': 'WhileLoop', 'diagram': 10, 'node': 'new:DL1', 'body': -2, 'terminals': [-3, -4]}
+  PASS  G43b created While body owns EXACTLY the measured rows: 1 unnamed source + 1 unnamed sink, Diagram-owned, Terminal, frame = body, unwired  [{'term_uid': -3, 'term_name': '', 'is_source': True, 'wire_uid': 0, 'owner_uid': -2, 'owner_class': 'Diagram', 'frame_diagram': -2, 'term_class': 'Terminal'}, {'term_uid': -4, 'term_name': '', 'is_source': False, 'wire_uid': 0, 'owner_uid': -2, 'owner_class': 'Diagram', 'frame_diagram': -2, 'term_c
+  PASS  G43c created For body owns EXACTLY 1 unnamed Diagram-owned source (i), no sink  [{'term_uid': -7, 'term_name': '', 'is_source': True, 'wire_uid': 0, 'owner_uid': -6, 'owner_class': 'Diagram', 'frame_diagram': -6, 'term_class': 'Terminal'}]
+  PASS  G43e created For has ONE count-terminal 'Tunnel' object (objs owner ForLoop): unnamed OuterTerminal sink on the parent (new:DL1.body) + unnamed InnerTerminal source on the For body (measured, diag_c101_forn.log)  [{'term_uid': -9, 'term_name': '', 'is_source': False, 'wire_uid': 0, 'owner_uid': -8, 'owner_class': 'Tunnel', 'frame_diagram': -2, 'term_class': 'OuterTerminal'}, {'term_uid': -10, 'term_name': '', 'is_source': True, 'wire_uid': 0, 'owner_uid': -8, 'owner_class': 'Tunnel', 'frame_diagram': -6, 'te
+  PASS  G43f created While has NO count-terminal object (r3 op 2 real diff 0 with the body rows only)  
+  PASS  G43d the new body rows are one graph node each (node_of = the body, class Diagram), as bind_new groups them  
+  PASS  G44 move_in into 'new:DF1.body' re-homes #4's rows onto the new For body (nested in the new While body)  [-6, -6]
+  PASS  G45 '.value' names a Local's one terminal; wire -> new:DL1.cond wires it to the body's unnamed SINK row (card 101-3: the cond row is in the read)  {'wire': -13, 'how': 'new', 'src_term_uid': -12, 'dst_term_uid': -4, 'cond_of': -1}
+  PASS  G46 create indicator born_on 2.out: its own node (term_class ControlTerminal, owner = diagram 20), joined to w6  [{'term_uid': -14, 'term_name': 'plot', 'is_source': False, 'wire_uid': 6, 'owner_uid': 20, 'owner_class': 'Diagram', 'frame_diagram': 20, 'term_class': 'ControlTerminal'}]
+  PASS  G47 NEGATIVE: unknown alias / malformed symbolic diagram / '.cond' of a For / create-on an occupied sink are each refused (SimError)  [('unknown alias', 'refused: symbolic diagram new:ZZ1.body is not created by any earlier '), ("'.body' spelled without body", "refused: diagram reference 'new:DL1': a symbolic diagram is 'new:<ali"), ("'.cond' of a For loop", "refused: new:DF1.cond: '.cond' names a While loop's conditional termi"), 
+  PASS  G48 gate op: checks the object and changes nothing  
+  PASS  G49 PROVISIONAL: a moved Constant that was the ONLY source of a single-sink cut wire takes it along: the outside sink 1511 reads wire 0, the constant's 1003 wire 0, fate recorded 'delete'  ([{'wire': 3, 'src_term_uid': 1003, 'src_uid': 3, 'src_class': 'Constant', 'sink_term_uid': 1511, 'fate': 'delete'}], 0, 0)
+  PASS  G50 a moved SubVI (a node) keeps the measured rule: its only-source wires w6/w5 stay on the outside sinks 1611/1501 as sourceless half-wires, no only_source record  ([], 6, 5)
+  PASS  G51 a moved Constant feeding TWO outside sinks (w1 -> 1601, 1701) is outside the measured shape: both keep w1  ([], 1, 1)
+  PASS  G52 only_source 'ambiguous' keeps the half-wire and lists the outside sink in allow_either; 'keep' = the pre-101-4 result (1511 on sourceless w3, no record)  ([1511], 3)
+  PASS  G54 under an explicit {node: delete, subvi: keep} rule a moved PRIMITIVE (Bundler) only-source: w6/w5 are deleted, outside sinks 1611/1501 read wire 0, two 'delete' records  ([{'wire': 5, 'src_term_uid': 1024, 'src_uid': 2, 'src_class': 'Bundler', 'sink_term_uid': 1501, 'fate': 'delete'}, {'wire': 6, 'src_term_uid': 1023, 'src_uid': 2, 'src_class': 'Bundler', 'sink_term_uid': 1611, 'fate': 'delete'}], 0, 0)
+  PASS  G55 the SubVI rule is unchanged beside it (G50); a rule dict without 'subvi' falls back to 'node'; under the PROVISIONAL rule a moved Bundler KEEPS its half-wires (the r5 k24/k25 real reads, diag_c101c_resim.log:57)  (6, 5, [])
+  PASS  G56 under node:delete the deleted sink 1611 (LoopTunnel #61 inner) still flips the outer 1612 to a sink (r5 k12: 11365 wire 0 AND 11369 flipped); under keep the sourceless half-wire flips it the same way - the two rules agree on the tunnel  ([{'tunnel': 61, 'term_uid': 1612, 'side': 'OuterTerminal', 'wire': 7, 'outer_term_uid': 1612}], [{'tunnel': 61, 'term_uid': 1612, 'side': 'OuterTerminal', 'wire': 7, 'outer_term_uid': 1612}])
+  PASS  G61 join: an UNWIRED source onto a sink on a sourceless stub KEEPS the stub uid (w6): no new uid, source + sink + the stub's other sink 9001 all on w6 (opmodels/tunnel.json:200)  {'wire': 6, 'how': 'join_stub', 'src_term_uid': 1023, 'dst_term_uid': 1611, 'detached_from': 6, 'joined': [9001], 'kept_stub_uid': True}
+  PASS  G62 unchanged beside it: an ALREADY-WIRED source (2.err out, w5) onto the stub BRANCHES w5 and takes 9001 along (unmeasured, old rule); with no opmodel (provisional detach) the sink gets a NEW uid and 9001 stays on w6  ({'wire': 5, 'how': 'branch', 'src_term_uid': 1024, 'dst_term_uid': 1611, 'detached_from': 6, 'joined': [9001], 'kept_stub_uid': False}, {'wire': -1, 'how': 'new', 'src_term_uid': 1023, 'dst_term_uid': 1611, 'detached_from': 6, 'joined': [], 'kept_stub_uid': False})
+=== GATES: 66 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":66,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 3s

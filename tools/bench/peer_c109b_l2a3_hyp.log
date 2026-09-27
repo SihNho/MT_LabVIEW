@@ -1,0 +1,51 @@
+BGRUN START 2026-09-27 15:19:26 limit 20.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug c109b-l2a3-dgate -TaskFile tools/bench/peer_c109b_l2a3_task.txt -TimeoutSec 900
+BGRUN PID 26088
+OUTCOME: ANSWERED (142s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-27-c109b-l2a3-dgate.md
+COST: $1.3630  in 22 / out 12055 / cache-create 109129 / cache-read 1136840  (139s, 20 turn(s))
+--- ANSWER ---
+**Verdict: your conclusion survives, but the framing and the proposed fix are wrong.** The expectation in gate D that failed came from a simulator defect that the project's own records already contradicted. D is not an ill-posed check: it caught that defect, and it was the only gate that could. Accepting the artefact is defensible, but on different evidence from what you cited. Fix the simulator, not D.
+
+## 1. Strongest reason the claim, as framed, is wrong
+The fault is in `tools/stagesim.py`, not in D.
+- **The simulator ignores its own measurement.** `op_wire` always creates a new wire uid when the source has no wire (`tools/stagesim.py:884-886`), then moves the stub's other terminals onto it (`:889-894`).
+- **The record already says the opposite.** `tools/bench/opmodels/tunnel.json:200` reads: "a sink-side half-wire is JOINED and **keeps its uid** (tunnel_2: the tunnel's outer terminal took w2160)". `opmodels/connect_from_wire.json:5` cites the same measurement.
+- **A stale gap note hides this.** `stagesim.py:108` still lists "a sink on a sourceless half-wire is detached from it (not measured)".
+- **D is the only check that can see it.** E1 compares edges only. `stagexec.compare` / `edges` group terminals by wire and never compare wire uids (`tools/stagexec.py:438-451, 465-485`). Loosening D would remove the one check on wire identity and on lost base wires.
+
+**Your general rule is too broad.** "Connect Wire onto a stub keeps the stub's uid" is measured only when the **source has no wire**. That covers tunnel_2 and both rows here: a bare Local source, and the connect readback returns `UID 2` = 9921 / 11389 (log :120, :141). When the source **already has a wire**, the rule is unmeasured. The nearest case, tunnel_1, went the other way: the source-side half-wire was replaced with a new uid (`tunnel.json:200`). The simulator fix must cover only the unwired-source case. I found no NI documentation on which wire uid Connect Wire returns (search below). The local measurement is the only evidence.
+
+## 2. Alternative explanations of the same evidence
+- **(a) The wire uids at the end were stale (cached addresses, `stagexec.py:1306`), and LabVIEW really did make new wires.** This is refuted by fresh reads after the save: the sink terminals read `wire=9921` / `wire=11389` with no errors (log :198, :223). It is also refuted by the Remove Bad Wires (RBW) comparison below.
+- **(b) LabVIEW deleted 9921 and made a new wire that reuses the same uid** (the project tracks reused uids, `tunnel.json:101-103`). The wire count staying at 1939 (L2-A2 log :67 vs this log :182) fits either story. The evidence cannot tell (b) apart from "joined into the same wire". It does not matter for the graph, but it means "the wire object survives" is not proven. Only the uid is.
+
+## 3. Your acceptance evidence is the weaker of what you have
+- **The Is Broken? check does not describe the saved file.** The second pass runs *after* the save and re-issues a connect. So "Is Broken? False" (log :217, :242) describes the in-memory VI after one more change, not the file. The first readback said `Is Broken? True` on both wires (log :120, :141), and your brief leaves that unexplained.
+- **The RBW comparison does describe the saved file.** On the L2-A2 artefact, RBW deleted 29 bad wires, including 9921 and 11389 (`stage_d1_l2a2.log:80`). On a copy of this saved file it deleted 27: the same list minus exactly 9921 and 11389 (this log :246). Both stubs got a source, kept their uids, and are no longer bad in the saved file. Cite this instead of IB.
+
+## 4. What would falsify your claim
+If the saved file, read fresh, shows a different set of terminals on 9921 or 11389 than the simulator put on 10000007 / 10000008, then the problem is topology, not uid naming. The expected sets are:
+- 9921: {25585 source, 10393 sink}
+- 11389: {25594 source, 13163 sink, `#7311` t11005 sink}
+
+The t11005 membership is the risky one. The simulator lost 11389 entirely only because it also moved t11005 onto the new wire.
+
+## 5. Cheapest discriminating test (offline, no LabVIEW)
+1. Take the simulated end rows (the step-06 file for this stage under `tools/bench/sim/`) and rename 10000007 → 9921 and 10000008 → 11389.
+2. Rerun D's arithmetic (`stage_d1_l2a3.py:71-74`) against the real end rows. If `stage_d1_l2a3.json` did not save those rows, use one read-only read of the saved file. This is the only step that needs LabVIEW.
+3. Separately, confirm t11005 is on 11389 in the real rows.
+
+If the terminal sets match and D gives `new=[] lost=[]`, the claim holds. If t11005 is missing or sits on another wire, the claim fails and so does PB's topology assumption.
+
+## 6. Process consequences your brief left out
+- **Pre-run records are void.** A failed run invalidates them (CLAUDE.md, stage simulator rule 4). The PASS records from c108f/c109b were produced by the wrong model and must be regenerated once `op_wire` is fixed.
+- **The fix should make D predict the real result.** Change `op_wire` so that, when the source has no wire and the sink is on a sourceless stub, it keeps the stub's uid. Also remove the stale gap note at `stagesim.py:108`. D should then predict `new=[], lost=[]` and pass when replayed against this run's recorded end.
+
+**What would change my mind:** step 5 showing any difference in terminals beyond the uid rename.
+
+Sources:
+- [Node class/Connect Wires method – LabVIEW Wiki](https://labviewwiki.org/wiki/Node_class/Connect_Wires_method)
+- [Scripting: Wire object into existing wire – NI Community](https://forums.ni.com/t5/LabVIEW/Scripting-Wire-object-into-existing-wire/td-p/4014923)
+- [Tutorial: Wiring Objects Using VI Scripting – NI](https://www.ni.com/docs/en-US/bundle/labview/page/tutorial-wiring-objects-using-vi-scripting.html)
+
+None of these say which wire uid Connect Wire returns for a stub. The local measurement is the only evidence on that point.
+BGRUN END rc=0 after 143s

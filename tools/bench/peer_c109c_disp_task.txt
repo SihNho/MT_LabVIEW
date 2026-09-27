@@ -1,0 +1,21 @@
+FAILED PREDICTION - offline diagnostic tools/bench/diag_c109c_resim.py (card 109-3), log tools/bench/diag_c109c_resim_pre.log.
+No LabVIEW involved: the script re-simulates three finalized stage plans with the CURRENT tools/stagesim.py (BEFORE the card's op_wire
+change) and compares each with its recorded final.
+
+Prediction (script docstring): l2a2, disp and l2a3 re-sims reproduce their recorded end_cdiff_rows.
+Observed: l2a2 8 rows == recorded, l2a3 6 rows == recorded, but disp: 6 rows vs the 21 recorded in tools/bench/sim/disp/plan_disp.json
+(finalized.at 2026-09-27 02:15:11). extra [] - the 6 are a subset of the 21; final/open_rows_match True in both.
+
+My claim: this is a baseline error in MY diagnostic, not a simulator regression. plan_disp.json was finalized BEFORE card 106-3 changed the
+finalize graph's cdiff inputs (stagesim.py:1166 `cdiff_inputs`, "card 106-3: the finalize graph = the E3 inputs": node_labels_default
+626 labels + fs pairs). tools/bench/sim/c106c_resim_summary.json:65-66 already records exactly this re-sim of plan_disp: old_finalize_rows_n
+21 -> new_finalize_rows_n 6, and its end_rows (from :13) are the same 6 keys the pre-fix re-sim produced
+(8323 'Force (pN) vs Extension (nm) ', 8764 y, 27716 index, 28180 half-width, 29009 left rank, 29009 right rank;
+tools/bench/sim/c109c_pre/plan_disp.json:856-863). The correct no-regression baseline for disp is therefore the c106c record (6 rows),
+and the card's op_wire change is judged by pre-fix vs post-fix equality, not by the 02:15 file.
+
+Already ruled out: input drift (plan_in md5 7eec1754 and base md5 143ad46c equal the recorded ones, diag_c109c_resim_pre.log);
+the op_wire change (this run is BEFORE it, stagesim self-test 64/0 in tools/bench/selftest_stagesim_c109c_pre.log).
+
+Files: tools/bench/diag_c109c_resim.py, tools/bench/diag_c109c_resim_pre.log, tools/bench/sim/disp/plan_disp.json,
+tools/bench/sim/c106c_resim_summary.json, tools/bench/sim/c109c_pre/plan_disp.json, tools/stagesim.py (simulate, cdiff_inputs).

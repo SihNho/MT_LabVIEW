@@ -1,0 +1,33 @@
+BGRUN START 2026-09-27 15:29:10 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c109c-resim-disp-baseline -TaskFile tools/bench/peer_c109c_disp_task.txt
+BGRUN PID 26112
+OUTCOME: ANSWERED (88s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-27-c109c-resim-disp-baseline.md
+COST: $0.9261  in 12 / out 7642 / cache-create 84203 / cache-read 498146  (84s, 14 turn(s))
+--- ANSWER ---
+**Verdict: I could not refute the claim. It holds on the evidence.** The 21-row number in the 02:15 `plan_disp.json` comes from the old finalize rule, not from a simulator regression. What is still unproven is narrower: the pre-run only shows the current simulator's result agrees with the 07:22 re-sim on the 6-row count and the six missing keys. It does not show the step states are unchanged.
+
+**1. The strongest reason the claim could be wrong.** The claim treats the 07:22 re-sim record as the baseline, but that record belongs to the simulator as it stood at 07:22. `tools/stagesim.py` has changed since then (it shows as modified in git, and cycles 107 and 108 ran in between). The c106c run checked that every one of the 58 step states matched the pinned step files (`tools/bench/diag_c106c_resim_final.log:21`, gate R4). Today's pre-run did not repeat that check. `diag_c109c_resim.py:37-41` compares only the end rows, `final`, `open_rows_match` and `open_rows`.
+
+So "6 rows, the same 6 keys" shows agreement on a coarse projection, not that the simulation behaves the same. Only the end rows are compared; the step-by-step row counts and step states were not checked. Everything the files show is also consistent with the claim:
+- The recorded plan has no `cdiff_inputs` key under `finalized`. A grep of `tools/bench/sim/disp/plan_disp.json` finds none, while any simulation after card 106-3 writes that key (`stagesim.py:1285`). So the 02:15 file was finalized before 106-3.
+- Its 21 end rows fit the old rule: the old "legacy" match needed the end rows to equal all 21 open rows, and the file records `open_rows_match` true (`plan_disp.json:856-877`, `:972`).
+- The c106c run recorded that exact 21 → 6 drop (`c106c_resim_summary.json:65-66`).
+
+**2. An alternative explanation of the same evidence.** Some change to `stagesim.py` or to the operation models after 07:22 altered the intermediate states of the disp simulation. The end rows still come out as the same 6 because the finalize graph only looks at labelled terminals and fs pairs.
+
+Nothing in `diag_c109c_resim_pre.log` rules this out. The last-step md5 differs (recorded `7e307ba5`, re-sim `a588cb26`), but that proves nothing either way: each step file embeds the previous step's path (`stagesim.py:1187`), and the output folder is different, so the hashes would differ anyway.
+
+**3. What would falsify the claim.** Any of these:
+- A re-simulated step state (the `state` field only) differs from the pinned `tools/bench/sim/disp/step_NN_*.json`.
+- The per-step row counts differ from `c106c_resim_summary.json:103-335` (rows_per_step).
+- `plan_disp.json` no longer has md5 `c7d80fc9…`, the value pinned in `c106c_resim_summary.json:5`.
+
+**4. The cheapest test that separates the two.** Re-run the existing script `tools/bench/diag_c106c_resim.py` unchanged, before the op_wire change. It is offline and took 64 s. It already checks R2 (end rows equal the 6 class 1–3 rows), R4 (all 58 step states equal the pinned files) and R5 (`plan_disp.json` and its step files byte-unchanged).
+- **All PASS:** the claim is fully established. The 6-row c106c record is the correct baseline and the diagnostic's `rows_record` override (lines 26-29, not yet wired in at line 46) is legitimate.
+- **R4 fails:** the alternative holds, and a change after 07:22 needs its own review before op_wire is judged.
+
+For the op_wire change itself, "pre equals post" should compare step states in the same R4 style, not just end rows. A wiring change can alter a state without changing the end rows.
+
+**What would change my mind:** an R4 or R5 failure in that re-run.
+
+No external claims are involved: this is entirely about the project's own Python, so there was nothing to search and no URLs to cite. I did not run anything.
+BGRUN END rc=0 after 88s

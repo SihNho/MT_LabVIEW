@@ -1,0 +1,59 @@
+{
+ "schema": "task/1",
+ "id": "109-1",
+ "kind": "doc",
+ "goal": "Error List MISMATCH on bed D1_l2_a2 (no expected file): per-class counts vs the l2_a1 expected file + 108-1 RBW list; PD223(a) explicit expected file; offline re-verdict",
+ "why": "11 extras = the class PD195(b) attributed by RBW on the previous bed; L2-A2 wired one row more. PD223(a): explicit file iff per-class counts equal l2_a1's AND 108-1's RBW deleted the same 29 uids without 25523; else write nothing. No LabVIEW.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/errorlist_check.py"},
+  {"path": "tools/bench/errorlist_D1_l2_a2_20260927_132125_20260927_144914.json"},
+  {"path": "tools/bench/errorlist_D1_l2_a2_20260927_132125_20260927_144914_raw.json"},
+  {"path": "tools/bench/errorlist_expected_D1_l2_a1_20260925_235224.json"},
+  {"path": "tools/bench/errorlist_D1_l2_a1_20260925_235224_20260926_001456.json"},
+  {"path": "tools/bench/stage_d1_l2a2.log"},
+  {"path": "tools/bench/stage_d1_l2a1.json"},
+  {"path": "tools/bench/diag_c88_p2rbw.log"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a2_20260927_132125.vi", "md5": "807c803e1cef1dc33cfdc936c87af1ca"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/bench/errorlist_expected_D1_l2_a1_20260925_235224.json"},
+  {"kind": "file", "name": "tools/bench/errorlist_D1_l2_a2_20260927_132125_20260927_144914_raw.json"},
+  {"kind": "file", "name": "tools/bench/stage_d1_l2a2.log"}
+ ],
+ "pass": [
+  "M1 table: per class (normalised reason text) count on the l2_a2 read vs the l2_a1 expected file; every difference listed with item index",
+  "M2 from stage_d1_l2a2.log: the RBW-deleted uid list vs stage_d1_l2a1.json:866's 29 uids (set equal? 25523 absent?) with file:line",
+  "W1 iff M1 0 diffs AND M2 same 29 uids w/o 25523: write errorlist_expected_D1_l2_a2_20260927_132125.json (l2_a1 format, exact counts, cite M1/M2); else nothing, FAIL",
+  "W2 if W1 written: errorlist_check.reverdict on the 144914 read -> OK, 0 extra, 0 missing (RESULT line + reuse json path)",
+  "no LabVIEW touched; bed md5 unchanged; files + md5 listed"
+ ],
+ "outputs": [
+  "tools/bench/errorlist_expected_D1_l2_a2_20260927_132125.json",
+  "tools/bench/errorlist_D1_l2_a2_*_reuse.json",
+  "tools/bench/cards/result_109-1.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/errorlist_expected_D1_l2_a2_20260927_132125.json",
+   "tools/bench/errorlist_D1_l2_a2_*_reuse.json",
+   "tools/bench/c109_errorlist*",
+   "tools/bench/cards/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 25},
+ "rules": [
+  "errorlist_check.py is NOT edited; no uncapped licence class; exact counts only (PD195(b))",
+  "report MEASUREMENTS; a gate refusal is returned BLOCKED with its message",
+  "result/1 <=10 facts with file:line, <=3 open; do not judge design"
+ ],
+ "advances": ["M3"]
+}

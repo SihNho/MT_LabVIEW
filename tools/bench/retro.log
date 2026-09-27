@@ -3940,3 +3940,104 @@ VIOLATION: repeated-failure-class | loss_min=12 | loss_usd=1.31 | evidence=tools
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle108","verdict":"refuted","alternative":"The L2-A3 KeyError was unforeseeable: dry skips LB and dry rows carry term_class, so no offline check could see it.","discriminating_test":"result_108-4.json:16 (14:19) states read_terms rows lack term_class; task_108-6.json (~14:24) takes it as input yet has no grep of recipes; stage_d1_l2a3.py:66 reads that key. One grep at 14:24 finds it.","violations":[{"slug":"repeated-failure-class","loss_min":12,"loss_usd":1.31,"evidence":"tools/bench/stage_d1_l2a3.log:179"}],"sources":["tools/bench/diag_c108d_selind.log:49","tools/bench/cards/result_108-4.json:16","tools/bench/cards/task_108-6.json:10","tools/recipes/stage_d1_l2a3.py:65","tools/bench/stage_d1_l2a3.log:179","archive/peer/2026-09-27-c108f-l2a3-termclass.md:67","tools/bench/peer_c108f_l2a3_hyp.log:4"],"note":"Deferred cost to cycle 109 (re-dry/prerun/prior-art ~$1.21 + relaunch ~6.5 min) not counted. No device failed in-window; guard_peer SAME-ROW discharge by a pre-failure review is a design gap, not a device failure."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle108.md
 BGRUN END rc=0 after 332s
+BGRUN START 2026-09-27 15:43:24 limit 10.0 min: py tools/retrospective.py --cycle 109
+BGRUN PID 24512
+   window 2026-09-27 14:48:29 .. 2026-09-27 15:43:24 (55 min); 15 build logs, 8 machinery logs, 34 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle109.txt (27394 chars)
+   review card tools\bench\cards\review_retrospective-cycle109.json
+OUTCOME: ANSWERED (316s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-09-27-retrospective-cycle109.md
+COST: $1.8678  in 44 / out 29578 / cache-create 111240 / cache-read 1930587  (314s, 36 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle109 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle109.json
+--- ANSWER ---
+# Retrospective, cycle 109 (14:48:29 – 15:43:24)
+
+**Outcome.** The cycle delivered its goal. The new bed `claudeDev\D1_l2_a3_20260927_151224.vi` was saved (md5 `14337cfd`, `tools/bench/stage_d1_l2a3_c109b.log:189`), 28 of its 29 gates passed, and the one that failed (gate D) was traced to a simulator error and passes on replay after the fix (`tools/bench/diag_c109c_resim_post.log:31,36`). The simulator itself was fixed with no regression (self-test 66/0). Both beds (L2-A2 and L2-A3) now have an explicit expected Error List file whose re-verdict is OK. `next.json` moves on to planning L2-B1.
+
+The work used 3 of the 6 allowed sub-agent dispatches, one build launch of LabVIEW and one read-only launch. Reviews cost $3.657 (C4), and the session took about 45 minutes of the 180-minute budget. The cycle's own work had **no structural fault**. The one violation I report below is required by the device rule, whose threshold is 1: a gate device refused a harmless command. It cost about one minute.
+
+**Timeline, from the logs:**
+
+| Time | What happened |
+|---|---|
+| 14:57:43 | Session starts (`cycle_109.log:1`) |
+| ~14:58–15:02 | Card 109-1: blocked by the permission layer |
+| 15:03–15:22 | Card 109-2: re-verdict at 15:03:35, dry and pre-run 15:08–15:09, prior-art review 15:10–15:11, launch 15:12–15:18 (377 s), gate-D review 15:19–15:21 |
+| 15:25–15:42 | Card 109-3: re-simulations, a second review 15:29–15:30, Error List read in the GUI 15:33–15:40, expected file at 15:41 |
+| 15:43 | Retrospective |
+
+## Findings
+
+**1. Repeated failure.**
+- **The `MATERIAL=1` prefix (the costliest recurring class this cycle).** Card 109-1 came back BLOCKED because the permission layer denied every `MATERIAL=1 py …` launch (`result_109-1.json:2-3`). The same thing happened in cycle 104: at `material_marker.log:2234-2242` and `:2248-2250` the material agent tried `MATERIAL=1`, then `$env:MATERIAL`, then fell back to `--material`.
+  - The root cause is the agent's own instructions. `.claude/agents/material.md:61-62` still says "**The `MATERIAL=1` prefix is mandatory**". The cycle prompt makes the same kind of mistake for the retry card: `cycle_109.log:45-46` asks for a `RETRY_CARD=` prefix, which is also refused (`result_109-2.json:31`).
+  - The approach should have changed after cycle 104. The fix is a one-line edit to `material.md`, not a rule repeated on every card, which is what plan line PD223(c) chose ("Every card states this", `docs/d1-loop12-17-split-plan.md:1909`).
+  - Cost this cycle: roughly 4–5 minutes and one dispatch slot. The loss stayed small because 109-1 still produced its main output (the expected Error List file) by reading, and its unrun re-verdict (W2) took one second inside 109-2 (`c109_errorlist_reverdict.log:23`).
+- **The `term_class` KeyError.** This recurred in cycle 108 (cards 108-4 and 108-6). This cycle correctly ran the class-wide search (card 109-2 step F4) instead of patching one line. That is the right response.
+
+**2. Missing tool.**
+- **An opmodel-to-simulator consistency check.** The gate-D failure came from `stagesim.op_wire` giving a connected stub a new wire id (`tools/stagesim.py:884-894`). The project's own measured model already said the opposite: the stub keeps its id (`tools/bench/opmodels/tunnel.json:200`). A stale "not measured" note at `stagesim.py:108` hid the contradiction.
+  - Nothing cross-checks simulator rules against the `opmodels/*.json` records. The dry run cannot catch this, because it checks the simulation against itself (`stage_d1_l2a3_dry_c109b.log:60` shows the simulated ids 10000007/10000008 passing).
+  - The prior-art review ($1.3679, `peer_priorart_c109b_l2a3.log:6`) returned `novel` and missed it.
+  - Such a check would have saved the gate-D review ($1.3630) and steps S1–S3 of card 109-3. It would not have saved the launch, which was needed anyway.
+- **An executor for the launch-gate/stop-record decision table.** The 2026-09-24 decision called for this table; see the device section below.
+
+**3. Unmeasured steps.**
+- The simulator's rule itself was inference over a measurement that already existed (finding 2). It was written before this cycle, so this cycle only paid for it.
+- Everything decided inside the window was measured. The dry run was repeated after an edit (15:08:02 and 15:08:59). The Error List was read in the GUI, not assumed (`errorlist_check_c109c.log:26,63`). Gate D was replayed offline rather than asserted.
+- One weak spot: Error List attribution was at count level only, with no per-item id read (`result_109-3.json:24,28`). The judgement session accepted this explicitly (`split-plan.md:1907`).
+
+**4. Rule compliance.**
+- **Formal compliance only.** `task_109-1.json:28` ("W1 iff … write …; else nothing") and `task_109-3.json:31` ("E2 iff every E1 item is attributed: write …") put result-dependent actions into briefs. That goes against "A brief states the MEASUREMENT, never the result-dependent ACTION" (`cycle_109.log:69-71`). The rule the session cited in defence, PD223(a), was written by the same session minutes earlier.
+- **PD223(a) not applied to the session's own next card.** PD223(a) says the next bed's expected Error List file is written "in the SAME card that delivers it". Card 109-2's pass list left that step out, and the material agent raised it as an open item (`result_109-2.json:29`).
+- **Unauditable script.** `diag_c109c_finals.log:1` ran a script from a session scratchpad directory, outside the project, so nobody can re-read it.
+- **What the audit does not cover:**
+  - Permission-layer denials leave no line in `material_marker.log`. 109-1's blocked attempts are invisible to C6, and possibly the 15:01:54 line is its only trace.
+  - Check A3 flags `errorlist_check_c109c.log` as unreviewed. That is a false positive: it is an expected MISMATCH before an expected file existed, closed by `diag_c109c_errorlist.log`.
+  - Check A4's blank review is from cycle 103, outside this window. It has been flagged every cycle and nobody closes it.
+  - Check C7's list of 238 files mostly counts screenshots and logs, so it cannot point to scope creep.
+
+**5. Ordering.** The order was defensible:
+1. The Error List mismatch was handled first, as the cycle-start line required (`cycle_109.log:143-144`).
+2. Then one launch, preceded by the class-wide `term_class` search.
+3. Then the simulator fix and the offline replay.
+
+The only improvement would have been folding E1/E2 (the new bed's Error List read and expected file) into 109-2, as noted in finding 4.
+
+**6. What was not reported.**
+- 109-1 claims 12 minutes (`result_109-1.json:16`). The clock allows at most about 5: the session started at 14:57:43, and 109-2's re-verdict ran at 15:03:35.
+- The dry run on the recipe after the refused lint was not flagged as a lint skipped: the `pyflakes` check was never run (`material_marker.log:2422`).
+- The failed pre-fix re-simulation, `diag_c109c_resim_pre.log` (rc=1 after 64 s), was caused by a stale 21-row `plan_disp.json` baseline. That is a second, pre-existing stale record, and it cost $0.9261 (`peer_c109c_disp_hyp.log:4`). It appears only in 109-3's note field, not among its facts.
+
+**7. Judgement inside material sessions.**
+- All four "What was done with it" dispositions were written by material sessions:
+  - `c109b-l2a3-dgate.md:103`: "Accepted … with the reviewer's reframing"
+  - `priorart-c108f-l2a3.md:470`
+  - `priorart-c109b-l2a3.md:485`
+  - `c109c-resim-disp-baseline.md:83-88`
+- The last one is a real judgement act. The material session declined the reviewer's cheapest test and designed a substitute check (R4 folded into `diag_c109c_resim.py`).
+- 109-3 also decided on its own that count-level attribution was enough before writing the expected file.
+- Both decisions were later ratified by the judgement session (`split-plan.md:1906-1907`), and the gate-D disposition explicitly left accepting the artefact to judgement (`c109b-l2a3-dgate.md:119`). No outcome changed, so these are findings, not a violation.
+
+## Device effect
+
+- **Launch gate / stop-record read-only repair: FAILED.** At 15:07:18, `material_marker.log:2422` shows the launch gate (`PRERUN-GATE`) refusing `wc -l tools/recipes/stage_d1_l2a3.py && py -m pyflakes tools/recipes/stage_d1_l2a3.py`. That is the same read-only command shape as the negative case named in the 2026-09-27 01:15 decision (`docs/violation-decisions.md:1423-1429`, marker `:2175`).
+  - Cause: the repair was applied to one code path only. `guard_bash.py:238` removes lint segments before `stop_record.check_command`, but `prerun_gate` passes the raw command (`guard_bash.py:260`).
+  - The launch classifier then skips over `-m pyflakes` as an interpreter flag and counts the recipe path as the launched script (`tools/stage_prerun.py:1534-1540`). That breaks its own docstring: "A path that is only an argument … is not a launch" (`:1448-1449`).
+  - The project's own criterion applies: "If a read-only refusal shows up … the repair failed: that is device-failed round 2" (`violation-decisions.md:1488`).
+  - The loss was about 1 minute, and the lint was skipped.
+- **Retry-guard dispositions (`guard_peer`):** worked. The owed c108f prior-art disposition was written before the new prior-art dispatch (`priorart-c108f-l2a3.md:470`).
+- **Cost-line parsing:** worked, 3 seen / 3 parsed (C4b).
+- **bgrun forcing rc=1 on an inner FAIL:** worked (`stage_d1_l2a3_c109b.log:269`, `errorlist_check_c109c.log:66`).
+- **Premature-build gate and stop-record release:** worked. The prior-art review ended at 15:11:39 and the launch came at 15:12:22 under a novel record.
+- **`gates_due`:** not live. It was built by card 108-5 but only takes effect "at the next relaunch" (`STATUS.md:71`), and `cycle_109.json` has no `gates_due` field. No due gate was tripped in the window, so it did not fail here.
+- **Other devices:** no occasion arose in the window.
+
+**Ranking.**
+1. The costliest fault paid in this window was the simulator/opmodel contradiction: about 12 minutes and $2.29 in reviews. It was introduced before this cycle and was repaired well inside it, so it does not count against this cycle.
+2. Next, the `MATERIAL=1` instruction in `material.md`: about 4 minutes and one dispatch slot. It is repeated across cycles but small, and it did not change how the cycle ended.
+3. The only line I emit is the device failure, because the device rule's threshold is 1. The claim that the cycle ran without a costly structural fault holds in substance.
+
+VIOLATION: device-failed | loss_min=1 | loss_usd=? | evidence=tools/hooks/material_marker.log:2422
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle109","verdict":"refuted","alternative":"Cycle work itself had no structural fault (bed delivered, gate D replayed PASS); refutation rests only on the threshold-1 device rule: PRERUN-GATE refused a read-only pyflakes/wc on the recipe.","discriminating_test":"Run stage_prerun.check_launch on 'py -m pyflakes tools/recipes/stage_d1_l2a3.py' offline: returns a launch unit (refuse) => device still broken; returns no units => repaired.","violations":[{"slug":"device-failed","loss_min":1,"loss_usd":"?","evidence":"tools/hooks/material_marker.log:2422"}],"sources":["tools/hooks/material_marker.log:2422","tools/hooks/guard_bash.py:238","tools/hooks/guard_bash.py:260","tools/stage_prerun.py:1534","docs/violation-decisions.md:1488","tools/bench/cards/result_109-1.json:3",".claude/agents/material.md:61","tools/bench/opmodels/tunnel.json:200"],"note":"Largest cost paid in window: pre-existing stagesim op_wire vs opmodel contradiction (~12 min, $2.29), fixed in-cycle. Recurrent MATERIAL=1 mandate in material.md:61-62 still unfixed (cards carry it)."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle109.md
+BGRUN END rc=0 after 320s

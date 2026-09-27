@@ -1,0 +1,17 @@
+{"schema":"result/1","id":"109-1","status":"BLOCKED","gates":{"pass":3,"fail":0},
+"first_fail":"W2 not run: harness permission denied every py script run (py -c, py <scratch>.py, MATERIAL=1 bgrun fg and bg)",
+"blocked_by":{"device":"permission","message":"Bash 'Permission to use Bash has been denied' on MATERIAL=1 py tools/bgrun.py ... -- py -u tools/bench/c109_errorlist_reverdict.py (bg and fg timeout 30000) and on md5sum of the bed .vi; only py tools/protocol.py and md5sum of non-.vi files were allowed"},
+"artefacts":[{"path":"tools/bench/errorlist_expected_D1_l2_a2_20260927_132125.json","md5":"5c5ac59f7f20a9ce9490fddfb9c8fe91"},{"path":"tools/bench/c109_errorlist_reverdict.py","md5":"075727725d6028dc44142628d3012ff5"}],
+"facts":[
+"M1 (by reading, not by the checker): l2_a2 raw 35 items = 10 classes with counts 1,1,1,1,2,1,1,9,4,14 == l2_a1 expected file; 0 diffs (errorlist_expected_D1_l2_a1_20260925_235224.json:11-31)",
+"M1 item indices identical to l2_a1: notconnected 6,14,15,16,18,19,20,24,28; nosource 7,9,17,30; looseends 8,12,13,21-23,25-27,29,31-34 (..._144914_raw.json:15-1417 raw lines)",
+"The 11 'extra' of the 144914 read (errorlist_D1_l2_a2_..._144914.json:3780-3792) = 9 notconnected + polymorphic + Less?->RSR: expected_file null (:46), plan-derived licences only",
+"M2: stage_d1_l2a2.log:80 RBW deleted 29 uids == stage_d1_l2a1.json:866 (identical list, set equal); 25523 absent",
+"W1 written: tools/bench/errorlist_expected_D1_l2_a2_20260927_132125.json (l2_a1 format, exact counts, total 35, cites M1/M2)",
+"W2 not run: tools/bench/c109_errorlist_reverdict.py:1-16 (G1-G6: M1 via EC.compare, M2, bed md5, find_reusable, reverdict->OK) is ready for MATERIAL=1 bgrun",
+"Bed md5 not re-hashed this session (permission denied); the read recorded before==after 807c803e1cef1dc33cfdc936c87af1ca (..._144914.json:40,3769); no LabVIEW started by this card",
+"stage_d1_l2a2.log:35 says the work copy is a scratch deleted at close, yet the card lists the bed with md5 807c80... (not investigated)"
+],
+"open":["Re-issue W2 (run c109_errorlist_reverdict.py) in a session whose permissions allow py script runs, or accept M1 by reading until then?"],
+"cost":{"usd":null,"minutes":12,"labview_runs":0},
+"note":"errorlist_check.py not edited; no uncapped class. W1's condition was met by reading the raw file; the checker-based confirmation of M1 is gate G1/G2 of the unrun script."}

@@ -1,0 +1,24 @@
+{
+ "schema": "errorlist-expected/1",
+ "bed": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a3_20260927_151224.vi",
+ "bed_md5": "14337cfda5780cb39d12deb5fe0d3db9",
+ "decided_by": "docs/d1-loop12-17-split-plan.md Pre-decided 223(a) + card 109-3 E2: explicit file iff every item of the GUI read is attributed to an open row or to one of the 27 wires RBW deletes on a scratch of this file; exact per-class counts, no uncapped class (PD195(b))",
+ "measured_from": "tools/bench/errorlist_D1_l2_a3_20260927_151224_20260927_153323_raw.json (29 items == the window's own '29 errors and warnings', bed md5 before == after == 14337cfda5780cb39d12deb5fe0d3db9; log tools/bench/errorlist_check_c109c.log)",
+ "attribution": "COUNT-LEVEL (the Error List gives no uid per item, errorlist_check.py UID_ROUTE): RBW on a scratch of this file deleted 27 wires (tools/bench/stage_d1_l2a3_c109b.log:245); their ends (tools/bench/diag_c88_p2rbw.log:171-201, same uids on L2-A1/L2-A2) split as 13 source-only, 9 termless, 3 sink-only without a tunnel (w121, w505, w5859), 2 SubVI-sink + SelectorTunnel (w2924, w3472). L2-A2 -> L2-A3 drops exactly the items of 9921/11389 and of open rows 10382/11529: Not, Less?, input-of-Less?-to-RSR, polymorphic, 1 no-source, 1 loose-end (35 -> 29).",
+ "format_note": "entries use norm_all (checker _hit, tools/errorlist_check.py:384-390); order matters, the first entry with count left takes the item. 'not connected to anything' is matched on its DETAIL ('This is a completely unconnected wire.') because the OCR reads 'anvthing' in 2 of 9 raws (raw json items 4 and 10).",
+ "total": 29,
+ "expected": [
+  {"norm_all": ["imagein", "isnotwired"], "count": 1, "label": "SubVI #5058 'Image In' is not wired",
+   "cite": "open row 5058 'Image In' (plan_l2a3.json:113-115); raw item 0"},
+  {"norm_all": ["buildarr", "containsunwired"], "count": 1, "label": "Build Array: Contains unwired or bad terminal",
+   "cite": "open row 2626 'array' (plan_l2a3.json:107-110); its sink wire w505 is in the RBW 27; raw item 1"},
+  {"norm_all": ["outputlooptunneltoaninput"], "count": 2, "label": "output loop tunnel wired to a SubVI input",
+   "cite": "RBW w2924 / w3472 (SubVI 5696 / 6085 'x,y,z array' + SelectorTunnel 2765 sinks; open rows 5696, 6085); raw items 2,3"},
+  {"norm_all": ["completelyunconnectedwire"], "count": 9, "label": "This wire is not connected to anything.",
+   "cite": "the 9 termless RBW wires 5637, 5709, 5975, 9868, 10312, 10573, 17287, 17393, 23556; raw items 4,8,9,10,12,13,14,18,22"},
+  {"norm_all": ["connectsoneormoredatasinksbuthasnosource"], "count": 3, "label": "This wire connects one or more data sinks but has no source.",
+   "cite": "the 3 sink-only RBW wires w121 (RSR 119), w505 (Build Array 2626 + SelectorTunnel 2765 + RSR 1147), w5859 (RSR 5796); raw items 5,11,24"},
+  {"norm_all": ["wirehaslooseends"], "count": 13, "label": "Wire: Wire has loose ends.",
+   "cite": "the 13 source-only RBW wires 42, 373, 1681, 3040, 3512, 3646, 3912, 4027, 5746, 5979, 6041, 7429, 10763; raw items 6,7,15,16,17,19,20,21,23,25,26,27,28"}
+ ]
+}

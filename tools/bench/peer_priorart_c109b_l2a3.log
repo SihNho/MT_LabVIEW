@@ -1,0 +1,44 @@
+BGRUN START 2026-09-27 15:10:17 limit 20.0 min: py tools/prior_art_review.py --plan-file tools/bench/cards/split_plan_109_l2a3_relaunch.md --slug c109b-l2a3 --trigger cycle-start --recipe tools/recipes/stage_d1_l2a3.py
+BGRUN PID 23744
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c109b-l2a3.txt (64834 chars)
+   review card tools\bench\cards\review_priorart-c109b-l2a3.json
+OUTCOME: ANSWERED (79s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-27-priorart-c109b-l2a3.md
+COST: $1.3679  in 18 / out 6748 / cache-create 127014 / cache-read 1083588  (75s, 18 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c109b-l2a3 verdict=novel -> tools\bench\cards\verdict_priorart-c109b-l2a3.json
+--- ANSWER ---
+**Verdict: novel.** This addendum applies fixes that earlier reviews asked for. It does not repeat any earlier attempt, and I found nothing in the files that settles, refutes or contradicts it.
+
+## PART A: the direction
+
+- **A1 (already settled?)** No. What the plan does was already prescribed, but the work has not been done:
+  - The fix was ordered in STATUS.md `## NEXT` ("FIRST ACT of cycle 109 = … Pre-decided 222(g)").
+  - Its content comes from the accepted review `archive/peer/2026-09-27-c108f-l2a3-termclass.md:81` and `:92-99`: use `term_uid` membership, never `owner_class`, and run the RBW and ordered-read checks after the save.
+  - No `D1_l2_a3_*.vi` exists in `claudeDev`, so nothing has been built yet.
+- **A2 (already refuted?)** No. The only failure on record is card 108-6: `KeyError 'term_class'` at the recipe's own LB gate (`c108f-l2a3-termclass.md:16-22`). The plan fixes that cause.
+  - The review's warning that `owner_class == "ControlTerminal"` gives n_ct = 0 (`:63`) is followed: recipe `:68` counts by `term_uid in cts`.
+  - Same for its warning that the old `Is Broken?: True` readbacks tell us nothing (`:72`). IB now runs after the save (recipe `:103-105`), as `docs/NAMES.md:1098-1104` requires.
+- **A3 (contradicted?)** No contradiction. I checked every claim the plan cites:
+  - "Dry PASS unverified 0" matches the second run in `tools/bench/stage_d1_l2a3_dry_c109b.log:130`.
+  - The first run in the same log said `unverified 6` (`:64`), with CT reading `ControlTerminal False` (`:38`). The `ct_set` patch (recipe `:38`, the second clause) fixed that, and the re-run shows `ControlTerminal True` and 118 uids (`:104`, `:108`).
+  - `tools/stagesim.py:983` does model a created ControlTerminal as a row with `term_class` "ControlTerminal", as the plan says.
+- **A4 (unread evidence?)** None missing. The plan cites the review, `allterms.py`, `NAMES.md:1098`, the precedent `stage_d1_l2a1.py:82-91`, and `diag_c108d_selind.log`.
+
+## PART B: the artefact
+
+- **B1 (already built?)** No L2-A3 file exists.
+- **B2 (already failed?)** Card 108-6 failed, and the cause was the recipe bug. The patched LB (`:67-70`) no longer reads `term_class` from `read_terms` rows. The only remaining `term_class` read in the recipe (`:38`) runs on dry simulated rows only. Those rows carry the key, as dry run 2 `:108-112` shows.
+- **B3 (helper exists?)** The plan uses the existing helpers rather than writing its own:
+  - `stagekit.cfw_second_pass` (`tools/stagekit.py:876`), which also removes the stray Invoke node that ops of this kind leave behind (`:890`, `NAMES.md:1105-1113`);
+  - `expect_is_broken_false` (`:714`);
+  - `s.scratch` copies the saved disk file (`:466-471`), so RBW never sees the unsaved in-memory state after the second pass.
+  - The patched LB counts panel terminals by `term_uid` in `report_all('ControlTerminal')` (recipe `:39`) — the ControlTerminal set that `ct_read` also checks against (`:48`).
+- **B4 (already measured?)** No live LB, IB or RBW result exists for these two sinks (10382 t10393, 11529 t13163). Run 1 died before reaching them (`c108f-l2a3-termclass.md:96-98`).
+- **F4 grep claim (only one `term_class` read on `read_terms` rows):** it holds. The other hits in `tools/recipes/stage_*.py` either write literal `""` values (`stage_d1_l2a1.py:90`, `stage_d1_k.py:88`, `stage_d1_m4a/m4b`, `stage_d1_l7_*`) or read graph/BASE/`G["rows"]` rows (`stage_d1_l2a1.py:26-27`, `stage_d1_l7_1*.py:29-31`). The one hit in `stagekit.py` (`:756`) reads an end dict built with a literal `term_class`.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c109b-l2a3","verdict":"novel","alternative":"The addendum is the remedy prescribed by the accepted c108f review (term_uid membership, IB after save, RBW on a scratch of the saved file); no L2-A3 file exists and no prior attempt ran these fixed gates live.","discriminating_test":"The single live launch: LB counts CT 1 / Local 1 per label via report_all('ControlTerminal'); IB False with wire delta 0 on 10382/11529 after the save; RBW deletes neither re-wired sink wire.","violations":[],"sources":["archive/peer/2026-09-27-c108f-l2a3-termclass.md:81","archive/peer/2026-09-27-c108f-l2a3-termclass.md:92-99","tools/bench/stage_d1_l2a3_dry_c109b.log:104-130","tools/recipes/stage_d1_l2a3.py:36-39","tools/recipes/stage_d1_l2a3.py:67-70","tools/stagekit.py:876-892","docs/NAMES.md:1098-1113","tools/stagesim.py:983"],"note":"Dry log holds two runs: run 1 unverified 6 (:64), run 2 after the ct_set patch unverified 0 (:130); the plan cites the latter correctly."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c109b-l2a3.md
+   STOP RECORD: none - 2026-09-27-priorart-c109b-l2a3.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_l2a3.py sha 88b765a62e22 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 82s

@@ -1,0 +1,23 @@
+FAILED PREDICTION - stage run tools/bench/stage_d1_l2a3_c109b.log (card 109-2, recipe tools/recipes/stage_d1_l2a3.py, 120 lines, plan tools/bench/plan_l2a3.json).
+
+Prediction (recipe docstring, gate D at recipe :76-80): the end adds the plan's 2 new wires and loses exactly the simulated base wires [9921, 11389]
+(simulated: new wires 10000007/10000008, lost 9921/11389 - tools/bench/stage_d1_l2a3_dry_c109b.log gate D).
+Observed (log :172): FAIL D {'new': [], 'lost': []} - the real end read has NO new wire uid and still carries 9921 and 11389.
+Every other gate passed 28/29: E1 (STEPX 05/06 diff 0, log :138,:159), CT x2, LB x4, FU, PB (cdiff == the 6 open rows, :181), PS (saved
+D1_l2_a3_20260927_151224.vi md5 14337cfd..., input md5 unchanged), and the ORDERED second pass AFTER the save: both sinks read
+'UID 2' = 9921 / 11389 (the same uids), 'Is Broken?' False, wire delta 0 (:215-217, :240-242); RBW on a scratch of the saved file deleted
+27 pre-existing uids, neither 9921 nor 11389 (:245-246).
+
+My hypothesis: the D gate's EXPECTATION is wrong, not the build. Both sinks (#10382 t10393, #11529 t13163) sat on SOURCELESS stub wires
+9921 / 11389 before the connect (tools/bench/cards/split_plan_108_l2a3.md s1; 11389 also feeds RSR #7311, PD222(c)). LabVIEW's Connect Wire
+onto a sink that already has a (sourceless) wire joins the new source into THAT wire object, so its uid survives; the simulator
+(tools/stagesim.py wire/connect model) instead retires the stub uid and mints a new wire uid. E1's step comparison evidently tolerates this
+(diff 0), D compares raw uid sets, so D is a uid-identity check that cannot hold for a connect onto an existing stub.
+Proposed disposition: record D as "prediction model wrong for connect-onto-stub", accept the artefact on E1+PB+IB+RBW, and fix D (or the
+simulator's connect-onto-stub uid rule) in the tooling, not in this artefact.
+
+Already ruled out: the connection topology (E1 diff 0, PB cdiff == open rows, CT partner reads match sim); a broken net (ordered Is Broken?
+False after the save on both); RBW damage to the re-wired sinks; handle/ref leak (H5 15/15); input change (H2).
+
+Files: tools/bench/stage_d1_l2a3_c109b.log, tools/recipes/stage_d1_l2a3.py, tools/stagesim.py, tools/stagexec.py (Executor step compare),
+tools/bench/plan_l2a3.json, tools/bench/cards/split_plan_108_l2a3.md.

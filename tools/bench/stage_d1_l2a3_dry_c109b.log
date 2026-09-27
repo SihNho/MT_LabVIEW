@@ -1,0 +1,132 @@
+BGRUN START 2026-09-27 15:08:02 limit 10.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_l2a3.py
+BGRUN PID 25592
+stage_d1_l2a3 - cards 108-2/109-2, STAGE L2-A3 (d1-loop12-17-split-plan.md PD221(d), PD222(g)). INPUT the plan base graph's VI (L2-A2
+file), FRESH LabVIEW -> claudeDev\D1_l2_a3_<ts>.vi (rule-6 GUI save, ExecState 0 by design, never run). ROWS ONLY FROM plan_l2a3.json.
+CARRIER (PD221(d), CLAUDE.md 1c''): 2 hidden indicators in the 1.2 body + 2 Local READS in the 1.1 body; no queue, no edge detection.
+PRIOR ART: stage_d1_l2a2.py (DryBE, 179(b) CT reader, PB cdiff, RBW on a scratch of the saved file); stage_d1_l2a1.py:82-91 (ordered
+second pass: SS.resolve_addr + stagekit.cfw_second_pass + expect_is_broken_false); stagexec CREATE_ROUTES. No new op.
+109-2 FIXES: LB reads no `term_class` (read_terms rows lack it, allterms.py:45-46,85): ControlTerminal = term_uid in report_all(
+'ControlTerminal') live / the simulated ControlTerminal objects dry; Local = owner_class 'Local'. Every gate runs in dry on the simulated
+end rows or prints 'GATE <id> NOT RUNNABLE IN DRY: <why>'. PREDICTION: L1 action -> one op; E1 checkpoints == sim; CT created indicator's
+real partners == sim; LB each label on exactly 1 ControlTerminal + 1 Local; D new wires == sim, lost == sim; FU frame diagrams unchanged;
+PB cdiff(S1, end) == the 6 open_rows (FATAL, before save); PS saved, md5 != input, input unchanged; IB AFTER the save (in memory, never
+re-saved) per re-wired sink: wire_delta 0 + Is Broken? False on the sink's wire uid; RBW on a scratch deletes no re-wired sink's wire.
+    py tools/bgrun.py --material --max-min 60 --log tools/bench/stage_d1_l2a3.log -- py -u tools/recipes/stage_d1_l2a3.py
+  PASS  L0 the executed plan is FINAL, open_rows_match, plan_in = the plan_l2a3_in stageplan  ('f2341cabd04a25b146ed6918e4b710da', {'path': 'tools/bench/plan_l2a3_in.json', 'md5': '3ecc4d8094dcab2b745e519a61747f90'})
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 807c803e1cef1dc33cfdc936c87af1ca  got 807c803e1cef1dc33cfdc936c87af1ca
+  PASS  DRY graph JSON for input md5 807c803e1cef1dc33cfdc936c87af1ca  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_l2a2_20260927.json
+  PASS  L1 every plan action compiled into exactly one real op (6 -> 6)  [1, 2, 3, 4, 5, 6]
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 2 touched diagram(s) [639, 23166]: one-side-only Nodes[] entries 0
+  PRIME 2 terminal indexes proved at base; 0 ControlTerminal end(s) by 179(b); unprovable []
+  FACT  OP create [1] -> err '' (0.0 s)
+  STEPX 01 create         acts [1] ids ['a3_ind_reseed'] bound {-1: 10000001} diff 0
+  FACT  OP create [2] -> err '' (0.0 s)
+  STEPX 02 create         acts [2] ids ['a3_ind_count'] bound {-2: 10000002} diff 0
+  FACT  OP create [3] -> err '' (0.0 s)
+  STEPX 03 create         acts [3] ids ['a3_lr_reseed'] bound {-3: 10000003} diff 0
+  FACT  OP create [4] -> err '' (0.0 s)
+  STEPX 04 create         acts [4] ids ['a3_lr_count'] bound {-5: 10000005} diff 0
+  FACT  OP wire_connect [5] -> err '' (0.0 s)
+  STEPX 05 connect        acts [5] ids ['rw_lrrs_10393'] bound {} diff 0
+  FACT  OP wire_connect [6] -> err '' (0.0 s)
+  STEPX 06 connect        acts [6] ids ['rw_lrac_13163'] bound {} diff 0
+  PASS  E1 every checkpoint's real graph == its simulated step (6 ops)
+  FACT  BINDING obj {-1: 10000001, -2: 10000002, -3: 10000003, -5: 10000005} term {-1: 10000001, -2: 10000002, -4: 10000004, -6: 10000006}
+  FACT  CT row a3_ind_reseed sim #-1 real #10000001: ControlTerminal False rows 1 partners real [9668, 10469] sim [9668, 10469] (DRY: simulated end rows)
+  UNVERIFIED  CT a3_ind_reseed: created indicator read by the 179(b) reader == simulated end  (dry: after mutation Stage._op create)
+  FACT  CT row a3_ind_count sim #-2 real #10000002: ControlTerminal False rows 1 partners real [11346, 25385] sim [11346, 25385] (DRY: simulated end rows)
+  UNVERIFIED  CT a3_ind_count: created indicator read by the 179(b) reader == simulated end  (dry: after mutation Stage._op create)
+  FACT  LB ROUTE: ControlTerminal = term_uid in the simulated ControlTerminal objects (116 uids); Local = owner_class 'Local'; rows = the simulated end (5808)
+  UNVERIFIED  LB a3_ind_reseed: label 'autofocus reseed flag (1.2 to 1.1)' on exactly 1 ControlTerminal and 1 Local  (dry: after mutation Stage._op create)
+  UNVERIFIED  LB a3_ind_count: label 'autofocus reset count (1.2 to 1.1)' on exactly 1 ControlTerminal and 1 Local  (dry: after mutation Stage._op create)
+  UNVERIFIED  LB a3_lr_reseed: label 'autofocus reseed flag (1.2 to 1.1)' on exactly 1 ControlTerminal and 1 Local  (dry: after mutation Stage._op create)
+  UNVERIFIED  LB a3_lr_count: label 'autofocus reset count (1.2 to 1.1)' on exactly 1 ControlTerminal and 1 Local  (dry: after mutation Stage._op create)
+  PASS  D the end adds the plan's 2 new wire(s) and loses exactly the simulated base wires [9921, 11389]  {'new': [10000007, 10000008], 'lost': [9921, 11389]}
+  PASS  FU the set of frame diagrams is unchanged
+  FACT  ExecState [after all rows (warm, RECORDED - the plan's open rows stay open by design)] D1_l2_a3_20260927_150803.vi = <dry:g.exec_state>
+  FACT  CDIFF ROW {'node': 376, 'class': 'SubVI', 'sink': "#376 Terminal 'current frame data array in'", 'before': ['2626|Terminal|appended array|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 376, 'class': 'SubVI', 'sink': "#376 Terminal 'frame index'", 'before': ['644|Terminal||0'], 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array'", 'before': ['5058|Terminal|x,y,z array out|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 5058, 'class': 'SubVI', 'sink': "#5058 Terminal 'Image In'", 'before': ['6810|Terminal|Image Out|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 5696, 'class': 'SubVI', 'sink': "#5696 Terminal 'x,y,z array'", 'before': ['5058|Terminal|x,y,z array out|0@2765/f1'], 'after': []}
+  FACT  CDIFF ROW {'node': 6085, 'class': 'SubVI', 'sink': "#6085 Terminal 'x,y,z array'", 'before': ['5058|Terminal|x,y,z array out|0@2765/f0'], 'after': []}
+  PASS  PB frame-keyed cdiff(S1, real end) == the plan's 6 open_rows (FATAL, before save)  {'extra': [], 'missing': []}
+  FACT  CENSUS after L2-A3 D1_l2_a3_20260927_150803.vi: {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 92, 'Wire': 1939, 'LoopTunnel': 148, 'Local': 10, 'ControlTerminal': 116, 'Node': 0}
+  FACT  PH handles RECORDED: post-open <dry:bench_prep.labview_handles> -> before-save <dry:bench_prep.labview_handles>
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  dry0dry0dry0dry0dry0dry0dry0dry0
+  FACT  IB ENDS (after the save): [('rw_lrrs_10393', 10000003, 10382, 'x', 10000007), ('rw_lrac_13163', 10000005, 11529, 'x', 10000008)]
+GATE IB NOT RUNNABLE IN DRY: the ordered second pass is a live Connect Wire + Is Broken? readback on the saved VI (no dry model)
+GATE RBW NOT RUNNABLE IN DRY: Remove Bad Wires (VI method 410) runs inside LabVIEW on a scratch copy of the saved file
+
+=== DRY PASS: first_fail=None coverage 92/103 lines, first mutation Stage._op create, unverified 6, graph tools/bench/graph_l2a2_20260927.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 12s
+BGRUN START 2026-09-27 15:08:59 limit 10.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_l2a3.py
+BGRUN PID 25752
+stage_d1_l2a3 - cards 108-2/109-2, STAGE L2-A3 (d1-loop12-17-split-plan.md PD221(d), PD222(g)). INPUT the plan base graph's VI (L2-A2
+file), FRESH LabVIEW -> claudeDev\D1_l2_a3_<ts>.vi (rule-6 GUI save, ExecState 0 by design, never run). ROWS ONLY FROM plan_l2a3.json.
+CARRIER (PD221(d), CLAUDE.md 1c''): 2 hidden indicators in the 1.2 body + 2 Local READS in the 1.1 body; no queue, no edge detection.
+PRIOR ART: stage_d1_l2a2.py (DryBE, 179(b) CT reader, PB cdiff, RBW on a scratch of the saved file); stage_d1_l2a1.py:82-91 (ordered
+second pass: SS.resolve_addr + stagekit.cfw_second_pass + expect_is_broken_false); stagexec CREATE_ROUTES. No new op.
+109-2 FIXES: LB reads no `term_class` (read_terms rows lack it, allterms.py:45-46,85): ControlTerminal = term_uid in report_all(
+'ControlTerminal') live / the simulated ControlTerminal objects dry; Local = owner_class 'Local'. Every gate runs in dry on the simulated
+end rows or prints 'GATE <id> NOT RUNNABLE IN DRY: <why>'. PREDICTION: L1 action -> one op; E1 checkpoints == sim; CT created indicator's
+real partners == sim; LB each label on exactly 1 ControlTerminal + 1 Local; D new wires == sim, lost == sim; FU frame diagrams unchanged;
+PB cdiff(S1, end) == the 6 open_rows (FATAL, before save); PS saved, md5 != input, input unchanged; IB AFTER the save (in memory, never
+re-saved) per re-wired sink: wire_delta 0 + Is Broken? False on the sink's wire uid; RBW on a scratch deletes no re-wired sink's wire.
+    py tools/bgrun.py --material --max-min 60 --log tools/bench/stage_d1_l2a3.log -- py -u tools/recipes/stage_d1_l2a3.py
+  PASS  L0 the executed plan is FINAL, open_rows_match, plan_in = the plan_l2a3_in stageplan  ('f2341cabd04a25b146ed6918e4b710da', {'path': 'tools/bench/plan_l2a3_in.json', 'md5': '3ecc4d8094dcab2b745e519a61747f90'})
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 807c803e1cef1dc33cfdc936c87af1ca  got 807c803e1cef1dc33cfdc936c87af1ca
+  PASS  DRY graph JSON for input md5 807c803e1cef1dc33cfdc936c87af1ca  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_l2a2_20260927.json
+  PASS  L1 every plan action compiled into exactly one real op (6 -> 6)  [1, 2, 3, 4, 5, 6]
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 2 touched diagram(s) [639, 23166]: one-side-only Nodes[] entries 0
+  PRIME 2 terminal indexes proved at base; 0 ControlTerminal end(s) by 179(b); unprovable []
+  FACT  OP create [1] -> err '' (0.0 s)
+  STEPX 01 create         acts [1] ids ['a3_ind_reseed'] bound {-1: 10000001} diff 0
+  FACT  OP create [2] -> err '' (0.0 s)
+  STEPX 02 create         acts [2] ids ['a3_ind_count'] bound {-2: 10000002} diff 0
+  FACT  OP create [3] -> err '' (0.0 s)
+  STEPX 03 create         acts [3] ids ['a3_lr_reseed'] bound {-3: 10000003} diff 0
+  FACT  OP create [4] -> err '' (0.0 s)
+  STEPX 04 create         acts [4] ids ['a3_lr_count'] bound {-5: 10000005} diff 0
+  FACT  OP wire_connect [5] -> err '' (0.0 s)
+  STEPX 05 connect        acts [5] ids ['rw_lrrs_10393'] bound {} diff 0
+  FACT  OP wire_connect [6] -> err '' (0.0 s)
+  STEPX 06 connect        acts [6] ids ['rw_lrac_13163'] bound {} diff 0
+  PASS  E1 every checkpoint's real graph == its simulated step (6 ops)
+  FACT  BINDING obj {-1: 10000001, -2: 10000002, -3: 10000003, -5: 10000005} term {-1: 10000001, -2: 10000002, -4: 10000004, -6: 10000006}
+  FACT  CT row a3_ind_reseed sim #-1 real #10000001: ControlTerminal True rows 1 partners real [9668, 10469] sim [9668, 10469] (DRY: simulated end rows)
+  PASS  CT a3_ind_reseed: created indicator read by the 179(b) reader == simulated end  {'real': [9668, 10469], 'sim': [9668, 10469], 'rows': 1}
+  FACT  CT row a3_ind_count sim #-2 real #10000002: ControlTerminal True rows 1 partners real [11346, 25385] sim [11346, 25385] (DRY: simulated end rows)
+  PASS  CT a3_ind_count: created indicator read by the 179(b) reader == simulated end  {'real': [11346, 25385], 'sim': [11346, 25385], 'rows': 1}
+  FACT  LB ROUTE: ControlTerminal = term_uid in the simulated ControlTerminal objects + simulated ControlTerminal rows (118 uids); Local = owner_class 'Local'; rows = the simulated end (5808)
+  PASS  LB a3_ind_reseed: label 'autofocus reseed flag (1.2 to 1.1)' on exactly 1 ControlTerminal and 1 Local (counted CT 1, Local 1)  (1, 1)
+  PASS  LB a3_ind_count: label 'autofocus reset count (1.2 to 1.1)' on exactly 1 ControlTerminal and 1 Local (counted CT 1, Local 1)  (1, 1)
+  PASS  LB a3_lr_reseed: label 'autofocus reseed flag (1.2 to 1.1)' on exactly 1 ControlTerminal and 1 Local (counted CT 1, Local 1)  (1, 1)
+  PASS  LB a3_lr_count: label 'autofocus reset count (1.2 to 1.1)' on exactly 1 ControlTerminal and 1 Local (counted CT 1, Local 1)  (1, 1)
+  PASS  D the end adds the plan's 2 new wire(s) and loses exactly the simulated base wires [9921, 11389]  {'new': [10000007, 10000008], 'lost': [9921, 11389]}
+  PASS  FU the set of frame diagrams is unchanged
+  FACT  ExecState [after all rows (warm, RECORDED - the plan's open rows stay open by design)] D1_l2_a3_20260927_150900.vi = <dry:g.exec_state>
+  FACT  CDIFF ROW {'node': 376, 'class': 'SubVI', 'sink': "#376 Terminal 'current frame data array in'", 'before': ['2626|Terminal|appended array|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 376, 'class': 'SubVI', 'sink': "#376 Terminal 'frame index'", 'before': ['644|Terminal||0'], 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array'", 'before': ['5058|Terminal|x,y,z array out|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 5058, 'class': 'SubVI', 'sink': "#5058 Terminal 'Image In'", 'before': ['6810|Terminal|Image Out|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 5696, 'class': 'SubVI', 'sink': "#5696 Terminal 'x,y,z array'", 'before': ['5058|Terminal|x,y,z array out|0@2765/f1'], 'after': []}
+  FACT  CDIFF ROW {'node': 6085, 'class': 'SubVI', 'sink': "#6085 Terminal 'x,y,z array'", 'before': ['5058|Terminal|x,y,z array out|0@2765/f0'], 'after': []}
+  PASS  PB frame-keyed cdiff(S1, real end) == the plan's 6 open_rows (FATAL, before save)  {'extra': [], 'missing': []}
+  FACT  CENSUS after L2-A3 D1_l2_a3_20260927_150900.vi: {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 92, 'Wire': 1939, 'LoopTunnel': 148, 'Local': 10, 'ControlTerminal': 116, 'Node': 0}
+  FACT  PH handles RECORDED: post-open <dry:bench_prep.labview_handles> -> before-save <dry:bench_prep.labview_handles>
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  dry0dry0dry0dry0dry0dry0dry0dry0
+  FACT  IB ENDS (after the save): [('rw_lrrs_10393', 10000003, 10382, 'x', 10000007), ('rw_lrac_13163', 10000005, 11529, 'x', 10000008)]
+GATE IB NOT RUNNABLE IN DRY: the ordered second pass is a live Connect Wire + Is Broken? readback on the saved VI (no dry model)
+GATE RBW NOT RUNNABLE IN DRY: Remove Bad Wires (VI method 410) runs inside LabVIEW on a scratch copy of the saved file
+
+=== DRY PASS: first_fail=None coverage 92/103 lines, first mutation Stage._op create, unverified 0, graph tools/bench/graph_l2a2_20260927.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 12s

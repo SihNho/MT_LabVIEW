@@ -1537,3 +1537,20 @@ BEFORE the judgement session, as the errorlist hook does. Owed as the FIRST card
 stopped on D-2026-09-27-03/-04), ahead of any build. Self-test: a fixture with 7 retrospectives since the last outcome review
 must produce `gates_due` containing the outcome review. Also accepted: decision-header times are always written HH:MM (a
 `HH:Mx` time silently parsed as 00:00 and kept a slug DUE; cycle 107 lost 107-1's B2 to it).
+
+## device-failed — 2026-09-27 15:49 (cycle 109 judgement, after archive/peer/2026-09-27-retrospective-cycle109.md:98)
+
+`VIOLATION: device-failed | loss_min=1 | loss_usd=? | evidence=tools/hooks/material_marker.log:2422`: the launch gate
+(`PRERUN-GATE`) refused the read-only `wc -l tools/recipes/stage_d1_l2a3.py && py -m pyflakes tools/recipes/stage_d1_l2a3.py`,
+which is the shape the 01:15 read-only repair was meant to let through. The repair covers only the `stop_record` path
+(`guard_bash.py:238` strips lint segments). `prerun_gate` receives the raw command (`guard_bash.py:260`), and
+`stage_prerun.launched_py` skips `-m pyflakes` as an interpreter flag, so it counts the recipe argument as a launch
+(`tools/stage_prerun.py:1534-1540`, against its own docstring at `:1448-1449`).
+
+DECISION: device (threshold 1), in the FIRST card of cycle 110 beside the L2-B1 planning (small, offline). (1) `launched_py`:
+`py -m <module> …` launches the MODULE, so every following path is an argument, never a launch unit. (2) `prerun_gate` gets
+the same lint-segment stripping as the stop_record path. The self-test must hold three cases: the literal command at
+`material_marker.log:2422` returns no launch unit, `py -u tools/recipes/stage_x.py` is still a launch, and
+`py tools/bgrun.py --material … -- py -u tools/recipes/stage_x.py` is still a launch. Accepted with it (a finding, not a
+slug): `.claude/agents/material.md:61-62` still prescribes the refused `MATERIAL=1` prefix. The permission layer refused
+that edit before (STATUS "FOR THE USER", cycle 91), so it stays a user item and every card states the `--material` form.

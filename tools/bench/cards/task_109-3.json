@@ -1,0 +1,70 @@
+{
+ "schema": "task/1",
+ "id": "109-3",
+ "kind": "build",
+ "goal": "PD223(c): stagesim op_wire keeps the stub uid on connect-onto-sourceless-stub; re-sim plan_l2a3 + replay gate D vs the 109-2 run; Error List read of D1_l2_a3 + explicit expected file",
+ "why": "109-2 saved D1_l2_a3 (PB/IB/RBW/E1 PASS) but gate D failed on a simulator uid rule (review c109b-l2a3-dgate). Acceptance as bed needs D replayed with the fixed model and the bed's expected Error List (PD223(a)).",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/cards/result_109-2.json"},
+  {"path": "archive/peer/2026-09-27-c109b-l2a3-dgate.md", "md5": "369a875ff328ffdbfe887d4334fb856d"},
+  {"path": "tools/bench/stage_d1_l2a3_c109b.log", "md5": "da194518a44b40867dcfe6033b5e7bb4"},
+  {"path": "tools/stagesim.py"},
+  {"path": "tools/bench/opmodels/tunnel.json"},
+  {"path": "tools/bench/plan_l2a3.json"},
+  {"path": "tools/errorlist_check.py"},
+  {"path": "tools/bench/errorlist_expected_D1_l2_a2_20260927_132125.json", "md5": "5c5ac59f7f20a9ce9490fddfb9c8fe91"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a3_20260927_151224.vi", "md5": "14337cfda5780cb39d12deb5fe0d3db9"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/bench/opmodels/tunnel.json"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/bench/stage_d1_l2a3_c109b.log"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a3_20260927_151224.vi"}
+ ],
+ "pass": [
+  "S1 stagesim op_wire: unwired source onto a sourceless stub keeps the stub wire uid (cite opmodels/tunnel.json:200); stale note :108 fixed; stagesim self-test green + a case for this rule",
+  "S2 no regression: re-sim plan_l2a2 and plan_disp -> end cdiff and open rows unchanged vs their recorded finals (numbers + file:line)",
+  "S3 re-sim plan_l2a3 -> gate D's prediction (new/lost wires) == the 109-2 run's real new [] lost [] (stage_d1_l2a3_c109b.log:172); plan open rows unchanged",
+  "E1 errorlist_check on D1_l2_a3_20260927_151224.vi (GUI read, no VI run): n items, per-class counts, each item attributed to an open row or RBW's 27 uids (log :245-246)",
+  "E2 iff every E1 item is attributed: write errorlist_expected_D1_l2_a3_20260927_151224.json (exact counts) + reverdict OK; else write nothing, list the unattributed items"
+ ],
+ "outputs": [
+  "tools/stagesim.py",
+  "tools/bench/errorlist_expected_D1_l2_a3_20260927_151224.json",
+  "tools/bench/cards/result_109-3.json"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagesim.py",
+   "tools/bench/plan_l2a3*",
+   "tools/bench/sim/**",
+   "tools/bench/diag_c109c*",
+   "tools/bench/selftest_*",
+   "tools/bench/errorlist_*",
+   "tools/bench/errorlist_shots/**",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "the bed file is never edited or saved; never run any VI; Error List read on a scratch copy as errorlist_check does",
+  "launch every py script as py tools/bgrun.py --material ... -- py -u <script>; env-var prefixes are refused",
+  "plan_l2a3 rows unchanged; only the simulator's uid rule changes",
+  "a gate refusal is returned BLOCKED, never re-run through a self-test child or exempt route",
+  "facts <=10 with file:line; OPEN <=3; do not judge design"
+ ],
+ "advances": ["M3"]
+}
