@@ -1,0 +1,59 @@
+BGRUN START 2026-09-28 01:01:16 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c113a-graph -TaskFile tools/bench/peer_c113a_graph_task.md
+BGRUN PID 21592
+OUTCOME: ANSWERED (148s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-28-c113a-graph.md
+COST: $1.1722  in 14 / out 13291 / cache-create 96935 / cache-read 654390  (144s, 11 turn(s))
+--- ANSWER ---
+**Verdict: I could not refute the core claim.** The 4 new terminals are the D4-accepted ones, with the same uids that launch 2 saw, and the recorded counts leave no room for hidden new objects. The corrected gate N and the claim's list of differences still have two gaps, and both need fixing before the graph is used as the B2b planning base.
+
+**What the recorded data settles**
+- **Same uids.** The new objects in the read of the saved file are 25854, 25961, 25829 and 25862 (`tools/bench/diag_c113a_b2agraph.log:294`). Launch 2's step diff lists the same four (`tools/bench/stage_d1_l2b2a_r2.log:118`), and the D4-ACCEPT lines match them (`stage_d1_l2b2a_r2.log:119-124`).
+- **The counts add up exactly.**
+  - Terminal rows went from 5841 (B1, `diag_c111b_b1graph.log:6`) to 5845 (`diag_c113a_b2agraph.log:6`), so +4.
+  - Objects went from 10159 to 10168, so +9: the 4 terminals plus 5 wires.
+  - Those 5 wires are exactly the D gate's list `[25638, 25642, 25645, 25657, 25668]` (`stage_d1_l2b2a_r2.log:130`).
+  - The launch's own census shows Node 637 → 637 and Wire 1943 → 1948 (`stage_d1_l2b1_c110d.log:550`, `stage_d1_l2b2a_r2.log:206`).
+- **Form matches S1.** #8741 and #30331 each have `disabled index (col)` ×2, which launch 2 recorded as equal to S1 (`stage_d1_l2b2a_r2.log:190,196`).
+
+**1. Strongest reason the claim, as worded, is wrong: the diff cannot see some changes, and one such change happened.**
+`state()` compares only (wired, sources, name) per terminal (`diag_c113a_b2agraph.py:77,86`). A terminal whose `is_source`, `owner_uid`, `frame_diagram` or `term_class` changes does not produce a diff row. That happened here, in lines that are not among the 32:
+- Tunnel #9087's inner terminal 9089 changed `is_source` from false to true.
+- Tunnel #29911's inner terminal 29923 changed `is_source` from false to true.
+
+(Compared in `graph_l2b1_20260927.json` against `graph_l2b2a_20260928.json`.) So "all other differences are …" describes what the diff method can see, not the graph itself.
+
+The claim's list is also incomplete. The diff shows 9 sinks gaining a connection, not 7:
+- **7 planned rows:** the RBW-PRE list, `stage_d1_l2b2a_r2.log:198`.
+- **2 unplanned sinks:**
+  - 8640 (#8634 'array') now has source #9087.
+  - 29631 (#29625 'array') now has source #29911.
+
+Both unplanned changes look like LabVIEW deciding each tunnel's direction once rows b2_11 and b2_14 wired their outer sides. That is harmless here, but they are neither planned rows nor D4 terms.
+
+**2. Alternative explanation of the same evidence**
+For the uid question, none holds up: the logs settle it. For "nothing else changed", the alternative is changes in attributes the diff does not compare. The two tunnel flips show this class exists.
+
+One gap is symmetric and still open. Both reads resolve 172 Diagram uids (`diag_c111b_b1graph.log:257`, `diag_c113a_b2agraph.log:259`), but the census counts 173. It is probably the top-level diagram, and it is identical in B1 and B2a. Node and Wire parity rule out hidden node or wire growth there. Terminal growth on that one diagram is not ruled out by either count.
+
+**3. What would falsify the claim**
+Any of these:
+- A new non-wire uid outside {25829, 25854, 25862, 25961}.
+- A class count between B1 and B2a other than Terminal +4, Wire +5.
+- An `is_source`, `owner_uid` or `frame_diagram` change on any terminal other than 9089 and 29923.
+
+**4. Weakness in the fix itself**
+The new gate compares the multiset of (owner, name) pairs, not the uids (`diag_c113a_b2agraph.py:102-104`). Any four `disabled index (col)` terminals on #8741/#30331 would pass it, including a later re-read that assigns different uids, while B2b plan rows refer to uids. Pin the set: `{n["uid"] for n in nw} == {25829, 25854, 25862, 25961}`.
+
+**Cheapest discriminating test**
+Run the check offline, in seconds, with no LabVIEW (`diag_c113a_b2agraph.py offline`), adding three assertions:
+1. The uid-set pin above.
+2. `Counter(class)` of the B2a objects minus B1's equals `{Terminal: +4, Wire: +5}`.
+3. Widen the `state()` tuple to include `is_source`, `owner_uid`, `frame_diagram` and `term_class`, and require the only extra rows to be 9089 and 29923.
+
+If assertion 3 turns up any other change, the graph needs an explanation before B2b. What would change my mind is exactly that result.
+
+**Outside the question, but relevant to "fit as a planning base":**
+- **No data types in the graph.** Renaming `element` to `subarray` means the consumers #8764, #28233, #29005 and #30306 now receive a 1-D array instead of a scalar. That matches S1, but B2b planning cannot check types from this graph.
+- **66 broken wires.** Remove Bad Wires found 66 bad wires in the saved file (`stage_d1_l2b2a_r2.log:219`), and the graph includes them.
+
+I did not run a web search: every point above rests on this project's recorded logs and graph files, not on outside facts about LabVIEW.
+BGRUN END rc=0 after 149s

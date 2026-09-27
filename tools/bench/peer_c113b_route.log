@@ -1,0 +1,56 @@
+BGRUN START 2026-09-28 01:05:56 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c113b-route -TaskFile tools/bench/peer_c113b_route_task.md
+BGRUN PID 7360
+OUTCOME: ANSWERED (107s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-28-c113b-route.md
+COST: $1.0467  in 14 / out 9540 / cache-create 91366 / cache-read 624629  (104s, 14 turn(s))
+--- ANSWER ---
+Verdict: **part of the claim is wrong.** Plan-side changes cannot reach the three rows. But the missing piece is not a verb. It is the route selection in `connect_route`, which never sends a LoopTunnel face to an op that already exists. That op has only been measured on a case-structure owner, so whether it works on a loop owner is unmeasured.
+
+## 1. Strongest reason the claim is wrong
+
+The claim treats "no route kind" as "no verb". Here the two differ:
+
+- **The executor is not tied to tunnel class.** The `ctltun` branch (`tools/stagexec.py:1844-1859`) calls `g.wire_ctlsink(work, ct_i, owner_cls, owner_i, owner_term)`. That op (`tools/gscript.py:2141-2148`) runs `Traverse(owner_cls)[i]`, casts it to `Node`, and indexes `Terminals[t]`. A while or for loop is a Node, so a loop's `Terminals[]` should resolve the same way a CaseStructure's does. Nothing in the op needs the owner to be a case structure.
+- **The loop-face address already works in this same run.**
+  - b2_01 routes `nested` and b2_02 routes `cfw`, both through loop owners (`diag_c113b_plan.log:153-154`, uid echo on `#1359 Terminals[4]` and `#29874 Terminals[4]`).
+  - The b2_04/b2_05 refusal is raised at `:800-804`. That is after `addr.triple(real, dst…)` at `:775` had already resolved the LoopTunnel sink face. The address was found; the dispatcher refused anyway.
+  - The owner map has the loops: `graph_l2b2a_20260928.json` holds 3 `[While|ForLoop, 1359|29874]` entries. So `tunnel_owner` / `ocls` at `:789-793` would not stop either.
+- **The refusal is a scope choice written in a comment, not a measured failure.** `OWNER_ROUTED` excludes LoopTunnel so that `ctltun` "keep[s] their measured scope" (`:623-625`).
+- **b2_07 matches `ctlsink`'s own direction.** It needs Connect Wire called on the indicator CT, with the Wire Source being a structure face addressed through the owner's `Terminals[]`. That is `OpCtlSinkWire_v1` in its original, un-reversed direction. It is refused only because the `is_ct(rd)` branch at `:762-773` runs before any owner route is looked at, and it rejects `LOOP_ROUTED` sources at `:768`.
+
+So the accurate statement is: the ops exist; the selection gates at `:768` and `:782` exclude LoopTunnel; and wiring through a loop owner has never been run.
+
+## 2. Alternative explanation of the same evidence
+
+**Two alternatives fit the same evidence:**
+
+- **(a) A planning / judgement gap, not a tool gap.** PD226(e) (`docs/d1-loop12-17-split-plan.md:1988`) checked only B2-08 and B2-16 against the new tools. `split_plan_111_l2b2.md:21-24` already showed B2-04/05/06 as CT → LoopTunnel, and B2-04 had already FAILED once through `wire_control` (5001, `:1141`). The finalize dry-route that caught this (tooling item iv, `:1956,1966`) was built in cycle 112. It could have been run on these rows before the prediction was written. The failed prediction came from a table nobody checked, not from a tool that failed unexpectedly.
+- **(b) The op itself really fails on a loop owner.** In that case the claim holds in substance. The only live evidence for `ctltun` is one CaseStructure selector tunnel: `scratch_verify/stagexec.op_connect_20260927_233612.json`, CT #403 → Tunnel #2276 via owner #2222 `Terminals[0]`. A loop's `Terminals[]` also carries shift-register faces, so the index could land on the wrong face. Also, the reversed-direction Connect Wire has been measured on one class only.
+
+## 3. What would falsify the claim
+
+The claim is false if `OpCtlSinkWire_v1`, given `(owner_cls = the loop's class, the loop's class-traverse index, t = the Terminals[] index from addr.triple)`, produces a wire from the CT to that loop face. The pass test is the one card 112-1 used: wire count +1, sole source and sole sink as planned, `Is Broken?` False.
+
+Plan-side options were checked, and none of them works:
+
+- **Reordering:** no help. b2_06 is the same CT → LoopTunnel case and routes only because b2_05 wired `#29091` first. With b2_05 unroutable, b2_06 is too, and `open_rows` goes from 15 to 16.
+- **Reversing the direction:** does not apply. A CT source cannot be a sink.
+- **`cfw` from an existing wire:** not possible. `#28170`, `#29091` and `#29178` are bare in the B2a saved-file graph, as the log shows.
+- **`wire_indicators` for b2_07:** its source must already be wired (`tools/gscript.py:1905-1910`), and it addresses by node class and terminal name, which a LoopTunnel cannot satisfy.
+
+## 4. Cheapest discriminating test
+
+**Offline first (no LabVIEW, seconds):**
+
+- Temporarily widen the two gates in a scratch copy of `connect_route`: `:782` `OWNER_ROUTED` → `FACE_ROUTED`, and at `:768` send a `LOOP_ROUTED` source to the owner route instead of raising.
+- Re-run only the finalize dry-route on `plan_l2b2b.json`.
+- If all 9 rows route, with `owner_cls` ∈ {WhileLoop, ForLoop} and uid echo on `#1359` / `#29874`, then addressing is not the gap. That leaves only the live behaviour open.
+
+**Then one ≤120-line scratch-VI check** (the rule after two failures on one function), on a byte copy of the B2a bed:
+
+- `wire_ctlsink(ct_i(#28170), <loop cls>, idx(#1359), t(face #31055))` for b2_04.
+- The same op with the indicator CT #28786 and loop #29874's face #29178 for b2_07.
+- **If both pass,** the fix is to widen two gates and re-scope PD226(e), not to build a verb.
+- **If Connect Wire returns an error or wires the wrong face,** your tool-gap claim stands and applies to the op itself, not only to the dispatcher.
+
+I did not run a web search. Every point here rests on this repository's code and logs; none depends on external facts about LabVIEW.
+BGRUN END rc=0 after 108s

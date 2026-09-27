@@ -1,0 +1,102 @@
+BGRUN START 2026-09-28 01:18:01 limit 30.0 min: py -u tools/bench/diag_c113c_scratch.py
+BGRUN PID 14684
+BGRUN STAGE-RUN recorded diag_c113c_scratch.py cycle='cycle 113' card=None pid=13828 -> stage_runs.jsonl
+diag_c113c_scratch - card 113-2 T2: SCRATCH VERIFY of the two routes T1 widened (stagexec connect_route, self-test
+selftest_stagexec_c113a.log 124/0) on a LOOP owner, live: 'ctltun' b2_04 (CT #28170 -> LoopTunnel #31051 outer face via ForLoop #1359
+Terminals[]) and 'ctlsink' b2_07 (LoopTunnel #29172 outer face via ForLoop #29874 Terminals[] -> CT indicator #28786). Both run the EXISTING
+op OpCtlSinkWire_v1 (gscript.wire_ctlsink; review archive/peer/2026-09-28-c113b-route.md s4). FIXTURE: the dated scratch byte copy
+claudeDev\scratch_c113c_bed_<ts>.vi of the B2a bed (md5 107a3ef1), DELETED at close; nothing saved, no VI run. PLAN sim/c113c/plan_c113c_bed.json
+(diag_c113c_plan.log: FINAL, routes ctltun / ctlsink). PRIOR ART: diag_c112c_t1t2.py (this is its cut: LVBackend + Executor RECORD MODE).
+PREDICTION: L1 2 ops; E1 every checkpoint's real read == its sim step up to rule D4 (plan_l2b2b_d4.json, toward S1 only); R each sink's
+wire has ONE source == the planned source (read back); IB b2_04's wire Is Broken? False on the ordered idempotent cfw second pass (sink on
+#1359's Terminals[], wire_delta 0); RBW on a scratch-of-scratch deletes neither new wire (b2_07's sink is a panel terminal - no Nodes[]
+second pass exists, so LabVIEW's own broken-wire removal is its Is Broken? reader); ES ExecState unchanged; HF handles flat (+-100) over the
+two ops; H bed md5 unchanged, scratches deleted, LabVIEW gone. PASS writes tools/bench/scratch_verify/stagexec.ctltun_loop_<ts>.json + .ctlsink_loop_<ts>.json.
+    py tools/bgrun.py --material --max-min 30 --log tools/bench/diag_c113c_scratch.log -- py -u tools/bench/diag_c113c_scratch.py
+  PASS  L0 the plan is FINAL and open_rows_match; routes ctltun/ctlsink  ('11dd22cc08ee0cb66ef831d9c4868832', 'PASS')
+  PASS  L0b D4 S1 md5 pinned  5de014fe580b938328fa8662cf2b0652
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 298 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 107a3ef12da41b25d533f8a4c761aae8  got 107a3ef12da41b25d533f8a4c761aae8
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 34002
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_c113c_bed_20260928_011802.vi
+  FACT  ExecState [after open] scratch_c113c_bed_20260928_011802.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so scratch_c113c_bed_20260928_011802.vi is deleted at close
+  FACT  ExecState [before the rows] scratch_c113c_bed_20260928_011802.vi = 0
+  PASS  L1 2 plan actions -> 2 ops  [('connect', [1]), ('connect', [2])]
+  METER start  k   0  private 574.6 MB (d -)  handles 45646 (d -)
+  METER read   k   0  private 582.6 MB (d +8.0)  handles 45738 (d +92)
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 1 touched diagram(s) [23166]: one-side-only Nodes[] entries 0
+  PRIME 0 terminal indexes proved at base; 2 ControlTerminal end(s) by 179(b); unprovable []
+  CHECKPOINTS whole-VI read+diff after ops [1, 2] of 2
+  METER pre    k   1  private 563.1 MB (d -19.5)  handles 45770 (d +32)
+  FACT  wire_ctlsink node census: 637 rows
+  FACT  OP wire_ctlsink ControlTerminal[34] #28170 -> ForLoop[2].t7 (tunnel #31051 outer) -> err '' (0.3 s)
+  FACT  connect #28170->#31055 AFTER node census: 637 rows
+  FACT  connect #28170->#31055 CENSUS DIFF: Node 637 -> 637 ; 0 new uid(s): []
+  METER op     k   1  private 563.7 MB (d +0.6)  handles 45861 (d +91)
+  METER read   k   1  private 569.1 MB (d +5.4)  handles 45854 (d -7)
+  STEPX 01 connect        acts [1] ids ['b2_04'] bound {} diff 0
+  METER pre    k   2  private 569.1 MB (d +0.0)  handles 45855 (d +1)
+  FACT  wire_ctlsink node census: 637 rows
+  FACT  OP wire_ctlsink ControlTerminal[37] #28786 <- ForLoop[1].t1 (tunnel #29172 outer) -> err '' (0.3 s)
+  FACT  connect #29178->#28786 AFTER node census: 637 rows
+  FACT  connect #29178->#28786 CENSUS DIFF: Node 637 -> 637 ; 0 new uid(s): []
+  METER op     k   2  private 570.0 MB (d +0.9)  handles 45856 (d +1)
+  METER read   k   2  private 572.7 MB (d +2.7)  handles 45857 (d +1)
+  STEPX 02 connect        acts [2] ids ['b2_07'] bound {} diff 0
+  FACT  OP {"k": null, "ids": null, "result": null}
+  FACT  OP {"k": 1, "ids": ["b2_04"], "result": {"err": "", "s": 0.3, "how": ["ctltun", "ControlTerminal route 179(b): own uid #28170, owner Diagram #23166 (idx 21), in report_all", "uid echo: owner #1359 Terminals[7] uid == #31055 (name 'Force\\nsmoothing\\nhalf-width')"]}}
+  FACT  OP {"k": 2, "ids": ["b2_07"], "result": {"err": "", "s": 0.3, "how": ["ctlsink", "ControlTerminal route 179(b): own uid #28786, owner Diagram #23166 (idx 21), in report_all", "uid echo: owner #29874 Terminals[1] uid == #29178 (name '')"]}}
+  PASS  E1 every checkpoint's real read == its sim step up to D4 (toward S1 only)  {'bad': [], 'accepted': 0}
+  PASS  R b2_04: sink t31055 has a wire whose ONE source is t28170 (read back)  (25700, [28170])
+  PASS  R b2_07: sink t28786 has a wire whose ONE source is t29178 (read back)  (25753, [29178])
+  FACT  ExecState [after the rows] scratch_c113c_bed_20260928_011802.vi = 0
+  PASS  ES ExecState unchanged by the rows
+  FACT  HF handles: before the rows 45646 -> after the rows 45857 (d 211)
+  FAIL  HF handle count flat over the 2 ops (+-100)  (45646, 45857)
+  FACT  IB b2_04 sink unique-match; wire 25700 source rows [{'i': 0, 'is_source': True, 'owner_class': 'Diagram', 'owner_uid': 23166, 'recip': 25700}]
+  FACT  IB b2_04 ORDERED SECOND PASS {'delta': 0, 'err': '', 'is_broken': False, 'uid2': 25700}
+  PASS  IB b2_04 Wire.Is Broken? False on the ordered idempotent second pass, wire_delta 0  {'delta': 0, 'err': '', 'is_broken': False, 'uid2': 25700}
+  PASS  SC scratch_c113c_bed_20260928_011802_rbw.vi is a byte-identical copy of scratch_c113c_bed_20260928_011802.vi  scratch_c113c_bed_20260928_011802_rbw.vi
+  FACT  RBW BROKEN-WIRE COUNT: Wire 1948 -> 1882 after Remove Bad Wires = 66 bad wire(s); ExecState after 0
+  FACT  RBW deleted [42, 121, 373, 505, 628, 730, 1681, 1773, 2924, 3040, 3148, 3210, 3413, 3472, 3512, 3513, 3646, 3912, 4027, 4878, 4906, 5637, 5709, 5746, 5859, 5975, 5979, 6041, 6096, 6145, 6176, 6363, 7429, 9012, 9097, 9215, 9868, 9993, 10166, 10187, 10312, 10573, 10763, 10908, 11352, 12256, 17287, 17393, 23556, 25618, 28039, 28338, 28365, 28684, 28847, 29591, 29766, 29787, 30241, 30636]
+  PASS  RBW Remove Bad Wires deletes neither new wire {'b2_04': 25700, 'b2_07': 25753} (LabVIEW's own Is Broken? verdict)  {'new': {'b2_04': 25700, 'b2_07': 25753}, 'gone_n': 66}
+  PASS  RBW scratch deleted: scratch_c113c_bed_20260928_011802_rbw.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c113c_bed_20260928_011802_rbw.vi
+
+---------- [H] HYGIENE
+  FACT  close_panel(scratch_c113c_bed_20260928_011802.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 10, 'closed': 10, 'live': 0, 'cached_op_vis': 10}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 10, 'closed': 10, 'live': 0, 'cached_op_vis': 10}
+  FACT  LabVIEW handle count AFTER the work: 45998
+  PASS  H4 scratch deleted: scratch_c113c_bed_20260928_011802.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c113c_bed_20260928_011802.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 107a3ef12da41b25d533f8a4c761aae8 / after 107a3ef12da41b25d533f8a4c761aae8
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33995
+
+====================================================================================================
+=== GATES: 19 pass / 1 fail; failing: HF handle count flat over the 2 ops (+-100)
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c113c_scratch.json   elapsed 199.4 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":19,"fail":1},"first_fail":"HF handle count flat over the 2 ops (+-100)","artefacts":[]}
+LabVIEW gone at exit: True
+BGRUN END rc=1 after 204s

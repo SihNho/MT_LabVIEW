@@ -1591,3 +1591,27 @@ DECISION: device (threshold 1), item (vi) of cycle 112's tooling card. `guard_cy
 through by the shared `tools/launchunit.py` / `stop_record.offline_checker` route, and still refuses launches. Test
 cases: the 22:01:39 argv (`bgrun -- py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_l2b2a.py`) must pass, and
 `py -u tools/recipes/stage_d1_l2b2a.py` must still be refused while the prior-art verdict is unreleased.
+
+## inference-over-measurement — 2026-09-28 00:49 (cycle 113 judgement, after archive/peer/2026-09-28-retrospective-cycle112.md:394)
+
+`VIOLATION: inference-over-measurement | loss_min=17 | loss_usd=1.67 | evidence=tools/bench/cards/task_112-3.json:87`: ACCEPTED
+by the cycle-112 annotation. Card 112-3's hand-typed E1 allow set named `#8634`/`#29625` only, although the split page predicted
+the S1-form divergence on `#8741`/`#30331`.
+
+DECISION: no-device. The mechanical remedy already exists and was built in the same cycle: rule D4 (`tools/stagekit.py:1273,1298`,
+`d4_e1`/`d4_pb`/`d4_form`, offline test 19/0) replaces hand-typed allow sets with a check against S1's graph plus a count cap, so the
+specific inference (guessing which terminals LabVIEW will restore) is refused by code, not by care. The reviewer's discriminating
+test (diff the bed's terminal names on the cascade nodes against `docs/wiki/subvi/D1_s1_copy.json` offline before the launch) is a
+PASS item of B2b's card 113-1. If a B2b-era launch again stops on a terminal set that such an offline diff could have predicted,
+that is the device trigger: the diff moves into `stage_prerun --prerun`.
+
+## repeated-failure-class — 2026-09-28 02:25 (cycle 113 judgement, after archive/peer/2026-09-28-retrospective-cycle113.md:326)
+
+`VIOLATION: repeated-failure-class | loss_min=24 | loss_usd=2.71 | evidence=tools/bench/stage_d1_l2b2b.log:214`: ACCEPTED. The
+Build Array input-rename class (one input wired while a sibling input is an open row) was met at `#2626` in L2-B1 and licensed for
+that node only. It came back at `#11261` in B2b launch 1.
+
+DECISION: device. An offline `stage_prerun --prerun` check: a plan row wiring one input of a Build Array node whose other input is an
+open row at the stage's end is FLAGGED as a predicted name change. The card must then either declare the renamed pair or defer the row.
+Acceptance: replayed on `tools/bench/plan_l2b1*.json` and `tools/bench/plan_l2b2b_9row.json`, it flags `#2626` and `#11261` and nothing
+else. It is built first in cycle 114's card (`docs/d1-loop12-17-split-plan.md` PD227(j)).

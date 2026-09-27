@@ -1,0 +1,37 @@
+BGRUN START 2026-09-28 01:53:07 limit 20.0 min: py tools/prior_art_review.py --plan-file tools/bench/cards/plan_113-4_l2b2b.md --slug c113f-l2b2b --trigger new-op --recipe tools/recipes/stage_d1_l2b2b.py
+BGRUN PID 3584
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c113f-l2b2b.txt (78032 chars)
+   review card tools\bench\cards\review_priorart-c113f-l2b2b.json
+OUTCOME: ANSWERED (69s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-28-priorart-c113f-l2b2b.md
+COST: $1.2473  in 14 / out 5595 / cache-create 121583 / cache-read 813179  (65s, 9 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c113f-l2b2b verdict=novel -> tools\bench\cards\verdict_priorart-c113f-l2b2b.json
+--- ANSWER ---
+**Verdict: novel.** I found nothing in the project files that decides against, refutes or has already tried launching L2-B2b without b2_03, or leaving the pair (#11261, 'array') open until the stage that wires t11273. The files that do bear on it support the plan rather than block it.
+
+**Part A: the direction**
+
+- **A1, settled already.** Only by the decision this card carries out: `docs/d1-loop12-17-split-plan.md:1998-2001` (PD227(d), cycle 113, 2026-09-28) moves b2_03 to the stage that wires t11273 (#11608 → #11261). No earlier Pre-decided item orders Build Array inputs to be wired in input order, and no item says a Build Array's rows must be wired separately. A grep of all `.md` files for "Concatenate" and "input order" finds only this cycle's text and an unrelated 2026-08-30 note on the x,y,z array layout.
+- **A2, refuted already.** Nothing. No stage has dropped a row and then failed PB or E1 on the dropped pair. The one earlier re-cut that moved this same row was L2-B1: "B1 re-cut to 6 rows (the 5 + `11363→11261`, a LoopTunnel source, to B2)" (`tools/bench/cards/split_plan_110.md:53`). That move was forced by routing, not by a failure, and it is the reason the row is still open today.
+- **A3, contradicted.** No conflict found. The state this plan leaves #11261 in, both inputs unwired, is the state already measured in two beds:
+  - L2-B1's run read "#11261 (inputs unwired, output wired) kept its names" (`split_plan_110.md:64`).
+  - The B1 reader lists `('array', False, 0), ('element', False, 0)` (`tools/bench/facts_c111a_b1_errorlist.md:9`).
+  - L2-B2a delivered with PB passing while this pair was open (`d1-loop12-17-split-plan.md:1981-1983`).
+  - So the declared 16th open row (#11261, 'array') matches known behaviour and is not a guess.
+- **A4, unread evidence (a note, not blocking).** There is one earlier measured case of the same effect, a Build Array renaming its inputs when only some are wired. In L2-B1 launch 1, #2626 had one input wired (#5058's), and PB failed on an extra `(2626,'array')` because all four inputs read 'array' (`split_plan_110.md:61-64`). It passed later under a licence (STATUS cycle 110-4: "PB PASS under the #2626 licence").
+  - PD227(d) calls the cause "unmeasured" (`d1-loop12-17-split-plan.md:1999`). The #2626 case is a measured example of partial wiring changing input names, and it strengthens the review's leading explanation (`archive/peer/2026-09-28-c113d-pb.md:66-70`).
+  - It does not argue against this plan. It does show that licensing the pair was an earlier alternative to moving the row. It is worth citing where the later stage runs its owed M1–M4 reads.
+
+**Part B: the recipe**
+
+- **B1, already built.** No. `tools/recipes/stage_d1_l2b2b.py` is the only B2b recipe. The 8-row plan is a re-cut of the 9-row one, and both history copies are kept.
+- **B2, already failed.** The 9-row launch failed only at PB, on b2_03 (`d1-loop12-17-split-plan.md:1997`). That row is exactly what the new plan removes, so the recorded cause is dealt with, not repeated. None of the 8 remaining rows touches #11261 or #11608.
+- **B3, helper exists.** No gap. The plan already uses the existing helpers: stagesim FINAL, rule D4 (`tools/stagekit.py:1273,1298`), the connect_route routes, and launchunit.
+- **B4, already measured.** Nothing that answers the question this launch would answer. The M1–M4 reads that would answer the separate question (does t11270 read 'array' again once t11273 is wired?) are still owed by the later stage (`d1-loop12-17-split-plan.md:2000`).
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c113f-l2b2b","verdict":"novel","alternative":"Instead of moving b2_03, license (#11261,'array') in PB the way L2-B1 licensed the #2626 rename (split_plan_110.md:61-64). This is an earlier handling, not a decision against the plan.","discriminating_test":"Offline: in the launch-2 PB read, #11261 must show 'array' and 'element' both unwired, as in the B2a bed (facts_c111a_b1_errorlist.md:9). Any rename of #11261 without b2_03 would refute the open-row assumption.","violations":[],"sources":["docs/d1-loop12-17-split-plan.md:1997-2001","docs/d1-loop12-17-split-plan.md:1981-1983","tools/bench/cards/split_plan_110.md:53","tools/bench/cards/split_plan_110.md:61-64","tools/bench/facts_c111a_b1_errorlist.md:9","archive/peer/2026-09-28-c113d-pb.md:66-70"],"note":"The #2626 partial-wiring rename in L2-B1 is measured prior evidence for the Concatenate Inputs explanation that PD227(d) calls unmeasured. Cite it in the later stage's M1-M4 reads. It does not block this launch."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c113f-l2b2b.md
+   STOP RECORD: none - 2026-09-28-priorart-c113f-l2b2b.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_l2b2b.py sha 0a22db5faa59 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 72s

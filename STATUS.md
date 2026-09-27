@@ -57,10 +57,26 @@ rig-state: 조립   <!-- 2026-09-24 20:xx USER GRANT: "당분간 내가 말하�
 
 ## NEXT
 🟡 **CARRY (from the 2026-09-25 verification review `archive/peer/2026-09-25-hyp-lintverify-20260925.md`, not blocking): card flags are checked only on the top-level command (a child process could reach LabVIEW under labview=none); a stage run launched outside bgrun is not counted by the retry cap; a bgrun record failure is only logged (`tools/bgrun.py:219-220`). Close in a tooling cycle, deliverable-first.**
-current-bed: D1_l2_b2a_20260928_001426.vi
-<!-- ^ machine key read by tools/errorlist_check.py current_bed_text(); without it the bed is chosen by mtime among D1_*.vi names in this file, and the newer D1_s1_kswap_* would silently take over (review archive/peer/2026-09-26-c88-reuse-stalepin.md). Change it only when a new bed is accepted. Moved 2026-09-28 00:2x by cycle 112 (PD226(d)): L2-B2a accepted. -->
-🔵 **THE BED IS NOW `claudeDev\D1_l2_b2a_20260928_001426.vi`, md5 `107a3ef12da41b25d533f8a4c761aae8`** (L2-B2a; expected Error List file `tools/bench/errorlist_expected_D1_l2_b2a_20260928_001426.json`, 83 items, reverdict OK; PD226(d)). Its input `D1_l2_b1_20260927_193100.vi` (md5 `b705728a…`) is kept.
-🟢🟢 **FIRST ACT of cycle 113 = `docs/d1-loop12-17-split-plan.md` Pre-decided 226(e): ONE material card (Opus high) delivers L2-B2b** (rows B2-01..08 + B2-16 = 9, `tools/bench/cards/split_plan_111_l2b2.md` §2) from the B2a bed.
+current-bed: D1_l2_b2b_20260928_015450.vi
+<!-- ^ machine key read by tools/errorlist_check.py current_bed_text(); without it the bed is chosen by mtime among D1_*.vi names in this file, and the newer D1_s1_kswap_* would silently take over (review archive/peer/2026-09-26-c88-reuse-stalepin.md). Change it only when a new bed is accepted. Moved 2026-09-28 02:2x by cycle 113 (PD227(g)): L2-B2b accepted. -->
+🔵 **THE BED IS NOW `claudeDev\D1_l2_b2b_20260928_015450.vi`, md5 `4f51fd4cb93e9116dee1bc0b07281f12`** (L2-B2b, 8 rows; expected Error List file `tools/bench/errorlist_expected_D1_l2_b2b_20260928_015450.json`, 65 items, reverdict OK; PD227(g)). Its input `D1_l2_b2a_20260928_001426.vi` (md5 `107a3ef1…`) is kept.
+🟢🟢 **FIRST ACT of cycle 114 = `docs/d1-loop12-17-split-plan.md` Pre-decided 227(h): ONE material card (Opus high) delivers L2-B3** (rows B3-01..06: FS inner tunnel → new tunnel T1/T2/T3 → sink; `tools/bench/cards/split_plan_111_l2b2.md` §1 lines 34-36) from the B2b bed.
+   - STEP 0 (owed DEVICE, PD227(j), retrospective-cycle113 `repeated-failure-class` accepted): an offline `stage_prerun --prerun` check that flags a row wiring one Build Array input while a sibling input is an open row. Replayed on `plan_l2b1*` and `plan_l2b2b_9row.json` it must flag `#2626` and `#11261` only. Card rule: a hygiene gate (handles/memory) is never re-based inside a card.
+   - FIRST, with no LabVIEW: dump the graph of the SAVED B2b file, write `plan_l2b3.json`, and run the stagesim finalize route check on ALL 6 rows before any recipe. B3-03..06 were NOROUTE in route A.
+   - Any row with no route: add the route in `tools/stagexec.py` and scratch-check it on a byte copy of the bed in the same card, as 113-2 did.
+   - Then: D4 scope from an offline name diff against `docs/wiki/subvi/D1_s1_copy.json`, a recipe ≤ 120 lines, dry + prerun + prior-art, ONE launch → `claudeDev\D1_l2_b3_<ts>.vi`, the full Error List and its expected file.
+   - Launch syntax: `py tools/bgrun.py --material --max-min N --retry-card … -- …` (guard_bash refuses `--retry-card` placed before `--max-min`).
+   - **Carried to a LATER stage (PD227(d)):** row b2_03 (`#11363 → #11261.array`) is wired in the stage that wires `#11261`'s other input `t11273` (`#11608`, owned by QRT D5), after card 113-3's M1–M4 reads on a byte copy.
+- **CYCLE 113 in brief — L2-B2b DELIVERED, THE NEW BED (PD227):**
+  - Cycle start: the `inference-over-measurement` gate was due. Decision block written: `docs/violation-decisions.md` 2026-09-28 00:49, no device, because D4 is the mechanical remedy.
+  - 113-1 FAIL 2/1: the saved-B2a graph was dumped and the offline name diff done (only label differences plus `#2626`). 3 of 9 rows had NO route: b2_04/05 control → LoopTunnel face, b2_07 LoopTunnel face → indicator. My PD226(e) "the tools exist" was wrong.
+  - 113-2 FAIL 5/1: `connect_route` now routes LoopTunnel OUTER faces (self-test 124/0; scratch 20/0); 9/9 rows routed; recipe 120 lines. Launch 1 stopped at PB: Build Array `#11261` input `t11270` read 'element' after b2_03. Nothing was saved.
+  - 113-3 BLOCKED 1/1: a live diagnostic needs a FINAL plan (launch gate). M0 offline: `t11273` is a QRT-owned open row. There is no reader for Concatenate Inputs, index mode or data type.
+  - 113-4 PASS 5/0: b2_03 moved to a later stage (PD227(d)). Launch 2 saved `D1_l2_b2b_20260928_015450.vi` md5 `4f51fd4c…`; Error List 65 items, reverdict OK.
+  - Carries: `stage_runs` records `card=None` on a retry launch; the `--retry-card` argument order in guard_bash; 226(f)'s carries.
+  - Retrospective-cycle113 (`archive/peer/2026-09-28-retrospective-cycle113.md`, annotated): `repeated-failure-class` 24 min ACCEPTED (mine: `#2626`'s L2-B1 precedent was not checked at 113-2's plan step) → device STEP 0 above (`docs/violation-decisions.md` 02:25).
+  - User decisions: none open from this cycle.
+- (history) 🟢🟢 **FIRST ACT of cycle 113 = `docs/d1-loop12-17-split-plan.md` Pre-decided 226(e): ONE material card (Opus high) delivers L2-B2b** (rows B2-01..08 + B2-16 = 9, `tools/bench/cards/split_plan_111_l2b2.md` §2) from the B2a bed.
    - Dump the graph of the SAVED B2a file, then plan offline.
    - stagesim FINAL; every row routed (tools exist: owner route (v), base-flip seeding for B2-08, ctltun for B2-16).
    - Recipe ≤ 120 lines, with rule D4 (toward S1, count cap; `tools/stagekit.py:1273,1298`) scoped to B2b's cascade nodes.

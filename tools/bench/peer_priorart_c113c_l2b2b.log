@@ -1,0 +1,33 @@
+BGRUN START 2026-09-28 01:28:03 limit 20.0 min: py tools/prior_art_review.py --plan-file tools/bench/cards/plan_113-2_l2b2b.md --slug c113c-l2b2b --trigger new-op --recipe tools/recipes/stage_d1_l2b2b.py
+BGRUN PID 17056
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c113c-l2b2b.txt (78197 chars)
+   review card tools\bench\cards\review_priorart-c113c-l2b2b.json
+OUTCOME: ANSWERED (47s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-28-priorart-c113c-l2b2b.md
+COST: $1.1018  in 10 / out 3654 / cache-create 115201 / cache-read 535574  (43s, 8 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c113c-l2b2b verdict=novel -> tools\bench\cards\verdict_priorart-c113c-l2b2b.json
+--- ANSWER ---
+**Verdict: novel.** I found nothing in the project files showing this work was already built, measured, refuted or settled somewhere else. The change sends the control-terminal ↔ loop-tunnel outer-face rows to the existing op `OpCtlSinkWire_v1` (`gscript.wire_ctlsink`). It is the fix the latest review prescribed, and no new op was built.
+
+**Part A: the direction**
+- **A1, already settled?** No. The only earlier word on this is a scope comment in `tools/stagexec.py:623-625`. It refuses loop-tunnel faces for class-traverse verbs "because those verbs index the tunnel's OWN class". It is not a decision, and T1 answers its stated reason: the two new routes index the owner loop's class traverse, as written in `tools/stagexec.py:626-627`.
+- **A2, already refuted?** No. The route review `archive/peer/2026-09-28-c113b-route.md:53`, `:59`, `:64` calls the refusal "a scope choice written in a comment, not a measured failure". It also says the op is not tied to one tunnel class. Its falsifier (`:74`, `:78`) was a live test on a loop owner. The concern it named at `:74`, that the index could land on a shift-register face, is what T2 tested. Both scratch records read PASS with `is_broken` false: `tools/bench/scratch_verify/stagexec.ctltun_loop_20260928_012355.json:3,35` and `tools/bench/scratch_verify/stagexec.ctlsink_loop_20260928_012355.json:3,35`.
+- **A3, contradicted?** No. The plan's own claims match the files:
+  - 9/9 rows routed matches `archive/peer/2026-09-28-c113b-route.md:112-113`.
+  - Rows b2_04/b2_05 go through Terminals[7]/[8] of loop #1359, and b2_07 through Terminals[1] of loop #29874 (same lines).
+- **A4, unread evidence?** None. The plan cites the review it acts on (the route review above), and the dry-run and scratch logs (`tools/bench/diag_c113c_scratch*.log:4-5`) name the loop-owner case.
+
+**Part B: the artifact**
+- **B1, already built?** No. Before T1, no route kind covered a control terminal ↔ loop-tunnel outer face in either direction (`archive/peer/2026-09-28-c113b-route.md:30-34`). The cycle-112 loop-tunnel owner route, item (v), only does addressing (`tools/stagexec.py:1071`, `:2138-2139`). It has no route kind that leads to a control terminal.
+- **B2, already failed?** No. There is no record of `OpCtlSinkWire_v1` failing on a loop owner. The nearest match is a different op: cycle 90's `OpCreateConstOnTerm_v0` refused a ForLoop owner with error 1055 (STATUS, cycle-90 block). The only other hit, `tools/bench/diag_c104_selftest.log:7`, is a simulator-ID binding failure, not this op.
+- **B3, helper exists?** The helper that exists is the one being reused (`tools/stagexec.py:1845-1877`).
+- **B4, already measured?** No. Before T2, loop-owner wiring had never been run (`archive/peer/2026-09-28-c113b-route.md:67`).
+
+One point for the reader, not a slug: the only live proof for a loop owner is one scratch run. It wired b2_04 and b2_07, and only b2_04's broken-wire check was read (the `is_broken_b2_04` key in both records). No broken-wire result for b2_05 or b2_16 appears in those records.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c113c-l2b2b","verdict":"novel","alternative":"The loop owner's Terminals[] index could land on a shift-register face instead of the planned tunnel face (named in c113b-route.md:74); T2's uid echo covered b2_04 and b2_07 only.","discriminating_test":"In the launch, read each ctltun/ctlsink row back: sole source and sole sink == planned uids, Is Broken? False, for all 4 loop-owner rows (b2_04, b2_05, b2_07, b2_16).","violations":[],"sources":["tools/stagexec.py:623-627","archive/peer/2026-09-28-c113b-route.md:53","archive/peer/2026-09-28-c113b-route.md:74","archive/peer/2026-09-28-c113b-route.md:112","tools/bench/scratch_verify/stagexec.ctltun_loop_20260928_012355.json:3","tools/bench/scratch_verify/stagexec.ctlsink_loop_20260928_012355.json:3"],"note":"The loop-tunnel refusal was a scope comment, not a measured failure; T1 reuses the existing op OpCtlSinkWire_v1 as the review prescribed. No earlier failure of this op on a loop owner was found."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c113c-l2b2b.md
+   STOP RECORD: none - 2026-09-28-priorart-c113c-l2b2b.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_l2b2b.py sha 5c6f0e7f376c -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 50s

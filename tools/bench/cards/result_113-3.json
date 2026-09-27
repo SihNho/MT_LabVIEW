@@ -1,0 +1,24 @@
+{"schema":"result/1","id":"113-3","status":"BLOCKED","gates":{"pass":1,"fail":1},
+"first_fail":"launch gate: prerun FAIL 5/5 for tools/bench/diag_c113e_concat.py (X2 no finalized plan, X3/X5 0 rows, X6 re-typed uids, X9 no run_rows/from_decision) - diag_c113e_concat_prerun.log:72-79",
+"blocked_by":{"device":"guard_bash launch gate (stage_prerun.is_vi_modifying)","message":"diagnostic that calls LVBackend.connect is gated like tools/recipes/stage_*.py: needs dry PASS + prerun PASS, and prerun requires a finalized stageplan naming every row (b2_03 + an M3 row #11608 t11614 -> t11273 that no plan has) with no re-typed uid"},
+"artefacts":[
+{"path":"tools/bench/diag_c113e_concat.json","md5":null},
+{"path":"tools/bench/diag_c113e_concat.py","md5":"ebd4e43eef37d51d73bbb689cc68163a"},
+{"path":"tools/bench/diag_c113e_offline.py","md5":null},
+{"path":"tools/bench/diag_c113e_concat_dry2.log","md5":null},
+{"path":"tools/bench/diag_c113e_concat_prerun.log","md5":null}],
+"facts":[
+"M0: t11273 = open row (#11261,'element') 'QRT (D5)' (plan_l2b2b.json:183-186), open since L2-B1 (plan_l2b1_in.json:43); no L2 row wires it; owner QRT (d1-loop12-17-split-plan.md:74)",
+"M0 bed graph: #11261 on diag 23166, t11270 'array' w0, t11273 'element' w0; #11363 inner t11365 w11374 (diag 7911), outer t11369 w0 (diag_c113e_offline.log)",
+"M0 S1: #11261 on diag 639 with #11608; t11270 'array' w11352 from t11369, t11273 'element' w12256 from #11608 t11614 (diag_c113e_offline.log)",
+"M0 bed: #11608 (Bundler, diag 639) t11614 'output cluster' still carries w12256 whose sink side left with #11261 (diag_c113e_offline.log)",
+"No reader for BuildArray Concatenate Inputs (grep 0), LoopTunnel IndexMode read-back (gscript.py:2001-2002), Terminal.DataType (NAMES.md:475-476) - M1-M4 could only give names/wires/ExecState",
+"Dry run PASS 78/78 lines after 2 fixes (owners map as stagexec.py:1374; dry-safe HF/kill) - diag_c113e_concat_dry2.log:72",
+"Prerun FAIL: X2/X3/X5/X6/X9 - a live-connect diagnostic needs a finalized stageplan via Executor, as diag_c113c_plan.py + diag_c113c_scratch.py did (diag_c113e_concat_prerun.log:72-79)",
+"No LabVIEW launched; no scratch_c113e* file in claudeDev; bed md5 107a3ef1 and S1 md5 3e3d23ce unchanged (prerun log:15,18,70)"],
+"open":[
+"Re-issue with the scratch route of 113-2: a diag_c113e_plan.py building a FINAL stageplan (b2_03 alone; optionally a 2nd plan b2_03 + #11608 t11614 -> #11261 t11273) under a write glob that covers tools/bench/sim/c113e/**, then Executor-based live reads? Est. 20-30 min.",
+"M3's row (#11608 1.1 -> #11261 1.2 across loops) exists in no plan and crosses loops; is a scratch-only plan row for it within 'measurement only'?",
+"Without Concatenate/IndexMode/DataType readers the separator rests on terminal names + ExecState; build a read-only property reader first (tool decision)?"],
+"cost":{"usd":null,"minutes":27,"labview_runs":0},
+"note":"Stopped at the launch gate, not by budget. Failures counted: dry run 1 (own script: owners map + dry-unsafe abs/kill, fixed) and the prerun gate refusal. Nothing saved; STATUS not edited (status_edit false)."}

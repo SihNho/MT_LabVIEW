@@ -1,0 +1,65 @@
+{
+ "schema": "task/1",
+ "id": "113-3",
+ "kind": "measure",
+ "goal": "Measure why Build Array #11261 input t11270 reads 'element' after b2_03 (review c113d-pb s4 separator), live on byte copies of the bed and of S1; no delivery",
+ "why": "113-2 launch 1 stopped at PB on the new pair (11261,'array'). Review c113d-pb: node Concatenate Inputs flip caused by open t11273 (#11608 row) vs tunnel #11363 type. Unmeasured.",
+ "inputs": [
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_b2a_20260928_001426.vi", "md5": "107a3ef12da41b25d533f8a4c761aae8"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"},
+  {"path": "archive/peer/2026-09-28-c113d-pb.md", "md5": "6e2ece5dbd55a14ea2b97d0b152b620f"},
+  {"path": "tools/bench/cards/result_113-2.json"},
+  {"path": "tools/bench/plan_l2b2b.json", "md5": "58046f2f2d445a332b4a5b13bf405646"},
+  {"path": "tools/bench/stage_d1_l2b2b.log"},
+  {"path": "tools/bench/graph_l2b2a_20260928.json", "md5": "42fb5993fe51b0a5f7178820e4d36f0d"},
+  {"path": "docs/wiki/subvi/D1_s1_copy.json"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_b2a_20260928_001426.vi"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"},
+  {"kind": "file", "name": "tools/bench/plan_l2b2b.json"},
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/stagexec.py"}
+ ],
+ "pass": [
+  "M0 OFFLINE: which plan/stage row wires t11273 (#11608 -> #11261, w12256 in S1) and when; file:line, or 'no row plans it'",
+  "M1 bed copy BEFORE b2_03: #11261 Concatenate Inputs, all its input names; #11363 indexing mode; data type string at t11270 and at #11363 inner/outer faces",
+  "M2 same copy AFTER replaying b2_03 alone (plan_l2b2b.json row): the same reads",
+  "M3 same copy: wire a cluster of t11273's S1 type to t11273 (any source); the same reads (does t11270 return to 'array'?)",
+  "M4 S1 copy: the same reads on #11261 / #11363 / t11270 / t11273",
+  "M5 table of M1..M4 values in tools/bench/diag_c113e_concat.json; both copies deleted, originals' md5 unchanged, LabVIEW gone, handle count flat",
+  "else: stop point, values, file:line; nothing saved in claudeDev"
+ ],
+ "outputs": [
+  "tools/bench/diag_c113e_concat.json",
+  "tools/bench/cards/result_113-3.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c113e*",
+   "tools/bench/diag_c113e*",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/cards/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 35},
+ "rules": [
+  "measurement only: no stage recipe launch, no plan edit, no decision on b2_03; report the values",
+  "scratch = byte copies named scratch_c113e_*; never open-for-edit the bed or S1 file itself; never save a scratch",
+  "script <=120 lines on stagekit; reads by uid; if a property has no reader, say so (do not infer it)",
+  "run via py tools/bgrun.py --material; hold the turn until BGRUN END; LabVIEW verified gone at end",
+  "a gate refusal is returned BLOCKED, never re-run via a self-test child or exempt route",
+  "facts <=10 file:line; OPEN <=3"
+ ],
+ "advances": ["M3", "R1"]
+}

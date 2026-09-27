@@ -1,0 +1,89 @@
+{
+ "schema": "task/1",
+ "id": "113-4",
+ "kind": "build",
+ "retry_of": "stage_d1_l2b2b.py",
+ "goal": "Deliver L2-B2b with 8 rows (b2_03 removed, PD227(d)): re-finalize plan, re-dry/prerun, launch 2 -> D1_l2_b2b_<ts>.vi, then full Error List + expected file",
+ "why": "113-2 launch 1: all gates but PB passed; PB new pair (11261,'array') from b2_03 while t11273 (QRT row) stays open. Judgement PD227(d): b2_03 moves to the stage that wires t11273.",
+ "inputs": [
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_b2a_20260928_001426.vi", "md5": "107a3ef12da41b25d533f8a4c761aae8"},
+  {"path": "tools/bench/cards/result_113-2.json"},
+  {"path": "tools/bench/cards/result_113-3.json"},
+  {"path": "tools/bench/plan_l2b2b.json", "md5": "58046f2f2d445a332b4a5b13bf405646"},
+  {"path": "tools/bench/plan_l2b2b_d4.json", "md5": "d132599c1e3e0df62e21c998395f5d71"},
+  {"path": "tools/recipes/stage_d1_l2b2b.py", "md5": "aab966706a42d2fcff800ecf69ca9f36"},
+  {"path": "tools/bench/diag_c113c_plan.py", "md5": "a0f6e517e7757dd3fb0d1f082b3b130c"},
+  {"path": "tools/bench/diag_c113d_errorlist.py", "md5": "071a60203740210993f7240bfb31322e"},
+  {"path": "tools/bench/graph_l2b2a_20260928.json", "md5": "42fb5993fe51b0a5f7178820e4d36f0d"},
+  {"path": "archive/peer/2026-09-28-c113d-pb.md", "md5": "6e2ece5dbd55a14ea2b97d0b152b620f"},
+  {"path": "archive/peer/2026-09-28-priorart-c113c-l2b2b.md", "md5": "dd8fbf520fcc80d986da949d79faf92a"},
+  {"path": "tools/bench/errorlist_expected_D1_l2_b2a_20260928_001426.json"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_b2a_20260928_001426.vi"},
+  {"kind": "file", "name": "tools/bench/plan_l2b2b.json"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_l2b2b.py"},
+  {"kind": "file", "name": "tools/bench/diag_c113c_plan.py"},
+  {"kind": "file", "name": "tools/bench/diag_c113d_errorlist.py"},
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/lv_errorlist.py"}
+ ],
+ "pass": [
+  "P2 plan_l2b2b.json re-finalized WITHOUT b2_03 (its pair stays an open row); 8/8 routed; sim end shows (11261,'array') as open, not new; old plan md5 recorded",
+  "P3 recipe updated only for the row set (<=120 lines, D4 scope unchanged); top-level --dry and --prerun PASS with records",
+  "P4 prior-art only if the launch gate asks; released only by REFUTED:/FIXED: citations",
+  "P5 launch 2 with RETRY_CARD this card; op diffs vs sim logged; E1/PB under D4; gui_save D1_l2_b2b_<ts>.vi md5+size; input md5 same; LabVIEW gone",
+  "P6 full Error List (all_items_read), every item attributed; errorlist_expected_D1_l2_b2b_<ts>.json written, reverdict OK; or mismatch table",
+  "gates in order, stop at first FAIL: stop point, gate, values, file:line, JEV-LADDER row; nothing saved over the input"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_b2b_*",
+  "tools/recipes/stage_d1_l2b2b.py",
+  "tools/bench/plan_l2b2b*",
+  "tools/bench/errorlist_expected_D1_l2_b2b_*",
+  "tools/bench/cards/result_113-4.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_b2b_*",
+   "tools/recipes/stage_d1_l2b2b.py",
+   "tools/bench/plan_l2b2b*",
+   "tools/bench/sim/**",
+   "tools/bench/graph_l2b2b*",
+   "tools/bench/stage_d1_l2b2b*",
+   "tools/bench/diag_c113c_plan*",
+   "tools/bench/diag_c113d_errorlist*",
+   "tools/bench/diag_c113f*",
+   "tools/bench/errorlist_*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "docs/wiki/subvi/D1_l2_b2*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {"failures": 1, "minutes": 60},
+ "rules": [
+  "rule 1a: no computation change; D4 = convergence toward S1 only (PD226(c)); a real-lost term FAILS",
+  "only b2_03 is removed; every other row, gate and D4 scope stays as in 113-2's launch",
+  "this card authorises ONE launch (launch 2 of cap 2), command carries RETRY_CARD=tools/bench/cards/task_113-4.json",
+  "input never edited or saved; run no VI; gui_save per PD 9; self-tests 0 regressions",
+  "launch via py tools/bgrun.py --material; hold the turn until BGRUN END; LabVIEW verified gone at end",
+  "a gate refusal is returned BLOCKED, never re-run via a self-test child or exempt route",
+  "review design findings return as open, not accepted in the card; facts <=10 file:line; OPEN <=3"
+ ],
+ "advances": ["M3", "R1"]
+}

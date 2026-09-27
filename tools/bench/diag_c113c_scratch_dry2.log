@@ -1,0 +1,43 @@
+BGRUN START 2026-09-28 01:23:35 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/bench/diag_c113c_scratch.py
+BGRUN PID 20444
+diag_c113c_scratch - card 113-2 T2: SCRATCH VERIFY of the two routes T1 widened (stagexec connect_route, self-test
+selftest_stagexec_c113a.log 124/0) on a LOOP owner, live: 'ctltun' b2_04 (CT #28170 -> LoopTunnel #31051 outer face via ForLoop #1359
+Terminals[]) and 'ctlsink' b2_07 (LoopTunnel #29172 outer face via ForLoop #29874 Terminals[] -> CT indicator #28786). Both run the EXISTING
+op OpCtlSinkWire_v1 (gscript.wire_ctlsink; review archive/peer/2026-09-28-c113b-route.md s4). FIXTURE: the dated scratch byte copy
+claudeDev\scratch_c113c_bed_<ts>.vi of the B2a bed (md5 107a3ef1), DELETED at close; nothing saved, no VI run. PLAN sim/c113c/plan_c113c_bed.json
+(diag_c113c_plan.log: FINAL, routes ctltun / ctlsink). PRIOR ART: diag_c112c_t1t2.py (this is its cut: LVBackend + Executor RECORD MODE).
+PREDICTION: L1 2 ops; E1 every checkpoint's real read == its sim step up to rule D4 (plan_l2b2b_d4.json, toward S1 only); R each sink's
+wire has ONE source == the planned source (read back); IB b2_04's wire Is Broken? False on the ordered idempotent cfw second pass (sink on
+#1359's Terminals[], wire_delta 0); RBW on a scratch-of-scratch deletes neither new wire (b2_07's sink is a panel terminal - no Nodes[]
+second pass exists, so LabVIEW's own broken-wire removal is its Is Broken? reader); ES ExecState unchanged; HF handles flat (+-100) in steady
+state (after op 1's first load; run 2); H bed md5 unchanged, scratches deleted, LabVIEW gone. PASS writes tools/bench/scratch_verify/stagexec.ctltun_loop_<ts>.json + .ctlsink_loop_<ts>.json.
+    py tools/bgrun.py --material --max-min 30 --log tools/bench/diag_c113c_scratch.log -- py -u tools/bench/diag_c113c_scratch.py
+  PASS  L0 the plan is FINAL and open_rows_match; routes ctltun/ctlsink  ('11dd22cc08ee0cb66ef831d9c4868832', 'PASS')
+  PASS  L0b D4 S1 md5 pinned  5de014fe580b938328fa8662cf2b0652
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 107a3ef12da41b25d533f8a4c761aae8  got 107a3ef12da41b25d533f8a4c761aae8
+  PASS  DRY graph JSON for input md5 107a3ef12da41b25d533f8a4c761aae8  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_l2b2a_20260928.json
+  FACT  ExecState [before the rows] scratch_c113c_bed_20260928_012336.vi = <dry:g.exec_state>
+  PASS  L1 2 plan actions -> 2 ops  [('connect', [1]), ('connect', [2])]
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 1 touched diagram(s) [23166]: one-side-only Nodes[] entries 0
+  PRIME 0 terminal indexes proved at base; 2 ControlTerminal end(s) by 179(b); unprovable []
+  CHECKPOINTS whole-VI read+diff after ops [1, 2] of 2
+  FACT  OP wire_connect [1] -> err '' (0.0 s)
+  STEPX 01 connect        acts [1] ids ['b2_04'] bound {} diff 0
+  FACT  OP wire_connect [2] -> err '' (0.0 s)
+  STEPX 02 connect        acts [2] ids ['b2_07'] bound {} diff 0
+  FACT  OP {"k": null, "ids": null, "result": null}
+  FACT  OP {"k": 1, "ids": ["b2_04"], "result": {"applied": [1], "check": {"triple": [122, 14, 7], "how": "uid echo: owner #1359 Terminals[7] uid == #31055 (name 'Force\\nsmoothing\\nhalf-width')", "resolved_name": "Force\nsmoothing\nhalf-width", "route": "ctltun"}}}
+  FACT  OP {"k": 2, "ids": ["b2_07"], "result": {"applied": [2], "check": {"src_triple": [122, 13, 1], "how": "uid echo: owner #29874 Terminals[1] uid == #29178 (name '')", "route": "ctlsink"}}}
+  PASS  E1 every checkpoint's real read == its sim step up to D4 (toward S1 only)  {'bad': [], 'accepted': 0}
+  PASS  R b2_04: sink t31055 has a wire whose ONE source is t28170 (read back)  (10000001, [28170])
+  PASS  R b2_07: sink t28786 has a wire whose ONE source is t29178 (read back)  (10000002, [29178])
+  FACT  ExecState [after the rows] scratch_c113c_bed_20260928_012336.vi = <dry:g.exec_state>
+  UNVERIFIED  ES ExecState unchanged by the rows  (dry: after mutation Stage._op wire_connect)
+GATE IB/RBW/HF NOT RUNNABLE IN DRY: live readers
+
+=== DRY PASS: first_fail=None coverage 47/80 lines, first mutation Stage._op wire_connect, unverified 1, graph tools/bench/graph_l2b2a_20260928.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 4s

@@ -623,6 +623,8 @@ NOT_NODES = OWNER_ROUTED + (FSIT_CLS,)
 # owns the tunnel's INNER frame (tunnel_owner). Kept apart from OWNER_ROUTED so the routes built on OWNER_ROUTED alone
 # (tunouter's twin rule, face_twins, ctltun) keep their measured scope; a LoopTunnel face addressed by a class-traverse
 # verb (ctl, const, tunouter, ctlsink) is REFUSED in connect_route, because those verbs index the tunnel's OWN class.
+# card 113-2 T1: EXCEPT the two OWNER-addressed ControlTerminal routes - 'ctltun' (bare CT -> LoopTunnel OUTER sink) and
+# 'ctlsink' from a bare LoopTunnel OUTER source - which index the OWNER LOOP's class traverse, not the tunnel's.
 LOOP_ROUTED = ("LoopTunnel",)
 FACE_ROUTED = OWNER_ROUTED + LOOP_ROUTED
 # PD187(b) (card 82-1): a front-panel ControlTerminal is NEVER in Diagram.Nodes[] (stage_d1_l2a1_r3.log:439, #5634 moved
@@ -762,6 +764,19 @@ def connect_route(addr, real, src, dst, loop_of):
     if is_ct(rd):
         info["dst_ct"] = addr.ct(real, dst)[1]
         if not rs["wire_uid"]:
+            # card 113-2 T1 (review archive/peer/2026-09-28-c113b-route.md s1/s4; row b2_07 #29178 -> #28786): a BARE
+            # LoopTunnel OUTER face -> a ControlTerminal sink = 'ctlsink' with the source addressed through its OWNER LOOP's
+            # Terminals[] (the card-112-2 (v) owner route, Addr._triple FACE_ROUTED) - OpCtlSinkWire_v1's SOURCE ladder is
+            # Traverse(cls)[j] -> Node -> Terminals[t], and a loop is a Node. Only the OUTER face; an inner face stays refused.
+            if rs["owner_class"] in LOOP_ROUTED and rs["term_class"] == "OuterTerminal":
+                own = tunnel_owner(real, rs["owner_uid"], addr.owners)
+                ocls = sorted(set(v[0] for v in (addr.owners or {}).values() if int(v[1] or 0) == own))
+                if len(ocls) != 1:
+                    raise ExecStop("CONNECT-NO-VERB: ctlsink: owner #{0} of loop tunnel #{1} has class(es) {2} in the owner "
+                                   "map".format(own, rs["owner_uid"], ocls))
+                st_, hs = addr.triple(real, src, True, loop_of)
+                info.update(ct=addr.ct(real, dst)[0], src=st_, src_how=hs, src_term=st_[2], src_cls=ocls[0], src_owner=own)
+                return "ctlsink", rs, rd, info
             # PD191(a) (card 85-2): a BARE node terminal -> a ControlTerminal sink = 'ctlsink' (gscript.wire_ctlsink,
             # OpCtlSinkWire_v1: Connect Wire invoked ON the CT, Wire Source = Traverse(src class)[j].Terminals[t]).
             # wire_indicators stays for WIRED sources only (its measured limit, tools/gscript.py:1835-1838).
@@ -779,7 +794,9 @@ def connect_route(addr, real, src, dst, loop_of):
     if is_ct(rs):
         c = addr.ct(real, src)[0]
         same = [r for r in real if is_ct(r) and int(r["frame_diagram"] or 0) == c["diag"] and r["term_name"] == rs["term_name"]]
-        if rd["owner_class"] in OWNER_ROUTED and rd["term_class"] == "OuterTerminal":
+        # card 113-2 T1: FACE_ROUTED (was OWNER_ROUTED) - a LoopTunnel OUTER face (rows b2_04/b2_05, CT -> ForLoop #1359's
+        # tunnel faces) takes the same owner route as a case tunnel's: tunnel_owner() finds the loop, the owner map its class.
+        if rd["owner_class"] in FACE_ROUTED and rd["term_class"] == "OuterTerminal":
             # card 112-1 T2 (PD225(h)3 (ii), brief_110-3 (c); B2-15 #403 -> case selector Tunnel #2276, B2-16 -> SelectorTunnel
             # #6132): the CT is addressed by its OWN uid (179(b), no label), the tunnel face by its OWNER structure's
             # Terminals[] index (the PD185 owner route, dt above). gscript.wire_ctlsink (OpCtlSinkWire_v1) invokes Connect
@@ -1826,14 +1843,16 @@ class LVBackend(object):
         if kind == "indicator":
             return self.indicator(rs, rd)
         if kind == "ctlsink":                              # card 85-2, PD191(a): OpCtlSinkWire_v1 (build_opctlsinkwire_v1.py)
+            scls, sown = info.get("src_cls", rs["owner_class"]), int(info.get("src_owner", rs["owner_uid"]))  # card 113-2 T1
             ci = self.s.uid_index("ControlTerminal", int(dst))
-            si = self.s.uid_index(rs["owner_class"], int(rs["owner_uid"]))
+            si = self.s.uid_index(scls, sown)
             if ci is None or si is None:
                 raise ExecStop("ctlsink: CT #{0} / {1} #{2} not in their class traverses ({3}, {4})".format(
-                    dst, rs["owner_class"], rs["owner_uid"], ci, si))
+                    dst, scls, sown, ci, si))
             t = info["src_term"]
-            rec = self.s._op("wire_ctlsink", lambda: self.g.wire_ctlsink(self.s.work, ci, rs["owner_class"], si, t),
-                             "ControlTerminal[{0}] #{1} <- {2}[{3}].t{4}".format(ci, dst, rs["owner_class"], si, t))
+            rec = self.s._op("wire_ctlsink", lambda: self.g.wire_ctlsink(self.s.work, ci, scls, si, t),
+                             "ControlTerminal[{0}] #{1} <- {2}[{3}].t{4}{5}".format(
+                                 ci, dst, scls, si, t, " (tunnel #{0} outer)".format(rs["owner_uid"]) if "src_owner" in info else ""))
             res = rec.get("result")
             if isinstance(res, (list, tuple)) and len(res) > 1 and res[1]:
                 rec["err"] = rec.get("err") or res[1]
@@ -2866,6 +2885,52 @@ def _selftest_c112b(gate, row):
              k_ == "cfw" and "uid echo" in str(inf.get("dst_how")), (k_, inf))
     except ExecStop as e:
         gate("T112m a WIRED source -> bare LoopTunnel outer sink routes cfw", False, e)
+    _selftest_c113(gate, row, T, lo)
+
+
+def _selftest_c113(gate, row, T0, lo):
+    """card 113-2 T1: a bare ControlTerminal -> a bare LoopTunnel OUTER sink routes 'ctltun' (b2_04/b2_05 shape) and a bare
+    LoopTunnel OUTER source -> a ControlTerminal sink routes 'ctlsink' (b2_07 shape), both through the OWNER LOOP's class
+    traverse + Terminals[] (uid echo); a LoopTunnel INNER face stays refused in both directions."""
+    T = list(T0) + [row(4001, "cs", True, 0, 1, "Diagram", 1, FP), row(4002, "ci", False, 0, 1, "Diagram", 1, FP),
+                    row(241, "", True, 0, 240, "LoopTunnel", 1, "OuterTerminal"), row(242, "", False, 52, 240, "LoopTunnel", 7, "InnerTerminal"),
+                    row(261, "", False, 0, 260, "LoopTunnel", 1, "OuterTerminal"), row(262, "", True, 0, 260, "LoopTunnel", 7, "InnerTerminal"),
+                    row(271, "", True, 0, 270, "LoopTunnel", 1, "OuterTerminal"), row(272, "", False, 0, 270, "LoopTunnel", 7, "InnerTerminal")]
+
+    class FT(object):
+        st = {"owners": {"7": ["ForLoop", 200], "8": ["WhileLoop", 300]}, "objs": [], "terminals": T, "loops": []}
+    sr = SimReader(FT())
+    ad = Addr(sr, FT.st["owners"])
+    try:
+        k_, _rs, _rd, inf = connect_route(ad, T, 4001, 211, lo)
+        e_, nt_ = sr.node_terms(inf["dst"][0], inf["dst"][1])
+        gate("T113a bare CT -> bare LoopTunnel OUTER sink = 'ctltun' via the OWNER ForLoop #200's Terminals[] (uid echo)",
+             k_ == "ctltun" and inf["owner"] == 200 and inf["owner_cls"] == "ForLoop" and e_ == 200 and
+             not nt_[inf["owner_term"]]["is_source"] and inf["ct_uid"] == 4001 and "uid echo" in str(inf["dst_how"]), inf)
+    except ExecStop as e:
+        gate("T113a bare CT -> bare LoopTunnel OUTER sink = 'ctltun'", False, e)
+    try:
+        k_, _rs, _rd, inf = connect_route(ad, T, 241, 4002, lo)
+        e_, nt_ = sr.node_terms(inf["src"][0], inf["src"][1])
+        gate("T113b bare LoopTunnel OUTER source -> CT sink = 'ctlsink' with src_cls ForLoop / src_owner #200 and the loop's "
+             "Terminals[] index of the face (uid echo)",
+             k_ == "ctlsink" and inf["src_cls"] == "ForLoop" and inf["src_owner"] == 200 and e_ == 200 and
+             nt_[inf["src_term"]]["is_source"] and nt_[inf["src_term"]]["uid"] == 241 and inf["ct"]["ct"] == 4002
+             and "uid echo" in str(inf["src_how"]), inf)
+    except ExecStop as e:
+        gate("T113b bare LoopTunnel OUTER source -> CT sink = 'ctlsink'", False, e)
+    for tag, s_, d_ in (("T113c NEGATIVE: bare LoopTunnel INNER source -> CT sink", 262, 4002),
+                        ("T113d NEGATIVE: bare CT -> LoopTunnel INNER sink", 4001, 272)):
+        try:
+            connect_route(ad, T, s_, d_, lo)
+            gate(tag + " is still refused", False, "routed")
+        except ExecStop as e:
+            gate(tag + " is still refused", "NO-VERB" in str(e) or "ADDRESS" in str(e), e)
+    try:
+        connect_route(ad, T, 901, 261, lo)
+        gate("T113e NEGATIVE: a bare CONSTANT -> LoopTunnel outer sink is still refused (only CT routes widened)", False, "routed")
+    except ExecStop as e:
+        gate("T113e NEGATIVE: a bare CONSTANT -> LoopTunnel outer sink is still refused", "NO-VERB" in str(e), e)
 
 
 def selftest():

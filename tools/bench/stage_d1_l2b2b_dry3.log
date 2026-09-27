@@ -1,0 +1,110 @@
+BGRUN START 2026-09-28 01:51:45 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_l2b2b.py
+BGRUN PID 18168
+stage_d1_l2b2b - card 113-2: STAGE L2-B2b (d1-loop12-17-split-plan.md PD226(e); split page tools/bench/cards/split_plan_111_l2b2.md s2), the cut
+of stage_d1_l2b2a.py (card 112-4) with rule D4 ONE-WAY TOWARD S1 scoped by the OFFLINE name diff (tools/bench/plan_l2b2b_d4.json, 20 nodes of
+namediff_l2b2b.json). INPUT the plan base graph's VI (B2a bed D1_l2_b2a_20260928_001426.vi, PD226(d)), FRESH LabVIEW -> claudeDev\D1_l2_b2b_<ts>.vi
+(rule-6 GUI save, ExecState 0 by design, never run). ROWS ONLY FROM plan_l2b2b.json (decision 8): card 113-4 = 8 wire rows B2-01,02,04..08 + B2-16
+(b2_03 moved out, PD227(d); (11261,'array') is a declared open row, diag_c113f_plan.log) - routes nested/cfw/ctltun/ctltun/cfw/ctlsink/cfw/ctltun;
+b2_04/05/07 take card 113-2 T1's owner-loop routes (diag_c113c_scratch.log). No new op; RBW READS every re-wired sink BEFORE Remove Bad Wires (PD224(h)). PREDICTION: L1 one op per action, CT ends derived from the plan; E1 each checkpoint ==
+its sim step up to D4; each CT end one row, partners == sim; D new/lost == sim; FU unchanged; PB cdiff(S1, end) == the 16 open_rows up to D4; PS saved.
+    py tools/bgrun.py --material --retry-card tools/bench/cards/task_113-4.json --max-min 60 --log tools/bench/stage_d1_l2b2b_r2.log -- py -u tools/recipes/stage_d1_l2b2b.py
+  PASS  L0 the executed plan is FINAL, open_rows_match, plan_in = the plan_l2b2b_in stageplan  ('7a530b0cd6ea07f42b139570ad147959', {'path': 'tools/bench/plan_l2b2b_in.json', 'md5': 'd655813eb22f1bad1ea1b9e06bd52161'})
+  PASS  L0b D4 cites S1's graph docs/wiki/subvi/D1_s1_copy.json md5 5de014fe580b938328fa8662cf2b0652; S1 names read on every scope node S1 holds; the others [10850, 23508, 23792, 24053, 24104, 24268, 24324, 25228, 25276, 25339] have NO S1 row, so D4 grants nothing there  ('5de014fe580b938328fa8662cf2b0652', [119, 1147, 2626, 2972, 5680, 5702, 5796, 5825, 6016, 10978])
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 107a3ef12da41b25d533f8a4c761aae8  got 107a3ef12da41b25d533f8a4c761aae8
+  PASS  DRY graph JSON for input md5 107a3ef12da41b25d533f8a4c761aae8  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_l2b2a_20260928.json
+  PASS  L1 every plan action compiled into exactly one real op (8 -> 8); checkpoints (0, 4, 8); CT ends [9306, 28170, 28786, 29091] == the CT-routed ends [9306, 28170, 28786, 29091]  [1, 2, 3, 4, 5, 6, 7, 8]
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 1 touched diagram(s) [23166]: one-side-only Nodes[] entries 0
+  PRIME 0 terminal indexes proved at base; 5 ControlTerminal end(s) by 179(b); unprovable []
+  CHECKPOINTS whole-VI read+diff after ops [4, 8] of 8
+  FACT  OP wire_connect [1] -> err '' (0.0 s)
+  STEPX 01 connect        acts [1] ids ['b2_01'] diff skipped (not a checkpoint)
+  STALE-ADDRESS op 2: fresh read + one retry (ADDRESS: #8891 'x*y' on node #8885: 0 (name,dir,wire) matches in [('x*y', True, 10000001), ('y', False, 25636), ('x', False, 25612)])
+  FACT  OP wire_connect [2] -> err '' (0.0 s)
+  STEPX 02 connect        acts [2] ids ['b2_02'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect [3] -> err '' (0.0 s)
+  STEPX 03 connect        acts [3] ids ['b2_04'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect [4] -> err '' (0.0 s)
+  STEPX 04 connect        acts [4] ids ['b2_05'] bound {} diff 0
+  FACT  OP wire_connect [5] -> err '' (0.0 s)
+  STEPX 05 connect        acts [5] ids ['b2_06'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect [6] -> err '' (0.0 s)
+  STEPX 06 connect        acts [6] ids ['b2_07'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect [7] -> err '' (0.0 s)
+  STEPX 07 connect        acts [7] ids ['b2_08'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect [8] -> err '' (0.0 s)
+  STEPX 08 connect        acts [8] ids ['b2_16'] bound {} diff 0
+  PASS  E1 every checkpoint's real graph == its simulated step (8 ops) up to D4: a real-only term passes ONLY on [119, 1147, 2626, 2972, 5680, 5702, 5796, 5825, 6016, 10850, 10978, 23508, 23792, 24053, 24104, 24268, 24324, 25228, 25276, 25339] with its (node, name) in S1 (docs/wiki/subvi/D1_s1_copy.json md5 5de014fe580b938328fa8662cf2b0652)  {'bad': [], 'accepted': 0}
+  FACT  BINDING obj {} term {}
+  FACT  CT #9306: ControlTerminal True rows 1 partners real [6142] sim [6142] (DRY: simulated end rows)
+  PASS  CT #9306: re-wired ControlTerminal read by the 179(b) reader == simulated end  {'real': [6142], 'sim': [6142], 'rows': 1}
+  FACT  CT #28170: ControlTerminal True rows 1 partners real [31055] sim [31055] (DRY: simulated end rows)
+  PASS  CT #28170: re-wired ControlTerminal read by the 179(b) reader == simulated end  {'real': [31055], 'sim': [31055], 'rows': 1}
+  FACT  CT #28786: ControlTerminal True rows 1 partners real [29178] sim [29178] (DRY: simulated end rows)
+  PASS  CT #28786: re-wired ControlTerminal read by the 179(b) reader == simulated end  {'real': [29178], 'sim': [29178], 'rows': 1}
+  FACT  CT #29091: ControlTerminal True rows 1 partners real [30901, 31158] sim [30901, 31158] (DRY: simulated end rows)
+  PASS  CT #29091: re-wired ControlTerminal read by the 179(b) reader == simulated end  {'real': [30901, 31158], 'sim': [30901, 31158], 'rows': 1}
+  PASS  D the end adds the plan's 5 new wire(s) and loses exactly the simulated base wires (0)  {'new': [10000001, 10000002, 10000003, 10000004, 10000005], 'lost-extra': [], 'lost-missing': []}
+  PASS  FU the set of frame diagrams is unchanged
+  FACT  ExecState [after all rows (warm, RECORDED - the plan's open rows stay open by design)] D1_l2_b2b_20260928_015146.vi = <dry:g.exec_state>
+  FACT  CDIFF ROW {'node': 376, 'class': 'SubVI', 'sink': "#376 Terminal 'current frame data array in'", 'before': ['2626|Terminal|appended array|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 376, 'class': 'SubVI', 'sink': "#376 Terminal 'frame index'", 'before': ['644|Terminal||0'], 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array'", 'before': ['5058|Terminal|x,y,z array out|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array' [1]", 'before': None, 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array' [2]", 'before': None, 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array' [3]", 'before': None, 'after': ['5058|Terminal|x,y,z array out|0']}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'element'", 'before': ['5119|OverridableParameterTerminal|x-y|0'], 'after': None}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'element' [1]", 'before': ['30117|Terminal|Value|0'], 'after': None}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'element' [2]", 'before': ['4580|Terminal|Value|0'], 'after': None}
+  FACT  CDIFF ROW {'node': 5058, 'class': 'SubVI', 'sink': "#5058 Terminal 'Image In'", 'before': ['6810|Terminal|Image Out|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 5696, 'class': 'SubVI', 'sink': "#5696 Terminal 'z index of first ref'", 'before': ['5426|OverridableParameterTerminal|x+y|0@2992/f1'], 'after': []}
+  FACT  CDIFF ROW {'node': 5696, 'class': 'SubVI', 'sink': "#5696 Terminal 'z indices of all exp'", 'before': ['5556|OverridableParameterTerminal|x+y|0@3176/f1'], 'after': []}
+  FACT  CDIFF ROW {'node': 6085, 'class': 'SubVI', 'sink': "#6085 Terminal 'z index of first ref'", 'before': ['5426|OverridableParameterTerminal|x+y|0@2992/f0'], 'after': []}
+  FACT  CDIFF ROW {'node': 6085, 'class': 'SubVI', 'sink': "#6085 Terminal 'z indices of all exp'", 'before': ['5556|OverridableParameterTerminal|x+y|0@3176/f0'], 'after': []}
+  FACT  CDIFF ROW {'node': 8634, 'class': 'GrowableFunction', 'sink': "#8634 Terminal 'index (col)'", 'before': ['10068|ParameterTerminal|x-y*floor(x/y)|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 11261, 'class': 'BuildArray', 'sink': "#11261 Terminal 'array'", 'before': ['11310|Terminal|output cluster|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 11261, 'class': 'BuildArray', 'sink': "#11261 Terminal 'element'", 'before': ['11608|Terminal|output cluster|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 28083, 'class': 'SubVI', 'sink': "#28083 Terminal 'Mag pos when touched to glass'", 'before': ['27605|Terminal|Magnet position output|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 28083, 'class': 'SubVI', 'sink': "#28083 Terminal 'Magnet position'", 'before': ['30117|Terminal|Value|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 29625, 'class': 'GrowableFunction', 'sink': "#29625 Terminal 'index (col)'", 'before': ['29240|ParameterTerminal|x-y*floor(x/y)|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 29973, 'class': 'BuildArray', 'sink': "#29973 Terminal 'element' [1]", 'before': ['29240|ParameterTerminal|x-y*floor(x/y)|0'], 'after': []}
+  FACT  S1-FORM #119 (fact, never a gate): real-only [('', 2)] S1-only [('pos in cal image out', 2)]
+  FACT  S1-FORM #1147 (fact, never a gate): real-only [('', 2)] S1-only [('x,y,z array out', 2)]
+  FACT  S1-FORM #2626 (fact, never a gate): real-only [('array', 3)] S1-only [('element', 3)]
+  FACT  S1-FORM #2972 (fact, never a gate): real-only [('', 2)] S1-only [('pos in cal image out', 2)]
+  FACT  S1-FORM #5680 (fact, never a gate): real-only [('', 3)] S1-only [('Bead is good? array out', 3)]
+  FACT  S1-FORM #5702 (fact, never a gate): real-only [('', 3)] S1-only [('Bead is good? array out', 3)]
+  FACT  S1-FORM #5796 (fact, never a gate): real-only [('', 2)] S1-only [('Bead is good? array out', 2)]
+  FACT  S1-FORM #5825 (fact, never a gate): real-only [('', 3)] S1-only [('x,y,z array out', 3)]
+  FACT  S1-FORM #6016 (fact, never a gate): real-only [('', 3)] S1-only [('x,y,z array out', 3)]
+  FACT  S1-FORM #10850 (fact, never a gate): real-only [('', 2)] S1-only []
+  FACT  S1-FORM #10978 (fact, never a gate): real-only [('index', 3)] S1-only [('Index of closest\ncal image slice, bead 2', 3)]
+  FACT  S1-FORM #23508 (fact, never a gate): real-only [('', 2)] S1-only []
+  FACT  S1-FORM #23792 (fact, never a gate): real-only [('', 2)] S1-only []
+  FACT  S1-FORM #24053 (fact, never a gate): real-only [('', 2)] S1-only []
+  FACT  S1-FORM #24104 (fact, never a gate): real-only [('', 2)] S1-only []
+  FACT  S1-FORM #24268 (fact, never a gate): real-only [('', 2)] S1-only []
+  FACT  S1-FORM #24324 (fact, never a gate): real-only [('', 2)] S1-only []
+  FACT  S1-FORM #25228 (fact, never a gate): real-only [('Real-space cosine window', 2)] S1-only []
+  FACT  S1-FORM #25276 (fact, never a gate): real-only [('Cosine bandpass for Hilbert', 2)] S1-only []
+  FACT  S1-FORM #25339 (fact, never a gate): real-only [('', 2)] S1-only []
+  PASS  PB frame-keyed cdiff(S1, real end) == the plan's 16 open_rows up to D4 ONE-WAY (closures on scope nodes only, no new pair, grown names in S1; FATAL, before save)  {'bad': [], 'closed': [], 'extra': []}
+  PASS  RBW-PRE every re-wired sink [2811, 6142, 10009, 28786, 30144, 30901, 31055, 31158] carries a wire in the end read (pre-save; DRY: simulated end rows)  {30144: 10000001, 30901: 10000003, 10009: 10000001, 31055: 10000002, 31158: 10000003, 2811: 25283, 6142: 10000005, 28786: 10000004}
+  FACT  IB b2_01: sink #10004 is a LoopTunnel - face/register/panel sink: E1 + RBW only (PD184(a))
+  FACT  IB b2_02: sink #30135 is a LoopTunnel - face/register/panel sink: E1 + RBW only (PD184(a))
+  FACT  IB b2_04: sink #31051 is a LoopTunnel - face/register/panel sink: E1 + RBW only (PD184(a))
+  FACT  IB b2_05: sink #31137 is a LoopTunnel - face/register/panel sink: E1 + RBW only (PD184(a))
+  FACT  IB b2_06: sink #30896 is a LoopTunnel - face/register/panel sink: E1 + RBW only (PD184(a))
+  FACT  IB b2_07: sink #28786 is a ControlTerminal - face/register/panel sink: E1 + RBW only (PD184(a))
+  FACT  IB b2_08: sink #2765 is a SelectorTunnel - face/register/panel sink: E1 + RBW only (PD184(a))
+  FACT  IB b2_16: sink #6132 is a SelectorTunnel - face/register/panel sink: E1 + RBW only (PD184(a))
+  FACT  CENSUS after L2-B2b D1_l2_b2b_20260928_015146.vi: {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 92, 'Wire': 1948, 'LoopTunnel': 148, 'Local': 12, 'ControlTerminal': 118, 'Node': 0}
+  FACT  PH handles RECORDED: post-open <dry:bench_prep.labview_handles> -> before-save <dry:bench_prep.labview_handles>
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  dry0dry0dry0dry0dry0dry0dry0dry0
+GATE RBW NOT RUNNABLE IN DRY: Remove Bad Wires (VI method 410) runs inside LabVIEW on a scratch copy of the saved file; its pre-read half ran above as RBW-PRE
+
+=== DRY PASS: first_fail=None coverage 99/108 lines, first mutation Stage._op wire_connect, unverified 0, graph tools/bench/graph_l2b2a_20260928.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 15s

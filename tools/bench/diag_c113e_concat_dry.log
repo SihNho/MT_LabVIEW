@@ -1,0 +1,80 @@
+BGRUN START 2026-09-28 01:45:49 limit 3.0 min: py -u tools/stage_prerun.py --dry tools/bench/diag_c113e_concat.py
+BGRUN PID 1808
+diag_c113e_concat - card 113-3 (measurement only): why BuildArray #11261 input t11270 reads 'element' after b2_03 (review
+archive/peer/2026-09-28-c113d-pb.md s4 separator). FIXTURES: dated byte copies claudeDev\scratch_c113e_bed_<ts>.vi of the B2a bed
+(md5 107a3ef1) and scratch_c113e_bed_<ts>_s1.vi of D1_s1_copy.vi; both DELETED at close; nothing saved, no VI run.
+PRIOR ART: diag_c113c_scratch.py (LVBackend on a scratch) - this reuses stagexec.LVBackend.connect (the route b2_03 took in
+stage_d1_l2b2b.py, 'nested') and wiki_build.read_live; no new op. READERS: terminal NAME / wire / term_class per node (read_live),
+ExecState, the connect op readback. NO READER EXISTS for BuildArray 'Concatenate Inputs' (grep 0 in tools/docs), LoopTunnel IndexMode
+read-back (gscript.py:2001-2002 'no scripted read-back op yet') or Terminal.DataType (docs/NAMES.md:475-476, cycle27-plan.md:1055):
+those three are REPORTED as 'no reader', never inferred.
+PREDICTION (review's alternative): M1 t11270 'array', t11273 'element', both unwired; M2 after b2_03 alone t11270 reads 'element'
+(as stage_d1_l2b2b.log:187-189); M3 after wiring #11608 'output cluster' t11614 -> t11273 t11270 reads 'array' again; M4 S1 copy
+t11270 'array' / t11273 'element' both wired. H: bed + S1 md5 unchanged, scratches deleted, LabVIEW gone, handles flat (+-100) k1->end.
+    py tools/bgrun.py --material --max-min 20 --log tools/bench/diag_c113e_concat.log -- py -u tools/bench/diag_c113e_concat.py
+  PASS  L0 S1 VI md5 == the S1 graph dump's md5  ('3e3d23cefd3a334001aa9d6156bf1aee', '3e3d23cefd3a334001aa9d6156bf1aee')
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 107a3ef12da41b25d533f8a4c761aae8  got 107a3ef12da41b25d533f8a4c761aae8
+  PASS  DRY graph JSON for input md5 107a3ef12da41b25d533f8a4c761aae8  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_l2b2a_20260928.json
+  FACT  ExecState [M1] scratch_c113e_bed_20260928_014550.vi = <dry:g.exec_state>
+  FACT  M1 #11261 t11267 'appended array' wire 25618 src True Terminal diag 23166
+  FACT  M1 #11261 t11270 'array' wire 0 src False Terminal diag 23166
+  FACT  M1 #11261 t11273 'element' wire 0 src False Terminal diag 23166
+  FACT  M1 #11363 t11365 '' wire 11374 src False InnerTerminal diag 7911
+  FACT  M1 #11363 t11369 '' wire 0 src True OuterTerminal diag 23166
+  FACT  M1 #11608 t11614 'output cluster' wire 12256 src True Terminal diag 639
+  FACT  M1 #11608 t11617 'cluster' wire 0 src False Terminal diag 639
+  FACT  M1 #11608 t11618 'element' wire 11931 src False Terminal diag 639
+  FACT  M1 #11608 t11621 'element' wire 11957 src False Terminal diag 639
+  PASS  M1 bed copy before b2_03: t11270 'array' and t11273 'element' (graph_l2b2a)  ('array', 'element')
+  FACT  M2 connect b2_03 (#11363 t11369 -> #11261 t11270): {"stop": "ADDRESS: tunnel #11363: owner structure not unique from its inner frames ['7911'] (0 owners known)"}
+  FACT  ExecState [M2] scratch_c113e_bed_20260928_014550.vi = <dry:g.exec_state>
+  FACT  M2 #11261 t11267 'appended array' wire 25618 src True Terminal diag 23166
+  FACT  M2 #11261 t11270 'array' wire 0 src False Terminal diag 23166
+  FACT  M2 #11261 t11273 'element' wire 0 src False Terminal diag 23166
+  FACT  M2 #11363 t11365 '' wire 11374 src False InnerTerminal diag 7911
+  FACT  M2 #11363 t11369 '' wire 0 src True OuterTerminal diag 23166
+  FACT  M2 #11608 t11614 'output cluster' wire 12256 src True Terminal diag 639
+  FACT  M2 #11608 t11617 'cluster' wire 0 src False Terminal diag 639
+  FACT  M2 #11608 t11618 'element' wire 11931 src False Terminal diag 639
+  FACT  M2 #11608 t11621 'element' wire 11957 src False Terminal diag 639
+  UNVERIFIED  M2 b2_03 connected, no op error  (dry: read stub data)
+  ROW   M2 t11270 name after b2_03 alone : observed=array expected='element' (review alternative) / 'array' (plan)
+  FACT  M3 connect #11608 t11614 -> #11261 t11273: {"stop": "w12256: 0 source term(s) owned by #11608"}
+  FACT  ExecState [M3] scratch_c113e_bed_20260928_014550.vi = <dry:g.exec_state>
+  FACT  M3 #11261 t11267 'appended array' wire 25618 src True Terminal diag 23166
+  FACT  M3 #11261 t11270 'array' wire 0 src False Terminal diag 23166
+  FACT  M3 #11261 t11273 'element' wire 0 src False Terminal diag 23166
+  FACT  M3 #11363 t11365 '' wire 11374 src False InnerTerminal diag 7911
+  FACT  M3 #11363 t11369 '' wire 0 src True OuterTerminal diag 23166
+  FACT  M3 #11608 t11614 'output cluster' wire 12256 src True Terminal diag 639
+  FACT  M3 #11608 t11617 'cluster' wire 0 src False Terminal diag 639
+  FACT  M3 #11608 t11618 'element' wire 11931 src False Terminal diag 639
+  FACT  M3 #11608 t11621 'element' wire 11957 src False Terminal diag 639
+  UNVERIFIED  M3 t11273 connected, no op error  (dry: after mutation build_opconnectfromwire_v0.wire_source_owner)
+  ROW   M3 t11270 name after t11273 wired : observed=array expected='array' if the open t11273 row causes the rename
+  FACT  ExecState [M4] scratch_c113e_bed_s1.vi = <dry:g.exec_state>
+  FACT  M4 #11261 t11267 'appended array' wire 25618 src True Terminal diag 23166
+  FACT  M4 #11261 t11270 'array' wire 0 src False Terminal diag 23166
+  FACT  M4 #11261 t11273 'element' wire 0 src False Terminal diag 23166
+  FACT  M4 #11363 t11365 '' wire 11374 src False InnerTerminal diag 7911
+  FACT  M4 #11363 t11369 '' wire 0 src True OuterTerminal diag 23166
+  FACT  M4 #11608 t11614 'output cluster' wire 12256 src True Terminal diag 639
+  FACT  M4 #11608 t11617 'cluster' wire 0 src False Terminal diag 639
+  FACT  M4 #11608 t11618 'element' wire 11931 src False Terminal diag 639
+  FACT  M4 #11608 t11621 'element' wire 11957 src False Terminal diag 639
+  PASS  M4 S1 copy: t11270 'array', t11273 'element'  ('array', 'element')
+  FACT  HANDLES after M1 <dry:bench_prep.labview_handles> -> after M3 <dry:bench_prep.labview_handles> -> after M4 <dry:bench_prep.labview_handles>
+  STUB-LIMIT  dry path stopped on stub data after build_opconnectfromwire_v0.wire_source_owner: TypeError: bad operand type for abs(): 'Fake'
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stage_prerun.py", line 725, in run
+    fn(stage)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c113e_concat.py", line 81, in body
+    s.gate("HF handles flat (+-100) from the read after M1 to the end", None not in (h1, h4) and abs(h4 - h1) <= 100, [h1, h3, h4])
+TypeError: bad operand type for abs(): 'Fake'
+
+
+=== DRY FAIL: first_fail=PY RuntimeError: dry run: subprocess.run is blocked (module level) coverage 71/77 lines, first mutation build_opconnectfromwire_v0.wire_source_owner, unverified 2, graph tools/bench/graph_l2b2a_20260928.json
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"PY RuntimeError: dry run: subprocess.run is blocked (module level)","artefacts":[]}
+BGRUN END rc=1 after 1s

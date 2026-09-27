@@ -1,0 +1,43 @@
+BGRUN START 2026-09-28 01:36:20 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c113d-pb -TaskFile tools/bench/peer_c113d_pb_task.md
+BGRUN PID 10504
+OUTCOME: ANSWERED (182s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-28-c113d-pb.md
+COST: $1.4590  in 36 / out 14681 / cache-create 95981 / cache-read 1791674  (178s, 25 turn(s))
+--- ANSWER ---
+**Verdict: the claim is probably wrong in its cause.** The rename at #11261 is real. But nothing in the files ties it to #11363's tunnel mode. The one input that is actually different from every earlier bed is the other input of the same node: it has no wire (the #11608 open row, open by design). The files cannot tell whether the data type changed, so calling this a rule-1a question is unproven, and so is calling it pure noise.
+
+**1. Strongest reason the claim is wrong.** The files record every version of this bed through L2-A3 with #11363 feeding t11270 by the S1 wire. In all of them the input is named `'array'`:
+- `graph_s3_loop15_20260924`, `graph_k_s4_20260925`, `graph_l2a1_bed`, `graph_l2a2` and `graph_l2a3_bed` all show t11270 `'array'` on wire 11352 and t11273 `'element'` on wire 12256 (the #11608 wire).
+- In the current bed the inner side of #11363 is still fed by wire uid 11374 (`graph_l2b2a_20260928.json`), the same uid as S1 (`D1_s1_copy.json:73067-73071`).
+- No row of `plan_l2b2b.json` touches the tunnel's mode; they are all wire rows.
+- Neither graph dump has any indexing-mode or data-type field (grep for `Index`/`mode` in the S1 dump: 0 hits).
+
+So "#11363 is not indexing the same way" is an inference with no measurement behind it. The only input that changed between the beds where the name was `'array'` and the B2b end is #11608: wired until L2-A3, unwired since L2-B1 (`graph_l2b1_20260927.json`: both wires 0).
+
+**2. Alternative explanation (a node-mode effect, not the tunnel).** Build Array has a stored **Concatenate Inputs** setting ([LabVIEW Wiki](https://labviewwiki.org/wiki/BuildArray_class/Concatenate_Inputs_property)), and LabVIEW can switch it on its own depending on what gets wired ([NI forum](https://forums.ni.com/t5/LabVIEW/Build-Array-forces-Concatenate-Inputs/td-p/638648)). That thread does not say exactly when it switches.
+- In S1 the node is in the mixed state: an array (`'array'`, from the tunnel) plus a single cluster (`'element'`, from #11608).
+- Once only the tunnel input is wired, LabVIEW can re-evaluate the node without concatenation. Every input then reads `'element'`, even the unwired t11273. That matches the log exactly (`element` wired from 11310, `element`[1] unwired).
+- If the node had stayed in concatenate mode, the claim would need t11273 to read `'element'` while it is unwired. #2626 in this same bed points the other way: its unwired inputs read `'array'` (log:175-177).
+- Under this alternative the tunnel still delivers an array of clusters, the wire landed on the right terminal, and the name would come back when the #11608 row closes. What changes in the meantime is the node's output type, which is a type change caused by the open row, not by the tunnel.
+- Your option (a), wrong input, is weak: the readback shows the wire landing on the input named `'array'` (log:83), which in the bed is only t11270. The cdiff also traces the same source, 11310.
+- Your option (c) is close to this alternative, but the cause is the other *input* of #11261, not the tunnel's inner side (which is fed, wire 11374).
+
+**3. What would falsify the claim.** Either of these, read after the rename:
+- #11363's indexing setting is the same in S1 and in the bed, **and** t11270 receives the same data type as in S1 (a 1-D array of the cluster). The claim says it should be a single cluster.
+- Concatenate Inputs on #11261 is FALSE now and TRUE in S1.
+
+**4. Cheapest test that separates the two.**
+- **Offline, free:** look for any stage log between L2-A3 and L2-B2a that sets a tunnel mode or touches #11363. None means the tunnel was never changed, which leaves the claim without a mechanism.
+- **Live, on a byte copy of the bed:** replay b2_03 alone, then read three things:
+  - Concatenate Inputs on #11261, before and after the wire;
+  - #11363's indexing property;
+  - the data type at t11270 (and at the tunnel's outer face), compared with the same reads on an S1 copy.
+
+  If the tunnel type matches S1 and Concatenate Inputs flipped, the alternative holds. If the tunnel delivers a single cluster, the claim holds.
+- **Optional further separator on the same copy:** wire any cluster of the same type to t11273 and check whether t11270 goes back to `'array'`.
+
+**What would change my mind:** a read showing t11270 receiving a single cluster while the node's concatenate setting is unchanged.
+
+Sources:
+- [BuildArray class / Concatenate Inputs property – LabVIEW Wiki](https://labviewwiki.org/wiki/BuildArray_class/Concatenate_Inputs_property)
+- [Build Array forces Concatenate Inputs – NI Community](https://forums.ni.com/t5/LabVIEW/Build-Array-forces-Concatenate-Inputs/td-p/638648)
+BGRUN END rc=0 after 183s

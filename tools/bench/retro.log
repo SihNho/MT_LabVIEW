@@ -4369,3 +4369,95 @@ VIOLATION: inference-over-measurement | loss_min=17 | loss_usd=1.67 | evidence=t
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle112","verdict":"refuted","alternative":"Launch 1 was a legitimate first measurement: the split page said 'likely', and the toward-S1 rule needed review c112c-b2a-e1 to be seen.","discriminating_test":"Before 23:40, diff the bed's terminal names on the 8 split-page s3 cascade nodes against D1_s1_copy.json offline (seconds). If #8741/#30331 differ toward S1, the allow set was knowable before launch 1.","violations":[{"slug":"inference-over-measurement","loss_min":17,"loss_usd":1.67,"evidence":"tools/bench/cards/task_112-3.json:87"}],"sources":["tools/bench/cards/split_plan_111_l2b2.md:48","tools/bench/cards/split_plan_111_l2b2.md:53","tools/bench/stage_d1_l2b2a.log:122","tools/bench/stage_d1_l2b2a_r2.log:119","tools/bench/cards/task_112-4.json:9","tools/bench/peer_c112c_b2a.log:4"],"note":"$1.67 is a floor (material/judgement cost unlogged). Second-ranked: T1/T2 live check spread over 3 cards, ~14-18 min, $3.24. Judgement-in-material (D4 count cap, priorart-c112d:541-545) at 0 measured cost. No device failed."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle112.md
 BGRUN END rc=0 after 459s
+BGRUN START 2026-09-28 02:15:50 limit 10.0 min: py tools/retrospective.py --cycle 113
+BGRUN PID 19468
+   window 2026-09-28 00:47:09 .. 2026-09-28 02:15:50 (89 min); 31 build logs, 10 machinery logs, 37 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle113.txt (29396 chars)
+   review card tools\bench\cards\review_retrospective-cycle113.json
+OUTCOME: ANSWERED (191s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-09-28-retrospective-cycle113.md
+COST: $1.2650  in 26 / out 18746 / cache-create 87185 / cache-read 962287  (189s, 24 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle113 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle113.json
+--- ANSWER ---
+**Answer:** the review card's claim does not fully hold. Cycle 113 delivered its target: L2-B2b was saved as `D1_l2_b2b_20260928_015450.vi` (md5 4f51fd4c), and its Error List was read in full and reverdicted OK (`result_113-4.json:21-22`). One structural fault cost about 24 minutes and the cycle's last retry: a failure class this project had already measured in cycle 110 came back, because nothing added after that case checks for it before a launch. Everything else below is a finding.
+
+## The structural fault
+
+**What happened.** Row b2_03 wires only one input of Build Array #11261. The node's other input, t11273, has been open since L2-B1. The simulator treats input names as fixed, so the plan passed. In LabVIEW the node renamed its input from 'array' to 'element', and launch 1 failed the PB gate (`stage_d1_l2b2b.log:187-189,214,237`).
+
+**Why it is a repeat.** This project measured the same class in cycle 110. L2-B1 launch 1 failed PB because Build Array #2626, with only one input wired, renamed its inputs (`tools/bench/cards/split_plan_110.md:61-64`). That case was fixed with a licence for that one node, not with a plan-time check. So the class came back.
+- The first review (c113d-pb) had to rediscover it, and read #2626 as evidence against it (`archive/peer/2026-09-28-c113d-pb.md:69`).
+- Only the second prior-art review, after the failure, linked the two cases (`archive/peer/2026-09-28-priorart-c113f-l2b2b.md:499-501`).
+
+**Loss: about 24 minutes and $2.71.**
+- Launch 1 started at about 01:29:30 (315 s ending at 01:34:45, `stage_d1_l2b2b.log:239`).
+- The delivering launch started at about 01:54:50 (249 s ending at 01:58:59, `stage_d1_l2b2b_r2.log:252`).
+- In between: the c113d-pb review (`peer_c113d_pb.log:4`, $1.4590), card 113-3 (a measurement that the gate blocked), re-planning without b2_03, and a second prior-art review forced by the recipe's changed sha (`peer_priorart_c113f_l2b2b.log:6`, $1.2473).
+- $2.71 is a floor. Every result card has `usd: null`, so the material sessions' cost is not in any log.
+- Launch 2 of 2 was also spent. Had it failed, the deliverable would have needed a judgement card beyond the retry cap.
+
+**Counterfactual.** Suppose 113-2's plan step (`diag_c113c_plan.log`, 01:15:40) had applied the #2626 precedent: a row that wires one input of a Build Array whose other input is an open row gets deferred. Then launch 1 at 01:29 would have run the 8 rows that later passed. Launch 1 had already cleared every gate except PB on that one pair, and the same 8 rows passed 26/0 in r2. The Error List read (841 s) would have ended around 01:49 instead of 02:13:17 (`diag_c113d_errorlist.log:136`), and one retry would have been left. The caveat is that c113d-pb:69 read #2626 the other way, so connecting the two cases was not trivial. That is why I count this as one moderate fault and not more.
+
+## Findings
+
+**1. Repeated failure.**
+- The Build Array rename class above was attempt 2. The approach should have changed after attempt 1 in cycle 110 (a simulator rule or a plan-time check, not a one-node licence), or at the latest at 113-2's plan step.
+- The other failures in the cycle each happened once and were fixed:
+  - the D4 check failed in the first dry run (`stage_d1_l2b2b_dry.log:15`);
+  - the dry run blocked `subprocess.run` (`diag_c113e_concat_dry.log:79`);
+  - the handle-count gate failed on the first load (`diag_c113c_scratch.log:100`).
+
+**2. Missing tool.** There is no reader for Build Array Concatenate Inputs, LoopTunnel index mode, or terminal data type (`result_113-3.json:15`). There is also no simulator model of Build Array input names. Either one would have answered the PB failure and the 113-3 block. PD227(d) postpones the reader to a later stage (`d1-loop12-17-split-plan.md:2000`).
+
+**3. Unmeasured steps.**
+- PD226(e) said "B2b's tools exist" without a route check. That was a cycle-112 fault, admitted in PD227(a) (`d1-loop12-17-split-plan.md:1995`). Its cost here was small, because 113-1 found the 3 unroutable rows offline before any recipe (`diag_c113b_plan.log:153-161`).
+- The tunnel-mode explanation for the rename was pure inference. It was dropped after an offline grep (`c113d-pb.md:100-103`).
+- PD227(d) moved b2_03 without a measurement. That was defensible, because the decision is argued to hold under both explanations (`:1999`).
+
+**4. Rule compliance.**
+- **"When a diagnosis is guessed twice, build the reader"** (`CLAUDE.md:449-456`): this was the second Build Array rename explained by inference, and the next build was not the reader. It is met only in form: the failing row was removed rather than retried, and the reader was postponed.
+- **Handle hygiene:** S0-d says handles are counted from call 1 (`docs/cycle27-plan.md:409`). 113-2 re-based its handle gate after the first load (+211 handles, then flat) through the Jev ladder's `our-script-bug` route (`result_113-2.json:20-21`). That weakens a hygiene gate without a judgement turn.
+- **STATUS.md length:** it is 414 lines against a 110-line limit (audit L3).
+- **What the audit does not cover:**
+  - card minutes versus log time: the card minutes add up to 111 against an 89-minute window;
+  - material-session cost;
+  - the retry card being recorded as `card=None` in `stage_runs.jsonl`;
+  - whether a repeated failure class was known before the launch;
+  - whether a gate was loosened inside a material session.
+- The C7 scope counter (245 files) is noise at this plan granularity.
+
+**5. Ordering.**
+- Route check, then tool plus scratch check, then launch was the right order.
+- 113-3 (the live test that would have told the two candidate causes apart) was dispatched before a decision that PD227(d) then says holds whatever the cause. Going straight to 113-4, with M1-M4 carried as owed, saves roughly 10 minutes (01:39 to 01:49 by log times; the card claims 27).
+- The requirement that a live diagnostic go through dry and prerun was already known inside this cycle: 113-2's scratch check went through both at 01:17-01:23 (`diag_c113c_scratch_prerun.log`). Card 113-3 still omitted the plan step. PD227(f) records this as a carry.
+
+**6. What was not reported.**
+- Every card has `cost.usd: null`, so the material cost is invisible.
+- The minutes on the cards overstate the wall clock.
+- `stage_runs.jsonl` recorded `card=None` for an authorised retry (`result_113-4.json:24`).
+- `diag_c113e_offline.log:26` has no RESULT line (audit A8).
+- 66 RBW-bad wires were recorded but not acted on (`c113a-graph.md:116-117`).
+- 65 Error List items remain in the saved level (`d1-loop12-17-split-plan.md:2006`).
+
+**7. Judgement inside a material session.**
+- 113-1's material session decided that the unplanned sink gains and the 9089/29923 flips are a "tunnel direction settle" and belong to B2b's base state. That is a choice between explanations (`c113a-graph.md:114-115`).
+- 113-2 re-based the handle gate on its own (`result_113-2.json:20`).
+- `task_113-1.json:91` pre-scripted "route B2-07 only if S1 gives ONE sink, else leave it open", and `:96` lets the material session judge whether a fix "only narrows" a gate.
+- Review design findings were correctly returned as open questions (`result_113-2.json:28-30`, `result_113-4.json:26-28`).
+
+## Device effect
+
+I found no device failure in this window.
+- **Failure-marker scan:** a RESULT of FAIL forced rc=1 even though the process itself returned 0 (`diag_c113b_plan.log:166`). A FAIL line forced rc=1 at `diag_c113c_scratch.log:102`.
+- **Cost-line parsing:** 5 cost lines seen, 5 parsed (C4b).
+- **"What was done" check:** all 8 archived reviews are annotated (A4).
+- **Prior-art before build:** c113c ran at 01:28:53, before launch 1 at about 01:29:30. The stop record refused launch 2 on the sha change until c113f answered (`result_113-4.json:19`).
+- **Launch gate:** it let the dry and prerun checks through and refused the 113-3 live diagnostic. The refusal was returned as BLOCKED, not worked around (`result_113-3.json:2-3`).
+- **Collected route failures:** all 3 unroutable rows were reported in one dry (`diag_c113b_plan.log:153-161`).
+- **Gates due:** they were written into the cycle card (`cycle_113.log:146`).
+- **Prior-art review near miss:** it answered "novel" before a launch that repeated a recorded failure class. I do not count that as a device failure, because the precedent was a different node and c113f itself called it "unread evidence, not blocking".
+
+VIOLATION: repeated-failure-class | loss_min=24 | loss_usd=2.71 | evidence=tools/bench/stage_d1_l2b2b.log:214
+
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle113","verdict":"refuted","alternative":"The #11261 rename was not foreseeable: c113d-pb:69 read #2626 as pointing the other way, so no plan-time rule could have dropped b2_03 before launch 1, and the cycle was run well (verdict none).","discriminating_test":"Replay plan_l2b1 and plan_l2b2b_9row offline with a rule 'wiring one input of a BuildArray whose sibling input is an open row => predict a name change'; if it flags #2626 in L2-B1 and #11261 in B2b and nothing else, the class was knowable offline.","violations":[{"slug":"repeated-failure-class","loss_min":24,"loss_usd":2.71,"evidence":"tools/bench/stage_d1_l2b2b.log:214"}],"sources":["tools/bench/cards/split_plan_110.md:61-64","tools/bench/stage_d1_l2b2b.log:239","tools/bench/stage_d1_l2b2b_r2.log:252","tools/bench/peer_c113d_pb.log:4","tools/bench/peer_priorart_c113f_l2b2b.log:6","archive/peer/2026-09-28-priorart-c113f-l2b2b.md:499"],"note":"Deliverable met (result_113-4.json PASS). Loss_usd is a floor: material cost is null on every card. No device failed in the window."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle113.md
+BGRUN END rc=0 after 194s

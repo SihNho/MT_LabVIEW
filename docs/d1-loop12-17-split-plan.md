@@ -1991,6 +1991,33 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
        - `selftest_stagekit.py` case J has had a stale stub since cycle 102 and makes a real COM call when run directly (`selftest_stagekit_c112d.log:73`; sha-pinned at `tools/stage_prerun.py:1503`).
        - Hashing every `task/1` input md5 at bind (review c112a-md5; not decided).
        - The leftover `claudeDev\scratch_c112c_sr.vi` (an unused byte copy) is to be deleted.
+227. **(cycle 113 judgement; cards `113-1` FAIL 2/1, `113-2` FAIL 5/1, `113-3` BLOCKED 1/1 — `tools/bench/cards/result_113-{1,2,3}.json`)**
+     - **(a) 226(e) was wrong, and the fault is mine:** 3 of B2b's 9 rows (b2_04/05 control → LoopTunnel outer face on `#1359`; b2_07 `#29172` face → indicator `#28786`) had no route (113-1, `stagexec.py:768,782`). B2-07 passed the card's S1 rule: S1 gives `#29172` ONE sink, `#28786` (w32890).
+     - **(b) Tool BUILT (113-2):** `connect_route` routes a LoopTunnel OUTER face as a ctltun sink and a ctlsink source (self-test 124/0; inner faces and constant→face are still refused). Scratch check on a byte copy of the bed: 20/0, records `tools/bench/scratch_verify/stagexec.ctl{tun,sink}_loop_20260928_012355.json`. Plan `plan_l2b2b.json` FINAL with 9/9 rows routed; recipe `stage_d1_l2b2b.py` is 120 lines; dry, prerun 10/0 and prior-art (novel) all passed.
+     - **(c) Launch 1 (of cap 2):** 9 ops had no op error; E1, CT, D and FU passed. It stopped at PB on one new pair: after b2_03, Build Array `#11261` input `t11270` read 'element' (`stage_d1_l2b2b.log:187-189,214`). Nothing was saved. Review `archive/peer/2026-09-28-c113d-pb.md`.
+     - **(d) DECIDED — b2_03 (`#11363 → #11261.array`) LEAVES B2b** and goes to the stage that wires `#11261`'s other input `t11273` (`#11608 → #11261`, w12256 in S1). That row is open since L2-B1 and owned by QRT (D5) (`plan_l2b2b.json:183-186`, 113-3 M0). No L2 row wires it. Both inputs of one Build Array are wired in the same stage.
+       - Why this holds whatever the cause (the review's two candidates, unmeasured: the Concatenate Inputs flip with one input open, or the type at tunnel `#11363`): in the first case, wiring both inputs together is the fix; in the second, b2_03 would fail anyway and must be measured before it is wired. There is no reader today for Concatenate Inputs, LoopTunnel index mode or terminal data type (113-3).
+       - Owed by that later stage BEFORE it wires both rows, on a byte copy: the M1–M4 reads of card 113-3 (does `t11270` read 'array' again once `t11273` is wired?). If names alone cannot separate the two candidates, a read-only Build Array `Concatenate Inputs` reader is built first.
+       - Rule 1a: this only reorders when a wire is made. The final graph must reach S1's `#11261` inputs 'array' + 'element'.
+     - **(e) NEXT in this cycle:** launch 2 of `stage_d1_l2b2b.py` with the 8 remaining rows (a retry card), then the Error List read and the expected file.
+     - **(f) Carry:** a diagnostic that makes a live connection is gated like a stage recipe (it needs a FINAL plan through the Executor). Measurement cards that wire on a scratch must include a plan step, as 113-2's `diag_c113c_plan.py` did.
+     - **(g) CLOSE — L2-B2b IS DELIVERED AND IS THE NEW BED: `claudeDev\D1_l2_b2b_20260928_015450.vi`, md5 `4f51fd4cb93e9116dee1bc0b07281f12`, 308,757 B** (card `113-4` PASS 5/0, launch 2 of cap 2, `tools/bench/stage_d1_l2b2b_r2.log`).
+       - 8 ops; E1 passed with 0 D4 grants; CT ×4 == sim; D 5 new / 0 lost; PB 16 open rows == declared, with no bad, closed or extra pairs. Remove Bad Wires deleted no re-wired sink wire. The input md5 is unchanged, and LabVIEW is gone.
+       - Error List: 65 items (B2a had 83), all read; `tools/bench/errorlist_expected_D1_l2_b2b_20260928_015450.json` reverdicts OK. Plan `plan_l2b2b.json` md5 `7a530b0c…`; the 9-row version is kept as `*_9row.json`.
+       - Level: STRUCTURAL, ExecState 0 by design, never run.
+       - Prior-art c113f proposed licensing the transient `(11261,'element')` in PB instead, as L2-B1 licensed `#2626`: **NOT taken.** (d) stands. `#2626`'s L2-B1 behaviour is recorded as evidence for the Concatenate Inputs explanation, for the stage that wires `t11273` to cite.
+     - **(h) NEXT = L2-B3** (rows B3-01..06, `split_plan_111_l2b2.md` §1/§2: three FS inner-tunnel → new-tunnel → sink pairs T1/T2/T3), from the B2b bed.
+       - FIRST, with no LabVIEW: plan it on a graph of the SAVED B2b file and run the stagesim finalize route check on ALL rows. B3-03..06 were NOROUTE in route A (FS inner tunnel sources).
+       - A row with no route is a tool to build and scratch-check in the same card (as 113-2 did), never a claim that the tools exist (the lesson of (a)).
+       - Then recipe ≤ 120 lines, dry + prerun + prior-art, ONE launch, and the expected Error List file.
+     - **(i) Carries, not blocking:**
+       - `stage_runs.jsonl` records `card=None` for a launch that carried `--retry-card` (`stage_d1_l2b2b_r2.log:3`).
+       - `guard_bash` refuses `bgrun --retry-card …` placed before `--max-min`, which is the order `stage_d1_l2b2b.py:8`'s docstring gives.
+       - 226(f)'s carries are unchanged.
+     - **(j) DEVICE owed FIRST in cycle 114's card** (retrospective-cycle113 `repeated-failure-class`, ACCEPTED; `docs/violation-decisions.md` 2026-09-28 02:25): an offline `stage_prerun --prerun` check. A row that wires one input of a Build Array whose other input is an open row at the stage end is FLAGGED.
+       - Acceptance: replayed on `plan_l2b1*` and `plan_l2b2b_9row.json`, it flags `#2626` and `#11261` only.
+       - Then B3 per (h).
+       - Card rule from 114: a hygiene gate (handles, memory) is never re-based inside a card; a first-load jump returns as `open`.
 
 ## OPEN (design choices — for judgement; not decided here)
 

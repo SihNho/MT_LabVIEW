@@ -1,0 +1,16 @@
+BGRUN START 2026-09-28 01:22:05 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_l2b2b.py
+BGRUN PID 4344
+stage_d1_l2b2b - card 113-2: STAGE L2-B2b (d1-loop12-17-split-plan.md PD226(e); split page tools/bench/cards/split_plan_111_l2b2.md s2), the cut
+of stage_d1_l2b2a.py (card 112-4) with rule D4 ONE-WAY TOWARD S1 scoped by the OFFLINE name diff (tools/bench/plan_l2b2b_d4.json, 20 nodes of
+namediff_l2b2b.json). INPUT the plan base graph's VI (B2a bed D1_l2_b2a_20260928_001426.vi, PD226(d)), FRESH LabVIEW -> claudeDev\D1_l2_b2b_<ts>.vi
+(rule-6 GUI save, ExecState 0 by design, never run). ROWS ONLY FROM plan_l2b2b.json (decision 8): 9 wire rows B2-01..08 + B2-16 - routes nested/cfw/
+nested/ctltun/ctltun/cfw/ctlsink/cfw/ctltun; b2_04/05/07 take card 113-2 T1's owner-loop routes of OpCtlSinkWire_v1 (diag_c113c_scratch.log). No new op;
+RBW READS every re-wired sink BEFORE Remove Bad Wires (PD224(h)). PREDICTION: L1 one op per action, CT ends derived from the plan; E1 each checkpoint ==
+its sim step up to D4; each CT end one row, partners == sim; D new/lost == sim; FU unchanged; PB cdiff(S1, end) == the 15 open_rows up to D4; PS saved.
+    py tools/bgrun.py --material --retry-card tools/bench/cards/task_113-2.json --max-min 60 --log tools/bench/stage_d1_l2b2b.log -- py -u tools/recipes/stage_d1_l2b2b.py
+  PASS  L0 the executed plan is FINAL, open_rows_match, plan_in = the plan_l2b2b_in stageplan  ('58046f2f2d445a332b4a5b13bf405646', {'path': 'tools/bench/plan_l2b2b_in.json', 'md5': 'd13c0de4f260373ecde033d1e8a04a13'})
+  FAIL  L0b D4 cites S1's graph docs/wiki/subvi/D1_s1_copy.json md5 5de014fe580b938328fa8662cf2b0652; S1 names read on every scope node [119, 1147, 2626, 2972, 5680, 5702, 5796, 5825, 6016, 10850, 10978, 23508, 23792, 24053, 24104, 24268, 24324, 25228, 25276, 25339]  ('5de014fe580b938328fa8662cf2b0652', [119, 1147, 2626, 2972, 5680, 5702, 5796, 5825, 6016, 10978])
+
+=== DRY FAIL: first_fail=GATE L0b D4 cites S1's graph docs/wiki/subvi/D1_s1_copy.json md5 5de014fe580b938328fa8662cf2b0652; S1 names read on every scope node [119, 1147, 2626, 2972, 5680, 5702, 5796, 5825, 6016, 10850, 10978, 23508, 23792, 24053, 24104, 24268, 24324, 25228, 25276, 25339] coverage 31/108 lines, first mutation None, unverified 0, graph None
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"GATE L0b D4 cites S1's graph docs/wiki/subvi/D1_s1_copy.json md5 5de014fe580b938328fa8662cf2b0652; S1 names read on every scope node [119, 1147, 2626, 2972, 5680, 5702, 5796, 5825, 6016, 10850, 10978,","artefacts":[]}
+BGRUN END rc=1 after 1s

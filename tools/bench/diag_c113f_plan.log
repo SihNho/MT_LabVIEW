@@ -1,0 +1,40 @@
+BGRUN START 2026-09-28 01:51:08 limit 5.0 min: py -u tools/bench/diag_c113f_plan.py
+BGRUN PID 16268
+  GATE PASS  P2 input plan_l2b2b_in.json md5 == 113-2 pin d13c0de4 (9 rows)  d13c0de4f260373ecde033d1e8a04a13
+  GATE PASS  P2 old finalized plan_l2b2b.json md5 == 58046f2f (recorded)  58046f2f2d445a332b4a5b13bf405646
+  GATE PASS  P2 row set: 9 -> 8 actions, b2_03 gone, 16 open rows declared  (9, ['b2_01', 'b2_02', 'b2_04', 'b2_05', 'b2_06', 'b2_07', 'b2_08', 'b2_16'], 16)
+  BASE-FLIPS seeded 30 terminal(s) on 13 undirected tunnel(s): [2765, 2992, 3176, 6132, 9503, 10004, 10177, 28370, 29777, 30135, 30896, 31051, 31137]
+  STEP 01 wire             ok cands=0 cdiff=33 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 02 wire             ok cands=0 cdiff=32 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 03 wire             ok cands=0 cdiff=30 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 04 wire             ok cands=0 cdiff=28 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 05 wire             ok cands=0 cdiff=26 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 06 wire             ok cands=0 cdiff=25 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 07 wire             ok cands=0 cdiff=23 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 08 wire             ok cands=0 cdiff=21 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  ROUTE 1 connect ['b2_01']: nested
+  ROUTE 2 connect ['b2_02']: cfw
+  ROUTE 3 connect ['b2_04']: ctltun
+  ROUTE 4 connect ['b2_05']: ctltun
+  ROUTE 5 connect ['b2_06']: cfw
+  ROUTE 6 connect ['b2_07']: ctlsink
+  ROUTE 7 connect ['b2_08']: cfw
+  ROUTE 8 connect ['b2_16']: ctltun
+SIM FINAL True open_rows_match True failed None end pairs 16 declared 16
+END-ONLY [] DECLARED-ONLY []
+ROUTE-ROW 1 ['b2_01'] nested | uid echo: owner #1359 Terminals[4] uid == #10009 (name '') | None
+ROUTE-ROW 2 ['b2_02'] cfw | uid echo: owner #29874 Terminals[4] uid == #30144 (name '') | None
+ROUTE-ROW 3 ['b2_04'] ctltun | uid echo: owner #1359 Terminals[7] uid == #31055 (name 'Force\nsmoothing\nhalf-width') | None
+ROUTE-ROW 4 ['b2_05'] ctltun | uid echo: owner #1359 Terminals[8] uid == #31158 (name 'Extension\nmedian filter\nhalf-width') | None
+ROUTE-ROW 5 ['b2_06'] cfw | uid echo: owner #29874 Terminals[6] uid == #30901 (name 'Extension\nmedian filter\nhalf-width') | None
+ROUTE-ROW 6 ['b2_07'] ctlsink | uid echo: owner #29874 Terminals[1] uid == #29178 (name '') | None
+ROUTE-ROW 7 ['b2_08'] cfw | uid echo: owner #2222 Terminals[2] uid == #2811 (name 'x,y,z array out') | None
+ROUTE-ROW 8 ['b2_16'] ctltun | uid echo: owner #2222 Terminals[5] uid == #6142 (name 'Correction Factor') | None
+  GATE PASS  P2 FINAL and open_rows_match  (True, True, None)
+  GATE PASS  P2 route check PASS, 8/8 routed, none UNROUTABLE  ('PASS', 'None')
+  GATE PASS  P2 routes == prediction  {'b2_01': 'nested', 'b2_02': 'cfw', 'b2_04': 'ctltun', 'b2_05': 'ctltun', 'b2_06': 'cfw', 'b2_07': 'ctlsink', 'b2_08': 'cfw', 'b2_16': 'ctltun'}
+  GATE PASS  P2 (11261,'array') is in the simulated end AND declared: open, not new  [(11261, 'array'), (11261, 'element')]
+OPEN-ROWS-CLASSED {"ok": false, "want": [], "c4_n": 0, "c4_keys": 0, "c4_bad": [], "unclassed": [[376, "current frame data array in"], [376, "frame index"], [2626, "array"], [2626, "element"], [5058, "Image In"], [5696, "z index of first ref"], [5696, "z indices of all exp"], [6085, "z index of first ref"], [6085, "z indices of all exp"], [8634, "index (col)"], [11261, "array"], [11261, "element"], [28083, "Mag pos when touched to glass"], [28083, "Magnet position"], [29625, "index (col)"], [29973, "element"]]}
+  GATE PASS  P2 D4 scope = 20 nodes (unchanged), plan_md5 == new plan  (20, '7a530b0cd6ea07f42b139570ad147959')
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":8,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/plan_l2b2b_in_9row.json","md5":"d13c0de4f260373ecde033d1e8a04a13"},{"path":"tools/bench/plan_l2b2b_9row.json","md5":"58046f2f2d445a332b4a5b13bf405646"},{"path":"tools/bench/plan_l2b2b_in.json","md5":"d655813eb22f1bad1ea1b9e06bd52161"},{"path":"tools/bench/plan_l2b2b.json","md5":"7a530b0cd6ea07f42b139570ad147959"},{"path":"tools/bench/plan_l2b2b_d4.json","md5":"1ccde48da2c4eae7b5ba7eeb5420a4ba"}]}
+BGRUN END rc=0 after 14s
