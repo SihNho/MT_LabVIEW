@@ -327,3 +327,5 @@ How the run was made possible (PD192 → 193):
 ## Where to look — **`docs/handover-2026-09-22.md` (새 세션은 이것부터)** · `CLAUDE.md` · `docs/secrets-and-handover.md` (API keys, 사용자 교체 체크리스트) · `docs/jev-integration-plan.md` (Jev 삽입 자리, 2026-09-22) · **`docs/decisions.md`** · `docs/NAMES.md` · **`docs/toolkit-capabilities.md`** · **`docs/motor-call-site-census.md`** (P1) · **`docs/d1-route-b-plan.md`** = the build order · `tools/recipes/build_d1_routeb_v0.py`.
 
 ## RUNNER STOPPED history (2026-09-22 09:58, 2026-09-24 07:29, 2026-09-25 01:02, 2026-09-25 10:30) → `archive/2026-09-25-status-cycle81-relocate.md` §3
+
+## RUNNER STOPPED 2026-09-27 08:25:46 — next.json (cycle 107) sets stop_requested: PD220(g), only after the user fixes the rotor port (D-2026-09-27-03): VISA open check of ASRL5 (diag_c105d_visa.py, no LabVIEW) == 0, then ONE ABBA pe

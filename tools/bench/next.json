@@ -1,17 +1,29 @@
 {
  "schema": "next/1",
  "cycle": 107,
- "act": "PD220(g), only after the user fixes the rotor port (D-2026-09-27-03): VISA open check of ASRL5 (diag_c105d_visa.py, no LabVIEW) == 0, then ONE ABBA per PD217(f) via diag_c104_abba.py.",
- "task_kind": "measure",
- "plan": {"path": "docs/d1-loop12-17-split-plan.md", "md5": "61e48f906fc656cf9a05d87e4481b3cd"},
+ "act": "USER 2026-09-27 08:4x (D-2026-09-27-04 answered): NO REAL RUN until the user confirms COM5 in person (D-03 open). Continue build work that needs no real run: (1) display-loop PART 2 = stage_d1_disp.py --from-step 33 --base claudeDev\\D1_s1_dispA_20260927_024535.vi, fresh LabVIEW, ops 34-47, end gates (ExecState 1, cdiff) -> save D1_s1_disp_<ts>.vi, STRUCTURAL verification only; then (2) L2-A2 per PD220(d) from bed D1_l2_a1 (simulator dry/pre-run, one execution, save). The ABBA real run (PD217(f)) is deferred, not dropped.",
+ "task_kind": "build",
+ "plan": {
+  "path": "docs/d1-loop12-17-split-plan.md",
+  "md5": "61e48f906fc656cf9a05d87e4481b3cd"
+ },
  "pass": [
   "viOpen('Rotor') and viOpen('ASRL5::INSTR') return 0 with LabVIEW closed (diag_c105d_visa.py)",
   "ABBA A15 B15 B15 A15, 120 s, panel normal, 15 picks per leg, B's #8323 non-empty; judged against PD217(f) (GAIN = both B legs below the lower A leg by >= 25 % of A's mean)",
   "GAIN => the 210(c) rule-1a replay card; NO DIFFERENCE => re-plan with the user (outcome review 2026-09-27 section 7.5)",
   "D-2026-09-27-04 answered before any structural L2-A2 launch (tools/recipes/stage_d1_l2a2.py is launch-ready, not launched)"
  ],
- "blocked_by": {"device": "user decision D-2026-09-27-03 + D-2026-09-27-04", "message": "NI-VISA refuses the rotor port ASRL5/COM5 (0xBFFF0072, re-measured cycle 107); only a PC restart or adapter replug by the user clears it. -04: continue structural work meanwhile or stay stopped."},
- "stop_requested": true,
- "advances": ["M8", "R1", "R3"],
- "steer": {"item": "outcome:decision-starved+goal-requirement-not-advanced+ordering-stale+tooling-over-delivery", "response": "follow"}
+ "blocked_by": null,
+ "stop_requested": false,
+ "advances": [
+  "M3",
+  "M7",
+  "M8",
+  "R1",
+  "R3"
+ ],
+ "steer": {
+  "item": "outcome:decision-starved+goal-requirement-not-advanced+ordering-stale+tooling-over-delivery",
+  "response": "follow"
+ }
 }
