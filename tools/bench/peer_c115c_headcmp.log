@@ -1,0 +1,58 @@
+BGRUN START 2026-09-28 05:35:04 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c115c-headcmp -TaskFile tools/bench/cards/peer_task_c115c_headcmp.txt
+BGRUN PID 8660
+OUTCOME: ANSWERED (149s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-28-c115c-headcmp.md
+COST: $1.2775  in 20 / out 12532 / cache-create 101292 / cache-read 965784  (145s, 15 turn(s))
+--- ANSWER ---
+**The claim's conclusion is probably right: this is not a card 115-3 regression. But its explanation is wrong, and so is its framing that the working tree "passes both times".** The self-test's sandbox is not isolated. A child whose PID matches a leftover sandbox will fail {L3, L4b} deterministically, whichever copy of `stage_prerun.py` it runs. The working tree is exposed to this as much as the HEAD copy.
+
+## 1. Strongest reason the claim is wrong
+The failure does not come from ROOT/BENCH derivation or from a timing window near `t = now-100`. It comes from the sandbox being reused across runs by PID:
+
+- The sandbox is named by PID and never deleted: `SAND = %TEMP%\lg_selftest_{pid}` with `exist_ok=True` (`tools/bench/selftest_launch_gate.py:21-22`). There is no `rmtree` anywhere in the file.
+- `STAGE_RUNS` is not reset before the L cases. The first removal is at `:100-102`, after the L cases have run.
+- Every completed run leaves two counted lines behind. The M5 and M6 cases call `SP.record_started` (`:200`, `:207`), and nothing removes `stage_runs.jsonl` afterwards.
+- `%TEMP%` holds **86** leftover `lg_selftest_*\stage_runs.jsonl` files. For example, `C:\Users\KimLab\AppData\Local\Temp\lg_selftest_22500\stage_runs.jsonl:1-2` has 2 lines: `"cycle": "cycle 901"`, `"stage": "stage_lgtest.py"`, `"by": "bgrun"`. That is exactly `RETRY_CAP` = 2 (`tools/stage_prerun.py:2166`).
+- Suppose a new child gets a PID whose sandbox already exists. Then in L3 and L4b, `check_cap` finds 2 counted runs and refuses with RETRY CAP (`tools/stage_prerun.py:2238-2246`, reached from `:2441`).
+- The other cases still pass:
+  - L1, L2, L5 and L6 are refused earlier in `_check_units`, and their expected text still appears.
+  - C0 and later start after `RUNS` is removed at `:101-102`.
+  - M3 runs after that removal as well.
+
+  So the predicted failing set is exactly **{L3, L4b}**, which is the observed set.
+- Windows reuses PIDs as soon as the process object is released; they come from the same allocator as kernel handles ([Old New Thing: when a PID becomes reusable](https://devblogs.microsoft.com/oldnewthing/20110107-00/?p=11803), [PIDs are multiples of 4](https://devblogs.microsoft.com/oldnewthing/20080228-00/?p=23283%2F)). With about 86 stale directories, a collision is an ordinary event.
+
+## 2. Alternative explanation of the same evidence, and why it matters
+The HEAD child hit a stale sandbox; the working-tree child did not. Nothing about the code differs, so:
+
+- **H1 is a flaky gate.** It cannot certify "no regression" in either direction. A future card's regression could just as easily be masked, or blamed on the edit.
+- **"Working tree 28/0 both times" is luck, not evidence.** Both children run the same `selftest_launch_gate.py` and face the same collision odds.
+- **Why no one saw this:** `selftest_stage_prerun_headcmp_79-6.py:25-27` throws away the child's stdout, including the `why` text on every FAIL line. The cause was never recorded, so the claim had to be inferred.
+
+Your proposed mechanisms are unsupported:
+- In L3 and C0 the records, log directory and `t` values are identical, yet C0 passed. A timing window cannot separate the two.
+- ROOT = `%TEMP%\headcmp…` only changes `rel()` strings. Those are applied the same way when records are written and when they are checked.
+
+Circumstantial support: the `"script": "../lg_selftest_22500/…"` field means a HEAD-copy child wrote that file, since its ROOT was a sibling directory in `%TEMP%`. It was written at 05:33:04, inside the after-run window. I cannot confirm 22500 was the failing child, because neither PID was logged.
+
+## 3. What would falsify my alternative
+If the failing HEAD child's `lg_selftest_<pid>` directory was **created during the after-run** (05:28 or later), there was no collision and I am wrong. The same holds if the `why` text for L3/L4b is anything other than "RETRY CAP …". At that point the claim would need a real mechanism again, and an unexplained failure would reopen the regression question.
+
+## 4. Cheapest discriminating tests (offline, seconds each)
+1. `(Get-Item $env:TEMP\lg_selftest_22500).CreationTime`. Before 05:28 plus a 05:33 write means a stale directory was reused, which is a strong signal.
+2. Deterministic reproduction, with no reliance on PID luck:
+   - Copy `selftest_launch_gate.py` to the scratchpad and hard-code `SAND` to a fixed directory.
+   - Pre-seed `stage_runs.jsonl` in that directory with the two lines above.
+   - Run the copy against the **working tree** `stage_prerun.py`.
+   - Prediction: FAILS = [L3, L4b], `why` starting "RETRY CAP". That settles it: the failure is independent of the code, including 115-3's code.
+
+**What would fix it** (for the judgement session; I changed nothing):
+- In `selftest_launch_gate.py`: build `SAND` with `tempfile.mkdtemp()` (or `rmtree` it at start), and remove `RUNS` before the L section.
+- In the headcmp script: print the child's FAIL lines verbatim, so the next failure carries its own `why` instead of needing a guess.
+
+Until that fix lands, H1 cannot count as evidence either way.
+
+Sources:
+- [When does a process ID become available for reuse? – The Old New Thing](https://devblogs.microsoft.com/oldnewthing/20110107-00/?p=11803)
+- [Why are process and thread IDs multiples of four? – The Old New Thing](https://devblogs.microsoft.com/oldnewthing/20080228-00/?p=23283%2F)
+- [Process ID reuse on Windows – M-A's technology blog](http://m-a-tech.blogspot.com/2010/05/process-id-reuse-on-windows.html)
+BGRUN END rc=0 after 150s

@@ -1,0 +1,57 @@
+BGRUN START 2026-09-28 05:02:03 limit 20.0 min: py tools/prior_art_review.py --plan-file tools/bench/cards/plan_115-2_l2r1.md --slug c115b-l2r1 --trigger new-op --recipe tools/recipes/stage_d1_l2r1.py
+BGRUN PID 11820
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c115b-l2r1.txt (85784 chars)
+   review card tools\bench\cards\review_priorart-c115b-l2r1.json
+OUTCOME: ANSWERED (90s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-28-priorart-c115b-l2r1.md
+COST: $1.5202  in 20 / out 7359 / cache-create 138394 / cache-read 1328862  (86s, 18 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c115b-l2r1 verdict=novel -> tools\bench\cards\verdict_priorart-c115b-l2r1.json
+--- ANSWER ---
+**The work is not blocked: I found nothing that has already been done in a way this stage should reuse, already failed, or contradicts the plan. Verdict `novel`.** The three observations below do not block it.
+
+**PART A — Direction**
+- **A1 (already decided), not a blocking finding.** The direction was decided upstream, and the plan follows those decisions rather than repeating them:
+  - `docs/d1-loop12-17-split-plan.md:2040-2044` (PD228(g)(h)): the retire list is the 6 register pairs, L2-R1 is its own saved file, and the gates are listed there.
+  - `:1931` (PD226(d)): `#9018/#9025` and `#29505/#29512` were put on L2-R's retire list.
+  - `:487` (PD189(b)): the old `#119/#2972` is retired in L2-R "after the live-consumer check".
+  - `:1891`: `#7311` stays on w11389 until L2-R.
+  - The plan's gates match `:2044`. The Error List condition "no new class, loses only retired items" is covered by the post-stage expected-file comparison.
+- **A2 (already refuted): nothing found.** No archived review or retrospective argues against retiring these pairs.
+- **A3 (contradicted): nothing blocking.** One point to watch:
+  - `tools/bench/opmodels/delete_object.json:217-218` marks **only_sink as AMBIGUOUS**. When the deleted node was a wire's only sink, w8385 was deleted outright, but w2160/w2187 were kept as half-wires.
+  - The plan's gate D requires the real wires lost to equal exactly the 11 stubs the simulation drops.
+  - Per the plan's own face table, those 11 stubs lose every terminal (Right inner = sink on a sourceless stub; Left inner = source on a stub with no sink). The ambiguous cases in the model had a surviving source, so the model does not directly contradict this. If gate D mismatches, look here first.
+- **A4 (unread evidence): nothing missing.**
+  - The plan cites `stage_d1_l7_r.json` (#15/#51) and the opmodel.
+  - The recipe header (`tools/recipes/stage_d1_l2r1.py:4-5`) cites `stage_d1_l7_r.py` and the new code in `tools/stagexec.py:2460-2463` says what existed before it.
+
+**PART B — The file this stage builds**
+- **B1 (already built) / B3 (existing helper), Q1:** a register-pair retirement with a live-consumer gate and a Remove Bad Wires gate has been built and measured before, in `tools/recipes/stage_d1_l7_r.py:94-101`:
+  - It checks live consumers with `V.reach4` **once, before all deletes**.
+  - It then deletes with `s.delete_object`, and its gate "RBW removed no live uid edge" passed: `tools/bench/stage_d1_l7_r.log:420-425,448` (bad 7, ExecState 1).
+  - `stage_d1_m3a4.py:13,81-87` also retired 8 objects and then ran Remove Bad Wires.
+
+  The new `RetireGuardBE` differs in three ways, which is why I do not raise this as blocking:
+  - It re-reads the graph **before each delete**, as PD228(g) requires ("re-read … BEFORE each delete"). L7-R's gate cannot do that.
+  - It runs inside the Executor.
+  - It works on terminal rows instead of a built G4 graph.
+
+  `retire_check` only looks at direct sinks outside the pair, while `reach4` follows the whole downstream graph. For a pair deleted as a unit, direct sinks are enough. Reusing `reach4` would mean building a G4 graph on every read, and it is not required. `retire_ends` has no earlier equivalent. The closest is L7-R's edge-set equality at `:100-101`, which is coarser.
+- **B2 (already failed): nothing found.** The same retirement pattern succeeded twice in L7-R (r1 and r2) and in M3a-4.
+- **B4 (already measured), Q2 and Q3:**
+  - **Q2:** nothing on record says that deleting a Right register leaves a "Wire has loose ends" item on a branched net.
+    - `delete_object.json:215` says: "a branched wire it sank keeps its other sinks".
+    - L7-R's Remove Bad Wires removed no live edge after deleting SR pairs (`stage_d1_l7_r.log:448`).
+    - The only warning about Remove Bad Wires trimming loose ends on kept wires is `tools/bench/cards/result_98-2.json:16`. It concerns `move_into_frame`, not deletes, and the plan's check that Remove Bad Wires hits "no shared live net" covers it anyway.
+  - **Q3:** no later stage needs any of the 12 uids.
+    - `split-plan:2036`: all 12 have 0 live consumers.
+    - `:2039`: the 16 open rows are all QRT-owned, and none of them is an SR uid.
+    - `:1931`: the new 1.2 pairs were re-made by B2-09..14 from `#9227`/`#29616`, not from `#9018`/`#29505`.
+    - `:2037`: L2-R2's 13 tunnels do not include any of the 12.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c115b-l2r1","verdict":"novel","alternative":"Reuse L7-R's one-shot V.reach4 consumer gate (stage_d1_l7_r.py:95-97) instead of RetireGuardBE; rejected because PD228(g) requires a re-read before EACH delete, which reach4 on a prebuilt G4 does not give.","discriminating_test":"If gate D's real lost set != the sim's 11 stubs, compare against delete_object.json:217-218 only_sink ambiguity (half-wire kept vs deleted) before any other diagnosis.","violations":[],"sources":["docs/d1-loop12-17-split-plan.md:2036-2044","docs/d1-loop12-17-split-plan.md:1931","docs/d1-loop12-17-split-plan.md:487","tools/recipes/stage_d1_l7_r.py:94-101","tools/bench/stage_d1_l7_r.log:420-448","tools/bench/opmodels/delete_object.json:215-218","tools/bench/cards/result_98-2.json:16","tools/stagexec.py:2460-2525"],"note":"Direction settled upstream (PD228/226/189) and followed, not re-decided; L7-R/M3a-4 retire pattern is cited as prior art by the recipe; new code is additive and justified by per-delete re-read."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c115b-l2r1.md
+   STOP RECORD: none - 2026-09-28-priorart-c115b-l2r1.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_l2r1.py sha 2710527e7519 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 93s

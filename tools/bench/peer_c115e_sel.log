@@ -1,0 +1,56 @@
+BGRUN START 2026-09-28 06:43:04 limit 16.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 900 -Slug c115e-sel -TaskFile tools/bench/cards/peer_task_c115e_sel.txt -ReviewCard tools/bench/cards/review_115-5.json
+BGRUN PID 8524
+OUTCOME: ANSWERED (182s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-28-c115e-sel.md
+COST: $1.3604  in 20 / out 15568 / cache-create 101834 / cache-read 1007623  (178s, 16 turn(s))
+VERDICT-CARD: VERDICT-CARD c115e-sel verdict=supported -> tools\bench\cards\verdict_c115e-sel.json
+--- ANSWER ---
+**Verdict: the rule-1a acceptance holds, but the claim reaches it through a step that measured nothing.** The sentence "every new loose-ends item can only sit on one of the 7 shared nets" is an inference: no file checked shows it, and the tool it rests on cannot see loose segments. Rule 1a is supported by a different measurement, and the loose-ends count licence planned on top of the claim is a real hole.
+
+**1. The strongest reason the claim is wrong: the location argument is circular.**
+- "No other net's terminal list changed" (`diag_c115d_graph.log:30`) cannot limit where a loose segment appears. The card itself says a free segment is not in `Wire.Terms[]` (`result_115-4.json:22`).
+- The instrument is blind to exactly the thing being located. That the counts match (7 shared nets, 7 new items) is an arithmetic coincidence, not a measurement.
+- What does support rule 1a is a separate fact: the full diff of terminal lists across all 1945 wires shows no wire added, 11 stubs gone, and on the 7 shared nets only one register sink terminal lost each, with the same source and live sinks (`diag_c115d_graph.log:17-30`).
+- A segment with no terminal feeds no node, wherever it sits. So rule 1a does not depend on the location sentence, and that sentence should be struck from PD230(d).
+
+**Q1. Can a net with an unchanged source and sinks still change what a sink receives? I found no concrete case in these files.**
+- The 12 lost ids are 6 left and 6 right shift registers. Every left register's inner output was a stub with no sink: w1681, w6041, w7429, w9097, w10763, w28039 (`diag_c115d_graph.log:13-26`).
+- No right register has a source row, so no final value left the loop.
+- So the retired registers delivered nothing to any kept node. The initial values on w8590, w9051, w11253, w25438, w25461 and w29122 only fed dead registers.
+- Coercion and type are decided by the source and the sink terminals, and those are unchanged.
+- Tunnel indexing mode was not compared. However, the "undirected tunnel" items are 3 in B3 and 3 in R1 (B3/R1 captures, lines 249, 419, 460), and no tunnel's terminal list changed.
+- One apparent class shift is not real. The m1 script counts B3 as not-connected 19 / other 11 and R1 as 20 / 10, but B3 capture line 1513 is a misread "anvthing". Both captures actually hold 20 "not connected to anything" items. Nobody needs to chase this.
+
+**Q2. Could any new item sit on a net other than the 7? Yes, and nothing measured rules it out.**
+- The same counts fit a swap: one shared net already had a loose end in B3 (so it adds no new item) while some unrelated net's segment became loose (so it adds one). The totals come out identical: 23 − 6 + 7 = 24.
+- The bounding boxes cannot decide this. Each Show-Error shot is scrolled to its own item, so coordinates cannot be compared across items.
+  - R1#14 is a thin vertical strip (x 18–62, y 3–651, `diag_c115d_sel.log:28`). That fits a vertical wire run near a border, but it names no net.
+  - R1#13 and R1#19 have no mask at all (`:27,30`).
+- Matching shots by eye is fragile here. Pixel-difference pairing (m1) found 4 pairs, where selection-mask pairing (sel) found 17 (`diag_c115d_m1.log:8-11` against `diag_c115d_sel.log:50-72`).
+- Remove Bad Wires is no help either. Both runs end at 1905 wires, and none of the shared nets was deleted as a whole wire (`stage_d1_l2r1.log:241-245`). That tells us nothing about where the loose segments are.
+
+**Q3. Is licensing 7 items by count, with no uid, a hole? Yes.**
+- PD230(f) (`docs/d1-loop12-17-split-plan.md:2077`) carries a count licence forward into L2-R2. A later stage could then hide a new loose-ends item on an unrelated net under it.
+- The cheapest bound that keeps it honest:
+  - (a) Pin R1's loose-ends count at exactly 24, with no "up to".
+  - (b) In every later stage, let the loose-ends count grow by no more than the number of nets that lost a sink in that stage's own full terminal-list diff.
+  - (c) Make the whole-graph check (no other net's terminal list changed; source and live sinks equal) a gate in every stage, not an M5 measurement taken once.
+  - (d) A count licence never outlives the stage that earned it.
+
+**Alternative explanation of the same evidence.** The 7 new items are 6 register-side branches plus 1 segment on an unrelated net, with the seventh shared net already loose in B3. The counts cannot tell this apart from the claim.
+
+**What would falsify the claim's location sentence.** After loose ends are removed from the 7 shared nets only, the count stays above 17. In other words, some loose item survives while every one of the 7 shared nets is clean.
+
+**The cheapest test that separates the two.** Take a scratch byte copy of R1. Call `Wire.Remove Loose Ends` once on each of the 7 shared net uids, then read the Error List once.
+- The claim predicts 17 loose-ends items (= 23 − 6).
+- The alternative predicts 18 or more.
+- This involves a delete on a copy, so it is a separate card. It is not needed for the rule-1a acceptance. It is needed before a licence of the form "dangling branches on the 7 nets" gets written into the expected file.
+
+What would change my mind on rule 1a: any tunnel indexing mode, constant or node property that differs between B3 and R1. The M2 read compared terminal lists only, so this was not measured.
+
+Sources:
+- https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/wire-has-loose-ends.html (fetched; the page body did not load, so it does not say whether an item is reported per wire or per segment)
+- https://labviewwiki.org/wiki/Wire_class/Remove_Loose_Ends_method (cited by the earlier review `archive/peer/2026-09-28-c115c-errorlist.md:88`; not re-fetched here)
+- Local: `diag_c115d_graph.log:13-30`, `diag_c115d_sel.log:27-30,50-72`, `diag_c115d_m1.log:3,5,8-11`, `stage_d1_l2r1.log:241-245`, B3 capture `errorlist_D1_l2_b3_20260928_032703_20260928_035208.json:1513`
+
+VERDICT {"schema":"verdict/1","id":"c115e-sel","verdict":"supported","alternative":"6 register-side branches plus 1 loose segment on an unrelated net, with one shared net already loose in B3; counts 23-6+7=24 are identical and Wire.Terms[] cannot see free segments","discriminating_test":"Scratch byte copy of R1: Wire.Remove Loose Ends on each of the 7 shared net uids, one Error List read. Claim predicts loose-ends 17; the alternative predicts 18 or more","violations":[],"sources":["tools/bench/diag_c115d_graph.log:13-30","tools/bench/diag_c115d_sel.log:27-30","tools/bench/stage_d1_l2r1.log:241-245","tools/bench/errorlist_D1_l2_b3_20260928_032703_20260928_035208.json:1513","https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/wire-has-loose-ends.html"],"note":"Rule 1a supported by the full terminal-list diff (dead registers: stub outputs, no final-value output), not by the location sentence, which should be struck. Pin loose-ends == 24; any later licence needs a per-stage full terminal diff gate; no count licence carried into L2-R2."}
+BGRUN END rc=0 after 183s

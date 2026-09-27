@@ -1,0 +1,67 @@
+{
+ "schema": "task/1",
+ "id": "115-4",
+ "kind": "measure",
+ "goal": "MEASURE the extra 'Wire has loose ends' item of D1_l2_r1_20260928_055441.vi: which wire/net it sits on and how R1's loose-ends set differs from B3's, object by object",
+ "why": "115-3 F7 FAIL: 55 items vs B3 59, 1 unlicensed loose-ends item (diag_c115b_errorlist.log:106-124); peer c115c-errorlist: 23-6+7=24 (dangling branches on shared nets?) unresolved. Judgement decides acceptance",
+ "inputs": [
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_r1_20260928_055441.vi", "md5": "f465196bb5016638b146e771ba54c5af"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_b3_20260928_032703.vi", "md5": "1b5c12d71ca48f22e3f4b80316c67e51"},
+  {"path": "tools/bench/errorlist_D1_l2_r1_20260928_055441_20260928_060555.json", "md5": "81661d28b1ac1af66bca2f8c97a02ee6"},
+  {"path": "tools/bench/errorlist_expected_D1_l2_b3_20260928_032703.json"},
+  {"path": "tools/bench/cards/result_115-3.json"},
+  {"path": "archive/peer/2026-09-28-c115c-errorlist.md"},
+  {"path": "tools/bench/plan_l2r1.json", "md5": "aab1efbe09e0160277073f90c0e3f4ad"},
+  {"path": "tools/bench/graph_l2b3_20260928.json"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/errorlist_D1_l2_r1_20260928_055441_20260928_060555.json"},
+  {"kind": "file", "name": "tools/bench/errorlist_expected_D1_l2_b3_20260928_032703.json"},
+  {"kind": "file", "name": "archive/peer/2026-09-28-c115c-errorlist.md"},
+  {"kind": "file", "name": "tools/lv_errorlist.py"},
+  {"kind": "file", "name": "tools/bench/graph_l2b3_20260928.json"}
+ ],
+ "pass": [
+  "M1 OFFLINE first: from the two Error List captures, list every loose-ends item of B3 and of R1 with whatever identity is recorded (uid, location, text, capture)",
+  "M2 read-only graph dump of R1 (byte copy): per net of the 7 retire nets, wire segments with a free end, their uids, and B3's same nets",
+  "M3 name the wire under R1's extra loose-ends item (Error List selection -> uid) and its net: source, live sinks, whether a retired object was an end in B3",
+  "M4 table: B3 loose items -> R1 status (gone/kept/new); counts reconcile 59 -> 55 by class; state which peer arithmetic (1 segment vs 23-6+7) the data fits",
+  "M5 computation read: on each net with a new free end, source and live sink set in R1 == B3 (graph compare); report per net",
+  "no file saved; R1 and B3 md5 unchanged; handle count flat; LabVIEW verified gone"
+ ],
+ "outputs": [
+  "tools/bench/diag_c115d*",
+  "tools/bench/graph_l2r1*",
+  "tools/bench/cards/result_115-4.json"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c115d*",
+   "tools/bench/diag_c115d*",
+   "tools/bench/graph_l2r1*",
+   "tools/bench/errorlist_*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "MEASURE ONLY: no delete, no wire, no save, no expected Error List file; acceptance is judgement's",
+  "live reads on a BYTE COPY of R1 (scratch_c115d*), never on the saved R1 or B3",
+  "run no VI; GUI per PD 9 capture rule (capture, locate, act, capture, confirm)",
+  "launch: py tools/bgrun.py --material --max-min N -- ...; no env prefixes; hold turn to BGRUN END",
+  "a gate refusal is returned BLOCKED, never re-run via a self-test child or exempt route",
+  "facts <=10 file:line; OPEN <=3"
+ ],
+ "advances": ["M3", "R1"]
+}

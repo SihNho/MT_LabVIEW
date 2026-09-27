@@ -1,0 +1,37 @@
+ATTACK this claim (judgement decision PD230(d), docs/d1-loop12-17-split-plan.md:2065-2077; failed prediction in
+tools/bench/diag_c115d_sel.log, script tools/bench/diag_c115d_sel.py; card tools/bench/cards/task_115-4.json).
+
+CONTEXT. Stage L2-R1 retired 6 dead shift-register pairs on loop #637 of claudeDev\D1_l2_b3_20260928_032703.vi (B3):
+delete_wire of 11 stub wires (every terminal on a retired pair), then delete_object of each Right SR. Saved
+claudeDev\D1_l2_r1_20260928_055441.vi (R1, md5 f465196b). R1's Error List has 55 items vs B3's 59; loose-ends items
+23 -> 24. The earlier review archive/peer/2026-09-28-c115c-errorlist.md refuted "one cosmetic segment" and predicted
+23 - 6 + 7 = 24 (6 stub items gone, one dangling branch per shared net); rule 1a was NOT shown then.
+
+Card 115-4 then measured on a byte copy of R1 (tools/bench/diag_c115d_graph.log):
+ - M2: 18 wires touched an SR in B3: 11 stubs (all gone in R1) and 7 shared nets w8590, w9051, w11253, w11389,
+   w25438, w25461, w29122, each lost exactly ONE SR SINK terminal (:17-27).
+ - M5: on all 7 shared nets, R1 source and live sinks == B3 (:17-27). No new wire; no other net's terminal list
+   changed; one-sided wires 30 -> 19 == the 11 stubs (:29-30).
+ - M4 (screenshot pairing by Show-Error selection masks, diag_c115d_sel.log:50-73): 17 B3 items paired to R1 items,
+   6 B3-only (#20,35,43,49,51,54), 7 R1-only (#12,13,14,15,19,23,49). S2 counts reconcile (:75).
+ - FAILED PREDICTION S1 (:74): R1#13 and R1#19 had only 1 usable registered partner shot, so no mask (:27,30); they
+   are "R1-only" by default. Worst case 19 kept / 4 gone / 5 new.
+ - Not measured: item -> net uid. There is no Selection List reader; a free segment is not in Wire.Terms[].
+
+CLAIM UNDER ATTACK (PD230(d)): R1 is accepted on the GRAPH read, not on shot pairing. Every new loose-ends item can
+only sit on one of the 7 shared nets, as a dangling branch left where the SR sink was cut; a segment with no terminal
+feeds no node; source and live sinks are unchanged, so the computation is unchanged (rule 1a holds). The S1 failure
+(2 unmasked shots) is therefore irrelevant to acceptance. Next step planned: write R1's expected Error List file =
+B3 expected minus the retired-stub loose-ends items plus 7 loose-ends items licensed as dangling branches on those 7
+nets, and reverdict R1's capture against it.
+
+Questions:
+1. Can a net whose uid, source terminal and live sink terminal list are all unchanged still change what reaches a
+   sink (e.g. the cut segment was the branch that fed a kept sink, a coercion dot or type change, a tunnel's
+   indexing mode, the SR's removal changing an initialised value upstream)? If yes, name the concrete changed
+   source/sink or new wire in THESE files, not in general.
+2. Could any of the 7 new items (or the 2 unmasked ones, R1#13/#19) be on a net OTHER than the 7 shared nets while
+   M2's "no other net's terminal list changed" still holds? What evidence in diag_c115d_sel.log bboxes (:26-49)
+   argues for or against that?
+3. Is licensing 7 loose-ends items by COUNT (no uid) in the expected file a hole a later stage could hide a real
+   fault behind? What is the cheapest bound that keeps it honest (e.g. total loose-ends == 24 exactly, pinned)?

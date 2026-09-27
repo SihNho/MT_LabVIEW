@@ -33,7 +33,8 @@ PRE-RUN (decision 2, 3, 8), all offline, on the same graph JSON + the dry run's 
   X4 every row end / every address() end is addressable offline: node in the graph; the terminal by name +
      direction on the owner's terminal list (unwired: owner node -> terminal list -> uid echo), a structure by its
      border tunnels; a verify_term_uid must name a WIRED terminal of that owner; a term_uid must agree with the name
-  X5 wiring ops executed in the dry run == plan wire rows
+  X5 wiring ops executed in the dry run == plan wire rows; (card 115-3) delete_object/delete_wire ops are NOT wiring
+     ops - they are counted 1:1 per kind against the plan's delete rows (x5_count; selftest_stage_prerun_c115c.py)
   (card 79-6, PD178(g)) a named stageplan/1 counts as the plan ONLY via stageplan_check - final true, finalized.failed
      None, open_rows_match, undecided 0, stagexec.load_final_plan (base + step-file md5s) and compile_plan all pass;
      X3 counts its actions (each compiled exactly once); X5 expects its compiled WIRING real ops (tunnel/connect/
@@ -62,6 +63,11 @@ PRE-RUN (decision 2, 3, 8), all offline, on the same graph JSON + the dry run's 
   X11 (card 114-1 S0, PD227(j)) no stageplan `wire` row into one INPUT of a Build Array while a sibling input of that node
      is an open row at the stage end (the #2626 / #11261 input-rename class), unless a pb-licence/1 file naming the plan
      covers the node. Replay: `--buildarray-check <plan.json> ...`. Self-test: tools/bench/selftest_stage_prerun_c114.py
+  X12 (card 114-3 C4) no row names a wire uid an earlier border-crossing connect re-created.
+  X13 (card 115-1 A1, PD229(a)) OPMODEL CONFORMANCE: the recorded samples of every model file of the ops a stageplan uses
+     replay through stagesim with the in-force params and reproduce the measured wire outcome (source/sink wire fate,
+     wire groups, old source wire members); a FAIL names the sample and the field. No model file / no replayer = WARN.
+     `--opmodel-conformance [op ...] [--disable cfw_border_rule]` (exit 0/2). Self-test: selftest_stage_prerun_c115a.py
 Records: tools/bench/prerun_records.jsonl, one line per dry/prerun, keyed by the script's sha256 + the plan files'
 md5s. Launch gate (decisions 1/2/4): a `tools/recipes/stage_*.py` launch needs a dry PASS and a prerun PASS for the
 script's CURRENT sha256 and plan md5s, both newer than the newest failing run of that script (a failed run
@@ -1213,6 +1219,324 @@ def recreated_wire_refs(plan, base=None):
     return recreated, flags
 
 
+# card 115-1 A1 (PD229(a); retrospective-cycle114 `device-failed` ACCEPTED: the prior-art review missed that the measured
+# opmodels/connect_from_wire.json:266 already said a border-crossing connect RE-CREATES a wired source's wire, while
+# stagesim branched it - nothing compared the simulator against the op's own recorded samples). X13 OPMODEL CONFORMANCE:
+# every op a stageplan uses has the recorded samples of its model files (stagesim.MODEL_ALIASES -> opmodels/<op>.json)
+# REPLAYED through stagesim's own op functions with the params stagesim.model_for gives the plan's run; a sample whose
+# measured WIRE OUTCOME the replay does not reproduce FAILS the gate. An op with no model file, and a model file whose op
+# has no replayer here, are WARN lines (a judgement item), never skipped silently and never a PASS of that file.
+# Existed first (checked): stagesim.load_models / model_for / OPS / plan_tunnel_face / cfw_border_rule (used, not edited);
+# stagesim selftest G68-G71 (toy graph only, not the samples); diag_c114d_replay.py (real plans, not samples). No
+# sample-replay check existed in tools/. It only ADDS gate X13; no existing gate changes.
+OPMODEL_DIR = os.path.join(BENCH, "opmodels")
+# replayer per MODEL FILE op: a sample of these ops is one source -> tunnel -> sink connect across one loop border (the
+# measured shape: exactly 1 new tunnel, 2 edges added; connect_from_wire.json:267, tunnel.json:201). stagesim runs it as
+# the plan's tunnel group: `tunnel` + the `wire` into its face + the `wire` out of its other face (stagexec compiles that
+# group to ONE connect_from_wire, stagesim.plan_tunnel_face).
+BORDER_GROUP_OPS = ("connect_from_wire", "tunnel")
+
+
+def _sample_raw(model_path, sample):
+    return json.load(REAL_OPEN(os.path.join(os.path.dirname(model_path), sample["raw"]), encoding="utf-8"))
+
+
+def _border_group_case(model_path, sample):
+    """-> (state, actions, roles, measured) for one border-group sample, all from the sample's raw diff:
+    S = the source feeding the new tunnel's sink face, D = the sink its other face feeds, R = the source's other sinks
+    (edges_rewired); a terminal's BEFORE wire = terms_changed[wire_uid][0] when its wire changed, else its after wire."""
+    tg, raw = sample.get("target") or {}, _sample_raw(model_path, sample)
+    D = raw.get("diff") or {}
+    nt = (sample.get("checks") or {}).get("new_tunnels") or []
+    if len(nt) != 1:
+        raise ValueError("sample made {0} tunnels; the border-group replay needs exactly 1".format(len(nt)))
+    T = int(nt[0])
+    ocls = dict((int(o["uid"]), o["class"]) for o in D.get("objs_added") or [])
+    faces = dict((ocls.get(int(t["term_uid"])), int(t["term_uid"])) for t in D.get("terms_added") or []
+                 if int(t["owner_uid"]) == T)
+    if set(faces) != {"InnerTerminal", "OuterTerminal"}:
+        raise ValueError("tunnel #{0} faces by class: {1}".format(T, faces))
+    fset = set(faces.values())
+    after, owner, before = {}, {}, {}
+    for t in D.get("terms_added") or []:
+        after[int(t["term_uid"])] = int(t.get("wire_uid") or 0)
+    for e in D.get("edges_added") or []:
+        after[int(e["src"])], after[int(e["sink"])] = int(e["wire"]), int(e["wire"])
+        owner[int(e["src"])], owner[int(e["sink"])] = int(e["src_owner"]), int(e["sink_owner"])
+    for e in D.get("edges_rewired") or []:
+        after[int(e["src"])], after[int(e["sink"])] = int(e["wire"][1]), int(e["wire"][1])
+    for c in D.get("terms_changed") or []:
+        owner.setdefault(int(c["term_uid"]), int(c["owner_uid"]))
+        w = (c.get("changed") or {}).get("wire_uid")
+        if w:
+            before[int(c["term_uid"])], after[int(c["term_uid"])] = int(w[0] or 0), int(w[1] or 0)
+    into = [e for e in D.get("edges_added") or [] if int(e["sink"]) in fset]
+    outof = [e for e in D.get("edges_added") or [] if int(e["src"]) in fset]
+    if len(into) != 1 or len(outof) != 1:
+        raise ValueError("edges into / out of the tunnel faces: {0} / {1}".format(len(into), len(outof)))
+    S, Dt = int(into[0]["src"]), int(outof[0]["sink"])
+    din = int(into[0]["sink"]) == faces["OuterTerminal"]
+    R = sorted(int(e["sink"]) for e in D.get("edges_rewired") or [] if int(e["src"]) == S)
+    bw = lambda t: before.get(t, after.get(t, 0))                                           # noqa: E731
+    src_d, dst_d = tg.get("src"), tg.get("dst")
+    body = int(dst_d[0]) if din else int(src_d[0])
+    parent = (int(src_d[0]) if din else int(dst_d[0])) if isinstance(src_d, list) else -900001   # cfw: src diagram unread
+    s_diag, d_diag = (parent, body) if din else (body, parent)
+    loop = int(tg.get("setup_result") or -900002)
+
+    def row(t, src, fd):
+        return {"term_uid": t, "term_name": "", "is_source": src, "wire_uid": bw(t), "owner_uid": owner.get(t, t),
+                "owner_class": tg.get("src_cls") if t == S and tg.get("src_cls") else "Function",
+                "frame_diagram": fd, "term_class": "Terminal"}
+    terms = [row(S, True, s_diag), row(Dt, False, d_diag)] + [row(r, False, s_diag) for r in R]
+    st = {"terminals": terms, "objs": [{"uid": loop, "class": "WhileLoop", "pos": [0, 0], "owner": "Diagram"}],
+          "loops": [], "fs_pairs": None, "graph_summary": {}, "sym": {}, "diagrams": {}, "neg": 0, "removed_nodes": [],
+          "owners": {}, "dedupe": {}}
+    fa, fb = ("new:X.outer", "new:X.inner") if din else ("new:X.inner", "new:X.outer")
+    acts = [{"op": "tunnel", "loop": loop, "body": body, "parent": parent, "dir": "in" if din else "out", "as": "X"},
+            {"op": "wire", "src": {"uid": owner.get(S, S), "term_uid": S}, "dst": fa},
+            {"op": "wire", "src": fb, "dst": {"uid": owner.get(Dt, Dt), "term_uid": Dt}}]
+    roles = dict([(S, "src"), (Dt, "dst"), (faces["OuterTerminal"], "T.outer"), (faces["InnerTerminal"], "T.inner")] +
+                 [(r, "sink:{0}".format(r)) for r in R])
+    meas = _wire_outcome(dict((t, bw(t)) for t in roles), dict((t, after.get(t, 0)) for t in roles), roles, S, Dt)
+    return st, acts, roles, meas, faces
+
+
+def _wire_outcome(bef, aft, roles, S, Dt):
+    """The compared fields: source_wire / sink_wire (new | kept | recreated/replaced), groups (which roles share one wire
+    after the op, an unwired terminal alone), old_source_wire_members (roles still on the source's BEFORE wire)."""
+    def fate(t):
+        return "new" if not bef.get(t) else ("kept" if aft.get(t) == bef.get(t) else "recreated")
+    g = collections.defaultdict(list)
+    for t, r in roles.items():
+        g[aft.get(t) or ("unwired", t)].append(r)
+    old = bef.get(S)
+    return {"source_wire": fate(S), "sink_wire": fate(Dt), "groups": sorted(sorted(x) for x in g.values()),
+            "old_source_wire_members": sorted(roles[t] for t in roles if old and aft.get(t) == old)}
+
+
+def replay_sample(model_path, sample, models):
+    """-> (outcome, mismatches, detail): outcome 'PASS' | 'FAIL' | 'ERROR'; mismatches [(field, measured, simulated)]."""
+    import stagesim as SS
+    try:
+        st, acts, roles, meas, faces = _border_group_case(model_path, sample)
+    except Exception as e:                                                               # noqa: BLE001
+        return "ERROR", [("case", "readable border-group sample", str(e))], None
+    bef = dict((r["term_uid"], r["wire_uid"]) for r in st["terminals"])
+    effs, sym = [], {}
+    try:
+        for a in acts:
+            P = SS.model_for(a["op"], models)[0]
+            eff, _c = SS.OPS[a["op"]](st, a, P, None, {})
+            effs.append(eff)
+            if a["op"] == "tunnel":
+                sym = {eff["outer"]: faces["OuterTerminal"], eff["inner"]: faces["InnerTerminal"]}
+    except SS.SimError as e:
+        return "FAIL", [("replay", "applies", "SimError: {0}".format(e))], effs
+    aft = {}
+    for r in st["terminals"]:
+        aft[sym.get(r["term_uid"], r["term_uid"])] = r["wire_uid"]
+    bef.update((faces[k], 0) for k in faces)
+    sim = _wire_outcome(bef, aft, roles, [t for t, r in roles.items() if r == "src"][0],
+                        [t for t, r in roles.items() if r == "dst"][0])
+    mm = [(k, meas[k], sim[k]) for k in meas if meas[k] != sim[k]]
+    return ("PASS" if not mm else "FAIL"), mm, {"measured": meas, "simulated": sim, "hows": [e.get("how") for e in effs[1:]]}
+
+
+# card 115-2 R0 (additive; X13 used to WARN "not-replayed" for these three files): replayers for the DELETE family. A
+# sample's raw diff carries every terminal the op touched (terms_removed, terms_changed, both ends of edges_removed); a
+# terminal the op did NOT touch is absent, so a surviving wire that the diff shows with no source or no sink while it is
+# NOT in the measured half_wires_before/after gets ONE stand-in row of the missing polarity (it must exist: the measured
+# half-wire lists say the wire has both ends). Owner classes come from objs_removed / terms_*; a tunnel's faces get
+# opposite Inner/Outer classes (the raw diff carries no term_class). Compared: removed terms, removed nodes, per-terminal
+# wire fate (kept / cleared; an `allow_either` terminal of the sim accepts both), and is_source flips.
+DELETE_OPS = ("delete_object", "delete_wire", "remove_bad_wires")
+DELETE_DISABLE = {"tunnel_flip": ("delete_object", False), "sr_pair": ("delete_object", False),
+                  "drop_unconnected_fsit": ("remove_bad_wires", False), "drop_unwired_tunnel": ("delete_wire", False)}
+
+
+def _delete_case(model_path, sample):
+    raw = _sample_raw(model_path, sample)
+    D, op, meta = raw.get("diff") or {}, raw.get("op"), raw.get("meta") or {}
+    cls = dict((int(o["uid"]), o["class"]) for o in D.get("objs_removed") or [])
+    rows, flips_meas, after = {}, set(), {}
+
+    def put(t, owner, src, wire, name=""):
+        r = rows.setdefault(int(t), {"term_uid": int(t), "term_name": name, "is_source": src, "wire_uid": int(wire or 0),
+                                     "owner_uid": int(owner), "owner_class": "", "frame_diagram": 0, "term_class": "Terminal"})
+        if r["is_source"] is None and src is not None:
+            r["is_source"] = src
+        return r
+    for t in D.get("terms_removed") or []:
+        put(t["term_uid"], t["owner_uid"], bool(t["is_source"]), t["wire_uid"], t.get("term_name", ""))
+        cls[int(t["owner_uid"])] = t["owner_class"]
+    for e in D.get("edges_removed") or []:
+        put(e["src"], e["src_owner"], True, e["wire"])
+        put(e["sink"], e["sink_owner"], False, e["wire"])
+    for c in D.get("terms_changed") or []:
+        ch = c.get("changed") or {}
+        w = ch.get("wire_uid")
+        isrc = ch.get("is_source")
+        r = put(c["term_uid"], c["owner_uid"], bool(isrc[0]) if isrc else None, w[0] if w else 0)
+        if w:
+            r["wire_uid"], after[r["term_uid"]] = int(w[0] or 0), int(w[1] or 0)
+        if isrc:
+            flips_meas.add(r["term_uid"])
+        cls[int(c["owner_uid"])] = c["owner_class"]
+    half = set(int(x) for x in (D.get("half_wires_before") or []))
+    by_w = collections.defaultdict(list)
+    for r in rows.values():
+        by_w[r["wire_uid"]].append(r)
+    for w, rs in by_w.items():                       # a half-wire's unknown polarity = its known rows' polarity
+        known = [r["is_source"] for r in rs if r["is_source"] is not None]
+        for r in rs:
+            if r["is_source"] is None:
+                r["is_source"] = bool(known[0]) if (w in half and known) else False
+    for r in rows.values():
+        r["owner_class"] = cls.get(r["owner_uid"], "Function")
+    for u in set(r["owner_uid"] for r in rows.values() if r["owner_class"] in stagesim_tun1()):
+        rs = sorted((r for r in rows.values() if r["owner_uid"] == u), key=lambda r: (r["is_source"], r["term_uid"]))
+        for k, r in enumerate(rs):
+            r["term_class"] = ("OuterTerminal", "InnerTerminal")[min(k, 1)] if len(rs) > 1 else "OuterTerminal"
+    gone_w = set(int(o["uid"]) for o in D.get("objs_removed") or [] if o["class"] == "Wire")
+    half_a = set(int(x) for x in (D.get("half_wires_after") or []))
+    removed_t = set(int(t["term_uid"]) for t in D.get("terms_removed") or [])
+    flip_to = dict((int(c["term_uid"]), bool((c.get("changed") or {})["is_source"][1])) for c in D.get("terms_changed") or []
+                   if (c.get("changed") or {}).get("is_source"))
+    stand, k = [], 0
+    for w, rs in sorted(by_w.items()):
+        if not w:
+            continue
+        need = set()
+        if w not in half:                            # before the op the wire had both ends
+            need |= set(p for p in (True, False) if not any(r["is_source"] == p for r in rs))
+        if w not in half_a and w not in gone_w:      # after the op it still has both ends
+            ra = [r for r in rs if r["term_uid"] not in removed_t and after.get(r["term_uid"], w) == w]
+            need |= set(p for p in (True, False) if not any(flip_to.get(r["term_uid"], r["is_source"]) == p for r in ra))
+        for pol in sorted(need):
+            k += 1
+            stand.append({"term_uid": -910000 - k, "term_name": "", "is_source": pol, "wire_uid": w, "owner_uid": -910000 - k,
+                          "owner_class": "Function", "frame_diagram": 0, "term_class": "Terminal"})
+    # a removed node = a removed object that OWNS a terminal row of the read (the terminal read files both halves of a
+    # FlatSequenceInnerTunnel pair under ONE owner: remove_bad_wires_1 terms 2304/2310 read owner 2283 while objs_removed
+    # also lists #2301 - such a paired half owns no row, so it is not a node of the terminal graph stagesim works on)
+    owners_read = set(r["owner_uid"] for r in rows.values())
+    nodes = set(int(o["uid"]) for o in D.get("objs_removed") or [] if o["class"] != "Wire" and
+                int(o["uid"]) not in removed_t and int(o["uid"]) in owners_read)
+    act = {"op": op}
+    if op == "delete_object":
+        act["uid"] = int(meta["uid"])
+    elif op == "delete_wire":
+        act["wire_uid"] = int(meta["wire"])
+    st = {"terminals": [dict(r) for r in rows.values()] + stand, "objs": [], "loops": [], "fs_pairs": None,
+          "graph_summary": {}, "sym": {}, "diagrams": {}, "neg": 0, "removed_nodes": [], "owners": {}, "dedupe": {}}
+    meas = {"terms_removed": sorted(removed_t), "nodes_removed": sorted(nodes), "flips": sorted(flips_meas),
+            "fate": dict((t, _fate(r["wire_uid"], after.get(t, r["wire_uid"]))) for t, r in rows.items() if t not in removed_t)}
+    return st, act, meas
+
+
+def stagesim_tun1():
+    import stagesim as SS
+    return tuple(SS.TUN_FLIP)
+
+
+def _fate(b, a):
+    return "unwired" if not b and not a else ("kept" if a == b else ("cleared" if not a else "moved"))
+
+
+def replay_delete_sample(model_path, sample, models, disable=()):
+    """-> (outcome, mismatches, detail) for one delete_object / delete_wire / remove_bad_wires sample (card 115-2 R0)."""
+    import stagesim as SS
+    try:
+        st, act, meas = _delete_case(model_path, sample)
+    except Exception as e:                                                               # noqa: BLE001
+        return "ERROR", [("case", "readable delete-family sample", str(e))], None
+    bef = dict((r["term_uid"], (r["wire_uid"], r["is_source"])) for r in st["terminals"] if r["term_uid"] > -900000)
+    P = dict(SS.model_for(act["op"], models)[0])
+    for d in disable:
+        if d in DELETE_DISABLE and DELETE_DISABLE[d][0] == act["op"]:
+            P[d] = DELETE_DISABLE[d][1]
+    try:
+        eff, _c = SS.OPS[act["op"]](st, act, P, None, {})
+    except SS.SimError as e:
+        return "FAIL", [("replay", "applies", "SimError: {0}".format(e))], None
+    now = dict((r["term_uid"], r) for r in st["terminals"])
+    either = set((eff or {}).get("allow_either") or [])
+    sim = {"terms_removed": sorted(t for t in bef if t not in now),
+           "nodes_removed": sorted(set(st["removed_nodes"])),
+           "flips": sorted(t for t in bef if t in now and now[t]["is_source"] != bef[t][1]),
+           "fate": dict((t, _fate(bef[t][0], now[t]["wire_uid"])) for t in bef if t in now)}
+    mm = [(k, meas[k], sim[k]) for k in ("terms_removed", "nodes_removed", "flips") if meas[k] != sim[k]]
+    fb = dict((t, (f, sim["fate"].get(t))) for t, f in meas["fate"].items() if sim["fate"].get(t) != f and
+              not (t in either and {f, sim["fate"].get(t)} <= {"kept", "cleared"}))
+    if fb:
+        mm.append(("fate", dict((t, v[0]) for t, v in fb.items()), dict((t, v[1]) for t, v in fb.items())))
+    return ("PASS" if not mm else "FAIL"), mm, {"op": act["op"], "measured": meas, "allow_either": sorted(either)}
+
+
+def opmodel_conformance(ops=None, model_dir=None, disable=(), log=None):
+    """X13 core. ops = the stageplan ops to check (None = every model file in model_dir). disable: ('cfw_border_rule',)
+    runs with stagesim.cfw_border_rule switched off (card 115-1 A2's negative case). -> {files: {name: {status, samples,
+    fails}}, fails: [{file, sample, field, measured, simulated}], warns: [str]}"""
+    import stagesim as SS
+    md = model_dir or OPMODEL_DIR
+    saved = SS.cfw_border_rule
+    if "cfw_border_rule" in disable:
+        SS.cfw_border_rule = lambda _d: None
+    try:
+        models = SS.load_models(md)
+        by_file = dict((os.path.splitext(os.path.basename(m["path"]))[0], (name, m)) for name, m in models.items())
+        if ops is None:
+            names, warns = [n for n, _m in sorted(by_file.values(), key=lambda x: x[0])], []
+        else:
+            names, warns = [], []
+            for op in sorted(set(ops)):
+                have = [n for n in SS.MODEL_ALIASES.get(op, (op,)) if n in models]
+                if not have:
+                    warns.append("X13 WARN op {0!r}: no model file in {1} (provisional rule; aliases {2})".format(
+                        op, rel(md), list(SS.MODEL_ALIASES.get(op, (op,)))))
+                names += [n for n in have if n not in names]
+        files, fails = {}, []
+        for n in names:
+            m = models[n]
+            fname = os.path.basename(m["path"])
+            smp = [s for s in ((m.get("data") or {}).get("samples") or []) if isinstance(s, dict)]
+            if m.get("data") is None or not smp:
+                files[fname] = {"status": "no-samples", "samples": 0, "fails": []}
+                continue
+            if n not in BORDER_GROUP_OPS + DELETE_OPS:
+                files[fname] = {"status": "not-replayed", "samples": len(smp), "fails": []}
+                warns.append("X13 WARN {0}: {1} sample(s), no replayer for op {2!r} (only {3})".format(
+                    fname, len(smp), n, list(BORDER_GROUP_OPS + DELETE_OPS)))
+                continue
+            ff = []
+            for s in smp:
+                outc, mm, det = (replay_delete_sample(m["path"], s, models, disable) if n in DELETE_OPS else
+                                 replay_sample(m["path"], s, models))
+                if log:
+                    log("  X13 {0} {1}: {2} {3}".format(fname, s.get("raw"), outc, det if outc == "PASS" else mm))
+                for fld, a, b in mm:
+                    ff.append({"file": fname, "sample": s.get("raw"), "field": fld, "measured": a, "simulated": b})
+            files[fname] = {"status": "FAIL" if ff else "PASS", "samples": len(smp), "fails": ff}
+            fails += ff
+        return {"files": files, "fails": fails, "warns": warns}
+    finally:
+        SS.cfw_border_rule = saved
+
+
+def plan_ops(plan):
+    return sorted(set(str(a.get("op")) for a in plan.get("actions") or [] if isinstance(a, dict) and a.get("op")))
+
+
+def x13_gate(plans):
+    """(ok, detail, warns) over stageplan/1 dicts: the union of their ops, one conformance run."""
+    ops = sorted(set(o for p in plans for o in plan_ops(p)))
+    c = opmodel_conformance(ops)
+    det = c["fails"][:6] or "{0} op(s) {1}; files {2}".format(
+        len(ops), ops, dict((k, "{0} ({1})".format(v["status"], v["samples"])) for k, v in c["files"].items()))
+    return not c["fails"], det, c["warns"]
+
+
 def _selftest_control_lint():
     """L7 plan passes; a synthetic queue plan refuses (and passes with data_stream+why); a synthetic edge-detector plan
     refuses (and a declared-counter variant passes). Prints gates + a RESULT line; returns rc."""
@@ -1443,6 +1767,45 @@ def mem_margin(recipe, stop_after=None, from_step=None, log_dir=None, records=No
                 os.path.basename(recipe), int(from_step or 0) + 1, stop_after or "end", len(recs))}
 
 
+DELETE_VERB_RE = re.compile(r"^delete_(object|wire)$")    # card 115-3 F1: counted against plan DELETE rows, not wire rows
+
+
+def x5_count(verbs, rows, spc, stop_after=None, from_step=None):
+    """X5 (moved out of prerun unchanged, card 115-3 F1): (ok, detail). Wire-making verbs the dry run executed ==
+    plan `wire` decision rows + the stageplans' compiled wiring real ops (in the PART-A/PART-B window), and those ops
+    cover every `wire` action once. NARROWED by card 115-3 (JUDGEMENT, 115-2 BLOCKED on stage_prerun.py:103, where
+    WIRE_VERB_RE matched `delete_wire`): the verbs delete_object / delete_wire leave the wire-making count and are
+    counted 1:1, per kind, against the plan's DELETE rows (decision rows with that action + compiled delete ops in the
+    same window). An unplanned op of either kind still FAILS."""
+    wires = [r for r in rows if r.get("action") == "wire"]
+    ops = [v for v in verbs if WIRE_VERB_RE.search(v) and not DELETE_VERB_RE.search(v)]
+    dgot = collections.Counter(v for v in verbs if DELETE_VERB_RE.search(v))
+    dwant = collections.Counter(r["action"] for r in rows if DELETE_VERB_RE.search(str(r.get("action") or "")))
+    # card 79-6: a stageplan's wire actions are executed as stagexec real ops (a tunnel op carries its two border
+    # wires); expected = compiled wiring ops, AND those ops must cover every `wire` action of the plan exactly once
+    sp_wops, sp_wact, sp_cov = 0, 0, 0
+    for p, (_ok, _d, pl, ops_) in spc.items():
+        A = (pl or {}).get("actions") or []
+        wa = set(i for i, a in enumerate(A, 1) if a.get("op") == "wire")
+        wo = [o for o in (ops_ or []) if o["kind"] in SP_WIRING]
+        so = [o for o in (ops_ or []) if o["kind"] in SP_WIRE_OTHER]
+        # card 103-2: PART-A mode expects only the wiring ops the run dispatches (op index k <= stop_after)
+        # card 103-4: PART-B mode (`--from-step k`) expects only the wiring ops k+1.. the run dispatches
+        win = [o for k, o in enumerate(ops_ or [], 1) if k <= int(stop_after or len(ops_ or []))
+               and k > int(from_step or 0)]
+        wk = wo if stop_after is None and from_step is None else [o for o in win if o["kind"] in SP_WIRING]
+        dwant.update(o["kind"] for o in win if DELETE_VERB_RE.search(o["kind"]))
+        sp_wops, sp_wact = sp_wops + len(wk), sp_wact + len(wa)
+        sp_cov += len(wa & set(x for o in wo + so for x in o["acts"]))
+    ok = len(ops) == len(wires) + sp_wops and sp_cov == sp_wact and dgot == dwant
+    return ok, ("ops {0} vs plan wire rows {1} + stageplan wiring real ops {2}{5} (covering {3}/{4} wire actions); "
+                "delete ops {6} vs plan delete rows {7}").format(
+        len(ops), len(wires), sp_wops, sp_cov, sp_wact,
+        ("" if stop_after is None else " among ops 1..{0} (PART-A stop_after)".format(int(stop_after))) +
+        ("" if from_step is None else " among ops {0}.. (PART-B from_step)".format(int(from_step) + 1)),
+        dict(sorted(dgot.items())), dict(sorted(dwant.items())))
+
+
 def prerun(recipe, graph=None, stop_after=None, from_step=None):
     """card 103-2 (PD216(b)): stop_after=k (the recipe's own `--stop-after k`, PART-A mode) makes X5 expect only the
     stageplan wiring real ops 1..k - exactly the ops the run dispatches; the wire-action COVERAGE check stays over the
@@ -1496,6 +1859,11 @@ def prerun(recipe, graph=None, stop_after=None, from_step=None):
         rwr += [dict(x, plan=rel(p)) for x in fl_]
     gate("X12 no row names a wire uid an earlier border-crossing connect re-created (connect_from_wire.json:266)",
          not rwr, rwr[:6] or "{0} stageplan(s), {1} re-created source wire(s), none named later".format(len(spc), nrec))
+    # card 115-1 A1 (PD229(a)): the ops the stageplans use reproduce their own recorded opmodel samples in stagesim
+    x13_ok, x13_det, x13_w = x13_gate([pl or json.load(open(p, encoding="utf-8")) for p, (_ok, _d, pl, _o) in spc.items()])
+    gate("X13 opmodel conformance: every recorded sample of the plan ops' model files replays in stagesim", x13_ok, x13_det)
+    for w_ in x13_w:
+        print("  WARN  {0}".format(w_), flush=True)
     bad = []
     if OG is None:
         gate("X4 every end addressable offline", False, "no graph JSON for input md5 {0}".format(tr["input_md5"]))
@@ -1518,28 +1886,8 @@ def prerun(recipe, graph=None, stop_after=None, from_step=None):
             if why:
                 bad.append("{0}: {1}".format(lab, why))
         gate("X4 every end addressable offline ({0} ends)".format(len(seen)), not bad, bad[:8])
-    wires = [r for r in rows if r.get("action") == "wire"]
-    ops = [v for v in tr["ops"] if WIRE_VERB_RE.search(v)]
-    # card 79-6: a stageplan's wire actions are executed as stagexec real ops (a tunnel op carries its two border
-    # wires); expected = compiled wiring ops, AND those ops must cover every `wire` action of the plan exactly once
-    sp_wops, sp_wact, sp_cov = 0, 0, 0
-    for p, (_ok, _d, pl, ops_) in spc.items():
-        A = (pl or {}).get("actions") or []
-        wa = set(i for i, a in enumerate(A, 1) if a.get("op") == "wire")
-        wo = [o for o in (ops_ or []) if o["kind"] in SP_WIRING]
-        so = [o for o in (ops_ or []) if o["kind"] in SP_WIRE_OTHER]
-        # card 103-2: PART-A mode expects only the wiring ops the run dispatches (op index k <= stop_after)
-        # card 103-4: PART-B mode (`--from-step k`) expects only the wiring ops k+1.. the run dispatches
-        wk = wo if stop_after is None and from_step is None else [
-            o for k, o in enumerate(ops_ or [], 1) if o["kind"] in SP_WIRING and k <= int(stop_after or len(ops_ or []))
-            and k > int(from_step or 0)]
-        sp_wops, sp_wact = sp_wops + len(wk), sp_wact + len(wa)
-        sp_cov += len(wa & set(x for o in wo + so for x in o["acts"]))
-    gate("X5 wiring ops executed in the dry run == plan wire rows", plans and not sp_bad and len(ops) == len(wires) + sp_wops
-         and sp_cov == sp_wact, "ops {0} vs plan wire rows {1} + stageplan wiring real ops {2}{5} (covering {3}/{4} wire actions)"
-         .format(len(ops), len(wires), sp_wops, sp_cov, sp_wact,
-                 ("" if stop_after is None else " among ops 1..{0} (PART-A stop_after)".format(int(stop_after))) +
-                 ("" if from_step is None else " among ops {0}.. (PART-B from_step)".format(int(from_step) + 1))))
+    x5ok, x5det = x5_count(tr["ops"], rows, spc, stop_after, from_step)
+    gate("X5 wiring ops executed in the dry run == plan wire rows", plans and not sp_bad and x5ok, x5det)
     if OG is not None:
         ints, strs = lint(recipe, OG)
         gate("X6 ast lint: no re-typed uid / terminal name", not ints and not strs,
@@ -2111,6 +2459,9 @@ def main(argv=None):
     ap.add_argument("--control-lint", help="control_path_lint one stageplan/1 JSON (exit 0 clean / 2 refused)")
     ap.add_argument("--selftest-control-lint", action="store_true")
     ap.add_argument("--buildarray-check", nargs="+", help="card 114-1: X11 replay over stageplan/1 files (exit 0/2)")
+    ap.add_argument("--opmodel-conformance", nargs="*", help="card 115-1: X13 over these stageplan ops (none = every "
+                                                            "opmodels/*.json); exit 0 / 2 on a FAILED sample")
+    ap.add_argument("--disable", help="with --opmodel-conformance: 'cfw_border_rule' = the A2 negative run")
     # card 103-1: unknown arguments pass through to the recipe's own sys.argv (e.g. stage_d1_disp.py `--stop-after 40`,
     # PART-A mode), so a recipe mode can be dry-run / pre-run exactly as it will be launched; they must follow the recipe.
     a, rest = ap.parse_known_args(argv)
@@ -2122,6 +2473,22 @@ def main(argv=None):
         b = control_path_lint(json.load(open(a.control_lint, encoding="utf-8")))
         print("\n".join(b) or "CLEAN")
         return 2 if b else 0
+    if a.opmodel_conformance is not None:
+        # card 115-1 A2/A3: X13 over named ops (none = every opmodels/*.json); exit 0 no FAIL / 2 a sample FAILED
+        dis = tuple(x for x in (a.disable or "").split(",") if x)
+        c = opmodel_conformance(a.opmodel_conformance or None, disable=dis, log=print)
+        for fn, v in sorted(c["files"].items()):
+            print("FILE {0}: {1} ({2} sample(s)){3}".format(fn, v["status"], v["samples"], "".join(
+                " | FAIL(sample {0}, field {1}: measured {2} simulated {3})".format(x["sample"], x["field"], x["measured"],
+                                                                                 x["simulated"]) for x in v["fails"])))
+        for w_ in c["warns"]:
+            print("WARN {0}".format(w_))
+        import protocol as P
+        nf = len([v for v in c["files"].values() if v["status"] == "FAIL"])
+        npf = len([v for v in c["files"].values() if v["status"] == "PASS"])     # no-samples / not-replayed are not a pass
+        first = next(("X13 {0} sample {1} field {2}".format(x["file"], x["sample"], x["field"]) for x in c["fails"]), None)
+        print(P.result_line(P.make_result(npf, nf, first)), flush=True)
+        return 2 if c["fails"] else 0
     if a.buildarray_check:
         # card 114-1 S0b: replay X11 over plan files; prints every flag (licensed ones marked), exit 2 on an unlicensed one
         unl = 0
@@ -2157,7 +2524,13 @@ def main(argv=None):
             bao = [x for x in buildarray_open_sibling(json.load(open(recipe, encoding="utf-8")),
                                                       licences=pb_licences(recipe)) if not x["licensed"]]
             g_ = g_ + [("X11 Build Array half-wired vs open sibling (card 114-1)", not bao, json.dumps(bao)[:600] or "clean")]
-            ok = ok and not cpl and not bao
+            # card 115-1 A1 (PD229(a)): X13 opmodel conformance of the plan's ops; WARN lines printed, never a pass reason
+            x13_ok, x13_det, x13_w = x13_gate([json.load(open(recipe, encoding="utf-8"))])
+            for w_ in x13_w:
+                print("  WARN  {0}".format(w_), flush=True)
+            g_ = g_ + [("X13 opmodel conformance (card 115-1)", x13_ok, json.dumps(x13_det, default=str)[:600])]
+            print("  {0}  {1}  {2}".format("PASS" if x13_ok else "FAIL", g_[-1][0], g_[-1][2][:400]), flush=True)
+            ok = ok and not cpl and not bao and x13_ok
             st = "PASS" if ok else "FAIL"
             npass, nfail = sum(1 for x in g_ if x[1]), sum(1 for x in g_ if not x[1])
             ff = next((x[0] + ": " + x[2] for x in g_ if not x[1]), None)

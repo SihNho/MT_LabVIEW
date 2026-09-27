@@ -1,0 +1,66 @@
+{
+ "schema": "task/1",
+ "id": "115-5",
+ "kind": "review-dispatch",
+ "goal": "Discharge the owed hypothesis review on diag_c115d_sel.log, then write R1's expected Error List file licensing the 7 dangling-branch loose-ends items (PD230) and reverdict it",
+ "why": "115-4 BLOCKED: guard_peer armed by diag_c115d_sel.log (2 of 47 shots unregistered), JEV new-problem p=0.710. JUDGEMENT PD230: R1 accepted on graph M2/M5 (7 shared nets keep source+live sinks, no new wire), not on shot pairing",
+ "inputs": [
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_r1_20260928_055441.vi", "md5": "f465196bb5016638b146e771ba54c5af"},
+  {"path": "tools/bench/cards/result_115-4.json"},
+  {"path": "tools/bench/cards/result_115-3.json"},
+  {"path": "tools/bench/diag_c115d_sel.log"},
+  {"path": "tools/bench/diag_c115d_graph.log"},
+  {"path": "tools/bench/diag_c115d_m1.log"},
+  {"path": "tools/bench/errorlist_D1_l2_r1_20260928_055441_20260928_060555.json", "md5": "81661d28b1ac1af66bca2f8c97a02ee6"},
+  {"path": "tools/bench/errorlist_expected_D1_l2_b3_20260928_032703.json"},
+  {"path": "archive/peer/2026-09-28-c115c-errorlist.md"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c115d_sel.log"},
+  {"kind": "file", "name": "tools/bench/diag_c115d_graph.log"},
+  {"kind": "file", "name": "tools/bench/errorlist_expected_D1_l2_b3_20260928_032703.json"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/peer.ps1"}
+ ],
+ "pass": [
+  "V1 review/1 card + peer.ps1 -Agent claude -Role hypothesis -ReviewCard, naming diag_c115d_sel.log; ANSWERED; attack PD230's claim that graph M5 settles rule 1a for the 7 items",
+  "V2 review annotated (disposition per finding); guard_peer no longer armed by diag_c115d_sel.log (show the check)",
+  "V3 gate: verdict with a concrete counter-case to PD230 (a changed source/sink or new wire named) -> return BLOCKED, write no expected file",
+  "V4 errorlist_expected_D1_l2_r1_20260928_055441.json = B3 expected - the retired-stub items + 7 loose-ends items licensed as PD230 dangling branches (nets named)",
+  "V5 reverdict of R1's capture against V4 = OK (errorlist_check.py); report classes 24/1/20/10 = 55 reconciled",
+  "R1 and B3 md5 unchanged; no VI edited or saved"
+ ],
+ "outputs": [
+  "tools/bench/errorlist_expected_D1_l2_r1_20260928_055441.json",
+  "tools/bench/cards/review_115-5.json",
+  "tools/bench/cards/result_115-5.json"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/errorlist_*",
+   "tools/bench/diag_c115e*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 45},
+ "rules": [
+  "no delete, wire or save on any VI; LabVIEW only if errorlist_check needs it, on the saved capture otherwise",
+  "the review is asked to REFUTE PD230 (adversarial), never to confirm",
+  "review design findings return as open; acceptance and current-bed are judgement's",
+  "a gate refusal is returned BLOCKED, never re-run via a self-test child or exempt route",
+  "facts <=10 file:line; OPEN <=3"
+ ],
+ "advances": ["M3", "R1"]
+}

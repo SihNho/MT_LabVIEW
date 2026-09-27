@@ -1,0 +1,40 @@
+BGRUN START 2026-09-28 05:13:09 limit 20.0 min: py tools/prior_art_review.py --plan-file tools/bench/cards/plan_115-2_l2r1.md --slug c115b-l2r1-rev3 --trigger new-op --recipe tools/recipes/stage_d1_l2r1.py
+BGRUN PID 14708
+BGRUN REAP marked KILLED: peer_priorart_c115b_l2r1_v2.log pid=2660
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c115b-l2r1-rev3.txt (87017 chars)
+   review card tools\bench\cards\review_priorart-c115b-l2r1-rev3.json
+OUTCOME: ANSWERED (77s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-28-priorart-c115b-l2r1-rev3.md
+COST: $1.4507  in 16 / out 5269 / cache-create 141439 / cache-read 1068526  (74s, 12 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c115b-l2r1-rev3 verdict=novel -> tools\bench\cards\verdict_priorart-c115b-l2r1-rev3.json
+--- ANSWER ---
+**Verdict: novel.** Nothing in the project files says this has already been done, tried and failed, or covered by an existing helper. Every point below has a file and line.
+
+## PART A — the direction
+
+- **A1 (already decided, not blocking).** The direction was decided upstream, in `docs/d1-loop12-17-split-plan.md` PD228(f)(g)(h)(j) and PD229(d), and in STATUS.md's `## NEXT`. The first-round review said the same (`archive/peer/2026-09-28-priorart-c115b-l2r1.md:556`). What revision 2 adds is deleting the stub wires first. That is a new measured step, not a decision taken somewhere else.
+- **A2 (tried and dropped before):** none. No archived review, retrospective or superseded plan argues against deleting the stubs before the register pair.
+- **A3 (contradicted):** none. The R2 fact matches the model and the other records:
+  - The fact: after `delete_object`, the stub Wire objects stay behind with no terminal (Wire 1956 → 1956, `tools/bench/diag_c115b_scratch.log:116`).
+  - `opmodels/delete_wire.json:128` says a deleted wire takes every edge on it with it. That describes `delete_wire`, not the stubs a node deletion leaves behind.
+  - The first-round review, lines 565–566, said the stubs "lose every terminal". That also agrees.
+- **A4 (unread evidence):** none that bears on this.
+
+## PART B — the artefact
+
+- **B1/B3 (already built, existing helper).** The executor's `delete_wire` already finds each wire by its terminals and refuses on a mismatch (`tools/stagexec.py:1639-1651`). Line 1647 stops if the terminals sit on more than one live wire, and line 1650 stops if the live wire "carries other terminals than the simulated one". The plan uses this route; it does not rebuild it. The L7-R retirement (`tools/recipes/stage_d1_l7_r.py:94-101`) was already examined and set aside in the first round, lines 572 and 606. Nothing new since then.
+- **B2 (already failed), your question: no.** Searching `tools/bench` for either refusal message finds nothing. No stub-wire delete has ever been refused, and none has ever been recorded taking another wire. The one related precedent points the other way:
+  - `stagexec.py:1643-1645` covers a wire that LabVIEW had already deleted together with its node (`already_gone`, card 104-2).
+  - That happened because the wire was deleted after its node. This plan deletes the stubs first, so that case cannot come up.
+- **B4 (already measured), not blocking.**
+  - Both measured `delete_wire` samples are on wires that have a source and one or two sinks (`tools/bench/opmodels/delete_wire.json:15-18` and `:65-68`).
+  - No sample covers a stub with only a source or only a sink. The terminal-set check at `stagexec.py:1649` should still hold for such a stub, but that is not measured. The planned re-run of the R2 scratch on the new bytes is what measures it.
+  - Separately, the simulator's rule that deletes an object once it has no wire applies only to tunnels (`tools/stagesim.py:62`, `DROP_WHEN_UNWIRED = ("LoopTunnel", "Tunnel")`). So deleting the stubs cannot silently delete a shift register in the simulation. In the real VI, each Left register's outer face stays on a live net anyway.
+  - The live wire w11389 is kept. The ENDS check already measured it among the 7 shared nets (`diag_c115b_scratch.log:118`).
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c115b-l2r1-rev3","verdict":"novel","alternative":"delete_wire on a sourceless or sinkless stub has never been sampled (both opmodel samples have a source and 1-2 sinks), so the stagexec terminal-set check at :1649 is unmeasured for stubs","discriminating_test":"Re-run diag_c115b_scratch.py on the new bytes: all 11 delete_wire rows pass stagexec:1646-1650 with no ExecStop, Wire count drops by 11, w11389 is kept (ENDS)","violations":[],"sources":["tools/stagexec.py:1639-1651","tools/bench/opmodels/delete_wire.json:15-18","tools/bench/opmodels/delete_wire.json:65-68","tools/stagesim.py:62","tools/bench/diag_c115b_scratch.log:116","archive/peer/2026-09-28-priorart-c115b-l2r1.md:565-566"],"note":"No recorded case of the delete_wire refusals firing (grep of tools/bench for both messages: 0 hits); the already_gone precedent at stagexec:1643 cannot arise because stubs are deleted before the pair"}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c115b-l2r1-rev3.md
+   STOP RECORD: none - 2026-09-28-priorart-c115b-l2r1-rev3.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_l2r1.py sha 1865c0e6dbe0 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 80s

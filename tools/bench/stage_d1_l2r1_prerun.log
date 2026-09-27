@@ -1,0 +1,298 @@
+BGRUN START 2026-09-28 05:00:18 limit 8.0 min: py -u tools/stage_prerun.py --prerun tools/recipes/stage_d1_l2r1.py
+BGRUN PID 22260
+stage_d1_l2r1 - card 115-2: STAGE L2-R1 (docs/d1-loop12-17-split-plan.md PD228(g)(h)(j), PD229(d)): RETIRE the 6 dead shift-register pairs on
+loop #637 (tools/bench/facts_c114e_inventory.json: 0 live consumers each). INPUT the B3 bed D1_l2_b3_20260928_032703.vi (1b5c12d7), FRESH LabVIEW ->
+claudeDev\D1_l2_r1_<ts>.vi (rule-6 GUI save, ExecState 0 by design (PD228(h)), never run). ROWS ONLY FROM plan_l2r1.json (decision 8): 6 delete_object on
+the RIGHT register (the Left goes with it, opmodels/delete_object.json sr_pair). PRIOR ART: stage_d1_l2b3.py (this is its cut: Executor RECORD MODE,
+D4 gates with an EMPTY scope = exact), stage_d1_l7_r.py (retire + RBW), stagexec.RetireGuardBE (the live-consumer gate, re-read BEFORE EACH delete).
+SAVE=False (set by tools/bench/diag_c115b_scratch.py) = the R2 scratch check of this same body on a byte copy: nothing saved, RBW on the work copy.
+PREDICTION: L1 6 real ops; LC x6 PASS; E1 each checkpoint == its sim step; D new 0 / lost == the sim's 11 stubs; FU unchanged; CEN nodes lost == the 12
+SR uids, none added; SR census -6/-6, other classes 0; ENDS the 7 shared nets keep uid+source+kept sinks; PB cdiff(S1, end) == B3's 16 rows; HF +-100;
+RBW(new) adds no deletion over RBW(bed), and RBW(bed) - RBW(new) only wires with an end on a retired node; PS saved.
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/stage_d1_l2r1.log -- py -u tools/recipes/stage_d1_l2r1.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_l2r1_in, finalized end cdiff == B3's 16 rows  ('38efbd77a4685570b6a4a83181a0ec59', 16)
+  PASS  L0b D4 cites S1 md5 5de014fe580b938328fa8662cf2b0652, scope EMPTY (grants nothing), plan md5 pinned  ('5de014fe580b938328fa8662cf2b0652', '38efbd77a4685570b6a4a83181a0ec59')
+  PASS  L0c 6 register pairs from loop #637's table == the 12 inventory uids, each with 0 live consumers (facts_c114e_inventory.json)  {9018: [9018, 9025], 29505: [29505, 29512], 1147: [1147, 1142], 5796: [5796, 5805], 119: [119, 2972], 7311: [7311, 11001]}
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 1b5c12d71ca48f22e3f4b80316c67e51  got 1b5c12d71ca48f22e3f4b80316c67e51
+  PASS  DRY graph JSON for input md5 1b5c12d71ca48f22e3f4b80316c67e51  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_l2b3_20260928.json
+  FACT  CENSUS before L2-R1 D1_l2_r1_20260928_050019.vi: {'RightShiftRegister': 43, 'LeftShiftRegister': 43, 'WhileLoop': 6, 'Diagram': 173, 'SubVI': 92, 'LoopTunnel': 151, 'Local': 12, 'ControlTerminal': 118, 'Wire': 1956, 'Node': 0}
+  PASS  L1 the 6 actions compile into 6 real ops, all delete_object, each action once  ['delete_object', 'delete_object', 'delete_object', 'delete_object', 'delete_object', 'delete_object']
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 0 touched diagram(s) []: one-side-only Nodes[] entries 0
+  PRIME 0 terminal indexes proved at base; 0 ControlTerminal end(s) by 179(b); unprovable []
+  CHECKPOINTS whole-VI read+diff after ops [1, 2, 3, 4, 5, 6] of 6
+  PASS  LC live-consumer check re-read before deleting RightShiftRegister #9018 (pair [9018, 9025])  {'uids': [9018, 9025], 'rows': 4, 'missing': [], 'consumers': []}
+  FACT  OP delete_object [1] -> err '' (0.0 s)
+  STEPX 01 delete_object  acts [1] ids ['r1_sr9018'] bound {} diff 0
+  PASS  LC live-consumer check re-read before deleting RightShiftRegister #29505 (pair [29505, 29512])  {'uids': [29505, 29512], 'rows': 4, 'missing': [], 'consumers': []}
+  FACT  OP delete_object [2] -> err '' (0.0 s)
+  STEPX 02 delete_object  acts [2] ids ['r1_sr29505'] bound {} diff 0
+  PASS  LC live-consumer check re-read before deleting RightShiftRegister #1147 (pair [1142, 1147])  {'uids': [1142, 1147], 'rows': 4, 'missing': [], 'consumers': []}
+  FACT  OP delete_object [3] -> err '' (0.0 s)
+  STEPX 03 delete_object  acts [3] ids ['r1_sr1147'] bound {} diff 0
+  PASS  LC live-consumer check re-read before deleting RightShiftRegister #5796 (pair [5796, 5805])  {'uids': [5796, 5805], 'rows': 4, 'missing': [], 'consumers': []}
+  FACT  OP delete_object [4] -> err '' (0.0 s)
+  STEPX 04 delete_object  acts [4] ids ['r1_sr5796'] bound {} diff 0
+  PASS  LC live-consumer check re-read before deleting RightShiftRegister #119 (pair [119, 2972])  {'uids': [119, 2972], 'rows': 4, 'missing': [], 'consumers': []}
+  FACT  OP delete_object [5] -> err '' (0.0 s)
+  STEPX 05 delete_object  acts [5] ids ['r1_sr119'] bound {} diff 0
+  PASS  LC live-consumer check re-read before deleting RightShiftRegister #7311 (pair [7311, 11001])  {'uids': [7311, 11001], 'rows': 4, 'missing': [], 'consumers': []}
+  FACT  OP delete_object [6] -> err '' (0.0 s)
+  STEPX 06 delete_object  acts [6] ids ['r1_sr7311'] bound {} diff 0
+  PASS  LC all 6 live-consumer checks PASS (each re-read before its delete)  [{'uids': [9018, 9025], 'rows': 4, 'missing': [], 'consumers': [], 'ok': True}, {'uids': [29505, 29512], 'rows': 4, 'missing': [], 'consumers': [], 'ok': True}, {'uids': [1142, 1147], 'rows': 4, 'missing': [], 'consumers': [], 'ok': True}, {'uids': [5796, 5805], 'rows': 4, 'missing': [], 'consumers': [], 'ok': True}, {'uids': [119, 2972], 'rows': 4, 'missing': [], 'consumers': [], 'ok': True}, {'uids': [7311, 11001], 'rows': 4, 'missing': [], 'consumers': [], 'ok': True}]
+  PASS  E1 every checkpoint's real graph == its simulated step (D4 scope empty = exact)  {'bad': [], 'accepted': []}
+  PASS  D the end adds 0 wire(s) and loses exactly the simulated 11 stub(s)  {'new': [], 'lost': [121, 505, 1681, 5859, 6041, 7429, 9097, 9215, 10763, 28039, 29591], 'sim_lost': [121, 505, 1681, 5859, 6041, 7429, 9097, 9215, 10763, 28039, 29591]}
+  PASS  FU the set of frame diagrams is unchanged
+  PASS  CEN terminal-graph nodes lost == the retire set exactly, none added  {'lost': [119, 1142, 1147, 2972, 5796, 5805, 7311, 9018, 9025, 11001, 29505, 29512], 'added': []}
+  FACT  CENSUS after L2-R1 D1_l2_r1_20260928_050019.vi: {'RightShiftRegister': 43, 'LeftShiftRegister': 43, 'WhileLoop': 6, 'Diagram': 173, 'SubVI': 92, 'LoopTunnel': 151, 'Local': 12, 'ControlTerminal': 118, 'Wire': 1956, 'Node': 0}
+  PASS  CEN2 class census: RightShiftRegister -6, LeftShiftRegister -6, WhileLoop/Diagram/SubVI/LoopTunnel/Local/ControlTerminal 0 (Wire/Node recorded)  {'RightShiftRegister': 0, 'LeftShiftRegister': 0, 'WhileLoop': 0, 'Diagram': 0, 'SubVI': 0, 'LoopTunnel': 0, 'Local': 0, 'ControlTerminal': 0, 'Wire': 0, 'Node': 0}
+  PASS  ENDS every net shared by a retired and a kept terminal keeps its uid, its source(s) and its kept sinks (7 nets)  {'shared_wires': {8590: [6247, 23859], 9051: [8958, 25588], 11253: [10225, 25399], 11389: [13163, 25594], 25438: [2892, 5758, 25315, 25431], 25461: [5583, 5820, 25363, 25453], 29122: [25606, 28172]}, 'bad': []}
+  FACT  ExecState [after all rows (ExecState 0 expected, PD228(h))] D1_l2_r1_20260928_050019.vi = <dry:g.exec_state>
+  FACT  CDIFF ROW {'node': 376, 'class': 'SubVI', 'sink': "#376 Terminal 'current frame data array in'", 'before': ['2626|Terminal|appended array|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 376, 'class': 'SubVI', 'sink': "#376 Terminal 'frame index'", 'before': ['644|Terminal||0'], 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array'", 'before': ['5058|Terminal|x,y,z array out|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array' [1]", 'before': None, 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array' [2]", 'before': None, 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array' [3]", 'before': None, 'after': ['5058|Terminal|x,y,z array out|0']}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'element'", 'before': ['5119|OverridableParameterTerminal|x-y|0'], 'after': None}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'element' [1]", 'before': ['30117|Terminal|Value|0'], 'after': None}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'element' [2]", 'before': ['4580|Terminal|Value|0'], 'after': None}
+  FACT  CDIFF ROW {'node': 5058, 'class': 'SubVI', 'sink': "#5058 Terminal 'Image In'", 'before': ['6810|Terminal|Image Out|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 8634, 'class': 'GrowableFunction', 'sink': "#8634 Terminal 'index (col)'", 'before': ['10068|ParameterTerminal|x-y*floor(x/y)|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 11261, 'class': 'BuildArray', 'sink': "#11261 Terminal 'array'", 'before': ['11310|Terminal|output cluster|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 11261, 'class': 'BuildArray', 'sink': "#11261 Terminal 'element'", 'before': ['11608|Terminal|output cluster|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 28083, 'class': 'SubVI', 'sink': "#28083 Terminal 'Magnet position'", 'before': ['30117|Terminal|Value|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 29625, 'class': 'GrowableFunction', 'sink': "#29625 Terminal 'index (col)'", 'before': ['29240|ParameterTerminal|x-y*floor(x/y)|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 29973, 'class': 'BuildArray', 'sink': "#29973 Terminal 'element' [1]", 'before': ['29240|ParameterTerminal|x-y*floor(x/y)|0'], 'after': []}
+  PASS  PB frame-keyed cdiff(S1, real end) == B3's 16 rows exactly (no row added or removed; FATAL, before save)  {'bad': [], 'extra': [], 'missing': []}
+  FACT  HF handles: start <dry:bench_prep.labview_handles> -> end None; steady state read k1 -> last read []
+  PASS  HF handle count flat (+-100) in steady state, from the read after op 1 to the last read
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  dry0dry0dry0dry0dry0dry0dry0dry0
+GATE RBW NOT RUNNABLE IN DRY: Remove Bad Wires (VI method 410) runs inside LabVIEW
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  PASS  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['tools/bench/plan_l2b3.json', 'tools/bench/plan_l2r1.json']
+  PASS  X3 every plan row decided  0 rows + 15 stageplan actions
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  2 stageplan(s)
+  PASS  X11 no row wires one Build Array input while a sibling input is an open row (unless pb-licence/1)  2 stageplan(s)
+  PASS  X12 no row names a wire uid an earlier border-crossing connect re-created (connect_from_wire.json:266)  2 stageplan(s), 3 re-created source wire(s), none named later
+  PASS  X13 opmodel conformance: every recorded sample of the plan ops' model files replays in stagesim  3 op(s) ['delete_object', 'tunnel', 'wire']; files {'delete_object.json': 'PASS (2)', 'tunnel.json': 'PASS (2)', 'connect_from_wire.json': 'PASS (2)', 'wire_sr.json': 'not-replayed (2)'}
+  WARN  X13 WARN wire_sr.json: 2 sample(s), no replayer for op 'wire_sr' (only ['connect_from_wire', 'tunnel', 'delete_object', 'delete_wire', 'remove_bad_wires'])
+  PASS  X4 every end addressable offline (0 ends)  []
+  FAIL  X5 wiring ops executed in the dry run == plan wire rows  ops 0 vs plan wire rows 0 + stageplan wiring real ops 3 (covering 6/6 wire actions)
+  FAIL  X6 ast lint: no re-typed uid / terminal name  uids [(637, 19)]; names []
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_l2_r1_20260928_050019.vi; decisions rows NOT dispatched (recipe calls neither run_rows nor from_decision)
+  PASS  X10 predicted LabVIEW private MB < 690.0 (error-2 point; MEMSTOP 700.0) over the ops this run dispatches (UNMEASURED - no covering record)  {'why': 'UNMEASURED: no recorded meter of stage_d1_l2r1.py covers ops 1..end (0 record(s))'}
+  WARN  X10 WARN unmeasured: UNMEASURED: no recorded meter of stage_d1_l2r1.py covers ops 1..end (0 record(s))
+
+=== DRY PASS: first_fail=None coverage 85/99 lines, first mutation Stage._op delete_object, unverified 0, graph tools/bench/graph_l2b3_20260928.json
+=== PRERUN FAIL: 11 pass / 2 fail; first X5 wiring ops executed in the dry run == plan wire rows: ops 0 vs plan wire rows 0 + stageplan wiring real ops 3 (covering 6/6 wire actions)
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":11,"fail":2},"first_fail":"X5 wiring ops executed in the dry run == plan wire rows: ops 0 vs plan wire rows 0 + stageplan wiring real ops 3 (covering 6/6 wire actions) [X10 WARN unmeasured]","artefacts":[]}
+BGRUN END rc=1 after 9s
+BGRUN START 2026-09-28 05:01:11 limit 8.0 min: py -u tools/stage_prerun.py --prerun tools/recipes/stage_d1_l2r1.py
+BGRUN PID 16580
+stage_d1_l2r1 - card 115-2: STAGE L2-R1 (docs/d1-loop12-17-split-plan.md PD228(g)(h)(j), PD229(d)): RETIRE the 6 dead shift-register pairs on
+loop #637 (tools/bench/facts_c114e_inventory.json: 0 live consumers each). INPUT the B3 bed D1_l2_b3_20260928_032703.vi (1b5c12d7), FRESH LabVIEW ->
+claudeDev\D1_l2_r1_<ts>.vi (rule-6 GUI save, ExecState 0 by design (PD228(h)), never run). ROWS ONLY FROM plan_l2r1.json (decision 8): 6 delete_object on
+the RIGHT register (the Left goes with it, opmodels/delete_object.json sr_pair). PRIOR ART: stage_d1_l2b3.py (this is its cut: Executor RECORD MODE,
+D4 gates with an EMPTY scope = exact), stage_d1_l7_r.py (retire + RBW), stagexec.RetireGuardBE (the live-consumer gate, re-read BEFORE EACH delete).
+SAVE=False (set by tools/bench/diag_c115b_scratch.py) = the R2 scratch check of this same body on a byte copy: nothing saved, RBW on the work copy.
+PREDICTION: L1 6 real ops; LC x6 PASS; E1 each checkpoint == its sim step; D new 0 / lost == the sim's 11 stubs; FU unchanged; CEN nodes lost == the 12
+SR uids, none added; SR census -6/-6, other classes 0; ENDS the 7 shared nets keep uid+source+kept sinks; PB cdiff(S1, end) == B3's 16 rows; HF +-100;
+RBW(new) adds no deletion over RBW(bed), and RBW(bed) - RBW(new) only wires with an end on a retired node; PS saved.
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/stage_d1_l2r1.log -- py -u tools/recipes/stage_d1_l2r1.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_l2r1_in; its finalized end's (node, name) pairs == the REAL B3 end's (stage_d1_l2b3.json)  ('38efbd77a4685570b6a4a83181a0ec59', 16, 11)
+  PASS  L0b D4 cites S1 md5 5de014fe580b938328fa8662cf2b0652, scope EMPTY (grants nothing), plan md5 pinned  ('5de014fe580b938328fa8662cf2b0652', '38efbd77a4685570b6a4a83181a0ec59')
+  PASS  L0c 6 register pairs from ONE loop's register table ([637]) == 12 inventory uids, each with 0 live consumers (facts_c114e_inventory.json)  {9018: [9018, 9025], 29505: [29505, 29512], 1147: [1147, 1142], 5796: [5796, 5805], 119: [119, 2972], 7311: [7311, 11001]}
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 1b5c12d71ca48f22e3f4b80316c67e51  got 1b5c12d71ca48f22e3f4b80316c67e51
+  PASS  DRY graph JSON for input md5 1b5c12d71ca48f22e3f4b80316c67e51  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_l2b3_20260928.json
+  FACT  CENSUS before L2-R1 D1_l2_r1_20260928_050112.vi: {'RightShiftRegister': 43, 'LeftShiftRegister': 43, 'WhileLoop': 6, 'Diagram': 173, 'SubVI': 92, 'LoopTunnel': 151, 'Local': 12, 'ControlTerminal': 118, 'Wire': 1956, 'Node': 0}
+  PASS  L1 the 6 actions compile into 6 real ops, all delete_object, each action once  ['delete_object', 'delete_object', 'delete_object', 'delete_object', 'delete_object', 'delete_object']
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 0 touched diagram(s) []: one-side-only Nodes[] entries 0
+  PRIME 0 terminal indexes proved at base; 0 ControlTerminal end(s) by 179(b); unprovable []
+  CHECKPOINTS whole-VI read+diff after ops [1, 2, 3, 4, 5, 6] of 6
+  PASS  LC live-consumer check re-read before deleting RightShiftRegister #9018 (pair [9018, 9025])  {'uids': [9018, 9025], 'rows': 4, 'missing': [], 'consumers': []}
+  FACT  OP delete_object [1] -> err '' (0.0 s)
+  STEPX 01 delete_object  acts [1] ids ['r1_sr9018'] bound {} diff 0
+  PASS  LC live-consumer check re-read before deleting RightShiftRegister #29505 (pair [29505, 29512])  {'uids': [29505, 29512], 'rows': 4, 'missing': [], 'consumers': []}
+  FACT  OP delete_object [2] -> err '' (0.0 s)
+  STEPX 02 delete_object  acts [2] ids ['r1_sr29505'] bound {} diff 0
+  PASS  LC live-consumer check re-read before deleting RightShiftRegister #1147 (pair [1142, 1147])  {'uids': [1142, 1147], 'rows': 4, 'missing': [], 'consumers': []}
+  FACT  OP delete_object [3] -> err '' (0.0 s)
+  STEPX 03 delete_object  acts [3] ids ['r1_sr1147'] bound {} diff 0
+  PASS  LC live-consumer check re-read before deleting RightShiftRegister #5796 (pair [5796, 5805])  {'uids': [5796, 5805], 'rows': 4, 'missing': [], 'consumers': []}
+  FACT  OP delete_object [4] -> err '' (0.0 s)
+  STEPX 04 delete_object  acts [4] ids ['r1_sr5796'] bound {} diff 0
+  PASS  LC live-consumer check re-read before deleting RightShiftRegister #119 (pair [119, 2972])  {'uids': [119, 2972], 'rows': 4, 'missing': [], 'consumers': []}
+  FACT  OP delete_object [5] -> err '' (0.0 s)
+  STEPX 05 delete_object  acts [5] ids ['r1_sr119'] bound {} diff 0
+  PASS  LC live-consumer check re-read before deleting RightShiftRegister #7311 (pair [7311, 11001])  {'uids': [7311, 11001], 'rows': 4, 'missing': [], 'consumers': []}
+  FACT  OP delete_object [6] -> err '' (0.0 s)
+  STEPX 06 delete_object  acts [6] ids ['r1_sr7311'] bound {} diff 0
+  PASS  LC all 6 live-consumer checks PASS (each re-read before its delete)  [{'uids': [9018, 9025], 'rows': 4, 'missing': [], 'consumers': [], 'ok': True}, {'uids': [29505, 29512], 'rows': 4, 'missing': [], 'consumers': [], 'ok': True}, {'uids': [1142, 1147], 'rows': 4, 'missing': [], 'consumers': [], 'ok': True}, {'uids': [5796, 5805], 'rows': 4, 'missing': [], 'consumers': [], 'ok': True}, {'uids': [119, 2972], 'rows': 4, 'missing': [], 'consumers': [], 'ok': True}, {'uids': [7311, 11001], 'rows': 4, 'missing': [], 'consumers': [], 'ok': True}]
+  PASS  E1 every checkpoint's real graph == its simulated step (D4 scope empty = exact)  {'bad': [], 'accepted': []}
+  PASS  D the end adds 0 wire(s) and loses exactly the simulated 11 stub(s)  {'new': [], 'lost': [121, 505, 1681, 5859, 6041, 7429, 9097, 9215, 10763, 28039, 29591], 'sim_lost': [121, 505, 1681, 5859, 6041, 7429, 9097, 9215, 10763, 28039, 29591]}
+  PASS  FU the set of frame diagrams is unchanged
+  PASS  CEN terminal-graph nodes lost == the retire set exactly, none added  {'lost': [119, 1142, 1147, 2972, 5796, 5805, 7311, 9018, 9025, 11001, 29505, 29512], 'added': []}
+  FACT  CENSUS after L2-R1 D1_l2_r1_20260928_050112.vi: {'RightShiftRegister': 43, 'LeftShiftRegister': 43, 'WhileLoop': 6, 'Diagram': 173, 'SubVI': 92, 'LoopTunnel': 151, 'Local': 12, 'ControlTerminal': 118, 'Wire': 1956, 'Node': 0}
+  PASS  CEN2 class census: RightShiftRegister -6, LeftShiftRegister -6, WhileLoop/Diagram/SubVI/LoopTunnel/Local/ControlTerminal 0 (Wire/Node recorded)  {'RightShiftRegister': 0, 'LeftShiftRegister': 0, 'WhileLoop': 0, 'Diagram': 0, 'SubVI': 0, 'LoopTunnel': 0, 'Local': 0, 'ControlTerminal': 0, 'Wire': 0, 'Node': 0}
+  PASS  ENDS every net shared by a retired and a kept terminal keeps its uid, its source(s) and its kept sinks (7 nets)  {'shared_wires': {8590: [6247, 23859], 9051: [8958, 25588], 11253: [10225, 25399], 11389: [13163, 25594], 25438: [2892, 5758, 25315, 25431], 25461: [5583, 5820, 25363, 25453], 29122: [25606, 28172]}, 'bad': []}
+  FACT  ExecState [after all rows (ExecState 0 expected, PD228(h))] D1_l2_r1_20260928_050112.vi = <dry:g.exec_state>
+  FACT  CDIFF ROW {'node': 376, 'class': 'SubVI', 'sink': "#376 Terminal 'current frame data array in'", 'before': ['2626|Terminal|appended array|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 376, 'class': 'SubVI', 'sink': "#376 Terminal 'frame index'", 'before': ['644|Terminal||0'], 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array'", 'before': ['5058|Terminal|x,y,z array out|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array' [1]", 'before': None, 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array' [2]", 'before': None, 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array' [3]", 'before': None, 'after': ['5058|Terminal|x,y,z array out|0']}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'element'", 'before': ['5119|OverridableParameterTerminal|x-y|0'], 'after': None}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'element' [1]", 'before': ['30117|Terminal|Value|0'], 'after': None}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'element' [2]", 'before': ['4580|Terminal|Value|0'], 'after': None}
+  FACT  CDIFF ROW {'node': 5058, 'class': 'SubVI', 'sink': "#5058 Terminal 'Image In'", 'before': ['6810|Terminal|Image Out|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 8634, 'class': 'GrowableFunction', 'sink': "#8634 Terminal 'index (col)'", 'before': ['10068|ParameterTerminal|x-y*floor(x/y)|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 11261, 'class': 'BuildArray', 'sink': "#11261 Terminal 'array'", 'before': ['11310|Terminal|output cluster|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 11261, 'class': 'BuildArray', 'sink': "#11261 Terminal 'element'", 'before': ['11608|Terminal|output cluster|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 28083, 'class': 'SubVI', 'sink': "#28083 Terminal 'Magnet position'", 'before': ['30117|Terminal|Value|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 29625, 'class': 'GrowableFunction', 'sink': "#29625 Terminal 'index (col)'", 'before': ['29240|ParameterTerminal|x-y*floor(x/y)|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 29973, 'class': 'BuildArray', 'sink': "#29973 Terminal 'element' [1]", 'before': ['29240|ParameterTerminal|x-y*floor(x/y)|0'], 'after': []}
+  PASS  PB frame-keyed cdiff(S1, real end) == B3's 16 rows exactly (no row added or removed; FATAL, before save)  {'bad': [], 'extra': [], 'missing': [], 'vs_b3_real': []}
+  FACT  HF handles: start <dry:bench_prep.labview_handles> -> end None; steady state read k1 -> last read []
+  PASS  HF handle count flat (+-100) in steady state, from the read after op 1 to the last read
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  dry0dry0dry0dry0dry0dry0dry0dry0
+GATE RBW NOT RUNNABLE IN DRY: Remove Bad Wires (VI method 410) runs inside LabVIEW
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  PASS  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['tools/bench/plan_l2r1.json']
+  PASS  X3 every plan row decided  0 rows + 6 stageplan actions
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  1 stageplan(s)
+  PASS  X11 no row wires one Build Array input while a sibling input is an open row (unless pb-licence/1)  1 stageplan(s)
+  PASS  X12 no row names a wire uid an earlier border-crossing connect re-created (connect_from_wire.json:266)  1 stageplan(s), 0 re-created source wire(s), none named later
+  PASS  X13 opmodel conformance: every recorded sample of the plan ops' model files replays in stagesim  1 op(s) ['delete_object']; files {'delete_object.json': 'PASS (2)'}
+  PASS  X4 every end addressable offline (0 ends)  []
+  PASS  X5 wiring ops executed in the dry run == plan wire rows  ops 0 vs plan wire rows 0 + stageplan wiring real ops 0 (covering 0/0 wire actions)
+  PASS  X6 ast lint: no re-typed uid / terminal name  uids []; names []
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_l2_r1_20260928_050112.vi; decisions rows NOT dispatched (recipe calls neither run_rows nor from_decision)
+  PASS  X10 predicted LabVIEW private MB < 690.0 (error-2 point; MEMSTOP 700.0) over the ops this run dispatches (UNMEASURED - no covering record)  {'why': 'UNMEASURED: no recorded meter of stage_d1_l2r1.py covers ops 1..end (0 record(s))'}
+  WARN  X10 WARN unmeasured: UNMEASURED: no recorded meter of stage_d1_l2r1.py covers ops 1..end (0 record(s))
+
+=== DRY PASS: first_fail=None coverage 88/102 lines, first mutation Stage._op delete_object, unverified 0, graph tools/bench/graph_l2b3_20260928.json
+=== PRERUN PASS: 13 pass / 0 fail; first None
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":"X10 WARN unmeasured: UNMEASURED: no recorded meter of stage_d1_l2r1.py covers ops 1..end (0 record(s))","artefacts":[]}
+BGRUN END rc=0 after 9s
+BGRUN START 2026-09-28 05:15:06 limit 8.0 min: py -u tools/stage_prerun.py --prerun tools/recipes/stage_d1_l2r1.py
+BGRUN PID 16940
+stage_d1_l2r1 - card 115-2: STAGE L2-R1 (split plan PD228(g)(h)(j), PD229(d)): RETIRE the 6 dead shift-register pairs on loop #637 (facts_c114e_inventory.json:
+0 live consumers each). INPUT the B3 bed D1_l2_b3_20260928_032703.vi, FRESH LabVIEW -> claudeDev\D1_l2_r1_<ts>.vi (rule-6 GUI save, ExecState 0 by design, never run).
+ROWS ONLY FROM plan_l2r1.json: per pair, delete_wire of its stub wires (every terminal on the pair; R2 scratch run 1 measured delete_object leaves them as Wire
+objects), then delete_object on the RIGHT register (Left goes with it, delete_object.json sr_pair). PRIOR ART: stage_d1_l2b3.py (its cut: RECORD MODE, D4 EMPTY
+scope = exact), stage_d1_l7_r.py (retire + RBW), stagexec.RetireGuardBE (live-consumer gate re-read BEFORE EACH delete). SAVE=False (diag_c115b_scratch.py) = R2.
+PREDICTION: L1 17 ops (11 delete_wire + 6 delete_object); LC x6; E1 == sim each checkpoint; D new 0, lost == sim's 11 stubs; FU; CEN nodes lost == 12 SR uids;
+census SR -6/-6, Wire -11, others 0; ENDS 7 shared nets keep uid/source/sinks; PB cdiff == B3's 16 rows; HF +-100; RBW(new) <= RBW(bed), difference retired; PS.
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/stage_d1_l2r1.log -- py -u tools/recipes/stage_d1_l2r1.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_l2r1_in; its finalized end's (node, name) pairs == the REAL B3 end's (stage_d1_l2b3.json)  ('aab1efbe09e0160277073f90c0e3f4ad', 16, 11)
+  PASS  L0b D4 cites S1 md5 5de014fe580b938328fa8662cf2b0652, scope EMPTY (grants nothing), plan md5 pinned  ('5de014fe580b938328fa8662cf2b0652', 'aab1efbe09e0160277073f90c0e3f4ad')
+  PASS  L0c 6 register pairs from ONE loop's register table ([637]) == 12 inventory uids, each with 0 live consumers (facts_c114e_inventory.json)  {9018: [9018, 9025], 29505: [29505, 29512], 1147: [1147, 1142], 5796: [5796, 5805], 119: [119, 2972], 7311: [7311, 11001]}
+  PASS  L0d the plan's delete_wire rows == the stubs whose EVERY terminal is on a retired node (11), each once  {'plan': [121, 505, 1681, 5859, 6041, 7429, 9097, 9215, 10763, 28039, 29591], 'stubs': [121, 505, 1681, 5859, 6041, 7429, 9097, 9215, 10763, 28039, 29591]}
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 1b5c12d71ca48f22e3f4b80316c67e51  got 1b5c12d71ca48f22e3f4b80316c67e51
+  PASS  DRY graph JSON for input md5 1b5c12d71ca48f22e3f4b80316c67e51  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_l2b3_20260928.json
+  FACT  CENSUS before L2-R1 D1_l2_r1_20260928_051507.vi: {'RightShiftRegister': 43, 'LeftShiftRegister': 43, 'WhileLoop': 6, 'Diagram': 173, 'SubVI': 92, 'LoopTunnel': 151, 'Local': 12, 'ControlTerminal': 118, 'Wire': 1956, 'Node': 0}
+  PASS  L1 the 17 actions compile into 17 real ops (delete_wire / delete_object only, 6 delete_object), each action once  ['delete_wire', 'delete_wire', 'delete_object', 'delete_wire', 'delete_wire', 'delete_object', 'delete_wire', 'delete_wire', 'delete_object', 'delete_wire', 'delete_wire', 'delete_object', 'delete_wire', 'delete_wire', 'delete_object', 'delete_wire', 'delete_object']
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 0 touched diagram(s) []: one-side-only Nodes[] entries 0
+  PRIME 0 terminal indexes proved at base; 0 ControlTerminal end(s) by 179(b); unprovable []
+  CHECKPOINTS whole-VI read+diff after ops [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17] of 17
+  FACT  OP delete_wire [1] -> err '' (0.0 s)
+  STEPX 01 delete_wire    acts [1] ids ['r1_w9215'] bound {} diff 0
+  FACT  OP delete_wire [2] -> err '' (0.0 s)
+  STEPX 02 delete_wire    acts [2] ids ['r1_w9097'] bound {} diff 0
+  PASS  LC live-consumer check re-read before deleting RightShiftRegister #9018 (pair [9018, 9025])  {'uids': [9018, 9025], 'rows': 4, 'missing': [], 'consumers': []}
+  FACT  OP delete_object [3] -> err '' (0.0 s)
+  STEPX 03 delete_object  acts [3] ids ['r1_sr9018'] bound {} diff 0
+  FACT  OP delete_wire [4] -> err '' (0.0 s)
+  STEPX 04 delete_wire    acts [4] ids ['r1_w29591'] bound {} diff 0
+  FACT  OP delete_wire [5] -> err '' (0.0 s)
+  STEPX 05 delete_wire    acts [5] ids ['r1_w28039'] bound {} diff 0
+  PASS  LC live-consumer check re-read before deleting RightShiftRegister #29505 (pair [29505, 29512])  {'uids': [29505, 29512], 'rows': 4, 'missing': [], 'consumers': []}
+  FACT  OP delete_object [6] -> err '' (0.0 s)
+  STEPX 06 delete_object  acts [6] ids ['r1_sr29505'] bound {} diff 0
+  FACT  OP delete_wire [7] -> err '' (0.0 s)
+  STEPX 07 delete_wire    acts [7] ids ['r1_w505'] bound {} diff 0
+  FACT  OP delete_wire [8] -> err '' (0.0 s)
+  STEPX 08 delete_wire    acts [8] ids ['r1_w1681'] bound {} diff 0
+  PASS  LC live-consumer check re-read before deleting RightShiftRegister #1147 (pair [1142, 1147])  {'uids': [1142, 1147], 'rows': 4, 'missing': [], 'consumers': []}
+  FACT  OP delete_object [9] -> err '' (0.0 s)
+  STEPX 09 delete_object  acts [9] ids ['r1_sr1147'] bound {} diff 0
+  FACT  OP delete_wire [10] -> err '' (0.0 s)
+  STEPX 10 delete_wire    acts [10] ids ['r1_w5859'] bound {} diff 0
+  FACT  OP delete_wire [11] -> err '' (0.0 s)
+  STEPX 11 delete_wire    acts [11] ids ['r1_w6041'] bound {} diff 0
+  PASS  LC live-consumer check re-read before deleting RightShiftRegister #5796 (pair [5796, 5805])  {'uids': [5796, 5805], 'rows': 4, 'missing': [], 'consumers': []}
+  FACT  OP delete_object [12] -> err '' (0.0 s)
+  STEPX 12 delete_object  acts [12] ids ['r1_sr5796'] bound {} diff 0
+  FACT  OP delete_wire [13] -> err '' (0.0 s)
+  STEPX 13 delete_wire    acts [13] ids ['r1_w121'] bound {} diff 0
+  FACT  OP delete_wire [14] -> err '' (0.0 s)
+  STEPX 14 delete_wire    acts [14] ids ['r1_w7429'] bound {} diff 0
+  PASS  LC live-consumer check re-read before deleting RightShiftRegister #119 (pair [119, 2972])  {'uids': [119, 2972], 'rows': 4, 'missing': [], 'consumers': []}
+  FACT  OP delete_object [15] -> err '' (0.0 s)
+  STEPX 15 delete_object  acts [15] ids ['r1_sr119'] bound {} diff 0
+  FACT  OP delete_wire [16] -> err '' (0.0 s)
+  STEPX 16 delete_wire    acts [16] ids ['r1_w10763'] bound {} diff 0
+  PASS  LC live-consumer check re-read before deleting RightShiftRegister #7311 (pair [7311, 11001])  {'uids': [7311, 11001], 'rows': 4, 'missing': [], 'consumers': []}
+  FACT  OP delete_object [17] -> err '' (0.0 s)
+  STEPX 17 delete_object  acts [17] ids ['r1_sr7311'] bound {} diff 0
+  PASS  LC all 6 live-consumer checks PASS (each re-read before its delete)  [{'uids': [9018, 9025], 'rows': 4, 'missing': [], 'consumers': [], 'ok': True}, {'uids': [29505, 29512], 'rows': 4, 'missing': [], 'consumers': [], 'ok': True}, {'uids': [1142, 1147], 'rows': 4, 'missing': [], 'consumers': [], 'ok': True}, {'uids': [5796, 5805], 'rows': 4, 'missing': [], 'consumers': [], 'ok': True}, {'uids': [119, 2972], 'rows': 4, 'missing': [], 'consumers': [], 'ok': True}, {'uids': [7311, 11001], 'rows': 4, 'missing': [], 'consumers': [], 'ok': True}]
+  PASS  E1 every checkpoint's real graph == its simulated step (D4 scope empty = exact)  {'bad': [], 'accepted': []}
+  PASS  D the end adds 0 wire(s) and loses exactly the simulated 11 stub(s)  {'new': [], 'lost': [121, 505, 1681, 5859, 6041, 7429, 9097, 9215, 10763, 28039, 29591], 'sim_lost': [121, 505, 1681, 5859, 6041, 7429, 9097, 9215, 10763, 28039, 29591]}
+  PASS  FU the set of frame diagrams is unchanged
+  PASS  CEN terminal-graph nodes lost == the retire set exactly, none added  {'lost': [119, 1142, 1147, 2972, 5796, 5805, 7311, 9018, 9025, 11001, 29505, 29512], 'added': []}
+  FACT  CENSUS after L2-R1 D1_l2_r1_20260928_051507.vi: {'RightShiftRegister': 43, 'LeftShiftRegister': 43, 'WhileLoop': 6, 'Diagram': 173, 'SubVI': 92, 'LoopTunnel': 151, 'Local': 12, 'ControlTerminal': 118, 'Wire': 1956, 'Node': 0}
+  PASS  CEN2 class census: RightShiftRegister -6, LeftShiftRegister -6, Wire -11 (the deleted stubs), WhileLoop/Diagram/SubVI/LoopTunnel/Local/ControlTerminal/Node 0  {'RightShiftRegister': 0, 'LeftShiftRegister': 0, 'WhileLoop': 0, 'Diagram': 0, 'SubVI': 0, 'LoopTunnel': 0, 'Local': 0, 'ControlTerminal': 0, 'Wire': 0, 'Node': 0}
+  PASS  ENDS every net shared by a retired and a kept terminal keeps its uid, its source(s) and its kept sinks (7 nets)  {'shared_wires': {8590: [6247, 23859], 9051: [8958, 25588], 11253: [10225, 25399], 11389: [13163, 25594], 25438: [2892, 5758, 25315, 25431], 25461: [5583, 5820, 25363, 25453], 29122: [25606, 28172]}, 'bad': []}
+  FACT  ExecState [after all rows (ExecState 0 expected, PD228(h))] D1_l2_r1_20260928_051507.vi = <dry:g.exec_state>
+  FACT  CDIFF ROW {'node': 376, 'class': 'SubVI', 'sink': "#376 Terminal 'current frame data array in'", 'before': ['2626|Terminal|appended array|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 376, 'class': 'SubVI', 'sink': "#376 Terminal 'frame index'", 'before': ['644|Terminal||0'], 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array'", 'before': ['5058|Terminal|x,y,z array out|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array' [1]", 'before': None, 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array' [2]", 'before': None, 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array' [3]", 'before': None, 'after': ['5058|Terminal|x,y,z array out|0']}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'element'", 'before': ['5119|OverridableParameterTerminal|x-y|0'], 'after': None}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'element' [1]", 'before': ['30117|Terminal|Value|0'], 'after': None}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'element' [2]", 'before': ['4580|Terminal|Value|0'], 'after': None}
+  FACT  CDIFF ROW {'node': 5058, 'class': 'SubVI', 'sink': "#5058 Terminal 'Image In'", 'before': ['6810|Terminal|Image Out|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 8634, 'class': 'GrowableFunction', 'sink': "#8634 Terminal 'index (col)'", 'before': ['10068|ParameterTerminal|x-y*floor(x/y)|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 11261, 'class': 'BuildArray', 'sink': "#11261 Terminal 'array'", 'before': ['11310|Terminal|output cluster|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 11261, 'class': 'BuildArray', 'sink': "#11261 Terminal 'element'", 'before': ['11608|Terminal|output cluster|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 28083, 'class': 'SubVI', 'sink': "#28083 Terminal 'Magnet position'", 'before': ['30117|Terminal|Value|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 29625, 'class': 'GrowableFunction', 'sink': "#29625 Terminal 'index (col)'", 'before': ['29240|ParameterTerminal|x-y*floor(x/y)|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 29973, 'class': 'BuildArray', 'sink': "#29973 Terminal 'element' [1]", 'before': ['29240|ParameterTerminal|x-y*floor(x/y)|0'], 'after': []}
+  PASS  PB frame-keyed cdiff(S1, real end) == B3's 16 rows exactly (no row added or removed; FATAL, before save)  {'bad': [], 'extra': [], 'missing': [], 'vs_b3_real': []}
+  FACT  HF handles: start <dry:bench_prep.labview_handles> -> end None; steady state read k1 -> last read []
+  PASS  HF handle count flat (+-100) in steady state, from the read after op 1 to the last read
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  dry0dry0dry0dry0dry0dry0dry0dry0
+GATE RBW NOT RUNNABLE IN DRY: Remove Bad Wires (VI method 410) runs inside LabVIEW
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  PASS  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['tools/bench/plan_l2r1.json']
+  PASS  X3 every plan row decided  0 rows + 17 stageplan actions
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  1 stageplan(s)
+  PASS  X11 no row wires one Build Array input while a sibling input is an open row (unless pb-licence/1)  1 stageplan(s)
+  PASS  X12 no row names a wire uid an earlier border-crossing connect re-created (connect_from_wire.json:266)  1 stageplan(s), 0 re-created source wire(s), none named later
+  PASS  X13 opmodel conformance: every recorded sample of the plan ops' model files replays in stagesim  2 op(s) ['delete_object', 'delete_wire']; files {'delete_object.json': 'PASS (2)', 'delete_wire.json': 'PASS (2)'}
+  PASS  X4 every end addressable offline (0 ends)  []
+  FAIL  X5 wiring ops executed in the dry run == plan wire rows  ops 11 vs plan wire rows 0 + stageplan wiring real ops 0 (covering 0/0 wire actions)
+  PASS  X6 ast lint: no re-typed uid / terminal name  uids []; names []
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_l2_r1_20260928_051507.vi; decisions rows NOT dispatched (recipe calls neither run_rows nor from_decision)
+  PASS  X10 predicted LabVIEW private MB < 690.0 (error-2 point; MEMSTOP 700.0) over the ops this run dispatches (UNMEASURED - no covering record)  {'why': 'UNMEASURED: no recorded meter of stage_d1_l2r1.py covers ops 1..end (0 record(s))'}
+  WARN  X10 WARN unmeasured: UNMEASURED: no recorded meter of stage_d1_l2r1.py covers ops 1..end (0 record(s))
+
+=== DRY PASS: first_fail=None coverage 93/107 lines, first mutation Stage._op delete_wire, unverified 0, graph tools/bench/graph_l2b3_20260928.json
+=== PRERUN FAIL: 12 pass / 1 fail; first X5 wiring ops executed in the dry run == plan wire rows: ops 11 vs plan wire rows 0 + stageplan wiring real ops 0 (covering 0/0 wire actions)
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":12,"fail":1},"first_fail":"X5 wiring ops executed in the dry run == plan wire rows: ops 11 vs plan wire rows 0 + stageplan wiring real ops 0 (covering 0/0 wire actions) [X10 WARN unmeasured]","artefacts":[]}
+BGRUN END rc=1 after 14s

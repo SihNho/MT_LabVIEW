@@ -1,0 +1,9 @@
+BGRUN START 2026-09-28 04:35:24 limit 3.0 min: py -u tools/stage_prerun.py --opmodel-conformance wire --disable cfw_border_rule
+BGRUN PID 7436
+  X13 connect_from_wire.json raw/connect_from_wire_1.json: FAIL [('source_wire', 'recreated', 'kept'), ('old_source_wire_members', [], ['T.outer', 'src'])]
+  X13 connect_from_wire.json raw/connect_from_wire_2.json: FAIL [('source_wire', 'recreated', 'kept'), ('old_source_wire_members', [], ['T.outer', 'sink:23241', 'sink:23450', 'sink:23514', 'src'])]
+FILE connect_from_wire.json: FAIL (2 sample(s)) | FAIL(sample raw/connect_from_wire_1.json, field source_wire: measured recreated simulated kept) | FAIL(sample raw/connect_from_wire_1.json, field old_source_wire_members: measured [] simulated ['T.outer', 'src']) | FAIL(sample raw/connect_from_wire_2.json, field source_wire: measured recreated simulated kept) | FAIL(sample raw/connect_from_wire_2.json, field old_source_wire_members: measured [] simulated ['T.outer', 'sink:23241', 'sink:23450', 'sink:23514', 'src'])
+FILE wire_sr.json: not-replayed (2 sample(s))
+WARN X13 WARN wire_sr.json: 2 sample(s), no replayer for op 'wire_sr' (only ['connect_from_wire', 'tunnel'])
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"X13 connect_from_wire.json sample raw/connect_from_wire_1.json field source_wire","artefacts":[]}
+BGRUN END rc=2 after 1s

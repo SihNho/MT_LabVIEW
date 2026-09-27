@@ -2457,6 +2457,74 @@ def w0_wires(s, base, from_step, dry):
     return set(int(u) for u in AT.all_wire_uids(s.work)[0])
 
 
+# ============================================================================================ RETIRE stages (card 115-2)
+# PD228(g)/(h), split plan §3 :158: a retire stage deletes only; the live-consumer gate is RE-READ on the live file BEFORE
+# EACH delete. Existed first (checked): Executor delete_object dispatch (:1652, missing_ok), LVBackend/DryPlanBE
+# delete_object, stagesim op_delete_object sr_pair; nothing re-read the live graph before a delete. Additive only.
+def retire_check(rows, uids):
+    """(ok, detail) on ONE terminal read: `uids` = the nodes one delete removes (a register pair). FAILS when a node of
+    the set has no row in the read, or when a SOURCE terminal of the set sits on a wire with a SINK owned by a node
+    OUTSIDE the set (that sink is a consumer which would lose its source - rule 1a)."""
+    U = set(int(u) for u in uids)
+    mine = [r for r in rows if int(r["owner_uid"]) in U]
+    missing = sorted(U - set(int(r["owner_uid"]) for r in mine))
+    cons = []
+    for r in mine:
+        if r["is_source"] and r["wire_uid"]:
+            cons += [(int(r["term_uid"]), int(x["owner_uid"]), int(x["term_uid"])) for x in rows
+                     if x["wire_uid"] == r["wire_uid"] and not x["is_source"] and int(x["owner_uid"]) not in U]
+    return not missing and not cons, {"uids": sorted(U), "rows": len(mine), "missing": missing, "consumers": cons[:20]}
+
+
+def retire_ends(base_rows, rows, retire):
+    """(ok, detail): every wire that carried a terminal of a retired node AND a terminal of a kept node still carries,
+    in `rows` (the read after the deletes), exactly its kept terminals under the SAME wire uid with the same source
+    terminal(s) - the ends of the shared nets read back (a live source keeps its live sinks)."""
+    R = set(int(u) for u in retire)
+    by = collections.defaultdict(list)
+    for r in base_rows:
+        if r["wire_uid"]:
+            by[int(r["wire_uid"])].append(r)
+    now = dict((int(r["term_uid"]), r) for r in rows)
+    bad, shared = [], {}
+    for w, rs in sorted(by.items()):
+        if not any(int(r["owner_uid"]) in R for r in rs) or all(int(r["owner_uid"]) in R for r in rs):
+            continue
+        kept = [r for r in rs if int(r["owner_uid"]) not in R]
+        shared[w] = sorted(int(r["term_uid"]) for r in kept)
+        for r in kept:
+            n = now.get(int(r["term_uid"]))
+            if n is None or int(n["wire_uid"] or 0) != w or bool(n["is_source"]) != bool(r["is_source"]):
+                bad.append((w, int(r["term_uid"]), None if n is None else (int(n["wire_uid"] or 0), bool(n["is_source"]))))
+        srcs = sorted(int(r["term_uid"]) for r in rows if int(r["wire_uid"] or 0) == w and r["is_source"])
+        if srcs != sorted(int(r["term_uid"]) for r in kept if r["is_source"]):
+            bad.append((w, "sources", srcs))
+    return not bad, {"shared_wires": shared, "bad": bad[:20]}
+
+
+class RetireGuardBE(object):
+    """Wraps a backend (LVBackend or DryPlanBE): delete_object first reads the graph (`read()` = the live file, or the
+    simulated state in a dry run) and gates retire_check on the pair `pairs[uid]`; a FAIL stops the run (ExecStop)
+    before anything is deleted. Every other attribute is the wrapped backend's."""
+
+    def __init__(self, be, s, pairs, read):
+        self.__dict__.update(_be=be, _s=s, _pairs=dict((int(k), list(v)) for k, v in pairs.items()), _rd=read, checks=[])
+
+    def __getattr__(self, n):
+        return getattr(self._be, n)
+
+    def __setattr__(self, n, v):
+        setattr(self._be, n, v)
+
+    def delete_object(self, cls, uid, op):
+        ok, det = retire_check(self._rd(), self._pairs.get(int(uid), [uid]))
+        self.checks.append(dict(det, ok=ok))
+        self._s.gate("LC live-consumer check re-read before deleting {0} #{1} (pair {2})".format(cls, uid, det["uids"]), ok, det)
+        if not ok:
+            raise ExecStop("LC: delete #{0} would remove a source with a live consumer or reads no row: {1}".format(uid, det))
+        return self._be.delete_object(cls, uid, op)
+
+
 def report_stop(s, x, be, e):
     """An ExecStop inside Executor.run: record the report / meter / step diffs, list every unroutable row, FAIL E1 fatally."""
     s.R["stagexec"] = x.report

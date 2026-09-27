@@ -1,0 +1,17 @@
+{
+ "schema": "verdict/1",
+ "id": "priorart-c115b-l2r1-rev3",
+ "verdict": "novel",
+ "alternative": "delete_wire on a sourceless or sinkless stub has never been sampled (both opmodel samples have a source and 1-2 sinks), so the stagexec terminal-set check at :1649 is unmeasured for stubs",
+ "discriminating_test": "Re-run diag_c115b_scratch.py on the new bytes: all 11 delete_wire rows pass stagexec:1646-1650 with no ExecStop, Wire count drops by 11, w11389 is kept (ENDS)",
+ "violations": [],
+ "sources": [
+  "tools/stagexec.py:1639-1651",
+  "tools/bench/opmodels/delete_wire.json:15-18",
+  "tools/bench/opmodels/delete_wire.json:65-68",
+  "tools/stagesim.py:62",
+  "tools/bench/diag_c115b_scratch.log:116",
+  "archive/peer/2026-09-28-priorart-c115b-l2r1.md:565-566"
+ ],
+ "note": "No recorded case of the delete_wire refusals firing (grep of tools/bench for both messages: 0 hits); the already_gone precedent at stagexec:1643 cannot arise because stubs are deleted before the pair"
+}

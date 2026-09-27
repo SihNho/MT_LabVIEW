@@ -1,18 +1,19 @@
 {
  "schema": "next/1",
- "cycle": 115,
- "act": "PD229(a)(b) STEP 0 (opmodel conformance prerun check; E1/U3 pin floor+labels) then PD228(j) L2-R1 (retire 6 old SR pairs on #637) from bed D1_l2_b3_20260928_032703.vi, ONE launch",
+ "cycle": 116,
+ "act": "PD230(g) STEP 0 devices (stop-record ; split, disposition-landed check) + (f) B3-vs-R1 property compare, then L2-R2: retire 13 dead tunnels on #637 from D1_l2_r1_20260928_055441.vi",
  "task_kind": "build",
  "plan": {
   "path": "docs/d1-loop12-17-split-plan.md",
-  "md5": "216d2434fcbd219212507ed8b8aa0bd2"
+  "md5": "c64d2c29d6e0e400ee9acc5f643cfe3a"
  },
  "pass": [
-  "STEP 0: prerun replays opmodels/<op>.json samples via stagesim: PASS on connect_from_wire.json, FAIL with cfw_border_rule off; E1/U3 pass floor + G01-G42 labels + unflip_81 rc",
-  "plan_l2r1.json stagesim FINAL on graph_l2b3_20260928.json: 6 SR-pair delete rows (9018/9025, 29505/29512, 1147/1142, 5796/5805, 119/2972, 7311/11001), predicted end = B3's 16 cdiff rows",
-  "recipe tools/recipes/stage_d1_l2r1.py <=120 lines; live-consumer check (0) read on the live file before each delete; top-level dry + prerun (X11/X12) PASS; prior-art ANSWERED",
-  "ONE launch -> claudeDev\\D1_l2_r1_<ts>.vi: cdiff(S1,new) == the 16 B3 rows exactly; census removes exactly the retire set; RBW deletes no other wire; input md5 unchanged; LabVIEW gone",
-  "full Error List read: no new class, only items on retired objects lost; errorlist_expected_D1_l2_r1_<ts>.json reverdict OK"
+  "STEP 0 devices (PD230(g)): stop record passes material_marker.log:2614-2615 and still refuses a launch after ';'; disposition-landed check flags the 2 known fixes, then 0 after fixing",
+  "STEP 0: read-only property compare B3 vs R1 (tunnel indexing mode on #637, constants, node properties): 0 differences, else BLOCKED to judgement",
+  "plan_l2r2.json stagesim FINAL on a graph of the saved R1: 13 tunnels (#2294 #3644 #2580 #2396 #4432 #3656 #3920 #4031 #5129 #5328 #28343 #5752 #5569), stubs first; #32572 kept",
+  "recipe tools/recipes/stage_d1_l2r2.py <=120 lines; dry + prerun (X5/X11/X12/X13) PASS; scratch on a byte copy PASS; prior-art ANSWERED",
+  "ONE launch -> claudeDev\\D1_l2_r2_<ts>.vi: cdiff == R1's 16 rows; census == retire set; whole-graph terminal diff: only retired objects' terminals change; RBW deletes no other wire",
+  "Error List: loose-ends count == the plan's own pinned prediction (no carried licence); errorlist_expected_D1_l2_r2_<ts>.json reverdict OK"
  ],
  "blocked_by": null,
  "stop_requested": false,

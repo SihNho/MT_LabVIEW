@@ -1,0 +1,45 @@
+BGRUN START 2026-09-28 06:18:09 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c115c-errorlist -TaskFile tools/bench/cards/peer_task_c115c_errorlist.txt
+BGRUN PID 13412
+OUTCOME: ANSWERED (163s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-28-c115c-errorlist.md
+COST: $1.3095  in 22 / out 14061 / cache-create 97297 / cache-read 1082446  (159s, 17 turn(s))
+--- ANSWER ---
+I don't think the claim holds. Its premise contradicts B3's own licence table, and its mechanism predicts 7 new loose-ends items, not the 1 that was seen. The swap of old items for new ones is only hidden because items are matched by class and count, not by uid.
+
+**1. Strongest reason it is wrong**
+- **The premise is contradicted.** The claim says the 6 source-only stubs were never reported as loose-ends in B3. But B3's loose-ends licence of 23 items was counted against source-only wires that Remove Bad Wires deletes: 13 + 9 = 22, plus 1 residual (`errorlist_expected_D1_l2_b3_20260928_032703.json:99-116`, `facts_c111a_b1_errorlist.md:43`).
+  - All 11 stubs are in that pool: they are exactly the wires only the bed's Remove Bad Wires deletes (`stage_d1_l2r1.log:245`).
+  - B1's loose-ends row has exactly 6 items nobody attributed (5 + the residual 1), and 6 is exactly the number of source-only stubs (`diag_c115b_errorlist.log:3`).
+- **Source and sink stubs are treated differently without evidence.** The 5 sink-only stubs cost exactly 5 "has no source" items, one per wire (`diag_c115b_errorlist.log:114-115,122`). The claim gives the 6 source-only stubs zero items each.
+- **The mechanism is applied to one net only.** Where a shared net lost a terminal, that terminal was a sink, because the ENDS gate confirms every net kept its source (`stage_d1_l2r1.log:210`). A dangling sink branch would then occur on all 7 shared nets, which predicts up to 7 new items, not 1.
+
+**2. Alternative explanation, which fits the counts exactly**
+- 23 − 6 (source-only stubs deleted) + 7 (one dangling branch per shared net) = 24. The R1 read shows exactly 24 loose-ends items: 12–15, 19, 23, 30, 33, 37–39, 41 and 43–54.
+- If that is right, "cosmetic, computation unchanged" has to be shown for 7 nets, including the 4-terminal nets 25438 and 25461. Right now it is argued for none of them one by one.
+- Weaker alternatives:
+  - An OCR or class-reading slip on one item. Other classes look clean (not-connected is 20 in both reads).
+  - Some of the 7 nets were already reported as loose in B3, so a new branch added no item.
+
+**3. What would falsify the claim**
+- Any B3 loose-ends capture whose selection sits on a retired shift register on loop #637 (#9018/#9025, #29505/#29512, …).
+- Or more than one R1 loose-ends capture whose selection sits on a shared-net branch ending where a retired register was.
+
+**4. Cheapest discriminating test (offline, no LabVIEW)**
+- Compare the 23 loose-ends `bd_*_after<N>.png` captures from the B3 read (`errorlist_D1_l2_b3_20260928_032703_20260928_035208.json`) with the 24 from the R1 read (`errorlist_D1_l2_r1_20260928_055441_20260928_060555.json`, from `bd_060903_after12.png` through item 54). Count the selections at the retired registers on loop #637.
+  - The claim predicts 0 in B3 and 1 in R1.
+  - The alternative predicts 6 in B3 (gone in R1) and 7 in R1 at the shared nets' register-side ends.
+- If the captures are too coarse to tell (as `facts_c111b_attribution.md:30` found once), run one scratch test on a copy of B3: delete only the 6 source-only stubs and read the loose-ends count.
+  - The alternative predicts 17; the claim predicts 23.
+  - Then call `Wire.Remove Loose Ends` (method 6370C08) on each of R1's 7 shared nets and read the list again. That settles, net by net, whether only retired branches were dangling.
+
+**Rule 1a status:** not proven. The ENDS gate reads terminal lists, so it cannot tell a dangling retired branch from a cut segment that fed a kept sink. Don't accept the item as cosmetic until the test above ties it to specific nets.
+
+What would change my mind: B3's loose-ends captures show no selection at the retired registers, and R1 shows exactly one new selection, on a single shared net's retired branch.
+
+Plan mode was on and file writes were disabled in this session, so this review exists only in this reply; I saved nothing and ran nothing.
+
+Sources:
+- [Wire class/Remove Loose Ends method (labviewwiki)](https://labviewwiki.org/wiki/Wire_class/Remove_Loose_Ends_method)
+- [AbstractDiagram Remove Wire Loose Ends (NI)](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/abstractdiagram/removewirelooseends.html)
+- [Block Diagram.Remove Bad Wires (labviewwiki)](https://labviewwiki.org/wiki/VI_class/Block_Diagram.Remove_Bad_Wires_method)
+- [NI error page: Wire has loose ends](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/wire-has-loose-ends.html) (the page body did not load, so I could not check whether LabVIEW reports one item per wire or per branch)
+BGRUN END rc=0 after 164s

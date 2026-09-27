@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"115-3","status":"FAIL","gates":{"pass":6,"fail":1},
+"first_fail":"F7 NC extra == []: 55 items (B3 59), no-source -5, loose-ends licences all used + 1 EXTRA 'Wire has loose ends'; no expected file (diag_c115b_errorlist.log:106-124)",
+"blocked_by":null,
+"artefacts":[
+{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_r1_20260928_055441.vi","md5":"f465196bb5016638b146e771ba54c5af"},
+{"path":"tools/stage_prerun.py","md5":"d194d8c0fd8034b46521759d20e2299c"},
+{"path":"tools/bench/selftest_stage_prerun_c115c.py","md5":"0b4f70df233b0e5672d4aac0ae41b6d6"},
+{"path":"tools/bench/diag_c115c_regress.py","md5":"d927b33e57a4b9f7a2937f274b4f12a3"},
+{"path":"tools/bench/diag_c115c_headcmp_disc.py","md5":"7f571c60f6a847d216e71b1b5df71861"},
+{"path":"tools/bench/scratch_verify/stagexec.op_delete_object_srpair_20260928_053915.json","md5":"1d9189e84de7caeffc5a3499c3266a33"},
+{"path":"tools/bench/errorlist_D1_l2_r1_20260928_055441_20260928_060555.json","md5":"81661d28b1ac1af66bca2f8c97a02ee6"}],
+"facts":[
+"F1 PASS: X5 -> stage_prerun.py:1773 x5_count; DELETE_VERB_RE :1770 takes delete_object/delete_wire out of the wire count, compared per kind vs plan delete rows (same PART-A/B window)",
+"F2 PASS: selftest_stage_prerun_c115c.log 10/0 (extra delete_wire / connect, missing / swapped delete all FAIL). Failures on record before F1: none (diag_c115c_regress_before.log 11/0)",
+"F2 after 11/1: headcmp H1 HEAD copy [L3,L4b] = stale PID sandbox (%TEMP%\\lg_selftest_*, 86) with 2 RETRY-CAP lines; diag_c115c_headcmp_disc.log 3/0 reproduces on working tree; rerun 2/0",
+"F3 PASS: recipe --dry PASS, --prerun 13/0, X5 delete 6/11 == plan, X11/X12/X13 PASS (stage_d1_l2r1_prerun_c115c.log:99-111); recipe md5 1d3fce95 == prior-art rev3 attachment",
+"F4 PASS 31/0 byte copy, plan v2: LC x6, E1, D lost == 11 stubs, CEN2 Wire -11, ENDS 7 nets, PB, HF 45751->45739, RBW (diag_c115b_scratch_v2.log:209-262); scratch_verify/..._053915.json",
+"F5 PASS: ONE launch stage_d1_l2r1.log 35/0; gui_save D1_l2_r1_20260928_055441.vi 307,924 B md5 f465196b (:235-239); input 1b5c12d7 unchanged (:253)",
+"F6 PASS: PB cdiff == B3's 16 rows (:228); CEN lost == 12 SR uids (:207); D lost == 11 stubs, new 0 (:205); RBW new_only [] live_hit [] (:245); HF 45735->45712 (:230)",
+"F7 FAIL: reader gates all PASS (all_items_read, 55/55) but 1 extra loose-ends item (diag_c115b_errorlist.log:107,121); LO attribution PASS (no-source 5<=5, loose 0<=6)",
+"Peer c115c-errorlist refuted 'one cosmetic segment': 23-6+7 = 24 fits (6 stub items gone, 1 dangling branch per shared net); rule 1a unshown (archive/peer/2026-09-28-c115c-errorlist.md:53-81)",
+"JEV-LADDER errorlist.log new-problem p=0.692 -> review owed -> dispatched, ANSWERED, annotated. LabVIEW gone (errorlist.log:125); STATUS not edited, no commit"],
+"open":[
+"F7: 1 cosmetic segment, or 7 dangling branches on the shared nets replacing 6 stub items? Tests: B3-vs-R1 loose-ends captures offline, or B3 scratch minus the 6 source-only stubs (17 vs 23)",
+"Accept D1_l2_r1_20260928_055441.vi as the bed only after that; no errorlist_expected_D1_l2_r1_*.json written (F7 precondition failed)",
+"selftest_launch_gate.py sandbox is PID-named and never deleted (flaky headcmp H1); fix (mkdtemp / reset RUNS before L) not applied, outside card scope"],
+"cost":{"usd":null,"minutes":72,"labview_runs":3},
+"note":"labview_runs = scratch (902 s) + the ONE stage launch (657 s) + Error List read (683 s). Two hypothesis peers dispatched and annotated (c115c-headcmp, c115c-errorlist)."}

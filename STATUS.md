@@ -57,10 +57,45 @@ rig-state: 조립   <!-- 2026-09-24 20:xx USER GRANT: "당분간 내가 말하�
 
 ## NEXT
 🟡 **CARRY (from the 2026-09-25 verification review `archive/peer/2026-09-25-hyp-lintverify-20260925.md`, not blocking): card flags are checked only on the top-level command (a child process could reach LabVIEW under labview=none); a stage run launched outside bgrun is not counted by the retry cap; a bgrun record failure is only logged (`tools/bgrun.py:219-220`). Close in a tooling cycle, deliverable-first.**
-current-bed: D1_l2_b3_20260928_032703.vi
-<!-- ^ machine key read by tools/errorlist_check.py current_bed_text(); without it the bed is chosen by mtime among D1_*.vi names in this file, and the newer D1_s1_kswap_* would silently take over (review archive/peer/2026-09-26-c88-reuse-stalepin.md). Change it only when a new bed is accepted. Moved 2026-09-28 04:2x by cycle 114 (PD228(d)): L2-B3 accepted. -->
-🔵 **THE BED IS NOW `claudeDev\D1_l2_b3_20260928_032703.vi`, md5 `1b5c12d71ca48f22e3f4b80316c67e51`** (L2-B3, 308,928 B; expected Error List file `tools/bench/errorlist_expected_D1_l2_b3_20260928_032703.json`, 59 items, reverdict OK; PD228(d)). STRUCTURAL, ExecState 0 by design, never run. Its input `D1_l2_b2b_20260928_015450.vi` (md5 `4f51fd4c…`) is kept.
-🟢🟢 **FIRST ACT of cycle 115 = `docs/d1-loop12-17-split-plan.md` Pre-decided 228(j): ONE material card (Opus high) delivers L2-R1**, retiring the 6 old shift-register pairs on `#637` (9018/9025, 29505/29512, 1147/1142, 5796/5805, 119/2972, 7311/11001; all measured with 0 live consumers, `tools/bench/facts_c114e_inventory.json`) from the B3 bed.
+current-bed: D1_l2_r1_20260928_055441.vi
+<!-- ^ machine key read by tools/errorlist_check.py current_bed_text(); without it the bed is chosen by mtime among D1_*.vi names in this file, and the newer D1_s1_kswap_* would silently take over (review archive/peer/2026-09-26-c88-reuse-stalepin.md). Change it only when a new bed is accepted. Moved 2026-09-28 by cycle 115 (PD230(d)): L2-R1 accepted. -->
+🔵 **THE BED IS NOW `claudeDev\D1_l2_r1_20260928_055441.vi`, md5 `f465196bb5016638b146e771ba54c5af`** (L2-R1, 307,924 B; expected Error List file `tools/bench/errorlist_expected_D1_l2_r1_20260928_055441.json`, 55 items, reverdict OK; PD230(d)). STRUCTURAL, ExecState 0 by design, never run. Its input, the B3 file `D1_l2_b3_20260928_032703.vi` (md5 `1b5c12d7…`), is kept.
+🟢🟢 **FIRST ACT of cycle 116 = `docs/d1-loop12-17-split-plan.md` Pre-decided 230(f): ONE material card (Opus high) delivers L2-R2** from the R1 bed. L2-R2 retires the 13 tunnels on `#637` that have no consumer (#2294 #3644 #2580 #2396 #4432 #3656 #3920 #4031 #5129 #5328 #28343 #5752 #5569). `#32572` stays.
+   - **STEP 0a (owed DEVICES, PD230(g); retrospective-cycle115 `device-failed` ACCEPTED, `docs/violation-decisions.md` 07:05):**
+     - (1) The stop record splits on `;`/`&&`/`||`/`|` and refuses only a segment that executes the recipe. Its self-test: `tools/hooks/material_marker.log:2614-2615` pass, and a launch hidden after a `;` is still refused.
+     - (2) A disposition-landed check in `audit_cycle`. It must flag `guard_card.py:44` and the missing doc_lint HH:MM lint; then fix both, and the check shows 0.
+     - (3) `selftest_launch_gate.py` uses a `mkdtemp` sandbox that it deletes.
+     - Card rules: the L2-R2 scratch run reads the Error List and pins the loose-ends count BEFORE the launch; a diagnosis card for a failed prediction carries `hypothesis` in `peers`.
+   - **STEP 0b (review `archive/peer/2026-09-28-c115e-sel.md`, PD230(f)):** an offline or read-only property compare of B3 vs R1: tunnel indexing mode on `#637`, constants, node properties. Any difference → BLOCKED to judgement before any launch.
+   - Build it the way 115-3 did:
+     - dump the graph of the SAVED R1 file and write `plan_l2r2.json` (stub wires first, then the objects; stagesim FINAL);
+     - recipe ≤ 120 lines, dry + prerun (X5/X11/X12/X13 included), prior-art;
+     - scratch run on a byte copy of the bed first;
+     - ONE launch → `claudeDev\D1_l2_r2_<ts>.vi`, then the full Error List read and `errorlist_expected_D1_l2_r2_<ts>.json` in the same card.
+   - Gates:
+     - cdiff == R1's 16 rows;
+     - census == the retire set;
+     - **whole-graph terminal-list diff: only the retired objects' terminals change** (new, PD230(f));
+     - RBW deletes no other wire; handles ±100;
+     - the **loose-ends count is PINNED to the plan's own prediction.** No count licence carries over from R1.
+   - After L2-R: a facts card per QRT pair (PD228(i)), then the QRT wiring stage (b2_03 with `t11273`, 227(d)). That stage also removes the loose ends net by net; a blanket RBW is not used (PD230(e)).
+- **CYCLE 115 in brief — L2-R1 DELIVERED, THE NEW BED (PD230):**
+  - 115-1 PASS 8/0 (STEP 0): prerun X13 (opmodel conformance) PASSes on cfw and FAILs with the rule off. The E1/U3 pins now have a pass floor and a G01-G42 label check; `unflip_81` exits 1 on a failure.
+    - The disposition grep found 2 accepted fixes missing from the code: `guard_card.py:44` accepts any `cd`, and doc_lint has no HH:MM header lint.
+  - 115-2 BLOCKED 4/1: the plan and scratch passed (30/0), and the delete replayers were added to X13. Prerun X5 counted `delete_wire` as a wiring op, which is a checker false positive.
+  - 115-3 FAIL 6/1: X5 now counts delete ops against the plan's delete rows (10/0). The scratch passed 31/0 and the ONE launch passed 35/0 and saved R1. Every PD228(h) gate passed.
+    - F7 failed: the Error List had 1 loose-ends item more than licensed (55 items vs B3's 59).
+  - 115-4 BLOCKED 10/1 (read-only): on the graph, the 7 shared nets each lost one SR sink, and their source and live sinks are unchanged. There is no new wire. The Error List's loose-ends count went 23 − 6 + 7.
+    - Pairing the Error List items by screenshot missed 2 shots, which armed `guard_peer`.
+  - 115-5 PASS 6/0: hypothesis review `c115e-sel` = supported, with no counter-case. The expected file reverdicts OK 55/55 → **R1 accepted, `current-bed:` moved.**
+  - Carries:
+    - the Remove-Loose-Ends-per-net separator (17 vs ≥ 18) was not run;
+    - `selftest_launch_gate.py` leaves its PID sandbox behind (headcmp H1 flaky);
+    - the 2 missing fixes above;
+    - 9 opmodel files are still not replayed by X13.
+  - Retrospective-cycle115 (`archive/peer/2026-09-28-retrospective-cycle115.md`, annotated): `device-failed` 2 min ACCEPTED. The stop record refused a read-only `wc -l …; awk …` → STEP 0a above.
+  - User decisions: none open from this cycle.
+- (history) 🟢🟢 **FIRST ACT of cycle 115 = `docs/d1-loop12-17-split-plan.md` Pre-decided 228(j): ONE material card (Opus high) delivers L2-R1**, retiring the 6 old shift-register pairs on `#637` (9018/9025, 29505/29512, 1147/1142, 5796/5805, 119/2972, 7311/11001; all measured with 0 live consumers, `tools/bench/facts_c114e_inventory.json`) from the B3 bed.
    - **STEP 0 (owed DEVICE, PD229(a), retrospective-cycle114 `device-failed` ACCEPTED, `docs/violation-decisions.md` 04:35):** an opmodel conformance check in `stage_prerun --prerun`. It replays each used op's samples in `tools/bench/opmodels/<op>.json` through stagesim and FAILS on any sample stagesim does not reproduce. Acceptance: PASS on `connect_from_wire.json`; FAIL with `cfw_border_rule` disabled.
    - **Also STEP 0 (PD229(b)):** the E1/U3 pins get a pass-count floor, the frozen G01-G42 label check and `sys.exit(1)` in unflip_81. Then grep accepted dispositions for named fixes missing from the code, and report the count.
    - Card rules (PD229(c)): a regression pass criterion names the failures already on record, or the card carries its peer. A review's offline test marked "not checked" is run or returned `open`, never waived.

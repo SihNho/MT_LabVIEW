@@ -1,0 +1,14 @@
+  PASS  T1 group from wired #1.out (w50), then delete_wire 50 -> FLAG row del50 (recreated_by t_out)  ([{'wire': 50, 'row': 't_out', 'idx': 2}], [{'row': 'del50', 'idx': 4, 'wire': 50, 'recreated_by': 't_out'}])
+  PASS  T2 the same delete_wire BEFORE the group -> clean  ([{'wire': 50, 'row': 't_out', 'idx': 3}], [])
+  PASS  T3 group alone -> 1 re-created (w50), no flag  ([{'wire': 50, 'row': 't_out', 'idx': 2}], [])
+  PASS  T4 group from an UNWIRED source (#3.q) -> nothing re-created, a later w50 row clean  ([], [])
+  PASS  T5 SAME-DIAGRAM connect from wired #1.out (no plan tunnel) then w50 row -> clean (uid kept, l7_1b_r3.log:92)  ([], [])
+  PASS  T6 string address '1.out' + a later row naming 50 in ANY uid field -> FLAG  ([{'wire': 50, 'row': 't_out', 'idx': 2}], [{'row': 'delo', 'idx': 4, 'wire': 50, 'recreated_by': 't_out'}])
+  PASS  T7 a later row whose only 50 is a POSITION -> clean  ([{'wire': 50, 'row': 't_out', 'idx': 2}], [])
+  PASS  R1 plan_l2b3.json (md5 827be8f3d9fac5e36590544369eda1ca): re-created == {28392, 5174, 5336} by b3_t1_out/b3_t2_out/b3_t3_out, no flag  ([{'wire': 28392, 'row': 'b3_t1_out', 'idx': 2}, {'wire': 5174, 'row': 'b3_t2_out', 'idx': 5}, {'wire': 5336, 'row': 'b3_t3_out', 'idx': 8}], [])
+  PASS  R2 plan_l2b3 + a later delete_wire 5174 -> FLAGGED (recreated_by b3_t2_out)  [{'row': 'late5174', 'idx': 10, 'wire': 5174, 'recreated_by': 'b3_t2_out'}]
+  PASS  R3 plan_l2b3 with the same row FIRST -> clean  []
+  INFO top-level stageplans with re-created source wires: [('plan_k_split.json', 6), ('plan_l2b3.json', 3), ('plan_l2b3_in.json', 3), ('plan_l7_split.json', 5), ('stageplan_k_split.json', 6), ('stageplan_l7_split.json', 5)]
+  PASS  R4 every top-level tools/bench/*.json stageplan/1 (20 files) flags nothing  []
+  PASS  S1 prerun() runs recreated_wire_refs as gate X12  True
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":12,"fail":0},"first_fail":null,"artefacts":[]}

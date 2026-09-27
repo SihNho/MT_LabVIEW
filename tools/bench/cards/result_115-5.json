@@ -1,0 +1,26 @@
+{"schema":"result/1","id":"115-5","status":"PASS","gates":{"pass":6,"fail":0},
+"first_fail":null,
+"blocked_by":null,
+"artefacts":[
+{"path":"tools/bench/errorlist_expected_D1_l2_r1_20260928_055441.json","md5":"33a9cf5476cc965b7190b91109f0acd2"},
+{"path":"tools/bench/errorlist_check_c115e_reuse.json","md5":"0ca4dacf7e75ca2c3bafd30af938c0c3"},
+{"path":"tools/bench/cards/review_115-5.json","md5":"679e8827eb959655d282a1cab0dfa78e"},
+{"path":"tools/bench/cards/verdict_c115e-sel.json","md5":"90709e1efa3f07cb90257fc256d9dda2"},
+{"path":"archive/peer/2026-09-28-c115e-sel.md","md5":"cfbb66c0834ec71be1a9e5ea15914d51"},
+{"path":"tools/bench/diag_c115e_reverdict.py","md5":"c6bc46962f271cad0d4c02a57150322a"}],
+"facts":[
+"V1: peer c115e-sel (claude/hypothesis, opus-5-5 high) ANSWERED 182 s, $1.36, review/1 card review_115-5.json (peer_c115e_sel.log:3-4,56)",
+"V3: VERDICT supported, violations []; no changed source/sink or new wire named -> gate passes (archive/peer/2026-09-28-c115e-sel.md:138)",
+"Review: rule 1a holds on the full terminal-list diff (retired left SRs fed only sink-less stubs; no right SR had a source), NOT on PD230(d)'s location sentence, called circular (c115e-sel.md:92-101)",
+"Review Q2: swap (6 SR branches + 1 segment on another net) fits 23-6+7=24 too; test: Remove Loose Ends on the 7 nets of a copy, 17 vs >=18 (c115e-sel.md:106-129)",
+"Review Q3: count licence is a hole if carried into L2-R2 (PD230(f)); pin 24 exactly, per-stage terminal-diff gate, no carry (c115e-sel.md:114-120)",
+"V2: disposition written per finding (c115e-sel.md:144-); guard_peer on a build command rc=0, stderr empty (diag_c115e_reverdict.log:3); the bgrun launch itself passed the hook",
+"V4: expected file 11 entries total 55: B3 minus no-source 5 (w121,w505,w5859,w9215,w29591), loose 23->17 (6 source-only stubs, one lumped entry), + 7 PD230 loose, nets named, location marked inferred",
+"V5: reverdict OK, extra 0, missing 0, every entry used exactly, 55/55 licensed, classes loose 24/no-source 1/unconn 20/other 10 (diag_c115e_reverdict.log:7-34)",
+"R1 f465196b and B3 1b5c12d7 md5 unchanged before/after, capture 81661d28 unchanged; no LabVIEW started, no VI opened/edited/saved (diag_c115e_reverdict.log:21-22,34)"],
+"open":[
+"PD230(d)'s sentence 'every new item can only sit on one of the 7 shared nets' is unmeasured (review point 1): strike/reword it, and is the 7-item licence acceptable before the Remove-Loose-Ends-per-net test (17 vs >=18) on a copy?",
+"PD230(f) carries the dangling-branch count licence into L2-R2; review Q3 asks for a per-stage whole-graph terminal-diff gate and no carried count licence - adopt?",
+"Tunnel indexing mode / constants / node properties were never compared B3 vs R1 (M2 compared terminal lists only); review says that is what would change its mind on rule 1a"],
+"cost":{"usd":1.36,"minutes":14,"labview_runs":0},
+"note":"JEV ladder row: diag_c115d_sel.log | new-problem p=0.710 | hypothesis review owed (old path) | dispatched c115e-sel, ANSWERED, annotated | guard_peer rc 0. usd = peer only. STATUS not edited, no commit."}

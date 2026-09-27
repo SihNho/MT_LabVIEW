@@ -1,0 +1,25 @@
+ATTACK this claim (card tools/bench/cards/task_115-3.json F7; failed prediction in tools/bench/diag_c115b_errorlist.log,
+script tools/bench/diag_c115b_errorlist.py, read file tools/bench/errorlist_D1_l2_r1_20260928_055441_20260928_060555.json).
+
+CONTEXT. Stage L2-R1 retired 6 dead shift-register pairs on loop #637 of claudeDev\D1_l2_b3_20260928_032703.vi (B3 bed):
+per pair delete_wire of its stub wires (11 wires whose EVERY terminal is on the pair: 5 sink-only, 6 source-only), then
+delete_object of the Right register (Left goes with it). Saved claudeDev\D1_l2_r1_20260928_055441.vi md5 f465196b,
+tools/bench/stage_d1_l2r1.log 35/0: E1 real == simulated at every checkpoint; D lost wires == the 11 stubs, new 0; CEN
+nodes lost == the 12 SR uids; CEN2 Wire -11; ENDS: 7 nets shared by a retired and a kept terminal (e.g. 9051: [8958,
+25588], 11389 [13163, 25594]) keep uid, source(s) and kept sinks; PB cdiff == B3's 16 rows; RBW(new) deleted 40 wire
+uids, RBW(bed) 51, bed_only == exactly the 11 stubs, new_only [] (stage_d1_l2r1.log:245).
+
+PREDICTION (diag_c115b_errorlist.py:6-8,72-74): extra == []; lost items only no-source <= 5 and loose-ends <= 6.
+OBSERVATION (diag_c115b_errorlist.log:106-124): 55 items (B3 had 59, expected file
+tools/bench/errorlist_expected_D1_l2_b3_20260928_032703.json); lost no-source 5 (== the 5 sink-only stubs), loose-ends
+lost 0; every B3 loose-ends licence fully used (13 + 9 + 1) AND one EXTRA "Wire: Wire has loose ends." ("This wire
+segment is not connected to anything"). Items carry no uid (uid_route none); per-item before/after diagram screenshots
+exist in tools/bench/errorlist_shots/ (bd_*_after<N>.png).
+
+CLAIM UNDER ATTACK: the extra loose-ends item is a dangling branch SEGMENT left on one of the 7 shared live nets where a
+retired Left-outer / Right-inner terminal was a sink branch (a segment is not a separate Wire object, so the uid-level
+D/ENDS/RBW gates cannot see it); the 6 source-only stubs were never reported as loose-ends items in B3, so their
+deletion removed nothing from that class. Consequence claimed: the item is cosmetic (Remove Bad Wires would delete the
+segment only), not a computation change (rule 1a) - source and kept sinks of every shared net are unchanged.
+Name the strongest reason this is wrong, an alternative cause, what would falsify it, and the CHEAPEST discriminating
+test (offline preferred; e.g. which screenshot pair identifies the extra item's location, or a stagesim/graph check).

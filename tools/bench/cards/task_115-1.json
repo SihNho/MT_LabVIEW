@@ -1,0 +1,71 @@
+{
+ "schema": "task/1",
+ "id": "115-1",
+ "kind": "build",
+ "goal": "STEP 0 (offline, owed devices PD229(a)+(b)): an opmodel conformance check in stage_prerun --prerun, the rest of the E1/U3 pin fix, and the count of accepted-review fixes missing from the code",
+ "why": "retrospective-cycle114 device-failed ACCEPTED (prior-art missed connect_from_wire.json:266) and repeated-failure-class ACCEPTED (E1/U3 pin fix accepted in c112a, only half applied); docs/d1-loop12-17-split-plan.md PD229(a)-(c); docs/violation-decisions.md 2026-09-28 04:35",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/stage_prerun.py"},
+  {"path": "tools/stagesim.py"},
+  {"path": "tools/bench/opmodels/connect_from_wire.json"},
+  {"path": "archive/peer/2026-09-28-retrospective-cycle114.md"},
+  {"path": "archive/peer/2026-09-28-c114d-regress.md"},
+  {"path": "tools/bench/cards/result_114-3.json"},
+  {"path": "tools/bench/cards/result_114-4.json"},
+  {"path": "tools/bench/diag_c114d_regress_r2.log"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/bench/opmodels/connect_from_wire.json"},
+  {"kind": "file", "name": "archive/peer/2026-09-28-c114d-regress.md"},
+  {"kind": "file", "name": "archive/peer/2026-09-28-retrospective-cycle114.md"}
+ ],
+ "pass": [
+  "A1 prerun check: each used op's samples in opmodels/<op>.json replayed via stagesim; FAIL on any unreproduced wire outcome; op without a model file = WARN line (judgement), never skipped",
+  "A2 acceptance: PASS on connect_from_wire.json now; FAIL naming the sample with cfw_border_rule disabled; both runs logged",
+  "A3 run the check over every opmodels/*.json with samples: PASS / FAIL(sample, field) / no-samples per file; a FAIL is reported, not fixed",
+  "B1 E1/U3 pins: pass-count floor + frozen G01-G42 label check (c114d-regress.md:94-107); negative cases (a G label removed, count below floor) FAIL",
+  "B2 unflip_81 calls sys.exit(1) when any case fails; negative case recorded",
+  "B3 stagesim + stage_prerun self-tests 0 fail, failures on record before the card named; plan_l2b3/l2b2b/l2b2a replays keep verdicts",
+  "C1 grep accepted dispositions (archive/peer/2026-09-2[5-8]-*) for named fixes, check code: count present/absent, absent list <=10 file:line; build none",
+  "no LabVIEW; md5 before/after of every edited tool reported"
+ ],
+ "outputs": [
+  "tools/stage_prerun.py",
+  "tools/stagesim.py",
+  "tools/bench/selftest_*",
+  "tools/bench/diag_c115a*",
+  "tools/bench/cards/result_115-1.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_prerun.py",
+   "tools/stagesim.py",
+   "tools/bench/selftest_*",
+   "tools/bench/sim/**",
+   "tools/bench/diag_c115a*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/cards/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "offline only; no LabVIEW, no VI opened",
+  "only ADD checks; no existing gate, pin or opmodel sample is loosened or edited to make a check pass",
+  "a regression criterion names the failures on record (PD229(c))",
+  "a review's offline test marked 'not checked' is run here or returned open, never waived",
+  "a gate refusal is returned BLOCKED, never re-run via a self-test child or exempt route",
+  "facts <=10 file:line; OPEN <=3"
+ ],
+ "unblocks": "M3"
+}

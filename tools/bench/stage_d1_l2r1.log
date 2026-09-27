@@ -1,0 +1,269 @@
+BGRUN START 2026-09-28 05:54:40 limit 50.0 min: py -u tools/recipes/stage_d1_l2r1.py
+BGRUN PID 608
+BGRUN STAGE-RUN recorded stage_d1_l2r1.py cycle='cycle 115' card=None pid=17228 -> stage_runs.jsonl
+stage_d1_l2r1 - card 115-2: STAGE L2-R1 (split plan PD228(g)(h)(j), PD229(d)): RETIRE the 6 dead shift-register pairs on loop #637 (facts_c114e_inventory.json:
+0 live consumers each). INPUT the B3 bed D1_l2_b3_20260928_032703.vi, FRESH LabVIEW -> claudeDev\D1_l2_r1_<ts>.vi (rule-6 GUI save, ExecState 0 by design, never run).
+ROWS ONLY FROM plan_l2r1.json: per pair, delete_wire of its stub wires (every terminal on the pair; R2 scratch run 1 measured delete_object leaves them as Wire
+objects), then delete_object on the RIGHT register (Left goes with it, delete_object.json sr_pair). PRIOR ART: stage_d1_l2b3.py (its cut: RECORD MODE, D4 EMPTY
+scope = exact), stage_d1_l7_r.py (retire + RBW), stagexec.RetireGuardBE (live-consumer gate re-read BEFORE EACH delete). SAVE=False (diag_c115b_scratch.py) = R2.
+PREDICTION: L1 17 ops (11 delete_wire + 6 delete_object); LC x6; E1 == sim each checkpoint; D new 0, lost == sim's 11 stubs; FU; CEN nodes lost == 12 SR uids;
+census SR -6/-6, Wire -11, others 0; ENDS 7 shared nets keep uid/source/sinks; PB cdiff == B3's 16 rows; HF +-100; RBW(new) <= RBW(bed), difference retired; PS.
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/stage_d1_l2r1.log -- py -u tools/recipes/stage_d1_l2r1.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_l2r1_in; its finalized end's (node, name) pairs == the REAL B3 end's (stage_d1_l2b3.json)  ('aab1efbe09e0160277073f90c0e3f4ad', 16, 11)
+  PASS  L0b D4 cites S1 md5 5de014fe580b938328fa8662cf2b0652, scope EMPTY (grants nothing), plan md5 pinned  ('5de014fe580b938328fa8662cf2b0652', 'aab1efbe09e0160277073f90c0e3f4ad')
+  PASS  L0c 6 register pairs from ONE loop's register table ([637]) == 12 inventory uids, each with 0 live consumers (facts_c114e_inventory.json)  {9018: [9018, 9025], 29505: [29505, 29512], 1147: [1147, 1142], 5796: [5796, 5805], 119: [119, 2972], 7311: [7311, 11001]}
+  PASS  L0d the plan's delete_wire rows == the stubs whose EVERY terminal is on a retired node (11), each once  {'plan': [121, 505, 1681, 5859, 6041, 7429, 9097, 9215, 10763, 28039, 29591], 'stubs': [121, 505, 1681, 5859, 6041, 7429, 9097, 9215, 10763, 28039, 29591]}
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 300 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 1b5c12d71ca48f22e3f4b80316c67e51  got 1b5c12d71ca48f22e3f4b80316c67e51
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33960
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  D1_l2_r1_20260928_055441.vi
+  FACT  ExecState [after open] D1_l2_r1_20260928_055441.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so D1_l2_r1_20260928_055441.vi is deleted at close
+  FACT  CENSUS before L2-R1 D1_l2_r1_20260928_055441.vi: {'RightShiftRegister': 43, 'LeftShiftRegister': 43, 'WhileLoop': 6, 'Diagram': 173, 'SubVI': 97, 'LoopTunnel': 151, 'Local': 12, 'ControlTerminal': 118, 'Wire': 1956, 'Node': 637}
+  PASS  L1 the 17 actions compile into 17 real ops (delete_wire / delete_object only, 6 delete_object), each action once  ['delete_wire', 'delete_wire', 'delete_object', 'delete_wire', 'delete_wire', 'delete_object', 'delete_wire', 'delete_wire', 'delete_object', 'delete_wire', 'delete_wire', 'delete_object', 'delete_wire', 'delete_wire', 'delete_object', 'delete_wire', 'delete_object']
+  METER start  k   0  private 568.6 MB (d -)  handles 45669 (d -)
+  METER read   k   0  private 577.1 MB (d +8.5)  handles 45714 (d +45)
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 0 touched diagram(s) []: one-side-only Nodes[] entries 0
+  PRIME 0 terminal indexes proved at base; 0 ControlTerminal end(s) by 179(b); unprovable []
+  CHECKPOINTS whole-VI read+diff after ops [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17] of 17
+  METER pre    k   1  private 577.1 MB (d +0.0)  handles 45714 (d +0)
+  FACT  delete_wire node census: 637 rows
+      stagexecdeleted wire w9215
+  FACT  OP delete_wire w9215 -> err '' (1.7 s)
+  FACT  delete_wire w9215 (plan w9215) AFTER node census: 637 rows
+  FACT  delete_wire w9215 (plan w9215) CENSUS DIFF: Node 637 -> 637 ; 0 new uid(s): []
+  METER op     k   1  private 555.9 MB (d -21.2)  handles 45729 (d +15)
+  METER read   k   1  private 559.7 MB (d +3.8)  handles 45735 (d +6)
+  STEPX 01 delete_wire    acts [1] ids ['r1_w9215'] bound {} diff 0
+  METER pre    k   2  private 559.7 MB (d +0.0)  handles 45735 (d +0)
+  FACT  delete_wire node census: 637 rows
+      stagexecdeleted wire w9097
+  FACT  OP delete_wire w9097 -> err '' (1.7 s)
+  FACT  delete_wire w9097 (plan w9097) AFTER node census: 637 rows
+  FACT  delete_wire w9097 (plan w9097) CENSUS DIFF: Node 637 -> 637 ; 0 new uid(s): []
+  METER op     k   2  private 560.4 MB (d +0.7)  handles 45726 (d -9)
+  METER read   k   2  private 563.9 MB (d +3.5)  handles 45728 (d +2)
+  STEPX 02 delete_wire    acts [2] ids ['r1_w9097'] bound {} diff 0
+  METER pre    k   3  private 564.0 MB (d +0.1)  handles 45728 (d +0)
+  PASS  LC live-consumer check re-read before deleting RightShiftRegister #9018 (pair [9018, 9025])  {'uids': [9018, 9025], 'rows': 4, 'missing': [], 'consumers': []}
+  FACT  delete_object node census: 637 rows
+      stagexecdeleted RightShiftRegister #9018 -> gone [9018]
+  FACT  OP delete_object RightShiftRegister #9018 -> err '' (0.2 s)
+  FACT  delete_object RightShiftRegister #9018 AFTER node census: 637 rows
+  FACT  delete_object RightShiftRegister #9018 CENSUS DIFF: Node 637 -> 637 ; 0 new uid(s): []
+  METER op     k   3  private 566.0 MB (d +2.0)  handles 45719 (d -9)
+  METER read   k   3  private 568.7 MB (d +2.7)  handles 45719 (d +0)
+  STEPX 03 delete_object  acts [3] ids ['r1_sr9018'] bound {} diff 0
+  METER pre    k   4  private 568.7 MB (d +0.0)  handles 45719 (d +0)
+  FACT  delete_wire node census: 637 rows
+      stagexecdeleted wire w29591
+  FACT  OP delete_wire w29591 -> err '' (1.7 s)
+  FACT  delete_wire w29591 (plan w29591) AFTER node census: 637 rows
+  FACT  delete_wire w29591 (plan w29591) CENSUS DIFF: Node 637 -> 637 ; 0 new uid(s): []
+  METER op     k   4  private 569.0 MB (d +0.3)  handles 45720 (d +1)
+  METER read   k   4  private 571.1 MB (d +2.1)  handles 45718 (d -2)
+  STEPX 04 delete_wire    acts [4] ids ['r1_w29591'] bound {} diff 0
+  METER pre    k   5  private 571.1 MB (d +0.0)  handles 45718 (d +0)
+  FACT  delete_wire node census: 637 rows
+      stagexecdeleted wire w28039
+  FACT  OP delete_wire w28039 -> err '' (1.7 s)
+  FACT  delete_wire w28039 (plan w28039) AFTER node census: 637 rows
+  FACT  delete_wire w28039 (plan w28039) CENSUS DIFF: Node 637 -> 637 ; 0 new uid(s): []
+  METER op     k   5  private 571.1 MB (d +0.0)  handles 45718 (d +0)
+  METER read   k   5  private 575.0 MB (d +3.9)  handles 45714 (d -4)
+  STEPX 05 delete_wire    acts [5] ids ['r1_w28039'] bound {} diff 0
+  METER pre    k   6  private 575.1 MB (d +0.1)  handles 45715 (d +1)
+  PASS  LC live-consumer check re-read before deleting RightShiftRegister #29505 (pair [29505, 29512])  {'uids': [29505, 29512], 'rows': 4, 'missing': [], 'consumers': []}
+  FACT  delete_object node census: 637 rows
+      stagexecdeleted RightShiftRegister #29505 -> gone [29505]
+  FACT  OP delete_object RightShiftRegister #29505 -> err '' (0.2 s)
+  FACT  delete_object RightShiftRegister #29505 AFTER node census: 637 rows
+  FACT  delete_object RightShiftRegister #29505 CENSUS DIFF: Node 637 -> 637 ; 0 new uid(s): []
+  METER op     k   6  private 576.8 MB (d +1.7)  handles 45716 (d +1)
+  METER read   k   6  private 577.6 MB (d +0.8)  handles 45716 (d +0)
+  STEPX 06 delete_object  acts [6] ids ['r1_sr29505'] bound {} diff 0
+  METER pre    k   7  private 577.6 MB (d +0.0)  handles 45716 (d +0)
+  FACT  delete_wire node census: 637 rows
+      stagexecdeleted wire w505
+  FACT  OP delete_wire w505 -> err '' (1.7 s)
+  FACT  delete_wire w505 (plan w505) AFTER node census: 637 rows
+  FACT  delete_wire w505 (plan w505) CENSUS DIFF: Node 637 -> 637 ; 0 new uid(s): []
+  METER op     k   7  private 578.0 MB (d +0.4)  handles 45717 (d +1)
+  METER read   k   7  private 580.0 MB (d +2.0)  handles 45716 (d -1)
+  STEPX 07 delete_wire    acts [7] ids ['r1_w505'] bound {} diff 0
+  METER pre    k   8  private 580.0 MB (d +0.0)  handles 45716 (d +0)
+  FACT  delete_wire node census: 637 rows
+      stagexecdeleted wire w1681
+  FACT  OP delete_wire w1681 -> err '' (1.7 s)
+  FACT  delete_wire w1681 (plan w1681) AFTER node census: 637 rows
+  FACT  delete_wire w1681 (plan w1681) CENSUS DIFF: Node 637 -> 637 ; 0 new uid(s): []
+  METER op     k   8  private 580.8 MB (d +0.8)  handles 45716 (d +0)
+  METER read   k   8  private 585.6 MB (d +4.8)  handles 45716 (d +0)
+  STEPX 08 delete_wire    acts [8] ids ['r1_w1681'] bound {} diff 0
+  METER pre    k   9  private 585.6 MB (d +0.0)  handles 45717 (d +1)
+  PASS  LC live-consumer check re-read before deleting RightShiftRegister #1147 (pair [1142, 1147])  {'uids': [1142, 1147], 'rows': 4, 'missing': [], 'consumers': []}
+  FACT  delete_object node census: 637 rows
+      stagexecdeleted RightShiftRegister #1147 -> gone [1147]
+  FACT  OP delete_object RightShiftRegister #1147 -> err '' (0.3 s)
+  FACT  delete_object RightShiftRegister #1147 AFTER node census: 637 rows
+  FACT  delete_object RightShiftRegister #1147 CENSUS DIFF: Node 637 -> 637 ; 0 new uid(s): []
+  METER op     k   9  private 588.0 MB (d +2.4)  handles 45715 (d -2)
+  METER read   k   9  private 588.1 MB (d +0.1)  handles 45713 (d -2)
+  STEPX 09 delete_object  acts [9] ids ['r1_sr1147'] bound {} diff 0
+  METER pre    k  10  private 588.1 MB (d +0.0)  handles 45713 (d +0)
+  FACT  delete_wire node census: 637 rows
+      stagexecdeleted wire w5859
+  FACT  OP delete_wire w5859 -> err '' (1.7 s)
+  FACT  delete_wire w5859 (plan w5859) AFTER node census: 637 rows
+  FACT  delete_wire w5859 (plan w5859) CENSUS DIFF: Node 637 -> 637 ; 0 new uid(s): []
+  METER op     k  10  private 588.7 MB (d +0.6)  handles 45713 (d +0)
+  METER read   k  10  private 593.7 MB (d +5.0)  handles 45711 (d -2)
+  STEPX 10 delete_wire    acts [10] ids ['r1_w5859'] bound {} diff 0
+  METER pre    k  11  private 593.7 MB (d +0.0)  handles 45711 (d +0)
+  FACT  delete_wire node census: 637 rows
+      stagexecdeleted wire w6041
+  FACT  OP delete_wire w6041 -> err '' (1.8 s)
+  FACT  delete_wire w6041 (plan w6041) AFTER node census: 637 rows
+  FACT  delete_wire w6041 (plan w6041) CENSUS DIFF: Node 637 -> 637 ; 0 new uid(s): []
+  METER op     k  11  private 593.8 MB (d +0.1)  handles 45712 (d +1)
+  METER read   k  11  private 593.9 MB (d +0.1)  handles 45712 (d +0)
+  STEPX 11 delete_wire    acts [11] ids ['r1_w6041'] bound {} diff 0
+  METER pre    k  12  private 593.9 MB (d +0.0)  handles 45712 (d +0)
+  PASS  LC live-consumer check re-read before deleting RightShiftRegister #5796 (pair [5796, 5805])  {'uids': [5796, 5805], 'rows': 4, 'missing': [], 'consumers': []}
+  FACT  delete_object node census: 637 rows
+      stagexecdeleted RightShiftRegister #5796 -> gone [5796]
+  FACT  OP delete_object RightShiftRegister #5796 -> err '' (0.4 s)
+  FACT  delete_object RightShiftRegister #5796 AFTER node census: 637 rows
+  FACT  delete_object RightShiftRegister #5796 CENSUS DIFF: Node 637 -> 637 ; 0 new uid(s): []
+  METER op     k  12  private 598.0 MB (d +4.1)  handles 45712 (d +0)
+  METER read   k  12  private 604.0 MB (d +6.0)  handles 45711 (d -1)
+  STEPX 12 delete_object  acts [12] ids ['r1_sr5796'] bound {} diff 0
+  METER pre    k  13  private 604.0 MB (d +0.0)  handles 45711 (d +0)
+  FACT  delete_wire node census: 637 rows
+      stagexecdeleted wire w121
+  FACT  OP delete_wire w121 -> err '' (1.8 s)
+  FACT  delete_wire w121 (plan w121) AFTER node census: 637 rows
+  FACT  delete_wire w121 (plan w121) CENSUS DIFF: Node 637 -> 637 ; 0 new uid(s): []
+  METER op     k  13  private 604.0 MB (d +0.0)  handles 45713 (d +2)
+  METER read   k  13  private 608.1 MB (d +4.1)  handles 45714 (d +1)
+  STEPX 13 delete_wire    acts [13] ids ['r1_w121'] bound {} diff 0
+  METER pre    k  14  private 608.1 MB (d +0.0)  handles 45714 (d +0)
+  FACT  delete_wire node census: 637 rows
+      stagexecdeleted wire w7429
+  FACT  OP delete_wire w7429 -> err '' (1.8 s)
+  FACT  delete_wire w7429 (plan w7429) AFTER node census: 637 rows
+  FACT  delete_wire w7429 (plan w7429) CENSUS DIFF: Node 637 -> 637 ; 0 new uid(s): []
+  METER op     k  14  private 604.3 MB (d -3.8)  handles 45714 (d +0)
+  METER read   k  14  private 606.6 MB (d +2.3)  handles 45713 (d -1)
+  STEPX 14 delete_wire    acts [14] ids ['r1_w7429'] bound {} diff 0
+  METER pre    k  15  private 606.6 MB (d +0.0)  handles 45713 (d +0)
+  PASS  LC live-consumer check re-read before deleting RightShiftRegister #119 (pair [119, 2972])  {'uids': [119, 2972], 'rows': 4, 'missing': [], 'consumers': []}
+  FACT  delete_object node census: 637 rows
+      stagexecdeleted RightShiftRegister #119 -> gone [119]
+  FACT  OP delete_object RightShiftRegister #119 -> err '' (0.6 s)
+  FACT  delete_object RightShiftRegister #119 AFTER node census: 637 rows
+  FACT  delete_object RightShiftRegister #119 CENSUS DIFF: Node 637 -> 637 ; 0 new uid(s): []
+  METER op     k  15  private 609.3 MB (d +2.7)  handles 45714 (d +1)
+  METER read   k  15  private 609.7 MB (d +0.4)  handles 45714 (d +0)
+  STEPX 15 delete_object  acts [15] ids ['r1_sr119'] bound {} diff 0
+  METER pre    k  16  private 609.7 MB (d +0.0)  handles 45710 (d -4)
+  FACT  delete_wire node census: 637 rows
+      stagexecdeleted wire w10763
+  FACT  OP delete_wire w10763 -> err '' (1.8 s)
+  FACT  delete_wire w10763 (plan w10763) AFTER node census: 637 rows
+  FACT  delete_wire w10763 (plan w10763) CENSUS DIFF: Node 637 -> 637 ; 0 new uid(s): []
+  METER op     k  16  private 610.2 MB (d +0.5)  handles 45709 (d -1)
+  METER read   k  16  private 612.3 MB (d +2.1)  handles 45710 (d +1)
+  STEPX 16 delete_wire    acts [16] ids ['r1_w10763'] bound {} diff 0
+  METER pre    k  17  private 612.3 MB (d +0.0)  handles 45709 (d -1)
+  PASS  LC live-consumer check re-read before deleting RightShiftRegister #7311 (pair [7311, 11001])  {'uids': [7311, 11001], 'rows': 4, 'missing': [], 'consumers': []}
+  FACT  delete_object node census: 637 rows
+      stagexecdeleted RightShiftRegister #7311 -> gone [7311]
+  FACT  OP delete_object RightShiftRegister #7311 -> err '' (0.6 s)
+  FACT  delete_object RightShiftRegister #7311 AFTER node census: 637 rows
+  FACT  delete_object RightShiftRegister #7311 CENSUS DIFF: Node 637 -> 637 ; 0 new uid(s): []
+  METER op     k  17  private 616.6 MB (d +4.3)  handles 45711 (d +2)
+  METER read   k  17  private 616.7 MB (d +0.1)  handles 45712 (d +1)
+  STEPX 17 delete_object  acts [17] ids ['r1_sr7311'] bound {} diff 0
+  PASS  LC all 6 live-consumer checks PASS (each re-read before its delete)  [{'uids': [9018, 9025], 'rows': 4, 'missing': [], 'consumers': [], 'ok': True}, {'uids': [29505, 29512], 'rows': 4, 'missing': [], 'consumers': [], 'ok': True}, {'uids': [1142, 1147], 'rows': 4, 'missing': [], 'consumers': [], 'ok': True}, {'uids': [5796, 5805], 'rows': 4, 'missing': [], 'consumers': [], 'ok': True}, {'uids': [119, 2972], 'rows': 4, 'missing': [], 'consumers': [], 'ok': True}, {'uids': [7311, 11001], 'rows': 4, 'missing': [], 'consumers': [], 'ok': True}]
+  PASS  E1 every checkpoint's real graph == its simulated step (D4 scope empty = exact)  {'bad': [], 'accepted': []}
+  FACT  METER SUMMARY {"n": 53, "first_mb": 568.6, "peak_mb": 616.7, "last": {"tag": "read", "k": 17, "t": 1790543090.1, "mb": 616.7, "handles": 45712, "d_mb": 0.1, "d_h": 1}, "sum_d_mb_op": -4.4, "sum_d_mb_read": 52.3, "mean_d_mb_op": -0.26, "mean_d_mb_read": 2.91, "warned_at": null}
+  PASS  D the end adds 0 wire(s) and loses exactly the simulated 11 stub(s)  {'new': [], 'lost': [121, 505, 1681, 5859, 6041, 7429, 9097, 9215, 10763, 28039, 29591], 'sim_lost': [121, 505, 1681, 5859, 6041, 7429, 9097, 9215, 10763, 28039, 29591]}
+  PASS  FU the set of frame diagrams is unchanged
+  PASS  CEN terminal-graph nodes lost == the retire set exactly, none added  {'lost': [119, 1142, 1147, 2972, 5796, 5805, 7311, 9018, 9025, 11001, 29505, 29512], 'added': []}
+  FACT  CENSUS after L2-R1 D1_l2_r1_20260928_055441.vi: {'RightShiftRegister': 37, 'LeftShiftRegister': 37, 'WhileLoop': 6, 'Diagram': 173, 'SubVI': 97, 'LoopTunnel': 151, 'Local': 12, 'ControlTerminal': 118, 'Wire': 1945, 'Node': 637}
+  PASS  CEN2 class census: RightShiftRegister -6, LeftShiftRegister -6, Wire -11 (the deleted stubs), WhileLoop/Diagram/SubVI/LoopTunnel/Local/ControlTerminal/Node 0  {'RightShiftRegister': -6, 'LeftShiftRegister': -6, 'WhileLoop': 0, 'Diagram': 0, 'SubVI': 0, 'LoopTunnel': 0, 'Local': 0, 'ControlTerminal': 0, 'Wire': -11, 'Node': 0}
+  PASS  ENDS every net shared by a retired and a kept terminal keeps its uid, its source(s) and its kept sinks (7 nets)  {'shared_wires': {8590: [6247, 23859], 9051: [8958, 25588], 11253: [10225, 25399], 11389: [13163, 25594], 25438: [2892, 5758, 25315, 25431], 25461: [5583, 5820, 25363, 25453], 29122: [25606, 28172]}, 'bad': []}
+  FACT  ExecState [after all rows (ExecState 0 expected, PD228(h))] D1_l2_r1_20260928_055441.vi = 0
+  FACT  CDIFF ROW {'node': 376, 'class': 'SubVI', 'sink': "#376 Terminal 'current frame data array in'", 'before': ['2626|Terminal|appended array|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 376, 'class': 'SubVI', 'sink': "#376 Terminal 'frame index'", 'before': ['644|Terminal||0'], 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array'", 'before': ['5058|Terminal|x,y,z array out|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array' [1]", 'before': None, 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array' [2]", 'before': None, 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array' [3]", 'before': None, 'after': ['5058|Terminal|x,y,z array out|0']}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'element'", 'before': ['5119|OverridableParameterTerminal|x-y|0'], 'after': None}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'element' [1]", 'before': ['30117|Terminal|Value|0'], 'after': None}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'element' [2]", 'before': ['4580|Terminal|Value|0'], 'after': None}
+  FACT  CDIFF ROW {'node': 5058, 'class': 'SubVI', 'sink': "#5058 Terminal 'Image In'", 'before': ['6810|Terminal|Image Out|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 8634, 'class': 'GrowableFunction', 'sink': "#8634 Terminal 'index (col)'", 'before': ['10068|ParameterTerminal|x-y*floor(x/y)|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 11261, 'class': 'BuildArray', 'sink': "#11261 Terminal 'array'", 'before': ['11310|Terminal|output cluster|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 11261, 'class': 'BuildArray', 'sink': "#11261 Terminal 'element'", 'before': ['11608|Terminal|output cluster|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 28083, 'class': 'SubVI', 'sink': "#28083 Terminal 'Magnet position'", 'before': ['30117|Terminal|Value|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 29625, 'class': 'GrowableFunction', 'sink': "#29625 Terminal 'index (col)'", 'before': ['29240|ParameterTerminal|x-y*floor(x/y)|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 29973, 'class': 'BuildArray', 'sink': "#29973 Terminal 'element' [1]", 'before': ['29240|ParameterTerminal|x-y*floor(x/y)|0'], 'after': []}
+  PASS  PB frame-keyed cdiff(S1, real end) == B3's 16 rows exactly (no row added or removed; FATAL, before save)  {'bad': [], 'extra': [], 'missing': [], 'vs_b3_real': []}
+  FACT  HF handles: start 45606 -> end 45714; steady state read k1 -> last read [45735, 45712]
+  PASS  HF handle count flat (+-100) in steady state, from the read after op 1 to the last read  [45735, 45712]
+
+---------- [SAVE] D1_l2_r1_20260928_055441.vi
+  FACT  ExecState [before the save] D1_l2_r1_20260928_055441.vi = 0
+  FACT  SAVE ROUTE = gui_save, the APPROVED broken-intermediate route (CLAUDE.md split-rule 6; evidence "user 2026-09-22 broken-intermediate save"). The artefact is BROKEN BY DESIGN and is NEVER RUN (34(f)).
+  PASS  S1 the save returned without raising (gui_save route)
+  FACT  SAVED ARTEFACT: D1_l2_r1_20260928_055441.vi md5 f465196bb5016638b146e771ba54c5af size 307924 B; version bytes [0, 38]
+  PASS  S2 the artefact is on disk and non-empty  307924 B
+  FACT  S3 COLD re-open check SKIPPED BY RULE: ExecState was 0, and a broken-saved VI is never cold-loaded headless (recompile spin).
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  f465196bb5016638b146e771ba54c5af
+  PASS  SC D1_l2_r1_20260928_055441_rbw.vi is a byte-identical copy of D1_l2_r1_20260928_055441.vi  D1_l2_r1_20260928_055441_rbw.vi
+  FACT  RBW(new) BROKEN-WIRE COUNT: Wire 1945 -> 1905 after Remove Bad Wires = 40 bad wire(s); ExecState after 0
+  PASS  SC D1_l2_r1_20260928_055441_rbwbed.vi is a byte-identical copy of D1_l2_b3_20260928_032703.vi  D1_l2_r1_20260928_055441_rbwbed.vi
+  FACT  RBW(bed) BROKEN-WIRE COUNT: Wire 1956 -> 1905 after Remove Bad Wires = 51 bad wire(s); ExecState after 0
+  FACT  RBW(new) deleted [42, 373, 628, 730, 1773, 3040, 3512, 3646, 3912, 4027, 4878, 4906, 5637, 5709, 5746, 5975, 5979, 6096, 6363, 9012, 9868, 10166, 10187, 10312, 10573, 10908, 11352, 12256, 17287, 17393, 23556, 25618, 28338, 28684, 28847, 29766, 29787, 31059, 31166, 32890]; RBW(bed) deleted [42, 121, 373, 505, 628, 730, 1681, 1773, 3040, 3512, 3646, 3912, 4027, 4878, 4906, 5637, 5709, 5746, 5859, 5975, 5979, 6041, 6096, 6363, 7429, 9012, 9097, 9215, 9868, 10166, 10187, 10312, 10573, 10763, 10908, 11352, 12256, 17287, 17393, 23556, 25618, 28039, 28338, 28684, 28847, 29591, 29766, 29787, 31059, 31166, 32890]
+  PASS  RBW RBW(new) deletes nothing RBW(bed) keeps and no shared live net; RBW(bed) - RBW(new) only wires with an end on a retired node  {'new_only': [], 'live_hit': [], 'bed_only': [121, 505, 1681, 5859, 6041, 7429, 9097, 9215, 10763, 28039, 29591], 'bed_only_not_retired': []}
+  PASS  RBW scratch deleted: D1_l2_r1_20260928_055441_rbw.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_l2_r1_20260928_055441_rbw.vi
+  PASS  RBW-bed scratch deleted: D1_l2_r1_20260928_055441_rbwbed.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_l2_r1_20260928_055441_rbwbed.vi
+
+---------- [H] HYGIENE
+  FACT  gscript ref_counts: {'opened': 13, 'closed': 13, 'live': 0, 'cached_op_vis': 3}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 13, 'closed': 13, 'live': 0, 'cached_op_vis': 3}
+  FACT  LabVIEW handle count AFTER the work: 32081
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 1b5c12d71ca48f22e3f4b80316c67e51 / after 1b5c12d71ca48f22e3f4b80316c67e51
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: ['D1_l2_r1_20260928_055441.vi']  (removed: [])
+  PASS  H6 the files left on disk == ['D1_l2_r1_20260928_055441.vi'] and nothing was removed  added ['D1_l2_r1_20260928_055441.vi'] removed []
+  FACT  LabVIEW handle count at exit: 32081
+
+====================================================================================================
+=== GATES: 35 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\stage_d1_l2r1.json   elapsed 651.8 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":35,"fail":0},"first_fail":null,"artefacts":[{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_r1_20260928_055441.vi","md5":"f465196bb5016638b146e771ba54c5af"}]}
+LabVIEW gone at exit: True
+BGRUN END rc=0 after 657s

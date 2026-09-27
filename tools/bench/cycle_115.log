@@ -1,0 +1,147 @@
+BGRUN START 2026-09-28 04:28:21 limit 180.0 min: claude.exe -p --model claude-opus-5-5 --effort high --output-format json --permission-mode acceptEdits CARD tools/bench/cards/cycle_115.json
+
+You are the JUDGEMENT session for exactly ONE cycle of this project. You were spawned by
+`tools/cycle_runner.py`; when this cycle ends you exit and the runner spawns the next session fresh.
+Nobody is watching this session. Everything you need is on disk.
+
+## Session protocol v1 (`docs/session-protocol.md`, user-approved 2026-09-24) — every channel is ONE JSON card
+- **The first line of this prompt is `CARD tools/bench/cards/cycle_<N>.json`** (`cycle/1`): cycle number, rig state,
+  model/effort, firefighter, bed `{path, md5}`, motor-session result, budget. Read it FIRST; it is the cycle's machine
+  state and it wins over any number you would otherwise infer from prose.
+- **Delegate with cards, not prose.** For each material / log-reader / motor-limit-checker dispatch write
+  `tools/bench/cards/task_<N>-<seq>.json` (`py tools/protocol.py new task --id <N>-<seq>`, fill it: goal, inputs with
+  md5, pass, outputs, **flags** — labview / gui / hardware / run_vi / write globs / status_edit / git_commit / peers —
+  budget, rules, and `advances` (goal-map ids from `docs/goalmap.json`) or `unblocks` (one milestone)), check it with
+  `py tools/protocol.py validate <card>`, and dispatch with the ONE-LINE prompt `CARD <card path>`. The sub-agent binds
+  itself to the card (its first command) and the hooks enforce the flags. Its answer is a `result/1` object (also in
+  `tools/bench/cards/result_<id>.json`); validate it and read `status` / `blocked_by` / `first_fail` — never infer
+  success from wording.
+- **Fill `requires` (card chat-N1 4a, user 2026-09-26).** Every op VI, script verb, donor file or terminal the card
+  depends on and your plan does NOT already cite by uid goes into the card's `requires`
+  (`[{"kind": "op|verb|file|terminal", "name": "...", "where": "<optional dir / source file / wiki key>"}]`). Check it
+  yourself first with `py tools/protocol.py requires <card>` (offline, seconds); a MISSING item is a tool to build or a
+  plan to change NOW, not a 60-minute discovery inside LabVIEW (cycle 89, cards 89-1/89-2). The material session runs
+  the same check first and returns BLOCKED on anything missing; the hook refuses its launches until it passes.
+- **Six material-type dispatches per session** (material, its Fable rungs, log-reader, SendMessage resumes; user
+  2026-09-26, was 8). The 7th is refused: write NEXT and exit.
+- **Reviews are cards too.** `prior_art_review.py`, `retrospective.py`, `outcome_review.py` and `doc_ingest.py` write a
+  `review/1` card and pass it to `peer.ps1 -ReviewCard`; for a failed-prediction review write your own `review/1`
+  (`py tools/protocol.py new review --id ...`) and pass `-ReviewCard`. The peer's `verdict/1` lands in
+  `tools/bench/cards/verdict_<id>.json`.
+- **Questions only the user can answer** are APPENDED as items to `tools/bench/decisions_pending.json`
+  (`decisions-pending/1`: id `D-<date>-<nn>`, asked, `"by": "cycle <N>"`, question, ≤ 4 options, recommendation,
+  `blocks` milestone ids, `"status": "open"`), then `py tools/protocol.py validate tools/bench/decisions_pending.json`.
+  Never delete or re-word an existing item; the chat reports every open item at each cycle end.
+
+- **A STEERING CARD is obeyed or refused with evidence — never ignored** (user, 2026-09-24: "아웃컴 리뷰에 조향카드
+  부여하는 것 동의"). When the cycle card's `steer` is not null it names `tools/bench/cards/steer_<c>.json` (`steer/1`:
+  a verdict the outcome review REPEATED, its `required_act` and `goal_ids`). Your `next.json` must carry
+  `"steer": {"item": "<its item>", "response": "follow"}` — and the cycle's work and next act must actually do the
+  required act — or `"steer": {"item": ..., "response": "refuse", "evidence": ["file:line", ...]}` citing what shows the
+  required act is wrong now. No answer counts as a refusal; the SECOND refusal of the same item stops the runner and
+  puts the item on `decisions_pending.json` for the user.
+- **RETRY CAP** (user, 2026-09-24): one stage script (`tools/recipes/stage_*.py`, `_vN` stripped) is launched at most
+  `RETRY_CAP` = 2 times per cycle (`tools/stage_prerun.py`, counted in `tools/bench/stage_runs.jsonl`). A further run
+  is YOUR decision: write a `task/1` card with `"retry_of": "<stage basename>.py"` and have the launch command carry
+  `RETRY_CARD=<that card path>`; one card authorises one run.
+
+## Read, in this order, and nothing else
+0. The cycle card named on the first line of this prompt.
+1. `CLAUDE.md` — the standing rules. They bind you; do not work from a summary of them.
+2. `STATUS.md` — the lock, the rig-state banner, where things stand, OPEN, and NEXT.
+3. The ONE plan document STATUS.md names as current (its frontmatter says `status: current`), including its
+   `## Pre-decided` section.
+Do not read `archive/` (CLAUDE.md rule 4), do not read whole logs, do not re-read what is already in context.
+
+## The rig state and LabVIEW permission are whatever STATUS.md's banner says — NEVER infer them
+STATUS.md's hardware banner is the only authority on the rig state (분해 / 조립 / 실험중) and therefore on what
+may be touched. Only the user announces a state change, and the announcement reaches you only as an edit to that
+banner. A quiet period, a released lock, an empty `tasklist`, the hour of the night, or the fact that the previous
+cycle ran something are NOT evidence that the state changed. If the banner says an experiment is running or
+imminent, no LabVIEW and no instrument is touched in this cycle — you do the work that needs neither, and if the
+whole cycle needs LabVIEW you write that in NEXT and exit rather than deciding the experiment must be over.
+
+## What you do in this cycle
+- **Delegate every piece of material work** to the `material` agent (`.claude/agents/material.md`) with the
+  Agent tool: writing and running recipes or diagnostics, anything touching LabVIEW, log reading (`log-reader`),
+  peer dispatch, STATUS/INDEX bookkeeping. You never run `tools/recipes/*.py` or `tools/bench/*.py` yourself and
+  never read a whole log yourself — `tools/hooks/guard_bash.py` refuses it and it is the point of the split.
+- **A brief states the MEASUREMENT, never the result-dependent ACTION.** "If A removes 1, do X, else do Y" is
+  not delegation; it moves the decision into the session that must not make it. Ask for the measurement, get the
+  facts back, then decide.
+- **A failed gate is first routed by the Jev ladder, not by you** (user, 2026-09-24 03:5x: the verdict must drive
+  the next action — *advisory-only is not delegation*). The newest `JEV-LADDER` line for that log in
+  `tools/bench/jev_gate.log` ends `NEXT-ACTION:`; the `material` agent reads it first and acts on it
+  (`our-script-bug` → patch + rerun with no review and no judgement turn, failure budget 2 still counting;
+  `already-reviewed-class` → apply the cited review's disposition and rerun; otherwise → hypothesis review owed).
+  You receive it as one table row (log | class p | NEXT-ACTION | what was done | result), not as a log, and spend a
+  judgement turn only on `review owed` rows and on a failure budget that ran out.
+- **INTRA-CYCLE ESCALATION (user, 2026-09-25: "한 싸이클 내부에서도 특정 프로세스가 과하게 오래 걸리거나 반복적으로
+  실패할 경우 … 높여보는 것"; rungs RE-SET 2026-09-26 by the user after matbench v1, `tools/bench/matbench/report_v1.md`).**
+  When a card comes back FAIL with its failure budget spent, or its `budget.minutes` is exceeded, do not re-dispatch it
+  to `material` a third time and do not wait for the next cycle: write a NEW card with the same `goal`/`pass`,
+  `escalation: 1`, `retry_of_card: <old id>`, and dispatch it to the **`material-opus-max`** agent (Opus 5.5 max: the
+  only level that reported the missing verb in the bench); if that fails the same way, `escalation: 2` to
+  **`material-fable-low`** (bench 5/5 at half of max's minutes); after that the item goes to
+  `tools/bench/decisions_pending.json` and the card stops. Two rungs per card, never more; the result card records which
+  rung solved it. Same flags, same rules, same peers. `material` itself is Opus 5.5 HIGH (bench: high catches the
+  uid-precision task, max costs 3x the minutes). `material-fable-medium` is no longer dispatched (no gain over low).
+- **JUDGEMENT LADDER (runner-decided, user 2026-09-26, card chat-M1; rungs re-set by the user's model table
+  2026-09-27, card chat-N4).** Your model/effort is chosen by `tools/cycle_runner.py` from files (opus high ->
+  opus max -> fable low -> RUNNER STOP; a recipe firefighter cycle is one Opus max cycle) and
+  recorded in the cycle card's `note` as `judge-ladder level N: <reason>`. Do not change it; deliver something
+  (a PASS result card with artefacts, or a goalmap milestone done) and the next cycle drops back to level 0.
+- **SCRATCH-VI VERIFICATION (user 2026-09-27).** After two stage runs failed on the SAME scripting function, write
+  the scratch-verification card first (a <=120-line stagekit script on a minimal scratch VI, record under
+  `tools/bench/scratch_verify/`); `stage_prerun.check_launch` refuses a third stage run until that record PASSes.
+- **Answer from the plan first.** If the plan's `## Pre-decided` section already settles a question, apply it and
+  say which line — do not re-open it, and do not ask the user.
+- **Decide** the things only judgement can decide: design, what to accept from a review, rule-1a equivalence,
+  which discriminating experiment to run next.
+- **Close the cycle**: write `tools/bench/next.json` (below) FIRST — `guard_bash` refuses the retrospective until it
+  is new and valid — then run `py tools/bgrun.py --max-min 10 --log tools/bench/retro.log -- py tools/retrospective.py
+  --cycle <N>`, annotate what it returns, then rewrite STATUS.md's `## NEXT` section so the next session can start
+  cold from it.
+  🔴 **THE RETROSPECTIVE IS THE LAST THING YOU RUN — never run one early, and never run one for another cycle.**
+  `tools/hooks/guard_bash.py:226-227` calls `mark_retro_done()` on ANY `retrospective.py` in command position,
+  whatever `--cycle` says, and `guard_session.py` then refuses every `material` / `log-reader` dispatch for the
+  rest of the session. Cycle 29 lost its whole cycle that way: it opened by paying cycle 28's unrun retrospective
+  to discharge `guard_cycle`, and was left unable to delegate anything. **If the previous cycle left its
+  retrospective unrun, that debt is NOT yours to pay up front** — do the cycle's work first and let your own
+  closing retrospective cover both cycles (precedent: cycle 26's covered cycle 25). If `guard_cycle` then refuses
+  the build because the previous cycle's logs have no newer retrospective, say so in NEXT — do not clear it by
+  running a retrospective mid-cycle.
+- **Then stop.** Do not start a second cycle. After the retrospective runs,
+  `tools/hooks/guard_session.py` refuses further material dispatches; that refusal is the end of your cycle, not a
+  problem to route around. The same hook refuses the 9th material dispatch — if you reach it, the cycle was too
+  big: write NEXT and exit so the runner starts a fresh session.
+- **ENDING YOUR TURN IS THE END OF THIS PROCESS — there is no next turn in `claude -p`, and every background job
+  you started is KILLED the moment you stop.** Session 68 (2026-09-21 20:46) wrote "the prior-art review is running,
+  meanwhile…" and stopped; the review died 19 s later with no END line and the cycle produced nothing. So: NEVER end
+  a message expecting to be resumed. While ANY bgrun you launched lacks its `BGRUN END`/`TIMEOUT` line, stay in the
+  turn — wait on it (Monitor on its log, or the tracked background task) — then act on its result, THEN write NEXT.
+
+## `tools/bench/next.json` is your whole output (C7) — STATUS NEXT is its human copy
+The runner reads **`tools/bench/next.json`** (`next/1`) to decide whether to continue, and `guard_bash` refuses the
+retrospective until you have written a NEW, VALID one: `{"schema":"next/1","cycle":<N>,"act":"<the next session's
+first act>","task_kind":"build|measure|diagnose|doc|review-dispatch|read-log","plan":{"path":...,"md5":...},
+"pass":[...],"blocked_by":null,"stop_requested":false,"advances":["R.."/"M.."]}` — `advances` (goal-map ids) or
+`unblocks` (one milestone id) is REQUIRED; when the cycle card carries a `steer`, the `steer` answer is too. Check it with `py tools/protocol.py validate tools/bench/next.json`.
+**If next.json is absent, invalid or byte-identical after two consecutive cycles the runner stops**, because a cycle
+that changed nothing is a loop. Also rewrite STATUS.md's prose `## NEXT` for people, saying the same first act
+concretely, with the file and the plan section to start from — never "continue the work". If you are blocked on
+something only the user can answer, add it to `tools/bench/decisions_pending.json`, set `"stop_requested": true` and
+`blocked_by` in next.json, and put `STOP` at the start of a line near the top of STATUS.md; the runner exits and the
+user reads it.
+
+## Cost discipline
+One cycle, one context. Fewer, larger turns; chain a build and its bookkeeping into one runner; never dispatch a
+sub-agent for something already answered in the plan. You are the expensive model — your turns are reading
+STATUS + plan, deciding, and delegating.
+
+
+ERRORLIST (cycle-start Error List check, user decision 5 2026-09-24): OK - tools\bench\errorlist_D1_l2_b3_20260928_032703_20260928_042814_reuse.json
+
+BGRUN PID 14656
+{"duration_api_ms":3428769,"stop_reason":"end_turn","session_id":"572b728e-665d-4063-b1d0-ad1b9f13d545","total_cost_usd":37.40625139999997,"usage":{"input_tokens":2,"cache_creation_input_tokens":1210,"cache_read_input_tokens":210236,"output_tokens":112,"output_tokens_details":{"thinking_tokens":37},"server_tool_use":{"web_search_requests":0,"web_fetch_requests":0},"service_tier":"standard","cache_creation":{"ephemeral_1h_input_tokens":1210,"ephemeral_5m_input_tokens":0},"inference_geo":"not_available","iterations":[{"input_tokens":2,"output_tokens":112,"cache_read_input_tokens":210236,"cache_creation_input_tokens":1210,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":1210},"type":"message"}],"speed":"standard"},"modelUsage":{"claude-opus-5-5":{"inputTokens":100,"outputTokens":42638,"cacheReadInputTokens":8082554,"cacheCreationInputTokens":308536,"webSearchRequests":0,"costUSD":4.9379588,"contextWindow":1000000,"maxOutputTokens":128000,"thinkingTokens":7912,"canonicalModel":"claude-opus-5-5","provider":"firstParty","costBasis":"list"},"claude-opus-5-5[1m]":{"inputTokens":738,"outputTokens":297256,"cacheReadInputTokens":70893828,"cacheCreationInputTokens":2468291,"webSearchRequests":0,"costUSD":32.46829259999999,"contextWindow":1000000,"maxOutputTokens":128000,"thinkingTokens":98095,"canonicalModel":"claude-opus-5-5","provider":"firstParty","costBasis":"list"}},"permission_denials":[],"terminal_reason":"completed","fast_mode_state":"off","fast_mode_disabled_reason":"sdk_opt_in_required","origin":{"kind":"task-notification"},"subagent_stats":{"spawned":5,"requested":{"background":0,"foreground":5,"unset":0},"started_in_background":0,"max_depth":1,"spawned_by_subagents":0,"completed":5,"failed":0,"killed":{"parent":0,"user":0,"system":0},"refused":{"depth_limit":0,"concurrency_limit":0,"budget":0},"by_type":{"material":5}},"is_error":false,"num_turns":1,"subtype":"success","api_error_status":null,"result":"Nothing to do here: the log watcher timed out after it had already delivered the retrospective's result. Cycle 115 is closed, `next.json` and STATUS `## NEXT` are written, and no background work from this session is still running.","ttft_ms":1959,"type":"result","duration_ms":3871,"uuid":"8ed6f0b5-ef09-4eae-8794-6d318c5902e7","ttft_stream_ms":1717,"time_to_request_ms":199,"first_content_frame_ms":1717,"queued_turn_count":0,"result_index":2}
+BGRUN END rc=0 after 9142s

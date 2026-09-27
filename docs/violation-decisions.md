@@ -1636,3 +1636,20 @@ DECISION: no new device beyond finishing the recorded fix. Card 114-4 re-pinned 
 - adds the pass-count floor, the frozen G01-G42 label check and the unflip_81 exit code;
 - runs the reviewer's test: find accepted dispositions whose named fix is absent from the code.
 If that search finds more than this one unapplied fix, the device is a check that an accepted disposition's named fix has landed.
+
+## device-failed — 2026-09-28 07:05 (cycle 115 judgement, after archive/peer/2026-09-28-retrospective-cycle115.md:380)
+
+`VIOLATION: device-failed | loss_min=2 | loss_usd=? | evidence=tools/hooks/material_marker.log:2615`: ACCEPTED (threshold 1).
+The stop record's read-only exemption (decided 2026-09-24 05:54, re-repaired 2026-09-27 01:15 and 22:20) refused the purely
+read-only `wc -l tools/recipes/stage_d1_l2r1.py; awk … | wc -l` as STOPPED-RECIPE (`:2614-2615`). The likely gap is the `;`
+segment separator.
+
+DECISION: device, first in cycle 116's card (STEP 0, `docs/d1-loop12-17-split-plan.md` PD230(g)):
+- **(1)** The stop record splits a command on `;`, `&&`, `||` and `|` and refuses only a segment that EXECUTES the recipe.
+  - Its self-test replays the literal commands at `material_marker.log:2614` and `:2615`, which must pass.
+  - A real launch must still be refused, including one hidden after a `;`.
+- **(2)** The follow-on device of the 04:35 decision is now due. Card 115-1's C1 grep found two more accepted fixes absent from the code:
+  - `guard_card.py:44` accepts any `cd`;
+  - doc_lint has no HH:MM header lint.
+
+  So a check is owed that an ACCEPTED disposition's named fix has landed, run by `audit_cycle`. It greps "accepted"/"FIXED" dispositions for a named `file` or function and reports each one absent from the code. Acceptance: it flags exactly those two before they are fixed, and 0 after the same card fixes them.

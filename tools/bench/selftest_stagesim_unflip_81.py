@@ -10,6 +10,7 @@ U3 stagesim selftest 0 failing gates (was 42/0, re-pinned by card 114-4), selfte
 import copy, json, os, re, subprocess, sys                                            # noqa: E401
 HERE = os.path.dirname(os.path.abspath(__file__)); TOOLS = os.path.dirname(HERE); sys.path.insert(0, TOOLS)  # noqa: E702
 import stagesim as S, jev_candidates as JC, protocol                                   # noqa: E401,E402
+sys.path.insert(0, HERE); import selftest_stagesim_pin as SP                           # noqa: E402,E702  card 115-1 B1
 GATES = []
 def gate(l, ok, d=""): GATES.append((l, bool(ok))); print("  {0}  {1}  {2}".format("PASS" if ok else "FAIL", l, str(d)[:900]), flush=True)  # noqa: E702,E704
 J = lambda p: json.load(open(p, encoding="utf-8"))                                     # noqa: E731
@@ -61,9 +62,12 @@ for lbl, cmd, want in (("stagesim selftest", [os.path.join(TOOLS, "stagesim.py")
     # card 114-4 R2: the stagesim pin was an exact count (42/0) that broke each time stagesim gained gates (57, 71, 75 - all
     # 0 fail); it now asserts 0 failing stagesim gates (GATES line present) and logs the count. The other two pins unchanged.
     if want is None:
-        gate("U3 {0} 0 failing gates, count {1}".format(lbl, got and got[0]), got is not None and got[1] == 0, (got, p.returncode))
+        # card 115-1 B1: + rc 0, pass >= the floor on record (75), frozen G01-G42 all PASS (selftest_stagesim_pin.check)
+        pin = SP.check(p.stdout, p.returncode)
+        gate("U3 {0} 0 failing gates, count {1}".format(lbl, got and got[0]), got is not None and got[1] == 0 and pin[0], (got, p.returncode, pin[1]))
     else:
         gate("U3 {0} unchanged {1}/{2}".format(lbl, *want), got == want, (got, p.returncode))
 n_pass = sum(1 for _l, ok in GATES if ok); first = next((l for l, ok in GATES if not ok), None)   # noqa: E702
 print("=== GATES: {0} pass / {1} fail{2}".format(n_pass, len(GATES) - n_pass, "; failing: " + first if first else ""))
 print(protocol.result_line(protocol.make_result(n_pass, len(GATES) - n_pass, first, [])))
+sys.exit(0 if first is None else 1)                                                    # card 115-1 B2: rc reflects the gates

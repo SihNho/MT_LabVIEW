@@ -18,6 +18,7 @@ PREDICTIONS (contract):
 import collections, copy, json, os, re, subprocess, sys                          # noqa: E401
 HERE = os.path.dirname(os.path.abspath(__file__)); TOOLS = os.path.dirname(HERE); sys.path.insert(0, TOOLS)  # noqa: E702
 import stagesim as S, vigraph as V, jev_candidates as JC, protocol                 # noqa: E401,E402
+sys.path.insert(0, HERE); import selftest_stagesim_pin as SP                       # noqa: E402,E702  card 115-1 B1
 GATES, BODY = [], 23166
 TOPS = [5540, 9647, 10247, 10445, 10950, 17289, 10969, 10757, 17487, 5634]
 
@@ -145,9 +146,12 @@ for lbl, cmd, want in (("E1 stagesim selftest", [sys.executable, "-u", os.path.j
     # card 114-4 R2: E1 was an exact-count pin (42/0) that broke each time stagesim gained gates (57, 71, 75 - all 0 fail);
     # it now asserts 0 failing stagesim gates (GATES line present, rc 0) and logs the count.
     ok = (got is not None and got[1] == 0) if want is None else got == want
+    # card 115-1 B1 (review archive/peer/2026-09-28-c114d-regress.md:94-107): E1 ALSO needs pass >= the floor on record (75)
+    # and every frozen label G01-G42 as a PASS line (selftest_stagesim_pin.check) - still ONE gate, so the 13/0 pin holds
+    pin = SP.check(p.stdout, p.returncode) if want is None else (True, None)
     gate("{0} still passes with {1}".format(lbl, "0 failing gates, count {0}".format(got and got[0]) if want is None
-                                         else "its pre-refit count {0}/{1}".format(*want)), ok and p.returncode == 0,
-         (got, p.returncode, [l for l in p.stdout.splitlines() if "FAIL" in l][:4]))
+                                         else "its pre-refit count {0}/{1}".format(*want)), ok and p.returncode == 0 and pin[0],
+         (got, p.returncode, pin[1], [l for l in p.stdout.splitlines() if "FAIL" in l][:4]))
 n_pass = sum(1 for _l, ok in GATES if ok)
 first = next((l for l, ok in GATES if not ok), None)
 print("=== GATES: {0} pass / {1} fail".format(n_pass, len(GATES) - n_pass))

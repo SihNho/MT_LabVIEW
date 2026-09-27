@@ -4605,3 +4605,94 @@ VIOLATION: device-failed | loss_min=11 | loss_usd=2.02 | evidence=archive/peer/2
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle114","verdict":"refuted","alternative":"Both losses are small against a cycle that delivered B3 as bed plus X11/X12 and the sim fix; the pin failure could be read as normal regression hygiene and the prior-art miss as within the reviewer's measured 6.5/8 accuracy.","discriminating_test":"Grep all archived reviews for a fix named in an accepted disposition and check the code for it: if c112a's E1/U3 re-pin is the only unapplied one, fault 1 is a one-off; if several recur, it is a missing check-that-fixes-landed device.","violations":[{"slug":"repeated-failure-class","loss_min":12,"loss_usd":1.16,"evidence":"tools/bench/peer_c112a_unflip81.log:28"},{"slug":"device-failed","loss_min":11,"loss_usd":2.02,"evidence":"archive/peer/2026-09-28-priorart-c114a-l2b3.md:539"}],"sources":["tools/bench/diag_c114d_regress.log:5-6","tools/bench/cards/task_114-3.json:28","tools/bench/cards/task_114-3.json:54","archive/peer/2026-09-28-c114d-regress.md:92","archive/peer/2026-09-28-c114d-regress.md:103","archive/peer/2026-09-28-priorart-c114a-l2b3.md:544","archive/peer/2026-09-28-priorart-c114a-l2b3.md:566","archive/peer/2026-09-28-c114b-l2b3d.md:43-56","tools/bench/opmodels/connect_from_wire.json:266","tools/bench/jev_gate.log:2362","tools/bench/cards/result_114-4.json:31"],"note":"Cycle delivered (B3 accepted, PD228). Device-failed = prior-art review (tool-not-built device) missed A3 contradiction vs graph_l2b2b and cfw_2 model; material declined its offline test. Material/judgement spend unlogged; USD figures are review cost only."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle114.md
 BGRUN END rc=0 after 325s
+BGRUN START 2026-09-28 06:50:14 limit 10.0 min: py tools/retrospective.py --cycle 115
+BGRUN PID 13248
+   window 2026-09-28 04:25:44 .. 2026-09-28 06:50:14 (145 min); 82 build logs, 11 machinery logs, 39 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle115.txt (36045 chars)
+   review card tools\bench\cards\review_retrospective-cycle115.json
+OUTCOME: ANSWERED (234s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-09-28-retrospective-cycle115.md
+COST: $1.5345  in 44 / out 21951 / cache-create 90054 / cache-read 1775813  (232s, 34 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle115 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle115.json
+--- ANSWER ---
+# Retrospective, cycle 115 (04:25:44 – 06:50:14)
+
+**Outcome.** The cycle produced what it was for, and I found no costly structural fault. It built the X13 opmodel-conformance device first, as PD229(a) ordered (`tools/bench/cards/result_115-1.json:19-22`). It made exactly one stage launch, which passed 35/0 and saved bed `D1_l2_r1_20260928_055441.vi` (`result_115-3.json:18`). It resolved one failed Error-List prediction through two peer reviews and ended with an expected file whose reverdict came back OK (`result_115-5.json:19`). It then handed the next cycle a `next.json` that adopts the review's hardening: loose ends pinned at exactly 24, a whole-graph terminal diff and no carried licence (`tools/bench/next.json:4,15`).
+
+Costs:
+- 5 material cards, under the 6-dispatch cap.
+- Review cost $6.92 across 5 cost lines, all 5 parsed (audit C4/C4b).
+- Build wall-clock 79 min (audit C3).
+
+The contract's device rule (threshold 1) still requires one line at the end, for the device that fired wrongly. That line costs 2 minutes; it is not a costly fault.
+
+## Findings
+
+**1. Repeated failure.** There was no repeated class. Four gate failures had four different causes:
+- **Our own recipe bug:** the first prerun at 05:00 failed X5 and X6 because the recipe named two plan files (`stage_d1_l2r1_prerun.log:75,83-84`). It was fixed in 53 s and passed at `:175`.
+- **X5 false positive:** X5 counted `delete_wire` as a wiring op (`stage_d1_l2r1_prerun.log:288`).
+- **Flaky selftest sandbox:** the headcmp selftest failed on a stale, PID-named `%TEMP%` sandbox. This is its only FAIL on record (`selftest_stage_prerun_headcmp_79-6_c115c_after.log:6`).
+- **Error List F7:** one extra loose-ends item (`diag_c115b_errorlist.log:121`).
+
+No attempt should have changed approach sooner than it did.
+
+**2. Missing tool.** Two readers were missing:
+- **Selection List / item→wire reader:** there is no `TopLevelDiagram.Selection List[]` reader. Card 115-4 therefore tied Error List items to nets by screenshot masks, and 2 of 47 shots failed, which triggered a review (`result_115-4.json:22,27`). The last card also had to license the 7 new items with an *inferred* location (`archive/peer/2026-09-28-c115e-sel.md:153-156`).
+- **Selftest sandbox cleanup:** `selftest_launch_gate` never deletes its PID-named sandboxes (86 were left over). This cost one hypothesis review, $1.2775 (`peer_c115c_headcmp.log:4,14`). The fix was left unapplied (`result_115-3.json:26`).
+
+**3. Unmeasured steps.** This is the most expensive item of the cycle, but I rank it as a finding, not a fault:
+- Prior-art Q2 asked whether deleting a register leaves loose ends on a branched net. Its disposition said this would be "measured instead by the R2 scratch run and by the R7 full Error List read" (`archive/peer/2026-09-28-priorart-c115b-l2r1.md:609-610`).
+- Neither scratch log reads the Error List (grep over `diag_c115b_scratch*.log` finds no Error List read).
+- The first measurement was therefore after the launch, where F7 failed at 06:17. The detour ran from 06:17 to 06:48 (31 min, $1.3095 + $1.3604 of review).
+- Q2 was answered from local records only ("nothing on record", `:585`). NI documents "Wire has loose ends" as its own error class, and documents a per-wire [Remove Loose Ends](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/wire/removelooseends.html) method ([error page](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/wire-has-loose-ends.html)).
+- Why it is not a fault: measuring on the scratch copy would mostly have **moved** the rule-1a analysis (graph M2/M5, review) ahead of the launch, not removed it. I cannot build a counterfactual that ends the cycle much earlier.
+
+**4. Rule compliance.**
+- **Followed:**
+  - Failed-prediction review: F7 at 06:17 went to review at 06:18 (`peer_c115c_errorlist.log:1`).
+  - ONE launch, as the card's rule required.
+  - Adversarial framing: "REFUTE PD230, never confirm" (`task_115-5.json:60`).
+  - Gate refusal returned as BLOCKED, not bypassed (`result_115-2.json:3`).
+- **Broken:** STATUS.md is 466 lines, against the rule-4 limit of 110 (doc-lint L3). This is standing debt, not new.
+- **External search:** CLAUDE.md:628-636 requires one for any factual tool question. It was not run for Q2 (see finding 3).
+- **Audit A1 is a false positive:** the 41 flagged logs are children of bgrun-wrapped regression runners, for example `diag_c115a_regress.log:1-3`.
+- **Audit C7 has no discrimination:** 269 "out-of-plan" files, including this cycle's own cards. It cannot show scope creep; I judged scope from the task cards myself.
+- **What the audit does not cover:** read-only hook refusals (`material_marker.log`), and whether a disposition's promised measurement was ever made (finding 3).
+
+**5. Ordering.** Defensible:
+- The device was built first.
+- The prior-art review ran before the launch, and was re-reviewed on the changed bytes (recipe md5 1d3fce95 equals the rev3 attachment, `result_115-3.json:16`).
+- The scratch copy was re-run on the v2 bytes before the one launch.
+
+The one step that belonged earlier is the Error List read on the scratch copy (finding 3).
+
+**6. What was not reported.**
+- `result_115-2.json` omits the first X5/X6 prerun failure at 05:00 (`stage_d1_l2r1_prerun.log:91`).
+- It gives the killed rev2 prior-art dispatch as "stopped because recipe was 123 lines" (`:22`). It omits that two read-only line-count commands were refused just before (`material_marker.log:2614-2615`), which is why rev2 was launched on a 123-line recipe.
+
+**7. Judgement inside a material session.**
+- **Plan v1→v2 change by `material` (borderline, acceptable):** the material agent added 11 `delete_wire` rows (`plan_115-2_l2r1.md:8-16`). The card's own R2 spelled out "both halves, their wires" (`task_115-2.json:41`), so this implements the card rather than redesigns it.
+- **Card 115-5's V3 gate:** V3 is pre-scripted as "counter-case → BLOCKED" (`task_115-5.json:29`). It is a gate, and the material session returned every design finding (Q2 swap, Q3 b–d, PD230(d)) as open (`c115e-sel.md:153-167`).
+- **Clean:** acceptance of R1 was decided by the judgement session (PD230, `task_115-5.json:6`).
+
+**Other structural observations:**
+- Card 115-4 was written with `peers=[]` for a diagnosis of a failed prediction. It was therefore bound to block on any new failed prediction, and it did (`result_115-4.json:3`). That cost one extra card boundary, about 5 min.
+- The X5 block cost about 23 min (05:16 → 05:39) and was resolved correctly: a narrow fix, selftests before and after.
+
+## Device effect
+
+Every device that had occasion to fire in this window worked, except one:
+- **bgrun inner-FAIL → rc:** worked (`diag_c115b_errorlist.log:127`).
+- **Cost-line parsing:** worked (C4b 5/5).
+- **Prior-art before build / stop record by sha:** worked; rev3 ran on the changed bytes (`peer_priorart_c115b_l2r1_v3.log:1`).
+- **bgrun reap:** worked (`peer_priorart_c115b_l2r1_v2.log:5`).
+- **guard_peer failed-prediction lock:** held and refused `diag_c115d_sel2.py` (`result_115-4.json:3`).
+- **`gates_due` in the cycle card:** present (`cycle_115.json:28-44`).
+- **X13 (PD229(a)):** its fail case was shown (`result_115-1.json:20`), and sim and real lost sets matched (`result_115-3.json:19`).
+- **Failed:** the stop record's read-only exemption. It was decided 2026-09-24 05:54 and re-repaired 2026-09-27 (01:15, 22:20). `violation-decisions.md:1488-1489` says any further read-only refusal means the repair failed. At 05:13:02 it refused the purely read-only `wc -l tools/recipes/stage_d1_l2r1.py; awk 'length > 250' … | wc -l` as STOPPED-RECIPE (`tools/hooks/material_marker.log:2615`; also `:2614`). The likely gap is the `;` segment separator.
+  - **Loss:** rev2 was launched blind at 05:12:27 on a 123-line recipe and was killed after 43 s with no cost line. About 2 min.
+  - **Counterfactual:** had `wc -l` passed at 05:12:12, the recipe would have been trimmed first, and only one re-review launched (at about 05:12:30 rather than 05:13:09). That saves about 1–2 min and one killed dispatch.
+
+VIOLATION: device-failed | loss_min=2 | loss_usd=? | evidence=tools/hooks/material_marker.log:2615
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle115","verdict":"refuted","alternative":"No costly structural fault: the cycle delivered bed D1_l2_r1 + reverdicted expected file; the device-rule line is emitted only because stop_record's read-only exemption refused `wc -l …; awk …` (2 min), and the 31-min F7 detour moved rather than wasted work.","discriminating_test":"Replay the literal argv at material_marker.log:2615 through stop_record/launchunit offline: if it is still refused, the read-only exemption misses `;`-separated segments.","violations":[{"slug":"device-failed","loss_min":2,"loss_usd":"?","evidence":"tools/hooks/material_marker.log:2615"}],"sources":["tools/hooks/material_marker.log:2615","docs/violation-decisions.md:1488","tools/bench/cards/result_115-2.json:22","archive/peer/2026-09-28-priorart-c115b-l2r1.md:609","tools/bench/diag_c115b_errorlist.log:121","tools/bench/cards/result_115-5.json:19","https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/wire-has-loose-ends.html"],"note":"Largest cost was the F7 detour 06:17-06:48 ($2.67): the prior-art Q2 disposition promised a scratch Error List read that was never made; a finding, not a fault. 115-4 peers=[] cost one card boundary."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle115.md
+BGRUN END rc=0 after 238s

@@ -2062,6 +2062,30 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
        - A regression pass criterion names the failures already on record, or the card carries the peer it needs.
        - A review's offline test marked "not checked" is run, or returned `open` to judgement; it is never waived inside the card.
      - **(d) Then L2-R1 per 228(j).**
+230. **(cycle 115 judgement; cards `115-1` PASS 8/0, `115-2` BLOCKED 4/1, `115-3` FAIL 6/1, `115-4` BLOCKED 10/1, `115-5` — `tools/bench/cards/result_115-{1..5}.json`)**
+     - **(a) STEP 0 done (115-1):** prerun X13 (`stage_prerun.py` opmodel conformance) PASSes on `connect_from_wire.json` and FAILs with `cfw_border_rule` off. The E1/U3 pins now carry a pass floor and a frozen G01-G42 check, and `unflip_81` exits 1 on a failure. 115-2 added replayers for delete_object/delete_wire/remove_bad_wires (6/6). The C1 disposition grep found 2 accepted fixes absent from the code: `guard_card.py:44` accepts any `cd`, and there is no HH:MM header lint in doc_lint.
+     - **(b) DECIDED (115-2 → 115-3): X5 counted `delete_wire` as a wiring op.** This was a checker false positive, of the same class as X9 in 110-6. X5 now counts delete ops one-to-one against the plan's delete rows (`stage_prerun.py:1770-1773`, self-test 10/0, and every unplanned op still FAILs). Plan v2 was chosen over v1: it deletes the 11 stub wires, then the 6 SR pairs, so no terminal-less Wire objects are left.
+     - **(c) L2-R1 SAVED (115-3, ONE launch 35/0):** `claudeDev\D1_l2_r1_20260928_055441.vi`, md5 `f465196bb5016638b146e771ba54c5af`, 307,924 B. cdiff equals B3's 16 rows, the census removed exactly the 12 SR uids plus the 11 stubs, RBW deleted no other wire, and handles held. Its Error List has 55 items against B3's 59, and it contains one loose-ends item that no rule licenses.
+     - **(d) DECIDED — L2-R1 IS ACCEPTED on the graph read (115-4 M2/M5), not on screenshot pairing.**
+       - Each of the 7 shared nets (w8590, w9051, w11253, w11389, w25438, w25461, w29122) lost exactly one SR sink term. Their source and live sink set in R1 equal B3's.
+       - No new wire appeared. One-sided wires dropped 30 → 19, which is exactly the 11 stubs. No other net's terminal list changed.
+       - ⚠️ Corrected after review `archive/peer/2026-09-28-c115e-sel.md:92-101`: **rule 1a rests on the full terminal-list diff**, not on where the new items sit. The retired left SRs fed only sink-less stubs, no right SR had a source, and every other terminal list is unchanged. That the 7 new loose-ends items are dangling branches on those 7 nets is INFERRED. A swap is not excluded (6 SR branches plus 1 segment on another net, `:106-129`); the Remove Loose Ends per net on a copy (17 vs ≥ 18) is the test that would separate them, and it is not run. Acceptance stands at the structural level either way, because a segment with no terminal feeds no node.
+       - Loose-ends accounting: 23 − 6 stub items + 7 dangling branches = 24, as peer `c115c-errorlist` predicted.
+       - Level: STRUCTURAL, ExecState 0 by design, never run.
+       - Precondition MET (115-5): `errorlist_expected_D1_l2_r1_20260928_055441.json` (md5 `33a9cf54…`) reverdicts OK, 55/55 licensed. The review verdict was `supported` with no counter-case. **`current-bed:` moved to R1.**
+     - **(e) Carry:** the 7 dangling segments stay in the file. They are cosmetic and must not be removed by a blanket Remove Bad Wires; a per-net `Remove Loose Ends` belongs in the QRT wiring stage, where ExecState 1 becomes a gate. `selftest_launch_gate.py` leaves its PID-named sandbox behind (headcmp H1 is flaky), which is a tooling carry.
+     - **(f) NEXT = L2-R2** (the 13 consumer-less tunnels, 228(g); `#32572` stays) from the R1 bed. Use the same shape as 115-3: plan v2 style (stub wires first, then objects), X5/X13 in prerun, a scratch on a byte copy, ONE launch, and the Error List expected file written in the same card.
+       - **DECIDED (review Q3, `c115e-sel.md:114-120`): NO count licence carries into L2-R2.** Instead, L2-R2 gets two gates:
+         - a per-stage whole-graph terminal-list diff, where only the retired objects' terminals may change;
+         - an Error List loose-ends count PINNED to the plan's own prediction.
+       - **STEP 0 of the L2-R2 card:** an offline or read-only property compare of B3 vs R1 (tunnel indexing mode on `#637`, constants, node properties). M2 compared terminal lists only, and the review names this as the fact that would change its rule-1a verdict. A difference found → BLOCKED to judgement before any L2-R2 launch.
+     - **(g) Cycle 115 close (retrospective `archive/peer/2026-09-28-retrospective-cycle115.md`, annotated; `docs/violation-decisions.md` 2026-09-28 07:05).** Cycle 116's card runs these STEP 0 items BEFORE (f):
+       - **(1) Stop record:** it splits a command on `;`/`&&`/`||`/`|` and refuses only a segment that EXECUTES the recipe. Its self-test replays `tools/hooks/material_marker.log:2614-2615`, which must pass, and a launch hidden after a `;` must still be refused.
+       - **(2) Disposition-landed check in `audit_cycle`:** it reports each accepted/FIXED disposition whose named file or function is absent from the code. It must flag `guard_card.py:44` (accepts any `cd`) and the missing doc_lint HH:MM header lint, then the same card fixes both and the check shows 0.
+       - **(3)** `selftest_launch_gate.py` uses a `mkdtemp` sandbox that it deletes.
+       - **Card rules from 116:**
+         - L2-R2's scratch run reads the Error List and pins the loose-ends count before the launch (retrospective finding 3).
+         - A diagnosis card for a failed prediction carries `hypothesis` in `peers`.
 
 ## OPEN (design choices — for judgement; not decided here)
 

@@ -1,0 +1,31 @@
+ATTACK this claim (card tools/bench/cards/task_115-3.json, failed prediction in tools/bench/diag_c115c_regress_after.log, script tools/bench/diag_c115c_regress.py).
+
+CONTEXT. Card 115-3 F1 narrows stage_prerun X5: the prerun() inline X5 count moved into a new pure function
+tools/stage_prerun.py x5_count (search "def x5_count"); delete_object/delete_wire verbs leave the wire-making count and
+are counted per kind against plan delete rows. Nothing else in stage_prerun.py was edited by this card (the file also
+carries UNCOMMITTED edits from cards 115-1/115-2: X13 opmodel conformance, replay_delete_sample; git HEAD = 0aafad3,
+cycle 114 auto-commit, 04:28). check_launch/_check_units/check_cap/check_scratch/last_failed_run_after are not in any
+diff hunk vs HEAD (git diff HEAD -- tools/stage_prerun.py hunks: 33, 62, 1213, 1443, 1496, 1518, 2111, 2122, 2157).
+
+OBSERVATION.
+- BEFORE the edit (05:20-05:26): tools/bench/diag_c115c_regress_before.log 11/0; its child
+  tools/bench/selftest_stage_prerun_headcmp_79-6_c115c_before.log: work [] head [] (both 28/0).
+- AFTER the edit (05:28-05:34): tools/bench/diag_c115c_regress_after.log 11/1; only failing child is
+  tools/bench/selftest_stage_prerun_headcmp_79-6_c115c_after.log: working-tree run of tools/bench/selftest_launch_gate.py
+  28/0 FAILS [] ; the HEAD copy (git show HEAD:tools/stage_prerun.py into %TEMP%\headcmp_79_6_<pid>) 26/2 FAILS
+  [L3, L4b]. H1 (work set == head set) FAIL, H2 (set == predicted empty) PASS on the working tree.
+  L3 = "dry + prerun PASS, current sha, no later failure -> allowed"; L4b = "another script's failure does not
+  invalidate these records" (tools/bench/selftest_launch_gate.py:69-81) - both are ALLOW cases the HEAD copy refused.
+- Between the two runs, and partly CONCURRENT with the after-run, this card ran (all offline, bgrun --material):
+  selftest_stage_prerun_c115c.py (05:27, 10/0), stage_prerun --dry/--prerun tools/recipes/stage_d1_l2r1.py
+  (records written to tools/bench/prerun_records.jsonl, logs stage_d1_l2r1_{dry,prerun}_c115c.log) and the same for
+  tools/bench/diag_c115b_scratch.py (diag_c115b_scratch_{dry,prerun}_c115c.log). HEAD bytes are unchanged between runs.
+
+CLAIM UNDER ATTACK: the H1 failure is NOT caused by the X5 edit. The working tree (the code the card changed) passes
+28/0 both times; the refusal is in the HEAD copy, whose check_launch bytes are identical to the working tree's, so it
+must come from shared, time- or environment-dependent state the sandbox does not isolate (e.g. a real log or record
+the HEAD copy resolves against the project because its ROOT/BENCH is derived differently, or a timing window around
+the records' t = now-100 while other bgrun children were writing logs), and so it is not a regression of card 115-3.
+Name the strongest reason this is wrong, the alternative cause (with file:line), what would falsify the claim, and
+the CHEAPEST discriminating test (e.g. re-run tools/bench/selftest_stage_prerun_headcmp_79-6.py alone, quiescent,
+and print check_launch's `why` for L3/L4b from the HEAD copy).

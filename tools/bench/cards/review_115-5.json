@@ -1,0 +1,27 @@
+{
+ "schema": "review/1",
+ "id": "c115e-sel",
+ "role": "hypothesis",
+ "claim": "PD230(d): R1's 7 new loose-ends items are dangling branches on the 7 shared nets (w8590,w9051,w11253,w11389,w25438,w25461,w29122); graph M5 (source + live sinks equal B3, no new wire) shows rule 1a holds, so screenshot pairing (diag_c115d_sel.log S1) is not needed.",
+ "predicted": "diag_c115d_sel.py S1: every one of the 47 loose-ends shots (B3 23, R1 24) gets a Show-Error selection mask >= 20 px from >= 2 registered partner shots.",
+ "observed": "S1 FAIL: R1#13 and R1#19 had only 1 usable partner, no mask (diag_c115d_sel.log:27,30); S2 PASS 23-6+7==24; 7 R1-only items 12,13,14,15,19,23,49, 6 B3-only 20,35,43,49,51,54 (:54-73).",
+ "ruled_out": [
+  "A changed live net: diag_c115d_graph.log:17-27 all 7 shared nets keep src and live sinks (M5 equal True); :29-30 no new wire, no other net's terminal list changed.",
+  "A lost node: stage_d1_l2r1.log census lost == 12 SR uids, D lost == 11 stubs, RBW new_only [] (result_115-3.json F6).",
+  "An item-count reading fault: B3 59 / R1 55 all_items_read, classes 24/1/20/10 (diag_c115d_m1.log:3,5)."
+ ],
+ "attachments": [
+  {"path": "tools/bench/diag_c115d_sel.log"},
+  {"path": "tools/bench/diag_c115d_sel.py"},
+  {"path": "tools/bench/diag_c115d_graph.log"},
+  {"path": "tools/bench/diag_c115d_graph.py"},
+  {"path": "tools/bench/diag_c115d_m1.log"},
+  {"path": "tools/bench/cards/result_115-4.json"},
+  {"path": "tools/bench/cards/result_115-3.json"},
+  {"path": "archive/peer/2026-09-28-c115c-errorlist.md"},
+  {"path": "tools/bench/errorlist_expected_D1_l2_b3_20260928_032703.json"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "ask": "refute",
+ "note": "PD230 is at docs/d1-loop12-17-split-plan.md:2065-2077. Attack: can a net whose source + live sinks are unchanged still change computation (a cut segment feeding a kept sink, a type/coercion change, a tunnel mode)? Name a concrete changed source/sink or new wire, or say none exists."
+}
