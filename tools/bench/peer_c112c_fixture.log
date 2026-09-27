@@ -1,0 +1,45 @@
+BGRUN START 2026-09-27 23:25:38 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c112c-fixture -TaskFile tools/bench/peer_task_c112c_fixture.md
+BGRUN PID 21744
+OUTCOME: ANSWERED (244s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-27-c112c-fixture.md
+COST: $2.2017  in 58 / out 19878 / cache-create 131543 / cache-read 3527224  (240s, 48 turn(s))
+--- ANSWER ---
+Your explanation of what went wrong is right, but the rerun you planned would most likely fail at the same gate. Both new shift-register candidates came out of the same filter that picked exp-ref management.vi, and both have more For loops than While loops. Cause (2) holds. On the "Find the VI named ..." dialog, this project's own measurement says it does not appear.
+
+## 1. Strongest reason the claim is wrong
+Cause (1) is not one bad pick. It is the selection method:
+- **The filter proves nothing about While loops.** `diag_c112c_scan.py:25` keeps a VI when `LeftShiftRegister > 0 and WhileLoop > 0`. Those are two independent counts; together they do not show that the While loop holds a register.
+- **Gate L was set from a guess.** It pinned #205 from `diag_c112c_scan3.log:12`, where the register's frame_diagram 217 was never resolved to an owning loop. It turned out to be ForLoop #184 (`diag_c112c_fixture.log:8`).
+- **Both rerun candidates have the same shape as the failed pick:**
+  - check N bead pos v2: ForLoop 2, WhileLoop 1 (`docs/wiki/subvi/check N bead pos v2.json:5781,5789`)
+  - choose bandpass v2: ForLoop 6, WhileLoop 1, 5 register pairs (`choose bandpass v2.json:10468-10485`)
+  - exp-ref management, which failed, was ForLoop 2, WhileLoop 1.
+- **The offline data cannot settle it.** The wiki JSONs have no terminals owned by a loop (checked `exp-ref management.json`), so the scan can never map a register to its loop.
+
+The likely outcome of the rerun is gate W failing. That would be a second failure of the same kind under a different name, which is exactly the repeat the firefighter trigger watches for.
+
+## 2. Alternative explanation, and a better fixture
+The real problem is that the fixture isn't the graph T1 will actually wire. T1 targets registers on WhileLoop #10170 in the card's own input bed (the working VI), `claudeDev\D1_l2_b1_20260927_193100.vi` (`task_112-3.json:23`). There is prior art for using it:
+- `diag_c111b_tunnelitems.py:2,80` used a byte copy of the L2-A3 bed as its scratch fixture, through `K.Stage` with discard_work, and recorded a scratch_verify PASS.
+- 112-2 already read a live read-only copy of this bed (`task_112-3.json:7`).
+- A copy named `claudeDev\scratch_c112c_bed.vi` falls under the card's `scratch_*` write flag.
+- It tests the real register and the real address, it has already been shown to load, and it takes the fixture-choice question away entirely.
+- The other option is a minimal VI with one While loop and one shift register built with `gscript.add_shift_reg` (`gscript.py:722`). That is what the scratch-VI verification rule prescribes, and it has no subVIs at all.
+
+## 3. The modal dialog: evidence says it won't hang, but there are three other risks
+- **No prompt at options=0.** gscript loads with `GetVIReference(path, "", False, 0)` (`gscript.py:225,264`). NI says a programmatic load prompts for a missing subVI only when option 0x10 is passed ([NI forum](https://forums.ni.com/t5/LabVIEW/quot-Open-VI-Reference-quot-Option-quot-Prompt-user-to-find/td-p/175363?profile.language=en), [LAVA](https://lavag.org/topic/10362-heres-a-way-to-open-vis-without-file-dialogs-for-missing-subvis/)).
+- **Measured here:** a cold load of a relocated copy came back **ExecState 0 after 112 s** with no modal. The dialog check read "clear" (`diag_d0_execstate_preload.log:12-14,38`).
+- **The warnings in the code are assertions, not measurements.** `diag_d0_execstate_preload.py:26` and `drive_original_copy.py:184` say a modal would block, but the measured log contradicts them.
+
+The real risks:
+- **(a) Time.** Each load can spend about 110 s searching for subVIs. Option 0x20 (hide the loading dialog while searching) isn't passed.
+- **(b) The wrong subVI copy.** The default search path includes `<userlib>\*`, which is recursive ([NI forum](https://forums.ni.com/t5/LabVIEW/Solved-Looking-in-wrong-directories/td-p/1065402), [NI Paths page](https://www.ni.com/docs/en-CA/bundle/labview-api-ref/page/resource/dialog/preferencesdialog/preferencepages/prefpage-paths.html)). Duplicates of choose bandpass v2's and check N bead pos v2's subVIs exist in `claudeDev\SPEC\` (`prep cal image.vi`, `proc cal image-make bandpass.vi`, `rect coord from center.vi`). If LabVIEW links those, ExecState 1 tells you nothing about which copy it linked.
+- **(c) A camera VI.** check N bead pos v2 calls IMAQdx Configure Grab and Grab (`check N bead pos v2.json:5704-5736`). Loading it read-only is harmless, but it puts a VI that can reach the camera next to a Run button, on a card flagged `hardware: none`, when it isn't needed.
+
+## 4. Cause (2)
+Confirmed. The error text says so directly (`diag_c112c_fixture.log:38`), and the patched script no longer calls `close_panel`. The underlying reason is that the script manages the LabVIEW lifecycle itself instead of using `K.Stage`, against the rule that new diagnostics are ≤120-line files on stagekit. That is how a stray close call got in.
+
+## What would change my mind, and the cheapest test
+- **Falsifier:** a candidate's LOOPS line shows `('WhileLoop', uid, [non-empty], …)`. Then my attack on (1) fails, and the choice was only unlucky.
+- **Cheapest test:** one read-only load of choose bandpass v2's copy, then read only the WhileLoop entry of the LOOPS line (about a minute plus the search). An empty list there kills the whole candidate set.
+- **Better:** skip the test and read a byte copy of the bed, where WhileLoop #10170's registers are already known.
+BGRUN END rc=0 after 245s

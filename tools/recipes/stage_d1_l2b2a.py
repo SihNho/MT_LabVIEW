@@ -1,14 +1,13 @@
-r"""stage_d1_l2b2a - card 111-5, STAGE L2-B2a (d1-loop12-17-split-plan.md PD225(f); split page tools/bench/cards/split_plan_111_l2b2.md). INPUT the
-plan base graph's VI (the B1 bed D1_l2_b1_20260927_193100.vi, PD225(c)), FRESH LabVIEW -> claudeDev\D1_l2_b2a_<ts>.vi (rule-6 GUI save, ExecState 0
-by design, never run). ROWS ONLY FROM plan_l2b2a.json (decision 8): 7 wire rows, no move/create - B2-09..14 feed the two 1.2 registers B1 made
-(SRB1 R #9603 / L #10544, SRB2 R #25545 / L #25582 on #10170) and B2-15 wires CT #403 'Z/dZ' to case selector Tunnel #2276. PRIOR ART: stage_d1_l2b1.py
-(this file is its cut: same checkpoints rule + J3 BIND, CT reader 179(b), D/FU/PB/PS, every gate in dry). No new op. CHANGED vs B1 (PD224(h) carry):
-the RBW gate READS every re-wired sink's wire in the scratch BEFORE Remove Bad Wires (the B1 gate read after it, vacuous: split plan :1919), and its
-pre-read half runs in dry on the simulated end. No #2626 uid licence: the base already names #2626's 4 inputs 'array' and the plan's open_rows carry
-that (plan_l2b2a_in.json). PREDICTION: L1 one op per action, 1 CT end (#403); E1 every checkpoint == its sim step; CT #403 one row, partners == sim;
-D new/lost == sim; FU unchanged; PB cdiff(S1, end) == the plan's open_rows (FATAL, before save); PS saved, md5 != input, input unchanged; RBW-PRE every
-re-wired sink has a wire before RBW; RBW deletes none of those wires. IB: every sink here is a face/register (no node sink) -> E1 + RBW only (PD184(a)).
-    py tools/bgrun.py --material --max-min 60 --log tools/bench/stage_d1_l2b2a.log -- py -u tools/recipes/stage_d1_l2b2a.py"""
+r"""stage_d1_l2b2a - card 111-5; card 112-3 (Executor RECORD MODE, L1 checks ONE CT end, derived); card 112-4: E1/PB rule D4 ONE-WAY TOWARD S1
+(stagekit.d4_e1/d4_pb on tools/bench/plan_l2b2a_d4.json; replaces 112-3's allow-either). STAGE L2-B2a (d1-loop12-17-split-plan.md PD225(f); split page
+tools/bench/cards/split_plan_111_l2b2.md). INPUT the plan base graph's VI (B1 bed D1_l2_b1_20260927_193100.vi, PD225(c)), FRESH LabVIEW ->
+claudeDev\D1_l2_b2a_<ts>.vi (rule-6 GUI save, ExecState 0 by design, never run). ROWS ONLY FROM plan_l2b2a.json (decision 8): 7 wire rows - B2-09..14
+feed SRB1 (R #9603 / L #10544) and SRB2 (R #25545 / L #25582) on #10170, B2-15 wires CT #403 'Z/dZ' to case selector Tunnel #2276. PRIOR ART:
+stage_d1_l2b1.py (its cut); no new op; the RBW gate READS every re-wired sink BEFORE Remove Bad Wires (PD224(h)). PREDICTION: L1 one op per action,
+1 CT end; E1 every checkpoint == its sim step up to D4 (only real-only terms on the s3 cascade nodes whose (node, name) S1 has - 112-3 saw
+'disabled index (col)' on #8741 at ck4 and on #8741/#30331 at ck7); CT #403 one row, partners == sim; D new/lost == sim; FU unchanged; PB cdiff(S1, end)
+== open_rows up to D4 (closures only on scope nodes, no new pair); PS saved, md5 != input; RBW-PRE/PRE2 every re-wired sink wired; RBW deletes none.
+    py tools/bgrun.py --material --retry-card tools/bench/cards/task_112-4.json --max-min 60 --log tools/bench/stage_d1_l2b2a_r2.log -- py -u tools/recipes/stage_d1_l2b2a.py"""
 import copy, json, os, sys                                                         # noqa: E401
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import stagekit as K, gscript as g, vigraph as V, stagexec as SX, jev_candidates as JC, allterms as AT  # noqa: E401,E402
@@ -25,12 +24,15 @@ WIR = [a for a in A if a["op"] == "wire" and isinstance(a["dst"], dict)]
 CT_END = sorted(set(e["uid"] for a in WIR for e in (a["src"], a["dst"]) if isinstance(e, dict) and CLS.get(e["uid"]) == "ControlTerminal"))
 wires, frames = (lambda rows: set(int(r["wire_uid"]) for r in rows if r["wire_uid"])), (lambda rows: set(int(r["frame_diagram"] or 0) for r in rows))
 nodry = lambda gid, why: print("GATE {0} NOT RUNNABLE IN DRY: {1}".format(gid, why), flush=True)   # noqa: E731
+D4 = K.d4_load(os.path.join(K.BENCH, "plan_l2b2a_d4.json"))                      # card 112-4 rules D4: ONE-WAY TOWARD S1 (split page s3 scope)
 
 
 def body(s):
     print(__doc__, flush=True)
     s.gate("L0 the executed plan is FINAL, open_rows_match, plan_in = the plan_l2b2a_in stageplan", P.get("final") is True and P["finalized"].get("open_rows_match") is True
            and os.path.splitext(P["finalized"]["plan_in"]["path"])[0].endswith("plan_l2b2a_in"), (K.md5(PLAN), P["finalized"]["plan_in"]), fatal=True)
+    s.gate("L0b D4 cites S1's graph {0} md5 {1}; S1 names read on every scope node {2}".format(D4["s1"]["path"], D4["s1"]["md5"], sorted(D4["scope"])),
+           D4["s1_md5_got"] == D4["s1"]["md5"] and sorted(D4["names"]) == sorted(D4["scope"]) and D4["plan_md5"] == K.md5(PLAN), (D4["s1_md5_got"], sorted(D4["names"])), fatal=True)
     s.start(); s.discard_work(); bp = K.mod("bench_prep"); h0 = bp.labview_handles()   # noqa: E702
     ex, last = {}, lambda: ex["x"].step(len(A))["state"]
 
@@ -43,14 +45,21 @@ def body(s):
         s.fact("CT #{0}: ControlTerminal {1} rows {2} partners real {3} sim {4}{5}".format(uid, uid in cts, len(hit), got, want, " (DRY: simulated end rows)" if DRY else ""))
         return uid in cts and len(hit) == 1 and got == want, {"real": got, "sim": want, "rows": len(hit)}
     be = SX.DryPlanBE(s, P, PLAN, BASE) if DRY else SX.LVBackend(s, BASE["fs_tunnel_pairs"], sink_gates=[], gates={}, mem_stop_mb=SX.MEM_STOP_MB)
-    x = ex["x"] = SX.Executor(PLAN, be, log=lambda m: print(m, flush=True), checkpoints=CHECKPOINTS or None)
+    x = ex["x"] = SX.Executor(PLAN, be, log=lambda m: print(m, flush=True), checkpoints=CHECKPOINTS or None, record=True)
     OPS = [dict(o, id=A[o["acts"][0] - 1]["id"]) for o in x.ops]; acts = sorted(n for o in OPS for n in o["acts"])   # noqa: E702
     s.gate("L1 every plan action compiled into exactly one real op ({0} -> {1}); checkpoints {2}; CT ends {3}".format(len(A), len(OPS), CHECKPOINTS, CT_END),
-           acts == list(range(1, len(A) + 1)) and len(OPS) == len(A) and CT_END == [403], acts, fatal=True)
+           acts == list(range(1, len(A) + 1)) and len(OPS) == len(A) and len(CT_END) == 1, acts, fatal=True)
     try:
-        real = x.run(); s.gate("E1 every checkpoint's real graph == its simulated step ({0} ops)".format(len(OPS)), True)   # noqa: E702
+        real = x.run()                                                             # RECORD MODE: a step diff is logged, then judged below
     except SX.ExecStop as e:
         return SX.report_stop(s, x, be, e)
+    nm = dict((int(r["term_uid"]), (int(r["owner_uid"]), r["term_name"])) for k in range(len(A) + 1) for r in x.step(k)["state"]["terminals"])
+    nm.update((int(r["term_uid"]), (int(r["owner_uid"]), r["term_name"])) for r in real)
+    nm.update((int(t), (int(w[0]), w[2])) for d in x.diffs for t, w in (d["diff"].get("who") or {}).items() if w)   # the checkpoint's own read wins
+    e1ok, acc, bad = K.d4_e1([(d["k"], d["diff"]) for d in x.diffs], nm, D4)
+    for k, t, n, nme in acc: s.fact("D4-ACCEPT ck {0} term t{1} node #{2} name {3!r} in-S1 yes".format(k, t, n, nme))  # noqa: E701
+    s.gate("E1 every checkpoint's real graph == its simulated step ({0} ops) up to D4: a real-only term passes ONLY on {1} with its (node, name) in S1 ({2} md5 {3})".format(
+        len(OPS), sorted(D4["scope"]), D4["s1"]["path"], D4["s1"]["md5"]), e1ok, {"bad": bad[:40], "accepted": len(acc)}, fatal=True)
     s.R["stagexec"] = x.report; s.fact("BINDING obj {0} term {1}".format(x.bind["obj"], x.bind["term"]))   # noqa: E702
     DRY or s.fact("METER SUMMARY {0}".format(json.dumps(be.meter.summary(), default=str)))
     L = last(); ob = x.bind["obj"]                                                  # noqa: E702
@@ -73,10 +82,14 @@ def body(s):
     G1 = V.build4(real, getattr(be, "last_objs", None) or be.st["objs"], loops, LAB, BASE["fs_tunnel_pairs"], frame_keyed=True)
     cd = V.computation_diff_frame(S1f, G1)
     for y in cd["rows"]: s.fact("CDIFF ROW {0}".format(dict((k, V.show(v) if k == "sink" else v) for k, v in y.items())))  # noqa: E701
-    got = sorted(set((int(y["node"]), str(y["sink"]).split("|")[2]) for y in cd["rows"]))
-    want = sorted(set((int(y["node"]), y["term"]) for y in P["open_rows"]))
-    s.gate("PB frame-keyed cdiff(S1, real end) == the plan's {0} open_rows (FATAL, before save)".format(len(want)), got == want,
-           {"extra": sorted(set(got) - set(want)), "missing": sorted(set(want) - set(got))}, fatal=True)
+    gs, ws = set((int(y["node"]), str(y["sink"]).split("|")[2]) for y in cd["rows"]), set((int(y["node"]), y["term"]) for y in P["open_rows"])
+    got, want = sorted(gs), sorted(ws)
+    pbok, closed, grown, pbad = K.d4_pb(gs, ws, real, SX.translate(L["terminals"], x.bind), D4)
+    for p in closed: s.fact("D4-PB-CLOSED toward S1: #{0} {1!r} (a planned open row the real end closed)".format(*p))  # noqa: E701
+    for p, c in grown: s.fact("D4-PB-GROWN #{0} {1!r} x{2} in-S1 {3}".format(p[0], p[1], c, "yes" if K.d4_ok(p[0], p[1], D4) else "NO"))  # noqa: E701
+    for n, v in sorted(K.d4_form(real, D4).items()): s.fact("S1-FORM #{0} (fact, never a gate): {1}".format(n, v))  # noqa: E701
+    s.gate("PB frame-keyed cdiff(S1, real end) == the plan's {0} open_rows up to D4 ONE-WAY (closures on scope nodes only, no new pair, grown names in S1; FATAL, before save)".format(len(want)),
+           pbok, {"bad": pbad[:30], "closed": closed, "extra": sorted(gs - ws)}, fatal=True)
     sinks = sorted(set(x.bind["term"].get(a["dst"]["term_uid"], a["dst"]["term_uid"]) for a in WIR))
     pre = dict((int(q["term_uid"]), int(q["wire_uid"] or 0)) for q in rows if int(q["term_uid"]) in sinks)
     s.gate("RBW-PRE every re-wired sink {0} carries a wire in the end read (pre-save{1})".format(sinks, "; DRY: simulated end rows" if DRY else ""),
@@ -101,7 +114,7 @@ def body(s):
 
 
 if __name__ == "__main__":
-    st = K.Stage(BASE["vi"], BASE["md5"], "D1_l2_b2a", preload=False, deadline_min=50, out_json=os.path.join(K.BENCH, "stage_d1_l2b2a.json"), task="card 111-5")
+    st = K.Stage(BASE["vi"], BASE["md5"], "D1_l2_b2a", preload=False, deadline_min=50, out_json=os.path.join(K.BENCH, "stage_d1_l2b2a.json"), task="card 112-4")
     rc = K.run(body, st)
     DRY or SX.kill_labview_at_exit()
     sys.exit(rc)

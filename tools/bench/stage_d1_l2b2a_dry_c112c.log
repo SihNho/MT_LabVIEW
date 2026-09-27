@@ -1,0 +1,117 @@
+BGRUN START 2026-09-27 23:37:15 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_l2b2a.py
+BGRUN PID 300
+stage_d1_l2b2a - card 111-5 (card 112-3: Executor RECORD MODE; E1/PB allow-either ONLY on tools/bench/plan_l2b2a_allow.json's split-page s3
+cascade owners, each state logged; L1 checks ONE CT end, derived), STAGE L2-B2a (d1-loop12-17-split-plan.md PD225(f); split page tools/bench/cards/split_plan_111_l2b2.md). INPUT the
+plan base graph's VI (the B1 bed D1_l2_b1_20260927_193100.vi, PD225(c)), FRESH LabVIEW -> claudeDev\D1_l2_b2a_<ts>.vi (rule-6 GUI save, ExecState 0
+by design, never run). ROWS ONLY FROM plan_l2b2a.json (decision 8): 7 wire rows, no move/create - B2-09..14 feed the two 1.2 registers B1 made
+(SRB1 R #9603 / L #10544, SRB2 R #25545 / L #25582 on #10170) and B2-15 wires CT #403 'Z/dZ' to case selector Tunnel #2276. PRIOR ART: stage_d1_l2b1.py
+(this file is its cut: same checkpoints rule + J3 BIND, CT reader 179(b), D/FU/PB/PS, every gate in dry). No new op. CHANGED vs B1 (PD224(h) carry):
+the RBW gate READS every re-wired sink's wire in the scratch BEFORE Remove Bad Wires (the B1 gate read after it, vacuous: split plan :1919), and its
+pre-read half runs in dry on the simulated end. No #2626 uid licence: the base already names #2626's 4 inputs 'array' and the plan's open_rows carry
+that (plan_l2b2a_in.json). PREDICTION: L1 one op per action, 1 CT end (#403); E1 every checkpoint == its sim step; CT #403 one row, partners == sim;
+D new/lost == sim; FU unchanged; PB cdiff(S1, end) == the plan's open_rows (FATAL, before save); PS saved, md5 != input, input unchanged; RBW-PRE every
+re-wired sink has a wire before RBW; RBW deletes none of those wires. IB: every sink here is a face/register (no node sink) -> E1 + RBW only (PD184(a)).
+    py tools/bgrun.py --material --max-min 60 --log tools/bench/stage_d1_l2b2a.log -- py -u tools/recipes/stage_d1_l2b2a.py
+  PASS  L0 the executed plan is FINAL, open_rows_match, plan_in = the plan_l2b2a_in stageplan  ('4b782c1f5547c222c423636ca25c2ba9', {'path': 'tools/bench/plan_l2b2a_in.json', 'md5': '4e420fe88987b31b46fa89458749e80c'})
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == b705728ab0714dc8179fc955283800f9  got b705728ab0714dc8179fc955283800f9
+  PASS  DRY graph JSON for input md5 b705728ab0714dc8179fc955283800f9  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_l2b1_20260927.json
+  PASS  L1 every plan action compiled into exactly one real op (7 -> 7); checkpoints (0, 4, 7); CT ends [403]  [1, 2, 3, 4, 5, 6, 7]
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 2 touched diagram(s) [686, 23166]: one-side-only Nodes[] entries 0
+  PRIME 0 terminal indexes proved at base; 1 ControlTerminal end(s) by 179(b); unprovable []
+  CHECKPOINTS whole-VI read+diff after ops [4, 7] of 7
+  FACT  OP wire_connect [1] -> err '' (0.0 s)
+  STEPX 01 connect        acts [1] ids ['b2_09'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect [2] -> err '' (0.0 s)
+  STEPX 02 connect        acts [2] ids ['b2_10'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect [3] -> err '' (0.0 s)
+  STEPX 03 connect        acts [3] ids ['b2_11'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect [4] -> err '' (0.0 s)
+  STEPX 04 connect        acts [4] ids ['b2_12'] bound {} diff 0
+  FACT  OP wire_connect [5] -> err '' (0.0 s)
+  STEPX 05 connect        acts [5] ids ['b2_13'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect [6] -> err '' (0.0 s)
+  STEPX 06 connect        acts [6] ids ['b2_14'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect [7] -> err '' (0.0 s)
+  STEPX 07 connect        acts [7] ids ['b2_15'] bound {} diff 0
+  PASS  E1 every checkpoint's real graph == its simulated step (7 ops), a diff ONLY on [8634, 29625] logged (allow-either)
+  FACT  BINDING obj {} term {}
+  FACT  CT #403: ControlTerminal True rows 1 partners real [2282] sim [2282] (DRY: simulated end rows)
+  PASS  CT #403: re-wired ControlTerminal read by the 179(b) reader == simulated end  {'real': [2282], 'sim': [2282], 'rows': 1}
+  PASS  D the end adds the plan's 5 new wire(s) and loses exactly the simulated base wires (0)  {'new': [10000001, 10000002, 10000003, 10000004, 10000005], 'lost-extra': [], 'lost-missing': []}
+  PASS  FU the set of frame diagrams is unchanged
+  FACT  ExecState [after all rows (warm, RECORDED - the plan's open rows stay open by design)] D1_l2_b2a_20260927_233716.vi = <dry:g.exec_state>
+  FACT  CDIFF ROW {'node': 376, 'class': 'SubVI', 'sink': "#376 Terminal 'current frame data array in'", 'before': ['2626|Terminal|appended array|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 376, 'class': 'SubVI', 'sink': "#376 Terminal 'frame index'", 'before': ['644|Terminal||0'], 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array'", 'before': ['5058|Terminal|x,y,z array out|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array' [1]", 'before': None, 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array' [2]", 'before': None, 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array' [3]", 'before': None, 'after': ['5058|Terminal|x,y,z array out|0']}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'element'", 'before': ['5119|OverridableParameterTerminal|x-y|0'], 'after': None}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'element' [1]", 'before': ['30117|Terminal|Value|0'], 'after': None}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'element' [2]", 'before': ['4580|Terminal|Value|0'], 'after': None}
+  FACT  CDIFF ROW {'node': 5058, 'class': 'SubVI', 'sink': "#5058 Terminal 'Image In'", 'before': ['6810|Terminal|Image Out|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 5696, 'class': 'SubVI', 'sink': "#5696 Terminal 'Correction Factor'", 'before': ['9306|ControlTerminal|Correction Factor|0@6132/f1'], 'after': []}
+  FACT  CDIFF ROW {'node': 5696, 'class': 'SubVI', 'sink': "#5696 Terminal 'x,y,z array'", 'before': ['5058|Terminal|x,y,z array out|0@2765/f1'], 'after': []}
+  FACT  CDIFF ROW {'node': 5696, 'class': 'SubVI', 'sink': "#5696 Terminal 'z index of first ref'", 'before': ['5426|OverridableParameterTerminal|x+y|0@2992/f1'], 'after': []}
+  FACT  CDIFF ROW {'node': 5696, 'class': 'SubVI', 'sink': "#5696 Terminal 'z indices of all exp'", 'before': ['5556|OverridableParameterTerminal|x+y|0@3176/f1'], 'after': []}
+  FACT  CDIFF ROW {'node': 6085, 'class': 'SubVI', 'sink': "#6085 Terminal 'Correction Factor'", 'before': ['9306|ControlTerminal|Correction Factor|0@6132/f0'], 'after': []}
+  FACT  CDIFF ROW {'node': 6085, 'class': 'SubVI', 'sink': "#6085 Terminal 'x,y,z array'", 'before': ['5058|Terminal|x,y,z array out|0@2765/f0'], 'after': []}
+  FACT  CDIFF ROW {'node': 6085, 'class': 'SubVI', 'sink': "#6085 Terminal 'z index of first ref'", 'before': ['5426|OverridableParameterTerminal|x+y|0@2992/f0'], 'after': []}
+  FACT  CDIFF ROW {'node': 6085, 'class': 'SubVI', 'sink': "#6085 Terminal 'z indices of all exp'", 'before': ['5556|OverridableParameterTerminal|x+y|0@3176/f0'], 'after': []}
+  FACT  CDIFF ROW {'node': 8566, 'class': 'BuildArray', 'sink': "#8566 Terminal 'element'", 'before': ['8885|OverridableParameterTerminal|x*y|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 8634, 'class': 'GrowableFunction', 'sink': "#8634 Terminal 'disabled index (row)'", 'before': [], 'after': None}
+  FACT  CDIFF ROW {'node': 8634, 'class': 'GrowableFunction', 'sink': "#8634 Terminal 'index (col)'", 'before': ['10068|ParameterTerminal|x-y*floor(x/y)|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 8634, 'class': 'GrowableFunction', 'sink': "#8634 Terminal 'index (row)'", 'before': None, 'after': []}
+  FACT  CDIFF ROW {'node': 8741, 'class': 'IndexArray', 'sink': "#8741 Terminal 'disabled index (col)'", 'before': [], 'after': None}
+  FACT  CDIFF ROW {'node': 8741, 'class': 'IndexArray', 'sink': "#8741 Terminal 'disabled index (col)' [1]", 'before': [], 'after': None}
+  FACT  CDIFF ROW {'node': 8741, 'class': 'IndexArray', 'sink': "#8741 Terminal 'index (row)'", 'before': ['8775|Terminal|index (row)|0'], 'after': None}
+  FACT  CDIFF ROW {'node': 8741, 'class': 'IndexArray', 'sink': "#8741 Terminal 'index (row)' [1]", 'before': ['8795|Terminal|index (row)|0'], 'after': None}
+  FACT  CDIFF ROW {'node': 8741, 'class': 'IndexArray', 'sink': "#8741 Terminal 'index'", 'before': None, 'after': ['8775|Terminal|index (row)|0']}
+  FACT  CDIFF ROW {'node': 8741, 'class': 'IndexArray', 'sink': "#8741 Terminal 'index' [1]", 'before': None, 'after': ['8795|Terminal|index (row)|0']}
+  FACT  CDIFF ROW {'node': 8764, 'class': 'Function', 'sink': "#8764 ParameterTerminal 'x'", 'before': ['8741|Terminal|subarray|0'], 'after': ['8741|Terminal|element|0']}
+  FACT  CDIFF ROW {'node': 11261, 'class': 'BuildArray', 'sink': "#11261 Terminal 'array'", 'before': ['11310|Terminal|output cluster|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 11261, 'class': 'BuildArray', 'sink': "#11261 Terminal 'element'", 'before': ['11608|Terminal|output cluster|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 27716, 'class': 'Function', 'sink': "#27716 ParameterTerminal 'index'", 'before': ['28170|ControlTerminal|Force\nsmoothing\nhalf-width|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 28083, 'class': 'SubVI', 'sink': "#28083 Terminal 'Mag pos when touched to glass'", 'before': ['27605|Terminal|Magnet position output|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 28083, 'class': 'SubVI', 'sink': "#28083 Terminal 'Magnet position'", 'before': ['30117|Terminal|Value|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 28180, 'class': 'SubVI', 'sink': "#28180 Terminal 'half-width'", 'before': ['28170|ControlTerminal|Force\nsmoothing\nhalf-width|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 28233, 'class': 'PolymorphicSubVI', 'sink': "#28233 Terminal 'X'", 'before': ['8741|Terminal|subarray|1'], 'after': ['8741|Terminal|element|1']}
+  FACT  CDIFF ROW {'node': 28786, 'class': 'ControlTerminal', 'sink': "#28786 ControlTerminal 'Extension (nm) vs Time (Frame #)'", 'before': ['29005|Terminal|output cluster|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 29005, 'class': 'Bundler', 'sink': "#29005 Terminal 'element'", 'before': ['30331|Terminal|subarray|0'], 'after': ['30331|Terminal|element|0']}
+  FACT  CDIFF ROW {'node': 29009, 'class': 'SubVI', 'sink': "#29009 Terminal 'left rank'", 'before': ['29091|ControlTerminal|Extension\nmedian filter\nhalf-width|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 29009, 'class': 'SubVI', 'sink': "#29009 Terminal 'right rank'", 'before': ['29091|ControlTerminal|Extension\nmedian filter\nhalf-width|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 29625, 'class': 'GrowableFunction', 'sink': "#29625 Terminal 'disabled index (row)'", 'before': [], 'after': None}
+  FACT  CDIFF ROW {'node': 29625, 'class': 'GrowableFunction', 'sink': "#29625 Terminal 'index (col)'", 'before': ['29240|ParameterTerminal|x-y*floor(x/y)|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 29625, 'class': 'GrowableFunction', 'sink': "#29625 Terminal 'index (row)'", 'before': None, 'after': []}
+  FACT  CDIFF ROW {'node': 29973, 'class': 'BuildArray', 'sink': "#29973 Terminal 'element'", 'before': ['8885|OverridableParameterTerminal|x*y|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 29973, 'class': 'BuildArray', 'sink': "#29973 Terminal 'element' [1]", 'before': ['29240|ParameterTerminal|x-y*floor(x/y)|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 30306, 'class': 'SubVI', 'sink': "#30306 Terminal 'X'", 'before': ['30331|Terminal|subarray|1'], 'after': ['30331|Terminal|element|1']}
+  FACT  CDIFF ROW {'node': 30306, 'class': 'SubVI', 'sink': "#30306 Terminal 'left rank'", 'before': ['29091|ControlTerminal|Extension\nmedian filter\nhalf-width|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 30306, 'class': 'SubVI', 'sink': "#30306 Terminal 'right rank'", 'before': ['29091|ControlTerminal|Extension\nmedian filter\nhalf-width|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 30331, 'class': 'IndexArray', 'sink': "#30331 Terminal 'disabled index (col)'", 'before': [], 'after': None}
+  FACT  CDIFF ROW {'node': 30331, 'class': 'IndexArray', 'sink': "#30331 Terminal 'disabled index (col)' [1]", 'before': [], 'after': None}
+  FACT  CDIFF ROW {'node': 30331, 'class': 'IndexArray', 'sink': "#30331 Terminal 'index (row)'", 'before': ['30371|Terminal|index (row)|0'], 'after': None}
+  FACT  CDIFF ROW {'node': 30331, 'class': 'IndexArray', 'sink': "#30331 Terminal 'index (row)' [1]", 'before': ['33478|Terminal|index (row)|0'], 'after': None}
+  FACT  CDIFF ROW {'node': 30331, 'class': 'IndexArray', 'sink': "#30331 Terminal 'index'", 'before': None, 'after': ['30371|Terminal|index (row)|0']}
+  FACT  CDIFF ROW {'node': 30331, 'class': 'IndexArray', 'sink': "#30331 Terminal 'index' [1]", 'before': None, 'after': ['33478|Terminal|index (row)|0']}
+  FACT  PB-ALLOW pairs on [8634, 29625] (logged, allow-either): []
+  PASS  PB frame-keyed cdiff(S1, real end) == the plan's 42 open_rows, up to pairs on [8634, 29625] (FATAL, before save)  {'extra': [], 'missing': []}
+  PASS  RBW-PRE every re-wired sink [2282, 9092, 22281, 25588, 25596, 25606, 29928] carries a wire in the end read (pre-save; DRY: simulated end rows)  {25588: 9051, 25606: 29122, 29928: 10000004, 9092: 10000002, 2282: 10000005, 22281: 10000001, 25596: 10000003}
+  FACT  IB b2_09: sink #10544 is a LeftShiftRegister - face/register sink: E1 + RBW only (PD184(a))
+  FACT  IB b2_10: sink #9603 is a RightShiftRegister - face/register sink: E1 + RBW only (PD184(a))
+  FACT  IB b2_11: sink #9087 is a LoopTunnel - face/register sink: E1 + RBW only (PD184(a))
+  FACT  IB b2_12: sink #25582 is a LeftShiftRegister - face/register sink: E1 + RBW only (PD184(a))
+  FACT  IB b2_13: sink #25545 is a RightShiftRegister - face/register sink: E1 + RBW only (PD184(a))
+  FACT  IB b2_14: sink #29911 is a LoopTunnel - face/register sink: E1 + RBW only (PD184(a))
+  FACT  IB b2_15: sink #2276 is a Tunnel - face/register sink: E1 + RBW only (PD184(a))
+  FACT  CENSUS after L2-B2a D1_l2_b2a_20260927_233716.vi: {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 92, 'Wire': 1943, 'LoopTunnel': 148, 'Local': 12, 'ControlTerminal': 118, 'Node': 0}
+  FACT  PH handles RECORDED: post-open <dry:bench_prep.labview_handles> -> before-save <dry:bench_prep.labview_handles>
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  dry0dry0dry0dry0dry0dry0dry0dry0
+GATE RBW NOT RUNNABLE IN DRY: Remove Bad Wires (VI method 410) runs inside LabVIEW on a scratch copy of the saved file; its pre-read half ran above as RBW-PRE
+
+=== DRY PASS: first_fail=None coverage 92/102 lines, first mutation Stage._op wire_connect, unverified 0, graph tools/bench/graph_l2b1_20260927.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 12s

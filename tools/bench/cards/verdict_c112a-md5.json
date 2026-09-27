@@ -1,0 +1,20 @@
+{
+ "schema": "verdict/1",
+ "id": "c112a-md5",
+ "verdict": "supported",
+ "alternative": "The file went through >=3 versions in cycle 110; if a version other than the launched one was committed, the bed came from different text. Also stagekit/stagexec (110-4 could write them) are unpinned. The pin's source is unproven (4ef10fc4 is in 110-2/110-3/110-4).",
+ "discriminating_test": "certutil -hashfile tools\\recipes\\stage_d1_l2b1.py SHA256 must equal 725c47875a29... (stage_runs.jsonl:47 launch sha); plus git log on the file shows only 2473868 after 19:31.",
+ "violations": [],
+ "sources": [
+  "tools/bench/stage_runs.jsonl:47",
+  "tools/bench/peer_priorart_c110e_l2b1.log:9",
+  "tools/bench/peer_priorart_c110e_l2b1.log:28",
+  "tools/bench/prerun_records.jsonl:246",
+  "tools/bench/prerun_records.jsonl:249",
+  "tools/bench/cards/result_110-4.json:6",
+  "tools/bench/cards/result_111-5.json:18",
+  "tools/protocol.py:656-660",
+  "tools/protocol.py:707"
+ ],
+ "note": "No check hashes task/1 inputs[].md5 against disk: validate is schema-only, requires checks existence only. Add a hash check of every input when a card is written or bound. The stage log prints no script hash; stage_runs.jsonl is the record that settles it."
+}

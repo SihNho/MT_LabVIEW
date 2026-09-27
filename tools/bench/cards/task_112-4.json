@@ -1,0 +1,88 @@
+{
+ "schema": "task/1",
+ "id": "112-4",
+ "kind": "build",
+ "escalation": 1,
+ "retry_of_card": "112-3",
+ "retry_of": "stage_d1_l2b2a.py",
+ "goal": "Deliver L2-B2a: replace allow-either with the one-way TOWARD-S1 rule (rules D4), re-dry+prerun, launch 2 -> claudeDev\\D1_l2_b2a_<ts>.vi, then its Error List + expected file",
+ "why": "112-3 launch 1: 7 ops no op error; E1 stopped only on LabVIEW restoring S1-form terminals on #8741/#30331 (review c112c-b2a-e1 s1/s2). The card's allow set was too narrow (judgement fault). W0 T1/T2 scratch PASS.",
+ "inputs": [
+  {"path": "tools/bench/cards/result_112-3.json", "md5": "330524e91373489e35cccc7f441f19df"},
+  {"path": "tools/bench/cards/task_112-3.json"},
+  {"path": "archive/peer/2026-09-27-c112c-b2a-e1.md"},
+  {"path": "tools/bench/stage_d1_l2b2a.log", "md5": "c5e5e81c3dc2f22c9476687ede27b7e2"},
+  {"path": "tools/recipes/stage_d1_l2b2a.py", "md5": "d3f4073fe7169c55be9d655c21ed606b"},
+  {"path": "tools/bench/plan_l2b2a.json", "md5": "4b782c1f5547c222c423636ca25c2ba9"},
+  {"path": "tools/bench/plan_l2b2a_allow.json", "md5": "aa556de7d80d6801bf86fc2194acd2d7"},
+  {"path": "tools/bench/cards/split_plan_111_l2b2.md"},
+  {"path": "tools/bench/graph_l2b1_20260927.json", "md5": "8327f974cf150146b93b19f10e54afd5"},
+  {"path": "tools/bench/errorlist_expected_D1_l2_b1_20260927_193100.json", "md5": "4995e58695288a024e3cc228d8dcafca"},
+  {"path": "tools/bench/diag_c112c_errorlist.py", "md5": "ca24fe9ad58f03f04375460f32a09b65"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_b1_20260927_193100.vi", "md5": "b705728ab0714dc8179fc955283800f9"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/recipes/stage_d1_l2b2a.py"},
+  {"kind": "file", "name": "tools/bench/plan_l2b2a.json"},
+  {"kind": "file", "name": "tools/bench/diag_c112c_errorlist.py"},
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/lv_errorlist.py"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_b1_20260927_193100.vi"}
+ ],
+ "pass": [
+  "R0 E1/PB rule D4 in the recipe (<=120 lines) or stagekit; offline test: 112-3's ck4/ck7 diffs PASS, a non-S1 terminal FAILS; top-level --dry + --prerun PASS with records",
+  "R1 prior-art ANSWERED + annotated if the launch gate asks; launch gate ALLOW with --retry-card this card",
+  "R2 launch 2: 7 ops, every accepted term logged (node, name, ck, in-S1 yes); gui_save D1_l2_b2a_<ts>.vi md5+size; input md5 unchanged; LabVIEW gone",
+  "R3 full Error List read (all_items_read); errorlist_expected_D1_l2_b2a_<ts>.json written, reverdict OK, or the mismatch table reported",
+  "else: stop point, gate, values, file:line, JEV-LADDER row; nothing saved over the input"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_b2a_*",
+  "tools/recipes/stage_d1_l2b2a.py",
+  "tools/bench/errorlist_expected_D1_l2_b2a_*",
+  "tools/bench/cards/result_112-4.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_b2a_*",
+   "tools/recipes/stage_d1_l2b2a.py",
+   "tools/stagekit.py",
+   "tools/bench/plan_l2b2a*",
+   "tools/bench/sim/**",
+   "tools/bench/graph_l2b2a*",
+   "tools/bench/stage_d1_l2b2a*",
+   "tools/bench/diag_c112d*",
+   "tools/bench/diag_c112c_errorlist*",
+   "tools/bench/selftest_*",
+   "tools/bench/errorlist_*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "docs/wiki/subvi/D1_l2_b2a*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {"failures": 1, "minutes": 70},
+ "rules": [
+  "D4 real-only term at a checkpoint/PB passes ONLY if (node,name) exists on that node in S1's graph",
+  "D4 scope: nodes in split_plan_111_l2b2.md s3 cascade list; anything else, or a real-lost term, FAILS",
+  "D4 cite S1's graph file + md5 (review c112c-b2a-e1 names D1_s1_copy.json); no ordering scratch",
+  "ONE launch, via bgrun --material --retry-card tools/bench/cards/task_112-4.json; no env prefixes",
+  "input never edited or saved; run no VI; gui_save per PD 9; self-tests 0 regressions",
+  "hold the turn until every bgrun writes BGRUN END; LabVIEW closed and verified gone at the end",
+  "a gate refusal is returned BLOCKED, never re-run via a self-test child or exempt route",
+  "facts <=10 file:line; OPEN <=3"
+ ],
+ "advances": ["M3", "R1"]
+}

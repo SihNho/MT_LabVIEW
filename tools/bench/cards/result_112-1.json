@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"112-1","status":"FAIL","gates":{"pass":4,"fail":2},
+"first_fail":"T1/T2 scratch_verify: stage_prerun --dry of tools/bench/diag_c112a_ctltun.py failed 3x (no graph; objs empty; owner slot not emulated) - failure budget spent, no LabVIEW run",
+"blocked_by":null,
+"artefacts":[
+{"path":"tools/stagexec.py","md5":"776c6c07cab6f976f2ff823c491f5788"},
+{"path":"tools/stagesim.py","md5":"e1e9f4a23462740468a4eb44112e04de"},
+{"path":"tools/hooks/guard_cycle.py","md5":"a33d9b30723cb2c8d5d9f785b24e2a10"},
+{"path":"tools/bench/selftest_guard_cycle_offline.py","md5":"2d449c005a48d8a32f38a9751e5859a2"},
+{"path":"tools/bench/diag_c112a_b2a_route.py","md5":"e59d56bfa9c29f6a7e490bee6553e29a"},
+{"path":"tools/bench/diag_c112a_u2seed.py","md5":"dab50bc4cd476e673ff0791cf5a2f976"},
+{"path":"tools/bench/diag_c112a_ctltun.py","md5":"ee75688832574c8a3b5b48a61f80bcd1"}],
+"facts":[
+"H0 PASS: archive/peer/2026-09-27-c112a-md5.md supported+annotated; sha256 of stage_d1_l2b1.py = launch sha stage_runs.jsonl:47; FAIL was stale pin task_111-5.json:16",
+"T6 PASS: guard_cycle.py:534,569 offline_only via launchunit.segments+stop_record.offline_checker; selftest_guard_cycle_offline.log 5/0; fixed 6/0+2/0, rerun 4/0",
+"T3 PASS: stagesim.py:454 seed_base_flips (under move_in unflip_on_source); selftest_stagesim_c112e.log 71/0 (G63-G65); U2 real case unchanged diag_c112a_u2seed.log 2/0",
+"T4 PASS: stagesim.py:1199,1357 finalize dry-runs FINAL plans, advisory on non-final; G66 route PASS, G67 unroutable refuses final (selftest_stagesim_c112e.log)",
+"T1 code: stagexec.py:830,845,1325 base regs -> loop_of + wire_sr RightIn/LeftIn; stagexec selftest 112/0 (T112a-d, selftest_stagexec_c112c.log). No scratch_verify",
+"T2 code: stagexec.py:787 'ctltun' = OpCtlSinkWire_v1 roles reversed (CT own uid, owner Terminals[t]); T112e/f PASS. No scratch_verify: Connect Wire direction unmeasured",
+"B2a route report diag_c112a_b2a_route2.log: only B2-12 routes (cfw); B2-09 2 bare '' sinks on #10170; B2-15 3 bare '' on #2222; B2-10/11/13/14 LoopTunnel face not in Nodes[]",
+"B2a re-sim with seeding: cdiff 56->54 (b2_11 unflips 9089, b2_14 unflips 29923); not final, plan_l2b2a.json open_rows declared 56 (diag_c112a_b2a_route2.log)",
+"Bed seeding catches 15 tunnels (4 SelectorTunnel, 11 LoopTunnel), all bare outer + wired inner; saved-file reversion still unmeasured (diag_c112a_u2seed.log)",
+"Pre-existing, not 112 regressions: selftest_stagesim_l2a1_80 E1 and unflip_81 U3 pin stagesim at 42/0, failing since c101-4 (selftest_stagesim_unflip_81_c101-4.log:10)"],
+"open":[
+"Addressing bare unnamed faces blocks 6/7 B2a rows: SR outer on #10170 (2 matches), selector on #2222 (3), LoopTunnel faces need the owner route (v, assigned to B2b). Pull (v) into B2a and pick a tie-break?",
+"T1/T2 scratch_verify needs a fixture the dry can emulate (graph_*.json with objs+owners, or a LabVIEW read first) - allow a live-read graph step, or a new card?",
+"Unbuilt device suggested by review c112a-md5: hash every task/1 input md5 at bind (protocol.py validate is schema-only). Build it?"],
+"cost":{"usd":null,"minutes":36,"labview_runs":0},
+"note":"LabVIEW never launched (0 processes at end). Reviews: c112a-md5, c112a-b2aroute, c112a-l2a1reg, c112a-unflip81, all ANSWERED + annotated. plan_l2b2a.json untouched (b7ca7db6). stage_d1_l2b2a.py not launched; c111e prior-art not released."}

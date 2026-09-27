@@ -1,0 +1,19 @@
+{
+ "schema": "review/1",
+ "id": "c112a-b2aroute",
+ "role": "hypothesis",
+ "claim": "diag_c112a_b2a_route.log's gate failed only because simulate() runs the finalize route check on FINAL plans, and the re-simulated B2a plan is not final: the new base-flip seeding (T3) closed 2 cdiff rows (56 -> 54), so the plan's declared open_rows (written for 56) no longer match.",
+ "predicted": "simulate(route_check=True) on plan_l2b2a_in.json returns a route_check with 7 rows.",
+ "observed": "FINAL False, open_rows_match False, failed None; END cdiff 54 (was 56); step 3 b2_11 unflipped [9089], step 6 b2_14 unflipped [29923]; route_check None (diag_c112a_b2a_route.log).",
+ "ruled_out": [
+  "A crash: failed None, every step ok, BGRUN END with a RESULT line.",
+  "The pinned plan_l2b2a.json: md5 unchanged b7ca7db6 (gate 1 PASS).",
+  "The seeding: 34 terminals on 15 all-sink tunnels incl. #9087/#29911 (log BASE-FLIPS line)."
+ ],
+ "attachments": [
+  {"path": "tools/bench/diag_c112a_b2a_route.log"},
+  {"path": "tools/bench/diag_c112a_b2a_route.py"},
+  {"path": "tools/stagesim.py"}
+ ],
+ "ask": "refute"
+}

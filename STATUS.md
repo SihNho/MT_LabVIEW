@@ -57,10 +57,34 @@ rig-state: 조립   <!-- 2026-09-24 20:xx USER GRANT: "당분간 내가 말하�
 
 ## NEXT
 🟡 **CARRY (from the 2026-09-25 verification review `archive/peer/2026-09-25-hyp-lintverify-20260925.md`, not blocking): card flags are checked only on the top-level command (a child process could reach LabVIEW under labview=none); a stage run launched outside bgrun is not counted by the retry cap; a bgrun record failure is only logged (`tools/bgrun.py:219-220`). Close in a tooling cycle, deliverable-first.**
-current-bed: D1_l2_b1_20260927_193100.vi
-<!-- ^ machine key read by tools/errorlist_check.py current_bed_text(); without it the bed is chosen by mtime among D1_*.vi names in this file, and the newer D1_s1_kswap_* would silently take over (review archive/peer/2026-09-26-c88-reuse-stalepin.md). Change it only when a new bed is accepted. Moved 2026-09-27 22:1x by cycle 111 (PD225(g)): L2-B1 accepted. -->
-🔵 **THE BED IS NOW `claudeDev\D1_l2_b1_20260927_193100.vi`, md5 `b705728ab0714dc8179fc955283800f9`** (L2-B1; expected Error List file `tools/bench/errorlist_expected_D1_l2_b1_20260927_193100.json`, reverdict OK 99/99; PD225(c)/(g)). Its input `D1_l2_a3_20260927_151224.vi` (md5 `14337cfd…`) is kept. The "CURRENT BED" sentence in the DELIVERED line above is history from cycle 110.
-🟢🟢 **FIRST ACT of cycle 112 = `docs/d1-loop12-17-split-plan.md` Pre-decided 225(h) item 3: ONE material card (Opus high) builds the B2 tooling, each item checked first on a small scratch VI (≤120-line stagekit script, record under `tools/bench/scratch_verify/`):**
+current-bed: D1_l2_b2a_20260928_001426.vi
+<!-- ^ machine key read by tools/errorlist_check.py current_bed_text(); without it the bed is chosen by mtime among D1_*.vi names in this file, and the newer D1_s1_kswap_* would silently take over (review archive/peer/2026-09-26-c88-reuse-stalepin.md). Change it only when a new bed is accepted. Moved 2026-09-28 00:2x by cycle 112 (PD226(d)): L2-B2a accepted. -->
+🔵 **THE BED IS NOW `claudeDev\D1_l2_b2a_20260928_001426.vi`, md5 `107a3ef12da41b25d533f8a4c761aae8`** (L2-B2a; expected Error List file `tools/bench/errorlist_expected_D1_l2_b2a_20260928_001426.json`, 83 items, reverdict OK; PD226(d)). Its input `D1_l2_b1_20260927_193100.vi` (md5 `b705728a…`) is kept.
+🟢🟢 **FIRST ACT of cycle 113 = `docs/d1-loop12-17-split-plan.md` Pre-decided 226(e): ONE material card (Opus high) delivers L2-B2b** (rows B2-01..08 + B2-16 = 9, `tools/bench/cards/split_plan_111_l2b2.md` §2) from the B2a bed.
+   - Dump the graph of the SAVED B2a file, then plan offline.
+   - stagesim FINAL; every row routed (tools exist: owner route (v), base-flip seeding for B2-08, ctltun for B2-16).
+   - Recipe ≤ 120 lines, with rule D4 (toward S1, count cap; `tools/stagekit.py:1273,1298`) scoped to B2b's cascade nodes.
+   - Top-level dry + pre-run + prior-art, then ONE launch → `claudeDev\D1_l2_b2b_<ts>.vi`, and its expected Error List file in the same card.
+   - Launch as `py tools/bgrun.py --material …`; no env prefixes.
+   - **Card rules from retrospective-cycle112 (annotated):**
+     - Before the launch, diff the B2a bed's terminal names on B2b's cascade nodes against `docs/wiki/subvi/D1_s1_copy.json` offline, and set D4's scope from that diff.
+     - A byte copy of the bed is a valid scratch fixture.
+     - A prior-art `contradicted` verdict returns BLOCKED to judgement unless every fix only narrows an existing gate.
+     - Fixture and self-test failures count against the failure budget.
+   - Carries (PD226(f), not blocking):
+     - `selftest_stagekit.py` case J stale stub; it made a real COM call.
+     - Hashing every task input md5 at bind.
+     - Delete `claudeDev\scratch_c112c_sr.vi`.
+     - `md5sum` is missing from `guard_bash` `MATERIAL_EXEMPT_RE`.
+     - The review's confounder (B) separator runs first if B2b loses a terminal on a `connect_from_wire` op.
+- **CYCLE 112 in brief — L2-B2a DELIVERED, THE NEW BED (PD226); steer_111 FOLLOWED:**
+  - 112-1 FAIL 4/2: the owed md5 review, plus tools (iii) flip seeding, (iv) finalize route check and (vi) guard_cycle offline-only. (i)/(ii) existed as code only; 6 of 7 rows could not be addressed.
+  - 112-2 FAIL 2/2 (rung 1; it reported 80 min, the logs show about 24): owner route (v) + uid addressing; 7/7 rows route; plan FINAL `4b782c1f`.
+  - 112-3 FAIL 3/2: T1/T2 wired live on a scratch PASS. Launch 1 ran 7 ops and stopped at E1 on S1-form terminals of `#8741`/`#30331` (my allow set was too narrow).
+  - 112-4 PASS 23/0 (rung 1): rule D4 (toward S1). Launch 2 saved `D1_l2_b2a_20260928_001426.vi` md5 `107a3ef1…`; Error List 83, reverdict OK.
+  - Retrospective-cycle112 (`archive/peer/2026-09-28-retrospective-cycle112.md`, annotated): `inference-over-measurement` 17 min ACCEPTED (mine: 112-3's allow set ignored the split page's own prediction) → D4 + the pre-launch name diff above. No device.
+  - User decisions: none open from this cycle.
+- (history) 🟢🟢 **FIRST ACT of cycle 112 = `docs/d1-loop12-17-split-plan.md` Pre-decided 225(h) item 3: ONE material card (Opus high) builds the B2 tooling, each item checked first on a small scratch VI (≤120-line stagekit script, record under `tools/bench/scratch_verify/`):**
    - (i) wiring to shift registers that ALREADY exist on the bed (`wire_sr` / SR outer face finds the loop from the graph, not only from `add_sr`; `tools/stagexec.py:406-409,1008-1011`);
    - (ii) the route from a control terminal into a structure tunnel (rows B2-15/B2-16; `stagexec.py:778-782`);
    - (iii) stagesim seeds and reverts sink flips made in an earlier session (rows B2-08/-11/-14; `tools/stagesim.py:426-451`);

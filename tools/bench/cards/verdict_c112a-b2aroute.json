@@ -1,0 +1,18 @@
+{
+ "schema": "verdict/1",
+ "id": "c112a-b2aroute",
+ "verdict": "supported",
+ "alternative": "Saved-file flip reversion (stagesim.py:459-460) is an unmeasured prediction; the 2 closed rows may be wrong. Pinned open_rows was a snapshot of all 56 rows, and 5 of 7 steps change no row, so re-declaring 54 would hide that.",
+ "discriminating_test": "Offline: diff end rows vs open_rows (expect exactly 8634/29625 'array'); route_report(sim plan, require_final=False) on all 7 rows. Scratch VI: save undirected loop tunnel, reopen, wire outer, read inner is_source.",
+ "violations": [],
+ "sources": [
+  "tools/stagesim.py:1357",
+  "tools/stagesim.py:1316-1322",
+  "tools/stagesim.py:459-460",
+  "tools/bench/plan_l2b2a.json:345-401",
+  "tools/bench/sim/c112a/l2b2a/summary.json:4146-4200",
+  "docs/d1-loop12-17-split-plan.md:1960",
+  "https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/wire-connected-to-undirected-tunnel.html"
+ ],
+ "note": "Mechanism confirmed; saved-file seeding has no scratch_verify record (card 112-1 rule). Script on disk is not the one that produced the log. Give non-final plans an advisory route report."
+}

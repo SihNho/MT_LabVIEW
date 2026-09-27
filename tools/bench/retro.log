@@ -4252,3 +4252,120 @@ VIOLATION: device-failed | loss_min=3 | loss_usd=? | evidence=tools/bench/cards/
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle111","verdict":"refuted","alternative":"No structural fault: 111-5 still yielded the PD158 crossing and gap (i) (existing-register route) that a tooling card could not have known, and the dry refusal cost ~3 min without changing the cycle's end.","discriminating_test":"Feed guard_cycle.main() offline the 22:01:39 argv (bgrun -- py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_l2b2a.py): if BUILD_RE matches via '.py --dry' and :612 blocks, the device failure stands.","violations":[{"slug":"wrong-ordering","loss_min":13,"loss_usd":1.65,"evidence":"docs/d1-loop12-17-split-plan.md:1937"},{"slug":"device-failed","loss_min":3,"loss_usd":"?","evidence":"tools/bench/cards/result_111-5.json:2"}],"sources":["tools/bench/cards/brief_110-3.md:12","tools/bench/cards/task_111-3.json:30","tools/bench/diag_c111c_dry_negative.log:24","archive/peer/2026-09-27-priorart-c111e-l2b2a.md:506","tools/bench/peer_priorart_c111e_l2b2a.log:6","tools/hooks/guard_cycle.py:40","tools/hooks/guard_cycle.py:612","docs/violation-decisions.md:1519","tools/hooks/material_marker.log:2519"],"note":"Device named: 07:46 'stage_prerun --dry passes the launch gate', repaired in stop_record only; guard_cycle BUILD_RE/verdict gate still refuses it. Same pattern: read-only hash refused at material_marker.log:2519, rerun as script at :2520."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle111.md
 BGRUN END rc=0 after 467s
+BGRUN START 2026-09-28 00:39:30 limit 10.0 min: py tools/retrospective.py --cycle 112
+BGRUN PID 5516
+   window 2026-09-27 22:12:57 .. 2026-09-28 00:39:31 (147 min); 68 build logs, 15 machinery logs, 37 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle112.txt (32227 chars)
+   review card tools\bench\cards\review_retrospective-cycle112.json
+OUTCOME: ANSWERED (454s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-09-28-retrospective-cycle112.md
+COST: $2.7574  in 42 / out 45165 / cache-create 168452 / cache-read 2531348  (453s, 41 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle112 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle112.json
+--- ANSWER ---
+# Retrospective, cycle 112 (22:12:57 to 00:39:31)
+
+**Outcome:** the cycle delivered. Launch 2 of `stage_d1_l2b2a.py` passed 23/0 and saved `D1_l2_b2a_20260928_001426.vi` (md5 `107a3ef1…`) (`tools/bench/stage_d1_l2b2a_r2.log:240-244`). Its Error List was read and matched the expected file (`result_112-4.json:18`), and STATUS moved the bed to it (`STATUS.md:61`). The steering card was followed (`tools/bench/next.json:22-25`).
+
+The review claim ("run without a costly structural fault") does not hold. There is one structural fault, below.
+
+**Timeline, from log and marker timestamps:**
+
+| Card | Wall clock | What happened |
+|---|---|---|
+| Start | 22:17 | Session starts |
+| 112-1 | 22:20–22:48 | Tooling |
+| 112-2 (Opus max) | 22:56–23:11 | `material_marker.log:2528-2533` |
+| 112-3 | 23:16–23:50 | Launch 1 FAIL at 23:44 |
+| 112-4 (Opus max) | about 23:52–00:37 | Launch 2 PASS at 00:18 |
+| Retrospective | 00:39 | |
+
+The window is consistent with the evidence. The only item from the previous cycle inside it is `motor_session_end_cycle111.log` at 22:14, which costs nothing.
+
+## The structural fault: launch 1's allow set ignored the cycle's own written prediction
+
+- **Slug:** `inference-over-measurement`.
+- **What was decided:** card 112-3 declared allow-either only for #8634/#29625 (`tools/bench/cards/task_112-3.json:87`). "Allow-either" meant a terminal diff on those two nodes was accepted whichever way it went.
+- **What the split page already said:**
+  - It listed IndexArray #8741/#30331 among the cascade pairs of the saved B1 file (`split_plan_111_l2b2.md:48-50`).
+  - It predicted that LabVIEW would "likely restore the cascade terminals → E1/PB would diverge" (`:53-54`).
+  - S1's terminal names for those nodes were on disk, offline, in `docs/wiki/subvi/D1_s1_copy.json:34485-34550`, as the later review showed (`c112c-b2a-e1.md:73`).
+- **What happened:** launch 1 stopped at E1 on exactly #8741/#30331 (`stage_d1_l2b2a.log:122`). Launch 2 then accepted the same six terminals under rule D4 (`stage_d1_l2b2a_r2.log:119-125`). The real graph did not change between the two runs; only the rule did. The judgement session admits this itself: "The card's allow set was too narrow (judgement fault)" (`task_112-4.json:9`).
+- **Loss in time:** about 17 min.
+  - Launch 1 took 221 s and review c112c-b2a-e1 took 229 s, plus a judgement turn, a re-dispatch and two repeated dry/pre-run pairs.
+  - The passing launch started at 00:14:26. Had D4 been coded in 112-3, the passing launch would have started about 23:57: 23:40 plus roughly 15 min of D4 coding, measured in 112-4 as 00:02:35→00:07:23, plus the count-cap round.
+- **Loss in money:** $1.67 (`peer_c112c_b2a.log:4`). This is a floor. The material and judgement sessions log no cost (audit C4c, and `"usd": null` in every result card).
+- **Second-order cost:** it used launch slot 2 of 2. The deliverable went out on its last permitted launch.
+- **Counterfactual:** had card 112-3 (written about 23:12) scoped E1/PB to the split page's own eight cascade nodes, checked against S1's names, launch 1 at 23:40:23 would have passed. The cycle would have closed about 00:22 instead of 00:39.
+
+## Findings
+
+**1. Repeated failure.**
+- **Main case:** the live T1/T2 wiring check took three cards.
+  - 112-1 tried it through the offline dry run, which cannot emulate the fixture. It got the same "no graph JSON for input md5" error twice (`diag_c112a_ctltun_dry.log:21`, `dry2.log:21`), then a third failure (`dry3.log:24`).
+  - 112-2 did not attempt it (`result_112-2.json:2`).
+  - 112-3 spent 23:16–23:34 looking for a fixture: seven scans, `diag_c112c_fixture.log:39` FAIL, `diag_c112c_rows.log:10` FAIL, and reviews costing $2.20 + $1.04. It then used a byte copy of the bed, which passed (`diag_c112c_t1t2.log:99`).
+  - 112-2 had already opened that same bed copy read-only at 23:08 (`diag_c112b_addr.log:33-41`).
+  - The approach should have changed inside 112-2, once uid addressing existed (23:04). The card's rule D3, "build + save the scratch VI" (`task_112-2.json:82`), pushed toward a separate fixture instead.
+  - This is my second-ranked fault: about 14–18 min and $3.24. I kept it below the main fault because its causes are mixed (the card's wording and the material session's search).
+- **Second case:** the "saved-file cascade terminals the simulation does not model" class carried over from L2-B1 into B2a unchanged. The split page describes it for B1 (`split_plan_111_l2b2.md:47-50`).
+
+**2. Missing tool.**
+- stagesim has no model of polymorphic terminal growth, and E1 compares uid sets only, so renames are invisible to it (`c112c-b2a-e1.md:73`, citing `stagexec.py:465-481`). D4 is a gate against S1, not a prediction. B2b will meet the same cascade blind.
+- Nothing checks a task card's input md5 values when the card is bound (`result_112-1.json:26`). The stale pin cost the opening H0 review ($1.02, `peer_c112a_md5.log:17`).
+- Nothing derives a card's minutes from bgrun wall clock (see finding 6).
+
+**3. Unmeasured steps.**
+- The allow set (the fault above).
+- The failed-prediction review ended with a 4-minute test that would tell its explanations apart (`c112c-b2a-e1.md:93-106`). Card 112-4 forbade it: "no ordering scratch" (`task_112-4.json:80`). So confounder (B), the `connect_from_wire` purge, is still not separated. B2b will use that same operation.
+- Budget exhaustion was claimed, not measured. 112-2 said "~80 of 75 min", but its logs span about 15 min of commands, in a card of about 24 min.
+
+**4. Rule compliance.**
+- **Failure budget of 2 (`CLAUDE.md:328`), broken:**
+  - 112-3 failed twice (fixture at 23:22, rows at 23:30) and went on to launch.
+  - 112-4 had a budget of 1 (`task_112-4.json:76`) and failed twice: `selftest_d4_l2b2a.log:26` and the `selftest_stagekit_c112d` crash.
+- **Cheapest separator (`CLAUDE.md:662-664`), satisfied only on paper:** the review was dispatched and annotated, but its separating test was never run.
+- **Brief states the measurement, not the action (`CLAUDE.md:344-348`), evaded:** see finding 7.
+- **A4, broken:** `archive/peer/2026-09-27-outcome-review-20260927.md:219-221` still says "(Claude fills in)". That review ran in this window (22:14) and produced the steering card that was followed. The other blank file, `c103-scratch-selftest`, comes from an earlier cycle; A4 counts by day, so it pulled that file in.
+- **What the audit does not cover:**
+  - Whether result-card claims (minutes, budget spent) agree with log wall clock.
+  - Judgement taken inside material sessions.
+  - C6 labels three refusals as "judgement-session attempts", but all three came from material sessions (`material_marker.log:2522`, `:2545`, `:2555`).
+  - C7's list of 324 files is noise and cannot show scope.
+
+**5. Ordering.** Mostly defensible. The owed H0 review and the tooling-first order came from STATUS NEXT (the PD225(h) item). The indefensible step is launching before checking the allow set against the split page. There was also a smaller detour: 112-1 re-ran two self-tests that have been failing since cycle 101 (`result_112-1.json:22`). Those runs armed `guard_peer` and cost two reviews ($0.66 + $0.85).
+
+**6. Not reported.**
+- Result cards overstate minutes about threefold:
+  - 112-2 says 80, against about 24 min of wall clock.
+  - 112-3 says 115, against about 38 min (`result_112-3.json:28`; marker lines 2534–2545).
+  - STATUS repeats "over its minutes" (`STATUS.md:72`).
+- 112-3's claim that its "90-min budget is spent" was the stated reason for skipping the 4-minute test (`c112c-b2a-e1.md:126`).
+- STATUS calls self-test case J only a "stale stub" (`STATUS.md:69`). It omits that the stub made a real COM call (`result_112-4.json:24`).
+- The c111e FIXED release text described allow-either code that no longer exists. Prior-art review c112d caught it (`priorart-c112d-l2b2a.md:514-518`), not the session.
+
+**7. Judgement inside a material session: yes.**
+- Prior-art c112d came back `contradicted`. The material session accepted finding A3.1, added a count cap that changes what D4 accepts, wrote its own FIXED release, and launched (`priorart-c112d-l2b2a.md:541-545`). It then asked "Keep it?" afterwards (`result_112-4.json:26`).
+- The brief had pre-scripted this: "prior-art ANSWERED + annotated if the launch gate asks; launch gate ALLOW" (`task_112-4.json:35`).
+- Likewise, 112-3's material session wrote five FIXED lines releasing c111e (`result_112-3.json:17`), as its card required (`task_112-3.json:38`). One of them was stale by the next card.
+- Measured cost is zero: the cap only narrows the rule and did not change launch 2. That makes it a finding, not the top fault.
+
+## Device effect
+
+No device on file failed inside the window.
+
+- **bgrun forces rc=1 on an inner FAIL:** fired correctly (`diag_c112a_b2a_route.log:25`, `diag_c112c_rows.log:11`, `selftest_stagesim_unflip_81_c112a.log:15`).
+- **COST regex:** 10 of 10 lines parsed (C4b).
+- **Stop record / launch gate:**
+  - It let the dry and pre-run of the unreleased recipe through at 00:06–00:07 (`material_marker.log:2553-2554`). That is the 22:20 repair working.
+  - It refused `--check-launch` before release (`:2555`). That argv is outside the offline-checker scope by design (`stop_record.py:134-136`), and the check itself answered ALLOW after release (`stage_d1_l2b2a_checklaunch_c112d.log:3`).
+- **Pre-run gate:** refused a LabVIEW diagnostic launch that had no dry run (`material_marker.log:2522`). Correct.
+- **Stagexec PARITY check:** 0 (`stage_d1_l2b2a_r2.log:39`).
+- **Route report lists all rows:** all 7 rows reported (`result_112-1.json:19`).
+- **`gates_due` on the cycle card:** present (`cycle_112.json:31-47`).
+- **peer.ps1 card validation:** refused an over-long claim (`peer_c112a_md5.log:3`). Correct.
+- **Remaining devices** (motor, VISA, SendMessage, reaper, graph-shape and others): not exercised in the window.
+- **`md5sum` refusal:** `guard_bash`'s material gate refused a read-only `md5sum` (`material_marker.log:2545`; 22 s, worked around with `diag_c112c_md5.py`). That gate is not a listed device. It is only a finding: `md5sum` is missing from `MATERIAL_EXEMPT_RE` (`guard_bash.py:63-66`).
+
+VIOLATION: inference-over-measurement | loss_min=17 | loss_usd=1.67 | evidence=tools/bench/cards/task_112-3.json:87
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle112","verdict":"refuted","alternative":"Launch 1 was a legitimate first measurement: the split page said 'likely', and the toward-S1 rule needed review c112c-b2a-e1 to be seen.","discriminating_test":"Before 23:40, diff the bed's terminal names on the 8 split-page s3 cascade nodes against D1_s1_copy.json offline (seconds). If #8741/#30331 differ toward S1, the allow set was knowable before launch 1.","violations":[{"slug":"inference-over-measurement","loss_min":17,"loss_usd":1.67,"evidence":"tools/bench/cards/task_112-3.json:87"}],"sources":["tools/bench/cards/split_plan_111_l2b2.md:48","tools/bench/cards/split_plan_111_l2b2.md:53","tools/bench/stage_d1_l2b2a.log:122","tools/bench/stage_d1_l2b2a_r2.log:119","tools/bench/cards/task_112-4.json:9","tools/bench/peer_c112c_b2a.log:4"],"note":"$1.67 is a floor (material/judgement cost unlogged). Second-ranked: T1/T2 live check spread over 3 cards, ~14-18 min, $3.24. Judgement-in-material (D4 count cap, priorart-c112d:541-545) at 0 measured cost. No device failed."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle112.md
+BGRUN END rc=0 after 459s

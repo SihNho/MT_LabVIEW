@@ -531,6 +531,15 @@ def block(msg):
     sys.exit(2)
 
 
+def offline_only(cmd):
+    """card 112-1 T6: True when EVERY segment of `cmd` that BUILD_RE matches is `stage_prerun.py --dry|--prerun`
+    (stop_record.offline_checker, bgrun-wrapped or not; segments split by tools/launchunit.segments, the one shared
+    splitter). False when any recipe-naming segment is anything else, or when no segment names a recipe."""
+    import launchunit
+    segs = [s for s in launchunit.segments(cmd) if BUILD_RE.search(s)]
+    return bool(segs) and all(stop_record.offline_checker(s.strip()) for s in segs)
+
+
 def main():
     if os.environ.get("CYCLE_GUARD_OFF") == "1":
         return
@@ -551,6 +560,14 @@ def main():
     allow, why = stop_record.check_command(cmd)
     if not allow:
         block(why)
+
+    # OFFLINE CHECKERS ARE NOT BUILDS (card 112-1 T6; docs/violation-decisions.md device-failed 2026-09-27 22:20).
+    # BUILD_RE also matches `stage_prerun.py --dry tools/recipes/X.py` (the `\bpy` of `stage_prerun.py` is in command
+    # position for it), so the verdict / timing / retrospective gates below refused an OFFLINE dry of an unreleased
+    # recipe that the launch gate above had already classed "exempt" (card 107-1). The same shared predicate decides
+    # it here: every segment that names a recipe must be an offline checker; one launch segment keeps every gate on.
+    if offline_only(cmd):
+        return
 
     due = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "violations.py"), "--due"],
                          capture_output=True, text=True, timeout=120)

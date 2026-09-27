@@ -1,0 +1,909 @@
+{
+ "schema": "stageplan/1",
+ "stage": "l2b2a",
+ "goal": "L2-B2a (PD225(f), card 111-5): on the B1 bed D1_l2_b1_20260927_193100.vi (graph_l2b1_20260927.json), the 6 SR rows B2-09..14 that feed the two 1.2 registers B1 created (SRB1 = R #9603 / L #10544, SRB2 = R #25545 / L #25582, both on WhileLoop #10170) and the case-selector row B2-15 (#403 'Z/dZ' -> Tunnel #2276). No move, no create. Row ids = tools/bench/facts_c111b_l2b_rows.json.",
+ "base": {
+  "path": "tools/bench/graph_l2b1_20260927.json",
+  "md5": "8327f974cf150146b93b19f10e54afd5"
+ },
+ "context": {
+  "s1_key": "D1_s1_copy"
+ },
+ "actions": [
+  {
+   "op": "wire",
+   "id": "b2_09",
+   "src": {
+    "uid": 8953,
+    "term_uid": 8958
+   },
+   "dst": {
+    "uid": 10544,
+    "term_uid": 25588
+   },
+   "why": "B2-09 SRB1 init: #8953 'initialized array' (wired, w9051 -> old L #9025 outer) -> SRB1 L.outer t25588 (D3)"
+  },
+  {
+   "op": "wire",
+   "id": "b2_10",
+   "src": {
+    "uid": 9227,
+    "term_uid": 9234
+   },
+   "dst": {
+    "uid": 9603,
+    "term_uid": 22281
+   },
+   "why": "B2-10 SRB1 feed: #1359's output LoopTunnel #9227 outer t9234 (bare) -> SRB1 R.inner t22281 (census #1359 i2 w9215, D3)"
+  },
+  {
+   "op": "wire",
+   "id": "b2_11",
+   "src": {
+    "uid": 10544,
+    "term_uid": 25587
+   },
+   "dst": {
+    "uid": 9087,
+    "term_uid": 9092
+   },
+   "why": "B2-11 SRB1 re-feed: SRB1 L.inner t25587 -> #1359's input LoopTunnel #9087 outer t9092 (census #1359 i1 w9097; build_d1_v0 noroute)"
+  },
+  {
+   "op": "wire",
+   "id": "b2_12",
+   "src": {
+    "uid": 28124,
+    "term_uid": 28172
+   },
+   "dst": {
+    "uid": 25582,
+    "term_uid": 25606
+   },
+   "why": "B2-12 SRB2 init: #28124 'initialized array' (wired, w29122 -> old L #29512 outer) -> SRB2 L.outer t25606 (D3)"
+  },
+  {
+   "op": "wire",
+   "id": "b2_13",
+   "src": {
+    "uid": 29616,
+    "term_uid": 29624
+   },
+   "dst": {
+    "uid": 25545,
+    "term_uid": 25596
+   },
+   "why": "B2-13 SRB2 feed: #29874's output LoopTunnel #29616 outer t29624 (bare) -> SRB2 R.inner t25596 (census #29874 i5 w29591, D3)"
+  },
+  {
+   "op": "wire",
+   "id": "b2_14",
+   "src": {
+    "uid": 25582,
+    "term_uid": 25605
+   },
+   "dst": {
+    "uid": 29911,
+    "term_uid": 29928
+   },
+   "why": "B2-14 SRB2 re-feed: SRB2 L.inner t25605 -> #29874's input LoopTunnel #29911 outer t29928 (census #29874 i3 w28039; build_d1_v0 noroute)"
+  },
+  {
+   "op": "wire",
+   "id": "b2_15",
+   "src": {
+    "uid": 403,
+    "term_uid": 403
+   },
+   "dst": {
+    "uid": 2276,
+    "term_uid": 2282
+   },
+   "why": "B2-15 w730: bare ControlTerminal #403 'Z/dZ' -> case selector Tunnel #2276 outer t2282 (census #2222 i0 from-ctl 47; build_d1_v0 noroute 'wire_control is name-addressed on BOTH ends')"
+  }
+ ],
+ "open_rows": [
+  {
+   "node": 376,
+   "term": "current frame data array in",
+   "why": "QRT (PD175): #2626 -> #376 w4517, 1.2 -> 1.7"
+  },
+  {
+   "node": 376,
+   "term": "frame index",
+   "why": "QRT (PD175), carried from the bed"
+  },
+  {
+   "node": 5058,
+   "term": "Image In",
+   "why": "QRT (PD177(e)), carried from the bed"
+  },
+  {
+   "node": 2626,
+   "term": "element",
+   "why": "QRT (PD182(c)/D5): #5119, #30117, #4580 1.1 -> 1.2 data crossings"
+  },
+  {
+   "node": 11261,
+   "term": "element",
+   "why": "QRT (D5): #11608 1.1 -> 1.2 data crossing"
+  },
+  {
+   "node": 28083,
+   "term": "Magnet position",
+   "why": "QRT (D5): #30117 via #1359 tunnel #9503"
+  },
+  {
+   "node": 8634,
+   "term": "index (col)",
+   "why": "QRT (D5): #10068 via #1359 tunnel #10177"
+  },
+  {
+   "node": 29625,
+   "term": "index (col)",
+   "why": "QRT (D5): #29240 via #29874 tunnel #29777"
+  },
+  {
+   "node": 29973,
+   "term": "element",
+   "why": "QRT (D5): #29240 via #29874 tunnel #29777"
+  },
+  {
+   "node": 8566,
+   "term": "element",
+   "why": "B2b B2-01: #8885 -> LoopTunnel #10004"
+  },
+  {
+   "node": 11261,
+   "term": "array",
+   "why": "B2b B2-03: LoopTunnel #11363 -> #11261"
+  },
+  {
+   "node": 27716,
+   "term": "index",
+   "why": "B2b B2-04: #28170 -> LoopTunnel #31051"
+  },
+  {
+   "node": 28180,
+   "term": "half-width",
+   "why": "B2b B2-04: #28170 -> LoopTunnel #31051"
+  },
+  {
+   "node": 29009,
+   "term": "left rank",
+   "why": "B2b B2-05: #29091 -> LoopTunnel #31137"
+  },
+  {
+   "node": 29009,
+   "term": "right rank",
+   "why": "B2b B2-05: #29091 -> LoopTunnel #31137"
+  },
+  {
+   "node": 30306,
+   "term": "left rank",
+   "why": "B2b B2-06: #29091 -> LoopTunnel #30896"
+  },
+  {
+   "node": 30306,
+   "term": "right rank",
+   "why": "B2b B2-06: #29091 -> LoopTunnel #30896"
+  },
+  {
+   "node": 8634,
+   "term": "array",
+   "why": "B2a b2_11 wires #9087's outer, but #9087's inner t9089 is a sink on the B1 bed (flipped in B1) and stagesim reverts only flips of THIS simulation (split page s4): stays open in the sim"
+  },
+  {
+   "node": 29625,
+   "term": "array",
+   "why": "B2a b2_14 wires #29911's outer; its inner t29923 is a flipped sink on the B1 bed (same simulator limit as 8634 'array')"
+  },
+  {
+   "node": 5696,
+   "term": "x,y,z array",
+   "why": "B2b B2-08: #5058 -> #2765, after the stagesim base-flip seeding (split page s4)"
+  },
+  {
+   "node": 6085,
+   "term": "x,y,z array",
+   "why": "B2b B2-08: #5058 -> #2765, after the stagesim base-flip seeding (split page s4)"
+  },
+  {
+   "node": 28083,
+   "term": "Mag pos when touched to glass",
+   "why": "B3: pre-loop tunnel off #27605 t27635 -> #28370"
+  },
+  {
+   "node": 5696,
+   "term": "z index of first ref",
+   "why": "B3: pre-loop tunnel off #5183 t5186 -> #2992"
+  },
+  {
+   "node": 6085,
+   "term": "z index of first ref",
+   "why": "B3: pre-loop tunnel off #5183 t5186 -> #2992"
+  },
+  {
+   "node": 5696,
+   "term": "z indices of all exp",
+   "why": "B3: pre-loop tunnel off #5669 t5671 -> #3176"
+  },
+  {
+   "node": 6085,
+   "term": "z indices of all exp",
+   "why": "B3: pre-loop tunnel off #5669 t5671 -> #3176"
+  },
+  {
+   "node": 28786,
+   "term": "Extension (nm) vs Time (Frame #)",
+   "why": "B2b B2-07: LoopTunnel #29172 -> #28786 (J1)"
+  },
+  {
+   "node": 5696,
+   "term": "Correction Factor",
+   "why": "B2b B2-16: #9306 -> SelectorTunnel #6132 (w6096)"
+  },
+  {
+   "node": 6085,
+   "term": "Correction Factor",
+   "why": "B2b B2-16: #9306 -> SelectorTunnel #6132 (w6096)"
+  },
+  {
+   "node": 2626,
+   "term": "array",
+   "why": "BASE (saved B1 read, graph_l2b1): #2626's 4 inputs all named 'array' (licensed rename, plan_l2b1_licence.json); S1 has 'array' + 'element' x3"
+  },
+  {
+   "node": 8634,
+   "term": "index (row)",
+   "why": "BASE cascade on the saved B1 (not in B1's in-memory end, plan_l2b1_sim6.log SUMMARY): terminal set of #8634 changed after the cold load; plan_l2b2a_sim.log step 0"
+  },
+  {
+   "node": 8634,
+   "term": "disabled index (row)",
+   "why": "BASE cascade on the saved B1 (as 8634 'index (row)')"
+  },
+  {
+   "node": 8741,
+   "term": "index",
+   "why": "BASE cascade: IndexArray #8741 lost 2 'disabled index (col)' vs L2-A3 (facts_c111b_attribution.md row 14)"
+  },
+  {
+   "node": 8741,
+   "term": "index (row)",
+   "why": "BASE cascade: IndexArray #8741 (as 8741 'index')"
+  },
+  {
+   "node": 8741,
+   "term": "disabled index (col)",
+   "why": "BASE cascade: IndexArray #8741 (as 8741 'index')"
+  },
+  {
+   "node": 8764,
+   "term": "x",
+   "why": "BASE cascade on the saved B1 (downstream of #8741)"
+  },
+  {
+   "node": 28233,
+   "term": "X",
+   "why": "BASE cascade: FIR #28233 'X' fed by #8741 'element' w28443 (facts_c111b_attribution.md row 14 candidate)"
+  },
+  {
+   "node": 29625,
+   "term": "index (row)",
+   "why": "BASE cascade on the saved B1 (as 8634 'index (row)', #29874 side)"
+  },
+  {
+   "node": 29625,
+   "term": "disabled index (row)",
+   "why": "BASE cascade on the saved B1 (#29874 side)"
+  },
+  {
+   "node": 30331,
+   "term": "index",
+   "why": "BASE cascade: IndexArray #30331 (facts_c111b_attribution.md row 12, cascade of B2-14)"
+  },
+  {
+   "node": 30331,
+   "term": "index (row)",
+   "why": "BASE cascade: IndexArray #30331 (row 12)"
+  },
+  {
+   "node": 30331,
+   "term": "disabled index (col)",
+   "why": "BASE cascade: IndexArray #30331 lost 2 'disabled index (col)' (row 12)"
+  },
+  {
+   "node": 30306,
+   "term": "X",
+   "why": "BASE cascade on the saved B1 (downstream of #30331)"
+  },
+  {
+   "node": 29005,
+   "term": "element",
+   "why": "BASE cascade on the saved B1 (#29874 side)"
+  }
+ ],
+ "final": false,
+ "finalized": {
+  "base": {
+   "path": "tools/bench/graph_l2b1_20260927.json",
+   "md5": "8327f974cf150146b93b19f10e54afd5"
+  },
+  "plan_in": {
+   "path": "tools/bench/plan_l2b2a_in.json",
+   "md5": "23b64237d122f213a23db06f82e2880f"
+  },
+  "last_step": {
+   "path": "tools/bench/sim/c112b/l2b2a/step_07_wire.json",
+   "md5": "42a78013d51b3f1b4bcdd58eb11fe298"
+  },
+  "summary": {
+   "path": "tools/bench/sim/c112b/l2b2a/summary.json",
+   "md5": "e8ed2cfd8efabac5d3ca44249152c8ad"
+  },
+  "end_cdiff_rows": [
+   "11261|Terminal|array|0",
+   "11261|Terminal|element|0",
+   "2626|Terminal|array|0",
+   "2626|Terminal|array|1",
+   "2626|Terminal|array|2",
+   "2626|Terminal|array|3",
+   "2626|Terminal|element|0",
+   "2626|Terminal|element|1",
+   "2626|Terminal|element|2",
+   "27716|ParameterTerminal|index|0",
+   "28083|Terminal|Mag pos when touched to glass|0",
+   "28083|Terminal|Magnet position|0",
+   "28180|Terminal|half-width|0",
+   "28233|Terminal|X|0",
+   "28786|ControlTerminal|Extension (nm) vs Time (Frame #)|0",
+   "29005|Terminal|element|0",
+   "29009|Terminal|left rank|0",
+   "29009|Terminal|right rank|0",
+   "29625|Terminal|disabled index (row)|0",
+   "29625|Terminal|index (col)|0",
+   "29625|Terminal|index (row)|0",
+   "29973|Terminal|element|0",
+   "29973|Terminal|element|1",
+   "30306|Terminal|X|0",
+   "30306|Terminal|left rank|0",
+   "30306|Terminal|right rank|0",
+   "30331|Terminal|disabled index (col)|0",
+   "30331|Terminal|disabled index (col)|1",
+   "30331|Terminal|index (row)|0",
+   "30331|Terminal|index (row)|1",
+   "30331|Terminal|index|0",
+   "30331|Terminal|index|1",
+   "376|Terminal|current frame data array in|0",
+   "376|Terminal|frame index|0",
+   "5058|Terminal|Image In|0",
+   "5696|Terminal|Correction Factor|0",
+   "5696|Terminal|x,y,z array|0",
+   "5696|Terminal|z index of first ref|0",
+   "5696|Terminal|z indices of all exp|0",
+   "6085|Terminal|Correction Factor|0",
+   "6085|Terminal|x,y,z array|0",
+   "6085|Terminal|z index of first ref|0",
+   "6085|Terminal|z indices of all exp|0",
+   "8566|Terminal|element|0",
+   "8634|Terminal|disabled index (row)|0",
+   "8634|Terminal|index (col)|0",
+   "8634|Terminal|index (row)|0",
+   "8741|Terminal|disabled index (col)|0",
+   "8741|Terminal|disabled index (col)|1",
+   "8741|Terminal|index (row)|0",
+   "8741|Terminal|index (row)|1",
+   "8741|Terminal|index|0",
+   "8741|Terminal|index|1",
+   "8764|ParameterTerminal|x|0"
+  ],
+  "failed": null,
+  "first_divergent": {
+   "n": 0,
+   "op": "base",
+   "id": null,
+   "rows_from_here": 54
+  },
+  "open_rows": [
+   [
+    376,
+    "current frame data array in"
+   ],
+   [
+    376,
+    "frame index"
+   ],
+   [
+    2626,
+    "array"
+   ],
+   [
+    2626,
+    "element"
+   ],
+   [
+    5058,
+    "Image In"
+   ],
+   [
+    5696,
+    "Correction Factor"
+   ],
+   [
+    5696,
+    "x,y,z array"
+   ],
+   [
+    5696,
+    "z index of first ref"
+   ],
+   [
+    5696,
+    "z indices of all exp"
+   ],
+   [
+    6085,
+    "Correction Factor"
+   ],
+   [
+    6085,
+    "x,y,z array"
+   ],
+   [
+    6085,
+    "z index of first ref"
+   ],
+   [
+    6085,
+    "z indices of all exp"
+   ],
+   [
+    8566,
+    "element"
+   ],
+   [
+    8634,
+    "array"
+   ],
+   [
+    8634,
+    "disabled index (row)"
+   ],
+   [
+    8634,
+    "index (col)"
+   ],
+   [
+    8634,
+    "index (row)"
+   ],
+   [
+    8741,
+    "disabled index (col)"
+   ],
+   [
+    8741,
+    "index"
+   ],
+   [
+    8741,
+    "index (row)"
+   ],
+   [
+    8764,
+    "x"
+   ],
+   [
+    11261,
+    "array"
+   ],
+   [
+    11261,
+    "element"
+   ],
+   [
+    27716,
+    "index"
+   ],
+   [
+    28083,
+    "Mag pos when touched to glass"
+   ],
+   [
+    28083,
+    "Magnet position"
+   ],
+   [
+    28180,
+    "half-width"
+   ],
+   [
+    28233,
+    "X"
+   ],
+   [
+    28786,
+    "Extension (nm) vs Time (Frame #)"
+   ],
+   [
+    29005,
+    "element"
+   ],
+   [
+    29009,
+    "left rank"
+   ],
+   [
+    29009,
+    "right rank"
+   ],
+   [
+    29625,
+    "array"
+   ],
+   [
+    29625,
+    "disabled index (row)"
+   ],
+   [
+    29625,
+    "index (col)"
+   ],
+   [
+    29625,
+    "index (row)"
+   ],
+   [
+    29973,
+    "element"
+   ],
+   [
+    30306,
+    "X"
+   ],
+   [
+    30306,
+    "left rank"
+   ],
+   [
+    30306,
+    "right rank"
+   ],
+   [
+    30331,
+    "disabled index (col)"
+   ],
+   [
+    30331,
+    "index"
+   ],
+   [
+    30331,
+    "index (row)"
+   ]
+  ],
+  "open_rows_match": false,
+  "open_rows_match_legacy": false,
+  "open_rows_classed": {
+   "ok": false,
+   "want": [],
+   "c4_n": 0,
+   "c4_keys": 0,
+   "c4_bad": [],
+   "unclassed": [
+    [
+     376,
+     "current frame data array in"
+    ],
+    [
+     376,
+     "frame index"
+    ],
+    [
+     2626,
+     "array"
+    ],
+    [
+     2626,
+     "element"
+    ],
+    [
+     5058,
+     "Image In"
+    ],
+    [
+     5696,
+     "Correction Factor"
+    ],
+    [
+     5696,
+     "x,y,z array"
+    ],
+    [
+     5696,
+     "z index of first ref"
+    ],
+    [
+     5696,
+     "z indices of all exp"
+    ],
+    [
+     6085,
+     "Correction Factor"
+    ],
+    [
+     6085,
+     "x,y,z array"
+    ],
+    [
+     6085,
+     "z index of first ref"
+    ],
+    [
+     6085,
+     "z indices of all exp"
+    ],
+    [
+     8566,
+     "element"
+    ],
+    [
+     8634,
+     "array"
+    ],
+    [
+     8634,
+     "disabled index (row)"
+    ],
+    [
+     8634,
+     "index (col)"
+    ],
+    [
+     8634,
+     "index (row)"
+    ],
+    [
+     8741,
+     "disabled index (col)"
+    ],
+    [
+     8741,
+     "index"
+    ],
+    [
+     8741,
+     "index (row)"
+    ],
+    [
+     8764,
+     "x"
+    ],
+    [
+     11261,
+     "array"
+    ],
+    [
+     11261,
+     "element"
+    ],
+    [
+     27716,
+     "index"
+    ],
+    [
+     28083,
+     "Mag pos when touched to glass"
+    ],
+    [
+     28083,
+     "Magnet position"
+    ],
+    [
+     28180,
+     "half-width"
+    ],
+    [
+     28233,
+     "X"
+    ],
+    [
+     28786,
+     "Extension (nm) vs Time (Frame #)"
+    ],
+    [
+     29005,
+     "element"
+    ],
+    [
+     29009,
+     "left rank"
+    ],
+    [
+     29009,
+     "right rank"
+    ],
+    [
+     29625,
+     "array"
+    ],
+    [
+     29625,
+     "disabled index (row)"
+    ],
+    [
+     29625,
+     "index (col)"
+    ],
+    [
+     29625,
+     "index (row)"
+    ],
+    [
+     29973,
+     "element"
+    ],
+    [
+     30306,
+     "X"
+    ],
+    [
+     30306,
+     "left rank"
+    ],
+    [
+     30306,
+     "right rank"
+    ],
+    [
+     30331,
+     "disabled index (col)"
+    ],
+    [
+     30331,
+     "index"
+    ],
+    [
+     30331,
+     "index (row)"
+    ]
+   ]
+  },
+  "cdiff_inputs": {
+   "labels": "node_labels_default",
+   "labels_n": 626,
+   "fs_pairs": "state",
+   "fs_pairs_n": 576
+  },
+  "step_files": [
+   {
+    "n": 0,
+    "op": "base",
+    "path": "tools/bench/sim/c112b/l2b2a/step_00_base.json",
+    "md5": "c60124ee58e3d09f61b148c1380f68aa"
+   },
+   {
+    "n": 1,
+    "op": "wire",
+    "path": "tools/bench/sim/c112b/l2b2a/step_01_wire.json",
+    "md5": "7dfbf6e0d9d53621b5ee013ec2ea2d8e"
+   },
+   {
+    "n": 2,
+    "op": "wire",
+    "path": "tools/bench/sim/c112b/l2b2a/step_02_wire.json",
+    "md5": "9cc19122933f0966fc22be1cf0308868"
+   },
+   {
+    "n": 3,
+    "op": "wire",
+    "path": "tools/bench/sim/c112b/l2b2a/step_03_wire.json",
+    "md5": "485aa6c501027a8329f31395286ce916"
+   },
+   {
+    "n": 4,
+    "op": "wire",
+    "path": "tools/bench/sim/c112b/l2b2a/step_04_wire.json",
+    "md5": "def5115f83f2312b5e410bb1382023cf"
+   },
+   {
+    "n": 5,
+    "op": "wire",
+    "path": "tools/bench/sim/c112b/l2b2a/step_05_wire.json",
+    "md5": "48f57b202a123ce446fb922bbd3931a6"
+   },
+   {
+    "n": 6,
+    "op": "wire",
+    "path": "tools/bench/sim/c112b/l2b2a/step_06_wire.json",
+    "md5": "4db8d34cabed9aa63f9969273da7945a"
+   },
+   {
+    "n": 7,
+    "op": "wire",
+    "path": "tools/bench/sim/c112b/l2b2a/step_07_wire.json",
+    "md5": "42a78013d51b3f1b4bcdd58eb11fe298"
+   }
+  ],
+  "undecided": 0,
+  "at": "2026-09-27 23:04:39",
+  "route_check": {
+   "status": "PASS",
+   "first_fail": null,
+   "rows": [
+    {
+     "k": 1,
+     "op": "connect",
+     "ids": [
+      "b2_09"
+     ],
+     "route": "cfw",
+     "how": "uid echo: owner #10170 Terminals[18] uid == #25588 (name '')",
+     "unroutable": null
+    },
+    {
+     "k": 2,
+     "op": "connect",
+     "ids": [
+      "b2_10"
+     ],
+     "route": "wire_sr:RightIn",
+     "how": "uid echo: owner #1359 Terminals[2] uid == #9234 (name '')",
+     "unroutable": null
+    },
+    {
+     "k": 3,
+     "op": "connect",
+     "ids": [
+      "b2_11"
+     ],
+     "route": "wire_sr:LeftIn",
+     "how": "uid echo: owner #1359 Terminals[1] uid == #9092 (name '')",
+     "unroutable": null
+    },
+    {
+     "k": 4,
+     "op": "connect",
+     "ids": [
+      "b2_12"
+     ],
+     "route": "cfw",
+     "how": "uid echo: owner #10170 Terminals[20] uid == #25606 (name '')",
+     "unroutable": null
+    },
+    {
+     "k": 5,
+     "op": "connect",
+     "ids": [
+      "b2_13"
+     ],
+     "route": "wire_sr:RightIn",
+     "how": "uid echo: owner #29874 Terminals[5] uid == #29624 (name '')",
+     "unroutable": null
+    },
+    {
+     "k": 6,
+     "op": "connect",
+     "ids": [
+      "b2_14"
+     ],
+     "route": "wire_sr:LeftIn",
+     "how": "uid echo: owner #29874 Terminals[3] uid == #29928 (name '')",
+     "unroutable": null
+    },
+    {
+     "k": 7,
+     "op": "connect",
+     "ids": [
+      "b2_15"
+     ],
+     "route": "ctltun",
+     "how": "uid echo: owner #2222 Terminals[0] uid == #2282 (name '')",
+     "unroutable": null
+    }
+   ],
+   "advisory": true
+  }
+ }
+}

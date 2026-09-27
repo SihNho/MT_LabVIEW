@@ -1,0 +1,91 @@
+{
+ "schema": "task/1",
+ "id": "112-2",
+ "kind": "build",
+ "escalation": 1,
+ "retry_of_card": "112-1",
+ "goal": "Finish B2a tooling: scratch-verify T1 (base-graph SR) + T2 (ctltun), add owner route (v) and uid addressing of bare faces, re-sim plan_l2b2a to FINAL with all 7 rows routed",
+ "why": "112-1 FAIL 4/2: H0/T3/T4/T6 PASS; T1/T2 code only (scratch dry had no graph); route2 log: 6/7 B2a rows unaddressable (bare '' faces, LoopTunnel faces not in Nodes[]). Judgement decisions D1-D3 in rules.",
+ "inputs": [
+  {"path": "tools/bench/cards/result_112-1.json", "md5": "682ce9a7359c69d9d35f0463d8e282ae"},
+  {"path": "tools/bench/cards/task_112-1.json"},
+  {"path": "tools/bench/diag_c112a_b2a_route2.log", "md5": "2c98485444d21e1d1ec085b93e803676"},
+  {"path": "tools/bench/diag_c112a_u2seed.log", "md5": "284a430e5808158d016f9cfc99c8ecf3"},
+  {"path": "tools/bench/diag_c112a_ctltun.py", "md5": "ee75688832574c8a3b5b48a61f80bcd1"},
+  {"path": "tools/bench/cards/brief_110-3.md", "md5": "79d02fbd41dd48d41e8362ecb7ebd8c7"},
+  {"path": "tools/bench/cards/split_plan_111_l2b2.md"},
+  {"path": "tools/bench/plan_l2b2a.json", "md5": "b7ca7db6f1933410331ee39d00844dfd"},
+  {"path": "tools/bench/graph_l2b1_20260927.json", "md5": "8327f974cf150146b93b19f10e54afd5"},
+  {"path": "tools/stagexec.py", "md5": "776c6c07cab6f976f2ff823c491f5788"},
+  {"path": "tools/stagesim.py", "md5": "e1e9f4a23462740468a4eb44112e04de"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/bench/graph_l2b1_20260927.json"},
+  {"kind": "file", "name": "tools/bench/plan_l2b2a.json"},
+  {"kind": "file", "name": "tools/bench/diag_c112a_b2a_route2.log"}
+ ],
+ "pass": [
+  "S1 scratch fixture VI(s) built + saved under claudeDev\\scratch_c112*, graph JSON dumped (objs+owners); then T1 and T2 stagekit scripts dry+run on them: scratch_verify records PASS",
+  "S2 (v) LoopTunnel owner route in stagexec (+stagesim if needed): self-test case + scratch_verify record PASS; 0 regressions (stagexec 112/0, stagesim 71/0)",
+  "S3 bare-face rows (B2-09, B2-15, LoopTunnel faces) addressed by owner node -> terminal list -> uid from the base graph; ambiguity is a hard error, never a guess",
+  "S4 route report: all 7 B2a rows route; plan_l2b2a re-simulated on graph_l2b1 to FINAL; end cdiff vs open rows reported row by row (closed / still open, why)",
+  "else: stop point, gate, values, file:line, JEV-LADDER row"
+ ],
+ "outputs": [
+  "tools/stagexec.py",
+  "tools/stagesim.py",
+  "tools/bench/plan_l2b2a*",
+  "tools/bench/scratch_verify/**",
+  "tools/bench/cards/result_112-2.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\Op*",
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/stagekit.py",
+   "tools/gscript.py",
+   "tools/opmodels/**",
+   "tools/bench/plan_l2b2a*",
+   "tools/bench/sim/**",
+   "tools/bench/graph_scratch_c112*",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/selftest_*",
+   "tools/bench/diag_c112b*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "docs/NAMES.md",
+   "docs/toolkit-capabilities.md",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 75},
+ "rules": [
+  "D1 (v) is pulled into B2a: B2-10/11/13/14 need it (route2 log); deliverable-first",
+  "D2 bare faces: owner node -> terminal list -> uid echo (CLAUDE.md Stages SIMULATED item 2); never name/position",
+  "D3 scratch fixture: build + save the scratch VI and dump its graph FIRST, then dry + run the stagekit check on it",
+  "scratch VIs only; never touch the bed or any D1_* file; do NOT launch stage_d1_l2b2a.py (card 112-3)",
+  "shared-tool edits keep every existing self-test at 0 regressions; report counts",
+  "scripts via py tools/bgrun.py --material --max-min N --log f -- py -u <script>; no env prefixes",
+  "hold the turn until every bgrun writes BGRUN END; LabVIEW closed and verified gone at the end",
+  "a gate refusal is returned BLOCKED, never re-run via a self-test child or exempt route",
+  "a design choice D1-D3 does not settle is returned OPEN; facts <=10 file:line; OPEN <=3"
+ ],
+ "advances": ["M3", "R1"]
+}

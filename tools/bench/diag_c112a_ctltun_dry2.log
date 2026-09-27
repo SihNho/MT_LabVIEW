@@ -1,0 +1,22 @@
+BGRUN START 2026-09-27 22:41:18 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/bench/diag_c112a_ctltun.py
+BGRUN PID 500
+diag_c112a_ctltun - card 112-1 T2 SCRATCH VERIFY of the new stagexec 'ctltun' route (PD225(h)3 (ii), B2-15 shape):
+a BARE ControlTerminal SOURCE -> a structure Tunnel's OUTER SINK, written by gscript.wire_ctlsink (OpCtlSinkWire_v1) with the
+roles REVERSED (Connect Wire invoked ON the CT, `Wire Source` = the owner CaseStructure's Terminals[t]). The route stands on
+LabVIEW wiring by the terminals' directions; this measures it. FIXTURE: a scratch byte copy (discard_work, deleted at close)
+of claudeDev\background VIs_COPY\Motor control.vi (never the bed, never a D1_* file): its case-selector 'Tunnel' #613 is
+fed by ControlTerminal #483 'Home' (docs/wiki/subvi/Motor control.json; diag_c112a_fixture.log). Nothing saved, no VI run.
+PRIOR ART: stagekit delete_wire / uid_index / es; gscript node_labels / node_terms_uid / wire_ctlsink; wiki_build.read_live.
+PREDICTION: F the fixture row exists (Tunnel outer sink whose wire's ONE source is a CT) and exactly one node on its diagram
+holds that wire at a sink Terminals[t]; C after delete_wire the face is bare at the same index; W wire_ctlsink returns no
+error and Wire +1; R the face's new wire has exactly ONE source = the CT, the index t reads that wire; E ExecState back to
+its pre-cut value; H scratch deleted, fixture md5 unchanged, LabVIEW gone.
+    py tools/bgrun.py --material --max-min 20 --log tools/bench/diag_c112a_ctltun.log -- py -u tools/bench/diag_c112a_ctltun.py
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 3bf4ec6803e6815716f1634544ddc674  got 3bf4ec6803e6815716f1634544ddc674
+  FAIL  DRY graph JSON for input md5 3bf4ec6803e6815716f1634544ddc674  no terminal-list graph JSON carries md5 3bf4ec6803e6815716f1634544ddc674; skipped other shapes: tools/bench/sim/c112a_ctltun/graph_motorcontrol.json: objs is an empty list, not a non-empty list
+
+=== DRY FAIL: first_fail=GATE DRY graph JSON for input md5 3bf4ec6803e6815716f1634544ddc674 coverage 17/83 lines, first mutation None, unverified 0, graph None
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"GATE DRY graph JSON for input md5 3bf4ec6803e6815716f1634544ddc674","artefacts":[]}
+BGRUN END rc=1 after 1s

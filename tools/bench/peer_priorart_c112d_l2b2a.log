@@ -1,0 +1,53 @@
+BGRUN START 2026-09-28 00:08:24 limit 20.0 min: py tools/prior_art_review.py --plan-file tools/bench/cards/plan_112-4_d4.md --slug c112d-l2b2a --trigger new-op --recipe tools/recipes/stage_d1_l2b2a.py
+BGRUN PID 628
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c112d-l2b2a.txt (76571 chars)
+   review card tools\bench\cards\review_priorart-c112d-l2b2a.json
+OUTCOME: ANSWERED (114s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-28-priorart-c112d-l2b2a.md
+COST: $1.6083  in 20 / out 9526 / cache-create 144382 / cache-read 1313251  (110s, 16 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c112d-l2b2a verdict=settled-already -> tools\bench\cards\verdict_priorart-c112d-l2b2a.json
+--- ANSWER ---
+**The work is not novel. One finding blocks it: `contradicted`.** Everything else I checked is new work or follows decisions already recorded. The one contradiction is small and cheap to release.
+
+## Part A — the direction
+
+**A1 — settled already: nothing against it.** The direction follows what was decided:
+- The accepted hypothesis review, `archive/peer/2026-09-27-c112c-b2a-e1.md:108`, offers two fixes: model "init + link ⇒ S1 form" in stagesim, *or* "an allow rule that must equal S1's names, not an 'either' rule". D4 is the second fix.
+- `docs/d1-loop12-17-split-plan.md:1960` (PD225(h)4) requires one launch that produces `D1_l2_b2a_<ts>.vi` plus its expected Error List file. That is the plan's launch 2.
+
+**A2 — refuted already: nothing against D4.** Allow-either is the rule that was refuted, at `c112c-b2a-e1.md:85-91`. D4 replaces it.
+
+**A3 — contradicted (two places):**
+
+1. **"Names and count" versus "names only".**
+   - The review's fix says: *"after init and link, #8741/#30331 must hold S1's terminal names **and count**, and the same S1 expectation must hold for the downstream cascade pairs in PB"* (`archive/peer/2026-09-27-c112c-b2a-e1.md:91`). Its falsifier at `:78` is also stated as a count: *"names … differ from S1's list (… or a different count)"*.
+   - The material annotation of that same file narrows this to *"a one-directional 'must equal S1's names' rule"* (`:123`).
+   - The code keeps the count as a fact only: `tools/stagekit.py:1316` says *"the review's stronger 'names and count' reading; never a gate here"*. The recipe's `S1-FORM` line is logged as *"(fact, never a gate)"* (`tools/recipes/stage_d1_l2b2a.py:90`), and the plan agrees (`tools/bench/cards/plan_112-4_d4.md:31`).
+   - Consequence: `d4_ok` checks only whether the name exists on the node (`stagekit.py:1268-1270`). The `grown` check at `:1308` counts terminals but judges each one by name alone. So if a scope node grew *more* `disabled index (col)` terminals than S1 has, both E1 and PB would pass.
+   - The project has already found this class of problem once. An uncapped class licence was shown to hide real faults of the same wording, and was replaced by capped, explicit counts (`archive/peer/2026-09-26-c87-errorlist-extras.md:118`; `tools/errorlist_check.py:225-231`, PD195(b)).
+   - Two ways to release it:
+     - a `REFUTED:` line explaining why a count cap is unsafe here (for example, scope nodes that the plan leaves open may lawfully stay short of S1's count);
+     - or a cap of "real count ≤ S1 count on each scope node", which `d4_form` already computes.
+
+2. **An earlier prior-art release now describes code that is gone.**
+   - `archive/peer/2026-09-27-priorart-c111e-l2b2a.md:545` releases the c111e `contradicted` finding with `FIXED: … tools/recipes/stage_d1_l2b2a.py:29 - … RECORD MODE plus allow-either ONLY on the s3 cascade owners (tools/bench/plan_l2b2a_allow.json)`.
+   - In the current recipe, line 29 is blank and allow-either no longer exists (`stage_d1_l2b2a.py:1-2`: *"replaces 112-3's allow-either"*).
+   - E1 and PB are fatal again (`:61-62`, `:91-92`, `fatal=True`).
+   - The substance probably still holds, because D4 PB lets planned rows close on the s3 scope nodes (`stagekit.py:1305-1307`). The citation text should be updated to D4 (`stage_d1_l2b2a.py:27,59,87`) so the release stays true.
+
+**A4 — unread evidence: none.** The review's own cheapest test was read but was not run: the b2_09 → b2_11 → b2_12 → b2_14 → b2_15 scratch run with a name dump after each row (`c112c-b2a-e1.md:93-106`). The annotation records it as not done (`:124-125`). That makes it a merits question for judgement, not unread prior art. It is also the only thing that separates confounder (A), b2_15, and confounder (B), the `connect_from_wire` purge (`:71-72`), from the mechanism that D4 assumes.
+
+## Part B — the artifact
+
+- **B1 — already built:** no. No earlier gate checks real-only terminal *names* for one-way agreement with S1.
+  - The closest helper is `stagesim.open_rows_classed`, "class-4 sources == S1's" (`docs/toolkit-capabilities.md:843`, PD217(c)). It compares cdiff row sources, not terminal names on a node, so it does not cover this.
+  - The L2-B1 `#2626` licence (`tools/bench/plan_l2b1_licence.json`, PD224(h) at `split-plan.md:1918`) licenses a uid, not "must be in S1".
+- **B2 — already failed:** only launch 1, card 112-3 (`tools/bench/stage_d1_l2b2a.log:96,119`). The plan addresses its cause directly.
+- **B3 — a helper exists:** no.
+- **B4 — already measured:** no.
+
+PRIOR-ART: contradicted
+
+VERDICT {"schema":"verdict/1","id":"priorart-c112d-l2b2a","verdict":"settled-already","alternative":"Only finding is 'contradicted': c112c review :91/:78 asks S1 names AND count; D4 gates names only (stagekit.py:1268,1308,1316). Also c111e :545 FIXED cites allow-either at recipe :29, now removed. Cap count (real<=S1 per scope node) or REFUTE.","discriminating_test":"Offline: feed selftest_d4_l2b2a a ck7 diff with 3 'disabled index (col)' uids on #8741 (S1 has 2); D4 currently PASSes it. If it passes, add the count cap from d4_form or write why the cap is wrong.","violations":[],"sources":["archive/peer/2026-09-27-c112c-b2a-e1.md:91","archive/peer/2026-09-27-c112c-b2a-e1.md:123","tools/stagekit.py:1316","tools/stagekit.py:1308","archive/peer/2026-09-27-priorart-c111e-l2b2a.md:545","archive/peer/2026-09-26-c87-errorlist-extras.md:118"],"note":"Enum forces settled-already; the real slug is contradicted only. D4's direction matches the accepted review (:108); nothing already built/failed/measured. Review s4 scratch test (:93-106) never run: judgement's call."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c112d-l2b2a.md
+   STOP RECORD armed: tools/recipes/stage_d1_l2b2a.py sha 876bb078c484 verdict contradicted -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 117s

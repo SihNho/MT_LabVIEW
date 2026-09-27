@@ -1,0 +1,20 @@
+FAILED PREDICTION - a regression self-test after card 112-1 edited tools/stagesim.py:
+  py -u tools/bench/selftest_stagesim_l2a1_80.py   log tools/bench/selftest_stagesim_l2a1_80_c112a.log  (12 pass / 1 fail)
+
+Failing gate (:16): "E1 stagesim selftest still passes with its pre-refit count 42/0" with detail
+((71, 0), 0, ["  PASS  G67 NEGATIVE: an UNROUTABLE row fails FINALIZE ... (True, False, 'FAIL', 'UNROUTABLE 1 row(s) ...')"]).
+The stagesim self-test itself is 71 pass / 0 fail (tools/bench/selftest_stagesim_c112e.log, "=== GATES: 71 pass / 0 fail").
+
+Hypothesis: E1 fails only because it collects every self-test output line containing the upper-case word FAIL, and the NEW
+gate G67 (card 112-1 T4, the negative case of the finalize route check) prints the route check's status string 'FAIL' in
+its PASS line's detail tuple. No stagesim behaviour regressed; the other 12 gates of the file pass. Fix applied: G67 prints
+its detail lower-cased (tools/stagesim.py, G67).
+
+Already ruled out: the stagesim self-test count (71/0, i.e. 66 old gates + G63-G67, 0 fail); selftest_stagesim_k79 4/0 and
+selftest_guard_cycle_fixed 6/0 + 2/0 after the same edit.
+
+Questions:
+1. Strongest reason this is NOT merely a text-match artefact: read selftest_stagesim_l2a1_80.py's E1 and say what else its
+   second/third tuple elements test (e.g. a count that must equal a pinned number) that the new gates could break.
+2. Is lower-casing the detail the right fix, or should E1 match only lines that START with the FAIL marker?
+3. Cheapest discriminating test.

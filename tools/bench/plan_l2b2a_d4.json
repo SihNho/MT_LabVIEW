@@ -1,0 +1,13 @@
+{
+ "schema": "toward-s1/1",
+ "stage": "l2b2a",
+ "card": "tools/bench/cards/task_112-4.json rules D4 (judgement, cycle 112); replaces tools/bench/plan_l2b2a_allow.json (allow-either, card 112-3)",
+ "plan_md5": "4b782c1f5547c222c423636ca25c2ba9",
+ "s1": {"path": "docs/wiki/subvi/D1_s1_copy.json", "md5": "5de014fe580b938328fa8662cf2b0652",
+        "why": "review archive/peer/2026-09-27-c112c-b2a-e1.md s2(C) names D1_s1_copy.json:34485-34550 (#8741) and :27455-27520 (#30331)"},
+ "scope_nodes": [8634, 29625, 8741, 30331, 8764, 28233, 30306, 29005],
+ "scope_source": "tools/bench/cards/split_plan_111_l2b2.md:47-50 (s3 cascade list: #8634/#29625, IndexArray #8741/#30331, #8764 'x', FIR #28233 'X', #30306 'X', #29005 'element'); #2626 'array' is listed there as a rename, not a cascade, and stays OUT of scope",
+ "rule_e1": "D4 at every checkpoint (stagekit.d4_e1): a real-only term passes ONLY if its node is in scope_nodes and (node, name) exists on that node in S1's graph; a real-lost term (only_sim_terms) or any other diff kind (edges, dangling, unbound) FAILS",
+ "rule_pb": "D4 at PB (stagekit.d4_pb), ONE-WAY TOWARD S1: a cdiff(S1, real end) pair the plan kept open may CLOSE only on a scope node; a NEW pair FAILS; every (node, name) a scope node holds in the real end beyond the simulated end must exist on that node in S1; every real-only terminal uid must pass the E1 test; a real-lost terminal uid FAILS",
+ "facts_only": "per scope node, the real end's name multiset vs S1's (S1-FORM lines) is LOGGED, never gated"
+}

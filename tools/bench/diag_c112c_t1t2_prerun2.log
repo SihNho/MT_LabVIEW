@@ -1,0 +1,57 @@
+BGRUN START 2026-09-27 23:35:53 limit 5.0 min: py -u tools/stage_prerun.py --prerun tools/bench/diag_c112c_t1t2.py
+BGRUN PID 13108
+diag_c112c_t1t2 - card 112-3 W0: SCRATCH VERIFY of T1 (stagexec 'wire_sr' on a register that EXISTS on the base - SRB1, the
+Void register B1 created, Shift Registers[4] of WhileLoop #10170) and T2 ('ctltun': CT #403 -> case-selector Tunnel #2276 outer,
+OpCtlSinkWire_v1 roles reversed). FIXTURE: the dated scratch byte copy claudeDev\scratch_c112c_bed_<ts>.vi of the bed (graph
+tools/bench/graph_l2b1_20260927.json, dumped by cycle 111), DELETED at close - nothing is saved, no VI is run (reviews
+archive/peer/2026-09-27-c112c-fixture.md s2, -c112c-rows.md s5). PLAN sim/c112c/plan_c112c_bed.json (diag_c112c_plan.log: final,
+route wire_sr:RightIn / wire_sr:LeftIn / ctltun, rows copied from plan_l2b2a_in.json). PRIOR ART: stage_d1_l2b2a.py (this is its
+cut: LVBackend + Executor), stagexec RECORD MODE (card 101-4) so a step diff is logged, not fatal. No new op.
+PREDICTION: L1 3 ops (connect x3 -> wire_sr RightIn, wire_sr LeftIn, connect/ctltun); E1 every op's real read == its sim step,
+EXCEPT diffs whose terminals all sit on #8634/#29625 (split_plan_111_l2b2.md s3 cascade: allowed either way, logged); R each
+re-wired sink's wire has exactly ONE source == the planned source; ES ExecState unchanged (0, broken by design); H bed md5
+unchanged, scratch deleted, LabVIEW gone. PASS writes tools/bench/scratch_verify/{stagexec.op:wire_sr,stagexec.op:connect}_<ts>.json.
+    py tools/bgrun.py --material --max-min 40 --log tools/bench/diag_c112c_t1t2.log -- py -u tools/bench/diag_c112c_t1t2.py
+  PASS  L0 the plan is FINAL and open_rows_match  ('45e2e9fe2ae0d978555fec47808fe952', 'PASS')
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == b705728ab0714dc8179fc955283800f9  got b705728ab0714dc8179fc955283800f9
+  PASS  DRY graph JSON for input md5 b705728ab0714dc8179fc955283800f9  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_l2b1_20260927.json
+  FACT  ExecState [before the rows] scratch_c112c_bed_20260927_233554.vi = <dry:g.exec_state>
+  PASS  L1 3 plan actions -> 3 ops  [('connect', [1]), ('connect', [2]), ('connect', [3])]
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 1 touched diagram(s) [23166]: one-side-only Nodes[] entries 0
+  PRIME 0 terminal indexes proved at base; 1 ControlTerminal end(s) by 179(b); unprovable []
+  CHECKPOINTS whole-VI read+diff after ops [1, 2, 3] of 3
+  FACT  OP wire_connect [1] -> err '' (0.0 s)
+  STEPX 01 connect        acts [1] ids ['b2_10'] bound {} diff 0
+  FACT  OP wire_connect [2] -> err '' (0.0 s)
+  STEPX 02 connect        acts [2] ids ['b2_11'] bound {} diff 0
+  FACT  OP wire_connect [3] -> err '' (0.0 s)
+  STEPX 03 connect        acts [3] ids ['b2_15'] bound {} diff 0
+  FACT  OP {"k": null, "kind": null, "ids": null, "result": null, "how": null}
+  FACT  OP {"k": 1, "kind": null, "ids": ["b2_10"], "result": {"applied": [1], "check": {"triple": [122, 14, 2], "how": "uid echo: owner #1359 Terminals[2] uid == #9234 (name '')", "resolved_name": "", "route": "wire_sr:RightIn", "loop": 10170, "right": 9603}}, "how": null}
+  FACT  OP {"k": 2, "kind": null, "ids": ["b2_11"], "result": {"applied": [2], "check": {"triple": [122, 14, 1], "how": "uid echo: owner #1359 Terminals[1] uid == #9092 (name '')", "resolved_name": "", "route": "wire_sr:LeftIn", "loop": 10170, "right": 9603}}, "how": null}
+  FACT  OP {"k": 3, "kind": null, "ids": ["b2_15"], "result": {"applied": [3], "check": {"triple": [122, 15, 0], "how": "uid echo: owner #2222 Terminals[0] uid == #2282 (name '')", "resolved_name": "", "route": "ctltun"}}, "how": null}
+  PASS  E1 every op's real read == its sim step, except #8634/#29625 cascade diffs (allow-either, logged: 0)
+  PASS  R b2_10: sink t22281 has a wire whose ONE source is t9234 (read back)  (10000001, [9234])
+  PASS  R b2_11: sink t9092 has a wire whose ONE source is t25587 (read back)  (10000002, [25587])
+  PASS  R b2_15: sink t2282 has a wire whose ONE source is t403 (read back)  (10000003, [403])
+  FACT  ExecState [after the rows] scratch_c112c_bed_20260927_233554.vi = <dry:g.exec_state>
+  UNVERIFIED  ES ExecState unchanged by the rows  (dry: after mutation Stage._op wire_connect)
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  PASS  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['tools/bench/sim/c112c/plan_c112c_bed.json']
+  PASS  X3 every plan row decided  0 rows + 3 stageplan actions
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  1 stageplan(s)
+  PASS  X4 every end addressable offline (0 ends)  []
+  PASS  X5 wiring ops executed in the dry run == plan wire rows  ops 3 vs plan wire rows 0 + stageplan wiring real ops 3 (covering 3/3 wire actions)
+  PASS  X6 ast lint: no re-typed uid / terminal name  uids []; names []
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c112c_bed_20260927_233554.vi; decisions rows NOT dispatched (recipe calls neither run_rows nor from_decision)
+  PASS  X10 predicted LabVIEW private MB < 690.0 (error-2 point; MEMSTOP 700.0) over the ops this run dispatches (UNMEASURED - no covering record)  {'why': 'UNMEASURED: no recorded meter of diag_c112c_t1t2.py covers ops 1..end (0 record(s))'}
+  WARN  X10 WARN unmeasured: UNMEASURED: no recorded meter of diag_c112c_t1t2.py covers ops 1..end (0 record(s))
+
+=== DRY PASS: first_fail=None coverage 48/68 lines, first mutation Stage._op wire_connect, unverified 1, graph tools/bench/graph_l2b1_20260927.json
+=== PRERUN PASS: 10 pass / 0 fail; first None
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":10,"fail":0},"first_fail":"X10 WARN unmeasured: UNMEASURED: no recorded meter of diag_c112c_t1t2.py covers ops 1..end (0 record(s))","artefacts":[]}
+BGRUN END rc=0 after 6s

@@ -1,0 +1,70 @@
+BGRUN START 2026-09-27 23:08:15 limit 20.0 min: py -u tools/bench/diag_c112b_addr.py
+BGRUN PID 8572
+diag_c112b_addr - card 112-2 S3 on LabVIEW, READ-ONLY: every B2a end of tools/bench/plan_l2b2a.json addressed on a dated SCRATCH
+byte copy of the bed by the REAL executor path (stagexec.LVBackend + Addr + LVReader, the D2 uid echo through OpNodeTermsUid_v0;
+the (v) LoopTunnel owner route). Nothing is wired, moved or saved; the scratch is deleted at close (no stagekit mutating verb).
+PRIOR ART: diag_c112a_b2a_route2.log (offline, 1/7), diag_c112b_route.log (offline, 7/7 after (v)+D2); stagexec.lv_run's read.
+PREDICTION: K0 the live read of the scratch == graph_l2b1 (compare, diff 0); A1 each of the 7 BARE faces (t25588 t9234 t9092
+t25606 t29624 t29928 t2282) resolves to exactly ONE owner Terminals[] entry by uid echo, owner = #10170/#1359/#1359/#10170/
+#29874/#29874/#2222; A2 the 2 WIRED sources (t8958, t28172) resolve; A3 CT #403 by 179(b); A4 SRB1/SRB2 (right #9603 / #25545)
+are Shift Registers[] entries of WhileLoop #10170; H bed md5 unchanged, scratch deleted, LabVIEW gone.
+    py tools/bgrun.py --material --max-min 20 --log tools/bench/diag_c112b_addr.log -- py -u tools/bench/diag_c112b_addr.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 296 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == b705728ab0714dc8179fc955283800f9  got b705728ab0714dc8179fc955283800f9
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33970
+  FACT  PRELOAD: the ORIGINAL is resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened, nothing saved
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_c112b_addr_20260927_230816.vi
+  FACT  ExecState [after open] scratch_c112b_addr_20260927_230816.vi = 0
+  PASS  K0 the live read of the scratch == graph_l2b1 (terminal-level diff)
+  FACT  END b2_09 src #8958 (GrowableFunction Terminal): (8953, 1, 'order-proof')
+  FACT  END b2_09 dst #25588 (LeftShiftRegister OuterTerminal): (10170, 18, "uid echo: owner #10170 Terminals[18] uid == #25588 (name '')")
+  FACT  END b2_10 src #9234 (LoopTunnel OuterTerminal): (1359, 2, "uid echo: owner #1359 Terminals[2] uid == #9234 (name '')")
+  FACT  END b2_11 dst #9092 (LoopTunnel OuterTerminal): (1359, 1, "uid echo: owner #1359 Terminals[1] uid == #9092 (name '')")
+  FACT  END b2_12 src #28172 (GrowableFunction Terminal): (28124, 1, 'order-proof')
+  FACT  END b2_12 dst #25606 (LeftShiftRegister OuterTerminal): (10170, 20, "uid echo: owner #10170 Terminals[20] uid == #25606 (name '')")
+  FACT  END b2_13 src #29624 (LoopTunnel OuterTerminal): (29874, 5, "uid echo: owner #29874 Terminals[5] uid == #29624 (name '')")
+  FACT  END b2_14 dst #29928 (LoopTunnel OuterTerminal): (29874, 3, "uid echo: owner #29874 Terminals[3] uid == #29928 (name '')")
+  FACT  END b2_15 dst #2282 (Tunnel OuterTerminal): (2222, 0, "uid echo: owner #2222 Terminals[0] uid == #2282 (name '')")
+  PASS  A1 each BARE B2a face -> ONE owner Terminals[] entry by uid echo, on the predicted owner  {25588: (10170, 18, "uid echo: owner #10170 Terminals[18] uid == #25588 (name '')"), 9234: (1359, 2, "uid echo: owner #1359 Terminals[2] uid == #9234 (name '')"), 9092: (1359, 1, "uid echo: owner #1359 Terminals[1] uid == #9092 (name '')"), 25606: (10170, 20, "uid echo: owner #10170 Terminals[20] uid == #25606 (name '')"), 29624: (29874, 5, "uid echo: owner #29874 Terminals[5] uid == #29624 (name '')"), 29928: (29874, 3, "uid echo: owner #29874 Terminals[3] uid == #29928 (name '')"), 2282: (2222, 0, "uid echo: owner #2222 Terminals[0] uid == #2282 (name '')")}
+  PASS  A2 the wired sources #8958 / #28172 resolve  [(8953, 1, 'order-proof'), (28124, 1, 'order-proof')]
+  PASS  A3 CT #403 by its own uid (179(b))  ('ct', 23166, 'ControlTerminal route 179(b): own uid #403, owner Diagram #23166 (idx 21), in report_all')
+  PASS  A4 SRB1 R #9603 / SRB2 R #25545 are Shift Registers[] entries of WhileLoop #10170  (1, [4, 5])
+
+---------- [H] HYGIENE
+  FACT  close_panel(scratch_c112b_addr_20260927_230816.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  PRELOAD references released; refs {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 6}
+  FACT  gscript ref_counts: {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 6}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 6}
+  FACT  LabVIEW handle count AFTER the work: 45832
+  PASS  H4 scratch deleted: scratch_c112b_addr_20260927_230816.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c112b_addr_20260927_230816.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before b705728ab0714dc8179fc955283800f9 / after b705728ab0714dc8179fc955283800f9
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33957
+
+====================================================================================================
+=== GATES: 13 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c112b_addr.json   elapsed 148.5 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  H LabVIEW gone at exit
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":14,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 153s

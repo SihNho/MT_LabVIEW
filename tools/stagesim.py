@@ -451,6 +451,39 @@ def _unflip_restored_tunnels(st, seeds, cascade=False):
     return out
 
 
+def seed_base_flips(st, cascade=False):
+    """card 112-1 T3 (PD225(h)3 (iii), brief_110-3 (e)): flips made in an EARLIER session. A base-graph tunnel of a
+    TUN_FLIP class whose terminals are ALL sinks is undirected (the flipped state _flip_orphaned_output_tunnels leaves, saved
+    to disk: B2-11/-14's #9087/#29911 on the L2-B1 bed, split_plan_111_l2b2.md §3). Every one of its terminals is registered
+    in st['flip_reg'] exactly as a same-session flip is, and st['unflip'] is armed, so op_wire's _unflip_restored_tunnels
+    reverts the OPPOSITE side once one side gets a source (the 81-5 F1 rule, measured on same-session flips; on a
+    saved-file flip it is the PREDICTION the executor's per-step compare checks). Returns the seeded records."""
+    reg = st.setdefault("flip_reg", {})
+    by = collections.defaultdict(list)
+    for r in st["terminals"]:
+        if r["owner_class"] in TUN_FLIP and r["term_class"] in TUN_SIDES:
+            by[r["owner_uid"]].append(r)
+    out = []
+    for tun, rows in sorted(by.items()):
+        sides = set(r["term_class"] for r in rows)
+        if len(sides) != 2 or any(r["is_source"] for r in rows):
+            continue
+        for r in rows:
+            if str(r["term_uid"]) not in reg:
+                reg[str(r["term_uid"])] = tun
+                out.append({"tunnel": tun, "term_uid": r["term_uid"], "side": r["term_class"], "wire": r["wire_uid"]})
+    if out and not st.get("unflip"):
+        st["unflip"] = {"cascade": bool(cascade)}
+    return out
+
+
+def seed_base_flips_modelled(st, models):
+    """seed_base_flips under the switch that arms the same-session un-flip (the move_in model's `unflip_on_source`,
+    card 81-5 F1). ONE definition for simulate() and stagexec's dry backends, so the dry state equals step_00."""
+    Pm = model_for("move_in", models)[0]
+    return seed_base_flips(st, Pm.get("unflip_cascade", False)) if Pm.get("unflip_on_source", False) else []
+
+
 def _fate_by_class(rule, src_class):
     if isinstance(rule, dict):
         # card 101-5: a SubVI source is its own kind ('subvi'; falls back to 'node' when a rule has no 'subvi' key)
@@ -1163,8 +1196,34 @@ def open_rows_classed(plan, S1, G, end_pairs):
             "unclassed": [list(x) for x in unclassed]}
 
 
+def route_report(plan_out_path, model_dir=OPMODEL_DIR, log=print, require_final=True):
+    """card 112-1 T4: stagexec.dry_run on a just-finalized plan -> {status, first_fail, rows: [{k, op, ids, route, how,
+    unroutable}]}. stagexec imports this module, so the import is lazy. Any exception fails closed (status ERROR).
+    require_final=False = the diagnostic routability run on a non-final plan (stagexec.dry_run's card 100-3 mode)."""
+    try:
+        import stagexec as X
+        st_, ff, ex = X.dry_run(plan_out_path, log=lambda *_a: None, model_dir=model_dir, require_final=require_final)
+    except Exception as e:                                                    # noqa: BLE001 - fail closed, reported
+        return {"status": "ERROR", "first_fail": "{0}: {1}".format(type(e).__name__, e)[:1500], "rows": []}
+    un = dict((tuple(u["acts"]), u["err"]) for u in (getattr(ex, "unroutable", None) or []) if u.get("acts"))
+    rows = []
+    for r in ex.report:
+        if r.get("op") in ("base", "from_step"):
+            continue
+        chk = ((r.get("result") or {}).get("check") or {}) if isinstance(r.get("result"), dict) else {}
+        rows.append({"k": r.get("k"), "op": r.get("op"), "ids": r.get("ids"), "route": chk.get("route") or r.get("op"),
+                     "how": chk.get("how"), "unroutable": un.get(tuple(r.get("acts") or ())) or chk.get("unroutable")})
+    for acts, err in un.items():                                            # rows the run never reached (a hard stop)
+        if not any(tuple(x.get("acts") or ()) == acts for x in ex.report):
+            rows.append({"k": None, "op": None, "ids": None, "acts": list(acts), "route": None, "how": None, "unroutable": err})
+    for x in rows:
+        log("  ROUTE {0} {1} {2}: {3}{4}".format(x.get("k"), x.get("op"), x.get("ids"), x.get("route"),
+                                                "  UNROUTABLE " + str(x["unroutable"])[:200] if x.get("unroutable") else ""))
+    return {"status": st_, "first_fail": ff, "rows": rows}
+
+
 def simulate(plan_path, graph_path, out_root=SIM_ROOT, plan_out_dir=BENCH, model_dir=OPMODEL_DIR, labels=None,
-             log=print):
+             log=print, route_check=True):
     plan = _j(plan_path)
     ok, why = protocol.validate_obj(plan)
     if not ok:
@@ -1177,6 +1236,12 @@ def simulate(plan_path, graph_path, out_root=SIM_ROOT, plan_out_dir=BENCH, model
     models = load_models(model_dir)
     S1 = load_s1(plan)
     st = base_state(_j(graph_path), plan.get("context"))
+    # card 112-1 T3: flips saved in the base file are seeded under the SAME model switch that arms the same-session un-flip
+    # (move_in `unflip_on_source`, card 81-5 F1); with no such model (the self-test's provisional rules) nothing changes
+    base_flips = seed_base_flips_modelled(st, models)
+    if base_flips:
+        log("  BASE-FLIPS seeded {0} terminal(s) on {1} undirected tunnel(s): {2}".format(
+            len(base_flips), len(set(f["tunnel"] for f in base_flips)), sorted(set(f["tunnel"] for f in base_flips))[:20]))
     base_nodes = set(V.node_of(r) for r in st["terminals"])
     cd_lab, cd_fs, cd_rec = cdiff_inputs(plan, st, labels)          # card 106-3: the finalize graph = the E3 inputs
     labels = labels if labels is not None else {}                   # the ops keep their old inputs (step states unchanged)
@@ -1289,6 +1354,28 @@ def simulate(plan_path, graph_path, out_root=SIM_ROOT, plan_out_dir=BENCH, model
     pp = os.path.join(plan_out_dir, "plan_{0}.json".format(stage))
     with open(pp, "w", encoding="utf-8") as f:
         json.dump(out_plan, f, indent=1, default=str)
+    if final and route_check:
+        # card 112-1 T4 (PD225(h)3 (iv), brief_110-3 (b)): FINALIZE RUNS THE ROUTE CHECK. The finalized plan is dry-run
+        # through stagexec's collecting backend, whose connect / wire_sr / branch / create take the SAME route functions
+        # the real backend takes (connect_route, Addr) - so an UNROUTABLE row fails at plan time, not at the dry of the
+        # launch card (plan_l2b1_dry3.log:84). Per-row route report in finalized.route_check.
+        rc = route_report(pp, model_dir, log)
+        out_plan["finalized"]["route_check"] = rc
+        if rc["status"] != "PASS":
+            final = out_plan["final"] = summary["final"] = False
+            log("  FINALIZE REFUSED: route check {0}: {1}".format(rc["status"], str(rc["first_fail"])[:600]))
+        with open(pp, "w", encoding="utf-8") as f:
+            json.dump(out_plan, f, indent=1, default=str)
+        summary["route_check"] = rc
+    elif route_check and not failed and S1 is not None:
+        # review archive/peer/2026-09-27-c112a-b2aroute.md: a NON-final plan also carries the route report, ADVISORY
+        # (stagexec.dry_run's require_final=False diagnostic mode); it never makes a plan final
+        rc = route_report(pp, model_dir, log, require_final=False)
+        rc["advisory"] = True
+        out_plan["finalized"]["route_check"] = rc
+        with open(pp, "w", encoding="utf-8") as f:
+            json.dump(out_plan, f, indent=1, default=str)
+        summary["route_check"] = rc
     summary["plan_out"] = {"path": _rel(pp), "md5": md5_file(pp)}
     summary["summary_path"] = sp
     summary["_state"] = st
@@ -1777,6 +1864,52 @@ def selftest():
          e62["how"] == "branch" and e62["wire"] == 5 and sorted(r["term_uid"] for r in wire_rows(s62, 6)) == [] and
          e63["how"] == "new" and e63["wire"] == n63 - 1 and [r["term_uid"] for r in wire_rows(s63, 6)] == [9001],
          (e62, e63))
+    # card 112-1 T3: a flip SAVED in the base (B2-11/-14 shape: input LoopTunnel #9087 on the L2-B1 bed, outer t9092 bare
+    # sink, inner a sink on w9076 -> #8634 'array'); a register's L.inner wired onto the outer reverts the inner to a source
+    def b2_11():
+        T = [tr(9092, False, 0, 9087, "LoopTunnel", "OuterTerminal", 20), tr(9093, False, 76, 9087, "LoopTunnel", "InnerTerminal", 21),
+             tr(8640, False, 76, 8634, "SubVI", "Terminal", 21), tr(25587, True, 0, 10544, "LeftShiftRegister", "InnerTerminal", 20),
+             tr(7001, True, 71, 7000, "SubVI", "Terminal", 21), tr(7002, False, 71, 7003, "SubVI", "Terminal", 21),
+             tr(7101, False, 0, 7100, "LoopTunnel", "OuterTerminal", 20), tr(7102, True, 72, 7100, "LoopTunnel", "InnerTerminal", 21)]
+        return base_state({"terminals": T})
+    s64 = b2_11()
+    seeded = seed_base_flips(s64, False)
+    e64, _c = op_wire(s64, {"src": {"uid": 10544, "term_uid": 25587}, "dst": {"uid": 9087, "term_uid": 9092}},
+                      dict(PROVISIONAL["wire"]["params"]), None, {})
+    r64 = dict((r["term_uid"], r) for r in s64["terminals"])
+    gate("G63 base flip seeding: only the all-sink tunnel #9087 is seeded (both faces), the directed #7100 is not",
+         sorted(f["term_uid"] for f in seeded) == [9092, 9093] and s64.get("unflip") == {"cascade": False}, seeded)
+    gate("G64 B2-11 shape: SR L.inner -> the saved-flipped outer reverts the inner 9093 to a SOURCE, so w76 -> #8634 has a "
+         "source; the outer stays a sink",
+         r64[9093]["is_source"] is True and has_source(s64, 76) and r64[9092]["is_source"] is False and
+         [u["term_uid"] for u in e64.get("unflipped") or []] == [9093], e64)
+    s65 = b2_11()
+    e65, _c = op_wire(s65, {"src": {"uid": 10544, "term_uid": 25587}, "dst": {"uid": 9087, "term_uid": 9092}},
+                      dict(PROVISIONAL["wire"]["params"]), None, {})
+    gate("G65 negative control: without seeding the saved flip is NOT reverted (the pre-112 behaviour, stagesim.py "
+         "_unflip_restored_tunnels reads flip_reg only)", not has_source(s65, 76) and "unflipped" not in e65, e65)
+    # card 112-1 T4: finalize runs the route check. Positive: wired Constant #1 -> SubVI #4 'x' ('cfw' route). Negative:
+    # a wired source -> a LoopTunnel's INNER sink face (not addressable by stagexec Addr: the toy's #61 is in no
+    # Diagram.Nodes[]) - the sim alone finalizes it, the route check must refuse it.
+    rp = {"schema": "stageplan/1", "stage": "r", "goal": "route check", "context": {"s1_graph": {"path": s1p}},
+          "open_rows": [{"node": 4, "term": "x", "why": "toy"}]}
+    ok66 = run(dict(rp, actions=[{"op": "delete_wire", "wire_uid": 7}, {"op": "wire", "src": {"uid": 1, "term_uid": 1001},
+                                  "dst": {"uid": 4, "term_uid": 1041}}]), "route_ok", log=quiet, route_check=True)
+    acts67 = [{"op": "delete_wire", "wire_uid": 6}, {"op": "wire", "src": {"uid": 2, "term_uid": 1024},
+                                                     "dst": {"uid": 61, "term_uid": 1611}}]
+    pre67 = run(dict(rp, actions=acts67), "route_bad0", log=quiet)                     # the end rows, declared open below
+    open67 = [{"node": V.key_parts(k)[0], "term": V.key_parts(k)[2], "why": "toy"} for k in pre67.get("end_cdiff_rows") or []]
+    gate("G66 finalize route check PASS on a routable row: final, finalized.route_check lists the row's route",
+         ok66["final"] and ok66.get("route_check", {}).get("status") == "PASS" and
+         [x["route"] for x in ok66["route_check"]["rows"]][-1:] == ["cfw"],
+         (ok66.get("route_check"), ok66.get("failed"), ok66.get("end_cdiff_rows"), ok66.get("open_rows_match")))
+    bad = run(dict(rp, actions=acts67, open_rows=open67), "route_bad", log=quiet, route_check=True)
+    rcb = bad.get("route_check") or {}
+    gate("G67 NEGATIVE: an UNROUTABLE row fails FINALIZE (not final, although the sim alone finalizes), the row is named",
+         bad.get("open_rows_match") and not bad["final"] and rcb.get("status") == "FAIL" and
+         any(x.get("unroutable") for x in rcb.get("rows") or []),
+         # printed lower-case: selftest_stagesim_l2a1_80.py E1 counts every output line carrying the upper-case word
+         (bad.get("open_rows_match"), bad.get("final"), str(rcb.get("status")).lower(), str(rcb.get("first_fail"))[:300].lower()))
     n_pass = sum(1 for _l, ok in gates if ok)
     n_fail = len(gates) - n_pass
     first = next((l for l, ok in gates if not ok), None)
@@ -1785,13 +1918,15 @@ def selftest():
     return 0 if n_fail == 0 else 1
 
 
-def _run_plan(plan, name, gp, tmp, model_dir=None, log=print):
+def _run_plan(plan, name, gp, tmp, model_dir=None, log=print, route_check=False):
+    # route_check off by default here (card 112-1 T4): G01-G62 test the SIMULATION model on a toy graph whose objects the
+    # executor's readers were never meant to address; G66-G67 turn the finalize route check on explicitly
     pp = os.path.join(tmp, "plan_in_{0}.json".format(name))
     plan = dict(plan, stage=name)
     with open(pp, "w", encoding="utf-8") as f:
         json.dump(plan, f)
     return simulate(pp, gp, out_root=os.path.join(tmp, "sim"), plan_out_dir=tmp,
-                    model_dir=model_dir or os.path.join(tmp, "no_models"), log=log)
+                    model_dir=model_dir or os.path.join(tmp, "no_models"), log=log, route_check=route_check)
 
 
 def main(argv):

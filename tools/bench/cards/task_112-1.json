@@ -1,0 +1,92 @@
+{
+ "schema": "task/1",
+ "id": "112-1",
+ "kind": "build",
+ "escalation": 0,
+ "goal": "PD225(h)3 scoped to B2a: owed hypothesis review (diag_c111e_md5.log), then build + scratch-verify tooling (i),(ii),(iii),(iv),(vi) per pass T1-T6; (v) is B2b, not here",
+ "why": "B2a (rows B2-09..15 on bed D1_l2_b1_20260927_193100.vi) is blocked only by missing routes (split_plan_111_l2b2.md §5, prior-art c111e). Tools are built because the deliverable needs them; card 112-2 launches B2a this cycle.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/cards/split_plan_111_l2b2.md"},
+  {"path": "tools/bench/cards/brief_110-3.md", "md5": "79d02fbd41dd48d41e8362ecb7ebd8c7"},
+  {"path": "archive/peer/2026-09-27-priorart-c111e-l2b2a.md"},
+  {"path": "tools/bench/diag_c111e_md5.log", "md5": "52c4bad8cf7a88da88fe9184e909fc50"},
+  {"path": "tools/bench/plan_l2b2a.json", "md5": "b7ca7db6f1933410331ee39d00844dfd"},
+  {"path": "tools/bench/graph_l2b1_20260927.json", "md5": "8327f974cf150146b93b19f10e54afd5"},
+  {"path": "tools/stagexec.py", "md5": "df752d0e72a725e5a01a0082991bdb6a"},
+  {"path": "tools/stagesim.py", "md5": "3ec5911d4d8dc9e35eb83d4ddef9fe2c"},
+  {"path": "tools/hooks/guard_cycle.py", "md5": "cacbe2f2efc26c70342cbe28d83f3391"},
+  {"path": "docs/violation-decisions.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/hooks/guard_cycle.py"},
+  {"kind": "file", "name": "tools/launchunit.py"},
+  {"kind": "file", "name": "tools/bench/graph_l2b1_20260927.json"},
+  {"kind": "file", "name": "tools/bench/plan_l2b2a.json"}
+ ],
+ "pass": [
+  "H0 first: -Role hypothesis review naming tools/bench/diag_c111e_md5.log ANSWERED + annotated; guard_peer clear (cause per PD225(h)3: stale md5 4ef10fc4 vs e13177d9)",
+  "T1 (i) wire_sr/SR outer face for a register already on the base graph (loop_of from graph): stagexec self-test +case, 0 regressions; scratch_verify PASS",
+  "T2 (ii) ControlTerminal -> structure-tunnel sink route (B2-15 shape): self-test case + scratch_verify record PASS",
+  "T3 (iii) stagesim seeds flips from the base graph, reverts them when the outer gets a source: +case of B2-11/-14 shape, 0 regressions",
+  "T4 (iv) stagesim finalize runs connect_route per row: negative case fails finalize; per-row route report for the 7 B2a rows",
+  "T6 (vi) guard_cycle ALLOWS stage_prerun --dry|--prerun of an unreleased recipe and still REFUSES its launch: self-test both cases",
+  "else: stop point, gate, values, file:line, JEV-LADDER row"
+ ],
+ "outputs": [
+  "tools/stagexec.py",
+  "tools/stagesim.py",
+  "tools/hooks/guard_cycle.py",
+  "tools/bench/scratch_verify/**",
+  "tools/bench/selftest_*",
+  "tools/bench/cards/result_112-1.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\Op*",
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/stagekit.py",
+   "tools/gscript.py",
+   "tools/hooks/guard_cycle.py",
+   "tools/opmodels/**",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/selftest_*",
+   "tools/bench/diag_c112a*",
+   "tools/bench/sim/**",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "docs/NAMES.md",
+   "docs/toolkit-capabilities.md",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 75},
+ "rules": [
+  "H0 first; no build before guard_peer is clear; review = -Agent claude -Role hypothesis, single arm",
+  "each tool item scratch-verified (<=120-line stagekit script) before stage use; never on the bed or any D1_* file",
+  "do NOT launch stage_d1_l2b2a.py nor release the c111e prior-art review (card 112-2 does both)",
+  "shared-tool edits keep every existing self-test at 0 regressions; report the counts",
+  "run no VI except scratch VIs made here; LabVIEW closed and verified gone at the end",
+  "scripts via py tools/bgrun.py --material --max-min N --log f -- py -u <script>; no env prefixes",
+  "hold the turn until every bgrun you start writes BGRUN END",
+  "a gate refusal is returned BLOCKED, never re-run via a self-test child or exempt route",
+  "a design choice PD225 does not settle is returned OPEN; facts <=10 file:line; OPEN <=3"
+ ],
+ "advances": ["M3", "R1"]
+}

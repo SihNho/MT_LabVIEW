@@ -1,0 +1,20 @@
+BGRUN START 2026-09-27 22:23:00 limit 1.0 min: py -u tools/bench/diag_c112a_peek.py tools/bench/plan_l2b2a.json
+BGRUN PID 632
+['schema', 'stage', 'goal', 'base', 'context', 'actions', 'open_rows', 'final', 'finalized']
+schema = "stageplan/1"
+stage = "l2b2a"
+goal = "L2-B2a (PD225(f), card 111-5): on the B1 bed D1_l2_b1_20260927_193100.vi (graph_l2b1_20260927.json), the 6 SR rows B2-09..14 that feed the two 1.2 registers B1 created (SRB1 = R #9603 / L #10544, SRB2 = R #25545 / L #25582, both on WhileLoop #10170) and the case-selector row B2-15 (#403 'Z/dZ' -> Tunnel #2276). No move, no create. Row ids = tools/bench/facts_c111b_l2b_rows.json."
+base = {"path": "tools/bench/graph_l2b1_20260927.json", "md5": "8327f974cf150146b93b19f10e54afd5"}
+context = {"s1_key": "D1_s1_copy"}
+open_rows = [{"node": 376, "term": "current frame data array in", "why": "QRT (PD175): #2626 -> #376 w4517, 1.2 -> 1.7"}, {"node": 376, "term": "frame index", "why": "QRT (PD175), carried from the bed"}, {"node": 5058, "term": "Image In", "why": "QRT (PD177(e)), carried from the bed"}, {"node": 2626, "term": "element", "why": "QRT (PD182(c)/D5): #5119, #30117, #4580 1.1 -> 1.2 data crossings"}, {"node": 11261, "term": "element", "why": "QRT (D5): #11608 1.1 -> 1.2 data crossing"}, {"node": 28083, "term": "Magnet position", "why": "QRT (D5): #30117 via #1359 tunnel #9503"}, {"node": 8634, "term": "index (c
+final = true
+finalized = {"base": {"path": "tools/bench/graph_l2b1_20260927.json", "md5": "8327f974cf150146b93b19f10e54afd5"}, "plan_in": {"path": "tools/bench/plan_l2b2a_in.json", "md5": "23b64237d122f213a23db06f82e2880f"}, "last_step": {"path": "tools/bench/sim/l2b2/l2b2a/step_07_wire.json", "md5": "f0498bf6cc226800e1860b56fd55bcd9"}, "summary": {"path": "tools/bench/sim/l2b2/l2b2a/summary.json", "md5": "2a684298ebf27e34189267f93800c68c"}, "end_cdiff_rows": ["11261|Terminal|array|0", "11261|Terminal|element|0", "2626|Terminal|array|0", "2626|Terminal|array|1", "2626|Terminal|array|2", "2626|Terminal|array|3", "2626|
+{"op": "wire", "id": "b2_09", "src": {"uid": 8953, "term_uid": 8958}, "dst": {"uid": 10544, "term_uid": 25588}, "why": "B2-09 SRB1 init: #8953 'initialized array' (wired, w9051 -> old L #9025 outer) -> SRB1 L.outer t25588 (D3)"}
+{"op": "wire", "id": "b2_10", "src": {"uid": 9227, "term_uid": 9234}, "dst": {"uid": 9603, "term_uid": 22281}, "why": "B2-10 SRB1 feed: #1359's output LoopTunnel #9227 outer t9234 (bare) -> SRB1 R.inner t22281 (census #1359 i2 w9215, D3)"}
+{"op": "wire", "id": "b2_11", "src": {"uid": 10544, "term_uid": 25587}, "dst": {"uid": 9087, "term_uid": 9092}, "why": "B2-11 SRB1 re-feed: SRB1 L.inner t25587 -> #1359's input LoopTunnel #9087 outer t9092 (census #1359 i1 w9097; build_d1_v0 noroute)"}
+{"op": "wire", "id": "b2_12", "src": {"uid": 28124, "term_uid": 28172}, "dst": {"uid": 25582, "term_uid": 25606}, "why": "B2-12 SRB2 init: #28124 'initialized array' (wired, w29122 -> old L #29512 outer) -> SRB2 L.outer t25606 (D3)"}
+{"op": "wire", "id": "b2_13", "src": {"uid": 29616, "term_uid": 29624}, "dst": {"uid": 25545, "term_uid": 25596}, "why": "B2-13 SRB2 feed: #29874's output LoopTunnel #29616 outer t29624 (bare) -> SRB2 R.inner t25596 (census #29874 i5 w29591, D3)"}
+{"op": "wire", "id": "b2_14", "src": {"uid": 25582, "term_uid": 25605}, "dst": {"uid": 29911, "term_uid": 29928}, "why": "B2-14 SRB2 re-feed: SRB2 L.inner t25605 -> #29874's input LoopTunnel #29911 outer t29928 (census #29874 i3 w28039; build_d1_v0 noroute)"}
+{"op": "wire", "id": "b2_15", "src": {"uid": 403, "term_uid": 403}, "dst": {"uid": 2276, "term_uid": 2282}, "why": "B2-15 w730: bare ControlTerminal #403 'Z/dZ' -> case selector Tunnel #2276 outer t2282 (census #2222 i0 from-ctl 47; build_d1_v0 noroute 'wire_control is name-addressed on BOTH ends')"}
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

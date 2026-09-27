@@ -1,0 +1,41 @@
+BGRUN START 2026-09-27 22:34:08 limit 20.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug c112a-b2aroute -TaskFile tools/bench/peer_c112a_b2aroute_task.txt -ReviewCard tools/bench/cards/review_c112a-b2aroute.json -TimeoutSec 900
+BGRUN PID 21976
+OUTCOME: ANSWERED (118s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-27-c112a-b2aroute.md
+COST: $1.2151  in 22 / out 9851 / cache-create 98336 / cache-read 1050351  (114s, 19 turn(s))
+VERDICT-CARD: VERDICT-CARD c112a-b2aroute verdict=supported -> tools\bench\cards\verdict_c112a-b2aroute.json
+--- ANSWER ---
+**Verdict: supported on the mechanism, but I could not refute it and it is incomplete.** The gate failed for the reason given. The part that matters is still unmeasured: whether the two rows that closed were closed correctly.
+
+**What the machine confirms**
+- The route check only runs on a final plan. It sits behind `if final and route_check:` (`tools/stagesim.py:1357`). `final` needs `open_match` (`stagesim.py:1316-1322`).
+- The pinned plan ended with 56 rows and was final only because its `open_rows` matched those 56 exactly (legacy match: `tools/bench/plan_l2b2a.json:345-401`, `:588-589`).
+- The new run's end list (`tools/bench/sim/c112a/l2b2a/summary.json:4146-4200`) is the same list minus exactly two rows: `8634|array` and `29625|array`. Those are the array inputs fed by inner terminals 9089 and 29923. The diagnostic log reports both as reverted (unflipped) at steps 3 and 6 (`diag_c112a_b2a_route.log:16,19`), and the wiring is recorded at `diag_c110_terms_bed.log:108,114`.
+
+**1. Strongest reason the claim is not the whole story**
+Calling this "just a non-final plan" treats `open_rows` as bookkeeping to update. But the pinned `open_rows` was a snapshot of the entire simulated output: all 56 end rows were declared "open by design". A snapshot like that makes any progress break finality.
+
+The plan also says B2a's end cdiff must close the 7 rows' pairs (`docs/d1-loop12-17-split-plan.md:1960`). The new run closes 2 rows, and 5 of the 7 steps (b2_09, 10, 12, 13, 15) change nothing (`diag_c112a_b2a_route.log:4-10`). Copying the 54 rows into `open_rows` would make the plan final while hiding that. The evidence I read does not show whether those 5 rows' pairs are in the cdiff at all, or whether the simulator runs them as no-ops.
+
+**2. Alternative explanation (your Q1)**
+The seeding's reversion could be a wrong prediction. The seeding code itself says the reversion rule was measured only on flips made in the same session; for a flip saved in the file it is a prediction (`stagesim.py:459-460`). I found no record of it under `tools/bench/scratch_verify/`, even though card 112-1's rules require every tool item to be scratch-verified (`tools/bench/cards/task_112-1.json:82`).
+
+External evidence supports the seeding. NI documents tunnel direction as coming only from where the wire's source is: source outside means an input tunnel, and no source on either side means an undirected tunnel error ([NI: Wire connected to an undirected tunnel](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/wire-connected-to-undirected-tunnel.html)). On that rule, a saved undirected tunnel whose outer side gets a source should turn its inner terminal into a source regardless of session. But that is documentation, not a measurement on this VI copy, and the simulator reverts only terminals in `flip_reg`, which is a narrower model than LabVIEW's.
+
+**3. What would falsify the claim**
+- Set `open_rows` to the 54 end rows and re-simulate. If the plan still does not finalize (the classed rule, or undecided candidates), the claim is wrong. The claim also needs the reverse: `route_report(..., require_final=False)` must list all 7 rows, with none unroutable.
+- A real save → reopen → wire test where inner terminal 9089 or 29923 stays a sink would falsify the seeding, and with it the 54-row target.
+
+**4. Is "route check only on final plans" the right contract? (your Q2)**
+No. Final-only gating is right for granting finality. But a non-final plan should still carry the route report, marked advisory (`require_final=False`). Otherwise the operator fixes `open_rows`, re-runs, and only then finds unroutable rows: two iterations instead of one.
+
+**Record hygiene**
+The script on disk is not the one that produced this log. The current `diag_c112a_b2a_route.py:25,28` prints "END ROWS" and "ROUTE-CHECK not run…", and neither line is in the log. The card lists the attachments' md5 as `None`.
+
+**5. Cheapest discriminating test**
+- **Offline, seconds:** diff `summary.end_cdiff_rows` against `open_rows` and confirm it is exactly {(8634, array), (29625, array)}. Then run `route_report("tools/bench/sim/c112a/plan_l2b2a.json", require_final=False)` and look at the 7 rows, including whether b2_09, 10, 12, 13 and 15 are routable.
+- **Seeding:** a scratch VI of 120 lines or fewer. Save a VI with an undirected loop tunnel, reopen it in a fresh LabVIEW instance, wire the outer side from a constant, and read the inner terminal's `is_source`.
+
+Changing `open_rows` should wait until both results are in.
+
+VERDICT {"schema":"verdict/1","id":"c112a-b2aroute","verdict":"supported","alternative":"Saved-file flip reversion (stagesim.py:459-460) is an unmeasured prediction; the 2 closed rows may be wrong. Pinned open_rows was a snapshot of all 56 rows, and 5 of 7 steps change no row, so re-declaring 54 would hide that.","discriminating_test":"Offline: diff end rows vs open_rows (expect exactly 8634/29625 'array'); route_report(sim plan, require_final=False) on all 7 rows. Scratch VI: save undirected loop tunnel, reopen, wire outer, read inner is_source.","violations":[],"sources":["tools/stagesim.py:1357","tools/stagesim.py:1316-1322","tools/stagesim.py:459-460","tools/bench/plan_l2b2a.json:345-401","tools/bench/sim/c112a/l2b2a/summary.json:4146-4200","docs/d1-loop12-17-split-plan.md:1960","https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/wire-connected-to-undirected-tunnel.html"],"note":"Mechanism confirmed; saved-file seeding has no scratch_verify record (card 112-1 rule). Script on disk is not the one that produced the log. Give non-final plans an advisory route report."}
+BGRUN END rc=0 after 119s

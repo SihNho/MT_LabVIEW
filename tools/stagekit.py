@@ -1235,6 +1235,108 @@ def uid_edges(G, kinds=("wire", "fs")):
     return out
 
 
+# ---------------------------------------------------------------------------------------------- RULE D4
+# Card 112-4 (judgement, cycle 112), after review archive/peer/2026-09-27-c112c-b2a-e1.md s1-s3: LabVIEW's type
+# propagation restores S1-form terminals on polymorphic nodes (IndexArray #8741/#30331 grew 'disabled index (col)',
+# tools/bench/stage_d1_l2b2a.log:96,119), which the simulator does not model. "Allow-either" would also accept the
+# bed's non-S1 form, so the rule is ONE-WAY TOWARD S1 - D4: a real-only term at a checkpoint/PB passes ONLY if
+# (node, name) exists on that node in S1's graph; scope = the split page's s3 cascade nodes; anything else, or a
+# real-lost term, FAILS. S1's names come from the graph file the D4 JSON pins, after its md5 is checked.
+# Pure functions, no LabVIEW. Offline test: tools/bench/selftest_d4_l2b2a.py.
+D4_FAIL_KEYS = ("only_sim_terms", "only_sim_edges", "only_real_edges", "dangling_sim_only", "dangling_real_only",
+                "unbound")
+
+
+def d4_load(path):
+    """The D4 JSON ({s1: {path, md5}, scope_nodes}) plus `scope` (set), `s1_md5_got` and `names` = {node: {name:
+    count}} over S1's terminal rows (deduplicated by term uid). `names` is EMPTY when S1's md5 is not the pinned one:
+    the caller gates on `s1_md5_got`."""
+    d = json.load(open(path, encoding="utf-8"))
+    s1 = os.path.join(ROOT, d["s1"]["path"].replace("/", os.sep))
+    got, names, seen = md5(s1), {}, set()
+    scope = set(int(n) for n in d["scope_nodes"])
+    if got == d["s1"]["md5"]:
+        for r in json.load(open(s1, encoding="utf-8"))["terminals"]:
+            n, t = int(r["owner_uid"]), int(r["term_uid"])
+            if n in scope and t not in seen:
+                seen.add(t)
+                names.setdefault(n, {})
+                names[n][r["term_name"]] = names[n].get(r["term_name"], 0) + 1
+    return dict(d, scope=scope, s1_md5_got=got, names=names)
+
+
+def d4_ok(node, name, d4):
+    """D4's one test: the node is in scope and S1's graph has a terminal of that name on it."""
+    return node in d4["scope"] and name in d4["names"].get(node, {})
+
+
+def d4_e1(diffs, info, d4):
+    """(ok, accepted, bad) over [(checkpoint k, stagexec.compare dict)]; `info` = {term uid: (owner uid, name)}.
+    accepted = [(k, term, node, name)] real-only terms that pass d4_ok AND stay within S1's COUNT of that name on
+    that node at that checkpoint (prior-art c112d `contradicted`: review c112c-b2a-e1 :78/:91 asks names AND count;
+    D4's "passes ONLY if" is a necessary condition, the count cap only narrows it); bad = every other diff entry."""
+    acc, bad = [], []
+    for k, d in diffs:
+        bad += [(k, key, t) for key in D4_FAIL_KEYS for t in d.get(key) or []]
+        seen = {}
+        for t in d.get("only_real_terms") or []:
+            node, name = info.get(int(t), (None, None))
+            ok = d4_ok(node, name, d4) and seen.get((node, name), 0) < d4["names"][node][name]
+            if ok:
+                seen[(node, name)] = seen.get((node, name), 0) + 1
+            (acc if ok else bad).append((k, int(t), node, name))
+    return not bad, acc, bad
+
+
+def _d4_terms(rows):
+    out = {}
+    for r in rows:
+        out.setdefault(int(r["term_uid"]), (int(r["owner_uid"]), r["term_name"]))
+    return out
+
+
+def d4_pb(got, want, real_end, sim_end, d4):
+    """(ok, closed, grown, bad) at PB. got / want = sets of (node, sink name) of cdiff(S1, real end) / the plan's
+    open_rows; real_end / sim_end = terminal rows (sim uids already bound to real ones). ONE-WAY TOWARD S1: a NEW
+    pair FAILS; a planned pair that CLOSED passes only on a scope node; every (node, name) a scope node holds in the
+    real end beyond the simulated end (grown or renamed, by count) must pass d4_ok; every real-only terminal uid must
+    pass d4_ok; a real-lost terminal uid FAILS."""
+    R, S = _d4_terms(real_end), _d4_terms(sim_end)
+    cr, cs = {}, {}
+    for src, cnt in ((R, cr), (S, cs)):
+        for v in src.values():
+            if v[0] in d4["scope"]:
+                cnt[v] = cnt.get(v, 0) + 1
+    grown = sorted((p, c - cs.get(p, 0)) for p, c in cr.items() if c > cs.get(p, 0))
+    closed = sorted(want - got)
+    bad = [("new-pair", p) for p in sorted(got - want)] + [("closed-off-scope", p) for p in closed
+                                                          if p[0] not in d4["scope"]]
+    bad += [("grown-not-S1", p, c) for p, c in grown if not d4_ok(p[0], p[1], d4)]
+    bad += [("count-over-S1", p, cr[p], d4["names"][p[0]][p[1]]) for p, _c in grown
+            if d4_ok(p[0], p[1], d4) and cr[p] > d4["names"][p[0]][p[1]]]       # prior-art c112d: names AND count
+    bad += [("real-only-not-S1", t, R[t]) for t in sorted(set(R) - set(S)) if not d4_ok(R[t][0], R[t][1], d4)]
+    bad += [("real-lost", t, S[t]) for t in sorted(set(S) - set(R))]
+    return not bad, closed, grown, bad
+
+
+def d4_form(real_end, d4):
+    """FACTS ONLY: {scope node: 'equal to S1' | 'real-only {..} S1-only {..}'} comparing the real end's name counts on
+    each scope node with S1's (the review's stronger 'names and count' reading; never a gate here)."""
+    cnt = {}
+    for n, name in _d4_terms(real_end).values():
+        if n in d4["scope"]:
+            cnt.setdefault(n, {})
+            cnt[n][name] = cnt[n].get(name, 0) + 1
+    out = {}
+    for n in sorted(d4["scope"]):
+        a, b = cnt.get(n, {}), d4["names"].get(n, {})
+        ra = dict((k, v - b.get(k, 0)) for k, v in a.items() if v > b.get(k, 0))
+        sb = dict((k, v - a.get(k, 0)) for k, v in b.items() if v > a.get(k, 0))
+        out[n] = "equal to S1 {0}".format(sorted(a.items())) if not (ra or sb) else \
+            "real-only {0} S1-only {1}".format(sorted(ra.items()), sorted(sb.items()))
+    return out
+
+
 def fixture_listing():
     return sorted(os.path.basename(p) for p in glob.glob(os.path.join(os.path.dirname(g.MOVE_DST), "*.vi")))
 

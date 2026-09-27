@@ -1,0 +1,31 @@
+BGRUN START 2026-09-27 23:06:17 limit 20.0 min: py -u tools/bench/diag_c112b_opuid.py
+BGRUN PID 4760
+diag_c112b_opuid - card 112-2 D2/S3: BUILD the reader the uid route needs - claudeDev\OpNodeTermsUid_v0.vi = a byte copy of
+OpNodeTerms_v0 (the donor is never written) + ONE property node GObject.UID 632A813 on each Terminals[] entry's OWN reference
+(PN_C `reference out`, inside the For loop) -> auto-indexed tunnel -> array indicator (+ its error out) - then MEASURE it.
+PRIOR ART (checked first): no reader returns a per-terminal uid from the node side (docs/cycle27-plan.md:2925; gscript
+node_terms / net_map / OpWireSource_v5 / OpOwnerChain_v1 give none); the build steps are tools/recipes/build_opnodeterms_v0.py
+5-9 verbatim in kind (build_property, wire, exit_loop, set_index_mode, tunnel_indicator, save). Plain gscript: a TOOL build.
+PREDICTION (gates): B1 copy ExecState 1; B2 PN_C found (a body Property with a 'Wire' source and a bare 'reference out');
+B3 PN_U + wire -> ExecState 1; B4 exit_loop 'UID' and 'error out' -> exactly 1 new LoopTunnel each; B5 two new indicators;
+B6 ExecState 1 + saved; F1 on the donor OpNodeTerms_v0.vi (read-only, md5 unchanged) EVERY node on EVERY diagram: node echo ==
+node uid, every entry's uid is a terminal of the whole-VI table (OpAllTerms_v1) with the same direction + wire, and the
+old columns == OpNodeTerms_v0's for the same node; F2 (v) the diagram-0 ForLoop's Terminals[] hold its LoopTunnels' OUTER faces
+by uid; F3 20 calls leave the LabVIEW handle count flat (+-100); H LabVIEW gone at exit.
+    py tools/bgrun.py --material --max-min 20 --log tools/bench/diag_c112b_opuid.log -- py -u tools/bench/diag_c112b_opuid.py
+  PASS  B1 the copy of OpNodeTerms_v0 is runnable  1
+  PASS  B2 ONE body Property with a 'Wire' source and a BARE 'reference out' (PN_C)  ([1], [(145, [('reference', False, 521), ('reference out', True, 780), ('error in (no error)', False, 0), ('error out', True, 871), ('Name', True, 818)]), (148, [('reference', False, 780), ('reference out', True, 789), ('error in (no error)', False, 0), ('error out', True, 880), ('IsSource', True, 840)]), (151, [('reference', False, 789), ('reference out', True, 0), ('error in (no error)', False, 0), ('error out', True, 889), ('Wire', True, 792)]), (154, [('reference', False, 792), ('reference out', True, 0), ('error in (no error)', False, 0), ('error out', True, 898), ('UID', True, 853)])])
+  PASS  B3 PN_U GObject[UID] on PN_C 'reference out' -> ExecState 1  (1300, 1)
+  PASS  B4 exit_loop 'UID' -> exactly 1 new LoopTunnel  [{'i': 8, 'class': 'LoopTunnel', 'uid': 1333, 'pos': (3926, 1882), 'owner': 'ForLoop'}]
+  PASS  B5 TermUID: one new array indicator  ['Array 8']
+  PASS  B4 exit_loop 'error out' -> exactly 1 new LoopTunnel  [{'i': 9, 'class': 'LoopTunnel', 'uid': 1373, 'pos': (3961, 1860), 'owner': 'ForLoop'}]
+  PASS  B5 TermUIDErr: one new array indicator  ['Array 9']
+  PASS  B6 ExecState 1 before the save  1
+  PASS  B6 OpNodeTermsUid_v0 saved; labels written  ('fc21b17a6de67faed5a5289e7cd5861a', {'Array 8': 'TermUID', 'Array 9': 'TermUIDErr'})
+  PASS  F1 every entry of every node: node echo, uid in the whole-VI table with the same direction + wire, old columns == OpNodeTerms_v0 (83 entries)  []
+  PASS  F2 (v) a ForLoop's Terminals[] list its LoopTunnels' OUTER faces, each told by its own uid  [(142, 1, 564, 558), (142, 2, 811, 800), (142, 3, 825, 806), (142, 4, 845, 812), (142, 5, 863, 830), (142, 6, 875, 847), (142, 7, 884, 865), (142, 8, 893, 876)]
+  PASS  F3 20 calls leave the LabVIEW handle count flat (+-100)  (31191, 31191)
+  PASS  F4 the donor OpNodeTerms_v0.vi md5 is unchanged  ('8a3ce146e3f9d98b6b95880fa7c03bd7', '8a3ce146e3f9d98b6b95880fa7c03bd7')
+  PASS  H LabVIEW gone at exit  
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":14,"fail":0},"first_fail":null,"artefacts":[{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpNodeTermsUid_v0.vi","md5":"fc21b17a6de67faed5a5289e7cd5861a"}]}
+BGRUN END rc=0 after 107s

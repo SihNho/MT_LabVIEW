@@ -1,0 +1,18 @@
+FAILED PREDICTION - a regression self-test after card 112-1 edited tools/stagesim.py:
+  py -u tools/bench/selftest_stagesim_unflip_81.py   log tools/bench/selftest_stagesim_unflip_81_c112a.log  (6 pass / 2 fail)
+
+Failing gates: :10 "U3 stagesim selftest unchanged 42/0" got ((71, 0), 0); :12 "U3 selftest_stagesim_l2a1_80 unchanged 13/0"
+got ((12, 1), 1).
+
+Hypothesis: both U3 gates PIN exact gate counts (stagesim 42/0, selftest_stagesim_l2a1_80 13/0). They have failed with the SAME
+6/2 since cycle 101 (tools/bench/selftest_stagesim_unflip_81_c101-4.log:10,12: (57, 0) and (12, 1)), because stagesim's own
+self-test grew 42 -> 57 -> 66 -> 71 gates, all passing; the l2a1_80 file's single fail is its own pinned E1 (42/0), already
+reviewed in archive/peer/2026-09-27-c112a-l2a1reg.md. So this is a pre-existing pinned-count failure, not a regression of
+card 112-1 (stagesim 71 pass / 0 fail in tools/bench/selftest_stagesim_c112e.log).
+
+Already ruled out: stagesim self-test 71/0; selftest_stagesim_k79 4/0; guard_cycle premature_build self-test 6/0 + 2/0.
+
+Questions:
+1. Strongest reason this is NOT only the pinned count (read tools/bench/selftest_stagesim_unflip_81.py U3 and say whether
+   its other U-gates, which PASS, cover the un-flip behaviour card 112-1 extended with seed_base_flips).
+2. Cheapest discriminating test.

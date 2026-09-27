@@ -1,0 +1,66 @@
+BGRUN START 2026-09-27 23:44:57 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c112c-b2a-e1 -TaskFile tools/bench/peer_task_c112c_b2a.md
+BGRUN PID 22468
+OUTCOME: ANSWERED (228s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-27-c112c-b2a-e1.md
+COST: $1.6716  in 32 / out 20249 / cache-create 111797 / cache-read 1734461  (225s, 23 turn(s))
+--- ANSWER ---
+**Verdict:** the cause is probably right: LabVIEW's type propagation, not a wiring fault. Two parts of the claim are wrong, though. The evidence it gives does not support "the init rows cause it". And the proposed fix, widening allow-either to #8741 and #30331, would hide the same kind of change further downstream, because the E1 gate cannot see types.
+
+### 1. Strongest reason the claim is wrong as written
+**b2_12 alone did not change #30331.** At checkpoint 4, b2_12 (SRB2 init) had already run, yet the diff showed only #8741. #30331 appeared only by checkpoint 7, after b2_13, b2_14 and b2_15 (`tools/bench/stage_d1_l2b2a.log:96`, `:119`). So "b2_09/b2_12 give the registers their type" is false as a sufficient cause.
+
+What the data supports is a two-part condition: **the init row AND the L.inner→LoopTunnel link (b2_11 / b2_14) together.**
+- The scratch run had the SRB1 link (b2_11) but no init, and showed no change (`diag_c112c_t1t2.log:59`).
+- The stage run had init plus link for SRB1 by checkpoint 4, and #8741 grew.
+- For SRB2 the link (b2_14, op 6) came after checkpoint 4, and #30331 grew only after it.
+
+The claim's own sentence says the type flows "through the LoopTunnels #9087/#29911", but its stated evidence ("the scratch run had no b2_09/b2_12") only shows the init is necessary, not sufficient.
+
+The mechanism fits the graph:
+- #8953 has three `dimension size` inputs, so it produces a 3-D array (`graph_l2b1_20260927.json`: terminals 8961/8964/9662).
+- #9087's inner feeds #8634 `array` over w9076. The simulation already un-flips that inner (`sim/.../step_07_wire.json`: 9089 `is_source:true`), and the E1 diff shows no edge difference.
+- The R.inner feeds (b2_10/b2_13) are circular: #9227's inner sits on #8634's own output w8811. They cannot supply a type. That is why the scratch run stayed flat.
+
+### 2. Alternative explanations of the same evidence
+- **(A) For #30331, b2_15 is not excluded.** Checkpoint 7 covers b2_13, b2_14 and b2_15 together. The scratch run cleared b2_15 only while SRB2 had no type, so a combined effect is still open. #30331 sits in ForLoop #29874 (diagram 29894). Whether #29874 is nested in CaseStructure #2222 is not in the graph dump I read. I think b2_15 is an unlikely cause, but the measurement does not settle it.
+- **(B) The operation, not the row, is the confound.** Both init rows ran through `connect_from_wire`, which creates and then purges a stray Invoke node #25609 on diagram 686 (`stage_d1_l2b2a.log:47-59`, `:80-92`). The scratch run never used that function. So "init row" and "connect_from_wire plus node delete" are the same variable in this data.
+- **(C) The diff shows only a small part of the real change.** `compare()` compares terminal-uid sets and edges only; it does not compare names or types (`tools/stagexec.py:465-481`). In the bed, #8741 is `array, element×2, index×2`. In S1 it is `array, subarray×2, index (row)×2, disabled index (col)×2` (`docs/wiki/subvi/D1_s1_copy.json:34485-34550`). The same holds for #30331 (`:27455-27520`). In the real run, `element` and `index` were most likely renamed to `subarray` and `index (row)` on the same uids. Those renames are invisible to E1. Only the two newly created uids per node showed up. The split page's list of saved-B1 cascade pairs (#8764 `x`, FIR #28233 `X`, #30306 `X`, #29005 `element`; `split_plan_111_l2b2.md:47-50`) says the type change reaches further downstream, where E1 is blind. "Only #8741/#30331 differ" describes the detector, not the whole effect.
+
+### 3. What would falsify the claim
+- #8741 grows after b2_09 alone, before b2_11 (the type reached it by another path, or the `connect_from_wire` delete caused it).
+- #30331 grows only when b2_15 lands.
+- After growth, the names on #8741/#30331 differ from S1's list (for example `index (col)` enabled, or a different count). That would be a real type change, not a restoration.
+
+### (b) Is this computation-relevant (rule 1a)?
+Yes. The `disabled index (col)` terminals carry no wire, but they show the input's dimensionality. With a 2-D input and only the row index wired, Index Array returns a 1-D row. With a 1-D input it returns one element ([NI Index Array help](https://www.physik.uzh.ch/local/teaching/SPI301/LV-2013-Help/glang.chm/Index_Array.html), [LabVIEW Wiki](https://labviewwiki.org/wiki/Index_Array_function)). That decides whether Subtract, Median and FIR receive rows or scalars.
+
+S1 has the 2-D form. The bed's 1-D form is the deviation that B1 left behind with its Void registers. The growth moves the graph back toward S1.
+
+### (c) Is widening allow-either safe?
+Not as an "either" rule.
+- "Either" would also accept the bed's 1-D state at the end, which is the state that breaks rule 1a.
+- The PB gate compares the cdiff to open_rows. The type-level rows on #8741/#30331 and the downstream pairs would close, so PB would fail next. The allow file covers PB only for #8634/#29625 (`plan_l2b2a_allow.json:5-7`).
+- It also allows nothing where it was expected to: this run showed no diff on #8634/#29625 at all.
+
+The safe version is one-directional: after init and link, #8741/#30331 must hold S1's terminal names and count, and the same S1 expectation must hold for the downstream cascade pairs in PB.
+
+### 4. Cheapest discriminating test
+Re-run the existing scratch harness (`tools/bench/diag_c112c_t1t2.py`, same bed copy, nothing saved) with these rows in order, a checkpoint after every operation, and each checkpoint also dumping the **names** of #8741's and #30331's terminals:
+
+**b2_09 → b2_11 → b2_12 → b2_14 → b2_15**
+
+| after | claim predicts | if different |
+|---|---|---|
+| b2_09 | no change | (B) `connect_from_wire` or another path |
+| b2_11 | #8741 gets +2 terminals, names match S1 | — |
+| b2_12 | no change | — |
+| b2_14 | #30331 gets +2 terminals, names match S1 | — |
+| b2_15 | no change | (A) the case selector is involved |
+
+This takes one scratch run of about 4 minutes and needs no new LabVIEW operation.
+
+**What would change my mind:** if every row matches, I accept the mechanism. The fix is then to model "init + link ⇒ S1 form" in stagesim, or an allow rule that must equal S1's names, not an "either" rule.
+
+Sources:
+- [Index Array Function — LabVIEW Help](https://www.physik.uzh.ch/local/teaching/SPI301/LV-2013-Help/glang.chm/Index_Array.html)
+- [Index Array function — LabVIEW Wiki](https://labviewwiki.org/wiki/Index_Array_function)
+BGRUN END rc=0 after 229s

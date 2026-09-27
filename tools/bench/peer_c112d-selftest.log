@@ -1,0 +1,35 @@
+BGRUN START 2026-09-28 00:04:22 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c112d-selftest -TaskFile tools/bench/peer_c112d_selftest_task.md
+BGRUN PID 19356
+OUTCOME: ANSWERED (82s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-28-c112d-selftest.md
+COST: $0.9686  in 20 / out 6846 / cache-create 82660 / cache-read 851618  (78s, 19 turn(s))
+--- ANSWER ---
+**Verdict: the claim is half right, and the discriminating test you proposed would fail.** The new D4 functions are almost certainly not the cause. But the failure is also not an invocation error: case J has been stale since cycle 102, so it will fail under `--dry` too. You would not get 51/0.
+
+## 1. The strongest reason the claim is wrong: case J tests code that no longer exists
+
+- The test stubs the old creator route. `selftest_stagekit.py:322-330` replaces `K.mod("diag_s3b_l0_localname_v2").create_local` with `_L.create_local`, which appends to `got`. J1 passes only if `got == [("plot ring (display)", 1)]` (`:336-337`).
+- In cycle 102 `stagekit.create_local_read` stopped using that route. It now calls `g.create_local_read(self.work, panel_index)` (`tools/stagekit.py:687-697`, reaching `gscript.py:4139` → `_create_local_mode`). Nothing calls `_L.create_local` any more, so `got` stays `[]` and J1 fails. J2 then does `got[-1]` on the empty list, which is the `IndexError` in the log (`selftest_stagekit_c112d.log:73-80`).
+- The run you cite as the good baseline was taken before that change. `selftest_stagekit_c101-5_dry2.log:73` shows the detail `"'plot ring (display)' panel[1]"`, without the `(READ mode)` suffix that `stagekit.py:697` produces now. The c112d log does show `(READ mode)`. So dry2 is not a baseline for the current code; it tested the older function.
+- Under `--dry`, J1 still fails. The fake gscript turns `g.create_local_read` into `_stub`, which returns a `Fake` object (`stage_prerun.py:455-461, 514-520`). `_L.create_local` is still never called, so `got == []`. The `Fake` also fails the `r.get("is_source") != [True]` check at `stagekit.py:694`. Expect roughly 49 pass / 2 fail with `'s': 0.0`, not 51/0.
+- On (b), the direct run is the intended form. Every run from 2026-09-22 to 09-24 was `py -u tools/bench/selftest_stagekit.py` run directly (`selftest_stagekit.log:1,56,…,637`), and the docstring promises "Nothing here opens COM" (`:1-2`). Since cycle 102, case J breaks that promise: it reaches real COM with `target="stub.vi"`, which gives error 7 after 14 s. The dry harness hid this, and the only dry runs on record predate cycle 102. So yes, it is a latent defect: the test lost its isolation from real COM when cycle 102 changed the creator route and the test was never updated.
+
+## 2. Alternative explanation of the same evidence
+
+The failure comes from the cycle-102 change to `create_local_read` combined with a test that was never updated. The card-112-4 edit and the invocation are both beside the point. The 14 s and error 7 are just what happens when you run the stale test directly: real COM activation, then `ensure_loaded("stub.vi")` (`gscript.py:4158`).
+
+## 3. What would falsify your claim
+
+`py tools/stage_prerun.py --dry tools/bench/selftest_stagekit.py` reporting 51/0 with J1 PASS on the current `stagekit.py`. Reading the code, I expect the opposite.
+
+## Your other points
+
+- **(a) Import-time side effects or name shadowing from the D4 code.** Unlikely. The additions sit at `stagekit.py:1246-1331`: `D4_FAIL_KEYS` and `d4_*` / `_d4_terms`. None of these names appear anywhere in case J's path (`create_local_read`, `_op`, `g.panel_wiring`, `mod`). Cases A–I passed 47/47, and the failing record shows the call reaching real gscript, which is a different mechanism. I have not seen the diff (no shell access here), so "no existing function changed" is your assertion, not something I verified. It doesn't change this verdict either way.
+- **(c) Leftovers from the COM call.** `ensure_loaded("stub.vi")` failed with "file not found", so no VI was opened and `OpCreateLocalRead_v0` was never run. No `claudeDev` write is expected. Your tasklist check covers the LabVIEW process. I did not check whether gscript's COM client writes a handle or stall record on exit (e.g. `tools/bench/stall_pid*.log`). A new one of those would arm `guard_peer`, so grep for it before the next launch.
+- **(B) The `TypeError`.** Accepted as your own test's bug: Python requires string keys for `**`. The fix is fine. I did not verify the rerun.
+
+## Cheapest discriminating test
+
+Run the proposed dry rerun **with the prediction reversed**: expect J1 FAIL with `got == []` and `'s': 0.0`. If that happens, the cause is stale case J, not the invocation and not the card-112-4 edit.
+
+The actual fix is separate from card 112-4. Case J should stub `K.g.create_local_read`, returning `{"err": None, "is_source": [True], "uid": 1}` and recording `(panel_index)` into `got`, and the J1 and J3 expectations should be updated to match. After that the test is offline again when run directly, which is what its docstring promises. What would change my mind: a dry run on the current code that passes J1.
+BGRUN END rc=0 after 83s

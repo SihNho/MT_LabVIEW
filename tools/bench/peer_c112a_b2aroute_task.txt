@@ -1,0 +1,24 @@
+FAILED PREDICTION - an offline diagnostic of card 112-1 (no LabVIEW):
+  py -u tools/bench/diag_c112a_b2a_route.py   log tools/bench/diag_c112a_b2a_route.log  (RESULT FAIL 1/1 "route report lists 7 rows")
+
+What it does: re-simulates tools/bench/plan_l2b2a_in.json on tools/bench/graph_l2b1_20260927.json with tools/stagesim.py
+simulate(..., route_check=True) into tools/bench/sim/c112a/ (NEW in this card: finalize dry-runs a FINAL plan through
+stagexec.dry_run and records a per-row route report, stagesim.py route_report / simulate; NEW: seed_base_flips registers
+all-sink tunnels of the base as flipped so op_wire's un-flip reverts them).
+
+Prediction: the route report lists the 7 B2a rows.
+Observed: FINAL False, open_rows_match False, failed None; end cdiff rows 54 (the card-111 sim had 56); step 3 (b2_11)
+unflipped [9089], step 6 (b2_14) unflipped [29923]; route_check absent, so the gate failed.
+
+Hypothesis: the route check is by design run only on a plan that finalizes; the plan did not finalize because the new
+seeding closed two cdiff rows (#8634 'array' / #29625 'array' family) that the plan's open_rows still declare, so
+end rows != open_rows. The diagnostic, not the tool, was wrong to expect a route report from a non-final plan.
+
+Already ruled out: no crash (every step ok); the pinned plan_l2b2a.json is unchanged; the seeding hit #9087 and #29911.
+
+Questions:
+1. Strongest reason this is NOT just "non-final plan => no route check" (e.g. could the 2 closed rows be WRONG predictions
+   that make the seeding itself suspect: LabVIEW may not revert a flip SAVED in the file)? What record would separate them?
+2. Is running the route check only on final plans the right finalize contract, or should a non-final plan also carry the
+   route report so the reason list is complete?
+3. Cheapest discriminating test.

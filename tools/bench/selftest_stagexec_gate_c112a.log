@@ -1,0 +1,18 @@
+BGRUN START 2026-09-27 22:47:20 limit 3.0 min: py -u tools/bench/selftest_stagexec_gate.py
+BGRUN PID 11708
+  PASS  G1 a bgrun'd `stagexec.py run <plan>` is ONE plan launch  [('G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\stagexec.py', 'C:\\Users\\KimLab\\AppData\\Local\\Temp\\sxg_selftest_22364\\plan_x.json')]
+  PASS  G2 reading/grepping stagexec.py or running its dry/prerun is not a launch  
+  PASS  G3 no dry/prerun record for the plan => refused, naming the plan  LAUNCH GATE (CLAUDE.md §3 'Stages are SIMULATED', decisions 1/2): C:/Users/KimLab/AppData/Local/Temp/sxg_selftest_22364/plan_x.json has no dry + prerun PASS record for sha256 3deb948549a9... and plan md5s {'C:/Users/KimLab/AppData/Local/Temp/sxg_selftest_22364/plan_x.json': '3ad72b602c2469d9be590ee4
+  PASS  G4 dry only => still refused (prerun missing)  LAUNCH GATE (CLAUDE.md §3 'Stages are SIMULATED', decisions 1/2): C:/Users/KimLab/AppData/Local/Temp/sxg_selftest_22364/plan_x.json has no prerun PASS record for sha256 3deb948549a9... and plan md5s {'C:/Users/KimLab/AppData/Local/Temp/sxg_selftest_22364/plan_x.json': '3ad72b602c2469d9be590ee429d887
+  PASS  G5 dry + prerun PASS for this stagexec sha256 and plan md5 => allowed  
+  PASS  G6 the plan changed after its records (md5) => refused  LAUNCH GATE (CLAUDE.md §3 'Stages are SIMULATED', decisions 1/2): C:/Users/KimLab/AppData/Local/Temp/sxg_selftest_22364/plan_x.json has no dry + prerun PASS record for sha256 3deb948549a9... and plan md5s {'C:/Users/KimLab/AppData/Local/Temp/sxg_selftest_22364/plan_x.json': 'c9195658b4e16f4a9a2fa0b6
+  PASS  G7 a FAILED stagexec run after the records => refused until re-pre-run (decision 4)  LAUNCH GATE (decision 4): C:/Users/KimLab/AppData/Local/Temp/sxg_selftest_22364/plan_x.json FAILED after its pre-run records (stagexec_x.log: STEP-DIFF after real op 3); the records are invalid - pre-run it again.
+  PASS  G8 the whitelist is gone: no 'target BROKEN after wiring' special case left in stagexec.py  
+  PASS  G9 T1 wire_indicators error, NO declared gate -> ExecStop (the run stops)  wire_indicators #5058: op error RuntimeError: wire_indicators: target BROKEN after wiring - a source terminal was probably unwired on sink [900, 'Pos within cal image'] - no declared gate reads that sink (declared sinks: [])
+  PASS  G10 T2 error WITH a declared gate on that exact sink -> continues, logged, and the gate READS that sink at run end  ({'err': 'RuntimeError: wire_indicators: target BROKEN after wiring - a source terminal was probably unwired', 's': 0.1, 'how': 'wire_indicators', 'deferred_to': 'W pos_ind'}, ["OP-ERROR wire_indicators #5058 on sink [900, 'Pos within cal image'] DEFERRED to declared gate 'W pos_ind': RuntimeError: 
+  PASS  G11 T2 a declaration naming an ABSENT gate -> refused  sink gate 'W missing' for sink [900, 'Pos within cal image']: no such gate declared by the recipe (declared: ['W pos_ind'])
+  PASS  G12 T2 a declaration naming ANOTHER sink -> the error still stops  wire_indicators #5058: op error RuntimeError: wire_indicators: target BROKEN after wiring - a source terminal was probably unwired on sink [900, 'Pos within cal image'] - no declared gate reads that sink (declared sinks: [[900, 'Pos: Diffraction Pattern']])
+  PASS  G13 a declared gate that FAILS its read stops the run  declared sink gate 'W pos_ind' failed on [900, 'Pos within cal image']: sink unwired
+=== GATES: 13 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 2s

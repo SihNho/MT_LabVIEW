@@ -1,0 +1,10 @@
+BGRUN START 2026-09-27 22:42:29 limit 3.0 min: py -u tools/bench/selftest_stagesim_k79.py
+BGRUN PID 8636
+  PASS  S1 fixture = M1 read of op 3 on bed 4b621946  ('k_op3_read/1', 3, '4b621946492da3d2fbb96b6053e715ec', 'ad2183bbb5b38fa5ef8ba707ec96441a')
+  PASS  S2 current sim step 3 (tools/bench/sim/k_split/step_03_move_in.json) == the M1 read (stagexec.compare n == 0)  {}
+  FACT  step 3 tunnel_flips: [{'tunnel': 2765, 'term_uid': 2792, 'side': 'InnerTerminal', 'wire': 2924}, {'tunnel': 2765, 'term_uid': 2789, 'side': 'InnerTerminal', 'wire': 3472}]
+  PASS  S3 op_move_in re-applied to step 2 with measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2 reproduces the M1 read (n == 0)  {'diff': {}, 'flips': [{'tunnel': 2765, 'term_uid': 2792, 'side': 'InnerTerminal', 'wire': 2924}, {'tunnel': 2765, 'term_uid': 2789, 'side': 'InnerTerminal', 'wire': 3472}]}
+  PASS  S4 NEGATIVE: flip restricted to TUN1 gives the 79-6 divergence back  {'only_sim_edges': [(2789, 6253), (2792, 5910)], 'dangling_real_only': [2789, 2792, 5910, 6253], 'n': 6}
+=== GATES: 4 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 2s

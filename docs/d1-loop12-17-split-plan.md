@@ -1959,6 +1959,38 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
             - **Before any build in that card:** the hypothesis review owed for `tools/bench/diag_c111e_md5.log` ("input md5 changed"). The md5 was stale because I typed card 111-5's input md5 for `stage_d1_l2b1.py` as `4ef10fc4` (from 110-4), while the git-clean file is `e13177d9`. `guard_peer` is armed until an ANSWERED `-Role hypothesis` exchange names that log.
          4. **Then, in a second card,** B2a is re-simulated on the new tools. Its end cdiff must close the 7 rows' pairs (the sim now closes 0). Then dry (collecting backend), pre-run, and a prior-art round with a `FIXED:` release citing the tooling. After that, ONE launch → `claudeDev\D1_l2_b2a_<ts>.vi` and its expected Error List file in the same card (223(a)).
          5. The prior-art review file `archive/peer/2026-09-27-priorart-c111e-l2b2a.md` is released by `FIXED:` only after (i)–(iv) exist.
+226. **(cycle 112 judgement; steer_111 FOLLOWED — the cycle's work was aimed at the B2a file; cards `112-1` FAIL 4/2, `112-2` FAIL 2/2 (rung 1), `112-3` FAIL 3/2, `112-4` PASS 23/0 (rung 1) — `tools/bench/cards/result_112-{1,2,3,4}.json`)**
+     - **(a) Tooling for B2a is BUILT (225(h)3, scoped to B2a):**
+       - H0: review `archive/peer/2026-09-27-c112a-md5.md` (the stale pin).
+       - (iii): `stagesim.seed_base_flips` (self-test 71/0).
+       - (iv): finalize dry-routes FINAL plans.
+       - (vi): `guard_cycle` offline-only through `launchunit` (5/0).
+       - (i): base-graph registers → `loop_of` + `wire_sr`.
+       - (ii): `ctltun`.
+       - (v): the LoopTunnel owner route (`FACE_ROUTED`).
+       - Bare-face addressing: by terminal-uid echo (`Addr._by_uid`), with 0 or >1 hits = stop. Self-test stagexec 119/0.
+       - New read-only reader: `claudeDev\OpNodeTermsUid_v0.vi` (14/0, handles flat).
+       - T1/T2 were wired live on a scratch copy of the bed: `scratch_verify/stagexec.op_wire_sr_20260927_233612.json` and `…op_connect_…json`, both PASS.
+       - (v) was pulled forward from B2b because B2-10/11/13/14 needed it.
+     - **(b) DECIDED at 112-2:** the remainder (the T1/T2 live check, not attempted, cut by minutes) was not re-issued as rung 2. It became the first gate (W0) of the delivery card. Why: rung 2 exists for work Opus has failed, and nothing had failed in LabVIEW.
+     - **(c) DECIDED at 112-3 — rule D4 (toward S1):** at a checkpoint or at PB, a real-only terminal passes only if (node, name) exists on that node in S1's graph. The count must not exceed S1's count (a cap added by 112-4 to release prior-art c112d; ACCEPTED, it only narrows the rule). Scope: the cascade nodes of `split_plan_111_l2b2.md` §3. Anything else, and any real-lost terminal, fails.
+       - Why: 112-3's launch 1 stopped only because LabVIEW restored S1's 2-D terminals on IndexArray `#8741`/`#30331` once SRB1/SRB2 were typed (review `archive/peer/2026-09-27-c112c-b2a-e1.md`).
+       - My allow set had named only `#8634`/`#29625`: a judgement fault.
+       - Convergence toward S1 is not a computation change (rule 1a).
+       - Code: `tools/stagekit.py:1273,1298` `d4_e1`/`d4_pb`/`d4_form`; offline test 19/0.
+     - **(d) CLOSE — L2-B2a IS DELIVERED AND IS THE NEW BED: `claudeDev\D1_l2_b2a_20260928_001426.vi`, md5 `107a3ef12da41b25d533f8a4c761aae8`, 308,661 B** (launch 2 of cap 2, `tools/bench/stage_d1_l2b2a_r2.log`).
+       - 7 ops ran; E1 under D4 accepted exactly the 6 S1-form terms.
+       - PB: 14 planned pairs were closed toward S1 and 0 new pairs appeared.
+       - Saved by gui_save. The input md5 is unchanged, and LabVIEW is gone.
+       - Error List: 83 items (B1 had 99), all read. The expected file `tools/bench/errorlist_expected_D1_l2_b2a_20260928_001426.json` reverdicts OK.
+       - Level: STRUCTURAL, ExecState 0 by design, never run.
+     - **(e) NEXT = L2-B2b** (B2-01..08 + B2-16 = 9 rows; `split_plan_111_l2b2.md` §2), from the B2a bed.
+       - Its tools now exist: the owner route (v), base-flip seeding for B2-08, and ctltun for B2-16.
+       - One card: plan offline on a graph of the B2a SAVED file, stagesim FINAL, recipe ≤ 120 lines with D4 extended to B2b's cascade set, dry + pre-run + prior-art, ONE launch, and the expected Error List file.
+     - **(f) Carries, not blocking:**
+       - `selftest_stagekit.py` case J has had a stale stub since cycle 102 and makes a real COM call when run directly (`selftest_stagekit_c112d.log:73`; sha-pinned at `tools/stage_prerun.py:1503`).
+       - Hashing every `task/1` input md5 at bind (review c112a-md5; not decided).
+       - The leftover `claudeDev\scratch_c112c_sr.vi` (an unused byte copy) is to be deleted.
 
 ## OPEN (design choices — for judgement; not decided here)
 

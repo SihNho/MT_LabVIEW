@@ -999,6 +999,52 @@ def node_terms_uid(target, diagram_index, node_index):
         return None, rows
 
 
+# card 112-2 D2 (owner node -> terminal list -> uid echo): OpNodeTerms_v0 + ONE property node GObject.UID 632A813 on each
+# Terminals[] entry's own reference (PN_C 'reference out', inside the For loop) -> an auto-indexed array. Built by
+# tools/bench/diag_c112b_opuid.py on a byte copy of OpNodeTerms_v0 (the donor is not touched); labels
+# tools/bench/diag_c112b_opnodetermsuid_labels.json ({indicator label: meaning}, the donor's map + TermUID/TermUIDErr).
+OP_NODE_TERMS_UID = os.path.join(CLAUDEDEV, "OpNodeTermsUid_v0.vi")
+NODE_TERMS_UID_LABELS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench",
+                                     "diag_c112b_opnodetermsuid_labels.json")
+
+
+def node_terms_uids(target, diagram_index, node_index):
+    """(node_uid, rows): node_terms' rows of Nodes[node_index] on Diagram[diagram_index] PLUS `uid` = each Terminals[]
+    entry's OWN GObject.UID (0 = not read; `uid_err` its error code), all from ONE OpNodeTermsUid_v0 run - so a bare face
+    that shares ('', direction, 0) with its twins is still told apart (card 112-2 D2). The caller checks the node echo."""
+    import json
+    with open(NODE_TERMS_UID_LABELS, encoding="utf-8") as f:
+        lab = {v: k for k, v in json.load(f).items()}
+    vi = op(OP_NODE_TERMS_UID)
+    vi.SetControlValue("vi path", target); vi.SetControlValue("Class Name", "Diagram")
+    vi.SetControlValue("index", diagram_index); vi.SetControlValue("index 2", node_index); vi.SetControlValue("index 3", 0)
+    for k, v in (("error in (no error)", (False, 0, "")), ("error in", (True, 1, "neutralised creator")),
+                 ("Class Name 3", ""), ("Class Name 2", "")):
+        try:
+            vi.SetControlValue(k, v)
+        except Exception:
+            pass
+    _run(vi)
+    try:
+        node_uid = int(vi.GetControlValue("UID"))
+    except Exception:
+        node_uid = None
+    names = list(vi.GetControlValue(lab["Name"]))
+    src = [bool(x) for x in vi.GetControlValue(lab["IsSource"])]
+    wire = [int(x) for x in vi.GetControlValue(lab["WireUID"])]
+    tu = [int(x) for x in vi.GetControlValue(lab["TermUID"])]
+    try:
+        te = [int(tuple(e)[1]) if tuple(e)[0] else 0 for e in vi.GetControlValue(lab["TermUIDErr"])] if "TermUIDErr" in lab else []
+    except Exception:
+        te = []
+    rows = []
+    for i in range(len(names)):
+        rows.append({"i": i, "name": names[i], "is_source": src[i] if i < len(src) else None,
+                     "wire": wire[i] if i < len(wire) else 0, "uid": tu[i] if i < len(tu) else 0,
+                     "uid_err": te[i] if i < len(te) else 0, "node_uid": node_uid})
+    return node_uid, rows
+
+
 OP_TUNNELS = os.path.join(CLAUDEDEV, "OpTunnels_v0.vi")
 _TUNNELS_LABELS = None
 

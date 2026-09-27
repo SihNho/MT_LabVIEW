@@ -1,0 +1,55 @@
+BGRUN START 2026-09-28 00:12:16 limit 5.0 min: py -u tools/bench/selftest_d4_l2b2a.py
+BGRUN PID 13320
+  PASS  T0a S1 md5 matches the pin and names were read on all 8 scope nodes  ('5de014fe580b938328fa8662cf2b0652', [8634, 8741, 8764, 28233, 29005, 29625, 30306, 30331])
+  FACT  S1 names on #8634: [('array', 1), ('disabled index (row)', 1), ('index (col)', 1), ('new element/subarray', 1), ('output array', 1)]
+  FACT  S1 names on #8741: [('array', 1), ('disabled index (col)', 2), ('index (row)', 2), ('subarray', 2)]
+  FACT  S1 names on #8764: [('x', 1), ('x-y', 1), ('y', 1)]
+  FACT  S1 names on #28233: [('', 1), ('FIR Coefficients', 1), ('Filtered X', 1), ('X', 1), ('error', 1), ('init/cont (init:F)', 1)]
+  FACT  S1 names on #29005: [('Filtered X', 1), ('cluster', 1), ('element', 1), ('output cluster', 1)]
+  FACT  S1 names on #29625: [('array', 1), ('disabled index (row)', 1), ('index (col)', 1), ('new element/subarray', 1), ('output array', 1)]
+  FACT  S1 names on #30306: [('', 7), ('Filtered X', 1), ('X', 1), ('error', 1), ('left rank', 1), ('right rank', 1)]
+  FACT  S1 names on #30331: [('array', 1), ('disabled index (col)', 2), ('index (row)', 2), ('subarray', 2)]
+  PASS  T0b S1's #8741 and #30331 carry 'disabled index (col)', and #8741 has no 'index (col)'  
+  PASS  T0c a WRONG S1 md5 pin leaves names EMPTY (the recipe's L0b then refuses)  
+  PASS  T1a the 112-3 log is the recorded one (md5 c5e5e81c3dc2f22c9476687ede27b7e2) and holds 2 step diffs at ck 4 and 7  ('c5e5e81c3dc2f22c9476687ede27b7e2', [4, 7])
+  FACT  D4-ACCEPT ck 4 term t25829 node #8741 name 'disabled index (col)' in-S1 yes
+  FACT  D4-ACCEPT ck 4 term t25862 node #8741 name 'disabled index (col)' in-S1 yes
+  FACT  D4-ACCEPT ck 7 term t25829 node #8741 name 'disabled index (col)' in-S1 yes
+  FACT  D4-ACCEPT ck 7 term t25854 node #30331 name 'disabled index (col)' in-S1 yes
+  FACT  D4-ACCEPT ck 7 term t25862 node #8741 name 'disabled index (col)' in-S1 yes
+  FACT  D4-ACCEPT ck 7 term t25961 node #30331 name 'disabled index (col)' in-S1 yes
+  PASS  T1b 112-3's ck4/ck7 diffs PASS D4: 6 accepted (#8741 x2 at ck4; #8741 x2 + #30331 x2 at ck7), 0 bad  (True, 6, [])
+  PASS  T2 a real-only term whose (node, name) S1 lacks ('index (col)' on #8741) FAILS  [(4, 25829, 8741, 'index (col)')]
+  PASS  T2b COUNT (prior-art c112d discriminating test): ck7's diff plus a THIRD 'disabled index (col)' on #8741 (S1 has 2) FAILS  [(4, 99002, 8741, 'disabled index (col)')]
+  PASS  T3 a real-only term off scope (#2626 'array') FAILS  
+  PASS  T4 a real-lost term (only_sim_terms) FAILS  
+  PASS  T5 an edge difference FAILS  
+  PASS  T5b a dangling-only difference FAILS (D4: anything else fails)  
+  FACT  base #8741 names ['array', 'element', 'element', 'index', 'index']
+  FACT  D4-PB-GROWN #8741 'disabled index (col)' x2
+  FACT  D4-PB-GROWN #8741 'index (row)' x2
+  FACT  D4-PB-GROWN #8741 'subarray' x2
+  FACT  D4-PB-GROWN #30331 'disabled index (col)' x2
+  FACT  D4-PB-GROWN #30331 'index (row)' x2
+  FACT  D4-PB-GROWN #30331 'subarray' x2
+  FACT  S1-FORM #8634: real-only [('index (row)', 1)] S1-only [('disabled index (row)', 1)]
+  FACT  S1-FORM #8741: equal to S1 [('array', 1), ('disabled index (col)', 2), ('index (row)', 2), ('subarray', 2)]
+  FACT  S1-FORM #8764: equal to S1 [('x', 1), ('x-y', 1), ('y', 1)]
+  FACT  S1-FORM #28233: equal to S1 [('', 1), ('FIR Coefficients', 1), ('Filtered X', 1), ('X', 1), ('error', 1), ('init/cont (init:F)', 1)]
+  FACT  S1-FORM #29005: equal to S1 [('Filtered X', 1), ('cluster', 1), ('element', 1), ('output cluster', 1)]
+  FACT  S1-FORM #29625: real-only [('index (row)', 1)] S1-only [('disabled index (row)', 1)]
+  FACT  S1-FORM #30306: equal to S1 [('', 7), ('Filtered X', 1), ('X', 1), ('error', 1), ('left rank', 1), ('right rank', 1)]
+  FACT  S1-FORM #30331: equal to S1 [('array', 1), ('disabled index (col)', 2), ('index (row)', 2), ('subarray', 2)]
+  PASS  T6 PB: S1-form #8741/#30331 with their 6 planned pairs CLOSED PASSES, closed == those pairs  (True, [(8741, 'disabled index (col)'), (8741, 'index'), (8741, 'index (row)'), (30331, 'disabled index (col)'), (30331, 'index'), (30331, 'index (row)')], [])
+  PASS  T6b d4_form calls #8741 and #30331 'equal to S1' in that constructed end (the facts-only reading)  {8634: "real-only [('index (row)', 1)] S1-only [('disabled index (row)', 1)]", 8741: "equal to S1 [('array', 1), ('disabled index (col)', 2), ('index (row)', 2), ('subarray', 2)]", 8764: "equal to S1 [('x', 1), ('x-y', 1), ('y', 1)]", 28233: "equal to S1 [('', 1), ('FIR Coefficients', 1), ('Filtered X', 1), ('X', 1), ('error', 1), ('init/cont (init:F)', 1)]", 29005: "equal to S1 [('Filtered X', 1)
+  PASS  T7 PB with one NEW pair FAILS  
+  PASS  T8 PB with a closed pair OFF scope (#2626 'array') FAILS  
+  PASS  T9 PB with a grown non-S1 name on #8741 ('index (col)') FAILS  [('grown-not-S1', (8741, 'index (col)'), 1), ('real-only-not-S1', 995001, (8741, 'index (col)'))]
+  PASS  T9b COUNT: PB with a THIRD 'disabled index (col)' on #8741 (S1 has 2) FAILS  [('count-over-S1', (8741, 'disabled index (col)'), 3, 2)]
+  PASS  T10 PB with a real-lost uid on #8741 FAILS  
+  PASS  T11 PB unchanged end (got == want, real == sim) PASSES with nothing closed or grown  []
+
+==========================================================================================
+=== GATES: 19 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":19,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

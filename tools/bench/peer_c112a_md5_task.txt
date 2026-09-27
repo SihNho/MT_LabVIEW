@@ -1,0 +1,29 @@
+FAILED PREDICTION - an input-pin check of card 111-5 failed:
+  py -u tools/bench/diag_c111e_md5.py   log tools/bench/diag_c111e_md5.log  (RESULT FAIL 5/1, first_fail "input md5 changed")
+
+Prediction: every input of card 111-5 (tools/bench/cards/task_111-5.json "inputs") hashes to its pinned md5.
+
+Observed (machine records):
+- tools/bench/diag_c111e_md5.log:9  INPUT DIFF e13177d907890f3794a82f3bc878be1a (disk) vs 4ef10fc4047dbe69e583730ca033ef18 (pin)
+  for tools/recipes/stage_d1_l2b1.py; the other 5 inputs are INPUT OK (:3-8).
+- tools/bench/cards/task_111-5.json:16 pins stage_d1_l2b1.py at 4ef10fc4.
+- tools/bench/cards/task_110-4.json:18 pins the SAME 4ef10fc4 as an INPUT of card 110-4, and :50 lists stage_d1_l2b1.py among
+  card 110-4's OUTPUTS (write glob) - i.e. 110-4 was allowed to edit it.
+- tools/bench/cards/review_c110d-errorlist-cap.json (cycle 110, 20:04) already attaches stage_d1_l2b1.py at e13177d9.
+- git: the last commit touching the file is 2473868 "Cycle 110: session outputs"; the working tree is clean for it.
+
+Hypothesis under review: the pin in 111-5 was copied from 110-4's input list (pre-edit hash) instead of being re-hashed; the
+file changed legitimately in cycle 110 and nothing changed it afterwards. The failure is a card-authoring error, not a drift.
+
+Already ruled out (3 lines):
+- the bed D1_l2_b1 (b705728a) and its graph json (8327f974) match their pins (diag_c111e_md5.log:3-4).
+- the planning inputs facts_c111b_* and plan_l2b1.json match (:5-7).
+- the listed OUTPUT lines are the card's own products and are not compared.
+
+Questions:
+1. What is the strongest reason this is NOT merely a stale pin - e.g. could e13177d9 differ from what card 110-4 actually ran
+   (the run log stage_d1_l2b1_c110d.log) so that the saved bed was built by a different script text than the one on disk?
+   Name the record that separates the two (e.g. a sha/md5 the stage log itself prints).
+2. Which mechanical check would have caught the stale pin before dispatch (card-validation re-hash of every input at card
+   write time), and is there any existing one in tools/protocol.py that should have done so?
+3. Cheapest discriminating test for question 1.

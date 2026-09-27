@@ -1,0 +1,40 @@
+BGRUN START 2026-09-27 23:21:26 limit 15.0 min: py -u tools/bench/diag_c112c_fixture.py
+BGRUN PID 18780
+  GATE PASS  K0 no LabVIEW process before the read  False
+  GATE PASS  K1 sr: source md5 == pin  19f5d739163f31feee5d7e8a86b8113d
+  GATE PASS  K2 sr: fixture scratch_c112c_sr.vi is a byte copy of the source  19f5d739163f31feee5d7e8a86b8113d
+  FACT sr: LIVE 66 terminal rows, 125 objs, ExecState 1
+  FACT sr: LOOPS [('WhileLoop', 74, [], {}), ('ForLoop', 184, [205], {}), ('ForLoop', 45, [270], {})]
+  OBSERVED uid 217 -> owner 'ForLoop' uid 184 | self 'Diagram'#217 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 282 -> owner 'CaseStructure' uid 233 | self 'Diagram'#282 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 268 -> owner 'CaseStructure' uid 233 | self 'Diagram'#268 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 121 -> owner 'ForLoop' uid 45 | self 'Diagram'#121 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 389 -> owner 'CaseStructure' uid 126 | self 'Diagram'#389 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 408 -> owner 'CaseStructure' uid 126 | self 'Diagram'#408 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 103 -> owner 'WhileLoop' uid 74 | self 'Diagram'#103 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 184 -> owner 'TopLevelDiagram' uid 3 | self 'ForLoop'#184 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  OBSERVED uid 233 -> owner 'Diagram' uid 217 | self 'CaseStructure'#233 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 45 -> owner 'TopLevelDiagram' uid 3 | self 'ForLoop'#45 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  OBSERVED uid 126 -> owner 'Diagram' uid 121 | self 'CaseStructure'#126 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 74 -> owner 'TopLevelDiagram' uid 3 | self 'WhileLoop'#74 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  FACT sr: owners [(45, ('TopLevelDiagram', 3)), (74, ('TopLevelDiagram', 3)), (103, ('WhileLoop', 74)), (121, ('ForLoop', 45)), (126, ('Diagram', 121)), (184, ('TopLevelDiagram', 3)), (217, ('ForLoop', 184)), (233, ('Diagram', 217)), (268, ('CaseStructure', 233)), (282, ('CaseStructure', 233)), (389, ('CaseStructure', 126)), (408, ('CaseStructure', 126))]
+  GATE PASS  O sr: every Diagram (7) has a resolved owner  []
+  GATE PASS  E sr: ExecState 1 on the read copy  1
+  FACT WROTE G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_scratch_c112c_sr.json md5 faefba25dfca30501f61d79c017504ec
+  GATE FAIL  L sr: the WhileLoop holds register #205 (left #209)  [(74, [], {})]
+  GATE PASS  R sr: t207 (R #205 inner) and t254 (#255) share w359; t212 (L #209 inner) and t249 (#250) share w383  ({'term_uid': 207, 'term_name': '', 'is_source': False, 'wire_uid': 359, 'owner_uid': 205, 'owner_class': 'RightShiftRegister', 'frame_diagram': 217, 'term_class': 'InnerTerminal'}, {'term_uid': 254, 'term_name': '', 'is_source': True, 'wire_uid': 359, 'owner_uid': 255, 'owner_class': 'SelectorTunnel', 'frame_diagram': 217, 'term_class': 'OuterTerminal'}, {'term_uid': 212, 'term_name': '', 'is_source': True, 'wire_uid': 383, 'owner_uid': 209, 'owner_class': 'LeftShiftRegister', 'frame_diagram': 217, 'term_class': 'InnerTerminal'}, {'term_uid': 249, 'term_name': '', 'is_source': False, 'wire_uid': 383, 'owner_uid': 250, 'owner_class': 'SelectorTunnel', 'frame_diagram': 217, 'term_class': 'OuterTerminal'})
+  GATE PASS  H LabVIEW gone; sources unchanged; read copies deleted  (True, [False])
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c112c_fixture.py", line 139, in <module>
+    sys.exit(main())
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c112c_fixture.py", line 115, in main
+    g.close_panel(scr)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 1402, in close_panel
+    _invoke(r, "CloseFrontPanel")
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 362, in _invoke
+    raise result["err"]
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 349, in call
+    result["ok"] = disp.Invoke(disp.GetIDsOfNames(0, method), 0,
+pywintypes.com_error: (-2147352567, '예외가 발생했습니다.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"com_error: (-2147352567, '\uc608\uc678\uac00 \ubc1c\uc0dd\ud588\uc2b5\ub2c8\ub2e4.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set i","artefacts":[]}
+BGRUN END rc=1 after 61s
