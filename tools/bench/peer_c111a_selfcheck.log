@@ -1,0 +1,62 @@
+BGRUN START 2026-09-27 20:31:08 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c111a-selfcheck -TaskFile tools/bench/peer_c111a_selfcheck_task.txt
+BGRUN PID 5248
+OUTCOME: ANSWERED (219s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-27-c111a-selfcheck.md
+COST: $1.5586  in 26 / out 19323 / cache-create 109633 / cache-read 1372236  (215s, 19 turn(s))
+--- ANSWER ---
+**Verdict:** the claim is mostly right about the three failing checks, but wrong in what it concludes from the self-check. The attribution step can double-count one wire, and the numbers that were logged don't come from the script now on disk. Fix and re-run that offline before starting the 25-minute GUI run.
+
+**1. Strongest reason the claim is wrong: one wire can clear two errors.**
+- In `tools/bench/diag_c111_b1_errorlist.py:156-158`, a sink-only wire whose sink is a LoopTunnel is added to the `sink-LoopTunnel` pool. It is never removed from the `sink-only` pool.
+- So one wire can clear an item in `tunnel_to_input` or `no_source`, and again in `undirected_tunnel`.
+- The facts file shows this happened for all 11 `undirected_tunnel` items:
+  - Wires 9076, 9993, 10166, 28365, 28684, 29766 and 29853 are credited to `tunnel_to_input` (`facts_c111a_b1_errorlist_selfcheck.md:37`) and again to `undirected_tunnel` (`:38`).
+  - Wires 30636, 30885, 31064 and 31128 are credited to `no_source` (`:41`) and again to `undirected_tunnel` (`:38`).
+- That is 11 of the 40 "open-row" attributions. "Output loop tunnel wired to an input" and "wire connected to an undirected tunnel" describe opposite states of the same tunnel. So for those 7 wires, at least one of the two credits is probably wrong. That is my inference, not a measurement.
+- Correct the double count and the unattributed figure rises from 14 to as much as 25 (of 80). A self-check whose main output is wrong by that much did not validate the attribution step.
+
+**2. The logged run is not the code on disk.**
+- The log lists 33 wires taken from the L2-A3 expected file (`diag_c111_b1_errorlist_selfcheck.log:9`). Six of them are 107, 110, 113, 115, 2626 and 5058.
+  - 107/110 and 113/115 are line numbers from `plan_l2a3.json`, cited in `errorlist_expected_D1_l2_a3_20260927_151224.json:12,14`.
+  - 2626 and 5058 are node IDs, not wires.
+- The current code skips any cite whose first `;`-part lacks "RBW" (`diag_c111_b1_errorlist.py:136`). That yields exactly the 27 wires the expected file lists (`:7`). It cannot produce those six numbers.
+- So the script was edited after the logged run. The mtime order from Glob points the same way (facts file, then log, then the `.py`).
+- The effect on the counts may be nil, but the "it ran end to end" evidence is for a different version.
+
+**3. Two more ways the attribution can mislead.**
+- **The L2-A3 credits are counted, never checked against B1.** The code credits `min(n, L2-A3 count)` per class without checking that those L2-A3 wires still exist in B1's list of wires Remove Bad Wires would delete. If B1's build removed some of them, their credits silently absorb new errors of the same wording.
+  - The failure-free route: check `set(ENDS) ∩ A3W` per pool, compared with the L2-A3 counts.
+- **The open-row match is broad.** It matches any wire end on a node that is merely *cited* in an open row's `why` text. That's how Bundle #11608 got credited through row `11261:element` (`facts…:30`).
+- **Two structural limits, not bugs, that the report should state:**
+  - `unconnected` wires have no ends, so they can never match an open row. Its unattributed count is fixed by construction.
+  - The attribution never uses the per-item Show Error captures (`bd_after`), so it matches counts, not identities.
+
+**4. Your question about reaching 99 items with `max_steps=180`: I see no reason it would stop short.**
+- The old read stopped because the loop ran out of steps:
+  - After item 79 there is no break message ("reached", "will not scroll", "stopped moving") (`errorlist_check_c110d.log:108-109`).
+  - 80 rows gave 80 items, so no header rows sit in the errors band. Headers don't use up steps.
+- `n_want=99` only stops the walk when it has enough items.
+- The end-of-list check needs the scroll wheel to fail twice, and that mechanism already scrolled correctly through 80 rows.
+- The `max_steps` patch does reach `EC.main`, because `_lv_imports` imports the module only once (`errorlist_check.py:40-44`, `:479`).
+- Remaining risks:
+  - I could not confirm from NI's documentation whether "N errors and warnings" counts rows that are hidden. The page only says the list shows the errors and warnings for the VI selected under "Items with errors" ([NI Error List Window](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/dialog-boxes/error-list-window.html)). The L2-A3 read matched 29 of 29, which suggests the count equals the rows shown.
+  - A silent `break` at `lv_errorlist.py:767-768` logs nothing.
+  - If `EC.main` dies before writing its JSON, `diag…py:105` quietly copies the *old* 80-item read into the c111 file. The G2/G3 checks would fail, but the facts header would still name the c111 file as its source.
+
+**Alternative explanation of the same evidence:** the three failures really are caused by how the self-check was set up. But the self-check's one passing result (every item falls into exactly one class) says nothing about whether the attribution is right. Its output is inflated by the double count and came from a different version of the code.
+
+**What would falsify my objection:** B1 cold-loaded in LabVIEW shows two error rows for each of those 11 wires (one "undirected tunnel" row plus one "output loop tunnel" or "no source" row). If so, the double use is legitimate.
+
+**Cheapest discriminating test (about 1 s, no LabVIEW):**
+1. Re-run `diag_c111_b1_errorlist.py offline errorlist_D1_l2_b1_20260927_193100_20260927_194303.json` on the current code.
+2. Add two printouts:
+   - the wires credited in more than one class;
+   - per pool, `|keys(ENDS) ∩ A3W|` compared with the L2-A3 class count.
+3. If any wire is credited twice, or a class's L2-A3 credits exceed the L2-A3 wires still present, fix the rule before the GUI run.
+4. In the real run, the final walk line must read "reached the window's own count of 99".
+
+I edited nothing and ran nothing.
+
+Sources:
+- [NI – Error List Window](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/dialog-boxes/error-list-window.html)
+- [NI – Displaying Warnings](https://www.ni.com/docs/en-US/bundle/labview/page/displaying-warnings.html)
+BGRUN END rc=0 after 220s

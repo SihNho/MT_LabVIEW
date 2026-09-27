@@ -1,0 +1,70 @@
+{
+ "schema": "task/1",
+ "id": "111-1",
+ "kind": "measure",
+ "escalation": 0,
+ "goal": "PD224(h): read ALL Error List items of D1_l2_b1_20260927_193100.vi, the items on wire 25618, the owner loops of #11261/#8323, and attribute every item (L2-A3 licence or plan_l2b1 open row)",
+ "why": "110-4 saved L2-B1 but the Error List reader stopped at 80 of 99 (lv_errorlist.py:581 max_steps=80), so B1 has no expected file and is not the bed. Wire 25618 bad: (i) #11261's inputs are open B2/B3 rows vs (ii) cross-loop plan fault, not separated. Judgement decides the bed.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/cards/result_110-4.json"},
+  {"path": "tools/bench/stage_d1_l2b1_c110d.log"},
+  {"path": "tools/bench/plan_l2b1.json", "md5": "9fb69b9b097603250ca3b9e2f87f322e"},
+  {"path": "tools/bench/plan_l2b1_licence.json"},
+  {"path": "tools/bench/errorlist_expected_D1_l2_a3_20260927_151224.json"},
+  {"path": "tools/bench/diag_c110_errorlist.py", "md5": "b309d5e014bd1dd5bbd6c4ccc0b7bb52"},
+  {"path": "tools/lv_errorlist.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_b1_20260927_193100.vi", "md5": "b705728ab0714dc8179fc955283800f9"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/lv_errorlist.py"},
+  {"kind": "file", "name": "tools/bench/diag_c110_errorlist.py"},
+  {"kind": "file", "name": "tools/bench/plan_l2b1.json"},
+  {"kind": "file", "name": "tools/bench/errorlist_expected_D1_l2_a3_20260927_151224.json"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_b1_20260927_193100.vi"}
+ ],
+ "pass": [
+  "R1 lv_errorlist.read_by_capture max_steps is a caller parameter reaching >= 150 from the diag script (default unchanged or raised; existing callers unaffected); py_compile OK",
+  "R2 Error List of the B1 file read in full: item count reported, all_items_read True, raw items saved to tools/bench/errorlist_D1_l2_b1_20260927_193100_c111.json",
+  "R3 items on wire 25618/#11261/#8323: text + double-click location; owner structure (uid, class, loop 1.1/1.2/1.5/1.7/other) of #11261 and of #8323's terminal, from the saved file",
+  "R4 facts_c111a_b1_errorlist.md: per item class, count + licence (L2-A3 expected class / plan_l2b1 open row id / UNATTRIBUTED); totals",
+  "R5 B1 file md5 unchanged (b705728a...), never saved, never run; LabVIEW closed and verified gone"
+ ],
+ "outputs": [
+  "tools/bench/errorlist_D1_l2_b1_20260927_193100_c111.json",
+  "tools/bench/facts_c111a_b1_errorlist.md",
+  "tools/bench/cards/result_111-1.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/lv_errorlist.py",
+   "tools/bench/diag_c111*",
+   "tools/bench/errorlist_D1_l2_b1_*",
+   "tools/bench/facts_c111a*",
+   "tools/bench/selftest_*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "advances": ["M3"],
+ "rules": [
+  "B1 file READ ONLY: open, read, close with Don't Save; never run any VI",
+  "do NOT write errorlist_expected_D1_l2_b1_*.json nor STATUS current-bed: the bed is judgement's",
+  "GUI: capture-locate-act-capture-confirm (cycle27-plan PD 9), as the Error List reader does",
+  "scripts via py tools/bgrun.py --material --max-min N --log f -- py -u script; no env prefixes",
+  "hold the turn until every bgrun you start writes BGRUN END",
+  "a gate refusal is returned BLOCKED, never re-run via a self-test child or exempt route",
+  "facts <=10 with file:line; OPEN <=3"
+ ]
+}

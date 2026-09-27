@@ -4147,3 +4147,108 @@ VIOLATION: device-failed | loss_min=13 | loss_usd=? | evidence=tools/bench/plan_
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle110","verdict":"refuted","alternative":"The PRIME/CHECKPOINT stops before op 1 are fail-fast by design; 13 min is ordinary iteration and the 17:18 user stop fixed the cycle's end, so no structural fault.","discriminating_test":"Re-dry plan a9a5b360 with PRIME failures collected, not stopped: if rw_403_2282/rw_9306_6142 appear as UNROUTABLE in the same pass, the 09-25 16:10 device had a scope gap.","violations":[{"slug":"device-failed","loss_min":13,"loss_usd":"?","evidence":"tools/bench/plan_l2b1_dry.log:22"}],"sources":["tools/bench/plan_l2b1_dry.log:22","tools/bench/plan_l2b1_dry2.log:22","tools/bench/plan_l2b1_dry3.log:84","tools/bench/cards/result_110-2.json:19","docs/violation-decisions.md:1304","tools/hooks/material_marker.log:2434","tools/bench/stage_replay_swap_110_prerunb.log:35"],"note":"Also failed, each <=10 min: read-only pyflakes refusals after the 15:49 repair (guard_card.log:371, material_marker.log:2434; pyflakes absent), X9 false positive (result_110-6.json). Error List cap 80 cost 18 min (finding)."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle110.md
 BGRUN END rc=0 after 431s
+BGRUN START 2026-09-27 22:05:10 limit 10.0 min: py tools/retrospective.py --cycle 111
+BGRUN PID 21932
+   window 2026-09-27 20:18:43 .. 2026-09-27 22:05:10 (106 min); 57 build logs, 11 machinery logs, 36 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle111.txt (32694 chars)
+   review card tools\bench\cards\review_retrospective-cycle111.json
+OUTCOME: ANSWERED (463s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-09-27-retrospective-cycle111.md
+COST: $2.7836  in 56 / out 45939 / cache-create 152107 / cache-read 3238771  (461s, 50 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle111 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle111.json
+--- ANSWER ---
+# Retrospective, cycle 111 (20:18:43 to 22:05:10)
+
+The cycle's outcome was good. L2-B1 became the bed: `result_111-4.json:8-10` shows 99/99 items licensed and a reverdict of OK. The owed dry-run device was built (`diag_c111c_dry_negative.log:24`, 7 of 7 rows reported in one run). It used 5 of 6 dispatches and 106 of 180 minutes. The claim on the card still fails on one fault in the last dispatch. A second line is added only because the device rule says any failed device must be reported.
+
+## The most costly structural fault: `wrong-ordering`, the B2a planning card (111-5) went ahead of the B2 tooling
+
+- **What happened.** Decision PD225(f) (`docs/d1-loop12-17-split-plan.md:1937`) sent card 111-5 at 21:49:10 (`guard_card.log:386`) to make L2-B2a launch-ready. The card included row B2-15.
+- **The session already knew B2-15 could not be routed.** The tooling had already been ordered before any B2 work (`brief_110-3.md:12-14`). The judgement session's own card from 47 minutes earlier named `rw_403_2282` (B2-15) as a dead row (`task_111-3.json:30`). The 111-3 negative test had measured that row as UNROUTABLE at 21:16 (`diag_c111c_dry_negative.log:24`).
+- **What it cost.** The prior-art review returned already-failed and settled-already (`priorart-c111e-l2b2a.md:506-508, 494-498`). The card ended BLOCKED (`result_111-5.json:1-3`), and the session admits the fault at PD225(h) (`:1942`).
+  - Wall-clock: 21:49:10 to 22:02:25, about 13 min, run in parallel with card 111-4.
+  - Money: $1.6506 for the prior-art review (`peer_priorart_c111e_l2b2a.log:6`), which was spent only because a recipe that could not be released was written.
+  - Side cost: guard_peer held card 111-4 for about 8 min because of 111-5's failing peek log (`result_111-4.json:14`).
+  - Not all wasted: the card produced the PD158 crossing and found gap (i), that wiring to shift registers already on the bed is unsupported (`stagexec.py:406-409`). The loss is gross, not net.
+- **Counterfactual.** Suppose PD225(f) at about 21:48 had sent the tooling card (brief_110-3 (b)–(e)) alongside 111-4:
+  - 111-4 would not have been held and would have ended about 21:52 instead of 22:00:35.
+  - The cycle would still have closed around 22:05, but with tooling under way instead of a BLOCKED plan.
+  - Cycle 112 would start at PD225(h)4 (re-simulate and dry run) instead of (h)3.
+
+## Device rule (threshold 1): `device-failed`, a gate refused an offline dry run
+
+- **What the 07:46 device promised.** The device decided 2026-09-27 07:46 was meant to let the offline checker `stage_prerun --dry|--prerun <recipe>` through the launch gate, "offline checks that precede a release" (`violation-decisions.md:1519-1521`).
+- **It was repaired in stop_record only.** `guard_cycle.py:40`'s `BUILD_RE` matches `\bpy` inside the `.py --dry tools/recipes/…` part of `py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_l2b2a.py`. The prior-art verdict check at `guard_cycle.py:612` has no command-class check, and guard_cycle does not use `launchunit.py` (checked by grep).
+- **What happened in this window.**
+  - The dry was attempted at 21:58:39 (before the prior-art review) and at 22:01:39 (after it), per `material_marker.log:2516`/`:2518`. No `plan_l2b2a_dry.log` exists.
+  - The card's first failure is "--dry refused by guard_cycle.py" (`result_111-5.json:2`).
+  - The review had named this dry run as its discriminating test. The collecting dry built this cycle was never run on B2.
+  - PD225(h)'s tooling list therefore rests on reading code, not on a measurement ("verbs NOT shown (dry refused)", `result_111-5.json:12`).
+- **Cost:** about 3 min; no log carries a dollar figure.
+- **Counterfactual.** With guard_cycle classifying launches through `launchunit`, the 22:01:39 dry would have run in about 1 min. It would have returned the measured unroutable list for all 7 rows. The end time would not have changed.
+- **The same pattern appeared once more.** At 22:01:59 the stop record refused a read-only PowerShell hash (`$f = @(...)`, `material_marker.log:2519`). The agent reran it as `diag_c111e_md5.py` at 22:02:24 (`:2520`).
+- This is the fourth code path in a row to get the read-only repair after the others (`violation-decisions.md:1545, 1564-1565`).
+
+## Findings
+
+**1. Repeated failure.** Eight of the cycle's new diagnostic or self-test scripts failed on their first run (`jev_gate.log:2148, 2158, 2163-2166, 2174, 2188, 2193, 2197`). Five paid hypothesis reviews followed, $6.10 in total. Four of them found real problems (c111a double credit, c111c-regress rule narrowing, stageplan hidden regression, realstore harness mechanism). The peek review ($0.7852) found only the session's own script bug. No attempt needed a change of approach, but the gate threshold did. `diag_c111e_peek.log` scored p=0.666, just over the 0.65 cut-off, and that is what held 111-4.
+
+**2. Missing tool.**
+- brief_110-3 (b), "stagesim finalize runs `connect_route`", was not built. Without it, `plan_l2b2a_sim2.log` called a plan with 3 unroutable rows "final, open_rows_match". It would have caught B2-15, B2-11 and B2-14 at plan time.
+- `launchunit` is not wired into guard_cycle, which is the second fault above.
+
+**3. Unmeasured steps.**
+- The `requires` list on card 111-5 names only files (`task_111-5.json:20-30`). `protocol.py requires` therefore passed without checking anything. Listing the two missing verbs would have come back MISSING in seconds, before any dispatch.
+- Gap (i) is inferred from reading `stagexec.py:406-409`, not measured.
+
+**4. Rule compliance.**
+- The CLAUDE.md judgement/material split holds. A delegation brief states the measurement, not the action, and cards 111-4 and 111-5 kept the bed and row decisions for the judgement session.
+- The card rule "a gate refusal is returned BLOCKED, never re-run via an exempt route" (`task_111-5.json:73`) was bent, harmlessly: the read-only hash refused at `:2519` was rerun through a new script.
+- The audit is wrong or blind in three places:
+  - A1 FAIL is a false positive. The 22 logs were written by a subprocess of `diag_c111c_regress.py:62`, which itself ran under bgrun (`material_marker.log:2499`).
+  - C6's "judgement-session attempts refused 9" is mislabelled. Those lines are refusals of material-agent commands, and four are self-test fixtures (`:2493-2494, 2500-2501`).
+  - C7 lists 438 files and has stopped carrying information.
+- The audit does not see gate refusals made inside hooks, such as guard_cycle's, which log nowhere. It also does not see self-reported minutes.
+
+**5. Ordering.**
+- 111-1 first, then 111-2 alongside 111-3: this order was sound.
+- The 21:49 slot should have gone to the tooling card (the main fault above).
+- `next.json:10-15` puts five scratch-verified tooling items, a re-simulation, a dry run, a pre-run, prior-art and a launch into one act. Card 111-3 took about 45 min and 3 reviews for two items, so the split rule applies to cycle 112 before it starts.
+
+**6. What was not reported.**
+- The self-reported minutes are impossible:
+  - `result_111-2.json:28` says 80 min and `result_111-3.json:34` says 105 min, but both cards were bound at 21:02:49–50 (`guard_card.log:380-381`), leaving at most 62 min.
+  - `result_111-1.json:28` says 48 min, against at most 40.6 min between 20:22:10 and 21:02:49.
+  - Both "over the 60-min budget" notes are false, and that is the trigger for escalation.
+- The STATUS summary of 111-5 omits that the dry run was blocked by a gate defect.
+- `diag_c111e_md5.log` ended rc=1 because the judgement session pinned an old md5 for `stage_d1_l2b1.py` in the card (`task_111-5.json:16` vs `diag_c111e_md5.log:8`). That log is still unreviewed (audit A3) and may hold cycle 112's first build.
+
+**7. Judgement inside a material session.**
+- The 111-3 material session narrowed decision 15:49 (`py -m`: only READONLY_MODULES count as non-launches) and shipped it into three hooks before the judgement session saw it (`result_111-3.json:26`). The judgement session ratified it afterwards at PD225(e). The narrowing fails safe, but it was a design change made in the material session.
+- The 111-5 material session wrote "ACCEPTED in full" on the prior-art review (`priorart-c111e-l2b2a.md:532`). The card required the annotation (`task_111-5.json:35`), but it correctly left the row-set choice open.
+
+## Device effect
+
+| Device (decided) | Held in this window? |
+|---|---|
+| bgrun rc vs inner (09-16), FAIL scan (09-17 03:38) | Yes: `diag_c111e_md5.log:14`, `diag_c111c_realstore2.log:21` forced rc=1 |
+| peer confirm-bait (09-16) | Not exercised |
+| prior-art review (09-16) | Yes: fired correctly on 111-5 |
+| blank-disposition refusal (09-16 15:05) | Yes: all in-window reviews annotated (A4's blank one is c103) |
+| C3/C4 cost split, COST regex (09-16 15:05, 21:07) | Yes: C4 $7.7517 = sum of 6 COST lines, 6/6 parsed |
+| premature-build timing gate (09-16 19:16) | Fired on the dry checker at 21:58:39; part of the device failure |
+| C7 scope counter (09-16 19:16) | No scope creep; counter saturated (438) |
+| stop record + launch gate (09-18, 09-24 ×3, 09-27 01:15/01:55) | Launch stop held. Read-only refusal recurred (`material_marker.log:2519`) and was worked around (`:2520`) |
+| guard_peer retry gate (09-24 03:53) | Fired on the wrong card (held 111-4 about 8 min, `result_111-4.json:14`); not bypassed |
+| selftest_exempt closure (09-25 05:58) | Yes: `guard_card.log:382` |
+| collect-all-unroutable dry (09-25 16:10 / 09-27 20:20) | Built (111-3); never run on B2 because the dry was refused |
+| gates_due at cycle start (09-26 14:10, 09-27 08:30) | Yes: `cycle_111.json:28-44` |
+| next.json plan path (09-25 14:28) | Yes: audit C7 used it |
+| **stage_prerun --dry passes the gate (09-27 07:46)** | **Failed:** the same argv shape was refused by `guard_cycle.py:612` (`result_111-5.json:2`) |
+| py -m launch unit (09-27 15:49) | Built on 3 paths (33/0); guard_cycle's `BUILD_RE` is an unpatched fourth path |
+| retry cap, SimReader, ExecStop sink gates, graph shape, memory prediction, VISA precheck, OpLoopEndRef, Jev exemption, SendMessage refusal, bgrun reap, motor FAIL lines | Not exercised (no stage or real run) or passed (A2) |
+
+VIOLATION: wrong-ordering | loss_min=13 | loss_usd=1.65 | evidence=docs/d1-loop12-17-split-plan.md:1937
+VIOLATION: device-failed | loss_min=3 | loss_usd=? | evidence=tools/bench/cards/result_111-5.json:2
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle111","verdict":"refuted","alternative":"No structural fault: 111-5 still yielded the PD158 crossing and gap (i) (existing-register route) that a tooling card could not have known, and the dry refusal cost ~3 min without changing the cycle's end.","discriminating_test":"Feed guard_cycle.main() offline the 22:01:39 argv (bgrun -- py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_l2b2a.py): if BUILD_RE matches via '.py --dry' and :612 blocks, the device failure stands.","violations":[{"slug":"wrong-ordering","loss_min":13,"loss_usd":1.65,"evidence":"docs/d1-loop12-17-split-plan.md:1937"},{"slug":"device-failed","loss_min":3,"loss_usd":"?","evidence":"tools/bench/cards/result_111-5.json:2"}],"sources":["tools/bench/cards/brief_110-3.md:12","tools/bench/cards/task_111-3.json:30","tools/bench/diag_c111c_dry_negative.log:24","archive/peer/2026-09-27-priorart-c111e-l2b2a.md:506","tools/bench/peer_priorart_c111e_l2b2a.log:6","tools/hooks/guard_cycle.py:40","tools/hooks/guard_cycle.py:612","docs/violation-decisions.md:1519","tools/hooks/material_marker.log:2519"],"note":"Device named: 07:46 'stage_prerun --dry passes the launch gate', repaired in stop_record only; guard_cycle BUILD_RE/verdict gate still refuses it. Same pattern: read-only hash refused at material_marker.log:2519, rerun as script at :2520."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle111.md
+BGRUN END rc=0 after 467s

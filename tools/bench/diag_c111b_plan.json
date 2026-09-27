@@ -1,0 +1,18 @@
+{
+ "schema_note": "card 111-2 A4: FINALIZED decision-row plan of tools/bench/diag_c111b_tunnelitems.py - a never-saved byte copy of the L2-A3 bed, two wire DELETIONS that reproduce B1's cut on one ForLoop tunnel each, one unwired add_shift_reg, then ONE Error List read diffed against the bed's known 29 items. Rows 'wire' are deletions (stagekit.delete_wire), the only wiring ops. Precedent: tools/bench/diag_c108d_plan.json. Every uid below is from tools/bench/graph_l2a3_bed_20260927.json.",
+ "input": {"vi": "D1_l2_a3_20260927_151224.vi", "md5": "14337cfda5780cb39d12deb5fe0d3db9", "graph": "tools/bench/graph_l2a3_bed_20260927.json",
+           "base_errorlist": "errorlist_D1_l2_a3_20260927_151224_20260927_202005_reuse.json"},
+ "cuts": [{"tag": "a", "wire": 9097, "tunnel": 9087, "inner_wire": 9076},
+          {"tag": "b", "wire": 29787, "tunnel": 29777, "inner_wire": 29766}],
+ "sr_loop": 10170,
+ "sizes": {"DEADLINE_MIN": 35, "MAX_STEPS": 120},
+ "decisions": [
+  {"id": "A4-0", "action": "stage", "what": "stagekit Stage: restart LabVIEW, byte copy of the L2-A3 bed as the work copy, discard_work (never saved)"},
+  {"id": "A4-1", "action": "read", "what": "read_live: cut wires end on their tunnels' OUTER faces; print the inner wires' ends"},
+  {"id": "A4-2", "action": "wire", "what": "DELETE wire cuts[0] (LSR -> For#1359 tunnel outer); inner wire keeps 1 sink"},
+  {"id": "A4-3", "action": "wire", "what": "DELETE wire cuts[1] (x mod y -> For#29874 tunnel outer); inner wire keeps 2 sinks"},
+  {"id": "A4-4", "action": "create", "what": "add_shift_reg on WhileLoop sr_loop (traverse index re-read), left unwired"},
+  {"id": "A4-5", "action": "read", "what": "ExecState; open panel + diagram; ONE Error List read (lv_errorlist.read, max_steps); census vs the base file"},
+  {"id": "A4-6", "action": "discard", "what": "close(): scratch deleted, bed md5 unchanged, LabVIEW killed and gone; PASS record to tools/bench/scratch_verify/"}
+ ]
+}

@@ -1,0 +1,35 @@
+BGRUN START 2026-09-27 21:18:51 limit 20.0 min: py -u tools/bench/diag_c111c_regress.py
+BGRUN PID 10264
+diag_c111c_regress - card 111-3 D5: the existing OFFLINE self-tests of the edited files (stage_prerun.py, stagexec.py,
+stop_record.py, hooks/guard_card.py -> protocol card flags) re-run after the edit, each compared with its LATEST archived log
+(the pre-edit run) by gate NAME and COUNT. Nothing here opens LabVIEW; every child is an offline self-test that sandboxes its
+records in %TEMP% (selftest_launch_gate.py:4, selftest_prerun_diag.py:23). NOT RUN here: selftest_stage_prerun_c110g.py
+(it imports gscript, selftest_stage_prerun_c110g.py:33 - card 111-3 flags.labview 'none' refuses it; not routed around) and
+`tools/stagexec.py selftest` (run on its own, the guard_card pure-selftest command form).
+PREDICTION: R1 every test exits with the same gate NAMES as its baseline log and no gate that passed there fails now.
+    py tools/bgrun.py --material --max-min 20 --log tools/bench/diag_c111c_regress.log -- py -u tools/bench/diag_c111c_regress.py
+  PASS  R1 selftest_stage_prerun_c103.py: now 4/0 (rc 0) | base selftest_stage_prerun_c103_c110g.log 4/0 | new fails [] | missing [] | added []
+  PASS  R1 selftest_stage_prerun_c106c.py: now 6/0 (rc 0) | base selftest_stage_prerun_c106c_c110g.log 6/0 | new fails [] | missing [] | added []
+  PASS  R1 selftest_stage_prerun_c106e.py: now 15/0 (rc 0) | base selftest_stage_prerun_c106e_c110g.log 15/0 | new fails [] | missing [] | added []
+  PASS  R1 selftest_stage_prerun_graphload.py: now 18/0 (rc 0) | base selftest_stage_prerun_graphload_c110g.log 18/0 | new fails [] | missing [] | added []
+  PASS  R1 selftest_stage_prerun_headcmp_79-6.py: now 2/0 (rc 0) | base selftest_stage_prerun_headcmp_c110g.log 2/0 | new fails [] | missing [] | added []
+  PASS  R1 selftest_stage_prerun_stageplan.py: now 55/27 (rc 0) | base selftest_stage_prerun_stageplan_c110g.log 55/27 | new fails [] | missing [] | added []
+  PASS  R1 selftest_c110_launchgate.py: now 10/0 (rc 0) | base selftest_c110_launchgate.log 8/0 | new fails [] | missing [] | added ['H# prerun_gate(L#) == #']
+  PASS  R1 selftest_launch_gate.py: now 28/0 (rc 0) | base selftest_launch_gate_c110.log 28/0 | new fails [] | missing [] | added []
+  PASS  R1 selftest_prerun_diag.py: now 9/0 (rc 0) | base selftest_prerun_diag_c110.log 9/0 | new fails [] | missing [] | added []
+  PASS  R1 selftest_c106d_tools.py: now 23/0 (rc 0) | base selftest_c106d_tools_c110.log 23/0 | new fails [] | missing [] | added []
+  FAIL  R1 selftest_c103d_hooks.py: now 16/1 (rc 1) | base selftest_c103d_hooks_c110.log 17/0 | new fails ['S# NEGATIVE unknown module refused  rc #'] | missing [] | added []
+  PASS  R1 selftest_c108e_tools.py: now 13/0 (rc 0) | base selftest_c108e_tools.log 13/0 | new fails [] | missing [] | added []
+  FAIL  R1 selftest_stoprecord_offline_c107.py: now 0/0 (rc 1) | base selftest_stoprecord_offline_c107.log 0/0 | new fails [] | missing [] | added []
+  PASS  R1 selftest_stoprecord_table.py: now 107/0 (rc 0) | base selftest_stoprecord_table.log 107/0 | new fails [] | missing [] | added []
+  PASS  R1 selftest_stoprecord_bgrun.py: now 6/0 (rc 0) | base selftest_stoprecord_bgrun_c73.log 6/0 | new fails [] | missing [] | added []
+  PASS  R1 selftest_stoprecord_eqform.py: now 5/0 (rc 0) | base selftest_stoprecord_eqform_c73.log 5/0 | new fails [] | missing [] | added []
+  FAIL  R1 selftest_stoprecord_supersession.py: now 36/0 (rc 0) | base selftest_stoprecord_supersession_c73.log 36/0 | new fails [] | missing ["C#b the REAL store was never touched   ('#a#a#e#d#', '#d#ab#"] | added ["C#b the REAL store was never touched   ('#cc#d#e#a', '#d#ab#"]
+  PASS  R1 selftest_protocol.py: now 48/0 (rc 0) | base selftest_protocol.log 48/0 | new fails [] | missing [] | added []
+  PASS  R1 selftest_protocol_wiring.py: now 66/0 (rc 0) | base selftest_protocol_wiring.log 66/0 | new fails [] | missing [] | added []
+  PASS  R1 selftest_requires.py: now 7/0 (rc 0) | base selftest_requires.log 7/0 | new fails [] | missing [] | added []
+  FAIL  R1 selftest_retry_cap.py: now 8/0 (rc 0) | base selftest_retry_cap.log 8/0 | new fails [] | missing ['C# real tools/bench/stage_runs.jsonl byte-unchanged  bfd#a#e'] | added ['C# real tools/bench/stage_runs.jsonl byte-unchanged  #e#dc#f']
+  PASS  R1 selftest_stagexec_gate.py: now 13/0 (rc 0) | base selftest_stagexec_gate.log 13/0 | new fails [] | missing [] | added []
+=== GATES: 18 pass / 4 fail
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":18,"fail":4},"first_fail":"R1 regression","artefacts":[]}
+BGRUN END rc=1 after 453s

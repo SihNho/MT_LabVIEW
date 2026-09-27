@@ -60,12 +60,41 @@ def pure_selftest(cmd):
     return bool(re.match(r"^[A-Za-z]:/", p)) and os.path.normcase(os.path.abspath(p)) == want
 
 
+def _install_launch_units(protocol):
+    """card 111-3 (docs/violation-decisions.md device-failed 20:20, guard_card.log:371): the card flags judge the .py
+    files a command RUNS through the ONE shared rule, tools/launchunit.py - `py -m <module> X` launches the module, X is
+    an argument. protocol._launched_scripts (a token regex that read `pyflakes X` as "python pyflakes X") is kept as the
+    detector; launchunit.drop_module_args only removes an entry that it sees ONLY as a READ-ONLY module's argument
+    (pyflakes, pycodestyle, py_compile ...), never one it sees launched, and never a second occurrence the regex saw;
+    what launchunit sees RUN and the regex missed (any other module's argument, a `-m` module that is a project file)
+    is added. Installed once per process."""
+    if getattr(protocol._launched_scripts, "_launchunit", False):
+        return
+    import launchunit as LU
+    orig = protocol._launched_scripts
+
+    def launched(cmd):
+        out = LU.drop_module_args(cmd, orig(cmd), protocol.ROOT)
+        have = set(LU.norm(p, protocol.ROOT) for p in out)
+        for p in LU.launched_py(cmd, protocol.ROOT):   # + what only launchunit sees run: a non-read-only module's
+            if os.path.isfile(p) and LU.norm(p, protocol.ROOT) not in have:   # argument (`py -m pdb X`), `-m tools.recipes.x`
+                out.append(p)
+                have.add(LU.norm(p, protocol.ROOT))
+        return out
+    launched._launchunit = True
+    protocol._launched_scripts = launched
+
+
 def decide(payload):
     """(exit_code, message). Shared by main() and guard_bash.py."""
     try:
         if TOOLS not in sys.path:
             sys.path.insert(0, TOOLS)
         import protocol
+        try:
+            _install_launch_units(protocol)
+        except Exception as e:  # noqa: BLE001 - keep protocol's own (stricter) detector, never fail open
+            log("LAUNCHUNIT ERROR (protocol detector kept) %s: %s" % (type(e).__name__, e))
         ok, msg = protocol.hook_decision(payload)
         cmd = (payload.get("tool_input") or {}).get("command", "") \
             if payload.get("tool_name") in ("Bash", "PowerShell") else ""

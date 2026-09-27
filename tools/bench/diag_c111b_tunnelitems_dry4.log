@@ -1,0 +1,41 @@
+BGRUN START 2026-09-27 21:18:26 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/bench/diag_c111b_tunnelitems.py
+BGRUN PID 21336
+diag_c111b_tunnelitems - card 111-2 A4: how many Error List items does ONE cut loop-tunnel wire raise (and one unwired new SR)?
+FIXTURE: a scratch byte copy (discard_work, deleted at close) of the L2-A3 bed claudeDev\D1_l2_a3_20260927_151224.vi (md5 14337cfd),
+whose Error List is KNOWN: 29 items (errorlist_D1_l2_a3_..._202005_reuse.json: loose 13, unconnected 9, no-source 3, tunnel-to-input 2,
+BuildArray 1, Image In 1; no undirected-tunnel, no SR item). Nothing is saved, no VI is run. B1 is not touched.
+MUTATIONS = the B1 situation, one object each (graph_l2a3_bed_20260927.json):
+ (a) delete wire 9097 = LSR #9025 -> For#1359 tunnel #9087 outer t9092; inner wire 9076 keeps ONE sink (#8634 'array')
+ (b) delete wire 29787 = #29240 -> For#29874 tunnel #29777 outer t29782; inner wire 29766 keeps TWO sinks (#29625 'index (col)', #29973 'element')
+ (c) add_shift_reg on WhileLoop #10170 (as B1's srb1), left unwired
+PRIOR ART: stagekit.delete_wire / add_shift_reg (the B1 stage's own ops), errorlist_check.open_diagram + lv_errorlist.read (card 111-1).
+PREDICTION (recorded, not assumed): the item classes that grow over the 29, per mutation class; gates are only on the mechanics:
+ M the 3 ops return no error; E ExecState 0 after; L the Error List read is complete (n_reported == items read);
+ H scratch deleted, bed md5 unchanged, LabVIEW gone.
+    py tools/bgrun.py --material --max-min 40 --log tools/bench/diag_c111b_tunnelitems.log -- py -u tools/bench/diag_c111b_tunnelitems.py
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 14337cfda5780cb39d12deb5fe0d3db9  got 14337cfda5780cb39d12deb5fe0d3db9
+  PASS  DRY graph JSON for input md5 14337cfda5780cb39d12deb5fe0d3db9  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_l2a3_bed_20260927.json
+  FACT  BASE census (29 expected) {'subvi_not_wired': 1, 'node_unwired': 1, 'tunnel_to_input': 2, 'unconnected': 9, 'no_source': 3, 'loose_ends': 13} n=29
+  FACT  L2-A3 scratch cut a: wire 9097 ends [(9087, 'LoopTunnel', '', False), (9025, 'LeftShiftRegister', '', True)]; inner wire 9076 ends [(8634, 'GrowableFunction', 'array', False), (9087, 'LoopTunnel', '', True)]
+  FACT  L2-A3 scratch cut b: wire 29787 ends [(29240, 'Function', 'x-y*floor(x/y)', True), (29777, 'LoopTunnel', '', False)]; inner wire 29766 ends [(29973, 'BuildArray', 'element', False), (29625, 'GrowableFunction', 'index (col)', False), (29777, 'LoopTunnel', '', True)]
+  PASS  F every cut wire ends on its tunnel (outer face, sink)  [[(9087, 'LoopTunnel', '', False), (9025, 'LeftShiftRegister', '', True)], [(29240, 'Function', 'x-y*floor(x/y)', True), (29777, 'LoopTunnel', '', False)]]
+  FACT  OP delete_wire w9097 -> err '' (0.0 s)
+  FACT  OP delete_wire w29787 -> err '' (0.0 s)
+  FACT  WhileLoop sr_loop traverse index 1
+  PASS  F WhileLoop sr_loop has a traverse index  1
+  FACT  OP add_shift_reg loop[1] y=120 -> err '' (0.0 s)
+  FACT  OPS [{'verb': 'delete_wire', 'detail': 'w9097', 'err': '', 'result': <dry:build_opfsinnertunnelconnect_v0.del_wire>, 's': 0.0}, {'verb': 'delete_wire', 'detail': 'w29787', 'err': '', 'result': <dry:build_opfsinnertunnelconnect_v0.del_wire>, 's': 0.0}, {'verb': 'add_shift_reg', 'detail': 'loop[1] y=120', 'err': '', 'result': <dry:g.add_shift_reg>, 's': 0.0}]
+  FACT  ExecState [after a+b+c] scratch_c111b_tun_20260927_211827.vi = <dry:g.exec_state>
+  UNVERIFIED  E ExecState 0 after the 3 mutations  (dry: after mutation Stage._op delete_wire)
+  FACT  DRY: Error List read skipped (GUI/tasklist, no COM)
+
+====================================================================================================
+=== GATES: 4 pass / 0 fail
+JSON: C:\Users\KimLab\AppData\Local\Temp\stage_dry\diag_c111b_tunnelitems.json   elapsed 0.2 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"artefacts":[]}
+
+=== DRY PASS: first_fail=None coverage 47/71 lines, first mutation Stage._op delete_wire, unverified 1, graph tools/bench/graph_l2a3_bed_20260927.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

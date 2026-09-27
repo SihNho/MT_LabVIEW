@@ -1,0 +1,33 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle111",
+ "verdict": "refuted",
+ "alternative": "No structural fault: 111-5 still yielded the PD158 crossing and gap (i) (existing-register route) that a tooling card could not have known, and the dry refusal cost ~3 min without changing the cycle's end.",
+ "discriminating_test": "Feed guard_cycle.main() offline the 22:01:39 argv (bgrun -- py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_l2b2a.py): if BUILD_RE matches via '.py --dry' and :612 blocks, the device failure stands.",
+ "violations": [
+  {
+   "slug": "wrong-ordering",
+   "loss_min": 13,
+   "loss_usd": 1.65,
+   "evidence": "docs/d1-loop12-17-split-plan.md:1937"
+  },
+  {
+   "slug": "device-failed",
+   "loss_min": 3,
+   "loss_usd": null,
+   "evidence": "tools/bench/cards/result_111-5.json:2"
+  }
+ ],
+ "sources": [
+  "tools/bench/cards/brief_110-3.md:12",
+  "tools/bench/cards/task_111-3.json:30",
+  "tools/bench/diag_c111c_dry_negative.log:24",
+  "archive/peer/2026-09-27-priorart-c111e-l2b2a.md:506",
+  "tools/bench/peer_priorart_c111e_l2b2a.log:6",
+  "tools/hooks/guard_cycle.py:40",
+  "tools/hooks/guard_cycle.py:612",
+  "docs/violation-decisions.md:1519",
+  "tools/hooks/material_marker.log:2519"
+ ],
+ "note": "Device named: 07:46 'stage_prerun --dry passes the launch gate', repaired in stop_record only; guard_cycle BUILD_RE/verdict gate still refuses it. Same pattern: read-only hash refused at material_marker.log:2519, rerun as script at :2520."
+}

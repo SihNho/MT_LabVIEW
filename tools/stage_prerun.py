@@ -1544,42 +1544,13 @@ def launched_py(cmd):
     """argv only: every script path a python token RUNS (past interpreter flags), directly or after bgrun's `--`.
     card 106-5 (review archive/peer/2026-09-27-c103d-hooks-before.md s1): a NEWLINE separates commands too (a two-line
     Bash/PowerShell command with the stage on line 2 was not found); a line continuation (bash `\\`, PowerShell backtick)
-    is joined first, so a continued command stays one."""
-    out = []
-    joined = re.sub(r"(?:\\|`)[ \t]*\r?\n", " ", cmd or "")
-    segs = re.split(r"\s*(?:&&|\|\||;|\||\r?\n)\s*", joined)
-    for seg in segs:
-        try:
-            toks = shlex.split(seg, posix=False)
-        except ValueError:
-            toks = seg.split()
-        toks = [t.strip("\"'") for t in toks]
-        i = 0
-        while i < len(toks):
-            b = os.path.basename(toks[i]).lower()
-            if re.match(r"^py(thon)?[\d.]*(\.exe)?$", b):
-                j = i + 1
-                mod = None
-                while j < len(toks) and toks[j].startswith("-"):
-                    # card 110-1 (violation-decisions device-failed 15:49): `py -m <module> ...` launches the MODULE;
-                    # every later token is an argument of it, never a launch unit (a `py` token later in the segment,
-                    # e.g. after bgrun's `--`, is still scanned by the outer loop)
-                    if toks[j] == "-m" or (toks[j].startswith("-m") and len(toks[j]) > 2):
-                        mod = j + (2 if toks[j] == "-m" else 1)
-                        break
-                    j += 2 if toks[j] in ("-X", "-W") else 1
-                if mod is not None:
-                    i = mod
-                    continue
-                if j < len(toks):
-                    p = toks[j]
-                    ap = p if os.path.isabs(p) else os.path.join(ROOT, p)
-                    if p.lower().endswith(".py"):
-                        out.append(os.path.normpath(ap))
-                    i = j + 1
-                    continue
-            i += 1
-    return out
+    is joined first, so a continued command stays one.
+    card 111-3 (violation-decisions device-failed 20:20): the rule lives in ONE module, tools/launchunit.py, shared with
+    stop_record (segment_class) and the card-flag path (guard_card): `py -m <module>` launches the MODULE; its later
+    tokens are arguments only for a READ-ONLY module (launchunit.READONLY_MODULES: pyflakes, pycodestyle, py_compile,
+    ...), fail-closed for any other module and for a module that is a project file."""
+    import launchunit as LU
+    return LU.launched_py(cmd, ROOT)
 
 
 STAGEXEC = os.path.join(HERE, "stagexec.py")

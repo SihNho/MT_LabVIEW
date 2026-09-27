@@ -1,0 +1,41 @@
+BGRUN START 2026-09-27 21:43:34 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c111c-realstore -TaskFile tools/bench/peer_c111c_realstore_task.txt
+BGRUN PID 12852
+OUTCOME: ANSWERED (128s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-27-c111c-realstore.md
+COST: $1.1722  in 22 / out 9974 / cache-create 95803 / cache-read 1031098  (125s, 16 turn(s))
+--- ANSWER ---
+**Verdict: part (a) is mostly right. Part (b) is wrong about the cause, and the "single one-off" is not a one-off.** The HEAD refusal on N1 happened in both independent runs, and the code explains it without needing any hidden state inside the HEAD copy. Separately, the S1 check could not have caught an effect of card 111-3 even if one existed.
+
+### 1. Strongest reason the claim is wrong
+**(b) The refusal is reproducible and has a concrete cause.** N1 came back HEAD=refuse / NEW=allow in `diag_c111c_realstore.log:12` and again in `diag_c111c_realstore2.log:16`. Those are two separate processes, so this is not a one-off.
+
+The cause is in `diag_c111c_realstore.py:28`. That line re-points `ROOT`, `HERE` and `STORE` on the HEAD copy, but not `HOOKS`. `HOOKS` is set once when the module loads (`stop_record.py:63`: `HOOKS = os.path.join(HERE, "hooks")`), so in the copy loaded from the temp file it points to `<tempdir>/hooks`, which does not exist. The sequence is:
+
+1. P1–P5 never reach the release check: the recipe is not a build target in those commands, so `_check` skips them (`stop_record.py:591`).
+2. N1 is the first command that builds the recipe. The tuple on `diag…py:40` evaluates HEAD before NEW.
+3. HEAD's release check does `sys.path.insert(0, HOOKS)` and then `import guard_cycle` (`stop_record.py:515-517`). At that moment `tools/hooks` is not on `sys.path` (the diag only inserts `tools/`), so the import fails with ModuleNotFoundError.
+4. That error lands in the catch-all at `stop_record.py:660-665`, which refuses any command naming `tools/recipes/`.
+5. NEW then runs the same check with the real `tools/hooks` path. That puts `guard_cycle` into `sys.modules`.
+6. Every later HEAD call finds `guard_cycle` already loaded and allows. This is why the re-ask printed an empty message, and why the second pass was 13/13.
+
+So the refusal is an artefact of the test harness, not of card 111-3, as the claim says. But the mechanism is a dependency shared between the two modules through `sys.modules`, not state inside the HEAD copy. It also means HEAD's verdicts after that point were computed with a `guard_cycle` that imported the working-copy `stop_record` (`guard_cycle.py:63`), not HEAD's.
+
+**(a) S1 cannot tell "no effect" apart from "hidden effect".** On the real store, every record for `stage_d1_disp.py` releases, so every command is allowed whatever its command class. The review asked to confirm that HEAD and NEW give the same verdicts. When both allow everything, that comparison cannot fail. Only N1's command classes were printed (`realstore2.log:14`); N2–N8 were never compared. A change to the command-class split (the `split_segments`/`segment_class` edit at 266-281) that re-labelled N7 or N8 from build to read-only would show allow/allow here, and would only turn into a real hole once a record refuses again.
+
+### 2. Alternative explanations
+- **(b)** Covered above: a failed import caught by the catch-all refusal branch, not a refusal from a stop record. The other candidate was a genuine BLOCKED refusal from a record whose released bytes differ from the file now. That is unlikely: none of the 9 records is in the mismatched-bytes state (S2 lists states novel/superseded only), and such a refusal would have repeated on the second pass.
+- **(a)** The store drift is real and has a timestamp. In the 25/0 run (`selftest_stoprecord_offline_c107.log:47-93`, 07:58 local = 22:58 UTC), the refusals came from record `e22f…`: it was released for different bytes, and the recipe on disk then was `d62f…` (log lines 67-74). The `d62f…` novel record was created at `2026-09-26T23:09:27Z` (`stop_records.json:1253-1263`), about 11 minutes after that run. From then on `e22f…` counts as superseded and everything is allowed. That fits the claim, but it only shows the old test result had expired. It does not show that the edited `stop_record.py` classifies commands the same way.
+- One unverified detail: `diag_c111c_regress2.log:23` lists only 5 of the 10 new failures. The claim that the 10 are exactly N1–N9 plus L4 is inferred from the counts, not read from a log.
+
+### 3. What would falsify each part
+- **(b) is falsified** if HEAD's first N1 message is a stop-record BLOCKED message rather than "the launch gate itself failed … ModuleNotFoundError('guard_cycle')". It is also falsified if HEAD still refuses N1 after `HSR.HOOKS = os.path.join(TOOLS, "hooks")` is set, or when HEAD runs after NEW.
+- **(a) is falsified** if you roll the store back to its state before 23:09:27Z (drop the `d62f…` record so `e22f…` refuses again), and the edited `stop_record.py` then allows any of N1–N8. The same applies if `SR.command_keys` differs from `HSR.command_keys` for any of the 13 commands.
+
+### 4. Cheapest discriminating test (offline, about 1 second, no LabVIEW)
+Make one copy of `diag_c111c_realstore.py` with these changes:
+
+1. Before line 40, print `HSR.HOOKS` and `'guard_cycle' in sys.modules`. Then call `HSR.check_command(N1)` once, alone, and print its full message. This settles (b).
+2. Assert `HSR.command_keys(c) == SR.command_keys(c)` for all 13 commands.
+3. Point both modules' `STORE` at a scratch copy of `stop_records.json` without the `d62f…` record. Run all 13 commands through HEAD and NEW; expect P1–P5 allow and N1–N8 refuse from both. This is the check that can actually fail, and it settles (a).
+
+If (1) shows the ModuleNotFoundError message and (2) and (3) agree, I accept both parts, with (b)'s mechanism corrected as above.
+BGRUN END rc=0 after 129s

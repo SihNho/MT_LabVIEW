@@ -1278,11 +1278,29 @@ class Executor(object):
                                    classes_of(st0["terminals"], st0.get("objs")))
         self.report[0]["parity"] = {"diagrams": diags, "n": npar, "rows": rows}
         self.log("  PARITY {0} touched diagram(s) {1}: one-side-only Nodes[] entries {2}".format(len(diags), diags, npar))
+        # card 111-3 (violation-decisions device-failed 20:20): on a COLLECTING (dry) backend the pre-op checks below -
+        # PARITY, PRIME address proofs, the CHECKPOINT set - no longer stop before op 1. Each failure is recorded in
+        # be.unroutable (acts = the plan action(s) it belongs to, [] for a whole-plan one), the run simulates on to the
+        # last op collecting routing failures too, and the end raises ONE ExecStop naming every row (dry FAIL, no PASS
+        # record). plan_l2b1_dry.log:22 / dry2.log:22 stopped before op 1 and hid the 2 dead rows until dry 3. The REAL
+        # backend (no `unroutable` list) still stops at the first failure.
+        collect = isinstance(getattr(be, "unroutable", None), list)
+        self.pre_op_fails = []
+
+        def pre_fail(kind, acts, msg):
+            rec = {"acts": list(acts), "ids": [A[n - 1].get("id") for n in acts], "err": "{0}: {1}".format(kind, msg)[:300],
+                   "phase": "pre-op"}
+            self.pre_op_fails.append(rec)
+            be.unroutable.append(rec)
         if npar:
-            raise ExecStop("PARITY: SimReader vs real Nodes[] differ on {0} entr(ies) - stop before op 1: {1}".format(
-                npar, json.dumps([r for r in rows if r.get("only_real") or r.get("only_sim") or r.get("missing_on")], default=str)[:900]))
+            ptxt = json.dumps([r for r in rows if r.get("only_real") or r.get("only_sim") or r.get("missing_on")], default=str)
+            if not collect:
+                raise ExecStop("PARITY: SimReader vs real Nodes[] differ on {0} entr(ies) - stop before op 1: {1}".format(
+                    npar, ptxt[:900]))
+            pre_fail("PARITY", [], "SimReader vs real Nodes[] differ on {0} entr(ies): {1}".format(npar, ptxt[:200]))
         rightin = set(o["acts"][0] for o in self.ops if o["kind"] == "wire_sr" and o["variant"] == "RightIn")
         primed, why, ct_primed = 0, [], 0
+        why_acts = collections.OrderedDict()               # card 111-3: plan action -> its unprovable end(s)
         for i, a in enumerate(A, 1):
             if i <= s_act:                                 # card 103-4: a Part-B entry primes the ends of ops > k only
                 continue
@@ -1296,6 +1314,7 @@ class Executor(object):
                         ct_primed += 1
                     except (ExecStop, SS.SimError) as x:
                         why.append(str(x)[:160])
+                        why_acts.setdefault(i, []).append(str(x)[:160])
                     continue
                 if side == "src" and i not in rightin:     # PD185: a connect source is routed by its WIRE, never by index
                     continue
@@ -1309,11 +1328,15 @@ class Executor(object):
                         primed += 1
                     except ExecStop as x:
                         why.append(str(x)[:160])
+                        why_acts.setdefault(i, []).append(str(x)[:160])
         self.report[0]["primed"] = {"n": primed, "ct": ct_primed, "unprovable": why[:10]}
         self.log("  PRIME {0} terminal indexes proved at base; {1} ControlTerminal end(s) by 179(b); unprovable {2}".format(
-            primed, ct_primed, why[:4]))
-        if why:                                            # PD185(3): an unprovable end STOPS before op 1
-            raise ExecStop("PRIME: {0} wired end(s) not addressable at base - stop before op 1: {1}".format(len(why), why[:6]))
+            primed, ct_primed, why[:4] if not collect else why))
+        if why:                                            # PD185(3): an unprovable end STOPS before op 1 (real backend)
+            if not collect:
+                raise ExecStop("PRIME: {0} wired end(s) not addressable at base - stop before op 1: {1}".format(len(why), why[:6]))
+            for n, ws in why_acts.items():                 # card 111-3: one row per plan action, every end named
+                pre_fail("ADDRESS", [n], "{0} wired end(s) not addressable at base: {1}".format(len(ws), "; ".join(ws)))
         cp = self.checkpoints
         last_k = len(self.ops) if self.stop_after is None else self.stop_after
         if not (fs or 0) + 1 <= last_k <= len(self.ops):
@@ -1322,8 +1345,13 @@ class Executor(object):
             need = set(k for k, o in enumerate(self.ops, 1) if o["kind"] in BIND_KINDS and (fs or 0) < k <= last_k) | {last_k}
             bad = sorted(need - cp) + sorted(k for k in cp if not 0 <= k <= len(self.ops))
             if bad:
-                raise ExecStop("CHECKPOINT: set {0} lacks binding/last op(s) or is out of range: {1} (need {2}) - stop before op 1".format(
-                    sorted(cp), bad, sorted(need)))
+                msg = "set {0} lacks binding/last op(s) or is out of range: {1} (need {2})".format(sorted(cp), bad, sorted(need))
+                if not collect:
+                    raise ExecStop("CHECKPOINT: " + msg + " - stop before op 1")
+                # card 111-3: recorded; the dry run goes on with the set it needs (cp | need, out-of-range dropped), so
+                # the binding ops still bind and every later address / route failure is still found
+                pre_fail("CHECKPOINT", [], msg)
+                cp = set(k for k in cp if 0 <= k <= len(self.ops)) | need
             self.log("  CHECKPOINTS whole-VI read+diff after ops {0} of {1}".format(sorted(k for k in cp if k), len(self.ops)))
         stale = False
         last_read_k = fs or 0
@@ -1343,16 +1371,22 @@ class Executor(object):
                 be.addr.snap_loop(int(a["loop"]), int(after["state"]["diagrams"][str(a["body"])]))
             meter("pre", k)                        # parity/PRIME (k=1) or retrack/bind reads since the last whole-VI read
             try:
-                be.strict = stale and op["kind"] in self.RETRY_KINDS
-                res = self.execute(op, prev, after["state"], real)
-            except ExecStop as e:                  # PD193: a stale read may mis-address; one fresh read, one retry
-                if not stale or op["kind"] not in self.RETRY_KINDS or "op error" in str(e):
+                try:
+                    be.strict = stale and op["kind"] in self.RETRY_KINDS
+                    res = self.execute(op, prev, after["state"], real)
+                except ExecStop as e:              # PD193: a stale read may mis-address; one fresh read, one retry
+                    if not stale or op["kind"] not in self.RETRY_KINDS or "op error" in str(e):
+                        raise
+                    self.log("  STALE-ADDRESS op {0}: fresh read + one retry ({1})".format(k, str(e)[:200]))
+                    self.stale_retries.append({"k": k, "err": str(e)[:200]})
+                    real, stale, be.strict = be.read(), False, False
+                    meter("read_retry", k)
+                    res = self.execute(op, prev, after["state"], real)
+            except ExecStop as e:                  # card 111-3: a collecting backend records an op-level stop and
+                if not collect or "op error" in str(e):    # simulates on (the op applied from the plan, as _unroutable)
                     raise
-                self.log("  STALE-ADDRESS op {0}: fresh read + one retry ({1})".format(k, str(e)[:200]))
-                self.stale_retries.append({"k": k, "err": str(e)[:200]})
-                real, stale, be.strict = be.read(), False, False
-                meter("read_retry", k)
-                res = self.execute(op, prev, after["state"], real)
+                be.strict = False
+                res = be._unroutable(op, e)
             be.strict = False
             meter("op", k)
             if cp is not None and k not in cp:     # PD193(a): no whole-VI read/diff between checkpoints
@@ -1428,8 +1462,14 @@ class Executor(object):
                 last_k, len(self.ops), last_k + 1))
         un = getattr(be, "unroutable", None)      # a collecting (dry) backend: every unroutable row, reported at the end
         if un:
-            raise ExecStop("UNROUTABLE {0} row(s): {1}".format(len(un), "; ".join(
-                "acts {0} {1}: {2}".format(u["acts"], u["ids"], u["err"][:160]) for u in un)))
+            # card 111-3: ONE line naming every failing ROW - a plan action seen at PRIME (ADDRESS) and again at its op
+            # (CONNECT-...) is one row with both reasons; whole-plan failures (CHECKPOINT, PARITY, acts []) are rows too
+            rows = collections.OrderedDict()
+            for n_, u in enumerate(un):
+                key = tuple(u["acts"]) if u["acts"] else ("plan", n_)
+                rows.setdefault(key, {"acts": u["acts"], "ids": u["ids"], "errs": []})["errs"].append(u["err"][:160])
+            raise ExecStop("UNROUTABLE {0} row(s): {1}".format(len(rows), "; ".join(
+                "acts {0} {1}: {2}".format(r["acts"], r["ids"], " | ".join(r["errs"])) for r in rows.values())))
         fin = getattr(be, "run_deferred", None)   # card 80-3: deferred op errors are answered by their declared gates
         if fin:
             fin()
@@ -2706,7 +2746,8 @@ def selftest():
     def _no(*_a, **_k):
         raise ExecStop("ADDRESS: injected unprovable end")
     be_.addr.triple = _no
-    try:
+    be_.unroutable = None      # card 111-3: T20/T22b/T35c/T40b test the REAL-backend contract (a non-collecting backend
+    try:                       # stops before op 1); the dry run's collect-all is tools/bench/diag_c111c_dry_negative.py
         Executor(fin, be_, log=q).run()
         gate("T20 an unprovable PRIME end STOPS before op 1 (PD185(3))", False, "ran")
     except ExecStop as e:
@@ -2724,6 +2765,7 @@ def selftest():
     gate("T22a NEGATIVE: SimReader listing a class the real read lacks -> parity n > 0 with an only_sim entry",
          n_ > 0 and any(r.get("only_sim") for r in rows_), n_)
     be2.addr.rd = Extra(be2)                                    # the backend's "real" reader lacks nothing but lists extra
+    be2.unroutable = None                                       # card 111-3: the non-collecting contract (see T20)
     try:
         Executor(fin, be2, log=q).run()
         gate("T22b NEGATIVE: a parity difference STOPS at PRIME before op 1", False, "ran")
@@ -2971,7 +3013,9 @@ def selftest():
         gate("T35b NEGATIVE: an edge dropped at skipped op {0} is caught by the NEXT checkpoint diff (op {1})".format(fk, nxt),
              "STEP-DIFF after real op {0} ".format(nxt) in str(e), str(e)[:200])
     try:
-        Executor(fin, mkbe(), log=q, checkpoints={0, len(opsx)}).run()
+        b35c = mkbe()
+        b35c.unroutable = None                                  # card 111-3: the non-collecting contract (see T20)
+        Executor(fin, b35c, log=q, checkpoints={0, len(opsx)}).run()
         gate("T35c NEGATIVE: a set missing a binding op (add_sr/tunnel) stops before op 1", False, "ran")
     except ExecStop as e:
         gate("T35c NEGATIVE: a set missing a binding op (add_sr/tunnel) stops before op 1", str(e).startswith("CHECKPOINT"), str(e)[:200])
@@ -3028,7 +3072,9 @@ def selftest():
          fa1 and not fa2 and exf.diffs and exf.diffs[-1]["class"] == "fail", fd)
     cpa = set(k for k in bindk if k <= ksa) | {0, len(opsx)}
     try:
-        Executor(fin, mkbe(), log=q, checkpoints=cpa - {ksa}, stop_after=ksa).run()
+        b40b = mkbe()
+        b40b.unroutable = None                                  # card 111-3: the non-collecting contract (see T20)
+        Executor(fin, b40b, log=q, checkpoints=cpa - {ksa}, stop_after=ksa).run()
         gate("T40b NEGATIVE: stop_after op not in the checkpoint set stops before op 1", False, "ran")
     except ExecStop as e:
         gate("T40b NEGATIVE: stop_after op not in the checkpoint set stops before op 1", str(e).startswith("CHECKPOINT"), str(e)[:200])

@@ -1,0 +1,41 @@
+BGRUN START 2026-09-27 21:40:32 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c111c-stageplan -TaskFile tools/bench/peer_c111c_stageplan_task.txt
+BGRUN PID 10200
+OUTCOME: ANSWERED (72s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-27-c111c-stageplan.md
+COST: $0.9080  in 16 / out 5491 / cache-create 82500 / cache-read 690816  (68s, 13 turn(s))
+--- ANSWER ---
+**On the narrow question the claim holds: the 7 `X4` FAIL lines come from the self-test's own stub, not from the card 111-3 edit.** But the claim is stated too broadly. The regression run it cites as evidence, `diag_c111c_regress.log`, hides a real regression in a neighbouring suite.
+
+## 1. Strongest reason the claim is wrong: "the regression re-run passed" leaves out a suite that got worse
+
+The claim leans on the regression harness (`diag_c111c_regress2.log:16`, its overall result `23 pass / 0 fail` at `:35-36`). The same log records a suite that regressed:
+
+- `diag_c111c_regress2.log:23`: `INFO  R1 selftest_stoprecord_offline_c107.py: now 15/10 (rc 1) | base … 25/0`.
+- New failures there include `N# bgrun launch of the recipe REFUSED`, `N# direct launch REFUSED` and `N# dry && launch REFUSED`. These are checks that a launch gets refused, and they now fail.
+- `diag_c111c_regress.py:73-77` labels this suite `INFO` and never adds it to the gate count. The script decided on its own that this suite depends on the stop-record store.
+- The replacement check, R2 (`:33`), only uses a fake store that refuses everything. With that store, HEAD and the edited code refuse every command shape the same way. It never runs the real store against HEAD.
+
+So the harness shows that the edited code and HEAD agree under a fake store. It does not show that the 10 new failures come from a change in the store rather than from the edit. `stop_record.py` is one of the edited files, and the new failures are exactly about refusing launches, which is what the new `launchunit.py` rule governs (`stage_prerun.py:1543-1553`). That is the likeliest place for a real change in behaviour.
+
+## 2. Alternative explanations
+
+- **For the regression in point 1:** the new `launchunit.launched_py` rule counts command tokens differently, for example when it treats arguments as belonging to a read-only module. Under the real store, launches that used to be refused are now allowed. That is a behaviour change that R2's fake store cannot see.
+- **For the X4 lines:** they are identical because they can only ever read one way in this test. So they are no evidence either way, not proof of "no change". The self-test replaces `SP.dry` with a stub whose `input_md5` is `None` (`selftest_stage_prerun_stageplan.py:30-31`). That means `_graph()` never looks up a graph (`stage_prerun.py:469-470`), and X4 always takes the "no graph" branch (`:1328-1329`). None of S1–S9 check X4 at all. This test cannot see any change to X4 on a real graph.
+
+## 3. What would falsify the claim
+
+- Running `selftest_stoprecord_offline_c107.py` against HEAD's `stop_record.py` with the **current real store** gives 25/0, or anything other than the same 15/10 with the same failure names. Then the regression comes from the edit, not from the store.
+- For X4 specifically: a test that loads a real graph shows different X4 results before and after the edit. That would mean the edit reached X4 by a route this self-test cannot show.
+
+On the specific question you asked, I found no such route. Reading the code, X4 depends only on `OG = _graph()` (`stage_prerun.py:1300`), which depends on `D.input_md5`, `D.graph_override` and `plan_base_graphs`. `launched_py` / `launchunit` appear only in the launch-gate helpers (`:1478`, `:1539-1553`), not in `prerun()`'s X4 path. So the edited launch-unit rule cannot make X4 look for a graph it did not look for before. The X4 detail text is also identical line for line in both logs, not just the counts: new log `:6,21,34,47,60,73,86` vs baseline `:8,23,36,49,62,75,88`.
+
+## 4. Cheapest discriminating test
+
+Load HEAD's `stop_record.py` with `git show HEAD:tools/stop_record.py`, as R2 already does. Run the `selftest_stoprecord_offline_c107.py` command list through **both** the HEAD version and the edited version against the **real** store, and compare the refusal result for each of the 10 newly failing names.
+
+- If they agree, the regression is store drift and the INFO label was justified.
+- If they differ, card 111-3 changed which launches get refused beyond R2b's single intended change, and guard_peer should not be discharged.
+
+For X4 alone, the cheap check is the one already run: `selftest_stage_prerun_graphload.py` 18/0 → 18/0 (`diag_c111c_regress2.log:14`). I have not confirmed that it covers X4 with a real graph. If it does, the X4 part of the claim is settled.
+
+**Verdict:** the claim about the X4 lines stands. Do not treat card 111-3's regression check as passed while `selftest_stoprecord_offline_c107` sits at 15/10 and has only been compared under a fake store. This needs no web search: every point is local and cited by file and line.
+BGRUN END rc=0 after 73s

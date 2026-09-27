@@ -65,6 +65,10 @@ BENCH = os.path.join(HERE, "bench")
 SHOTS = os.path.join(BENCH, "errorlist_shots")
 EVIDENCE = "user 2026-09-23 error list via GUI"
 ERRWIN_RE = re.compile(r"error\s*list", re.I)
+# Card 111-1 (PD224(h)): the capture walk's row cap. 80 stopped the L2-B1 read at 80 of 99 items
+# (tools/bench/errorlist_check_c110d.log:113). The DEFAULT is unchanged (existing callers unaffected); a caller
+# passes `max_steps=` to read() / read_by_capture() to raise it.
+MAX_STEPS = 80
 
 # UIA pattern ids (uiautomationcore.h) - named, never inlined.
 PAT_VALUE, PAT_SELECTIONITEM, PAT_SELECTION, PAT_TEXT, PAT_LEGACY = 10002, 10010, 10001, 10014, 10018
@@ -578,7 +582,7 @@ def _sel_in(lay, eb):
     return None
 
 
-def read_by_capture(R, wtitle, acts, log, max_steps=80, hwnd=None, on_item=None):
+def read_by_capture(R, wtitle, acts, log, max_steps=None, hwnd=None, on_item=None):
     """METHOD B. Walk the list one row at a time; each step: capture -> LOCATE the highlighted row by
     COLOUR on that capture -> OCR that row and the Details pane -> act -> capture -> CONFIRM the
     selection moved exactly one row.
@@ -678,6 +682,8 @@ def read_by_capture(R, wtitle, acts, log, max_steps=80, hwnd=None, on_item=None)
             sel = sel2
 
     wheel_dir, row_ord = -1, 0
+    max_steps = int(max_steps or MAX_STEPS)
+    R["max_steps"] = max_steps
     for step in range(max_steps):
         if img is None or sel is None:
             break
@@ -789,7 +795,7 @@ def _split(raw):
     return (m.group(1).strip(), m.group(2).strip()) if m else ("", t)
 
 
-def read(vi_path, out_json=None, maxdepth=14, dump_tree=True, log=print, on_item=None):
+def read(vi_path, out_json=None, maxdepth=14, dump_tree=True, log=print, on_item=None, max_steps=None):
     """Open the Error List for `vi_path` (already in memory), read every item, close it.
 
     Returns the record; also written to `out_json`. The VI is never run and never saved."""
@@ -860,7 +866,7 @@ def read(vi_path, out_json=None, maxdepth=14, dump_tree=True, log=print, on_item
     # --- method B: capture + OCR, used when no accessibility route exposed a row ---------------
     if not R["items"]:
         try:
-            read_by_capture(R, wtitle, acts, log, hwnd=hwnd, on_item=on_item)
+            read_by_capture(R, wtitle, acts, log, max_steps=max_steps, hwnd=hwnd, on_item=on_item)
         except Exception as e:                                                     # noqa: BLE001
             R["errors"].append("capture+OCR: {0}: {1}".format(type(e).__name__, str(e)[:200]))
             log("  capture+OCR RAISED {0}: {1}".format(type(e).__name__, str(e)[:200]))

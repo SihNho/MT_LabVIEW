@@ -1,0 +1,46 @@
+BGRUN START 2026-09-27 21:59:39 limit 20.0 min: py tools/prior_art_review.py --plan-file tools/bench/cards/split_plan_111_l2b2.md --slug c111e-l2b2a --trigger new-op --recipe tools/recipes/stage_d1_l2b2a.py
+BGRUN PID 20352
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c111e-l2b2a.txt (74704 chars)
+   review card tools\bench\cards\review_priorart-c111e-l2b2a.json
+OUTCOME: ANSWERED (88s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-27-priorart-c111e-l2b2a.md
+COST: $1.6506  in 20 / out 7417 / cache-create 152688 / cache-read 1403558  (84s, 16 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c111e-l2b2a verdict=settled-already -> tools\bench\cards\verdict_priorart-c111e-l2b2a.json
+--- ANSWER ---
+**No — B2a is not novel.** Two of its three row groups repeat a failure the project already recorded and a tooling order it already decided. Details with citations below.
+
+## Part A — the direction
+
+**A1 — settled already.** The cycle-110 judgement brief decided what must be built *before* any B2 run:
+- `tools/bench/cards/brief_110-3.md:6-7` moved row `rw_403_2282` (Z/dZ → Tunnel `#2276`, which B2a calls B2-15) to B2.
+- `tools/bench/cards/brief_110-3.md:12-14` says: *"Accepted for the B2 tooling card, NOT this card: … (b) stagesim finalize runs `connect_route` so an UNROUTABLE row fails at plan time; (c) the CT-source → structure tunnel face route; (d) the LoopTunnel owner route; (e) flip_reg seeding."*
+- `tools/bench/cards/split_plan_110.md:71` repeats it: *"stagesim base-flip seeding and the stagexec LoopTunnel owner route are B2's tools, their own card."*
+- PD225(e) (`docs/d1-loop12-17-split-plan.md:1932-1936`) lists only the dry-collecting device and `launchunit.py` as built in cycle 111. No record shows (c) or (e) was built. The B2a recipe's own header says "No new op" (`tools/recipes/stage_d1_l2b2a.py:5`).
+
+**A3 — the plan contradicts itself.** Its §3 (`split_plan_111_l2b2.md:51-54`) predicts that B2-11 and B2-14 will diverge in a real run: *"LabVIEW reverts every inner once the outer has a source (81-5 F1) → real would close #8634 'array' / #29625 'array' … → E1/PB would diverge."* Yet §2 (`:42`) marks the plan "final, open_rows_match", and the recipe makes PB FATAL (`stage_d1_l2b2a.py:78-79`). Split_plan_110 took `#5058→#2765` out of B1 for exactly this simulator limit (`split_plan_110.md:44-49`). B2a keeps two rows with the same limit and defers only B2-08 "after base-flip seeding" (`split_plan_111_l2b2.md:43`).
+
+**A4 — unread evidence.** `brief_110-3.md` is not in the card's inputs (`task_111-5.json:8-19`), and the split page does not cite it. That brief is where the B2 tooling order was written.
+
+## Part B — the artifact
+
+**B2 — already failed.** B2-15 is the same row that failed L2-B1's third dry run:
+- `tools/bench/plan_l2b1_dry3.log:84-88`: *"UNROUTABLE acts [23] ids ['rw_403_2282']: CONNECT-NO-VERB: bare ControlTerminal source #403 -> sink #2282 on Tunnel #2276: wire_control addresses the sink NODE by class traverse"*.
+- The code still refuses it: `tools/stagexec.py:778-782` raises that exact `ExecStop` whenever the sink's owner class is in `OWNER_ROUTED`, which is `("SelectorTunnel", "Tunnel")` (`tools/stagexec.py:614`). Nothing in B2a changes this.
+- The older build hit the same wall: `build_d1_v0` NOROUTE at `:1171` (quoted at `split_plan_111_l2b2.md:32`).
+- The simulator can't catch it: B2-15 closes no computation-diff row (`split_plan_111_l2b2.md:54-55`; `result_110-2.json:20`). Only the dry run's route check or the real run would see it.
+
+**B4 — already measured.** The flip-revert behaviour that makes B2-11 and B2-14 diverge is on file: card 81-5 F1 (`tools/bench/cards/result_81-5.json:18`) and the unflip logic at `tools/stagesim.py:426-451`, which reverts only flips made in the same simulation. The plan uses this fact but not its consequence.
+
+**B1 and B3 — nothing found.** No existing recipe re-makes the two loop-1.2 shift registers (SRB1/SRB2). The reuse of `stage_d1_l2b1.py` is stated in the recipe header. The shift-register rows B2-09, -10, -12 and -13 are novel, pending the dry run's route check.
+
+**What would release this:** build tooling items (c) and (e) from `brief_110-3.md:12-14` first, or cut B2a down to the four shift-register rows B2-09, -10, -12 and -13.
+
+PRIOR-ART: already-failed
+PRIOR-ART: settled-already
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+PRIOR-ART: already-measured
+
+VERDICT {"schema":"verdict/1","id":"priorart-c111e-l2b2a","verdict":"settled-already","alternative":"Build brief_110-3 item (c) CT-source->Tunnel face route and (e) base-flip seeding first, or cut B2a to the 4 SR rows (B2-09/-10/-12/-13) and move B2-11/-14/-15 behind that tooling.","discriminating_test":"Top-level stage_prerun --dry of stage_d1_l2b2a.py: expect UNROUTABLE CONNECT-NO-VERB on 403->2282 (stagexec.py:778-782) as in plan_l2b1_dry3.log:84.","violations":[],"sources":["tools/bench/plan_l2b1_dry3.log:84","tools/stagexec.py:778","tools/bench/cards/brief_110-3.md:12","tools/bench/cards/split_plan_110.md:71","tools/bench/cards/split_plan_111_l2b2.md:51"],"note":"B2-15 already failed dry (L2-B1 dry3); its route is not built. B2-11/-14 self-predicted E1/PB divergence (flip seeding unbuilt). SR rows B2-09/10/12/13 look novel."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c111e-l2b2a.md
+   STOP RECORD armed: tools/recipes/stage_d1_l2b2a.py sha 6c3127bed0d1 verdict already-failed, settled-already, contradicted, unread-evidence, already-measured -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 90s

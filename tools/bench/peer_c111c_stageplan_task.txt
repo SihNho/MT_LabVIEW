@@ -1,0 +1,7 @@
+ATTACK this claim (card 111-3). guard_peer names tools/bench/diag_c111c_regress_selftest_stage_prerun_stageplan.log as a failing log, first failure line "FAIL  X4 every end addressable offline  no graph JSON for input md5 None".
+
+That file is the captured stdout of ONE child of tools/bench/diag_c111c_regress.py (the D5 regression re-run of existing self-tests after card 111-3's edits to tools/stagexec.py, tools/stage_prerun.py, tools/stop_record.py, tools/hooks/guard_card.py and the new tools/launchunit.py): `py -u tools/bench/selftest_stage_prerun_stageplan.py`.
+
+CLAIM: the 7 "FAIL X4 ..." lines are NOT a failure of the self-test and NOT caused by the edit. They are the printed sub-gates of the nested pre-runs the self-test drives on purpose (synthetic plans with no graph JSON); the self-test's own verdict is `=== GATES: 12 pass / 0 fail` + `RESULT ... "status":"PASS"` (diag_c111c_regress_selftest_stage_prerun_stageplan.log:97-98), and the pre-edit archived run tools/bench/selftest_stage_prerun_stageplan_c110g.log prints the SAME 7 X4 FAIL lines (:8,23,36,49,62,75,88) with the same 12/0 PASS verdict (:99-100). diag_c111c_regress2.log:16 compares both runs: 55/27 PASS/FAIL lines each, no new FAIL name, none missing.
+
+Give: the strongest reason the claim is wrong; an alternative explanation; what would falsify it; the cheapest discriminating test. In particular: could any X4 line now fail for a different reason than at baseline (e.g. a changed launched_py/launch-unit rule making stage_prerun look for a graph it did not look for before)?

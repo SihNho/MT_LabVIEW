@@ -1,0 +1,78 @@
+{
+ "schema": "task/1",
+ "id": "111-2",
+ "kind": "measure",
+ "escalation": 0,
+ "goal": "Object-level attribution of B1's 14 unattributed Error List items: list L2-B's remaining (B2/B3) rows, map each item's object to a row, and test on a scratch VI whether one wire raises two items",
+ "why": "111-1: 99 items, 14 UNATTRIBUTED vs L2-A3 classes + plan_l2b1 open rows. 7 are undirected-tunnel items on wires already credited (one-credit rule); 7 (SR x4, IndexArray, selector, dims) may be B2/B3 rows not yet planned. Judgement needs objects, not counts.",
+ "inputs": [
+  {"path": "tools/bench/facts_c111a_b1_errorlist.md", "md5": "7be375461fedabe255a086893c576b48"},
+  {"path": "tools/bench/errorlist_D1_l2_b1_20260927_193100_c111.json", "md5": "f1f212c08ee52da07d1f376a6983c7b6"},
+  {"path": "tools/bench/errorlist_D1_l2_b1_20260927_193100_c111_owners.json", "md5": "6f3befa75d0fdced278fe77052c081c8"},
+  {"path": "tools/bench/diag_c110d_rbwends.log"},
+  {"path": "tools/bench/plan_l2b1.json", "md5": "9fb69b9b097603250ca3b9e2f87f322e"},
+  {"path": "tools/bench/cards/split_plan_110.md"},
+  {"path": "tools/bench/d1_rewire_sources.json"},
+  {"path": "tools/bench/build_d1_v0.json"},
+  {"path": "tools/bench/facts_c108c_groupB.md"},
+  {"path": "tools/bench/graph_l2a3_bed_20260927.json", "md5": "f01e719dae7136c0174f719f8c1dee3e"},
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_b1_20260927_193100.vi", "md5": "b705728ab0714dc8179fc955283800f9"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/d1_rewire_sources.json"},
+  {"kind": "file", "name": "tools/bench/build_d1_v0.json"},
+  {"kind": "file", "name": "tools/bench/diag_c110d_rbwends.log"},
+  {"kind": "file", "name": "tools/bench/cards/split_plan_110.md"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/stagekit.py"}
+ ],
+ "pass": [
+  "A1 L2-B remaining-row list (all group-B rows NOT in plan_l2b1, from d1_rewire_sources x build_d1_v0 per PD158): row id, src, sink, loop; saved facts_c111b_l2b_rows.json",
+  "A2 the 2 B1-new sink-RSR ends (SR items): RSR uid, owner loop, S1 source of its inside, and which A1 row (or none) re-makes it",
+  "A3 IndexArray / unwired-selector / different-dims items: object uid + owner (graph diff L2-A3 vs B1, or capture match), and its A1 row or none",
+  "A4 scratch VI (<=120-line stagekit, record under tools/bench/scratch_verify/): Error List item count+texts for one loop-tunnel sink-only wire, and for tunnel-to-input",
+  "A5 facts_c111b_attribution.md: each of the 14 items -> row id / double-item (A4) / NONE; B1 md5 unchanged, never run/saved; LabVIEW gone"
+ ],
+ "outputs": [
+  "tools/bench/facts_c111b_l2b_rows.json",
+  "tools/bench/facts_c111b_attribution.md",
+  "tools/bench/scratch_verify/*",
+  "tools/bench/cards/result_111-2.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c111*",
+   "tools/bench/diag_c111b*",
+   "tools/bench/facts_c111b*",
+   "tools/bench/graph_l2b1*",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/errorlist_scratch_c111*",
+   "tools/bench/errorlist_shots/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "advances": ["M3"],
+ "rules": [
+  "MEASURE only: no expected file, no STATUS, no bed decision; NONE is a valid answer",
+  "B1 file READ ONLY (byte-copy scratch for any live read); never run any VI",
+  "do not plan L2-B2 recipes or dry runs; A1 is a row list only",
+  "GUI: capture-locate-act-capture-confirm (cycle27-plan PD 9)",
+  "scripts via py tools/bgrun.py --material --max-min N --log f -- py -u script; no env prefixes",
+  "hold the turn until every bgrun you start writes BGRUN END",
+  "a gate refusal is returned BLOCKED, never re-run via an exempt route",
+  "facts <=10 with file:line; OPEN <=3"
+ ]
+}

@@ -1,0 +1,17 @@
+BGRUN START 2026-09-27 21:42:30 limit 5.0 min: py -u tools/bench/diag_c111c_realstore.py
+BGRUN PID 13068
+diag_c111c_realstore - card 111-3 D5, review archive/peer/2026-09-27-c111c-stageplan.md s60-64 (ACCEPTED): is
+selftest_stoprecord_offline_c107.py's 15/10 (diag_c111c_regress2.log:23, archived 25/0) store drift or the edit?
+OFFLINE: offline_c107's own command list (selftest_stoprecord_offline_c107.py:39-53) through HEAD's stop_record (git show
+HEAD:tools/stop_record.py) and the edited one, both on the REAL store tools/bench/stop_records.json, save_records disabled
+(nothing is stamped). Also the HEAD vs working launched_plan_runs for its L4 (the function was not edited by card 111-3).
+PREDICTION: S1 every command gets the SAME allow/refuse verdict from HEAD and NEW (=> the 10 fails are store drift);
+S2 the store holds no undisposed record for tools/recipes/stage_d1_disp.py (why N1-N8 are allowed by both); S3 launched_plan_runs
+source is byte-identical in HEAD and the working copy.
+    py tools/bgrun.py --material --max-min 5 --log tools/bench/diag_c111c_realstore.log -- py -u tools/bench/diag_c111c_realstore.py
+  FAIL  S1 real store: every offline_c107 command gets the same verdict from HEAD and NEW (allow?)  {'P1': (True, True), 'P2': (True, True), 'P3': (True, True), 'P4': (True, True), 'P5': (True, True), 'N1': (False, True), 'N2': (True, True), 'N3': (True, True), 'N4': (True, True), 'N5': (True, True), 'N6': (True, True), 'N7': (True, True), 'N8': (True, True)}
+  PASS  S2 the real store holds no refusing record for tools/recipes/stage_d1_disp.py (9 record(s), states ['novel', 'superseded'])  {'released': [True, True, True, True, True, True, True, True, True]}
+  PASS  S3 launched_plan_runs is unchanged by card 111-3 (HEAD == working copy); offline_c107 L4 reads HEAD's copy  
+=== GATES: 2 pass / 1 fail
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":2,"fail":1},"first_fail":"S realstore","artefacts":[]}
+BGRUN END rc=1 after 1s

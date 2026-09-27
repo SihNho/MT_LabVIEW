@@ -1,0 +1,24 @@
+{"schema":"result/1","id":"111-5","status":"BLOCKED","gates":{"pass":3,"fail":2},
+"first_fail":"P4: --dry refused by guard_cycle.py: prior-art c111e-l2b2a verdicts (settled-already, already-failed, ...) neither refuted nor fixed; pre-run not run",
+"blocked_by":{"device":"guard_cycle.py prior-art gate + stop_record launch gate","message":"archive/peer/2026-09-27-priorart-c111e-l2b2a.md: B2-15 already failed L2-B1 dry3 (CONNECT-NO-VERB, stagexec.py:778-782); brief_110-3.md:12-14 orders tooling (b)-(e) before B2; release needs FIXED/REFUTED = a row-set or tooling decision"},
+"artefacts":[
+{"path":"tools/bench/cards/split_plan_111_l2b2.md","md5":"c15c490754b5cb5fb4cf08cacff399a7"},
+{"path":"tools/bench/plan_l2b2a_in.json","md5":"23b64237d122f213a23db06f82e2880f"},
+{"path":"tools/bench/plan_l2b2a.json","md5":"b7ca7db6f1933410331ee39d00844dfd"},
+{"path":"tools/recipes/stage_d1_l2b2a.py","md5":"07c9e1fcd70ba23fce01c17c2a551b4e"}],
+"facts":[
+"P1 PASS: group B 38 census rows == 38 build_d1_v0 cut rows; 22 B2/B3 rows crossed; MISMATCH only B2-09/-10/-12/-13 (build_d1_v0 keeps the rings on 1.1) split_plan_111_l2b2.md:21-40",
+"B2-15/B3-03..06/B2-11/-14 were NOROUTE in build_d1_v0 too (build_d1_v0.json:1167-1183); B2-04/-05/-06/-16 FAILED there (wire_control 5001, :1141-1153)",
+"P2 plan_l2b2a.json final (7 rows B2-09..15, sim2 PASS) but NO row closes a cdiff row: 56 -> 56 (plan_l2b2a_sim2.log:3-10); verbs NOT shown (dry refused)",
+"Saved B1 graph cdiff(S1) = 44 pairs vs B1 in-memory end 29: +15 base pairs (#2626 'array', IndexArray #8741/#30331 and #8634/#29625 terminal-set cascades) plan_l2b2a_sim.log:10",
+"B2-11/-14 sinks #9087/#29911 inners are flipped sinks on the bed (diag_c111e_peek2.log:36-38,61-63); stagesim reverts only same-sim flips (stagesim.py:426-451) -> sim/real would diverge",
+"Existing-register rows B2-09..14: wire_sr compiles only for plan-created registers (stagexec.py:406-409); SR outer faces need loop_of set only by add_sr (:1008-1011,:1419)",
+"CT #403 'Z/dZ' and #9306 are BARE (wire_uid 0) ControlTerminals in #23166 (diag_c111e_peek2.log:66,72); the ctl route refuses a Tunnel sink (stagexec.py:778-782)",
+"P3: recipe 107 lines on stagekit; RBW-PRE (dry-runnable) + RBW-PRE2 read sink wires BEFORE Remove Bad Wires (stage_d1_l2b2a.py:84-86,96-100); dry execution itself unverified",
+"P5: no LabVIEW launch; B1 VI, graph, rows, attribution, plan_l2b1 md5 unchanged (diag_c111e_md5.log:3-7); card md5 of stage_d1_l2b1.py is stale (4ef10fc4 from 110-2; git-clean e13177d9, :8)",
+"Reviews: archive/peer/2026-09-27-c111e-peek.md (hypothesis, my peek-script bug, discharged by rerun 20/0) and 2026-09-27-priorart-c111e-l2b2a.md, both ANSWERED + annotated"],
+"open":[
+"B2a row set: keep PD225(f)'s 7 rows behind tooling brief_110-3 (b)-(e) plus a route for registers made in an earlier session, or cut/re-order (review offers the 4 register rows, which hit the same register-address gap), or re-make SRB1/SRB2 inside B2a so wire_sr applies?",
+"Stage gates after B1 are keyed to the SAVED-file graph (44 pairs), not B1's in-memory end (29): accept, and how are cascade terminals LabVIEW restores on reconnect predicted for E1/PB?"],
+"cost":{"usd":null,"minutes":16,"labview_runs":0},
+"note":"Jev ladder: diag_c111e_peek.log new-problem p=0.666 -> hypothesis review done (our-script-bug); diag_c111e_census_dump.log our-script-bug p=1.0 -> patched and rerun (jev_gate.log:2193,2197). diag_c111e_md5.log rc=1 is the stale card md5 only."}

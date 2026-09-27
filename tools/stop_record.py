@@ -265,6 +265,17 @@ def segment_class(seg, whole_cmd=""):
         mm = re.match(r"\s+(?:-[A-Za-z]+\s+)*?-m\s+([\w.]+)", rest)
         if mm and mm.group(1).lower() in PY_READONLY_MODULES:
             return "readonly"
+        # card 111-3 (violation-decisions device-failed 20:20, material_marker.log:2434): the shared launch-unit rule -
+        # `py -m <module> X` launches the MODULE, X is an argument (not a runner module, no project-file shadow, no env
+        # prefix, no cd away from the root; tools/launchunit.py module_arg_segment). Anything else stays "build".
+        try:
+            if HERE not in sys.path:
+                sys.path.insert(0, HERE)
+            import launchunit as LU
+            if LU.module_arg_segment(seg, whole_cmd or seg, ROOT):
+                return "readonly"
+        except Exception:                            # noqa: BLE001 - a broken helper keeps the fail-closed class
+            pass
     return "build"
 
 

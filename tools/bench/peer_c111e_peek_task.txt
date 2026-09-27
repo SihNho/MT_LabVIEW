@@ -1,0 +1,14 @@
+ATTACK this claim about a failed prediction in tools/bench/diag_c111e_peek.py (log tools/bench/diag_c111e_peek.log).
+
+The script (an offline JSON reader, no LabVIEW) predicted that every uid in its list has >= 1 row in
+tools/bench/graph_l2b1_20260927.json "terminals" with owner_uid == uid. It FAILED 16/2: uids 403 and 9306 had no rows
+(log lines 64 and 69).
+
+CLAIM: this is a bug in our own reader script, not a graph fault. #403 ('Z/dZ') and #9306 ('Correction Factor') are
+ControlTerminals (log lines 64/69, class ControlTerminal, owner Diagram). In this graph format a ControlTerminal's own
+terminal row carries term_uid == the CT's uid and owner_uid == its DIAGRAM uid (compare tools/recipes/stage_d1_l2b1.py:41-44
+where the CT reader keys CT rows by term_uid, and plan_l2b1_in.json rw_11267_8323 dst {"uid": 8323, "term_uid": 8323}).
+So the predicate owner_uid == uid can never match a CT; the fix is to also match term_uid == uid.
+
+Already ruled out: LabVIEW is not involved (pure JSON read); the graph md5 is the card input (8327f974...).
+Cheapest discriminating test you may propose: one read of rows with term_uid in (403, 9306) from the same JSON.

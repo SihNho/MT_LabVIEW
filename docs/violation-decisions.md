@@ -1572,3 +1572,22 @@ negative case = replay of plan_l2b1's cycle-110 input (`plan_l2b1_in.json` befor
 rows (5 ends + the 2 dead rows) in ONE dry; (2) the `py -m` launch-unit rule is applied on the card-flag path and the
 stop-record path too (one shared helper, not three copies); self-test holds the literal commands at `guard_card.log:371`
 and `material_marker.log:2434` as passes and `py -u tools/recipes/stage_x.py` as a launch.
+
+## wrong-ordering — 2026-09-27 22:20 (cycle 111 judgement, after archive/peer/2026-09-27-retrospective-cycle111.md)
+
+`VIOLATION: wrong-ordering | loss_min=13 | loss_usd=1.65 | evidence=docs/d1-loop12-17-split-plan.md:1937`: ACCEPTED. This
+is a judgement fault: PD225(f) dispatched the B2a plan before the B2 tooling, which brief_110-3 item 3 had ordered first.
+
+DECISION: no-device. The existing prior-art gate refused the dry correctly. Cycle 112 opens with the B2 tooling card
+(PD225(h) item 3), and every stage-planning card lists each row's route against the existing tooling before simulating.
+
+## device-failed — 2026-09-27 22:20 (cycle 111 judgement, after archive/peer/2026-09-27-retrospective-cycle111.md)
+
+`VIOLATION: device-failed | loss_min=3 | loss_usd=? | evidence=tools/bench/cards/result_111-5.json:2`: ACCEPTED. The 07:46
+offline-dry exemption was applied in `stop_record` only. `guard_cycle.py:612` (the prior-art verdict gate, through
+BUILD_RE) still refuses `stage_prerun --dry|--prerun <recipe>` for an unreleased recipe.
+
+DECISION: device (threshold 1), item (vi) of cycle 112's tooling card. `guard_cycle` lets `stage_prerun --dry|--prerun`
+through by the shared `tools/launchunit.py` / `stop_record.offline_checker` route, and still refuses launches. Test
+cases: the 22:01:39 argv (`bgrun -- py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_l2b2a.py`) must pass, and
+`py -u tools/recipes/stage_d1_l2b2a.py` must still be refused while the prior-art verdict is unreleased.

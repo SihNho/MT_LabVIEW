@@ -1,0 +1,23 @@
+ATTACK this claim about a failed run (card 111-1, tools/bench/cards/task_111-1.json).
+
+LOG: tools/bench/diag_c111_b1_errorlist_selfcheck.log (script tools/bench/diag_c111_b1_errorlist.py, mode `offline <older read>`).
+It ended 5 pass / 3 fail: G2_errorlist_gates, G3_c111_copy, G4_wire_and_owners.
+
+CLAIM: the three failures are BY CONSTRUCTION of the self-check, not a fault of the script's LabVIEW path:
+ (1) the self-check fed the script the OLDER read errorlist_D1_l2_b1_20260927_193100_20260927_194303.json (card 110-4), which
+     holds 80 of the window's 99 items because tools/lv_errorlist.py read_by_capture had max_steps=80 (errorlist_check_c110d.log:113);
+     so all_items_read False (G2) and items 80 != N 99 (G3) are that old read's known state;
+ (2) G4 failed because the owner file errorlist_D1_l2_b1_20260927_193100_c111_owners.json is only written by the LabVIEW phase,
+     which the offline mode skips (OWN = {} when the file is absent);
+ (3) the self-check's purpose was only to execute the offline attribution code (class keys, L2-A3 licences, RBW-end pools
+     parsed from tools/bench/stage_d1_l2b1_c110d.log) before the ~25-min GUI run; it ran end to end, G5 (every item in one class) PASSED.
+The next act is the real run: errorlist_check.main() unchanged, with lv_errorlist.read(max_steps=180) passed by the diag script
+(new optional parameter; default 80 unchanged), then an owner read (build_d1_v0.owner_of, allterms.read_terms) on a byte-identical
+scratch of the saved file, LabVIEW killed, scratch deleted.
+
+Already ruled out: none of the three failing gates depends on LabVIEW; the B1 md5 was unchanged before/after (G6a/G6 PASS).
+
+Questions: Is there a reason the real run would still stop short of 99 items with max_steps=180 (headers counted as steps,
+the scroll end-of-list break at lv_errorlist.py read_by_capture, or the `n_want` break)? Is anything in the attribution
+rule (count-capped L2-A3 class counts first, then open rows of tools/bench/plan_l2b1.json by node kind / terminal name / RBW
+wire ends on an open-row node or a uid cited in its `why`) likely to mis-attribute? Name the cheapest discriminating test.

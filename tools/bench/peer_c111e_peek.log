@@ -1,0 +1,44 @@
+BGRUN START 2026-09-27 21:51:26 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c111e-peek -TaskFile tools/bench/peer_c111e_peek_task.txt
+BGRUN PID 10388
+OUTCOME: ANSWERED (60s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-27-c111e-peek.md
+COST: $0.7852  in 12 / out 4645 / cache-create 74502 / cache-read 481068  (57s, 9 turn(s))
+--- ANSWER ---
+**Verdict: the diagnosis holds, but the claim as written describes code that is not on disk, so the failure is not explained yet.** The graph does have the rows. What remains open is which script produced the failing log.
+
+## 1. Strongest reason the claim is wrong
+The fix the claim proposes is already in the script. `tools/bench/diag_c111e_peek.py:16` reads:
+```python
+rows = [r for r in T if int(r["owner_uid"]) == u or int(r["term_uid"]) == u]
+```
+The claim says the predicate is `owner_uid == uid` only and "can never match a CT". That is not the code on disk.
+
+I checked the JSON directly. It has exactly the rows that the `term_uid` branch would catch:
+- `{"term_uid": 403, "term_name": "Z/dZ", "is_source": true, "wire_uid": 0, "owner_uid": 23166, "owner_class": "Diagram", "term_class": "ControlTerminal"}`
+- `{"term_uid": 9306, "term_name": "Correction Factor", "is_source": true, "wire_uid": 0, "owner_uid": 23166, ...}`
+
+If the on-disk script had run on this JSON, log lines 64 and 69 would each show one row, and the result would be 18/0, not 16/2. So one of two things is true: the script was edited after the 21:50:41 run and never re-run, or the JSON it read then is not the JSON on disk now. Either way, "the bug is the missing `term_uid` match" is a claim about a file that no longer exists. There is only one log (`tools/bench/diag_c111e_peek.log`) and no re-run log.
+
+## 2. Alternative explanations of the same evidence
+- **(a) Edited but not re-run (most likely).** The fix was typed into the script before this review and never re-run. The log is stale, and the failed prediction is unresolved rather than explained.
+- **(b) Different input at run time.** `graph_l2b1_20260927.json` was different at 21:50. For example, it was rewritten after the B1 re-read, before the CT rows were keyed by `term_uid`. The log prints the VI's md5 (`b705728a…`, line 5), not the JSON's md5, so the log cannot rule out a different `8327f974…` input.
+
+The claim's structural point is right on its own terms:
+- `stage_d1_l2b1.py:41-44` does key CT rows by `term_uid`.
+- The JSON rows carry `owner_uid` = the frame diagram, 23166. That is the 1.2 body the CTs were moved into, not the CT itself.
+
+No external fact about LabVIEW is involved, so there is nothing to search. This is purely our own JSON format.
+
+## 3. What would falsify the claim
+Running the current script on the current JSON still gives 16/2 for 403 and 9306. Given the rows above, that would mean the `term_uid` branch is not what it looks like, or a different file is being read. Explanation (b) would then need its md5 check.
+
+## 4. Cheapest discriminating test
+Two offline steps, about one second each, no LabVIEW:
+1. Compute the md5 of `tools/bench/graph_l2b1_20260927.json`. It must equal the card's input, `8327f974…`.
+2. Re-run the unchanged `py -u tools/bench/diag_c111e_peek.py` under bgrun with a new log file.
+
+The claim (as (a)) predicts 18/0, with 403 and 9306 each showing one row where `term_class=ControlTerminal`, `wire_uid=0` and `owner_uid=23166`. Any other result means (b), or something neither of us has named.
+
+**Two warnings for whoever acts on this:**
+- Passing the presence check does not mean the endpoints are fine. Both CTs have `wire_uid 0`, so they are unwired in #23166. The outer terminal of their partner `SelectorTunnel` #6132 is also unwired (log line 71). That fits B2 still owing these wires. Any B2 check should assert "one row, `ControlTerminal`, unwired" for these endpoints, not just "≥ 1 row".
+- Do not treat the stale 21:50 log as the record of the fixed script. It must be replaced by a re-run before the review is marked discharged.
+BGRUN END rc=0 after 61s

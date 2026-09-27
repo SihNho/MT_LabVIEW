@@ -1,0 +1,57 @@
+{
+ "schema": "task/1",
+ "id": "111-4",
+ "kind": "doc",
+ "escalation": 0,
+ "goal": "PD225(c): write errorlist_expected_D1_l2_b1_20260927_193100.json (per-class counts from the 111-1 read, licences per PD225(b)) and reverdict it OK against that read, offline",
+ "why": "Judgement accepted B1 as the bed (PD225(c)) on 111-2's object-level attribution; the cycle-start Error List check needs the explicit expected file (PD223(a)) or the next cycle starts on a MISMATCH.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/errorlist_D1_l2_b1_20260927_193100_c111.json", "md5": "f1f212c08ee52da07d1f376a6983c7b6"},
+  {"path": "tools/bench/facts_c111a_b1_errorlist.md", "md5": "7be375461fedabe255a086893c576b48"},
+  {"path": "tools/bench/facts_c111b_attribution.md", "md5": "e0bcf15c2befddede3a419d4e6779fac"},
+  {"path": "tools/bench/errorlist_expected_D1_l2_a3_20260927_151224.json"},
+  {"path": "tools/errorlist_check.py"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/bench/errorlist_expected_D1_l2_a3_20260927_151224.json"},
+  {"kind": "file", "name": "tools/bench/errorlist_D1_l2_b1_20260927_193100_c111.json"}
+ ],
+ "pass": [
+  "E1 expected file in the L2-A3 file's format; each class's count and licence text cites PD225(b) and the facts file row (double-item / cascade / open row / L2-A3 class)",
+  "E2 errorlist_check reverdict of the 111-1 read against it: OK, 0 extra, 0 missing (log saved)",
+  "E3 errorlist_check picks this file for bed name D1_l2_b1_20260927_193100.vi (offline check of its lookup, no LabVIEW)"
+ ],
+ "outputs": [
+  "tools/bench/errorlist_expected_D1_l2_b1_20260927_193100.json",
+  "tools/bench/errorlist_check_c111d.log",
+  "tools/bench/cards/result_111-4.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/errorlist_expected_D1_l2_b1_20260927_193100.json",
+   "tools/bench/errorlist_check_c111d*",
+   "tools/bench/diag_c111d*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/cards/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 25},
+ "advances": ["M3"],
+ "rules": [
+  "no LabVIEW; do not edit errorlist_check.py; if it cannot express a licence, return BLOCKED with the gap",
+  "STATUS current-bed is moved by judgement, not by this card",
+  "scripts via py tools/bgrun.py --material --max-min N --log f -- py -u script; no env prefixes",
+  "hold the turn until every bgrun you start writes BGRUN END",
+  "facts <=10 with file:line; OPEN <=3"
+ ]
+}

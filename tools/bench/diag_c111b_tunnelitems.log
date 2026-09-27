@@ -1,0 +1,162 @@
+BGRUN START 2026-09-27 21:18:46 limit 40.0 min: py -u tools/bench/diag_c111b_tunnelitems.py
+BGRUN PID 14784
+BGRUN STAGE-RUN recorded diag_c111b_tunnelitems.py cycle='cycle 111' card=None pid=11716 -> stage_runs.jsonl
+diag_c111b_tunnelitems - card 111-2 A4: how many Error List items does ONE cut loop-tunnel wire raise (and one unwired new SR)?
+FIXTURE: a scratch byte copy (discard_work, deleted at close) of the L2-A3 bed claudeDev\D1_l2_a3_20260927_151224.vi (md5 14337cfd),
+whose Error List is KNOWN: 29 items (errorlist_D1_l2_a3_..._202005_reuse.json: loose 13, unconnected 9, no-source 3, tunnel-to-input 2,
+BuildArray 1, Image In 1; no undirected-tunnel, no SR item). Nothing is saved, no VI is run. B1 is not touched.
+MUTATIONS = the B1 situation, one object each (graph_l2a3_bed_20260927.json):
+ (a) delete wire 9097 = LSR #9025 -> For#1359 tunnel #9087 outer t9092; inner wire 9076 keeps ONE sink (#8634 'array')
+ (b) delete wire 29787 = #29240 -> For#29874 tunnel #29777 outer t29782; inner wire 29766 keeps TWO sinks (#29625 'index (col)', #29973 'element')
+ (c) add_shift_reg on WhileLoop #10170 (as B1's srb1), left unwired
+PRIOR ART: stagekit.delete_wire / add_shift_reg (the B1 stage's own ops), errorlist_check.open_diagram + lv_errorlist.read (card 111-1).
+PREDICTION (recorded, not assumed): the item classes that grow over the 29, per mutation class; gates are only on the mechanics:
+ M the 3 ops return no error; E ExecState 0 after; L the Error List read is complete (n_reported == items read);
+ H scratch deleted, bed md5 unchanged, LabVIEW gone.
+    py tools/bgrun.py --material --max-min 40 --log tools/bench/diag_c111b_tunnelitems.log -- py -u tools/bench/diag_c111b_tunnelitems.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 295 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 14337cfda5780cb39d12deb5fe0d3db9  got 14337cfda5780cb39d12deb5fe0d3db9
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33991
+  FACT  PRELOAD: the ORIGINAL is resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened, nothing saved
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_c111b_tun_20260927_211847.vi
+  FACT  ExecState [after open] scratch_c111b_tun_20260927_211847.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so scratch_c111b_tun_20260927_211847.vi is deleted at close
+  FACT  BASE census (29 expected) {'subvi_not_wired': 1, 'node_unwired': 1, 'tunnel_to_input': 2, 'unconnected': 9, 'no_source': 3, 'loose_ends': 13} n=29
+  FACT  L2-A3 scratch cut a: wire 9097 ends [(9087, 'LoopTunnel', '', False), (9025, 'LeftShiftRegister', '', True)]; inner wire 9076 ends [(8634, 'GrowableFunction', 'array', False), (9087, 'LoopTunnel', '', True)]
+  FACT  L2-A3 scratch cut b: wire 29787 ends [(29240, 'Function', 'x-y*floor(x/y)', True), (29777, 'LoopTunnel', '', False)]; inner wire 29766 ends [(29973, 'BuildArray', 'element', False), (29625, 'GrowableFunction', 'index (col)', False), (29777, 'LoopTunnel', '', True)]
+  PASS  F every cut wire ends on its tunnel (outer face, sink)  [[(9087, 'LoopTunnel', '', False), (9025, 'LeftShiftRegister', '', True)], [(29240, 'Function', 'x-y*floor(x/y)', True), (29777, 'LoopTunnel', '', False)]]
+  FACT  delete_wire node census: 637 rows
+      adeleted wire w9097
+  FACT  OP delete_wire w9097 -> err '' (1.8 s)
+  FACT  delete_wire node census: 637 rows
+      bdeleted wire w29787
+  FACT  OP delete_wire w29787 -> err '' (1.7 s)
+  FACT  WhileLoop sr_loop traverse index 1
+  PASS  F WhileLoop sr_loop has a traverse index  1
+  FACT  add_shift_reg node census: 637 rows
+  FACT  OP add_shift_reg loop[1] y=120 -> err '' (0.1 s)
+  FACT  OPS [{'verb': 'delete_wire', 'detail': 'w9097', 'err': '', 'result': True, 's': 1.8}, {'verb': 'delete_wire', 'detail': 'w29787', 'err': '', 'result': True, 's': 1.7}, {'verb': 'add_shift_reg', 'detail': 'loop[1] y=120', 'err': '', 'result': 9338, 's': 0.1}]
+  FACT  ExecState [after a+b+c] scratch_c111b_tun_20260927_211847.vi = 0
+  PASS  E ExecState 0 after the 3 mutations
+  windows before Ctrl+L: [['scratch_c111b_tun_20260927_211847.vi Block Diagram', 'LVDChild'], ['scratch_c111b_tun_20260927_211847.vi Front Panel', 'LVDChild'], ['LabVIEW', 'LVFrame']]
+  fronted 'scratch_c111b_tun_20260927_211847.vi Block Diagram' (measured foreground 'scratch_c111b_tun_20260927_211847.vi Block Diagram')
+  Error List window: hwnd=6096548 title='Error list' class=LVDChild rect=(463, 195, 1462, 895)
+  win32 CHILD windows of the dialog: 0
+  --- UIA tree (7 elements) ---
+   0 [Window] name='Error list' cls='LVDChild' aid='' val='' sel=None
+     0.0 [50037] name='' cls='' aid='' val='Error list' sel=None
+       0.0.0 [50010] name='시스템' cls='' aid='MenuBar' val='' sel=None
+         0.0.0.0 [MenuItem] name='시스템' cls='' aid='' val='' sel=None
+       0.0.1 [Button] name='최소화' cls='' aid='' val='' sel=None
+       0.0.2 [Button] name='최대화' cls='' aid='' val='' sel=None
+       0.0.3 [Button] name='닫기' cls='' aid='' val='' sel=None
+  UIA: 0 list-ish container(s), 0 item element(s) exposed
+  window's own count: None (from None)
+  MSAA: 1 accessible object(s); 0 with role=listitem; roles seen ['window']
+   msaa 0 [window] hwnd=6096548 name='Error list' value='' state=1048580
+  OCR engine: rapidocr-onnxruntime
+  layout: bands=[(63, 201), (228, 386), (411, 645)] selections=[(65, 80), (246, 261)] errors_band=(228, 386) details_band=(411, 645)
+  window's own count: 41 (from '41 errors and warnings')
+  dialog is the measured foreground: True
+  stepping mechanism: click (highlight (246, 261) -> (246, 261) after one {DOWN})
+   item  0: object="Subvl 'Track N beads four-fold over-kern" reason="required input 'Image In' is not wired" detail='The designer of this subvl has specified that this terminal must be wi'
+   item  1: object='Shift Register' reason='unwired from inside the loop' detail=''
+   item  2: object='Shift Register' reason='Shift register: Feedback Node: data type is undefined' detail='You must wire a valid data type to the right side of this shift regist'
+   item  3: object='' reason="BuildArray'BuildArray':Containsunwiredorbadterminal" detail='One or more required inputs to this function are not wired or are wire'
+   item  4: object="BuildArray'BuildArray'" reason='Containsunwired orbadterminal' detail='One or more required inputs to this function are not wired or are wire'
+   item  5: object='' reason='Thiswire connects one or more data sinks but has no source.' detail='A wire must be connected to one and only one data source, such as a co'
+   item  6: object='' reason='Loop Tunnel:Wire connected to an undirected tunnel.' detail='A tunnel on this wire cannot determine whether it is an input or an ou'
+   item  7: object='' reason="ReplaceArraySubset'ReplaceArraySubset':Containsunwiredorbadterminal" detail='One or more required inputs to this function are not wired or are wire'
+   item  8: object='' reason='You have connected two terminals of different types.' detail='These cannot be wired together because their data types (numeric, stri'
+   item  9: object='' reason='You have connected two terminals of different types.' detail='These cannot be wired together because their data types (numeric, stri'
+   item 10: object='' reason='Youhaveconnectedanoutputlooptunnel toaninputofReplaceArraySubset.Chang' detail='A wire must be connected to one and only one data source, such as a co'
+   item 11: object='' reason='Youhaveconnectedtwo arrays ofdifferentdimensions.' detail='You have two or more array data types wired together, but the arrays h'
+   item 12: object='' reason='LoopTunnel:Wireconnected toan undirectedtunnel.' detail='A tunnel on this wire cannot determine whether it is an input or an ou'
+   item 13: object='' reason='You have connected an output loop tunnel to an input of SubVl. Change ' detail='A wire must be connected to one and only one data source, such as a co'
+   item 14: object='' reason='You haveconnectedanoutput loop tunnel toan inputofsubVl.Change the inp' detail='A wire must be connected to one and only one data source, such as a co'
+   item 15: object='' reason='This wire is not connected to anything' detail='This is a completely unconnected wire.'
+   item 16: object='' reason='Thiswireconnectsoneormoredatasinksbuthasnosource.' detail='A wire must be connected to one and only one data source, such as a co'
+   item 17: object='' reason='Wire:Wirehaslooseends.' detail='This wire segment is not connected to anything. Select Remove Broken W'
+   item 18: object='Wire' reason='Wire has loose ends.' detail='This wire segment is not connected to anything. Select Remove Broken W'
+   item 19: object='' reason='This wire is not connected to anything' detail='This is a completely unconnected wire.'
+   item 20: object='' reason='This wire is not connected to anvthing.' detail='This is a completely unconnected wire.'
+   item 21: object='' reason='Thiswireisnotconnectedtoanything' detail='This is a completely unconnected wire.'
+   item 22: object='' reason='Thiswireconnects one or more data sinksbut has no source.' detail='A wire must be connected to one and only one data source, such as a co'
+   item 23: object='' reason='This wire is not connected to anything' detail='This is a completely unconnected wire.'
+   item 24: object='' reason='Thiswire isnotconnected toanything' detail='This is a completely unconnected wire.'
+   item 25: object='' reason='Thiswireisnotconnectedtoanything' detail='This is a completely unconnected wire.'
+   item 26: object='' reason='Youhaveconnectedtwoarraysofdifferentdimensions.' detail='You have two or more array data types wired together, but the arrays h'
+   item 27: object='' reason='Wire:Wirehaslooseends.' detail='This wire segment is not connected to anything. Select Remove Broken W'
+   item 28: object='Wire' reason='Wire has loose ends.' detail='This wire segment is not connected to anything. Select Remove Broken W'
+   item 29: object='Wire' reason='Wire has loose ends.' detail='This wire segment is not connected to anything. Select Remove Broken W'
+   item 30: object='' reason='Thiswireisnot connectedtoanything' detail='This is a completely unconnected wire.'
+   item 31: object='Wire' reason='Wire has loose ends.' detail='This wire segment is not connected to anything. Select Remove Broken W'
+   item 32: object='Wire' reason='Wire has loose ends.' detail='This wire segment is not connected to anything. Select Remove Broken W'
+   item 33: object='Wire' reason='Wire has loose ends.' detail='This wire segment is not connected to anything. Select Remove Broken W'
+   item 34: object='' reason='Thiswireisnotconnectedtoanything' detail='This is a completely unconnected wire.'
+   item 35: object='' reason='Wire:Wirehas loose ends.' detail='This wire segment is not connected to anything. Select Remove Broken W'
+   item 36: object='' reason='Thiswireconnectsoneormoredatasinksbuthasnosource.' detail='A wire must be connected to one and only one data source, such as a co'
+   item 37: object='' reason='Wire:Wirehas loose ends.' detail='This wire segment is not connected to anything. Select Remove Broken W'
+   item 38: object='Wire' reason='Wire has loose ends.' detail='This wire segment is not connected to anything. Select Remove Broken W'
+   item 39: object='Wire' reason='Wire has loose ends.' detail='This wire segment is not connected to anything. Select Remove Broken W'
+   item 40: object='' reason='Wire:Wirehas looseends.' detail='This wire segment is not connected to anything. Select Remove Broken W'
+  reached the window's own count of 41 items
+  Esc closed the Error List: True
+  refine_rows: 28 row(s) re-read unselected; not refined: [20]
+  JSON -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\errorlist_scratch_c111b_tunnelitems.json  (41 items)
+  PASS  L Error List read complete (n_reported == items)  (41, 41, [])
+  FACT  AFTER census {'subvi_not_wired': 1, 'sr_unwired_inside': 1, 'sr_type_undefined': 1, 'node_unwired': 3, 'no_source': 4, 'undirected_tunnel': 2, 'different_types': 2, 'tunnel_to_input': 3, 'different_dims': 2, 'unconnected': 9, 'loose_ends': 13} n=41
+  FACT  DELTA over the L2-A3 base {'different_dims': 2, 'different_types': 2, 'loose_ends': 0, 'no_source': 1, 'node_unwired': 2, 'sr_type_undefined': 1, 'sr_unwired_inside': 1, 'subvi_not_wired': 0, 'tunnel_to_input': 1, 'unconnected': 0, 'undirected_tunnel': 2}
+  FACT  ITEM 1 | Shift Register: unwired from inside the loop | 
+  FACT  ITEM 2 | Shift Register: Shift register: Feedback Node: data type is undefined | You must wire a valid data type to the right side of this shift register, or delete the shift register.
+  FACT  ITEM 3 | Build Array 'Build Array': Contains unwired or bad terminal | One or more required inputs to this function are not wired or are wired incorrectly. Show the Context Help window to see what the connections to this function s
+  FACT  ITEM 4 | Build Array 'Build Array': Contains unwired or bad terminal | One or more required inputs to this function are not wired or are wired incorrectly. Show the Context Help window to see what the connections to this function s
+  FACT  ITEM 6 | Loop Tunnel: Wire connected to an undirected tunnel. | A tunnel on this wire cannot determine whether it is an input or an output. Connect the tunnel to exactly one source terminal to set the direction of data flow.
+  FACT  ITEM 7 | Replace Array Subset 'Replace Array Subset': Contains unwired or bad terminal | One or more required inputs to this function are not wired or are wired incorrectly. Show the Context Help window to see what the connections to this function s
+  FACT  ITEM 10 | You have connected an output loop tunnel to an input of Replace Array Subset. Change the input to an output, or add a source. | A wire must be connected to one and only one data source, such as a control's terminal or a function output. This wire is connected to two data sinks but zero s
+  FACT  ITEM 12 | Loop Tunnel: Wire connected to an undirected tunnel. | A tunnel on this wire cannot determine whether it is an input or an output. Connect the tunnel to exactly one source terminal to set the direction of data flow.
+  FACT  ITEM 13 | You have connected an output loop tunnel to an input of Subvl. Change the input to an output, or add a source. | A wire must be connected to one and only one data source, such as a control's terminal or a function output. This wire is connected to two data sinks but zero s
+  FACT  ITEM 14 | You have connected an output loop tunnel to an input of Subvl. Change the input to an output, or add a source. | A wire must be connected to one and only one data source, such as a control's terminal or a function output. This wire is connected to two data sinks but zero s
+
+---------- [H] HYGIENE
+  FACT  close_panel(scratch_c111b_tun_20260927_211847.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  PRELOAD references released; refs {'opened': 6, 'closed': 6, 'live': 0, 'cached_op_vis': 4}
+  FACT  gscript ref_counts: {'opened': 6, 'closed': 6, 'live': 0, 'cached_op_vis': 4}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 6, 'closed': 6, 'live': 0, 'cached_op_vis': 4}
+  FACT  LabVIEW handle count AFTER the work: 42920
+  PASS  H4 scratch deleted: scratch_c111b_tun_20260927_211847.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c111b_tun_20260927_211847.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 14337cfda5780cb39d12deb5fe0d3db9 / after 14337cfda5780cb39d12deb5fe0d3db9
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33996
+
+====================================================================================================
+=== GATES: 12 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c111b_tunnelitems.json   elapsed 505.5 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":12,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  H LabVIEW gone at exit; bed md5 unchanged  (True, '14337cfda5780cb39d12deb5fe0d3db9')
+
+====================================================================================================
+=== GATES: 13 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c111b_tunnelitems.json   elapsed 509.7 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 510s
