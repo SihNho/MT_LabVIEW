@@ -1,0 +1,34 @@
+BGRUN START 2026-09-27 14:08:20 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c108d-selind-dry -TaskFile tools/bench/peer_c108d_task.txt
+BGRUN PID 4880
+OUTCOME: ANSWERED (90s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-27-c108d-selind-dry.md
+COST: $1.1540  in 20 / out 7461 / cache-create 100821 / cache-read 990571  (87s, 21 turn(s))
+--- ANSWER ---
+**No, the claim is wrong as stated.** A sanctioned route through both gates exists and has already been used. The refusal comes from what `diag_c108d_selind.py` is missing, not from a conflict between the scratch-VI rule and the classifier. Every point below is from our own files; nothing here depends on an outside source, so I did no web search.
+
+**1. Strongest reason it's wrong: both steps have been passed before.**
+- **Step 1, the graph JSON.** The claim says the graph "exists only after a separate LabVIEW read." That is true, but that read can be launched freely. `diag_c107b_bedgraph.py` imports stagekit, reads a byte copy without changing it, and writes a `graph_*.json` keyed to that file's md5 (`tools/bench/diag_c107b_bedgraph.py:1-18`). It calls no function in the gate's list of VI-changing calls (`MODIFY_VERBS`), so the launch gate does not apply to it. It ran directly under bgrun with no dry or prerun record (`diag_c107b_bedgraph.log:1,266`, rc=0; no entry in `prerun_records.jsonl`), and its output exists (`tools/bench/graph_l2a1_bed_20260927.json`). The same pattern works for `TRACK_kernel_v1.vi`.
+- **Step 2, the plan file (gates X2/X3).** The claim says "a scratch verification has no reason to have [a plan]." The project has already done exactly this. `diag_c99b_bench.py` built two scratch benches on scratch copies. It named a small list of decision rows written in plain prose (`tools/bench/diag_c99b_benchplan.json:1-24`, with actions like `create`, `run`, `quit`). Its prerun passed three times (`prerun_records.jsonl:130,133,136`). `selftest_c98_stage.py` and `selftest_c98_rbw.py` passed the same way (`:114,117,120`).
+- **Why that works:**
+  - Any `.json` the script names that contains `decisions` rows with `id` and `action` fields counts as a plan (`tools/stage_prerun.py:850-872`).
+  - X3 refuses only undecided actions: `None`, `""`, `llm`, `unknown`, `undecided` (`:1287`).
+  - The scratch-VI record is keyed only by the function name and status PASS, and nothing ties it to plans (`:1824-1844`).
+
+**2. Alternative explanation of the same evidence.** The script was simply launched without its fixture's graph and without a plan. The same failure pair happened on 2026-09-26: `diag_c101_owners.py` failed dry on "no graph JSON" and then prerun on X2 "no plan" (`prerun_records.jsonl:158,163`). That is a recurring preparation gap, not a new design conflict. What is true is narrower: the gate's refusal text for scratch-VI verification (`stage_prerun.py:1859-1863`) and the comment above it (`:1758-1759`) never mention that such a script needs a dry pass and a prerun pass. That is a documentation gap. It invites this mistake, but it does not make the launch impossible. The `scratch_verify/` folder is empty, so the scratch-VI route has never been run end to end.
+
+**3. What would prove the claim right.** Give the script a graph JSON of the fixture (md5 `8dfe1d5f...`) and a decision-row plan with fully decided rows. If `--dry` and `--prerun` still cannot both pass because of X2 or X3 themselves, the claim holds. If they do pass, the claim is refuted.
+
+**Risks that remain even on this route** (these are the script's to fix, not the gate's):
+- **X5.** `create_indicator_nested` does not match the wiring-call pattern `connect|wire|fs_inner` (`:92`). So the plan must contain no `action: "wire"` rows, or the counts will not match (`:1341`).
+- **X6.** Gate X6 refuses a script that types a uid or terminal name directly into its code (`:1347-1351`). The owner-case uid used in the V prediction must be read from the graph.
+- **X4.** The terminals the script addresses must be findable in the offline graph (`:1303-1323`).
+- **X10.** Having no memory record for this script only produces a warning; it does not fail (`:1407`).
+
+**4. Cheapest test that separates the two explanations** (no LabVIEW needed):
+1. Temporarily point `find_graph` at any existing graph by passing `--graph <existing graph_*.json>`. `--graph` is a real flag (`:1926`).
+2. Add a 5-row prose `decisions` JSON with actions `create`, `read`, `negative`, `handles`, `discard`, named as a string in a scratch copy of the script.
+3. Run `py tools/stage_prerun.py --prerun <copy> --no-record`.
+
+If X2 and X3 print PASS, the claimed conflict does not exist; any gates still failing belong to the script. If X2 or X3 still fail with a decided plan named, the claim stands.
+
+The real launch still needs the true fixture graph. The cheapest way to get it is a read-only copy of `diag_c107b_bedgraph.py` pointed at `TRACK_kernel_v1.vi`, launched as an ordinary bgrun command with no gate involved.
+BGRUN END rc=0 after 91s

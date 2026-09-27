@@ -9,6 +9,7 @@ selftest_cycle_runner_ff stays 3/3.
 Usage: MATERIAL=1 py tools/bgrun.py --max-min 10 --log tools/bench/selftest_heartbeat.log -- py -u tools/bench/selftest_heartbeat.py"""
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -84,8 +85,12 @@ gate("G3 released after --ack", g3.returncode == 0, "(exit %d)" % g3.returncode)
 
 ff = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "bench", "selftest_cycle_runner_ff.py")],
                     capture_output=True, text=True, encoding="utf-8", errors="replace", cwd=ROOT)
-gate("F1 selftest_cycle_runner_ff 3/3", "3/3 PASS" in ff.stdout,
-     "(%s)" % ([ln for ln in ff.stdout.splitlines() if "/3 PASS" in ln] or ["?"])[0])
+# card 108-5: was the literal "3/3 PASS"; selftest_cycle_runner_ff grew to 5 gates in chat-N4 (306db46, 2026-09-27 02:10)
+# and this gate went stale. Pinned to ff's current 5 gates (archive/peer/2026-09-27-c108e-regress.md s.3: N/N alone would
+# pass 1/1 or 0/0 and miss ff silently losing modes).
+_ffm = re.search(r"^(\d+)/(\d+) PASS\s*$", ff.stdout, re.M)
+gate("F1 selftest_cycle_runner_ff 5/5", bool(_ffm) and _ffm.group(1) == _ffm.group(2) == "5" and ff.returncode == 0,
+     "(%s, rc %s)" % (_ffm.group(0) if _ffm else "?", ff.returncode))
 
 n_fail = sum(not ok for _, ok in gates)
 print("%d/%d PASS" % (len(gates) - n_fail, len(gates)))

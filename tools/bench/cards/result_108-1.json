@@ -1,0 +1,22 @@
+{"schema":"result/1","id":"108-1","status":"PASS","gates":{"pass":20,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a2_20260927_132125.vi","md5":"807c803e1cef1dc33cfdc936c87af1ca"},
+{"path":"tools/bench/stage_d1_l2a2.log","md5":"53740705c26e0916bd775e0a63dde739"},
+{"path":"tools/bench/stage_d1_l2a2.json","md5":"2fb6fda313d73714051d0ac5aa3cffc2"},
+{"path":"archive/peer/2026-09-27-c108a-disp107-visa-refusal.md","md5":"c2fa27763efa7f628cfe748ce7744499"}],
+"facts":[
+"First launch refused by guard_peer on disp_107_abba.log (V1 VISA precheck FAIL; JEV-LADDER new-problem p=0.490 -> hypothesis review owed); review dispatched, ANSWERED 231s, then launch ALLOWED",
+"ladder row: disp_107_abba.log | new-problem p=0.490 | hypothesis review owed | hypothesis peer run, disposition written | lifted (archive/peer/2026-09-27-c108a-disp107-visa-refusal.md:106)",
+"ONE stage run, BGRUN END rc=0 after 182s, GATES 20 pass / 0 fail (tools/bench/stage_d1_l2a2.log:100-104)",
+"1 op: OpCtlSinkWire #10874 IndexArray.t1 -> ControlTerminal #23541, err '', census 635->635 nodes, STEPX diff 0; E1 PASS (stage_d1_l2a2.log:44-50)",
+"CT reader #23541 partners real [10874] == sim [10874]; D: new wire [25523], lost [] (stage_d1_l2a2.log:53-55); FU frame set unchanged :56",
+"PB frame-keyed cdiff(S1,end) == plan's 8 open rows, extra [] missing [] (rows 376x2, 2626, 5058, 5696, 6085, 10382, 11529; 9703 closed) (stage_d1_l2a2.log:58-66)",
+"Saved by gui_save D1_l2_a2_20260927_132125.vi md5 807c803e 308008 B, ExecState 0 by design; bed md5 51d9b8a3 unchanged after, all 5 pins hold (stage_d1_l2a2.log:72-94)",
+"RBW on scratch: Wire 1939->1910, same 29 uids as the bed's RBW (stage_d1_l2a1_86-5.log:754), new wire 25523 not among them; no explicit 'Is Broken?' line in the log (stage_d1_l2a2.log:79-81)",
+"Memory peak 621.4 MB private, handles 45963 -> 46139 before save, 32433 at exit; refs opened 10 == closed 10; LabVIEW gone at exit, tasklist 0 (stage_d1_l2a2.log:37-52,85-103)"],
+"open":[
+"Hypothesis review of disp_107 (archive/peer/2026-09-27-c108a-disp107-visa-refusal.md:41-47,71-86): our LabVIEW kills while Configure.vi held COM5 are a suspected cause; it proposes a Win32 overlapped-open + comm-setup probe (COM5 vs COM6) before D-2026-09-27-03 is answered. Adopt?",
+"Same review :90: the real-run launcher should return SKIP, not FAIL, while D-03 is open (each FAIL re-arms guard_peer on the next build). Change?",
+"Card pass line 'second-pass Is Broken? False' has no direct reader output in this recipe; covered only indirectly by RBW not deleting 25523. Accept as equivalent?"],
+"cost":{"usd":null,"minutes":14,"labview_runs":1},
+"note":"recipe/plan not edited; bed not saved; no VI run; STATUS not edited (status_edit false)"}

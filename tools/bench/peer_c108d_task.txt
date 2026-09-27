@@ -1,0 +1,26 @@
+ATTACK this claim about our own tools (read-only; cite file:line for every statement).
+
+FAILING LOG: tools/bench/diag_c108d_selind_dry.log (stage_prerun --dry of tools/bench/diag_c108d_selind.py). First failure line:
+"FAIL  DRY graph JSON for input md5 8dfe1d5fec235e0d1d7b919949d0c1ef  no tools/bench/graph_*.json carries this md5".
+
+CONTEXT: card tools/bench/cards/task_108-4.json V2 asks for a "<=120-line stagekit script" that scratch-verifies a new gscript
+route (gscript.create_indicator_nested on a SelectorTunnel OUTER face: gscript._selector_outer_face / _create_on_selector_outer)
+on a minimal scratch VI (byte copy of claudeDev\TRACK_kernel_v1.vi, never saved). The launch of that script under bgrun was
+refused by tools/hooks/guard_bash.py -> tools/stage_prerun.py check_launch because stage_prerun.vi_modifying_calls
+(tools/stage_prerun.py:1478-1506, MODIFY_VERBS :1459) classifies ANY .py that imports stagekit and calls a MODIFY verb
+(here create_indicator_nested, discard_work) as a stage: it then needs a dry PASS and a prerun PASS.
+
+CLAIM TO ATTACK: "A stagekit-based scratch-VI verification script, as the scratch-VI rule itself prescribes
+(tools/stage_prerun.py:1749-1760: 'written with a RESULT line by a <=120-line stagekit script'), cannot be launched at all
+under the current gates: (1) --dry needs a graph JSON of the fixture's md5 (find_graph, tools/stage_prerun.py:181-229),
+which exists only after a separate LabVIEW read; (2) even with one, --prerun gate X2/X3 (tools/stage_prerun.py:1280-1296)
+require a finalized plan file (decisions rows or a stageplan/1) named by the recipe, which a scratch verification has no
+reason to have. So the refusal is a gate-design conflict between the scratch-VI rule (card chat-N4) and the classifier
+(card chat-N1), not a defect of diag_c108d_selind.py."
+
+Already ruled out: (a) the script's own Python (the dry imported gscript/stagekit and reached gate K1 PASS before failing);
+(b) a missing fixture (K1 md5 8dfe1d5f... read from the file); (c) dropping the stagekit import to escape the classifier is
+NOT an option for us (card rule: a gate refusal is returned BLOCKED, never re-run through an exempt route).
+
+Answer: is the claim right? Is there an existing sanctioned route (an exemption, a flag, a record type) by which a scratch
+verification passes check_launch without a plan? What is the cheapest discriminating test?

@@ -1,0 +1,205 @@
+BGRUN START 2026-09-27 14:30:45 limit 60.0 min: py -u tools/recipes/stage_d1_l2a3.py
+BGRUN PID 26536
+BGRUN STAGE-RUN recorded stage_d1_l2a3.py cycle='cycle 108' card=None pid=15668 -> stage_runs.jsonl
+stage_d1_l2a3 - card 108-2, STAGE L2-A3 (docs/d1-loop12-17-split-plan.md PD221(d); split page tools/bench/cards/split_plan_108_l2a3.md).
+INPUT the L2-A2 file claudeDev\D1_l2_a2_20260927_132125.vi (named by the plan's base graph), FRESH LabVIEW -> claudeDev\D1_l2_a3_<ts>.vi
+(rule-6 GUI save at ExecState 0 - the plan's 6 open rows stay open by design, never run).
+ROWS ONLY FROM THE FINALIZED PLAN tools/bench/plan_l2a3.json (plan_in plan_l2a3_in.json, base graph_l2a2_20260927.json); no uid and no
+terminal name or label is typed here; the created indicators and Locals are found through the plan's own `create` rows + the binding.
+CARRIER (PD221(d), CLAUDE.md 1c''): 2 hidden indicators in the 1.2 body + 2 Local READS in the 1.1 body; no queue, no edge detection.
+PRIOR ART: stage_d1_l2a2.py (the skeleton: DryBE, 179(b) CT reader, PB frame-keyed cdiff, RBW on a scratch of the saved file),
+stage_d1_disp.py / plan_disp.json r5_ind_* + r6_lr_* (the create indicator born_on + create Local read routes, stagexec CREATE_ROUTES
+'indicator' + 'local_read'). No new op.
+PREDICTION: L1 each plan action -> exactly one real op; E1 every checkpoint read == its simulated step; CT the 179(b) reader on each
+created indicator: real wire partners == simulated; LB each new label on exactly 1 ControlTerminal and exactly 1 Local; D the end adds the
+plan's new wires and loses exactly the base wires the simulation loses; FU the set of frame diagrams is unchanged; PB frame-keyed cdiff(S1,
+end) == the plan's open_rows (FATAL, before save); ES recorded (0 by design); PS saved, md5 != input, input unchanged; RBW on a scratch of
+the saved file deletes no wire of a re-wired sink; LabVIEW gone at exit.
+    py tools/bgrun.py --material --max-min 40 --log tools/bench/stage_d1_l2a3.log -- py -u tools/recipes/stage_d1_l2a3.py
+  PASS  L0 the executed plan is FINAL, open_rows_match, plan_in = the plan_l2a3_in stageplan  ('f2341cabd04a25b146ed6918e4b710da', {'path': 'tools/bench/plan_l2a3_in.json', 'md5': '3ecc4d8094dcab2b745e519a61747f90'})
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 293 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 807c803e1cef1dc33cfdc936c87af1ca  got 807c803e1cef1dc33cfdc936c87af1ca
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33982
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  D1_l2_a3_20260927_143046.vi
+  FACT  ExecState [after open] D1_l2_a3_20260927_143046.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so D1_l2_a3_20260927_143046.vi is deleted at close
+  PASS  L1 every plan action compiled into exactly one real op (6 -> 6)  [1, 2, 3, 4, 5, 6]
+  METER start  k   0  private 562.1 MB (d -)  handles 45626 (d -)
+  METER read   k   0  private 570.3 MB (d +8.2)  handles 45719 (d +93)
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 2 touched diagram(s) [639, 23166]: one-side-only Nodes[] entries 0
+  PRIME 2 terminal indexes proved at base; 0 ControlTerminal end(s) by 179(b); unprovable []
+  METER pre    k   1  private 561.9 MB (d -8.4)  handles 45776 (d +57)
+  FACT  indicator_nested node census: 635 rows
+  FACT  OP indicator_nested #9647.t0 -> err '' (1.3 s)
+  FACT  create indicator a3_ind_reseed AFTER node census: 635 rows
+  FACT  create indicator a3_ind_reseed CENSUS DIFF: Node 635 -> 635 ; 0 new uid(s): []
+  METER op     k   1  private 561.9 MB (d +0.0)  handles 45857 (d +81)
+  METER read   k   1  private 565.5 MB (d +3.6)  handles 45852 (d -5)
+  STEPX 01 create         acts [1] ids ['a3_ind_reseed'] bound {-1: 25557} diff 0
+  METER pre    k   2  private 565.5 MB (d +0.0)  handles 45851 (d -1)
+  FACT  indicator_nested node census: 635 rows
+  OBSERVED uid 11336 -> owner 'CaseStructure' uid 10445 | self 'SelectorTunnel'#11336 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 10445 -> owner 'Diagram' uid 23166 | self 'CaseStructure'#10445 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP indicator_nested SelectorTunnel #11336 outer face #11346 (owner CaseStructure Terms[] -> OpCreateIndicatorNested_v0) -> err '' (13.3 s)
+  FACT  create indicator a3_ind_count AFTER node census: 635 rows
+  FACT  create indicator a3_ind_count CENSUS DIFF: Node 635 -> 635 ; 0 new uid(s): []
+  METER op     k   2  private 566.6 MB (d +1.1)  handles 45906 (d +55)
+  METER read   k   2  private 569.8 MB (d +3.2)  handles 45898 (d -8)
+  STEPX 02 create         acts [2] ids ['a3_ind_count'] bound {-2: 25573} diff 0
+  METER pre    k   3  private 569.8 MB (d +0.0)  handles 45898 (d +0)
+  FACT  create_local_read node census: 635 rows
+  OBSERVED uid 25576 -> owner 'TopLevelDiagram' uid 536 | self 'Local'#25576 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  FACT  OP create_local_read 'autofocus reseed flag (1.2 to 1.1)' panel[116] (READ mode) -> err '' (0.2 s)
+  FACT  create local_read a3_lr_reseed AFTER node census: 636 rows
+  FACT  create local_read a3_lr_reseed CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(25576, 'Local', (5799, 2169))]
+  FACT  create local_read a3_lr_reseed new #25576 #25576 lives at: {'diagram_index': 0, 'diagram_uid': 536, 'diagram_class': 'TopLevelDiagram', 'nodes_index': 0, 'nodes_on_diagram': 1, 'label': 'D1_l2_a3_20260927_143046.vi'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  create local_read a3_lr_reseed new #25576 terminal table of #25576 (Diagram idx 0, Nodes[0], echo 25576): 1 terminal(s)
+  FACT      create local_read a3_lr_reseed new #25576 t0  'autofocus reseed flag (1.2 to 1.1)' is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  create local_read a3_lr_reseed NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #25576 class 'Local' label 'D1_l2_a3_20260927_143046.vi', 1 terminal(s), 0 wired - REPORTED, left alone
+  FACT  move_in node census: 636 rows
+  FACT  OP move_in #25576 -> Diagram[52] at (40, 40) -> err '' (0.1 s)
+  FACT  create local_read a3_lr_reseed move_in AFTER node census: 637 rows
+  FACT  create local_read a3_lr_reseed move_in CENSUS DIFF: Node 636 -> 637 ; 1 new uid(s): [(25516, 'Invoke', (2639, 933))]
+  FACT  create local_read a3_lr_reseed move_in new #25516 #25516 lives at: {'diagram_index': 52, 'diagram_uid': 639, 'diagram_class': 'Diagram', 'nodes_index': 58, 'nodes_on_diagram': 59, 'label': 'Invoke Node'}  (53 diagram(s) scanned of 173, 1.8 s)
+  FACT  create local_read a3_lr_reseed move_in new #25516 terminal table of #25516 (Diagram idx 52, Nodes[58], echo 25516): 6 terminal(s)
+  FACT      create local_read a3_lr_reseed move_in new #25516 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_read a3_lr_reseed move_in new #25516 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_read a3_lr_reseed move_in new #25516 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_read a3_lr_reseed move_in new #25516 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_read a3_lr_reseed move_in new #25516 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_read a3_lr_reseed move_in new #25516 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  create local_read a3_lr_reseed move_in the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  create local_read a3_lr_reseed move_in purge delete Node #25516 at index 195: gone [25516], error '', census 637 -> 636, still present False (1.27 s)
+  FACT  create local_read a3_lr_reseed move_in AFTER THE PURGE node census: 636 rows
+  FACT  create local_read a3_lr_reseed move_in purge arithmetic: Node 636 -> 637 -> 636
+  METER op     k   3  private 570.3 MB (d +0.5)  handles 46002 (d +104)
+  METER read   k   3  private 578.8 MB (d +8.5)  handles 46002 (d +0)
+  STEPX 03 create         acts [3] ids ['a3_lr_reseed'] bound {-3: 25576} diff 0
+  METER pre    k   4  private 578.8 MB (d +0.0)  handles 46002 (d +0)
+  FACT  create_local_read node census: 636 rows
+  OBSERVED uid 25578 -> owner 'TopLevelDiagram' uid 536 | self 'Local'#25578 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  FACT  OP create_local_read 'autofocus reset count (1.2 to 1.1)' panel[117] (READ mode) -> err '' (0.2 s)
+  FACT  create local_read a3_lr_count AFTER node census: 637 rows
+  FACT  create local_read a3_lr_count CENSUS DIFF: Node 636 -> 637 ; 1 new uid(s): [(25578, 'Local', (5799, 2169))]
+  FACT  create local_read a3_lr_count new #25578 #25578 lives at: {'diagram_index': 0, 'diagram_uid': 536, 'diagram_class': 'TopLevelDiagram', 'nodes_index': 0, 'nodes_on_diagram': 1, 'label': 'D1_l2_a3_20260927_143046.vi'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  create local_read a3_lr_count new #25578 terminal table of #25578 (Diagram idx 0, Nodes[0], echo 25578): 1 terminal(s)
+  FACT      create local_read a3_lr_count new #25578 t0  'autofocus reset count (1.2 to 1.1)' is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  create local_read a3_lr_count NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #25578 class 'Local' label 'D1_l2_a3_20260927_143046.vi', 1 terminal(s), 0 wired - REPORTED, left alone
+  FACT  move_in node census: 637 rows
+  FACT  OP move_in #25578 -> Diagram[52] at (40, 40) -> err '' (0.1 s)
+  FACT  create local_read a3_lr_count move_in AFTER node census: 638 rows
+  FACT  create local_read a3_lr_count move_in CENSUS DIFF: Node 637 -> 638 ; 1 new uid(s): [(25516, 'Invoke', (2639, 933))]
+  FACT  create local_read a3_lr_count move_in new #25516 #25516 lives at: {'diagram_index': 52, 'diagram_uid': 639, 'diagram_class': 'Diagram', 'nodes_index': 58, 'nodes_on_diagram': 60, 'label': 'Invoke Node'}  (53 diagram(s) scanned of 173, 1.8 s)
+  FACT  create local_read a3_lr_count move_in new #25516 terminal table of #25516 (Diagram idx 52, Nodes[58], echo 25516): 6 terminal(s)
+  FACT      create local_read a3_lr_count move_in new #25516 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_read a3_lr_count move_in new #25516 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_read a3_lr_count move_in new #25516 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_read a3_lr_count move_in new #25516 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_read a3_lr_count move_in new #25516 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_read a3_lr_count move_in new #25516 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  create local_read a3_lr_count move_in the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  create local_read a3_lr_count move_in purge delete Node #25516 at index 196: gone [25516], error '', census 638 -> 637, still present False (1.27 s)
+  FACT  create local_read a3_lr_count move_in AFTER THE PURGE node census: 637 rows
+  FACT  create local_read a3_lr_count move_in purge arithmetic: Node 637 -> 638 -> 637
+  METER op     k   4  private 578.8 MB (d +0.0)  handles 46001 (d -1)
+  METER read   k   4  private 582.8 MB (d +4.0)  handles 45997 (d -4)
+  STEPX 04 create         acts [4] ids ['a3_lr_count'] bound {-5: 25578} diff 0
+  METER pre    k   5  private 582.8 MB (d +0.0)  handles 45997 (d +0)
+  FACT  connect_nested_v1 node census: 637 rows
+      op readback {'UID': 10382, 'Name': 'x', 'UID 2': 9921, 'Is Broken?': True}
+  FACT  OP connect_nested_v1 D[52].N[24].t1 <- D[52].N[57].t0 -> err '' (0.3 s)
+  FACT  connect #25585->#10393 AFTER node census: 638 rows
+  FACT  connect #25585->#10393 CENSUS DIFF: Node 637 -> 638 ; 1 new uid(s): [(25516, 'Invoke', (2639, 933))]
+  FACT  connect #25585->#10393 new #25516 #25516 lives at: {'diagram_index': 52, 'diagram_uid': 639, 'diagram_class': 'Diagram', 'nodes_index': 59, 'nodes_on_diagram': 60, 'label': 'Invoke Node'}  (53 diagram(s) scanned of 173, 1.9 s)
+  FACT  connect #25585->#10393 new #25516 terminal table of #25516 (Diagram idx 52, Nodes[59], echo 25516): 6 terminal(s)
+  FACT      connect #25585->#10393 new #25516 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #25585->#10393 new #25516 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #25585->#10393 new #25516 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #25585->#10393 new #25516 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #25585->#10393 new #25516 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #25585->#10393 new #25516 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  connect #25585->#10393 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  connect #25585->#10393 purge delete Node #25516 at index 195: gone [25516], error '', census 638 -> 637, still present False (1.27 s)
+  FACT  connect #25585->#10393 AFTER THE PURGE node census: 637 rows
+  FACT  connect #25585->#10393 purge arithmetic: Node 637 -> 638 -> 637
+  METER op     k   5  private 585.4 MB (d +2.6)  handles 46042 (d +45)
+  METER read   k   5  private 585.4 MB (d +0.0)  handles 46041 (d -1)
+  STEPX 05 connect        acts [5] ids ['rw_lrrs_10393'] bound {} diff 0
+  METER pre    k   6  private 585.4 MB (d +0.0)  handles 46041 (d +0)
+  FACT  connect_nested_v1 node census: 637 rows
+      op readback {'UID': 11529, 'Name': 'x', 'UID 2': 11389, 'Is Broken?': True}
+  FACT  OP connect_nested_v1 D[52].N[22].t2 <- D[52].N[58].t0 -> err '' (0.3 s)
+  FACT  connect #25594->#13163 AFTER node census: 638 rows
+  FACT  connect #25594->#13163 CENSUS DIFF: Node 637 -> 638 ; 1 new uid(s): [(25516, 'Invoke', (2639, 933))]
+  FACT  connect #25594->#13163 new #25516 #25516 lives at: {'diagram_index': 52, 'diagram_uid': 639, 'diagram_class': 'Diagram', 'nodes_index': 59, 'nodes_on_diagram': 60, 'label': 'Invoke Node'}  (53 diagram(s) scanned of 173, 1.9 s)
+  FACT  connect #25594->#13163 new #25516 terminal table of #25516 (Diagram idx 52, Nodes[59], echo 25516): 6 terminal(s)
+  FACT      connect #25594->#13163 new #25516 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #25594->#13163 new #25516 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #25594->#13163 new #25516 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #25594->#13163 new #25516 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #25594->#13163 new #25516 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #25594->#13163 new #25516 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  connect #25594->#13163 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  connect #25594->#13163 purge delete Node #25516 at index 195: gone [25516], error '', census 638 -> 637, still present False (1.27 s)
+  FACT  connect #25594->#13163 AFTER THE PURGE node census: 637 rows
+  FACT  connect #25594->#13163 purge arithmetic: Node 637 -> 638 -> 637
+  METER op     k   6  private 589.5 MB (d +4.1)  handles 46043 (d +2)
+  METER read   k   6  private 593.6 MB (d +4.1)  handles 46044 (d +1)
+  STEPX 06 connect        acts [6] ids ['rw_lrac_13163'] bound {} diff 0
+  PASS  E1 every checkpoint's real graph == its simulated step (6 ops)
+  FACT  BINDING obj {-1: 25557, -2: 25573, -3: 25576, -5: 25578} term {-1: 25557, -2: 25573, -4: 25585, -6: 25594}
+  FACT  METER SUMMARY {"n": 20, "first_mb": 562.1, "peak_mb": 593.6, "last": {"tag": "read", "k": 6, "t": 1790487318.2, "mb": 593.6, "handles": 46044, "d_mb": 4.1, "d_h": 1}, "sum_d_mb_op": 8.3, "sum_d_mb_read": 31.6, "mean_d_mb_op": 1.38, "mean_d_mb_read": 4.51, "warned_at": null}
+  FACT  CT row a3_ind_reseed sim #-1 real #25557: ControlTerminal True rows 1 partners real [9668, 10469] sim [9668, 10469]
+  PASS  CT a3_ind_reseed: created indicator read by the 179(b) reader == simulated end  {'real': [9668, 10469], 'sim': [9668, 10469], 'rows': 1}
+  FACT  CT row a3_ind_count sim #-2 real #25573: ControlTerminal True rows 1 partners real [11346, 25385] sim [11346, 25385]
+  PASS  CT a3_ind_count: created indicator read by the 179(b) reader == simulated end  {'real': [11346, 25385], 'sim': [11346, 25385], 'rows': 1}
+
+OBSERVED EXC 'term_class'
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagekit.py", line 1270, in run
+    fn(stage)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\stage_d1_l2a3.py", line 66, in body
+    n_ct = sum(1 for r in rows if r["term_class"] == "ControlTerminal" and r["term_name"] == a["label"])
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\stage_d1_l2a3.py", line 66, in <genexpr>
+    n_ct = sum(1 for r in rows if r["term_class"] == "ControlTerminal" and r["term_name"] == a["label"])
+KeyError: 'term_class'
+
+  FAIL  the run completed without an unhandled exception  'term_class'
+
+---------- [H] HYGIENE
+  FACT  close_panel(D1_l2_a3_20260927_143046.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 6, 'closed': 6, 'live': 0, 'cached_op_vis': 14}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 6, 'closed': 6, 'live': 0, 'cached_op_vis': 14}
+  FACT  LabVIEW handle count AFTER the work: 46044
+  PASS  H4 scratch deleted: D1_l2_a3_20260927_143046.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_l2_a3_20260927_143046.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 807c803e1cef1dc33cfdc936c87af1ca / after 807c803e1cef1dc33cfdc936c87af1ca
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33994
+
+====================================================================================================
+=== GATES: 13 pass / 1 fail; failing: the run completed without an unhandled exception
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\stage_d1_l2a3.json   elapsed 380.3 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":13,"fail":1},"first_fail":"KeyError: 'term_class'","artefacts":[]}
+LabVIEW gone at exit: True
+BGRUN END rc=1 after 385s

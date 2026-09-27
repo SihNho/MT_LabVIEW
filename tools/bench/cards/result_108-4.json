@@ -1,0 +1,26 @@
+{"schema":"result/1","id":"108-4","status":"BLOCKED","gates":{"pass":2,"fail":0},
+"first_fail":"P2 not attempted: stagexec builds an indicator only on LoopTunnel faces (tools/stagexec.py:313; :1794 real, :2087 dry), so row 2 stays UNROUTABLE; card forbids editing stagexec.py",
+"blocked_by":{"device":"card rule (stagexec.py edit forbidden; 108-5 edits it)","message":"stagexec.tunnel_outer_face (tools/stagexec.py:307-318) accepts only owner_class 'LoopTunnel'. The dry (:2087) and real (:1794) routes need 'SelectorTunnel' too, to reach the now-verified verb. Until then a3_ind_count is UNROUTABLE; P1/P2/R1 not run."},
+"artefacts":[
+{"path":"tools/gscript.py","md5":"ba020e9ef1c7d59807f95d15f1a872af"},
+{"path":"tools/bench/diag_c108d_selind.py","md5":"2627d78db66579fd16caf27414f2333a"},
+{"path":"tools/bench/diag_c108d_plan.json","md5":"7db215c8f423006d36a50b76c769468f"},
+{"path":"tools/bench/diag_c108d_graph_track.json","md5":"f4c793e06846043ee40285a9c7b6864d"},
+{"path":"tools/bench/diag_c108d_selind2.log","md5":"098ef06f6d05efa07db5975ade1d554d"},
+{"path":"tools/bench/scratch_verify/gscript.create_indicator_nested_20260927_141618.json","md5":"9e435e7db913d8748c07a293c44fec26"}],
+"facts":[
+"V1: create_indicator_nested accepts a SelectorTunnel face/uid + None; picks the owner case's Terms[] source on the face's wire -> OpCreateIndicatorNested_v0 (tools/gscript.py:3877,3886-3955)",
+"No new op: OpTunnelInd_v0 casts to LoopTunnel (tools/recipes/build_optunnelind.py:119). Documented: docs/NAMES.md OpTunnelInd note, docs/toolkit-capabilities.md row after :77",
+"V2 PASS 24/0, byte copy of TRACK_kernel_v1.vi: face #488 of #430 -> case #154 Terms[11] -> indicator on w408, branch, Wire 40->40, CT 14->15 (tools/bench/diag_c108d_selind2.log)",
+"V2: face still sole source; sinks [1237]->[535,1237]; ExecState 1; alias (#430,None) same; inner #434, input face #449 -> ValueError; 20 calls handles 35998->35995 (diag_c108d_selind2.log)",
+"Run 1 died on KeyError 'term_class': allterms rows lack it, only read_live adds it (diag_c108d_selind.log:41-49). Verb now tells OUTER by frame_diagram == the case's diagram",
+"Launch gate needed a fixture graph (--graph) + a decision-row plan for a stagekit scratch script (review archive/peer/2026-09-27-c108d-selind-dry.md s1, ANSWERED, disposed)",
+"Fixture graph, read-only: diag_c108d_graph.py -> diag_c108d_graph_track.json, 91 rows, 3 SelectorTunnel output faces, fixture md5 unchanged (tools/bench/diag_c108d_graph.log)",
+"Dry PASS (tools/bench/diag_c108d_selind_dry2.log), prerun PASS 10/0 (diag_c108d_selind_prerun2.log). Record tools/bench/scratch_verify/gscript.create_indicator_nested_20260927_141618.json",
+"Not done: P1 re-sim (row 2 unchanged, born_on #11336 t11346), P2, prior-art, R1. L2-A2 never opened; nothing saved; LabVIEW gone at exit (diag_c108d_selind2.log)",
+"JEV-LADDER: no line for diag_c108d_selind*.log; old path taken (hypothesis review). guard_peer now blocks on 108-5's diag_c108e_regress.log (new-problem p=0.666), not this card's logs"],
+"open":[
+"stagexec.tunnel_outer_face (:313) is LoopTunnel-only. After 108-5 lands, should a card let it accept 'SelectorTunnel' (dry :2087, real :1794) and then run P1/P2/R1?",
+"The scratch-VI refusal text (stage_prerun.py:1859-1863) does not say a stagekit scratch script needs a graph JSON and a decision-row plan to pass dry/prerun. Add that to it and the chat-N4 rule?"],
+"cost":{"usd":null,"minutes":84,"labview_runs":3},
+"note":"LabVIEW runs: 1 graph read, 2 scratch-verify runs (1st our KeyError, 2nd 24/0). 1 hypothesis review ~$1.15. No STATUS edit, no commit; stagexec/stage_prerun untouched."}

@@ -161,6 +161,33 @@ def stop_reason(arm, row):
     return None
 
 
+def refusal_verdict(gates, rows, loop_stop):
+    """card 108-5 (PD222(d); archive/peer/2026-09-27-c108a-disp107-visa-refusal.md:90, 108-1 open 2): -> (status, n_pass,
+    n_fail, first_fail) for the driver's RESULT line. When the leg loop STOPPED on a VISA-refused leg, the gates that only
+    restate that refusal (V1 of a refused leg, T12 of its slot, T17 the loop stop) are set aside and the run is SKIP -
+    not a failed prediction, so it does not arm guard_peer (protocol.result_failed) - PROVIDED every other gate passed.
+    Any other failing gate (a leg that ran and failed, md5 moved, camera not restored) keeps the run FAIL, refusal or not.
+    Without a refusal stop this is the old verdict: PASS iff no gate failed."""
+    bad = [k for k, v in gates.items() if not v]
+    refused = [r for r in rows or [] if r.get("refused")]
+    if not (refused and loop_stop and "refused" in str(loop_stop.get("reason", ""))):
+        return ("FAIL" if bad else "PASS"), len(gates) - len(bad), len(bad), (bad[0] if bad else None)
+    tags, slots = set(str(r.get("leg")) for r in refused), set(r.get("slot") for r in refused)
+
+    def restates(k):
+        if k.startswith("T17 "):
+            return True
+        if k.startswith("V1 ") and any(k.startswith("V1 %s " % t) for t in tags):
+            return True
+        return any(k.startswith("T12 slot%s " % s) for s in slots)
+    other = [k for k in bad if not restates(k)]
+    if other:
+        return "FAIL", len(gates) - len(bad), len(bad), other[0]
+    kept = [k for k in gates if not restates(k)]
+    return "SKIP", len(kept), 0, ("SKIP: %s at slot %s (%d refusal gate(s) set aside)" % (
+        loop_stop.get("reason"), loop_stop.get("slot"), len(gates) - len(kept)))[:200]
+
+
 def leg_loop(order, run_leg, log=print, max_legs=None):
     """order = [(arm, src, _, npick)]; run_leg(slot, arm, src, attempt, npick) -> row. Returns (finals, stop)."""
     finals, stop = [], None

@@ -226,6 +226,6 @@ print("SUMMARY " + json.dumps({r["leg"]: {"lost": r["lost_frames"], "iters": r["
                                "foreign": [r["sysload_before"].get("foreign"), r["sysload_after"].get("foreign")], "cpu": [r["sysload_before"].get("cpu_pct_mean"), r["sysload_after"].get("cpu_pct_mean")],
                                "tmx": r["motor_tmx_after"], "cap1": r["capture_class_before_pick1"], "rel": r["releases"]} for r in rows}, default=str), flush=True)
 print("COUNTED BY ARM %s" % json.dumps(counted, default=str), flush=True)
-bad = [k for k, v in gates.items() if not v]
-print(P.result_line(P.make_result(len(gates) - len(bad), len(bad), bad[0] if bad else None, [{"path": os.path.relpath(jp, ROOT), "md5": md5(jp)}])), flush=True)
-sys.exit(1 if bad else 0)
+ST, NP, NF, FIRST = LG.refusal_verdict(gates, rows, LOOP_STOP)                 # card 108-5: a VISA-refused leg -> SKIP, not FAIL
+print(P.result_line(P.make_result(NP, NF, FIRST, [{"path": os.path.relpath(jp, ROOT), "md5": md5(jp)}], status=ST)), flush=True)
+sys.exit(1 if ST == "FAIL" else 0)

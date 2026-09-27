@@ -1,0 +1,62 @@
+BGRUN START 2026-09-27 14:17:34 limit 14.0 min: powershell -NoProfile -File tools\peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c108e-regress -TaskFile C:\Users\KimLab\AppData\Local\Temp\c108e_hyp_task.txt
+BGRUN PID 26272
+-TaskFile not found: C:\Users\KimLab\AppData\Local\Temp\c108e_hyp_task.txt
+위치 G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\peer.ps1:181 문자:39
++ ... not (Test-Path $TaskFile)) { throw "-TaskFile not found: $TaskFile" }
++                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: (-TaskFile not f...8e_hyp_task.txt:String) [], RuntimeException
+    + FullyQualifiedErrorId : -TaskFile not found: C:\Users\KimLab\AppData\Local\Temp\c108e_hyp_task.txt
+ 
+BGRUN END rc=1 after 1s
+BGRUN START 2026-09-27 14:17:51 limit 14.0 min: powershell -NoProfile -File tools\peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c108e-regress -TaskFile C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\a4d082cf-dad2-4af2-9824-2270b965805f\scratchpad\c108e_hyp_task.txt
+BGRUN PID 13036
+OUTCOME: ANSWERED (114s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-27-c108e-regress.md
+COST: $1.0582  in 20 / out 10283 / cache-create 84967 / cache-read 863751  (110s, 19 turn(s))
+--- ANSWER ---
+**The claim mostly holds, but it is framed wrong in a way that matters.** Neither failure is a regression in card 108-5's code edits. One of the two failures, though, was caused by card 108-5's own test list, and the other has not been re-checked since 108-5 changed the test.
+
+## 1. Strongest reason the claim is wrong: `selftest_guard_peer_scan_tmp` is not a self-test, and 108-5 put it in the list
+
+- The file describes itself as a throwaway: *"Throwaway census (card 79-2)… Deleted after use."* (`tools/bench/selftest_guard_peer_scan_tmp.py:1`). It has no assertions. It prints a census and then a hard-coded `RESULT … "PASS"` line (`:15`).
+- Card 79-2's result card records it as *"Throwaway … (census, rc=1 malformed RESULT, selftest-exempt) could not be deleted: Remove-Item needs approval"* (`tools/bench/cards/result_79-2.json:17`).
+- It was already classified FAIL before 108-5. On 2026-09-25 08:36 the log reads `BGRUN END rc=1 … first_fail=malformed RESULT line (schema is not result-line/1)` (`tools/bench/selftest_guard_peer_scan_tmp.log:101`).
+
+So the part of the claim saying "it was a FAIL before 108-5 too" is supported by that record, and no git check is needed for it. But the prediction ("all 25 listed existing self-tests pass") failed because 108-5's own diagnostic listed this file (`tools/bench/diag_c108e_regress.py:18-25`). The honest count is **23 of 24 real tests, plus 1 non-test that was predicted wrongly**, not "a failure unrelated to 108-5".
+
+The project's own checks also disagree about this file. `lint_verify_20260925b.log:132` and `:297` marked it **PASS**, while `bgrun` and `protocol` mark it FAIL. "It was a FAIL before" is only true for one of those two checks.
+
+## 2. Alternative explanation for the F1 failure (weaker, not ruled out)
+
+- The old F1 failure message is `(?)` (`diag_c108e_regress.log:10`). That appears to be the literal check's fallback. The pass form was `(3/3 PASS)` (`selftest_heartbeat.log:16`). So the failing run records only that the text "3/3 PASS" was missing. It does not show what `selftest_cycle_runner_ff` actually printed when `selftest_heartbeat` called it.
+- The evidence that ff was fine inside heartbeat is indirect:
+  - ff passed 5/5 when the batch ran it on its own (`diag_c108e_regress.log:9`).
+  - The timing fits a full run: heartbeat took 61 s, ff alone took 54 s.
+- ff is no longer self-contained, because of 108-5 itself:
+  - ff starts the real `cycle_runner.py` with `--dry-cmd`.
+  - 108-5 added `gates_due_hook`, which also runs in dry mode (`tools/cycle_runner.py:917-930`, called at `:1373`).
+  - That hook reads the live project state: `violations.py --due`, `guard_cycle`'s real BENCH logs through `_retro_debt`, `stop_record`, and the prior-art gate (`:886-914`).
+  - Card 108-4 was writing those logs at the same time. So ff passing at 14:07 depends on the state of the repo at that moment. That does not refute the claim, but it undermines "ff passed, so the rewritten F1 will pass".
+
+## 3. Other weak spots in the claim
+
+- **The rewritten F1 has not been run.** The batch ran the old code: the failure label is still `F1 … 3/3`. I found no heartbeat log written after the edit at `selftest_heartbeat.py:87-91`.
+- **The fix weakens the test.** `^(\d+)/(\d+) PASS$` with N==N passes on 1/1 or 0/0. The original purpose was to pin the gate count (the docstring at `selftest_heartbeat.py:8` still says "stays 3/3"). The new form cannot catch ff silently losing modes after 108-5's changes to `cycle_runner.py`.
+
+## 4. What would falsify the claim
+
+- **F1:** the fixed `selftest_heartbeat.py` shows anything other than `F1 … (5/5 PASS, rc 0)`. Or ff reports a different gate count when run against the pre-108-5 `cycle_runner.py`.
+- **scan_tmp:** the 09-25 record already settles this part. The malformed line predates 108-5, so the claim cannot be falsified on this point. Only the "self-test" label is wrong.
+
+## 5. Cheapest test that separates the claim from the alternative
+
+1. Run `py tools/bgrun.py --max-min 5 --log tools/bench/selftest_heartbeat_c108e.log -- py -u tools/bench/selftest_heartbeat.py` and check that the F1 line reads `(5/5 PASS, rc 0)`. This runs no LabVIEW and takes about 60 s.
+2. Optional, to rule out 108-5 changing ff's result: `git show HEAD:tools/cycle_runner.py` into a temp copy, point ff's `RUNNER` at it, and confirm the result is still `5/5 PASS`.
+
+**Needed alongside:**
+- Drop `selftest_guard_peer_scan_tmp` from `diag_c108e_regress.py`'s list, or delete the file as card 79-2 intended.
+- Pin F1 to `== 5` (or `>= 5`) rather than accepting any N/N.
+
+**Verdict:** the claim holds on the narrow question it asks (108-5's code edits did not cause either failure). What would change my mind is step 1 showing anything other than 5/5 with rc 0. Even so, the prediction failed for a reason inside card 108-5: its test list included a file that is not a self-test.
+
+No web search was needed. Every claim here is about local files and logs, cited by file and line.
+BGRUN END rc=0 after 115s

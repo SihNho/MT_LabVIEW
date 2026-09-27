@@ -1,0 +1,18 @@
+BGRUN START 2026-09-27 14:05:24 limit 10.0 min: py -u tools\bench\selftest_c108e_tools.py
+BGRUN PID 25112
+  PASS  G1a 7 retros since the last outcome review -> gates_due 'outcome' due True  {'gate': 'outcome', 'due': True, 'detail': '7 cycle retrospectives since 2026-09-26-outcome-review-20260926.md (every 5)'}
+  PASS  G1b items violations + retro-debt present (bool or null), recipe:stage_d1_l2a3.py present  [('violations', False), ('outcome', True), ('retro-debt', False), ('recipe:stage_d1_l2a3.py', True)]
+  PASS  G1c [outcome review newer than every retrospective -> due False; no recipe item]  {'gate': 'outcome', 'due': False, 'detail': '0/5 cycles, 0.0/7 days since 2026-09-26-outcome-review-20260926.md'}
+  PASS  G1d cycle/1 with gates_due validates; [an item with an unknown key is refused]  ('OK cycle/1', "$.gates_due[0]: unknown field(s) ['extra']")
+  PASS  G2a due outcome review RAN before the session: stand-in marker < session marker, OUTCOME-REVIEW before CYCLE-CARD  outcome 1790485528.868458 session 1790485529.615464 lines 3<6 rc 0
+  PASS  G2b cycle_1.json validates; gates_due outcome RAN, now not due  ('OK cycle/1', {'gate': 'outcome', 'due': False, 'detail': 'RAN before the session (rc 0, C:\\Users\\KimLab\\AppData\\Local\\Temp\\c108e_bench_20u1bja7\\outcome_review_cycle1.log); now: 0/5 cycles, 0.0/7 days since 2026-09-27-outcome-review-stub.md'})
+  PASS  G2c [dry run without --outcome-cmd -> 'DUE, not dispatched (dry run)', card outcome due True, no stand-in ran]  {'gate': 'outcome', 'due': True, 'detail': 'DUE, not dispatched (dry run): 7 cycle retrospectives since 2026-09-26-outcome-review-20260926.md (every 5)'}
+  PASS  G3 tap flags diag_c108b_dry.log:39 + 2 stagexec forms; [prose + STEPX lines not flagged]; output passes through  ["  FACT  UNROUTABLE acts [2] ids ['a3_ind_count']: create_indicator_nested addresses Traverse('Node') by uid; #11346 'Value' belongs to SelectorTunnel #11336, which is not a Node (a tunnel face / register / constant / panel terminal)", "  UNROUTABLE acts [7] ids ['x']: y", 'UNROUTABLE 2 row(s): acts [1]; acts [2]']
+  PASS  G4a disp_107 (VISA-refused) -> SKIP, fail 0, RESULT validates, result_failed False  RESULT {"schema":"result-line/1","status":"SKIP","gates":{"pass":8,"fail":0},"first_fail":"SKIP: leg refused by the VISA precheck (LabVIEW not started) at slot 1 (3 refusal gate(s) set aside)","artefacts":[]}
+  PASS  G4b guard_peer does NOT arm on the SKIP replay of disp_107_abba.log; [the original FAIL text still arms]  ((False, '(see the log)'), 'V1 leg1 A@15 VISA precheck Rotor+ASRL5 status 0')
+  PASS  G4c [refused run with M2 md5 gate False -> FAIL on M2]  ('FAIL', 7, 4, 'M2 S1 + disp md5 after last leg == before')
+  PASS  G4d [a real leg failure (not refused) -> FAIL, guard_peer arms]  ('FAIL', 2, 3, 'T1 leg1 A@15 rc 0')
+  PASS  G4e [SKIP with gates.fail 1 -> result_failed True]; no refusal + all pass -> PASS  
+13/13 PASS
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 7s

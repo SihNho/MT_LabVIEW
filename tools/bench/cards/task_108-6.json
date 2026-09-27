@@ -1,0 +1,76 @@
+{
+ "schema": "task/1",
+ "id": "108-6",
+ "kind": "build",
+ "goal": "PD222(g): stagexec.tunnel_outer_face accepts SelectorTunnel (dry + real) -> the verified verb; re-sim L2-A3 row 2; dry+prerun+prior-art; ONE launch -> claudeDev\\D1_l2_a3_<ts>.vi",
+ "why": "108-4 verified the verb (scratch 24/0) but was barred from stagexec.py while 108-5 edited it; 108-5 has landed (PASS 5/0). Only the stagexec routing is missing. Advances M3.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/cards/result_108-4.json"},
+  {"path": "tools/bench/cards/result_108-5.json"},
+  {"path": "tools/bench/scratch_verify/gscript.create_indicator_nested_20260927_141618.json", "md5": "9e435e7db913d8748c07a293c44fec26"},
+  {"path": "tools/gscript.py", "md5": "ba020e9ef1c7d59807f95d15f1a872af"},
+  {"path": "tools/stage_prerun.py", "md5": "5cf9316f13508c047af85a2a0e214e48"},
+  {"path": "tools/bench/cards/split_plan_108_l2a3.md", "md5": "21cae054cf6e9d34c25d33638485358b"},
+  {"path": "tools/bench/plan_l2a3.json", "md5": "7cab639cb145113b86a152c49ec14b76"},
+  {"path": "tools/recipes/stage_d1_l2a3.py", "md5": "3fcefd3bcc37bff171152b0ff8337bf8"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a2_20260927_132125.vi", "md5": "807c803e1cef1dc33cfdc936c87af1ca"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/bench/scratch_verify/gscript.create_indicator_nested_20260927_141618.json"},
+  {"kind": "file", "name": "tools/bench/plan_l2a3.json"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_l2a3.py"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a2_20260927_132125.vi"}
+ ],
+ "pass": [
+  "S1 stagexec.tunnel_outer_face + dry (:2087) + real (:1794) routes accept SelectorTunnel outer faces; stagexec self-test passes + a SelectorTunnel dry case",
+  "P1 plan_l2a3 re-simulated: row 2 routable; end cdiff == the 6 open rows; recipe <=120 lines, rows only from plan",
+  "P2 TOP-LEVEL --dry (0 UNROUTABLE, new rule) and --prerun PASS with record lines; prior-art ANSWERED for the edited plan/recipe; launch gate ALLOW",
+  "R1 ONE launch under bgrun: step diffs == sim, end cdiff == plan, gui_save D1_l2_a3_<ts>.vi md5+size, input md5 unchanged, LabVIEW gone",
+  "else: stop point, gate, values, file:line, JEV-LADDER row; nothing saved over the input"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a3_*",
+  "tools/stagexec.py",
+  "tools/bench/cards/result_108-6.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a3_*",
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/recipes/stage_d1_l2a3.py",
+   "tools/bench/plan_l2a3*",
+   "tools/bench/sim/l2a3/**",
+   "tools/bench/stage_d1_l2a3*",
+   "tools/bench/diag_c108f*",
+   "tools/bench/selftest_*",
+   "tools/bench/errorlist_*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "docs/wiki/subvi/D1_l2_a*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 75},
+ "rules": [
+  "carrier = indicator in 1.2 + Local read in 1.1 (PD221(d)); #7311 stays on the Local's net (PD222(c))",
+  "input never edited/saved; never run any VI; gui_save capture-locate-act-capture-confirm (PD 9)",
+  "bgrun --max-min 60 per run; hold the turn to BGRUN END; ExecState 0 by design, not a gate",
+  "a gate refusal is returned BLOCKED, never re-run through a self-test child or exempt route",
+  "facts <=10 with file:line; OPEN <=3; do not judge design"
+ ],
+ "advances": ["M3", "R1"]
+}

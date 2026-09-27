@@ -1,0 +1,37 @@
+BGRUN START 2026-09-27 13:50:10 limit 20.0 min: py tools/prior_art_review.py --plan-file tools/bench/cards/split_plan_108_l2a3.md --slug c108b-l2a3 --trigger cycle-start --recipe tools/recipes/stage_d1_l2a3.py
+BGRUN PID 24124
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c108b-l2a3.txt (66228 chars)
+   review card tools\bench\cards\review_priorart-c108b-l2a3.json
+OUTCOME: ANSWERED (61s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-27-priorart-c108b-l2a3.md
+COST: $1.1927  in 16 / out 4721 / cache-create 114699 / cache-read 902895  (57s, 11 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c108b-l2a3 verdict=novel -> tools\bench\cards\verdict_priorart-c108b-l2a3.json
+--- ANSWER ---
+Verdict: **novel.** Nothing in the project's files shows L2-A3 already built, measured, tried and failed, or refuted. The direction was settled in the same cycle as this plan, and the plan cites that decision correctly.
+
+## Part A — the direction
+
+**A1 (settled already): no.** The only decision on these two rows is the one that orders this work. `docs/d1-loop12-17-split-plan.md:1885`, PD221(d), cycle 108, after the user's 2026-09-27 08:45 answer to D-04 (`:1881`): the two 1.2→1.1 crossings (`10382.x` / `11529.x`) go by local variable, using the same indicator + Local read pattern as 181(c), in a new sub-stage L2-A3. It is a decision to do the work, not a record that the work was done.
+
+**A2 (refuted already): no.** The earlier ruling was 182(c) (`:729-732`): these two rows go to queues, and "No indicator/Local carrier is invented here". That ruling was about the carrier, and PD221(d) explicitly replaces it on the basis of CLAUDE.md rule 1c'' (user, 2026-09-25, which is later). The plan cites both, so nothing is left unresolved. `archive/peer/2026-09-15-reseed-vi-design-cycle7.md:23,84` discusses the same nodes, but for the reseed design, not for a carrier across loops.
+
+**A3 (contradicted): no.** What the plan says about `#10886` matches `docs/camera-acquisition-facts.md:267-272`. That file gives `enable = NOT(reseed-And #9921) AND Auto-Focus (w7527) AND (#10445's counter < Limit)`, then `Fix to a Certain Pattern ← NOT(enable)` through `#10285` → w3461 → `#1469`. The plan says the same. It also matches CLAUDE.md rule 1c'': the value is read as its latest state, with no edge detection and no queue.
+
+**A4 (unread evidence): none found.** The plan already cites 181(c), 182(c), PD221(d), `ct23541_facts_80.log`, the camera facts and the verb docstrings.
+
+## Part B — the recipe and plan
+
+**B1 (already built): no.** Searching `l2a3|L2-A3` finds only this cycle's own plan, simulation and recipe files. No hidden-indicator or Local carrier for `#9647 t9668` or `#11336 t11346` exists in any bed or recipe.
+
+**B2 (already failed): no.** No earlier attempt at this build is recorded.
+
+**B3 (helper exists): the plan already uses the existing helpers.** It uses the existing `stagexec` create steps (`indicator` = `gscript.create_indicator_nested`; `local_read` = `stagekit.create_local_read`) and the owner route (`tools/stagexec.py:605`). It does not hand-roll anything.
+
+**B4 (already measured): no, and the plan says so itself.** The plan flags that nobody has measured Create Indicator on a case structure's `Terminals[]` entry. `tools/gscript.py:3856-3865` confirms that the tunnel route only takes loop tunnels (`OpTunnelInd_v0`). The only earlier measurement is of a For loop's `Terminals[]`, which produced dangling indicators (`gscript.py:3859-3861`). So row 2 (the one sourced from the selector tunnel `#11336`) is unmeasured and new ground, not prior art. It is a risk to the plan, and judging that belongs to the other reviews. The run-time E1 check is the plan's stated backstop.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c108b-l2a3","verdict":"novel","alternative":"The only earlier ruling on these rows, 182(c) (queue, 'no carrier invented'), is superseded by PD221(d) per CLAUDE.md 1c''; no carrier was ever built or tried.","discriminating_test":"Row 2 (Create Indicator via the owner route on SelectorTunnel #11336 outer face) is unmeasured; a scratch check of that one create before launch would separate it from the For-loop dangling-indicator case (gscript.py:3859-3861).","violations":[],"sources":["docs/d1-loop12-17-split-plan.md:1885","docs/d1-loop12-17-split-plan.md:729-732","docs/camera-acquisition-facts.md:267-272","tools/gscript.py:3856-3865","tools/stagexec.py:605","archive/peer/2026-09-15-reseed-vi-design-cycle7.md:23"],"note":"No l2a3 artefact exists outside this cycle's own plan/sim/recipe files."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c108b-l2a3.md
+   STOP RECORD: none - 2026-09-27-priorart-c108b-l2a3.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_l2a3.py sha 8c991f788f9c -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 64s

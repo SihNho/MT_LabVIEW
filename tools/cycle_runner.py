@@ -800,8 +800,162 @@ def errorlist_hook(n, a, bench, runner_log, status_text):
     return verdict, js, "see %s" % os.path.basename(log)
 
 
+# GATES DUE AT CYCLE START (card 108-5; docs/violation-decisions.md device-failed 2026-09-27 08:30, after
+# archive/peer/2026-09-27-retrospective-cycle107.md:292 - the 2026-09-26 14:10 wrong-ordering device "check every due
+# gate before the first dispatch" was decided and never built, so cycle 107 dispatched cards into gates they tripped).
+# Every guard_cycle "due" check runs HERE, before the judgement session spawns, and the list rides in the cycle card
+# (`gates_due`). A due OUTCOME review is RUN here (bgrun, like errorlist_hook), not left for a card to trip over.
+# What is checked, and where the rule lives (read, not re-decided):
+#   violations   `tools/violations.py --due` rc 1                             (guard_cycle.py:555-561)
+#   outcome      outcome_review.is_due() on --peer-dir                         (guard_cycle.py:566-575, outcome_review.py:106)
+#   retro-debt   guard_cycle's retrospective budget, recomputed from its own functions/constants (guard_cycle.py:638-670)
+#   recipe:<f>   for each tools/recipes/*.py named in next.json `act`: stop_record.check_command, guard_cycle.premature_build
+#                (prior-art), stage_prerun.check_launch (recorded dry + prerun PASS for the current sha)
+OUTCOME_MAX_MIN = 20                    # outcome_review.py waits up to 900 s on peer.ps1
+ACT_RECIPE_RE = re.compile(r"(?:tools[\\/]recipes[\\/])?\b([A-Za-z][\w-]*\.py)\b")
+
+
+def _hooks_dir_import(name):
+    p = os.path.join(HERE, "hooks")
+    if p not in sys.path:
+        sys.path.append(p)
+    return __import__(name)
+
+
+def _outcome_due(peer_dir):
+    """(due, why) - outcome_review.is_due() with its PEER pointed at `peer_dir` (the runner's --peer-dir)."""
+    import outcome_review as OR
+    old = OR.PEER
+    OR.PEER = peer_dir
+    try:
+        return OR.is_due()
+    finally:
+        OR.PEER = old
+
+
+def _retro_debt():
+    """(due, detail) - guard_cycle.main's LAST block (guard_cycle.py:638-670), from guard_cycle's own functions."""
+    GC = _hooks_dir_import("guard_cycle")
+    log, retro = GC.newest_build_log(), GC.newest_retrospective()
+    since = [p for p in GC.glob.glob(os.path.join(GC.BENCH, "*.log"))
+             if GC.logclass.is_recipe_build_log(p) and (retro is None or os.path.getmtime(p) > retro[1])
+             and time.time() - os.path.getmtime(p) <= GC.MAX_AGE_S]
+    if retro is None:
+        hours = 999.0
+    elif len(since) >= 2:
+        ts = [os.path.getmtime(p) for p in since]
+        hours = (max(ts) - min(ts)) / 3600.0
+    else:
+        hours = 0.0
+    overdue = len(since) >= GC.CYCLE_BUILD_BUDGET or hours >= GC.CYCLE_HOURS
+    due = bool(log and (retro is None or (retro[1] < log[1] and overdue)))
+    return due, "%d recipe build log(s) since %s, span %.1f h (budget %d / %.0f h)" % (
+        len(since), os.path.basename(retro[0]) if retro else "no retrospective", hours, GC.CYCLE_BUILD_BUDGET,
+        GC.CYCLE_HOURS)
+
+
+def _recipe_state(name):
+    """(due, detail) for tools/recipes/<name>: launch refusals that would meet a launch of it this cycle."""
+    fp = os.path.join(ROOT, "tools", "recipes", name)
+    cmd = "py tools/recipes/%s" % name
+    why = []
+    try:
+        import stop_record
+        ok, w = stop_record.check_command(cmd)
+        if not ok:
+            why.append("stop_record: " + " ".join(str(w).split())[:120])
+    except Exception as e:  # noqa: BLE001
+        why.append("stop_record error %s" % type(e).__name__)
+    try:
+        msg = _hooks_dir_import("guard_cycle").premature_build(cmd)
+        if msg:
+            why.append("prior-art: " + " ".join(str(msg).split())[:120])
+    except Exception as e:  # noqa: BLE001
+        why.append("prior-art error %s" % type(e).__name__)
+    if os.path.basename(fp).startswith("stage_"):
+        try:
+            import stage_prerun
+            ok, w = stage_prerun.check_launch(cmd)
+            if not ok:
+                why.append("launch gate: " + " ".join(str(w).split())[:120])
+        except Exception as e:  # noqa: BLE001
+            why.append("launch gate error %s" % type(e).__name__)
+    return bool(why), ("; ".join(why) or "launch-ready (stop record, prior-art, dry+prerun records)")[:300]
+
+
+def gates_due(bench, peer_dir, next_card):
+    """[{gate, due, detail}] - every guard_cycle 'due' check, measured at cycle start. `due` None = the check errored.
+    Never raises; each check is independent."""
+    out = []
+
+    def add(gate, fn):
+        try:
+            d, why = fn()
+            out.append({"gate": gate[:80], "due": bool(d), "detail": str(why)[:300]})
+        except Exception as e:  # noqa: BLE001 - one broken check must not hide the others
+            out.append({"gate": gate[:80], "due": None, "detail": ("error %s: %s" % (type(e).__name__, e))[:300]})
+
+    def viol():
+        p = subprocess.run([sys.executable, os.path.join(HERE, "violations.py"), "--due"], cwd=ROOT, capture_output=True,
+                           text=True, encoding="utf-8", errors="replace", timeout=120)
+        lines = [ln.strip() for ln in (p.stdout or "").splitlines() if ln.startswith("DUE ")]
+        return p.returncode == 1 and bool((p.stdout or "").strip()), (" | ".join(lines) or "rc %d, none due" % p.returncode)
+    add("violations", viol)
+    add("outcome", lambda: _outcome_due(peer_dir))
+    add("retro-debt", _retro_debt)
+    act = (next_card or {}).get("act") or ""
+    seen = []
+    for m in ACT_RECIPE_RE.finditer(act):
+        nm = m.group(1)
+        if nm not in seen and os.path.isfile(os.path.join(ROOT, "tools", "recipes", nm)):
+            seen.append(nm)
+    for nm in seen[:6]:
+        add("recipe:" + nm, lambda nm=nm: _recipe_state(nm))
+    return out
+
+
+def gates_due_hook(n, a, bench, runner_log):
+    """Cycle start: gates_due(), then a DUE outcome review is RUN before the session spawns (not in dry runs unless the
+    self-test names a stand-in with --outcome-cmd), then the outcome check is re-read. Returns the list for the card.
+    Never stops the runner: a failed review is recorded in the item and the log."""
+    stamp = time.strftime("%Y-%m-%d %H:%M:%S")
+    _m, card, _w = next_json_reading(bench)
+    items = gates_due(bench, a.peer_dir, card)
+    oc = next((x for x in items if x["gate"] == "outcome"), None)
+    if oc and oc["due"]:
+        stand_in = getattr(a, "outcome_cmd", "")
+        if (a.dry_run or a.dry_cmd) and not stand_in:
+            oc["detail"] = ("DUE, not dispatched (dry run): " + oc["detail"])[:300]
+            log_line(runner_log, "OUTCOME-REVIEW | %s | cycle %d | DUE, not dispatched (dry run) | %s"
+                     % (stamp, n, oc["detail"][:160]))
+        else:
+            log = os.path.join(bench, "outcome_review_cycle%d.log" % n)
+            inner = stand_in.split() if stand_in else [sys.executable, "-u", os.path.join(HERE, "outcome_review.py")]
+            cmd = [sys.executable, BGRUN, "--max-min", str(OUTCOME_MAX_MIN), "--log", log, "--"] + inner
+            log_line(runner_log, "OUTCOME-REVIEW | %s | cycle %d | DUE (%s) - running before the session | %s"
+                     % (stamp, n, oc["detail"][:120], protocol._rel(log)))
+            try:
+                proc = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                                      env=dict(os.environ, MATERIAL="1"))
+                rc = proc.returncode
+            except Exception as e:  # noqa: BLE001
+                rc = "raised %s" % type(e).__name__
+            try:
+                still, why = _outcome_due(a.peer_dir)
+            except Exception as e:  # noqa: BLE001
+                still, why = None, "re-check error %s" % type(e).__name__
+            oc["due"] = still
+            oc["detail"] = ("RAN before the session (rc %s, %s); now: %s" % (rc, protocol._rel(log), why))[:300]
+            log_line(runner_log, "OUTCOME-REVIEW | %s | cycle %d | ran rc %s | still due: %s | %s"
+                     % (time.strftime("%Y-%m-%d %H:%M:%S"), n, rc, still, why[:160]))
+    log_line(runner_log, "GATES-DUE | %s | cycle %d | %s" % (
+        time.strftime("%Y-%m-%d %H:%M:%S"), n,
+        "; ".join("%s=%s" % (x["gate"], {True: "DUE", False: "ok", None: "ERROR"}[x["due"]]) for x in items)))
+    return items
+
+
 def write_cycle_card(bench, n, status_text, model, effort, ff_recipe, motor_verdict, a, errorlist=None, steer=None,
-                     note=None):
+                     note=None, gates=None):
     """C1: `<bench>/cards/cycle_<n>.json`, validated against docs/protocol/cycle.json. Returns (path, None) or
     (None, reason). `errorlist` is {path, verdict OK|MISMATCH} from errorlist_hook, null when skipped (card chat-C2); `bed` is read
     from the optional `<bench>/bed.json` ({path, md5}) and is null when there is none."""
@@ -835,6 +989,8 @@ def write_cycle_card(bench, n, status_text, model, effort, ff_recipe, motor_verd
             "motor_session": (motor_verdict or None) and str(motor_verdict)[:120],
             "next": protocol._rel(next_path), "budget": {"minutes": float(a.max_min), "dispatches": 8},
             "rules": CYCLE_RULES}
+    if gates is not None:
+        card["gates_due"] = list(gates)[:20]
     if note:
         card["note"] = str(note)[:300]
     ok, why = protocol.validate_obj(card)
@@ -1055,6 +1211,8 @@ def main():
     ap.add_argument("--no-motor-hooks", action="store_true", help="self-test only: skip motor_gate --session start/end (never for a real run)")
     ap.add_argument("--no-errorlist-hook", action="store_true", help="self-test only: skip the cycle-start Error List check (never for a real run)")
     ap.add_argument("--no-labview-close", action="store_true", help="self-test only: skip the cycle-end LabVIEW close (never for a real run)")
+    ap.add_argument("--outcome-cmd", default="", help="self-test only (card 108-5): whitespace-split stand-in run under "
+                                                        "bgrun instead of outcome_review.py when the outcome review is due")
     a = ap.parse_args()
 
     status_path = os.path.abspath(a.status)
@@ -1210,6 +1368,14 @@ def _loop(a, status_path, bench, runner_log, prompt, run_t0, hb):
             log_line(runner_log, "RUNNER STOP | %s | %s" % (time.strftime("%Y-%m-%d %H:%M:%S"), reason))
             note_in_status(status_path, reason)
             return 3
+        # GATES DUE (card 108-5): every guard_cycle due-check measured now; a due outcome review RUNS now, before the
+        # session and before the STEER read below (so a steer card the review writes rides in this cycle's card).
+        g_due = gates_due_hook(n, a, bench, runner_log)
+        due_now = [x for x in g_due if x["due"] is not False]
+        if due_now:
+            this_prompt += ("\n\nGATES DUE at cycle start (card 108-5; cycle card `gates_due`): %s - answer these BEFORE "
+                            "the first dispatch that would trip them.\n"
+                            % "; ".join("%s: %s" % (x["gate"], x["detail"][:140]) for x in due_now))
         # STEER (user 2026-09-24, card chat-D): the newest open steer/1 from a repeated outcome verdict rides in the
         # cycle card; the session follows it or refuses it with evidence in next.json `steer` (read after the cycle).
         steer_path, steer_card = protocol.active_steer(os.path.join(bench, "cards"), os.path.join(bench, "steer_state.json"))
@@ -1224,7 +1390,7 @@ def _loop(a, status_path, bench, runner_log, prompt, run_t0, hb):
                                ", ".join(steer_card["goal_ids"]), steer_card["item"]))
         # C1: the cycle card. An invalid card is not dispatched (docs/session-protocol.md, common rule 5).
         card_path, card_why = write_cycle_card(bench, n, status_text, model, effort, ff_recipe, why, a, el_card,
-                                               steer_path if steer_card else None, j_note)
+                                               steer_path if steer_card else None, j_note, g_due)
         if not card_path:
             reason = "the cycle/1 card for cycle %d did not validate (%s) - no cycle is dispatched without one" \
                      % (n, card_why)

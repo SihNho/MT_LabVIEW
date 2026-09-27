@@ -3826,3 +3826,117 @@ VIOLATION: device-failed | loss_min=36 | loss_usd=2.64 | evidence=tools/bench/ca
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle107","verdict":"refuted","alternative":"The late outcome review was unavoidable: guard_cycle checks it only when a build is attempted, and STATUS NEXT never told the session to check it, so the session could not have known it was due.","discriminating_test":"Run py tools/outcome_review.py --due against the file state at 07:46; if it prints due (7 retrospectives, cycles 100-106, >= 5), the 107-2 dispatch went ahead with a known, cheap check skipped.","violations":[{"slug":"device-failed","loss_min":36,"loss_usd":2.64,"evidence":"tools/bench/cards/result_107-3.json:3"}],"sources":["docs/violation-decisions.md:1407","tools/bench/cards/result_107-3.json:3","tools/bench/cards/result_107-1.json:3","tools/hooks/material_marker.log:2360","archive/peer/2026-09-27-outcome-review-20260927.md:155","tools/bench/outcome_review_c107.log:1","STATUS.md:65"],"note":"Device = the 2026-09-26 14:10 wrong-ordering gates_due device: never built in cycle_runner.py and its manual form was missing from STATUS NEXT. loss_usd = the two L2-A2 prior-art reviews only, a lower bound; the L2-A2 files are kept pending D-04."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle107.md
 BGRUN END rc=0 after 270s
+BGRUN START 2026-09-27 14:42:57 limit 10.0 min: py tools/retrospective.py --cycle 108
+BGRUN PID 13020
+   window 2026-09-27 08:24:35 .. 2026-09-27 14:42:58 (378 min); 30 build logs, 13 machinery logs, 34 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle108.txt (28410 chars)
+   review card tools\bench\cards\review_retrospective-cycle108.json
+OUTCOME: ANSWERED (328s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-09-27-retrospective-cycle108.md
+COST: $1.9880  in 38 / out 33658 / cache-create 119192 / cache-read 1805935  (326s, 39 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle108 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle108.json
+--- ANSWER ---
+# Retrospective (v2): cycle 108, 2026-09-27 13:12 to 14:42
+
+Everything below comes from read-only file and log reads.
+
+## The one structural fault: the same `KeyError 'term_class'` hit twice in one cycle, and the second time it killed the deliverable run
+
+- **Attempt 1, 14:12:55 to 14:14:53.** Card 108-4's scratch-verify script died at `diag_c108d_selind.py:36` with `KeyError: 'term_class'` (`tools/bench/diag_c108d_selind.log:41-49`). The cause was measured and written up at once. `allterms.read_terms` rows have no `term_class` field; only `read_live` adds one. It is `tools/bench/cards/result_108-4.json:16`.
+- **The fix went only into that one script and a comment in `tools/gscript.py:3901-3902`.** Nobody searched for other code that reads the same rows. `tools/recipes/stage_d1_l2a3.py:66`, written earlier in the same cycle by card 108-2, has the identical read: `r["term_class"] == "ControlTerminal"` on `AT.read_terms` rows.
+- **The judgement session had the fact when it wrote the next card.** `result_108-4.json` is an input of `tools/bench/cards/task_108-6.json:10`. Card 108-6 was written about 14:24. None of its pass lines or rules asks for that search.
+- **The dry run could not catch it.** The recipe skips the label-check (LB) gate in dry mode (`stage_d1_l2a3.py:65`). The dry's own summary shows the gap: it covered 68 of 88 lines (`tools/bench/stage_d1_l2a3_dry_c108f.log:57`).
+- **Attempt 2, 14:30:45 to 14:37:10.** This was the cycle's one L2-A3 launch. All 6 ops matched the simulation (STEPX diff 0), and the E1 and both CT gates passed. It then died at LB with the same KeyError (`tools/bench/stage_d1_l2a3.log:171-181`, `BGRUN END rc=1 after 385s` at :205). Nothing was saved.
+- **The hypothesis review that followed says so itself.** "What this also is: a repeat… That lesson went into gscript.py but not into the recipe written in the same cycle" (`archive/peer/2026-09-27-c108f-l2a3-termclass.md:67`).
+- **It changed how the cycle ended.** The cycle closed with L2-A3 FAIL and no second stage file, instead of `D1_l2_a3_<ts>.vi`. The steer asked for exactly that kind of deliverable. The first pass line of `tools/bench/next.json:11` is now the one-line search that was owed at 14:24.
+
+**Loss:**
+- **In this window: about 12 min.** That is the 385 s launch, the 113 s review (`tools/bench/peer_c108f_l2a3_hyp.log:37`), and writing the disposition, up to the 14:42 close.
+- **Dollars: $1.31**, from `COST: $1.3147` (`peer_c108f_l2a3_hyp.log:4`).
+- **Carried into cycle 109, not counted here:** another dry, pre-run, prior-art review (the last one cost $1.2063, `peer_priorart_c108f_l2a3.log:6`) and another launch of about 6.5 min.
+
+**Counterfactual:** At about 14:24, card 108-6 could have carried one more pass line: "grep `tools/recipes/stage_*.py` for `term_class` on `read_terms` rows". Line 66 would then have been patched before the 14:28 dry. The 14:30:45 launch would have gone on to D, FU, PB and the save. On the L2-A2 precedent (`stage_d1_l2a2.log`, 182 s including the save and the RBW check), the cycle would still have closed around 14:42, with a second stage artefact instead of a FAIL. The dry had already passed D and PB for this plan. What stays unmeasured is the save/RBW part and the type of the two re-wired nets.
+
+Nothing else in this cycle is of the same size. Everything else below is a finding.
+
+## Findings
+
+**1. Repeated failure.**
+- The KeyError repeated. The approach should have changed at attempt 1 (`diag_c108d_selind.log:49`, 14:14). A missing row key is a fact about the reader, so the fix belongs at every consumer of that reader, not in one script.
+- A deeper class also repeated: offline checks that quietly skip what they cannot evaluate.
+  - At 13:51 the dry reported an UNROUTABLE row, downgraded E1 to UNVERIFIED, and still printed `DRY PASS` with a PASS record (`tools/bench/diag_c108b_dry.log:39-43`; `prerun_records.jsonl:213`).
+  - Card 108-5 fixed only that instance: UNROUTABLE now fails the dry (`diag_c108e_dry_replay.log`).
+  - At 14:28 the same class passed again through the recipe's `[] if DRY` skip (`stage_d1_l2a3.py:65`).
+  - The change was due at 13:51: any gate the dry does not evaluate should be listed and counted as not passed. `STATUS.md:59` item (2) now asks for this.
+
+**2. Missing tool.** The dry's fake rows are richer than what the live reader returns. `DryPlanBE` rows carry `term_class` (termclass review :59), while the live `allterms.read_terms` rows do not (`tools/allterms.py:45-46,71,85`). Either of two cheap checks would have caught both KeyErrors (`diag_c108d_selind.log:49` and `stage_d1_l2a3.log:179`) before LabVIEW started:
+- make the dry's row schema match the live one, or
+- lint recipes for keys that `read_terms` rows do not have.
+
+**3. Measurements that were cheap but not taken.**
+- The dry printed "coverage 68/88 lines" (`stage_d1_l2a3_dry_c108f.log:57`), but nobody listed the 20 uncovered lines. Line 66 was one of them.
+- Card 108-5 patched `stage_prerun.py` with two separate edits while 108-4 was running dries. Whether they overlapped is recorded as unmeasured (`result_108-5.json:31`).
+- The pass line "Is Broken? False" in 108-1 was accepted on indirect evidence (`result_108-1.json:20`). The review later showed that readback is taken before the connect and tells nothing (termclass review :69-73).
+
+**4. Rule compliance (`CLAUDE.md`).**
+- **Line 645-646:** an error class that shows up a second time must get "a record the gate can see, not a sentence." The KeyError's second occurrence got only "noted for the retrospective" (termclass review :99). **Broken.**
+- **Lines 638-656:** a failed prediction triggers a mandatory peer review. The 14:14 KeyError got none. `guard_peer`'s same-script discharge released it using `2026-09-27-c108d-selind-dry.md`, a review written before that failure about a different one (a dry refusal) (`tools/bench/jev_gate.log:2002,2006`). **Satisfied only formally.**
+- **Lines 491-495:** "a stage that ends without a saved artefact ⇒ the next cycle's FIRST act is a decomposition plan." `next.json` goes straight to patch-and-relaunch, justified as PD222(g). That is defensible, since L2-A3 is already a split step and the failure was a gate bug, not a stage-design fault. But no explicit waiver is recorded.
+- **Audit A4:** the disposition of `2026-09-27-priorart-c108f-l2a3.md:468-470` is still "(Claude fills in)", although a launch followed 20 s later.
+- **Doc lint L3:** `STATUS.md` is 339 lines against a limit of 110. **Broken.**
+
+What the audit does not cover:
+- the same failure in two different scripts;
+- a discharge by a review older than the failure it discharges;
+- who wrote a disposition;
+- dry coverage of gate code;
+- the judgement session's own cost (C4c: no cost line), so the largest cost item in the cycle is missing from C5.
+
+**5. Ordering.**
+- Putting the deliverable first (108-1 PASS, `result_108-1.json`) was right under steer_107.
+- Running 108-4 and 108-5 in parallel was not free. 108-4 was barred from `stagexec.py` "because 108-5 patches it" (`task_108-4.json:77`), yet 108-5 never touched `stagexec.py` (`result_108-5.json:26`).
+  - That cost a card hop: 108-6 existed mainly to do 108-4's leftover routing.
+  - 108-6 was the sixth and last material dispatch under the prompt's cap (`cycle_108.log:25`), so no slot was left to patch and relaunch after the KeyError.
+  - The cycle card says 8 dispatches (`cycle_108.json:24`). The card and the prompt disagree.
+
+**6. What the summary hides.**
+- `STATUS.md:60,66` does not say that the L2-A3 failure repeated a bug measured 16 minutes earlier.
+- 108-3 reports `status: PASS` while its rerun was refused and its own G3 gate failed. Its tables are "run 1 + Grep addenda" (`result_108-3.json:1-2`).
+- 108-5 got its regression to pass by re-pinning a self-test's expected "3/3" to "5/5" and dropping `scan_tmp` (`result_108-5.json:24`). The STATUS summary omits this.
+- `stage_d1_l2a3.log:123,144` reads "Is Broken? True" on both connects, which is still unexplained for the output state.
+- The 10 "judgement-session attempts refused" in audit C6 are mostly `md5sum`/`cp` commands issued during material cards (`material_marker.log:2379,2388,2392,2413,2416`). `result_108-5.json:33` attributes the md5 refusals to the permission layer, so C6's label is not supported.
+
+**7. Judgement inside material sessions.**
+- Material sessions wrote every disposition in this cycle:
+  - `c108f-l2a3-termclass.md:92-95` accepts a review finding and picks the fix (count by `term_uid`, not `owner_class`);
+  - `c108d-selind-dry.md:89` ("s1 ACCEPTED") changes 108-4's route to a fixture graph plus a decision-row plan;
+  - `result_108-1.json:9` records a disposition written and the launch lifted inside the card.
+- 108-5's re-pin and test drop (`result_108-5.json:24`) is also a judgement call.
+- The prompt reserves "review owed" rows for a judgement turn (`cycle_108.log:77-78`).
+- None of this changed how the cycle ended: the termclass choice matches `next.json`. It is a pattern, not this cycle's fault.
+
+## Device effect
+
+I found no device that failed inside this window.
+
+**Checked and worked:**
+- `unreported-fact` (09-16), `device-failed` (09-17): bgrun forced rc=1 where the process itself said 0 (`diag_c108c_groupB.log:124`), and both KeyError logs end rc=1.
+- `rule-evaded`: the termclass review brief carries the adversarial instructions and no confirm-bait (termclass review :44-50).
+- `unreported-fact` C3 and the cost regex (09-16 21:07): 7 cost lines seen, 7 parsed, summing to $8.8955 (audit C4b).
+- `premature-build`: the prior-art review was archived at 14:30:25, before the 14:30:45 launch.
+- Stop record and novel record: the launch was allowed on a NOVEL record (`result_108-6.json:18`).
+- SimReader parity: `stage_d1_l2a3.log:43` shows 0 one-side-only entries.
+- VISA precheck (09-27 07:40): it refused `disp_107` correctly (`result_108-1.json:8`).
+- Dry/pre-run pass-through (07:46): the top-level dry and pre-run were recorded.
+- bgrun stage-run record: it was written at child start (`stage_d1_l2a3.log:3`), though it carries `card=None`.
+
+**Checked and not exercised in this window:** the blank-disposition refusal (no prior-art review was dispatched after the blank one), the motor-gate FAIL lines, and memory prediction (first run of the recipe, X10 WARN unmeasured).
+
+**Three borderline cases, none counted as a failure:**
+- **Prior-art review (`tool-not-built`).** It named `allterms.read_terms` as a helper being reused (`priorart-c108f-l2a3.md:456`) without flagging the key measured missing 15 minutes earlier. Its job is approach-level prior art, not code linting, so this is outside its scope.
+- **Same-script discharge (guard_peer, 09-24 03:53).** It released 108-4's retry at 14:16 using an older review about a different failure (`jev_gate.log:2002`). That is its specified behaviour (`tools/hooks/guard_peer.py:34-39`), and the retry was correct: it passed 24/0. So the fault the device exists to stop did not occur. The design gap is real, though: it matches on script name and age, not on which failure happened.
+- **`gates_due` (09-27 08:30).** It was owed as the first card but built as the fifth (108-5), under steer_107's deliverable-first order. `STATUS.md:68` says the manual `--due` checks ran before the first dispatch. I could not confirm that from any log, because the judgement session's commands are not recorded.
+
+VIOLATION: repeated-failure-class | loss_min=12 | loss_usd=1.31 | evidence=tools/bench/stage_d1_l2a3.log:179
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle108","verdict":"refuted","alternative":"The L2-A3 KeyError was unforeseeable: dry skips LB and dry rows carry term_class, so no offline check could see it.","discriminating_test":"result_108-4.json:16 (14:19) states read_terms rows lack term_class; task_108-6.json (~14:24) takes it as input yet has no grep of recipes; stage_d1_l2a3.py:66 reads that key. One grep at 14:24 finds it.","violations":[{"slug":"repeated-failure-class","loss_min":12,"loss_usd":1.31,"evidence":"tools/bench/stage_d1_l2a3.log:179"}],"sources":["tools/bench/diag_c108d_selind.log:49","tools/bench/cards/result_108-4.json:16","tools/bench/cards/task_108-6.json:10","tools/recipes/stage_d1_l2a3.py:65","tools/bench/stage_d1_l2a3.log:179","archive/peer/2026-09-27-c108f-l2a3-termclass.md:67","tools/bench/peer_c108f_l2a3_hyp.log:4"],"note":"Deferred cost to cycle 109 (re-dry/prerun/prior-art ~$1.21 + relaunch ~6.5 min) not counted. No device failed in-window; guard_peer SAME-ROW discharge by a pre-failure review is a design gap, not a device failure."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle108.md
+BGRUN END rc=0 after 332s

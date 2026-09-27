@@ -260,7 +260,10 @@ def parse_result_line(text):
 
 
 def result_failed(d):
-    return d is None or d.get("status") != "PASS" or int((d.get("gates") or {}).get("fail", 1)) > 0
+    """A RESULT line fails unless its status is PASS or SKIP AND gates.fail == 0. SKIP (card 108-5, review
+    archive/peer/2026-09-27-c108a-disp107-visa-refusal.md:90): a run refused before it measured anything (a VISA-refused
+    leg) is not a failed prediction, so it must not arm guard_peer; a SKIP with a failing gate is still a failure."""
+    return d is None or d.get("status") not in ("PASS", "SKIP") or int((d.get("gates") or {}).get("fail", 1)) > 0
 
 
 # ----------------------------------------------------------------------------------------- run segments + verdicts

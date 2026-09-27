@@ -1,0 +1,37 @@
+{
+ "schema": "stageplan/1",
+ "stage": "l2a3",
+ "goal": "L2-A3 (PD221(d); split page tools/bench/cards/split_plan_108_l2a3.md): the two 1.2->1.1 crossings of group A re-made by LOCAL VARIABLE (CLAUDE.md 1c'', the 181(c) indicator + Local read pattern) on the L2-A2 file: S1 w9921 #9647 'x .and. y?' -> #10382 'x' and S1 w11389 #11336 'Value' (outer) -> #11529 'x'; both sinks feed #10886 (autofocus enable, facts_c108b_l2a2.log)",
+ "base": {"path": "tools/bench/graph_l2a2_20260927.json", "md5": "e34e97c712eb67a2dad250c5c4eb7c9b"},
+ "context": {"s1_key": "D1_s1_copy"},
+ "actions": [
+  {"op": "create", "id": "a3_ind_reseed", "class": "ControlTerminal", "diagram": 23166, "as": "INDRS1",
+   "label": "autofocus reseed flag (1.2 to 1.1)", "indicator": true, "visible": false,
+   "born_on": {"uid": 9647, "term_uid": 9668},
+   "why": "hidden indicator in the 1.2 body on the S1 source of 10382.x (#9647 'x .and. y?', S1 w9921; facts_c108b_l2a2.log); create_indicator_nested Node route + set_control_label + set_visible"},
+  {"op": "create", "id": "a3_ind_count", "class": "ControlTerminal", "diagram": 23166, "as": "INDAC1",
+   "label": "autofocus reset count (1.2 to 1.1)", "indicator": true, "visible": false,
+   "born_on": {"uid": 11336, "term_uid": 11346},
+   "why": "hidden indicator in the 1.2 body on the S1 source of 11529.x (#11336 SelectorTunnel outer 'Value', S1 w11389)"},
+  {"op": "create", "id": "a3_lr_reseed", "class": "Local", "diagram": 639, "as": "LRRS1",
+   "label": "autofocus reseed flag (1.2 to 1.1)", "mode": "read",
+   "terminals": [{"name": "autofocus reseed flag (1.2 to 1.1)", "is_source": true}],
+   "why": "Local READ in the 1.1 body #639 (stagekit.create_local_read + move_in)"},
+  {"op": "create", "id": "a3_lr_count", "class": "Local", "diagram": 639, "as": "LRAC1",
+   "label": "autofocus reset count (1.2 to 1.1)", "mode": "read",
+   "terminals": [{"name": "autofocus reset count (1.2 to 1.1)", "is_source": true}],
+   "why": "Local READ in the 1.1 body #639"},
+  {"op": "wire", "id": "rw_lrrs_10393", "src": "new:LRRS1.value", "dst": {"uid": 10382, "term_uid": 10393},
+   "why": "Local -> #10382 'x' (S1 w9921's sink)"},
+  {"op": "wire", "id": "rw_lrac_13163", "src": "new:LRAC1.value", "dst": {"uid": 11529, "term_uid": 13163},
+   "why": "Local -> #11529 'x' (S1 w11389's sink)"}
+ ],
+ "open_rows": [
+  {"node": 376, "term": "current frame data array in", "why": "bed open row 1: QRT (PD175), 1.2->1.7 crossing"},
+  {"node": 376, "term": "frame index", "why": "bed open row 2: QRT (PD175)"},
+  {"node": 2626, "term": "array", "why": "bed open row 3: L2-B (#2626 group B)"},
+  {"node": 5058, "term": "Image In", "why": "bed open row 4: QRT (PD177(e))"},
+  {"node": 5696, "term": "x,y,z array", "why": "bed open row 5: L2-B (#2222 tunnel 2765)"},
+  {"node": 6085, "term": "x,y,z array", "why": "bed open row 6: L2-B (#2222 tunnel 2765)"}
+ ]
+}

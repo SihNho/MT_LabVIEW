@@ -1,0 +1,26 @@
+FAILED PREDICTION - stage run tools/bench/stage_d1_l2a3.log (card 108-6, recipe tools/recipes/stage_d1_l2a3.py, 107 lines).
+
+Prediction (recipe docstring :10-14): after the 6 plan ops, gates CT, LB, D, FU, PB pass, then a rule-6 save.
+Observed: all 6 ops ran, STEPX diff 0 on every step, E1 PASS, CT PASS for both indicators (log :163-169); then the run died at
+the LB gate with KeyError 'term_class' (log :171-181), recipe line 66:
+    n_ct = sum(1 for r in rows if r["term_class"] == "ControlTerminal" and r["term_name"] == a["label"])
+where rows = AT.read_terms(s.work, AT.OP_ALLTERMS_V1)[0] (recipe :61). Nothing saved; scratch deleted; input md5 unchanged; LabVIEW gone (log :188-204).
+
+My hypothesis: a bug in OUR recipe, not LabVIEW. OpAllTerms_v1 rows (allterms.read_terms) carry no `term_class` key; only
+wiki_build.read_live joins it from a GObject census. The same fact was measured in card 108-4 (tools/bench/diag_c108d_selind.log:41-49,
+KeyError 'term_class'; gscript.py:3901-3902 comment). The dry run could not catch it because the recipe skips LB in dry mode
+(recipe :65 `[] if DRY else IND + LOC`). Proposed fix: take the LB count from `real` (the executor's final read, which the E1/D gates
+already use and which carries term_class, stagexec tunnel_outer_face reads r["term_class"] on it) or classify ControlTerminal rows by
+owner_class/term_uid membership in report_all('ControlTerminal'), as ct_read does at recipe :42.
+
+Second observation to attack: both connect readbacks printed 'Is Broken?': True with 'UID 2' = the sink's pre-existing wire
+(log :123 {'UID': 10382, 'UID 2': 9921, 'Is Broken?': True}; :144 {'UID': 11529, 'UID 2': 11389, 'Is Broken?': True}). In earlier
+display-stage runs the sinks were bare and readbacks show UID 2 = 0, Is Broken False (tools/bench/stage_d1_dispA_r1.log:264).
+Both sinks here sat on SOURCELESS wires before the op (w9921 stub; w11389 shared with RSR #7311 t11005 -
+tools/bench/cards/split_plan_108_l2a3.md s1). I have NOT decided whether this readback means the new net is broken or only that
+the old sourceless wire was read before LabVIEW merged it. CT's partner read after op 6 matched the simulation (log :166-169).
+
+Already ruled out: the SelectorTunnel row (row 2) - it created one indicator on the face's wire (log :57, :168-169);
+LabVIEW memory (peak 593.6 MB, log :165); handle leak (H5 opened 6 / closed 6, log :186).
+
+Files: tools/bench/stage_d1_l2a3.log, tools/recipes/stage_d1_l2a3.py, tools/allterms.py, tools/stagexec.py, tools/bench/cards/split_plan_108_l2a3.md.

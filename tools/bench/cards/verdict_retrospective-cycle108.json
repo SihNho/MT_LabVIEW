@@ -1,0 +1,25 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle108",
+ "verdict": "refuted",
+ "alternative": "The L2-A3 KeyError was unforeseeable: dry skips LB and dry rows carry term_class, so no offline check could see it.",
+ "discriminating_test": "result_108-4.json:16 (14:19) states read_terms rows lack term_class; task_108-6.json (~14:24) takes it as input yet has no grep of recipes; stage_d1_l2a3.py:66 reads that key. One grep at 14:24 finds it.",
+ "violations": [
+  {
+   "slug": "repeated-failure-class",
+   "loss_min": 12,
+   "loss_usd": 1.31,
+   "evidence": "tools/bench/stage_d1_l2a3.log:179"
+  }
+ ],
+ "sources": [
+  "tools/bench/diag_c108d_selind.log:49",
+  "tools/bench/cards/result_108-4.json:16",
+  "tools/bench/cards/task_108-6.json:10",
+  "tools/recipes/stage_d1_l2a3.py:65",
+  "tools/bench/stage_d1_l2a3.log:179",
+  "archive/peer/2026-09-27-c108f-l2a3-termclass.md:67",
+  "tools/bench/peer_c108f_l2a3_hyp.log:4"
+ ],
+ "note": "Deferred cost to cycle 109 (re-dry/prerun/prior-art ~$1.21 + relaunch ~6.5 min) not counted. No device failed in-window; guard_peer SAME-ROW discharge by a pre-failure review is a design gap, not a device failure."
+}

@@ -22,6 +22,12 @@
     "budget": {"type": "object", "additionalProperties": false, "required": ["minutes", "dispatches"],
                "properties": {"minutes": {"type": "number", "minimum": 0}, "dispatches": {"type": "integer", "minimum": 0}}},
     "rules": {"type": "array", "items": {"type": "string", "maxLength": 120}},
+    "gates_due": {"type": "array", "maxItems": 20,
+                  "description": "card 108-5: every guard_cycle due-check measured by the runner at cycle start (violations, outcome, retro-debt, recipe:<file> of next.json's act); due null = the check errored. A due outcome review has already been RUN when the card is written.",
+                  "items": {"type": "object", "additionalProperties": false, "required": ["gate", "due"],
+                            "properties": {"gate": {"type": "string", "minLength": 1, "maxLength": 80},
+                                           "due": {"type": ["boolean", "null"]},
+                                           "detail": {"type": "string", "maxLength": 300}}}},
     "note": {"type": "string", "maxLength": 300}
   },
   "definitions": {

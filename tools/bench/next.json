@@ -1,26 +1,24 @@
 {
  "schema": "next/1",
- "cycle": 107,
- "act": "USER 08:4x: NO REAL RUN until COM5 confirmed (D-03). Build only: (1) display-loop part 2 stage_d1_disp.py --from-step 33 from D1_s1_dispA_20260927_024535.vi, structural gates; (2) L2-A2 PD220(d)",
+ "cycle": 108,
+ "act": "PD222(g): one card: patch stage_d1_l2a3.py LB (CTs by term_uid), gates in dry, Is Broken? after save, fix term_class reads; re-dry/prerun/prior-art; relaunch L2-A3 on D1_l2_a2_20260927_132125",
  "task_kind": "build",
  "plan": {
   "path": "docs/d1-loop12-17-split-plan.md",
-  "md5": "61e48f906fc656cf9a05d87e4481b3cd"
+  "md5": "049226c5634544f0d6ae4209f977a7c9"
  },
  "pass": [
-  "viOpen('Rotor') and viOpen('ASRL5::INSTR') return 0 with LabVIEW closed (diag_c105d_visa.py)",
-  "ABBA A15 B15 B15 A15, 120 s, panel normal, 15 picks per leg, B's #8323 non-empty; judged against PD217(f) (GAIN = both B legs below the lower A leg by >= 25 % of A's mean)",
-  "GAIN => the 210(c) rule-1a replay card; NO DIFFERENCE => re-plan with the user (outcome review 2026-09-27 section 7.5)",
-  "D-2026-09-27-04 answered before any structural L2-A2 launch (tools/recipes/stage_d1_l2a2.py is launch-ready, not launched)"
+  "grep of tools/recipes/stage_*.py + tools/stagekit.py: no term_class index on read_terms rows remains",
+  "top-level dry runs gate LB (or says it cannot) and PASS, 0 UNROUTABLE; prerun PASS; prior-art ANSWERED for the patched recipe",
+  "ONE launch: STEPX 01-06 diff 0, LB PASS, end cdiff(S1,new) == the 6 open rows, ordered Is Broken? False on both re-wired nets after save",
+  "saved claudeDev\\D1_l2_a3_<ts>.vi by gui_save, md5+size; input md5 807c803e unchanged; LabVIEW gone",
+  "then (same cycle) the L2-B1 destination decision from tools/bench/facts_c108c_groupB.md (PD221(e), PD222(f))"
  ],
  "blocked_by": null,
  "stop_requested": false,
  "advances": [
   "M3",
-  "M7",
-  "M8",
-  "R1",
-  "R3"
+  "R1"
  ],
  "steer": {
   "item": "outcome:decision-starved+goal-requirement-not-advanced+ordering-stale+tooling-over-delivery",

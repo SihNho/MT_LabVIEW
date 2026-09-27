@@ -1,0 +1,68 @@
+{
+ "schema": "task/1",
+ "id": "108-1",
+ "kind": "build",
+ "goal": "PD221(c): LAUNCH L2-A2 once: tools/recipes/stage_d1_l2a2.py on bed D1_l2_a1_20260925_235224.vi -> claudeDev\\D1_l2_a2_<ts>.vi (gui_save, broken by design), gates of split_plan_107_l2a2.md s4",
+ "why": "D-2026-09-27-04 answered 08:45: continue no-real-run split builds. L2-A2 is launch-ready (107-2 PASS 5/0: plan f086df8b, recipe f00a7e53, recorded dry + prerun 10/0, prior-art novel). Advances M3.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/cards/result_107-2.json"},
+  {"path": "tools/bench/cards/split_plan_107_l2a2.md", "md5": "d070f60f2698dcb1ec5b01b3fe523d01"},
+  {"path": "tools/bench/plan_l2a2.json", "md5": "f086df8bee04a49c677162ead64440b5"},
+  {"path": "tools/recipes/stage_d1_l2a2.py", "md5": "f00a7e53e717ab0771bafeb2c7219933"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a1_20260925_235224.vi", "md5": "51d9b8a3af5b4240cdc2ad193d9b4f41"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/recipes/stage_d1_l2a2.py"},
+  {"kind": "file", "name": "tools/bench/plan_l2a2.json"},
+  {"kind": "file", "name": "tools/bench/cards/split_plan_107_l2a2.md"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a1_20260925_235224.vi"}
+ ],
+ "pass": [
+  "launch gate (stage_prerun check_launch) ALLOW with the recorded dry/prerun of recipe md5 f00a7e53; if refused: return BLOCKED with the refusal text, do not route around it",
+  "ONE run under bgrun, turn held to BGRUN END: every step diff == simulated, row rw_10874_23541 wired (#10757 'element' -> CT #23541), second-pass Is Broken? False",
+  "end cdiff(S1, new) == the plan's 8 open rows exactly (9703.x closed); no new termless/loose-end wire beyond RBW's pre-existing uids",
+  "saved as claudeDev\\D1_l2_a2_<ts>.vi by gui_save (CLAUDE.md 3 rule 6); report md5 + size; bed md5 51d9b8a3 unchanged after",
+  "max private MB + handles at checkpoints; LabVIEW process gone at exit (tasklist)",
+  "else: stop step, gate, values, file:line and the JEV-LADDER NEXT-ACTION row; nothing saved over the bed"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a2_*",
+  "tools/bench/stage_d1_l2a2*",
+  "tools/bench/cards/result_108-1.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a2_*",
+   "tools/bench/stage_d1_l2a2*",
+   "tools/bench/diag_c108a*",
+   "tools/bench/facts_c108a*",
+   "tools/bench/errorlist_*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/cards/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "docs/wiki/subvi/D1_l2_a2*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 50},
+ "rules": [
+  "recipe/plan NOT edited; one launch; a 2nd only via Jev our-script-bug route, in failure budget (RETRY_CAP 2)",
+  "bed never edited/saved; never run any VI (D-2026-09-27-03 open: no camera/motor legs)",
+  "gui_save: capture-locate-act-capture-confirm (PD 9); Evidence = the user's 2026-09-22 wording",
+  "bgrun --max-min 60; hold the turn to BGRUN END; ExecState 0 is by design, not a gate",
+  "a gate refusal is returned BLOCKED, never re-run through a self-test child or exempt route",
+  "facts <=10 with file:line; OPEN <=3; do not judge design"
+ ],
+ "advances": ["M3", "R1"]
+}

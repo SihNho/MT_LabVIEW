@@ -3862,11 +3862,95 @@ def create_indicator_nested(target, node_uid, terminal_index):
     Terminal.Create Indicator 6349C02). The Traverse index is resolved from the uid AT THE CALL and ECHOED by
     OpTunnels_v0 at the same index before anything is created; the effect check is the new panel row's wire == the
     face's wire (an already-wired face gets a BRANCH: no new Wire object). An inner face, a non-LoopTunnel owner or
-    an unwired face whose side cannot be told -> ValueError before any edit."""
+    an unwired face whose side cannot be told -> ValueError before any edit.
+
+    CARD 108-4 (PD222(b)) - a SelectorTunnel (case-structure tunnel) OUTER face is accepted too, same return shape
+    (+ `route`, `face`): `node_uid` = the face TERMINAL uid (e.g. #11346 of #11336) or the SelectorTunnel uid,
+    `terminal_index` None or 'outer'. OpTunnelInd_v0 cannot take it (its cast is LoopTunnel-typed,
+    tools/recipes/build_optunnelind.py:119), so the face is reached through its OWNER CaseStructure's Terms[] (the
+    PD185 owner route, stagexec._triple): owner chain tunnel -> CaseStructure -> Diagram read at the call, the case's
+    Terms[] read by OpNodeTerms_v0 (uid echo), and the ONE entry that is a SOURCE on the face's wire picked (a wire
+    has exactly one source, so twin names cannot collide - the T2c2 fault was a census index carried to another
+    copy, docs/NAMES.md:1132-1137); then OpCreateIndicatorNested_v0 on (case uid, that index). Effect check: exactly
+    one new panel object, on the face's wire (a BRANCH). An inner face, an unwired or sink outer face, an owner that
+    is not a CaseStructure, or no unique Terms[] entry -> ValueError before any edit. No new op VI."""
+    sel = _selector_outer_face(target, node_uid, terminal_index)
+    if sel is not None:
+        return _create_on_selector_outer(target, sel)
     face = _tunnel_outer_face(target, node_uid, terminal_index)
     if face is None:
         return _create_on_node_term("OpCreateIndicatorNested_v0", target, node_uid, terminal_index)
     return _create_on_tunnel_outer(target, face)
+
+
+def _selector_outer_face(target, uid, terminal_index):
+    """Card 108-4: None unless `uid` names a SelectorTunnel or a SelectorTunnel face terminal (terminal_index None or
+    'outer'); then {tunnel, face_term, out_wire, case, diagram, diagram_index, k, echo} of its wired OUTER source face,
+    or ValueError before any edit. Every index is read at the call."""
+    if isinstance(terminal_index, int) and not isinstance(terminal_index, bool):
+        return None
+    if terminal_index not in (None, "outer"):
+        return None                                          # _tunnel_outer_face raises its own message
+    ensure_loaded(target)
+    if int(uid) in uids(target, "LoopTunnel"):
+        return None
+    here = os.path.dirname(os.path.abspath(__file__))
+    if here not in sys.path:
+        sys.path.insert(0, here)
+    import allterms
+    # OpAllTerms_v1 rows carry `frame_diagram` but NO term class (wiki_build.read_live joins that from a GObject census,
+    # diag_c108d_selind.log:41-49 KeyError 'term_class'): a face is OUTER iff it sits on the diagram that owns the case.
+    rows, _dt = allterms.read_terms(target, allterms.OP_ALLTERMS_V1)
+    r = [x for x in rows if int(x["term_uid"]) == int(uid)]
+    if len(r) == 1 and r[0]["owner_class"] == "SelectorTunnel":
+        tun = int(r[0]["owner_uid"])
+    elif not r and int(uid) in uids(target, "SelectorTunnel"):
+        tun = int(uid)
+    else:
+        return None
+    _c97_paths()
+    import build_d1_v0 as B
+    cc, case = B.owner_of(target, tun, strict=True)
+    if cc != "CaseStructure":
+        raise ValueError("SelectorTunnel #%s is owned by %s #%s, not a CaseStructure" % (tun, cc, case))
+    dc, d = B.owner_of(target, case, strict=True)
+    dl = [int(o["uid"]) for o in report_all(target, "Diagram")]
+    if dc not in ("Diagram", "TopLevelDiagram") or int(d) not in dl:
+        raise ValueError("CaseStructure #%s is owned by %s #%s, not a Diagram in Traverse('Diagram')" % (case, dc, d))
+    outer = [x for x in rows if int(x["owner_uid"]) == tun and int(x["frame_diagram"] or 0) == int(d)]
+    if len(outer) != 1:
+        raise ValueError("SelectorTunnel #%s has %d face rows on the case's diagram #%s, not 1" % (tun, len(outer), d))
+    face = outer[0]
+    if r and int(r[0]["term_uid"]) != int(face["term_uid"]):
+        raise ValueError("terminal #%s is an INNER face of SelectorTunnel #%s (frame diagram #%s; the outer face is #%s on "
+                         "#%s) - only the outer face is routed" % (uid, tun, r[0]["frame_diagram"], face["term_uid"], d))
+    w = int(face["wire_uid"] or 0)
+    if not w or not face["is_source"]:
+        raise ValueError("outer face #%s of SelectorTunnel #%s: wire %s, source %s - an indicator needs a WIRED OUTPUT "
+                         "face" % (face["term_uid"], tun, w, face["is_source"]))
+    di = dl.index(int(d))
+    echo, nt = node_terms_uid(target, di, _node_index(target, di, case))
+    if echo != int(case):
+        raise RuntimeError("OpNodeTerms_v0 echo #%s != CaseStructure #%s - nothing created" % (echo, case))
+    hits = [int(x["i"]) for x in nt if int(x["wire"] or 0) == w and bool(x["is_source"])]
+    if len(hits) != 1:
+        raise ValueError("CaseStructure #%s Terms[]: %d source entries on w%s (need exactly 1)" % (case, len(hits), w))
+    return {"tunnel": tun, "face_term": int(face["term_uid"]), "out_wire": w, "case": int(case), "diagram": int(d),
+            "diagram_index": di, "k": hits[0], "echo": echo}
+
+
+def _create_on_selector_outer(target, face):
+    out = _create_on_node_term("OpCreateIndicatorNested_v0", target, face["case"], face["k"])
+    out.update(route="SelectorTunnel owner CaseStructure Terms[] (OpCreateIndicatorNested_v0)", face=dict(face))
+    probs = []
+    if len(out["new_panel"]) != 1:
+        probs.append("%d new panel objects" % len(out["new_panel"]))
+    elif int(out["new_panel"][0].get("wire") or 0) != face["out_wire"]:
+        probs.append("the new indicator is on w%s, not the face's w%s" % (out["new_panel"][0].get("wire"),
+                                                                          face["out_wire"]))
+    if probs:
+        out["err"] = " | ".join(([out["err"]] if out["err"] else []) + probs)
+    return out
 
 
 def _tunnel_outer_face(target, uid, terminal_index):

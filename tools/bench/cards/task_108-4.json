@@ -1,0 +1,84 @@
+{
+ "schema": "task/1",
+ "id": "108-4",
+ "kind": "build",
+ "goal": "PD222(b): build + scratch-verify verb 'indicator on SelectorTunnel outer face', re-plan L2-A3 row 2 with it, dry+prerun+prior-art, then ONE launch -> claudeDev\\D1_l2_a3_<ts>.vi",
+ "why": "108-2 BLOCKED only on row 11529.x (#11336 t11346 is a SelectorTunnel; create_indicator_nested covers Nodes/LoopTunnels). Rows 1,3-6 dry diff 0. Advances M3.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/cards/result_108-2.json"},
+  {"path": "tools/bench/cards/split_plan_108_l2a3.md", "md5": "21cae054cf6e9d34c25d33638485358b"},
+  {"path": "tools/bench/plan_l2a3.json", "md5": "7cab639cb145113b86a152c49ec14b76"},
+  {"path": "tools/recipes/stage_d1_l2a3.py", "md5": "3fcefd3bcc37bff171152b0ff8337bf8"},
+  {"path": "tools/bench/diag_c108b_dry.log", "md5": "ee7fbda1c098efc77eb6ddab50be2ddd"},
+  {"path": "archive/peer/2026-09-27-priorart-c108b-l2a3.md"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a2_20260927_132125.vi", "md5": "807c803e1cef1dc33cfdc936c87af1ca"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/bench/plan_l2a3.json"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_l2a3.py"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a2_20260927_132125.vi"}
+ ],
+ "pass": [
+  "V1 verb in gscript (+ op VI under claudeDev if needed): indicator on a SelectorTunnel OUTER face; refs closed; documented in docs/NAMES.md + toolkit-capabilities",
+  "V2 scratch_verify record PASS (<=120-line stagekit script, minimal scratch VI: case + output tunnel -> indicator, graph read back, ExecState 1, handles flat)",
+  "P1 plan_l2a3 re-simulated with the verb on row 2: end cdiff == the 6 open rows; recipe <=120 lines, rows only from plan",
+  "P2 TOP-LEVEL --dry (0 UNROUTABLE) and --prerun PASS with record lines; prior-art ANSWERED for the edited recipe; launch gate ALLOW",
+  "R1 ONE launch under bgrun: step diffs == sim, end cdiff == plan, gui_save D1_l2_a3_<ts>.vi md5+size, input md5 unchanged, LabVIEW gone",
+  "else: stop point, gate, values, file:line, JEV-LADDER row; nothing saved over the input"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a3_*",
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\Op*",
+  "tools/gscript.py",
+  "tools/bench/scratch_verify/**",
+  "tools/bench/cards/result_108-4.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a3_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\Op*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_*",
+   "tools/gscript.py",
+   "tools/stagekit.py",
+   "tools/stagesim.py",
+   "tools/recipes/stage_d1_l2a3.py",
+   "tools/bench/plan_l2a3*",
+   "tools/bench/sim/l2a3/**",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/stage_d1_l2a3*",
+   "tools/bench/diag_c108d*",
+   "tools/bench/selftest_*",
+   "tools/bench/errorlist_*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "docs/NAMES.md",
+   "docs/toolkit-capabilities.md",
+   "docs/wiki/subvi/D1_l2_a*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 90},
+ "rules": [
+  "verb scratch-verified BEFORE any stage use; never on the input file",
+  "do not edit tools/stage_prerun.py or tools/stagexec.py (card 108-5 patches them in parallel)",
+  "carrier = indicator in 1.2 + Local read in 1.1 (PD221(d)); #7311 stays on the Local's net (PD222(c))",
+  "input never edited/saved; never run any VI; gui_save capture-locate-act-capture-confirm (PD 9)",
+  "bgrun --max-min 60 per run; hold the turn to BGRUN END; ExecState 0 by design, not a gate",
+  "a gate refusal is returned BLOCKED, never re-run through a self-test child or exempt route"
+ ],
+ "advances": ["M3", "R1"]
+}

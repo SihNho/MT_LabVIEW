@@ -1,0 +1,104 @@
+BGRUN START 2026-09-27 13:21:25 limit 60.0 min: py -u tools/recipes/stage_d1_l2a2.py
+BGRUN PID 24128
+BGRUN STAGE-RUN recorded stage_d1_l2a2.py cycle='cycle 108' card=None pid=24108 -> stage_runs.jsonl
+stage_d1_l2a2 - card 107-2, STAGE L2-A2 (docs/d1-loop12-17-split-plan.md §2 row L2-A2, PD219(f)(2b); split page
+tools/bench/cards/split_plan_107_l2a2.md). INPUT the L2-A1 bed claudeDev\D1_l2_a1_20260925_235224.vi (named by the plan's base graph),
+FRESH LabVIEW -> claudeDev\D1_l2_a2_<ts>.vi (rule-6 GUI save at ExecState 0 - the plan's open rows stay open by design, never run).
+ROWS ONLY FROM THE FINALIZED PLAN tools/bench/plan_l2a2.json (plan_in plan_l2a2_in.json, base graph_l2a1_bed_20260927.json); no uid and no
+terminal name is typed here; the ControlTerminal sink gates are derived from the plan + base graph classes.
+PRIOR ART: stage_d1_l2a1.py (the skeleton: DryBE, 179(b) CT reader, PB frame-keyed cdiff, RBW on a scratch of the saved file),
+stagexec (DryPlanBE, report_stop, kill_labview_at_exit, sink_gates), OpCtlSinkWire_v1 (PD191(a)/192, the rw_10988_17272 route). No new op.
+PREDICTION: L1 each plan action -> exactly one real op; E1 every checkpoint read == its simulated step; CT the 179(b) reader on every
+ControlTerminal sink: real wire partners == simulated; D the end adds exactly the plan's new wires, loses no base wire; FU the set of
+frame diagrams is unchanged; PB frame-keyed cdiff(S1, end) == the plan's open_rows (FATAL, before save); ES recorded (0 by design);
+PS saved, md5 != input, input unchanged; RBW on a scratch of the saved file deletes no wire of a re-wired sink; LabVIEW gone at exit.
+    py tools/bgrun.py --material --max-min 40 --log tools/bench/stage_d1_l2a2.log -- py -u tools/recipes/stage_d1_l2a2.py
+  PASS  L0 the executed plan is FINAL, open_rows_match, plan_in = the plan_l2a2_in stageplan  ('f086df8bee04a49c677162ead64440b5', {'path': 'tools/bench/plan_l2a2_in.json', 'md5': '708c6e72f9d267073395b30b5cffce7a'})
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 292 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 51d9b8a3af5b4240cdc2ad193d9b4f41  got 51d9b8a3af5b4240cdc2ad193d9b4f41
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 34323
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  D1_l2_a2_20260927_132125.vi
+  FACT  ExecState [after open] D1_l2_a2_20260927_132125.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so D1_l2_a2_20260927_132125.vi is deleted at close
+  PASS  L1 every plan action compiled into exactly one real op (1 -> 1); sink_gates [{'gate': 'CT-rw_10874_23541', 'sink': [23541, 'index']}]  [1]
+  METER start  k   0  private 613.0 MB (d -)  handles 45963 (d -)
+  METER read   k   0  private 621.4 MB (d +8.4)  handles 46057 (d +94)
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 1 touched diagram(s) [23166]: one-side-only Nodes[] entries 0
+  PRIME 0 terminal indexes proved at base; 1 ControlTerminal end(s) by 179(b); unprovable []
+  METER pre    k   1  private 605.4 MB (d -16.0)  handles 46084 (d +27)
+  FACT  wire_ctlsink node census: 635 rows
+  FACT  OP wire_ctlsink ControlTerminal[27] #23541 <- IndexArray[7].t1 -> err '' (0.3 s)
+  FACT  connect #10874->#23541 AFTER node census: 635 rows
+  FACT  connect #10874->#23541 CENSUS DIFF: Node 635 -> 635 ; 0 new uid(s): []
+  METER op     k   1  private 605.4 MB (d +0.0)  handles 46148 (d +64)
+  METER read   k   1  private 610.3 MB (d +4.9)  handles 46141 (d -7)
+  STEPX 01 connect        acts [1] ids ['rw_10874_23541'] bound {} diff 0
+  PASS  E1 every checkpoint's real graph == its simulated step (1 ops)
+  FACT  BINDING obj {} term {}
+  FACT  METER SUMMARY {"n": 5, "first_mb": 613.0, "peak_mb": 621.4, "last": {"tag": "read", "k": 1, "t": 1790483010.0, "mb": 610.3, "handles": 46141, "d_mb": 4.9, "d_h": -7}, "sum_d_mb_op": 0.0, "sum_d_mb_read": 13.3, "mean_d_mb_op": 0.0, "mean_d_mb_read": 6.65, "warned_at": null}
+  FACT  CT row rw_10874_23541 #23541: ControlTerminal True rows 1 partners real [10874] sim [10874]
+  PASS  CT rw_10874_23541: ControlTerminal sink read by the 179(b) reader == simulated end  {'real': [10874], 'sim': [10874], 'rows': 1}
+  PASS  D the end adds exactly the plan's 1 new wire(s) and loses no base wire  {'new': [25523], 'lost': []}
+  PASS  FU the set of frame diagrams is unchanged
+  FACT  ExecState [after all rows (warm, RECORDED - the plan's open rows stay open by design)] D1_l2_a2_20260927_132125.vi = 0
+  FACT  CDIFF ROW {'node': 376, 'class': 'SubVI', 'sink': "#376 Terminal 'current frame data array in'", 'before': ['2626|Terminal|appended array|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 376, 'class': 'SubVI', 'sink': "#376 Terminal 'frame index'", 'before': ['644|Terminal||0'], 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array'", 'before': ['5058|Terminal|x,y,z array out|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 5058, 'class': 'SubVI', 'sink': "#5058 Terminal 'Image In'", 'before': ['6810|Terminal|Image Out|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 5696, 'class': 'SubVI', 'sink': "#5696 Terminal 'x,y,z array'", 'before': ['5058|Terminal|x,y,z array out|0@2765/f1'], 'after': []}
+  FACT  CDIFF ROW {'node': 6085, 'class': 'SubVI', 'sink': "#6085 Terminal 'x,y,z array'", 'before': ['5058|Terminal|x,y,z array out|0@2765/f0'], 'after': []}
+  FACT  CDIFF ROW {'node': 10382, 'class': 'Function', 'sink': "#10382 ParameterTerminal 'x'", 'before': ['9647|ParameterTerminal|x .and. y?|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 11529, 'class': 'Comparison', 'sink': "#11529 ParameterTerminal 'x'", 'before': ['10150|OverridableParameterTerminal|x+1|0@11336/f1', '9907|Terminal|Value|0@11336/f0'], 'after': []}
+  PASS  PB frame-keyed cdiff(S1, real end) == the plan's 8 open_rows (FATAL, before save)  {'extra': [], 'missing': []}
+  FACT  CENSUS after L2-A2 D1_l2_a2_20260927_132125.vi: {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Wire': 1939, 'LoopTunnel': 148, 'Local': 10, 'ControlTerminal': 116, 'Node': 635}
+  FACT  PH handles RECORDED: post-open 45963 -> before-save 46139
+
+---------- [SAVE] D1_l2_a2_20260927_132125.vi
+  FACT  ExecState [before the save] D1_l2_a2_20260927_132125.vi = 0
+  FACT  SAVE ROUTE = gui_save, the APPROVED broken-intermediate route (CLAUDE.md split-rule 6; evidence "user 2026-09-22 broken-intermediate save"). The artefact is BROKEN BY DESIGN and is NEVER RUN (34(f)).
+  PASS  S1 the save returned without raising (gui_save route)
+  FACT  SAVED ARTEFACT: D1_l2_a2_20260927_132125.vi md5 807c803e1cef1dc33cfdc936c87af1ca size 308008 B; version bytes [0, 38]
+  PASS  S2 the artefact is on disk and non-empty  308008 B
+  FACT  S3 COLD re-open check SKIPPED BY RULE: ExecState was 0, and a broken-saved VI is never cold-loaded headless (recompile spin).
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  807c803e1cef1dc33cfdc936c87af1ca
+  PASS  SC D1_l2_a2_20260927_132125_rbw.vi is a byte-identical copy of D1_l2_a2_20260927_132125.vi  D1_l2_a2_20260927_132125_rbw.vi
+  FACT  RBW BROKEN-WIRE COUNT: Wire 1939 -> 1910 after Remove Bad Wires = 29 bad wire(s); ExecState after 0
+  FACT  RBW deleted [42, 121, 373, 505, 1681, 2924, 3040, 3472, 3512, 3646, 3912, 4027, 5637, 5709, 5746, 5859, 5975, 5979, 6041, 7429, 9868, 9921, 10312, 10573, 10763, 11389, 17287, 17393, 23556]
+  PASS  RBW deletes no wire of a re-wired sink (scratch of the saved file)  [42, 121, 373, 505, 1681, 2924, 3040, 3472, 3512, 3646, 3912, 4027, 5637, 5709, 5746, 5859, 5975, 5979, 6041, 7429, 9868, 9921, 10312, 10573, 10763, 11389, 17287, 17393, 23556]
+  PASS  RBW scratch deleted: D1_l2_a2_20260927_132125_rbw.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_l2_a2_20260927_132125_rbw.vi
+
+---------- [H] HYGIENE
+  FACT  gscript ref_counts: {'opened': 10, 'closed': 10, 'live': 0, 'cached_op_vis': 4}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 10, 'closed': 10, 'live': 0, 'cached_op_vis': 4}
+  FACT  LabVIEW handle count AFTER the work: 32433
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 51d9b8a3af5b4240cdc2ad193d9b4f41 / after 51d9b8a3af5b4240cdc2ad193d9b4f41
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: ['D1_l2_a2_20260927_132125.vi']  (removed: [])
+  PASS  H6 the files left on disk == ['D1_l2_a2_20260927_132125.vi'] and nothing was removed  added ['D1_l2_a2_20260927_132125.vi'] removed []
+  FACT  LabVIEW handle count at exit: 32433
+
+====================================================================================================
+=== GATES: 20 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\stage_d1_l2a2.json   elapsed 176.6 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":20,"fail":0},"first_fail":null,"artefacts":[{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a2_20260927_132125.vi","md5":"807c803e1cef1dc33cfdc936c87af1ca"}]}
+LabVIEW gone at exit: True
+BGRUN END rc=0 after 182s

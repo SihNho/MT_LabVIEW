@@ -1,0 +1,24 @@
+ATTACK this claim about a failed prediction in an OFFLINE measurement script (no LabVIEW was touched).
+
+Script: tools/bench/diag_c108c_groupB.py (card 108-3, another material session of cycle 108). Log: tools/bench/diag_c108c_groupB.log.
+Failure: gate G3 "tunnels bed" and "tunnels s1" FAIL (diag_c108c_groupB.log:6 and :65). The gate compared, for the group-B
+structures #1359, #2222, #29874, the set of Tunnel objects read from the graph files against the P0 lists copied from
+docs/d1-loop12-17-split-plan.md:106-108 (the script's P0T dict).
+
+Measured difference (from the log line itself vs P0T in the script):
+- #2222: read == P0 (7 tunnels).
+- #1359: read has one extra, #7922.
+- #29874: read has one extra, #29914.
+
+CLAIM (the explanation formed by the card-108-2 session, which is blocked by this gate and did not write the script):
+the failure is a wrong PREDICTION, not a wrong graph. #7922 and #29914 are each a class-'Tunnel' object with one
+OuterTerminal on diagram #639 and one InnerTerminal on the structure's own body (#7911 / #29894), per
+tools/bench/graph_l2a1_bed_20260927.json; that is the shape tools/stagesim.py op_create documents for a For loop's
+COUNT terminal N ('Tunnel' object, owner ForLoop, unnamed outer sink + inner source). The P0 list was written as a list
+of DATA tunnels and never carried the N terminals, so an equality gate had to fail. The script's docstring
+(diag_c108c_groupB.py:8-10) was already amended to "contain the P0 lists; any extra is an unwired 'Tunnel'".
+
+Attack it: the strongest reason it is wrong (e.g. #7922/#29914 are data tunnels that P0 missed, or wired, or the extra
+appears in S1 for a different reason); an alternative explanation; what would falsify the claim; and the cheapest
+discriminating test that can be run on the two graph JSON files alone (graph_l2a1_bed_20260927.json and
+par1359_95_graph.json), without LabVIEW.

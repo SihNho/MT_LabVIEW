@@ -1,0 +1,59 @@
+BGRUN START 2026-09-27 14:28:32 limit 10.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_l2a3.py
+BGRUN PID 5444
+stage_d1_l2a3 - card 108-2, STAGE L2-A3 (docs/d1-loop12-17-split-plan.md PD221(d); split page tools/bench/cards/split_plan_108_l2a3.md).
+INPUT the L2-A2 file claudeDev\D1_l2_a2_20260927_132125.vi (named by the plan's base graph), FRESH LabVIEW -> claudeDev\D1_l2_a3_<ts>.vi
+(rule-6 GUI save at ExecState 0 - the plan's 6 open rows stay open by design, never run).
+ROWS ONLY FROM THE FINALIZED PLAN tools/bench/plan_l2a3.json (plan_in plan_l2a3_in.json, base graph_l2a2_20260927.json); no uid and no
+terminal name or label is typed here; the created indicators and Locals are found through the plan's own `create` rows + the binding.
+CARRIER (PD221(d), CLAUDE.md 1c''): 2 hidden indicators in the 1.2 body + 2 Local READS in the 1.1 body; no queue, no edge detection.
+PRIOR ART: stage_d1_l2a2.py (the skeleton: DryBE, 179(b) CT reader, PB frame-keyed cdiff, RBW on a scratch of the saved file),
+stage_d1_disp.py / plan_disp.json r5_ind_* + r6_lr_* (the create indicator born_on + create Local read routes, stagexec CREATE_ROUTES
+'indicator' + 'local_read'). No new op.
+PREDICTION: L1 each plan action -> exactly one real op; E1 every checkpoint read == its simulated step; CT the 179(b) reader on each
+created indicator: real wire partners == simulated; LB each new label on exactly 1 ControlTerminal and exactly 1 Local; D the end adds the
+plan's new wires and loses exactly the base wires the simulation loses; FU the set of frame diagrams is unchanged; PB frame-keyed cdiff(S1,
+end) == the plan's open_rows (FATAL, before save); ES recorded (0 by design); PS saved, md5 != input, input unchanged; RBW on a scratch of
+the saved file deletes no wire of a re-wired sink; LabVIEW gone at exit.
+    py tools/bgrun.py --material --max-min 40 --log tools/bench/stage_d1_l2a3.log -- py -u tools/recipes/stage_d1_l2a3.py
+  PASS  L0 the executed plan is FINAL, open_rows_match, plan_in = the plan_l2a3_in stageplan  ('f2341cabd04a25b146ed6918e4b710da', {'path': 'tools/bench/plan_l2a3_in.json', 'md5': '3ecc4d8094dcab2b745e519a61747f90'})
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 807c803e1cef1dc33cfdc936c87af1ca  got 807c803e1cef1dc33cfdc936c87af1ca
+  PASS  DRY graph JSON for input md5 807c803e1cef1dc33cfdc936c87af1ca  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_l2a2_20260927.json
+  PASS  L1 every plan action compiled into exactly one real op (6 -> 6)  [1, 2, 3, 4, 5, 6]
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 2 touched diagram(s) [639, 23166]: one-side-only Nodes[] entries 0
+  PRIME 2 terminal indexes proved at base; 0 ControlTerminal end(s) by 179(b); unprovable []
+  FACT  OP create [1] -> err '' (0.0 s)
+  STEPX 01 create         acts [1] ids ['a3_ind_reseed'] bound {-1: 10000001} diff 0
+  FACT  OP create [2] -> err '' (0.0 s)
+  STEPX 02 create         acts [2] ids ['a3_ind_count'] bound {-2: 10000002} diff 0
+  FACT  OP create [3] -> err '' (0.0 s)
+  STEPX 03 create         acts [3] ids ['a3_lr_reseed'] bound {-3: 10000003} diff 0
+  FACT  OP create [4] -> err '' (0.0 s)
+  STEPX 04 create         acts [4] ids ['a3_lr_count'] bound {-5: 10000005} diff 0
+  FACT  OP wire_connect [5] -> err '' (0.0 s)
+  STEPX 05 connect        acts [5] ids ['rw_lrrs_10393'] bound {} diff 0
+  FACT  OP wire_connect [6] -> err '' (0.0 s)
+  STEPX 06 connect        acts [6] ids ['rw_lrac_13163'] bound {} diff 0
+  PASS  E1 every checkpoint's real graph == its simulated step (6 ops)
+  FACT  BINDING obj {-1: 10000001, -2: 10000002, -3: 10000003, -5: 10000005} term {-1: 10000001, -2: 10000002, -4: 10000004, -6: 10000006}
+  PASS  CT a3_ind_reseed: created indicator read by the 179(b) reader == simulated end  dry
+  PASS  CT a3_ind_count: created indicator read by the 179(b) reader == simulated end  dry
+  PASS  D the end adds the plan's 2 new wire(s) and loses exactly the simulated base wires [9921, 11389]  {'new': [10000007, 10000008], 'lost': [9921, 11389]}
+  PASS  FU the set of frame diagrams is unchanged
+  FACT  ExecState [after all rows (warm, RECORDED - the plan's open rows stay open by design)] D1_l2_a3_20260927_142833.vi = <dry:g.exec_state>
+  FACT  CDIFF ROW {'node': 376, 'class': 'SubVI', 'sink': "#376 Terminal 'current frame data array in'", 'before': ['2626|Terminal|appended array|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 376, 'class': 'SubVI', 'sink': "#376 Terminal 'frame index'", 'before': ['644|Terminal||0'], 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array'", 'before': ['5058|Terminal|x,y,z array out|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 5058, 'class': 'SubVI', 'sink': "#5058 Terminal 'Image In'", 'before': ['6810|Terminal|Image Out|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 5696, 'class': 'SubVI', 'sink': "#5696 Terminal 'x,y,z array'", 'before': ['5058|Terminal|x,y,z array out|0@2765/f1'], 'after': []}
+  FACT  CDIFF ROW {'node': 6085, 'class': 'SubVI', 'sink': "#6085 Terminal 'x,y,z array'", 'before': ['5058|Terminal|x,y,z array out|0@2765/f0'], 'after': []}
+  PASS  PB frame-keyed cdiff(S1, real end) == the plan's 6 open_rows (FATAL, before save)  {'extra': [], 'missing': []}
+  FACT  CENSUS after L2-A3 D1_l2_a3_20260927_142833.vi: {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 92, 'Wire': 1939, 'LoopTunnel': 148, 'Local': 10, 'ControlTerminal': 116, 'Node': 0}
+  FACT  PH handles RECORDED: post-open <dry:bench_prep.labview_handles> -> before-save <dry:bench_prep.labview_handles>
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  dry0dry0dry0dry0dry0dry0dry0dry0
+
+=== DRY PASS: first_fail=None coverage 68/88 lines, first mutation Stage._op create, unverified 0, graph tools/bench/graph_l2a2_20260927.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 11s

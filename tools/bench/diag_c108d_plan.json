@@ -1,0 +1,14 @@
+{
+ "schema_note": "card 108-4 V2: FINALIZED row plan of tools/bench/diag_c108d_selind.py, the scratch-VI verification of gscript.create_indicator_nested's SelectorTunnel outer-face route on a never-saved byte copy of claudeDev\\TRACK_kernel_v1.vi. No row wires anything (create_indicator_nested branches onto the face's existing wire); the face is found from the live graph, never typed. Precedent for a prose decision-row plan: tools/bench/diag_c99b_benchplan.json (review archive/peer/2026-09-27-c108d-selind-dry.md s1).",
+ "input": {"vi": "TRACK_kernel_v1.vi", "graph": "tools/bench/diag_c108d_graph_track.json"},
+ "sizes": {"NCALL": 20, "HANDLE_TOL": 100, "DEADLINE_MIN": 25, "NPINS": 2},
+ "decisions": [
+  {"id": "V2-0", "action": "stage", "what": "stagekit Stage: restart LabVIEW, byte copy of the fixture as the work copy, discard_work (never saved)"},
+  {"id": "V2-1", "action": "read", "what": "allterms: pick the first SelectorTunnel OuterTerminal SOURCE face whose wire has a ControlTerminal sink; ExecState 1"},
+  {"id": "V2-2", "action": "create", "what": "create_indicator_nested(W, face term uid, None) -> 1 indicator branched on the face's wire (gates V, R, E)"},
+  {"id": "V2-3", "action": "create", "what": "alias create_indicator_nested(W, SelectorTunnel uid, None) -> 1 more indicator on the same wire (gate A)"},
+  {"id": "V2-4", "action": "negative", "what": "INNER face and an INPUT tunnel's outer face -> ValueError, ControlTerminal count unchanged (gate N)"},
+  {"id": "V2-5", "action": "handles", "what": "NCALL more calls on the face; handles flat within HANDLE_TOL; ExecState 1 (gate H)"},
+  {"id": "V2-6", "action": "discard", "what": "close(): refs closed, scratch deleted, fixture md5 unchanged; LabVIEW killed and gone; PASS record to tools/bench/scratch_verify/"}
+ ]
+}

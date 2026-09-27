@@ -1,0 +1,55 @@
+{
+ "schema": "task/1",
+ "id": "108-3",
+ "kind": "measure",
+ "goal": "PD221(e): OFFLINE consumer table of group B (plan s1: #1359 #2222 #2626 #6104 #8885 #9833 #11261 #29874 + 4 controls) on the L2 chain, vs plan_disp.json's moved set",
+ "why": "L2-B moves group B into 1.2 (plan s2) but PD212(b) moved the Force-path set into a display loop on the S1 branch. Judgement picks L2-B's destination from this table next cycle. Advances M3.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/graph_l2a1_bed_20260927.json", "md5": "93d153ddb36f1967c1e6e75f3541c565"},
+  {"path": "tools/bench/sim/disp/plan_disp.json"},
+  {"path": "tools/bench/facts_c99_display.json"},
+  {"path": "tools/bench/facts_c99b_display.json"},
+  {"path": "tools/bench/split_rows_l2l7.json"},
+  {"path": "tools/bench/build_d1_v0.json"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/graph_l2a1_bed_20260927.json"},
+  {"kind": "file", "name": "tools/bench/sim/disp/plan_disp.json"},
+  {"kind": "file", "name": "tools/bench/split_rows_l2l7.json"}
+ ],
+ "pass": [
+  "T1 per group-B node: every output wire's consumers, walked to the first sink; each tagged saved-data(#376 path) / display-only / motor / 1.2 or 1.5 computation, file:line",
+  "T2 per group-B node: in plan_disp.json's moved set? (yes/no, with the plan row id)",
+  "T3 group-B inputs: which come from 1.2 (#5058/group A), 1.1, or panel controls; crossings count if B goes to 1.2 vs display loop",
+  "T4 the 4 controls (#47 #9289 #28148 #28996): who reads them, per destination",
+  "all four tables in tools/bench/facts_c108c_groupB.json + a <=40-line md summary; source file:line for every cell"
+ ],
+ "outputs": [
+  "tools/bench/facts_c108c_groupB.json",
+  "tools/bench/facts_c108c_groupB.md",
+  "tools/bench/diag_c108c_*",
+  "tools/bench/cards/result_108-3.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/facts_c108c*",
+   "tools/bench/diag_c108c_*",
+   "tools/bench/cards/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 45},
+ "rules": [
+  "files only; no LabVIEW, no VI opened; a cell the files cannot answer is written UNKNOWN, not inferred",
+  "measure only: do not recommend a destination (judgement's)",
+  "facts <=10 with file:line; OPEN <=3"
+ ],
+ "advances": ["M3"]
+}

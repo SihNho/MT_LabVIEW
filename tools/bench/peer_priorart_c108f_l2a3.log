@@ -1,0 +1,44 @@
+BGRUN START 2026-09-27 14:29:38 limit 20.0 min: py tools/prior_art_review.py --plan-file tools/bench/cards/split_plan_108_l2a3_c108f.md --slug c108f-l2a3 --trigger cycle-start --recipe tools/recipes/stage_d1_l2a3.py
+BGRUN PID 23840
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c108f-l2a3.txt (61709 chars)
+   review card tools\bench\cards\review_priorart-c108f-l2a3.json
+OUTCOME: ANSWERED (45s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-27-priorart-c108f-l2a3.md
+COST: $1.2063  in 10 / out 3654 / cache-create 127519 / cache-read 565199  (41s, 8 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c108f-l2a3 verdict=novel -> tools\bench\cards\verdict_priorart-c108f-l2a3.json
+--- ANSWER ---
+**Verdict: novel.** Nothing in the project files shows row 2's SelectorTunnel outer-face route, or the L2-A3 stage, as already built, measured, failed or refuted. The one piece of prior art is this cycle's own earlier review. This addendum answers the risk that review raised; it does not repeat it.
+
+## Part A — the direction
+
+**A1, settled already: no.** Only one decision covers these two rows, and it is the one that orders the work: PD221(d), `docs/d1-loop12-17-split-plan.md:1885`. The previous prior-art round for L2-A3 checked this and returned `novel` (`archive/peer/2026-09-27-priorart-c108b-l2a3.md:494`). The addendum does not change the direction, only how row 2 is routed.
+
+**A2, refuted already: no.** The earlier queue ruling in 182(c) (`:729-732`) was replaced by PD221(d) under CLAUDE.md rule 1c''. The last round already resolved this (`archive/peer/2026-09-27-priorart-c108b-l2a3.md:496`). No earlier attempt to create an indicator on a SelectorTunnel face exists. The failure on record is a different case: a sweep of a *For loop's* `Terminals[]` that left dangling indicators (`tools/gscript.py:3859-3861`). The new verb avoids that case by design. It picks the single `Terms[]` entry that is a *source on the face's wire* (`tools/gscript.py:3935-3937`), and it checks that exactly one new panel object is created, on that wire (`:3946-3950`).
+
+**A3, contradicted: no.** The addendum's cited facts match the files:
+- `diag_c108b_dry.log:39` UNROUTABLE is quoted in `archive/peer/2026-09-27-priorart-c108b-l2a3.md:524-525`.
+- `FACE_ROUTES` with SelectorTunnel is at `tools/stagexec.py:308-313`.
+- The T38f/T38g self-test gates are at `tools/stagexec.py:3352-3381`.
+- The new dry run shows `L1` 6→6, `E1` PASS, `CT a3_ind_count` PASS, `D` lost `[9921, 11389]`, `PB` with no extras or missing rows, and `RESULT` PASS (`tools/bench/stage_d1_l2a3_dry_c108f.log:23,39,42,43,52,58`). There is no UNROUTABLE line.
+- The scratch-verify record exists (`tools/bench/scratch_verify/gscript.create_indicator_nested_20260927_141618.json`).
+
+One small note: the addendum places the `STEPX diff 0` evidence at `:24-38`. In the log I read, the gate summary sits at `:39`. Both point to the same place, so this is not a contradiction.
+
+**A4, unread evidence: none.** The addendum cites the earlier review's discriminating test and its "What was done with it" note (`archive/peer/2026-09-27-priorart-c108b-l2a3.md:522-528`). That note says the scratch check was "judgement's call". Card 108-4 has now made that check.
+
+## Part B — the artifact
+
+**B1, already built: no, apart from this cycle's own card 108-4.** Before card 108-4, only the LoopTunnel face route existed: card 100-4 via `OpTunnelInd_v0`, `tools/gscript.py:3856-3865`, whose cast only accepts LoopTunnels (`tools/recipes/build_optunnelind.py:119`, cited at `gscript.py:3869-3870`). PD185 added an owner-routed SelectorTunnel path (`tools/stagexec.py:608-614`), but it serves wire *sinks*: T17 is "a SelectorTunnel outer sink resolves on its OWNER's Terminals[]" (`:2674`). It never created an indicator on a *source* face. So the addendum reuses the PD185 owner route rather than inventing a new one, which is correct.
+
+**B2, already failed: no.** The only failure on record for this row is the dry-run UNROUTABLE (`diag_c108b_dry.log:39`). The addendum addresses exactly that cause.
+
+**B3, helper exists: the addendum already uses the helpers.** It reuses `create_indicator_nested`, `OpCreateIndicatorNested_v0`, `OpNodeTerms_v0`, `allterms.read_terms` and `B.owner_of`, and adds no new op VI (`tools/gscript.py:3876`).
+
+**B4, already measured: no.** Card 108-4's scratch record (24/0) is the first measurement of this route. No earlier one exists.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c108f-l2a3","verdict":"novel","alternative":"The only prior art is this cycle's own c108b review, whose B4 risk (row 2 unmeasured/unroutable) is the gap this addendum closes via the PD185 owner route; the LoopTunnel-only face route (card 100-4) and PD185 sink routing never created an indicator on a SelectorTunnel source face.","discriminating_test":"At launch, the 'a3_ind_count' op must show exactly one new panel object on w25386 (the #11336 outer face's wire) and a CT partner match; a second object or another wire reproduces the For-loop Terminals[] dangling case (gscript.py:3859-3861).","violations":[],"sources":["archive/peer/2026-09-27-priorart-c108b-l2a3.md:510","archive/peer/2026-09-27-priorart-c108b-l2a3.md:522-528","tools/gscript.py:3856-3876","tools/gscript.py:3935-3953","tools/stagexec.py:308-313","tools/stagexec.py:608-614","tools/stagexec.py:2674","tools/bench/stage_d1_l2a3_dry_c108f.log:39-58"],"note":"Recipe md5 3fcefd3b unchanged from the c108b round; only the stagexec routing changed. No l2a3 VI exists in any bed."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c108f-l2a3.md
+   STOP RECORD: none - 2026-09-27-priorart-c108f-l2a3.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_l2a3.py sha 8c991f788f9c -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 47s

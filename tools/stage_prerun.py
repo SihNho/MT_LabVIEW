@@ -761,6 +761,36 @@ def _jev_stub(name):
     return f
 
 
+UNROUTABLE_RE = re.compile(r"^\s*(?:FACT\s+|FAIL\s+)?UNROUTABLE\s+(?:acts\b|\d+\s+row)")
+
+
+class _UnroutableTap(object):
+    """stdout pass-through that keeps every line an executor/Stage prints as an UNROUTABLE row (stagekit `FACT  UNROUTABLE
+    acts ...`, stagexec.dry_run `  UNROUTABLE acts ...`, the ExecStop text `UNROUTABLE n row(s)`), card 108-5."""
+
+    def __init__(self, inner):
+        self.inner, self.hits, self._buf = inner, [], ""
+
+    def write(self, s):
+        self._buf += s
+        while "\n" in self._buf:
+            ln, self._buf = self._buf.split("\n", 1)
+            if UNROUTABLE_RE.search(ln):
+                self.hits.append(ln)
+        return self.inner.write(s)
+
+    def flush_tail(self):
+        if self._buf and UNROUTABLE_RE.search(self._buf):
+            self.hits.append(self._buf)
+        self._buf = ""
+
+    def flush(self):
+        return self.inner.flush()
+
+    def __getattr__(self, k):
+        return getattr(self.inner, k)
+
+
 def dry(recipe, graph=None):
     """Run in THIS process (the caller is a fresh process: `--dry` / `--prerun`). Returns the trace dict."""
     install(graph)
@@ -786,6 +816,8 @@ def dry(recipe, graph=None):
         return None
     t0 = time.time()
     if not D.fails:
+        tap = _UnroutableTap(sys.stdout)
+        sys.stdout = tap
         sys.settrace(tracer)
         try:
             runpy.run_path(path, run_name="__main__")
@@ -795,6 +827,14 @@ def dry(recipe, graph=None):
             D.fails.append("PY {0}: {1} (module level)".format(type(e).__name__, str(e)[:160]))
         finally:
             sys.settrace(None)
+            tap.flush_tail()
+            if sys.stdout is tap:
+                sys.stdout = tap.inner
+        # card 108-5 (PD222(d), device-failed): ANY UNROUTABLE row is a dry FAIL. diag_c108b_dry.log:39-43 printed
+        # `FACT  UNROUTABLE acts [2]` and still ended `DRY PASS` + a PASS record, because the E1 gate that names it runs
+        # after the first mutation and is downgraded to UNVERIFIED. An unroutable row is a plan fact, not stub data.
+        for ln in tap.hits:
+            D.fails.append("UNROUTABLE " + ln.split("UNROUTABLE", 1)[1].strip()[:200])
     status = "PASS" if (D.reached_end and not D.fails) else "FAIL"
     first = D.fails[0] if D.fails else (None if D.reached_end else "STUB-LIMIT: " + str(D.stub_limit)
                                         if D.stub_limit else "body did not reach its end")

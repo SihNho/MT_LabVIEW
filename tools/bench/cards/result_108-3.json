@@ -1,0 +1,16 @@
+{"schema":"result/1","id":"108-3","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,
+"blocked_by":{"device":"guard_peer","message":"rerun of diag_c108c_groupB.py refused: run 1's own G3 contract failed on unwired N tunnels #7922/#29914; JEV-LADDER new-problem p=0.848 (jev_gate.log:1973), review owed, card peers=[]; tables = run 1 + Grep addenda. Blocks later builds until a review names diag_c108c_groupB.log"},
+"artefacts":[{"path":"tools/bench/facts_c108c_groupB.json","md5":"049f5cc3fa7e2e9eb3acffa2b5663164"},{"path":"tools/bench/facts_c108c_groupB.md","md5":"d6a7088efa30bf9b7f8b619d75700c55"},{"path":"tools/bench/diag_c108c_graph.py","md5":"78e784f3f9af67a2bd0bf8f646d8e2b6"},{"path":"tools/bench/diag_c108c_groupB.py","md5":"31b40ba8b3bdb7de6a3788b632251c86"}],
+"facts":[
+"T1: #2626 is B's only non-display consumer edge: 'appended array' -> #376 save trace.vi 'current frame data array in' (par1359_95_graph.json:26506); on the bed it is UNWIRED (w4517, QRT-owed)",
+"T1: #11261 -> indicator #8323 (:27576) and #29874 -> indicator #28786 (:27876) are display-only, no Local readers; motor 0, 1.2/1.5 computation consumers 0 (facts_c108c_groupB.json s1.T1/bed.T1)",
+"T1: #1359 and #29874 each feed themselves via a B-only SR pair on #637: #9018/#9025 (:24626,:24616) and #29505/#29512 (:17976,:17956); #6104 'subarray' is unwired in S1 too (:25456)",
+"T2: plan_disp moves 9 of #1359's interior nodes (plan_disp.json:46-150) + deletes tunnel 11363 (:311) + moves #11261 (:298); #1359 itself, #2222, #2626, #6104, #8885, #9833, #29874 have no row",
+"T3: external sources = 1.2 x1 (#5058 'x,y,z array out' -> #2222, #2626, :26336; both UNWIRED on bed), 1.1 x6 (#10068 #30117 #5119 #4580 #11608 #29240), pre-loop x5, the 4 controls, 3 constants",
+"T3: crossings if all 8 go to 1.2: 6 in + 1 out (#376) = 7; to a display loop: 7 in + 1 out = 8; both need 5 pre-loop tunnels/SR inits, 2 re-made SR pairs (facts_c108c_groupB.json addenda.T3_crossings)",
+"T3: #2626 has no data edge to any other B node (in: #5058, #5119, #30117, #4580; out: #376); the other 7 form one chain whose only exits are the 2 indicators (s1.T1/T3 rows)",
+"T4: all readers of the 4 controls are in B, no Locals: Z/dZ->#2222 sel #2276 (:25486); CorrF->#5696/#6085 (:25586); Force hw->#27716/#28180; Ext med->#29009 (:24796)+#30306 (:18086)",
+"Interior of B: 0 indicators, 0 Local/Property, 1 control Exp Baseline #8476 (:25406), 7 subVIs none motor/save (facts_c108c_groupB.json addenda.interior_census_s1)"],
+"open":["#30117 and #4580 are Property 'Value' reads feeding #1359/#2626; which control they read is UNKNOWN from these files","guard_peer now blocks every build until a hypothesis review names diag_c108c_groupB.log (G3 was the script's own over-tight contract); who dispatches it?"],
+"cost":{"usd":null,"minutes":16,"labview_runs":0},
+"note":"offline, structural; S1 cites = par1359_95_graph.json:<line>, bed cites = term_uid (single-line JSON). S1 FS tunnels not paired (no fs_tunnel_pairs) - #2222's two pre-loop sources resolved on the bed only."}

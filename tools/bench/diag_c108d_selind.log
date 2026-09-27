@@ -1,0 +1,77 @@
+BGRUN START 2026-09-27 14:12:55 limit 30.0 min: py -u tools/bench/diag_c108d_selind.py
+BGRUN PID 19972
+BGRUN STAGE-RUN recorded diag_c108d_selind.py cycle='cycle 108' card=None pid=23596 -> stage_runs.jsonl
+diag_c108d_selind - card 108-4 V2: SCRATCH-VI verification of gscript.create_indicator_nested's new SelectorTunnel
+OUTER-face route (card 108-4 V1: gscript._selector_outer_face + _create_on_selector_outer) BEFORE any stage uses it.
+FIXTURE: a byte copy of claudeDev\TRACK_kernel_v1.vi - the smallest VI on disk with a Case Structure whose OUTPUT tunnels
+feed pane indicators (case 154; 3 output tunnels -> pane indicators; ExecState 1, tools/bench/build_track_kernel_v1.log:60-66).
+The copy is a scratch (discard_work): never saved, deleted at close; TRACK_kernel_v1.vi is never opened for writing; the
+stage input (L2-A2) is not touched. No VI is run - only op VIs execute.
+PRIOR ART: create_indicator_nested LoopTunnel route (card 100-4, OpTunnelInd_v0), its Node route (diag_c100_verbs_build2.log:
+75-79), the PD185 owner route (stagexec._triple), selftest_c98_move.py (fixture / gate shape). NO NEW OP VI.
+PREDICTION (gates):
+ F  >=1 SelectorTunnel OUTER source face wired to a ControlTerminal; ExecState 1 before
+ V  create_indicator_nested(W, <face term uid>, None): err '', route SelectorTunnel owner, echo == the owner case uid, exactly
+    1 new panel object on the face's wire, ControlTerminal +1, Wire count unchanged (a BRANCH)
+ R  graph read back (allterms): the face is still the ONLY source on its wire; the wire's sinks == before + the new
+    indicator's terminal, which sits on the face's diagram
+ E  ExecState 1 after
+ A  alias (SelectorTunnel uid, None) -> same route, +1 indicator on the same wire
+ N  NEGATIVE: the tunnel's INNER face and an INPUT tunnel's outer face -> ValueError, ControlTerminal count unchanged
+ H  20 more calls: handles flat +-100; refs closed (H5); scratch deleted; fixture md5 unchanged; LabVIEW gone at exit
+    MATERIAL=1 py tools/bgrun.py --max-min 30 --log tools/bench/diag_c108d_selind.log -- py -u tools/bench/diag_c108d_selind.py
+
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 293 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 8dfe1d5fec235e0d1d7b919949d0c1ef  got 8dfe1d5fec235e0d1d7b919949d0c1ef
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33933
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_c108d_selind_20260927_141256.vi
+  FACT  ExecState [after open] scratch_c108d_selind_20260927_141256.vi = 1
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so scratch_c108d_selind_20260927_141256.vi is deleted at close
+
+OBSERVED EXC 'term_class'
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagekit.py", line 1270, in run
+    fn(stage)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c108d_selind.py", line 36, in body
+    faces = [r for r in rows if r["owner_class"] == "SelectorTunnel" and r["term_class"] == "OuterTerminal" and r["is_source"]
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c108d_selind.py", line 36, in <listcomp>
+    faces = [r for r in rows if r["owner_class"] == "SelectorTunnel" and r["term_class"] == "OuterTerminal" and r["is_source"]
+KeyError: 'term_class'
+
+  FAIL  the run completed without an unhandled exception  'term_class'
+
+---------- [H] HYGIENE
+  FACT  close_panel(scratch_c108d_selind_20260927_141256.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 1}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 1}
+  FACT  LabVIEW handle count AFTER the work: 34068
+  PASS  H4 scratch deleted: scratch_c108d_selind_20260927_141256.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c108d_selind_20260927_141256.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 8dfe1d5fec235e0d1d7b919949d0c1ef / after 8dfe1d5fec235e0d1d7b919949d0c1ef
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33969
+
+====================================================================================================
+=== GATES: 8 pass / 1 fail; failing: the run completed without an unhandled exception
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c108d_selind.json   elapsed 113.0 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":8,"fail":1},"first_fail":"KeyError: 'term_class'","artefacts":[]}
+  PASS  H LabVIEW gone at exit
+
+====================================================================================================
+=== GATES: 9 pass / 1 fail; failing: the run completed without an unhandled exception
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c108d_selind.json   elapsed 117.3 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":9,"fail":1},"first_fail":"KeyError: 'term_class'","artefacts":[]}
+BGRUN END rc=1 after 118s

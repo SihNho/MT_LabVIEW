@@ -1,0 +1,78 @@
+{
+ "schema": "task/1",
+ "id": "108-5",
+ "kind": "build",
+ "goal": "PD222(d): (1) cycle_runner gates_due at cycle start (owed, retro-107 device-failed); (2) dry with any UNROUTABLE row = FAIL, no PASS record; (3) VISA-refused real-run leg = SKIP not FAIL",
+ "why": "Three gates let their own fault through: retro-107 (due checks not run at cycle start), diag_c108b_dry.log:40-43 (UNROUTABLE dry recorded PASS), 108-1 open 2 (VISA refusal re-arms guard_peer).",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "docs/violation-decisions.md"},
+  {"path": "tools/bench/cards/result_108-1.json"},
+  {"path": "tools/bench/cards/result_108-2.json"},
+  {"path": "tools/bench/diag_c108b_dry.log", "md5": "ee7fbda1c098efc77eb6ddab50be2ddd"},
+  {"path": "archive/peer/2026-09-27-c108a-disp107-visa-refusal.md"},
+  {"path": "tools/cycle_runner.py"},
+  {"path": "tools/stage_prerun.py"},
+  {"path": "tools/stagexec.py"},
+  {"path": "tools/bench/drive_legguard.py"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/cycle_runner.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/bench/drive_legguard.py"},
+  {"kind": "file", "name": "tools/outcome_review.py"},
+  {"kind": "file", "name": "tools/violations.py"}
+ ],
+ "pass": [
+  "G1 cycle_runner at cycle start runs violations --due, outcome_review --due, retrospective debt, recorded-dry/prior-art state of next.json's recipe; list -> cycle card 'gates_due'",
+  "G2 a due outcome review runs before the judgement session spawns; self-test: 7 retros since last outcome review => gates_due includes it; runner self-tests still pass",
+  "G3 stage_prerun --dry: any UNROUTABLE line => DRY FAIL, rc!=0, no PASS record; negative = replay of diag_c108b_dry.log case; old dry self-tests pass",
+  "G4 leg driver: VISA-refused leg ends RESULT status SKIP (not FAIL) and guard_peer does not arm on it; negative: a real leg failure still FAILs",
+  "every change: file:line, md5 before/after, self-test counts; no LabVIEW opened"
+ ],
+ "outputs": [
+  "tools/cycle_runner.py",
+  "tools/stage_prerun.py",
+  "tools/stagexec.py",
+  "tools/bench/drive_legguard.py",
+  "tools/bench/selftest_*",
+  "tools/bench/cards/result_108-5.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/cycle_runner.py",
+   "tools/stage_prerun.py",
+   "tools/stagexec.py",
+   "tools/bench/drive_legguard.py",
+   "tools/bench/diag_c104_abba.py",
+   "tools/bench/drive_original_copy_v5.py",
+   "tools/hooks/guard_peer.py",
+   "tools/protocol.py",
+   "docs/protocol/**",
+   "tools/bench/selftest_*",
+   "tools/bench/diag_c108e*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 75},
+ "rules": [
+  "no LabVIEW; no real run; runner changes take effect only at the next relaunch (do not restart the runner)",
+  "stage_prerun/stagexec edits are single atomic writes; card 108-4 runs dry/prerun in parallel",
+  "cycle card schema change: extend docs/protocol cycle/1 so 'gates_due' validates; protocol self-tests pass",
+  "a gate refusal is returned BLOCKED, never re-run through a self-test child or exempt route",
+  "facts <=10 with file:line; OPEN <=3"
+ ],
+ "unblocks": "M3"
+}

@@ -6,7 +6,8 @@
   "required": ["schema", "status", "gates"],
   "properties": {
     "schema": {"const": "result-line/1"},
-    "status": {"enum": ["PASS", "FAIL"]},
+    "status": {"enum": ["PASS", "FAIL", "SKIP"],
+               "description": "SKIP (card 108-5): the run was refused before it measured anything (e.g. a VISA-refused leg) and every gate that does not follow from that refusal passed; gates.fail must be 0. Not a failure (protocol.result_failed), not a pass for any 'newest run passed' reader."},
     "gates": {"$ref": "#/definitions/gates"},
     "first_fail": {"type": ["string", "null"], "maxLength": 200},
     "artefacts": {"type": "array", "items": {"$ref": "#/definitions/fileref"}}

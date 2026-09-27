@@ -1,0 +1,37 @@
+BGRUN START 2026-09-27 14:38:16 limit 20.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug c108f-l2a3-termclass -TaskFile tools/bench/peer_c108f_l2a3_task.txt -TimeoutSec 900
+BGRUN PID 25368
+OUTCOME: ANSWERED (112s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-27-c108f-l2a3-termclass.md
+COST: $1.3147  in 30 / out 8827 / cache-create 100899 / cache-read 1540204  (109s, 20 turn(s))
+--- ANSWER ---
+The KeyError explanation holds, but the proposed fix is half wrong and the `Is Broken?` readback tells us nothing about the new wires.
+
+**KeyError — the claim holds (settled).**
+- `allterms.read_terms` builds each row from `FIELDS` plus `frame_diagram` only (`tools/allterms.py:45-46,71,85`). No `term_class` column exists, so recipe line 66 must throw on its first row.
+- This does not depend on LabVIEW. The same fact is already written into `tools/gscript.py:3901-3902` from card 108-4.
+- The dry run could not catch it: line 65 skips LB when `DRY`, and `DryPlanBE` rows would carry `term_class` anyway.
+- The remaining path after LB only reads `owner_class`, `term_name`, `term_uid` and `wire_uid`, which all exist. I found no second latent KeyError.
+
+**1. Strongest attack — the second fix route doesn't work.**
+- The simulated/graph rows record the panel terminal as `owner_class: "Diagram"`, not `"ControlTerminal"`. Example: `{"term_uid": 10502, "term_name": "Autoreference? 1=Y", ..., "owner_class": "Diagram", ..., "term_class": "ControlTerminal"}` in `tools/bench/graph_l2a2_20260927.json`. I infer the live OpAllTerms rows fill `owner_class` the same way, since the graph files are built from those reads. A "fix" that tests `owner_class == "ControlTerminal"` would give `n_ct = 0` and fail LB, and that failure would look like a real stage fault.
+- Use `r["term_uid"] in cts` (the `report_all('ControlTerminal')` set, as `ct_read` builds it at `:42`), or count on `real`. `real` is the list the E1/D gates use, and stagexec reads `term_class` on it (`tools/stagexec.py:322,529-530`).
+- The Local half (line 67, `owner_class == "Local"`) is fine. The Local's own terminal is named with the label (`stage_d1_l2a3.log:71,100`).
+
+**1b. What this also is: a repeat.** The same KeyError on the same op was measured in 108-4. That lesson went into `gscript.py` but not into the recipe written in the same cycle. That makes it a repeated-failure-class entry for the retrospective, not a new diagnosis.
+
+**2. Alternative reading of `Is Broken?: True` — it reports the sink's old wire from before the connect.**
+- `docs/NAMES.md:1083-1085`: in OpConnectNested_v0/v1, the reader's `error in` is unwired, so it can run before `Connect Wire` and report the old wire.
+- The machine confirms that order here. In `stage_d1_dispA_r1.log:264,284,304,…,780`, all 14 connects onto bare sinks read `UID 2: 0`, yet every one created a wire. A reader running after the connect would have returned the new wire's uid, not 0.
+- So here `UID 2` = 9921 / 11389 is the pre-existing sourceless stub. LabVIEW treats a wire with no source as broken by definition ("A wire must be connected to one and only one data source" — [NI forum](https://forums.ni.com/t5/LabVIEW/Im-getting-a-quot-no-source-error-quot/td-p/89100)). True is the expected reading of the input state, and it says nothing about the output.
+- **Caution:** that cuts both ways. The readback does not show the new nets are sound either. STEPX diff 0 matches the connection layout only, not wire data types. Nothing in this run checked that the Local's type is legal at sinks 10382.x and 11529.x. The recipe's RBW check on a copy of the saved file was meant to be that evidence, and it never ran.
+
+**3. What would falsify the KeyError claim.** An OpAllTerms_v1 read returning a `term_class` key; `opallterms_v1_labels.json` listing a `term_class` field; or a re-run with LB fixed that dies at the same line. The dispA evidence shows the code shape can't produce any of these.
+
+**4. Cheapest test that separates the two readings.**
+- **KeyError:** no LabVIEW needed. Load `opallterms_v1_labels.json` and check for `term_class`, then run the patched LB line against `real` in the dry run with the skip removed. The dry rows carry `term_class`, so that tests the new line's logic offline.
+- **`Is Broken?`:** in the re-run, the planned RBW check on the copy of the saved file must delete neither 9921/11389 nor their successor wires. An ordered read (the W7b order from OpConnectFromWire_v0) after the save must also give False, and must stay below the save point per `NAMES.md:1098-1104`. If either wire is removed, or the ordered read gives True, the stubs were not healed by the connect and the "old wire, read early" reading is wrong for this case.
+
+**Verdict:** the KeyError hypothesis stands. The owner_class version of the fix must be dropped (use term_uid membership or `real`). The `Is Broken?: True` value should be recorded as "pre-connect read, no information", not as evidence either way.
+
+Sources:
+- [NI Community — "no source" error](https://forums.ni.com/t5/LabVIEW/Im-getting-a-quot-no-source-error-quot/td-p/89100)
+BGRUN END rc=0 after 113s

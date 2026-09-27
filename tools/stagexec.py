@@ -304,13 +304,22 @@ def create_route(a):
     raise ExecStop("create class {0!r} has no executor (no donor_uid / prim / on)".format(c))
 
 
+# card 108-6 (PD222(g)): the tunnel classes whose OUTER SOURCE face gscript.create_indicator_nested(W, face, None) takes.
+# LoopTunnel -> OpTunnelInd_v0 (card 100-4); SelectorTunnel -> its owner CaseStructure's Terms[] entry on the face's wire,
+# OpCreateIndicatorNested_v0 (card 108-4, gscript.py:3867-3879; scratch record
+# tools/bench/scratch_verify/gscript.create_indicator_nested_20260927_141618.json, 24/0). The case SELECTOR ("Tunnel") is not
+# one: it is a sink, and the verb has no route for it.
+FACE_ROUTES = {"LoopTunnel": "OpTunnelInd_v0",
+               "SelectorTunnel": "owner CaseStructure Terms[] -> OpCreateIndicatorNested_v0"}
+
+
 def tunnel_outer_face(real, term, diagram):
-    """card 100-6 (PD213(f)3): the row of terminal `term` when it is the OUTER SOURCE face of a LoopTunnel sitting on
-    Diagram #diagram - the one tunnel face gscript.create_indicator_nested(W, face, None) reaches (OpTunnelInd_v0,
-    gscript.py _tunnel_outer_face). Anything else (an inner face, a sink face, another class, another diagram) -> None,
-    and the row takes the Node route, which refuses a non-Node owner (T38)."""
+    """card 100-6 (PD213(f)3) + card 108-6 (PD222(g)): the row of terminal `term` when it is the OUTER SOURCE face of a
+    LoopTunnel or a SelectorTunnel (FACE_ROUTES) sitting on Diagram #diagram - the tunnel faces
+    gscript.create_indicator_nested(W, face, None) reaches. Anything else (an inner face, a sink face, another class,
+    another diagram) -> None, and the row takes the Node route, which refuses a non-Node owner (T38)."""
     r = next((x for x in real if x["term_uid"] == term), None)
-    if (r is None or r["owner_class"] != "LoopTunnel" or r["term_class"] != "OuterTerminal" or not r["is_source"]
+    if (r is None or r["owner_class"] not in FACE_ROUTES or r["term_class"] != "OuterTerminal" or not r["is_source"]
             or int(r["frame_diagram"] or 0) != int(diagram)):
         return None
     return r
@@ -1792,8 +1801,9 @@ class LVBackend(object):
         if route in ("indicator", "control"):
             end = args["born_on"] if route == "indicator" else args["on"]
             face = tunnel_outer_face(real, end, dg) if route == "indicator" else None
-            if face is not None:                   # card 100-6 (PD213(f)3): create_indicator_nested(W, <face term>, None)
-                how = "LoopTunnel #{0} outer face #{1} (OpTunnelInd_v0)".format(face["owner_uid"], end)
+            if face is not None:                   # card 100-6 / 108-6: create_indicator_nested(W, <face term>, None)
+                how = "{0} #{1} outer face #{2} ({3})".format(face["owner_class"], face["owner_uid"], end,
+                                                              FACE_ROUTES[face["owner_class"]])
                 rec = s._op("indicator_nested", lambda: g.create_indicator_nested(W, int(end), None), how)
             else:
                 (_d, _n, t), how = self.addr.triple(real, end, route == "indicator")
@@ -2085,9 +2095,9 @@ class SimBackend(object):
                 chk["panel_ct"] = cts[0]["term_uid"]
             elif route == "indicator":
                 face = tunnel_outer_face(real, args["born_on"], args["diagram"])
-                if face is not None:                   # card 100-6 (PD213(f)3): the tunnel-face route of the real backend
-                    chk.update(tunnel_face=face["term_uid"], tunnel=face["owner_uid"],
-                               via="gscript.create_indicator_nested(W, face, None) -> OpTunnelInd_v0")
+                if face is not None:                   # card 100-6 / 108-6: the tunnel-face route of the real backend
+                    chk.update(tunnel_face=face["term_uid"], tunnel=face["owner_uid"], tunnel_class=face["owner_class"],
+                               via="gscript.create_indicator_nested(W, face, None) -> " + FACE_ROUTES[face["owner_class"]])
                 else:
                     chk.update(self._node_end(real, args["born_on"], True, "create_indicator_nested"))
             elif route == "control":
@@ -3325,6 +3335,7 @@ def _selftest_create(gate, tmp, q):
              "diagram it does not sit on", tunnel_outer_face(base["terminals"], 1602, 20) is None
              and tunnel_outer_face(base["terminals"], 1601, 10) is None and tunnel_outer_face(base["terminals"], 1612, 20) is None
              and tunnel_outer_face(base["terminals"], 1612, 10) is not None)
+        _selftest_selector_face(gate, tmp, q, md, base, plan, acts, row)
         g_, okp = prerun_plan(fin, log=q, model_dir=md)
         gate("T38b prerun_plan still REFUSES the non-final create plan (the diagnostic mode is not a launch gate)",
              not okp and "not final" in g_[0][2], g_[0])
@@ -3335,6 +3346,39 @@ def _selftest_create(gate, tmp, q):
              not verbs_missing("while") and mz == ["gscript.nope_verb_c100"], (verbs_missing("while"), mz))
     finally:
         proposed_schema(False)
+
+
+def _selftest_selector_face(gate, tmp, q, md, base, plan, acts, row):
+    """card 108-6 (PD222(g)) T38f/g: a SelectorTunnel OUTER SOURCE face on its case's diagram ROUTES in the dry backend
+    (the L2-A3 row-2 shape: #11346 'Value' of #11336, frame 23166 == the row's diagram), and the faces the verb refuses
+    stay refused offline. Own graph file, so the T36-T38 fixture is unchanged."""
+    sb = copy.deepcopy(base)
+    sb["terminals"] += [row(1622, "Value", True, 8, 62, "SelectorTunnel", 10, "OuterTerminal"),
+                        row(1621, "Value", False, 9, 62, "SelectorTunnel", 20, "InnerTerminal"),
+                        row(1632, "", False, 11, 63, "Tunnel", 10, "OuterTerminal"),
+                        row(1642, "Value", False, 12, 64, "SelectorTunnel", 10, "OuterTerminal")]
+    sb["objs"] += [{"uid": u, "class": c, "pos": [0, 9], "owner": "Diagram"} for u, c in
+                   ((62, "SelectorTunnel"), (63, "Tunnel"), (64, "SelectorTunnel"))]
+    gps = os.path.join(tmp, "graph_cr_sel.json")
+    json.dump(sb, open(gps, "w", encoding="utf-8"))
+    sel = dict(plan, stage="xcrsel", context={"s1_graph": {"path": gps}},
+               actions=acts[:2] + [{"op": "create", "id": "ind4", "class": "ControlTerminal", "diagram": 10, "as": "IND4",
+                                    "label": "p4", "indicator": True, "visible": False, "born_on": {"uid": 62, "term_uid": 1622}}])
+    ps = os.path.join(tmp, "plan_in_xcrsel.json")
+    json.dump(sel, open(ps, "w", encoding="utf-8"))
+    S4 = SS.simulate(ps, gps, out_root=os.path.join(tmp, "sim"), plan_out_dir=tmp, model_dir=md, log=q)
+    st4, ff4, ex4 = dry_run(os.path.join(tmp, "plan_xcrsel.json"), log=q, model_dir=md, require_final=False)
+    rt4 = dict((r["ids"][0], (r.get("result") or {}).get("check")) for r in ex4.report[1:] if r.get("ids"))
+    c4 = rt4.get("ind4") or {}
+    gate("T38f card 108-6: an indicator born on a SelectorTunnel OUTER SOURCE face (#1622 of #62, on its diagram) simulates "
+         "and ROUTES as create_indicator_nested(W, face, None) via the owner CaseStructure's Terms[]",
+         S4["failed"] is None and st4 == "PASS" and c4.get("tunnel_face") == 1622 and c4.get("tunnel_class") == "SelectorTunnel"
+         and "CaseStructure Terms[]" in str(c4.get("via")), (S4["failed"], st4, str(ff4)[:200], c4))
+    T = sb["terminals"]
+    gate("T38g NEGATIVE: tunnel_outer_face refuses the SelectorTunnel inner face #1621, its outer face on another diagram, a "
+         "case SELECTOR ('Tunnel') face #1632 and an unwired sink SelectorTunnel face #1642",
+         tunnel_outer_face(T, 1621, 20) is None and tunnel_outer_face(T, 1622, 20) is None and tunnel_outer_face(T, 1632, 10) is None
+         and tunnel_outer_face(T, 1642, 10) is None and (tunnel_outer_face(T, 1622, 10) or {}).get("owner_class") == "SelectorTunnel")
 
 
 def _selftest_live_const(gate, fin, md, q, n_acts):

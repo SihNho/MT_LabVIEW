@@ -1185,6 +1185,14 @@ appears among the windows). gscript's watchdog reports it correctly as a modal (
   `error out 4` (Move), `error out 2`/`error out 3`. NI `examples\Comparison\Max and Min.vi` holds SIX `Max & Min` nodes
   (uids 43 94 116 337 705 1478, all on Diagram #3); the node label reads **`Max & Min`**, scripting class **`Comparison`**.
   An indicator made by `OpTunnelInd_v0` on a LoopTunnel's outer face is labelled **`Array`** (the face has no name).
+  ⚠️ `OpTunnelInd_v0`'s cast is **LoopTunnel**-typed (`tools/recipes/build_optunnelind.py:119`), so a **SelectorTunnel**
+  (case tunnel) face does not go through it; card 108-4 routes that face through its owner `CaseStructure`'s `Terms[]`
+  (`gscript._selector_outer_face`: owner chain tunnel → CaseStructure → Diagram, `OpNodeTerms_v0` echo, the ONE source
+  entry on the face's wire) + `OpCreateIndicatorNested_v0`. **SCRATCH-VERIFIED 2026-09-27, 24/0**
+  (`tools/bench/diag_c108d_selind2.log`, byte copy of `TRACK_kernel_v1.vi`): case #154's `Terms[]` index 11 = the outer
+  face #488 of SelectorTunnel #430; the new indicator is labelled **`<face name> 2`** (`pos in cal image out 2`), a
+  BRANCH on w408 (Wire count unchanged). ⚠️ `allterms.read_terms` rows have NO `term_class` (only `wiki_build.read_live`
+  joins it): outer vs inner is told by `frame_diagram` == the case's owner diagram.
   `Terminal.Create Control` on an ALREADY-WIRED sink returns error `''` and a control whose terminal wire is 0.
 - **`VI Server:DigitalNumericConstant` property IDs (measured by attaching each, 2026-09-15 05:34 — the labviewwiki
   class table is shifted):** `634D001` Fmt&Prec · `634D002` Format · `634D003` Precision · `634D004` RadixVis ·

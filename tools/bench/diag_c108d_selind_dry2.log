@@ -1,0 +1,55 @@
+BGRUN START 2026-09-27 14:16:03 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/bench/diag_c108d_selind.py --graph tools/bench/diag_c108d_graph_track.json
+BGRUN PID 12216
+diag_c108d_selind - card 108-4 V2: SCRATCH-VI verification of gscript.create_indicator_nested's new SelectorTunnel
+OUTER-face route (card 108-4 V1: gscript._selector_outer_face + _create_on_selector_outer) BEFORE any stage uses it.
+FIXTURE: a byte copy of claudeDev\TRACK_kernel_v1.vi - the smallest VI on disk with a Case Structure whose OUTPUT tunnels
+feed pane indicators (case 154; 3 output tunnels -> pane indicators; ExecState 1, tools/bench/build_track_kernel_v1.log:60-66).
+The copy is a scratch (discard_work): never saved, deleted at close; TRACK_kernel_v1.vi is never opened for writing; the
+stage input (L2-A2) is not touched. No VI is run - only op VIs execute.
+PRIOR ART: create_indicator_nested LoopTunnel route (card 100-4, OpTunnelInd_v0), its Node route (diag_c100_verbs_build2.log:
+75-79), the PD185 owner route (stagexec._triple), selftest_c98_move.py (fixture / gate shape). NO NEW OP VI.
+PREDICTION (gates):
+ F  >=1 SelectorTunnel OUTER source face wired to a ControlTerminal; ExecState 1 before
+ V  create_indicator_nested(W, <face term uid>, None): err '', route SelectorTunnel owner, echo == the owner case uid, exactly
+    1 new panel object on the face's wire, ControlTerminal +1, Wire count unchanged (a BRANCH)
+ R  graph read back (allterms): the face is still the ONLY source on its wire; the wire's sinks == before + the new
+    indicator's terminal, which sits on the face's diagram
+ E  ExecState 1 after
+ A  alias (SelectorTunnel uid, None) -> same route, +1 indicator on the same wire
+ N  NEGATIVE: the tunnel's INNER face and an INPUT tunnel's outer face -> ValueError, ControlTerminal count unchanged
+ H  20 more calls: handles flat +-100; refs closed (H5); scratch deleted; fixture md5 unchanged; LabVIEW gone at exit
+    MATERIAL=1 py tools/bgrun.py --max-min 30 --log tools/bench/diag_c108d_selind.log -- py -u tools/bench/diag_c108d_selind.py
+
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 8dfe1d5fec235e0d1d7b919949d0c1ef  got 8dfe1d5fec235e0d1d7b919949d0c1ef
+  PASS  DRY graph JSON for input md5 8dfe1d5fec235e0d1d7b919949d0c1ef  tools/bench/diag_c108d_graph_track.json
+  FACT  F 3 SelectorTunnel outer source face(s) feeding a ControlTerminal: [(430, 488, 408, 'pos in cal image out'), (443, 502, 419, 'x,y,z array out'), (490, 516, 425, 'Bead is good? array out')]
+  PASS  F >=1 SelectorTunnel OUTER source face wired to a ControlTerminal
+  FACT  ExecState [before] scratch_c108d_selind_20260927_141604.vi = <dry:g.exec_state>
+  UNVERIFIED  F ExecState 1 before  (dry: read stub data)
+  FACT  V result "<dry:g.create_indicator_nested>"
+  UNVERIFIED  V err '' and route = SelectorTunnel owner  (dry: after mutation g.create_indicator_nested)
+  UNVERIFIED  V echo == the owner case uid  (dry: after mutation g.create_indicator_nested)
+  UNVERIFIED  V exactly 1 new panel object, on the face's wire w408  (dry: after mutation g.create_indicator_nested)
+  UNVERIFIED  V ControlTerminal +1, Wire count unchanged (branch)  (dry: after mutation g.create_indicator_nested)
+  PASS  R the face is the ONLY source on w408  [488]
+  UNVERIFIED  R sinks == before + the new indicator's terminal  (dry: after mutation g.create_indicator_nested)
+  UNVERIFIED  R the new terminal is a ControlTerminal on the face's diagram  (dry: after mutation g.create_indicator_nested)
+  FACT  ExecState [after V] scratch_c108d_selind_20260927_141604.vi = <dry:g.exec_state>
+  UNVERIFIED  E ExecState 1 after  (dry: after mutation g.create_indicator_nested)
+  UNVERIFIED  A alias (SelectorTunnel #430, None): same route, 1 new panel object on w408  (dry: after mutation g.create_indicator_nested)
+  UNVERIFIED  N INNER face -> ValueError, ControlTerminal unchanged  (dry: after mutation g.create_indicator_nested)
+  UNVERIFIED  N INPUT tunnel outer face -> ValueError, ControlTerminal unchanged  (dry: after mutation g.create_indicator_nested)
+  UNVERIFIED  H 20 more calls: no error, handles flat +-100 (<dry:bench_prep.labview_handles> -> <dry:bench_prep.labview_handles>)  (dry: after mutation g.create_indicator_nested)
+  FACT  ExecState [after H] scratch_c108d_selind_20260927_141604.vi = <dry:g.exec_state>
+  UNVERIFIED  E ExecState 1 after all calls  (dry: after mutation g.create_indicator_nested)
+
+====================================================================================================
+=== GATES: 4 pass / 0 fail
+JSON: C:\Users\KimLab\AppData\Local\Temp\stage_dry\diag_c108d_selind.json   elapsed 0.0 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"artefacts":[]}
+
+=== DRY PASS: first_fail=None coverage 70/78 lines, first mutation g.create_indicator_nested, unverified 13, graph tools/bench/diag_c108d_graph_track.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s
