@@ -4,6 +4,7 @@ status: current
 date: 2026-09-20
 tags: [hand-off]
 ---
+STOP — USER 2026-09-27 17:1x: "지금 세션 종료할 것. 이후 컴퓨터 재부팅 및 기계 재연결 진행할 예정". Runner stopped by the chat mid-cycle 110 (offline planning card, no LabVIEW open); the PC is being rebooted and the rotor adapter reconnected (D-2026-09-27-03). Do NOT relaunch until the user says so.
 Chat 2026-09-27 08:5x (user): the cycle-107 STOP was LIFTED ("그 동안 루프 분할 빌드는 계속 진행하도록"). 🔴 NO REAL RUN (camera / motor / bead-pick legs) until the user confirms COM5 in person (D-2026-09-27-03 open; diag_c105d_visa.py must return 0 first). Build-only work continues: display-loop part 2, then L2-A2. Original stop text: cycle 107 judgement, 2026-09-27 (outcome review §7, steer_107 FOLLOWED): every real run needs the rotor port, which NI-VISA still refuses (D-2026-09-27-03). Whether structural work continues meanwhile is D-2026-09-27-04. Remove this line only after the user answers; first act then = ## NEXT.
 Chat 2026-09-26 01:4x: the chat STOP (cycle-88 boundary, to relaunch on card chat-M1 code) was REMOVED after cycle 88 ended and the runner relaunched on the new cycle_runner.py (judgement ladder, judge A/B, material Fable low). Not a user start; the user said "lint 검증 이후 러너 재개" (2026-09-25).
 Chat 2026-09-27 03:3x: the chat STOP at the cycle-103 boundary was REMOVED and the runner relaunched on card chat-N4 code (judgement Opus high fixed, ladder high→max→fable low, firefighter Opus max, retrospective Opus high). Not a user start; continuous running through the weekend per the user.
