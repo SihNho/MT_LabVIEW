@@ -1,0 +1,62 @@
+BGRUN START 2026-09-28 08:31:35 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c116b-pin -TaskFile tools/bench/peer_c116b_pin_task.txt
+BGRUN PID 3000
+OUTCOME: ANSWERED (284s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-28-c116b-pin.md
+COST: $1.9739  in 50 / out 24138 / cache-create 114698 / cache-read 2690429  (280s, 36 turn(s))
+--- ANSWER ---
+Neither H1 nor H2 is supported by the evidence. H1 is nearly ruled out by R1's own accounting. H2 has no known mechanism in its current form. The observation proves less than the brief assumes, and the prediction it failed was partly guessed.
+
+**What the observation actually proves.** The other three classes matched exactly (not-connected 20, no-source 1, other 10), and `extra == []` (`diag_c116b_scratch_el.log:114-115`). So the whole change is inside loose-ends: 24 − s + n = 22.
+- s is the number of stub items removed (at most 11). n is the number of outer nets that became newly loose (at most 13).
+- That forces n ≤ 9, so at least 4 of the 13 sink-losing nets added no item.
+- The prediction's "only 2 already loose" is not a measurement. `R1LOOSE = {8590, 9051, 11253, 11389, 25438, 25461, 29122}` is hard-coded at `plan_l2r2_make.py:73`. It comes from PD230(d), which the plan itself marks INFERRED, with "a swap is not excluded" (`docs/d1-loop12-17-split-plan.md:2072`).
+- R1's mask pairing never identified 2 of its 7 R1-only items: R1#13 and R1#19 had "only 1 usable partners" (`diag_c115d_sel.log:27,30`).
+- The PD230 "7 used 5" line proves nothing either. `errorlist_check.compare` fills identical labels first-come-first-served (`tools/errorlist_check.py:400-411`), so the split between the two loose-ends licences is arbitrary.
+
+## 1. Strongest reason each hypothesis is wrong
+
+**H1 (four of the 13 nets were already loose in R1).** R1's 24 loose items are already accounted for, and an outer net fits almost none of the slots.
+- **Where the 24 come from.** B1 had 23 loose items against 22 source-only wires, plus 1 unexplained residual (`split-plan.md:1930`). The B3 licences 13 + 9 + 1 keep that count (`errorlist_expected_D1_l2_b3_…json:98-115`). R1 then removed 6 stubs and added 7 PD230 items. So R1 = 16 source-only wires + 1 residual + 7 PD230 items.
+- **Why the 13 nets mostly don't fit.** Each of the 13 nets keeps a source and 1–3 sinks, so none is a source-only wire. Only two slots are not tied to a known wire: the B1 residual, and PD230's possible "swap" segment. That gives at most 2 extra already-loose nets, and H1 needs 2 extra on top of w25438/w25461.
+- **So H1 needs all of these at once:** the residual sits on one of the 11 other nets, the swap segment sits on another of them, and the SR net that the swap leaves clean is not w25438 or w25461.
+- **Your named example is contradicted.** B3 re-created the three nets under new uids (w25911, w26021, w26064; `split-plan.md:2023-2028`), yet B3's loose count stayed 23 with every item attributed. So those three nets did not add loose items in B3. At most one of them can have inherited the residual.
+
+**H2 (deleting a tunnel at a branch end removes that segment).**
+- I found no documented behaviour where deleting an object trims a wire branch. NI offers `Wire.Remove Loose Ends` and `AbstractDiagram.Remove Wire Loose Ends` precisely because deletion leaves loose ends behind ([NI](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/wire/removelooseends.html), [NI diagram-level](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/abstractdiagram/removewirelooseends.html)). The NI forum treats a deleted terminal as leaving a broken wire to repair ([forum](https://forums.ni.com/t5/LabVIEW/Script-connect-existing-loose-wires-to-case-tunnels/td-p/4195933)).
+- Your own R1 run cut 7 SR sinks, and the accepted reading is +7 loose, one per net (`split-plan.md:2073`).
+- I did not find a source that settles this directly. What I found makes H2 as stated unlikely, not impossible.
+
+## 2. An alternative you missed
+
+**H2′ (pass-through terminal).** The tunnel's outer terminal was not the end of a branch but a joint in the middle of the wire. The wire came in from the source, touched the tunnel, and carried on to another sink. Deleting the tunnel then leaves a bend, not a loose end, so no item appears.
+
+LabVIEW's wire model allows this. A joint of type "terminal connection" can have up to four neighbouring joints ([Wire.Joints[] property 6371005](https://labviewwiki.org/wiki/Wire_class/Joints()_property)). This is H2 with an actual mechanism, and it depends only on how the wire was laid out. Wires that B3 re-created and routed by script are good candidates for this layout.
+
+The premise that s = 11 looks sound. The stubs are source-only wires, and that class matched the loose count at B1 (22 + 1).
+
+## 3. What would falsify each
+
+In an R1 byte copy, read the loose joints (flag `0x100`) and the terminal-joint neighbour count on the 13 outer wires:
+
+| Hypothesis | Falsified if R1 shows… |
+|---|---|
+| H1 | fewer than 4 of the 13 wires have a loose joint |
+| H2′ | none of the 13 tunnel-face joints has 2 or more neighbouring segments |
+| H2 (branch end removed) | the R2 scratch still has a loose joint at every deleted tunnel's position |
+| The prediction's own premise | w25438 or w25461 has no loose joint in R1 |
+
+Also, if w25438/w25461 show two loose joints each in R2 while the Error List counts them once, that confirms one item per wire object.
+
+## 4. Cheapest discriminating test
+
+Read `Wire.Joints[]` (property ID 6371005) on the 13 outer wires, and optionally the 11 stubs, in a byte copy of the saved R1 bed. Per joint, record the Type, the Flags (`0x1` = connects to a terminal, `0x100` = loose), and the number of neighbouring joints ([labviewwiki](https://labviewwiki.org/wiki/Wire_class/Joints()_property)).
+- It is read-only, deletes nothing, and needs no Error List pass (that read took 660 s, `diag_c116b_scratch_el.log:88`).
+- H1 predicts 4 wires with a loose joint. H2′ predicts 2 loose wires plus about 2 tunnel joints with 2 or more neighbours.
+- The same read on the 7 PD230 nets would also settle the old R1 swap question.
+- **Caveat:** this project has no Joints reader. It would be a small new read-only function, allowed under the 2026-09-24 tool grant. The one existing precedent, `Wire.Is Broken?` 6371004, lives only inside the connect ops. I have not checked whether 6371005 is reachable over COM, so read it inside an op VI.
+
+Your existing selection-mask pairing tool (`tools/bench/diag_c115d_sel.py`) cannot separate the two. Both hypotheses predict 11 vanished and 9 new items between R1 and R2. It would only help if you could also tell which nets the persisting items sit on, and its gate S1 already failed on 2 R1 items (`diag_c115d_sel.log:74`).
+
+**On which count to hold the stage to:** don't re-pin to 22 until the Joints read names the 4 nets. Matching a count without knowing which wires make it up is exactly how R1's inferred allocation got carried into this prediction.
+
+Two notes: I could not write the plan file because the Write tool is disabled in this session, so this reply is the whole review. The Figma connector (claude.ai Figma) also needs authorisation in your claude.ai connector settings before it can be used.
+BGRUN END rc=0 after 285s

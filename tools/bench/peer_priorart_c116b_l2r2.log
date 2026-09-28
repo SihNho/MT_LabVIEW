@@ -1,0 +1,59 @@
+BGRUN START 2026-09-28 08:00:59 limit 20.0 min: py tools/prior_art_review.py --plan-file tools/bench/cards/plan_116-2_l2r2.md --slug c116b-l2r2 --trigger new-op --recipe tools/recipes/stage_d1_l2r2.py
+BGRUN PID 13380
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c116b-l2r2.txt (90403 chars)
+   review card tools\bench\cards\review_priorart-c116b-l2r2.json
+OUTCOME: ANSWERED (83s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-28-priorart-c116b-l2r2.md
+COST: $1.3468  in 18 / out 6822 / cache-create 123322 / cache-read 1118453  (79s, 15 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c116b-l2r2 verdict=novel -> tools\bench\cards\verdict_priorart-c116b-l2r2.json
+--- ANSWER ---
+The recipe `tools/recipes/stage_d1_l2r2.py` has not been built before, and nothing on record says its direction is wrong. **Verdict: novel.** Your first question has a recorded answer; your second does not, and your planned scratch run is the right way to settle it.
+
+## Your question 1: has deleting a LoopTunnel ever failed, taken a wire along, or re-created the outer wire under a new uid?
+
+No such case is recorded. There is one earlier deletion of a LoopTunnel, and it worked cleanly:
+- **LoopTunnel #11363** was deleted with `delete_object` in the display-loop stage. This happened in four runs:
+  - `tools/bench/stage_d1_dispA_r1.log:423-426`
+  - `tools/bench/stage_d1_dispA_r2.log:423-426` (the run that saved `D1_s1_dispA_20260927_024535.vi`)
+  - `tools/bench/stage_d1_disp_r7.log:430-436`
+  - the r5 run (`archive/peer/2026-09-27-c101-5-onlysource.md:110`)
+- Each time the log shows `err ''`, `gone [11363]`, "0 new uid(s)", and no leftover junk Invoke node.
+- The simulator's dry runs predicted diff 0 for that step (`stage_d1_disp_dry.log:93`, `stage_d1_disp_dry4.log:70`).
+
+This precedent is weaker than your case in two ways:
+- Its inner face was already bare before the delete (`c101-5-onlysource.md:29-30`).
+- Step 23 was not a checkpoint, so nobody read the outer wire right after the delete (`stage_d1_disp_r7.log:436`). Your per-uid wire read after each delete would be the first measurement of that.
+
+**Rules already recorded for `delete_object`** (`tools/bench/opmodels/delete_object.json:215-218`):
+- A branched wire that the deleted node was a sink on keeps its other sinks. This matches your prediction for the 13 outer nets.
+- **Open ambiguity:** when the deleted node was a wire's ONLY sink, LabVIEW deleted the wire outright in one case (w8385) but left half-wires in another (w2160/w2187). All 13 of your tunnels sit on nets that have other sinks, so this should not apply. Your per-wire gate would catch it if it did.
+- **Lineage note:** tunnel #28343, which is in your retire set, was first recorded as a "dead tunnel" when #27605 was deleted (`delete_object.json:155-159`). The same sample shows that deleting a node flips the direction of nearby LoopTunnels (`:145-192`). That fits how #28343 became consumer-less, and does not contradict the plan.
+
+## Your question 2: does the Error List count a wire with two dangling branches as one item or two?
+
+This has never been measured here:
+- The review of your own plan says outright that no file measures it, and NI's documentation page for the error loaded with no content (`archive/peer/2026-09-28-c116b-plan.md:61-89`, and earlier `archive/peer/2026-09-28-c115c-errorlist.md:91`).
+- The closest measurement is `tools/bench/facts_c111b_attribution.md:11-14`: a CUT tunnel adds its own "undirected tunnel" item on top of its wire's item. That is about cut tunnels, not about wires with several loose branches, so it does not answer your question.
+
+Your plan's scratch run reads the Error List on a byte copy before the launch, and a count mismatch stops the launch. That run separates the three predictions you recorded: 24 (one item per wire), 26 (one per segment), and 25 (the swap alternative). It is the test the plan review asked for (`c116b-plan.md:79-82`).
+
+## Part A: the direction
+- **A1 (settled already):** the decision to retire these 13 tunnels, with #32572 staying, was made upstream in PD228(g) and PD230(f), and the plan cites them. That settles the direction; it does not mean the recipe already exists.
+- **A2 (refuted already):** nothing. No record argues against retiring these tunnels, and no earlier deletion failed.
+- **A3 (contradicted):** none found. Your prediction of 55 total uses the one-item-per-wire model and already takes into account `c115e-sel.md:107` and `c116b-plan.md:63`.
+- **A4 (unread evidence):** for your own information only, not blocking:
+  - `delete_object.json:215-218`, the sole-sink ambiguity above.
+  - `facts_c111b_attribution.md:13-14`. Your prediction assumes the "other" class stays at 10. That holds only if none of the 13 tunnels currently raises its own item. Your scratch read will show it either way.
+
+## Part B: the recipe itself
+- **B1 (already built):** no. The recipe is a trimmed copy of `stage_d1_l2r1.py`, as the plan says. `stagexec`'s `delete_object` and `delete_wire` steps are the existing helpers, and the plan reuses them.
+- **B2 (already failed):** no L2-R2 attempt is on record.
+- **B3 (helper exists):** nothing is hand-rolled. The recipe uses `retire_check`, the Executor's record mode and `gui_save`.
+- **B4 (already measured):** question 1 is partly measured (#11363 above). Question 2 is not measured.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c116b-l2r2","verdict":"novel","alternative":"Error List may count per segment (26) or swap (25) instead of per wire object (24); deleting a tunnel that was a wire's ONLY sink has two recorded outcomes (deleted w8385 vs half-wire w2160/w2187).","discriminating_test":"The plan's own scratch run on a byte copy of R1, followed by an Error List read, before the one launch: loose ends 24 vs 25 vs 26 settles the counting rule; the per-uid wire read after each delete settles Q1.","violations":[],"sources":["tools/bench/stage_d1_dispA_r2.log:423-426","tools/bench/stage_d1_disp_r7.log:430-436","tools/bench/opmodels/delete_object.json:215-218","tools/bench/opmodels/delete_object.json:155-159","archive/peer/2026-09-28-c116b-plan.md:61-89","tools/bench/facts_c111b_attribution.md:11-14","archive/peer/2026-09-27-c101-5-onlysource.md:29-30"],"note":"Q1: one prior LoopTunnel delete (#11363), clean (err '', no new uid); its outer wire was not read at that step. Q2: never measured; the plan's scratch Error List read is the test."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c116b-l2r2.md
+   STOP RECORD: none - 2026-09-28-priorart-c116b-l2r2.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_l2r2.py sha 834b47e41846 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 85s

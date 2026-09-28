@@ -92,8 +92,9 @@ PATH_TOKEN_RE = re.compile(r"""[A-Za-z]:[\\/][^\s'"|;&<>]+|[^\s'"|;&<>=]*[\\/][^
 # refused. The check is per segment because every real command here arrives as `cd "<project>" && py …`.
 EXEMPT_PROGRAMS = ("tools/stop_record.py", "tools/prior_art_review.py")
 # Shell separators. Tokens never contain these characters (PATH_TOKEN_RE excludes them), so splitting here
-# cannot cut a path in half.
-SEGMENT_SPLIT_RE = re.compile(r"&&|\|\||[;|\n]")
+# cannot cut a path in half. A lone `&` (background) is a separator too (card 116-3 S1: `wc -l R & py -u R` was ONE
+# read-only segment; launchunit.py:31 already split on it); `2>&1`, `>&`, `&>` are redirections, not separators.
+SEGMENT_SPLIT_RE = re.compile(r"&&|\|\||(?<![<>&])&(?![&>])|[;|\n]")
 # Command position inside one segment: optional env-var prefix, the interpreter, its flags, then the script.
 COMMAND_POSITION_RE = re.compile(
     r"^\s*(?:\w+=[^\s]+\s+)*"
@@ -191,24 +192,47 @@ READONLY_PROGRAMS = {
     "wc", "cat", "head", "tail", "grep", "egrep", "fgrep", "rg", "less", "more", "diff", "cmp", "md5sum",
     "sha256sum", "sha1sum", "file", "stat", "ls", "dir", "type", "sed", "findstr", "fc",
     "get-content", "gc", "select-string", "sls", "measure-object", "get-filehash", "get-item", "get-childitem",
-    "test-path", "format-hex"}
+    "test-path", "format-hex",
+    # card 116-3 S1 (docs/violation-decisions.md device-failed 2026-09-28 07:05; review archive/peer/2026-09-28-
+    # retrospective-cycle115.md): print/cut programs that material_marker.log:2614 used and that cannot run a file.
+    "cut", "basename", "echo"}
+# awk is read-only UNLESS its program can run a command or load code (card 116-3 S1): system(), a pipe to/from a
+# quoted command (`print | "sh"`, `"cmd" | getline`, `|&`), or a program/extension read from a file (-f/-i/-l, @load).
+AWK_PROGRAMS = {"awk", "gawk", "mawk", "nawk"}
+AWK_EXEC_RE = re.compile(r"\bsystem\s*\(|\|&|\|\s*[\"']|[\"']\s*\|\s*getline|@(?:load|include)\b|"
+                         r"(?:^|\s)(?:-f|-i|-l|-E|--file|--include|--load|--exec)(?:=|\s|$)")
+# Shell keywords that PRECEDE a command in the same segment (`do py -u $f`, `then wc -l X`). Stripped before
+# classification, so the command after them is judged; `time`/`exec`/`eval`/`env` are NOT stripped (they stay build).
+_KEYWORD_RE = re.compile(r"^\s*(?:(?:do|then|else|elif|if|while|until|!|\{)\s+)+")
+# `for NAME in WORDS` and a pure `NAME=VALUE` segment run nothing themselves; they BIND NAME to the path tokens of
+# WORDS / VALUE, and a later segment that expands $NAME / ${NAME} carries those tokens at ITS class (card 116-3 S1:
+# `for f in <recipe>; do wc -l $f` is a read; `f=<recipe>; py -u $f` is a launch).
+_FOR_RE = re.compile(r"^\s*for\s+([A-Za-z_]\w*)\s+in\b")
+_ASSIGN_RE = re.compile(r"^\s*([A-Za-z_]\w*)=")
+VAR_REF_RE = re.compile(r"\$\{?([A-Za-z_]\w*)")
 GIT_READONLY = {"diff", "log", "show", "status", "blame", "grep", "ls-files", "cat-file", "hash-object"}
 PY_READONLY_MODULES = {"py_compile", "ast", "tokenize", "tabnanny"}
 # Inside `py -c "<code>"`: any of these could run the file, so the segment is "build".
 PY_EXEC_RE = re.compile(r"\bexec\b|\beval\b|runpy|subprocess|os\.system|os\.popen|popen|spawn|__import__|"
                         r"import_module|importlib|run_path|run_module", re.I)
 # A whole command that feeds file content to an executor, or substitutes a command into an argument, gets no
-# read-only credit anywhere: `cat X | py -`, `wc -l $(py X)`, `Get-Content X | iex`.
+# read-only credit anywhere: `cat X | py -`, `wc -l \`py X\``, `Get-Content X | iex`.
+# `$( )` is NO LONGER here (card 116-3 S1, review archive/peer/2026-09-28-retrospective-cycle115.md): it made EVERY
+# segment of material_marker.log:2614 "build" for a `$(basename $f .py)`. A `$( )` is now classified by what it RUNS -
+# command_keys() recurses into it (`substitutions`), so `wc -l $(py -u X)` is still build for X and `b=$(basename X)`
+# is a read. Backtick and `<( )` keep the old whole-command rule (not needed by the fix, not loosened).
 EXEC_PIPE_RE = re.compile(r"\|\s*(?:py|python\w*|sh|bash|pwsh|powershell|iex|invoke-expression|xargs)\b|"
-                          r"\$\(|`|<\(|\bxargs\b|invoke-expression|\biex\b", re.I)
+                          r"`|<\(|\bxargs\b|invoke-expression|\biex\b", re.I)
 _PROG_RE = re.compile(r"^[\s(]*(?:\w+=[^\s]*\s+)*(\"[^\"]*\"|'[^']*'|[^\s'\"|;&()]+)(.*)$", re.S)
 _PY_RE = re.compile(r"^py(?:thon)?[\w.]*$", re.I)
 
 
 def split_segments(cmd):
     """Shell segments split on && || ; | newline OUTSIDE quotes (so `py -c "a;b" X` stays one segment). Falls back
-    to the plain split when the quotes do not balance."""
-    out, cur, q, i, s = [], [], None, 0, cmd or ""
+    to the plain split when the quotes do not balance.
+    card 116-3 S1: a lone `&` splits too (not the `&` of `2>&1` / `>&` / `&>`), and nothing splits INSIDE `$( )`,
+    whose inner command command_keys() judges on its own."""
+    out, cur, q, i, s, depth = [], [], None, 0, cmd or "", 0
     while i < len(s):
         ch = s[i]
         if q:
@@ -222,8 +246,25 @@ def split_segments(cmd):
             cur.append(ch)
             i += 1
             continue
+        if s.startswith("$(", i):
+            depth += 1
+            cur.append("$(")
+            i += 2
+            continue
+        if depth and ch in "()":
+            depth += 1 if ch == "(" else -1
+            cur.append(ch)
+            i += 1
+            continue
+        if depth:
+            cur.append(ch)
+            i += 1
+            continue
         if s.startswith("&&", i) or s.startswith("||", i):
             out.append("".join(cur)); cur = []; i += 2
+            continue
+        if ch == "&" and not (i > 0 and s[i - 1] in "<>") and not s.startswith("&>", i):
+            out.append("".join(cur)); cur = []; i += 1
             continue
         if ch in ";|\n":
             out.append("".join(cur)); cur = []; i += 1
@@ -236,14 +277,63 @@ def split_segments(cmd):
     return out
 
 
+def substitutions(text):
+    """The inner commands of the OUTERMOST `$( ... )` in `text` (balanced parentheses; an unclosed one runs to the
+    end). Nested substitutions are reached by command_keys() recursing into each inner command. card 116-3 S1."""
+    out, s, i = [], text or "", 0
+    while True:
+        j = s.find("$(", i)
+        if j < 0:
+            return out
+        depth, k = 1, j + 2
+        while k < len(s) and depth:
+            if s[k] == "(":
+                depth += 1
+            elif s[k] == ")":
+                depth -= 1
+            k += 1
+        out.append(s[j + 2:k - 1] if depth == 0 else s[j + 2:])
+        i = k
+
+
+def binding_name(seg):
+    """NAME when this segment is `for NAME in ...` or a pure `NAME=VALUE` (nothing runs after it), else ''."""
+    s = _KEYWORD_RE.sub("", seg or "", count=1)
+    m = _FOR_RE.match(s)
+    if m:
+        return m.group(1)
+    m = _ASSIGN_RE.match(s)
+    if not m:
+        return ""
+    q, depth, i, v = None, 0, m.end(), s
+    while i < len(v):                            # an unquoted blank at depth 0 followed by more = an env prefix
+        ch = v[i]
+        if q:
+            q = None if ch == q else q
+        elif ch in "\"'":
+            q = ch
+        elif v.startswith("$(", i):
+            depth += 1
+            i += 1
+        elif ch == ")" and depth:
+            depth -= 1
+        elif ch in " \t" and not depth and v[i:].strip():
+            return ""
+        i += 1
+    return m.group(1)
+
+
 def segment_class(seg, whole_cmd=""):
     """'exempt' | 'readonly' | 'build' for one segment - the command-class axis of DECISION_TABLE."""
+    seg = _KEYWORD_RE.sub("", seg or "", count=1)   # card 116-3 S1: `do wc -l $f` is judged as `wc -l $f`
     if exempt_program(seg):
         return "exempt"
     if EXEC_PIPE_RE.search(whole_cmd or seg):
         return "build"
     if offline_checker(seg):                     # card 107-1: stage_prerun --dry|--prerun (offline, see OFFLINE_CHECKER)
         return "exempt"
+    if binding_name(seg):                        # card 116-3 S1: a for-binding / pure assignment runs nothing itself
+        return "readonly"
     m = _PROG_RE.match(seg or "")
     if not m:
         return "build"
@@ -253,6 +343,8 @@ def segment_class(seg, whole_cmd=""):
     rest = m.group(2)
     if prog == "sed":
         return "build" if re.search(r"(?:^|\s)(?:-i|--in-place)", rest) else "readonly"
+    if prog in AWK_PROGRAMS:                     # card 116-3 S1: awk reads unless it can run/load code
+        return "build" if AWK_EXEC_RE.search(rest) else "readonly"
     if prog in READONLY_PROGRAMS:
         return "readonly"
     if prog == "git":
@@ -260,8 +352,8 @@ def segment_class(seg, whole_cmd=""):
         return "readonly" if sub in GIT_READONLY else "build"
     if _PY_RE.match(prog):
         mc = re.match(r"\s+(?:-[A-Za-z]+\s+)*?-c\s+(\"[^\"]*\"|'[^']*'|\S+)", rest)
-        if mc:
-            return "build" if PY_EXEC_RE.search(mc.group(1)) else "readonly"
+        if mc:                                   # card 116-3 S1: code built from $x / $( ) / backtick is unknown code
+            return "build" if (PY_EXEC_RE.search(mc.group(1)) or re.search(r"[$`]", mc.group(1))) else "readonly"
         mm = re.match(r"\s+(?:-[A-Za-z]+\s+)*?-m\s+([\w.]+)", rest)
         if mm and mm.group(1).lower() in PY_READONLY_MODULES:
             return "readonly"
@@ -279,15 +371,36 @@ def segment_class(seg, whole_cmd=""):
     return "build"
 
 
-def command_keys(command_string):
-    """{key: strictest command class} over every path token of the command."""
+def command_keys(command_string, _taint=None, _depth=0):
+    """{key: strictest command class} over every path token of the command.
+
+    card 116-3 S1: (1) a `for NAME in` / `NAME=VALUE` segment binds NAME to its path tokens and a later `$NAME` /
+    `${NAME}` carries them at the expanding segment's class (transitively: `g=$f`); (2) each `$( )` is judged by its
+    own inner command, recursively, with the bindings seen so far; nesting deeper than 8 is judged build."""
     out = {}
-    for seg in split_segments(command_string):
-        cls = segment_class(seg, command_string)
-        for t in PATH_TOKEN_RE.findall(seg):
+    taint = {} if _taint is None else _taint
+
+    def put(tokens, cls):
+        for t in tokens:
             for k in keys_for(t):
                 if _CLASS_RANK[cls] > _CLASS_RANK.get(out.get(k), -1):
                     out[k] = cls
+    for seg in split_segments(command_string):
+        cls = segment_class(seg, command_string)
+        toks = set(PATH_TOKEN_RE.findall(seg))
+        for v in VAR_REF_RE.findall(seg):
+            toks |= taint.get(v, set())
+        for inner in substitutions(seg):
+            if _depth >= 8:
+                cls = "build"
+                continue
+            for k, c in command_keys(inner, dict(taint), _depth + 1).items():
+                if _CLASS_RANK[c] > _CLASS_RANK.get(out.get(k), -1):
+                    out[k] = c
+        name = binding_name(seg)
+        if name:
+            taint[name] = set(toks)
+        put(toks, cls)
     return out
 
 

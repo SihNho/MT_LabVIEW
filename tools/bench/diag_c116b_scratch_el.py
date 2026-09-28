@@ -1,0 +1,94 @@
+r"""diag_c116b_scratch_el - card 116-2 P4 (part 2) and P7: the FULL Error List of a SAVED L2-R2 file read by tools/errorlist_check.py main() UNCHANGED
+(scratch copy, Ctrl+E/Ctrl+L, per-item double-click, Esc, md5 before/after, max_steps 180) against the R1 bed's expected file, then compared with the
+plan's PINNED prediction (tools/bench/plan_l2r2_pred.json: loose 24 / no-source 1 / not-connected 20 / other 10 = 55, one item per wire object).
+MODE 'scratch' (argv[1]): the file is diag_c116b_scratch.json l2r2.final (a claudeDev\scratch_c116b_bed_*.vi); PASS writes tools/bench/plan_l2r2_pin.json
+(the pin the launch is held to) and the scratch file is deleted. MODE 'final': the file is stage_d1_l2r2.json l2r2.final (D1_l2_r2_*.vi); PASS (counts
+== the pin) writes errorlist_expected_D1_l2_r2_<ts>.json (R1's entries with the counts this read USED) and reverdict must say OK.
+PRIOR ART: diag_c115b_errorlist.py (this is its cut: B3 -> R1 became R1 -> R2, class attribution replaced by the pinned prediction). Never saves or runs a
+VI. PREDICTION: reader gates True; extra []; class counts == the pin; LabVIEW gone.
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/diag_c116b_scratch_el.log -- py -u tools/bench/diag_c116b_scratch_el.py scratch"""
+import glob, json, os, subprocess, sys, time                                         # noqa: E401
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+for _p in ("tools", os.path.join("tools", "bench"), os.path.join("tools", "recipes")):
+    sys.path.insert(0, os.path.join(ROOT, _p))
+import errorlist_check as EC, protocol                                             # noqa: E401,E402
+B = os.path.join(ROOT, "tools", "bench")
+MODE = (sys.argv[1:2] or ["scratch"])[0]
+PREV = os.path.join(B, "errorlist_expected_D1_l2_r1_20260928_055441.json")
+ST = json.load(open(os.path.join(B, "diag_c116b_scratch.json" if MODE == "scratch" else "stage_d1_l2r2.json"), encoding="utf-8"))["l2r2"]
+NEW, PIN = ST["final"], ST["md5"]
+STEM = os.path.splitext(os.path.basename(NEW or "none"))[0]
+PRED = json.load(open(os.path.join(B, "plan_l2r2_pred.json"), encoding="utf-8"))["errorlist"]["pred"]
+gates, out = [], []
+
+
+def gate(label, ok, detail=""):
+    gates.append((label, bool(ok)))
+    print("  GATE {0}  {1}  {2}".format("PASS" if ok else "FAIL", label, str(detail)[:900]), flush=True)
+
+
+def klass(label):
+    t = str(label).lower()
+    return "nosource" if "has no source" in t else ("loose" if "loose ends" in t else ("notconn" if "not connected to anything" in t else "other"))
+
+
+gate("K mode {0}: file on disk, md5 == its stage JSON pin".format(MODE), bool(NEW) and os.path.exists(NEW) and EC.md5(NEW) == PIN
+     and (MODE != "scratch" or os.path.basename(NEW).startswith("scratch_c116b_")), (NEW, PIN))
+if gates[-1][1]:
+    before = set(glob.glob(os.path.join(B, "errorlist_%s_*.json" % STEM)))
+    EC._lv_imports()
+    E, _orig, RD = EC.E, EC.E.read, {}
+
+    def _read(*a, **k):
+        k["max_steps"] = 180
+        r = _orig(*a, **k); RD["max_steps"] = r.get("max_steps"); return r              # noqa: E702
+    E.read, sys.argv = _read, [sys.argv[0], "--vi", NEW, "--expected", PREV]
+    EC.main()
+    new = sorted(p for p in set(glob.glob(os.path.join(B, "errorlist_%s_*.json" % STEM))) - before if not p.endswith(("_raw.json", "_reuse.json")))
+    gate("R the reader wrote ONE read file (max_steps {0})".format(RD.get("max_steps")), len(new) == 1, new)
+    if len(new) == 1:
+        R = json.load(open(new[0], encoding="utf-8"))
+        rg = R.get("gates") or {}
+        for k, v in sorted(rg.items()):                                             # the reader's own integrity gates (as diag_c115b_errorlist.py:60-61)
+            gate("EL {0}".format(k), v)
+        pv = json.load(open(PREV, encoding="utf-8"))
+        use = R.get("licence_usage") or []
+        rows = [(e.get("label"), int(e.get("count", 1)), use[i]["used"] if i < len(use) else None) for i, e in enumerate(pv["expected"])]
+        got = {"loose": 0, "nosource": 0, "notconn": 0, "other": 0}
+        for lab, c, u in rows:
+            print("  FACT TABLE {0:<90} R1 {1:>3} used {2}".format(str(lab)[:90], c, u), flush=True)
+            got[klass(lab)] += u or 0
+        for x in R.get("extra") or []:
+            print("  FACT EXTRA {0}".format(x), flush=True); got[klass(x.get("label") if isinstance(x, dict) else x)] += 1   # noqa: E702
+        got["total"] = sum(got[k] for k in ("loose", "nosource", "notconn", "other"))
+        print("  FACT items {0}; classes read {1}; pinned prediction {2}".format(R.get("item_count"), got, PRED), flush=True)
+        gate("NC extra == [] (no item outside R1's licence classes)", not R.get("extra"), len(R.get("extra") or []))
+        gate("PIN class counts == plan_l2r2_pred.json (loose {0} / no-source {1} / not-connected {2} / other {3} = {4})".format(
+             PRED["loose"], PRED["nosource"], PRED["notconn"], PRED["other"], PRED["total"]), all(got[k] == PRED[k] for k in got) and R.get("item_count") == PRED["total"], got)
+        if MODE == "scratch" and all(ok for _l, ok in gates):
+            out.append(os.path.join(B, "plan_l2r2_pin.json"))
+            json.dump({"schema": "l2r2-pin/1", "pinned": PRED, "measured": got, "item_count": R.get("item_count"), "read": os.path.relpath(new[0], ROOT),
+                       "scratch": NEW, "scratch_md5": PIN, "t": time.time()}, open(out[-1], "w", encoding="utf-8"), indent=1)
+        if MODE == "final" and all(ok for _l, ok in gates):
+            d = dict(pv, bed=NEW, bed_md5=PIN, expected=[dict(e, count=u) for e, (_l, _c, u) in zip(pv["expected"], rows) if u],
+                     decided_by="card 116-2 P7 (mechanical, diag_c116b_scratch_el.py final): R1's licences, each count set to the count this read used; class counts == "
+                                "the plan's pinned prediction (plan_l2r2_pred.json, pinned by the scratch read plan_l2r2_pin.json); nothing new licensed",
+                     measured_from=os.path.relpath(new[0], ROOT), r2_delta=[[lab, c, u] for lab, c, u in rows if u != c])
+            out.append(os.path.join(B, "errorlist_expected_%s.json" % STEM))
+            json.dump(d, open(out[-1], "w", encoding="utf-8"), indent=1, ensure_ascii=False)
+            verdict, rv = EC.reverdict(NEW, new[0], new[0].replace(".json", "_raw.json"), expected_path=out[-1])
+            gate("V reverdict of this read against {0}: OK".format(os.path.basename(out[-1])), verdict == "OK", rv)
+subprocess.run(["taskkill", "/F", "/IM", "LabVIEW.exe"], capture_output=True, text=True, timeout=60); time.sleep(4)   # noqa: E702
+gone = "labview.exe" not in subprocess.run(["tasklist"], capture_output=True, text=True, timeout=60).stdout.lower()
+gate("H LabVIEW gone; file md5 unchanged by the read", gone and bool(NEW) and EC.md5(NEW) == PIN)
+if MODE == "scratch" and NEW and os.path.basename(NEW).startswith("scratch_c116b_") and os.path.exists(NEW):
+    for _i in range(5):
+        try:
+            os.remove(NEW); break                                                   # noqa: E702
+        except OSError:
+            time.sleep(3)
+    gate("H2 the saved scratch is deleted", not os.path.exists(NEW), NEW)
+n = sum(1 for _l, ok in gates if ok)
+ff = next((lab for lab, ok in gates if not ok), None)
+print(protocol.result_line(protocol.make_result(n, len(gates) - n, ff, [{"path": os.path.relpath(p, ROOT), "md5": EC.md5(p)} for p in out])), flush=True)
+sys.exit(0 if ff is None else 1)

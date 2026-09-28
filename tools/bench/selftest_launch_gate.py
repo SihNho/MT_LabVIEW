@@ -5,20 +5,28 @@ No LabVIEW. Records + logs live in a %TEMP% sandbox (PRERUN_RECORDS / PRERUN_LOG
 PREDICTION: L1-L9 and M1-M3, R1-R3 all PASS; then INSTALL replaces guard_bash.py (md5 changes to the .new's).
     py tools/bgrun.py --material --max-min 3 --log tools/bench/selftest_launch_gate.log -- py -u tools/bench/selftest_launch_gate.py
 """
+import atexit
 import hashlib
 import importlib.machinery
 import importlib.util
 import io
 import json
 import os
+import shutil
 import sys
+import tempfile
 import time
 import types
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 TOOLS = os.path.dirname(HERE)
 HOOKS = os.path.join(TOOLS, "hooks")
-SAND = os.path.join(os.environ.get("TEMP", "."), "lg_selftest_{0}".format(os.getpid()))
+# card 116-3 L1 (PD230(g)): the sandbox was %TEMP%/lg_selftest_<pid>, never deleted - a reused PID could meet the
+# previous run's records.jsonl / stage_runs.jsonl (headcmp_79-6 H1, which runs this file twice, read 1/1 in 116-1 and
+# 2/0 in diag_c116a_regress_before2.log; cause not measured). Now a fresh tempfile.mkdtemp, removed by the process-level finally (atexit runs on normal exit,
+# sys.exit and an uncaught exception alike, so a failure anywhere below still cleans up).
+SAND = tempfile.mkdtemp(prefix="lg_selftest_")
+atexit.register(shutil.rmtree, SAND, True)
 os.makedirs(os.path.join(SAND, "tools", "recipes"), exist_ok=True)
 os.makedirs(os.path.join(SAND, "logs"), exist_ok=True)
 os.environ["PRERUN_RECORDS"] = os.path.join(SAND, "records.jsonl")

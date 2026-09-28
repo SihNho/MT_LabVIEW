@@ -1,0 +1,329 @@
+BGRUN START 2026-09-28 07:45:21 limit 60.0 min: py -u tools/bench/diag_c116b_props.py
+BGRUN PID 12932
+diag_c116b_props - card 116-2 STEP 0b (P0) + P1 dump, READ-ONLY on byte copies: B3 vs R1 property compare, then the SAVED R1 graph.
+Part A (one fresh LabVIEW, COM): work copy of R1 (claudeDev\scratch_c116b_prop_<ts>.vi, discarded) + scratch copy of B3; per file
+  A1 every LoopTunnel via g.tunnels (OpTunnels_v0: uid, IndexMode, face names, wires), A2 every Constant via OpConstValue_v1 (base-Constant
+  cast, lossless flattened bytes, uid echo - prior art diag_c105_const.py), A3 the R1 graph dump (wiki_build.read_live + k_contract_79.mloops
+  + build_d1_v0.owner_of, prior art diag_c114c_b3graph.py) -> tools/bench/graph_l2r1_saved_20260928.json (fs_tunnel_pairs carried from the
+  B3 dump, review c116b-keys.md:46: term_a/term_b only are used). Part B (a second fresh LabVIEW, NI's own LabVIEWCLI CreateComparisonReport
+  = LVCompare, XML, -nobdcosm) on two fresh claudeDev byte copies -> tools/bench/diag_c116b_cmp.xml; the report is parsed offline afterwards.
+Nothing is run, wired, deleted or saved; copies deleted; LabVIEW killed. PREDICTION: G1 tunnel count B3 == R1 == 151, every uid read with
+identity; G2 IndexMode + face names equal for every tunnel uid kept in both (#637's included); G3 constant uid sets equal, every
+uid echo == listing uid, flattened bytes equal per uid; G4 graph dump: 5827 terminal rows, 10138 objs, #637 in loops with no left_of entry for
+the 6 retired pairs; G5 CLI rc 0 and the XML report exists; LabVIEW gone; inputs unchanged.
+    py tools/bgrun.py --material --max-min 60 --log tools/bench/diag_c116b_props.log -- py -u tools/bench/diag_c116b_props.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 301 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == f465196bb5016638b146e771ba54c5af  got f465196bb5016638b146e771ba54c5af
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33996
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_c116b_prop_20260928_074522.vi
+  FACT  ExecState [after open] scratch_c116b_prop_20260928_074522.vi = 0
+  PASS  SC scratch_c116b_prop_20260928_074522_b3.vi is a byte-identical copy of D1_l2_b3_20260928_032703.vi  scratch_c116b_prop_20260928_074522_b3.vi
+  FACT  R1: 151 LoopTunnels, 302 Constants read; handles 45800
+  FACT  B3: 151 LoopTunnels, 302 Constants read; handles 45796
+  PASS  G1 LoopTunnel count R1 == B3 == 151, every uid nonzero and distinct  (151, 151)
+  FACT  TUNNEL index modes R1: [(2294, 0), (2396, 0), (2580, 0), (3644, 0), (3656, 0), (3920, 0), (4031, 0), (4432, 0), (5129, 0), (5328, 0), (5569, 0), (5752, 0), (28343, 0), (32572, 0)]
+  FACT  TUNNEL wire differences (reported, not gated; K4 of diag_c116b_keys already equal): []
+  PASS  G2 IndexMode + face names/directions equal for every tunnel kept in both (151)
+  PASS  G3 constants: uid sets equal (302/302), every echo == listing uid, no op error, bytes equal per uid  {'echo_bad': [], 'diff': [], 'only_r1': [], 'only_b3': []}
+  OBSERVED uid 3628 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#3628 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 3667 -> owner 'Sequence' uid 3593 | self 'Diagram'#3667 | 482 says 'Sequence' cast 'Sequence' |  
+  OBSERVED uid 3886 -> owner 'CaseStructure' uid 3826 | self 'Diagram'#3886 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 4406 -> owner 'CaseStructure' uid 3826 | self 'Diagram'#4406 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 5038 -> owner 'Sequence' uid 3593 | self 'Diagram'#5038 | 482 says 'Sequence' cast 'Sequence' |  
+  OBSERVED uid 81548 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#81548 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 27537 -> owner 'ForLoop' uid 27489 | self 'Diagram'#27537 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 113 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#113 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 124 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#124 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 43928 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#43928 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 44125 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#44125 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 44169 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#44169 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 3371 -> owner 'CaseStructure' uid 2857 | self 'Diagram'#3371 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 3293 -> owner 'CaseStructure' uid 2857 | self 'Diagram'#3293 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 5031 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#5031 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 3121 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#3121 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 1817 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#1817 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 4866 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#4866 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 686 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#686 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 23405 -> owner 'WhileLoop' uid 23041 | self 'Diagram'#23405 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 23166 -> owner 'WhileLoop' uid 10170 | self 'Diagram'#23166 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 29894 -> owner 'ForLoop' uid 29874 | self 'Diagram'#29894 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 7911 -> owner 'ForLoop' uid 1359 | self 'Diagram'#7911 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 2265 -> owner 'CaseStructure' uid 2222 | self 'Diagram'#2265 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 2235 -> owner 'CaseStructure' uid 2222 | self 'Diagram'#2235 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 10453 -> owner 'CaseStructure' uid 10445 | self 'Diagram'#10453 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 10459 -> owner 'CaseStructure' uid 10445 | self 'Diagram'#10459 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 5582 -> owner 'CaseStructure' uid 5540 | self 'Diagram'#5582 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 5592 -> owner 'CaseStructure' uid 5540 | self 'Diagram'#5592 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 23058 -> owner 'WhileLoop' uid 23032 | self 'Diagram'#23058 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 10417 -> owner 'CaseStructure' uid 10407 | self 'Diagram'#10417 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 10423 -> owner 'CaseStructure' uid 10407 | self 'Diagram'#10423 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 25392 -> owner 'WhileLoop' uid 25380 | self 'Diagram'#25392 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 25767 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#25767 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 27980 -> owner 'CaseStructure' uid 27905 | self 'Diagram'#27980 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 27996 -> owner 'CaseStructure' uid 27905 | self 'Diagram'#27996 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 28036 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#28036 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 28426 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#28426 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 27389 -> owner 'CaseStructure' uid 27364 | self 'Diagram'#27389 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 27399 -> owner 'CaseStructure' uid 27364 | self 'Diagram'#27399 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 27425 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#27425 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 27723 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#27723 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 27024 -> owner 'CaseStructure' uid 26991 | self 'Diagram'#27024 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 27037 -> owner 'CaseStructure' uid 26991 | self 'Diagram'#27037 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 27076 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#27076 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 27259 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#27259 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 26496 -> owner 'CaseStructure' uid 26441 | self 'Diagram'#26496 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 26505 -> owner 'CaseStructure' uid 26441 | self 'Diagram'#26505 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 26535 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#26535 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 26880 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#26880 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 25834 -> owner 'CaseStructure' uid 25810 | self 'Diagram'#25834 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 25846 -> owner 'CaseStructure' uid 25810 | self 'Diagram'#25846 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 25892 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#25892 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 26292 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#26292 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 28686 -> owner 'ForLoop' uid 28670 | self 'Diagram'#28686 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 639 -> owner 'WhileLoop' uid 637 | self 'Diagram'#639 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 2603 -> owner 'ForLoop' uid 2457 | self 'Diagram'#2603 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 10213 -> owner 'EventStructure' uid 10153 | self 'Diagram'#10213 | 482 says 'EventStructure' cast 'EventStructure' |  
+  OBSERVED uid 32067 -> owner 'EventStructure' uid 10153 | self 'Diagram'#32067 | 482 says 'EventStructure' cast 'EventStructure' |  
+  OBSERVED uid 32166 -> owner 'EventStructure' uid 10153 | self 'Diagram'#32166 | 482 says 'EventStructure' cast 'EventStructure' |  
+  OBSERVED uid 24642 -> owner 'ForLoop' uid 4810 | self 'Diagram'#24642 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 29629 -> owner 'ForLoop' uid 29617 | self 'Diagram'#29629 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 12599 -> owner 'CaseStructure' uid 12589 | self 'Diagram'#12599 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 12617 -> owner 'CaseStructure' uid 12589 | self 'Diagram'#12617 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 16565 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#16565 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 11926 -> owner 'CaseStructure' uid 11869 | self 'Diagram'#11926 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 11936 -> owner 'CaseStructure' uid 11869 | self 'Diagram'#11936 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 18724 -> owner 'CaseStructure' uid 18716 | self 'Diagram'#18724 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 18730 -> owner 'CaseStructure' uid 18716 | self 'Diagram'#18730 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 22116 -> owner 'CaseStructure' uid 22082 | self 'Diagram'#22116 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 22128 -> owner 'CaseStructure' uid 22082 | self 'Diagram'#22128 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 20518 -> owner 'CaseStructure' uid 20474 | self 'Diagram'#20518 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 20530 -> owner 'CaseStructure' uid 20474 | self 'Diagram'#20530 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 21624 -> owner 'CaseStructure' uid 21600 | self 'Diagram'#21624 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 21649 -> owner 'CaseStructure' uid 21630 | self 'Diagram'#21649 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 21658 -> owner 'CaseStructure' uid 21630 | self 'Diagram'#21658 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 21745 -> owner 'CaseStructure' uid 21726 | self 'Diagram'#21745 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 21754 -> owner 'CaseStructure' uid 21726 | self 'Diagram'#21754 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 21871 -> owner 'CaseStructure' uid 21600 | self 'Diagram'#21871 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 20602 -> owner 'CaseStructure' uid 20548 | self 'Diagram'#20602 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 20774 -> owner 'CaseStructure' uid 20548 | self 'Diagram'#20774 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 3227 -> owner 'CaseStructure' uid 3191 | self 'Diagram'#3227 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 3292 -> owner 'CaseStructure' uid 3191 | self 'Diagram'#3292 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 206 -> owner 'CaseStructure' uid 57 | self 'Diagram'#206 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 253 -> owner 'CaseStructure' uid 57 | self 'Diagram'#253 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 759 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#759 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 1493 -> owner 'CaseStructure' uid 195 | self 'Diagram'#1493 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 1610 -> owner 'CaseStructure' uid 195 | self 'Diagram'#1610 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 12960 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#12960 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 13236 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#13236 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 18402 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#18402 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 32410 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#32410 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 33688 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#33688 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 14037 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#14037 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 14435 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#14435 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 13531 -> owner 'CaseStructure' uid 13507 | self 'Diagram'#13531 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 13589 -> owner 'CaseStructure' uid 13507 | self 'Diagram'#13589 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 13706 -> owner 'ForLoop' uid 13683 | self 'Diagram'#13706 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 13404 -> owner 'ForLoop' uid 13390 | self 'Diagram'#13404 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 14840 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#14840 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 15041 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#15041 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 15266 -> owner 'WhileLoop' uid 15173 | self 'Diagram'#15266 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 16964 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#16964 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 19002 -> owner 'CaseStructure' uid 18975 | self 'Diagram'#19002 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 19011 -> owner 'CaseStructure' uid 18975 | self 'Diagram'#19011 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 19033 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#19033 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 19227 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#19227 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 18686 -> owner 'CaseStructure' uid 18666 | self 'Diagram'#18686 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 18695 -> owner 'CaseStructure' uid 18666 | self 'Diagram'#18695 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 18718 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#18718 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 18914 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#18914 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 18286 -> owner 'CaseStructure' uid 18267 | self 'Diagram'#18286 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 18295 -> owner 'CaseStructure' uid 18267 | self 'Diagram'#18295 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 18317 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#18317 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 18565 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#18565 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 18055 -> owner 'CaseStructure' uid 18036 | self 'Diagram'#18055 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 18065 -> owner 'CaseStructure' uid 18036 | self 'Diagram'#18065 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 28412 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#28412 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 28823 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#28823 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 18096 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#18096 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 18240 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#18240 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 17741 -> owner 'CaseStructure' uid 17722 | self 'Diagram'#17741 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 17750 -> owner 'CaseStructure' uid 17722 | self 'Diagram'#17750 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 17772 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#17772 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 17977 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#17977 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 17430 -> owner 'CaseStructure' uid 17410 | self 'Diagram'#17430 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 17439 -> owner 'CaseStructure' uid 17410 | self 'Diagram'#17439 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 17471 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#17471 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 17664 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#17664 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 16989 -> owner 'CaseStructure' uid 16970 | self 'Diagram'#16989 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 16998 -> owner 'CaseStructure' uid 16970 | self 'Diagram'#16998 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 17020 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#17020 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 17299 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#17299 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 16002 -> owner 'CaseStructure' uid 15968 | self 'Diagram'#16002 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 16013 -> owner 'CaseStructure' uid 15968 | self 'Diagram'#16013 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 16303 -> owner 'CaseStructure' uid 16238 | self 'Diagram'#16303 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 16355 -> owner 'ForLoop' uid 16312 | self 'Diagram'#16355 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 16411 -> owner 'CaseStructure' uid 16369 | self 'Diagram'#16411 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 16463 -> owner 'CaseStructure' uid 16369 | self 'Diagram'#16463 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 16621 -> owner 'ForLoop' uid 16557 | self 'Diagram'#16621 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 16930 -> owner 'CaseStructure' uid 16238 | self 'Diagram'#16930 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 15593 -> owner 'EventStructure' uid 15544 | self 'Diagram'#15593 | 482 says 'EventStructure' cast 'EventStructure' |  
+  OBSERVED uid 15622 -> owner 'EventStructure' uid 15544 | self 'Diagram'#15622 | 482 says 'EventStructure' cast 'EventStructure' |  
+  OBSERVED uid 15683 -> owner 'Sequence' uid 15649 | self 'Diagram'#15683 | 482 says 'Sequence' cast 'Sequence' |  
+  OBSERVED uid 15795 -> owner 'Sequence' uid 15649 | self 'Diagram'#15795 | 482 says 'Sequence' cast 'Sequence' |  
+  OBSERVED uid 28735 -> owner 'CaseStructure' uid 28709 | self 'Diagram'#28735 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 28741 -> owner 'CaseStructure' uid 28709 | self 'Diagram'#28741 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 19687 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#19687 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 19887 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#19887 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 20261 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#20261 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 21134 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#21134 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 21577 -> owner 'ForLoop' uid 21305 | self 'Diagram'#21577 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 22013 -> owner 'Sequence' uid 21590 | self 'Diagram'#22013 | 482 says 'Sequence' cast 'Sequence' |  
+  OBSERVED uid 22160 -> owner 'CaseStructure' uid 22086 | self 'Diagram'#22160 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 22295 -> owner 'CaseStructure' uid 22086 | self 'Diagram'#22295 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 22325 -> owner 'Sequence' uid 21590 | self 'Diagram'#22325 | 482 says 'Sequence' cast 'Sequence' |  
+  OBSERVED uid 22382 -> owner 'Sequence' uid 21590 | self 'Diagram'#22382 | 482 says 'Sequence' cast 'Sequence' |  
+  OBSERVED uid 22427 -> owner 'Sequence' uid 21590 | self 'Diagram'#22427 | 482 says 'Sequence' cast 'Sequence' |  
+  OBSERVED uid 22532 -> owner 'ForLoop' uid 22433 | self 'Diagram'#22532 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 22650 -> owner 'Sequence' uid 22541 | self 'Diagram'#22650 | 482 says 'Sequence' cast 'Sequence' |  
+  OBSERVED uid 22780 -> owner 'Sequence' uid 22541 | self 'Diagram'#22780 | 482 says 'Sequence' cast 'Sequence' |  
+  OBSERVED uid 23714 -> owner 'CaseStructure' uid 23619 | self 'Diagram'#23714 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 23729 -> owner 'CaseStructure' uid 23619 | self 'Diagram'#23729 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 24013 -> owner 'CaseStructure' uid 23619 | self 'Diagram'#24013 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 24449 -> owner 'CaseStructure' uid 23619 | self 'Diagram'#24449 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 22847 -> owner 'ForLoop' uid 22786 | self 'Diagram'#22847 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 25266 -> owner 'Sequence' uid 21590 | self 'Diagram'#25266 | 482 says 'Sequence' cast 'Sequence' |  
+  OBSERVED uid 25290 -> owner 'ForLoop' uid 25272 | self 'Diagram'#25290 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 25345 -> owner 'ForLoop' uid 25325 | self 'Diagram'#25345 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 25769 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#25769 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 25890 -> owner 'ForLoop' uid 25850 | self 'Diagram'#25890 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 26117 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#26117 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 637 -> owner 'Diagram' uid 686 | self 'WhileLoop'#637 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 2294 -> owner 'WhileLoop' uid 637 | self 'LoopTunnel'#2294 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 3644 -> owner 'WhileLoop' uid 637 | self 'LoopTunnel'#3644 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 2580 -> owner 'WhileLoop' uid 637 | self 'LoopTunnel'#2580 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 2396 -> owner 'WhileLoop' uid 637 | self 'LoopTunnel'#2396 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 4432 -> owner 'WhileLoop' uid 637 | self 'LoopTunnel'#4432 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 3656 -> owner 'WhileLoop' uid 637 | self 'LoopTunnel'#3656 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 3920 -> owner 'WhileLoop' uid 637 | self 'LoopTunnel'#3920 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 4031 -> owner 'WhileLoop' uid 637 | self 'LoopTunnel'#4031 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 5129 -> owner 'WhileLoop' uid 637 | self 'LoopTunnel'#5129 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 5328 -> owner 'WhileLoop' uid 637 | self 'LoopTunnel'#5328 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 28343 -> owner 'WhileLoop' uid 637 | self 'LoopTunnel'#28343 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 5752 -> owner 'WhileLoop' uid 637 | self 'LoopTunnel'#5752 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 5569 -> owner 'WhileLoop' uid 637 | self 'LoopTunnel'#5569 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 32572 -> owner 'WhileLoop' uid 637 | self 'LoopTunnel'#32572 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 24364 -> owner 'EventStructure' uid 10153 | self 'SelectorTunnel'#24364 | 482 says 'EventStructure' cast 'EventStructure' |  
+  OBSERVED uid 3593 -> owner 'Diagram' uid 3628 | self 'Sequence'#3593 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 3826 -> owner 'Diagram' uid 3667 | self 'CaseStructure'#3826 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 27489 -> owner 'Diagram' uid 81548 | self 'ForLoop'#27489 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 2857 -> owner 'Diagram' uid 124 | self 'CaseStructure'#2857 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 23041 -> owner 'Diagram' uid 686 | self 'WhileLoop'#23041 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 10170 -> owner 'Diagram' uid 686 | self 'WhileLoop'#10170 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 29874 -> owner 'Diagram' uid 23166 | self 'ForLoop'#29874 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 1359 -> owner 'Diagram' uid 23166 | self 'ForLoop'#1359 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 2222 -> owner 'Diagram' uid 23166 | self 'CaseStructure'#2222 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 10445 -> owner 'Diagram' uid 23166 | self 'CaseStructure'#10445 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 5540 -> owner 'Diagram' uid 23166 | self 'CaseStructure'#5540 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 23032 -> owner 'Diagram' uid 686 | self 'WhileLoop'#23032 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 10407 -> owner 'Diagram' uid 23058 | self 'CaseStructure'#10407 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 25380 -> owner 'Diagram' uid 686 | self 'WhileLoop'#25380 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 27905 -> owner 'Diagram' uid 25767 | self 'CaseStructure'#27905 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 27364 -> owner 'Diagram' uid 25767 | self 'CaseStructure'#27364 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 26991 -> owner 'Diagram' uid 25767 | self 'CaseStructure'#26991 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 26441 -> owner 'Diagram' uid 25767 | self 'CaseStructure'#26441 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 25810 -> owner 'Diagram' uid 25767 | self 'CaseStructure'#25810 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 28670 -> owner 'Diagram' uid 686 | self 'ForLoop'#28670 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 2457 -> owner 'Diagram' uid 639 | self 'ForLoop'#2457 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 10153 -> owner 'Diagram' uid 639 | self 'EventStructure'#10153 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 4810 -> owner 'Diagram' uid 32166 | self 'ForLoop'#4810 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 29617 -> owner 'Diagram' uid 639 | self 'ForLoop'#29617 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 12589 -> owner 'Diagram' uid 639 | self 'CaseStructure'#12589 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 11869 -> owner 'Diagram' uid 16565 | self 'CaseStructure'#11869 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 18716 -> owner 'Diagram' uid 639 | self 'CaseStructure'#18716 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 22082 -> owner 'Diagram' uid 639 | self 'CaseStructure'#22082 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 20474 -> owner 'Diagram' uid 639 | self 'CaseStructure'#20474 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 21600 -> owner 'Diagram' uid 20530 | self 'CaseStructure'#21600 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 21630 -> owner 'Diagram' uid 21624 | self 'CaseStructure'#21630 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 21726 -> owner 'Diagram' uid 21658 | self 'CaseStructure'#21726 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 20548 -> owner 'Diagram' uid 20530 | self 'CaseStructure'#20548 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 3191 -> owner 'Diagram' uid 639 | self 'CaseStructure'#3191 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 57 -> owner 'Diagram' uid 639 | self 'CaseStructure'#57 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 195 -> owner 'Diagram' uid 759 | self 'CaseStructure'#195 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 13507 -> owner 'Diagram' uid 13236 | self 'CaseStructure'#13507 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 13683 -> owner 'Diagram' uid 13589 | self 'ForLoop'#13683 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 13390 -> owner 'Diagram' uid 13236 | self 'ForLoop'#13390 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 15173 -> owner 'Diagram' uid 15041 | self 'WhileLoop'#15173 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 18975 -> owner 'Diagram' uid 16964 | self 'CaseStructure'#18975 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 18666 -> owner 'Diagram' uid 16964 | self 'CaseStructure'#18666 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 18267 -> owner 'Diagram' uid 16964 | self 'CaseStructure'#18267 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 18036 -> owner 'Diagram' uid 16964 | self 'CaseStructure'#18036 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 17722 -> owner 'Diagram' uid 16964 | self 'CaseStructure'#17722 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 17410 -> owner 'Diagram' uid 16964 | self 'CaseStructure'#17410 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 16970 -> owner 'Diagram' uid 16964 | self 'CaseStructure'#16970 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 15968 -> owner 'Diagram' uid 15266 | self 'CaseStructure'#15968 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 16238 -> owner 'Diagram' uid 15266 | self 'CaseStructure'#16238 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 16312 -> owner 'Diagram' uid 16303 | self 'ForLoop'#16312 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 16369 -> owner 'Diagram' uid 16355 | self 'CaseStructure'#16369 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 16557 -> owner 'Diagram' uid 16303 | self 'ForLoop'#16557 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 15544 -> owner 'Diagram' uid 15266 | self 'EventStructure'#15544 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 15649 -> owner 'Diagram' uid 15622 | self 'Sequence'#15649 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 28709 -> owner 'Diagram' uid 15795 | self 'CaseStructure'#28709 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 21305 -> owner 'Diagram' uid 21134 | self 'ForLoop'#21305 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 21590 -> owner 'Diagram' uid 21577 | self 'Sequence'#21590 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 22086 -> owner 'Diagram' uid 22013 | self 'CaseStructure'#22086 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 22433 -> owner 'Diagram' uid 22427 | self 'ForLoop'#22433 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 22541 -> owner 'Diagram' uid 22532 | self 'Sequence'#22541 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 23619 -> owner 'Diagram' uid 22780 | self 'CaseStructure'#23619 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 22786 -> owner 'Diagram' uid 22780 | self 'ForLoop'#22786 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 25272 -> owner 'Diagram' uid 25266 | self 'ForLoop'#25272 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 25325 -> owner 'Diagram' uid 25290 | self 'ForLoop'#25325 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 25850 -> owner 'Diagram' uid 25769 | self 'ForLoop'#25850 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  WROTE G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_l2r1_saved_20260928.json md5 e429f7ad7b2eebdaabaf0db1a462f10e
+  PASS  G4 dump: 5827 rows, 10138 objs, every Diagram owner resolved, #637 in loops without the 12 SR uids  (5827, 10138, 1, [])
+
+---------- [H] HYGIENE
+  FACT  close_panel(scratch_c116b_prop_20260928_074522.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 6, 'closed': 6, 'live': 0, 'cached_op_vis': 9}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 6, 'closed': 6, 'live': 0, 'cached_op_vis': 9}
+  FACT  LabVIEW handle count AFTER the work: 45949
+  PASS  H4 scratch deleted: scratch_c116b_prop_20260928_074522.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c116b_prop_20260928_074522.vi
+  PASS  H4 scratch deleted: scratch_c116b_prop_20260928_074522_b3.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c116b_prop_20260928_074522_b3.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before f465196bb5016638b146e771ba54c5af / after f465196bb5016638b146e771ba54c5af
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33996
+
+====================================================================================================
+=== GATES: 14 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c116b_props.json   elapsed 262.0 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":14,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  C0 compare copies are byte copies  ('scratch_c116b_cmp_b3_20260928_074948.vi', 'scratch_c116b_cmp_r1_20260928_074948.vi')
+  FACT  CLI rc 0 after 81 s: LabVIEWCLI started logging in file: C:\Users\KimLab\AppData\Local\Temp\lvtemporary_947830.log Using LabVIEW: "C:\Program Files\National Instruments\LabVIEW 2026\LabVIEW.exe" LabVIEW launched successfully. Connection established with LabVIEW at port number 3364. Operation output: Report can be found at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c116b_cmp.xml CreateComparisonReport operation succeeded. 
+  PASS  G5 CLI rc 0 and the XML report exists (6403 B)
+  PASS  C9 compare copies deleted
+  PASS  Z LabVIEW gone; R1 and B3 md5 unchanged  (True, 'f465196bb5016638b146e771ba54c5af', '1b5c12d71ca48f22e3f4b80316c67e51')
+
+====================================================================================================
+=== GATES: 18 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c116b_props.json   elapsed 356.7 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":18,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 357s

@@ -4136,6 +4136,34 @@ def read_bool_const(target, uid):
     return out
 
 
+C116D_LABELS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench", "diag_c116d_oplabels.json")
+
+
+def wire_joints(target, wire_uid, index=None):
+    """Card 116-4 J1: `Wire.Joints[]` 6371005 of Wire #wire_uid through OpWireJoints_v0 (Traverse('Wire')[i] -> TMSC(Wire) ->
+    ONE Property node [GObject.UID 632A813, Joints[]] -> Close Reference on its `reference out`; built by
+    tools/bench/diag_c116d_opbuild.py). READ-ONLY: no property write, no method. `index` = the Traverse('Wire') index when the
+    caller already holds report_all(target, 'Wire') order for an UNMUTATED target (a bulk read); else it is re-read here.
+    Returns {echo, joints (raw COM value), err}; an echo != wire_uid is appended to err."""
+    with open(C116D_LABELS, encoding="utf-8") as f:
+        lab = json.load(f)["OpWireJoints_v0"]
+    ensure_loaded(target)
+    i = int(index) if index is not None else _uid_index(target, "Wire", wire_uid)
+    vi = op(os.path.join(CLAUDEDEV, "OpWireJoints_v0.vi"))
+    _set_common(vi, target, lab, "Wire", i)
+    vi.SetControlValue(lab["UID"], 0)
+    try:
+        vi.SetControlValue(lab["Joints"], [])
+    except Exception:                                                               # noqa: BLE001
+        pass
+    _run(vi)
+    out = {"echo": int(vi.GetControlValue(lab["UID"])), "joints": vi.GetControlValue(lab["Joints"]),
+           "err": _err(vi, lab["Err"]) or ""}
+    if wire_uid is not None and out["echo"] != int(wire_uid):
+        out["err"] = (out["err"] + " | " if out["err"] else "") + "uid echo %r != #%s" % (out["echo"], wire_uid)
+    return out
+
+
 def create_local_read(target, panel_index, dest_diagram_uid=None, position=(40, 40)):
     """Cycle 102 (stage_d1_disp_r6.log:544,572,595): the READ twin of create_local_write - OpCreateLocalRead_v0 with
     `Write?` = False (toolkit-capabilities.md:76: the Boolean steers the mode; a Local is BORN write, is_source False).

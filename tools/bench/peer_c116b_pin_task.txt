@@ -1,0 +1,14 @@
+ATTACK my reading of a FAILED PREDICTION in tools/bench/diag_c116b_scratch_el.log (script tools/bench/diag_c116b_scratch_el.py, card tools/bench/cards/task_116-2.json P4).
+
+Setup. L2-R2 retires 13 input LoopTunnels on loop #637 from the R1 bed (D1_l2_r1_20260928_055441.vi). Plan tools/bench/plan_l2r2.json (made by tools/bench/plan_l2r2_make.py from the SAVED R1 graph tools/bench/graph_l2r1_saved_20260928.json): per tunnel delete_wire of its inner source-only stub (11 stubs; #2294/#3644 have an unwired inner face), then delete_object of the tunnel. Each tunnel's outer face is one SINK on a live net that keeps its source and 1-3 other sinks (w25238 w25225 w24277 w24333 w25237 w25280 w25306 w25336 w26021 w26064 w25911 w25438 w25461).
+The scratch run on a byte copy (tools/bench/diag_c116b_scratch.log, 43/0) passed every structural gate: E1 real == simulated per checkpoint, Wire census exactly -11 (only the stubs; no outer wire deleted), LoopTunnel -13, TD whole-graph terminal-list diff (only the 26 tunnel rows gone, every other wire's terminal list unchanged), ENDS (13 nets keep uid, source, kept sinks), cdiff == R1's 16 rows, RBW(new) deletes nothing RBW(bed) keeps.
+
+Prediction (tools/bench/plan_l2r2_pred.json, one Error List item per WIRE OBJECT): R1 loose-ends 24 - 11 stubs + 13 nets losing a sink - 2 of them (w25438, w25461) already loose in R1 = 24; no-source 1, not-connected 20, other 10; total 55. Alternatives recorded beforehand: per-segment 26, swap 25.
+Observation (the Error List of the SAVED scratch, all reader integrity gates PASS, extra == []): loose-ends 22, no-source 1, not-connected 20, other 10, total 53 (diag_c116b_scratch_el.log FACT items line). None of 24/25/26.
+
+My competing explanations (I have NOT tested either):
+H1 per-wire counting holds, but FOUR of the 13 outer nets (not two) already had a loose end in R1, e.g. B3's border-re-created face-to-face nets w25911/w26021/w26064 (plan d1-loop12-17-split-plan.md PD228(b)-(d)), so only 9 nets add an item: 24 - 11 + 9 = 22.
+H2 deleting a tunnel whose outer terminal sat at the END of a branch removes that branch segment inside the same wire object (no dangling end), for some nets; 11 stubs -11, and only 9 of 13 nets become loose.
+(An 11-stub premise failure - some inner stubs not being loose-ends items in R1 - is also possible: then the nets would add more, not fewer.)
+
+Give: the strongest reason each of H1/H2 is wrong; any alternative I missed; what would falsify each; and the CHEAPEST discriminating test on byte copies (the Error List items carry no uid - errorlist_check reads labels only; a selection-mask pairing by screenshot exists, tools/bench/diag_c115d_sel.py). Rule 1a is not in question here: the terminal-list diff shows no kept terminal changed; the question is only which Error List count the stage should be held to.

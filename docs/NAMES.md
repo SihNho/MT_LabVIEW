@@ -1334,3 +1334,14 @@ Inputs: the OpSetIndexMode_v0-donor ops take `vi path`, `vi path 2`, `Class Name
   (census `+4`/`+2`, `:119`, `:146`); `ConditionalTunnel` is the class that owns `UseDefault`.
 - A front-panel terminal in the whole-VI terminal table (`allterms.read_terms`) has owner class **`Diagram`** and
   `term_uid` == the ControlTerminal's own uid (#8476 `Exp Baseline`, #8323).
+
+## `Wire.Joints[]` 6371005 reader — OpWireJoints_v0 (measured 2026-09-28, card 116-4, `tools/bench/diag_c116d_opbuild.log`, `diag_c116d_j1.log`)
+
+- `claudeDev\OpWireJoints_v0.vi` md5 `15cf4971…`: donor OpSetIndexMode_v0 → Traverse(`Class Name`='Wire', `index`) → TMSC seeded
+  VI Server:Wire → ONE PN `[UID, Joints[]]` (PN data terminal **`Joints[]`**) → `Close Reference` (#615, copied from KernelBuilder_v1
+  #157) on the PN's `reference out`. Indicators **`UID`**, **`Joints[]`**, **`error out 2`**; labels `tools/bench/diag_c116d_oplabels.json`.
+  Python: `gscript.wire_joints(target, wire_uid, index=None)` → `{echo, joints, err}`. Read-only; 20 calls handles 34187 → 34186.
+- **Joint element = `[[x, y], flags, n_neighbours, nb0, nb1, nb2, nb3]`** (nb = joint index, -1 = none). `flags & 0x1` = terminal
+  joint; **`flags & 0x100` = LOOSE** — set on every joint of a one-sink wire whose sink node was deleted (w430: flags 1/0/1 → 3/256/260).
+- **Deleting the node at a PASS-THROUGH terminal joint (flags 1, 2 neighbours) leaves NO loose end**: the joint is removed and its
+  two neighbours are re-joined (w366: 5 joints → 4, no 0x100 anywhere). Deleting the only sink leaves the wire with loose joints.

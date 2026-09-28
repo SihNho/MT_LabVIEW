@@ -1,0 +1,27 @@
+{"schema":"result/1","id":"116-4","status":"FAIL","gates":{"pass":4,"fail":1},
+"first_fail":"J1 'closing every ref': OpWireJoints_v0 closes the Wire ref but not the Traverse array; a 1945-call sweep on R1 failed from read 536 (error 1055, then error 2) (diag_c116d_decode.log:3)",
+"blocked_by":null,
+"artefacts":[
+{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpWireJoints_v0.vi","md5":"15cf497190fcd972407f1be109197b01"},
+{"path":"tools/bench/diag_c116d_oplabels.json","md5":"f90e4c6826a20d4d3247a43dfeb87ff5"},
+{"path":"tools/gscript.py","md5":"0710ebedcf577196296771c8cc1904a0"},
+{"path":"tools/bench/scratch_verify/gscript.wire_joints_20260928_085620.json","md5":"e4dd7d0d2f1f7938c78106997c5af5bc"},
+{"path":"tools/bench/diag_c116d_j3_raw.json","md5":"21311cd427531a6fd8f7151aa3a894ee"},
+{"path":"tools/bench/diag_c116d_j3_raw2.json","md5":"7a65c2ad2758580e4210c69533344d5e"},
+{"path":"tools/bench/diag_c116d_decode.json","md5":"79913b2aaba7e0c4803e296215b659ea"}],
+"facts":[
+"J1 op built 10/0, cold ES 1, Close Reference #615 on the PN reference out; gscript.wire_joints added (diag_c116d_opbuild.log:22-26); NAMES.md section 'Wire.Joints[] 6371005 reader'",
+"J1 scratch 13/0 on an OpLoopCast_v0 copy: joint=[[x,y],flags,n_nb,nb0..3]; only-sink deleted -> flags 0x100 LOOSE; pass-through terminal deleted -> re-joined, no 0x100 (diag_c116d_j1.log:35,40)",
+"J1 20 calls handles 34187->34186 (j1.log:43), BUT on R1 (1945 wires) reads 536+ all failed error 1055 then error 2: un-closed Traverse array ~1.04M refnums (decode.log:3; review c116d-sweep)",
+"J2 R1 byte copy: of the 13 outer nets only w25438,w25461 carry a loose joint; the other 11 none. H1 (4 already loose) falsified (diag_c116d_decode.log:44)",
+"J2 R1: all 7 PD230(d) nets (8590 9051 11253 11389 25438 25461 29122) and all 11 stubs carry loose joints (diag_c116d_decode.log:8-40)",
+"J2 total: 23 wires with a loose joint among 536 validly read of 1945 vs R1 Error List 24; residual 1 lies in the 1409 unread wires or is not a loose joint (decode.log:41)",
+"J3 scratch rerun (recipe body, SAVE=False) 42/0 incl. E1 D CEN CEN2 ENDS TD PB HF RBW; 26 after-reads clean (diag_c116d_j3b.log:378,407)",
+"J4 9 of 13 outer nets become loose (24277 24333 25237 25280 25306 25336 25911 26021 26064); w25238,w25225 do NOT (diag_c116d_decode.log:43,45)",
+"J4 w25238/w25225 each had 1 pass-through terminal joint (2 neighbours) that vanished: joints 14->13, 8->7, terminals 5->4, 4->3 = H2' (decode.log:26,28,46)",
+"J4 per-wire sum 24 - 11 stubs + 9 newly loose = 22 == scratch Error List 22 (diag_c116b_scratch_el.log:114-116); read after-set sum 21 = 23-11+9 (decode.log:42)"],
+"open":[
+"Re-pin L2-R2's loose-ends to 22 on this per-net evidence (9 new loose nets named; 2 pass-through nets explain the -2)? The unread-wire residual (R1 23 read vs 24) is unchanged by R2.",
+"Fund an OpWireJoints_v1 that closes the Traverse array and wires the Traverse error into the PN (review c116d-sweep :41-44,95) before any whole-graph Joints sweep?"],
+"cost":{"usd":null,"minutes":64,"labview_runs":4},
+"note":"Runs: opbuild, j1, j3 try1 (died read 536; hung LabVIEW restarted by bench_prep --restart), j3 try2. Peer c116d-sweep ANSWERED $2.17, annotated; no Jev ladder line. Inputs md5 unchanged; no save; scratches deleted; LabVIEW gone. STATUS not edited, no commit."}

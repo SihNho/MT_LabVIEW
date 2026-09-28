@@ -1,0 +1,14 @@
+ATTACK this claim about the failing regression baseline tools/bench/diag_c116a_regress_before.log (script tools/bench/diag_c116a_regress.py, run with argument `before`).
+
+Context: card 116-1 wrote an offline regression runner that runs 16 pure-Python self-tests (no LabVIEW) as children, records each child's rc, its C6 `RESULT {...}` line and its failing-label set into diag_c116a_regress_before.json, so an `after` run (after edits to tools/stop_record.py, tools/hooks/guard_card.py, tools/doc_lint.py, tools/audit_cycle.py, tools/bench/selftest_launch_gate.py) can compare. Its `before` gate B required every child to print a RESULT line. Result 10 pass / 6 fail.
+
+Claim: all 6 failures are the diag's own contract being wrong, not a tool fault. The 6 children (selftest_stoprecord_table, _bgrun, _eqform, _supersession, selftest_audit_cost_window, selftest_audit_c4c_split) are older self-tests that end with a tally instead of a RESULT line, each 0 fail and rc 0:
+  table "=== selftest_stoprecord_table: 107 pass, 0 fail ===", bgrun "6 pass, 0 fail", eqform "5 pass, 0 fail", supersession "36 pass, 0 fail", audit_cost_window "SELFTEST 7 pass / 0 fail", audit_c4c_split "=== GATES: 33 pass / 0 fail".
+The three real failures (offline_c107 15/10, c111c_launchunit D4h, stage_prerun_headcmp_79-6 H1) were on record before the card and are not in question here.
+
+Proposed disposition (the script already carries it, diag_c116a_regress.py lines ~57-65): when a child prints no RESULT line, take the LAST match of `(\d+) pass(?:,| /)\s*(\d+) fail` in its log; status = PASS iff fail == 0 and rc == 0; gate B becomes "printed a RESULT line or a tally". Rerun `before`, expect 16/0 on gate B with the 3 named failures carried as status FAIL in the snapshot.
+
+Questions to answer:
+1. Is there any evidence in these logs that one of the 6 hides a real failure (a tally that is not the child's own, an early exit, a rc 0 with failing gates)?
+2. Can the tally fallback take a QUOTED child tally as the child's own? selftest_stoprecord_eqform quotes supersession's last line ("last line: === supersession selftest (PATCHED): 36 pass, 0 fail ===") and supersession quotes stop_record's "29 pass, 0 fail". Is "last match wins" enough, and what is the cheapest stronger rule (e.g. match only lines starting with '===' or 'SELFTEST', or require the match on the last non-empty line)?
+3. The after-run compares failing-label sets extracted by FAIL_RE (line-start `FAIL <label>` / `GATE <label> FAIL`). Can that regex miss a newly failing gate in any of these 16 formats, so G1 passes on a regression?

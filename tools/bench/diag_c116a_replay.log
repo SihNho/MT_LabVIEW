@@ -1,0 +1,25 @@
+BGRUN START 2026-09-28 07:04:32 limit 1.0 min: py -u tools/bench/diag_c116a_replay.py
+BGRUN PID 17196
+GATE M2614 full argv recovered from transcript                    PASS 2 match(es)
+ARGV 2614 'wc -l tools/recipes/stage_d1_l2r1.py; py tools/bgrun.py --material --max-min 2 --log tools/bench/diag_c115b_r1.log -- py -u tools/bench/diag_c115b_r1.py > /dev/null; grep "PASS  R1\\|FAIL  R1\\|SIM WIRES" tools/bench/diag_c115b_r1.log | tail -5 | cut -c1-250; for f in tools/recipes/stage_d1_l2r1.py tools/bench/diag_c115b_scratch.py; do b=$(basename $f .py); py tools/bgrun.py --material --max-min 5 --log tools/bench/${b}_dry.log -- py -u tools/stage_prerun.py --dry $f > /dev/null; grep "=== DRY" tools/bench/${b}_dry.log | tail -1 | cut -c1-200; done'
+  SEG build     'wc -l tools/recipes/stage_d1_l2r1.py'
+  SEG build     ' py tools/bgrun.py --material --max-min 2 --log tools/bench/diag_c115b_r1.log -- py -u tools/bench/diag_c115b_r1.py > /dev/null'
+  SEG build     ' grep "PASS  R1\\|FAIL  R1\\|SIM WIRES" tools/bench/diag_c115b_r1.log '
+  SEG build     ' tail -5 '
+  SEG build     ' cut -c1-250'
+  SEG build     ' for f in tools/recipes/stage_d1_l2r1.py tools/bench/diag_c115b_scratch.py'
+  SEG build     ' do b=$(basename $f .py)'
+  SEG build     ' py tools/bgrun.py --material --max-min 5 --log tools/bench/${b}_dry.log -- py -u tools/stage_prerun.py --dry $f > /dev/null'
+  SEG build     ' grep "=== DRY" tools/bench/${b}_dry.log '
+  SEG build     ' tail -1 '
+  SEG build     ' cut -c1-200'
+  SEG build     ' done'
+  VERDICT REFUSE
+GATE M2615 full argv recovered from transcript                    PASS 1 match(es)
+ARGV 2615 "wc -l tools/recipes/stage_d1_l2r1.py; awk 'length > 250' tools/recipes/stage_d1_l2r1.py | wc -l"
+  SEG readonly  'wc -l tools/recipes/stage_d1_l2r1.py'
+  SEG build     " awk 'length > 250' tools/recipes/stage_d1_l2r1.py "
+  SEG readonly  ' wc -l'
+  VERDICT REFUSE
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":2,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

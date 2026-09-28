@@ -1,0 +1,80 @@
+{
+ "schema": "task/1",
+ "id": "116-1",
+ "kind": "build",
+ "goal": "STEP 0a offline devices PD230(g): stop record refuses only an executing segment; audit_cycle disposition-landed check + its 2 fixes; selftest_launch_gate mkdtemp sandbox",
+ "why": "retrospective-cycle115 device-failed ACCEPTED (retrospective-cycle115.md:376-389; material_marker.log:2614-2615 read-only 'wc -l; awk' refused); 115-1 C1 found 2 accepted fixes absent from code; split plan PD230(g); violation-decisions 2026-09-28 07:05",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "archive/peer/2026-09-28-retrospective-cycle115.md"},
+  {"path": "tools/bench/cards/result_115-1.json"},
+  {"path": "tools/stop_record.py"},
+  {"path": "tools/launchunit.py"},
+  {"path": "tools/hooks/guard_bash.py"},
+  {"path": "tools/hooks/guard_card.py"},
+  {"path": "tools/audit_cycle.py"},
+  {"path": "tools/doc_lint.py"},
+  {"path": "tools/bench/selftest_launch_gate.py"},
+  {"path": "tools/hooks/material_marker.log"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stop_record.py"},
+  {"kind": "file", "name": "tools/launchunit.py"},
+  {"kind": "file", "name": "tools/hooks/guard_card.py"},
+  {"kind": "file", "name": "tools/audit_cycle.py"},
+  {"kind": "file", "name": "tools/doc_lint.py"},
+  {"kind": "file", "name": "tools/bench/selftest_launch_gate.py"},
+  {"kind": "file", "name": "tools/hooks/material_marker.log"}
+ ],
+ "pass": [
+  "S1 stop record splits a command on ; && || | and refuses only a segment that EXECUTES a stopped recipe (py command position or bgrun '--' command); read-only segments pass",
+  "S2 self-test: material_marker.log:2614/:2615 commands PASS; a stopped-recipe launch after ';' or '&&' (plain py and via bgrun --) REFUSED; earlier stop/launch self-tests keep verdicts",
+  "D1 audit_cycle check: ACCEPTED/FIXED dispositions (archive/peer 2026-09-2[5-8]) whose named file/function is absent from code; run BEFORE fixes must flag guard_card.py:44 + doc_lint HH:MM lint",
+  "D2 fix guard_card.py:44 and add the doc_lint HH:MM header lint per their dispositions, each with a negative case; rerun D1 = 0 absent (else each item listed with why it is not a code fix)",
+  "L1 selftest_launch_gate.py uses tempfile.mkdtemp and deletes it in finally; two runs: same verdicts, no PID sandbox left, headcmp H1 stable",
+  "no LabVIEW; md5 before/after of every edited tool reported; doc_lint on changed docs 0 errors"
+ ],
+ "outputs": [
+  "tools/stop_record.py",
+  "tools/launchunit.py",
+  "tools/hooks/guard_bash.py",
+  "tools/hooks/guard_card.py",
+  "tools/audit_cycle.py",
+  "tools/doc_lint.py",
+  "tools/bench/selftest_*",
+  "tools/bench/diag_c116a*",
+  "tools/bench/cards/result_116-1.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stop_record.py",
+   "tools/launchunit.py",
+   "tools/hooks/guard_bash.py",
+   "tools/hooks/guard_card.py",
+   "tools/audit_cycle.py",
+   "tools/doc_lint.py",
+   "tools/bench/selftest_*",
+   "tools/bench/diag_c116a*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/cards/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "offline only; no LabVIEW, no VI opened",
+  "the stop record still refuses every launch of a stopped recipe; only read-only segments are let through",
+  "only the named fixes; no other gate, pin or check is loosened",
+  "a regression criterion names the failures on record (PD229(c))",
+  "a gate refusal is returned BLOCKED, never re-run via a self-test child or exempt route",
+  "facts <=10 file:line; OPEN <=3"
+ ],
+ "unblocks": "M3"
+}

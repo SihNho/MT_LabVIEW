@@ -268,6 +268,45 @@ def a2_state(body):
     return "unfinished"
 
 
+# A9 (card 116-3 D1). CANDIDATE = a `## What was done with it` section (archive/peer, 2026-09-25 onward) that ACCEPTS a
+# finding (`ACCEPTED`, not `NOT ACCEPTED`) and has a line saying a fix was NOT built/applied/fixed or is left open.
+# LANDED (JUDGEMENT 116-3 OPEN-3) = the review's file stem or slug is cited by a non-bench tools/ file or a
+# tools/bench/selftest_*; otherwise it is reported absent. The citation is the witness, the words are not.
+A9_GLOB = "2026-09-2[5-9]-*.md"
+A9_ACC_RE = re.compile(r"(?<!NOT )\bACCEPTED\b")
+A9_UNBUILT_RE = re.compile(r"(?i)\b(not built|not fixed|left open|not applied|not yet applied)\b")
+
+
+def a9_unlanded(root=None, peer_glob=A9_GLOB, code_override=None):
+    """(absent: [review stem], n_candidates). `code_override` {project-relative path: text} replaces a code file's
+    text (the self-test measures the pre-fix state with the git-HEAD bytes of the files a fix edited)."""
+    root = root or ROOT
+    code, over = [], dict(code_override or {})
+    for ext in ("py", "ps1"):
+        for p in glob.glob(os.path.join(root, "tools", "**", "*." + ext), recursive=True):
+            r = os.path.relpath(p, root).replace("\\", "/")
+            if r.startswith("tools/bench/") and not r.startswith("tools/bench/selftest_"):
+                continue
+            code.append(over.pop(r) if r in over else read(p))
+    code.extend(over.values())
+    blob = "\n".join(code)
+    absent, n = [], 0
+    for p in sorted(glob.glob(os.path.join(root, "archive", "peer", peer_glob))):
+        body = read(p)
+        i = body.find("## What was done with it")
+        if i < 0:
+            continue
+        sec = re.split(r"^## ", body[i + 3:], maxsplit=1, flags=re.M)[0]
+        lines = [ln for ln in sec.splitlines() if "NOT ACCEPTED" not in ln]
+        if not (any(A9_ACC_RE.search(ln) for ln in lines) and any(A9_UNBUILT_RE.search(ln) for ln in lines)):
+            continue
+        n += 1
+        stem = os.path.basename(p)[:-3]
+        if stem not in blob and stem[11:] not in blob:
+            absent.append(stem)
+    return absent, n
+
+
 def say(check, ok, detail):
     RESULT.append(dict(check=check, ok=ok, detail=detail))
     mark = "PASS" if ok is True else ("FAIL" if ok is False else "n-a ")
@@ -574,6 +613,14 @@ def main():
           + (f"{len(no_result)} log(s) with a run that printed none: {no_result[:6]}{'…' if len(no_result) > 6 else ''}"
              if no_result else "every scoped run in the window printed one (or predates the mark)"), flush=True)
     WARNS.append(("A8", len(no_result)))
+
+    # A9 - accepted-but-unbuilt dispositions have LANDED (card 116-3 D1; retrospective-cycle115 device-failed, 115-1
+    # C1 found 2 accepted fixes absent from code). WARN, like A8: counted and named, never changes `AUDIT PASS`.
+    unlanded, n_cand = a9_unlanded()
+    print(f"  {'WARN' if unlanded else 'PASS'}  A9 accepted-but-unbuilt dispositions are cited by code: "
+          + (f"{len(unlanded)}/{n_cand} not cited by a tools/ file or tools/bench/selftest_*: "
+             f"{unlanded[:8]}{'…' if len(unlanded) > 8 else ''}" if unlanded else f"{n_cand}/{n_cand} cited"), flush=True)
+    WARNS.append(("A9", len(unlanded)))
 
     # cost lines
     # EVERY COST LINE BELOW IS SUMMED OVER `window_runs`, NOT OVER WHOLE FILES - see BGRUN_START_RE above.

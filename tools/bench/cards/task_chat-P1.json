@@ -1,0 +1,82 @@
+{
+ "schema": "task/1",
+ "id": "chat-P1",
+ "kind": "build",
+ "goal": "Apply the user-approved acceleration items 1-4 (pipeline prep card, proven-pattern review skip + retrospective every 3rd cycle, batched gate false positives, up to 25 rows on a proven pattern)",
+ "why": "Cycles 110-115 delivered one saved build step per 1.4-2.8 h; most time is offline checks, reviews and gate false positives. User 2026-09-28: 1~4번 적용. Detail: brief_chat-P1.md",
+ "inputs": [
+  {
+   "path": "tools/bench/cards/brief_chat-P1.md",
+   "md5": "afbeeea95b0fc7b4a8c9a564590ed811"
+  },
+  {
+   "path": "tools/hooks/guard_session.py",
+   "md5": "970b154c9865acaa97ff957fb6a9cd1c"
+  },
+  {
+   "path": "tools/hooks/guard_cycle.py",
+   "md5": "a33d9b30723cb2c8d5d9f785b24e2a10"
+  },
+  {
+   "path": "tools/hooks/guard_peer.py",
+   "md5": "405ad724df41b698bad6242b273990ec"
+  },
+  {
+   "path": "tools/hooks/guard_bash.py",
+   "md5": "9c914876bb2a1d3a02345c3ceb99950a"
+  },
+  {
+   "path": "tools/protocol.py",
+   "md5": "e8ffb0684279822258f99834e6a81ddf"
+  },
+  {
+   "path": "tools/stage_prerun.py",
+   "md5": "d194d8c0fd8034b46521759d20e2299c"
+  },
+  {
+   "path": "tools/cycle_runner.py",
+   "md5": "b78114d3a2b5d175ff28cfaaa4129c51"
+  },
+  {
+   "path": "tools/cycle_prompt.md",
+   "md5": "6d093f91e48ceed683610906ba706ee1"
+  }
+ ],
+ "pass": [
+  "1 pipeline: bind+guard_session locked; <=2 live cards, <=1 labview; prep budget 3; premature_build per recipe; RULE-OFFLINE-CARD; provisional base refused, --rebase; prompt+agents",
+  "2a proven_pattern() + PROVEN-PATTERN allow in guard_cycle; pattern recorded in stage_runs",
+  "2b retro_due.py (+--close), prompt, RETRO_RE, runner fallback, backstop constants 30/24",
+  "3 gate_fp.py log/drain + queue, material*.md routing text, RULE-GATE-FP for checker gates only, gates_due gate-fp item",
+  "4 X14 advisory WARN; split-plan Pre-decided item for rows per step",
+  "every listed self-test green incl. new cases; logs under tools/bench; RESULT line; ONE commit; no safety guard or env bypass changed"
+ ],
+ "outputs": [
+  "tools/retro_due.py",
+  "tools/gate_fp.py",
+  "tools/bench/gate_fp_queue.jsonl"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/**",
+   "docs/**",
+   ".claude/agents/**"
+  ],
+  "status_edit": false,
+  "git_commit": true,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 150
+ },
+ "unblocks": "M3",
+ "rules": [
+  "Patch files with Edit/Write, never heredoc",
+  "Safety guards untouched",
+  "Graceful shutdown"
+ ]
+}

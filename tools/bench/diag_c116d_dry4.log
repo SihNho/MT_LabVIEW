@@ -1,0 +1,32 @@
+BGRUN START 2026-09-28 08:55:25 limit 8.0 min: py tools/stage_prerun.py --dry tools/bench/diag_c116d_j1.py
+BGRUN PID 5476
+diag_c116d_j1 - card 116-4 J1 (part 2): SCRATCH-VI CHECK of gscript.wire_joints (OpWireJoints_v0, Wire.Joints[] 6371005) on a
+dated byte copy claudeDev\scratch_c116d_j1_<ts>.vi of the small op VI OpLoopCast_v0.vi (graph dump tools/bench/graph_oploopcast_v0_c95.json,
+md5 89452a9a: its TMSC `specific class reference` w366 is a known BRANCH to Property #330/#238/#230). The branch is found live, not assumed: a top-level
+wire with >= 2 sink terminals, one of them on a Property node. That Property node is deleted (no Remove Bad Wires) -> a KNOWN
+DANGLING BRANCH. A second wire with exactly 1 sink has its sink Property node deleted -> a KNOWN LOOSE END. PRIOR ART: the reader
+shape is diag_c97's; nothing else reads Joints[]. PREDICTION: every read echoes its uid, err ''; each wire's joints CHANGE after its
+sink node is deleted (raw values recorded for the offline decode, diag_c116d_decode.py); a non-wire uid is refused (ValueError);
+20 calls handles flat (+-100); scratch deleted; LabVIEW gone. PASS writes tools/bench/scratch_verify/gscript.wire_joints_<ts>.json.
+    py tools/bgrun.py --material --max-min 15 --log tools/bench/diag_c116d_j1.log -- py -u tools/bench/diag_c116d_j1.py
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 89452a9a87b147bc23f5de34f1a22f4c  got 89452a9a87b147bc23f5de34f1a22f4c
+  PASS  DRY graph JSON for input md5 89452a9a87b147bc23f5de34f1a22f4c  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_oploopcast_v0_c95.json
+  FACT  top-level nets {600: (1, 1), 415: (1, 1), 373: (0, 1), 467: (0, 1), 366: (0, 3), 769: (1, 0), 882: (1, 0), 430: (1, 1), 605: (1, 0), 1066: (0, 1), 455: (1, 1), 941: (1, 0), 481: (1, 1), 785: (1, 0), 1000: (1, 0), 657: (1, 1), 746: (1, 0)}
+  PASS  F1 a top-level branched wire (<= 1 source seen in Nodes[], >= 2 sinks, one sink on a Property node) exists  [366]
+  FACT  JOINTS w366 [branch before] echo <dry:g.wire_joints[]> err <dry:g.wire_joints[]> n=0 raw="<dry:g.wire_joints[]>"
+  FACT  JOINTS w430 [single before] echo <dry:g.wire_joints[]> err <dry:g.wire_joints[]> n=0 raw="<dry:g.wire_joints[]>"
+  UNVERIFIED  R0 reads before: uid echo ok, err '', joints non-empty  (dry: after mutation g.wire_joints)
+  FACT  OP delete_object Property #230 -> err '' (0.0 s)
+  FACT  JOINTS w366 [branch after (sink node #230 deleted)] echo <dry:g.wire_joints[]> err <dry:g.wire_joints[]> n=0 raw="<dry:g.wire_joints[]>"
+  UNVERIFIED  J1a the branched wire survives its sink node's delete and its joints CHANGE (a known dangling branch)  (dry: after mutation g.wire_joints)
+  FACT  OP delete_object Property #313 -> err '' (0.0 s)
+  FACT  JOINTS w430 [single after (sink deleted)] echo <dry:g.wire_joints[]> err <dry:g.wire_joints[]> n=0 raw="<dry:g.wire_joints[]>"
+  ROW   J1b single-sink wire w430 after its sink's delete : observed=(0, True) expected=None
+  UNVERIFIED  N1 a non-wire uid is refused (ValueError before the op runs)  (dry: after mutation g.wire_joints)
+  PASS  HF 20 calls identical, handles flat (+-100)  (0, <dry:bench_prep.labview_handles>, <dry:bench_prep.labview_handles>)
+
+=== DRY PASS: first_fail=None coverage 69/77 lines, first mutation g.wire_joints, unverified 3, graph tools/bench/graph_oploopcast_v0_c95.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

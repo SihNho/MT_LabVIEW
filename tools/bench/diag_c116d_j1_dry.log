@@ -1,0 +1,19 @@
+BGRUN START 2026-09-28 08:50:46 limit 5.0 min: py tools/stage_prerun.py --dry tools/bench/diag_c116d_j1.py
+BGRUN PID 1652
+diag_c116d_j1 - card 116-4 J1 (part 2): SCRATCH-VI CHECK of gscript.wire_joints (OpWireJoints_v0, Wire.Joints[] 6371005) on a
+dated byte copy claudeDev\scratch_c116d_j1_<ts>.vi of the small op VI OpCaseFrames_v1.vi (its TMSC `specific class reference` wire is a
+known BRANCH: PN + uid-echo PN, diag_c97_tools_opbuild.py:138,148). The branch is found from the graph, not assumed: a top-level
+wire with >= 2 sink terminals, one of them on a Property node. That Property node is deleted (no Remove Bad Wires) -> a KNOWN
+DANGLING BRANCH. A second wire with exactly 1 sink has its sink Property node deleted -> a KNOWN LOOSE END. PRIOR ART: the reader
+shape is diag_c97's; nothing else reads Joints[]. PREDICTION: every read echoes its uid, err ''; each wire's joints CHANGE after its
+sink node is deleted (raw values recorded for the offline decode, diag_c116d_decode.py); a non-wire uid is refused (ValueError);
+20 calls handles flat (+-100); scratch deleted; LabVIEW gone. PASS writes tools/bench/scratch_verify/gscript.wire_joints_<ts>.json.
+    py tools/bgrun.py --material --max-min 15 --log tools/bench/diag_c116d_j1.log -- py -u tools/bench/diag_c116d_j1.py
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 5770209cbbfa6349a10fb85e50050b60  got 5770209cbbfa6349a10fb85e50050b60
+  FAIL  DRY graph JSON for input md5 5770209cbbfa6349a10fb85e50050b60  no tools/bench/graph_*.json carries this md5
+
+=== DRY FAIL: first_fail=GATE DRY graph JSON for input md5 5770209cbbfa6349a10fb85e50050b60 coverage 18/73 lines, first mutation None, unverified 0, graph None
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"GATE DRY graph JSON for input md5 5770209cbbfa6349a10fb85e50050b60","artefacts":[]}
+BGRUN END rc=1 after 1s

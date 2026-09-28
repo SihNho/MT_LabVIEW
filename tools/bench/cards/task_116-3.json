@@ -1,0 +1,93 @@
+{
+ "schema": "task/1",
+ "id": "116-3",
+ "kind": "build",
+ "goal": "Discharge guard_peer (hypothesis review of diag_c116a_regress_before.log), then finish STEP 0a PD230(g): stop-record fix, disposition-landed check + 2 fixes, launch_gate mkdtemp",
+ "why": "116-1 BLOCKED: guard_peer armed by its own baseline diag (tally vs RESULT line), peers=[]; its S1/D1/D2 measurements stand (result_116-1.json facts 1-8). JUDGEMENT on its 3 OPEN items is in rules",
+ "retry_of_card": "116-1",
+ "inputs": [
+  {"path": "tools/bench/cards/result_116-1.json"},
+  {"path": "tools/bench/cards/task_116-1.json"},
+  {"path": "tools/bench/diag_c116a_regress_before.log", "md5": "42a8fd215f8b96909d3bdd80fffc130f"},
+  {"path": "tools/bench/diag_c116a_regress.py", "md5": "3f43e1a1f7db0f01d06941357f5ce2b9"},
+  {"path": "tools/bench/diag_c116a_replay.log", "md5": "11d925555c5e25470fb82eb09059eb1e"},
+  {"path": "tools/bench/selftest_stoprecord_c116a.py", "md5": "bbfec9a08cde4ca3421e66a31dc69f27"},
+  {"path": "tools/stop_record.py", "md5": "e69b92941d5a216e7e7d1f17da192269"},
+  {"path": "tools/hooks/guard_card.py", "md5": "a89e7c9d22bb7d1315e2b6a3437458cf"},
+  {"path": "tools/doc_lint.py", "md5": "390a2b55b95a82e313a443b40590534b"},
+  {"path": "tools/audit_cycle.py", "md5": "5d2f1bc906ec355bea39ed5771263884"},
+  {"path": "tools/bench/selftest_launch_gate.py", "md5": "1c8077d1aa22f969d98a22a963d992df"},
+  {"path": "tools/bench/selftest_errorlist_reuse_81.py"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c116a_regress_before.log"},
+  {"kind": "file", "name": "tools/bench/selftest_stoprecord_c116a.py"},
+  {"kind": "file", "name": "tools/stop_record.py"},
+  {"kind": "file", "name": "tools/hooks/guard_card.py"},
+  {"kind": "file", "name": "tools/doc_lint.py"},
+  {"kind": "file", "name": "tools/audit_cycle.py"},
+  {"kind": "file", "name": "tools/bench/selftest_launch_gate.py"},
+  {"kind": "file", "name": "tools/bench/selftest_errorlist_reuse_81.py"}
+ ],
+ "pass": [
+  "R0 FIRST: review/1 card + peer.ps1 -Agent claude -Role hypothesis on diag_c116a_regress_before.log (claim: the diag's RESULT-line contract is wrong, not a tool); ANSWERED, disposition written",
+  "R1 fix the diag's baseline contract (accept tally or RESULT per self-test); rerun baseline; named on-record failures (offline_c107 15/10, c111c D4h, headcmp H1) and 0 new",
+  "S1 stop_record: awk read-only credit unless system()/pipe-to-shell; $( ) refused only when its inner command launches a recipe; lone & is a separator; for-loop/assignment taint as drafted",
+  "S2 selftest_stoprecord_c116a.py PASS (2 replays :2614/:2615 pass, 7 allow, 24 refuse); regression baseline verdicts unchanged",
+  "D1 audit_cycle disposition-landed check (witness rule in card rules); run before fixes flags guard_card.py:44 cd hole and doc_lint HH:MM lint; logged",
+  "D2 guard_card.py:44 cd limited to the project root; K9 in selftest_errorlist_reuse_81.py re-pinned to rc 2; HH:MM lint added; each fix cites its review in a comment; D1 rerun = 0 absent",
+  "L1 selftest_launch_gate.py uses tempfile.mkdtemp, deleted in finally; two runs same verdicts, no PID sandbox left",
+  "no LabVIEW; md5 before/after of every edited tool; doc_lint 0 errors; guard_peer disarmed at card end (next bgrun allowed)"
+ ],
+ "outputs": [
+  "tools/stop_record.py",
+  "tools/launchunit.py",
+  "tools/hooks/guard_card.py",
+  "tools/audit_cycle.py",
+  "tools/doc_lint.py",
+  "tools/bench/selftest_*",
+  "tools/bench/diag_c116a*",
+  "tools/bench/diag_c116c*",
+  "tools/bench/cards/result_116-3.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stop_record.py",
+   "tools/launchunit.py",
+   "tools/hooks/guard_bash.py",
+   "tools/hooks/guard_card.py",
+   "tools/audit_cycle.py",
+   "tools/doc_lint.py",
+   "tools/bench/selftest_*",
+   "tools/bench/diag_c116a*",
+   "tools/bench/diag_c116c*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "JUDGEMENT OPEN-1: re-issue with the hypothesis peer; review first, no build before it is ANSWERED",
+  "JUDGEMENT OPEN-2: HH:MM lint FAILs for headers dated >= 2026-09-28, WARNs on older ones; historic headers not edited",
+  "JUDGEMENT OPEN-3: a disposition is landed when a non-bench tools/ file or a tools/bench/selftest_* cites the review",
+  "JUDGEMENT OPEN-3 cont.: otherwise it is reported absent",
+  "the stop record still refuses every launch of a stopped recipe; only read-only segments pass",
+  "only the named fixes; no other gate, pin or check is loosened; K9's re-pin is the one pin change allowed",
+  "a regression criterion names the failures on record (PD229(c))",
+  "a gate refusal is returned BLOCKED, never re-run via a self-test child or exempt route",
+  "offline only; no LabVIEW, no VI opened",
+  "facts <=10 file:line; OPEN <=3"
+ ],
+ "escalation": 0,
+ "unblocks": "M3"
+}

@@ -1,0 +1,62 @@
+BGRUN START 2026-09-28 08:56:20 limit 15.0 min: py -u tools/bench/diag_c116d_j1.py
+BGRUN PID 15240
+BGRUN STAGE-RUN recorded diag_c116d_j1.py cycle='cycle 116' card=None pid=20580 -> stage_runs.jsonl
+diag_c116d_j1 - card 116-4 J1 (part 2): SCRATCH-VI CHECK of gscript.wire_joints (OpWireJoints_v0, Wire.Joints[] 6371005) on a
+dated byte copy claudeDev\scratch_c116d_j1_<ts>.vi of the small op VI OpLoopCast_v0.vi (graph dump tools/bench/graph_oploopcast_v0_c95.json,
+md5 89452a9a: its TMSC `specific class reference` w366 is a known BRANCH to Property #330/#238/#230). The branch is found live, not assumed: a top-level
+wire with >= 2 sink terminals, one of them on a Property node. That Property node is deleted (no Remove Bad Wires) -> a KNOWN
+DANGLING BRANCH. A second wire with exactly 1 sink has its sink Property node deleted -> a KNOWN LOOSE END. PRIOR ART: the reader
+shape is diag_c97's; nothing else reads Joints[]. PREDICTION: every read echoes its uid, err ''; each wire's joints CHANGE after its
+sink node is deleted (raw values recorded for the offline decode, diag_c116d_decode.py); a non-wire uid is refused (ValueError);
+20 calls handles flat (+-100); scratch deleted; LabVIEW gone. PASS writes tools/bench/scratch_verify/gscript.wire_joints_<ts>.json.
+    py tools/bgrun.py --material --max-min 15 --log tools/bench/diag_c116d_j1.log -- py -u tools/bench/diag_c116d_j1.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 302 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 89452a9a87b147bc23f5de34f1a22f4c  got 89452a9a87b147bc23f5de34f1a22f4c
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33992
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_c116d_j1_20260928_085620.vi
+  FACT  ExecState [after open] scratch_c116d_j1_20260928_085620.vi = 1
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so scratch_c116d_j1_20260928_085620.vi is deleted at close
+  FACT  top-level nets {467: (1, 1), 106: (0, 1), 600: (1, 1), 415: (0, 1), 373: (0, 1), 605: (1, 1), 1066: (0, 1), 366: (1, 3), 333: (0, 1), 550: (0, 1), 769: (1, 0), 882: (1, 0), 430: (1, 1), 455: (1, 1), 941: (1, 0), 481: (1, 1), 785: (1, 0), 1000: (1, 0), 657: (1, 1), 746: (1, 0)}
+  PASS  F1 a top-level branched wire (<= 1 source seen in Nodes[], >= 2 sinks, one sink on a Property node) exists  [366]
+  FACT  JOINTS w366 [branch before] echo 366 err '' n=5 raw=[[[679, 283], 1, 1, -1, -1, -1, 1], [[901, 283], 0, 2, -1, 2, 0, -1], [[901, 654], 1, 2, 1, 3, -1, -1], [[901, 804], 1, 2, 2, 4, -1, -1], [[901, 954], 1, 1, 3, -1, -1, -1]]
+  FACT  JOINTS w430 [single before] echo 430 err '' n=3 raw=[[[932, 826], 1, 1, -1, -1, -1, 1], [[1199, 826], 0, 2, 2, -1, 0, -1], [[1199, 804], 1, 1, -1, 1, -1, -1]]
+  PASS  R0 reads before: uid echo ok, err '', joints non-empty  ('', '')
+  FACT  delete_object node census: 13 rows
+      J1 branch sinkdeleted Property #230 -> gone [230]
+  FACT  OP delete_object Property #230 -> err '' (0.1 s)
+  FACT  JOINTS w366 [branch after (sink node #230 deleted)] echo 366 err '' n=4 raw=[[[679, 283], 1, 1, -1, -1, -1, 1], [[901, 283], 0, 2, -1, 3, 0, -1], [[901, 954], 1, 1, 3, -1, -1, -1], [[901, 804], 1, 2, 1, 2, -1, -1]]
+  PASS  J1a the branched wire survives its sink node's delete and its joints CHANGE (a known dangling branch)  (5, 4)
+  FACT  delete_object node census: 12 rows
+      J1 single sinkdeleted Property #313 -> gone [313]
+  FACT  OP delete_object Property #313 -> err '' (0.1 s)
+  FACT  JOINTS w430 [single after (sink deleted)] echo 430 err '' n=3 raw=[[[932, 826], 3, 1, -1, -1, -1, 1], [[1199, 826], 256, 2, 2, -1, 0, -1], [[1199, 804], 260, 1, -1, 1, -1, -1]]
+  ROW   J1b single-sink wire w430 after its sink's delete : observed=(3, True) expected=None
+  PASS  N1 a non-wire uid is refused (ValueError before the op runs)  #230 is not a Wire of scratch_c116d_j1_20260928_085620.vi
+  PASS  HF 20 calls identical, handles flat (+-100)  (20, 34187, 34186)
+
+---------- [H] HYGIENE
+  FACT  close_panel(scratch_c116d_j1_20260928_085620.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 4}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 4}
+  FACT  LabVIEW handle count AFTER the work: 34186
+  PASS  H4 scratch deleted: scratch_c116d_j1_20260928_085620.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c116d_j1_20260928_085620.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 89452a9a87b147bc23f5de34f1a22f4c / after 89452a9a87b147bc23f5de34f1a22f4c
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33994
+
+====================================================================================================
+=== GATES: 13 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c116d_j1.json   elapsed 112.1 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":null,"artefacts":[]}
+LabVIEW gone at exit: True
+BGRUN END rc=0 after 117s

@@ -1,0 +1,55 @@
+GATE M1 material_marker.log:2614 is this refused command                        PASS /diag_c115b_r1.py > /dev/null; grep "PASS  R1\|FAI
+GATE M1 material_marker.log:2614 ALLOWED now                                    PASS 
+GATE M2 material_marker.log:2615 is this refused command                        PASS ngth > 250' tools/recipes/stage_d1_l2r1.py | wc -l
+GATE M2 material_marker.log:2615 ALLOWED now                                    PASS 
+GATE P1 wc && awk | wc ALLOWED                                                  PASS 
+GATE P2 awk alone ALLOWED                                                       PASS 
+GATE P3 for-binding read by wc ALLOWED                                          PASS 
+GATE P4 cut | head ALLOWED                                                      PASS 
+GATE P5 basename substitution, echo ALLOWED                                     PASS 
+GATE P6 cd-prefixed read (Bash form) ALLOWED                                    PASS 
+GATE P7 for-binding into stage_prerun --dry ALLOWED                             PASS 
+GATE N1 ; py -u REFUSED                                                         PASS 
+GATE N2 && py -u REFUSED                                                        PASS 
+GATE N3 ; bgrun -- REFUSED                                                      PASS 
+GATE N4 && bgrun -- REFUSED                                                     PASS 
+GATE N5 lone & background REFUSED                                               PASS 
+GATE N6 for variable launched REFUSED                                           PASS 
+GATE N7 assignment launched REFUSED                                             PASS 
+GATE N8 assignment via bgrun ${f} REFUSED                                       PASS 
+GATE N9 $(echo R) as script REFUSED                                             PASS 
+GATE N10 $(py -u R) inside wc REFUSED                                           PASS 
+GATE N11 awk system() REFUSED                                                   PASS 
+GATE N12 awk -f REFUSED                                                         PASS 
+GATE N13 cat | py - REFUSED                                                     PASS 
+GATE N14 py -c $(cat R) REFUSED                                                 PASS 
+GATE N15 nested substitution REFUSED                                            PASS 
+GATE N16 sh -c REFUSED                                                          PASS 
+GATE N17 if/then REFUSED                                                        PASS 
+GATE N18 subshell REFUSED                                                       PASS 
+GATE N19 xargs REFUSED                                                          PASS 
+GATE N20 time REFUSED                                                           PASS 
+GATE N21 PowerShell assignment REFUSED                                          PASS 
+GATE N22 export REFUSED                                                         PASS 
+GATE N23 transitive assignment REFUSED                                          PASS 
+GATE N24 backtick REFUSED                                                       PASS 
+GATE G1 guard_bash.stop_gate(M2615) == 0                                        PASS 
+BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe is STOPPED by a prior-art verdict that is neither refuted nor fixed.
+  recipe      : tools/recipes/stage_d1_l2r1.py
+  review      : archive/peer/none-c116a.md
+  verdict     : already-failed
+  reviewed sha: 000000000000
+  the review file named by the record is not on disk: archive/peer/none-c116a.md
+
+A prior-art verdict other than `novel` stops the work, and cycle 18 exists because stopping the
+BUILD was not enough: on route-B run 3 the recipe LAUNCHED six seconds after the review that said it
+could not pass. The only releases are the two that already exist, written into the review file
+itself and paid for with a citation:
+  REFUTED: <slug> - <file>:<line> says X, which does not cover Y because ...
+  FIXED:   <slug> - <path>:<line> - <one sentence saying what changed>
+(`FIXED:` releases only if the cited path exists, changed AFTER the review, and the line sits under
+'## What was done with it'.) An assertion is not a refutation and a promise is not a fix.
+CYCLE_GUARD_OFF is not a release and does not reach this gate.
+GATE G2 guard_bash.stop_gate(N3) == 2                                           PASS 
+GATE W0 the gate wrote no record                                                PASS []
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":38,"fail":0},"first_fail":null,"artefacts":[]}

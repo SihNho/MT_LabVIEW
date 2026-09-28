@@ -1,0 +1,111 @@
+BGRUN START 2026-09-28 08:58:40 limit 50.0 min: py -u tools/bench/diag_c116d_j3.py
+BGRUN PID 12428
+diag_c116d_j3 - card 116-4 J2 + J3: Wire.Joints[] (gscript.wire_joints, OpWireJoints_v0) on the R1 bed BEFORE and AFTER the L2-R2
+rows, on ONE fresh dated byte copy claudeDev\scratch_c116d_bed_<ts>.vi. It runs the stage recipe's OWN body (tools/recipes/
+stage_d1_l2r2.py, imported, SAVE=False: nothing is saved, the work copy is a scratch deleted at close) exactly as diag_c116b_scratch.py
+did, with two READ-ONLY hooks: (J2) before the Executor's first op, joints of the 13 outer nets, the 7 PD230(d) nets, the 11 stubs and
+every wire the saved R1 graph shows with no sink or no source (candidates for a loose end), then a TIME-CAPPED sweep of the other wires
+(coverage recorded); (J3) after all rows, before Remove Bad Wires touches the copy, the same wires again (stubs are gone by design).
+PRIOR ART: diag_c116b_scratch.py (this is its cut; SAVE=False + the two hooks are new). No launch, no save, no VI run.
+PREDICTION: every read echoes its uid with err ''; the recipe's gates behave as in 116-2 (43/0, diag_c116b_scratch.log:340); raw
+joints -> tools/bench/diag_c116d_j3_raw.json for the offline decode (diag_c116d_decode.py); scratch deleted; LabVIEW gone.
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/diag_c116d_j3.log -- py -u tools/bench/diag_c116d_j3.py
+  FACT  TARGET 37 wires: 13 outer [25238, 25225, 24277, 24333, 25237, 25280, 25306, 25336, 26021, 26064, 25911, 25438, 25461] | PD230 [8590, 9051, 11253, 11389, 25438, 25461, 29122] | stubs [373, 42, 3512, 3646, 3912, 4027, 628, 1773, 28338, 5746, 5979] | no-sink/no-source in the saved R1 graph [42, 373, 628, 1773, 3040, 3512, 3646, 3912, 4027, 4878, 5746, 5979, 10166, 10187, 12256, 28338, 28684, 29766, 29787]
+stage_d1_l2r2 - card 116-2 L2-R2 (PD228(f)(g), PD230(f)): RETIRE the 13 consumer-less LoopTunnels on #637 (#32572 stays) from the R1 bed D1_l2_r1_20260928_055441.vi,
+FRESH LabVIEW -> claudeDev\D1_l2_r2_<ts>.vi (rule-6 GUI save, ExecState 0 by design, never run). ROWS ONLY FROM plan_l2r2.json (plan_l2r2_make.py on the SAVED R1 graph):
+per tunnel, delete_wire of its inner stub, then delete_object. PRIOR ART: stage_d1_l2r1.py (its cut: SR pairs -> tunnels; Executor RECORD MODE, RetireGuardBE, D4 EMPTY).
+PREDICTION (plan_l2r2_pred.json): L1 24 ops (11 + 13); LC x13; E1 == sim; D new 0, lost == 11 stubs; FU; CEN lost == 13 tunnels; census LoopTunnel -13, Wire -11, rest 0;
+ENDS 13 shared nets; TD only the 13 tunnels' 26 rows go, each wire's list == base minus them; PB cdiff == R1's 16 rows; HF +-100; RBW(new) <= RBW(bed); PS.
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/stage_d1_l2r2.log -- py -u tools/recipes/stage_d1_l2r2.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_l2r2_in, base md5 == pred graph md5; finalized end's pairs == the REAL R1 end's (stage_d1_l2r1.json)  ('67bad9a8c8c28a0bf306b2a1d3c6fea5', 16, 11)
+  PASS  L0b D4 cites S1 md5 5de014fe580b938328fa8662cf2b0652, scope EMPTY (grants nothing), plan md5 pinned  ('5de014fe580b938328fa8662cf2b0652', '67bad9a8c8c28a0bf306b2a1d3c6fea5')
+  PASS  L0c 13 tunnels, ONE owner loop [637], == inventory zero_live_tunnels on it minus the kept #32572 == pred retire set
+  PASS  L0d the plan's delete_wire rows == the stubs whose EVERY terminal is on a retired node (11) == pred stubs, each once  {'plan': [42, 373, 628, 1773, 3512, 3646, 3912, 4027, 5746, 5979, 28338], 'stubs': [42, 373, 628, 1773, 3512, 3646, 3912, 4027, 5746, 5979, 28338]}
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 302 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == f465196bb5016638b146e771ba54c5af  got f465196bb5016638b146e771ba54c5af
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33955
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_c116d_bed_20260928_085841.vi
+  FACT  ExecState [after open] scratch_c116d_bed_20260928_085841.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so scratch_c116d_bed_20260928_085841.vi is deleted at close
+  FACT  CENSUS before L2-R2 scratch_c116d_bed_20260928_085841.vi: {'RightShiftRegister': 37, 'LeftShiftRegister': 37, 'WhileLoop': 6, 'Diagram': 173, 'SubVI': 97, 'LoopTunnel': 151, 'Local': 12, 'ControlTerminal': 118, 'Wire': 1945, 'Node': 637}
+  PASS  L1 the 24 actions compile into 24 real ops (delete_wire / delete_object only, 13 delete_object), each action once  ['delete_object', 'delete_object', 'delete_wire', 'delete_object', 'delete_wire', 'delete_object', 'delete_wire', 'delete_object', 'delete_wire', 'delete_object', 'delete_wire', 'delete_object', 'delete_wire', 'delete_object', 'delete_wire', 'delete_object', 'delete_wire', 'delete_object', 'delete_wire', 'delete_object', 'delete_wire', 'delete_object', 'delete_wire', 'delete_object']
+  FACT  JOINTS [before] w42 echo 42 err '' n=10 raw=[[[2637, 1155], 3, 1, -1, -1, -1, 1], [[3096, 1155], 256, 2, 2, -1, 0, -1], [[3096, 1146], 262, 2, -1, 1, -1, 3], [[3122, 1146], 256, 2, 4, -1, 2, -1], [[3122, 1136], 262, 2, -1, 3, -1, 5], [[3650, 1136], 260, 2, -1, 6, 4, -1], [[3650, 1348], 258, 2, 5, -1, -1, 7], [[4748, 1348], 260, 2, -1, 8, 6, -1], [[4748, 1496], 256, 2, 7, -1, 9, -1], [[3814, 1496], 258, 1, -1, -1, -1, 8]]
+  FACT  JOINTS [before] w373 echo 373 err '' n=5 raw=[[[2637, 1143], 3, 1, -1, -1, -1, 1], [[2679, 1143], 260, 2, -1, 2, 0, -1], [[2679, 1468], 258, 2, 1, -1, -1, 3], [[3827, 1468], 260, 2, -1, 4, 2, -1], [[3827, 1482], 256, 1, 3, -1, -1, -1]]
+  FACT  JOINTS [before] w628 echo 628 err '' n=3 raw=[[[2637, 1428], 3, 1, -1, -1, -1, 1], [[4559, 1428], 260, 2, -1, 2, 0, -1], [[4559, 1537], 256, 1, 1, -1, -1, -1]]
+  FACT  JOINTS [before] w1773 echo 1773 err '' n=14 raw=[[[2637, 1440], 3, 1, -1, -1, -1, 1], [[2652, 1440], 256, 2, 2, -1, 0, -1], [[2652, 1439], 262, 2, -1, 1, -1, 3], [[2727, 1439], 260, 2, -1, 4, 2, -1], [[2727, 1472], 258, 2, 3, -1, -1, 5], [[3663, 1472], 260, 2, -1, 6, 4, -1], [[3663, 1534], 258, 2, 5, -1, -1, 7], [[4096, 1534], 256, 2, 8, -1, 6, -1], [[4096, 1508], 262, 2, -1, 7, -1, 9], [[4184, 1508], 260, 2, -1, 10, 8, -1], [[4184, 1554], 258, 2, 9, -1, -1, 11], [[4209, 1554], 256, 2, 12, -1, 10, -1], [[4209, 1549], 262, 2, -1, 11, -1, 13], [[4559, 1549], 256, 1, -1, -1, 12, -1]]
+  FACT  JOINTS [before] w3040 echo 3040 err '' n=9 raw=[[[4029, 1300], 3, 1, -1, -1, -1, 1], [[4037, 1300], 256, 2, 2, -1, 0, -1], [[4037, 1285], 260, 2, -1, 1, 3, -1], [[3999, 1285], 262, 2, -1, 4, -1, 2], [[3999, 1286], 256, 2, 3, -1, 5, -1], [[3996, 1286], 262, 2, -1, 6, -1, 4], [[3996, 1327], 256, 2, 5, -1, 7, -1], [[3821, 1327], 262, 2, -1, 8, -1, 6], [[3821, 1482], 256, 1, 7, -1, -1, -1]]
+  FACT  JOINTS [before] w3512 echo 3512 err '' n=12 raw=[[[2637, 1188], 3, 1, -1, -1, -1, 1], [[2681, 1188], 260, 2, -1, 2, 0, -1], [[2681, 1295], 258, 2, 1, -1, -1, 3], [[2732, 1295], 260, 2, -1, 4, 2, -1], [[2732, 1467], 258, 2, 3, -1, -1, 5], [[3666, 1467], 260, 2, -1, 6, 4, -1], [[3666, 1471], 258, 2, 5, -1, -1, 7], [[3753, 1471], 260, 2, -1, 8, 6, -1], [[3753, 1481], 258, 2, 7, -1, -1, 9], [[3805, 1481], 260, 2, -1, 10, 8, -1], [[3805, 1502], 258, 2, 9, -1, -1, 11], [[3814, 1502], 256, 1, -1, -1, 10, -1]]
+  FACT  JOINTS [before] w3646 echo 3646 err '' n=3 raw=[[[2637, 1200], 3, 1, -1, -1, -1, 1], [[3821, 1200], 260, 2, -1, 2, 0, -1], [[3821, 1498], 256, 1, 1, -1, -1, -1]]
+  FACT  JOINTS [before] w3912 echo 3912 err '' n=7 raw=[[[2637, 1308], 3, 1, -1, -1, -1, 1], [[2722, 1308], 260, 2, -1, 2, 0, -1], [[2722, 1462], 258, 2, 1, -1, -1, 3], [[3678, 1462], 260, 2, -1, 4, 2, -1], [[3678, 1528], 258, 2, 3, -1, -1, 5], [[3833, 1528], 256, 2, 6, -1, 4, -1], [[3833, 1498], 260, 1, -1, 5, -1, -1]]
+  FACT  JOINTS [before] w4027 echo 4027 err '' n=7 raw=[[[2637, 1374], 3, 1, -1, -1, -1, 1], [[2717, 1374], 260, 2, -1, 2, 0, -1], [[2717, 1464], 258, 2, 1, -1, -1, 3], [[3683, 1464], 260, 2, -1, 4, 2, -1], [[3683, 1512], 258, 2, 3, -1, -1, 5], [[3839, 1512], 256, 2, 6, -1, 4, -1], [[3839, 1502], 260, 1, -1, 5, -1, -1]]
+  FACT  JOINTS [before] w4878 echo 4878 err '' n=4 raw=[[[4600, 1805], 3, 1, -1, -1, -1, 1], [[4625, 1805], 256, 2, 2, -1, 0, -1], [[4625, 1725], 262, 2, -1, 1, -1, 3], [[4687, 1725], 256, 1, -1, -1, 2, -1]]
+  FACT  JOINTS [before] w5746 echo 5746 err '' n=8 raw=[[[2637, 1521], 3, 1, -1, -1, -1, 1], [[2688, 1521], 256, 2, 2, -1, 0, -1], [[2688, 1139], 262, 2, -1, 1, -1, 3], [[2873, 1139], 256, 2, 4, -1, 2, -1], [[2873, 1108], 262, 2, -1, 3, -1, 5], [[3616, 1108], 256, 2, 6, -1, 4, -1], [[3616, 1090], 262, 2, -1, 5, -1, 7], [[3775, 1090], 256, 1, -1, -1, 6, -1]]
+  FACT  JOINTS [before] w5979 echo 5979 err '' n=6 raw=[[[2637, 1509], 3, 1, -1, -1, -1, 1], [[2693, 1509], 256, 2, 2, -1, 0, -1], [[2693, 1058], 262, 2, -1, 1, -1, 3], [[3300, 1058], 260, 2, -1, 4, 2, -1], [[3300, 1114], 258, 2, 3, -1, -1, 5], [[3775, 1114], 256, 1, -1, -1, 4, -1]]
+  FACT  JOINTS [before] w8590 echo 8590 err '' n=10 raw=[[[1981, 994], 1, 1, -1, -1, -1, 1], [[2615, 994], 4, 3, -1, 2, 0, 8], [[2615, 1009], 256, 2, 1, -1, 3, -1], [[2609, 1009], 262, 2, -1, 4, -1, 2], [[2609, 1120], 258, 2, 3, -1, -1, 5], [[2623, 1120], 256, 2, 6, -1, 4, -1], [[2623, 1112], 262, 2, -1, 5, -1, 7], [[2645, 1112], 256, 1, -1, -1, 6, -1], [[4599, 994], 0, 2, -1, 9, 1, -1], [[4599, 5837], 1, 1, 8, -1, -1, -1]]
+  FACT  JOINTS [before] w9051 echo 9051 err '' n=8 raw=[[[2349, 1090], 1, 1, -1, -1, -1, 1], [[2363, 1090], 4, 3, -1, 2, 0, 6], [[2363, 1110], 258, 2, 1, -1, -1, 3], [[2619, 1110], 260, 2, -1, 4, 2, -1], [[2619, 1214], 258, 2, 3, -1, -1, 5], [[2645, 1214], 256, 1, -1, -1, 4, -1], [[4599, 1090], 0, 2, -1, 7, 1, -1], [[4599, 5837], 1, 1, 6, -1, -1, -1]]
+  FACT  JOINTS [before] w10166 echo 10166 err '' n=6 raw=[[[9699, 7126], 1, 1, -1, -1, -1, 1], [[9734, 7126], 0, 2, -1, 2, 0, -1], [[9734, 7257], 0, 2, 1, -1, -1, 3], [[9869, 7257], 0, 2, 4, -1, 2, -1], [[9869, 7138], 0, 2, -1, 3, -1, 5], [[9889, 7138], 1, 1, -1, -1, 4, -1]]
+  FACT  JOINTS [before] w10187 echo 10187 err '' n=6 raw=[[[3724, 1697], 3, 1, -1, -1, -1, 1], [[3736, 1697], 256, 2, 2, -1, 0, -1], [[3736, 1642], 262, 2, -1, 1, -1, 3], [[6060, 1642], 256, 2, 4, -1, 2, -1], [[6060, 1403], 260, 2, -1, 3, 5, -1], [[5106, 1403], 258, 1, -1, -1, -1, 4]]
+  FACT  JOINTS [before] w11253 echo 11253 err '' n=6 raw=[[[2315, 959], 1, 1, -1, -1, -1, 1], [[2623, 959], 4, 3, -1, 2, 0, 4], [[2623, 1409], 258, 2, 1, -1, -1, 3], [[2645, 1409], 256, 1, -1, -1, 2, -1], [[4599, 959], 0, 2, -1, 5, 1, -1], [[4599, 5837], 1, 1, 4, -1, -1, -1]]
+  FACT  JOINTS [before] w11389 echo 11389 err '' n=9 raw=[[[2774, 981], 1, 1, -1, -1, -1, 1], [[3486, 981], 0, 2, 2, -1, 0, -1], [[3486, 965], 0, 2, -1, 1, -1, 3], [[3548, 965], 0, 2, -1, 4, 2, -1], [[3548, 996], 0, 2, 3, -1, -1, 5], [[3655, 996], 2, 3, -1, 6, 4, 7], [[3655, 1004], 1, 1, 5, -1, -1, -1], [[6375, 996], 260, 2, -1, 8, 5, -1], [[6375, 1409], 256, 1, 7, -1, -1, -1]]
+  FACT  JOINTS [before] w12256 echo 12256 err '' n=4 raw=[[[5565, 2712], 3, 1, -1, -1, -1, 1], [[5583, 2712], 256, 2, 2, -1, 0, -1], [[5583, 2678], 262, 2, -1, 1, -1, 3], [[5602, 2678], 256, 1, -1, -1, 2, -1]]
+  FACT  JOINTS [before] w24277 echo 24277 err '' n=8 raw=[[[1981, 1042], 1, 1, -1, -1, -1, 1], [[2057, 1042], 0, 3, -1, 2, 0, 6], [[2057, 1125], 0, 2, 1, -1, -1, 3], [[2610, 1125], 0, 2, -1, 4, 2, -1], [[2610, 1143], 0, 2, 3, -1, -1, 5], [[2637, 1143], 1, 1, -1, -1, 4, -1], [[9370, 1042], 0, 2, -1, 7, 1, -1], [[9370, 5721], 1, 1, 6, -1, -1, -1]]
+  FACT  JOINTS [before] w24333 echo 24333 err '' n=12 raw=[[[1981, 1090], 1, 1, -1, -1, -1, 1], [[2095, 1090], 0, 3, -1, 2, 0, 10], [[2095, 1124], 0, 2, 1, -1, -1, 3], [[2563, 1124], 0, 2, -1, 4, 2, -1], [[2563, 1153], 0, 2, 3, -1, -1, 5], [[2618, 1153], 0, 2, 6, -1, 4, -1], [[2618, 1145], 0, 2, -1, 5, -1, 7], [[2623, 1145], 0, 2, -1, 8, 6, -1], [[2623, 1155], 0, 2, 7, -1, -1, 9], [[2637, 1155], 1, 1, -1, -1, 8, -1], [[9357, 1090], 0, 2, -1, 11, 1, -1], [[9357, 5721], 1, 1, 10, -1, -1, -1]]
+  FACT  JOINTS [before] w25225 echo 25225 err '' n=8 raw=[[[1981, 1410], 1, 1, -1, -1, -1, 1], [[2521, 1410], 0, 3, 2, -1, 0, 6], [[2521, 1098], 0, 2, -1, 1, -1, 3], [[2637, 1098], 1, 2, -1, -1, 2, 4], [[9365, 1098], 0, 2, -1, 5, 3, -1], [[9365, 11732], 1, 1, 4, -1, -1, -1], [[9013, 1410], 0, 2, 7, -1, 1, -1], [[9013, 1157], 1, 1, -1, 6, -1, -1]]
+  FACT  JOINTS [before] w25237 echo 25237 err '' n=6 raw=[[[1981, 1078], 1, 1, -1, -1, -1, 1], [[2034, 1078], 0, 3, -1, 2, 0, 4], [[2034, 1188], 0, 2, 1, -1, -1, 3], [[2637, 1188], 1, 1, -1, -1, 2, -1], [[9357, 1078], 0, 2, -1, 5, 1, -1], [[9357, 5721], 1, 1, 4, -1, -1, -1]]
+  FACT  JOINTS [before] w25238 echo 25238 err '' n=14 raw=[[[1981, 1102], 1, 1, -1, -1, -1, 1], [[2001, 1102], 0, 2, 2, -1, 0, -1], [[2001, 917], 0, 2, -1, 1, -1, 3], [[9021, 917], 0, 2, -1, 4, 2, -1], [[9021, 1065], 0, 3, 3, 11, 5, 12], [[2637, 1065], 1, 2, -1, -1, 6, 4], [[2601, 1065], 0, 2, -1, 7, -1, 5], [[2601, 1119], 0, 2, 6, -1, 8, -1], [[2226, 1119], 0, 2, 9, -1, -1, 7], [[2226, 1034], 0, 2, -1, 8, -1, 10], [[2335, 1034], 1, 1, -1, -1, 9, -1], [[9021, 1141], 1, 1, 4, -1, -1, -1], [[9357, 1065], 0, 2, -1, 13, 4, -1], [[9357, 11732], 1, 1, 12, -1, -1, -1]]
+  FACT  JOINTS [before] w25280 echo 25280 err '' n=6 raw=[[[1981, 1114], 1, 1, -1, -1, -1, 1], [[2013, 1114], 0, 3, -1, 2, 0, 4], [[2013, 1200], 0, 2, 1, -1, -1, 3], [[2637, 1200], 1, 1, -1, -1, 2, -1], [[9364, 1114], 0, 2, -1, 5, 1, -1], [[9364, 5721], 1, 1, 4, -1, -1, -1]]
+  FACT  JOINTS [before] w25306 echo 25306 err '' n=8 raw=[[[1981, 1138], 1, 1, -1, -1, -1, 1], [[2000, 1138], 0, 3, -1, 2, 0, 6], [[2000, 1311], 0, 2, 1, -1, -1, 3], [[2623, 1311], 0, 2, 4, -1, 2, -1], [[2623, 1308], 0, 2, -1, 3, -1, 5], [[2637, 1308], 1, 1, -1, -1, 4, -1], [[9376, 1138], 0, 2, -1, 7, 1, -1], [[9376, 5721], 1, 1, 6, -1, -1, -1]]
+  FACT  JOINTS [before] w25336 echo 25336 err '' n=6 raw=[[[1981, 1150], 1, 1, -1, -1, -1, 1], [[1992, 1150], 0, 3, -1, 2, 0, 4], [[1992, 1374], 0, 2, 1, -1, -1, 3], [[2637, 1374], 1, 1, -1, -1, 2, -1], [[9382, 1150], 0, 2, -1, 5, 1, -1], [[9382, 5721], 1, 1, 4, -1, -1, -1]]
+  FACT  JOINTS [before] w25438 echo 25438 err '' n=15 raw=[[[1981, 982], 1, 1, -1, -1, -1, 1], [[1992, 982], 0, 3, -1, 2, 0, 11], [[1992, 992], 0, 2, 1, -1, -1, 3], [[2009, 992], 2, 3, -1, 4, 2, 8], [[2009, 1504], 0, 2, 3, -1, -1, 5], [[2623, 1504], 0, 2, -1, 6, 4, -1], [[2623, 1521], 0, 2, 5, -1, -1, 7], [[2637, 1521], 1, 1, -1, -1, 6, -1], [[2619, 992], 260, 2, -1, 9, 3, -1], [[2619, 1079], 258, 2, 8, -1, -1, 10], [[2645, 1079], 256, 1, -1, -1, 9, -1], [[4599, 982], 0, 3, -1, 12, 1, 13], [[4599, 5837], 1, 1, 11, -1, -1, -1], [[8368, 982], 0, 2, -1, 14, 11, -1], [[8368, 5721], 1, 1, 13, -1, -1, -1]]
+  FACT  JOINTS [before] w25461 echo 25461 err '' n=13 raw=[[[1981, 1007], 1, 1, -1, -1, -1, 1], [[2117, 1007], 0, 3, -1, 2, 0, 6], [[2117, 1500], 0, 2, 1, -1, -1, 3], [[2199, 1500], 0, 2, -1, 4, 2, -1], [[2199, 1509], 0, 2, 3, -1, -1, 5], [[2637, 1509], 1, 1, -1, -1, 4, -1], [[2605, 1007], 4, 3, -1, 7, 1, 9], [[2605, 1169], 258, 2, 6, -1, -1, 8], [[2645, 1169], 256, 1, -1, -1, 7, -1], [[4599, 1007], 0, 3, -1, 10, 6, 11], [[4599, 5837], 1, 1, 9, -1, -1, -1], [[8368, 1007], 0, 2, -1, 12, 9, -1], [[8368, 5721], 1, 1, 11, -1, -1, -1]]
+  FACT  JOINTS [before] w25911 echo 25911 err '' n=8 raw=[[[2305, 2432], 1, 1, -1, -1, -1, 1], [[2309, 2432], 0, 3, 2, -1, 0, 4], [[2309, 1497], 0, 2, -1, 1, -1, 3], [[2637, 1497], 1, 1, -1, -1, 2, -1], [[2475, 2432], 0, 3, -1, 5, 1, 6], [[2475, 2502], 1, 1, 4, -1, -1, -1], [[9699, 2432], 0, 2, -1, 7, 4, -1], [[9699, 5721], 1, 1, 6, -1, -1, -1]]
+  FACT  JOINTS [before] w26021 echo 26021 err '' n=6 raw=[[[1981, 1432], 1, 1, -1, -1, -1, 1], [[1992, 1432], 0, 3, 2, -1, 0, 4], [[1992, 1428], 0, 2, -1, 1, -1, 3], [[2637, 1428], 1, 1, -1, -1, 2, -1], [[9152, 1432], 0, 2, -1, 5, 1, -1], [[9152, 5721], 1, 1, 4, -1, -1, -1]]
+  FACT  JOINTS [before] w26064 echo 26064 err '' n=6 raw=[[[1981, 1465], 1, 1, -1, -1, -1, 1], [[1992, 1465], 0, 3, 2, -1, 0, 4], [[1992, 1440], 0, 2, -1, 1, -1, 3], [[2637, 1440], 1, 1, -1, -1, 2, -1], [[9152, 1465], 0, 2, -1, 5, 1, -1], [[9152, 5721], 1, 1, 4, -1, -1, -1]]
+  FACT  JOINTS [before] w28338 echo 28338 err '' n=16 raw=[[[2637, 1497], 3, 1, -1, -1, -1, 1], [[2654, 1497], 260, 2, -1, 2, 0, -1], [[2654, 1498], 258, 2, 1, -1, -1, 3], [[2810, 1498], 256, 2, 4, -1, 2, -1], [[2810, 1476], 262, 2, -1, 3, -1, 5], [[3630, 1476], 260, 2, -1, 6, 4, -1], [[3630, 1544], 258, 2, 5, -1, -1, 7], [[3766, 1544], 256, 2, 8, -1, 6, -1], [[3766, 1543], 262, 2, -1, 7, -1, 9], [[3862, 1543], 260, 2, -1, 10, 8, -1], [[3862, 1579], 258, 2, 9, -1, -1, 11], [[4895, 1579], 256, 2, 12, -1, 10, -1], [[4895, 1569], 262, 2, -1, 11, -1, 13], [[5043, 1569], 256, 2, 14, -1, 12, -1], [[5043, 1546], 262, 2, -1, 13, -1, 15], [[5106, 1546], 256, 1, -1, -1, 14, -1]]
+  FACT  JOINTS [before] w28684 echo 28684 err '' n=4 raw=[[[9699, 7138], 1, 1, -1, -1, -1, 1], [[9728, 7138], 0, 2, -1, 2, 0, -1], [[9728, 7285], 0, 2, 1, -1, -1, 3], [[9757, 7285], 1, 1, -1, -1, 2, -1]]
+  FACT  JOINTS [before] w29122 echo 29122 err '' n=6 raw=[[[2592, 1904], 1, 1, -1, -1, -1, 1], [[2606, 1904], 0, 3, 2, -1, 0, 4], [[2606, 1247], 262, 2, -1, 1, -1, 3], [[2645, 1247], 256, 1, -1, -1, 2, -1], [[4599, 1904], 0, 2, -1, 5, 1, -1], [[4599, 5837], 1, 1, 4, -1, -1, -1]]
+  FACT  JOINTS [before] w29766 echo 29766 err '' n=8 raw=[[[9416, 7436], 1, 1, -1, -1, -1, 1], [[9480, 7436], 0, 3, 2, 4, 0, -1], [[9480, 7405], 0, 2, -1, 1, -1, 3], [[9541, 7405], 1, 1, -1, -1, 2, -1], [[9480, 7449], 0, 2, 1, -1, -1, 5], [[9584, 7449], 0, 2, 6, -1, 4, -1], [[9584, 7429], 0, 2, -1, 5, -1, 7], [[9615, 7429], 1, 1, -1, -1, 6, -1]]
+  FACT  JOINTS [before] w29787 echo 29787 err '' n=4 raw=[[[3719, 1737], 3, 1, -1, -1, -1, 1], [[3731, 1737], 256, 2, 2, -1, 0, -1], [[3731, 1713], 262, 2, -1, 1, -1, 3], [[4823, 1713], 256, 1, -1, -1, 2, -1]]
+  FACT  JOINTS [before] 37 target wires read in 6.3 s (0.17 s/read); 0 target uids absent
+  FACT  JOINTS [before] coverage {'wires': 1945, 'target_read': 37, 'sweep_read': 1908, 'sweep_total': 1908}
+  FAIL  J-before every read echoes its uid with err '' (1945 reads)  ['29267', '29282', '4526', '30928', '26432', '24927', '24619', '16665', '16186', '16083', '4589', '4461', '25437', '1737', '24355', '34066', '34015', '33813', '33636', '33367']
+  METER start  k   0  private 665.9 MB (d -)  handles 45690 (d -)
+  FAIL  J3 the after-rows read ran (before Remove Bad Wires)
+
+OBSERVED EXC report_all(GObject) on scratch_c116d_bed_20260928_085841.vi: error 2: Invoke Node in TRef Traverse.vi->VI Scripting - Traverse.lvlib:Traverse for GObjects.vi->OpReportAll_v0.vi | <APPEND> | Method Name: <b>Class Operator:Traverse</b> (Traverse Failed)
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagekit.py", line 1372, in run
+    fn(stage)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c116d_j3.py", line 76, in body
+    return R.body(s)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\stage_d1_l2r2.py", line 53, in body
+    real = x.run()
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c116d_j3.py", line 57, in run
+    return _Exe.run(self, *a, **kw)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagexec.py", line 1335, in run
+    real = be.read()
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagexec.py", line 1788, in read
+    lv = self.K.mod("wiki_build").read_live(self.s.work, fs_pairs=self.fs)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\wiki_build.py", line 240, in read_live
+    for o in g.report_all(path, "GObject"):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 529, in report_all
+    raise RuntimeError(f"report_all({cls}) on {os.path.basename(target)}: {err}")
+RuntimeError: report_all(GObject) on scratch_c116d_bed_20260928_085841.vi: error 2: Invoke Node in TRef Traverse.vi->VI Scripting - Traverse.lvlib:Traverse for GObjects.vi->OpReportAll_v0.vi | <APPEND> | Method Name: <b>Class Operator:Traverse</b> (Traverse Failed)
+
+  FAIL  the run completed without an unhandled exception  report_all(GObject) on scratch_c116d_bed_20260928_085841.vi: error 2: Invoke Node in TRef Traverse.vi->VI Scripting - Traverse.lvlib:Traverse for GObjects.vi->O
+
+---------- [H] HYGIENE
+BGRUN KILLED (external) pid=12428 marked 2026-09-28 09:15:17 by bgrun pid=16580: no END/TIMEOUT and the runner process is gone

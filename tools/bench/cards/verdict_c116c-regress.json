@@ -1,0 +1,21 @@
+{
+ "schema": "verdict/1",
+ "id": "c116c-regress",
+ "verdict": "supported",
+ "alternative": "10/6 came from an older script version (log label 'printed a RESULT line' vs script:84 '...or a tally'); on-disk before.json holds status None for the 6, so G2 is blind for them until before is rerun.",
+ "discriminating_test": "Rerun `before` (expect B 16/0, 6 PASS by tally); feed '  -> FAIL  C9', '  **FAIL**  X', and a 2nd '  FAIL  D4h' to FAIL_RE: first two unmatched, third leaves set unchanged.",
+ "violations": [],
+ "sources": [
+  "tools/bench/diag_c116a_regress.py:32",
+  "tools/bench/diag_c116a_regress.py:84",
+  "tools/bench/diag_c116a_regress.py:92",
+  "tools/bench/diag_c116a_regress_before.log:19",
+  "tools/bench/selftest_stoprecord_supersession.py:65",
+  "tools/bench/selftest_audit_c7.py:27",
+  "tools/bench/selftest_c111c_launchunit_c116a_before.log:20-21",
+  "tools/bench/selftest_audit_c4c_split.py:239",
+  "https://docs.python.org/3/library/sys.html#sys.exit",
+  "https://docs.python.org/3/library/re.html"
+ ],
+ "note": "Claim holds: the 6 rc0/0fail are real passes. FAIL_RE misses '-> FAIL' (supersession) and '**FAIL**' (audit_c7), and keeps only the first label word (c111c has two D4h gates), so G1 can pass a regression; gate fail count and match full lines."
+}

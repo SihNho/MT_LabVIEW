@@ -1,0 +1,13 @@
+{
+ "schema_note": "card 116-4 J1: FINALIZED decision-row plan of tools/bench/diag_c116d_j1.py - a never-saved byte copy of claudeDev\\OpLoopCast_v0.vi (graph tools/bench/graph_oploopcast_v0_c95.json, md5 89452a9a), two node DELETIONS (stagekit.delete_object) that turn a branched wire into a dangling branch and a one-sink wire into a loose end, Wire.Joints[] read before/after each. Precedent: tools/bench/diag_c111b_plan.json. The deleted nodes are found live from the graph (the leaf-most Property sink of the first branched top-level wire; the Property sink of the first one-sink wire not touching it) - no uid is typed here.",
+ "input": {"vi": "OpLoopCast_v0.vi", "md5": "89452a9a87b147bc23f5de34f1a22f4c", "graph": "tools/bench/graph_oploopcast_v0_c95.json"},
+ "decisions": [
+  {"id": "J1-0", "action": "stage", "what": "stagekit Stage: restart LabVIEW, byte copy of OpLoopCast_v0.vi as the work copy, discard_work (never saved)"},
+  {"id": "J1-1", "action": "read", "what": "top-level nets from Nodes[] terminals; Joints[] of the branched wire and of the one-sink wire"},
+  {"id": "J1-2", "action": "delete_object", "what": "DELETE the branched wire's leaf-most Property sink node -> dangling branch"},
+  {"id": "J1-3", "action": "read", "what": "Joints[] of the branched wire again"},
+  {"id": "J1-4", "action": "delete_object", "what": "DELETE the one-sink wire's Property sink node -> loose end"},
+  {"id": "J1-5", "action": "read", "what": "Joints[] of the one-sink wire again; negative (non-wire uid refused); 20 calls handles flat"},
+  {"id": "J1-6", "action": "discard", "what": "close(): scratch deleted, fixture md5 unchanged, LabVIEW killed and gone; PASS record to tools/bench/scratch_verify/"}
+ ]
+}

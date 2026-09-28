@@ -4,7 +4,8 @@ status: current
 date: 2026-09-20
 tags: [hand-off]
 ---
-✅ RESUMED — USER 2026-09-27 17:4x: "1번부터 진행하도록. 시작" (runner relaunched by the chat; first act = the ABBA, see ## NEXT).
+STOP — chat 2026-09-28 08:4x, graceful at the cycle-116 boundary: the user approved acceleration items 1–4 ("1~4번은 적용하도록 하고 … 지금 싸이클 끝내고 바로 적용해보자"): (1) pipeline the next step's offline prep beside the LabVIEW build, (2) skip prior-art on a proven pattern and run the retrospective less often, (3) gate false positives logged and batched instead of fixed card-by-card, (4) up to ~25 rows per build step on a proven pattern. The chat applies them and relaunches; not a user stop of the project.
+(history) ✅ RESUMED — USER 2026-09-27 17:4x: "1번부터 진행하도록. 시작" (runner relaunched by the chat; first act = the ABBA, see ## NEXT).
 (history) STOP (lifted 17:4x) — USER 2026-09-27 17:1x: "지금 세션 종료할 것. 이후 컴퓨터 재부팅 및 기계 재연결 진행할 예정". Runner stopped by the chat mid-cycle 110 (offline planning card, no LabVIEW open); the PC is being rebooted and the rotor adapter reconnected (D-2026-09-27-03). Do NOT relaunch until the user says so.
 ✅ Chat 2026-09-27 17:3x (user): "COM5 확인 했으니, 구동 허용하도록 함." — PC rebooted 17:21, rotor reconnected; `diag_c105d_visa.py` after reboot PASS 6/0, viOpen Rotor/ASRL5 ×3 = 0 (`tools/bench/diag_c105d_visa_postreboot.log`). D-2026-09-27-02/-03 ANSWERED. **REAL RUNS ALLOWED again** (the "NO REAL RUN" clause below is lifted). Runner still stopped until the user says resume.
 (history) Chat 2026-09-27 08:5x (user): the cycle-107 STOP was LIFTED ("그 동안 루프 분할 빌드는 계속 진행하도록"). 🔴 NO REAL RUN (camera / motor / bead-pick legs) until the user confirms COM5 in person (D-2026-09-27-03 open; diag_c105d_visa.py must return 0 first). Build-only work continues: display-loop part 2, then L2-A2. Original stop text: cycle 107 judgement, 2026-09-27 (outcome review §7, steer_107 FOLLOWED): every real run needs the rotor port, which NI-VISA still refuses (D-2026-09-27-03). Whether structural work continues meanwhile is D-2026-09-27-04. Remove this line only after the user answers; first act then = ## NEXT.
@@ -60,7 +61,29 @@ rig-state: 조립   <!-- 2026-09-24 20:xx USER GRANT: "당분간 내가 말하�
 current-bed: D1_l2_r1_20260928_055441.vi
 <!-- ^ machine key read by tools/errorlist_check.py current_bed_text(); without it the bed is chosen by mtime among D1_*.vi names in this file, and the newer D1_s1_kswap_* would silently take over (review archive/peer/2026-09-26-c88-reuse-stalepin.md). Change it only when a new bed is accepted. Moved 2026-09-28 by cycle 115 (PD230(d)): L2-R1 accepted. -->
 🔵 **THE BED IS NOW `claudeDev\D1_l2_r1_20260928_055441.vi`, md5 `f465196bb5016638b146e771ba54c5af`** (L2-R1, 307,924 B; expected Error List file `tools/bench/errorlist_expected_D1_l2_r1_20260928_055441.json`, 55 items, reverdict OK; PD230(d)). STRUCTURAL, ExecState 0 by design, never run. Its input, the B3 file `D1_l2_b3_20260928_032703.vi` (md5 `1b5c12d7…`), is kept.
-🟢🟢 **FIRST ACT of cycle 116 = `docs/d1-loop12-17-split-plan.md` Pre-decided 230(f): ONE material card (Opus high) delivers L2-R2** from the R1 bed. L2-R2 retires the 13 tunnels on `#637` that have no consumer (#2294 #3644 #2580 #2396 #4432 #3656 #3920 #4031 #5129 #5328 #28343 #5752 #5569). `#32572` stays.
+🟢🟢 **FIRST ACT of cycle 117 = `docs/d1-loop12-17-split-plan.md` Pre-decided 231(e)/(f): ONE material card (Opus high).**
+   - **STEP 0 (PD231(e), reference hygiene):** `OpWireJoints_v1`. The v0 op (`claudeDev\OpWireJoints_v0.vi`, md5 `15cf4971…`) does not close its Traverse array, and a sweep on R1 failed from read 536 with error 1055. v1 closes that ref and wires the Traverse error into the property node (review `archive/peer/2026-09-28-c116d-sweep.md` :41-44, :95). Acceptance:
+     - 20 calls with handles flat ±100;
+     - a sweep of all 1,945 R1 wires with 0 errors and handles flat;
+     - the sweep names R1's 24th loose-ends item (only 23 were found among the 536 wires read).
+   - **Then L2-R2, ONE launch (PD231(d)):** from the R1 bed with `tools/recipes/stage_d1_l2r2.py` (md5 `488c2209…`) and `tools/bench/plan_l2r2.json` (md5 `67bad9a8…`). Its scratch build already PASSED 43/0 in 116-2; if either file changes, re-dry it. The launch saves `claudeDev\D1_l2_r2_<ts>.vi`. Gates:
+     - PD230(f)'s gates: cdiff == R1's 16 rows; census == 13 tunnels + 11 stubs; whole-graph terminal diff only on retired objects; RBW deletes no other wire; handles ±100;
+     - **Error List loose-ends == 22**;
+     - **joints on the 20 nets == 116-4's J4 table**: 9 nets loose (24277 24333 25237 25280 25306 25336 25911 26021 26064), w25238/w25225 not loose, the 7 PD230(d) nets unchanged.
+     - Then the full Error List read and `errorlist_expected_D1_l2_r2_<ts>.json` in the same card.
+   - After L2-R: a facts card per QRT pair (PD228(i)), then the QRT wiring stage (b2_03 with `t11273`, 227(d)).
+- **CYCLE 116 in brief — no new file; STEP 0a landed; L2-R2 stopped by its own pin, and the gap was then measured (PD231):**
+  - 116-1 BLOCKED 10/6: the stop record's cause is not `;` (awk had no read-only credit, `$(…)` matched EXEC_PIPE_RE, a lone `&` was not a separator). The card's own baseline check armed `guard_peer`, and the card had no peer.
+  - 116-3 FAIL 6/2 (re-issue with a hypothesis peer): review c116c-regress was supported. Fixed: stop record 38/0; `guard_card` `cd` only to the project root (K9 re-pinned); doc_lint L8 HH:MM lint; `selftest_launch_gate` mkdtemp. Regression 50/0.
+    - FAILED only on my witness rule for audit A9. A9 stays WARN-only (PD231(a)).
+  - 116-2 FAIL 4/1: STEP 0b PASSED (B3 == R1 properties; LabVIEWCLI compare). Plan, recipe (120 lines), dry, prerun 13/0 and prior-art (novel) all passed, and the scratch build passed 43/0. The Error List had loose ends 22 against the pinned 24, so there was no launch.
+  - 116-4 FAIL 4/1: the new `Wire.Joints[]` reader showed 24 − 11 stubs + 9 newly loose outer nets = 22, with 2 pass-through nets re-joining. The reader op leaks its Traverse array (sweep died at read 536).
+  - Carries:
+    - A9's witness must be the file the fix names, never a pinning test.
+    - 107 old `lg_selftest_<pid>` dirs remain in %TEMP%.
+    - doc_lint L6 FAILs on 2 blank 09-27 reviews (pre-existing).
+  - User decisions: none open from this cycle.
+- (history) 🟢🟢 **FIRST ACT of cycle 116 = `docs/d1-loop12-17-split-plan.md` Pre-decided 230(f): ONE material card (Opus high) delivers L2-R2** from the R1 bed. L2-R2 retires the 13 tunnels on `#637` that have no consumer (#2294 #3644 #2580 #2396 #4432 #3656 #3920 #4031 #5129 #5328 #28343 #5752 #5569). `#32572` stays.
    - **STEP 0a (owed DEVICES, PD230(g); retrospective-cycle115 `device-failed` ACCEPTED, `docs/violation-decisions.md` 07:05):**
      - (1) The stop record splits on `;`/`&&`/`||`/`|` and refuses only a segment that executes the recipe. Its self-test: `tools/hooks/material_marker.log:2614-2615` pass, and a launch hidden after a `;` is still refused.
      - (2) A disposition-landed check in `audit_cycle`. It must flag `guard_card.py:44` and the missing doc_lint HH:MM lint; then fix both, and the check shows 0.

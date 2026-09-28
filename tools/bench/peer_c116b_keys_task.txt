@@ -1,0 +1,10 @@
+ATTACK this claim about a failed prediction in tools/bench/diag_c116b_keys.log (script tools/bench/diag_c116b_keys.py, card tools/bench/cards/task_116-2.json STEP 0b prep, offline, no LabVIEW).
+
+Prediction (rev 1 of the script): the saved-graph dumps tools/bench/graph_l2b3_20260928.json (B3 file) and tools/bench/graph_l2r1_20260928.json (R1 file) have the same top-level key set.
+Observation: B3 keys = fs_tunnel_pairs, handles, loops, md5, objs, owners, source, terminals, vi; R1 keys = fs_tunnel_pairs, handles, md5, objs, source, terminals, vi, wire_census.
+
+Claim: this is a bug in MY diagnostic's prediction, not a fact about the VIs. The two dumps were written by different readers - B3's "source" field says tools/bench/diag_c114c_b3graph.py (read_live + mloops + owner_of), R1's says tools/bench/diag_c115d_graph.py (read_live only, plus a wire census). The per-record field sets (objs: uid/class/pos/owner; terminals: term_uid/term_name/is_source/wire_uid/owner_uid/owner_class/frame_diagram/term_class) are the same in both. Consequence I intend to act on: (a) patch the diag's contract to compare record fields only and rerun; (b) for STEP 0b (B3-vs-R1 property compare: tunnel indexing mode on loop #637, constants, node properties) neither dump carries any property value, so a read-only LabVIEW property read on byte copies of both files is needed; (c) the R1 dump lacks "loops" and "owners", which the L2-R2 plan's stagesim base needs (plan_l2r1 used graph_l2b3 which has them), so a fresh dump of the SAVED R1 file with diag_c114c_b3graph.py's reader is needed for P1.
+
+Already ruled out: the R1 file changed after the dump (graph md5 field f465196b == the saved R1 md5 in tools/bench/cards/result_115-3.json).
+
+Give: the strongest reason the claim is wrong; an alternative explanation; what would falsify it; the cheapest discriminating test (reading files in this project is enough).

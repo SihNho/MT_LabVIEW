@@ -4696,3 +4696,106 @@ VIOLATION: device-failed | loss_min=2 | loss_usd=? | evidence=tools/hooks/materi
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle115","verdict":"refuted","alternative":"No costly structural fault: the cycle delivered bed D1_l2_r1 + reverdicted expected file; the device-rule line is emitted only because stop_record's read-only exemption refused `wc -l …; awk …` (2 min), and the 31-min F7 detour moved rather than wasted work.","discriminating_test":"Replay the literal argv at material_marker.log:2615 through stop_record/launchunit offline: if it is still refused, the read-only exemption misses `;`-separated segments.","violations":[{"slug":"device-failed","loss_min":2,"loss_usd":"?","evidence":"tools/hooks/material_marker.log:2615"}],"sources":["tools/hooks/material_marker.log:2615","docs/violation-decisions.md:1488","tools/bench/cards/result_115-2.json:22","archive/peer/2026-09-28-priorart-c115b-l2r1.md:609","tools/bench/diag_c115b_errorlist.log:121","tools/bench/cards/result_115-5.json:19","https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/wire-has-loose-ends.html"],"note":"Largest cost was the F7 detour 06:17-06:48 ($2.67): the prior-art Q2 disposition promised a scratch Error List read that was never made; a finding, not a fault. 115-4 peers=[] cost one card boundary."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle115.md
 BGRUN END rc=0 after 238s
+BGRUN START 2026-09-28 09:49:37 limit 10.0 min: py tools/retrospective.py --cycle 116
+BGRUN PID 9696
+   window 2026-09-28 06:54:12 .. 2026-09-28 09:49:38 (175 min); 85 build logs, 11 machinery logs, 40 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle116.txt (37179 chars)
+   review card tools\bench\cards\review_retrospective-cycle116.json
+BGRUN START 2026-09-28 09:50:21 limit 20.0 min: C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\retrospective.py --cycle 116
+BGRUN PID 2396
+   window 2026-09-28 06:54:12 .. 2026-09-28 09:50:22 (176 min); 85 build logs, 11 machinery logs, 40 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle116.txt (37179 chars)
+   review card tools\bench\cards\review_retrospective-cycle116.json
+OUTCOME: ANSWERED (498s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-09-28-retrospective-cycle116.md
+COST: $2.5822  in 58 / out 48802 / cache-create 131311 / cache-read 2777341  (496s, 48 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle116 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle116.json
+--- ANSWER ---
+The claim is **refuted**. Cycle 116 was mostly well run, but it had one real structural fault, plus one failed device that the threshold-1 rule requires me to report.
+
+The evidence window starts at 06:54:12, but cycle 116's session only began at 07:01:03 (`tools/bench/cycle_116.log:1`). The 06:54–07:01 logs (`cycle_115.log`, `motor_session_end_cycle115.log`) belong to cycle 115 and are not counted here. The task text names `docs/cycle27-plan.md` as this cycle's plan, which is also wrong: the cycle worked from `docs/d1-loop12-17-split-plan.md` (`tools/bench/next.json:7`). The audit's C7 already uses the right plan.
+
+## The most costly structural fault
+
+**A new reader VI broke the reference-hygiene rule, and its proof test passed only on paper.** Slug: rule-evaded.
+
+- **What happened.** CLAUDE.md:218-219 says op VIs must close "every ref they create (… Traverse arrays …)". Card 116-4 repeated this (`task_116-4.json:25,64`). The new `OpWireJoints_v0` closed only the property node's reference (`tools/bench/diag_c116d_opbuild.log:34-35`). Its `error in` was left unwired (`:27`), so any Traverse error was thrown away.
+- **Why the proof missed it.** The op passed the rule's "20 calls, handles flat" test (`result_116-4.json:15`). The code already says that test can't see this leak: `tools/gscript.py:247-249` states the counters "CANNOT see refnum-class exhaustion inside an op VI" (measured in cycle 38).
+- **What it broke.**
+  - The R1 sweep failed from read 536 onward (`diag_c116d_j3.log:84,108`).
+  - LabVIEW hung at 37,034 handles and had to be restarted (`diag_c116d_restart.log:3`).
+  - A $2.17 hypothesis review followed (`peer_c116d-sweep.log:4`).
+  - Only 536 of 1,945 wires were read, so R1's 24th loose-ends item is still unexplained (`result_116-4.json:18`).
+  - Cycle 117 now opens with an op-repair step before the L2-R2 launch (`next.json:4`, plan PD231(e) at `docs/d1-loop12-17-split-plan.md:2109`).
+- **Loss.** About 18 min on the critical path: attempt 1 started at 08:58:40 (`diag_c116d_j3.log:1`) and attempt 2 at 09:17:15 (`tools/hooks/material_marker.log:2669`). Plus $2.17.
+- **Counterfactual.** Had the op build at 08:46 also closed the Traverse array and wired its error, as CLAUDE.md:218-219 requires, the 08:58 run would have finished both phases in one go. Card 116-4 would have ended around 09:29 instead of 09:47, with the sweep covering whatever its time cap allowed rather than stopping at 536. The 24th item would most likely have been named, and cycle 117 could open with the L2-R2 launch.
+
+**The second line is a device failure, reported under the threshold-1 rule, not because it is as costly.** The audit A9 "disposition landed" check (decision 2026-09-28 07:05, part 2) had one acceptance test: flag `guard_card.py:44` before the fix and show 0 after (`docs/violation-decisions.md:1655`).
+- On the unfixed code it did not flag the `guard_card` hole. The self-test that pins that hole cites the review, and the check counted that citation as proof the fix had landed (`result_116-3.json:2,26`).
+- After the fixes it still showed 12, not 0.
+- The judgement session declined it ("Not accepted as a device", `docs/d1-loop12-17-split-plan.md:2096`) and left the repair as an unscheduled carry (STATUS.md:82). It is not in `next.json`.
+- **Loss this cycle:** 0 min, because both fixes were landed by hand. The cost is forward: this class of fault is still unguarded.
+- **Counterfactual:** the material agent itself proposed, around 07:13, that only a file outside `tools/bench` should count as a witness (`result_116-1.json:25`). Had 116-3 built that, instead of also counting `tools/bench/selftest_*`, A9 would have met its acceptance inside 116-3, which ended around 07:36.
+
+## Findings
+
+**1. Repeated failure**
+- **Blocked card, same cause as last cycle.** 116-1 came back blocked: a failed prediction armed `guard_peer`, and the card listed no peer (`result_116-1.json:3`, `task_116-1.json:68`). Card 115-4 was blocked the same way one cycle earlier (`result_115-4.json:3`). The carried rule (PD230(g), plan :2088) was read as covering only "diagnosis cards". The change was due when the 116-1 card was written: any card that checks its own diagnostic against a pass contract should carry a hypothesis peer. Cost: one extra dispatch, the baseline rerun twice more, and $1.08.
+- **Own-script bugs sent to review.** The Jev ladder labelled two of the cycle's own script bugs as "new-problem" (`jev_gate.log:2435,2479`). Together with c116b-plan, $3.58 of hypothesis reviews went on script bugs.
+- **Pre-run checks misfiring on diagnostics.** They demanded stage plans from read-only diagnostic scripts (X2/X3/X5/X9: `diag_c116b_props_prerun.log:28-38`, `diag_c116d_prerun_j1.log:30-40`). This is the same class as 115-2's X5 false positive.
+- **Within 116-4 the change came at the right attempt**: attempt 2 was redesigned.
+
+**2. Missing tool**
+- **No refnum probe.** Nothing measures VI Server reference consumption, and the only hygiene tool is known to be blind to it. The review's two-minute fixed-index test (`archive/peer/2026-09-28-c116d-sweep.md:67-71,89-95`) would have caught J1's leak before the sweep. It was not run even after the failure (`:112-113`).
+- **Read-only `md5sum` refused.** The judgement/material guard in `guard_bash` blocks `md5sum` because it is not on the read-only list (`tools/hooks/guard_bash.py:66`; refusals at `material_marker.log:2654,2671`, and `2616-2617` in cycle 115). The cost is small but it keeps recurring.
+
+**3. Unmeasured steps**
+- J1's hygiene was accepted on handle count although the code documents that count as blind (see above).
+- The loose-ends pin of 24 came from arithmetic (`plan_l2r2_make.log:44`). That arithmetic did not treat separately the two tunnels with no inner stub (`:26-27`), and those are exactly the two nets that re-joined (`result_116-4.json:21`). The scratch run caught the miss, as designed.
+- A9's 12 "absent" items were declared "not owed code" all at once (plan :2096). The result card had asked which of them were owed (`result_116-3.json:29`).
+
+**4. Rule compliance**
+- **Broken:** CLAUDE.md:218-219 (Traverse arrays not closed).
+- **Satisfied only on paper:**
+  - CLAUDE.md:224-225, the handle-count proof.
+  - CLAUDE.md:499-500, which says an op that doesn't close its Traverse references is repaired before any staged build uses it. After the leak was known, the unrepaired op was used again in attempt 2, which ran the recipe body on a scratch copy (`diag_c116d_j3b.log`). The review had said this was "not shown safe" (`c116d-sweep.md:73-84`).
+  - The failure budget of 2 was counted per script. 116-2 had 7 logs ending rc=1 (for example `plan_l2r2_make.log:22`, `diag_c116b_keys.log:27`, `stage_d1_l2r2_prerun.log:133`); 116-4 had 6.
+- **What the audit's two failures actually are.** A1's 32 logs are child logs of the regression runner, whose parent ran under bgrun (`diag_c116a_regress_after.log:73`). A2's "unfinished" cost-window logs are self-test fixture text (`selftest_audit_cost_window_c116a_after.log:8`). The KILLED entries come from an outside kill at 09:12 (`tools/finish_orphan_cycle.py:2-3`).
+- **What the audit does not cover:** whether an op VI closes its references, whether a device met its own acceptance, and failure-budget counting.
+
+**5. Ordering**
+- Defensible overall: STEP 0a, then 116-2, then measuring the pin gap. PD230(f) forbade carrying a count licence over to L2-R2 (plan :2078), so measuring before re-pinning was correct.
+- Two ordering faults:
+  - J1's hygiene test ran on a small scratch VI, and the full-size test was left to the measurement run itself.
+  - `next.json` makes naming R1's 24th item an acceptance condition for the op repair, and so a gate on L2-R2. But that residual is "unchanged by R2" (`result_116-4.json:24`), so it holds back the deliverable for an unrelated question.
+
+**6. What was not reported**
+- **Session cost lost.** The runner was killed at 09:12, so the judgement session's cost for cycle 116 is lost (audit C4c shows 0; `finish_orphan_cycle.py:44` writes `$?`). Cycle 115's session cost $37.41 (`cycle_runner_main_20260928a.log:28`), so the largest cost line of this cycle is missing.
+- **STATUS understates 116-4.** STATUS.md:80 says only "the reader op leaks". It omits:
+  - the rule breach;
+  - the LabVIEW hang and restart;
+  - that attempt 2 dropped the whole-graph sweep by the material agent's own decision.
+- **Failed runs.** STATUS reports only the P4 failure out of 116-2's seven failed runs.
+
+**7. Judgement inside a material session**
+- **Pin model chosen by the material agent.** It picked the per-wire-object counting model from three candidates (24/25/26), which set the pin that later failed, and it declined the review's separating test (`archive/peer/2026-09-28-c116b-plan.md:98-104`).
+- **Review accepted and design changed by the material agent.** It accepted the refnum-exhaustion reading. It had already launched a redesigned attempt 2, without the sweep, at 09:17, before the review answered (review 09:15:52–09:21). It also declined the review's falsifier (`c116d-sweep.md:109-114`).
+- **Severity chosen by the material agent.** It set A9 to WARN (`result_116-3.json:33`).
+- **Correct hand-back:** `c116b-pin.md:105-108` returned its question to judgement as it should.
+
+## Device effect
+- **Cost-line parsing:** worked (C4b 6/6).
+- **bgrun exit-code propagation:** worked. `diag_c116b_keys.log:27` shows rc=1 although the process itself exited 0.
+- **Adversarial review prompts:** worked (`c116d-sweep.md:27-33`).
+- **Blank-disposition gate:** worked (A4 26/26).
+- **Prior-art and premature-build gates:** worked for the recipe (prior-art 08:00–08:02 came before the scratch run). But an op VI built from a `tools/bench` script falls outside the gate by design, and this cycle's fault came in through that gap.
+- **Stop record:** no STOPPED-RECIPE refusal inside the window; self-test 38/0.
+- **`guard_peer`:** fired correctly on 116-1.
+- **C7 scope counter:** now reads the correct plan, but at 276 files it is noise.
+- **A9 disposition-landed check:** failed (second line below).
+- **The rest** (motor, reaper, SimReader, send-message guard): not exercised in this window.
+
+VIOLATION: rule-evaded | loss_min=18 | loss_usd=2.17 | evidence=tools/bench/diag_c116d_opbuild.log:35
+VIOLATION: device-failed | loss_min=0 | loss_usd=? | evidence=tools/bench/cards/result_116-3.json:26
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle116","verdict":"refuted","alternative":"The leak was unforeseeable: J1's 20-call handle test is the proof CLAUDE.md prescribes, so the op met the rule as written and the cycle had no structural fault.","discriminating_test":"Open OpWireJoints_v0's diagram: a Traverse refnum array with no Close Reference (opbuild.log:35 closes only the PN ref) breaks CLAUDE.md:218-219 whatever the handle count shows.","violations":[{"slug":"rule-evaded","loss_min":18,"loss_usd":2.17,"evidence":"tools/bench/diag_c116d_opbuild.log:35"},{"slug":"device-failed","loss_min":0,"loss_usd":"?","evidence":"tools/bench/cards/result_116-3.json:26"}],"sources":["CLAUDE.md:218","tools/gscript.py:247","tools/bench/diag_c116d_j3.log:84","tools/bench/peer_c116d-sweep.log:4","tools/hooks/material_marker.log:2669","docs/violation-decisions.md:1655","docs/d1-loop12-17-split-plan.md:2096"],"note":"Runner death at 09:12 was an external kill, not this cycle's fault; the judgement-session cost for cycle 116 is unrecorded."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle116.md
+BGRUN END rc=0 after 503s

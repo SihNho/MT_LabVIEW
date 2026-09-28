@@ -1,0 +1,38 @@
+BGRUN START 2026-09-28 07:16:48 limit 16.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 900 -Slug c116c-regress -TaskFile tools/bench/peer_c116c_regress_task.txt -ReviewCard tools/bench/cards/review_c116c-regress.json
+BGRUN PID 7652
+OUTCOME: ANSWERED (125s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-28-c116c-regress.md
+COST: $1.0791  in 18 / out 11394 / cache-create 86352 / cache-read 801467  (121s, 17 turn(s))
+VERDICT-CARD: VERDICT-CARD c116c-regress verdict=supported -> tools\bench\cards\verdict_c116c-regress.json
+--- ANSWER ---
+**Verdict: the claim holds.** None of the 6 flagged self-tests hides a failure; they fail gate B only because the diag demanded a RESULT line they never print. But the `after` comparison the fix leads into has three holes, and one of them can let a regression pass G1 silently.
+
+**Strongest reason the claim could be wrong, and why it isn't.** The fallback status comes from the tally and the rc, so a tally copied from a child's output could hide a failure. It can't here, because each of the 6 exits 1 exactly when its own gates fail:
+- `selftest_stoprecord_table.py:142`, `_bgrun.py:67`, `_eqform.py:86`, `_supersession.py:423`, `selftest_audit_cost_window.py:149` and `selftest_audit_c4c_split.py:247` all return 1 on any failure.
+- An uncaught exception also exits 1 (https://docs.python.org/3/library/sys.html#sys.exit).
+- None of them calls `os._exit(0)` or `sys.exit(0)` early.
+- Each log's last non-empty line is the child's own tally: table:110, bgrun:9, eqform:8, supersession:52, cost_window:10, c4c_split:68.
+- No FAIL line and no Traceback appears in any of the 6 logs.
+
+**Alternative explanation of the same evidence.** The 10/6 was produced by an earlier version of the script, not the attached one. The log's gate label says "printed a RESULT line" (`diag_c116a_regress_before.log:19`). The current file says "printed a RESULT line or a tally" (`diag_c116a_regress.py:84`), so md5 `3f43…` already includes the fallback. It follows that `diag_c116a_regress_before.json` on disk still has `status: None` for these 6. G2 fires only when the saved status was `"PASS"` (`diag_c116a_regress.py:92`), so an `after` run against that file would be blind for all 6. Re-running `before` is required, not optional.
+
+**Q1 – hidden failure?** No evidence of one. The two self-tests that quote other tests' output (eqform:6, supersession:50–51) and c4c_split's FACT lines 58–64 all show 0 fail with rc 0. The one lenient spot is in the child's own logic, not the diag: `selftest_audit_c4c_split.py:239` also passes a neighbour test that prints no tally (`nfail is None`). All four printed a tally this time.
+
+**Q2 – can a quoted tally be taken as the child's own?** Yes, if a child dies after quoting and before printing its own line. Status is still right in that case because rc is 1, so only the saved pass/fail counts would be wrong. Cheapest stronger rule: apply TALLY_RE only to the last non-empty line, and record "no tally" otherwise. All 6 current logs satisfy that.
+
+**Q3 – can FAIL_RE miss a new failure?** Yes, in three ways:
+1. **Supersession's failure lines don't match.** It prints `  -> FAIL  <name>` (`selftest_stoprecord_supersession.py:65`). FAIL_RE's alternatives need `GATE`, `FAIL` or `[FAIL` right after the leading spaces, and `->` is none of those (https://docs.python.org/3/library/re.html). A supersession regression, including a stop_record regression that surfaces through its C9 gate, never enters the failing set. Only G2 catches it, and only if the saved snapshot says `PASS`.
+2. **audit_c7's failure lines don't match.** It prints `  **FAIL**  name` (`selftest_audit_c7.py:27`), and the leading `*` blocks the match. Its RESULT line feeds G2, so this is covered as long as its saved status is `PASS`.
+3. **Only the first word of the label is kept.** The FAIL alternatives capture `(\S+)`, and the diag stores a set of those words. c111c_launchunit has two gates both labelled `D4h`: log line 20 passes and line 21 fails. If line 20 starts failing, the set stays `{'D4h'}`, so G1 passes. G2 is also blind, because that test's saved status is already `FAIL`, and the fail count (1→2) is not gated anywhere. The same applies to its 12 `D4` rows and 14 `NEG` rows once any one of them fails, and to c4c_split's repeated G2, G12 and G14 labels.
+
+**What would falsify the claim.** Re-running `before` with the current script and getting any of the 6 back with rc≠0, a tally with fail>0, or a non-empty failing set.
+
+**Cheapest discriminating test.**
+1. Re-run `before` with the current script. Expect gate B at 16/0, the 6 at PASS by tally, and the 3 known failures saved as `FAIL`.
+2. Run a Python one-liner that feeds `"  -> FAIL  C9 x"`, `"  **FAIL**  X"` and a second `"  FAIL  D4h y"` to FAIL_RE. The first two will produce no match and the third won't change the set, which confirms the Q3 holes.
+3. Fix those holes:
+   - Match the `->` and `**FAIL**` forms.
+   - Store the whole failing line, with volatile numbers removed, as a multiset.
+   - Add a gate that the fail count does not rise for tests that were already failing.
+
+VERDICT {"schema":"verdict/1","id":"c116c-regress","verdict":"supported","alternative":"10/6 came from an older script version (log label 'printed a RESULT line' vs script:84 '...or a tally'); on-disk before.json holds status None for the 6, so G2 is blind for them until before is rerun.","discriminating_test":"Rerun `before` (expect B 16/0, 6 PASS by tally); feed '  -> FAIL  C9', '  **FAIL**  X', and a 2nd '  FAIL  D4h' to FAIL_RE: first two unmatched, third leaves set unchanged.","violations":[],"sources":["tools/bench/diag_c116a_regress.py:32","tools/bench/diag_c116a_regress.py:84","tools/bench/diag_c116a_regress.py:92","tools/bench/diag_c116a_regress_before.log:19","tools/bench/selftest_stoprecord_supersession.py:65","tools/bench/selftest_audit_c7.py:27","tools/bench/selftest_c111c_launchunit_c116a_before.log:20-21","tools/bench/selftest_audit_c4c_split.py:239","https://docs.python.org/3/library/sys.html#sys.exit","https://docs.python.org/3/library/re.html"],"note":"Claim holds: the 6 rc0/0fail are real passes. FAIL_RE misses '-> FAIL' (supersession) and '**FAIL**' (audit_c7), and keeps only the first label word (c111c has two D4h gates), so G1 can pass a regression; gate fail count and match full lines."}
+BGRUN END rc=0 after 126s

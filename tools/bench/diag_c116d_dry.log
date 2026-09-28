@@ -1,0 +1,21 @@
+BGRUN START 2026-09-28 08:52:16 limit 8.0 min: py tools/stage_prerun.py --dry tools/bench/diag_c116d_j1.py
+BGRUN PID 16664
+diag_c116d_j1 - card 116-4 J1 (part 2): SCRATCH-VI CHECK of gscript.wire_joints (OpWireJoints_v0, Wire.Joints[] 6371005) on a
+dated byte copy claudeDev\scratch_c116d_j1_<ts>.vi of the small op VI OpLoopCast_v0.vi (graph dump tools/bench/graph_oploopcast_v0_c95.json,
+md5 89452a9a: its TMSC `specific class reference` w366 is a known BRANCH to Property #330/#238/#230). The branch is found live, not assumed: a top-level
+wire with >= 2 sink terminals, one of them on a Property node. That Property node is deleted (no Remove Bad Wires) -> a KNOWN
+DANGLING BRANCH. A second wire with exactly 1 sink has its sink Property node deleted -> a KNOWN LOOSE END. PRIOR ART: the reader
+shape is diag_c97's; nothing else reads Joints[]. PREDICTION: every read echoes its uid, err ''; each wire's joints CHANGE after its
+sink node is deleted (raw values recorded for the offline decode, diag_c116d_decode.py); a non-wire uid is refused (ValueError);
+20 calls handles flat (+-100); scratch deleted; LabVIEW gone. PASS writes tools/bench/scratch_verify/gscript.wire_joints_<ts>.json.
+    py tools/bgrun.py --material --max-min 15 --log tools/bench/diag_c116d_j1.log -- py -u tools/bench/diag_c116d_j1.py
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 89452a9a87b147bc23f5de34f1a22f4c  got 89452a9a87b147bc23f5de34f1a22f4c
+  PASS  DRY graph JSON for input md5 89452a9a87b147bc23f5de34f1a22f4c  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_oploopcast_v0_c95.json
+  FACT  top-level nets {600: (1, 1), 415: (1, 1), 373: (0, 1), 467: (0, 1), 366: (0, 3), 769: (1, 0), 882: (1, 0), 430: (1, 1), 605: (1, 0), 1066: (0, 1), 455: (1, 1), 941: (1, 0), 481: (1, 1), 785: (1, 0), 1000: (1, 0), 657: (1, 1), 746: (1, 0)}
+  FAIL  F1 a top-level branched wire (1 source, >= 2 sinks, one sink on a Property node) exists
+
+=== DRY FAIL: first_fail=GATE F1 a top-level branched wire (1 source, >= 2 sinks, one sink on a Property node) exists coverage 32/74 lines, first mutation None, unverified 0, graph tools/bench/graph_oploopcast_v0_c95.json
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"GATE F1 a top-level branched wire (1 source, >= 2 sinks, one sink on a Property node) exists","artefacts":[]}
+BGRUN END rc=1 after 1s

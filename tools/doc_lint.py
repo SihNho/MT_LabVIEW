@@ -347,6 +347,46 @@ def check_marked_decisions():
         say("PASS", "L7 decision/measurement sentences carry a mark", "all marked")
 
 
+# L8 - violation-decisions.md decision headers carry a PARSEABLE HH:MM (card 116-3 D2; review
+# archive/peer/2026-09-25-retrospective-cycle77.md F2(a), ACCEPTED, "header lint for violation-decisions.md HH:MM").
+# tools/violations.py DEC_RE reads `## <slug> - YYYY-MM-DD HH:MM`; a time written as `19:2x` / `05:5x` is silently
+# read as a BARE date (00:00), which misordered guard_cycle's discharge on 2026-09-25 (retrospective-cycle77.md:271).
+# JUDGEMENT 116-3 OPEN-2: a header dated >= L8_FAIL_FROM that lacks a parseable HH:MM FAILs; an OLDER header whose
+# time is present but unparseable WARNs (historic headers are not edited); an older bare date is not reported.
+L8_FAIL_FROM = "2026-09-28"
+DEC_HEAD_RE = re.compile(r"^##\s*([a-z0-9-]+)\s*[-—]\s*(\d{4}-\d{2}-\d{2})(.*)$")
+DEC_TIME_RE = re.compile(r"^[ T]+\d{2}:\d{2}(?!\d|[xX])")      # the shape violations.py DEC_RE accepts, no `x`
+TIMEISH_RE = re.compile(r"^[ T]+\d{1,2}:\S")
+
+
+def check_decision_headers(path=None):
+    p = path or os.path.join(DOCS, "violation-decisions.md")
+    fails, warns = [], []
+    try:
+        name = rel(p)
+    except ValueError:                       # a file on another drive (a self-test sandbox): keep the absolute path
+        name = p.replace("\\", "/")
+    for i, line in enumerate(read(p).splitlines(), 1):
+        m = DEC_HEAD_RE.match(line)
+        if not m or DEC_TIME_RE.match(m.group(3)):
+            continue
+        where = f"{name}:{i}"
+        if m.group(2) >= L8_FAIL_FROM:
+            fails.append(where)
+        elif TIMEISH_RE.match(m.group(3)):
+            warns.append(where)
+    if fails:
+        say("FAIL", "L8 decision headers carry HH:MM",
+            f"{len(fails)} header(s) dated >= {L8_FAIL_FROM} without a parseable HH:MM (violations.py DEC_RE reads "
+            f"them as bare dates): {fails[:10]}")
+    elif warns:
+        say("WARN", "L8 decision headers carry HH:MM",
+            f"{len(warns)} older header(s) with an unparseable time (historic, not edited): {warns[:10]}")
+    else:
+        say("PASS", "L8 decision headers carry HH:MM", "all parse")
+    return fails, warns
+
+
 def run(skip_dispositions=False):
     del RESULT[:]
     check_frontmatter()
@@ -360,6 +400,7 @@ def run(skip_dispositions=False):
     else:
         say("PASS", "L6 archived reviews are disposed", "skipped - audit_cycle A4 owns this condition")
     check_marked_decisions()
+    check_decision_headers()
     return list(RESULT)
 
 

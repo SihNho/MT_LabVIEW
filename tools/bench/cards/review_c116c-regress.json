@@ -1,0 +1,23 @@
+{
+ "schema": "review/1",
+ "id": "c116c-regress",
+ "role": "hypothesis",
+ "claim": "diag_c116a_regress_before.log failed 10/6 only because its own B gate demanded a C6 RESULT line; the 6 flagged self-tests print a pass/fail tally instead (all 0 fail, rc 0). The diag's contract is wrong, not any tool.",
+ "predicted": "diag_c116a_regress.py before: every one of 16 self-tests ends with a RESULT line (16/0 on gate B).",
+ "observed": "10/6: stoprecord_table/bgrun/eqform/supersession and audit_cost_window/audit_c4c_split rc 0, status None (no RESULT line) (diag_c116a_regress_before.log:3-6,17-18; gate B :19-22,33-34).",
+ "ruled_out": [
+  "A failing self-test among the 6: logs end '107 pass, 0 fail','6 pass, 0 fail','5 pass, 0 fail','36 pass, 0 fail','7 pass / 0 fail','33 pass / 0 fail' (selftest_*_c116a_before.log).",
+  "Tool edits by card 116-1: md5 of stop_record/guard_card/doc_lint/audit_cycle/launch_gate selftest unchanged (result_116-1.json facts 9).",
+  "The 3 real failures (offline_c107 15/10, c111c D4h, headcmp H1) are on record before 116-1 (result_116-1.json fact 5)."
+ ],
+ "attachments": [
+  {"path": "tools/bench/diag_c116a_regress_before.log", "md5": "42a8fd215f8b96909d3bdd80fffc130f"},
+  {"path": "tools/bench/diag_c116a_regress.py", "md5": "3f43e1a1f7db0f01d06941357f5ce2b9"},
+  {"path": "tools/bench/selftest_stoprecord_eqform_c116a_before.log"},
+  {"path": "tools/bench/selftest_stoprecord_supersession_c116a_before.log"},
+  {"path": "tools/bench/selftest_audit_c4c_split_c116a_before.log"},
+  {"path": "tools/bench/cards/result_116-1.json"}
+ ],
+ "ask": "refute",
+ "note": "Proposed fix (already in diag_c116a_regress.py:57-62,65): accept the LAST tally 'N pass(,| /) M fail' when no RESULT line, status PASS iff M==0 and rc==0. Attack: can a quoted child tally be taken as the child's own?"
+}

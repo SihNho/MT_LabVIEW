@@ -40,20 +40,39 @@ def log(line):
 # exactly that self-test (optionally after `cd <dir> &&`, an env prefix, and a bgrun wrapper), and only a refusal
 # on the labview flag is lifted; every other flag, and an unbound agent, is still refused.
 _Q = r"(?:\"[^\"]*\"|'[^']*'|[^\s\"';&|]+)"
+# The `cd <dir> &&` prefix is CAPTURED and must name the PROJECT ROOT (card 116-3 D2, review
+# archive/peer/2026-09-25-hyp-selftest-elreuse-81.md, K6 finding ACCEPTED): `cd "C:/elsewhere" && py tools/stagexec.py
+# selftest` runs a FOREIGN stagexec.py while protocol resolves `tools/stagexec.py` against ROOT, so any other cd was an
+# exemption for a file nobody scanned. Self-test K9 in tools/bench/selftest_errorlist_reuse_81.py now pins rc 2.
 PURE_SELFTEST_RE = re.compile(
-    r"^\s*(?:cd\s+" + _Q + r"\s*&&\s*)?"
+    r"^\s*(?:cd\s+(?P<cd>" + _Q + r")\s*&&\s*)?"
     r"(?:(?:\$env:)?[A-Z_]+\s*=\s*['\"]?\w*['\"]?\s*;?\s+)*"
     r"(?:py(?:thon)?(?:\.exe)?\s+(?:-u\s+)?[\"']?[^\s\"';&|]*bgrun\.py[\"']?\s+(?:--[\w-]+(?:\s+(?!--)" + _Q +
     r")?\s+)*--\s+)?"
-    r"py(?:thon)?(?:\.exe)?\s+(?:-u\s+)?(?:\"([^\"]*)\"|'([^']*)'|([^\s\"';&|]+))\s+selftest\s*$", re.I)
+    r"py(?:thon)?(?:\.exe)?\s+(?:-u\s+)?(?:\"(?P<p1>[^\"]*)\"|'(?P<p2>[^']*)'|(?P<p3>[^\s\"';&|]+))\s+selftest\s*$",
+    re.I)
+
+
+def _is_root(d):
+    """True when the cd target (quotes stripped) is this project's root directory."""
+    d = (d or "").strip().strip("'\"")
+    if not d:
+        return False
+    try:
+        return os.path.normcase(os.path.abspath(d)) == os.path.normcase(os.path.abspath(os.path.dirname(TOOLS)))
+    except (OSError, ValueError):
+        return False
 
 
 def pure_selftest(cmd):
-    """True only for THIS project's tools/stagexec.py (relative `tools/stagexec.py` or its absolute path)."""
+    """True only for THIS project's tools/stagexec.py (relative `tools/stagexec.py` or its absolute path), and a
+    `cd` prefix only when it names the project root (card 116-3 D2)."""
     m = PURE_SELFTEST_RE.match(cmd or "")
     if not m:
         return False
-    p = (m.group(1) or m.group(2) or m.group(3) or "").replace("\\", "/")
+    if m.group("cd") is not None and not _is_root(m.group("cd")):
+        return False
+    p = (m.group("p1") or m.group("p2") or m.group("p3") or "").replace("\\", "/")
     if re.match(r"^(?:\./)?tools/stagexec\.py$", p, re.I):
         return True
     want = os.path.normcase(os.path.abspath(os.path.join(TOOLS, "stagexec.py")))

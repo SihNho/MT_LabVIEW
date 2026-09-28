@@ -2086,6 +2086,32 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
        - **Card rules from 116:**
          - L2-R2's scratch run reads the Error List and pins the loose-ends count before the launch (retrospective finding 3).
          - A diagnosis card for a failed prediction carries `hypothesis` in `peers`.
+231. **(cycle 116 judgement; cards `116-1` BLOCKED 10/6, `116-3` FAIL 6/2, `116-2` FAIL 4/1, `116-4` FAIL 4/1 — `tools/bench/cards/result_116-{1..4}.json`)**
+     - **(a) STEP 0a of 230(g) LANDED (116-1 measured, 116-3 built), ACCEPTED except the audit check's witness:**
+       - The stop record's real cause was not `;`. awk had no read-only credit, and `$(…)` matched EXEC_PIPE_RE. A lone `&` was also not a separator. All are fixed (`tools/stop_record.py` md5 `725619d9…`); `selftest_stoprecord_c116a.py` 38/0, and `:2614`/`:2615` now pass.
+       - `guard_card.py` accepts `cd` only to the project root. K9 is re-pinned to rc 2.
+       - doc_lint L8: a header dated ≥ 2026-09-28 without HH:MM FAILs; the 8 older headers WARN and are not edited.
+       - `selftest_launch_gate.py` uses mkdtemp and deletes it (2 runs, 28/0 each). Regression 50/0; the failures on record are unchanged.
+       - Review `archive/peer/2026-09-28-c116c-regress.md`: supported.
+       - **Not accepted as a device:** audit_cycle A9 ("disposition landed", WARN). My witness rule counts a citation from the self-test that PINS the hole (elreuse-81 via K9). A9 stays WARN-only, and its 12 "absent" items are not owed code. Carry: the witness must be the file the fix names, never a pinning test.
+     - **(b) 116-2: STEP 0b PASSED.** B3 and R1 have equal properties: 151 LoopTunnels with the same IndexMode and faces, 302 byte-equal constants, and a LabVIEWCLI compare showing only the retired SRs, wiring and loose ends (`diag_c116b_p0.log:4`). The rule-1a doubt of review c115e-sel Q is closed.
+       - Plan `plan_l2r2.json` (md5 `67bad9a8…`), recipe `stage_d1_l2r2.py` (md5 `488c2209…`, 120 lines, dry + prerun 13/0, prior-art novel).
+       - The scratch build passed 43/0, including the whole-graph terminal diff. Its Error List had loose ends 22 against the pinned 24 → no launch (`diag_c116b_scratch_el.log:114-116`).
+     - **(c) 116-4 MEASURED the difference with a new read-only `Wire.Joints[]` reader** (`OpWireJoints_v0.vi`, md5 `15cf4971…`; `gscript.wire_joints`):
+       - Of the 13 outer nets, 9 become loose (24277 24333 25237 25280 25306 25336 25911 26021 26064).
+       - Nets w25238 and w25225 each lose a pass-through terminal joint and re-join (review c116b-pin's H2').
+       - 24 − 11 stubs + 9 = 22, equal to the scratch Error List (`diag_c116d_decode.log:42-46`). H1 (the nets were already loose) is falsified.
+       - ⚠️ v0 does NOT close its Traverse array. A 1,945-wire sweep on R1 failed from read 536 (error 1055; review c116d-sweep). Only 536 wires were read, so R1's residual 1 (23 read vs 24 listed) is unexplained.
+     - **(d) DECIDED — L2-R2's loose-ends pin is 22, re-set on measured per-net evidence.** This is not a licence carried from R1: the number now comes from a per-net derivation that a reader confirmed. The launch's gates are 230(f)'s, plus:
+       - the Error List loose-ends count == 22;
+       - the joints read on the 20 nets (13 outer + 7 PD230(d)) equals 116-4's J4 table: the 9 nets loose, w25238/w25225 not loose, and the 7 PD230 nets unchanged.
+       - Rule 1a: every deleted tunnel was an input tunnel with no consumer. Each outer net keeps its source and its 1–3 sinks (P2), and a loose joint feeds no node.
+     - **(e) DECIDED — the reader is repaired BEFORE it is used in a staged build** (CLAUDE.md reference hygiene; split-steps rule 5). `OpWireJoints_v1` closes the Traverse array and wires the Traverse error into the property node (review c116d-sweep :41-44, :95). Acceptance:
+       - 20 calls with handles flat ±100;
+       - a whole-graph sweep of all 1,945 R1 wires with 0 errors and handles flat;
+       - the sweep names R1's residual loose-ends item (24th).
+     - **(f) NEXT = cycle 117: STEP 0 = (e); then L2-R2 ONE launch with pin 22 and the (d) joints gate**, from the R1 bed, with the same recipe/plan md5 (or a re-dry if either changes). Then write the full Error List read and `errorlist_expected_D1_l2_r2_<ts>.json` in the same card.
+       - Accepted as reasonable: 116-2's read-only diag registering its work copy via `s.scratches.append` (same as `diag_c105_const.py:55`).
 
 ## OPEN (design choices — for judgement; not decided here)
 

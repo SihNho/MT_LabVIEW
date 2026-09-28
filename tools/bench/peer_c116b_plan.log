@@ -1,0 +1,62 @@
+BGRUN START 2026-09-28 07:49:03 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c116b-plan -TaskFile tools/bench/peer_c116b_plan_task.txt
+BGRUN PID 13584
+OUTCOME: ANSWERED (131s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-28-c116b-plan.md
+COST: $1.2851  in 28 / out 10476 / cache-create 96469 / cache-read 1356304  (127s, 19 turn(s))
+--- ANSWER ---
+**Claim 1 holds: it is a script bug, and the patch fixes the failing gate. But your explanation of the 21 extras is wrong, and the patched M0 now checks nothing. Claim 2 is not settled: you would pin 26, but the evidence supports 24 at least as well.**
+
+## Claim 1: the M0 failure is the script's bug
+
+**Strongest reason it is wrong.** The 21 extra uids are not "consumer-less tunnels of other loops". Every one of them has `owner_loop: null` (`facts_c114e_inventory.json:1653…2496`). The inventory decides a tunnel's loop from the diagram its inner face sits on, using the lookup `BODY = {639:637, 23166:10170, 23405:23041}` (`diag_c114e_inventory.py:142-150`). 102 tunnels resolved to no loop at all (`diag_c114e_inventory2.log:82`). Several of the 21 are also not the same kind of object as your 13:
+- #9503, #10177 and #29777 have no source face at all (`diag_c114e_inventory2.log:124,125,143`).
+- The list `zero_all` mixes loops and mixes definitions.
+
+**Alternative reading of the same evidence.**
+- The PD228(f) list was made by filtering this same file to #637. Log lines 112-123 and 140 are exactly the 13 retire uids plus #32572.
+- So rev 2's filter `owner_loop == 637` makes M0 compare the list with its own source. It can now only catch a typo.
+- It cannot catch drift between B3 (the graph the inventory read) and the saved R1 graph that R2 actually edits.
+- The "all LoopTunnel on #637" part of M0 is not checked against the R1 graph either. Line 37 checks only the class and the count of 13, not which loop owns each tunnel.
+- The real protection is M1, which re-reads the saved graph. That is fine, but M0's name claims more than it checks.
+
+**What would falsify the claim.** A tunnel on loop #637 hidden among the null-owner entries (possible only if its inner face is on a diagram other than 639), or a 14th consumer-less #637 tunnel present in the R1 graph.
+
+**Cheapest discriminating test (files only).**
+1. In `graph_l2r1_saved_20260928.json`, recompute consumer-less for every LoopTunnel whose `InnerTerminal` rows sit on diagram 639.
+2. Compare that set with the 13 retire uids plus #32572.
+3. Make M0 that check, instead of a comparison with the B3-era file.
+
+The per-tunnel rows already printed in `plan_l2r2_make.log:4-16` all show inner diagram 639, so I expect the test to pass. The verdict on the diagnosis stays "script bug, fix accepted". The verdict on the gate is "rev 2 is circular; replace it".
+
+## Claim 2: the predicted Error List of 57 (loose ends 26)
+
+**Strongest reason it is wrong.** You add +13 by assuming each net that loses a sink adds one new "Wire has loose ends" item. For w25438 and w25461 that holds only if LabVIEW reports one item per loose segment. If it reports one item per wire, the second dangling branch on those two nets adds nothing.
+
+Your own review record already works on the per-wire model: *"one shared net already had a loose end in B3 (so it adds no new item)"* (`archive/peer/2026-09-28-c115e-sel.md:107`).
+
+The web does not settle this. NI's page for the error ([ni.com, Wire has loose ends](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/wire-has-loose-ends.html)) loaded again with no body text, the same as in the earlier review (`c115e-sel.md:134`).
+
+**Alternative prediction.**
+- Per-wire counting: loose ends = 24 − 11 + 11 = **24**, total **55**.
+- A second premise is also unmeasured. That the two nets carry R1's dangling branches at all is inferred, not measured: the expected file says "LOCATION IS INFERRED, not measured" (`errorlist_expected_D1_l2_r1_20260928_055441.json:75`), and the swap alternative is still OPEN (`c115e-sel.md:157-159`).
+- So any of 24, 25 or 26 fits the current evidence.
+- R1 cannot tell the two counting rules apart. Each of its 7 nets lost exactly one sink, so no net ever carried two dangling ends.
+
+**What would falsify your 26.** An Error List read on R2 with loose ends at 24 (or 25) and every other class unchanged.
+
+**Cheapest discriminating test.** Files cannot settle it, because Error List items carry no wire uid.
+1. Take a scratch byte copy of R1.
+2. Delete only tunnel #5752, whose outer face is a sink on w25438, together with its stub w5746.
+3. Read the Error List once.
+   - Loose ends at 23 (stub −1, and the second branch adds nothing) means per-wire counting: pin 24.
+   - Loose ends at 24 means per-segment counting: pin 26.
+
+This is one delete on a copy, so it needs its own card. Without it, I would not pin 26 exactly. Either pin a range of 24–26 with loose ends as the only class allowed to move, or run the scratch test first. Pinning 26 exactly risks a failed prediction that is really an unmeasured counting rule, the same trap as `c115e-sel` Q3.
+
+One smaller point: the −11 assumes all 11 stubs are separate items in R1's loose-ends pool of 17 (the pool is kept as one undivided entry, `errorlist_expected…:7`). R1 did measure "source-only stub −1" six times, so I accept that part.
+
+**What would change my mind on Claim 2:** a measured case, in any file on this project, of one wire with two dangling branches counted as two Error List items.
+
+Sources:
+- [ni.com, Wire has loose ends](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/wire-has-loose-ends.html) (fetched; no body text, so it does not settle per-wire vs per-segment)
+- [ISIS Computing Group, LabVIEW errors](https://github.com/ISISComputingGroup/ibex_developers_manual/wiki/LabVIEW-errors) (a search result; I did not read it and do not rely on it)
+BGRUN END rc=0 after 132s

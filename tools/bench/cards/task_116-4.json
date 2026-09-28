@@ -1,0 +1,72 @@
+{
+ "schema": "task/1",
+ "id": "116-4",
+ "kind": "measure",
+ "goal": "Build a read-only Wire.Joints[] (6371005) reader; measure loose joints per net on an R1 byte copy and after the L2-R2 scratch build: which nets explain 22 vs the predicted 24",
+ "why": "116-2 FAIL at P4: scratch loose-ends 22 != pinned 24 (diag_c116b_scratch_el.log:114-116); review c116b-pin :74-95 names Wire.Joints[] as the discriminating read; JUDGEMENT: no re-pin without it (PD230(f))",
+ "inputs": [
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_r1_20260928_055441.vi", "md5": "f465196bb5016638b146e771ba54c5af"},
+  {"path": "tools/bench/cards/result_116-2.json"},
+  {"path": "archive/peer/2026-09-28-c116b-pin.md"},
+  {"path": "tools/recipes/stage_d1_l2r2.py", "md5": "488c220990a3ae4930fc005a8525ff85"},
+  {"path": "tools/bench/plan_l2r2.json", "md5": "67bad9a8c8c28a0bf306b2a1d3c6fea5"},
+  {"path": "tools/bench/plan_l2r2_pred.json", "md5": "e390451eec9ab578c467b923a165ff6e"},
+  {"path": "tools/bench/graph_l2r1_saved_20260928.json", "md5": "e429f7ad7b2eebdaabaf0db1a462f10e"},
+  {"path": "tools/bench/diag_c116b_scratch.py"},
+  {"path": "tools/bench/errorlist_scratch_c116b_bed_20260928_080301_20260928_081932.json", "md5": "adeedac72e961a200891c9411e27160d"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c116b_scratch.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_l2r2.py"},
+  {"kind": "file", "name": "archive/peer/2026-09-28-c116b-pin.md"},
+  {"kind": "file", "name": "tools/stagekit.py"}
+ ],
+ "pass": [
+  "J1 reader: read-only op/verb for Wire.Joints[] (6371005) closing every ref; scratch-VI check (<=120-line stagekit) reads a known dangling branch; 20 calls handles flat +-100; record in scratch_verify/",
+  "J2 on a BYTE COPY of R1: per-net joint list + loose-end count for the 13 L2-R2 outer nets and the 7 PD230(d) nets; total vs R1 Error List loose-ends 24",
+  "J3 re-run the L2-R2 scratch build on a fresh byte copy (same recipe/plan md5, no launch, no save); read joints again on the same 20 nets; table net | before | after",
+  "J4 report which nets change and by how much, with the per-net sum that reproduces the scratch Error List count 22 (or the residual it does not explain)",
+  "no delete, save or launch on any real bed; inputs md5 unchanged; scratch copies deleted; LabVIEW verified gone"
+ ],
+ "outputs": [
+  "tools/bench/diag_c116d*",
+  "tools/bench/scratch_verify/**",
+  "tools/bench/cards/result_116-4.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c116*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\Op*Joints*",
+   "tools/gscript.py",
+   "tools/stagekit.py",
+   "tools/bench/diag_c116d*",
+   "tools/bench/selftest_*",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/errorlist_*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "docs/NAMES.md",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 75},
+ "rules": [
+  "MEASURE only: report per-net facts; do not re-pin, re-plan or launch L2-R2 (judgement decides next cycle)",
+  "the reader is read-only: no property write, no wire edit; Close Reference on every ref it opens",
+  "a failed prediction's diagnosis carries the hypothesis peer",
+  "a hygiene gate (handles, memory) is never re-based inside the card",
+  "a gate refusal is returned BLOCKED, never re-run via a self-test child or exempt route",
+  "launch: py tools/bgrun.py --material --max-min N -- ...; no env prefixes; hold turn to BGRUN END",
+  "facts <=10 file:line; OPEN <=3"
+ ],
+ "unblocks": "M3"
+}

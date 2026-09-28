@@ -199,11 +199,12 @@ def main():
              not GC.pure_selftest("py C:/elsewhere/tools/stagexec.py selftest") and
              GC.pure_selftest('py "%s" selftest' % os.path.join(TOOLS, "stagexec.py")))
         # K9 = the discriminating test of review hyp-selftest-elreuse-81 (archive/peer/2026-09-25-hyp-selftest-elreuse-81.md):
-        # the reviewer PREDICTS the cd-prefixed foreign form is exempted (rc 0) - a guard_card hole. Card 81-3 may not
-        # edit tools/hooks/, so this gate records the measured behaviour (prediction = the review's) and the fix is OPEN.
+        # the reviewer predicted the cd-prefixed foreign form is exempted (rc 0) - a guard_card hole, measured by card 81-3.
+        # RE-PINNED by card 116-3 D2 (the one pin change allowed): guard_card.py now accepts `cd` only to the project
+        # root, so the foreign form must be REFUSED (rc 2); K2 above still allows `cd "<ROOT>" && ...`.
         rc9, msg9 = dec('cd "C:/elsewhere" && py tools/stagexec.py selftest')
-        gate("K9 review prediction: cd <foreign dir> && py tools/stagexec.py selftest is EXEMPTED (rc 0, known hole)",
-             rc9 == 0, (rc9, msg9))
+        gate("K9 cd <foreign dir> && py tools/stagexec.py selftest is REFUSED (rc 2, hole closed by card 116-3)",
+             rc9 == 2, (rc9, msg9))
     finally:
         protocol.binding = orig_b
     shutil.rmtree(tmp, ignore_errors=True)

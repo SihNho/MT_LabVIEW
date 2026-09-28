@@ -1,0 +1,70 @@
+BGRUN START 2026-09-28 07:44:10 limit 3.0 min: py -u tools/stage_prerun.py --dry tools/bench/diag_c116b_props.py
+BGRUN PID 9796
+diag_c116b_props - card 116-2 STEP 0b (P0) + P1 dump, READ-ONLY on byte copies: B3 vs R1 property compare, then the SAVED R1 graph.
+Part A (one fresh LabVIEW, COM): work copy of R1 (claudeDev\scratch_c116b_prop_<ts>.vi, discarded) + scratch copy of B3; per file
+  A1 every LoopTunnel via g.tunnels (OpTunnels_v0: uid, IndexMode, face names, wires), A2 every Constant via OpConstValue_v1 (base-Constant
+  cast, lossless flattened bytes, uid echo - prior art diag_c105_const.py), A3 the R1 graph dump (wiki_build.read_live + k_contract_79.mloops
+  + build_d1_v0.owner_of, prior art diag_c114c_b3graph.py) -> tools/bench/graph_l2r1_saved_20260928.json (fs_tunnel_pairs carried from the
+  B3 dump, review c116b-keys.md:46: term_a/term_b only are used). Part B (a second fresh LabVIEW, NI's own LabVIEWCLI CreateComparisonReport
+  = LVCompare, XML, -nobdcosm) on two fresh claudeDev byte copies -> tools/bench/diag_c116b_cmp.xml; the report is parsed offline afterwards.
+Nothing is run, wired, deleted or saved; copies deleted; LabVIEW killed. PREDICTION: G1 tunnel count B3 == R1 == 151, every uid read with
+identity; G2 IndexMode + face names equal for every tunnel uid kept in both (#637's included); G3 constant uid sets equal, every
+uid echo == listing uid, flattened bytes equal per uid; G4 graph dump: 5827 terminal rows, 10138 objs, #637 in loops with no left_of entry for
+the 6 retired pairs; G5 CLI rc 0 and the XML report exists; LabVIEW gone; inputs unchanged.
+    py tools/bgrun.py --material --max-min 60 --log tools/bench/diag_c116b_props.log -- py -u tools/bench/diag_c116b_props.py
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == f465196bb5016638b146e771ba54c5af  got f465196bb5016638b146e771ba54c5af
+  PASS  DRY graph JSON for input md5 f465196bb5016638b146e771ba54c5af  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_l2r1_20260928.json
+  FACT  R1: 151 LoopTunnels, 1 Constants read; handles <dry:bench_prep.labview_handles>
+  FACT  B3: 151 LoopTunnels, 1 Constants read; handles <dry:bench_prep.labview_handles>
+  PASS  G1 LoopTunnel count R1 == B3 == 151, every uid nonzero and distinct  (151, 151)
+  FACT  TUNNEL index modes R1: []
+  FACT  TUNNEL wire differences (reported, not gated; K4 of diag_c116b_keys already equal): []
+  UNVERIFIED  G2 IndexMode + face names/directions equal for every tunnel kept in both (0)  (dry: after mutation g._run)
+  UNVERIFIED  G3 constants: uid sets equal (1/1), every echo == listing uid, no op error, bytes equal per uid  (dry: after mutation g._run)
+  STUB-LIMIT  dry path stopped on stub data after g._run: FileNotFoundError: [Errno 2] No such file or directory: 'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\graph_l2r1_saved_2
+z_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stage_prerun.py", line 734, in run
+    fn(stage)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c116b_props.py", line 87, in body
+    json.dump(gr, open(OUTG, "w", encoding="utf-8")); s.fact("WROTE {0} md5 {1}".format(OUTG, K.md5(OUTG)))   # noqa: E702
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagekit.py", line 163, in md5
+    with open(path, "rb") as f:
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stage_prerun.py", line 595, in dry_open
+    return real_open(file, mode, *a, **k)
+FileNotFoundError: [Errno 2] No such file or directory: 'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\graph_l2r1_saved_20260928.json'
+
+
+=== DRY FAIL: first_fail=PY RuntimeError: dry run: subprocess.run is blocked (module level) coverage 70/106 lines, first mutation g._run, unverified 2, graph tools/bench/graph_l2r1_20260928.json
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"PY RuntimeError: dry run: subprocess.run is blocked (module level)","artefacts":[]}
+BGRUN END rc=1 after 3s
+BGRUN START 2026-09-28 07:44:38 limit 3.0 min: py -u tools/stage_prerun.py --dry tools/bench/diag_c116b_props.py
+BGRUN PID 19632
+diag_c116b_props - card 116-2 STEP 0b (P0) + P1 dump, READ-ONLY on byte copies: B3 vs R1 property compare, then the SAVED R1 graph.
+Part A (one fresh LabVIEW, COM): work copy of R1 (claudeDev\scratch_c116b_prop_<ts>.vi, discarded) + scratch copy of B3; per file
+  A1 every LoopTunnel via g.tunnels (OpTunnels_v0: uid, IndexMode, face names, wires), A2 every Constant via OpConstValue_v1 (base-Constant
+  cast, lossless flattened bytes, uid echo - prior art diag_c105_const.py), A3 the R1 graph dump (wiki_build.read_live + k_contract_79.mloops
+  + build_d1_v0.owner_of, prior art diag_c114c_b3graph.py) -> tools/bench/graph_l2r1_saved_20260928.json (fs_tunnel_pairs carried from the
+  B3 dump, review c116b-keys.md:46: term_a/term_b only are used). Part B (a second fresh LabVIEW, NI's own LabVIEWCLI CreateComparisonReport
+  = LVCompare, XML, -nobdcosm) on two fresh claudeDev byte copies -> tools/bench/diag_c116b_cmp.xml; the report is parsed offline afterwards.
+Nothing is run, wired, deleted or saved; copies deleted; LabVIEW killed. PREDICTION: G1 tunnel count B3 == R1 == 151, every uid read with
+identity; G2 IndexMode + face names equal for every tunnel uid kept in both (#637's included); G3 constant uid sets equal, every
+uid echo == listing uid, flattened bytes equal per uid; G4 graph dump: 5827 terminal rows, 10138 objs, #637 in loops with no left_of entry for
+the 6 retired pairs; G5 CLI rc 0 and the XML report exists; LabVIEW gone; inputs unchanged.
+    py tools/bgrun.py --material --max-min 60 --log tools/bench/diag_c116b_props.log -- py -u tools/bench/diag_c116b_props.py
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == f465196bb5016638b146e771ba54c5af  got f465196bb5016638b146e771ba54c5af
+  PASS  DRY graph JSON for input md5 f465196bb5016638b146e771ba54c5af  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_l2r1_20260928.json
+  FACT  R1: 151 LoopTunnels, 1 Constants read; handles <dry:bench_prep.labview_handles>
+  FACT  B3: 151 LoopTunnels, 1 Constants read; handles <dry:bench_prep.labview_handles>
+  PASS  G1 LoopTunnel count R1 == B3 == 151, every uid nonzero and distinct  (151, 151)
+  FACT  TUNNEL index modes R1: []
+  FACT  TUNNEL wire differences (reported, not gated; K4 of diag_c116b_keys already equal): []
+  UNVERIFIED  G2 IndexMode + face names/directions equal for every tunnel kept in both (0)  (dry: after mutation g._run)
+  UNVERIFIED  G3 constants: uid sets equal (1/1), every echo == listing uid, no op error, bytes equal per uid  (dry: after mutation g._run)
+  UNVERIFIED  G4 dump: 5827 rows, 10138 objs, every Diagram owner resolved, #637 in loops without the 12 SR uids  (dry: after mutation g._run)
+
+=== DRY PASS: first_fail=None coverage 76/110 lines, first mutation g._run, unverified 3, graph tools/bench/graph_l2r1_20260928.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s
