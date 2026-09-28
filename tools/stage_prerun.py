@@ -883,7 +883,16 @@ def plan_files(recipe):
                     elif isinstance(d, dict) and d.get("schema") == "stageplan/1":
                         plans.append(p)
                     break
-    return sorted(set(plans)), sorted(set(named))
+    # gate-fp fp-5 (card 121-3): one file reached by two spellings (BENCH\x.json and <recipe dir>\x.json, or
+    # ROOT\tools/bench/x.json) was kept twice by set(), so X2 listed the plan twice and X3/X5 doubled the rows.
+    return _uniq_paths(plans), _uniq_paths(named)
+
+
+def _uniq_paths(paths):
+    seen = {}
+    for p in paths:
+        seen.setdefault(os.path.normcase(os.path.abspath(os.path.normpath(p))), p)
+    return sorted(seen.values())
 
 
 SP_WIRING = ("tunnel", "connect", "wire_sr", "branch")     # stagexec compiled-op kinds that make a wire
@@ -2152,8 +2161,28 @@ def read_records():
     return out
 
 
+# gate-fp fp-1/fp-6, card 121-5 (PD238(k), review archive/peer/2026-09-28-c121-3-launch-gate-l4.md ACCEPTED): the
+# decision-4 false positives were failed PRE-RUNS (`py -u tools/stage_prerun.py --prerun <stage>`) whose START line
+# names the stage, so `base not in line` read them as failed stage runs. A segment is excluded ONLY when its START
+# command is ONE plain `py|python [-flags] tools/stage_prerun.py ...` invocation: no shell separator (; && || | &),
+# no env prefix, no other script in command position - so a real launch can never hide behind it. The card-121-3
+# time filter (segment_ended_by) is REVERTED: it widened decision 4 (clock step, rounding window); the time rule is
+# again "any failing segment in a log modified after t_min".
+PRERUN_SEG_RE = re.compile(
+    r"min:\s*(?:py|python|python3)(?:\.exe)?(?:\s+-[A-Za-z]+)*\s+['\"]?(?:[.\w:/\\-]*[/\\])?tools[/\\]stage_prerun\.py['\"]?"
+    r"(?:\s|$)", re.I)
+SHELL_SEP_RE = re.compile(r";|&&|\|\||\||&")
+
+
+def is_prerun_segment(start_line):
+    """True when this bgrun START line runs tools/stage_prerun.py itself (a dry/prerun/check, never a stage run)."""
+    cmd = (start_line or "").split("min:", 1)[-1]
+    return bool(PRERUN_SEG_RE.search(start_line or "")) and not SHELL_SEP_RE.search(cmd)
+
+
 def last_failed_run_after(script, t_min):
-    """Newest failing bgrun run of `script` in a log modified after t_min (protocol.run_verdict)."""
+    """Newest failing bgrun run of `script` in a log modified after t_min (protocol.run_verdict).
+    Segments that run tools/stage_prerun.py itself are not runs of `script` (is_prerun_segment, card 121-5)."""
     import protocol as P
     base = os.path.basename(script)
     worst = None
@@ -2168,6 +2197,8 @@ def last_failed_run_after(script, t_min):
             continue
         for ts, line, seg in P.segments(text):
             if base not in line:
+                continue
+            if is_prerun_segment(line):
                 continue
             v = P.run_verdict(seg)
             if v["failed"]:
@@ -2832,6 +2863,60 @@ def escalation_route(card, cards_dir=None, now=None):
     return "escalate", None, "%s failed once in %s; no previous failing attempt in the same function" % (old_id, fn)
 
 
+# ------------------------------------------------------------- card chat-P3 item A: NO SCRATCH BUILD ON A PROVEN PATTERN
+# User 2026-09-28 ("A는 실행"). Before this card every build step ran the recipe once on a byte copy of the bed (a
+# tools/bench/stage_<x>_scratch.py wrapper, ~15 min, e.g. stage_d1_qrt_pool_scratch.py) and THEN the one real launch.
+# WHERE THAT RULE LIVED (measured, card chat-P3): only in card pass-lines and plan text (task_116-2 P4, task_118-1/-2 P3,
+# task_119-4 L2, task_121-2, d1-loop12-17-split-plan.md PD234(g)) - no gate ever refused a launch for a missing scratch
+# run; check_scratch above is a different rule (two failures on one function). So the change is a DECISION FUNCTION the
+# card writer and the launch gate both read, not a relaxed refusal:
+#   scratch NOT required  <=> the recipe is a tools/recipes/stage_*.py AND proven_pattern (>= PROVEN_MIN other clean
+#                             stages cover its signature) AND a dry + prerun PASS exist for its CURRENT sha256 + plan md5s
+#                             AND no real launch of the stage failed in the SCRATCH_WINDOW_S log window;
+#   otherwise required    (a new structure class is never proven; a failed real launch means no second skip).
+# check_launch logs `SCRATCH-SKIP-PROVEN | <stage> | proven: <stages>` when it ALLOWS such a launch (stderr + SKIP_LOG);
+# `--scratch-required <recipe>` prints the decision (exit 0 skip / 3 required). The Error List of a skipped launch is
+# compared with the plan's own predicted new-item count (what the scratch run used to pin; 119-4 pinned 0 == predicted 0).
+SKIP_LOG = os.environ.get("SCRATCH_SKIP_LOG") or os.path.join(BENCH, "jev_gate.log")
+
+
+def scratch_requirement(recipe, runs=None, recs=None, now=None):
+    """(required: bool, why: str, proven_stages: [..]) - see the block comment."""
+    s = os.path.abspath(recipe)
+    if not STAGE_RE.search(s):
+        return True, "not a tools/recipes/stage_*.py recipe - the scratch rule is unchanged", []
+    key = unit_key(s)
+    fails = [ts for ts, failed, _fn in stage_run_segments(key, now) if failed]
+    if fails:
+        return True, "a real launch of {0} FAILED ({1}) - no second skip".format(
+            key, time.strftime("%m-%d %H:%M:%S", time.localtime(fails[-1]))), []
+    runs = read_stage_runs() if runs is None else runs
+    recs = read_records() if recs is None else recs
+    ok, stages, sig = proven_pattern(s, runs, recs)
+    if not ok:
+        new = new_structure_classes(s, runs, recs, sig)
+        return True, ("NEW structure class(es) {0} - no clean stage ran them".format(", ".join(new[:8])) if new else
+                      "not a proven pattern ({0} clean other stage(s) {1}; needs {2})".format(
+                          len(stages), stages, PROVEN_MIN)), stages
+    sha, pm = sha256(s), plan_md5s(s)
+    missing = [k for k in ("dry", "prerun") if not any(
+        r.get("kind") == k and r.get("status") == "PASS" and r.get("sha256") == sha and r.get("plan_md5s") == pm
+        and not r.get("replay") for r in recs)]
+    if missing:
+        return True, "proven, but no {0} PASS for the current sha256 {1}... / plan md5s".format(
+            " + ".join(missing), (sha or "")[:12]), stages
+    return False, "proven: " + ", ".join(stages), stages
+
+
+def scratch_skip_log(line):
+    sys.stderr.write(line + "\n")
+    try:
+        with REAL_OPEN(SKIP_LOG, "a", encoding="utf-8") as fh:
+            fh.write(line + "\n")
+    except OSError:
+        pass
+
+
 def check_launch(cmd):
     """(allow, why). Refuses a stage-recipe launch without a dry PASS and a prerun PASS for its CURRENT sha256 and
     plan md5s, both newer than the newest failing run of it (decision 4), and past RETRY_CAP runs in this cycle
@@ -2889,6 +2974,14 @@ def _check_units(units, cmd):
         ok_sv, why_sv = check_scratch(plan or s)          # card chat-N4: two failures on one function -> scratch VI
         if not ok_sv:
             return False, why_sv
+        if not plan and STAGE_RE.search(s):             # card chat-P3 item A: record a skipped scratch build
+            try:
+                req, _why_r, st_r = scratch_requirement(s, runs=runs, recs=recs)
+            except Exception:                                                      # noqa: BLE001 - advisory only
+                req, st_r = True, []
+            if not req:
+                scratch_skip_log("SCRATCH-SKIP-PROVEN | {0} | proven: {1} | {2}".format(
+                    stage_key(s), ", ".join(st_r), time.strftime("%Y-%m-%d %H:%M:%S")))
     return True, ""
 
 
@@ -2901,6 +2994,8 @@ def main(argv=None):
     ap.add_argument("--no-record", action="store_true")
     ap.add_argument("--json-out")
     ap.add_argument("--check-launch")
+    ap.add_argument("--scratch-required", help="card chat-P3: is the scratch build required before this stage recipe's "
+                                               "one launch? exit 0 = skip (SCRATCH-SKIP-PROVEN) / 3 = required")
     ap.add_argument("--control-lint", help="control_path_lint one stageplan/1 JSON (exit 0 clean / 2 refused)")
     ap.add_argument("--selftest-control-lint", action="store_true")
     ap.add_argument("--buildarray-check", nargs="+", help="card 114-1: X11 replay over stageplan/1 files (exit 0/2)")
@@ -2965,6 +3060,11 @@ def main(argv=None):
         ok, why = check_launch(a.check_launch)
         print("ALLOW" if ok else why)
         return 0 if ok else 2
+    if a.scratch_required is not None:
+        req, why, st_ = scratch_requirement(a.scratch_required)
+        print("SCRATCH-REQUIRED | {0} | {1}".format(stage_key(a.scratch_required), why) if req else
+              "SCRATCH-SKIP-PROVEN | {0} | proven: {1}".format(stage_key(a.scratch_required), ", ".join(st_)))
+        return 3 if req else 0
     recipe = a.dry or a.prerun
     if not recipe:
         ap.error("--dry, --prerun or --check-launch")

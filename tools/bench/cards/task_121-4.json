@@ -1,0 +1,57 @@
+{
+ "schema": "task/1",
+ "id": "121-4",
+ "kind": "build",
+ "goal": "Finish ring P2a (re-issue of 121-2 with gui true): scratch Error List pin, ONE launch of stage_d1_ring_p2a.py, final Error List read, expected file",
+ "why": "121-2 BLOCKED only on my card flag (gui false); plan, recipe, dry, prerun 13/0 and a no-save scratch 25/0 already PASS (result_121-2.json).",
+ "retry_of_card": "121-2",
+ "inputs": [
+  {"path": "tools/bench/cards/result_121-2.json", "md5": "39149fe06b36004643f139e51d60b29f"},
+  {"path": "tools/bench/plan_ring_p2a.json", "md5": "ad1be164996dcdf26e11b50d36f6a5f0"},
+  {"path": "tools/recipes/stage_d1_ring_p2a.py", "md5": "1ba0ac2076f70980c69b569a0b148477"},
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "2f2641e76c21685b81eb38ecd06e4f12"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_qrt_pool_20260928_141055.vi", "md5": "9353936895141d3ec2f890649c5cf22f"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p2a_scratch.py"},
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p2a_el.py"}
+ ],
+ "pass": [
+  "scratch pin: stage_d1_ring_p2a_scratch.py + el.py scratch read give the Error List count (prediction 54, alternative 53)",
+  "ONE launch saves claudeDev D1_ring_p2a_<ts>.vi; same gates as the scratch (E1 8 ops, census 5 gone incl. #25898, w14741 == R2, cdiff 16)",
+  "final Error List read == the scratch pin; errorlist_expected_D1_ring_p2a_<ts>.json written and reverdicts OK",
+  "refs balanced; open->save within the PD236(b) band; LabVIEW closed and verified gone"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p2a_<ts>.vi"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/*ring_p2a*",
+   "tools/bench/sim/ring_p2a/**",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/errorlist*ring_p2a*",
+   "tools/bench/graph_ring_p2a*",
+   "tools/recipes/stage_d1_ring_p2a*.py"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "rules": [
+  "GUI only via lv_gui.ps1 with -Exception Approved; save evidence 'user 2026-09-22 broken-intermediate save'",
+  "Every GUI act: capture, locate, act, capture, confirm (cycle27-plan PD9)",
+  "The 5th object gone (#25898, auto-removed with its last wire) is ACCEPTED (PD238(j))",
+  "Return at the first unexpected result; bed is never saved over",
+  "Patch with Edit/Write, never heredoc"
+ ],
+ "advances": ["M3", "M4"]
+}

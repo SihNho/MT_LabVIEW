@@ -1,0 +1,52 @@
+BGRUN START 2026-09-28 18:58:06 limit 5.0 min: py -u tools/bench/selftest_c111c_launchunit.py
+BGRUN PID 2824
+selftest_c111c_launchunit - card 111-3 D3/D4 (docs/violation-decisions.md device-failed 2026-09-27 20:20 (2)): ONE
+launch-unit helper, tools/launchunit.py, on the three command paths - stage_prerun.launched_py (launch gate),
+stop_record.segment_class (stop record), guard_card -> protocol._launched_scripts (card flags). OFFLINE, no LabVIEW; nothing
+is launched - every case is a string handed to the gates' own functions. PRE-FIX versions (git show b278d85^, pinned by
+card 121-3 - HEAD contains the fix since cycle 111) are loaded to show each
+positive case was refused before (the test discriminates).
+LITERALS: C371 = the command card 110-1 was refused at guard_card.log:371 (agent aa721f52 transcript, tool_use at 16:11:5x);
+M2434 = material_marker.log:2434 verbatim.
+PREDICTION: D4 C371 and M2434 pass all three paths NOW and were refused by HEAD on the path the log names; `py -u
+tools/recipes/stage_x.py` (bare and under bgrun) is a launch on all three; NEGATIVES stay refused (lint && launch, runner
+module pdb, `-m tools.recipes.<stage>`, PYTHONPATH prefix, cd away, pipe into py, pytest, smuggled second occurrence);
+D3 the three paths call launchunit and RUNNER_MODULES is defined once.
+    py tools/bgrun.py --material --max-min 5 --log tools/bench/selftest_c111c_launchunit.log -- py -u tools/bench/selftest_c111c_launchunit.py
+  PASS  D3a guard_card installs the launchunit filter on protocol._launched_scripts  
+  PASS  D4 C371 launch gate: no launch unit (stage_prerun.launched_py)  []
+  PASS  D4 C371 stop record: the recipe is not 'build' (stop_record.command_keys)  {('abs', 'g:\\codes\\labview_codes\\minlab\\zz_labview vi\\aaa_unist\\2. tracking\\v6_parallelloop\\vi\\aaa_unist\\2'): 'build', ('rel', 'vi/aaa_unist/2.'): 'build', ('abs', 'g:\\codes\\labview_codes\\minlab\\zz_labview'): 'build', ('rel', 'tracking/v6_parallelloop'): 'build', ('abs', 'g:\\codes\\labview_codes\\minlab\\zz_labview vi\\aaa_unist\\2. tracking\\v6_parallelloop\\tracking\\v6_parallello
+  PASS  D4 C371 card flags labview 'read' AND 'none': allowed  (None, None)
+  PASS  D4 M2434 launch gate: no launch unit (stage_prerun.launched_py)  []
+  PASS  D4 M2434 stop record: the recipe is not 'build' (stop_record.command_keys)  {('abs', 'g:\\codes\\labview_codes\\minlab\\zz_labview vi\\aaa_unist\\2. tracking\\v6_parallelloop\\vi\\aaa_unist\\2'): 'build', ('rel', 'vi/aaa_unist/2.'): 'build', ('abs', 'g:\\g\\codes\\labview_codes\\minlab\\zz_labview'): 'build', ('rel', 'tracking/v6_parallelloop'): 'build', ('abs', 'g:\\codes\\labview_codes\\minlab\\zz_labview vi\\aaa_unist\\2. tracking\\v6_parallelloop\\tracking\\v6_paralle
+  PASS  D4 M2434 card flags labview 'read' AND 'none': allowed  (None, None)
+  PASS  D4h C371 card flags on HEAD's detector: refused 'recipes are refused' (guard_card.log:371)  flags.labview is 'read' - recipes are refused (tools\recipes\stage_d1_l2b1.py)
+  PASS  D4h M2434 stop record on the pre-fix b278d85^: 'build' (material_marker.log:2434 on 2026-09-27)  {('abs', 'g:\\g\\codes\\labview_codes\\minlab\\zz_labview'): 'build', ('abs', 'g:\\codes\\labview_codes\\minlab\\zz_labview vi\\aaa_unist\\2. tracking\\v6_parallelloop\\vi\\aaa_unist\\2'): 'build', ('rel', 'vi/aaa_unist/2.'): 'build', ('rel', 'tracking/v6_parallelloop'): 'build', ('abs', 'g:\\codes\\labview_codes\\minlab\\zz_labview vi\\aaa_unist\\2. tracking\\v6_parallelloop\\tracking\\v6_paralle
+  PASS  D4 bare `py -u tools/recipes/stage_x.py` is a launch unit (launch gate)  ['G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\recipes\\stage_x.py']
+  PASS  D4 bare ... is 'build' for the stop record  {('rel', 'tools/recipes/stage_x.py'): 'build', ('abs', 'g:\\codes\\labview_codes\\minlab\\zz_labview vi\\aaa_unist\\2. tracking\\v6_parallelloop\\tools\\recipes\\stage_x.py'): 'build'}
+  PASS  D4 bare ... on an existing recipe is refused by card flags 'read'  flags.labview is 'read' - recipes are refused (tools\recipes\stage_d1_l2b1.py)
+  PASS  D4 bgrun `py -u tools/recipes/stage_x.py` is a launch unit (launch gate)  ['G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bgrun.py', 'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\recipes\\stage_x.py']
+  PASS  D4 bgrun ... is 'build' for the stop record  {('abs', 'g:\\codes\\labview_codes\\minlab\\zz_labview vi\\aaa_unist\\2. tracking\\v6_parallelloop\\tools\\bgrun.py'): 'build', ('rel', 'tools/bgrun.py'): 'build', ('rel', 'tools/recipes/stage_x.py'): 'build', ('abs', 'g:\\codes\\labview_codes\\minlab\\zz_labview vi\\aaa_unist\\2. tracking\\v6_parallelloop\\tools\\recipes\\stage_x.py'): 'build'}
+  PASS  D4 bgrun ... on an existing recipe is refused by card flags 'read'  flags.labview is 'read' - recipes are refused (tools\recipes\stage_d1_l2b1.py)
+  PASS  NEG lint && launch: still refused (all)  {'launch_gate': True, 'stop_record_build': True, 'card': True}
+  PASS  NEG runner module pdb: still refused (all)  {'launch_gate': True, 'stop_record_build': True, 'card': True}
+  PASS  NEG runner module trace: still refused (all)  {'launch_gate': True, 'stop_record_build': True, 'card': True}
+  PASS  NEG unlisted runner mprof (review c111c-regress s64-78): still refused (all)  {'launch_gate': True, 'stop_record_build': True, 'card': True}
+  PASS  NEG unlisted runner streamlit: still refused (all)  {'launch_gate': True, 'stop_record_build': True, 'card': True}
+  PASS  NEG unknown module (c103d S7 shape): still refused (all)  {'launch_gate': True, 'stop_record_build': True, 'card': True}
+  PASS  NEG -m tools.recipes.<stage> (module is a project file): still refused (lpcard)  {'launch_gate': True, 'stop_record_build': False, 'card': True}
+  PASS  NEG PYTHONPATH prefix: still refused (sr)  {'launch_gate': False, 'stop_record_build': True, 'card': False}
+  PASS  NEG cd away then lint: still refused (sr)  {'launch_gate': False, 'stop_record_build': True, 'card': False}
+  PASS  NEG pipe into py: still refused (sr)  {'launch_gate': False, 'stop_record_build': True, 'card': False}
+  PASS  NEG pytest -m pyflakes: still refused (sr)  {'launch_gate': False, 'stop_record_build': True, 'card': True}
+  PASS  NEG smuggled 2nd occurrence (quoted, after &): still refused (srcard)  {'launch_gate': False, 'stop_record_build': True, 'card': True}
+  PASS  NEG & then a bare launch: still refused (all)  {'launch_gate': True, 'stop_record_build': True, 'card': True}
+  PASS  NEG module arg with a quote/redirect: still refused (sr)  {'launch_gate': False, 'stop_record_build': True, 'card': False}
+  PASS  D3b stage_prerun.launched_py delegates to launchunit (no own -m parse)  1037
+  PASS  D3c stop_record and guard_card import launchunit  []
+  PASS  D3d READONLY_MODULES defined once (tools/launchunit.py)  ['launchunit.py']
+  PASS  D3e launch gate == launchunit on the corpus  
+=== GATES: 33 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":33,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s
+BGRUN KILLED (external) pid=2824 marked 2026-09-28 18:58:08 by bgrun pid=20060: no END/TIMEOUT and the runner process is gone

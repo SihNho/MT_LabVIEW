@@ -1,0 +1,49 @@
+{
+ "schema": "task/1",
+ "id": "121-5",
+ "kind": "build",
+ "goal": "Apply PD238(k): revert the fp-1/6 time filter in stage_prerun.py; skip only segments whose START runs tools/stage_prerun.py; fix L4/L4b fixtures; drain fp-1..6",
+ "why": "Review archive/peer/2026-09-28-c121-3-launch-gate-l4.md ACCEPTED: the time filter widens a safety gate; the real cause is dry/prerun segments counted as stage runs.",
+ "retry_of_card": "121-3",
+ "inputs": [
+  {"path": "archive/peer/2026-09-28-c121-3-launch-gate-l4.md", "md5": "e9ddf6a83a19974d7f2ef2870a0d96e6"},
+  {"path": "tools/bench/cards/result_121-3.json", "md5": "e1e39a26827b0b49c6d334ad7d2e64ee"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/bench/selftest_launch_gate.py"},
+  {"kind": "file", "name": "tools/bench/selftest_c121_3_gatefp.py"},
+  {"kind": "file", "name": "tools/gate_fp.py"}
+ ],
+ "pass": [
+  "stage_prerun.py:2167 time filter removed; decision 4's time rule as at 0a42260; segments whose START runs tools/stage_prerun.py are not stage runs",
+  "selftest_launch_gate: L4/L4b with current-time stamps + a prerun-segment case; all green (was 27/1)",
+  "selftest_c121_3_gatefp re-pinned to the new fix, green; c107, c111c, chat_p1, chat_p3, c110, protocol, cycle_runner green",
+  "fp-1, fp-4, fp-5, fp-6 drained with --fixed/--selftest; fp-2, fp-3 drained as accepted form (gate correct)",
+  "git commit attempted; if the permission layer refuses it, say so and leave the tree for the runner's commit"
+ ],
+ "outputs": [],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/**"
+  ],
+  "status_edit": false,
+  "git_commit": true,
+  "peers": ["hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 45
+ },
+ "rules": [
+  "Offline only; card 121-4 (LabVIEW) runs beside this - never touch *ring_p2a* files",
+  "A fix may only NARROW what the gate lets through, never widen it",
+  "Return at the first unexpected result",
+  "Patch with Edit/Write, never heredoc"
+ ],
+ "unblocks": "M3"
+}

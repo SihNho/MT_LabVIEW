@@ -4906,3 +4906,139 @@ VIOLATION: none
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle117","verdict":"none","alternative":"Candidate device-failed: guard_peer held LabVIEW card 117-1 on offline card 117-4's failing log for 7 min (10:53:48 to 11:00:44) plus a $1.07 review; the one-way exemption was by design and the tail was card 117-3, so the cycle end did not move.","discriminating_test":"Replay the 10:53:48 hyg launch against guard_peer with diag_c117d_rows.log newest; a symmetric RULE-OFFLINE-CARD (LV card not held by a labview:none card's offline-command log) should return 0. Then check whether the cycle end (11:43) changes.","violations":[],"sources":["tools/bench/cycle_117.log:1","tools/bench/stage_d1_l2r2.log:305","tools/bench/diag_c117a_el.log:114","tools/hooks/material_marker.log:2686","tools/hooks/guard_peer.py:901","tools/bench/jev_gate.log:2589","tools/bench/cards/result_117-1.json:23","archive/peer/2026-09-28-c117d-rows.md:81"],"note":"Window starts 37 min before the session (chat relaunch); A1/A2 FAILs are chat-P1 self-tests. Deliverable R2 saved and L4 PASS. Minor: 3 own-script diag bugs all Jev-labelled new-problem ($3.51 reviews); stagekit/120-line rule broken on 2 diags."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle117.md
 BGRUN END rc=0 after 266s
+BGRUN START 2026-09-28 19:37:32 limit 10.0 min: py tools/retrospective.py --cycle 121
+BGRUN PID 21720
+   window 2026-09-28 11:48:07 .. 2026-09-28 19:37:33 (469 min); 162 build logs, 17 machinery logs, 41 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle121.txt (41183 chars)
+   review card tools\bench\cards\review_retrospective-cycle121.json
+OUTCOME: ANSWERED (489s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-09-28-retrospective-cycle121.md
+COST: $3.0181  in 34 / out 47395 / cache-create 200510 / cache-read 2329965  (487s, 35 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle121 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle121.json
+--- ANSWER ---
+# Retrospective, cycle 121: outcome review over the window 11:48–19:37
+
+**Summary.** The window ends with one real deliverable: `D1_ring_p2a_20260928_191739.vi` (md5 `c22a473f`), accepted as the bed (`tools/bench/cards/result_121-4.json:10`). Measured against the goal, that is thin for 469 minutes.
+- **What survives.** P2a's output is R2 plus 20 image buffers and their names constant. Around it survive:
+  - a constant-value reader (118-4);
+  - a terminal-type reader and the FS-crossing route facts (120);
+  - the camera buffer-mode measurement (121-1);
+  - tooling.
+- **What was thrown away.** The queue half of the pool (cycles 118–119), most of cycle 120, and all of P2a, which only undid it. I rank that loss as the biggest in the window, but I do not count it as a structural fault of these cycles (reason below). The one structural fault I name is smaller: cycle 118 spent two attempts, on two escalation rungs, rediscovering a reader limitation that `docs/NAMES.md` had recorded since 2026-09-15.
+
+**The window does not match "cycle 121".** It covers runner cycles 118, 119 and 120, a 145-minute stop, and then cycle 121:
+- cycles 118–120: `cycle_runner_main_20260928_1033.log:22-62`;
+- the runner was stopped for the user's redirect from 15:55 to 18:20 (`STATUS.md:8`, `cycle_runner_main_20260928_1820.log:1`);
+- cycle 121 itself ran from 18:20:41 (`cycle_121.log:1`).
+
+Cycles 118–120 had no retrospective of their own because it was not due (`cycle_runner_main_20260928_1033.log:27,42`), so their cost lands here.
+
+The audit also understates the window's cost:
+- **C4c** lists $69.0161 from two logs only: cycle 118 at $42.2459 (`cycle_118.log:170`) and cycle 119 at $26.7702 (`cycle_119.log:170`).
+- **Cycle 120** was killed from outside with no cost line (`cycle_120.log:170`, `cycle_runner_main_20260928_1033.log:62` "$?").
+- **Cycle 121's** judgement session was still open when the window closed.
+
+## The structural fault: cycle 118 rediscovered a recorded tool limit on two attempts
+
+- **Attempt 118-1.** It failed partly on an IMAQ path inside an LLB, which `NAMES.md:954-956` already records (`result_118-1`, restated at `result_118-2.json:14`).
+- **Attempt 118-2 (escalation rung 1, Opus max).** It ran gate A1b with the base-class `Constant.Value` reader. That reader returns void for every non-String constant, as `NAMES.md:1164-1165` has recorded since 2026-09-15.
+  - The run failed in 20 s (`result_118-2.json:2,16`).
+  - The review said so outright: *"The general rule was already in NAMES.md, and it makes the A1b result a foregone conclusion"* (`archive/peer/2026-09-28-c118p1-names.md:63`).
+- **Judgement's response.** PD234(i) chose to run the donor VI instead of building a reader, and escalated to rung 2 (`docs/d1-loop12-17-split-plan.md:2189`).
+- **Attempt 118-3 (Fable low).** It failed on the same missing capability: a Constant is not a Node, so no indicator route reaches it. It also hit the one-node rule on the ArrayConstant copy (`result_118-3.json:2,22,24`).
+  - The ladder was now spent, so a user question, D-2026-09-28-02, was raised (`decisions_pending.json:251-265`).
+- **What finally worked.** Only then did PD234(j) order the reader (`split-plan.md:2198`). Card 118-4 built it and passed in about 20 minutes (13:00→13:20: `selftest_c118_primnested.log` 13:13 … `diag_c118_r1v.log` 13:19).
+
+**Counterfactual.** When the review landed at 12:34 (`peer_c118p1.log`), the next card could have been the reader instead of rung 2's donor track (12:36–12:58: `diag_c118_q2.log` 12:43 … `diag_c118_p1b_r2.log` 12:58).
+- The reader would then have existed by about 12:56, and the ArrayConstant gap would have surfaced on the first re-run.
+- P1 would have passed at about 13:15, inside cycle 118, instead of at 13:38 in cycle 119 (`diag_c119_p1b_r2.log`).
+- One Fable rung and the D-02 user question would not have been spent.
+
+**Loss.** About 25 minutes of wall-clock by my counterfactual. The chat's own measure is larger: "cycle 118: 84 min on one function" (`cycle_121.log:117`). No log carries a per-card dollar figure; cycle 118 as a whole cost $42.25.
+
+**What is already fixed and what is not.** The escalation half is already covered by the device built in chat-P2 item 4, which refuses an escalation when the same function fails twice. The first-attempt half is not covered:
+- a VI-modifying diagnostic is outside prior-art;
+- `protocol.py requires` checks that an op exists, not what it can read.
+
+## FINDINGS
+
+### 1. Repeated failure
+- **Cycle 118.** The same class of failure recurred three times: a VI-modifying diagnostic written against tool behaviour that was already recorded. That is 118-1 (LLB path), 118-2 (void reader) and 118-3 (Constant is not a Node). The approach should have changed after attempt 2 (118-2), as described above.
+- **Gate misfires that repeated a queued defect:**
+  - **fp-6 (15:37:54).** Decision 4 again read an appended prerun FAIL segment as a failed stage run. That is the same defect as fp-1 from cycle 117 (`gate_fp_queue.jsonl:1,6`).
+  - **The read-only md5sum refusal (fp-4's class).** It happened again at 18:24:38, before 121-3's fix (`tools/hooks/material_marker.log:2779`), and was not logged as a new gate false positive.
+  - **The one-way RULE-OFFLINE-CARD hold.** It recurred as fp-10 (`gate_fp_queue.jsonl:10`); it had been a carry since retrospective-cycle117 (`:424`).
+  - Each of these cost seconds, not minutes.
+
+### 2. Missing tool
+- **A reader for non-String constant values.** Its absence answered both 118-2's A1b failure and 118-3's value check. It was built only as the third card (`split-plan.md:2201-2204`).
+- **A capability check.** `requires` should check whether an op can read the terminal class in question, not just whether the op exists. A NAMES.md lookup for VI-modifying diagnostics would do the same job.
+- **A handle-band reference.** 119-4's only FAIL was a "handles ±100" gate that judgement wrote without the recorded build-step band. Card 119-5 then had to measure +176…+684 after the fact (`split-plan.md:2218`).
+
+### 3. Unmeasured steps
+- **PD234(i)** chose "run the donor" by inference. 118-3 measured that no indicator route reaches a Constant (`result_118-3.json:22`).
+- **PD236(b)'s ±100 handle gate** was inferred from the per-op hygiene number when build-step records existed. That cost a FAIL plus the read-only card 119-5.
+- Both measurements were cheap and were available beforehand.
+
+### 4. Rule compliance
+**Broken or satisfied only formally:**
+- **CLAUDE.md rule 4.** STATUS.md grew from 513 lines at the start of cycle 117 to 577 now (audit L3). The rule was broken, and more so over the window.
+- **Superseded-document rule (audit L5).** `docs/ring-buffer-design.md` supersedes `d1-build-plan.md`, which is still marked current.
+- **C6 RESULT-line rule (audit A8).** 14 logs have no RESULT line. chat-P3 admits three of them (`result_chat-P3.json:16`).
+- **A1 FAIL.** This is an audit false positive: `run_mode.log` is a mode ledger, not a build log.
+- **A9.** 21 of 22 accepted-but-unbuilt dispositions are still uncited by code. It keeps growing.
+- **"RUN MODE FIRST".** No mode read appears in `run_mode.log` between 18:20 and 18:51. That is not proven broken, because `get` may not log.
+
+**What the audit does not cover:**
+- deliverables that a later redirect supersedes (P2a scores as a clean delivery);
+- a killed cycle's missing cost (C4c silently counts 2 logs);
+- an offline card editing a gate that the live LabVIEW card is using (below);
+- the 145-minute stop counted as cycle time;
+- whether a card's self-reported `minutes` is plausible (finding 6).
+
+### 5. Ordering
+- **Cycle 118.** Wrong, as above: the reader should have come second, not fourth.
+- **Cycle 121.** Defensible: offline tooling ran beside the P1 camera measurement, then P2a. The exception is that 121-3's time-filter patch to the launch gate was live in the working tree while 121-2 was launching (`result_121-3.json:22`). The user's parallelism rule of 19:3x now forbids this (`STATUS.md:63`).
+- **121-2 BLOCKED.** It was blocked on judgement's own flag, `gui: false` (`result_121-2.json:2`). The no-save scratch run it did (18:41–18:50) was then repeated as 121-4's pin scratch (386 s, `result_121-4.json:8`). That cost about 10 minutes and the cycle's end moved by about that much. It is minor.
+
+### 6. What the summaries hide or understate
+- **The window's net product.** STATUS calls cycle 119 "POOL STAGE DELIVERED" and cycle 121 "P2a DELIVERED". Together, half of the first was undone by the second (`split-plan.md:2254`). Work that was not worth doing:
+  - the queue route of 118-3 (`result_118-3.json:18-19`);
+  - the two BLOCKED schema cards of 119 and the Obtain/Enqueue half of 119-4;
+  - most of cycle 120's 80 minutes: the design of seven more queues (PD237(a)) and the Dequeue/Case routes (120-3);
+  - all of P2a (21 + 55 card-minutes, `result_121-2.json:26`, `result_121-4.json:18`).
+
+  That is on the order of 150–190 minutes. Cycle 120's dollars are unknown.
+- **Why I do not count the pool reversal as a fault of these cycles.** `docs/decisions.md:22,24` recorded the Q_free pool with "no free slot ⇒ do not read" as the decided frame handoff. When the chat raised the conflict with `:25` at 11:55, it recommended that "the build of the pool itself can proceed" (`decisions_pending.json:242`). The user's final design, U13 at 16:3x, is a new rule, not an old one the cycles evaded (`docs/user-rules.md:38`). The upstream cause is PD233(k) in cycle 117, outside the window, together with that internal conflict in `decisions.md`.
+- **Implausible card minutes.** Card 118-2 reports `minutes: 112` and 118-3 `66` (`result_118-2.json:28`, `result_118-3.json:32`). Cycle 118 lasted 94 minutes in total, and the logs show the cards ran one after another. These figures cannot be used as cost.
+
+### 7. Judgement inside a material session
+- **The launch-gate time filter.** 121-3, a material card, chose it: a widening of a safety gate (`result_121-3.json:13`). Judgement rejected it (`split-plan.md:2264`) and 121-5 reverted it. It was caught, and it ran in the parallel slot, so it did not move the end.
+- **Otherwise clean.** 121-2 and 121-4 returned their acceptance questions (the fifth object gone, the new bed) to judgement (`result_121-2.json:24-25`, `result_121-4.json:17`), which is correct.
+
+## DEVICE EFFECT
+
+- **Worked:**
+  - the bgrun FAIL scan, which forced rc=1 (`result_118-2.json:16`);
+  - cost parsing, 8 of 8 lines (C4b);
+  - A4 disposition, 41 of 41 annotated;
+  - the adversarial review: the c121-3 reviewer disagreed with the claim (`peer_c121_3_launch_gate_l4.log:6-20`);
+  - guard_cycle's prior-art timing: the review ended at 13:43:59 and the launches came after 13:50;
+  - bgrun_reap on the killed runner (`cycle_runner_main_20260928_1033.log:58`);
+  - `gates_due`, which carried the gate-fp queue as DUE and led to it being drained (`cycle_runner_main_20260928_1820.log:6`);
+  - op-hygiene: new ops came with 2,000-call records (`split-plan.md:2202`).
+- **Misfired, then queued and drained as designed:**
+  - the launch gate's decision 4 (fp-6);
+  - guard_bash MATERIAL_RE (fp-4 and `:2779`);
+  - guard_peer (fp-7, fp-10);
+  - guard_card (fp-8).
+
+  Each was routed around in seconds (fp-6 at 15:37:54, rerun at 15:38:06) and fixed at 18:42–18:59. None was bypassed routinely, and none let its own fault through.
+- **C7 scope counter.** It lists 877 files against a plan that names none of the tools, so it cannot discriminate. No scope creep went through unseen, but as a measure it is dead.
+- **Prior-art.** It returned `novel` on the pool recipe (`archive/peer/2026-09-28-priorart-c119-qrt-pool.md:1455`). That recipe only created the queues, and the user-rules question did not exist until chat-P2. This is a gap in its scope, not a failure.
+
+**Verdict on devices:** no device failed at a cost inside the window, so I do not count a device failure.
+
+VIOLATION: repeated-failure-class | loss_min=25 | loss_usd=? | evidence=archive/peer/2026-09-28-c118p1-names.md:63
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle121","verdict":"refuted","alternative":"The window's largest loss (~150-190 min: pool queues of 118-120 plus the P2a undo) is a user redirect on a design decisions.md:22,24 recorded and the chat cleared at 11:55 (decisions_pending.json:242), so it is a finding, not this window's fault.","discriminating_test":"Replay 118-2's A1b plan through a NAMES.md capability lookup: if OpConstValue_v1 is flagged void for ArrayConstant (NAMES.md:1164) before launch, the rung-2 attempt and D-2026-09-28-02 disappear; if not, the fault is the lookup's absence, not judgement.","violations":[{"slug":"repeated-failure-class","loss_min":25,"loss_usd":"?","evidence":"archive/peer/2026-09-28-c118p1-names.md:63"}],"sources":["tools/bench/cards/result_118-2.json:2","tools/bench/cards/result_118-3.json:22","docs/NAMES.md:1164","docs/d1-loop12-17-split-plan.md:2189","docs/d1-loop12-17-split-plan.md:2254","tools/bench/decisions_pending.json:242","tools/bench/cycle_118.log:170","tools/bench/cycle_120.log:170","tools/bench/cards/result_121-3.json:22","tools/bench/gate_fp_queue.jsonl:6"],"note":"Window spans cycles 118-121 plus a 145-min stop; C4c omits cycle 120 (killed, $?) and 121. Deliverable: D1_ring_p2a (c22a473f). Device misfires fp-4/6/10 were queued and drained as designed, seconds each; no costly device failure."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle121.md
+BGRUN END rc=0 after 495s

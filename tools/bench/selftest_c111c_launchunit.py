@@ -1,7 +1,8 @@
 r"""selftest_c111c_launchunit - card 111-3 D3/D4 (docs/violation-decisions.md device-failed 2026-09-27 20:20 (2)): ONE
 launch-unit helper, tools/launchunit.py, on the three command paths - stage_prerun.launched_py (launch gate),
 stop_record.segment_class (stop record), guard_card -> protocol._launched_scripts (card flags). OFFLINE, no LabVIEW; nothing
-is launched - every case is a string handed to the gates' own functions. HEAD versions (git show) are loaded to show each
+is launched - every case is a string handed to the gates' own functions. PRE-FIX versions (git show b278d85^, pinned by
+card 121-3 - HEAD contains the fix since cycle 111) are loaded to show each
 positive case was refused before (the test discriminates).
 LITERALS: C371 = the command card 110-1 was refused at guard_card.log:371 (agent aa721f52 transcript, tool_use at 16:11:5x);
 M2434 = material_marker.log:2434 verbatim.
@@ -25,9 +26,15 @@ def gate(lab, ok, det=""):
 TMP = tempfile.mkdtemp(prefix="c111c_lu_")
 
 
+# Baseline PINNED to the commit before the fix (card 121-3, 2026-09-28): the fix was committed at b278d85 (cycle 111);
+# `git show HEAD:` has returned the FIXED code since then, so D4h ("HEAD refused it") could only pass while the fix sat
+# uncommitted. History is immutable; HEAD is not. Nothing live (material_marker.log, stores) is read - M2434 is a literal.
+BASE = "b278d85^"
+
+
 def head(rel, name):
     p = os.path.join(TMP, name + ".py")
-    open(p, "wb").write(subprocess.run(["git", "show", "HEAD:" + rel], cwd=ROOT, capture_output=True, check=True).stdout)
+    open(p, "wb").write(subprocess.run(["git", "show", BASE + ":" + rel], cwd=ROOT, capture_output=True, check=True).stdout)
     sp = importlib.util.spec_from_file_location(name, p); m = importlib.util.module_from_spec(sp); sp.loader.exec_module(m)   # noqa: E702
     return m
 
@@ -68,7 +75,7 @@ for tag, cmd in (("C371", C371), ("M2434", M2434)):
     gate("D4 {0} card flags labview 'read' AND 'none': allowed".format(tag), card(CARD_READ, cmd) is None and card(CARD_NONE, cmd) is None,
          (card(CARD_READ, cmd), card(CARD_NONE, cmd)))
 gate("D4h C371 card flags on HEAD's detector: refused 'recipes are refused' (guard_card.log:371)", "recipes are refused" in (card_head(CARD_READ, C371) or ""), card_head(CARD_READ, C371))
-gate("D4h M2434 stop record on HEAD: 'build' (material_marker.log:2434)", sr_build(M2434, H_SR), H_SR.command_keys(M2434))
+gate("D4h M2434 stop record on the pre-fix %s: 'build' (material_marker.log:2434 on 2026-09-27)" % BASE, sr_build(M2434, H_SR), H_SR.command_keys(M2434))
 # ---------------------------------------------------------------- launches stay launches on all three paths
 for tag, cmd in (("bare", "py -u tools/recipes/stage_x.py"), ("bgrun", "py tools/bgrun.py --material --max-min 5 --log x.log -- py -u tools/recipes/stage_x.py")):
     gate("D4 {0} `py -u tools/recipes/stage_x.py` is a launch unit (launch gate)".format(tag),

@@ -78,15 +78,23 @@ records(("dry", "PASS"), ("prerun", "PASS"), t=time.time() - 100)
 clear_logs()
 ok, why = SP.check_launch(LAUNCH)
 gate("L3 dry + prerun PASS, current sha, no later failure -> allowed", ok, why)
+# card 121-5 (PD238(k)): the failing runs carry the CURRENT time (they are newer than the records by their own stamp),
+# so L4/L4b test the script-name rule and decision 4, not a stale stamp; L4c = a failed --prerun segment is not a run.
+NOW_STAMP = time.strftime("%Y-%m-%d %H:%M:%S")
 open(os.path.join(os.environ["PRERUN_LOG_DIR"], "stage_lgtest.log"), "w", encoding="utf-8").write(
-    "BGRUN START 2026-09-24 20:00:00 limit 5.0 min: py -u {0}\nboom\nBGRUN END rc=1 after 3s\n".format(STG))
+    "BGRUN START {1} limit 5.0 min: py -u {0}\nboom\nBGRUN END rc=1 after 3s\n".format(STG, NOW_STAMP))
 ok, why = SP.check_launch(LAUNCH)
 gate("L4 a FAILED run newer than the records -> refused (decision 4)", not ok and "decision 4" in why, why.splitlines()[0] if why else "")
 clear_logs()
 open(os.path.join(os.environ["PRERUN_LOG_DIR"], "other.log"), "w", encoding="utf-8").write(
-    "BGRUN START 2026-09-24 20:00:00 limit 5.0 min: py -u tools/recipes/stage_other.py\nBGRUN END rc=1 after 3s\n")
+    "BGRUN START {0} limit 5.0 min: py -u tools/recipes/stage_other.py\nBGRUN END rc=1 after 3s\n".format(NOW_STAMP))
 ok, why = SP.check_launch(LAUNCH)
 gate("L4b another script's failure does not invalidate these records", ok, why)
+clear_logs()
+open(os.path.join(os.environ["PRERUN_LOG_DIR"], "stage_lgtest_prerun.log"), "w", encoding="utf-8").write(
+    "BGRUN START {1} limit 5.0 min: py -u tools/stage_prerun.py --prerun {0}\nPRERUN FAIL\nBGRUN END rc=1 after 3s\n".format(STG, NOW_STAMP))
+ok, why = SP.check_launch(LAUNCH)
+gate("L4c a FAILED --prerun segment of this stage is not a stage run -> allowed", ok, why)
 clear_logs()
 open(STG, "a", encoding="utf-8").write("print('edited')\n")
 ok, why = SP.check_launch(LAUNCH)

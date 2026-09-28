@@ -394,7 +394,9 @@ RUN_VI_SRC_RE = re.compile(r"\.Run\(\s*(?:True|False|0|1)?\s*\)")
 RUN_VI_CMD_RE = re.compile(r"drive_original_copy", re.I)
 GIT_COMMIT_RE = re.compile(r"\bgit\b(?:\s+-\S+(?:\s+\S+)?)*\s+commit\b", re.I)
 MOTOR_CMD_RE = re.compile(r"motor_gate\.py|motor_send_pi\.ps1|motor_asi_io\.ps1", re.I)
-RUNNER_CMD_RE = re.compile(r"cycle_runner\.py", re.I)
+# Anchored on the file name (gate-fp fp-8, card chat-P3): `selftest_cycle_runner.py` / `selftest_cycle_runner_ff.py`
+# are self-tests that drive the runner with --dry-cmd themselves, not a real runner launch.
+RUNNER_CMD_RE = re.compile(r"(?<![\w.-])cycle_runner\.py", re.I)
 STATUS_WRITE_RE = re.compile(r"(?:>>?|\bSet-Content\b|\bAdd-Content\b|\bOut-File\b|\bsed\s+-i\b|\btee\b|\bmv\b|\bcp\b|"
                              r"\bMove-Item\b|\bCopy-Item\b|os\.replace)[^|;&\n]*?\b(?:STATUS|CLAUDE)\.md\b", re.I)
 # peer dispatch -> the role name the card's `peers` list uses (docs/protocol/task.json flags.peers enum)

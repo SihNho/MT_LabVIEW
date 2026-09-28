@@ -1,0 +1,47 @@
+{
+ "schema": "task/1",
+ "id": "121-3",
+ "kind": "build",
+ "goal": "Tooling: rebuild selftest_stoprecord_offline_c107 + selftest_c111c_launchunit on fabricated state (like selftest_guard_cycle_offline); then drain gate-fp fp-1..fp-6",
+ "why": "chat-P3 FAIL 28/2: both tests replay fixed lines of the live material_marker.log (Jev our-script-bug p=0.828 -> patch + rerun). gate-fp queue DUE (6 open >= 5, oldest cycle 117).",
+ "retry_of_card": "chat-P3",
+ "inputs": [
+  {"path": "tools/bench/cards/result_chat-P3.json", "md5": "34b24413d2131378e78997320553d99e"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/selftest_stoprecord_offline_c107.py"},
+  {"kind": "file", "name": "tools/bench/selftest_c111c_launchunit.py"},
+  {"kind": "file", "name": "tools/bench/selftest_guard_cycle_offline.py"},
+  {"kind": "file", "name": "tools/gate_fp.py"}
+ ],
+ "pass": [
+  "both self-tests build their own temp marker-log state, never read the live material_marker.log; each green, same case coverage as before",
+  "fp-1..fp-6: each drained with gate_fp.py drain --fixed <path:line> --selftest <name>, or left open with a one-line measured reason",
+  "no fix widens a safety guard (motors, originals, LabVIEW timeouts, rule 1a); a gate that stops refusing a REAL launch is not a fix",
+  "regression: selftest_chat_p3, selftest_launch_gate, selftest_protocol, selftest_cycle_runner green after the changes",
+  "one git commit"
+ ],
+ "outputs": [],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/**"
+  ],
+  "status_edit": false,
+  "git_commit": true,
+  "peers": ["hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "rules": [
+  "Offline only; card 121-2 (LabVIEW) runs beside this - never touch *ring_p2a* files",
+  "Return at the first unexpected result",
+  "Patch with Edit/Write, never heredoc"
+ ],
+ "unblocks": "M3"
+}

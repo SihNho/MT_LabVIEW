@@ -1,0 +1,55 @@
+{
+ "schema": "task/1",
+ "id": "121-1",
+ "kind": "measure",
+ "goal": "Ring-buffer P1 (PD238(g)): MEASURE the IMAQdx buffer-number modes through the C API (ctypes niimaqdx, no LabVIEW) on the real camera, as facts for the camera-loop design",
+ "why": "PD238(b)/(c): the camera loop 1.1 copies each NEW BufNum into a ring slot; with Last it re-reads the newest buffer at zero delay (camera-acquisition-facts.md:79-81), so the loop's spin cost and whether any mode waits for a new buffer decide P3's loop-rate row. This card only measures.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "1bc5bf6cfc8c95cb05c2d54f2cca7d46"},
+  {"path": "docs/ring-buffer-design.md", "md5": "48ac0e5778017cee6b7911c8defe4c4f"},
+  {"path": "docs/camera-acquisition-facts.md", "md5": "4f15de8e8f96dc75e0541572fc88af41"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/camera_budget_sweep.py"},
+  {"kind": "file", "name": "tools/bench/camera_contract.py"}
+ ],
+ "pass": [
+  "M0: which IMAQdxBufferNumberMode values the INSTALLED niimaqdx.h defines (file:line), plus one external doc source (NI) for what each mode does - search, do not recall",
+  "M1: every defined mode x loop delay 0/1/15 ms, 90 Hz per camera_contract, >= 4 s each: calls/s, distinct BufNums/s",
+  "M1 cont.: duplicates, gaps (BufNum jump >1), median/p99 time inside GetImageData, camera acquired rate",
+  "M2: the same M1 row set at the camera's 150 Hz setting if camera_contract allows it, else say why not",
+  "M3: CPU time of the reading thread at delay 0 per mode (process CPU seconds / wall seconds)",
+  "camera session closed and acquisition stopped at the end, verified (no process holding the camera); camera settings restored per camera_contract",
+  "script <= 120 lines under tools/bench/, run under bgrun, raw numbers in tools/bench/p1_bufmode_121.json; facts appended as a dated section to docs/camera-acquisition-facts.md"
+ ],
+ "outputs": [
+  "tools/bench/p1_bufmode_121.py",
+  "tools/bench/p1_bufmode_121.json",
+  "tools/bench/p1_bufmode_121.log"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/p1_bufmode_121*",
+   "docs/camera-acquisition-facts.md"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "rules": [
+  "Camera only (rig 조립, camera allowed, CLAUDE.md 1b); no motor, no ASI, no LabVIEW",
+  "LabVIEW must not be running (tasklist) before the camera session opens; if it is, return BLOCKED",
+  "Measurement only: report facts and an OPEN line; no design recommendation acted on",
+  "Return at the first unexpected result (chat-P2 item 2)",
+  "Patch with Edit/Write, never heredoc"
+ ],
+ "advances": ["M3", "M4", "R4"]
+}

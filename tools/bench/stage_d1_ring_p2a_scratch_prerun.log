@@ -1,0 +1,110 @@
+BGRUN START 2026-09-28 18:40:53 limit 5.0 min: py -u tools/stage_prerun.py --prerun tools/bench/stage_d1_ring_p2a_scratch.py
+BGRUN PID 17372
+  FAIL  X1 dry run PASS (whole Python path, COM stubbed)  PY AssertionError: --prerun (module level)
+  PASS  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['tools/bench/plan_ring_p2a.json']
+  PASS  X3 every plan row decided  0 rows + 8 stageplan actions
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  1 stageplan(s)
+  PASS  X11 no row wires one Build Array input while a sibling input is an open row (unless pb-licence/1)  1 stageplan(s)
+  PASS  X12 no row names a wire uid an earlier border-crossing connect re-created (connect_from_wire.json:266)  1 stageplan(s), 0 re-created source wire(s), none named later
+  PASS  X13 opmodel conformance: every recorded sample of the plan ops' model files replays in stagesim  2 op(s) ['delete_object', 'delete_wire']; files {'delete_object.json': 'PASS (2)', 'delete_wire.json': 'PASS (2)'}
+  FAIL  X4 every end addressable offline  no graph JSON for input md5 None
+  FAIL  X5 wiring ops executed in the dry run == plan wire rows  ops 0 vs plan wire rows 0 + stageplan wiring real ops 0 (covering 0/0 wire actions); delete ops {} vs plan delete rows {'delete_object': 4, 'delete_wire': 4}
+  FAIL  X6 ast lint: no re-typed uid / terminal name  no graph JSON - the lint needs the input's uids
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work None; decisions rows NOT dispatched (recipe calls neither run_rows nor from_decision)
+  PASS  X10 predicted LabVIEW private MB < 690.0 (error-2 point; MEMSTOP 700.0) over the ops this run dispatches (UNMEASURED - no covering record)  {'why': 'UNMEASURED: no recorded meter of stage_d1_ring_p2a_scratch.py covers ops 1..end (0 record(s))'}
+  WARN  X10 WARN unmeasured: UNMEASURED: no recorded meter of stage_d1_ring_p2a_scratch.py covers ops 1..end (0 record(s))
+  INFO  X14 rows 8, budget 25 (proven: stage_d1_l2r1.py, stage_d1_l2r2.py)
+
+=== DRY FAIL: first_fail=PY AssertionError: --prerun (module level) coverage 10/31 lines, first mutation None, unverified 0, graph None
+=== PRERUN FAIL: 9 pass / 4 fail; first X1 dry run PASS (whole Python path, COM stubbed): PY AssertionError: --prerun (module level)
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":9,"fail":4},"first_fail":"X1 dry run PASS (whole Python path, COM stubbed): PY AssertionError: --prerun (module level) [X10 WARN unmeasured]","artefacts":[]}
+BGRUN END rc=1 after 2s
+BGRUN START 2026-09-28 18:41:07 limit 5.0 min: py -u tools/stage_prerun.py --prerun tools/bench/stage_d1_ring_p2a_scratch.py
+BGRUN PID 14732
+stage_d1_ring_p2a_scratch - card 121-2: SCRATCH VERIFY of RING P2a BEFORE the one launch. Runs the stage recipe's OWN body
+(tools/recipes/stage_d1_ring_p2a.py, imported unchanged) on a dated byte copy claudeDev\scratch_c121_p2a_<ts>.vi of the pool bed (md5 93539368) -
+same Executor, LVBackend, RetireGuardBE and every recipe gate. No VI is run; the bed is never opened for edit (byte copy only).
+MODE (argv[1]):
+  nosave : SAVE off - structural verification only, NO GUI (no rule-6 save); the work copy is dropped by the Stage hygiene.
+  pin    : SAVE on (rule-6 gui_save of the SCRATCH) so stage_d1_ring_p2a_el.py scratch can pin its Error List (that script deletes it). NEEDS flags.gui.
+PRIOR ART: tools/bench/stage_d1_qrt_pool_scratch.py (card 119-4; this is its cut, + the nosave mode).
+PREDICTION: every recipe gate PASS (PS only in pin mode); LabVIEW gone; PASS writes tools/bench/scratch_verify/stagexec.ring_p2a_deletes_<mode>_<ts>.json.
+    py tools/bgrun.py --material --max-min 30 --log tools/bench/stage_d1_ring_p2a_scratch_nosave.log -- py -u tools/bench/stage_d1_ring_p2a_scratch.py nosave
+MODE nosave (SAVE False)
+stage_d1_ring_p2a - card 121-2, RING P2a (d1-loop12-17-split-plan.md PD238(a)(g), docs/ring-buffer-design.md): from the SAVED pool bed
+D1_qrt_pool_20260928_141055.vi DELETE the pool queues - Obtain Q_free, Obtain Q_work, the For-body Enqueue, the I32 20 (+ their wires) -
+and KEEP the For, IMAQ Create, names constant, ring and names tunnel (the 20 images stay; P3 wires them). FRESH LabVIEW -> claudeDev\D1_ring_p2a_<ts>.vi
+(rule-6 GUI save, ExecState 0 by design, never run). ROWS ONLY FROM plan_ring_p2a.json (stagesim FINAL of plan_ring_p2a_in.json, plan_ring_p2a_make.py);
+expected values only from plan_ring_p2a_pred.json. PRIOR ART: stage_d1_l2r2.py (retire cut: RetireGuardBE live-consumer check before each delete,
+retire_ends, terminal-list diff) + stage_d1_qrt_pool.py (Executor/LVBackend/DryPlanBE, PB cdiff, save). No new op.
+PREDICTION: L1 8 actions -> 8 ops (4 delete_wire + 4 delete_object); LC x4; E1 every checkpoint == sim; D no new wire, lost == the 4 deleted wires;
+CEN nodes lost == the 4 + the Enqueue's queue tunnel (auto-removed with its last wire, opmodel delete_wire.json); CEN2 LoopTunnel -1, Wire -4;
+ENDS w14741 keeps uid/source/kept sink; TD every other base terminal keeps its wire, IMAQ New Image -> 0, w14741 list == R2's; FU frames unchanged;
+PB cdiff(S1, end) == the pool bed's 16 rows (FATAL, before save); HB open->save handles <= +700 (PD236(b)); PS saved, input unchanged.
+    py tools/bgrun.py --material --max-min 45 --log tools/bench/stage_d1_ring_p2a.log -- py -u tools/recipes/stage_d1_ring_p2a.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p2a_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == the pool bed's rows  ('ad1be164996dcdf26e11b50d36f6a5f0', {'path': 'tools/bench/graph_qrt_pool_20260928.json', 'md5': 'd265b2833970df40fb9252224d5feb35'}, '9353936895141d3ec2f890649c5cf22f')
+  PASS  L0c delete_object rows == pred retire (4), delete_wire rows == pred stubs + orphan, none on a kept node  {'retire': [23105, 23118, 23136, 26017], 'dw': [25835, 26114, 26189, 26155], 'keep': {'p_for': 23093, 'p_imaq': 23099, 'p_names': 23789, 'p_ring': 26846, 'p_tun': 26131}}
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 9353936895141d3ec2f890649c5cf22f  got 9353936895141d3ec2f890649c5cf22f
+  PASS  DRY graph JSON for input md5 9353936895141d3ec2f890649c5cf22f  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_qrt_pool_20260928.json
+  FACT  CENSUS before P2a scratch_c121_p2a_20260928_184108.vi: {'LoopTunnel': 140, 'Wire': 1941, 'WhileLoop': 6, 'Diagram': 174, 'SubVI': 93, 'Local': 12, 'ControlTerminal': 118, 'Node': 0}
+  PASS  L1 the 8 actions compile into 8 real ops == pred kinds, each action once  ['delete_wire', 'delete_wire', 'delete_wire', 'delete_wire', 'delete_object', 'delete_object', 'delete_object', 'delete_object']
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 0 touched diagram(s) []: one-side-only Nodes[] entries 0
+  PRIME 0 terminal indexes proved at base; 0 ControlTerminal end(s) by 179(b); unprovable []
+  FACT  OP delete_wire [1] -> err '' (0.0 s)
+  STEPX 01 delete_wire    acts [1] ids ['p2a_w25835'] bound {} diff 0
+  FACT  OP delete_wire [2] -> err '' (0.0 s)
+  STEPX 02 delete_wire    acts [2] ids ['p2a_w26114'] bound {} diff 0
+  FACT  OP delete_wire [3] -> err '' (0.0 s)
+  STEPX 03 delete_wire    acts [3] ids ['p2a_w26189'] bound {} diff 0
+  FACT  OP delete_wire [4] -> err '' (0.0 s)
+  STEPX 04 delete_wire    acts [4] ids ['p2a_w26155'] bound {} diff 0
+  PASS  LC live-consumer check re-read before deleting Function #23136 (pair [23136])  {'uids': [23136], 'rows': 7, 'missing': [], 'consumers': []}
+  FACT  OP delete_object [5] -> err '' (0.0 s)
+  STEPX 05 delete_object  acts [5] ids ['p2a_o23136'] bound {} diff 0
+  PASS  LC live-consumer check re-read before deleting Function #23105 (pair [23105])  {'uids': [23105], 'rows': 8, 'missing': [], 'consumers': []}
+  FACT  OP delete_object [6] -> err '' (0.0 s)
+  STEPX 06 delete_object  acts [6] ids ['p2a_o23105'] bound {} diff 0
+  PASS  LC live-consumer check re-read before deleting Function #23118 (pair [23118])  {'uids': [23118], 'rows': 8, 'missing': [], 'consumers': []}
+  FACT  OP delete_object [7] -> err '' (0.0 s)
+  STEPX 07 delete_object  acts [7] ids ['p2a_o23118'] bound {} diff 0
+  PASS  LC live-consumer check re-read before deleting DigitalNumericConstant #26017 (pair [26017])  {'uids': [26017], 'rows': 1, 'missing': [], 'consumers': []}
+  FACT  OP delete_object [8] -> err '' (0.0 s)
+  STEPX 08 delete_object  acts [8] ids ['p2a_o26017'] bound {} diff 0
+  PASS  E1 every checkpoint's real graph == its simulated step (8 ops)
+  PASS  LC all 4 live-consumer checks PASS (each re-read before its delete)  [{'uids': [23136], 'rows': 7, 'missing': [], 'consumers': [], 'ok': True}, {'uids': [23105], 'rows': 8, 'missing': [], 'consumers': [], 'ok': True}, {'uids': [23118], 'rows': 8, 'missing': [], 'consumers': [], 'ok': True}, {'uids': [26017], 'rows': 1, 'missing': [], 'consumers': [], 'ok': True}]
+  PASS  D no new wire; lost == the simulated == the 4 deleted wires  {'new': [], 'lost': [25835, 26114, 26155, 26189], 'sim_lost': [25835, 26114, 26155, 26189]}
+  PASS  CEN terminal-graph nodes lost == the 4 retired + the auto-removed queue tunnel [25898], none added  {'lost': [23105, 23118, 23136, 25898, 26017], 'added': []}
+  FACT  CENSUS after P2a scratch_c121_p2a_20260928_184108.vi: {'LoopTunnel': 140, 'Wire': 1941, 'WhileLoop': 6, 'Diagram': 174, 'SubVI': 93, 'Local': 12, 'ControlTerminal': 118, 'Node': 0}
+  FACT  CENSUS DELTA {'LoopTunnel': 0, 'Wire': 0, 'WhileLoop': 0, 'Diagram': 0, 'SubVI': 0, 'Local': 0, 'ControlTerminal': 0, 'Node': 0} (Node recorded, not gated)
+  PASS  CEN2 class census: LoopTunnel -1, Wire -4, WhileLoop/Diagram/SubVI/Local/ControlTerminal 0  {'LoopTunnel': 0, 'Wire': 0, 'WhileLoop': 0, 'Diagram': 0, 'SubVI': 0, 'Local': 0, 'ControlTerminal': 0, 'Node': 0}
+  PASS  ENDS every net shared by a retired and a kept terminal keeps its uid, source(s) and kept sinks ([14741])  {'shared_wires': {14741: [13166, 13941]}, 'bad': []}
+  PASS  TD rows lost == the 5 nodes' rows, none added; every other base terminal keeps its wire, [23289] -> 0; w14741 list == R2's  {'changed': [], 'rows_lost_extra': [], 'w_img': [(13166, False), (13941, True)]}
+  PASS  FU the set of frame diagrams is unchanged
+  FACT  ExecState [after all rows (ExecState 0 expected: the pool bed is broken by design)] scratch_c121_p2a_20260928_184108.vi = <dry:g.exec_state>
+  PASS  PB frame-keyed cdiff(S1, real end) == the pool bed's 16 rows and the plan's 11 open (node, term) pairs (FATAL, before save)  {'extra': [], 'missing': []}
+  FACT  PH handles: post-open <dry:bench_prep.labview_handles> -> before-save None
+  PASS  HB open->save handle growth <= +700 (PD236(b) band; refs balance is H5)  (<dry:bench_prep.labview_handles>, None)
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  PASS  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['tools/bench/plan_ring_p2a.json']
+  PASS  X3 every plan row decided  0 rows + 8 stageplan actions
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  1 stageplan(s)
+  PASS  X11 no row wires one Build Array input while a sibling input is an open row (unless pb-licence/1)  1 stageplan(s)
+  PASS  X12 no row names a wire uid an earlier border-crossing connect re-created (connect_from_wire.json:266)  1 stageplan(s), 0 re-created source wire(s), none named later
+  PASS  X13 opmodel conformance: every recorded sample of the plan ops' model files replays in stagesim  2 op(s) ['delete_object', 'delete_wire']; files {'delete_object.json': 'PASS (2)', 'delete_wire.json': 'PASS (2)'}
+  PASS  X4 every end addressable offline (0 ends)  []
+  PASS  X5 wiring ops executed in the dry run == plan wire rows  ops 0 vs plan wire rows 0 + stageplan wiring real ops 0 (covering 0/0 wire actions); delete ops {'delete_object': 4, 'delete_wire': 4} vs plan delete rows {'delete_object': 4, 'delete_wire': 4}
+  PASS  X6 ast lint: no re-typed uid / terminal name  uids []; names []
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c121_p2a_20260928_184108.vi; decisions rows NOT dispatched (recipe calls neither run_rows nor from_decision)
+  PASS  X10 predicted LabVIEW private MB < 690.0 (error-2 point; MEMSTOP 700.0) over the ops this run dispatches (UNMEASURED - no covering record)  {'why': 'UNMEASURED: no recorded meter of stage_d1_ring_p2a_scratch.py covers ops 1..end (0 record(s))'}
+  WARN  X10 WARN unmeasured: UNMEASURED: no recorded meter of stage_d1_ring_p2a_scratch.py covers ops 1..end (0 record(s))
+  INFO  X14 rows 8, budget 25 (proven: stage_d1_l2r1.py, stage_d1_l2r2.py)
+
+=== DRY PASS: first_fail=None coverage 21/30 lines, first mutation Stage._op delete_wire, unverified 0, graph tools/bench/graph_qrt_pool_20260928.json
+=== PRERUN PASS: 13 pass / 0 fail; first None
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":"X10 WARN unmeasured: UNMEASURED: no recorded meter of stage_d1_ring_p2a_scratch.py covers ops 1..end (0 record(s))","artefacts":[]}
+BGRUN END rc=0 after 10s

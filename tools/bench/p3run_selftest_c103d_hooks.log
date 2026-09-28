@@ -1,0 +1,32 @@
+BGRUN START 2026-09-28 18:41:40 limit 5.0 min: py -u tools/bench/selftest_c103d_hooks.py
+BGRUN PID 14528
+  PASS  S1 marker:2175 wc + pyflakes piped to head passes  rc 0
+  PASS  S2 py -m pycodestyle alone passes  rc 0
+fake-refusal
+  PASS  S3 NEGATIVE direct launch refused  rc 2
+fake-refusal
+  PASS  S4 NEGATIVE bgrun launch refused  rc 2
+fake-refusal
+  PASS  S5 NEGATIVE lint then launch refused  rc 2
+fake-refusal
+  PASS  S6 NEGATIVE lint piped into py - refused  rc 2
+fake-refusal
+  PASS  S7 NEGATIVE unknown module refused  rc 2
+  PASS  S8 marker:2175 verbatim shape (cd to the project root first) passes  rc 0
+fake-refusal
+  PASS  N1 NEGATIVE escaped-quote newline smuggles a launch  rc 2
+fake-refusal
+  PASS  N2 NEGATIVE env prefix (PYTHONPATH hijack) refused  rc 2
+fake-refusal
+  PASS  N3 NEGATIVE flake8 (config plugins) refused  rc 2
+fake-refusal
+  PASS  N4 NEGATIVE pytest -m pyflakes refused  rc 2
+fake-refusal
+  PASS  N5 NEGATIVE cd elsewhere then lint refused  rc 2
+  PASS  L1 selftest_stagekit.py is not a VI-modifying launch  []
+  PASS  L2 NEGATIVE the same bytes under another path are still VI-modifying  ['create_local_read', 'save_route']
+  PASS  L4 NEGATIVE other bytes at the exempt path are VI-modifying again (sha256 pin)  ['create_local_read', 'save_route']
+  PASS  L3 NEGATIVE a real stage recipe is still a stage launch  tools/recipes/stage_d1_disp.py
+=== GATES: 17 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":17,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

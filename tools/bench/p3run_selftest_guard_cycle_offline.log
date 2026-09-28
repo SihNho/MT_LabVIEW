@@ -1,0 +1,13 @@
+BGRUN START 2026-09-28 18:27:08 limit 3.0 min: py -u tools/bench/selftest_guard_cycle_offline.py
+BGRUN PID 8584
+  PASS  O0 fixture: one unreleased already-failed record in the temp store  [('tools/recipes/scratch_gcoffline_3460_1790587629.py', ['already-failed'], None)]
+  PASS  O1 bgrun-wrapped stage_prerun --dry of the unreleased recipe is ALLOWED  (0, [])
+  PASS  O2 plain stage_prerun --prerun of the unreleased recipe is ALLOWED  (0, [])
+  PASS  O3 the recipe's LAUNCH is REFUSED while its prior-art verdict is unreleased  (2, ['BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe is STOPPED by a prior-art verdict that is neither refuted nor fixed.'])
+  PASS  O4 a dry chained with a launch is REFUSED  (2, ['BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe is STOPPED by a prior-art verdict that is neither refuted nor fixed.'])
+  PASS  O5 offline_only: [True, True, False, False, False]  [True, True, False, False, False]
+  PASS  O6 discriminator: with a REFUTED: line the same LAUNCH passes the stop-record gate  []
+  PASS  O7 cleanup: scratch recipe gone, live store bytes unchanged  (False, '099fec32', '099fec32')
+=== GATES: 8 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":8,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

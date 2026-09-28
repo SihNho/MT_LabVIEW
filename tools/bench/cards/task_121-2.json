@@ -1,0 +1,63 @@
+{
+ "schema": "task/1",
+ "id": "121-2",
+ "kind": "build",
+ "goal": "Ring-buffer P2a (PD238(a)(g)): delete p_qfree, p_qwork, p_enq, p_i32 (+ wires) from the pool bed; keep p_for/p_imaq/p_names/p_ring/p_tun; save D1_ring_p2a_<ts>.vi",
+ "why": "User design 2026-09-28 (U13): ring buffer, no Q_free/Q_work. The 20 pool images stay; the queues go before the ring's panel objects (P2b) are added.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "1bc5bf6cfc8c95cb05c2d54f2cca7d46"},
+  {"path": "docs/ring-buffer-design.md", "md5": "48ac0e5778017cee6b7911c8defe4c4f"},
+  {"path": "tools/bench/graph_qrt_pool_20260928.json", "md5": "d265b2833970df40fb9252224d5feb35"},
+  {"path": "tools/bench/plan_qrt_pool.json", "md5": "bb3393b0d754b61960731af462af08ad"},
+  {"path": "tools/bench/errorlist_expected_D1_qrt_pool_20260928_141055.json", "md5": "46b423aa3eb3c378da93a98c9b18e0bb"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_qrt_pool_20260928_141055.vi", "md5": "9353936895141d3ec2f890649c5cf22f"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/recipes/stage_d1_qrt_pool.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_l2r2.py"}
+ ],
+ "pass": [
+  "plan_ring_p2a.json on graph_qrt_pool_20260928.json: delete rows only (wires first, then objects, L2-R2 pattern), stagesim FINAL",
+  "recipe <= 120 lines on stagekit; dry + prerun PASS; prior-art only if prerun says the pattern is not proven",
+  "scratch run on a byte copy of the bed pins the Error List count BEFORE the ONE launch",
+  "census: exactly the 4 objects gone (uids from the graph); p_for/p_imaq/p_names/p_ring/p_tun and their wires unchanged",
+  "w14741 sinks == R2's (the 2 Obtain type branches gone, nothing else); cdiff(S1) == the bed's 16 rows",
+  "Error List == the scratch pin; refs balanced; open->save within the PD236(b) band",
+  "saved claudeDev D1_ring_p2a_<ts>.vi + errorlist_expected_D1_ring_p2a_<ts>.json; LabVIEW closed and verified gone"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p2a_<ts>.vi",
+  "tools/bench/plan_ring_p2a.json",
+  "tools/recipes/stage_d1_ring_p2a.py"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p2a*",
+   "tools/recipes/stage_d1_ring_p2a*.py",
+   "tools/bench/*ring_p2a*",
+   "tools/bench/sim/ring_p2a/**",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/errorlist*ring_p2a*",
+   "tools/bench/graph_ring_p2a*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 75
+ },
+ "rules": [
+  "Bed is read, never saved over; the only saved VI is the new claudeDev file",
+  "Return at the first unexpected result (finish the step, close LabVIEW, record facts)",
+  "Do not wire the images anywhere (that is P3); do not add panel objects (P2b)",
+  "Launch form: py tools/bgrun.py --material --max-min N --log ... -- py -u <recipe>",
+  "Patch with Edit/Write, never heredoc"
+ ],
+ "advances": ["M3", "M4"]
+}

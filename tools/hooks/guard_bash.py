@@ -46,8 +46,11 @@ import guard_session  # noqa: E402  - ONE definition of the per-session state fi
 # the reason in its own comment: until 2026-09-15 it matched the path ANYWHERE on the line, so a read-only
 # one-liner that merely CONTAINED "tools/recipes/*.py" inside a glob was blocked as if it were a build.
 # The path must follow a python invocation, optionally past its flags.
+# gate-fp fp-4 (card 121-3): `\bpy` also matched the EXTENSION of a preceding path - `md5sum tools/stagexec.py
+# tools/bench/x.py` read as `py tools/bench/x.py`. The interpreter token may not follow a `.` (a real `py`/`python`
+# token starts a word or follows a path separator, e.g. C:\Python\python.exe).
 MATERIAL_RE = re.compile(
-    r"\bpy(?:thon)?[\w.]*\s+(?:-\S+\s+)*[^\s|;&]*tools[\\/](?:recipes|bench)[\\/][^\s|;&]*\.py", re.I)
+    r"(?<![.\w])py(?:thon)?[\w.]*\s+(?:-\S+\s+)*[^\s|;&]*tools[\\/](?:recipes|bench)[\\/][^\s|;&]*\.py", re.I)
 # The declaration. It must be its own token, so a path or a log line containing the word cannot launder a run.
 #
 # THREE accepted forms. `--material` is the ONLY one that works under `claude -p`, and it was added

@@ -1,0 +1,16 @@
+{"schema":"result/1","id":"121-1","status":"PASS","gates":{"pass":51,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/bench/p1_bufmode_121.py","md5":"586972a405ca368d0267ea2e30e28c3c"},{"path":"tools/bench/p1_bufmode_121.json","md5":"c53762ce4fae3543b218a56e800e308e"},{"path":"tools/bench/p1_bufmode_121.log","md5":"9840697a5c941dd28a1b47fea66b7054"},{"path":"docs/camera-acquisition-facts.md","md5":"c75f6df522f99fc589cf30aa77b2f9f3"}],
+"facts":[
+"M0: installed NIIMAQdx.h:178-185 (NI-IMAQdx 26.3) defines Next 0, Last 1, BufferNumber 2, Every 3, LastNew 4; the 'header lists 3' claim at archive/peer/2026-09-25-m8b-...-fact.md:58 is wrong here",
+"M0 doc: NI sources cited from archived fact search archive/peer/2026-09-25-m8b-replay-prep-75-fact.md:54,58 (NI VI ref + KB kA03q000001DwvoCAC); WebSearch/WebFetch denied to this card, no fresh fetch",
+"M1: Next/BufferNumber/Every/LastNew block in GetImageData ~1 frame period (median 11.11 ms @90, 6.67 ms @150 at delay 0); 90.0/149.9 calls/s, 0 dup, 0 gaps (p1_bufmode_121.log:6-36)",
+"M1/M3: Last delay 0 = 25112 calls/s @90 (25203 @150), median 0.038 ms, 100088 duplicates, distinct 90.0/s, process CPU/wall 1.004 (log:9,25)",
+"Last delay 1 ms: ~590 calls/s, distinct = camera rate, CPU <1% (log:10,26); other modes at delay 0 CPU 0.4-5.5% (log:6,12,15,18,22,28,31,34)",
+"Delay 15 ms: no rc error in any mode; Next falls to exactly 1/2 (45.0 @90) and 1/3 (49.9 @150); Last/LastNew/BufferNumber/Every deliver ~64.5/s (log:8,11,14,17,20,24-36)",
+"BufferNumber (asked prev+1) and Every jump ~5 buffers when behind (20 gaps/100 skipped @90) without an error: returned BufNum differs from requested (log:14,17)",
+"M2: 150 Hz allowed under contract exposure 5555 us < 6667 us period; set 149.993 Hz, camera 149.7-149.9 Hz in all cells (log:21-36)",
+"Contract read back after open: ExposureAuto Off, ExposureTime 5555, 1280x1024, 90.0009 Hz (log:4); camera rate within 3% of set in all 30 cells",
+"Cleanup: rate restored 90.0009 Hz, close rc 0, fresh reopen rc 0 at 1280x1024 90.0009 Hz, close rc 0 (log:37); LabVIEW absent before open; facts section appended to docs/camera-acquisition-facts.md"],
+"open":["Delay is a WAIT (sleep) not busy processing; is a spin-cost row with processing load needed for P3's loop-rate row?"],
+"cost":{"usd":null,"minutes":22,"labview_runs":0},
+"note":"script 116 lines; bgrun END rc=0 after 144s; no Jev ladder row (no failed gate)"}

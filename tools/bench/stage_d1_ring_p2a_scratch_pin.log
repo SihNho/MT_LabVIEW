@@ -1,0 +1,172 @@
+BGRUN START 2026-09-28 18:53:28 limit 30.0 min: py -u tools/bench/stage_d1_ring_p2a_scratch.py pin
+BGRUN PID 10940
+stage_d1_ring_p2a_scratch - card 121-2: SCRATCH VERIFY of RING P2a BEFORE the one launch. Runs the stage recipe's OWN body
+(tools/recipes/stage_d1_ring_p2a.py, imported unchanged) on a dated byte copy claudeDev\scratch_c121_p2a_<ts>.vi of the pool bed (md5 93539368) -
+same Executor, LVBackend, RetireGuardBE and every recipe gate. No VI is run; the bed is never opened for edit (byte copy only).
+MODE (argv[1]):
+  nosave : SAVE off - structural verification only, NO GUI (no rule-6 save); the work copy is dropped by the Stage hygiene.
+  pin    : SAVE on (rule-6 gui_save of the SCRATCH) so stage_d1_ring_p2a_el.py scratch can pin its Error List (that script deletes it). NEEDS flags.gui.
+PRIOR ART: tools/bench/stage_d1_qrt_pool_scratch.py (card 119-4; this is its cut, + the nosave mode).
+PREDICTION: every recipe gate PASS (PS only in pin mode); LabVIEW gone; PASS writes tools/bench/scratch_verify/stagexec.ring_p2a_deletes_<mode>_<ts>.json.
+    py tools/bgrun.py --material --max-min 30 --log tools/bench/stage_d1_ring_p2a_scratch_nosave.log -- py -u tools/bench/stage_d1_ring_p2a_scratch.py nosave
+MODE pin (SAVE True)
+stage_d1_ring_p2a - card 121-2, RING P2a (d1-loop12-17-split-plan.md PD238(a)(g), docs/ring-buffer-design.md): from the SAVED pool bed
+D1_qrt_pool_20260928_141055.vi DELETE the pool queues - Obtain Q_free, Obtain Q_work, the For-body Enqueue, the I32 20 (+ their wires) -
+and KEEP the For, IMAQ Create, names constant, ring and names tunnel (the 20 images stay; P3 wires them). FRESH LabVIEW -> claudeDev\D1_ring_p2a_<ts>.vi
+(rule-6 GUI save, ExecState 0 by design, never run). ROWS ONLY FROM plan_ring_p2a.json (stagesim FINAL of plan_ring_p2a_in.json, plan_ring_p2a_make.py);
+expected values only from plan_ring_p2a_pred.json. PRIOR ART: stage_d1_l2r2.py (retire cut: RetireGuardBE live-consumer check before each delete,
+retire_ends, terminal-list diff) + stage_d1_qrt_pool.py (Executor/LVBackend/DryPlanBE, PB cdiff, save). No new op.
+PREDICTION: L1 8 actions -> 8 ops (4 delete_wire + 4 delete_object); LC x4; E1 every checkpoint == sim; D no new wire, lost == the 4 deleted wires;
+CEN nodes lost == the 4 + the Enqueue's queue tunnel (auto-removed with its last wire, opmodel delete_wire.json); CEN2 LoopTunnel -1, Wire -4;
+ENDS w14741 keeps uid/source/kept sink; TD every other base terminal keeps its wire, IMAQ New Image -> 0, w14741 list == R2's; FU frames unchanged;
+PB cdiff(S1, end) == the pool bed's 16 rows (FATAL, before save); HB open->save handles <= +700 (PD236(b)); PS saved, input unchanged.
+    py tools/bgrun.py --material --max-min 45 --log tools/bench/stage_d1_ring_p2a.log -- py -u tools/recipes/stage_d1_ring_p2a.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p2a_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == the pool bed's rows  ('ad1be164996dcdf26e11b50d36f6a5f0', {'path': 'tools/bench/graph_qrt_pool_20260928.json', 'md5': 'd265b2833970df40fb9252224d5feb35'}, '9353936895141d3ec2f890649c5cf22f')
+  PASS  L0c delete_object rows == pred retire (4), delete_wire rows == pred stubs + orphan, none on a kept node  {'retire': [23105, 23118, 23136, 26017], 'dw': [25835, 26114, 26189, 26155], 'keep': {'p_for': 23093, 'p_imaq': 23099, 'p_names': 23789, 'p_ring': 26846, 'p_tun': 26131}}
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 309 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 9353936895141d3ec2f890649c5cf22f  got 9353936895141d3ec2f890649c5cf22f
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33997
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_c121_p2a_20260928_185329.vi
+  FACT  ExecState [after open] scratch_c121_p2a_20260928_185329.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so scratch_c121_p2a_20260928_185329.vi is deleted at close
+  FACT  CENSUS before P2a scratch_c121_p2a_20260928_185329.vi: {'LoopTunnel': 140, 'Wire': 1941, 'WhileLoop': 6, 'Diagram': 174, 'SubVI': 98, 'Local': 12, 'ControlTerminal': 118, 'Node': 642}
+  PASS  L1 the 8 actions compile into 8 real ops == pred kinds, each action once  ['delete_wire', 'delete_wire', 'delete_wire', 'delete_wire', 'delete_object', 'delete_object', 'delete_object', 'delete_object']
+  METER start  k   0  private 574.2 MB (d -)  handles 45705 (d -)
+  METER read   k   0  private 582.2 MB (d +8.0)  handles 45748 (d +43)
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 0 touched diagram(s) []: one-side-only Nodes[] entries 0
+  PRIME 0 terminal indexes proved at base; 0 ControlTerminal end(s) by 179(b); unprovable []
+  METER pre    k   1  private 582.2 MB (d +0.0)  handles 45748 (d +0)
+  FACT  delete_wire node census: 642 rows
+      stagexecdeleted wire w25835
+  FACT  OP delete_wire w25835 -> err '' (1.7 s)
+  FACT  delete_wire w25835 (plan w25835) AFTER node census: 642 rows
+  FACT  delete_wire w25835 (plan w25835) CENSUS DIFF: Node 642 -> 642 ; 0 new uid(s): []
+  METER op     k   1  private 561.8 MB (d -20.4)  handles 45763 (d +15)
+  METER read   k   1  private 565.0 MB (d +3.2)  handles 45769 (d +6)
+  STEPX 01 delete_wire    acts [1] ids ['p2a_w25835'] bound {} diff 0
+  METER pre    k   2  private 565.0 MB (d +0.0)  handles 45759 (d -10)
+  FACT  delete_wire node census: 642 rows
+      stagexecdeleted wire w26114
+  FACT  OP delete_wire w26114 -> err '' (1.7 s)
+  FACT  delete_wire w26114 (plan w26114) AFTER node census: 642 rows
+  FACT  delete_wire w26114 (plan w26114) CENSUS DIFF: Node 642 -> 642 ; 0 new uid(s): []
+  METER op     k   2  private 565.7 MB (d +0.7)  handles 45759 (d +0)
+  METER read   k   2  private 569.9 MB (d +4.2)  handles 45758 (d -1)
+  STEPX 02 delete_wire    acts [2] ids ['p2a_w26114'] bound {} diff 0
+  METER pre    k   3  private 569.9 MB (d +0.0)  handles 45758 (d +0)
+  FACT  delete_wire node census: 642 rows
+      stagexecdeleted wire w26189
+  FACT  OP delete_wire w26189 -> err '' (1.7 s)
+  FACT  delete_wire w26189 (plan w26189) AFTER node census: 642 rows
+  FACT  delete_wire w26189 (plan w26189) CENSUS DIFF: Node 642 -> 642 ; 0 new uid(s): []
+  METER op     k   3  private 570.1 MB (d +0.2)  handles 45750 (d -8)
+  METER read   k   3  private 571.1 MB (d +1.0)  handles 45750 (d +0)
+  STEPX 03 delete_wire    acts [3] ids ['p2a_w26189'] bound {} diff 0
+  METER pre    k   4  private 571.1 MB (d +0.0)  handles 45750 (d +0)
+  FACT  delete_wire node census: 642 rows
+      stagexecdeleted wire w26155
+  FACT  OP delete_wire w26155 -> err '' (1.7 s)
+  FACT  delete_wire w26155 (plan w26155) AFTER node census: 642 rows
+  FACT  delete_wire w26155 (plan w26155) CENSUS DIFF: Node 642 -> 642 ; 0 new uid(s): []
+  METER op     k   4  private 571.1 MB (d +0.0)  handles 45749 (d -1)
+  METER read   k   4  private 574.0 MB (d +2.9)  handles 45749 (d +0)
+  STEPX 04 delete_wire    acts [4] ids ['p2a_w26155'] bound {} diff 0
+  METER pre    k   5  private 574.0 MB (d +0.0)  handles 45748 (d -1)
+  PASS  LC live-consumer check re-read before deleting Function #23136 (pair [23136])  {'uids': [23136], 'rows': 7, 'missing': [], 'consumers': []}
+  FACT  delete_object node census: 642 rows
+      stagexecdeleted Function #23136 -> gone [23136]
+  FACT  OP delete_object Function #23136 -> err '' (0.4 s)
+  FACT  delete_object Function #23136 AFTER node census: 641 rows
+  FACT  delete_object Function #23136 CENSUS DIFF: Node 642 -> 641 ; 0 new uid(s): []
+  METER op     k   5  private 576.2 MB (d +2.2)  handles 45749 (d +1)
+  METER read   k   5  private 579.7 MB (d +3.5)  handles 45749 (d +0)
+  STEPX 05 delete_object  acts [5] ids ['p2a_o23136'] bound {} diff 0
+  METER pre    k   6  private 579.6 MB (d -0.1)  handles 45748 (d -1)
+  PASS  LC live-consumer check re-read before deleting Function #23105 (pair [23105])  {'uids': [23105], 'rows': 8, 'missing': [], 'consumers': []}
+  FACT  delete_object node census: 641 rows
+      stagexecdeleted Function #23105 -> gone [23105]
+  FACT  OP delete_object Function #23105 -> err '' (0.5 s)
+  FACT  delete_object Function #23105 AFTER node census: 640 rows
+  FACT  delete_object Function #23105 CENSUS DIFF: Node 641 -> 640 ; 0 new uid(s): []
+  METER op     k   6  private 582.7 MB (d +3.1)  handles 45749 (d +1)
+  METER read   k   6  private 583.1 MB (d +0.4)  handles 45748 (d -1)
+  STEPX 06 delete_object  acts [6] ids ['p2a_o23105'] bound {} diff 0
+  METER pre    k   7  private 583.2 MB (d +0.1)  handles 45749 (d +1)
+  PASS  LC live-consumer check re-read before deleting Function #23118 (pair [23118])  {'uids': [23118], 'rows': 8, 'missing': [], 'consumers': []}
+  FACT  delete_object node census: 640 rows
+      stagexecdeleted Function #23118 -> gone [23118]
+  FACT  OP delete_object Function #23118 -> err '' (0.5 s)
+  FACT  delete_object Function #23118 AFTER node census: 639 rows
+  FACT  delete_object Function #23118 CENSUS DIFF: Node 640 -> 639 ; 0 new uid(s): []
+  METER op     k   7  private 585.6 MB (d +2.4)  handles 45749 (d +0)
+  METER read   k   7  private 590.4 MB (d +4.8)  handles 45748 (d -1)
+  STEPX 07 delete_object  acts [7] ids ['p2a_o23118'] bound {} diff 0
+  METER pre    k   8  private 590.4 MB (d +0.0)  handles 45748 (d +0)
+  PASS  LC live-consumer check re-read before deleting DigitalNumericConstant #26017 (pair [26017])  {'uids': [26017], 'rows': 1, 'missing': [], 'consumers': []}
+  FACT  delete_object node census: 639 rows
+      stagexecdeleted DigitalNumericConstant #26017 -> gone [26017]
+  FACT  OP delete_object DigitalNumericConstant #26017 -> err '' (0.5 s)
+  FACT  delete_object DigitalNumericConstant #26017 AFTER node census: 639 rows
+  FACT  delete_object DigitalNumericConstant #26017 CENSUS DIFF: Node 639 -> 639 ; 0 new uid(s): []
+  METER op     k   8  private 593.7 MB (d +3.3)  handles 45750 (d +2)
+  METER read   k   8  private 597.8 MB (d +4.1)  handles 45750 (d +0)
+  STEPX 08 delete_object  acts [8] ids ['p2a_o26017'] bound {} diff 0
+  PASS  E1 every checkpoint's real graph == its simulated step (8 ops)
+  PASS  LC all 4 live-consumer checks PASS (each re-read before its delete)  [{'uids': [23136], 'rows': 7, 'missing': [], 'consumers': [], 'ok': True}, {'uids': [23105], 'rows': 8, 'missing': [], 'consumers': [], 'ok': True}, {'uids': [23118], 'rows': 8, 'missing': [], 'consumers': [], 'ok': True}, {'uids': [26017], 'rows': 1, 'missing': [], 'consumers': [], 'ok': True}]
+  PASS  D no new wire; lost == the simulated == the 4 deleted wires  {'new': [], 'lost': [25835, 26114, 26155, 26189], 'sim_lost': [25835, 26114, 26155, 26189]}
+  PASS  CEN terminal-graph nodes lost == the 4 retired + the auto-removed queue tunnel [25898], none added  {'lost': [23105, 23118, 23136, 25898, 26017], 'added': []}
+  FACT  CENSUS after P2a scratch_c121_p2a_20260928_185329.vi: {'LoopTunnel': 139, 'Wire': 1937, 'WhileLoop': 6, 'Diagram': 174, 'SubVI': 98, 'Local': 12, 'ControlTerminal': 118, 'Node': 639}
+  FACT  CENSUS DELTA {'LoopTunnel': -1, 'Wire': -4, 'WhileLoop': 0, 'Diagram': 0, 'SubVI': 0, 'Local': 0, 'ControlTerminal': 0, 'Node': -3} (Node recorded, not gated)
+  PASS  CEN2 class census: LoopTunnel -1, Wire -4, WhileLoop/Diagram/SubVI/Local/ControlTerminal 0  {'LoopTunnel': -1, 'Wire': -4, 'WhileLoop': 0, 'Diagram': 0, 'SubVI': 0, 'Local': 0, 'ControlTerminal': 0, 'Node': -3}
+  PASS  ENDS every net shared by a retired and a kept terminal keeps its uid, source(s) and kept sinks ([14741])  {'shared_wires': {14741: [13166, 13941]}, 'bad': []}
+  PASS  TD rows lost == the 5 nodes' rows, none added; every other base terminal keeps its wire, [23289] -> 0; w14741 list == R2's  {'changed': [], 'rows_lost_extra': [], 'w_img': [(13166, False), (13941, True)]}
+  PASS  FU the set of frame diagrams is unchanged
+  FACT  ExecState [after all rows (ExecState 0 expected: the pool bed is broken by design)] scratch_c121_p2a_20260928_185329.vi = 0
+  PASS  PB frame-keyed cdiff(S1, real end) == the pool bed's 16 rows and the plan's 11 open (node, term) pairs (FATAL, before save)  {'extra': [], 'missing': []}
+  FACT  PH handles: post-open 45642 -> before-save 45749
+  PASS  HB open->save handle growth <= +700 (PD236(b) band; refs balance is H5)  (45642, 45749)
+
+---------- [SAVE] scratch_c121_p2a_20260928_185329.vi
+  FACT  ExecState [before the save] scratch_c121_p2a_20260928_185329.vi = 0
+  FACT  SAVE ROUTE = gui_save, the APPROVED broken-intermediate route (CLAUDE.md split-rule 6; evidence "user 2026-09-22 broken-intermediate save"). The artefact is BROKEN BY DESIGN and is NEVER RUN (34(f)).
+  PASS  S1 the save returned without raising (gui_save route)
+  FACT  SAVED ARTEFACT: scratch_c121_p2a_20260928_185329.vi md5 ff6786bff30da6374610de602e449462 size 308204 B; version bytes [0, 38]
+  PASS  S2 the artefact is on disk and non-empty  308204 B
+  FACT  S3 COLD re-open check SKIPPED BY RULE: ExecState was 0, and a broken-saved VI is never cold-loaded headless (recompile spin).
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  ff6786bff30da6374610de602e449462
+
+---------- [H] HYGIENE
+  FACT  gscript ref_counts: {'opened': 7, 'closed': 7, 'live': 0, 'cached_op_vis': 0}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 7, 'closed': 7, 'live': 0, 'cached_op_vis': 0}
+  FACT  LabVIEW handle count AFTER the work: 34134
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 9353936895141d3ec2f890649c5cf22f / after 9353936895141d3ec2f890649c5cf22f
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: ['scratch_c121_p2a_20260928_185329.vi']  (removed: [])
+  PASS  H6 the files left on disk == ['scratch_c121_p2a_20260928_185329.vi'] and nothing was removed  added ['scratch_c121_p2a_20260928_185329.vi'] removed []
+  FACT  LabVIEW handle count at exit: 34134
+
+====================================================================================================
+=== GATES: 27 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\stage_d1_ring_p2a_scratch_pin.json   elapsed 381.3 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":27,"fail":0},"first_fail":null,"artefacts":[{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c121_p2a_20260928_185329.vi","md5":"ff6786bff30da6374610de602e449462"}]}
+LabVIEW gone at exit: True
+BGRUN END rc=0 after 386s

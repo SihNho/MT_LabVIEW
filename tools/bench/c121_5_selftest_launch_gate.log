@@ -1,0 +1,39 @@
+BGRUN START 2026-09-28 18:57:53 limit 5.0 min: py -u tools/bench/selftest_launch_gate.py
+BGRUN PID 3612
+---------- [L] check_launch (tools/stage_prerun.py)
+  PASS  L1 no records -> refused  LAUNCH GATE (CLAUDE.md §3 'Stages are SIMULATED', decisions 1/2): C:/Users/KimLab/AppData/Local/Temp/lg_selftest_ib7t7uq8/tools/recipes/stage_lgtest.py has no dry + prerun PASS record for sha256 2a1d2e247f13... and plan md5s {}. Run first:
+  PASS  L2 dry only -> refused (prerun missing)  LAUNCH GATE (CLAUDE.md §3 'Stages are SIMULATED', decisions 1/2): C:/Users/KimLab/AppData/Local/Temp/lg_selftest_ib7t7uq8/tools/recipes/stage_lgtest.py has no prerun PASS record for sha256 2a1d2e247f13... and plan md5s {}. Run first:
+  PASS  L3 dry + prerun PASS, current sha, no later failure -> allowed  
+  PASS  L4 a FAILED run newer than the records -> refused (decision 4)  LAUNCH GATE (decision 4): C:/Users/KimLab/AppData/Local/Temp/lg_selftest_ib7t7uq8/tools/recipes/stage_lgtest.py FAILED after its pre-run records (stage_lgtest.log: BGRUN END rc=1); the records are invalid - pre-run it again.
+  PASS  L4b another script's failure does not invalidate these records  
+  PASS  L4c a FAILED --prerun segment of this stage is not a stage run -> allowed  
+  PASS  L5 script edited after the records (sha256 changed) -> refused  LAUNCH GATE (CLAUDE.md §3 'Stages are SIMULATED', decisions 1/2): C:/Users/KimLab/AppData/Local/Temp/lg_selftest_ib7t7uq8/tools/recipes/stage_lgtest.py has no dry + prerun PASS record for sha256 d4f1c2b3a606... and plan md5s {}. Run first:
+  PASS  L6 prerun FAIL record -> refused  LAUNCH GATE (CLAUDE.md §3 'Stages are SIMULATED', decisions 1/2): C:/Users/KimLab/AppData/Local/Temp/lg_selftest_ib7t7uq8/tools/recipes/stage_lgtest.py has no prerun PASS record for sha256 d4f1c2b3a606... and plan md5s {}. Run first:
+  PASS  L7 reads / dry / prerun / diagnostics / non-stage recipes / git are never refused (7 commands)  []
+  PASS  L8 a direct (non-bgrun) stage launch is gated too  LAUNCH GATE (CLAUDE.md §3 'Stages are SIMULATED', decisions 1/2): C:/Users/KimLab/AppData/Local/Temp/lg_selftest_ib7t7uq8/tools/recipes/stage_lgtest.py has no prerun PASS record for sha256 d4f1c2b3a606... and plan md5s {}. Run first:
+  PASS  L9 a stage launch inside a && / ; chain is found by argv  
+---------- [C] RETRY CAP (card chat-D; RETRY_CAP=2)
+  PASS  C0 check_launch records nothing (recording lives only in bgrun.record_started)  0
+  PASS  C1 runs 1 and 2 of a stage in one cycle are allowed and recorded by bgrun  ((True, ''), (True, ''), 2)
+  PASS  C2 run 3 without a judgement card -> refused (RETRY CAP), not recorded  RETRY CAP (user 2026-09-24): stage_lgtest.py already ran 2 time(s) in cycle 901 (cap 2; tools/bench/stage_runs.jsonl). A further run is a JUDGEMENT decision: a task/1 card with "retry_of": "stage_lgtest.py", carried as RETRY_CARD=<card path> in the launch command (no RETRY_CARD=<task card path> in t
+  PASS  C3 run 3 WITH a task/1 card retry_of=stage_lgtest.py -> allowed, recorded with the card id  
+  PASS  C4 the SAME card again -> refused (one card, one run)  RETRY CAP (user 2026-09-24): stage_lgtest.py already ran 3 time(s) in cycle 901 (cap 2; tools/bench/stage_runs.jsonl). A further run is a JUDGEMENT decision: a task/1 card with "retry_of": "stage_lgtest.py", carried as RETRY_CARD=<card path> in the launch command (RETRY_CARD id 'lg-retry-1' already 
+  PASS  C5 a card whose retry_of names another stage -> refused  RETRY CAP (user 2026-09-24): stage_lgtest.py already ran 3 time(s) in cycle 901 (cap 2; tools/bench/stage_runs.jsonl). A further run is a JUDGEMENT decision: a task/1 card with "retry_of": "stage_lgtest.py", carried as RETRY_CARD=<card path> in the launch command (RETRY_CARD C:/Users/KimLab/AppData/
+  PASS  C6 a task card without retry_of (PowerShell env form) -> refused  RETRY CAP (user 2026-09-24): stage_lgtest.py already ran 3 time(s) in cycle 901 (cap 2; tools/bench/stage_runs.jsonl). A further run is a JUDGEMENT decision: a task/1 card with "retry_of": "stage_lgtest.py", carried as RETRY_CARD=<card path> in the launch command (RETRY_CARD C:/Users/KimLab/AppData/
+  PASS  C7 a new cycle starts a fresh count -> allowed  
+  PASS  C8 stage key strips _vN (stage_x_v3.py == stage_x.py)  
+---------- [M/R] guard_bash main() (the .new when one is staged, else the installed hook)
+  PASS  M1 guard_bash.new refuses a bgrun stage launch with no records (rc 2, LAUNCH GATE text)  BLOCKED by tools/hooks/guard_bash.py: LAUNCH GATE (CLAUDE.md §3 'Stages are SIMULATED', decisions 1/2): C:/Users/KimLab/AppData/Local/Temp/lg_selftest_ib7t7uq8/
+  PASS  M2 guard_bash.new passes a grep of the stage file  
+  PASS  M3 guard_bash.new passes the same launch once dry + prerun PASS exist  JEV-DRIFT p=0.11: repair  (advisory, nothing is blocked; docs/jev-integration-plan.md 2nd wave #4)
+JEV-PREFLIGHT | stage_lgtest.py | missing-guard p=0.93 | P1 s
+  PASS  M4 the hook itself records nothing (bgrun is the one recorder, card 78-2 / chat-L2)  0
+  PASS  M5 a refused launch (no records) is NOT recorded  1
+  PASS  M6 guard_bash refuses the 3rd launch in the cycle with the RETRY CAP text  run2 exit 0, run3 exit 2, BLOCKED by tools/hooks/guard_bash.py: RETRY CAP (user 2026-09-24): stage_lgtest.py already ran 2 time(s) in cycle 901 (cap 2; tools/bench/stage_runs.jsonl). A f
+  PASS  R1 a retrospective call carrying agent_id does NOT set retro_done  []
+  PASS  R2 a --dry-run retrospective does NOT set retro_done  []
+  PASS  R3 the main session's real retrospective still sets retro_done  ['selftest']
+=== GATES: 29 pass / 0 fail
+  FACT  tested the INSTALLED guard_bash.py (no .new staged) - nothing to install
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":29,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 6s

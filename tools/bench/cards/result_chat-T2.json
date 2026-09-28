@@ -1,0 +1,21 @@
+{
+ "schema": "result/1",
+ "id": "chat-T2",
+ "status": "PASS",
+ "gates": {"pass": 2, "fail": 0},
+ "first_fail": null,
+ "artefacts": [],
+ "facts": [
+  "B source: stage_runs.jsonl lines 45-67 = 23 LabVIEW runs in cycles 110-120; markers = each run's JSON es_timeline 't' (s from script start), 'elapsed_s', and log 'BGRUN END ... after Ns' line",
+  "B LabVIEW start + VI open ('after open' t): median 56.6 s, range 54.4-72.1 s (c118 p1b 72.1), 22 runs ~21 min total = ~17% of 122 min bgrun wall (e.g. stage_d1_l2r2.json es_timeline[0] t=56.8)",
+  "B bgrun wall: 23 runs total 7327 s (122 min), median 221 s; largest stage_d1_l2r2.log:338 971 s, stage_d1_l2b1.log:575 744 s",
+  "B scripting span (open -> 'before the save') for 7 saving stages: 402, 113, 148, 129, 554, 860, 372 s (l2b1, l2b2a, l2b2b, l2b3, l2r1, l2r2, qrt_pool); median 372 s, total 2578 s = 43 min",
+  "B save+close+post-checks (elapsed_s - 'before the save' t; no separate save/close marker exists): 200, 39, 40, 39, 41, 48, 22 s; median 40 s; l2r2: 917.2 -> 965.5 (stage_d1_l2r2.log:335)",
+  "B per-row cost inside scripting: l2r2 stagexec 25 steps sum 823 s, steps ~24 s / ~43 s (stage_d1_l2r2.json stagexec[].secs); OP lines themselves only 0.3-2.0 s (stage_d1_l2r2.log:45-264)",
+  "B bgrun overhead ~5 s/run; caveat: failed first runs (l2b1, l2b2a, l2b2b, scratch, p1b x2) share a JSON with their rerun, so their phase split is the rerun's",
+  "D source: 107 archive/peer/2026-09-2[78]-*.md, duration from each file's '**outcome:** ANSWERED (Ns)' line (cost line fallback), all 107 ANSWERED; cycle by date vs cycle_runner.log CYCLE windows",
+  "D per role: hypothesis 60 = 144.7 min (med 129 s, $78); retrospective 17 = 87.1 min (max 498 s cycle116); priorart 28 = 31.9 min (med 68.5 s); outcome-review 2 = 4.5 min; total 268 min, $159",
+  "D per cycle n/min: 110 5/13.1, 111 7/20.5, 112 11/28.1, 113 6/12.4, 114 5/14.5, 115 6/14.9, 116 6/17.4, 117 6/14.5, 118 3/8.2, 119 1/1.2, 120 2/4.2; 101-109: 44/104; between cycles 5/15"
+ ],
+ "open": ["No log carries separate save and close timestamps; the save+close figure includes post-save checks (md5, ref counts)."]
+}

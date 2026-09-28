@@ -139,6 +139,12 @@ whole cycle needs LabVIEW you write that in NEXT and exit rather than deciding t
   items >= 238 without the line; every prior-art review now also asks the contradiction question
   (`PRIOR-ART: user-rule-contradicted` blocks like any non-`novel` verdict). A plan that introduces a NEW structure class
   (an op kind / create class no clean stage ran) always gets the prior-art review, proven-pattern or not.
+- **NO SCRATCH BUILD ON A PROVEN PATTERN** (user 2026-09-28 "A는 실행", card chat-P3, plan Pre-decided 239): before you
+  write a build card's "scratch run on a byte copy, then ONE launch" lines, run `py tools/stage_prerun.py
+  --scratch-required <recipe>` (offline, after its dry + prerun). Exit 0 (`SCRATCH-SKIP-PROVEN`, proven pattern + dry/
+  prerun PASS on the current bytes) = the card has NO scratch run: the ONE launch follows the prerun directly, and its
+  Error List is compared with the plan's predicted new-item count. Exit 3 = keep the scratch run (a NEW structure class,
+  not proven, no current prerun, or the stage's last real launch FAILED - no second skip). `check_launch` logs the skip.
 - **Error List reads** (card chat-P2 item 3): a stage's read of a SCRATCH copy uses `errorlist_check.py --count-only
   --role scratch` (no per-item double-click; the full read follows automatically when the per-class counts differ);
   the saved FINAL file always gets the full read (`--role final`, the default).

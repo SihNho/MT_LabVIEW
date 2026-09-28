@@ -1,0 +1,26 @@
+{"schema":"result/1","id":"121-3","status":"FAIL","gates":{"pass":5,"fail":1},
+"first_fail":"regression selftest_launch_gate 27/1: L4 'a FAILED run newer than the records -> refused (decision 4)' (c121_3reg_selftest_launch_gate.log:7) after the fp-1/6 patch",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/selftest_stoprecord_offline_c107.py","md5":"ecec90fe01861f20d1b4d1fec82668c5"},
+ {"path":"tools/bench/selftest_c111c_launchunit.py","md5":"276902f2d30d9f8858a2b2bebc022b7c"},
+ {"path":"tools/bench/selftest_c121_3_gatefp.py","md5":"6a229524f6fd0e74572b7a1c8b164aea"},
+ {"path":"tools/stage_prerun.py","md5":"6283e8cae38dbae94532c7d74d2e5fc1"},
+ {"path":"tools/hooks/guard_bash.py","md5":"2e2e77cd77cf52c060e9b1f26485c91a"}],
+"facts":[
+ "c107 rebuilt: temp stop store (1 undisposed record) + temp marker log with the 2 refused lines; L4 baseline pinned bf0f5b2^: 26/0 (c121_3_selftest_stoprecord_offline_c107.log)",
+ "c111c: the cause was git show HEAD, not the marker log (M2434 is a literal); baseline pinned b278d85^ (fix commit): 33/0 (c121_3_selftest_c111c_launchunit.log)",
+ "fp-1/6 patch stage_prerun.py:2167 segment_ended_by + last_failed_run_after: a segment is skipped when START+after Ns+1 <= t_min; no stamp/no END still counts",
+ "fp-5 patch stage_prerun.py:891 _uniq_paths (normcase abspath). fp-4 patch guard_bash.py:52 MATERIAL_RE (?<![.\\w])py. fp-2/fp-3: no gate change, accepted forms",
+ "new selftest_c121_3_gatefp.py 21/0 (selftest_c121_3_gatefp.log): each fix discriminated against pinned 0a42260; N1-N3 newer/unprovable fails still refused",
+ "regression green: chat_p3 10/0, protocol 48/0, cycle_runner 10/0 (c121_3reg_*.log). NOT run (guard_peer block, then return): c107/c111c after the gate patch, chat_p1, c110",
+ "L4 fixture selftest_launch_gate.py:81-82 stamps the 'newer' failed run 2026-09-24 20:00:00 +3 s, records at now-100 s (:77); old gate saw only log mtime",
+ "review archive/peer/2026-09-28-c121-3-launch-gate-l4.md ANSWERED (opus high, $1.53): root cause = gate counts --prerun/--dry segments as stage runs (stage_prerun.py:2194 `base not in line`)",
+ "review: time filter is a small real widening (backward clock step; +1 s rounding window, use +2); L4b (:86-89) has the same old stamp and now tests nothing; cleaner fix = exclude stage_prerun segments",
+ "Jev: c121_3reg_selftest_launch_gate.log | new-problem p=0.622 | hypothesis review owed | dispatched, ANSWERED | FAIL 27/1. Queue: nothing drained; no commit; tree holds the patches"],
+"open":[
+ "fp-1/6: keep the time filter (+2 s, current-time stamps in L4/L4b, a --prerun-segment test) or replace it with the reviewer's 'skip segments whose START runs tools/stage_prerun.py' and keep decision 4's time rule? The patch is LIVE in the working tree while 121-2 runs.",
+ "fp-2 (op_hygiene importlib form, selftest_op_hygiene.py:36) and fp-3 (direct-gscript op build, diag_c117a_opv1.py:15): drain as 'accepted form, gate correct' (like fp-7), or leave open?",
+ "archive/peer/2026-09-28-c121-3-launch-gate-l4.md '## What was done with it' is still the placeholder - outside this card's write globs (tools/**)."],
+"cost":{"usd":null,"minutes":24,"labview_runs":0},
+"note":"No LabVIEW, GUI or hardware touched (the running LabVIEW.exe 16824 is card 121-2's). Returned at the first unexpected result (L4) after the owed hypothesis review; not diagnosed or retried further."}

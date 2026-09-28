@@ -1,0 +1,66 @@
+{
+ "schema": "task/1",
+ "id": "chat-C0",
+ "kind": "doc",
+ "goal": "Roll the project back to option C: bed D1_s4_loop17, supersede K/L2/pool/QRT items, goal map M3/M4, next.json = C2 then C1, one decision item for motor sampling",
+ "why": "User 2026-09-28 16:0x: C로 진행, 진행 방향이 잘못되었네, 롤백. Detail and evidence: brief_chat-C0.md",
+ "inputs": [
+  {
+   "path": "tools/bench/cards/brief_chat-C0.md",
+   "md5": "b581707f584a1f4f94916eb173abce11"
+  },
+  {
+   "path": "STATUS.md",
+   "md5": "12ab56aa9c9bd74b7a1ec0f04cd92dd1"
+  },
+  {
+   "path": "tools/bench/next.json",
+   "md5": "92c2d10fe1a96dc4545d9a5a4cc611bd"
+  },
+  {
+   "path": "docs/goalmap.json",
+   "md5": "9181ed890bc70b79705d5b8092ec72c4"
+  },
+  {
+   "path": "docs/d1-loop12-17-split-plan.md",
+   "md5": "2defcce5871aa0dfde5d28ca36b88bcb"
+  },
+  {
+   "path": "tools/bench/decisions_pending.json",
+   "md5": "3b9d6261ea4ae5a1840530b1630b1701"
+  }
+ ],
+ "pass": [
+  "STATUS current-bed D1_s4_loop17 (md5 verified) + C plan as NEXT; pool/L2 lines marked history",
+  "PD238 in split plan + superseded markers, text untouched",
+  "goalmap M3/M4/R2.3/current/M2 updated; json valid",
+  "superseded headers on the listed docs",
+  "next.json valid (C2 then C1); decision item for motor sampling added",
+  "doc_lint run; one commit"
+ ],
+ "outputs": [],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "STATUS.md",
+   "docs/**",
+   "tools/bench/next.json",
+   "tools/bench/decisions_pending.json"
+  ],
+  "status_edit": true,
+  "git_commit": true,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "unblocks": "M8",
+ "rules": [
+  "Never rewrite history text, only mark superseded",
+  "Patch with Edit/Write"
+ ]
+}

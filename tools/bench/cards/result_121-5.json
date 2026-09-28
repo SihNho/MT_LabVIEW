@@ -1,0 +1,21 @@
+{"schema":"result/1","id":"121-5","status":"PASS","gates":{"pass":5,"fail":0},
+"first_fail":null,
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/stage_prerun.py","md5":"c1038bc1e4caa94aef67286c5357b7de"},
+ {"path":"tools/bench/selftest_launch_gate.py","md5":"51b96e94fd1681dbc9ded8027cda777c"},
+ {"path":"tools/bench/selftest_c121_3_gatefp.py","md5":"1b07466aab3cc94d2e3f0d8073f95598"},
+ {"path":"tools/bench/gate_fp_queue.jsonl","md5":"41861bbca38387d67cc99df02e89cfd5"}],
+"facts":[
+ "stage_prerun.py:2164-2205: segment_ended_by + SEG_AFTER_RE removed; last_failed_run_after time rule back to 0a42260 (any failing segment in a log with mtime > t_min)",
+ "stage_prerun.py:2177 is_prerun_segment: skips a segment only if its START command is ONE plain `py|python [-flags] tools/stage_prerun.py`; any ; && || | &, env prefix or other script = counted",
+ "selftest_launch_gate 29/0 (c121_5_selftest_launch_gate.log:36): L4/L4b now stamped with the current time; new L4c = failed --prerun segment of this stage -> allowed",
+ "selftest_c121_3_gatefp re-pinned 30/0 (c121_5_selftest_c121_3_gatefp.log:33): F1/F1b vs 0a42260, F1c --dry, F1d real fp-1/fp-6 START lines, N1b time filter reverted, N3 chained/env forms count",
+ "regression green: c107 26/0, c111c 33/0, chat_p1 46/0, chat_p3 10/0, c110 10/0, protocol 48/0, cycle_runner 10/0 (tools/bench/c121_5reg_*.log RESULT lines)",
+ "gate_fp drained: fp-1, fp-6 -> stage_prerun.py:2177; fp-5 -> stage_prerun.py:891; fp-4 -> guard_bash.py:52; fp-2/fp-3 accepted form -> selftest_c121_3_gatefp.py:103/:112. fp-10 (121-2) left open",
+ "widening vs 0a42260, by design of PD238(k): a --prerun/--dry FAIL segment newer than the PASS records no longer refuses; _check_units:2958 takes the newest PASS record and ignores newer FAIL records",
+ "stage_prerun.py in the commit also carries card chat-P3's uncommitted scratch_requirement block (result_chat-P3.json exists) and 121-3's fp-5 _uniq_paths"],
+"open":[
+ "Decision 4 no longer sees a failing --prerun of the SAME sha+plan after the PASS record (records scan takes max PASS t, stage_prerun.py:2958-2960). Should _check_units also refuse when the NEWEST prerun/dry record for that sha+plan is FAIL? (a narrowing; out of this card's scope)"],
+"cost":{"usd":null,"minutes":14,"labview_runs":0},
+"note":"Offline only; no LabVIEW, GUI or hardware; no ring_p2a files touched. git add+commit (pathspec: stage_prerun, guard_bash, 4 selftests, gate_fp_queue, result files, c121_5 logs) was REFUSED by the permission layer; tree left for the runner's commit."}

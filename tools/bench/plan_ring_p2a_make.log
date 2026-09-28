@@ -1,0 +1,11 @@
+BGRUN START 2026-09-28 18:37:46 limit 3.0 min: py -u tools/bench/plan_ring_p2a_make.py
+BGRUN PID 5348
+PASS  M0 two Obtain Queue Functions on 13236 sink #13938.New Image's wire w14741  [23105, 23118]
+PASS  M1 Q_free (queue out wired) / Q_work (not) / ONE queue LoopTunnel / ONE Enqueue behind it / ONE I32 constant on both max sizes  {"QF": [23105], "QW": [23118], "QT": [25898], "ENQ": [23136], "C20": [26017]}
+PASS  M2 keep set = ForLoop / SubVI / ArrayConstant / RingConstant / LoopTunnel, none retired  {"p_for": 23093, "p_imaq": 23099, "p_names": 23789, "p_ring": 26846, "p_tun": 26131}
+PASS  M3 wires: stubs (every end retired) + ONE orphaned kept output (IMAQ New Image -> ENQ) + ONE shared net (w14741) with kept sinks  {"stubs": [25835, 26114, 26189], "orphan": [26155], "shared": [14741]}
+PASS  M4 no retired node sources a kept sink (rule 1a: nothing kept loses its source)  []
+PASS  M5 w14741 after the deletes == R2's terminal list (only the 2 Obtain type branches go)  {"r2": [[13166, false], [13941, true]], "after": [[13166, false], [13941, true]]}
+  FACT WROTE plan_ring_p2a_in.json (8 actions) + plan_ring_p2a_pred.json; retire [23136, 23105, 23118, 26017], auto-removed [25898]
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":6,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

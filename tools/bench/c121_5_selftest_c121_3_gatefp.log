@@ -1,0 +1,35 @@
+BGRUN START 2026-09-28 18:57:54 limit 5.0 min: py -u tools/bench/selftest_c121_3_gatefp.py
+BGRUN PID 7912
+  PASS  F1 fp-1/6 a FAIL --prerun segment is not a stage run  None
+  PASS  F1b discriminates: 0a42260 counted it  ('x_prerun.log', 1790549670.0, 'X5')
+  PASS  F1c a FAIL --dry segment AFTER the records is not a stage run either  
+  PASS  F1d the real fp-1 START line is a prerun segment  
+  PASS  F1d the real fp-6 START line is a prerun segment  
+  PASS  N1 a FAILED stage run after the records still counts  
+  PASS  N1b time filter REVERTED: a stage FAIL that ended before the records, in a log modified after them, counts  
+  PASS  N2 stage FAIL with no END line still counts  
+  PASS  N3 not a plain prerun, still counts: py -u tools/stage_prerun.py --prerun S && py -u S  
+  PASS  N3 not a plain prerun, still counts: py -u tools/stage_prerun.py --prerun S; py -u S  
+  PASS  N3 not a plain prerun, still counts: py -u tools/stage_prerun.py --dry S | py -u S  
+  PASS  N3 not a plain prerun, still counts: X=1 py -u S tools/stage_prerun.py  
+  PASS  N3 not a plain prerun, still counts: py -u S --after tools/stage_prerun.py  
+  PASS  N4 time filter code removed (no segment_ended_by)  
+  PASS  F5 fp-5 one plan named by two spellings -> 1 plan  ['C:\\Users\\KimLab\\AppData\\Local\\Temp\\c121_3_fp_pb1hrc08\\p5\\plan_fp5.json']
+  PASS  F5b discriminates: 0a42260 kept 2  ['C:/Users/KimLab/AppData/Local/Temp/c121_3_fp_pb1hrc08/p5/plan_fp5.json', 'C:\\Users\\KimLab\\AppData\\Local\\Temp\\c121_3_fp_pb1hrc08\\p5\\plan_fp5.json']
+  PASS  F4 fp-4 md5sum of a .py then a bench .py is not a launch  
+  PASS  F4b discriminates: the old regex matched it  
+  PASS  F4 still a launch: py -u tools/bench/x.py  
+  PASS  F4 still a launch: python3 tools/recipes/stage_x.py  
+  PASS  F4 still a launch: C:\Python\python.exe tools/bench/x.py  
+  PASS  F4 still a launch: py tools/bgrun.py --material --max-min 5 --log x.log -- py -u tools/bench/x.py  
+  PASS  F4 still a launch: cd y && py -u tools/bench/x.py  
+  PASS  F4 still a launch: (py tools/recipes/stage_x.py)  
+  PASS  F2 `import gscript` still flags LabVIEW  
+  PASS  F2b accepted form selftest_op_hygiene.py:36 loads gscript by importlib  
+  PASS  F2c ... and passes a labview 'none' card  None
+  PASS  F2d a script with `import gscript` is refused by the same card  flags.labview is 'none' - this command touches LabVIEW (C:\Users\KimLab\AppData\Local\Temp\c121_3_fp_pb1hrc08\lv_fp2.py)
+  PASS  F3 stagekit import + mutating verb is still VI-modifying (add_shift_reg)  
+  PASS  F3b accepted op-build form diag_c117a_opv1.py (gscript direct) is not  
+=== GATES: 30 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":30,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

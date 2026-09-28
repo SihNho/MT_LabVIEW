@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"chat-P3","status":"FAIL","gates":{"pass":28,"fail":2},
+"first_fail":"selftest_stoprecord_offline_c107 15/10 (N1 recipe launch not refused) + selftest_c111c_launchunit 32/1 (D4h); both replay live material_marker.log lines",
+"blocked_by":{"device":"permission","message":"`git add` (and the commit) denied by the permission layer (Bash; PowerShell `git log` also denied once). NOTHING COMMITTED - files are in the working tree"},
+"artefacts":[
+ {"path":"tools/bench/selftest_guard_cycle_offline.py","md5":null},
+ {"path":"tools/bench/selftest_chat_p3.py","md5":null},
+ {"path":"tools/stage_prerun.py","md5":null},
+ {"path":"tools/protocol.py","md5":null},
+ {"path":"tools/cycle_prompt.md","md5":null},
+ {"path":"docs/d1-loop12-17-split-plan.md","md5":null},
+ {"path":"tools/bench/gate_fp_queue.jsonl","md5":null}],
+"facts":[
+ "1.1 review archive/peer/2026-09-28-p2-offline-fixture.md ANSWERED + annotated before this card (:72-80, commit 0a42260); not re-dispatched",
+ "1.2 selftest_guard_cycle_offline builds its own state (scratch recipe + unreleased review + temp stop store, real guard_cycle.main in-process): 8/0 (p3run_selftest_guard_cycle_offline.log:11)",
+ "1.3 green: stage_prerun_* 10 files (stageplan 12, headcmp 2, graphload 18, c103 4, c106c 6, c106e 15, c114 16, c114d 12, c115a 8, c115c 10); launch_gate 28, retry_cap 8, stagexec_gate 13",
+ "1.3 green: gc_rerun/stoprec_table/supersession rc0 (NO RESULT LINE), c116a 38, prerun_diag 9, c110 10, c103d 17, cycle_runner 10, protocol 48, chat_p1 46, chat_p2 25, scratch_verify 7",
+ "1.3 FAIL: p3run_selftest_stoprecord_offline_c107.log:12-28 (N1-N9, L4), p3run_selftest_c111c_launchunit.log:23 (D4h); both replay line numbers of live tools/hooks/material_marker.log",
+ "fp-8 fixed protocol.py:399 RUNNER_CMD_RE anchored; selftest_cycle_runner ran with no --dry-run token 10/0. fp-7/8/9 DRAINED; fp-7 by brief_chat-P3.md:16-17 (stricter accepted), no code",
+ "fp-7 measured p3_diag_lvclass.log:3-8: hook self-tests are LV-classed via stage_prerun.py:329,628 lazy `import allterms` (allterms.py:40 imports gscript), not errorlist_check",
+ "A: scratch run was never gated; it lived only in card pass-lines (task_116-2, 118-1/2, 119-4, 121-2) and PD234(g); check_launch had only check_scratch (2 fails on one function)",
+ "A built: stage_prerun.scratch_requirement + --scratch-required (exit 0/3); check_launch logs SCRATCH-SKIP-PROVEN to jev_gate.log; selftest_chat_p3.log 10/0",
+ "A docs: cycle_prompt.md rule (before 'Error List reads'); plan Pre-decided 239 + USER-RULES: U1. Runner untouched (cycle 121 running); STATUS/CLAUDE.md not edited"],
+"open":[
+ "Enforce the scratch record in check_launch for the REQUIRED case? Today no gate refuses a launch without a scratch run; this card made the decision mechanical and logged, not a new refusal (would break selftest_launch_gate's allow cases).",
+ "selftest_stoprecord_offline_c107 / selftest_c111c_launchunit replay fixed line numbers of the live material_marker.log (same class as fp-9): rebuild them on fabricated state like selftest_guard_cycle_offline? Jev row for c111c: our-script-bug p=0.828.",
+ "Nothing committed (git add denied by the permission layer): leave it to cycle 121's runner auto-commit, or commit from the chat? The plan doc also holds cycle 121's uncommitted PD238(i)."],
+"cost":{"usd":null,"minutes":30,"labview_runs":0},
+"note":"No LabVIEW, no GUI, no hardware. Jev: p3run_selftest_c111c_launchunit.log | our-script-bug p=0.828 | patch the script and rerun | not acted on (return at first unexpected result) | FAIL 32/1. c107 has no ladder row yet."}

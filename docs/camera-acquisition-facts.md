@@ -724,3 +724,36 @@ The order to run, all without the main VI so its complexity cannot confound the 
    viewer is justified rather than merely attractive.
 4. **Ring depth.** `Number of Buffers` is the jitter margin. 100 buffers of 1.3 MB is 130 MB against 64 GB of RAM, so
    depth is nearly free; what the main VI currently requests should be read and compared.
+
+## MEASURED 2026-09-28 (card 121-1, ring-buffer P1) — all five buffer-number modes, C API, no LabVIEW
+
+Script `tools/bench/p1_bufmode_121.py`, log `tools/bench/p1_bufmode_121.log` (`BGRUN END rc=0 after 144s`, gates 51/0),
+raw rows `tools/bench/p1_bufmode_121.json`. 10 ring buffers, 1280×1024, contract applied after open (ExposureAuto Off,
+ExposureTime 5555 µs read back), 4 s per cell after 5 discarded frames. "Delay" is a WAIT (`time.sleep`, 1 ms timer
+period), i.e. a LabVIEW `Wait (ms)`, not busy processing. `BufferNumber` mode asked for `previous + 1`.
+
+**Modes defined by the installed header**: `C:\Program Files (x86)\National Instruments\NI-IMAQdx\include\NIIMAQdx.h:178-185`
+(NI-IMAQdx 26.3) — `Next` 0, `Last` 1, `BufferNumber` 2, `Every` 3, `LastNew` 4 (+ `Guard`). The claim in
+`archive/peer/2026-09-25-m8b-replay-prep-75-fact.md:58` that the public header lists only three is true of an old
+third-party copy, not of this install. NI's meaning of each value is quoted from the NI pages cited at `:54`/`:58` of that
+archived fact search (web tools were not available to this card, so no fresh fetch).
+
+| mode | 90 Hz, delay 0: calls/s · median GetImageData · CPU | 150 Hz, delay 0 | delay 1 ms (90 / 150) calls/s | delay 15 ms (90 / 150) delivered/s · gaps/skipped |
+|---|---|---|---|---|
+| `Next` | 90.0 · 11.11 ms · 1.2 % | 149.9 · 6.67 ms · 2.3 % | 89.9 / 149.9 | **45.0 / 49.9** (exactly ½ and ⅓) · 179/179, 199/398 |
+| `Last` | **25 112 · 0.038 ms · 100 %** (100 088 duplicates; distinct 90.0/s) | 25 203 · 0.038 ms · 100 % | 595 / 585 (duplicates 2 022 / 1 739) | 64.5 / 64.7 · 101/101, 258/339 |
+| `BufferNumber` | 90.0 · 11.11 ms · 1.2 % | 149.9 · 6.67 ms · 2.7 % | 90.0 / 149.9 | 64.4 / 64.4 · 20/100, 64/337 |
+| `Every` | 90.0 · 11.11 ms · 0.4 % | 149.9 · 6.67 ms · 2.3 % | 89.9 / 149.9 | 64.2 / 64.6 · 20/100, 64/336 |
+| `LastNew` | 90.0 · 11.11 ms · 0.4 % | 149.9 · 6.67 ms · 5.5 % | 89.9 / 149.9 | 64.2 / 64.5 · 101/101, 257/339 |
+
+- **Every mode except `Last` blocks inside `GetImageData` until a buffer it has not returned exists** (median = the frame
+  period at delay 0; ≈ period − 1 ms at delay 1), so those loops run at exactly the camera rate with 0 duplicates, 0 gaps.
+- **`Last` never waits**: at delay 0 it re-reads the newest buffer 25 000×/s and holds one core at 100 % (process CPU
+  / wall = 1.004); a 1 ms wait cuts that to ~590 calls/s and <1 % CPU with no lost distinct buffers.
+- When the consumer is slower than the camera (15 ms wait), **no mode returned an rc error**; the camera rate stayed within
+  0.3 % of the set rate in every cell. `Next` fell to exactly ½ (90 Hz) / ⅓ (150 Hz) of the camera; `BufferNumber`
+  (asked for prev+1) and `Every` jumped forward in steps of ~5 buffers (20 gaps / 100 skipped at 90 Hz) and delivered
+  the same 64 Hz as `Last`/`LastNew`, which skip one buffer at a time. `BufferNumber` therefore returned a buffer other
+  than the one requested without an error — the returned number must be read, not assumed.
+- 150 Hz was reachable under the contract exposure (5555 µs < 6667 µs period); set 149.993 Hz, measured 149.7–149.9.
+- Cleanup: rate restored to 90.0009 Hz, session closed rc 0, a fresh open/close afterwards rc 0/0 at 1280×1024, 90.0009 Hz.

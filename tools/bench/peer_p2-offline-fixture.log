@@ -1,0 +1,37 @@
+BGRUN START 2026-09-28 18:18:03 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug p2-offline-fixture -TaskFile C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/a5bcbf27-1eb1-4a4c-b234-98f27fbcff51/scratchpad/hyp_p2_offline.txt
+BGRUN PID 17196
+OUTCOME: ANSWERED (109s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-28-p2-offline-fixture.md
+COST: $1.2931  in 18 / out 9257 / cache-create 116663 / cache-read 872826  (105s, 16 turn(s))
+--- ANSWER ---
+**I could not refute the claim.** chat-P2's edits did not cause O3/O4 to allow the launch. The self-test has depended on live state since the evening of 2026-09-27. The claim does get the releasing mechanism wrong, and it understates the damage: the test has been reporting PASS without testing what it says it tests.
+
+**1. What the claim gets wrong: c111e is not the review that releases the launch today.**
+- In the launch gate, the c111e record is released only for one version of the recipe file, sha `a78d3c14…` (`tools/bench/stop_records.json:1411-1414`, stamped 2026-09-27T14:38:09Z).
+- A later record for the same recipe carries its own release, for sha `876bb078…` (`stop_records.json:1427-1438`, review `archive/peer/2026-09-28-priorart-c112d-l2b2a.md`).
+- Under the gate's supersession rule, c111e is skipped once a later record exists for that path (`tools/stop_record.py:684-685`, `:733-735`). The c112d record is the one that decides.
+- So if the recipe's bytes on disk were anything other than `876bb…`, the launch would be refused as "released for different bytes", however valid c111e's FIXED lines at `:543-547` are.
+- guard_cycle's own verdict check only reads the newest prior-art review (`tools/hooks/guard_cycle.py:669-690`), which today is `2026-09-28-priorart-c119-qrt-pool.md` (novel). c111e never reaches that check.
+
+**2. The other explanation, and why the evidence rules it out.**
+- For chat-P2's code to be the cause, the new `new_structure_classes` call (`guard_cycle.py:543`) or the proven-pattern release (`:533-539`) would have to let the launch through.
+- The logged stderr rules out both. The proven-pattern release always writes a `PROVEN-PATTERN` line to stderr (`:569-571`), and O3/O4 logged `(0, [])` (`p2run_selftest_guard_cycle_offline.log:5-6`).
+- `new_structure_classes` only runs on the refusal path. It sits inside `except Exception`, and a crash would exit with rc 1, not 0.
+- Adding `user-rule-contradicted` to the slug list (`:71-75`) can only block more. It releases something only when a FIXED line uses that slug, and none of the l2b2a reviews do.
+
+**3. The earlier passes support the claim, and they expose the real defect.**
+- The launch gate runs before the retrospective-threshold check (`guard_cycle.py:621` before `:633`).
+- `selftest_guard_cycle_offline_p1before.log:3`, taken before chat-P1 or chat-P2 existed, was refused by the threshold check. That means the launch gate was already allowing the launch at that point.
+- The only run where O3 passed for the stated reason is the original, at 2026-09-27 22:26 (`selftest_guard_cycle_offline.log:5`). The release was stamped 1 h 12 min later, at 23:38 local time.
+- Since then O3/O4 have passed twice for the wrong reason. This is a self-test that never builds its own test state, not just drift. It cannot tell a working launch gate from one that allows everything.
+
+**What would show the claim wrong:** the launch gate refusing the launch at chat-P2's parent commit 53916a1 but allowing it at 99e99f8. Or any stderr, or rc ≠ 0, from the proven-pattern or new-structure code on this command.
+
+**Cheapest test that tells the two apart** (read-only, no LabVIEW):
+1. `py tools/stop_record.py check py -u tools/recipes/stage_d1_l2b2a.py` should print `ALLOW`.
+2. `git diff 53916a1 99e99f8 --stat -- tools/stop_record.py` should show nothing changed.
+3. Run the recipe file's sha256. It should equal `876bb078…`.
+
+If all three hold, chat-P2 is cleared. The fix is to make O3/O4 build their own state: copy `stop_records.json` into a scratch folder, add an unreleased record for a scratch recipe, point `stop_record.STORE` at the copy, and run the check in-process. Only then does the test show the launch gate refusing an unreleased launch.
+
+What would change my mind: step 1 printing a refusal, or steps 2 or 3 failing.
+BGRUN END rc=0 after 110s
