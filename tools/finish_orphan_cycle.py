@@ -41,9 +41,13 @@ def main():
     ok_end, why_end = CR.motor_limits_hook("end", x.cycle, a, bench, log, CR.read(status_path))
     ok_lv, why_lv = CR.labview_close_hook(x.cycle, a, bench, log, CR.read(status_path))
     CR.bgrun_reap_hook(x.cycle, bench, log)
-    CR.log_line(log, "CYCLE %d | %s | %s | exit ? (orphaned: runner died, finished by finish_orphan_cycle.py) | $? | "
-                     "motor-end %s, labview-close %s" % (x.cycle, x.started, end, "OK" if ok_end else why_end,
-                                                         "OK" if ok_lv else why_lv))
+    line = ("CYCLE %d | %s | %s | exit ? (orphaned: runner died, finished by finish_orphan_cycle.py) | $? | "
+            "motor-end %s, labview-close %s" % (x.cycle, x.started, end, "OK" if ok_end else why_end,
+                                                "OK" if ok_lv else why_lv))
+    CR.log_line(log, line)
+    # the runner numbers its next cycle from THIS cumulative log (last_cycle_number), not from the per-run log;
+    # without it a relaunch reused the orphan's number (2026-09-28 10:32)
+    CR.log_line(os.path.join(bench, "cycle_runner.log"), line)
     CR.log_line(log, "RUNNER STOP | %s | orphan cycle %d finished by finish_orphan_cycle.py (runner process had died)"
                 % (end, x.cycle))
     return 0 if (ok_end and ok_lv) else 1
