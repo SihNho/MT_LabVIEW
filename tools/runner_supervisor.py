@@ -46,6 +46,8 @@ def read(path):
 def verdict(log_text):
     """-> ('routine'|'real'|'running', reason line)."""
     lines = log_text.splitlines()
+    if any(l.startswith("BGRUN KILLED") for l in lines):
+        return "real", "runner killed from outside (bgrun_reap): " + next(l for l in lines if l.startswith("BGRUN KILLED"))
     if not any(l.startswith("BGRUN END") for l in lines):
         return "running", ""
     stops = [l for l in lines if l.startswith("RUNNER STOP")]
@@ -70,7 +72,9 @@ def launch():
 
 
 def main():
-    log = newest_log()
+    # --start-now: do not wait on the newest log (e.g. a runner killed from outside leaves no BGRUN END and would be
+    # read as 'running' forever); check the STOP marker and launch at once.
+    log = None if "--start-now" in sys.argv else newest_log()
     life = None
     while True:
         if log:

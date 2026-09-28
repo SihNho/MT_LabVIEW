@@ -295,7 +295,10 @@ background notification is a full turn over the whole conversation. Standing rul
    (delegate → decide → retrospective → STATUS NEXT), exits; the runner checks the exit and NEXT and spawns the next.
    Runner stop conditions: a `STOP` marker in STATUS.md (written by the user), the same failure two cycles running,
    the usage-limit rule (renewal + 2 min). `tools/hooks/guard_session.py` (PreToolUse Agent) refuses material
-   dispatches after the retrospective has run in that session and above 8 dispatches per session. **The interactive
+   dispatches after the retrospective has run in that session and above the per-session cap (`MAX_DISPATCHES`, 6 in
+   code), plus a separate budget of 3 offline prep cards run beside a LabVIEW card (pipeline, 2026-09-28); at most 2
+   cards live and at most one of them touching LabVIEW. **A ROUTINE runner end (budget / cycle count) starts the next
+   runner automatically** — `tools/runner_supervisor.py` (user 2026-09-28); real stops still stop. **The interactive
    chat is for talking with the user only** — it answers from STATUS and the latest retrospective and redirects the
    runner by editing STATUS NEXT/STOP; it never runs a cycle itself. Every cycle plan carries a `## Pre-decided`
    section (decisions material sessions apply without asking; `doc_lint` warns when it is missing).
@@ -410,6 +413,15 @@ it bounds it to a card that Opus has already failed twice.
 
 ### Every cycle ends with a RETROSPECTIVE — the peer loop cannot criticise judgement otherwise (user, 2026-09-15)
 
+⚠️ **CADENCE AMENDED — ACCELERATION, user 2026-09-28 ("1~4번은 적용하도록"):** the retrospective runs every 3rd
+cycle, OR in any cycle that saved no new build step, OR when a violation slug is at threshold−1 — decided by
+`tools/retro_due.py` (otherwise `retro_due.py --cycle N --close`). The same approval: (1) PIPELINE — one LabVIEW card
+plus one offline prep card for the next step may run at once (prep plans on a provisional base, `stage_prerun.py
+--rebase` before launch); (2) no prior-art review for a build step on a PROVEN pattern; (3) gate/checker false
+positives go to `tools/bench/gate_fp_queue.jsonl` (`tools/gate_fp.py`) and are drained in batches, never by an env
+bypass; (4) up to ~25 rows per step on a proven pattern. Safety guards (motors, originals, LabVIEW timeouts, rule 1a)
+are unchanged. Brief: `tools/bench/cards/brief_chat-P1.md`. The text below states the original every-cycle rule.
+
 (User: *"피어 리뷰를 통해 판단 및 실행 구조에 대한 비평은 할 수 없는 것 같아."*) The hypothesis-level reviews all
 pass and the cycle still goes badly, because a peer only ever sees a framing Claude wrote about a failure Claude
 chose. Nobody asks whether the question was worth asking, whether twenty failures were one failure, or whether a
@@ -488,6 +500,8 @@ at** (the "preserved" crash copies were byte-identical to the untouched original
    Scripting. The user must always have something to open.
 2. **Default granularity = one saved artefact per natural stage** (copy → structures → moves → re-wiring in batches of
    10–15 rows → census → final save). Not one script per wire (*"일일히 배선 하나하나 별도 스크립트를 쓰는 건 낭비"*).
+   **Up to ~25 rows when the stage pattern is PROVEN** (≥2 earlier passing launches of the same pattern,
+   `stage_prerun.proven_pattern`; advisory prerun X14) — user, 2026-09-28, acceleration item 4.
 3. **Re-splitting is triggered, not felt** (user: the decision is the judgement session's, the trigger is the
    machine's): the same stage failing twice at the same place, or a stage that ends without a saved artefact ⇒ the
    next cycle's FIRST act is a **decomposition plan** for that stage (one page: sub-steps, each's saved file name and
@@ -599,7 +613,8 @@ becomes a **delivery** cycle, and on repetition the work stops for a re-plan wit
 layer to one script, one dispatch and one gate line — the user's explicit budget for it. **STEERING CARD (user, 2026-09-24: "아웃컴 리뷰에 조향카드 부여하는 것 동의"):** a repeated outcome verdict now also emits a `steer/1` card (the next cycle's required act, tied to `docs/goalmap.json` ids); the judgement session FOLLOWS it or REFUSES it with cited evidence in `next.json`; two refusals of the same item stop the runner and put it on `tools/bench/decisions_pending.json`. **RETRY CAP (user, same day: "재시도 상한도 동의함. 다만 숫자 … 데이터를 쌓아가면서 조정"):** one stage's LabVIEW runs per cycle are capped (`tools/stage_prerun.py` `RETRY_CAP`, start 2); a further run needs a judgement card; per-stage run counts are recorded so the number is tuned from data.
 
 **The fourth layer — PRIOR ART ("has this already been done here?", `prior_art_review.py`, gated by the same
-`guard_cycle.py`) — stops the work on any verdict other than `novel`, and there are exactly TWO releases, each
+`guard_cycle.py`; NOT required for a build step on a PROVEN pattern — ≥2 earlier passing launches of the same
+pattern, `PROVEN-PATTERN` log line; user 2026-09-28 acceleration item 2) — stops the work on any verdict other than `novel`, and there are exactly TWO releases, each
 written into the review file itself and each paid for with a citation:**
 
 | release | means | conditions (all machine-checked) |
