@@ -4,6 +4,7 @@ status: current
 date: 2026-09-20
 tags: [hand-off]
 ---
+📌 **NEW CHAT? Read `docs/chat-handoff.md` right after this file** (2026-09-28 19:4x): the chat's duties (30-min usage → `run_mode.py write`, report_gate acks, the tick), today's decisions, and the OPEN proposals awaiting the user.
 ✅ STARTED — USER 2026-09-28 17:xx: "시작합시다" (runner relaunched by the chat via runner_supervisor; first act = card chat-P3, then the ring-buffer plan, see ## NEXT).
 (history; option C later CANCELLED in favour of the ring buffer) STOP (lifted) — USER 2026-09-28 16:0x: "C로 진행하자. 진행 방향이 잘못되었네. 롤백하고 다시 C로 진행". Option C = acquisition and tracking stay in ONE loop, reading the newest camera buffer each iteration (the original's way; the user's 2026-09-15 fallback); NO image pool, NO frame queue between acquisition and tracking. The pool/QRT direction (PD233–237, cycles 118–120) is abandoned. Runner stopped by the chat mid-cycle 120 (pool-direction cards); rollback point and the C plan are being determined before any relaunch.
 (history) ✅ RELAUNCHED 2026-09-28 10:5x by the chat on the acceleration code (card chat-P1, commit e13f176, self-tests 32/32; CLAUDE.md amended). Runner started through `tools/runner_supervisor.py --start-now` (routine ends relaunch automatically). Cycle 116 had been finished by `tools/finish_orphan_cycle.py` after the runner process was killed from outside at 09:12.
