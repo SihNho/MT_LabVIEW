@@ -2121,6 +2121,23 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
      existed; the limit was prose at :15 and in 225(f)/223(b)'s "≤ 13 rows each"). The same predicate lets
      `guard_cycle` skip the prior-art review for that recipe (PROVEN-PATTERN, item 2a). Supersedes the "10–15 rows"
      batch size at :15 for new steps; earlier items keep the size they were decided with.
+     **CONFIRMED by the user 2026-09-28 11:0x ("지금방식 유지"): only OTHER stages count** — a stage's own earlier clean
+     run never makes its pattern proven (asked by card chat-P1's `open`).
+233. **(cycle 117 judgement, 2026-09-28 10:37; steer_116 FOLLOWED; retrospective-cycle116 annotated; `docs/violation-decisions.md` 10:37)**
+     - **(a) Card 117-1 = 231(e) then 231(d), in one card.**
+       - STEP 0: `OpWireJoints_v1` closes its Traverse array and wires the Traverse error into the property node.
+       - v1 acceptance: 20 calls, handles flat ±100; then a sweep of all 1,945 R1 wires (≥ 2,000 calls in total) with 0 errors and handles flat. The result is written as `tools/bench/op_hygiene/OpWireJoints_v1.json` (schema in the 10:37 decision).
+     - **(b) AMENDED from 231(e):** naming R1's 24th loose-ends item is REPORT-ONLY. It is not an acceptance condition of v1 and does not gate L2-R2. The residual is unchanged by R2 (`result_116-4.json:24`; retrospective-cycle116 finding 5).
+     - **(c) L2-R2 ONE launch with 231(d)'s gates**: pin 22, and the joints on the 20 nets must equal 116-4's J4 table. The recipe and plan md5 are unchanged (`488c2209…` / `67bad9a8…`), or they are re-dried. On any mismatch the card returns FAIL: no re-pin and no second launch inside the card.
+     - **(d) Pipeline:** card 117-2 runs offline beside 117-1. It holds the QRT facts per open pair (228(i)), read from the R1 graph dump; L2-R2 does not touch those 16 cdiff rows. It reports FACTS; any split into data stream or control signal is only a PROPOSAL, and judgement decides it (CLAUDE.md 1c'').
+     - **(e) After 117-1:** card 117-3 (offline tooling) builds the rule-evaded device and the A9 witness fix of the 10:37 decision.
+     - **(f) QRT facts (117-2 PASS 15/0, `tools/bench/facts_c117_qrt.json` md5 `bee2a8f3…`, summary `facts_c117_qrt.md`).** 16 open rows form 11 pairs. `(2626,'array')` is a rename artefact that is already wired in R1 (w25283). `(11261,'array')` = b2_03 is a 1.2→1.2 plain wire. The other 9 pairs cross loops (1.1→1.2, 1.2→1.7, 1.1→1.7).
+       - **DECIDED (rule 1a): a per-frame value that meets another per-frame value in a computation or in a saved row travels IN THE SAME queue element as its frame.** No value is re-read or re-sampled in another loop. So:
+         - (1) `#30117` Trans Pos / `#4580` Rot pos, read in 1.1, ride the Q_work element with `Image Out`. A re-read in 1.2 would change the sampling time.
+         - (2) `#376`'s frame index (t7, `#637` i) rides through 1.2 with the tracked row: Q_work → Q_res. It is never sent separately from 1.1, so each saved row keeps its own frame's index.
+         - (3) The display index remainders `#10068`/`#29240` are computed in 1.2 from that carried counter, with the same arithmetic, so display index and display data come from one frame.
+       - This does not contradict CLAUDE.md 1c'': these are lossless per-frame DATA (queue), not control signals. Pure display-only sinks that take no frame-paired input may still take a latest value (PD210).
+       - **NEXT after L2-R2:** a QRT-W design plan (rows, Q_work/Q_res payload clusters, b2_03 + t11273 per 227(d)) on the R2 graph, offline with prior-art review, then the build step.
 
 ## OPEN (design choices — for judgement; not decided here)
 
