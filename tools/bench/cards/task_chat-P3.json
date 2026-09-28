@@ -1,0 +1,58 @@
+{
+ "schema": "task/1",
+ "id": "chat-P3",
+ "kind": "build",
+ "goal": "Close chat-P2 (owed review, stale fixture, remaining self-tests, drain fp-7/8/9), then speed item A: no scratch build on a proven pattern with prerun PASS",
+ "why": "User 2026-09-28: A는 실행; chat-P2 blocked on a pre-existing stale self-test fixture. Detail: brief_chat-P3.md",
+ "inputs": [
+  {
+   "path": "tools/bench/cards/brief_chat-P3.md",
+   "md5": "53c397e9d423ac67daf1ebb3daca3226"
+  },
+  {
+   "path": "tools/bench/cards/result_chat-P2.json",
+   "md5": "4725615723e48a7dd55a04884adee2ff"
+  },
+  {
+   "path": "tools/stage_prerun.py",
+   "md5": "00cbf9d507c38644202431e9cb234087"
+  },
+  {
+   "path": "tools/cycle_prompt.md",
+   "md5": "d5b3d1db32dde5a814b9be2f0386c46d"
+  }
+ ],
+ "pass": [
+  "hypothesis review for p2run_selftest_guard_cycle_offline.log archived + annotated",
+  "guard_cycle_offline fixture self-contained, green",
+  "all remaining self-tests green; fp-7/8/9 drained",
+  "A: proven + prerun PASS -> scratch not required (SCRATCH-SKIP-PROVEN); new class and after a failed launch -> required; self-test cases",
+  "prompt + Pre-decided line with USER-RULES; runner not started; one commit"
+ ],
+ "outputs": [],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/**",
+   "docs/**"
+  ],
+  "status_edit": false,
+  "git_commit": true,
+  "peers": [
+   "hypothesis"
+  ]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 120
+ },
+ "unblocks": "M3",
+ "rules": [
+  "Runner stays stopped",
+  "Safety guards untouched",
+  "Patch with Edit/Write, never heredoc"
+ ]
+}
