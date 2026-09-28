@@ -1,0 +1,79 @@
+{
+ "schema": "task/1",
+ "id": "120-2",
+ "kind": "measure",
+ "goal": "PD237(k): measure whether the existing connect route wires across two flat sequences into a loop (scratch VI), and build + measure a read-only terminal data-type reader op",
+ "why": "120-1: the pool refnums must cross FS2->FS1 and no measured route makes FS tunnels; the Obtain type-equality gate has no type reader (a silent coercion would change values, rule 1a)",
+ "inputs": [
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_qrt_pool_20260928_141055.vi", "md5": "9353936895141d3ec2f890649c5cf22f"},
+  {"path": "tools/bench/cards/brief_120-2.md", "md5": "2cd12baa49907d88ccb9607b3ebfb858"},
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "ee41e69eea7ab5567e63e584b3fd0cda"},
+  {"path": "tools/bench/facts_c120_qrtw.json", "md5": "6af9be89469e431463a4851ddcf883a9"},
+  {"path": "tools/bench/graph_qrt_pool_20260928.json", "md5": "d265b2833970df40fb9252224d5feb35"},
+  {"path": "tools/gscript.py", "md5": "925f57e8c40137f49965d9dbf47a085d"},
+  {"path": "tools/bench/cards/result_120-1.json"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/bench/opmodels/connect_from_wire.json"}
+ ],
+ "pass": [
+  "F1-F2 scratch VI with the bed's FS nesting built; one connect across both sequences into a loop; every hop read back (brief_120-2.md Part F)",
+  "F4 a scratch_verify record (PASS or FAIL with facts) + tools/bench/opmodels/connect_across_fs.json samples",
+  "T1-T2 OpTermDataType_v0.vi + op_hygiene record (20 calls, handles flat +-100) + gscript.read_term_type wrapper",
+  "T3 types of the 6 field terminals + #23105 element input + 2 known controls -> tools/bench/facts_c120_types.json",
+  "Bed md5 unchanged; scratch VIs deleted; LabVIEW closed and verified gone"
+ ],
+ "outputs": [
+  "tools/bench/scratch_verify/*c120*",
+  "tools/bench/opmodels/connect_across_fs.json",
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpTermDataType_v0.vi",
+  "tools/bench/op_hygiene/OpTermDataType_v0.json",
+  "tools/bench/facts_c120_types.json",
+  "tools/bench/cards/result_120-2.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c120*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpTermDataType_v0*",
+   "tools/gscript.py",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/opmodels/connect_across_fs.json",
+   "tools/bench/op_hygiene/OpTermDataType_v0*",
+   "tools/bench/facts_c120*",
+   "tools/bench/diag_c120*",
+   "tools/bench/build_op_termtype*",
+   "tools/bench/selftest_op_hygiene*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_120-2.json",
+   "tools/bench/cards/requires_120-2.json",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "tools/bench/INDEX.md",
+   "docs/NAMES.md",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 80},
+ "rules": [
+  "Part F MEASURE ONLY: no alternative route (named obtain, manual tunnels); judgement chooses (PD237(k))",
+  "the bed is only byte-copied, never edited or saved; scratch VIs are created and deleted in the card",
+  "do not edit tools/stagexec.py or tools/stagesim.py (card 120-3 edits them in parallel)",
+  "new op: reference hygiene (close every ref), 20-call flat-handle test, record so gscript.op() admits it",
+  "scripts <=120-line stagekit; LabVIEW via py tools/bgrun.py --material --max-min N -- ...; hold to BGRUN END",
+  "failed prediction -> hypothesis peer; gate refusal -> BLOCKED or tools/gate_fp.py log; never an exempt route",
+  "facts <=10 file:line; OPEN <=3"
+ ],
+ "unblocks": "M3"
+}

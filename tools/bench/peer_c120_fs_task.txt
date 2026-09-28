@@ -1,0 +1,22 @@
+ATTACK this claim about a failed gate in tools/bench/diag_c120_fs.log (script tools/bench/diag_c120_fs.py, card 120-2 Part F).
+
+CONTEXT. Measure-only run on a never-saved byte copy of a LabVIEW VI: one connect (build_opconnectnested_v1.connect_nested_v1,
+the 'nested' route of tools/stagexec.py connect_route) from a BARE Obtain Queue 'queue out' (#23118, t25591) on frame diagram #13236
+of one Flat Sequence to a duplicated Enqueue 'queue' (#26300) inside While loop #637 body #639 on frame diagram #686 of another
+Flat Sequence. Gate F1a failed (diag_c120_fs.log:30): it expected build_d1_v0.owner_of() to walk each frame diagram's owners up to
+the TopLevelDiagram and find a FlatSequence ancestor on each side. Observed (:24-29): owner_of(#13236) and owner_of(#686) both
+return ('FlatSequenceFrame', 0) with 'error 1055: Property Node in OpOwnerChain_v1.vi'; #639 -> WhileLoop #637 -> Diagram #686 read
+fine. Every other gate passed (13/1): the connect returned no error; the after-graph shows 4 new wires, 1 LoopTunnel #26507 (owner
+While #637), 2 FlatSequenceOuterTunnels #26775 (owner FlatSequence #12938; inner face on #13236, outer face w26702 on #536) and
+#26549 (owner FlatSequence #681; outer face w26702 on #536, inner face on #686); the hop walk closes t25591 -> #26775 -> w26702 ->
+#26549 -> #26507 -> #26300.'queue' (:49-52); all 4 hop wires survived LabVIEW's Remove Bad Wires (:54-56).
+
+THE CLAIM. F1a failed because of OUR GATE's premise, not the VI or the route: OpOwnerChain_v1 cannot resolve the owner of a
+FlatSequenceFrame (its owner-uid read errors 1055 and returns 0), so an owner_of walk stops at the frame. The nesting the gate meant
+to confirm is nevertheless established by the tunnels LabVIEW created: #26775 is owned by FlatSequence #12938 with its inner face on
+#13236 and #26549 by FlatSequence #681 with its inner face on #686, both outer faces on TopLevelDiagram #536, so source and sink are in
+two different flat sequences on the top-level diagram. The route result (PASS: the wire crosses both sequences through one
+FlatSequenceOuterTunnel each, no FlatSequenceInnerTunnel, plus one LoopTunnel) is unaffected.
+
+Give: the strongest reason this claim is wrong (e.g. could error 1055 mean the frames are NOT flat-sequence frames, or that the
+copy is corrupted?); an alternative explanation; what would falsify it; the cheapest discriminating test.

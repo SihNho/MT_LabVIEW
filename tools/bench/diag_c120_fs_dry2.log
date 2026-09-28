@@ -1,0 +1,28 @@
+BGRUN START 2026-09-28 15:38:02 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/bench/diag_c120_fs.py
+BGRUN PID 4316
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 9353936895141d3ec2f890649c5cf22f  got 9353936895141d3ec2f890649c5cf22f
+  PASS  DRY graph JSON for input md5 9353936895141d3ec2f890649c5cf22f  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_qrt_pool_20260928.json
+
+---------- [F1] nesting read back + the sink
+  FACT  F1a chain #13236: [(13236, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0)]
+  FACT  F1a chain #639: [(639, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0)]
+  PASS  F1a src frame in FlatSequence A, sink body in While #637 in FlatSequence B != A, both reach the TopLevelDiagram  ([], [])
+  PASS  F1b one Enqueue duplicated onto Diagram #639 (owner checked in the verb)  (<dry:g.create_primitive_nested>, '')
+
+---------- [F2] one connect through the 'nested' route
+  FACT  ExecState [before connect] scratch_c120_fs_20260928_153803.vi = <dry:g.exec_state>
+  FACT  OP connect_nested_v1 D[<dry:g._uid_index>].N[<dry:g._node_index>].t0 <- D[<dry:g._uid_index>].N[<dry:g._node_index>].t0 -> err '' (0.0 s)
+  PASS  F2a the connect call returned (its own error is data)
+  FACT  ExecState [after connect] scratch_c120_fs_20260928_153803.vi = <dry:g.exec_state>
+  FACT  F2 new objects by class {}; non-terminal []
+  FACT  F2 FS tunnel faces []
+  PASS  F2b after-graph read and the chain walked from t25591
+  PASS  F2d Remove Bad Wires ran on the scratch (per-segment survival = not broken)
+  ROW   F route closes t25591 -> #<dry:g.create_primitive_nested>.'queue' with every segment surviving RBW : observed=False expected=measured, not predicted
+  PASS  F4 records written
+
+=== DRY PASS: first_fail=None coverage 89/113 lines, first mutation g.create_primitive_nested, unverified 0, graph tools/bench/graph_qrt_pool_20260928.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

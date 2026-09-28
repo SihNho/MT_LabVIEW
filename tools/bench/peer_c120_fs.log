@@ -1,0 +1,44 @@
+BGRUN START 2026-09-28 15:41:54 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c120-fs-owner-frame -TaskFile tools/bench/peer_c120_fs_task.txt
+BGRUN PID 20100
+OUTCOME: ANSWERED (122s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-28-c120-fs-owner-frame.md
+COST: $1.2379  in 18 / out 9828 / cache-create 100019 / cache-read 884754  (118s, 15 turn(s))
+--- ANSWER ---
+**The claim holds. The one failed check (F1a) failed because the check itself was built on a premise this project had already measured as false.** It does not show that the copy is corrupted or that the frames are something other than flat-sequence frames. What the claim overstates is the "route PASS". Here is the attack, in the four parts the brief requires.
+
+**1. Strongest reason the claim could be wrong, and why it still holds.** The obvious worry is that error 1055 means these two diagrams are not flat-sequence frames, or that the copy is damaged. The evidence rules both out.
+- **Error 1055 is explained by LabVIEW's class tree.** The VI Server class hierarchy puts `FlatSequenceFrame` directly under `Generic`, not under `GObject`. The sequence and its tunnels are all under `GObject`: `FlatSequence` directly, and both tunnel classes through `Tunnel` ([LabVIEW Wiki, VI Server Class Hierarchy](https://labviewwiki.org/wiki/VI_Server_Class_Hierarchy)).
+  - Our owner-reading tool reads `Owner` without error, and the class name taken from that uncast reference is `'FlatSequenceFrame'`.
+  - The only errors come from the property nodes downstream of the cast (`docs/diagram-hierarchy.md:158-175`). That is the "cast returns an invalid reference, the next node reads it" pattern.
+  - The class name the tool echoes is the machine saying these ARE flat-sequence frames.
+- **The same result has been measured before, on other diagrams:** diagram #113 and #686 on 2026-09-16 (`docs/diagram-hierarchy.md:95-98`, `:86`).
+- **The project's own plan already says the owner walk stops there:** "No owner-chain op. `OpOwnerChain_v1` stops at a FlatSequenceFrame (1055)" (`docs/d1-loop12-17-split-plan.md:1099`).
+- **Corruption is ruled out by the log:** the work copy is byte-identical to the input (`diag_c120_fs.log:20`, K3), and #639 → #637 → #686 read cleanly in the same run (`:25-26`).
+
+So F1a was a check that could never pass, written into a script whose plan documents say so. The honest classification is a prior-art miss at planning time, not a surprise.
+
+**2. Alternative explanation, and where the claim goes too far.** The tunnel argument is partly circular. The tunnels were created by the route being tested, so they cannot on their own confirm the route's starting assumption about where source and sink sit.
+- It is rescued by an independent measurement: a separate earlier run put #686 and #13236 in two different top-level flat sequences whose owner is #536 (`d1-loop12-17-split-plan.md:115-118`, from `p1_c70_f3a.log:44-60`). #681's owner has also been read cleanly as TopLevelDiagram #536 (`docs/cycle27-plan.md:3374`).
+- Cite those as the proof of the nesting, not the new tunnels.
+
+The "route PASS" is structural only, for three reasons:
+- **The VI never compiled.** ExecState is 0 before and after the connect (`:35`, `:40`), and there are 29 bad wires elsewhere (`:54`). "Survived Remove Bad Wires" in a VI that is already broken is weaker evidence than a clean compile.
+- **The plan predicted something else.** It says the pool-to-loop wire crosses 8 inner tunnels on each side, 16 in total, and states "No measured route creates FS tunnels" (`d1-loop12-17-split-plan.md:2233`). The run observed zero inner tunnels and two outer tunnels.
+  - That is a second failed prediction.
+  - The script sidesteps it by labelling the result "expected=measured, not predicted" (`:56`).
+  - LabVIEW does allow this: data leaves each flat-sequence frame's own tunnel as soon as that frame finishes ([NI, Flat Sequence Structure](https://www.ni.com/docs/en-GD/bundle/labview-api-ref/page/structures/flat-sequence.html)). But the plan's model of the crossing was wrong and should be corrected, not passed over.
+- **The wire adds a new timing dependency.** Frame 9 of sequence #681 now waits for frame 2 of sequence #12938 to finish. Under rule 1a, that change in execution order still needs a check against the original's order.
+
+**3. What would falsify the claim:**
+- #13236 is missing from the frame list (`Diagrams[]`) of sequence #12938, or #686 is missing from #681's.
+- Or an owner read on a diagram known to be clean returns 1055 in the same session, which would point at the tool or the copy rather than the class.
+
+**4. Cheapest test that separates the claim from the alternatives.** This needs no LabVIEW run: check that the earlier frame lists in `p1_c70_f3a.log:44-60` attribute #13236 to #12938 and #686 to #681 by uid. That run was on a different file, so confirm the uids carry over by byte copy.
+
+If a live check is wanted, one read-only call is enough: read `FlatSequence.Diagrams[]` (property 3578BC00, already shown to attach, `docs/diagram-hierarchy.md:137-146`) on #12938 and #681 and test membership. Then rewrite F1a to check that membership, or to check each tunnel's owner and inner-face diagram, instead of walking owners.
+
+**What would change my mind:** a membership mismatch in that test, or a clean diagram returning 1055 in the same session.
+
+Sources:
+- [VI Server Class Hierarchy – LabVIEW Wiki](https://labviewwiki.org/wiki/VI_Server_Class_Hierarchy)
+- [Flat Sequence Structure – NI](https://www.ni.com/docs/en-GD/bundle/labview-api-ref/page/structures/flat-sequence.html)
+BGRUN END rc=0 after 123s

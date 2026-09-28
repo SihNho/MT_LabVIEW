@@ -1,0 +1,39 @@
+{
+ "schema": "result/1",
+ "id": "120-3",
+ "status": "PASS",
+ "gates": {"pass": 5, "fail": 0},
+ "first_fail": null,
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/stagexec.py", "md5": "287edb989b04ad2717dd07f2a3a25223"},
+  {"path": "tools/stagesim.py", "md5": "da5f208db5ff6cdf97245f83783c98dc"},
+  {"path": "tools/bench/selftest_c120_routes.py", "md5": "aab017b47232094d6e0d77023158d841"},
+  {"path": "tools/bench/selftest_c120_routes.log", "md5": "88e8585a65cbc7ca16e84d60d2bf98c0"},
+  {"path": "tools/bench/scratch_plan_c120_routes.md", "md5": "00137f11a62188ba042847dbae870b51"},
+  {"path": "tools/bench/selftest_c120_stageplan_proposed.json", "md5": "6100149d43ab628fc0b21ab506059787"},
+  {"path": "tools/bench/selftest_c120_caseshape.py", "md5": "6c3d1b9b1f272417d4c602ba8a944bc7"},
+  {"path": "tools/bench/selftest_c120_caseshape.log", "md5": "45be5c96925bf9da657789a122089a9e"},
+  {"path": "tools/bench/selftest_stagexec_c120.log", "md5": "ead0acdd0d682fcd8c5abba3da07ea4b"},
+  {"path": "tools/bench/selftest_stagesim_c120.log", "md5": "2d6252ede823749e34558b7c8a248bb3"}
+ ],
+ "facts": [
+  "R1: create_route accepts queue_kind dequeue (stagexec.py:319); LV branch unchanged, fake test calls queue_node('dequeue',...) + 1 auto LoopTunnel (selftest_c120_routes.log L01)",
+  "R1 model: Dequeue names+directions MEASURED docs/NAMES.md:993-995 (stagesim.py:1067); term_class + Terminals[] order UNMEASURED (stagesim.py:1072); guessed/wrong-dir names refused (N01,N02)",
+  "R2 case shape MEASURED on 3 real cases: selector 'Tunnel' 1 outer sink + 1 inner source/frame; SelectorTunnel 1 outer + 1 inner/frame (selftest_c120_caseshape.log:18-20)",
+  "R2 create route 'case' = gscript.case_in, frames bound BY NAME in plan order, selector = the one new Tunnel (stagexec.py:311,2164); sim model stagesim.py:1091; symbols new:<as>.f<k>",
+  "R2 in/out tunnels reuse the `tunnel` group with loop=<case>, body=<frame> (stagesim.py:812); output tunnel records use_default ASSUMED False + broken_unless_wired (UNMEASURED)",
+  "R2 binding: new bind_case_faces binds multi-frame faces by frame (stagexec.py:647), called before bind_new (:1620); returns {} for every other op (L05)",
+  "R3: selftest_c120_routes.log 29/0; stagexec suite 124/0 (selftest_stagexec_c120.log) and stagesim 77/0 (selftest_stagesim_c120.log) == c118d counts, no pre-existing failure",
+  "R4: only 'case' added to CREATE_ROUTES (A01); copied case keeps copy_in (A03); '.body' resolution unchanged (A02); CaseStructure branch only when no donor_uid/prim (stagexec.py:311)",
+  "Installed schema docs/protocol/stageplan.json:107 allows queue_kind obtain|enqueue and diagref '.body' only: tests widen it in process; widening written to selftest_c120_stageplan_proposed.json",
+  "Gate FP fp-4 logged: guard_bash.py:91 refused an md5sum of tools/bench/*.py as a launch (tools/bench/gate_fp_queue.jsonl); routed via a glob md5sum form"
+ ],
+ "open": [
+  "Install tools/bench/selftest_c120_stageplan_proposed.json over docs/protocol/stageplan.json (needs a card with that write flag)? Until then no dequeue/case plan validates.",
+  "Dequeue rows' term_class is unmeasured: if real rows are ParameterTerminal (as Obtain, facts_c120_qrtw.json:129) a plan declaring none will STOP at BINDING - declare it or run scratch M1 first?",
+  "stage_prerun.py (not writable here) was not checked for '.f<k>' diagrams / the case route; does a prerun card need to run on a case plan before QRT-W A/B1/OV use it?"
+ ],
+ "cost": {"usd": null, "minutes": 72, "labview_runs": 0},
+ "note": "Offline only; no LabVIEW, no COM. R5 scratch plan written (under 120 lines), not run."
+}

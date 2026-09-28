@@ -210,6 +210,11 @@ CREATE_ROUTES = {
              "`src_into` sink; same diagram, or (card 118-3, PD234(i)) `src` on the PARENT of a loop body this plan created "
              "- the creator auto-makes the non-indexed LoopTunnel (build_track_v6_queue.py:202)",
     "subvi": "gscript.drop_subvi (OpSubVI) of the file `subvi_path` on the diagram, unwired",
+    # card 120-3 (PD237(k)): the queue route above also takes queue_kind 'dequeue' (gscript.queue_node('dequeue'),
+    # OpQueueDequeue_v0, gscript.py:1339-1371) - same src/src_into/auto-tunnel rule as the Enqueue of card 118-3
+    "case": "gscript.case_in (build_case on the top level, selector from panel control `label`, OpMoveIn_v0 into the loop "
+            "body - the move severs the selector wire; owner + frames read back by case_frames, gscript.py:3479-3543); "
+            "the selector is wired by a later plain `wire` to new:<selector_as>.outer",
 }
 ROUTE_VERBS = {
     "while": [("gscript", "loop_in")], "for": [("gscript", "loop_in")],
@@ -224,6 +229,7 @@ ROUTE_VERBS = {
     "const_on_term": [("stagekit", "const_row")],
     "queue": [("gscript", "queue_node")],
     "subvi": [("gscript", "drop_subvi")],
+    "case": [("gscript", "case_in"), ("gscript", "case_frames")],          # card 120-3 R2
     "gate": [("gscript", "read_bool_const")],
     "stop": [("file", "tools/bench/opstopfromnode_labels.json")],
 }
@@ -302,9 +308,17 @@ def create_route(a):
         if a.get("on") is None:
             raise ExecStop("create control needs `on` (the sink terminal it is created on)")
         return "control"
+    if c == "CaseStructure" and a.get("donor_uid") is None and not a.get("prim"):
+        # card 120-3 R2: a NEW case in a loop body (gscript.case_in); a copied case (donor_uid) keeps the copy_in route
+        if not a.get("as") or not a.get("selector_as") or not a.get("label"):
+            raise ExecStop("create case needs `as`, `selector_as` (the selector's alias) and `label` (the top-level panel "
+                           "control case_in wires to the selector)")
+        return "case"
     if a.get("queue_kind"):                              # card 118-1: Obtain / Enqueue through gscript.queue_node
-        if a["queue_kind"] not in ("obtain", "enqueue") or a.get("src") is None or not a.get("src_into") or not a.get("terminals"):
-            raise ExecStop("create queue needs queue_kind obtain|enqueue, `src` (source addr), `src_into` (the new node's "
+        # card 120-3 R1: + Dequeue (gscript.queue_node('dequeue')), same shape as Enqueue
+        if a["queue_kind"] not in ("obtain", "enqueue", "dequeue") or a.get("src") is None or not a.get("src_into") \
+                or not a.get("terminals"):
+            raise ExecStop("create queue needs queue_kind obtain|enqueue|dequeue, `src` (source addr), `src_into` (the new node's "
                            "sink name) and the declared `terminals`")
         return "queue"
     if a.get("subvi_path"):                              # card 118-1: a subVI dropped unwired
@@ -363,7 +377,9 @@ def check_symbols(A):
                                    "or use before create)".format(i, a.get("id"), f, v, h))
                 kind = defined[h]
                 tail = v.partition(".")[2] if isinstance(v, str) else (v.get("term") if isinstance(v, dict) else "")
-                if f in DIAG_FIELDS and (tail != "body" or not kind.startswith("loop:")):
+                # card 120-3 R2: + 'new:<case alias>.f<k>' (a frame of a case this plan created); '.body' rule unchanged
+                case_frame = kind == "case" and tail[:1] == "f" and tail[1:].isdigit()
+                if f in DIAG_FIELDS and (tail != "body" or not kind.startswith("loop:")) and not case_frame:
                     raise ExecStop("action {0} ({1}): {2}={3!r} - a symbolic diagram is 'new:<loop alias>.body'".format(
                         i, a.get("id"), f, v))
                 if tail == "cond" and kind != "loop:WhileLoop":
@@ -374,6 +390,11 @@ def check_symbols(A):
             defined["new:" + nm + "R"], defined["new:" + nm + "L"] = "srR", "srL"
         elif a["op"] == "tunnel" and nm:
             defined["new:" + nm] = "tunnel"
+        elif a["op"] == "create" and nm and a.get("class") == "CaseStructure" and a.get("donor_uid") is None \
+                and not a.get("prim"):                    # card 120-3 R2: the case + its selector's alias
+            defined["new:" + nm] = "case"
+            if a.get("selector_as"):
+                defined["new:" + a["selector_as"]] = "obj"
         elif a["op"] == "create" and nm:
             defined["new:" + nm] = ("loop:" + a["class"]) if a.get("class") in ("WhileLoop", "ForLoop") else "obj"
     return defined
@@ -617,6 +638,56 @@ def bind_new(prev_real, real, sim_prev, sim_now, bind):
         for sr in s_rows:
             rr = next(x for x in r_rows if key(x) == key(sr))
             bind["term"][sr["term_uid"]] = rr["term_uid"]
+    return made
+
+
+MULTI_FRAME_CLS = ("Tunnel", "SelectorTunnel")
+
+
+def bind_case_faces(prev_real, real, sim_prev, sim_now, bind):
+    """card 120-3 R2: bind a created case SELECTOR ('Tunnel') or case DATA tunnel (SelectorTunnel) - one outer face plus ONE
+    INNER FACE PER FRAME, all unnamed or same-named, which bind_new's (class, direction, name) key cannot tell apart. Its
+    inner faces are bound by FRAME through bind['diag'] (the frames the case create bound). Only a created object of those
+    classes whose inner faces sit on >1 frame is touched; any other op returns {} and bind_new runs exactly as before.
+    Such an object is then in bind['obj'], so bind_new skips it on both sides."""
+    sp = set(V.node_of(r) for r in sim_prev)
+    cand = collections.OrderedDict()
+    for r in sim_now:
+        n = V.node_of(r)
+        if n < 0 and n not in sp and r["owner_class"] in MULTI_FRAME_CLS:
+            cand.setdefault(n, []).append(r)
+    cand = dict((n, rs) for n, rs in cand.items()
+                if len(set(int(x["frame_diagram"] or 0) for x in rs if x["term_class"] == "InnerTerminal")) > 1)
+    if not cand:
+        return {}
+    D = dict((int(k), int(v)) for k, v in (bind.get("diag") or {}).items())
+    old_t = set(r["term_uid"] for r in prev_real)
+    new_real = collections.OrderedDict()
+    for r in real:
+        if r["term_uid"] not in old_t and r["owner_class"] in MULTI_FRAME_CLS:
+            new_real.setdefault(V.node_of(r), []).append(r)
+    made = {}
+    for su, s_rows in cand.items():
+        cls = s_rows[0]["owner_class"]
+        want = sorted(D.get(int(x["frame_diagram"] or 0), int(x["frame_diagram"] or 0)) for x in s_rows
+                      if x["term_class"] == "InnerTerminal")
+        ru = [u for u, rs in new_real.items() if rs[0]["owner_class"] == cls and u not in bind["obj"].values()
+              and sorted(int(x["frame_diagram"] or 0) for x in rs if x["term_class"] == "InnerTerminal") == want]
+        if len(ru) != 1:
+            raise ExecStop("BINDING: created {0} #{1} (inner faces on real frames {2}): {3} real candidate(s) {4}".format(
+                cls, su, want, len(ru), ru[:4]))
+        r_rows = new_real[ru[0]]
+        key_s = lambda x: (x["term_class"], bool(x["is_source"]),                                  # noqa: E731
+                           D.get(int(x["frame_diagram"] or 0), int(x["frame_diagram"] or 0)) if x["term_class"] == "InnerTerminal" else 0)
+        key_r = lambda x: (x["term_class"], bool(x["is_source"]),                                  # noqa: E731
+                           int(x["frame_diagram"] or 0) if x["term_class"] == "InnerTerminal" else 0)
+        ks, kr = collections.Counter(key_s(x) for x in s_rows), collections.Counter(key_r(x) for x in r_rows)
+        if ks != kr or any(v != 1 for v in ks.values()):
+            raise ExecStop("BINDING: {0} #{1} -> #{2} face keys sim {3} vs real {4}".format(cls, su, ru[0], dict(ks), dict(kr)))
+        bind["obj"][su] = ru[0]
+        made[su] = ru[0]
+        for sr in s_rows:
+            bind["term"][sr["term_uid"]] = next(x for x in r_rows if key_r(x) == key_s(sr))["term_uid"]
     return made
 
 
@@ -1545,6 +1616,8 @@ class Executor(object):
             if op["kind"] == "create":                     # card 100-3: a loop owns no row - bound from the op's return
                 made = self._bind_create(op, after["state"], res)
             if op["kind"] in BIND_KINDS:
+                # card 120-3 R2: a created case selector / case tunnel first ({} for every other op), then bind_new as before
+                made.update(bind_case_faces(real, real_new, prev["terminals"], after["state"]["terminals"], self.bind))
                 made.update(bind_new(real, real_new, prev["terminals"], after["state"]["terminals"], self.bind))
                 if op["kind"] == "add_sr":
                     a = A[first - 1]
@@ -1685,6 +1758,21 @@ class Executor(object):
         """A created LOOP owns no terminal row: bind its object and its body diagram from the uids the op returned
         (res 'uid', 'body'); a missing or non-positive return STOPS (the body could not be addressed)."""
         a = self.plan["actions"][op["acts"][0] - 1]
+        if op["route"] == "case":
+            # card 120-3 R2: the case object and each FRAME diagram from the op's return (res 'uid', 'frames' in the plan's
+            # `frames` order); the selector's faces are bound by bind_case_faces (by frame) right after
+            su = after["sym"]["new:" + a["as"]]
+            sf = [after["sym"]["new:{0}.f{1}".format(a["as"], k)] for k in range(len(a.get("frames") or SS.CASE_FRAMES_DEFAULT))]
+            ru, rf = (res or {}).get("uid"), list((res or {}).get("frames") or [])
+            if not isinstance(ru, int) or ru <= 0 or len(rf) != len(sf) or any(not isinstance(x, int) or x <= 0 for x in rf):
+                raise ExecStop("BINDING: create {0} returned case {1!r} frames {2!r} - the case and each of its {3} frames "
+                               "must come back".format(a.get("id"), ru, rf, len(sf)))
+            self.bind["obj"][su] = ru
+            out = {su: ru}
+            for s_, r_ in zip(sf, rf):
+                self.bind["diag"][s_] = r_
+                out[s_] = r_
+            return out
         if op["route"] not in ("while", "for"):
             return {}
         su, sb = after["sym"]["new:" + a["as"]], after["sym"]["new:" + a["as"] + ".body"]
@@ -2073,6 +2161,27 @@ class LVBackend(object):
                                                                                              "on the parent" if cross else "same diagram"))
             out.update(uid=int(new[0]), how=CREATE_ROUTES[route], auto_tunnel=(nt[0] if nt else None))
             return out
+        if route == "case":                                   # card 120-3 R2: gscript.case_in (+ its case_frames read-back)
+            names = list(a.get("frames") or SS.CASE_FRAMES_DEFAULT)
+            t0 = set(int(u) for u in g.uids(W, "Tunnel"))
+            rec = s._op("case_in", lambda: g.case_in(W, dg, pos, a["label"], tuple(names)),
+                        "frames {0} selector {1!r} into Diagram #{2}".format(names, a["label"], dg))
+            res = rec.get("result") or {}
+            if res.get("err"):
+                rec["err"] = rec.get("err") or res["err"]
+            out = self._done(rec, tag)
+            if int(res.get("owner") or 0) != int(dg):
+                raise ExecStop("{0}: case #{1} read back owned by {2} #{3}, not Diagram #{4}".format(
+                    tag, res.get("case"), res.get("owner_class"), res.get("owner"), dg))
+            byname = dict(zip([str(x) for x in res.get("names") or []], res.get("frames") or []))
+            if sorted(byname) != sorted(names) or len(res.get("frames") or []) != len(names):
+                raise ExecStop("{0}: frame names read back {1} (frames {2}), asked {3}".format(tag, res.get("names"), res.get("frames"), names))
+            nt = sorted(set(int(u) for u in g.uids(W, "Tunnel")) - t0)
+            if len(nt) != 1:
+                raise ExecStop("{0}: {1} new Tunnel(s) {2}, expected the one selector".format(tag, len(nt), nt))
+            out.update(uid=int(res["case"]), frames=[int(byname[n]) for n in names], selector=nt[0], names_back=list(res["names"]),
+                       how=CREATE_ROUTES[route])
+            return out
         if route == "subvi":
             f0 = set(int(u) for u in g.uids(W, "SubVI"))
             rec = s._op("drop_subvi", lambda: g.drop_subvi(W, a["subvi_path"], di, pos), "{0} on Diagram[{1}] #{2}".format(
@@ -2290,6 +2399,8 @@ class SimBackend(object):
         self.st["diagrams"] = dict((str(rn(int(k))), rn(int(v))) for k, v in (self.st.get("diagrams") or {}).items())
         self.st["owners"] = dict((str(rn(int(k))), [v[0], rn(int(v[1] or 0))]) for k, v in (self.st.get("owners") or {}).items())
         self.st["sym"] = dict((k, rn(v)) for k, v in self.st["sym"].items())
+        if self.st.get("case_tunnel_frame"):                 # card 120-3 R2: {case tunnel: frame} is uid-keyed too
+            self.st["case_tunnel_frame"] = dict((str(rn(int(k))), rn(int(v))) for k, v in self.st["case_tunnel_frame"].items())
         f = self.fault
         if f.get("at") == op["acts"][-1]:
             if f.get("kind") == "drop_edge":                   # a real op that made one edge fewer
@@ -2378,11 +2489,25 @@ class SimBackend(object):
                     raise ExecStop("create queue: src on diagram #{0}, node on #{1} (same diagram, or a loop body of that diagram "
                                    "created by this plan - PD234(i))".format(s_["frame_diagram"], sd))
                 chk.update(self._node_end(real, args["src"], True, "queue_node"), auto_tunnel=int(s_["frame_diagram"] or 0) != int(sd))
+            elif route == "case":                                    # card 120-3 R2: gscript.case_in's preconditions
+                own = (self.addr.owners or {}).get(str(int(args["diagram"])))
+                if not own or own[0] not in ("WhileLoop", "ForLoop") or int(own[1] or 0) <= 0:
+                    raise ExecStop("create case: diagram #{0} is not a (bound) For/While body ({1}) - case_in places a case "
+                                   "in a loop body".format(args["diagram"], own))
+                cts = [r for r in real if is_ct(r) and r["term_name"] == a["label"] and r["is_source"]]
+                if len(cts) != 1:
+                    raise ExecStop("create case: {0} panel CONTROL(s) labelled {1!r} (build_case wires the selector from "
+                                   "exactly one, by label)".format(len(cts), a["label"]))
+                chk.update(selector_ct=cts[0]["term_uid"], frames=list(a.get("frames") or SS.CASE_FRAMES_DEFAULT))
         except ExecStop as e:
             return self._unroutable(op, e)
         out = self._apply(op, chk)
         if route in ("while", "for"):
             out.update(uid=self.st["sym"]["new:" + a["as"]], body=self.st["sym"]["new:" + a["as"] + ".body"])
+        elif route == "case":                                        # card 120-3 R2: what LVBackend returns
+            n_ = len(a.get("frames") or SS.CASE_FRAMES_DEFAULT)
+            out.update(uid=self.st["sym"]["new:" + a["as"]], selector=self.st["sym"]["new:" + a["selector_as"]],
+                       frames=[self.st["sym"]["new:{0}.f{1}".format(a["as"], k)] for k in range(n_)])
         return out
 
     def stop(self, loop, src, real, op):

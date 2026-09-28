@@ -1,0 +1,78 @@
+BGRUN START 2026-09-28 15:16:53 limit 30.0 min: py -u tools/bench/diag_c120_types.py
+BGRUN PID 16696
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 309 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 9353936895141d3ec2f890649c5cf22f  got 9353936895141d3ec2f890649c5cf22f
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33977
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_c120_types_20260928_151653.vi
+  FACT  ExecState [after open] scratch_c120_types_20260928_151653.vi = 0
+  PASS  K0 donor DonorPool_v0 md5 == fac6e4ab0fc4f7513d1a98df31e1f4e8  fac6e4ab0fc4f7513d1a98df31e1f4e8
+
+---------- [H] op-hygiene probe
+  FACT  HYG OpTermDataType_v0: 2000 calls in 39.5 s on DonorPool_v0 Terminal[0] #195, errors 0 [], handles 45743 -> 45738, private 598437888 -> 602468352, first {"echo": 195, "index": 0, "bytes_hex": "26008000000000010005000300000100000000000000000000", "hex_ok": true, "err": "", "rest": "", "types": {"version": "26008000", "tds": [{"len": 5, "flags": 0, "code": 3, "name": "I32", "hex": "0005000300"}], "top": [0], "sig": "0005000300", "top_name": "I32"}}
+  PASS  H OpTermDataType_v0 2000 consecutive calls: 0 errors, same bytes, handles flat +-100  (0, 45743, 45738)
+  FACT  HYGIENE RECORD op_hygiene/OpTermDataType_v0.json
+  PASS  H hygiene record written (gscript.op admits OpTermDataType_v0)
+
+---------- [R] read_term_type on the 9 terminals
+  FACT  Traverse('Terminal') on the work copy: 5842 rows
+  FACT  R F1 #30117.'Value' t30145: top DBL [('DBL', None)] sig 000b400a000556616c7565 err ''
+  PASS  R F1 t30145: echo, hex == u8, no error, rest ''  (30145, True, '')
+  FACT  R F2 #4580.'Value' t4728: top DBL [('DBL', None)] sig 000b400a000556616c7565 err ''
+  PASS  R F2 t4728: echo, hex == u8, no error, rest ''  (4728, True, '')
+  FACT  R F3 #637.'i' t644: top I32 [('I32', None)] sig 0005000300 err ''
+  PASS  R F3 t644: echo, hex == u8, no error, rest ''  (644, True, '')
+  FACT  R F4 #5119.'x-y' t6323: top U32 [('U32', None)] sig 0005000700 err ''
+  PASS  R F4 t6323: echo, hex == u8, no error, rest ''  (6323, True, '')
+  FACT  R F5 #11608.'output cluster' t11614: top Cluster [('DBL', None), ('Array', None), ('DBL', None), ('Array', None), ('Cluster', None)] sig 000a0050000200010003 err ''
+  PASS  R F5 t11614: echo, hex == u8, no error, rest ''  (11614, True, '')
+  FACT  R R0 #2626.'appended array' t2813: top Array [('DBL', None), ('Array', None)] sig 000c00400001ffffffff0000 err ''
+  PASS  R R0 t2813: echo, hex == u8, no error, rest ''  (2813, True, '')
+  FACT  R OBT #23105.'element data type' t25391: top Typedef [('Typedef', None)] sig 005500f100000000000000010e494d415120496d6167652e63746c003e4070001d09494d4151496d err ''
+  PASS  R OBT t25391: echo, hex == u8, no error, rest ''  (25391, True, '')
+  FACT  R K_DBL #5058.'x,y,z array out' t5124: top Array [('DBL', None), ('Array', '0x78')] sig 001c40400001ffffffff00000f782c792c7a206172726179206f7574 err ''
+  PASS  R K_DBL t5124: echo, hex == u8, no error, rest ''  (5124, True, '')
+  FACT  R K_I32 #5058.'pos in cal image out' t5171: top Array [('I32', None), ('Array', 'Refnum')] sig 002240400001ffffffff000014706f7320696e2063616c20696d616765206f757400 err ''
+  PASS  R K_I32 t5171: echo, hex == u8, no error, rest ''  (5171, True, '')
+  FAIL  K K_DBL top TD = Array of DBL (NAMES.md:37)  {'len': 28, 'flags': 64, 'code': 64, 'name': 'Array', 'hex': '001c40400001ffffffff00000f782c792c7a206172726179206f7574', 'ndims': 1, 'elem_code': 120, 'elem_name': '0x78'}
+  FAIL  K K_I32 top TD = Array of I32 (NAMES.md:41)  {'len': 34, 'flags': 64, 'code': 64, 'name': 'Array', 'hex': '002240400001ffffffff000014706f7320696e2063616c20696d616765206f757400', 'ndims': 1, 'elem_code': 112, 'elem_name': 'Refnum'}
+  PASS  K F3 loop i top TD = I32  {'len': 5, 'flags': 0, 'code': 3, 'name': 'I32', 'hex': '0005000300'}
+  PASS  K the reader distinguishes K_DBL from K_I32 (sig differs)
+  FACT  FACTS written G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\facts_c120_types.json
+  PASS  X donor md5 unchanged after the reads  fac6e4ab0fc4f7513d1a98df31e1f4e8
+
+---------- [H] HYGIENE
+  FACT  close_panel(scratch_c120_types_20260928_151653.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 2}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 2}
+  FACT  LabVIEW handle count AFTER the work: 45739
+  PASS  H4 scratch deleted: scratch_c120_types_20260928_151653.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c120_types_20260928_151653.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 9353936895141d3ec2f890649c5cf22f / after 9353936895141d3ec2f890649c5cf22f
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33956
+
+====================================================================================================
+=== GATES: 23 pass / 2 fail; failing: K K_DBL top TD = Array of DBL (NAMES.md:37), K K_I32 top TD = Array of I32 (NAMES.md:41)
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c120_types.json   elapsed 158.9 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":23,"fail":2},"first_fail":"K K_DBL top TD = Array of DBL (NAMES.md:37)","artefacts":[]}
+LabVIEW gone at exit: True
+BGRUN END rc=1 after 164s

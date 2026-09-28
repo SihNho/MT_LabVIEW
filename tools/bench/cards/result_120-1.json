@@ -1,0 +1,27 @@
+{"schema":"result/1","id":"120-1","status":"PASS","gates":{"pass":8,"fail":0},
+"first_fail":null,
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/graph_qrt_pool_20260928.json","md5":"d265b2833970df40fb9252224d5feb35"},
+ {"path":"tools/bench/facts_c120_qrtw.json","md5":"6af9be89469e431463a4851ddcf883a9"},
+ {"path":"tools/bench/diag_c120_g.py","md5":"70aa8a68c8ebd6bb008dbad038b12f6b"},
+ {"path":"tools/bench/diag_c120_facts.py","md5":"04232313d257ed9955eaca9b105f7c3a"},
+ {"path":"tools/bench/diag_c120_g.log","md5":null},
+ {"path":"tools/bench/diag_c120_facts.log","md5":null}],
+"facts":[
+ "G1 dump 5842 rows (R2 5801), 10148 objs, 24 loops, all owners resolved; graph md5 d265b283 identical on 2 runs; bed md5 9353936 unchanged (diag_c120_g.log:556-557,571)",
+ "G2 pool on FS2 frame 13236: Obtain #23105 queue out w26114->LoopTunnel #25898 (Q_free); #23118 queue out UNWIRED; type<-w14741 (#13938); For body 23169 = #23099,#23136 (facts_c120_qrtw.json:2-300)",
+ "G2 borders: 13236 = FS2 frame 2 of 10; 639/23166 = bodies of #637/#10170 on 686 = FS1 frame 9 of 10. Path 13236->8 FSIT->FS2 outer->#536->FS1 outer(3628)->8 FSIT->loop tunnel (facts:303-352,749-834)",
+ "G2 3 FS2->FS1 wires (w57288,w59094,w28386; 26117->3628): FS1 already waits on FS2; #6810 Image In w1651 comes from Property #35869 Value in frame 3121, not #13938 (facts:353-391,841-892)",
+ "G2/G6 no measured route creates a FlatSequence tunnel: no opmodel sample adds FSIT/FSOuter; connect_from_wire border sample made a LoopTunnel only (opmodels/connect_from_wire.json:14-31)",
+ "G3 #6810=get buff image-lost frames.vi: Image In t6857, Image Out t6865 w3040 (0 sinks), NO Image Dst terminal; #5058=Track N beads four-fold over-kernel-v3.vi (facts:955-1116,1279,1312)",
+ "G3 #5058 outputs only t5111 Bead is good? array out, t5124 x,y,z array out (w25283->#2626 t4168), t5171 pos in cal image out; NO Image Out, NO error in/out (facts:1117-1311)",
+ "G4 six sources found (#30117/#4580 Property Value, #637 i t644, #5119 x-y, #11608 output cluster, #2626 appended array); type: NO READER (634A008 value op) (facts:1330-1487; NAMES.md:470-484)",
+ "G5 #11261: t11270 array w0, t11273 element w0, out t11267 w25618; #2626 inputs 2832/4160/4165/4168 all 'array' (only 4168 wired); Concatenate Inputs/type: no reader (facts:1488-1593)",
+ "G6 IMAQ Copy OK (stagexec.py:212,310; NAMES.md:960); Dequeue/Case-in-loop: gscript only (gscript.py:1344,3508), plan route MISSING (stagexec.py:198-213,305-308); typed const = copy (gscript.py:4418)"],
+"open":[
+ "PD237(a) puts new Obtains beside the pool on FS2 frame 13236, but 1.1/1.2 sit in FS1 frame 686 (18 FS borders + a loop border) and no measured route makes FS tunnels: build/scratch-verify that route, or relocate?",
+ "PD237(d): #5058 has neither Image Out nor error out; which of its data outputs (x,y,z array out, Bead is good? array out, pos in cal image out) orders the Enqueue(Q_free) return, or another mechanism?",
+ "PD237(b)/(f) need tools not on disk: a Terminal.Data Type value reader (type compare), stagexec plan routes for Dequeue and Case-in-loop-body; build them before 120-2's A0 plan?"],
+"cost":{"usd":null,"minutes":42,"labview_runs":2},
+"note":"G7: 22 term ends + 24 uids unchanged vs R1. G8: handles 33989->45631 open->45911->33994 exit, refs 4/4, scratch gone, LabVIEW gone (diag_c120_g.log:310-587). Ladder: diag_c120_g.log | our-script-bug .766 | patch+rerun | G3b wanted '.vi', llb path has none | rerun PASS 11/0."}

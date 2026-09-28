@@ -1,0 +1,72 @@
+{
+ "schema": "task/1",
+ "id": "120-1",
+ "kind": "measure",
+ "goal": "READ-ONLY facts for QRT-W on the POOL bed (PD237): graph dump of a byte copy of D1_qrt_pool_20260928_141055.vi + the facts PD237(a)-(g) need, as a table; no bed edit/save, no VI run",
+ "why": "PD236(e)/PD237(i): QRT-W is planned on the REAL graph of the pool bed; the draft (qrtw-plan-draft.md) was written on R1 and lacks the pool, #6810/#5058 terminals, field types and the M1-M4 reads",
+ "inputs": [
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_qrt_pool_20260928_141055.vi", "md5": "9353936895141d3ec2f890649c5cf22f"},
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "3eee08f5d703bcde2a0915ebfc9ca34d"},
+  {"path": "docs/qrtw-plan-draft.md", "md5": "f440704598a61ab59ddf9305039e4da8"},
+  {"path": "tools/bench/qrtw_rows_draft.json", "md5": "368909f8ca0d9843b4db0bf474737e89"},
+  {"path": "tools/bench/errorlist_expected_D1_qrt_pool_20260928_141055.json", "md5": "46b423aa3eb3c378da93a98c9b18e0bb"},
+  {"path": "tools/bench/cards/result_119-4.json"},
+  {"path": "tools/bench/cards/brief_120-1.md", "md5": "a6f8998a4525facb6c5c0152196d488b"}
+ ],
+ "requires": [
+  {"kind": "verb", "name": "read_const_value", "where": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/stagekit.py"}
+ ],
+ "pass": [
+  "G1 graph dump of a byte copy -> tools/bench/graph_qrt_pool_20260928.json; bed md5 unchanged (brief_120-1.md G1)",
+  "G2 pool uids + owning diagram + the borders a wire must cross to reach bodies 639/23166, with existing route file:line (brief G2)",
+  "G3 #6810 class + terminals + Image Out sinks; #5058 output terminals (brief G3)",
+  "G4 data type of the 6 field source terminals, or the missing reader named (brief G4)",
+  "G5 M1-M4 on #11261 and #2626: value or 'no reader' (brief G5)",
+  "G6 route inventory EXISTS file:line / MISSING: IMAQ Copy, Dequeue, Case in a loop body, typed constant (brief G6)",
+  "G7 every qrtw_rows_draft.json uid re-checked on the new graph (brief G7)",
+  "G8 LabVIEW closed and verified gone; handle count before/after"
+ ],
+ "outputs": [
+  "tools/bench/graph_qrt_pool_20260928.json",
+  "tools/bench/facts_c120_qrtw.json",
+  "tools/bench/cards/result_120-1.json"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c120*",
+   "tools/bench/graph_qrt_pool*",
+   "tools/bench/facts_c120*",
+   "tools/bench/diag_c120*",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_120-1.json",
+   "tools/bench/cards/requires_120-1.json",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "tools/bench/INDEX.md",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "READ-ONLY: work on a byte copy (scratch_c120_*), never edit or save the bed; delete the scratch copy at the end",
+  "measure only: report facts, do not choose rows, carriers or step split (PD237 is decided; the plan is card 120-2)",
+  "every new diagnostic is a <=120-line stagekit script (tools/bench/diag_c120_*.py)",
+  "LabVIEW launches via py tools/bgrun.py --material --max-min N -- ...; hold to BGRUN END; close LabVIEW and verify gone",
+  "a reader that does not exist is reported MISSING with the grep that shows it; not built in this card",
+  "gate refusal -> BLOCKED, or tools/gate_fp.py log if false positive; never an exempt route",
+  "facts <=10 file:line in result; full tables in tools/bench/facts_c120_qrtw.json; OPEN <=3"
+ ],
+ "advances": ["M3", "R1"]
+}

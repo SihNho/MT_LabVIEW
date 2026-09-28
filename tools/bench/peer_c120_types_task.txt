@@ -1,0 +1,23 @@
+ATTACK this claim about a failed prediction in tools/bench/diag_c120_types.log (script tools/bench/diag_c120_types.py, card 120-2).
+
+CONTEXT. A new read-only op VI OpTermDataType_v0 reads Terminal.Data Type (634A008, a Variant) and exports it as the bytes of
+Flatten To String(variant) (a U8 array plus a lowercase-hex string; both agreed on every read). tools/gscript.py
+parse_type_descriptors() parses those bytes: U32 version, I32 nTDs, nTDs x (I16 len, I16 code, body), I16 index count, I16 indices
+(layout recorded in docs/NAMES.md:1153-1155). Two gates failed: "K K_DBL top TD = Array of DBL (NAMES.md:37)" and "K K_I32 top TD =
+Array of I32 (NAMES.md:41)" (diag_c120_types.log:49-50). All 9 reads themselves passed (uid echo, hex == u8, no error; :31-48);
+the 2000-call hygiene probe passed (:24-25); loop i read as I32 (:35,:51).
+
+RAW (from the log):
+  K_DBL t5124 'x,y,z array out': TD list [DBL, Array]; top Array TD = 001c 4040 0001 ffffffff 0000 0f 'x,y,z array out'
+  K_I32 t5171 'pos in cal image out': TD list [I32, Array]; top Array TD = 0022 4040 0001 ffffffff 0000 14 'pos in cal image out' 00
+  F5 t11614 output cluster: TD list [DBL, Array, DBL, Array, Cluster]; top Cluster TD = 000a 0050 0002 0001 0003
+
+THE CLAIM. The op and the bytes are right; the failure is OUR PARSER: it read the Array's element as an INLINE TD at the bytes after
+the dimension sizes (giving codes 0x78 'x' and 0x70), but in a flattened variant the Array TD holds an I16 INDEX into the TD list
+after ndims x I32 (here 0000 -> TD 0 = DBL / I32), and a Cluster TD holds I16 n then n x I16 indices (F5: elements TD 1 and TD 3).
+The fix is parser-only (gscript.py parse_type_descriptors + _td_canon); re-parsing the recorded bytes offline should give
+Array1D<DBL>, Array1D<I32>, I32, and Cluster{Array1D<DBL>,Array1D<DBL>} for F5.
+
+Give: the strongest reason this claim is wrong; an alternative explanation of the bytes (e.g. is 0000 something other than an
+element index - flags, a typedef index, a dimension field?); what would falsify the index reading; the cheapest discriminating test.
+Cite NI documentation on flattened type descriptors (LabVIEW "Type Descriptors" / "Flattened Data") where you can.

@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"120-2","status":"PASS","gates":{"pass":58,"fail":1},
+"first_fail":"diag_c120_fs.log:30 F1a: gate premise only (owner_of stops at FlatSequenceFrame, 1055); nesting proven by p1_c70_f3a.log:44-60; review 2026-09-28-c120-fs-owner-frame",
+"blocked_by":null,
+"artefacts":[
+ {"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpTermDataType_v0.vi","md5":"6851527e91628f628b5e0d2ca2fa6100"},
+ {"path":"tools/bench/op_hygiene/OpTermDataType_v0.json","md5":"bc6897a45770d031aa8fbb0cb20a7add"},
+ {"path":"tools/bench/build_op_termtype_labels.json","md5":"0f526ca8341de705939f9c3f543131ae"},
+ {"path":"tools/gscript.py","md5":"0497ddd243e0401888df1081c9be752c"},
+ {"path":"tools/bench/facts_c120_types.json","md5":"d0baba8f29f1a6126709cbff18bbadc9"},
+ {"path":"tools/bench/scratch_verify/stagexec.connect_nested_across_fs_c120_20260928_153812.json","md5":"662636c06317ec75d0473a568c8f882e"},
+ {"path":"tools/bench/opmodels/connect_across_fs.json","md5":"70afe13d834c11aeb927958b1c7d2a40"}],
+"facts":[
+ "F2 connect_nested_v1 (route 'nested') #23118 'queue out' t25591 -> dup Enqueue #26300 'queue' on #639: err '', +4 Wire, +1 stray Invoke (diag_c120_fs.log:38,47)",
+ "F2 LabVIEW made 2 FlatSequenceOuterTunnels (#26775 owner FS #12938, #26549 owner FS #681) + LoopTunnel #26507 (While #637); 0 FlatSequenceInnerTunnels (diag_c120_fs.log:42-48)",
+ "F2 hops: t25591 -w26834-> #26775 inner(13236) | outer -w26702 on #536-> #26549 outer | inner(686) -w26534-> #26507 outer | inner(639) -w26498-> #26300.queue (diag_c120_fs.log:49-52)",
+ "F2 all 4 hop wires survive Remove Bad Wires (29 pre-existing bad of 1945); ExecState 0 before and after = STRUCTURAL only; record PASS (diag_c120_fs.log:35,40,54-57)",
+ "F1 nesting: #686 and #13236 are frames of two different top-level flat sequences owned by #536 (p1_c70_f3a.log:44-60); owner_of stops at FlatSequenceFrame, 1055 (diag_c120_fs.log:24,27)",
+ "T1 OpTermDataType_v0 built 20/0: OpWireJoints_v1 retype to Terminal [632A813,634A008] + Flatten -> Unflatten U8[] + hex; COLD ES 1 (build_op_termtype.log:3-26)",
+ "T2 hygiene 2000 calls 0 errors, handles 45752->45747; record admits the op; wrapper gscript.read_term_type + parse_type_descriptors/_td_canon (diag_c120_types_r2.log:24-26)",
+ "T3 canon: F1 #30117 Value DBL, F2 #4580 Value DBL, F3 #637 i I32, F4 #5119 x-y U32, F5 #11608 Cluster{Array1D<DBL>,Array1D<DBL>}, R0 #2626 Array1D<DBL> (diag_c120_types_r2.log:31-41)",
+ "T3 Obtain #23105 'element data type' t25391 = Typedef 'IMAQ Image.ctl' (IMAQ image refnum); knowns K_DBL Array1D<DBL>, K_I32 Array1D<I32> distinguished, 25/0 (diag_c120_types_r2.log:43-52)",
+ "Flattened-variant Array TD = I16 ndims, ndims x I32, I16 INDEX into TD list; Cluster = I16 n + n indices; run 1 parser read inline -> K fails, peer confirmed (diag_c120_types.log:49-50)"],
+"open":[
+ "d1-loop12-17-split-plan.md:2233 models the pool->loop wire as 8+8 FlatSequenceInnerTunnels and 'no route makes FS tunnels'; measured: route 'nested' makes 2 FS OUTER tunnels, 0 inner. Adopt this route for PD237(a)?",
+ "Rule 1a: the new wire makes FS #681's frame (686) consume FS #12938 frame 2 data; 120-1 found FS1 already waits on FS2 (3 wires from 26117->3628, facts_c120_qrtw.json:353-391). Is the added dependency accepted as scheduling-only?",
+ "Type gate: F4 x-y is U32 while F1/F2 Value are DBL and F5 is a cluster of two DBL arrays; which of the six fields must match which queue element type (rule 1a, no coercion) is judgement's call."],
+"cost":{"usd":null,"minutes":52,"labview_runs":4},
+"note":"types run1 23/2 (parser bug; review c120-types-td-index; parsecheck 9/0) -> r2 25/0; fs 13/1 (review c120-fs-owner-frame). Gate FPs fp-5, fp-6 logged. Bed md5 unchanged (H2), scratch deleted (H4), LabVIEW gone. Hygiene 2000 calls (op-hygiene/1), not 20."}

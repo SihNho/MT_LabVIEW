@@ -1,0 +1,82 @@
+BGRUN START 2026-09-28 15:38:11 limit 35.0 min: py -u tools/bench/diag_c120_fs.py
+BGRUN PID 5872
+BGRUN STAGE-RUN recorded diag_c120_fs.py cycle='cycle 120' card=None pid=17512 -> stage_runs.jsonl
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 309 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 9353936895141d3ec2f890649c5cf22f  got 9353936895141d3ec2f890649c5cf22f
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33998
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_c120_fs_20260928_153812.vi
+  FACT  ExecState [after open] scratch_c120_fs_20260928_153812.vi = 0
+
+---------- [F1] nesting read back + the sink
+  OBSERVED uid 13236 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#13236 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 639 -> owner 'WhileLoop' uid 637 | self 'Diagram'#639 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 637 -> owner 'Diagram' uid 686 | self 'WhileLoop'#637 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 686 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#686 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  FACT  F1a chain #13236: [(13236, 'FlatSequenceFrame', 0)]
+  FACT  F1a chain #639: [(639, 'WhileLoop', 637), (637, 'Diagram', 686), (686, 'FlatSequenceFrame', 0)]
+  FAIL  F1a src frame in FlatSequence A, sink body in While #637 in FlatSequence B != A, both reach the TopLevelDiagram  ([], [])
+  OBSERVED uid 26300 -> owner 'Diagram' uid 639 | self 'Function'#26300 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  F1b one Enqueue duplicated onto Diagram #639 (owner checked in the verb)  (26300, '')
+
+---------- [F2] one connect through the 'nested' route
+  FACT  ExecState [before connect] scratch_c120_fs_20260928_153812.vi = 0
+  FACT  connect_nested_v1 node census: 643 rows
+      op readback {'UID': 26300, 'Name': 'queue', 'UID 2': 0, 'Is Broken?': False}
+  FACT  OP connect_nested_v1 D[56].N[51].t0 <- D[90].N[16].t5 -> err '' (0.3 s)
+  PASS  F2a the connect call returned (its own error is data)
+  FACT  ExecState [after connect] scratch_c120_fs_20260928_153812.vi = 0
+  OBSERVED uid 26262 -> owner 'Diagram' uid 639 | self 'Invoke'#26262 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 26507 -> owner 'WhileLoop' uid 637 | self 'LoopTunnel'#26507 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 26549 -> owner 'FlatSequence' uid 681 | self 'FlatSequenceOuterTunnel'#26549 | 482 says 'FlatSequence' cast 'FlatSequence' |  
+  OBSERVED uid 26775 -> owner 'FlatSequence' uid 12938 | self 'FlatSequenceOuterTunnel'#26775 | 482 says 'FlatSequence' cast 'FlatSequence' |  
+   READ[OUT] uid 26549 -> self 'FlatSequenceOuterTunnel'#26549 cast 'FlatSequenceOuterTunnel' | OuterTerminal #26573 wire #26702 | InnerTerminal #26561 wire #26534 | is_source False | owner 'FlatSequenceOuterTunnel'#26549 | err '' A '' B '' | errs 
+   READ[OUT] uid 26775 -> self 'FlatSequenceOuterTunnel'#26775 cast 'FlatSequenceOuterTunnel' | OuterTerminal #26816 wire #26702 | InnerTerminal #26789 wire #26834 | is_source True | owner 'FlatSequenceOuterTunnel'#26775 | err '' A '' B '' | errs 
+  FACT  F2 new objects by class {'Terminal': 10, 'OuterTerminal': 1, 'Invoke': 1, 'InnerTerminal': 1, 'LoopTunnel': 1, 'Wire': 4, 'FlatSequenceOuterTunnel': 2}; non-terminal [(26262, 'Invoke', ('Diagram', 639)), (26507, 'LoopTunnel', ('WhileLoop', 637)), (26549, 'FlatSequenceOuterTunnel', ('FlatSequence', 681)), (26775, 'FlatSequenceOuterTunnel', ('FlatSequence', 12938))]
+  FACT  F2 FS tunnel faces [{'uid': 26549, 'class': 'FlatSequenceOuterTunnel', 'face_a': 'OuterTerminal', 'term_a': 26573, 'wire_a': 26702, 'face_b': 'InnerTerminal', 'term_b': 26561, 'wire_b': 26534, 'uid_back': 26549, 'err': '', 'err_a': '', 'err_b': '', 'errs': ''}, {'uid': 26775, 'class': 'FlatSequenceOuterTunnel', 'face_a': 'OuterTerminal', 'term_a': 26816, 'wire_a': 26702, 'face_b': 'InnerTerminal', 'term_b': 26789, 'wire_b': 26834, 'uid_back': 26775, 'err': '', 'err_a': '', 'err_b': '', 'errs': ''}]
+  FACT  HOP w26834 from [25591, 'queue out', 23118, 'Function', 'ParameterTerminal', 13236] to [[26789, 'queue out', 26775, 'FlatSequenceOuterTunnel', 'Terminal', 13236]]
+  FACT  HOP w26702 from [26816, 'queue out', 26775, 'FlatSequenceOuterTunnel', 'Terminal', 536] to [[26573, 'queue out', 26549, 'FlatSequenceOuterTunnel', 'Terminal', 536]]
+  FACT  HOP w26534 from [26561, 'queue out', 26549, 'FlatSequenceOuterTunnel', 'Terminal', 686] to [[26525, 'queue out', 26507, 'LoopTunnel', 'OuterTerminal', 686]]
+  FACT  HOP w26498 from [26510, 'queue out', 26507, 'LoopTunnel', 'InnerTerminal', 639] to [[26309, 'queue', 26300, 'Function', 'ParameterTerminal', 639]]
+  PASS  F2b after-graph read and the chain walked from t25591  4
+  FACT  F2d BROKEN-WIRE COUNT: Wire 1945 -> 1916 after Remove Bad Wires = 29 bad wire(s); ExecState after 0
+  PASS  F2d Remove Bad Wires ran on the scratch (per-segment survival = not broken)  {'bad': 29, 'wires_before': 1945, 'wires_after': 1916, 'exec_state': 0}
+  ROW   F route closes t25591 -> #26300.'queue' with every segment surviving RBW : observed=True expected=measured, not predicted
+  FACT  SCRATCH-VERIFY record G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\scratch_verify\stagexec.connect_nested_across_fs_c120_20260928_153812.json (PASS); opmodel G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\opmodels\connect_across_fs.json
+  PASS  F4 records written
+
+---------- [H] HYGIENE
+  FACT  close_panel(scratch_c120_fs_20260928_153812.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 8, 'closed': 8, 'live': 0, 'cached_op_vis': 10}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 8, 'closed': 8, 'live': 0, 'cached_op_vis': 10}
+  FACT  LabVIEW handle count AFTER the work: 46020
+  PASS  H4 scratch deleted: scratch_c120_fs_20260928_153812.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c120_fs_20260928_153812.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 9353936895141d3ec2f890649c5cf22f / after 9353936895141d3ec2f890649c5cf22f
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33988
+
+====================================================================================================
+=== GATES: 13 pass / 1 fail; failing: F1a src frame in FlatSequence A, sink body in While #637 in FlatSequence B != A, both reach the TopLevelDiagram
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c120_fs.json   elapsed 168.4 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":13,"fail":1},"first_fail":"F1a src frame in FlatSequence A, sink body in While #637 in FlatSequence B != A, both reach the TopLevelDiagram","artefacts":[]}
+LabVIEW gone at exit: True
+BGRUN END rc=1 after 173s

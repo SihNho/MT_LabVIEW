@@ -1,0 +1,72 @@
+{
+ "schema": "task/1",
+ "id": "120-5",
+ "kind": "build",
+ "goal": "PD237(n) OFFLINE prep: QRT-W step-split page docs/qrtw-plan.md on the pool graph + step A0 (7 typed Obtains on 686) planned to launch-ready: sim FINAL, dry, prerun, prior-art",
+ "why": "120-1/120-2 gave the real pool graph and every field type; A0 needs no Dequeue/Case/FS crossing, so it is planned while 120-4 verifies those routes",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_120-5.md", "md5": "bf8e66faef53986b3855362f450788de"},
+  {"path": "tools/bench/graph_qrt_pool_20260928.json", "md5": "d265b2833970df40fb9252224d5feb35"},
+  {"path": "tools/bench/facts_c120_types.json", "md5": "d0baba8f29f1a6126709cbff18bbadc9"},
+  {"path": "tools/bench/facts_c120_qrtw.json", "md5": "6af9be89469e431463a4851ddcf883a9"},
+  {"path": "tools/bench/qrtw_rows_draft.json", "md5": "368909f8ca0d9843b4db0bf474737e89"},
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "2defcce5871aa0dfde5d28ca36b88bcb"},
+  {"path": "tools/recipes/stage_d1_qrt_pool.py", "md5": "af3edc8379871e051409d0aa4d8e38bc"},
+  {"path": "tools/bench/errorlist_expected_D1_qrt_pool_20260928_141055.json", "md5": "46b423aa3eb3c378da93a98c9b18e0bb"}
+ ],
+ "requires": [
+  {"kind": "verb", "name": "read_term_type", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "queue_node", "where": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/prior_art_review.py"}
+ ],
+ "pass": [
+  "P1 docs/qrtw-plan.md: every QRT-W row in steps A0..OV, <=15 rows/step (25 only if proven), routes + saved names + gates (brief Part P)",
+  "A1 plan_qrtw_a0.json: 7 Obtains on 686, exact-type donors, max 20, data_stream true; stagesim FINAL",
+  "A2 recipe tools/recipes/stage_d1_qrtw_a0.py <=120 lines with the brief's gates; dry PASS; stage_prerun --prerun PASS",
+  "A3 prior-art review dispatched and ANSWERED; verdict novel or released (REFUTED/FIXED) in the review file",
+  "A missing donor route for a type -> reported with the grep, not improvised"
+ ],
+ "outputs": [
+  "docs/qrtw-plan.md",
+  "tools/bench/plan_qrtw_a0.json",
+  "tools/recipes/stage_d1_qrtw_a0.py",
+  "tools/bench/cards/result_120-5.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "docs/qrtw-plan.md",
+   "tools/bench/plan_qrtw*",
+   "tools/recipes/stage_d1_qrtw_a0*",
+   "tools/bench/sim/**",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stop_records.json",
+   "tools/bench/priorart*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_120-5.json",
+   "tools/bench/cards/requires_120-5.json",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 75},
+ "rules": [
+  "labview none: no LabVIEW, no COM; PD237 (a)-(m) are decided, apply them; unsettled -> OPEN, not decided here",
+  "do not edit stagexec.py/stagesim.py/gscript.py/stageplan.json (card 120-4 may, in parallel); a tool gap -> report",
+  "no launch and no scratch run in this card",
+  "gate refusal -> BLOCKED or tools/gate_fp.py log; never an exempt route",
+  "facts <=10 file:line; OPEN <=3"
+ ],
+ "advances": ["M3", "R1"]
+}

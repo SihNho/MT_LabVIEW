@@ -1,0 +1,23 @@
+{
+ "schema_note": "card 120-2 T2/T3 (PD237(k)): FINALIZED decision-row plan of tools/bench/diag_c120_types.py on a never-saved byte copy of the SAVED pool bed. Tools only: the op-hygiene probe of the new reader OpTermDataType_v0 and read_term_type on 9 terminals. No wire, no create, no delete, no save, no VI run.",
+ "input": {"vi": "D1_qrt_pool_20260928_141055.vi", "md5": "9353936895141d3ec2f890649c5cf22f", "graph": "tools/bench/graph_qrt_pool_20260928.json"},
+ "hygiene": {"vi": "DonorPool_v0.vi", "md5": "fac6e4ab0fc4f7513d1a98df31e1f4e8", "calls": 2000, "index": 0},
+ "terms": [
+  {"key": "F1", "node": 30117, "term": 30145, "name": "Value", "src": "facts_c120_qrtw.json:1330-1355"},
+  {"key": "F2", "node": 4580, "term": 4728, "name": "Value", "src": "facts_c120_qrtw.json:1356-1381"},
+  {"key": "F3", "node": 637, "term": 644, "name": "i", "src": "facts_c120_qrtw.json:1382-1407", "known": "I32 (While Loop iteration terminal, NI Help)"},
+  {"key": "F4", "node": 5119, "term": 6323, "name": "x-y", "src": "facts_c120_qrtw.json:1408-1433"},
+  {"key": "F5", "node": 11608, "term": 11614, "name": "output cluster", "src": "facts_c120_qrtw.json:1434-1459"},
+  {"key": "R0", "node": 2626, "term": 2813, "name": "appended array", "src": "facts_c120_qrtw.json:1460-1485"},
+  {"key": "OBT", "node": 23105, "term": 25391, "name": "element data type", "src": "graph_qrt_pool_20260928.json (owner 23105)"},
+  {"key": "K_DBL", "node": 5058, "term": 5124, "name": "x,y,z array out", "src": "facts_c120_qrtw.json:1117-1311", "known": "DBL array (docs/NAMES.md:37)"},
+  {"key": "K_I32", "node": 5058, "term": 5171, "name": "pos in cal image out", "src": "facts_c120_qrtw.json:1117-1311", "known": "I32 array (docs/NAMES.md:41)"}
+ ],
+ "decisions": [
+  {"id": "T-0", "action": "stage", "what": "stagekit Stage: restart LabVIEW, byte copy of the pool bed as the work copy = a scratch (never saved)"},
+  {"id": "T-H", "action": "read", "what": "op-hygiene probe OpTermDataType_v0 on DonorPool_v0 Traverse('Terminal')[0] (read-only, never run): 1 warm + 2000 calls, 0 errors, same bytes, handles flat +-100 -> op_hygiene/OpTermDataType_v0.json"},
+  {"id": "T-R", "action": "read", "what": "gscript.read_term_type on the 9 terminals of `terms` (uid echo, hex == u8, no error) -> facts_c120_types.json"},
+  {"id": "T-K", "action": "read", "what": "known controls: K_DBL top TD Array of DBL, K_I32 top TD Array of I32, F3 top TD I32; K_DBL sig != K_I32 sig"},
+  {"id": "T-X", "action": "discard", "what": "close(): scratch deleted, bed md5 unchanged, donor md5 unchanged, LabVIEW killed and gone"}
+ ]
+}

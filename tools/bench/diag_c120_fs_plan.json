@@ -1,0 +1,18 @@
+{
+ "schema_note": "card 120-2 Part F (PD237(k)): FINALIZED decision-row plan of tools/bench/diag_c120_fs.py, MEASURE ONLY, on a never-saved byte copy of the SAVED pool bed (the bed's own nesting = the scratch). One duplicate node, one connect through the existing 'nested' route, read-backs, Remove Bad Wires on the scratch last; nothing saved, scratch deleted.",
+ "input": {"vi": "D1_qrt_pool_20260928_141055.vi", "md5": "9353936895141d3ec2f890649c5cf22f", "graph": "tools/bench/graph_qrt_pool_20260928.json"},
+ "src": {"node": 23118, "term": 25591, "name": "queue out", "diagram": 13236, "why": "BARE Obtain on FS2 frame 2 of 10 (facts_c120_qrtw.json:2-46,303-352)"},
+ "sink": {"donor": 23136, "name": "queue", "diagram": 639, "loop": 637, "pos": [3200, 1150], "why": "#639 = body of While #637 on #686 = FS1 frame 9 of 10 (facts_c120_qrtw.json:749-834); duplicate of the pool's own Enqueue"},
+ "route": {"kind": "nested", "wrapper": "build_opconnectnested_v1.connect_nested_v1", "cite": "tools/stagexec.py:857-859,1940-1945"},
+ "decisions": [
+  {"id": "F-0", "action": "stage", "what": "stagekit Stage: restart LabVIEW, byte copy of the pool bed as the work copy = a scratch (never saved)"},
+  {"id": "F-1a", "action": "read", "what": "owner chains of #13236 and #639 up to the TopLevelDiagram (owner_of)"},
+  {"id": "F-1b", "action": "create", "what": "gscript.create_primitive_nested(work, 639, donor=work #23136): one Enqueue on the loop body"},
+  {"id": "F-2a", "action": "read", "what": "wiki_build.read_live BEFORE (objects + terminals)"},
+  {"id": "F-2b", "action": "wire", "what": "connect_nested_v1: sink D[639].N[enq].'queue' <- src D[13236].N[#23118].'queue out'"},
+  {"id": "F-2c", "action": "read", "what": "read_live AFTER; new objects + owner_of; read_fs_tunnels on new FS tunnels; chain walk from t25591 to the Enqueue 'queue'"},
+  {"id": "F-2d", "action": "read", "what": "Remove Bad Wires on the scratch (mutating, last); which chain wires survive = not broken"},
+  {"id": "F-4", "action": "write", "what": "scratch_verify record + tools/bench/opmodels/connect_across_fs.json sample"},
+  {"id": "F-X", "action": "discard", "what": "close(): scratch deleted, bed md5 unchanged, LabVIEW killed and gone"}
+ ]
+}

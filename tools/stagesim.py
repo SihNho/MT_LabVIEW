@@ -309,7 +309,9 @@ def resolve_diag(st, ref):
     if isinstance(ref, int) and not isinstance(ref, bool):
         return ref
     if isinstance(ref, str) and ref.startswith("new:"):
-        if not ref.endswith(".body"):
+        # card 120-3 R2: + 'new:<case alias>.f<k>' = frame k of a Case structure an earlier `create` made (op_create
+        # CaseStructure registers exactly these symbols); a '.body' ref is resolved exactly as before
+        if not ref.endswith(".body") and not re.search(r"\.f[0-9]+$", ref):
             raise SimError("diagram reference {0!r}: a symbolic diagram is 'new:<alias>.body'".format(ref))
         if ref not in st["sym"]:
             raise SimError("symbolic diagram {0} is not created by any earlier action of this plan (unknown alias or "
@@ -353,6 +355,11 @@ def resolve_addr(st, a, want_source):
     if side:
         rows = [r for r in rows if r["term_class"] == ("InnerTerminal" if side == "inner" else "OuterTerminal")]
     rows = [r for r in rows if bool(r["is_source"]) == bool(want_source)]
+    ctf = (st.get("case_tunnel_frame") or {}).get(str(uid))
+    if ctf is not None and len(set(int(r["frame_diagram"] or 0) for r in rows)) > 1:
+        # card 120-3 R2: a case tunnel THIS plan made has one inner face per frame; its group wires the frame named by
+        # the `tunnel` action's `body` (op_tunnel -> _case_tunnel) - only that frame's face is the address
+        rows = [r for r in rows if r["term_class"] != "InnerTerminal" or int(r["frame_diagram"] or 0) == int(ctf)]
     uniq = dict(((r["term_uid"], r["term_class"], r["frame_diagram"]), r) for r in rows)
     if len(uniq) != 1:
         raise SimError("address {0} ({1}) resolves to {2} {3} terminal(s): {4}".format(
@@ -802,9 +809,41 @@ def op_add_shift_reg(st, a, P, S1, labels):
             "parent": parent, "terms": terms}, []
 
 
+def _case_tunnel(st, a, case, body, parent):
+    """card 120-3 R2 (i)/(ii): a DATA tunnel of a Case structure, made by the border-crossing wire of its `tunnel` group.
+    MEASURED shape (tools/bench/selftest_c120_caseshape.log, graph_qrt_pool_20260928.json #2222/#2857/#3826): ONE
+    SelectorTunnel object (owner CaseStructure), ONE OuterTerminal on the parent diagram and ONE InnerTerminal on EVERY frame;
+    dir 'in' = outer sink + inner sources, dir 'out' = outer source + inner sinks. The group wires the frame `body` only;
+    the other frames' inner faces stay UNWIRED. ASSUMED, UNMEASURED here (no sample of a freshly scripted case tunnel):
+    (1) connecting across a case border makes exactly this object (as a loop border makes a LoopTunnel, tunnel.json);
+    (2) an OUTPUT tunnel is created with 'Use Default If Unwired' OFF (LabVIEW's default), so each unwired frame breaks
+    the VI until it is wired or the flag is set - recorded as `broken_unless_wired`, never hidden."""
+    frames = [int(k) for k, v in (st.get("owners") or {}).items() if v[0] == "CaseStructure" and int(v[1] or 0) == case]
+    if body not in frames:
+        raise SimError("tunnel {0}: body #{1} is not a frame of CaseStructure #{2} (frames {3})".format(a.get("as"), body, case, frames))
+    if a.get("indexing"):
+        raise SimError("tunnel {0}: a case tunnel has no indexing mode".format(a.get("as")))
+    din = a.get("dir", "in") == "in"
+    T = _new_obj(st, "SelectorTunnel", "CaseStructure")
+    o = _new_term(st, T, "SelectorTunnel", "OuterTerminal", not din, parent)
+    inners = [(f, _new_term(st, T, "SelectorTunnel", "InnerTerminal", din, f)) for f in frames]
+    st.setdefault("case_tunnel_frame", {})[str(T)] = body
+    st["diagrams"][str(body)] = parent
+    unw = [f for f in frames if f != body]
+    eff = {"tunnel": _sym(st, a.get("as") or "T{0}".format(-T), T), "case": case, "dir": a.get("dir", "in"), "indexing": False,
+           "outer": o, "inner": dict(inners)[body], "inners": [t for _f, t in inners], "body": body, "parent": parent,
+           "frame": body, "unwired_frames": unw, "model": "measured shape (selftest_c120_caseshape.log); creation UNMEASURED"}
+    if not din:
+        eff.update(use_default_if_unwired="ASSUMED False (LabVIEW default; UNMEASURED for a scripted case tunnel)",
+                   broken_unless_wired=unw)
+    return eff, []
+
+
 def op_tunnel(st, a, P, S1, labels):
     loop, body = resolve_uid(st, a["loop"]), resolve_diag(st, a["body"])
     parent = _parent_of(st, body, a, labels)
+    if obj_class(st, loop) == "CaseStructure":          # card 120-3 R2: a case's data tunnel (a loop is unchanged below)
+        return _case_tunnel(st, a, loop, body, parent)
     T = _new_obj(st, "LoopTunnel", obj_class(st, loop) or "WhileLoop")
     din = a.get("dir", "in") == "in"
     o = _new_term(st, T, "LoopTunnel", "OuterTerminal", not din, parent)
@@ -1020,6 +1059,74 @@ def op_remove_bad_wires(st, a, P, S1, labels):
     return {"removed_wires": sorted(bad), "dropped_fsit": dropped}, []
 
 
+# card 120-3 R1 (PD237(k)): the Dequeue Element node gscript.queue_node('dequeue') places (gscript.py:1339-1371). Terminal
+# NAMES and DIRECTIONS are MEASURED: docs/NAMES.md:993-995 (test_opqueue.log: "Dequeue Element: queue, timeout in ms (-1),
+# error in (no error) -> queue out, element, timed out?, error out"), the same set as docs/NAMES.md:910-911. UNMEASURED for
+# Dequeue: the rows' term_class (only Obtain's rows were read - ParameterTerminal, tools/bench/facts_c120_qrtw.json:119-200)
+# and the Terminals[] read order - the scratch check reads both (tools/bench/scratch_plan_c120_routes.md).
+QUEUE_TERM_TABLE = {"dequeue": (("queue", False), ("timeout in ms (-1)", False), ("error in (no error)", False),
+                                ("queue out", True), ("element", True), ("timed out?", True), ("error out", True))}
+QUEUE_TERM_UNMEASURED = {"dequeue": ("term_class", "Terminals[] read order")}
+# card 120-3 R2: gscript.case_in (gscript.py:3508-3543) = build_case on the TOP-LEVEL diagram with its selector wired from
+# the top-level panel control `label`, then OpMoveIn_v0 into the loop body (which SEVERS that wire, docs/cycle27-plan.md:
+# 846-851), then owner + frames read back. Frame names default False/True (a boolean selector).
+CASE_FRAMES_DEFAULT = ("False", "True")
+CASE_ASSUMED = ("the moved case keeps an UNWIRED selector (the severed wire leaves no stub on the case side)",
+                "the panel control `label` is left as it was before case_in (no stub wire) - UNMEASURED",
+                "build_case accepts the frame names as given for a boolean selector - UNMEASURED (its contract names "
+                "'0, Default','1' for a numeric one, gscript.py:3508)")
+
+
+def _dequeue_check(a):
+    """card 120-3 R1: every DECLARED terminal of a dequeue create is in the measured table with the same direction."""
+    tab = dict(QUEUE_TERM_TABLE["dequeue"])
+    bad = [(t["name"], t["is_source"]) for t in a.get("terminals") or [] if tab.get(t["name"]) is None or
+           bool(tab[t["name"]]) != bool(t["is_source"])]
+    if bad or a.get("src_into") != "queue":
+        raise SimError("create dequeue {0}: declared terminal(s) {1} not in the measured Dequeue table (docs/NAMES.md:993-995)"
+                       "{2}".format(a.get("id"), bad, "" if a.get("src_into") == "queue" else
+                                    "; src_into {0!r} is not the refnum sink 'queue'".format(a.get("src_into"))))
+
+
+def _create_case(st, a, dg, name, eff):
+    """card 120-3 R2: a Case structure in a LOOP BODY (gscript.case_in's contract, gscript.py:3509). MEASURED shape of an
+    existing case (tools/bench/selftest_c120_caseshape.log, graph_qrt_pool_20260928.json #2222/#2857/#3826): the
+    CaseStructure object (owner Diagram), one frame Diagram per frame (owners[frame] = [CaseStructure, case]), and the
+    SELECTOR = a 'Tunnel' object (owner CaseStructure) with ONE unnamed OuterTerminal SINK on the parent diagram and ONE
+    unnamed InnerTerminal SOURCE per frame. The selector comes out UNWIRED (case_in's move severs it) and is wired by a later
+    `wire` to 'new:<selector_as>.outer'. Symbols: new:<as>, new:<as>.f<k> (frame k, in `frames` order), new:<selector_as>."""
+    names = list(a.get("frames") or CASE_FRAMES_DEFAULT)
+    if not name or not a.get("selector_as") or not a.get("label"):
+        raise SimError("create CaseStructure needs `as`, `selector_as` and `label` (the top-level panel control case_in wires "
+                       "to the selector before the move severs it)")
+    if len(names) < 2 or len(set(names)) != len(names):
+        raise SimError("create CaseStructure {0}: frames {1} (need >= 2 distinct names)".format(name, names))
+    own = (st.get("owners") or {}).get(str(dg))
+    if not own or own[0] not in LOOP_CLS:
+        raise SimError("create CaseStructure on diagram {0}: not a For/While body in the owners map ({1}) - gscript.case_in "
+                       "places a case in a loop body (gscript.py:3509)".format(dg, own))
+    cts = [r for r in st["terminals"] if r["term_class"] == "ControlTerminal" and r["term_name"] == a["label"]]
+    if len(cts) != 1 or not cts[0]["is_source"]:
+        raise SimError("create CaseStructure {0}: {1} panel terminal(s) labelled {2!r}, need exactly one CONTROL (case_in's "
+                       "build_case wires the selector from it by label)".format(name, len(cts), a["label"]))
+    u = _new_obj(st, "CaseStructure", "Diagram")
+    frames = []
+    for _k in names:
+        f = new_uid(st)
+        st["diagrams"][str(f)] = dg
+        st.setdefault("owners", {})[str(f)] = ["CaseStructure", u]
+        frames.append(f)
+    S = _new_obj(st, "Tunnel", "CaseStructure")
+    so = _new_term(st, S, "Tunnel", "OuterTerminal", False, dg)
+    si = [_new_term(st, S, "Tunnel", "InnerTerminal", True, f) for f in frames]
+    key = _sym(st, name, u)
+    fk = [_sym(st, "{0}.f{1}".format(name, k), f) for k, f in enumerate(frames)]
+    eff.update(node=key, frames=frames, frame_syms=fk, frame_names=names, selector=_sym(st, a["selector_as"], S),
+               selector_outer=so, selector_inners=si, selector_ct=cts[0]["term_uid"], selector_ct_wired=bool(cts[0]["wire_uid"]),
+               assumed=list(CASE_ASSUMED))
+    return eff, []
+
+
 def _join(st, s, d):
     """Wire source row s to sink row d (d must be unwired): s's wire is branched, else a new (negative) wire."""
     if d["wire_uid"]:
@@ -1092,6 +1199,11 @@ def op_create(st, a, P, S1, labels):
             eff["wire"] = _join(st, row, d)
         eff.update(node=_sym(st, name or "C{0}".format(-t), t), terminals=[t], visible=a.get("visible"))
         return eff, []
+    if cls == "CaseStructure" and a.get("donor_uid") is None and not a.get("prim"):
+        # card 120-3 R2: a NEW case (gscript.case_in); a copied case (donor_uid, copy_in) keeps the generic path below
+        return _create_case(st, a, dg, name, eff)
+    if a.get("queue_kind") == "dequeue":         # card 120-3 R1: the declared terminals against the measured table
+        _dequeue_check(a)
     u = _new_obj(st, cls, "Diagram")
     decl = list(a.get("terminals") or [])
     d = None

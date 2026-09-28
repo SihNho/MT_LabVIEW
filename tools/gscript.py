@@ -4284,6 +4284,98 @@ def read_const_value(target, uid):
     return out
 
 
+TERMTYPE_LABELS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench", "build_op_termtype_labels.json")
+OP_TERM_DATA_TYPE = os.path.join(CLAUDEDEV, "OpTermDataType_v0.vi")
+TD_NAMES = {0x01: "I8", 0x02: "I16", 0x03: "I32", 0x04: "I64", 0x05: "U8", 0x06: "U16", 0x07: "U32", 0x08: "U64",
+            0x09: "SGL", 0x0A: "DBL", 0x0B: "EXT", 0x0C: "CSG", 0x0D: "CDB", 0x0E: "CXT", 0x15: "Enum U8", 0x16: "Enum U16",
+            0x17: "Enum U32", 0x21: "Boolean", 0x30: "String", 0x32: "Path", 0x40: "Array", 0x50: "Cluster",
+            0x53: "Variant", 0x54: "Waveform", 0x70: "Refnum", 0xF1: "Typedef"}
+
+
+def parse_type_descriptors(b):
+    """The TYPE half of a flattened LabVIEW variant (layout measured, docs/NAMES.md:1153-1155): U32 version, I32 nTDs,
+    nTDs x (I16 length, I16 code, body), I16 index count, that many I16 top-level indices. Returns {version, tds:
+    [{len, flags, code, name, hex, ndims/elem_index | elems}], top, sig, canon} where `sig` = the TOP-LEVEL TD's bytes in
+    hex (a type WITH its labels: two terminals of one type but different names differ in the label bytes) and `canon` =
+    _td_canon (label-free, Array/Cluster resolved) - or {err, raw}."""
+    import struct
+    try:
+        ver, n = struct.unpack(">Ii", b[:8]); p, tds = 8, []                    # noqa: E702
+        if not 0 < n <= 256:
+            return {"err": "bad #TDs %d" % n, "raw": b[:64].hex()}
+        for _ in range(n):
+            ln, code = struct.unpack(">hh", b[p:p + 4])
+            if ln < 4 or p + ln > len(b):
+                return {"err": "bad TD length %d at %d" % (ln, p), "raw": b[:64].hex()}
+            tds.append({"len": ln, "flags": (code >> 8) & 0xFF, "code": code & 0xFF, "name": TD_NAMES.get(code & 0xFF, "0x%02x" % (code & 0xFF)),
+                        "hex": b[p:p + ln].hex()})
+            # MEASURED 2026-09-28 (tools/bench/diag_c120_types.log:45-50, run 1): inside a flattened variant an Array TD is
+            # I16 ndims, ndims x I32 size, then an I16 INDEX into this TD list (not an inline element TD); a Cluster TD is
+            # I16 n, then n x I16 indices (F5 '000a 0050 0002 0001 0003').
+            if code & 0xFF == 0x40 and ln >= 12:
+                nd = struct.unpack(">h", b[p + 4:p + 6])[0]; q = p + 6 + 4 * nd                     # noqa: E702
+                if 0 < nd <= 64 and q + 2 <= p + ln:
+                    tds[-1].update(ndims=nd, elem_index=struct.unpack(">h", b[q:q + 2])[0])
+            elif code & 0xFF == 0x50 and ln >= 6:
+                k = struct.unpack(">h", b[p + 4:p + 6])[0]
+                if 0 <= k <= 256 and p + 6 + 2 * k <= p + ln:
+                    tds[-1]["elems"] = list(struct.unpack(">%dh" % k, b[p + 6:p + 6 + 2 * k]))
+            p += ln
+        k = struct.unpack(">h", b[p:p + 2])[0]
+        top = list(struct.unpack(">%dh" % k, b[p + 2:p + 2 + 2 * k])) if 0 < k <= 16 else []
+        t = tds[top[0]] if top and 0 <= top[0] < len(tds) else None
+        return {"version": "%08x" % ver, "tds": tds, "top": top, "sig": t["hex"] if t else None,
+                "top_name": t["name"] if t else None, "canon": _td_canon(tds, top[0]) if t else None}
+    except Exception as e:                                                          # noqa: BLE001
+        return {"err": "%s: %s" % (type(e).__name__, str(e)[:80]), "raw": b[:64].hex()}
+
+
+_TD_PLAIN = set(range(0x01, 0x0F)) | {0x21, 0x30, 0x32, 0x53}
+
+
+def _td_canon(tds, i, depth=0):
+    """A LABEL-FREE canonical type string built from the TD list (Array/Cluster resolved through their indices):
+    'DBL', 'Array1D<DBL>', 'Cluster{Array1D<DBL>,Array1D<DBL>}'. Refnum/typedef/other TDs keep their body bytes (which
+    may still carry a label) after the name. The type-EQUALITY key; `sig` keeps the labels."""
+    if depth > 20 or not 0 <= i < len(tds):
+        return "?"
+    t = tds[i]
+    if t["code"] == 0x40:
+        return "Array%dD<%s>" % (t.get("ndims", 0), _td_canon(tds, t["elem_index"], depth + 1) if "elem_index" in t else "?")
+    if t["code"] == 0x50:
+        return "Cluster{%s}" % ",".join(_td_canon(tds, e, depth + 1) for e in t.get("elems", []))
+    return t["name"] if t["code"] in _TD_PLAIN else "%s:%s" % (t["name"], t["hex"][8:])
+
+
+def read_term_type(target, term_uid, index=None):
+    """Card 120-2 T2 (PD237(k)): READ-ONLY data type of terminal #term_uid (any GObject of class Terminal, e.g. a node's pin,
+    a loop's `i`, a tunnel face) through OpTermDataType_v0 (tools/bench/build_op_termtype.py): Traverse('Terminal')[i] -> TMSC
+    -> Terminal.Data Type 634A008 (Variant) -> Flatten To String -> Unflatten(U8[]) -> U8 SAFEARRAY + lowercase hex (two
+    independent lossless readbacks, the OpConstValue_v1c route). `index` = the Traverse('Terminal') index when the caller
+    already read it on the SAME unmutated target; else it is re-read here. Returns {echo, index, bytes_hex, hex_ok, types, err}:
+    `types` = parse_type_descriptors(bytes) - compare two terminals by `types['sig']` (label-exact) or by the TD code list."""
+    with open(TERMTYPE_LABELS, encoding="utf-8") as f:
+        lab = json.load(f)
+    ensure_loaded(target)
+    i = _uid_index(target, "Terminal", term_uid) if index is None else int(index)
+    vi = op(OP_TERM_DATA_TYPE)
+    _set_common(vi, target, lab, "Terminal", i)
+    vi.SetControlValue(lab["UID"], 0); vi.SetControlValue(lab["hex"], "POISON"); vi.SetControlValue(lab["u8"], [])  # noqa: E702
+    vi.SetControlValue(lab["size"], False)
+    _run(vi)
+    raw, hx = vi.GetControlValue(lab["u8"]), vi.GetControlValue(lab["hex"])
+    try:
+        b = bytes(raw) if raw is not None and not isinstance(raw, str) else b""
+    except (TypeError, ValueError):
+        b = bytes(int(x) for x in raw)
+    out = {"echo": int(vi.GetControlValue(lab["UID"])), "index": i, "bytes_hex": b.hex(),
+           "hex_ok": isinstance(hx, str) and hx == b.hex() and bool(b), "err": str(_err(vi, lab["Err"]) or ""),
+           "rest": vi.GetControlValue(lab["rest"]), "types": parse_type_descriptors(b) if b else {"err": "no bytes"}}
+    if out["echo"] != int(term_uid):
+        out["err"] = (out["err"] + " | " if out["err"] else "") + "uid echo %r != #%s" % (out["echo"], term_uid)
+    return out
+
+
 C116D_LABELS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench", "diag_c116d_oplabels.json")   # v0 (retired)
 C117A_LABELS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench", "diag_c117a_oplabels.json")
 

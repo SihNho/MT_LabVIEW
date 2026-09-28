@@ -483,6 +483,13 @@ Terminal short names read off the machine (probe_castfree5.log), all compile WIT
   property node WIRED to a Terminal reference inside a SAVED op VI — **a new op**, which cycle 66's briefs forbid.
   **So a coercion on the S3a/S3b divided focus path is UNMEASURED, which is NOT the same as absent.** The next cycle
   can build the op; the ID risk and the short-name risk are both now retired.
+  ✅ **THE VALUE READER IS BUILT (card 120-2, 2026-09-28): `claudeDev\OpTermDataType_v0.vi`** (md5 6851527e,
+  `tools/bench/build_op_termtype.log` 20/0; op-hygiene PASS 2,000 calls, handles 45752 -> 45747,
+  `tools/bench/op_hygiene/OpTermDataType_v0.json`), wrapper **`gscript.read_term_type(target, term_uid)`**: Traverse('Terminal')
+  -> Terminal.Data Type -> Flatten To String -> U8[] + hex. Compare types by `types['canon']` (label-free, e.g. `Array1D<DBL>`)
+  or `types['sig']` (with labels). Measured layout: inside the flattened variant an **Array TD = I16 ndims, ndims x I32, then an
+  I16 INDEX into the TD list; a Cluster TD = I16 n, n x I16 indices** (`tools/bench/diag_c120_types.log:45-50`, review
+  `archive/peer/2026-09-28-c120-types-td-index.md`). Coerce Dot? is still unread.
 
 **CORRECTION, 2026-09-21 (cycle 66 material #4) — supersedes `tools/bench/diag_c66_s3b_m3.log:133` `TYPE READ
 UNREACHABLE`.** Cycle 66 dispatch #2 concluded the type read was unreachable after surveying **eight already-wrapped

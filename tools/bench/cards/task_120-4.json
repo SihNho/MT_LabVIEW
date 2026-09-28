@@ -1,0 +1,82 @@
+{
+ "schema": "task/1",
+ "id": "120-4",
+ "kind": "measure",
+ "goal": "PD237(m): install the stageplan widening, then run the Dequeue/Case route scratch verification (scratch_plan_c120_routes.md) and a stage_prerun on its plan",
+ "why": "120-3 built the dequeue and case plan routes offline; Dequeue term_class and the case output tunnel's use-default are UNMEASURED, and no case plan has ever been prerun",
+ "inputs": [
+  {"path": "tools/bench/scratch_plan_c120_routes.md", "md5": "00137f11a62188ba042847dbae870b51"},
+  {"path": "tools/bench/selftest_c120_stageplan_proposed.json", "md5": "6100149d43ab628fc0b21ab506059787"},
+  {"path": "docs/protocol/stageplan.json", "md5": "4db66990e15c7be063b92e2c81f45eb5"},
+  {"path": "tools/stagexec.py", "md5": "287edb989b04ad2717dd07f2a3a25223"},
+  {"path": "tools/stagesim.py", "md5": "da5f208db5ff6cdf97245f83783c98dc"},
+  {"path": "tools/gscript.py", "md5": "0497ddd243e0401888df1081c9be752c"},
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "2defcce5871aa0dfde5d28ca36b88bcb"},
+  {"path": "tools/bench/cards/result_120-3.json"}
+ ],
+ "requires": [
+  {"kind": "verb", "name": "queue_node", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "case_in", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "read_term_type", "where": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"}
+ ],
+ "pass": [
+  "S0 stageplan.json widened from the proposed file; selftest_protocol* re-run 0 new failures vs 48/0 and 66/0",
+  "S1 scratch run of scratch_plan_c120_routes.md PASS: Dequeue placed via the plan route, its terminals + term_class read back",
+  "S2 case via the plan route: frames, selector, in/out tunnels, node-in-frame read back; output tunnel use-default MEASURED",
+  "S3 stagesim models corrected to the measured values if they differ (stagesim/stagexec self-tests 0 new failures)",
+  "S4 stage_prerun --prerun PASS on the scratch plan (or its first refusal returned); scratch_verify record; LabVIEW gone"
+ ],
+ "outputs": [
+  "docs/protocol/stageplan.json",
+  "tools/bench/scratch_verify/*c120*",
+  "tools/bench/cards/result_120-4.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "docs/protocol/stageplan.json",
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c120*",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/scratch_c120*",
+   "tools/bench/diag_c120_s*",
+   "tools/bench/plan_scratch_c120*",
+   "tools/bench/selftest_c120*",
+   "tools/bench/selftest_protocol*",
+   "tools/bench/selftest_stagexec*",
+   "tools/bench/selftest_stagesim*",
+   "tools/bench/opmodels/**",
+   "tools/bench/sim/**",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_120-4.json",
+   "tools/bench/cards/requires_120-4.json",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "tools/bench/INDEX.md",
+   "docs/NAMES.md",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 70},
+ "rules": [
+  "scratch VIs only; the bed is not opened; scratch files created and deleted in the card",
+  "stagexec/stagesim edits only to match a MEASURED value, additive; card 120-5 imports them offline in parallel",
+  "scripts <=120-line stagekit; LabVIEW via py tools/bgrun.py --material --max-min N -- ...; hold to BGRUN END",
+  "failed prediction -> hypothesis peer; gate refusal -> BLOCKED or tools/gate_fp.py log; never an exempt route",
+  "facts <=10 file:line; OPEN <=3"
+ ],
+ "unblocks": "M3"
+}

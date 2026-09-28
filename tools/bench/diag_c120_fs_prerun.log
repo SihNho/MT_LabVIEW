@@ -1,0 +1,132 @@
+BGRUN START 2026-09-28 15:13:13 limit 5.0 min: py -u tools/stage_prerun.py --prerun tools/bench/diag_c120_fs.py
+BGRUN PID 20448
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 9353936895141d3ec2f890649c5cf22f  got 9353936895141d3ec2f890649c5cf22f
+  PASS  DRY graph JSON for input md5 9353936895141d3ec2f890649c5cf22f  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_qrt_pool_20260928.json
+
+---------- [F1] nesting read back + the sink
+  FACT  F1a chain #13236: [(13236, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0)]
+  FACT  F1a chain #639: [(639, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0)]
+  PASS  F1a src frame in FlatSequence A, sink body in While #637 in FlatSequence B != A, both reach the TopLevelDiagram  ([], [])
+  PASS  F1b one Enqueue duplicated onto Diagram #639 (owner checked in the verb)  (<dry:g.create_primitive_nested>, '')
+
+---------- [F2] one connect through the 'nested' route
+  FACT  ExecState [before connect] scratch_c120_fs_20260928_151314.vi = <dry:g.exec_state>
+  FACT  OP connect_nested_v1 D[<dry:g._uid_index>].N[<dry:g._node_index>].t0 <- D[<dry:g._uid_index>].N[<dry:g._node_index>].t0 -> err '' (0.0 s)
+  PASS  F2a the connect call returned (its own error is data)
+  FACT  ExecState [after connect] scratch_c120_fs_20260928_151314.vi = <dry:g.exec_state>
+  FACT  F2 new objects by class {}; non-terminal []
+  FACT  F2 FS tunnel faces []
+  PASS  F2b after-graph read and the chain walked from t25591
+  PASS  F2d Remove Bad Wires ran on the scratch (per-segment survival = not broken)
+  ROW   F route closes t25591 -> #<dry:g.create_primitive_nested>.'queue' with every segment surviving RBW : observed=False expected=measured, not predicted
+  PASS  F4 records written
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  PASS  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['tools/bench/diag_c120_fs_plan.json', 'tools/bench/diag_c120_fs_plan.json']
+  PASS  X3 every plan row decided  18 rows + 0 stageplan actions
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  0 stageplan(s)
+  PASS  X11 no row wires one Build Array input while a sibling input is an open row (unless pb-licence/1)  0 stageplan(s)
+  PASS  X12 no row names a wire uid an earlier border-crossing connect re-created (connect_from_wire.json:266)  0 stageplan(s), 0 re-created source wire(s), none named later
+  PASS  X13 opmodel conformance: every recorded sample of the plan ops' model files replays in stagesim  0 op(s) []; files {}
+  PASS  X4 every end addressable offline (0 ends)  []
+  FAIL  X5 wiring ops executed in the dry run == plan wire rows  ops 1 vs plan wire rows 0 + stageplan wiring real ops 0 (covering 0/0 wire actions); delete ops {} vs plan delete rows {}
+  PASS  X6 ast lint: no re-typed uid / terminal name  uids []; names []
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c120_fs_20260928_151314.vi; decisions rows NOT dispatched (recipe calls neither run_rows nor from_decision)
+  PASS  X10 predicted LabVIEW private MB < 690.0 (error-2 point; MEMSTOP 700.0) over the ops this run dispatches (UNMEASURED - no covering record)  {'why': 'UNMEASURED: no recorded meter of diag_c120_fs.py covers ops 1..end (0 record(s))'}
+  WARN  X10 WARN unmeasured: UNMEASURED: no recorded meter of diag_c120_fs.py covers ops 1..end (0 record(s))
+  WARN  X14 rows 18, budget 15 (proven: no)
+
+=== DRY PASS: first_fail=None coverage 89/113 lines, first mutation g.create_primitive_nested, unverified 0, graph tools/bench/graph_qrt_pool_20260928.json
+=== PRERUN FAIL: 12 pass / 1 fail; first X5 wiring ops executed in the dry run == plan wire rows: ops 1 vs plan wire rows 0 + stageplan wiring real ops 0 (covering 0/0 wire actions); delete ops {} vs plan delete rows {
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":12,"fail":1},"first_fail":"X5 wiring ops executed in the dry run == plan wire rows: ops 1 vs plan wire rows 0 + stageplan wiring real ops 0 (covering 0/0 wire actions); delete ops {} vs plan delete rows { [X10 WARN unmeasured]","artefacts":[]}
+BGRUN END rc=1 after 2s
+BGRUN START 2026-09-28 15:13:34 limit 5.0 min: py -u tools/stage_prerun.py --prerun tools/bench/diag_c120_fs.py
+BGRUN PID 17132
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 9353936895141d3ec2f890649c5cf22f  got 9353936895141d3ec2f890649c5cf22f
+  PASS  DRY graph JSON for input md5 9353936895141d3ec2f890649c5cf22f  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_qrt_pool_20260928.json
+
+---------- [F1] nesting read back + the sink
+  FACT  F1a chain #13236: [(13236, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0)]
+  FACT  F1a chain #639: [(639, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0)]
+  PASS  F1a src frame in FlatSequence A, sink body in While #637 in FlatSequence B != A, both reach the TopLevelDiagram  ([], [])
+  PASS  F1b one Enqueue duplicated onto Diagram #639 (owner checked in the verb)  (<dry:g.create_primitive_nested>, '')
+
+---------- [F2] one connect through the 'nested' route
+  FACT  ExecState [before connect] scratch_c120_fs_20260928_151335.vi = <dry:g.exec_state>
+  FACT  OP connect_nested_v1 D[<dry:g._uid_index>].N[<dry:g._node_index>].t0 <- D[<dry:g._uid_index>].N[<dry:g._node_index>].t0 -> err '' (0.0 s)
+  PASS  F2a the connect call returned (its own error is data)
+  FACT  ExecState [after connect] scratch_c120_fs_20260928_151335.vi = <dry:g.exec_state>
+  FACT  F2 new objects by class {}; non-terminal []
+  FACT  F2 FS tunnel faces []
+  PASS  F2b after-graph read and the chain walked from t25591
+  PASS  F2d Remove Bad Wires ran on the scratch (per-segment survival = not broken)
+  ROW   F route closes t25591 -> #<dry:g.create_primitive_nested>.'queue' with every segment surviving RBW : observed=False expected=measured, not predicted
+  PASS  F4 records written
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  PASS  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['tools/bench/diag_c120_fs_plan.json', 'tools/bench/diag_c120_fs_plan.json']
+  PASS  X3 every plan row decided  18 rows + 0 stageplan actions
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  0 stageplan(s)
+  PASS  X11 no row wires one Build Array input while a sibling input is an open row (unless pb-licence/1)  0 stageplan(s)
+  PASS  X12 no row names a wire uid an earlier border-crossing connect re-created (connect_from_wire.json:266)  0 stageplan(s), 0 re-created source wire(s), none named later
+  PASS  X13 opmodel conformance: every recorded sample of the plan ops' model files replays in stagesim  0 op(s) []; files {}
+  PASS  X4 every end addressable offline (0 ends)  []
+  FAIL  X5 wiring ops executed in the dry run == plan wire rows  ops 1 vs plan wire rows 2 + stageplan wiring real ops 0 (covering 0/0 wire actions); delete ops {} vs plan delete rows {}
+  PASS  X6 ast lint: no re-typed uid / terminal name  uids []; names []
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c120_fs_20260928_151335.vi; decisions rows NOT dispatched (recipe calls neither run_rows nor from_decision)
+  PASS  X10 predicted LabVIEW private MB < 690.0 (error-2 point; MEMSTOP 700.0) over the ops this run dispatches (UNMEASURED - no covering record)  {'why': 'UNMEASURED: no recorded meter of diag_c120_fs.py covers ops 1..end (0 record(s))'}
+  WARN  X10 WARN unmeasured: UNMEASURED: no recorded meter of diag_c120_fs.py covers ops 1..end (0 record(s))
+  WARN  X14 rows 18, budget 15 (proven: no)
+
+=== DRY PASS: first_fail=None coverage 89/113 lines, first mutation g.create_primitive_nested, unverified 0, graph tools/bench/graph_qrt_pool_20260928.json
+=== PRERUN FAIL: 12 pass / 1 fail; first X5 wiring ops executed in the dry run == plan wire rows: ops 1 vs plan wire rows 2 + stageplan wiring real ops 0 (covering 0/0 wire actions); delete ops {} vs plan delete rows {
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":12,"fail":1},"first_fail":"X5 wiring ops executed in the dry run == plan wire rows: ops 1 vs plan wire rows 2 + stageplan wiring real ops 0 (covering 0/0 wire actions); delete ops {} vs plan delete rows { [X10 WARN unmeasured]","artefacts":[]}
+BGRUN END rc=1 after 2s
+BGRUN START 2026-09-28 15:14:11 limit 5.0 min: py -u tools/stage_prerun.py --prerun tools/bench/diag_c120_fs.py
+BGRUN PID 18672
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 9353936895141d3ec2f890649c5cf22f  got 9353936895141d3ec2f890649c5cf22f
+  PASS  DRY graph JSON for input md5 9353936895141d3ec2f890649c5cf22f  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_qrt_pool_20260928.json
+
+---------- [F1] nesting read back + the sink
+  FACT  F1a chain #13236: [(13236, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0)]
+  FACT  F1a chain #639: [(639, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0), (0, '<dry:build_d1_v0.owner_of[0]>', 0)]
+  PASS  F1a src frame in FlatSequence A, sink body in While #637 in FlatSequence B != A, both reach the TopLevelDiagram  ([], [])
+  PASS  F1b one Enqueue duplicated onto Diagram #639 (owner checked in the verb)  (<dry:g.create_primitive_nested>, '')
+
+---------- [F2] one connect through the 'nested' route
+  FACT  ExecState [before connect] scratch_c120_fs_20260928_151412.vi = <dry:g.exec_state>
+  FACT  OP connect_nested_v1 D[<dry:g._uid_index>].N[<dry:g._node_index>].t0 <- D[<dry:g._uid_index>].N[<dry:g._node_index>].t0 -> err '' (0.0 s)
+  PASS  F2a the connect call returned (its own error is data)
+  FACT  ExecState [after connect] scratch_c120_fs_20260928_151412.vi = <dry:g.exec_state>
+  FACT  F2 new objects by class {}; non-terminal []
+  FACT  F2 FS tunnel faces []
+  PASS  F2b after-graph read and the chain walked from t25591
+  PASS  F2d Remove Bad Wires ran on the scratch (per-segment survival = not broken)
+  ROW   F route closes t25591 -> #<dry:g.create_primitive_nested>.'queue' with every segment surviving RBW : observed=False expected=measured, not predicted
+  PASS  F4 records written
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  PASS  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['tools/bench/diag_c120_fs_plan.json']
+  PASS  X3 every plan row decided  9 rows + 0 stageplan actions
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  0 stageplan(s)
+  PASS  X11 no row wires one Build Array input while a sibling input is an open row (unless pb-licence/1)  0 stageplan(s)
+  PASS  X12 no row names a wire uid an earlier border-crossing connect re-created (connect_from_wire.json:266)  0 stageplan(s), 0 re-created source wire(s), none named later
+  PASS  X13 opmodel conformance: every recorded sample of the plan ops' model files replays in stagesim  0 op(s) []; files {}
+  PASS  X4 every end addressable offline (0 ends)  []
+  PASS  X5 wiring ops executed in the dry run == plan wire rows  ops 1 vs plan wire rows 1 + stageplan wiring real ops 0 (covering 0/0 wire actions); delete ops {} vs plan delete rows {}
+  PASS  X6 ast lint: no re-typed uid / terminal name  uids []; names []
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c120_fs_20260928_151412.vi; decisions rows NOT dispatched (recipe calls neither run_rows nor from_decision)
+  PASS  X10 predicted LabVIEW private MB < 690.0 (error-2 point; MEMSTOP 700.0) over the ops this run dispatches (UNMEASURED - no covering record)  {'why': 'UNMEASURED: no recorded meter of diag_c120_fs.py covers ops 1..end (0 record(s))'}
+  WARN  X10 WARN unmeasured: UNMEASURED: no recorded meter of diag_c120_fs.py covers ops 1..end (0 record(s))
+  INFO  X14 rows 9, budget 15 (proven: no)
+
+=== DRY PASS: first_fail=None coverage 89/113 lines, first mutation g.create_primitive_nested, unverified 0, graph tools/bench/graph_qrt_pool_20260928.json
+=== PRERUN PASS: 13 pass / 0 fail; first None
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":"X10 WARN unmeasured: UNMEASURED: no recorded meter of diag_c120_fs.py covers ops 1..end (0 record(s))","artefacts":[]}
+BGRUN END rc=0 after 2s

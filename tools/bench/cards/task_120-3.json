@@ -1,0 +1,70 @@
+{
+ "schema": "task/1",
+ "id": "120-3",
+ "kind": "build",
+ "goal": "PD237(k) OFFLINE prep: stagexec plan routes + stagesim models for Dequeue and a Case structure in a loop body, with offline self-tests and a scratch-check plan",
+ "why": "120-1: Dequeue and Case-in-loop exist in gscript only (gscript.py:1344,3508); QRT-W steps A/B1/OV need them as plan routes so stagesim can finalize the plans",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_120-3.md", "md5": "5383d7a1e8bda5687e3d0e81bfc21c0c"},
+  {"path": "tools/stagexec.py", "md5": "b7c72f0cc95c437ec1f9fe880a522abd"},
+  {"path": "tools/stagesim.py", "md5": "9f61ef87140ee41da8a35aff1d70c44a"},
+  {"path": "tools/gscript.py", "md5": "925f57e8c40137f49965d9dbf47a085d"},
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "ee41e69eea7ab5567e63e584b3fd0cda"},
+  {"path": "tools/bench/facts_c120_qrtw.json", "md5": "6af9be89469e431463a4851ddcf883a9"}
+ ],
+ "requires": [
+  {"kind": "verb", "name": "queue_node", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "case_in", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "case_frames", "where": "tools/gscript.py"}
+ ],
+ "pass": [
+  "R1 stagexec queue route accepts queue_kind dequeue + stagesim model; unmeasured terminal names marked UNMEASURED (brief_120-3.md)",
+  "R2 case_in create route + into-frame / out-of-frame tunnel wiring + node-in-frame placement, each with a stagesim model (brief R2)",
+  "R3 new offline self-tests PASS; existing stagexec/stagesim suites 0 new failures vs the c118d logs",
+  "R4 additive only: no existing route renamed, moved or changed in behaviour",
+  "R5 tools/bench/scratch_plan_c120_routes.md written (plan only, not run)"
+ ],
+ "outputs": [
+  "tools/stagexec.py",
+  "tools/stagesim.py",
+  "tools/bench/selftest_c120_routes.py",
+  "tools/bench/scratch_plan_c120_routes.md",
+  "tools/bench/cards/result_120-3.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/bench/selftest_c120*",
+   "tools/bench/selftest_stagexec*",
+   "tools/bench/selftest_stagesim*",
+   "tools/bench/scratch_plan_c120*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_120-3.json",
+   "tools/bench/cards/requires_120-3.json",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 75},
+ "rules": [
+  "labview none: no LabVIEW, no COM; fake-COM self-tests only",
+  "additive only: a LabVIEW card imports stagexec in parallel; never rename/move/alter an existing route",
+  "follow the cycle-118 Enqueue route (PD234(i)); terminal names from a measured source file:line, else UNMEASURED",
+  "do not edit tools/gscript.py (card 120-2 edits it in parallel)",
+  "gate refusal -> BLOCKED or tools/gate_fp.py log; never an exempt route",
+  "facts <=10 file:line; OPEN <=3"
+ ],
+ "unblocks": "M3"
+}
