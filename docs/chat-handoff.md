@@ -9,7 +9,15 @@ tags: [chat, hand-off]
 The previous chat ("현재 상황", local_a577c896…) was closed by the user at 55 % context and with its sub-agent
 dispatch cap spent ("지금 작업중인거 정리하고 새 세션 열 준비 해줘"). Read STATUS.md first, then this page.
 
-## 1. What is running (do NOT stop it unless the user says so)
+## 0. UPDATE 19:5x — the runner is being STOPPED gracefully for this hand-off
+The user asked (19:5x): "러너도 종료 준비해줘. 새 세션에서 이어받도록". A `STOP` line is at the top of STATUS.md:
+cycle 121 runs to its end, then the runner exits and the supervisor does not relaunch. First checks in the new chat:
+`tail` the newest `tools/bench/cycle_runner_main_*.log` for `RUNNER STOP | … STOP marker` and `BGRUN END`, the
+supervisor log `tools/runner_supervisor_bgrun.log` for `EXIT - real stop`, no LabVIEW.exe, `MOTOR-LIMITS … end | OK`.
+Report cycle 121 (report_gate), then wait for the user's start; restart as written in STATUS's STOP line.
+Duties in §2 apply once the runner runs again (the mode file only matters while it runs).
+
+## 1. What was running (before the stop)
 - Runner: started by the user 2026-09-28 17:xx ("시작합시다"). Launched DETACHED from the chat through
   `tools/runner_supervisor.py --start-now` under bgrun (log `tools/runner_supervisor_bgrun.log`); each runner writes
   `tools/bench/cycle_runner_main_<YYYYmmdd_HHMM>.log`. The supervisor relaunches the runner after a ROUTINE end (8-h

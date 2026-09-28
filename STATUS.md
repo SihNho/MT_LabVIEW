@@ -4,6 +4,7 @@ status: current
 date: 2026-09-20
 tags: [hand-off]
 ---
+STOP — USER 2026-09-28 19:5x (chat): "러너도 종료 준비해줘. 새 세션에서 이어받도록". Graceful: cycle 121 finishes (retrospective/NEXT/commit, motor limits released, LabVIEW closed), then the runner exits and runner_supervisor sees this STOP and does not relaunch. The NEW chat restarts it ONLY when the user says start: remove this line, then `Start-Process py tools/bgrun.py --max-min 10080 --log tools/runner_supervisor_bgrun.log -- py -u tools/runner_supervisor.py --start-now` (detached), refresh `run_mode.py write` first.
 📌 **NEW CHAT? Read `docs/chat-handoff.md` right after this file** (2026-09-28 19:4x): the chat's duties (30-min usage → `run_mode.py write`, report_gate acks, the tick), today's decisions, and the OPEN proposals awaiting the user.
 ✅ STARTED — USER 2026-09-28 17:xx: "시작합시다" (runner relaunched by the chat via runner_supervisor; first act = card chat-P3, then the ring-buffer plan, see ## NEXT).
 (history; option C later CANCELLED in favour of the ring buffer) STOP (lifted) — USER 2026-09-28 16:0x: "C로 진행하자. 진행 방향이 잘못되었네. 롤백하고 다시 C로 진행". Option C = acquisition and tracking stay in ONE loop, reading the newest camera buffer each iteration (the original's way; the user's 2026-09-15 fallback); NO image pool, NO frame queue between acquisition and tracking. The pool/QRT direction (PD233–237, cycles 118–120) is abandoned. Runner stopped by the chat mid-cycle 120 (pool-direction cards); rollback point and the C plan are being determined before any relaunch.
