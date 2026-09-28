@@ -14,7 +14,10 @@ The user asked (19:5x): "러너도 종료 준비해줘. 새 세션에서 이어�
 cycle 121 runs to its end, then the runner exits and the supervisor does not relaunch. First checks in the new chat:
 `tail` the newest `tools/bench/cycle_runner_main_*.log` for `RUNNER STOP | … STOP marker` and `BGRUN END`, the
 supervisor log `tools/runner_supervisor_bgrun.log` for `EXIT - real stop`, no LabVIEW.exe, `MOTOR-LIMITS … end | OK`.
-Report cycle 121 (report_gate), then wait for the user's start; restart as written in STATUS's STOP line.
+**DONE 19:46 and verified by the old chat:** cycle 121 exit 0, $33.06; git committed; motor limits RELEASED and read
+back; no LabVIEW.exe; supervisor `EXIT - real stop, not relaunching`; report_gate acknowledged (cycle 121 already
+reported to the user). NEXT = ring P2b (panel objects Num[20]=-1, TransPos/RotPos/FrameIdx[20], Latest). Wait for the
+user's start; restart as written in STATUS's STOP line.
 Duties in §2 apply once the runner runs again (the mode file only matters while it runs).
 
 ## 1. What was running (before the stop)
