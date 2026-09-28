@@ -65,7 +65,11 @@ whole cycle needs LabVIEW you write that in NEXT and exit rather than deciding t
   Agent tool: writing and running recipes or diagnostics, anything touching LabVIEW, log reading (`log-reader`),
   peer dispatch, STATUS/INDEX bookkeeping. You never run `tools/recipes/*.py` or `tools/bench/*.py` yourself and
   never read a whole log yourself — `tools/hooks/guard_bash.py` refuses it and it is the point of the split.
-- **PIPELINE: one LabVIEW card + one offline prep card at a time** (user 2026-09-28, "1~4번은 적용하도록"; card chat-P1).
+- **RUN MODE FIRST: `py tools/run_mode.py get`** (user 2026-09-28 15:4x). PERFORMANCE (weekly usage <= the fixed
+  threshold in `tools/bench/run_mode_config.json`, 50 %) = the PIPELINE below is allowed. ECONOMY (above it, or the
+  mode file stale) = **one card at a time, no prep card beside another card** — `guard_session` refuses the second
+  dispatch. Proven-pattern review skip, batched gate false positives and the 25-row budget apply in BOTH modes.
+- **PIPELINE (PERFORMANCE mode only): one LabVIEW card + one offline prep card at a time** (user 2026-09-28, "1~4번은 적용하도록"; card chat-P1).
   When the next build step N is launch-ready, dispatch the LAUNCH card for N and the PREP card for N+1 as **two Agent
   calls in ONE message**. The prep card has `flags.labview: "none"`, `peers: ["priorart"]`, and `write` globs covering
   only N+1's plan and recipe; it plans N+1 on stagesim's END graph of N (`tools/bench/sim/<stage N>/`), with the plan's

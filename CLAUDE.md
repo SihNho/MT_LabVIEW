@@ -419,7 +419,11 @@ cycle, OR in any cycle that saved no new build step, OR when a violation slug is
 plus one offline prep card for the next step may run at once (prep plans on a provisional base, `stage_prerun.py
 --rebase` before launch); (2) no prior-art review for a build step on a PROVEN pattern; (3) gate/checker false
 positives go to `tools/bench/gate_fp_queue.jsonl` (`tools/gate_fp.py`) and are drained in batches, never by an env
-bypass; (4) up to ~25 rows per step on a proven pattern. Safety guards (motors, originals, LabVIEW timeouts, rule 1a)
+bypass; (4) up to ~25 rows per step on a proven pattern. **RUN MODE (user 2026-09-28 15:4x):** weekly all-models usage
+above a FIXED threshold (50 %, `tools/bench/run_mode_config.json`, user-changeable) = ECONOMY = item (1) OFF, one card
+at a time; at or below = PERFORMANCE = item (1) ON. Items 2–4 stay on in both. The main chat writes
+`tools/bench/run_mode.json` from the app's usage readout at every 30-min report (`py tools/run_mode.py write --weekly
+N`); missing or older than 90 min ⇒ economy. Crossing the threshold is reported, then applied without asking. Safety guards (motors, originals, LabVIEW timeouts, rule 1a)
 are unchanged. Brief: `tools/bench/cards/brief_chat-P1.md`. The text below states the original every-cycle rule.
 
 (User: *"피어 리뷰를 통해 판단 및 실행 구조에 대한 비평은 할 수 없는 것 같아."*) The hypothesis-level reviews all

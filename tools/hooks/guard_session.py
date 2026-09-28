@@ -227,6 +227,21 @@ def decide(sid, sub, ti):
         lv = str(((card.get("flags") or {}).get("labview")) or "none") if card else "read"   # unreadable: fail closed
         live = [e for e in live if e.get("id") != cid]          # a re-dispatch of the same card replaces its entry
         lv_live = [e for e in live if e.get("labview") != "none"]
+        # RUN MODE (user 2026-09-28 15:4x): weekly usage above the fixed threshold = ECONOMY = no pipeline, one
+        # live card at a time; missing/stale mode file fails safe to economy. Items 2-4 are untouched by the mode.
+        try:
+            sys.path.insert(0, os.path.join(ROOT, "tools"))
+            import run_mode
+            mode, mode_why = run_mode.effective()
+        except Exception as e:  # noqa: BLE001
+            mode, mode_why = "economy", "run_mode unreadable: %s" % e
+        if mode != "performance" and live:
+            sys.stderr.write(
+                "BLOCKED by tools/hooks/guard_session.py: ECONOMY MODE - one card at a time (%s).\n"
+                "Live: %s. The pipeline (a prep card beside another card) runs only in PERFORMANCE mode\n"
+                "(weekly usage <= tools/bench/run_mode_config.json threshold). Wait for its result_<id>.json, then\n"
+                "dispatch %s.\n" % (mode_why, ", ".join("%s[%s]" % (e.get("id"), e.get("labview")) for e in live), cid))
+            return 2
         if len(live) >= MAX_LIVE:
             sys.stderr.write(
                 "BLOCKED by tools/hooks/guard_session.py: PIPELINE FULL - %d cards are live (%s).\n"
