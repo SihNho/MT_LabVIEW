@@ -43,6 +43,7 @@ Usage:
   py tools\\gscript.py kernel <target.vi>                 # build the parallel tracking loop
 """
 import contextlib
+import hashlib
 import json
 import os
 import subprocess
@@ -218,9 +219,90 @@ def lv():
     return _lv
 
 
+# --- OP HYGIENE RECORD GATE (card 117-3; docs/violation-decisions.md rule-evaded 2026-09-28 10:37) -----------------
+# `op()` below is THE code path by which this module (and every caller of `g.op`: stagekit, stagexec, allterms,
+# wiki_build) turns an op-VI path into a callable reference. An op VI whose FILE is newer than the install time of this
+# device is refused unless `tools/bench/op_hygiene/<op>.json` exists with schema `op-hygiene/1`, status PASS, errors 0
+# and md5 == the file's md5 (OpWireJoints_v0 was accepted on a 20-call handle count while its Traverse array leaked,
+# retrospective-cycle116:392). Older op VIs are GRANDFATHERED (they ran in clean stages). The ONE exemption is the
+# hygiene probe `hygiene_probe(<op path>)`, which exempts only that op while the probe measures it. No env bypass.
+OP_HYGIENE_DIR = os.path.join(PROJECT, "tools", "bench", "op_hygiene")
+OP_HYGIENE_SINCE = time.mktime(time.strptime("2026-09-28 11:30", "%Y-%m-%d %H:%M"))   # device install time (local; card 117-3 began the edit 11:30:46)
+_hygiene_probe_path = None     # normcased op path under its hygiene probe, or None
+_hygiene_ok = {}               # normcased path -> (mtime, size) of the file state last admitted on its record
+
+
+class OpHygieneRefused(RuntimeError):
+    """A NEW op VI (file newer than OP_HYGIENE_SINCE) has no PASS op-hygiene record matching its md5."""
+
+
+@contextlib.contextmanager
+def hygiene_probe(op_path):
+    """THE ONLY EXEMPTION from the op-hygiene gate: inside this block `op(op_path)` is admitted without a record, so
+    the probe that WRITES the record (>= 2,000 calls or a whole-graph sweep, 0 errors, handles flat +-100) can call
+    the op it measures. Exempts that one op path only; every other op is still checked."""
+    global _hygiene_probe_path
+    prev, _hygiene_probe_path = _hygiene_probe_path, os.path.normcase(os.path.abspath(op_path))
+    try:
+        yield
+    finally:
+        _hygiene_probe_path = prev
+
+
+def op_hygiene_record_path(path):
+    return os.path.join(OP_HYGIENE_DIR, os.path.splitext(os.path.basename(path))[0] + ".json")
+
+
+def op_hygiene_check(path):
+    """None if `path` may be opened as an op VI; else the refusal text. Pure file reads, no COM."""
+    key = os.path.normcase(os.path.abspath(path))
+    if _hygiene_probe_path is not None and key == _hygiene_probe_path:
+        return None
+    try:
+        st = os.stat(path)
+    except OSError:
+        return None            # a missing file is GetVIReference's error to report, not this gate's
+    if st.st_mtime <= OP_HYGIENE_SINCE:
+        return None            # grandfathered: built before the device existed
+    if _hygiene_ok.get(key) == (st.st_mtime, st.st_size):
+        return None
+    name = os.path.splitext(os.path.basename(path))[0]
+    rec = op_hygiene_record_path(path)
+    why = None
+    try:
+        with open(rec, encoding="utf-8") as f:
+            r = json.load(f)
+    except (OSError, ValueError) as e:
+        why = "no readable record (%s)" % type(e).__name__
+        r = None
+    if r is not None:
+        with open(path, "rb") as f:
+            md5 = hashlib.md5(f.read()).hexdigest()
+        if r.get("schema") != "op-hygiene/1":
+            why = "schema %r != 'op-hygiene/1'" % r.get("schema")
+        elif r.get("status") != "PASS":
+            why = "status %r != 'PASS'" % r.get("status")
+        elif r.get("errors") != 0:
+            why = "errors %r != 0" % r.get("errors")
+        elif str(r.get("md5", "")).lower() != md5:
+            why = "record md5 %s != file md5 %s" % (r.get("md5"), md5)
+    if why is None:
+        _hygiene_ok[key] = (st.st_mtime, st.st_size)
+        return None
+    return ("op-hygiene: op VI %s (file %s newer than the device install %s) is refused - %s; record %s. Run its "
+            "hygiene probe (gscript.hygiene_probe) and write a PASS op-hygiene/1 record first "
+            "(docs/violation-decisions.md rule-evaded 2026-09-28 10:37)."
+            % (name, time.strftime("%Y-%m-%d %H:%M", time.localtime(st.st_mtime)),
+               time.strftime("%Y-%m-%d %H:%M", time.localtime(OP_HYGIENE_SINCE)), why, rec))
+
+
 def op(path):
-    """A cached VI reference. Op VIs are non-reentrant, so one reference each is correct."""
+    """A cached VI reference. Op VIs are non-reentrant, so one reference each is correct.
+    Refuses a NEW op VI with no PASS op-hygiene record (op_hygiene_check, card 117-3) - on a cache hit too."""
     _check_poison()            # a cache HIT reached COM unguarded too - that was the 2026-09-17 stall
+    refusal = op_hygiene_check(path)
+    if refusal:
+        raise OpHygieneRefused(refusal)
     if path not in _cache:
         _cache[path] = lv().GetVIReference(path, "", False, 0)
     return _cache[path]
@@ -4136,20 +4218,24 @@ def read_bool_const(target, uid):
     return out
 
 
-C116D_LABELS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench", "diag_c116d_oplabels.json")
+C116D_LABELS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench", "diag_c116d_oplabels.json")   # v0 (retired)
+C117A_LABELS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench", "diag_c117a_oplabels.json")
 
 
 def wire_joints(target, wire_uid, index=None):
-    """Card 116-4 J1: `Wire.Joints[]` 6371005 of Wire #wire_uid through OpWireJoints_v0 (Traverse('Wire')[i] -> TMSC(Wire) ->
-    ONE Property node [GObject.UID 632A813, Joints[]] -> Close Reference on its `reference out`; built by
-    tools/bench/diag_c116d_opbuild.py). READ-ONLY: no property write, no method. `index` = the Traverse('Wire') index when the
-    caller already holds report_all(target, 'Wire') order for an UNMUTATED target (a bulk read); else it is re-read here.
+    """Card 117-1 S0a: `Wire.Joints[]` 6371005 of Wire #wire_uid through OpWireJoints_v1 (md5 29dcb59f...; built by
+    tools/bench/diag_c117a_opv1.py, log diag_c117a_opv1b.log 12/0): v0's chain Traverse('Wire')[i] -> TMSC(Wire) -> ONE Property
+    node [GObject.UID 632A813, Joints[]] -> Close Reference #615, PLUS the Traverse `References` ARRAY closed by Close Reference
+    #630 after the read (its error in <- the PN error out) and the Traverse `error out` wired into the PN (v0 leaked the array:
+    ~1.04 M refnums at read 536 on R1, review archive/peer/2026-09-28-c116d-sweep.md). v0 is never called again.
+    READ-ONLY: no property write, no method. `index` = the Traverse('Wire') index when the caller already holds
+    report_all(target, 'Wire') order for an UNMUTATED target (a bulk read); else it is re-read here.
     Returns {echo, joints (raw COM value), err}; an echo != wire_uid is appended to err."""
-    with open(C116D_LABELS, encoding="utf-8") as f:
-        lab = json.load(f)["OpWireJoints_v0"]
+    with open(C117A_LABELS, encoding="utf-8") as f:
+        lab = json.load(f)["OpWireJoints_v1"]
     ensure_loaded(target)
     i = int(index) if index is not None else _uid_index(target, "Wire", wire_uid)
-    vi = op(os.path.join(CLAUDEDEV, "OpWireJoints_v0.vi"))
+    vi = op(os.path.join(CLAUDEDEV, "OpWireJoints_v1.vi"))
     _set_common(vi, target, lab, "Wire", i)
     vi.SetControlValue(lab["UID"], 0)
     try:

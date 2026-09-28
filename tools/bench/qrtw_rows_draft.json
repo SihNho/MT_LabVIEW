@@ -1,0 +1,97 @@
+{
+ "schema": "qrtw-rows-draft/0",
+ "card": "117-4",
+ "status": "draft",
+ "provisional_base": {"path": "tools/bench/graph_l2r1_saved_20260928.json", "md5": "e429f7ad7b2eebdaabaf0db1a462f10e",
+                      "vi": "claudeDev/D1_l2_r1_20260928_055441.vi", "vi_md5": "f465196bb5016638b146e771ba54c5af",
+                      "why_provisional": "L2-R2 is not saved; R2 deletes only the 13 consumer-less tunnels on #637 (split plan 228(g)) and touches none of these rows (233(d)); every uid below must be re-read on the R2 graph (stage_prerun --rebase)"},
+ "decided_basis": "split plan PD233(f) (docs/d1-loop12-17-split-plan.md:2132-2137) and 227(d) (:1999-2002); nothing else is decided here",
+ "loops": {"1.1": "#637 body Diagram 639", "1.2": "#10170 body Diagram 23166", "1.7": "#23041 body Diagram 23405", "top": "Diagram 686"},
+ "payloads": {
+  "Q_work": {
+   "producer": "1.1 (body 639), every #637 iteration",
+   "consumer": "1.2 (body 23166)",
+   "fields": [
+    {"f": "F0 image",      "src": {"uid": 6810,  "term_uid": 6865,  "term": "Image Out"},      "s1_wire": 3040,  "card_list": true,  "cite": "diag_c117d_rows.log:16; d1-build-plan.md:572 (IMAQ image refnum)"},
+    {"f": "F1 trans_pos",  "src": {"uid": 30117, "term_uid": 30145, "term": "Value"},          "s1_wire": 30592, "card_list": true,  "cite": "diag_c117d_rows.log:32; PD233(f)(1)"},
+    {"f": "F2 rot_pos",    "src": {"uid": 4580,  "term_uid": 4728,  "term": "Value"},          "s1_wire": 4878,  "card_list": true,  "cite": "diag_c117d_rows.log:39; PD233(f)(1)"},
+    {"f": "F3 frame_i",    "src": {"uid": 639,   "term_uid": 644,   "term": "(loop i of #637, Diagram-owned)"}, "s1_wire": 3268, "card_list": true, "cite": "graph term 644 owner Diagram 639 on w3268; PD233(f)(2)"},
+    {"f": "F4 x_minus_y",  "src": {"uid": 5119,  "term_uid": 6323,  "term": "x-y"},            "s1_wire": 16483, "card_list": false, "cite": "diag_c117b_qrt.json:490-491 (S1 source of #2626 element|0); per 233(f) text a saved-row column rides the frame's element - NOT in the card's list, OPEN O4"},
+    {"f": "F5 wlc_cluster", "src": {"uid": 11608, "term_uid": 11614, "term": "output cluster"}, "s1_wire": 12256, "card_list": false, "cite": "diag_c117d_rows.log:61; meets #11363's 1.2 frame data in Build Array #11261 -> 233(f) text puts it in the element; facts_c117_qrt.json:147 proposed a local - OPEN O3"}
+   ],
+   "element_type": "unknown (graph has no type field, facts_c117_qrt.json:14); cluster per 233(f) 'same queue element' vs d1-build-plan.md:567 'no composite elements' - OPEN O1"
+  },
+  "Q_res": {
+   "producer": "1.2 (body 23166), every 1.2 iteration",
+   "consumer": "1.7 (body 23405)",
+   "fields": [
+    {"f": "R0 row",     "src": {"uid": 2626, "term_uid": 2813, "term": "appended array"}, "dst": {"uid": 376, "term_uid": 5754, "term": "current frame data array in"}, "s1_wire": 4517, "cite": "diag_c117d_rows.log:78,90"},
+    {"f": "R1 frame_i", "src": "Q_work.F3 (unbundled in 1.2)",                           "dst": {"uid": 376, "term_uid": 5763, "term": "frame index"},                "s1_wire": 3268, "cite": "diag_c117d_rows.log:92; PD233(f)(2)"}
+   ],
+   "element_type": "unknown; cluster {DBL[]? row, I32 i} - OPEN O1/O2"
+  }
+ },
+ "rows": [
+  {"id": "C01", "step": "A", "op": "create", "class": "ObtainQueue",  "sym": "$QW_obtain", "diagram": 686,   "route": "gscript.queue_node('obtain') gscript.py:1262 - NO stagexec route (stagexec.py:198-208)", "blocker": "element-type donor: O2 (cycle27-plan.md:1037-1046)"},
+  {"id": "C02", "step": "A", "op": "create", "class": "Bundler(5|6 el)", "sym": "$QW_bundle", "diagram": 639, "route": "stagexec copy_in (stagekit.py:807) from a base Bundler; no base Bundler has 5 or 6 element inputs (#27660 has 7, #13793 4, #11608/#11310 2; graph grep); resize MISSING"},
+  {"id": "C03", "step": "A", "op": "create", "class": "EnqueueElement", "sym": "$QW_enq",   "diagram": 639,   "route": "gscript.queue_node('enqueue'); no stagexec route"},
+  {"id": "C04", "step": "A", "op": "create", "class": "Constant (Enqueue timeout)", "sym": "$QW_enq_to", "on": "$QW_enq 'timeout in ms (-1)'", "diagram": 639, "route": "const_on_term stagexec.py:207 -> stagekit.const_row stagekit.py:861 (node in a WhileLoop body)", "value": "OPEN O6 (rule 1c: 0 on the frame path, d1-build-plan.md:639-640)"},
+  {"id": "C05", "step": "A", "op": "create", "class": "Constant (max queue size)", "sym": "$QW_max", "on": "$QW_obtain 'max queue size (-1, unlimited)'", "diagram": 686, "route": "MISSING on Diagram 686: OpCreateConstOnTerm_v0 fails on a Diagram container (cycle27-plan.md:1042-1044)", "value": "20 per d1-build-plan.md:572, OPEN O5"},
+  {"id": "W01", "step": "A", "op": "wire", "src": {"uid": 6810,  "term_uid": 6865}, "dst": {"sym": "$QW_bundle", "in": "F0"}, "loop": "1.1"},
+  {"id": "W02", "step": "A", "op": "wire", "src": {"uid": 30117, "term_uid": 30145}, "dst": {"sym": "$QW_bundle", "in": "F1"}, "loop": "1.1", "note": "branch: w30592 also feeds #20497 in 1.1"},
+  {"id": "W03", "step": "A", "op": "wire", "src": {"uid": 4580,  "term_uid": 4728},  "dst": {"sym": "$QW_bundle", "in": "F2"}, "loop": "1.1"},
+  {"id": "W04", "step": "A", "op": "wire", "src": {"uid": 639,   "term_uid": 644},   "dst": {"sym": "$QW_bundle", "in": "F3"}, "loop": "1.1", "note": "branch of w3268"},
+  {"id": "W05", "step": "A", "op": "wire", "src": {"uid": 5119,  "term_uid": 6323},  "dst": {"sym": "$QW_bundle", "in": "F4"}, "loop": "1.1", "note": "branch: w16483 also feeds #22703 'input 1'; OPEN O4"},
+  {"id": "W06", "step": "A", "op": "wire", "src": {"uid": 11608, "term_uid": 11614}, "dst": {"sym": "$QW_bundle", "in": "F5"}, "loop": "1.1", "note": "only if O3 = queue"},
+  {"id": "W07", "step": "A", "op": "wire", "src": {"sym": "$QW_bundle", "out": "output cluster"}, "dst": {"sym": "$QW_enq", "in": "element"}, "loop": "1.1"},
+  {"id": "W08", "step": "A", "op": "wire", "src": {"sym": "$QW_obtain", "out": "queue out"}, "dst": {"sym": "$QW_enq", "in": "queue"}, "loop": "top->1.1", "note": "LabVIEW makes the #637 input tunnel (NAMES.md:911-912)"},
+
+  {"id": "C06", "step": "B1", "op": "create", "class": "DequeueElement", "sym": "$QW_deq", "diagram": 23166, "route": "gscript.queue_node('dequeue'); no stagexec route"},
+  {"id": "C07", "step": "B1", "op": "create", "class": "Unbundler",      "sym": "$QW_unb", "diagram": 23166, "route": "stagexec copy_in of #11576 (2 outputs, 1.1); output count adapts to the wired cluster - INFERRED, unmeasured"},
+  {"id": "W09", "step": "B1", "op": "wire", "src": {"sym": "$QW_obtain", "out": "queue out"}, "dst": {"sym": "$QW_deq", "in": "queue"}, "loop": "top->1.2"},
+  {"id": "W10", "step": "B1", "op": "wire", "src": {"sym": "$QW_deq", "out": "element"}, "dst": {"sym": "$QW_unb", "in": "cluster"}, "loop": "1.2"},
+  {"id": "W11", "step": "B1", "op": "wire", "src": {"sym": "$QW_unb", "out": "F0"}, "dst": {"uid": 5058,  "term_uid": 5089,  "term": "Image In"}, "loop": "1.2", "cdiff_row": "5058|Terminal|Image In|0"},
+  {"id": "W12", "step": "B1", "op": "wire", "src": {"sym": "$QW_unb", "out": "F1"}, "dst": {"uid": 2626,  "term_uid": 4160,  "term": "element|1 (R1 name 'array')"}, "loop": "1.2", "cdiff_row": "2626|Terminal|element|1"},
+  {"id": "W13", "step": "B1", "op": "wire", "src": {"sym": "$QW_unb", "out": "F1"}, "dst": {"uid": 9503,  "term_uid": 9508,  "term": "Value (outer face; inner -> #28083 'Magnet position')"}, "loop": "1.2", "cdiff_row": "28083|Terminal|Magnet position|0"},
+  {"id": "W14", "step": "B1", "op": "wire", "src": {"sym": "$QW_unb", "out": "F2"}, "dst": {"uid": 2626,  "term_uid": 4165,  "term": "element|2 (R1 name 'array')"}, "loop": "1.2", "cdiff_row": "2626|Terminal|element|2"},
+  {"id": "W15", "step": "B1", "op": "wire", "src": {"sym": "$QW_unb", "out": "F4"}, "dst": {"uid": 2626,  "term_uid": 2832,  "term": "element|0 (R1 name 'array')"}, "loop": "1.2", "cdiff_row": "2626|Terminal|element|0"},
+  {"id": "W16", "step": "B1", "op": "wire", "src": {"sym": "$QW_unb", "out": "F5"}, "dst": {"uid": 11261, "term_uid": 11273, "term": "element"}, "loop": "1.2", "cdiff_row": "11261|Terminal|element|0", "rule": "227(d): same stage as W17"},
+  {"id": "W17", "step": "B1", "op": "wire", "src": {"uid": 11363, "term_uid": 11369, "term": "(outer face of #1359 output tunnel)"}, "dst": {"uid": 11261, "term_uid": 11270, "term": "array"}, "loop": "1.2", "cdiff_row": "11261|Terminal|array|0", "rule": "227(d) b2_03; M1-M4 reads first (:2001)"},
+
+  {"id": "C08", "step": "B2", "op": "create", "class": "Function (Quotient & Remainder)", "sym": "$QR_fd", "diagram": 23166, "route": "copy_in of #10068, or move_in #10068 itself (its only S1 consumer is tunnel #10177: w10187 has no sink in R1, diag_c117d_rows.log:50) - OPEN O8"},
+  {"id": "C09", "step": "B2", "op": "create", "class": "Function (Quotient & Remainder)", "sym": "$QR_dt", "diagram": 23166, "route": "copy_in of #29240, or move_in #29240 (w29787 no sink in R1, log:56) - OPEN O8"},
+  {"id": "W18", "step": "B2", "op": "wire", "src": {"sym": "$QW_unb", "out": "F3"}, "dst": {"sym": "$QR_fd", "in": "x"}, "loop": "1.2"},
+  {"id": "W19", "step": "B2", "op": "wire", "src": {"sym": "$QW_unb", "out": "F3"}, "dst": {"sym": "$QR_dt", "in": "x"}, "loop": "1.2"},
+  {"id": "W20", "step": "B2", "op": "wire", "src": {"uid": 686, "term_uid": 8936, "term": "# FD points (ControlTerminal)"}, "dst": {"sym": "$QR_fd", "in": "y"}, "loop": "top->1.2", "note": "S1 y came via #637 tunnel #10114 (w9000 -> w10103)"},
+  {"id": "W21", "step": "B2", "op": "wire", "src": {"uid": 686, "term_uid": 28844, "term": "# DT points (ControlTerminal)"}, "dst": {"sym": "$QR_dt", "in": "y"}, "loop": "top->1.2", "note": "S1 y came via #637 tunnel #29415 (w29006 -> w29404)"},
+  {"id": "W22", "step": "B2", "op": "wire", "src": {"sym": "$QR_fd", "out": "x-y*floor(x/y)"}, "dst": {"uid": 10177, "term_uid": 10182, "term": "outer face (inner -> #8634 'index (col)')"}, "loop": "1.2", "cdiff_row": "8634|Terminal|index (col)|0"},
+  {"id": "W23", "step": "B2", "op": "wire", "src": {"sym": "$QR_dt", "out": "x-y*floor(x/y)"}, "dst": {"uid": 29777, "term_uid": 29782, "term": "outer face (inner -> #29625 'index (col)' + #29973 'element')"}, "loop": "1.2", "cdiff_row": ["29625|Terminal|index (col)|0", "29973|Terminal|element|1"]},
+
+  {"id": "C10", "step": "C", "op": "create", "class": "ObtainQueue",   "sym": "$QR_obtain", "diagram": 686,   "route": "gscript.queue_node('obtain'); no stagexec route", "blocker": "O2"},
+  {"id": "C11", "step": "C", "op": "create", "class": "Bundler(2 el)", "sym": "$QR_bundle", "diagram": 23166, "route": "copy_in of #11310 (2 elements, already in 1.2 body 7911) or #11608"},
+  {"id": "C12", "step": "C", "op": "create", "class": "EnqueueElement", "sym": "$QR_enq",   "diagram": 23166, "route": "gscript.queue_node('enqueue'); no stagexec route"},
+  {"id": "C13", "step": "C", "op": "create", "class": "DequeueElement", "sym": "$QR_deq",   "diagram": 23405, "route": "gscript.queue_node('dequeue'); no stagexec route"},
+  {"id": "C14", "step": "C", "op": "create", "class": "Unbundler",      "sym": "$QR_unb",   "diagram": 23405, "route": "copy_in of #11576"},
+  {"id": "W24", "step": "C", "op": "wire", "src": {"uid": 2626, "term_uid": 2813, "term": "appended array"}, "dst": {"sym": "$QR_bundle", "in": "R0"}, "loop": "1.2"},
+  {"id": "W25", "step": "C", "op": "wire", "src": {"sym": "$QW_unb", "out": "F3"}, "dst": {"sym": "$QR_bundle", "in": "R1"}, "loop": "1.2"},
+  {"id": "W26", "step": "C", "op": "wire", "src": {"sym": "$QR_bundle", "out": "output cluster"}, "dst": {"sym": "$QR_enq", "in": "element"}, "loop": "1.2"},
+  {"id": "W27", "step": "C", "op": "wire", "src": {"sym": "$QR_obtain", "out": "queue out"}, "dst": {"sym": "$QR_enq", "in": "queue"}, "loop": "top->1.2"},
+  {"id": "W28", "step": "C", "op": "wire", "src": {"sym": "$QR_obtain", "out": "queue out"}, "dst": {"sym": "$QR_deq", "in": "queue"}, "loop": "top->1.7"},
+  {"id": "W29", "step": "C", "op": "wire", "src": {"sym": "$QR_deq", "out": "element"}, "dst": {"sym": "$QR_unb", "in": "cluster"}, "loop": "1.7"},
+  {"id": "W30", "step": "C", "op": "wire", "src": {"sym": "$QR_unb", "out": "R0"}, "dst": {"uid": 376, "term_uid": 5754, "term": "current frame data array in"}, "loop": "1.7", "cdiff_row": "376|Terminal|current frame data array in|0"},
+  {"id": "W31", "step": "C", "op": "wire", "src": {"sym": "$QR_unb", "out": "R1"}, "dst": {"uid": 376, "term_uid": 5763, "term": "frame index"}, "loop": "1.7", "cdiff_row": "376|Terminal|frame index|0 (cdiff blind spot, PD176(c))"}
+ ],
+ "not_in_qrtw": [
+  "Release Queue x2, stop sentinel, Dequeue timeouts and timed-out handling, queue error chains: STOP stage (split plan :76) - OPEN O6/O7",
+  "Obtain element-type donor rows: mechanism unknown (O2)",
+  "2626|Terminal|array|0..3: no row - rename artefact, S1 edge present as w25283 (facts_c117_qrt.json:54-58); must close by itself once W12/W14/W15 land"
+ ],
+ "counts": {"create": 14, "wire": 31, "total": 45, "cdiff_rows_closed_if_all_land": 12, "cdiff_rows_by_rename": 4},
+ "steps": {
+  "A":  {"rows": 13, "create": 5, "wire": 8, "proven_today": false, "budget": 15},
+  "B1": {"rows": 11, "create": 2, "wire": 9, "proven_today": false, "budget": 15},
+  "B2": {"rows": 8,  "create": 2, "wire": 6, "proven_today": false, "budget": 15},
+  "C":  {"rows": 13, "create": 5, "wire": 8, "proven_today": false, "budget": 15}
+ },
+ "alt_split": "creates first (14 rows, not proven, <=15) then wire-only steps (31 rows = 16 + 15; proven IF the recipe's call set is a subset of stage_d1_l2b2a_r2 / stage_d1_l2b2b_r2's, diag_c117d_rows.log:408,412 -> budget 25 each)"
+}

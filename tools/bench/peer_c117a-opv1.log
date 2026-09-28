@@ -1,0 +1,51 @@
+BGRUN START 2026-09-28 10:47:20 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c117a-opv1 -TaskFile tools/bench/peer_c117a_opv1_task.txt
+BGRUN PID 19656
+OUTCOME: ANSWERED (148s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-28-c117a-opv1.md
+COST: $1.4631  in 30 / out 11553 / cache-create 102971 / cache-read 1428320  (144s, 28 turn(s))
+--- ANSWER ---
+Your ordering reading is probably right about run 1, but nothing measured it: no ExecState was read between the copy and W1. The bigger problem is run 2. Its premise, that W2 makes the VI runnable, is contradicted by our own records, and W4 adds a new risk of a hang.
+
+**1. Strongest reason the reading is wrong (or at least unproven)**
+- **The claim that the VI was already broken is inferred, not read.** `finish()` sweeps terminals and gates on the graph shape, but it never calls `exec_state` before W1 (`tools/bench/diag_c117a_opv1.py:48-70`; log line 14 is a graph gate only).
+  - This is the same missing reading that `docs/s0-diff.md:66` named as D18 for the 2026-09-19 failure: "no reading exists between the node copy and the first wire".
+  - The same diagnostic gap is being repeated.
+- **Run 2 predicts that W2 will give ExecState 1, and our records show the opposite.**
+  - `tools/bench/build_s0_closeref_v3.log` copied the same donor Close Reference, `KernelBuilder_v1` #157, with `copy_by_index` into this op family.
+  - It branched the live `References` wire into its `reference` input and ended ExecState 0 in all four stages. See lines 31-50 and 80-99 (ExecState was 0 right after the branch, and still 0 at the end of the hook with `error in` also wired), and 139-158 and 191-202.
+  - The cause was never found. S0 was closed without it (`docs/REFERENCES.md:200-230`).
+  - The one success, `diag_c116d_opbuild.log:34`, fed the copied node a free scalar source (PN `reference out`), not a branch of the live `References` wire.
+  - W2 branches w600 while Index Array still uses it. That is exactly S0's D11 difference (`docs/s0-diff.md:35`), now without the For Loop.
+- **W1 itself is unlikely to be the fault.** It connects two standard error clusters (Traverse `error out` → PN `error in (no error)`), and it creates no cycle: the Traverse sits upstream of PN through Index Array and TMSC. I don't have a type-mismatch argument against W1.
+
+**2. Alternative explanations**
+- **(a)** The copy itself leaves the VI broken regardless of the unwired `reference` input.
+  - For example, `copy_by_index` also copied 3 `ParameterTerminal` objects (`docs/s0-diff.md:29`, D5).
+  - `diag_c116d` weakly argues against this: the same copy on this same op reached ExecState 1 once its reference was wired. But it never read ExecState before that wire either.
+- **(b)** Your reading is right for run 1, but run 2 will fail at W2 for the S0 reason (branching a live `References` wire), not for the array-type reason you listed as the open risk.
+  - If W2 reads 0, you won't be able to tell these two apart unless the test is designed for it (see 4).
+
+**3. What would falsify your reading**
+- Read ExecState at the entry of `finish()`, before any wire:
+  - If it reads **1**, W1 broke the VI and your reading is wrong.
+  - If it reads **0**, run 1's failure is explained by the ordering. That still says nothing about whether W2 can succeed.
+
+**4. Cheapest discriminating test (one run, no extra LabVIEW session)**
+- Add `print(g.exec_state(dst))` as the first line of `finish()`, and log the `Is Broken?` value that the connect function reads back at W2.
+- If W2 reads 0, run W2' in the same fresh-copy session: wire #630 `reference` from a branch of the Index Array element wire w605 (a scalar refnum) instead of w600.
+  - W2' gives 1 and W2 gives 0: the array type is the cause.
+  - Both give 0: it is the S0 branch-a-live-wire problem, and the S0 diff (D2/D4/D7/D11) is the thing to test next.
+
+**The array question (web)**
+- **Close Reference accepts an array of refnums and closes all of them.** "Wire an array of references to the Close Reference function to close all references at once" ([LabVIEW Wiki](https://labviewwiki.org/wiki/Close_Reference_function)). So a type clash is unlikely to be why W2 fails.
+- **A null element in the array:** the function "will try to close them all, even if there is a null reference somewhere in the middle", and returns an error ([NI forum](https://forums.ni.com/t5/LabVIEW/Close-Null-Reference-Behavior/td-p/3227318)).
+- **An already-closed element:** I found no source. The null-element behaviour suggests the same thing happens (close the rest, return an error), but that is an inference.
+- **`error in` carrying an error:** it still closes. "A quick test with LabVIEW 7.1 shows the reference is closed even with an error passed into 'Close Reference'" ([NI forum](https://forums.ni.com/t5/LabVIEW/If-the-quot-error-in-quot-input-to-a-CLOSE-reference-file/td-p/195597)).
+- **Whether `reference` is a required input:** I couldn't find this in NI's documentation. The official page fetched empty. It stays inferred.
+
+**Design risk in W4, separate from ExecState**
+- W4 makes #615 run after the array close, so #615 always closes a refnum that is already closed. To More Specific Class passes the same refnum through, so the element #615 closes is one of the array's elements.
+- That means #615 always returns an error, and its `error out` is unwired (log line 11: `error out` wire 0).
+- The script's docstring (`diag_c117a_opv1.py:5-6`) calls this "a harmless, unwired error". That is only true if automatic error handling is off, and this script never turns it off. S0 did (`docs/s0-diff.md:40`, D16).
+- With it on, every run of the op can open a modal error dialog and hang the headless COM caller.
+- Fix: either wire #615's `error out` to a sink, or drop #615, since the array close already covers its element.
+BGRUN END rc=0 after 149s

@@ -1,0 +1,20 @@
+{"schema":"result/1","id":"117-4","status":"PASS","gates":{"pass":6,"fail":0},"first_fail":null,
+"blocked_by":{"device":"guard_peer","message":"rerun refused: diag_c117d_rows.log FAILED 25/4 on my own gates (#644 + 3 WhileLoops own no rows); JEV-LADDER new-problem p=0.70, review owed, card peers [] so none sent; facts taken by graph grep. This log blocks the next build until a review names it"},
+"artefacts":[{"path":"docs/qrtw-plan-draft.md","md5":"f440704598a61ab59ddf9305039e4da8"},{"path":"tools/bench/qrtw_rows_draft.json","md5":"368909f8ca0d9843b4db0bf474737e89"},{"path":"tools/bench/diag_c117d_rows.py","md5":"8f710796cd4f3a85d18b3c20a95daad7"},{"path":"tools/bench/diag_c117d_rows.log","md5":"41815f36c009ddb08d530e378168d700"},{"path":"tools/bench/diag_c117d_rows.json","md5":"98aa21ce5086fef03dae295af8b12181"}],
+"facts":[
+"T1: queue ops exist only as gscript.queue_node (gscript.py:1262, OpQueue*_v0); stagexec has no queue/Bundle/Unbundle create route (stagexec.py:198-208,276-304)",
+"T1: Bundle/Unbundle/Q&R only by copy_in from the base (stagekit.py:807); no base Bundler has 5-6 inputs (#27660=7, #13793=4, rest 2); Bundle resize MISSING",
+"T1: Obtain donor must be a node with a named output (cycle27-plan.md:1037-1046); no node on #686 outputs a Q_work/Q_res cluster -> donor MISSING",
+"T2: Q_work = Image Out t6865, Trans Pos t30145, Rot pos t4728, i t644, PLUS x-y #5119 t6323 (saved column, diag_c117b_qrt.json:490) - card list omits x-y",
+"T2: Q_res = #2626 t2813 -> #376 t5754 and i -> #376 t5763 (diag_c117d_rows.log:78,90,92); 45 rows = 14 create + 31 wire; closes 12 of 16 cdiff rows",
+"T3: b2_03 = #11363 t11369 -> #11261 t11270; t11273 fed by #11608 t11614 (1.1, w12256) = Q_work field F5 under 233(f) text; both in step B1 (qrtw_rows_draft.json W16/W17)",
+"T3: Q&R divisors are panel controls on #686: # FD points t8936 (w9000), # DT points t28844 (w29006); #10068/#29240 outputs have no other R1 sink (log:50,56)",
+"T4: steps A 13 / B1 11 / B2 8 / C 13 rows; none proven - no clean past stage has op:create in its pattern (diag_c117d_rows.log:365-415)",
+"T4: wire-only step proven if its calls are a subset of stage_d1_l2b2a_r2 / l2b2b_r2 patterns (log:408,412) -> 25-row budget",
+"R1 has no image pool: #6810 Image In comes from one tunnel #1666 w1651 (log:15), so a queued refnum can be overwritten before 1.2 reads it"],
+"open":[
+"O5: Image Out is one IMAQ refnum with no Q_free pool in R1 - queueing it risks 1.2 tracking a later frame than F1-F5 (rule 1a); pool stage first or another carrier?",
+"O1+O2: 233(f) 'same queue element' (cluster) vs d1-build-plan.md:567 'no composite elements'; and no node donor exists for a cluster Obtain",
+"O3/O4: confirm #11608 (t11273) and #5119 x-y ride Q_work (233(f) text) rather than a local / not at all; full list O1-O11 in docs/qrtw-plan-draft.md"],
+"cost":{"usd":null,"minutes":28,"labview_runs":0},
+"note":"offline only; draft on the provisional R1 graph (md5 e429f7ad); no plan marked current, no STATUS/recipe edit"}

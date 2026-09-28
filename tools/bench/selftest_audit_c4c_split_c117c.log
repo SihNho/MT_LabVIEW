@@ -1,0 +1,71 @@
+BGRUN START 2026-09-28 11:35:34 limit 5.0 min: py -u tools/bench/selftest_audit_c4c_split.py
+BGRUN PID 2672
+====================================================================================================
+=== selftest_audit_c4c_split - the C3/C4/C4c cost split, on cycle 59's literal numbers
+====================================================================================================
+
+---------- [1] THE REAL WINDOW - cycle 64's audit, 2026-09-22 01:09:00 .. 2026-09-22 02:52:00
+  FACT  build logs 11 ; machinery logs 5 -> ['cycle_58.log', 'cycle_59.log', 'peer_c74_gate10.log', 'peer_c74_m3a2_fmt.log', 'priorart_c74_m3a2.log']
+  PASS  G1 the machinery set is the five files cycle 64 saw  ['cycle_58.log', 'cycle_59.log', 'peer_c74_gate10.log', 'peer_c74_m3a2_fmt.log', 'priorart_c74_m3a2.log']
+  FACT  cycle_58.log program 'claude.exe' ; command 'claude.exe -p --model fable --effort medium --output-format json --permission-mode acceptE'
+  PASS  G2 cycle_58.log is_judgement_session_log is True  got True
+  FACT  cycle_59.log program 'claude.exe' ; command 'claude.exe -p --model opus --effort max --output-format json --permission-mode acceptEdits'
+  PASS  G2 cycle_59.log is_judgement_session_log is True  got True
+  FACT  peer_c74_gate10.log program 'powershell' ; command "powershell -NoProfile -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -TimeoutS"
+  PASS  G2 peer_c74_gate10.log is_judgement_session_log is False  got False
+  FACT  peer_c74_m3a2_fmt.log program 'powershell' ; command "powershell -NoProfile -ExecutionPolicy Bypass -Command & 'tools/peer.ps1' -Agent claude -R"
+  PASS  G2 peer_c74_m3a2_fmt.log is_judgement_session_log is False  got False
+  FACT  priorart_c74_m3a2.log program 'py' ; command 'py -u tools/prior_art_review.py --plan-file tools/bench/priorart_task_c74_m3a2.md --slug p'
+  PASS  G2 priorart_c74_m3a2.log is_judgement_session_log is False  got False
+
+---------- [2] THE SPLIT ITSELF - cost_split over that window
+  FACT  cost_split[rsecs] = 1490
+  FACT  cost_split[rcost] = 12.3687
+  FACT  cost_split[rcosted] = 3
+  FACT  cost_split[rseen] = 3
+  FACT  cost_split[jsecs] = 6055
+  FACT  cost_split[jcost] = 51.62158950000003
+  FACT  cost_split[jcosted] = 1
+  FACT  cost_split[jseen] = 1
+  FACT  cost_split[jlogs] = ['cycle_59.log']
+  PASS  G3 C4c judgement cost is $51.6216 from exactly 1 log, and it is cycle_59.log  got $51.6216 from 1 log(s) ['cycle_59.log']
+  PASS  G4 C4c judgement wall-clock is 6055 s  got 6055
+  PASS  G5 C4 review cost is $12.3687 from exactly 3 logs  got $12.3687 from 3 log(s)
+  PASS  G6 C4 review wall-clock is 1490 s  got 1490
+  PASS  G7 NOTHING IS DROPPED: C4 + C4c reconstructs the broken line, $63.9903 and 7545 s  got $63.9903 and 7545 s
+  PASS  G8 C3 builds 431 s and C5 total 7976 s are UNCHANGED by the repair  got C3 431 s, C5 7976 s
+  PASS  G9 cycle_58.log contributes 0 s / $0 - its run STARTED before the window (window_runs still clips)  got 0 s / $0.0000
+  PASS  G10 A REAL REVIEW STILL COUNTS AS A REVIEW: the three review logs alone give $12.3687 in C4 and $0 in C4c  got C4 $12.3687 / C4c $0.0000
+
+---------- [3] A BUILD LOG IS STILL A BUILD - the shared predicates did not move
+  PASS  G11 build_d1_m3a2.log is_build_log True, is_review_log False, is_judgement_session_log False  exists=True build=True review=False judge=False
+  PASS  G11b a build log never enters the machinery set that feeds C4/C4c
+  PASS  G12 cycle_59.log is STILL is_review_log True / is_build_log False (unchanged)
+  PASS  G12 peer_c74_gate10.log is STILL is_review_log True / is_build_log False (unchanged)
+
+---------- [4] SYNTHETIC SCOPING - the COMMAND decides, not the filename
+  PASS  G13a a cycle-runner judgement session -> True  got True ; program 'claude.exe'
+  PASS  G13b a peer dispatch OF the claude peer (program is powershell) -> False  got False ; program 'powershell'
+  PASS  G13c the prior-art review runner -> False  got False ; program 'py'
+  PASS  G13d a recipe build under MATERIAL=1 -> False  got False ; program 'py'
+  PASS  G13e cycle_runner.log - the ledger, no BGRUN line: filename fallback -> True  got True ; program ''
+  PASS  G13f cycle3_toolkit.log - a REAL 2026-09 build, no underscore after `cycle` -> False  got False ; program ''
+  PASS  G13g a dry-run stand-in in a cycle_*.log spends nothing and is not a session -> False  got False ; program 'python.exe'
+  PASS  G13h an absolute-path claude.exe -> True  got True ; program 'claude.exe'
+  PASS  G13i LAST run wins: a peer dispatch appended after a session -> False  got False ; program 'powershell'
+  PASS  G13j synthetic pair splits 9.00/100s to C4c and 1.50/30s to C4  got [9.0, 100, 1.5, 30]
+  PASS  G13k seen==parsed on both sides (the C4b visibility half still holds)  jseen 1/1 rseen 1/1
+
+---------- [5] THE NEIGHBOURING SELF-TESTS, RE-RUN UNCHANGED
+  FACT  selftest_logclass_recipebuild.py rc=0 ; tally ('24', '0') ; last line '=== GATES: 24 pass / 0 fail'
+  PASS  G14 selftest_logclass_recipebuild.py still passes UNCHANGED (rc 0, 0 failures)  rc=0 nfail=0
+  FACT  selftest_guard_peer_jev.py rc=0 ; tally ('29', '0') ; last line 'RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":29,"fail":0},"first_fail":null,"artefacts":[]}'
+  PASS  G14 selftest_guard_peer_jev.py still passes UNCHANGED (rc 0, 0 failures)  rc=0 nfail=0
+  FACT  selftest_guard_peer_failre.py rc=0 ; tally ('29', '0') ; last line '=== 29 pass / 0 fail ===  (5.0 s)'
+  PASS  G14 selftest_guard_peer_failre.py still passes UNCHANGED (rc 0, 0 failures)  rc=0 nfail=0
+  FACT  selftest_audit_cost_window.py rc=0 ; tally ('7', '0') ; last line 'SELFTEST 7 pass / 0 fail'
+  PASS  G14 selftest_audit_cost_window.py still passes UNCHANGED (rc 0, 0 failures)  rc=0 nfail=0
+
+====================================================================================================
+=== GATES: 33 pass / 0 fail
+BGRUN END rc=0 after 40s (NO RESULT LINE)

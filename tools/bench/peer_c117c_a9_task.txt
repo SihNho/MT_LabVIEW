@@ -1,0 +1,24 @@
+CLAIM (card 117-3 D5/D6, material session, 2026-09-28 11:35). Card tools/bench/cards/task_117-3.json D5 orders: audit_cycle A9
+counts as witness ONLY the file the disposition's fix names, never tools/bench/selftest_* (decision docs/violation-decisions.md
+"device-failed" 2026-09-28 10:37, lines 1674-1677). I changed tools/audit_cycle.py a9_unlanded/a9_named_files (A9 block ~:271-330):
+a candidate is LANDED only if its "## What was done with it" section names a code file (tools/**/*.py|ps1 outside tools/bench/,
+or a bare name resolving to exactly one such file) that cites the review stem or slug.
+
+OBSERVATION. The regression self-test tools/bench/selftest_c116a_landed.py (written by card 116-3 for the OLD rule; on record
+18/0 in tools/bench/selftest_c116a_landed.log:46) now runs 15/3 (tools/bench/selftest_audit_c116a_landed_c117c.log):
+  S2 "cited by tools/x.py -> landed" FAIL - its fixture section (selftest_c116a_landed.py:43) names NO file, so the new rule has no witness;
+  S4 "cited by tools/bench/selftest_y.py -> landed" FAIL - the new rule forbids selftest witnesses by design;
+  A2 "post-fix (working tree): retrospective-cycle77 LANDED" FAIL - cycle77's disposition (archive/peer/2026-09-25-retrospective-cycle77.md:303)
+     names tools/bgrun.py, not tools/doc_lint.py, and doc_lint.py is the file that cites it.
+The new self-test tools/bench/selftest_audit_a9_witness.py is 8/0 (tools/bench/selftest_audit_a9_witness.log); the real archive
+now reports 16 absent of 21 candidates (was 12 under the old rule, result_116-3.json:26 fact 8).
+
+HYPOTHESIS. All three failures are the old test pinning the old witness rule, i.e. intended by D5, not a defect of the new code.
+In particular A2: the cycle77 fix (doc_lint L8) really landed, but the disposition never names doc_lint.py, so the named-file
+rule reports it absent - a false "absent" that the card's rule produces by construction.
+
+QUESTION. Attack this. Is any of the 3 failures a real defect of the new a9_unlanded (e.g. the path regex A9_PATH_RE missing a
+form dispositions actually use, such as `guard_card` without .py, backslash paths, or files named in a line that is itself NOT
+ACCEPTED)? Is "names no code file -> absent" going to report fixes as owed that are landed, and how many of the 16? Name the
+cheapest discriminating test. Read tools/audit_cycle.py, tools/bench/selftest_c116a_landed.py, tools/bench/selftest_audit_a9_witness.py
+and the two logs.

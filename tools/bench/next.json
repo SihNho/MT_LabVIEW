@@ -1,23 +1,27 @@
 {
  "schema": "next/1",
- "cycle": 117,
- "act": "PD231(e) STEP 0: OpWireJoints_v1 (close the Traverse array; whole-graph 1945-wire sweep on R1, 0 errors, handles flat); then PD231(d) L2-R2 ONE launch, loose-ends pin 22 + per-net joints gate",
+ "cycle": 118,
+ "act": "PD233(k): build the QRT POOL stage (Q_free/Q_work lock-stepped, bound 20, full => skip) from the R2 bed: plan on R2's graph, scratch, ONE launch -> D1_qrt_pool_<ts>.vi + expected Error List",
  "task_kind": "build",
  "plan": {
   "path": "docs/d1-loop12-17-split-plan.md",
-  "md5": "95bf8e6529ce706cf0226644a36a6708"
+  "md5": "b854d6963dc18e0c4642b41dbf9aa273"
  },
  "pass": [
-  "OpWireJoints_v1 closes every ref incl. the Traverse array; 20 calls handles flat +-100; whole-graph sweep of all 1945 R1 wires 0 errors, handles flat; names R1's 24th loose-ends item",
-  "L2-R2 from D1_l2_r1_20260928_055441.vi with stage_d1_l2r2.py md5 488c2209 / plan_l2r2.json md5 67bad9a8 (re-dry if changed); scratch already PASSED 43/0 in 116-2",
-  "ONE launch -> claudeDev\\D1_l2_r2_<ts>.vi: cdiff == R1's 16 rows; census == 13 tunnels + 11 stubs; whole-graph terminal diff only on retired objects; RBW deletes no other wire; handles +-100",
-  "Error List loose-ends == 22 (PD231(d)); joints on the 20 nets == 116-4 J4 table (9 named nets loose, w25238/w25225 not, 7 PD230(d) nets unchanged)",
-  "errorlist_expected_D1_l2_r2_<ts>.json written and reverdict OK in the same card"
+  "plan_pool.json on the SAVED R2 graph (D1_l2_r2_20260928_110756.vi md5 7dac9f04) from d1-build-plan.md:567-579 + stage2-assembly-step-c.md:19-29; rows <= 15; stagesim FINAL",
+  "recipe <= 120 lines; dry + prerun + prior-art PASS; any missing queue/IMAQ create route built and scratch-verified in the card",
+  "scratch run on a byte copy of R2 passes all gates before the launch; ONE launch saves claudeDev\\D1_qrt_pool_<ts>.vi",
+  "gates: cdiff(S1,new) == R2's 16 rows minus the rows the plan closes, as the plan predicts; no deleted source or live consumer; handles +-100",
+  "full Error List read and errorlist_expected_D1_qrt_pool_<ts>.json written, reverdict OK; an unsettled design choice (O6/O7) returns BLOCKED"
  ],
  "blocked_by": null,
  "stop_requested": false,
  "advances": [
   "M3",
   "R1"
- ]
+ ],
+ "steer": {
+  "item": "outcome:goal-requirement-not-advanced+ordering-stale+tooling-over-delivery",
+  "response": "follow"
+ }
 }

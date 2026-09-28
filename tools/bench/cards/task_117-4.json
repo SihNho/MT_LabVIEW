@@ -1,0 +1,60 @@
+{
+ "schema": "task/1",
+ "id": "117-4",
+ "kind": "measure",
+ "goal": "OFFLINE prep for QRT-W (the step after L2-R2): draft row table + tool inventory for wiring the 9 cross-loop pairs and b2_03, under PD233(f). No LabVIEW.",
+ "why": "split plan PD233(f) NEXT: QRT-W design plan on the R2 graph; R2 is not saved yet, so this draft is PROVISIONAL on R1's graph (L2-R2 does not touch the 16 rows); pipeline rule (card chat-P1)",
+ "inputs": [
+  {"path": "tools/bench/facts_c117_qrt.json", "md5": "bee2a8f3db90a0e87394d5b06ab1f2f8"},
+  {"path": "tools/bench/facts_c117_qrt.md"},
+  {"path": "tools/bench/graph_l2r1_saved_20260928.json", "md5": "e429f7ad7b2eebdaabaf0db1a462f10e"},
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "docs/d1-build-plan.md"},
+  {"path": "docs/NAMES.md"},
+  {"path": "tools/stagexec.py"},
+  {"path": "tools/stagekit.py"},
+  {"path": "tools/gscript.py"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/facts_c117_qrt.json"},
+  {"kind": "file", "name": "tools/bench/graph_l2r1_saved_20260928.json"},
+  {"kind": "file", "name": "docs/d1-build-plan.md"}
+ ],
+ "pass": [
+  "T1 inventory: for Obtain Queue, Enqueue, Dequeue, Release Queue, Bundle, Unbundle, Quotient&Remainder create/wire: the existing op VI / gscript / stagexec function (file:line) or MISSING",
+  "T2 row table per PD233(f): Q_work payload (Image Out, Trans Pos, Rot pos, frame counter) and Q_res payload (tracked row + frame index); every row = source uid+term, sink uid+term, loop",
+  "T3 b2_03 (#11363 -> #11261.array) with t11273 per 227(d): the rows and which QRT pair feeds t11273",
+  "T4 rows total and split into build steps <= 15 (25 if proven_pattern per PD232); which steps are proven_pattern today",
+  "T5 OPEN list for judgement: queue element types, Q_work bound/skip (d1-build-plan.md:572), stop/release order, anything the files do not settle",
+  "write docs/qrtw-plan-draft.md (frontmatter status: draft, provisional base = R1 graph md5) + tools/bench/qrtw_rows_draft.json; no plan marked current"
+ ],
+ "outputs": [
+  "docs/qrtw-plan-draft.md",
+  "tools/bench/qrtw_rows_draft.json",
+  "tools/bench/cards/result_117-4.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "docs/qrtw-plan-draft.md",
+   "tools/bench/qrtw_*",
+   "tools/bench/diag_c117d*",
+   "tools/bench/cards/result_117-4.json"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "offline only: never open LabVIEW, never run a recipe or stage script",
+  "PD233(f) is decided; do not reopen it; every other design choice goes to T5 OPEN, not decided",
+  "a tool not found by file:line is MISSING, never assumed to exist",
+  "no edit to the current plan, STATUS, or any recipe",
+  "facts <=10 file:line; OPEN <=3 (full list in the draft)"
+ ],
+ "advances": ["M3", "R1"]
+}

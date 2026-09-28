@@ -1,0 +1,66 @@
+{
+ "schema": "task/1",
+ "id": "117-3",
+ "kind": "build",
+ "goal": "Offline device of the rule-evaded decision (2026-09-28 10:37): gscript refuses a NEW op VI with no PASS op-hygiene record; plus audit_cycle A9 counts only the fix's named file as witness",
+ "why": "docs/violation-decisions.md 2026-09-28 10:37 (rule-evaded 9, threshold 3; device-failed A9); split plan PD233(e); retrospective-cycle116 :392-393",
+ "inputs": [
+  {"path": "docs/violation-decisions.md"},
+  {"path": "archive/peer/2026-09-28-retrospective-cycle116.md"},
+  {"path": "tools/gscript.py"},
+  {"path": "tools/audit_cycle.py"},
+  {"path": "tools/bench/op_hygiene/OpWireJoints_v1.json"},
+  {"path": "tools/bench/cards/result_116-3.json"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/audit_cycle.py"},
+  {"kind": "file", "name": "tools/bench/op_hygiene/OpWireJoints_v1.json"}
+ ],
+ "pass": [
+  "D1 locate the single gscript code path that opens/calls an op VI by path; name it file:line",
+  "D2 there: an op VI whose file mtime is after the device install time needs tools/bench/op_hygiene/<op>.json, schema op-hygiene/1, errors 0, md5 == file md5",
+  "D3 missing/mismatched record -> raise with the op name and the record path; the hygiene probe (one named function) is the only exemption; older ops grandfathered",
+  "D4 self-test tools/bench/selftest_op_hygiene.py with NO LabVIEW (stub the call): fake new op without record refused; with record allowed; md5 mismatch refused; old op allowed; v1 allowed",
+  "D5 audit_cycle A9: witness = only the file the disposition's fix names, never tools/bench/selftest_*; rerun A9 and list its 'absent' items as owed / not owed",
+  "D6 existing regression self-tests of gscript/audit_cycle still pass with the failures on record named; git diff summary of both files"
+ ],
+ "outputs": [
+  "tools/gscript.py",
+  "tools/audit_cycle.py",
+  "tools/bench/selftest_op_hygiene.py",
+  "tools/bench/cards/result_117-3.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/gscript.py",
+   "tools/audit_cycle.py",
+   "tools/bench/op_hygiene/**",
+   "tools/bench/selftest_op_hygiene*",
+   "tools/bench/selftest_audit*",
+   "tools/bench/diag_c117c*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_117-3.json",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "offline only: no LabVIEW process, no COM call; the self-test stubs the op call",
+  "the check never blocks an op that ran before the install time (grandfathered)",
+  "no env-var bypass of the refusal; the only exemption is the named hygiene probe",
+  "a regression criterion names the failures already on record",
+  "failed prediction -> hypothesis peer; failure budget counts every rc!=0 run",
+  "facts <=10 file:line; OPEN <=3"
+ ],
+ "unblocks": "M3"
+}

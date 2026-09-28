@@ -2138,6 +2138,41 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
          - (3) The display index remainders `#10068`/`#29240` are computed in 1.2 from that carried counter, with the same arithmetic, so display index and display data come from one frame.
        - This does not contradict CLAUDE.md 1c'': these are lossless per-frame DATA (queue), not control signals. Pure display-only sinks that take no frame-paired input may still take a latest value (PD210).
        - **NEXT after L2-R2:** a QRT-W design plan (rows, Q_work/Q_res payload clusters, b2_03 + t11273 per 227(d)) on the R2 graph, offline with prior-art review, then the build step.
+     - **(g) QRT-W draft (117-4 PASS 6/0, `docs/qrtw-plan-draft.md` md5 `f440…`, `tools/bench/qrtw_rows_draft.json`; provisional on the R1 graph). Its offline diag's 4 G1 FAILs are the script's lookup bug (review `archive/peer/2026-09-28-c117d-rows.md`, supported, annotated). DECIDED on its OPEN list:**
+       - **O5 → a POOL stage comes first.** Queueing R1's single IMAQ refnum would let 1.1 overwrite the buffer before 1.2 reads it, so 1.2 could track a different frame (rule 1a). The image carrier is the DESIGNED `Q_free`/`Q_work` pool (`d1-build-plan.md:572`, bound 20, full ⇒ skip the read), built as its own saved step before QRT-W.
+       - **O1 → lock-stepped scalar queues, per `d1-build-plan.md:567`.** 233(f)'s "same queue element" is AMENDED to "the same lock-stepped enqueue". One 1.1 iteration enqueues all fields of its frame (image slot, Trans Pos, Rot pos, x-y, i, `#11608`) all-or-none, and 1.2 dequeues them together. The QRT-W gate adds a frame-index equality check between the fields.
+         - This dissolves **O2** (no cluster Obtain donor is needed) and **O11** (no Bundle resize).
+       - **O3/O4 → both ride Q_work:** `#11608` (t11273) and `#5119` x-y. They meet frame-paired values in 1.2, the same rule as 233(f)(1).
+       - **O8 → MOVE** `#10068`/`#29240` into 1.2. Their outputs have no other consumer in R1, and the arithmetic is unchanged.
+       - **Still OPEN for the plan's judgement:**
+         - O6: timeouts and error chains;
+         - O7: release order and the stop sentinel, which is the STOP stage;
+         - O9: `#2626`'s Concatenate Inputs, in the M1–M4 reads;
+         - O10: whether §9's Q_res/Q_good/Q_rmeta trio is superseded by {row, i}.
+     - **(h) 117-1 FAIL 7/1, but L2-R2 WAS SAVED: `claudeDev\D1_l2_r2_20260928_110756.vi`, md5 `7dac9f04ff4b65fa517e8e12f4bef5f3`, 307,072 B (ONE launch 43/0, `stage_d1_l2r2.log:305,336`).**
+       - STEP 0 met: `OpWireJoints_v1` md5 `29dcb59f…` made 2,066 calls with 0 errors and flat handles, and its record is `tools/bench/op_hygiene/OpWireJoints_v1.json`.
+       - L2 gates PASS: LC 13/13; D lost == 11 stubs; census LoopTunnel −13, Wire −11; PB == R1's 16 rows; RBW new_only []; handles held.
+       - L3a PASS: loose outer nets = J4's 9 + 25438/25461, which were already loose on R1; 25238/25225 are not loose.
+       - **L3b DECIDED PASS on the normalised comparison.** The raw FAIL (`diag_c117a_joints.log:25`) came from a tuple-vs-list comparison in our script. The re-comparison of the same raw read (`diag_c117a_cmp.log`) shows the 5 untouched PD230 nets == R1, and the only raw differences are the two re-joined nets that 116-4 predicted. This changes a representation, not a value. Review c117a-joints was answered and annotated.
+       - **S0d DROPPED:** a Joints 0x100 flag is not 1:1 with Error List "loose ends" items (44 flagged wires vs 45 items across three classes), so "the 24th item" has no single answer and is not asked again.
+       - **L4 (Error List loose ends == 22 + `errorlist_expected_D1_l2_r2_<ts>.json`) was NOT run.** It is the one gate left before R2 becomes the bed, run as card 117-5 with the already-written `tools/bench/diag_c117a_el.py`. On PASS, R2 is accepted and `current-bed:` moves.
+       - Gate false positive fp-1 (`stage_prerun.last_failed_run_after` reads whole logs by mtime) is queued; it is drained when gate-fp is due.
+     - **(i) CLOSE — L2-R2 IS ACCEPTED AND IS THE NEW BED** (card `117-5` PASS 17/0, one run):
+       - The full Error List of the saved R2 has 53 items = loose 22 / no-source 1 / not-connected 20 / other 10. **Pin 22 PASS.** The only change against R1 (24/1/20/10) is the loose ends derived in 231(c). The classes equal the 116-2 scratch measurement exactly.
+       - `errorlist_expected_D1_l2_r2_20260928_110756.json` (md5 `7efc63b4…`) reverdicts OK, and the R2 md5 is unchanged. `current-bed:` moved to R2.
+       - Level: STRUCTURAL, ExecState 0 by design, never run. Rule 1a: deletes only, every live consumer kept (L2 LC 13/13).
+       - **L2-R is complete.** Both retire sets of 228(g) are gone: 6 SR pairs in R1, 13 tunnels in R2.
+     - **(j) Device of the 10:37 rule-evaded decision BUILT (117-3 FAIL 5/1, accepted):**
+       - `gscript.op()` (`gscript.py:299`) refuses an op VI admitted after 11:30 with no matching PASS record (`OpHygieneRefused`). The 138 existing `Op*.vi` are admitted, and `hygiene_probe()` is the one exemption. Self-test 13/0.
+       - A9's witness is now only the non-bench file named in the item (`audit_cycle.py:285-288`). Self-test 10/0; review c117c-a9 answered.
+       - The one FAIL was expected: `selftest_c116a_landed.py` S2/S4/A2 pin the OLD witness rule. **Carry:** re-pin them to the new rule in the next tooling/gate-fp card, together with fp-1 and fp-2.
+       - **DECIDED (117-3 open 1):** a late fix in a file the item does not name is released by appending `FIXED: <slug> - <path>:<line>` to the disposition, the same currency as prior-art. The rule is not widened.
+       - Known limit: about 20 bench/recipe scripts call `GetVIReference` directly and bypass `op()`. They are older scripts; a new op is reached through `op()`.
+     - **(k) NEXT = the POOL stage (PD233(g) O5), the first build step of QRT.** One material card:
+       - plan offline on the SAVED R2 graph from the designed pool (`d1-build-plan.md:567-579`, `stage2-assembly-step-c.md:19-29`): Q_free / Q_work lock-stepped, bound 20, full ⇒ skip the read;
+       - rows ≤ 15; recipe ≤ 120 lines; dry + prerun + prior-art; scratch on a byte copy; ONE launch → `claudeDev\D1_qrt_pool_<ts>.vi`, then its Error List and expected file;
+       - a missing create route (queue / IMAQ Create; 117-4 T1) is built inside the card, because the deliverable needs it (2026-09-24 tools rule);
+       - any design choice the files do not settle (O6 timeouts, O7 release/stop) returns BLOCKED to judgement; it is not decided inside the card.
 
 ## OPEN (design choices — for judgement; not decided here)
 

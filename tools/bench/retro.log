@@ -4799,3 +4799,110 @@ VIOLATION: device-failed | loss_min=0 | loss_usd=? | evidence=tools/bench/cards/
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle116","verdict":"refuted","alternative":"The leak was unforeseeable: J1's 20-call handle test is the proof CLAUDE.md prescribes, so the op met the rule as written and the cycle had no structural fault.","discriminating_test":"Open OpWireJoints_v0's diagram: a Traverse refnum array with no Close Reference (opbuild.log:35 closes only the PN ref) breaks CLAUDE.md:218-219 whatever the handle count shows.","violations":[{"slug":"rule-evaded","loss_min":18,"loss_usd":2.17,"evidence":"tools/bench/diag_c116d_opbuild.log:35"},{"slug":"device-failed","loss_min":0,"loss_usd":"?","evidence":"tools/bench/cards/result_116-3.json:26"}],"sources":["CLAUDE.md:218","tools/gscript.py:247","tools/bench/diag_c116d_j3.log:84","tools/bench/peer_c116d-sweep.log:4","tools/hooks/material_marker.log:2669","docs/violation-decisions.md:1655","docs/d1-loop12-17-split-plan.md:2096"],"note":"Runner death at 09:12 was an external kill, not this cycle's fault; the judgement-session cost for cycle 116 is unrecorded."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle116.md
 BGRUN END rc=0 after 503s
+BGRUN START 2026-09-28 11:43:41 limit 10.0 min: py tools/retrospective.py --cycle 117
+BGRUN PID 17180
+   window 2026-09-28 09:58:44 .. 2026-09-28 11:43:42 (105 min); 91 build logs, 12 machinery logs, 41 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle117.txt (39606 chars)
+   review card tools\bench\cards\review_retrospective-cycle117.json
+OUTCOME: ANSWERED (262s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-09-28-retrospective-cycle117.md
+COST: $2.1630  in 42 / out 25712 / cache-create 147289 / cache-read 2351203  (260s, 36 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle117 verdict=none -> tools\bench\cards\verdict_retrospective-cycle117.json
+--- ANSWER ---
+# Retrospective, cycle 117 (outcome review)
+
+**Summary.** This cycle achieved its goal. The L2-R2 stage saved `D1_l2_r2_20260928_110756.vi` (md5 `7dac9f04`) in one launch with 43 gates passing and none failing (`stage_d1_l2r2.log:305,336`). Its full Error List passed: loose ends 22, matching the pin, and the expected file re-checks OK (`diag_c117a_el.log:114-117`). It is now the bed (`STATUS.md:62-64`). Alongside it, the cycle measured the QRT facts, drafted the QRT-W plan, and built the device that was due for `rule-evaded`. `next.json` names a deliverable build and follows the steering card (`next.json:4,23-26`).
+
+I looked for a fault that changed what the cycle cost or produced, and found none. Every fault below is a few minutes, or one to three dollars of reviews, and none of them moved the cycle's end.
+
+**The evidence window contradicts the cycle.** The judgement session started at 10:35:32 (`cycle_117.log:1`), not at 09:58:44.
+- From 09:58 to 10:33 the chat was relaunching the runner for the acceleration changes (`run_selftests_chat_p1_*.log`, `cycle_runner_main_20260928_1032.log`).
+- All 57 logs that fail audit A1 and all 6 that fail A2 are those `_p1before`/`_p1after` self-tests. They are not cycle 117's.
+- C3 (116 min) and C5 (127 min) are longer than the 105-min window. They add up parallel cards and include the chat's work.
+- Cycle 117's own reviews cost $4.82: `peer_c117a-opv1.log:4` $1.4631, `peer_c117d-rows.log:4` $1.0741, `peer_c117a-joints.log:4` $0.9719, `peer_c117c_a9.log:4` $1.3090. The remaining $2.388 of C4 is the outcome review that the runner ran before the session (`outcome_review_cycle117.log:7`).
+- The judgement session's own cost is unknown. C4c is empty because the session was still open when the window closed.
+
+**Timeline of the LabVIEW work:**
+
+| Time | Step | Result |
+|---|---|---|
+| 10:44 | opv1 run 1 | FAIL |
+| 10:47–10:49 | hypothesis review | |
+| 10:50–10:53 | opv1b | PASS |
+| 10:53:48 → 11:00:44 | hygiene sweep | held back ~7 min (see finding 5) |
+| 11:05 | hygiene sweep | PASS |
+| 11:05:53 | launch | refused by fp-1 |
+| 11:07:51–11:24 | stage launch | PASS |
+| 11:24 | joints check | FAIL |
+| 11:26–11:28 | review, then offline comparison | |
+| 11:30:39–11:41:52 | Error List read (card 117-5) | PASS |
+
+## FINDINGS
+
+**1. Repeated failure.** Three different diagnostic scripts each failed on a bug in their own checks:
+- `diag_c117a_opv1.log:15`: steps run in the wrong order.
+- `diag_c117d_rows.log:45,167-171`: terminals were looked up by owner, so they could never be found (`c117d-rows.md:58-60`).
+- `diag_c117a_joints.log:25`: tuples from COM were compared with lists from JSON. The line prints `(6,10,2)` against `(6,10,2)` and still fails.
+
+The Jev ladder classified all three as `new-problem` (`jev_gate.log:2564,2571,2589`), never as `our-script-bug`. So each one bought an Opus review, about $3.51 in total. The pattern was visible by the second failure (10:53): an offline check script written from scratch, outside stagekit (`jev_gate.log:2562,2568,2587`, all "stagekit=False"). That is the point where diagnostics should have moved onto shared helpers. This is not a recurring class: no earlier record of the tuple-vs-list bug exists.
+
+**2. Missing tool.**
+- A shared helper that normalises a COM read before comparing it with a JSON reference would have prevented the joints FAIL. That failure spent card 117-1's last failure, which forced L4 into a separate card (about 4 min and $0.97).
+- guard_peer exempts an offline card from the LabVIEW card's failing log, but not the reverse (`guard_peer.py:901-905`). A symmetric exemption would have removed the 7-minute hold in finding 5.
+
+**3. Unmeasured steps.** One small inference was accepted. The review said that w25225/w25238 differ only because joints are renumbered when a net is re-joined, and that this was "inferred, not measured" (`c117a-joints.md:54,75`). It does not matter, because the measured Error List (L4) settles acceptance. The tuple-vs-list reading itself was measured (`diag_c117a_cmp.log:22`).
+
+**4. Rule compliance.**
+- **stagekit rule.** CLAUDE.md requires every new diagnostic to be a file of 120 lines or fewer on stagekit. That was broken: `diag_c117d_rows.py` was 155–174 lines and `diag_c117b_qrt.py` 161 lines, both off stagekit (`jev_gate.log:2560,2568,2572`).
+- **Gate routed around.** fp-2 was "routed around" by loading gscript through `importlib` with fake COM modules, then asking judgement afterwards whether that is allowed (`result_117-3.json:26`, `gate_fp_queue.jsonl:2`). That is a way past the gate, not "an equivalent form the gate accepts".
+- **Outcome review not annotated.** A4 fails because the outcome review's "What was done with it" section is still blank (`outcome-review-20260928.md:229`), even though its steering card was followed.
+- **What the audit does not cover:**
+  - one card blocking another card's launch;
+  - who annotated a review (material or judgement);
+  - review dispatches killed by a runner relaunch (`outcome_review_cycle116.log:6`);
+  - wrong card IDs in result cards;
+  - C7's 210-file list, which is too broad to be useful.
+
+**5. Ordering.** The order was defensible and followed the rules: STEP 0 hygiene before the launch (PD233), prep and device work on the offline slot, and L4 before accepting the bed.
+
+The one cost was the hold. The LabVIEW card's hygiene launch was queued at 10:53:48 but only started at 11:00:44 (`material_marker.log:2686-2687`, `diag_c117a_hyg.log:1`). guard_peer's global failing-log rule held it on the offline card 117-4's throwaway draft script, which had no peer and so could not buy its own review. It stayed held until the judgement session paid for the c117d-rows review ($1.0741). This did not move the cycle's end: the offline card 117-3 finished last (`c117c-a9.md:114`, 11:43).
+
+**6. What was not reported.**
+- `result_117-1.json:23` blames "card 117-2's failing log" for the hold. It was 117-4's log; 117-2's diagnostic passed (`diag_c117b_qrt.log:36`). STATUS never mentions the 7-minute hold.
+- `result_117-4.json:2` says only "rerun refused". The rerun it tried had removed the failing gate instead of fixing the lookup (`diag_c117d_rows.py:30` `INFO_ONLY`; `c117d-rows.md:81`).
+- The gate_fp logging command was itself refused by the prerun gate (`material_marker.log:2689`).
+- 117-4's result reads PASS 6/0 while its own diagnostic FAILED 25/4. STATUS does disclose this (`STATUS.md:77`).
+
+**7. Judgement inside a material session.**
+- Material sessions wrote "ACCEPTED" on three reviews: `c117a-opv1.md:88`, `c117a-joints.md:71` and `c117c-a9.md:115`.
+  - **opv1:** fixing its own script within budget is material's job.
+  - **joints:** only formal. The acceptance was still returned to judgement (`result_117-1.json:25`) and judgement accepted it (`STATUS.md:73`).
+  - **c117c-a9:** this one belongs to judgement. The material session adopted a design change to audit A9's witness rule (per-bullet scope) because a review suggested it.
+- The INFO_ONLY attempt, which changed what counts as a pass after a FAIL, is also a judgement act. guard_peer refused it, so it had no effect.
+
+## DEVICE EFFECT
+
+**Worked:**
+- The bgrun FAIL scan and the rc guarantee: `diag_c117d_rows.log:419` was forced to rc=1 although the process exited 0.
+- Cost regex: C4b parsed 5 of 5.
+- The adversarial instruction is appended to every review (`c117a-joints.md:26-32`).
+- guard_peer refused 117-4's gate-stripped rerun (`jev_gate.log:2571-2573`; no `_r2` log exists).
+- bgrun_reap marked the killed pre-session runs (`cycle_runner_main_20260928_1032.log:7`).
+- The cycle card carried `gates_due` (`cycle_117.json:31-52`).
+
+**Misfired once, handled as designed:** the prerun decision-4 check refused the launch at 11:05:53 (`material_marker.log:2688`). The refusal was queued as fp-1 (`gate_fp_queue.jsonl:1`) and routed around by re-running dry and prerun, costing about 2 minutes. It was not bypassed routinely.
+
+**guard_peer holding card 117-1:** this was the intended one-way design, pinned by a self-test (`selftest_chat_p1.py:199`). It is a flaw in the pipeline's design, not a device that failed its own purpose.
+
+**The new op-hygiene device (10:37 decision):** the fault it exists to stop did not occur. OpWireJoints_v1 was accepted on 2,066 calls, 0 errors and flat handles (`diag_c117a_hyg.log:15-18`), not on the handle count alone. It has known holes:
+- about 20 scripts call `GetVIReference` directly and bypass it (`result_117-3.json:13`);
+- all 138 existing ops are grandfathered (`:16`);
+- A9 is now 20 of 21 absent, "only grows", and its regression self-test fails 15/3 (`:2,24`).
+
+**Not exercised in this window:** prior-art, stop record, SimReader, sink gates, NI-VISA, MEMSTOP, rename flagging, opmodels replay, graph shape and SendMessage refusal. No evidence shows any of them letting its own fault through.
+
+**Total minor loss:** about 7 min (the hold, which did not change when the cycle ended), about 2 min (fp-1), about 4 min (L4 moved to a new card), and $3.51 of reviews spent on the three script bugs.
+
+VIOLATION: none
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle117","verdict":"none","alternative":"Candidate device-failed: guard_peer held LabVIEW card 117-1 on offline card 117-4's failing log for 7 min (10:53:48 to 11:00:44) plus a $1.07 review; the one-way exemption was by design and the tail was card 117-3, so the cycle end did not move.","discriminating_test":"Replay the 10:53:48 hyg launch against guard_peer with diag_c117d_rows.log newest; a symmetric RULE-OFFLINE-CARD (LV card not held by a labview:none card's offline-command log) should return 0. Then check whether the cycle end (11:43) changes.","violations":[],"sources":["tools/bench/cycle_117.log:1","tools/bench/stage_d1_l2r2.log:305","tools/bench/diag_c117a_el.log:114","tools/hooks/material_marker.log:2686","tools/hooks/guard_peer.py:901","tools/bench/jev_gate.log:2589","tools/bench/cards/result_117-1.json:23","archive/peer/2026-09-28-c117d-rows.md:81"],"note":"Window starts 37 min before the session (chat relaunch); A1/A2 FAILs are chat-P1 self-tests. Deliverable R2 saved and L4 PASS. Minor: 3 own-script diag bugs all Jev-labelled new-problem ($3.51 reviews); stagekit/120-line rule broken on 2 diags."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle117.md
+BGRUN END rc=0 after 266s

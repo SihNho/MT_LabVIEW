@@ -1653,3 +1653,25 @@ DECISION: device, first in cycle 116's card (STEP 0, `docs/d1-loop12-17-split-pl
   - doc_lint has no HH:MM header lint.
 
   So a check is owed that an ACCEPTED disposition's named fix has landed, run by `audit_cycle`. It greps "accepted"/"FIXED" dispositions for a named `file` or function and reports each one absent from the code. Acceptance: it flags exactly those two before they are fixed, and 0 after the same card fixes them.
+
+## rule-evaded — 2026-09-28 10:37 (cycle 117 judgement, after archive/peer/2026-09-28-retrospective-cycle116.md:392)
+
+`VIOLATION: rule-evaded | loss_min=18 | loss_usd=2.17 | evidence=tools/bench/diag_c116d_opbuild.log:35`: ACCEPTED.
+`OpWireJoints_v0` was built with its Traverse array left open (CLAUDE.md "Reference hygiene" 1). It was accepted on a 20-call
+handle count, which does not see VI Server refnum consumption. After the leak was known it was used again on a scratch run of
+the recipe body. The slug count is 9 (7 of them from the saturated v1 retrospectives of cycles 7–13).
+
+DECISION: device. Per steer_116 it is built AFTER this cycle's deliverable launch, in its own offline card (117-3), not before it:
+- **(1) Record.** `tools/bench/op_hygiene/<op>.json`, schema `op-hygiene/1`: op, path, md5, calls, errors, error_codes,
+  handles_before/after, log `file:line`, date. A NEW op VI is accepted only on ≥ 2,000 consecutive calls (or a whole-graph sweep,
+  whichever is larger) with 0 errors AND handles flat ±100. The handle count alone is no longer the proof.
+- **(2) Refusal.** gscript's op-VI call path refuses an op VI whose file is newer than the device's install time and has no
+  PASS record with a matching md5. The hygiene probe itself is the one exception. Older ops are grandfathered, because they
+  ran in clean stages.
+- Self-test: a fake new op with no record is refused; the same op with a record is allowed; `OpWireJoints_v1` is allowed on its
+  record. The first record is `OpWireJoints_v1`, written by card 117-1 from its sweep in the schema above.
+
+`VIOLATION: device-failed | loss_min=0 | evidence=tools/bench/cards/result_116-3.json:26` (same retrospective, :393): ACCEPTED.
+The A9 witness counted a self-test that PINS the hole. Fix, in the same card 117-3: A9 counts as witness only the file the
+disposition's fix names, never `tools/bench/selftest_*`. Acceptance: A9's report on the current dispositions lists which of
+its 12 "absent" items are real (owed code) and which are not.

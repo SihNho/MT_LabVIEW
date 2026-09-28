@@ -1,0 +1,19 @@
+{"schema":"result/1","id":"117-2","status":"PASS","gates":{"pass":15,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/bench/facts_c117_qrt.json","md5":"bee2a8f3db90a0e87394d5b06ab1f2f8"},{"path":"tools/bench/facts_c117_qrt.md","md5":"b4e79d58fe8bf56e24e8c84a54e5a961"},{"path":"tools/bench/diag_c117b_qrt.json","md5":"b01375a487b829b55f4c166a3580b6cc"},{"path":"tools/bench/diag_c117b_qrt.py","md5":"05b91d73f74ce68efc70ca28887d61e0"},{"path":"tools/bench/diag_c117b_qrt.log","md5":"50e8d8eb079d6312bd440b6740fb38c7"}],
+"facts":[
+"Q1: cdiff(S1, R1 saved) = 16 sink keys == plan_l2r1.json:191-208, 11 (node,term) pairs (diag_c117b_qrt.log:10-12); the 16/11 is not in facts_c114e_inventory.json, it is in plan_l2b3.json:179-196",
+"9 of the 11 pairs are loop-to-loop; (2626,'array') is a rename artefact: S1 edge t4168<-#5058 x,y,z IS wired in R1 (key array|3, w25283, 1.2) (diag_c117b_qrt.json:399-446)",
+"(11261,'array') is 1.2->1.2: source #11310 Bundle in #1359 body, via tunnel #11363, S1 w11352 = b2_03, a plain wire (diag_c117b_qrt.log:14)",
+"1.2->1.7: #2626 appended array -> #376 t5754 (w4517); 1.1->1.7: #637 i #644 -> #376 frame index t5763 (w3268); sink = file writer (log:28,30)",
+"1.1->1.2 saved columns: #5119 x-y (w16483), #30117 Trans Pos (mm) (w30592), #4580 Rot pos (deg) (w4878) -> #2626 elements; #2626 feeds only #376 (log:20; diag_c117b_qrt.json:690)",
+"1.1->1.2 kernel: #6810 Image Out -> #5058 Image In t5089 (w3040); design Q_work bound 20, skip when full (d1-build-plan.md:572) (log:32)",
+"1.1->1.2 display-only: #10068 -> #8634, #11608 -> #11261.element, #30117 -> #28083, #29240 -> #29625/#29973; ends are only #8323/#28786 (json:1456,246,797,904,1011)",
+"The graph rows carry no data type (log:5,9). Every 1.1 source sits directly on body 639 with no case frame, so it runs on every #637 iteration (log:14-34).",
+"For-loop tunnels #9503/#10177/#29777 keep their inner wires in R1, but their outer faces are unwired (facts_c114e_inventory.json:1652-1706,2425-2451). That is where the 1.1 values enter.",
+"cycle27-plan.md:930-933 names no queue. Of the §9 queues, only Q_work and Q_res/Q_good/Q_rmeta touch these pairs (d1-build-plan.md:570-579). PD210 (:1572-1576) lets #8323 show the latest value."],
+"open":[
+"#10068/#29240 are frame-counter remainders that index the same frame's display data. CLAUDE.md 1c'' lists counters as local-carried. Which carrier: a queue, a local, or a recompute in 1.2 (d1-route-b-plan.md:360-366)?",
+"#30117/#4580 panel Property reads feed the saved row (#2626) and #28083. Carry the value read in 1.1, or re-read it in 1.2? A re-read changes the sampling time (rule 1a).",
+"#376's inputs come from 2 loops: t5 from 1.2 (#2626) and t7 from 1.1 (#637 i). How is each row paired with its frame index?"],
+"cost":{"usd":null,"minutes":20,"labview_runs":0},
+"note":"Offline only. Q5 carrier choices are PROPOSALS in facts_c117_qrt.json; nothing was decided."}

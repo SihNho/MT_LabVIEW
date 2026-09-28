@@ -1,0 +1,37 @@
+{
+ "schema": "verdict/1",
+ "id": "outcome-review-20260928",
+ "verdict": "refuted",
+ "alternative": "The L2 files may be necessary steps to a tracking split that pays off at 150 Hz. No measurement shows that: the display-loop VI already loses only 12-16 frames at 15 beads, 90 Hz, and nothing on the L2 chain can run before the QRT stage.",
+ "discriminating_test": "Add the R8 frame-rate control to D1_s1_disp_20260927_041648.vi and run 150 Hz at 8 and 15 picks, plus one supervised bead run of minutes. Lost frames near 0 => hand off, park L2. Loss at 150 Hz => resume L2 on the loop the numbers name.",
+ "violations": [
+  {
+   "slug": "wrong-ordering",
+   "loss_min": 647,
+   "loss_usd": 146.02,
+   "evidence": "tools/bench/cycle_runner.log:691,706,722,736,748; STATUS.md:64"
+  }
+ ],
+ "sources": [
+  "STATUS.md:18",
+  "STATUS.md:64",
+  "STATUS.md:76",
+  "STATUS.md:128",
+  "STATUS.md:183",
+  "STATUS.md:455",
+  "archive/benchmarks/INDEX.md:80",
+  "docs/goalmap.json:21",
+  "docs/goalmap.json:27",
+  "docs/goalmap.json:33",
+  "docs/goalmap.json:121",
+  "tools/bench/decisions_pending.json:104",
+  "tools/bench/decisions_pending.json:121",
+  "tools/bench/cards/steer_111.json:10",
+  "tools/bench/cycle_runner.log:694",
+  "tools/bench/cycle_runner.log:748",
+  "docs/d1-loop12-17-split-plan.md:239",
+  "docs/d1-loop12-17-split-plan.md:1918",
+  "tools/bench/heartbeat_latest.md:14"
+ ],
+ "note": "Cycles 112-116: 5 files, all ExecState 0 by design, never run; 0 new INDEX rows; cycle 116 cost unrecorded so usd is a floor. Accepted display-loop VI untouched, user not asked. 5 OUTCOME-VIOLATIONs; same path named twice => stop and re-plan with the user."
+}

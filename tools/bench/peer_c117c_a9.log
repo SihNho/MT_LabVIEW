@@ -1,0 +1,61 @@
+BGRUN START 2026-09-28 11:36:49 limit 16.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 900 -Slug c117c-a9 -TaskFile tools/bench/peer_c117c_a9_task.txt
+BGRUN PID 10504
+OUTCOME: ANSWERED (155s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-28-c117c-a9.md
+COST: $1.3090  in 22 / out 13994 / cache-create 102343 / cache-read 1051333  (151s, 18 turn(s))
+--- ANSWER ---
+**The claim is wrong.** S2 and S4 are the old test pinning the old rule, as the claim says. A2 is not: it exposes a flaw in the new code. The new self-test's R1 gate also marks a review as "absent" when its fix has in fact landed, which is the same mistake decision D5 was written to remove.
+
+## 1. Strongest reason it is wrong: every review the new rule moved to "absent" has either landed or was never owed
+
+The old rule left 12 of 20 reviews absent. The new rule leaves 16 of 21. I grepped the non-bench `.py`/`.ps1` files for the 16 absent names. Four are cited by real code:
+
+| review | cited by | status |
+|---|---|---|
+| `hyp-selftest-elreuse-81` | `tools/hooks/guard_card.py:44`; the fix itself is `_is_root` at `:56`, built by card 116-3 (`result_116-3.json:23`) | **landed** |
+| `retrospective-cycle77` | `tools/doc_lint.py:351`, the L8 check that its deferred item F2(a) asked for (`retrospective-cycle77.md:303`) | **landed** |
+| `retrospective-cycle115` | `tools/stop_record.py:197,220`. Its only "not built" line (`:394`) is a decision not to build the Selection List reader. | **not owed** |
+| `c116d-sweep` | `tools/gscript.py:4230` ("v0 is never called again"). The fix is an op VI, which no `.py` rule can name. | **landed, plausibly** (I did not verify what v1 contains) |
+
+The other 12 are not cited by any non-bench code file, so the old and new rules agree on them. So the new rule changed the result on the real archive only for these four, and none of them is owed code.
+
+**R1 checks the wrong thing.** R1 in `selftest_audit_a9_witness.py:60` asserts that elreuse-81 is absent. But `guard_card.py` was fixed and cites that review. The premise came from `result_116-3.json:26`, which said "landed via K9". That is true of the HEAD bytes. In the working tree, 116-3 D2 had already put the real fix and its citation into `guard_card.py`.
+
+Why it is reported absent anyway (`audit_cycle.py:281-297`):
+- The disposition names the fix as `guard_card` with no `.py` (`elreuse-81.md:117`). `A9_PATH_RE` needs an extension, so it never matches.
+- The one file the rule does pick up is `tools/stagexec.py`, taken from the backticked test command on the same line. That is a command string, not the file the fix names.
+
+## 2. Alternative explanation: the rule reads the wrong lines, and it reads them too narrowly
+
+D5 says the witness is "the file the disposition's **fix** names" (`violation-decisions.md:1675`). The code instead takes files named on any line of the section, except lines containing `NOT ACCEPTED` (`audit_cycle.py:324,329`). That produces false results in both directions:
+
+- **False "landed": `retrospective-cycle89`.** Its witness `tools/audit_cycle.py` comes from line 280, the fix line for a different finding. The item that was actually deferred is line 281, finding 1(b): an edit to `.claude/agents/*.md` that was refused and never applied. A9 reports it LANDED. `retrospective-cycle78` probably has the same shape: the deferred item is at `:273`, the fixed line naming `guard_peer.py` is at `:279`. I did not trace that one to the end.
+- **False "absent": `retrospective-cycle77`.** The file it picks up, `tools/bgrun.py`, belongs to a line that was already fixed (`:296-300`). The deferred line F2(a) names no code file. It could not have: the fix was written three days later in `doc_lint.py`.
+
+That second case is general. A fix that was deferred when the disposition was written usually lands later, in a file the disposition could not know about. Under the new rule such a review only counts as landed if someone appends a `FIXED: <slug> - <path>:<line>` line to the old disposition afterwards. If that is the intended way to clear it, the claim should say so. Otherwise A9's warning count only grows. Choosing between the two is a judgement-session decision.
+
+Other gaps in `A9_PATH_RE` and `a9_named_files`:
+- Names without an extension (`guard_card`) are missed.
+- Paths that contain a slash but do not start with `tools/` (for example `hooks/guard_card.py`) are dropped instead of resolved by file name (`:292`).
+- Absolute paths under `G:/…/2. Tracking/…` start matching at `Tracking/…` and are then dropped.
+- Fixes that are `.vi` or `.md` files can never count, which is why c116d-sweep and cycle89's item 1(b) come out the way they do.
+- Backslash paths are handled (`:289`), and `NOT ACCEPTED` lines are filtered out correctly.
+
+## 3. What would falsify the claim
+
+The claim holds only if both of these are true:
+- The four reviews that flipped to absent (elreuse-81, cycle77, cycle115, c116d-sweep) have code that is still owed.
+- No review is reported landed because of a file named on a different finding's line.
+
+Neither is true: `guard_card.py:56` and `doc_lint.py:351` are both present, and cycle89 is reported landed through line 280.
+
+## 4. Cheapest discriminating test (offline, about 1 second)
+
+1. Load `git show HEAD:tools/audit_cycle.py` (the 116-3 version) alongside the working-tree version. Run both `a9_unlanded(detail=…)` on the current tree and diff the absent sets. **My alternative predicts** a diff of exactly {elreuse-81, cycle77, cycle115, c116d-sweep}, each with a non-bench witness under the old rule. **The claim predicts** at least one of them has no real code fix.
+2. Add two fixtures to `selftest_audit_a9_witness.py`:
+   - **W8:** one line says "ACCEPTED, fixed in tools/x.py" and `x.py` cites the review; a second line says "ACCEPTED, not built". The current code returns landed. The expected answer is absent.
+   - **W9:** the disposition names `guard_card` with no extension, and `tools/hooks/guard_card.py` cites the review. The current code returns absent.
+
+Until those pass, the 16 absent reviews cannot be split into owed and not owed, and R1 should be re-labelled or removed.
+
+**What would change my mind:** evidence that `guard_card.py`'s `_is_root` and doc_lint's L8 check are not the fixes their reviews asked for. The code and the result card both say they are.
+BGRUN END rc=0 after 156s

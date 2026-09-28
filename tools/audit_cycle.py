@@ -270,26 +270,56 @@ def a2_state(body):
 
 # A9 (card 116-3 D1). CANDIDATE = a `## What was done with it` section (archive/peer, 2026-09-25 onward) that ACCEPTS a
 # finding (`ACCEPTED`, not `NOT ACCEPTED`) and has a line saying a fix was NOT built/applied/fixed or is left open.
-# LANDED (JUDGEMENT 116-3 OPEN-3) = the review's file stem or slug is cited by a non-bench tools/ file or a
-# tools/bench/selftest_*; otherwise it is reported absent. The citation is the witness, the words are not.
+# LANDED (card 117-3 D5; docs/violation-decisions.md device-failed 2026-09-28 10:37, retrospective-cycle116:393) = a
+# code file THE DISPOSITION ITSELF NAMES (tools/**/*.py|ps1, outside tools/bench/ - so never tools/bench/selftest_*)
+# exists and cites the review's file stem or slug. Until 117-3 any non-bench tools/ file or ANY tools/bench/selftest_*
+# citing the stem was a witness, and selftest_errorlist_reuse_81.py K9 - a test that PINNED the hole - "landed"
+# elreuse-81 (result_116-3.json:26). A disposition that names no code file has no witness and is reported absent.
+# SCOPE (review archive/peer/2026-09-28-c117c-a9.md §2): the section is split into bullet ITEMS; each item carrying the
+# unbuilt words is one deferred fix, and only the files named IN THAT ITEM witness it; LANDED = every deferred item has a
+# witness. (A file named on another finding's line - retrospective-cycle89 :280 vs :281 - used to "land" it.)
 A9_GLOB = "2026-09-2[5-9]-*.md"
 A9_ACC_RE = re.compile(r"(?<!NOT )\bACCEPTED\b")
 A9_UNBUILT_RE = re.compile(r"(?i)\b(not built|not fixed|left open|not applied|not yet applied)\b")
+A9_PATH_RE = re.compile(r"(?<![\w/.-])((?:[\w.:-]+/)*[\w.-]+\.(?:py|ps1))\b")
+A9_ITEM_RE = re.compile(r"^\s{0,3}(?:[-*]|\d+[.)])\s")
 
 
-def a9_unlanded(root=None, peer_glob=A9_GLOB, code_override=None):
+def a9_named_files(lines, root, code_names):
+    """Project-relative code files a disposition names: `tools/x/y.py` as written, or a bare `y.py` that resolves to
+    exactly ONE code file. Paths under tools/bench/ (selftests included) are dropped: they never witness a fix."""
+    out = []
+    for ln in lines:
+        for m in A9_PATH_RE.finditer(ln.replace("\\", "/")):
+            t = m.group(1).lstrip("./")
+            if "/tools/" in "/" + t:
+                t = t[("/" + t).index("/tools/"):]        # absolute or prefixed path: from its tools/ segment on
+            if t.startswith("tools/"):
+                r = t
+            else:                                          # bare `y.py` or `hooks/y.py`: unique basename match
+                hits = [h for h in code_names.get(t.rsplit("/", 1)[-1], []) if h.endswith("/" + t) or "/" not in t]
+                r = hits[0] if len(hits) == 1 else None
+            if r and not r.startswith("tools/bench/") and r not in out:
+                out.append(r)
+    return out
+
+
+def a9_unlanded(root=None, peer_glob=A9_GLOB, code_override=None, detail=None):
     """(absent: [review stem], n_candidates). `code_override` {project-relative path: text} replaces a code file's
-    text (the self-test measures the pre-fix state with the git-HEAD bytes of the files a fix edited)."""
+    text (the self-test measures the pre-fix state with the git-HEAD bytes of the files a fix edited). `detail`, if a
+    dict, receives {stem: [named witness files]} for every candidate."""
     root = root or ROOT
-    code, over = [], dict(code_override or {})
+    code, over = {}, dict(code_override or {})
     for ext in ("py", "ps1"):
         for p in glob.glob(os.path.join(root, "tools", "**", "*." + ext), recursive=True):
             r = os.path.relpath(p, root).replace("\\", "/")
-            if r.startswith("tools/bench/") and not r.startswith("tools/bench/selftest_"):
+            if r.startswith("tools/bench/"):
                 continue
-            code.append(over.pop(r) if r in over else read(p))
-    code.extend(over.values())
-    blob = "\n".join(code)
+            code[r] = over.pop(r) if r in over else read(p)
+    code.update({k: v for k, v in over.items() if not k.startswith("tools/bench/")})
+    names = {}
+    for r in code:
+        names.setdefault(r.rsplit("/", 1)[-1], []).append(r)
     absent, n = [], 0
     for p in sorted(glob.glob(os.path.join(root, "archive", "peer", peer_glob))):
         body = read(p)
@@ -302,7 +332,25 @@ def a9_unlanded(root=None, peer_glob=A9_GLOB, code_override=None):
             continue
         n += 1
         stem = os.path.basename(p)[:-3]
-        if stem not in blob and stem[11:] not in blob:
+        items = []                                 # bullet items: a deferred item's fix is what THAT item names
+        for ln in lines:
+            if not ln.strip():
+                items.append([])
+            elif A9_ITEM_RE.match(ln) or not items:
+                items.append([ln])
+            else:
+                items[-1].append(ln)
+        per = []
+        for it in items:
+            if not any(A9_UNBUILT_RE.search(ln) for ln in it):
+                continue
+            named = [r for r in a9_named_files(it, root, names) if r in code]
+            per.append({"item": " ".join(x.strip() for x in it)[:90], "named": named,
+                        "witness": [r for r in named if stem in code[r] or stem[11:] in code[r]]})
+        if detail is not None:
+            detail[stem] = {"named": sorted({r for x in per for r in x["named"]}),
+                            "witness": sorted({r for x in per for r in x["witness"]}), "items": per}
+        if not per or not all(x["witness"] for x in per):
             absent.append(stem)
     return absent, n
 

@@ -1,0 +1,108 @@
+BGRUN START 2026-09-28 11:34:19 limit 3.0 min: py -u tools/bench/selftest_audit_a9_witness.py
+BGRUN PID 1724
+GATE W1 named tools/x.py cites stem -> landed                                   PASS {'named': ['tools/x.py'], 'witness': ['tools/x.py']}
+GATE W2 named file silent, only a selftest cites -> absent                      PASS {'named': ['tools/x.py'], 'witness': []}
+GATE W3 named selftest never witnesses -> absent                                PASS {'named': [], 'witness': []}
+GATE W4 no file named, unnamed tools/hooks/z.py cites -> absent                 PASS {'named': [], 'witness': []}
+GATE W5 bare z.py -> tools/hooks/z.py cites -> landed                           PASS {'named': ['tools/hooks/z.py'], 'witness': ['tools/hooks/z.py']}
+GATE W6 named tools/q.py does not cite -> absent                                PASS {'named': ['tools/q.py'], 'witness': []}
+GATE W7 NOT ACCEPTED is not a candidate (6 candidates)                          PASS 6
+GATE R1 real archive: elreuse-81 ABSENT under the named-file witness            PASS {'named': ['tools/stagexec.py'], 'witness': []}
+FACT candidates 21 absent 16
+FACT absent 2026-09-25-hyp-selftest-elreuse-81 named=['tools/stagexec.py']
+FACT absent 2026-09-25-retrospective-cycle77 named=['tools/bgrun.py']
+FACT absent 2026-09-25-retrospective-cycle82 named=[]
+FACT absent 2026-09-26-c89-profiler-fact named=[]
+FACT absent 2026-09-26-c91-smoke-k1 named=[]
+FACT absent 2026-09-26-c91-step4-t12 named=[]
+FACT absent 2026-09-26-c91-t0step3c-quit named=[]
+FACT absent 2026-09-26-c92-unstamped-clickprobe named=[]
+FACT absent 2026-09-26-retrospective-cycle92 named=[]
+FACT absent 2026-09-26-retrospective-cycle98 named=[]
+FACT absent 2026-09-27-priorart-c108b-l2a3 named=['tools/recipes/stage_d1_l2a3.py']
+FACT absent 2026-09-27-priorart-priorart-c107c-disp named=['tools/stagexec.py', 'tools/recipes/stage_d1_disp.py', 'tools/recipes/stage_d1_k.py', 'tools/recipes/stage_d1_l2a1.py']
+FACT absent 2026-09-27-retrospective-cycle109 named=['tools/stagesim.py']
+FACT absent 2026-09-28-c115c-headcmp named=['tools/stage_prerun.py']
+FACT absent 2026-09-28-c116d-sweep named=[]
+FACT absent 2026-09-28-retrospective-cycle115 named=[]
+FACT landed 2026-09-25-retrospective-cycle78 witness=['tools/hooks/guard_peer.py']
+FACT landed 2026-09-26-c98-rbw-scope witness=['tools/gscript.py']
+FACT landed 2026-09-26-retrospective-cycle89 witness=['tools/audit_cycle.py']
+FACT landed 2026-09-26-retrospective-cycle90 witness=['tools/bgrun.py']
+FACT landed 2026-09-27-c106c-selftest-x1 witness=['tools/stage_prerun.py']
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":8,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s
+BGRUN START 2026-09-28 11:40:56 limit 3.0 min: py -u tools/bench/selftest_audit_a9_witness.py
+BGRUN PID 21976
+GATE W1 named tools/x.py cites stem -> landed                                   PASS {'named': ['tools/x.py'], 'witness': ['tools/x.py'], 'items': [{'item': '- ACCEPTED; fixed in `tools/x.py:10`, the rest not built.', 'named': ['tools/x.py'], 'witness': ['tools/x.py']}]}
+GATE W2 named file silent, only a selftest cites -> absent                      PASS {'named': ['tools/x.py'], 'witness': [], 'items': [{'item': '- ACCEPTED; `tools/x.py` to change, not built.', 'named': ['tools/x.py'], 'witness': []}]}
+GATE W3 named selftest never witnesses -> absent                                PASS {'named': [], 'witness': [], 'items': [{'item': '- ACCEPTED; pinned in tools/bench/selftest_y.py, fix not built.', 'named': [], 'witness': []}]}
+GATE W4 no file named, unnamed tools/hooks/z.py cites -> absent                 PASS {'named': [], 'witness': [], 'items': [{'item': '- ACCEPTED, not applied.', 'named': [], 'witness': []}]}
+GATE W5 bare z.py -> tools/hooks/z.py cites -> landed                           PASS {'named': ['tools/hooks/z.py'], 'witness': ['tools/hooks/z.py'], 'items': [{'item': '- ACCEPTED: `z.py:3` changed; the other half left open.', 'named': ['tools/hooks/z.py'], 'witness': ['tools/hooks/z.py']}]}
+GATE W6 named tools/q.py does not cite -> absent                                PASS {'named': ['tools/q.py'], 'witness': [], 'items': [{'item': '- ACCEPTED: `tools/q.py` to change, not fixed.', 'named': ['tools/q.py'], 'witness': []}]}
+GATE W7 NOT ACCEPTED is not a candidate (8 candidates)                          PASS 8
+GATE W8 file named on ANOTHER item's line does not witness the deferred item -> absent PASS [{'item': '- ACCEPTED, the second fix not built.', 'named': [], 'witness': []}]
+GATE W9 hooks/z.py and an absolute .../tools/x.py resolve (continuation line joins the item) -> landed PASS {'named': ['tools/hooks/z.py', 'tools/x.py'], 'witness': ['tools/hooks/z.py', 'tools/x.py'], 'items': [{'item': '- ACCEPTED: the z fix in hooks/z.py is not built yet, and G:/a/2. T/p/tools/x.py too.', 'named': ['tools/ho
+GATE R1 real archive: elreuse-81 is not witnessed by the pinning selftest K9    PASS []
+FACT candidates 21 absent 20
+FACT absent 2026-09-25-hyp-selftest-elreuse-81 items=[("- **NOT fixed here:** card 81-3's write flags exclude `tools", [])]
+FACT absent 2026-09-25-retrospective-cycle77 items=[('- F2(a) header lint for `violation-decisions.md` HH:MM: ACCE', [])]
+FACT absent 2026-09-25-retrospective-cycle78 items=[('Cycle-78 judgement, 2026-09-25. **ACCEPTED: `VIOLATION: none', [])]
+FACT absent 2026-09-25-retrospective-cycle82 items=[('- **Fault 1 (repeated-failure-class, one bare-source class p', [])]
+FACT absent 2026-09-26-c89-profiler-fact items=[('Card 89-3 (material, fable/low). ACCEPTED as the external ha', [])]
+FACT absent 2026-09-26-c91-smoke-k1 items=[('- NOT applied (judgement): "the harness refuses to click whi', [])]
+FACT absent 2026-09-26-c91-step4-t12 items=[("- §2 click: ACCEPTED as facts - hwndCapture on LabVIEW's own", [])]
+FACT absent 2026-09-26-c91-t0step3c-quit items=[('- §4 test 1 (re-hash the artefact) is answered by the smoke ', []), ('- The `stagekit.close()` change ("always restart before Quit', [])]
+FACT absent 2026-09-26-c92-unstamped-clickprobe items=[("- Not applied (judgement): the review's note that `--dry` by", [])]
+FACT absent 2026-09-26-c98-rbw-scope items=[("2. NOT BUILT (judgement's call, recorded as OPEN in result_9", [])]
+FACT absent 2026-09-26-retrospective-cycle89 items=[('- Finding 1(b) NOT FIXED by card 90-2 (2026-09-26): the Edit', ['tools/bgrun.py'])]
+FACT absent 2026-09-26-retrospective-cycle90 items=[('- **Finding 1/2 (missing constant creator for a Diagram-trav', [])]
+FACT absent 2026-09-26-retrospective-cycle92 items=[('- Finding 4 (intra-cycle escalation not applied to 92-1, a F', [])]
+FACT absent 2026-09-26-retrospective-cycle98 items=[('- **`device-failed` (1 min): ACCEPTED as a carry.** The mate', [])]
+FACT absent 2026-09-27-priorart-c108b-l2a3 items=[('Card 108-2 material session, 2026-09-27 13:5x. Verdict `nove', ['tools/recipes/stage_d1_l2a3.py'])]
+FACT absent 2026-09-27-priorart-priorart-c107c-disp items=[('- A3 stale cite `docs/d1-loop12-17-split-plan.md:1844/1846` ', ['tools/stagexec.py'])]
+FACT absent 2026-09-27-retrospective-cycle109 items=[('- **ACCEPTED, finding 2** (opmodel ↔ simulator consistency c', ['tools/stagesim.py'])]
+FACT absent 2026-09-28-c115c-headcmp items=[('- D3: same copy, fresh empty sandbox: 28/0. So the H1 failur', [])]
+FACT absent 2026-09-28-c116d-sweep items=[('ACCEPTED as the working reading (refnum exhaustion from the ', [])]
+FACT absent 2026-09-28-retrospective-cycle115 items=[('- The Selection List reader is NOT built. PD230(d) rests rul', [])]
+FACT landed 2026-09-27-c106c-selftest-x1 witness=['tools/stage_prerun.py']
+FACT HEAD-rule candidates 0 absent 0; only-new-absent ['2026-09-25-hyp-selftest-elreuse-81', '2026-09-25-retrospective-cycle77', '2026-09-25-retrospective-cycle78', '2026-09-25-retrospective-cycle82', '2026-09-26-c89-profiler-fact', '2026-09-26-c91-smoke-k1', '2026-09-26-c91-step4-t12', '2026-09-26-c91-t0step3c-quit', '2026-09-26-c92-unstamped-clickprobe', '2026-09-26-c98-rbw-scope', '2026-09-26-retrospective-cycle89', '2026-09-26-retrospective-cycle90', '2026-09-26-retrospective-cycle92', '2026-09-26-retrospective-cycle98', '2026-09-27-priorart-c108b-l2a3', '2026-09-27-priorart-priorart-c107c-disp', '2026-09-27-retrospective-cycle109', '2026-09-28-c115c-headcmp', '2026-09-28-c116d-sweep', '2026-09-28-retrospective-cycle115']; only-HEAD-absent []
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":10,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s
+BGRUN START 2026-09-28 11:41:09 limit 3.0 min: py -u tools/bench/selftest_audit_a9_witness.py
+BGRUN PID 17276
+GATE W1 named tools/x.py cites stem -> landed                                   PASS {'named': ['tools/x.py'], 'witness': ['tools/x.py'], 'items': [{'item': '- ACCEPTED; fixed in `tools/x.py:10`, the rest not built.', 'named': ['tools/x.py'], 'witness': ['tools/x.py']}]}
+GATE W2 named file silent, only a selftest cites -> absent                      PASS {'named': ['tools/x.py'], 'witness': [], 'items': [{'item': '- ACCEPTED; `tools/x.py` to change, not built.', 'named': ['tools/x.py'], 'witness': []}]}
+GATE W3 named selftest never witnesses -> absent                                PASS {'named': [], 'witness': [], 'items': [{'item': '- ACCEPTED; pinned in tools/bench/selftest_y.py, fix not built.', 'named': [], 'witness': []}]}
+GATE W4 no file named, unnamed tools/hooks/z.py cites -> absent                 PASS {'named': [], 'witness': [], 'items': [{'item': '- ACCEPTED, not applied.', 'named': [], 'witness': []}]}
+GATE W5 bare z.py -> tools/hooks/z.py cites -> landed                           PASS {'named': ['tools/hooks/z.py'], 'witness': ['tools/hooks/z.py'], 'items': [{'item': '- ACCEPTED: `z.py:3` changed; the other half left open.', 'named': ['tools/hooks/z.py'], 'witness': ['tools/hooks/z.py']}]}
+GATE W6 named tools/q.py does not cite -> absent                                PASS {'named': ['tools/q.py'], 'witness': [], 'items': [{'item': '- ACCEPTED: `tools/q.py` to change, not fixed.', 'named': ['tools/q.py'], 'witness': []}]}
+GATE W7 NOT ACCEPTED is not a candidate (8 candidates)                          PASS 8
+GATE W8 file named on ANOTHER item's line does not witness the deferred item -> absent PASS [{'item': '- ACCEPTED, the second fix not built.', 'named': [], 'witness': []}]
+GATE W9 hooks/z.py and an absolute .../tools/x.py resolve (continuation line joins the item) -> landed PASS {'named': ['tools/hooks/z.py', 'tools/x.py'], 'witness': ['tools/hooks/z.py', 'tools/x.py'], 'items': [{'item': '- ACCEPTED: the z fix in hooks/z.py is not built yet, and G:/a/2. T/p/tools/x.py too.', 'named': ['tools/ho
+GATE R1 real archive: elreuse-81 is not witnessed by the pinning selftest K9    PASS []
+FACT candidates 21 absent 20
+FACT absent 2026-09-25-hyp-selftest-elreuse-81 items=[("- **NOT fixed here:** card 81-3's write flags exclude `tools", [])]
+FACT absent 2026-09-25-retrospective-cycle77 items=[('- F2(a) header lint for `violation-decisions.md` HH:MM: ACCE', [])]
+FACT absent 2026-09-25-retrospective-cycle78 items=[('Cycle-78 judgement, 2026-09-25. **ACCEPTED: `VIOLATION: none', [])]
+FACT absent 2026-09-25-retrospective-cycle82 items=[('- **Fault 1 (repeated-failure-class, one bare-source class p', [])]
+FACT absent 2026-09-26-c89-profiler-fact items=[('Card 89-3 (material, fable/low). ACCEPTED as the external ha', [])]
+FACT absent 2026-09-26-c91-smoke-k1 items=[('- NOT applied (judgement): "the harness refuses to click whi', [])]
+FACT absent 2026-09-26-c91-step4-t12 items=[("- §2 click: ACCEPTED as facts - hwndCapture on LabVIEW's own", [])]
+FACT absent 2026-09-26-c91-t0step3c-quit items=[('- §4 test 1 (re-hash the artefact) is answered by the smoke ', []), ('- The `stagekit.close()` change ("always restart before Quit', [])]
+FACT absent 2026-09-26-c92-unstamped-clickprobe items=[("- Not applied (judgement): the review's note that `--dry` by", [])]
+FACT absent 2026-09-26-c98-rbw-scope items=[("2. NOT BUILT (judgement's call, recorded as OPEN in result_9", [])]
+FACT absent 2026-09-26-retrospective-cycle89 items=[('- Finding 1(b) NOT FIXED by card 90-2 (2026-09-26): the Edit', ['tools/bgrun.py'])]
+FACT absent 2026-09-26-retrospective-cycle90 items=[('- **Finding 1/2 (missing constant creator for a Diagram-trav', [])]
+FACT absent 2026-09-26-retrospective-cycle92 items=[('- Finding 4 (intra-cycle escalation not applied to 92-1, a F', [])]
+FACT absent 2026-09-26-retrospective-cycle98 items=[('- **`device-failed` (1 min): ACCEPTED as a carry.** The mate', [])]
+FACT absent 2026-09-27-priorart-c108b-l2a3 items=[('Card 108-2 material session, 2026-09-27 13:5x. Verdict `nove', ['tools/recipes/stage_d1_l2a3.py'])]
+FACT absent 2026-09-27-priorart-priorart-c107c-disp items=[('- A3 stale cite `docs/d1-loop12-17-split-plan.md:1844/1846` ', ['tools/stagexec.py'])]
+FACT absent 2026-09-27-retrospective-cycle109 items=[('- **ACCEPTED, finding 2** (opmodel ↔ simulator consistency c', ['tools/stagesim.py'])]
+FACT absent 2026-09-28-c115c-headcmp items=[('- D3: same copy, fresh empty sandbox: 28/0. So the H1 failur', [])]
+FACT absent 2026-09-28-c116d-sweep items=[('ACCEPTED as the working reading (refnum exhaustion from the ', [])]
+FACT absent 2026-09-28-retrospective-cycle115 items=[('- The Selection List reader is NOT built. PD230(d) rests rul', [])]
+FACT landed 2026-09-27-c106c-selftest-x1 witness=['tools/stage_prerun.py']
+FACT HEAD-rule candidates 21 absent 12; only-new-absent ['2026-09-25-hyp-selftest-elreuse-81', '2026-09-25-retrospective-cycle77', '2026-09-25-retrospective-cycle78', '2026-09-26-c98-rbw-scope', '2026-09-26-retrospective-cycle89', '2026-09-26-retrospective-cycle90', '2026-09-28-c116d-sweep', '2026-09-28-retrospective-cycle115']; only-HEAD-absent []
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":10,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 2s

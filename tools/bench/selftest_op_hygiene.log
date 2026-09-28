@@ -1,0 +1,34 @@
+BGRUN START 2026-09-28 11:34:10 limit 3.0 min: py -u tools/bench/selftest_op_hygiene.py
+BGRUN PID 16136
+GATE H1 new op, no record -> refused, names op + record path, no GetVIReference PASS op-hygiene: op VI OpFakeNew_v0 (file 2026-09-28 11:34 newer than the device install 2026-09-28 10:34) is refused - no readable record (FileNotFoundError); record C:\Users\KimLab\AppData\Local\Temp\op_hygiene_cuiqj6tg\op_
+GATE H2 PASS record with matching md5 -> allowed                                PASS (('REF', 'C:\\Users\\KimLab\\AppData\\Local\\Temp\\op_hygiene_cuiqj6tg\\OpFakeNew_v0.vi'), None)
+GATE H3 record md5 != file md5 -> refused                                       PASS op-hygiene: op VI OpFakeNew_v0 (file 2026-09-28 11:34 newer than the device install 2026-09-28 10:34) is refused - record md5 00000000000000000000000000000000 != file md5 00a0d091a59519dd6e1cb71cd789da85; record C:\Users
+GATE H3b file changed after admission -> refused on the cached call             PASS op-hygiene: op VI OpFakeNew_v0 (file 2026-09-28 11:34 newer than the device install 2026-09-28 10:34) is refused - record md5 00a0d091a59519dd6e1cb71cd789da85 != file md5 64c56f42e843a3b5fbf736cf03cb3bd1; record C:\Users
+GATE H4 status FAIL -> refused                                                  PASS op-hygiene: op VI OpFakeNew_v0 (file 2026-09-28 11:34 newer than the device install 2026-09-28 10:34) is refused - status 'FAIL' != 'PASS'; record C:\Users\KimLab\AppData\Local\Temp\op_hygiene_cuiqj6tg\op_hygiene\OpFakeN
+GATE H4 errors 1 -> refused                                                     PASS op-hygiene: op VI OpFakeNew_v0 (file 2026-09-28 11:34 newer than the device install 2026-09-28 10:34) is refused - errors 1 != 0; record C:\Users\KimLab\AppData\Local\Temp\op_hygiene_cuiqj6tg\op_hygiene\OpFakeNew_v0.json
+GATE H4 schema x -> refused                                                     PASS op-hygiene: op VI OpFakeNew_v0 (file 2026-09-28 11:34 newer than the device install 2026-09-28 10:34) is refused - schema 'x' != 'op-hygiene/1'; record C:\Users\KimLab\AppData\Local\Temp\op_hygiene_cuiqj6tg\op_hygiene\Op
+GATE H5 old op without record -> allowed (grandfathered)                        PASS (('REF', 'C:\\Users\\KimLab\\AppData\\Local\\Temp\\op_hygiene_cuiqj6tg\\OpFakeOld_v0.vi'), None)
+GATE H6 OpWireJoints_v1 on its real record, install time before its mtime -> allowed PASS None
+GATE H7 probe admits its op only; other op refused inside, op refused after     PASS (None, 'op-hygiene: op VI OpFakeOther_v0 (file 2026-09-28 11:34 newer than the device install 2026-09-28 10:34) is refused - no readable record (FileNotFoundError); record C:\\Users\\KimLab\\AppData\\Local\\Temp\\op_hygi
+GATE H8 no environment-variable bypass in the gate's source                     PASS 
+GATE H9 all 138 claudeDev Op*.vi admitted at the real install time 2026-09-28 11:40 PASS []
+GATE G0 COM Dispatch never called                                               PASS 0
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s
+BGRUN START 2026-09-28 11:34:18 limit 3.0 min: py -u tools/bench/selftest_op_hygiene.py
+BGRUN PID 12740
+GATE H1 new op, no record -> refused, names op + record path, no GetVIReference PASS op-hygiene: op VI OpFakeNew_v0 (file 2026-09-28 11:34 newer than the device install 2026-09-28 10:34) is refused - no readable record (FileNotFoundError); record C:\Users\KimLab\AppData\Local\Temp\op_hygiene_q9z44fjg\op_
+GATE H2 PASS record with matching md5 -> allowed                                PASS (('REF', 'C:\\Users\\KimLab\\AppData\\Local\\Temp\\op_hygiene_q9z44fjg\\OpFakeNew_v0.vi'), None)
+GATE H3 record md5 != file md5 -> refused                                       PASS op-hygiene: op VI OpFakeNew_v0 (file 2026-09-28 11:34 newer than the device install 2026-09-28 10:34) is refused - record md5 00000000000000000000000000000000 != file md5 00a0d091a59519dd6e1cb71cd789da85; record C:\Users
+GATE H3b file changed after admission -> refused on the cached call             PASS op-hygiene: op VI OpFakeNew_v0 (file 2026-09-28 11:34 newer than the device install 2026-09-28 10:34) is refused - record md5 00a0d091a59519dd6e1cb71cd789da85 != file md5 64c56f42e843a3b5fbf736cf03cb3bd1; record C:\Users
+GATE H4 status FAIL -> refused                                                  PASS op-hygiene: op VI OpFakeNew_v0 (file 2026-09-28 11:34 newer than the device install 2026-09-28 10:34) is refused - status 'FAIL' != 'PASS'; record C:\Users\KimLab\AppData\Local\Temp\op_hygiene_q9z44fjg\op_hygiene\OpFakeN
+GATE H4 errors 1 -> refused                                                     PASS op-hygiene: op VI OpFakeNew_v0 (file 2026-09-28 11:34 newer than the device install 2026-09-28 10:34) is refused - errors 1 != 0; record C:\Users\KimLab\AppData\Local\Temp\op_hygiene_q9z44fjg\op_hygiene\OpFakeNew_v0.json
+GATE H4 schema x -> refused                                                     PASS op-hygiene: op VI OpFakeNew_v0 (file 2026-09-28 11:34 newer than the device install 2026-09-28 10:34) is refused - schema 'x' != 'op-hygiene/1'; record C:\Users\KimLab\AppData\Local\Temp\op_hygiene_q9z44fjg\op_hygiene\Op
+GATE H5 old op without record -> allowed (grandfathered)                        PASS (('REF', 'C:\\Users\\KimLab\\AppData\\Local\\Temp\\op_hygiene_q9z44fjg\\OpFakeOld_v0.vi'), None)
+GATE H6 OpWireJoints_v1 on its real record, install time before its mtime -> allowed PASS None
+GATE H7 probe admits its op only; other op refused inside, op refused after     PASS (None, 'op-hygiene: op VI OpFakeOther_v0 (file 2026-09-28 11:34 newer than the device install 2026-09-28 10:34) is refused - no readable record (FileNotFoundError); record C:\\Users\\KimLab\\AppData\\Local\\Temp\\op_hygi
+GATE H8 no environment-variable bypass in the gate's source                     PASS 
+GATE H9 all 138 claudeDev Op*.vi admitted at the real install time 2026-09-28 11:30 PASS []
+GATE G0 COM Dispatch never called                                               PASS 0
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

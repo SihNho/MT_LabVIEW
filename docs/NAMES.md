@@ -1343,5 +1343,11 @@ Inputs: the OpSetIndexMode_v0-donor ops take `vi path`, `vi path 2`, `Class Name
   Python: `gscript.wire_joints(target, wire_uid, index=None)` → `{echo, joints, err}`. Read-only; 20 calls handles 34187 → 34186.
 - **Joint element = `[[x, y], flags, n_neighbours, nb0, nb1, nb2, nb3]`** (nb = joint index, -1 = none). `flags & 0x1` = terminal
   joint; **`flags & 0x100` = LOOSE** — set on every joint of a one-sink wire whose sink node was deleted (w430: flags 1/0/1 → 3/256/260).
+- **`OpWireJoints_v1` (card 117-1, 2026-09-28) REPLACES v0 behind `gscript.wire_joints`** — `claudeDev\OpWireJoints_v1.vi` md5 `29dcb59f…`,
+  labels `tools/bench/diag_c117a_oplabels.json`. v0 + Traverse #124 `error out` → PN #118 `error in`; a second `Close Reference` **#630**
+  whose `reference` is a BRANCH of the Traverse **`References` ARRAY** wire w600 (ExecState 1: Close Reference accepts the array), `error in`
+  ← PN `error out`; #615 `error in` ← #630 `error out`; auto error handling OFF (`diag_c117a_opv1b.log`). Hygiene record
+  `tools/bench/op_hygiene/OpWireJoints_v1.json`: 2,066 calls on R1 (1,945-wire sweep), 0 errors, handles flat. ⚠️ A fresh read returns the
+  joints as nested TUPLES; compare with a JSON-loaded reference only after `json.loads(json.dumps(x))` (`diag_c117a_cmp.log`).
 - **Deleting the node at a PASS-THROUGH terminal joint (flags 1, 2 neighbours) leaves NO loose end**: the joint is removed and its
   two neighbours are re-joined (w366: 5 joints → 4, no 0x100 anywhere). Deleting the only sink leaves the wire with loose joints.

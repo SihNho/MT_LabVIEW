@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"117-3","status":"FAIL","gates":{"pass":5,"fail":1},
+"first_fail":"D6: selftest_c116a_landed.py 15/3 (S2,S4,A2; was 18/0 at selftest_c116a_landed.log:46) - it pins the pre-117-3 witness rule; the file is outside this card's write flags, not edited",
+"blocked_by":null,
+"artefacts":[
+{"path":"tools/gscript.py","md5":"4b74771d04ab7a457ccaffdea77ed7bc"},
+{"path":"tools/audit_cycle.py","md5":"cf54d74c51503e4a49a83db72dab8abe"},
+{"path":"tools/bench/selftest_op_hygiene.py","md5":"5bda05d674bcf3eed3951a2480753ec1"},
+{"path":"tools/bench/selftest_op_hygiene.log","md5":"de035cb4fab7d4a300ad0d4d25a28730"},
+{"path":"tools/bench/selftest_audit_a9_witness.py","md5":"c5004cc2e6faadcbfc8aede2c194ab9a"},
+{"path":"tools/bench/selftest_audit_a9_witness.log","md5":"31263e1c08f06ce174e56cbd294e72a7"},
+{"path":"archive/peer/2026-09-28-c117c-a9.md","md5":"696758a1832832d029476a75e13adbcc"}],
+"facts":[
+"D1 gscript.py:299 op() is the one op-VI open path (cache :307); vi_ref :346 opens targets. ~20 bench/recipe scripts call g.lv().GetVIReference directly and bypass it",
+"D2/D3 gscript.py:256 op_hygiene_check, :305 raises OpHygieneRefused (op name + record path), on cache hits too; install :230 = 11:30; exemption hygiene_probe() :240, one op only",
+"D4 selftest_op_hygiene.log 13/0: no record/md5 mismatch/file edited after admission/status/errors/schema refused; old op and OpWireJoints_v1 on its record allowed; probe scoped; Dispatch 0",
+"D4 H9: all 138 claudeDev Op*.vi admitted at the real install time (selftest_op_hygiene.log), so no existing caller changes",
+"D5 audit_cycle.py:288 a9_named_files + :285 per-bullet scope: witness = non-bench code file named in the deferred item itself; selftest_audit_a9_witness.log 10/0",
+"D5 real archive: 20 absent of 21 (HEAD 116-3 rule: 12); new-only absent: elreuse-81, cycle77/78/89/90/115, c98-rbw-scope, c116d-sweep (selftest_audit_a9_witness.log FACT HEAD-rule)",
+"D5 flipped but NOT owed (review c117c-a9.md:58-63): elreuse-81 landed guard_card.py:56, cycle77 doc_lint.py:351, c116d-sweep OpWireJoints_v1, cycle115 decided not to build",
+"D5 not owed code: c89 (unit wording), c91-smoke-k1, c91-step4-t12, c91-t0step3c-quit, c92-clickprobe, cycle92, cycle109, c107c (docs), c115c (selftest_launch_gate.py:28)",
+"D5 possibly owed, unverified: cycle82 :282-285 (stagexec dry run reports every row), cycle98 :273-274 (material_marker refusal), c108b :526 (verb), cycle90 (constant creator)",
+"D6 audit regressions: c7 8/0, cost_window 7/0, c4c_split 33/0 (_c117c logs); c116a_landed 15/3 twice (_c117c, _c117c2). Hypothesis review c117c-a9 $1.31 ANSWERED, disposition written :112"],
+"open":[
+"Under the literal D5 rule a fix that lands later in a file its disposition does not name stays absent (cycle77, elreuse-81), so A9 only grows. Is appending `FIXED: <slug> - <path>:<line>` the release, or should the rule widen?",
+"selftest_c116a_landed.py S2/S4/A2 pin the old witness rule; re-pin or retire them (needs a card that may write that file)?",
+"Gate FP fp-2 logged (gate_fp_queue.jsonl): protocol.py:385 counts loading gscript as LabVIEW contact; the selftest loaded it via importlib with fake pythoncom/win32com (Dispatch raises, 0 calls). Accept that route?"],
+"cost":{"usd":1.31,"minutes":17,"labview_runs":0},
+"note":"No LabVIEW, no COM, STATUS not edited, no commit. gscript.py working tree also carries card 117-1's wire_joints v1 edit (not mine). Extensionless names (`guard_card`) are not resolved by A9. usd = peer only."}

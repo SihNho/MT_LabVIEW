@@ -1,0 +1,59 @@
+{
+ "schema": "task/1",
+ "id": "117-2",
+ "kind": "measure",
+ "goal": "OFFLINE QRT facts: for each of the 11 open cross-loop pairs (the 16 cdiff rows open at R1's end), a facts row from the R1 graph dump and the plans. No LabVIEW.",
+ "why": "split plan PD228(i) and PD233(d): the QRT wiring stage (b2_03 with t11273, 227(d)) follows L2-R, and needs per-pair facts before judgement picks a carrier (CLAUDE.md 1c'': locals for control signals, queues only for lossless data). L2-R2 does not touch these 16 rows, so R1's graph is valid for them",
+ "inputs": [
+  {"path": "tools/bench/graph_l2r1_saved_20260928.json", "md5": "e429f7ad7b2eebdaabaf0db1a462f10e"},
+  {"path": "tools/bench/facts_c114e_inventory.json"},
+  {"path": "tools/bench/errorlist_expected_D1_l2_r1_20260928_055441.json"},
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "docs/wiki/subvi/D1_s1_copy.json"},
+  {"path": "docs/cycle27-plan.md"},
+  {"path": "docs/d1-build-plan.md"},
+  {"path": "tools/bench/cards/split_plan_111_l2b2.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/graph_l2r1_saved_20260928.json"},
+  {"kind": "file", "name": "tools/bench/facts_c114e_inventory.json"},
+  {"kind": "file", "name": "docs/wiki/subvi/D1_s1_copy.json"},
+  {"kind": "file", "name": "tools/bench/cards/split_plan_111_l2b2.md"}
+ ],
+ "pass": [
+  "Q1 list the 16 open cdiff rows at R1's end and group them into the 11 pairs; the count reproduces facts_c114e_inventory.json (16 rows / 11 pairs) or the difference is named with file:line",
+  "Q2 per pair: source uid + exact terminal name + owning loop (1.1 #637 / 1.2 #10170 / 1.5 #23032 / 1.7 #23041 / top level); each sink the same; S1's original wire uid (D1_s1_copy.json)",
+  "Q3 per pair, MEASURED only: data type if recorded; does the source run every frame; does the sink need every value, citing its consumer (file writer, kernel input, display, setpoint)",
+  "Q4 per pair: which plan lines already name it (PD175 t5/t7, PD177(e) w3040, 227(d) b2_03/t11273, cycle27-plan :930-933 queue table)",
+  "Q5 per pair, a PROPOSAL column only: data stream (queue) or control signal (local), with its reason; flagged PROPOSAL; judgement decides",
+  "write tools/bench/facts_c117_qrt.json (one row per pair) + a <=40-line summary tools/bench/facts_c117_qrt.md; no LabVIEW process started"
+ ],
+ "outputs": [
+  "tools/bench/facts_c117_qrt.json",
+  "tools/bench/facts_c117_qrt.md",
+  "tools/bench/cards/result_117-2.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/facts_c117_qrt*",
+   "tools/bench/diag_c117b*",
+   "tools/bench/cards/result_117-2.json"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "offline only: read JSON/markdown; never open LabVIEW, never run a recipe",
+  "facts carry file:line; a value the files do not hold is written 'unknown', never inferred",
+  "the carrier choice is JUDGEMENT's: Q5 is a proposal column, nothing is decided or planned beyond it",
+  "no edit to any plan, STATUS or recipe",
+  "facts <=10 file:line; OPEN <=3"
+ ],
+ "advances": ["M3", "R1"]
+}

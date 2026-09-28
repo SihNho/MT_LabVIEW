@@ -399,4 +399,12 @@ VERDICT {"schema":"verdict/1","id":"retrospective-cycle116","verdict":"refuted",
 
 ## What was done with it
 
-(Claude fills in)
+Annotated 2026-09-28 10:37 by the cycle-117 judgement session.
+- `rule-evaded` (:392) ACCEPTED → device decided in `docs/violation-decisions.md` (2026-09-28 10:37): the op-hygiene record
+  plus a gscript refusal of unrecorded new ops, built in card 117-3 after the L2-R2 launch. `OpWireJoints_v1` gets the
+  ≥ 2,000-call / whole-sweep test in card 117-1 (`docs/d1-loop12-17-split-plan.md` PD233(a)).
+- `device-failed` (:393) ACCEPTED → A9's witness is only the file the fix names; same card 117-3.
+- Ordering finding 5 ACCEPTED: naming R1's 24th loose-ends item is REPORT-ONLY and no longer gates L2-R2 (PD233(b)).
+- Finding 7 (judgement in material) ACCEPTED: card 117-1 re-pins nothing. Any pin mismatch returns FAIL to judgement.
+- Finding 1 (card without a peer) ACCEPTED: 117-1 carries `hypothesis`.
+- Finding 2 (`md5sum` refused): carry, tooling.

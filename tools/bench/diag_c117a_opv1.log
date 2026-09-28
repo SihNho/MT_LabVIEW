@@ -1,0 +1,26 @@
+BGRUN START 2026-09-28 10:44:31 limit 25.0 min: py -u tools/bench/diag_c117a_opv1.py
+BGRUN PID 4320
+  PASS  V0 v0 md5 pinned  15cf497190fcd972407f1be109197b01
+  PASS  V1 byte copy ES 1  
+  FACT  KB #157 = Node[16]
+  FACT  node #43 [0] [(0, 'error out', 1, 0), (1, 'vi reference', 1, 467), (2, 'password ("")', 0, 0), (3, 'type specifier VI Refnum (for type only)', 0, 0), (4, 'error in (no error)', 0, 0), (5, 'options', 0, 0), (6, 'vi path', 0, 106), (7, 'application reference (local)', 0, 0)]
+  FACT  node #118 [5] [(0, 'reference', 0, 376), (1, 'reference out', 1, 650), (2, 'error in (no error)', 0, 0), (3, 'error out', 1, 637), (4, 'UID', 1, 417), (5, 'Joints[]', 1, 576)]
+  FACT  node #124 [1] [(0, 'error out', 1, 0), (1, '# of Refs', 1, 0), (2, 'References', 1, 600), (3, 'dup VI Refnum', 1, 0), (4, '', 0, 0), (5, 'Other Refnum', 0, 0), (6, 'Traverse Generated Code (F)', 0, 0), (7, 'Traverse Target', 0, 415), (8, 'error in (no error)', 0, 0), (9, '', 0, 0), (10, 'Class Name', 0, 373), (11, 'VI Refnum', 0, 467)]
+  FACT  node #308 [2] [(0, 'array', 0, 600), (1, 'element', 1, 605), (2, 'index', 0, 1066)]
+  FACT  node #316 [4] [(0, 'error out', 1, 0), (1, 'vi reference', 1, 0), (2, 'password ("")', 0, 0), (3, 'type specifier VI Refnum (for type only)', 0, 0), (4, 'error in (no error)', 0, 0), (5, 'options', 0, 0), (6, 'vi path', 0, 550), (7, 'application reference (local)', 0, 0)]
+  FACT  node #615 [6] [(0, 'error out', 1, 0), (1, 'error in (no error)', 0, 0), (2, 'reference', 0, 650)]
+  FACT  node #630 [7] [(0, 'error out', 1, 0), (1, 'error in (no error)', 0, 0), (2, 'reference', 0, 0)]
+  FACT  node #683 [3] [(0, 'specific class reference', 1, 376), (1, 'error out', 1, 0), (2, 'target class', 0, 279), (3, 'reference', 0, 605), (4, 'error in', 0, 0)]
+  PASS  M graph: one Traverse (References source) #124, PN #118 error in unwired, #615 error in unwired, ONE new node [630]  
+  FAIL  W1 PN error in <- Traverse error out: sink wired, ES 1  (1, 0, 664, 664)
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c117a_opv1.py", line 90, in <module>
+    add, sel = g.copy_by_index(KB, idx[1], idx[0], V1, expect_uid=157, finish=finish)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 1690, in copy_by_index
+    raise RuntimeError(f"copy_by_index: Target still broken after finish (ExecState {es}) - not saved; "
+RuntimeError: copy_by_index: Target still broken after finish (ExecState 0) - not saved; close without saving / restart before the next attempt
+  FAIL  the run completed without an unhandled exception  RuntimeError('copy_by_index: Target still broken after finish (ExecState 0) - not saved; close without saving / restart before the next attempt')
+  PASS  H LabVIEW gone; v0 md5 unchanged  
+=== GATES: 4 pass / 2 fail; failing: ['W1 PN error in <- Traverse error out: sink wired, ES 1', 'the run completed without an unhandled exception']
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":4,"fail":2},"first_fail":"W1 PN error in <- Traverse error out: sink wired, ES 1","artefacts":[]}
+BGRUN END rc=1 after 126s

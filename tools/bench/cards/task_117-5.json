@@ -1,0 +1,59 @@
+{
+ "schema": "task/1",
+ "id": "117-5",
+ "kind": "measure",
+ "goal": "L4 of L2-R2: read the full Error List of the saved D1_l2_r2_20260928_110756.vi; loose ends must equal 22; write errorlist_expected_D1_l2_r2_20260928_110756.json and reverdict it",
+ "why": "split plan PD233(h): L4 is the one gate left before R2 becomes the bed; the pin 22 is judgement's (PD231(d))",
+ "inputs": [
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_r2_20260928_110756.vi", "md5": "7dac9f04ff4b65fa517e8e12f4bef5f3"},
+  {"path": "tools/bench/diag_c117a_el.py"},
+  {"path": "tools/bench/errorlist_expected_D1_l2_r1_20260928_055441.json"},
+  {"path": "tools/bench/cards/result_117-1.json"},
+  {"path": "tools/bench/stage_d1_l2r2.json", "md5": "799b53d53b88fbb002eb864a127867f5"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c117a_el.py"},
+  {"kind": "file", "name": "tools/bench/errorlist_expected_D1_l2_r1_20260928_055441.json"}
+ ],
+ "pass": [
+  "E1 open the saved R2 file (never edit, never save it); full Error List read, all_items_read true, item count and per-class counts",
+  "E2 loose-ends count == 22 (pin); every other class count equals R1's expected file minus items on retired objects, or a table of the difference",
+  "E3 errorlist_expected_D1_l2_r2_20260928_110756.json written; errorlist_check reverdict OK on it",
+  "E4 R2 md5 unchanged after the read; LabVIEW verified gone"
+ ],
+ "outputs": [
+  "tools/bench/errorlist_expected_D1_l2_r2_20260928_110756.json",
+  "tools/bench/cards/result_117-5.json"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c117a_el*",
+   "tools/bench/diag_c117e*",
+   "tools/bench/errorlist_*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_117-5.json",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 45},
+ "rules": [
+  "read-only on R2: no edit, no save, run no VI",
+  "the pin 22 is judgement's: a mismatch -> FAIL with the per-class table; never re-pin",
+  "failed prediction -> hypothesis peer; failure budget counts every rc!=0 run",
+  "launch: py tools/bgrun.py --material --max-min N -- ...; no env prefixes; hold turn to BGRUN END",
+  "gate refusal -> BLOCKED, or tools/gate_fp.py if a false positive; never re-run via an exempt route",
+  "facts <=10 file:line; OPEN <=3"
+ ],
+ "advances": ["M3", "R1"]
+}

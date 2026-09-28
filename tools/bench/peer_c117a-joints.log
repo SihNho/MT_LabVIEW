@@ -1,0 +1,34 @@
+BGRUN START 2026-09-28 11:26:31 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c117a-joints -TaskFile tools/bench/peer_c117a_joints_task.txt
+BGRUN PID 9116
+OUTCOME: ANSWERED (91s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-28-c117a-joints.md
+COST: $0.9719  in 18 / out 7281 / cache-create 80700 / cache-read 785289  (87s, 19 turn(s))
+--- ANSWER ---
+**Verdict: your reading holds. I couldn't refute it, and the saved files already rule out the two alternatives you asked me to attack.** I read the files only; I ran nothing and edited nothing.
+
+**1. Strongest reason it could be wrong.** The log alone can't tell a type bug from a real position change. `dec()` (`tools/bench/diag_c117a_joints.py:26-30`) counts only loose flags, joints and terminal flags. It ignores x/y and the neighbour indices. So "decoded equal, raw unequal on all 18 nets" (`diag_c117a_joints.log:4-21`) would also appear if a save or re-layout had shifted every joint's position. And the False result on nets whose R1 counts already differ (24277–26064) says nothing either way.
+
+**The saved data answers what the log can't:**
+- **w8590:** the fresh read in `diag_c117a_joints_raw.json` matches the R1 read in `diag_c116d_j3_raw2.json:1131-1256` exactly — same 10 joints, same `[x,y]`, same flags, same neighbour indices, same order.
+- **w29122:** the fresh read matches R1 (`diag_c116d_j3_raw2.json:3483-3560`) the same way, all 6 joints.
+
+The values are identical, so the False can only come from the types. Python treats a tuple and a list as never equal, and pywin32/comtypes return COM arrays as tuples.
+
+**2. Your "default=str turned numbers into strings" alternative is also refuted.** No array entry in `diag_c116d_j3_raw2.json` is a quoted string (a grep for bare string lines finds 0). The numbers are JSON ints in both files. Tuples already serialise to JSON arrays, so `default=str` never ran on joint data.
+
+**3. What would falsify your reading.** After `diag_c117a_cmp.py` normalises both sides, any of the 5 untouched nets (8590, 9051, 11253, 11389, 29122) still comparing unequal to R1. I checked only two of the five and neither of 25438/25461, so three untouched nets are still unconfirmed.
+
+**4. Cheapest discriminating test.** Run `diag_c117a_cmp.py` as planned (offline, seconds). One change first: have it print the first differing joint (index, field, both values), not just a bool. Then a mismatch will show whether it is position, flags or index order.
+
+**Is a normalised raw match valid evidence for L3b?**
+- **For the 5 untouched nets:** yes, and it's the right test. It is stronger than the decoded check, because nothing should have moved those joints. Nothing should have renumbered them either, and 8590 and 29122 show neither happened.
+- **For 25438/25461 and the 13 outer nets:** don't gate on raw equality to 116-4's read. Two independent runs of the same deletes could reasonably give different joint numbering or merged segments. I'm inferring that; I haven't measured it. Gate on the decoded fields plus an order-free comparison: the set of `(x, y, flags)` and the set of connections between joints. A raw match there is a bonus, not a requirement.
+- **Record-keeping:** the L3b FAIL at `diag_c117a_joints.log:25` stays as recorded. The cmp result is a re-analysis of the same data after fixing a bug in our own script, not a new pass. The gate code (`diag_c117a_joints.py:44-45, 53-54`) should compare normalised values from now on.
+
+Sources:
+- [Python docs — value comparisons: "Equality comparison across these types results in inequality"](https://docs.python.org/3/reference/expressions.html#value-comparisons)
+- [comtypes docs — SAFEARRAY outputs converted to tuples](https://pythonhosted.org/comtypes/)
+- [Python Programming on Win32, ch. 7 — COM arrays returned as tuples](https://www.oreilly.com/library/view/python-programming-on/1565926218/ch07s02s06.html)
+- [python-win32 list — SAFEARRAY conversion](https://mail.python.org/pipermail/python-win32/2003-January/000738.html)
+
+**What would change my mind:** a normalised mismatch on 9051, 11253 or 11389, or on any untouched net where the first differing field is a coordinate.
+BGRUN END rc=0 after 92s

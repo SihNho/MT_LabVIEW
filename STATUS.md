@@ -59,10 +59,33 @@ rig-state: 조립   <!-- 2026-09-24 20:xx USER GRANT: "당분간 내가 말하�
 
 ## NEXT
 🟡 **CARRY (from the 2026-09-25 verification review `archive/peer/2026-09-25-hyp-lintverify-20260925.md`, not blocking): card flags are checked only on the top-level command (a child process could reach LabVIEW under labview=none); a stage run launched outside bgrun is not counted by the retry cap; a bgrun record failure is only logged (`tools/bgrun.py:219-220`). Close in a tooling cycle, deliverable-first.**
-current-bed: D1_l2_r1_20260928_055441.vi
-<!-- ^ machine key read by tools/errorlist_check.py current_bed_text(); without it the bed is chosen by mtime among D1_*.vi names in this file, and the newer D1_s1_kswap_* would silently take over (review archive/peer/2026-09-26-c88-reuse-stalepin.md). Change it only when a new bed is accepted. Moved 2026-09-28 by cycle 115 (PD230(d)): L2-R1 accepted. -->
-🔵 **THE BED IS NOW `claudeDev\D1_l2_r1_20260928_055441.vi`, md5 `f465196bb5016638b146e771ba54c5af`** (L2-R1, 307,924 B; expected Error List file `tools/bench/errorlist_expected_D1_l2_r1_20260928_055441.json`, 55 items, reverdict OK; PD230(d)). STRUCTURAL, ExecState 0 by design, never run. Its input, the B3 file `D1_l2_b3_20260928_032703.vi` (md5 `1b5c12d7…`), is kept.
-🟢🟢 **FIRST ACT of cycle 117 = `docs/d1-loop12-17-split-plan.md` Pre-decided 231(e)/(f): ONE material card (Opus high).**
+current-bed: D1_l2_r2_20260928_110756.vi
+<!-- ^ machine key read by tools/errorlist_check.py current_bed_text(); without it the bed is chosen by mtime among D1_*.vi names in this file, and the newer D1_s1_kswap_* would silently take over (review archive/peer/2026-09-26-c88-reuse-stalepin.md). Change it only when a new bed is accepted. Moved 2026-09-28 by cycle 117 (PD233(i)): L2-R2 accepted. -->
+🔵 **THE BED IS NOW `claudeDev\D1_l2_r2_20260928_110756.vi`, md5 `7dac9f04ff4b65fa517e8e12f4bef5f3`** (L2-R2, 307,072 B; expected Error List file `tools/bench/errorlist_expected_D1_l2_r2_20260928_110756.json`, 53 items, loose ends 22, reverdict OK; PD233(i)). STRUCTURAL, ExecState 0 by design, never run. **L2-R is complete.** Its input R1 (`D1_l2_r1_20260928_055441.vi`, md5 `f465196b…`) is kept.
+🟢🟢 **FIRST ACT of cycle 118 = `docs/d1-loop12-17-split-plan.md` Pre-decided 233(k): ONE material card (Opus high) builds the POOL stage, the first build step of QRT.**
+   - Plan offline on the SAVED R2 graph from the designed pool (`docs/d1-build-plan.md:567-579`, `stage2-assembly-step-c.md:19-29`): Q_free / Q_work lock-stepped, bound 20, full ⇒ skip the read. Design rules PD233(f)/(g): every field of one frame goes in the same lock-stepped enqueue; the pool comes before QRT-W because one IMAQ refnum would be overwritten (rule 1a).
+   - Rows ≤ 15; recipe ≤ 120 lines; dry + prerun + prior-art; scratch run on a byte copy; ONE launch → `claudeDev\D1_qrt_pool_<ts>.vi`, then the full Error List and its expected file in the same card.
+   - A missing create route (queue / IMAQ Create, `docs/qrtw-plan-draft.md` T1) is built inside the card. Any design choice the files do not settle (O6 timeouts, O7 release/stop) → BLOCKED to judgement.
+   - Draft for the step after: `docs/qrtw-plan-draft.md` (provisional on R1, status draft) + `tools/bench/qrtw_rows_draft.json`; facts `tools/bench/facts_c117_qrt.json`.
+- **CYCLE 117 in brief — L2-R2 DELIVERED, THE NEW BED; rule-evaded device built; QRT facts + draft (PD233):**
+  - 117-1 FAIL 7/1: `OpWireJoints_v1` (md5 `29dcb59f…`) made 2,066 calls with 0 errors and flat handles; record `tools/bench/op_hygiene/OpWireJoints_v1.json`.
+    - ONE launch 43/0 saved R2. L2/L3a passed.
+    - L3b failed on a tuple-vs-list bug in our comparison; it passes on the normalised re-comparison, which judgement accepted.
+    - The failure budget ran out before L4.
+  - 117-5 PASS 17/0: the Error List has 53 items, loose ends 22 == pin, and the expected file reverdicts OK → **R2 accepted, `current-bed:` moved.**
+  - 117-2 PASS 15/0 (offline): QRT facts for the 11 pairs.
+  - 117-4 PASS 6/0 (offline): QRT-W draft. Its diag's 4 FAILs were our own lookup bug (review c117d-rows, supported).
+  - PD233(f)/(g) decided: lock-stepped queues per frame; pool first; x-y and `#11608` ride Q_work; `#10068`/`#29240` move to 1.2.
+  - 117-3 FAIL 5/1 (offline): the rule-evaded device was built. `gscript.op()` refuses a new op without a hygiene record (13/0), and A9 counts only the file the fix names (10/0). The one FAIL is an old self-test pinning the replaced rule (carry).
+  - Carries: re-pin `selftest_c116a_landed.py` S2/S4/A2; gate-fp fp-1 (stage_prerun reads whole logs by mtime) and fp-2 (protocol.py:385 treats loading gscript as LabVIEW contact); about 20 old scripts bypass `op()`.
+    - From retrospective-cycle117 (`VIOLATION: none`, annotated):
+      - guard_peer held LabVIEW card 117-1 for 7 min on offline card 117-4's failing log, so the reverse RULE-OFFLINE-CARD is owed;
+      - a shared COM-vs-JSON normalising compare in stagekit;
+      - every new diagnostic stays on stagekit, ≤ 120 lines (two broke this);
+      - the fp-2 importlib/fake-COM route is not used again until the gate-fp drain decides it.
+    - These are batched in one tooling card when gate-fp is due, never ahead of the deliverable.
+  - User decisions: none open from this cycle.
+- (history) 🟢🟢 **FIRST ACT of cycle 117 = `docs/d1-loop12-17-split-plan.md` Pre-decided 231(e)/(f): ONE material card (Opus high).**
    - **STEP 0 (PD231(e), reference hygiene):** `OpWireJoints_v1`. The v0 op (`claudeDev\OpWireJoints_v0.vi`, md5 `15cf4971…`) does not close its Traverse array, and a sweep on R1 failed from read 536 with error 1055. v1 closes that ref and wires the Traverse error into the property node (review `archive/peer/2026-09-28-c116d-sweep.md` :41-44, :95). Acceptance:
      - 20 calls with handles flat ±100;
      - a sweep of all 1,945 R1 wires with 0 errors and handles flat;
