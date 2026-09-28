@@ -1,0 +1,53 @@
+BGRUN START 2026-09-28 13:42:46 limit 20.0 min: py -u tools/prior_art_review.py --plan-file tools/bench/plan_qrt_pool.json --slug c119-qrt-pool --trigger new-op --recipe tools/recipes/stage_d1_qrt_pool.py
+BGRUN PID 4688
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c119-qrt-pool.txt (112444 chars)
+   review card tools\bench\cards\review_priorart-c119-qrt-pool.json
+OUTCOME: ANSWERED (70s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-28-priorart-c119-qrt-pool.md
+COST: $1.3875  in 12 / out 6247 / cache-create 138599 / cache-read 768551  (66s, 15 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c119-qrt-pool verdict=novel -> tools\bench\cards\verdict_priorart-c119-qrt-pool.json
+--- ANSWER ---
+**Verdict: novel.** The QRT POOL stage has not been built into any bed, nothing in the files refutes it, and it does not repeat a failed build. Everything close to it is either a prerequisite the plan already cites or a scratch rehearsal that saved nothing.
+
+**Part A: the direction**
+- **A1 (already settled):** the design itself is decided, but that is the authority for this stage, not something that makes it redundant. `docs/d1-loop12-17-split-plan.md:2176-2208` (PD234(a)–(k), cycle 118 judgement, 2026-09-28) orders exactly this build and says prior-art is owed (`:2183`). The plan follows it:
+  - scope is creation only (`:2177`);
+  - the only change to an existing net is the w14741 branch (`:2180`);
+  - Image Type is a duplicate of #13245, not a branch (`:2186`);
+  - names are `Cam_pool00..19` (`:2185`);
+  - the names tunnel is auto-indexed and N is unwired (`:2191`).
+- **A2 (already refuted):** none that applies. The step-C "v1" queue of slot integers was rejected (`docs/stage2-assembly-step-c.md:12`, `:56-60`). This plan uses the accepted refnum-queue form instead.
+- **A3 (contradicted):** one soft tension, not a blocking contradiction.
+  - PD234(g) (`split-plan.md:2183`) assumes the pool adds new Error List items: "the new items the pool adds (its unwired outputs)".
+  - `tools/bench/plan_qrt_pool_pred.json:21-23` predicts `new_items_predicted: 0`, arguing that unwired outputs and optional inputs raise no items.
+  - Both sides require the count to be pinned on the scratch run before the launch (`pred.json:47`), so the measurement settles it.
+- **A4 (unread evidence):** none. The plan cites the step-C shape (`stage2-assembly-step-c.md:19`), the diag logs, and the stagexec/stagesim routes.
+
+**Part B: the artifact**
+- **B1 (already built):** not into the bed. Two near-matches, both outside the bed:
+  - The step-C pool loop was built in the Track v6 queue build (`build_track_v6_queue.py:202`, cited in PD234(i) at `split-plan.md:2190`). That was a different VI with bound 8.
+  - `tools/bench/diag_c119_p1b_r2.log:26-62` built the same 9 creates, the auto-indexed tunnel and the wires on a byte copy of R2, then deleted the copy (`:76`). That is the Step 2 scratch-verify precondition from STATUS NEXT, not a finished stage.
+- **B2 (already failed):** yes, earlier attempts failed, and the plan fixes the recorded cause.
+  - `diag_c118_p1b_r2.log:33,45`: the ArrayConstant copy tripped the one-new-node rule (2 new nodes, 1 expected). That rule now has an ArrayConstant exception (PD234(k), `split-plan.md:2204`), and the c119 rerun passes B1 (`diag_c119_p1b_r2.log:41`).
+  - The A1b value gate could never pass because the old reader returned void for non-String constants (PD234(i), `:2188`). `read_const_value` replaces it; `diag_c119_p1b_r2.log:44,46` show PASS.
+- **B3 (helper exists):** the recipe already uses the existing helpers rather than hand-rolling them:
+  - `stagexec.Executor` / `DryPlanBE` / `LVBackend`;
+  - `index_mode_fix` (`tools/stagexec.py:2154`);
+  - `gscript.read_const_value`;
+  - `diag_c118_p0.read_num` for the I32;
+  - `stagekit` save and census.
+  
+  The recipe calls `index_mode_fix` itself because `Executor.run` only calls it inside `if lost:` (`tools/stagexec.py:1559`). That is a correct workaround, not a duplicate helper.
+- **B4 (already measured):** partly. The scratch rehearsal (`diag_c119_p1b_r2.log`) already measured the creates, the tunnel IndexMode 1, the names, the ring duplicate and the w14741 branch. Three things remain unmeasured, and they are this stage's job:
+  - the saved bed file;
+  - the Error List pin;
+  - the cdiff equalling R2's 16 rows.
+  
+  One small difference from the rehearsal: the plan uses one I32 20 constant for both Obtains, where the diag used two (`diag_c119_p1b_r2.log:62`). The MX gate and the D wire count cover it.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c119-qrt-pool","verdict":"novel","alternative":"The pool shape exists only in the Track v6 step-C build (bound 8, other VI) and as a scratch rehearsal on an R2 copy that was deleted (diag_c119_p1b_r2.log:76); neither saved a bed.","discriminating_test":"Scratch-run Error List count vs R2's 53: PD234(g) (split-plan.md:2183) expects new items from unwired outputs; pred.json:21 predicts 0. Pin the count before the launch.","violations":[],"sources":["docs/d1-loop12-17-split-plan.md:2176-2208","docs/stage2-assembly-step-c.md:19-20","tools/bench/diag_c119_p1b_r2.log:41-62","tools/bench/diag_c118_p1b_r2.log:33","tools/bench/plan_qrt_pool_pred.json:21-23","tools/stagexec.py:1559"],"note":"Soft tension, not blocking: PD234(g) assumes new Error List items, pred predicts 0; the scratch pin settles it. One I32 constant replaces the diag's two."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c119-qrt-pool.md
+   STOP RECORD: none - 2026-09-28-priorart-c119-qrt-pool.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_qrt_pool.py sha fd80bb3d0b9f -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 73s

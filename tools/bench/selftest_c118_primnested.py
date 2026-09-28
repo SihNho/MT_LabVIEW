@@ -16,7 +16,7 @@ import protocol  # noqa: E402
 import gscript as g  # noqa: E402
 
 TGT, D = os.path.join(g.CLAUDEDEV, "scratch_c118_selftest.vi"), 13236
-DONOR = os.path.join(g.CLAUDEDEV, "OpPoolDonor_v0.vi")
+DONOR = os.path.join(g.CLAUDEDEV, "DonorPool_v0.vi")   # card 119-1 C1: byte copy of the retired Op-named donor (PD234(k))
 LAB = {"DonorUIDin": "uid in", "position": "position", "duplicate": "duplicate", "DonorUID": "UID d", "DiagUID": "UID g",
        "Err": "error out", "controls": [], "donors": {}}
 S = {}

@@ -1,0 +1,23 @@
+{
+ "schema": "result/1",
+ "id": "119-5",
+ "status": "PASS",
+ "gates": {"pass": 4, "fail": 0},
+ "first_fail": null,
+ "artefacts": [],
+ "facts": [
+  "JEV-TRIAGE | stage_d1_qrt_pool.log | expected-reading p=0.95 | FACT PIN AFTER ORIGINAL <md5> OK",
+  "FILE tools/bench/stage_d1_qrt_pool.log: BGRUN END rc=0 after 456s (line 264), GATES 21/0 (line 260); PH post-open 45607 -> before-save 46255 = +648 (line 233)",
+  "R1 pool op deltas k1..k13 (METER op lines 50-217): for+85, IMAQ subvi+35, prim p_names+79, prim p_i32 0, prim p_ring 0, Obtain Queue qfree+27, qwork+2, enq+29, tunnel+33, connect +1/+58/0/+75",
+  "R1 pool METER start 45608 (line 36) -> k13 read 46131 (line 218) = +523 over 13 ops; 8 creates sum +257, tunnel +33, 4 connects +134; read-step deltas within -9..+94",
+  "R2 create stages: disp c104B3 PH 45635->46232 = +597 (line 316), 47 ops incl >=6 creates in logged steps 33-47; l2a3 c109b 45603->46017 = +414 (line 183), 4 create + 2 connect",
+  "R2 qrt_pool_scratch (same 13 ops, 8 create): 45598->46282 = +684 (stage_d1_qrt_pool_scratch.log:239)",
+  "R3 no-create: l2a2 1 connect 45963->46139 = +176 (stage_d1_l2a2.log:68); l2b3 3 tunnel 45639->45969 = +330 (:128); l2b2b_r2 8 connect 45631->46011 = +380 (:215); l2b2a 7 ops 45601->46027 = +426 (:207)",
+  "R3 move: l2b1 27 ops (17 move_in) +405 (stage_d1_l2b1_c110d.log:551); l2a1 42 ops (14 move_in) +527 (_86-5.log:742); l7_r_r2 +482 (:458); k_r2 15 ops +516 (:542)",
+  "R4 creates|delta|per-op: qrt_pool 8|+648|+49.8; scratch 8|+684|+52.6; l2a3 4|+414|+69; disp>=6|+597|+12.7; l2a2 0|+176|+176; l2b3 0|+330|+110; l2b2b 0|+380|+47.5; l2b1 0|+405|+15 (deletes 0 all)",
+  "No delete-only stage log was located under tools/bench; every recorded open->save delta (9 stages) lies between +176 and +684, none within +-100"
+ ],
+ "open": [
+  "disp c104B3 log starts FROM-STEP 33; creates in steps 1-32 are not counted in its create number"
+ ]
+}

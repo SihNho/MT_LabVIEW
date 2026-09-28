@@ -59,10 +59,31 @@ rig-state: 조립   <!-- 2026-09-24 20:xx USER GRANT: "당분간 내가 말하�
 
 ## NEXT
 🟡 **CARRY (from the 2026-09-25 verification review `archive/peer/2026-09-25-hyp-lintverify-20260925.md`, not blocking): card flags are checked only on the top-level command (a child process could reach LabVIEW under labview=none); a stage run launched outside bgrun is not counted by the retry cap; a bgrun record failure is only logged (`tools/bgrun.py:219-220`). Close in a tooling cycle, deliverable-first.**
-current-bed: D1_l2_r2_20260928_110756.vi
-<!-- ^ machine key read by tools/errorlist_check.py current_bed_text(); without it the bed is chosen by mtime among D1_*.vi names in this file, and the newer D1_s1_kswap_* would silently take over (review archive/peer/2026-09-26-c88-reuse-stalepin.md). Change it only when a new bed is accepted. Moved 2026-09-28 by cycle 117 (PD233(i)): L2-R2 accepted. -->
-🔵 **THE BED IS NOW `claudeDev\D1_l2_r2_20260928_110756.vi`, md5 `7dac9f04ff4b65fa517e8e12f4bef5f3`** (L2-R2, 307,072 B; expected Error List file `tools/bench/errorlist_expected_D1_l2_r2_20260928_110756.json`, 53 items, loose ends 22, reverdict OK; PD233(i)). STRUCTURAL, ExecState 0 by design, never run. **L2-R is complete.** Its input R1 (`D1_l2_r1_20260928_055441.vi`, md5 `f465196b…`) is kept.
-🟢🟢 **FIRST ACT of cycle 119 = `docs/d1-loop12-17-split-plan.md` Pre-decided 234 (read (a)–(k)): ONE material card (Opus high) builds the POOL stage with the tools card 118-4 delivered.** The design is fully decided in PD234; the card applies it.
+current-bed: D1_qrt_pool_20260928_141055.vi
+<!-- ^ machine key read by tools/errorlist_check.py current_bed_text(); without it the bed is chosen by mtime among D1_*.vi names in this file, and the newer D1_s1_kswap_* would silently take over (review archive/peer/2026-09-26-c88-reuse-stalepin.md). Change it only when a new bed is accepted. Moved 2026-09-28 by cycle 119 (PD236(a)): the POOL stage accepted. -->
+🔵 **THE WORK VI (bed) IS NOW `claudeDev\D1_qrt_pool_20260928_141055.vi`, md5 `9353936895141d3ec2f890649c5cf22f`.** It is the POOL stage: 20 image buffers `Cam_pool00`…`19` and the two queues Q_free / Q_work, added to R2 and not yet consumed. Expected Error List file `tools/bench/errorlist_expected_D1_qrt_pool_20260928_141055.json`: 53 items (== R2's), reverdict OK (PD236(a)). STRUCTURAL, ExecState 0 by design, never run. Its input R2 (`D1_l2_r2_20260928_110756.vi`, md5 `7dac9f04…`) is kept.
+🟢🟢 **FIRST ACT of cycle 120 = `docs/d1-loop12-17-split-plan.md` Pre-decided 236(e): QRT-W**, i.e. wiring the pool into loops 1.1/1.2 (the dequeue/enqueue).
+   - Step 1: a graph read of the new bed.
+   - Step 2: plan the QRT-W rows from `docs/qrtw-plan-draft.md` + `tools/bench/qrtw_rows_draft.json` on that REAL graph, ≤ 15 rows per build step (split if more).
+   - The overload row (Q_free empty) follows D-2026-09-28-01's recommendation (latest-wins) and is MARKED so that the user's answer changes only that row.
+   - Step 3: recipe ≤ 120 lines, then dry + prerun + prior-art, then a scratch run that pins the Error List, then ONE launch → `claudeDev\D1_qrtw_<ts>.vi`.
+   - Handle gate per PD236(b): references balanced, and open→save inside the recorded band (not ±100).
+   - PIPELINE: the graph read + plan can run as the offline prep card only after the graph read (LabVIEW) lands.
+- **CYCLE 119 in brief — POOL STAGE DELIVERED, the new bed (PD235/PD236):**
+  - 119-1 PASS 6/0: the donor became `claudeDev\DonorPool_v0.vi` (byte copy; the Op-named file was removed; H9 13/0). P1 passed 23/0 on an R2 copy after one script bug (a constant source needs `wire_const`, not `wire`).
+  - 119-2 BLOCKED, then 119-3 BLOCKED (offline): the plan schema lacked 4 route fields, then `data_stream`, so prerun X8 could never pass a queue. Judgement classified Q_free/Q_work as DATA streams (rule 1c'', PD235(e)).
+  - 119-4 FAIL 5/1 but DELIVERED: schema widened (selftests 48/0 and 66/0); scratch 21/0 pinned 0 new Error List items; ONE launch 21/0; Error List 53 == R2 + 0.
+    - Its only FAIL was a wrong "handles ±100" gate that I (judgement) had written.
+  - 119-5 (read-only) measured every earlier build step at +176…+684 open→save, so the ±100 gate was not appropriate → the file was accepted (PD236(b)).
+  - LabVIEW was verified closed after each LabVIEW card.
+  - Carries:
+    - `stagexec.py:1561` (index_mode_fix only under `if lost:`) is left as is; the recipe keeps its explicit indexing row;
+    - `read_const_value` has no DigitalNumericConstant route (the recipe reads the I32 via `diag_c118_p0.read_num`);
+    - `stop_records.json` is written by `prior_art_review.py --recipe` outside the card write sets;
+    - `sim/disp/stageplan_disp.json` is schema-invalid (pre-existing);
+    - gate-fp fp-1..3 are still queued.
+  - **User decisions open:** D-2026-09-28-01 (pool overload: latest-wins or skip — blocks the first real run, not the build). D-2026-09-28-02 is still open for the user; the pool build proceeded under its recommendation (continue) and was delivered, so the user can close it.
+(history) 🟢🟢 **FIRST ACT of cycle 119 = `docs/d1-loop12-17-split-plan.md` Pre-decided 234 (read (a)–(k)): ONE material card (Opus high) builds the POOL stage with the tools card 118-4 delivered.** The design is fully decided in PD234; the card applies it.
    - Step 1: copy `claudeDev\OpPoolDonor_v0.vi` to `claudeDev\DonorPool_v0.vi`, point `tools/bench/diag_c118_p1b.py` at the copy, and remove the Op-named file (PD234(k)(1)).
    - Step 2: re-run `diag_c118_p1b.py` on an R2 byte copy. All 9 creates must land: the names ArrayConstant is checked with `gscript.read_const_value` == `Cam_pool00…19`, and the names tunnel must be auto-indexed. Result: a `scratch_verify` PASS record.
    - Step 3: `plan_qrt_pool.json` on `tools/bench/graph_l2r2_saved_20260928.json` (rows ≤ 15, stagesim FINAL); `stage_d1_qrt_pool.py` ≤ 120 lines; dry + prerun + prior-art.

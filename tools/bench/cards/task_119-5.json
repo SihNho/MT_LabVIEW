@@ -1,0 +1,35 @@
+{
+ "schema": "task/1",
+ "id": "119-5",
+ "kind": "read-log",
+ "goal": "Measure LabVIEW handle growth in earlier CREATE stages vs the pool launch (+322 steady, +648 open->save over 13 ops), from their existing logs. Read-only; facts only",
+ "why": "119-4 saved D1_qrt_pool with every gate PASS except handles +-100; judgement needs the baseline for object-adding stages to decide leak vs object growth",
+ "inputs": [
+  {"path": "tools/bench/cards/result_119-4.json"},
+  {"path": "tools/bench/stage_d1_qrt_pool.log"}
+ ],
+ "pass": [
+  "R1 pool log: handle readings k1..k13 and post-open/before-save values with line numbers, plus which op ran between each reading",
+  "R2 for >= 3 earlier stages that CREATED objects (e.g. L2-A1/A2/A3, display loop S1 disp, L7/K; locate their build logs under tools/bench): ops created, handle delta steady and open->save, file:line",
+  "R3 for R2 and R1 (delete-only stages): the same numbers, as the contrast",
+  "R4 a table: stage | ops created | ops deleted | handle delta | per-created-op delta; no conclusion beyond the numbers"
+ ],
+ "outputs": ["tools/bench/cards/result_119-5.json"],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": ["tools/bench/cards/result_119-5.json", "tools/bench/cards/requires_119-5.json"],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 20},
+ "rules": [
+  "read-only; targeted greps, never whole logs into the answer",
+  "report measurements only; the leak/no-leak decision is judgement's",
+  "facts <=10 file:line; OPEN <=3"
+ ],
+ "advances": ["M3"]
+}

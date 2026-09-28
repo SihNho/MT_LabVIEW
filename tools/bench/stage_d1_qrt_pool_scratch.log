@@ -1,0 +1,270 @@
+BGRUN START 2026-09-28 13:50:47 limit 45.0 min: py -u tools/bench/stage_d1_qrt_pool_scratch.py
+BGRUN PID 5872
+stage_d1_qrt_pool_scratch - card 119-4 L2 (part 1): SCRATCH VERIFY of the QRT POOL stage BEFORE the one launch. It runs the stage recipe's OWN
+body (tools/recipes/stage_d1_qrt_pool.py, imported unchanged) on the dated byte copy claudeDev\scratch_c119_pool_<ts>.vi of the R2 bed (md5 7dac9f04) -
+same Executor, LVBackend, TI/NV/RV/MX/D/TD/FU/PB gates and the rule-6 gui_save of the SCRATCH (so its Error List can be read by part 2,
+stage_d1_qrt_pool_el.py scratch, which deletes it). No VI is run. R2 is never opened for edit (byte copy only).
+PRIOR ART: tools/bench/diag_c116b_scratch.py (card 116-2 P4; this is its cut for the pool recipe).
+PREDICTION: every recipe gate PASS (PS on the scratch name); LabVIEW gone; PASS writes tools/bench/scratch_verify/stagexec.qrt_pool_creates_<ts>.json.
+    py tools/bgrun.py --material --max-min 45 --log tools/bench/stage_d1_qrt_pool_scratch.log -- py -u tools/bench/stage_d1_qrt_pool_scratch.py
+stage_d1_qrt_pool - card 119-2 (offline prep; run by the next launch card), STAGE QRT POOL (d1-loop12-17-split-plan.md PD234(a)-(k)). INPUT the
+SAVED R2 bed D1_l2_r2_20260928_110756.vi, FRESH LabVIEW -> claudeDev\D1_qrt_pool_<ts>.vi (rule-6 GUI save, ExecState 0 by design, never run).
+ROWS ONLY FROM plan_qrt_pool.json (stagesim FINAL of plan_qrt_pool_in.json); expected values only from plan_qrt_pool_pred.json.
+PRIOR ART (checked before writing): stage_d1_l2a3.py / stage_d1_l2r2.py (Executor + DryPlanBE, PB cdiff, save); diag_c118_p1b.py (the pool's
+creates, 8/9 landed on an R2 copy, diag_c118_p1b_r2.log:30-44); gscript.read_const_value (118-4, gscript.py:4226); diag_c118_p0.read_num (I32);
+LVBackend.index_mode_fix (stagexec.py:2154-2163). No new op. Executor.run calls index_mode_fix for a tunnel op only inside `if lost:`
+(stagexec.py:1559-1563), so gate TI calls it here with the plan's `indexing`.
+PREDICTION: L1 15 actions -> 13 ops == pred; E1 every checkpoint == sim; TI names tunnel IndexMode 1; NV names == Cam_pool00..19; RV ring dup
+value+type == #13245's; MX I32 == 20; D new wires == sim, none lost; TD base terminals keep their wires, only w14741 gains the 2 Obtain sinks;
+FU base frames kept + ONE new body; PB cdiff(S1, end) == R2's 16 rows (FATAL, before save); PS saved, input unchanged.
+    py tools/bgrun.py --material --max-min 45 --log tools/bench/stage_d1_qrt_pool.log -- py -u tools/recipes/stage_d1_qrt_pool.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_qrt_pool_in; base graph md5 == pred == file; bed md5 == pred  ('bb3393b0d754b61960731af462af08ad', {'path': 'tools/bench/graph_l2r2_saved_20260928.json', 'md5': 'c6356fcde059e84b4d966d8fc47e25e8'}, '7dac9f04ff4b65fa517e8e12f4bef5f3')
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 307 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 7dac9f04ff4b65fa517e8e12f4bef5f3  got 7dac9f04ff4b65fa517e8e12f4bef5f3
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33954
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_c119_pool_20260928_135047.vi
+  FACT  ExecState [after open] scratch_c119_pool_20260928_135047.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so scratch_c119_pool_20260928_135047.vi is deleted at close
+  PASS  L1 the 15 actions compile into 13 real ops == pred kinds, each action once  ['create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'tunnel', 'connect', 'connect', 'connect', 'connect']
+  METER start  k   0  private 568.4 MB (d -)  handles 45596 (d -)
+  METER read   k   0  private 572.7 MB (d +4.3)  handles 45722 (d +126)
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 1 touched diagram(s) [13236]: one-side-only Nodes[] entries 0
+  PRIME 0 terminal indexes proved at base; 0 ControlTerminal end(s) by 179(b); unprovable []
+  METER pre    k   1  private 550.9 MB (d -21.8)  handles 45750 (d +28)
+  FACT  loop_in node census: 637 rows
+  FACT  OP loop_in for on Diagram[90] #13236 -> err '' (0.7 s)
+  FACT  create for p_for AFTER node census: 638 rows
+  FACT  create for p_for CENSUS DIFF: Node 637 -> 638 ; 1 new uid(s): [(23093, 'ForLoop', (-16648, 2134))]
+  FACT  create for p_for new #23093 #23093 lives at: {'diagram_index': 90, 'diagram_uid': 13236, 'diagram_class': 'Diagram', 'nodes_index': 14, 'nodes_on_diagram': 15, 'label': 'For Loop'}  (91 diagram(s) scanned of 174, 5.8 s)
+  FACT  create for p_for new #23093 terminal table of #23093 (Diagram idx 90, Nodes[14], echo 23093): 1 terminal(s)
+  FACT      create for p_for new #23093 t0  ''                                 is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT  create for p_for NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #23093 class 'ForLoop' label 'For Loop', 1 terminal(s), 0 wired - REPORTED, left alone
+  METER op     k   1  private 556.8 MB (d +5.9)  handles 45834 (d +84)
+  METER read   k   1  private 564.6 MB (d +7.8)  handles 45832 (d -2)
+  STEPX 01 create         acts [1] ids ['p_for'] bound {-1: 23093, -2: 23169, -4: 23148} diff 0
+  METER pre    k   2  private 564.6 MB (d +0.0)  handles 45831 (d -1)
+  FACT  drop_subvi node census: 638 rows
+  FACT  OP drop_subvi IMAQ Create on Diagram[91] #23169 -> err '' (0.1 s)
+  FACT  create subvi p_imaq AFTER node census: 639 rows
+  FACT  create subvi p_imaq CENSUS DIFF: Node 638 -> 639 ; 1 new uid(s): [(23099, 'SubVI', (-16567, 2195))]
+  FACT  create subvi p_imaq new #23099 #23099 lives at: {'diagram_index': 91, 'diagram_uid': 23169, 'diagram_class': 'Diagram', 'nodes_index': 0, 'nodes_on_diagram': 1, 'label': 'IMAQ Create'}  (92 diagram(s) scanned of 174, 2.9 s)
+  FACT  create subvi p_imaq new #23099 terminal table of #23099 (Diagram idx 91, Nodes[0], echo 23099): 7 terminal(s)
+  FACT      create subvi p_imaq new #23099 t0  'New Image'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create subvi p_imaq new #23099 t1  'Border Size'                      is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create subvi p_imaq new #23099 t2  'Image Name'                       is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create subvi p_imaq new #23099 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create subvi p_imaq new #23099 t4  ''                                 is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create subvi p_imaq new #23099 t5  'Image Type'                       is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create subvi p_imaq new #23099 t6  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT  create subvi p_imaq NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #23099 class 'SubVI' label 'IMAQ Create', 7 terminal(s), 0 wired - REPORTED, left alone
+  METER op     k   2  private 566.8 MB (d +2.2)  handles 45866 (d +35)
+  METER read   k   2  private 570.6 MB (d +3.8)  handles 45862 (d -4)
+  STEPX 02 create         acts [2] ids ['p_imaq'] bound {-7: 23099} diff 0
+  METER pre    k   3  private 570.5 MB (d -0.1)  handles 45862 (d +0)
+  FACT  create_primitive_nested node census: 639 rows
+  OBSERVED uid 25292 -> owner 'ArrayConstant' uid 23789 | self 'StringConstant'#25292 | 482 says 'ArrayConstant' cast 'ArrayConstant' |  
+  OBSERVED uid 23789 -> owner 'Diagram' uid 13236 | self 'ArrayConstant'#23789 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'pool_names' on #13236 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorPool_v0.vi', 'uid': 101} -> err '' (2.2 s)
+  FACT  create primitive p_names AFTER node census: 639 rows
+  FACT  create primitive p_names CENSUS DIFF: Node 639 -> 639 ; 0 new uid(s): []
+  METER op     k   3  private 574.5 MB (d +4.0)  handles 45941 (d +79)
+  METER read   k   3  private 575.0 MB (d +0.5)  handles 45940 (d -1)
+  STEPX 03 create         acts [3] ids ['p_names'] bound {-15: 23789} diff 0
+  METER pre    k   4  private 575.0 MB (d +0.0)  handles 45940 (d +0)
+  FACT  create_primitive_nested node census: 639 rows
+  OBSERVED uid 26017 -> owner 'Diagram' uid 13236 | self 'DigitalNumericConstant'#26017 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'i32_20' on #13236 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorPool_v0.vi', 'uid': 214} -> err '' (2.1 s)
+  FACT  create primitive p_i32 AFTER node census: 639 rows
+  FACT  create primitive p_i32 CENSUS DIFF: Node 639 -> 639 ; 0 new uid(s): []
+  METER op     k   4  private 577.2 MB (d +2.2)  handles 45941 (d +1)
+  METER read   k   4  private 577.6 MB (d +0.4)  handles 45942 (d +1)
+  STEPX 04 create         acts [4] ids ['p_i32'] bound {-17: 26017} diff 0
+  METER pre    k   5  private 577.6 MB (d +0.0)  handles 45942 (d +0)
+  FACT  create_primitive_nested node census: 639 rows
+  OBSERVED uid 26846 -> owner 'Diagram' uid 23169 | self 'RingConstant'#26846 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'ring_dup' on #23169 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c119_pool_20260928_135047.vi', 'uid': 13245} -> err '' (2.0 s)
+  FACT  create primitive p_ring AFTER node census: 639 rows
+  FACT  create primitive p_ring CENSUS DIFF: Node 639 -> 639 ; 0 new uid(s): []
+  METER op     k   5  private 578.9 MB (d +1.3)  handles 45943 (d +1)
+  METER read   k   5  private 581.7 MB (d +2.8)  handles 45943 (d +0)
+  STEPX 05 create         acts [5] ids ['p_ring'] bound {-19: 26846} diff 0
+  METER pre    k   6  private 581.7 MB (d +0.0)  handles 45943 (d +0)
+  FACT  queue_node node census: 639 rows
+  FACT  OP queue_node obtain from SubVI[61] #13938.'New Image' on Diagram[90] #13236 -> err '' (0.5 s)
+  FACT  create queue p_qfree AFTER node census: 640 rows
+  FACT  create queue p_qfree CENSUS DIFF: Node 639 -> 640 ; 1 new uid(s): [(23105, 'Function', (-16508, 2134))]
+  FACT  create queue p_qfree new #23105 #23105 lives at: {'diagram_index': 90, 'diagram_uid': 13236, 'diagram_class': 'Diagram', 'nodes_index': 15, 'nodes_on_diagram': 16, 'label': 'Obtain Queue'}  (91 diagram(s) scanned of 174, 3.0 s)
+  FACT  create queue p_qfree new #23105 terminal table of #23105 (Diagram idx 90, Nodes[15], echo 23105): 8 terminal(s)
+  FACT      create queue p_qfree new #23105 t0  'name (unnamed)'                   is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create queue p_qfree new #23105 t1  'element data type'                is_source=False wire=14741   errs=[0, 0, 0, 0]
+  FACT      create queue p_qfree new #23105 t2  'create if not found? (T)'         is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create queue p_qfree new #23105 t3  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create queue p_qfree new #23105 t4  'max queue size (-1, unlimited)'   is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create queue p_qfree new #23105 t5  'queue out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create queue p_qfree new #23105 t6  'created new?'                     is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create queue p_qfree new #23105 t7  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  create queue p_qfree NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #23105 class 'Function' label 'Obtain Queue', 8 terminal(s), 1 wired - REPORTED, left alone
+  METER op     k   6  private 582.4 MB (d +0.7)  handles 45970 (d +27)
+  METER read   k   6  private 588.8 MB (d +6.4)  handles 45970 (d +0)
+  STEPX 06 create         acts [6] ids ['p_qfree'] bound {-21: 23105} diff 0
+  METER pre    k   7  private 588.8 MB (d +0.0)  handles 45970 (d +0)
+  FACT  queue_node node census: 640 rows
+  FACT  OP queue_node obtain from SubVI[61] #13938.'New Image' on Diagram[90] #13236 -> err '' (0.5 s)
+  FACT  create queue p_qwork AFTER node census: 641 rows
+  FACT  create queue p_qwork CENSUS DIFF: Node 640 -> 641 ; 1 new uid(s): [(23118, 'Function', (-16508, 2284))]
+  FACT  create queue p_qwork new #23118 #23118 lives at: {'diagram_index': 90, 'diagram_uid': 13236, 'diagram_class': 'Diagram', 'nodes_index': 16, 'nodes_on_diagram': 17, 'label': 'Obtain Queue'}  (91 diagram(s) scanned of 174, 3.0 s)
+  FACT  create queue p_qwork new #23118 terminal table of #23118 (Diagram idx 90, Nodes[16], echo 23118): 8 terminal(s)
+  FACT      create queue p_qwork new #23118 t0  'name (unnamed)'                   is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create queue p_qwork new #23118 t1  'element data type'                is_source=False wire=14741   errs=[0, 0, 0, 0]
+  FACT      create queue p_qwork new #23118 t2  'create if not found? (T)'         is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create queue p_qwork new #23118 t3  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create queue p_qwork new #23118 t4  'max queue size (-1, unlimited)'   is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create queue p_qwork new #23118 t5  'queue out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create queue p_qwork new #23118 t6  'created new?'                     is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create queue p_qwork new #23118 t7  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  create queue p_qwork NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #23118 class 'Function' label 'Obtain Queue', 8 terminal(s), 1 wired - REPORTED, left alone
+  METER op     k   7  private 585.8 MB (d -3.0)  handles 45971 (d +1)
+  METER read   k   7  private 591.0 MB (d +5.2)  handles 45970 (d -1)
+  STEPX 07 create         acts [7] ids ['p_qwork'] bound {-30: 23118} diff 0
+  METER pre    k   8  private 591.0 MB (d +0.0)  handles 45970 (d +0)
+  FACT  queue_node node census: 641 rows
+  FACT  OP queue_node enqueue from Function[123] #23105.'queue out' on Diagram[91] #23169 -> err '' (0.6 s)
+  FACT  create queue p_enq AFTER node census: 642 rows
+  FACT  create queue p_enq CENSUS DIFF: Node 641 -> 642 ; 1 new uid(s): [(23136, 'Function', (-16407, 2195))]
+  FACT  create queue p_enq new #23136 #23136 lives at: {'diagram_index': 91, 'diagram_uid': 23169, 'diagram_class': 'Diagram', 'nodes_index': 1, 'nodes_on_diagram': 2, 'label': 'Enqueue Element'}  (92 diagram(s) scanned of 174, 3.1 s)
+  FACT  create queue p_enq new #23136 terminal table of #23136 (Diagram idx 91, Nodes[1], echo 23136): 7 terminal(s)
+  FACT      create queue p_enq new #23136 t0  'queue'                            is_source=False wire=25835   errs=[0, 0, 0, 0]
+  FACT      create queue p_enq new #23136 t1  'element'                          is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create queue p_enq new #23136 t2  'timeout in ms (-1)'               is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create queue p_enq new #23136 t3  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create queue p_enq new #23136 t4  'queue out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create queue p_enq new #23136 t5  'timed out?'                       is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create queue p_enq new #23136 t6  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  create queue p_enq NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #23136 class 'Function' label 'Enqueue Element', 7 terminal(s), 1 wired - REPORTED, left alone
+  METER op     k   8  private 593.1 MB (d +2.1)  handles 45998 (d +28)
+  METER read   k   8  private 597.4 MB (d +4.3)  handles 45999 (d +1)
+  STEPX 08 create         acts [8] ids ['p_enq'] bound {-39: 23136, -47: 25898} diff 0
+  METER pre    k   9  private 597.4 MB (d +0.0)  handles 45999 (d +0)
+  FACT  wire_const node census: 642 rows
+  FACT  OP wire_const ArrayConstant[6] #23789 -> SubVI[48].t2 -> err '' (0.3 s)
+  FACT  connect #23517->#23393 AFTER node census: 642 rows
+  FACT  connect #23517->#23393 CENSUS DIFF: Node 642 -> 642 ; 0 new uid(s): []
+  METER op     k   9  private 597.4 MB (d +0.0)  handles 46032 (d +33)
+  METER read   k   9  private 598.5 MB (d +1.1)  handles 46030 (d -2)
+  STEPX 09 tunnel         acts [9, 10, 11] ids ['p_tun', 'p_w_names', 'p_w_name_in'] bound {-52: 26131} diff 0
+  METER pre    k  10  private 598.5 MB (d +0.0)  handles 46030 (d +0)
+  FACT  wire_const node census: 642 rows
+  FACT  OP wire_const RingConstant[4] #26846 -> SubVI[48].t5 -> err '' (0.3 s)
+  FACT  connect #26843->#23457 AFTER node census: 642 rows
+  FACT  connect #26843->#23457 CENSUS DIFF: Node 642 -> 642 ; 0 new uid(s): []
+  METER op     k  10  private 598.5 MB (d +0.0)  handles 46030 (d +0)
+  METER read   k  10  private 602.6 MB (d +4.1)  handles 46029 (d -1)
+  STEPX 10 connect        acts [12] ids ['p_w_type'] bound {} diff 0
+  METER pre    k  11  private 602.6 MB (d +0.0)  handles 46029 (d +0)
+  FACT  connect_nested_v1 node census: 642 rows
+      op readback {'UID': 23136, 'Name': 'element', 'UID 2': 0, 'Is Broken?': False}
+  FACT  OP connect_nested_v1 D[91].N[1].t1 <- D[91].N[0].t0 -> err '' (0.4 s)
+  FACT  connect #23289->#25649 AFTER node census: 643 rows
+  FACT  connect #23289->#25649 CENSUS DIFF: Node 642 -> 643 ; 1 new uid(s): [(23267, 'Invoke', (-16647, 2135))]
+  FACT  connect #23289->#25649 new #23267 #23267 lives at: {'diagram_index': 91, 'diagram_uid': 23169, 'diagram_class': 'Diagram', 'nodes_index': 2, 'nodes_on_diagram': 3, 'label': 'Invoke Node'}  (92 diagram(s) scanned of 174, 3.2 s)
+  FACT  connect #23289->#25649 new #23267 terminal table of #23267 (Diagram idx 91, Nodes[2], echo 23267): 6 terminal(s)
+  FACT      connect #23289->#25649 new #23267 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #23289->#25649 new #23267 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #23289->#25649 new #23267 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #23289->#25649 new #23267 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #23289->#25649 new #23267 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #23289->#25649 new #23267 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  connect #23289->#25649 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  connect #23289->#25649 purge delete Node #23267 at index 387: gone [23267], error '', census 643 -> 642, still present False (1.29 s)
+  FACT  connect #23289->#25649 AFTER THE PURGE node census: 642 rows
+  FACT  connect #23289->#25649 purge arithmetic: Node 642 -> 643 -> 642
+  METER op     k  11  private 608.6 MB (d +6.0)  handles 46083 (d +54)
+  METER read   k  11  private 612.6 MB (d +4.0)  handles 46082 (d -1)
+  STEPX 11 connect        acts [13] ids ['p_w_elem'] bound {} diff 0
+  METER pre    k  12  private 612.6 MB (d +0.0)  handles 46082 (d +0)
+  FACT  wire_const node census: 642 rows
+  FACT  OP wire_const DigitalNumericConstant[111] #26017 -> Function[123].t4 -> err '' (0.3 s)
+  FACT  connect #26002->#25440 AFTER node census: 642 rows
+  FACT  connect #26002->#25440 CENSUS DIFF: Node 642 -> 642 ; 0 new uid(s): []
+  METER op     k  12  private 612.7 MB (d +0.1)  handles 46082 (d +0)
+  METER read   k  12  private 612.8 MB (d +0.1)  handles 46084 (d +2)
+  STEPX 12 connect        acts [14] ids ['p_w_maxf'] bound {} diff 0
+  METER pre    k  13  private 612.8 MB (d +0.0)  handles 46085 (d +1)
+  FACT  connect_from_wire node census: 642 rows
+  FACT  OP connect_from_wire sink D[90].N[16].t4 <- w26189[0] -> err '' (0.4 s)
+  FACT  connect #26002->#25535 AFTER node census: 643 rows
+  FACT  connect #26002->#25535 CENSUS DIFF: Node 642 -> 643 ; 1 new uid(s): [(23267, 'Invoke', (-16708, 634))]
+  FACT  connect #26002->#25535 new #23267 #23267 lives at: {'diagram_index': 90, 'diagram_uid': 13236, 'diagram_class': 'Diagram', 'nodes_index': 17, 'nodes_on_diagram': 18, 'label': 'Invoke Node'}  (91 diagram(s) scanned of 174, 3.2 s)
+  FACT  connect #26002->#25535 new #23267 terminal table of #23267 (Diagram idx 90, Nodes[17], echo 23267): 6 terminal(s)
+  FACT      connect #26002->#25535 new #23267 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #26002->#25535 new #23267 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #26002->#25535 new #23267 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #26002->#25535 new #23267 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #26002->#25535 new #23267 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #26002->#25535 new #23267 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  connect #26002->#25535 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  connect #26002->#25535 purge delete Node #23267 at index 384: gone [23267], error '', census 643 -> 642, still present False (1.29 s)
+  FACT  connect #26002->#25535 AFTER THE PURGE node census: 642 rows
+  FACT  connect #26002->#25535 purge arithmetic: Node 642 -> 643 -> 642
+  METER op     k  13  private 616.8 MB (d +4.0)  handles 46159 (d +74)
+  METER read   k  13  private 620.9 MB (d +4.1)  handles 46159 (d +0)
+  STEPX 13 connect        acts [15] ids ['p_w_maxw'] bound {} diff 0
+  PASS  E1 every checkpoint's real graph == its simulated step (13 ops)
+  FACT  BINDING obj {-1: 23093, -4: 23148, -7: 23099, -15: 23789, -17: 26017, -19: 26846, -21: 23105, -30: 23118, -39: 23136, -47: 25898, -52: 26131} term {-3: 23249, -5: 23142, -6: 23154, -8: 23289, -9: 23307, -10: 23393, -11: 23408, -12: 23438, -13: 23457, -14: 23468, -16: 23517, -18: 26002, -20: 26843, -22: 25377, -23: 25391, -24: 25409, -25: 25421, -26: 25440, -27: 25458, -28: 25470, -29: 25496, -31: 25508, -32: 25513, -33: 25518, -34: 25522, -35: 25535, -36: 25591, -37: 25608, -38: 25617, -40: 25641, -41: 25649, -42: 25665, -43: 25684, -44: 25697, -45: 25761, -46: 25811, -48: 26088, -49: 26078, -53: 26175, -54: 26144}
+  PASS  TI names tunnel #26131 IndexMode == 1 (plan indexing True), set + read back by index_mode_fix  (1, '')
+  PASS  NV names constant #23789 == Cam_pool00..19 (read_const_value), all distinct, none == 'Cam'  {'cls': 'ArrayConstant', 'value': ('Cam_pool00', 'Cam_pool01', 'Cam_pool02', 'Cam_pool03', 'Cam_pool04', 'Cam_pool05', 'Cam_pool06', 'Cam_pool07', 'Cam_pool08', 'Cam_pool09', 'Cam_pool10', 'Cam_pool11', 'Cam_pool12', 'Cam_pool13', 'Cam_pool14', 'Cam_pool15', 'Cam_pool16', 'Cam_pool17', 'Cam_pool18', 'Cam_pool19'), 'type': {'python': 'tuple', 'n': 20, 'elements': ['str']}, 'echo': 23789, 'err': '', 'route': 'OpConstValueArr_v0'}
+  PASS  RV ring dup #26846 value+type == #13245's (0, {'python': 'int', 'representation': 6})  ({'cls': 'RingConstant', 'value': 0, 'type': {'python': 'int', 'representation': 6}, 'echo': 13245, 'err': '', 'route': 'OpConstValueRing_v0'}, {'cls': 'RingConstant', 'value': 0, 'type': {'python': 'int', 'representation': 6}, 'echo': 26846, 'err': '', 'route': 'OpConstValueRing_v0'})
+  PASS  MX I32 #26017 == 20 (read_num text '20')  {'uid': 26017, 'text': '20', 'repr': 3, 'hex': '26008000000000010005000300000100000000001400000000', 'wire': 26189, 'err': ''}
+  PASS  D the end adds the simulated 7 new wire(s) and loses none  {'new': [25835, 25878, 26084, 26114, 26155, 26189, 26217], 'lost': []}
+  PASS  TD every base terminal keeps its wire uid; only w14741 gains ['QF1.element data type', 'QW1.element data type']  {'changed': [], 'gain': [(23105, 'element data type'), (23118, 'element data type')], 'want': [(23105, 'element data type'), (23118, 'element data type')]}
+  PASS  FU base frame diagrams all kept; exactly ONE new frame = the For body #23169  [23169]
+  FACT  ExecState [after all rows (ExecState 0 expected: R2 is broken by design)] scratch_c119_pool_20260928_135047.vi = 0
+  FACT  CDIFF added computation nodes [(9996, 'Function'), (10171, 'Comparison'), (23035, 'Comparison'), (23042, 'Comparison'), (23073, 'DiagramTerminal'), (23099, 'SubVI'), (23105, 'Function'), (23118, 'Function'), (23136, 'Function'), (23225, 'DiagramTerminal'), (23249, 'DiagramTerminal'), (23444, 'DiagramTerminal'), (23459, 'Function'), (23541, 'ControlTerminal'), (23576, 'ControlTerminal'), (23789, 'ArrayConstant'), (23844, 'Function'), (23874, 'DigitalNumericConstant'), (25557, 'ControlTerminal'), (25573, 'ControlTerminal')]
+  PASS  PB frame-keyed cdiff(S1, real end) == R2's 16 rows and the plan's 11 open (node, term) pairs (FATAL, before save)  {'extra': [], 'missing': []}
+  FACT  CENSUS after QRT POOL scratch_c119_pool_20260928_135047.vi: {'Diagram': 174, 'WhileLoop': 6, 'SubVI': 98, 'Wire': 1941, 'LoopTunnel': 140, 'Local': 12, 'ControlTerminal': 118, 'Node': 642}
+  FACT  PH handles RECORDED: post-open 45598 -> before-save 46282
+
+---------- [SAVE] scratch_c119_pool_20260928_135047.vi
+  FACT  ExecState [before the save] scratch_c119_pool_20260928_135047.vi = 0
+  FACT  SAVE ROUTE = gui_save, the APPROVED broken-intermediate route (CLAUDE.md split-rule 6; evidence "user 2026-09-22 broken-intermediate save"). The artefact is BROKEN BY DESIGN and is NEVER RUN (34(f)).
+  PASS  S1 the save returned without raising (gui_save route)
+  FACT  SAVED ARTEFACT: scratch_c119_pool_20260928_135047.vi md5 cdaa9485b87e0ff1755466917fe445ca size 308993 B; version bytes [0, 38]
+  PASS  S2 the artefact is on disk and non-empty  308993 B
+  FACT  S3 COLD re-open check SKIPPED BY RULE: ExecState was 0, and a broken-saved VI is never cold-loaded headless (recompile spin).
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  cdaa9485b87e0ff1755466917fe445ca
+
+---------- [H] HYGIENE
+  FACT  gscript ref_counts: {'opened': 9, 'closed': 9, 'live': 0, 'cached_op_vis': 0}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 9, 'closed': 9, 'live': 0, 'cached_op_vis': 0}
+  FACT  LabVIEW handle count AFTER the work: 34133
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 7dac9f04ff4b65fa517e8e12f4bef5f3 / after 7dac9f04ff4b65fa517e8e12f4bef5f3
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: ['scratch_c119_pool_20260928_135047.vi']  (removed: [])
+  PASS  H6 the files left on disk == ['scratch_c119_pool_20260928_135047.vi'] and nothing was removed  added ['scratch_c119_pool_20260928_135047.vi'] removed []
+  FACT  LabVIEW handle count at exit: 34133
+
+====================================================================================================
+=== GATES: 21 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\stage_d1_qrt_pool_scratch.json   elapsed 514.5 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":21,"fail":0},"first_fail":null,"artefacts":[{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c119_pool_20260928_135047.vi","md5":"cdaa9485b87e0ff1755466917fe445ca"}]}
+LabVIEW gone at exit: True
+BGRUN END rc=0 after 519s

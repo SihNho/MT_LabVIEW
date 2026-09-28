@@ -1,0 +1,75 @@
+{
+ "schema": "task/1",
+ "id": "119-2",
+ "kind": "build",
+ "goal": "POOL P2 OFFLINE per PD234: plan_qrt_pool.json on saved R2 graph (<=15 rows, stagesim FINAL, new Error List items predicted), stage_d1_qrt_pool.py <=120 lines, dry+prerun+prior-art",
+ "why": "pipeline prep beside LabVIEW card 119-1 (P1 scratch verify); the launch card then only has scratch run + pin + ONE launch. Routes to copy are the ones diag_c118_p1b.py measured (8 of 9 creates on the R2 copy, result_118-3) plus 118-4's ArrayConstant exception",
+ "inputs": [
+  {"path": "tools/bench/graph_l2r2_saved_20260928.json", "md5": "c6356fcde059e84b4d966d8fc47e25e8"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_r2_20260928_110756.vi", "md5": "7dac9f04ff4b65fa517e8e12f4bef5f3"},
+  {"path": "tools/bench/diag_c118_p1b.py", "md5": "2cf01095366d331e92fd623741f961a1"},
+  {"path": "tools/bench/diag_c118_p1b_plan.json", "md5": "85c858583bdf6d473f30d2308f036c73"},
+  {"path": "tools/bench/errorlist_expected_D1_l2_r2_20260928_110756.json", "md5": "7efc63b4e29519e304a71db770010939"},
+  {"path": "tools/bench/cards/result_118-3.json"},
+  {"path": "tools/bench/cards/result_118-4.json"},
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "94566c25fe85f2e512e8bcdbd5bee67c"},
+  {"path": "docs/stage2-assembly-step-c.md", "md5": "1c0be30d1bf6f17df2321ad579772467"}
+ ],
+ "requires": [
+  {"kind": "verb", "name": "read_const_value", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "create_primitive_nested", "where": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/prior_art_review.py"}
+ ],
+ "pass": [
+  "P2a plan_qrt_pool.json base = saved R2 (md5 7dac9f04, not provisional); rows <= 15; PD234 rows + diag_c118_p1b's measured routes; stagesim FINAL",
+  "P2b predicted end: cdiff == R2's 16 rows; only new objects' terminals change (+ PD234(d) donor branch only if listed)",
+  "P2c plan lists the PREDICTED new Error List items (pool's unwired outputs, PD234(e)/(g)), count and per item, for the launch card's pin",
+  "P2d plan gates: ring dup value+Representation == #13245 and names == Cam_pool00..19 (read_const_value); tunnel auto-indexed; Obtain max 20",
+  "P2e stage_d1_qrt_pool.py <= 120 lines on stagekit, rows only from the plan; dry PASS; stage_prerun --prerun PASS (X-checks listed)",
+  "P2f prior_art_review.py on the plan answered, disposition annotated under '## What was done with it'"
+ ],
+ "outputs": [
+  "tools/bench/plan_qrt_pool.json",
+  "tools/recipes/stage_d1_qrt_pool.py",
+  "tools/bench/cards/result_119-2.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_qrt_pool*",
+   "tools/recipes/stage_d1_qrt_pool*",
+   "tools/bench/sim/**",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/priorart*",
+   "tools/bench/cards/result_119-2.json",
+   "tools/bench/cards/requires_119-2.json",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "PD234(a)-(k) are decided: apply them; do not re-open them",
+  "no LabVIEW, no COM; offline only (stagesim, dry, prerun)",
+  "do not edit gscript.py / stagexec.py / stagesim.py - card 119-1 may touch them; a tool gap -> BLOCKED with the gap named",
+  "rule 1a: additions only; O6 (timeouts, error merge) and O7 (Release/stop) not built; PD234-open -> BLOCKED",
+  "rows <= 15 (not a proven pattern); recipe <= 120 lines; row content only from the plan file",
+  "gate refusal -> BLOCKED, or tools/gate_fp.py log if false positive; never an exempt route",
+  "facts <=10 file:line; OPEN <=3"
+ ],
+ "advances": ["M3", "R1"]
+}

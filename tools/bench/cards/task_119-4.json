@@ -1,0 +1,91 @@
+{
+ "schema": "task/1",
+ "id": "119-4",
+ "kind": "build",
+ "goal": "POOL launch per PD235: stageplan data_stream field + mark Obtain rows, re-sim + prerun PASS; scratch run on R2 copy pins Error List; ONE launch -> claudeDev D1_qrt_pool_<ts>.vi + expected Error List",
+ "why": "119-1 P1 PASS, 119-3 plan FINAL + dry + prior-art novel; only prerun X8 (schema lacks data_stream) stands between the plan and the launch. PD235(e) classifies Q_free/Q_work as data streams",
+ "inputs": [
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_r2_20260928_110756.vi", "md5": "7dac9f04ff4b65fa517e8e12f4bef5f3"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorPool_v0.vi", "md5": "fac6e4ab0fc4f7513d1a98df31e1f4e8"},
+  {"path": "tools/bench/plan_qrt_pool.json", "md5": "4eeccdd7d82bca85199eaa2f0e4b455e"},
+  {"path": "tools/recipes/stage_d1_qrt_pool.py", "md5": "af3edc8379871e051409d0aa4d8e38bc"},
+  {"path": "tools/bench/plan_qrt_pool_pred.json", "md5": "60341097ccd61b0b3005527ec73f7381"},
+  {"path": "docs/protocol/stageplan.json", "md5": "f70c2328f36f19485dca1b979e66bbe2"},
+  {"path": "tools/bench/errorlist_expected_D1_l2_r2_20260928_110756.json", "md5": "7efc63b4e29519e304a71db770010939"},
+  {"path": "tools/bench/cards/result_119-1.json"},
+  {"path": "tools/bench/cards/result_119-3.json"},
+  {"path": "archive/peer/2026-09-28-priorart-c119-qrt-pool.md"},
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "129ef9515076c4193f325d2b27c7b51e"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/recipes/stage_d1_qrt_pool.py"},
+  {"kind": "file", "name": "tools/bench/plan_qrt_pool.json"},
+  {"kind": "verb", "name": "read_const_value", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "wire_const", "where": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/errorlist_check.py"}
+ ],
+ "pass": [
+  "L0 stageplan.json gains data_stream (bool) + its reason field as X8 reads them (stage_prerun.py:1000); plan Obtain rows marked true citing PD235(e); protocol selftests pass",
+  "L1 re-sim FINAL (15 rows, cdiff == R2's 16); recipe dry PASS; stage_prerun --prerun PASS incl. X8; prior-art unchanged or re-answered if recipe sha changed",
+  "L2 scratch run of the recipe on an R2 byte copy PASS; its Error List read and the new-item count PINNED (vs plan prediction 0) before any launch",
+  "L3 ONE launch saves claudeDev D1_qrt_pool_<ts>.vi: all recipe gates PASS (names + ring dup via read_const_value in the bed, tunnel read-back, Obtain max 20)",
+  "L4 cdiff == R2's 16 rows; only new objects' terminals change (+ w14741 donor branch as planned); handles +-100; R2 md5 unchanged",
+  "L5 full Error List read of the saved file == R2's 53 + the pinned new items; errorlist_expected_D1_qrt_pool_<ts>.json written and reverdicts OK; LabVIEW gone"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_qrt_pool_*.vi",
+  "tools/bench/errorlist_expected_D1_qrt_pool_*.json",
+  "tools/bench/cards/result_119-4.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_qrt_pool_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c119*",
+   "docs/protocol/stageplan.json",
+   "tools/bench/plan_qrt_pool*",
+   "tools/recipes/stage_d1_qrt_pool*",
+   "tools/bench/sim/**",
+   "tools/bench/selftest_protocol*",
+   "tools/bench/errorlist_*",
+   "tools/bench/graph_qrt_pool*",
+   "tools/bench/build_d1_qrt_pool*",
+   "tools/bench/stage_d1_qrt_pool*",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/stop_records.json",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/priorart*",
+   "tools/bench/cards/result_119-4.json",
+   "tools/bench/cards/requires_119-4.json",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "tools/bench/INDEX.md",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 90},
+ "rules": [
+  "PD234 + PD235(a)-(f) are decided: apply them; do not re-open them",
+  "no VI is run; values are read with read_const_value; R2 never edited or saved (byte copies only)",
+  "constant-sourced wires via stagexec const route or wire_const, never gscript.wire (PD235(b))",
+  "keep the explicit set-indexing row + read-back (PD235(c)); do not change stagexec.py",
+  "no launch before the scratch run PASSes and the Error List count is pinned; one launch only",
+  "rule 1a: additions only; O6/O7 not built; PD234-open -> BLOCKED",
+  "failed prediction -> hypothesis peer; failure budget counts every rc!=0 run",
+  "launch: py tools/bgrun.py --material --max-min N -- ...; no env prefixes; hold to BGRUN END",
+  "gate refusal -> BLOCKED, or tools/gate_fp.py log if false positive; never an exempt route",
+  "facts <=10 file:line; OPEN <=3"
+ ],
+ "advances": ["M3", "R1"]
+}

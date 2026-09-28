@@ -1,0 +1,812 @@
+{
+ "schema": "stageplan/1",
+ "stage": "qrt_pool",
+ "goal": "QRT POOL (PD234(a)-(k), card 119-2) on the SAVED R2 bed: Obtain Q_free + Q_work (max 20, typed by #13938.New Image) + For loop (N unwired) auto-indexing Cam_pool00..19 into ONE IMAQ Create (Image Type = duplicate of #13245) + ONE Enqueue(Q_free). Additions only; one listed existing-net change = PD234(d) branch of w14741. Outputs unwired (PD234(e)); no Release/timeouts (O6/O7).",
+ "base": {
+  "path": "tools/bench/graph_l2r2_saved_20260928.json",
+  "md5": "c6356fcde059e84b4d966d8fc47e25e8"
+ },
+ "context": {
+  "s1_key": "D1_s1_copy"
+ },
+ "actions": [
+  {
+   "op": "create",
+   "id": "p_for",
+   "class": "ForLoop",
+   "diagram": 13236,
+   "as": "PF1",
+   "pos": [
+    60,
+    1500
+   ],
+   "why": "PD234(a)/(b): the pool For loop on #13938's frame diagram 13236 (diag_c118_p1b_plan.json P1-1; measured diag_c118_p1b_r2.log:30-31 For #23093, one body); N stays unwired (PD234(i))"
+  },
+  {
+   "op": "create",
+   "id": "p_imaq",
+   "class": "SubVI",
+   "diagram": "new:PF1.body",
+   "as": "IMQ1",
+   "pos": [
+    80,
+    60
+   ],
+   "subvi_path": "C:\\Program Files\\NI\\LVAddons\\nivisioncommon\\1\\vi.lib\\vision\\Basics.llb\\IMAQ Create",
+   "terminals": [
+    {
+     "name": "New Image",
+     "is_source": true
+    },
+    {
+     "name": "Border Size",
+     "is_source": false
+    },
+    {
+     "name": "Image Name",
+     "is_source": false
+    },
+    {
+     "name": "error out",
+     "is_source": true
+    },
+    {
+     "name": "",
+     "is_source": false
+    },
+    {
+     "name": "Image Type",
+     "is_source": false
+    },
+    {
+     "name": "error in (no error)",
+     "is_source": false
+    }
+   ],
+   "why": "PD234(a): ONE IMAQ Create in the For body (diag P1-2, landed diag_c118_p1b_r2.log:32,44 SubVI #23096); terminal list = #13938's 7 rows in graph_l2r2_saved_20260928.json (same callee)"
+  },
+  {
+   "op": "create",
+   "id": "p_names",
+   "class": "ArrayConstant",
+   "diagram": 13236,
+   "as": "NM1",
+   "pos": [
+    40,
+    1500
+   ],
+   "prim": "pool_names",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorPool_v0.vi",
+    "uid": 101
+   },
+   "terminals": [
+    {
+     "name": "",
+     "is_source": true
+    }
+   ],
+   "why": "PD234(h)/(k): String[20] Cam_pool00..19 copied from the donor (#101 read == Cam_pool00..19, diag_c118_r1v.log:38-39); ArrayConstant copy = array + element, one terminal row (gscript.py:4464-4469; an element has no row: graph #6059/#6086)"
+  },
+  {
+   "op": "create",
+   "id": "p_i32",
+   "class": "DigitalNumericConstant",
+   "diagram": 13236,
+   "as": "C20",
+   "pos": [
+    40,
+    1600
+   ],
+   "prim": "i32_20",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorPool_v0.vi",
+    "uid": 214
+   },
+   "terminals": [
+    {
+     "name": "",
+     "is_source": true
+    }
+   ],
+   "why": "PD234(a) bound 20: ONE I32 20 (donor #214, diag_c118_p1b_r2.log:11; landed :36) feeds BOTH Obtain max sizes (one constant instead of the diag's two keeps the stage at 15 rows)"
+  },
+  {
+   "op": "create",
+   "id": "p_ring",
+   "class": "RingConstant",
+   "diagram": "new:PF1.body",
+   "as": "RG1",
+   "pos": [
+    20,
+    120
+   ],
+   "prim": "ring_dup",
+   "donor": {
+    "donor": "$work",
+    "uid": 13245
+   },
+   "terminals": [
+    {
+     "name": "",
+     "is_source": true
+    }
+   ],
+   "why": "PD234(c)/(h): Image Type = a DUPLICATE of #13245 (never a branch, PD234(d)); landed diag_c118_p1b_r2.log:40; gate = value + Representation == #13245's (PD234(k)(2))"
+  },
+  {
+   "op": "create",
+   "id": "p_qfree",
+   "class": "Function",
+   "diagram": 13236,
+   "as": "QF1",
+   "pos": [
+    200,
+    1500
+   ],
+   "queue_kind": "obtain",
+   "data_stream": true,
+   "src": {
+    "uid": 13938,
+    "term_uid": 13941
+   },
+   "src_into": "element data type",
+   "terminals": [
+    {
+     "name": "name (unnamed)",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "element data type",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "create if not found? (T)",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "error in (no error)",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "max queue size (-1, unlimited)",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "queue out",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "created new?",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "error out",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    }
+   ],
+   "why": "PD234(a)/(d): Obtain Q_free typed from #13938.New Image (w14741 BRANCHED - the one listed existing-net change); terminal names diag_queue_donor2.log:62, NAMES.md:909; landed diag_c118_p1b_r2.log:41. DATA stream (PD235(e), CLAUDE.md 1c''): image buffers handed between loops, split plan :2139/:2142"
+  },
+  {
+   "op": "create",
+   "id": "p_qwork",
+   "class": "Function",
+   "diagram": 13236,
+   "as": "QW1",
+   "pos": [
+    200,
+    1650
+   ],
+   "queue_kind": "obtain",
+   "data_stream": true,
+   "src": {
+    "uid": 13938,
+    "term_uid": 13941
+   },
+   "src_into": "element data type",
+   "terminals": [
+    {
+     "name": "name (unnamed)",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "element data type",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "create if not found? (T)",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "error in (no error)",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "max queue size (-1, unlimited)",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "queue out",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "created new?",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "error out",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    }
+   ],
+   "why": "PD234(a)/(d): Obtain Q_work, same type branch; landed diag_c118_p1b_r2.log:42. Its queue out stays unwired here (QRT-W). DATA stream (PD235(e), CLAUDE.md 1c''): image buffers handed between loops, split plan :2139/:2142"
+  },
+  {
+   "op": "create",
+   "id": "p_enq",
+   "class": "Function",
+   "diagram": "new:PF1.body",
+   "as": "ENQ1",
+   "pos": [
+    240,
+    60
+   ],
+   "queue_kind": "enqueue",
+   "data_stream": true,
+   "src": "new:QF1.queue out",
+   "src_into": "queue",
+   "terminals": [
+    {
+     "name": "queue",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "element",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "timeout in ms (-1)",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "error in (no error)",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "queue out",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "timed out?",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "error out",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    }
+   ],
+   "why": "PD234(a)/(i): Enqueue in the For body from Obtain(Q_free).queue out on the parent; the creator makes the non-indexed LoopTunnel (stagexec.py:2053-2075, stagesim.py:1116-1133; landed diag_c118_p1b_r2.log:43-44 #25842); timeout unwired = -1 (NAMES.md:993-994). Q_free DATA stream (PD235(e), 1c''), split plan :2139/:2142"
+  },
+  {
+   "op": "tunnel",
+   "id": "p_tun",
+   "loop": "new:PF1",
+   "body": "new:PF1.body",
+   "parent": 13236,
+   "dir": "in",
+   "as": "TN1",
+   "indexing": true,
+   "why": "PD234(i): the names enter the For loop through an AUTO-INDEXED tunnel (step C shape, stage2-assembly-step-c.md:19); a non-indexed String[] is a FAIL of the route"
+  },
+  {
+   "op": "wire",
+   "id": "p_w_names",
+   "src": "new:NM1.value",
+   "dst": "new:TN1.outer",
+   "why": "names -> tunnel outer (frame 13236)"
+  },
+  {
+   "op": "wire",
+   "id": "p_w_name_in",
+   "src": "new:TN1.inner",
+   "dst": "new:IMQ1.Image Name",
+   "why": "tunnel inner (indexed element) -> IMAQ Create 'Image Name'"
+  },
+  {
+   "op": "wire",
+   "id": "p_w_type",
+   "src": "new:RG1.value",
+   "dst": "new:IMQ1.Image Type",
+   "why": "PD234(c): Image Type from the ring duplicate, same body"
+  },
+  {
+   "op": "wire",
+   "id": "p_w_elem",
+   "src": "new:IMQ1.New Image",
+   "dst": "new:ENQ1.element",
+   "why": "PD234(a): Enqueue(Q_free, New Image); same body (diag P1-8b)"
+  },
+  {
+   "op": "wire",
+   "id": "p_w_maxf",
+   "src": "new:C20.value",
+   "dst": "new:QF1.max queue size (-1, unlimited)",
+   "why": "PD234(a): Q_free bound 20 (diag P1-8c)"
+  },
+  {
+   "op": "wire",
+   "id": "p_w_maxw",
+   "src": "new:C20.value",
+   "dst": "new:QW1.max queue size (-1, unlimited)",
+   "why": "PD234(a): Q_work bound 20 - branch of the same I32 20 (diag P1-8d used a second constant)"
+  }
+ ],
+ "open_rows": [
+  {
+   "node": 376,
+   "term": "current frame data array in",
+   "why": "carried from R2 (plan_l2r2_in.json): QRT (PD175)"
+  },
+  {
+   "node": 376,
+   "term": "frame index",
+   "why": "carried from R2: QRT (PD175)"
+  },
+  {
+   "node": 2626,
+   "term": "array",
+   "why": "carried from R2: licensed rename (plan_l2b1_licence.json)"
+  },
+  {
+   "node": 2626,
+   "term": "element",
+   "why": "carried from R2: QRT (PD182(c)/D5)"
+  },
+  {
+   "node": 5058,
+   "term": "Image In",
+   "why": "carried from R2: QRT (PD177(e))"
+  },
+  {
+   "node": 8634,
+   "term": "index (col)",
+   "why": "carried from R2: QRT (D5)"
+  },
+  {
+   "node": 11261,
+   "term": "array",
+   "why": "carried from R2: PD227(d)"
+  },
+  {
+   "node": 11261,
+   "term": "element",
+   "why": "carried from R2: QRT (D5)"
+  },
+  {
+   "node": 28083,
+   "term": "Magnet position",
+   "why": "carried from R2: QRT (D5)"
+  },
+  {
+   "node": 29625,
+   "term": "index (col)",
+   "why": "carried from R2: QRT (D5)"
+  },
+  {
+   "node": 29973,
+   "term": "element",
+   "why": "carried from R2: QRT (D5)"
+  }
+ ],
+ "final": true,
+ "finalized": {
+  "base": {
+   "path": "tools/bench/graph_l2r2_saved_20260928.json",
+   "md5": "c6356fcde059e84b4d966d8fc47e25e8"
+  },
+  "plan_in": {
+   "path": "tools/bench/plan_qrt_pool_in.json",
+   "md5": "c6326771e12af5f696b841a411de2968"
+  },
+  "last_step": {
+   "path": "tools/bench/sim/qrt_pool/step_15_wire.json",
+   "md5": "c50400d2635e5d69755749210815dc97"
+  },
+  "summary": {
+   "path": "tools/bench/sim/qrt_pool/summary.json",
+   "md5": "2c5da2da8f4a9904f0f607652dd43b1a"
+  },
+  "end_cdiff_rows": [
+   "11261|Terminal|array|0",
+   "11261|Terminal|element|0",
+   "2626|Terminal|array|0",
+   "2626|Terminal|array|1",
+   "2626|Terminal|array|2",
+   "2626|Terminal|array|3",
+   "2626|Terminal|element|0",
+   "2626|Terminal|element|1",
+   "2626|Terminal|element|2",
+   "28083|Terminal|Magnet position|0",
+   "29625|Terminal|index (col)|0",
+   "29973|Terminal|element|1",
+   "376|Terminal|current frame data array in|0",
+   "376|Terminal|frame index|0",
+   "5058|Terminal|Image In|0",
+   "8634|Terminal|index (col)|0"
+  ],
+  "failed": null,
+  "first_divergent": {
+   "n": 0,
+   "op": "base",
+   "id": null,
+   "rows_from_here": 16
+  },
+  "open_rows": [
+   [
+    376,
+    "current frame data array in"
+   ],
+   [
+    376,
+    "frame index"
+   ],
+   [
+    2626,
+    "array"
+   ],
+   [
+    2626,
+    "element"
+   ],
+   [
+    5058,
+    "Image In"
+   ],
+   [
+    8634,
+    "index (col)"
+   ],
+   [
+    11261,
+    "array"
+   ],
+   [
+    11261,
+    "element"
+   ],
+   [
+    28083,
+    "Magnet position"
+   ],
+   [
+    29625,
+    "index (col)"
+   ],
+   [
+    29973,
+    "element"
+   ]
+  ],
+  "open_rows_match": true,
+  "open_rows_match_legacy": true,
+  "open_rows_classed": {
+   "ok": false,
+   "want": [],
+   "c4_n": 0,
+   "c4_keys": 0,
+   "c4_bad": [],
+   "unclassed": [
+    [
+     376,
+     "current frame data array in"
+    ],
+    [
+     376,
+     "frame index"
+    ],
+    [
+     2626,
+     "array"
+    ],
+    [
+     2626,
+     "element"
+    ],
+    [
+     5058,
+     "Image In"
+    ],
+    [
+     8634,
+     "index (col)"
+    ],
+    [
+     11261,
+     "array"
+    ],
+    [
+     11261,
+     "element"
+    ],
+    [
+     28083,
+     "Magnet position"
+    ],
+    [
+     29625,
+     "index (col)"
+    ],
+    [
+     29973,
+     "element"
+    ]
+   ]
+  },
+  "cdiff_inputs": {
+   "labels": "node_labels_default",
+   "labels_n": 626,
+   "fs_pairs": "state",
+   "fs_pairs_n": 576
+  },
+  "step_files": [
+   {
+    "n": 0,
+    "op": "base",
+    "path": "tools/bench/sim/qrt_pool/step_00_base.json",
+    "md5": "d9761d2a4674d75f69069c06a584412b"
+   },
+   {
+    "n": 1,
+    "op": "create",
+    "path": "tools/bench/sim/qrt_pool/step_01_create.json",
+    "md5": "45e14ece4ee79060c62d5a41a866c5de"
+   },
+   {
+    "n": 2,
+    "op": "create",
+    "path": "tools/bench/sim/qrt_pool/step_02_create.json",
+    "md5": "abc48e87eb4ef922b714e4a3a20912dd"
+   },
+   {
+    "n": 3,
+    "op": "create",
+    "path": "tools/bench/sim/qrt_pool/step_03_create.json",
+    "md5": "83a06c24e736778efddc1a4bd7a49795"
+   },
+   {
+    "n": 4,
+    "op": "create",
+    "path": "tools/bench/sim/qrt_pool/step_04_create.json",
+    "md5": "fe4eb9a51acf457b3eb31acee9d9046c"
+   },
+   {
+    "n": 5,
+    "op": "create",
+    "path": "tools/bench/sim/qrt_pool/step_05_create.json",
+    "md5": "024df668bf7e03859a3b0d1332bedd75"
+   },
+   {
+    "n": 6,
+    "op": "create",
+    "path": "tools/bench/sim/qrt_pool/step_06_create.json",
+    "md5": "c9b5d3fe81dd105a8269f61aa000180e"
+   },
+   {
+    "n": 7,
+    "op": "create",
+    "path": "tools/bench/sim/qrt_pool/step_07_create.json",
+    "md5": "5fb358daa49b7b96eda00d84d1a4c436"
+   },
+   {
+    "n": 8,
+    "op": "create",
+    "path": "tools/bench/sim/qrt_pool/step_08_create.json",
+    "md5": "a7d7a2d68354d1522130824f36aa54f0"
+   },
+   {
+    "n": 9,
+    "op": "tunnel",
+    "path": "tools/bench/sim/qrt_pool/step_09_tunnel.json",
+    "md5": "8a610903af11089cfb366529056cd6f9"
+   },
+   {
+    "n": 10,
+    "op": "wire",
+    "path": "tools/bench/sim/qrt_pool/step_10_wire.json",
+    "md5": "ab4a1156a540e770a9789466eb1822df"
+   },
+   {
+    "n": 11,
+    "op": "wire",
+    "path": "tools/bench/sim/qrt_pool/step_11_wire.json",
+    "md5": "5b35db85a0a4f3fbc3eaa91a87c74685"
+   },
+   {
+    "n": 12,
+    "op": "wire",
+    "path": "tools/bench/sim/qrt_pool/step_12_wire.json",
+    "md5": "dbd4a39a012a36a4266360c0f758988d"
+   },
+   {
+    "n": 13,
+    "op": "wire",
+    "path": "tools/bench/sim/qrt_pool/step_13_wire.json",
+    "md5": "ffc97a8b6fa7aa80f7611f1f5c0c20e9"
+   },
+   {
+    "n": 14,
+    "op": "wire",
+    "path": "tools/bench/sim/qrt_pool/step_14_wire.json",
+    "md5": "e1e5c1522772e6ea4b41725ee031bd4a"
+   },
+   {
+    "n": 15,
+    "op": "wire",
+    "path": "tools/bench/sim/qrt_pool/step_15_wire.json",
+    "md5": "c50400d2635e5d69755749210815dc97"
+   }
+  ],
+  "undecided": 0,
+  "at": "2026-09-28 13:49:02",
+  "route_check": {
+   "status": "PASS",
+   "first_fail": null,
+   "rows": [
+    {
+     "k": 1,
+     "op": "create",
+     "ids": [
+      "p_for"
+     ],
+     "route": "for",
+     "how": null,
+     "unroutable": null
+    },
+    {
+     "k": 2,
+     "op": "create",
+     "ids": [
+      "p_imaq"
+     ],
+     "route": "subvi",
+     "how": null,
+     "unroutable": null
+    },
+    {
+     "k": 3,
+     "op": "create",
+     "ids": [
+      "p_names"
+     ],
+     "route": "primitive",
+     "how": null,
+     "unroutable": null
+    },
+    {
+     "k": 4,
+     "op": "create",
+     "ids": [
+      "p_i32"
+     ],
+     "route": "primitive",
+     "how": null,
+     "unroutable": null
+    },
+    {
+     "k": 5,
+     "op": "create",
+     "ids": [
+      "p_ring"
+     ],
+     "route": "primitive",
+     "how": null,
+     "unroutable": null
+    },
+    {
+     "k": 6,
+     "op": "create",
+     "ids": [
+      "p_qfree"
+     ],
+     "route": "queue",
+     "how": "order-proof",
+     "unroutable": null
+    },
+    {
+     "k": 7,
+     "op": "create",
+     "ids": [
+      "p_qwork"
+     ],
+     "route": "queue",
+     "how": "cached index (proved by its wire uid while wired)",
+     "unroutable": null
+    },
+    {
+     "k": 8,
+     "op": "create",
+     "ids": [
+      "p_enq"
+     ],
+     "route": "queue",
+     "how": "order-proof",
+     "unroutable": null
+    },
+    {
+     "k": 9,
+     "op": "tunnel",
+     "ids": [
+      "p_tun",
+      "p_w_names",
+      "p_w_name_in"
+     ],
+     "route": "const",
+     "how": "order-proof",
+     "unroutable": null
+    },
+    {
+     "k": 10,
+     "op": "connect",
+     "ids": [
+      "p_w_type"
+     ],
+     "route": "const",
+     "how": "order-proof",
+     "unroutable": null
+    },
+    {
+     "k": 11,
+     "op": "connect",
+     "ids": [
+      "p_w_elem"
+     ],
+     "route": "nested",
+     "how": "order-proof",
+     "unroutable": null
+    },
+    {
+     "k": 12,
+     "op": "connect",
+     "ids": [
+      "p_w_maxf"
+     ],
+     "route": "const",
+     "how": "order-proof",
+     "unroutable": null
+    },
+    {
+     "k": 13,
+     "op": "connect",
+     "ids": [
+      "p_w_maxw"
+     ],
+     "route": "cfw",
+     "how": "order-proof",
+     "unroutable": null
+    }
+   ]
+  }
+ }
+}

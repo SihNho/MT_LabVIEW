@@ -1,0 +1,45 @@
+BGRUN START 2026-09-28 13:35:32 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/bench/diag_c118_p1b.py
+BGRUN PID 17784
+  PASS  K0 donor DonorPool_v0.vi md5 == fac6e4ab0fc4f7513d1a98df31e1f4e8 (byte copy of the 118-3 donor)  fac6e4ab0fc4f7513d1a98df31e1f4e8
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 7dac9f04ff4b65fa517e8e12f4bef5f3  got 7dac9f04ff4b65fa517e8e12f4bef5f3
+  PASS  DRY graph JSON for input md5 7dac9f04ff4b65fa517e8e12f4bef5f3  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_l2r2_saved_20260928.json
+  FACT  DONOR #101 {"dry": "read donor names"}
+  FACT  CREATE for: {'ret': <dry:g.loop_in>, 'err': ''}
+  UNVERIFIED  B1a For loop #<dry:g.loop_in> on #13236 with ONE body []  (dry: read stub data)
+  FACT  CREATE imaq: {'ret': <dry:g.drop_subvi>, 'err': ''}
+  FACT  CREATE names: {'ret': <dry:g.create_primitive_nested>, 'err': ''}
+  FACT  CREATE c20a: {'ret': <dry:g.create_primitive_nested>, 'err': ''}
+  FACT  CREATE c20b: {'ret': <dry:g.create_primitive_nested>, 'err': ''}
+  FACT  CREATE ring: {'ret': <dry:g.create_primitive_nested>, 'err': ''}
+  FACT  CREATE obt_free: {'ret': <dry:g.queue_node>, 'err': ''}
+  FACT  CREATE obt_work: {'ret': <dry:g.queue_node>, 'err': ''}
+  FACT  CREATE enq: {'ret': <dry:g.queue_node>, 'err': ''}
+  FACT  NEW OBJECTS by class {'ForLoop': [], 'SubVI': [], 'Function': [], 'LoopTunnel': []}; IMAQ #0; body #<dry:g.loop_in>
+  PASS  B1 every create returned without error  {'for': '', 'imaq': '', 'names': '', 'c20a': '', 'c20b': '', 'ring': '', 'obt_free': '', 'obt_work': '', 'enq': ''}
+  UNVERIFIED  B1b census: ForLoop +1, SubVI +1, Function +3 (2 Obtain + Enqueue), LoopTunnel +1 (the Enqueue's auto tunnel)  (dry: after mutation g.drop_subvi)
+  FACT  NAMES COPY #<dry:g.create_primitive_nested> {"dry": "read names copy"}
+  UNVERIFIED  V1 names copy #<dry:g.create_primitive_nested> IN THE BED: read_const_value == Cam_pool00..19 (PD234(k) L4), ArrayConstant, no error  (dry: after mutation g.drop_subvi)
+  FACT  RING #13245 {"dry": "read ring"} | dup {"dry": "read ring dup"}
+  UNVERIFIED  B2 ring dup value + Representation == #13245's (read_const_value, PD234(k)(2)); #13245 unmoved on its old wire  (dry: after mutation g.drop_subvi)
+  UNVERIFIED  B3 both Obtain 'element data type' on #13938.New Image's wire w14741 (PD234(d)); no old row changed its wire  (dry: after mutation g.drop_subvi)
+  UNVERIFIED  B3b Enqueue #<dry:g.queue_node[]> 'queue' wired (wNone) from the NEW LoopTunnel's inner face  (dry: after mutation g.drop_subvi)
+  FACT  wire names -> pool Image Name raised IndexError: list index out of range
+  FACT  OP wire names -> pool Image Name -> err 'IndexError: list index out of range' (0.0 s)
+  UNVERIFIED  T1 the names wire made exactly ONE new LoopTunnel (source terminal None, err 'IndexError: list index out of range')  (dry: after mutation g.drop_subvi)
+  FACT  TUNNEL before {'index_mode': 0, 'in_wires': []} after {'index_mode': 0, 'in_wires': []}
+  FACT  OP wire pool New Image -> Enqueue element -> err '' (0.0 s)
+  FACT  wire c20a -> max queue size raised IndexError: list index out of range
+  FACT  OP wire c20a -> max queue size -> err 'IndexError: list index out of range' (0.0 s)
+  FACT  wire c20b -> max queue size raised IndexError: list index out of range
+  FACT  OP wire c20b -> max queue size -> err 'IndexError: list index out of range' (0.0 s)
+  UNVERIFIED  T2 IndexMode 1 read back on the names tunnel and its inner wire == Image Name's wNone (was mode 0)  (dry: after mutation g.drop_subvi)
+  UNVERIFIED  T3 the new For loop's N (its Tunnel's outer sink on the frame) is UNWIRED  (dry: after mutation g.drop_subvi)
+  UNVERIFIED  W1 pool IMAQ.New Image -> Enqueue.element on one wire (err '')  (dry: after mutation g.drop_subvi)
+  UNVERIFIED  W2 both Obtain 'max queue size' wired from the two I32 20 constants (errs ['IndexError: list index out of range', 'IndexError: list index out of range'])  (dry: after mutation g.drop_subvi)
+  PASS  K donor md5 unchanged after the reads and copies  fac6e4ab0fc4f7513d1a98df31e1f4e8
+
+=== DRY PASS: first_fail=None coverage 88/94 lines, first mutation g.drop_subvi, unverified 11, graph tools/bench/graph_l2r2_saved_20260928.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

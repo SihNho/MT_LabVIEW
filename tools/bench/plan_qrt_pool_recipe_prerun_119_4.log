@@ -1,0 +1,84 @@
+BGRUN START 2026-09-28 13:48:06 limit 5.0 min: py -u tools/stage_prerun.py --prerun tools/recipes/stage_d1_qrt_pool.py
+BGRUN PID 16204
+stage_d1_qrt_pool - card 119-2 (offline prep; run by the next launch card), STAGE QRT POOL (d1-loop12-17-split-plan.md PD234(a)-(k)). INPUT the
+SAVED R2 bed D1_l2_r2_20260928_110756.vi, FRESH LabVIEW -> claudeDev\D1_qrt_pool_<ts>.vi (rule-6 GUI save, ExecState 0 by design, never run).
+ROWS ONLY FROM plan_qrt_pool.json (stagesim FINAL of plan_qrt_pool_in.json); expected values only from plan_qrt_pool_pred.json.
+PRIOR ART (checked before writing): stage_d1_l2a3.py / stage_d1_l2r2.py (Executor + DryPlanBE, PB cdiff, save); diag_c118_p1b.py (the pool's
+creates, 8/9 landed on an R2 copy, diag_c118_p1b_r2.log:30-44); gscript.read_const_value (118-4, gscript.py:4226); diag_c118_p0.read_num (I32);
+LVBackend.index_mode_fix (stagexec.py:2154-2163). No new op. Executor.run calls index_mode_fix for a tunnel op only inside `if lost:`
+(stagexec.py:1559-1563), so gate TI calls it here with the plan's `indexing`.
+PREDICTION: L1 15 actions -> 13 ops == pred; E1 every checkpoint == sim; TI names tunnel IndexMode 1; NV names == Cam_pool00..19; RV ring dup
+value+type == #13245's; MX I32 == 20; D new wires == sim, none lost; TD base terminals keep their wires, only w14741 gains the 2 Obtain sinks;
+FU base frames kept + ONE new body; PB cdiff(S1, end) == R2's 16 rows (FATAL, before save); PS saved, input unchanged.
+    py tools/bgrun.py --material --max-min 45 --log tools/bench/stage_d1_qrt_pool.log -- py -u tools/recipes/stage_d1_qrt_pool.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_qrt_pool_in; base graph md5 == pred == file; bed md5 == pred  ('d5aa54a604b177b0a3de368d6e57782e', {'path': 'tools/bench/graph_l2r2_saved_20260928.json', 'md5': 'c6356fcde059e84b4d966d8fc47e25e8'}, '7dac9f04ff4b65fa517e8e12f4bef5f3')
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 7dac9f04ff4b65fa517e8e12f4bef5f3  got 7dac9f04ff4b65fa517e8e12f4bef5f3
+  PASS  DRY graph JSON for input md5 7dac9f04ff4b65fa517e8e12f4bef5f3  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_l2r2_saved_20260928.json
+  PASS  L1 the 15 actions compile into 13 real ops == pred kinds, each action once  ['create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'tunnel', 'connect', 'connect', 'connect', 'connect']
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 1 touched diagram(s) [13236]: one-side-only Nodes[] entries 0
+  PRIME 0 terminal indexes proved at base; 0 ControlTerminal end(s) by 179(b); unprovable []
+  FACT  OP create [1] -> err '' (0.0 s)
+  STEPX 01 create         acts [1] ids ['p_for'] bound {-1: 10000006, -2: 10000001, -4: 10000003} diff 0
+  FACT  OP create [2] -> err '' (0.0 s)
+  STEPX 02 create         acts [2] ids ['p_imaq'] bound {-7: 10000007} diff 0
+  FACT  OP create [3] -> err '' (0.0 s)
+  STEPX 03 create         acts [3] ids ['p_names'] bound {-15: 10000015} diff 0
+  FACT  OP create [4] -> err '' (0.0 s)
+  STEPX 04 create         acts [4] ids ['p_i32'] bound {-17: 10000017} diff 0
+  FACT  OP create [5] -> err '' (0.0 s)
+  STEPX 05 create         acts [5] ids ['p_ring'] bound {-19: 10000019} diff 0
+  FACT  OP create [6] -> err '' (0.0 s)
+  STEPX 06 create         acts [6] ids ['p_qfree'] bound {-21: 10000021} diff 0
+  FACT  OP create [7] -> err '' (0.0 s)
+  STEPX 07 create         acts [7] ids ['p_qwork'] bound {-30: 10000030} diff 0
+  FACT  OP create [8] -> err '' (0.0 s)
+  STEPX 08 create         acts [8] ids ['p_enq'] bound {-39: 10000040, -47: 10000049} diff 0
+  FACT  OP wire_tunnel [9, 10, 11] -> err '' (0.0 s)
+  STEPX 09 tunnel         acts [9, 10, 11] ids ['p_tun', 'p_w_names', 'p_w_name_in'] bound {-52: 10000054} diff 0
+  FACT  OP wire_connect [12] -> err '' (0.0 s)
+  STEPX 10 connect        acts [12] ids ['p_w_type'] bound {} diff 0
+  FACT  OP wire_connect [13] -> err '' (0.0 s)
+  STEPX 11 connect        acts [13] ids ['p_w_elem'] bound {} diff 0
+  FACT  OP wire_connect [14] -> err '' (0.0 s)
+  STEPX 12 connect        acts [14] ids ['p_w_maxf'] bound {} diff 0
+  FACT  OP wire_connect [15] -> err '' (0.0 s)
+  STEPX 13 connect        acts [15] ids ['p_w_maxw'] bound {} diff 0
+  PASS  E1 every checkpoint's real graph == its simulated step (13 ops)
+  FACT  BINDING obj {-1: 10000006, -4: 10000003, -7: 10000007, -15: 10000015, -17: 10000017, -19: 10000019, -21: 10000021, -30: 10000030, -39: 10000040, -47: 10000049, -52: 10000054} term {-3: 10000002, -5: 10000004, -6: 10000005, -8: 10000008, -9: 10000009, -10: 10000010, -11: 10000011, -12: 10000012, -13: 10000013, -14: 10000014, -16: 10000016, -18: 10000018, -20: 10000020, -22: 10000022, -23: 10000023, -24: 10000024, -25: 10000025, -26: 10000026, -27: 10000027, -28: 10000028, -29: 10000029, -31: 10000031, -32: 10000032, -33: 10000033, -34: 10000034, -35: 10000035, -36: 10000036, -37: 10000037, -38: 10000038, -40: 10000041, -41: 10000043, -42: 10000044, -43: 10000045, -44: 10000046, -45: 10000047, -46: 10000048, -48: 10000050, -49: 10000051, -53: 10000055, -54: 10000056}
+  PASS  TI names tunnel #10000054 IndexMode == 1 (plan indexing True), set + read back by index_mode_fix  (1, '')
+GATE NV/RV/MX NOT RUNNABLE IN DRY: read_const_value / read_num read the live constants (Constant.Value on a COM ref)
+  PASS  D the end adds the simulated 7 new wire(s) and loses none  {'new': [10000039, 10000042, 10000052, 10000053, 10000057, 10000058, 10000059], 'lost': []}
+  PASS  TD every base terminal keeps its wire uid; only w14741 gains ['QF1.element data type', 'QW1.element data type']  {'changed': [], 'gain': [(10000021, 'element data type'), (10000030, 'element data type')], 'want': [(10000021, 'element data type'), (10000030, 'element data type')]}
+  PASS  FU base frame diagrams all kept; exactly ONE new frame = the For body #10000001  [10000001]
+  FACT  ExecState [after all rows (ExecState 0 expected: R2 is broken by design)] D1_qrt_pool_20260928_134807.vi = <dry:g.exec_state>
+  FACT  CDIFF added computation nodes [(9996, 'Function'), (10171, 'Comparison'), (23035, 'Comparison'), (23042, 'Comparison'), (23073, 'DiagramTerminal'), (23225, 'DiagramTerminal'), (23444, 'DiagramTerminal'), (23459, 'Function'), (23541, 'ControlTerminal'), (23576, 'ControlTerminal'), (23844, 'Function'), (23874, 'DigitalNumericConstant'), (25557, 'ControlTerminal'), (25573, 'ControlTerminal'), (10000002, 'DiagramTerminal'), (10000007, 'SubVI'), (10000015, 'ArrayConstant'), (10000017, 'DigitalNumericConstant'), (10000019, 'RingConstant'), (10000021, 'Function')]
+  PASS  PB frame-keyed cdiff(S1, real end) == R2's 16 rows and the plan's 11 open (node, term) pairs (FATAL, before save)  {'extra': [], 'missing': []}
+  FACT  CENSUS after QRT POOL D1_qrt_pool_20260928_134807.vi: {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 92, 'Wire': 1934, 'LoopTunnel': 138, 'Local': 12, 'ControlTerminal': 118, 'Node': 0}
+  FACT  PH handles RECORDED: post-open <dry:bench_prep.labview_handles> -> before-save None
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  dry0dry0dry0dry0dry0dry0dry0dry0
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  PASS  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['tools/bench/plan_qrt_pool.json']
+  PASS  X3 every plan row decided  0 rows + 15 stageplan actions
+  FAIL  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  ["tools/bench/plan_qrt_pool.json: Q action 8 (p_enq): creates a queue/notifier primitive ['queue', 'queue out'] without data_stream: true + why (CLAUDE.md 1c'': control signals between loops are locals)"]
+  PASS  X11 no row wires one Build Array input while a sibling input is an open row (unless pb-licence/1)  1 stageplan(s)
+  PASS  X12 no row names a wire uid an earlier border-crossing connect re-created (connect_from_wire.json:266)  1 stageplan(s), 0 re-created source wire(s), none named later
+  PASS  X13 opmodel conformance: every recorded sample of the plan ops' model files replays in stagesim  3 op(s) ['create', 'tunnel', 'wire']; files {'const.json': 'not-replayed (2)', 'primitive.json': 'not-replayed (2)', 'tunnel.json': 'PASS (2)', 'connect_from_wire.json': 'PASS (2)', 'wire_sr.json': 'not-replayed (2)'}
+  WARN  X13 WARN const.json: 2 sample(s), no replayer for op 'const' (only ['connect_from_wire', 'tunnel', 'delete_object', 'delete_wire', 'remove_bad_wires'])
+  WARN  X13 WARN primitive.json: 2 sample(s), no replayer for op 'primitive' (only ['connect_from_wire', 'tunnel', 'delete_object', 'delete_wire', 'remove_bad_wires'])
+  WARN  X13 WARN wire_sr.json: 2 sample(s), no replayer for op 'wire_sr' (only ['connect_from_wire', 'tunnel', 'delete_object', 'delete_wire', 'remove_bad_wires'])
+  PASS  X4 every end addressable offline (0 ends)  []
+  PASS  X5 wiring ops executed in the dry run == plan wire rows  ops 5 vs plan wire rows 0 + stageplan wiring real ops 5 (covering 6/6 wire actions); delete ops {} vs plan delete rows {}
+  PASS  X6 ast lint: no re-typed uid / terminal name  uids []; names []
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_qrt_pool_20260928_134807.vi; decisions rows NOT dispatched (recipe calls neither run_rows nor from_decision)
+  PASS  X10 predicted LabVIEW private MB < 690.0 (error-2 point; MEMSTOP 700.0) over the ops this run dispatches (UNMEASURED - no covering record)  {'why': 'UNMEASURED: no recorded meter of stage_d1_qrt_pool.py covers ops 1..end (0 record(s))'}
+  WARN  X10 WARN unmeasured: UNMEASURED: no recorded meter of stage_d1_qrt_pool.py covers ops 1..end (0 record(s))
+  INFO  X14 rows 15, budget 15 (proven: no)
+
+=== DRY PASS: first_fail=None coverage 72/83 lines, first mutation Stage._op create, unverified 0, graph tools/bench/graph_l2r2_saved_20260928.json
+=== PRERUN FAIL: 12 pass / 1 fail; first X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector): ["tools/bench/plan_qrt_pool.json: Q action 8 (p_enq): creates a queue/notifier primitive ['queue', 'queue out'] without 
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":12,"fail":1},"first_fail":"X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector): [\"tools/bench/plan_qrt_pool.json: Q action 8 (p_enq): creates a queue/notifier primi [X10 WARN unmeasured]","artefacts":[]}
+BGRUN END rc=1 after 16s

@@ -1,0 +1,26 @@
+{"schema":"result/1","id":"119-2","status":"BLOCKED","gates":{"pass":2,"fail":1},
+"first_fail":"P2a: stagesim refuses plan_qrt_pool_in.json at schema validation (unknown fields donor/subvi_path/queue_kind/src_into); no FINAL plan_qrt_pool.json, so P2e dry/prerun and P2f prior-art not reached",
+"blocked_by":{"device":"tool-gap:docs/protocol/stageplan.json","message":"stageplan/1 action schema (additionalProperties false, docs/protocol/stageplan.json:56-101) lacks donor, subvi_path, queue_kind, src_into - the fields the 118-1/118-3 create routes read (stagexec.py:305-313, :2043-2049). Card may not write docs/protocol."},
+"artefacts":[
+ {"path":"tools/bench/plan_qrt_pool_in.json","md5":"f38a12fb4a03b18ae96dfd2b1dff72be"},
+ {"path":"tools/bench/plan_qrt_pool_pred.json","md5":"60341097ccd61b0b3005527ec73f7381"},
+ {"path":"tools/recipes/stage_d1_qrt_pool.py","md5":"af3edc8379871e051409d0aa4d8e38bc"},
+ {"path":"tools/bench/plan_qrt_pool_probe.log","md5":"4a438ce6534984477f53f07f27cba44c"},
+ {"path":"tools/bench/plan_qrt_pool_sim.log","md5":"42303b58605c2312c96928dfe2be26f0"}],
+"facts":[
+ "GAP: protocol.py validate plan_qrt_pool_in.json -> INVALID $.actions[1] unknown field subvi_path; schema action props docs/protocol/stageplan.json:56-101 have no donor/subvi_path/queue_kind/src_into",
+ "7 of 8 create rows need those fields (plan_qrt_pool_probe.log:3); stagexec.create_route reads them (stagexec.py:305-313) and the primitive route reads donor (stagexec.py:2043-2049)",
+ "Probe, only the 4 fields unvalidated, output in TEMP: stagesim final True, open_rows_match True, 16 cdiff rows = R2's 11 pairs, route check 13/13 PASS, stagexec.dry_run PASS (plan_qrt_pool_probe.log)",
+ "Plan: 15 actions -> 13 ops (8 create, 1 tunnel indexing true, 4 connect), routes for/subvi/primitive x3/queue x3/const/const/nested/const/cfw (plan_qrt_pool_probe.log ROUTE 1-13)",
+ "Rows cap: ONE I32 20 (donor DonorPool_v0 #214) feeds both Obtain max sizes, 2nd wire routes cfw; diag used two constants = 16 rows (diag_c118_p1b.py:64-65)",
+ "stagexec.py:1559-1563: Executor calls index_mode_fix for a tunnel op only inside `if lost:`; recipe gate TI calls LVBackend.index_mode_fix (stagexec.py:2154-2163) itself",
+ "Obtain/Enqueue term_class 'ParameterTerminal' is UNMEASURED (diag_queue_donor2.log:62 has names only); bind_new keys on class+dir+name when classes repeat (stagexec.py:606-614)",
+ "Error List prediction: 0 new items, total 53; 21 unwired pool terminals listed one by one with item 0 (plan_qrt_pool_pred.json errorlist)",
+ "read_const_value has no DigitalNumericConstant route (gscript.py:4222-4223); recipe MX reads the I32 with diag_c118_p0.read_num (diag_c118_p0.py:44-61)",
+ "plan_qrt_pool_sim.log: 2 runs rc=1 on my own plan_in (goal 620>400 chars; alias 'PF' vs ^[A-Za-z]+[0-9]+$), fixed, then the gap; recipe 98 lines, not dry/prerun, no prior-art dispatched"],
+"open":[
+ "Widen stageplan/1 action props (donor object, subvi_path string, queue_kind obtain|enqueue, src_into string) in a tooling card, then stagesim -> plan_qrt_pool.json, dry+prerun, prior-art?",
+ "stagexec.py:1561 index_mode_fix nested under `if lost:` - fix the indent in the tooling card, or keep the recipe's explicit TI call?",
+ "Accept one shared I32 20 constant for both Obtain max sizes (15 rows) instead of the diag's two (16 rows)?"],
+"cost":{"usd":null,"minutes":55,"labview_runs":0},
+"note":"Offline only. Plan_in, prediction and recipe draft are ready; the plan simulates FINAL once the 4 fields validate. Obtain/Enqueue term classes should be taken from 119-1's read before the launch."}

@@ -1,0 +1,75 @@
+{
+ "schema": "task/1",
+ "id": "119-3",
+ "kind": "build",
+ "goal": "Widen stageplan/1 action props (donor, subvi_path, queue_kind, src_into) to what stagexec reads; then plan_qrt_pool_in -> stagesim FINAL plan_qrt_pool.json, dry + prerun + prior-art. Offline",
+ "why": "119-2 BLOCKED on tool-gap docs/protocol/stageplan.json:56-101; its probe already simulated FINAL with only those 4 fields unvalidated. Judgement decided its 3 OPEN items (rules)",
+ "retry_of_card": "119-2",
+ "inputs": [
+  {"path": "tools/bench/cards/result_119-2.json"},
+  {"path": "tools/bench/plan_qrt_pool_in.json", "md5": "f38a12fb4a03b18ae96dfd2b1dff72be"},
+  {"path": "tools/bench/plan_qrt_pool_pred.json", "md5": "60341097ccd61b0b3005527ec73f7381"},
+  {"path": "tools/recipes/stage_d1_qrt_pool.py", "md5": "af3edc8379871e051409d0aa4d8e38bc"},
+  {"path": "tools/bench/plan_qrt_pool_probe.log", "md5": "4a438ce6534984477f53f07f27cba44c"},
+  {"path": "tools/bench/graph_l2r2_saved_20260928.json", "md5": "c6356fcde059e84b4d966d8fc47e25e8"},
+  {"path": "docs/protocol/stageplan.json"},
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "94566c25fe85f2e512e8bcdbd5bee67c"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "docs/protocol/stageplan.json"},
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/prior_art_review.py"}
+ ],
+ "pass": [
+  "S1 stageplan.json action props gain donor, subvi_path, queue_kind (obtain|enqueue), src_into, typed to what stagexec.py:305-313/:2043-2049 read; additionalProperties stays false",
+  "S2 every existing stage plan under tools/bench/plan_*.json that validated before still validates (count before == after); protocol selftest passes",
+  "S3 plan_qrt_pool.json from stagesim FINAL: 15 rows, one shared I32 20 constant feeds both Obtain max sizes; cdiff == R2's 16 rows; Error List prediction kept",
+  "S4 stage_d1_qrt_pool.py <= 120 lines on stagekit, rows only from the plan; dry PASS; stage_prerun --prerun PASS (X-checks listed)",
+  "S5 prior_art_review.py on the plan answered, disposition annotated under '## What was done with it'"
+ ],
+ "outputs": [
+  "docs/protocol/stageplan.json",
+  "tools/bench/plan_qrt_pool.json",
+  "tools/recipes/stage_d1_qrt_pool.py",
+  "tools/bench/cards/result_119-3.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "docs/protocol/stageplan.json",
+   "tools/bench/plan_qrt_pool*",
+   "tools/recipes/stage_d1_qrt_pool*",
+   "tools/bench/sim/**",
+   "tools/bench/selftest_protocol*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/priorart*",
+   "tools/bench/cards/result_119-3.json",
+   "tools/bench/cards/requires_119-3.json",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 45},
+ "rules": [
+  "DECIDED: one shared I32 20 constant for both Obtain max sizes (15 rows); both sinks are new, same value",
+  "DECIDED: do not change stagexec.py:1561; the recipe keeps its explicit index_mode_fix call + read-back gate",
+  "DECIDED: schema widening only - no change to other action props or to stagexec/stagesim/gscript",
+  "Obtain/Enqueue term_class unmeasured: keep bind by class+dir+name; the launch card takes classes from 119-1",
+  "no LabVIEW, no COM; card 119-1 (LabVIEW) runs beside this one",
+  "gate refusal -> BLOCKED, or tools/gate_fp.py log if false positive; never an exempt route",
+  "facts <=10 file:line; OPEN <=3"
+ ],
+ "advances": ["M3", "R1"]
+}

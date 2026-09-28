@@ -28,6 +28,8 @@ uidl = lambda t, c: [int(o["uid"]) for o in g.report_all(t, c)]                 
 
 
 def donor():
+    if os.path.exists(DONOR):                                                       # card 119-1: never overwrite the kept donor (DonorPool_v0.vi)
+        raise RuntimeError("donor exists, refusing to overwrite: " + DONOR)
     shutil.copyfile(EMPTY, DONOR); g.open_panel(DONOR)                               # noqa: E702
     u_gc = B.drop(DONOR, PA["get_controls"], 0, tuple(POS["donor_gc"])); wt = B.walk(DONOR, 0)   # noqa: E702
     r1 = g.create_const_loop_term(DONOR, "for_n", wt[u_gc][0], value=NAMES, term_index=B.term(wt[u_gc][2], T["gc_names"], False)["i"])

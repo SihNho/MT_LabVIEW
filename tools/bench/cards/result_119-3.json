@@ -1,0 +1,24 @@
+{"schema":"result/1","id":"119-3","status":"BLOCKED","gates":{"pass":4,"fail":1},
+"first_fail":"S4: stage_prerun --prerun FAIL 12/1 at X8 control_path_lint - Obtain actions 6 (p_qfree), 7 (p_qwork) lack data_stream: true, a field stageplan/1 does not allow",
+"blocked_by":{"device":"checker:stage_prerun:X8","message":"X8 needs data_stream:true+why on queue creates (stage_prerun.py:1000); stageplan.json action props have no data_stream (additionalProperties false) - outside this card's 4-field widening; 1c'' classification is judgement's (d1 plan :2132)"},
+"artefacts":[
+ {"path":"docs/protocol/stageplan.json","md5":"f70c2328f36f19485dca1b979e66bbe2"},
+ {"path":"tools/bench/plan_qrt_pool.json","md5":"4eeccdd7d82bca85199eaa2f0e4b455e"},
+ {"path":"tools/recipes/stage_d1_qrt_pool.py","md5":"af3edc8379871e051409d0aa4d8e38bc"},
+ {"path":"archive/peer/2026-09-28-priorart-c119-qrt-pool.md","md5":"9ff12c14b44813ba5bff2e2537ff7572"}],
+"facts":[
+ "S1 PASS: stageplan.json action props + donor{donor str,uid int, addl false}, subvi_path str, queue_kind obtain|enqueue, src_into str; nothing else changed (docs/protocol/stageplan.json:100-110)",
+ "S2 PASS: stageplan/1 files under tools/bench OK 66 -> 67 (only plan_qrt_pool_in.json newly valid; sim/disp/stageplan_disp.json BAD before and after) count_plans_119_3_after.log:COUNT",
+ "S2 PASS: selftest_protocol 48/0 (tools/bench/selftest_protocol_119_3.log), selftest_protocol_wiring 66/0 (tools/bench/selftest_protocol_wiring_119_3.log)",
+ "S3 PASS: stagesim FINAL, failed None, candidates 0, 15 actions, one I32 20 (C20) wired to both Obtain max sizes; end cdiff 16 rows == stage_d1_l2r2.json:1576-1592 (plan_qrt_pool_sim.log SUMMARY)",
+ "S4 dry PASS: E1 13 ops == sim, TI IndexMode 1, D 7 new wires none lost, TD only w14741 gains 2, FU 1 new body, PB cdiff == R2 16 (plan_qrt_pool_recipe_dry.log); NV/RV/MX not runnable dry",
+ "S4 prerun FAIL 12/1: X1-X7,X9-X13 PASS, X14 rows 15 budget 15; X8 flags Obtain actions 6,7 only, Enqueue passes (plan_qrt_pool_recipe_prerun.log:65,82)",
+ "Contradiction: X8 accepts a queue create only with data_stream:true+why (stage_prerun.py:1000) but schema refuses data_stream, so no valid stageplan with an Obtain can pass X8",
+ "Design text: pool queues carry frame DATA - d1-loop12-17-split-plan.md:2139 (Q_work), :2142 (Q_free/Q_work pool); :2132 says data-vs-control split is judgement's call",
+ "S5 PASS: prior-art verdict novel (archive/peer/2026-09-28-priorart-c119-qrt-pool.md:1455); NOVEL record for recipe sha fd80bb3d0b9f written to tools/bench/stop_records.json by the tool",
+ "Review A3 carried to launch: PD234(g) (split plan :2183) expects new Error List items, plan_qrt_pool_pred.json:21 predicts 0; scratch Error List pin decides. No JEV-LADDER line for the prerun log"],
+"open":[
+ "Widen stageplan/1 with data_stream (boolean) and mark p_qfree/p_qwork data_stream:true citing d1 plan :2139/:2142? Then re-simulate plan_qrt_pool.json and re-run prerun (dry already PASS).",
+ "Prerun FAIL has no JEV-LADDER line (old path: hypothesis review owed); this card's peers were priorart only - does judgement want that review, or is X8 a known schema gap needing none?"],
+"cost":{"usd":null,"minutes":20,"labview_runs":0},
+"note":"Offline only. Recipe unchanged (98 lines). Scratch counter: tools/bench/sim/count_plans_119_3.py. stop_records.json write is a side effect of prior_art_review.py --recipe, outside the card write globs."}

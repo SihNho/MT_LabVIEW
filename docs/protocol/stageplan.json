@@ -97,7 +97,19 @@
         "representation": {"type": "string", "maxLength": 20},
         "default": {"type": "number"},
         "read": {"enum": ["bool_const"]},
-        "stop_if": {"type": "boolean"}
+        "stop_if": {"type": "boolean"},
+        "donor": {"type": "object", "additionalProperties": false, "required": ["donor", "uid"],
+                  "description": "card 119-3 (widening only): the primitive route's donor, read at stagexec.py:2044-2047 - a VI path or \"$work\" (the work VI) plus the donor object's uid",
+                  "properties": {"donor": {"type": "string", "minLength": 1, "maxLength": 400},
+                                 "uid": {"type": "integer"}}},
+        "subvi_path": {"type": "string", "minLength": 1, "maxLength": 400,
+                       "description": "card 119-3: create route 'subvi' (stagexec.py:310-313, :2078), the subVI dropped unwired"},
+        "queue_kind": {"enum": ["obtain", "enqueue"],
+                       "description": "card 119-3: create route 'queue' (stagexec.py:305-309), gscript.queue_node"},
+        "src_into": {"type": "string", "minLength": 1, "maxLength": 120,
+                     "description": "card 119-3: the new node's sink that `src` feeds (stagexec.py:306, stagesim.py:1105-1111)"},
+        "data_stream": {"type": "boolean",
+                        "description": "card 119-4 (PD235(e)): a queue/notifier create that carries a lossless DATA stream (CLAUDE.md 1c''); prerun X8 (stage_prerun.py:1000) accepts a queue create only with data_stream: true AND a non-empty `why` giving the reason"}
       }
     }
   }

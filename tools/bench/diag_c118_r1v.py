@@ -2,7 +2,7 @@ r"""diag_c118_r1v - card 118-4 R1/R2/A2 on a never-saved byte copy of the SAVED 
 probe of the two new readers built by diag_c118_r1_opbuild.py (OpConstValueRing_v0, OpConstValueArr_v0; 1 warm + 2,000 consecutive calls
 each, 0 errors, handles flat +-100 - the op-hygiene/1 criterion, docs/violation-decisions.md 2026-09-28 10:37) -> tools/bench/op_hygiene/;
 (R1) gscript.read_const_value on #23583 (StringConstant, known 'Cam', diag_c118_p0.json:445) and #13245 (RingConstant, value + type);
-(R2) the same verb on claudeDev\OpPoolDonor_v0.vi #101 (ArrayConstant; READ-ONLY, the donor is never run or saved) == Cam_pool00..19;
+(R2) the same verb on claudeDev\DonorPool_v0.vi #101 (card 119-1: byte copy of the retired Op-named donor, same md5) (ArrayConstant; READ-ONLY, the donor is never run or saved) == Cam_pool00..19;
 (A2) gscript.create_primitive_nested(W, 13236, donor #101) - the ArrayConstant exception (PD234(j)(2)) - then the copy read back with the
 R1 reader == Cam_pool00..19. The work copy is never saved and is deleted; LabVIEW is killed at exit. No VI is run.
 PREDICTION: H1/H2 2,000 calls, 0 errors, |dHandles| <= 100 per op; R1a 'Cam' echo 23583; R1b ring value an int, Representation read,
@@ -56,7 +56,7 @@ def hyg(key, tgt, cls, uid):
 
 def body(_):
     s.start(); s.scratches.append(s.work); W = s.work                                 # noqa: E702
-    s.gate("K0 donor OpPoolDonor_v0 md5 == {0}".format(DONOR_MD5), K.md5(DONOR) == DONOR_MD5, K.md5(DONOR), fatal=True)
+    s.gate("K0 donor DonorPool_v0 md5 == {0}".format(DONOR_MD5), K.md5(DONOR) == DONOR_MD5, K.md5(DONOR), fatal=True)
     s.head("[H] op-hygiene probes")
     okh = [hyg("OpConstValueRing_v0", W, "RingConstant", Q["ring"]), hyg("OpConstValueArr_v0", DONOR, "ArrayConstant", NAMES_UID)]
     s.gate("H both hygiene records written (gscript.op admits the ops)", all(okh), okh, fatal=True)
@@ -82,7 +82,7 @@ def body(_):
         for fn in ("gscript.create_primitive_nested", "gscript.read_const_value"):
             p = os.path.join(SV, "{0}_c118_{1}.json".format(fn, s.stamp))
             json.dump({"function": fn, "status": "PASS", "t": time.time(), "card": "118-4 A2", "log": "tools/bench/diag_c118_r1v.log", "input_md5": R2M,
-                       "fixture": "never-saved byte copy of claudeDev\\D1_l2_r2_20260928_110756.vi (deleted) + OpPoolDonor_v0 #101 read-only",
+                       "fixture": "never-saved byte copy of claudeDev\\D1_l2_r2_20260928_110756.vi (deleted) + DonorPool_v0 #101 read-only",
                        "ops": dict((k, v["md5"]) for k, v in LABS.items())}, open(p, "w", encoding="utf-8"), indent=1)
             s.fact("SCRATCH-VERIFY record {0}".format(p))
     s.dump()
