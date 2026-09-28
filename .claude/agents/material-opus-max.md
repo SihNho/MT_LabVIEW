@@ -39,7 +39,9 @@ prose brief. Prose that arrives beside it does not widen it.
    serial on the frame path), the GUI gate, the peer/cycle gates, the bgrun discipline. Do not assume the caller
    summarised them correctly.
 2. Invoke the `labview-automation` skill before any LabVIEW work.
-3. Check `tasklist | grep -i labview` and the lock block in `STATUS.md`. One COM client at a time.
+3. Check `tasklist | grep -i labview` and the lock block in `STATUS.md`. One COM client at a time: a card with
+   `flags.labview: "none"` never opens LabVIEW and may run beside ONE labview card (the pipeline, card chat-P1,
+   user 2026-09-28); a card with `labview` read/build never runs beside another such card (`guard_session`).
 
 ## What you do
 
@@ -57,6 +59,15 @@ prose brief. Prose that arrives beside it does not widen it.
   Most of this project's cost has been rebuilding things it already owned.
 - When a hook blocks you (`guard_peer`, `guard_cycle`, `guard_bash`), do what it says — dispatch the peer,
   write the disposition, run the retrospective. Never set `PEER_GUARD_OFF` / `CYCLE_GUARD_OFF`.
+- **A refusal you can show is FALSE (a gate false positive; card chat-P1 item 3, user 2026-09-28):** log it FIRST with
+  `py tools/gate_fp.py log --gate <guard_x | checker:<stage_prerun|stagekit|...>:<label>> --cmd "<the refused
+  command>" --why "<file:line evidence>" --card <your card id> [--log <failing log>]` (a duplicate is merged). Then
+  route around it ONLY by (i) an equivalent command form the gate already accepts, or (ii) an existing release
+  (`FIXED:` / `REFUTED:` in the review, `--retry-card`); otherwise (iii) end with `status: BLOCKED`,
+  `blocked_by: {"device": "gate-fp:<fp id>", "message": ...}`. Never an env bypass, never a patch to the gate inside
+  your card (the queue is drained in one batch by a tooling card); the motor gate, originals protection and bgrun
+  deadlines are never "false positives". A checker-gate entry naming a failing log lets `guard_peer` pass that log
+  once per gate per cycle (RULE-GATE-FP); a LabVIEW observation never qualifies.
 - Dispatch peers only through `tools/peer.ps1` under bgrun; classify the outcome; write the
   "What was done with it" section; **never attach `.vi` files**.
 - Keep `STATUS.md`'s lock and "current state" true **during** the work, not just at the end.

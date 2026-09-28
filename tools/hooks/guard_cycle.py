@@ -44,8 +44,11 @@ EXEMPT_RE = re.compile(r"retrospective\.py|violations\.py|audit_cycle\.py|outcom
 MAX_AGE_S = 30 * 3600          # a cycle older than this is history; it does not gate today's work
 # How much work counts as "a cycle" before its retrospective is overdue. Deliberately generous: the point is to
 # stop a cycle from ending unreviewed, not to interrupt one in progress. Cycles 1-7 ran roughly 5-20 logs each.
-CYCLE_BUILD_BUDGET = 10
-CYCLE_HOURS = 8.0
+# RAISED 10 -> 30 builds and 8 -> 24 h by card chat-P1 item 2b (user 2026-09-28 "1~4번은 적용하도록"): the retrospective
+# now runs every THIRD cycle or when tools/retro_due.py says it is due, so this budget is only the BACKSTOP for a
+# retrospective that never came (cycle_runner._retro_debt reads these same two constants).
+CYCLE_BUILD_BUDGET = 30
+CYCLE_HOURS = 24.0
 
 
 # A REVIEW'S OWN RUNNER LOG IS NOT A BUILD LOG (2026-09-15). `retrospective.py` runs under bgrun, so its log gets
@@ -347,6 +350,23 @@ def newest_retrospective():
     return best
 
 
+RECIPE_ARG_RE = re.compile(r"--recipe(?:\s+|=)(\"[^\"]+\"|'[^']+'|\S+)")
+
+
+def running_review_recipes(body):
+    """card chat-P1 1(c): the normcase'd absolute recipe paths the LAST `BGRUN START` line of a prior-art log names with
+    `--recipe`; set() for a `--no-recipe` review; None when there is no START line or it carries neither (fail closed)."""
+    starts = [ln for ln in body.splitlines() if ln.startswith("BGRUN START")]
+    if not starts:
+        return None
+    line = starts[-1]
+    got = [m.group(1).strip("\"'") for m in RECIPE_ARG_RE.finditer(line)]
+    if not got:
+        return set() if "--no-recipe" in line else None
+    return set(os.path.normcase(os.path.abspath(g if os.path.isabs(g) else os.path.join(ROOT, g.replace("/", os.sep))))
+               for g in got)
+
+
 def premature_build(cmd):
     """THE DEVICE FOR `premature-build` (docs/violation-decisions.md, 2026-09-16 19:16, round 3).
 
@@ -403,6 +423,9 @@ def premature_build(cmd):
     """
     retro = newest_retrospective()
     floor = max(retro[1] if retro else 0.0, time.time() - MAX_AGE_S)
+    m = BUILD_RE.search(cmd)
+    rel = (m.group(1) if m else "").strip().strip("'\"")
+    fp = (rel if os.path.isabs(rel) else os.path.normpath(os.path.join(ROOT, rel.replace("/", os.sep)))) if rel else ""
     for p in sorted(glob.glob(os.path.join(BENCH, "priorart_*.log"))):
         try:
             if os.path.getmtime(p) < floor:
@@ -411,17 +434,21 @@ def premature_build(cmd):
         except OSError:
             continue
         if "BGRUN END" not in body and "BGRUN TIMEOUT" not in body:
+            # (a) SCOPED TO THIS RECIPE (card chat-P1 item 1(c), user 2026-09-28): the pipeline runs a prep card's
+            # prior-art review for stage N+1 WHILE stage N's recipe launches. A running review blocks only the recipe
+            # its own `BGRUN START` names with `--recipe` (a `--no-recipe` review names none and blocks no recipe); a
+            # review whose START line is missing, or carries neither flag, is treated as naming this one (fail closed).
+            named = running_review_recipes(body)
+            if named is not None and fp and os.path.normcase(os.path.abspath(fp)) not in named:
+                continue
             return ("BLOCKED by tools/hooks/guard_cycle.py: a PRIOR-ART REVIEW IS STILL RUNNING.\n"
                     f"  running review log : {_rel(p)}  (no BGRUN END/TIMEOUT line yet)\n\n"
                     "Device for the `premature-build` slug (cycles 7, 9, 11 - see docs/violation-decisions.md,\n"
                     "round 3). In cycle 11 a build started 2 min into its own prior-art review, and that review's\n"
                     "finding 5 predicted the failure the build then produced. Wait for the dispatch to end, read\n"
                     "its verdicts, write the disposition, then build.\n")
-    m = BUILD_RE.search(cmd)
-    rel = (m.group(1) if m else "").strip().strip("'\"")
     if not rel:
         return None
-    fp = rel if os.path.isabs(rel) else os.path.normpath(os.path.join(ROOT, rel.replace("/", os.sep)))
     if not os.path.isfile(fp):
         return None                      # cannot judge a recipe that is not on disk; the run will fail by itself
     try:
@@ -494,6 +521,19 @@ def premature_build(cmd):
             # MOVED OUT 2026-09-18 (cycle 20 step 1): the same `fixed_claim(latest)` call now runs ABOVE, before
             # the mtime rule, so that a claim which FAILS the check refuses instead of being invisible. Reaching
             # this line therefore means the newest review makes no claim on this recipe at all.
+        # PROVEN PATTERN (card chat-P1 item 2a, user 2026-09-28 "1~4번은 적용하도록"): a recipe whose mechanism - its
+        # stageplan ops + create classes + the stagekit/stagexec functions it calls - already ran CLEAN in >= 2 other
+        # stages (stage_prerun.proven_pattern, from stage_runs.jsonl + each run's log) asks nothing the prior-art
+        # question has not answered twice. Allowed and logged; condition (a) above and the verdict gate stay as they are.
+        try:
+            import stage_prerun
+            ok_p, stages_p, _sig = stage_prerun.proven_pattern(fp)
+        except Exception:                # noqa: BLE001 - a broken reader never releases (fail closed)
+            ok_p, stages_p = False, []
+        if ok_p:
+            _proven_log("PROVEN-PATTERN | %s | %s | no prior-art review owed: signature covered by clean runs of %s"
+                        % (time.strftime("%Y-%m-%d %H:%M:%S"), rel, ", ".join(stages_p)))
+            return None
         return ("BLOCKED by tools/hooks/guard_cycle.py: this RECIPE HAS NO PRIOR-ART REVIEW NEWER THAN ITSELF.\n"
                 f"  recipe        : {rel}  (last changed "
                 f"{time.strftime('%Y-%m-%d %H:%M', time.localtime(rmt))})\n"
@@ -513,6 +553,16 @@ def premature_build(cmd):
                 "   genuinely has no recipe - a plan document - takes --no-recipe \"<reason>\" instead, and the\n"
                 "   reason is written into the archived review.)\n")
     return None
+
+
+def _proven_log(line):
+    """One PROVEN-PATTERN line to stderr and tools/bench/jev_gate.log (resolved at call time: a self-test's BENCH)."""
+    sys.stderr.write(line + "\n")
+    try:
+        with open(os.path.join(BENCH, "jev_gate.log"), "a", encoding="utf-8") as fh:
+            fh.write(line + "\n")
+    except OSError:
+        pass
 
 
 def _rel(p):

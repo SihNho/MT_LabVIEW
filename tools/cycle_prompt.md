@@ -21,7 +21,8 @@ Nobody is watching this session. Everything you need is on disk.
   plan to change NOW, not a 60-minute discovery inside LabVIEW (cycle 89, cards 89-1/89-2). The material session runs
   the same check first and returns BLOCKED on anything missing; the hook refuses its launches until it passes.
 - **Six material-type dispatches per session** (material, its Fable rungs, log-reader, SendMessage resumes; user
-  2026-09-26, was 8). The 7th is refused: write NEXT and exit.
+  2026-09-26, was 8). The 7th is refused: write NEXT and exit. A `labview: none` PREP card dispatched while a LabVIEW
+  card is live counts in its own budget of 3, not in the six (card chat-P1, `tools/hooks/guard_session.py`).
 - **Reviews are cards too.** `prior_art_review.py`, `retrospective.py`, `outcome_review.py` and `doc_ingest.py` write a
   `review/1` card and pass it to `peer.ps1 -ReviewCard`; for a failed-prediction review write your own `review/1`
   (`py tools/protocol.py new review --id ...`) and pass `-ReviewCard`. The peer's `verdict/1` lands in
@@ -64,6 +65,24 @@ whole cycle needs LabVIEW you write that in NEXT and exit rather than deciding t
   Agent tool: writing and running recipes or diagnostics, anything touching LabVIEW, log reading (`log-reader`),
   peer dispatch, STATUS/INDEX bookkeeping. You never run `tools/recipes/*.py` or `tools/bench/*.py` yourself and
   never read a whole log yourself — `tools/hooks/guard_bash.py` refuses it and it is the point of the split.
+- **PIPELINE: one LabVIEW card + one offline prep card at a time** (user 2026-09-28, "1~4번은 적용하도록"; card chat-P1).
+  When the next build step N is launch-ready, dispatch the LAUNCH card for N and the PREP card for N+1 as **two Agent
+  calls in ONE message**. The prep card has `flags.labview: "none"`, `peers: ["priorart"]`, and `write` globs covering
+  only N+1's plan and recipe; it plans N+1 on stagesim's END graph of N (`tools/bench/sim/<stage N>/`), with the plan's
+  `base` = `{path, md5, "provisional": true, "sim_of": {"plan": <N's plan>, "md5": ...}}`, and gets dry, prerun and
+  prior-art PASS on it. A provisional plan is never launched: after N's artefact is saved, `py tools/stage_prerun.py
+  --rebase <N+1 plan> --graph <real graph read of N's artefact>` re-binds it (refused when N's plan changed), then dry
+  + prerun run again (offline, seconds). `guard_session` allows at most 2 live cards and at most ONE with labview !=
+  none; `guard_peer` does not hold an offline card back on the LabVIEW card's failing log (RULE-OFFLINE-CARD).
+- **Rows per build step: <= 15, up to ~25 on a PROVEN pattern** (`docs/d1-loop12-17-split-plan.md` Pre-decided "rows
+  per step"). `stage_prerun --prerun` prints the advisory `X14 rows N, budget 15|25 (proven: <stages>)`; a proven
+  pattern (its ops + create classes + stagekit/stagexec calls ran clean in >= 2 other stages) also needs no prior-art
+  review (`guard_cycle` logs PROVEN-PATTERN and allows).
+- **A gate that refused wrongly is QUEUED, not fixed in place** (card chat-P1 item 3). The material session logs it
+  with `py tools/gate_fp.py log --gate ... --cmd ... --why "<file:line>" --card <id>` and routes around it only by an
+  equivalent command form the gate accepts or an existing release, else returns BLOCKED with `blocked_by.device`
+  `gate-fp:<id>`. When the cycle card's `gates_due` shows `gate-fp` DUE, spend ONE tooling card to drain the queue
+  (`py tools/gate_fp.py drain --id <fp-n> --fixed <path:line> --selftest <name>` per entry).
 - **A brief states the MEASUREMENT, never the result-dependent ACTION.** "If A removes 1, do X, else do Y" is
   not delegation; it moves the decision into the session that must not make it. Ask for the measurement, get the
   facts back, then decide.
@@ -96,11 +115,16 @@ whole cycle needs LabVIEW you write that in NEXT and exit rather than deciding t
   say which line — do not re-open it, and do not ask the user.
 - **Decide** the things only judgement can decide: design, what to accept from a review, rule-1a equivalence,
   which discriminating experiment to run next.
-- **Close the cycle**: write `tools/bench/next.json` (below) FIRST — `guard_bash` refuses the retrospective until it
-  is new and valid — then run `py tools/bgrun.py --max-min 10 --log tools/bench/retro.log -- py tools/retrospective.py
-  --cycle <N>`, annotate what it returns, then rewrite STATUS.md's `## NEXT` section so the next session can start
-  cold from it.
-  🔴 **THE RETROSPECTIVE IS THE LAST THING YOU RUN — never run one early, and never run one for another cycle.**
+- **Close the cycle**: write `tools/bench/next.json` (below) FIRST — `guard_bash` refuses the retrospective (and the
+  close) until it is new and valid — then ask whether a retrospective is due: `py tools/retro_due.py --cycle <N>`
+  (card chat-P1 item 2b, user 2026-09-28: every THIRD cycle, or when this cycle delivered no claudeDev .vi, or a
+  violation slug is one below its threshold). **If DUE** (exit 1): run `py tools/bgrun.py --max-min 10 --log
+  tools/bench/retro.log -- py tools/retrospective.py --cycle <N>` and annotate what it returns. **If not due** (exit 0):
+  close with `py tools/retro_due.py --cycle <N> --close` instead - it closes the session exactly like the
+  retrospective does (no further material dispatch). Then rewrite STATUS.md's `## NEXT` section so the next session can
+  start cold from it. If you skip a due retrospective, the runner runs it after you exit.
+  🔴 **THE RETROSPECTIVE (or `retro_due.py --close`) IS THE LAST THING YOU RUN — never run one early, and never run one
+  for another cycle.**
   `tools/hooks/guard_bash.py:226-227` calls `mark_retro_done()` on ANY `retrospective.py` in command position,
   whatever `--cycle` says, and `guard_session.py` then refuses every `material` / `log-reader` dispatch for the
   rest of the session. Cycle 29 lost its whole cycle that way: it opened by paying cycle 28's unrun retrospective

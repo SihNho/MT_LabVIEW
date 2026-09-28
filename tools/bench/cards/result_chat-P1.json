@@ -1,0 +1,35 @@
+{"schema": "result/1", "id": "chat-P1", "status": "PASS", "gates": {"pass": 32, "fail": 0}, "first_fail": null, "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/retro_due.py", "md5": "b778c6c1748f2ccba585ace487ffc2f7"},
+  {"path": "tools/gate_fp.py", "md5": "8a8085946f1bd15f622a8eeee42ee44a"},
+  {"path": "tools/bench/gate_fp_queue.jsonl", "md5": "d41d8cd98f00b204e9800998ecf8427e"},
+  {"path": "tools/bench/selftest_chat_p1.py", "md5": "8ee59797744944087aff125f15a8c089"},
+  {"path": "tools/hooks/guard_session.py", "md5": "6dd5bc00dad5a08b08a6fd338cec2b79"},
+  {"path": "tools/hooks/guard_cycle.py", "md5": "c2c4b871a05008400c30e58222732a45"},
+  {"path": "tools/hooks/guard_peer.py", "md5": "1cbc95e2bff45f1c74fc5f9f1b853bf2"},
+  {"path": "tools/hooks/guard_bash.py", "md5": "89d23bb1365849b25cc734762f03d369"},
+  {"path": "tools/protocol.py", "md5": "23c5a8eab39e2ba287df412c95e271b1"},
+  {"path": "tools/stage_prerun.py", "md5": "6e03a5032338e1216abbe37cc61cdf5d"},
+  {"path": "tools/cycle_runner.py", "md5": "37c78596ed8e229bebf0239f3df6a574"},
+  {"path": "tools/cycle_prompt.md", "md5": "023995ca1e47abe65c8cbc46412ece1d"},
+  {"path": "docs/protocol/stageplan.json", "md5": "96a4ca8b452a2d7e5d84b385f369f116"}
+ ],
+ "facts": [
+  "Self-tests: baseline 31/31 PASS (run_selftests_chat_p1_before.log), after 32/32 PASS incl. new selftest_chat_p1 46/46 (run_selftests_chat_p1_after.log, selftest_chat_p1.log)",
+  "1 pipeline: protocol.file_lock (protocol.py:441) around bind; guard_session.decide (guard_session.py:208) tracks live cards, MAX_LIVE 2, one labview card, PREP_BUDGET 3",
+  "1(c) guard_cycle.running_review_recipes (guard_cycle.py:356): a running prior-art blocks only the recipe its BGRUN START --recipe names; no START line = blocks (fail closed)",
+  "1(d) guard_peer RULE-OFFLINE-CARD (guard_peer.py:400,908): bgrun wrapper skipped; stage_prerun --dry/--prerun/--rebase and stagesim simulate count offline by mode flag",
+  "Provisional base: stageplan.json baseref; stage_prerun._check_units refuses it; --rebase (stage_prerun.py:2518) binds by class+terminal keys, refuses ambiguity, re-simulates",
+  "2a proven_pattern (stage_prerun.py:2361) excludes the recipe's OWN stage key and needs 2 OTHER clean stages; PROVEN-PATTERN allow at guard_cycle.py:534; runs now record `pattern`",
+  "2b retro_due.py (c) counts only occurrences newer than the slug's newest decision (all-time counts would make every answered slug near forever); runner fallback cycle_runner.py:600",
+  "3 gate_fp.py log/drain/due + RULE-GATE-FP (guard_peer.py:938) for guard_* / checker:<stage_prerun|stagekit|stagesim|stop_record|protocol|launchunit|doc_lint> gates only",
+  "4 X14 advisory: real prerun of stage_d1_l2r2.py prints `WARN X14 rows 24, budget 15 (proven: no - stage_d1_l2r1.py)`, 13/0 unchanged (prerun_x14_check_p1.log:129-133)",
+  "Plan Pre-decided 232 added (d1-loop12-17-split-plan.md:2116), pointers at :15 and the two <=13-row lines; CLAUDE.md/STATUS.md untouched; no guard env bypass added"
+ ],
+ "open": [
+  "proven_pattern needs 2 OTHER clean stages (own stage key excluded, stricter than the brief's literal wording); keep or count the recipe's own earlier clean run?",
+  "The brief's optional per-row route class was not added to the signature (the dry log carries no per-row route class field to read); add later if wanted",
+  "STATUS.md is 495 lines (doc_lint L3 WARN) and doc_lint L6 FAILs on 3 undisposed reviews (pre-existing); this card had status_edit false, so neither was touched"
+ ],
+ "cost": {"usd": null, "minutes": 40, "labview_runs": 0},
+ "note": "Runner code changes take effect at the next runner relaunch. retro_due --close is matched by guard_bash RETRO_RE, so next_gate + session close hold as for retrospective.py."}

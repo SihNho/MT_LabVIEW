@@ -370,6 +370,51 @@ def newest_failing_log():
     return best
 
 
+# card chat-P1 1(d): the OFFLINE tools whose import closure reaches LabVIEW modules but which, in these modes, never open
+# COM (stage_prerun stubs it; stagesim is the simulator). Matched per launched script, with the mode flag required.
+OFFLINE_MODES = {"stage_prerun.py": re.compile(r"--(?:dry|prerun|rebase|check-launch|control-lint|buildarray-check|"
+                                               r"opmodel-conformance|selftest-control-lint)\b"),
+                 "stagesim.py": re.compile(r"\b(?:simulate|selftest)\b")}
+BGRUN_NAME = "bgrun.py"          # the deadline runner: its CHILD is what runs; the wrapper itself is not judged
+
+
+def offline_command(cmd):
+    """True when every python script `cmd` launches (protocol._launched_scripts) is the bgrun wrapper, an OFFLINE_MODES
+    tool in its offline mode, or a script whose import closure never reaches LabVIEW (script_touches_labview False).
+    No launched script at all -> False (nothing to judge, the old gate applies)."""
+    scripts = protocol._launched_scripts(cmd or "")
+    judged = 0
+    for s in scripts:
+        b = os.path.basename(s).lower()
+        if b == BGRUN_NAME:
+            continue
+        judged += 1
+        mode = OFFLINE_MODES.get(b)
+        if mode is not None and mode.search(cmd):
+            continue
+        if script_touches_labview(s):
+            return False
+    return judged > 0
+
+
+def offline_card(payload, cmd):
+    """The card id when the CALLER is a sub-agent bound to a task/1 card with flags.labview == 'none' and `cmd` is
+    offline_command; else None. The binding is protocol's (tools/bench/cards/active.json), never the prompt text."""
+    aid = (payload or {}).get("agent_id")
+    if not aid:
+        return None
+    try:
+        b = protocol.binding(aid)
+        if not b:
+            return None
+        card = protocol.load_card(protocol._abs(b["card"]), None)
+    except Exception:                    # noqa: BLE001 - unreadable binding/card: not exempt
+        return None
+    if str((card.get("flags") or {}).get("labview") or "none") != "none":
+        return None
+    return card.get("id") if offline_command(cmd) else None
+
+
 def failure_names(path, text):
     """The names a peer exchange must mention to count as a review OF this failure: the log's basename and every
     tools/recipes|bench script named in the log (its BGRUN START line names the recipe). Peer-attacked 2026-09-14:
@@ -853,6 +898,19 @@ def main():
     if hit:
         return 0          # a peer exchange NAMING this failure was archived after it - the loop is closed
 
+    # --- RULE-OFFLINE-CARD (card chat-P1 item 1(d), user 2026-09-28) ------------------------------------------
+    # newest_failing_log() is GLOBAL: in the pipeline, the LabVIEW card's failing log would block the offline prep card
+    # running beside it. A caller BOUND to a task/1 card with flags.labview == "none" whose command launches nothing
+    # that reaches LabVIEW (offline_command) cannot act on the failed prediction, so it is not the build this gate
+    # holds back. Every other caller - the LabVIEW card, the judgement session, an unbound agent - is gated as before.
+    oc = offline_card(payload, cmd)
+    if oc:
+        line = "RULE-OFFLINE-CARD | %s | %s not gated for card %s (flags.labview none; command offline)" % (
+            time.strftime("%Y-%m-%d %H:%M:%S"), _rel(path), oc)
+        sys.stderr.write(line + "\n")
+        _gate_log(line)
+        return 0
+
     # --- ONE REVIEW PER ROW PER CYCLE (the rule above; BEFORE the ladder, because it costs nothing) ---------
     sr = same_row_review(path, text)
     if sr:
@@ -864,6 +922,25 @@ def main():
                          "for a later failure of the same script inside 6 h.)\n")
         _gate_log(line)
         cite_same_row(rp, os.path.basename(path), ts)
+        return 0
+
+    # --- RULE-GATE-FP (card chat-P1 item 3, user 2026-09-28) --------------------------------------------------
+    # A failing log named by an OPEN tools/bench/gate_fp_queue.jsonl entry whose gate is a CHECKER (guard_* or
+    # checker:<stage_prerun|stagekit|...>) and whose first failure line is not a LabVIEW observation is a false positive
+    # of our own gate, queued with file:line evidence for a batch drain - not a failed prediction about the machine.
+    # At most ONE such entry per gate per cycle (tools/gate_fp.py discharge_for_log). A LabVIEW observation never.
+    try:
+        import gate_fp
+        fp_e, _fp_why = gate_fp.discharge_for_log(path, log_failure_file(path)[1])
+    except Exception:                    # noqa: BLE001 - the queue is optional; a broken reader never releases
+        fp_e = None
+    if fp_e:
+        line = "RULE-GATE-FP | %s | %s discharged by %s (gate %s, queued %s: %s)" % (
+            time.strftime("%Y-%m-%d %H:%M:%S"), _rel(path), fp_e.get("id"), fp_e.get("gate"), fp_e.get("iso"),
+            str(fp_e.get("why"))[:120])
+        sys.stderr.write(line + "\n  (a checker's false positive, queued for a batch drain - not a failed prediction; "
+                         "one per gate per cycle.)\n")
+        _gate_log(line)
         return 0
 
     # --- JEV DISCHARGE (docs/jev-integration-plan.md row #1; user 2026-09-22) ------------------------------

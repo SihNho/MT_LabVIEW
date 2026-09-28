@@ -302,6 +302,24 @@ def judge_ladder_step(level, next_moved, slugs, delivered):
     return level + 1, "+1: %s" % "; ".join(trig), False
 
 
+def retro_files_in_window(peer_dir, t_start, t_end):
+    """card chat-P1 2b: the retrospective archives CREATED inside the window (same stamp rule as retro_slugs_in_window)."""
+    out = []
+    try:
+        names = os.listdir(peer_dir)
+    except OSError:
+        return out
+    for fn in names:
+        if "retrospective" in fn and fn.endswith(".md"):
+            try:
+                st = os.stat(os.path.join(peer_dir, fn))
+            except OSError:
+                continue
+            if t_start <= min(st.st_ctime, st.st_mtime) <= t_end:
+                out.append(fn)
+    return sorted(out)
+
+
 def retro_slugs_in_window(peer_dir, t_start, t_end):
     """VIOLATION slugs from retrospective files CREATED inside the cycle window (creation time, as failed_recipes)."""
     out = set()
@@ -579,6 +597,44 @@ def land_retrospective(bench, runner_log):
     return note
 
 
+def retro_fallback(n, t_start, a, bench, runner_log):
+    """card chat-P1 item 2b (user 2026-09-28): the session runs its retrospective only when tools/retro_due.py says it
+    is DUE. After the session the runner re-checks: DUE and no retrospective archived in [t_start, now] -> the runner
+    runs it itself, synchronously (the session is gone; same shape as land_retrospective). A dry run only logs.
+    Returns a one-line note or None. Never raises."""
+    try:
+        import retro_due as RD
+        due, reasons, _f = RD.check(n, os.path.join(bench, "cards"), a.peer_dir)
+    except Exception as e:  # noqa: BLE001 - bookkeeping must never kill the runner
+        log_line(runner_log, "RETRO-DUE | cycle %d | check raised %s: %s" % (n, type(e).__name__, str(e)[:160]))
+        return None
+    stamp = time.strftime("%Y-%m-%d %H:%M:%S")
+    if not due:
+        log_line(runner_log, "RETRO-DUE | %s | cycle %d | not due" % (stamp, n))
+        return None
+    got = retro_files_in_window(a.peer_dir, t_start, time.time() + 60)
+    if got:
+        log_line(runner_log, "RETRO-DUE | %s | cycle %d | due and archived in the cycle (%s)" % (stamp, n, got[-1]))
+        return None
+    if a.dry_run or a.dry_cmd:
+        note = "RETRO-DUE | %s | cycle %d | DUE, none archived, not run (dry run): %s" % (stamp, n, "; ".join(reasons)[:160])
+        log_line(runner_log, note)
+        return note
+    retro_log = os.path.join(bench, "retro.log")
+    cmd = [sys.executable, BGRUN, "--max-min", "20", "--log", retro_log, "--",
+           sys.executable, os.path.join(HERE, "retrospective.py"), "--cycle", str(n)]
+    t0 = time.time()
+    try:
+        proc = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        rc = proc.returncode
+    except Exception as e:  # noqa: BLE001
+        rc = "exc %s" % e
+    note = ("RETRO-DUE | %s | cycle %d | DUE (%s) and the session archived none - the runner ran it: rc=%s after %.0f s"
+            % (stamp, n, "; ".join(reasons)[:160], rc, time.time() - t0))
+    log_line(runner_log, note)
+    return note
+
+
 MOTOR_OK = {"start": "SESSION START OK", "end": "SESSION END OK"}
 MOTOR_VERIFY = ("PI controller limits match the file", "ASI controller limits match the file")
 
@@ -809,6 +865,7 @@ def errorlist_hook(n, a, bench, runner_log, status_text):
 #   violations   `tools/violations.py --due` rc 1                             (guard_cycle.py:555-561)
 #   outcome      outcome_review.is_due() on --peer-dir                         (guard_cycle.py:566-575, outcome_review.py:106)
 #   retro-debt   guard_cycle's retrospective budget, recomputed from its own functions/constants (guard_cycle.py:638-670)
+#   gate-fp      tools/gate_fp.py due(): >= 5 open false positives, the oldest >= 3 cycles, or one blocking a card (chat-P1)
 #   recipe:<f>   for each tools/recipes/*.py named in next.json `act`: stop_record.check_command, guard_cycle.premature_build
 #                (prior-art), stage_prerun.check_launch (recorded dry + prerun PASS for the current sha)
 OUTCOME_MAX_MIN = 20                    # outcome_review.py waits up to 900 s on peer.ps1
@@ -903,6 +960,14 @@ def gates_due(bench, peer_dir, next_card):
     add("violations", viol)
     add("outcome", lambda: _outcome_due(peer_dir))
     add("retro-debt", _retro_debt)
+
+    def gate_fp_due():
+        # card chat-P1 item 3: the batched gate false positives - DUE at >= 5 open, oldest >= 3 cycles, or one blocking a
+        # card; the prompt then asks for ONE tooling card that drains the queue (tools/gate_fp.py drain per entry)
+        import gate_fp
+        cd = os.path.join(bench, "cards")
+        return gate_fp.due(cards_dir=cd, cycle=protocol.current_cycle(cd))
+    add("gate-fp", gate_fp_due)
     act = (next_card or {}).get("act") or ""
     seen = []
     for m in ACT_RECIPE_RE.finditer(act):
@@ -1402,6 +1467,7 @@ def _loop(a, status_path, bench, runner_log, prompt, run_t0, hb):
         this_prompt = "CARD %s\n\n" % protocol._rel(card_path).replace("\\", "/") + this_prompt
         cmd = ([sys.executable, BGRUN, "--max-min", str(a.max_min), "--log", cyc_log, "--"]
                + session_cmd(a, this_prompt, model, effort))
+        cyc_t0 = time.time()
         for attempt in range(1, LIMIT_RETRIES + 1):
             start = time.strftime("%Y-%m-%d %H:%M:%S")
             t0 = time.time()
@@ -1429,6 +1495,7 @@ def _loop(a, status_path, bench, runner_log, prompt, run_t0, hb):
 
         env = result_json(fresh)
         land_retrospective(bench, runner_log)
+        retro_fallback(n, cyc_t0, a, bench, runner_log)       # card chat-P1 2b: due + none archived -> run it here
         # A DRY RUN NEVER COMMITS (2026-09-24, card chat-B3): the self-tests run this runner with --dry-run/--dry-cmd on
         # a temp bench, and git_commit_cycle's `git add -A` on ROOT turned 16 self-test cycles into 16 "Cycle N runner
         # auto-commit" commits of the real working tree (b0f2ced..6d9f980).

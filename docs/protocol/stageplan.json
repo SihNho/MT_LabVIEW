@@ -8,7 +8,7 @@
     "schema": {"const": "stageplan/1"},
     "stage": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+$", "minLength": 1, "maxLength": 80},
     "goal": {"type": "string", "maxLength": 400},
-    "base": {"$ref": "#/definitions/fileref"},
+    "base": {"$ref": "#/definitions/baseref"},
     "context": {
       "type": "object", "additionalProperties": false,
       "properties": {
@@ -35,6 +35,14 @@
     "fileref": {"type": "object", "additionalProperties": false, "required": ["path"],
                 "properties": {"path": {"type": "string", "minLength": 1, "maxLength": 400},
                                "md5": {"type": ["string", "null"], "pattern": "^[0-9a-f]{32}$"}}},
+    "baseref": {"type": "object", "additionalProperties": false, "required": ["path"],
+                "description": "card chat-P1 (pipeline): a fileref, plus provisional=true when the base is stagesim's END graph of the previous stage (sim_of = that stage's plan {plan, md5}); tools/stage_prerun.py refuses to launch such a plan until `--rebase` re-binds it onto the real graph of the previous stage's saved artefact.",
+                "properties": {"path": {"type": "string", "minLength": 1, "maxLength": 400},
+                               "md5": {"type": ["string", "null"], "pattern": "^[0-9a-f]{32}$"},
+                               "provisional": {"type": "boolean"},
+                               "sim_of": {"type": "object", "additionalProperties": false, "required": ["plan", "md5"],
+                                          "properties": {"plan": {"type": "string", "minLength": 1, "maxLength": 400},
+                                                         "md5": {"type": "string", "pattern": "^[0-9a-f]{32}$"}}}}},
     "uidref": {"anyOf": [{"type": "integer"}, {"type": "string", "pattern": "^new:[A-Za-z]+[0-9]+[LR]?$"}]},
     "diagref": {"anyOf": [{"type": "integer"}, {"type": "string", "pattern": "^new:[A-Za-z]+[0-9]+\\.body$"}]},
     "addr": {"anyOf": [

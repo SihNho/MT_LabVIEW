@@ -438,6 +438,56 @@ def path_in_globs(path, globs):
     return False
 
 
+class file_lock(object):
+    """card chat-P1 item 1(a)/(b): a cross-process lock FILE around a read-modify-write (os.open O_CREAT|O_EXCL, retry
+    `tries` x `wait_s`). Two card agents bound in ONE message (the pipeline: launch card N + prep card N+1) ran bind()
+    at the same moment, and bind() read active.json, added itself and wrote it back - the second writer erased the
+    first binding. A lock older than `stale_s` is a crashed holder's and is broken once; otherwise TimeoutError."""
+
+    def __init__(self, path, tries=50, wait_s=0.1, stale_s=15.0):
+        self.path, self.tries, self.wait_s, self.stale_s, self.fd = path, tries, wait_s, stale_s, None
+
+    def __enter__(self):
+        os.makedirs(os.path.dirname(os.path.abspath(self.path)) or ".", exist_ok=True)
+        broke = False
+        while True:
+            for _ in range(self.tries):
+                try:
+                    self.fd = os.open(self.path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+                    os.write(self.fd, str(os.getpid()).encode("ascii"))
+                    return self
+                except FileExistsError:
+                    time.sleep(self.wait_s)
+                except PermissionError:          # Windows: the file is being deleted by the releasing holder
+                    time.sleep(self.wait_s)
+            try:
+                stale = time.time() - os.path.getmtime(self.path) > self.stale_s
+            except OSError:
+                stale = True                     # vanished meanwhile: just retry
+            if broke or not stale:
+                raise TimeoutError("lock %s busy after %.1f s" % (self.path, self.tries * self.wait_s))
+            broke = True
+            try:
+                os.remove(self.path)
+            except OSError:
+                pass
+
+    def __exit__(self, *exc):
+        try:
+            os.close(self.fd)
+        except (OSError, TypeError):
+            pass
+        for _ in range(20):
+            try:
+                os.remove(self.path)
+                break
+            except FileNotFoundError:
+                break
+            except PermissionError:
+                time.sleep(0.02)
+        return False
+
+
 def _load_active():
     try:
         with open(ACTIVE, encoding="utf-8") as f:
@@ -449,10 +499,17 @@ def _load_active():
 
 def _save_active(d):
     os.makedirs(os.path.dirname(ACTIVE), exist_ok=True)
-    tmp = ACTIVE + ".tmp"
+    tmp = ACTIVE + ".%d.tmp" % os.getpid()
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(d, f, ensure_ascii=False, indent=1)
-    os.replace(tmp, ACTIVE)
+    for i in range(20):                  # Windows: a concurrent READER (binding()) holds the target open - retry
+        try:
+            os.replace(tmp, ACTIVE)
+            return
+        except PermissionError:
+            if i == 19:
+                raise
+            time.sleep(0.05)
 
 
 def _abs(p):
@@ -468,10 +525,14 @@ def bind(agent_id, agent_type, card_path, goals="default"):
         return False, "card %s is not a valid task/1: %s" % (card_path, str(e)[:200])
     if card.get("schema") != "task/1":
         return False, "card %s is %s, not task/1" % (card_path, card.get("schema"))
-    d = _load_active()
-    d[agent_id] = {"card": _rel(p), "agent_type": agent_type, "id": card["id"],
-                   "bound": time.strftime("%Y-%m-%d %H:%M:%S"), "md5": _md5(p)}
-    _save_active(d)
+    try:
+        with file_lock(ACTIVE + ".lock"):        # card chat-P1 1(a): two binds in one message must both survive
+            d = _load_active()
+            d[agent_id] = {"card": _rel(p), "agent_type": agent_type, "id": card["id"],
+                           "bound": time.strftime("%Y-%m-%d %H:%M:%S"), "md5": _md5(p)}
+            _save_active(d)
+    except (TimeoutError, OSError) as e:
+        return False, "active.json could not be updated under its lock: %s" % str(e)[:200]
     return True, "BOUND agent %s (%s) -> %s (id %s)" % (agent_id, agent_type, _rel(p), card["id"])
 
 

@@ -79,6 +79,7 @@ import argparse
 import ast
 import builtins
 import collections
+import copy
 import glob
 import hashlib
 import io
@@ -86,6 +87,7 @@ import json
 import os
 import re
 import shlex
+import shutil
 import sys
 import time
 import types
@@ -1955,12 +1957,29 @@ def prerun(recipe, graph=None, stop_after=None, from_step=None):
     warn = "X10 WARN unmeasured: {0}".format(mm.get("why")) if mm["ok"] is None else None
     if warn:
         print("  WARN  {0}".format(warn), flush=True)
+    tr["x14"] = x14_advisory(recipe, len(rows) + sp_acts)      # card chat-P1 item 4: ADVISORY, never a gate
     npass = sum(1 for g_ in gates if g_[1])
     first = next((g_[0] + ": " + str(g_[2])[:120] for g_ in gates if not g_[1]), None)
     tr["prerun"] = {"status": "PASS" if npass == len(gates) else "FAIL", "gates": [[a, b, str(c)[:600]] for a, b, c in gates],
                     "first_fail": first, "plans": dict((rel(p), md5(p)) for p in plans), "pass": npass,
                     "fail": len(gates) - npass, "warn": warn}
     return tr
+
+
+def x14_advisory(recipe, n_rows, log=None):
+    """card chat-P1 item 4 (user 2026-09-28; docs/d1-loop12-17-split-plan.md Pre-decided 'rows per step'): rows per
+    build step <= ROWS_DEFAULT (15), up to ~ROWS_PROVEN (25) on a PROVEN pattern (proven_pattern). Prints ONE line,
+    `  X14 rows N, budget B (proven: ...)`, prefixed WARN when N > B. Never a gate, never a FAIL, never a pass reason."""
+    try:
+        ok, stages, _sig = proven_pattern(recipe)
+    except Exception as e:                                                         # noqa: BLE001
+        ok, stages = False, ["(proven_pattern raised %s)" % type(e).__name__]
+    budget = ROWS_PROVEN if ok else ROWS_DEFAULT
+    line = "X14 rows {0}, budget {1} (proven: {2})".format(n_rows, budget, ", ".join(stages) if ok else
+                                                           "no" + (" - %s" % ", ".join(stages) if stages else ""))
+    over = n_rows > budget
+    (log or (lambda m: print(m, flush=True)))("  {0}  {1}".format("WARN" if over else "INFO", line))
+    return {"rows": n_rows, "budget": budget, "proven": ok, "stages": stages, "warn": over, "line": line}
 
 
 def result_first(first, warn):
@@ -2246,6 +2265,310 @@ def check_cap(cmd, s, runs, ck):
                    "RETRY_CARD=<card path> in the launch command ({4}).\n").format(key, len(mine), ck, RETRY_CAP, why), None
 
 
+# ------------------------------------------------------------------------------------------ PROVEN PATTERN (card chat-P1)
+# User 2026-09-28 ("1~4번은 적용하도록", items 2a + 4): a stage whose MECHANISM has already run clean in two other stages
+# needs no prior-art review (guard_cycle PROVEN-PATTERN) and may carry up to ROWS_PROVEN rows instead of ROWS_DEFAULT
+# (X14, advisory). The mechanism is read from files, never from prose:
+#   signature(recipe) = {op:<stageplan action op>, create:<class>, row:<decisions action>} over plan_files(recipe)
+#                       UNION {K.<fn>, SX.<fn>} - the stagekit / stagexec functions the recipe CALLS (ast; the import
+#                       aliases are read from the recipe, `import stagekit as K, stagexec as SX` being the convention).
+#   proven = >= PROVEN_MIN distinct OTHER stage keys in stage_runs.jsonl (by == "bgrun") with a run whose log's LAST
+#            segment finished and did not fail (protocol.run_verdict) and whose signature CONTAINS this recipe's.
+# A run's signature is its record's `pattern` (written by record_started from this card on). For an older record it is
+# recomputed from today's files ONLY when the script's sha256 equals the run's AND the plan md5s equal a prerun PASS
+# record of that sha256 - otherwise the run is not counted (fail closed). An empty signature is never proven.
+PROVEN_MIN = 2
+ROWS_DEFAULT, ROWS_PROVEN = 15, 25
+
+
+def _call_signature(recipe):
+    try:
+        tree = ast.parse(REAL_OPEN(recipe, encoding="utf-8", errors="replace").read(), filename=recipe)
+    except (OSError, SyntaxError, ValueError):
+        return set()
+    alias = {}
+    for n in ast.walk(tree):
+        if isinstance(n, ast.Import):
+            for a in n.names:
+                base = a.name.split(".")[0]
+                if base in ("stagekit", "stagexec"):
+                    alias[a.asname or base] = "K" if base == "stagekit" else "SX"
+    out = set()
+    for n in ast.walk(tree):
+        if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute) and isinstance(n.func.value, ast.Name) \
+                and n.func.value.id in alias:
+            out.add("%s.%s" % (alias[n.func.value.id], n.func.attr))
+    return out
+
+
+def _plan_signature(plans):
+    out = set()
+    for p in plans:
+        try:
+            d = json.load(REAL_OPEN(p, encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if not isinstance(d, dict):
+            continue
+        for a in d.get("actions") or []:
+            if isinstance(a, dict) and a.get("op"):
+                out.add("op:%s" % a["op"])
+                if a["op"] == "create" and a.get("class"):
+                    out.add("create:%s" % a["class"])
+        for r in d.get("decisions") or []:
+            if isinstance(r, dict) and r.get("action"):
+                out.add("row:%s" % r["action"])
+    return out
+
+
+def pattern_signature(recipe):
+    """sorted list - see the block comment. [] when the recipe cannot be read."""
+    try:
+        plans = plan_files(recipe)[0] if recipe.lower().endswith(".py") else [recipe]
+    except Exception:                                                              # noqa: BLE001
+        plans = []
+    return sorted(_plan_signature(plans) | (_call_signature(recipe) if recipe.lower().endswith(".py") else set()))
+
+
+def _run_pattern(r, recs):
+    """The signature of one stage_runs record: its own `pattern`, else recomputed under the md5 conditions, else None."""
+    if isinstance(r.get("pattern"), list):
+        return set(r["pattern"])
+    s = os.path.join(ROOT, r.get("script") or "")
+    if not os.path.isfile(s) or sha256(s) != r.get("sha256"):
+        return None
+    pm = plan_md5s(s)
+    if not any(x.get("kind") == "prerun" and x.get("status") == "PASS" and x.get("sha256") == r.get("sha256")
+               and x.get("plan_md5s") == pm for x in recs):
+        return None
+    return set(pattern_signature(s))
+
+
+def _run_clean(r):
+    import protocol as P
+    lg = os.path.join(ROOT, r.get("log") or "")
+    if not r.get("log") or not os.path.isfile(lg):
+        return False
+    try:
+        text = REAL_OPEN(lg, encoding="utf-8", errors="replace").read()
+    except OSError:
+        return False
+    _ts, _cmd, seg = P.last_segment(text)
+    v = P.run_verdict(seg)
+    return v.get("source") != "none" and not v.get("failed")
+
+
+def proven_pattern(recipe, runs=None, recs=None):
+    """(proven: bool, stages: [stage keys whose clean run covers this signature], signature: [..])."""
+    sig = set(pattern_signature(recipe))
+    if not sig:
+        return False, [], []
+    runs = read_stage_runs() if runs is None else runs
+    recs = read_records() if recs is None else recs
+    own = stage_key(recipe) if recipe.lower().endswith(".py") else unit_key(recipe)
+    hits = []
+    for r in runs:
+        k = r.get("stage")
+        if r.get("by") != COUNTED_BY or not k or k == own or k in hits:
+            continue
+        pat = _run_pattern(r, recs)
+        if pat is None or not sig <= pat:
+            continue
+        if _run_clean(r):
+            hits.append(k)
+    return len(hits) >= PROVEN_MIN, sorted(hits), sorted(sig)
+
+
+# ------------------------------------------------------------------------------ PROVISIONAL BASE + REBASE (card chat-P1)
+# Item 1 (pipeline): the prep card plans stage N+1 while stage N runs in LabVIEW, on stagesim's END graph of N
+# (tools/bench/sim/<stage N>/...). Its plan says so: base = {path, md5, provisional: true, sim_of: {plan, md5}} (docs/
+# protocol/stageplan.json `baseref`). It gets dry / prerun / prior-art on that base offline, but it is NEVER launched on
+# it (_check_units refuses). When N's saved artefact exists, `--rebase <plan> --graph <real graph of N's artefact>`:
+#   1. refuses when N's plan (sim_of.plan) is not the md5 N+1 was simulated on (N changed -> re-plan N+1);
+#   2. binds every object the simulation of N CREATED (negative uids in the provisional base) to the real object that
+#      appeared between N's base graph and the real graph - grouped by (class, terminal keys), exactly one on each side
+#      or it REFUSES (ambiguous); terminals by (term_class, direction, name); wires and new frame diagrams through the
+#      bound terminals; a uid LabVIEW re-issued to another object (stagexec.uid_reuse) refuses;
+#   3. rewrites N+1's uid fields through that binding (stagexec.translate's rule, applied to the plan's fields), refuses
+#      an unbound negative or a positive uid the real graph does not hold, sets base = the real graph {path, md5} and
+#      drops provisional / sim_of / final / finalized;
+#   4. re-simulates N+1 on the real base (stagesim.simulate) - its step files were computed on the provisional graph.
+# The plan md5 changes, so --dry and --prerun must run again (offline, seconds); the recipe .py is unchanged, so its
+# prior-art review stays valid.
+UID_FIELDS = ("dest_diagram", "loop", "body", "parent", "uid", "diagram", "wire_uid", "donor_uid")
+ADDR_FIELDS = ("at", "src", "dst", "born_on", "on")
+
+
+def provisional_plans(s, plan=None):
+    """[(plan path, sim_of)] for every stageplan this unit would run whose base is provisional."""
+    try:
+        cands = [plan] if plan else [p for p in plan_files(s)[0] if is_stageplan(p)]
+    except Exception:                                                              # noqa: BLE001
+        cands = []
+    out = []
+    for p in cands:
+        try:
+            d = json.load(REAL_OPEN(p, encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        b = d.get("base") if isinstance(d, dict) else None
+        if isinstance(b, dict) and b.get("provisional"):
+            out.append((p, b.get("sim_of")))
+    return out
+
+
+def _terms(path):
+    d = json.load(REAL_OPEN(path, encoding="utf-8"))
+    return d, [dict(r) for r in d.get("terminals") or []]
+
+
+def rebind(before, prov, real):
+    """(M: {negative uid -> real uid} | None, why). See the block comment, step 2."""
+    import stagexec as SX
+    import vigraph as V
+    ru = SX.uid_reuse(before, real)
+    if ru:
+        return None, "UID-REUSE between N's base and the real graph: {0}".format(ru[:6])
+    tkey = lambda r: (r.get("term_class", ""), bool(r["is_source"]), r.get("term_name", ""))   # noqa: E731
+    sim_new, real_new = {}, {}
+    for r in prov:
+        if V.node_of(r) < 0:
+            sim_new.setdefault(V.node_of(r), []).append(r)
+    old_t = set(r["term_uid"] for r in before)
+    for r in real:
+        if r["term_uid"] not in old_t:
+            real_new.setdefault(V.node_of(r), []).append(r)
+
+    def sig(rows):
+        return (V.node_class(rows[0]), tuple(sorted(tkey(r) for r in rows)))
+    gs, gr = {}, {}
+    for u, rows in sim_new.items():
+        gs.setdefault(sig(rows), []).append(u)
+    for u, rows in real_new.items():
+        gr.setdefault(sig(rows), []).append(u)
+    bad = ["{0} x{1} simulated vs x{2} real".format(k[0], len(gs.get(k, [])), len(gr.get(k, [])))
+           for k in sorted(set(gs) | set(gr), key=str) if len(gs.get(k, [])) != len(gr.get(k, []))]
+    if bad:
+        return None, "BINDING: the created objects differ: {0}".format(bad[:6])
+    amb = ["{0} ({1} objects)".format(k[0], len(v)) for k, v in gs.items() if len(v) > 1]
+    if amb:
+        return None, "BINDING: ambiguous - several created objects share one signature: {0}".format(amb[:6])
+    M = {}
+    for k, (su,) in gs.items():
+        (rn,) = gr[k]
+        M[su] = rn
+        rrows = dict((tkey(r), r) for r in real_new[rn])
+        if len(rrows) != len(real_new[rn]):
+            return None, "BINDING: {0} has repeated terminal keys".format(k[0])
+        for sr in sim_new[su]:
+            rr = rrows[tkey(sr)]
+            for f in ("term_uid", "wire_uid", "frame_diagram"):
+                sv, rv = sr.get(f), rr.get(f)
+                if isinstance(sv, int) and sv < 0 and isinstance(rv, int):
+                    if M.get(sv, rv) != rv:
+                        return None, "BINDING: #{0} maps to both {1} and {2}".format(sv, M[sv], rv)
+                    M[sv] = rv
+    return M, None
+
+
+def _remap_plan(plan, M, known):
+    """(new plan, unbound negatives, unknown positives) - uid fields only (UID_FIELDS, ADDR_FIELDS, nodes, open_rows)."""
+    unb, unk = set(), set()
+
+    def m(v):
+        if isinstance(v, bool) or not isinstance(v, int):
+            return v
+        if v < 0:
+            if v in M:
+                return M[v]
+            unb.add(v)
+            return v
+        if v not in known:
+            unk.add(v)
+        return v
+
+    def addr(a):
+        if isinstance(a, dict):
+            a = dict(a)
+            if "uid" in a:
+                a["uid"] = m(a["uid"])
+            if "term_uid" in a:
+                a["term_uid"] = m(a["term_uid"])
+            return a
+        if isinstance(a, str):
+            mm = re.match(r"^(-?\d+)(\..*)$", a)
+            if mm:
+                return "{0}{1}".format(m(int(mm.group(1))), mm.group(2))
+        return a
+    p = copy.deepcopy(plan)
+    for a in p.get("actions") or []:
+        for f in UID_FIELDS:
+            if f in a:
+                a[f] = m(a[f])
+        for f in ADDR_FIELDS:
+            if f in a:
+                a[f] = addr(a[f])
+        if isinstance(a.get("nodes"), list):
+            a["nodes"] = [m(x) for x in a["nodes"]]
+    for r in p.get("open_rows") or []:
+        r["node"] = m(r.get("node"))
+    return p, sorted(unb), sorted(unk)
+
+
+def rebase(plan_path, graph_path, log=print, simulate=True, out_root=None, model_dir=None):
+    """(ok, detail) - see the block comment. Writes the rebased plan to plan_path only when every check passes."""
+    plan = json.load(REAL_OPEN(plan_path, encoding="utf-8"))
+    b = plan.get("base") if isinstance(plan.get("base"), dict) else {}
+    if not b.get("provisional"):
+        return False, "{0}: base is not provisional - nothing to rebase".format(rel(plan_path))
+    so = b.get("sim_of") or {}
+    pn = so.get("plan") and (so["plan"] if os.path.isabs(so["plan"]) else os.path.join(ROOT, so["plan"]))
+    if not pn or not os.path.isfile(pn):
+        return False, "base.sim_of.plan {0!r} missing".format(so.get("plan"))
+    if md5(pn) != so.get("md5"):
+        return False, ("REBASE REFUSED: {0} changed since stage N+1 was simulated on it (md5 {1} != sim_of {2}) - "
+                       "re-simulate N+1 on N's new end graph").format(rel(pn), md5(pn), so.get("md5"))
+    dn = json.load(REAL_OPEN(pn, encoding="utf-8"))
+    bn = (dn.get("finalized") or {}).get("base") or dn.get("base") or {}
+    if not bn.get("path"):
+        return False, "stage N's plan {0} names no base graph".format(rel(pn))
+    _gb, before = _terms(bn["path"] if os.path.isabs(bn["path"]) else os.path.join(ROOT, bn["path"]))
+    _gp, prov = _terms(b["path"] if os.path.isabs(b["path"]) else os.path.join(ROOT, b["path"]))
+    greal, real = _terms(graph_path)
+    M, why = rebind(before, prov, real)
+    if M is None:
+        return False, "REBASE REFUSED: " + why
+    known = set()
+    for r in real:
+        known.update(x for x in (r.get("owner_uid"), r.get("term_uid"), r.get("frame_diagram"), r.get("wire_uid"))
+                     if isinstance(x, int))
+    known.update(int(o["uid"]) for o in greal.get("objs") or [] if isinstance(o, dict) and isinstance(o.get("uid"), int))
+    new, unb, unk = _remap_plan(plan, M, known)
+    if unb or unk:
+        return False, ("REBASE REFUSED: unbound created uid(s) {0}; uid(s) the real graph does not hold {1}".format(
+            unb[:12], unk[:12]))
+    new["base"] = {"path": rel(graph_path).replace("\\", "/"), "md5": md5(graph_path)}
+    new.pop("final", None)
+    new.pop("finalized", None)
+    with REAL_OPEN(plan_path, "w", encoding="utf-8") as f:
+        json.dump(new, f, indent=1)
+    detail = "rebased {0}: {1} uid(s) bound, base -> {2}".format(rel(plan_path), len(M), new["base"]["path"])
+    if not simulate:
+        return True, detail + " (not re-simulated)"
+    import stagesim as SS
+    kw = {"plan_out_dir": os.path.dirname(os.path.abspath(plan_path)), "log": log}
+    if out_root:
+        kw["out_root"] = out_root
+    if model_dir:
+        kw["model_dir"] = model_dir
+    S = SS.simulate(plan_path, graph_path, **kw)
+    outp = S["plan_out"]["path"]
+    outp = outp if os.path.isabs(outp) else os.path.join(ROOT, outp)
+    if os.path.normcase(os.path.abspath(outp)) != os.path.normcase(os.path.abspath(plan_path)):
+        shutil.copyfile(outp, plan_path)
+    return bool(S["final"]), detail + "; re-simulated on the real base: final={0} failed={1}".format(S["final"], S["failed"])
+
+
 def record_stage_run(s, ck, card_id, cmd, by=COUNTED_BY, extra=None):
     rec = {"t": time.time(), "iso": time.strftime("%Y-%m-%d %H:%M:%S"), "cycle": ck, "stage": stage_key(s),
            "script": rel(s), "sha256": sha256(s), "card": card_id, "cap": RETRY_CAP, "by": by}
@@ -2268,9 +2591,13 @@ def record_started(cmdline, log=None, pid=None):
     m = RETRY_CARD_RE.search(cmdline or "")
     for s, plan in units:
         _ok, _why, cid = check_cap(cmdline, plan or s, runs, ck)
+        try:
+            pat = pattern_signature(plan or s)       # card chat-P1 2a: the mechanism this run exercises
+        except Exception:                                                          # noqa: BLE001
+            pat = None
         out.append(record_stage_run(plan or s, ck, cid, cmdline, by=COUNTED_BY,
                                     extra={"log": rel(log) if log else None, "pid": pid,
-                                           "retry_card_path": m.group(1) if m else None}))
+                                           "retry_card_path": m.group(1) if m else None, "pattern": pat}))
         runs.append(out[-1])
     return out
 
@@ -2421,6 +2748,13 @@ def _check_units(units, cmd):
     for s, plan in units:
         if not os.path.isfile(s) or (plan and not os.path.isfile(plan)):
             return False, "launch gate: {0} does not exist".format(rel(plan or s))
+        prov = provisional_plans(s, plan)                 # card chat-P1 item 1: a plan on a SIMULATED base never runs
+        if prov:
+            return False, ("LAUNCH GATE (card chat-P1 pipeline): {0} is planned on a PROVISIONAL base (stagesim's end graph "
+                           "of the previous stage, base.sim_of {1}). Read the previous stage's SAVED artefact into a graph "
+                           "and rebase first:\n  py tools/stage_prerun.py --rebase {0} --graph <real graph JSON>\n"
+                           "then re-run --dry and --prerun (the plan md5 changes).\n").format(
+                               rel(prov[0][0]), prov[0][1])
         sha, pm = sha256(s), ({rel(plan): md5(plan)} if plan else plan_md5s(s))
         what = rel(plan) if plan else rel(s)             # a plan run is pre-run BY ITS PLAN (card chat-S3)
         ok = {}
@@ -2462,6 +2796,9 @@ def main(argv=None):
     ap.add_argument("--opmodel-conformance", nargs="*", help="card 115-1: X13 over these stageplan ops (none = every "
                                                             "opmodels/*.json); exit 0 / 2 on a FAILED sample")
     ap.add_argument("--disable", help="with --opmodel-conformance: 'cfw_border_rule' = the A2 negative run")
+    ap.add_argument("--rebase", help="card chat-P1: re-bind a stageplan planned on a PROVISIONAL base (needs --graph = "
+                                     "the real graph read of the previous stage's saved artefact); exit 0 / 2")
+    ap.add_argument("--no-sim", action="store_true", help="with --rebase: do not re-simulate (self-tests)")
     # card 103-1: unknown arguments pass through to the recipe's own sys.argv (e.g. stage_d1_disp.py `--stop-after 40`,
     # PART-A mode), so a recipe mode can be dry-run / pre-run exactly as it will be launched; they must follow the recipe.
     a, rest = ap.parse_known_args(argv)
@@ -2501,6 +2838,18 @@ def main(argv=None):
             if not fl:
                 print("CLEAN {0}".format(rel(p)))
         return 2 if unl else 0
+    if a.rebase:
+        import protocol as P
+        if not a.graph:
+            ap.error("--rebase needs --graph <real graph JSON of the previous stage's saved artefact>")
+        try:
+            ok, why = rebase(os.path.abspath(a.rebase), os.path.abspath(a.graph), simulate=not a.no_sim)
+        except Exception as e:                                                     # noqa: BLE001
+            ok, why = False, "rebase raised {0}: {1}".format(type(e).__name__, str(e)[:300])
+        print(("REBASED " if ok else "") + why, flush=True)
+        arts = [{"path": rel(os.path.abspath(a.rebase)), "md5": md5(os.path.abspath(a.rebase))}] if ok else []
+        print(P.result_line(P.make_result(int(ok), int(not ok), None if ok else why[:200], arts)), flush=True)
+        return 0 if ok else 2
     if a.check_launch is not None:
         ok, why = check_launch(a.check_launch)
         print("ALLOW" if ok else why)
@@ -2531,6 +2880,8 @@ def main(argv=None):
             g_ = g_ + [("X13 opmodel conformance (card 115-1)", x13_ok, json.dumps(x13_det, default=str)[:600])]
             print("  {0}  {1}  {2}".format("PASS" if x13_ok else "FAIL", g_[-1][0], g_[-1][2][:400]), flush=True)
             ok = ok and not cpl and not bao and x13_ok
+            # card chat-P1 item 4: X14 rows-per-step ADVISORY on the plan's own actions (never a gate)
+            x14_advisory(recipe, len(json.load(open(recipe, encoding="utf-8")).get("actions") or []))
             st = "PASS" if ok else "FAIL"
             npass, nfail = sum(1 for x in g_ if x[1]), sum(1 for x in g_ if not x[1])
             ff = next((x[0] + ": " + x[2] for x in g_ if not x[1]), None)

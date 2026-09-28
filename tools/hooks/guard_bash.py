@@ -33,7 +33,11 @@ MARKER_LOG = os.path.join(HERE, "material_marker.log")
 # Command position, like MATERIAL_RE: `grep retrospective.py ...` is reading, not running. `retrospective_v1.py`
 # cannot match - the pattern requires `.py` immediately after `retrospective` - and that is deliberate: v1 is
 # frozen and kept runnable for the v1/v2 comparison only, so running it does not close a cycle.
-RETRO_RE = re.compile(r"\bpy(?:thon)?[\w.]*\s+(?:-\S+\s+)*[^\s|;&]*\bretrospective\.py\b", re.I)
+# card chat-P1 item 2b (user 2026-09-28): the retrospective runs every third cycle; a cycle that does not owe one closes
+# with `py tools/retro_due.py --cycle N --close`, and that command closes the session exactly like the retrospective -
+# next_gate (next.json first) and mark_retro_done both hold for it. Without `--close`, retro_due.py is a read.
+RETRO_RE = re.compile(r"\bpy(?:thon)?[\w.]*\s+(?:-\S+\s+)*[^\s|;&]*\b(?:retrospective\.py\b|"
+                      r"retro_due\.py\b(?=[^|;&\n]*\s--close\b))", re.I)
 sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(os.path.dirname(HERE)))     # tools/ - for stop_record
 import guard_session  # noqa: E402  - ONE definition of the per-session state file

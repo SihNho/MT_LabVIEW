@@ -14,6 +14,12 @@ Prose cannot enforce "now stop" on the session that is enjoying itself. So two r
       (recorded by `tools/hooks/guard_bash.py`, which sees the command), any further material dispatch is
       refused. A retrospective reviews a cycle; work done after it belongs to a cycle nobody reviewed.
   (c) NO SendMessage RESUME in a cycle session (CYCLE_SESSION=1), 2026-09-24 - see send_message_refusal().
+  (d) PIPELINE (card chat-P1 item 1, user 2026-09-28 "1~4번은 적용하도록"): a dispatch whose prompt is `CARD <path>`
+      is tracked as LIVE in st["live"] = [{id, labview, t, minutes, card}] until its result_<id>.json exists (newer
+      than the dispatch) or budget.minutes x 1.5 have passed. At most MAX_LIVE (2) cards are live, at most ONE of
+      them with flags.labview != "none" (one COM client). A labview:none card dispatched while a LabVIEW card is live
+      is a PREP card: it counts in st["prep"] (budget PREP_BUDGET = 3), not in MAX_DISPATCHES. The state file is
+      read-modified-written under a lock file (two Agent calls in one message run this hook concurrently).
 
 STATE: `tools/bench/session_<session_id>.json` = {"dispatches": n, "retro_done": bool, ...}. A file, not a
 memory - CLAUDE.md: "a rule whose counter is my memory is not a rule at all". `.json`, so no log gate globs it.
@@ -28,6 +34,7 @@ import json
 import os
 import re
 import sys
+import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
@@ -43,6 +50,11 @@ COUNTED = {"material", "material-opus-max", "material-fable-low", "material-fabl
 # had for a day: a gate that never fires looks exactly like a gate that passes).
 AGENT_TOOLS = ("Agent", "Task")
 SAFE_RE = re.compile(r"[^A-Za-z0-9._-]")
+MAX_LIVE = 2                # card chat-P1 (1): one LabVIEW card + one offline prep card
+PREP_BUDGET = 3             # offline cards dispatched while a LabVIEW card is live
+LIVE_FACTOR = 1.5           # a card with no result is dead after budget.minutes x this
+CARD_RE = re.compile(r"^\s*CARD\s+(\S+)", re.M)
+sys.path.insert(0, os.path.dirname(HERE))       # tools/ - protocol.file_lock (one lock definition)
 
 
 def session_id(data=None):
@@ -84,11 +96,57 @@ def mark_retro_done(sid):
 
     It lives here, not there, so there is ONE definition of the session state file (logclass.py's lesson:
     a classifier that three files each maintain separately is three classifiers)."""
-    d = load(sid)
-    if not d.get("retro_done"):
+    try:
+        with _lock(sid):
+            d = load(sid)
+            if not d.get("retro_done"):
+                d["retro_done"] = True
+                save(sid, d)
+            return d
+    except TimeoutError:                 # observe-only: never wedge guard_bash; fall back to the unlocked write
+        d = load(sid)
         d["retro_done"] = True
         save(sid, d)
-    return d
+        return d
+
+
+def _lock(sid):
+    import protocol
+    return protocol.file_lock(state_path(sid) + ".lock")
+
+
+def card_of_prompt(prompt):
+    """(card dict | None, card abs path | None) for a `CARD <path>` prompt. An unreadable card -> ({}, path)."""
+    m = CARD_RE.search(prompt or "")
+    if not m:
+        return None, None
+    p = m.group(1).strip("\"'")
+    p = p if os.path.isabs(p) else os.path.join(ROOT, p)
+    try:
+        with open(p, encoding="utf-8") as f:
+            c = json.load(f)
+        return (c if isinstance(c, dict) else {}), p
+    except (OSError, ValueError):
+        return {}, p
+
+
+def prune_live(live, now=None):
+    """The entries still live: no result_<id>.json newer than the dispatch beside the card, and younger than
+    budget.minutes x LIVE_FACTOR."""
+    now = now or time.time()
+    out = []
+    for e in live or []:
+        res = os.path.join(os.path.dirname(e.get("card") or os.path.join(BENCH, "cards", "x")),
+                           "result_%s.json" % e.get("id"))
+        try:
+            if os.path.getmtime(res) >= float(e.get("t", 0)) - 5:
+                continue
+        except OSError:
+            pass
+        if now - float(e.get("t", 0)) > float(e.get("minutes") or 60) * 60 * LIVE_FACTOR:
+            continue
+        out.append(e)
+    return out
 
 
 def send_message_refusal(data):
@@ -138,6 +196,17 @@ def main():
     else:
         return 0
     sid = session_id(data)
+    try:
+        with _lock(sid):
+            return decide(sid, sub, ti)
+    except TimeoutError as e:
+        sys.stderr.write("BLOCKED by tools/hooks/guard_session.py: the session state lock is busy (%s) - retry the "
+                         "dispatch in a moment.\n" % e)
+        return 2
+
+
+def decide(sid, sub, ti):
+    """The counted-dispatch decision, run under the session-state lock. 0 allow / 2 refuse."""
     st = load(sid)
     if st.get("retro_done"):
         sys.stderr.write(
@@ -149,6 +218,44 @@ def main():
             "Write the NEXT line and end the session; `tools/cycle_runner.py` spawns the next cycle fresh.\n"
             % (os.path.relpath(state_path(sid), ROOT), st.get("dispatches")))
         return 2
+    # (d) PIPELINE - only a `CARD <path>` dispatch is tracked; a prose prompt counts exactly as before.
+    card, cpath = card_of_prompt(ti.get("prompt") if sub != "sendmessage-resume" else "")
+    entry = None
+    live = prune_live(st.get("live"))
+    if card is not None:
+        cid = str(card.get("id") or os.path.basename(cpath or "?"))
+        lv = str(((card.get("flags") or {}).get("labview")) or "none") if card else "read"   # unreadable: fail closed
+        live = [e for e in live if e.get("id") != cid]          # a re-dispatch of the same card replaces its entry
+        lv_live = [e for e in live if e.get("labview") != "none"]
+        if len(live) >= MAX_LIVE:
+            sys.stderr.write(
+                "BLOCKED by tools/hooks/guard_session.py: PIPELINE FULL - %d cards are live (%s).\n"
+                "Card chat-P1 (user 2026-09-28): at most %d cards run at once - one LabVIEW card and one offline prep\n"
+                "card. Wait for one to return (its result_<id>.json) before dispatching %s.\n"
+                % (len(live), ", ".join("%s[%s]" % (e.get("id"), e.get("labview")) for e in live), MAX_LIVE, cid))
+            return 2
+        if lv != "none" and lv_live:
+            sys.stderr.write(
+                "BLOCKED by tools/hooks/guard_session.py: a second LabVIEW card while %s (labview %s) is live.\n"
+                "One COM client at a time: card %s has flags.labview=%r. Only a labview:none card may run beside a\n"
+                "LabVIEW card (card chat-P1 pipeline).\n" % (lv_live[0].get("id"), lv_live[0].get("labview"), cid, lv))
+            return 2
+        entry = {"id": cid, "labview": lv, "t": time.time(), "card": cpath,
+                 "minutes": (card.get("budget") or {}).get("minutes") if card else None}
+        if lv == "none" and lv_live:
+            p = int(st.get("prep", 0)) + 1
+            if p > PREP_BUDGET:
+                sys.stderr.write(
+                    "BLOCKED by tools/hooks/guard_session.py: PREP BUDGET SPENT (%d offline cards beside a LabVIEW card).\n"
+                    "Card chat-P1: an offline prep card dispatched while a LabVIEW card is live counts in its own budget\n"
+                    "of %d, not in the %d-dispatch cap. Wait for %s to return.\n"
+                    % (PREP_BUDGET, PREP_BUDGET, MAX_DISPATCHES, lv_live[0].get("id")))
+                return 2
+            st["prep"] = p
+            st["live"] = live + [entry]
+            st["last_subagent"] = sub
+            save(sid, st)
+            return 0
     n = int(st.get("dispatches", 0)) + 1
     if n > MAX_DISPATCHES:
         sys.stderr.write(
@@ -163,6 +270,8 @@ def main():
         return 2
     st["dispatches"] = n
     st["last_subagent"] = sub
+    if entry is not None:
+        st["live"] = live + [entry]
     save(sid, st)
     return 0
 

@@ -1,0 +1,59 @@
+BGRUN START 2026-09-28 10:21:18 limit 10.0 min: py -u tools/bench/selftest_chat_p1.py
+BGRUN PID 16136
+  ok   B1 12 concurrent binds all survive (lock)                  12/12 []
+  ok   S1 LabVIEW card A dispatched                               0
+  ok   S2 a 2nd LabVIEW card (labview read) is REFUSED            BLOCKED by tools/hooks/guard_session.py: a second LabVIEW card while p1s-A (labview build)
+  ok   S3 offline card allowed as PREP, dispatches unchanged      (0, 1, 1)
+  ok   S4 a 3rd live card is REFUSED (PIPELINE FULL)              BLOCKED by tools/hooks/guard_session.py: PIPELINE FULL - 2 cards are live (p1s-A[build], p
+  ok   S5 A's result frees its slot: LabVIEW card B allowed       (0, [{'id': 'p1s-C', 'labview': 'none', 't': 1790558479.3345757, 'card': 'C:\\Users\\KimLab\\AppData\\Local\\Temp\\p1st_g7e_019b\\cards_s\\task_p1s-C.
+  ok   S6 the 4th prep card beside a LabVIEW card is REFUSED (PREP BUDGET 3) [('E', 0, False), ('F', 0, False), ('G', 2, True)]
+  ok   S7 4 concurrent prose dispatches are all counted (state lock) ([0, 0, 0, 0], 4)
+  ok   O1 offline card NOT blocked by another card's failing log  (0, 'RULE-OFFLINE-CARD | 2026-09-28 10:21:20 | C:\\Users\\KimLab\\AppData\\Local\\Temp\\p1s')
+  ok   O2 a labview:build card is not exempted                    
+  ok   O3 an LV-touching command is not exempted (offline card)   
+  ok   O4 an unbound caller is not exempted                       
+  ok   F1 gate_fp log without file:line evidence is REFUSED       REFUSED: --why must cite the evidence as file:line (got 'no citation here')
+
+  ok   F2 log + dedupe on gate+line (card merged)                 ('fp-1', ['c1', 'c2'])
+  ok   F3 RULE-GATE-FP discharges a checker entry naming the failing log (0, 'RULE-GATE-FP | 2026-09-28 10:21:20 | C:\\Users\\KimLab\\AppData\\Local\\Temp\\p1st_g7e_019b\\gp_bench\\diag_')
+  ok   F4 a 2nd entry of the same gate in the same cycle does NOT discharge gate checker:stage_prerun:X5 already discharged fp-1 in cycle 116 (one per gate per cycle)
+  ok   F5 a non-checker gate never discharges                     entry fp-3 names the log but its gate 'labview:census' is not a checker
+  ok   F6 a LabVIEW observation never discharges                  the failure line is a LabVIEW observation, not a checker's false positive
+  ok   F7 drain needs an existing fix; then closes the entry      --fixed path does not exist: tools/no_such_file.py
+  ok   F8 due at >= 5 open (not before)                           gate-fp queue: 8 open (fp-2, fp-3, fp-4, fp-5, fp-6, fp-7, fp-8, fp-9); DUE: 8 open (>= 5) - spend O
+  ok   F9 is_checker_gate: guard_* and checker:<tool> only        
+  ok   C1 a running review of ANOTHER recipe does not block (timing) BLOCKED by tools/hooks/guard_cycle.py: this RECIPE HAS NO PRIOR-ART RE
+  ok   C2 naming THIS recipe, or no START line, blocks            
+  ok   C3 a --no-recipe review blocks no recipe                   BLOCKED by tools/hooks/guard_cycle.py: this RECIPE HAS NO PRIOR-ART RE
+  ok   C4 backstop constants 30 builds / 24 h                     
+  ok   P4 signature = ops + create classes + K./SX. calls         ['K.run', 'SX.Executor', 'create:Local', 'op:create', 'op:wire']
+  ok   P1 two other clean stages covering the signature -> proven (True, ['stage_a.py', 'stage_b.py'])
+  ok   P2 one clean + one failed -> NOT proven                    (False, ['stage_a.py'])
+  ok   P3 an old record whose script sha moved is not counted (fail closed) (False, ['stage_a.py'])
+  ok   R2 a provisional plan validates against stageplan/1 (baseref) OK stageplan/1
+  ok   R1 a provisional base is REFUSED at launch                 LAUNCH GATE (card chat-P1 pipeline): C:/Users/KimLab/AppData/Local/Temp/p1st_g7e_019b/rb/t
+  ok   R3 --rebase binds sim uids to the real ones                ('rebased C:/Users/KimLab/AppData/Local/Temp/p1st_g7e_019b/rb/tools/recipes/plan_p1m.json: 3 uid(s) bound, base -> C:/Users/KimLab/AppData/Local/Temp/
+  ok   R4 base -> real graph, provisional/final/finalized dropped, still valid {'path': 'C:/Users/KimLab/AppData/Local/Temp/p1st_g7e_019b/rb/tools/recipes/g_real.json', 'md5': '031830f1e16c4c422365e04128febf37'}
+  ok   R5 after --rebase the provisional refusal is gone          LAUNCH GATE (CLAUDE.md §3 'Stages are SIMULATED', decisions 1/2): C:/Users/KimLab/AppData/
+  ok   R6 a changed N plan REFUSES the rebase (re-simulate)       REBASE REFUSED: C:/Users/KimLab/AppData/Local/Temp/p1st_g7e_019b/rb/tools/recipes/plan_p1n
+  ok   X1 unproven: budget 15, WARN over, INFO under              ['  WARN  X14 rows 30, budget 15 (proven: no)', '  INFO  X14 rows 10, budget 15 (proven: no)']
+  ok   X2 proven: budget 25, 20 rows no WARN                        INFO  X14 rows 20, budget 25 (proven: stage_a.py, stage_b.py)
+  ok   X3 X14 is never a gate                                     
+  ok   D1 not due: 2 cards since the retro, delivered             ([], {'cycle': 202, 'since_retro': [201, 202], 'retro': 'C:\\Users\\KimLab\\AppData\\Local\\Temp\\p1st_g7e_019b\\rd_peer\\2026-09-28-retrospective-cyc
+  ok   D2 due at 3 cycle cards since the newest retrospective     ['(a) 3 cycle card(s) since the newest answered retrospective 2026-09-28-retrospective-cycle200.md (every 3)']
+  ok   D3 due when the cycle delivered no claudeDev .vi           ['(b) cycle 204 has no PASS result/1 with a claudeDev .vi artefact']
+NOT DUE: 2 cycle card(s) since the newest retrospective (C:\Users\KimLab\AppData\Local\Temp\p1st_g7e_019b\rd_peer\2026-09-28-retrospective-cycle200.md), delivered ['204-1'], no slug near threshold
+CLOSED cycle 204 without a retrospective (not due) - record C:\Users\KimLab\AppData\Local\Temp\p1st_g7e_019b\retro_due.jsonl
+DUE  (a) 3 cycle card(s) since the newest answered retrospective 2026-09-28-retrospective-cycle200.md (every 3)
+DUE  (b) cycle 205 has no PASS result/1 with a claudeDev .vi artefact
+NOT CLOSED: the retrospective is due - run `py tools/bgrun.py --max-min 10 --log tools/bench/retro.log -- py tools/retrospective.py --cycle 205`
+  ok   D4 --close records CLOSED when not due, refuses (rc 1) when due (0, 1, [True, False])
+  ok   D5 RETRO_RE: `retro_due.py --close` and retrospective.py only [True, False, False, True]
+  ok   D6 guard_bash: `retro_due.py --close` closes the session (retro_done) (0, '')
+  ok   U1 gates_due carries a gate-fp item                        [{'gate': 'gate-fp', 'due': True, 'detail': 'gate-fp queue: 8 open (fp-2, fp-3, fp-4, fp-5, fp-6, fp-7, fp-8, fp-9); DUE: 8 open (>= 5) - spend ONE to
+RETRO-DUE | 2026-09-28 10:21:22 | cycle 7 | DUE, none archived, not run (dry run): (b) cycle 7 has no PASS result/1 with a claudeDev .vi artefact
+  ok   U2 retro_fallback: DUE, none archived, not run in a dry run RETRO-DUE | 2026-09-28 10:21:22 | cycle 7 | DUE, none archived, not run (dry run): (b) cycle 7 has n
+
+SUMMARY 46/46 gates pass
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":46,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 5s
