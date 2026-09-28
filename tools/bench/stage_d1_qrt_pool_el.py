@@ -43,9 +43,10 @@ if all(ok for _l, ok in gates):
     def _read(*a, **k):
         k["max_steps"] = 180
         r = _orig(*a, **k); RD["max_steps"] = r.get("max_steps"); return r              # noqa: E702
-    E.read, sys.argv = _read, [sys.argv[0], "--vi", NEW, "--expected", PREV]
+    # card chat-P2 item 3: the SCRATCH read is count-only (full read follows inside EC.main if the class counts differ); the FINAL read is always full
+    E.read, sys.argv = _read, [sys.argv[0], "--vi", NEW, "--expected", PREV] + (["--count-only", "--role", "scratch"] if MODE == "scratch" else ["--role", "final"])
     EC.main()
-    new = sorted(p for p in set(glob.glob(os.path.join(B, "errorlist_%s_*.json" % STEM))) - before if not p.endswith(("_raw.json", "_reuse.json")))
+    new = sorted(p for p in set(glob.glob(os.path.join(B, "errorlist_%s_*.json" % STEM))) - before if not p.endswith(("_raw.json", "_raw_full.json", "_reuse.json")))
     gate("R the reader wrote ONE read file (max_steps {0})".format(RD.get("max_steps")), len(new) == 1, new)
     if len(new) == 1:
         R = json.load(open(new[0], encoding="utf-8"))

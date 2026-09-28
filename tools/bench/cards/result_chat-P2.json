@@ -1,0 +1,36 @@
+{
+ "schema": "result/1",
+ "id": "chat-P2",
+ "status": "BLOCKED",
+ "gates": {"pass": 19, "fail": 1},
+ "first_fail": "selftest_guard_cycle_offline O3/O4: launch of stage_d1_l2b2a allowed (rc 0), fixture expects refusal; its review was released by FIXED lines since (pre-existing drift)",
+ "blocked_by": {"device": "gate-fp:fp-9", "message": "guard_peer owes a hypothesis review for p2run_selftest_guard_cycle_offline.log (flags.peers [] forbids; fp-9 checker=False). Not run: stage_prerun_* x11, guard_cycle_rerun, stoprecord c116a/c107/table, prerun_diag, c110, c111c, c103d; cycle_runner selftest refused (fp-8)"},
+ "artefacts": [
+  {"path": "docs/user-rules.md", "md5": "9e0396da1b6fd9227a6e0ca850337cd5"},
+  {"path": "tools/bench/selftest_chat_p2.py", "md5": "2143a74aa55f2bef29dcc0c78ab8562f"},
+  {"path": "tools/cycle_prompt.md", "md5": "d5b3d1db32dde5a814b9be2f0386c46d"},
+  {"path": "tools/hooks/guard_session.py", "md5": "e38bf15d67d104c86db0679c447066ef"},
+  {"path": "tools/errorlist_check.py", "md5": "751aec6a12029af5db52e2d5062facea"},
+  {"path": "tools/doc_lint.py", "md5": "f7c20e494d674a09875853651c8db71b"},
+  {"path": ".claude/agents/material.md", "md5": "1484b3f2b7d1c2f3db9f440e2845dc5d"}
+ ],
+ "facts": [
+  "item1: docs/user-rules.md U1-U13 verbatim+date+source; prior_art_review.py:250 build_task attaches it + PART C question; slug user-rule-contradicted guard_cycle.py:75",
+  "item1: doc_lint.py:429 L9 WARN on Pre-decided items >=238 without USER-RULES:; repo run PASS; cycle_prompt.md USER-RULES rule; stage_prerun.py:2382 new_structure_classes named in guard_cycle refusal",
+  "item2: protocol.py:825 refuses a NEW bgrun recipe/diag launch >60 min after first bind (:535 keeps first_bound); reads pass; 4 material*.md + cycle_prompt: return at first unexpected result",
+  "item3: errorlist_check.py:449-475 --count-only --role scratch (no dclick; full read at once if class counts differ); --role final always full; stage_d1_qrt_pool_el.py scratch/final wired",
+  "item4: stage_prerun.py:2800 escalation_route; guard_session.py:219 refuses material-opus-max/fable-* when failure repeats same function (chain or last two stage runs), unless newer scratch PASS",
+  "selftest_chat_p2.log 25/25 PASS (U1-5,N1-2,L1-2,A1-6,E1-4,S1-6); first run 24/25 was a case bug in the test's A1 assertion, logged fp-7 and discharged by RULE-GATE-FP",
+  "green (tools/bench/p2run_*.log): chat_p1 46, guard_session 20, protocol 48, wiring 66, requires 7, ladder 13, ff 5, scratch 7, launch 28, retry 8, errorlist 5/4/18, gc_fixed 2, stoprec 6/5/36",
+  "p2run_selftest_guard_cycle_offline.log:5-6 O3/O4 FAIL: fixture = real 09-27 state; archive/peer/2026-09-27-priorart-c111e-l2b2a.md:543-547 released all 5 slugs since",
+  "earlier O3 PASS was an unrelated retro-threshold block (selftest_guard_cycle_offline_p1after.log:3); my guard_cycle edits only add a slug and refusal text",
+  "gate-fp queued: fp-7 guard_peer (selftest classifier via errorlist_check lazy import), fp-8 guard_card RUNNER_CMD_RE matches selftest_cycle_runner name (protocol.py:397), fp-9 stale fixture"
+ ],
+ "open": [
+  "Material 'step' scope: I let offline self-test iterations inside a tool-build card continue (material*.md); confirm or tighten.",
+  "selftest_guard_cycle_offline.py needs a fabricated fixture (its premise was released by FIXED lines); who fixes it, and is a hypothesis review still owed for that log?",
+  "guard_session.py now imports stage_prerun (lazy), so guard_peer classes selftest_guard_session/guard_session as LabVIEW-touching (stricter, not looser)."
+ ],
+ "cost": {"usd": null, "minutes": 60, "labview_runs": 0},
+ "note": "One commit. No LabVIEW, runner not started, STATUS STOP untouched. Error List minutes saved: measured on the next stage run. Remaining self-tests wait on the guard_peer review."
+}

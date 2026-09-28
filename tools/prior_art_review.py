@@ -61,9 +61,16 @@ PART B - THE ARTIFACT, if the plan builds or changes one
     wiring, saving, censusing? Name the call.
  B4 ALREADY MEASURED. Has the question this artifact would answer already been measured and written down?
 
+PART C - THE USER'S RULES (card chat-P2, user 2026-09-28; docs/user-rules.md is attached in full below)
+ C1 Does this plan contradict any rule in user-rules.md? Name the rule and the plan line. Quote both. A plan that
+    puts a queue on a control signal or at the acquisition boundary, lets the camera loop wait, puts serial on the
+    frame path, or changes a per-bead number is the kind of contradiction this question exists for. If the plan
+    relies on a rule correctly, say nothing about it.
+
 End with machine-readable lines, one per finding:
   PRIOR-ART: settled-already | refuted-already | contradicted | unread-evidence
   PRIOR-ART: already-built | already-failed | helper-exists | already-measured
+  PRIOR-ART: user-rule-contradicted
   PRIOR-ART: novel
 `novel` only if none apply. Do not invent slugs.
 
@@ -219,6 +226,42 @@ def jev_advisory(slug, plan):
         pass
 
 
+# THE USER'S RULES (card chat-P2 item 1, user 2026-09-28 "1~4번 적용"): the largest loss of cycles 84-120 was a design
+# direction (the image-pool queues, PD233-237) that contradicted rules the user had already given. The file is attached
+# to EVERY dispatch - in the task text AND as a review/1 attachment (md5) - and PART C of QUESTIONS asks the one fixed
+# contradiction question. The verdict `user-rule-contradicted` is in guard_cycle.PRIOR_ART_SLUGS, so it blocks exactly
+# like every other non-`novel` slug and is released only by REFUTED:/FIXED:. A missing file is SAID in the task (the
+# reviewer is told it is absent), never silently skipped.
+USER_RULES_REL = "docs/user-rules.md"
+USER_RULES = os.path.join(ROOT, "docs", "user-rules.md")
+
+
+def user_rules_block(path=None):
+    p = path or USER_RULES
+    try:
+        with open(p, encoding="utf-8", errors="replace") as f:
+            body = f.read()
+    except OSError:
+        return ("=== docs/user-rules.md: ABSENT (card chat-P2 expects it) - answer C1 from CLAUDE.md rules 1a-1c'' "
+                "and docs/decisions.md instead, and say that the file was missing ===\n")
+    return "=== docs/user-rules.md IN FULL (the user's standing design rules; PART C asks about these) ===\n" + body
+
+
+def build_task(plan, trigger="new-op", use_index=False, status_path=None, rules_path=None):
+    """The full task text a prior-art dispatch sends (split out of main() by card chat-P2 so a self-test can check it
+    without dispatching anything)."""
+    status = ""
+    sp = status_path or os.path.join(ROOT, "STATUS.md")
+    if os.path.exists(sp):
+        with open(sp, encoding="utf-8", errors="replace") as f:
+            status = f.read()
+    return (f"PRIOR-ART REVIEW (trigger: {trigger}).\n\n{QUESTIONS}\n\n"
+            f"=== WHAT IS UNDER REVIEW ===\n{plan}\n\n"
+            f"{user_rules_block(rules_path)}\n\n"
+            f"=== STATUS.md IN FULL (the project's current decisions and state) ===\n{status}\n\n"
+            f"{inventory(use_index)}")
+
+
 def main():
     try:
         sys.stdout.reconfigure(errors="replace")
@@ -265,15 +308,7 @@ def main():
     else:
         print("need --plan or --plan-file"); return 2
 
-    status = ""
-    sp = os.path.join(ROOT, "STATUS.md")
-    if os.path.exists(sp):
-        with open(sp, encoding="utf-8", errors="replace") as f:
-            status = f.read()
-    task = (f"PRIOR-ART REVIEW (trigger: {a.trigger}).\n\n{QUESTIONS}\n\n"
-            f"=== WHAT IS UNDER REVIEW ===\n{plan}\n\n"
-            f"=== STATUS.md IN FULL (the project's current decisions and state) ===\n{status}\n\n"
-            f"{inventory(a.index)}")
+    task = build_task(plan, a.trigger, a.index)
     jev_advisory(a.slug, plan)
     scratch = os.path.join(os.environ.get("TEMP", "."), f"priorart_{a.slug}.txt")
     with open(scratch, "w", encoding="utf-8") as f:
@@ -286,7 +321,8 @@ def main():
     rcard = protocol.write_review_card(protocol.review_card(
         "priorart", "priorart-" + a.slug, "The work under review (%s) is novel - not already built, measured, "
         "refuted or covered by an existing helper in this project's files." % a.trigger,
-        attachments=[p for p in (a.recipe or []) if os.path.isfile(os.path.join(ROOT, p))]))
+        attachments=[p for p in (a.recipe or []) if os.path.isfile(os.path.join(ROOT, p))]
+        + ([USER_RULES_REL] if os.path.isfile(USER_RULES) else [])))
     try:                                   # card chat-L2: relpath RAISES across drives (ROOT on C: in a self-test,
         shown_card = os.path.relpath(rcard, ROOT)   # the card on G:) - stop_record_selftest C6 died here, rc 1
     except ValueError:

@@ -82,28 +82,35 @@ A sub-agent that "holds until the monitor fires" and returns has ENDED — nothi
 2026-09-17 that left a prior-art review running, the LabVIEW lock held, and the caller re-waking you by hand. Wait
 for your own dispatch with a bounded foreground loop that touches no LabVIEW (Bash, `timeout` up to 600000:
 `until grep -q "BGRUN END\|BGRUN TIMEOUT" <log>; do sleep 10; done`), re-issue it if the deadline passes, and only
-then continue. Return only when your work is done or the failure budget is spent.
+then continue. Return only when your work is done or a step's result differed from its prediction (next section).
 
-## Failure budget = 2
+## Return at the FIRST unexpected result — finish the step, record, return (card chat-P2, user 2026-09-28)
 
-If the same build or diagnostic fails twice, **stop**. Write the two logs' failure lines and your best two
-competing explanations into your summary and return. Do not grind a third attempt — that is the judgement
-session's call.
+User 2026-09-28 ("그렇게 1~4번 적용하여 수정하면 되겠음"), measured: cards were 93 % of cycle time and the long sinks were
+FAIL cards that kept diagnosing and retrying inside the card (116-2 95 min, 115-3 65 min). So: **when a step's result
+differs from its prediction** (a gate FAIL, a RESULT line with fail > 0, a TIMEOUT, an unexpected count), you
+1. **finish that step** — LabVIEW closed and verified gone, scratch VIs deleted, intermediate files saved, nothing of
+   yours left running;
+2. **record the facts** — the failing gate line, the values, the log path, the Jev ladder row below;
+3. **return** your `result/1` (status FAIL). Do NOT diagnose and do NOT retry inside the card: the judgement session
+   decides the retry. A "step" is a LabVIEW run, a stage/diagnostic/recipe run, or any run with a prediction contract;
+   editing and re-running offline self-tests while building a tool your card asked for is part of that build step.
+The **failure budget (2) is unchanged** as a ceiling; the first failure is now a return. **Soft 60-minute alert:** once
+your card is 60 min past its first bind, `protocol.check_command` refuses STARTING a new recipe/diagnostic bgrun
+("finish the running step and return a result"). It never kills anything and never blocks reads, docs, peers or the
+result file — finish what is running and return.
 
-## After ANY failed gate, read the Jev ladder's NEXT-ACTION first — and do it
+## After ANY failed gate, read the Jev ladder's NEXT-ACTION — and REPORT it
 
 The review ladder's verdict drives the next step; it does not only lift the review gate (user, 2026-09-24 03:5x,
 on "스크립트 버그임이 Jev로 밝혀지면 판단세션에서는 그에 맞춰 동작을 바꾸는건지"; memory principle *advisory-only is
-not delegation*). Before diagnosing, read the NEWEST `JEV-LADDER` line for that log in `tools/bench/jev_gate.log`
-(`grep "JEV-LADDER | .* | <log name> |" tools/bench/jev_gate.log | tail -1`) and follow its `NEXT-ACTION:` —
-this is a user-decided rule, not a result-dependent action taken in your session:
-- `patch the script and rerun; no review, no judgement turn` → fix our own file and rerun; the failure budget of 2
-  still counts the reruns.
-- `apply the cited review's disposition (<path>) and rerun` → do what that review's `## What was done with it`
-  section says; no new diagnosis.
-- `hypothesis review owed (old path)` (or no ladder line) → the old path: dispatch the review, then report.
-Report it to the caller as ONE table row in FACTS — `log | ladder class p | NEXT-ACTION | what you did | result` —
-never as a log excerpt.
+not delegation*). Read the NEWEST `JEV-LADDER` line for that log in `tools/bench/jev_gate.log`
+(`grep "JEV-LADDER | .* | <log name> |" tools/bench/jev_gate.log | tail -1`). Since card chat-P2 you do not act on
+it inside the card (see the section above) — the judgement session re-dispatches per its `NEXT-ACTION:`
+(`patch the script and rerun` / `apply the cited review's disposition (<path>) and rerun` / `hypothesis review owed`).
+Only exception: when your card's `flags.peers` includes `hypothesis` and the row says `review owed`, dispatch that
+review, wait for it, then return. Report it as ONE table row in FACTS —
+`log | ladder class p | NEXT-ACTION | what you did | result` — never as a log excerpt.
 
 ## If the brief contains result-dependent actions, do not take them
 

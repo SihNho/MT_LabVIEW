@@ -439,16 +439,61 @@ def license_headers(items):
     return out
 
 
+# COUNT-ONLY SCRATCH READ (card chat-P2 item 3, user 2026-09-28 "1~4번 적용"): a stage that reads the Error List of a
+# SCRATCH copy and then of the saved FINAL file paid two full reads (pool stage: scratch 664 s + final 665 s). The
+# expensive part of a full read is the per-item double-click (make_on_item: two block-diagram captures + 1.5 s each).
+# `--count-only --role scratch` walks the list WITHOUT the double-clicks (rows and details are still OCR'd, so every
+# item's text and the per-class counts are read) and compares the per-class counts with the expected file; if they
+# differ (any extra, any missing, or items != the window's own N) the FULL read runs at once on the same scratch,
+# exactly as before. `--role final` (the default) ALWAYS gets the full read: --count-only is refused for it and said so.
+def class_counts(items):
+    """{norm(raw): n} over the read items - the per-class counts a count-only read is judged by."""
+    out = {}
+    for it in items or []:
+        k = norm(it.get("raw"))
+        out[k] = out.get(k, 0) + 1
+    return dict(sorted(out.items()))
+
+
+def count_only_differs(items, n_reported, expected, derived):
+    """(differs: bool, why: str) - a count-only read is accepted only when it matches the expectation exactly."""
+    import copy
+    ex, mi, _u = compare(copy.deepcopy(items or []), expected, [dict(d) for d in derived])
+    why = []
+    if n_reported is None or len(items or []) != n_reported:
+        why.append("items %s != window N %s" % (len(items or []), n_reported))
+    if ex:
+        why.append("%d extra" % len(ex))
+    if mi:
+        why.append("%d missing" % len(mi))
+    return bool(why), "; ".join(why)
+
+
+def read_mode(count_only, role):
+    """'count' only for a scratch copy; the final saved file is always 'full'."""
+    return "count" if (count_only and role == "scratch") else "full"
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--vi", default="")
     ap.add_argument("--expected", default="")
     ap.add_argument("--status", default=os.path.join(ROOT, "STATUS.md"))
+    ap.add_argument("--count-only", action="store_true",
+                    help="card chat-P2: walk the list without the per-item double-click; full read follows at once "
+                         "if the per-class counts differ from the expected file. Honoured only with --role scratch.")
+    ap.add_argument("--role", choices=["scratch", "final"], default="final",
+                    help="what --vi is: a scratch copy (count-only allowed) or the saved final file (always full)")
     a = ap.parse_args()
+    mode = read_mode(a.count_only, a.role)
+    if a.count_only and mode != "count":
+        print("COUNT-ONLY REFUSED: --role %s - the final saved file always gets the FULL read (card chat-P2)" % a.role,
+              flush=True)
     _lv_imports()
     t0, ts = time.time(), time.strftime("%Y%m%d_%H%M%S")
     bed = a.vi or current_bed(a.status)
-    R = {"bed": bed, "stamp": ts, "errors": [], "gui_acts_outer": [], "no_vi_was_run": True, "evidence": EVID}
+    R = {"bed": bed, "stamp": ts, "errors": [], "gui_acts_outer": [], "no_vi_was_run": True, "evidence": EVID,
+         "role": a.role, "read_mode": mode, "count_only_refused": bool(a.count_only and mode != "count")}
     out = os.path.join(BENCH, "errorlist_%s_%s.json" % (os.path.splitext(os.path.basename(bed or "none"))[0], ts))
     verdict = "FAIL"
     if not bed or not os.path.exists(bed):
@@ -476,11 +521,31 @@ def main():
             time.sleep(1.0)
             R["exec_state"] = g.exec_state(scratch)
             R["block_diagram_open"] = open_diagram(scratch, R)
+            t_read = time.time()
             r = E.read(scratch, out.replace(".json", "_raw.json"), log=lambda s: print(s, flush=True),
-                       on_item=make_on_item(scratch, R))
+                       on_item=None if mode == "count" else make_on_item(scratch, R))
             R.update({k: r.get(k) for k in ("method", "n_reported", "n_reported_from", "items", "categories",
                                             "gui_acts", "closed_with_esc", "window", "ocr_engine")})
             R["errors"] += r.get("errors") or []
+            R["read_seconds"] = [round(time.time() - t_read, 1)]
+            if mode == "count":
+                R["class_counts"] = class_counts(R.get("items"))
+                differs, why = count_only_differs(R.get("items"), R.get("n_reported"), expected, derived)
+                print("COUNT-ONLY read: %d items, window N %s, %d classes, %.1f s -> %s" % (
+                    len(R.get("items") or []), R.get("n_reported"), len(R["class_counts"]), R["read_seconds"][0],
+                    ("counts DIFFER (%s): FULL read of the scratch follows" % why) if differs else "counts match"),
+                    flush=True)
+                if differs:
+                    R["read_mode"] = "count->full"
+                    R["count_only_first"] = {"items": len(R.get("items") or []), "n_reported": R.get("n_reported"),
+                                             "why": why, "class_counts": R["class_counts"]}
+                    t_read = time.time()
+                    r = E.read(scratch, out.replace(".json", "_raw_full.json"), log=lambda s: print(s, flush=True),
+                               on_item=make_on_item(scratch, R))
+                    R.update({k: r.get(k) for k in ("method", "n_reported", "n_reported_from", "items", "categories",
+                                                    "gui_acts", "closed_with_esc", "window", "ocr_engine")})
+                    R["errors"] += r.get("errors") or []
+                    R["read_seconds"].append(round(time.time() - t_read, 1))
             if not R["items"]:
                 n0, line, cap = count_zero(R)
                 R["n_reported"], R["n_reported_from"], R["zero_capture"] = (
@@ -515,7 +580,8 @@ def main():
             "window_opened": bool(R.get("window")),
             "count_read": R.get("n_reported") is not None,
             "all_items_read": R.get("n_reported") is not None and R["item_count"] == R["n_reported"],
-            "every_item_dclicked": R["dclicked"] == R["item_count"],
+            # a count-only scratch read skips the double-clicks BY DESIGN (card chat-P2); every other read keeps the gate
+            "every_item_dclicked": R["dclicked"] == R["item_count"] if R.get("read_mode") != "count" else True,
             "closed_with_esc": bool(R.get("closed_with_esc")),
             "scratch_identical": bool(R.get("scratch_identical")),
             "scratch_deleted": R["scratch_deleted"],

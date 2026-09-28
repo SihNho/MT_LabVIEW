@@ -90,16 +90,30 @@ whole cycle needs LabVIEW you write that in NEXT and exit rather than deciding t
 - **A brief states the MEASUREMENT, never the result-dependent ACTION.** "If A removes 1, do X, else do Y" is
   not delegation; it moves the decision into the session that must not make it. Ask for the measurement, get the
   facts back, then decide.
+- **A material session RETURNS AT THE FIRST UNEXPECTED RESULT** (card chat-P2 item 2, user 2026-09-28 "1~4번 적용";
+  measured: the long sinks of cycles 114-119 were FAIL cards that kept retrying inside the card, 116-2 95 min, 115-3
+  65 min). When a step's result differs from its prediction the material session FINISHES that step (LabVIEW closed,
+  files saved/cleaned), records the facts and returns `result/1` - it does not diagnose and retry inside the card. The
+  failure budget (2) is unchanged; the first failure is now a return and YOU decide the retry (a new card, or the same
+  card re-dispatched). Mechanical backstop: once a card is 60 min past its first bind, `protocol.check_command` refuses
+  STARTING a new recipe/diagnostic bgrun under it ("finish the running step and return"); nothing is killed, reads are
+  never blocked. Write cards whose steps each fit well inside that.
 - **A failed gate is first routed by the Jev ladder, not by you** (user, 2026-09-24 03:5x: the verdict must drive
   the next action — *advisory-only is not delegation*). The newest `JEV-LADDER` line for that log in
-  `tools/bench/jev_gate.log` ends `NEXT-ACTION:`; the `material` agent reads it first and acts on it
-  (`our-script-bug` → patch + rerun with no review and no judgement turn, failure budget 2 still counting;
-  `already-reviewed-class` → apply the cited review's disposition and rerun; otherwise → hypothesis review owed).
-  You receive it as one table row (log | class p | NEXT-ACTION | what was done | result), not as a log, and spend a
-  judgement turn only on `review owed` rows and on a failure budget that ran out.
+  `tools/bench/jev_gate.log` ends `NEXT-ACTION:`; the `material` agent reads it and reports it as one table row
+  (log | class p | NEXT-ACTION | what was done | result) in its result card, and since card chat-P2 it RETURNS instead
+  of rerunning. Apply the row's NEXT-ACTION with no new diagnosis: `our-script-bug` → re-dispatch the same card to
+  patch + rerun (no review, budget still counting); `already-reviewed-class` → re-dispatch to apply the cited review's
+  disposition and rerun; otherwise → hypothesis review owed. Spend real judgement only on `review owed` rows and on a
+  failure budget that ran out.
 - **INTRA-CYCLE ESCALATION (user, 2026-09-25: "한 싸이클 내부에서도 특정 프로세스가 과하게 오래 걸리거나 반복적으로
   실패할 경우 … 높여보는 것"; rungs RE-SET 2026-09-26 by the user after matbench v1, `tools/bench/matbench/report_v1.md`).**
-  When a card comes back FAIL with its failure budget spent, or its `budget.minutes` is exceeded, do not re-dispatch it
+  **FIRST check whether the failure is a REPEATED TOOL FUNCTION (card chat-P2 item 4, user 2026-09-28):** when the
+  card's `first_fail` names the SAME gscript/stagekit/stagexec function (or op VI) as the previous failing attempt of
+  that stage, the next card is the SCRATCH-VI VERIFICATION of that function (the section below) dispatched at the SAME
+  rung as the failed card — NOT an escalation. `guard_session` refuses the escalation dispatch in that case
+  (`stage_prerun.escalation_route`); a model change does not fix a tool defect (cycle 118: 84 min on one function).
+  Otherwise, when a card comes back FAIL with its failure budget spent, or its `budget.minutes` is exceeded, do not re-dispatch it
   to `material` a third time and do not wait for the next cycle: write a NEW card with the same `goal`/`pass`,
   `escalation: 1`, `retry_of_card: <old id>`, and dispatch it to the **`material-opus-max`** agent (Opus 5.5 max: the
   only level that reported the missing verb in the bench); if that fails the same way, `escalation: 2` to
@@ -117,6 +131,17 @@ whole cycle needs LabVIEW you write that in NEXT and exit rather than deciding t
   `tools/bench/scratch_verify/`); `stage_prerun.check_launch` refuses a third stage run until that record PASSes.
 - **Answer from the plan first.** If the plan's `## Pre-decided` section already settles a question, apply it and
   say which line — do not re-open it, and do not ask the user.
+- **USER-RULES before any new DESIGN item** (card chat-P2 item 1, user 2026-09-28; the largest loss of cycles 84-120
+  was a design that contradicted the user's own rules - the pool queues of PD233-237). Before you write a new
+  Pre-decided item that decides a design, READ `docs/user-rules.md` and put one line in the item:
+  `USER-RULES: U4, U6, U13` (the rows it relies on, and state it does not contradict any) or `USER-RULES: none apply`.
+  If the design contradicts a row, do not write it - ask the user (decisions_pending). `tools/doc_lint.py` L9 warns on
+  items >= 238 without the line; every prior-art review now also asks the contradiction question
+  (`PRIOR-ART: user-rule-contradicted` blocks like any non-`novel` verdict). A plan that introduces a NEW structure class
+  (an op kind / create class no clean stage ran) always gets the prior-art review, proven-pattern or not.
+- **Error List reads** (card chat-P2 item 3): a stage's read of a SCRATCH copy uses `errorlist_check.py --count-only
+  --role scratch` (no per-item double-click; the full read follows automatically when the per-class counts differ);
+  the saved FINAL file always gets the full read (`--role final`, the default).
 - **Decide** the things only judgement can decide: design, what to accept from a review, rule-1a equivalence,
   which discriminating experiment to run next.
 - **Close the cycle**: write `tools/bench/next.json` (below) FIRST — `guard_bash` refuses the retrospective (and the

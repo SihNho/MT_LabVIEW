@@ -387,6 +387,67 @@ def check_decision_headers(path=None):
     return fails, warns
 
 
+# L9 - a Pre-decided item carries a `USER-RULES:` line (card chat-P2 item 1, user 2026-09-28 "1~4번 적용"). Before a
+# judgement session writes a new Pre-decided DESIGN item it reads docs/user-rules.md and writes `USER-RULES: U4, U6`
+# (the rows it relies on) or `USER-RULES: none apply` in the item. Items numbered >= L9_FROM_ITEM (the first number
+# written after 2026-09-28 17:xx; the numbering is shared by every plan's Pre-decided sections) are checked; older ones
+# are history and never edited. WARN only: the line is a prompt for the reader, not a gate.
+L9_FROM_ITEM = 238
+PD_ITEM_RE = re.compile(r"^(\d{2,4})\.\s")
+PD_END_RE = re.compile(r"^#{1,6}\s")
+USER_RULES_LINE_RE = re.compile(r"USER-RULES:\s*\S")
+
+
+def predecided_items(body):
+    """[(number, first_line_no, text)] for every numbered item inside a `Pre-decided` section of one document."""
+    out, in_pd, cur, lvl = [], False, None, 0
+    for i, line in enumerate(body.splitlines(), 1):
+        if PD_END_RE.match(line):
+            if cur:
+                out.append(cur)
+                cur = None
+            h = len(line) - len(line.lstrip("#"))
+            if PREDECIDED_MARK_RE.match(line):
+                in_pd, lvl = True, h
+            elif not (in_pd and h > lvl):          # a deeper sub-heading stays inside the Pre-decided section
+                in_pd = False
+            continue
+        if not in_pd:
+            continue
+        m = PD_ITEM_RE.match(line)
+        if m:
+            if cur:
+                out.append(cur)
+            cur = (int(m.group(1)), i, line + "\n")
+        elif cur:
+            cur = (cur[0], cur[1], cur[2] + line + "\n")
+    if cur:
+        out.append(cur)
+    return out
+
+
+def check_user_rules_lines(paths=None):
+    miss = []
+    for p in (paths if paths is not None else active_docs()):
+        body = read(p)
+        if not PREDECIDED_MARK_RE.search(body):
+            continue
+        try:
+            name = rel(p)
+        except ValueError:
+            name = p.replace("\\", "/")
+        for n, ln, text in predecided_items(body):
+            if n >= L9_FROM_ITEM and not USER_RULES_LINE_RE.search(text):
+                miss.append(f"{name}:{ln} (item {n})")
+    if miss:
+        say("WARN", "L9 new Pre-decided items carry a USER-RULES: line",
+            f"{len(miss)} item(s) >= {L9_FROM_ITEM} without `USER-RULES:` (read docs/user-rules.md and cite the rows "
+            f"relied on, or write `USER-RULES: none apply`): {miss[:10]}")
+    else:
+        say("PASS", "L9 new Pre-decided items carry a USER-RULES: line", f"every item >= {L9_FROM_ITEM} carries one")
+    return miss
+
+
 def run(skip_dispositions=False):
     del RESULT[:]
     check_frontmatter()
@@ -401,6 +462,7 @@ def run(skip_dispositions=False):
         say("PASS", "L6 archived reviews are disposed", "skipped - audit_cycle A4 owns this condition")
     check_marked_decisions()
     check_decision_headers()
+    check_user_rules_lines()
     return list(RESULT)
 
 

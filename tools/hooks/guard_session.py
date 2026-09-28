@@ -20,6 +20,9 @@ Prose cannot enforce "now stop" on the session that is enjoying itself. So two r
       them with flags.labview != "none" (one COM client). A labview:none card dispatched while a LabVIEW card is live
       is a PREP card: it counts in st["prep"] (budget PREP_BUDGET = 3), not in MAX_DISPATCHES. The state file is
       read-modified-written under a lock file (two Agent calls in one message run this hook concurrently).
+  (e) REPEATED TOOL FUNCTION (card chat-P2 item 4): an escalation-rung dispatch (material-opus-max / -fable-*) of a
+      card whose failure repeats the SAME scripting function as the previous failing attempt is refused; the next card
+      is the scratch-VI verification of that function at the same rung (stage_prerun.escalation_route).
 
 STATE: `tools/bench/session_<session_id>.json` = {"dispatches": n, "retro_done": bool, ...}. A file, not a
 memory - CLAUDE.md: "a rule whose counter is my memory is not a rule at all". `.json`, so no log gate globs it.
@@ -205,6 +208,36 @@ def main():
         return 2
 
 
+# (e) REPEATED TOOL FUNCTION -> SCRATCH VERIFY, NOT ESCALATION (card chat-P2 item 4, user 2026-09-28 "1~4번 적용";
+# cycle 118 spent 84 min escalating one function). A dispatch to an escalation rung whose card re-issues a failed card
+# (`retry_of_card`) is refused when stage_prerun.escalation_route() finds that the failure repeats the SAME scripting
+# function as the previous failing attempt: the next card is the scratch-VI verification of that function, dispatched
+# at the SAME rung as the failed card. Fails OPEN (a broken reader never blocks a dispatch) and is logged.
+ESCALATION_TYPES = {"material-opus-max", "material-fable-low", "material-fable-medium"}
+
+
+def escalation_refusal(sub, card, cpath):
+    if sub not in ESCALATION_TYPES or not card or not card.get("retry_of_card"):
+        return ""
+    try:
+        import stage_prerun
+        route, fn, why = stage_prerun.escalation_route(card, cards_dir=os.path.dirname(cpath) if cpath else None)
+    except Exception as e:  # noqa: BLE001
+        sys.stderr.write("guard_session: escalation_route unreadable (%s: %s) - dispatch allowed\n"
+                         % (type(e).__name__, str(e)[:160]))
+        return ""
+    if route != "scratch-verify":
+        return ""
+    return ("BLOCKED by tools/hooks/guard_session.py: REPEATED TOOL FUNCTION - SCRATCH VERIFY, NOT ESCALATION.\n"
+            "  card %s re-issues %s to %s, but %s.\n\n"
+            "Card chat-P2 item 4 (user 2026-09-28): the next card is the SCRATCH-VI VERIFICATION of `%s` at the SAME\n"
+            "rung as %s (subagent_type of that card, normally `material`): a <=120-line stagekit script on a minimal\n"
+            "scratch VI that runs `%s`, reads the graph back and writes tools/bench/scratch_verify/<function>_<ts>.json\n"
+            "{\"function\": \"%s\", \"status\": \"PASS\", \"t\": <epoch>}. A model change does not fix a tool defect.\n"
+            "Escalation stays for a failure that is NOT a repeated tool function (or after a newer scratch PASS).\n"
+            % (card.get("id"), card.get("retry_of_card"), sub, why, fn, card.get("retry_of_card"), fn, fn))
+
+
 def decide(sid, sub, ti):
     """The counted-dispatch decision, run under the session-state lock. 0 allow / 2 refuse."""
     st = load(sid)
@@ -220,6 +253,10 @@ def decide(sid, sub, ti):
         return 2
     # (d) PIPELINE - only a `CARD <path>` dispatch is tracked; a prose prompt counts exactly as before.
     card, cpath = card_of_prompt(ti.get("prompt") if sub != "sendmessage-resume" else "")
+    why = escalation_refusal(sub, card, cpath)
+    if why:
+        sys.stderr.write(why)
+        return 2
     entry = None
     live = prune_live(st.get("live"))
     if card is not None:

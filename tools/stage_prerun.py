@@ -2379,6 +2379,32 @@ def proven_pattern(recipe, runs=None, recs=None):
     return len(hits) >= PROVEN_MIN, sorted(hits), sorted(sig)
 
 
+def new_structure_classes(recipe, runs=None, recs=None, sig=None):
+    """card chat-P2 item 1 (user 2026-09-28): the STRUCTURE elements of this recipe's signature (`op:<kind>` and
+    `create:<class>`) that no CLEAN run of ANY other stage carries. Non-empty = the plan introduces a new structure class,
+    so it always gets the prior-art review (with the user-rules question). proven_pattern already needs every element
+    in >= 2 clean stages, so a new class is never proven; this names WHICH elements are new so guard_cycle's refusal
+    says so (and the self-test pins that such a recipe is refused, not skipped)."""
+    sig = set(pattern_signature(recipe)) if sig is None else set(sig)
+    struct = {s for s in sig if s.startswith(("op:", "create:"))}
+    if not struct:
+        return []
+    runs = read_stage_runs() if runs is None else runs
+    recs = read_records() if recs is None else recs
+    own = stage_key(recipe) if recipe.lower().endswith(".py") else unit_key(recipe)
+    seen = set()
+    for r in runs:
+        k = r.get("stage")
+        if r.get("by") != COUNTED_BY or not k or k == own:
+            continue
+        pat = _run_pattern(r, recs)
+        if pat is None or not (struct - seen) & pat:
+            continue
+        if _run_clean(r):
+            seen |= pat
+    return sorted(struct - seen)
+
+
 # ------------------------------------------------------------------------------ PROVISIONAL BASE + REBASE (card chat-P1)
 # Item 1 (pipeline): the prep card plans stage N+1 while stage N runs in LabVIEW, on stagesim's END graph of N
 # (tools/bench/sim/<stage N>/...). Its plan says so: base = {path, md5, provisional: true, sim_of: {plan, md5}} (docs/
@@ -2719,6 +2745,91 @@ def check_scratch(unit, now=None):
                    "No PASS record newer than the second failure exists.\n").format(
                        key, fn1, time.strftime("%m-%d %H:%M:%S", time.localtime(t1)),
                        time.strftime("%m-%d %H:%M:%S", time.localtime(t2)), rel(SCRATCH_DIR))
+
+
+# ------------------------------------------------------------- card chat-P2 item 4: REPEATED FUNCTION -> SCRATCH VERIFY
+# User 2026-09-28 ("1~4번 적용"; measured: cycle 118 spent 84 min escalating ONE function through Opus max and Fable
+# low). When a card's first_fail names the SAME scripting function (gscript/stagekit/stagexec function, a stagexec op
+# kind, or an op VI) as the previous failing attempt of that stage, the next card is the SCRATCH-VI VERIFICATION of that
+# function at the SAME model rung - not an escalation to material-opus-max / material-fable-low. A model change does not
+# fix a tool defect (cycles 95-101). Escalation stays for failures that are NOT a repeated tool function.
+# "Previous failing attempt" is read from files only: (a) the result of the card the failed card itself re-issued
+# (`retry_of_card`), and (b) the stage's own last two bgrun runs (check_scratch's rule), for every stage recipe the
+# failed card names (retry_of, inputs, outputs). A scratch_verify PASS record for the function newer than the failure
+# releases the escalation (the tool was verified; the failure is something else).
+FF_FUNC_RE = re.compile(r"\b(gscript|stagekit|stagexec)\.((?:op:)?[A-Za-z_]\w*)")
+
+
+def function_of_text(text):
+    """The scripting function a first_fail / fact string names: '<module>.<fn>' | 'stagexec.op:<kind>' | 'op:<OpName>'."""
+    m = FF_FUNC_RE.search(text or "")
+    if m:
+        return "%s.%s" % (m.group(1), m.group(2))
+    m = STEPDIFF_RE.search(text or "")
+    if m:
+        return "stagexec.op:%s" % m.group(1)
+    m = OPVI_RE.search(text or "")
+    return "op:%s" % m.group(1) if m else None
+
+
+def _result_of(card_id, cards_dir):
+    try:
+        d = json.load(REAL_OPEN(os.path.join(cards_dir, "result_%s.json" % card_id), encoding="utf-8"))
+        return d if isinstance(d, dict) else None
+    except (OSError, ValueError):
+        return None
+
+
+def _card_of(card_id, cards_dir):
+    try:
+        d = json.load(REAL_OPEN(os.path.join(cards_dir, "task_%s.json" % card_id), encoding="utf-8"))
+        return d if isinstance(d, dict) else None
+    except (OSError, ValueError):
+        return None
+
+
+def _stage_units(card):
+    out = []
+    for v in [card.get("retry_of")] + [x.get("path") if isinstance(x, dict) else x
+                                       for x in (card.get("inputs") or []) + (card.get("outputs") or [])]:
+        if isinstance(v, str) and re.search(r"(?:^|[\\/])stage_[\w.-]+\.py$", v.strip(), re.I):
+            out.append(v.strip())
+    return list(dict.fromkeys(out))
+
+
+def escalation_route(card, cards_dir=None, now=None):
+    """('scratch-verify', function, evidence) or ('escalate', None, why) for an ESCALATION card (`retry_of_card` set).
+    Reads result_<retry_of_card>.json's first_fail and the previous failing attempt (see the block comment)."""
+    import protocol as P
+    cards_dir = cards_dir or P.CARDS_DIR
+    old_id = card.get("retry_of_card")
+    if not old_id:
+        return "escalate", None, "not an escalation card (no retry_of_card)"
+    old_res = _result_of(old_id, cards_dir)
+    if not old_res or old_res.get("status") == "PASS":
+        return "escalate", None, "result_%s.json absent or PASS" % old_id
+    fn = function_of_text(str(old_res.get("first_fail") or ""))
+    if not fn:
+        return "escalate", None, "result_%s first_fail names no scripting function" % old_id
+    try:
+        t_fail = os.path.getmtime(os.path.join(cards_dir, "result_%s.json" % old_id))
+    except OSError:
+        t_fail = 0
+    if scratch_pass_after(fn, t_fail):
+        return "escalate", None, "%s has a scratch_verify PASS newer than result_%s" % (fn, old_id)
+    old_card = _card_of(old_id, cards_dir) or {}
+    prev_id = old_card.get("retry_of_card")
+    if prev_id:
+        prev = _result_of(prev_id, cards_dir)
+        if prev and prev.get("status") != "PASS" and function_of_text(str(prev.get("first_fail") or "")) == fn:
+            return "scratch-verify", fn, "result_%s and result_%s both failed in %s" % (prev_id, old_id, fn)
+    for unit in _stage_units(old_card) + _stage_units(card):
+        runs = stage_run_segments(unit_key(unit), now)
+        if len(runs) >= 2:
+            (t1, f1, fn1), (t2, f2, fn2) = runs[-2], runs[-1]
+            if f1 and f2 and fn1 == fn2 == fn and not scratch_pass_after(fn, t2):
+                return "scratch-verify", fn, "the last two runs of %s both failed in %s" % (unit_key(unit), fn)
+    return "escalate", None, "%s failed once in %s; no previous failing attempt in the same function" % (old_id, fn)
 
 
 def check_launch(cmd):

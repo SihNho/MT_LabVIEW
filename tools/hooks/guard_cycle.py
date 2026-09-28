@@ -69,7 +69,10 @@ import stop_record  # noqa: E402  - the LAUNCH gate (cycle 18); it imports THIS 
 # The verdict vocabulary prior_art_review.py defines. An allowlist keeps a stray line from inventing a slug that
 # blocks forever, and keeps the question's own menu line out of the tally.
 PRIOR_ART_SLUGS = {"settled-already", "refuted-already", "contradicted", "unread-evidence",
-                   "already-built", "already-failed", "helper-exists", "already-measured", "novel"}
+                   "already-built", "already-failed", "helper-exists", "already-measured", "novel",
+                   # card chat-P2 item 1 (user 2026-09-28): prior_art_review.py PART C, a plan that contradicts a row
+                   # of docs/user-rules.md. Blocks and releases exactly like the others (REFUTED:/FIXED:).
+                   "user-rule-contradicted"}
 PRIOR_ART_RE = re.compile(r"^PRIOR-ART:[ \t]*([a-z-]+)", re.M)
 
 # THE SECOND RELEASE FORM: `FIXED:` (2026-09-16). The gate's own refusal says "if the review is right, change the
@@ -534,9 +537,17 @@ def premature_build(cmd):
             _proven_log("PROVEN-PATTERN | %s | %s | no prior-art review owed: signature covered by clean runs of %s"
                         % (time.strftime("%Y-%m-%d %H:%M:%S"), rel, ", ".join(stages_p)))
             return None
+        # card chat-P2 item 1: name the NEW structure classes (op kinds / create classes no clean stage ran) - such a
+        # plan always gets the review, and the review now also asks the user-rules question (docs/user-rules.md).
+        try:
+            new_p = stage_prerun.new_structure_classes(fp)
+        except Exception:                # noqa: BLE001 - advisory text only
+            new_p = []
         return ("BLOCKED by tools/hooks/guard_cycle.py: this RECIPE HAS NO PRIOR-ART REVIEW NEWER THAN ITSELF.\n"
                 f"  recipe        : {rel}  (last changed "
                 f"{time.strftime('%Y-%m-%d %H:%M', time.localtime(rmt))})\n"
+                + (f"  NEW structure : {', '.join(new_p[:8])} - no clean stage ran these; a new structure class "
+                   f"always gets the review (card chat-P2)\n" if new_p else "") +
                 f"  newest priorart review : "
                 + (f"{_rel(latest[0])} ({time.strftime('%Y-%m-%d %H:%M', time.localtime(latest[1]))})"
                    if latest else "none archived") + "\n\n"

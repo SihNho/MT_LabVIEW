@@ -528,8 +528,13 @@ def bind(agent_id, agent_type, card_path, goals="default"):
     try:
         with file_lock(ACTIVE + ".lock"):        # card chat-P1 1(a): two binds in one message must both survive
             d = _load_active()
+            now = time.strftime("%Y-%m-%d %H:%M:%S")
+            prev = d.get(agent_id) or {}
+            # card chat-P2 item 2: the soft 60-min alert counts from the FIRST bind of this agent to this card - a
+            # re-bind must not restart the clock.
+            first = prev.get("first_bound") or prev.get("bound") if prev.get("id") == card["id"] else None
             d[agent_id] = {"card": _rel(p), "agent_type": agent_type, "id": card["id"],
-                           "bound": time.strftime("%Y-%m-%d %H:%M:%S"), "md5": _md5(p)}
+                           "bound": now, "first_bound": first or now, "md5": _md5(p)}
             _save_active(d)
     except (TimeoutError, OSError) as e:
         return False, "active.json could not be updated under its lock: %s" % str(e)[:200]
@@ -797,6 +802,45 @@ def _cmd_requires(a):
     return 0 if r["ok"] else 1
 
 
+# ------------------------------------------------------------------ card chat-P2 item 2: the SOFT 60-MINUTE ALERT
+# User 2026-09-28 ("1~4번 적용"; measured: cards 93 % of cycle time, the long sinks were FAIL cards that kept retrying
+# inside the card - 116-2 95 min, 115-3 65 min). Once the bound card is older than SOFT_ALERT_MIN (counted from its
+# FIRST bind, see bind()), STARTING a new bgrun launch of a recipe / diagnostic / stage / LabVIEW-touching script is
+# refused with "finish the running step and return". NOTHING is killed and nothing already running is touched; reads,
+# edits, docs, peers, self-tests, git and the result file are never blocked. No hard kill (the user said so).
+SOFT_ALERT_MIN = 60
+DIAG_PATH_RE = re.compile(r"tools[\\/](?:recipes[\\/]|bench[\\/](?:diag_|stage_))", re.I)
+
+
+def _bound_age_min(card, now=None):
+    t = card.get("_bound")
+    if not t:
+        return None
+    try:
+        return ((now or time.time()) - time.mktime(time.strptime(str(t), "%Y-%m-%d %H:%M:%S"))) / 60.0
+    except (ValueError, OverflowError):
+        return None
+
+
+def soft_alert_refusal(card, cmd, scripts, srcs=None, now=None):
+    """None, or the refusal for a NEW bgrun launch of a recipe/diagnostic under a card bound > SOFT_ALERT_MIN ago."""
+    age = _bound_age_min(card, now)
+    if age is None or age < SOFT_ALERT_MIN:
+        return None
+    if not any(BGRUN_SCRIPT_RE.search(p) for p in scripts):
+        return None
+    srcs = srcs or {}
+    runs = [p for p in scripts if not BGRUN_SCRIPT_RE.search(p) and (
+        RECIPE_PATH_RE.search(p) or DIAG_PATH_RE.search(p)
+        or LV_IMPORT_RE.search(code_only(srcs.get(p) if p in srcs else _src(p))))]
+    if not runs:
+        return None
+    return ("SOFT ALERT (card chat-P2 item 2, user 2026-09-28): this card was bound %d min ago (> %d) - no NEW "
+            "recipe/diagnostic launch (%s). Finish the running step (LabVIEW closed, files saved/cleaned) and return a "
+            "result/1 now; the judgement session decides any retry. Reads, docs, peers and anything already running are "
+            "not blocked." % (int(age), SOFT_ALERT_MIN, _rel(runs[0])))
+
+
 def check_command(card, cmd):
     """None = allowed, else the refusal reason. The card's flags applied to ONE Bash/PowerShell command."""
     fl = card.get("flags") or {}
@@ -806,6 +850,9 @@ def check_command(card, cmd):
     if GIT_COMMIT_RE.search(cmd) and not fl.get("git_commit"):
         return "flags.git_commit is false - this card may not `git commit`"
     why = requires_refusal(card, cmd, scripts)          # card chat-N1 (4a)
+    if why:
+        return why
+    why = soft_alert_refusal(card, cmd, scripts, srcs)  # card chat-P2 item 2
     if why:
         return why
     if not fl.get("status_edit") and STATUS_WRITE_RE.search(cmd):
@@ -895,6 +942,7 @@ def hook_decision(payload):
     try:
         card = load_card(_abs(b["card"]), None)
         card["_md5"] = _md5(_abs(b["card"]))            # card chat-N1 (4a): requires_<id>.json freshness
+        card["_bound"] = b.get("first_bound") or b.get("bound")   # card chat-P2 item 2: the soft alert's clock
     except (OSError, ValueError) as e:
         return False, "the bound card %s no longer loads: %s" % (b.get("card"), str(e)[:200])
     if tool in ("Bash", "PowerShell"):

@@ -1,0 +1,71 @@
+{
+ "schema": "task/1",
+ "id": "chat-P2",
+ "kind": "build",
+ "goal": "Apply speed items 1-4: user-rules check in prior-art + design items, return at first unexpected result + 60-min soft alert, no duplicate Error List full read, repeated tool function -> scratch verify",
+ "why": "User 2026-09-28: 1~4번 적용. Measured: cards 93% of time, long FAIL cards retrying in-card, duplicate 11-min Error List reads, a design that contradicted user rules. Detail: brief_chat-P2.md",
+ "inputs": [
+  {
+   "path": "tools/bench/cards/brief_chat-P2.md",
+   "md5": "b0d15b9460c5b82c0c5ce8a1b05cd94b"
+  },
+  {
+   "path": "tools/prior_art_review.py",
+   "md5": "0d3e6e0d28b98764721475bfee3d549c"
+  },
+  {
+   "path": "tools/cycle_prompt.md",
+   "md5": "121016e5ff29a232dd9fb42bce24f80b"
+  },
+  {
+   "path": "tools/hooks/guard_card.py",
+   "md5": "1153f2c67f2ee5bbb346cdfd8e090dcd"
+  },
+  {
+   "path": "tools/stagekit.py",
+   "md5": "ae6952591d3ca26ba5dae6d93d49c2e4"
+  },
+  {
+   "path": "tools/cycle_runner.py",
+   "md5": "37c78596ed8e229bebf0239f3df6a574"
+  },
+  {
+   "path": "docs/ring-buffer-design.md",
+   "md5": "48ac0e5778017cee6b7911c8defe4c4f"
+  }
+ ],
+ "pass": [
+  "docs/user-rules.md seeded with verbatim quotes; prior_art_review attaches it and asks the contradiction question; USER-RULES line rule in prompt + doc_lint warn",
+  "material*.md + prompt: return at first unexpected result; guard blocks NEW launches after 60 min, never kills or blocks reads",
+  "scratch Error List read is count-only unless counts differ; final saved file always full read",
+  "repeated failing tool function -> scratch verify card at same rung, not escalation",
+  "affected self-tests green + new cases; runner NOT started; STATUS STOP kept; one commit"
+ ],
+ "outputs": [
+  "docs/user-rules.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/**",
+   "docs/**",
+   ".claude/agents/**"
+  ],
+  "status_edit": false,
+  "git_commit": true,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 150
+ },
+ "unblocks": "M3",
+ "rules": [
+  "Runner stays stopped",
+  "Safety guards untouched",
+  "Patch with Edit/Write, never heredoc"
+ ]
+}
