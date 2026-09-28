@@ -4218,6 +4218,72 @@ def read_bool_const(target, uid):
     return out
 
 
+C118_LABELS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench", "diag_c118_oplabels.json")
+C118_CONST_OPS = {"RingConstant": "OpConstValueRing_v0", "ArrayConstant": "OpConstValueArr_v0"}
+CONST_VALUE_CLASSES = ("StringConstant", "RingConstant", "ArrayConstant", "BooleanConstant")
+
+
+def read_const_value(target, uid):
+    """Card 118-4 R1 (PD234(j)(1)): READ-ONLY value + type of diagram constant #uid, class found by traverse membership.
+    `Constant.Value` 634AC00 is read on a node typed to the object's MOST-SPECIFIC class (the base class returns a void
+    variant for every non-String constant, docs/NAMES.md:1157-1162):
+      StringConstant -> OpConstValue_v1 (flattened bytes, decode_flat: type = TD code, value = the string);
+      RingConstant   -> OpConstValueRing_v0 (value = the ring's numeric value; type = Representation enum when the op has it);
+      ArrayConstant  -> OpConstValueArr_v0 (value = the array as COM returns it; type = element Python types);
+      BooleanConstant -> read_bool_const.
+    The two c118 ops are OpWireJoints_v1 retyped (tools/bench/diag_c118_r1_opbuild.py): every reference they open is
+    closed. Returns {cls, value, type, echo, err, route, hex?}; an echo != uid is appended to err. No write, no method."""
+    ensure_loaded(target)
+    cls = i = None
+    for c in CONST_VALUE_CLASSES:
+        order = [int(o["uid"]) for o in report_all(target, c)]
+        if int(uid) in order:
+            cls, i = c, order.index(int(uid))
+            break
+    if cls is None:
+        raise ValueError("#%s is none of %s in %s" % (uid, CONST_VALUE_CLASSES, os.path.basename(target)))
+    if cls == "BooleanConstant":
+        r = read_bool_const(target, uid)
+        r.update(cls=cls, type="Boolean", route="OpConstValueB_v0")
+        return r
+    if cls == "StringConstant":
+        _c97_paths()
+        from build_opconstvalue_v1b import decode_flat
+        with open(os.path.join(PROJECT, "tools", "bench", "opconstvalue_labels.json"), encoding="utf-8") as f:
+            lab = json.load(f)
+        vi = op(os.path.join(CLAUDEDEV, "OpConstValue_v1.vi"))
+        vi.SetControlValue(lab["hex"], "POISON"); vi.SetControlValue("UID", 0); vi.SetControlValue(lab["size"], False)
+        vi.SetControlValue("vi path", target); vi.SetControlValue("Class Name", cls); vi.SetControlValue("index", i)
+        _run(vi)
+        raw = vi.GetControlValue(lab["u8"])
+        b = bytes(raw) if raw is not None and not isinstance(raw, str) else b""
+        code, val, note = decode_flat(b) if b else (None, None, "no bytes")
+        out = {"cls": cls, "value": val, "type": "TD 0x%02x" % code if code is not None else None, "hex": b.hex(),
+               "echo": int(vi.GetControlValue("UID")), "err": str(_err(vi, "error out") or ""), "route": "OpConstValue_v1",
+               "note": note}
+    else:
+        key = C118_CONST_OPS[cls]
+        with open(C118_LABELS, encoding="utf-8") as f:
+            lab = json.load(f)[key]
+        vi = op(os.path.join(CLAUDEDEV, key + ".vi"))
+        _set_common(vi, target, lab, cls, i)
+        vi.SetControlValue(lab["UID"], 0)
+        _run(vi)
+        v = vi.GetControlValue(lab["Value"])
+        if cls == "RingConstant":
+            typ = {"python": type(v).__name__}
+            if lab.get("Repr"):
+                typ["representation"] = int(vi.GetControlValue(lab["Repr"]))
+        else:
+            typ = {"python": type(v).__name__, "n": len(v) if isinstance(v, (list, tuple)) else None,
+                   "elements": sorted(set(type(x).__name__ for x in v)) if isinstance(v, (list, tuple)) else None}
+        out = {"cls": cls, "value": v, "type": typ, "echo": int(vi.GetControlValue(lab["UID"])),
+               "err": str(_err(vi, lab["Err"]) or ""), "route": key}
+    if out["echo"] != int(uid):
+        out["err"] = (out["err"] + " | " if out["err"] else "") + "uid echo %r != #%s" % (out["echo"], uid)
+    return out
+
+
 C116D_LABELS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench", "diag_c116d_oplabels.json")   # v0 (retired)
 C117A_LABELS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench", "diag_c117a_oplabels.json")
 
@@ -4307,7 +4373,33 @@ def _create_local_mode(target, panel_index, write, dest_diagram_uid=None, positi
     return out
 
 
-def create_primitive_nested(target, diagram_uid, prim_name, pos):
+def _is_array_const_donor(reg):
+    """Card 118-4 A1 (PD234(j)(2)): True iff the donor object #reg['uid'] is an ArrayConstant of reg['donor'] (read-only
+    traverse of the donor file; read only AFTER a copy made two nodes, so the one-node path pays nothing)."""
+    try:
+        return int(reg["uid"]) in uids(reg["donor"], "ArrayConstant")
+    except Exception:                                                              # noqa: BLE001
+        return False
+
+
+def _array_pair(target, new):
+    """Card 118-4 A1: the two new objects of an ArrayConstant copy must be EXACTLY {one new ArrayConstant, its element}:
+    one of them is an ArrayConstant of `target`, the other is owned by that ArrayConstant. Returns the ArrayConstant uid,
+    or the refusal text (the caller raises). No other widening of the one-node rule (PD234(j)(2))."""
+    arrs = [u for u in new if int(u) in uids(target, "ArrayConstant")]
+    if len(arrs) != 1:
+        return "ArrayConstant copy: %d of the new %r are ArrayConstants, expected 1" % (len(arrs), list(new))
+    a = int(arrs[0])
+    e = next(int(u) for u in new if int(u) != a)
+    _c97_paths()
+    import build_d1_v0 as B
+    own = B.owner_of(target, e, strict=False)
+    if tuple(own) != ("ArrayConstant", a):
+        return "ArrayConstant copy: element #%s is owned by %r, not ArrayConstant #%s" % (e, own, a)
+    return a
+
+
+def create_primitive_nested(target, diagram_uid, prim_name, pos, donor=None):
     """V6 (card 100-4, PD213(b)): place primitive `prim_name` on Diagram #diagram_uid of `target` (ANY nesting depth)
     by DONOR COPY and return the new node's uid.
     OpPrimCopyNested_v0 (built by tools/bench/diag_c100_verbs_build.py on an OpSetIndexMode_v0 copy, which carries
@@ -4318,9 +4410,17 @@ def create_primitive_nested(target, diagram_uid, prim_name, pos):
     (archive/peer/2026-08-28-copy-nodes-between-vis.md:31-44). The donor is a registered byte copy of an NI
     example (labels file key `OpPrimCopyNested_v0` -> `donors`), never an original.
     Unknown primitive / donor file / diagram -> ValueError BEFORE any edit. Any op error, echo mismatch, a node
-    delta other than exactly one, or an owner read that is not Diagram #diagram_uid -> RuntimeError."""
+    delta other than exactly one, or an owner read that is not Diagram #diagram_uid -> RuntimeError.
+    Card 118-4 A1 (PD234(j)(2)): the ONE exception is an ArrayConstant donor, whose copy adds the array AND its element:
+    exactly {one new ArrayConstant, one object owned by it} is accepted and the ArrayConstant's uid is returned
+    (_array_pair); every other create keeps the one-node rule."""
     lab = _c100("OpPrimCopyNested_v0")
-    reg = (lab.get("donors") or {}).get(prim_name)
+    # card 118-1 P1: `donor` = {"donor": <claudeDev file>, "uid": <object uid in it>} names a donor that is not in the
+    # labels-file registry (a constant carrying a planned value, or the target itself for a byte-exact duplicate of one
+    # of its own constants). Same op, same post-conditions; the registry is untouched.
+    reg = dict(donor) if donor else (lab.get("donors") or {}).get(prim_name)
+    if reg and donor and not os.path.normcase(os.path.abspath(reg["donor"])).startswith(os.path.normcase(CLAUDEDEV)):
+        raise ValueError("donor %r is not under claudeDev" % reg["donor"])
     if not reg:
         raise ValueError("no donor registered for primitive %r (registered: %s)"
                          % (prim_name, sorted(lab.get("donors") or {})))
@@ -4329,6 +4429,7 @@ def create_primitive_nested(target, diagram_uid, prim_name, pos):
     ensure_loaded(target)
     di = _uid_index(target, "Diagram", diagram_uid)              # ValueError before any edit
     n0 = uids(target, "Node")
+    c0 = uids(target, "Constant") if donor else None
     vi = op(os.path.join(CLAUDEDEV, "OpPrimCopyNested_v0.vi"))
     vi.SetControlValue("vi path", target)
     vi.SetControlValue("Class Name", "Diagram")
@@ -4350,6 +4451,8 @@ def create_primitive_nested(target, diagram_uid, prim_name, pos):
     err = run_err or _err(vi, lab["Err"]) or ""
     d_echo, g_echo = int(vi.GetControlValue(lab["DonorUID"])), int(vi.GetControlValue(lab["DiagUID"]))
     new = sorted(uids(target, "Node") - n0)
+    if donor and not new and c0 is not None:          # card 118-1: a constant may not be in Traverse('Node')
+        new = sorted(uids(target, "Constant") - c0)
     probs = []
     if err:
         probs.append("op error %s" % err)
@@ -4357,9 +4460,16 @@ def create_primitive_nested(target, diagram_uid, prim_name, pos):
         probs.append("donor uid echo %r != #%s" % (d_echo, reg["uid"]))
     if g_echo != int(diagram_uid):
         probs.append("diagram uid echo %r != #%s" % (g_echo, diagram_uid))
-    if len(new) != 1:
+    arr = None
+    if len(new) == 2 and _is_array_const_donor(reg):
+        arr = _array_pair(target, new)       # card 118-4 A1 (PD234(j)(2)): {new ArrayConstant, its element} only
+        if isinstance(arr, str):
+            probs.append(arr)
+    if arr is not None and not isinstance(arr, str):
+        new = [arr]                          # the ArrayConstant stands for the pair; its owner is checked below
+    elif len(new) != 1:
         probs.append("%d new Node(s) %r, expected 1" % (len(new), new[:8]))
-    else:
+    if len(new) == 1:
         _c97_paths()
         import build_d1_v0 as B
         own = B.owner_of(target, new[0], strict=False)

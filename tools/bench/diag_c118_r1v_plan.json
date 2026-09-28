@@ -1,0 +1,18 @@
+{
+ "schema_note": "card 118-4 (PD234(j)): FINALIZED decision-row plan of tools/bench/diag_c118_r1v.py on a never-saved byte copy of the SAVED R2. Tools only: the op-hygiene probe of the two new readers, R1/R2 reads, the A2 ArrayConstant copy onto the frame diagram and its read-back. No wire, no delete, no save, no VI run.",
+ "input": {"vi": "D1_l2_r2_20260928_110756.vi", "md5": "7dac9f04ff4b65fa517e8e12f4bef5f3", "graph": "tools/bench/graph_l2r2_saved_20260928.json"},
+ "p0": {"frame": 13236, "name_const": 23583, "name_value": "Cam", "ring": 13245, "base_name": "Cam"},
+ "donor": {"vi": "OpPoolDonor_v0.vi", "md5": "fac6e4ab0fc4f7513d1a98df31e1f4e8", "names": 101},
+ "pos": {"names": [40, 1500]},
+ "hygiene_calls": 2000,
+ "decisions": [
+  {"id": "V-0", "action": "stage", "what": "stagekit Stage: restart LabVIEW, byte copy of the saved R2 as the work copy = a scratch (never saved)"},
+  {"id": "V-H1", "action": "read", "what": "op-hygiene probe OpConstValueRing_v0 on the work copy's RingConstant #13245: 1 warm + 2000 calls, 0 errors, handles flat +-100 -> op_hygiene/OpConstValueRing_v0.json"},
+  {"id": "V-H2", "action": "read", "what": "op-hygiene probe OpConstValueArr_v0 on OpPoolDonor_v0 #101 (read-only, never run): 1 warm + 2000 calls -> op_hygiene/OpConstValueArr_v0.json"},
+  {"id": "V-R1", "action": "read", "what": "gscript.read_const_value on #23583 (== 'Cam') and #13245 (int value + Representation)"},
+  {"id": "V-R2", "action": "read", "what": "gscript.read_const_value on the donor #101 == Cam_pool00..Cam_pool19"},
+  {"id": "V-A2", "action": "create", "what": "gscript.create_primitive_nested(work, 13236, donor #101): the ArrayConstant exception returns the array uid, owner Diagram #13236"},
+  {"id": "V-A2b", "action": "read", "what": "gscript.read_const_value on the copy == Cam_pool00..Cam_pool19; scratch_verify PASS records when every gate passes"},
+  {"id": "V-X", "action": "discard", "what": "close(): scratch deleted, R2 md5 unchanged, donor md5 unchanged, LabVIEW killed and gone"}
+ ]
+}

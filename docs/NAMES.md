@@ -1167,6 +1167,14 @@ appears among the windows). gscript's watchdog reports it correctly as a modal (
   scalar TDs have ODD lengths (7, 11, 17, 21, 23) with no pad byte (the even-rounding applies to the
   `Variant To Flattened String` form, not here). `NumericConstant.Representation` enum (NI doc): 1 DBL, 3 I32,
   6 U32 — cross-checks the TD low byte 0x0A/0x03/0x07.
+- **Card 118-4 (2026-09-28): RingConstant and ArrayConstant values ARE readable through a node typed to that class**
+  (`tools/bench/diag_c118_r1v.log:34-46`). `VI Server:RingConstant` PN accepts `632A813` UID, `634AC00` Value and
+  `5DCFC00` Representation (output names `UID`, `Value`, `Representation`); `VI Server:ArrayConstant` PN accepts UID +
+  Value. Ops `OpConstValueRing_v0` / `OpConstValueArr_v0` (labels `tools/bench/diag_c118_oplabels.json`), verb
+  `gscript.read_const_value(target, uid)`. Measured: R2 `#13245` (IMAQ Create Image Type ring) = 0, Representation 6;
+  a String[20] ArrayConstant arrives over COM as a tuple of str. An ArrayConstant copied by `create_primitive_nested`
+  adds TWO objects: the ArrayConstant (owner = the diagram) and its element, class `StringConstant`, owner = the
+  ArrayConstant (`:42-43`).
 - **Card 100-2 (2026-09-26), measured names** (`tools/bench/diag_c100_verbs_build.log` / `…build2.log`):
   `Control.Visible` = **6332000** (attached to a `VI Server:Control` PN, output terminal `Visible`); a
   `VI Server:Node` PN on 6359000 names its output **`Terms[]`**; Invoke `Terminal.Create Indicator` 6349C02 terminals

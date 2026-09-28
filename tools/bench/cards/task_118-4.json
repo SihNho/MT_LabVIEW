@@ -1,0 +1,82 @@
+{
+ "schema": "task/1",
+ "id": "118-4",
+ "kind": "build",
+ "goal": "TOOLS per PD234(j): (1) read-only Constant VALUE reader (flattened value + type; Array/Ring included); (2) ArrayConstant exception to create_primitive_nested's one-node rule. Scratch-verified",
+ "unblocks": "M3",
+ "why": "the pool stage (PD234) stopped three times on tool gaps; PD234(j) decides both tools; the pool retry itself is cycle 119, not this card",
+ "inputs": [
+  {"path": "tools/bench/cards/result_118-3.json"},
+  {"path": "archive/peer/2026-09-28-c118p1b-a3.md"},
+  {"path": "archive/peer/2026-09-28-c118p1-names.md"},
+  {"path": "tools/bench/diag_c118_p1b.py", "md5": "2cf01095366d331e92fd623741f961a1"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_r2_20260928_110756.vi", "md5": "7dac9f04ff4b65fa517e8e12f4bef5f3"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpPoolDonor_v0.vi", "md5": "fac6e4ab0fc4f7513d1a98df31e1f4e8"},
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "5edb581f274443fcadfccf27fac4b62f"},
+  {"path": "docs/NAMES.md"}
+ ],
+ "requires": [
+  {"kind": "verb", "name": "create_primitive_nested", "where": "tools/gscript.py"},
+  {"kind": "op", "name": "OpConstValueN_v1.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "tools/bench/diag_c118_p1b.py"}
+ ],
+ "pass": [
+  "R1 reader (op VI or existing op variant; op_hygiene PASS record, 20 calls handles flat) returns #23583 == 'Cam' and #13245's value+type, read-only on an R2 byte copy",
+  "R2 same reader returns OpPoolDonor_v0's names constant == Cam_pool00..Cam_pool19 (read-only; no VI run)",
+  "R3 fallback ONLY if R1/R2 cannot return a value: Constant.Terminal -> Create Indicator op + donor run (census 0 SubVI/Property/Invoke/CLFN first); say which path",
+  "A1 create_primitive_nested: ArrayConstant donor accepts exactly {new ArrayConstant, its element}, element owner == that array; every other create keeps one-node; selftest cases both ways",
+  "A2 scratch-verify on an R2 byte copy: copy the donor names ArrayConstant onto diagram 13236, read its value back with R1's reader == Cam_pool00..19; record under tools/bench/scratch_verify/",
+  "R2 md5 unchanged; nothing saved into the bed; handles +-100; LabVIEW verified gone; gscript/stagexec/stagesim selftests still pass"
+ ],
+ "outputs": [
+  "tools/bench/scratch_verify/*c118*",
+  "tools/bench/op_hygiene/**",
+  "tools/bench/cards/result_118-4.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": true,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c118*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\Op*",
+   "tools/gscript.py",
+   "tools/stagekit.py",
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/stage_prerun.py",
+   "tools/bench/diag_c118*",
+   "tools/bench/opmodels/**",
+   "tools/bench/op_hygiene/**",
+   "tools/bench/selftest_*",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "docs/NAMES.md",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 70},
+ "rules": [
+  "PD234(j) decides both tools; do not re-open them; tooling only, no pool plan or launch",
+  "run_vi ONLY for claudeDev OpPoolDonor_v0 on the R3 fallback, after its census; never run R2/copies",
+  "a new op VI needs its op_hygiene PASS record before gscript.op() uses it",
+  "the one-node rule is relaxed ONLY for an ArrayConstant donor; no other widening",
+  "a hygiene gate (handles, memory) is never re-based inside the card",
+  "every new diagnostic is a stagekit script <= 120 lines",
+  "failed prediction -> hypothesis peer; failure budget counts every rc!=0 run",
+  "inputs never edited or saved",
+  "launch: py tools/bgrun.py --material --max-min N -- ...; no env prefixes; hold to BGRUN END",
+  "gate refusal -> BLOCKED, or tools/gate_fp.py log if false positive; never an exempt route",
+  "facts <=10 file:line; OPEN <=3"
+ ]
+}

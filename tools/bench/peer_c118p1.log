@@ -1,0 +1,70 @@
+BGRUN START 2026-09-28 12:31:37 limit 16.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug c118p1-names -TaskFile tools/bench/peer_c118p1_task.txt -TimeoutSec 840
+BGRUN PID 16548
+OUTCOME: ANSWERED (166s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-28-c118p1-names.md
+COST: $1.4837  in 24 / out 13089 / cache-create 112727 / cache-read 1346143  (162s, 24 turn(s))
+--- ANSWER ---
+**The claim goes too far.** It is almost certainly true that the reader failed. It does not follow that the write succeeded. The recorded evidence can't separate E1 from E2, because the reader would return the same 20 bytes in both cases.
+
+## 1. Strongest reason the claim is wrong
+
+This reader has a known, recorded blind spot, and it covers this case whatever the constant holds.
+
+- `docs/NAMES.md:1157-1162` says that reading `Constant.Value` (634AC00) through a base-class `VI Server:Constant` cast returns a **void variant, without error**, for every DigitalNumericConstant (6/6) and every BooleanConstant (4/4). Only StringConstant came back with data.
+- The fix recorded there was to build the property node for the object's most specific class (`OpConstValueN_v0`).
+- Since then the same void pattern `2600800000000001000400000001000000000000` has appeared on:
+  - all 7 VISA constants (`tools/bench/diag_c105_const.json:417`, `verdict_void_all: true`);
+  - RingConstant #13245 in this same cycle, read through the DigitalNumeric-typed op (`tools/bench/diag_c118_p0.json:452-459`: `text ''`, `wire 0`, `err ''`).
+
+`OpConstValue_v1` is the base-class reader (`tools/recipes/build_opconstvalue_v1.py:178`). An ArrayConstant read through it would come back void whether it holds `Cam_pool00..19`, an empty `String[]`, or anything else. So "void" tells us nothing about the write.
+
+The session said it found no prior art on array reads. The general rule was already in `NAMES.md`, and it makes the A1b result a foregone conclusion. A1b could never have passed, so its failure is no evidence for or against the write.
+
+The `err ''` doesn't help either:
+- The void read is documented as happening without an error (`NAMES.md:1158`).
+- `opconstvalue_labels.json` has no `error out` entry.
+- `gscript._err` returns `None` whenever `GetControlValue` raises (`tools/gscript.py:550-553`), which `read_str` turns into `''`.
+
+## 2. Alternative explanations of the same bytes
+
+- **E1a (the write dropped the value):** the Python list reaches the Variant `Value` control as an OLE array of VARIANT. `Terminal.Create Constant` doesn't convert it to `String[]`, so the constant is a correctly typed but empty array. The reader shows this as void too.
+- **E1b (wrong type):** the constant was typed from what arrived (array of Variant) or from a sink that isn't `String[]`. Nothing checked the class of #101 or the type of the `Control Names` terminal.
+
+External facts, neither of which settles it:
+- The Create Constant method's `Value` input is an optional LabVIEW Variant, and the constant's type comes from the terminal ([LabVIEW Wiki](https://labviewwiki.org/wiki/Terminal_class/Create_Constant_method), [NI forum](https://forums.ni.com/t5/LabVIEW/Create-Constant-VI-Reference-Type/td-p/3189022)). Neither says what happens when the value's type doesn't match the terminal.
+- Getting arrays from ActiveX into LabVIEW Variants is a known source of trouble: arrays whose elements arrive as `VT_EMPTY`, and `VT_ARRAY` needing an element type to be valid ([NI forum](https://forums.ni.com/t5/LabVIEW/Sending-Variant-Arrays-to-An-Active-X-Component/td-p/85906), [NI forum](https://forums.ni.com/t5/LabVIEW/OLE-VARIANT-from-COM-ActiveX-to-LabView-Variant/td-p/3662425)).
+
+The only earlier success with this write was a scalar: 1.0 into an I32 N terminal, read back as `'1'` (`tools/bench/build_op_const_loopterm_77.py:81,109`). That is a numeric-to-numeric conversion inside LabVIEW. It says nothing about converting a COM array into `String[]`.
+
+## 3. What would falsify E2
+
+E2 is false if a reader that doesn't go through `Constant.Value` gets back **an empty array** or **a non-String element type** from constant #101. E2 is also in trouble if an ArrayConstant known to hold data (one made by hand or copied from the original VI) reads back with data through `OpConstValue_v1`. That would mean the reader can see arrays after all, so a void result would point to an empty constant.
+
+## 4. Cheapest test that separates E1 from E2
+
+Read the constant through LabVIEW's own dataflow instead of the Value property. This is one scripted step, uses only existing functions, and runs on the claudeDev scratch donor (no instruments involved):
+
+1. Rebuild the donor exactly as `diag_c118_p1.py:31-33` does.
+2. Delete the Get Controls.vi subVI and run Remove Bad Wires, as at `:40`.
+3. `g.create_indicator(DONOR, <Nodes[] index of #101>, <its output terminal>)`.
+4. Check ExecState is 1, run the donor VI over COM, and call `GetControlValue` on the new indicator.
+
+How to read the result:
+
+| indicator returns | meaning |
+|---|---|
+| `('Cam_pool00', …, 'Cam_pool19')` | **E2** (write fine, reader blind) |
+| `()` | **E1a** |
+| an error, or elements that aren't strings | **E1b** |
+
+For the E1b cases, also log the classes from `report_all(DONOR, "ArrayConstant")` and of the element constant inside it (`probe_opforloop.log:8` shows element constants listed with owner `ArrayConstant`).
+
+Whichever result comes back, gate A1b needs a reader that can see arrays. Without one, that gate can only ever fail.
+
+My current view: E2's half about the reader is close to certain given the prior art. Its half about the write is unmeasured, and the COM-array conversion is a real risk. Only the indicator read above settles it.
+
+Sources:
+- [Terminal class/Create Constant method – LabVIEW Wiki](https://labviewwiki.org/wiki/Terminal_class/Create_Constant_method)
+- [Create Constant VI Reference Type – NI Community](https://forums.ni.com/t5/LabVIEW/Create-Constant-VI-Reference-Type/td-p/3189022)
+- [Sending Variant Arrays to an ActiveX Component – NI Community](https://forums.ni.com/t5/LabVIEW/Sending-Variant-Arrays-to-An-Active-X-Component/td-p/85906)
+- [OLE VARIANT from COM ActiveX to LabVIEW Variant – NI Community](https://forums.ni.com/t5/LabVIEW/OLE-VARIANT-from-COM-ActiveX-to-LabView-Variant/td-p/3662425)
+BGRUN END rc=0 after 167s

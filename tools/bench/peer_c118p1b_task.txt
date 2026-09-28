@@ -1,0 +1,25 @@
+FAILED PREDICTION (card 118-3 P1, tools/bench/diag_c118_p1b.py run 1, log tools/bench/diag_c118_p1b.log:6-7).
+
+Context: a scratch diagnostic builds a small donor VI (claudeDev\OpPoolDonor_v0.vi, from EMPTY_v0.vi): it drops Erdos Miller's
+"Get Controls.vi", calls Terminal.Create Constant on its "Control Names" input with value = ['Cam_pool00', ..., 'Cam_pool19']
+(gscript.create_const_loop_term, kind 'for_n' = top-level Nodes[index].Terminals[term_index]), then deletes the helper subVI.
+The created constant got uid 101 (log line 5, no invoke error).
+
+Prediction A3 (mine): the new constant #101 is a top-level Node, so `build_track_v6_core.walk(DONOR, 0)` (Diagram.Nodes[] walked
+through gscript.node_labels + gscript.node_terms_uid) lists it with one source terminal, and gscript.create_indicator(node_index,
+terminal_index) can put an indicator on it.
+Observation: walk() did NOT list #101 (A3 detail None), the gate stopped the run before any indicator was made.
+
+My explanation (H1, our script's wrong prediction on a known fact): result_118-1.json already records that constants #23583/#13245
+of the main VI are in Traverse('Constant') but NOT in Traverse('Node'); the Nodes[]-walk readers (OpNodeLabels_v0 / OpNodeTermsUid_v0)
+apparently see the same population, so a constant never appears there. The fix I intend: address the constant BY UID through
+gscript.create_indicator_nested(DONOR, 101, 0) (OpCreateIndicatorNested_v0: UID -> GObject -> Terminals[0] -> Terminal.Create
+Indicator), which does not depend on Nodes[] membership.
+
+Already ruled out: the constant exists (uid echo 101, invoke error ''); the helper subVI was deleted before the walk (walk after
+delete + Remove Bad Wires) - the walk still found no #101; LabVIEW was fresh (handles 31,024).
+
+Please refute: is Nodes[] really excluding constants here, or does walk() stop early (it walks n in range(80) until node_terms_uid
+returns uid 0 - could a deleted subVI leave a hole that ends the walk before #101)? Is Terminals[0] of an ArrayConstant its output
+terminal? What is the cheapest discriminating test? Files: tools/recipes/build_track_v6_core.py:84-100 (walk), tools/gscript.py
+create_indicator_nested (:3979), docs/NAMES.md (Traverse classes), tools/bench/cards/result_118-1.json, tools/bench/diag_c118_p1b.log.

@@ -1,0 +1,34 @@
+{
+ "schema_note": "card 118-3 P1 (rung 2 of 118-1; PD234(i)): FINALIZED decision-row plan of tools/bench/diag_c118_p1b.py on a never-saved byte copy of the SAVED R2. Extends diag_c118_p1_plan.json (118-2) by PD234(i): D the donor's names constant is checked by RUNNING the donor (indicator read), never by Constant.Value; T the names enter the For loop through a tunnel set AUTO-INDEXED by gscript.set_index_mode and read back by gscript.tunnels; the Enqueue is made IN the For body from the top-level Obtain (creator auto-tunnel, NAMES.md:911-912, build_track_v6_queue.py:202). Every uid / name / position the script uses is HERE (stage_prerun X2/X6). uids from diag_c118_p0.json (118-1 P0, accepted by PD234(h)); constant output terminal names from graph_l2r2_saved_20260928.json (a constant's output row carries its sink's name: #23583 'Image Name', #13245 'Image Type'; diag_c118_q2.log).",
+ "input": {"vi": "D1_l2_r2_20260928_110756.vi", "md5": "7dac9f04ff4b65fa517e8e12f4bef5f3", "graph": "tools/bench/graph_l2r2_saved_20260928.json"},
+ "p0": {"imaq": 13938, "frame": 13236, "name_const": 23583, "ring": 13245, "base_name": "Cam", "name_hex_tail": "0000000343616d00000000"},
+ "paths": {
+  "donor": "OpPoolDonor_v0.vi",
+  "empty": "EMPTY_v0.vi",
+  "get_controls": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\vi.lib\\Erdos Miller\\LV-Scripting\\Get Controls.vi",
+  "imaq_create": "C:\\Program Files\\NI\\LVAddons\\nivisioncommon\\1\\vi.lib\\vision\\Basics.llb\\IMAQ Create"
+ },
+ "terms": {"gc_names": "Control Names", "imaq_out": "New Image", "imaq_name": "Image Name", "q_out": "queue out", "obt_type": "element data type",
+           "enq_queue": "queue", "enq_elem": "element", "obt_max": "max queue size (-1, unlimited)"},
+ "census_classes": ["SubVI", "CallLibrary", "Property", "Invoke"],
+ "pos": {"donor_gc": [200, 200], "donor_for": [500, 300], "for": [60, 1500], "imaq": [80, 60], "ring": [20, 120], "enq": [240, 60],
+         "names": [40, 1500], "c20a": [40, 1600], "c20b": [40, 1700], "obt_free": [200, 1500], "obt_work": [200, 1650]},
+ "decisions": [
+  {"id": "P1-A", "action": "create", "what": "donor claudeDev\\OpPoolDonor_v0.vi from EMPTY_v0.vi: String[20] Cam_pool00..19 on Get Controls' Control Names (create_const_loop_term 'Value'), I32 20 on a For N; helper deleted, bad wires removed"},
+  {"id": "P1-D", "action": "run", "what": "PD234(i): create_indicator on the names constant; census (no SubVI/CallLibrary/Property/Invoke); ExecState 1; RUN the donor (the only VI run of the card); indicator == Cam_pool00..19; save"},
+  {"id": "P1-0", "action": "stage", "what": "stagekit Stage: restart LabVIEW, byte copy of the saved R2 as the work copy = a scratch (never saved)"},
+  {"id": "P1-1", "action": "create", "what": "For loop on the frame diagram of #13938 (loop_in 'for'); N stays unwired"},
+  {"id": "P1-2", "action": "create", "what": "IMAQ Create in the For body (drop_subvi, LLB path without .vi)"},
+  {"id": "P1-3", "action": "create", "what": "String[20] names on the frame (create_primitive_nested, donor = the donor file's names constant)"},
+  {"id": "P1-4", "action": "create", "what": "I32 20 twice on the frame (create_primitive_nested, donor = the donor file's I32 20)"},
+  {"id": "P1-5", "action": "create", "what": "RING in the For body = a DUPLICATE of #13245 (create_primitive_nested, donor = the scratch itself, PD234(h))"},
+  {"id": "P1-6", "action": "create", "what": "Obtain Queue x2 on the frame typed from #13938.New Image (queue_node obtain; the PD234(d) branch)"},
+  {"id": "P1-7", "action": "create", "what": "Enqueue Element in the For body from Obtain(Q_free).queue out (queue_node enqueue; the creator makes the tunnel, PD234(i))"},
+  {"id": "P1-8a", "action": "wire", "what": "names constant -> IMAQ Create.Image Name across the For border (gscript.wire, one new LoopTunnel), then set_index_mode 1 and tunnels() read-back (PD234(i) T)"},
+  {"id": "P1-8b", "action": "wire", "what": "pool IMAQ Create.New Image -> Enqueue.element (gscript.wire, same body diagram)"},
+  {"id": "P1-8c", "action": "wire", "what": "I32 20 (c20a) -> Obtain(Q_free).max queue size (gscript.wire, frame diagram)"},
+  {"id": "P1-8d", "action": "wire", "what": "I32 20 (c20b) -> Obtain(Q_work).max queue size (gscript.wire, frame diagram)"},
+  {"id": "P1-9", "action": "read", "what": "read_live of the scratch before and after the wires; read_num on the ring pair; scratch_verify PASS records when every gate passes"},
+  {"id": "P1-10", "action": "discard", "what": "close(): scratch deleted, R2 md5 unchanged, LabVIEW killed and gone"}
+ ]
+}

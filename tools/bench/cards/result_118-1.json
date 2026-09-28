@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"118-1","status":"FAIL","gates":{"pass":1,"fail":1},
+"first_fail":"failure budget spent: read-only diag_c118_p0 ended rc=1 twice (run 1 list.get script bug; run 2 G2 '.vi' suffix lookup bug + G6 wrong prediction); no plan, no launch",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/graph_l2r2_saved_20260928.json","md5":"c6356fcde059e84b4d966d8fc47e25e8"},
+ {"path":"tools/bench/diag_c118_p0.json","md5":"d5c0c4085e8c282e59d00307f91f0159"},
+ {"path":"tools/bench/diag_c118_p1.py","md5":"149be282aeaf551cef16ad0b5f7ce6c1"},
+ {"path":"tools/stagexec.py","md5":"8ed049d44f8558efe1f8447a5da09e42"},
+ {"path":"tools/stagesim.py","md5":"494ae1a71cfe17c402b40406c2ec75df"},
+ {"path":"tools/gscript.py","md5":"907d6bbd5c6e3db1d95e6ec65239489a"},
+ {"path":"archive/peer/2026-09-28-c118p0-lookup.md","md5":null}],
+"facts":[
+ "P0 R2 graph dumped: graph_l2r2_saved_20260928.json 5801 rows/10088 objs, all Diagram owners resolved; R2 md5 unchanged (diag_c118_p0.log:259-260, diag_c118_p0b.log H2)",
+ "#13938 (SubVI, frame diagram 13236): Image Name<-StringConstant #23583, Image Type<-RingConstant #13245, Border Size + error in unwired (diag_c118_p0b.log:24-25)",
+ "#23583 value = 'Cam' (flattened bytes end 00000003 43616d) => PD234(c) pool names Cam_pool00..Cam_pool19 (diag_c118_p0b.log G4 line)",
+ "#13245 RingConstant: read via OpConstValueN_v1 Class 'RingConstant'/'Constant' uid echo ok, text '' repr 0, bytes 2600...00000000; NOT in DigitalNumericConstant traverse (diag_c118_p0b.log G5)",
+ "#23583/#13245 are in Traverse('Constant') but not Traverse('Node') => create_primitive_nested now falls back to the Constant delta when donor= is given (tools/gscript.py create_primitive_nested)",
+ "#20436 Image Name is an IMAGE wire (FSIT #32955 'Image Out' <- ... <- IMAQdx Grab #15403), a run-time name, not a constant (archive/peer/2026-09-28-c118p0-lookup.md:56-68)",
+ "Routes added, not LabVIEW-checked: stagexec 'queue','subvi', primitive donor=; stagesim create src join; selftests 124/0 75/0 (selftest_stagexec_c118.log, selftest_stagesim_c118.log)",
+ "P1 scratch-check written, not run: tools/bench/diag_c118_p1.py builds donor claudeDev\\OpPoolDonor_v0.vi (String[20] + I32 20) and all 8 creates on an R2 byte copy, then read_live",
+ "Fail lines: diag_c118_p0.log:262 AttributeError (s.safe returns a tuple); diag_c118_p0b.log:22-23 callers [] because subvis paths have no '.vi' (tools/bench/main_vi_subvis.json:380-382)",
+ "JEV rows: p0.log | our-script-bug p=0.950 | patch+rerun | patched, reran | p0b FAIL ; p0b.log | new-problem p=0.924 | hypothesis review | c118p0-lookup ANSWERED, annotated (jev_gate.log)"],
+"open":[
+ "PD234(c) uniqueness: #20436's name is a run-time image-name coercion (likely 'Cam', the grab buffer). Is 'Cam_poolNN unique and != literal Cam' the accepted proof, or must the run-time name be measured?",
+ "Image Type rule 1a: #13245 has no decoded value reader (text '', repr 0). Accept a byte-exact DUPLICATE of #13245 (create_primitive_nested donor=$work) with equal flattened bytes as the proof?",
+ "Re-issue on the escalation rung from diag_c118_p1.py (P1), with P0's facts reused - or a judgement card first for the two items above?"],
+"cost":{"usd":null,"minutes":22,"labview_runs":2},
+"note":"Failure budget (2 rc!=0 runs) spent on the read-only P0 diagnostic; both were our script's lookups (G6 also a wrong graph prediction). P0's content is complete. No plan, recipe, prior-art, scratch run or launch was made; no VI was saved; LabVIEW verified gone."}

@@ -228,6 +228,39 @@
    "status": "answered",
    "answer": "user 2026-09-27 08:4x: \"그 동안 루프 분할 빌드는 계속 진행하도록\" - restart the runner now and continue the loop-splitting build work that needs NO real run (L2-A2 and the display-loop part 2 build); real runs resume only after the user confirms COM5 (D-03)",
    "answered_at": "2026-09-27T08:45"
+  },
+  {
+   "id": "D-2026-09-28-01",
+   "asked": "2026-09-28T11:55",
+   "by": "chat",
+   "question": "The next build step (PD233(k)) adds the frame pool between the camera loop 1.1 and tracking loop 1.2: 20 image slots, and when all 20 are waiting, 1.1 skips reading the NEWEST camera frame. So under sustained overload tracking works through older queued frames (up to 20 behind, ~0.2 s at 90 Hz) and the newest frames are the ones lost. Your 2026-09-15 rule (docs/decisions.md:25) says the opposite: discard the backlog and take the newest frame. Every frame keeps its own buffer number, so timing labels stay correct either way; what differs is which frames are lost and how far tracking lags. Which do you want?",
+   "options": [
+    "latest-wins as decided on 09-15: when tracking falls behind, it drops the queued older frames and takes the newest (the pool stage is changed to do that)",
+    "keep the planned pool: skip the newest read when 20 are waiting (lag up to 20 frames, oldest kept)",
+    "other (please say)"
+   ],
+   "recommendation": "latest-wins (your 09-15 rule); the build of the pool itself can proceed and the overload branch is set by your answer before the first real run",
+   "blocks": [
+    "M4",
+    "R4"
+   ],
+   "status": "open"
+  },
+  {
+   "id": "D-2026-09-28-02",
+   "asked": "2026-09-28T13:10",
+   "by": "cycle 118",
+   "question": "Image-buffer pool build (20 buffers + 2 queues): 3 tries failed in cycle 118, each got further (last: 8 of 9 parts placed on a test copy). The 2 gaps are in our scripting tools (read / copy a list constant). Cycle 118 fixes them on a test VI; cycle 119 retries the pool. Continue?",
+   "options": [
+    "yes: fix the two tools, then retry the pool in cycle 119 (plan item 234(j))",
+    "stop the pool work and tell me why first",
+    "other (please say)"
+   ],
+   "recommendation": "yes. Nothing was saved over any file; the current work VI (D1_l2_r2) is unchanged; the saved-data maths is not touched",
+   "blocks": [
+    "M3"
+   ],
+   "status": "open"
   }
  ]
 }

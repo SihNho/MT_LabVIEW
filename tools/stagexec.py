@@ -205,6 +205,11 @@ CREATE_ROUTES = {
     "primitive": "gscript.create_primitive_nested (100-2)",
     "copy_in": "stagekit.copy_in (OpMoveByIndex_v0 duplicate, donor = the base)",
     "const_on_term": "stagekit.const_row (OpCreateConstOnTerm_v0, a node in a WhileLoop body)",
+    # card 118-1 P1 (PD234): the POOL stage's creators
+    "queue": "gscript.queue_node (OpQueueObtain_v0 / OpQueueEnqueue_v0): the node + the wire from `src` into its "
+             "`src_into` sink; same diagram, or (card 118-3, PD234(i)) `src` on the PARENT of a loop body this plan created "
+             "- the creator auto-makes the non-indexed LoopTunnel (build_track_v6_queue.py:202)",
+    "subvi": "gscript.drop_subvi (OpSubVI) of the file `subvi_path` on the diagram, unwired",
 }
 ROUTE_VERBS = {
     "while": [("gscript", "loop_in")], "for": [("gscript", "loop_in")],
@@ -217,6 +222,8 @@ ROUTE_VERBS = {
     "primitive": [("gscript", "create_primitive_nested")],
     "copy_in": [("stagekit", "copy_in")],
     "const_on_term": [("stagekit", "const_row")],
+    "queue": [("gscript", "queue_node")],
+    "subvi": [("gscript", "drop_subvi")],
     "gate": [("gscript", "read_bool_const")],
     "stop": [("file", "tools/bench/opstopfromnode_labels.json")],
 }
@@ -295,6 +302,15 @@ def create_route(a):
         if a.get("on") is None:
             raise ExecStop("create control needs `on` (the sink terminal it is created on)")
         return "control"
+    if a.get("queue_kind"):                              # card 118-1: Obtain / Enqueue through gscript.queue_node
+        if a["queue_kind"] not in ("obtain", "enqueue") or a.get("src") is None or not a.get("src_into") or not a.get("terminals"):
+            raise ExecStop("create queue needs queue_kind obtain|enqueue, `src` (source addr), `src_into` (the new node's "
+                           "sink name) and the declared `terminals`")
+        return "queue"
+    if a.get("subvi_path"):                              # card 118-1: a subVI dropped unwired
+        if not a.get("terminals"):
+            raise ExecStop("create subvi needs the declared `terminals`")
+        return "subvi"
     if a.get("donor_uid") is not None:
         return "copy_in"
     if a.get("prim"):
@@ -1690,6 +1706,8 @@ class Executor(object):
             out["on"] = self.real_term(prev, prev, a["on"], False)
         if a.get("donor_uid") is not None:
             out["donor_uid"] = int(a["donor_uid"])
+        if a.get("queue_kind") and a.get("src") is not None:          # card 118-1: the queue node's type/refnum source
+            out["src"] = self.real_term(prev, prev, a["src"], True)
         return out
 
 
@@ -2023,10 +2041,47 @@ class LVBackend(object):
             out.update(uid=pu, how=[CREATE_ROUTES[route], how])
             return out
         if route == "primitive":
-            rec = s._op("create_primitive_nested", lambda: g.create_primitive_nested(W, dg, a["prim"], pos),
-                        "{0!r} on #{1}".format(a["prim"], dg))
+            dn = a.get("donor")                               # card 118-1: {"donor": file | "$work", "uid": n}
+            if dn:
+                dn = {"donor": W if dn["donor"] == "$work" else _abs(dn["donor"]) if not os.path.isabs(dn["donor"]) else dn["donor"],
+                      "uid": int(dn["uid"])}
+            rec = s._op("create_primitive_nested", lambda: g.create_primitive_nested(W, dg, a["prim"], pos, donor=dn),
+                        "{0!r} on #{1} donor {2}".format(a["prim"], dg, dn))
             out = self._done(rec, tag)
             out.update(uid=rec.get("result"), how=CREATE_ROUTES[route])
+            return out
+        if route == "queue":                                  # card 118-1: queue_node; card 118-3: src on the body's PARENT too
+            rs = next(r for r in real if r["term_uid"] == args["src"])
+            cross = int(rs["frame_diagram"] or 0) != int(dg)
+            own = (self.addr.owners or {}).get(str(int(dg)))
+            if cross and not (own and own[0] in ("ForLoop", "WhileLoop") and int(own[1] or 0) > 0):
+                raise ExecStop("{0}: src #{1} is on diagram #{2}, not #{3}, and #{3} is not a loop body (queue route: same "
+                               "diagram, or the creator's auto tunnel into a loop body - PD234(i))".format(tag, args["src"], rs["frame_diagram"], dg))
+            node = V.node_of(rs)
+            scls = rs["owner_class"]
+            sidx = [int(o["uid"]) for o in g.report_all(W, scls)].index(int(node))
+            t0 = set(int(u) for u in g.uids(W, "LoopTunnel"))
+            rec = s._op("queue_node", lambda: g.queue_node(a["queue_kind"], W, scls, sidx, rs["term_name"], di, pos),
+                        "{0} from {1}[{2}] #{3}.{4!r} on Diagram[{5}] #{6}".format(a["queue_kind"], scls, sidx, node, rs["term_name"], di, dg))
+            out = self._done(rec, tag)
+            new = rec.get("result") or []
+            if len(new) != 1:
+                raise ExecStop("{0}: {1} new Function(s) {2}, expected 1".format(tag, len(new), new))
+            nt = sorted(set(int(u) for u in g.uids(W, "LoopTunnel")) - t0)
+            if len(nt) != (1 if cross else 0):                # the auto tunnel is the measured effect (build_track_v6_queue.py:202)
+                raise ExecStop("{0}: {1} new LoopTunnel(s) {2}, expected {3} (src {4})".format(tag, len(nt), nt, 1 if cross else 0,
+                                                                                             "on the parent" if cross else "same diagram"))
+            out.update(uid=int(new[0]), how=CREATE_ROUTES[route], auto_tunnel=(nt[0] if nt else None))
+            return out
+        if route == "subvi":
+            f0 = set(int(u) for u in g.uids(W, "SubVI"))
+            rec = s._op("drop_subvi", lambda: g.drop_subvi(W, a["subvi_path"], di, pos), "{0} on Diagram[{1}] #{2}".format(
+                os.path.basename(a["subvi_path"]), di, dg))
+            out = self._done(rec, tag)
+            new = sorted(set(int(u) for u in g.uids(W, "SubVI")) - f0)
+            if len(new) != 1:
+                raise ExecStop("{0}: {1} new SubVI(s) {2}, expected 1".format(tag, len(new), new))
+            out.update(uid=new[0], how=CREATE_ROUTES[route])
             return out
         if route == "copy_in":
             u = s.copy_in(a["class"], args["donor_uid"], dg, pos, tag=tag)
@@ -2315,6 +2370,14 @@ class SimBackend(object):
                         args["donor_uid"], SS.obj_class(S0, args["donor_uid"]), a["class"]))
             elif route == "primitive" and not a.get("prim"):
                 raise ExecStop("create_primitive_nested needs `prim`")
+            elif route == "queue":                                   # card 118-1: same-diagram source; 118-3: or the body's parent
+                sd = SS.resolve_diag(self.st, a["diagram"])
+                s_ = SS.resolve_addr(self.st, a["src"], True)
+                par = (self.st.get("diagrams") or {}).get(str(int(sd)))
+                if int(s_["frame_diagram"] or 0) != int(sd) and not (par is not None and int(par) == int(s_["frame_diagram"] or 0)):
+                    raise ExecStop("create queue: src on diagram #{0}, node on #{1} (same diagram, or a loop body of that diagram "
+                                   "created by this plan - PD234(i))".format(s_["frame_diagram"], sd))
+                chk.update(self._node_end(real, args["src"], True, "queue_node"), auto_tunnel=int(s_["frame_diagram"] or 0) != int(sd))
         except ExecStop as e:
             return self._unroutable(op, e)
         out = self._apply(op, chk)

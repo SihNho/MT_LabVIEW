@@ -1,0 +1,24 @@
+ATTACK this explanation of a failed prediction (card 118-1, read-only diagnostic tools/bench/diag_c118_p0.py, log tools/bench/diag_c118_p0b.log).
+
+The run read a byte copy of claudeDev\D1_l2_r2_20260928_110756.vi. Two gates failed:
+
+G2 "exactly 2 IMAQ Create SubVIs: #13938 in frame diagram 13236 and #20436" - the log shows `IMAQ CREATE callers []` (diag_c118_p0b.log:22).
+  CLAIM: the script's own lookup is wrong, not the VI: it calls gscript.subvis(W, diagram_index) for every frame diagram that holds a SubVI
+  terminal row and keeps rows whose `path` ends with "imaq create.vi" (diag_c118_p0.py, function probe). docs/main-vi-subvi-identity.md:163
+  records the callee path as `C:\Program Files\NI\LVAddons\nivisioncommon\1\vi.lib\vision\Basics.llb\IMAQ Create` - no ".vi" suffix -
+  so the suffix test can never match. The same log's G3 PASS (:24-25) shows #13938's terminal rows (New Image, Border Size, Image Name,
+  error out, '', Image Type, error in) read from the graph dump, i.e. #13938 exists as a SubVI on frame diagram 13236.
+  ALTERNATIVE I considered: subvis() raised/returned empty for every diagram (no "subvis ... raised" fact was printed, s.safe prints one on
+  an exception), or the diagram index mapping (report_all 'Diagram' order) differs from subvis' Traverse index.
+
+G6 "#20436 Image Name source read" - the graph shows #20436 'Image Name' is wired (w32944) from FlatSequenceInnerTunnel #32955 term 'Image Out'
+  (diag_c118_p0b.log G6 FACT line), not from a StringConstant, so the script's reader list was empty.
+  CLAIM: a wrong PREDICTION about the graph (I assumed #20436's name is a constant on its own frame); the machine is fine. The name value
+  must be traced upstream through the flat-sequence tunnel pair, offline, from tools/bench/graph_l2r2_saved_20260928.json.
+
+Other gates of the same run passed: G1 (graph dump, run 1), G3, G4 (#23583 = "Cam" in its flattened bytes), G5 (#13245 RingConstant read by
+the RingConstant and Constant class routes; NOT in the DigitalNumericConstant traverse; the flattened bytes end in 0x0000 0x0000).
+
+Tell me the strongest reason this explanation is wrong, what would falsify it, and the cheapest discriminating test. In particular: does
+subvis() return paths without the ".vi" extension (tools/gscript.py:632-687, and any log of an earlier subvis call in tools/bench), and is
+`term_name 'Image Out'` on the FSIT face consistent with a string-typed name wire?

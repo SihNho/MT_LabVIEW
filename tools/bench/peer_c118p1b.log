@@ -1,0 +1,35 @@
+BGRUN START 2026-09-28 12:51:22 limit 16.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug c118p1b-a3 -TaskFile tools/bench/peer_c118p1b_task.txt -TimeoutSec 840
+BGRUN PID 7224
+OUTCOME: ANSWERED (142s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-28-c118p1b-a3.md
+COST: $1.3987  in 32 / out 11225 / cache-create 100512 / cache-read 1673493  (138s, 26 turn(s))
+--- ANSWER ---
+H1 holds: a Constant is not a Node, and the walk did not stop early. But the fix you intend fails for exactly that reason. `create_indicator_nested(DONOR, 101, 0)` also looks the uid up among Nodes, so it will stop with a `ValueError` before it makes any edit. Don't launch the patched `diag_c118_p1b.py` as it stands: line 38 now makes that call, and the run will fail again at A3.
+
+**1. The strongest reason the claim is wrong: the fix goes through the same Node lookup it is meant to avoid.**
+- `create_indicator_nested` passes a plain constant uid to `_create_on_node_term` (`tools/gscript.py:4010`).
+- `_create_on_node_term` starts with `i = _uid_index(target, "Node", node_uid)` (`tools/gscript.py:3938`). That reads `report_all(target, "Node")` and raises `ValueError("#101 is not a Node ...")` when the uid is missing (`tools/gscript.py:3452-3457`).
+- Its op VI then casts to Node before reading `Node.Terminals[]` (`tools/gscript.py:3930`). A constant cannot pass that cast.
+- Your own record already says `#23583` and `#13245` are in `Traverse('Constant')` but not in `Traverse('Node')` (`tools/bench/cards/result_118-1.json:17`).
+- So "does not depend on Nodes[] membership" is false. It depends on the Node class instead of the Nodes[] list, and the constant is in neither.
+
+**2. Does the walk stop early? No.**
+- The Nodes[] readers read the list fresh on every op run (`tools/gscript.py:694-725`, `:1072-1081`). A deleted subVI therefore leaves no gap in the list.
+- After the delete, the donor's diagram should hold only the For loop, which has terminals, plus the two constants and wires.
+- The walk ends at the first uid 0 (`tools/recipes/build_track_v6_core.py:87-90`). For #101 to be hidden, a node with no terminals would have to come before it, and the donor has none.
+- Separately, the project has already measured that Nodes[] leaves out every `*Constant` except `ControlReferenceConstant`: 173 diagrams, 0 one-sided entries after the fit (`tools/stagexec.py:655-674`, `docs/d1-loop12-17-split-plan.md:839`).
+- Externally, the VI Server class hierarchy puts Constant directly under GObject, next to Node rather than inside it ([LabVIEW Wiki: Constant class](https://labviewwiki.org/wiki/Constant_class), [NI: Constant Properties](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/constant-p.html)).
+
+One caveat: `diag_c118_p1b.json` does not keep the walk's key set, and `diag_c118_p1b.py` has been overwritten since run 1. The record therefore cannot confirm that run 1 walked *after* the delete; that rests on your account.
+
+**3. Is `Terminals[0]` of an array constant its output? The question does not apply.** A Constant has no `Terminals[]` array. It has a single `Terminal` property, the output terminal ([LabVIEW Wiki](https://labviewwiki.org/wiki/Constant_class)). Our tools already use it as `Constant.Terminal` 634AC04 in `OpConstWire_v1` (`tools/gscript.py:2207-2211`).
+
+**4. An alternative explanation of the same evidence.** "The fix is by uid, so it works" confuses a uid lookup that searches every class with one that searches the Node class. Both the missing #101 in the walk and the coming `ValueError` come from one fact: a constant is a GObject, not a Node.
+
+**5. What would falsify H1.** `report_all(DONOR, "Node")` listing 101 would falsify it. Nothing in the record suggests it will.
+
+**6. The cheapest discriminating test (no VI run, no edit).** Rebuild the donor up to the delete and Remove Bad Wires, then read `report_all(DONOR, "Node")` and `report_all(DONOR, "Constant")`.
+- H1 predicts 101 and 214 appear only in the Constant list.
+- In the same session, calling `gscript._uid_index(DONOR, "Node", 101)` should raise. That shows ahead of time that the planned fix fails.
+
+**A route that should work instead.** Traverse('Constant')[i] → cast to Constant → `Constant.Terminal` 634AC04 → `Terminal.Create Indicator` 6349C02. The first half is `OpConstWire_v1`'s source chain, already measured (`tools/gscript.py:2207-2211`). The invoke is the one `OpCreateIndicator_v0` uses. No existing op joins the two, so this is a new tool. Under the 2026-09-24 rule, that is a judgement-session decision, followed by a scratch-VI check before the stage runs.
+BGRUN END rc=0 after 143s

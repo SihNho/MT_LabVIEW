@@ -1102,6 +1102,38 @@ def op_create(st, a, P, S1, labels):
         if not decl:
             decl = [{"name": d["term_name"], "is_source": True}]
     ts = [_new_term(st, u, cls, t.get("term_class") or "Terminal", t["is_source"], dg, t["name"]) for t in decl]
+    if a.get("src") is not None and a.get("src_into"):
+        # card 118-1 (queue route, gscript.queue_node): the op wires `src` (an existing SOURCE on the same diagram) into
+        # the new node's sink named `src_into` - a branch when the source is already wired, else a new wire
+        s = resolve_addr(st, a["src"], True)
+        into = [r for r in st["terminals"] if r["owner_uid"] == u and not r["is_source"] and r["term_name"] == a["src_into"]]
+        if len(into) != 1:
+            raise SimError("create {0}: {1} declared sinks named {2!r}, need exactly 1".format(cls, len(into), a["src_into"]))
+        sd = int(s["frame_diagram"] or 0)
+        if sd == dg:
+            eff["src_branch"] = bool(s["wire_uid"])
+            eff["wire"] = _join(st, s, into[0])
+        elif str(dg) in st["diagrams"] and int(st["diagrams"][str(dg)]) == sd and (st.get("owners") or {}).get(str(dg)):
+            # card 118-3 (PD234(i), measured prior art build_track_v6_queue.py:202 + NAMES.md:911-912): the creator wires a
+            # PARENT-diagram refnum source into a node it places in a loop BODY and auto-makes the (non-indexed) LoopTunnel:
+            # outer sink face on the parent joined to `src` (a branch when already wired), inner source face on the body
+            # joined to the new node's sink. The body must be a loop body this plan created (st.diagrams/owners know it).
+            lcls, loop = st["owners"][str(dg)]
+            Tn = _new_obj(st, "LoopTunnel", lcls)
+            o = _new_term(st, Tn, "LoopTunnel", "OuterTerminal", False, sd)
+            i = _new_term(st, Tn, "LoopTunnel", "InnerTerminal", True, dg)
+            for x in st["objs"]:
+                if x["uid"] == Tn:
+                    x["indexing"] = False
+            rowof = lambda t: next(r for r in st["terminals"] if r["term_uid"] == t)                  # noqa: E731
+            eff["src_branch"] = bool(s["wire_uid"])
+            eff["outer_wire"] = _join(st, s, rowof(o))
+            eff["wire"] = _join(st, rowof(i), into[0])
+            eff["auto_tunnel"] = {"tunnel": _sym(st, (name or "N{0}".format(-u)) + ".tunnel", Tn), "loop": loop, "outer": o, "inner": i,
+                                  "indexing": False}
+        else:
+            raise SimError("create {0}: src on diagram {1}, node on {2} (same diagram, or a loop body of that diagram created by "
+                           "this plan)".format(cls, s["frame_diagram"], dg))
     if d is not None:
         src = [r for r in st["terminals"] if r["owner_uid"] == u and r["is_source"]]
         if len(src) != 1:
@@ -2007,6 +2039,28 @@ def selftest():
              S71["end_cdiff_rows"] == S["end_cdiff_rows"], (e71, S71["failed"], S71["end_cdiff_rows"]))
     else:
         gate("G71 full toy plan under the measured cfw model", False, "no opmodels/connect_from_wire.json")
+    # card 118-3 (PD234(i)): the queue route's AUTO TUNNEL - a Function created in a loop body THIS plan made, `src` on the parent
+    s72 = base_state(_synthetic())
+    op_create(s72, {"op": "create", "id": "pf", "class": "ForLoop", "diagram": 10, "as": "PF", "pos": [0, 0]}, PR, None, {})
+    EQ = {"op": "create", "id": "enq", "class": "Function", "diagram": "new:PF.body", "as": "ENQ", "pos": [1, 1], "src": "1.v", "src_into": "queue",
+          "terminals": [{"name": "queue", "is_source": False}, {"name": "queue out", "is_source": True}]}
+    e72, _c = op_create(s72, EQ, PR, None, {})
+    at = e72.get("auto_tunnel") or {}
+    orow = next((r for r in s72["terminals"] if r["term_uid"] == at.get("outer")), {})
+    irow = next((r for r in s72["terminals"] if r["term_uid"] == at.get("inner")), {})
+    qrow = next((r for r in s72["terminals"] if r["owner_uid"] == s72["sym"]["new:ENQ"] and r["term_name"] == "queue"), {})
+    gate("G72 queue route across the border: ONE new non-indexed LoopTunnel; outer sink on diagram 10 BRANCHES w1 (1.v already wired); "
+         "inner source on the new body shares the new node's 'queue' wire",
+         at and orow.get("frame_diagram") == 10 and not orow.get("is_source") and orow.get("wire_uid") == 1 and e72.get("src_branch") is True
+         and irow.get("frame_diagram") == s72["sym"]["new:PF.body"] and irow.get("is_source") and irow.get("wire_uid") == qrow.get("wire_uid")
+         and qrow.get("wire_uid") and qrow.get("wire_uid") < 0 and at.get("indexing") is False
+         and sum(1 for o in s72["objs"] if o["class"] == "LoopTunnel" and o["uid"] == at.get("tunnel") and False) == 0, (e72, orow, irow, qrow))
+    try:
+        op_create(base_state(_synthetic()), dict(EQ, diagram=20), PR, None, {})
+        e73 = "no error"
+    except SimError as e:
+        e73 = str(e)
+    gate("G73 the same node on a body the plan did NOT create (diagram 20, base loop A) is still refused", "same diagram" in e73, e73)
     n_pass = sum(1 for _l, ok in gates if ok)
     n_fail = len(gates) - n_pass
     first = next((l for l, ok in gates if not ok), None)

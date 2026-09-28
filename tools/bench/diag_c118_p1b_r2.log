@@ -1,0 +1,70 @@
+BGRUN START 2026-09-28 12:56:22 limit 40.0 min: py -u tools/bench/diag_c118_p1b.py
+BGRUN PID 2116
+BGRUN STAGE-RUN recorded diag_c118_p1b.py cycle='cycle 118' card=None pid=12668 -> stage_runs.jsonl
+   PASS drop Get Controls.vi [43]
+  PASS  A1 donor: both constants created (uid, no invoke error)  ({'err': '', 'inv_err': '', 'created_uid': 101}, {'err': '', 'inv_err': '', 'created_uid': 214})
+  FACT  DONOR CENSUS {'SubVI': (0, ''), 'CallLibrary': (0, ''), 'Property': (0, ''), 'Invoke': (0, '')}; Node uids [44]; Constant uids [101, 122, 131, 146, 162, 171, 187, 214]; node labels ['For Loop']
+  PASS  A3 (review c118p1b-a3 test) both donor constants are in Traverse('Constant') and NEITHER is in Traverse('Node')  ([44], [101, 122, 131, 146, 162, 171, 187, 214])
+  PASS  D0 donor census: no SubVI / CallLibrary / Property / Invoke node (constants + loop only)  {'SubVI': (0, ''), 'CallLibrary': (0, ''), 'Property': (0, ''), 'Invoke': (0, '')}
+  PASS  D1 donor ExecState 1 (runnable; NOT run - D2 needs the missing indicator op)  1
+  FACT  D2 NOT MEASURED: names value check needs Constant.Terminal -> Create Indicator (no op on disk) - OPEN to judgement
+  FACT  DONOR RECORD {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpPoolDonor_v0.vi', 'md5': 'fac6e4ab0fc4f7513d1a98df31e1f4e8', 'names': 101, 'i32': 214, 'd2': 'NOT MEASURED'}
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 305 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 7dac9f04ff4b65fa517e8e12f4bef5f3  got 7dac9f04ff4b65fa517e8e12f4bef5f3
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 37684
+  FACT  LabVIEW handle count AFTER the restart: 34003
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_c118_p1b_20260928_125623.vi
+  FACT  ExecState [after open] scratch_c118_p1b_20260928_125623.vi = 0
+  FACT  CREATE for: {'ret': 23093, 'err': ''}
+  PASS  B1a For loop #23093 on #13236 with ONE body [23169]  (23093, [23169])
+  FACT  CREATE imaq: {'ret': 0.14562034606933594, 'err': ''}
+  FACT  names raised RuntimeError: create_primitive_nested('pool_names' on #13236): 2 new Node(s) [23517, 25286], expected 1
+  FACT  CREATE names: {'ret': None, 'err': "RuntimeError: create_primitive_nested('pool_names' on #13236): 2 new Node(s) [23517, 25286], expected 1"}
+  OBSERVED uid 26002 -> owner 'Diagram' uid 13236 | self 'DigitalNumericConstant'#26002 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  CREATE c20a: {'ret': 26002, 'err': ''}
+  OBSERVED uid 26793 -> owner 'Diagram' uid 13236 | self 'DigitalNumericConstant'#26793 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  CREATE c20b: {'ret': 26793, 'err': ''}
+  OBSERVED uid 27242 -> owner 'Diagram' uid 23169 | self 'RingConstant'#27242 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  CREATE ring: {'ret': 27242, 'err': ''}
+  FACT  CREATE obt_free: {'ret': [23099], 'err': ''}
+  FACT  CREATE obt_work: {'ret': [22218], 'err': ''}
+  FACT  CREATE enq: {'ret': [23105], 'err': ''}
+  FACT  NEW OBJECTS by class {'ForLoop': [23093], 'SubVI': [23096], 'Function': [22218, 23099, 23105], 'LoopTunnel': [25842]}; IMAQ #23096; body #23169
+  FAIL  B1 every create returned without error  {'for': '', 'imaq': '', 'names': "RuntimeError: create_primitive_nested('pool_names' on #13236): 2 new Node(s) [23517, 25286], expected 1", 'c20a': '', 'c20b': '', 'ring': '', 'obt_free': '', 'obt_work': '', 'enq': ''}
+  FAIL  STOP at gate: B1 every create returned without error
+
+---------- [H] HYGIENE
+  FACT  close_panel(scratch_c118_p1b_20260928_125623.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 11, 'closed': 11, 'live': 0, 'cached_op_vis': 7}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 11, 'closed': 11, 'live': 0, 'cached_op_vis': 7}
+  FACT  LabVIEW handle count AFTER the work: 45944
+  PASS  H4 scratch deleted: scratch_c118_p1b_20260928_125623.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c118_p1b_20260928_125623.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 7dac9f04ff4b65fa517e8e12f4bef5f3 / after 7dac9f04ff4b65fa517e8e12f4bef5f3
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33995
+
+====================================================================================================
+=== GATES: 13 pass / 2 fail; failing: B1 every create returned without error, STOP at gate: B1 every create returned without error
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c118_p1b.json   elapsed 143.1 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":13,"fail":2},"first_fail":"B1 every create returned without error","artefacts":[]}
+LabVIEW gone at exit: True
+BGRUN END rc=1 after 148s

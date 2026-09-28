@@ -62,11 +62,26 @@ rig-state: 조립   <!-- 2026-09-24 20:xx USER GRANT: "당분간 내가 말하�
 current-bed: D1_l2_r2_20260928_110756.vi
 <!-- ^ machine key read by tools/errorlist_check.py current_bed_text(); without it the bed is chosen by mtime among D1_*.vi names in this file, and the newer D1_s1_kswap_* would silently take over (review archive/peer/2026-09-26-c88-reuse-stalepin.md). Change it only when a new bed is accepted. Moved 2026-09-28 by cycle 117 (PD233(i)): L2-R2 accepted. -->
 🔵 **THE BED IS NOW `claudeDev\D1_l2_r2_20260928_110756.vi`, md5 `7dac9f04ff4b65fa517e8e12f4bef5f3`** (L2-R2, 307,072 B; expected Error List file `tools/bench/errorlist_expected_D1_l2_r2_20260928_110756.json`, 53 items, loose ends 22, reverdict OK; PD233(i)). STRUCTURAL, ExecState 0 by design, never run. **L2-R is complete.** Its input R1 (`D1_l2_r1_20260928_055441.vi`, md5 `f465196b…`) is kept.
-🟢🟢 **FIRST ACT of cycle 118 = `docs/d1-loop12-17-split-plan.md` Pre-decided 233(k): ONE material card (Opus high) builds the POOL stage, the first build step of QRT.**
-   - Plan offline on the SAVED R2 graph from the designed pool (`docs/d1-build-plan.md:567-579`, `stage2-assembly-step-c.md:19-29`): Q_free / Q_work lock-stepped, bound 20, full ⇒ skip the read. Design rules PD233(f)/(g): every field of one frame goes in the same lock-stepped enqueue; the pool comes before QRT-W because one IMAQ refnum would be overwritten (rule 1a).
-   - Rows ≤ 15; recipe ≤ 120 lines; dry + prerun + prior-art; scratch run on a byte copy; ONE launch → `claudeDev\D1_qrt_pool_<ts>.vi`, then the full Error List and its expected file in the same card.
-   - A missing create route (queue / IMAQ Create, `docs/qrtw-plan-draft.md` T1) is built inside the card. Any design choice the files do not settle (O6 timeouts, O7 release/stop) → BLOCKED to judgement.
-   - Draft for the step after: `docs/qrtw-plan-draft.md` (provisional on R1, status draft) + `tools/bench/qrtw_rows_draft.json`; facts `tools/bench/facts_c117_qrt.json`.
+🟢🟢 **FIRST ACT of cycle 119 = `docs/d1-loop12-17-split-plan.md` Pre-decided 234 (read (a)–(k)): ONE material card (Opus high) builds the POOL stage with the tools card 118-4 delivered.** The design is fully decided in PD234; the card applies it.
+   - Step 1: copy `claudeDev\OpPoolDonor_v0.vi` to `claudeDev\DonorPool_v0.vi`, point `tools/bench/diag_c118_p1b.py` at the copy, and remove the Op-named file (PD234(k)(1)).
+   - Step 2: re-run `diag_c118_p1b.py` on an R2 byte copy. All 9 creates must land: the names ArrayConstant is checked with `gscript.read_const_value` == `Cam_pool00…19`, and the names tunnel must be auto-indexed. Result: a `scratch_verify` PASS record.
+   - Step 3: `plan_qrt_pool.json` on `tools/bench/graph_l2r2_saved_20260928.json` (rows ≤ 15, stagesim FINAL); `stage_d1_qrt_pool.py` ≤ 120 lines; dry + prerun + prior-art.
+   - Step 4: a scratch run that pins the new Error List items, then ONE launch → `claudeDev\D1_qrt_pool_<ts>.vi` + `errorlist_expected_D1_qrt_pool_<ts>.json`.
+   - Gates are in next.json. If the card runs out of minutes, split it at a saved record; never re-run a whole card.
+   - Draft for the step after: `docs/qrtw-plan-draft.md` + `tools/bench/qrtw_rows_draft.json`.
+- **CYCLE 118 in brief — no new VI; the pool stage's design is decided (PD234) and the two tools it lacked are BUILT:**
+  - Three pool cards FAILED, each getting further:
+    - 118-1 (Opus high): the read-only P0 was complete; `#13938` has name `'Cam'` and type ring `#13245`. The budget went on two script bugs.
+    - 118-2 (Opus max): P1 became launchable, but its value gate could never pass, because the old reader returns void for non-String constants.
+    - 118-3 (Fable low): the queue route with the Enqueue's automatic tunnel is done, and 8 of 9 creates landed on the R2 copy. The ArrayConstant copy tripped the one-node rule.
+    - The escalation ladder for that card ended, so it went to `decisions_pending` **D-2026-09-28-02** (open; the work proceeds under its recommendation).
+  - 118-4 PASS 6/0 (tooling): `gscript.read_const_value` works on the bed itself with the new ops `OpConstValueRing_v0`/`OpConstValueArr_v0` (hygiene 2,000 calls each). The ArrayConstant exception is in `create_primitive_nested`. Records: `tools/bench/scratch_verify/*c118*`.
+  - R2 is unchanged (md5 `7dac9f04…`), and LabVIEW was verified closed after every card.
+  - Carries:
+    - gate-fp **fp-3** (the launch gate treated an op build that imports stagekit as a stage);
+    - `selftest_op_hygiene` H9 fails on `OpPoolDonor_v0.vi` (fixed by step 1 above);
+    - `decisions_pending.json` item 13 (D-2026-09-28-01, the chat's) has a question over the schema's 300-character limit, so `validate` fails on it. The chat owns its wording.
+  - **User decisions open:** D-2026-09-28-01 (pool overload: latest-wins or skip), D-2026-09-28-02 (continue the pool build as above).
 - **CYCLE 117 in brief — L2-R2 DELIVERED, THE NEW BED; rule-evaded device built; QRT facts + draft (PD233):**
   - 117-1 FAIL 7/1: `OpWireJoints_v1` (md5 `29dcb59f…`) made 2,066 calls with 0 errors and flat handles; record `tools/bench/op_hygiene/OpWireJoints_v1.json`.
     - ONE launch 43/0 saved R2. L2/L3a passed.

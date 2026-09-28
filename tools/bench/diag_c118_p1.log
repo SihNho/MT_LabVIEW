@@ -1,0 +1,31 @@
+BGRUN START 2026-09-28 12:30:15 limit 35.0 min: py -u tools/bench/diag_c118_p1.py
+BGRUN PID 20400
+BGRUN STAGE-RUN recorded diag_c118_p1.py cycle='cycle 118' card=None pid=12704 -> stage_runs.jsonl
+  PASS  A0 P0's #23583 value bytes end in 'Cam' (the PD234(h) base name)  4e616d6500000100000000000343616d00000000
+   PASS drop Get Controls.vi [43]
+  FACT  DONOR consts: names {'err': '', 'inv_err': '', 'created_uid': 101} ; i32 {'err': '', 'inv_err': '', 'created_uid': 214}
+  PASS  A1 donor: both constants created (uid, no invoke error)  ({'err': '', 'inv_err': '', 'created_uid': 101}, {'err': '', 'inv_err': '', 'created_uid': 214})
+  FACT  DONOR NAMES READ {"uid": 101, "hex": "2600800000000001000400000001000000000000", "text": "&\u0000\u0080\u0000\u0000\u0000\u0000\u0001\u0000\u0004\u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0000\u0000\u0000", "err": ""}
+  FAIL  A1b donor names constant bytes end in the flattened Cam_pool00..19  2600800000000001000400000001000000000000
+  FAIL  STOP at gate: A1b donor names constant bytes end in the flattened Cam_pool00..19
+
+---------- [H] HYGIENE
+  FACT  close_panel(scratch_c118_p1_20260928_123015.vi) raised com_error: (-2147352567, '??? ??????.', (5507, 'LabVIEW', 'LabVIEW: (Hex 0x7) File not found. The file might be in a different location or deleted. Use the command prompt or the file explorer to verify that the path is correct.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 2, 'closed': 2, 'live': 0, 'cached_op_vis': 7}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 2, 'closed': 2, 'live': 0, 'cached_op_vis': 7}
+  FACT  LabVIEW handle count AFTER the work: 37682
+  FAIL  H2 the INPUT's md5 is UNCHANGED after the run  before None / after 7dac9f04ff4b65fa517e8e12f4bef5f3
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  H6 NOT MEASURED: the run never took the BEFORE listing, so an 'added' set would be the whole directory. Reported, not gated.
+
+====================================================================================================
+=== GATES: 4 pass / 3 fail; failing: A1b donor names constant bytes end in the flattened Cam_pool00..19, STOP at gate: A1b donor names constant bytes end in the flattened Cam_pool00..19, H2 the INPUT's md5 is UNCHANGED after the run
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c118_p1.json   elapsed 15.4 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":4,"fail":3},"first_fail":"A1b donor names constant bytes end in the flattened Cam_pool00..19","artefacts":[]}
+LabVIEW gone at exit: True
+BGRUN END rc=1 after 20s

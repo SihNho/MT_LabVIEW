@@ -1,0 +1,21 @@
+ATTACK this explanation of a failed prediction (card 118-2, diagnostic tools/bench/diag_c118_p1.py, log tools/bench/diag_c118_p1.log).
+
+The run built a donor VI claudeDev\OpPoolDonor_v0.vi from EMPTY_v0.vi: dropped Get Controls.vi, then gscript.create_const_loop_term(DONOR,
+"for_n", <Get Controls Nodes[] index>, value=<Python list of 20 str 'Cam_pool00'..'Cam_pool19'>, term_index=<'Control Names' index>)
+(tools/gscript.py:2796-2835; OpCreateConstTop_v0 = Terminal.Create Constant 6349C00 with its 'Value' input wired from a front-panel control
+made by create_control on that input, tools/bench/build_op_const_loopterm_77.py:46-57; the list is passed by COM SetControlValue).
+The op returned created_uid 101, err '' and inv_err '' (diag_c118_p1.log:6-7). Then diag_c118_p0.read_str(DONOR, 101)
+(tools/bench/diag_c118_p0.py:32-41: OpConstValue_v1, Class 'Constant', Constant.Value 634AC00, flattened bytes) returned uid echo 101,
+err '' and hex 2600800000000001000400000001000000000000 (diag_c118_p1.log:8) - a flattened VARIANT whose one type descriptor is 0004 0000,
+i.e. VOID, and no data. The same reader on StringConstant #23583 of the R2 bed returned a String TD and the data 'Cam'
+(tools/bench/diag_c118_p0.json:445-449). Gate A1b (donor names bytes end in the flattened Cam_pool00..19) FAILED; nothing else ran.
+
+CLAIM (E2): the reader, not the write, is what failed - Constant.Value read through OpConstValue_v1 returns a void variant for an
+ArrayConstant (the value may well be in the constant). ALTERNATIVE I hold open (E1): the COM list reached the op's Variant 'Value' control as
+an OLE variant array that Terminal.Create Constant did not convert to String[], so the constant carries no value (or its default), and the
+reader is fine. I have NOT measured either: no array constant has ever been read by OpConstValue_v1 in this project that I found, and
+create_const_loop_term was only ever measured with scalar values (-7, build_op_const_loopterm_77.py:9-11).
+
+Tell me the strongest reason the claim is wrong, what would falsify it, and the cheapest discriminating test that separates E1 from E2
+on LabVIEW 2026 VI Scripting (e.g. what a void Constant.Value means for an array constant, whether Create Constant's Value accepts an ActiveX
+variant array, and a reader or write route that would settle it in ONE scripted step). Relevant: docs/NAMES.md, tools/recipes/build_opconstvalue_v1.py.

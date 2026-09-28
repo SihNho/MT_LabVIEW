@@ -1,0 +1,13 @@
+BGRUN START 2026-09-28 13:13:29 limit 1.0 min: py -u tools/bench/selftest_c118_primnested.py
+BGRUN PID 10452
+  PASS  T1 array donor + {ArrayConstant 500, element 501 owned by it} -> 500  500
+  PASS  T2 element NOT owned by the new array -> refused  REFUSED create_primitive_nested('pool_names' on #13236): ArrayConstant copy: element #501 is owned by ('Diagram', 13236), not ArrayConstant #500 | 2 new Node(s) [500, 501], expected 1
+  PASS  T3 non-ArrayConstant donor, 2 new -> refused (one-node rule kept)  REFUSED create_primitive_nested('pool_names' on #13236): 2 new Node(s) [500, 501], expected 1
+  PASS  T4 non-ArrayConstant donor, 1 new on the diagram -> 600  600
+  PASS  T5 array donor, 3 new -> refused  REFUSED create_primitive_nested('pool_names' on #13236): 3 new Node(s) [500, 501, 502], expected 1
+  PASS  T6 array donor, 2 new but no new ArrayConstant -> refused  REFUSED create_primitive_nested('pool_names' on #13236): ArrayConstant copy: 0 of the new [500, 501] are ArrayConstants, expected 1 | 2 new Node(s) [500, 501], expected 1
+  PASS  T7 array pair whose array is NOT on Diagram #13236 -> refused  REFUSED create_primitive_nested('pool_names' on #13236): new node #500 is owned by ('Diagram', 999), not Diagram #13236
+  PASS  T8 array donor, exactly 1 new -> 500 (one-node path unchanged)  500
+=== GATES: 8 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":8,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

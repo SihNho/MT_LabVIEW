@@ -1,0 +1,73 @@
+BGRUN START 2026-09-28 13:16:06 limit 35.0 min: py -u tools/bench/diag_c118_r1v.py
+BGRUN PID 19704
+BGRUN STAGE-RUN recorded diag_c118_r1v.py cycle='cycle 118' card=None pid=12088 -> stage_runs.jsonl
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 307 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 7dac9f04ff4b65fa517e8e12f4bef5f3  got 7dac9f04ff4b65fa517e8e12f4bef5f3
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33963
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_c118_r1v_20260928_131606.vi
+  FACT  ExecState [after open] scratch_c118_r1v_20260928_131606.vi = 0
+  PASS  K0 donor OpPoolDonor_v0 md5 == fac6e4ab0fc4f7513d1a98df31e1f4e8  fac6e4ab0fc4f7513d1a98df31e1f4e8
+
+---------- [H] op-hygiene probes
+  FACT  HYG OpConstValueRing_v0: 2000 calls in 53.9 s, errors 0 [], handles 45707 -> 45707, private 597327872 -> 601350144, value 0
+  PASS  H OpConstValueRing_v0 2000 consecutive calls on #13245: 0 errors, handles flat +-100  (0, 45707, 45707)
+  FACT  HYGIENE RECORD op_hygiene/OpConstValueRing_v0.json
+  FACT  HYG OpConstValueArr_v0: 2000 calls in 48.0 s, errors 0 [], handles 45730 -> 45711, private 601382912 -> 601214976, value ('Cam_pool00', 'Cam_pool01', 'Cam_pool02', 'Cam_pool03', 'Cam_pool04', 'Cam_pool05', 'Cam_pool06', 'Cam_pool07', 'Cam_po
+  PASS  H OpConstValueArr_v0 2000 consecutive calls on #101: 0 errors, handles flat +-100  (0, 45730, 45711)
+  FACT  HYGIENE RECORD op_hygiene/OpConstValueArr_v0.json
+  PASS  H both hygiene records written (gscript.op admits the ops)  [True, True]
+
+---------- [R] read_const_value
+  FACT  R1a #23583 {"cls": "StringConstant", "value": "Cam", "type": "TD 0x30", "hex": "260080000000000100144030ffffffff0a496d616765204e616d6500000100000000000343616d00000000", "echo": 23583, "err": "", "route": "OpConstValue_v1", "note": "v0x26008000 tds=[48] body=7B/7 attrs=0"}
+  PASS  R1a #23583 StringConstant == 'Cam', uid echo, no error
+  FACT  R1b #13245 {"cls": "RingConstant", "value": 0, "type": {"python": "int", "representation": 6}, "echo": 13245, "err": "", "route": "OpConstValueRing_v0"}
+  PASS  R1b #13245 RingConstant: int value + Representation read, uid echo, no error  (0, {'python': 'int', 'representation': 6}, '')
+  FACT  R2 donor #101 {"cls": "ArrayConstant", "value": ["Cam_pool00", "Cam_pool01", "Cam_pool02", "Cam_pool03", "Cam_pool04", "Cam_pool05", "Cam_pool06", "Cam_pool07", "Cam_pool08", "Cam_pool09", "Cam_pool10", "Cam_pool11", "Cam_pool12", "Cam_pool13", "Cam_pool14", "Cam_pool15", "Cam_pool16", "Cam_pool17", "Cam_pool18", "Cam_pool19"], "type": {"python": "tuple", "n": 20, "elements": ["str"]}, "echo": 101, "err": "", "route": "OpConstValueArr_v0"}
+  PASS  R2 donor #101 ArrayConstant value == Cam_pool00..19, uid echo, no error  ({'python': 'tuple', 'n': 20, 'elements': ['str']}, '')
+
+---------- [A2] ArrayConstant copy onto frame diagram #13236
+  OBSERVED uid 23301 -> owner 'ArrayConstant' uid 23148 | self 'StringConstant'#23301 | 482 says 'ArrayConstant' cast 'ArrayConstant' |  
+  OBSERVED uid 23148 -> owner 'Diagram' uid 13236 | self 'ArrayConstant'#23148 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  A2a create_primitive_nested returned ONE ArrayConstant uid owned by Diagram #13236 (no refusal)  (23148, '')
+  FACT  A2b copy #23148 {"cls": "ArrayConstant", "value": ["Cam_pool00", "Cam_pool01", "Cam_pool02", "Cam_pool03", "Cam_pool04", "Cam_pool05", "Cam_pool06", "Cam_pool07", "Cam_pool08", "Cam_pool09", "Cam_pool10", "Cam_pool11", "Cam_pool12", "Cam_pool13", "Cam_pool14", "Cam_pool15", "Cam_pool16", "Cam_pool17", "Cam_pool18", "Cam_pool19"], "type": {"python": "tuple", "n": 20, "elements": ["str"]}, "echo": 23148, "err": "", "route": "OpConstValueArr_v0"}
+  PASS  A2b the copy reads back == Cam_pool00..19 with the R1 reader  ({'python': 'tuple', 'n': 20, 'elements': ['str']}, '')
+  PASS  K donor md5 unchanged after the reads and the copy  fac6e4ab0fc4f7513d1a98df31e1f4e8
+  FACT  SCRATCH-VERIFY record G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\scratch_verify\gscript.create_primitive_nested_c118_20260928_131606.json
+  FACT  SCRATCH-VERIFY record G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\scratch_verify\gscript.read_const_value_c118_20260928_131606.json
+
+---------- [H] HYGIENE
+  FACT  close_panel(scratch_c118_r1v_20260928_131606.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 6}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 6}
+  FACT  LabVIEW handle count AFTER the work: 34397
+  PASS  H4 scratch deleted: scratch_c118_r1v_20260928_131606.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c118_r1v_20260928_131606.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 7dac9f04ff4b65fa517e8e12f4bef5f3 / after 7dac9f04ff4b65fa517e8e12f4bef5f3
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33998
+
+====================================================================================================
+=== GATES: 18 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c118_r1v.json   elapsed 215.9 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":18,"fail":0},"first_fail":null,"artefacts":[]}
+LabVIEW gone at exit: True
+BGRUN END rc=0 after 221s
