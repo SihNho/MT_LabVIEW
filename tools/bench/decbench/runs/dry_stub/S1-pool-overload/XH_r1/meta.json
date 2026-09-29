@@ -1,0 +1,40 @@
+{
+ "case": "S1-pool-overload",
+ "arm": "XH",
+ "rep": 1,
+ "model": "claude-opus-5-5",
+ "effort": "xhigh",
+ "attempt": 2,
+ "usd": 0.0,
+ "minutes": 0.01,
+ "cell_minutes": 0.01,
+ "turns": 1,
+ "tools": 1,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-opus-5-5",
+   "effort": "xhigh",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.01,
+   "usd": 0.0,
+   "turns": 1,
+   "tools": 1,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "stub"
+   ]
+  }
+ ],
+ "answer": "Says the planned overload branch (full Q_work => skip the read) keeps older queued frames and drops/skips the NEWEST frame (drop-new / stale data).\nIdentifies that this contradicts the user's latest-wins overload rule (discard backlog, take the newest frame; docs/decisions.md:25 or frame-ownership-design).\nNext act changes the overload behaviour to latest-wins (discard the backlog, read the newest) or puts that decision to the user before any real run; does not simply build the planned skip-read.\nVERDICT: change NEXT\nDEFECT: major - stub",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "M3": 1.0,
+  "F1": 0.0,
+  "F2": 0.0,
+  "B1": 0.0
+ }
+}

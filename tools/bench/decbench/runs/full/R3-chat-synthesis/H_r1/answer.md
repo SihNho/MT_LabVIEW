@@ -1,0 +1,15 @@
+**No, the summary should not go out as written.** None of its judgement A/B numbers appear anywhere in this checkout, and its Fable cost claim is contradicted by the report itself.
+
+**1. Strongest reason it is wrong: the A/B numbers are unsourced.** A search for `2.17`, `1.57`, `37.18` and `38.24` found no A/B record. Every record of the A/B gives different figures: "high PASS 2.5 vs 2.0 per cycle, $33 vs $39, n=4/5, not decisive but never worse" (`CLAUDE.md:384-385`; the same figures at `tools/cycle_runner.py:252`, `tools/cycle_runner.py:1255` and `tools/bench/cards/brief_chat-N4.md:14`). The summary's direction matches (high better and cheaper). But its magnitudes are made up or come from a window no one recorded, and it drops the "n=4/5, not decisive" caveat. "So high is also cheaper" also overstates a gap of $1.06 per cycle at that sample size.
+
+**Other defects:**
+- **Fable "costs about the same" is false on the report's own numbers.** Fable low cost $17.59 for **5** cells; Opus high cost $15.24 for **10** cells (`report_v1.md:17`, `report_v1.md:77`). Per cell that is about $3.52 against $1.52, so Fable costs about 2.3× as much. Fable was also slower: 3.48 against 2.56 mean minutes. The Fable cells are old v0 runs with one repeat each, re-scored by the v1 scorer (`report_v1.md:65`), so 5/5 against 8/10 is not a like-for-like comparison either.
+- **The matbench line is right, but only partly.** It says effort changed the score only on T1 and T3, and only T1 exceeded repeat noise; `report_v1.md:34` and `report_v1.md:26-28` support that. But T2's mean score also changed across effort levels (low 0.5, medium 1, high 1, max 0.5 at `report_v1.md:27`). That is within repeat noise (within-range 1, between-range 0.5), so "changed the score only on T1 and T3" is loose unless it says "beyond noise".
+
+**2. Another explanation for the same evidence.** 2.17/1.57 may be per-cycle means over a different set of cycles. The runner's cards show medium/high alternating past cycle 97: cycle 101 is "judge-ab medium" and cycle 103 is "judge-ab medium" (`tools/bench/cards/cycle_101.json:31`, `tools/bench/cards/cycle_103.json:28`). If so, the summary is quoting a different experiment than the one the user approved the table on, while labelling it "cycles 89-97".
+
+**3. What would prove the summary right.** A runner log or results file that computes 2.17/1.57 and $37.18/$38.24 over cycles 89-97. If the only numbers for cycles 89-97 are 2.5/2.0 and $33/$39, the summary is wrong.
+
+**4. Cheapest test.** Search the runner logs (`tools/bench/cycle_runner_main_*.log`) for `JUDGE-AB` and the per-cycle PASS and cost lines for cycles 89-97. Recompute both means and see whether they give 2.5/2.0 and $33/$39 or 2.17/1.57 and $37.18/$38.24. Then check whether the latter only appears if cycles 98-103 are added.
+
+DEFECT: major - The A/B figures (2.17 vs 1.57, $37.18 vs $38.24) are not in any source, contradict the recorded 2.5 vs 2.0 and $33 vs $39 (`CLAUDE.md:384`), and "Fable costs about the same" ignores that its $17.59 bought 5 cells against Opus high's 10.

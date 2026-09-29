@@ -1,0 +1,39 @@
+{
+ "case": "T1-looseends-pin",
+ "arm": "XH",
+ "rep": 2,
+ "model": "claude-opus-5-5",
+ "effort": "xhigh",
+ "attempt": 1,
+ "usd": 1.2515,
+ "minutes": 2.74,
+ "cell_minutes": 2.51,
+ "turns": 13,
+ "tools": 12,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-opus-5-5",
+   "effort": "xhigh",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 2.51,
+   "usd": 1.2515014,
+   "turns": 13,
+   "tools": 12,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-opus-5-5"
+   ]
+  }
+ ],
+ "answer": "The pinned prediction was wrong, not the build. Error List counts looked right (53 items, matching the window's own count, and all other classes exact), so the loose-ends number 22 is real. The pin subtracted 2 \"already loose\" nets, and those 2 were an assumption that was never measured.\n\n**Why the pin said 24.** The formula was: 24 in R1, minus 11 deleted stubs, plus 13 shared nets that each lose a tunnel sink, minus 2 of those nets (25438 and 25461) that were already loose in R1 (`tools/bench/plan_l2r2_make.log:44`). An earlier version of the same formula, without the \"minus 2\", gave 26 (`plan_l2r2_make.log:20`).\n\nThat subtraction only works if the Error List reports one item per wire. The observed 22 supports this: if it counted per segment, the result would be at least 24. So the counting unit is fine. What is wrong is which of the 13 nets already had a loose end.\n\n**Where the \"2\" came from.** It was taken from the PD230(d) licence on 7 nets (8590, 9051, 11253, 11389, 25438, 25461, 29122). That licence's own note says \"LOCATION IS INFERRED, not measured\" (`tools/bench/errorlist_expected_D1_l2_r1_20260928_055441.json:75`). The peer review said the same count of 24 also fits a swap, where a different shared net was already loose (`archive/peer/2026-09-28-c115e-sel.md:106-107`). That question was left OPEN, not settled (`c115e-sel.md:157-159`). The existing tools cannot see loose segments: a free segment is not in `Wire.Terms[]` (`c115e-sel.md:53`). Remove Bad Wires did not delete any shared net in either VI (`diag_c116b_scratch.log:319-320`), so it gives no location either. The Error List reader's \"7 used 5\" (`diag_c116b_scratch_el.log:113`) is a count-based assignment, not a location.\n\nObserved 22 = 24 − 11 + 9. So only 9 of the 13 shared nets added a new item.\n\n**Two explanations for the missing 2:**\n- **H1 (most likely):** 4 of the 13 shared nets were already loose in R1, not 2. Two of R1's loose-ends items sit on shared nets other than 25438 and 25461. This is the swap case the review left open.\n- **H2:** only 2 were already loose, but on 2 nets deleting the tunnel left no dangling branch, for example because LabVIEW removed the segment together with the tunnel.\n\nThe build's own checks cannot tell these apart. The ENDS check passed on all 13 nets (`diag_c116b_scratch.log:284`), but it compares terminal lists, which do not show free segments.\n\n**Cheapest test.** Make a new byte copy of R1 (the scratch copy was already deleted, `diag_c116b_scratch_el.log:118`). On that copy, call `Wire.Remove Loose Ends` once on each of the 13 shared nets, then read the Error List once (about 11 minutes, `el.log:88`).\n- H1 predicts loose-ends 24 → 20.\n- H2 predicts 24 → 22.\n\nThe project has no `Remove Loose Ends` script function yet (a search of `tools/*.py` found none), so it needs a minimal scratch-VI check first. It is still one run and one read, and it also settles the open swap question for R1's licence.\n\nROOT CAUSE: The pin subtracted only the 2 inferred PD230 nets (25438, 25461) as already loose in R1, but that location was never measured, and the observed 22 means 4 of the 13 shared nets already had a loose end.\nTEST: On a fresh byte copy of R1, call Wire.Remove Loose Ends on each of the 13 shared nets and read the Error List once; loose-ends 20 confirms 4 were already loose, while 22 means 2 tunnel deletes left no dangling branch.",
+ "mech": {
+  "M1": 1.0,
+  "M2": 0.0,
+  "F1": 0.0,
+  "F2": 1.0,
+  "B1": 0.0
+ }
+}

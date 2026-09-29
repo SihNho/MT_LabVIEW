@@ -1,0 +1,38 @@
+{
+ "case": "T3-handles-gate",
+ "arm": "H",
+ "rep": 2,
+ "model": "claude-opus-5-5",
+ "effort": "high",
+ "attempt": 1,
+ "usd": 0.6908,
+ "minutes": 1.83,
+ "cell_minutes": 0.86,
+ "turns": 8,
+ "tools": 7,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.86,
+   "usd": 0.6907748,
+   "turns": 8,
+   "tools": 7,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-opus-5-5"
+   ]
+  }
+ ],
+ "answer": "**Answer:** The saved VI is almost certainly not defective. A `.vi` file that is never run cannot leak VI Server references. The more likely explanation is that the card's ±100 handle limit was applied to the wrong kind of stage: it was calibrated on R2, a stage that only deleted, and this pool stage creates objects.\n\n**Evidence**\n- **References are balanced.** Opened equals closed (9/9, 0 live) at `tools/bench/stage_d1_qrt_pool.log:245-246`, and no VI was run (`tools/bench/cards/result_119-4.json:30`).\n- **The growth steps up only on create/connect operations, and reads stay flat.** k1 +85 (`:50`), k3 +79 (`:78`), k11 +58 (`:189`), k13 +75 (`:217`). Reads right after each operation move 0 to ±6 (`:51, :79, :190, :218`), and read-only steps k4–k5 and k10 are flat (`:87-97, :168`). A leak in a repeated call would also show up on the read-only steps. These steps look like LabVIEW memory for the new objects in the open, edited diagram: 7 new wires (`:226`), a For loop and constants (`:45, :223-225`), 642 nodes after the stage (`:232`).\n- **The ±100 figure was measured on a stage that adds nothing.** R2's gate was \"flat (+-100) in steady state\" (`tools/bench/stage_d1_l2r2.log:299`), and R2 only deleted (`result_119-4.json:27`). CLAUDE.md's ±100 rule is for accepting a new operation: 20 runs of the same op must leave the count flat. It is not a limit on one build that adds objects (CLAUDE.md, \"Reference hygiene\" item 2).\n- **Most of the growth is released at exit.** Handles were 33962 after the restart (`:29`) and 34139 at exit (`:257`), so +177 remains after the VI is closed, against +648 while it was open (`:233`).\n- **The competing explanation is not ruled out.** That +177 is above ±100, while R2 ended *below* its restart count (33991 → 32064, `stage_d1_l2r2.log:27,321`). So the create/connect operations may each keep a small internal reference: the ones R2 never exercised, or the connects that print err 1055 on 'reference' terminals (`:179-180, :207-208`). That would be a problem in the tools, not in the saved VI.\n\n**Cheapest test between the two:** No full stage rebuild is needed. On a scratch byte copy of R2 in a fresh LabVIEW, run one create operation plus one connect operation 20 times, reading handles after each call. Then close the VI and read handles again.\n- **Normal growth for new objects:** handles grow per object added and fall back to within ±100 of the pre-open count after close.\n- **A leak in the operations:** the count after close keeps climbing roughly in step with the number of calls. `tools/bench/handle_audit.py` then names which operation.\n\nI haven't run this; it needs one short LabVIEW session. Once the audit shows normal growth, the gate should be redefined for create stages (for example: flat across read-only steps, and back within ±100 after close) through the false-positive queue (`tools/gate_fp.py`) rather than bypassed.\n\nROOT CAUSE: The ±100 steady-state handle limit was calibrated on R2, a delete-only stage, and applied unchanged to a stage that creates objects, so the handles taken by the new diagram objects (step growth on create/connect only, reads flat, refs 9/9) tripped it; a small leak in the create/connect operations (+177 still held after close) is not yet ruled out.\nTEST: On a scratch R2 copy in a fresh LabVIEW, run one create operation and one connect operation 20× with a handle read after each call and again after closing the VI: back within ±100 of the pre-open count means normal growth, a count that climbs with the number of calls means a leak in the operations.",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0,
+  "B1": 1.0
+ }
+}

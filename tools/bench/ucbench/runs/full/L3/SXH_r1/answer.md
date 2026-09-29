@@ -1,0 +1,123 @@
+COUNT repeated-failure-class = 25
+COUNT device-failed = 25
+COUNT inference-over-measurement = 16
+COUNT wrong-ordering = 9
+COUNT tool-not-built = 8
+COUNT unreported-fact = 8
+COUNT rule-evaded = 7
+COUNT premature-build = 6
+COUNT scope-creep = 4
+COUNT judgement-in-material = 4
+CLAIM 1: repeated-failure-class named in 2026-09-15-retrospective-cycle7.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle7.md:214
+CLAIM 2: repeated-failure-class named in 2026-09-15-retrospective-cycle8.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle8.md:154
+CLAIM 3: repeated-failure-class named in 2026-09-15-retrospective-cycle9.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle9.md:169
+CLAIM 4: repeated-failure-class named in 2026-09-16-retrospective-cycle10.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle10.md:184
+CLAIM 5: repeated-failure-class named in 2026-09-16-retrospective-cycle11.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle11.md:191
+CLAIM 6: repeated-failure-class named in 2026-09-16-retrospective-cycle12.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle12.md:202
+CLAIM 7: repeated-failure-class named in 2026-09-17-retrospective-cycle14.md | EVIDENCE: archive/peer/2026-09-17-retrospective-cycle14.md:241
+CLAIM 8: repeated-failure-class named in 2026-09-17-retrospective-cycle15.md | EVIDENCE: archive/peer/2026-09-17-retrospective-cycle15.md:226
+CLAIM 9: repeated-failure-class named in 2026-09-17-retrospective-cycle15-d1-build3.md | EVIDENCE: archive/peer/2026-09-17-retrospective-cycle15-d1-build3.md:224
+CLAIM 10: repeated-failure-class named in 2026-09-17-retrospective-cycle15-routeb.md | EVIDENCE: archive/peer/2026-09-17-retrospective-cycle15-routeb.md:283
+CLAIM 11: repeated-failure-class named in 2026-09-17-retrospective-cycle16.md | EVIDENCE: archive/peer/2026-09-17-retrospective-cycle16.md:200
+CLAIM 12: repeated-failure-class named in 2026-09-17-retrospective-cycle16b.md | EVIDENCE: archive/peer/2026-09-17-retrospective-cycle16b.md:202
+CLAIM 13: repeated-failure-class named in 2026-09-18-retrospective-cycle34.md | EVIDENCE: archive/peer/2026-09-18-retrospective-cycle34.md:224
+CLAIM 14: repeated-failure-class named in 2026-09-18-retrospective-cycle35.md | EVIDENCE: archive/peer/2026-09-18-retrospective-cycle35.md:238
+CLAIM 15: repeated-failure-class named in 2026-09-19-retrospective-cycle39.md | EVIDENCE: archive/peer/2026-09-19-retrospective-cycle39.md:239
+CLAIM 16: repeated-failure-class named in 2026-09-19-retrospective-cycle47.md | EVIDENCE: archive/peer/2026-09-19-retrospective-cycle47.md:242
+CLAIM 17: repeated-failure-class named in 2026-09-20-retrospective-cycle48.md | EVIDENCE: archive/peer/2026-09-20-retrospective-cycle48.md:227
+CLAIM 18: repeated-failure-class named in 2026-09-21-retrospective-cycle53.md | EVIDENCE: archive/peer/2026-09-21-retrospective-cycle53.md:336
+CLAIM 19: repeated-failure-class named in 2026-09-21-retrospective-cycle57.md | EVIDENCE: archive/peer/2026-09-21-retrospective-cycle57.md:235
+CLAIM 20: repeated-failure-class named in 2026-09-21-retrospective-cycle60.md | EVIDENCE: archive/peer/2026-09-21-retrospective-cycle60.md:223
+CLAIM 21: repeated-failure-class named in 2026-09-21-retrospective-cycle61.md | EVIDENCE: archive/peer/2026-09-21-retrospective-cycle61.md:221
+CLAIM 22: repeated-failure-class named in 2026-09-23-retrospective-cycle67.md | EVIDENCE: archive/peer/2026-09-23-retrospective-cycle67.md:238
+CLAIM 23: repeated-failure-class named in 2026-09-24-retrospective-cycle70.md | EVIDENCE: archive/peer/2026-09-24-retrospective-cycle70.md:235
+CLAIM 24: repeated-failure-class named in 2026-09-24-retrospective-cycle71.md | EVIDENCE: archive/peer/2026-09-24-retrospective-cycle71.md:242
+CLAIM 25: repeated-failure-class named in 2026-09-24-retrospective-cycle73.md | EVIDENCE: archive/peer/2026-09-24-retrospective-cycle73.md:235
+CLAIM 26: device-failed named in 2026-09-17-retrospective-cycle14.md | EVIDENCE: archive/peer/2026-09-17-retrospective-cycle14.md:242
+CLAIM 27: device-failed named in 2026-09-17-retrospective-cycle15-d1-build3.md | EVIDENCE: archive/peer/2026-09-17-retrospective-cycle15-d1-build3.md:225
+CLAIM 28: device-failed named in 2026-09-17-retrospective-cycle15-routeb.md | EVIDENCE: archive/peer/2026-09-17-retrospective-cycle15-routeb.md:284
+CLAIM 29: device-failed named in 2026-09-18-retrospective-cycle17.md | EVIDENCE: archive/peer/2026-09-18-retrospective-cycle17.md:275
+CLAIM 30: device-failed named in 2026-09-18-retrospective-cycle19.md | EVIDENCE: archive/peer/2026-09-18-retrospective-cycle19.md:244
+CLAIM 31: device-failed named in 2026-09-18-retrospective-cycle23.md | EVIDENCE: archive/peer/2026-09-18-retrospective-cycle23.md:245
+CLAIM 32: device-failed named in 2026-09-18-retrospective-cycle24.md | EVIDENCE: archive/peer/2026-09-18-retrospective-cycle24.md:221
+CLAIM 33: device-failed named in 2026-09-18-retrospective-cycle26.md | EVIDENCE: archive/peer/2026-09-18-retrospective-cycle26.md:225
+CLAIM 34: device-failed named in 2026-09-18-retrospective-cycle28.md | EVIDENCE: archive/peer/2026-09-18-retrospective-cycle28.md:239
+CLAIM 35: device-failed named in 2026-09-18-retrospective-cycle29.md | EVIDENCE: archive/peer/2026-09-18-retrospective-cycle29.md:210
+CLAIM 36: device-failed named in 2026-09-18-retrospective-cycle36.md | EVIDENCE: archive/peer/2026-09-18-retrospective-cycle36.md:224
+CLAIM 37: device-failed named in 2026-09-19-retrospective-cycle39.md | EVIDENCE: archive/peer/2026-09-19-retrospective-cycle39.md:240
+CLAIM 38: device-failed named in 2026-09-19-retrospective-cycle43.md | EVIDENCE: archive/peer/2026-09-19-retrospective-cycle43.md:214
+CLAIM 39: device-failed named in 2026-09-20-retrospective-cycle52.md | EVIDENCE: archive/peer/2026-09-20-retrospective-cycle52.md:234
+CLAIM 40: device-failed named in 2026-09-21-retrospective-cycle53.md | EVIDENCE: archive/peer/2026-09-21-retrospective-cycle53.md:337
+CLAIM 41: device-failed named in 2026-09-21-retrospective-cycle57.md | EVIDENCE: archive/peer/2026-09-21-retrospective-cycle57.md:236
+CLAIM 42: device-failed named in 2026-09-21-retrospective-cycle58.md | EVIDENCE: archive/peer/2026-09-21-retrospective-cycle58.md:223
+CLAIM 43: device-failed named in 2026-09-22-retrospective-cycle64.md | EVIDENCE: archive/peer/2026-09-22-retrospective-cycle64.md:244
+CLAIM 44: device-failed named in 2026-09-22-retrospective-cycle65.md | EVIDENCE: archive/peer/2026-09-22-retrospective-cycle65.md:262
+CLAIM 45: device-failed named in 2026-09-22-retrospective-cycle66.md | EVIDENCE: archive/peer/2026-09-22-retrospective-cycle66.md:258
+CLAIM 46: device-failed named in 2026-09-24-retrospective-cycle68.md | EVIDENCE: archive/peer/2026-09-24-retrospective-cycle68.md:363
+CLAIM 47: device-failed named in 2026-09-24-retrospective-cycle70.md | EVIDENCE: archive/peer/2026-09-24-retrospective-cycle70.md:236
+CLAIM 48: device-failed named in 2026-09-24-retrospective-cycle71.md | EVIDENCE: archive/peer/2026-09-24-retrospective-cycle71.md:243
+CLAIM 49: device-failed named in 2026-09-24-retrospective-cycle72.md | EVIDENCE: archive/peer/2026-09-24-retrospective-cycle72.md:234
+CLAIM 50: device-failed named in 2026-09-24-retrospective-cycle73.md | EVIDENCE: archive/peer/2026-09-24-retrospective-cycle73.md:236
+CLAIM 51: inference-over-measurement named in 2026-09-15-retrospective-cycle7.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle7.md:216
+CLAIM 52: inference-over-measurement named in 2026-09-15-retrospective-cycle8.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle8.md:156
+CLAIM 53: inference-over-measurement named in 2026-09-15-retrospective-cycle9.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle9.md:171
+CLAIM 54: inference-over-measurement named in 2026-09-16-retrospective-cycle10.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle10.md:186
+CLAIM 55: inference-over-measurement named in 2026-09-16-retrospective-cycle11.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle11.md:193
+CLAIM 56: inference-over-measurement named in 2026-09-16-retrospective-cycle12.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle12.md:204
+CLAIM 57: inference-over-measurement named in 2026-09-16-retrospective-cycle13.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle13.md:216
+CLAIM 58: inference-over-measurement named in 2026-09-18-retrospective-cycle23.md | EVIDENCE: archive/peer/2026-09-18-retrospective-cycle23.md:244
+CLAIM 59: inference-over-measurement named in 2026-09-18-retrospective-cycle31.md | EVIDENCE: archive/peer/2026-09-18-retrospective-cycle31.md:225
+CLAIM 60: inference-over-measurement named in 2026-09-19-retrospective-cycle42.md | EVIDENCE: archive/peer/2026-09-19-retrospective-cycle42.md:229
+CLAIM 61: inference-over-measurement named in 2026-09-20-retrospective-cycle52.md | EVIDENCE: archive/peer/2026-09-20-retrospective-cycle52.md:233
+CLAIM 62: inference-over-measurement named in 2026-09-20-retrospective-cycle55.md | EVIDENCE: archive/peer/2026-09-20-retrospective-cycle55.md:210
+CLAIM 63: inference-over-measurement named in 2026-09-22-retrospective-cycle62.md | EVIDENCE: archive/peer/2026-09-22-retrospective-cycle62.md:209
+CLAIM 64: inference-over-measurement named in 2026-09-22-retrospective-cycle63.md | EVIDENCE: archive/peer/2026-09-22-retrospective-cycle63.md:209
+CLAIM 65: inference-over-measurement named in 2026-09-22-retrospective-cycle65.md | EVIDENCE: archive/peer/2026-09-22-retrospective-cycle65.md:261
+CLAIM 66: inference-over-measurement named in 2026-09-24-retrospective-cycle68.md | EVIDENCE: archive/peer/2026-09-24-retrospective-cycle68.md:362
+CLAIM 67: wrong-ordering named in 2026-09-15-retrospective-cycle7.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle7.md:218
+CLAIM 68: wrong-ordering named in 2026-09-15-retrospective-cycle8.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle8.md:158
+CLAIM 69: wrong-ordering named in 2026-09-15-retrospective-cycle9.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle9.md:173
+CLAIM 70: wrong-ordering named in 2026-09-16-retrospective-cycle10.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle10.md:188
+CLAIM 71: wrong-ordering named in 2026-09-16-retrospective-cycle11.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle11.md:195
+CLAIM 72: wrong-ordering named in 2026-09-16-retrospective-cycle12.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle12.md:206
+CLAIM 73: wrong-ordering named in 2026-09-16-retrospective-cycle13.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle13.md:218
+CLAIM 74: wrong-ordering named in 2026-09-18-retrospective-cycle19.md | EVIDENCE: archive/peer/2026-09-18-retrospective-cycle19.md:243
+CLAIM 75: wrong-ordering named in 2026-09-18-retrospective-cycle36.md | EVIDENCE: archive/peer/2026-09-18-retrospective-cycle36.md:223
+CLAIM 76: tool-not-built named in 2026-09-15-retrospective-cycle7.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle7.md:215
+CLAIM 77: tool-not-built named in 2026-09-15-retrospective-cycle8.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle8.md:155
+CLAIM 78: tool-not-built named in 2026-09-15-retrospective-cycle9.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle9.md:170
+CLAIM 79: tool-not-built named in 2026-09-16-retrospective-cycle10.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle10.md:185
+CLAIM 80: tool-not-built named in 2026-09-16-retrospective-cycle11.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle11.md:192
+CLAIM 81: tool-not-built named in 2026-09-16-retrospective-cycle12.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle12.md:203
+CLAIM 82: tool-not-built named in 2026-09-16-retrospective-cycle13.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle13.md:215
+CLAIM 83: tool-not-built named in 2026-09-22-retrospective-cycle64.md | EVIDENCE: archive/peer/2026-09-22-retrospective-cycle64.md:243
+CLAIM 84: unreported-fact named in 2026-09-15-retrospective-cycle7.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle7.md:219
+CLAIM 85: unreported-fact named in 2026-09-15-retrospective-cycle8.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle8.md:159
+CLAIM 86: unreported-fact named in 2026-09-15-retrospective-cycle9.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle9.md:174
+CLAIM 87: unreported-fact named in 2026-09-16-retrospective-cycle10.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle10.md:189
+CLAIM 88: unreported-fact named in 2026-09-16-retrospective-cycle11.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle11.md:196
+CLAIM 89: unreported-fact named in 2026-09-16-retrospective-cycle12.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle12.md:207
+CLAIM 90: unreported-fact named in 2026-09-16-retrospective-cycle13.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle13.md:219
+CLAIM 91: unreported-fact named in 2026-09-20-retrospective-cycle49.md | EVIDENCE: archive/peer/2026-09-20-retrospective-cycle49.md:219
+CLAIM 92: rule-evaded named in 2026-09-15-retrospective-cycle7.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle7.md:217
+CLAIM 93: rule-evaded named in 2026-09-15-retrospective-cycle8.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle8.md:157
+CLAIM 94: rule-evaded named in 2026-09-15-retrospective-cycle9.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle9.md:172
+CLAIM 95: rule-evaded named in 2026-09-16-retrospective-cycle10.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle10.md:187
+CLAIM 96: rule-evaded named in 2026-09-16-retrospective-cycle11.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle11.md:194
+CLAIM 97: rule-evaded named in 2026-09-16-retrospective-cycle12.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle12.md:205
+CLAIM 98: rule-evaded named in 2026-09-16-retrospective-cycle13.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle13.md:217
+CLAIM 99: premature-build named in 2026-09-15-retrospective-cycle7.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle7.md:221
+CLAIM 100: premature-build named in 2026-09-15-retrospective-cycle9.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle9.md:175
+CLAIM 101: premature-build named in 2026-09-16-retrospective-cycle11.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle11.md:198
+CLAIM 102: premature-build named in 2026-09-16-retrospective-cycle12.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle12.md:209
+CLAIM 103: premature-build named in 2026-09-20-retrospective-cycle53.md | EVIDENCE: archive/peer/2026-09-20-retrospective-cycle53.md:227
+CLAIM 104: premature-build named in 2026-09-22-retrospective-cycle66.md | EVIDENCE: archive/peer/2026-09-22-retrospective-cycle66.md:257
+CLAIM 105: scope-creep named in 2026-09-15-retrospective-cycle7.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle7.md:220
+CLAIM 106: scope-creep named in 2026-09-16-retrospective-cycle10.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle10.md:190
+CLAIM 107: scope-creep named in 2026-09-16-retrospective-cycle11.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle11.md:197
+CLAIM 108: scope-creep named in 2026-09-16-retrospective-cycle12.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle12.md:208
+CLAIM 109: judgement-in-material named in 2026-09-16-retrospective-cycle11.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle11.md:199
+CLAIM 110: judgement-in-material named in 2026-09-16-retrospective-cycle12.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle12.md:210
+CLAIM 111: judgement-in-material named in 2026-09-16-retrospective-cycle13.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle13.md:220
+CLAIM 112: judgement-in-material named in 2026-09-20-retrospective-cycle54.md | EVIDENCE: archive/peer/2026-09-20-retrospective-cycle54.md:215
+CLAIMS: 112

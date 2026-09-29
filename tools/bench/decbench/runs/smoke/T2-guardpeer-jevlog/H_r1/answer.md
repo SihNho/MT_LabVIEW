@@ -1,0 +1,18 @@
+The root cause is the self-test's own fake failure text. It ends up in a log that `guard_peer.py` doesn't exempt, so the gate treats a passing self-test as a real LabVIEW failure. I read four files (the log, the self-test, `guard_peer.py`, `tools/logclass.py`) and ran one pattern search on the log. Nothing was edited and nothing was run.
+
+**Symptom 1 (rc=99).** In the 08:42 run, `guard_peer.main()` crashed while building its block message. `os.path.relpath(path, ROOT)` fails when the path and the start are on different drives: the fake log was in the system TEMP folder on C:, the project is on G: (`tools/bench/jev_discharge.log:21-26`). The self-test then printed `  FAIL  SELF-TEST…` (`:26`). This part was already fixed by moving `guard_peer.ROOT` into the temp folder (`tools/bench/selftest_guard_peer_jev.py:126-130`). The 09:06 rerun passed 15/0 (`jev_discharge.log:276`).
+
+**Symptom 2 (the 09:0x refusal).** This is the real cause:
+- The gate skips failure-shaped self-test output only when the log file is named `selftest_*` (`tools/hooks/guard_peer.py:124,138`). It also skips review-dispatcher logs (`tools/logclass.py:46-53`).
+- Here the self-test ran inside `jev_run_all.py`, which writes to `tools/bench/jev_discharge.log`. That name matches neither exemption.
+- The Jev exemption (`guard_peer.py:62`) only applies to the command being launched, not to the logs the gate scans.
+- The gate reads only the last `BGRUN START` section of a log (`guard_peer.py:156-157`). The failure pattern matches `STOP:` anywhere in a line (`guard_peer.py:96`).
+- The fake log deliberately uses `STOP:` so that `bgrun`'s own failure scan would not trip on it (`selftest_guard_peer_jev.py:51-60`). But the gate's block message repeats the fake log's first failure line into the captured output. In the last run section, the only match is that fake line (`jev_discharge.log:245`).
+- Before 09:06:39, the last section was the 08:42 run, which matches on the `FAIL` line at `:26` instead. Either way the cause is the same: failure text produced by the test, sitting in a log the gate doesn't exempt.
+
+**Most plausible alternative.** A real failure in the Jev trials, or `bgrun`'s `rc=1`, made the log a failing log. Against this: both trials ended `rc=0` (`:390`, `:470`). The final `rc=1` comes from `bgrun`'s separate scan (`:480-481`), and a line like `BGRUN END rc=1` doesn't match the gate's pattern at all.
+
+**Cheapest test.** Run `guard_peer.FAILURE_RE` offline against only the text after the last `BGRUN START` in `jev_discharge.log`, and print the first matching line. My search suggests it will be `:245` (fake-log text) and that nothing from Trial A or Trial B will match. As a second check, copy the log to a file named `selftest_x.log`: `newest_failing_log()` should then return `None`.
+
+ROOT CAUSE: `guard_peer.py` exempts a self-test's failure-shaped output only by the `selftest_*` filename, but this self-test ran inside `jev_run_all.py` and its output (first the `FAIL` row from the cross-drive `relpath` crash, then the repeated fake `STOP:` line) landed in `jev_discharge.log`, which the gate then read as a real LabVIEW failure owing a peer review.
+TEST: Apply `guard_peer.FAILURE_RE` to the last `BGRUN START` section of `jev_discharge.log` and confirm that its only match is the fake-log `STOP: A2 THE WIDGET…` line (`:245`), not any Trial A/B output, then confirm that `newest_failing_log()` returns `None` when the same log is named `selftest_*.log`.

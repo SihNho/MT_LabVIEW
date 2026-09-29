@@ -1,0 +1,23 @@
+The most likely root cause is the plan's "already loose in R1" list, not the build or the error-list reader. The list of 13 shared nets that were already loose was checked against only one of R1's two groups of loose-end errors, and that group's net identities were themselves guessed. Two more of the 13 nets were probably already loose, so the plan over-predicted by 2.
+
+**What the numbers show**
+- LabVIEW's own error count agrees with the reader: "53 errors and warnings" and 53 items read, with no unexpected items (`diag_c116b_scratch_el.log:27,83,114-115`). A misread by the reader is therefore unlikely.
+- The pin is 24 − 11 + 13 − 2 = 24, where the −2 is nets `[25438, 25461]` (`plan_l2r2_make.log:44`). The only difference from the observed 22 is loose-ends −2. Every other class matched: no-source 1, not-connected 20, other 10 (`diag_c116b_scratch_el.log:114`).
+- R1's 24 loose-ends items came from two groups in its expected error list:
+  - **17 older items** (carried over from the earlier B3 build), counted but never tied to a wire uid (`errorlist_expected_D1_l2_r1_20260928_055441.json:69`).
+  - **7 items from R1's own shift-register cuts**, placed on nets w8590, w9051, w11253, w11389, w25438, w25461 and w29122. That file says "LOCATION IS INFERRED, not measured (no Selection List reader …)" (`…_expected_…json:75`). In the saved error-list JSON every item's `uid` is null (`errorlist_D1_l2_r1_…_060555.json:149,190,…`).
+- The two already-loose nets in the pin, 25438 and 25461, are exactly where that inferred 7-net list overlaps the 13 shared nets. That overlap was the only check made; nobody checked whether any of the 17 unidentified older items sit on the other 11 shared nets. LabVIEW lists "Wire has loose ends" once per wire, so a net that is already loose adds nothing when it loses a tunnel sink. If 4 shared nets were already loose, the count is 24 − 11 + 13 − 4 = 22, which matches.
+- The classification table fits this: the shift-register-cut class shows "R1 7 used 5" (`diag_c116b_scratch_el.log:113`).
+
+**Most plausible alternative**
+The scripted delete of a tunnel may have removed the dangling outer branch on 2 of the shared nets, so those nets never became loose. The two tunnels with no inner wire, #2294 and #3644 (`plan_l2r2_make.log:26-27`), are natural suspects. Under this alternative the plan's pre-existing count would be right and deletion would be behaving differently on some nets.
+
+**Cheapest discriminating test**
+The needed reader is the missing piece named in the expected file: a wire-uid read after each double-click. Open an unedited byte copy of R1. Double-click each of its 24 "Wire has loose ends" items and record the uid of the wire LabVIEW selects. Intersect that list with the 13 shared nets.
+- **4 shared nets in the list:** the undercounted already-loose set is confirmed.
+- **Only 25438 and 25461:** the plan's count stands. Run the same read on the scratch copy after the deletions: a shared net with no loose-ends item there confirms the branch-removal alternative.
+
+This touches only a copy and makes no edits.
+
+ROOT CAUSE: The pin's already-loose subtraction (2, nets 25438/25461) was checked only against the 7 inferred shift-register-cut nets, while R1's other 17 loose-ends items have no wire uid, so two more of the 13 shared nets were probably already loose and gained no new error item (LabVIEW lists one per wire): 24−11+13−4 = 22.
+TEST: On an unedited copy of R1, double-click each of the 24 "Wire has loose ends" items, record the selected wire uid, and check whether 4 of the 13 shared nets are in the list (confirms) or only 25438/25461 (points to tunnel Delete removing the dangling branch).

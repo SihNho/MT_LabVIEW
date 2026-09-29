@@ -1,0 +1,28 @@
+**The claim is not established: it rests on a foreground state that nobody measured, and its "no modal dialog" exclusion is invalid.**
+
+**1. Strongest reason it is wrong.** `gui_save` does not only focus and type. For every candidate window it performs a real mouse click on that window's title bar before sending Ctrl+S (`tools/gscript.py:2041-2046`, then `:2049`). A real click activates the window under it, so the home window would have to hold foreground through a click on another window, across three candidates (`tools/gscript.py:2031`). Nothing in the run records that: the log holds no foreground reading, only the before/after screenshot names (`tools/bench/build_d1_m3a1.log:2684`). Chain steps (1), (4) and (5) are readings of screenshots, which I did not open, not machine records.
+
+Steps (2) and (3) are true of the code (`tools/lv_gui.ps1:686-687`, `:795`; `Focus` discards the `SetForegroundWindow` result at `:240`). They show the failure is possible, not that it happened.
+
+**2. Alternative explanation.** Ctrl+S did reach the VI, LabVIEW raised a save-time dialog, and `gui_save` cancelled it itself. It sends Esc unconditionally after every Ctrl+S (`tools/gscript.py:2054`), and `Focus` also taps Esc (`tools/lv_gui.ps1:242-244`). That produces the same evidence: mtime unchanged and no dialog in the after screenshot.
+
+The "ruled out (2)" does not cover this. "VERDICT: clear" was printed at step [0], the restart (`tools/bench/build_d1_m3a1.log:2017`), while the save happened at step [7] (`:2685`), after the edits.
+
+The error is also not specific to this run. The previous run, stamp 20260921_234216, failed with the identical message (`tools/bench/build_d1_m3a1.log:1967`), and earlier runs show the same restart line (`:19`, `:610`, `:1298`). I did not check whether any of those earlier runs saved successfully; if one did, the restart's home window is not a sufficient cause.
+
+**3. What would falsify the claim.** A `GetForegroundWindow` reading taken immediately before the `^s` whose title is the WORK VI's Block Diagram or Front Panel, with mtime still unmoved. Equally, a `dialogs` listing taken between `^s` and Esc that shows a LabVIEW dialog.
+
+**Attack on the fix.**
+- `clickprobe` activates exactly as `Focus` does, Alt tap included (`tools/lv_gui.ps1:343-353`), so it measures the problem without changing the activation.
+- It is documented as "NO RETRY LOOP" (`tools/lv_gui.ps1:46-47`), so the one retry is new caller logic.
+- If the foreground never matches, the fix only raises a better error; there is still no artefact on disk.
+- It keeps the unconditional Esc, so under the alternative it fails identically while reporting "foreground OK".
+- Substring title matching (`tools/gscript.py:2018-2019`) means "contains the candidate title" also passes for the bare-name candidate on the wrong window of the same VI.
+
+**4. Cheapest discriminating test.** On a broken scratch VI under claudeDev after a fresh restart, run one `clickprobe` on the candidate title bar and read its foreground-after-activation and foreground-at-press fields (`tools/lv_gui.ps1:354-356`, `:369`). Then send `^s`, and run `-Action dialogs` before any Esc.
+- Foreground is the home window: the claim holds.
+- Foreground is the VI and a dialog is listed: the alternative holds.
+
+I do not believe the claim as stated. A foreground record naming "LabVIEW" at the press would change my mind.
+
+DEFECT: major - the diagnosis asserts an unmeasured foreground state, ignores the title-bar click and the unconditional Esc in gui_save, and excludes a modal dialog using a check taken at restart rather than at save time.

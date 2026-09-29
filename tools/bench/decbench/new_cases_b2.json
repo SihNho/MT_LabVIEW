@@ -1,0 +1,276 @@
+{
+ "schema": "decbench-case-swap/1",
+ "note": "card chat-B2 (brief_chat-B2.md items 1-3): replacement cases. swap_b2.py puts each one in the place of `replaces` in cases.json.",
+ "swaps": [
+  {
+   "replaces": "S3-scratch-verify",
+   "case": {
+    "id": "S3-disp-resplit",
+    "category": "steering",
+    "base": "1bd3d74",
+    "copy": [],
+    "note": "chat-B2: replaces S3-scratch-verify (its answer was a user rule made after base). Base = end of cycle 101. Answer from files AT base: CLAUDE.md:486-490 (re-split trigger) + r5 NO FILE + diag_c100_rows.py:214 / stagekit.py:809-814 (op 41 precondition). Settled: retrospective-cycle102 VIOLATION wrong-ordering (r6, r7 full-length retries, no file) and PD215(b) Part A split at cycle 102 close.",
+    "fields": {
+     "plan": "docs/d1-loop12-17-split-plan.md (Pre-decided 213-214)",
+     "focus": "the display-loop STAGE card whose build ends in ONE record-mode run of all 47 ops of tools/recipes/stage_d1_disp.py (after the 214(b)-(c) simulator fixes), producing claudeDev\\D1_s1_disp_<ts>.vi"
+    },
+    "known_answer": "Change NEXT. The display stage has already ended without a saved artefact (r5 in cycle 101 stopped in op 26, NO FILE; cycle 100's two runs also NO FILE), so CLAUDE.md's split-and-save rule 3 (CLAUDE.md:486-490) makes the next cycle's FIRST act a decomposition plan (sub-steps, each with its saved file and pass criterion) and forbids another full-length retry. The 47-op stage should be cut so that a first part (ops up to the last runnable one, e.g. ops 1-40) saves an intermediate (a broken-by-design intermediate may be saved by GUI Ctrl+S, CLAUDE.md:493), with the rest as later steps. The files also show the full run cannot pass op 41: row r7_wait's verb copy_in requires work == gscript.MOVE_DST (diag_c100_rows.py:214, stagekit.py:809-814), which a claudeDev work copy does not satisfy. Settled: cycle 102 ran two more full-length attempts (r6 stopped op 31, r7 at op 41, no file), its retrospective named wrong-ordering, and the split into a saved Part A (ops 1-40) was decided at cycle 102's close (PD215(b)).",
+    "rubric": {
+     "must_hit": [
+      {
+       "id": "M1",
+       "text": "Invokes the project's split-and-save / re-split rule: the stage has ended without a saved artefact (or failed repeatedly), so the next act must be a decomposition plan, not another full-length retry.",
+       "re": [
+        "decomposition\\s+plan",
+        "re-?split",
+        "full[- ]length\\s+(retry|re-?run|run|attempt)",
+        "split[- ]and[- ]save",
+        "CLAUDE\\.md:4(8[0-9]|9[0-5])"
+       ]
+      },
+      {
+       "id": "M2",
+       "text": "Next act cuts the 47-op stage into smaller steps that each save an intermediate VI (e.g. a first part up to the last runnable op, saved), instead of one run of all 47 ops.",
+       "re": [
+        "part\\s+A\\b",
+        "(split|cut|divide|break)\\w*\\s+(\\w+\\s+){0,6}(stage|ops|run|47)\\b[^\\n]{0,160}(save|file|artefact|artifact|intermediate)",
+        "(save|saved|saving)\\s+(\\w+\\s+){0,4}intermediate",
+        "intermediate\\s+(\\w+\\s+){0,3}(saved|file|VI|artefact|artifact)",
+        "ops?\\s+1\\s*[-–]\\s*\\d{1,2}\\b[^\\n]{0,120}(save|file|intermediate)"
+       ]
+      }
+     ],
+     "forbidden": [
+      {
+       "id": "F1",
+       "text": "Keeps NEXT: endorses one more full run of all 47 ops as the next act.",
+       "re": [
+        "(?m)^\\W*VERDICT:\\s*keep"
+       ]
+      }
+     ],
+     "bonus": [
+      {
+       "id": "B1",
+       "text": "Finds from the files that the full run cannot pass op 41: r7_wait's copy_in needs work == gscript.MOVE_DST (diag_c100_rows.py:214 / stagekit.py:809-814).",
+       "re": [
+        "MOVE_DST",
+        "r7_wait",
+        "stagekit\\.py:8(0[5-9]|1[0-6])",
+        "diag_c100_rows\\.py:21[0-6]"
+       ]
+      },
+      {
+       "id": "B2",
+       "text": "Names the approved route for saving a broken-by-design intermediate (GUI Ctrl+S / gui_save, CLAUDE.md:493).",
+       "re": [
+        "gui_save",
+        "Ctrl\\s*\\+\\s*S",
+        "broken[- ](by[- ]design\\s+)?intermediate",
+        "CLAUDE\\.md:49[3-9]"
+       ]
+      }
+     ]
+    },
+    "leak": [
+     "Part A \\(ops 1",
+     "Pre-decided 215",
+     "PD215",
+     "D1_s1_dispA",
+     "retrospective-cycle102",
+     "split came last",
+     "stage_d1_disp_r7\\.log"
+    ],
+    "absent": [
+     "archive/peer/2026-09-27-retrospective-cycle102.md",
+     "tools/bench/stage_d1_disp_r6.log",
+     "tools/bench/stage_d1_disp_r7.log"
+    ]
+   }
+  },
+  {
+   "replaces": "T2-guardpeer-jevlog",
+   "case": {
+    "id": "T2-constvalue-void",
+    "category": "troubleshooting",
+    "base": "83bf463",
+    "copy": [
+     {
+      "from": "44baab6",
+      "path": "tools/bench/diag_c118_p1.py"
+     },
+     {
+      "from": "44baab6",
+      "path": "tools/bench/diag_c118_p1_plan.json"
+     },
+     {
+      "from": "44baab6",
+      "path": "tools/bench/diag_c118_p1.log"
+     },
+     {
+      "from": "44baab6",
+      "path": "tools/bench/diag_c118_p0.py"
+     },
+     {
+      "from": "44baab6",
+      "path": "tools/bench/diag_c118_p0.json"
+     }
+    ],
+    "note": "chat-B2: replaces T2-guardpeer-jevlog (smoke saturated 5/5). Base = end of cycle 117; the cycle-118 diag files are put in from 44baab6. The root cause is NOT in the failing log: it needs docs/NAMES.md:1157-1162 (base-class Constant.Value reader returns void for non-String constants) and/or reading the flattened-variant bytes (TD code 0000 = void, not an empty String[]). Settled by machine: 119-1 read the same names constant back through an array-capable reader as Cam_pool00..19 (result_119-1.json, diag_c119_p1b_r2.log:44) - the write had landed.",
+    "fields": {
+     "failure": "Card 118-2, diagnostic tools/bench/diag_c118_p1.py (a scratch donor VI built from EMPTY_v0.vi). It created a names constant on Get Controls.vi's 'Control Names' input with gscript.create_const_loop_term(value=<Python list of 20 strings Cam_pool00..Cam_pool19>): created_uid 101, err '', inv_err '' (diag_c118_p1.log:6-7). Gate A1b then read constant #101 back with diag_c118_p0.read_str and expected the bytes to end in the flattened Cam_pool00..19; it got hex 2600800000000001000400000001000000000000 and the run stopped at that fatal gate (diag_c118_p1.log:8-10).",
+     "files": "tools/bench/diag_c118_p1.py, tools/bench/diag_c118_p1.log, tools/bench/diag_c118_p0.py, tools/bench/diag_c118_p0.json, tools/gscript.py"
+    },
+    "known_answer": "The READER failed, not (shown) the write: read_str reads Constant.Value through a base-class 'Constant' cast (OpConstValue_v1), which docs/NAMES.md:1157-1162 records as returning an EMPTY void variant, without error, for every non-String constant (numeric, boolean; the returned bytes are the void pattern - one type descriptor with code 0000 and no data, also seen on the VISA constants in diag_c105_const.json and ring #13245 in diag_c118_p0.json). So A1b could never pass on an array constant and says nothing about the write. Cheapest discriminating test: read #101 by a route that sees its type (a property node of its most specific class, ArrayConstant, or wire an indicator to it and run the donor), or read a known-filled array constant with the same reader - Cam_pool00..19 back = reader blind; empty array/wrong type = the COM list write failed. Settled: cycle 119 read the names constant back as Cam_pool00..19 through an array-capable reader.",
+    "rubric": {
+     "must_hit": [
+      {
+       "id": "M1",
+       "text": "Root cause is the reader: the base-class Constant.Value read (read_str / OpConstValue_v1, class 'Constant') returns a void/empty variant for non-String (here array) constants, so gate A1b could not pass regardless of the write.",
+       "re": [
+        "(reader|read_str|Constant\\.Value|OpConstValue\\w*|base[- ]class)[^\\n]{0,160}(void|blind|cannot\\s+(see|read)|can't\\s+(see|read)|empty\\s+variant|no\\s+type)",
+        "void[^\\n]{0,80}(every|all|any)\\s+non-?String",
+        "NAMES\\.md:11(5[5-9]|6[0-6])",
+        "most[- ]specific\\s+class"
+       ]
+      },
+      {
+       "id": "M2",
+       "text": "Test separates 'reader blind' from 'write failed': read #101 through a type-aware route (a property node of its specific class, e.g. ArrayConstant; an indicator wired to it and a run) or read a known-filled array constant with the same reader.",
+       "re": [
+        "ArrayConstant",
+        "indicator",
+        "most[- ]specific",
+        "known[- ](good|filled|populated|non-?empty|value)",
+        "(typed|type[- ]specific|class[- ]specific)\\s+(reader|node|property|read|cast)"
+       ]
+      }
+     ],
+     "forbidden": [
+      {
+       "id": "F1",
+       "text": "Final root cause = the write failed (the COM list did not land / the constant is empty) with no mention of the reader limitation.",
+       "re": [
+        "ROOT CAUSE:(?![^\\n]*(reader|read_str|Constant\\.Value|OpConstValue|base[- ]class|void\\s+for))[^\\n]*(write|create_const\\w*|COM\\s+list|SetControlValue|OLE|SAFEARRAY)"
+       ]
+      }
+     ],
+     "bonus": [
+      {
+       "id": "B1",
+       "text": "Decodes the bytes: one type descriptor with code 0000 = void type (an empty String[] would still carry an array type descriptor), so the reader got no type at all.",
+       "re": [
+        "0004\\s*0000",
+        "(TD|type\\s+descriptor|type\\s+code)\\W+(\\w+\\W+){0,4}(0x)?0000",
+        "empty\\s+(String\\s*\\[\\]|array)\\s+would\\s+(still\\s+)?(carry|have|show)"
+       ]
+      },
+      {
+       "id": "B2",
+       "text": "Cites earlier void reads of non-String constants on file (VISA constants diag_c105_const.json, ring #13245 in diag_c118_p0.json).",
+       "re": [
+        "diag_c105_const",
+        "13245"
+       ]
+      }
+     ]
+    },
+    "leak": [
+     "OpConstValueArr",
+     "c118p1-names",
+     "A1b could never pass",
+     "diag_c119_",
+     "read_const_value"
+    ],
+    "absent": [
+     "archive/peer/2026-09-28-c118p1-names.md",
+     "tools/bench/cards/result_118-2.json",
+     "tools/bench/cards/result_119-1.json"
+    ]
+   }
+  },
+  {
+   "replaces": "R3-pool-skipnewest-claim",
+   "case": {
+    "id": "R3-chat-synthesis",
+    "category": "review",
+    "base": "8305043",
+    "copy": [],
+    "note": "chat-B2 brief item 3: replaces R3-pool-skipnewest-claim (duplicate of S1). The chat's own erroneous synthesis of 2026-09-29, reviewed at base = HEAD 8305043 (tools/bench/matbench/report_v1.md exists there). Defects verified: report_v1.md:8,27 (T2 per-condition means 0.5/1/1/0.5), :34 names only T5/T6 as unchanged; material.md:8-10 + cycle_runner.log:346-372 (JUDGE-AB: 89 medium, 90 high, 91 medium - the Fable-low material cycles); report_v1.md:17 (high 10 cells $15.24) vs :77 (fable/low 5 cells $17.59).",
+    "fields": {
+     "claim": "A summary to review, written before it is sent to the user. Sources it was drawn from: tools/bench/matbench/report_v1.md and the runner's judgement A/B (JUDGE-AB, cycles 89-97).\n\nSUMMARY:\n- On matbench v1, effort changed the score only on T1 and T3; only T1 exceeded repeat noise.\n- Judgement A/B: high 2.17 vs medium 1.57 PASS/cycle at $37.18 vs $38.24 per cycle, so high is also cheaper.\n- Fable 5.1 low scored 5/5 at $17.59 against Opus high 8/10 at $15.24, so Fable costs about the same."
+    },
+    "known_answer": "The summary has three defects. (1) T2's score also changed with effort (per-condition means low 0.5, medium 1, high 1, max 0.5; report_v1.md:8,27); report_v1.md:34 names only T5 and T6 as unchanged. (The second half - only T1's between-range exceeds repeat noise - is true, :34.) (2) The per-cycle cost comparison is confounded: a cycle's cost includes its material sessions, and cycles 89-91 ran Fable-low material (.claude/agents/material.md:8-10, $50-57 per cycle), two of them (89, 91) in the medium arm and one (90) in high (cycle_runner.log JUDGE-AB lines), so 'high is also cheaper' does not follow. (3) $17.59 is the total over 5 Fable cells and $15.24 over 10 Opus-high cells (report_v1.md:17,77); per cell Fable low ~$3.52 vs Opus high ~$1.52, about 2.3x - not 'about the same'.",
+    "rubric": {
+     "must_hit": [
+      {
+       "id": "M1",
+       "text": "Defect 1: T2's score also changed with effort (per-condition means 0.5 / 1 / 1 / 0.5; report_v1.md:8/:27), so 'only T1 and T3' is wrong.",
+       "re": [
+        "\\bT2\\b[^\\n]{0,160}(also\\s+chang|chang\\w*\\s+(with|by|across)\\s+effort|vari|differ|0\\.5\\s*[,/]\\s*1|low\\s+0\\.5|max\\s+0\\.5|not\\s+(constant|flat|unchanged))",
+        "report_v1\\.md:(8|27)\\b"
+       ]
+      },
+      {
+       "id": "M2",
+       "text": "Defect 2: the per-cycle cost is confounded - it includes material spend, and cycles 89-91 ran Fable-low material (unevenly split between arms), so 'high is cheaper' does not follow.",
+       "re": [
+        "confound",
+        "Fable[- ]low\\s+material",
+        "material\\s+(\\w+\\s+){0,3}(spend|cost|sessions?)\\b[^\\n]{0,120}(Fable|89|90|91|confound|include)",
+        "cycles?\\s+89\\s*[-–,]\\s*9[01]",
+        "material\\.md:(8|9|10)\\b"
+       ]
+      },
+      {
+       "id": "M3",
+       "text": "Defect 3: totals over different cell counts (5 Fable cells vs 10 Opus-high cells); per cell Fable low ~$3.52 vs Opus high ~$1.52 (~2.3x), not 'about the same'.",
+       "re": [
+        "3\\.5[12]",
+        "1\\.52",
+        "2\\.3\\s*(x|×|times)",
+        "per[- ]cell",
+        "\\b5\\s+cells?\\b[^\\n]{0,60}\\b10\\s+cells?",
+        "(twice|double|more\\s+than\\s+2\\s*x)"
+       ]
+      }
+     ],
+     "forbidden": [
+      {
+       "id": "F1",
+       "text": "Accepts the summary (DEFECT: none) or rates the defect minor.",
+       "re": [
+        "DEFECT:\\s*(none|minor)"
+       ]
+      }
+     ],
+     "bonus": [
+      {
+       "id": "B1",
+       "text": "Shows which A/B arm the Fable-material cycles fell in (89 and 91 medium, 90 high) from the JUDGE-AB lines.",
+       "re": [
+        "89\\D{1,40}91\\D{1,60}medium",
+        "medium\\W+(\\w+\\W+){0,8}(89|91)\\b",
+        "cycle_runner\\.log:3[4-7]\\d"
+       ]
+      }
+     ]
+    },
+    "leak": [
+     "effort changed the score only on T1 and T3",
+     "high is also cheaper",
+     "Fable costs about the same",
+     "2\\.17 vs",
+     "\\$37\\.18",
+     "\\$38\\.24",
+     "2\\.3\\s*x",
+     "per-cell cost"
+    ],
+    "absent": [
+     "tools/bench/cards/brief_chat-B2.md",
+     "tools/bench/decbench"
+    ]
+   }
+  }
+ ]
+}

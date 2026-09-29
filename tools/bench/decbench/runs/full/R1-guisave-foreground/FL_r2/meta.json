@@ -1,0 +1,38 @@
+{
+ "case": "R1-guisave-foreground",
+ "arm": "FL",
+ "rep": 2,
+ "model": "claude-fable-5-1",
+ "effort": "low",
+ "attempt": 1,
+ "usd": 1.3678,
+ "minutes": 0.7,
+ "cell_minutes": 0.7,
+ "turns": 9,
+ "tools": 8,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-fable-5-1",
+   "effort": "low",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.7,
+   "usd": 1.3677730000000001,
+   "turns": 9,
+   "tools": 8,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-fable-5-1"
+   ]
+  }
+ ],
+ "answer": "**Verdict: the claim is not established. It is an inference that nothing in this checkout measures, and the code contradicts one link of it.** I read code and logs only; I did not view the two screenshots.\n\n**1. Strongest reason it is wrong.** `gui_save` does not rely on `focus` alone. Before every Ctrl+S it sends a real mouse click to the candidate's title bar (`tools/gscript.py:2041-2046`). A real click activates the window under it, so Ctrl+S at `gscript.py:2049` goes to whatever owns that point. For the claim to hold, the home window must cover that exact point on every candidate, which nothing measured. And if the home window was gone in the after screenshot (claim step 5), something closed it. The obvious candidate is the misdirected Ctrl+E or Ctrl+S, or the Esc sent at `gscript.py:2054`. That leaves the VI window in front for the later candidates, yet the modification time still did not move.\n\nTwo further weaknesses:\n- No foreground reading exists for this run. `focus` discards the `SetForegroundWindow` result (`tools/lv_gui.ps1:236-240`, `:682-687`), and only `clickprobe` records it (`lv_gui.ps1:340-356`).\n- Step 4 rests on a comment, \"Ctrl+S on the FP saved nothing\" (`gscript.py:2022-2023`), not on a measurement in this run.\n\n**2. Alternative explanation.** The project's own diagnostic names it as H1: Ctrl+S did arrive, a broken copy of the main VI raised a modal save dialog, and the unconditional Esc cancelled it (`tools/bench/diag_c68_guisave.py:7-12`; Esc at `gscript.py:2054`). That predicts the same evidence, including \"no dialog\" in the after screenshot. The diagnostic lists focus theft only as H2 (`diag_c68_guisave.py:13`).\n\nRuled-out item 2 does not exclude this. \"VERDICT: clear\" was printed at the restart (`tools/bench/build_d1_m3a1.log:2017`), long before the save at `:2684-2685`.\n\nThe same failure also occurred in the previous run (`build_d1_m3a1.log:1967`), and `diag_c68_guisave.py:5` records the same signature in an earlier build. So it is systematic, not a one-off foreground race.\n\n**3. What would falsify the claim.** A foreground reading taken just before Ctrl+S that shows the VI's own window in front while the modification time still does not move. A modal dialog visible between Ctrl+S and Esc would do the same.\n\n**On the proposed fix.**\n- It is sound as instrumentation but does not fix H1. With the foreground verified, the Esc still cancels any dialog.\n- The title match is loose. `focus` matches titles as substrings (`gscript.py:2018-2019`), and the bare file name is a candidate (`gscript.py:2031`), so \"foreground title contains candidate\" would accept the Front Panel as the Block Diagram. Compare window handles, as `clickprobe` does (`lv_gui.ps1:356`).\n- The Ctrl+E branch (`gscript.py:2025-2030`) has no click at all. The fix must guard it separately and confirm a Block Diagram window exists afterwards.\n\n**4. Cheapest discriminating test.** Run the existing `tools/bench/diag_c68_guisave.py` sequence (`:15-20`) with one addition: replace the click with `clickprobe` and log the foreground title before Ctrl+S. Then read `dialogs` and the modification time between Ctrl+S and Esc.\n- Foreground is the home window and no dialog appears: the claim holds.\n- Foreground is the VI and a dialog appears before Esc: H1 holds.\n\nDEFECT: major - the claim asserts focus theft without any foreground measurement and ignores both the title-bar click that precedes every Ctrl+S and the untested alternative that Esc cancels a save dialog, which the proposed fix would not repair.",
+ "mech": {
+  "M1": 0.0,
+  "M2": 0.0,
+  "F1": 0.0,
+  "B1": 0.0
+ }
+}

@@ -1,0 +1,26 @@
+**Root cause:** the build is fine; the prediction is wrong. From the observed 22, only 9 of the 13 outer wires that lost a tunnel produced a new "loose ends" item. The pin assumed 11, and that number was never measured.
+
+**The build matches the plan**
+- Every structural gate passed: E1, D (only the 11 stubs removed), CEN/CEN2, ENDS (all 13 wires keep their uid, source and kept sinks), TD and PB (`tools/bench/diag_c116b_scratch.log:277-303`). The total was 43/0 (`:340`).
+- Remove Bad Wires on R1 deleted exactly the 11 stubs more than it did on the new VI (`:319-320`).
+- It is not a misreading. LabVIEW's own header says 53 (`tools/bench/diag_c116b_scratch_el.log:27`), and the other classes match exactly (`:114`).
+
+**Why the 13-wire part of the formula is the weak one**
+- The "−11 stubs" part has evidence behind it: 11 whole bad wires were removed (`diag_c116b_scratch.log:320`). Earlier stages also counted one loose item per source-only bad wire (`tools/bench/facts_c111a_b1_errorlist.md:43`).
+- The "+13 − 2" part was never measured:
+  - Error List items carry no wire uid (`tools/bench/errorlist_D1_l2_r1_20260928_055441_20260928_060555.json:149-151`).
+  - The claim that R1's loose items sit on 25438/25461 is marked INFERRED, and the test that would separate it was never run (`docs/d1-loop12-17-split-plan.md:2072`).
+  - Nobody established whether LabVIEW reports one item per wire or one per segment (`archive/peer/2026-09-28-c115e-sel.md:134`).
+  - The "−2 already loose" was a correction added between two runs of the plan maker, which first predicted 26 and then 24 (`plan_l2r2_make.log:20,42`).
+- The recipe's gates compare terminal lists (`tools/recipes/stage_d1_l2r2.py:75-82`). A free wire segment has no terminal (`archive/peer/2026-09-28-c115e-sel.md:53`), so no gate could have caught this before the Error List read.
+
+**Most plausible alternative:** the stub part is the wrong one. On this reading the 11 stubs carried more than 11 items in R1, and every one of the 11 wires not already loose did add an item. That would happen if LabVIEW counts one item per dangling segment rather than per wire. The item's own text leans that way: "This wire segment is not connected to anything" (`diag_c116b_scratch_el.log:42`).
+
+**Cheapest test that tells them apart:** make a fresh byte copy of R1 and run the same recipe with only the 11 `delete_wire` rows. The plan already deletes stubs before tunnels, so this is a valid intermediate state (`docs/d1-loop12-17-split-plan.md:2067`). Then read the Error List once, which takes about 11 minutes (`diag_c116b_scratch_el.log:88`). No new tool is needed and no VI is run.
+- If the root cause above is right, loose ends = 13 (total 44).
+- If the alternative is right, loose ends ≤ 11.
+
+If the result is 13, one question is left for later. Either 2 more of the 13 wires were already loose in R1, or 2 tunnel deletions left no dangling segment. Settling that needs a per-wire "Remove Loose Ends" operation, and the tools do not have one yet.
+
+ROOT CAUSE: The pinned 24 assumed, without any measurement, that each of the 13 outer wires gains one new "Wire has loose ends" item when its tunnel is deleted unless the inferred pair [25438, 25461] was already loose; the observed 22 implies only 9 such items, so the prediction failed while the build matched the plan in every structural gate.
+TEST: On a fresh byte copy of R1, run the same recipe with only the 11 delete_wire rows and read the Error List once: the root cause predicts 13 loose ends (total 44), the stub-side alternative predicts 11 or fewer.

@@ -1,0 +1,23 @@
+**Do not send this summary as written — two of its three bullets contradict the repository's own records.**
+
+**1. Strongest reason it is wrong.** The judgement A/B numbers in bullet 2 (2.17 vs 1.57 PASS/cycle, $37.18 vs $38.24) appear nowhere in the checkout: a search of all `.md`/`.json` files for those four values found only unrelated hits. The recorded result for cycles 89-97 is "high PASS 2.5 vs 2.0 per cycle, $33 vs $39, n=4/5, not decisive but never worse" (`CLAUDE.md:384-385`). "So high is also cheaper" is a conclusion the record explicitly withholds ("not decisive") at n = 4 vs 5.
+
+**2. Other defects.**
+- Bullet 1 is wrong on the count: effort changed the score on three tasks, not two. T2 also varies (low 0.5, medium 1, high 1, max 0.5; `tools/bench/matbench/report_v1.md:27`). Only T5 and T6 are flat (`report_v1.md:29-30,34`). The second half is correct: only T1 exceeds repeat noise (`report_v1.md:26,34`).
+- Bullet 3's figures are right (`report_v1.md:17,77`), but the comparison is not like-for-like. Fable's $17.59 covers 5 cells, one repeat each (`report_v1.md:65,77`); Opus high's $15.24 covers 10 cells (`report_v1.md:17`). Per cell that is about $3.52 vs $1.52, so Fable costs roughly 2.3 times as much, not "about the same". The Fable cells also come from the earlier v0 run re-scored (`report_v1.md:65`), with no repeat to estimate noise.
+
+**3. Alternative explanations of the same evidence.**
+- The A/B figures may come from a different cycle window. The parity alternation continued through at least cycle 103 (`tools/bench/cards/cycle_98.json:28` to `cycle_103.json:28`), so 2.17/1.57 could be a 89-101-ish average mislabelled "89-97". I did not recompute it.
+- The A/B difference may reflect cycle content rather than effort: effort was assigned by cycle parity (`tools/cycle_runner.py:39`), not randomly, and some cycles ran under a raised ladder level (`cycle_103.json:28`).
+- Fable low's 5/5 may be single-repeat luck: within-condition score range reached 1 on T2 and T3 (`report_v1.md:27-28`).
+
+**4. What would falsify the summary's claims.**
+- Bullet 2: a per-cycle tally of cycles 89-97 that does not give 2.17/1.57 and $37.18/$38.24.
+- Bullet 3: per-cell cost, which already falsifies it from the report itself.
+- Bullet 1: `report_v1.md:27` already falsifies "only T1 and T3".
+
+**5. Cheapest discriminating test.** Offline, with no model calls: tabulate PASS result cards and cost per cycle from `tools/bench/cards/cycle_89.json` through `cycle_97.json`, split by the `judge-ab` note, and compare against both number pairs. If it reproduces 2.5/2.0 and $33/$39, the summary's figures are wrong; if it matches 2.17/1.57 only over a wider window, the label is wrong.
+
+I do not believe the summary holds. Bullet 1's noise statement and bullet 3's raw figures survive; the rest needs correction before sending.
+
+DEFECT: major - the judgement A/B figures and the "high is also cheaper" conclusion contradict the recorded result (2.5 vs 2.0, $33 vs $39, not decisive), and the Fable cost comparison sets 5 cells against 10.

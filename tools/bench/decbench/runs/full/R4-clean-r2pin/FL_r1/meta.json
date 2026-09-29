@@ -1,0 +1,37 @@
+{
+ "case": "R4-clean-r2pin",
+ "arm": "FL",
+ "rep": 1,
+ "model": "claude-fable-5-1",
+ "effort": "low",
+ "attempt": 1,
+ "usd": 1.3073,
+ "minutes": 0.47,
+ "cell_minutes": 0.47,
+ "turns": 3,
+ "tools": 2,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-fable-5-1",
+   "effort": "low",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.47,
+   "usd": 1.3072840000000001,
+   "turns": 3,
+   "tools": 2,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-fable-5-1"
+   ]
+  }
+ ],
+ "answer": "**The claim is not proven as stated: the pin of 22 is fitted to the scratch result, and the joint reader that \"confirms\" it does not reproduce the Error List.**\n\n**1. Strongest reason it is wrong.** The reader's own count does not close. In the R1 byte copy it found 23 wires with a loose joint, against an Error List of 24, and it validly read only 536 of 1945 wires (`tools/bench/cards/result_116-4.json:18`). Its after-set sum is 21, not 22 (`result_116-4.json:22`). The \"24 − 11 + 9 = 22\" therefore rests on one item no measurement has located. PD231 itself still leaves naming that 24th item to a sweep (`docs/d1-loop12-17-split-plan.md:2112`). That residual has been unexplained since B1 (`archive/peer/2026-09-28-c116b-pin.md:54`).\n\nThe \"equals the scratch build\" agreement is also not independent. The scratch reading of 22 came first (`result_116-2.json:19`), and the derivation was built afterwards to reach it, after predictions of 24, 25 and 26 all failed (`c116b-pin.md:21-22`).\n\nCard 116-4, the source of the J4 table, is itself recorded as FAIL 4/1 (`split-plan.md:2089`).\n\n**2. Alternative explanation.** The same 22 arises if the residual item is not a loose joint at all, or sits in the 1409 unread wires, and the delete happens to touch it. For example, 10 stub items removed plus 8 visible new nets, with the residual shifting, also gives 22.\n\nThe Error List comparison cannot tell these apart. `errorlist_check.compare` fills identical labels first-come-first-served, so the items are interchangeable (`c116b-pin.md:49`). A count of 22 passes with the wrong 22 wires.\n\n**3. What would falsify the claim.**\n- A full-coverage joint read of R2 showing a number of loose wires other than 22.\n- The residual item located on one of the 20 gated nets or on one of the 11 stubs.\n- Any wire outside the 20 gated nets changing its loose state between R1 and R2. The joint gate covers only those 20 (`split-plan.md:2107`), so it would not see this.\n\n**4. Cheapest discriminating test.** Offline, with no launch: extend the existing joint read on the R1 byte copy and on the saved scratch build from 536 wires to all 1945. Then check two things:\n- loose-wire count equals 24 in R1 and 22 in the scratch build;\n- the set difference is exactly the 11 stubs removed and the 9 named nets added.\n\nIf the reader cannot reach the unread wires, the run sweep that names the 24th item should come before the launch, not after it.\n\n**Do I still believe the claim?** Partly. The per-net part looks sound: the 9 nets become loose, and w25238/w25225 each lose a pass-through joint and re-join (`result_116-4.json:20-21`). The rule 1a argument, that the deleted tunnels had no consumer and each net keeps its source and sinks, is supported (`result_116-2.json:16`). The claim that the total is derived rather than fitted is not. A full-coverage read reproducing 24 and 22 would change my mind.\n\nI did not open the decode logs themselves; the citations above are to the result cards and review that quote them.\n\nDEFECT: major - the pin of 22 depends on an unlocated 24th loose-ends item and a joint reader covering 536 of 1945 wires that sums to 23 and 21, so the count gate can pass on a different set of wires than the one derived.",
+ "mech": {
+  "M1": 1.0,
+  "F1": 0.0,
+  "B1": 1.0
+ }
+}

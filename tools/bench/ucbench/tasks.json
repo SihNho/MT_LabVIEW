@@ -1,0 +1,2285 @@
+{
+ "schema": "ucbench-tasks/1",
+ "preamble": "You are auditing the repository checked out in the current directory. It is READ-ONLY for you: use Read, Grep, Glob and read-only shell commands; do not use git (it is blocked); do not modify files. Work until you are confident the answer is COMPLETE - completeness is scored (recall) as well as correctness (precision). Do not include anything you have not checked in the files.",
+ "answer_format": "ANSWER FORMAT (mandatory - only these lines are scored): one line per finding, each starting with `CLAIM <n>:` (n = 1, 2, 3, ...), stating the finding, followed by ` | EVIDENCE: ` and the file:line citation(s). After the last claim, one line `CLAIMS: <count>`. Nothing after it.",
+ "tasks": [
+  {
+   "id": "L1",
+   "base": "1d4caf891ce60ecf981f198449d93fc23be286e2",
+   "copy": [],
+   "size": "71 docs/*.md + CLAUDE.md + STATUS.md",
+   "remove": [
+    "archive/ingest/*",
+    "tools/bench/ingest_*.log",
+    "tools/bench/cards/review_*ingest*.json",
+    "tools/bench/cards/verdict_*ingest*.json",
+    "tools/doc_ingest.py"
+   ],
+   "leak": [
+    "full-20260925-protocol-simulator",
+    "CONTRADICTIONS:\\s*9\\b"
+   ],
+   "question": "TASK L1 - WHOLE-DOCUMENT CONTRADICTION AUDIT. The active documents of this project are CLAUDE.md, STATUS.md and every docs/*.md file (not archive/). Find EVERY pair of statements in these documents that CONTRADICT each other (two statements that cannot both be true: a value, count, time, state, rule or plan status stated differently), including a document contradicting itself and a document contradicting CLAUDE.md or STATUS.md. Not stylistic differences, not a document merely being older, not a history line that is clearly marked as history/superseded. Cite file:line for BOTH sides of every pair and quote both statements briefly; one claim per pair; no recommendations.",
+   "key": [
+    {
+     "id": "K1",
+     "text": "STATUS.md:47 says motor limits were LEFT ON since 2026-09-18 (PI TMN 0/TMX 39); STATUS.md:58 says limits were RELEASED and read back on 2026-09-23 (PI 0..52, ASI +-500)",
+     "ref": "STATUS.md:47 vs STATUS.md | EVIDENCE: STATUS.md:47; STATUS.md:58",
+     "re": [
+      [
+       "STATUS\\.md[^0-9\\n]{0,12}(?:47)\\b"
+      ],
+      [
+       "STATUS\\.md[^0-9\\n]{0,12}(?:58)\\b"
+      ]
+     ]
+    },
+    {
+     "id": "K2",
+     "text": "STATUS.md:57 says limits LEFT ON (PI TMN 0/TMX 39 in RAM, ASI SL/SU persistent); STATUS.md:58 records them released with readback",
+     "ref": "STATUS.md:57 vs STATUS.md | EVIDENCE: STATUS.md:57; STATUS.md:58",
+     "re": [
+      [
+       "STATUS\\.md[^0-9\\n]{0,12}(?:57)\\b"
+      ],
+      [
+       "STATUS\\.md[^0-9\\n]{0,12}(?:58)\\b"
+      ]
+     ]
+    },
+    {
+     "id": "K3",
+     "text": "STATUS.md:109 'No motor, no camera, no ASI' vs STATUS.md:58 user grant: motors (PI, rotor, ASI) may be driven by the gate and by a running main VI while assembled",
+     "ref": "STATUS.md:109 vs STATUS.md | EVIDENCE: STATUS.md:109; STATUS.md:58",
+     "re": [
+      [
+       "STATUS\\.md[^0-9\\n]{0,12}(?:108|109|110)\\b"
+      ],
+      [
+       "STATUS\\.md[^0-9\\n]{0,12}(?:57|58|59)\\b"
+      ]
+     ]
+    },
+    {
+     "id": "K4",
+     "text": "STATUS.md:100 a functional run of D1_s3_loop15.vi drives motors directly so in assembled state it is not permitted vs docs/m8-real-run-plan.md:14 (and STATUS.md:58) motors granted until withdrawn, real run allowed",
+     "ref": "STATUS.md:100 vs m8-real-run-plan.md | EVIDENCE: STATUS.md:100; m8-real-run-plan.md:14",
+     "re": [
+      [
+       "STATUS\\.md[^0-9\\n]{0,12}(?:99|100|101)\\b"
+      ],
+      [
+       "m8\\-real\\-run\\-plan\\.md[^0-9\\n]{0,12}(?:13|14|15)\\b",
+       "STATUS\\.md[^0-9\\n]{0,12}(?:57|58|59)\\b"
+      ]
+     ]
+    },
+    {
+     "id": "K5",
+     "text": "STATUS.md:72 FIRST ACT when the runner resumes = M8 real run vs STATUS.md:77 FIRST ACT (cycle 74) = tool fix computation_diff blind spot",
+     "ref": "STATUS.md:72 vs STATUS.md | EVIDENCE: STATUS.md:72; STATUS.md:77",
+     "re": [
+      [
+       "STATUS\\.md[^0-9\\n]{0,12}(?:71|72|73)\\b"
+      ],
+      [
+       "STATUS\\.md[^0-9\\n]{0,12}(?:76|77|78)\\b"
+      ]
+     ]
+    },
+    {
+     "id": "K6",
+     "text": "STATUS.md:107 treats the 2026-09-18 no-new-device order as still in force vs STATUS.md:75 (and docs/violation-decisions.md:1103) tool building allowed again / order lifted 2026-09-24",
+     "ref": "STATUS.md:107 vs STATUS.md | EVIDENCE: STATUS.md:107; STATUS.md:75",
+     "re": [
+      [
+       "STATUS\\.md[^0-9\\n]{0,12}(?:106|107|108)\\b"
+      ],
+      [
+       "STATUS\\.md[^0-9\\n]{0,12}(?:74|75|76)\\b",
+       "violation\\-decisions\\.md[^0-9\\n]{0,12}(?:1102|1103|1104)\\b"
+      ]
+     ]
+    },
+    {
+     "id": "K7",
+     "text": "CLAUDE.md:258 hypothesis reviews max->high, priorart medium (table re-set 2026-09-23) vs CLAUDE.md:603 role table priorart opus/high, hypothesis opus/max",
+     "ref": "CLAUDE.md:258 vs CLAUDE.md | EVIDENCE: CLAUDE.md:258; CLAUDE.md:603",
+     "re": [
+      [
+       "CLAUDE\\.md[^0-9\\n]{0,12}(?:257|258|259)\\b"
+      ],
+      [
+       "CLAUDE\\.md[^0-9\\n]{0,12}(?:602|603|604)\\b"
+      ]
+     ]
+    },
+    {
+     "id": "K8",
+     "text": "docs/cycle27-plan.md:54 failed prediction -> single hypothesis arm at opus effort max vs STATUS.md:102 models: hypothesis high",
+     "ref": "cycle27-plan.md:54 vs STATUS.md | EVIDENCE: cycle27-plan.md:54; STATUS.md:102",
+     "re": [
+      [
+       "cycle27\\-plan\\.md[^0-9\\n]{0,12}(?:53|54|55)\\b"
+      ],
+      [
+       "STATUS\\.md[^0-9\\n]{0,12}(?:101|102|103)\\b"
+      ]
+     ]
+    },
+    {
+     "id": "K9",
+     "text": "STATUS.md:16 says the D1 route-B plan docs/d1-route-b-plan.md is paused vs docs/d1-route-b-plan.md:4 frontmatter status: current",
+     "ref": "STATUS.md:16 vs d1-route-b-plan.md | EVIDENCE: STATUS.md:16; d1-route-b-plan.md:4",
+     "re": [
+      [
+       "STATUS\\.md[^0-9\\n]{0,12}(?:15|16|17)\\b"
+      ],
+      [
+       "d1\\-route\\-b\\-plan\\.md[^0-9\\n]{0,12}(?:3|4|5)\\b"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "L2",
+   "base": "1d4caf891ce60ecf981f198449d93fc23be286e2",
+   "copy": [],
+   "size": "every backticked/linked path in 73 active docs",
+   "blank": [
+    "tools/doc_lint.py",
+    "tools/audit_cycle.py"
+   ],
+   "absent": [
+    "archive/peer/2026-09-17-priorart-d1-build-rev4.md",
+    "docs/per-frame-path.md",
+    "docs/wiki/subvi/D1_s3_loop15.json",
+    "tools/bench/build_opflatseqdiagrams_v0.log",
+    "tools/bench/diag_a3_complete.log",
+    "tools/bench/diag_a3_complete.py",
+    "tools/bench/frame_loop_a4.json",
+    "tools/bench/m3a1_severed_arith.json",
+    "tools/bench/m3a1_severed_rows.log",
+    "tools/bench/m8_numbers.log",
+    "tools/bench/m8_run1.json",
+    "tools/bench/m8_run1.log",
+    "tools/bench/opflatseqdiagrams_labels.json",
+    "tools/bench/s2a_legality.json",
+    "tools/bench/selftest_motor_gate.py",
+    "tools/bench/steer_state.json",
+    "tools/recipes/build_d1_route_b.py",
+    "tools/recipes/build_opflatseqdiagrams_v0.py"
+   ],
+   "redact": [
+    {
+     "roots": [
+      "archive",
+      "tools"
+     ],
+     "re": "DANGLING of \\d+|forward reference\\(s\\)|[\\w./-]+\\.md:\\d+ -> (?:tools|docs|archive)/"
+    }
+   ],
+   "leak": [
+    "DANGLING of \\d+ citations",
+    "forward reference\\(s\\) in plan documents",
+    "docs/[\\w.-]+\\.md:\\d+ -> (?:tools|docs|archive)/"
+   ],
+   "question": "TASK L2 - DANGLING-CITATION CENSUS. In the active documents (CLAUDE.md, STATUS.md and every docs/*.md file; not archive/), a CITATION is a span in backticks `like/this.py` or a markdown link target ](like/this.md) that (a) starts with one of docs/ tools/ archive/ project-requirements/ .claude/, (b) contains a '/', (c) ends in one of .md .py .ps1 .json .log .txt .vi .ctl .toml .yaml .yml (an optional :<line> or :<a>-<b> suffix is stripped first), and (d) contains none of the characters * < > | ? \" ' { } or a space, and no '...', and is not a URL or an absolute path. List EVERY citation whose path does NOT exist as a file in this checkout - one claim per occurrence (the same path cited on two lines is two claims), giving the citing document, the line number of the citation, and the missing path.",
+   "key": [
+    {
+     "id": "K1",
+     "text": "docs/cycle14-plan.md:95 cites `tools/recipes/build_opflatseqdiagrams_v0.py`, which does not exist in the repository",
+     "ref": "docs/cycle14-plan.md:95 cites tools/recipes/build_opflatseqdiagrams_v0.py which does not exist | EVIDENCE: docs/cycle14-plan.md:95",
+     "re": [
+      [
+       "cycle14\\-plan\\.md[^0-9\\n]{0,12}(?:94|95|96)\\b"
+      ],
+      [
+       "build_opflatseqdiagrams_v0\\.py"
+      ]
+     ]
+    },
+    {
+     "id": "K2",
+     "text": "docs/cycle14-plan.md:106 cites `tools/bench/opflatseqdiagrams_labels.json`, which does not exist in the repository",
+     "ref": "docs/cycle14-plan.md:106 cites tools/bench/opflatseqdiagrams_labels.json which does not exist | EVIDENCE: docs/cycle14-plan.md:106",
+     "re": [
+      [
+       "cycle14\\-plan\\.md[^0-9\\n]{0,12}(?:105|106|107)\\b"
+      ],
+      [
+       "opflatseqdiagrams_labels\\.json"
+      ]
+     ]
+    },
+    {
+     "id": "K3",
+     "text": "docs/cycle14-plan.md:168 cites `tools/recipes/build_opflatseqdiagrams_v0.py`, which does not exist in the repository",
+     "ref": "docs/cycle14-plan.md:168 cites tools/recipes/build_opflatseqdiagrams_v0.py which does not exist | EVIDENCE: docs/cycle14-plan.md:168",
+     "re": [
+      [
+       "cycle14\\-plan\\.md[^0-9\\n]{0,12}(?:167|168|169)\\b"
+      ],
+      [
+       "build_opflatseqdiagrams_v0\\.py"
+      ]
+     ]
+    },
+    {
+     "id": "K4",
+     "text": "docs/cycle14-plan.md:169 cites `tools/bench/build_opflatseqdiagrams_v0.log`, which does not exist in the repository",
+     "ref": "docs/cycle14-plan.md:169 cites tools/bench/build_opflatseqdiagrams_v0.log which does not exist | EVIDENCE: docs/cycle14-plan.md:169",
+     "re": [
+      [
+       "cycle14\\-plan\\.md[^0-9\\n]{0,12}(?:168|169|170)\\b"
+      ],
+      [
+       "build_opflatseqdiagrams_v0\\.log"
+      ]
+     ]
+    },
+    {
+     "id": "K5",
+     "text": "docs/cycle14-plan.md:169 cites `tools/bench/opflatseqdiagrams_labels.json`, which does not exist in the repository",
+     "ref": "docs/cycle14-plan.md:169 cites tools/bench/opflatseqdiagrams_labels.json which does not exist | EVIDENCE: docs/cycle14-plan.md:169",
+     "re": [
+      [
+       "cycle14\\-plan\\.md[^0-9\\n]{0,12}(?:168|169|170)\\b"
+      ],
+      [
+       "opflatseqdiagrams_labels\\.json"
+      ]
+     ]
+    },
+    {
+     "id": "K6",
+     "text": "docs/cycle14-plan.md:170 cites `tools/bench/diag_a3_complete.py`, which does not exist in the repository",
+     "ref": "docs/cycle14-plan.md:170 cites tools/bench/diag_a3_complete.py which does not exist | EVIDENCE: docs/cycle14-plan.md:170",
+     "re": [
+      [
+       "cycle14\\-plan\\.md[^0-9\\n]{0,12}(?:169|170|171)\\b"
+      ],
+      [
+       "diag_a3_complete\\.py"
+      ]
+     ]
+    },
+    {
+     "id": "K7",
+     "text": "docs/cycle14-plan.md:171 cites `tools/bench/diag_a3_complete.log`, which does not exist in the repository",
+     "ref": "docs/cycle14-plan.md:171 cites tools/bench/diag_a3_complete.log which does not exist | EVIDENCE: docs/cycle14-plan.md:171",
+     "re": [
+      [
+       "cycle14\\-plan\\.md[^0-9\\n]{0,12}(?:170|171|172)\\b"
+      ],
+      [
+       "diag_a3_complete\\.log"
+      ]
+     ]
+    },
+    {
+     "id": "K8",
+     "text": "docs/cycle14-plan.md:171 cites `tools/bench/frame_loop_a4.json`, which does not exist in the repository",
+     "ref": "docs/cycle14-plan.md:171 cites tools/bench/frame_loop_a4.json which does not exist | EVIDENCE: docs/cycle14-plan.md:171",
+     "re": [
+      [
+       "cycle14\\-plan\\.md[^0-9\\n]{0,12}(?:170|171|172)\\b"
+      ],
+      [
+       "frame_loop_a4\\.json"
+      ]
+     ]
+    },
+    {
+     "id": "K9",
+     "text": "docs/cycle27-plan.md:705 cites `tools/bench/s2a_legality.json`, which does not exist in the repository",
+     "ref": "docs/cycle27-plan.md:705 cites tools/bench/s2a_legality.json which does not exist | EVIDENCE: docs/cycle27-plan.md:705",
+     "re": [
+      [
+       "cycle27\\-plan\\.md[^0-9\\n]{0,12}(?:704|705|706)\\b"
+      ],
+      [
+       "s2a_legality\\.json"
+      ]
+     ]
+    },
+    {
+     "id": "K10",
+     "text": "docs/cycle27-plan.md:799 cites `tools/bench/s2a_legality.json`, which does not exist in the repository",
+     "ref": "docs/cycle27-plan.md:799 cites tools/bench/s2a_legality.json which does not exist | EVIDENCE: docs/cycle27-plan.md:799",
+     "re": [
+      [
+       "cycle27\\-plan\\.md[^0-9\\n]{0,12}(?:798|799|800)\\b"
+      ],
+      [
+       "s2a_legality\\.json"
+      ]
+     ]
+    },
+    {
+     "id": "K11",
+     "text": "docs/cycle27-plan.md:829 cites `tools/bench/s2a_legality.json`, which does not exist in the repository",
+     "ref": "docs/cycle27-plan.md:829 cites tools/bench/s2a_legality.json which does not exist | EVIDENCE: docs/cycle27-plan.md:829",
+     "re": [
+      [
+       "cycle27\\-plan\\.md[^0-9\\n]{0,12}(?:828|829|830)\\b"
+      ],
+      [
+       "s2a_legality\\.json"
+      ]
+     ]
+    },
+    {
+     "id": "K12",
+     "text": "docs/cycle27-plan.md:870 cites `tools/bench/s2a_legality.json`, which does not exist in the repository",
+     "ref": "docs/cycle27-plan.md:870 cites tools/bench/s2a_legality.json which does not exist | EVIDENCE: docs/cycle27-plan.md:870",
+     "re": [
+      [
+       "cycle27\\-plan\\.md[^0-9\\n]{0,12}(?:869|870|871)\\b"
+      ],
+      [
+       "s2a_legality\\.json"
+      ]
+     ]
+    },
+    {
+     "id": "K13",
+     "text": "docs/d1-build-plan.md:45 cites `archive/peer/2026-09-17-priorart-d1-build-rev4.md`, which does not exist in the repository",
+     "ref": "docs/d1-build-plan.md:45 cites archive/peer/2026-09-17-priorart-d1-build-rev4.md which does not exist | EVIDENCE: docs/d1-build-plan.md:45",
+     "re": [
+      [
+       "d1\\-build\\-plan\\.md[^0-9\\n]{0,12}(?:44|45|46)\\b"
+      ],
+      [
+       "2026\\-09\\-17\\-priorart\\-d1\\-build\\-rev4\\.md"
+      ]
+     ]
+    },
+    {
+     "id": "K14",
+     "text": "docs/d1-loop12-17-split-plan.md:62 cites `docs/wiki/subvi/D1_s3_loop15.json`, which does not exist in the repository",
+     "ref": "docs/d1-loop12-17-split-plan.md:62 cites docs/wiki/subvi/D1_s3_loop15.json which does not exist | EVIDENCE: docs/d1-loop12-17-split-plan.md:62",
+     "re": [
+      [
+       "d1\\-loop12\\-17\\-split\\-plan\\.md[^0-9\\n]{0,12}(?:61|62|63)\\b"
+      ],
+      [
+       "D1_s3_loop15\\.json"
+      ]
+     ]
+    },
+    {
+     "id": "K15",
+     "text": "docs/d1-route-b-plan.md:391 cites `tools/recipes/build_d1_route_b.py`, which does not exist in the repository",
+     "ref": "docs/d1-route-b-plan.md:391 cites tools/recipes/build_d1_route_b.py which does not exist | EVIDENCE: docs/d1-route-b-plan.md:391",
+     "re": [
+      [
+       "d1\\-route\\-b\\-plan\\.md[^0-9\\n]{0,12}(?:390|391|392)\\b"
+      ],
+      [
+       "build_d1_route_b\\.py"
+      ]
+     ]
+    },
+    {
+     "id": "K16",
+     "text": "docs/m3a1-severed-rows.md:87 cites `tools/bench/m3a1_severed_arith.json`, which does not exist in the repository",
+     "ref": "docs/m3a1-severed-rows.md:87 cites tools/bench/m3a1_severed_arith.json which does not exist | EVIDENCE: docs/m3a1-severed-rows.md:87",
+     "re": [
+      [
+       "m3a1\\-severed\\-rows\\.md[^0-9\\n]{0,12}(?:86|87|88)\\b"
+      ],
+      [
+       "m3a1_severed_arith\\.json"
+      ]
+     ]
+    },
+    {
+     "id": "K17",
+     "text": "docs/m3a1-severed-rows.md:89 cites `tools/bench/m3a1_severed_rows.log`, which does not exist in the repository",
+     "ref": "docs/m3a1-severed-rows.md:89 cites tools/bench/m3a1_severed_rows.log which does not exist | EVIDENCE: docs/m3a1-severed-rows.md:89",
+     "re": [
+      [
+       "m3a1\\-severed\\-rows\\.md[^0-9\\n]{0,12}(?:88|89|90)\\b"
+      ],
+      [
+       "m3a1_severed_rows\\.log"
+      ]
+     ]
+    },
+    {
+     "id": "K18",
+     "text": "docs/m8-real-run-plan.md:43 cites `tools/bench/m8_run1.log`, which does not exist in the repository",
+     "ref": "docs/m8-real-run-plan.md:43 cites tools/bench/m8_run1.log which does not exist | EVIDENCE: docs/m8-real-run-plan.md:43",
+     "re": [
+      [
+       "m8\\-real\\-run\\-plan\\.md[^0-9\\n]{0,12}(?:42|43|44)\\b"
+      ],
+      [
+       "m8_run1\\.log"
+      ]
+     ]
+    },
+    {
+     "id": "K19",
+     "text": "docs/m8-real-run-plan.md:46 cites `tools/bench/m8_run1.json`, which does not exist in the repository",
+     "ref": "docs/m8-real-run-plan.md:46 cites tools/bench/m8_run1.json which does not exist | EVIDENCE: docs/m8-real-run-plan.md:46",
+     "re": [
+      [
+       "m8\\-real\\-run\\-plan\\.md[^0-9\\n]{0,12}(?:45|46|47)\\b"
+      ],
+      [
+       "m8_run1\\.json"
+      ]
+     ]
+    },
+    {
+     "id": "K20",
+     "text": "docs/m8-real-run-plan.md:48 cites `tools/bench/m8_numbers.log`, which does not exist in the repository",
+     "ref": "docs/m8-real-run-plan.md:48 cites tools/bench/m8_numbers.log which does not exist | EVIDENCE: docs/m8-real-run-plan.md:48",
+     "re": [
+      [
+       "m8\\-real\\-run\\-plan\\.md[^0-9\\n]{0,12}(?:47|48|49)\\b"
+      ],
+      [
+       "m8_numbers\\.log"
+      ]
+     ]
+    },
+    {
+     "id": "K21",
+     "text": "docs/motor-limit-assurance-plan.md:105 cites `tools/bench/selftest_motor_gate.py`, which does not exist in the repository",
+     "ref": "docs/motor-limit-assurance-plan.md:105 cites tools/bench/selftest_motor_gate.py which does not exist | EVIDENCE: docs/motor-limit-assurance-plan.md:105",
+     "re": [
+      [
+       "motor\\-limit\\-assurance\\-plan\\.md[^0-9\\n]{0,12}(?:104|105|106)\\b"
+      ],
+      [
+       "selftest_motor_gate\\.py"
+      ]
+     ]
+    },
+    {
+     "id": "K22",
+     "text": "docs/session-protocol.md:167 cites `tools/bench/steer_state.json`, which does not exist in the repository",
+     "ref": "docs/session-protocol.md:167 cites tools/bench/steer_state.json which does not exist | EVIDENCE: docs/session-protocol.md:167",
+     "re": [
+      [
+       "session\\-protocol\\.md[^0-9\\n]{0,12}(?:166|167|168)\\b"
+      ],
+      [
+       "steer_state\\.json"
+      ]
+     ]
+    },
+    {
+     "id": "K23",
+     "text": "docs/t0-instrumentation-plan.md:38 cites `docs/per-frame-path.md`, which does not exist in the repository",
+     "ref": "docs/t0-instrumentation-plan.md:38 cites docs/per-frame-path.md which does not exist | EVIDENCE: docs/t0-instrumentation-plan.md:38",
+     "re": [
+      [
+       "t0\\-instrumentation\\-plan\\.md[^0-9\\n]{0,12}(?:37|38|39)\\b"
+      ],
+      [
+       "per\\-frame\\-path\\.md"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "L3",
+   "base": "1d4caf891ce60ecf981f198449d93fc23be286e2",
+   "copy": [],
+   "size": "58 retrospective archives (cycles 7-73)",
+   "counts": {
+    "repeated-failure-class": 25,
+    "device-failed": 24,
+    "inference-over-measurement": 16,
+    "wrong-ordering": 9,
+    "tool-not-built": 8,
+    "rule-evaded": 7,
+    "unreported-fact": 7,
+    "premature-build": 6,
+    "scope-creep": 4,
+    "judgement-in-material": 4
+   },
+   "blank": [
+    "tools/violations.py",
+    "tools/audit_cycle.py",
+    "tools/retro_due.py",
+    "tools/bench/retro_v2_compare.log",
+    "tools/bench/reverse_census_walk.json",
+    "tools/bench/reverse_census_walk.log"
+   ],
+   "leak": [
+    "slug\\s+count\\s+loss_min\\s+retrospectives",
+    "reported loss across all slugs"
+   ],
+   "question": "TASK L3 - CROSS-CYCLE FAILURE-CLASS AUDIT. Every cycle of this project ended with a retrospective archived as archive/peer/*retrospective*.md; each names the cycle's structural faults as VIOLATION slugs (two formats: `VIOLATION: <slug>` and `VIOLATION: <slug> | loss_min=... | ...`). Find EVERY failure class (slug) that was named in TWO OR MORE retrospectives, and EVERY retrospective that named it. One claim per (slug, retrospective) pair: the slug and the retrospective's file name (archive/peer/<date>-retrospective-cycle<N...>.md; a cycle with several retrospectives, e.g. cycle15 and cycle15-routeb, gives one pair per file), with the file:line of the VIOLATION line. Before the first CLAIM line, write one line `COUNT <slug> = <number of retrospectives that named it>` for each such slug.",
+   "key": [
+    {
+     "id": "K1",
+     "text": "`repeated-failure-class` named in archive/peer/2026-09-15-retrospective-cycle7.md (cycle 7)",
+     "ref": "repeated-failure-class | archive/peer/2026-09-15-retrospective-cycle7.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle7.md",
+     "re": [
+      [
+       "repeated\\-failure\\-class"
+      ],
+      [
+       "cycle[ _-]?7(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "repeated-failure-class",
+     "cycle": "7",
+     "count": 25
+    },
+    {
+     "id": "K2",
+     "text": "`repeated-failure-class` named in archive/peer/2026-09-15-retrospective-cycle8.md (cycle 8)",
+     "ref": "repeated-failure-class | archive/peer/2026-09-15-retrospective-cycle8.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle8.md",
+     "re": [
+      [
+       "repeated\\-failure\\-class"
+      ],
+      [
+       "cycle[ _-]?8(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "repeated-failure-class",
+     "cycle": "8",
+     "count": 25
+    },
+    {
+     "id": "K3",
+     "text": "`repeated-failure-class` named in archive/peer/2026-09-15-retrospective-cycle9.md (cycle 9)",
+     "ref": "repeated-failure-class | archive/peer/2026-09-15-retrospective-cycle9.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle9.md",
+     "re": [
+      [
+       "repeated\\-failure\\-class"
+      ],
+      [
+       "cycle[ _-]?9(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "repeated-failure-class",
+     "cycle": "9",
+     "count": 25
+    },
+    {
+     "id": "K4",
+     "text": "`repeated-failure-class` named in archive/peer/2026-09-16-retrospective-cycle10.md (cycle 10)",
+     "ref": "repeated-failure-class | archive/peer/2026-09-16-retrospective-cycle10.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle10.md",
+     "re": [
+      [
+       "repeated\\-failure\\-class"
+      ],
+      [
+       "cycle[ _-]?10(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "repeated-failure-class",
+     "cycle": "10",
+     "count": 25
+    },
+    {
+     "id": "K5",
+     "text": "`repeated-failure-class` named in archive/peer/2026-09-16-retrospective-cycle11.md (cycle 11)",
+     "ref": "repeated-failure-class | archive/peer/2026-09-16-retrospective-cycle11.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle11.md",
+     "re": [
+      [
+       "repeated\\-failure\\-class"
+      ],
+      [
+       "cycle[ _-]?11(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "repeated-failure-class",
+     "cycle": "11",
+     "count": 25
+    },
+    {
+     "id": "K6",
+     "text": "`repeated-failure-class` named in archive/peer/2026-09-16-retrospective-cycle12.md (cycle 12)",
+     "ref": "repeated-failure-class | archive/peer/2026-09-16-retrospective-cycle12.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle12.md",
+     "re": [
+      [
+       "repeated\\-failure\\-class"
+      ],
+      [
+       "cycle[ _-]?12(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "repeated-failure-class",
+     "cycle": "12",
+     "count": 25
+    },
+    {
+     "id": "K7",
+     "text": "`repeated-failure-class` named in archive/peer/2026-09-17-retrospective-cycle14.md (cycle 14)",
+     "ref": "repeated-failure-class | archive/peer/2026-09-17-retrospective-cycle14.md | EVIDENCE: archive/peer/2026-09-17-retrospective-cycle14.md",
+     "re": [
+      [
+       "repeated\\-failure\\-class"
+      ],
+      [
+       "cycle[ _-]?14(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "repeated-failure-class",
+     "cycle": "14",
+     "count": 25
+    },
+    {
+     "id": "K8",
+     "text": "`repeated-failure-class` named in archive/peer/2026-09-17-retrospective-cycle15-d1-build3.md (cycle 15-d1-build3)",
+     "ref": "repeated-failure-class | archive/peer/2026-09-17-retrospective-cycle15-d1-build3.md | EVIDENCE: archive/peer/2026-09-17-retrospective-cycle15-d1-build3.md",
+     "re": [
+      [
+       "repeated\\-failure\\-class"
+      ],
+      [
+       "cycle[ _-]?15\\-d1\\-build3(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "repeated-failure-class",
+     "cycle": "15-d1-build3",
+     "count": 25
+    },
+    {
+     "id": "K9",
+     "text": "`repeated-failure-class` named in archive/peer/2026-09-17-retrospective-cycle15-routeb.md (cycle 15-routeb)",
+     "ref": "repeated-failure-class | archive/peer/2026-09-17-retrospective-cycle15-routeb.md | EVIDENCE: archive/peer/2026-09-17-retrospective-cycle15-routeb.md",
+     "re": [
+      [
+       "repeated\\-failure\\-class"
+      ],
+      [
+       "cycle[ _-]?15\\-routeb(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "repeated-failure-class",
+     "cycle": "15-routeb",
+     "count": 25
+    },
+    {
+     "id": "K10",
+     "text": "`repeated-failure-class` named in archive/peer/2026-09-17-retrospective-cycle15.md (cycle 15)",
+     "ref": "repeated-failure-class | archive/peer/2026-09-17-retrospective-cycle15.md | EVIDENCE: archive/peer/2026-09-17-retrospective-cycle15.md",
+     "re": [
+      [
+       "repeated\\-failure\\-class"
+      ],
+      [
+       "cycle[ _-]?15(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "repeated-failure-class",
+     "cycle": "15",
+     "count": 25
+    },
+    {
+     "id": "K11",
+     "text": "`repeated-failure-class` named in archive/peer/2026-09-17-retrospective-cycle16.md (cycle 16)",
+     "ref": "repeated-failure-class | archive/peer/2026-09-17-retrospective-cycle16.md | EVIDENCE: archive/peer/2026-09-17-retrospective-cycle16.md",
+     "re": [
+      [
+       "repeated\\-failure\\-class"
+      ],
+      [
+       "cycle[ _-]?16(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "repeated-failure-class",
+     "cycle": "16",
+     "count": 25
+    },
+    {
+     "id": "K12",
+     "text": "`repeated-failure-class` named in archive/peer/2026-09-17-retrospective-cycle16b.md (cycle 16b)",
+     "ref": "repeated-failure-class | archive/peer/2026-09-17-retrospective-cycle16b.md | EVIDENCE: archive/peer/2026-09-17-retrospective-cycle16b.md",
+     "re": [
+      [
+       "repeated\\-failure\\-class"
+      ],
+      [
+       "cycle[ _-]?16b(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "repeated-failure-class",
+     "cycle": "16b",
+     "count": 25
+    },
+    {
+     "id": "K13",
+     "text": "`repeated-failure-class` named in archive/peer/2026-09-18-retrospective-cycle34.md (cycle 34)",
+     "ref": "repeated-failure-class | archive/peer/2026-09-18-retrospective-cycle34.md | EVIDENCE: archive/peer/2026-09-18-retrospective-cycle34.md",
+     "re": [
+      [
+       "repeated\\-failure\\-class"
+      ],
+      [
+       "cycle[ _-]?34(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "repeated-failure-class",
+     "cycle": "34",
+     "count": 25
+    },
+    {
+     "id": "K14",
+     "text": "`repeated-failure-class` named in archive/peer/2026-09-18-retrospective-cycle35.md (cycle 35)",
+     "ref": "repeated-failure-class | archive/peer/2026-09-18-retrospective-cycle35.md | EVIDENCE: archive/peer/2026-09-18-retrospective-cycle35.md",
+     "re": [
+      [
+       "repeated\\-failure\\-class"
+      ],
+      [
+       "cycle[ _-]?35(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "repeated-failure-class",
+     "cycle": "35",
+     "count": 25
+    },
+    {
+     "id": "K15",
+     "text": "`repeated-failure-class` named in archive/peer/2026-09-19-retrospective-cycle39.md (cycle 39)",
+     "ref": "repeated-failure-class | archive/peer/2026-09-19-retrospective-cycle39.md | EVIDENCE: archive/peer/2026-09-19-retrospective-cycle39.md",
+     "re": [
+      [
+       "repeated\\-failure\\-class"
+      ],
+      [
+       "cycle[ _-]?39(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "repeated-failure-class",
+     "cycle": "39",
+     "count": 25
+    },
+    {
+     "id": "K16",
+     "text": "`repeated-failure-class` named in archive/peer/2026-09-19-retrospective-cycle47.md (cycle 47)",
+     "ref": "repeated-failure-class | archive/peer/2026-09-19-retrospective-cycle47.md | EVIDENCE: archive/peer/2026-09-19-retrospective-cycle47.md",
+     "re": [
+      [
+       "repeated\\-failure\\-class"
+      ],
+      [
+       "cycle[ _-]?47(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "repeated-failure-class",
+     "cycle": "47",
+     "count": 25
+    },
+    {
+     "id": "K17",
+     "text": "`repeated-failure-class` named in archive/peer/2026-09-20-retrospective-cycle48.md (cycle 48)",
+     "ref": "repeated-failure-class | archive/peer/2026-09-20-retrospective-cycle48.md | EVIDENCE: archive/peer/2026-09-20-retrospective-cycle48.md",
+     "re": [
+      [
+       "repeated\\-failure\\-class"
+      ],
+      [
+       "cycle[ _-]?48(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "repeated-failure-class",
+     "cycle": "48",
+     "count": 25
+    },
+    {
+     "id": "K18",
+     "text": "`repeated-failure-class` named in archive/peer/2026-09-21-retrospective-cycle53.md (cycle 53)",
+     "ref": "repeated-failure-class | archive/peer/2026-09-21-retrospective-cycle53.md | EVIDENCE: archive/peer/2026-09-21-retrospective-cycle53.md",
+     "re": [
+      [
+       "repeated\\-failure\\-class"
+      ],
+      [
+       "cycle[ _-]?53(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "repeated-failure-class",
+     "cycle": "53",
+     "count": 25
+    },
+    {
+     "id": "K19",
+     "text": "`repeated-failure-class` named in archive/peer/2026-09-21-retrospective-cycle57.md (cycle 57)",
+     "ref": "repeated-failure-class | archive/peer/2026-09-21-retrospective-cycle57.md | EVIDENCE: archive/peer/2026-09-21-retrospective-cycle57.md",
+     "re": [
+      [
+       "repeated\\-failure\\-class"
+      ],
+      [
+       "cycle[ _-]?57(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "repeated-failure-class",
+     "cycle": "57",
+     "count": 25
+    },
+    {
+     "id": "K20",
+     "text": "`repeated-failure-class` named in archive/peer/2026-09-21-retrospective-cycle60.md (cycle 60)",
+     "ref": "repeated-failure-class | archive/peer/2026-09-21-retrospective-cycle60.md | EVIDENCE: archive/peer/2026-09-21-retrospective-cycle60.md",
+     "re": [
+      [
+       "repeated\\-failure\\-class"
+      ],
+      [
+       "cycle[ _-]?60(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "repeated-failure-class",
+     "cycle": "60",
+     "count": 25
+    },
+    {
+     "id": "K21",
+     "text": "`repeated-failure-class` named in archive/peer/2026-09-21-retrospective-cycle61.md (cycle 61)",
+     "ref": "repeated-failure-class | archive/peer/2026-09-21-retrospective-cycle61.md | EVIDENCE: archive/peer/2026-09-21-retrospective-cycle61.md",
+     "re": [
+      [
+       "repeated\\-failure\\-class"
+      ],
+      [
+       "cycle[ _-]?61(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "repeated-failure-class",
+     "cycle": "61",
+     "count": 25
+    },
+    {
+     "id": "K22",
+     "text": "`repeated-failure-class` named in archive/peer/2026-09-23-retrospective-cycle67.md (cycle 67)",
+     "ref": "repeated-failure-class | archive/peer/2026-09-23-retrospective-cycle67.md | EVIDENCE: archive/peer/2026-09-23-retrospective-cycle67.md",
+     "re": [
+      [
+       "repeated\\-failure\\-class"
+      ],
+      [
+       "cycle[ _-]?67(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "repeated-failure-class",
+     "cycle": "67",
+     "count": 25
+    },
+    {
+     "id": "K23",
+     "text": "`repeated-failure-class` named in archive/peer/2026-09-24-retrospective-cycle70.md (cycle 70)",
+     "ref": "repeated-failure-class | archive/peer/2026-09-24-retrospective-cycle70.md | EVIDENCE: archive/peer/2026-09-24-retrospective-cycle70.md",
+     "re": [
+      [
+       "repeated\\-failure\\-class"
+      ],
+      [
+       "cycle[ _-]?70(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "repeated-failure-class",
+     "cycle": "70",
+     "count": 25
+    },
+    {
+     "id": "K24",
+     "text": "`repeated-failure-class` named in archive/peer/2026-09-24-retrospective-cycle71.md (cycle 71)",
+     "ref": "repeated-failure-class | archive/peer/2026-09-24-retrospective-cycle71.md | EVIDENCE: archive/peer/2026-09-24-retrospective-cycle71.md",
+     "re": [
+      [
+       "repeated\\-failure\\-class"
+      ],
+      [
+       "cycle[ _-]?71(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "repeated-failure-class",
+     "cycle": "71",
+     "count": 25
+    },
+    {
+     "id": "K25",
+     "text": "`repeated-failure-class` named in archive/peer/2026-09-24-retrospective-cycle73.md (cycle 73)",
+     "ref": "repeated-failure-class | archive/peer/2026-09-24-retrospective-cycle73.md | EVIDENCE: archive/peer/2026-09-24-retrospective-cycle73.md",
+     "re": [
+      [
+       "repeated\\-failure\\-class"
+      ],
+      [
+       "cycle[ _-]?73(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "repeated-failure-class",
+     "cycle": "73",
+     "count": 25
+    },
+    {
+     "id": "K26",
+     "text": "`device-failed` named in archive/peer/2026-09-17-retrospective-cycle14.md (cycle 14)",
+     "ref": "device-failed | archive/peer/2026-09-17-retrospective-cycle14.md | EVIDENCE: archive/peer/2026-09-17-retrospective-cycle14.md",
+     "re": [
+      [
+       "device\\-failed"
+      ],
+      [
+       "cycle[ _-]?14(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "device-failed",
+     "cycle": "14",
+     "count": 24
+    },
+    {
+     "id": "K27",
+     "text": "`device-failed` named in archive/peer/2026-09-17-retrospective-cycle15-d1-build3.md (cycle 15-d1-build3)",
+     "ref": "device-failed | archive/peer/2026-09-17-retrospective-cycle15-d1-build3.md | EVIDENCE: archive/peer/2026-09-17-retrospective-cycle15-d1-build3.md",
+     "re": [
+      [
+       "device\\-failed"
+      ],
+      [
+       "cycle[ _-]?15\\-d1\\-build3(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "device-failed",
+     "cycle": "15-d1-build3",
+     "count": 24
+    },
+    {
+     "id": "K28",
+     "text": "`device-failed` named in archive/peer/2026-09-17-retrospective-cycle15-routeb.md (cycle 15-routeb)",
+     "ref": "device-failed | archive/peer/2026-09-17-retrospective-cycle15-routeb.md | EVIDENCE: archive/peer/2026-09-17-retrospective-cycle15-routeb.md",
+     "re": [
+      [
+       "device\\-failed"
+      ],
+      [
+       "cycle[ _-]?15\\-routeb(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "device-failed",
+     "cycle": "15-routeb",
+     "count": 24
+    },
+    {
+     "id": "K29",
+     "text": "`device-failed` named in archive/peer/2026-09-18-retrospective-cycle19.md (cycle 19)",
+     "ref": "device-failed | archive/peer/2026-09-18-retrospective-cycle19.md | EVIDENCE: archive/peer/2026-09-18-retrospective-cycle19.md",
+     "re": [
+      [
+       "device\\-failed"
+      ],
+      [
+       "cycle[ _-]?19(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "device-failed",
+     "cycle": "19",
+     "count": 24
+    },
+    {
+     "id": "K30",
+     "text": "`device-failed` named in archive/peer/2026-09-18-retrospective-cycle23.md (cycle 23)",
+     "ref": "device-failed | archive/peer/2026-09-18-retrospective-cycle23.md | EVIDENCE: archive/peer/2026-09-18-retrospective-cycle23.md",
+     "re": [
+      [
+       "device\\-failed"
+      ],
+      [
+       "cycle[ _-]?23(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "device-failed",
+     "cycle": "23",
+     "count": 24
+    },
+    {
+     "id": "K31",
+     "text": "`device-failed` named in archive/peer/2026-09-18-retrospective-cycle24.md (cycle 24)",
+     "ref": "device-failed | archive/peer/2026-09-18-retrospective-cycle24.md | EVIDENCE: archive/peer/2026-09-18-retrospective-cycle24.md",
+     "re": [
+      [
+       "device\\-failed"
+      ],
+      [
+       "cycle[ _-]?24(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "device-failed",
+     "cycle": "24",
+     "count": 24
+    },
+    {
+     "id": "K32",
+     "text": "`device-failed` named in archive/peer/2026-09-18-retrospective-cycle26.md (cycle 26)",
+     "ref": "device-failed | archive/peer/2026-09-18-retrospective-cycle26.md | EVIDENCE: archive/peer/2026-09-18-retrospective-cycle26.md",
+     "re": [
+      [
+       "device\\-failed"
+      ],
+      [
+       "cycle[ _-]?26(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "device-failed",
+     "cycle": "26",
+     "count": 24
+    },
+    {
+     "id": "K33",
+     "text": "`device-failed` named in archive/peer/2026-09-18-retrospective-cycle28.md (cycle 28)",
+     "ref": "device-failed | archive/peer/2026-09-18-retrospective-cycle28.md | EVIDENCE: archive/peer/2026-09-18-retrospective-cycle28.md",
+     "re": [
+      [
+       "device\\-failed"
+      ],
+      [
+       "cycle[ _-]?28(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "device-failed",
+     "cycle": "28",
+     "count": 24
+    },
+    {
+     "id": "K34",
+     "text": "`device-failed` named in archive/peer/2026-09-18-retrospective-cycle29.md (cycle 29)",
+     "ref": "device-failed | archive/peer/2026-09-18-retrospective-cycle29.md | EVIDENCE: archive/peer/2026-09-18-retrospective-cycle29.md",
+     "re": [
+      [
+       "device\\-failed"
+      ],
+      [
+       "cycle[ _-]?29(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "device-failed",
+     "cycle": "29",
+     "count": 24
+    },
+    {
+     "id": "K35",
+     "text": "`device-failed` named in archive/peer/2026-09-18-retrospective-cycle36.md (cycle 36)",
+     "ref": "device-failed | archive/peer/2026-09-18-retrospective-cycle36.md | EVIDENCE: archive/peer/2026-09-18-retrospective-cycle36.md",
+     "re": [
+      [
+       "device\\-failed"
+      ],
+      [
+       "cycle[ _-]?36(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "device-failed",
+     "cycle": "36",
+     "count": 24
+    },
+    {
+     "id": "K36",
+     "text": "`device-failed` named in archive/peer/2026-09-19-retrospective-cycle39.md (cycle 39)",
+     "ref": "device-failed | archive/peer/2026-09-19-retrospective-cycle39.md | EVIDENCE: archive/peer/2026-09-19-retrospective-cycle39.md",
+     "re": [
+      [
+       "device\\-failed"
+      ],
+      [
+       "cycle[ _-]?39(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "device-failed",
+     "cycle": "39",
+     "count": 24
+    },
+    {
+     "id": "K37",
+     "text": "`device-failed` named in archive/peer/2026-09-19-retrospective-cycle43.md (cycle 43)",
+     "ref": "device-failed | archive/peer/2026-09-19-retrospective-cycle43.md | EVIDENCE: archive/peer/2026-09-19-retrospective-cycle43.md",
+     "re": [
+      [
+       "device\\-failed"
+      ],
+      [
+       "cycle[ _-]?43(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "device-failed",
+     "cycle": "43",
+     "count": 24
+    },
+    {
+     "id": "K38",
+     "text": "`device-failed` named in archive/peer/2026-09-20-retrospective-cycle52.md (cycle 52)",
+     "ref": "device-failed | archive/peer/2026-09-20-retrospective-cycle52.md | EVIDENCE: archive/peer/2026-09-20-retrospective-cycle52.md",
+     "re": [
+      [
+       "device\\-failed"
+      ],
+      [
+       "cycle[ _-]?52(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "device-failed",
+     "cycle": "52",
+     "count": 24
+    },
+    {
+     "id": "K39",
+     "text": "`device-failed` named in archive/peer/2026-09-21-retrospective-cycle53.md (cycle 53)",
+     "ref": "device-failed | archive/peer/2026-09-21-retrospective-cycle53.md | EVIDENCE: archive/peer/2026-09-21-retrospective-cycle53.md",
+     "re": [
+      [
+       "device\\-failed"
+      ],
+      [
+       "cycle[ _-]?53(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "device-failed",
+     "cycle": "53",
+     "count": 24
+    },
+    {
+     "id": "K40",
+     "text": "`device-failed` named in archive/peer/2026-09-21-retrospective-cycle57.md (cycle 57)",
+     "ref": "device-failed | archive/peer/2026-09-21-retrospective-cycle57.md | EVIDENCE: archive/peer/2026-09-21-retrospective-cycle57.md",
+     "re": [
+      [
+       "device\\-failed"
+      ],
+      [
+       "cycle[ _-]?57(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "device-failed",
+     "cycle": "57",
+     "count": 24
+    },
+    {
+     "id": "K41",
+     "text": "`device-failed` named in archive/peer/2026-09-21-retrospective-cycle58.md (cycle 58)",
+     "ref": "device-failed | archive/peer/2026-09-21-retrospective-cycle58.md | EVIDENCE: archive/peer/2026-09-21-retrospective-cycle58.md",
+     "re": [
+      [
+       "device\\-failed"
+      ],
+      [
+       "cycle[ _-]?58(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "device-failed",
+     "cycle": "58",
+     "count": 24
+    },
+    {
+     "id": "K42",
+     "text": "`device-failed` named in archive/peer/2026-09-22-retrospective-cycle64.md (cycle 64)",
+     "ref": "device-failed | archive/peer/2026-09-22-retrospective-cycle64.md | EVIDENCE: archive/peer/2026-09-22-retrospective-cycle64.md",
+     "re": [
+      [
+       "device\\-failed"
+      ],
+      [
+       "cycle[ _-]?64(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "device-failed",
+     "cycle": "64",
+     "count": 24
+    },
+    {
+     "id": "K43",
+     "text": "`device-failed` named in archive/peer/2026-09-22-retrospective-cycle65.md (cycle 65)",
+     "ref": "device-failed | archive/peer/2026-09-22-retrospective-cycle65.md | EVIDENCE: archive/peer/2026-09-22-retrospective-cycle65.md",
+     "re": [
+      [
+       "device\\-failed"
+      ],
+      [
+       "cycle[ _-]?65(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "device-failed",
+     "cycle": "65",
+     "count": 24
+    },
+    {
+     "id": "K44",
+     "text": "`device-failed` named in archive/peer/2026-09-22-retrospective-cycle66.md (cycle 66)",
+     "ref": "device-failed | archive/peer/2026-09-22-retrospective-cycle66.md | EVIDENCE: archive/peer/2026-09-22-retrospective-cycle66.md",
+     "re": [
+      [
+       "device\\-failed"
+      ],
+      [
+       "cycle[ _-]?66(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "device-failed",
+     "cycle": "66",
+     "count": 24
+    },
+    {
+     "id": "K45",
+     "text": "`device-failed` named in archive/peer/2026-09-24-retrospective-cycle68.md (cycle 68)",
+     "ref": "device-failed | archive/peer/2026-09-24-retrospective-cycle68.md | EVIDENCE: archive/peer/2026-09-24-retrospective-cycle68.md",
+     "re": [
+      [
+       "device\\-failed"
+      ],
+      [
+       "cycle[ _-]?68(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "device-failed",
+     "cycle": "68",
+     "count": 24
+    },
+    {
+     "id": "K46",
+     "text": "`device-failed` named in archive/peer/2026-09-24-retrospective-cycle70.md (cycle 70)",
+     "ref": "device-failed | archive/peer/2026-09-24-retrospective-cycle70.md | EVIDENCE: archive/peer/2026-09-24-retrospective-cycle70.md",
+     "re": [
+      [
+       "device\\-failed"
+      ],
+      [
+       "cycle[ _-]?70(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "device-failed",
+     "cycle": "70",
+     "count": 24
+    },
+    {
+     "id": "K47",
+     "text": "`device-failed` named in archive/peer/2026-09-24-retrospective-cycle71.md (cycle 71)",
+     "ref": "device-failed | archive/peer/2026-09-24-retrospective-cycle71.md | EVIDENCE: archive/peer/2026-09-24-retrospective-cycle71.md",
+     "re": [
+      [
+       "device\\-failed"
+      ],
+      [
+       "cycle[ _-]?71(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "device-failed",
+     "cycle": "71",
+     "count": 24
+    },
+    {
+     "id": "K48",
+     "text": "`device-failed` named in archive/peer/2026-09-24-retrospective-cycle72.md (cycle 72)",
+     "ref": "device-failed | archive/peer/2026-09-24-retrospective-cycle72.md | EVIDENCE: archive/peer/2026-09-24-retrospective-cycle72.md",
+     "re": [
+      [
+       "device\\-failed"
+      ],
+      [
+       "cycle[ _-]?72(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "device-failed",
+     "cycle": "72",
+     "count": 24
+    },
+    {
+     "id": "K49",
+     "text": "`device-failed` named in archive/peer/2026-09-24-retrospective-cycle73.md (cycle 73)",
+     "ref": "device-failed | archive/peer/2026-09-24-retrospective-cycle73.md | EVIDENCE: archive/peer/2026-09-24-retrospective-cycle73.md",
+     "re": [
+      [
+       "device\\-failed"
+      ],
+      [
+       "cycle[ _-]?73(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "device-failed",
+     "cycle": "73",
+     "count": 24
+    },
+    {
+     "id": "K50",
+     "text": "`inference-over-measurement` named in archive/peer/2026-09-15-retrospective-cycle7.md (cycle 7)",
+     "ref": "inference-over-measurement | archive/peer/2026-09-15-retrospective-cycle7.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle7.md",
+     "re": [
+      [
+       "inference\\-over\\-measurement"
+      ],
+      [
+       "cycle[ _-]?7(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "inference-over-measurement",
+     "cycle": "7",
+     "count": 16
+    },
+    {
+     "id": "K51",
+     "text": "`inference-over-measurement` named in archive/peer/2026-09-15-retrospective-cycle8.md (cycle 8)",
+     "ref": "inference-over-measurement | archive/peer/2026-09-15-retrospective-cycle8.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle8.md",
+     "re": [
+      [
+       "inference\\-over\\-measurement"
+      ],
+      [
+       "cycle[ _-]?8(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "inference-over-measurement",
+     "cycle": "8",
+     "count": 16
+    },
+    {
+     "id": "K52",
+     "text": "`inference-over-measurement` named in archive/peer/2026-09-15-retrospective-cycle9.md (cycle 9)",
+     "ref": "inference-over-measurement | archive/peer/2026-09-15-retrospective-cycle9.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle9.md",
+     "re": [
+      [
+       "inference\\-over\\-measurement"
+      ],
+      [
+       "cycle[ _-]?9(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "inference-over-measurement",
+     "cycle": "9",
+     "count": 16
+    },
+    {
+     "id": "K53",
+     "text": "`inference-over-measurement` named in archive/peer/2026-09-16-retrospective-cycle10.md (cycle 10)",
+     "ref": "inference-over-measurement | archive/peer/2026-09-16-retrospective-cycle10.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle10.md",
+     "re": [
+      [
+       "inference\\-over\\-measurement"
+      ],
+      [
+       "cycle[ _-]?10(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "inference-over-measurement",
+     "cycle": "10",
+     "count": 16
+    },
+    {
+     "id": "K54",
+     "text": "`inference-over-measurement` named in archive/peer/2026-09-16-retrospective-cycle11.md (cycle 11)",
+     "ref": "inference-over-measurement | archive/peer/2026-09-16-retrospective-cycle11.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle11.md",
+     "re": [
+      [
+       "inference\\-over\\-measurement"
+      ],
+      [
+       "cycle[ _-]?11(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "inference-over-measurement",
+     "cycle": "11",
+     "count": 16
+    },
+    {
+     "id": "K55",
+     "text": "`inference-over-measurement` named in archive/peer/2026-09-16-retrospective-cycle12.md (cycle 12)",
+     "ref": "inference-over-measurement | archive/peer/2026-09-16-retrospective-cycle12.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle12.md",
+     "re": [
+      [
+       "inference\\-over\\-measurement"
+      ],
+      [
+       "cycle[ _-]?12(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "inference-over-measurement",
+     "cycle": "12",
+     "count": 16
+    },
+    {
+     "id": "K56",
+     "text": "`inference-over-measurement` named in archive/peer/2026-09-16-retrospective-cycle13.md (cycle 13)",
+     "ref": "inference-over-measurement | archive/peer/2026-09-16-retrospective-cycle13.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle13.md",
+     "re": [
+      [
+       "inference\\-over\\-measurement"
+      ],
+      [
+       "cycle[ _-]?13(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "inference-over-measurement",
+     "cycle": "13",
+     "count": 16
+    },
+    {
+     "id": "K57",
+     "text": "`inference-over-measurement` named in archive/peer/2026-09-18-retrospective-cycle23.md (cycle 23)",
+     "ref": "inference-over-measurement | archive/peer/2026-09-18-retrospective-cycle23.md | EVIDENCE: archive/peer/2026-09-18-retrospective-cycle23.md",
+     "re": [
+      [
+       "inference\\-over\\-measurement"
+      ],
+      [
+       "cycle[ _-]?23(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "inference-over-measurement",
+     "cycle": "23",
+     "count": 16
+    },
+    {
+     "id": "K58",
+     "text": "`inference-over-measurement` named in archive/peer/2026-09-18-retrospective-cycle31.md (cycle 31)",
+     "ref": "inference-over-measurement | archive/peer/2026-09-18-retrospective-cycle31.md | EVIDENCE: archive/peer/2026-09-18-retrospective-cycle31.md",
+     "re": [
+      [
+       "inference\\-over\\-measurement"
+      ],
+      [
+       "cycle[ _-]?31(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "inference-over-measurement",
+     "cycle": "31",
+     "count": 16
+    },
+    {
+     "id": "K59",
+     "text": "`inference-over-measurement` named in archive/peer/2026-09-19-retrospective-cycle42.md (cycle 42)",
+     "ref": "inference-over-measurement | archive/peer/2026-09-19-retrospective-cycle42.md | EVIDENCE: archive/peer/2026-09-19-retrospective-cycle42.md",
+     "re": [
+      [
+       "inference\\-over\\-measurement"
+      ],
+      [
+       "cycle[ _-]?42(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "inference-over-measurement",
+     "cycle": "42",
+     "count": 16
+    },
+    {
+     "id": "K60",
+     "text": "`inference-over-measurement` named in archive/peer/2026-09-20-retrospective-cycle52.md (cycle 52)",
+     "ref": "inference-over-measurement | archive/peer/2026-09-20-retrospective-cycle52.md | EVIDENCE: archive/peer/2026-09-20-retrospective-cycle52.md",
+     "re": [
+      [
+       "inference\\-over\\-measurement"
+      ],
+      [
+       "cycle[ _-]?52(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "inference-over-measurement",
+     "cycle": "52",
+     "count": 16
+    },
+    {
+     "id": "K61",
+     "text": "`inference-over-measurement` named in archive/peer/2026-09-20-retrospective-cycle55.md (cycle 55)",
+     "ref": "inference-over-measurement | archive/peer/2026-09-20-retrospective-cycle55.md | EVIDENCE: archive/peer/2026-09-20-retrospective-cycle55.md",
+     "re": [
+      [
+       "inference\\-over\\-measurement"
+      ],
+      [
+       "cycle[ _-]?55(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "inference-over-measurement",
+     "cycle": "55",
+     "count": 16
+    },
+    {
+     "id": "K62",
+     "text": "`inference-over-measurement` named in archive/peer/2026-09-22-retrospective-cycle62.md (cycle 62)",
+     "ref": "inference-over-measurement | archive/peer/2026-09-22-retrospective-cycle62.md | EVIDENCE: archive/peer/2026-09-22-retrospective-cycle62.md",
+     "re": [
+      [
+       "inference\\-over\\-measurement"
+      ],
+      [
+       "cycle[ _-]?62(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "inference-over-measurement",
+     "cycle": "62",
+     "count": 16
+    },
+    {
+     "id": "K63",
+     "text": "`inference-over-measurement` named in archive/peer/2026-09-22-retrospective-cycle63.md (cycle 63)",
+     "ref": "inference-over-measurement | archive/peer/2026-09-22-retrospective-cycle63.md | EVIDENCE: archive/peer/2026-09-22-retrospective-cycle63.md",
+     "re": [
+      [
+       "inference\\-over\\-measurement"
+      ],
+      [
+       "cycle[ _-]?63(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "inference-over-measurement",
+     "cycle": "63",
+     "count": 16
+    },
+    {
+     "id": "K64",
+     "text": "`inference-over-measurement` named in archive/peer/2026-09-22-retrospective-cycle65.md (cycle 65)",
+     "ref": "inference-over-measurement | archive/peer/2026-09-22-retrospective-cycle65.md | EVIDENCE: archive/peer/2026-09-22-retrospective-cycle65.md",
+     "re": [
+      [
+       "inference\\-over\\-measurement"
+      ],
+      [
+       "cycle[ _-]?65(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "inference-over-measurement",
+     "cycle": "65",
+     "count": 16
+    },
+    {
+     "id": "K65",
+     "text": "`inference-over-measurement` named in archive/peer/2026-09-24-retrospective-cycle68.md (cycle 68)",
+     "ref": "inference-over-measurement | archive/peer/2026-09-24-retrospective-cycle68.md | EVIDENCE: archive/peer/2026-09-24-retrospective-cycle68.md",
+     "re": [
+      [
+       "inference\\-over\\-measurement"
+      ],
+      [
+       "cycle[ _-]?68(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "inference-over-measurement",
+     "cycle": "68",
+     "count": 16
+    },
+    {
+     "id": "K66",
+     "text": "`wrong-ordering` named in archive/peer/2026-09-15-retrospective-cycle7.md (cycle 7)",
+     "ref": "wrong-ordering | archive/peer/2026-09-15-retrospective-cycle7.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle7.md",
+     "re": [
+      [
+       "wrong\\-ordering"
+      ],
+      [
+       "cycle[ _-]?7(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "wrong-ordering",
+     "cycle": "7",
+     "count": 9
+    },
+    {
+     "id": "K67",
+     "text": "`wrong-ordering` named in archive/peer/2026-09-15-retrospective-cycle8.md (cycle 8)",
+     "ref": "wrong-ordering | archive/peer/2026-09-15-retrospective-cycle8.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle8.md",
+     "re": [
+      [
+       "wrong\\-ordering"
+      ],
+      [
+       "cycle[ _-]?8(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "wrong-ordering",
+     "cycle": "8",
+     "count": 9
+    },
+    {
+     "id": "K68",
+     "text": "`wrong-ordering` named in archive/peer/2026-09-15-retrospective-cycle9.md (cycle 9)",
+     "ref": "wrong-ordering | archive/peer/2026-09-15-retrospective-cycle9.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle9.md",
+     "re": [
+      [
+       "wrong\\-ordering"
+      ],
+      [
+       "cycle[ _-]?9(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "wrong-ordering",
+     "cycle": "9",
+     "count": 9
+    },
+    {
+     "id": "K69",
+     "text": "`wrong-ordering` named in archive/peer/2026-09-16-retrospective-cycle10.md (cycle 10)",
+     "ref": "wrong-ordering | archive/peer/2026-09-16-retrospective-cycle10.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle10.md",
+     "re": [
+      [
+       "wrong\\-ordering"
+      ],
+      [
+       "cycle[ _-]?10(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "wrong-ordering",
+     "cycle": "10",
+     "count": 9
+    },
+    {
+     "id": "K70",
+     "text": "`wrong-ordering` named in archive/peer/2026-09-16-retrospective-cycle11.md (cycle 11)",
+     "ref": "wrong-ordering | archive/peer/2026-09-16-retrospective-cycle11.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle11.md",
+     "re": [
+      [
+       "wrong\\-ordering"
+      ],
+      [
+       "cycle[ _-]?11(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "wrong-ordering",
+     "cycle": "11",
+     "count": 9
+    },
+    {
+     "id": "K71",
+     "text": "`wrong-ordering` named in archive/peer/2026-09-16-retrospective-cycle12.md (cycle 12)",
+     "ref": "wrong-ordering | archive/peer/2026-09-16-retrospective-cycle12.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle12.md",
+     "re": [
+      [
+       "wrong\\-ordering"
+      ],
+      [
+       "cycle[ _-]?12(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "wrong-ordering",
+     "cycle": "12",
+     "count": 9
+    },
+    {
+     "id": "K72",
+     "text": "`wrong-ordering` named in archive/peer/2026-09-16-retrospective-cycle13.md (cycle 13)",
+     "ref": "wrong-ordering | archive/peer/2026-09-16-retrospective-cycle13.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle13.md",
+     "re": [
+      [
+       "wrong\\-ordering"
+      ],
+      [
+       "cycle[ _-]?13(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "wrong-ordering",
+     "cycle": "13",
+     "count": 9
+    },
+    {
+     "id": "K73",
+     "text": "`wrong-ordering` named in archive/peer/2026-09-18-retrospective-cycle19.md (cycle 19)",
+     "ref": "wrong-ordering | archive/peer/2026-09-18-retrospective-cycle19.md | EVIDENCE: archive/peer/2026-09-18-retrospective-cycle19.md",
+     "re": [
+      [
+       "wrong\\-ordering"
+      ],
+      [
+       "cycle[ _-]?19(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "wrong-ordering",
+     "cycle": "19",
+     "count": 9
+    },
+    {
+     "id": "K74",
+     "text": "`wrong-ordering` named in archive/peer/2026-09-18-retrospective-cycle36.md (cycle 36)",
+     "ref": "wrong-ordering | archive/peer/2026-09-18-retrospective-cycle36.md | EVIDENCE: archive/peer/2026-09-18-retrospective-cycle36.md",
+     "re": [
+      [
+       "wrong\\-ordering"
+      ],
+      [
+       "cycle[ _-]?36(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "wrong-ordering",
+     "cycle": "36",
+     "count": 9
+    },
+    {
+     "id": "K75",
+     "text": "`tool-not-built` named in archive/peer/2026-09-15-retrospective-cycle7.md (cycle 7)",
+     "ref": "tool-not-built | archive/peer/2026-09-15-retrospective-cycle7.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle7.md",
+     "re": [
+      [
+       "tool\\-not\\-built"
+      ],
+      [
+       "cycle[ _-]?7(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "tool-not-built",
+     "cycle": "7",
+     "count": 8
+    },
+    {
+     "id": "K76",
+     "text": "`tool-not-built` named in archive/peer/2026-09-15-retrospective-cycle8.md (cycle 8)",
+     "ref": "tool-not-built | archive/peer/2026-09-15-retrospective-cycle8.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle8.md",
+     "re": [
+      [
+       "tool\\-not\\-built"
+      ],
+      [
+       "cycle[ _-]?8(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "tool-not-built",
+     "cycle": "8",
+     "count": 8
+    },
+    {
+     "id": "K77",
+     "text": "`tool-not-built` named in archive/peer/2026-09-15-retrospective-cycle9.md (cycle 9)",
+     "ref": "tool-not-built | archive/peer/2026-09-15-retrospective-cycle9.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle9.md",
+     "re": [
+      [
+       "tool\\-not\\-built"
+      ],
+      [
+       "cycle[ _-]?9(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "tool-not-built",
+     "cycle": "9",
+     "count": 8
+    },
+    {
+     "id": "K78",
+     "text": "`tool-not-built` named in archive/peer/2026-09-16-retrospective-cycle10.md (cycle 10)",
+     "ref": "tool-not-built | archive/peer/2026-09-16-retrospective-cycle10.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle10.md",
+     "re": [
+      [
+       "tool\\-not\\-built"
+      ],
+      [
+       "cycle[ _-]?10(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "tool-not-built",
+     "cycle": "10",
+     "count": 8
+    },
+    {
+     "id": "K79",
+     "text": "`tool-not-built` named in archive/peer/2026-09-16-retrospective-cycle11.md (cycle 11)",
+     "ref": "tool-not-built | archive/peer/2026-09-16-retrospective-cycle11.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle11.md",
+     "re": [
+      [
+       "tool\\-not\\-built"
+      ],
+      [
+       "cycle[ _-]?11(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "tool-not-built",
+     "cycle": "11",
+     "count": 8
+    },
+    {
+     "id": "K80",
+     "text": "`tool-not-built` named in archive/peer/2026-09-16-retrospective-cycle12.md (cycle 12)",
+     "ref": "tool-not-built | archive/peer/2026-09-16-retrospective-cycle12.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle12.md",
+     "re": [
+      [
+       "tool\\-not\\-built"
+      ],
+      [
+       "cycle[ _-]?12(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "tool-not-built",
+     "cycle": "12",
+     "count": 8
+    },
+    {
+     "id": "K81",
+     "text": "`tool-not-built` named in archive/peer/2026-09-16-retrospective-cycle13.md (cycle 13)",
+     "ref": "tool-not-built | archive/peer/2026-09-16-retrospective-cycle13.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle13.md",
+     "re": [
+      [
+       "tool\\-not\\-built"
+      ],
+      [
+       "cycle[ _-]?13(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "tool-not-built",
+     "cycle": "13",
+     "count": 8
+    },
+    {
+     "id": "K82",
+     "text": "`tool-not-built` named in archive/peer/2026-09-22-retrospective-cycle64.md (cycle 64)",
+     "ref": "tool-not-built | archive/peer/2026-09-22-retrospective-cycle64.md | EVIDENCE: archive/peer/2026-09-22-retrospective-cycle64.md",
+     "re": [
+      [
+       "tool\\-not\\-built"
+      ],
+      [
+       "cycle[ _-]?64(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "tool-not-built",
+     "cycle": "64",
+     "count": 8
+    },
+    {
+     "id": "K83",
+     "text": "`rule-evaded` named in archive/peer/2026-09-15-retrospective-cycle7.md (cycle 7)",
+     "ref": "rule-evaded | archive/peer/2026-09-15-retrospective-cycle7.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle7.md",
+     "re": [
+      [
+       "rule\\-evaded"
+      ],
+      [
+       "cycle[ _-]?7(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "rule-evaded",
+     "cycle": "7",
+     "count": 7
+    },
+    {
+     "id": "K84",
+     "text": "`rule-evaded` named in archive/peer/2026-09-15-retrospective-cycle8.md (cycle 8)",
+     "ref": "rule-evaded | archive/peer/2026-09-15-retrospective-cycle8.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle8.md",
+     "re": [
+      [
+       "rule\\-evaded"
+      ],
+      [
+       "cycle[ _-]?8(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "rule-evaded",
+     "cycle": "8",
+     "count": 7
+    },
+    {
+     "id": "K85",
+     "text": "`rule-evaded` named in archive/peer/2026-09-15-retrospective-cycle9.md (cycle 9)",
+     "ref": "rule-evaded | archive/peer/2026-09-15-retrospective-cycle9.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle9.md",
+     "re": [
+      [
+       "rule\\-evaded"
+      ],
+      [
+       "cycle[ _-]?9(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "rule-evaded",
+     "cycle": "9",
+     "count": 7
+    },
+    {
+     "id": "K86",
+     "text": "`rule-evaded` named in archive/peer/2026-09-16-retrospective-cycle10.md (cycle 10)",
+     "ref": "rule-evaded | archive/peer/2026-09-16-retrospective-cycle10.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle10.md",
+     "re": [
+      [
+       "rule\\-evaded"
+      ],
+      [
+       "cycle[ _-]?10(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "rule-evaded",
+     "cycle": "10",
+     "count": 7
+    },
+    {
+     "id": "K87",
+     "text": "`rule-evaded` named in archive/peer/2026-09-16-retrospective-cycle11.md (cycle 11)",
+     "ref": "rule-evaded | archive/peer/2026-09-16-retrospective-cycle11.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle11.md",
+     "re": [
+      [
+       "rule\\-evaded"
+      ],
+      [
+       "cycle[ _-]?11(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "rule-evaded",
+     "cycle": "11",
+     "count": 7
+    },
+    {
+     "id": "K88",
+     "text": "`rule-evaded` named in archive/peer/2026-09-16-retrospective-cycle12.md (cycle 12)",
+     "ref": "rule-evaded | archive/peer/2026-09-16-retrospective-cycle12.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle12.md",
+     "re": [
+      [
+       "rule\\-evaded"
+      ],
+      [
+       "cycle[ _-]?12(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "rule-evaded",
+     "cycle": "12",
+     "count": 7
+    },
+    {
+     "id": "K89",
+     "text": "`rule-evaded` named in archive/peer/2026-09-16-retrospective-cycle13.md (cycle 13)",
+     "ref": "rule-evaded | archive/peer/2026-09-16-retrospective-cycle13.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle13.md",
+     "re": [
+      [
+       "rule\\-evaded"
+      ],
+      [
+       "cycle[ _-]?13(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "rule-evaded",
+     "cycle": "13",
+     "count": 7
+    },
+    {
+     "id": "K90",
+     "text": "`unreported-fact` named in archive/peer/2026-09-15-retrospective-cycle7.md (cycle 7)",
+     "ref": "unreported-fact | archive/peer/2026-09-15-retrospective-cycle7.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle7.md",
+     "re": [
+      [
+       "unreported\\-fact"
+      ],
+      [
+       "cycle[ _-]?7(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "unreported-fact",
+     "cycle": "7",
+     "count": 7
+    },
+    {
+     "id": "K91",
+     "text": "`unreported-fact` named in archive/peer/2026-09-15-retrospective-cycle8.md (cycle 8)",
+     "ref": "unreported-fact | archive/peer/2026-09-15-retrospective-cycle8.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle8.md",
+     "re": [
+      [
+       "unreported\\-fact"
+      ],
+      [
+       "cycle[ _-]?8(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "unreported-fact",
+     "cycle": "8",
+     "count": 7
+    },
+    {
+     "id": "K92",
+     "text": "`unreported-fact` named in archive/peer/2026-09-15-retrospective-cycle9.md (cycle 9)",
+     "ref": "unreported-fact | archive/peer/2026-09-15-retrospective-cycle9.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle9.md",
+     "re": [
+      [
+       "unreported\\-fact"
+      ],
+      [
+       "cycle[ _-]?9(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "unreported-fact",
+     "cycle": "9",
+     "count": 7
+    },
+    {
+     "id": "K93",
+     "text": "`unreported-fact` named in archive/peer/2026-09-16-retrospective-cycle10.md (cycle 10)",
+     "ref": "unreported-fact | archive/peer/2026-09-16-retrospective-cycle10.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle10.md",
+     "re": [
+      [
+       "unreported\\-fact"
+      ],
+      [
+       "cycle[ _-]?10(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "unreported-fact",
+     "cycle": "10",
+     "count": 7
+    },
+    {
+     "id": "K94",
+     "text": "`unreported-fact` named in archive/peer/2026-09-16-retrospective-cycle11.md (cycle 11)",
+     "ref": "unreported-fact | archive/peer/2026-09-16-retrospective-cycle11.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle11.md",
+     "re": [
+      [
+       "unreported\\-fact"
+      ],
+      [
+       "cycle[ _-]?11(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "unreported-fact",
+     "cycle": "11",
+     "count": 7
+    },
+    {
+     "id": "K95",
+     "text": "`unreported-fact` named in archive/peer/2026-09-16-retrospective-cycle12.md (cycle 12)",
+     "ref": "unreported-fact | archive/peer/2026-09-16-retrospective-cycle12.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle12.md",
+     "re": [
+      [
+       "unreported\\-fact"
+      ],
+      [
+       "cycle[ _-]?12(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "unreported-fact",
+     "cycle": "12",
+     "count": 7
+    },
+    {
+     "id": "K96",
+     "text": "`unreported-fact` named in archive/peer/2026-09-16-retrospective-cycle13.md (cycle 13)",
+     "ref": "unreported-fact | archive/peer/2026-09-16-retrospective-cycle13.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle13.md",
+     "re": [
+      [
+       "unreported\\-fact"
+      ],
+      [
+       "cycle[ _-]?13(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "unreported-fact",
+     "cycle": "13",
+     "count": 7
+    },
+    {
+     "id": "K97",
+     "text": "`premature-build` named in archive/peer/2026-09-15-retrospective-cycle7.md (cycle 7)",
+     "ref": "premature-build | archive/peer/2026-09-15-retrospective-cycle7.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle7.md",
+     "re": [
+      [
+       "premature\\-build"
+      ],
+      [
+       "cycle[ _-]?7(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "premature-build",
+     "cycle": "7",
+     "count": 6
+    },
+    {
+     "id": "K98",
+     "text": "`premature-build` named in archive/peer/2026-09-15-retrospective-cycle9.md (cycle 9)",
+     "ref": "premature-build | archive/peer/2026-09-15-retrospective-cycle9.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle9.md",
+     "re": [
+      [
+       "premature\\-build"
+      ],
+      [
+       "cycle[ _-]?9(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "premature-build",
+     "cycle": "9",
+     "count": 6
+    },
+    {
+     "id": "K99",
+     "text": "`premature-build` named in archive/peer/2026-09-16-retrospective-cycle11.md (cycle 11)",
+     "ref": "premature-build | archive/peer/2026-09-16-retrospective-cycle11.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle11.md",
+     "re": [
+      [
+       "premature\\-build"
+      ],
+      [
+       "cycle[ _-]?11(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "premature-build",
+     "cycle": "11",
+     "count": 6
+    },
+    {
+     "id": "K100",
+     "text": "`premature-build` named in archive/peer/2026-09-16-retrospective-cycle12.md (cycle 12)",
+     "ref": "premature-build | archive/peer/2026-09-16-retrospective-cycle12.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle12.md",
+     "re": [
+      [
+       "premature\\-build"
+      ],
+      [
+       "cycle[ _-]?12(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "premature-build",
+     "cycle": "12",
+     "count": 6
+    },
+    {
+     "id": "K101",
+     "text": "`premature-build` named in archive/peer/2026-09-20-retrospective-cycle53.md (cycle 53)",
+     "ref": "premature-build | archive/peer/2026-09-20-retrospective-cycle53.md | EVIDENCE: archive/peer/2026-09-20-retrospective-cycle53.md",
+     "re": [
+      [
+       "premature\\-build"
+      ],
+      [
+       "cycle[ _-]?53(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "premature-build",
+     "cycle": "53",
+     "count": 6
+    },
+    {
+     "id": "K102",
+     "text": "`premature-build` named in archive/peer/2026-09-22-retrospective-cycle66.md (cycle 66)",
+     "ref": "premature-build | archive/peer/2026-09-22-retrospective-cycle66.md | EVIDENCE: archive/peer/2026-09-22-retrospective-cycle66.md",
+     "re": [
+      [
+       "premature\\-build"
+      ],
+      [
+       "cycle[ _-]?66(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "premature-build",
+     "cycle": "66",
+     "count": 6
+    },
+    {
+     "id": "K103",
+     "text": "`scope-creep` named in archive/peer/2026-09-15-retrospective-cycle7.md (cycle 7)",
+     "ref": "scope-creep | archive/peer/2026-09-15-retrospective-cycle7.md | EVIDENCE: archive/peer/2026-09-15-retrospective-cycle7.md",
+     "re": [
+      [
+       "scope\\-creep"
+      ],
+      [
+       "cycle[ _-]?7(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "scope-creep",
+     "cycle": "7",
+     "count": 4
+    },
+    {
+     "id": "K104",
+     "text": "`scope-creep` named in archive/peer/2026-09-16-retrospective-cycle10.md (cycle 10)",
+     "ref": "scope-creep | archive/peer/2026-09-16-retrospective-cycle10.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle10.md",
+     "re": [
+      [
+       "scope\\-creep"
+      ],
+      [
+       "cycle[ _-]?10(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "scope-creep",
+     "cycle": "10",
+     "count": 4
+    },
+    {
+     "id": "K105",
+     "text": "`scope-creep` named in archive/peer/2026-09-16-retrospective-cycle11.md (cycle 11)",
+     "ref": "scope-creep | archive/peer/2026-09-16-retrospective-cycle11.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle11.md",
+     "re": [
+      [
+       "scope\\-creep"
+      ],
+      [
+       "cycle[ _-]?11(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "scope-creep",
+     "cycle": "11",
+     "count": 4
+    },
+    {
+     "id": "K106",
+     "text": "`scope-creep` named in archive/peer/2026-09-16-retrospective-cycle12.md (cycle 12)",
+     "ref": "scope-creep | archive/peer/2026-09-16-retrospective-cycle12.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle12.md",
+     "re": [
+      [
+       "scope\\-creep"
+      ],
+      [
+       "cycle[ _-]?12(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "scope-creep",
+     "cycle": "12",
+     "count": 4
+    },
+    {
+     "id": "K107",
+     "text": "`judgement-in-material` named in archive/peer/2026-09-16-retrospective-cycle11.md (cycle 11)",
+     "ref": "judgement-in-material | archive/peer/2026-09-16-retrospective-cycle11.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle11.md",
+     "re": [
+      [
+       "judgement\\-in\\-material"
+      ],
+      [
+       "cycle[ _-]?11(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "judgement-in-material",
+     "cycle": "11",
+     "count": 4
+    },
+    {
+     "id": "K108",
+     "text": "`judgement-in-material` named in archive/peer/2026-09-16-retrospective-cycle12.md (cycle 12)",
+     "ref": "judgement-in-material | archive/peer/2026-09-16-retrospective-cycle12.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle12.md",
+     "re": [
+      [
+       "judgement\\-in\\-material"
+      ],
+      [
+       "cycle[ _-]?12(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "judgement-in-material",
+     "cycle": "12",
+     "count": 4
+    },
+    {
+     "id": "K109",
+     "text": "`judgement-in-material` named in archive/peer/2026-09-16-retrospective-cycle13.md (cycle 13)",
+     "ref": "judgement-in-material | archive/peer/2026-09-16-retrospective-cycle13.md | EVIDENCE: archive/peer/2026-09-16-retrospective-cycle13.md",
+     "re": [
+      [
+       "judgement\\-in\\-material"
+      ],
+      [
+       "cycle[ _-]?13(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "judgement-in-material",
+     "cycle": "13",
+     "count": 4
+    },
+    {
+     "id": "K110",
+     "text": "`judgement-in-material` named in archive/peer/2026-09-20-retrospective-cycle54.md (cycle 54)",
+     "ref": "judgement-in-material | archive/peer/2026-09-20-retrospective-cycle54.md | EVIDENCE: archive/peer/2026-09-20-retrospective-cycle54.md",
+     "re": [
+      [
+       "judgement\\-in\\-material"
+      ],
+      [
+       "cycle[ _-]?54(?![0-9A-Za-z-])"
+      ]
+     ],
+     "slug": "judgement-in-material",
+     "cycle": "54",
+     "count": 4
+    }
+   ]
+  }
+ ]
+}

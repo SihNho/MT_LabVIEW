@@ -1,0 +1,352 @@
+{
+ "schema": "decbench-results/1",
+ "tag": "smoke",
+ "par": 10,
+ "stub": null,
+ "cases": [
+  "T2-guardpeer-jevlog"
+ ],
+ "per_arm": {
+  "H": {
+   "n": 1,
+   "invalid": 0,
+   "mech_mean": 1.0,
+   "blind_mean": 1.0,
+   "minutes_mean": 0.97,
+   "usd_total": 1.04,
+   "usd_per_run": 1.044,
+   "turns_mean": 9,
+   "tools_mean": 8
+  },
+  "XH": {
+   "n": 1,
+   "invalid": 0,
+   "mech_mean": 1.0,
+   "blind_mean": 1.0,
+   "minutes_mean": 1.27,
+   "usd_total": 1.11,
+   "usd_per_run": 1.113,
+   "turns_mean": 9,
+   "tools_mean": 8
+  },
+  "MX": {
+   "n": 1,
+   "invalid": 0,
+   "mech_mean": 1.0,
+   "blind_mean": 1.0,
+   "minutes_mean": 4.99,
+   "usd_total": 2.0,
+   "usd_per_run": 2.001,
+   "turns_mean": 18,
+   "tools_mean": 17
+  },
+  "FL": {
+   "n": 1,
+   "invalid": 0,
+   "mech_mean": 1.0,
+   "blind_mean": 1.0,
+   "minutes_mean": 0.53,
+   "usd_total": 2.29,
+   "usd_per_run": 2.288,
+   "turns_mean": 4,
+   "tools_mean": 3
+  },
+  "PAR": {
+   "n": 1,
+   "invalid": 0,
+   "mech_mean": 1.0,
+   "blind_mean": 1.0,
+   "minutes_mean": 1.58,
+   "usd_total": 3.63,
+   "usd_per_run": 3.634,
+   "turns_mean": 29,
+   "tools_mean": 25
+  }
+ },
+ "blind_usd": 0.15,
+ "spent_usd": 10.23,
+ "disagreements": [
+  "T2-guardpeer-jevlog H r1 B2 mech 1.0 blind 0.5",
+  "T2-guardpeer-jevlog XH r1 B2 mech 1.0 blind 0.5",
+  "T2-guardpeer-jevlog MX r1 B2 mech 1.0 blind 0.0",
+  "T2-guardpeer-jevlog FL r1 B2 mech 1.0 blind 0.5",
+  "T2-guardpeer-jevlog PAR r1 B2 mech 1.0 blind 0.0"
+ ],
+ "records": [
+  {
+   "case": "T2-guardpeer-jevlog",
+   "arm": "H",
+   "rep": 1,
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "attempt": 1,
+   "usd": 1.0443,
+   "minutes": 0.97,
+   "cell_minutes": 0.97,
+   "turns": 9,
+   "tools": 8,
+   "timeout": false,
+   "cells": [
+    {
+     "name": "c0",
+     "model": "claude-opus-5-5",
+     "effort": "high",
+     "rc": 0,
+     "timeout": false,
+     "minutes": 0.97,
+     "usd": 1.044312,
+     "turns": 9,
+     "tools": 8,
+     "invalid_ratelimit": false,
+     "models_used": [
+      "claude-opus-5-5"
+     ]
+    }
+   ],
+   "answer": "The root cause is the self-test's own fake failure text. It ends up in a log that `guard_peer.py` doesn't exempt, so the gate treats a passing self-test as a real LabVIEW failure. I read four files (the log, the self-test, `guard_peer.py`, `tools/logclass.py`) and ran one pattern search on the log. Nothing was edited and nothing was run.\n\n**Symptom 1 (rc=99).** In the 08:42 run, `guard_peer.main()` crashed while building its block message. `os.path.relpath(path, ROOT)` fails when the path and the start are on different drives: the fake log was in the system TEMP folder on C:, the project is on G: (`tools/bench/jev_discharge.log:21-26`). The self-test then printed `  FAIL  SELF-TEST…` (`:26`). This part was already fixed by moving `guard_peer.ROOT` into the temp folder (`tools/bench/selftest_guard_peer_jev.py:126-130`). The 09:06 rerun passed 15/0 (`jev_discharge.log:276`).\n\n**Symptom 2 (the 09:0x refusal).** This is the real cause:\n- The gate skips failure-shaped self-test output only when the log file is named `selftest_*` (`tools/hooks/guard_peer.py:124,138`). It also skips review-dispatcher logs (`tools/logclass.py:46-53`).\n- Here the self-test ran inside `jev_run_all.py`, which writes to `tools/bench/jev_discharge.log`. That name matches neither exemption.\n- The Jev exemption (`guard_peer.py:62`) only applies to the command being launched, not to the logs the gate scans.\n- The gate reads only the last `BGRUN START` section of a log (`guard_peer.py:156-157`). The failure pattern matches `STOP:` anywhere in a line (`guard_peer.py:96`).\n- The fake log deliberately uses `STOP:` so that `bgrun`'s own failure scan would not trip on it (`selftest_guard_peer_jev.py:51-60`). But the gate's block message repeats the fake log's first failure line into the captured output. In the last run section, the only match is that fake line (`jev_discharge.log:245`).\n- Before 09:06:39, the last section was the 08:42 run, which matches on the `FAIL` line at `:26` instead. Either way the cause is the same: failure text produced by the test, sitting in a log the gate doesn't exempt.\n\n**Most plausible alternative.** A real failure in the Jev trials, or `bgrun`'s `rc=1`, made the log a failing log. Against this: both trials ended `rc=0` (`:390`, `:470`). The final `rc=1` comes from `bgrun`'s separate scan (`:480-481`), and a line like `BGRUN END rc=1` doesn't match the gate's pattern at all.\n\n**Cheapest test.** Run `guard_peer.FAILURE_RE` offline against only the text after the last `BGRUN START` in `jev_discharge.log`, and print the first matching line. My search suggests it will be `:245` (fake-log text) and that nothing from Trial A or Trial B will match. As a second check, copy the log to a file named `selftest_x.log`: `newest_failing_log()` should then return `None`.\n\nROOT CAUSE: `guard_peer.py` exempts a self-test's failure-shaped output only by the `selftest_*` filename, but this self-test ran inside `jev_run_all.py` and its output (first the `FAIL` row from the cross-drive `relpath` crash, then the repeated fake `STOP:` line) landed in `jev_discharge.log`, which the gate then read as a real LabVIEW failure owing a peer review.\nTEST: Apply `guard_peer.FAILURE_RE` to the last `BGRUN START` section of `jev_discharge.log` and confirm that its only match is the fake-log `STOP: A2 THE WIDGET…` line (`:245`), not any Trial A/B output, then confirm that `newest_failing_log()` returns `None` when the same log is named `selftest_*.log`.",
+   "mech": {
+    "M1": 1.0,
+    "M2": 1.0,
+    "F1": 0.0,
+    "B1": 0.0,
+    "B2": 1.0
+   },
+   "blind": {
+    "M1": 1.0,
+    "M2": 1.0,
+    "F1": 0.0,
+    "B1": 0.0,
+    "B2": 0.5
+   }
+  },
+  {
+   "case": "T2-guardpeer-jevlog",
+   "arm": "XH",
+   "rep": 1,
+   "model": "claude-opus-5-5",
+   "effort": "xhigh",
+   "attempt": 1,
+   "usd": 1.1134,
+   "minutes": 1.27,
+   "cell_minutes": 1.27,
+   "turns": 9,
+   "tools": 8,
+   "timeout": false,
+   "cells": [
+    {
+     "name": "c0",
+     "model": "claude-opus-5-5",
+     "effort": "xhigh",
+     "rc": 0,
+     "timeout": false,
+     "minutes": 1.27,
+     "usd": 1.1133864,
+     "turns": 9,
+     "tools": 8,
+     "invalid_ratelimit": false,
+     "models_used": [
+      "claude-opus-5-5"
+     ]
+    }
+   ],
+   "answer": "**Root cause:** the Jev bundle writes its self-test's failure-shaped text into `jev_discharge.log`. `guard_peer` only exempts self-test output when the log's *filename* starts with `selftest_`, so it counted that bundle log as a real failed prediction. The Jev exemption was coded for commands, not for the logs they write.\n\n**Symptom 1 (rc=99).** The test puts its fixture in the system temp folder on C:, while the project root is on G: (`selftest_guard_peer_jev.py:107`). `guard_peer.main()` builds its block message with `os.path.relpath(path, ROOT)` (`guard_peer.py:370`). On Windows that call raises `ValueError` when the two paths are on different drives (`jev_discharge.log:21-26`). The 09:06 rerun passes because `ROOT` was moved along with `BENCH` and `PEER` (`selftest_guard_peer_jev.py:126-130`; `jev_discharge.log:276`).\n\n**Symptom 2 (the refusal).**\n- `jev_run_all.py` runs the self-test in its own process and logs everything to `jev_discharge.log` (`jev_run_all.py:47-53`).\n- `newest_failing_log()` skips only review-machinery logs and names starting `selftest_` (`guard_peer.py:124,138`). The review-log list has no `jev_` entry (`logclass.py:46-71`).\n- The user's \"Jev는 면제\" exemption (`CLAUDE.md:363`) was added only to `RUNNER_RE` (`guard_peer.py:62`). That lets commands that *run* Jev scripts through, but does not stop *their logs* from arming the gate against other commands.\n- Only two lines in the log match `FAILURE_RE`, and both come from the self-test:\n  - Before 09:06:39, the gate saw the crash row `  FAIL  SELF-TEST ... raised ValueError` (`jev_discharge.log:26`).\n  - After it, the gate saw the fixture's `STOP: A2 …` line (`:245`). Test C0b calls `run_main(cmd)` without `capture=True` (`selftest_guard_peer_jev.py:142`), so the block message leaks into the bundle log (`jev_discharge.log:243-260`). `FAILURE_RE` matches `STOP:` anywhere on a line (`guard_peer.py:96`).\n- So the fixture's \"use `STOP:`, not `FAIL`\" workaround (`selftest_guard_peer_jev.py:51-57`) got past bgrun's scanner but not `guard_peer`. Even the passing 15/0 run left the log armed. Separately, bgrun still ended that run `rc=1` (`jev_discharge.log:480-481`).\n\n**Most plausible alternative:** the Jev trials themselves recorded a real failed prediction, which would mean the refusal was correct. Evidence against it: none of the Trial A/B lines match `FAILURE_RE`. That includes the `XX` disagreement rows (`jev_discharge.log:89,92,152…`) and the `BGRUN INNER FAILURE` line.\n\n**Cheapest discriminating test (offline, no LabVIEW, about a second):** copy `jev_discharge.log` into a temporary `BENCH` twice, then call `guard_peer.newest_failing_log()` on each copy:\n- copy (a): delete only the self-test block, `jev_discharge.log:236-278`;\n- copy (b): delete only the Trial A/B blocks.\n\nIf (a) returns `None` and (b) still returns the log, the leaked self-test output alone armed the gate. If (a) still returns the log, a Trial line is the cause and the refusal was legitimate.\n\nROOT CAUSE: `guard_peer` exempts self-test output by filename only (`selftest_`) and exempts Jev scripts only as commands, so self-test text written into `jev_discharge.log` armed the gate: first the cross-drive `relpath` crash row, then the fixture's `STOP:` line leaked through the uncaptured stderr in C0b.\nTEST: Call `guard_peer.newest_failing_log()` on two temporary copies of `jev_discharge.log`, one without the self-test block (lines 236-278) and one without the Trial A/B blocks; if only the copy without the self-test block comes back `None`, the self-test leak is confirmed.",
+   "mech": {
+    "M1": 1.0,
+    "M2": 1.0,
+    "F1": 0.0,
+    "B1": 0.0,
+    "B2": 1.0
+   },
+   "blind": {
+    "M1": 1.0,
+    "M2": 1.0,
+    "F1": 0.0,
+    "B1": 0.0,
+    "B2": 0.5
+   }
+  },
+  {
+   "case": "T2-guardpeer-jevlog",
+   "arm": "MX",
+   "rep": 1,
+   "model": "claude-opus-5-5",
+   "effort": "max",
+   "attempt": 1,
+   "usd": 2.0008,
+   "minutes": 4.99,
+   "cell_minutes": 4.99,
+   "turns": 18,
+   "tools": 17,
+   "timeout": false,
+   "cells": [
+    {
+     "name": "c0",
+     "model": "claude-opus-5-5",
+     "effort": "max",
+     "rc": 0,
+     "timeout": false,
+     "minutes": 4.99,
+     "usd": 2.0007850000000005,
+     "turns": 18,
+     "tools": 17,
+     "invalid_ratelimit": false,
+     "models_used": [
+      "claude-opus-5-5"
+     ]
+    }
+   ],
+   "answer": "The two symptoms are one chain. guard_peer treats a Jev test log as a LabVIEW failure, and the self-test crash only supplied that log's first failure line.\n\n**Symptom 1.** In the 08:42 run, the self-test moved `guard_peer.BENCH/PEER` to TEMP on C: but left `ROOT` on G:. So `os.path.relpath(path, ROOT)` raised a cross-drive ValueError (tools/hooks/guard_peer.py:370; tools/bench/jev_discharge.log:21-25). jev_run_all turned that into rc=99 and a `  FAIL` row (tools/bench/jev_run_all.py:32-36; jev_discharge.log:26). In real use BENCH sits under ROOT (guard_peer.py:51-53). The test now moves ROOT too (tools/bench/selftest_guard_peer_jev.py:126-130), and the 09:06 rerun passed 15/0 (jev_discharge.log:276).\n\n**Symptom 2.** guard_peer skips a log only by its file name: the review-tool names (tools/logclass.py:46-71) and `selftest_*` (guard_peer.py:124,138). The user's Jev exemption (CLAUDE.md:363) was coded only for commands (guard_peer.py:62,316). The self-test runs inside the jev_run_all process (jev_run_all.py:47-53), whose log is `jev_discharge.log` (jev_run_all.py:8). Run on its own, the same test logs to `selftest_*` and is skipped (selftest_guard_peer_jev.log:1). So line 26 made jev_discharge.log the newest failing log (guard_peer.py:127-159).\n\n**Most plausible alternative:** a legitimate one-off block that clears once the self-test passes.\n\n**Evidence against it:**\n- Case C0b calls the gate without capturing stderr (selftest_guard_peer_jev.py:142), and bgrun merges stderr into the log (tools/bgrun.py:183). So the block message copies the test's fake `STOP:` line into jev_discharge.log:245.\n- The `STOP:` pattern in FAILURE_RE is not tied to the start of a line (guard_peer.py:96), and only the last run in a log counts (guard_peer.py:156). So the passing 09:06 run still arms the gate. Whether the 09:0x refusal came before or after that rerun, the log matched (line 26 or 245).\n- Changing the fake marker from `FAIL` to `STOP:` (selftest_guard_peer_jev.py:51-57) got past bgrun's failure scan but not guard_peer's.\n- That run's `BGRUN END rc=1` comes from bgrun.py:215 matching `rc=2` in four PASS rows (jev_discharge.log:480). FAILURE_RE has no `rc=` term, so the gate ignores it.\n\n**Cheapest discriminating test:** apply FAILURE_RE only to the text after the last `BGRUN START` (jev_discharge.log:230). It is a file read with no LabVIEW. A match means a passing self-test still blocks LabVIEW work; no match supports the alternative. Searching the whole file with that pattern (ripgrep) returns exactly lines 26 and 245. Line 245 is in the last run, so the result already supports the root cause.\n\nROOT CAUSE: guard_peer.py exempts logs only by file name and applies the Jev exemption only to commands, so the Jev self-test's output in tools/bench/jev_discharge.log (first the FAIL row from its own cross-drive relpath crash, then, even on a passing run, the copied `STOP:` line from the test's fake log) is read as an unreviewed LabVIEW failed prediction.\nTEST: Run guard_peer.FAILURE_RE over only the last `BGRUN START` section of tools/bench/jev_discharge.log (the 09:06 run that passed 15/0); a match on line 245's copied `STOP:` shows the gate stays armed after the crash is fixed, ruling out \"only the one-off rc=99 FAIL row\".",
+   "mech": {
+    "M1": 1.0,
+    "M2": 1.0,
+    "F1": 0.0,
+    "B1": 0.0,
+    "B2": 1.0
+   },
+   "blind": {
+    "M1": 1.0,
+    "M2": 1.0,
+    "F1": 0.0,
+    "B1": 0.0,
+    "B2": 0.0
+   }
+  },
+  {
+   "case": "T2-guardpeer-jevlog",
+   "arm": "FL",
+   "rep": 1,
+   "model": "claude-fable-5-1",
+   "effort": "low",
+   "attempt": 1,
+   "usd": 2.2878,
+   "minutes": 0.53,
+   "cell_minutes": 0.53,
+   "turns": 4,
+   "tools": 3,
+   "timeout": false,
+   "cells": [
+    {
+     "name": "c0",
+     "model": "claude-fable-5-1",
+     "effort": "low",
+     "rc": 0,
+     "timeout": false,
+     "minutes": 0.53,
+     "usd": 2.287763,
+     "turns": 4,
+     "tools": 3,
+     "invalid_ratelimit": false,
+     "models_used": [
+      "claude-fable-5-1"
+     ]
+    }
+   ],
+   "answer": "Yes — both symptoms are one defect chain: a self-test's failure-shaped output landed in a log that `guard_peer.py` classifies as a build log.\n\n**Symptom 1 (rc=99).** The self-test puts its fixture in the system TEMP directory (`tools/bench/selftest_guard_peer_jev.py:107-111`) and redirected `guard_peer.BENCH`/`PEER`, but not `ROOT`. The block message calls `os.path.relpath(path, ROOT)` (`tools/hooks/guard_peer.py:370`), which raises on Windows across drives: `ValueError: path is on mount 'C:', start on mount 'G:'` (`tools/bench/jev_discharge.log:21-25`), reported as rc=99 (`jev_discharge.log:26-28`). The self-test now moves `ROOT` too and records this cause (`selftest_guard_peer_jev.py:126-130`). This is a test-harness bug, not a Jev or gate-logic fault.\n\n**Symptom 2 (the refusal).** The bundle's output is logged under `jev_discharge.log`, not a `selftest_*` name (`jev_discharge.log:1`). `newest_failing_log()` skips only review logs and basenames matching `^selftest_` (`guard_peer.py:124,138`). `RUNNER_RE` exempts Jev *commands* from being gated (`guard_peer.py:62,316`), but nothing exempts Jev *logs* from being scanned. The log's last run contains failure-shaped text:\n\n- Run 1 (08:42): the `  FAIL  SELF-TEST…` row (`jev_discharge.log:26`) matches `FAILURE_RE` (`guard_peer.py:96-97`).\n- Run 2 (09:06): the self-test passes 15/0 (`jev_discharge.log:276`), but the log still holds the gate's echoed fixture line `first failure line : STOP: A2…` (`jev_discharge.log:245`), which matches the unanchored `STOP:` alternative.\n\nEither way the file is within the 6 h window (`guard_peer.py:99`), so the diagnostic launch is blocked. This is the same class already recorded for `selftest_guard_peer_failre.log` (`guard_peer.py:108-115`), and it contradicts the rule that Jev scripts are exempt from the failed-prediction gate (`CLAUDE.md`, rule 3 exception, \"Jev는 면제\").\n\n**Most plausible alternative.** A genuine Jev failure — API/transport or discharge logic — that really owes a review. The evidence is against it: both trials ended rc=0 with 0 errors (`jev_discharge.log:138-140,217-219`), and the traceback is in path formatting, not in `jev_gate`.\n\n**Cheapest discriminating test.** Offline, no LabVIEW and no API: apply `guard_peer.FAILURE_RE` to the last `BGRUN START` segment of `jev_discharge.log` and print the matching lines (the hook's own selection logic, `guard_peer.py:156-157`). Then rerun the self-test with the temp directory on the project's drive.\n\n- Root cause confirmed if the only matches are self-test/fixture lines (`:245`, plus bgrun's echo at `:480-481`) and the rerun passes with `ROOT` unmoved.\n- Alternative confirmed if a match comes from Trial A/B output, or the same-drive rerun still raises.\n\nI did not run this; the prediction comes from reading the regex against the log.\n\nROOT CAUSE: The Jev self-test's fixture sat on C: while `guard_peer.ROOT` stayed on G:, so `os.path.relpath` raised (rc=99), and because that output is written to `jev_discharge.log` — a name `guard_peer.py` exempts neither as a review log nor as `selftest_*` — its FAIL/`STOP:` lines armed the failed-prediction gate against cycle 68's launch.\nTEST: Run `guard_peer.FAILURE_RE` over the last `BGRUN START` segment of `jev_discharge.log` and rerun the self-test with its temp directory on the project drive — matches only on self-test/fixture lines plus a clean rerun confirm this, while a match in Trial A/B output or a persisting exception points to a real Jev failure.",
+   "mech": {
+    "M1": 1.0,
+    "M2": 1.0,
+    "F1": 0.0,
+    "B1": 0.0,
+    "B2": 1.0
+   },
+   "blind": {
+    "M1": 1.0,
+    "M2": 1.0,
+    "F1": 0.0,
+    "B1": 0.0,
+    "B2": 0.5
+   }
+  },
+  {
+   "case": "T2-guardpeer-jevlog",
+   "arm": "PAR",
+   "rep": 1,
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "attempt": 1,
+   "usd": 3.634,
+   "minutes": 1.58,
+   "cell_minutes": 3.05,
+   "turns": 29,
+   "tools": 25,
+   "timeout": false,
+   "cells": [
+    {
+     "name": "lens0",
+     "model": "claude-opus-5-5",
+     "effort": "high",
+     "rc": 0,
+     "timeout": false,
+     "minutes": 0.88,
+     "usd": 1.0412742,
+     "turns": 8,
+     "tools": 7,
+     "invalid_ratelimit": false,
+     "models_used": [
+      "claude-opus-5-5"
+     ]
+    },
+    {
+     "name": "lens1",
+     "model": "claude-opus-5-5",
+     "effort": "high",
+     "rc": 0,
+     "timeout": false,
+     "minutes": 0.74,
+     "usd": 1.0192256000000002,
+     "turns": 7,
+     "tools": 6,
+     "invalid_ratelimit": false,
+     "models_used": [
+      "claude-opus-5-5"
+     ]
+    },
+    {
+     "name": "lens2",
+     "model": "claude-opus-5-5",
+     "effort": "high",
+     "rc": 0,
+     "timeout": false,
+     "minutes": 0.74,
+     "usd": 0.9442100000000001,
+     "turns": 6,
+     "tools": 5,
+     "invalid_ratelimit": false,
+     "models_used": [
+      "claude-opus-5-5"
+     ]
+    },
+    {
+     "name": "synth",
+     "model": "claude-opus-5-5",
+     "effort": "high",
+     "rc": 0,
+     "timeout": false,
+     "minutes": 0.69,
+     "usd": 0.6292899999999999,
+     "turns": 8,
+     "tools": 7,
+     "invalid_ratelimit": false,
+     "models_used": [
+      "claude-opus-5-5"
+     ]
+    }
+   ],
+   "answer": "The analysts are right on the main point: `guard_peer` read the Jev bundle's own output log as a real failure. The \"genuine failure that owes a review\" alternative does not survive the files, and the two symptoms have separate causes.\n\n**Claims that held up against the files**\n- **Symptom 1 was a separate crash, already fixed.**\n  - At 08:42 the self-test raised `ValueError: path is on mount 'C:', start on mount 'G:'` from `relpath` (`tools/bench/jev_discharge.log:24-26`). The gate builds that path at `tools/hooks/guard_peer.py:370`.\n  - The fix moves `ROOT` to the temp folder along with the fixture (`tools/bench/selftest_guard_peer_jev.py:126-130`).\n  - The 09:06 rerun's self-test passed with rc=0 (`jev_discharge.log:278`, `:475`).\n- **The Jev log is not exempt from the scan.**\n  - The bundle writes to `tools/bench/jev_discharge.log` (`tools/bench/jev_run_all.py:8`).\n  - `newest_failing_log()` skips only review logs and `selftest_*` names (`guard_peer.py:124,138`). The review-log list has no `jev` entry (`tools/logclass.py:46-71`).\n  - The \"Jev는 면제\" exemption (`RUNNER_RE`) applies only to the command being launched (`guard_peer.py:62,316`), never to the log scan.\n- **The self-test's fixture text leaked into that log.**\n  - Case C0b calls `run_main(cmd)` without `capture=True` (`selftest_guard_peer_jev.py:142`; the default is `capture=False`, `:217`). So the gate's block message went to real stderr, and bgrun saved it into the log.\n  - That message includes `first failure line : STOP: A2 THE WIDGET RESOLVED…` (`jev_discharge.log:243-245`).\n  - `FAILURE_RE` matches `STOP:` anywhere on a line (`guard_peer.py:96-98`). The gate reads only the last run in the file (`:156`).\n  - Scanning the whole log for `FAILURE_RE` finds only two lines: `:26` (the 08:42 run) and `:245` (the 09:06 run). So the run that passed still arms the gate, and only because of the fixture echo.\n- **The fixture comment was right about the risk but wrong about the fix.** It says the `STOP:` marker was chosen to get past bgrun, and admits `guard_peer` still matches it (`selftest_guard_peer_jev.py:51-57`). It also promises nothing is written under `tools/bench/` (`:8-11`). Both fail once stderr is captured, and bgrun still ended the passing run with rc=1 (`jev_discharge.log:480-481`).\n\n**Claims I dropped**\n- Analyst 2's check of renaming the log to `selftest_…`: it changes a file, which a read-only test must not do.\n- Analyst 3's check of reading the refusal's \"first failure line\": that refusal text is not in the checkout. The same answer can be read straight from the log instead.\n\n**Alternative explanation, and why it fails:** the gate fired on the real 08:42 crash (`:26`) and would clear after the rerun. It does not clear: after 09:06 the last run's only match is fixture line `:245`, even though that run passed. CLAUDE.md also exempts Jev scripts from this gate (\"Jev는 면제\").\n\nROOT CAUSE: The Jev self-test's uncaptured C0b call printed `guard_peer`'s block message, including the fixture line `STOP: A2…`, into `tools/bench/jev_discharge.log`, a file the gate does not exempt (it is not `selftest_*` or a review log, and the Jev exemption covers only commands), so the gate read the passing test's own fixture text as a failed prediction.\nTEST: Read-only, import `guard_peer` and apply `FAILURE_RE` to the text after the last `BGRUN START` in `jev_discharge.log`: if the only match is line 245's `STOP: A2 THE WIDGET…` (fixture echo) and not line 26's `FAIL SELF-TEST` (real crash), and `SELFTEST_LOG_RE.match(\"jev_discharge.log\")` is `None`, the fixture leak is confirmed over \"a genuine failure owes a review\".",
+   "mech": {
+    "M1": 1.0,
+    "M2": 1.0,
+    "F1": 0.0,
+    "B1": 0.0,
+    "B2": 1.0
+   },
+   "blind": {
+    "M1": 1.0,
+    "M2": 1.0,
+    "F1": 0.0,
+    "B1": 0.0,
+    "B2": 0.0
+   }
+  }
+ ]
+}

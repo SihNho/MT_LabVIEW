@@ -24,6 +24,13 @@ Prose cannot enforce "now stop" on the session that is enjoying itself. So two r
       card whose failure repeats the SAME scripting function as the previous failing attempt is refused; the next card
       is the scratch-VI verification of that function at the same rung (stage_prerun.escalation_route).
 
+  (f) SCOPE (user 2026-09-29 "수정안대로 진행하도록"): (a) and (b) bind RUNNER CYCLE SESSIONS only (CYCLE_SESSION=1,
+      set by tools/cycle_runner.py). The interactive chat is not a cycle: it delegates offline work (benches,
+      measurements) without a dispatch cap, and is bounded instead by its CONTEXT SIZE - a counted dispatch is refused
+      once the chat's last turn used more than CHAT_CONTEXT_LIMIT tokens (write docs/chat-handoff.md, open a new chat).
+      The Workflow tool (multi-agent orchestration) is a counted dispatch too: one in a cycle session, and subject to
+      the same context rule in the chat. (c)-(e) are unchanged.
+
 STATE: `tools/bench/session_<session_id>.json` = {"dispatches": n, "retro_done": bool, ...}. A file, not a
 memory - CLAUDE.md: "a rule whose counter is my memory is not a rule at all". `.json`, so no log gate globs it.
 
@@ -57,6 +64,50 @@ MAX_LIVE = 2                # card chat-P1 (1): one LabVIEW card + one offline p
 PREP_BUDGET = 3             # offline cards dispatched while a LabVIEW card is live
 LIVE_FACTOR = 1.5           # a card with no result is dead after budget.minutes x this
 CARD_RE = re.compile(r"^\s*CARD\s+(\S+)", re.M)
+WORKFLOW_TOOLS = ("Workflow",)  # (f) multi-agent orchestration counts as one dispatch
+CHAT_CONTEXT_LIMIT = 500_000    # (f) tokens = 50 % of the 1M window; above it the chat hands off instead of dispatching
+TAIL_BYTES = 4_000_000          # read only the transcript's tail for the last assistant usage
+
+
+def in_cycle():
+    return bool(os.environ.get("CYCLE_SESSION"))
+
+
+def last_context_tokens(transcript_path):
+    """Tokens the chat's last assistant turn sent as input (input + cache creation + cache read), read from the
+    tail of the transcript JSONL. None when unreadable - the caller fails OPEN (a broken reader never blocks)."""
+    try:
+        with open(transcript_path, "rb") as f:
+            f.seek(0, 2)
+            size = f.tell()
+            f.seek(max(0, size - TAIL_BYTES))
+            lines = f.read().decode("utf-8", "replace").splitlines()
+    except (OSError, TypeError, ValueError):
+        return None
+    for line in reversed(lines):
+        if '"usage"' not in line:
+            continue
+        try:
+            d = json.loads(line)
+        except ValueError:
+            continue
+        u = ((d.get("message") or {}).get("usage")) if isinstance(d, dict) else None
+        if isinstance(u, dict) and d.get("type") == "assistant":
+            return sum(int(u.get(k) or 0) for k in
+                       ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens"))
+    return None
+
+
+def chat_context_refusal(data):
+    """(f) The chat's bound: refuse a counted dispatch once its context passed CHAT_CONTEXT_LIMIT. '' = allow."""
+    n = last_context_tokens((data or {}).get("transcript_path"))
+    if n is None or n <= CHAT_CONTEXT_LIMIT:
+        return ""
+    return ("BLOCKED by tools/hooks/guard_session.py: CHAT CONTEXT %d tokens > %d (50 %% of the window).\n\n"
+            "The interactive chat has no dispatch cap (user 2026-09-29); it is bounded by its context size instead,\n"
+            "because a long context makes every turn expensive and fades the rules (CLAUDE.md section 3 item 2).\n"
+            "Write the state into docs/chat-handoff.md and ask the user to open a new chat, which dispatches this.\n"
+            % (n, CHAT_CONTEXT_LIMIT))
 sys.path.insert(0, os.path.dirname(HERE))       # tools/ - protocol.file_lock (one lock definition)
 
 
@@ -196,8 +247,15 @@ def main():
         sub = str(ti.get("subagent_type") or "").strip().lower()
         if sub not in COUNTED:
             return 0
+    elif data.get("tool_name") in WORKFLOW_TOOLS:
+        sub = "workflow"
     else:
         return 0
+    if not in_cycle():
+        why = chat_context_refusal(data)
+        if why:
+            sys.stderr.write(why)
+            return 2
     sid = session_id(data)
     try:
         with _lock(sid):
@@ -241,7 +299,8 @@ def escalation_refusal(sub, card, cpath):
 def decide(sid, sub, ti):
     """The counted-dispatch decision, run under the session-state lock. 0 allow / 2 refuse."""
     st = load(sid)
-    if st.get("retro_done"):
+    cycle = in_cycle()                   # (f) the cap and the retrospective close bind runner cycle sessions only
+    if cycle and st.get("retro_done"):
         sys.stderr.write(
             "BLOCKED by tools/hooks/guard_session.py: THIS SESSION'S CYCLE IS CLOSED BY ITS RETROSPECTIVE.\n"
             "  session state : %s (dispatches=%s, retro_done=true)\n\n"
@@ -252,7 +311,7 @@ def decide(sid, sub, ti):
             % (os.path.relpath(state_path(sid), ROOT), st.get("dispatches")))
         return 2
     # (d) PIPELINE - only a `CARD <path>` dispatch is tracked; a prose prompt counts exactly as before.
-    card, cpath = card_of_prompt(ti.get("prompt") if sub != "sendmessage-resume" else "")
+    card, cpath = card_of_prompt(ti.get("prompt") if sub not in ("sendmessage-resume", "workflow") else "")
     why = escalation_refusal(sub, card, cpath)
     if why:
         sys.stderr.write(why)
@@ -309,7 +368,7 @@ def decide(sid, sub, ti):
             save(sid, st)
             return 0
     n = int(st.get("dispatches", 0)) + 1
-    if n > MAX_DISPATCHES:
+    if cycle and n > MAX_DISPATCHES:
         sys.stderr.write(
             "BLOCKED by tools/hooks/guard_session.py: CYCLE DISPATCH CAP REACHED (%d material/log-reader "
             "dispatches).\n"

@@ -17,6 +17,13 @@ PREDICTION CONTRACT (checked below, 18 gates; G15-G18 added 2026-09-24 cycle 73)
           guard_bash AND sets retro_done=true in that session's state file
   G13     the next `material` dispatch in that session is REFUSED with "CYCLE IS CLOSED"
   G14     `retrospective_v1.py` and `grep retrospective.py` do NOT set retro_done (command position, frozen v1)
+  SCOPE (f), 2026-09-29 (user "수정안대로 진행하도록"): G1-G13 run under CYCLE_SESSION=1 (the cap and the retrospective
+  close bind runner cycle sessions only); G19/G20 re-pinned: in the chat they are ALLOWED.
+  G21     chat: 8 dispatches allowed and counted (no cap)
+  G22     chat: a dispatch after a turn above CHAT_CONTEXT_LIMIT is REFUSED ("CHAT CONTEXT")
+  G23     chat: unreadable transcript fails open      G24 chat after a retro mark allowed
+  G25     a cycle session ignores the chat context rule (its cap still refuses)
+  G26     cycle: Workflow counts as a dispatch (7th refused)   G27 chat: Workflow bound by the context rule only
 State files are written under tools/bench/session_<id>.json with throwaway ids and deleted at the end.
 Output deliberately avoids the strings bgrun/guard_peer scan for (`rc=<n>`, a line starting with FAIL).
 """
@@ -36,6 +43,8 @@ import guard_session  # noqa: E402
 SID_A = "selftest-gs-cap"
 SID_B = "selftest-gs-retro"
 SID_C = "selftest-gs-nomark"
+SID_D = "selftest-gs-chat"
+SID_E = "selftest-gs-wfcycle"
 
 RESULTS = []
 
@@ -45,15 +54,32 @@ def gate(label, ok, detail=""):
     print("  %-4s %-46s %s" % ("ok" if ok else "BAD", label, detail), flush=True)
 
 
-def call(script, payload):
+def call(script, payload, cycle=False):
+    env = dict(os.environ)
+    env.pop("CYCLE_SESSION", None)
+    if cycle:
+        env["CYCLE_SESSION"] = "1"
     p = subprocess.run([sys.executable, script], input=json.dumps(payload), text=True,
-                       capture_output=True, encoding="utf-8", errors="replace", timeout=60)
+                       capture_output=True, encoding="utf-8", errors="replace", timeout=60, env=env)
     return p.returncode, (p.stderr or "")
 
 
-def agent_call(sid, sub):
-    return call(GUARD_SESSION, {"session_id": sid, "tool_name": "Agent",
-                                "tool_input": {"subagent_type": sub, "prompt": "x"}})
+def agent_call(sid, sub, cycle=True, transcript=None):
+    payload = {"session_id": sid, "tool_name": "Agent", "tool_input": {"subagent_type": sub, "prompt": "x"}}
+    if transcript:
+        payload["transcript_path"] = transcript
+    return call(GUARD_SESSION, payload, cycle=cycle)
+
+
+def fake_transcript(tokens):
+    """A transcript JSONL whose last assistant turn used `tokens` input tokens (split over the three fields)."""
+    p = os.path.join(os.environ.get("TEMP", "."), "gs_selftest_transcript_%d_%d.jsonl" % (os.getpid(), tokens))
+    with open(p, "w", encoding="utf-8") as f:
+        f.write(json.dumps({"type": "assistant", "message": {"usage": {"input_tokens": 1}}}) + "\n")
+        f.write(json.dumps({"type": "user", "message": {"content": "hi"}}) + "\n")
+        f.write(json.dumps({"type": "assistant", "message": {"usage": {
+            "input_tokens": 10, "cache_creation_input_tokens": 90, "cache_read_input_tokens": tokens - 100}}}) + "\n")
+    return p
 
 
 def bash_call(sid, cmd):
@@ -62,7 +88,7 @@ def bash_call(sid, cmd):
 
 
 def cleanup():
-    for sid in (SID_A, SID_B, SID_C):
+    for sid in (SID_A, SID_B, SID_C, SID_D, SID_E):
         p = guard_session.state_path(guard_session.SAFE_RE.sub("_", sid))
         if os.path.isfile(p):
             os.remove(p)
@@ -140,11 +166,51 @@ def main():
          "exit %d, counter %s -> %s" % (rc, n0, n1))
     rc, _ = send("main", True)
     gate("G18 SendMessage to main allowed in cycle", rc == 0, "exit %d" % rc)
-    # G19-G20 (card chat-L2): a SendMessage resume is a dispatch - the cap and the retrospective close apply to it
+    # G19-G20 (re-pinned 2026-09-29, scope (f)): in the CHAT a SendMessage resume past 6 / after a retrospective mark
+    # is ALLOWED - the cap and the retrospective close bind runner cycle sessions only
     rc, err = send("a1b2c3d4-material", False, sid=SID_A)
-    gate("G19 SendMessage past the cap refused", rc == 2 and "CYCLE DISPATCH CAP" in err, "exit %d" % rc)
+    gate("G19 chat SendMessage past 6 allowed", rc == 0, "exit %d" % rc)
     rc, err = send("a1b2c3d4-material", False, sid=SID_B)
-    gate("G20 SendMessage after retrospective refused", rc == 2 and "CYCLE IS CLOSED" in err, "exit %d" % rc)
+    gate("G20 chat SendMessage after retro mark allowed", rc == 0, "exit %d" % rc)
+
+    # G21-G27 : scope (f), user 2026-09-29 "수정안대로 진행하도록"
+    small, big = fake_transcript(200_000), fake_transcript(600_000)
+    for i in range(1, 9):
+        rc, _ = agent_call(SID_D, "material", cycle=False, transcript=small)
+        if rc != 0:
+            break
+    std = guard_session.load(guard_session.SAFE_RE.sub("_", SID_D))
+    gate("G21 chat: 8 dispatches allowed and counted", rc == 0 and std.get("dispatches") == 8,
+         "exit %d, counter %s" % (rc, std.get("dispatches")))
+    rc, err = agent_call(SID_D, "material", cycle=False, transcript=big)
+    gate("G22 chat over the context limit refused", rc == 2 and "CHAT CONTEXT" in err, "exit %d" % rc)
+    rc, _ = agent_call(SID_D, "material", cycle=False, transcript=os.path.join(ROOT, "no_such_transcript.jsonl"))
+    gate("G23 chat, unreadable transcript -> fail open", rc == 0, "exit %d" % rc)
+    rc, _ = agent_call(SID_B, "material", cycle=False, transcript=small)
+    gate("G24 chat after a retro mark allowed", rc == 0, "exit %d" % rc)
+    rc, err = agent_call(SID_A, "material", cycle=True, transcript=big)
+    gate("G25 cycle session ignores the chat context rule (cap refuses)", rc == 2 and "CYCLE DISPATCH CAP" in err,
+         "exit %d" % rc)
+
+    def wf(sid, cycle, transcript=None):
+        payload = {"session_id": sid, "tool_name": "Workflow", "tool_input": {"script": "export const meta = {}"}}
+        if transcript:
+            payload["transcript_path"] = transcript
+        return call(GUARD_SESSION, payload, cycle=cycle)
+    for i in range(1, 7):
+        rc, _ = wf(SID_E, True)
+    rc7, err7 = wf(SID_E, True)
+    gate("G26 cycle: Workflow counted, 7th refused", rc == 0 and rc7 == 2 and "CYCLE DISPATCH CAP" in err7,
+         "exit %d / %d" % (rc, rc7))
+    rc, _ = wf(SID_D, False, small)
+    rc2, err2 = wf(SID_D, False, big)
+    gate("G27 chat: Workflow allowed under the limit, refused over it", rc == 0 and rc2 == 2 and "CHAT CONTEXT" in err2,
+         "exit %d / %d" % (rc, rc2))
+    for p in (small, big):
+        try:
+            os.remove(p)
+        except OSError:
+            pass
 
     cleanup()
     good = sum(1 for _, ok in RESULTS if ok)

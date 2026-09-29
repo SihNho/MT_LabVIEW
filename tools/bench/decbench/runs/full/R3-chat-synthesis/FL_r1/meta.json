@@ -1,0 +1,39 @@
+{
+ "case": "R3-chat-synthesis",
+ "arm": "FL",
+ "rep": 1,
+ "model": "claude-fable-5-1",
+ "effort": "low",
+ "attempt": 1,
+ "usd": 1.3212,
+ "minutes": 0.47,
+ "cell_minutes": 0.47,
+ "turns": 3,
+ "tools": 2,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-fable-5-1",
+   "effort": "low",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.47,
+   "usd": 1.3212142500000001,
+   "turns": 3,
+   "tools": 2,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-fable-5-1"
+   ]
+  }
+ ],
+ "answer": "No — the summary should not be sent as written. Two of its three bullets fail against the sources.\n\n**1. Strongest reason it is wrong: the judgement A/B figures do not match the record, and the cost direction is reversed.**\nThe only in-repo statement of the A/B result is high 2.5 vs medium 2.0 PASS per cycle at **$33 (high) vs $39 (medium)**, n = 4/5, \"not decisive but never worse\" (`CLAUDE.md:384-385`). I searched `.md`, `.json` and `.py` files for 2.17, 1.57, 37.18 and 38.24; the first 40 hits (the search was capped there) contained no A/B match, so those figures are unsourced as far as I checked. Even on the summary's own numbers, a $1.06 gap at n = 4/5 does not support \"high is also cheaper\".\n\n**Second defect: the Fable bullet compares unequal totals.**\n- Fable low's $17.59 covers 5 cells (`tools/bench/matbench/report_v1.md:77`); Opus high's $15.24 covers 10 cells (`report_v1.md:17`).\n- Per cell that is about $3.52 against $1.52, so Fable low costs roughly 2.3 times as much, not \"about the same\".\n- The Fable cells are v0 runs re-scored, one repeat each (`report_v1.md:65`), so 5/5 has no repeat-noise estimate.\n\n**Bullet 1 is loosely worded.**\n- Scores also varied on T2: low 0.5, medium 1, high 1, max 0.5 (`report_v1.md:27`). Only T5 and T6 were flat (`report_v1.md:29-30`).\n- \"Only T1 exceeded repeat noise\" is correct (`report_v1.md:34`).\n- By the report's own rule, T3's between-range of 1.0 does not exceed its within-range of 1 (`report_v1.md:28`, `report_v1.md:22`), so T3 is not separable at n = 2 (`report_v1.md:43`).\n\n**2. Alternative explanation.**\nThe A/B assigned effort by cycle parity, odd medium and even high (`tools/cycle_runner.py:39`). PASS-per-cycle differences can therefore reflect which build step happened to fall on which cycle, not effort. The cycle cards also show the parity labels continuing through cycles 98-103 (`tools/bench/cards/cycle_98.json:28`, `tools/bench/cards/cycle_103.json:28`), and cycle 103 ran at ladder level 1. The summary's figures may come from a different window than 89-97, with escalated cycles mixed in; I did not recompute this.\n\n**3. What would falsify the summary's claims.**\n- A per-cycle table for cycles 89-97 that yields something other than 2.17 / 1.57 and $37.18 / $38.24.\n- Per-cell cost: Fable low at about $3.52 against Opus high at about $1.52 already falsifies \"about the same\".\n\n**4. Cheapest discriminating test.**\nTwo offline steps, no model calls:\n1. Divide each total in `report_v1.md` by its cell count (lines 17 and 77).\n2. Recompute PASS count and cost per cycle from `tools/bench/cards/cycle_89.json` to `cycle_97.json` and their result cards, grouped by the `judge-ab` note, excluding any cycle with ladder rank above 0. Compare with `CLAUDE.md:384`.\n\nI do not believe the summary holds. I would change my mind on bullet 2 if a runner log or card table reproduces its four figures for cycles 89-97.\n\nDEFECT: major - the Fable bullet compares a 5-cell total with a 10-cell total (per cell Fable low costs about 2.3 times Opus high), and the A/B figures contradict the recorded $33 high vs $39 medium.",
+ "mech": {
+  "M1": 1.0,
+  "M2": 0.0,
+  "M3": 1.0,
+  "F1": 0.0,
+  "B1": 0.0
+ }
+}

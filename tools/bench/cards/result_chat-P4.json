@@ -1,0 +1,16 @@
+{"schema":"result/1","id":"chat-P4","status":"PASS","gates":{"pass":3,"fail":0},"first_fail":null,"blocked_by":null,"artefacts":[],
+"facts":[
+"Step secs (rec secs, stagexec.py:1643): l2r2 24 steps 823 s mean 34.3; qrt_pool 13 steps 334 s mean 25.7; ring_p2a 8 steps 267 s mean 33.4 (stage_d1_*.json stagexec[])",
+"Op call is ~3% of step time: sum 26.9/823 s l2r2, 9.7/334 pool, 8.9/267 ring; delete_wire 1.7-2.0 s, delete_object 0.3-1.1, create 0.1-2.2, connect 0.3-0.4 (stage_d1_l2r2.log:64)",
+"Whole-VI read be.read->read_live (stagexec.py:1611,1893) = 19.9 s: delete_object other 42.3 minus delete_wire other 22.4 in l2r2 AND ring; matches warm read_secs 20.0-20.5 in meter_l2a1_86d.json",
+"Split (derived; logs have no per-check timestamps, Meter.rows t at stagexec.py:83 not dumped on PASS): dw 24.1=op1.8+read19.9+rest2.4; do 42.8=0.5+LC19.9+read19.9+2.5; create 25.6=1.0+19.9+4.7",
+"connect 26.5=0.35+read 19.9+rest 6.3 (rest = node census x2 stagekit.py:554,570 + junk Invoke purge/node_view build_opfsinnertunnelconnect_v0.py:269-286 + 3 meter probes stagexec.py:1577,1596,1614)",
+"Batching already ran live once: meter_l2a1_86d, 42 ops, 635-node bed, 34 reads skipped, 0 stale retries (meter_l2a1_86d.log:695); steps without read 3.1-7.7 s (mean 6.0), with read 22.9-27.9 s",
+"BATCHABLE: read+step diff after connect/delete_*/move_in/wire_sr via existing checkpoints (stagexec.py:1318-1322,1597-1610); l2r2 passes every op (stage_d1_l2r2.py:48), pool/ring default None",
+"Batching costs: a diff localises to 'ops_since_last_read' not one row (stagexec.py:1661); connect/tunnel/wire_sr on a stale read get 1 fresh read+retry (stagexec.py:1582-1589)",
+"PER-STEP: read aft. create/tunnel/add_sr (bind_new, stagexec.py:1314,1550,1616-1621) + last op (1550); census mark+purge ties stray Invoke to its op (stagekit.py:554,570-581); MEMSTOP (stagexec.py:89)",
+"LC guard (stagexec.py:2707-2713) must precede each delete_object but its read repeats step k-1's post-read, no mutation between (stagexec.py:1611; 1422 at k=1): 19.9 s duplicate per delete_object"
+],
+"open":["Upper bound: -19.9 s per non-binding step (dw 24.1->~4.2 s); 15-row retire stage (8 dw+7 do, ~492 s of rows) -14x19.9=~279 s; pool-like (9/13 binding) only ~60 s of 334; fixed per launch (open 56.6 s, pre-loop ~35 s, save 22-48 s) unchanged. Apply checkpoints=binding+last, LC read reuse, both, none?"],
+"cost":{"usd":null,"minutes":14,"labview_runs":0},
+"note":"Measurement from existing logs/JSON/code only; no patch, no LabVIEW. The 19.9 s read is derived by difference and cross-checked against 86c/86d read_secs, not timed per step in the 3 runs."}

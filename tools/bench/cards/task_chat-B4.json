@@ -1,12 +1,37 @@
-{"schema": "task/1", "id": "chat-B4", "kind": "build",
- "goal": "Replace source regexes in the card-flag hook with an ast call detector; add utility-prefix recipe scope; run F12b + bundle; commit",
- "why": "chat-B3 FAIL: GUI/SAVE/RUN_VI regexes matched string literals. Third text-pattern false positive today; judgement: hooks judge code by ast, not regex. Fresh budget 2.",
- "inputs": [{"path": "tools/bench/cards/task_chat-B.json", "md5": "a3acb04ba0c5c77f6c7a5b46f6627f68"}],
- "pass": ["selftest_protocol_wiring load() fixed; F7 uses a gui:true card or a recipe that really calls gui_save", "GUI_SRC_RE/SAVE_SRC_RE/RUN_VI_SRC_RE ignore comments and docstrings (tokenize/ast), test with build_d1_m3a1.py", "every self-test green: protocol_wiring, protocol, cycle_runner, cycle_runner_ff, next_gate_jev, guard_peer suites, jev_ladder_action, bgrun suites, motor_fail_exit, stagekit", "peer.ps1 -ReviewCard and the 4 review callers exercised with -DryRun, verdict parse checked", "the three .new hooks replaced by os.replace only after green", "cycle_runner --dry-run --cycles 1 --no-motor-hooks writes a valid cycle/1 card and reads next.json", "one git commit with all chat-B + B2 changes"],
- "outputs": ["tools/bench/selftest_protocol_wiring.log", "tools/bench/cards/result_chat-B4.json"],
- "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
-           "write": ["tools/**", ".claude/agents/**", "docs/protocol/**"], "status_edit": false,
-           "git_commit": true, "peers": ["hypothesis"]},
- "budget": {"failures": 2, "minutes": 60},
+{
+ "schema": "task/1",
+ "id": "chat-B4",
+ "kind": "measure",
+ "goal": "ucbench full run: harden L3 key, add S-XH arm, re-lock, run 3 tasks x 4 arms x 2 reps, write report_v1.md",
+ "why": "User 2026-09-29: ultracode is the core question. Detail: brief_chat-B4.md",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_chat-B4.md", "md5": "ca12fde5a9559f692869882707fdca78"},
+  {"path": "tools/bench/cards/result_chat-B3.json", "md5": "6e494d1f307c4172afd3359c1311a84f"},
+  {"path": "tools/bench/ucbench/ucbench.py", "md5": "420e520d243836f249ba457346ff7204"},
+  {"path": "tools/bench/ucbench/tasks.json", "md5": "3cd70ed641516e1e7e162965a9182eaf"}
+ ],
+ "pass": [
+  "L3 key = (slug, cycle) pairs from the base's tools; S-XH arm added; lock PASS, leak 3/3",
+  "24 runs valid (invalid cells re-run from the start), 0 worktrees left, no LabVIEW touched",
+  "report_v1.md: per task x arm recall/precision/false claims/usd/min/agents, UC vs S-XH and UC vs S-MX, discriminating tasks, UC-only items"
+ ],
+ "outputs": [],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": ["tools/bench/ucbench/**"],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 240},
  "unblocks": "M3",
- "rules": ["§3 Tooling"]}
+ "rules": [
+  "Rig 실험중: no LabVIEW/GUI/hardware; never touch the user's LabVIEW process",
+  "Runner stays stopped",
+  "Facts only in the report",
+  "Patch with Edit/Write, never heredoc"
+ ]
+}

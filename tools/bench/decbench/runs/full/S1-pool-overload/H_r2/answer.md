@@ -1,0 +1,24 @@
+No. The next act should not be building the POOL step as written. The overload rule it would hard-code conflicts with the user's settled overload decision, and the one design question it depends on (O6, the enqueue timeouts) is still open. So the next cycle should settle that question before any LabVIEW build.
+
+**What NEXT prescribes.** One material session builds the POOL step: `Q_free` and `Q_work`, 20 slots each, with "full ⇒ skip the read" (`STATUS.md:65-68`; `docs/d1-loop12-17-split-plan.md:2171-2175`). The source for this is `docs/d1-build-plan.md:572`, which says "full `Q_work` ⇒ skip this read, return the slot in the same iteration".
+
+**Why that is wrong as a next act:**
+
+1. **It keeps a backlog instead of taking the newest frame.** The settled rule for overload between acquisition and tracking is "lossy, latest-wins — discard the backlog, take the newest frame" (`docs/decisions.md:25`).
+   - "Skip the read" only meets that rule when the PC holds almost no queued frames of its own; then the camera driver's ring buffer does the latest-wins work (`docs/stage2-plan.md:51-52`).
+   - With a 20-deep `Q_work`, sustained overload keeps the queue full. Tracking then works about 20 frames (≈222 ms at 90 Hz) behind the camera, and the newest frames are the ones dropped.
+   - That is the "drop-new" behaviour the user rejected: it leaves the tracker "contiguous but lagged" (`docs/frame-ownership-design.md:90-91`).
+   - Sustained overload is the real operating case, not an edge case: the user has said frames are already lost at 90 Hz with 8–15 beads (memory `experimental-load-beads-and-frame-rate`).
+2. **The settled decisions disagree with each other.** `decisions.md:22` sets the pool at 20 slots but states the invariant as "free + queued + processing = 8". `decisions.md:21` forbids pool eviction, while `decisions.md:25` requires discarding the backlog.
+   - One way to satisfy both is for tracking loop 1.2 to empty `Q_work` down to the newest frame and return the older slots to `Q_free`. That is not producer-side eviction.
+   - That header says these decisions "must not be re-opened without the user" (`decisions.md:8`). Picking a reading inside a build session is exactly the judgement-in-material fault.
+3. **It is also a rule 1a question.** Rule 1a is the project rule that the original's computation must not change. The original reads the newest buffer and tracks it in the same loop (`decisions.md:20`). Under overload, a FIFO backlog changes which frames get tracked, and it makes the autofocus correction (every 25 frames) act on stale z values. CLAUDE.md rule 1a says: when a step cannot be shown to preserve the computation, stop and ask.
+4. **The build session would stop anyway.** A bounded LabVIEW queue waits forever when full unless it is given a finite timeout (`frame-ownership-design.md:80-81`). So "skip the read" is itself the O6 timeout decision. NEXT sends O6 back to judgement as BLOCKED (`STATUS.md:68`; `d1-loop12-17-split-plan.md:2148`), so the card would most likely stop partway and spend the cycle for nothing.
+
+**What the next cycle should do instead.** Make it a short judgement cycle, with no LabVIEW:
+- Record the conflict as a user decision item in `decisions_pending.json`. Recommended answer: tracking empties `Q_work` down to the newest frame and returns the older slots; 20 slots; enqueue timeout 0.
+- Write the answer into a new Pre-decided item covering O6 and the `§9` table row, plus a pass check that tracking lag stays at 1 frame or less under sustained overload.
+- Meanwhile, run offline work that does not depend on the answer (the owed tooling/gate-fp carries). Then build the POOL step against the corrected row.
+
+VERDICT: change NEXT
+NEXT ACT: Before any POOL build, get the `Q_work` overload policy and O6 timeouts decided, which needs the user's input (the recommendation is that tracking empties `Q_work` down to the newest frame, to honour the latest-wins rule and preserve the original's behaviour); then correct `d1-build-plan.md:572` and build the POOL step on the saved R2 VI.

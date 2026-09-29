@@ -1,0 +1,778 @@
+{
+ "schema": "decbench-cases/1",
+ "note": "card chat-B1 (brief_chat-B1.md). Each case runs in a git worktree at `base` (the answer did not exist yet); `copy` puts files from a later commit (`from`) into it, optionally truncated to `lines`. `leak` regexes are searched over every text file of the prepared worktree: any hit = LEAKED. `absent` paths must not exist there. The rubric of each case is md5-pinned in cases_lock.json by `decbench.py --lock`.",
+ "templates": {
+  "preamble": "BENCHMARK QUESTION about this repository as it stood at a past moment (this checkout is that moment). Work READ-ONLY: read and search files inside this checkout only; do not edit files, do not run git, do not start LabVIEW, PowerShell GUI tools or any hardware, do not use sub-agents or the web. Cite file:line for every factual claim. Answer in at most 450 words.\n\n",
+  "steering": "Read STATUS.md (its ## NEXT section) and the plan it names: {plan}.\nQUESTION: Is the next act that NEXT prescribes - {focus} - the right next act for this project? If not, what should the next cycle do instead, and why?\nEnd with exactly two lines:\nVERDICT: keep NEXT   (or)   VERDICT: change NEXT\nNEXT ACT: <one sentence>",
+  "troubleshooting": "FAILURE:\n{failure}\nRelevant files: {files}\nQUESTION: What is the root cause of this failure, and what is the CHEAPEST discriminating test that would confirm it against the most plausible alternative explanation?\nEnd with exactly two lines:\nROOT CAUSE: <one sentence>\nTEST: <one sentence>",
+  "review": "{claim}\n\n--- HOW TO ANSWER (mandatory, from the dispatcher) ---\nYour job is to REFUTE the claim above, not to confirm it. Do not open with agreement.\n1. Name the single strongest reason the claim is WRONG.\n2. Name at least one ALTERNATIVE explanation of the same evidence.\n3. Name the observation that would FALSIFY the claim.\n4. End with the CHEAPEST discriminating test that separates the claim from your alternative.\nIf you still believe the claim holds after all four, say so explicitly and state what would change your mind.\n\nEnd with exactly one line:\nDEFECT: <blocker|major|minor|none> - <one sentence naming the most serious real defect of the claim, or none>"
+ },
+ "cases": [
+  {
+   "id": "S1-pool-overload",
+   "category": "steering",
+   "base": "83bf463",
+   "copy": [],
+   "fields": {
+    "plan": "docs/d1-loop12-17-split-plan.md (Pre-decided 233) and docs/d1-build-plan.md section 9",
+    "focus": "the POOL build step that puts 20 image slots and the queues Q_free / Q_work between camera loop 1.1 and tracking loop 1.2, with 'full Q_work => skip this read'"
+   },
+   "known_answer": "Change NEXT (or at least its overload row): 'full Q_work => skip this read' keeps the queued older frames and drops the newest (drop-new), which violates the user's recorded overload rule latest-wins (docs/decisions.md:25, frame-ownership-design): discard the backlog, read the newest frame, gap recorded by the buffer number. Re-decide the overload branch (or put it to the user) before any real run; the pool structure itself may stay. Settled by the user 2026-09-28 15:3x (commit f504b34, D-2026-09-28-01).",
+   "rubric": {
+    "must_hit": [
+     {
+      "id": "M1",
+      "text": "Says the planned overload branch (full Q_work => skip the read) keeps older queued frames and drops/skips the NEWEST frame (drop-new / stale data).",
+      "re": [
+       "drop[- ]?new",
+       "skip\\w*\\s+(reading\\s+)?(the\\s+)?(newest|latest|new(er)?|fresh\\w*)",
+       "keeps?\\s+(the\\s+)?old(er|est)",
+       "old(er|est)\\s+(frames?\\s+)?(are\\s+)?kept",
+       "stale"
+      ]
+     },
+     {
+      "id": "M2",
+      "text": "Identifies that this contradicts the user's latest-wins overload rule (discard backlog, take the newest frame; docs/decisions.md:25 or frame-ownership-design).",
+      "re": [
+       "latest[- ]wins",
+       "decisions\\.md:2[45]",
+       "frame-ownership-design",
+       "freshest"
+      ]
+     },
+     {
+      "id": "M3",
+      "text": "Next act changes the overload behaviour to latest-wins (discard the backlog, read the newest) or puts that decision to the user before any real run; does not simply build the planned skip-read.",
+      "re": [
+       "(discard|drop|flush|empty|dequeue)\\w*\\s+(\\w+\\s+){0,3}(backlog|queued|older|oldest|stale)",
+       "\\bre-?decid",
+       "(ask|put\\w*\\s+(it\\s+)?to)\\s+the\\s+user",
+       "user('s)?\\s+decision",
+       "(?m)^\\W*VERDICT:\\s*change"
+      ]
+     }
+    ],
+    "forbidden": [
+     {
+      "id": "F1",
+      "text": "Endorses the planned 'skip the newest read when full' as correct / consistent with the rules.",
+      "re": [
+       "skip(ping)?\\s+the\\s+(newest|new)\\s+read\\s+(is|was)\\s+(correct|fine|right|consistent)"
+      ]
+     },
+     {
+      "id": "F2",
+      "text": "Recommends Lossy Enqueue Element as the fix (excluded by docs/decisions.md:21).",
+      "re": [
+       "(use|switch\\s+to|replace\\s+with)\\s+(a\\s+)?Lossy\\s+Enqueue"
+      ]
+     }
+    ],
+    "bonus": [
+     {
+      "id": "B1",
+      "text": "Notes that gaps stay accountable through the buffer number (time axis), so latest-wins is safe for the time series.",
+      "re": [
+       "buffer\\s+number"
+      ]
+     }
+    ]
+   },
+   "leak": [
+    "VIOLATES \\(2\\)",
+    "skip-newest branch is WRONG",
+    "re-confirmed 2026-09-28",
+    "pool overload: latest-wins or skip"
+   ],
+   "absent": []
+  },
+  {
+   "id": "S2-display-loop",
+   "category": "steering",
+   "base": "3dfdd6a",
+   "copy": [],
+   "fields": {
+    "plan": "docs/d1-loop12-17-split-plan.md (Pre-decided 205-208)",
+    "focus": "the display-rate gate of #1359 (the N-frame Quotient & Remainder gate around the Force vs Extension plot inside the frame loop), i.e. diagnosing why the gated copy breaks and then rebuilding it"
+   },
+   "known_answer": "Change NEXT: stop the N-frame gate (fgate) work; move the Force vs Extension plot (#8323) into a SEPARATE DISPLAY LOOP on its own clock, fed by a local variable written in the frame loop (no queue, no schedule boolean in the frame loop; CLAUDE.md 1c''; the restructure plan already has a display loop). User direction 2026-09-26 18:0x (PD210, commit 8f140e3); machine evidence cycle 110 ABBA lost frames A 3,359/5,860 vs B 16/12.",
+   "rubric": {
+    "must_hit": [
+     {
+      "id": "M1",
+      "text": "Proposes drawing the plot in a separate display loop (own loop, own clock / period) instead of gating it inside the frame loop.",
+      "re": [
+       "separate\\s+(display\\s+)?loop",
+       "display\\s+loop",
+       "own\\s+(loop|clock|timing)",
+       "(independent|dedicated)\\s+(\\w+\\s+)?loop"
+      ]
+     },
+     {
+      "id": "M2",
+      "text": "The frame loop hands the plot data to that loop by a local variable (latest value), not a queue.",
+      "re": [
+       "local\\s+variable",
+       "\\blocals?\\b"
+      ]
+     },
+     {
+      "id": "M3",
+      "text": "Stops / drops the N-frame gate (fgate) rebuild rather than diagnosing and rebuilding it.",
+      "re": [
+       "(drop|abandon|stop|retire|replace|instead\\s+of|rather\\s+than)\\w*\\W+(\\w+\\W+){0,8}(gate|fgate|N-frame|quotient)",
+       "(?m)^\\W*VERDICT:\\s*change"
+      ]
+     }
+    ],
+    "forbidden": [
+     {
+      "id": "F1",
+      "text": "Keeps NEXT (continue diagnosing / rebuilding the in-loop N-frame gate) as the recommended path.",
+      "re": [
+       "(?m)^\\W*VERDICT:\\s*keep\\s+NEXT\\W*$"
+      ]
+     },
+     {
+      "id": "F2",
+      "text": "Uses a queue to carry the plot data between loops.",
+      "re": [
+       "(enqueue|queue)\\s+the\\s+plot"
+      ]
+     }
+    ],
+    "bonus": [
+     {
+      "id": "B1",
+      "text": "Names an acceptance measurement: lost frames in an ABBA against S1, and/or bit-identical replay of X/Y/Z.",
+      "re": [
+       "ABBA",
+       "lost\\s+frames",
+       "replay"
+      ]
+     }
+    ]
+   },
+   "leak": [
+    "D-2026-09-26-02[^.;]{0,40}answered",
+    "plot in a separate display loop",
+    "그래프 플롯",
+    "D1_s1_disp_"
+   ],
+   "absent": []
+  },
+  {
+   "id": "S3-disp-resplit",
+   "category": "steering",
+   "base": "1bd3d74",
+   "copy": [],
+   "note": "chat-B2: replaces S3-scratch-verify (its answer was a user rule made after base). Base = end of cycle 101. Answer from files AT base: CLAUDE.md:486-490 (re-split trigger) + r5 NO FILE + diag_c100_rows.py:214 / stagekit.py:809-814 (op 41 precondition). Settled: retrospective-cycle102 VIOLATION wrong-ordering (r6, r7 full-length retries, no file) and PD215(b) Part A split at cycle 102 close.",
+   "fields": {
+    "plan": "docs/d1-loop12-17-split-plan.md (Pre-decided 213-214)",
+    "focus": "the display-loop STAGE card whose build ends in ONE record-mode run of all 47 ops of tools/recipes/stage_d1_disp.py (after the 214(b)-(c) simulator fixes), producing claudeDev\\D1_s1_disp_<ts>.vi"
+   },
+   "known_answer": "Change NEXT. The display stage has already ended without a saved artefact (r5 in cycle 101 stopped in op 26, NO FILE; cycle 100's two runs also NO FILE), so CLAUDE.md's split-and-save rule 3 (CLAUDE.md:486-490) makes the next cycle's FIRST act a decomposition plan (sub-steps, each with its saved file and pass criterion) and forbids another full-length retry. The 47-op stage should be cut so that a first part (ops up to the last runnable one, e.g. ops 1-40) saves an intermediate (a broken-by-design intermediate may be saved by GUI Ctrl+S, CLAUDE.md:493), with the rest as later steps. The files also show the full run cannot pass op 41: row r7_wait's verb copy_in requires work == gscript.MOVE_DST (diag_c100_rows.py:214, stagekit.py:809-814), which a claudeDev work copy does not satisfy. Settled: cycle 102 ran two more full-length attempts (r6 stopped op 31, r7 at op 41, no file), its retrospective named wrong-ordering, and the split into a saved Part A (ops 1-40) was decided at cycle 102's close (PD215(b)).",
+   "rubric": {
+    "must_hit": [
+     {
+      "id": "M1",
+      "text": "Invokes the project's split-and-save / re-split rule: the stage has ended without a saved artefact (or failed repeatedly), so the next act must be a decomposition plan, not another full-length retry.",
+      "re": [
+       "decomposition\\s+plan",
+       "re-?split",
+       "full[- ]length\\s+(retry|re-?run|run|attempt)",
+       "split[- ]and[- ]save",
+       "CLAUDE\\.md:4(8[0-9]|9[0-5])"
+      ]
+     },
+     {
+      "id": "M2",
+      "text": "Next act cuts the 47-op stage into smaller steps that each save an intermediate VI (e.g. a first part up to the last runnable op, saved), instead of one run of all 47 ops.",
+      "re": [
+       "part\\s+A\\b",
+       "(split|cut|divide|break)\\w*\\s+(\\w+\\s+){0,6}(stage|ops|run|47)\\b[^\\n]{0,160}(save|file|artefact|artifact|intermediate)",
+       "(save|saved|saving)\\s+(\\w+\\s+){0,4}intermediate",
+       "intermediate\\s+(\\w+\\s+){0,3}(saved|file|VI|artefact|artifact)",
+       "ops?\\s+1\\s*[-–]\\s*\\d{1,2}\\b[^\\n]{0,120}(save|file|intermediate)"
+      ]
+     }
+    ],
+    "forbidden": [
+     {
+      "id": "F1",
+      "text": "Keeps NEXT: endorses one more full run of all 47 ops as the next act.",
+      "re": [
+       "(?m)^\\W*VERDICT:\\s*keep"
+      ]
+     }
+    ],
+    "bonus": [
+     {
+      "id": "B1",
+      "text": "Finds from the files that the full run cannot pass op 41: r7_wait's copy_in needs work == gscript.MOVE_DST (diag_c100_rows.py:214 / stagekit.py:809-814).",
+      "re": [
+       "MOVE_DST",
+       "r7_wait",
+       "stagekit\\.py:8(0[5-9]|1[0-6])",
+       "diag_c100_rows\\.py:21[0-6]"
+      ]
+     },
+     {
+      "id": "B2",
+      "text": "Names the approved route for saving a broken-by-design intermediate (GUI Ctrl+S / gui_save, CLAUDE.md:493).",
+      "re": [
+       "gui_save",
+       "Ctrl\\s*\\+\\s*S",
+       "broken[- ](by[- ]design\\s+)?intermediate",
+       "CLAUDE\\.md:49[3-9]"
+      ]
+     }
+    ]
+   },
+   "leak": [
+    "Part A \\(ops 1",
+    "Pre-decided 215",
+    "PD215",
+    "D1_s1_dispA",
+    "retrospective-cycle102",
+    "split came last",
+    "stage_d1_disp_r7\\.log"
+   ],
+   "absent": [
+    "archive/peer/2026-09-27-retrospective-cycle102.md",
+    "tools/bench/stage_d1_disp_r6.log",
+    "tools/bench/stage_d1_disp_r7.log"
+   ]
+  },
+  {
+   "id": "T1-looseends-pin",
+   "category": "troubleshooting",
+   "base": "9842a3f",
+   "copy": [
+    {
+     "from": "c986227",
+     "path": "tools/bench/plan_l2r2.json"
+    },
+    {
+     "from": "c986227",
+     "path": "tools/bench/plan_l2r2_make.log"
+    },
+    {
+     "from": "c986227",
+     "path": "tools/bench/diag_c116b_scratch.log"
+    },
+    {
+     "from": "c986227",
+     "path": "tools/bench/diag_c116b_scratch_el.log"
+    },
+    {
+     "from": "c986227",
+     "path": "tools/recipes/stage_d1_l2r2.py"
+    }
+   ],
+   "fields": {
+    "failure": "Card 116-2, stage L2-R2 (delete 13 unused input tunnels of loop #637 and the 11 source-only stub wires behind them), scratch build on a byte copy of the bed R1: the scratch build passed 43/0, but gate P4 failed - the scratch VI's LabVIEW Error List shows 'Wire has loose ends' = 22 (total 53) against the plan's pinned prediction 24 (total 55), so the real launch was withheld. The pin (tools/bench/plan_l2r2_make.log:44): loose 24 - 11 source-only stubs + 13 shared nets losing a tunnel sink - 2 of them already loose in R1 ([25438, 25461]) = 24. All reader gates passed, 'extra' items [] (diag_c116b_scratch_el.log:114-116).",
+    "files": "tools/bench/plan_l2r2.json, tools/bench/plan_l2r2_make.log, tools/bench/diag_c116b_scratch.log, tools/bench/diag_c116b_scratch_el.log, tools/recipes/stage_d1_l2r2.py"
+   },
+   "known_answer": "The pin arithmetic over-counts: not every outer net that loses a tunnel sink becomes loose. Two nets (w25238, w25225) had a PASS-THROUGH terminal joint that vanished with the tunnel, so the wire re-joins instead of leaving a loose end; 9 (not 11) outer nets become loose: 24 - 11 + 9 = 22. The build is not defective. Measured in 116-4 with a new read-only Wire.Joints[] reader (per-net joint flags before/after); H1 'the nets were already loose' falsified.",
+   "rubric": {
+    "must_hit": [
+     {
+      "id": "M1",
+      "text": "Root cause is the prediction, not the build: some of the 13 outer nets do not become loose when their tunnel is deleted (the pin over-counts newly loose nets).",
+      "re": [
+       "(pin|prediction|arithmetic|formula|count)\\w*\\s+(\\w+\\s+){0,6}(over-?count|wrong|incorrect|too\\s+high|assum)",
+       "not\\s+(all|every)\\s+(\\w+\\s+){0,4}(nets?|wires?)\\s+(\\w+\\s+){0,3}(become|go|are|end)\\s+loose",
+       "over-?count"
+      ]
+     },
+     {
+      "id": "M2",
+      "text": "Mechanism: a deleted tunnel that was a pass-through point of a wire lets the wire re-join (joint removed), so no loose end appears on that net.",
+      "re": [
+       "pass[- ]?through",
+       "re-?join",
+       "re-?connect\\w*\\s+(\\w+\\s+){0,3}(segments?|branch)",
+       "joint"
+      ]
+     }
+    ],
+    "forbidden": [
+     {
+      "id": "F1",
+      "text": "Blames the build (the recipe deleted the wrong objects / a build defect) as the root cause.",
+      "re": [
+       "ROOT CAUSE:\\s*(the\\s+)?(recipe|build|scratch build)\\s+(deleted|removed)\\s+(the\\s+)?wrong"
+      ]
+     },
+     {
+      "id": "F2",
+      "text": "Final root cause = the 2 nets were already loose in R1 (hypothesis H1, falsified by measurement).",
+      "re": [
+       "ROOT CAUSE:[^\\n]*already\\s+loose"
+      ]
+     }
+    ],
+    "bonus": [
+     {
+      "id": "B1",
+      "text": "Test: read per-net wire joints / loose-end flags on the 13 outer nets before vs after (e.g. a Wire.Joints reader, or the Error List items by wire uid).",
+      "re": [
+       "joints?\\b",
+       "per[- ]net",
+       "by\\s+wire\\s+uid",
+       "each\\s+(of\\s+the\\s+)?13\\s+(outer\\s+)?nets"
+      ]
+     }
+    ]
+   },
+   "leak": [
+    "OpWireJoints",
+    "c116b-pin",
+    "diag_c116d_",
+    "pass-through terminal joint",
+    "24 - 11 stubs \\+ 9"
+   ],
+   "absent": [
+    "tools/bench/cards/result_116-4.json",
+    "tools/bench/cards/result_116-2.json"
+   ]
+  },
+  {
+   "id": "T2-constvalue-void",
+   "category": "troubleshooting",
+   "base": "83bf463",
+   "copy": [
+    {
+     "from": "44baab6",
+     "path": "tools/bench/diag_c118_p1.py"
+    },
+    {
+     "from": "44baab6",
+     "path": "tools/bench/diag_c118_p1_plan.json"
+    },
+    {
+     "from": "44baab6",
+     "path": "tools/bench/diag_c118_p1.log"
+    },
+    {
+     "from": "44baab6",
+     "path": "tools/bench/diag_c118_p0.py"
+    },
+    {
+     "from": "44baab6",
+     "path": "tools/bench/diag_c118_p0.json"
+    }
+   ],
+   "note": "chat-B2: replaces T2-guardpeer-jevlog (smoke saturated 5/5). Base = end of cycle 117; the cycle-118 diag files are put in from 44baab6. The root cause is NOT in the failing log: it needs docs/NAMES.md:1157-1162 (base-class Constant.Value reader returns void for non-String constants) and/or reading the flattened-variant bytes (TD code 0000 = void, not an empty String[]). Settled by machine: 119-1 read the same names constant back through an array-capable reader as Cam_pool00..19 (result_119-1.json, diag_c119_p1b_r2.log:44) - the write had landed.",
+   "fields": {
+    "failure": "Card 118-2, diagnostic tools/bench/diag_c118_p1.py (a scratch donor VI built from EMPTY_v0.vi). It created a names constant on Get Controls.vi's 'Control Names' input with gscript.create_const_loop_term(value=<Python list of 20 strings Cam_pool00..Cam_pool19>): created_uid 101, err '', inv_err '' (diag_c118_p1.log:6-7). Gate A1b then read constant #101 back with diag_c118_p0.read_str and expected the bytes to end in the flattened Cam_pool00..19; it got hex 2600800000000001000400000001000000000000 and the run stopped at that fatal gate (diag_c118_p1.log:8-10).",
+    "files": "tools/bench/diag_c118_p1.py, tools/bench/diag_c118_p1.log, tools/bench/diag_c118_p0.py, tools/bench/diag_c118_p0.json, tools/gscript.py"
+   },
+   "known_answer": "The READER failed, not (shown) the write: read_str reads Constant.Value through a base-class 'Constant' cast (OpConstValue_v1), which docs/NAMES.md:1157-1162 records as returning an EMPTY void variant, without error, for every non-String constant (numeric, boolean; the returned bytes are the void pattern - one type descriptor with code 0000 and no data, also seen on the VISA constants in diag_c105_const.json and ring #13245 in diag_c118_p0.json). So A1b could never pass on an array constant and says nothing about the write. Cheapest discriminating test: read #101 by a route that sees its type (a property node of its most specific class, ArrayConstant, or wire an indicator to it and run the donor), or read a known-filled array constant with the same reader - Cam_pool00..19 back = reader blind; empty array/wrong type = the COM list write failed. Settled: cycle 119 read the names constant back as Cam_pool00..19 through an array-capable reader.",
+   "rubric": {
+    "must_hit": [
+     {
+      "id": "M1",
+      "text": "Root cause is the reader: the base-class Constant.Value read (read_str / OpConstValue_v1, class 'Constant') returns a void/empty variant for non-String (here array) constants, so gate A1b could not pass regardless of the write.",
+      "re": [
+       "(reader|read_str|Constant\\.Value|OpConstValue\\w*|base[- ]class)[^\\n]{0,160}(void|blind|cannot\\s+(see|read)|can't\\s+(see|read)|empty\\s+variant|no\\s+type)",
+       "void[^\\n]{0,80}(every|all|any)\\s+non-?String",
+       "NAMES\\.md:11(5[5-9]|6[0-6])",
+       "most[- ]specific\\s+class"
+      ]
+     },
+     {
+      "id": "M2",
+      "text": "Test separates 'reader blind' from 'write failed': read #101 through a type-aware route (a property node of its specific class, e.g. ArrayConstant; an indicator wired to it and a run) or read a known-filled array constant with the same reader.",
+      "re": [
+       "ArrayConstant",
+       "indicator",
+       "most[- ]specific",
+       "known[- ](good|filled|populated|non-?empty|value)",
+       "(typed|type[- ]specific|class[- ]specific)\\s+(reader|node|property|read|cast)"
+      ]
+     }
+    ],
+    "forbidden": [
+     {
+      "id": "F1",
+      "text": "Final root cause = the write failed (the COM list did not land / the constant is empty) with no mention of the reader limitation.",
+      "re": [
+       "ROOT CAUSE:(?![^\\n]*(reader|read_str|Constant\\.Value|OpConstValue|base[- ]class|void\\s+for))[^\\n]*(write|create_const\\w*|COM\\s+list|SetControlValue|OLE|SAFEARRAY)"
+      ]
+     }
+    ],
+    "bonus": [
+     {
+      "id": "B1",
+      "text": "Decodes the bytes: one type descriptor with code 0000 = void type (an empty String[] would still carry an array type descriptor), so the reader got no type at all.",
+      "re": [
+       "0004\\s*0000",
+       "(TD|type\\s+descriptor|type\\s+code)\\W+(\\w+\\W+){0,4}(0x)?0000",
+       "empty\\s+(String\\s*\\[\\]|array)\\s+would\\s+(still\\s+)?(carry|have|show)"
+      ]
+     },
+     {
+      "id": "B2",
+      "text": "Cites earlier void reads of non-String constants on file (VISA constants diag_c105_const.json, ring #13245 in diag_c118_p0.json).",
+      "re": [
+       "diag_c105_const",
+       "13245"
+      ]
+     }
+    ]
+   },
+   "leak": [
+    "OpConstValueArr",
+    "c118p1-names",
+    "A1b could never pass",
+    "diag_c119_",
+    "read_const_value"
+   ],
+   "absent": [
+    "archive/peer/2026-09-28-c118p1-names.md",
+    "tools/bench/cards/result_118-2.json",
+    "tools/bench/cards/result_119-1.json"
+   ]
+  },
+  {
+   "id": "T3-handles-gate",
+   "category": "troubleshooting",
+   "base": "44baab6",
+   "copy": [
+    {
+     "from": "f7e0b29",
+     "path": "tools/bench/cards/task_119-4.json"
+    },
+    {
+     "from": "f7e0b29",
+     "path": "tools/bench/cards/result_119-4.json"
+    },
+    {
+     "from": "f7e0b29",
+     "path": "tools/bench/stage_d1_qrt_pool.log"
+    }
+   ],
+   "fields": {
+    "failure": "Card 119-4 (pool stage, ONE real LabVIEW launch, saved claudeDev\\D1_qrt_pool_20260928_141055.vi) ended FAIL 5/1. Every gate passed (cdiff == R2's 16 rows, 7 new wires 0 lost, Error List 53 == R2 + pinned 0, R2 md5 unchanged) EXCEPT L4 'handles +-100': LabVIEW handle count steady state 45809 (k1) -> 46131 (k13) = +322, post-open -> before-save +648; VI Server refs opened/closed 9/9. Question for the judgement session: is the saved VI defective (a reference leak), or is something else wrong?",
+    "files": "tools/bench/cards/task_119-4.json, tools/bench/cards/result_119-4.json, tools/bench/stage_d1_qrt_pool.log, CLAUDE.md"
+   },
+   "known_answer": "The GATE was wrong, not the build: +-100 is the per-op hygiene test (20 calls of one op leave handles flat, CLAUDE.md reference hygiene 2), not a bound for a whole build step. Every earlier recorded build step's open->save delta is +176...+684 (none within +-100); the pool is +648 with refs 9/9 balanced, inside that band -> accept the file (card 119-5, PD236(b)).",
+   "rubric": {
+    "must_hit": [
+     {
+      "id": "M1",
+      "text": "The +-100 handle gate is misapplied: it is the per-op 20-call hygiene criterion, not a valid bound for a whole build step; the delta is not evidence of a leak (refs balanced).",
+      "re": [
+       "(gate|threshold|criterion|bound|limit)\\W+(\\w+\\W+){0,10}(wrong|misappl|inappropriate|not\\s+(appropriate|applicable|meant|designed)|per-?op|20[- ]call|too\\s+(tight|strict))",
+       "not\\s+a\\s+(reference\\s+)?leak",
+       "no\\s+(reference\\s+)?leak"
+      ]
+     },
+     {
+      "id": "M2",
+      "text": "Compares with the handle deltas of earlier build steps / normal baseline (they also exceed +-100) to decide.",
+      "re": [
+       "(earlier|previous|other|prior|past)\\s+(\\w+\\s+){0,2}(stage|step|build|run|launch)s?",
+       "baseline",
+       "stage_d1_l2"
+      ]
+     }
+    ],
+    "forbidden": [
+     {
+      "id": "F1",
+      "text": "Root cause = a reference leak in the pool build / the VI is defective.",
+      "re": [
+       "ROOT CAUSE:[^\\n]*\\bleak(s|ed|ing)?\\b(?![^\\n]*\\bnot\\b)"
+      ]
+     }
+    ],
+    "bonus": [
+     {
+      "id": "B1",
+      "text": "Quotes measured deltas of earlier steps (numbers in the +176...+684 range) or runs the 20-call test for the new ops.",
+      "re": [
+       "\\+\\s?(?!322|648)(1[7-9]\\d|[2-6]\\d\\d)\\b",
+       "20\\s+calls"
+      ]
+     }
+    ]
+   },
+   "leak": [
+    "\\+176…\\+684",
+    "\\+176\\.\\.\\.\\+684",
+    "result_119-5",
+    "PD236",
+    "was the WRONG gate"
+   ],
+   "absent": [
+    "tools/bench/cards/result_119-5.json"
+   ]
+  },
+  {
+   "id": "R1-guisave-foreground",
+   "category": "review",
+   "base": "88e9cba",
+   "copy": [
+    {
+     "from": "7a8947a",
+     "path": "tools/bench/build_d1_m3a1.log",
+     "lines": [
+      1,
+      2716
+     ]
+    }
+   ],
+   "fields": {
+    "claim": "ATTACK this claim about the run-4 gui_save failure in tools/bench/build_d1_m3a1.log (stamp 20260922_002234, `FAIL H no mutator call was REFUSED BY THE MACHINE`, refusal = g.save(WORK, allow_broken=True) -> \"gui_save(WORK_C68M3A1_20260922_002234.vi): file mtime did not move after Ctrl+S on every candidate window\").\n\nCLAIM (the diagnosis that is about to drive the next build): the Ctrl+E and Ctrl+S keystrokes never reached the VI's windows because they were dispatched while a DIFFERENT window held the Windows foreground - the LabVIEW 2026 \"Getting Started\" home window (title exactly \"LabVIEW\"), left up by the fresh LabVIEW restart that this run performs. Chain: (1) the run restarts LabVIEW, the home window opens and holds foreground - the run's own before-save screenshot shows it in FRONT of the WORK VI's Front Panel; (2) the GUI helper's 'focus' action calls Focus and prints \"focused: <title>\" WITHOUT verifying the window became foreground; (3) its 'keys' action is SendKeys::SendWait, which types into whatever IS foreground; (4) the VI had ONLY a Front Panel window, and Ctrl+S on a Front Panel saves nothing, so the BD-opening Ctrl+E that went to the home window was the load-bearing loss; (5) the after screenshot shows the home window GONE and no modal dialog anywhere.\n\nPROPOSED FIX (attack this too): tools/gscript.py gui_save should replace the blind title-bar `click` with `clickprobe` and send Ctrl+E/Ctrl+S ONLY when the measured foreground title contains the candidate window's title (one retry), and raise with the observed per-candidate record.\n\nALREADY RULED OUT: (1) the double-quote -Title form - tools/bench/diag_c68_quote2.log shows both quote forms focus a real spaced title; (2) a modal dialog - the run's restart printed \"VERDICT: clear\"; (3) an unwritable target - WORK is a fresh copy under claudeDev."
+   },
+   "known_answer": "The claim is wrong. gscript._lv_gui (tools/gscript.py:272-277) joins its args UNQUOTED into a PowerShell -Command string; the state-changing actions (click/keys) carry a spaced `-Evidence \"...\"` argument, which breaks the parse, so the GUI script never runs and NO keystroke or click is ever dispatched (tools/gui_actions.log has no row since 2026-09-18 despite the save attempts; focus/rect/shot carry no Evidence and quote their -Title, so they worked). The foreground fix would not change anything. Review archive/peer/2026-09-22-c72-guisave-foreground-r2.md; fixed in commit 7a8947a.",
+   "rubric": {
+    "must_hit": [
+     {
+      "id": "M1",
+      "text": "Names the real defect: _lv_gui does not quote arguments with spaces (the -Evidence text), so the PowerShell command is mis-parsed.",
+      "re": [
+       "_lv_gui",
+       "unquoted",
+       "not\\s+(\\w+\\s+)?quoted",
+       "quot(e|es|ing)\\s+(of\\s+)?(the\\s+)?(-?Evidence|arguments?|args)",
+       "-Evidence"
+      ]
+     },
+     {
+      "id": "M2",
+      "text": "Shows / predicts that the keystrokes and clicks were never dispatched at all (e.g. no row in tools/gui_actions.log), so the foreground theory is not the cause.",
+      "re": [
+       "gui_actions\\.log",
+       "never\\s+(\\w+\\s+)?(invoked|dispatched|executed|called)",
+       "(script|powershell|ps1)\\W+(\\w+\\W+){0,4}never\\s+(runs?|ran|starts?|started)",
+       "no\\s+(log\\s+)?(row|entry)"
+      ]
+     }
+    ],
+    "forbidden": [
+     {
+      "id": "F1",
+      "text": "Accepts the foreground/home-window claim as the root cause (DEFECT: none).",
+      "re": [
+       "DEFECT:\\s*none"
+      ]
+     }
+    ],
+    "bonus": [
+     {
+      "id": "B1",
+      "text": "Cheapest test: run the exact _lv_gui command string (or check gui_actions.log for a new row) and see whether the GUI script executes.",
+      "re": [
+       "gui_actions",
+       "exact\\s+(\\w+\\s+){0,3}(string|command)"
+      ]
+     }
+    ]
+   },
+   "leak": [
+    "c72-guisave-foreground-r2",
+    "single-quotes every arg",
+    "_lv_gui[^\\n]{0,80}(unquoted|not quoted|never quot)"
+   ],
+   "absent": [
+    "archive/peer/2026-09-22-c72-guisave-foreground-r2.md",
+    "archive/peer/2026-09-22-c72-guisave-foreground.md"
+   ]
+  },
+  {
+   "id": "R2-fsit-writer",
+   "category": "review",
+   "base": "be2620a",
+   "copy": [],
+   "fields": {
+    "claim": "ATTACK this claim, which STATUS.md gives as the standing reason row D (stage M3a-3b) has no saved file:\n\nCLAIM: row D cannot be delivered because NO writer on disk can address a FlatSequenceInnerTunnel (FSIT) terminal sink - the W1 gate of tools/bench/c78_rowd_writer.log measures exactly that. Therefore the next step is to BUILD a new op that can wire onto an FSIT terminal sink before any further row-D run."
+   },
+   "known_answer": "False since cycle 82: OpFsInnerTunnelConnect_v1's `Wire Source` half IS the FSIT LeftTerm property node (tools/bench/build_d1_m3a3b_d3.log:28, term_uid 7488 / uid_back 7468 on 20/20 calls), and tools/bench/diag_c86_norbw.log:87/:97 records it WRITING wire 25324 onto #7488. No new writer is needed; row D lacks a file only because no run has saved one. Prior-art correction archive/peer/2026-09-22-priorart-c87-rowd-stagekit.md (commit 9be2782).",
+   "rubric": {
+    "must_hit": [
+     {
+      "id": "M1",
+      "text": "Cites the existing evidence that an FSIT writer exists and has written onto the FSIT terminal (OpFsInnerTunnelConnect_v1 / build_d1_m3a3b_d3.log / diag_c86_norbw.log, #7488, wire 25324).",
+      "re": [
+       "OpFsInnerTunnelConnect",
+       "diag_c86_norbw",
+       "build_d1_m3a3b_d3",
+       "7488",
+       "25324"
+      ]
+     },
+     {
+      "id": "M2",
+      "text": "Concludes the claim is false/outdated and that building a new writer is not the next step.",
+      "re": [
+       "(claim|statement|reason)\\s+is\\s+(false|outdated|stale|refuted|incorrect)",
+       "(already|does)\\s+(exist|exists|built|written|wrote|write)",
+       "no\\s+new\\s+(writer|op)\\s+(is\\s+)?needed"
+      ]
+     }
+    ],
+    "forbidden": [
+     {
+      "id": "F1",
+      "text": "Agrees that a new FSIT writer must be built first (DEFECT: none).",
+      "re": [
+       "DEFECT:\\s*none"
+      ]
+     }
+    ],
+    "bonus": [
+     {
+      "id": "B1",
+      "text": "Explains what c78_rowd_writer.log's W1 actually measured (narrower than 'no writer on disk').",
+      "re": [
+       "W1\\W+(\\w+\\W+){0,10}(only|narrow|did\\s+not|does\\s+not|specific)"
+      ]
+     }
+    ]
+   },
+   "leak": [
+    "HAS BEEN FALSE SINCE",
+    "priorart-c87-rowd",
+    "THE REAL REASON ROW D HAS NO FILE"
+   ],
+   "absent": [
+    "archive/peer/2026-09-22-priorart-c87-rowd-stagekit.md"
+   ]
+  },
+  {
+   "id": "R3-chat-synthesis",
+   "category": "review",
+   "base": "8305043",
+   "copy": [],
+   "note": "chat-B2 brief item 3: replaces R3-pool-skipnewest-claim (duplicate of S1). The chat's own erroneous synthesis of 2026-09-29, reviewed at base = HEAD 8305043 (tools/bench/matbench/report_v1.md exists there). Defects verified: report_v1.md:8,27 (T2 per-condition means 0.5/1/1/0.5), :34 names only T5/T6 as unchanged; material.md:8-10 + cycle_runner.log:346-372 (JUDGE-AB: 89 medium, 90 high, 91 medium - the Fable-low material cycles); report_v1.md:17 (high 10 cells $15.24) vs :77 (fable/low 5 cells $17.59).",
+   "fields": {
+    "claim": "A summary to review, written before it is sent to the user. Sources it was drawn from: tools/bench/matbench/report_v1.md and the runner's judgement A/B (JUDGE-AB, cycles 89-97).\n\nSUMMARY:\n- On matbench v1, effort changed the score only on T1 and T3; only T1 exceeded repeat noise.\n- Judgement A/B: high 2.17 vs medium 1.57 PASS/cycle at $37.18 vs $38.24 per cycle, so high is also cheaper.\n- Fable 5.1 low scored 5/5 at $17.59 against Opus high 8/10 at $15.24, so Fable costs about the same."
+   },
+   "known_answer": "The summary has three defects. (1) T2's score also changed with effort (per-condition means low 0.5, medium 1, high 1, max 0.5; report_v1.md:8,27); report_v1.md:34 names only T5 and T6 as unchanged. (The second half - only T1's between-range exceeds repeat noise - is true, :34.) (2) The per-cycle cost comparison is confounded: a cycle's cost includes its material sessions, and cycles 89-91 ran Fable-low material (.claude/agents/material.md:8-10, $50-57 per cycle), two of them (89, 91) in the medium arm and one (90) in high (cycle_runner.log JUDGE-AB lines), so 'high is also cheaper' does not follow. (3) $17.59 is the total over 5 Fable cells and $15.24 over 10 Opus-high cells (report_v1.md:17,77); per cell Fable low ~$3.52 vs Opus high ~$1.52, about 2.3x - not 'about the same'.",
+   "rubric": {
+    "must_hit": [
+     {
+      "id": "M1",
+      "text": "Defect 1: T2's score also changed with effort (per-condition means 0.5 / 1 / 1 / 0.5; report_v1.md:8/:27), so 'only T1 and T3' is wrong.",
+      "re": [
+       "\\bT2\\b[^\\n]{0,160}(also\\s+chang|chang\\w*\\s+(with|by|across)\\s+effort|vari|differ|0\\.5\\s*[,/]\\s*1|low\\s+0\\.5|max\\s+0\\.5|not\\s+(constant|flat|unchanged))",
+       "report_v1\\.md:(8|27)\\b"
+      ]
+     },
+     {
+      "id": "M2",
+      "text": "Defect 2: the per-cycle cost is confounded - it includes material spend, and cycles 89-91 ran Fable-low material (unevenly split between arms), so 'high is cheaper' does not follow.",
+      "re": [
+       "confound",
+       "Fable[- ]low\\s+material",
+       "material\\s+(\\w+\\s+){0,3}(spend|cost|sessions?)\\b[^\\n]{0,120}(Fable|89|90|91|confound|include)",
+       "cycles?\\s+89\\s*[-–,]\\s*9[01]",
+       "material\\.md:(8|9|10)\\b"
+      ]
+     },
+     {
+      "id": "M3",
+      "text": "Defect 3: totals over different cell counts (5 Fable cells vs 10 Opus-high cells); per cell Fable low ~$3.52 vs Opus high ~$1.52 (~2.3x), not 'about the same'.",
+      "re": [
+       "3\\.5[12]",
+       "1\\.52",
+       "2\\.3\\s*(x|×|times)",
+       "per[- ]cell",
+       "\\b5\\s+cells?\\b[^\\n]{0,60}\\b10\\s+cells?",
+       "(twice|double|more\\s+than\\s+2\\s*x)"
+      ]
+     }
+    ],
+    "forbidden": [
+     {
+      "id": "F1",
+      "text": "Accepts the summary (DEFECT: none) or rates the defect minor.",
+      "re": [
+       "DEFECT:\\s*(none|minor)"
+      ]
+     }
+    ],
+    "bonus": [
+     {
+      "id": "B1",
+      "text": "Shows which A/B arm the Fable-material cycles fell in (89 and 91 medium, 90 high) from the JUDGE-AB lines.",
+      "re": [
+       "89\\D{1,40}91\\D{1,60}medium",
+       "medium\\W+(\\w+\\W+){0,8}(89|91)\\b",
+       "cycle_runner\\.log:3[4-7]\\d"
+      ]
+     }
+    ]
+   },
+   "leak": [
+    "effort changed the score only on T1 and T3",
+    "high is also cheaper",
+    "Fable costs about the same",
+    "2\\.17 vs",
+    "\\$37\\.18",
+    "\\$38\\.24",
+    "2\\.3\\s*x",
+    "per-cell cost"
+   ],
+   "absent": [
+    "tools/bench/cards/brief_chat-B2.md",
+    "tools/bench/decbench"
+   ]
+  },
+  {
+   "id": "R4-clean-r2pin",
+   "category": "review",
+   "base": "c986227",
+   "copy": [],
+   "clean": true,
+   "fields": {
+    "claim": "ATTACK this decision before the L2-R2 launch (docs/d1-loop12-17-split-plan.md, Pre-decided 231(d)):\n\nCLAIM: L2-R2's Error List loose-ends pin is 22, re-set on measured per-net evidence rather than carried from R1: 24 loose-end items in R1 - 11 deleted source-only stub wires + 9 outer nets that become newly loose (24277 24333 25237 25280 25306 25336 25911 26021 26064) = 22. Nets w25238 and w25225 each lose a pass-through terminal joint and re-join, so they do not go loose; w25438/w25461 were already loose in R1. This equals the scratch build's Error List (22). The launch gates are therefore: Error List loose-ends == 22, and the joints read on the 20 nets (13 outer + 7 PD230(d)) equal the 116-4 J4 table (the 9 nets loose, w25238/w25225 not loose, the 7 PD230 nets unchanged). Rule 1a: every deleted tunnel was an input tunnel with no consumer; each outer net keeps its source and its 1-3 sinks, and a loose joint feeds no node."
+   },
+   "known_answer": "CLEAN: executed as card 117-5, PASS 17/0 - the launch's Error List had loose ends 22 == pin and the expected file reverdicted OK; R2 accepted (STATUS 117-5). No blocker-level defect. (Known non-blocking caveat: R1's 24th loose item was not located among the 536 wires read by the v0 reader.)",
+   "rubric": {
+    "must_hit": [
+     {
+      "id": "M1",
+      "text": "Does NOT claim a blocker-level defect (final DEFECT line is none, minor or major).",
+      "re": [
+       "DEFECT:\\s*(none|minor|major)"
+      ]
+     }
+    ],
+    "forbidden": [
+     {
+      "id": "F1",
+      "text": "Claims a blocker-level defect.",
+      "re": [
+       "DEFECT:\\s*blocker"
+      ]
+     }
+    ],
+    "bonus": [
+     {
+      "id": "B1",
+      "text": "Notes the one real open caveat without over-weighting it: R1's 24th loose item was not located (only 536 of 1,945 wires were read / reader leak).",
+      "re": [
+       "536",
+       "24th",
+       "residual"
+      ]
+     }
+    ]
+   },
+   "leak": [
+    "117-5",
+    "R2 accepted",
+    "loose ends 22 == pin"
+   ],
+   "absent": [
+    "tools/bench/cards/result_117-5.json"
+   ]
+  }
+ ]
+}

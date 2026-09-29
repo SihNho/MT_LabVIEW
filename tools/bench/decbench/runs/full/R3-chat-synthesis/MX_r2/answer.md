@@ -1,0 +1,26 @@
+**No, this should not be sent as written. All three bullets misstate their sources, and the third one reverses its conclusion.**
+
+**1. Strongest reason it's wrong: the Fable cost comparison uses totals over different numbers of runs.**
+- $17.59 is the total for 5 Fable runs (`tools/bench/matbench/report_v1.md:77`). $15.24 is the total for 10 Opus-high runs (`report_v1.md:17`).
+- Per run that is $3.52 against $1.52, about 2.3×. Per point scored it is $3.52 against $1.91.
+- On every task, the one Fable run ($2.57–$5.03, `report_v1.md:69-73`) cost more than both Opus-high repeats ($0.72–$2.31, `report_v1.md:7-11`).
+- "About the same" is false.
+
+**2. The A/B numbers come from a different set of cycles than the one named.**
+- The runner gave odd cycles medium effort and even cycles high (`tools/bench/cycle_runner.log:346-513`).
+- For cycles 89–97, the per-cycle cost lines give high $133.68/4 = **$33.42** and medium $197.04/5 = **$39.41** (`cycle_runner.log:356,369,382,395,411,425,438,452,467`).
+- The PASS result files for 89–97 give high 10/4 = **2.5** per cycle (`result_90-4`, `92-2/3/4`, `94-1/2/3`, `96-1/2/3`, all line 1) and medium 10/5 = **2.0** (`result_89-3.json:4`, `89-5.json:4`, `89-6`, `91-1/3`, `93-2`, `95-1/4`, `97-1/3`). That matches `CLAUDE.md:384`.
+- The summary's 2.17/1.57 and $37.18/$38.24 only come out when cycles 98–101 are added: high 13/6 and $223.08/6, medium 11/7 and $267.69/7 (`cycle_runner.log:481,496,510,525`; `result_98-1`, `100-4/5`, `101-2`).
+
+**3. T2 also changed.** T2's average score was 0.5 / 1 / 1 / 0.5 across low / medium / high / max (`report_v1.md:27`). So effort changed the score on T1, T2 and T3. Only the "T1 alone exceeded repeat noise" half is right (`report_v1.md:26-28,34`).
+
+**Alternative explanation.** "High is also cheaper" fits the mix of work just as well as it fits effort:
+- Cycle cost ranges from $14.81 to $58.53 within both groups (`cycle_runner.log:452,510`). The gap is $1.06 (2.8%) with only 6 and 7 cycles.
+- PASS-per-cycle depends partly on how finely each cycle split its work into tasks. Cycle 89 alone had six task results (`result_89-1…89-6`).
+- On the benchmark, Fable's 5/5 is one repeat from an earlier batch, re-scored with the newer scorer (`report_v1.md:65`). With 2 repeats per task, T2 and T3 differences are not separable from noise (`report_v1.md:43`).
+
+**What would falsify the summary.** It is already falsified by its own sources: the per-run division above, and the 89–97 averages (2.5 vs 2.0 PASS, $33.42 vs $39.41) not matching its figures. My reading would be overturned if the summary's 2.17/1.57 and $37.18/$38.24 came out of cycles 89–97 alone, or if a same-batch rerun had Fable low averaging about $1.5 per run.
+
+**Cheapest test.** Group the 9 cycle cost lines and PASS result files for 89–97 by odd and even cycle and divide. Repeat for 89–101. Then divide each benchmark total by its run count (`report_v1.md:15-18,77`). This takes a few divisions and no new runs.
+
+DEFECT: major - the Fable bullet compares a 5-run total with a 10-run total, hiding a ~2.3× per-run cost gap, and the A/B figures come from cycles 89–101 while being labelled 89–97.

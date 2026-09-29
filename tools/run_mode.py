@@ -18,7 +18,10 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BENCH = os.path.join(ROOT, "tools", "bench")
 MODE_FILE = os.path.join(BENCH, "run_mode.json")
 CONFIG_FILE = os.path.join(BENCH, "run_mode_config.json")
-DEFAULT_CONFIG = {"threshold_pct": 50, "stale_min": 90, "basis": "Weekly · all models"}
+DEFAULT_CONFIG = {"threshold_pct": 50, "stale_min": 90, "basis": "Weekly · all models", "disabled": False}
+# DISABLED by the user 2026-09-29 ("5시간 한도 및 주간 사용량 제한은 폐기하도록 하자 … 사용량은 내가 실시간으로 체크하고
+# 매뉴얼하게 통제"): with config "disabled": true, effective() is always PERFORMANCE and no mode file is needed. The
+# threshold logic is kept (and self-tested) so the user can switch it back by editing the config.
 
 
 def config():
@@ -31,6 +34,8 @@ def config():
 
 def effective(now=None):
     c = config()
+    if c.get("disabled"):
+        return "performance", "run mode disabled by the user (2026-09-29): usage is controlled manually"
     try:
         m = json.load(open(MODE_FILE, encoding="utf-8"))
     except Exception:
@@ -79,6 +84,8 @@ if __name__ == "__main__":
         write(10); cases.append(("stale -> economy", effective(now=time.time() + 91 * 60)[0] == "economy"))
         json.dump({"threshold_pct": 5}, open(CONFIG_FILE, "w")); write(10)
         cases.append(("config threshold 5, 10% -> economy", effective()[0] == "economy"))
+        json.dump({"threshold_pct": 5, "disabled": True}, open(CONFIG_FILE, "w")); os.remove(MODE_FILE)
+        cases.append(("disabled, no mode file -> performance", effective()[0] == "performance"))
         for name, good in cases:
             ok += good
             print("%s %s" % ("PASS" if good else "FAIL", name))

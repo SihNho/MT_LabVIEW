@@ -296,7 +296,10 @@ background notification is a full turn over the whole conversation. Standing rul
    Runner stop conditions: a `STOP` marker in STATUS.md (written by the user), the same failure two cycles running,
    the usage-limit rule (renewal + 2 min). `tools/hooks/guard_session.py` (PreToolUse Agent) refuses material
    dispatches after the retrospective has run in that session and above the per-session cap (`MAX_DISPATCHES`, 6 in
-   code), plus a separate budget of 3 offline prep cards run beside a LabVIEW card (pipeline, 2026-09-28); at most 2
+   code) — **in RUNNER cycle sessions only (`CYCLE_SESSION=1`; user 2026-09-29 "수정안대로 진행하도록", after the cap
+   blocked the interactive chat's offline benches): the chat has no dispatch cap and is bounded by its context size
+   instead (a counted dispatch is refused above 500k tokens → write `docs/chat-handoff.md`, open a new chat); the
+   Workflow tool counts as one dispatch in both** — plus a separate budget of 3 offline prep cards run beside a LabVIEW card (pipeline, 2026-09-28); at most 2
    cards live and at most one of them touching LabVIEW. **A ROUTINE runner end (budget / cycle count) starts the next
    runner automatically** — `tools/runner_supervisor.py` (user 2026-09-28); real stops still stop. **The interactive
    chat is for talking with the user only** — it answers from STATUS and the latest retrospective and redirects the
@@ -419,7 +422,11 @@ cycle, OR in any cycle that saved no new build step, OR when a violation slug is
 plus one offline prep card for the next step may run at once (prep plans on a provisional base, `stage_prerun.py
 --rebase` before launch); (2) no prior-art review for a build step on a PROVEN pattern; (3) gate/checker false
 positives go to `tools/bench/gate_fp_queue.jsonl` (`tools/gate_fp.py`) and are drained in batches, never by an env
-bypass; (4) up to ~25 rows per step on a proven pattern. **RUN MODE (user 2026-09-28 15:4x):** weekly all-models usage
+bypass; (4) up to ~25 rows per step on a proven pattern. **RUN MODE DISABLED (user 2026-09-29: "5시간 한도 및 주간
+사용량 제한은 폐기 … 50% 숫자를 한계로 뒀는데 이것도 없애는게 좋을 것 같음 … 사용량은 내가 실시간으로 체크하고 매뉴얼하게
+통제"):** `run_mode_config.json` `disabled: true` ⇒ always PERFORMANCE; the chat no longer writes the mode file; no
+self-imposed 5-hour/weekly usage gates anywhere (ultracode included). The usage-limit protocol (a PLATFORM limit hit ⇒
+resume at renewal + 2 min, rerun interrupted benches) still applies. (history) **RUN MODE (user 2026-09-28 15:4x):** weekly all-models usage
 above a FIXED threshold (50 %, `tools/bench/run_mode_config.json`, user-changeable) = ECONOMY = item (1) OFF, one card
 at a time; at or below = PERFORMANCE = item (1) ON. Items 2–4 stay on in both. The main chat writes
 `tools/bench/run_mode.json` from the app's usage readout at every 30-min report (`py tools/run_mode.py write --weekly
@@ -514,6 +521,12 @@ at** (the "preserved" crash copies were byte-identical to the untouched original
 4. A new large stage (e.g. EMCCD sync) starts with its step list and saved-file list written into the plan; no build
    before that list exists.
 6. **A BROKEN INTERMEDIATE MAY BE SAVED BY GUI Ctrl+S (user, 2026-09-22: "저장 허용함.").** A `claudeDev` stage artefact that is broken BY DESIGN (its missing rows belong to the next stage, `ExecState` 0) is saved through `gui_save` (block-diagram window fronted and click-probed, Ctrl+S, mtime verified) with `-Exception Approved -Evidence "user 2026-09-22 broken-intermediate save"`, because COM `SaveInstrument` hangs on a broken VI — the scripted route is verified unreachable for this class. Such a file is NEVER run and never cold-loaded headless. Not for originals (rule 1) and not for the final deliverable, which must reach `ExecState` 1 and save by script.
+7. **AT MOST 6 CONSECUTIVE BROKEN INTERMEDIATES (user, 2026-09-29: "상한을 6으로 두고 (가) 진행하자", first said 5).**
+   After six broken-by-design (`ExecState` 0) stage files in a row, the next step must bring the chain to `ExecState` 1
+   and RUN it once (replay or real run) before another broken step is built. Raised by the 2026-09-29 independent
+   review, which found the K → L2 → pool → ring chain unrun end to end. **Counting starts at ring P2b (option (a)):**
+   the eight earlier broken files are not counted; P2b, P3, P4, P5 are 4 of 6 and P6 is the first run, leaving room for
+   two splits. Mechanical enforcement (launch gate) is owed.
 5. **Reference hygiene is a precondition, not an afterthought**: an op that traverses without `Close Reference` is
    repaired before it is used in a staged build (20 consecutive calls in one script, handle count flat ±100).
 

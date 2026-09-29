@@ -30,7 +30,8 @@ Duties in §2 apply once the runner runs again (the mode file only matters while
   returns the newest when behind, never duplicates (result_121-1.json).
 
 ## 2. Duties the chat must take over IMMEDIATELY (nothing else does them)
-1. **Every ~30 min: read usage and write the run mode.** Call the app's usage tool (`get_usage`, "Weekly · all
+1. ~~**Every ~30 min: read usage and write the run mode.**~~ **RETIRED 2026-09-29** — the user disabled the run mode
+   and all self-imposed usage limits; they watch usage themselves (`run_mode_config.json` disabled: true). Old text: Call the app's usage tool (`get_usage`, "Weekly · all
    models" percent), then `py tools/run_mode.py write --weekly <N>`. If the mode file is >90 min old the runner and
    the dispatch guard fall to ECONOMY (one card at a time) — fail-safe, but it slows the project. Threshold 50 %,
    `tools/bench/run_mode_config.json`. Crossing 50 %: report to the user, then let economy apply.
@@ -67,6 +68,105 @@ Duties in §2 apply once the runner runs again (the mode file only matters while
    (5) lock agreed items; (6) a frame-loop time budget each track declares, summed against the frame period;
    + one global adversary reviewer. Max 2 rounds, then the user decides. Build the frame/format now, fill after P6?
 3. Speed idea E (batch the per-step graph checks inside a build; each step 24–43 s vs 0.3–2 s per op) — measure first.
+
+**2026-09-29 answers (chat, rig state 실험중 — no LabVIEW):** item 3 APPROVED ("측정 후 효과 있으면 적용") —
+card `tools/bench/cards/task_chat-P4.json` (measurement only, offline) dispatched; apply decided by the chat after.
+Item 2: user wants the procedure written NOW (frame only, content after P6) but said "확정된 것이 없으니 기다리도록" —
+NOT started; wait for the user's explicit start. Item 1: user asked whether Fable instead of Opus max would differ;
+answered with the measured record (cycle 87, Fable-low material trial, matbench v1: no evidence Fable beats Opus max;
+the reconciliation task itself is unmeasured) — still undecided.
+Item 3 measured (`tools/bench/cards/result_chat-P4.json`, PASS 3/0): ~20 s whole-VI re-read per step dominates
+(op ≈ 3 %). Options reported, NOT applied (user said wait): (a) reuse the previous read for the pre-delete_object
+guard (stagexec.py:2707-2713) — no downside; (b) checkpoints only after binding steps + last — failure localises to a
+group of rows. Chat recommends (a) now, (b) on proven patterns. All Fable evidence cited was claude-fable-5-1 (logs);
+configs use the bare alias `fable` — pinning offered, not done.
+Effort census (workflow wf_c227c772-2d0, 8 agents, verified): only MATERIAL work has a real effort comparison
+(matbench v1: Opus 5.5 low 5/medium 7/high 8/max 9 of 10; Fable 5.1 low 5/5 n=1 at ~2.3x high's per-cell cost).
+Judgement: medium vs high only (2.17 vs 1.57 PASS/cycle, n=6/7, cost confounded by the Fable material trial);
+high vs max never measured. Peer-review accuracy, troubleshooting, inter-session communication: never measured.
+Opus 5.5 xhigh and ultracode (= parallel multi-agent workflow, not an effort) never measured. User's 5 categories
+for future evaluation: (1) steering (2) troubleshooting/guidance (3) peer-review accuracy+efficiency (4) code
+writing/execution (5) inter-session communication/direction map; GUI excluded. Proposed (not started): a bench for
+1/2/3 on known-answer past cases, Opus high/xhigh/max vs Fable low vs parallel-agent review; first trial of the
+parallel mode on (3) peer review.
+**User 2026-09-29: "벤치 설계 및 실행해보도록"** → card `tools/bench/cards/task_chat-B1.json` (brief_chat-B1.md):
+decbench, 10 known-answer cases (3 steering, 3 troubleshooting, 3 defect + 1 clean review), arms Opus 5.5
+high/xhigh/max, Fable 5.1 low, PAR (3 Opus high + 1 synthesiser), 2 repeats, mechanical + blind scorer. B1 = build +
+dry run + smoke only; the chat reviews the cases (leakage, answer truly known) before dispatching the full run (B2).
+Weekly usage at dispatch: 13 % (Fable 3 %).
+**decbench v1 DONE** (card chat-B2 PASS, `tools/bench/decbench/report_v1.md`, 100/100 valid, $179.78 + smoke $10.42,
+57 min at --par 10). Blind mean: Opus max .90, high .74, xhigh .73, Fable-5.1 low .72, PAR .67. Review defect hit
+(R1–R3): max .97, xhigh .90, PAR .89, Fable low .57, high .51; clean case false alarms 0/10 all arms. Steering tied
+(H/MX/FL 1.00, XH .67, PAR .50). Troubleshooting max .71 > high .62 (T1/T3 rubric disagreement, weak). Only S1/T3/R1
+discriminate; 106 mech/blind disagreements. Chat's proposals to the user (NOT applied, awaiting decision): hypothesis
+review Opus high → max (or xhigh); judgement/material unchanged; drop or replace the Fable-low escalation rung;
+optional v2 with more review/troubleshooting cases and fixed T1/T3 rubrics.
+
+**ULTRACODE BENCH (user: "이걸 벤치해보자. 사실 이게 핵심이거든") — B3 DONE, B4 READY, NOT DISPATCHED.**
+- B3 PASS (`tools/bench/cards/result_chat-B3.json`, $14.9): Workflow WORKS inside a `claude -p` replay cell and its
+  sub-agents inherit the guard (probe 8/8). Ultracode is switched on by `--effort ultracode` (= xhigh + Workflow); the
+  prompt keyword alone did not. Tasks at base 1d4caf8: L1 doc contradictions (key 9), L2 dangling citations (key 23),
+  L3 violation census (key 10, ceiling in smoke → hardened in B4 to (slug, cycle) pairs). Smoke L3: SH $1.28/2.2 min,
+  SMX $4.16/8.3 min, UC $5.58/6.7 min/6 agents, all 10/10.
+- B4 = `tools/bench/cards/task_chat-B4.json` (validated OK; brief_chat-B4.md): harden L3, add S-XH arm (isolates
+  orchestration from effort), full run 3 tasks × 4 arms × 2 reps, est. $250–350, ~1 h. **The previous chat hit the
+  6-dispatch session cap (guard_session) — the NEW chat dispatches it: Agent material, "Execute card
+  tools/bench/cards/task_chat-B4.json (brief …B4.md). Return a result/1 JSON object."** Then report per task × arm
+  (recall/precision/cost/time/agents), UC vs S-XH and UC vs S-MX, UC-only items.
+- Rig state 실험중 (user 2026-09-29): no LabVIEW; runner stopped; benches are offline and allowed.
+
+**guard_session scope change DONE (user 2026-09-29 "수정안대로 진행하도록"), uncommitted:** the 6-dispatch cap and the
+retrospective close bind runner cycle agents only (CYCLE_SESSION=1); the chat is bounded by context (> 500k tokens →
+dispatch refused, hand off); Workflow counts as a dispatch (settings.json matcher + guard). Self-test 27/27
+(`tools/bench/selftest_guard_session_20260929.log`); CLAUDE.md §3 item 2 amended.
+**DECIDED, TO DO after B4 and the independent-judgement workflow finish (user: "지금 도는것 마치면 6회 말고 문맥크기로
+변경하자"):** replace MAX_DISPATCHES in runner judgement agents with a CONTEXT-SIZE limit (same reader
+`last_context_tokens`); keep the retrospective close; keep the count as a record only. Set the number from measured
+judgement-agent context sizes in past cycles (transcripts under ~/.claude/projects/…, runner cycle sessions), report
+it with the distribution. User also said "나머지 2개 수정안도 적용하고" = keep the retrospective close (already in
+force) and demote the dispatch count to a record — apply both in the same change. Self-test re-pin, CLAUDE.md line, then commit.
+B4 dispatched 2026-09-29 (material, card task_chat-B4.json); independent-judgement Workflow wf_e10b1529-d64 running.
+**Independent-judgement workflow DONE** (wf_e10b1529-d64, 38 agents, 5.0M sub-agent tokens, 16 min; full JSON in the
+run's journal.jsonl). Ours stronger where it could not see user decisions (ring = user design, autofocus answered,
+D-2026-09-25-04 is about S3 not the display VI). Real gaps it found in ours: STATUS stale (S3 loop 1.5 DID run on the
+rig — INDEX.md:66-68; hardware header said 조립, fixed 2026-09-29); R8 camera settings in the VI (user 2026-09-25) not in
+any plan; 12–16 lost frames on EVERY VI incl. the original, unexplained; 150 Hz never really run (rate reset to 90 on
+open); cycle-110 replay has bead 15 x/y NaN on every S1 row (weakens "bit-identical"); long chain of never-run
+ExecState-0 files; steering check cannot fail (writing "follow" passes); ring doc "no copy" vs PD238(b) "copy";
+DISP-D1 "due" vs the parallelism rule. User decisions it flags: keep building the ring vs measure first; GPU order
+(ours says GPU-first but schedules it last); cap on consecutive broken intermediates; measured-loss precondition
+before a split; hold model changes (decbench weak).
+**User decisions 2026-09-29 on the independent review:** (1) ring buffer: KEEP preparing it (plan of record stands);
+(2) cap of 5 consecutive broken intermediates (CLAUDE.md split-and-save item 7) — the current chain from D1_k onward
+(K, L2-A1, A2, A3, R1, R2, pool, ring_p2a) is already ~8 broken files: ASK the user whether it is counted from now or
+whether the next step must first make the chain compile and run; (3) user asked HOW loop splits will be tested given
+many variables (ROI, sensor crop, frame rate, exposure vs gap at the same rate) — test design proposed in chat, awaiting
+answer; (4) HOLD all model/effort changes (hypothesis-review max etc. NOT applied); and design a structure where the
+judgement agent may decide or ask about model/effort per task as progress requires (proposal pending).
+**Follow-up decisions 2026-09-29:** broken-intermediate cap = **6**, counted from ring P2b (option (a)) — CLAUDE.md
+split-and-save item 7. Judgement agent picks effort per card: APPROVED as proposed ("그렇게 진행하면 좋겠음") — scope
+material cards' effort ∈ {high, xhigh, max} with a logged reason, a per-cycle cost ceiling (proposed $50) above which
+max is not selectable, choice + outcome recorded in the card for later analysis; model swaps (Opus↔Fable) or model-table
+changes go to decisions_pending, never decided by the agent. BUILD after the 5-hour window resets (it was 80 % at
+18:3x). **Ultracode (decided 2026-09-29):** NO limits — no agent-count cap, no one-at-a-time rule, no usage gates;
+the user controls usage manually. **One ultracode run live at a time** (user: "ultracode 에이전트를 복수로 띄우지 않는
+것은 동의함"; B4's six concurrent runs were a deliberate bench exception). Not used for peer reviews (direction agreed).
+Build of the effort/ultracode choice structure dispatched as card chat-S1 (no cost ceiling — retired). Where to use it: the judgement
+agent may choose it (same logged-choice structure as effort). **Run mode + all self-imposed usage limits DISABLED**
+(run_mode_config.json disabled: true, selftest 7/7); the 50 % weekly rule is gone.
+**B4 STOPPED by the chat 2026-09-29 18:2x** after the user flagged fast usage (5-hour 80 %, weekly 13 → 34 %): 13 of
+24 runs finished (single-session arms only, ≈$88.6: L1/L2/L3 × SH, SXH, L2 SMX); all 6 ultracode runs and the rest
+were killed mid-run → invalid, never enter a table. The independent-judgement workflow (38 agents, 5.0M tokens) was
+the other large spend. Before any rerun: cap concurrency of UC runs (≤2), and estimate UC per-run cost from ONE run.
+**Ultracode judgement: NONE yet** (user agreed 2026-09-29: no measured basis — earlier "use it for surveys / not for
+decisions" were my inferences). Next bench: mixed (known-answer tasks + shadow runs in real cycles), all three kinds
+(survey, troubleshooting, decision), controls single xhigh + single max (+ optionally N independent singles merged),
+task size as a variable, ≥3 repeats, recall + precision + extra real findings, blind scorer. FIRST: pilot = ONE UC
+run on L1 (card chat-B5, dispatched) to price it; the S1 card (effort choice) is on hold until the criteria table is
+agreed — ultracode is NOT on that table until measured. B4 single-arm mechanical recall on L1: SH 7,9 / SXH 6,7 of 9;
+L2/L3 saturated (all 23/23, 110/110).
+Terminology the user asked for (2026-09-29): "agent" = a Claude instance the runner/chat spawns (judgement agent,
+material agent); "session" = a new conversation window.
 
 ## 5. Timing estimate given to the user (19:3x)
 Ring buffer remainder 9–13 h → contract 1–2 h → remaining tracks 9–14 h; total 20–29 h (~$500–730), confidence

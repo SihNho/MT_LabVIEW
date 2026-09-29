@@ -1,0 +1,18 @@
+**No, the saved VI is not defective.** Card 119-4 checked the build step against a handle limit that the project had already ruled does not apply to steps that edit a VI. The only real doubt left is about the scripting functions that create objects, not about the file.
+
+**What held up against the files**
+- **The ±100 limit doesn't apply to this kind of step.** Ruling 176(a) says ±100 is the test for one operation called 20 times in a row. "It does not apply to an editing stage … handle numbers are RECORDED, not gated … A leak is judged only by the 20-call test on the ops involved" (`docs/d1-loop12-17-split-plan.md:458-461`). The plan repeats "Handles are recorded (176(a))" (`:521`). The card still gated on "handles +-100" (`tools/bench/cards/task_119-4.json:32`). The script itself only recorded the numbers ("PH handles RECORDED", `tools/bench/stage_d1_qrt_pool.log:233`), and all its checks passed, 21 of 21 (`:260-262`).
+- **The handle count can't see VI Server references anyway.** The tools say so: "the handle count is blind to VI Server refnums" (`tools/stagexec.py:64`, `tools/stagekit.py:178`). The counter that does track them was balanced: 9 opened, 9 closed, 0 left open (`stage_d1_qrt_pool.log:245-246`).
+- **The growth is on the create steps, not the read steps.** Handles rose only when objects were created or wired: +85, +35, +79, +27, +29, +33, +58, +75 (`:50,68,78,115,152,160,189,217`). The read-backs, which open and close references each time, stayed between −9 and +2 (`:51,69,79,116,153,161,190,218`).
+- **Almost everything was released when the VI closed.** Right after the restart the count was 33962 (`:29`). After the work and at exit it was 34139 (`:247,257`), so only +177 remained.
+- **Refuted in passing:** the log line saying "this stage saves nothing … deleted at close" (`:34`) is leftover template text. The saved file and its md5 are in the RESULT line (`:262`).
+
+**What doesn't hold up**
+- Analyst 3's proposed test, comparing this run's handle-to-object ratio with the earlier L7-R step's log, costs nothing. But a similar ratio can't rule out a small leak each time a create function is called. Under ruling 176(a) it is a first look, not the deciding test.
+
+**The most plausible alternative:** a create or connect function could leave something behind on every call that the reference counter doesn't track. That would also make handles rise step by step. Only the 20-call test can separate the two, and I found no record in these files that the functions used here (the pool create functions and `read_const_value`) have passed it.
+
+**What to do next:** log L4 as a gate false positive with `tools/gate_fp.py` instead of launching again (`task_119-4.json:87`). Then run the 20-call test on a scratch copy of R2 as described below. Either outcome leaves the saved file standing. Its correctness rests on the graph comparison, the wiring check and the Error List count, and all of them passed (`result_119-4.json`).
+
+ROOT CAUSE: Card 119-4 gated a VI-editing step on the "±100 handles" limit, which ruling 176(a) reserves for the 20-call test of a single scripting function, so normal handle growth from the new objects failed the step: growth came only on create/connect, reads stayed flat, references balanced 9/9, and all but +177 came back when the VI closed, so the saved VI is not leaking.
+TEST: In one fresh LabVIEW, on a scratch byte copy of R2, create and then delete the same pool node (and call `read_const_value`) 20 times, reading the handle count after each round: flat within ±100 confirms normal growth from new objects (L4 is a false positive), while a steady climb means one of those functions leaks.

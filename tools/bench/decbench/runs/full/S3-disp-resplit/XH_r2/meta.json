@@ -1,0 +1,39 @@
+{
+ "case": "S3-disp-resplit",
+ "arm": "XH",
+ "rep": 2,
+ "model": "claude-opus-5-5",
+ "effort": "xhigh",
+ "attempt": 1,
+ "usd": 1.2223,
+ "minutes": 1.81,
+ "cell_minutes": 1.69,
+ "turns": 17,
+ "tools": 16,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-opus-5-5",
+   "effort": "xhigh",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 1.69,
+   "usd": 1.2223014,
+   "turns": 17,
+   "tools": 16,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-opus-5-5"
+   ]
+  }
+ ],
+ "answer": "**No. The goal is right but the order is wrong: NEXT schedules again the detour that cycle 101's retrospective named as its most costly fault.**\n\n**What should stay**\n- The display loop is the user's own direction (`docs/d1-loop12-17-split-plan.md:1568-1575`), and it was judged GO (`:1667-1676`).\n- The open question D-2026-09-27-01 recommends \"yes\" (`tools/bench/decisions_pending.json:164-170`). Go ahead on that assumption and flag it (rule 2c).\n- Report one mismatch: `next.json:7` says `blocked_by: null`, but that open decision says it \"blocks M8\" (`decisions_pending.json:171-173`).\n- The final act stays: one record-mode run of `stage_d1_disp.py` that produces `D1_s1_disp_<ts>.vi`.\n\n**What is wrong with NEXT**\n1. **Step 1 (measure the 214(b) half-wire rule first, `STATUS.md:58`) is not needed before the run.**\n   - 214(c) already turns sourceless half-wire differences into WARN (`plan:1794-1797`).\n   - Record mode logs each real difference and keeps going (`plan:1787`), so the run itself measures what happens to the half-wires on every move.\n   - The retrospective's counterfactual is exactly this: the op-26 fix plus one record-mode run under the existing rule and 214(c) would have reached ops 26-47 about 13 minutes sooner (`archive/peer/2026-09-27-retrospective-cycle101.md:279,289`). NEXT schedules that detour again, and may add a LabVIEW move on a scratch copy.\n2. **\"Replay r5 k1–k25\" cannot work as a gate.**\n   - Only k0, 2–5, 12, 24 and 25 were real reads (`2026-09-27-c101-5-onlysource.md:103-104`; `stage_d1_disp_r5.log:133-228` \"diff skipped\").\n   - r5's only real difference was the sourceless 11365 at k12 (`r5.log:249`), and 214(c) already covers it.\n3. **It leaves out the thing that actually ends runs: verb crashes.**\n   - r5 died inside op 26 on a script function that had never run in LabVIEW (`r5.log:456`). The dry run fakes `create`, and later ops use more functions that have never run (`retrospective:256`).\n   - The op-26 fix has only been checked by a self-test (`retrospective:264`).\n   - A crash is not a record-mode difference: it ends the run.\n\n**What cycle 102 should do instead (one stage card, in this order)**\n- (a) **Fix the tunnel-flip seed bug.** It is needed: in the simulation it cuts a real data edge, 11369→11270 (`onlysource.md:108`). That is not a sourceless difference, so it would still stop the save under 214(c).\n- (b) **Settle `plan_disp.json`:** 7c432e1b vs b535071e (`plan:1800`).\n- (c) **Check function coverage offline:** every function the 47 steps use must have a real run in some log. Each one that has never run, including `create_local_read` with its fix, gets run once on a dated scratch copy of S1, with a flat handle count.\n- (d) **Add the 214(c) WARN rule,** then the dry run, the pre-run, and one record-mode run.\n- (e) **Use the run's records to settle 214(b).** Model the half-wire rule only if a later step refers to one of those uids.\n\nVERDICT: change NEXT\nNEXT ACT: Fix the tunnel-flip seed bug, settle `plan_disp.json`, run every never-yet-run function in the 47 steps once on a scratch copy of S1, add the 214(c) WARN rule, then dry run, pre-run and one record-mode `stage_d1_disp.py` run that produces `D1_s1_disp_<ts>.vi`, reading the half-wire rule from that run's records instead of measuring it first.",
+ "mech": {
+  "M1": 0.0,
+  "M2": 0.0,
+  "F1": 0.0,
+  "B1": 0.0,
+  "B2": 0.0
+ }
+}

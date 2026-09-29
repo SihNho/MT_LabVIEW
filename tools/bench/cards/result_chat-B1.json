@@ -1,0 +1,39 @@
+{
+ "schema": "result/1",
+ "id": "chat-B1",
+ "status": "PASS",
+ "gates": {"pass": 4, "fail": 0},
+ "first_fail": null,
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/decbench/cases.json", "md5": "7c4fff229141d939d02f44da42c6d011"},
+  {"path": "tools/bench/decbench/cases_lock.json", "md5": "76c02eed89b4585a1af2403dbaf910a5"},
+  {"path": "tools/bench/decbench/decbench.py", "md5": "e545c0f274b435ae46e25d43e9918a2b"},
+  {"path": "tools/bench/decbench/dec_guard.py", "md5": "15b2d2c858cfb2e0ce4fb8f706a78eaf"},
+  {"path": "tools/bench/decbench/dec_score.py", "md5": "e6233829cb13d2c7e8b118e04fd54714"},
+  {"path": "tools/bench/decbench/stub_dec.py", "md5": "8a04a156418f6bbd4f31d907b1dbcbee"},
+  {"path": "tools/bench/decbench/results_dry_stub.json", "md5": "9e1aec6a1dbe3562e99b8a21a480a88d"},
+  {"path": "tools/bench/decbench/results_smoke.json", "md5": "569bdcd51d6cb8cb8ccb9c8cfe7ac54a"},
+  {"path": "tools/bench/decbench/report_smoke.md", "md5": "4d2d7c5f11f4213a7e528e72394950ab"},
+  {"path": "tools/bench/decbench/probe_effort.txt", "md5": "e72d8dfabb56801e44802f782b297d2c"}
+ ],
+ "facts": [
+  "10 cases rubric-md5 pinned, leak PASS 10/10 (lock_v2.log:3-12, lock_v3_R1.log); lock v1 found 7 hits (lock.log:3-12): 6 over-broad patterns fixed, c121-3 case replaced",
+  "S1 83bf463 full=>skip-newest violates latest-wins | S2 3dfdd6a plot to separate display loop via locals, drop fgate | S3 5b21f14 tool defects => scratch-VI check first (cases.json)",
+  "T1 9842a3f pin 24 over-counts: 2 pass-through nets re-join (22) | T2 bcaa88d relpath C:/G: ValueError + Jev fixture log arms gate | T3 44baab6 +-100 gate wrong (+176..+684)",
+  "R1 88e9cba real cause _lv_gui unquoted -Evidence (gscript.py:272-277) | R2 be2620a FSIT writer exists (diag_c86_norbw.log:87) | R3 83bf463 skip-on-full = drop-new | R4 c986227 CLEAN (117-5)",
+  "c121-3 dropped: 121-3 stage_prerun.py never committed; f63be12 has the 121-5 revert citing the review (lock.log:11, stage_prerun.py:2164 @f63be12)",
+  "Dry run (stub) all 5 arms x 2 cases PASS 10/0, 10 rate-limit re-queues from the start, blind parse OK, 0 worktrees left (dry_stub.log)",
+  "xhigh accepted: no 'Unknown --effort' warning (bogus warns, lists xhigh), modelUsage claude-opus-5-5 (probe_effort.txt:2-4); smoke XH meta effort xhigh",
+  "Smoke T2 usd/min: H 1.04/1.0, XH 1.11/1.3, MX 2.00/5.0, FL 2.29/0.5, PAR 3.63/1.6 (4 cells); blind $0.15; total $10.23 (smoke.log, results_smoke.json)",
+  "Smoke: every arm scored 1.0 blind and mech on T2 (ceiling); mech/blind disagree only on bonus B2, 5 items (report_smoke.md). par 10: 7 cells ran at once, 0 rate-limit invalid, wall 314 s",
+  "Projection full run 100 arm-runs (160 cells + 10 scorer): $200 at T2 scale, est $300-450 on heavier cases; ~45-75 min wall at --par 10; ~1.1 GB per worktree, <=3 alive"
+ ],
+ "open": [
+  "T2 saturated (5/5 arms 1.0) and S3's known answer is a user rule rather than machine evidence: keep both, or swap them for harder cases before the full run?",
+  "R3 repeats S1 (same base and answer, review format vs steering format): keep it as a format comparison, or pick another defect claim?",
+  "Rubric tweaks before B2 (the B2 regex is too loose; the blind scorer sees known_answer): approve any, then re-run --lock"
+ ],
+ "cost": {"usd": null, "minutes": 44, "labview_runs": 0},
+ "note": "Spend $10.42. Full run NOT started. --par default 10; worktree ops behind one lock; rate-limit cells re-queued (<=3). One worktree per case, cells read-only. decbench.py 348 lines. LABVIEW NEW [] every run; one pre-existing LabVIEW process (rig 실험중) left untouched."
+}

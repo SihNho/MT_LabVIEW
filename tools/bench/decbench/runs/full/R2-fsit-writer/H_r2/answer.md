@@ -1,0 +1,17 @@
+Still read-only and nothing has been changed; I'm writing up the rebuttal now. My answer: **the claim is wrong.** A writer that can reach the FSIT terminal was already built, and the log the claim relies on is older than that writer.
+
+**1. Strongest reason it is wrong.** The W1 measurement is a stale, files-only census, and a later build proved it out of date. `c78_rowd_writer.log` ran at 2026-09-22 09:25 (`tools/bench/c78_rowd_writer.log:1`). It never opened LabVIEW (`:3`). It only counted label maps that address a sink by UID, found 0, and passed 5/0 (`:36`, `:44`). Three hours later, `OpFsInnerTunnelConnect_v0.vi` was built and saved at `ExecState` 1 (`tools/bench/build_opfsinnertunnelconnect_v0.log:1`, `:79`, `:84`). A `_v1` label map also exists that addresses the FSIT through `fsit_uid` and `Left Terminal` 1C3A9000 (`tools/bench/opfsinnertunnelconnect_v1_labels.json:2`, `:12`, `:24-26`). STATUS itself contradicts line 9: its NEXT says to run Row D with `OpFsInnerTunnelConnect_v1` (`STATUS.md:54`, `tools/recipes/stage_d1_m3a3_rowD.py:8`). So "build a new op" describes work that has already been done.
+
+**2. Alternative explanation of the same evidence.** The FSIT terminal can be addressed. What fails is that no wire gets created. On a scratch copy of the working VI, the op resolved the FSIT (echo `#7468`), returned LeftTerm `#7488`, and reported no error (`build_opfsinnertunnelconnect_v0.log:323-326`). But the new wire count was 0 and the terminal stayed bare (`:341-342`, G4f FAIL). So the op did hold a reference to the sink. The open question is whether `Connect Wire` can join two bare terminals at all, or whether it only splices onto an existing wire. That is exactly the question the D-3b diagnostic asks (`STATUS.md:26`). There is also a hint in the earlier route-A run: after its connect, the source border `#23032` sat on wire `7506`, the wire that feeds `#7488` (`c80_rowd_routeA_r2.log:244`). It looks like splicing onto an existing wire works, while wiring onto a bare terminal does not.
+
+**3. What would falsify the claim.** Any run where a writer reads `#7488` back from the FSIT with no error. G4d/G4e (`build_opfsinnertunnelconnect_v0.log:324-325`) already show that. The claim is falsified on the record.
+
+**4. Cheapest test that separates the two.** Take a dated scratch copy of the Row-C working VI (`D1_s3b_m3a3_20260922_081056.vi`, md5 `33ef524e…`). Then:
+- **Arm 1:** don't delete wire 7506. Call `OpFsInnerTunnelConnect_v1` from `#23868` onto `#7488`, then read the net's sources with `OpWireSource_v5`.
+- **Arm 2:** delete 7506 first (no Remove Bad Wires), then make the same call.
+
+If Arm 1 changes the net and Arm 2 again gives a wire count of 0, the fault is "can't connect onto a bare terminal", not "can't reach the terminal". Row D then needs a splice-then-delete order, not a new op. No new build is required: both ops are already on disk.
+
+The claim would only hold if both arms failed to change anything *and* the op's `term_uid` echo stopped returning 7488.
+
+DEFECT: blocker - The claim rests on a files-only census (09:25) that the 12:32 build of `OpFsInnerTunnelConnect_v0` already overturned; that op reached FSIT `#7488` without error and failed only at wire creation (G4f), so building "a new op to address the FSIT" targets a problem already disproven and leaves the real one untouched.

@@ -1,0 +1,49 @@
+{
+ "schema": "task/1",
+ "id": "chat-P4",
+ "kind": "measure",
+ "goal": "Speed idea E: measure where a stage build step's 24-43 s goes and which per-step graph checks could run once per batch",
+ "why": "User 2026-09-29: measure first, apply if effective. Detail: brief_chat-P4.md",
+ "inputs": [
+  {
+   "path": "tools/bench/cards/brief_chat-P4.md",
+   "md5": "ec4acf244875e73e93bf06ab0e354fda"
+  },
+  {
+   "path": "tools/stagexec.py",
+   "md5": "287edb989b04ad2717dd07f2a3a25223"
+  },
+  {
+   "path": "tools/stagekit.py",
+   "md5": "ae6952591d3ca26ba5dae6d93d49c2e4"
+  }
+ ],
+ "pass": [
+  "per-step time split (op call / each named check / other) for 3 recent passing launches, with log citations",
+  "each check classified per-step-required or batchable, with code line citations",
+  "upper-bound saving per step and per 15-row stage"
+ ],
+ "outputs": [],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/speedE/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 45
+ },
+ "unblocks": "M3",
+ "rules": [
+  "Runner stays stopped",
+  "Measurement only: no patch, no decision",
+  "Read logs by targeted grep, not whole"
+ ]
+}

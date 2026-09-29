@@ -1,0 +1,36 @@
+{
+ "schema": "task/1",
+ "id": "chat-B5",
+ "kind": "measure",
+ "goal": "Ultracode pilot: ONE UC run on ucbench L1 alone, measure cost/time/agents, blind-score it with the 4 single L1 answers",
+ "why": "User 2026-09-29: judge ultracode cost from one run before designing the mixed bench. Detail: brief_chat-B5.md",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_chat-B5.md", "md5": "971ddb61ce1ad95978f9430f242e3305"},
+  {"path": "tools/bench/ucbench/ucbench.py", "md5": "98338cee86d9469c60fbe7fbdca6c5c7"},
+  {"path": "tools/bench/ucbench/uc_score.py", "md5": "97fa9be8af86533e2257b5f1187a8c28"}
+ ],
+ "pass": [
+  "exactly one UC run on L1, nothing concurrent; usd, minutes, sub-agents, tokens recorded",
+  "blind scores for the UC answer and the 4 single-session L1 answers (recall, precision, false, extra real)",
+  "pilot_uc_L1.md written; no other runs launched"
+ ],
+ "outputs": [],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": ["tools/bench/ucbench/**"],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 120},
+ "unblocks": "M3",
+ "rules": [
+  "Rig 실험중: no LabVIEW/GUI/hardware; never touch the user's LabVIEW process",
+  "Runner stays stopped",
+  "One ultracode run only, par 1",
+  "Facts only"
+ ]
+}

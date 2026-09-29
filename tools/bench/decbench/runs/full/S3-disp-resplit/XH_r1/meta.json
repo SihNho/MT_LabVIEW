@@ -1,0 +1,39 @@
+{
+ "case": "S3-disp-resplit",
+ "arm": "XH",
+ "rep": 1,
+ "model": "claude-opus-5-5",
+ "effort": "xhigh",
+ "attempt": 1,
+ "usd": 0.9823,
+ "minutes": 2.56,
+ "cell_minutes": 1.54,
+ "turns": 14,
+ "tools": 13,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-opus-5-5",
+   "effort": "xhigh",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 1.54,
+   "usd": 0.9823027999999999,
+   "turns": 14,
+   "tools": 13,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-opus-5-5"
+   ]
+  }
+ ],
+ "answer": "**No, change NEXT.** The fixes 214(b)–(d) ask for are worth doing, but NEXT then ends in another all-or-nothing run of all 47 build steps. The project's split rule forbids that after a stage has ended without a saved file, and this stage has now done so five times.\n\n**Evidence**\n\n- **Five runs, no file.** The display-loop build script `stage_d1_disp.py` has run five times in LabVIEW. Every run ended FAIL with `\"artefacts\":[]`:\n  - `tools/bench/stage_d1_disp.log:62`\n  - `stage_d1_disp_r2.log:78`\n  - `stage_d1_disp_r3.log:90`\n  - `stage_d1_disp_r4.log:111`\n  - `stage_d1_disp_r5.log:477`\n\n  Each one stopped at the gate that compares the real graph with the simulation after each step, in a different place each time: step 2, a tunnel, step 4, and step 26 (`r2:57`, `r3:69`, `r4:90`, `r5:456`).\n- **The rule this breaks.** A stage that ends without a saved file means the next cycle's first act is a one-page decomposition plan: sub-steps, each with its saved file name and pass criterion. \"A full-length retry under a new file name … is forbidden\" (`CLAUDE.md:486-490`). A step is not done until it has left a file, and the next step starts from that file in a fresh LabVIEW instance (`CLAUDE.md:481-483`).\n- **NEXT keeps the same shape.** NEXT asks for \"ONE record-mode run\" to produce `D1_s1_disp_<ts>.vi` (`STATUS.md:57-60`). Record mode saves only when every step matches (`docs/d1-loop12-17-split-plan.md:1787`), so it can again leave nothing behind.\n- **Memory limit.** In run 4, LabVIEW was already at 594.6 MB after step 4 of 47. The stop limit is 700 MB, so run 5 could only afford checks at a few checkpoints (`r5.log:16-18`). Splitting into fresh instances resets memory and lets each piece be checked after every step.\n- **Broken-by-design saves are allowed.** A broken-by-design intermediate may be saved by GUI Ctrl+S (`CLAUDE.md:493`). So needing ExecState 1 only at the end is not a reason to keep one monolithic run.\n- **The open user question rests on the wrong reason.** D-2026-09-27-01 asks whether to retry the same build, and recommends yes because \"each run gets further\" (`decisions_pending.json:164-170`). That is the \"felt\" progress rule 3 rejects in favour of a machine trigger.\n- **What stays valid.** The one-source half-wire rule is still unmeasured (`plan:1790-1793`). The WARN rule and the simulator fixes (`plan:1794-1801`) apply to any split, so they remain inputs to the new plan.\n\n**What the next cycle should do**\n\n1. **Write the decomposition plan first.** Cut the 47 build steps at their natural boundaries, for example:\n   - (a) create the display While/For loop, the Wait, the `Display period` control and the #25261 check (step 25 is where r5 had already reached);\n   - (b) the moves, then save;\n   - (c) the local reads/writes and rewiring, clean-up, and the end checks, then the final save by script.\n\n   Each piece names its `claudeDev\\D1_s1_disp_<a|b|c>_<ts>.vi` file and its pass criteria.\n2. **Get it prior-art reviewed once.** Do the 214(b)–(d) work as the offline preparation it already is.\n3. **Run sub-step (a) in the same cycle and save its file.** This keeps the deliverable first.\n4. **Rewrite D-2026-09-27-01** so the user is asked about the split plan, not about a full retry.\n\nVERDICT: change NEXT\nNEXT ACT: Write a one-page decomposition plan that cuts the 47-step display-loop build into saved sub-steps, get it prior-art reviewed once, then run sub-step (a) from `D1_s1_copy.vi` in a fresh LabVIEW and save `claudeDev\\D1_s1_disp_a_<ts>.vi`, with the 214(b)–(d) fixes as offline preparation.",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0,
+  "B1": 0.0,
+  "B2": 1.0
+ }
+}

@@ -1,0 +1,22 @@
+**The failure is in the gate's reader, not the constant.** The bytes that failed gate A1b are a "void" (typeless) read. That reader returns this for any constant that is not a plain string, whatever the constant holds. So the gate cannot say whether the 20 names reached constant #101.
+
+**Decoding the bytes.** The measured layout is in `docs/NAMES.md:1153-1155`. It reads `26008000` (version) · `00000001` (one type) · `0004 0000` (a type of code 0x0000, which is void) · `0001 0000` (type index) · `00000000` (no attributes). There is no data section. Even an *empty* string array read correctly would carry an array type (0x40) around a string type (0x30). A void type means the reader got no type at all.
+
+**Why the reader goes blind:**
+- `read_str` runs `OpConstValue_v1` with `Class Name = "Constant"` (`diag_c118_p0.py:36-39`). That is a `Constant.Value` read through the generic `VI Server:Constant` cast.
+- `NAMES.md:1157-1159` records that this cast returns the value only for a StringConstant. It gives "an EMPTY (void, TD 0x0000) variant … without error" for numeric and Boolean constants.
+- The documented fix is to build the Value node for the object's own class (`NAMES.md:1159-1165`).
+- Constant #101 is a 1-D string array constant, not a StringConstant. It sits on Get Controls' `Control Names` input and was given a Python list (`diag_c118_p1.py:33`).
+- The same 20 bytes already appear in this run's own records for ring constant #13245, read through both routes (`diag_c118_p0.json:457,465`). That ring feeds IMAQ Create's Image Type (`diag_c118_p0.json:429-436`), so it certainly holds a value. The void read therefore happens with real data present.
+- No array constant has ever been read back by these tools: no `ArrayConstant` appears in any `.md` or `.py` file.
+
+**The competing explanation: the writer dropped the list.**
+- `create_const_loop_term` does pass the list to the op's `Value` control (`gscript.py:2823-2824`; label `"Value"` in `opcreateconst_loopterm_labels.json:5`).
+- That control was made by `create_control` on the Create Constant method's `Value` input (`build_op_const_loopterm_77.py:48-49,57`). Its data type was never recorded.
+- The route has only been tested with a numeric value, 1.0 read back as `'1'` (`build_op_const_loopterm_77.py:81,109`). So COM could have silently turned the list into nothing, leaving an empty array. The invoke error was `''` (`diag_c118_p1.log:6`), but `NAMES.md:1157-1159` shows these routes can fail without an error.
+- This explanation is still possible, but the void bytes neither support nor rule it out, because the reader would print the same bytes either way.
+
+**What to change.** Gate A1b (and B2b at `diag_c118_p1.py:99`) should not use `read_str` on non-string constants.
+
+ROOT CAUSE: `read_str` reads `Constant.Value` through the generic `VI Server:Constant` cast, which gives a void variant (type 0x0000, no error) for any constant that is not a StringConstant (`NAMES.md:1157-1159`; same bytes on ring #13245, `diag_c118_p0.json:457`), so gate A1b failed on the reader and says nothing about what constant #101 holds.
+TEST: Re-read #101 with a `Value` property node built for #101's own class (the fix in `NAMES.md:1159-1162`); bytes ending in the flattened Cam_pool00..19 confirm a reader failure, while an array type with zero elements means the writer really dropped the list.

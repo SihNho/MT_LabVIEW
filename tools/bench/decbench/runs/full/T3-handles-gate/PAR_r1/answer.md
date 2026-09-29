@@ -1,0 +1,27 @@
+**The saved VI is not defective, and the log shows no reference leak.** The FAIL comes from the card's own L4 wording ("handles +-100", `task_119-4.json:32`). Ruling 176(a) had already removed that check from build stages.
+
+**What holds up after checking the analysts' claims**
+- **Ruling 176(a) is real.** The ±100 limit is the test for repeated calls of one scripting function. It "does not apply to an editing stage … handle numbers are RECORDED, not gated … A leak is judged only by the 20-call test" (`docs/d1-loop12-17-split-plan.md:458-461`). The recipe follows it: it only records the numbers (`stage_d1_qrt_pool.log:233`) and ends 21/0 (`:260`).
+- **References balance.** VI Server references opened 9, closed 9, 0 live (`:245-246`).
+- **The handles are given back.** "AFTER the work" is read after the panels are closed (`tools/stagekit.py:1129-1139`). It shows 34,139 (`:247`), against 33,962 just after the restart (`:29`). That is +177 net, compared with +648 while the VI was open. Both numbers come from the LabVIEW process HandleCount (`tools/bench/bench_prep.py:64-66`).
+
+**What does not hold up**
+- **Analysts 2 and 3 say steps that create nothing added about 0 (k4, k5).** Wrong: k4 and k5 do create objects, the constants `p_i32` and `p_ring` (`:84,93`). They still added +0 (`:87,96`).
+- **"Handles grow with object creation" is not the best fit.** The same scripting function called a second time barely moves the count, even when it creates a similar object:
+
+| step | handles | step | handles |
+|---|---|---|---|
+| k6 first Obtain Queue | +27 (`:115`) | k7 second Obtain Queue | +2 (`:134`) |
+| k3 first create_primitive_nested | +79 (`:78`) | k4, k5 same function | +0, +0 |
+| k9 first wire_const | +33 (`:160`) | k10, k12 same function | +1, +0 (`:168,197`) |
+
+- **Every jump is the first call of a scripting function** that had not been used yet in the run: loop_in +85, drop_subvi +35, connect_nested_v1 +58, connect_from_wire +75 (`:50,68,189,217`).
+- **k11 and k13 each ended with zero net new nodes.** A junk Invoke node was created and then deleted (`:186,214`), yet they added +58 and +75. So the growth follows loading each helper VI (the "op VI" that a scripting function calls) and whatever it pulls into memory the first time. It does not follow the number of objects.
+- **Why R2 stayed flat is consistent with this.** R2 called essentially one kind of operation over and over (`stage_d1_l2r2.log:48-67`), so it paid the first-call cost only once.
+
+**Most plausible alternative:** the op VI behind a scripting function opens a reference and never closes it. The 9/9 counter would not see that, because it only counts references opened on the Python side. But a leak like that would add handles on every call, and the repeated calls above add about 0. It would also survive closing the panels, and +177 is only about a quarter of the +648 peak (and 34,139 is close to the usual ~31,500 fresh-start level).
+
+**Cheapest test** (CLAUDE.md's own 20-call test, `CLAUDE.md:225`): on a scratch byte copy of R2, call connect_from_wire (the largest first-call jump, +75) 20 times in one script, deleting what each call makes, and read the handle count after each call. A jump on call 1 and then a flat count within ±100 means it is the helper VI loading and L4 is a gate false positive (log it with `tools/gate_fp.py`). About +75 per call means that helper VI leaks, which is a fault in the tool, not in the saved VI.
+
+ROOT CAUSE: Card L4 applied the ±100 test for repeated calls of one scripting function to a build stage that ruling 176(a) exempts; the +322/+648 is the handles LabVIEW takes when each helper VI is called for the first time in the run (the same functions called again add about 0), mostly released when the VI closes (34,139 after the work vs 33,962 after the restart), with references 9/9 — so it is not a leak in the saved VI.
+TEST: On a scratch R2 byte copy, call connect_from_wire 20 times (deleting what each call makes) and read the handle count after each call — a single first-call jump then flat within ±100 confirms a gate false positive, while about +75 per call means that helper VI leaks.

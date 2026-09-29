@@ -1,0 +1,38 @@
+{
+ "case": "R2-fsit-writer",
+ "arm": "XH",
+ "rep": 2,
+ "model": "claude-opus-5-5",
+ "effort": "xhigh",
+ "attempt": 1,
+ "usd": 0.868,
+ "minutes": 1.44,
+ "cell_minutes": 1.44,
+ "turns": 16,
+ "tools": 15,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-opus-5-5",
+   "effort": "xhigh",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 1.44,
+   "usd": 0.868002,
+   "turns": 16,
+   "tools": 15,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-opus-5-5"
+   ]
+  }
+ ],
+ "answer": "**The claim is wrong. An op that wires onto an FSIT terminal sink already exists, and it has already made such a wire in a measured run.**\n\n**1. Strongest reason: the writer exists and has worked.**\n- `tools/bench/opfsinnertunnelconnect_v1_labels.json:2,12,23,26` declares a Connect Wire op (`method 6349C03`). It works on class `FlatSequenceInnerTunnel` and finds its sink by the tunnel's UID (`fsit_uid`), not by a `Nodes[]` index.\n- In `tools/bench/diag_c86_norbw.log`, arm A ran `OpFsInnerTunnelConnect_v1` on two unwired terminals (lines 82–87):\n  - it returned `term_uid=7488 uid_back=7468`, `wire_delta=1` and `Is Broken?=False` (line 87);\n  - LeftTerm `#7488` now carries wire 25324, the same wire as the loop border (lines 92, 96);\n  - the wire's source is `RightShiftRegister #23868`, the only source on the net, with 0 PD85 violations (line 105).\n- STATUS itself names this op as the row-D connect step (`STATUS.md:54`), and so does the stage file (`tools/recipes/stage_d1_m3a3_rowD.py:8`).\n\n**2. The cited log doesn't measure what the claim says.**\n- `c78_rowd_writer.log` read files only and started no LabVIEW (line 3).\n- It checked the 4 label maps that declare `6349C03`, out of 66 maps (lines 21–22), while 111 `Op*.vi` sit on disk (line 34).\n- It labels its zero count \"a FACT, not a gate failure\" (line 33) and ends with 5 pass / 0 fail (line 39).\n- **It has no W1 gate.** Its gates are A1, A2, B1, B2 and B3.\n- It ran at 09:25 (line 1), before the FSIT connect op was built at 12:32 (`build_opfsinnertunnelconnect_v0.log:1`). It is a snapshot from before the writer existed.\n\n**3. Alternative explanation: row D has no file because nobody has run it.**\n- The row-D stage is \"written, AST-clean, NOT yet run\" (`STATUS.md:54`).\n- Cycle 66 was killed at its deadline before its recipe ran (`STATUS.md:26`).\n- The earlier failures were in deleting the old wire, not in the writer:\n  - once wire 7506 was deleted, looking up the FSIT by UID failed with error 1055 (`diag_c83_connect2x2_kit.log:78`);\n  - with wire 7506 still in place, the call raised no error but made no new wire (`wire_delta=0`, line 61);\n  - deleting the wire without Remove Bad Wires kept the FSIT findable, and `#7488` came out unwired (`diag_c86_norbw.log:71–76`).\n\n**4. What would falsify the claim — and it is already in the logs.** A measured new wire whose sink is an FSIT terminal falsifies it. `diag_c86_norbw.log:102` shows wire 25324 owned by `FlatSequenceInnerTunnel` 7468, next to line 96.\n\n**Cheapest discriminating test.** Re-reading lines 82–105 of `diag_c86_norbw.log` costs nothing and already settles the question. The live test is to run `stage_d1_m3a3_rowD.py` as it stands on a scratch copy of the current working VI (`D1_s3b_m3a3_20260922_081056.vi`):\n- If gate D1 passes and the connect gives `wire_delta=1` with `#23868` as the only source, the claim is dead.\n- If it fails, the question is whether the UID lookup still works after the delete. That calls for a narrower fix, not a new op.\n\n**Caveats.**\n- `diag_c86_norbw.log` ends at line 134 with no `GATES` or `BGRUN END` line, so the run did not finish. Arm A is complete; arm B is not.\n- Arm A ran on a scratch copy and saved nothing.\n- That evidence is structural (wire exists, `Is Broken?` False, one source), not functional.\n- What would change my mind: a finished run in which wire 25324 turns out to be broken, or turns out not to be attached to the FSIT terminal.\n\nDEFECT: blocker - the claim's premise is false: `OpFsInnerTunnelConnect_v1` already wires onto FSIT LeftTerm #7488 in a measured run, so building a new op would redo existing work instead of running the row-D stage that is already written.",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0,
+  "B1": 0.0
+ }
+}

@@ -1,0 +1,215 @@
+{
+ "schema": "decbench-replaced/1",
+ "cases": [
+  {
+   "id": "S3-scratch-verify",
+   "category": "steering",
+   "base": "5b21f14",
+   "copy": [],
+   "fields": {
+    "plan": "docs/d1-loop12-17-split-plan.md (Pre-decided 213-215)",
+    "focus": "splitting the display stage into Part A (ops 1-40) and Part B (ops 41-47), registering a Wait (ms) donor, then ONE Part-A stage run"
+   },
+   "known_answer": "The split is reasonable, but the recurring cause across cycles 95-102 is TOOL defects (scripting functions: stagekit.copy_in works only on one sample pair, create_local_read made write locals, simulator/graph mismatch), not the plan or the model. Before a further stage run, verify the scripting function that failed on a minimal scratch VI (build, run the function, read the graph back). User decision 2026-09-27 02:2x ('스크래치 vi 검증', commit 7a1c214), mechanised in stage_prerun.check_launch.",
+   "rubric": {
+    "must_hit": [
+     {
+      "id": "M1",
+      "text": "Diagnoses the repeated failures as defects of the scripting tools/functions (e.g. stagekit.copy_in, create_local_read, the simulator), not of the stage plan or the model.",
+      "re": [
+       "tool\\s+(defect|bug|fault|failure)s?",
+       "scripting\\s+(function|verb|tool)s?",
+       "copy_in",
+       "create_local_read",
+       "(stagekit|gscript|stagesim)\\s+(bug|defect|fault|limitation)"
+      ]
+     },
+     {
+      "id": "M2",
+      "text": "Next act verifies the failing function(s) in isolation on a minimal scratch VI (a unit test of the function) BEFORE another full stage run.",
+      "re": [
+       "scratch",
+       "minimal\\s+(test\\s+)?VI",
+       "in\\s+isolation",
+       "unit[- ]?test",
+       "isolated\\s+test"
+      ]
+     }
+    ],
+    "forbidden": [
+     {
+      "id": "F1",
+      "text": "Recommends changing the model / escalating (e.g. to Fable) as the main remedy.",
+      "re": [
+       "(switch|escalate|move)\\w*\\s+(\\w+\\s+){0,3}to\\s+Fable"
+      ]
+     }
+    ],
+    "bonus": [
+     {
+      "id": "B1",
+      "text": "Checks each function's preconditions offline (pre-run) before LabVIEW.",
+      "re": [
+       "precondition"
+      ]
+     }
+    ]
+   },
+   "leak": [
+    "scratch_verify",
+    "스크래치 vi",
+    "SCRATCH-VI VERIFICATION",
+    "scratch-VI verification"
+   ],
+   "absent": []
+  },
+  {
+   "id": "T2-guardpeer-jevlog",
+   "category": "troubleshooting",
+   "base": "bcaa88d",
+   "copy": [
+    {
+     "from": "889b773",
+     "path": "tools/bench/jev_discharge.log"
+    }
+   ],
+   "fields": {
+    "failure": "Two symptoms on 2026-09-22 morning. (1) The Jev self-test bundle (tools/bench/jev_run_all.py) ended rc=99: its 'guard_peer JEV-DISCHARGE branches' self-test raised instead of passing (tools/bench/jev_discharge.log). (2) At 09:0x a read-only LabVIEW diagnostic launch of cycle 68 was REFUSED by tools/hooks/guard_peer.py, which named tools/bench/jev_discharge.log as the latest failing log that owes a failed-prediction peer review.",
+    "files": "tools/hooks/guard_peer.py, tools/bench/jev_discharge.log, tools/bench/selftest_guard_peer_jev.py, CLAUDE.md"
+   },
+   "known_answer": "(1) guard_peer formats os.path.relpath(path, ROOT) into its refusal; on Windows relpath raises ValueError for a path on another drive (the self-test's fixture log in TEMP on C: vs the project on G:), so the hook crashes (rc=99) instead of refusing - guard_cycle.py:518 already has the non-raising _rel helper. (2) The Jev self-test log's FIXTURE text (STOP:/FAIL lines by construction) matches FAILURE_RE, so a Jev script's own log arms the failed-prediction gate; the user's 2026-09-22 'Jev scripts are exempt' was wired only on the command side (RUNNER_RE), not in newest_failing_log. Fixed in commit 889b773.",
+   "rubric": {
+    "must_hit": [
+     {
+      "id": "M1",
+      "text": "Symptom 1: os.path.relpath raises ValueError when the log is on a different drive (C: vs G:), so the hook raises instead of refusing.",
+      "re": [
+       "relpath",
+       "(different|another|other)\\s+drive",
+       "mount",
+       "ValueError"
+      ]
+     },
+     {
+      "id": "M2",
+      "text": "Symptom 2: the Jev self-test log's own fixture/test text (FAIL/STOP lines) makes guard_peer treat it as a failing build; Jev script logs should be exempt (user 2026-09-22), the exemption covers only the command side.",
+      "re": [
+       "fixture",
+       "self-?test\\W+(\\w+\\W+){0,4}(text|lines?|output|log)",
+       "exempt",
+       "RUNNER_RE",
+       "Jev\\s+(script|log)s?\\s+(\\w+\\s+){0,4}(excluded|exempt|skip)"
+      ]
+     }
+    ],
+    "forbidden": [
+     {
+      "id": "F1",
+      "text": "Concludes the refusal was correct and a peer review is genuinely owed for jev_discharge.log.",
+      "re": [
+       "review\\s+is\\s+(genuinely\\s+|really\\s+)?owed"
+      ]
+     }
+    ],
+    "bonus": [
+     {
+      "id": "B1",
+      "text": "Points to the existing drive-safe helper in guard_cycle.py (_rel) as the fix pattern.",
+      "re": [
+       "guard_cycle",
+       "_rel\\b"
+      ]
+     },
+     {
+      "id": "B2",
+      "text": "Test: call guard_peer (or relpath) with a log path on C: while ROOT is on G:, or run the self-test after excluding Jev logs.",
+      "re": [
+       "C:\\\\",
+       "on\\s+C:",
+       "TEMP"
+      ]
+     }
+    ]
+   },
+   "leak": [
+    "the SAME helper `tools/hooks/guard_cycle\\.py:518`",
+    "THE JEV EXEMPTION, THE OTHER HALF",
+    "made the hook itself raise instead of refusing"
+   ],
+   "absent": []
+  },
+  {
+   "id": "R3-pool-skipnewest-claim",
+   "category": "review",
+   "base": "83bf463",
+   "copy": [],
+   "note": "replaces the c121-3 launch-gate case: the 121-3 version of tools/stage_prerun.py (with the time filter) was never committed - f63be12 already carries the 121-5 revert and cites the review (lock v1: LEAKED)",
+   "fields": {
+    "claim": "ATTACK this claim before the pool build step (docs/d1-build-plan.md section 9, docs/d1-loop12-17-split-plan.md Pre-decided 233):\n\nCLAIM: the pool's overload row - when Q_work already holds 20 images, loop 1.1 skips this camera read and returns the slot to Q_free in the same iteration - is exactly the 'freshest wins, never blocks' behaviour the project's frame rules require: the camera is never gated, the acquisition loop never waits, and no frame is corrupted. So the pool stage can be built and later run with this overload branch unchanged."
+   },
+   "old_fields_unused": {
+    "claim": "ATTACK this claim about a failed self-test row (card 121-3, offline, no LabVIEW).\n\nFAILURE: tools/bench/c121_3reg_selftest_launch_gate.log:7 `FAIL L4 a FAILED run newer than the records -> refused (decision 4)` (27 pass / 1 fail). Script: tools/bench/selftest_launch_gate.py:77-84.\n\nCHANGE THAT PRECEDED IT (gate-fp fp-1/fp-6): tools/stage_prerun.py `last_failed_run_after` now skips a bgrun segment of an appended log when its END is proven <= t_min (segment_ended_by: START stamp + the `after Ns` of its END/TIMEOUT line + 1 s); a segment with no stamp or no END line still counts. Before, every segment of any log whose MTIME > t_min counted. Evidence for fp-1: tools/bench/stage_d1_l2r2_prerun.log:1-133 is a FAIL prerun segment 07:54:30 (+27 s) older than its PASS records (prerun_records.jsonl, 08:00:25); the log's mtime came from the later PASS segment, so the launch was refused.\n\nCLAIM: L4 fails because its FIXTURE, not the gate, is wrong. selftest_launch_gate.py:77 writes the pre-run records at time.time()-100 (2026-09-28), and :81-82 writes the \"newer\" failing run with a hard-coded START stamp `2026-09-24 20:00:00` and `BGRUN END rc=1 after 3s` - i.e. a run that by its own stamp ENDED four days BEFORE the records. The old gate only saw the file mtime (fresh), so it passed; the new gate reads the stamp. A real bgrun writes the real local time, so a genuinely newer failed run still has end > t_min and is still refused (tools/bench/selftest_c121_3_gatefp.py N1/N2/N3: 21/0). The fix would be to stamp the fixture with the current time, not to change the gate.\n\nAttack: is there a REAL launch path where a failed run that happened after the pre-run records carries a START stamp + duration <= the records' time? If one exists the gate change widens decision 4 and must not be kept."
+   },
+   "known_answer": "The claim is wrong: skipping the read when Q_work is full keeps the 20 OLDER queued frames and loses the newest (drop-new; lag up to 20 frames). The project's overload rule acq -> tracking is LATEST-WINS - discard the backlog, read the newest frame, gap recorded by the buffer number (docs/decisions.md:25; frame-ownership-design.md 'not drop-new'; d1-build-plan.md:1200 already refutes the same 'freshest wins' wording for an enqueue that skips on full). Lossy Enqueue Element is excluded (decisions.md:21), so latest-wins must be built otherwise (e.g. dequeue/flush the backlog), or acquisition and tracking stay sequential. User decision 2026-09-28 15:3x (commit f504b34).",
+   "rubric": {
+    "must_hit": [
+     {
+      "id": "M1",
+      "text": "Shows the skip-on-full branch is drop-NEW: it keeps the older queued frames and discards the newest one (stale data, lag up to 20 frames), so it is not 'freshest wins'.",
+      "re": [
+       "drop[- ]?new",
+       "keeps?\\s+(the\\s+)?old(er|est)",
+       "old(er|est)\\s+(\\w+\\s+){0,3}(kept|retained|win)",
+       "stale",
+       "(discard|lose|loses|drop|drops|skip|skips)\\w*\\s+(\\w+\\s+){0,2}(newest|latest|freshest)"
+      ]
+     },
+     {
+      "id": "M2",
+      "text": "Cites the project's latest-wins overload rule (docs/decisions.md:25 / frame-ownership-design 'not drop-new') or the d1-build-plan note that refutes the same wording.",
+      "re": [
+       "latest[- ]wins",
+       "decisions\\.md:2[45]",
+       "frame-ownership-design",
+       "d1-build-plan\\.md:1(19|20)\\d"
+      ]
+     }
+    ],
+    "forbidden": [
+     {
+      "id": "F1",
+      "text": "Accepts the claim (DEFECT: none) or rates the defect minor.",
+      "re": [
+       "DEFECT:\\s*(none|minor)"
+      ]
+     },
+     {
+      "id": "F2",
+      "text": "Recommends Lossy Enqueue Element as the fix (excluded by decisions.md:21).",
+      "re": [
+       "(use|switch\\s+to|replace\\s+with)\\s+(a\\s+)?Lossy\\s+Enqueue"
+      ]
+     }
+    ],
+    "bonus": [
+     {
+      "id": "B1",
+      "text": "Proposes a latest-wins construction that avoids Lossy Enqueue (dequeue/flush the backlog and return those slots to Q_free) or the sequential fallback.",
+      "re": [
+       "flush",
+       "dequeue\\w*\\s+(\\w+\\s+){0,4}(backlog|old|stale|queued)",
+       "sequential"
+      ]
+     }
+    ]
+   },
+   "leak": [
+    "VIOLATES \\(2\\)",
+    "skip-newest branch is WRONG",
+    "re-confirmed 2026-09-28",
+    "pool overload: latest-wins or skip"
+   ],
+   "absent": []
+  }
+ ]
+}

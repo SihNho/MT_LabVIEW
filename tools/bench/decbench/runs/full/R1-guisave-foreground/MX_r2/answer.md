@@ -1,0 +1,22 @@
+**No, the claim is wrong. The Ctrl+E, the title-bar click and the Ctrl+S were most likely never sent at all, so the home window cannot have swallowed them.**
+
+**1. Strongest reason.** lv_gui.ps1 writes an audit row for every `click` and `keys` call before it acts. Lines 631-641 run before the action switch at :644, and `$ErrorActionPreference='Stop'` (:127) aborts the action if that write fails. `tools/gui_actions.log` has 1800 rows (the last is 2026-09-18 18:12:14, :1800), and not one mentions gui_save. Callers that quote their arguments do get logged: bench_prep.py:26-31 → :263, and drive_original_copy_v4.py:451-452 → :1796-1800.
+
+**2. Alternative.** `_lv_gui` joins its arguments into one `-Command` string and quotes none of them (gscript.py:272-277). gui_save's `-Evidence` values contain spaces and parentheses (gscript.py:2029, :2045, :2049). The extra words then bind to positional parameters such as `[int]$X` (lv_gui.ps1:101). PowerShell fails at that binding step, before the audit write and before SendWait. The mechanism is my inference; the missing log rows are measured.
+
+`_lv_gui` returns the error as a string and gui_save never reads it. So its closing message, "after Ctrl+S on every candidate window" (gscript.py:2058-2060), describes something that did not happen. The quote tests only called `focus`, which takes no `-Evidence` (diag_c68_quote2.py:60; diag_c68_quote_echo.py:101-107), so they did not rule this out. The same error also appears in a run with no LabVIEW restart at all (label_copy_clfn.log:1-17).
+
+The screenshot evidence is weak too:
+- The before screenshot is taken before gui_save's `focus` runs (build_d1_m3a1.py:680-682; gscript.py:2025). It cannot show which window had the foreground when the keys went out.
+- The screenshots are git-ignored (.gitignore:9-10), so steps (1) and (5) cannot be checked here.
+- Steps (2) and (3) are true (lv_gui.ps1:682-688, :795), but they do not matter if nothing is sent.
+
+**The proposed fix has the same defect.** `clickprobe` needs `-Exception`/`-Evidence` just like `click` (lv_gui.ps1:629-631). Called through `_lv_gui` with a multi-word `-Evidence`, it fails the same way, so the fix would raise every time. Its foreground check also runs in a different PowerShell process from the keystroke, which goes out only after the `-WaitMs` sleep (lv_gui.ps1:626). The better fix is to quote each argument in `_lv_gui`, as bench_prep.py:28-29 already does. gui_save should also require the `keys`/`click` confirmation line (lv_gui.ps1:797, :730) before it believes anything was sent.
+
+**3. What falsifies the claim.** The claim needs `Key=^e` and `Key=^s` rows in gui_actions.log during run 4's save, and there are none. If such rows existed, my alternative would be dead.
+
+**4. Cheapest discriminating test** (no LabVIEW, no GUI action):
+`print(g._lv_gui("-Action","cursor","-Exception","Approved","-Evidence","gui_save: title-bar click to unstick the UI loop (H5)"))`
+If it prints a parameter-binding or "not recognized" error, my alternative holds. If it prints cursor coordinates, the arguments bind correctly and the foreground claim is back in play.
+
+DEFECT: blocker - the claim explains where the keystrokes landed, but gui_save has never logged a single one, most likely because its unquoted multi-word -Evidence kills every click/keys call before it is sent, and the proposed fix keeps that path.

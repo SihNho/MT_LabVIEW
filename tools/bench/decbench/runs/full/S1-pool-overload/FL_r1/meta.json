@@ -1,0 +1,40 @@
+{
+ "case": "S1-pool-overload",
+ "arm": "FL",
+ "rep": 1,
+ "model": "claude-fable-5-1",
+ "effort": "low",
+ "attempt": 1,
+ "usd": 1.48,
+ "minutes": 0.67,
+ "cell_minutes": 0.67,
+ "turns": 7,
+ "tools": 5,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-fable-5-1",
+   "effort": "low",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.67,
+   "usd": 1.479955,
+   "turns": 7,
+   "tools": 5,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-fable-5-1"
+   ]
+  }
+ ],
+ "answer": "**No — the POOL step is the right step in the right order, but its overload rule as written in NEXT is the wrong one to build.**\n\n**What NEXT prescribes.** Cycle 118's first act is one build step for the pool: `Q_free`/`Q_work`, bound 20, \"full ⇒ skip the read\" (`STATUS.md:65-66`; `docs/d1-loop12-17-split-plan.md:2171-2172`). It takes that from the queue table: \"full `Q_work` ⇒ skip this read, return the slot in the same iteration\" (`docs/d1-build-plan.md:572`).\n\n**Why the pool itself is right.** Queueing the single IMAQ refnum would let loop 1.1 overwrite the buffer before 1.2 reads it, so 1.2 could track a different frame (`docs/d1-loop12-17-split-plan.md:2142`). A pre-allocated 20-slot pool is the decided frame handoff (`docs/decisions.md:22`). The input file R2 is accepted (`STATUS.md:64`).\n\n**Why the overload rule is wrong.**\n- \"Full `Q_work` ⇒ skip this read\" keeps the 20 queued old frames and discards the newest one. That is drop-new.\n- The decided policy for acquisition → tracking is the opposite: \"lossy, latest-wins — discard the backlog, take the newest frame. A stale sample corrupts the time series; an explicit gap does not\" (`docs/decisions.md:25`).\n- The project's own design document states the user chose latest-wins, \"not drop-new\" (`docs/frame-ownership-design.md:89-90`).\n- The only place drop-new was accepted is `Q_focus`, and that acceptance says explicitly that latest-wins remains the rule for the frame path (`docs/d1-build-plan.md:1121-1122`, `:1174-1176`).\n- With a FIFO of depth 20, tracking under overload always works on frames up to 20 reads old — the stale-sample case the decision exists to prevent.\n\n**The complication, which is why this is not a one-line fix.** The same decisions table forbids the obvious latest-wins mechanisms: \"No pool eviction, no `Lossy Enqueue Element`, no generation numbers\" (`docs/decisions.md:21`), and says \"no free slot ⇒ simply do not read this iteration\" (`docs/decisions.md:24`). So rows 21/24 and row 25 are only consistent if the backlog is discarded on the consumer side (1.2 drains `Q_work`, returns the older slots to `Q_free`, tracks the newest), or if the depth is small. Neither appears in the pool row of `d1-build-plan.md:572`. The files do not settle which mechanism stands.\n\nNEXT already sends unsettled design choices \"BLOCKED to judgement\" (`STATUS.md:68`), but it names only O6/O7 and hands the material session \"full ⇒ skip\" as settled — so the step would be built and saved with the wrong policy baked in.\n\n**What the next cycle should do instead.** Before any LabVIEW launch, an offline judgement step reconciles `decisions.md:21/24/25` with `d1-build-plan.md:572` and writes the overload mechanism into a Pre-decided entry. If the files cannot settle it, it goes to the user's pending-decisions list. The pool's structural parts (20 slots, two queues, `IMAQ Create` route) can be planned offline in parallel, since they do not depend on that answer.\n\nConfidence: high on the contradiction (direct quotes); medium on the best mechanism, which I did not find specified.\n\nVERDICT: change NEXT\nNEXT ACT: Offline, settle how the pool realises latest-wins (discard backlog, track newest frame) without violating the camera-free-runs rule, record it as a Pre-decided entry, and only then build the POOL step with that overload policy instead of \"full Q_work ⇒ skip this read\".",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "M3": 1.0,
+  "F1": 0.0,
+  "F2": 0.0,
+  "B1": 0.0
+ }
+}

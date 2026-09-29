@@ -1,0 +1,17 @@
+**No, not as NEXT writes it.** The next build should still be a pool; PD233(g) O5 is right that queueing R1's single IMAQ refnum would let loop 1.1 overwrite the buffer before 1.2 reads it (`docs/d1-loop12-17-split-plan.md:2142`). The problem is the overload rule the build card is told to use. It is the opposite of what the user decided.
+
+**Why:**
+- NEXT and PD233(k) prescribe "bound 20, full ⇒ skip the read" (`STATUS.md:66`, `docs/d1-loop12-17-split-plan.md:2172`), copied from `docs/d1-build-plan.md:572`. With 20 slots and a first-in-first-out Q_work, sustained overload keeps the 20 oldest frames and drops the newest one. That is "drop-new": the tracker would run up to 20 frames (about 222 ms at 90 Hz) behind.
+- The user decided the reverse on 2026-09-15: "latest-wins — discard the backlog, take the newest frame" (`docs/decisions.md:25`). The recorded wording is "pool exhausted ⇒ abandon the oldest unprocessed frame, reuse its slot, never block acquisition" (`archive/peer/2026-09-15-cycle8-plan-attack.md:34-37`). `docs/frame-ownership-design.md:90-91` says explicitly "not drop-new", because drop-new leaves the tracker "contiguous but lagged".
+- The project has already caught this pattern once. `docs/d1-build-plan.md:1200` calls a skip-on-full enqueue "drop-NEW" against `decisions.md:25` and made it a rule-1a blocker for the 1-element Q_focus. The 20-deep Q_work never got the same check.
+- The settled decisions contradict each other here. Rows 21 and 24 ("no pool eviction, no Lossy Enqueue"; "no free slot ⇒ do not read") conflict with row 25 (latest-wins) (`docs/decisions.md:21,24,25`). `frame-ownership-design.md:92-94` records the eviction as "cancelled" without citing the user. `decisions.md:8` says these rows are not re-opened without the user.
+- Fixing it after the build costs more. PD233(g) O1 sends every field of a frame (image slot, Trans Pos, Rot pos, x-y, i, `#11608`) through the same lock-stepped enqueue (`d1-loop12-17-split-plan.md:2143`). So the discard rule decides how many queues 1.2 must drain on each dequeue. The build card would either save a bed with drop-new built in, or return BLOCKED on O6 (timeouts, `:2148`; `STATUS.md:68`) — and timeouts are the pool's core behaviour.
+
+**What the next cycle should do instead:** a short judgement step with no LabVIEW that writes a Pre-decided entry for the pool's overload behaviour and O6 timeouts. One option that fits both rules:
+- 1.1 takes a free slot from Q_free with timeout 0 and skips the read only when no slot is free, so the camera is never gated (row 21).
+- 1.2 drains Q_work and all the lock-stepped field queues together, tracks only the newest frame, returns the older slots to Q_free, and records their frame numbers as gaps.
+
+The discard happens on the consumer side, so it needs no producer eviction and no Lossy Enqueue. That can meet rows 21 and 25 at once. If judgement cannot reconcile it with row 21, the question goes to `tools/bench/decisions_pending.json` for the user, and the pool build waits. After that, build the pool from the settled spec.
+
+VERDICT: change NEXT
+NEXT ACT: A judgement step with no LabVIEW settles the pool's overload rule and O6 timeouts to match the user's latest-wins decision (for example, 1.2 drains Q_work and tracks only the newest frame), or asks the user if the rules can't be reconciled; only then does the POOL build card run.

@@ -1,0 +1,39 @@
+{
+ "schema": "task/1",
+ "id": "chat-B1",
+ "kind": "build",
+ "goal": "Decision bench (steering / troubleshooting / peer review): build 10 leak-checked known-answer cases + harness + blind scorer, dry-run, smoke 5 arms on one case; do NOT run the full bench",
+ "why": "User 2026-09-29: benchmark judgement-level work across Opus 5.5 high/xhigh/max, Fable 5.1 low and parallel agents. Detail: brief_chat-B1.md",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_chat-B1.md", "md5": "2087c168637a05769554361c71d03f00"},
+  {"path": "tools/bench/matbench/matbench.py", "md5": "32834a83dca2065b665d70a767ab2d88"},
+  {"path": "tools/bench/matbench/cell_guard.py", "md5": "ce454ec4cd12a7a5962ab01448a439ab"},
+  {"path": "tools/bench/matbench/score.py", "md5": "73313208e99cc551a03c7b613c8309a2"}
+ ],
+ "pass": [
+  "10 cases (3 steering, 3 troubleshooting, 3 defect + 1 clean review), each with base commit, rubric md5-pinned, leak check PASS",
+  "harness + scorer (mechanical + blind model scorer) dry-run PASS on stub for all 5 arms, worktrees removed",
+  "smoke: 1 real run per arm on one case, usd/min per arm, xhigh accepted or not",
+  "projected full-run cost and time; full run NOT started"
+ ],
+ "outputs": [],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": ["tools/bench/decbench/**"],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 150},
+ "unblocks": "M3",
+ "rules": [
+  "Rig 실험중: no LabVIEW/GUI/hardware",
+  "Runner stays stopped",
+  "Pin model ids claude-opus-5-5 / claude-fable-5-1",
+  "Reuse matbench by import, stagekit-style short files",
+  "Patch with Edit/Write, never heredoc"
+ ]
+}

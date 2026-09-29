@@ -1,0 +1,39 @@
+{
+ "case": "T2-constvalue-void",
+ "arm": "FL",
+ "rep": 1,
+ "model": "claude-fable-5-1",
+ "effort": "low",
+ "attempt": 1,
+ "usd": 0.0,
+ "minutes": 0.01,
+ "cell_minutes": 0.01,
+ "turns": 1,
+ "tools": 1,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-fable-5-1",
+   "effort": "low",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.01,
+   "usd": 0.0,
+   "turns": 1,
+   "tools": 1,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "stub"
+   ]
+  }
+ ],
+ "answer": "Root cause is the reader: the base-class Constant.Value read (read_str / OpConstValue_v1, class 'Constant') returns a void/empty variant for non-String (here array) constants, so gate A1b could not pass regardless of the write.\nTest separates 'reader blind' from 'write failed': read #101 through a type-aware route (a property node of its specific class, e.g. ArrayConstant; an indicator wired to it and a run) or read a known-filled array constant with the same reader.\nVERDICT: change NEXT\nDEFECT: major - stub",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0,
+  "B1": 0.0,
+  "B2": 0.0
+ }
+}

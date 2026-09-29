@@ -1,0 +1,30 @@
+No — the pool step is the right *kind* of step, but its overload rule as written should not be built yet.
+
+**What holds up**
+- Pool-before-QRT-W ordering is sound: queueing R1's single IMAQ refnum would let loop 1.1 overwrite the buffer before 1.2 reads it, so 1.2 could track a different frame (`docs/d1-loop12-17-split-plan.md:2142`).
+- The 20-slot pre-allocated pool is a recorded decision (`docs/decisions.md:22`).
+- The working VI (R2) is accepted, so a build step is due (`STATUS.md:64-65`).
+
+**What is wrong**
+- NEXT prescribes a FIFO `Q_work` of bound 20 with "full ⇒ skip the read" (`STATUS.md:66`, `docs/d1-build-plan.md:572`). That drops the *newest* frame and keeps up to 20 old ones.
+- The recorded decision for overload between acquisition and tracking is the opposite: "lossy, latest-wins — discard the backlog, take the newest frame. A stale sample corrupts the time series" (`docs/decisions.md:25`).
+- The plan itself recognised this conflict for `Q_focus`: a skipping enqueue "is drop-NEW where `decisions.md:25` decided latest-wins" (`docs/d1-build-plan.md:1175-1176`). It was accepted there only with a zero-drops gate (`docs/d1-build-plan.md:1174`). I found no equivalent resolution for `Q_work`; section 9 just states the policy (`docs/d1-build-plan.md:572`).
+- Under sustained overload, 1.2 would track frames up to 20 deep in backlog. This is the real case, not a corner: the project memory index records frame loss already at 90 Hz with 8–15 beads.
+
+**Constraints on the fix**
+- The obvious fix is also forbidden: "No pool eviction, no `Lossy Enqueue Element`" (`docs/decisions.md:21`).
+- "No free slot ⇒ simply do not read this iteration" is decided (`docs/decisions.md:24`), but that concerns an empty `Q_free`, not a 20-deep `Q_work`.
+- So the design has to reconcile lines 21, 24 and 25. Candidates are consumer-side draining (1.2 dequeues to the newest slot and returns the older ones to `Q_free`) or a much smaller effective `Q_work` depth. Draining changes which frames are tracked, so it needs a judgement decision and possibly the user's.
+
+**Secondary point**
+- Cards must send unsettled design choices (O6 timeouts, O7 release/stop) back to judgement as BLOCKED (`STATUS.md:68`). The overload policy is a bigger open choice than either, and it is currently written as settled.
+
+**What the next cycle should do instead**
+- Start with an offline judgement act, no LabVIEW: settle the `Q_work` overload behaviour against `docs/decisions.md:21-25`, and amend `docs/d1-build-plan.md:572` and Pre-decided 233(k) (`docs/d1-loop12-17-split-plan.md:2171-2172`).
+- If no existing file settles it, put it on the pending-decisions list for the user.
+- Then dispatch the pool card on the amended design. The pool and queue creation rows are probably unchanged; only the full-queue branch and the 1.2 dequeue side differ.
+
+**Limits of this check**: I did not read `stage2-assembly-step-c.md:19-29` or `frame-ownership-design.md`. Either might already contain a drain rule that resolves this.
+
+VERDICT: change NEXT
+NEXT ACT: Before any build, have the judgement session reconcile the `Q_work` "full ⇒ skip the read" policy with the latest-wins decision in `docs/decisions.md:25` (asking the user if the files do not settle it), amend the plan, and then dispatch the pool build card.

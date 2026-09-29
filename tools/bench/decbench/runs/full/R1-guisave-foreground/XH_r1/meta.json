@@ -1,0 +1,38 @@
+{
+ "case": "R1-guisave-foreground",
+ "arm": "XH",
+ "rep": 1,
+ "model": "claude-opus-5-5",
+ "effort": "xhigh",
+ "attempt": 1,
+ "usd": 1.4597,
+ "minutes": 3.38,
+ "cell_minutes": 2.9,
+ "turns": 29,
+ "tools": 28,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-opus-5-5",
+   "effort": "xhigh",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 2.9,
+   "usd": 1.4596956000000003,
+   "turns": 29,
+   "tools": 28,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-opus-5-5"
+   ]
+  }
+ ],
+ "answer": "**The claim is wrong.** In the run-4 save window, `gui_save` most likely never sent Ctrl+E, the title-bar click or Ctrl+S to any window, so it does not matter which window was in front.\n\n**1. Strongest reason: the keystroke calls fail before they run**\n- `_lv_gui` joins its arguments with spaces into one `-Command` string and quotes none of them (`tools/gscript.py:274-275`).\n- `gui_save` quotes `-Title` by hand (`:2025,:2032`) but passes multi-word `-Evidence` strings bare, containing `(2026-08-30, 2026-09-15)`, `(H5)` and `(skill com-driving.md)` (`:2029,:2045,:2049`).\n- `lv_gui.ps1` is a `[CmdletBinding()]` script (`tools/lv_gui.ps1:95`). The spare words cannot bind to any parameter, and `(H5)` / `(skill …)` are evaluated as commands that do not exist. PowerShell would stop there, before the gate that writes the audit row (`:631-641`) and before `SendWait` (`:795`).\n- `gui_save` never reads what the click or keys calls return (`gscript.py:2028,2044,2049`), so an error there passes silently.\n- The audit log agrees. `tools/gui_actions.log` ends at `2026-09-18 18:12:14` (line 1800) and contains the string `gui_save` zero times.\n- Callers that quote `-Evidence` do get logged: `bench_prep.py:28-29` (e.g. `gui_actions.log:263`) and `d0_clickprobe.py:73`.\n\n**2. Alternative explanation of the same evidence**\nOnly `focus` and the bare `key esc` actually ran; neither needs `-Evidence`. That fits the screenshots too:\n- The home window being gone afterwards is what a *working* `focus` produces: an Alt tap, then `ShowWindow` and `SetForegroundWindow` (`lv_gui.ps1:236-240`).\n- \"No modal dialog\" follows because no Ctrl+S ever happened.\n\nI cannot check points (1) and (5) of the claim here: PNGs are gitignored (`.gitignore:9-10`) and are not in this checkout.\n\nPoint (4) also fails on the code alone. After the Ctrl+E attempt, the loop focuses the Front Panel again on its own (`gscript.py:2031-2032`), so a lost Ctrl+E can only matter if \"Ctrl+S on a Front Panel saves nothing\" is true. That idea rests on the `:2022-2023` comment, which is dated after the gate and may be this same defect.\n\n**3. What would falsify my position**\nA `keys … Key=^s` (or `click`) row in `tools/gui_actions.log` whose evidence starts `gui_save:` and falls inside run 4's save window. If that row exists, the keystroke was sent and the foreground idea is back in play.\n\n**Why the proposed fix fails**\n`clickprobe` passes through the same gate (`lv_gui.ps1:631`). It also uses the same bare-joining `_lv_gui` and the same unquoted-evidence habit. Checking the foreground first would therefore pass, and the `^s` call would still die at the parameter stage. The fix would then write a misleading \"foreground verified, save failed\" record. The `remove_bad_wires` evidence strings (`gscript.py:1667-1676`) are unquoted in the same way.\n\n**4. Cheapest test: no LabVIEW, no GUI action**\nIn Python, print `subprocess.list2cmdline(cmd)` for the `^s` call. Then run `g._lv_gui(\"-Action\",\"cursor\",\"-Evidence\",\"gui_save: title-bar click to unstick the UI loop (H5)\")`.\n- A PowerShell error (positional parameter, or `H5` not recognized) instead of a cursor position confirms my alternative.\n- A clean cursor position revives the claim.\n- Repeat with `\"'...'\"`-quoted evidence as the control.\n\nDEFECT: blocker - The claim blames where the keystrokes went, but they were never sent: `gui_save` passes an unquoted multi-word `-Evidence` through `_lv_gui`'s bare `-Command` join (`gscript.py:274-275,2029,2045,2049`), and `gui_actions.log` has not one `gui_save` row.",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0,
+  "B1": 1.0
+ }
+}

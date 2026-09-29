@@ -1,0 +1,39 @@
+{
+ "case": "T2-constvalue-void",
+ "arm": "FL",
+ "rep": 2,
+ "model": "claude-fable-5-1",
+ "effort": "low",
+ "attempt": 1,
+ "usd": 1.5157,
+ "minutes": 0.93,
+ "cell_minutes": 0.93,
+ "turns": 8,
+ "tools": 7,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-fable-5-1",
+   "effort": "low",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.93,
+   "usd": 1.51566475,
+   "turns": 8,
+   "tools": 7,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-fable-5-1"
+   ]
+  }
+ ],
+ "answer": "**Finding (confidence: moderate — read from files, not measured on LabVIEW).**\n\n**What the bytes say.** The read-back `2600800000000001000400000001000000000000` (diag_c118_p1.log:8) contains no string data at all. Compare gate A0 in the same run, where the same reader returned bytes ending in a length-prefixed `Cam` (diag_c118_p1.log:4). So the reader works for a scalar string constant, and for #101 it returned an empty, untyped value — not even twenty empty strings.\n\n**How the value was written.** `create_const_loop_term` puts the Python object straight into the op VI's `Value` control with `SetControlValue` and runs it (tools/gscript.py:2823-2825). That control was made by `create_control` on the `Value` input of the `Terminal.Create Constant` invoke (tools/bench/build_op_const_loopterm_77.py:48-49, 57), so it is a variant. The function's only success evidence is the created uid and the invoke error (tools/gscript.py:2807, 2826-2834); neither says anything about the value. Gate A1 passing (diag_c118_p1.log:7) therefore proves creation only.\n\n**What is new in this call.** The diagnostic passed a Python list of 20 strings (tools/bench/diag_c118_p1.py:33). The other callers I found pass scalars: `int(value)` (tools/bench/diag_c90_t0_step3.py:68) and `bool(value)` (tools/gscript.py:3554). I found no earlier array value through this route, so the array case is unproven.\n\n**Most plausible root cause.** The list did not survive the COM → variant control → `Create Constant` path as a String array. The constant was created and typed by the sink, but its value was never set, with no error raised.\n\n**Most plausible alternative.** The reader is at fault. `read_str` finds #101 in the `Constant` traverse and reads it through `OpConstValue_v1.vi` (tools/bench/diag_c118_p0.py:33-41). That op may return an empty variant for any array constant, even one holding the right value. It was only shown on a scalar string here (diag_c118_p1.log:4).\n\n**Discriminating test.** One scratch VI from `EMPTY_v0.vi`, about 15 s (the failed run took 15.4 s, diag_c118_p1.log:28):\n1. Drop `Get Controls.vi` and create the names constant exactly as in diag_c118_p1.py:32-33.\n2. Create an indicator on the constant's output terminal, run the scratch VI, and read the indicator with `GetControlValue`. This bypasses `OpConstValue_v1.vi`.\n3. Read the same constant with `read_str`.\n\nOutcomes:\n- Indicator shows `Cam_pool00..19`, `read_str` shows the void bytes → reader defect; the write is fine and gate A1b needs a different reader.\n- Indicator shows an empty array → the write path dropped the value; the fix belongs in how the array is handed to `Value`.\n\n**Not checked.** I did not open the op VIs themselves, and tools/bench/diag_c118_p0.json was not searched for an earlier array-constant read that might already settle the reader question.\n\nROOT CAUSE: `create_const_loop_term` handed a Python list to the op's variant `Value` control, a route only proven for scalars, so constant #101 was created without the 20 strings while the uid/error oracle reported success.\nTEST: In one scratch VI, create the same constant, wire it to an indicator, run, and compare the indicator's value with `read_str` on the same uid — a filled indicator blames the reader, an empty one blames the write.",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 1.0,
+  "B1": 1.0,
+  "B2": 0.0
+ }
+}
