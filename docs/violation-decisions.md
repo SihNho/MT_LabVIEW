@@ -1794,3 +1794,25 @@ Why: 1,800 lines. The decision blocks still cited as in force are listed in `doc
 
 APPEND-ONLY CONTINUES BELOW THIS FOOTER: `tools/violations.py`, `tools/retro_due.py`, the retrospective dispatcher (`DECISIONS` path) and `tools/doc_lint.py` L8 read THIS file, so a new `## <slug> - YYYY-MM-DD HH:MM` decision block is still appended at the END of this file (never above, never edited) until those readers are pointed at a new location. Appending keeps every cited line number.
 
+## device-failed — 2026-10-02 04:52 (cycle 130 judgement, after archive/peer/2026-10-02-retrospective-cycle130.md:353)
+
+**`VIOLATION: device-failed | loss_min=15 | loss_usd=? | evidence=tools/bench/gate_fp_queue.jsonl:24` — guard_peer's offline
+classification. ACCEPTED, with the peer's alternative ACCEPTED as a second cause.** guard_peer held the DRY X10 self-test
+(`selftest_x10_c130_1.py`, no LabVIEW: its probes stub COM) on a sibling offline card's failing log, because its import
+closure follows `stage_prerun` → `gscript` (fp-24; fp-22 is the same class: function-local imports followed). Fp-16/17/18,
+drained in the same cycle, were guard_peer false positives too. The alternative is also true: card 130-2 was dispatched
+with `peers: []` although STATUS's standing line says card peers = hypothesis, outcome, priorart, so its own failing suite
+log (run while `protocol.py` was being edited) could not be reviewed inside it — a judgement omission in the card, not a
+device.
+
+DECISION: device — fix guard_peer's offline classification in cycle 131, as an OFFLINE card BESIDE the deliverable's offline
+card (pipeline, two live offline cards, disjoint write lists; deliverable-first holds because the deliverable card is
+dispatched in the same message):
+- A command is OFFLINE when every module it runs is in `protocol.OFFLINE_SELFTESTS` or is a stage_prerun `--dry`/`--prerun`/
+  self-test whose COM is stubbed; an import that merely REACHES `gscript` without calling COM does not make it LabVIEW-touching.
+  Measure the rule against fp-16/17/18/22/24's recorded argvs (each must pass) and every LabVIEW launch in `stage_runs.jsonl`
+  (each must still be held), then drain fp-22 and fp-24.
+- Card hygiene (judgement, no device): every card that edits hooks or runs self-test suites carries `peers` including
+  `hypothesis`.
+- A further guard_peer hold of an offline self-test after this fix is `device-failed` again.
+

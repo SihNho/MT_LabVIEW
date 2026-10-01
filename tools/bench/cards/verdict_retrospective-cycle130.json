@@ -1,0 +1,25 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle130",
+ "verdict": "refuted",
+ "alternative": "The 03:32 hold was correct by guard_peer's spec (X10 self-test import closure reaches gscript; suite_gb was a real unreviewed failing log); the loss is the judgement session's peers omission (task_130-2.json:63 vs STATUS.md:99), i.e. rule-evaded, not device-failed.",
+ "discriminating_test": "Replay the fp-24 argv (03:32:22) offline against guard_peer twice: (1) with diag_c130_2_suite_gb.log marked reviewed, (2) with only the X10 self-test classed offline. Whichever alone releases it names the cause.",
+ "violations": [
+  {
+   "slug": "device-failed",
+   "loss_min": 15,
+   "loss_usd": null,
+   "evidence": "tools/bench/gate_fp_queue.jsonl:24"
+  }
+ ],
+ "sources": [
+  "tools/bench/gate_fp_queue.jsonl:24",
+  "tools/bench/cards/guard_card.log:591",
+  "tools/bench/diag_c130_3_wait.log:3",
+  "tools/bench/cards/result_130-3.json:1",
+  "tools/bench/cards/task_130-2.json:63",
+  "STATUS.md:99",
+  "tools/bench/cards/brief_130-6.md:4"
+ ],
+ "note": "Device = guard_peer selftest_exempt/offline_command (decided 2026-09-25 05:58); also fp-22. Cost: 1 of 6 dispatches + ~15 min; PD270(b) slid to cycle 131. Pin3 naming FAIL was PD265(a)'s planned test, not a fault."
+}

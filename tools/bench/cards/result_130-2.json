@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"130-2","status":"PASS","gates":{"pass":6,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+ {"path":"tools/hooks/guard_bash.py","md5":"1a74f78e6612aaa3c83ccbf7a66898e1"},
+ {"path":"tools/hooks/guard_peer.py","md5":"29a8eab368f53da684f834f0152428ed"},
+ {"path":"tools/protocol.py","md5":"0a214bbf926af31c63a0d862ea252431"},
+ {"path":"tools/peer.ps1","md5":"ec64aa834ed008fe740e7ac16230a648"},
+ {"path":"docs/ring-buffer-design.md","md5":"edba76b556d51dc8ef8938d3eed13c0a"},
+ {"path":"tools/bench/gate_fp_queue.jsonl","md5":"f032872f03008634ea2530d7e0e98180"},
+ {"path":"tools/bench/selftest_stoprecord_c130_2.py","md5":"88b6077d56e0b5f09a7f3d03d608a294"},
+ {"path":"tools/bench/selftest_c130_2_tools.py","md5":"ab4148500247ff6ed8fe8165852d33b9"},
+ {"path":"tools/bench/selftest_c130_2_peerfact.py","md5":"9886b3ac4468ebdf31deaa2c89cf57dc"},
+ {"path":"tools/bench/diag_c130_2_suite_all.log","md5":"cd7ef2142db6d2c52244cf7e1bfba4c4"}],
+"facts":[
+ "P1 stop record: guard_bash.py:305 _argument_only_view - python segments judged by scripts they RUN, not args; selftest_stoprecord_c130_2.log 37/0 (gate_fp --cmd/md5sum/grep pass, 19 launches refused)",
+ "P1 ids: brief's fp-22 became fp-23 (drained); fp-22 = guard_peer refusing my pure-Python self-test (guard_peer.py:206 follows function-local import stage_prerun at guard_bash.py:368), OPEN",
+ "P1 md5sum half NOT fixed: guard_cycle.py:40 BUILD_RE '\\bpy' matches a .py EXTENSION (fp-4 twin) - guard_cycle.py is outside this card's write list",
+ "Pre-existing stop_record holes (diag_c130_2_baseline.log): 'cd tools/recipes && py X.py' and a QUOTED absolute recipe path are allowed by stop_record alone; unchanged by fp-23 (selftest H1-H3)",
+ "P2 fp-18 RUNS_RE lookbehind guard_peer.py:94; fp-17 report_waiter_only guard_peer.py:102; fp-16 superseded_by_rerun (identical cmd, newer rc=0) guard_peer.py:396; selftest_c130_2_tools.log 31/0",
+ "P2 fp-15: canonical stagexec selftest form already passed 17 s after the refusal (diag_c126_3_sx_before.log:1); fixed the redirect form 'selftest 2>&1 | tail' at protocol.py:423",
+ "P3 protocol.py validate (result/1): CLOCK line via card_clock; MISMATCH -> rc 1, UNMEASURED -> WARN rc 0; synthetic OK/UNMEASURED/MISMATCH + real result_128-5 -> MISMATCH; selftest_card_clock 5/0",
+ "P4 ring-buffer-design.md:23-24 struck through + SUPERSEDED by PD238(b)/(c) note, same 2 lines; doc_lint 1 FAIL = L6 archive/peer disposals (pre-existing class, not this doc) c130_2_doclint.log",
+ "P5 peer.ps1 Test-ContentEmptyFactAnswer: gemini fact answer with no URL that points at an agy artifact -> ERROR rc 4 -> chain fallback; -ClassifyAnswerFile test switch; selftest_c130_2_peerfact 7/0",
+ "P6 diag_c130_2_suite_all.log: 40 self-tests rerun, 40 ok / 0 fail (guard_bash 22, protocol 11, guard_peer 12 incl. g6_peerset 13/0, logclass_cmd 28/0); new fp-25 logged (peer_role_of on md5sum)"],
+"open":[
+ "guard_cycle.py:40 (md5sum of two recipes refused, the 129-8 case) and stop_record holes H1-H3 need a card whose write list includes guard_cycle.py / stop_record.py",
+ "fp-22 (guard_peer import-closure follows function-local imports, guard_peer.py:206) and fp-25 (protocol.py:907 peer_role_of on read-only commands) stay open for the next tooling drain"],
+"cost":{"usd":null,"minutes":26,"labview_runs":0},
+"note":"Offline only; no LabVIEW, no paid peer call. stop_record.py, stage_prerun.py, stagesim.py, stagexec.py untouched."}

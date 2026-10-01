@@ -101,111 +101,6 @@
   },
   {
    "op": "create",
-   "id": "p3b_lr_num1",
-   "class": "Local",
-   "diagram": "new:FS1.f0",
-   "as": "LRN1",
-   "label": "Num",
-   "mode": "read",
-   "pos": [
-    20,
-    220
-   ],
-   "terminals": [
-    {
-     "name": "Num",
-     "is_source": true,
-     "term_class": "Terminal"
-    }
-   ],
-   "why": "ROUTE local_read (create_local_read + move_in) | PRECEDENT | PD246(c) A2 | run on loop body #639 (plan_l2a3_in.json:16); placement in a FS frame never run"
-  },
-  {
-   "op": "create",
-   "id": "p3b_ras_num1",
-   "class": "GrowableFunction",
-   "diagram": "new:FS1.f0",
-   "as": "RAN1",
-   "pos": [
-    120,
-    220
-   ],
-   "prim": "Replace Array Subset",
-   "donor": {
-    "donor": "$work",
-    "uid": 29157
-   },
-   "terminals": [
-    {
-     "name": "array",
-     "is_source": false,
-     "term_class": "Terminal"
-    },
-    {
-     "name": "output array",
-     "is_source": true,
-     "term_class": "Terminal"
-    },
-    {
-     "name": "index",
-     "is_source": false,
-     "term_class": "Terminal"
-    },
-    {
-     "name": "new element/subarray",
-     "is_source": false,
-     "term_class": "Terminal"
-    }
-   ],
-   "why": "ROUTE primitive $work donor #29157 | PRECEDENT | PD246(c) A2 Replace Array Subset | route measured in P3a (stage_d1_ring_p3a.log, Equal?/Increment/Q&R); class GrowableFunction never copied: census UNPREDICTED"
-  },
-  {
-   "op": "create",
-   "id": "p3b_k_m1",
-   "class": "DigitalNumericConstant",
-   "diagram": "new:FS1.f0",
-   "as": "KM1",
-   "pos": [
-    60,
-    160
-   ],
-   "prim": "const_donor",
-   "donor": {
-    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRingConst_v0.vi",
-    "uid": 249
-   },
-   "terminals": [
-    {
-     "name": "",
-     "is_source": true,
-     "term_class": "Terminal"
-    }
-   ],
-   "why": "ROUTE primitive const_donor | MEASURED | PD238(c) Num(i)=-1 | const in a FS frame: diag_c125_5_fsscr.log:41-47 (C-3a); I32 -1 = DonorRingConst_v0 #249 (PD247(a))"
-  },
-  {
-   "op": "create",
-   "id": "p3b_lw_num1",
-   "class": "Local",
-   "diagram": "new:FS1.f0",
-   "as": "LWN1",
-   "label": "Num",
-   "mode": "write",
-   "pos": [
-    220,
-    220
-   ],
-   "terminals": [
-    {
-     "name": "Num",
-     "is_source": false,
-     "term_class": "Terminal"
-    }
-   ],
-   "why": "ROUTE local_write (create_local_write -> dest diagram) | PRECEDENT | PD246(c) A2 | stagexec.py:206 route; placement in a FS frame never run"
-  },
-  {
-   "op": "create",
    "id": "p3b_ia",
    "class": "IndexArray",
    "diagram": "new:FS1.f1",
@@ -478,27 +373,6 @@
   },
   {
    "op": "wire",
-   "id": "p3b_w_n1_arr",
-   "src": "new:LRN1.value",
-   "dst": "new:RAN1.array",
-   "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD246(c) A2 frame 1 | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run"
-  },
-  {
-   "op": "wire",
-   "id": "p3b_w_m1_new",
-   "src": "new:KM1.value",
-   "dst": "new:RAN1.new element/subarray",
-   "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD238(c) Num(i) = -1 | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run"
-  },
-  {
-   "op": "wire",
-   "id": "p3b_w_n1_out",
-   "src": "new:RAN1.output array",
-   "dst": "new:LWN1.value",
-   "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD246(c) A2 frame 1 | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run"
-  },
-  {
-   "op": "wire",
    "id": "p3b_w_ia_dst",
    "src": "new:IA1.element",
    "dst": "new:CP1.Image Dst",
@@ -545,22 +419,6 @@
    "src": "new:SEL1.s? t:f",
    "dst": "new:RAN3.new element/subarray",
    "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD258(c) element = status ? -1 : BufNum | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run"
-  },
-  {
-   "op": "wire",
-   "id": "p3b_x_i_f1",
-   "src": {
-    "uid": 27373,
-    "term": "x-y*floor(x/y)"
-   },
-   "dst": "new:RAN1.index",
-   "why": "ROUTE connect_term_uid ACROSS FS border (case frame 27219 -> FS f0) | MEASURED | PD246(c)(d) i = count mod 20 | census_samples.json connect_term_uid case_frame_to_fs_frame (diag_c126_4_fs.log:53)"
-  },
-  {
-   "op": "wire_remove_loose_ends",
-   "id": "p3b_rle_i_f1",
-   "of": "p3b_x_i_f1",
-   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0; diag_c126_4_op.log:52-60; diag_c126_6_cross.log:61-65 | PD256(b) every wire of crossing p3b_x_i_f1"
   },
   {
    "op": "wire",

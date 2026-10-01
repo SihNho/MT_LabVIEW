@@ -89,8 +89,22 @@ BENCH = os.path.join(ROOT, "tools", "bench")
 PEER = os.path.join(ROOT, "archive", "peer")
 
 # Commands that RUN something (a recipe or a bench script). Reading a log is not running a build.
-RUNS_RE = re.compile(r"py[\w.]*\s+(?:-u\s+)?[^\s|;&]*tools[\\/](?:recipes|bench)[\\/][^\s|;&]*\.py|"
+# gate-fp fp-18 (card 130-2): `py` may not follow a `.`/word char - `md5sum tools/stagexec.py tools/bench/x.py` read the
+# EXTENSION `py` of the first path as an interpreter (the fp-4 twin; guard_bash.MATERIAL_RE got the same lookbehind).
+RUNS_RE = re.compile(r"(?<![.\w])py[\w.]*\s+(?:-u\s+)?[^\s|;&]*tools[\\/](?:recipes|bench)[\\/][^\s|;&]*\.py|"
                      r"bgrun\.py", re.I)
+# gate-fp fp-17 (card 130-2): the chat's report waiter (tools/wait_runner_event.py: imports os/sys/time + report_gate, tails
+# runner logs, no LabVIEW, no build) under bgrun is not a build. Exempt ONLY when every .py the command names
+# (protocol._launched_scripts - any mention, not just command position) is bgrun.py or wait_runner_event.py.
+WAITER_SCRIPTS = {"bgrun.py", "wait_runner_event.py"}
+
+
+def report_waiter_only(cmd):
+    try:
+        scripts = [os.path.basename(s).lower() for s in protocol._launched_scripts(cmd or "")]
+    except Exception:                                                              # noqa: BLE001 - not exempt
+        return False
+    return "wait_runner_event.py" in scripts and all(s in WAITER_SCRIPTS for s in scripts)
 # The CYCLE RUNNER is not a build (2026-09-21 11:5x): `bgrun.py ... -- py tools/cycle_runner.py` only spawns the
 # judgement session that will itself dispatch the owed review; blocking the runner on a failing log left by a
 # session the 600-min cap killed mid-cycle deadlocks the loop (nobody is left to dispatch anything).
@@ -368,9 +382,41 @@ def newest_failing_log():
                 continue
         elif SELFTEST_LOG_RE.match(os.path.basename(p)):
             continue
-        if log_failure(text, st.st_mtime)[0]:
+        if log_failure(text, st.st_mtime)[0] and not ("BGRUN START" in text and
+                                                      superseded_by_rerun(p, st.st_mtime, "BGRUN START" + last)):
             best = (p, st.st_mtime, last)
     return best
+
+
+def _start_cmd(run):
+    first = (run.splitlines() or [""])[0]
+    return first.split(" min: ", 1)[1].strip() if first.startswith("BGRUN START") and " min: " in first else ""
+
+
+def superseded_by_rerun(path, mtime, last):
+    """gate-fp fp-16 (card 130-2): a failing log whose LAST run's command is IDENTICAL (byte for byte after bgrun's
+    ` min: `) to the last run of a NEWER log that ended `BGRUN END rc=0` with no failure line is superseded - the same
+    rule as a passing rerun appended to the SAME file (only the LAST run counts, above), across log names. A different
+    command (other arguments, other script), a TIMEOUT, rc != 0, or any failure line keeps the old log failing."""
+    cmd = _start_cmd(last)
+    if not cmd:
+        return False
+    for q in glob.glob(os.path.join(BENCH, "*.log")):
+        if os.path.normcase(q) == os.path.normcase(path):
+            continue
+        try:
+            if os.stat(q).st_mtime <= mtime:
+                continue
+            with open(q, "r", encoding="utf-8", errors="replace") as f:
+                t = f.read().lstrip("﻿")
+        except OSError:
+            continue
+        if "BGRUN START" not in t:
+            continue
+        run = "BGRUN START" + t.rsplit("BGRUN START", 1)[-1]
+        if _start_cmd(run) == cmd and re.search(r"^BGRUN END rc=0\b", run, re.M) and not log_failure(run)[0]:
+            return True
+    return False
 
 
 # card chat-P1 1(d): the OFFLINE tools whose import closure reaches LabVIEW modules but which, in these modes, never open
@@ -920,6 +966,8 @@ def main():
     # exemptions used to apply to the WHOLE command, so a build whose arguments contained `dir`/`type`/`head` was
     # exempt. A command that runs a build is exempt only if it is the remedy itself.
     if REMEDY_RE.search(cmd):
+        return 0
+    if report_waiter_only(cmd):                     # gate-fp fp-17 (card 130-2)
         return 0
 
     failing = newest_failing_log()

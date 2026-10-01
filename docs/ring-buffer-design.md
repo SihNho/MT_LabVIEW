@@ -20,8 +20,8 @@ QUEUES (`Q_free`, `Q_work`) are dropped. Rollback to D1_s4 is CANCELLED.
 
 ## Design
 1. **Slots:** the 20 IMAQ images already created by the POOL stage (`Cam_pool00..19`, bed
-   `claudeDev\D1_qrt_pool_20260928_141055.vi`). Slot index = the CAMERA LOOP's own counter k mod 20 (not BufNum mod
-   20), so the camera acquires DIRECTLY into `Img(k mod 20)` — no extra copy.
+   `claudeDev\D1_qrt_pool_20260928_141055.vi`). ~~Slot index = the CAMERA LOOP's own counter k mod 20 (not BufNum mod
+   20), so the camera acquires DIRECTLY into `Img(k mod 20)` — no extra copy.~~ **SUPERSEDED by PD238(b)/(c) (`docs/d1-loop12-17-split-plan.md:2255-2256`): slot write = `IMAQ Copy 'Cam' → Img(i)` per NEW BufNum only, i = the camera loop's count of NEW frames mod 20 — not acquisition into the slot (card 130-2).**
 2. **No corruption (seqlock):** per-slot number array `Num(20)`, init -1. Camera loop, per frame: `Num(i) = -1` (writing),
    acquire into `Img(i)`, store the frame-paired values (`#30117` Trans Pos, `#4580` Rot pos, frame index) in per-slot
    arrays, then `Num(i) = BufNum`, publish `Latest = BufNum`. Tracking loop: `n1 = Num(i)`, track `Img(i)`, `n2 = Num(i)`;

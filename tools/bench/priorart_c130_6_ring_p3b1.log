@@ -1,0 +1,38 @@
+BGRUN START 2026-10-02 04:19:01 limit 20.0 min: py -u tools/prior_art_review.py --plan-file tools/bench/plan_ring_p3b1.json --slug c130-6-ring-p3b1 --trigger new-op --recipe tools/recipes/stage_d1_ring_p3b1.py
+BGRUN PID 20372
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c130-6-ring-p3b1.txt (63903 chars)
+   review card tools\bench\cards\review_priorart-c130-6-ring-p3b1.json
+OUTCOME: ANSWERED (49s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-02-priorart-c130-6-ring-p3b1.md
+COST: $1.2312  in 12 / out 3847 / cache-create 126604 / cache-read 706760  (46s, 9 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c130-6-ring-p3b1 verdict=novel -> tools\bench\cards\verdict_priorart-c130-6-ring-p3b1.json
+--- ANSWER ---
+**Verdict: `novel`.** Nothing in the project's files has already built, refuted or superseded this 31-action P3b-1 plan. It is the memory re-cut of a build that was planned before but never launched. No `D1_ring_p3b*` VI exists in `claudeDev`.
+
+**PART A — the direction**
+- **A1 (already decided?)** The direction is decided, and this plan carries it out rather than repeating it. `docs/d1/ring-p3b.md:24-33`, PD269(a)–(d), 2026-10-02, accepts the cut: P3b-1 has 31 edit operations and a predicted peak of 663.4 MB; P3b-2 has 39 and 664.3 MB; frame f0 stays empty; IMAQ Copy and its error guard stay together. The plan matches this.
+- **A2 (already refuted?)** Nothing refutes it. The earlier failures shaped this plan:
+  - The scratch run `pin2` stopped at op 33 of 40 at 697.3 MB (STATUS NEXT, cycle 129-4). The new cut removes that cause: N 31, R 20, peak 663.4 (`stage_prerun_c130_6_p3b1_prerun.log:123-124`).
+  - The tunnel-naming mismatch is handled by PD265(a). The simulator now names the crossing's tunnel from named tunnels already on the source net (STATUS 129-7).
+- **A3 (contradictions)** One small stale line, which I am not counting as a finding. The plan's `goal` string still says "FS + f0 Num(i)=-1 + IMAQ Copy…". PD269(a) (`docs/d1/ring-p3b.md:25-26`) moved f0's `Num(i)=-1` group to P3b-2. The recipe docstring is already corrected (`stage_prerun_c130_6_p3b1_prerun.log:5-6`), and no gate reads the goal text. It is only a text fix.
+- **A4 (unread evidence)** None. The plan cites the relevant measurement logs: diag_c125_5, c126_4, c126_6 and c128_2.
+
+**PART B — the artifact**
+- **B1 (already built?)** Not built. There is no P3b-1 VI in `claudeDev`.
+- **B2 (already failed?)** The same build failed once as a scratch run (`stage_d1_ring_p3b1_scratch_pin2.log`, memory stop at op 33). The cause is addressed, as above, and not repeated.
+- **B3 (helper exists?)** The recipe uses the existing helpers rather than hand-rolling them: `OpWireRemoveLooseEnds_v0` (`gscript.py:4972`), `connect_term_uid`, the stagexec flat-sequence routes, and the existing donor VIs. Its own header says "No new op" (`prerun log:13`).
+- **B4 (already measured?)** Not as a whole. The memory cost per edit and per whole-VI read was measured in 129-6. That run measured the inputs to this plan; it did not answer the question this build answers.
+- The memory check that failed in cycle 129 now computes its prediction from the compiled plan here (`prerun log:123-124`). Background: `archive/peer/2026-10-02-hyp-c130-3-x10-selftest.md:20,38`.
+
+**PART C — the user's rules**
+- **C1** No contradiction:
+  - The guard writes -1 when the copy fails (`status ? -1 : BufNum`), so a failed copy can never leave a slot whose image and buffer number disagree (U9).
+  - The plan adds no queue and no serial call (`prerun log:107`, X8 PASS).
+  - It changes no per-bead computation (U1; PD269 relies on the final graph being unchanged).
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c130-6-ring-p3b1","verdict":"novel","alternative":"Same build already attempted as scratch pin2 (op 33 memory stop, 697 MB); this 31-op cut (663.4 MB, PD269) addresses that cause rather than repeating it. Plan goal string is stale (still names f0 Num(i)=-1) - cosmetic only.","discriminating_test":"Card 2 scratch pin on a P3a byte copy: peak memory <= 675 MB, op 33-equivalent tunnel named 'current image number', Error List 54.","violations":[],"sources":["docs/d1/ring-p3b.md:21-33","tools/bench/stage_prerun_c130_6_p3b1_prerun.log:3-13,93,123-124","STATUS.md NEXT cycle 129 129-4/129-6/129-7","archive/peer/2026-10-02-hyp-c130-3-x10-selftest.md:20,38"],"note":"No D1_ring_p3b* VI in claudeDev; not built before. Earlier prior-art reviews c129-2/c129-8 on the 40-op version also returned novel."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c130-6-ring-p3b1.md
+   STOP RECORD: none - 2026-10-02-priorart-c130-6-ring-p3b1.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_ring_p3b1.py sha fd2507d7603e -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 53s

@@ -58,6 +58,13 @@ PRE-RUN (decision 2, 3, 8), all offline, on the same graph JSON + the dry run's 
      dispatched ops, from the RECORDED per-op meter of an earlier run of the same recipe (stagexec.mem_predict), is
      below X10_FAIL_MB 690 (card 106-5, PD219(c): error 2 was seen at 695 MB; MEMSTOP stagexec.MEM_STOP_MB 700 stays
      the run-time guard); no covering record = UNMEASURED: `X10 WARN unmeasured` in the output and the RESULT line, pass.
+     REPLACED by card 130-1 (PD267(b)): X10 predicts every stagexec.Executor the dry run builds from its COMPILED plan +
+     checkpoint set, peak = start + R*read + N*(edit+other) (tools/bench/memory_model.json, each value cited); FAIL above
+     its fail_above_mb (675); FAIL UNMEASURED when nothing compiles and no recorded meter covers the run (x10_gate).
+     Self-test: tools/bench/selftest_x10_c130_1.py
+     card 130-5 (PD268(b)): `--dry` FAILs (EXECUTOR-STOP / EXECUTOR-NOT-RUN, executor_stops) when a stagexec.Executor
+     the recipe built ran fewer ops than its window (from_step+1 .. stop_after|last). Self-test:
+     tools/bench/selftest_dry_c130_5.py
      Without --graph the dry uses the recipe's plan base graph (find_graph / plan_base_graphs, card 106-5).
      Self-test of X9/X10: tools/bench/selftest_stage_prerun_c106c.py
   X11 (card 114-1 S0, PD227(j)) no stageplan `wire` row into one INPUT of a Build Array while a sibling input of that node
@@ -360,6 +367,8 @@ class DryState(object):
         self.blocked = []                    # subprocess / file ops refused
         self.works = []                      # card 106-3: every Stage's work path (X9 verb preconditions)
         self.recipe = None                   # card 106-5: the recipe under dry run (find_graph reads its plans' base)
+        self.executors = []                  # card 130-1 (PD267(b)): every stagexec.Executor the recipe built (X10 model)
+        self.x10_probe = False               # card 130-1: stop the recipe at its first Executor (self-test probe)
 
 
 D = DryState()
@@ -845,13 +854,17 @@ def dry(recipe, graph=None):
         tap = _UnroutableTap(sys.stdout)
         sys.stdout = tap
         sys.settrace(tracer)
+        unhook = x10_capture_executors()                       # card 130-1 (PD267(b)): record every Executor's set
         try:
             runpy.run_path(path, run_name="__main__")
         except SystemExit:
             pass
+        except X10Probe:
+            pass                                               # card 130-1: probe mode stops at the first Executor
         except BaseException as e:                                                 # noqa: BLE001
             D.fails.append("PY {0}: {1} (module level)".format(type(e).__name__, str(e)[:160]))
         finally:
+            unhook()
             sys.settrace(None)
             tap.flush_tail()
             if sys.stdout is tap:
@@ -861,7 +874,12 @@ def dry(recipe, graph=None):
         # after the first mutation and is downgraded to UNVERIFIED. An unroutable row is a plan fact, not stub data.
         for ln in tap.hits:
             D.fails.append("UNROUTABLE " + ln.split("UNROUTABLE", 1)[1].strip()[:200])
-    status = "PASS" if (D.reached_end and not D.fails) else "FAIL"
+        # card 130-5 (PD268(b), docs/d1/tooling.md:20-38): an Executor that stopped before its plan's last op made the dry
+        # PASS anyway (the recipe's E1 is downgraded to UNVERIFIED in a dry run): c128b stopped at op 48 of 63 and PASSed.
+        # A dry that does not cover every op is no evidence for a launch -> FAIL. (Probe mode stops at the first Executor.)
+        if not D.x10_probe:
+            D.fails.extend(executor_stops(D.executors))
+    status ="PASS" if (D.reached_end and not D.fails) else "FAIL"
     first = D.fails[0] if D.fails else (None if D.reached_end else "STUB-LIMIT: " + str(D.stub_limit)
                                         if D.stub_limit else "body did not reach its end")
     return {"status": status, "first_fail": first, "fails": D.fails, "unverified": D.unverified,
@@ -869,7 +887,7 @@ def dry(recipe, graph=None):
             "coverage": [len(hit & code_lines), len(code_lines)], "ops": D.ops, "addresses": D.addresses,
             "jev": D.jev, "graph": rel(D.graph_path) if D.graph_path else None, "input_md5": D.input_md5,
             "input_vi": D.input_vi, "blocked": sorted(set(D.blocked)), "secs": round(time.time() - t0, 1),
-            "calls": len(D.calls), "works": list(D.works)}
+            "calls": len(D.calls), "works": list(D.works), "executors": list(D.executors)}
 
 
 # ---------------------------------------------------------------------------------------------- the pre-run
@@ -1791,6 +1809,164 @@ def mem_margin(recipe, stop_after=None, from_step=None, log_dir=None, records=No
                 os.path.basename(recipe), int(from_step or 0) + 1, stop_after or "end", len(recs))}
 
 
+# ------------------------------------------------------------------ card 130-1 (PD267(b)): X10 MODEL from the compiled plan
+# retrospective-cycle129 device-failed: X10 passed the 40-op P3b-1 as UNMEASURED (stage_prerun_c129_1_p3b1_prerun.log:137)
+# because it only read RECORDED meters. X10 now predicts every Executor the recipe builds in its dry run from the compiled
+# plan + the checkpoint set it passes: peak = start + R*read + N*(edit + other) (coefficients ONLY from memory_model.json,
+# each citing its log line); FAIL above fail_above_mb (675, PD266(b)); FAIL UNMEASURED when no Executor/plan compiles and
+# no recorded meter covers the run. A recorded meter (mem_margin) still FAILS on its own >= 690 when it exists.
+MEMORY_MODEL = os.path.join(BENCH, "memory_model.json")
+
+
+class X10Probe(BaseException):
+    """card 130-1: raised by the Executor capture in probe mode (D.x10_probe) - not an Exception, so stagekit.run's
+    handlers do not swallow it; dry() catches it."""
+
+
+def load_memory_model(path=None):
+    m = json.load(REAL_OPEN(path or MEMORY_MODEL, encoding="utf-8"))
+    for k in ("start_mb", "read_mb", "edit_mb", "other_mb", "fail_above_mb"):
+        if not isinstance(m.get(k), dict) or not isinstance(m[k].get("value"), (int, float)) or not m[k].get("cite"):
+            raise ValueError("memory_model {0}: needs {{value, cite}}".format(k))
+    return m
+
+
+def x10_capture_executors():
+    """card 130-1: wrap stagexec.Executor.__init__ for the dry run - record plan path, compiled op kinds, checkpoints,
+    stop_after, from_step (bound through the real signature, defaults applied). Returns the un-hook."""
+    import inspect
+    try:
+        import stagexec as SX
+    except Exception:                                                              # noqa: BLE001
+        return lambda: None
+    orig = SX.Executor.__init__
+    sig = inspect.signature(orig)
+
+    def cap(self, *a, **kw):
+        rec = {"plan": None, "kinds": None, "checkpoints": None, "stop_after": None, "from_step": None, "error": None}
+        try:
+            b = sig.bind(self, *a, **kw)
+            b.apply_defaults()
+            cp = b.arguments.get("checkpoints")
+            rec.update(plan=rel(str(b.arguments.get("plan_path"))), stop_after=b.arguments.get("stop_after"),
+                       from_step=b.arguments.get("from_step"),
+                       checkpoints=None if cp is None else sorted(int(k) for k in cp))
+            pl = json.load(REAL_OPEN(os.path.abspath(str(b.arguments.get("plan_path"))), encoding="utf-8"))
+            rec["kinds"] = [o["kind"] for o in SX.compile_plan(pl)]
+        except Exception as e:                                                     # noqa: BLE001
+            rec["error"] = "{0}: {1}".format(type(e).__name__, str(e)[:200])
+        D.executors.append(rec)
+        if D.x10_probe:
+            raise X10Probe(rec["plan"])
+        self._prerun_rec = rec                             # card 130-5: run_cap fills rec["run"] (PD268(b))
+        return orig(self, *a, **kw)
+    orig_run = SX.Executor.run
+
+    def run_cap(self, *a, **kw):
+        """card 130-5 (PD268(b)): record how far run() got. A dry run whose Executor stopped before its window's last op
+        (ExecStop/SimError inside run, downgraded to UNVERIFIED by the recipe's E1) must FAIL, not PASS (c128b: 48 of 63)."""
+        rec = getattr(self, "_prerun_rec", None)
+        if rec is None:
+            return orig_run(self, *a, **kw)
+        first = int(self.from_step or 0)
+        last = int(self.stop_after if self.stop_after is not None else len(self.ops))
+        rr = {"called": True, "completed": False, "planned": max(0, last - first), "executed": 0, "stopped_in": None,
+              "stop": None}
+        rec["run"] = rr
+        try:
+            out = orig_run(self, *a, **kw)
+            rr["completed"], rr["executed"] = True, rr["planned"]
+            return out
+        except BaseException as e:                                                 # noqa: BLE001 - recorded, re-raised
+            cur = self.cur or {}
+            rr["stopped_in"] = {"k": cur.get("k"), "op": cur.get("op"), "ids": cur.get("ids")}
+            rr["executed"] = max(0, int(cur.get("k") or first) - 1 - first) if cur.get("k") else 0
+            rr["stop"] = "{0}: {1}".format(type(e).__name__, str(e)[:240])
+            raise
+    SX.Executor.__init__ = cap
+    SX.Executor.run = run_cap
+
+    def unhook():
+        SX.Executor.__init__ = orig
+        SX.Executor.run = orig_run
+    return unhook
+
+
+def executor_stops(executors):
+    """card 130-5 (PD268(b)): one FAIL text per Executor whose run() ended before its window's last op, or that was built
+    and never run. [] when every Executor ran its whole window (or none was built)."""
+    out = []
+    for ex in executors or []:
+        rr = ex.get("run")
+        if ex.get("error"):
+            continue                                       # not compilable: X10 reports it UNMEASURED
+        if not rr:
+            out.append("EXECUTOR-NOT-RUN {0}: built, run() never called - 0 ops executed".format(ex.get("plan")))
+        elif not rr.get("completed"):
+            out.append("EXECUTOR-STOP {0}: executed {1} of {2} ops, stopped IN op {3}: {4}".format(
+                ex.get("plan"), rr.get("executed"), rr.get("planned"), rr.get("stopped_in"), rr.get("stop")))
+    return out
+
+
+def x10_model_peak(kinds, checkpoints, stop_after=None, from_step=None, model=None):
+    """card 130-1 (PD267(b)): the predicted private-MB peak of ONE Executor run. N = ops dispatched (from_step+1 ..
+    stop_after|end); R = whole-VI reads = {from_step|0} + the checkpoints in the window + the ops the Executor forces
+    (every BIND_KINDS op and the last op, stagexec.py:1960); checkpoints None = a read after every op (R = N + 1)."""
+    import stagexec as SX
+    m = model or load_memory_model()
+    first, last = int(from_step or 0), int(stop_after or len(kinds))
+    win = range(first + 1, last + 1)
+    if checkpoints is None:
+        reads = set([first]) | set(win)
+    else:
+        reads = (set([first]) | set(k for k in checkpoints if first < k <= last)
+                 | set(k for k in win if kinds[k - 1] in SX.BIND_KINDS) | set([last]))
+    N, R = len(win), len(reads)
+    v = lambda k: float(m[k]["value"])                                             # noqa: E731
+    peak = round(v("start_mb") + R * v("read_mb") + N * (v("edit_mb") + v("other_mb")), 1)
+    return {"N": N, "R": R, "bind": sum(1 for k in win if kinds[k - 1] in SX.BIND_KINDS), "peak_mb": peak,
+            "fail_above_mb": v("fail_above_mb"), "ok": peak <= v("fail_above_mb"),
+            "checkpoints": "every op" if checkpoints is None else sorted(reads)}
+
+
+def x10_gate(recipe, executors, stop_after=None, from_step=None, model=None):
+    """card 130-1 (PD267(b)): (ok, detail dict). ok False = a predicted peak > fail_above_mb, or UNMEASURED (no Executor
+    whose plan compiled AND no covering recorded meter), or a recorded meter >= 690 (mem_margin, kept)."""
+    try:
+        m = model or load_memory_model()
+    except Exception as e:                                                         # noqa: BLE001
+        return False, {"why": "UNMEASURED: memory model unreadable ({0})".format(e)}
+    runs, bad = [], []
+    for ex in executors or []:
+        if ex.get("error") or not ex.get("kinds"):
+            bad.append("{0}: plan/checkpoint set not compilable ({1})".format(ex.get("plan"), ex.get("error")))
+            continue
+        sa = ex.get("stop_after") if ex.get("stop_after") is not None else stop_after
+        fs = ex.get("from_step") if ex.get("from_step") is not None else from_step
+        runs.append(dict(x10_model_peak(ex["kinds"], ex.get("checkpoints"), sa, fs, m), plan=ex.get("plan")))
+    mm = mem_margin(recipe, stop_after, from_step)
+    det = {"model": rel(MEMORY_MODEL), "runs": runs, "not_compiled": bad,
+           "recorded": dict((k, mm.get(k)) for k in ("ok", "peak_mb", "source", "why") if mm.get(k) is not None)}
+    if bad or (not runs and mm["ok"] is None):
+        det["why"] = "UNMEASURED: " + ("; ".join(bad) if bad else
+                                       "no stagexec.Executor plan in the dry run and no recorded meter covers the run")
+        return False, det
+    det["peak_mb"] = max([r["peak_mb"] for r in runs] or [mm.get("peak_mb") or 0])
+    return all(r["ok"] for r in runs) and mm["ok"] is not False, det
+
+
+def x10_probe(recipe, graph=None):
+    """card 130-1 self-test helper: dry-run the recipe only up to its first Executor (probe) and return the records."""
+    D.__init__()
+    D.x10_probe = True
+    try:
+        dry(recipe, graph)
+    finally:
+        builtins.open = REAL_OPEN
+        D.x10_probe = False
+    return list(D.executors)
+
+
 DELETE_VERB_RE = re.compile(r"^delete_(object|wire)$")    # card 115-3 F1: counted against plan DELETE rows, not wire rows
 RLE_VERB_RE = re.compile(r"^wire_remove_loose_ends$")     # card 128-4 (PD261(b)): counted against plan RLE rows
 
@@ -2084,17 +2260,17 @@ def prerun(recipe, graph=None, stop_after=None, from_step=None):
          vp[:6] or "work {0}; decisions rows {1}".format(
              wk, "dispatched (run_rows/from_decision called)" if rdisp else
              "NOT dispatched (recipe calls neither run_rows nor from_decision)"))
-    # card 106-3: X10 memory margin from the recorded per-op meter (retrospective-cycle103 inference-over-measurement)
-    mm = mem_margin(recipe, stop_after, from_step)
-    tr["mem_margin"] = mm
-    # card 106-5 (PD219(c)): fail at a predicted checkpoint >= X10_FAIL_MB (690); no covering record = WARN, pass
-    gate("X10 predicted LabVIEW private MB < {0} (error-2 point; MEMSTOP {1}) over the ops this run dispatches ({2})".format(
-        round(mm.get("memstop") - mm.get("margin_mb"), 1), mm.get("memstop"),
-        "UNMEASURED - no covering record" if mm["ok"] is None else mm.get("how")), mm["ok"] is not False,
-        dict((k, mm.get(k)) for k in ("peak_mb", "at", "headroom_mb", "window", "source", "why") if mm.get(k) is not None))
-    warn = "X10 WARN unmeasured: {0}".format(mm.get("why")) if mm["ok"] is None else None
-    if warn:
-        print("  WARN  {0}".format(warn), flush=True)
+    # card 130-1 (PD267(b)): X10 = the MODEL prediction from each Executor's compiled plan + checkpoint set (memory_model.json),
+    # FAIL > fail_above_mb (675) and FAIL UNMEASURED; a recorded meter (card 106-3/106-5 mem_margin) still fails at >= 690
+    x10_ok, x10_det = x10_gate(recipe, tr.get("executors"), stop_after, from_step)
+    tr["mem_margin"] = x10_det
+    for r_ in x10_det.get("runs", []):
+        print("  FACT  X10 {0}: N {1} ops, BIND {2}, R {3} reads, predicted peak {4} MB (fail above {5})".format(
+            r_["plan"], r_["N"], r_["bind"], r_["R"], r_["peak_mb"], r_["fail_above_mb"]), flush=True)
+    gate("X10 predicted LabVIEW private MB <= model fail_above_mb, from the compiled plan + checkpoint set ({0})".format(
+        x10_det.get("why") or "peak {0} MB".format(x10_det.get("peak_mb"))), x10_ok,
+        dict((k, x10_det.get(k)) for k in ("peak_mb", "why", "recorded", "not_compiled", "model") if x10_det.get(k)))
+    warn = None
     tr["x14"] = x14_advisory(recipe, len(rows) + sp_acts)      # card chat-P1 item 4: ADVISORY, never a gate
     npass = sum(1 for g_ in gates if g_[1])
     first = next((g_[0] + ": " + str(g_[2])[:120] for g_ in gates if not g_[1]), None)

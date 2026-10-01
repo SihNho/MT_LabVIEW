@@ -577,6 +577,13 @@ active docs are ambiguous, and say why. When any working doc needs scrolling to 
 state, push content down a layer immediately, not at the next cleanup. Scratch artefacts
 (throwaway VIs, build targets) are created and deleted in the same operation.
 
+**LONG DOCS ARE FROZEN IN PLACE AND INDEXED (user 2026-10-02: "쪼개서 링크 거는 방식이 더 좋지 않은지?" → "문서 정리안
+전체 … 이렇게 하고 한번 테스트해보자"):** a doc that outgrows its layer is not cut (thousands of `file:line` citations
+point into it) — its `status:` becomes `frozen` on the same line, a footer is appended, and a short INDEX lists the
+decisions still in force with links to the frozen lines. New decisions go to short per-topic files beside the INDEX.
+`doc_lint` caps active docs at 400 lines (reference tables WARN). D1 work: `docs/d1/INDEX.md` + `docs/d1/*.md`; the
+five long plan docs were frozen this way (`tools/bench/freeze_docs_d1.json`).
+
 **Concrete threshold (2026-09-15, after STATUS.md reached 651 lines):** STATUS.md over ~100 lines means the cycle
 narrative has crept back in — move it to `archive/<date>-status-<topic>.md` and leave lock, hardware permission,
 current state, OPEN items and NEXT. The narrative is never rewritten, only relocated.

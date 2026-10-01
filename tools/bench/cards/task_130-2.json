@@ -1,0 +1,73 @@
+{
+ "schema": "task/1",
+ "id": "130-2",
+ "kind": "build",
+ "goal": "Tooling debt: fp-22 stop-record predicate fix, drain fp-15..fp-18, card_clock wired into protocol.py validate, ring-buffer-design.md:23-24 superseded mark, gemini empty answer falls back to claude",
+ "why": "gate-fp queue DUE (7 open); violation-decisions 2026-10-02 02:57 and 01:01; PD267(c). brief_130-2.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_130-2.md"},
+  {"path": "tools/hooks/guard_bash.py"},
+  {"path": "tools/gate_fp.py"},
+  {"path": "tools/protocol.py"},
+  {"path": "tools/card_clock.py"},
+  {"path": "tools/peer.ps1"},
+  {"path": "docs/ring-buffer-design.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/hooks/guard_bash.py"},
+  {"kind": "file", "name": "tools/gate_fp.py"},
+  {"kind": "file", "name": "tools/card_clock.py"},
+  {"kind": "file", "name": "tools/bench/selftest_card_clock.py"},
+  {"kind": "file", "name": "tools/bench/selftest_stoprecord_c116a.py"},
+  {"kind": "file", "name": "tools/bench/peer_c129_6_undo.log"}
+ ],
+ "pass": [
+  "P1 fp-22: recipe path = launch only in python command position; self-test: md5sum/grep/gate_fp --cmd not recorded, a real launch recorded; fp-22 logged + drained",
+  "P2 fp-15..fp-18 each drained (path:line + self-test) or closed as not a false positive with the reason; gate_fp list shows them closed",
+  "P3 protocol.py validate: UNMEASURED clock WARNs, MISMATCH FAILs, OK passes (three synthetic cards); selftest_card_clock still green",
+  "P4 docs/ring-buffer-design.md:23-24 marked superseded by PD238(c) on those lines; doc_lint has no new FAIL",
+  "P5 peer.ps1 gemini fact arm: empty content -> claude fact fallback; shown without a real paid call",
+  "P6 every edited hook/tool's existing self-tests rerun, counts listed"
+ ],
+ "outputs": [
+  "tools/hooks/guard_bash.py",
+  "tools/protocol.py",
+  "tools/peer.ps1",
+  "docs/ring-buffer-design.md",
+  "tools/bench/gate_fp_queue.jsonl",
+  "tools/bench/cards/result_130-2.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/hooks/guard_bash.py",
+   "tools/hooks/guard_peer.py",
+   "tools/hooks/guard_card.py",
+   "tools/protocol.py",
+   "tools/card_clock.py",
+   "tools/peer.ps1",
+   "tools/gate_fp.py",
+   "docs/ring-buffer-design.md",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/selftest_*",
+   "tools/bench/diag_c130_2*",
+   "tools/bench/c130_2*",
+   "tools/bench/cards/result_130-2*",
+   "tools/bench/cards/selftest_*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 50},
+ "rules": [
+  "Offline only; no LabVIEW",
+  "Never edit stage_prerun.py, stagesim.py, stagexec.py, plan_ring_p3b* or P3b recipes (130-1 is live on them)",
+  "A hook edit is followed immediately by its self-test; never leave a hook broken between steps",
+  "Return at the first unexpected result; cost.minutes = bind->return"
+ ],
+ "unblocks": "M3"
+}

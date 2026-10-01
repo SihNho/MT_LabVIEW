@@ -252,6 +252,14 @@ validated) is READY: dispatch it (Agent material) as soon as cycle 129's CYCLE l
 apply the CLAUDE.md line changes it lists, remove the STOP line, relaunch the supervisor detached
 (`Start-Process py tools/bgrun.py --max-min 10080 --log tools/runner_supervisor_bgrun.log -- py -u
 tools/runner_supervisor.py --start-now`), and report cycle 130 as the test of the new layout.
+**DONE 03:1x:** cycle 129 ended 02:58 ($39.00), runner stopped cleanly (limits released, no LabVIEW, supervisor real
+stop). chat-D1 PASS 5/0, 16 min, commit 689c565e: 5 docs frozen in place (0 old lines changed), `docs/d1/INDEX.md`
+177 lines (+ ring-p3b.md, ring-p4.md, tooling.md from PD268; UNSURE list of 8 for the judgement agent), doc_lint cap
+400 (5 grandfathered docs 444–621 lines WARN — open), violation-decisions.md stays append-only below its footer
+(tools parse it), next.json plan → INDEX. Chat edited tools/cycle_prompt.md (read INDEX, write PDs to docs/d1/<topic>)
+and CLAUDE.md rule 4 (freeze-in-place paragraph); STOP line lifted; supervisor relaunched (pid 21392), cycle 130
+started 03:12 = the test. Uncommitted chat edits: CLAUDE.md, cycle_prompt.md, guard_session.py + self-test, STATUS,
+this file (the runner's per-cycle commit will include them).
 **CLOUD PLAN DROPPED (user 2026-09-29 ~20:0x KST: "그럼 클라우드는 그냥 잊어버리자").** No Linux port of benches/hooks;
 benches stay local. Both probe routines were run-once and are spent. Open next: user asked whether to bring Gemini back
 for web search; chat proposed (awaiting answer) a headless-permission fix test + a 6–8 question known-answer comparison

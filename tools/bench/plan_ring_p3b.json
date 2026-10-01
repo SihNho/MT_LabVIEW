@@ -639,6 +639,108 @@
    "why": "ROUTE local_write (create_local_write -> dest diagram) | PRECEDENT | PD246(c) A2 | stagexec.py:206 route; placement in a FS frame never run"
   },
   {
+   "op": "create",
+   "id": "p3b_ub_status",
+   "class": "Unbundler",
+   "diagram": "new:FS1.f2",
+   "as": "UB1",
+   "pos": [
+    60,
+    120
+   ],
+   "prim": "Unbundle",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorErrSel_ErrToWarning.vi",
+    "uid": 157
+   },
+   "terminals": [
+    {
+     "name": "cluster",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "element",
+     "is_source": true,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "element",
+     "is_source": true,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "element",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE primitive vilib_donor DonorErrSel_ErrToWarning #157 | MEASURED | PD261(a) guard Unbundle (status) | create_primitive_nested on a claudeDev byte copy, diag_c128_2_donors.log:56-58,83"
+  },
+  {
+   "op": "create",
+   "id": "p3b_sel",
+   "class": "Function",
+   "diagram": "new:FS1.f2",
+   "as": "SEL1",
+   "pos": [
+    120,
+    120
+   ],
+   "prim": "Select",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorErrSel_MergeErrors.vi",
+    "uid": 529
+   },
+   "terminals": [
+    {
+     "name": "s? t:f",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "f",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "s",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "t",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    }
+   ],
+   "why": "ROUTE primitive vilib_donor DonorErrSel_MergeErrors #529 | MEASURED | PD261(a) guard Select | create_primitive_nested on a claudeDev byte copy, diag_c128_2_donors.log:61-63"
+  },
+  {
+   "op": "create",
+   "id": "p3b_k_m3",
+   "class": "DigitalNumericConstant",
+   "diagram": "new:FS1.f2",
+   "as": "KM3",
+   "pos": [
+    60,
+    200
+   ],
+   "prim": "const_donor",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRingConst_v0.vi",
+    "uid": 249
+   },
+   "terminals": [
+    {
+     "name": "",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE primitive const_donor | MEASURED | PD238(c) Num(i)=-1 | const in a FS frame: diag_c125_5_fsscr.log:41-47 (C-3a); I32 -1 = DonorRingConst_v0 #249 (PD247(a)) (guard t = -1)"
+  },
+  {
    "op": "wire",
    "id": "p3b_w_n1_arr",
    "src": "new:LRN1.value",
@@ -721,6 +823,34 @@
    "src": "new:RAN3.output array",
    "dst": "new:LWN3.value",
    "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD246(c) A2 frame 3 | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_w_err_ub",
+   "src": "new:CP1.error out",
+   "dst": "new:UB1.cluster",
+   "why": "ROUTE fs_frame_to_frame (f1 -> f2) | MEASURED | PD258(c) IMAQ Copy error out -> guard | stagesim FS_MEASURED; diag_c128_2_donors.log:80-83"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_w_ub_sel",
+   "src": "new:UB1.element#0",
+   "dst": "new:SEL1.s",
+   "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD262(b) s = status (element#0) | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_w_m3_sel",
+   "src": "new:KM3.value",
+   "dst": "new:SEL1.t",
+   "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD261(a) t = -1 | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_w_sel_n3",
+   "src": "new:SEL1.s? t:f",
+   "dst": "new:RAN3.new element/subarray",
+   "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD258(c) element = status ? -1 : BufNum | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run"
   },
   {
    "op": "wire",
@@ -825,8 +955,8 @@
     "uid": 6810,
     "term": "current image number"
    },
-   "dst": "new:RAN3.new element/subarray",
-   "why": "ROUTE connect_term_uid ACROSS case border (639 -> 27219) + FS border (-> f2) | MEASURED | PD238(c) Num(i) = BufNum; new sink on w3747 only (PD241(d)) | census_samples.json connect_term_uid loop_body_wired_src_to_fs_frame_in_case (diag_c126_6_cross.log:49,60): source net RE-CREATED (PD256(c)) B1 exact"
+   "dst": "new:SEL1.f",
+   "why": "ROUTE connect_term_uid ACROSS case border (639 -> 27219) + FS border (-> f2) | MEASURED | PD238(c)/PD258(c) Select f = BufNum; new sink on w3747 only (PD241(d)) | census_samples.json connect_term_uid loop_body_wired_src_to_fs_frame_in_case (diag_c126_6_cross.log:49,60): source net RE-CREATED (PD256(c)) B1 exact"
   },
   {
    "op": "wire_remove_loose_ends",
@@ -955,15 +1085,15 @@
   },
   "plan_in": {
    "path": "tools/bench/plan_ring_p3b_in.json",
-   "md5": "b03d4ca09b7ebf54de6af54ed9d1863f"
+   "md5": "08fa224112606aedd4a15ec378268d88"
   },
   "last_step": {
-   "path": "tools/bench/sim/ring_p3b/step_63_wire_remove_loose_ends.json",
-   "md5": "018204012c90436de4de0c45b6625ae6"
+   "path": "tools/bench/sim/ring_p3b/step_70_wire_remove_loose_ends.json",
+   "md5": "2e71f99bc46e6ea6c339dc573087db0a"
   },
   "summary": {
    "path": "tools/bench/sim/ring_p3b/summary.json",
-   "md5": "4a1c82a5f9174e99260f24bf1a0f21c0"
+   "md5": "509df468fe69355ff02e6693cdb89611"
   },
   "end_cdiff_rows": [
    "11261|Terminal|array|0",
@@ -1244,246 +1374,288 @@
    },
    {
     "n": 24,
-    "op": "wire",
-    "path": "tools/bench/sim/ring_p3b/step_24_wire.json",
-    "md5": "c36fef02d578f9bd3b945eb986dd5e04"
+    "op": "create",
+    "path": "tools/bench/sim/ring_p3b/step_24_create.json",
+    "md5": "0bf1ee98e600512df6dabbb1e6ad756f"
    },
    {
     "n": 25,
-    "op": "wire",
-    "path": "tools/bench/sim/ring_p3b/step_25_wire.json",
-    "md5": "8dd8abf45defee0a58fbee8eda8421dc"
+    "op": "create",
+    "path": "tools/bench/sim/ring_p3b/step_25_create.json",
+    "md5": "81c58ef7d193855cea44270d09493159"
    },
    {
     "n": 26,
-    "op": "wire",
-    "path": "tools/bench/sim/ring_p3b/step_26_wire.json",
-    "md5": "1620cfe4434db52ed1b319a68c9f1891"
+    "op": "create",
+    "path": "tools/bench/sim/ring_p3b/step_26_create.json",
+    "md5": "0b5c7668769edd69f8c144b222205cbe"
    },
    {
     "n": 27,
     "op": "wire",
     "path": "tools/bench/sim/ring_p3b/step_27_wire.json",
-    "md5": "a7c377aa89675d732f698e5dd20629dd"
+    "md5": "3791ecc0a4e57a16efda4dd387ef2218"
    },
    {
     "n": 28,
     "op": "wire",
     "path": "tools/bench/sim/ring_p3b/step_28_wire.json",
-    "md5": "7fab22cbd8abfb6f25025bbeb0a95c72"
+    "md5": "138623a6a5da2525fc05e7d7478047ef"
    },
    {
     "n": 29,
     "op": "wire",
     "path": "tools/bench/sim/ring_p3b/step_29_wire.json",
-    "md5": "18206e57c1e3f461ea872697499a05ab"
+    "md5": "0b271148f4fb8ae0ecba20f4039777fb"
    },
    {
     "n": 30,
     "op": "wire",
     "path": "tools/bench/sim/ring_p3b/step_30_wire.json",
-    "md5": "17fe64ab4b166d8faeb735f161583b1b"
+    "md5": "0eccdf34f2463930b59cd3f8042e485d"
    },
    {
     "n": 31,
     "op": "wire",
     "path": "tools/bench/sim/ring_p3b/step_31_wire.json",
-    "md5": "bd015da5aba0b448e31586c7203a990a"
+    "md5": "2d4a306b3a836aab88c9f0561662c417"
    },
    {
     "n": 32,
     "op": "wire",
     "path": "tools/bench/sim/ring_p3b/step_32_wire.json",
-    "md5": "77104706d68e4e44c8e09141442e295a"
+    "md5": "072ece79f5362e365385858f87010b65"
    },
    {
     "n": 33,
     "op": "wire",
     "path": "tools/bench/sim/ring_p3b/step_33_wire.json",
-    "md5": "b75e58ffa1b6c1590a5dad37c6ba5803"
+    "md5": "8903c5c1fc076eb311348d6ed29dc92d"
    },
    {
     "n": 34,
     "op": "wire",
     "path": "tools/bench/sim/ring_p3b/step_34_wire.json",
-    "md5": "56f6f7b0705fce8a6200354bc4e69968"
+    "md5": "98c1a756c9c011c52b906351af2c9fa5"
    },
    {
     "n": 35,
     "op": "wire",
     "path": "tools/bench/sim/ring_p3b/step_35_wire.json",
-    "md5": "52b4aa67758a6e508da5f6558fb7e56b"
+    "md5": "9e47627d61820a51a20e9640a0499a29"
    },
    {
     "n": 36,
     "op": "wire",
     "path": "tools/bench/sim/ring_p3b/step_36_wire.json",
-    "md5": "586eb3a8dc156c3ea3afa839956f1c58"
+    "md5": "55524d7e8597d52146e58b9520f4e56c"
    },
    {
     "n": 37,
-    "op": "wire_remove_loose_ends",
-    "path": "tools/bench/sim/ring_p3b/step_37_wire_remove_loose_ends.json",
-    "md5": "7f907758640845a25ac4b7dc1df5f939"
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3b/step_37_wire.json",
+    "md5": "c329d4ec09be214dc816a867721270f4"
    },
    {
     "n": 38,
     "op": "wire",
     "path": "tools/bench/sim/ring_p3b/step_38_wire.json",
-    "md5": "6f2adb1c7329d5a9dc21d41a91ea8b36"
+    "md5": "3d8657da00c192491672893e363a63d5"
    },
    {
     "n": 39,
-    "op": "wire_remove_loose_ends",
-    "path": "tools/bench/sim/ring_p3b/step_39_wire_remove_loose_ends.json",
-    "md5": "00bb5a8dc74d9f6e5eeb8f128ffa4753"
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3b/step_39_wire.json",
+    "md5": "dcd8f03bffeb8d79b03c42a6f7ce0a23"
    },
    {
     "n": 40,
     "op": "wire",
     "path": "tools/bench/sim/ring_p3b/step_40_wire.json",
-    "md5": "fcfb33554dec7f03584c53aed493c211"
+    "md5": "70ada0f1e6fbf8124b4b31ad6c0383e2"
    },
    {
     "n": 41,
-    "op": "wire_remove_loose_ends",
-    "path": "tools/bench/sim/ring_p3b/step_41_wire_remove_loose_ends.json",
-    "md5": "68f5e560a3b40c990fc3a279f439838c"
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3b/step_41_wire.json",
+    "md5": "db41fbdac2c9f4a96e87c2185c83b472"
    },
    {
     "n": 42,
     "op": "wire",
     "path": "tools/bench/sim/ring_p3b/step_42_wire.json",
-    "md5": "6d5dc214c1c5fa1c01b428161cd9276a"
+    "md5": "c2da7acd1e357f7c9605761ccd756bf8"
    },
    {
     "n": 43,
-    "op": "wire_remove_loose_ends",
-    "path": "tools/bench/sim/ring_p3b/step_43_wire_remove_loose_ends.json",
-    "md5": "dc7920d1f918e1d3819c70790e2be1ab"
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3b/step_43_wire.json",
+    "md5": "36b45927320c8763d484990b2f394013"
    },
    {
     "n": 44,
-    "op": "wire",
-    "path": "tools/bench/sim/ring_p3b/step_44_wire.json",
-    "md5": "f58e78326d05e0f766c9986a0f5d2b5d"
+    "op": "wire_remove_loose_ends",
+    "path": "tools/bench/sim/ring_p3b/step_44_wire_remove_loose_ends.json",
+    "md5": "ed9b8cbe54c8825bb752249d0d3082b8"
    },
    {
     "n": 45,
-    "op": "wire_remove_loose_ends",
-    "path": "tools/bench/sim/ring_p3b/step_45_wire_remove_loose_ends.json",
-    "md5": "11af3973da3af38f938fadb92b0084ca"
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3b/step_45_wire.json",
+    "md5": "ce2d72aaba1fa23926e9ff82e38a9b97"
    },
    {
     "n": 46,
-    "op": "wire",
-    "path": "tools/bench/sim/ring_p3b/step_46_wire.json",
-    "md5": "f6f05b67f2ccd2fa18e2015661b14b8a"
+    "op": "wire_remove_loose_ends",
+    "path": "tools/bench/sim/ring_p3b/step_46_wire_remove_loose_ends.json",
+    "md5": "2312211de68e4b91094a7aff8ab222f0"
    },
    {
     "n": 47,
-    "op": "wire_remove_loose_ends",
-    "path": "tools/bench/sim/ring_p3b/step_47_wire_remove_loose_ends.json",
-    "md5": "ebb5d10efd6fea2d410d284fed6d0de2"
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3b/step_47_wire.json",
+    "md5": "3044c54f6a836aa85059fb4309630dd0"
    },
    {
     "n": 48,
-    "op": "wire",
-    "path": "tools/bench/sim/ring_p3b/step_48_wire.json",
-    "md5": "8fb70982a341341c8551c8d9957eef27"
+    "op": "wire_remove_loose_ends",
+    "path": "tools/bench/sim/ring_p3b/step_48_wire_remove_loose_ends.json",
+    "md5": "f8a54584becc59abf3ad6276ae5c0996"
    },
    {
     "n": 49,
-    "op": "wire_remove_loose_ends",
-    "path": "tools/bench/sim/ring_p3b/step_49_wire_remove_loose_ends.json",
-    "md5": "37f87574cf790143c99f09c920471f8c"
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3b/step_49_wire.json",
+    "md5": "4c6b78e76d348c714a36468f802bf559"
    },
    {
     "n": 50,
-    "op": "wire",
-    "path": "tools/bench/sim/ring_p3b/step_50_wire.json",
-    "md5": "76c19c744f1404a9b3c2c4bf2d03e876"
+    "op": "wire_remove_loose_ends",
+    "path": "tools/bench/sim/ring_p3b/step_50_wire_remove_loose_ends.json",
+    "md5": "5b6209cd2a3c41e1ac7b4e621f816c05"
    },
    {
     "n": 51,
-    "op": "wire_remove_loose_ends",
-    "path": "tools/bench/sim/ring_p3b/step_51_wire_remove_loose_ends.json",
-    "md5": "ccfae7eaadc96558a91dbd94a21df488"
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3b/step_51_wire.json",
+    "md5": "9ae96bd14a9772b358fe6968120caafa"
    },
    {
     "n": 52,
-    "op": "wire",
-    "path": "tools/bench/sim/ring_p3b/step_52_wire.json",
-    "md5": "f51448c1f2e4d7f998ef9f4c47987fab"
+    "op": "wire_remove_loose_ends",
+    "path": "tools/bench/sim/ring_p3b/step_52_wire_remove_loose_ends.json",
+    "md5": "1c91d55f82b1448bfa53f54e61954d87"
    },
    {
     "n": 53,
-    "op": "wire_remove_loose_ends",
-    "path": "tools/bench/sim/ring_p3b/step_53_wire_remove_loose_ends.json",
-    "md5": "91250b25fd549d73c116598a0a9edfd6"
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3b/step_53_wire.json",
+    "md5": "df4407d8fe1e0de44304147cd9474929"
    },
    {
     "n": 54,
-    "op": "wire",
-    "path": "tools/bench/sim/ring_p3b/step_54_wire.json",
-    "md5": "70f2df35c773cf030eaf36b6ea7d6e78"
+    "op": "wire_remove_loose_ends",
+    "path": "tools/bench/sim/ring_p3b/step_54_wire_remove_loose_ends.json",
+    "md5": "9dd86f1070ce6126a99f03892fd81cb6"
    },
    {
     "n": 55,
-    "op": "wire_remove_loose_ends",
-    "path": "tools/bench/sim/ring_p3b/step_55_wire_remove_loose_ends.json",
-    "md5": "1c9fcd88151265070a3d4baff142b745"
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3b/step_55_wire.json",
+    "md5": "13521cafb9f1deabb8dfce858c221ac2"
    },
    {
     "n": 56,
-    "op": "wire",
-    "path": "tools/bench/sim/ring_p3b/step_56_wire.json",
-    "md5": "49d74117e2873374b71767a91564b31e"
+    "op": "wire_remove_loose_ends",
+    "path": "tools/bench/sim/ring_p3b/step_56_wire_remove_loose_ends.json",
+    "md5": "36b138321010e4c47c269fdfd1ad0aea"
    },
    {
     "n": 57,
-    "op": "wire_remove_loose_ends",
-    "path": "tools/bench/sim/ring_p3b/step_57_wire_remove_loose_ends.json",
-    "md5": "e4596c759d8b91d38fe7eff3909f70e3"
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3b/step_57_wire.json",
+    "md5": "717efbd3bb8c6ed0d1bb407066db6e92"
    },
    {
     "n": 58,
-    "op": "wire",
-    "path": "tools/bench/sim/ring_p3b/step_58_wire.json",
-    "md5": "476397ead801afd1bf8b18e7dbd982b8"
+    "op": "wire_remove_loose_ends",
+    "path": "tools/bench/sim/ring_p3b/step_58_wire_remove_loose_ends.json",
+    "md5": "03db33132b13aed460a2649b1cfcacb7"
    },
    {
     "n": 59,
-    "op": "wire_remove_loose_ends",
-    "path": "tools/bench/sim/ring_p3b/step_59_wire_remove_loose_ends.json",
-    "md5": "32a3c5d76d6a257f83b9509f85107e94"
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3b/step_59_wire.json",
+    "md5": "5a862da096ff465b21d35652c645b2f9"
    },
    {
     "n": 60,
-    "op": "wire",
-    "path": "tools/bench/sim/ring_p3b/step_60_wire.json",
-    "md5": "5b43c72f1a82a0e40af870da0cb39a59"
+    "op": "wire_remove_loose_ends",
+    "path": "tools/bench/sim/ring_p3b/step_60_wire_remove_loose_ends.json",
+    "md5": "337dd03350db64ff2cacbb3bc39465f2"
    },
    {
     "n": 61,
-    "op": "wire_remove_loose_ends",
-    "path": "tools/bench/sim/ring_p3b/step_61_wire_remove_loose_ends.json",
-    "md5": "9549a3cb95a42cd22f19850e95182897"
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3b/step_61_wire.json",
+    "md5": "0b5cb985640a18afa7f738dccc7eb2a4"
    },
    {
     "n": 62,
-    "op": "wire",
-    "path": "tools/bench/sim/ring_p3b/step_62_wire.json",
-    "md5": "b2d56277435db880acee74c6a7391859"
+    "op": "wire_remove_loose_ends",
+    "path": "tools/bench/sim/ring_p3b/step_62_wire_remove_loose_ends.json",
+    "md5": "26f0a1ade5ae8e44f187120f09a8108d"
    },
    {
     "n": 63,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3b/step_63_wire.json",
+    "md5": "160d08e9128f02a2db42b6ea6617b76f"
+   },
+   {
+    "n": 64,
     "op": "wire_remove_loose_ends",
-    "path": "tools/bench/sim/ring_p3b/step_63_wire_remove_loose_ends.json",
-    "md5": "018204012c90436de4de0c45b6625ae6"
+    "path": "tools/bench/sim/ring_p3b/step_64_wire_remove_loose_ends.json",
+    "md5": "65b9de04605edfe819155f9286e7f2a8"
+   },
+   {
+    "n": 65,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3b/step_65_wire.json",
+    "md5": "b8605f0a6587796d0ded7bed23a8e6c1"
+   },
+   {
+    "n": 66,
+    "op": "wire_remove_loose_ends",
+    "path": "tools/bench/sim/ring_p3b/step_66_wire_remove_loose_ends.json",
+    "md5": "0e61df94d5439a36e2b6b45045295169"
+   },
+   {
+    "n": 67,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3b/step_67_wire.json",
+    "md5": "69671745d86be266fab9424fcecb7bb7"
+   },
+   {
+    "n": 68,
+    "op": "wire_remove_loose_ends",
+    "path": "tools/bench/sim/ring_p3b/step_68_wire_remove_loose_ends.json",
+    "md5": "f6dcb4a66dad0fe1358d19051b7bf1b6"
+   },
+   {
+    "n": 69,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3b/step_69_wire.json",
+    "md5": "fa63f24073ff12cb6fb95c4edc363b3c"
+   },
+   {
+    "n": 70,
+    "op": "wire_remove_loose_ends",
+    "path": "tools/bench/sim/ring_p3b/step_70_wire_remove_loose_ends.json",
+    "md5": "2e71f99bc46e6ea6c339dc573087db0a"
    }
   ],
   "undecided": 0,
-  "at": "2026-10-01 23:31:29"
+  "at": "2026-10-02 04:09:59"
  }
 }

@@ -49,7 +49,13 @@ Nobody is watching this session. Everything you need is on disk.
 1. `CLAUDE.md` — the standing rules. They bind you; do not work from a summary of them.
 2. `STATUS.md` — the lock, the rig-state banner, where things stand, OPEN, and NEXT.
 3. The ONE plan document STATUS.md names as current (its frontmatter says `status: current`), including its
-   `## Pre-decided` section.
+   `## Pre-decided` section. **From 2026-10-02 that is `docs/d1/INDEX.md`** (user-approved doc reorganisation): it
+   lists the decisions in force with links into FROZEN long files (`docs/d1-loop12-17-split-plan.md`,
+   `docs/cycle27-plan.md`, …). Open a frozen file only at a linked line, never whole. **Write NEW Pre-decided items
+   into the topic file under `docs/d1/` they concern (`ring-p3b.md`, `ring-p4.md`, `tooling.md`, or a new short
+   topic file), numbered from 268 on, and add a one-line link to INDEX.** Never append to a frozen file (exception:
+   `docs/violation-decisions.md` stays append-only below its footer — the violation tools parse it). Active docs are
+   capped at 400 lines by doc_lint.
 Do not read `archive/` (CLAUDE.md rule 4), do not read whole logs, do not re-read what is already in context.
 
 ## The rig state and LabVIEW permission are whatever STATUS.md's banner says — NEVER infer them

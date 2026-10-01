@@ -1,0 +1,82 @@
+{
+ "schema": "task/1",
+ "id": "130-4",
+ "kind": "build",
+ "goal": "Continue 130-3 from P1: owed review of diag_c130_2_suite_gb.log, rerun X10 self-test (print every L0 condition), P3b memory re-cut, P3b-1 dry/prerun",
+ "why": "130-3 BLOCKED: guard_peer held the self-test on 130-2's suite_gb log (g6_peerset TIMEOUT 240s, :13; suite_all later 13/0). Review c130-3 ANSWERED (alt (a): L0 has 8 conditions).",
+ "retry_of_card": "130-3",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_130-1.md"},
+  {"path": "tools/bench/cards/result_130-3.json"},
+  {"path": "archive/peer/2026-10-02-hyp-c130-3-x10-selftest.md", "md5": "a77bee47af2cab89eb7a0b701a4fbee2"},
+  {"path": "tools/bench/diag_c130_2_suite_gb.log"},
+  {"path": "tools/bench/diag_c130_2_suite_all.log", "md5": "cd7ef2142db6d2c52244cf7e1bfba4c4"},
+  {"path": "tools/stage_prerun.py", "md5": "c19cf552861b38c457784f8bad34ee81"},
+  {"path": "tools/bench/selftest_x10_c130_1.py"},
+  {"path": "tools/bench/plan_ring_p3b_split.py", "md5": "ad0ec303c6e46a02bc95859c61091f95"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c130_2_suite_gb.log"},
+  {"kind": "file", "name": "tools/bench/selftest_x10_c130_1.py"},
+  {"kind": "file", "name": "tools/bench/memory_model.json"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3b_split.py"},
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p3b1_scratch.py"}
+ ],
+ "pass": [
+  "P0 hypothesis review on diag_c130_2_suite_gb.log ANSWERED (claim: one g6_peerset 240s timeout, rerun passed in suite_all); verdict in facts",
+  "P1 X10 self-test rerun prints every L0 condition per probe: 129-1 bytes FAIL, 129-8 bytes FAIL (688.5), no-plan FAIL UNMEASURED, p3a PASS; old stage_prerun self-tests, FAILs listed",
+  "P2 re-cut run: each <=40, dependency-closed, Copy+guard together, RLE with loose end; replay = unsplit-70 end graph; preds carry memory_pred; both recipes {0,len}|BIND",
+  "P3 X10 PASS <=675 on BOTH halves (N, BIND, R, peak each); P3b-1 recipe + scratch helper dry + prerun PASS in own processes; --scratch-required exit code",
+  "P4 prior-art only if the launch gate asks: ANSWERED, verdict returned, not annotated"
+ ],
+ "outputs": [
+  "tools/stage_prerun.py",
+  "tools/bench/plan_ring_p3b1.json",
+  "tools/bench/plan_ring_p3b2.json",
+  "tools/bench/plan_ring_p3b1_pred.json",
+  "tools/bench/plan_ring_p3b2_pred.json",
+  "tools/recipes/stage_d1_ring_p3b1.py",
+  "tools/recipes/stage_d1_ring_p3b2.py",
+  "tools/bench/cards/result_130-4.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_prerun.py",
+   "tools/bench/memory_model*",
+   "tools/bench/selftest_stage_prerun*",
+   "tools/bench/selftest_x10*",
+   "tools/bench/plan_ring_p3b1*",
+   "tools/bench/plan_ring_p3b2*",
+   "tools/bench/plan_ring_p3b_split*",
+   "tools/bench/sim/**",
+   "tools/recipes/stage_d1_ring_p3b1.py",
+   "tools/recipes/stage_d1_ring_p3b2.py",
+   "tools/bench/stage_d1_ring_p3b1_scratch*",
+   "tools/bench/stage_prerun*",
+   "tools/bench/diag_c130_4*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prior_art*",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_130-4*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 50},
+ "rules": [
+  "Offline only; no LabVIEW, no recipe launched",
+  "Keep the new X10 live (judgement 130); never tune checkpoints or coefficients to reach 675; the cut is free",
+  "No cut <=675 on both halves => return the best cut's numbers (third half = user, PD261(d))",
+  "No hook edits; a further wrong gate refusal is logged with gate_fp.py and returned BLOCKED",
+  "Return at the first unexpected result; cost.minutes = bind->return"
+ ],
+ "advances": ["M3", "M4"]
+}

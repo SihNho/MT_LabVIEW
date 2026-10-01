@@ -169,8 +169,34 @@ param(
     # `- **route:**`. Empty (every other dispatch) = no route line, header unchanged.
     [string]$RouteNote = '',
 
+    # TEST SWITCH (card 130-2): classify a saved gemini fact ANSWER text with the same rule the live call uses, print
+    # `CLASSIFY: ANSWERED|ERROR (...)` and exit with the code the live call would (0 / 4). Dispatches nothing.
+    [string]$ClassifyAnswerFile = '',
+
     [switch]$CheckQuota
 )
+
+# card 130-2 (brief_130-2.md item 5; evidence tools/bench/peer_c129_6_undo.log:6-24): agy's gemini sometimes writes its
+# findings into its own ARTIFACT files (walkthrough.md, research_plan.md, ...) and returns only a pointer to them -
+# non-blank text with no content. For the gemini FACT arm such an answer is CONTENT-EMPTY = not ANSWERED, so the fact
+# chain falls back to the claude fact role exactly as on ERROR/TIMEOUT: no `http(s)://` source in the answer AND it
+# points at an artifact (`<name>.md` artifact / "the ... artifact" / "walkthrough"). An answer carrying any URL is kept.
+function Test-ContentEmptyFactAnswer([string]$text) {
+    if ([string]::IsNullOrWhiteSpace($text)) { return $true }
+    if ($text -match 'https?://') { return $false }
+    return ($text -match '(?i)\b(?:walkthrough|research_plan|implementation_plan|task)\.md\b' -or
+            $text -match '(?i)\b(?:the|this|an?)\s+(?:[\w-]+\s+){0,3}artifacts?\b')
+}
+
+if ($ClassifyAnswerFile) {
+    $t = Get-Content -Path $ClassifyAnswerFile -Raw -Encoding UTF8
+    if (Test-ContentEmptyFactAnswer $t) {
+        Write-Output "CLASSIFY: ERROR (content-empty gemini fact answer: no URL, points at an agy artifact) -> rc 4 -> fact chain FALLBACK"
+        exit 4
+    }
+    Write-Output "CLASSIFY: ANSWERED -> rc 0 -> no fallback"
+    exit 0
+}
 
 $ErrorActionPreference = 'Stop'
 # This script's own stdout is captured by bgrun and read back as UTF-8. Without this, Write-Output of a Korean
@@ -244,7 +270,7 @@ if ($factChain) {
     $why = switch ($rcG) {
         2 { 'TIMEOUT' }
         3 { 'QUOTA' }
-        4 { 'ERROR (incl. empty answer / agy no output)' }
+        4 { 'ERROR (incl. empty or content-empty answer / agy no output)' }
         5 { 'SKIPPED (gemini marked quota-exhausted earlier; no gemini archive)' }
         default { "exit code $rcG" }
     }
@@ -784,6 +810,10 @@ if (-not $done) {
     } else {
         $outcome = 'ANSWERED'
     }
+}
+if ($outcome -eq 'ANSWERED' -and $Agent -eq 'gemini' -and $Kind -eq 'fact' -and (Test-ContentEmptyFactAnswer $answer)) {
+    # card 130-2: a pointer to agy artifact files is not an answer (peer_c129_6_undo.log:6-24) -> rc 4 -> chain fallback
+    $outcome = 'ERROR'; $answer = "(content-empty answer: no URL, points at an agy artifact)`n$answer"
 }
 
 if ($agyCwd) { Remove-Item $agyCwd -Recurse -Force -ErrorAction SilentlyContinue }

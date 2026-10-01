@@ -5650,3 +5650,100 @@ VIOLATION: device-failed | loss_min=2 | loss_usd=? | evidence=tools/hooks/materi
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle129","verdict":"refuted","alternative":"Memory was unknowable before 129-6, so pin2 was the cheapest probe and nothing was lost. Refuted: P3a's launch meter (566.1->652.3 MB over 22 ops, stage_d1_ring_p3a.log:39,252) predicted about 723 MB for 40 ops at 01:13, offline.","discriminating_test":"Feed X10 the P3a launch meter as a sibling-recipe record and rerun --prerun on the 129-1 P3b-1 bytes (md5 4dc77962): it must FAIL above 690 MB; it currently PASSes as UNMEASURED.","violations":[{"slug":"device-failed","loss_min":25,"loss_usd":2.08,"evidence":"tools/bench/stage_prerun_c129_1_p3b1_prerun.log:137"},{"slug":"device-failed","loss_min":2,"loss_usd":"?","evidence":"tools/hooks/material_marker.log:2989"}],"sources":["tools/bench/stage_d1_ring_p3b1_scratch_pin2.log:476","tools/bench/stage_d1_ring_p3a.log:252","tools/stage_prerun.py:1735","docs/violation-decisions.md:1475","tools/bench/cards/result_129-8.json:28","tools/bench/cards/result_129-2.json:2"],"note":"Ranked second, not emitted: 129-2's agent exit killed its scratch run (about 9 min, repeated class, material.md:92-98). Line 2 is emitted only under the threshold-1 device rule; it also blocked gate_fp logging."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle129.md
 BGRUN END rc=0 after 317s
+BGRUN START 2026-10-02 04:46:20 limit 10.0 min: py tools/retrospective.py --cycle 130
+BGRUN PID 21004
+   window 2026-10-02 02:55:23 .. 2026-10-02 04:46:21 (111 min); 37 build logs, 11 machinery logs, 45 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle130.txt (35241 chars)
+   review card tools\bench\cards\review_retrospective-cycle130.json
+OUTCOME: ANSWERED (365s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-10-02-retrospective-cycle130.md
+COST: $1.9137  in 40 / out 30555 / cache-create 115841 / cache-read 1878764  (363s, 31 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle130 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle130.json
+--- ANSWER ---
+# Retrospective, cycle 130 (window 02:55:23 – 04:46:21)
+
+**Window caveat.** The cycle itself began at 03:12:35 (`tools/bench/cycle_130.log:1`). The first 17 minutes of the window belong to other work, and their cost should not be counted against cycle 130:
+- cycle 129's close (`motor_session_end_cycle129.log`, 02:59);
+- the chat's card chat-D1 (`freeze_docs_d1.log` 03:03, the `selftest_*_d1.log` set 03:08–03:09, and the refusals at `guard_card.log:586-588`);
+- the chat's own watcher crash (`wait_runner_event.log:223-227`, cp949 error at 02:58).
+
+The audit's A3 failure is that watcher crash, not cycle 130's work. Its A1 failure (`motor_gate.log`) is fixture output from `selftest_motor_gate2` inside card 130-2's suite (`motor_gate.log:149,151`, DRY refusals). That is not a build.
+
+**Outcome.** No new VI was produced. The X10 memory model went live with its self-test passing 9/0. P3b was re-cut to 663.4 / 664.3 MB. Scratch run pin3 stopped at op 26 on a tunnel name. The six-dispatch budget was fully used: `brief_130-6.md:4` says "This is the cycle's LAST dispatch".
+
+## The most costly structural fault
+
+**`guard_peer` held an unrelated offline card on a sibling card's failing log. Neither card was allowed to clear that log.**
+
+1. Card 130-2 (gate tooling) ran its own hook suite while it was editing `protocol.py`. The run timed out: `diag_c130_2_suite_gb.log:13,28`. The review later found it was not a real result (`result_130-4.json` facts[0]).
+2. 130-2's card had `peers: []` (`task_130-2.json:63`). The hook therefore refused, three times, to let it dispatch the review its log needed (`guard_card.log:591,595,598`).
+3. At 03:32:22, card 130-3's rerun of the fixed X10 self-test was refused by `guard_peer`. The reason was 130-2's log, not anything 130-3 did. The session logged this as false positive fp-24 (`gate_fp_queue.jsonl:24`).
+4. 130-3 then waited 8 minutes for a review that could never come (`diag_c130_3_wait.log:1-4`, "NOT FOUND after 481 s") and returned BLOCKED (`result_130-3.json`).
+5. Card 130-4 had to be issued just to review 130-2's log ($1.3121, `peer_hyp_c130_4_suite_gb.log:4`). The same self-test then passed 9/0 at 03:47:30 (`selftest_x10_c130_4.log`).
+
+The judgement session made this possible: it wrote cards 130-1 and 130-2 without `hypothesis` in their peers, against the standing rule "card `peers` = hypothesis, outcome, priorart" (`STATUS.md:99`; `task_130-1.json:72`). That omission is also why 130-1 itself came back BLOCKED (`result_130-1.json` blocked_by).
+
+- **Loss:** about 15 minutes of wall-clock (03:32:22 to 03:47:30) and one of the six material dispatches (130-3 produced only a review that 130-1 could have dispatched itself). No log carries the material sessions' dollar cost. The only logged figure is the $1.31 review, and that review was owed anyway under rule A3, so the dollar loss is unknown.
+- **Counterfactual:** suppose card 130-2 had carried `peers: ["hypothesis"]` at 03:15, or `guard_peer` had not held an offline card on a sibling's log at 03:32.
+  - The X10 self-test would have passed at about 03:33 instead of 03:47.
+  - Card 130-3 would not have been needed as a re-issue.
+  - Pin3 would still have failed at op 26, about 15 minutes earlier.
+  - One dispatch would have been left for the PD270(b) offline naming table (`docs/d1/tooling.md:46-51`). Cycle 130 would then have ended at about 05:00 with the naming rule measured, instead of 04:46 with it owed to cycle 131.
+
+## FINDINGS
+
+**1. Repeated failure.** Two classes recurred.
+- **Tunnel names (simulator vs LabVIEW).** The simulator named a new Flat Sequence tunnel `''` where LabVIEW named it from the source. First seen at 129-4 op 33, then again in 130-5's dry run of the stale plan (`selftest_dry_c130_5.log:4`, the same sample), and then a new case at pin3 op 26 (`stage_d1_ring_p3b1_scratch_pin3.log:370`). PD265(a) said this rule was fitted to one net and that "the next scratch tests it" (`docs/d1/INDEX.md:134`). So pin3 was the planned test, and the response (build the reader next, `tooling.md:44-45`) came at the second failure, as `CLAUDE.md:480` requires. That is compliant, and not this cycle's fault.
+- **`guard_peer` holds.** These hit three cards in a row: 130-1, 130-3, and 130-4's split rerun (`result_130-4.json` facts[6]). The approach should have changed when 130-3 was written at 03:26: give 130-2 the `hypothesis` peer, or stop running the gate-editing card alongside the others.
+
+**2. Missing tool.**
+- A crossing-name table built from already-recorded crossings (PD270(b)). It might have answered pin3's op-26 failure offline, although pin2's `''` rows mean no trivial rule was obviously available.
+- A bounded `close_panel` in stagekit's failure path. Pin3's close hung for about 7 minutes (`pin3.log:374-394`; pin2 took about 16).
+
+**3. Unmeasured steps.**
+- The pin3 brief predicted a tunnel name for the BufNum net only (`brief_130-6.md:21-22`). The `Image Out` crossing was left to the simulator's unmeasured default.
+- Timestamps were typed rather than read. Card 130-6 says "return ~04:48" and PD270 is stamped "04:5x" (`tooling.md:39`). But pin3 ended at 04:43:03 (`pin3.log:395`), and both stamps are later than this review's own window end (04:46:21). This happened in the same cycle that wired `card_clock` into `protocol validate`. I could not check whether its CLOCK line flagged it.
+
+**4. Rule compliance.**
+- The standing peers rule was broken (`STATUS.md:99`).
+- Three hypothesis reviews were acted on (PD268) but never annotated (audit A4; the cards say "not annotated").
+- Card 130-2 ran self-tests while it was editing the very tool they test.
+- In card 130-6, `taskkill` was refused by the permission layer and LabVIEW was killed with `Stop-Process` instead (`result_130-6.json:29`). That routes around a permission refusal, even though closing LabVIEW at cycle end is required.
+- `STATUS.md` is 111 lines, over the 110-line limit (L3).
+- The gate-fp queue was due at cycle start (`cycle_130.log:211`). Five entries were drained, but three new ones were logged (fp-22, fp-24, fp-25).
+- **What the audit does not cover:** card peers against the standing rule; typed clocks against log stamps; one card holding another; how a permission refusal was routed around; and work by the chat that falls inside the window.
+
+**5. Ordering.** Running 130-2 (which edited `guard_peer`, `protocol.py` and `peer.ps1`) at the same time as 130-1 (which runs under those gates) was not defensible. The pipeline rule pairs one LabVIEW card with one prep card (`cycle_130.log:80`), not two offline cards where one edits the other's gates. 130-2 should have run first or alone.
+
+**6. What was not reported.**
+- STATUS says "~2 dispatches" were lost to review holds. It does not say that this used up the sixth dispatch slot, so the measured next act could not run in this cycle.
+- STATUS says "LabVIEW killed". It omits that `taskkill` was denied and `Stop-Process` was used to get around it.
+- The window includes about 17 minutes of chat work.
+
+**7. Judgement inside a material session.** I found no violation.
+- Card 130-3's fp-24 classification and its bounded wait follow the gate-fp card rule (`cycle_130.log:93-96`).
+- Card 130-4's `x10_of` fix is implementation work inside its build step.
+- The "if" lines in brief 130-6 (`:14`, `:26-27`) are time and pass gates, not choices between explanations.
+- The `Stop-Process` kill (point 4) is the closest case. It is a hygiene action, not a design decision.
+
+## DEVICE EFFECT
+
+**One device failed: `guard_peer`'s self-test exemption (decided 2026-09-25 05:58).** In this window it refused offline commands twice:
+- fp-22 at 03:21:49: it followed a function-local import into a pure-Python diagnostic (`gate_fp_queue.jsonl:22`; `result_130-2.json` facts[1]).
+- fp-24 at 03:32:22: it judged the DRY X10 self-test to be LabVIEW-touching and held it on a sibling card's log (`gate_fp_queue.jsonl:24`).
+
+Fp-16, fp-17 and fp-18, drained by 130-2 in this same cycle, were also `guard_peer` false positives. This device now fires on the wrong target often enough that working around it through the false-positive queue is routine. That is the third failure mode the contract lists.
+
+The other devices either worked or had nothing to fire on in this window:
+- **bgrun failure scan:** it forced rc=1 over a child process that exited 0 (`diag_c130_2_suite_gb.log:28`).
+- **Cost-line parsing:** 4 of 4 cost lines seen were parsed (C4b).
+- **Prior-art review and launch gate:** the gate refused the new recipe bytes until the prior-art review came back `novel` (`result_130-6.json` facts[3]).
+- **`gates_due`:** carried on the cycle card (`cycle_130.log:211`).
+- **X10 memory model:** it predicted 663.4 MB; pin3 measured 650.4 MB at op 26 (`pin3.log:369`). This is consistent so far but untested beyond op 26.
+- **Unannotated-review refusal:** it only covers priorart and retrospective reviews, which is why three hypothesis reviews stayed blank.
+- **Stop record:** fp-23 (the cycle-129 case) is fixed, and I found no recurrence in the window. The other half of that device, `guard_cycle.py:40` BUILD_RE, is still unbuilt because the card's write list excluded it (`result_130-2.json` facts[2]).
+
+VIOLATION: device-failed | loss_min=15 | loss_usd=? | evidence=tools/bench/gate_fp_queue.jsonl:24
+
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle130","verdict":"refuted","alternative":"The 03:32 hold was correct by guard_peer's spec (X10 self-test import closure reaches gscript; suite_gb was a real unreviewed failing log); the loss is the judgement session's peers omission (task_130-2.json:63 vs STATUS.md:99), i.e. rule-evaded, not device-failed.","discriminating_test":"Replay the fp-24 argv (03:32:22) offline against guard_peer twice: (1) with diag_c130_2_suite_gb.log marked reviewed, (2) with only the X10 self-test classed offline. Whichever alone releases it names the cause.","violations":[{"slug":"device-failed","loss_min":15,"loss_usd":"?","evidence":"tools/bench/gate_fp_queue.jsonl:24"}],"sources":["tools/bench/gate_fp_queue.jsonl:24","tools/bench/cards/guard_card.log:591","tools/bench/diag_c130_3_wait.log:3","tools/bench/cards/result_130-3.json:1","tools/bench/cards/task_130-2.json:63","STATUS.md:99","tools/bench/cards/brief_130-6.md:4"],"note":"Device = guard_peer selftest_exempt/offline_command (decided 2026-09-25 05:58); also fp-22. Cost: 1 of 6 dispatches + ~15 min; PD270(b) slid to cycle 131. Pin3 naming FAIL was PD265(a)'s planned test, not a fault."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle130.md
+BGRUN END rc=0 after 370s

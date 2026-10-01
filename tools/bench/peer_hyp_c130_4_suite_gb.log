@@ -1,0 +1,49 @@
+BGRUN START 2026-10-02 03:44:43 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug hyp-c130-4-suite-gb -TaskFile C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/1331a01d-b042-4166-a762-a892853680e6/scratchpad/hyp_c130_4.txt
+BGRUN PID 1648
+OUTCOME: ANSWERED (147s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-02-hyp-c130-4-suite-gb.md
+COST: $1.3121  in 18 / out 12818 / cache-create 106371 / cache-read 903122  (143s, 21 turn(s))
+--- ANSWER ---
+**The claim's premise is wrong. Code under test did change during the failing run.** Its practical conclusion still holds: nothing shows a defect in the current code. But it holds for a different reason than the one given.
+
+## 1. The strongest reason the claim is wrong
+"No code under test changed between the two runs" is contradicted by the project's own logs. While the failing run was going (03:23:13 → 03:28:13, `diag_c130_2_suite_gb.log:1,28`), the session was still editing and re-testing the card's files:
+
+- At 03:26:11, `selftest_c130_2_tools.py` ran with 23 passes and 3 failures: S5, F1 and F2 (`selftest_c130_2_tools.log:19-23,30`).
+- At 03:26:38 it ran again and passed 27/0. Gate S5 had been reworded and a new gate S0 added (`:47,52`).
+- At 03:27:04 it passed 31/0. F3 changed from "command touches LabVIEW", i.e. refused (`:57`), to "allowed" (`:90`), and F4–F6 are new (`:91-93`). This is the change recorded as "fixed the redirect form … at protocol.py:423" (`result_130-2.json:19`). So `protocol.py` changed somewhere between 03:26:38 and 03:27:04.
+- `selftest_c130_2_peerfact` first ran at 03:29:26 (`selftest_c130_2_peerfact.log:1`). It tests the `peer.ps1` change, which therefore landed close to the rerun. The logs do not show whether that was before or after 03:23.
+
+Adding up the times in the failing log, the tests before `selftest_g6_peerset` took about 32 s (`gb.log:3-12`). So it ran from about 03:23:45 to its 240 s timeout at about 03:27:45, and the `protocol.py` edit fell inside that window. Its 13 sub-tests import `protocol` / `guard_bash` / `guard_peer` when each one starts, so the failing run executed a mix of code versions. The tests listed after it in the failing run (`gb.log:14-25`) ran on newer code than the tests before it.
+
+**Q1:** the md5s in `result_130-2.json` were taken at 03:40:33 (`diag_c130_2_md5.log:1`), after both runs. They identify the code of the 600 s run and say nothing about what was on disk at 03:23. No md5 snapshot exists from the start of the failing run. I could not read file modification times from this read-only session.
+
+## 2. Alternative explanations of the same evidence
+- **A — the failing run is not a valid result at all.** The code changed while it ran. The suite runner also threw away all output on timeout: `except TimeoutExpired: out, rc = "", "TIMEOUT"` (`diag_c130_2_suite.py:40-41`). Python's `TimeoutExpired` does carry the partial output (`.stdout`/`.output`; https://docs.python.org/3/library/subprocess.html). So we cannot tell which of the 13 sub-tests had passed or failed by 240 s. A sub-test failure that happened before the kill would be hidden behind "TIMEOUT".
+- **B — something kept running after the timeout.** On Windows, `kill()` calls `TerminateProcess` on the direct child only. Python's docs say this, and Microsoft's documentation describes the call as ending "the specified process and all of its threads", with nothing about its children (https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-terminateprocess). So whichever sub-test was running at 240 s was left running on its own. Applying the 600 s run's timings, that was probably `selftest_stamp_window`, which mostly sleeps (`selftest_stamp_window.py:75,87,107`). It overlapped `c100_v5wrap` … `stoprecord_*`. `selftest_guard_peer_jev` writes fake failing logs into `tools/bench` and appends to the real `jev_gate.log` (`selftest_guard_peer_jev.py:285-309`). If it had been the one cut off, other tests would have seen extra state. The timing estimate makes that unlikely, but it is not proven.
+
+## 3. Q2: is ~250 s normal, or a sign of a hang?
+It is normal, not a hang. The 600 s run measured each of g6's 13 sub-tests on its own, and they add up: 27+7+14+1+0+0+2+1+10+3+115+44+23 = **247 s**, against 250 s measured (`suite_all.log:5,6,11,32-42`). The time goes on two things:
+
+- **`selftest_logclass_cmd` (115 s).** It surveys every `tools/bench/*.log` (`selftest_logclass_cmd.py:82-88`), and that folder only grows. It also re-runs 7 other self-tests (`:100-104`), several of which g6 already runs (audit_c4c_split, stamp_window, guard_peer_jev, failre).
+- **Fixed sleeps in `stamp_window`.** About 22 s of its 23 s.
+
+No peer is called. So the runtime grows with project history, and the 240 → 250 s overrun was predictable rather than a fluke. It will keep growing toward the 300 s per-test cap inside g6 (`selftest_g6_peerset.py:24`). The 600 s ceiling only postpones the next timeout.
+
+## 4. Q3: could the timeout have hidden a real failure?
+Yes. Explanation A applies: the output was discarded and the code was mid-edit, so a sub-test failure on the intermediate code is possible and unrecoverable. Those intermediate files no longer exist.
+
+What does settle the question for the **current** code is the 600 s run. It ran every g6 sub-test again individually, and all passed (`suite_all.log:5,6,11,32-42`). That covers the current code even without g6's own pass. The correct conclusion is: the failing run is invalid and carries no information about the code at either time, and the 600 s run is the only evidence. It is not "a timeout, therefore the code was fine".
+
+## 5. What would show the claim is wrong
+Either of these would:
+- a failure in `selftest_g6_peerset` itself, or in any of its sub-tests, when the guard_bash group is rerun on files matching the md5s in `result_130-2.json`;
+- g6 taking far longer than about 250 s on a quiet machine.
+
+## 6. Cheapest test that tells the two apart
+1. Run `diag_c130_2_md5.py` (1 s) and confirm all 11 md5s still match `result_130-2.json`.
+2. Rerun only `py -u tools/bench/selftest_g6_peerset.py` under bgrun (about 250 s) and compare its per-sub-test times with `suite_all.log`.
+
+If it passes at about 250 s on matching md5s, the code is cleared. The failing run can never be recovered and should be logged as a non-result: mid-run edits, output discarded. It is not "a harness timeout of the same code".
+
+Two harness fixes are owed: on timeout, keep `e.stdout` and kill the whole process tree, for example with `taskkill /T` or a Job Object. Also cap or deduplicate `selftest_logclass_cmd`'s nested re-runs and its survey of every log.
+BGRUN END rc=0 after 148s

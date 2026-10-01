@@ -418,7 +418,10 @@ def offline_selftest(path, cmd):
         return True
     hits = [m for m in PY_TOKEN_RE.finditer(cmd or "")
             if _norm(_abs(next(g for g in m.groups() if g))) == _norm(path)]
-    tail_re = re.compile(r"[\"']?[ \t]+" + re.escape(arg) + r"[ \t]*(?:$|[;&|)\n\r])")
+    # gate-fp fp-15 (card 130-2): an output REDIRECTION after the measured argument (`selftest 2>&1 | tail -3`,
+    # `selftest > x.txt`) does not change what runs; any other trailing ARGUMENT still breaks the measured form.
+    tail_re = re.compile(r"[\"']?[ \t]+" + re.escape(arg) +
+                         r"(?:[ \t]+\d?>>?(?:&\d|[ \t]*[^\s;&|<>()]+))*[ \t]*(?:$|[;&|)\n\r])")
     return bool(hits) and all(tail_re.match(cmd, m.end()) for m in hits)
 
 
@@ -1361,7 +1364,24 @@ def _cmd_validate(a):
         print("INVALID %s: %s" % (a.file, str(e).replace("\n", " ")[:300]))
         return 1
     with open(a.file, encoding="utf-8") as f:
-        print("OK %s %s" % (json.load(f)["schema"], a.file))
+        schema = json.load(f)["schema"]
+    # card 130-2 (docs/violation-decisions.md `## inference-over-measurement - 2026-10-02 01:01`, PD265(d)): a result/1 card
+    # also gets the CLOCK line from tools/card_clock.py (files only: bind line, result mtime, cost.minutes, budget.minutes).
+    # CLOCK-MISMATCH fails validation; CLOCK-UNMEASURED only warns. A clock that cannot be computed at all warns too.
+    if schema == "result/1" and not getattr(a, "no_clock", False):
+        try:
+            import card_clock
+            line, verdict, _rc = card_clock.clock(a.file, getattr(a, "clock_log", None) or os.path.join(CARDS_DIR, "guard_card.log"),
+                                                  getattr(a, "clock_cards", None) or CARDS_DIR)
+        except Exception as e:                                                   # noqa: BLE001
+            line, verdict = "CLOCK error %s" % (str(e)[:200]), "CLOCK-UNMEASURED"
+        print(line)
+        if verdict == "CLOCK-MISMATCH":
+            print("INVALID %s: CLOCK-MISMATCH (%s)" % (a.file, line.split(" reason=", 1)[-1][:300]))
+            return 1
+        if verdict != "OK":
+            print("WARN %s: CLOCK-UNMEASURED (%s)" % (a.file, line.split(" reason=", 1)[-1][:300]))
+    print("OK %s %s" % (schema, a.file))
     return 0
 
 
@@ -1468,6 +1488,9 @@ def main(argv=None):
     v = sub.add_parser("validate")
     v.add_argument("file")
     v.add_argument("--no-goalmap", action="store_true", help="do not check advances/unblocks ids against the goal map")
+    v.add_argument("--no-clock", action="store_true", help="result/1: skip the card_clock CLOCK check (card 130-2)")
+    v.add_argument("--clock-log", default="", help="result/1: guard_card.log to read bind lines from (self-tests)")
+    v.add_argument("--clock-cards", default="", help="result/1: directory holding task_<id>.json (self-tests)")
     n = sub.add_parser("new")
     n.add_argument("kind")
     n.add_argument("--id", required=True)

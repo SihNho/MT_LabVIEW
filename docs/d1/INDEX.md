@@ -26,7 +26,7 @@ not enough. Long history stays where it was; nothing here replaces the full text
 - **Work VI (bed):** `claudeDev\D1_ring_p3a_20261001_180540.vi`, md5 `4dfa44aac8fb32f706b3eb792ee7d3cc` (STATUS `current-bed:`; PD251(a) — [split-plan:2552](../d1-loop12-17-split-plan.md)). Error List 55 items, expected file `tools/bench/errorlist_expected_D1_ring_p3a_20261001_180540.json`. STRUCTURAL, `ExecState` 0 by design, never run.
 - **Broken-intermediate count (CLAUDE.md "AT MOST 6"):** 2 of 6 (P2b 1, P3a 2). After P3b-1/P3b-2: 4 of 6; P4 and P5 use 5 and 6; P6 must run (PD261(d) — [split-plan:2847](../d1-loop12-17-split-plan.md)).
 - **Plan of record for the frame handoff:** `docs/ring-buffer-design.md` (user design 2026-09-28; PD238(a)). User rules checked by every design item: `docs/user-rules.md`.
-- **Next act (cycle 130):** PD267(b) — fix X10's memory prediction, re-cut P3b by predicted memory (≤ 675 MB both halves), then P3b-1 scratch and ONE launch ([split-plan:2966](../d1-loop12-17-split-plan.md)); `tools/bench/next.json` holds the act.
+- **Next act (cycle 131):** PD270(b) — offline: measure the FS-tunnel naming rule from every recorded crossing, fix the simulator, re-finalize P3b-1/P3b-2, P3b-1 dry/prerun; then scratch `pin4` ([tooling:39](tooling.md)); `tools/bench/next.json` holds the act. (Cycle 130 did PD267(b): X10 model live, re-cut 663.4/664.3 MB.)
 
 ## Ring-buffer step table (PD238(g) — [split-plan:2260](../d1-loop12-17-split-plan.md))
 
@@ -36,7 +36,7 @@ not enough. Long history stays where it was; nothing here replaces the full text
 | P2a | remove the pool's queue nodes, keep the 20 images | DELIVERED `D1_ring_p2a_20260928_191739.vi` (`c22a473f…`) | PD238(l) :2266 |
 | P2b | `Num`/`TransPos`/`RotPos`/`FrameIdx`/`Latest` + their init on FS1 `#4866` | DELIVERED `D1_ring_p2b_20261001_140658.vi` (`652b1447…`) | PD246(a) :2397 |
 | P3a | loop-1.1 control: wait, two registers, `Equal?`, case, counter, mod 20 | DELIVERED `D1_ring_p3a_20261001_180540.vi` (`4dfa44aa…`) = bed | PD251(a) :2552 |
-| P3b-1 | slot writes part 1 (IMAQ Copy + error guard, ≤ 40 actions) | IN PROGRESS — re-cut by memory, then scratch `pin3`, ONE launch | PD264–267 :2889–2973 |
+| P3b-1 | slot writes part 1 (IMAQ Copy + error guard; 31 actions, 663.4 MB pred) | IN PROGRESS — pin3 stopped at op 26 on a tunnel name; measure naming rule, then `pin4`, ONE launch | PD264–267 :2889–2973, PD269–270 (ring-p3b.md:20, tooling.md:39) |
 | P3b-2 | slot writes part 2 (TransPos/RotPos/FrameIdx groups, Latest) | PLANNED — provisional base; dry/prerun after `--rebase` on P3b-1 | PD264(b) :2898 |
 | P4 | tracking-loop 1.2 rows (seqlock read, `last` register, jump to `Latest`) | NOT STARTED — size it with the memory formula first | PD238(e) :2258, PD266(b) :2946 |
 | P5 | results queue 1.2 → 1.7 (lossless FIFO) | NOT STARTED | PD238(d) :2257 |
@@ -139,6 +139,15 @@ delivered step that later items build on; it is in force as a fact, not as an or
 - PD266(c) Broken-file count P3b-1 = 3, P3b-2 = 4 of 6 — :2953
 - PD267(b) Cycle 130 FIRST card = X10 fix (cross-recipe peak, FAIL > 675 and FAIL UNMEASURED) then the re-cut X10 must PASS (replaces PD266(d)'s separate script) — :2966
 - PD267(c) Cards 2/3 (P3b-1 scratch, ONE launch) per PD266(d); briefs quote `.claude/agents/material.md:92-98`; card 4 adds the stop-record predicate fix (fp-22) — :2971
+
+### PD268+ — topic files (cycle 130 on)
+- PD268(a) X10 memory model live (FAIL > 675 / UNMEASURED), self-test 9/0 — docs/d1/tooling.md:22
+- PD268(b) `--dry` FAILS when the executor stopped before the last op (130-5) — docs/d1/tooling.md:27
+- PD268(c) c128b red = stale unsplit fixture; re-finalize the unsplit 70 as a reference, re-pin c128b — docs/d1/tooling.md:30
+- PD269(a) P3b re-cut accepted: P3b-1 N31 663.4 MB, P3b-2 N39 664.3 MB; f0's `Num(i)=-1` group moves to P3b-2 — docs/d1/ring-p3b.md:20
+- PD269(b)(c) Empty f0 after P3b-1 accepted; FS/FU gates compare per-frame counts with the simulated end state — docs/d1/ring-p3b.md:26
+- PD270(a)(b) PD265(a)'s tunnel-name rule refuted at pin3 op 26 (`Image Out`); MEASURE the rule from every recorded crossing before a third scratch run — docs/d1/tooling.md:39
+- PD268(d) 130-2 accepted; open tooling queue fp-20/21/22/24/25, guard_cycle:40, stop_record H1–H3 — docs/d1/tooling.md:34
 
 ### Older items that PD238+ cite as still applying
 - PD182 record-build inputs left open for QRT by design (cited by PD257(a)) — :721

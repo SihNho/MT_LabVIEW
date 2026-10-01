@@ -1,0 +1,26 @@
+{"schema":"result/1","id":"130-4","status":"FAIL","gates":{"pass":2,"fail":1},"first_fail":"P2 re-cut: plan_ring_p3b_split.py crashed at S1 scoring (stagexec.ExecStop: P3b-2 half names new:FS1.f1 created in P3b-1), plan_ring_p3b_split_c130_4.log:5-12; c128b new red","blocked_by":null,
+"artefacts":[
+ {"path":"archive/peer/2026-10-02-hyp-c130-4-suite-gb.md","md5":"a2530f28c5b8ce625bb518661c2f22a1"},
+ {"path":"archive/peer/2026-10-02-hyp-c130-4-c128b.md","md5":"d134d2b4e8f0b2ba26405e57f6b2449b"},
+ {"path":"tools/bench/selftest_x10_c130_1.py","md5":"db027f3ec4519fbda5deccd3014522f4"},
+ {"path":"tools/bench/selftest_x10_c130_4.log","md5":"728b3f79898b0f46616c8196c418b464"},
+ {"path":"tools/bench/diag_c130_4_spsuite.log","md5":"2779b3a6d6a2977312796680516b3526"},
+ {"path":"tools/bench/diag_c130_4_c128b.log","md5":"990b6cf77c4353d395f5cd2e2c8b48b9"},
+ {"path":"tools/bench/plan_ring_p3b_split.py","md5":"0f84a88166a3b9c6027c051088c2176c"},
+ {"path":"tools/bench/plan_ring_p3b_split_c130_4.log","md5":"a95a3e14cb40f5f25e9c128182065ed6"}],
+"facts":[
+ "P0 hyp-c130-4-suite-gb ANSWERED: premise wrong, protocol.py edited ~03:27 DURING the gb run, output dropped on timeout (suite.py:40-41); gb run = non-result; g6 ~247 s normal",
+ "P1 selftest_x10_c130_4.log 9/0: 8 L0 atoms TRUE per probe (:5-12,:34-41), L0+K1+DRY pass (:28-32); T1 N40 BIND23 R41 728.9; T2 R25 688.5; T3 UNMEASURED; T4 p3a 654.6 PASS",
+ "P1 diag_c130_4_spsuite.log 11 ok/2 fail: c106e E1 (known fp-20); c128b NEW red 3/2: T4 D.ops 48 not 63, T5 X5 19 vs 26 wiring, RLE 7 vs 15 (was 5/0 at 00:29)",
+ "hyp-c130-4-c128b ANSWERED: 'X10 caused it' WRONG, probe off in main() (stage_prerun.py:1911); dry stops at op 48 p3b_x_bn_n3; cause stagesim 129-7 naming (:1491-1524)",
+ "Review: plan_ring_p3b.json finalized before 129-7, stale vs simulator; split plans crossing 'current image number' need re-sim; --dry PASSes a run stopped at 48/63 (stage_prerun.py:869-871)",
+ "P2 split crash: x10_of(a2) compile refuses P3b-2 naming new:FS1.f1 (stagexec.py:462); fixed in plan_ring_p3b_split.py x10_of (frame sym -> stand-in neg uid, as A2r), NOT rerun",
+ "Split rerun refused by guard_peer on diag_c130_4_c128b.log (review now archived); plans/preds/recipes UNCHANGED (p3b1 10a0f401)",
+ "Jev row: diag_c130_2_suite_gb.log | new-problem p=0.712 | hypothesis review owed | dispatched P0 | ANSWERED",
+ "Jev row: diag_c130_4_c128b.log | new-problem p=0.588 | hypothesis review owed | dispatched | ANSWERED (cause stagesim 129-7, not X10)",
+ "Not run: P2 re-cut, P3 X10 per half / P3b-1 dry+prerun / --scratch-required, P4. No LabVIEW, no recipe launched; reviews not annotated"],
+"open":[
+ "c128b regression (stagesim 129-7 vs plan_ring_p3b.json finalized earlier): re-simulate/re-pin the fixture, or accept c128b red? The same 129-7 naming may also hit the P3b split's S2/S4 sims and P3b-1 dry (crossing p3b_x_bn_n3 is in P3b-1)",
+ "Re-issue from P2 with the fixed x10_of (plan_ring_p3b_split.py md5 0f84a881)?"],
+"cost":{"usd":null,"minutes":17,"labview_runs":0},
+"note":"Returned at first unexpected result (card rule). Peer cost: $1.31 + $1.56. selftest_x10 L0-atom print added (P1). Fixed split bug is an edit inside the build step, not rerun."}

@@ -1,0 +1,83 @@
+{
+ "schema": "task/1",
+ "id": "130-1",
+ "kind": "build",
+ "goal": "PD267(b): X10 predicts a stage recipe's peak memory from its compiled plan (FAIL >675, FAIL UNMEASURED); PD266(b): re-cut P3b so X10 PASSes both halves; P3b-1 dry/prerun",
+ "why": "retrospective-cycle129 device-failed: X10 passed the 40-op P3b-1 as UNMEASURED; P3b-1 predicted 688.5 MB vs error 2 at 695. brief_130-1.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_130-1.md"},
+  {"path": "tools/stage_prerun.py", "md5": "88abd9c6c54bbe50ab93077d4de338bf"},
+  {"path": "tools/bench/plan_ring_p3b1_in.json", "md5": "0f4f40b27277e6260e35d0ccb0f9ff93"},
+  {"path": "tools/bench/plan_ring_p3b2_in.json", "md5": "8a67b3553812dc7a7d13ebcf29d870e3"},
+  {"path": "tools/bench/plan_ring_p3b_split.py"},
+  {"path": "tools/recipes/stage_d1_ring_p3b1.py"},
+  {"path": "tools/recipes/stage_d1_ring_p3b2.py"},
+  {"path": "tools/bench/stage_d1_ring_p3b1_scratch.py"},
+  {"path": "tools/bench/diag_c129_6_mem.log"},
+  {"path": "tools/bench/diag_c129_8_mempred.log"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3b_split.py"},
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p3b1_scratch.py"},
+  {"kind": "file", "name": "tools/bench/diag_c129_6_mem.log"},
+  {"kind": "file", "name": "tools/bench/selftest_stage_prerun_c106e.py"}
+ ],
+ "pass": [
+  "P1 X10 = start + R*read + N*(edit+other) from any stage recipe's compiled plan + checkpoint set; coefficients in one model file citing logs; FAIL >675; FAIL UNMEASURED if not compilable",
+  "P2 X10 self-test: 129-1 bytes FAIL (~723), 129-8 bytes FAIL (688.5), no-plan FAIL UNMEASURED, a passing recipe PASS; old stage_prerun self-tests rerun, every FAIL listed",
+  "P3 re-cut: each <=40, dependency-closed, Copy+guard together, RLE with loose end; replay = unsplit-70 end graph; preds carry memory_pred; both recipes {0,len}|BIND",
+  "P4 X10 PASS <=675 on BOTH halves (N, BIND, R, peak each); P3b-1 recipe + scratch helper dry + prerun PASS in own processes; --scratch-required exit code reported",
+  "P5 prior-art only if the launch gate asks: ANSWERED, verdict returned, not annotated"
+ ],
+ "outputs": [
+  "tools/stage_prerun.py",
+  "tools/bench/memory_model.json",
+  "tools/bench/plan_ring_p3b1.json",
+  "tools/bench/plan_ring_p3b2.json",
+  "tools/bench/plan_ring_p3b1_pred.json",
+  "tools/bench/plan_ring_p3b2_pred.json",
+  "tools/recipes/stage_d1_ring_p3b1.py",
+  "tools/recipes/stage_d1_ring_p3b2.py",
+  "tools/bench/cards/result_130-1.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_prerun.py",
+   "tools/bench/memory_model*",
+   "tools/bench/selftest_stage_prerun*",
+   "tools/bench/selftest_x10*",
+   "tools/bench/plan_ring_p3b1*",
+   "tools/bench/plan_ring_p3b2*",
+   "tools/bench/plan_ring_p3b_split*",
+   "tools/bench/sim/**",
+   "tools/recipes/stage_d1_ring_p3b1.py",
+   "tools/recipes/stage_d1_ring_p3b2.py",
+   "tools/bench/stage_d1_ring_p3b1_scratch*",
+   "tools/bench/stage_prerun*",
+   "tools/bench/diag_c130_1*",
+   "tools/bench/prior_art*",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_130-1*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 55},
+ "rules": [
+  "Offline only; no LabVIEW, no recipe launched",
+  "Never tune the checkpoint set or the coefficients to reach 675; the cut is the only free variable",
+  "No cut <=675 on both halves => return the best cut's numbers (a third half is the user's decision, PD261(d))",
+  "Do not edit tools/hooks/*, protocol.py, peer.ps1 (card 130-2 is live on those)",
+  "Return at the first unexpected result; cost.minutes = bind->return"
+ ],
+ "advances": ["M3", "M4"]
+}

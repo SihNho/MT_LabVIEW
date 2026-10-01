@@ -1,0 +1,81 @@
+{
+ "schema": "task/1",
+ "id": "130-3",
+ "kind": "build",
+ "goal": "Continue 130-1: owed hypothesis review for selftest_x10_c130_1.log, rerun the fixed X10 self-test, then the P3b memory re-cut + P3b-1 dry/prerun (brief_130-1.md Part A step 3 on, Part B)",
+ "why": "130-1 BLOCKED 4/3: T0 fixture md5 git-LF vs CRLF; Jev new-problem p=0.55 => review owed, card had no hypothesis peer. Judgement: keep new X10 live (PD267(b)).",
+ "retry_of_card": "130-1",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_130-1.md"},
+  {"path": "tools/bench/cards/result_130-1.json"},
+  {"path": "tools/stage_prerun.py", "md5": "c19cf552861b38c457784f8bad34ee81"},
+  {"path": "tools/bench/memory_model.json", "md5": "3203ca935da5efb4dd95523ac97e79c7"},
+  {"path": "tools/bench/selftest_x10_c130_1.py", "md5": "b99a972cb8158a292e431006b2931d72"},
+  {"path": "tools/bench/plan_ring_p3b_split.py", "md5": "ad0ec303c6e46a02bc95859c61091f95"},
+  {"path": "tools/bench/plan_ring_p3b1_in.json", "md5": "0f4f40b27277e6260e35d0ccb0f9ff93"},
+  {"path": "tools/bench/plan_ring_p3b2_in.json", "md5": "8a67b3553812dc7a7d13ebcf29d870e3"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/selftest_x10_c130_1.py"},
+  {"kind": "file", "name": "tools/bench/selftest_x10_c130_1.log"},
+  {"kind": "file", "name": "tools/bench/memory_model.json"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3b_split.py"},
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p3b1_scratch.py"}
+ ],
+ "pass": [
+  "P0 hypothesis review on selftest_x10_c130_1.log ANSWERED (claim: T0 failed on LF-vs-CRLF fixture md5 only); its verdict returned in facts",
+  "P1 fixed X10 self-test rerun: 129-1 bytes FAIL (~729), 129-8 bytes FAIL (688.5), no-plan FAIL UNMEASURED, p3a PASS; old stage_prerun self-tests rerun, every FAIL listed",
+  "P2 re-cut run: each <=40, dependency-closed, Copy+guard together, RLE with loose end; replay = unsplit-70 end graph; preds carry memory_pred; both recipes {0,len}|BIND",
+  "P3 X10 PASS <=675 on BOTH halves (N, BIND, R, peak each); P3b-1 recipe + scratch helper dry + prerun PASS in own processes; --scratch-required exit code",
+  "P4 prior-art only if the launch gate asks: ANSWERED, verdict returned, not annotated"
+ ],
+ "outputs": [
+  "tools/stage_prerun.py",
+  "tools/bench/plan_ring_p3b1.json",
+  "tools/bench/plan_ring_p3b2.json",
+  "tools/bench/plan_ring_p3b1_pred.json",
+  "tools/bench/plan_ring_p3b2_pred.json",
+  "tools/recipes/stage_d1_ring_p3b1.py",
+  "tools/recipes/stage_d1_ring_p3b2.py",
+  "tools/bench/cards/result_130-3.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_prerun.py",
+   "tools/bench/memory_model*",
+   "tools/bench/selftest_stage_prerun*",
+   "tools/bench/selftest_x10*",
+   "tools/bench/plan_ring_p3b1*",
+   "tools/bench/plan_ring_p3b2*",
+   "tools/bench/plan_ring_p3b_split*",
+   "tools/bench/sim/**",
+   "tools/recipes/stage_d1_ring_p3b1.py",
+   "tools/recipes/stage_d1_ring_p3b2.py",
+   "tools/bench/stage_d1_ring_p3b1_scratch*",
+   "tools/bench/stage_prerun*",
+   "tools/bench/diag_c130_3*",
+   "tools/bench/prior_art*",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_130-3*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 50},
+ "rules": [
+  "Offline only; no LabVIEW, no recipe launched",
+  "Keep the new X10 live (judgement 130); never tune checkpoints or coefficients to reach 675; the cut is free",
+  "No cut <=675 on both halves => return the best cut's numbers (third half = user, PD261(d))",
+  "Do not edit tools/hooks/*, protocol.py, peer.ps1 (card 130-2 is live on those)",
+  "Return at the first unexpected result; cost.minutes = bind->return"
+ ],
+ "advances": ["M3", "M4"]
+}

@@ -1,0 +1,15 @@
+---
+type: archive
+date: 2026-10-02
+tags: [status-relocate]
+---
+# STATUS relocation, cycle 130 close (verbatim, rule 4)
+
+## §1 The cycle-130 FIRST ACT block (STATUS `## NEXT`, written by cycle 129)
+
+🟢🟢 **FIRST ACT of cycle 130 = FIX the X10 memory check, re-balance the P3b split until X10 passes both halves, then the P3b-1 scratch run, then ONE launch — `docs/d1-loop12-17-split-plan.md` Pre-decided 267(b) over 266(b)(d) (read 264–267).** (The cycle-129 first-act block is in `archive/2026-10-02-status-cycle129-relocate.md` §2.)
+   - 🔴 Card 1 starts with the `device-failed` fix (retrospective-cycle129, `docs/violation-decisions.md` 2026-10-02 02:57): X10 in `tools/stage_prerun.py` predicts a step's peak from the compiled plan ACROSS recipes (start + R × read + N × (edit + other), coefficients cited), FAILS > 675 MB and FAILS UNMEASURED for a LabVIEW stage recipe; self-test on the 129-1 bytes (≈ 723, FAIL), the 129-8 bytes (688.5, FAIL), a no-plan recipe (FAIL). Then the re-cut below is accepted only when X10 itself PASSes both halves.
+   - Card 1 (offline, first), continued: re-cut `tools/bench/plan_ring_p3b1_in.json` + `plan_ring_p3b2_in.json` (70 actions together) so the LARGER predicted peak — 570 + R × 2.53 + N × 1.4 MB, R = whole-VI reads in the `{0, len} | BIND` set — is **≤ 675 MB**. Today P3b-1 = 688.5 (N 40, R 25), P3b-2 = 641.8 (N 30, R 12) (`tools/bench/diag_c129_8_mempred.log:3,5`). Keep each ≤ 40, dependency-closed, IMAQ Copy + guard together, each RLE with its loose end; finalize, preds with `memory_pred`, both recipes' checkpoint sets; P3b-1 recipe + `tools/bench/stage_d1_ring_p3b1_scratch.py` dry + prerun (own processes); prior-art if the launch gate asks for the new bytes. No valid cut ≤ 675 ⇒ return (a third half is the user's decision, PD261(d); a scoped checkpoint read is a tool project).
+   - Card 2 (LabVIEW): P3b-1 scratch `pin` (log `_pin3`) on a P3a byte copy, **waited on in-turn** (`.claude/agents/material.md:92-98`; 129-2's agent exit killed its run). Predictions: every recipe gate PASS incl. op 33's FS tunnel named `current image number` (PD265(a) rests on ONE named net — this run tests it); peak memory ≤ `memory_pred`; Error List count-only 54 (alt 57). Then the measured census into the pred (PD264(c)) + dry/prerun.
+   - Card 3 (LabVIEW): ONE launch → `claudeDev\D1_ring_p3b1_*.vi`, final full Error List read, expected file. Broken-file count 3 of 6.
+   - Card 4 (offline tooling, when no LabVIEW card is live): the second `device-failed` fix — the stop record treats a recipe path as a launch ONLY in python command position, never as an argument (`md5sum`, `grep`, `gate_fp.py log --cmd`), logged as fp-22 (`docs/violation-decisions.md` 2026-10-02 02:57) + gate-fp drain fp-15..fp-21 + wire `tools/card_clock.py` into `protocol.py validate` (UNMEASURED warns, MISMATCH fails; `docs/violation-decisions.md` 2026-10-02 01:01) + mark `docs/ring-buffer-design.md:23-24` superseded by PD238(c) + the gemini fact arm counted an EMPTY answer as ANSWERED (`tools/bench/peer_c129_6_undo.log:6-24`) — make empty content fall back to the claude arm.

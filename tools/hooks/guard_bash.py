@@ -234,6 +234,96 @@ def _bash_escaped_quotes(cmd):
 _CUR_TOOL = [None]     # set by _main(); stop_gate keeps its one-argument call shape (selftest_launch_gate patches it)
 
 
+# card 130-2 / gate-fp fp-22 (docs/violation-decisions.md `## device-failed - 2026-10-02 02:57` (2)): the stop record treated
+# a recipe path that is only an ARGUMENT of a python program (`py tools/gate_fp.py log --cmd "md5sum tools/recipes/X.py"`,
+# material_marker.log:2989) as a launch (stop_record.segment_class: any python script naming a path = "build"), so the
+# sanctioned queue for a false positive was itself refused. Rule now: a segment whose program is a python interpreter
+# running a .py SCRIPT is judged by the scripts it RUNS in python command position (directly, or after bgrun's `--`
+# followed by another python interpreter), never by its arguments. Everything that cannot be decided that way reaches
+# stop_record UNCHANGED (fail closed): an executor pipe/backtick (EXEC_PIPE_RE), a `$(`, a cd anywhere but the project
+# root, an env prefix, `py -c` / `py -` / `py -m`, a non-.py script token (`$f`), a second interpreter token that is not
+# right after `--`, a `--` followed by a non-python program, and any segment that DOES launch a tools/recipes/ path.
+# Self-test: tools/bench/selftest_stoprecord_c130_2.py.
+_QUOTED_ARG_RE = re.compile(r"[\s;&|<>`$]")
+_PY_TOKEN_RE = re.compile(r"^py(?:thon)?[\d.]*(?:\.exe)?$", re.I)
+_RECIPE_PATH_RE = re.compile(r"(?:^|[\\/])tools[\\/]recipes[\\/]", re.I)
+
+
+def _is_recipe_path(p):
+    """True for a path under <project>/tools/recipes after normalisation (`tools/bench/../recipes/x.py` included), or
+    any path spelling `tools/recipes/` (an msys `/g/...` absolute form)."""
+    if _RECIPE_PATH_RE.search(p or ""):
+        return True
+    a = p if os.path.isabs(p) else os.path.join(PROJECT_ROOT, p)
+    rd = os.path.normcase(os.path.normpath(os.path.join(PROJECT_ROOT, "tools", "recipes"))) + os.sep
+    return os.path.normcase(os.path.normpath(a)).startswith(rd)
+
+
+def _py_launch_view(seg, sr):
+    """None = undecidable here (stop_record judges the segment unchanged); else the .py paths the segment RUNS."""
+    s = sr._KEYWORD_RE.sub("", seg or "", count=1).strip()
+    if not s or "$(" in s or "`" in s:
+        return None
+    try:
+        import shlex
+        raw = shlex.split(s, posix=False)
+    except ValueError:
+        return None
+    toks = []
+    for t in raw:                                  # a quoted token holding blanks/separators is an argument TEXT: masked
+        quoted = len(t) >= 2 and t[0] == t[-1] and t[0] in "\"'"
+        toks.append(None if quoted and _QUOTED_ARG_RE.search(t[1:-1]) else t.strip("\"'"))
+
+    def is_py(t):
+        return t is not None and bool(_PY_TOKEN_RE.match(t.replace("\\", "/").rsplit("/", 1)[-1]))
+    if not is_py(toks[0]):
+        return None
+    launched, i = [], 0
+    while True:
+        j = i + 1
+        while j < len(toks) and toks[j] is not None and toks[j].startswith("-") and toks[j] != "--":
+            if toks[j] == "-" or toks[j].startswith("-c") or toks[j].startswith("-m"):
+                return None
+            j += 2 if toks[j] in ("-X", "-W") else 1
+        if j >= len(toks) or toks[j] is None or not toks[j].lower().endswith(".py") or "$" in toks[j]:
+            return None
+        launched.append(toks[j])
+        rest = toks[j + 1:]
+        if "--" in rest:
+            k = j + 1 + rest.index("--")
+            if any(is_py(t) for t in toks[j + 1:k]):
+                return None
+            if k + 1 >= len(toks) or not is_py(toks[k + 1]):
+                return None
+            i = k + 1
+            continue
+        if any(is_py(t) for t in rest):
+            return None
+        return launched
+
+
+def _argument_only_view(cmd, sr):
+    """The command stop_record judges: python segments that run no tools/recipes/ script are dropped (fp-22)."""
+    if sr.EXEC_PIPE_RE.search(cmd or ""):
+        return cmd
+    try:
+        import launchunit
+        if not launchunit.cd_only_to_root(cmd):
+            return cmd
+    except Exception:                                                              # noqa: BLE001
+        return cmd
+    segs = sr.split_segments(cmd or "")
+    keep, changed = [], False
+    for s in segs:
+        view = _py_launch_view(s, sr)
+        if view is None or any(_is_recipe_path(p) for p in view):
+            keep.append(s)
+        else:                                      # judged by what it RUNS: a stop record on the script itself still bites
+            keep.extend("py " + p for p in view)
+            changed = True
+    return " ; ".join(keep) if changed else cmd
+
+
 def stop_gate(cmd, shell=None):
     """0 = pass, 2 = refuse. One call, no logic duplicated - see tools/stop_record.py."""
     try:
@@ -242,7 +332,11 @@ def stop_gate(cmd, shell=None):
         return 0                     # a missing/broken module must not wedge every command in the session
     shell = shell or _CUR_TOOL[0] or "Bash"
     seen = _bash_escaped_quotes(cmd) if shell == "Bash" else cmd
-    allow, why = stop_record.check_command(_drop_lint_segments(seen, stop_record))
+    try:
+        judged = _argument_only_view(_drop_lint_segments(seen, stop_record), stop_record)
+    except Exception:                                                              # noqa: BLE001 - fail closed
+        judged = _drop_lint_segments(seen, stop_record)
+    allow, why = stop_record.check_command(judged)
     if allow:
         return 0
     note(False, "STOPPED-RECIPE " + cmd)

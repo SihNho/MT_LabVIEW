@@ -7,10 +7,12 @@ MODE (argv[1]):
   pin    : SAVE on (rule-6 gui_save of the SCRATCH) so stage_d1_ring_p3b1_el.py scratch can pin its Error List (that script deletes it).
 Observation only (wrapper-side, the recipe is not touched): Executor.run's real terminal rows are kept and, at CEN2, every NEW object
 uid is printed with its class and (for terminals) its owner uid/class and frame (NEWOBJ lines); the FULL-class census before/after is
-printed (CENSUS-ALL lines) - the pred's census is EMPTY (all 40 rows CENSUS-UNPREDICTED), so CEN2 is vacuous here and these lines are
+printed (CENSUS-ALL lines) - the pred's census is EMPTY (all 31 rows CENSUS-UNPREDICTED), so CEN2 is vacuous here and these lines are
 the measurement PD264(c) writes into plan_ring_p3b1_pred.json.
 PRIOR ART: tools/bench/stage_d1_ring_p3a_scratch.py (card 124-7/124-8; this is its cut - recipe module, plan, stage name, record key).
-PREDICTION: L1 40 actions; E1 every checkpoint == sim; FS 1 FlatSequence with 3 frames on 27219; RB reads `status`; D == sim; TD; PB cdiff 16;
+FS/FU are the recipe's own gates (R.body, PD269(c) per-frame counts vs the plan's simulated end state) - no copy here to drift.
+PREDICTION: L1 31 actions; E1 every checkpoint == sim; FS 1 FlatSequence with 3 frames on 27219, per-frame terminals == sim end state
+(f0 0 / f1 16 / f2 18); FU base + 2 filled frames; RB reads `status`; D == sim; TD; PB cdiff 16; peak memory <= 663.4 MB (pred memory_pred);
 HB <= +700; PS saved (scratch only); CEN2 vacuous PASS; LabVIEW gone; PASS writes tools/bench/scratch_verify/stagexec.ring_p3b1_fs_<mode>_<ts>.json.
     py tools/bgrun.py --material --max-min 45 --log tools/bench/stage_d1_ring_p3b1_scratch_pin3.log -- py -u tools/bench/stage_d1_ring_p3b1_scratch.py pin"""
 import json, os, sys, time                                                          # noqa: E401
@@ -21,7 +23,7 @@ import stage_d1_ring_p3b1 as R                                                  
 REC = os.path.join(K.BENCH, "scratch_verify")
 PLAN = os.path.join(K.BENCH, "plan_ring_p3b1.json")                                 # the recipe's plan (stage_prerun.plan_files reads it)
 MODE = "pin" if "pin" in sys.argv[1:] else "nosave"                                # stage_prerun passes its own flags in argv
-CARD, LOGTAG = "129-4", {"pin": "pin3"}.get(MODE, MODE)                             # card 129-4: rerun of 129-2's killed pin run -> _pin2.log; card 129-8: checkpoint-set run -> _pin3.log
+CARD, LOGTAG = "130-6", {"pin": "pin3"}.get(MODE, MODE)                             # card 129-4: _pin2.log; 129-8/130-6: the 31-action cut -> _pin3.log
 R.SAVE = MODE == "pin"
 OBS = {"rows": None, "snaps": []}
 _run, _snap, _cg = SX.Executor.run, K.Stage.census_snapshot, K.Stage.census_gate

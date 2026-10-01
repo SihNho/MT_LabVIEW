@@ -1,13 +1,16 @@
 r"""stage_d1_ring_p3b1 - card 129-1 (WRITTEN, NOT LAUNCHED), RING P3b-1 (d1-loop12-17-split-plan.md PD246(c) A1/A2, PD254(d),
-PD256(b)(c), PD258(a)(c), PD261(a)(d), PD262(b), PD263(b)): on the SAVED P3a bed D1_ring_p3a_20261001_180540.vi (md5 4dfa44aa)
-build, in case #22694's False frame 27219, a 3-frame Flat Sequence with [Num(i) = -1] -> [IMAQ Copy #6810 Image Out -> Img(i),
-error in <- #6810 error out] -> [Num(i) = status ? -1 : BufNum (Unbundler #157 element#0 -> Select #529 s, I32 -1 -> t,
-BufNum -> f)]; wire_remove_loose_ends on w27378 and after every crossing. TransPos/RotPos/FrameIdx and Latest are P3b-2's.
+PD256(b)(c), PD258(a)(c), PD261(a)(d), PD262(b), PD263(b); cut re-set by docs/d1/ring-p3b.md PD269(a)-(c), card 130-6): on the
+SAVED P3a bed D1_ring_p3a_20261001_180540.vi (md5 4dfa44aa) build, in case #22694's False frame 27219, a 3-frame Flat Sequence
+whose frame f0 stays EMPTY here (its [Num(i) = -1] group, 9 rows, moved to P3b-2 by the memory cut, PD269(a)(b)) ->
+f1 [IMAQ Copy #6810 Image Out -> Img(i), error in <- #6810 error out] -> f2 [Num(i) = status ? -1 : BufNum (Unbundler #157
+element#0 -> Select #529 s, I32 -1 -> t, BufNum -> f)]; wire_remove_loose_ends on w27378 and after every crossing. 31 actions
+(N 31, BIND 18, R 20, predicted peak 663.4 MB). f0's Num(i)=-1, TransPos/RotPos/FrameIdx and Latest are P3b-2's.
 FRESH LabVIEW -> claudeDev\D1_ring_p3b1_<ts>.vi (rule-6 GUI save, ExecState 0 by design: the P3a bed is broken, never run) +
 tools\bench\errorlist_expected_D1_ring_p3b1_<ts>.json (54 = P3a's 55 - w27378, + 0 own). ROWS ONLY FROM plan_ring_p3b1.json
 (stagesim FINAL of plan_ring_p3b1_in.json, plan_ring_p3b_split.py); expected values only from plan_ring_p3b1_pred.json.
 PRIOR ART: stage_d1_ring_p3a.py (Executor/LVBackend/DryPlanBE skeleton, D/TD/FU/PB/HB/PS/EL gates). No new op.
-PREDICTION: L1 40 actions -> pred ops; E1 every checkpoint == sim; FS 1 FlatSequence with 3 frames on 27219; RB the Unbundler
+PREDICTION: L1 31 actions -> pred ops; E1 every checkpoint == sim; FS 1 FlatSequence with 3 frames on 27219, terminals per frame ==
+the simulator's end state read from the plan's last step (f0 0 / f1 16 / f2 18 at plan 6934a0ed, PD269(c)); RB the Unbundler
 terminal on Select.s's wire reads back `status` (PD262(b); FAILS otherwise, UNVERIFIED-DRY in a dry run); D new/lost wires == sim's;
 TD every base terminal that was wired stays wired; CEN2 == pred census (CENSUS-UNPREDICTED rows: the scratch run pins them);
 PB cdiff(S1, end) == P3a's 16 rows (FATAL, before save); HB handles <= +700; PS saved, input unchanged; EL 54.
@@ -48,8 +51,11 @@ def body(s):
     rb = lambda sym: x.bind["obj"].get(L["sym"][sym], x.bind["diag"].get(L["sym"][sym], L["sym"][sym]))   # noqa: E731 - frames: bind['diag']
     term = lambda sym, nm: [r for r in real if r["owner_uid"] == rb(sym) and r["term_name"] == nm]   # noqa: E731
     fs, fr = rb("new:FS1"), [rb("new:FS1.f{0}".format(k)) for k in range(3)]
-    s.gate("FS one FlatSequence #{0} with 3 distinct frames {1}, every frame holds created rows".format(fs, fr),
-           len(set(fr)) == 3 and all(any(int(r["frame_diagram"] or 0) == f for r in real) for f in fr), fr, fatal=True)
+    fsim = [int(L["sym"]["new:FS1.f{0}".format(k)]) for k in range(3)]             # PD269(c): the simulated end state's frame uids
+    nexp = [sum(1 for r in L["terminals"] if int(r["frame_diagram"] or 0) == f) for f in fsim]   # read from the plan's last step, never typed
+    nreal = [sum(1 for r in real if int(r["frame_diagram"] or 0) == f) for f in fr]
+    s.gate("FS one FlatSequence #{0} with 3 distinct frames {1}; terminals per frame {2} == simulated end state {3} (PD269(c))".format(fs, fr, nreal, nexp),
+           len(set(fr)) == 3 and nreal == nexp, {"frames": fr, "real": nreal, "sim": nexp, "sim_uids": fsim}, fatal=True)
     sw = term("new:SEL1", "s")
     ub = [r for r in real if r["owner_uid"] == rb("new:UB1") and r["is_source"] and len(sw) == 1 and sw[0]["wire_uid"] and r["wire_uid"] == sw[0]["wire_uid"]]
     s.gate("RB PD262(b) read-back: the Unbundler terminal on Select.s's wire reads `{0}`, expected `{1}`{2}".format(
@@ -63,7 +69,9 @@ def body(s):
     bw, rw = dict((int(r["term_uid"]), int(r["wire_uid"] or 0)) for r in BASE["terminals"]), dict((int(r["term_uid"]), int(r["wire_uid"] or 0)) for r in real)
     unw = [t for t, w_ in bw.items() if w_ and not rw.get(t)]
     s.gate("TD every base terminal that was wired is still wired, no base row lost", not unw and not set(bw) - set(rw), {"unwired": unw[:20], "lost_rows": sorted(set(bw) - set(rw))[:20]})
-    s.gate("FU frame diagrams == base + the FS's 3 frames", frames(real) == frames(BASE["terminals"]) | set(fr), sorted(frames(BASE["terminals"]) ^ frames(real))[:20], fatal=True)
+    fu = frames(BASE["terminals"]) | set(f for f, n in zip(fr, nexp) if n)         # PD269(c): only the frames the sim end state fills
+    s.gate("FU frame diagrams == base + the FS frames holding terminals in the simulated end state ({0} of 3)".format(sum(1 for n in nexp if n)),
+           frames(real) == fu, sorted(fu ^ frames(real))[:20], fatal=True)
     s.es("after all rows (ExecState 0 expected: the P3a bed is broken by design)")
     s1p = J(JC.WIKI, JC.S1_KEY + ".json")
     S1f = V.build4(s1p["terminals"], J(JC._newest("graph_objs_s1_*.json"))["objects"], J(JC._newest("graph_loops_s1_*.json"))["loops"], LAB, s1p["fs_tunnel_pairs"], frame_keyed=True)

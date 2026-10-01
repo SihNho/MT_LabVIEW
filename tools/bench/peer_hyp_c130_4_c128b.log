@@ -1,0 +1,40 @@
+BGRUN START 2026-10-02 03:58:27 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug hyp-c130-4-c128b -TaskFile C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/1331a01d-b042-4166-a762-a892853680e6/scratchpad/hyp_c130_4b.txt
+BGRUN PID 23736
+OUTCOME: ANSWERED (152s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-02-hyp-c130-4-c128b.md
+COST: $1.5623  in 32 / out 12938 / cache-create 118786 / cache-read 1765559  (148s, 23 turn(s))
+--- ANSWER ---
+**The claim is wrong.** The X10 edit to `tools/stage_prerun.py` cannot produce this failure. The evidence points to cycle 129's card 129-7 change in `tools/stagesim.py`. It stops the dry run at the plan's first crossing from the named net 'current image number'. I read files only and ran nothing, so the two tests below are still owed.
+
+## 1. Strongest reason the claim is wrong
+- **The probe stops construction, not the run.** `x10_capture_executors` raises `X10Probe` inside `Executor.__init__`, before `orig(self, …)` runs (`tools/stage_prerun.py:1851-1853`). That is before `x.run()` dispatches any operation. The failing run still dispatched 19 wiring ops and 7 RLE ops (`diag_c130_4_c128b.log:8`), so `x.run()` executed and was stopped partway.
+- **The probe is off in this test.** It fires only when `D.x10_probe` is True. Only the helper `x10_probe()` sets that flag (`:1911`), and `main()` never calls it. With the flag off, `cap` records the plan and calls the real `__init__`, so it changes nothing. That is why `--dry` also shows 48 (log :7), which a probe could not explain.
+
+## 2. Alternative explanation, with the evidence that pins it
+- **Where the run stopped.** The 63-op trace is ordered: 1 RLE, 22 create, 12 wire_connect, then 14 pairs of wire_connect_term_uid + RLE (`diag_c128_3_recipe_dry.json:13-77`). Its first 48 ops are 1 + 22 + 12 + 7 crossings + 6 RLE. That gives exactly 19 wiring ops and 7 RLE ops, matching the failing X5 line. So the run stopped on op 48, the 7th crossing.
+- **What op 48 is.** It is plan action `p3b_x_bn_n3`, a wire from `6810 'current image number'` to RAN3 across the case and Flat Sequence borders (`plan_ring_p3b.json:822-829`). The six crossings before it come from the unnamed `x-y*floor(x/y)` net, e.g. `:807-812`. So op 48 is the plan's first crossing from a named net.
+- **What changed for that case.** Card 129-7 (`tools/stagesim.py:1491-1513`, `:1524`, `:1592`; file mtime 02:24, which is after the 00:29 pass) changed exactly this case. New tunnel faces on a crossing from a named net now carry the name, and unmeasured naming cases raise `SimError` ("UNMEASURED tunnel naming (card 129-7)").
+- **Why it stops.** `plan_ring_p3b.json` was finalized before 129-7, so its recorded steps assume the old naming. The dry backend `DryPlanBE` is a `SimBackend` running the current `stagesim` (`tools/stagexec.py:3438-3453`). At op 48 it either raises or disagrees with the recorded step. Either way the run ends in an ExecStop → `report_stop` → E1 FATAL (`stagexec.py:3535-3545`).
+- **Why `--dry` still says PASS.** A dry run downgrades that gate to UNVERIFIED. This is the known gap from card 108-5 (`stage_prerun.py:869-871`), so `--dry` returns rc 0 and PASS with 48 ops.
+- **Unsettled.** The logs do not show whether op 48 died on a `SimError` or a step mismatch. The self-test sent the run's own output into a buffer and kept only the X5 and RESULT lines. Both causes are card 129-7.
+
+## 3. What would falsify the claim (and confirm it)
+- The claim is false if the run's own output shows a stop at op 48 (an E1 "stopped IN op" line, a STEP-DIFF at k 48, or a SimError citing 129-7).
+- It is also false if the self-test still gives 48 with `stage_prerun.py` taken from `d70963a7` (no X10 capture), because `d70963a7` already contains 129-7.
+- The claim survives only if that older `stage_prerun.py` gives 63/63, or if the current one with the `x10_capture_executors()` call removed gives 63/63.
+
+## 4. Your questions
+- **(1)** Card 129-7's change in `tools/stagesim.py` makes the run stop at 48, not X10. `--dry` seeing 48 too is what rules out X10: the probe is off there, and even when on it stops before any op runs.
+- **(2)** Yes, by inference: a fresh process (a new `py` run) should also show 48. Nothing in the path depends on running inside the test process, and the probe flag is off in `main()`. So the real prerun of this recipe is affected, not only the self-test. `--dry` alone would wrongly report PASS; X5 in `--prerun` is what catches it.
+- **(3)** Cheapest discriminating test (pure Python, no LabVIEW): `py tools/stage_prerun.py --dry tools/recipes/stage_d1_ring_p3b.py --no-record`, then grep the output for `E1`, `stopped IN op`, `STEP-DIFF`, `129-7`.
+  - A stop at op 48 or `p3b_x_bn_n3` confirms my explanation; no stop leaves the claim alive.
+  - Your proposed swap to `git show d70963a7:tools/stage_prerun.py` also separates the two: my explanation predicts 48, the claim predicts 63.
+  - The most direct check is the reverse: keep today's `stage_prerun.py`, swap `stagesim.py` back to its `e9edc1d6` version, and expect 63/63.
+
+## What this means for the next action
+- Do not revert X10.
+- The fixture is stale for the current simulator: `plan_ring_p3b.json` was finalized before 129-7. Before any recipe whose plan crosses the 'current image number' net is used again, re-simulate it under 129-7, or record that the c128b test is pinned to the old simulator. This includes the P3b-1 and P3b-2 split plans.
+- The card 108-5 gap is still open: `--dry` reported PASS on a run that stopped at op 48 of 63.
+- Separate from this, `plan_ring_p3b_split_c130_4.log:13` shows the split script crashing on its own bug: action 1 uses `new:FS1` before any action creates it.
+
+No web sources: every claim above comes from this project's own files.
+BGRUN END rc=0 after 153s

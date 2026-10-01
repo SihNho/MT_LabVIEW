@@ -1,0 +1,88 @@
+{
+ "schema": "task/1",
+ "id": "130-5",
+ "kind": "build",
+ "goal": "PD268(b)(c) + PD266(b): --dry FAILs on an early executor stop; unsplit 70 re-finalized as reference, c128b re-pinned green; rerun the P3b memory re-cut; P3b-1 dry/prerun",
+ "why": "130-4 FAIL 2/1: split crash fixed (x10_of) not rerun; c128b red = stale unsplit fixture vs stagesim 129-7; --dry passed a run stopped at 48/63. docs/d1/tooling.md:20-38.",
+ "retry_of_card": "130-4",
+ "inputs": [
+  {"path": "docs/d1/tooling.md"},
+  {"path": "tools/bench/cards/brief_130-1.md"},
+  {"path": "tools/bench/cards/result_130-4.json"},
+  {"path": "archive/peer/2026-10-02-hyp-c130-4-c128b.md", "md5": "d134d2b4e8f0b2ba26405e57f6b2449b"},
+  {"path": "tools/stage_prerun.py", "md5": "c19cf552861b38c457784f8bad34ee81"},
+  {"path": "tools/bench/plan_ring_p3b_split.py", "md5": "0f84a88166a3b9c6027c051088c2176c"},
+  {"path": "tools/bench/plan_ring_p3b_in.json", "md5": "08fa224112606aedd4a15ec378268d88"},
+  {"path": "tools/bench/plan_ring_p3b1_in.json", "md5": "0f4f40b27277e6260e35d0ccb0f9ff93"},
+  {"path": "tools/bench/plan_ring_p3b2_in.json", "md5": "8a67b3553812dc7a7d13ebcf29d870e3"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/selftest_stage_prerun_c128b.py"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3b_in.json"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3b_split.py"},
+  {"kind": "file", "name": "tools/bench/selftest_x10_c130_1.py"},
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p3b1_scratch.py"}
+ ],
+ "pass": [
+  "P1 --dry FAILs when executed ops < plan ops (stage_prerun.py:869-871 case); self-test on the 48/63 case + a full run PASS; selftest_x10 still 9/0",
+  "P2 unsplit 70 re-finalized from plan_ring_p3b_in.json under current stagesim (reference, never launched); c128b re-pinned and green; other stage_prerun self-tests, FAILs listed",
+  "P3 re-cut run: each <=40, dependency-closed, Copy+guard together, RLE with loose end; replay = new unsplit-70 end graph; preds carry memory_pred; both recipes {0,len}|BIND",
+  "P4 X10 PASS <=675 on BOTH halves (N, BIND, R, peak each); P3b-1 recipe + scratch helper dry (all ops executed) + prerun PASS in own processes; --scratch-required exit code",
+  "P5 prior-art only if the launch gate asks: ANSWERED, verdict returned, not annotated"
+ ],
+ "outputs": [
+  "tools/stage_prerun.py",
+  "tools/bench/plan_ring_p3b.json",
+  "tools/bench/plan_ring_p3b1.json",
+  "tools/bench/plan_ring_p3b2.json",
+  "tools/bench/plan_ring_p3b1_pred.json",
+  "tools/bench/plan_ring_p3b2_pred.json",
+  "tools/recipes/stage_d1_ring_p3b1.py",
+  "tools/recipes/stage_d1_ring_p3b2.py",
+  "tools/bench/cards/result_130-5.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_prerun.py",
+   "tools/bench/memory_model*",
+   "tools/bench/selftest_stage_prerun*",
+   "tools/bench/selftest_x10*",
+   "tools/bench/selftest_dry*",
+   "tools/bench/plan_ring_p3b.json",
+   "tools/bench/plan_ring_p3b_pred*",
+   "tools/bench/plan_ring_p3b_make*",
+   "tools/bench/plan_ring_p3b1*",
+   "tools/bench/plan_ring_p3b2*",
+   "tools/bench/plan_ring_p3b_split*",
+   "tools/bench/sim/**",
+   "tools/recipes/stage_d1_ring_p3b1.py",
+   "tools/recipes/stage_d1_ring_p3b2.py",
+   "tools/bench/stage_d1_ring_p3b1_scratch*",
+   "tools/bench/stage_prerun*",
+   "tools/bench/diag_c130_5*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prior_art*",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_130-5*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 45},
+ "rules": [
+  "Offline only; no LabVIEW, no recipe launched; stage_d1_ring_p3b.py (unsplit) is never launched",
+  "Never tune checkpoints or coefficients to reach 675; the cut is free",
+  "No cut <=675 on both halves => return the best cut's numbers (third half = user, PD261(d))",
+  "No hook edits; a wrong gate refusal is logged with gate_fp.py and returned BLOCKED",
+  "Return at the first unexpected result; cost.minutes = bind->return"
+ ],
+ "advances": ["M3", "M4"]
+}

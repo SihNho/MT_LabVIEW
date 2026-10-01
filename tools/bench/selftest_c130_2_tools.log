@@ -1,0 +1,101 @@
+BGRUN START 2026-10-02 03:26:11 limit 3.0 min: py -u tools/bench/selftest_c130_2_tools.py
+BGRUN PID 13824
+GATE R1 md5sum stagexec.py + bench .py does not match                             PASS 
+GATE R2 grep stagexec.py + bench .py does not match                               PASS 
+GATE R3 py -u bench script matches                                                PASS 
+GATE R4 python3 recipe matches                                                    PASS 
+GATE R5 C:\Python\python.exe bench matches                                        PASS 
+GATE R6 bare bgrun.py matches                                                     PASS 
+GATE R7 cd root && py -u bench matches                                            PASS 
+GATE W1 fp-17 waiter command -> True                                              PASS 
+GATE W2 waiter ; recipe -> False                                                  PASS 
+GATE W3 waiter + bench script -> False                                            PASS 
+GATE W4 bgrun of a bench script -> False                                          PASS 
+GATE W5 plain bgrun of a ps1 -> False                                             PASS 
+GATE S1 same cmd newer rc=0 -> superseded                                         PASS True
+GATE S2 other command -> not                                                      PASS False
+GATE S3 newer rc=1 -> not                                                         PASS False
+GATE S4 newer TIMEOUT -> not                                                      PASS False
+GATE S5 newer with a FAIL line -> not                                             FAIL True
+GATE S6 OLDER pass -> not                                                         PASS False
+GATE S7 real fp-16 pair: c127_2.log superseded by c127_2b.log                     PASS 
+GATE F1 bgrun -- py -u tools/stagexec.py selftest -> allowed                      FAIL tools\bench\cards\requires_130-2.json is stale (card changed since it was written) - re-run `py tools/protocol.py requires <card>`
+GATE F2 cd root && bgrun ... selftest -> allowed                                  FAIL tools\bench\cards\requires_130-2.json is stale (card changed since it was written) - re-run `py tools/protocol.py requires <card>`
+INFO F3 bgrun ... selftest 2>&1 | tail -3 (measured only) -> tools\bench\cards\requires_130-2.json is stale (card changed since it was written) - re-run `py tools/protocol.py requires <card>`
+GATE C1 OK card -> rc 0 + verdict=OK                                              PASS CLOCK id=t-ok bound=03:16:12 (guard_card.log:1) written=03:26:12 measured=10.0 claimed=10 budget=50 verdict=OK reason=- | OK result/1 C:\Users\KimLab\AppData\Local\Temp\c130_2_clk_8of0gbby\result_t-ok
+GATE C2 UNMEASURED (no bind line) -> rc 0 + WARN                                  PASS CLOCK id=t-un bound=- (guard_card.log:-) written=03:26:12 measured=- claimed=12 budget=50 verdict=CLOCK-UNMEASURED reason=no bind line for id t-un in guard_card.log | WARN C:\Users\KimLab\AppData\Loca
+GATE C3 MISMATCH (8 measured, 45 claimed, budget cited) -> rc 1 + CLOCK-MISMATCH  PASS CLOCK id=t-mm bound=03:18:12 (guard_card.log:2) written=03:26:12 measured=8.0 claimed=45 budget=50 verdict=CLOCK-MISMATCH reason=(i) failure text cites budget/minutes but measured 8.0 < 0.8*budget 40.
+GATE C4 real result_128-5.json -> rc 1 CLOCK-MISMATCH                             PASS CLOCK id=128-5 bound=00:41:33 (guard_card.log:575) written=00:49:02 measured=7.5 claimed=45 budget=50 verdict=CLOCK-MISMATCH reason=(i) failure text cites budget/minutes but measured 7.5 < 0.8*budget 
+GATE C5 --no-clock keeps the schema-only answer for result_128-5.json             PASS OK result/1 G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\cards\result_1
+=== GATES: 23 pass / 3 fail
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":23,"fail":3},"first_fail":"S5 newer with a FAIL line -> not","artefacts":[]}
+BGRUN END rc=1 after 1s
+BGRUN START 2026-10-02 03:26:38 limit 3.0 min: py -u tools/bench/selftest_c130_2_tools.py
+BGRUN PID 21052
+GATE R1 md5sum stagexec.py + bench .py does not match                             PASS 
+GATE R2 grep stagexec.py + bench .py does not match                               PASS 
+GATE R3 py -u bench script matches                                                PASS 
+GATE R4 python3 recipe matches                                                    PASS 
+GATE R5 C:\Python\python.exe bench matches                                        PASS 
+GATE R6 bare bgrun.py matches                                                     PASS 
+GATE R7 cd root && py -u bench matches                                            PASS 
+GATE W1 fp-17 waiter command -> True                                              PASS 
+GATE W2 waiter ; recipe -> False                                                  PASS 
+GATE W3 waiter + bench script -> False                                            PASS 
+GATE W4 bgrun of a bench script -> False                                          PASS 
+GATE W5 plain bgrun of a ps1 -> False                                             PASS 
+GATE S0 the synthetic failing log reads as failing                                PASS 
+GATE S1 same cmd newer rc=0 -> superseded                                         PASS True
+GATE S2 other command -> not                                                      PASS False
+GATE S3 newer rc=1 -> not                                                         PASS False
+GATE S4 newer TIMEOUT -> not                                                      PASS False
+GATE S5 newer with a FAIL RESULT line, rc=0 -> not                                PASS False
+GATE S6 OLDER pass -> not                                                         PASS False
+GATE S7 real fp-16 pair: c127_2.log superseded by c127_2b.log                     PASS 
+GATE F1 bgrun -- py -u tools/stagexec.py selftest -> allowed                      PASS None
+GATE F2 cd root && bgrun ... selftest -> allowed                                  PASS None
+INFO F3 bgrun ... selftest 2>&1 | tail -3 (measured only) -> flags.labview is 'none' - this command touches LabVIEW (tools\stagexec.py)
+GATE C1 OK card -> rc 0 + verdict=OK                                              PASS CLOCK id=t-ok bound=03:16:40 (guard_card.log:1) written=03:26:40 measured=10.0 claimed=10 budget=50 verdict=OK reason=- | OK result/1 C:\Users\KimLab\AppData\Local\Temp\c130_2_clk_ewm3ocjn\result_t-ok
+GATE C2 UNMEASURED (no bind line) -> rc 0 + WARN                                  PASS CLOCK id=t-un bound=- (guard_card.log:-) written=03:26:40 measured=- claimed=12 budget=50 verdict=CLOCK-UNMEASURED reason=no bind line for id t-un in guard_card.log | WARN C:\Users\KimLab\AppData\Loca
+GATE C3 MISMATCH (8 measured, 45 claimed, budget cited) -> rc 1 + CLOCK-MISMATCH  PASS CLOCK id=t-mm bound=03:18:40 (guard_card.log:2) written=03:26:40 measured=8.0 claimed=45 budget=50 verdict=CLOCK-MISMATCH reason=(i) failure text cites budget/minutes but measured 8.0 < 0.8*budget 40.
+GATE C4 real result_128-5.json -> rc 1 CLOCK-MISMATCH                             PASS CLOCK id=128-5 bound=00:41:33 (guard_card.log:575) written=00:49:02 measured=7.5 claimed=45 budget=50 verdict=CLOCK-MISMATCH reason=(i) failure text cites budget/minutes but measured 7.5 < 0.8*budget 
+GATE C5 --no-clock keeps the schema-only answer for result_128-5.json             PASS OK result/1 G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\cards\result_1
+=== GATES: 27 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":27,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 2s
+BGRUN START 2026-10-02 03:27:04 limit 3.0 min: py -u tools/bench/selftest_c130_2_tools.py
+BGRUN PID 24704
+GATE R1 md5sum stagexec.py + bench .py does not match                             PASS 
+GATE R2 grep stagexec.py + bench .py does not match                               PASS 
+GATE R3 py -u bench script matches                                                PASS 
+GATE R4 python3 recipe matches                                                    PASS 
+GATE R5 C:\Python\python.exe bench matches                                        PASS 
+GATE R6 bare bgrun.py matches                                                     PASS 
+GATE R7 cd root && py -u bench matches                                            PASS 
+GATE W1 fp-17 waiter command -> True                                              PASS 
+GATE W2 waiter ; recipe -> False                                                  PASS 
+GATE W3 waiter + bench script -> False                                            PASS 
+GATE W4 bgrun of a bench script -> False                                          PASS 
+GATE W5 plain bgrun of a ps1 -> False                                             PASS 
+GATE S0 the synthetic failing log reads as failing                                PASS 
+GATE S1 same cmd newer rc=0 -> superseded                                         PASS True
+GATE S2 other command -> not                                                      PASS False
+GATE S3 newer rc=1 -> not                                                         PASS False
+GATE S4 newer TIMEOUT -> not                                                      PASS False
+GATE S5 newer with a FAIL RESULT line, rc=0 -> not                                PASS False
+GATE S6 OLDER pass -> not                                                         PASS False
+GATE S7 real fp-16 pair: c127_2.log superseded by c127_2b.log                     PASS 
+GATE F1 bgrun -- py -u tools/stagexec.py selftest -> allowed                      PASS None
+GATE F2 cd root && bgrun ... selftest -> allowed                                  PASS None
+GATE F3 bgrun ... selftest 2>&1 | tail -3 -> allowed                              PASS None
+GATE F4 ... selftest > x.txt -> allowed                                           PASS None
+GATE F5 NEGATIVE ... selftest --live (another argument) -> refused                PASS flags.labview is 'none' - this command touches LabVIEW (tools\stagexec.py)
+GATE F6 NEGATIVE ... run <plan> -> refused                                        PASS flags.labview is 'none' - this command touches LabVIEW (tools\stagexec.py)
+GATE C1 OK card -> rc 0 + verdict=OK                                              PASS CLOCK id=t-ok bound=03:17:08 (guard_card.log:1) written=03:27:08 measured=10.0 claimed=10 budget=50 verdict=OK reason=- | OK result/1 C:\Users\KimLab\AppData\Local\Temp\c130_2_clk_d67o50p3\result_t-ok
+GATE C2 UNMEASURED (no bind line) -> rc 0 + WARN                                  PASS CLOCK id=t-un bound=- (guard_card.log:-) written=03:27:08 measured=- claimed=12 budget=50 verdict=CLOCK-UNMEASURED reason=no bind line for id t-un in guard_card.log | WARN C:\Users\KimLab\AppData\Loca
+GATE C3 MISMATCH (8 measured, 45 claimed, budget cited) -> rc 1 + CLOCK-MISMATCH  PASS CLOCK id=t-mm bound=03:19:08 (guard_card.log:2) written=03:27:08 measured=8.0 claimed=45 budget=50 verdict=CLOCK-MISMATCH reason=(i) failure text cites budget/minutes but measured 8.0 < 0.8*budget 40.
+GATE C4 real result_128-5.json -> rc 1 CLOCK-MISMATCH                             PASS CLOCK id=128-5 bound=00:41:33 (guard_card.log:575) written=00:49:02 measured=7.5 claimed=45 budget=50 verdict=CLOCK-MISMATCH reason=(i) failure text cites budget/minutes but measured 7.5 < 0.8*budget 
+GATE C5 --no-clock keeps the schema-only answer for result_128-5.json             PASS OK result/1 G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\cards\result_1
+=== GATES: 31 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":31,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 4s

@@ -1,0 +1,12 @@
+{
+ "schema": "memory_model/1",
+ "card": "130-1",
+ "decided": "docs/d1-loop12-17-split-plan.md:2918-2933 (PD265(b)(c)), :2946-2953 (PD266(b)), :2963-2970 (PD267(b))",
+ "formula": "peak_mb = start_mb + R * read_mb + N * (edit_mb + other_mb); R = whole-VI checkpoint reads (k 0 included), N = ops dispatched",
+ "start_mb": {"value": 570.0, "cite": "tools/bench/stage_d1_ring_p3b1_scratch_pin2.log:55 (METER read k 0 private 570.0 MB)"},
+ "read_mb": {"value": 2.53, "cite": "tools/bench/diag_c129_6_mem.log:55 (W1 15 checkpoint reads, slope 2.529 MB/rep; rows :40-54)"},
+ "edit_mb": {"value": 0.58, "cite": "tools/bench/diag_c129_6_mem.log:87 (W2 15 edits, slope 0.576 MB/rep; rows :58-86)"},
+ "other_mb": {"value": 0.8, "cite": "docs/d1-loop12-17-split-plan.md:2927 (PD265(b): pin2 ~3.9 MB/op = read 2.5 + edit 0.6 + ~0.8 unattributed)"},
+ "fail_above_mb": {"value": 675.0, "cite": "docs/d1-loop12-17-split-plan.md:2951 (PD266(b): pass = larger predicted peak <= 675 MB, >= 15 MB under 690)"},
+ "note": "never tuned to reach a number (card 130-1 rule 2); the cut is the only free variable"
+}
