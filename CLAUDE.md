@@ -710,7 +710,7 @@ summary.
 | | reads files | reads the web | model |
 |---|---|---|---|
 | **codex** | ✅ project dir, read-only sandbox | ✅ | `gpt-5.6-sol` / medium, pinned in peer.ps1 (user, 2026-09-15). **Still selectable, no longer any default — weekly quota 9 % on 2026-09-18** |
-| **agy (gemini)** | ❌ | ✅ | RETIRED from every default/fallback 2026-09-22 (user: roles delegated to claude; headless permission auto-deny). Explicit `-Agent gemini` only |
+| **agy (gemini)** | ❌ (runs from an empty temp dir, web-only brief) | ✅ | **FIRST ARM of `-Kind fact` (no `-Agent`) from 2026-10-01** (user: "이렇게 변경하고 진행하자"): `gemini-3.1-pro-high`, 600 s; on error/timeout/empty the same call falls back to the claude fact role. Basis `tools/bench/gsearch/report_g2.md` (8 LabVIEW cases x 2: gemini 13 C/3 P/0 W vs Opus medium 7/8/1, high 6/9/1) — but gemini cites a primary source only 4/16, so an answer that drives an expensive build is re-checked with an explicit `-Agent claude -Kind fact` (Opus 16/16 primary sources). Works headless only with the user's hand-set `deny command(*)` in `~/.gemini/antigravity-cli/settings.json`. Every other role unchanged (retired 2026-09-22 for the command auto-deny) |
 | **claude** | ✅ project dir (the thin roles: only what they choose to read), plan mode + acting tools denied | per role | **`-Role` decides**: `audit` sonnet · `ingest` sonnet · `priorart` claude-opus-5-5/medium · `hypothesis` claude-opus-5-5/high +web (user table 2026-09-23; was opus/high · opus/max) · `fact` **fable/low +web, thin** · `outcome` **fable/medium +web, thin** · `prose` **fable/low, thin** |
 
 The claude peer was added 2026-09-15 on the user's direction ("claude 하위 세션도 peer review에 참여

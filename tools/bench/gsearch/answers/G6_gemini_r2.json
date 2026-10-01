@@ -1,0 +1,13 @@
+{
+ "case": "G6",
+ "arm": "gemini",
+ "rep": 2,
+ "outcome": "ANSWERED",
+ "rc": 0,
+ "seconds": 101,
+ "wall": 100.8,
+ "claude_usd": 0.0,
+ "archive": "archive\\peer\\2026-09-29-g1-g6-gemini-r2.md",
+ "answer": "### Answer\r\n\r\n1. **Creation Timestamp:** The new file inherits the **creation timestamp of the original (deleted) file**, rather than receiving the current system time.\r\n2. **Mechanism Name:** **File System Tunneling** (also referred to as *File Name Tunneling* or the *NTFS Tunneling Cache*).\r\n\r\n---\r\n\r\n### Technical Details & Reasoning\r\n\r\n* **Behavior:** When a file is deleted or renamed, the Windows file system (NTFS, FAT) temporarily caches its metadata (specifically the creation time and 8.3 short filename / long filename association) in memory per directory. If a file with the same name is created in that same directory within the tunneling cache window, the file system applies the cached creation timestamp to the newly created file.\r\n* **Default Time Window:** **15 seconds** (configurable up to 71 seconds). If the new file is created after this window expires, it receives a normal current timestamp.\r\n* **Purpose:** Implemented for compatibility with legacy applications and safe-save patterns (where an application saves by writing to a temporary file, deleting the original, and renaming the temporary file). Tunneling prevents the apparent creation date from shifting to the modification time on every save and preserves 8.3 short names.\r\n* **Registry Controls:** Located at `HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\FileSystem`:\r\n  * `MaximumTunnelEntryAgeInSeconds` (`REG_DWORD`): Cache lifespan in seconds (default: `15`).\r\n  * `MaximumTunnelEntries` (`REG_DWORD`): Maximum cache entries (default: `1024`; setting to `0` disables tunneling).\r\n\r\n---\r\n\r\n### Sources & Citations\r\n\r\n1. **Microsoft Developer Blogs (*The Old New Thing* by Raymond Chen):**\r\n   *Article:* [\"The apocryphal history of file system tunnelling\"](https://devblogs.microsoft.com/oldnewthing/20050715-14/?p=34923) (July 15, 2005)\r\n2. **Microsoft Knowledge Base (KB172190):**\r\n   *Article:* \"Windows NT Contains File System Tunneling Capabilities\" — documented under Microsoft KB 172190 (archived and mirrored via [Microsoft Support](https://support.microsoft.com/help/172190)).",
+ "raw_tail": ""
+}

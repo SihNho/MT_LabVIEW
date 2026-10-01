@@ -1,0 +1,13 @@
+{
+ "case": "G4",
+ "arm": "claude",
+ "rep": 1,
+ "outcome": "ANSWERED",
+ "rc": 0,
+ "seconds": 60,
+ "wall": 60.2,
+ "claude_usd": 0.2974,
+ "archive": "archive\\peer\\2026-09-29-g1-g4-claude-r1.md",
+ "answer": "I've finished the search. Here's the answer.\n\n**The setting is `[Console]::OutputEncoding`.** PowerShell uses it to turn a native program's stdout bytes into strings when it captures them. By default it matches the console's OEM code page (e.g. 437 on US-English systems), not UTF-8. So UTF-8 output comes out garbled.\n\n**To decode UTF-8 correctly, set it before running the program:**\n\n```powershell\n[Console]::OutputEncoding = [System.Text.Encoding]::UTF8\n$x = & prog.exe | Out-String\n```\n\n**`$OutputEncoding` does not do this.** It controls the other direction. The Microsoft 5.1 docs say it \"determines the character encoding method that PowerShell uses when piping data into native applications\", and that it \"should align to the value of `[Console]::InputEncoding`.\" Setting it will not fix output that was already decoded wrongly. The usual advice is to set both to UTF-8 if you want UTF-8 going in and coming out.\n\n**How strong the evidence is:**\n- Microsoft's 5.1 `about_Character_Encoding` page only says `$OutputEncoding` \"affects the encoding PowerShell uses to communicate with external programs.\" It does not say which setting decodes captured stdout.\n- The clear statement that `[Console]::OutputEncoding` does the decoding comes from a third-party blog (hy2k.dev) and a PowerShell GitHub issue (#7233). The GitHub issue shows UTF-8 from Node.js being garbled because it was decoded with the OEM code page.\n- The Microsoft docs I found don't contradict this, but they don't confirm it either.\n\nSources:\n- [about_Character_Encoding (PowerShell 5.1), Microsoft Learn](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_character_encoding?view=powershell-5.1)\n- [about_Preference_Variables, `$OutputEncoding` section (PowerShell 5.1), Microsoft Learn](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_preference_variables?view=powershell-5.1)\n- [Fixing Mojibake from UTF-8 Tools in PowerShell on Windows, hy2k.dev](https://hy2k.dev/en/blog/2025/11-20-fix-powershell-mojibake-on-windows/)\n- [PowerShell/PowerShell issue #7233](https://github.com/PowerShell/PowerShell/issues/7233)\n- [PowerShell/PowerShell issue #14945](https://github.com/PowerShell/PowerShell/issues/14945) (only appeared in search results; I didn't open it)",
+ "raw_tail": ""
+}

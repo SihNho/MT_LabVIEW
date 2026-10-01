@@ -1,0 +1,13 @@
+{
+ "case": "G2",
+ "arm": "claude",
+ "rep": 2,
+ "outcome": "ANSWERED",
+ "rc": 0,
+ "seconds": 60,
+ "wall": 60.0,
+ "claude_usd": 0.2957,
+ "archive": "archive\\peer\\2026-09-29-g1-g2-claude-r2.md",
+ "answer": "**Answer: yes, you can do this for a specific VI through VI Server.**\n\n- **Class:** VI class. Open a reference to the target VI, for example with Open VI Reference, and wire it to a Property Node.\n- **Property:** `Automatic Error Handling` (short name `Auto Err Handling`), in the Execution category. It's a Boolean and you can read and write it. Write FALSE to switch it off.\n- **Limits:** You can't change it while that VI is running. It's marked as not available in the LabVIEW Run-Time Engine, which doesn't support automatic error handling anyway, so this is a development-environment setting. (LabVIEW Wiki property page; NI's reference page for the same property is listed below, but I couldn't load its content.)\n\n**Global switch: only for new VIs, as far as I could confirm.**\n\n- **Tools » Options » Block Diagram » \"Enable automatic error handling in new VIs\"** only sets the default for new, blank VIs. It doesn't change VIs that already exist. (LabVIEW Wiki; LabVIEW Artisan blog)\n- **No built-in switch for existing VIs.** An NI Idea Exchange post asks for a way to turn it on or off for all VIs in a project, which suggests none exists. The usual workaround is to loop over the VIs and set the property above on each one.\n- **Unconfirmed:** From memory, the same Options page also has an \"Enable automatic error handling dialogs\" checkbox that suppresses the dialogs everywhere. None of the sources I found mention it, and I couldn't find a LabVIEW.ini key for either option. Check the Options dialog in your LabVIEW version.\n\nSources:\n- [LabVIEW Wiki – VI class/Automatic Error Handling property](https://labviewwiki.org/wiki/VI_class/Automatic_Error_Handling_property)\n- [NI – Automatic Error Handling (VI Server reference)](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/vi/automaticerrorhandling.html)\n- [LabVIEW Wiki – Automatic Error Handling](https://labviewwiki.org/wiki/Automatic_Error_Handling)\n- [NI Idea Exchange – Enable/disable Automatic Error Handling for all project items](https://forums.ni.com/t5/LabVIEW-Idea-Exchange/Ability-to-enable-or-disable-Automatic-Error-Handling-for-all/idi-p/4392260)\n- [LabVIEW Artisan – My Tools > Options Settings](http://labviewartisan.blogspot.com/2009/02/my-tools-options-settings.html)",
+ "raw_tail": ""
+}

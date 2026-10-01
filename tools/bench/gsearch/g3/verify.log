@@ -1,0 +1,40 @@
+BGRUN START 2026-09-30 05:53:36 limit 18.0 min: sh tools/bench/gsearch/g3/verify.sh
+BGRUN PID 24564
+OUTCOME: ANSWERED (215s)  model: gemini-3.1-pro-high (pinned by -Model)  archived: archive\peer\2026-09-30-g3-verify-a.md
+--- ANSWER ---
+Based on web search and documentation reading, here are the answers to your questions regarding the LabVIEW VI Scripting (VI Server) Wire object:
+
+### 1. Which property reports whether a wire is broken?
+The property of a Wire object that reports whether it is broken is **`Is Broken?`**. It returns a Boolean value (`TRUE` if the wire is broken or in a bad state, and `FALSE` if it is healthy). 
+
+### 2. What is that property's unique ID string?
+The unique ID string (the hex ID used when configuring a property node programmatically and the "Allow Alternate Names" parameter is set to `FALSE`) for the `Is Broken?` property is **`6371004`**.
+
+### 3. What kinds of wire problems does it flag?
+The `Is Broken?` property reflects the design-time state of the LabVIEW compiler (the classic dashed line with a red "X"). It flags syntactic and dataflow violations that prevent the VI from compiling and running. This includes:
+*   **Type mismatches:** Connecting incompatible data types (e.g., a Boolean terminal to a String terminal, or a scalar to an array).
+*   **Invalid connections:** Wiring two sources (controls) together, two sinks (indicators) together, or multiple data sources to a single wire path without a proper junction.
+*   **Unconnected / missing terminals:** Wires that have loose ends or are connected to subVI terminals that have since been deleted or modified.
+*   **Wire class conflicts:** Connecting different resource types or incompatible object/refnum hierarchies.
+
+### 4. What kinds of wire problems does it NOT flag?
+Because the `Is Broken?` property only reflects compile-time syntax and strict type-checking, there are numerous wiring and dataflow issues it **does not** flag:
+*   **Logic and algorithmic errors:** It cannot detect if a wire is carrying the "wrong" data (e.g., an incorrect mathematical result) or if the algorithm is poorly designed.
+*   **Race conditions:** It will not flag dataflow issues caused by passing data between parallel loops using local/global variables instead of explicit wires, which can cause unpredictable execution order.
+*   **Runtime failures:** It cannot anticipate errors that occur only during execution, such as a hardware reference becoming invalid, a file path being unreachable, or a device disconnecting.
+*   **"Sweeping" / Unhandled errors:** If an error cluster wire is routed into a structure (like a While Loop or Flat Sequence) but not wired out to anything, the error is essentially swallowed and cleared. LabVIEW considers the tunnel connection valid and does not flag the wire as broken.
+*   **Dead code:** Wires located inside unexecuted frames of a Case Structure will not be flagged as problematic by this property simply because they are unreachable, as long as they are syntactically valid.
+
+***
+
+**Sources Cited:**
+*   **Wire class properties, "Is Broken?" and Hex ID (`6371004`):** [LabVIEW Wiki - Wire Class](https://labviewwiki.org/wiki/Wire_class)
+*   **LabVIEW compile-time checking and broken wires:** [NI Documentation - Fixing Broken VIs](https://www.ni.com/docs/en-US/bundle/labview/page/gls/fixing_broken_vis.html) (via search summaries) and [Bloomy - Troubleshooting](https://www.bloomy.com)
+*   **Dataflow, race conditions, and unhandled errors:** [Beyond Solutions LabVIEW Tutorials](https://beyondsolutions.co.za) and LAVA Forums discussions (via search summaries).
+
+
+OUTCOME: ERROR (16s)  model: gemini-3.1-pro-high (pinned by -Model)  archived: archive\peer\2026-09-30-g3-verify-b.md
+OUTCOME: TIMEOUT (300s)  model: gemini-3.1-pro-high (pinned by -Model)  archived: archive\peer\2026-09-30-g3-verify-c.md
+LEFTOVER_CWD_DIRS 0
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":0,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 536s

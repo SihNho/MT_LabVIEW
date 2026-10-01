@@ -1,0 +1,62 @@
+﻿# g5-l3-gemini-pro-r1
+
+- **agent:** gemini
+- **role:** (n/a)
+- **model:** gemini-3.1-pro-high (pinned by -Model)
+- **kind:** fact
+- **cost:** 
+- **date:** 2026-09-30 20:09:22
+- **outcome:** ANSWERED (159s)
+- **verdict-card:** (no -ReviewCard)
+- **why asked:** (Claude fills in)
+- **verdict:** unverified
+
+## Question
+
+In LabVIEW VI Scripting, a program reads the Nodes[] property of a block diagram (Diagram / TopLevelDiagram class) to enumerate what is on it. Does that array include diagram constants, structure tunnels (for example loop tunnels or case selector tunnels) and shift registers? If some of them are missing, why, and how can a program enumerate them instead?
+
+Search the web and cite the URL of every source you used.
+
+## Answer
+
+Based on web research into the LabVIEW VI Scripting API and the VI Server class hierarchy, here is the answer to your question:
+
+### 1. Does the `Nodes[]` array include diagram constants, structure tunnels, and shift registers?
+**No.** The `Nodes[]` property of a block diagram (which belongs to the `AbstractDiagram` class) does not include diagram constants, structure tunnels, or shift registers. 
+
+### 2. Why are they missing?
+They are missing because of how LabVIEW classifies objects within its VI Server class hierarchy:
+
+*   **Constants are not Nodes:** The `Nodes[]` property strictly returns an array of objects that inherit from the **`Node`** class (such as SubVIs, Functions, and Structures). Diagram constants do not inherit from `Node`. Their class inheritance path is `Generic` » `GObject` » `Constant`. Because they belong to a separate branch of the `GObject` family, they are excluded from the `Nodes[]` array.
+*   **Tunnels and Shift Registers are Border Nodes:** Tunnels and shift registers also do not inherit from the `Node` class (their hierarchy is `GObject` » `Tunnel`). Furthermore, these objects are technically part of the anatomy of the **Structure** they are attached to (like a For Loop or Case Structure) rather than being free-floating items on the diagram itself. Because they are considered "Border Nodes" belonging to a structure, they do not appear in the parent diagram's `Nodes[]` array.
+
+### 3. How can a program enumerate them instead?
+If you need to programmatically find these objects, you must use different properties or built-in utilities:
+
+*   **To enumerate Constants:** Instead of using the `Nodes[]` property, read the **`All Objects[]`** property of the diagram. This property returns an array of references to every `GObject` on the diagram, including constants, nodes, wires, and decorations. You can then iterate through this array and use the **To More Specific Class** function to filter out items that belong to the `Constant` class.
+*   **To enumerate Tunnels and Shift Registers:** You must first find the reference to the **Structure** they belong to (structures *are* returned by the `Nodes[]` array). Once you cast that reference to a `Structure` class, you can read its **`Tunnels[]`** property. This property returns an array of references to all tunnels and shift registers attached to that specific structure.
+*   **The Best Practice Alternative:** Instead of manually querying properties and navigating nested diagrams, LabVIEW provides a built-in utility called **`Traverse for GObjects.vi`** (found in the `vi.lib\Utility\traverseref.llb` or the VI Scripting examples). This VI recursively searches through a diagram and all its nested structures. You can configure it to find exact classes—like `Constant`, `Tunnel`, or `ShiftRegister`—and it will safely enumerate all of them across the entire block diagram for you.
+
+***
+
+### Sources Cited
+The following URLs were accessed during the research to verify the class hierarchies and scripting properties (links are provided via the search engine's grounding redirect service to the original sources):
+
+1. **ni.com** (LabVIEW VI Scripting `AbstractDiagram:Nodes[]` property and `All Objects[]`): 
+   [https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGZZMIl6ZBYRtT-ymoPW48WbslznecVO9zEjIrmUbjIdfDN88NSTN6gTlGhC6udYheMVjlyZGaFVRuAQOYmLi39LdEijHwloxtyQECC3mSMecR2L4r2O5Qd9GQ2hYaY3zdsMWxPxhEWG8NuyxCzpgD-2ICe5ha1KSchaxOyQ-6N8COuq4508EFet45HCbYbFYla_6Oc65XdYO6XPFe23NqibXCvC-D3e9FaIfw8Xwc4vI1FxvXMAoI=](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGZZMIl6ZBYRtT-ymoPW48WbslznecVO9zEjIrmUbjIdfDN88NSTN6gTlGhC6udYheMVjlyZGaFVRuAQOYmLi39LdEijHwloxtyQECC3mSMecR2L4r2O5Qd9GQ2hYaY3zdsMWxPxhEWG8NuyxCzpgD-2ICe5ha1KSchaxOyQ-6N8COuq4508EFet45HCbYbFYla_6Oc65XdYO6XPFe23NqibXCvC-D3e9FaIfw8Xwc4vI1FxvXMAoI=)
+2. **ni.com** (LabVIEW `Structure:Tunnels[]` property for VI Scripting):
+   [https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH27j1x5bWIZhkODINLVOZCwaHQQRl0t1l5tHyFv22oSPqGzGy_CbnX4zQ9VMzbQBFkglNi723heVCetGq8x5qOYYfqLWwIzLcFUJHJhLFGl0w2YqFj-nLHQlYjJqdBnOJ8rf5TdP9bWM5WY0o4D4ac3EyBf9LB7CfViOXg4BkUts9qaUsG9QabyPSlf5iwKlFOw3vs5aXiz_0tWB51](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH27j1x5bWIZhkODINLVOZCwaHQQRl0t1l5tHyFv22oSPqGzGy_CbnX4zQ9VMzbQBFkglNi723heVCetGq8x5qOYYfqLWwIzLcFUJHJhLFGl0w2YqFj-nLHQlYjJqdBnOJ8rf5TdP9bWM5WY0o4D4ac3EyBf9LB7CfViOXg4BkUts9qaUsG9QabyPSlf5iwKlFOw3vs5aXiz_0tWB51)
+3. **labviewwiki.org** (VI Server Class Hierarchy, verifying that `Constant` inherits from `GObject`, not `Node`):
+   [https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFit84YheYdvmoko2Qs-FSJ2at7ma-aCN-BqGhTfmmzX6DaT8OTqbvyPDKKQkw232vutKvyIU40tErpwbn8OT4ZosnVkiM3zb3U-M5f2Cugo62juJSMGqGdlkXb9_oO5b5rfarN-Sc7KvsF0YA=](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFit84YheYdvmoko2Qs-FSJ2at7ma-aCN-BqGhTfmmzX6DaT8OTqbvyPDKKQkw232vutKvyIU40tErpwbn8OT4ZosnVkiM3zb3U-M5f2Cugo62juJSMGqGdlkXb9_oO5b5rfarN-Sc7KvsF0YA=)
+4. **ni.com** (Accessing objects using `Block Diagram:Objects` and `Traverse for GObjects`):
+   [https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHo5lZWz7f7HeY6H4U3FDrCa_Xt6rLJO97HNiR44N_5kL4DFw0cEfaFAuZVhhcIG0Y9VE-GBuq04JkSu4bv2yCKMOqBI_At_LeEijneGNGkwM1ezN2dCX_RpLiBtR0FuR5x-caYeK4Zco8CU9UN9EtZpaRbkyykf8nDVNCrHnQrLjCfLWzL0A==](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHo5lZWz7f7HeY6H4U3FDrCa_Xt6rLJO97HNiR44N_5kL4DFw0cEfaFAuZVhhcIG0Y9VE-GBuq04JkSu4bv2yCKMOqBI_At_LeEijneGNGkwM1ezN2dCX_RpLiBtR0FuR5x-caYeK4Zco8CU9UN9EtZpaRbkyykf8nDVNCrHnQrLjCfLWzL0A==)
+
+
+
+## Sources
+
+(extract from answer)
+
+## What was done with it
+
+(Claude fills in)

@@ -1,0 +1,55 @@
+BGRUN START 2026-09-30 19:39:14 limit 18.0 min: sh tools/bench/gsearch/g4/verify.sh
+BGRUN PID 24564
+SETTINGS_MD5_BEFORE 5da8f4c0fe37e6f3de0be76b17d34908
+OUTCOME: ANSWERED (268s)  model: gemini-3.1-pro-high (pinned by -Model)  archived: archive\peer\2026-09-30-g4-verify-a.md
+--- ANSWER ---
+Based on web searches and LabVIEW VI Server documentation, here is the answer to your question:
+
+**1. Property Name**
+The property of a `Wire` object that reports its status is **"Is Broken?"** (its short name is **"Broken?"**).
+
+**2. Unique ID String (Hex ID)**
+When setting this property dynamically via scripting with *Allow Alternate Names* = FALSE, the unique hex ID string you must use is **`006136BC`** (or **`6136BC`**). This hexadecimal string is the direct equivalent of the property's internal decimal ID, which is **`6371004`**. 
+
+**3. What it Flags vs. Does Not Flag**
+*   **What it flags:** The property returns `TRUE` for physical/structural problems belonging to the wire object itself. This includes wires connecting incompatible data types (data type mismatches), wires with multiple data sources (source conflicts), and loose ends (wire branches that terminate nowhere or are left dangling).
+*   **What it does not flag:** It does **not** flag broken VIs caused by an *unwired required terminal* on a node or subVI. In those cases, the node itself is broken, but because no wire object exists at the missing connection, there is no wire property to check. It also does not flag runtime logical errors (e.g., a legally wired connection passing bad data like `NaN`) or internal errors within a subVI it is connected to. 
+
+***
+
+**Sources Cited:**
+*   LabVIEW Wiki - Wire class/Is Broken? property: https://labviewwiki.org/wiki/Wire_class/Is_Broken%3F_property
+*   LabVIEW Wiki (Source Code View): https://labviewwiki.org/w/index.php?title=Wire_class/Is_Broken%3F_property&action=edit (Used to verify the exact `propertyid` value of `6371004`).
+*   NI Documentation / Community Forums (via search summaries) regarding VI Scripting and block diagram error troubleshooting.
+
+
+OUTCOME: ANSWERED (34s)  model: gemini-3.1-pro-high (pinned by -Model)  archived: archive\peer\2026-09-30-g4-verify-b.md
+--- ANSWER ---
+I cannot list the files in your current working directory because local command execution and terminal tools have been disabled, in accordance with the restrictions set for this task. 
+
+However, I attempted to read the file directly and can confirm plainly that `STATUS.md` does not exist.
+
+
+OUTCOME: ANSWERED (245s)  model: gemini-3.1-pro-high (pinned by -Model)  archived: archive\peer\2026-09-30-g4-verify-c.md
+--- ANSWER ---
+Based on web research, here are the answers to your questions regarding LabVIEW VI Scripting and the Wire object:
+
+### 1. Which property reports whether a wire is broken?
+The property of a Wire object that reports its broken status is the **"Is Broken?"** property.
+
+### 2. What is that property's unique ID string?
+The unique property ID is `6371004` in decimal. When represented as a 4-byte Unique ID string (the hex ID used when setting the property programmatically via a property node with `Allow Alternate Names = FALSE`), the hex ID string is **`006136BC`** (or `0x006136BC` / `6136BC`).
+
+### 3. What kinds of wire problems does it flag and not flag?
+*   **What it DOES flag:** It flags standard "broken wire" conditions that violate LabVIEW's dataflow or typing rules and render the block diagram non-executable. This includes type mismatches (e.g., wiring a numeric to a string terminal), class conflicts, or wiring multiple data sources into the same sink.
+*   **What it DOES NOT flag:** It **does not flag loose ends**. A wire with a loose end (a wire segment that is not connected to a node terminal on one or both sides) will not return `TRUE` for the "Is Broken?" property. To programmatically address loose ends, developers typically use the `Wire:Clean Up` method to remove them.
+
+### Sources Cited:
+*   [LabVIEW Wiki: Property:Wire/Is_Broken?](https://labviewwiki.org/wiki/Property:Wire/Is_Broken%3F) - Lists the specific Property ID as `6371004`.
+*   [LabVIEW Wiki: Wire](https://labviewwiki.org/wiki/Wire) - Provides documentation noting that the "Is Broken?" property flags broken wires but explicitly *does not flag loose ends*, and notes that the `Wire:Clean Up` method is used to remove them.
+
+
+SETTINGS_MD5_AFTER 2d6fae65d3cbfe70f80b2764b21548fb
+LEFTOVER_CWD_DIRS 0
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":0,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 556s

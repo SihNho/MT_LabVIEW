@@ -1,0 +1,61 @@
+﻿# g5-g1-gemini-pro-r1
+
+- **agent:** gemini
+- **role:** (n/a)
+- **model:** gemini-3.1-pro-high (pinned by -Model)
+- **kind:** fact
+- **cost:** 
+- **date:** 2026-09-30 19:58:54
+- **outcome:** ANSWERED (265s)
+- **verdict-card:** (no -ReviewCard)
+- **why asked:** (Claude fills in)
+- **verdict:** unverified
+
+## Question
+
+In LabVIEW VI Scripting (VI Server), which property of a Wire object reports whether that wire is broken, and what is that property's unique ID string (the hex ID used when the property is set with Allow Alternate Names = FALSE)? Also say what kinds of wire problems that property does and does not flag.
+
+Search the web and cite the URL of every source you used.
+
+## Answer
+
+Based on web searches and available LabVIEW documentation, here is the information regarding your request:
+
+### Wire Property for Broken Wires
+In LabVIEW VI Scripting, the property of a **Wire** object that reports whether it is broken is **`Is Broken?`** (or `Wire:Is Broken?`). This property returns a Boolean value (`TRUE` if the wire is broken or in an invalid state, and `FALSE` otherwise).
+
+### Unique ID String (Hex ID)
+*The web does not settle this point.* While it is well-documented that disabling the "Allow Alternate Names" option on a Property Node requires you to use the property's unique 4-character ID string (or Hex ID / OSType) instead of its English display name, the specific hex ID string for the `Wire:Is Broken?` property is not publicly listed or documented in accessible online wikis or forums (such as LabVIEW Wiki or NI/LAVA forums). 
+
+### What Wire Problems the Property Flags
+The `Is Broken?` property checks for compilation-level errors and structural dataflow violations. It **does flag**:
+*   **Data Type Mismatches:** Connecting incompatible data types (e.g., wiring a string output into a numeric input).
+*   **Unconnected Ends:** Wires that are left floating and not properly connected to a valid input/output terminal.
+*   **Multiple Sources:** Attempting to connect more than one data source (output terminal) to the same wire.
+*   **Missing Required Inputs:** Wires connected to nodes that require data to execute, but the wire itself is incomplete.
+*   **Class Conflicts:** Connecting objects or refnums that belong to incompatible class hierarchies.
+
+### What Wire Problems the Property Does NOT Flag
+The property only checks if the wire is syntactically and structurally valid for compilation. It **does not flag**:
+*   **Logical Errors:** The wire is considered perfectly valid if the data types match, even if the actual data values being passed are logically incorrect for your application.
+*   **Race Conditions:** It does not detect unintended execution timing or race conditions if the structural dataflow rules are satisfied.
+*   **Silent Error Swallowing:** Wires that carry an error cluster into a structure (like a Case Structure) but do not wire it out. LabVIEW considers this structurally valid, even though it drops the error chain.
+*   **Runtime/Performance Issues:** It will not flag wires that cause excessive data copies, buffer allocations, or other performance problems.
+*   **Intermittent Execution Issues:** Problems occurring strictly at runtime (e.g., dynamically calling a VI that isn't in memory) will not cause the wire itself to be flagged as broken during edit-time scripting checks.
+
+***
+
+**Sources Cited:**
+*   LabVIEW Wiki - Wire: https://labviewwiki.org/wiki/Wire
+*   NI Forums & Support - Troubleshooting Broken VIs: https://www.ni.com/docs
+*   LAVA Forums (lavag.org) - Discussions on Wire class and VI Scripting properties.
+
+
+
+## Sources
+
+(extract from answer)
+
+## What was done with it
+
+(Claude fills in)

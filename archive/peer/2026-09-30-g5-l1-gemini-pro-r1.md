@@ -1,0 +1,54 @@
+﻿# g5-l1-gemini-pro-r1
+
+- **agent:** gemini
+- **role:** (n/a)
+- **model:** gemini-3.1-pro-high (pinned by -Model)
+- **kind:** fact
+- **cost:** 
+- **date:** 2026-09-30 20:04:45
+- **outcome:** ANSWERED (94s)
+- **verdict-card:** (no -ReviewCard)
+- **why asked:** (Claude fills in)
+- **verdict:** unverified
+
+## Question
+
+When LabVIEW is automated from another program through its ActiveX (COM) server, the VirtualInstrument object is used to control a VI. Which VirtualInstrument property tells the client whether that VI is broken (cannot run), what numeric values can that property take and what does each mean? Does the ActiveX VirtualInstrument interface also expose a separate 'is broken' Boolean?
+
+Search the web and cite the URL of every source you used.
+
+## Answer
+
+Based on the web search results, here are the answers to your questions regarding the LabVIEW ActiveX (COM) server:
+
+### 1. Which `VirtualInstrument` property tells the client whether that VI is broken?
+The property that indicates the execution state of the VI (including whether it is broken) is the **`ExecState`** property. 
+
+### 2. What numeric values can that property take and what does each mean?
+The `ExecState` property returns a value from the `ExecStateEnum` enumeration. The numeric values and their meanings are:
+
+*   **`0` (`eBad` or `Bad`)**: The VI has errors (is broken) and cannot be executed.
+*   **`1` (`eIdle` or `Idle`)**: The VI is loaded into memory but is not currently executing.
+*   **`2` (`eRunTopLevel` or `Run top level`)**: The VI is actively executing as the top-level VI in an active hierarchy.
+*   **`3` (`eRunning` or `Running`)**: The VI is actively running as a subVI (reserved for execution by active top-level VIs).
+
+### 3. Does the ActiveX `VirtualInstrument` interface also expose a separate 'is broken' Boolean?
+**No.** There is no direct, separate Boolean property (such as `IsBroken` or `IsExecutable`) exposed on the `VirtualInstrument` interface to check if a VI is broken. To determine if a VI cannot run, clients must read the `ExecState` property and check if its value equals `0` (`eBad`).
+
+***
+
+### Sources Cited:
+*   [Documentation.help - ExecStateEnum](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEYG-X8DYqV-BPaMBIMr8PrRm8H2yxlzP3RFxuCblBCQwAASdOUhqQ4FyOQeO2WGSbVHL56jg1erJHcRHMqLvyHTXAQErVO0g2OYAEtH5IfDPuBj7ae2naxIfwNAQPZR6DTvQ-ReZBnfQ7QW0J3acky4cHGceo=)
+*   [NI Community - Check if a VI is broken via ActiveX](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFNVGRGEE8Q6iAI8lHO-ZpKPIuCdO_zGPItSfFPuxgw3_usltJn9l7U4WIzal-ssDd5WQ7gqpv3i6NSuPVKPJA-nXzMfc-2LNf_vmo6ILTcYjHYF0fv1JqMTOS-yKegmwnYbM017dQL0_WxzoZnX-_n9XdLYaizGwvNpQn-TPU0r1fPC4AwPLjZ4hiic_uRpbIIjFOXxbpU2xYdmmTZOhaMrEg=)
+*   [NI Support - VI Server Execution:State Property](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFdWm3V9PxzE-MI03l14avYjhhbAMhy1anPVuBwJr2xorObT_usleN-_YV2iNm8MlR12QjbqH0w6pT3QnXLBq92A5v8xCu8VHK-kY49ABOL4bMvcixFxRRJN1Wei8-kHqF8bZ-RaMki-xcz2nDXnadqw2z-mWMiaA436xJexbY29tBO8Mwz9_Q-P4ZZ2ZYk40rjT0JE_OCsYFwBD8oIk5DelMA=)
+*   [LabVIEW Wiki - Execution:State Property](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHo5_zqAxQDyLIBnYBezaqan5xiNb6xFflI9Pn_B8GPftB6zkWBuzNzHsNpSzo61w5RHqDA06_sHcN_OqaNWOHcLhES28d4-r6xxdc0YA4UN8s9CxN7hwTfAXY80FX3H65WtujyZZ_8eHTEoMG-k9CIkB4EmA==)
+
+
+
+## Sources
+
+(extract from answer)
+
+## What was done with it
+
+(Claude fills in)

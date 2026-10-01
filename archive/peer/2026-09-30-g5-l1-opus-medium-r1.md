@@ -1,0 +1,69 @@
+﻿# g5-l1-opus-medium-r1
+
+- **agent:** claude
+- **role:** fact
+- **model:** claude-opus-5-5 (effort medium; peer.ps1 default for role fact)
+- **kind:** fact
+- **cost:** $0.5109  in 20 / out 4516 / cache-create 20124 / cache-read 336080  (104s, 19 turn(s))
+- **date:** 2026-09-30 20:00:22
+- **outcome:** ANSWERED (106s)
+- **verdict-card:** (no -ReviewCard)
+- **why asked:** (Claude fills in)
+- **verdict:** unverified
+
+## Question
+
+When LabVIEW is automated from another program through its ActiveX (COM) server, the VirtualInstrument object is used to control a VI. Which VirtualInstrument property tells the client whether that VI is broken (cannot run), what numeric values can that property take and what does each mean? Does the ActiveX VirtualInstrument interface also expose a separate 'is broken' Boolean?
+
+Search the web and cite the URL of every source you used.
+
+## Answer
+
+The property is **`ExecState`**. Its values are 0 = broken, 1 = idle, 2 = running as the top-level VI, 3 = running as a subVI. I couldn't confirm whether a separate "is broken" Boolean exists.
+
+**Which property.** NI documents an ActiveX VI property called `ExecState` ([NI – ExecState (ActiveX)](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/activex/vi/execstate.html)). Client code reads it as `VI.ExecState` and compares it against `ExecStateEnum.eIdle`, `.eRunning` and `.eRunTopLevel` ([SECI LabViewApp.cs source](https://shadow.nd.rl.ac.uk/SECI/html/LabViewApp_8cs_source.html)). The NI pages load their content with script, so my fetch couldn't read the text itself. I found the property through search results and client code, not by reading NI's page.
+
+**Values.** These come from the documentation of the VI Server property `Execution:State` (a U32 enum), which is the same thing `ExecState` exposes over ActiveX ([LabVIEW Wiki – VI class/Execution.State property](https://labviewwiki.org/wiki/VI_class/Execution.State_property)):
+
+| Value | ActiveX name | Meaning |
+|---|---|---|
+| 0 | `eBad` | Bad: the VI has errors and can't run, i.e. it is broken |
+| 1 | `eIdle` | Idle: the VI is in memory but not running |
+| 2 | `eRunTopLevel` | Run top level: the VI is the top-level VI of a running hierarchy |
+| 3 | `eRunning` | Running: one or more running top-level VIs have reserved it to run (as a subVI) |
+
+- The `eBad`/`eIdle`/`eRunTopLevel`/`eRunning` names match the SECI code above.
+- A COM client in the Zuehlke `labview-mcp` project treats "execState 0" as a broken VI and "execState 1" (`eIdle`) as a good one ([Zuehlke/labview-mcp PR #60](https://github.com/Zuehlke/labview-mcp/pull/60)).
+- A Python win32com example treats `ExecState == 2` as running ([gist](https://gist.github.com/limyiheng/b4582f097ed16069e5f135133f3dba75)).
+- The 0–3 mapping for the ActiveX enum comes from matching the names to the VI Server documentation. I did not read it on NI's ActiveX page.
+
+**Caveats:**
+- A VI can show as Bad (0) in some cases where it isn't really broken, for example when it has unsaved changes after being loaded through VI Server ([NI forum](https://forums.ni.com/t5/LabVIEW/VI-state-indicates-VIis-broken-when-it-is-not/td-p/374104), [LAVA](https://lavag.org/topic/14744-why-is-my-vi-bad/)).
+- LabVIEW has an internal "reserved" state that it reports as Running ([LAVA](https://lavag.org/topic/16660-how-to-get-actual-vi-execution-state/)).
+
+**Is there a separate "is broken" Boolean? Not settled.** I found no such property in anything I could read:
+- Searches for "Is Broken" / "VI Broken?" turned up nothing, and every source checks for brokenness with `ExecState == eBad`.
+- I couldn't read the full list of ActiveX VirtualInstrument properties to rule it out. NI's page wouldn't render ([VI Properties (ActiveX)](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/activex/vi-p.html)), and the documentation.help mirror returned 403 ([mirror](https://documentation.help/NI-ActiveX-LabView/)).
+
+So "no separate Boolean" is likely, but I haven't confirmed it.
+
+Sources:
+- https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/activex/vi/execstate.html
+- https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/activex/vi-p.html
+- https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/vi/execstate.html
+- https://labviewwiki.org/wiki/VI_class/Execution.State_property
+- https://shadow.nd.rl.ac.uk/SECI/html/LabViewApp_8cs_source.html
+- https://github.com/Zuehlke/labview-mcp/pull/60
+- https://gist.github.com/limyiheng/b4582f097ed16069e5f135133f3dba75
+- https://forums.ni.com/t5/LabVIEW/VI-state-indicates-VIis-broken-when-it-is-not/td-p/374104
+- https://lavag.org/topic/14744-why-is-my-vi-bad/
+- https://lavag.org/topic/16660-how-to-get-actual-vi-execution-state/
+- https://documentation.help/NI-ActiveX-LabView/
+
+## Sources
+
+(extract from answer)
+
+## What was done with it
+
+(Claude fills in)

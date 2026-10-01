@@ -1,0 +1,35 @@
+{
+ "schema": "task/1",
+ "id": "chat-G6",
+ "kind": "build",
+ "goal": "peer.ps1 -Kind fact (no -Agent): gemini-3.1-pro-high first (600 s), automatic fallback to the claude fact role on error/timeout/empty, both archived; explicit -Agent routes unchanged",
+ "why": "User 2026-10-01 approved after report_g2.md. Detail: brief_chat-G6.md",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_chat-G6.md", "md5": "9f2557bd91b7ae043bde2b189cd1aba5"},
+  {"path": "tools/peer.ps1", "md5": "29ab3a06fc238cb85ada9e6921649a0c"}
+ ],
+ "pass": [
+  "DryRun shows the two-step route for -Kind fact and unchanged routes for -Agent claude/gemini -Kind fact and -Kind review",
+  "real call (a) answered by gemini without fallback; forced call (b) falls back to claude and archives both with the reason",
+  "existing peer/guard self-tests pass; ~/.gemini untouched; peer.ps1 before/after md5 recorded; g6/verify.log written"
+ ],
+ "outputs": ["tools/peer.ps1", "tools/bench/gsearch/g6/verify.log"],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": ["tools/peer.ps1", "tools/bench/gsearch/**", "tools/bench/selftest_*", "archive/peer/**"],
+  "status_edit": false,
+  "git_commit": true,
+  "peers": ["fact", "audit", "hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 90},
+ "unblocks": "M3",
+ "rules": [
+  "Rig 실험중: no LabVIEW/GUI/hardware",
+  "Runner stays stopped",
+  "Do not touch ~/.gemini; do not edit CLAUDE.md or STATUS.md",
+  "No other role default changes"
+ ]
+}

@@ -1,0 +1,14 @@
+{
+ "case": "L4",
+ "arm": "gemini-pro",
+ "rep": 2,
+ "outcome": "ANSWERED",
+ "rc": 0,
+ "seconds": 294,
+ "wall": 294.7,
+ "claude_usd": 0.0,
+ "timeout_sec": 600,
+ "archive": "archive\\peer\\2026-09-30-g5-l4-gemini-pro-r2.md",
+ "answer": "Based on web research into LabVIEW VI Scripting and the VI Server object model, here are the answers to your questions:\r\n\r\n### 1. What class name does a VISA Write function node report?\r\nWhen traversed using VI Scripting (such as with `Traverse for GObjects.vi`) or when querying the `ClassName` property of its GObject reference, a **VISA Write** node reports its class simply as **`Function`** (which is a subclass of `Node` and `GObject`). Because it is a built-in LabVIEW polymorphic primitive, it does not report a unique, dedicated class name string like \"VISA Write\" or \"VISAWriteNode\".\r\n\r\n### 2. Is there a VISA-specific scripting class for it?\r\n**No, there is not.** There is no VISA-specific VI Scripting block diagram class for the node itself. All standard VISA palette functions (VISA Write, VISA Read, VISA Open, etc.) are categorized under the generic `Function` and `Node` classes. \r\n\r\n*(Note: While LabVIEW does have classes like `VISA`, `I/O Session`, and `Instr`, these refer to the **VISA Resource Name / Session** data types used for instrument communication interfaces, not the block diagram function nodes themselves.)*\r\n\r\n### 3. How would a program pick out only the VISA Write nodes?\r\nSince you cannot filter exclusively by a \"VISA Write\" class name using `Traverse for GObjects.vi`, a script must use a two-step approach:\r\n1. **Filter by Base Class:** Use `Traverse for GObjects.vi` with the class name input set to **`\"Function\"`** (or `\"Node\"`) to return an array of references to all function nodes on the block diagram.\r\n2. **Filter by Name/Label:** Iterate through this array of generic function references and inspect their identifying properties using a Property Node. By reading properties such as the node's **`Name`** or **`Label.Text`** (which generally reports \"VISA Write\"), the script can programmatically identify and pick out only the VISA Write nodes from the rest of the functions.\r\n\r\n***\r\n\r\n**Sources Cited:**\r\n* NI Forums & Knowledge Base documentation on VI Scripting, GObjects, and VISA primitives: [ni.com](https://www.ni.com/)\r\n* LabVIEW Wiki documentation on VI Scripting and Traverse for GObjects: [labviewwiki.org](https://labviewwiki.org/)\r\n* LAVA Forums (LabVIEW Advanced Virtual Architects) discussions on VI Scripting and VISA nodes: [lavag.org](https://lavag.org/)\r\n\r\n*(Note: As this task required only web research and answering a question with no code modifications, a formal Implementation Plan artifact was not created).*",
+ "raw_tail": ""
+}

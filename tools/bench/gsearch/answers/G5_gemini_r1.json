@@ -1,0 +1,13 @@
+{
+ "case": "G5",
+ "arm": "gemini",
+ "rep": 1,
+ "outcome": "ANSWERED",
+ "rc": 0,
+ "seconds": 72,
+ "wall": 72.1,
+ "claude_usd": 0.0,
+ "archive": "archive\\peer\\2026-09-29-g1-g5-gemini-r1.md",
+ "answer": "In Windows PowerShell 5.1, `Get-Content` defaults to **`Default`** encoding—the system's active legacy **ANSI** code page (e.g., Windows-1252 on US/Western European Windows installations, CP949 on Korean installations)—when reading a text file without a Byte Order Mark (BOM).\r\n\r\n---\r\n\r\n### Details & Reasoning\r\n\r\n1. **BOM detection behavior**: If a file begins with a recognized Unicode BOM (such as UTF-8 BOM `0xEF, 0xBB, 0xBF` or UTF-16LE BOM `0xFF, 0xFE`), `Get-Content` detects it and decodes using that Unicode format.\r\n2. **Absence of a BOM**: When no BOM is present, `Get-Content` does **not** assume UTF-8. Instead, it falls back to the system's active ANSI code page (`[System.Text.Encoding]::Default`). Multibyte UTF-8 characters without a BOM will be misinterpreted or corrupted into mojibake.\r\n3. **Contrast with PowerShell 7+**: In PowerShell (Core) 6+, the default encoding for reading and writing files without a BOM was changed to BOM-less UTF-8 (`utf8NoBOM`).\r\n\r\n---\r\n\r\n### Sources Used\r\n\r\n- **Microsoft Learn: `about_Character_Encoding` (PowerShell 5.1)**  \r\n  https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_character_encoding?view=powershell-5.1  \r\n  *(Section: \"For cmdlets that read string data in the absence of a BOM: `Get-Content` and `Import-PowerShellDataFile` uses the `Default` ANSI encoding.\")*\r\n\r\n- **Microsoft Learn: `Get-Content` Cmdlet Reference (PowerShell 5.1)**  \r\n  https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/get-content?view=powershell-5.1  \r\n  *(Section: `-Encoding` parameter definition: \"`Default`: Uses the encoding that corresponds to the system's active ANSI code page.\")*",
+ "raw_tail": ""
+}

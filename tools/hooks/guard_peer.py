@@ -468,6 +468,11 @@ def review_quality(body):
         return False, f"outcome {outcome} - the call told you nothing"
     a = re.search(r"^\-\s*\*\*agent:\*\*\s*(\w+)", body, re.M)
     agent = (a.group(1) if a else "").lower()
+    # 2026-10-01: `-Kind fact` (no -Agent) now goes to gemini first. A fact answer is a lookup, not a framing
+    # adversary, for EVERY agent - without this line a default gemini fact archive would discharge a failed prediction.
+    k = re.search(r"^\-\s*\*\*kind:\*\*\s*(\w+)", body, re.M)
+    if k and k.group(1).lower() == "fact":
+        return False, "kind fact is a lookup, not a framing adversary (needs a review: codex, gemini or claude/hypothesis)"
     if agent == "claude":
         if _claude_is_adversary(body):
             return True, ""

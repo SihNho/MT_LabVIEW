@@ -1,0 +1,71 @@
+{
+ "schema": "gsearch-cases/1",
+ "card": "chat-G5",
+ "note": "Card chat-G5 (Part B of brief_chat-G2.md). G1-G3 copied verbatim from tools/bench/gsearch/cases.json (md5 98f13d170fb8e1df25c9a5dba8ed825e); L1-L5 are NEW LabVIEW-topic cases whose answers were measured on this machine or read from the installed driver. Questions are phrased neutrally (no answer leaked). Evidence cites the project file:line where the verified answer is recorded.",
+ "cases": [
+  {
+   "id": "G1",
+   "topic": "LabVIEW VI Scripting",
+   "question": "In LabVIEW VI Scripting (VI Server), which property of a Wire object reports whether that wire is broken, and what is that property's unique ID string (the hex ID used when the property is set with Allow Alternate Names = FALSE)? Also say what kinds of wire problems that property does and does not flag.",
+   "known_answer": "The Wire class property 'Is Broken?' (short name 'Broken?'), unique ID 6371004. It flags type conflicts / illegal wires; it does NOT flag a legal coercion (e.g. DBL->SGL or DBL->I32 coercion dot).",
+   "key_points": ["property name Is Broken? (Broken?)", "ID 6371004", "coercion is not flagged"],
+   "evidence": ["docs/NAMES.md:381", "docs/NAMES.md:459", "docs/vi-server-ids.json:60"]
+  },
+  {
+   "id": "G2",
+   "topic": "LabVIEW VI Server",
+   "question": "In LabVIEW, can the 'Enable automatic error handling' option (VI Properties > Execution) of one specific VI be switched off programmatically through VI Server? If so, give the exact class and property name. Is there also a global switch?",
+   "known_answer": "Yes: the VI class property 'Automatic Error Handling' (a writable Boolean on a VI reference) turns it off for that VI. A global alternative is the labview.ini key EnableAutomaticErrorHandling=False.",
+   "key_points": ["VI class property Automatic Error Handling", "writable", "global ini key EnableAutomaticErrorHandling"],
+   "evidence": ["docs/keystone-op-spec.md:543", "docs/toolkit-capabilities.md:584", "archive/peer/2026-08-28-auto-error-handling-scripting2.md:75"]
+  },
+  {
+   "id": "G3",
+   "topic": "NI-IMAQdx",
+   "question": "In NI-IMAQdx (C function IMAQdxGetImageData, or the LabVIEW IMAQdx Get Image2 VI), what numeric value does each buffer-number mode (Next, Last, BufferNumber, Every, LastNew) have, and which of these modes returns immediately without waiting for a new frame from the camera?",
+   "known_answer": "Next = 0, Last = 1, BufferNumber = 2, Every = 3, LastNew = 4. Only Last returns immediately (it returns the newest buffer, possibly the same one again); the other modes block until a buffer not yet returned exists.",
+   "key_points": ["Next 0, Last 1, BufferNumber 2, Every 3, LastNew 4", "only Last does not wait", "Last can return the same buffer again"],
+   "evidence": ["docs/camera-acquisition-facts.md:736", "docs/camera-acquisition-facts.md:749", "docs/camera-acquisition-facts.md:751"]
+  },
+  {
+   "id": "L1",
+   "topic": "LabVIEW ActiveX/COM",
+   "question": "When LabVIEW is automated from another program through its ActiveX (COM) server, the VirtualInstrument object is used to control a VI. Which VirtualInstrument property tells the client whether that VI is broken (cannot run), what numeric values can that property take and what does each mean? Does the ActiveX VirtualInstrument interface also expose a separate 'is broken' Boolean?",
+   "known_answer": "The ExecState property (execution state enum): 0 = bad / broken (eBad, broken run arrow), 1 = idle / runnable (eIdle), 2 = running as top-level VI (eRunTopLevel), 3 = running as a subVI / reserved for running (eRunning). There is no separate IsBroken member on the ActiveX VirtualInstrument interface; ExecState = 0 is how brokenness is read.",
+   "key_points": ["property ExecState", "0 = broken (eBad)", "1 = idle/runnable", "2 and 3 = running","no separate IsBroken member"],
+   "evidence": [".claude/skills/labview-automation/references/com-driving.md:54", ".claude/skills/labview-automation/references/com-driving.md:62"]
+  },
+  {
+   "id": "L2",
+   "topic": "NI-IMAQdx",
+   "question": "With NI-IMAQdx and a USB3 Vision camera, a program opens a camera session, writes new values to attributes such as Width/Height (ROI), ExposureAuto/ExposureTime or the acquisition frame rate, confirms them by reading back, and then closes the session. When the next IMAQdxOpenCamera (or IMAQdx Open Camera VI) call opens the same camera, what values do those attributes have, and why?",
+   "known_answer": "They are back at the values from the camera's configuration, not the ones written in the earlier session: IMAQdxOpenCamera reloads the camera file (.icd in the NI-IMAQdx Data folder) or the camera defaults on every open, so attributes written in one session are lost when it closes. Measured: ROI 640x512 -> 1280x1024 again, ExposureAuto Off -> Continuous, ExposureTime 5555 -> 1909 us, frame rate 150 -> 90 Hz. The owning session must write them after opening, or the camera file must be changed (e.g. saved from MAX).",
+   "key_points": ["settings do NOT persist to the next session", "open reloads the camera file (.icd) / defaults", "write after open or save to the camera file"],
+   "evidence": ["docs/camera-acquisition-facts.md:424", "docs/camera-acquisition-facts.md:435", "docs/camera-acquisition-facts.md:437", "docs/camera-acquisition-facts.md:645"]
+  },
+  {
+   "id": "L3",
+   "topic": "LabVIEW VI Scripting",
+   "question": "In LabVIEW VI Scripting, a program reads the Nodes[] property of a block diagram (Diagram / TopLevelDiagram class) to enumerate what is on it. Does that array include diagram constants, structure tunnels (for example loop tunnels or case selector tunnels) and shift registers? If some of them are missing, why, and how can a program enumerate them instead?",
+   "known_answer": "No. Nodes[] returns only objects of the Node class. A diagram Constant is a GObject but not a Node, so it never appears; loop tunnels, case-selector tunnels and shift registers are not in Nodes[] either (they belong to their structure). To enumerate them use a GObject-level traversal, e.g. vi.lib's Traverse for GObjects.vi by class name (or the diagram's AllObjs[] / the structure's own tunnel and shift-register properties).",
+   "key_points": ["constants are NOT in Nodes[] (Constant is a GObject, not a Node)", "tunnels and shift registers are NOT in Nodes[]", "use Traverse for GObjects / AllObjs[] / structure properties"],
+   "evidence": ["docs/d1-build-plan.md:323", "docs/frame-loop-wire-graph.md:29", "docs/d1-loop12-17-split-plan.md:801"]
+  },
+  {
+   "id": "L4",
+   "topic": "NI-VISA",
+   "question": "In LabVIEW VI Scripting, a program enumerates the objects on a block diagram and reads each object's class name (for example with Traverse for GObjects.vi or the ClassName property of a GObject reference). What class name does a VISA Write function node report, is there a VISA-specific scripting class for it, and how would a program pick out only the VISA Write nodes?",
+   "known_answer": "It reports the generic class 'Function' - the same class as Add, Multiply or Divide; there is no VISA-specific scripting class. VISA Write nodes are singled out by their name/label text ('VISA Write'), not by class.",
+   "key_points": ["class = Function (generic)", "no VISA-specific class", "identify by name/label 'VISA Write'"],
+   "evidence": ["docs/toolkit-capabilities.md:48", "tools/bench/visa_class_probe.log:14", "tools/bench/visa_class_probe.log:25"]
+  },
+  {
+   "id": "L5",
+   "topic": "NI-IMAQdx",
+   "question": "In the LabVIEW NI-IMAQdx palette, what are the DEFAULT values of the 'Buffer Number Mode' input of IMAQdx Get Image2.vi and of the 'Wait for Next Buffer?' input of IMAQdx Grab2.vi when those inputs are left unwired, and what does that default mean for a display loop that runs slower than the camera?",
+   "known_answer": "Get Image2 defaults to Buffer Number Mode = Next and Grab2 defaults to Wait for Next Buffer? = Yes (TRUE); both wait for the next buffer in sequence. A loop slower than the camera therefore falls behind, the driver ring overwrites unread buffers and frames are missed; wiring Last (or No) returns the newest buffer without waiting and decouples the display rate.",
+   "key_points": ["Get Image2 default Next", "Grab2 default Wait for Next Buffer = Yes", "slow loop falls behind / buffers overwritten; Last decouples"],
+   "evidence": ["docs/camera-acquisition-facts.md:668", "docs/camera-acquisition-facts.md:669", "docs/camera-acquisition-facts.md:671"]
+  }
+ ]
+}

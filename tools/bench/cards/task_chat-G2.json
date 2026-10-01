@@ -1,0 +1,39 @@
+{
+ "schema": "task/1",
+ "id": "chat-G2",
+ "kind": "measure",
+ "goal": "Gemini re-test: fix agy headless command auto-deny (safe allow rule, backup first) and run agy from an empty cwd, then LabVIEW-focused comparison gemini-pro vs Opus fact medium vs high",
+ "why": "User 2026-09-30 '제미나이는 재시험 진행' after report_g1.md. Detail: brief_chat-G2.md",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_chat-G2.md", "md5": "da073d2ad695ac869a4cefb3d936a5ac"},
+  {"path": "tools/peer.ps1", "md5": "681a46a08a246011b147c93d58339b26"},
+  {"path": "tools/bench/gsearch/cases.json", "md5": "98f13d170fb8e1df25c9a5dba8ed825e"}
+ ],
+ "pass": [
+  "agy settings backed up with md5 before any change; exact diff recorded; no blanket shell/write allow",
+  "peer.ps1 gemini branch runs agy from an empty temp dir; other branches and role defaults unchanged",
+  "3 verification calls: web answer with URLs and no denial x2; project file content NOT visible",
+  "Part B (only if A passes): cases_g2.json 7-8 LabVIEW-topic cases with evidence; 3 arms x 2 repeats; blind Sonnet scores",
+  "report_g2.md with per-case table, totals, failure causes, Claude usd per arm, project-file citations"
+ ],
+ "outputs": ["tools/bench/gsearch/cases_g2.json", "tools/bench/gsearch/report_g2.md"],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": ["tools/bench/gsearch/**", "tools/peer.ps1", "archive/peer/**", "C:/Users/KimLab/.gemini/**"],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["fact", "audit", "hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 120},
+ "unblocks": "M3",
+ "rules": [
+  "Rig 실험중: no LabVIEW/GUI/hardware",
+  "Runner stays stopped",
+  "Backup agy settings before editing; safe direction only",
+  "No role default changed in peer.ps1",
+  "Facts only; the chat decides"
+ ]
+}

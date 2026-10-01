@@ -1,0 +1,13 @@
+{
+ "case": "G5",
+ "arm": "claude",
+ "rep": 2,
+ "outcome": "ANSWERED",
+ "rc": 0,
+ "seconds": 20,
+ "wall": 20.2,
+ "claude_usd": 0.2398,
+ "archive": "archive\\peer\\2026-09-29-g1-g5-claude-r2.md",
+ "answer": "In Windows PowerShell 5.1, `Get-Content` reads a file with no byte-order mark (BOM) using **`Default` encoding. That is the system's active ANSI code page**, which is set by the system locale. It does not default to UTF-8 or UTF-16. Microsoft's documentation states this directly, so the evidence is clear.\n\n- **about_Character_Encoding (5.1):** \"For cmdlets that read string data in the absence of a BOM: `Get-Content` and `Import-PowerShellDataFile` uses the `Default` ANSI encoding. ANSI is also what the PowerShell engine uses when it reads source code from files.\" `Default` is defined there as \"the encoding that corresponds to the system's active code page (usually ANSI).\"\n  https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_character_encoding?view=powershell-5.1\n\n- **Get-Content reference (5.1):** for the `-Encoding` parameter it says \"The default value is `Default`,\" and describes that value as \"the encoding that corresponds to the system's active code page (usually ANSI).\"\n  https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/get-content?view=powershell-5.1\n\n**What this means in practice:** the same page also warns that a UTF-8 file without a BOM that contains non-ASCII characters gets misread as the legacy ANSI code page. To read such a file correctly, pass `-Encoding UTF8`. In PowerShell 7 and later the default is different (`utf8NoBOM`).\n\nSources:\n- https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_character_encoding?view=powershell-5.1\n- https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/get-content?view=powershell-5.1",
+ "raw_tail": ""
+}

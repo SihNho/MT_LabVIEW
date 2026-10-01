@@ -1,0 +1,18 @@
+{"schema":"result/1","id":"chat-G6","status":"PASS","gates":{"pass":11,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/peer.ps1","md5":"204682a111f2bad11c60e8127a0e407a"},{"path":"tools/bench/gsearch/g6/verify.log","md5":"0b11fb6b11abecd1db15e6adc21e19a4"},{"path":"tools/bench/selftest_g6_peerset.py","md5":"4255f88033789d17aba6e45a4e5c1bd5"}],
+"facts":[
+"peer.ps1 md5 29ab3a06 -> 204682a1; fact chain block after -TaskFile read, re-invokes the script per arm like -Dual (tools/peer.ps1:197-262); commit 1a10aab",
+"DryRun -Kind fact prints 2-step route: agy gemini-3.1-pro-high 600s -> <slug>-gemini, fallback claude fact opus-5-5/medium thin web -> <slug>-claude (g6/dryrun.txt ### A)",
+"-Agent claude -Kind fact, -Agent gemini -Kind fact, -Kind review, -Role hypothesis, -Kind prose: single routes unchanged (g6/dryrun.txt ### B-E,G)",
+"Real call (a): gemini ANSWERED 115 s, no fallback, rc 0, Claude $0 (g6/call_a.log; archive/peer/2026-10-01-g6-call-a-gemini.md)",
+"Forced (b) -FactGeminiTimeoutSec 5: gemini TIMEOUT rc 2 -> claude ANSWERED 40 s $0.4307, rc 0; both archived with route lines + '## Fact chain' note (g6/call_b.log)",
+"Existing self-tests 13/13 rc 0 incl. 7 guard_peer + c106d_tools H4 (g6/selftests.log); ~/.gemini settings.json md5 2d6fae65 unchanged",
+"New params: -FactGeminiTimeoutSec (600, also the test switch) and internal -RouteNote -> '- **route:**' header line only when set (tools/peer.ps1:160-168)",
+"Archive names change for plain -Kind fact: <slug>-gemini.md / <slug>-claude.md instead of <slug>.md; worst-case chain time = 600 s + -TimeoutSec (callers' bgrun --max-min must allow it)"
+],
+"open":[
+"guard_peer.py:447 ADVERSARY_AGENTS accepts any ANSWERED gemini archive incl. kind fact, so a default fact answer naming a failing log would now discharge a failed prediction (claude fact role could not). Fix in guard_peer (kind != fact)?",
+"Design call taken: -Kind fact with -Model/-Effort/-Role but no -Agent keeps the old claude route (claude-role knobs; e.g. gsearch run_g2 opus-high arm). Accept?"
+],
+"cost":{"usd":0.43,"minutes":25,"labview_runs":0},
+"note":"peer.ps1 commit also carries the earlier uncommitted G3/G4 gemini web-only brief + empty cwd edits. A LabVIEW.exe (pid 11128) was already running and not touched (rig 실험중). gemini answer in (a) mentions it wrote an agy 'Implementation Plan artifact' (agy plan mode, its own store), not verified."}

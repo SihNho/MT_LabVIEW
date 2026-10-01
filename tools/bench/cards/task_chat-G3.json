@@ -1,0 +1,35 @@
+{
+ "schema": "task/1",
+ "id": "chat-G3",
+ "kind": "build",
+ "goal": "Replace the AGENTS.md brief peer.ps1 inlines for gemini with a web-only brief, then re-run the 3 headless verification calls",
+ "why": "User 2026-09-30 '가 적용 후 확인해보도록' after chat-G2 found our own brief makes agy run shell commands. Detail: brief_chat-G3.md",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_chat-G3.md", "md5": "144cf5e7bd4e957656476b0b85e2313e"},
+  {"path": "tools/peer.ps1", "md5": "9fbe3cd873ca1657aecbea92ccb14a82"}
+ ],
+ "pass": [
+  "peer.ps1 gemini branch inlines a web-only brief; other branches, empty-cwd change and role defaults unchanged; before/after md5 recorded",
+  "3 verification calls recorded: status, seconds, URLs, any run_command attempt and denial text",
+  "~/.gemini untouched (md5 a3fc3324c9edab230905c21a95d29ac0 before and after)"
+ ],
+ "outputs": ["tools/bench/gsearch/g3/verify.log"],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": ["tools/bench/gsearch/**", "tools/peer.ps1", "archive/peer/**"],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["fact", "audit", "hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 45},
+ "unblocks": "M3",
+ "rules": [
+  "Rig 실험중: no LabVIEW/GUI/hardware",
+  "Runner stays stopped",
+  "Do not touch ~/.gemini settings",
+  "Facts only; the chat decides"
+ ]
+}

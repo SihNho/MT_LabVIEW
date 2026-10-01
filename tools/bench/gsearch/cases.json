@@ -1,0 +1,63 @@
+{
+ "schema": "gsearch-cases/1",
+ "card": "chat-G1",
+ "note": "Past web/fact question classes whose answers were later checked against the machine, the installed vendor header, or a measurement. Questions are phrased neutrally (no answer leaked). Evidence cites the project file:line where the verified answer is recorded.",
+ "cases": [
+  {
+   "id": "G1",
+   "topic": "LabVIEW VI Scripting",
+   "question": "In LabVIEW VI Scripting (VI Server), which property of a Wire object reports whether that wire is broken, and what is that property's unique ID string (the hex ID used when the property is set with Allow Alternate Names = FALSE)? Also say what kinds of wire problems that property does and does not flag.",
+   "known_answer": "The Wire class property 'Is Broken?' (short name 'Broken?'), unique ID 6371004. It flags type conflicts / illegal wires; it does NOT flag a legal coercion (e.g. DBL->SGL or DBL->I32 coercion dot).",
+   "key_points": ["property name Is Broken? (Broken?)", "ID 6371004", "coercion is not flagged"],
+   "evidence": ["docs/NAMES.md:381", "docs/NAMES.md:459", "docs/vi-server-ids.json:60"]
+  },
+  {
+   "id": "G2",
+   "topic": "LabVIEW VI Server",
+   "question": "In LabVIEW, can the 'Enable automatic error handling' option (VI Properties > Execution) of one specific VI be switched off programmatically through VI Server? If so, give the exact class and property name. Is there also a global switch?",
+   "known_answer": "Yes: the VI class property 'Automatic Error Handling' (a writable Boolean on a VI reference) turns it off for that VI. A global alternative is the labview.ini key EnableAutomaticErrorHandling=False.",
+   "key_points": ["VI class property Automatic Error Handling", "writable", "global ini key EnableAutomaticErrorHandling"],
+   "evidence": ["docs/keystone-op-spec.md:543", "docs/toolkit-capabilities.md:584", "archive/peer/2026-08-28-auto-error-handling-scripting2.md:75"]
+  },
+  {
+   "id": "G3",
+   "topic": "NI-IMAQdx",
+   "question": "In NI-IMAQdx (C function IMAQdxGetImageData, or the LabVIEW IMAQdx Get Image2 VI), what numeric value does each buffer-number mode (Next, Last, BufferNumber, Every, LastNew) have, and which of these modes returns immediately without waiting for a new frame from the camera?",
+   "known_answer": "Next = 0, Last = 1, BufferNumber = 2, Every = 3, LastNew = 4. Only Last returns immediately (it returns the newest buffer, possibly the same one again); the other modes block until a buffer not yet returned exists.",
+   "key_points": ["Next 0, Last 1, BufferNumber 2, Every 3, LastNew 4", "only Last does not wait", "Last can return the same buffer again"],
+   "evidence": ["docs/camera-acquisition-facts.md:736", "docs/camera-acquisition-facts.md:749", "docs/camera-acquisition-facts.md:751"]
+  },
+  {
+   "id": "G4",
+   "topic": "Windows PowerShell",
+   "question": "In Windows PowerShell 5.1, when the standard output of a native executable is captured inside PowerShell (for example $x = & prog.exe | Out-String), which setting determines the character encoding used to decode those bytes, and what do you set so that UTF-8 output is decoded correctly?",
+   "known_answer": "[Console]::OutputEncoding (the console's output code page, e.g. the OEM/ANSI page such as cp949) decides it; set [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 (in the same runspace/job). $OutputEncoding governs the other direction (text piped TO a native program).",
+   "key_points": ["[Console]::OutputEncoding", "set it to UTF8", "$OutputEncoding is the other direction"],
+   "evidence": ["tools/peer.ps1:569", "tools/peer.ps1:574"]
+  },
+  {
+   "id": "G5",
+   "topic": "Windows PowerShell",
+   "question": "In Windows PowerShell 5.1, which character encoding does Get-Content use by default when it reads a text file that has no byte-order mark?",
+   "known_answer": "The system's legacy ANSI code page ('Default', e.g. Windows-1252 or cp949 on a Korean system), not UTF-8; UTF-8 without BOM must be read with -Encoding UTF8.",
+   "key_points": ["ANSI / system default code page", "not UTF-8", "-Encoding UTF8 needed"],
+   "evidence": ["tools/peer.ps1:591"]
+  },
+  {
+   "id": "G6",
+   "topic": "Windows NTFS",
+   "question": "On an NTFS volume in Windows, a file is deleted and a new file with the same name is then created in the same folder shortly afterwards. What creation timestamp does the new file have, and what is the mechanism called?",
+   "known_answer": "The new file inherits the deleted file's creation time (and short name): NTFS 'file system tunneling' (default window 15 s, configurable in the registry).",
+   "key_points": ["keeps the old creation time", "file system tunneling"],
+   "evidence": ["tools/peer.ps1:717", "tools/peer.ps1:718"]
+  },
+  {
+   "id": "G7",
+   "topic": "Windows PowerShell",
+   "question": "In Windows PowerShell 5.1, if a string variable that contains embedded double-quote characters and spaces is passed as a single argument to a native executable (for example & prog.exe $s), does the program receive it as one intact argument?",
+   "known_answer": "No. PowerShell 5.1 does not escape the embedded double quotes when building the native command line, so the argument is mangled and can be split into several arguments. (PowerShell 7.3+ fixes this via $PSNativeCommandArgumentPassing.) Workarounds: pass via stdin or escape quotes manually.",
+   "key_points": ["not intact / split", "embedded quotes not escaped", "fixed in PS 7.3 ($PSNativeCommandArgumentPassing)"],
+   "evidence": ["tools/peer.ps1:419", "tools/peer.ps1:420"]
+  }
+ ]
+}

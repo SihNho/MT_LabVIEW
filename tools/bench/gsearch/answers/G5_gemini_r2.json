@@ -1,0 +1,13 @@
+{
+ "case": "G5",
+ "arm": "gemini",
+ "rep": 2,
+ "outcome": "ANSWERED",
+ "rc": 0,
+ "seconds": 82,
+ "wall": 82.1,
+ "claude_usd": 0.0,
+ "archive": "archive\\peer\\2026-09-29-g1-g5-gemini-r2.md",
+ "answer": "### Answer\r\n\r\nIn Windows PowerShell 5.1, `Get-Content` uses the **`Default`** encoding—the system's active **ANSI code page** (e.g., Windows-1252 on Western European/US Windows, CP949 on Korean Windows)—when reading a text file that has no Byte-Order Mark (BOM).\r\n\r\n---\r\n\r\n### Official Documentation & Sources\r\n\r\n1. **Microsoft Learn: `about_Character_Encoding` (PowerShell 5.1)**  \r\n   https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_character_encoding?view=powershell-5.1  \r\n   > *\"For cmdlets that read string data in the absence of a BOM:*  \r\n   > *- `Get-Content` and `Import-PowerShellDataFile` uses the `Default` ANSI encoding. ANSI is also what the PowerShell engine uses when it reads source code from files.\"*  \r\n   >  \r\n   > *\"`Default`: Uses the encoding that corresponds to the system's active code page (usually ANSI).\"*\r\n\r\n2. **Microsoft Learn: `Get-Content` (PowerShell 5.1)**  \r\n   https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/get-content?view=powershell-5.1  \r\n   > Under `-Encoding`:  \r\n   > *\"Specifies the type of encoding for the target file. The default value is `Default`.\"*  \r\n   > *\"`Default` Uses the encoding that corresponds to the system's active code page (usually ANSI).\"*\r\n\r\n---\r\n\r\n### Important Implications & Traps\r\n\r\n- **BOM-less UTF-8 files will be misinterpreted:** Windows PowerShell 5.1 does not auto-detect BOM-less UTF-8 when reading via `Get-Content`. Any non-ASCII bytes will be decoded using the active ANSI code page, producing mojibake / character corruption.\r\n- **PowerShell 7+ differs:** Modern PowerShell (v6+) changed this default behavior to BOM-less UTF-8 (`utf8NoBOM`).\r\n- **To safely read BOM-less UTF-8 in 5.1:** Specify `-Encoding UTF8` explicitly, or set `$PSDefaultParameterValues['Get-Content:Encoding'] = 'utf8'`.\r\n\r\n---\r\n\r\n### Cheap Verification Check\r\n\r\nTo check what ANSI code page `Default` resolves to on the current Windows machine, run:\r\n```powershell\r\n[System.Text.Encoding]::Default.WebName\r\n# typically returns 'windows-1252' (or localized code page like 'ks_c_5601-1987' / 'cp949')\r\n```",
+ "raw_tail": ""
+}

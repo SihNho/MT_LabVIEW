@@ -1,0 +1,13 @@
+{
+ "case": "G5",
+ "arm": "claude",
+ "rep": 1,
+ "outcome": "ANSWERED",
+ "rc": 0,
+ "seconds": 20,
+ "wall": 19.9,
+ "claude_usd": 0.2403,
+ "archive": "archive\\peer\\2026-09-29-g1-g5-claude-r1.md",
+ "answer": "When it reads a file with no byte-order mark (BOM), Windows PowerShell 5.1's `Get-Content` uses the **`Default` encoding: the system's active ANSI code page.** The Microsoft docs say this directly, so the evidence settles the question.\n\n- **Get-Content reference page for 5.1:** the `-Encoding` parameter's default value is `Default`, which \"Uses the encoding that corresponds to the system's active code page (usually ANSI).\"\n  https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/get-content?view=powershell-5.1\n\n- **about_Character_Encoding page for 5.1:** under \"For cmdlets that read string data in the absence of a BOM,\" it says: \"`Get-Content` and `Import-PowerShellDataFile` uses the `Default` ANSI encoding. ANSI is also what the PowerShell engine uses when it reads source code from files.\" It also defines `Default` as \"the encoding specified by the active system locale's ANSI legacy code page.\"\n  https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_character_encoding?view=powershell-5.1\n\nThe actual code page depends on the machine's system locale. For example, US English systems usually use Windows-1252, and Korean systems usually use CP949. This means a UTF-8 file without a BOM that contains non-ASCII characters will be misread unless you pass `-Encoding UTF8`. The same page notes that `Import-Csv`, `Import-Clixml` and `Select-String` behave differently: they assume UTF-8 when there's no BOM. The code-page examples are general Windows knowledge, not taken from these pages.\n\nI went straight to the official Microsoft documentation with WebFetch instead of running a web search. I didn't run or change anything.\n\n**Sources:**\n- [Get-Content (PowerShell 5.1), Microsoft Learn](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/get-content?view=powershell-5.1)\n- [about_Character_Encoding (PowerShell 5.1), Microsoft Learn](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_character_encoding?view=powershell-5.1)",
+ "raw_tail": ""
+}

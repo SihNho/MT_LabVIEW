@@ -1,0 +1,35 @@
+{
+ "schema": "task/1",
+ "id": "chat-G4",
+ "kind": "measure",
+ "goal": "Re-run the 3 headless Gemini verification calls of chat-G3 unchanged, now that the user set deny command(*) in ~/.gemini/antigravity-cli/settings.json by hand",
+ "why": "User 2026-09-30 '수정했음'. G3 (tools/bench/gsearch/g3/verify.log, result_chat-G3.json): a ANSWERED 215 s, b ERROR 16 s command auto-deny, c TIMEOUT 300 s. Measure whether an explicit deny returns control to the model instead of aborting.",
+ "inputs": [
+  {"path": "tools/bench/gsearch/g3/verify.sh", "md5": "d0cdf6adf3fa01fb3d01632c72a1e4ad"},
+  {"path": "tools/peer.ps1", "md5": "29ab3a06fc238cb85ada9e6921649a0c"}
+ ],
+ "pass": [
+  "~/.gemini/antigravity-cli/settings.json read-only check: md5 5da8f4c0fe37e6f3de0be76b17d34908 before and after; never edited",
+  "the same 3 calls (a web, b local-files probe, c web repeat) as G3 with no script or peer.ps1 change; per call status, seconds, URL count, denial or error text verbatim",
+  "tools/bench/gsearch/g4/verify.log and a table G2 / G3 / G4 per call"
+ ],
+ "outputs": ["tools/bench/gsearch/g4/verify.log"],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": ["tools/bench/gsearch/**", "archive/peer/**"],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["fact", "audit", "hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 30},
+ "unblocks": "M3",
+ "rules": [
+  "Rig 실험중: no LabVIEW/GUI/hardware",
+  "Runner stays stopped",
+  "Do not edit peer.ps1 or ~/.gemini; do not read agy conversation DBs",
+  "Facts only; the chat decides"
+ ]
+}

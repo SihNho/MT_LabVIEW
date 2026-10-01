@@ -1,0 +1,13 @@
+{
+ "case": "G6",
+ "arm": "gemini",
+ "rep": 1,
+ "outcome": "ANSWERED",
+ "rc": 0,
+ "seconds": 89,
+ "wall": 89.7,
+ "claude_usd": 0.0,
+ "archive": "archive\\peer\\2026-09-29-g1-g6-gemini-r1.md",
+ "answer": "### Answer\r\n\r\n1. **Creation Timestamp:** The new file receives the **creation timestamp of the original (deleted) file**, rather than the current time when the new file was created.\r\n2. **Mechanism Name:** The mechanism is called **File System Tunneling** (or **File Name Tunneling** / **Tunneling**).\r\n\r\n---\r\n\r\n### Reasoning & Details\r\n\r\n* **Purpose:** Windows implements tunneling to accommodate applications using atomic \"safe save\" patterns (e.g., writing changes to a temporary file, deleting the original target file, and renaming the temporary file to the original name). Without tunneling, every save operation would reset the file's creation timestamp and could break short (8.3) to long filename associations for legacy applications.\r\n* **Cache Lifetime & Capacity:** By default, metadata for deleted or renamed files is cached for **15 seconds** (up to 1,024 entries). If a new file with the exact same name is created in that folder within this 15-second window, it inherits the cached creation date and short/long name mappings.\r\n* **Registry Configuration:** The mechanism is governed under `HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\FileSystem`:\r\n  * `MaximumTunnelEntryAgeInSeconds` (DWORD): Lifetime of cached metadata (default: `15`).\r\n  * `MaximumTunnelEntries` (DWORD): Maximum cache entries (default: `1024`). Setting this value to `0` disables tunneling entirely.\r\n\r\n---\r\n\r\n### Sources & References\r\n\r\n* Raymond Chen, *\"The apocryphal history of file system tunnelling\"*, Microsoft DevBlogs (*The Old New Thing*):  \r\n  https://devblogs.microsoft.com/oldnewthing/20050715-14/?p=34923\r\n* Microsoft Knowledge Base Article 172190 (*\"Windows NT Contains File System Tunneling Capabilities\"*):  \r\n  https://web.archive.org/web/20080112111151/http://support.microsoft.com/kb/172190\r\n* SuperUser Reference (*\"Why does the file creation date sometimes get preserved when I delete a file and create a new one with the same name?\"*):  \r\n  https://superuser.com/questions/1126648/why-does-the-file-creation-date-sometimes-get-preserved-when-i-delete-a-file-and",
+ "raw_tail": ""
+}

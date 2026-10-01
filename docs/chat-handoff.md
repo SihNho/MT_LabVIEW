@@ -165,6 +165,101 @@ task size as a variable, ≥3 repeats, recall + precision + extra real findings,
 run on L1 (card chat-B5, dispatched) to price it; the S1 card (effort choice) is on hold until the criteria table is
 agreed — ultracode is NOT on that table until measured. B4 single-arm mechanical recall on L1: SH 7,9 / SXH 6,7 of 9;
 L2/L3 saturated (all 23/23, 110/110).
+**B5 pilot STOPPED by the user's choice 2026-09-29 ~19:0x** (5-hour window 89 %): the agent had just re-verified the
+L1 lock (PASS, key md5 d15a23da) and was launching the UC run; no ultracode process was left running. Rerun B5 as is
+(card task_chat-B5.json) after the 5-hour reset (~19:30 KST) — in the cloud or locally.
+**GitHub (verified 2026-09-29):** PRIVATE repo https://github.com/SihNho/MT_LabVIEW, default branch **master** (the
+auto-created `main` README branch was deleted by the user), `origin/master` = 188500d, local master tracks it. The
+chat's own push is refused by the permission classifier — the USER runs `git push` whenever the cloud needs newer
+commits (the runner commits locally only). Raw bench
+`cell.log` files are git-ignored. **Cloud plan (user 2026-09-29, $250 cloud credit until 2026-11-05):** benches go to
+cloud sessions first (no LabVIEW needed); the judgement agent stays local. Steps: (1) make ucbench/decbench/matbench and
+the hooks run on Linux (G:/ absolute hook paths, `py` launcher, worktree paths); (2) REPRODUCIBILITY check — rerun part
+of decbench v1 in the cloud and compare with the local report (same arm ranking? similar repeat spread?); (3) the
+mixed ultracode bench (known-answer + shadow, survey/troubleshooting/decision). Start after the 5-hour reset, in a NEW
+chat session (this one is at 42 % context).
+**Cloud premise NOT verified (new chat, 2026-09-29 ~10:3x):** official docs (code.claude.com cloud-environments /
+claude-code-on-the-web / costs) never mention a "$250 cloud credit"; they say cloud sessions share rate limits with all
+Claude usage; `claude` CLI is not in the cloud image's pre-installed list (nested `claude -p` undocumented); the app's
+usage readout shows 5-hour / weekly / extra usage (disabled) and NO credit line. Porting paused before any edit; WSL
+not installed here. Proposed discriminating test (awaiting the user): one small cloud session (`which claude`,
+one `claude -p` call) while the 5-hour window reads 0 %, then read whether 5-hour/weekly % moved.
+**Probe 1 RAN (user "시험세션 진행해보도록"; routine trig_01GSQFxfhK568BQ7He4bLCLs, session cse_015wLZ6858ht2ZAYPSG9rxuJ,
+10:40–10:41 UTC, Opus 5.5, 18 turns, ~390k chars read):** capability YES — Ubuntu 24.04.4, python3 3.11.15, NO `py`,
+`claude` 2.1.284 preinstalled at /opt/node22/bin, nested `claude -p` (haiku) exit 0 with no login ($0.067); repo hooks
+run and error (Windows paths/`py`), non-blocking; nested cell warns "Ignoring 21 permissions.allow entries … workspace
+has not been trusted" (needs hasTrustDialogAccepted in /root/.claude.json). Billing UNDECIDED: 5-hour 0 → 1 %, weekly
+36 → 36 %, but this chat's own turns in the same window are of the same size; the run log carries 2 rate_limit_event
+entries (content not shown). Proposed probe 2: $5–10 cloud load with the chat idle.
+**Probe 2 RAN (routine trig_01Mk2EDE2D6MrFk3HDGYwoMC, session cse_01DH1xrjs8mk3bQrZSdwj4BH, 10:50 UTC, haiku):** nested
+`claude -p --output-format stream-json --verbose` in the cloud emits `rate_limit_event` IDENTICAL to a local call:
+rateLimitType five_hour, unifiedWindows five_hour 0.01 / seven_day 0.36 (same resetsAt), isUsingOverage false,
+overageStatus rejected / out_of_credits. The user reports the cloud credit still at $250 after probe 1. CONCLUSION:
+cloud (routine) sessions and their nested calls draw on the SUBSCRIPTION windows, not the $250; overage beyond the
+limit is rejected, not paid from the credit. Hypothesis (unverified): the $250 is API-console credit usable only with
+an API key. Asked the user where the $250 is displayed. Direct cost readout = `total_cost_usd` per call (list price,
+7 decimals); pool readout = `rate_limit_event.rate_limit_info` (2-decimal utilization).
+**CLOUD PLAN DROPPED (user 2026-09-29 ~20:0x KST: "그럼 클라우드는 그냥 잊어버리자").** No Linux port of benches/hooks;
+benches stay local. Both probe routines were run-once and are spent. Open next: user asked whether to bring Gemini back
+for web search; chat proposed (awaiting answer) a headless-permission fix test + a 6–8 question known-answer comparison
+(Gemini vs claude `fact` role) before any role change.
+**chat-G1 DONE (PASS, $6.67, 42 min; `tools/bench/gsearch/report_g1.md`):** 7 known-answer cases x 2. gemini default
+6 C / 8 W (all 300 s timeouts); gemini-3.1-pro-high 10 C / 4 W (all 4 = agy `command` auto-deny), median 50 s;
+claude fact 9 C / 5 P / 0 W, primary source 14/14, $5.10; claude's 5 P all on LabVIEW/IMAQdx cases where gemini-pro
+was often complete. One gemini-pro correct answer read OUR repo (agy cwd = project root). Chat proposed (awaiting
+user): allow-rule in the user-level ~/.gemini settings (needs user OK) + neutral cwd in peer.ps1, rerun 5–6 LabVIEW
+cases, then gemini-pro first / claude fallback for fact questions. No role default changed.
+**CORRECTION (B5):** the B5 UC pilot DID start — `ucbench/pilot_run.log` BGRUN START 18:46:53, cell files last written
+19:03 (`runs/pilot/L1/UC_r1/c0/cell.log` 2.9 MB, calls.jsonl 773 lines), no result line, no BGRUN END → interrupted,
+INVALID (rerun from the beginning). No valid ultracode measurement exists except the B3 smoke (L3, 1 run each).
+**Ultracode cost pilot RERUN (user "돌려보자"; result_chat-B5 via material, FAIL):** 2026-09-29 23:17 → 00:17, par 1,
+killed at the 60-min cap with NO answer; 53 sub-agents, ~3,080 sub-agent tool calls, Workflow counter 13.16M tokens
+(still in its 'Chunk scan' phase), main loop cache-read 12.85M; usd not recorded (no result envelope). Invalid 18:46
+attempt moved to `tools/bench/ucbench/runs_invalid/pilot_20260929_1846/` (NONRESULT.md). Usage after the evening:
+5-hour 39 %, weekly 46 % (36 at 19:36; mixed with the Gemini bench and this chat). The 4 single-session L1 answers are
+still unscored. Chat proposed (awaiting user): record UC as "did not finish in 60 min", blind-score the 4 singles only,
+and redesign any further UC test on smaller tasks rather than rerun with a bigger cap.
+**DECIDED 2026-09-30 (user "좋아") — ULTRACODE IS NOT USED.** Division of labour: judgement/review needing several
+documents together → single Opus (high, max when needed); hundreds of well-defined per-item checks → Jev loop +
+script aggregation (accuracy measured on a labelled set first; the user's point, matching their 2026-09-23 Jev
+direction); mechanical checks → Python. The pending effort-choice structure (card chat-S1) offers EFFORT only, no
+ultracode. The 4 single-session L1 answers stay unscored (would not change the decision). Gemini re-test still awaits
+the user (user-level ~/.gemini rule + neutral cwd, then LabVIEW cases with Opus medium AND high arms).
+**Gemini re-test (card chat-G2, user "제미나이는 재시험 진행") BLOCKED at step 1:** the backup/edit of
+`~/.gemini/antigravity-cli/settings.json` was refused by the auto-mode permission classifier ([Security Weaken]);
+file untouched (md5 a3fc3324…, `{"permissions":{"allow":["read_url(*)"]}}`). Done: peer.ps1 gemini branch now runs agy
+from a per-call empty %TEMP%\peer_agy_cwd_* dir (peer.ps1:570-575,591,673,702; md5 9fbe3cd8…); verified no project
+content reached answers. Still 3/3 headless aborts: any `run_command` kills the run — (1) Invoke-WebRequest fallback
+after read_url fails, (2) OUR inlined AGENTS.md brief tells agy to read STATUS.md (AGENTS.md:57). Offered: (가) a
+web-only gemini brief in peer.ps1 (our file); (나) the user adds `"deny":["command(*)"]` by hand (untested whether
+deny returns control to the model). Awaiting the user. Part B not run.
+**(가) applied (card chat-G3, user "가 적용 후 확인해보도록"):** peer.ps1 gemini branch now inlines a 466-char web-only
+brief instead of AGENTS.md (peer.ps1:289-300, md5 29ab3a06…); ~/.gemini untouched. Verify: (a) web Q ANSWERED 215 s,
+4 URLs, correct; (b) local-files probe ERROR 16 s (command auto-deny, expected for that probe); (c) same web Q TIMEOUT
+300 s. agy trajectory DB read refused by the classifier [PII Data Handling]. Chat's view: still unreliable (1/2 web
+answers, 3–4x slower than Opus). Next: user may add `"deny":["command(*)"]` by hand → re-run the 3 calls; if still
+unstable, drop Gemini and keep the Opus fact role.
+**User set `"deny":["command(*)"]` by hand ("수정했음"); card chat-G4:** 3/3 ANSWERED, no abort — (a) 268 s correct,
+(b) local-files probe 34 s "local command execution … disabled", no project content, (c) 245 s correct. agy re-saved
+settings.json pretty-printed during the run (md5 5da8f4c0 → 2d6fae65; content identical: allow read_url(*), deny
+command(*)). Then card chat-G5 dispatched = the approved comparison (G2 Part B): LabVIEW cases, gemini-pro (timeout 600 s)
+vs Opus fact medium vs Opus fact high, 2 repeats, blind Sonnet scoring → `tools/bench/gsearch/report_g2.md`.
+**chat-G5 DONE (PASS 48/0, 45 min, Claude $22.97):** 8 LabVIEW cases x 2. C/P/W of 16: gemini-pro 13/3/0, Opus medium
+7/8/1, Opus high 6/9/1; ni.com primary source gemini 4/16 (7 with no URL, 6 redirect-only) vs Opus 16/16 each; median
+143 / 99 / 114 s. No project-file citations. Chat proposed (awaiting user): fact role = gemini-pro first, Opus medium
+fallback on no-answer/timeout, Opus re-check before expensive builds (primary sources); hypothesis reviews stay Opus;
+fact effort stays medium (high no better).
+**APPROVED 2026-10-01 ("이렇게 변경하고 진행하자"):** CLAUDE.md research-ladder gemini row updated; memory
+gemini_roles_delegated_to_claude.md rewritten; card chat-G6 dispatched to implement the gemini-first / claude-fallback
+route in peer.ps1 (`-Kind fact`, no `-Agent`), explicit `-Agent` routes unchanged.
+**chat-G6 DONE (PASS 11/0, $0.43, commit 1a10aab, peer.ps1 md5 204682a1):** DryRun shows the 2-step route; real call
+gemini ANSWERED 115 s no fallback; forced call (-FactGeminiTimeoutSec 5) gemini TIMEOUT → claude ANSWERED 40 s $0.43,
+both archived (`<slug>-gemini.md` / `<slug>-claude.md`); 13/13 existing self-tests. Accepted agent design call:
+`-Kind fact` with -Model/-Effort/-Role but no -Agent keeps the claude-only route. Chain worst case 600 s + -TimeoutSec
+(callers' bgrun --max-min must allow it). **Chat fix (uncommitted):** guard_peer.py review_quality now rejects any
+`kind: fact` archive as a failed-prediction review (a default gemini fact answer would otherwise have discharged one);
+guard_peer self-tests 7 files all PASS. CLAUDE.md gemini row edited (uncommitted). A LabVIEW.exe (pid 11128) was
+running during G6 — not ours, untouched (rig 실험중).
 Terminology the user asked for (2026-09-29): "agent" = a Claude instance the runner/chat spawns (judgement agent,
 material agent); "session" = a new conversation window.
 

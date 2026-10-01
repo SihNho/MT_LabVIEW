@@ -1,0 +1,23 @@
+{"schema":"result/1","id":"chat-G1","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/bench/gsearch/cases.json","md5":"98f13d170fb8e1df25c9a5dba8ed825e"},
+{"path":"tools/bench/gsearch/report_g1.md","md5":"7f905a7b74f5e22d647ba132b5320016"},
+{"path":"tools/bench/gsearch/run_arm.py","md5":"11ecf994184fd30967e10c97506cbdaf"},
+{"path":"tools/bench/gsearch/score.py","md5":"4821da53f6a7e3623cae8c291151373b"},
+{"path":"tools/bench/gsearch/report.py","md5":"167761d7ab784c4bf69cc7521fafa1bf"}],
+"facts":[
+"Part A: peer.ps1 -Agent gemini -Kind fact, no peer.ps1 change, ANSWERED 189 s, 4 URLs, no denial (tools/bench/gsearch/partA_gemini.log:3); agy settings already allow read_url(*)",
+"Totals, 14 answers/arm (report_g1.md:24-26): gemini default 6 correct/8 wrong (8 no-answer), gemini-3.1-pro-high 10/0/4, claude fact 9 correct/5 partly/0 wrong",
+"All 8 gemini-default failures are peer.ps1 300 s timeouts; median 300 s, mean 235.5 s (report_g1.md:24). gemini-pro median 50 s, claude median 66 s",
+"All 4 gemini-pro failures = agy 'command' permission auto-denied, same wall as 09-22 (archive/peer/2026-09-29-g1-g1-gemini-pro-r1.md Answer)",
+"Answers with >=1 primary source (ni.com / microsoft.com): gemini 6/14, gemini-pro 8/14, claude 14/14 (report_g1.md:24-26)",
+"Claude usd: claude arm answers $5.10 (14 calls), blind scorer $1.57 (sonnet/low thin, 30 calls); gemini answers $0 (report_g1.md:26,37)",
+"claude's 5 'partly' are all on the LabVIEW/IMAQdx cases G1-G3 (ID 6371004 left unconfirmed, mode values incomplete); all Windows cases G4-G7 correct 8/8 (report_g1.md:12-18)",
+"LEAK: gemini-pro G1 r2 cited docs/vi-server-ids.json from THIS repo, not the web: agy runs with cwd = project root (tools/peer.ps1:577 Set-Location $wd)",
+"Only CITED local reads are detectable; claude fact cell also runs from root in plan mode - whether it can Read files was not measured (report_g1.md PROJECT files section)",
+"No peer.ps1 edit (git status clean for tools/peer.ps1); 73 exchanges archived archive/peer/2026-09-29-g1-*; no agy/LabVIEW process left running"],
+"open":[
+"Should agy run from a neutral cwd (not the project root) so a gemini cell cannot read the answers from our own files? That changes peer.ps1 beyond a flag - judgement's call.",
+"gemini-pro loses 4/14 to the 'command' auto-deny: add a permissions deny/allow rule in ~/.gemini/antigravity-cli/settings.json (outside this card's write globs) or accept the loss?",
+"Is a rerun needed with a longer timeout for the default gemini model (8/14 hit 300 s) before any role decision?"],
+"cost":{"usd":6.67,"minutes":42,"labview_runs":0},
+"note":"Part A answer content (LabVIEW 2026 Q3, July 2026) was not independently checked. Scorer is sonnet, not a human; grades in tools/bench/gsearch/scores/*.json."}

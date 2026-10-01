@@ -1,0 +1,13 @@
+{
+ "case": "G2",
+ "arm": "gemini",
+ "rep": 2,
+ "outcome": "ANSWERED",
+ "rc": 0,
+ "seconds": 291,
+ "wall": 291.3,
+ "claude_usd": 0.0,
+ "archive": "archive\\peer\\2026-09-29-g1-g2-gemini-r2.md",
+ "answer": "### Answer\r\n\r\n**Yes**, it can be switched off programmatically for a specific VI via VI Server.\r\n\r\n* **Class:** `VI` (VI Server class hierarchy: `Generic » VI`)\r\n* **Property Name:** \r\n  * **Long / Display Name:** `Execution:Automatic Error Handling` (or `Automatic Error Handling`)\r\n  * **Short Name:** `Auto Err Handling`\r\n  * **Data Type:** Boolean (`False` to switch off; `True` to enable)\r\n  * **Access:** Read/Write in the LabVIEW development environment while the VI is in edit mode (not running). It is unsupported in the LabVIEW Run-Time Engine and Real-Time OS.\r\n\r\n---\r\n\r\n### Is there also a global switch?\r\n\r\n**No global runtime switch exists** to toggle automatic error handling across all existing VIs simultaneously at runtime. The setting is persisted as an execution property per-VI inside the VI binary.\r\n\r\nHowever, two related global mechanisms exist:\r\n\r\n1. **Global default for newly created VIs (IDE / INI):**\r\n   * **IDE:** **Tools » Options » Block Diagram » Error Handling » Enable automatic error handling in new VIs** (uncheck to disable by default).\r\n   * **Configuration file (`LabVIEW.ini`):** The token `defaultErrorHandlingForNewVIs = False` (often accompanied by `EnableAutomaticErrorHandling = False`).\r\n   * *Limitation:* This only affects new, blank VIs created afterward; it does not alter existing VIs.\r\n\r\n2. **Programmatic batch modification:**\r\n   * To switch it off across all loaded VIs, you must iterate over the VI references (e.g., via `Application.AllVIsInMemory` or project items) and write `False` to each VI's `Auto Err Handling` property individually.\r\n\r\n3. **LabVIEW Run-Time Engine (Built executables):**\r\n   * Automatic error handling is inherently and globally disabled/unsupported in the Run-Time Engine.\r\n\r\n---\r\n\r\n### Sources Used\r\n\r\n* [NI LabVIEW API Reference: Automatic Error Handling Property](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/vi/automaticerrorhandling.html)\r\n* [NI Product Documentation: Handling Errors in LabVIEW (Disabling Automatic Error Handling)](https://www.ni.com/docs/en-US/bundle/labview/page/handling-errors.html)\r\n* [LabVIEW Wiki: Automatic Error Handling](https://labviewwiki.org/wiki/Automatic_Error_Handling)",
+ "raw_tail": ""
+}

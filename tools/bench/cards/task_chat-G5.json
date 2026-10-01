@@ -1,0 +1,36 @@
+{
+ "schema": "task/1",
+ "id": "chat-G5",
+ "kind": "measure",
+ "goal": "Part B of brief_chat-G2.md ONLY: LabVIEW-focused known-answer comparison gemini-3.1-pro-high vs Opus fact medium vs Opus fact high, 2 repeats, blind Sonnet scoring",
+ "why": "User approved the Gemini re-test (2026-09-30). Part A is DONE by other means: web-only gemini brief in peer.ps1 (chat-G3) and the user's hand-set deny command(*) in ~/.gemini (chat-G4: 3/3 ANSWERED, 245-268 s per web answer). Do NOT redo Part A.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_chat-G2.md", "md5": "da073d2ad695ac869a4cefb3d936a5ac"},
+  {"path": "tools/peer.ps1", "md5": "29ab3a06fc238cb85ada9e6921649a0c"},
+  {"path": "tools/bench/gsearch/cases.json", "md5": "98f13d170fb8e1df25c9a5dba8ed825e"}
+ ],
+ "pass": [
+  "cases_g2.json: G1-G3 from cases.json plus 4-5 NEW LabVIEW-topic cases, each with verifying evidence file:line, neutral wording",
+  "3 arms x 2 repeats per case; gemini arm with -TimeoutSec 600 (answers take ~4-5 min; record the value); opus-high arm method stated",
+  "blind Sonnet scores per answer; report_g2.md with per-case table, totals, failure causes, Claude usd per arm, any project-file citation"
+ ],
+ "outputs": ["tools/bench/gsearch/cases_g2.json", "tools/bench/gsearch/report_g2.md"],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": ["tools/bench/gsearch/**", "archive/peer/**"],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["fact", "audit", "hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 150},
+ "unblocks": "M3",
+ "rules": [
+  "Rig 실험중: no LabVIEW/GUI/hardware",
+  "Runner stays stopped",
+  "Do not edit peer.ps1 or ~/.gemini; do not read agy conversation DBs",
+  "Facts only; the chat decides"
+ ]
+}

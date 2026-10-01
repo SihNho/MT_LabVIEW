@@ -1,0 +1,14 @@
+{
+ "case": "L1",
+ "arm": "gemini-pro",
+ "rep": 2,
+ "outcome": "ANSWERED",
+ "rc": 0,
+ "seconds": 79,
+ "wall": 78.8,
+ "claude_usd": 0.0,
+ "timeout_sec": 600,
+ "archive": "archive\\peer\\2026-09-30-g5-l1-gemini-pro-r2.md",
+ "answer": "Based on web research of LabVIEW's ActiveX (COM) server documentation, here is the answer to your question:\r\n\r\n### 1. Which VirtualInstrument property tells the client whether that VI is broken?\r\nThe property used to determine if a VI is broken (cannot run) is the **`ExecState`** property.\r\n\r\n### 2. What numeric values can that property take and what does each mean?\r\nThe `ExecState` property returns an integer corresponding to the `ExecStateEnum` data type. It can take one of four numeric values:\r\n*   **`0` (`eBad`)**: The VI has errors, is broken, and cannot execute.\r\n*   **`1` (`eIdle`)**: The VI is not running but is loaded in memory and available to be called.\r\n*   **`2` (`eRunTopLevel`)**: The VI is actively running as the top-level VI in an active hierarchy.\r\n*   **`3` (`eRunning`)**: The VI is reserved for execution by one or more active top-level VIs (typically meaning it is running as a subVI).\r\n\r\nBy checking if the `ExecState` property equals `0`, the client can determine if the VI is broken.\r\n\r\n### 3. Does the ActiveX VirtualInstrument interface also expose a separate 'is broken' Boolean?\r\n**No**, the ActiveX `VirtualInstrument` interface does not expose a separate \"is broken\" Boolean property. The standard approach provided by the LabVIEW COM server to verify if a VI is executable is to query the `ExecState` property and evaluate whether it returns `0` (`eBad`). \r\n\r\n***\r\n\r\n**Sources Cited:**\r\nBecause the search tool provided Grounding API redirection links rather than direct readable URLs, the information was synthesized from the following primary domains returned during the search:\r\n*   **NI Official Documentation & Support (ni.com)**: VI Server and ActiveX `VirtualInstrument` reference, specifically detailing `ExecStateEnum` and troubleshooting broken ActiveX nodes.\r\n*   **Documentation.help**: LabVIEW Automation Server class references for `VirtualInstrument` properties and `ExecStateEnum` values.\r\n*   **LAVA Forums (lavag.org)**: Community discussions confirming the absence of a direct \"broken\" Boolean property in the ActiveX interface and the standard practice of using `ExecState`. \r\n\r\n*(Note: Per your explicit instructions not to create or modify local files, I have skipped generating the usual `/plan` local markdown artifact and have provided your answer directly here).*",
+ "raw_tail": ""
+}
