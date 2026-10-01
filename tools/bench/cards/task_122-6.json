@@ -1,0 +1,71 @@
+{
+ "schema": "task/1",
+ "id": "122-6",
+ "kind": "build",
+ "goal": "Ring P2b (PD240-244) on frame #4866: plan on diag_c122_graph_p2a.json, dry/prerun/prior-art, scratch run (= route verification), ONE launch -> claudeDev D1_ring_p2b_<ts>.vi",
+ "why": "Tools are accepted (OpConstInd_v0 + hygiene, DonorRingConst_v0); the P2a graph exists (PD244(a)); P2b is the next ring step.",
+ "retry_of_card": "122-5",
+ "inputs": [
+  {"path": "tools/bench/cards/result_122-5.json"},
+  {"path": "tools/bench/diag_c122_graph_p2a.json", "md5": "3f6f5d36808cc205771a8349b5a737ff"},
+  {"path": "tools/bench/op_hygiene/OpConstInd_v0.json", "md5": "e8c80e9e975329ce8851d5fbea4218d2"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRingConst_v0.vi", "md5": "d8dc30136c197bef836cd4622bbce61d"},
+  {"path": "tools/bench/facts_c120_types.json", "md5": "d0baba8f29f1a6126709cbff18bbadc9"},
+  {"path": "tools/bench/errorlist_expected_D1_ring_p2a_20260928_191739.json", "md5": "2154ffa9b8928cfbf12990319a027fc4"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p2a_20260928_191739.vi", "md5": "c22a473f26ebcc67296d1c2441f8a47a"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "op", "name": "OpConstInd_v0"},
+  {"kind": "verb", "name": "const_indicator_on_diagram", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "read_term_type", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "read_const_value", "where": "tools/gscript.py"}
+ ],
+ "pass": [
+  "plan_ring_p2b.json on diag_c122_graph_p2a.json, frame #4866: rows <= 15 or P2b-1/-2 split (PD240(e)); stagesim FINAL; dry + prerun PASS",
+  "prior-art review answered and released (new create class); FS-frame checks use owner_of(strict=False) (PD244(b))",
+  "scratch run on a bed byte copy: 5 objects, label exact, read_term_type == F-types, read_const_value == PD240(b); scratch_verify record PASS",
+  "scratch pins the Error List new-item count (PD240(d) predicts 0, total 54)",
+  "ONE launch saves D1_ring_p2b_<ts>.vi with the scratch's gates; all five on #4866, none in a loop; cdiff == 16 rows; no wire lost",
+  "final Error List == pin; errorlist_expected_D1_ring_p2b_<ts>.json written, reverdicts OK; refs balanced; PD236(b) band; LabVIEW gone"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p2b_<ts>.vi",
+  "tools/bench/errorlist_expected_D1_ring_p2b_<ts>.json",
+  "tools/bench/plan_ring_p2b.json",
+  "tools/recipes/stage_d1_ring_p2b.py"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/*ring_p2b*",
+   "tools/bench/sim/ring_p2b*/**",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/errorlist*ring_p2*",
+   "tools/bench/graph_ring_p2*",
+   "tools/bench/diag_c122_*",
+   "tools/recipes/stage_d1_ring_p2b*.py",
+   "archive/peer/**",
+   "tools/bench/cards/review_122*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 90
+ },
+ "rules": [
+  "PD240-244 fix labels, types, values, frame #4866; a contradicting fact is returned as OPEN",
+  "No separate route run (PD244(d)); the scratch run is the verification",
+  "Bed never saved over; GUI only via lv_gui.ps1 -Exception Approved, broken-intermediate evidence",
+  "Every GUI act: capture, locate, act, capture, confirm (cycle27-plan PD9)",
+  "If the 60-min backstop refuses the launch, return with the launch-ready state recorded",
+  "guard_peer hold -> owed review, never bypass; return at the first unexpected result"
+ ],
+ "advances": ["M3", "M4"]
+}

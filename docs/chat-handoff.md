@@ -260,6 +260,12 @@ both archived (`<slug>-gemini.md` / `<slug>-claude.md`); 13/13 existing self-tes
 `kind: fact` archive as a failed-prediction review (a default gemini fact answer would otherwise have discharged one);
 guard_peer self-tests 7 files all PASS. CLAUDE.md gemini row edited (uncommitted). A LabVIEW.exe (pid 11128) was
 running during G6 — not ours, untouched (rig 실험중).
+**RUNNER RESTARTED 2026-10-01 12:27 (user: "현재는 리그 사용하지 않음. 그대로 코딩 싸이클 돌리도록 … 오늘 밤 사용할지도,
+그 때는 내가 사전에 말하도록"):** STATUS rig-state 실험중 → 조립; STOP line → (history); the user closed their own
+LabVIEW (pid 11128, open since 09-30 13:24) first, verified gone. Supervisor launched detached (Start-Process, pid 5888);
+cycle 122 started on judgement Opus 5.5 high; errorlist REUSE OK; PI referenced + verify OK attempt 1/3, limits SET
+(`tools/bench/motor_session_start_cycle122.log`). Chat duties back on: report_gate acks, 30-min waiter
+(`wait_runner_event.py` under bgrun). When the user announces 실험중: write a STOP line at the top of STATUS (graceful).
 Terminology the user asked for (2026-09-29): "agent" = a Claude instance the runner/chat spawns (judgement agent,
 material agent); "session" = a new conversation window.
 

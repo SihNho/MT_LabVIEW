@@ -1,0 +1,31 @@
+{"schema":"result/1","id":"122-4","status":"FAIL","gates":{"pass":57,"fail":1},
+"first_fail":"H6 files left on disk == []: added ['DonorRingConst_v0.vi'] (diag_c122_hyg.log) - the intended donor, never declared to stagekit's leftover gate",
+"blocked_by":null,
+"artefacts":[
+{"path":"tools/bench/op_hygiene/OpConstInd_v0.json","md5":"e8c80e9e975329ce8851d5fbea4218d2"},
+{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRingConst_v0.vi","md5":"d8dc30136c197bef836cd4622bbce61d"},
+{"path":"tools/bench/diag_c122_donor.json","md5":"838e34a698dece6cc7b7aea307125504"},
+{"path":"tools/bench/diag_c122_hyg.py","md5":"11118edd3a5232025257774f3f26f48a"},
+{"path":"tools/bench/diag_c122_hyg_plan.json","md5":"a8a9c47b7ef27f45c8f75aa8a30a0507"},
+{"path":"tools/bench/diag_c122_hyg.log","md5":"f5a0ecaa0ed141a6c75c17c344a1a056"},
+{"path":"tools/bench/diag_c122_route.py","md5":"9f73d0eb1d780d6fc26f74de5e7fd960"},
+{"path":"tools/bench/diag_c122_route_plan.json","md5":"ebf2f546934caa3a4a90c8e75197eece"},
+{"path":"tools/stagesim.py","md5":"b70dc7b71f20f1c22526573e621efd94"},
+{"path":"tools/bench/selftest_c122_stagesim.log","md5":"9f61a6b1077e78d3bbf49c05a6598be8"}],
+"facts":[
+"HYGIENE PASS: 20 rounds x 100 = 2000 raw OpConstInd_v0 calls + 5 warm, 0 errors, echo #249 every call, +100 ControlTerminals per round (diag_c122_hyg.log H2)",
+"Handles with no scratch loaded: warm 42783 -> last 42766, max dev 17; refs opened 53 == closed 53 (diag_c122_hyg.log H3/H5); op_hygiene/OpConstInd_v0.json md5 field fd4be498 == the op",
+"DONOR claudeDev\\DonorRingConst_v0.vi md5 d8dc3013: DBL[20] 0.0 #101, I32[20] -1 #130, I32 -1 #249; read back ==, ES 1, kernel gone by class, kernel md5 same (diag_c122_hyg.log D0-D3,K)",
+"Only FAIL = stagekit H6 leftover gate (donor saved as intended, never declared). Input md5 unchanged; LabVIEW gone at exit; no scratch_c122* left (diag_c122_hyg.log)",
+"stagesim.py selftest G46b ADDED: created ArrayConstant new:CK1 -> indicator born_on it, one new wire joins exactly the two rows; 78/0 (selftest_c122_stagesim.log:58)",
+"NOT RUN (chat-P2 return): diag_c122_route.py = P2a graph dump + 3-label verify on #3121 + scratch_verify record; rewritten, dry PASS, prerun 13/0",
+"NOT DONE: 3-row stageplan + recipe + --prerun: its base needs diag_c122_graph_p2a.json, written only by the route run (no P2a graph JSON exists)",
+"Dry run needs a graph of the Stage input: both scripts take the saved R2 (graph_l2r2_saved_20260928.json) as input, as diag_c118_r1v.py:26; P2a only as a scratch",
+"JEV ladder | diag_c122_hyg.log | no JEV-LADDER row yet (jev_gate.log:2923-2924 PREFLIGHT only) | - | returned, no retry | -"
+],
+"open":[
+"Accept the hygiene record (all measurement gates PASS; the FAIL is the undeclared donor file) and re-issue a card to launch diag_c122_route.py, then the 3-row plan prerun on its graph? The leftover gate fix is one line (declare DON as an intended artefact) if a rerun is wanted.",
+"guard_peer will likely hold the next LabVIEW launch on diag_c122_hyg.log (a failing log): is this a script-premise case for the Jev ladder, or does it owe a hypothesis review?"
+],
+"cost":{"usd":null,"minutes":47,"labview_runs":1},
+"note":"Returned at the first unexpected result (chat-P2): no retry, no diagnosis run. STATUS untouched (status_edit false). The hygiene record was written by the script because H2+H3 passed; the H6 gate runs after it at Stage close."}

@@ -1,0 +1,31 @@
+{"schema":"result/1","id":"122-3","status":"FAIL","gates":{"pass":20,"fail":3},
+"first_fail":"K old PN #118 gone, links made, ES 1 - diag_c122_opbuild.log: uid 118 of the deleted PN was re-issued to the new Invoke ('W 118.reference <- 685.Terminal'); ES read 1",
+"blocked_by":null,
+"artefacts":[
+{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpConstInd_v0.vi","md5":"fd4be49823db087e0fd7fc976aa41ed9"},
+{"path":"tools/bench/diag_c122_oplabels.json","md5":"9bc4ddf1de02bc4802fb33bba5407011"},
+{"path":"tools/bench/diag_c122_opbuild.log","md5":"292e400527434a1ee359c7b2b0afd7a9"},
+{"path":"tools/bench/diag_c122_opbuild.py","md5":"3e1d4ade35b455f5323dd2999da5826f"},
+{"path":"tools/bench/diag_c122_route.py","md5":"252ed55a9f25936caedc269af9217b23"},
+{"path":"tools/bench/selftest_c122_stagexec.log","md5":"ba59be1ee86906443904f36513ad13ba"},
+{"path":"archive/peer/2026-10-01-122-p3.md","md5":"4cf4e30ebaf4242ae870355bb13e63f1"},
+{"path":"tools/bench/cards/review_122-p3.json","md5":"118e98d07c82f92221ed2d8559412654"}],
+"facts":[
+"Step 0: hypothesis review on diag_c122_p3.log ANSWERED, verdict supported; annotated. New: #35869 = implicit Value of 'IMAQimage', writer IMAQ Create #20436 not #13938 (2026-10-01-122-p3.md:83)",
+"OpConstInd_v0.vi BUILT: Traverse->TMSC(Constant)->PN#685[UID,Terminal]->Invoke#118 Create Indicator; closes #630,#615,#651,#744; all 12 wire gates PASS, COLD ES 1 (diag_c122_opbuild.log)",
+"All 3 FAILs = one premise error in my K gate: it tested 'uid 118 absent', but 118 was re-issued to the new Invoke (opmodels/primitive.json uid_allocation); C1/C2 failed only via all(G)",
+"Labels written diag_c122_oplabels.json: UID ind 'UID 2', error 'error out 3', seed 'reference 2', pn 685, inv 118, cr1 651, cr2 744",
+"NOT DONE: no op_hygiene record (gscript.op refuses OpConstInd_v0 until then, gscript.py:299-305); donor DonorRingConst_v0.vi, scratch_verify record: none; diag_c122_route.py never run",
+"gscript.py:4293 _read_num_const (read_const_value now reads DigitalNumericConstant via OpConstValueN_v1); :4342 create_indicator_on_const; :4384 const_indicator_on_diagram (donor copy+indicator+label)",
+"stagexec.py:348 const_born_on + indicator sub-branch in both backends (:2124 real, :2486 dry); ROUTE_VERBS indicator += create_indicator_on_const; stagexec selftest 124/0; py_compile OK",
+"stagesim not edited: create ControlTerminal born_on already joins a same-diagram source addr incl. a created constant with declared terminals (stagesim.py:1180-1201); no self-test of that yet",
+"diag_c122_route.py plan: donor sinks 'x,y,z array' DBL[] / 'pos in cal image in' I32[] of PARALLEL_kernel_v3.vi (NAMES.md:37,41), not confirmed as connector-pane terminals; frame #3121",
+"JEV ladder | diag_c122_opbuild.log | our-script-bug p=0.892 | NEXT-ACTION: patch the script and rerun | returned per chat-P2 (no retry) | LabVIEW gone (gate H PASS)"
+],
+"open":[
+"Accept OpConstInd_v0 as built (COLD ES 1, all wiring gates PASS; K checked uid absence, not class) and re-issue a card running diag_c122_route.py (donor + hygiene + scratch verify + 3-row plan prerun)? Or rebuild with the K gate fixed?",
+"Hygiene record for a CREATOR op: card says 20 calls; docs/violation-decisions.md:1665-1667 says >= 2,000 consecutive calls. Which applies to OpConstInd_v0 (each call adds an indicator)?",
+"P3 plan: the review says the image into #6810 is panel 'IMAQimage' written by #20436, not 'Cam' #13938; draft row 4 of facts_c122_p3_rows.md rests on that identity (offline test named in the review)"
+],
+"cost":{"usd":null,"minutes":21,"labview_runs":1},
+"note":"Returned at the first unexpected result (chat-P2). No retry, no diagnosis run. STATUS untouched (status_edit false); lock never held in STATUS. Offline checks after the run: only regression checks of my own edits to shared tools (stagexec selftest, py_compile)."}

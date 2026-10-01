@@ -1,0 +1,70 @@
+BGRUN START 2026-10-01 13:23:02 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_ring_p2b.py
+BGRUN PID 19200
+stage_d1_ring_p2b - card 122-6, RING P2b (d1-loop12-17-split-plan.md PD240(a)-(e), PD241(b), PD244(a)-(d)): on the SAVED P2a bed
+D1_ring_p2a_20260928_191739.vi ADD five indicators Num I32[20] / TransPos DBL[20] / RotPos DBL[20] / FrameIdx I32[20] / Latest I32, each born on a
+VALUED donor constant (claudeDev\DonorRingConst_v0.vi: Num/FrameIdx -1 x20, TransPos/RotPos 0.0 x20, Latest -1) on FS1 frame #4866 (the frame
+before #686), outside every loop; NO existing net touched. FRESH LabVIEW -> claudeDev\D1_ring_p2b_<ts>.vi (rule-6 GUI save, ExecState 0 by
+design, never run). ROWS ONLY FROM plan_ring_p2b.json (stagesim FINAL of plan_ring_p2b_in.json, plan_ring_p2b_make.py); expected values only from
+plan_ring_p2b_pred.json. PRIOR ART: stage_d1_ring_p2a.py (Executor/LVBackend/DryPlanBE, D/TD/FU/PB/HB/PS gates, save) + diag_c122_route.py
+verify() (per-label read-back: panel_wiring label/wire, read_term_type canon, read_const_value, frame) + stagexec const_born_on route
+(create_primitive_nested const_donor -> create_indicator_on_const = gscript.const_indicator_on_diagram's two calls). No new op.
+Review archive/peer/2026-10-01-c122-route-s0.md: NO owner_of call on #4866; placement is gated by the live read (gate F, FATAL).
+PREDICTION: L1 10 actions -> 10 create ops; E1 every checkpoint == sim; per label: ONE new indicator (panel label exact, wired), ONE new constant
+on the same wire, both on #4866 (F), canon == pred on both ends (T), constant value == pred (V); D new wires == 5 == sim, none lost;
+CEN2 ControlTerminal +5, Wire +5, ArrayConstant +4, DigitalNumericConstant +1, LoopTunnel/WhileLoop/Diagram/SubVI/Local 0; TD every base
+terminal keeps its wire, rows added == the 10 new; FU frames unchanged; PB cdiff(S1, end) == the P2a bed's 16 rows (FATAL, before save);
+HB open->save handles <= +700 (PD236(b)); PS saved, input unchanged.
+    py tools/bgrun.py --material --max-min 45 --log tools/bench/stage_d1_ring_p2b.log -- py -u tools/recipes/stage_d1_ring_p2b.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p2b_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == the P2a bed's rows  ('ce18e794994b94b251d76cb2c828ef7b', {'path': 'tools/bench/diag_c122_graph_p2a.json', 'md5': '3f6f5d36808cc205771a8349b5a737ff'}, 'c22a473f26ebcc67296d1c2441f8a47a')
+  PASS  L0c 10 create rows on #4866: 5 constants (donor DonorRingConst_v0.vi, md5 pinned) + 5 indicators labelled == pred  {'labels': ['Num', 'TransPos', 'RotPos', 'FrameIdx', 'Latest']}
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == c22a473f26ebcc67296d1c2441f8a47a  got c22a473f26ebcc67296d1c2441f8a47a
+  PASS  DRY graph JSON for input md5 c22a473f26ebcc67296d1c2441f8a47a  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c122_graph_p2a.json
+  FACT  CENSUS before P2b D1_ring_p2b_20261001_132303.vi: {'LoopTunnel': 139, 'Wire': 1937, 'WhileLoop': 6, 'Diagram': 174, 'SubVI': 93, 'Local': 12, 'ControlTerminal': 118, 'ArrayConstant': 17, 'DigitalNumericConstant': 181}
+  PASS  L1 the 10 actions compile into 10 real ops == pred kinds, each action once  ['create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create']
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 1 touched diagram(s) [4866]: one-side-only Nodes[] entries 0
+  PRIME 0 terminal indexes proved at base; 0 ControlTerminal end(s) by 179(b); unprovable []
+  FACT  OP create [1] -> err '' (0.0 s)
+  STEPX 01 create         acts [1] ids ['p2b_c_Num'] bound {-1: 10000001} diff 0
+  FACT  OP create [2] -> err '' (0.0 s)
+  STEPX 02 create         acts [2] ids ['p2b_i_Num'] bound {-3: 10000004} diff 0
+  FACT  OP create [3] -> err '' (0.0 s)
+  STEPX 03 create         acts [3] ids ['p2b_c_TransPos'] bound {-5: 10000005} diff 0
+  FACT  OP create [4] -> err '' (0.0 s)
+  STEPX 04 create         acts [4] ids ['p2b_i_TransPos'] bound {-7: 10000008} diff 0
+  FACT  OP create [5] -> err '' (0.0 s)
+  STEPX 05 create         acts [5] ids ['p2b_c_RotPos'] bound {-9: 10000009} diff 0
+  FACT  OP create [6] -> err '' (0.0 s)
+  STEPX 06 create         acts [6] ids ['p2b_i_RotPos'] bound {-11: 10000012} diff 0
+  FACT  OP create [7] -> err '' (0.0 s)
+  STEPX 07 create         acts [7] ids ['p2b_c_FrameIdx'] bound {-13: 10000013} diff 0
+  FACT  OP create [8] -> err '' (0.0 s)
+  STEPX 08 create         acts [8] ids ['p2b_i_FrameIdx'] bound {-15: 10000016} diff 0
+  FACT  OP create [9] -> err '' (0.0 s)
+  STEPX 09 create         acts [9] ids ['p2b_c_Latest'] bound {-17: 10000017} diff 0
+  FACT  OP create [10] -> err '' (0.0 s)
+  STEPX 10 create         acts [10] ids ['p2b_i_Latest'] bound {-19: 10000020} diff 0
+  PASS  E1 every checkpoint's real graph == its simulated step (10 ops)
+  PASS  D new wires == 5 == sim's count, none lost  {'new': [10000003, 10000007, 10000011, 10000015, 10000019], 'sim_new': [-20, -16, -12, -8, -4], 'lost': []}
+  PASS  G Num: ONE new indicator terminal (sink) + ONE new ArrayConstant (source) on ONE new wire, both on #4866  ([{'term_uid': 10000004, 'term_name': 'Num', 'is_source': False, 'wire_uid': 10000003, 'owner_uid': 4866, 'owner_class': 'Diagram', 'frame_diagram': 4866, 'term_class': 'ControlTerminal'}], [{'term_uid': 10000002, 'term_name': '', 'is_source': True, 'wire_uid': 10000003, 'owner_uid': 10000001, 'owner_class': 'ArrayConstant', 'frame_diagram': 4866, 'term_class': 'Terminal'}])
+  PASS  G TransPos: ONE new indicator terminal (sink) + ONE new ArrayConstant (source) on ONE new wire, both on #4866  ([{'term_uid': 10000008, 'term_name': 'TransPos', 'is_source': False, 'wire_uid': 10000007, 'owner_uid': 4866, 'owner_class': 'Diagram', 'frame_diagram': 4866, 'term_class': 'ControlTerminal'}], [{'term_uid': 10000006, 'term_name': '', 'is_source': True, 'wire_uid': 10000007, 'owner_uid': 10000005, 'owner_class': 'ArrayConstant', 'frame_diagram': 4866, 'term_class': 'Terminal'}])
+  PASS  G RotPos: ONE new indicator terminal (sink) + ONE new ArrayConstant (source) on ONE new wire, both on #4866  ([{'term_uid': 10000012, 'term_name': 'RotPos', 'is_source': False, 'wire_uid': 10000011, 'owner_uid': 4866, 'owner_class': 'Diagram', 'frame_diagram': 4866, 'term_class': 'ControlTerminal'}], [{'term_uid': 10000010, 'term_name': '', 'is_source': True, 'wire_uid': 10000011, 'owner_uid': 10000009, 'owner_class': 'ArrayConstant', 'frame_diagram': 4866, 'term_class': 'Terminal'}])
+  PASS  G FrameIdx: ONE new indicator terminal (sink) + ONE new ArrayConstant (source) on ONE new wire, both on #4866  ([{'term_uid': 10000016, 'term_name': 'FrameIdx', 'is_source': False, 'wire_uid': 10000015, 'owner_uid': 4866, 'owner_class': 'Diagram', 'frame_diagram': 4866, 'term_class': 'ControlTerminal'}], [{'term_uid': 10000014, 'term_name': '', 'is_source': True, 'wire_uid': 10000015, 'owner_uid': 10000013, 'owner_class': 'ArrayConstant', 'frame_diagram': 4866, 'term_class': 'Terminal'}])
+  PASS  G Latest: ONE new indicator terminal (sink) + ONE new DigitalNumericConstant (source) on ONE new wire, both on #4866  ([{'term_uid': 10000020, 'term_name': 'Latest', 'is_source': False, 'wire_uid': 10000019, 'owner_uid': 4866, 'owner_class': 'Diagram', 'frame_diagram': 4866, 'term_class': 'ControlTerminal'}], [{'term_uid': 10000018, 'term_name': '', 'is_source': True, 'wire_uid': 10000019, 'owner_uid': 10000017, 'owner_class': 'DigitalNumericConstant', 'frame_diagram': 4866, 'term_class': 'Terminal'}])
+  PASS  F every new indicator and constant terminal reads frame_diagram == #4866 (FATAL; review c122-route-s0 (c))  [('ArrayConstant', 4866), ('Diagram', 4866), ('DigitalNumericConstant', 4866)]
+  FACT  CENSUS after P2b D1_ring_p2b_20261001_132303.vi: {'LoopTunnel': 139, 'Wire': 1937, 'WhileLoop': 6, 'Diagram': 174, 'SubVI': 93, 'Local': 12, 'ControlTerminal': 118, 'ArrayConstant': 17, 'DigitalNumericConstant': 181}
+  FACT  CENSUS DELTA {'LoopTunnel': 0, 'Wire': 0, 'WhileLoop': 0, 'Diagram': 0, 'SubVI': 0, 'Local': 0, 'ControlTerminal': 0, 'ArrayConstant': 0, 'DigitalNumericConstant': 0}
+  PASS  CEN2 class census == {'LoopTunnel': 0, 'Wire': 5, 'WhileLoop': 0, 'Diagram': 0, 'SubVI': 0, 'Local': 0, 'ControlTerminal': 5, 'ArrayConstant': 4, 'DigitalNumericConstant': 1}  {'LoopTunnel': 0, 'Wire': 0, 'WhileLoop': 0, 'Diagram': 0, 'SubVI': 0, 'Local': 0, 'ControlTerminal': 0, 'ArrayConstant': 0, 'DigitalNumericConstant': 0}
+  PASS  TD every base terminal keeps its wire; rows added == the 10 new (5 constants + 5 indicators)  {'changed': [], 'lost_rows': [], 'added': 10}
+  PASS  FU the set of frame diagrams is unchanged
+  FACT  ExecState [after all rows (ExecState 0 expected: the P2a bed is broken by design)] D1_ring_p2b_20261001_132303.vi = <dry:g.exec_state>
+  PASS  PB frame-keyed cdiff(S1, real end) == the P2a bed's 16 rows and the plan's 11 open (node, term) pairs (FATAL, before save)  {'extra': [], 'missing': []}
+  FACT  PH handles: post-open <dry:bench_prep.labview_handles> -> before-save None
+  PASS  HB open->save handle growth <= +700 (PD236(b) band; refs balance is H5)  (<dry:bench_prep.labview_handles>, None)
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  dry0dry0dry0dry0dry0dry0dry0dry0
+
+=== DRY PASS: first_fail=None coverage 89/106 lines, first mutation Stage._op create, unverified 0, graph tools/bench/diag_c122_graph_p2a.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 10s

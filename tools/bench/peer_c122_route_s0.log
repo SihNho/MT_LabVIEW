@@ -1,0 +1,38 @@
+BGRUN START 2026-10-01 13:18:35 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c122-route-s0 -TaskFile tools/bench/diag_c122_route_peer_task.md
+BGRUN PID 14764
+OUTCOME: ANSWERED (125s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-01-c122-route-s0.md
+COST: $1.4712  in 28 / out 10443 / cache-create 115945 / cache-read 1568454  (121s, 24 turn(s))
+--- ANSWER ---
+**The claim mostly holds, but it is weaker than it reads.** Error 1055 does mean "this is a flat-sequence frame", and the S0 failure is the script's premise. But the check that P2b now relies on, `owner_of(strict=False) == ('FlatSequenceFrame', 0)`, cannot tell which frame it is looking at. It also drops the one identity check the read had.
+
+**1. Strongest reason the claim is wrong: the replacement check proves almost nothing.**
+- In this same run, about 55 different diagrams returned exactly the same tuple and the same 1055 (`diag_c122_route.log:25-197`). That includes #3121 (`:40`), #4866 (`:42`) and the frames of the other flat sequence (#13236 at `:114`, #21134 at `:176`). A pass therefore cannot mean "#4866 is the intended frame of the intended sequence". It only means "some flat-sequence frame".
+- `strict=False` also skips the `uid_back == uid` comparison (`build_d1_v0.py:351`). So PD244(b), as written, is weaker than what failed: it keeps the class name and throws away the identity check.
+- It also goes back on the accepted outcome of the 2026-09-28 review. That review's "What was done with it" section says "a later script should check FlatSequence.Diagrams[] membership instead" (`archive/peer/2026-09-28-c120-fs-owner-frame.md:98-99`). PD244(b) instead adopts the owner read.
+- This is also the second time the same premise has failed: F1a in cycle 120, then S0 here. Both were an owner read through a flat-sequence frame under a strict check. The retrospective should count it as `repeated-failure-class`.
+
+**2. Alternative explanation of the same evidence.** The log is equally consistent with #3121 or #4866 being a frame of a different flat sequence than PD240(c) assumes. Frame #4866 was chosen from x-positions in `facts_c120_qrtw.json` and from tunnel grouping on an older file (`p1_c70_f3a.log:44-60`, 2026-09-24), not from this bed. The owner read gives the same answer either way. The meaning of the 1055 itself is not in doubt:
+- It was measured: the `Owner` read upstream is clean, and only the UID and ClassName reads after the cast fail (`docs/diagram-hierarchy.md:158-175`).
+- The LabVIEW Wiki puts `FlatSequenceFrame` directly under `Generic`, not under `GObject`, so the cast to GObject cannot succeed (https://labviewwiki.org/wiki/VI_Server_Class_Hierarchy).
+- I found nothing in the repo where this 1055 meant a stale reference or a wrong Traverse index. Either one would show up as an error in the upstream indicators (`errO`/`errL`/`errT`) or as a POISON class, not as a clean `'FlatSequenceFrame'`.
+
+**3. What would falsify the claim:**
+- #4866 is missing from the same sequence's `FlatSequence.Diagrams[]` as #3121 and #1817, or sits at an unexpected index.
+- Or, for #4866, the upstream `Owner` error indicator (`errO`) is non-empty, which would point to a stale reference rather than the frame's class.
+
+**4. Cheapest test: run offline, already done, and it supports the claim.** The P2a graph dump read from this bed (`diag_c122_graph_p2a.json`) links the frames through FlatSequenceInnerTunnels:
+- Tunnel #4021 has one face on #3121 and one on #1817.
+- Tunnel #4652 has one face on #1817 and one on #4866 (terminals 4025/4026, 4964).
+
+So #3121 → #1817 → #4866 are adjacent frames of one flat sequence, read live from the bed rather than from older records. That matches PD244(c)'s order "3121, 1817, 4866". In the owner read, #4866 does not behave differently from #3121 (`log:42`).
+
+**What should change before P2b:**
+- (a) Gate frame membership on this tunnel-adjacency fact from the graph, or on a `Diagrams[]` read (property 3578BC00, already shown to attach, `docs/diagram-hierarchy.md:137-146`), not on the strict=False tuple.
+- (b) If the owner read is kept, keep `uid_back == 4866` as a condition and accept only a 1055 that comes from the reads after the cast.
+- (c) The real proof of placement is P2b's gate that the new indicator's terminal reports `frame_diagram == 4866` (the pattern at `diag_c122_route.py:74`). That gate must stay fatal.
+
+What would change my mind: a `Diagrams[]` read that does not place #4866 next to #1817, or an `errO` error on #4866.
+
+Sources:
+- [VI Server Class Hierarchy – LabVIEW Wiki](https://labviewwiki.org/wiki/VI_Server_Class_Hierarchy)
+BGRUN END rc=0 after 126s

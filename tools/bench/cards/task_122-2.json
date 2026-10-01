@@ -1,0 +1,54 @@
+{
+ "schema": "task/1",
+ "id": "122-2",
+ "kind": "measure",
+ "goal": "Ring P3 FACT SHEET (PD240(f)), offline from existing graph files: every node/terminal/wire P3's camera-loop rows will bind to, as tools/bench/facts_c122_p3.json, no plan file",
+ "why": "P3 (camera loop: duplicate-BufNum skip, Num(i)=-1, IMAQ Copy 'Cam'->Img(i), per-slot values, Num(i)=BufNum, Latest, 1 ms wait; PD238(c)(i)) is planned the moment P2b is saved; the facts do not depend on P2b's outcome.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "0d97093a47836576510a7a4851e161ec"},
+  {"path": "docs/ring-buffer-design.md", "md5": "48ac0e5778017cee6b7911c8defe4c4f"},
+  {"path": "tools/bench/graph_qrt_pool_20260928.json", "md5": "d265b2833970df40fb9252224d5feb35"},
+  {"path": "tools/bench/facts_c120_qrtw.json", "md5": "6af9be89469e431463a4851ddcf883a9"},
+  {"path": "tools/bench/facts_c120_types.json", "md5": "d0baba8f29f1a6126709cbff18bbadc9"},
+  {"path": "tools/bench/plan_ring_p2a.json", "md5": "ad1be164996dcdf26e11b50d36f6a5f0"}
+ ],
+ "requires": [],
+ "pass": [
+  "each fact carries its uid and source graph file:key",
+  "loop 1.1: While loop uid, its diagram uid, its i terminal",
+  "#6810: BufNum out and Image Out terminals with every sink; the 'Cam' refnum source into its Image In; error chain in/out inside 1.1",
+  "#30117 Value, #4580 Value, #637 i source terminals; on 1.1's diagram or crossing into it",
+  "route of the 20 pool image refnums (FS2 frame 2) into 1.1: source terminal, applicable nested-route facts (PD237(m)), expected hops",
+  "P2a bed only: #23105 #23118 #23136 #26017 #25898 excluded and listed as excluded",
+  "draft P3 row LIST (no plan json) in PD238(c) order, each row with its bound facts and existing route, or 'no route' as OPEN",
+  "OPEN: any fact the graph files cannot answer (to be read from the P2b graph by the P3 card)"
+ ],
+ "outputs": [
+  "tools/bench/facts_c122_p3.json",
+  "tools/bench/facts_c122_p3_rows.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/facts_c122_p3*",
+   "tools/bench/diag_c122_p3*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 45
+ },
+ "rules": [
+  "Offline only: no LabVIEW, no COM, no gscript import that touches LabVIEW",
+  "Facts only - no design decisions; a choice between routes is returned as OPEN for judgement",
+  "Read graph JSON with targeted scripts (<= 120 lines on stagekit), never whole logs",
+  "No gate/hook edits (retrospective-cycle121: none in the offline slot while a LabVIEW card is live)"
+ ],
+ "unblocks": "M3"
+}

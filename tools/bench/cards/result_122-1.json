@@ -1,0 +1,23 @@
+{"schema":"result/1","id":"122-1","status":"BLOCKED","gates":{"pass":4,"fail":2},
+"first_fail":"Step 2: no route for the scalar indicator `Latest` fed by a constant, and no 1-D Initialize Array donor; building either needs gscript.py/stagexec.py, outside this card's write globs",
+"blocked_by":{"device":"requires","message":"route:indicator-on-Constant (Latest <- I32 -1; a Constant is not a Node); donor:1-D Initialize Array (bed has only 2-D/3-D). Both need gscript.py/stagexec.py edits outside flags.write. guard_peer also refuses runs on 122-2's diag_c122_p3.log FAIL"},
+"artefacts":[{"path":"tools/bench/cards/requires_122-1.json","md5":"9b2ef7a35f7e6d2ff6595e9d106a8fad"}],
+"facts":[
+"requires PASS 4/0 covers only the verbs create_indicator_nested/read_term_type/wire_const + op OpTermDataType_v0 (requires_122-1.json); it checks no donor and no constant-to-indicator route",
+"create_indicator_nested reaches only a Node terminal, a LoopTunnel outer face or a SelectorTunnel outer face (gscript.py:4005-4011, Traverse('Node') at gscript.py:3938)",
+"A constant is not a Node: GObject > Constant (toolkit-capabilities.md:125), not in Diagram.Nodes[] (:39). So 'constant -> Latest' (PD240(b), split-plan :2289) has no creator",
+"All 3 Initialize Arrays in the bed are multi-dim (graph_qrt_pool_20260928.json): #781 2 dimension-size terms (1846,4459), #8953 3 (8961,8964,9662), #28124 3 (28175,28178,28185)",
+"A $work duplicate (create_primitive_nested gscript.py:4494) would be 2-D/3-D, not [20]; a node's terminal count has no scripting path (labview-automation SKILL.md rule 0.2)",
+"Registered primitive donors: only 'Max & Min' and 'Wait (ms)' (facts_c100_oplabels.json:257-273); no 1-D Initialize Array donor exists",
+"Const donors: I32 20 = DonorPool_v0 #214 (plan_qrt_pool_in.json:21-22); none for I32 -1 / DBL 0.0; read_const_value skips DigitalNumericConstant (gscript.py:4223)",
+"Valued const-on-terminal creators: WhileLoop-body node (stagekit.py:861-874) and top-level/loop terms (gscript.py:2796) only; none for a node on an FS frame (FS1 frame 8)",
+"0 term_name hits for Num/TransPos/RotPos/FrameIdx/Latest in graph_qrt_pool_20260928.json (pool-bed graph, not a live P2a read)",
+"guard_peer refused a read-only grep 12:33:50: diag_c122_p3.log FAIL (:5,:9,:11, card 122-2) new-problem p=0.890. No LabVIEW opened; Step 1 graph read not done"
+],
+"open":[
+"Latest: build a new verb + stagexec route 'indicator born on a Constant' (op: Constant.Terminal 634AC04 -> Terminal.Create Indicator 6349C02), or change PD240(b) so Latest comes from a Node output? Either way the card needs gscript.py/stagexec.py write access",
+"1-D Initialize Array: make a claudeDev donor from an NI example that has a 1-D Initialize Array (create_primitive_nested donor dict), and I32 -1 / DBL 0.0 constant donors, in a tooling card with scratch checks before P2b?",
+"Who clears the guard_peer block from 122-2's diag_c122_p3.log (122-2 has peers []): a hypothesis review from this cycle, or a 122-2 rerun that passes?"
+],
+"cost":{"usd":null,"minutes":22,"labview_runs":0},
+"note":"Stopped at Step 2 under the card rule ('a missing one is built + scratch-verified here or BLOCKED'): the missing route and donor need edits to tools/gscript.py and tools/stagexec.py, which are outside flags.write. Nothing was written apart from this file; STATUS lock untouched (never acquired)."}

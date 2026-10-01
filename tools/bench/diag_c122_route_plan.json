@@ -1,0 +1,14 @@
+{
+ "schema_note": "card 122-4 (PD241(a)/(b), PD242): FINALIZED decision-row plan of tools/bench/diag_c122_route.py. Stage work copy = a byte copy of the SAVED R2 (scratch, closed at once, never edited). The route runs on a never-saved byte copy of the P2a bed (scratch, deleted); the bed and every stage file stay untouched. No VI run, no save.",
+ "input": {"vi": "D1_l2_r2_20260928_110756.vi", "md5": "7dac9f04ff4b65fa517e8e12f4bef5f3", "graph": "tools/bench/graph_l2r2_saved_20260928.json"},
+ "bed": {"vi": "D1_ring_p2a_20260928_191739.vi", "md5": "c22a473f26ebcc67296d1c2441f8a47a", "frame": 3121, "fs_pairs_from": "tools/bench/graph_qrt_pool_20260928.json"},
+ "donor": "tools/bench/diag_c122_donor.json",
+ "rows": [["Latest", "i32", "I32", -1], ["Num", "i32_20", "Array1D<I32>", [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]],
+          ["TransPos", "dbl_20", "Array1D<DBL>", [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]]],
+ "decisions": [
+  {"id": "R-0", "action": "stage", "what": "stagekit Stage: restart LabVIEW, R2 byte copy as work copy (scratch, closed at once)"},
+  {"id": "R-G", "action": "read", "what": "graph dump of the P2a-bed byte copy BEFORE any edit (read_live + mloops + owner_of, diag_c120_g.py form) -> diag_c122_graph_p2a.json (md5 == the bed's)"},
+  {"id": "R-S", "action": "build", "what": "on the P2a copy, frame diagram #3121: gscript.const_indicator_on_diagram x3 (Latest <- I32 -1, Num <- I32[20] -1, TransPos <- DBL[20] 0.0) from the donor; read back label, canon type both ends, constant value, one wire each"},
+  {"id": "R-X", "action": "read", "what": "scratch deleted; bed md5 unchanged; scratch_verify record on PASS"}
+ ]
+}

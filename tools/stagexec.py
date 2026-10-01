@@ -200,7 +200,8 @@ CREATE_ROUTES = {
     "for": "gscript.loop_in('for') - OpForLoopIn_v0",
     "local_read": "stagekit.create_local_read (OpCreateLocalRead_v0, Write?=False) + stagekit.move_in",
     "local_write": "stagekit.create_local_write (100-2) + stagekit.move_in when it does not place it",
-    "indicator": "gscript.create_indicator_nested (100-2) + set_control_label + set_visible (100-2)",
+    "indicator": "gscript.create_indicator_nested (100-2) + set_control_label + set_visible (100-2); born_on a diagram "
+                 "CONSTANT's terminal -> gscript.create_indicator_on_const (OpConstInd_v0, card 122-3)",
     "control": "gscript.create_control_nested (100-2) + set_control_label + set_default_in_memory",
     "primitive": "gscript.create_primitive_nested (100-2)",
     "copy_in": "stagekit.copy_in (OpMoveByIndex_v0 duplicate, donor = the base)",
@@ -221,7 +222,7 @@ ROUTE_VERBS = {
     "local_read": [("stagekit", "create_local_read"), ("stagekit", "move_in")],
     "local_write": [("stagekit", "create_local_write")],
     "indicator": [("gscript", "create_indicator_nested"), ("gscript", "set_control_label"), ("gscript", "set_visible"),
-                  ("gscript", "panel_wiring")],
+                  ("gscript", "panel_wiring"), ("gscript", "create_indicator_on_const")],
     "control": [("gscript", "create_control_nested"), ("gscript", "set_control_label"),
                 ("gscript", "set_default_in_memory"), ("gscript", "panel_wiring")],
     "primitive": [("gscript", "create_primitive_nested")],
@@ -341,6 +342,21 @@ def create_route(a):
 # one: it is a sink, and the verb has no route for it.
 FACE_ROUTES = {"LoopTunnel": "OpTunnelInd_v0",
                "SelectorTunnel": "owner CaseStructure Terms[] -> OpCreateIndicatorNested_v0"}
+CONST_IND_ROUTE = "gscript.create_indicator_on_const -> OpConstInd_v0 (Constant.Terminal -> Terminal.Create Indicator, card 122-3)"
+
+
+def const_born_on(real, term, diagram):
+    """card 122-3 (PD241(a)): the row of terminal `term` when it is the OUTPUT terminal of a diagram CONSTANT (is_const) on
+    Diagram #diagram - the end gscript.create_indicator_on_const reaches (a constant is not in Traverse('Node'), so the
+    Nodes[] triple route cannot take it). None when `term` is not a constant's terminal; ExecStop when it is a constant's but
+    not a source or not on #diagram (the indicator terminal is born on the constant's own diagram)."""
+    r = next((x for x in real if x["term_uid"] == term), None)
+    if r is None or not is_const(r):
+        return None
+    if not r["is_source"] or int(r["frame_diagram"] or 0) != int(diagram):
+        raise ExecStop("indicator born on constant #{0} terminal #{1}: source {2}, on #{3} - needs the constant's OUTPUT on the "
+                       "create row's diagram #{4}".format(r["owner_uid"], term, r["is_source"], r["frame_diagram"], diagram))
+    return r
 
 
 def tunnel_outer_face(real, term, diagram):
@@ -2100,10 +2116,14 @@ class LVBackend(object):
         if route in ("indicator", "control"):
             end = args["born_on"] if route == "indicator" else args["on"]
             face = tunnel_outer_face(real, end, dg) if route == "indicator" else None
+            cst = const_born_on(real, end, dg) if route == "indicator" and face is None else None
             if face is not None:                   # card 100-6 / 108-6: create_indicator_nested(W, <face term>, None)
                 how = "{0} #{1} outer face #{2} ({3})".format(face["owner_class"], face["owner_uid"], end,
                                                               FACE_ROUTES[face["owner_class"]])
                 rec = s._op("indicator_nested", lambda: g.create_indicator_nested(W, int(end), None), how)
+            elif cst is not None:                  # card 122-3: an indicator born on a diagram constant
+                how = "{0} #{1} terminal #{2} ({3})".format(cst["owner_class"], cst["owner_uid"], end, CONST_IND_ROUTE)
+                rec = s._op("indicator_on_const", lambda: g.create_indicator_on_const(W, int(cst["owner_uid"])), how)
             else:
                 (_d, _n, t), how = self.addr.triple(real, end, route == "indicator")
                 node = V.node_of(next(r for r in real if r["term_uid"] == end))
@@ -2459,9 +2479,12 @@ class SimBackend(object):
                 chk["panel_ct"] = cts[0]["term_uid"]
             elif route == "indicator":
                 face = tunnel_outer_face(real, args["born_on"], args["diagram"])
+                cst = const_born_on(real, args["born_on"], args["diagram"]) if face is None else None
                 if face is not None:                   # card 100-6 / 108-6: the tunnel-face route of the real backend
                     chk.update(tunnel_face=face["term_uid"], tunnel=face["owner_uid"], tunnel_class=face["owner_class"],
                                via="gscript.create_indicator_nested(W, face, None) -> " + FACE_ROUTES[face["owner_class"]])
+                elif cst is not None:                  # card 122-3: the constant route of the real backend
+                    chk.update(const=cst["owner_uid"], const_class=cst["owner_class"], via=CONST_IND_ROUTE)
                 else:
                     chk.update(self._node_end(real, args["born_on"], True, "create_indicator_nested"))
             elif route == "control":

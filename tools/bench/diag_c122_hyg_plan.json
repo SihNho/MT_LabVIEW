@@ -1,0 +1,12 @@
+{
+ "schema_note": "card 122-4 (PD242(a)(b)): FINALIZED decision-row plan of tools/bench/diag_c122_hyg.py. The Stage's work copy (a byte copy of the SAVED R2, as diag_c118_r1v.py) is a scratch, never edited. Builds the claudeDev constant donor DonorRingConst_v0.vi from EMPTY_v0 and measures OpConstInd_v0's hygiene on recycled never-saved byte copies of that donor. No wire on any bed, no VI run.",
+ "input": {"vi": "D1_l2_r2_20260928_110756.vi", "md5": "7dac9f04ff4b65fa517e8e12f4bef5f3", "graph": "tools/bench/graph_l2r2_saved_20260928.json"},
+ "rounds": 20,
+ "calls": 100,
+ "decisions": [
+  {"id": "H-0", "action": "stage", "what": "stagekit Stage: restart LabVIEW, byte copy of the saved R2 as the work copy = a scratch (never saved, never edited)"},
+  {"id": "H-D", "action": "build", "what": "DonorRingConst_v0.vi = EMPTY_v0 byte copy + PARALLEL_kernel_v3 dropped -> create_const_loop_term DBL[20] 0.0 on 'x,y,z array', I32[20] -1 on 'pos in cal image in'; For loop N <- I32 -1; kernel deleted (class at uid); read back; ES 1; save"},
+  {"id": "H-1", "action": "read", "what": "warm: one full gscript.create_indicator_on_const on the donor copy's I32 constant (echo, one new wired indicator) + 4 raw calls"},
+  {"id": "H-2", "action": "read", "what": "20 rounds x 100 consecutive raw OpConstInd_v0 calls, each round on a fresh never-saved byte copy of the donor (close + delete after); handles read with no scratch loaded after each round -> op_hygiene/OpConstInd_v0.json on 0 errors and |last - warm| <= 100"}
+ ]
+}

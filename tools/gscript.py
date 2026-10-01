@@ -4220,7 +4220,11 @@ def read_bool_const(target, uid):
 
 C118_LABELS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench", "diag_c118_oplabels.json")
 C118_CONST_OPS = {"RingConstant": "OpConstValueRing_v0", "ArrayConstant": "OpConstValueArr_v0"}
-CONST_VALUE_CLASSES = ("StringConstant", "RingConstant", "ArrayConstant", "BooleanConstant")
+CONST_VALUE_CLASSES = ("StringConstant", "RingConstant", "ArrayConstant", "BooleanConstant", "DigitalNumericConstant")
+# card 122-3: DigitalNumericConstant -> OpConstValueN_v1 (grandfathered numeric reader, docs/toolkit-capabilities.md:64; labels
+# tools/bench/opconstvaluen_v1_labels.json; read form tools/recipes/build_opconstvaluen_v1.py:113-134)
+OP_CONST_VALUE_N = os.path.join(CLAUDEDEV, "OpConstValueN_v1.vi")
+NUM_REPR = {1: "DBL", 3: "I32", 6: "U32", 0: "EXT", 2: "SGL", 4: "I16", 5: "I8", 7: "U16", 8: "U8", 9: "I64", 10: "U64"}
 
 
 def read_const_value(target, uid):
@@ -4246,6 +4250,8 @@ def read_const_value(target, uid):
         r = read_bool_const(target, uid)
         r.update(cls=cls, type="Boolean", route="OpConstValueB_v0")
         return r
+    if cls == "DigitalNumericConstant":
+        return _read_num_const(target, uid, i)
     if cls == "StringConstant":
         _c97_paths()
         from build_opconstvalue_v1b import decode_flat
@@ -4284,7 +4290,110 @@ def read_const_value(target, uid):
     return out
 
 
-TERMTYPE_LABELS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench", "build_op_termtype_labels.json")
+def _read_num_const(target, uid, i):
+    """card 122-3: value of DigitalNumericConstant #uid (Traverse index i) through OpConstValueN_v1: Constant.Value on a
+    DigitalNumericConstant-typed node (flattened bytes -> decode_flat) + NumText + Representation + the fed wire's UID.
+    Returns {cls, value, type: {representation, repr_name, td}, text, wire, echo, err, route}. Read-only."""
+    _c97_paths()
+    from build_opconstvalue_v1b import decode_flat
+    from build_opconstvalue_v1c import normalize_u8
+    with open(os.path.join(PROJECT, "tools", "bench", "opconstvaluen_v1_labels.json"), encoding="utf-8") as f:
+        lab = json.load(f)
+    vi = op(OP_CONST_VALUE_N)
+    for k in (lab["text"], lab["hex"]):
+        vi.SetControlValue(k, "POISON")
+    vi.SetControlValue(lab["u8"], []); vi.SetControlValue(lab["wire"], -1); vi.SetControlValue("UID", 0)  # noqa: E702
+    vi.SetControlValue(lab["size"], False)
+    vi.SetControlValue("vi path", target); vi.SetControlValue("Class Name", "DigitalNumericConstant")  # noqa: E702
+    vi.SetControlValue("index", int(i))
+    _run(vi)
+    b = normalize_u8(vi.GetControlValue(lab["u8"]))
+    code, val, note = decode_flat(b) if b else (None, None, "no bytes")
+    rep = vi.GetControlValue(lab["repr"])
+    errs = [str(_err(vi, k) or "") for k in ("error out", lab["errV"], lab["errT"])]
+    out = {"cls": "DigitalNumericConstant", "value": val, "type": {"representation": rep, "repr_name": NUM_REPR.get(rep),
+           "td": code}, "text": vi.GetControlValue(lab["text"]), "wire": int(vi.GetControlValue(lab["wire"])),
+           "echo": int(vi.GetControlValue("UID")), "err": " | ".join(e for e in errs if e), "route": "OpConstValueN_v1",
+           "note": note}
+    if out["echo"] != int(uid):
+        out["err"] = (out["err"] + " | " if out["err"] else "") + "uid echo %r != #%s" % (out["echo"], uid)
+    return out
+
+
+# --- card 122-3 (PD241(a)): an INDICATOR born on a diagram CONSTANT, any nesting depth -----------------------------------
+# OpConstInd_v0 (tools/bench/diag_c122_opbuild.py): Traverse(cls)[i] -> TMSC(Constant seed) -> PN [UID, Constant.Terminal
+# 634AC04] -> Invoke Terminal.Create Indicator 6349C02; the Traverse array, the typed ref, the Terminal ref and the created
+# object's ref are each closed. Labels tools/bench/diag_c122_oplabels.json. A Constant is not in Traverse('Node'), so
+# create_indicator_nested cannot take it (result_122-1.json).
+C122_LABELS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench", "diag_c122_oplabels.json")
+OP_CONST_IND = os.path.join(CLAUDEDEV, "OpConstInd_v0.vi")
+CONST_IND_CLASSES = ("DigitalNumericConstant", "ArrayConstant", "StringConstant", "BooleanConstant", "RingConstant")
+
+
+def const_class_index(target, uid):
+    """(class, Traverse index) of constant #uid: the first CONST_IND_CLASSES listing that holds it, else ValueError."""
+    for c in CONST_IND_CLASSES:
+        order = [int(o["uid"]) for o in report_all(target, c)]
+        if int(uid) in order:
+            return c, order.index(int(uid))
+    raise ValueError("#%s is none of %s in %s" % (uid, CONST_IND_CLASSES, os.path.basename(target)))
+
+
+def create_indicator_on_const(target, const_uid, label=None):
+    """card 122-3: a NEW indicator wired to the output terminal of diagram constant #const_uid (any diagram) through
+    OpConstInd_v0, then (label given) its label set by set_control_label and read back. Returns {cls, echo, created_uid,
+    new_terminals, new_panel, label_back, err}. Effect checks: exactly ONE new panel object, wired (wire != 0)."""
+    with open(C122_LABELS, encoding="utf-8") as f:
+        lab = json.load(f)["OpConstInd_v0"]
+    ensure_loaded(target)
+    cls, i = const_class_index(target, const_uid)                 # ValueError before any edit
+    ct0 = uids(target, "ControlTerminal")
+    pw0 = set(int(r["uid"]) for r in panel_wiring(target))
+    vi = op(OP_CONST_IND)
+    _set_common(vi, target, lab, cls, i)
+    vi.SetControlValue(lab["UID"], 0)
+    run_err = ""
+    try:
+        _run(vi)
+    except RuntimeError as e:
+        run_err = "modal dialog (dismissed)" if "modal dialog" in str(e) else "EXC %s" % str(e)[:140]
+    out = {"cls": cls, "index": i, "echo": int(vi.GetControlValue(lab["UID"])), "created_uid": 0,
+           "err": run_err or str(_err(vi, lab["Err"]) or ""), "new_terminals": sorted(uids(target, "ControlTerminal") - ct0)}
+    rows = panel_wiring(target)
+    out["new_panel"] = [r for r in rows if int(r["uid"]) not in pw0]
+    probs = []
+    if out["echo"] != int(const_uid):
+        probs.append("uid echo %r != #%s" % (out["echo"], const_uid))
+    if len(out["new_panel"]) != 1:
+        probs.append("%d new panel objects" % len(out["new_panel"]))
+    else:
+        out["created_uid"] = int(out["new_panel"][0]["uid"])
+        if not int(out["new_panel"][0].get("wire") or 0):
+            probs.append("the new indicator is NOT WIRED (dangling)")
+    if label is not None and not probs:
+        pi = [int(r["uid"]) for r in rows].index(out["created_uid"])
+        r = set_control_label(target, pi, label)
+        out["label_back"] = r["text_back"]
+        if r["err"] or r["text_back"] != label:
+            probs.append("label %r back %r err %r" % (label, r["text_back"], r["err"]))
+    if probs:
+        out["err"] = " | ".join(([out["err"]] if out["err"] else []) + probs)
+    return out
+
+
+def const_indicator_on_diagram(target, diagram_uid, donor, label, pos=(40, 40)):
+    """card 122-3 ROUTE (PD241(a)): a VALUED constant on Diagram #diagram_uid (any nesting depth; a flat-sequence frame
+    included) wired to a NEW indicator labelled `label`. The constant is a DONOR COPY (create_primitive_nested(donor=):
+    the value and type travel with the copy, an ArrayConstant copy = array + element) of a constant in a claudeDev donor
+    that carries the planned value (claudeDev\\DonorRingConst_v0.vi, built by tools/bench/diag_c122_route.py); the
+    indicator is born on the constant's terminal (create_indicator_on_const). Returns {const_uid, ...indicator fields}."""
+    cu = create_primitive_nested(target, diagram_uid, "const_donor", pos, donor=donor)
+    out = create_indicator_on_const(target, cu, label)
+    out["const_uid"] = int(cu)
+    return out
+
+
+TERMTYPE_LABELS =os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench", "build_op_termtype_labels.json")
 OP_TERM_DATA_TYPE = os.path.join(CLAUDEDEV, "OpTermDataType_v0.vi")
 TD_NAMES = {0x01: "I8", 0x02: "I16", 0x03: "I32", 0x04: "I64", 0x05: "U8", 0x06: "U16", 0x07: "U32", 0x08: "U64",
             0x09: "SGL", 0x0A: "DBL", 0x0B: "EXT", 0x0C: "CSG", 0x0D: "CDB", 0x0E: "CXT", 0x15: "Enum U8", 0x16: "Enum U16",

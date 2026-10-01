@@ -1,0 +1,41 @@
+BGRUN START 2026-10-01 13:24:49 limit 20.0 min: py -u tools/prior_art_review.py --plan-file tools/bench/plan_ring_p2b.json --slug c122-ring-p2b --trigger new-op --recipe tools/recipes/stage_d1_ring_p2b.py
+BGRUN PID 25824
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c122-ring-p2b.txt (126383 chars)
+   review card tools\bench\cards\review_priorart-c122-ring-p2b.json
+OUTCOME: ANSWERED (110s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-01-priorart-c122-ring-p2b.md
+COST: $1.6791  in 22 / out 6508 / cache-create 151641 / cache-read 1678600  (107s, 14 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c122-ring-p2b verdict=novel -> tools\bench\cards\verdict_priorart-c122-ring-p2b.json
+--- ANSWER ---
+**Verdict: novel.** Nothing in the project's files already does this, has measured it, or has tried and failed at it. The plan uses the existing helpers instead of re-writing them, and it breaks none of the user's design rules. I found one fact the plan does not cite; it does not block P2b and is listed at the end.
+
+**PART A — the direction**
+- **A1 (already decided?)** The decision is the plan's own source, so it is not prior art against it. P2b is ordered by `docs/d1-loop12-17-split-plan.md:2260` (PD238(g)) and specified by `:2281-2302` (PD240). It is amended at `:2319` (PD241(b): an array constant may replace Initialize Array) and pinned at `:2366` (PD244(c): frame `#4866`). The plan follows all of them: indicators rather than controls (PD240(a)), values written by the diagram on every run (PD240(b)/241(b)), and placement on the FS1 frame immediately before `686` (PD240(c)/244(c)).
+- **A2 (already refuted?)** No. The pool-queue direction this replaces was dropped at `:2254` (PD238(a)), and P2b keeps none of it. The one past failure on this route was the 122-5 S0 owner-read premise. Its review (`archive/peer/2026-10-01-c122-route-s0.md:77-79`) asked that placement be proven by a fatal `frame_diagram == 4866` read. The recipe does exactly that (`tools/recipes/stage_d1_ring_p2b.py:9,92-93`, gate F, fatal) and makes no `owner_of` call.
+- **A3 (contradicted?)** I found no contradiction between the plan and the files. One adjacent fact is listed under "Finding" below.
+- **A4 (unread evidence?)** None that changes P2b.
+
+**PART B — the file it builds**
+- **B1 (already built?)** No `D1_ring_p2b*.vi` exists in `claudeDev`, and no launch record for this stage exists. Only plan, dry and prerun logs and the sim steps are in `tools/bench`.
+- **B2 (already failed?)** No real launch of this stage has been made.
+- **B3 (existing helper?)** The plan uses the existing route rather than re-writing it:
+  - `gscript.py:4390`: `create_primitive_nested(..., "const_donor")` copies the valued constant from the donor VI.
+  - `stagexec.py:345-348`: `CONST_IND_ROUTE` / `const_born_on` uses `OpConstInd_v0`, which was accepted at `:2334`, with its handle-count record accepted at `:2350`.
+  - `stagesim.py:1963-1970`: test G46b models the same constant-then-indicator pair.
+  - The donor `DonorRingConst_v0.vi` was accepted at `:2352`, with uids `#101` / `#130` / `#249` as the plan uses them.
+- **B4 (already measured?)** No. This is the first end-to-end scratch run of this route on `#4866`, and PD244(d) at `:2368-2370` says that is what the run is for.
+
+**PART C — the user's rules:** no contradiction.
+- The plan adds no queue (U4/U13).
+- The new objects sit outside every loop, in an earlier flat-sequence frame. The camera loop gets no new input and waits on nothing (U6).
+- No existing net is touched, and the gate cdiff == the P2a bed's 16 rows is fatal (U1).
+- `Num` and `Latest` start at −1, the seqlock's "nothing published" value (U9/U13).
+
+**Finding, for P3 (not blocking):** PD240(a) gives `Num` and `Latest` the type I32. It matches every per-slot array to its source's measured type, but cites no type for the value P3 will write into these two, the camera BufNum. The only record of that type says U32: `tools/bench/m8b_replay_prep_75_fact.log:31` ("Buffer Number In / Buffer Number Out | U32"). I32 is needed for the −1 value, so P2b is right as planned. But P3's `Num(i) = BufNum` write will then convert U32 to I32. That changes no value below 2³¹ and touches no per-bead number. P3's plan should state that conversion, or re-measure BufNum's type on w3747 with `read_term_type`, and not leave it implicit.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c122-ring-p2b","verdict":"novel","alternative":"None found: no prior D1_ring_p2b file or launch; route OpConstInd_v0 + const_donor accepted PD242/243 and reused, not re-written.","discriminating_test":"P2b scratch run on a P2a byte copy: gate F frame_diagram==4866 (fatal), read_term_type/read_const_value read-back, cdiff == 16 P2a rows.","violations":[],"sources":["docs/d1-loop12-17-split-plan.md:2281-2302","docs/d1-loop12-17-split-plan.md:2319","docs/d1-loop12-17-split-plan.md:2334-2352","docs/d1-loop12-17-split-plan.md:2366-2370","tools/stagexec.py:345","tools/stagesim.py:1963","archive/peer/2026-10-01-c122-route-s0.md:77-79","tools/recipes/stage_d1_ring_p2b.py:92","tools/bench/m8b_replay_prep_75_fact.log:31"],"note":"Non-blocking for P3: BufNum is recorded U32 (m8b_replay_prep_75_fact.log:31) vs Num/Latest I32 (needed for -1); P3 must state or re-measure the U32->I32 conversion."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c122-ring-p2b.md
+   STOP RECORD: none - 2026-10-01-priorart-c122-ring-p2b.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_ring_p2b.py sha 7edb44137bc9 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 113s

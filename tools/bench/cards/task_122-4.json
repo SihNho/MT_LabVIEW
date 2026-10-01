@@ -1,0 +1,67 @@
+{
+ "schema": "task/1",
+ "id": "122-4",
+ "kind": "build",
+ "goal": "Finish the valued-constant -> indicator route (PD242): OpConstInd_v0 hygiene record, donor, scratch verification on an FS frame, 3-row plan prerun",
+ "why": "122-3 built OpConstInd_v0 (accepted as built, PD242(a)); gscript.op() refuses it until a hygiene record exists, and the route was never run end to end.",
+ "retry_of_card": "122-3",
+ "inputs": [
+  {"path": "tools/bench/cards/result_122-3.json"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpConstInd_v0.vi", "md5": "fd4be49823db087e0fd7fc976aa41ed9"},
+  {"path": "tools/bench/diag_c122_route.py", "md5": "252ed55a9f25936caedc269af9217b23"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "op", "name": "OpConstInd_v0"},
+  {"kind": "verb", "name": "const_indicator_on_diagram", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "create_indicator_on_const", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "read_const_value", "where": "tools/gscript.py"}
+ ],
+ "pass": [
+  "op_hygiene/OpConstInd_v0.json PASS: >= 2,000 consecutive calls, 0 errors, handles flat +-100 at equal VI state (PD242(b))",
+  "the constant donor is a claudeDev file built by script; no original or kernel VI is saved or modified",
+  "scratch VI with the bed's nesting: on the FS frame, Latest <- I32 -1, Num <- I32[20] all -1, TransPos <- DBL[20] all 0.0",
+  "read back each: label exact; read_term_type canonical == I32 / I32[] / DBL[]; read_const_value == written; 1 wire each",
+  "scratch_verify record PASS for the route; stagesim self-test of a created constant feeding a created indicator",
+  "stage_prerun --prerun PASS on a 3-row scratch plan using the route; scratch VI deleted; LabVIEW closed and verified gone"
+ ],
+ "outputs": [
+  "tools/bench/op_hygiene/OpConstInd_v0.json",
+  "tools/bench/scratch_verify/<route>_c122_*.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/gscript.py",
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/stagekit.py",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/op_hygiene/**",
+   "tools/bench/selftest_c122_*",
+   "tools/bench/diag_c122_*",
+   "tools/bench/opmodels/**",
+   "tools/bench/sim/c122*/**",
+   "tools/bench/plan_c122*",
+   "tools/recipes/build_*c122*.py",
+   "docs/NAMES.md"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "fact"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "rules": [
+  "Deletion is gated by CLASS at a uid, never by uid absence (uids are re-issued, PD242(a))",
+  "Scratch VIs only; bed and every claudeDev stage file untouched",
+  "New diagnostics on stagekit, <= 120 lines; patch with Edit/Write, never heredoc",
+  "Return at the first unexpected result; facts + OPEN, no retry inside the card"
+ ],
+ "unblocks": "M3"
+}

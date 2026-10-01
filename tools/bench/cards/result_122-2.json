@@ -1,0 +1,23 @@
+{"schema":"result/1","id":"122-2","status":"FAIL","gates":{"pass":4,"fail":2},
+"first_fail":"N2 Image In back-trace tip = Property #35869 Value t35894 (reference unwired, FS1 frame 3121); IMAQ Create #13938 'Cam' forward does not reach it (reaches #15403) - diag_c122_p3.log:5",
+"blocked_by":null,
+"artefacts":[{"path":"tools/bench/facts_c122_p3.json","md5":"9170281ef4992b35ed8ee884a2f27320"},{"path":"tools/bench/facts_c122_p3_rows.md","md5":"3fce7a75792ff5681327827b6a4e9d2b"},{"path":"tools/bench/diag_c122_p3.py","md5":"b1864d1ebba031162dedcd655f5fd7ee"},{"path":"tools/bench/diag_c122_p3.log","md5":"51d189ab59bc8473cd255ac7c3f2a1d1"}],
+"facts":[
+"Loop 1.1 = WhileLoop #637 on 686, body diagram 639, i = t644 w3268 (facts_c122_p3.json:4-53)",
+"#6810 BufNum = 'current image number' t6897 w3747; sinks #5119, #2347 (case 3292), #1978, #194 on 686, indicator t34217 (facts_c122_p3.json:218-355)",
+"#6810 Image Out t6865 w3040 has 0 sinks; Image In t6857 <- LoopTunnel 1666 (t1669) <- FSITs 1690/24936/24990 <- Property #35869 Value, ref unwired (facts_c122_p3.json:356-523,602-653)",
+"#6810 error out w653 -> only LoopTunnel 649 -> #1839 error in on 759; error in <- LoopTunnel 924 <- Property #250 on 686 (facts_c122_p3.json:369-420,525-552)",
+"#30117 Value t30145 w30592 (sinks via case #20530), #4580 Value t4728 w4878 (0 sink rows), i t644 7 sinks incl #10068/#29240 - all on 639 (facts_c122_p3.json:747-1163)",
+"Pool: IMAQ Create #23099 New Image t23289 in For 23093 body 23169 on 13236; only wire w26155 deleted by P2a: no route out (facts_c122_p3.json:1164-1261, plan_ring_p2a.json:33-35)",
+"Measured nested route 13236 -> 639 = FS outer tunnels on FS 12938 and 681 + LoopTunnel on 637 + 1 stray Invoke; exit from a For body not measured (opmodels/connect_across_fs.json)",
+"Excluded P2a uids 23105/23118/23136/26017/25898 absent from sim step_08 (facts_c122_p3.json:1307-1333); X1 FAILED only because pre-P2a fwd of #13938 lists 23105/23118 on w14741",
+"Loop 1.1 has LeftShiftRegister #5351 feeding Buffer to extract (facts_c122_p3.json:564-572); script's SR/For-tunnel searches returned [] - owners map lacks tunnels (diag_c122_p3.py:93-95)",
+"JEV ladder | diag_c122_p3.log | new-problem p=0.890 | NEXT-ACTION: hypothesis review owed | not dispatched (card peers=[]) | FAIL returned (jev_gate.log)"
+],
+"open":[
+"'Cam' source into #6810: which control the implicit Property #35869 (ref unwired) reads, and whether IMAQ Copy's Src is t1669 (before #6810) or Image Out t6865 (after it)",
+"Route of the 20 pool refnums out of For #23093 (indexing output tunnel) then nested into 639 - For exit unmeasured; diag script is 135 lines (>120 card rule)",
+"P3 ordering by error chain needs a new sink on or a splice of w653 (an existing net); w4878 has no sink rows in the graph file"
+],
+"cost":{"usd":null,"minutes":12,"labview_runs":0},
+"note":"Offline only. Draft row list (8 rows, PD238(c)+238(i) order) in facts_c122_p3_rows.md. Returned at first FAIL per chat-P2; no diagnosis/retry."}

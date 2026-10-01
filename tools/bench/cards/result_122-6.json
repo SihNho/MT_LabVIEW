@@ -1,0 +1,34 @@
+{"schema":"result/1","id":"122-6","status":"FAIL","gates":{"pass":40,"fail":1},
+"first_fail":"CEN2 class census: DigitalNumericConstant +5, predicted +1 (stage_d1_ring_p2b_scratch_pin.log:172); every other census class as predicted",
+"blocked_by":null,
+"artefacts":[
+{"path":"tools/bench/plan_ring_p2b_make.py","md5":"0b7de2d23b25fb3a2d7fc8ee38acc791"},
+{"path":"tools/bench/plan_ring_p2b_in.json","md5":"a2961121646a9fa3c2953a870c3fc49e"},
+{"path":"tools/bench/plan_ring_p2b.json","md5":"ce18e794994b94b251d76cb2c828ef7b"},
+{"path":"tools/bench/plan_ring_p2b_pred.json","md5":"878314caed05af81a73cee3f41943da4"},
+{"path":"tools/recipes/stage_d1_ring_p2b.py","md5":"93a8ad5aabb0210f0c119a3fa12d83cc"},
+{"path":"tools/bench/stage_d1_ring_p2b_scratch.py","md5":"6d9091cf7fe634832380a30f080bb188"},
+{"path":"tools/bench/stage_d1_ring_p2b_el.py","md5":"a19b02cc3b98ebd6fa07910afba6f2a7"},
+{"path":"tools/bench/stage_d1_ring_p2b_scratch_pin.log","md5":"e58d552c43f123d03599450ca36ac100"},
+{"path":"tools/bench/stage_d1_ring_p2b_scratch_pin.json","md5":"71f89623f2b97305063a542cf9571115"},
+{"path":"archive/peer/2026-10-01-c122-route-s0.md","md5":"42ec9ceb6b8159f97f5060cfbcd7ac9a"},
+{"path":"archive/peer/2026-10-01-priorart-c122-ring-p2b.md","md5":"a88877b54ab7d6e8bb88100e4200b1d6"},
+{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c122_p2b_20261001_132703.vi","md5":"a18b92d5e89f8a9363ce95132f01caca"}],
+"facts":[
+"guard_peer hold on diag_c122_route.log: hypothesis review ANSWERED, claim holds but weak; applied: adjacency gate, no owner_of, FATAL frame gate (2026-10-01-c122-route-s0.md:90)",
+"Plan 10 create rows on #4866 (5 donor consts + 5 indicators); make 7/0 with live FSIT adjacency 1817-4866 (plan_ring_p2b_make.log); stagesim FINAL, cdiff 16 (plan_ring_p2b_sim.log)",
+"dry PASS; prerun recipe 13/0, scratch 13/0 (stage_d1_ring_p2b_prerun.log); --scratch-required exit 3 (create:ControlTerminal); prior-art novel",
+"Scratch pin 40/1, 455 s: 5 labels exact, wired, on #4866; canon and values == PD240(a)/(b) on both ends (stage_d1_ring_p2b_scratch_pin.log:149-169)",
+"Also PASS: D 5 new wires, none lost; TD; FU; PB cdiff == P2a 16 rows; HB 45637->46001; PS; refs 7/7; input md5 c22a473f unchanged (log:148,173-201)",
+"ONLY FAIL CEN2: DigitalNumericConstant 181->186 (+5, pred +1); ArrayConstant +4, ControlTerminal +5, Wire +5 as predicted (log:51,170,172)",
+"Likely cause, not tested: an ArrayConstant copy brings its element as a DigitalNumericConstant (gscript.py:4387); 4 arrays + Latest = +5",
+"Scratch VI kept for the Error List pin (el script deletes it): claudeDev scratch_c122_p2b_20261001_132703.vi md5 a18b92d5; no scratch_verify record; LabVIEW gone",
+"NOT DONE (returned at first unexpected result): scratch Error List pin, the ONE launch, final Error List + expected file",
+"JEV ladder | stage_d1_ring_p2b_scratch_pin.log | no JEV-LADDER row yet | - | returned, no retry | -"
+],
+"open":[
+"Accept CEN2 as a wrong prediction (pred census DigitalNumericConstant +1 -> +5, the array elements) and re-run the scratch, or run stage_d1_ring_p2b_el.py scratch on the kept scratch file as is?",
+"The FS-frame owner read under a strict check failed twice (cycle 120 F1a, 122-5 S0); the review asks the retrospective to count it as repeated-failure-class. Judgement's call."
+],
+"cost":{"usd":null,"minutes":24,"labview_runs":1},
+"note":"Returned at the first unexpected result (chat-P2). No diagnosis run, no retry; pred file not edited. STATUS untouched (status_edit false). Every object gate passed; the only failing gate is the census class count of my own prediction."}

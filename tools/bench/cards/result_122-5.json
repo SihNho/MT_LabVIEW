@@ -1,0 +1,29 @@
+{"schema":"result/1","id":"122-5","status":"FAIL","gates":{"pass":12,"fail":2},
+"first_fail":"S0 #3121 is a flat-sequence frame diagram (diag_c122_route.log:269): owner_of(3121, strict=True) raised - LabVIEW answers 'FlatSequenceFrame' uid 0 + error 1055 in OpOwnerChain_v1 (:267-268)",
+"blocked_by":null,
+"artefacts":[
+{"path":"tools/bench/diag_c122_graph_p2a.json","md5":"3f6f5d36808cc205771a8349b5a737ff"},
+{"path":"tools/bench/diag_c122_route.log","md5":"d09650b43870d34f65fa7f6d51d4c4c6"},
+{"path":"archive/peer/2026-10-01-c122-hyg-h6.md","md5":"a7cf07525caff13502fe40194cbd0fcb"},
+{"path":"tools/bench/diag_c122_hyg_peer_task.md","md5":"da8fb3f0b7ecbbb68b66ac88723f604f"},
+{"path":"tools/bench/diag_c122_mtime.py","md5":"31d0c950a6f7a4d313a7fa957e5ac1fa"},
+{"path":"tools/bench/diag_c122_mtime.log","md5":"8b8973b20e918b8382913f62d7c30d6d"},
+{"path":"tools/bench/diag_c122_insp.py","md5":"3c673d07854560bf5b3cb8d3d9c07328"}],
+"facts":[
+"guard_peer held the route launch on diag_c122_hyg.log (Jev new-problem p=0.780); hypothesis review ANSWERED, verdict: claim holds, H6 blind to same-name overwrites (2026-10-01-c122-hyg-h6.md:46-57)",
+"Review's offline test run: 561 claudeDev files scanned recursively, exactly 1 modified 13:01:50-13:05:30 = DonorRingConst_v0.vi 13:03:00 (diag_c122_mtime.log:3-4); disposition written (:90)",
+"Route run: P2a graph WRITTEN diag_c122_graph_p2a.json md5 3f6f5d36: 5816 rows, 10113 objs, 24 loops; G1 every Diagram owner resolved PASS (diag_c122_route.log:265-266)",
+"S0 FAIL = script premise: graph() calls owner_of strict=False (diag_c122_route.py:36) but S0 calls strict=True (:49); a FS frame diagram's owner is 'FlatSequenceFrame' uid 0 + err 1055",
+"S0 is fatal, so no const_indicator_on_diagram call ran: 0 of 3 route rows verified, no scratch_verify record (diag_c122_route.log:269-270)",
+"Cleanup PASS: scratches deleted, input md5 unchanged, pins hold, H6 added [] removed [], refs 7/7, handles 33992->45897; tasklist shows no LabVIEW (diag_c122_route.log:276-296)",
+"FS1 frame order by x (facts_c120_qrtw.json:749-760): 3628,81548,113,124,5031,3121,1817,4866,686,759 - the frame immediately before 686 (PD240(c) 'frame 8') is #4866, not #3121",
+"NOT DONE (chat-P2 return): plan_ring_p2b, stagesim, dry/prerun, prior-art, scratch pin, launch - nothing of P2b written",
+"JEV ladder | diag_c122_route.log | no JEV-LADDER row yet (written at the next launch attempt) | - | returned, no retry | -"
+],
+"open":[
+"Re-issue the route run with S0 accepting owner_of(strict=False) == ('FlatSequenceFrame', 0) (as graph() at :36 does), and verify on #4866 (the frame before 686) instead of #3121?",
+"The review says stagekit has no way to declare a saved donor (close() takes no expect_files, stagekit.py:1382): build that before the next donor-saving script, or keep declaring by gate?",
+"Should the P2b plan go on #4866 (frame before 686, PD240(c) preference) even though the route verification is on #3121, or must route verification run on the chosen frame?"
+],
+"cost":{"usd":null,"minutes":20,"labview_runs":1},
+"note":"Returned at the first unexpected result (chat-P2): no retry, no diagnosis run. The fix is one argument, not applied. STATUS untouched (status_edit false). The P2a graph needed for the offline plan now exists."}

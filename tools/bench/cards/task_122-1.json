@@ -1,0 +1,70 @@
+{
+ "schema": "task/1",
+ "id": "122-1",
+ "kind": "build",
+ "goal": "Ring P2b (PD240): add indicators Num/TransPos/RotPos/FrameIdx/Latest with diagram-written init in an earlier FS1 frame; save claudeDev D1_ring_p2b_<ts>.vi + expected Error List",
+ "why": "Ring buffer build order PD238(g): P2b gives P3 (camera loop) and P4 (tracking loop) the shared locals they write and read.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "0d97093a47836576510a7a4851e161ec"},
+  {"path": "docs/ring-buffer-design.md", "md5": "48ac0e5778017cee6b7911c8defe4c4f"},
+  {"path": "tools/bench/facts_c120_types.json", "md5": "d0baba8f29f1a6126709cbff18bbadc9"},
+  {"path": "tools/bench/plan_ring_p2a.json", "md5": "ad1be164996dcdf26e11b50d36f6a5f0"},
+  {"path": "tools/bench/errorlist_expected_D1_ring_p2a_20260928_191739.json", "md5": "2154ffa9b8928cfbf12990319a027fc4"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p2a_20260928_191739.vi", "md5": "c22a473f26ebcc67296d1c2441f8a47a"}
+ ],
+ "requires": [
+  {"kind": "verb", "name": "create_indicator_nested", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "read_term_type", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "wire_const", "where": "tools/gscript.py"},
+  {"kind": "op", "name": "OpTermDataType_v0"}
+ ],
+ "pass": [
+  "Step 1: graph read of a bed byte copy -> tools/bench/graph_ring_p2a_<ts>.json; FS1 frames and the frame before 686 named; no panel label equals any of the five",
+  "Step 2: routes for Initialize Array and a panel indicator from a primitive output exist (requires); a missing one is built + scratch-verified here or BLOCKED",
+  "Step 3: plan_ring_p2b.json (<=15 rows or P2b-1/-2 split, PD240(e)), stagesim FINAL, dry + prerun PASS; prior-art if new create class; --scratch-required decides scratch",
+  "Step 4 ONE launch saves D1_ring_p2b_<ts>.vi: five indicators with PD240(a) labels, types read back by read_term_type == F-types",
+  "each terminal wired from its PD240(b) initialiser, values read back by read_const_value; all on the PD240(c) frame, none in a loop",
+  "cdiff == the P2a bed's 16 rows; no existing wire lost",
+  "Error List new items == plan prediction (PD240(d): 0, total 54); errorlist_expected_D1_ring_p2b_<ts>.json written, reverdicts OK",
+  "refs balanced; open->save within the PD236(b) band; LabVIEW closed and verified gone"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p2b_<ts>.vi",
+  "tools/bench/errorlist_expected_D1_ring_p2b_<ts>.json",
+  "tools/bench/plan_ring_p2b.json",
+  "tools/recipes/stage_d1_ring_p2b.py"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/*ring_p2b*",
+   "tools/bench/sim/ring_p2b*/**",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/errorlist*ring_p2*",
+   "tools/bench/graph_ring_p2*",
+   "tools/bench/op_hygiene/**",
+   "tools/recipes/stage_d1_ring_p2b*.py",
+   "tools/bench/diag_c122_*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 90
+ },
+ "rules": [
+  "PD240 fixes labels, types, init values, placement; a fact contradicting PD240 is returned as OPEN",
+  "Bed is never saved over; new file name only",
+  "GUI only via lv_gui.ps1 -Exception Approved, evidence 'user 2026-09-22 broken-intermediate save'",
+  "Every GUI act: capture, locate, act, capture, confirm (cycle27-plan PD9)",
+  "Return at the first unexpected result (finish the step, LabVIEW closed, facts recorded)",
+  "New diagnostics on stagekit, <= 120 lines; patch with Edit/Write, never heredoc",
+  "A gate that refuses wrongly -> py tools/gate_fp.py log, never an env bypass"
+ ],
+ "advances": ["M3", "M4"]
+}

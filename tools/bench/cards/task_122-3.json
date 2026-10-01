@@ -1,0 +1,69 @@
+{
+ "schema": "task/1",
+ "id": "122-3",
+ "kind": "build",
+ "goal": "Tooling (PD241(a)): route = valued numeric constant on a given diagram uid (FS frame) wired to a NEW labelled indicator; numeric/array const value reader; stagexec route + stagesim model",
+ "why": "122-1 BLOCKED: no creator for a valued constant on a flat-sequence frame, no indicator-from-Constant route (result_122-1.json). P2b and later P3/P4 need it.",
+ "inputs": [
+  {"path": "tools/bench/cards/result_122-1.json"},
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/facts_c120_types.json", "md5": "d0baba8f29f1a6126709cbff18bbadc9"}
+ ],
+ "requires": [
+  {"kind": "verb", "name": "create_indicator_nested", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "read_term_type", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "read_const_value", "where": "tools/gscript.py"},
+  {"kind": "op", "name": "OpTermDataType_v0"}
+ ],
+ "pass": [
+  "Step 0: if guard_peer holds this card on diag_c122_p3.log (122-2), dispatch the owed hypothesis review (review/1, -ReviewCard) and annotate it; never bypass",
+  "scratch VI shaped like the bed (outer FS, a frame diagram 2 levels down) built and deleted in the same run",
+  "on the frame diagram: I32 -1 -> indicator 'Latest'; I32[20] all -1 -> 'Num'; DBL[20] all 0.0 -> 'TransPos', each a NEW constant wired to a NEW indicator",
+  "read back per object: label exact; read_term_type == I32 / I32[] / DBL[] canonical; constant value read == the written values; wire count 1 each",
+  "value reader covers DigitalNumericConstant and numeric ArrayConstant; self-test on the scratch reads",
+  "stagexec plan route + stagesim model for the new row kind; offline self-tests PASS; stage_prerun --prerun accepts a 3-row scratch plan",
+  "every new op: 20-call hygiene record, handles flat +-100, refs closed; record under tools/bench/scratch_verify/ PASS",
+  "LabVIEW closed and verified gone"
+ ],
+ "outputs": [
+  "tools/bench/scratch_verify/<route>_c122_*.json",
+  "tools/bench/selftest_c122_*.py"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/gscript.py",
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/stagekit.py",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/op_hygiene/**",
+   "tools/bench/selftest_c122_*",
+   "tools/bench/diag_c122_*",
+   "tools/bench/opmodels/**",
+   "tools/recipes/build_op*c122*.py",
+   "docs/NAMES.md",
+   "docs/protocol/stageplan.json",
+   "archive/peer/**",
+   "tools/bench/cards/review_122*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "fact"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 75
+ },
+ "rules": [
+  "Scratch VIs only; the bed and every claudeDev stage file stay untouched",
+  "Mechanism is yours (e.g. Constant.Terminal->Create Indicator, or indicator + Create Constant + set value)",
+  "Op VIs follow reference hygiene (Close Reference on every ref) and go through gscript.op() with a hygiene record",
+  "New diagnostics on stagekit, <= 120 lines; patch with Edit/Write, never heredoc",
+  "Return at the first unexpected result; facts + OPEN, no retry inside the card"
+ ],
+ "unblocks": "M3"
+}

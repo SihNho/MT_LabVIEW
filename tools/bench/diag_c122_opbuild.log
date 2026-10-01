@@ -1,0 +1,30 @@
+BGRUN START 2026-10-01 12:48:16 limit 25.0 min: py -u tools/bench/diag_c122_opbuild.py
+BGRUN PID 23252
+  PASS  M donor OpWireJoints_v1 md5 pinned  29dcb59f58d4d959e965f9f545abd50b
+  FACT  KB #157 = Node[16]
+  PASS  P one new Constant PN with UID + Terminal sources  ([685], ['reference out', 'error out', 'UID', 'Terminal'])
+  PASS  S seed ['reference 2'] -> TMSC #683 target class  ['reference 2']
+  PASS  W 685.reference <- 683.specific class reference  (174, 174)
+  PASS  W 685.error in (no error) <- 124.error out  (177, 177)
+  PASS  W 615.reference <- 685.reference out  (180, 180)
+  PASS  W 630.error in (no error) <- 685.error out  (241, 241)
+  PASS  C1 one copied Close Reference node [651]  
+  PASS  W 118.reference <- 685.Terminal  (576, 576)
+  PASS  W 118.error in (no error) <- 685.error out  (241, 241)
+  PASS  W 651.reference <- 118.reference out  (654, 654)
+  PASS  W 651.error in (no error) <- 118.error out  (657, 657)
+  FAIL  K old PN #118 gone, links made, ES 1  1
+  FAIL  C1 copy 1 (uid guard 157) finished, saved, gates clean  92238a12c080d0bd6a206333092d7943
+  PASS  C2 one copied Close Reference node [744]  
+  PASS  W 744.reference <- 118.Create Indicator  (785, 785)
+  PASS  W 744.error in (no error) <- 651.error out  (776, 776)
+  PASS  I indicator on #685 'UID' -> ['UID 2']  
+  PASS  I indicator on #744 'error out' -> ['error out 3']  
+  PASS  A assembled ES 1  
+  FAIL  C2 copy 2 finished, saved, gates clean  fd4be49823db087e0fd7fc976aa41ed9
+  PASS  COLD ExecState 1 (fresh LabVIEW)  fd4be49823db087e0fd7fc976aa41ed9
+  FACT  labels {'pn': 685, 'inv': 118, 'cr1': 651, 'seed': 'reference 2', 'class_': 'VI Server:Constant', 'props': ['632A813', '634AC04'], 'cr2': 744, 'UID': 'UID 2', 'Err': 'error out 3', 'controls': ['Class Name', 'Class Name 2', 'Properties', 'index', 'index 2', 'location (0, 0)', 'reference', 'reference 2', 'vi path', 'vi path 2'], 'md5': 'fd4be49823db087e0fd7fc976aa41ed9', 'donor': 'OpWireJoints_v1.vi 29dcb59f58d4d959e965f9f545abd50b'}
+  PASS  H LabVIEW gone; donor md5 unchanged  
+=== GATES: 20 pass / 3 fail; failing: ['K old PN #118 gone, links made, ES 1', 'C1 copy 1 (uid guard 157) finished, saved, gates clean', 'C2 copy 2 finished, saved, gates clean']
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":20,"fail":3},"first_fail":"K old PN #118 gone, links made, ES 1","artefacts":[]}
+BGRUN END rc=1 after 304s

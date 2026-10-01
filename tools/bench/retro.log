@@ -5042,3 +5042,95 @@ VIOLATION: repeated-failure-class | loss_min=25 | loss_usd=? | evidence=archive/
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle121","verdict":"refuted","alternative":"The window's largest loss (~150-190 min: pool queues of 118-120 plus the P2a undo) is a user redirect on a design decisions.md:22,24 recorded and the chat cleared at 11:55 (decisions_pending.json:242), so it is a finding, not this window's fault.","discriminating_test":"Replay 118-2's A1b plan through a NAMES.md capability lookup: if OpConstValue_v1 is flagged void for ArrayConstant (NAMES.md:1164) before launch, the rung-2 attempt and D-2026-09-28-02 disappear; if not, the fault is the lookup's absence, not judgement.","violations":[{"slug":"repeated-failure-class","loss_min":25,"loss_usd":"?","evidence":"archive/peer/2026-09-28-c118p1-names.md:63"}],"sources":["tools/bench/cards/result_118-2.json:2","tools/bench/cards/result_118-3.json:22","docs/NAMES.md:1164","docs/d1-loop12-17-split-plan.md:2189","docs/d1-loop12-17-split-plan.md:2254","tools/bench/decisions_pending.json:242","tools/bench/cycle_118.log:170","tools/bench/cycle_120.log:170","tools/bench/cards/result_121-3.json:22","tools/bench/gate_fp_queue.jsonl:6"],"note":"Window spans cycles 118-121 plus a 145-min stop; C4c omits cycle 120 (killed, $?) and 121. Deliverable: D1_ring_p2a (c22a473f). Device misfires fp-4/6/10 were queued and drained as designed, seconds each; no costly device failure."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle121.md
 BGRUN END rc=0 after 495s
+BGRUN START 2026-10-01 13:37:39 limit 10.0 min: py tools/retrospective.py --cycle 122
+BGRUN PID 7328
+   window 2026-09-28 19:45:47 .. 2026-10-01 13:37:40 (3952 min); 20 build logs, 10 machinery logs, 41 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle122.txt (31779 chars)
+   review card tools\bench\cards\review_retrospective-cycle122.json
+OUTCOME: ANSWERED (277s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-10-01-retrospective-cycle122.md
+COST: $1.8514  in 48 / out 26438 / cache-create 105994 / cache-read 2372691  (275s, 37 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle122 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle122.json
+--- ANSWER ---
+I judge this a well-run cycle with one costly fault at its very end: the session closed and pushed the deliverable to cycle 123 to re-measure something its own log had already measured. Below are the answer, the findings, the device check and the machine lines. Nothing was built, edited or run.
+
+**The evidence window does not match the cycle.** Cycle 122 started at 12:27:30 on 2026-10-01 (`tools/bench/cycle_122.log:1`) and ended with `retro.log` at about 13:37, so roughly 70 minutes. The other ~2.7 days in the window were interactive chat work, and three audit items belong to that work, not to this cycle:
+- A4's blank reviews (`2026-09-29-g1-*`).
+- A8's `selftest_guard_session_20260929.log`.
+- Most of C7's 526 files.
+
+None of their cost is charged here.
+
+## The one structural fault: a measurement already in the log was pushed to the next cycle
+
+Card 122-6 ran the P2b scratch build. It passed 40 of 41 gates. Every object gate passed: labels, types, values, frame #4866, wires and the 16-row diff (`stage_d1_ring_p2b_scratch_pin.log:147-201`). The only failure was the class-count gate CEN2: 5 new DigitalNumericConstants against a predicted 1 (`:172`).
+
+The result card calls the cause "Likely cause, not tested" (`result_122-6.json:24`). `next.json:4` and STATUS NEXT (`STATUS.md:68`) make cycle 123's first act "measure owners of the 5 new DigitalNumericConstants".
+
+**That measurement is already in the same log.** Lines `:60`, `:78`, `:96` and `:114` each show a new DigitalNumericConstant owned by one of the four new ArrayConstants (#25535→#25465, #25774→#25632, #26122→#25898, #26401→#26244). Line `:132` shows the fifth, #26495 (the `Latest` constant), owned by Diagram #4866. That is exactly +5: the prediction was wrong, not the build.
+
+The session also had room to finish:
+- It used 5 of its 6 material dispatches (`tools/bench/session_6a03e9b3-….json:1`).
+- It closed at about 13:37, 70 minutes into a 180-minute budget (`cycle_122.json:19-22`).
+- Every input was ready: plan, recipe, prior-art release and the kept scratch file.
+
+**Counterfactual:** had the session read `scratch_pin.log:60-132` at about 13:35, it could have sent one more card (correct the prediction, pin the Error List, then the ONE launch). That is roughly 7.5 minutes for a run the size of the scratch, plus the Error List reads. The cycle would have ended around 14:10 with `D1_ring_p2b_<ts>.vi` saved, instead of 13:37 with no stage VI. Cycle 123 now has to pay a session start-up and a LabVIEW read card to rediscover the fact. I estimate that at about 20 minutes, using card 122-5's 20 minutes (`result_122-5.json:28`) as the nearest comparable. No log carries a dollar figure for it.
+
+## Findings
+
+**1. Repeated failure.** Four of the six cards failed on their own check, while the measured work passed:
+- 122-3, gate K: it assumed uid 118 would disappear, but LabVIEW re-issued it (`diag_c122_opbuild.log:16`).
+- 122-4, gate H6: the donor file it meant to save was never declared (`result_122-4.json:2`).
+- 122-5, gate S0: a strict owner read on a flat-sequence frame (`result_122-5.json:2`).
+- 122-6, gate CEN2: a hand-written class count.
+
+S0 also repeats cycle 120's F1a. The fix was already on file: check `FlatSequence.Diagrams[]` membership instead (`archive/peer/2026-09-28-c120-fs-owner-frame.md:98-99`). The approach should have changed at attempt 3 (122-5): its brief should have carried the recorded fix. That would have saved the route-s0 review ($1.4712, `peer_c122_route_s0.log:4`), about 159 s of route run, and the lost route check. This is real, but it is smaller than the main fault and did not change how the cycle ended.
+
+**2. Missing tool.**
+- **No census predictor.** The CEN2 prediction is typed by hand (`plan_ring_p2b_make.py:82`). In dry mode the gate cannot fail: `DRY or dc == exp` at `tools/recipes/stage_d1_ring_p2b.py:98`. The prerun "13/0" therefore includes a CEN2 PASS against an all-zero change (`stage_d1_ring_p2b_prerun.log:58-59`).
+- **No donor class census.** Card 122-4 read the donor's values but not the classes inside it (`diag_c122_hyg.log:27,30`). One cheap read there would have shown the element constant inside each array constant.
+- **stagekit cannot declare a saved donor file** (PD244(e)). That is what made H6 fail.
+
+**3. Unmeasured steps.** The +1 prediction was inferred when the donor's class census was a cheap read. The closing decision treated a measured fact as "not tested" (the main fault).
+
+**4. Rule compliance.**
+- CLAUDE.md §2c says to finish what does not depend on an open answer. The session closed early. §2c was written about stopping to ask the user, so this breaks its intent rather than its text.
+- STATUS NEXT `:69` pre-scripts "If 4 are owned by … then correct pred, EL pin, ONE launch". That is the "if X then do Y" pattern the brief rule forbids (`cycle_122.log:92-94`), and it is ready to be copied into a material brief.
+
+What the audit does not cover:
+- Unused session capacity: dispatches left, budget left at close.
+- Gates that pass automatically in dry mode.
+- The judgement session's cost (C4c: no line).
+- Truncated hook lines (`material_marker.log:2846`).
+- The fact that its window spans chat work.
+
+**5. Ordering.** Mostly defensible, but the offline P3 fact card had a real cost:
+- Card 122-2's failing survey (`diag_c122_p3.log`) put a hold on the LabVIEW card (`jev_gate.log:2913`). It refused a read-only grep (`result_122-1.json:15`).
+- 122-3 then had to buy a $2.074 review first (`peer_122-p3.log:17`).
+- The existing exemption (RULE-OFFLINE-CARD, `guard_peer.py:906-917`) only covers one direction: the offline card is not held by the LabVIEW card's failures, but not the reverse.
+- Separately, 122-1 spent 22 minutes discovering a missing route. Its `requires` list covered only verbs, not routes (`result_122-1.json:6`).
+
+**6. Not reported.**
+- STATUS says "P2b is ready to launch" (`STATUS.md:71`). It does not say the scratch log ended rc=1, or that A3 lists that log as unreviewed.
+- The four reviews cost $6.43 in total; STATUS does not mention it.
+- The prerun 13/0 includes the dry-mode CEN2 pass.
+- The session closed with a dispatch and about 110 minutes unused.
+
+**7. Judgement inside a material session.** In 122-6, the material session accepted findings (a) and (c) of the route-s0 review, rejected (b), and dropped the owner_of check altogether (`archive/peer/2026-10-01-c122-route-s0.md:92-97`). The card's pass line said "FS-frame checks use owner_of(strict=False) (PD244(b))" (`task_122-6.json:26`). That is a design change made outside the judgement session. It turned out well (gate F passed, `scratch_pin.log:169`), so it is a finding, not a costly fault.
+
+## Device effect
+
+No listed device failed inside the window:
+- The rc forcing worked: every failing log ends `rc=1` (`diag_c122_p3.log:12`, `diag_c122_opbuild.log:30`, `diag_c122_hyg.log:122`, `diag_c122_route.log:296`, `scratch_pin.log:209`).
+- Review prompts are adversarial (`archive/peer/2026-10-01-c122-route-s0.md:43-49`).
+- Prior-art finished (13:26:42) before the scratch run started (13:27:02).
+- All 4 cost lines were parsed (C4b).
+- The op hygiene rule was applied: 2,000 calls and 0 errors (`result_122-4.json:16`), and gscript refused the op until that record existed (`result_122-3.json:18`).
+- The cycle card carried `gates_due`, and the `Nodes[]` parity check reads 0 (`scratch_pin.log:56`).
+
+One thing I could not judge: the PRERUN-GATE refusal at 13:00:17 (`material_marker.log:2846`). The hook log cuts the command off, and no gate-fp entry was filed, so whether it refused a read-only segment cannot be decided from the record.
+
+VIOLATION: inference-over-measurement | loss_min=20 | loss_usd=? | evidence=tools/bench/stage_d1_ring_p2b_scratch_pin.log:60
+
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle122","verdict":"refuted","alternative":"CEN2 +5 was a genuinely unknown cause needing a fresh LabVIEW read, so closing at 13:37 was correct and nothing was lost.","discriminating_test":"Read scratch_pin.log:60,78,96,114,132: four new DigitalNumericConstants owned by the four new ArrayConstants plus #26495 on #4866 = +5, already measured.","violations":[{"slug":"inference-over-measurement","loss_min":20,"loss_usd":"?","evidence":"tools/bench/stage_d1_ring_p2b_scratch_pin.log:60"}],"sources":["tools/bench/stage_d1_ring_p2b_scratch_pin.log:172","tools/bench/cards/result_122-6.json:24","tools/bench/next.json:4","tools/bench/session_6a03e9b3-88d7-472f-af86-32647b474e84.json:1","tools/recipes/stage_d1_ring_p2b.py:98"],"note":"Window includes ~2.7 days of chat work; cycle ran 12:27-13:37. Repeated FS-frame strict owner read (c120 F1a, 122-5 S0) is a finding, ~6 min + $1.47."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle122.md
+BGRUN END rc=0 after 282s

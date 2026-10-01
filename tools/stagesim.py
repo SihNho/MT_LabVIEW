@@ -1959,6 +1959,18 @@ def selftest():
     gate("G46 create indicator born_on 2.out: its own node (term_class ControlTerminal, owner = diagram 20), joined to w6",
          len(ct) == 1 and ct[0]["owner_uid"] == 20 and ct[0]["wire_uid"] == 6 and not ct[0]["is_source"] and
          V.node_of(ct[0]) == ct[0]["term_uid"], ct)
+    # card 122-4 (PD241(a)): a CREATED valued constant (donor copy, one declared unnamed source) feeding a CREATED indicator
+    # born on it (gscript.const_indicator_on_diagram; stagexec const_born_on) - one NEW wire joins exactly those two rows
+    op_create(sc, {"class": "ArrayConstant", "diagram": 20, "as": "CK1", "prim": "const_donor",
+                   "donor": {"donor": "DonorRingConst_v0.vi", "uid": 1}, "terminals": [{"name": "", "is_source": True}]}, P0, None, {})
+    e_k, _c = op_create(sc, {"class": "ControlTerminal", "diagram": 20, "as": "IND2", "label": "Num", "indicator": True,
+                             "born_on": {"uid": "new:CK1"}}, P0, None, {})
+    kr = [r for r in sc["terminals"] if r["owner_uid"] == sc["sym"]["new:CK1"]]
+    kt = [r for r in sc["terminals"] if r["term_uid"] == sc["sym"]["new:IND2"]]
+    gate("G46b created constant new:CK1 (one source row on #20) -> created indicator born_on it: ONE new wire joins exactly the "
+         "two rows, indicator a sink on #20", len(kr) == 1 and kr[0]["is_source"] and len(kt) == 1 and not kt[0]["is_source"] and
+         kt[0]["owner_uid"] == 20 and kr[0]["wire_uid"] < 0 and kr[0]["wire_uid"] == kt[0]["wire_uid"] == e_k.get("wire") and
+         sorted(r["term_uid"] for r in wire_rows(sc, kr[0]["wire_uid"])) == sorted([kr[0]["term_uid"], kt[0]["term_uid"]]), (kr, kt, e_k))
     refs = []
     for lab_, fn in (("unknown alias", lambda: op_move_in(sc, {"nodes": [2], "dest_diagram": "new:ZZ1.body"},
                                                            dict(PROVISIONAL["move_in"]["params"]), None, {})),

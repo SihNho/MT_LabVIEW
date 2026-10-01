@@ -2275,6 +2275,123 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
      Error List is compared with the plan's own predicted new-item count (what the scratch run used to pin). Before this
      item the scratch run lived only in card pass-lines and PD234(g), never in a gate. USER-RULES: U1 (relied on:
      acceptance stays numeric; the skip changes no computation; none contradicted).
+240. **(cycle 122 judgement, 2026-10-01 — ring P2b: the shared objects and their initialisation, decided before the card)**
+     USER-RULES: U1, U4, U6, U9, U13 (relied on; none contradicted — the objects are new, touch no existing net, and are
+     the locals U4/U13 name).
+     - **(a) Five INDICATORS, labels exactly `Num`, `TransPos`, `RotPos`, `FrameIdx`, `Latest`.** One writer each (the camera
+       loop, P3), readers by local variable (P4). Indicators, not controls: nobody types into them. Element types: `Num` I32
+       [20], `TransPos` DBL [20] (= F1 `#30117` Value), `RotPos` DBL [20] (= F2 `#4580` Value), `FrameIdx` I32 [20] (= F3
+       `#637` i), `Latest` I32 scalar — each read back with `read_term_type` and compared to its F-type
+       (`tools/bench/facts_c120_types.json`). A label already used on the panel is a plan FAIL, not a rename (a local binds
+       by label).
+     - **(b) Initial values are WRITTEN by the diagram at every run, never left to the panel default.** A stale panel value
+       survives a second run without reopening (the OPEN-58 (2) class). Writer: `Initialize Array` (element constant, one
+       shared I32 constant 20 for the size) → each array indicator's terminal; constant → `Latest`. Values: `Num` −1 ×20,
+       `Latest` −1 ("nothing published"; P4 compares `Num > last` and requires `>= 0`), `FrameIdx` −1 ×20, `TransPos` /
+       `RotPos` 0.0 ×20 (never read for a slot whose `Num` is −1, so their value carries no meaning; the type does).
+     - **(c) Placement = an EARLIER frame of the flat sequence that holds `686` (FS1, frames 0–8), outside every loop.** A
+       flat-sequence frame finishes before the next starts, so the init is ordered before loops 1.1/1.2 by structure, never
+       by timing (U6: the camera loop gains no new input and waits on nothing). Which earlier frame = the plan card's choice
+       on the real graph (prefer frame 8, the one immediately before `686`); the indicator TERMINALS live there too, and P3
+       writes them through local variables. No new wire touches an existing net (cdiff == the P2a bed's 16 rows).
+     - **(d) Error List prediction: 0 new items** (all new terminals wired, constants only) ⇒ 54 == P2a's. The scratch pin or,
+       on `SCRATCH-SKIP-PROVEN`, the final read settles it (PD239).
+     - **(e) Rows:** ~15 (5 indicators + 4 Initialize Array + 4 element constants + size constant + `Latest` constant, plus
+       wires). Over 15 on a pattern `stage_prerun` does not report proven ⇒ split into P2b-1 (`Num` + `Latest`) and P2b-2
+       (the three per-slot arrays), each its own saved file. A create class no clean stage ran (Initialize Array, a fresh
+       panel indicator from a primitive output) ⇒ prior-art review and a scratch verification of that route first.
+     - **(f) Cycle 122 cards:** 122-1 (LabVIEW) = graph read of the P2a bed → `protocol.py requires` on the routes → plan
+       → dry + prerun (+ prior-art / scratch per (e)) → ONE launch → `claudeDev\D1_ring_p2b_<ts>.vi` + expected Error List
+       file. 122-2 (offline PREP, parallel) = the P3 FACT SHEET on the existing graphs (the camera loop's diagram uid, `#6810`'s
+       BufNum and Image Out terminals and their sinks, `#30117`/`#4580`/`#637` source terminals relative to 1.1, the route of
+       the 20 pool refnums from FS2 frame 2 into 1.1, the error chain through `#6810`), no plan file — P3's rows bind to
+       122-1's objects, so the plan waits for its saved file.
+241. **(cycle 122 judgement, 2026-10-01 — after 122-1 BLOCKED and 122-2 FAIL 4/2)**
+     USER-RULES: U1, U6, U9 (relied on; none contradicted).
+     - **(a) 122-1 BLOCKED on a missing ROUTE, not on LabVIEW** (`result_122-1.json`): no creator puts a VALUED constant on
+       a flat-sequence frame diagram, an indicator cannot be created from a Constant (not a Node; `create_indicator_nested`
+       reaches Node / LoopTunnel / SelectorTunnel only), and the bed has no 1-D `Initialize Array` donor. **DECIDED: build the
+       route (2026-09-24 tools rule — it unblocks P2b, and P3/P4 need valued constants on non-loop diagrams again).** Card
+       122-3 (tooling, scratch only): on a given diagram uid (a flat-sequence frame, as in the bed), a new numeric constant of
+       a given representation and value (I32 scalar, I32[N], DBL[N]) wired to a NEW indicator with a given label, plus a
+       value READER for numeric/array constants (`read_const_value` skips DigitalNumericConstant), a stagexec plan route and a
+       stagesim model, hygiene records for any new op, self-tests. The mechanism is the card's to measure.
+     - **(b) PD240(b) AMENDED — the initialiser may be an ARRAY CONSTANT holding the 20 values instead of `Initialize Array`.**
+       The value that reaches the indicator is identical (20 × −1 / 0.0), so this is not a computation change; whichever the
+       122-3 route verifies is used, and no 1-D `Initialize Array` donor is required.
+     - **(c) 122-2's FAIL is the fact script's premise, its facts are used:** N2 assumed `IMAQ Create #13938` feeds `#6810`
+       directly; the measured source of `#6810` Image In is `Property #35869` Value (implicit property node, reference
+       unwired) through FSITs 1690/24936/24990 and LoopTunnel 1666 (`facts_c122_p3.json:356-523,602-653`). X1 compared a
+       pre-P2a forward list. If `guard_peer` holds a LabVIEW card on `diag_c122_p3.log`, the card dispatches the owed
+       hypothesis review (Jev: new-problem 0.89) — it is not bypassed.
+     - **(d) P3 binding decisions from 122-2's OPEN list:** `IMAQ Copy` Src = `#6810` **Image Out t6865** (0 sinks today; it
+       only gains a sink, as 237(c)) — never t1669 before `#6810`, which has no ordering against the write and could copy the
+       previous frame's pixels (U9). Ordering inside 1.1 uses NEW sinks on existing nets only (w653 error out, w3747 BufNum,
+       t6865); no existing wire is spliced. The 20 pool refnums leave For `#23093` through a NEW indexing output tunnel
+       (w26155 was its only exit and P2a removed it), then route `nested` into 639; the For exit is a P3 measurement.
+242. **(cycle 122 judgement, 2026-10-01 — after 122-3 FAIL 20/3)**
+     USER-RULES: U1, U9 (relied on; none contradicted).
+     - **(a) `claudeDev\OpConstInd_v0.vi` (md5 `fd4be498…`) is ACCEPTED as BUILT** (12 wiring gates PASS, cold `ExecState` 1, its
+       four refs closed — `diag_c122_opbuild.log`). The 3 FAILs are one gate premise: "uid 118 absent after deleting the old
+       property node" — LabVIEW re-issues uids (`opmodels/primitive.json` uid_allocation), and 118 now names the new Invoke.
+       Deletion is checked by CLASS at a uid, never by uid absence. It is NOT yet usable: `gscript.op()` refuses it until its
+       hygiene record exists.
+     - **(b) Hygiene threshold for this op = the device rule, not my card's "20 calls":** ≥ 2,000 consecutive calls, 0 errors,
+       handles flat ±100 (`docs/violation-decisions.md:1665-1667`). For a CREATOR the probe may delete each created
+       constant+indicator after its call, or recycle the scratch VI without saving at fixed call counts, measuring handles at
+       the same VI state each time.
+     - **(c) Correction to 238(b)/241(c): the image entering `#6810` is the panel object `IMAQimage` (implicit Value property
+       `#35869`), written by `IMAQ Create #20436` — NOT `'Cam'` `#13938`** (review `archive/peer/2026-10-01-122-p3.md:83`,
+       supported). 241(d) is unaffected (the copy's Src is `#6810` Image Out). **OPEN for the P3 card (a measurement):**
+       `#20436`'s image type vs the 20 pool images' type (made from `#13245`, the `'Cam'` type); a mismatch would make `IMAQ
+       Copy` convert pixels — a computation question returned to judgement, never improvised.
+243. **(cycle 122 judgement, 2026-10-01 — after 122-4 FAIL 57/1)**
+     USER-RULES: U1 (relied on; none contradicted — tooling only).
+     - **(a) `tools/bench/op_hygiene/OpConstInd_v0.json` (md5 `e8c80e9e…`) is ACCEPTED**: 2,000 consecutive calls + 5 warm, 0
+       errors, handles max deviation 17 at equal VI state, refs 53/53 (`diag_c122_hyg.log` H2/H3/H5). The donor
+       `claudeDev\DonorRingConst_v0.vi` (md5 `d8dc3013…`: DBL[20] 0.0 `#101`, I32[20] −1 `#130`, I32 −1 `#249`, read back equal,
+       `ExecState` 1) is ACCEPTED. The one FAIL (stagekit H6 "files left on disk") flagged that intended donor, which the
+       script never declared as an artefact — a script premise; later scripts declare their saved donors.
+     - **(b) Next = ONE card (122-5): route verification on a P2a byte copy (`diag_c122_route.py`, which also writes the P2a
+       graph dump), then P2b on that graph per PD240/241(b):** plan → dry + prerun → prior-art (a new create class: valued
+       constant → indicator on an FS frame) → `--scratch-required` → scratch run → ONE launch → final Error List + expected
+       file. If `guard_peer` holds a launch on `diag_c122_hyg.log` or `diag_c122_opbuild.log`, the card dispatches the owed
+       hypothesis review; it does not bypass.
+244. **(cycle 122 judgement, 2026-10-01 — after 122-5 FAIL 12/2)**
+     USER-RULES: U1 (relied on; none contradicted).
+     - **(a) The P2a graph exists:** `tools/bench/diag_c122_graph_p2a.json` md5 `3f6f5d36…` (5,816 rows, 10,113 objects, every
+       Diagram owner resolved). P2b is planned on it.
+     - **(b) The S0 FAIL is a script premise:** a flat-sequence frame diagram's owner reads `('FlatSequenceFrame', 0)` with
+       error 1055 under `owner_of(strict=True)`; `owner_of(strict=False)` (as `graph()` uses) is the accepted FS-frame check.
+     - **(c) PD240(c)'s frame = `#4866`** (FS1 frames by x: … 3121, 1817, **4866**, 686, 759 — `facts_c120_qrtw.json:749-760`).
+       `#3121` is not used.
+     - **(d) No separate route run.** The P2b SCRATCH run (required: a new create class) on a byte copy of the bed IS the route's
+       end-to-end verification on `#4866` with all five objects; its read-back gates (label, `read_term_type`,
+       `read_const_value`, 1 wire each) write the `scratch_verify` record. `diag_c122_route.py` is not re-run.
+     - **(e) A saved donor is declared through stagekit, not through a gate exemption:** carry to the next tooling card
+       (`stagekit.close()` takes no expected-files list, `stagekit.py:1382`; review `archive/peer/2026-10-01-c122-hyg-h6.md`).
+245. **(cycle 122 judgement, 2026-10-01 — after 122-6 FAIL 40/1, the cycle's last dispatch)**
+     USER-RULES: U1 (relied on; none contradicted).
+     - **(a) P2b's plan, recipe and scratch are DONE except one census line:** `plan_ring_p2b.json` md5 `ce18e794…` (10 create rows
+       on `#4866`), `tools/recipes/stage_d1_ring_p2b.py` md5 `93a8ad5a…`; dry PASS, prerun 13/0, prior-art `novel`; the scratch
+       (`stage_d1_ring_p2b_scratch_pin.log`) passed every object gate (5 labels, types, values == PD240(a)/(b), on `#4866`, 5 new
+       wires, none lost, cdiff 16, refs 7/7, input md5 unchanged). Kept scratch: `claudeDev\scratch_c122_p2b_20261001_132703.vi`
+       md5 `a18b92d5…`.
+     - **(b) CEN2 (DigitalNumericConstant +5 vs predicted +1) is NOT accepted by argument.** The candidate explanation (each of the
+       4 new ArrayConstants owns one element DigitalNumericConstant, + `Latest` = 5) fits every other census line but was not
+       measured. **The next card MEASURES it first, read-only on the kept scratch:** the owner of each of the 5 new
+       DigitalNumericConstants. Exactly 4 owned by the 4 new ArrayConstants + 1 on `#4866` ⇒ the prediction file is corrected
+       (that rule: an ArrayConstant adds its element constant) and the run continues: scratch Error List pin
+       (`stage_d1_ring_p2b_el.py`, which deletes the scratch) → ONE launch → final Error List + expected file. Any other
+       ownership ⇒ return to judgement. The Jev ladder / `guard_peer` decides whether a review is owed; never bypassed.
+     - **(b′) SETTLED by the retrospective (`archive/peer/2026-10-01-retrospective-cycle122.md`, `inference-over-measurement`,
+       ACCEPTED): the ownership WAS already measured** in `stage_d1_ring_p2b_scratch_pin.log:60,78,96,114,132` — DNC `#25535`,
+       `#25774`, `#26122`, `#26401` owned by ArrayConstants `#25465`, `#25632`, `#25898`, `#26244`; `#26495` on Diagram `#4866`.
+       CEN2 is a WRONG PREDICTION: correct `plan_ring_p2b_pred.json` (an ArrayConstant adds its element DigitalNumericConstant)
+       and continue with the Error List pin and the ONE launch. No new read-only step.
+     - **(c) Repeated class noted for the retrospective:** an FS-frame owner read under a strict check failed twice (cycle 120
+       F1a, 122-5 S0) — review `archive/peer/2026-10-01-c122-route-s0.md:90`. PD244(b) is the rule; the slug is the
+       retrospective's to assign.
 
 ## OPEN (design choices — for judgement; not decided here)
 
