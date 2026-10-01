@@ -1,0 +1,27 @@
+{"schema":"result/1","id":"chat-D1","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+ {"path":"docs/d1/INDEX.md","md5":"266ac009fad513724f365eaf9cb50c65"},
+ {"path":"docs/d1/ring-p3b.md","md5":"2424ff08beb2df495dff437659c5bf6d"},
+ {"path":"docs/d1/ring-p4.md","md5":"e1850b861ffc741531f24931d79c8543"},
+ {"path":"docs/d1/tooling.md","md5":"ea527369ae3d7cba9e8109b8ae8a6604"},
+ {"path":"tools/doc_lint.py","md5":"86071f334cdfeb78837043baaee0bbc1"},
+ {"path":"tools/bench/freeze_docs_d1.json","md5":"fc5d40e5855236634df8cb7665e72ac2"},
+ {"path":"tools/bench/selftest_doc_lint_d1.py","md5":"6d8e3c96eee23d84a95d313e946b75cb"},
+ {"path":"tools/bench/next.json","md5":"61bca6f6e1478b0f5289e285230dc8c5"}],
+"facts":[
+ "5 docs frozen in place (split-plan 3005, cycle27 3798, viol-dec 1785, d1-build 1281, route-b 719 lines): 0 old lines changed but status, +11 footer lines (freeze_docs_d1.log:3-7)",
+ "split-plan old md5 bc4909e7 == next.json's; new 3e22957e (freeze_docs_d1.json)",
+ "docs/d1/INDEX.md 177 lines: state, P1-P6 table, open decisions, PD238-267 in force + 9 older cited items, UNSURE list (8); topic files ring-p3b/ring-p4/tooling from PD268",
+ "violation-decisions.md frozen but its footer keeps APPEND-ONLY at the end: read by retrospective.py:61, violations.py:94 DEC_RE, retro_due.py, doc_lint L8 (FROZEN header does not match DEC_RE)",
+ "doc_lint.py current_plans() adds docs/*/INDEX.md -> L4/L8 = INDEX; L10 cap 400 FAIL, L10a exempt warn, L10b grandfathered warn, L11 frozen footer; L9 skips frozen",
+ "doc_lint --skip-dispositions PASS 0 fail/6 warn; plain run FAILs only pre-existing L6 (184 archive/peer reviews undisposed, untouched); selftest_doc_lint_d1.log 7/0",
+ "Runner dry path: selftest_cycle_runner_d1.log 10/10; regressions selftest_audit_c7 8/0, selftest_chat_p2 25/0; selftest_c116a_landed 15/3 = pre-existing S2/S4/A2 carry (result_117-3.json:2)",
+ "next.json plan -> docs/d1/INDEX.md md5 266ac009, act unchanged; protocol validate OK. STATUS.md:18 START HERE item 1 and :102 Where-to-look route-b pointer -> INDEX; STOP line kept",
+ "tools/cycle_prompt.md:51-52 reads 'the plan STATUS names' (now INDEX); :81 cites split-plan (resolves); not in write flags. agents/*.md, cycle_runner.py: no plan path",
+ "CLAUDE.md to change (not edited): :309 Pre-decided section -> INDEX + docs/d1 topic files; :580/:593 add 400-line cap + freeze-in-place; :289 plan doc -> INDEX"],
+"open":[
+ "L10b grandfathered 5 current docs over 400 (frame-loop-wire-graph 472, gpu-backend 444, keystone-op-spec 608, main-vi-panel-map 621, restructure-plan-4.6 495): freeze, split or exempt each?",
+ "violation-decisions.md: keep appending below its frozen footer, or point violations.py/retro_due.py/retrospective DECISIONS at a new file (tooling card)?",
+ "tools/cycle_prompt.md is outside this card's write flags: add an explicit 'new decisions go to docs/d1/<topic>.md, numbered from 268' line there?"],
+"cost":{"usd":null,"minutes":16,"labview_runs":0},
+"note":"No LabVIEW, GUI or hardware. INDEX UNSURE list: PD238(b) scratch-image condition, cycle-order items, PD245(c), PD253(c), PD256(e)(f), cycle27 PD1-126 except 9, pre-09-28 violation blocks, PD210."}

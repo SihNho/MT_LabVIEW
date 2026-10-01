@@ -15,7 +15,7 @@ STOP — CHAT 2026-10-02 ~02:1x for the user's approved doc reorganisation ("문
 
 
 ## START HERE
-1. **Cycle plan = `docs/cycle27-plan.md`** (cycle20/21 plans `superseded`; motor plan `docs/motor-limit-assurance-plan.md` **§A.1 + "P2 live findings"**; master `docs/pre-rig-master-plan.md`; decisions `docs/decisions.md`; D1 `docs/d1-route-b-plan.md`, paused).
+1. **Cycle plan = `docs/d1/INDEX.md`** (card chat-D1 2026-10-02: the in-force decisions, one line each, linked into the FROZEN long plans `docs/d1-loop12-17-split-plan.md` / `docs/cycle27-plan.md` / `docs/d1-build-plan.md` / `docs/d1-route-b-plan.md`, whose line numbers are unchanged; NEW decisions go to the topic files `docs/d1/*.md` it lists, numbered from 268; cycle20/21 plans `superseded`; motor plan `docs/motor-limit-assurance-plan.md` **§A.1 + "P2 live findings"**; master `docs/pre-rig-master-plan.md`; decisions `docs/decisions.md`).
 2. 🔴 **NEVER patch a file with a `py - <<'EOF'` heredoc** — one truncated **this file to 0 bytes** on 2026-09-17.
 3. ⚠️ `peer.ps1` only as `powershell -Command "& 'tools/peer.ps1' … -TaskFile <f>"`, `-TimeoutSec >= 780`. 🆕 **2026-09-18 (user, TRIAL): codex's roles → claude roles** — failed prediction = `-Agent claude -Role hypothesis` SINGLE arm (`-Dual` only for a second opinion on our own tools); `-Kind fact`/`-Kind prose` with no `-Agent` → fable/low thin; `outcome_review.py` → fable/medium thin. Check routing free with `-DryRun`.
 4. Six more operating hints (prior-art log naming · front panel open for edits · `guard_cycle`'s `FIXED:` release · `py_compile` tripping BUILD_RE · §11u unsound · §10 not authorised): **`archive/2026-09-18-status-cycle1-census.md` §1**. ⚠️ `BUILD_RE` also fires on a plain `cp a.py tools/recipes/b.py` — quote both paths (cycle23-close §3).
@@ -99,7 +99,7 @@ current-bed: D1_ring_p3a_20261001_180540.vi
 - ⚠️ Per-session cap 180 min: write `## NEXT` by minute 150; every new stage/diagnostic ≤120 lines on stagekit (§2).
 - Still the user's to overturn: N1 on the pre-bead-loss window, bead-4 FLIP mask, harness records 60 controls and sets none, `background VIs_COPY` untouched (§2).
 
-## Where to look — **`docs/handover-2026-09-22.md` (새 세션은 이것부터)** · `CLAUDE.md` · `docs/secrets-and-handover.md` (API keys, 사용자 교체 체크리스트) · `docs/jev-integration-plan.md` (Jev 삽입 자리, 2026-09-22) · **`docs/decisions.md`** · `docs/NAMES.md` · **`docs/toolkit-capabilities.md`** · **`docs/motor-call-site-census.md`** (P1) · **`docs/d1-route-b-plan.md`** = the build order · `tools/recipes/build_d1_routeb_v0.py`.
+## Where to look — **`docs/handover-2026-09-22.md` (새 세션은 이것부터)** · `CLAUDE.md` · `docs/secrets-and-handover.md` (API keys, 사용자 교체 체크리스트) · `docs/jev-integration-plan.md` (Jev 삽입 자리, 2026-09-22) · **`docs/decisions.md`** · `docs/NAMES.md` · **`docs/toolkit-capabilities.md`** · **`docs/motor-call-site-census.md`** (P1) · **`docs/d1/INDEX.md`** = the current plan (`docs/d1-route-b-plan.md` frozen 2026-10-02) · `tools/recipes/build_d1_routeb_v0.py`.
 
 ## RUNNER STOPPED history (2026-09-22 09:58, 2026-09-24 07:29, 2026-09-25 01:02, 2026-09-25 10:30) → `archive/2026-09-25-status-cycle81-relocate.md` §3
 

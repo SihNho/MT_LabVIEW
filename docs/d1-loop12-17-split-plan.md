@@ -1,7 +1,7 @@
 ---
 type: plan
 kind: stage-plan
-status: current
+status: frozen
 parent: docs/connectivity-map-plan.md
 date: 2026-09-24
 tags: [d1, loop-split, decomposition, stage-plan]
@@ -3003,3 +3003,14 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
 - **O7 final name.** `docs/cycle27-plan.md:390` names the result `Track_v6_D1_GPU.vi`, while `:749-756` says the
   kernel is the CPU one and the GPU swap is its own later stage.
 - **O8 which table governs** — §4's conflict: this page, `docs/cycle27-plan.md:383-390`, or `docs/d1-build-plan.md:675-682`.
+
+---
+<!-- FROZEN-FOOTER chat-D1 -->
+## FROZEN 2026-10-02 (card chat-D1) - index: `docs/d1/INDEX.md`
+
+Frozen IN PLACE on 2026-10-02 by card chat-D1 (user 2026-10-02: "문서 정리안 전체" / "이렇게 하고 한번 테스트해보자"). Every line above this footer is unchanged and keeps its line number, so every `file:line` citation in logs, cards and reviews still resolves. Only the frontmatter `status:` value changed (to `frozen`).
+
+Why: 3,000 lines that every judgement agent re-read each cycle; the items still in force (PD238 and later, plus the older items they cite) are one line each in `docs/d1/INDEX.md`.
+
+Do NOT append new Pre-decided items here. New decisions go to the per-topic files under `docs/d1/` that the index lists; numbering continues at 268.
+

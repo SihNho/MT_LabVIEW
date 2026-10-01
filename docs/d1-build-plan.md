@@ -1,6 +1,6 @@
 ---
 type: plan
-status: current
+status: frozen
 date: 2026-09-17
 cycle: 15
 kind: build
@@ -1279,3 +1279,14 @@ the terminal reads wire 0 and stop if it does not.** So:
   re-assigned to the INDEX-addressed writer `OpConnectNested_v1` in `docs/d1-route-b-plan.md` §4, which needs no
   name at either end. ⚠️ NOT yet measured: whether `OpConnectNested_v1` wires those three. That is one recipe row,
   not an op.
+
+---
+<!-- FROZEN-FOOTER chat-D1 -->
+## FROZEN 2026-10-02 (card chat-D1) - index: `docs/d1/INDEX.md`
+
+Frozen IN PLACE on 2026-10-02 by card chat-D1 (user 2026-10-02: "문서 정리안 전체" / "이렇게 하고 한번 테스트해보자"). Every line above this footer is unchanged and keeps its line number, so every `file:line` citation in logs, cards and reviews still resolves. Only the frontmatter `status:` value changed (to `frozen`).
+
+Why: 1,300 lines; its §9 pool queues were superseded by `docs/ring-buffer-design.md` (PD238(a)); the facts still cited are reached through `docs/d1/INDEX.md`.
+
+Do NOT append here.
+

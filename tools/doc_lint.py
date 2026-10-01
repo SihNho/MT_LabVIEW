@@ -52,6 +52,21 @@ DOCS = os.path.join(ROOT, "docs")
 PEER = os.path.join(ROOT, "archive", "peer")
 STATUS_MAX_LINES = 110          # CLAUDE.md section 4 says "~100"; the margin stops a 101-line file crying wolf
 
+# FROZEN DOCUMENTS AND THE LINE CAP (card chat-D1, user 2026-10-02 "만약 문서가 너무 길어진다면 쪼개서 링크 거는 방식이
+# 더 좋지 않은지?" -> "문서 정리안 전체"). A long plan is FROZEN IN PLACE (`status: frozen`, old lines and their numbers
+# unchanged, footer appended; tools/bench/freeze_docs_d1.py) and its in-force items are indexed in a short
+# `docs/<dir>/INDEX.md`. L10 caps every other active doc under docs/ at DOC_MAX_LINES (FAIL). Reference TABLES are
+# looked up, not read through, so they only WARN with their size. GRANDFATHERED = docs that were already over the cap
+# when it was introduced and were not named by the card (measured 2026-10-02); they WARN until judgement freezes,
+# splits or exempts each one - the list only shrinks.
+DOC_MAX_LINES = 400
+INDEX_DIRS = ("d1",)                                  # docs/<dir>/*.md are active docs too
+NOT_CAPPED_STATUS = ("frozen", "superseded")
+EXEMPT_REFERENCE = ("docs/NAMES.md", "docs/toolkit-capabilities.md", "docs/camera-acquisition-facts.md")
+GRANDFATHERED = ("docs/gpu-backend.md", "docs/frame-loop-wire-graph.md", "docs/restructure-plan-4.6.md",
+                 "docs/keystone-op-spec.md", "docs/main-vi-panel-map.md")
+FROZEN_FOOTER_RE = re.compile(r"^## FROZEN \d{4}-\d{2}-\d{2}", re.M)
+
 RESULT = []                     # (level, check, detail) - level in PASS / WARN / FAIL
 
 
@@ -68,9 +83,11 @@ def read(p):
 
 
 def active_docs():
-    """The ACTIVE set: docs/*.md plus the two root documents. Not archive/ - history is allowed to be stale, that
-    is what makes it history (CLAUDE.md rule 4)."""
+    """The ACTIVE set: docs/*.md, the index directories (`docs/d1/*.md`, card chat-D1 2026-10-02) and the two root
+    documents. Not archive/ - history is allowed to be stale, that is what makes it history (CLAUDE.md rule 4)."""
     out = sorted(glob.glob(os.path.join(DOCS, "*.md")))
+    for d in INDEX_DIRS:
+        out += sorted(glob.glob(os.path.join(DOCS, d, "*.md")))
     for n in ("STATUS.md", "CLAUDE.md"):
         p = os.path.join(ROOT, n)
         if os.path.isfile(p):
@@ -224,16 +241,22 @@ def check_status_length():
         say("PASS", "L3 STATUS.md stays one screen", f"{n} lines (limit {STATUS_MAX_LINES})")
 
 
-def current_plans():
-    """Every `docs/cycle*-plan.md` whose frontmatter says `status: current`, as ABSOLUTE paths.
+def current_plans(docs=None):
+    """Every `docs/cycle*-plan.md` (or `docs/<dir>/INDEX.md`) whose frontmatter says `status: current`, as ABSOLUTE paths.
 
     THE ONE predicate for "the plan" in this project - L4 below, L8, and `audit_cycle.py`'s C7 scope check all
     call this rather than keeping a copy.  C7 used to build `docs/cycle<N>-plan.md` from the cycle number, which
     went DEAD the moment the scheme moved to one plan spanning cycles 27+ (STATUS.md OPEN 56); repointing it here
     means a future rename of the scheme breaks one function, not three.  Sorted, so the caller's `[0]` is stable
-    when L4 is (wrongly) reporting more than one."""
+    when L4 is (wrongly) reporting more than one.
+
+    card chat-D1 (2026-10-02): an index `docs/<dir>/INDEX.md` with `status: current` is a plan too - the long cycle
+    plans were frozen in place and the index is now the plan the cycle prompt, L8, C7's fallback and the
+    retrospective's plan pointer read. `docs` is for the self-test only."""
+    docs = docs or DOCS
     out = []
-    for p in sorted(glob.glob(os.path.join(DOCS, "cycle*-plan.md"))):
+    cands = sorted(glob.glob(os.path.join(docs, "cycle*-plan.md"))) + sorted(glob.glob(os.path.join(docs, "*", "INDEX.md")))
+    for p in cands:
         if (frontmatter(read(p)) or {}).get("status") == "current":
             out.append(p)
     return out
@@ -448,6 +471,64 @@ def check_user_rules_lines(paths=None):
     return miss
 
 
+def _docname(p):
+    try:
+        return rel(p)
+    except ValueError:
+        return p.replace("\\", "/")
+
+
+def is_frozen(p):
+    return (frontmatter(read(p)) or {}).get("status") == "frozen"
+
+
+def check_line_cap(paths=None, names=None):
+    """L10 (card chat-D1): an active doc under docs/ that is not frozen/superseded stays <= DOC_MAX_LINES lines.
+    `paths` / `names` (published names, e.g. `docs/NAMES.md`) exist for the self-test, which runs on a temp tree."""
+    if paths is None:
+        paths = [p for p in active_docs() if os.path.normpath(p).startswith(os.path.normpath(DOCS) + os.sep)]
+    names = names or [_docname(p) for p in paths]
+    fails, ref_warn, gf_warn, frozen = [], [], [], 0
+    for p, nm in zip(paths, names):
+        st = (frontmatter(read(p)) or {}).get("status", "")
+        if st in NOT_CAPPED_STATUS:
+            frozen += st == "frozen"
+            continue
+        n = len(read(p).splitlines())
+        if n <= DOC_MAX_LINES:
+            continue
+        if nm in EXEMPT_REFERENCE:
+            ref_warn.append(f"{nm} {n}")
+        elif nm in GRANDFATHERED:
+            gf_warn.append(f"{nm} {n}")
+        else:
+            fails.append(f"{nm} {n}")
+    if fails:
+        say("FAIL", "L10 active docs stay <= %d lines" % DOC_MAX_LINES,
+            f"{len(fails)} doc(s) over the cap: {fails}. Freeze in place (`status: frozen` + footer, "
+            f"tools/bench/freeze_docs_d1.py) and index what is in force, or split into linked topic files.")
+    else:
+        say("PASS", "L10 active docs stay <= %d lines" % DOC_MAX_LINES,
+            f"none over the cap ({frozen} frozen doc(s) not capped)")
+    if ref_warn:
+        say("WARN", "L10a reference tables over the cap (exempt)", "; ".join(ref_warn))
+    if gf_warn:
+        say("WARN", "L10b grandfathered docs over the cap (judgement: freeze, split or exempt)", "; ".join(gf_warn))
+    return fails, ref_warn, gf_warn
+
+
+def check_frozen_footer(paths=None):
+    """L11 (card chat-D1): a `status: frozen` doc carries its FROZEN footer, which names the index to read instead."""
+    paths = paths if paths is not None else active_docs()
+    bad = [_docname(p) for p in paths if is_frozen(p) and not FROZEN_FOOTER_RE.search(read(p))]
+    if bad:
+        say("WARN", "L11 frozen docs carry a FROZEN footer", f"{len(bad)} without one: {bad[:10]}")
+    else:
+        n = sum(1 for p in paths if is_frozen(p))
+        say("PASS", "L11 frozen docs carry a FROZEN footer", f"{n} frozen doc(s), all with a footer")
+    return bad
+
+
 def run(skip_dispositions=False):
     del RESULT[:]
     check_frontmatter()
@@ -462,7 +543,9 @@ def run(skip_dispositions=False):
         say("PASS", "L6 archived reviews are disposed", "skipped - audit_cycle A4 owns this condition")
     check_marked_decisions()
     check_decision_headers()
-    check_user_rules_lines()
+    check_user_rules_lines([p for p in active_docs() if not is_frozen(p)])   # frozen items are never edited (chat-D1)
+    check_line_cap()
+    check_frozen_footer()
     return list(RESULT)
 
 

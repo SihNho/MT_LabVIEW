@@ -1,6 +1,6 @@
 ---
 type: decision
-status: current
+status: frozen
 date: 2026-09-18
 tags: [violations, cycle-discipline]
 ---
@@ -1783,3 +1783,14 @@ which cannot let a bad build through, so it follows the deliverable cards:
   -u tools/recipes/X.py"` on a STOPPED recipe → allowed; `py -u tools/recipes/X.py` and `py tools/bgrun.py … -- py -u
   tools/recipes/X.py` → still refused; the six earlier read-only repairs' cases stay allowed.
 - Logged as fp-22 in the same card. A seventh read-only refusal after this fix is `device-failed`.
+
+---
+<!-- FROZEN-FOOTER chat-D1 -->
+## FROZEN 2026-10-02 (card chat-D1) - index: `docs/d1/INDEX.md`
+
+Frozen IN PLACE on 2026-10-02 by card chat-D1 (user 2026-10-02: "문서 정리안 전체" / "이렇게 하고 한번 테스트해보자"). Every line above this footer is unchanged and keeps its line number, so every `file:line` citation in logs, cards and reviews still resolves. Only the frontmatter `status:` value changed (to `frozen`).
+
+Why: 1,800 lines. The decision blocks still cited as in force are listed in `docs/d1/INDEX.md`.
+
+APPEND-ONLY CONTINUES BELOW THIS FOOTER: `tools/violations.py`, `tools/retro_due.py`, the retrospective dispatcher (`DECISIONS` path) and `tools/doc_lint.py` L8 read THIS file, so a new `## <slug> - YYYY-MM-DD HH:MM` decision block is still appended at the END of this file (never above, never edited) until those readers are pointed at a new location. Appending keeps every cited line number.
+

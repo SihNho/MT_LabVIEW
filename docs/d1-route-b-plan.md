@@ -1,7 +1,7 @@
 ---
 decided_2026_09_17: "SINK RULE (judgement): a from-tunnel row's sink is ALWAYS a terminal with Is Source? = FALSE — the consuming node's input inside the new loop (LabVIEW creates the tunnel) or, for a MOVED structure, its INPUT tunnel's OUTSIDE terminal; an OUTPUT tunnel is never a sink (T2c2's two-source broken wire). Gate per row: sink Is Source? FALSE and bare before, wire Is Broken? FALSE after. One read-only Terminals[] census of #5540 (pre/post move) is allowed to settle tunnel-side addressing."
 type: plan
-status: paused
+status: frozen
 date: 2026-09-18
 cycle: 15
 kind: build
@@ -717,3 +717,14 @@ indicators on terminal indices 0–7* (lines 49–59), i.e. it infers attachment
 It reports; it repairs nothing. The route-B run may use its output to name what is broken, and only rows the op
 NAMES may be fixed — the budget-2 rule in the brief exists so that "ExecState 0" never again becomes a licence to
 guess at 63 wires.
+
+---
+<!-- FROZEN-FOOTER chat-D1 -->
+## FROZEN 2026-10-02 (card chat-D1) - index: `docs/d1/INDEX.md`
+
+Frozen IN PLACE on 2026-10-02 by card chat-D1 (user 2026-10-02: "문서 정리안 전체" / "이렇게 하고 한번 테스트해보자"). Every line above this footer is unchanged and keeps its line number, so every `file:line` citation in logs, cards and reviews still resolves. Only the frontmatter `status:` value changed (to `frozen`).
+
+Why: 720 lines, `status: paused` since 2026-09-18 (route B was replaced by the staged loop split). Index: `docs/d1/INDEX.md`.
+
+Do NOT append here.
+
