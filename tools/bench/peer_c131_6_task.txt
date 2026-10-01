@@ -1,0 +1,21 @@
+ATTACK this claim about the failure in tools/bench/stage_d1_ring_p3b1_el_final.log (script tools/bench/stage_d1_ring_p3b1_el.py).
+
+FAILURE: gate X "P3a 55 - removed 2 == predicted_total 53 (entry #12 count -> -1)" (stage_d1_ring_p3b1_el_final.log:3). No LabVIEW read was made.
+
+CLAIM: this is a bug in our helper script, not a problem with the VI. The helper built the expected Error List file for the
+P3b-1 final read by subtracting ALL predicted removed items (2: w27378 and w3040, plan_ring_p3b1_pred.json:370-384) from the
+LAST 'wire has loose ends' entry of the P3a expected file (tools/bench/errorlist_expected_D1_ring_p3a_20261001_180540.json:110-117,
+count 1), which went to -1. The P3a file has four loose-ends entries (17/5/1/1, lines 86-117) whose keys
+('wirehaslooseends', 'wirewirehaslooseends') all match the same Error List rows, and tools/errorlist_check.py compare()
+(lines 415-432) is first-match greedy, so the per-entry split carries no location meaning: only the CLASS total does.
+FIX (already edited, judgement PD274(b), docs/d1/ring-p3b.md:71-73): merge the four entries into one class entry
+'wirehaslooseends' count 24-2 = 22, total 53; re-pin per-key counts from the measured final read afterwards. Offline
+self-check added (MODE selfcheck): the class file must license the measured P3b-1 scratch read
+(tools/bench/errorlist_scratch_c129_ring_p3b1_20261002_052136_20261002_053812.json, 53 items, loose ends 22) with extra 0 /
+missing 0, and must leave exactly 2 extra / 0 missing on P3a's own final read
+(tools/bench/errorlist_D1_ring_p3a_20261001_180540_20261001_181801.json).
+
+Specifically try to find: (1) a reason the per-entry structure DOES matter (e.g. an entry whose norm_all would match rows of
+another class, so merging changes which rows are licensed); (2) a way the merged key 'wirehaslooseends' could license a row
+the old entries would not, or vice versa (substring matching on raw + detail text); (3) whether the class-total debit could
+hide a real mismatch the final read is meant to catch (e.g. one loose end gone and a different one added).

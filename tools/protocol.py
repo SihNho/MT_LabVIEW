@@ -640,9 +640,35 @@ def _src(p):
         return ""
 
 
+# gate-fp fp-25 (card 131-2): a READ-ONLY program that merely NAMES the peer dispatcher (`md5sum tools/peer.ps1`,
+# `grep -n x tools/peer.ps1 | head`) dispatches nothing. Judged per command SEGMENT (split on ; && || | newline) by the
+# segment's first program; a segment led by any other program (py, powershell, &, bgrun, ...) is still a dispatch.
+READONLY_PROGRAMS = frozenset((
+    "md5sum", "sha1sum", "sha256sum", "cksum", "grep", "egrep", "fgrep", "rg", "cat", "head", "tail", "less", "more",
+    "wc", "ls", "dir", "type", "stat", "file", "diff", "cmp", "sort", "uniq", "cut", "echo",
+    "get-content", "gc", "select-string", "sls", "get-filehash", "get-item", "get-childitem", "test-path",
+    "measure-object"))
+_PEER_SEG_SPLIT_RE = re.compile(r"&&|\|\||;|\||\r?\n")
+
+
+def _dispatch_text(cmd):
+    """`cmd` without the segments a READONLY_PROGRAMS program leads (fp-25); `git log|diff|show|status|blame` too."""
+    keep = []
+    for seg in _PEER_SEG_SPLIT_RE.split(cmd or ""):
+        toks = seg.strip().lstrip("(").split()
+        prog = os.path.basename(toks[0].strip("\"'")).lower() if toks else ""
+        if prog in READONLY_PROGRAMS:
+            continue
+        if prog == "git" and len(toks) > 1 and toks[1].lower() in ("log", "diff", "show", "status", "blame"):
+            continue
+        keep.append(seg)
+    return " ; ".join(keep)
+
+
 def peer_role_of(cmd):
     """The review role a command dispatches, or None. peer.ps1: -Role wins, else -Kind (fact/prose), else a
-    -Kind review / -Dual = hypothesis."""
+    -Kind review / -Dual = hypothesis. Segments led by a read-only program are not dispatches (fp-25)."""
+    cmd = _dispatch_text(cmd)
     for script, role in PEER_SCRIPT_ROLES:
         if re.search(r"(?:^|[\\/\s\"'])" + re.escape(script), cmd or "", re.I):
             return role

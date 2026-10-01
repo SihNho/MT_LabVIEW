@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"131-5","status":"FAIL","gates":{"pass":4,"fail":1},
+"first_fail":"N4 final Error List helper offline gate X: P3a 55 - removed 2 == 53 but last loose-ends entry #12 count 1 -> -1 (stage_d1_ring_p3b1_el_final.log:3); no read made",
+"blocked_by":null,
+"artefacts":[
+ {"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b1_20261002_060910.vi","md5":"9d7bf28738b7c154280e5e7c2c9d4961"},
+ {"path":"tools/bench/stage_d1_ring_p3b1.log","md5":"23bddfaa37be0ce5e28b738d04020c08"},
+ {"path":"tools/bench/errorlist_expected_D1_ring_p3b1_20261002_060910.json","md5":"86c7619987d2cdb0fd4c8e279c614795"},
+ {"path":"tools/bench/plan_ring_p3b1_pred.json","md5":"44fffed380c3fba01c81196621565116"},
+ {"path":"tools/bench/plan_ring_p3b1_pin.json","md5":"b5bde623a2428caeb79e8eb4538b8e9b"},
+ {"path":"tools/bench/diag_c131_5_stubs.log","md5":"4b1d21a4e4f964a10c22c8d6e6d77ce3"},
+ {"path":"tools/bench/stage_d1_ring_p3b1_el_final.log","md5":"197ea7a7c378e6b23bbf703686354bab"}],
+"facts":[
+ "N0: read items carry no uid (show_error.uid_route 'none'); graph diff P3a base vs sim end retires ONE one-sided wire: w3040, #6810 'Image Out' t6865 source-only (diag_c131_5_stubs.log:19-21)",
+ "N0: w3040's net is the Image Out crossing p3b_x_img_src + RLE p3b_rle_img_src (plan_ring_p3b1.json:476-486) -> RLE-target yes; base shows only 8 one-sided wires vs 24 loose items, so UNVERIFIED by uid",
+ "N1: hypothesis review ANSWERED, verdict 'unverified', alt: a branch stub on w3747/w653 (also rebuilt+RLE'd) cleared (archive/peer/2026-10-02-hyp-c131-5-el53.md:9,93)",
+ "N2: pred census = pin4.log:455 (18 classes, Wire 28) + fail_above 690 (pred:478) via diag_c131_4_census.log C1-C6 PASS; errorlist predicted_total 53, removed +w3040 (pred:374-383)",
+ "N2: dry E1 31 ops diff 0, DRY PASS (stage_prerun_c131_5_p3b1_dry.log:91-105); prerun 15/0 (stage_prerun_c131_5_p3b1_prerun.log)",
+ "N3: launch RESULT PASS 22/0, BGRUN END rc=0 after 819s; FS [0,16,18]==sim, RB 'status', D new 28 lost 3 [653,3040,3747], CEN2==pred, PB 16 rows (stage_d1_ring_p3b1.log:432-474)",
+ "N3: peak 680.4 MB at 'METER read k 31' (+17.4, log:430) <= 690; saved D1_ring_p3b1_20261002_060910.vi 9d7bf287; input md5 unchanged (PS, log:451); H5 refs 12/12; LabVIEW gone (log:473)",
+ "N3: the recipe has no explicit tunnel-name gate; 'current image number' appears nowhere in stage_d1_ring_p3b1.log - names covered only by E1 checkpoint==sim",
+ "N4: el helper takes ALL pred.removed off the LAST loose-ends entry (stage_d1_ring_p3b1_el.py:38-45); P3a entries 17/5/1/1 -> -1; rewrote errorlist_expected_scratch_ring_p3b1_pred.json",
+ "Jev ladder: stage_d1_ring_p3b1_el_final.log | no row yet | - | returned per material.md | FAIL. Side: fp-28 logged (guard_peer on my own parse bug); 2nd review hyp-c131-5-s4el ANSWERED"],
+"open":[
+ "Step 4: which P3a loose-ends entry (17/5/1/1) does the w3040 item come off? The helper debits only the last (count 1); choosing the entry is judgement, then a helper edit and the final read.",
+ "Accept D1_ring_p3b1_20261002_060910.vi as the bed given N0 is unverified (PD273(d)) and the review's alternative w3747/w653?",
+ "Recipe-written errorlist_expected_D1_ring_p3b1_060910.json has total 53 but unchanged entry counts summing to 55 (stage_d1_ring_p3b1.py:91) - re-pin from the final read?"],
+"cost":{"usd":null,"minutes":27,"labview_runs":1},
+"note":"Bind 05:58, return 06:25. Steps 0-3 done; step 4 stopped at the helper's offline gate X before LabVIEW opened. STATUS untouched, current-bed not moved."}

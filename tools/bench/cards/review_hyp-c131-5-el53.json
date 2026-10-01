@@ -1,0 +1,22 @@
+{
+ "schema": "review/1",
+ "id": "hyp-c131-5-el53",
+ "role": "hypothesis",
+ "claim": "P3b-1 scratch Error List is 53 not 54 because P3b-1's Image Out crossing (plan_ring_p3b1.json:476-486) re-creates source net w3040 (#6810 Image Out t6865, a source-only stub in P3a), retiring one pre-existing loose-end item; harmless (no sink, no computation).",
+ "predicted": "54 items: P3a 55 minus w27378 only (plan_ring_p3b1_pred.json:353-360); loose-ends class 23",
+ "observed": "53 items, loose-ends 22, all other 8 classes equal (stage_d1_ring_p3b1_el_scratch.log:183-190); items carry no uid (show_error.uid_route none)",
+ "ruled_out": [
+  "reader miss: count-only 53 == window header '53 errors and warnings' == full read 53 (el_scratch.log:89,168)",
+  "other class shift: only 'wire has loose ends' differs (el_scratch.log:183)"
+ ],
+ "attachments": [
+  {"path": "tools/bench/stage_d1_ring_p3b1_el_scratch.log", "md5": "9e380e13fe91d45834e1f07cb575d888"},
+  {"path": "tools/bench/diag_c131_5_stubs.log"},
+  {"path": "tools/bench/diag_c131_5_stubs.py"},
+  {"path": "tools/bench/plan_ring_p3b1.json", "md5": "edbdba9909cc5130f8710f49a510b8ad"},
+  {"path": "tools/bench/errorlist_expected_D1_ring_p3a_20261001_180540.json"},
+  {"path": "docs/d1/ring-p3b.md"}
+ ],
+ "ask": "refute",
+ "note": "PD273(a) said 'an RLE row cleared a second stub on the same net'; the graph diff instead names w3040 retired by net re-creation (PD256(c)). Base graph has only 8 one-sided wires vs 24 loose items, so stub coverage is partial."
+}

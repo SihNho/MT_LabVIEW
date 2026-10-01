@@ -1,0 +1,75 @@
+{
+ "schema": "task/1",
+ "id": "131-4",
+ "kind": "build",
+ "goal": "PD272(c): P3b-1 scratch S3 (Error List count-only, scratch deleted) + S4 (census into pred, fail_above 690, dry/prerun), then ONE launch -> claudeDev D1_ring_p3b1_*.vi, final Error List",
+ "why": "Scratch pin4 structurally clean (22/0, names right); memory margin re-decided from measurement (PD272(b)). brief_131-4.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_131-4.md"},
+  {"path": "docs/d1/ring-p3b.md"},
+  {"path": "tools/bench/cards/result_131-3.json"},
+  {"path": "tools/bench/stage_d1_ring_p3b1_scratch_pin4.log", "md5": "e07b9dacd6446580596bf55b1a9ce411"},
+  {"path": "tools/bench/stage_d1_ring_p3b1_scratch_pin.json", "md5": "902bdda195f350908f0f65ef0178e2a4"},
+  {"path": "tools/bench/plan_ring_p3b1.json", "md5": "edbdba9909cc5130f8710f49a510b8ad"},
+  {"path": "tools/bench/plan_ring_p3b1_pred.json", "md5": "e4bba5b3e74fdf991dd073400f3756ca"},
+  {"path": "tools/recipes/stage_d1_ring_p3b1.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3a_20261001_180540.vi", "md5": "4dfa44aac8fb32f706b3eb792ee7d3cc"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p3b1.py"},
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p3b1_el.py"},
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p3b1_scratch_pin.json"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/wait_logs.py"},
+  {"kind": "file", "name": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/scratch_c129_ring_p3b1_20261002_052136.vi"},
+  {"kind": "file", "name": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_ring_p3a_20261001_180540.vi"}
+ ],
+ "pass": [
+  "L1 scratch Error List count-only per class == pin4 expected (54); scratch deleted; LabVIEW gone",
+  "L2 measured census into pred citing log line; fail_above 690.0 (line named); dry 31/31 + prerun 15/0; --scratch-required exit",
+  "L3 ONE launch to BGRUN END: all gates PASS through op 31, census == pred, peak <= 690 MB, saved D1_ring_p3b1_*.vi + md5, bed unchanged",
+  "L4 final full Error List of saved file == 54 predicted; expected file written; LabVIEW verified gone"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p3b1_pred.json",
+  "tools/bench/errorlist_expected_D1_ring_p3b1_*.json",
+  "tools/bench/cards/result_131-4.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/*ring_p3b1*",
+   "tools/bench/stage_d1_ring_p3b1_el.py",
+   "tools/bench/sim/**",
+   "tools/bench/prerun/**",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/errorlist*",
+   "tools/bench/graph_ring_p3b1*",
+   "tools/bench/census_samples.json",
+   "tools/bench/diag_c131_4*",
+   "tools/bench/stage_prerun*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prior_art*",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_131-4*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 75},
+ "rules": [
+  "Steps in order; return at the first result that differs from its prediction (step finished, LabVIEW closed)",
+  "Exactly ONE launch of the real recipe; never end the turn while a run lacks BGRUN END (material.md:92-98)",
+  "GUI via lv_gui.ps1 -Exception Approved only; capture, locate, act, capture, confirm",
+  "No STATUS edit, no current-bed move; cost.minutes = bind->return"
+ ],
+ "advances": ["M3", "M4"]
+}

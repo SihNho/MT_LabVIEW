@@ -1498,19 +1498,85 @@ def _diag_chain(st, d, par):
 # names, stagexec.py:932); a named net through a loop border is refused as unmeasured.
 CROSS_NAME_FROM_CLS = ("SelectorTunnel", "LoopTunnel", "RightShiftRegister", "LeftShiftRegister", "FlatSequenceOuterTunnel",
                        FSIT_CLS, "Tunnel")
+# card 131-1 (PD270(b)): the 129-7 rule above was REFUTED by pin3 op 26 (#6865 'Image Out' on w3040, a net with NO tunnel:
+# LabVIEW named the FSOT 'Image Out', stage_d1_ring_p3b1_scratch_pin3.log:370). Rule re-derived from EVERY recorded crossing
+# (tools/bench/fs_tunnel_naming_table.json, self-test tools/bench/selftest_stagesim_tunnel_naming.py): the name comes from the
+# SOURCE TERMINAL, by its owner class - a SubVI output gives its terminal name (B1, A_bn, pin2 op 33, pin3 ops 24/26, B3), a
+# primitive Function output gives '' (Q1, Q3, pin2 ops 27/29/31, pin3 ops 20/22), an unnamed source gives '' (B2, A_i).
+# Scope: a WIRED source names every face of every created tunnel (B1, A_bn, pin3 op 26); an UNWIRED source names only the
+# face that takes the wire from it (B3: For-exit sink face 'New Image', every other face '', diag_c126_6_cross.log:78).
+# Classes measured only by a READ of the base graph's existing tunnels (diag_c131_1_census.log): Property/Local/Diagram name
+# like a SubVI, BuildArray gives ''. Any other class with a non-empty terminal name is refused as UNMEASURED.
+CROSS_NAMED_SRC_CLS = ("SubVI", "Property", "Local", "Diagram")
+CROSS_EMPTY_SRC_CLS = ("Function", "BuildArray")
 
 
 def _cross_tunnel_name(st, s, a):
+    """card 131-1 -> (name on every face, name on the FIRST face only). See the block comment above."""
+    nm = s["term_name"] or ""
+    if nm and s.get("owner_class") in CROSS_EMPTY_SRC_CLS:
+        nm = ""
+    elif nm and s.get("owner_class") not in CROSS_NAMED_SRC_CLS:
+        raise SimError("wire {0} -> {1}: source '{2}' on a {3} - UNMEASURED tunnel naming for that owner class (card 131-1, "
+                       "fs_tunnel_naming_table.json)".format(a["src"], a["dst"], nm, s.get("owner_class")))
     if not s["wire_uid"]:
-        return ""
+        return "", nm
     names = set(r["term_name"] for r in wire_rows(st, s["wire_uid"])
                 if r["owner_class"] in CROSS_NAME_FROM_CLS and r["term_uid"] != s["term_uid"]) - {""}
-    if not names:
-        return ""
-    if names != {s["term_name"]}:
-        raise SimError("wire {0} -> {1}: the source net's tunnels carry names {2} (source '{3}') - UNMEASURED tunnel naming "
-                       "(card 129-7)".format(a["src"], a["dst"], sorted(names), s["term_name"]))
-    return s["term_name"]
+    if names and names != {nm}:
+        raise SimError("wire {0} -> {1}: the source net's tunnels carry names {2} (source '{3}' -> '{4}') - UNMEASURED tunnel "
+                       "naming (card 131-1)".format(a["src"], a["dst"], sorted(names), s["term_name"], nm))
+    return nm, ""
+
+
+def cross_face_names(st, s, a, tunnels):
+    """card 131-1: the names LabVIEW gives the faces of the tunnels ONE crossing creates. `tunnels` = [(cls, fin, fout,
+    [other faces])] in chain order from the source -> [{'in': name, 'out': name, 'other': name}] (self-tested against every
+    row of tools/bench/fs_tunnel_naming_table.json)."""
+    every, first = _cross_tunnel_name(st, s, a)
+    out = [{"in": every, "out": every, "other": every} for _ in tunnels]
+    if out and first:
+        out[0]["in"] = first
+    return out
+
+
+NAMING_TABLE = "tools/bench/fs_tunnel_naming_table.json"
+
+
+def naming_table_check(path=None):
+    """card 131-1: every row of the crossing table vs cross_face_names -> {rows: [(label, bad, cite)], skipped: [label],
+    cells, unknown}. A row with `scope` (FlatSequenceInnerTunnel, frame-to-frame) is outside the rule and skipped."""
+    T = _j(_abs(path or NAMING_TABLE))
+    res = {"rows": [], "skipped": [], "cells": 0, "unknown": 0}
+    for r in T["rows"]:
+        lab = "{0} op {1}".format(r["run"], r["op"])
+        if r.get("scope"):
+            res["skipped"].append(lab)
+            continue
+        w = 900001 if r["src_wired"] else 0
+        src = {"term_uid": 800001, "term_name": r["src_name"], "is_source": True, "wire_uid": w, "owner_uid": 800000,
+               "owner_class": r["src_owner_class"], "frame_diagram": 1, "term_class": "Terminal"}
+        rows = [src] + [{"term_uid": 800100 + k, "term_name": nm, "is_source": False, "wire_uid": w, "owner_uid": 800200 + k,
+                         "owner_class": "SelectorTunnel", "frame_diagram": 1, "term_class": "OuterTerminal"}
+                        for k, nm in enumerate(r["net_tunnel_names"] if w else [])]
+        try:
+            got = cross_face_names({"terminals": rows, "objs": [], "neg": 0}, src, {"src": r["src_uid"], "dst": "x"}, r["faces"])
+        except SimError as e:
+            res["rows"].append((lab, [("refused", str(e))], r["faces_cite"]))
+            continue
+        bad = []
+        for want, g in zip(r["faces"], got):
+            for role in ("in", "out", "other"):
+                if role not in want:
+                    continue
+                if want[role] == "unknown":
+                    res["unknown"] += 1
+                    continue
+                res["cells"] += 1
+                if want[role] != g[role]:
+                    bad.append((want["cls"], role, want[role], g[role]))
+        res["rows"].append((lab, bad, r["faces_cite"]))
+    return res
 
 
 def _border_tunnel(st, kind, x, parent, cls, struct, name=""):
@@ -1589,7 +1655,7 @@ def _fs_border_wire(st, a, s, d, labels):
     if vn is None:
         raise SimError("wire {0} -> {1}: border crossing {2} (source {3}) is UNMEASURED - no census_samples.json "
                        "connect_term_uid variant".format(a["src"], a["dst"], sig, "wired" if wired else "unwired"))
-    nm = _cross_tunnel_name(st, s, a)                    # card 129-7: read BEFORE the net is re-created below
+    nm, nm_first = _cross_tunnel_name(st, s, a)          # card 131-1: read BEFORE the net is re-created below
     n_obj0, n_term0 = len(st["objs"]), len(st["terminals"])
     tunnels, faces = [], []
     for kind, x in borders:
@@ -1599,6 +1665,8 @@ def _fs_border_wire(st, a, s, d, labels):
         tunnels.append(T)
         faces.append((fin, fout))
     rows = dict((r["term_uid"], r) for r in st["terminals"])
+    if faces and nm_first:                               # card 131-1: unwired source names only the face it feeds (B3)
+        rows[faces[0][0]]["term_name"] = nm_first
     wires, recreated, rewired = [], None, []
     cur = s
     for k, (fin, fout) in enumerate(faces + [(d["term_uid"], None)]):
@@ -2755,7 +2823,7 @@ def selftest():
     for lab, rows_, su, want in cases:
         s_ = {"terminals": [dict(r) for r in rows_], "objs": [], "neg": 0}
         src_ = next(r for r in s_["terminals"] if r["term_uid"] == su)
-        got.append((lab, _cross_tunnel_name(s_, src_, {"src": su, "dst": "x"}), want))
+        got.append((lab, _cross_tunnel_name(s_, src_, {"src": su, "dst": "x"})[0], want))
     for lab, g_, want in got:
         gate("G74 crossing tunnel name, measured case {0}: '{1}'".format(lab, want), g_ == want, g_)
     s75 = {"terminals": [], "objs": [], "neg": 0, "owners": {"27219": ["CaseStructure", 22694], "27232": ["CaseStructure", 22694]}}
@@ -2783,6 +2851,29 @@ def selftest():
         e77b = str(e)
     gate("G77 NEGATIVE: a loop border from a named net, and a net with a different tunnel name, are refused as UNMEASURED",
          "UNMEASURED" in e77 and "UNMEASURED" in e77b, (e77, e77b))
+    # card 131-1: the crossing table IS the self-test of the naming rule - one gate per row (also run by
+    # tools/bench/selftest_stagesim_tunnel_naming.py)
+    nt = naming_table_check()
+    for lab, bad, cite in nt["rows"]:
+        gate("G78 naming table row {0}: every known face name == rule ({1})".format(lab, cite[:80]), not bad, bad)
+    print("  FACT  G78 rows {0}, face cells {1}, unknown {2}, skipped (FSIT) {3}".format(len(nt["rows"]), nt["cells"],
+                                                                                         nt["unknown"], nt["skipped"]))
+    gate("G78b the table has 15 rule rows and 3 FSIT rows", len(nt["rows"]) == 15 and len(nt["skipped"]) == 3,
+         (len(nt["rows"]), nt["skipped"]))
+    neg = []
+    for cls_, nm_, net_ in (("GrowableFunction", "x+y", None), ("SubVI", "Image Out", "other"), ("Function", "x-y*floor(x/y)", "q")):
+        w_ = 5 if net_ else 0
+        sr_ = {"term_uid": 1, "term_name": nm_, "is_source": True, "wire_uid": w_, "owner_uid": 2, "owner_class": cls_,
+               "frame_diagram": 1, "term_class": "Terminal"}
+        rs_ = [sr_] + ([{"term_uid": 3, "term_name": net_, "is_source": False, "wire_uid": w_, "owner_uid": 4,
+                         "owner_class": "SelectorTunnel", "frame_diagram": 1, "term_class": "OuterTerminal"}] if net_ else [])
+        try:
+            cross_face_names({"terminals": rs_, "objs": [], "neg": 0}, sr_, {"src": 2, "dst": "x"}, [{}])
+            neg.append("no error")
+        except SimError as e:
+            neg.append(str(e))
+    gate("G79 NEGATIVE: named source on an unmeasured class; SubVI net with another tunnel name; Function on a named net - "
+         "all refused UNMEASURED", all("UNMEASURED" in x for x in neg), neg)
     n_pass = sum(1 for _l, ok in gates if ok)
     n_fail = len(gates) - n_pass
     first = next((l for l, ok in gates if not ok), None)

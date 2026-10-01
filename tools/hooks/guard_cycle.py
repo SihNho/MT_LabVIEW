@@ -37,7 +37,14 @@ PEER = os.path.join(ROOT, "archive", "peer")
 # docstring promises that diagnostics are never blocked; guard_peer.py's RUNS_RE already had the stricter form.
 # The capture group was added 2026-09-16 for the `premature-build` device below, which needs the RECIPE FILE
 # itself (to compare its mtime against the newest prior-art review). `.search()` truthiness is unaffected.
-BUILD_RE = re.compile(r"\bpy(?:thon)?[\w.]*\s+(?:-\S+\s+)*([^\s|;&]*tools[\\/]recipes[\\/][^\s|;&]*\.py)", re.I)
+# card 131-2 (gate-fp class of fp-4/fp-18): `\bpy` also matched the EXTENSION of a path that is only an argument -
+# `cp a.py tools/recipes/b.py` read `py tools/recipes/b.py` as a python run. The interpreter must now start a word that is
+# not preceded by `.`/word char (command position, the guard_peer.RUNS_RE fp-18 form). Still a build, unchanged: a python
+# run of the recipe itself, and a python run of ANOTHER script whose arguments name a recipe (`py tools/x.py ...
+# tools/recipes/r.py` - fail closed; stage_prerun --dry/--prerun is then released by offline_only below). Group 1 = recipe.
+BUILD_RE = re.compile(r"(?:^|(?<=[\s;&|(\"'\\/]))py(?:thon)?[\w.]*\s+(?:-\S+\s+)*"
+                      r"(?:[^\s|;&]*\.py\s+(?:[^\s|;&]+\s+)*?)?"
+                      r"([^\s|;&]*tools[\\/]recipes[\\/][^\s|;&]*\.py)", re.I)
 EXEMPT_RE = re.compile(r"retrospective\.py|violations\.py|audit_cycle\.py|outcome_review\.py|prior_art_review\.py|"
                        r"peer\.ps1|guard_|--help|"
                        r"\b(cat|head|tail|sed|grep|less|type|wc|ls|dir)\b", re.I)

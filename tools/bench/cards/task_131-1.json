@@ -1,0 +1,79 @@
+{
+ "schema": "task/1",
+ "id": "131-1",
+ "kind": "measure",
+ "goal": "PD270(b): table of every recorded FS-tunnel-creating crossing (cited), stagesim naming rule rewritten to explain every row (self-test = table), P3b-1/P3b-2 re-finalized, P3b-1 dry 31/31 + prerun",
+ "why": "PD265(a) naming rule refuted at pin3 op 26 (second guessed failure) - build the reader before a third scratch run. brief_131-1.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_131-1.md"},
+  {"path": "docs/d1/tooling.md"},
+  {"path": "docs/d1/ring-p3b.md"},
+  {"path": "tools/bench/cards/result_130-6.json"},
+  {"path": "tools/stagesim.py", "md5": "0fb9ff8babbc190ca6c604c34c8f8a22"},
+  {"path": "tools/bench/plan_ring_p3b1.json", "md5": "6934a0ed12e6c9c40d66a120ac4c2cf8"},
+  {"path": "tools/bench/plan_ring_p3b1_pred.json", "md5": "92681f8290d55201da27f60719c93a73"},
+  {"path": "tools/bench/plan_ring_p3b2.json", "md5": "307ebc12da68328f8db62d21295ad2e7"},
+  {"path": "tools/bench/plan_ring_p3b.json", "md5": "4bc434604cbe7bbf1c8a81e1ef86d2e4"},
+  {"path": "tools/bench/stage_d1_ring_p3b1_scratch_pin3.log"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p3b1_scratch_pin3.log"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p3b1.py"},
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p3b1_scratch.py"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3b_in.json"}
+ ],
+ "pass": [
+  "A fs_tunnel_naming_table.json: every recorded run crossing (B1, A_bn, pin2 op33 + '' rows, pin3 ops 1-26), columns per brief, each cell cited file:line or unknown",
+  "B stagesim naming rule explains every table row; selftest_stagesim_tunnel_naming all rows pass; existing stagesim self-tests still green (counts). If no rule fits: FAIL with the conflicting rows, stop",
+  "C (only after B) P3b-1/P3b-2 re-finalized, split end == unsplit 70 reference; P3b-1 recipe + scratch helper --dry 31/31 + --prerun PASS; X10 peak; --scratch-required exit code; new plan/pred md5s"
+ ],
+ "outputs": [
+  "tools/bench/fs_tunnel_naming_table.json",
+  "tools/stagesim.py",
+  "tools/bench/selftest_stagesim_tunnel_naming.py",
+  "tools/bench/plan_ring_p3b1.json",
+  "tools/bench/plan_ring_p3b1_pred.json",
+  "tools/bench/plan_ring_p3b2.json",
+  "tools/bench/cards/result_131-1.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagesim.py",
+   "tools/bench/fs_tunnel_naming*",
+   "tools/bench/selftest_stagesim*",
+   "tools/bench/selftest_stage_prerun_c128b*",
+   "tools/bench/*ring_p3b*",
+   "tools/recipes/stage_d1_ring_p3b1.py",
+   "tools/recipes/stage_d1_ring_p3b2.py",
+   "tools/bench/stage_d1_ring_p3b1_scratch.py",
+   "tools/bench/sim/**",
+   "tools/bench/prerun/**",
+   "tools/bench/diag_c131_1*",
+   "tools/bench/c125_1*",
+   "tools/bench/stage_prerun*",
+   "tools/bench/prior_art*",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_131-1*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 55},
+ "rules": [
+  "Offline only; never edit tools/stage_prerun.py or tools/hooks/* (card 131-2 live on them)",
+  "Every table value cited to a log/graph line or written unknown - never inferred",
+  "Part C only after Part B passes; no rule fits => return with the table",
+  "Return at the first unexpected result; cost.minutes = bind->return"
+ ],
+ "advances": ["M3", "M4"]
+}

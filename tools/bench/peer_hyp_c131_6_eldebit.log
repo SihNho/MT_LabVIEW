@@ -1,0 +1,57 @@
+BGRUN START 2026-10-02 06:28:00 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug hyp-c131-6-eldebit -TaskFile tools/bench/peer_c131_6_task.txt
+BGRUN PID 6720
+OUTCOME: ANSWERED (125s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-02-hyp-c131-6-eldebit.md
+COST: $1.1801  in 16 / out 10873 / cache-create 100692 / cache-read 785292  (121s, 16 turn(s))
+--- ANSWER ---
+**My verdict: the diagnosis holds, but the fix is not ready to run, and its self-check proves less than it claims.** The failed gate is an arithmetic bug in the helper script. On the measured data, merging the four loose-ends entries changes nothing. But the edited script has a syntax error and has never run, half of the self-check is circular, and the class-total check is blind to a swap inside the class.
+
+## 1. Strongest reason the claim is wrong: the "fix, already edited" is not runnable and has never run
+- In `tools/bench/stage_d1_ring_p3b1_el.py:29` two statements are fused on one line: `…["ring_p3b1"]NEW, PIN = ST["final"], ST["md5"]`.
+  - A search for `\]NEW` finds 1 hit and a search for `\]\rNEW` finds 0, so this is not a stray carriage return that Python would accept as a line break.
+  - The script will stop with a SyntaxError before any gate runs, in every mode including `selfcheck`.
+- No `stage_d1_ring_p3b1_el_selfcheck*.log` exists.
+- So "Offline self-check added" and the prediction "selfcheck X,S,S PASS" (`:14`) are unexecuted claims.
+
+## 2. Alternative explanation of the same evidence
+The X gate did not fire because of anything subtle in the first-match greedy matching. It fired because the prediction was changed after the measurement.
+- The helper was written for one removal, P3a 55 → 54 (docstring `:4`). The original prediction was also 54, with w27378 only (`archive/peer/2026-10-02-hyp-c131-5-el53.md:18`).
+- The second removal, w3040, was added to `pred.removed` after the scratch read came back with 53. It is marked "UNVERIFIED by uid" (`plan_ring_p3b1_pred.json:383`).
+- The open review names w653 or w3747 as an equally good fit (`hyp-c131-5-el53.md:68-73`) and returned "unverified" (`:57`).
+
+What this means for the self-check:
+- The new gate S "class file licenses the measured P3b-1 scratch read with extra 0 / missing 0" is circular. The 22 was fitted to that same read, so the leg cannot fail.
+- Only the P3a-read leg ("2 extra") carries any information, and it only re-checks 24 − 22.
+
+## 3. Your three questions
+
+**(1) Does the per-entry structure matter? No, on the measured data.**
+- All 24 loose-ends rows in P3a's read have raw text `Wire: Wire has loose ends.` or `Wire:Wire has loose ends.` Both normalise to `wirewirehaslooseends` (`errorlist_D1_ring_p3a_…_181801.json:590–2393`).
+- Their detail text is "This wire segment is not connected to anything…". No row of any other class contains `wirehaslooseends` in its raw or detail text (`:126–2394`).
+- The merged entry sits at `li[0]`, after every other class's entry, so the order in which entries claim rows is unchanged.
+
+**(2) Could the merged key license different rows? Only in a direction that drops a false failure.**
+- The old entries 12 and 13 used the stricter key `wirewirehaslooseends`.
+- An OCR read that dropped the "Wire:" prefix would have failed under the old file only if that row fell in the last two loose-ends positions. Under the merged file it passes. That position-dependence was noise, not location meaning.
+- The merged key cannot pick up a row of another class, because none of their texts contain the substring.
+
+**(3) Can the class-total debit hide a real mismatch? Yes.** This limitation was inherited, not introduced by the merge.
+- Neither the old file nor gate C (`:117`, which compares per-class counts) can see a swap inside the class.
+- Two cases would pass both:
+  - w3040's loose end survives and a branch on w653 or w3747 is cleared instead.
+  - Remove-loose-ends clears two old loose ends and leaves one new one elsewhere.
+- The re-pin at `:122-126` then writes whatever count the read shows into the P3b-2 baseline. That is exactly the "53 for the wrong reason" risk the earlier review raised (`hyp-c131-5-el53.md:81`).
+- PD274(a) excuses this on the computation side only: loose ends execute nothing. It does not cover the inherited expected count.
+
+## 4. What would falsify the claim
+- **That merging changes nothing:** any read row whose raw or detail text contains `wirehaslooseends` but belongs to another class. Or a loose-ends row that OCR garbles so neither key matches (for example "Ioose").
+- **That the debit is w27378 + w3040:** a per-wire read of the launched file that still shows a loose segment on the net of #6810 `Image Out` (w3040).
+
+## 5. Cheapest discriminating tests, in order
+1. **Parse check, seconds, no LabVIEW:** `py -c "import ast;ast.parse(open('tools/bench/stage_d1_ring_p3b1_el.py',encoding='utf-8').read())"`. It is expected to fail. Split line 29, then run `selfcheck`.
+2. **Equivalence check, offline:** run `EC.compare()` on both reads, once with the original P3a file debited by 2 and once with the merged file. If the extra/missing sets match row for row, the claim holds for (1) and (2).
+3. **Identity check, the only test the class total cannot stand in for:** read the per-wire loose-joint counts for the three source nets of #6810 (t6865, `current image number`, `error out`) in P3a and in the launched file. The method is in `hyp-c131-5-el53.md:87-91`. If w3040's net goes from 1 or more loose joints to 0 while the other two nets keep theirs, the w3040 explanation is confirmed. Anything else means the 53 baseline is right in count but wrong in content.
+
+**What would change my mind:** test 1 passing on the current file, which means my line-29 reading is wrong. Separately, test 3 is what would settle the w3040 question.
+
+I made no claims about LabVIEW tools or APIs here, so no web sources were needed; every citation is to a local file.
+BGRUN END rc=0 after 126s

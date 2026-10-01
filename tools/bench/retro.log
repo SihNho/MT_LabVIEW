@@ -5747,3 +5747,90 @@ VIOLATION: device-failed | loss_min=15 | loss_usd=? | evidence=tools/bench/gate_
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle130","verdict":"refuted","alternative":"The 03:32 hold was correct by guard_peer's spec (X10 self-test import closure reaches gscript; suite_gb was a real unreviewed failing log); the loss is the judgement session's peers omission (task_130-2.json:63 vs STATUS.md:99), i.e. rule-evaded, not device-failed.","discriminating_test":"Replay the fp-24 argv (03:32:22) offline against guard_peer twice: (1) with diag_c130_2_suite_gb.log marked reviewed, (2) with only the X10 self-test classed offline. Whichever alone releases it names the cause.","violations":[{"slug":"device-failed","loss_min":15,"loss_usd":"?","evidence":"tools/bench/gate_fp_queue.jsonl:24"}],"sources":["tools/bench/gate_fp_queue.jsonl:24","tools/bench/cards/guard_card.log:591","tools/bench/diag_c130_3_wait.log:3","tools/bench/cards/result_130-3.json:1","tools/bench/cards/task_130-2.json:63","STATUS.md:99","tools/bench/cards/brief_130-6.md:4"],"note":"Device = guard_peer selftest_exempt/offline_command (decided 2026-09-25 05:58); also fp-22. Cost: 1 of 6 dispatches + ~15 min; PD270(b) slid to cycle 131. Pin3 naming FAIL was PD265(a)'s planned test, not a fault."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle130.md
 BGRUN END rc=0 after 370s
+BGRUN START 2026-10-02 06:45:08 limit 10.0 min: py tools/retrospective.py --cycle 131
+BGRUN PID 22764
+   window 2026-10-02 04:52:31 .. 2026-10-02 06:45:08 (113 min); 45 build logs, 8 machinery logs, 46 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle131.txt (36140 chars)
+   review card tools\bench\cards\review_retrospective-cycle131.json
+OUTCOME: ANSWERED (315s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-10-02-retrospective-cycle131.md
+COST: $1.7296  in 30 / out 30158 / cache-create 108834 / cache-read 1278211  (314s, 32 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle131 verdict=none -> tools\bench\cards\verdict_retrospective-cycle131.json
+--- ANSWER ---
+# Retrospective, cycle 131 (04:52:31 to 06:45:08, 113 min)
+
+**Verdict: no structural fault.** The cycle did what NEXT asked. P3b-1 was launched with 22/0 gates (`stage_d1_ring_p3b1.log:432-474`). The final read was 53 items and differed from P3a only in loose ends, 24 to 22 (`stage_d1_ring_p3b1_el_final2.log:113-115`). The bed moved under PD274(c) (`STATUS.md:100-102`). It used 113 of the 180 budgeted minutes. Reviews cost $3.2985 (audit C4).
+
+The card cost the brief, not the result. The three earlier P3b cycles (128 to 130) produced no new VI (`STATUS.md:67-81`); this one produced the bed.
+
+## Candidates, ranked (none reaches structural)
+
+1. **The Error List prediction of 54 was wrong (actual 53).** It cost about 11 min and $2.12 in reviews.
+   - 131-4 returned at 05:57 (`result_131-4.json:2`). The launch then waited for an offline naming step and two hypothesis reviews: el53 at $1.3079 (`peer_hyp-c131-5-el53.log:4`) and s4el at $0.8105 (`peer_hyp-c131-5-s4el.log:4`).
+   - The launch began at about 06:09 (the saved file is stamped `_060910`).
+   - The prediction was taken from one plan row, `p3b_rle_w27378` (`result_131-4.json:13`). Meanwhile the simulator already retired three wires, `[653,3040,3747]`, and the launch matched it (`result_131-5.json:18`).
+   - The review was owed by rule, and the result did not change the outcome.
+2. **The Error List helper subtracted from one entry, not the class total.** It cost about 8 min and $1.18.
+   - Brief 131-5 predicted 53 (55 − 2) through a helper whose own header says it debits the LAST loose-ends entry. In P3a that entry has a count of 1 (`stage_d1_ring_p3b1_el.py:3-4`, the original docstring).
+   - Its offline gate X caught this before LabVIEW opened (`result_131-5.json:2`). That made 131-6 a separate dispatch: bound 06:25:17, review 06:28 to 06:30 ($1.1801, `peer_hyp_c131_6_eldebit.log:4`), read started about 06:31.
+   - **Counterfactual:** had brief 131-5 (about 05:58) carried PD274(b)'s debit by class, the final read would have run inside 131-5 from about 06:23 to 06:35. The cycle would have ended about 06:37 instead of 06:45.
+   - It also used the sixth and last dispatch (`MAX_DISPATCHES = 6`, `guard_session.py:53`). The cycle closed at the dispatch cap with 67 min of budget left, and nothing reports that. The cost of that slot is close to zero, because cycle 132 runs the graph read beside its offline card.
+3. **The memory model had no term for the final whole-VI read.** That read added +17.4 MB, against ~+4.1 for each earlier read (`stage_d1_ring_p3b1_scratch_pin4.log:446-447`). Cost was about 1–2 min: the scratch VI was reused and nothing was rerun (`result_131-4.json:6`).
+
+Together these come to about 20 min of avoidable cost in a cycle that delivered. None of them changed how it ended.
+
+## Findings
+
+**1. Repeated failure.** There were three returns on three different predictions: memory (131-3), Error List count (131-4) and helper debit (131-5). They share no mechanism or function. Each was finished, returned and re-decided once (PD272, PD273, PD274), and none was retried inside its card. They have one cause in common: no earlier full-length run had measured the end of a P3b run, because pin2 and pin3 stopped at ops 33 and 26 (`STATUS.md:71,76`). No attempt needed a change of approach.
+
+**2. Missing tool.** The Error List reader carries no item identity (`result_131-5.json:13`: `uid_route 'none'`; `result_131-4.json:14`: `missing [null]`).
+- Its absence caused 131-5 step 0, both reviews (about 11 min, $2.12) and the loose-ends swap question 131-6 still lists as open (`result_131-6.json:22`).
+- PD274(a) ruled it unnecessary for accepting the bed. That is defensible, because all three retired wires sit on RLE'd nets.
+- It will come back at P3b-2.
+
+**3. Unmeasured steps.**
+- (a) The Error List prediction was typed from one plan row, not from the simulator's retired-wire set. That set was available offline and proved right.
+- (b) `diag_c131_5_stubs.py:6-7` predicts that w27378 is retired, but `:42-43` prints `status PASS` unconditionally. Its own prediction failed and the script still passed (s4el review, `2026-10-02-hyp-c131-5-s4el.md:44-48`).
+- (c) Despite that, `diag_c131_5_s4_el.log:11` writes w27378 into `pred.removed`.
+- (d) X10's end-read coefficient was inferred in cycle 130. That cost belongs to cycle 130.
+
+**4. Rule compliance.**
+- **Review annotation (`CLAUDE.md:446`) broken for two of this cycle's reviews.** `hyp-c131-5-el53.md:99-101` and `hyp-c131-5-s4el.md:77-79` are still "(Claude fills in)". Three cycle-130 reviews also remain blank (audit A4).
+- **STATUS.md length:** 118 lines against the 110-line warning threshold (L3); it grew with this cycle's brief.
+- **Satisfied:** return at the first miss, waiting in the same turn, deliverable first, and briefs stating the measurement.
+- **What the audit does not cover:**
+  - whether a review's content was used (only whether the section is blank);
+  - whether a diagnostic's PASS line depends on any check;
+  - whether a prediction was computed or typed;
+  - dispatch-cap use;
+  - the two unbound sub-agent refusals (`guard_card.log:604-605`).
+- **C7 is unusable at 479 files**, against 39 in cycle 130 (`retrospective-cycle130.md:179`). It counts every generated simulator file in the window.
+
+**5. Ordering.** Defensible.
+- Deferring the stage_prerun tooling (PD272(d)) instead of running it as an offline card beside 131-3..6 avoided editing stage_prerun while the LabVIEW cards were running its dry and prerun checks.
+- The one misordering: the helper's offline gate X should have been run before the launch was briefed. That would have taken seconds.
+
+**6. What was not reported.**
+- `result_131-5.json:22` reports the s4el review only as "ANSWERED". It leaves out the review's main point: the stubs script's prediction failed, w27378 was absent from the retired set, and the script's PASS meant nothing.
+- `w27378` sits in `pred.removed` although no measurement shows it was retired.
+- Neither `next.json` nor STATUS says the cycle ended on the dispatch cap.
+
+**7. Judgement inside a material session.** Minor, two instances:
+- 131-5's material session wrote one explanation (w3040) into the prediction file (`diag_c131_5_s4_el.log:11`). Its brief said "Unknown stays unknown" (`brief_131-5.md:11`), and its own review had just returned "unverified". It then reran the script 19 s after the s4el review answered, with no disposition (`diag_c131_5_s4_el.log:7`). The effect was confined to labels; judgement owned the count of 53.
+- 131-6 adopted the review's test 2 as gate E (`result_131-6.json:19`). That is an addition to the checks, not a change of direction.
+
+## Device effect
+
+No device failed in the window.
+- **bgrun's failure scan** forced `rc=1` on a FAIL (`diag_c131_5_s4_el.log:6`). The stubs script's unconditional PASS prints no FAIL text, so it is outside that device's reach. That is a finding, not a failure.
+- **Cost lines:** 3 seen, 3 parsed (C4b).
+- **Retrospective-annotation guard:** retrospective-cycle130 is annotated.
+- **The 04:52 offline-command rule:** fp-26 and fp-27 (05:06) happened before it was built. It went in at 05:16 (`gate_fp_queue.jsonl:26-27`), and no offline card was refused wrongly after that.
+- **fp-28 (06:05) is not a false positive.** card 131-5 is a LabVIEW card, and the guard fired on that card's own failing log. The review it forced found a real defect. It should be closed as "correct refusal", not drained by a code change in cycle 132.
+- **X10** under-predicted the peak by 17.4 MB. Its purpose still held: the run finished 22/0 below LabVIEW's ~695 MB error point, inside the planning margin. That is a calibration carry (PD272(d)), not a device failure.
+- **The judgement session's attempt to run a script itself** was refused once (audit C6).
+
+VIOLATION: none
+
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle131","verdict":"none","alternative":"Brief 131-5 predicted EL 53 (55-2) through a helper whose header says it debits the last entry (count 1); that cost 131-6 as a separate dispatch (~8 min, $1.18) and the 6th, last dispatch slot.","discriminating_test":"Had brief 131-5 (~05:58) carried PD274(b)'s class debit, would the final read have run in 131-5 (06:23-06:35) and the cycle ended ~06:37, with an unused dispatch going to the P3b-1 graph read?","violations":[],"sources":["tools/bench/cards/result_131-5.json:2","tools/bench/stage_d1_ring_p3b1_el.py:3","tools/hooks/guard_session.py:53","tools/bench/diag_c131_5_stubs.py:42","archive/peer/2026-10-02-hyp-c131-5-s4el.md:77","tools/bench/peer_hyp_c131_6_eldebit.log:4"],"note":"Deliverable met (P3b-1 bed, 53 EL items, loose ends 24 to 22). Avoidable cost ~20 min / $3.30 over 3 unrelated misses. Owed: el53/s4el dispositions, fp-28 closed as a correct refusal, stubs.py conditional PASS, w27378 out of pred.removed."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle131.md
+BGRUN END rc=0 after 326s

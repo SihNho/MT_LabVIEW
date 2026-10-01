@@ -7,6 +7,12 @@ MODE 'scratch' (argv[1]): the file is stage_d1_ring_p3b1_scratch_pin.json ring_p
 = {54, 57}) writes tools/bench/plan_ring_p3b1_pin.json = the PINNED new items; the scratch file is deleted.
 MODE 'final': the file is stage_d1_ring_p3b1.json ring_p3b1.final (D1_ring_p3b1_*.vi), FULL read `--role final`; PASS (missing [], new
 items == the pin as a multiset of norm(raw)) writes errorlist_expected_D1_ring_p3b1_<ts>.json and reverdict must say OK.
+CARD 131-6 (PD274(b)(c)): the removed items are debited from the loose-ends CLASS (P3a entries 17/5/1/1 merged into one entry 24 - 2 = 22,
+total 53), never from one entry; MODE 'selfcheck' runs only the offline gates (X; S: the class file licenses the measured P3b-1 scratch read
+exactly and leaves 2 extra on P3a's own final read) and opens no LabVIEW. 'final' adds gate C (per-class norm_ocr counts == P3a's except
+loose ends -2, items == 53) and RE-PINS the loose-ends entries of errorlist_expected_D1_ring_p3b1_<ts>.json from the measured read.
+PREDICTION 131-6: selfcheck X,S,S PASS; final: reader gates True, missing [], extra [], 53 items, delta {loose ends: -2}, V OK, LabVIEW gone.
+    py tools/bgrun.py --material --max-min 5 --log tools/bench/stage_d1_ring_p3b1_el_selfcheck.log -- py -u tools/bench/stage_d1_ring_p3b1_el.py selfcheck
 PRIOR ART: tools/bench/stage_d1_ring_p3a_el.py (card 124-7; this is its cut + the removed-item expected file). Never saves or runs a VI.
 PREDICTION: reader gates True; missing []; new 0 (alternative 3); total 54 (alt 57); LabVIEW gone.
     py tools/bgrun.py --material --max-min 50 --log tools/bench/stage_d1_ring_p3b1_el_scratch.log -- py -u tools/bench/stage_d1_ring_p3b1_el.py scratch"""
@@ -16,7 +22,7 @@ for _p in ("tools", os.path.join("tools", "bench"), os.path.join("tools", "recip
     sys.path.insert(0, os.path.join(ROOT, _p))
 import errorlist_check as EC, protocol                                             # noqa: E401,E402
 B = os.path.join(ROOT, "tools", "bench")
-MODE = "final" if "final" in sys.argv[1:] else "scratch"
+MODE = "final" if "final" in sys.argv[1:] else "selfcheck" if "selfcheck" in sys.argv[1:] else "scratch"
 PRED = json.load(open(os.path.join(B, "plan_ring_p3b1_pred.json"), encoding="utf-8"))["errorlist"]
 PREV = os.path.join(B, "errorlist_expected_scratch_ring_p3b1_pred.json")
 PINF = os.path.join(B, "plan_ring_p3b1_pin.json")
@@ -35,14 +41,45 @@ def gate(label, ok, detail=""):
 ms = lambda raws: sorted(collections.Counter(EC.norm(r) for r in raws).items())    # noqa: E731
 base = json.load(open(os.path.join(ROOT, PRED["base_file"]), encoding="utf-8"))
 pe = copy.deepcopy(base)
-li = [i for i, e in enumerate(pe["expected"]) if any("wirehaslooseends" in k for k in e.get("norm_all") or [])]
+# card 131-6, PD274(b): the removed items are debited from the CLASS total, never from one entry. All of P3a's loose-ends
+# entries (17/5/1/1, keys wirehaslooseends / wirewirehaslooseends) match the same items (compare() is first-match greedy,
+# errorlist_check.py:415-432), so they are merged into ONE class entry of count (sum - removed); per-entry counts are
+# re-pinned from the measured final read below, never predicted.
+LOOSE = "wirehaslooseends"
+li = [i for i, e in enumerate(pe["expected"]) if any(LOOSE in k for k in e.get("norm_all") or [])]
+cls = sum(int(pe["expected"][i].get("count", 1)) for i in li)
 rm = sum(PRED["removed"].values())
-pe["expected"][li[-1]]["count"] -= rm
-pe["expected"][li[-1]]["cite"] += " | card 129-2: -{0} for {1} (plan_ring_p3b1_pred.json errorlist.removed / row_sources)".format(rm, sorted(PRED["removed"]))
-pe.update(total=base["total"] - rm, decided_by="card 129-2 (stage_d1_ring_p3b1_el.py, mechanical): {0} with pred.removed taken off".format(PRED["base_file"]))
+merged = {"norm_all": [LOOSE], "count": cls - rm, "label": "Wire: Wire has loose ends. (CLASS total, PD274(b))",
+          "cite": "card 131-6: P3a loose-ends entries {0} (sum {1}) merged, -{2} for {3} (plan_ring_p3b1_pred.json errorlist.removed / row_sources)".format(
+              [pe["expected"][i]["count"] for i in li], cls, rm, sorted(PRED["removed"]))}
+pe["expected"] = pe["expected"][:li[0]] + [merged] + [e for i, e in enumerate(pe["expected"]) if i > li[0] and i not in li]
+pe.update(total=base["total"] - rm, decided_by="card 131-6 (stage_d1_ring_p3b1_el.py, mechanical): {0} with pred.removed debited from the loose-ends CLASS "
+          "(PD274(b))".format(PRED["base_file"]))
 json.dump(pe, open(PREV, "w", encoding="utf-8"), indent=1, ensure_ascii=False); out.append(PREV)
-gate("X expected file: P3a {0} - removed {1} == predicted_total {2} (entry #{3} count -> {4})".format(base["total"], rm, PRED["predicted_total"], li[-1],
-     pe["expected"][li[-1]]["count"]), pe["total"] == PRED["predicted_total"] == PRED["bed_total"] - rm and pe["expected"][li[-1]]["count"] >= 0, PREV)
+gate("X expected file: P3a {0} - removed {1} == predicted_total {2} (loose-ends class {3} -> {4})".format(base["total"], rm, PRED["predicted_total"], cls, merged["count"]),
+     pe["total"] == PRED["predicted_total"] == PRED["bed_total"] - rm == sum(int(e.get("count", 1)) for e in pe["expected"]) and merged["count"] >= 0, PREV)
+# offline self-check (no LabVIEW): the class-debited file must license the MEASURED P3b-1 scratch read exactly (extra [], missing []), and
+# must NOT license P3a's own final read (its 24 loose ends leave 2 extra, nothing missing) - a discriminating pair.
+P3A_READ = json.load(open(os.path.join(ROOT, base["measured_from"]), encoding="utf-8"))
+SCR_READ = json.load(open(os.path.join(ROOT, json.load(open(PINF, encoding="utf-8"))["read"]), encoding="utf-8"))
+for nm, rd, want in (("P3b-1 scratch read", SCR_READ, (0, 0)), ("P3a final read", P3A_READ, (rm, 0))):
+    ex, mi, _u = EC.compare(copy.deepcopy(rd.get("items") or []), pe["expected"])
+    gate("S self-check vs {0} ({1} items): extra {2} missing {3} == predicted {4}".format(nm, len(rd.get("items") or []), len(ex), len(mi), want), (len(ex), len(mi)) == want, ex)
+    # review hyp-c131-6-eldebit test 2: the UNMERGED P3a file debited by the same 2 (spilled from the last entries backwards) gives the
+    # same extra rows and the same missing count on the same read -> the merge changes no licensing decision.
+    old = copy.deepcopy(base["expected"]); left = rm                                   # noqa: E702
+    for i in reversed(li):
+        take = min(left, int(old[i].get("count", 1))); old[i]["count"] = int(old[i].get("count", 1)) - take; left -= take   # noqa: E702
+    ex2, mi2, _u2 = EC.compare(copy.deepcopy(rd.get("items") or []), old)
+    gate("E merged == unmerged-spilled on {0}: extra rows equal {1}, missing {2} == {3}".format(nm, sorted(map(str, ex)) == sorted(map(str, ex2)), len(mi), len(mi2)),
+         sorted(map(str, ex)) == sorted(map(str, ex2)) and len(mi) == len(mi2), (ex2, mi2))
+P3A_CC = EC.class_counts(P3A_READ.get("items"), ocr=True)
+LKEY = EC.norm_ocr("Wire: Wire has loose ends.")
+if MODE == "selfcheck":
+    n = sum(1 for _l, ok in gates if ok)
+    ff = next((lab for lab, ok in gates if not ok), None)
+    print(protocol.result_line(protocol.make_result(n, len(gates) - n, ff, [{"path": os.path.relpath(p, ROOT), "md5": EC.md5(p)} for p in out])), flush=True)
+    sys.exit(0 if ff is None else 1)
 gate("K mode {0}: file on disk, md5 == its stage JSON pin".format(MODE), bool(NEW) and os.path.exists(NEW) and EC.md5(NEW) == PIN
      and os.path.basename(NEW).startswith("scratch_c129_ring_p3b1" if MODE == "scratch" else "D1_ring_p3b1_"), (NEW, PIN))
 if MODE == "final":
@@ -82,12 +119,26 @@ if all(ok for _l, ok in gates):
                            "scratch": NEW, "scratch_md5": PIN, "t": time.time()}, open(PINF, "w", encoding="utf-8"), indent=1)
         else:
             gate("PIN new items == the scratch pin (multiset of norm(raw)): {0}".format(pin["new_count"]), ms(extra) == [tuple(x) for x in pin["new_norm"]], (ms(extra), pin["new_norm"]))
+            cco = EC.class_counts(R.get("items"), ocr=True)
+            dlt = {k: cco.get(k, 0) - P3A_CC.get(k, 0) for k in sorted(set(cco) | set(P3A_CC)) if cco.get(k, 0) != P3A_CC.get(k, 0)}
+            print("  FACT per-class (norm_ocr) P3a {0} -> P3b-1 {1}: total {2} -> {3}; delta {4}".format(
+                json.dumps(P3A_CC, sort_keys=True), json.dumps(cco, sort_keys=True), sum(P3A_CC.values()), sum(cco.values()), json.dumps(dlt)), flush=True)
+            gate("C per-class == P3a except loose ends -{0} (PD274(c)): delta {1}".format(rm, dlt), dlt == {LKEY: -rm} and len(R.get("items") or []) == PRED["predicted_total"], dlt)
             if all(ok for _l, ok in gates):
                 add = [{"norm_all": [k], "count": c, "label": next(x for x in extra if EC.norm(x) == k), "cite": "card 129-2: RING P3b-1 new item pinned by the scratch read {0}".format(pin["read"])}
                        for k, c in ms(extra)]
-                d = dict(pe, bed=NEW, bed_md5=PIN, total=pe["total"] + len(extra), expected=pe["expected"] + add, measured_from=os.path.relpath(new[0], ROOT),
-                         decided_by="mechanical, stage_d1_ring_p3b1_el.py final: P3a's {0} - {1} removed + the {2} new item(s) pinned on the scratch "
-                                    "(plan_ring_p3b1_pin.json, PD235(f))".format(base["total"], rm, len(extra)))
+                # PD274(b) re-pin: the loose-ends CLASS entry is replaced by the measured per-key counts of the items it licensed in THIS read
+                loose = collections.Counter(EC.norm(it.get("raw")) for it in R.get("items") or []
+                                            if EC._hit(merged, "%s %s" % (it.get("raw") or "", it.get("detail") or "")))
+                rep = [{"norm_all": [k], "count": c, "label": "Wire: Wire has loose ends. (measured, card 131-6 final read)",
+                        "cite": "card 131-6: re-pinned from the measured final read {0} (PD274(b)); class {1} -> {2}".format(os.path.relpath(new[0], ROOT), cls, sum(loose.values()))}
+                       for k, c in sorted(loose.items())]
+                k0 = pe["expected"].index(merged)
+                exp_rp = pe["expected"][:k0] + rep + pe["expected"][k0 + 1:]
+                d = dict(pe, bed=NEW, bed_md5=PIN, total=sum(int(e.get("count", 1)) for e in exp_rp) + len(extra), expected=exp_rp + add, measured_from=os.path.relpath(new[0], ROOT),
+                         per_class_read=cco, per_class_p3a=P3A_CC, per_class_delta=dlt,
+                         decided_by="mechanical, stage_d1_ring_p3b1_el.py final (card 131-6): P3a's {0} - {1} removed from the loose-ends CLASS, loose-ends entries "
+                                    "re-pinned from the measured read (PD274(b)) + the {2} new item(s) pinned on the scratch (plan_ring_p3b1_pin.json, PD235(f))".format(base["total"], rm, len(extra)))
                 out.append(os.path.join(B, "errorlist_expected_%s.json" % STEM))
                 json.dump(d, open(out[-1], "w", encoding="utf-8"), indent=1, ensure_ascii=False)
                 verdict, rv = EC.reverdict(NEW, new[0], new[0].replace(".json", "_raw.json"), expected_path=out[-1])

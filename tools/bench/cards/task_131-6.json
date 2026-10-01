@@ -1,0 +1,62 @@
+{
+ "schema": "task/1",
+ "id": "131-6",
+ "kind": "measure",
+ "goal": "PD274(b)(c): el helper debits removed items by CLASS; final full Error List read of D1_ring_p3b1_20261002_060910.vi; expected file re-pinned from the read; per-class diff vs P3a",
+ "why": "131-5 launched P3b-1 (22/0) but the final read stopped at the helper's per-entry debit (-1). PD274.",
+ "retry_of_card": "131-5",
+ "inputs": [
+  {"path": "docs/d1/ring-p3b.md"},
+  {"path": "tools/bench/cards/result_131-5.json"},
+  {"path": "tools/bench/stage_d1_ring_p3b1_el.py"},
+  {"path": "tools/bench/stage_d1_ring_p3b1_el_final.log", "md5": "197ea7a7c378e6b23bbf703686354bab"},
+  {"path": "tools/bench/errorlist_expected_D1_ring_p3a_20261001_180540.json"},
+  {"path": "tools/bench/plan_ring_p3b1_pred.json", "md5": "44fffed380c3fba01c81196621565116"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b1_20261002_060910.vi", "md5": "9d7bf28738b7c154280e5e7c2c9d4961"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p3b1_el.py"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/wait_logs.py"},
+  {"kind": "file", "name": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_ring_p3b1_20261002_060910.vi"}
+ ],
+ "pass": [
+  "F1 helper: removed items debited from the class total (loose ends 24 -> 22, total 53), no per-entry prediction; offline self-check shown",
+  "F2 final full Error List read (--role final) of the launched file to BGRUN END; total and per-class counts listed vs P3a's",
+  "F3 expected file errorlist_expected_D1_ring_p3b1_20261002_060910.json re-pinned from the read (per-entry measured); file md5 unchanged; LabVIEW gone"
+ ],
+ "outputs": [
+  "tools/bench/stage_d1_ring_p3b1_el.py",
+  "tools/bench/errorlist_expected_D1_ring_p3b1_20261002_060910.json",
+  "tools/bench/cards/result_131-6.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/stage_d1_ring_p3b1_el.py",
+   "tools/bench/*ring_p3b1*",
+   "tools/bench/errorlist*",
+   "tools/bench/diag_c131_6*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_131-6*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 40},
+ "rules": [
+  "Read only: the launched VI is never edited or saved; md5 checked before and after",
+  "Never end the turn while a run lacks BGRUN END (material.md:92-98); wait with wait_logs.py ticks",
+  "GUI via lv_gui.ps1 -Exception Approved only; capture, locate, act, capture, confirm",
+  "No STATUS edit, no current-bed move; return at the first unexpected result; cost.minutes = bind->return"
+ ],
+ "advances": ["M3", "M4"]
+}

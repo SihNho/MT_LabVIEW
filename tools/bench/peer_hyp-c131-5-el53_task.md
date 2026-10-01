@@ -1,0 +1,9 @@
+ATTACK this claim about the failed prediction in tools/bench/stage_d1_ring_p3b1_el_scratch.log (card 131-4, LabVIEW Error List of a scratch copy after build step P3b-1).
+
+Predicted 54 items (P3a's 55 minus the stub w27378 cleared by row p3b_rle_w27378, tools/bench/plan_ring_p3b1_pred.json:353-360). Observed 53; only the class "Wire: Wire has loose ends." differs (22 vs 23, el_scratch.log:183). The Error List items carry no wire uid.
+
+Claim (offline evidence, tools/bench/diag_c131_5_stubs.log): diffing one-sided wires (all terminals source or all sink) between the P3a base graph tools/bench/graph_ring_p3a_20261001_190155.json and the simulated P3b-1 end state tools/bench/sim/ring_p3b1/step_31_wire_remove_loose_ends.json retires exactly ONE wire: w3040, the source-only wire on SubVI #6810 terminal 'Image Out' t6865. Plan rows p3b_x_img_src + p3b_rle_img_src (plan_ring_p3b1.json:476-486) wire that terminal across the case and FS borders, re-creating the source net (PD256(c)). So the extra missing Error List item is w3040's loose end, which the prediction (row_sources 'crossings: 0') failed to count. Consequence claimed: the item is harmless (a wire with no sink executes nothing) and 53 is the right expected count for P3b-1.
+
+The earlier judgement hypothesis (docs/d1/ring-p3b.md PD273(a)) was different: an RLE row cleared a second ORIGINAL stub on the same net.
+
+Specific weak points to attack: the base graph lists only 8 one-sided wires while P3a's Error List has 24 loose-end items, so the terminal table misses branch stubs (w27378 itself is not among the 8) - a different, invisible branch stub could be the one gone; w3040 being one of P3a's 24 loose-end items is inferred from the attribution note in errorlist_expected_D1_ring_p3a_20261001_180540.json (source-only stubs counted in the loose-ends pool), not read by uid; the simulator is 'provisional' for these rows.

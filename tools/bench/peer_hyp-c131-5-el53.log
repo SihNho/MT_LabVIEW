@@ -1,0 +1,44 @@
+BGRUN START 2026-10-02 06:03:17 limit 15.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug hyp-c131-5-el53 -TaskFile tools/bench/peer_hyp-c131-5-el53_task.md -ReviewCard tools/bench/cards/review_hyp-c131-5-el53.json
+BGRUN PID 13552
+OUTCOME: ANSWERED (105s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-02-hyp-c131-5-el53.md
+COST: $1.3079  in 14 / out 9190 / cache-create 124549 / cache-read 638156  (101s, 14 turn(s))
+VERDICT-CARD: NO-VERDICT: $.alternative: 346 chars > limit 300
+--- ANSWER ---
+The claim is not refuted, but it is not shown either, so my verdict is **unverified**. The offline check that names w3040 could not have found any other candidate, so it does not tell w3040 apart from the alternatives.
+
+**1. The strongest reason the claim may be wrong: the check can only see one kind of wire.**
+`diag_c131_5_stubs.py:17-27` counts a wire only by the terminals it touches. That leaves out two kinds of loose end:
+- **Dangling branches on wires that have both a source and sinks.** P3a's expected list names this group itself ("PD230 dangling branches where a retired SR sink was cut", `errorlist_expected_D1_ring_p3a_20261001_180540.json:99`).
+- **Wires that touch no terminal at all.**
+
+The base graph has 8 one-sided wires (`diag_c131_5_stubs.log:12`), but P3a has 24 loose-end items. So at least 15 of them are out of the check's reach. Even w27378, the one stub we know P3b-1 removed, did not show up (the docstring predicts it at `diag_c131_5_stubs.py:6`, but the result at `:21` lists only w3040). If the check cannot see the item we already know left, the one item it can see is not evidence about which item left.
+
+**2. w3040 dropping out is built into the simulator.** `tools/stagesim.py:1157-1166` and `:1670-1677` give a new wire id to any wired source net that crosses a structure border (the `recreate` rule). That means w3040 would leave the base set whatever LabVIEW actually does with its dangling end. The diff reflects the simulator's rule; it is not a measurement.
+
+**3. An alternative that fits the same evidence.** P3b-1 rebuilds at least three source nets of #6810, and each is followed by a remove-loose-ends edit:
+- `current image number` on w3747 (`plan_ring_p3b1.json:456-470`)
+- `Image Out` on w3040 (`:472-486`)
+- `error out` on w653 (`:504-518`)
+
+If w3747 or w653 carried one of those dangling branches in P3a, rebuilding it, or the remove-loose-ends call on it, would remove exactly one loose-end item and nothing else. That matches 22 vs 23 with no new items. In that case w3040's loose end could still be present, and the 53 would include it.
+
+There is a precedent for remove-loose-ends clearing a segment on an existing net. In `diag_c126_6_cross.log:61-63`, w27927 had 1 loose end and `broken_before True` before the call, and `broken_after False` after it. In that run the loose-end count stayed at 24 (`:87`). So we have never measured whether clearing a segment on an *old* net changes the Error List count.
+
+**4. Two more weak points:**
+- **w3040 being a P3a Error List item is assumed, not read.** The source-only stubs counted in the loose-ends pool are worked out by class totals, and the expected file says per-entry membership "is not measured" (`errorlist_expected…json:7`). w3040 is not named anywhere in that file.
+- **The judgement's hypothesis and this claim are almost the same.** PD273(a) (`docs/d1/ring-p3b.md:53-55`) says a remove-loose-ends edit cleared an original stub on the same net. `p3b_rle_img_src` is that edit on w3040's net. The real competitor is "a different net", which the check cannot rule out.
+
+**5. "Harmless" is true either way, but only on the computation axis.** A loose end has no sink, so it computes nothing. What 53 changes is the expected-count baseline that every later step (P3b-2, P4, P5) inherits. If 53 is right for the wrong reason, the next step's prediction will fail again.
+
+**What would show the claim is false:**
+- a structure read of the P3b-1 result that still shows a loose segment on #6810 `Image Out`'s net, or
+- one of w3747 / w653 / their rebuilt nets having a loose joint in P3a and none afterwards.
+
+**Cheapest test that separates the two (offline if possible):** compare loose-joint counts per wire, not one-sided wires. The connect operations already return `joints: {loose, free}` per wire (`diag_c126_6_cross.log:50,61`). Do this:
+1. Read loose joints for #6810's three source nets (t6865, `current image number`, `error out`) in the P3a base. If a stored structure dump has them, this needs no LabVIEW.
+2. Read the same in the launched P3b-1 file, in one read-only pass.
+
+The claim holds only if w3040's net goes from loose ≥ 1 to 0 and the other two nets keep their loose counts.
+
+VERDICT {"schema":"verdict/1","id":"hyp-c131-5-el53","verdict":"unverified","alternative":"A dangling branch on a two-sided net (w3747 'current image number' or w653 'error out', both also rebuilt and loose-ends-removed in P3b-1) was cleared; the terminal-table diff cannot see branch stubs (8 one-sided vs 24 loose items; w27378 itself invisible), and w3040 drops out only because stagesim gives every wired crossed source net a new id.","discriminating_test":"Read per-wire loose-joint counts (connect-op joints{loose}) for #6810's three source nets in the P3a base and in the P3b-1 result: the claim holds only if t6865's net goes from loose>=1 to 0 while the w3747/w653 nets keep their counts.","violations":[],"sources":["tools/bench/diag_c131_5_stubs.py:17-27","tools/bench/diag_c131_5_stubs.log:12-21","tools/stagesim.py:1157-1166","tools/bench/plan_ring_p3b1.json:456-518","tools/bench/errorlist_expected_D1_ring_p3a_20261001_180540.json:7,99","tools/bench/diag_c126_6_cross.log:61-63,87","docs/d1/ring-p3b.md:53-55"],"note":"Harmless for computation either way (no sink). Risk is a wrong 53 baseline carried into P3b-2/P4/P5. Inference over measurement: the check is structurally blind to the competing class."}
+BGRUN END rc=0 after 107s

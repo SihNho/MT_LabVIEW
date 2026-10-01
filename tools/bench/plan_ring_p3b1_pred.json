@@ -4,7 +4,7 @@
  "note": "P3b-1: base = the real P3a bed",
  "plan": {
   "path": "tools/bench/plan_ring_p3b1.json",
-  "md5": "6934a0ed12e6c9c40d66a120ac4c2cf8"
+  "md5": "edbdba9909cc5130f8710f49a510b8ad"
  },
  "graph": {
   "path": "tools/bench/graph_ring_p3a_20261001_190155.json",
@@ -12,8 +12,27 @@
  },
  "bed": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3a_20261001_180540.vi",
  "bed_md5": "4dfa44aac8fb32f706b3eb792ee7d3cc",
- "census": {},
- "census_overall": "UNPREDICTED",
+ "census": {
+  "Diagram": 3,
+  "DigitalNumericConstant": 1,
+  "FlatSequence": 1,
+  "FlatSequenceInnerTunnel": 2,
+  "FlatSequenceOuterTunnel": 8,
+  "Function": 1,
+  "GrowableFunction": 1,
+  "IndexArray": 1,
+  "InnerTerminal": 10,
+  "Local": 2,
+  "LoopTunnel": 2,
+  "OuterTerminal": 6,
+  "ParameterTerminal": 4,
+  "SelectorTunnel": 4,
+  "SubVI": 1,
+  "Terminal": 42,
+  "Unbundler": 1,
+  "Wire": 28
+ },
+ "census_overall": "MEASURED-SCRATCH",
  "census_unpredicted": [
   "p3b_rle_w27378",
   "p3b_fs",
@@ -351,15 +370,17 @@
  "errorlist": {
   "bed_total": 55,
   "removed": {
-   "p3b_rle_w27378": 1
+   "p3b_rle_w27378": 1,
+   "p3b_x_img_src_w3040": 1
   },
   "new_items_predicted": 0,
-  "predicted_total": 54,
+  "predicted_total": 53,
   "base_file": "tools/bench/errorlist_expected_D1_ring_p3a_20261001_180540.json",
   "row_sources": {
    "p3b_rle_w27378": "-1: w27378 'Wire has loose ends' (diag_c126_4_op.log:52-60, 55 -> 54)",
    "crossings + their RLE rows": "0: measured, loose ends cleared (diag_c126_6_cross.log:61-65; diag_c127_1_fsinner.log:81-109)",
-   "guard rows (UB1, SEL1, KM3, 4 wires, BufNum -> SEL1.f)": "0: every Select input wired (diag_c128_2_donors.log:80-99)"
+   "guard rows (UB1, SEL1, KM3, 4 wires, BufNum -> SEL1.f)": "0: every Select input wired (diag_c128_2_donors.log:80-99)",
+   "p3b_x_img_src_w3040": "-1: w3040 (#6810 'Image Out' t6865, source-only in P3a) retired by the Image Out crossing (plan_ring_p3b1.json:476-486, net re-created PD256(c)); offline graph diff tools/bench/diag_c131_5_stubs.log:21; scratch read 53 (stage_d1_ring_p3b1_el_scratch.log:183); PD273(a)/(b) - UNVERIFIED by uid (read items carry none)"
   },
   "unwired_created_sinks": [
    "p3b_copy '' (SubVI #-9)",
@@ -454,13 +475,29 @@
    "wire_remove_loose_ends"
   ],
   "peak_mb": 663.4,
-  "fail_above_mb": 675.0,
+  "fail_above_mb": 690.0,
   "below_fail": true,
   "model": {
    "path": "tools/bench/memory_model.json",
    "md5": "3203ca935da5efb4dd95523ac97e79c7"
   },
   "how": "stage_prerun.x10_model_peak on the compiled plan, checkpoints {0, len} | BIND (the recipe's set)",
-  "note": "report only; the set and the model are not tuned to the number (card 130-1 rule 2)"
+  "note": "report only; the set and the model are not tuned to the number (card 130-1 rule 2)",
+  "fail_above_source": {
+   "card": "131-4",
+   "decided": "PD272(b) docs/d1/ring-p3b.md:40-43: launch measured-memory stop 690 MB; X10 planning threshold stays 675 (memory_model.json)",
+   "previous": 675.0,
+   "measured": "pin4 peak 680.8 MB at 'METER read k 31' (stage_d1_ring_p3b1_scratch_pin4.log:447)"
+  }
+ },
+ "census_source": {
+  "card": "131-4",
+  "decided": "PD264(c): the scratch census becomes the launch prediction",
+  "log": "tools/bench/stage_d1_ring_p3b1_scratch_pin4.log",
+  "line": 455,
+  "expect": "CENSUS-ALL new uids by class (every class)",
+  "log_md5": "e07b9dacd6446580596bf55b1a9ce411",
+  "what": "stagekit.census_gate counts NEW uids per class (after - before); the scratch measured it on every class",
+  "previous": {}
  }
 }

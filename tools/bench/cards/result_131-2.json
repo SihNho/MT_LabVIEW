@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"131-2","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+ {"path":"tools/hooks/guard_peer.py","md5":"18899fd24d643513ade50b95ca057fff"},
+ {"path":"tools/hooks/guard_cycle.py","md5":"cfd8abc095a0861fc8793c646162ea5d"},
+ {"path":"tools/protocol.py","md5":"296535db65b2e9e73609e9504a47a527"},
+ {"path":"tools/gate_fp.py","md5":"dd21e1d2b65c2befc4ed57fb96433248"},
+ {"path":"tools/bench/gate_fp_queue.jsonl","md5":"73264e9a72fa7b66cbc749026c741de5"},
+ {"path":"tools/bench/selftest_c131_2_tools.py","md5":"60dfae99834af39a78f8babfe37d9645"},
+ {"path":"tools/bench/diag_c131_2_offline.py","md5":"4553bb7d2216803d243528cbd81c788f"},
+ {"path":"tools/bench/c131_2_reach.py","md5":"f598ce6684b85540c356f0e9a80d8dc6"},
+ {"path":"tools/bench/diag_c131_2_suite.py","md5":"5d76f71fa9e76906197c824b90b979db"}],
+"facts":[
+ "P1 measured before switch-on: fp-16/17/18/22/24 argvs 5/5 pass (v1 4/5, fp-24 held); 53/53 stage_runs LabVIEW launches still held (v1 53/53) - diag_c131_2_offline_after.log",
+ "P1 rule v2 = AST, guard_peer.py:236-386: launched script any depth; imported modules module-level only; COM-entry defs by fixpoint; stage_prerun dry/prerun declared stubbed (:249)",
+ "P1 flips over 1318 bench+recipe scripts: 153 v1-LV -> v2-offline, 5 v1-offline -> v2-LV (*_labels.py, drive_legguard), 0 recipes; hook == candidate on all (diag_c131_2_offline_after.log)",
+ "P2 fp-25: protocol.py:645-665 _dispatch_text drops ;/&&/||/| segments led by a read-only program before peer_role_of (:668); guard_bash.py unchanged (it consumes check_command)",
+ "P3 guard_cycle.py:40-47 BUILD_RE: interpreter must follow start/space/;&|(\"'\\/; cp a.py tools/recipes/b.py no match, main rc 0; py tools/x.py tools/recipes/r.py still a build",
+ "selftest_c131_2_tools.log: 30 pass / 0 fail (G1-G12 guard_peer, N1 gate_fp.note, P1-P8 peer_role_of, C1-C8 BUILD_RE)",
+ "P4 suite of 32 existing self-tests (guard_peer/guard_cycle/protocol/guard_bash): before 32 ok/0 fail, after 32 ok/0 fail - diag_c131_2_suite_before.log, diag_c131_2_suite_after.log",
+ "Drained fp-22, fp-24, fp-25, fp-26, fp-27; fp-19/20/21 open with notes (gate_fp.py note, new); gate_fp due still DUE: oldest from cycle 128 (>=3 cycles)",
+ "First candidate run FAILED (fp-24 held; stage_prerun.dry not yet declared stubbed): diag_c131_2_offline.log:15; that log then blocked card 131-1 (fp-26) and me (fp-27, JEV p=0.622)",
+ "JEV row: diag_c131_2_offline.log | our-script-bug p=0.622 | hypothesis review owed | logged gate-fp fp-27 (RULE-OFFLINE-CARD missed by v1), fixed candidate, reran | PASS 4/0"],
+"open":[
+ "v2 does not follow subprocess/runpy/importlib (as v1); 153 bench scripts now count offline, incl. diag_c104*_launch.py (they call stage_prerun.check_launch only). Accept the static rule?",
+ "gate-fp queue stays DUE by its age rule (fp-19 from cycle 128) until a stage_prerun tooling card runs after 131-1.",
+ "fp-27 was logged and discharged inside this card for its own failing measurement log (an offline tool-build iteration), not a hypothesis review: acceptable use of RULE-GATE-FP?"],
+"cost":{"usd":null,"minutes":22,"labview_runs":0},
+"note":"No LabVIEW, no hardware. v1 kept as guard_peer.script_touches_labview_v1 for comparison only. c131_2_why.py (diagnostic helper) also written under tools/bench."}

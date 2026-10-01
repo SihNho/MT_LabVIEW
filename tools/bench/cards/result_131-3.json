@@ -1,0 +1,24 @@
+{"schema":"result/1","id":"131-3","status":"FAIL","gates":{"pass":1,"fail":1},
+"first_fail":"S2 peak memory: measured 680.8 MB at 'METER read k 31' > predicted 663.4 MB (and > fail_above 675.0) - stage_d1_ring_p3b1_scratch_pin4.log:447",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/stage_d1_ring_p3b1_scratch_pin4.log","md5":"e07b9dacd6446580596bf55b1a9ce411"},
+ {"path":"tools/bench/stage_d1_ring_p3b1_scratch_pin.json","md5":"902bdda195f350908f0f65ef0178e2a4"},
+ {"path":"tools/bench/errorlist_expected_scratch_c129_ring_p3b1_20261002_052136.json","md5":"1eac808a7a95bec025ad54bacbe62ab4"},
+ {"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c129_ring_p3b1_20261002_052136.vi","md5":"efb317efd14a38936c515feb4203bb5b"}],
+"facts":[
+ "S1 PASS: dry E1 31 ops == sim, FS [0,16,18]==sim (stage_prerun_c131_3_p3b1_dry.log:92-93; _scratch_dry.log:111,127); prerun 15/0 both (_prerun.log:129; _scratch_prerun.log:150)",
+ "S2 run: BGRUN END rc=0 after 755s; GATES 22 pass / 0 fail, RESULT PASS; LabVIEW gone at exit True (scratch_pin4.log:608-611)",
+ "S2 E1 every checkpoint == sim through op 31; FS #27509 frames [0,16,18]==sim; RB reads 'status'; D new 28/lost 3 == sim; PB/TD/FU/HB PASS (pin4.log:449-580)",
+ "S2 tunnel names as predicted: FSOT+SelectorTunnel 'Image Out' (src frame 32464) and 'current image number' (pin4.log:522-543)",
+ "S2 MISS: METER op k31 663.4 MB (== model) but final read k31 680.8 MB, d +17.4 vs ~+4.1 per earlier read (pin4.log:446-447); fail_above 675.0 (plan_ring_p3b1_pred.json:456-457)",
+ "S2 handles open->save 45631 -> 46159 (pin4.log:580); EL expected written 54 == 55-1+0 (pin4.log:590); CEN2 vacuous (pred census empty, pin4.log:453)",
+ "Bed md5 4dfa44aac8fb32f706b3eb792ee7d3cc unchanged (certutil after run; pin4.log:596); no LabVIEW process (tasklist)",
+ "S3 NOT run. Scratch VI LEFT: claudeDev\\scratch_c129_ring_p3b1_20261002_052136.vi (rm refused: outside session dirs); el.py scratch reads it via scratch_pin.json:2902 and deletes it",
+ "S4 not done: plan_ring_p3b1_pred.json unchanged (md5 e4bba5b3); real recipe not launched",
+ "Jev ladder: no JEV-LADDER row for scratch_pin4 (RESULT PASS; memory is not a helper gate) | - | - | -"],
+"open":[
+ "Peak 680.8 MB (> 675 fail_above) came only from the final whole-VI read after op 31 (+17.4 MB); accept it (launch-gate X10 model counts that read?) or re-cut/raise the memory model before the real launch?",
+ "Run S3 (stage_d1_ring_p3b1_el.py scratch) on the scratch VI already on disk - it measures the Error List count and deletes the scratch - without rerunning pin?"],
+"cost":{"usd":null,"minutes":17,"labview_runs":1},
+"note":"Bind 05:19, return 05:36. Waited in-turn with wait_logs.py 28 s ticks (longer foreground waits refused by guard_bash). Scratch VI not deleted: needs approval for a path outside the session, or the el script."}

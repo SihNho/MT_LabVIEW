@@ -53,3 +53,21 @@ How to add: see the 5-line note at the top of `docs/d1/INDEX.md`.
        FAIL hygiene) — a bounded close in stagekit's FAIL path is tooling debt, not ahead of P3b-1.
      - **(d)** Measured on the way: pin3 peak 650.4 MB at op 26 (pred 663.4 for all 31); prior-art c130-6 `novel`; dry
        31/31 FS [0,16,18] == sim; `--scratch-required` exit 3.
+271. **(cycle 131 judgement, 2026-10-02 — after 131-1 PASS 3/0, 131-2 PASS 4/0)**
+     USER-RULES: U1 (relied on; simulator naming and hook classification only — no computation, no design change).
+     - **(a) Tunnel-naming rule ACCEPTED** (`stagesim.py:1499-1543,1668`, table `tools/bench/fs_tunnel_naming_table.json`,
+       18 crossings, self-test 16/0, stagesim 105/0): a crossing-created tunnel takes the SOURCE TERMINAL's name for a SubVI
+       source (`''` for a Function); a wired source names every face, an unwired one only the face it feeds. pin3 op 26
+       (`#6865` `Image Out`, alone on w3040) is explained. The rival rule ("an indexing For exit drops the name") fits the
+       same rows and gives the same P3b names, so the choice does not change P3b; the first recorded crossing that
+       separates them decides — the binder's name gate catches a wrong guess at that op, as it did at op 26.
+     - **(b) P3b-2's `p3b_x_rot` name `Value` (`#4580` Property, net w4878 without tunnels) is a graph-read prediction,
+       not a run fact;** it is measured on P3b-2's own scratch run, not before. No extra LabVIEW act for it.
+     - **(c) P3b-1 / P3b-2 re-finalized** (`plan_ring_p3b1.json` edbdba99, pred e4bba5b3; `plan_ring_p3b2.json` b25c1ecb;
+       unsplit reference `plan_ring_p3b.json` 747d712e, c128b re-pinned 6/0); P3b-1 dry 31/31 + prerun 15/0, X10 663.4 /
+       664.3 MB; `--scratch-required` exit 3 (census unpredicted, 31 rows) ⇒ scratch `pin4` per D-2026-10-01-01, then ONE launch.
+     - **(d) guard_peer offline rule v2 ACCEPTED** (`guard_peer.py:236-386`, AST, measured before switch-on: fp-16/17/18/22/24
+       5/5 pass, 53/53 recorded LabVIEW launches still held; 153 bench scripts flip to offline, 5 flip to LabVIEW, 0
+       recipes). Not following subprocess/runpy is accepted: a real launch goes through a recipe/bgrun path that is still
+       held. fp-27 (the tool's own measurement log, before the fix landed) is not `device-failed`. Open gate-fp: fp-19/20/21
+       (stage_prerun) — drained by ONE stage_prerun tooling card after P3b-1's launch, never while a stage card is live.

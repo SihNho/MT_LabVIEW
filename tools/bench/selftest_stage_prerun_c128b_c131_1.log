@@ -1,0 +1,13 @@
+BGRUN START 2026-10-02 05:14:23 limit 6.0 min: py -u tools/bench/selftest_stage_prerun_c128b.py
+BGRUN PID 564
+  FACT plan_ring_p3b.json md5 747d712ef7767c416fa425919165204a (trace taken on 747d712ef7767c416fa425919165204a)
+  PASS  T0 fixture pinned: plan_ring_p3b.json md5 == the trace's plan md5, 70 actions  ('747d712ef7767c416fa425919165204a', '747d712ef7767c416fa425919165204a', 70)
+  PASS  T1 x5_count(P3b fresh-process trace, plan_ring_p3b.json) PASS: 30 wiring + 15 RLE, each 1:1  ops 30 vs plan wire rows 0 + stageplan wiring real ops 30 (covering 30/30 wire actions); delete ops {} vs plan delete rows {}; RLE ops 15 vs plan RLE rows 15
+  PASS  T2 NEGATIVE: one extra wire_connect FAILS  ops 31 vs plan wire rows 0 + stageplan wiring real ops 30 (covering 30/30 wire actions); delete ops {} vs plan delete rows {}; RLE ops 15 vs plan RLE rows 15
+  PASS  T3 NEGATIVE: one extra wire_remove_loose_ends FAILS  ops 30 vs plan wire rows 0 + stageplan wiring real ops 30 (covering 30/30 wire actions); delete ops {} vs plan delete rows {}; RLE ops 16 vs plan RLE rows 15
+  FACT in-process --dry: {"mode": "--dry", "rc": 0, "D.ops": 70, "depth": 1, "x5_line": [], "result": ["RESULT {\"schema\":\"result-line/1\",\"status\":\"PASS\",\"gates\":{\"pass\":1,\"fail\":0},\"first_fail\":null,\"artefacts\":[]}"]}
+  FACT in-process --prerun: {"mode": "--prerun", "rc": 1, "D.ops": 70, "depth": 1, "x5_line": ["PASS  X5 wiring ops executed in the dry run == plan wire rows  ops 30 vs plan wire rows 0 + stageplan wiring real ops 30 (covering 30/30 wire actions); delete ops {} vs plan delete rows {}; RLE ops 15 vs plan RLE rows 15"], "result": ["RESULT {\"schema\":\"result-line/1\",\"status\":\"FAIL\",\"gates\":{\"pass\":14,\"fail\":1},\"first_fail\":\"X10 predicted LabVIEW private MB <= model fail_above_mb, from the compiled plan + checkpoint set (peak 846.2 MB): {'peak_mb': 846.2, 'recorded': {'why': 'UNMEASURED: no recorded meter of stage_d1_ring\",\"artefacts\":[]}"]}
+  PASS  T4 in-process --dry then --prerun: D.ops 70 after EACH call, Stage._op wrap depth 1 after each; the --dry rc 0  [(70, 1), (70, 1)]
+  PASS  T5 the in-process --prerun's X5 line is PASS  ['PASS  X5 wiring ops executed in the dry run == plan wire rows  ops 30 vs plan wire rows 0 + stageplan wiring real ops 30 (covering 30/30 wire actions); delete ops {} vs plan delete rows {}; RLE ops 15 vs plan RLE rows 15']
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":6,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 104s

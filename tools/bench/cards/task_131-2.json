@@ -1,0 +1,73 @@
+{
+ "schema": "task/1",
+ "id": "131-2",
+ "kind": "build",
+ "goal": "Gate-fp drain: guard_peer offline classification (device-failed 2026-10-02 04:52; fp-22, fp-24), fp-25 read-only commands, guard_cycle.py:40 BUILD_RE; stage_prerun fps 19/20/21 left open with reason",
+ "why": "gate-fp queue DUE (6 open, fp-24 blocking); violation-decisions.md:1797-1817. brief_131-2.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_131-2.md"},
+  {"path": "docs/violation-decisions.md"},
+  {"path": "tools/hooks/guard_peer.py", "md5": "29a8eab368f53da684f834f0152428ed"},
+  {"path": "tools/hooks/guard_bash.py", "md5": "1a74f78e6612aaa3c83ccbf7a66898e1"},
+  {"path": "tools/hooks/guard_cycle.py", "md5": "595973d92df8ec619fe1229871c5e8b5"},
+  {"path": "tools/gate_fp.py"},
+  {"path": "tools/bench/gate_fp_queue.jsonl"},
+  {"path": "tools/bench/stage_runs.jsonl"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/hooks/guard_peer.py"},
+  {"kind": "file", "name": "tools/hooks/guard_bash.py"},
+  {"kind": "file", "name": "tools/hooks/guard_cycle.py"},
+  {"kind": "file", "name": "tools/gate_fp.py"},
+  {"kind": "file", "name": "tools/bench/stage_runs.jsonl"},
+  {"kind": "file", "name": "tools/bench/selftest_guard_peer_jev.py"}
+ ],
+ "pass": [
+  "P1 guard_peer offline rule measured before switch-on: fp-16/17/18/22/24 recorded argvs all pass (count), every LabVIEW launch in stage_runs.jsonl still held (count); fp-22 + fp-24 drained",
+  "P2 fp-25: read-only commands naming tools/peer.ps1 are not a peer dispatch; self-test; drained",
+  "P3 guard_cycle.py BUILD_RE: python in command position only; self-test cp a.py tools/recipes/b.py not a build, py tools/recipes/x.py still a build",
+  "P4 existing self-tests of every edited hook rerun, counts listed; gate_fp list shows open = fp-19/20/21 only (each with a note)"
+ ],
+ "outputs": [
+  "tools/hooks/guard_peer.py",
+  "tools/hooks/guard_bash.py",
+  "tools/hooks/guard_cycle.py",
+  "tools/bench/gate_fp_queue.jsonl",
+  "tools/bench/cards/result_131-2.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/hooks/guard_peer.py",
+   "tools/hooks/guard_bash.py",
+   "tools/hooks/guard_cycle.py",
+   "tools/protocol.py",
+   "tools/gate_fp.py",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/selftest_guard*",
+   "tools/bench/selftest_gate_fp*",
+   "tools/bench/selftest_c131_2*",
+   "tools/bench/diag_c131_2*",
+   "tools/bench/c131_2*",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_131-2*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 50},
+ "rules": [
+  "Offline only; never edit stage_prerun/stagesim/stagexec/stagekit, plan_ring_p3b* or P3b recipes (131-1 live)",
+  "Measure the new rule on the recorded argvs before switching it on",
+  "A hook edit is followed immediately by its self-test; never leave a hook broken between steps",
+  "Return at the first unexpected result; cost.minutes = bind->return"
+ ],
+ "unblocks": "M3"
+}

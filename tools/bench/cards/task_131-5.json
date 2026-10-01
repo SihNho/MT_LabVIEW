@@ -1,0 +1,80 @@
+{
+ "schema": "task/1",
+ "id": "131-5",
+ "kind": "build",
+ "goal": "PD273: name the extra loose end offline, owed hypothesis review, S4 (census, expected 53, fail_above 690), ONE launch of P3b-1, final Error List",
+ "why": "131-4: scratch Error List 53 vs 54, one extra loose end; launch proceeds under PD273(b), non-destructive. brief_131-5.md.",
+ "retry_of_card": "131-4",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_131-5.md"},
+  {"path": "docs/d1/ring-p3b.md"},
+  {"path": "tools/bench/cards/result_131-4.json"},
+  {"path": "tools/bench/errorlist_expected_D1_ring_p3a_20261001_180540.json"},
+  {"path": "tools/bench/errorlist_scratch_c129_ring_p3b1_20261002_052136_20261002_053812.json", "md5": "c83c9beadad904d90d102342c82ec8d1"},
+  {"path": "tools/bench/stage_d1_ring_p3b1_el_scratch.log", "md5": "9e380e13fe91d45834e1f07cb575d888"},
+  {"path": "tools/bench/stage_d1_ring_p3b1_scratch_pin4.log", "md5": "e07b9dacd6446580596bf55b1a9ce411"},
+  {"path": "tools/bench/plan_ring_p3b1.json", "md5": "edbdba9909cc5130f8710f49a510b8ad"},
+  {"path": "tools/bench/plan_ring_p3b1_pred.json", "md5": "e4bba5b3e74fdf991dd073400f3756ca"},
+  {"path": "tools/recipes/stage_d1_ring_p3b1.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3a_20261001_180540.vi", "md5": "4dfa44aac8fb32f706b3eb792ee7d3cc"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p3b1.py"},
+  {"kind": "file", "name": "tools/bench/diag_c131_4_census.py"},
+  {"kind": "file", "name": "tools/bench/errorlist_expected_D1_ring_p3a_20261001_180540.json"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/wait_logs.py"},
+  {"kind": "file", "name": "tools/peer.ps1"},
+  {"kind": "file", "name": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_ring_p3a_20261001_180540.vi"}
+ ],
+ "pass": [
+  "N0 missing loose-end item(s) named by identifying fields, net uid if recorded, RLE-row target yes/no/unknown with plan line",
+  "N1 hypothesis review ANSWERED, verdict line reported, archive path",
+  "N2 census + expected 53 + fail_above 690 in pred (lines named); dry 31/31 + prerun 15/0",
+  "N3 ONE launch to BGRUN END: all gates PASS through op 31, census == pred, peak <= 690 MB, saved D1_ring_p3b1_*.vi + md5, bed unchanged",
+  "N4 final full Error List == 53; expected file written; loose-end diff vs P3a on the real file; LabVIEW gone"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p3b1_pred.json",
+  "tools/bench/errorlist_expected_D1_ring_p3b1_*.json",
+  "tools/bench/cards/result_131-5.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/*ring_p3b1*",
+   "tools/bench/stage_d1_ring_p3b1_el.py",
+   "tools/bench/sim/**",
+   "tools/bench/prerun/**",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/errorlist*",
+   "tools/bench/graph_ring_p3b1*",
+   "tools/bench/census_samples.json",
+   "tools/bench/diag_c131_4*",
+   "tools/bench/diag_c131_5*",
+   "tools/bench/stage_prerun*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prior_art*",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_131-5*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "Steps in order; step 0's result does not gate the launch; return at the first prediction miss in steps 2-4",
+  "Exactly ONE launch of the real recipe; never end the turn while a run lacks BGRUN END (material.md:92-98)",
+  "GUI via lv_gui.ps1 -Exception Approved only; capture, locate, act, capture, confirm",
+  "No STATUS edit, no current-bed move; cost.minutes = bind->return"
+ ],
+ "advances": ["M3", "M4"]
+}

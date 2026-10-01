@@ -1,0 +1,76 @@
+{
+ "schema": "task/1",
+ "id": "131-3",
+ "kind": "build",
+ "goal": "PD271(c): P3b-1 scratch pin4 on a P3a byte copy (waited in-turn), Error List count-only, census into pred. No launch",
+ "why": "Naming rule measured (PD271(a)); D-2026-10-01-01 needs a full scratch run before the ring step's launch. brief_131-3.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_131-3.md"},
+  {"path": "tools/bench/cards/brief_130-6.md"},
+  {"path": "docs/d1/tooling.md"},
+  {"path": "tools/bench/cards/result_131-1.json"},
+  {"path": "tools/bench/plan_ring_p3b1.json", "md5": "edbdba9909cc5130f8710f49a510b8ad"},
+  {"path": "tools/bench/plan_ring_p3b1_pred.json", "md5": "e4bba5b3e74fdf991dd073400f3756ca"},
+  {"path": "tools/stagesim.py", "md5": "c3b2cd8a92ff174adac91483740370b0"},
+  {"path": "tools/recipes/stage_d1_ring_p3b1.py"},
+  {"path": "tools/bench/stage_d1_ring_p3b1_scratch.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3a_20261001_180540.vi", "md5": "4dfa44aac8fb32f706b3eb792ee7d3cc"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p3b1.py"},
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p3b1_scratch.py"},
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p3b1_el.py"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3b1_pred.json"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/wait_logs.py"},
+  {"kind": "file", "name": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_ring_p3a_20261001_180540.vi"}
+ ],
+ "pass": [
+  "S1 recipe + helper --dry 31/31 and --prerun 15/0 on current bytes",
+  "S2 scratch pin4 waited to BGRUN END: every gate PASS through op 31 incl. tunnel names and per-frame counts; peak <= 663.4 MB (measured)",
+  "S3 scratch Error List count-only == pred per class; scratch deleted; LabVIEW verified gone; bed md5 unchanged",
+  "S4 if S1-S3 match and <= 50 min: measured census into pred by script citing log line; dry + prerun again; --scratch-required exit"
+ ],
+ "outputs": [
+  "tools/bench/stage_d1_ring_p3b1_scratch_pin4.log",
+  "tools/bench/plan_ring_p3b1_pred.json",
+  "tools/bench/cards/result_131-3.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/*ring_p3b1*",
+   "tools/bench/stage_d1_ring_p3b1_scratch.py",
+   "tools/bench/stage_d1_ring_p3b1_el.py",
+   "tools/bench/sim/**",
+   "tools/bench/prerun/**",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/errorlist*ring_p3b1*",
+   "tools/bench/graph_ring_p3b1*",
+   "tools/bench/census_samples.json",
+   "tools/bench/diag_c131_3*",
+   "tools/bench/stage_prerun*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prior_art*",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_131-3*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "Real recipe NOT launched; bed never opened for edit; scratch on a byte copy only",
+  "Never end the turn while a run you started lacks BGRUN END (material.md:92-98); wait with wait_logs.py ticks",
+  "GUI via lv_gui.ps1 -Exception Approved only; capture, locate, act, capture, confirm",
+  "Return at the first unexpected result (step finished, LabVIEW closed, scratch cleaned); cost.minutes = bind->return"
+ ],
+ "advances": ["M3", "M4"]
+}

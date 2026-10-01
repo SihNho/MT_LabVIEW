@@ -144,6 +144,21 @@ def drain(fp_id, fixed, selftest, path=None):
     return None, "no entry %s" % fp_id
 
 
+def note(fp_id, text, path=None):
+    """card 131-2: attach a NOTE to an entry (why it stays open, who owns it). (entry, None) or (None, why). Status is
+    not changed; a later note replaces the earlier one."""
+    if not (text or "").strip():
+        return None, "--text is empty"
+    with P.file_lock((path or QUEUE) + ".lock"):
+        rows = read_queue(path)
+        for r in rows:
+            if r.get("id") == fp_id:
+                r.update({"note": text.strip()[:600], "note_iso": time.strftime("%Y-%m-%d %H:%M:%S")})
+                _write_queue(rows, path)
+                return r, None
+    return None, "no entry %s" % fp_id
+
+
 def blocking_ids(cards_dir=None):
     """fp ids named by a result/1 card's blocked_by.device == 'gate-fp:<id>'."""
     d = cards_dir or P.CARDS_DIR
@@ -240,10 +255,17 @@ def main(argv=None):
     dr.add_argument("--id", required=True)
     dr.add_argument("--fixed", required=True)
     dr.add_argument("--selftest", required=True)
+    nt = sub.add_parser("note")
+    nt.add_argument("--id", required=True)
+    nt.add_argument("--text", required=True)
     ls = sub.add_parser("list")
     ls.add_argument("--open", action="store_true")
     sub.add_parser("due")
     a = ap.parse_args(argv)
+    if a.cmd == "note":
+        e, why = note(a.id, a.text)
+        print(("NOTED %s" % e["id"]) if e else "REFUSED: %s" % why)
+        return 0 if e else 2
     if a.cmd == "log":
         try:
             e, new = log_fp(a.gate, a.command, a.why, a.card, a.line, a.log)
@@ -263,6 +285,8 @@ def main(argv=None):
                 continue
             print("%s %-7s cycle %s gate %s card %s | %s" % (r.get("id"), r.get("status"), r.get("cycle"), r.get("gate"),
                                                              r.get("card"), str(r.get("first_refusal_line"))[:100]))
+            if r.get("note"):
+                print("    note: %s" % r["note"])
         return 0
     if a.cmd == "due":
         d, why = due()

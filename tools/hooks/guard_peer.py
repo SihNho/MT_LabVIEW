@@ -60,6 +60,7 @@ DELIBERATE LIMITS, stated so nobody mistakes this for more than it is:
 
 Exit code 2 = block (stderr goes back to Claude); 0 = allow.
 """
+import ast
 import glob
 import json
 import os
@@ -231,9 +232,164 @@ def _module_names(src):
     return names
 
 
+# ---- v2 OFFLINE CLASSIFICATION (card 131-2; docs/violation-decisions.md "device-failed - 2026-10-02 04:52") -------------
+# v1 (script_touches_labview_v1 below) followed EVERY `import` line by regex, function-local ones included, so a pure-
+# Python self-test that imports stage_prerun / guard_bash / stagexec only to call an offline function was held as
+# LabVIEW (fp-11, fp-22, fp-24). v2, by AST: a LAUNCHED script reaches LabVIEW when its code (any depth - it is what runs)
+#   (a) imports a _LV_MODULES name or calls Dispatch("LabVIEW.Application"), or
+#   (b) imports a PROJECT module whose IMPORT reaches LabVIEW (that module's module-level code only: function bodies and
+#       `if __name__` blocks do not run on import), or
+#   (c) USES a COM ENTRY of a project module it imports (`alias.name`, or `from mod import name` + `name`); an entry is a
+#       top-level def/class whose body reaches LabVIEW by (a)-(c) (fixpoint inside the module), EXCEPT the stage_prerun
+#       modes that install their own COM stubs (_STUBBED_ENTRIES - the decision's "--dry/--prerun ... COM is stubbed").
+# An import that merely REACHES gscript without calling COM is not LabVIEW. Fails closed (unreadable / unparseable launched
+# script or project module = reaches). Not followed, as in v1: subprocess / importlib / runpy of another file.
+# MEASURED before switch-on: tools/bench/diag_c131_2_offline.log (fp-16/17/18/22/24 argvs 5/5 pass, v1 4/5; all 53 unique
+# LabVIEW launches of stage_runs.jsonl still held, v1 53/53; no tools/recipes script flips; cold classification 1.4 s).
+_STUBBED_ENTRIES = {"tools/stage_prerun.py": frozenset(("dry", "prerun"))}   # stage_prerun.py:829-831 install(graph)
+_MODINFO = {}
+
+
+def _v2_dirs(key):
+    return [os.path.dirname(key)] + [os.path.join(ROOT, "tools", d) for d in ("", "bench", "hooks", "recipes")]
+
+
+def _v2_find(name, dirs):
+    for d in dirs:
+        c = os.path.join(d, name + ".py")
+        if os.path.isfile(c):
+            return os.path.normcase(os.path.abspath(c))
+    return None
+
+
+def _v2_main_guard(n):
+    return (isinstance(n, ast.If) and isinstance(n.test, ast.Compare) and isinstance(n.test.left, ast.Name)
+            and n.test.left.id == "__name__")
+
+
+def _v2_walk(nodes, module_level):
+    """Every node under `nodes`. module_level: function/lambda BODIES and `if __name__` blocks are not entered."""
+    stack = list(nodes)[::-1]
+    while stack:
+        n = stack.pop()
+        yield n
+        if module_level and (isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)) or _v2_main_guard(n)):
+            continue
+        stack.extend(list(ast.iter_child_nodes(n))[::-1])
+
+
+def _v2_bind(nodes, dirs, stack):
+    """(hit, {alias: module path}, {local names bound to an entry}) for the imports among `nodes`."""
+    hit, alias, names = False, {}, set()
+    for n in nodes:
+        if isinstance(n, ast.Import):
+            for a in n.names:
+                base = a.name.split(".")[0]
+                if base in _LV_MODULES:
+                    hit = True
+                    continue
+                p = _v2_find(base, dirs)
+                if p:
+                    hit = hit or _v2_info(p, stack)[0]
+                    alias[a.asname or base] = p
+        elif isinstance(n, ast.ImportFrom) and n.module and not n.level:
+            base = n.module.split(".")[0]
+            if base in _LV_MODULES:
+                hit = True
+                continue
+            p = _v2_find(base, dirs)
+            if p:
+                top, ent = _v2_info(p, stack)
+                hit = hit or top
+                for a in n.names:
+                    if a.name == "*":
+                        hit = hit or bool(ent)
+                    elif a.name in ent:
+                        names.add(a.asname or a.name)
+    return hit, alias, names
+
+
+def _v2_uses(nodes, alias, names, stack):
+    for n in nodes:
+        if isinstance(n, ast.Attribute) and isinstance(n.value, ast.Name) and n.value.id in alias:
+            if n.attr in _v2_info(alias[n.value.id], stack)[1]:
+                return True
+        elif isinstance(n, ast.Name) and n.id in names:
+            return True
+    return False
+
+
+def _v2_info(path, stack=frozenset()):
+    """(import_reaches, entries) of a PROJECT module. Cached per process; an import cycle contributes nothing."""
+    if path in _MODINFO:
+        return _MODINFO[path]
+    if path in stack:
+        return False, frozenset()
+    stack = stack | {path}
+    try:
+        with open(path, "r", encoding="utf-8", errors="replace") as f:
+            src = f.read()
+        tree = ast.parse(src)
+    except (OSError, SyntaxError, ValueError):
+        _MODINFO[path] = (True, frozenset())
+        return _MODINFO[path]
+    dirs = _v2_dirs(path)
+    code = protocol.code_only(src)
+    lv_lines = [code.count("\n", 0, m.start()) + 1 for m in _LV_TEXT_RE.finditer(code)]
+    try:
+        stub = _STUBBED_ENTRIES.get(os.path.relpath(path, ROOT).replace("\\", "/").lower(), frozenset())
+    except ValueError:
+        stub = frozenset()
+    defs = [d for d in tree.body if isinstance(d, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))]
+    span = {d.name: (d.lineno, d.end_lineno or d.lineno) for d in defs}
+    defs = [d for d in defs if d.name not in stub]
+    mod_nodes = list(_v2_walk(tree.body, True))
+    hit, alias, names = _v2_bind(mod_nodes, dirs, stack)
+    entries = {d.name for d in defs if any(span[d.name][0] <= ln <= span[d.name][1] for ln in lv_lines)}
+    per_def = {}
+    for d in defs:
+        dn = list(_v2_walk([d], False))
+        h, a2, n2 = _v2_bind(dn, dirs, stack)
+        per_def[d.name] = (dn, dict(alias, **a2), names | n2)
+        if h:
+            entries.add(d.name)
+    changed = True
+    while changed:
+        changed = False
+        for d in defs:
+            if d.name in entries:
+                continue
+            dn, al, nm = per_def[d.name]
+            if _v2_uses(dn, al, nm | entries, stack):
+                entries.add(d.name)
+                changed = True
+    top = hit or any(not any(s <= ln <= e for s, e in span.values()) for ln in lv_lines) \
+        or _v2_uses(mod_nodes, alias, names | entries, stack)
+    _MODINFO[path] = (bool(top), frozenset(entries))
+    return _MODINFO[path]
+
+
 def script_touches_labview(script, _seen=None):
-    """True when `script` (a path) or any PROJECT module it imports, transitively, reaches LabVIEW: imports one of
-    _LV_MODULES or calls Dispatch on the LabVIEW application class. FAILS CLOSED: an unreadable script counts as True."""
+    """v2 (card 131-2): True when the LAUNCHED `script` can open LabVIEW - rules in the block above. FAILS CLOSED."""
+    key = os.path.normcase(os.path.abspath(script))
+    try:
+        with open(key, "r", encoding="utf-8", errors="replace") as f:
+            src = f.read()
+        tree = ast.parse(src)
+    except (OSError, SyntaxError, ValueError):
+        return True
+    if _LV_TEXT_RE.search(protocol.code_only(src)):
+        return True
+    nodes = list(_v2_walk(tree.body, False))
+    stack = frozenset({key})
+    hit, alias, names = _v2_bind(nodes, _v2_dirs(key), stack)
+    return hit or _v2_uses(nodes, alias, names, stack)
+
+
+def script_touches_labview_v1(script, _seen=None):
+    """v1, KEPT for comparison only (diag_c131_2_offline.py): True when `script` (a path) or any PROJECT module it
+    imports, transitively, reaches LabVIEW: imports one of _LV_MODULES or calls Dispatch on the LabVIEW application
+    class. FAILS CLOSED: an unreadable script counts as True."""
     seen = _seen if _seen is not None else set()
     key = os.path.normcase(os.path.abspath(script))
     if key in seen:
@@ -254,7 +410,7 @@ def script_touches_labview(script, _seen=None):
         for d in dirs:
             cand = os.path.join(d, name + ".py")
             if os.path.isfile(cand):
-                if script_touches_labview(cand, seen):
+                if script_touches_labview_v1(cand, seen):
                     return True
                 break
     return False

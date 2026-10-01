@@ -1,0 +1,24 @@
+{"schema":"result/1","id":"131-4","status":"FAIL","gates":{"pass":16,"fail":3},
+"first_fail":"S3 scratch Error List: 53 items, predicted 54 - gate M missing / N / T FAIL (stage_d1_ring_p3b1_el_scratch.log:183-186)",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/stage_d1_ring_p3b1_el_scratch.log","md5":"9e380e13fe91d45834e1f07cb575d888"},
+ {"path":"tools/bench/errorlist_scratch_c129_ring_p3b1_20261002_052136_20261002_053812.json","md5":"c83c9beadad904d90d102342c82ec8d1"},
+ {"path":"tools/bench/errorlist_expected_scratch_ring_p3b1_pred.json","md5":"2ade5b19f7dc632285545b41a201e13b"},
+ {"path":"tools/bench/diag_c131_4_census.py","md5":"856cba080049883eac4704ceec5179fa"}],
+"facts":[
+ "S3 run: BGRUN END rc=1 after 1072s; RESULT FAIL 16/3, first_fail 'M missing == []' (stage_d1_ring_p3b1_el_scratch.log:189-190)",
+ "Count-only read 53 items == window's own count 53 ('53 errors and warnings'), so the reader went to a FULL read; full read also 53, extra 0 (el_scratch.log:89,168)",
+ "Per class measured: wire-has-loose-ends 22 vs expected 23 (17+5+1+0, expected_scratch_ring_p3b1_pred.json:90-114); all other 8 classes equal (el_scratch.log:183)",
+ "Prediction basis: pred removed only p3b_rle_w27378 (-1, 55->54) (plan_ring_p3b1_pred.json:353-360); measured 55->53, i.e. one more loose-end wire gone",
+ "Read file's missing list is [null] (errorlist_scratch_..._053812.json:5665-5667) - reader names no item; the diff is only by class count",
+ "Reader integrity gates all PASS (dclicked, esc, refs, md5 unchanged); verdict line ERRORLIST-VERDICT: MISMATCH (el_scratch.log:170-182)",
+ "Scratch VI deleted (gate H2 PASS, el_scratch.log:188; Glob claudeDev *scratch_c129_ring_p3b1* = none); LabVIEW gone (gate H, tasklist no LabVIEW.exe)",
+ "plan_ring_p3b1_pin.json NOT written (only on PASS). S4 not run: diag_c131_4_census.py written (census from pin4.log:455 + fail_above 690), pred unchanged (e4bba5b3)",
+ "No launch; bed not opened. Recipe runtime stop = SX.MEM_STOP_MB 700 (stage_d1_ring_p3b1.py:41, stagexec.py:69); X10 reads memory_model.json, not the pred (stage_prerun.py:1925-1928)",
+ "Jev ladder: log | none (no JEV-LADDER row for stage_d1_ring_p3b1_el_scratch.log in jev_gate.log) | - | returned per material.md | FAIL"],
+"open":[
+ "Accept 53 as P3b-1's Error List (one extra loose-end wire cleared by a P3b-1 wire_remove_loose_ends row) and re-pin the expected file, or find which wire before the launch?",
+ "PD272(b) 690 stop: the recipe's runtime MEMSTOP is stagexec 700 and the recipe is outside this card's write list - is the pred record + post-run peak check enough, or should the recipe pass mem_stop_mb=690?"],
+"cost":{"usd":null,"minutes":20,"labview_runs":1},
+"note":"Bind 05:37, return 05:57. Returned at the first miss (S3) per brief step 1; S4 / launch / final read not done. Scratch is gone, so a re-pin needs a new scratch run or a read of the launched file."}
