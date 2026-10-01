@@ -31,7 +31,11 @@
       .\tools\peer.ps1 -Agent claude -Task "..."                     # sonnet; -Model opus if it earns it
       .\tools\peer.ps1 -Agent claude -Role hypothesis -Slug x -Task "..."  # FAILED-PREDICTION reviewer:
                                                                            # opus / effort max, WEB SEARCH ALLOWED
-      .\tools\peer.ps1 -Kind fact  -Slug x -Task "..."      # no -Agent => claude / role fact  (opus-5-5, medium, thin)
+      .\tools\peer.ps1 -Kind fact  -Slug x -Task "..."      # no -Agent => FACT CHAIN (card chat-G6, 2026-10-01):
+                                                            # gemini-3.1-pro-high 600 s -> x-gemini; only on
+                                                            # ERROR/TIMEOUT/QUOTA/empty: claude role fact -> x-claude
+      .\tools\peer.ps1 -Agent claude -Kind fact -Slug x -Task "..."  # claude / role fact only (opus-5-5, medium,
+                                                            # thin, web): the primary-source re-check
       .\tools\peer.ps1 -Kind prose -Slug x -TaskFile f.md   # no -Agent => claude / role prose (opus-5-5, medium, thin)
       .\tools\peer.ps1 -Dual -Slug x -TaskFile q.md   # the SAME task to codex AND the hypothesis role,
                                                       # archived as <date>-x-codex.md and <date>-x-opus.md
@@ -156,6 +160,15 @@ param(
     # prose exchange as before and records the parse result on its `verdict-card:` line.
     [string]$ReviewCard = '',
 
+    # FACT CHAIN (card chat-G6, user 2026-10-01 "이렇게 변경하고 진행하자", basis tools/bench/gsearch/report_g2.md):
+    # the timeout of the GEMINI step of `-Kind fact` with no -Agent. -TimeoutSec stays the claude fallback's timeout.
+    # A small value here is also the test switch that forces the fallback (g6/verify.log).
+    [int]$FactGeminiTimeoutSec = 600,
+
+    # Internal: the fact chain passes each arm a one-line route note, written into that arm's archive header as
+    # `- **route:**`. Empty (every other dispatch) = no route line, header unchanged.
+    [string]$RouteNote = '',
+
     [switch]$CheckQuota
 )
 
@@ -182,6 +195,72 @@ if ($TaskFile) {
     $Task = Get-Content -Path $TaskFile -Raw -Encoding UTF8
 }
 
+# --- FACT CHAIN: gemini first, claude fact role on failure (card chat-G6, user 2026-10-01) -----------------
+# `-Kind fact` with NO -Agent (and no explicit -Role/-Model/-Effort, which are claude-role knobs and keep the old
+# claude route): step 1 = `-Agent gemini -Model gemini-3.1-pro-high`, -FactGeminiTimeoutSec (600 s). Only if that
+# step does not answer (ERROR incl. empty answer and agy's "no output", TIMEOUT, QUOTA, or gemini marked out earlier)
+# step 2 = `-Agent claude -Kind fact` = the claude fact role exactly as an explicit call runs it, with -TimeoutSec.
+# Basis report_g2.md: gemini-3.1-pro-high 13 correct / 3 partly / 0 wrong of 16 vs Opus fact medium 7/8/1, but gemini
+# cited a primary ni.com source in 4/16 vs 16/16 - so an explicit `-Agent claude -Kind fact` remains THE re-check with
+# primary sources before an expensive build. Like -Dual, this re-invokes this script per arm, so every mechanism
+# below applies to both unchanged. Archives: archive\peer\<date>-<slug>-gemini.md and, on fallback, -<slug>-claude.md;
+# each carries a `route:` line, and on fallback a `## Fact chain` note is appended to the gemini archive. Exit code =
+# the arm that answered (the claude arm's when the fallback fired). A fact answer never discharges a failed
+# prediction BY ROLE for claude; NOTE the gemini arm's archive says `agent: gemini`, which guard_peer.py's
+# ADVERSARY_AGENTS accepts if the archive names the failing log (same as an explicit -Agent gemini call today).
+$factChain = (-not $Agent) -and (-not $Dual) -and (-not $CheckQuota) -and ($Kind -eq 'fact') -and
+             (-not $PSBoundParameters.ContainsKey('Role')) -and (-not $Model) -and (-not $Effort)
+if ($factChain) {
+    if (-not $Task) { throw '-Kind fact needs -Task or -TaskFile.' }
+    $chainFile = Join-Path $env:TEMP ("peer_factchain_{0}.txt" -f (Get-Random))
+    Set-Content -Path $chainFile -Value $Task -Encoding utf8
+    $common = @{ Kind = 'fact'; TaskFile = $chainFile }
+    if ($Image) { $common['Image'] = $Image }
+    if ($ReviewCard) { $common['ReviewCard'] = $ReviewCard }
+    $gemModel = 'gemini-3.1-pro-high'
+    $gemSlug = "$Slug-gemini"; $claSlug = "$Slug-claude"
+    $dateC = Get-Date -Format 'yyyy-MM-dd'
+    $gemArch = Join-Path $root "archive\peer\$dateC-$gemSlug.md"
+    if ($DryRun) {
+        Write-Output "DRYRUN route      : FACT CHAIN (no -Agent). step 1/2 gemini $gemModel ${FactGeminiTimeoutSec}s -> archive\peer\$dateC-$gemSlug.md"
+        Write-Output "DRYRUN route      : step 2/2 ONLY if step 1 ends ERROR/TIMEOUT/QUOTA/empty/marked-out: claude role fact ${TimeoutSec}s -> archive\peer\$dateC-$claSlug.md"
+        Write-Output "DRYRUN route      : exit code = the arm that answered"
+        Write-Output "=== FACT CHAIN STEP 1/2 (dry run) ==="
+        & $PSCommandPath -Agent gemini -Model $gemModel -TimeoutSec $FactGeminiTimeoutSec -Slug $gemSlug -DryRun @common
+        Write-Output "=== FACT CHAIN STEP 2/2, fallback only (dry run) ==="
+        & $PSCommandPath -Agent claude -TimeoutSec $TimeoutSec -Slug $claSlug -DryRun @common
+        Remove-Item $chainFile -Force -ErrorAction SilentlyContinue
+        exit 0
+    }
+    Write-Output "=== FACT CHAIN STEP 1/2: gemini $gemModel (${FactGeminiTimeoutSec}s) -> $gemSlug ==="
+    & $PSCommandPath -Agent gemini -Model $gemModel -TimeoutSec $FactGeminiTimeoutSec -Slug $gemSlug @common `
+        -RouteNote "fact chain step 1/2: gemini first; claude fact role is the fallback on ERROR/TIMEOUT/QUOTA/empty"
+    $rcG = $LASTEXITCODE
+    if ($rcG -eq 0) {
+        Remove-Item $chainFile -Force -ErrorAction SilentlyContinue
+        Write-Output "=== FACT CHAIN DONE: answered by gemini (step 1/2), no fallback; rc=0 ==="
+        exit 0
+    }
+    $why = switch ($rcG) {
+        2 { 'TIMEOUT' }
+        3 { 'QUOTA' }
+        4 { 'ERROR (incl. empty answer / agy no output)' }
+        5 { 'SKIPPED (gemini marked quota-exhausted earlier; no gemini archive)' }
+        default { "exit code $rcG" }
+    }
+    Write-Output "=== FACT CHAIN STEP 2/2: FALLBACK to claude role fact (${TimeoutSec}s) -> $claSlug; gemini step ended $why (rc $rcG) ==="
+    & $PSCommandPath -Agent claude -TimeoutSec $TimeoutSec -Slug $claSlug @common `
+        -RouteNote "fact chain step 2/2: FALLBACK - gemini step ended $why (rc $rcG), archive\peer\$dateC-$gemSlug.md"
+    $rcC = $LASTEXITCODE
+    if (Test-Path $gemArch) {
+        Add-Content -Path $gemArch -Encoding utf8 -Value ("`n## Fact chain`n`nFallback fired: this gemini step ended $why (rc $rcG). " +
+            "The claude fact role ran as step 2/2 and ended rc ${rcC}: archive\peer\$dateC-$claSlug.md.")
+    }
+    Remove-Item $chainFile -Force -ErrorAction SilentlyContinue
+    Write-Output "=== FACT CHAIN DONE: gemini $why (rc $rcG) -> fallback claude rc=$rcC; answered by $(if ($rcC -eq 0) { 'claude (step 2/2)' } else { 'NEITHER' }) ==="
+    exit $rcC
+}
+
 # C4: the review/1 card, rendered by tools/protocol.py (ONE renderer; this script does not restate the schema).
 $verdictId = ''
 $verdictContract = ''
@@ -198,8 +277,9 @@ if ($ReviewCard -and -not $Dual) {
 # codex is at 9 % of its weekly quota, so the roles it held move to claude sub-sessions and codex stops being
 # a default. Only -Kind decides, and only when the caller named no -Agent: an explicit -Agent codex (or gemini)
 # is still honoured exactly as before, which is what keeps the ladder's fallback usable.
-#   -Kind fact  -> claude / role fact  (fable, low,    thin)
-#   -Kind prose -> claude / role prose (fable, low,    thin)
+#   -Kind fact  -> claude / role fact  (opus-5-5, medium, thin) - reached here only with -Role/-Model/-Effort given;
+#                  plain `-Kind fact` is the FACT CHAIN above (gemini first, this role as fallback; card chat-G6)
+#   -Kind prose -> claude / role prose (opus-5-5, medium, thin)
 #   -Kind review-> NOT defaulted: a review's reviewer is a judgement call (hypothesis vs audit vs gemini).
 # $PSBoundParameters is how "the caller passed -Role" is distinguished from "the parameter has its default
 # value 'audit'" - prior_art_review.py and doc_ingest.py both pass -Role explicitly and are untouched by this.
@@ -287,10 +367,16 @@ $preamble = 'You are a read-only research assistant. Never run or modify anythin
             'Cite a URL for every external claim. '
 
 # Codex loads AGENTS.md natively (verified). agy does NOT scan it (verified: zero mentions in its
-# log) and headless mode auto-denies its file tools, so for agy the brief is inlined into the prompt.
+# log) and headless mode auto-denies its file tools AND its command tool - any run_command aborts the whole
+# run ("jetski: no output produced"). Card chat-G3 (user 2026-09-30 "가 적용 후 확인해보도록"): the inlined
+# AGENTS.md told agy to read STATUS.md first (AGENTS.md:57), which made it run `cat STATUS.md` / Get-ChildItem
+# (archive/peer/2026-09-30-g2-verify-b.md, -c.md). agy now gets a short WEB-ONLY brief instead of AGENTS.md.
 if ($Agent -eq 'gemini') {
-    $brief = Get-Content (Join-Path $root 'AGENTS.md') -Raw
-    $preamble = "Your project brief follows between the markers; obey it.`n--- BRIEF ---`n$brief`n--- END BRIEF ---`n"
+    $preamble = 'You are a read-only web research assistant. Answer ONLY from web search and web page reading. ' +
+                'There are no local files and no shell in this task: do not list, read, open or run anything ' +
+                'locally, and do not use any command or terminal tool. If a web page cannot be read, try another ' +
+                'source or another search result instead of fetching that page some other way. Never modify ' +
+                'anything. Cite the URL of every source you used; if the web does not settle a point, say so.' + "`n"
 }
 # A claude cell loads CLAUDE.md automatically - which addresses the SESSION that owns the work, not
 # a reviewer. Say plainly which role this cell holds, or it will try to take the lock and build.
@@ -558,9 +644,22 @@ if ($DryRun) {
     Write-Output "DRYRUN prompt     : $($prompt.Length) chars"
     Write-Output "DRYRUN archive    : $archP"
     Write-Output "DRYRUN timeout    : ${TimeoutSec}s"
+    if ($RouteNote) { Write-Output "DRYRUN routenote  : $RouteNote" }
     Write-Output "DRYRUN reviewcard : $(if ($verdictId) { "id $verdictId, card block + verdict contract ($($verdictContract.Length) chars) in the prompt, verdict -> tools\bench\cards\verdict_$verdictId.json" } else { '(none)' })"
     Remove-Item $promptFile -Force -ErrorAction SilentlyContinue
     exit 0
+}
+
+# NEUTRAL WORKING DIRECTORY FOR agy (card chat-G2, user 2026-09-30 "제미나이는 재시험 진행"). agy takes its cwd as
+# its workspace: from the project root it loaded .agents/skills, view_file'd the repo and tried `run_command ls docs/...`,
+# which headless mode auto-denies (report_g1.md: 4/14 gemini-pro ERRORs; one correct answer read OUR files). So the
+# gemini cell runs from a fresh EMPTY temp dir, created per call and removed after. codex/claude keep $root.
+$jobWd = $root
+$agyCwd = ''
+if ($Agent -eq 'gemini') {
+    $agyCwd = Join-Path $env:TEMP ("peer_agy_cwd_{0}" -f (Get-Random))
+    New-Item -ItemType Directory -Force $agyCwd | Out-Null
+    $jobWd = $agyCwd
 }
 
 $t0 = Get-Date
@@ -576,7 +675,7 @@ $job = Start-Job -ScriptBlock {
     $env:Path = $path
     Set-Location $wd
     Get-Content $promptFile -Raw | & $exe @exeArgs 2>&1 | Out-String
-} -ArgumentList $exe, $exeArgs, $root, $env:Path, $promptFile
+} -ArgumentList $exe, $exeArgs, $jobWd, $env:Path, $promptFile
 
 $done = Wait-Job $job -Timeout $TimeoutSec
 $elapsed = [int]((Get-Date) - $t0).TotalSeconds
@@ -658,7 +757,7 @@ if (-not $done) {
             param($exe, $a, $wd, $path, $inFile)
             $env:Path = $path; Set-Location $wd
             Get-Content $inFile -Raw | & $exe @a 2>&1 | Out-String
-        } -ArgumentList $exe, $probeArgs, $root, $env:Path, $probeIn
+        } -ArgumentList $exe, $probeArgs, $jobWd, $env:Path, $probeIn
         $probeOk = $false
         if (Wait-Job $probeJob -Timeout 60) {
             $pOut = (Receive-Job $probeJob | Out-String)
@@ -686,6 +785,8 @@ if (-not $done) {
         $outcome = 'ANSWERED'
     }
 }
+
+if ($agyCwd) { Remove-Item $agyCwd -Recurse -Force -ErrorAction SilentlyContinue }
 
 # Archive the exchange (rule 5: every exchange, useful or not).
 # A PROSE PASS IS NOT A PEER REVIEW. It goes to archive\prose\, because guard_peer.py, prior_art_review.py and
@@ -730,7 +831,7 @@ $archFile = Join-Path $archDir "$date-$Slug.md"
 - **agent:** $Agent
 - **role:** $(if ($Agent -eq 'claude') { $Role } else { '(n/a)' })
 - **model:** $modelLine
-- **kind:** $Kind
+- **kind:** $Kind$(if ($RouteNote) { "`n- **route:** $RouteNote" })
 - **cost:** $costLine
 - **date:** $dateStamp
 - **outcome:** $outcome (${elapsed}s)

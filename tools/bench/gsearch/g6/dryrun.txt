@@ -1,0 +1,103 @@
+﻿### A: -Kind fact (no -Agent)
+DRYRUN route      : FACT CHAIN (no -Agent). step 1/2 gemini gemini-3.1-pro-high 600s -> archive\peer\2026-10-01-g6-dry-gemini.md
+DRYRUN route      : step 2/2 ONLY if step 1 ends ERROR/TIMEOUT/QUOTA/empty/marked-out: claude role fact 180s -> archive\peer\2026-10-01-g6-dry-claude.md
+DRYRUN route      : exit code = the arm that answered
+=== FACT CHAIN STEP 1/2 (dry run) ===
+DRYRUN agent      : gemini
+DRYRUN role       : audit  (ignored for this agent)
+DRYRUN kind       : fact
+DRYRUN model      : gemini-3.1-pro-high (pinned by -Model)
+DRYRUN exe        : agy.exe
+DRYRUN args       : --mode plan --print-timeout 600s --model gemini-3.1-pro-high
+DRYRUN thin       : no (project context loaded)
+DRYRUN preamble   : 466 chars
+DRYRUN prompt     : 478 chars
+DRYRUN archive    : archive\peer\2026-10-01-g6-dry-gemini.md
+DRYRUN timeout    : 600s
+DRYRUN reviewcard : (none)
+=== FACT CHAIN STEP 2/2, fallback only (dry run) ===
+DRYRUN agent      : claude
+DRYRUN role       : fact
+DRYRUN kind       : fact
+DRYRUN model      : claude-opus-5-5 (effort medium; peer.ps1 default for role fact)
+DRYRUN exe        : claude.exe
+DRYRUN args       : -p --model claude-opus-5-5 --permission-mode plan --output-format json --effort medium --safe-mode --allowedTools WebSearch WebFetch --disallowedTools Bash PowerShell Edit Write NotebookEdit Agent
+DRYRUN thin       : YES (--safe-mode: no CLAUDE.md, no skills/plugins/hooks/MCP)
+DRYRUN preamble   : 248 chars
+DRYRUN prompt     : 260 chars
+DRYRUN archive    : archive\peer\2026-10-01-g6-dry-claude.md
+DRYRUN timeout    : 180s
+DRYRUN reviewcard : (none)
+rc=0
+### B: -Agent claude -Kind fact
+DRYRUN agent      : claude
+DRYRUN role       : fact
+DRYRUN kind       : fact
+DRYRUN model      : claude-opus-5-5 (effort medium; peer.ps1 default for role fact)
+DRYRUN exe        : claude.exe
+DRYRUN args       : -p --model claude-opus-5-5 --permission-mode plan --output-format json --effort medium --safe-mode --allowedTools WebSearch WebFetch --disallowedTools Bash PowerShell Edit Write NotebookEdit Agent
+DRYRUN thin       : YES (--safe-mode: no CLAUDE.md, no skills/plugins/hooks/MCP)
+DRYRUN preamble   : 248 chars
+DRYRUN prompt     : 258 chars
+DRYRUN archive    : archive\peer\2026-10-01-g6-dry.md
+DRYRUN timeout    : 180s
+DRYRUN reviewcard : (none)
+rc=0
+### C: -Agent gemini -Kind fact
+DRYRUN agent      : gemini
+DRYRUN role       : audit  (ignored for this agent)
+DRYRUN kind       : fact
+DRYRUN model      : (agy default, not readable) (agy built-in default)
+DRYRUN exe        : agy.exe
+DRYRUN args       : --mode plan --print-timeout 180s
+DRYRUN thin       : no (project context loaded)
+DRYRUN preamble   : 466 chars
+DRYRUN prompt     : 476 chars
+DRYRUN archive    : archive\peer\2026-10-01-g6-dry.md
+DRYRUN timeout    : 180s
+DRYRUN reviewcard : (none)
+rc=0
+### D: -Kind review (no -Agent; must still throw as before)
+THROW: Both -Agent and -Task are required (or use -CheckQuota, or -TaskFile).
+### E: -Agent claude -Role hypothesis -Kind review
+DRYRUN agent      : claude
+DRYRUN role       : hypothesis
+DRYRUN kind       : review
+DRYRUN model      : claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)
+DRYRUN exe        : claude.exe
+DRYRUN args       : -p --model claude-opus-5-5 --permission-mode plan --output-format json --effort high --allowedTools WebSearch WebFetch Read Glob Grep --disallowedTools Bash PowerShell Edit Write NotebookEdit Agent
+DRYRUN thin       : no (project context loaded)
+DRYRUN preamble   : 5413 chars
+DRYRUN prompt     : 5949 chars
+DRYRUN archive    : archive\peer\2026-10-01-g6-dry.md
+DRYRUN timeout    : 180s
+DRYRUN reviewcard : (none)
+rc=0
+### F: -Kind fact -Effort high (no -Agent; claude-role knob keeps old claude route)
+DRYRUN agent      : claude
+DRYRUN role       : fact
+DRYRUN kind       : fact
+DRYRUN model      : claude-opus-5-5 (effort high; pinned by -Model/-Effort (role fact))
+DRYRUN exe        : claude.exe
+DRYRUN args       : -p --model claude-opus-5-5 --permission-mode plan --output-format json --effort high --safe-mode --allowedTools WebSearch WebFetch --disallowedTools Bash PowerShell Edit Write NotebookEdit Agent
+DRYRUN thin       : YES (--safe-mode: no CLAUDE.md, no skills/plugins/hooks/MCP)
+DRYRUN preamble   : 248 chars
+DRYRUN prompt     : 258 chars
+DRYRUN archive    : archive\peer\2026-10-01-g6-dry.md
+DRYRUN timeout    : 180s
+DRYRUN reviewcard : (none)
+rc=0
+### G: -Kind prose
+DRYRUN agent      : claude
+DRYRUN role       : prose
+DRYRUN kind       : prose
+DRYRUN model      : claude-opus-5-5 (effort medium; peer.ps1 default for role prose)
+DRYRUN exe        : claude.exe
+DRYRUN args       : -p --model claude-opus-5-5 --permission-mode plan --output-format json --effort medium --safe-mode --disallowedTools Bash PowerShell Edit Write NotebookEdit Agent
+DRYRUN thin       : YES (--safe-mode: no CLAUDE.md, no skills/plugins/hooks/MCP)
+DRYRUN preamble   : 1059 chars
+DRYRUN prompt     : 1065 chars
+DRYRUN archive    : archive\prose\2026-10-01-g6-dry.md
+DRYRUN timeout    : 180s
+DRYRUN reviewcard : (none)
+rc=0

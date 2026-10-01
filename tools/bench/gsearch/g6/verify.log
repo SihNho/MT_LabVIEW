@@ -1,0 +1,23 @@
+card chat-G6 verify - peer.ps1 -Kind fact (no -Agent) = gemini-3.1-pro-high first (600 s), claude fact role fallback
+date 2026-10-01
+
+peer.ps1 md5 before 29ab3a06fc238cb85ada9e6921649a0c (= card input md5)
+peer.ps1 md5 after  204682a111f2bad11c60e8127a0e407a
+~/.gemini/antigravity-cli/settings.json md5 2d6fae65d3cbfe70f80b2764b21548fb before and after (not edited by this card)
+
+GATE PASS | DryRun -Kind fact (no -Agent): two-step route printed - step 1 agy --model gemini-3.1-pro-high --print-timeout 600s -> <slug>-gemini; step 2 (fallback only) claude role fact opus-5-5/medium thin web 180s -> <slug>-claude; rc 0 | dryrun.txt "### A"
+GATE PASS | DryRun -Agent claude -Kind fact: single claude role fact, archive <slug>.md, args identical to the step-2 arm | dryrun.txt "### B"
+GATE PASS | DryRun -Agent gemini -Kind fact: single agy call, agy default model, 180s, archive <slug>.md (no chain) | dryrun.txt "### C"
+GATE PASS | -Kind review without -Agent: still throws "Both -Agent and -Task are required" (not defaulted) | dryrun.txt "### D"
+GATE PASS | DryRun -Agent claude -Role hypothesis -Kind review: opus-5-5/high, web+Read/Glob/Grep, not thin (unchanged) | dryrun.txt "### E"
+INFO      | -Kind fact with -Effort/-Model/-Role and no -Agent keeps the old claude route (claude-role knobs) | dryrun.txt "### F"
+GATE PASS | DryRun -Kind prose: claude role prose -> archive\prose (unchanged) | dryrun.txt "### G"
+
+GATE PASS | real call (a) -Kind fact -Slug g6-call-a: step 1 gemini ANSWERED 115 s, no fallback, chain rc 0, bgrun 133 s, Claude usd 0 | call_a.log; archive/peer/2026-10-01-g6-call-a-gemini.md (route line present)
+GATE PASS | forced call (b) -Kind fact -Slug g6-call-b -FactGeminiTimeoutSec 5 -TimeoutSec 300: gemini TIMEOUT 5 s (rc 2) -> claude fact role ANSWERED 40 s, $0.4307, chain rc 0, bgrun 66 s | call_b.log
+GATE PASS | both (b) exchanges archived: -gemini.md (outcome TIMEOUT, route step 1/2, appended "## Fact chain" naming the fallback and the claude archive) and -claude.md (route "step 2/2: FALLBACK - gemini step ended TIMEOUT (rc 2)") | archive/peer/2026-10-01-g6-call-b-*.md
+
+GATE PASS | existing self-tests 13/13 rc 0 (guard_peer budget/failre/jev/ladder/samerow/scan_tmp/77_measure, c106d_tools, protocol_wiring, guard_bash_jev, logclass_cmd, audit_c4c_split, stamp_window) | selftests.log (driver tools/bench/selftest_g6_peerset.py)
+INFO      | no agy.exe left running after the forced timeout; no peer_agy_cwd_* temp dir left
+
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":11,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/peer.ps1","md5":"204682a111f2bad11c60e8127a0e407a"}]}
