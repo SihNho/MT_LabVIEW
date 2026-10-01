@@ -1,0 +1,66 @@
+{
+ "schema": "task/1",
+ "id": "128-3",
+ "kind": "diagnose",
+ "goal": "Offline: review gate for diag_c128_1_checks.log; MEASURE the X5 123-vs-26 breakdown; fix stage_prerun dry_open restore; per-row census source in the P3b pred file",
+ "why": "128-1 FAIL 7/1: recipe --prerun X5 counts 123 wiring ops vs plan 26 (stage_prerun.py:2013,:1788). P3b launch needs prerun PASS. Detail: tools/bench/cards/brief_128-3.md. Plan PD260(b).",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_128-3.md"},
+  {"path": "tools/bench/cards/result_128-1.json"},
+  {"path": "tools/bench/diag_c128_1_checks.log", "md5": "3f3f0cf1d50d02d517932252d6ce1862"},
+  {"path": "tools/bench/diag_c128_1_checks.py", "md5": "debce20b10d7391069cde433988e70dc"},
+  {"path": "tools/stagexec.py", "md5": "d8c254d84336b317c09e1198d1870f99"},
+  {"path": "tools/bench/plan_ring_p3b.json"},
+  {"path": "tools/bench/plan_ring_p3b_pred.json", "md5": "6dca647f0c7d8339c6af98cbf17937e9"},
+  {"path": "tools/recipes/stage_d1_ring_p3b.py"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/peer.ps1"},
+  {"kind": "file", "name": "tools/bench/census_samples.json"}
+ ],
+ "pass": [
+  "Step 0 per brief: JEV-LADDER NEXT-ACTION for diag_c128_1_checks.log followed; review (if owed) ANSWERED + annotated",
+  "Step 1: table of the 123 X5 ops by group (plan wiring rows / RLE / read-only / other) with counts; every 'other' op named",
+  "Step 2.1: stage_prerun restores REAL_OPEN after an in-process dry; new self-test case passes; existing self-tests green",
+  "Step 2.2: pred file carries per-row census sources from measured variants; unpredicted rows listed",
+  "Plan dry+prerun and recipe dry+prerun rerun; every check result recorded; X5 left unchanged"
+ ],
+ "outputs": [
+  "tools/stage_prerun.py",
+  "tools/bench/plan_ring_p3b_pred.json",
+  "tools/bench/diag_c128_3*"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_prerun.py",
+   "tools/bench/plan_ring_p3b_pred*",
+   "tools/bench/diag_c128_3*",
+   "tools/bench/selftest_*",
+   "tools/bench/stage_prerun*",
+   "tools/bench/sim/**",
+   "tools/bench/cards/result_128-3*",
+   "tools/bench/cards/review_128-3*",
+   "tools/bench/cards/verdict_128-3*",
+   "tools/bench/peer_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 45
+ },
+ "rules": [
+  "Offline only: no LabVIEW, no COM; no gscript/stagexec edit; recipe never launched",
+  "Do not change X5 or log a gate false positive: measure only; judgement decides",
+  "Return at the first unexpected result"
+ ],
+ "advances": ["M3", "M4"]
+}

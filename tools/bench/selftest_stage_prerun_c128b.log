@@ -1,0 +1,12 @@
+BGRUN START 2026-10-02 00:28:18 limit 6.0 min: py -u tools/bench/selftest_stage_prerun_c128b.py
+BGRUN PID 24192
+  FACT plan_ring_p3b.json md5 4003eaa587a8c00b4a933f8dab749379 (trace was taken on 4003eaa587a8c00b4a933f8dab749379)
+  PASS  T1 x5_count(P3b fresh-process trace, plan_ring_p3b.json) PASS: 26 wiring + 15 RLE, each 1:1  ops 26 vs plan wire rows 0 + stageplan wiring real ops 26 (covering 26/26 wire actions); delete ops {} vs plan delete rows {}; RLE ops 15 vs plan RLE rows 15
+  PASS  T2 NEGATIVE: one extra wire_connect FAILS  ops 27 vs plan wire rows 0 + stageplan wiring real ops 26 (covering 26/26 wire actions); delete ops {} vs plan delete rows {}; RLE ops 15 vs plan RLE rows 15
+  PASS  T3 NEGATIVE: one extra wire_remove_loose_ends FAILS  ops 26 vs plan wire rows 0 + stageplan wiring real ops 26 (covering 26/26 wire actions); delete ops {} vs plan delete rows {}; RLE ops 16 vs plan RLE rows 15
+  FACT in-process --dry: {"mode": "--dry", "rc": 0, "D.ops": 63, "depth": 1, "x5_line": [], "result": ["RESULT {\"schema\":\"result-line/1\",\"status\":\"PASS\",\"gates\":{\"pass\":1,\"fail\":0},\"first_fail\":null,\"artefacts\":[]}"]}
+  FACT in-process --prerun: {"mode": "--prerun", "rc": 0, "D.ops": 63, "depth": 1, "x5_line": ["PASS  X5 wiring ops executed in the dry run == plan wire rows  ops 26 vs plan wire rows 0 + stageplan wiring real ops 26 (covering 26/26 wire actions); delete ops {} vs plan delete rows {}; RLE ops 15 vs plan RLE rows 15"], "result": ["RESULT {\"schema\":\"result-line/1\",\"status\":\"PASS\",\"gates\":{\"pass\":15,\"fail\":0},\"first_fail\":\"X10 WARN unmeasured: UNMEASURED: no recorded meter of stage_d1_ring_p3b.py covers ops 1..end (0 record(s))\",\"artefacts\":[]}"]}
+  PASS  T4 in-process --dry then --prerun: D.ops 63 after EACH call, Stage._op wrap depth 1 after each  [(63, 1), (63, 1)]
+  PASS  T5 the in-process --prerun's X5 line is PASS  ['PASS  X5 wiring ops executed in the dry run == plan wire rows  ops 26 vs plan wire rows 0 + stageplan wiring real ops 26 (covering 26/26 wire actions); delete ops {} vs plan delete rows {}; RLE ops 15 vs plan RLE rows 15']
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 91s

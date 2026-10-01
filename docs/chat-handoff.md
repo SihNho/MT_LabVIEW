@@ -209,6 +209,12 @@ holds for routines only. Proposed (awaiting user): check the claim status, open 
 interactive cloud sessions → credit first. Still unmeasured: nested `claude -p` INSIDE an interactive cloud session
 (asked the user to run one from that session and read the credit). If it bills the credit → revive the Linux port of
 the benches (hook paths, `py`, workspace trust) and run LabVIEW-free benches in user-opened cloud sessions.
+**2026-10-02 00:1x — `claude --cloud "<task>"` from a LOCAL terminal also bills the credit** ($248 → $244 during one
+test session `session_01HxSF2TVc6Wjua8e1WejSAT`, Opus 5.5 [1m], reading ~300 KB of docs ≈ $4). The user also saw ~$1
+for nested `claude -p` inside an app-opened cloud session. Constraints measured: `--cloud` refuses non-TTY callers
+("--cloud requires an interactive terminal") → automation needs a pseudo-terminal (pywinpty, not installed; download
+needs user OK); the session clones origin at the current branch (user pushes); the cloud names its own branch
+(`claude/billing-test-summary-…`); the chat CAN read a cloud session's log with RemoteTrigger get_run_log.
 **CLOUD PLAN DROPPED (user 2026-09-29 ~20:0x KST: "그럼 클라우드는 그냥 잊어버리자").** No Linux port of benches/hooks;
 benches stay local. Both probe routines were run-once and are spent. Open next: user asked whether to bring Gemini back
 for web search; chat proposed (awaiting answer) a headless-permission fix test + a 6–8 question known-answer comparison

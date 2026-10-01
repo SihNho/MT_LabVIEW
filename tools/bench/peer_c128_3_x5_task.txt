@@ -1,0 +1,12 @@
+ATTACK this claim about a failed offline pre-run gate. Read-only; cite file:line.
+
+FAILURE: tools/bench/diag_c128_1_checks.log (script tools/bench/diag_c128_1_checks.py), check C4 at log lines 31 and 35-37:
+  FAIL  X5 wiring ops executed in the dry run == plan wire rows  ops 123 vs plan wire rows 0 + stageplan wiring real ops 26 (covering 26/26 wire actions); delete ops {} vs plan delete rows {}
+The same plan (tools/bench/plan_ring_p3b.json, stageplan/1, 63 actions) passes `stage_prerun --prerun` when given directly (log :21-23, 9/0); the recipe tools/recipes/stage_d1_ring_p3b.py that executes that plan fails X5 under `stage_prerun --prerun <recipe>` (14 pass / 1 fail).
+Predicted: X5 PASS (count of wire-making ops in the recipe's dry trace == 26 compiled wiring ops of the plan).
+
+How X5 counts: tools/stage_prerun.py:109 `WIRE_VERB_RE = re.compile(r"connect|wire|fs_inner", re.I)`; :1796 counts every verb string passed to Stage._op (recorded at :683-684, `D.ops.append(verb)`) whose name matches WIRE_VERB_RE and is not delete_object/delete_wire; expected = plan `wire` decision rows + stageplan compiled ops whose kind is in SP_WIRING (:1805, :1811, :1815).
+
+CLAIM (the cycle-128 judgement session's reading): X5's 123 is an OVER-COUNT by WIRE_VERB_RE of verbs that are not real wire-making calls - e.g. `wire_remove_loose_ends` (15 RLE actions in the plan), read-backs such as wire/Is-Broken reads or census reads whose verb names contain 'wire'/'connect', and helper verbs one stagexec real op issues several of - not 97 extra real wiring calls.
+
+Questions: (1) the strongest reason this claim is wrong - e.g. stagexec (tools/stagexec.py) really issues several diagram-editing connect calls per plan op (a tunnel/frame op carrying two border wires, a multi-object op like p3b_x_pool binding 6 objects, retries), so the 123 are mostly real edits and the gate is right; or the recipe runs the plan twice / runs a scratch pass; (2) an alternative explanation; (3) what would falsify it; (4) the cheapest discriminating OFFLINE test (e.g. `py tools/stage_prerun.py --dry tools/recipes/stage_d1_ring_p3b.py --json-out <f> --no-record` and group the `ops` list by verb; read stagexec.py for which verbs each SP_WIRING kind passes to Stage._op).

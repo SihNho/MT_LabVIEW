@@ -1,0 +1,25 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle128",
+ "verdict": "refuted",
+ "alternative": "128-5's 'budget spent' was a unit error (agent counted from an earlier spawn or a token budget), and the session would have closed anyway to keep P3b-1's remainder and launch in one cycle under the 6-dispatch cap.",
+ "discriminating_test": "Compare 128-5's first tool timestamp in its agent transcript with result_128-5.json's write time: a start >=00:39:33 and a return <=00:50 means <=11 of 50 min used, so the stop was unforced.",
+ "violations": [
+  {
+   "slug": "inference-over-measurement",
+   "loss_min": 42,
+   "loss_usd": null,
+   "evidence": "tools/bench/cards/result_128-5.json:2"
+  }
+ ],
+ "sources": [
+  "tools/bench/cards/result_128-5.json:2",
+  "tools/bench/cards/guard_card.log:575",
+  "tools/bench/peer_c128_4_c106e.log:25",
+  "tools/bench/jev_gate.log:3317",
+  "docs/d1-loop12-17-split-plan.md:2877",
+  "STATUS.md:61",
+  "tools/bench/cycle_128.log:210"
+ ],
+ "note": "Card 128-5 claimed its 50-min budget spent after ~8-11 min (bound 00:41:33); judgement accepted it and closed at 00:50 with 1 dispatch and ~126 min left, deferring split/recipes/dry/prerun/prior-art to cycle 129. No listed device failed."
+}

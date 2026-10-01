@@ -1,0 +1,42 @@
+BGRUN START 2026-10-02 00:06:44 limit 10.0 min: py -u tools/bench/diag_c128_1_checks.py
+BGRUN PID 24320
+PASS  C0 plan_ring_p3b.json is the plan of record  4003eaa587a8c00b4a933f8dab749379
+  FACT dry log lines 66, STEP lines 64; last 6 STEP lines:
+    |   STEPX 58 connect_term_uid acts [58] ids ['p3b_x_fidx'] bound {-134: 10000136, -138: 10000141} diff 0
+    |   STEPX 59 wire_remove_loose_ends acts [59] ids ['p3b_rle_fidx'] bound {} diff 0
+    |   STEPX 60 connect_term_uid acts [60] ids ['p3b_x_pool'] bound {-156: 10000162, -144: 10000146, -153: 10000158, -147: 10000150, -150: 10000154, -160: 10000167} diff 0
+    |   STEPX 61 wire_remove_loose_ends acts [61] ids ['p3b_rle_pool'] bound {} diff 0
+    |   STEPX 62 connect_term_uid acts [62] ids ['p3b_x_err_in'] bound {-170: 10000172, -174: 10000177} diff 0
+    |   STEPX 63 wire_remove_loose_ends acts [63] ids ['p3b_rle_err_in'] bound {} diff 0
+  FACT dry cur {'k': 63, 'op': 'wire_remove_loose_ends', 'acts': [63], 'ids': ['p3b_rle_err_in']}
+PASS  C2a stagexec dry_run (unfiltered) PASS past p3b_x_pool  None
+    | === DRY (stagexec plan) PASS: first_fail=None
+    | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+PASS  C2 stage_prerun --dry on plan_ring_p3b.json PASS  ['RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}']
+    |   WARN  X13 WARN op 'wire_remove_loose_ends': no model file in tools/bench/opmodels (provisional rule; aliases ['wire_remove_loose_ends'])
+    |   WARN  X13 WARN const.json: 2 sample(s), no replayer for op 'const' (only ['connect_from_wire', 'tunnel', 'delete_object', 'delete_wire', 'remove_bad_wires'])
+    |   WARN  X13 WARN primitive.json: 2 sample(s), no replayer for op 'primitive' (only ['connect_from_wire', 'tunnel', 'delete_object', 'delete_wire', 'remove_bad_wires'])
+    |   WARN  X13 WARN wire_sr.json: 2 sample(s), no replayer for op 'wire_sr' (only ['connect_from_wire', 'tunnel', 'delete_object', 'delete_wire', 'remove_bad_wires'])
+    |   WARN  X14 rows 63, budget 15 (proven: no)
+    | === PRERUN (stagexec plan) PASS: first_fail=None
+    | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":9,"fail":0},"first_fail":null,"artefacts":[]}
+PASS  C2 stage_prerun --prerun on plan_ring_p3b.json PASS  ['RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":9,"fail":0},"first_fail":null,"artefacts":[]}']
+    | === DRY PASS: first_fail=None coverage 64/73 lines, first mutation Stage._op wire_remove_loose_ends, unverified 0, graph tools/bench/graph_ring_p3a_20261001_190155.json
+    | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+PASS  C4 stage_prerun --dry on the recipe (COM stubbed, NOT launched) PASS  ['=== DRY PASS: first_fail=None coverage 64/73 lines, first mutation Stage._op wire_remove_loose_ends, unverified 0, graph tools/bench/graph_ring_p3a_20261001_190155.json', 'RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}']
+    |   WARN  X13 WARN op 'wire_remove_loose_ends': no model file in tools/bench/opmodels (provisional rule; aliases ['wire_remove_loose_ends'])
+    |   WARN  X13 WARN const.json: 2 sample(s), no replayer for op 'const' (only ['connect_from_wire', 'tunnel', 'delete_object', 'delete_wire', 'remove_bad_wires'])
+    |   WARN  X13 WARN primitive.json: 2 sample(s), no replayer for op 'primitive' (only ['connect_from_wire', 'tunnel', 'delete_object', 'delete_wire', 'remove_bad_wires'])
+    |   WARN  X13 WARN wire_sr.json: 2 sample(s), no replayer for op 'wire_sr' (only ['connect_from_wire', 'tunnel', 'delete_object', 'delete_wire', 'remove_bad_wires'])
+    |   FAIL  X5 wiring ops executed in the dry run == plan wire rows  ops 123 vs plan wire rows 0 + stageplan wiring real ops 26 (covering 26/26 wire actions); delete ops {} vs plan delete rows {}
+    |   WARN  X10 WARN unmeasured: UNMEASURED: no recorded meter of stage_d1_ring_p3b.py covers ops 1..end (0 record(s))
+    |   WARN  X14 rows 63, budget 15 (proven: no)
+    | === DRY PASS: first_fail=None coverage 64/73 lines, first mutation Stage._op wire_remove_loose_ends, unverified 0, graph tools/bench/graph_ring_p3a_20261001_190155.json
+    | === PRERUN FAIL: 14 pass / 1 fail; first X5 wiring ops executed in the dry run == plan wire rows: ops 123 vs plan wire rows 0 + stageplan wiring real ops 26 (covering 26/26 wire actions); delete ops {} vs plan delete r
+    | RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":14,"fail":1},"first_fail":"X5 wiring ops executed in the dry run == plan wire rows: ops 123 vs plan wire rows 0 + stageplan wiring real ops 26 (covering 26/26 wire actions); delete ops {} vs plan delete r [X10 WARN unmeasured]","artefacts":[]}
+FAIL  C4 stage_prerun --prerun on the recipe (COM stubbed, NOT launched) PASS  ['=== DRY PASS: first_fail=None coverage 64/73 lines, first mutation Stage._op wire_remove_loose_ends, unverified 0, graph tools/bench/graph_ring_p3a_20261001_190155.json', '=== PRERUN FAIL: 14 pass / 1 fail; first X5 wiring ops executed in the dry run == plan wire rows: ops 123 vs plan wire rows 0 + stageplan wiring real ops 26 (covering 26/26 wire actions); delete ops {} vs plan delete r', 'RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":14,"fail":1},"first_fail":"X5 wiring ops executed in the dry run == plan wire rows: ops 123 vs plan wire rows 0 + stageplan wiring real ops 26 (covering 26/26 wire actions); delete ops {} vs plan delete r [X10 WARN unmeasured]","artefacts":[]}']
+  FACT SCRATCH-REQUIRED | stage_d1_ring_p3b.py | CENSUS-UNPREDICTED tools/bench/plan_ring_p3b.json rows [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63] - the scratch run measures the census before the ONE launch
+PASS  C5 --scratch-required decision recorded (predicted SCRATCH-REQUIRED)  SCRATCH-REQUIRED | stage_d1_ring_p3b.py | CENSUS-UNPREDICTED tools/bench/plan_ring_p3b.json rows [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63] - the scratch run measures the census before the ONE launch
+PASS  C3 plan_ring_p3b_pred.json checks_128_1 written; plan md5 unchanged  {'pred_md5': '6dca647f0c7d8339c6af98cbf17937e9', 'plan': '4003eaa587a8c00b4a933f8dab749379'}
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":7,"fail":1},"first_fail":"C4 stage_prerun --prerun on the recipe (COM stubbed, NOT launched) PASS","artefacts":[{"path":"tools/bench/plan_ring_p3b_pred.json","md5":"6dca647f0c7d8339c6af98cbf17937e9"}]}
+BGRUN END rc=1 after 144s

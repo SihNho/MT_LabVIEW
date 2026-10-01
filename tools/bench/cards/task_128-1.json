@@ -1,0 +1,73 @@
+{
+ "schema": "task/1",
+ "id": "128-1",
+ "kind": "build",
+ "goal": "PD260(b) offline: frame-keyed multi-object binder in stagexec.bind_new (p3b_x_pool); ROUTE_CENSUS fs_inner_face_branch; P3b recipe dry + prerun, --scratch-required, prior-art",
+ "why": "127-4's dry on the P3b plan of record (md5 4003eaa5...) stops at p3b_x_pool: bind_new (stagexec.py:886-891) refuses a multi-object create (review c127-4-dry-pool ANSWERED). P3b = next ring build step. Plan Pre-decided 258-260.",
+ "inputs": [
+  {"path": "tools/bench/cards/result_127-4.json"},
+  {"path": "archive/peer/2026-10-01-c127-4-dry-pool.md"},
+  {"path": "tools/bench/plan_ring_p3b.json"},
+  {"path": "tools/bench/plan_ring_p3b_pred.json"},
+  {"path": "tools/stagexec.py"},
+  {"path": "tools/recipes/stage_d1_ring_p3b.py"},
+  {"path": "tools/bench/diag_c126_6_cross.log"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/prior_art_review.py"},
+  {"kind": "file", "name": "tools/bench/selftest_case_frame_c124.py"}
+ ],
+ "pass": [
+  "bind_new binds a multi-object create per border/frame from the census variant, never by uid order",
+  "B3 self-test: positive (126-6's descending uids bound right) + uid-order negative (a uid-order binder mis-binds) both pass",
+  "ROUTE_CENSUS connect_term_uid fs_inner_face_branch = {}; selftest_case_frame_c124 U01 + stagexec/stagesim self-tests green",
+  "c125_1_offline_measure 0 COM trips; P3b recipe dry + prerun on plan_ring_p3b.json recorded; first failing check named file:line",
+  "--scratch-required output recorded; prior-art review dispatched + annotated (say PD258(c) guard rows are not in the plan yet)"
+ ],
+ "outputs": [
+  "tools/stagexec.py",
+  "tools/bench/plan_ring_p3b_pred.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/stage_prerun.py",
+   "tools/bench/plan_ring_p3b*",
+   "tools/recipes/stage_d1_ring_p3b*",
+   "tools/bench/sim/**",
+   "tools/bench/selftest_*",
+   "tools/bench/c125_1_offline_measure*",
+   "tools/bench/errorlist_expected_*",
+   "tools/bench/diag_c128_1*",
+   "tools/bench/prior_art*",
+   "tools/bench/stage_prerun*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/cards/result_128-1*",
+   "tools/bench/cards/review_128-1*",
+   "tools/bench/cards/verdict_128-1*",
+   "tools/bench/peer_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 50
+ },
+ "rules": [
+  "Offline only: no LabVIEW, no COM; no gscript.py edit (card 128-2 uses it live)",
+  "Recipe never launched; existing self-tests stay green",
+  "Return at the first unexpected result (finish the step, record facts, return result/1)",
+  "Each step well inside the 60-min backstop: dry+prerun seconds, prior-art review ~10 min"
+ ],
+ "advances": ["M3", "M4"]
+}

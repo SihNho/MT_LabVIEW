@@ -1,0 +1,81 @@
+{
+ "schema": "task/1",
+ "id": "128-5",
+ "kind": "build",
+ "goal": "PD262 offline: repeated-terminal-name addressing (element#k) in bind_new + stagesim; guard rows; P3b split; dry+prerun both; prior-art P3b-1; fp-19 drain",
+ "why": "128-4 FAIL 23/1: the guard's Unbundler outputs all read 'element' until wired, and bind_new/stagesim cannot address them. P3b-1 is the next deliverable launch. Plan PD261(d), PD262; brief_128-4.md sections 3-5.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_128-4.md"},
+  {"path": "tools/bench/cards/result_128-4.json"},
+  {"path": "tools/bench/diag_c128_2_donors.log", "md5": "cf8d1f4466c8d177514532a36c81a68c"},
+  {"path": "tools/bench/diag_c128_4_checks.log", "md5": "1a4986d4114053032960f7bd3985ca7e"},
+  {"path": "tools/stage_prerun.py", "md5": "88abd9c6c54bbe50ab93077d4de338bf"},
+  {"path": "tools/stagexec.py"},
+  {"path": "tools/stagesim.py"},
+  {"path": "tools/bench/census_samples.json", "md5": "205a7f23802f41342ed25d06dc212bc5"},
+  {"path": "tools/bench/plan_ring_p3b_make.py"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/gate_fp.py"},
+  {"kind": "file", "name": "tools/prior_art_review.py"},
+  {"kind": "file", "name": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/DonorErrSel_ErrToWarning.vi"},
+  {"kind": "file", "name": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/DonorErrSel_MergeErrors.vi"}
+ ],
+ "pass": [
+  "bind_new + stagesim address a repeated terminal name of one node as name#k in Terminals[] read order; self-test green",
+  "Guard rows in the plan per brief_128-4.md section 3 (Unbundler element#0 = status); PINS re-pinned to census md5 205a7f23",
+  "plan_ring_p3b1/p3b2 each <=40 actions, dependency-closed, copy+guard together; recipes <=120 lines; predictions per half",
+  "Dry+prerun PASS on both halves out of process; P3b-1 --scratch-required recorded; prior-art for P3b-1 dispatched + annotated",
+  "c106e E1 rerun lists every FAIL line; fp-19 drained; X16-on-Local logged as a new gate-fp entry"
+ ],
+ "outputs": [
+  "tools/stagexec.py",
+  "tools/stagesim.py",
+  "tools/bench/plan_ring_p3b1.json",
+  "tools/bench/plan_ring_p3b2.json",
+  "tools/recipes/stage_d1_ring_p3b1.py",
+  "tools/recipes/stage_d1_ring_p3b2.py"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_prerun.py",
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/census_predict.py",
+   "tools/bench/plan_ring_p3b*",
+   "tools/recipes/stage_d1_ring_p3b*",
+   "tools/bench/sim/**",
+   "tools/bench/selftest_*",
+   "tools/bench/p3run_selftest_*",
+   "tools/bench/c125_1_offline_measure*",
+   "tools/bench/errorlist_expected_*",
+   "tools/bench/diag_c128_5*",
+   "tools/bench/prior_art*",
+   "tools/bench/stage_prerun*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/cards/result_128-5*",
+   "tools/bench/cards/review_128-5*",
+   "tools/bench/cards/verdict_128-5*",
+   "tools/bench/peer_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 50
+ },
+ "rules": [
+  "Offline only: no LabVIEW, no COM; recipes never launched; dry/prerun out of process",
+  "Existing self-tests stay green (c106e's pre-existing X16 failure excepted, logged)",
+  "Return at the first unexpected result (finish the step, record facts, return result/1)"
+ ],
+ "advances": ["M3", "M4"]
+}

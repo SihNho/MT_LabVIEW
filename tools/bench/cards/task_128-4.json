@@ -1,0 +1,82 @@
+{
+ "schema": "task/1",
+ "id": "128-4",
+ "kind": "build",
+ "goal": "PD261 offline: X5 gate-fp fix + drain; vi.lib donor copies; U9 guard rows; split P3b into P3b-1/P3b-2 (<=40 each); dry+prerun both; prior-art P3b-1",
+ "why": "128-2 measured the guard form (C1, 5 wires unbroken); 128-3 showed X5 refuses wrongly (41 = 26 wiring + 15 RLE). P3b ~71 actions > user's ~40/step (D-2026-10-01-01). Plan PD261; detail brief_128-4.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_128-4.md"},
+  {"path": "tools/bench/cards/result_128-2.json"},
+  {"path": "tools/bench/cards/result_128-3.json"},
+  {"path": "tools/bench/diag_c128_2_donors.log", "md5": "cf8d1f4466c8d177514532a36c81a68c"},
+  {"path": "tools/bench/diag_c128_2_donors_out.json", "md5": "eea104c4dc6ab59ff70afc79210c4f72"},
+  {"path": "tools/bench/diag_c128_3_x5.log", "md5": "8b22e35a61a6bf594f75c194d99f83ff"},
+  {"path": "tools/stage_prerun.py", "md5": "b0ff0325754a38ed438f29de0eb1cf19"},
+  {"path": "tools/stagexec.py", "md5": "d8c254d84336b317c09e1198d1870f99"},
+  {"path": "tools/bench/plan_ring_p3b.json"},
+  {"path": "tools/bench/plan_ring_p3b_make.py"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/gate_fp.py"},
+  {"kind": "file", "name": "tools/prior_art_review.py"},
+  {"kind": "file", "name": "tools/bench/census_samples.json"},
+  {"kind": "file", "name": "tools/bench/diag_c128_2_donors.py"}
+ ],
+ "pass": [
+  "X5 fixed per brief 1: P3b recipe X5 PASS, extra-wire negative FAILS, in-process double main counts once; fp logged + drained",
+  "Donor byte copies in claudeDev with path/md5/uid recorded; 128-2 census samples merged; c124 U01 + c125_1 measure green",
+  "Guard rows in the plan per brief 3, terminals from 128-2 measured rows only",
+  "plan_ring_p3b1/p3b2 each <=40 actions, dependency-closed, copy+guard together; recipes written (<=120 lines)",
+  "Dry+prerun PASS on both halves (out of process); P3b-1 --scratch-required recorded; prior-art dispatched + annotated"
+ ],
+ "outputs": [
+  "tools/stage_prerun.py",
+  "tools/bench/plan_ring_p3b1.json",
+  "tools/bench/plan_ring_p3b2.json",
+  "tools/recipes/stage_d1_ring_p3b1.py",
+  "tools/recipes/stage_d1_ring_p3b2.py"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_prerun.py",
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/census_predict.py",
+   "tools/bench/plan_ring_p3b*",
+   "tools/recipes/stage_d1_ring_p3b*",
+   "tools/bench/census_samples.json",
+   "tools/bench/sim/**",
+   "tools/bench/selftest_*",
+   "tools/bench/c125_1_offline_measure*",
+   "tools/bench/errorlist_expected_*",
+   "tools/bench/diag_c128_4*",
+   "tools/bench/prior_art*",
+   "tools/bench/stage_prerun*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/cards/result_128-4*",
+   "tools/bench/cards/review_128-4*",
+   "tools/bench/cards/verdict_128-4*",
+   "tools/bench/peer_*",
+   "archive/peer/**",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/DonorErrSel_*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 55
+ },
+ "rules": [
+  "Offline only: no LabVIEW, no COM; vi.lib files only byte-copied, never edited; recipes never launched",
+  "Run dry/prerun out of process; existing self-tests stay green",
+  "Return at the first unexpected result (finish the step, record facts, return result/1)"
+ ],
+ "advances": ["M3", "M4"]
+}

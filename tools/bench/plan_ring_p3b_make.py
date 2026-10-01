@@ -30,6 +30,11 @@ CARD 127-3 RERUN (PD258(a)(c)): the 4 inner-face rows are MEASURED; + crossing p
 out, w653 re-created, #649 kept) + its RLE; the Unbundle By Name / Select / const / 4 wires of PD258(c) are HELD (UNMEASURED).
 PREDICTION (127-3): 63 actions = 22 create + 12 wires + 14 crossings (all MEASURED) + 15 RLE; compiles 10 fs_border + 4 inner;
 replay B END TO END, end cdiff 16 == P3a's; M11 keeps w653's old sink #649.
+CARD 128-5 RERUN (PD261(a), PD262(b)): the HELD guard rows become actions in f2 (Unbundler + Select from claudeDev vi.lib byte
+copies, I32 -1 const; CP1 error out -> UB1 cluster (fs_frame_to_frame), UB1.element#0 -> SEL1.s, KM3 -> SEL1.t, SEL1 -> RAN3
+new element; BufNum crossing retargeted to SEL1.f; Latest = BufNum unchanged); census_samples pin 205a7f23.
+PREDICTION (128-5): 70 actions = 25 create + 16 wires + 14 crossings + 15 RLE; compiles (crossings as 127-3); replay A 41 rows
+no error; replay B END TO END; end cdiff == P3a's 16 rows; M11 holds.
     py tools/bgrun.py --material --max-min 5 --log tools/bench/plan_ring_p3b_make_c127_3.log -- py -u tools/bench/plan_ring_p3b_make.py"""
 import collections, copy, hashlib, json, os, shutil, sys, tempfile          # noqa: E401
 B = os.path.dirname(os.path.abspath(__file__))
@@ -48,7 +53,7 @@ def gate(name, c, det=""):
 GR, P3A = "tools/bench/graph_ring_p3a_20261001_190155.json", os.path.join(B, "plan_ring_p3a.json")
 PINS = {GR: "2fa6ce0c3e8a3014fa916085cb852f68", "tools/bench/plan_ring_p3a.json": "234efaaa890c5d2ac255d746048ddb84",
         "tools/bench/ring_p3_steps.md": "6617a5e921b5671e6362da3848fb14cf",
-        "tools/bench/census_samples.json": "e554f19a576867ace27b80099e194596",   # card 127-3: 127-1 added fs_inner_branch n=3
+        "tools/bench/census_samples.json": "205a7f23802f41342ed25d06dc212bc5",   # card 128-5: re-pinned after 128-4's vilib_donor section
         "tools/bench/diag_c126_7_facts2.py": "30587ab3652bda5923de50360d66c812",
         "archive/peer/2026-10-01-c126-7-t644.md": "2c2672260a0ca01c21e18f7d065d3edc"}
 def md5_pre_sameline(p):
@@ -146,6 +151,23 @@ for lab, nm in (("TransPos", "T"), ("RotPos", "R"), ("FrameIdx", "F")):
 # frame 3 (f2): Num(i) = BufNum (SECOND local read, PD254(d)), Latest = BufNum
 A += [loc("p3b_lr_num3", "LRN3", "Num", 2, "read", 20), prim("p3b_ras_num3", "RAN3", 2, 29157, RAS, R_RAS),
       loc("p3b_lw_num3", "LWN3", "Num", 2, "write", 220), loc("p3b_lw_latest", "LWL1", "Latest", 2, "write", 220)]
+# card 128-5, PD258(c) + PD261(a) + PD262(b): the error GUARD in frame f2 (where Num(i) is written): Unbundler (vi.lib byte copy
+# DonorErrSel_ErrToWarning.vi #157) + Select (DonorErrSel_MergeErrors.vi #529) + I32 -1 (DonorRingConst_v0 #249). Terminal names
+# in READ ORDER and term_class from 128-2's measured creates (diag_c128_2_donors.log:57 Unbundler census Terminal 4; :62 Select
+# census ParameterTerminal 4). The Unbundler's 3 outputs read 'element' until wired: element#0 = status (:83, PD262(b)).
+R_GD = "primitive vilib_donor {0} | MEASURED | PD261(a) guard {1} | create_primitive_nested on a claudeDev byte copy, diag_c128_2_donors.log:{2}"
+UNB_T = [{"name": "cluster", "is_source": False, "term_class": "Terminal"}] + [{"name": "element", "is_source": True, "term_class": "Terminal"}] * 3
+SEL_T = [{"name": "s? t:f", "is_source": True, "term_class": "ParameterTerminal"}] + \
+        [{"name": n, "is_source": False, "term_class": "ParameterTerminal"} for n in ("f", "s", "t")]
+A += [{"op": "create", "id": "p3b_ub_status", "class": "Unbundler", "diagram": "new:FS1.f2", "as": "UB1", "pos": [60, 120], "prim": "Unbundle",
+       "donor": {"donor": CLAUDE + r"\DonorErrSel_ErrToWarning.vi", "uid": 157}, "terminals": copy.deepcopy(UNB_T),
+       "why": "ROUTE " + R_GD.format("DonorErrSel_ErrToWarning #157", "Unbundle (status)", "56-58,83")},
+      {"op": "create", "id": "p3b_sel", "class": "Function", "diagram": "new:FS1.f2", "as": "SEL1", "pos": [120, 120], "prim": "Select",
+       "donor": {"donor": CLAUDE + r"\DonorErrSel_MergeErrors.vi", "uid": 529}, "terminals": copy.deepcopy(SEL_T),
+       "why": "ROUTE " + R_GD.format("DonorErrSel_MergeErrors #529", "Select", "61-63")},
+      {"op": "create", "id": "p3b_k_m3", "class": "DigitalNumericConstant", "diagram": "new:FS1.f2", "as": "KM3", "pos": [60, 200],
+       "prim": "const_donor", "donor": {"donor": CLAUDE + r"\DonorRingConst_v0.vi", "uid": 249},
+       "terminals": [{"name": "", "is_source": True, "term_class": "Terminal"}], "why": "ROUTE " + R_K + " (guard t = -1)"}]
 NC = len(A)
 A += [w("p3b_w_n1_arr", "new:LRN1.value", "new:RAN1.array", R_W.format("PD246(c) A2 frame 1")),
       w("p3b_w_m1_new", "new:KM1.value", "new:RAN1.new element/subarray", R_W.format("PD238(c) Num(i) = -1")),
@@ -156,6 +178,12 @@ for nm in ("T", "R", "F"):
           w("p3b_w_{0}_out".format(nm.lower()), "new:RA{0}1.output array".format(nm), "new:LW{0}1.value".format(nm), R_W.format("PD246(c) A2 frame 2"))]
 A += [w("p3b_w_n3_arr", "new:LRN3.value", "new:RAN3.array", R_W.format("PD254(d) frame 3 second Num read")),
       w("p3b_w_n3_out", "new:RAN3.output array", "new:LWN3.value", R_W.format("PD246(c) A2 frame 3"))]
+# card 128-5 guard wires (PD261(a) form C1, measured as 5 wires all Is Broken? False, diag_c128_2_donors.log:80-99)
+A += [w("p3b_w_err_ub", "new:CP1.error out", "new:UB1.cluster",
+        "fs_frame_to_frame (f1 -> f2) | MEASURED | PD258(c) IMAQ Copy error out -> guard | stagesim FS_MEASURED; diag_c128_2_donors.log:80-83"),
+      w("p3b_w_ub_sel", "new:UB1.element#0", "new:SEL1.s", R_W.format("PD262(b) s = status (element#0)")),
+      w("p3b_w_m3_sel", "new:KM3.value", "new:SEL1.t", R_W.format("PD261(a) t = -1")),
+      w("p3b_w_sel_n3", "new:SEL1.s? t:f", "new:RAN3.new element/subarray", R_W.format("PD258(c) element = status ? -1 : BufNum"))]
 NW = len(A)
 I = {"uid": 27373, "term": "x-y*floor(x/y)"}
 A += [w("p3b_x_i_f1", I, "new:RAN1.index", R_X.format("FS border (case frame 27219 -> FS f0)", "PD246(c)(d) i = count mod 20", V_Q1, "MEASURED")),
@@ -165,8 +193,8 @@ for k, tgt in enumerate(("IA1", "RAT1", "RAR1", "RAF1")):
         "FS border (27219 -> f1)" + (", 1st sink of i into f1" if k == 0 else ", BRANCH into f1 already entered"), "PD246(c) i",
         V_Q3 if k == 0 else V_SAME, "MEASURED"))]
 TWO = "case border (639 -> 27219) + FS border (-> {0})"
-A += [w("p3b_x_bn_n3", {"uid": 6810, "term": "current image number"}, "new:RAN3.new element/subarray",
-        R_X.format(TWO.format("f2"), "PD238(c) Num(i) = BufNum; new sink on w3747 only (PD241(d))", V_B12 + " B1 exact", "MEASURED")),
+A += [w("p3b_x_bn_n3", {"uid": 6810, "term": "current image number"}, "new:SEL1.f",   # card 128-5: BufNum -> Select.f (PD258(c))
+        R_X.format(TWO.format("f2"), "PD238(c)/PD258(c) Select f = BufNum; new sink on w3747 only (PD241(d))", V_B12 + " B1 exact", "MEASURED")),
       w("p3b_x_bn_latest", {"uid": 6810, "term": "current image number"}, "new:LWL1.value",
         R_X.format(TWO.format("f2"), "PD238(c) Latest = BufNum", V_SAME, "MEASURED")),
       w("p3b_x_img_src", {"uid": 6810, "term": "Image Out"}, "new:CP1.Image Src",
@@ -188,22 +216,7 @@ A += [w("p3b_x_bn_n3", {"uid": 6810, "term": "current image number"}, "new:RAN3.
 # card 127-3, PD258(c) HELD (UNMEASURED: no donor for NamedUnbundler / Select in the OpPrimCopyNested_v0 registry
 # (facts_c100_oplabels.json donors = Max & Min, Wait (ms)); no recorded graph holds an error-cluster Unbundle By Name or a Select
 # (diag_c127_3_facts.log); kept OUT of `actions` like 126-8's held rows, bodies in plan_ring_p3b_rows.json `held_rows`)
-R_UNM = "primitive donor ? | UNMEASURED | PD258(c) {0} | no donor registered/recorded; terminal table not recorded - scratch/donor owed"
-HELD = [{"op": "create", "id": "p3b_ub_status", "class": "NamedUnbundler", "diagram": "new:FS1.f2", "as": "UB1", "pos": [60, 120],
-         "prim": "Unbundle By Name", "donor": None,
-         "terminals": [{"name": "input cluster", "is_source": False, "term_class": "Terminal", "src": "MEASURED class/name: bed NamedUnbundler #27462 t27464"},
-                       {"name": "status", "is_source": True, "term_class": "Terminal", "src": "UNMEASURED name (error-cluster element); class as #27462's outputs"}],
-         "why": "ROUTE " + R_UNM.format("Unbundle By Name status")},
-        {"op": "create", "id": "p3b_sel", "class": "?", "diagram": "new:FS1.f2", "as": "SEL1", "pos": [120, 120], "prim": "Select", "donor": None,
-         "terminals": "UNMEASURED (s / t / f / output: names and term_class recorded nowhere)", "why": "ROUTE " + R_UNM.format("Select")},
-        {"op": "create", "id": "p3b_k_m3", "class": "DigitalNumericConstant", "diagram": "new:FS1.f2", "as": "KM3", "pos": [60, 200],
-         "prim": "const_donor", "donor": {"donor": CLAUDE + r"\DonorRingConst_v0.vi", "uid": 249},
-         "terminals": [{"name": "", "is_source": True, "term_class": "Terminal"}], "why": "ROUTE " + R_K},
-        w("p3b_w_err_ub", "new:CP1.error out", "new:UB1.input cluster", "fs_frame_to_frame (f1 -> f2) | MEASURED | PD258(c) | stagesim FS_MEASURED"),
-        w("p3b_w_ub_sel", "new:UB1.status", "new:SEL1.s", R_W.format("PD258(c) s = status") + " | UNMEASURED terminal names"),
-        w("p3b_w_m3_sel", "new:KM3.value", "new:SEL1.t", R_W.format("PD258(c) t = -1") + " | UNMEASURED terminal names"),
-        w("p3b_w_sel_n3", "new:SEL1.output", "new:RAN3.new element/subarray", R_W.format("PD258(c) element = status ? -1 : BufNum")),
-        {"retarget": "p3b_x_bn_n3", "dst": "new:SEL1.f", "why": "PD258(c): BufNum feeds Select.f, not RAN3 directly (Latest = BufNum unchanged)"}]
+HELD = []        # card 128-5: the 127-3 HELD guard rows are now actions (above), from 128-2's measured form C1
 NX = [a["id"] for a in A[NW:]]
 # PD255(b)/PD256(b): wire_remove_loose_ends on P3a's w27378 first, then one `of` EVERY crossing right after it (stageplan/1
 # op since card 127-2)
@@ -222,9 +235,9 @@ plan = {"schema": "stageplan/1", "stage": "ring_p3b",
         "base": {"path": GR, "md5": PINS[GR]}, "context": dict(p3a["context"]), "open_rows": copy.deepcopy(p3a["open_rows"]), "actions": A}
 v = P.validate_obj(plan)
 opc = collections.Counter("x" if a["id"] in NX else a["op"] for a in A)
-gate("M5 plan validates as stageplan/1; 63 rows = 22 create + 12 same-frame wires + 14 crossings + 15 wire_remove_loose_ends "
+gate("M5 plan validates as stageplan/1; 70 rows = 25 create + 16 in-FS wires (12 + 4 guard) + 14 crossings + 15 wire_remove_loose_ends "
      "(w27378 first, one `of` right after each crossing); every why has a ROUTE tag",
-     v[0] and dict(opc) == {"create": 22, "wire": 12, "x": 14, "wire_remove_loose_ends": 15} and A[0]["wire_uid"] == 27378
+     v[0] and dict(opc) == {"create": 25, "wire": 16, "x": 14, "wire_remove_loose_ends": 15} and A[0]["wire_uid"] == 27378
      and all(A[k + 1].get("of") == A[k]["id"] for k in range(len(A)) if A[k]["id"] in NX)
      and all(a["why"].startswith("ROUTE ") and len(a["why"]) <= 400 for a in A),
      (v, dict(opc), max(len(a["why"]) for a in A)))
@@ -254,10 +267,11 @@ gate("M6 statuses: crossings 14 MEASURED (126-4/126-6 variants, 4 inner-face bra
      "MEASURED/PRECEDENT + 15 RLE MEASURED; created (non-crossing) == FlatSequence 1, Diagram 3, "
      "Local 11, GrowableFunction 5, IndexArray 1, SubVI 1, DigitalNumericConstant 1, Wire 12",
      collections.Counter(r["status"] for r in rows if r["id"] in NX) == {"MEASURED": 14}
-     and sum(1 for r in rows if r["id"] not in NX and r["op"] != "wire_remove_loose_ends" and r["status"] in ("MEASURED", "PRECEDENT")) == 34
+     and sum(1 for r in rows if r["id"] not in NX and r["op"] != "wire_remove_loose_ends" and r["status"] in ("MEASURED", "PRECEDENT")) == 41
      and sum(1 for r in rows if r["op"] == "wire_remove_loose_ends" and r["status"] == "MEASURED") == 15
      and all(xs[i] in CTU for i in NX if not str(xs[i]).startswith("fs_inner_branch"))
-     and dict(cc) == {"FlatSequence": 1, "Diagram": 3, "Local": 11, "GrowableFunction": 5, "IndexArray": 1, "SubVI": 1, "DigitalNumericConstant": 1, "Wire": 12},
+     and dict(cc) == {"FlatSequence": 1, "Diagram": 3, "Local": 11, "GrowableFunction": 5, "IndexArray": 1, "SubVI": 1, "DigitalNumericConstant": 2,
+                      "Unbundler": 1, "Function": 1, "Wire": 16},
      (dict(stc), dict(cc), xs))
 byw = collections.defaultdict(list)
 for r in T:
@@ -305,8 +319,8 @@ try:
 finally:
     shutil.rmtree(tmp, ignore_errors=True)
 P3A_END = sorted(p3a["finalized"]["end_cdiff_rows"])
-gate("M8 stagesim replay A (34 non-crossing rows) on graph_ring_p3a: no error; end cdiff == P3a's 16 rows",
-     SIM["A"]["failed"] is None and SIM["A"]["ok_steps"] == 34 and SIM["A"]["end_cdiff"] == P3A_END,
+gate("M8 stagesim replay A (41 non-crossing rows) on graph_ring_p3a: no error; end cdiff == P3a's 16 rows",
+     SIM["A"]["failed"] is None and SIM["A"]["ok_steps"] == 41 and SIM["A"]["end_cdiff"] == P3A_END,
      dict(SIM["A"], end_cdiff=len(SIM["A"]["end_cdiff"] or [])))
 cx = SIM["B"].get("crossings") or {}
 census_ok = all((cx.get(i) or {}).get("census") == (CTU[xs[i]]["delta"] if xs[i] in CTU else {}) for i in NX)

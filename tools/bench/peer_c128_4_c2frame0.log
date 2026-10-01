@@ -1,0 +1,21 @@
+BGRUN START 2026-10-02 00:25:52 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c128-4-c2frame0 -TaskFile tools/bench/peer_c128_4_c2frame0_task.md
+BGRUN PID 19672
+OUTCOME: ANSWERED (87s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-02-c128-4-c2frame0.md
+COST: $1.2976  in 16 / out 6304 / cache-create 124299 / cache-read 765632  (83s, 10 turn(s))
+--- ANSWER ---
+I tried to break the claim and couldn't. The cause it names is right, and the one thing that does weaken the plan is in C1, not C2.
+
+1. **Strongest attack, and it fails.** I suspected `case_frame_wire` looked at the wrong diagram ("Diagram[2]" against uid 420). It didn't. `case_frame_wire` takes frame 0's diagram uid (`tools/gscript.py:5183`), which is 420. #483's owner is Diagram 420 (`diag_c128_2_donors.log:120`), and `frames [420, 426]` is at log:107. That uid becomes a position number through `_uid_index` (`gscript.py:4995`, `:3631-3636`), so "Diagram[2]" is just frame 0's position in the list, not uid 2. The lookup then fails in `_node_index`, which searches `node_labels` (`gscript.py:3639-3643`). `node_labels` reads `Diagram.Nodes[]` (`gscript.py:826`).
+
+2. **Alternative explanation.** The diagram list read by `_uid_index` (`report_all`) and the one read by `node_labels` might be ordered differently. Then position 2 could point at a different diagram. This code path never checks that the two agree.
+
+3. **Why that alternative is unlikely, from evidence the claim didn't use.** The node count in this same log does not change when a constant is created. It goes 8 → 9 after Select (log:59, 64), stays 9 after the C1kt and C1kf constants (log:69, 74), reaches 10 after Max & Min (log:79), and stays 10 after the C2kt and C2kf constants (log:114-124). That count lists Nodes across the whole VI (`report_all(path, "Node")`, e.g. `tools/bench/diag_c64_junkpurge.py:216-222`), so frame position plays no part. An older project note says the same thing: constants are not in the node census (`tools/bench/diag_d0_inventory.py:130-131`). LabVIEW's class tree agrees: Constant inherits from GObject, beside Node rather than under it ([LabVIEW Wiki: Constant class](https://labviewwiki.org/wiki/Constant_class), [GObject class](https://labviewwiki.org/wiki/GObject_class)). One gap: no NI page I found states outright that `Nodes[]` leaves constants out. That part is inferred from the class tree plus the local counts.
+
+4. **What would prove the claim wrong.** A `case_frame_wire` call whose source is a constant succeeding anywhere, or a `node_labels` read of Diagram 420 that lists #483.
+
+5. **Does this weaken C1?** Not through this failure. All five C1 wires went through `connect_term_uid` and never touched `case_frame_wire` (log:80-99). But the C1 evidence is structural only: each of the five wires reads not-broken. The VI is still broken (ExecState 0, log:100), with "Max & Min: Contains unwired or bad terminal" (log:101). Nothing in C1 has compiled cleanly, run, or been compared numerically with the original (rule 1a). So "5 wires unbroken" should not be read as "C1 verified".
+
+6. **Cheapest test that separates the two, no LabVIEW needed.** Pull the class column of the node census rows already in `diag_c128_2_donors.json`. If no `*Constant` appears anywhere in the whole-VI Node list, the claim stands and the ordering mismatch is irrelevant. For the C2 route, the next run should wire constant terminal #482 to the tunnel's inner face in frame 0 with `connect_term_uid`. That is the route that worked for frame 1 (log:125-127).
+
+**Verdict:** I could not refute the claim; I'd change my mind only if a constant turns up in the `Node` census. The plan should still call C1 "5 wires unbroken, VI still broken (ExecState 0), never run" rather than "measured".
+BGRUN END rc=0 after 88s

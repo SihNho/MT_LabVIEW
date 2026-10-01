@@ -608,7 +608,8 @@ def install(graph_override=None):
             return getattr(shutil, "_real_" + name.split(".")[-1])(*a, **k)
         return f
     for n in ("copyfile", "copy", "copy2", "move"):
-        setattr(shutil, "_real_" + n, getattr(shutil, n))
+        if not hasattr(shutil, "_real_" + n):     # card 128-4: a 2nd in-process install() must not save the wrapper
+            setattr(shutil, "_real_" + n, getattr(shutil, n))
         setattr(shutil, n, noop("shutil." + n))
     for n in ("remove", "unlink", "replace", "rename"):
         real = getattr(os, n)
@@ -641,20 +642,28 @@ def patch_stagekit():
             if hasattr(mm, k):
                 setattr(mm, k, _jev_stub(modname + "." + k))
     import jev_candidates as JC
-    real_cands = JC.candidates
+    if not hasattr(JC, "_dry_orig_candidates"):     # card 128-4: wrap the real function once per process
+        JC._dry_orig_candidates = JC.candidates
+    if not hasattr(K, "_dry_orig_mod"):
+        K._dry_orig_mod = K.mod
+    real_cands = JC._dry_orig_candidates
 
     def cands(G, intent, *a, **k):
         D.jev.append({"via": "candidates", "intent": _plain(intent)})
         return real_cands(G, intent, *a, **k)
     JC.candidates = cands
-    real_mod = K.mod
+    real_mod = K._dry_orig_mod
 
     def mod(name):
         m = real_mod(name)
         return m if name in PURE_MODS else wrap_module(m)
     K.mod = mod
     S = K.Stage
-    orig = dict((k, getattr(S, k)) for k in ("__init__", "gate", "_op", "address"))
+    # card 128-4 (PD261(b)): a second in-process main() re-ran this and wrapped the WRAPPER (Stage._op depth 1 -> 2,
+    # D.ops 63 -> 189, diag_c128_3_x5.log M2). The real methods are kept once on the class and every patch wraps them.
+    if not hasattr(S, "_dry_orig"):
+        S._dry_orig = dict((k, getattr(S, k)) for k in ("__init__", "gate", "_op", "address"))
+    orig = dict(S._dry_orig)
 
     def init(self, *a, **k):
         orig["__init__"](self, *a, **k)
@@ -1783,6 +1792,7 @@ def mem_margin(recipe, stop_after=None, from_step=None, log_dir=None, records=No
 
 
 DELETE_VERB_RE = re.compile(r"^delete_(object|wire)$")    # card 115-3 F1: counted against plan DELETE rows, not wire rows
+RLE_VERB_RE = re.compile(r"^wire_remove_loose_ends$")     # card 128-4 (PD261(b)): counted against plan RLE rows
 
 
 def x5_count(verbs, rows, spc, stop_after=None, from_step=None):
@@ -1792,8 +1802,14 @@ def x5_count(verbs, rows, spc, stop_after=None, from_step=None):
     WIRE_VERB_RE matched `delete_wire`): the verbs delete_object / delete_wire leave the wire-making count and are
     counted 1:1, per kind, against the plan's DELETE rows (decision rows with that action + compiled delete ops in the
     same window). An unplanned op of either kind still FAILS."""
+    # card 128-4 (PD261(b), gate-fp X5): `wire_remove_loose_ends` matched WIRE_VERB_RE while SP_WIRING (:901) leaves
+    # it out, so P3b's 15 RLE ops were counted against 26 wiring rows (41 vs 26, diag_c128_3_x5.log M1). RLE ops now
+    # leave the wiring count and are counted 1:1 against the plan's RLE rows (compiled RLE ops in the same window),
+    # exactly as DELETE ops are (card 115-3). An unplanned RLE op still FAILS.
     wires = [r for r in rows if r.get("action") == "wire"]
-    ops = [v for v in verbs if WIRE_VERB_RE.search(v) and not DELETE_VERB_RE.search(v)]
+    ops = [v for v in verbs if WIRE_VERB_RE.search(v) and not DELETE_VERB_RE.search(v) and not RLE_VERB_RE.search(v)]
+    rgot = sum(1 for v in verbs if RLE_VERB_RE.search(v))
+    rwant = sum(1 for r in rows if RLE_VERB_RE.search(str(r.get("action") or "")))
     dgot = collections.Counter(v for v in verbs if DELETE_VERB_RE.search(v))
     dwant = collections.Counter(r["action"] for r in rows if DELETE_VERB_RE.search(str(r.get("action") or "")))
     # card 79-6: a stageplan's wire actions are executed as stagexec real ops (a tunnel op carries its two border
@@ -1810,15 +1826,16 @@ def x5_count(verbs, rows, spc, stop_after=None, from_step=None):
                and k > int(from_step or 0)]
         wk = wo if stop_after is None and from_step is None else [o for o in win if o["kind"] in SP_WIRING]
         dwant.update(o["kind"] for o in win if DELETE_VERB_RE.search(o["kind"]))
+        rwant += sum(1 for o in win if RLE_VERB_RE.search(o["kind"]))
         sp_wops, sp_wact = sp_wops + len(wk), sp_wact + len(wa)
         sp_cov += len(wa & set(x for o in wo + so for x in o["acts"]))
-    ok = len(ops) == len(wires) + sp_wops and sp_cov == sp_wact and dgot == dwant
+    ok = len(ops) == len(wires) + sp_wops and sp_cov == sp_wact and dgot == dwant and rgot == rwant
     return ok, ("ops {0} vs plan wire rows {1} + stageplan wiring real ops {2}{5} (covering {3}/{4} wire actions); "
-                "delete ops {6} vs plan delete rows {7}").format(
+                "delete ops {6} vs plan delete rows {7}; RLE ops {8} vs plan RLE rows {9}").format(
         len(ops), len(wires), sp_wops, sp_cov, sp_wact,
         ("" if stop_after is None else " among ops 1..{0} (PART-A stop_after)".format(int(stop_after))) +
         ("" if from_step is None else " among ops {0}.. (PART-B from_step)".format(int(from_step) + 1)),
-        dict(sorted(dgot.items())), dict(sorted(dwant.items())))
+        dict(sorted(dgot.items())), dict(sorted(dwant.items())), rgot, rwant)
 
 
 # card 123-7 (PD247(e), brief_123-5.md STEP 3): the CENSUS hook-in. tools/census_predict.py derives each stageplan row's
@@ -3228,7 +3245,13 @@ def main(argv=None):
     real_stdout = sys.stdout
     sa = int(rest[rest.index("--stop-after") + 1]) if "--stop-after" in rest else None   # card 103-2: PART-A X5
     fk = int(rest[rest.index("--from-step") + 1]) if "--from-step" in rest else None     # card 103-4: PART-B X5
-    tr = prerun(recipe, a.graph, stop_after=sa, from_step=fk) if a.prerun else dry(recipe, a.graph)
+    D.__init__()   # card 128-4 (PD261(b)): D was never reset, so an in-process --dry then --prerun counted ops twice
+    try:
+        tr = prerun(recipe, a.graph, stop_after=sa, from_step=fk) if a.prerun else dry(recipe, a.graph)
+    finally:
+        # card 128-3 (result_128-1.json fact 8): install() sets builtins.open = dry_open (:601) and nothing restored it, so a
+        # caller that ran main([--dry|--prerun, recipe]) IN-PROCESS had every later write outside %TEMP% redirected to SINK
+        builtins.open = REAL_OPEN
     sys.stdout = real_stdout
     import protocol as P
     print("\n=== DRY {0}: first_fail={1} coverage {2}/{3} lines, first mutation {4}, unverified {5}, graph {6}".format(

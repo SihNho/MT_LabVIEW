@@ -457,6 +457,21 @@ def resolve_addr(st, a, want_source):
     side = a.get("side")
     if a.get("term") is not None:
         named = [r for r in rows if r["term_name"] == a["term"]]
+        mk = re.match(r"^(.*)#([0-9]+)$", str(a["term"])) if not named else None
+        if mk:
+            # card 128-5 (PD262(b)): '<name>#k' = the k-th (0-based) of ONE node's terminals that share <name>, in the node's
+            # Terminals[] read order (rows are kept in read order; a created node's rows in its plan `terminals` order). The
+            # new Unbundler's three outputs all read 'element' until wired (diag_c128_2_donors.log:57,83): element#0 = status.
+            same, seen = [], set()
+            for r in rows:
+                if r["term_name"] == mk.group(1) and r["term_uid"] not in seen:
+                    seen.add(r["term_uid"])
+                    same.append(r)
+            k = int(mk.group(2))
+            if k >= len(same):
+                raise SimError("address {0}: #{1} has {2} terminal(s) named {3!r}, no index {4}".format(
+                    a, uid, len(same), mk.group(1), k))
+            named = [same[k]]
         if not named and a["term"] in ("inner", "outer"):
             side = a["term"]
         elif not named and a["term"] == "value":
@@ -2227,6 +2242,19 @@ def selftest():
     S6 = run(pa, "ambig", log=quiet)
     gate("G23 an ambiguous terminal name (two sinks 'a') is unaddressable without term_uid",
          S6["failed"] and S6["failed"]["n"] == 2 and "resolves to 2" in S6["failed"]["error"], S6["failed"])
+    # card 128-5 (PD262(b)): 'a#1' addresses the SECOND sink named 'a' of that node (read order); 'a#2' is refused
+    pk = copy.deepcopy(pa)
+    pk["stage"], pk["actions"][1]["dst"] = "ambig_k", "new:C1.a#1"
+    S6k = run(pk, "ambig_k", log=quiet)
+    endk = json.load(open(S6k["steps"][-1]["file"]["path"], encoding="utf-8"))["state"] if not S6k["failed"] else {"terminals": []}
+    ak = [r for r in endk["terminals"] if r["term_name"] == "a" and r["owner_class"] == "Function"]
+    gate("G23k 'name#k' addresses the k-th same-named terminal of one node in read order (a#1 wired, a#0 not)",
+         not S6k["failed"] and len(ak) == 2 and not ak[0]["wire_uid"] and ak[1]["wire_uid"], (S6k["failed"], ak))
+    pk2 = copy.deepcopy(pa)
+    pk2["stage"], pk2["actions"][1]["dst"] = "ambig_k2", "new:C1.a#2"
+    S6k2 = run(pk2, "ambig_k2", log=quiet)
+    gate("G23k2 'a#2' on a node with two 'a' terminals is refused (no index 2)",
+         S6k2["failed"] and S6k2["failed"]["n"] == 2 and "no index 2" in S6k2["failed"]["error"], S6k2["failed"])
     px = {"schema": "stageplan/1", "stage": "xdiag", "context": {"s1_graph": {"path": s1p}},
           "actions": [{"op": "delete_wire", "wire_uid": 7}, {"op": "wire", "src": "2.out", "dst": "4.x"}]}
     S7 = run(px, "xdiag", log=quiet)

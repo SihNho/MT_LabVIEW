@@ -1,0 +1,9 @@
+ATTACK this claim about a failed LabVIEW diagnostic. Read-only; cite file:line.
+
+FAILURE: tools/bench/diag_c127_5_errsel.log (script tools/bench/diag_c127_5_errsel.py, plan tools/bench/diag_c127_5_errsel_plan.json), gate D1 at log line 31:
+  FAIL  D1 donors found: Unbundle None | Select None
+Predicted (script docstring :8): both donors found. Seven NI example VIs were byte-copied into claudeDev and read with allterms.read_terms(<copy>, OP_ALLTERMS_V1) (script :26-28, :31-51); every copy reported NamedUnbundler [] and Select-signature [] (log :24-30). The per-candidate allterms row COUNT was not logged.
+
+CLAIM (card 127-5's reading, result_127-5.json): none of those seven shipped examples contains an Unbundle By Name or a Select node, so there is no donor route; the next step is another donor source (other vi.lib files, a fact peer, or the GUI class).
+
+Questions: (1) strongest reason this claim is wrong - e.g. allterms.read_terms returned ZERO rows for every copy (copy never opened / wrong path / op reads only top-level diagram, not nested frames/loops / owner_class string for Unbundle By Name is not 'NamedUnbundler' / select_sig in the plan does not match Select's real terminal names 's','t','f','s? t: f'), so 'no node' and 'empty read' are not separated; (2) an alternative explanation; (3) what would falsify it; (4) the cheapest discriminating test (preferably offline: read tools/allterms.py and the plan's select_sig / candidates list, compare with docs/NAMES.md or census_samples.json for the real class names).

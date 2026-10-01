@@ -2,21 +2,23 @@
  "schema": "ring-p3b-rows/1",
  "card": "127-3",
  "plan_in": "tools/bench/plan_ring_p3b_in.json",
- "n_rows": 63,
- "n_actions": 63,
+ "n_rows": 70,
+ "n_actions": 70,
  "status_counts": {
-  "MEASURED": 33,
-  "PRECEDENT": 30
+  "MEASURED": 37,
+  "PRECEDENT": 33
  },
  "created_non_crossing": {
   "FlatSequence": 1,
   "Diagram": 3,
   "Local": 11,
   "GrowableFunction": 5,
-  "DigitalNumericConstant": 1,
+  "DigitalNumericConstant": 2,
   "IndexArray": 1,
   "SubVI": 1,
-  "Wire": 12
+  "Unbundler": 1,
+  "Function": 1,
+  "Wire": 16
  },
  "crossing_variants": {
   "p3b_x_i_f1": "case_frame_to_fs_frame",
@@ -39,10 +41,11 @@
   "('create', 'fs_create')": 1,
   "('create', 'fs_frame')": 2,
   "('create', 'local_read')": 5,
-  "('create', 'primitive')": 7,
+  "('create', 'primitive')": 10,
   "('create', 'local_write')": 6,
   "('create', 'subvi')": 1,
-  "('connect', None)": 12,
+  "('connect', None)": 15,
+  "('connect_term_uid', 'fs_frame_to_frame')": 1,
   "('connect_term_uid', 'fs_border')": 10,
   "('connect_term_uid', 'fs_border_inner_branch')": 4
  },
@@ -64,8 +67,8 @@
  },
  "sim": {
   "A": {
-   "rows": 34,
-   "ok_steps": 34,
+   "rows": 41,
+   "ok_steps": 41,
    "failed": null,
    "final": true,
    "end_cdiff": [
@@ -88,8 +91,8 @@
    ]
   },
   "B": {
-   "rows": 63,
-   "ok_steps": 63,
+   "rows": 70,
+   "ok_steps": 70,
    "failed": null,
    "final": true,
    "end_cdiff": [
@@ -562,6 +565,33 @@
    }
   },
   {
+   "id": "p3b_ub_status",
+   "op": "create",
+   "route": "primitive vilib_donor DonorErrSel_ErrToWarning #157",
+   "status": "MEASURED",
+   "created": {
+    "Unbundler": 1
+   }
+  },
+  {
+   "id": "p3b_sel",
+   "op": "create",
+   "route": "primitive vilib_donor DonorErrSel_MergeErrors #529",
+   "status": "MEASURED",
+   "created": {
+    "Function": 1
+   }
+  },
+  {
+   "id": "p3b_k_m3",
+   "op": "create",
+   "route": "primitive const_donor",
+   "status": "MEASURED",
+   "created": {
+    "DigitalNumericConstant": 1
+   }
+  },
+  {
    "id": "p3b_w_n1_arr",
    "op": "wire",
    "route": "connect same-diagram (connect_nested_v1)",
@@ -662,6 +692,42 @@
   },
   {
    "id": "p3b_w_n3_out",
+   "op": "wire",
+   "route": "connect same-diagram (connect_nested_v1)",
+   "status": "PRECEDENT",
+   "created": {
+    "Wire": 1
+   }
+  },
+  {
+   "id": "p3b_w_err_ub",
+   "op": "wire",
+   "route": "fs_frame_to_frame (f1 -> f2)",
+   "status": "MEASURED",
+   "created": {
+    "Wire": 1
+   }
+  },
+  {
+   "id": "p3b_w_ub_sel",
+   "op": "wire",
+   "route": "connect same-diagram (connect_nested_v1)",
+   "status": "PRECEDENT",
+   "created": {
+    "Wire": 1
+   }
+  },
+  {
+   "id": "p3b_w_m3_sel",
+   "op": "wire",
+   "route": "connect same-diagram (connect_nested_v1)",
+   "status": "PRECEDENT",
+   "created": {
+    "Wire": 1
+   }
+  },
+  {
+   "id": "p3b_w_sel_n3",
    "op": "wire",
    "route": "connect same-diagram (connect_nested_v1)",
    "status": "PRECEDENT",
@@ -987,32 +1053,32 @@
    "3747": {
     "old_terms": 8,
     "on_src_net": 8,
-    "end_wire": -101
+    "end_wire": -125
    },
    "3268": {
     "old_terms": 8,
     "on_src_net": 8,
-    "end_wire": -141
+    "end_wire": -165
    },
    "3040": {
     "old_terms": 1,
     "on_src_net": 1,
-    "end_wire": -111
+    "end_wire": -135
    },
    "30592": {
     "old_terms": 2,
     "on_src_net": 2,
-    "end_wire": -121
+    "end_wire": -145
    },
    "4878": {
     "old_terms": 1,
     "on_src_net": 1,
-    "end_wire": -131
+    "end_wire": -155
    },
    "653": {
     "old_terms": 2,
     "on_src_net": 2,
-    "end_wire": -177
+    "end_wire": -201
    }
   }
  },
@@ -1048,106 +1114,5 @@
   "IMAQ Copy: 3 connector slots measured UNNAMED ('' x3, graph_harness_copyloop_c95.json #11 t132/t138/t144); stagexec binds them by order",
   "ROWS: 63 actions > 40 (D-2026-10-01-01 cap for P3b); PD255(c): ONE step with a full scratch run"
  ],
- "held_rows": [
-  {
-   "op": "create",
-   "id": "p3b_ub_status",
-   "class": "NamedUnbundler",
-   "diagram": "new:FS1.f2",
-   "as": "UB1",
-   "pos": [
-    60,
-    120
-   ],
-   "prim": "Unbundle By Name",
-   "donor": null,
-   "terminals": [
-    {
-     "name": "input cluster",
-     "is_source": false,
-     "term_class": "Terminal",
-     "src": "MEASURED class/name: bed NamedUnbundler #27462 t27464"
-    },
-    {
-     "name": "status",
-     "is_source": true,
-     "term_class": "Terminal",
-     "src": "UNMEASURED name (error-cluster element); class as #27462's outputs"
-    }
-   ],
-   "why": "ROUTE primitive donor ? | UNMEASURED | PD258(c) Unbundle By Name status | no donor registered/recorded; terminal table not recorded - scratch/donor owed"
-  },
-  {
-   "op": "create",
-   "id": "p3b_sel",
-   "class": "?",
-   "diagram": "new:FS1.f2",
-   "as": "SEL1",
-   "pos": [
-    120,
-    120
-   ],
-   "prim": "Select",
-   "donor": null,
-   "terminals": "UNMEASURED (s / t / f / output: names and term_class recorded nowhere)",
-   "why": "ROUTE primitive donor ? | UNMEASURED | PD258(c) Select | no donor registered/recorded; terminal table not recorded - scratch/donor owed"
-  },
-  {
-   "op": "create",
-   "id": "p3b_k_m3",
-   "class": "DigitalNumericConstant",
-   "diagram": "new:FS1.f2",
-   "as": "KM3",
-   "pos": [
-    60,
-    200
-   ],
-   "prim": "const_donor",
-   "donor": {
-    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRingConst_v0.vi",
-    "uid": 249
-   },
-   "terminals": [
-    {
-     "name": "",
-     "is_source": true,
-     "term_class": "Terminal"
-    }
-   ],
-   "why": "ROUTE primitive const_donor | MEASURED | PD238(c) Num(i)=-1 | const in a FS frame: diag_c125_5_fsscr.log:41-47 (C-3a); I32 -1 = DonorRingConst_v0 #249 (PD247(a))"
-  },
-  {
-   "op": "wire",
-   "id": "p3b_w_err_ub",
-   "src": "new:CP1.error out",
-   "dst": "new:UB1.input cluster",
-   "why": "ROUTE fs_frame_to_frame (f1 -> f2) | MEASURED | PD258(c) | stagesim FS_MEASURED"
-  },
-  {
-   "op": "wire",
-   "id": "p3b_w_ub_sel",
-   "src": "new:UB1.status",
-   "dst": "new:SEL1.s",
-   "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD258(c) s = status | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run | UNMEASURED terminal names"
-  },
-  {
-   "op": "wire",
-   "id": "p3b_w_m3_sel",
-   "src": "new:KM3.value",
-   "dst": "new:SEL1.t",
-   "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD258(c) t = -1 | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run | UNMEASURED terminal names"
-  },
-  {
-   "op": "wire",
-   "id": "p3b_w_sel_n3",
-   "src": "new:SEL1.output",
-   "dst": "new:RAN3.new element/subarray",
-   "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD258(c) element = status ? -1 : BufNum | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run"
-  },
-  {
-   "retarget": "p3b_x_bn_n3",
-   "dst": "new:SEL1.f",
-   "why": "PD258(c): BufNum feeds Select.f, not RAN3 directly (Latest = BufNum unchanged)"
-  }
- ]
+ "held_rows": []
 }

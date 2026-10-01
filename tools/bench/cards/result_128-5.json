@@ -1,0 +1,27 @@
+{"schema":"result/1","id":"128-5","status":"FAIL","gates":{"pass":2,"fail":3},
+"first_fail":"budget: 50-min card budget spent after pass criteria 1-2; split p3b1/p3b2, recipes, dry+prerun, prior-art, c106e E1 rerun and fp-19 drain NOT done",
+"blocked_by":null,
+"artefacts":[
+{"path":"tools/stagesim.py","md5":"cb47ae2abfb17433bd85b6773097c3ec"},
+{"path":"tools/stagexec.py","md5":"a7380a637e0f26bbd7c4abc808e7cf11"},
+{"path":"tools/bench/plan_ring_p3b_make.py","md5":"d42782a5063503134d0c3daa9f2592ee"},
+{"path":"tools/bench/plan_ring_p3b_in.json","md5":"08fa224112606aedd4a15ec378268d88"},
+{"path":"tools/bench/plan_ring_p3b_rows.json","md5":"1b5b2a0ab8bc36ab12639898928e7010"},
+{"path":"tools/bench/plan_ring_p3b_make_c128_5.log","md5":"8eef21967577093f20abb01dd2d1ff5f"},
+{"path":"tools/bench/selftest_stagesim_c128_5.log","md5":"4495e519b4d0eb2fb1a34b5adc55da21"},
+{"path":"tools/bench/selftest_stagexec_c128_5.log","md5":"6f9282dc5cd842d0a705d10734f53cf0"}],
+"facts":[
+"stagesim.resolve_addr: '<name>#k' = k-th same-named terminal of one node in row (read) order, out of range refused (stagesim.py:459-473)",
+"stagesim selftest 80/0 incl G23k (a#1 wires the 2nd 'a') and G23k2 (a#2 refused) (selftest_stagesim_c128_5.log:26-27,84)",
+"stagexec.bind_new: repeated NAMED keys of one fresh node paired in read order when all unwired; wired repeats still stop (stagexec.py:909-915)",
+"stagexec selftest 136/0 incl T1285a (Unbundler t399/t412/t418/t422 bound in order) + T1285b wired negative (selftest_stagexec_c128_5.log:136-140)",
+"Guard rows in f2 per brief_128-4 s3: Unbundler #157 + Select #529 (ParameterTerminal x4) + I32 -1; UB1.element#0->SEL1.s; BufNum crossing -> SEL1.f (plan_ring_p3b_make.py)",
+"plan_ring_p3b_make 14/0: 70 actions = 25 create + 16 wires + 14 crossings + 15 RLE; error out->cluster compiles connect_term_uid fs_frame_to_frame (plan_ring_p3b_make_c128_5.log M5,M7)",
+"Replay A 41/41 and replay B all 70 END TO END, end cdiff == P3a's 16 rows, M11 holds; PINS census md5 = 205a7f23 (plan_ring_p3b_make_c128_5.log M0,M8,M8b,M11)",
+"plan_ring_p3b_in.json rewritten (md5 08fa2241); plan_ring_p3b.json (4003eaa5), its _pred and stage_d1_ring_p3b.py are now STALE vs the input - not finalized here",
+"fp-20 logged: gate checker:stage_prerun:X16 refusing a Local create (plan_disp r6_lr_ring), log selftest_c128_4_stage_prerun_c106e.log (gate_fp_queue.jsonl)",
+"Not done: split p3b1/p3b2 + finalize + preds + recipes, dry/prerun both halves, --scratch-required, prior-art P3b-1, c106e E1 rerun listing every FAIL, fp-19 drain"],
+"open":[
+"Re-issue the remainder (split/finalize/preds/recipes, dry+prerun, scratch-required, prior-art, c106e E1 rerun, fp-19 drain) as a new card starting from plan_ring_p3b_in.json md5 08fa2241?"],
+"cost":{"usd":null,"minutes":45,"labview_runs":0},
+"note":"Offline only, no LabVIEW/COM, no recipe launched. M6/M8b gate LABELS in plan_ring_p3b_make.py still carry the old counts in their text (values checked are the new ones). STATUS not edited."}

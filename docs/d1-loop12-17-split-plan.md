@@ -2822,6 +2822,70 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
      - **(d) Cost note:** 127-1 lost ~28 min to four ~7-min Error List GUI reads (PD258(a) rule now in force); 127-5 waited
        ~3 min on `guard_peer` for 127-4's failing log (a LabVIEW card held by an OFFLINE card's log — the reverse of
        RULE-OFFLINE-CARD, already a cycle-122 carry).
+261. **(cycle 128 judgement, 2026-10-02 — after 128-1 FAIL 7/1, 128-3 FAIL 5/1, 128-2 FAIL 46/1)**
+     USER-RULES: U1, U6, U9, U11 (relied on; none contradicted — the guard is new ring code, the original's error chain
+     and computation are unchanged). User decision D-2026-10-01-01 (answered, option 1) applied.
+     - **(a) PD258(c)'s guard form = 128-2's form C1, the plan of record:** a plain `Unbundler` copied from a claudeDev byte
+       copy of vi.lib `Error to Warning.vi` (#157; first element `status`, read back status/code/source after wiring) +
+       a `Select` copied from a byte copy of vi.lib `Merge Errors.vi` (class `Function`, terminals `s? t:f`/s/t/f); t = I32
+       −1 constant, f = BufNum, output → the `Num(i)` element. Measured: 5 wires, all `Is Broken?` False; Error List held
+       only the test sink's own unwired item (`diag_c128_2_donors.log:56-101`). Form C2 (error cluster on a case
+       selector) is not used: it needs one more structure and its constant-into-frame route is unmeasured (`:130-135`).
+       127-5's "no donor" was a search artefact (review `archive/peer/2026-10-02-c128-2-errsel-donor.md`): signature
+       typo `s? t: f` vs measured `s? t:f` (`archive/peer/2026-10-02-c128-1-errsel-donors.md`). The bed has 12
+       NamedUnbundler + 3 Unbundler, not 16 (`:2818` above is wrong).
+     - **(b) X5's refusal of the P3b recipe is a GATE FALSE POSITIVE** (`diag_c128_3_x5.log` M1): the recipe's 41
+       X5-counted ops are exactly the plan's 26 wiring rows (12 `wire_connect` + 14 crossings) + 15 RLE rows, 0 other.
+       `WIRE_VERB_RE` (`stage_prerun.py:109`) counts `wire_remove_loose_ends` while `SP_WIRING` (`:901`) excludes it.
+       Fix: X5 compares wiring ops with plan wiring rows AND RLE ops with plan RLE rows, each 1:1. The 123 was our harness
+       running `--dry` and `--prerun` in one process (`D` never reset, `Stage._op` wrapped twice): reset both per `main()`.
+       Logged and drained through `tools/gate_fp.py`, with a self-test.
+     - **(c) The census prediction is NOT a launch precondition for P3b:** D-2026-10-01-01 requires a full scratch run
+       before every ring build step anyway, so `--scratch-required`'s CENSUS-UNPREDICTED changes nothing; the scratch's
+       measured census is the prediction the ONE launch is compared with. `census_predict` row branches for wire/RLE/FS
+       rows are tool debt, not P3b's.
+     - **(d) P3b is SPLIT to honour the user's ~40 edit operations per step:** 63 actions + the guard's ~8 = ~71.
+       P3b-1 and P3b-2, each ≤ 40 actions counting create, wire, crossing and RLE rows; each RLE row goes in the step
+       that creates its loose end; the cut sits at a dependency-closed boundary (no row in step 1 needs an object made
+       in step 2); IMAQ Copy and its guard rows go in the SAME step. Broken-file count after both: 4 of 6 (P2b 1, P3a 2,
+       P3b-1 3, P3b-2 4), so P4 and P5 use 5 and 6 and P6 must run — no slack is left for a further split without
+       asking the user.
+     - **(e) Order:** one offline card = (b) + donor byte copies registered + guard rows + the split + dry/prerun on both
+       halves + prior-art review (new classes Unbundler, Select). Then the LabVIEW card: P3b-1 full scratch run on a P3a
+       byte copy (ONE Error List read at its end), then ONE launch.
+262. **(cycle 128 judgement, 2026-10-02 — after 128-4 FAIL 23/1)**
+     USER-RULES: U1, U9 (relied on; tooling only, none contradicted).
+     - **(a) 128-4 ACCEPTED as far as it ran:** X5 fixed (`stage_prerun.py:1795,1832`; D reset per `main()`; self-test
+       `selftest_stage_prerun_c128b` 5/0, P3b trace 26/26 + 15/15); fp-19 logged; donors `claudeDev\DonorErrSel_ErrToWarning.vi`
+       (uid 157, Unbundler, md5 `5019b629…`) and `DonorErrSel_MergeErrors.vi` (uid 529, Select, md5 `2369e859…`);
+       `census_samples.json` section `create_primitive_nested:vilib_donor`.
+     - **(b) The new Unbundler's three outputs all read `element` until wired** (`diag_c128_2_donors.log:57,83`). DECIDED:
+       address a REPEATED terminal name of ONE node by its position among the same-named terminals in `Terminals[]` read
+       order (`element#0` = status, `#1` = code, `#2` = source) — the same read-order pairing `bind_new` already uses for
+       IMAQ Copy's repeated unnamed sinks (PD259(a)), and the order 128-2 read back after wiring (status/code/source,
+       `:83`). This is per-node terminal order, NOT the uid-order binding of several new objects that PD260(b) forbids.
+       stagexec `bind_new` and stagesim terminal addressing get it with a self-test. The P3b-1 scratch confirms: after the
+       wire the read-back name of the bound terminal must be `status`, else the scratch fails (it is a prediction). The
+       Find First Error NamedUnbundler (#266) stays an unmeasured alternative.
+     - **(c) `selftest_stage_prerun_c106e` E1 is red since X16 was added (cycle 125), not from the X5 fix:** last green
+       2026-09-28, first_fail X16 on `plan_disp r6_lr_ring`, a `Local` create with no `term_class`
+       (`p3run_selftest_stage_prerun_c106e.log:19`, review `archive/peer/2026-10-02-c128-4-c106e.md`). Logged as a gate
+       false-positive candidate (X16 on a Local create), queued, not fixed in place; fp-19 is drained citing
+       `selftest_stage_prerun_c128b` with c106e's E1 rerun listing every FAIL line, so X5 is shown not to be behind X16.
+     - **(d) Order:** one offline card now (b) + guard rows + split + both halves' dry/prerun + prior-art; P3b-1's scratch
+       run + ONE launch is the next cycle's first act.
+263. **(cycle 128 judgement, 2026-10-02 — after 128-5 FAIL 2/3, card budget spent)**
+     USER-RULES: U1, U9 (relied on; none contradicted).
+     - **(a) 128-5 ACCEPTED as far as it ran:** `name#k` addressing in stagesim (`stagesim.py:459-473`, self-test 80/0) and
+       stagexec `bind_new` (`stagexec.py:909-915`, self-test 136/0, wired repeats still stop); guard rows in frame 2
+       (Unbundler #157 `element#0` → Select #529 `s`, I32 −1 → `t`, BufNum crossing → `f`); `plan_ring_p3b_in.json` md5
+       `08fa2241…` = 70 actions (25 create + 16 wires + 14 crossings + 15 RLE), replays END TO END, end cdiff 16 == P3a's,
+       M11 holds (`plan_ring_p3b_make_c128_5.log`). **`plan_ring_p3b.json` (4003eaa5), its `_pred` and
+       `stage_d1_ring_p3b.py` are now STALE** — never launch them.
+     - **(b) Remainder, unchanged decisions (PD261(d), PD262):** split `plan_ring_p3b_in.json` into P3b-1/P3b-2 (each ≤ 40,
+       dependency-closed, IMAQ Copy + guard together, RLE with its loose end), finalize both, predictions, recipes, dry +
+       prerun out of process, `--scratch-required`, prior-art for P3b-1; c106e E1 rerun listing every FAIL; fp-19 drain.
+       Then in the SAME cycle (pipeline): P3b-1 full scratch run on a P3a byte copy, ONE Error List read, ONE launch.
 
 ## OPEN (design choices — for judgement; not decided here)
 

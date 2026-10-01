@@ -1,0 +1,68 @@
+{
+ "schema": "task/1",
+ "id": "128-2",
+ "kind": "measure",
+ "goal": "PD260(c): creation route for the U9 guard (copy error -> -1 or BufNum): (A) owed 127-5 review, (B) per-file node-class donor census, (C) two scratch forms measured",
+ "why": "127-5 found no Select/Unbundle donor but logged no per-file counts ('no node' vs 'empty read' unseparated). guard_peer blocks builds until diag_c127_5_errsel.log has a hypothesis review. P3b waits on these rows. Plan PD258(c)-260(c).",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_128-2.md"},
+  {"path": "tools/bench/cards/result_127-5.json"},
+  {"path": "tools/bench/diag_c127_5_errsel.py"},
+  {"path": "tools/bench/diag_c127_5_errsel.log"},
+  {"path": "tools/bench/graph_ring_p3a_20261001_190155.json"},
+  {"path": "tools/gscript.py"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "verb", "name": "create_primitive_nested", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "connect_term_uid", "where": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/peer.ps1"}
+ ],
+ "pass": [
+  "(A) hypothesis review naming diag_c127_5_errsel.log ANSWERED, archived, annotated (brief_128-2.md section A)",
+  "(B) node-class census per file: bed graph, a claudeDev byte copy of the original, <=8 vi.lib error VI copies; empty reads flagged (brief B)",
+  "(C1) Unbundle By Name + Select scratch measured per brief C1, or NOT ATTEMPTED per node with the reason",
+  "(C2) error cluster -> Case Structure selector scratch measured per brief C2: frame names, Is Broken? per wire, terminals",
+  "ONE Error List read per scratch; scratch_verify record per form; copies deleted (donor file reported if kept); LabVIEW gone"
+ ],
+ "outputs": [
+  "tools/bench/census_samples.json",
+  "tools/bench/scratch_verify/*",
+  "tools/bench/diag_c128_2*"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c128_2*",
+   "tools/bench/census_samples.json",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/errorlist_*",
+   "tools/bench/graph_*c128*",
+   "tools/bench/cards/result_128-2*",
+   "tools/bench/cards/review_128-2*",
+   "tools/bench/cards/verdict_128-2*",
+   "tools/bench/peer_*",
+   "archive/peer/**",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["fact", "hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 55
+ },
+ "rules": [
+  "Rule 1: original only BYTE-COPIED into claudeDev, never opened at its own path, never saved; vi.lib only copied",
+  "Scratch VIs only; bed D1_ring_p3a_20261001_180540.vi untouched; diagnostics <=120 lines on stagekit",
+  "No stagexec/stagesim edit (128-1 edits them offline); no GUI placement of primitives (PD260(c))",
+  "Time per brief_128-2.md: (A) in background during (B); return at the first unexpected result"
+ ],
+ "advances": ["M3", "M4"]
+}

@@ -1,0 +1,15 @@
+BGRUN START 2026-10-02 00:17:22 limit 8.0 min: py -u tools/bench/diag_c128_3_x5.py
+BGRUN PID 21672
+  FACT M1 out-of-process --dry: D.ops 63; verbs {'wire_remove_loose_ends': 15, 'create': 22, 'wire_connect': 12, 'wire_connect_term_uid': 14}
+  FACT M1 groups: (a) plan wiring 26 | (b) RLE 15 | (c) read-only 0 | (d) other 0 | not X5-counted 22
+    | create                     x22  group not-counted  acts ['p3b_fs', 'p3b_fr2', 'p3b_fr3', 'p3b_lr_num1', 'p3b_ras_num1', 'p3b_k_m1', 'p3b_lw_num1', 'p3b_ia', 'p3b_copy', 'p3b_lr_transpos', 'p3b_ras_transpos', 'p3b_lw_transpos', 'p3b_lr_rotpos', 'p3b_ras_rotpos', 'p3b_lw_rotpos', 'p3b_lr_frameidx', 'p3b_ras_frameidx', 'p3b_lw_frameidx', 'p3b_lr_num3', 'p3b_ras_num3']
+    | wire_connect               x12  group a            acts ['p3b_w_n1_arr', 'p3b_w_m1_new', 'p3b_w_n1_out', 'p3b_w_ia_dst', 'p3b_w_t_arr', 'p3b_w_t_out', 'p3b_w_r_arr', 'p3b_w_r_out', 'p3b_w_f_arr', 'p3b_w_f_out', 'p3b_w_n3_arr', 'p3b_w_n3_out']
+    | wire_connect_term_uid      x14  group a            acts ['p3b_x_i_f1', 'p3b_x_i_f3', 'p3b_x_i_ia1', 'p3b_x_i_rat1', 'p3b_x_i_rar1', 'p3b_x_i_raf1', 'p3b_x_bn_n3', 'p3b_x_bn_latest', 'p3b_x_img_src', 'p3b_x_trans', 'p3b_x_rot', 'p3b_x_fidx', 'p3b_x_pool', 'p3b_x_err_in']
+    | wire_remove_loose_ends     x15  group b            acts ['p3b_rle_w27378', 'p3b_rle_i_f1', 'p3b_rle_i_f3', 'p3b_rle_i_ia1', 'p3b_rle_i_rat1', 'p3b_rle_i_rar1', 'p3b_rle_i_raf1', 'p3b_rle_bn_n3', 'p3b_rle_bn_latest', 'p3b_rle_img_src', 'p3b_rle_trans', 'p3b_rle_rot', 'p3b_rle_fidx', 'p3b_rle_pool', 'p3b_rle_err_in']
+  FACT M1 x5_count on the out-of-process trace: (False, 'ops 41 vs plan wire rows 0 + stageplan wiring real ops 26 (covering 26/26 wire actions); delete ops {} vs plan delete rows {}')
+FAIL  M1 out-of-process X5-matched == 42 (16 RLE + 12 connect + 14 connect_term_uid)  {'b': 15, 'not-counted': 22, 'a': 26}
+  FACT M2 after in-process --dry: {'mode': '--dry', 'rc': 0, 'D.ops': 63, 'x5_matched_so_far': 41, 'op_wrap_depth': 1, 'open_is_real': True, 'x5_line': []}
+  FACT M2 after in-process --prerun: {'mode': '--prerun', 'rc': 1, 'D.ops': 189, 'x5_matched_so_far': 123, 'op_wrap_depth': 2, 'open_is_real': True, 'x5_line': ['FAIL  X5 wiring ops executed in the dry run == plan wire rows  ops 123 vs plan wire rows 0 + stageplan wiring real ops 26 (covering 26/26 wire actions); delete ops {} vs plan delete rows {}']}
+PASS  M2 in-process dry->prerun reproduces 128-1's 123  [[], ['FAIL  X5 wiring ops executed in the dry run == plan wire rows  ops 123 vs plan wire rows 0 + stageplan wiring real ops 26 (covering 26/26 wire actions); delete ops {} vs plan delete rows {}']]
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":1,"fail":1},"first_fail":"M1 out-of-process X5-matched == 42 (16 RLE + 12 connect + 14 connect_term_uid)","artefacts":[{"path":"tools/bench/diag_c128_3_x5.json","md5":"ec480fd751d8825d7aba53dfffb540b6"}]}
+BGRUN END rc=1 after 98s

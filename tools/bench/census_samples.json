@@ -197,8 +197,36 @@
     }
    ]
   },
+  "create_primitive_nested:vilib_donor": {
+   "plan_match": "action op 'create' of a primitive copied from a claudeDev BYTE COPY of a shipped vi.lib VI (card 128-2 form C1; PD261(a)); the variant is the created class",
+   "route": "gscript.create_primitive_nested(target, diagram, <prim>, pos, donor={donor: claudeDev copy, uid}) -> OpPrimCopyNested_v0",
+   "census_method": "128-2's per-create census counts the new node AND its own terminal objects (Terminal / ParameterTerminal), unlike the P2b const_donor samples above (node class only); compare like with like",
+   "variants": [
+    {
+     "name": "unbundler_error_to_warning",
+     "match": {"class": "Unbundler", "donor_vi": "Error to Warning.vi", "donor_uid": 157},
+     "delta": {"Unbundler": 1, "Terminal": 4},
+     "n": 1,
+     "why": "plain Unbundler copied from Error to Warning.vi #157: 1 sink 'cluster' + 3 sources all named 'element' at create; after the error cluster is wired they read status/code/source",
+     "cites": [
+      {"file": "tools/bench/diag_c128_2_donors.log", "line": 57, "expect": "CREATE C1unb #380 census {'Terminal': 4, 'Unbundler': 1}"},
+      {"file": "tools/bench/diag_c128_2_donors.log", "line": 83, "expect": "C1 Unbundle after wire [('cluster', False), ('status', True), ('code', True), ('source', True)]"}
+     ]
+    },
+    {
+     "name": "select_merge_errors",
+     "match": {"class": "Function", "donor_vi": "Merge Errors.vi", "donor_uid": 529},
+     "delta": {"Function": 1, "ParameterTerminal": 4},
+     "n": 1,
+     "why": "Select copied from Merge Errors.vi #529: class Function, terminals 's? t:f' (source) / s / t / f",
+     "cites": [
+      {"file": "tools/bench/diag_c128_2_donors.log", "line": 62, "expect": "CREATE C1sel #429 census {'Function': 1, 'ParameterTerminal': 4}"}
+     ]
+    }
+   ]
+  },
   "OpConstInd_v0": {
-   "plan_match": "action op 'create', class 'ControlTerminal', indicator true, born_on {'uid': 'new:<as of a const_donor row>'}; the variant is the born-on constant's (class, canon)",
+   "plan_match":"action op 'create', class 'ControlTerminal', indicator true, born_on {'uid': 'new:<as of a const_donor row>'}; the variant is the born-on constant's (class, canon)",
    "route": "gscript.create_indicator_on_const -> OpConstInd_v0 (Constant.Terminal -> Terminal.Create Indicator, card 122-3) (gscript.py const_indicator_on_diagram, second call)",
    "variants": [
     {

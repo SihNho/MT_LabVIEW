@@ -1,0 +1,31 @@
+{
+ "schema_note": "card 128-2 (PD260(c)): FINALIZED decision-row plan of tools/bench/diag_c128_2_donors.py. (B) donor census per file (8 vi.lib error.llb VIs + DONOR_Ex3_PrimitiveFunctions + DONOR_arrayops as renamed byte copies, then a byte copy of the 3StateClamping ORIGINAL, read last); (C1) scratch 1 = byte copy of claudeDev\\HARNESS_copyloop.vi: IMAQ Copy #240 error out t360 -> Unbundle By Name (donor) -> Select s, I32 -1 -> t, I32 0 -> f, Select out -> Max & Min x; NOT ATTEMPTED when either donor is missing; (C2) scratch 2 = second byte copy: case_wired (selector <- IMAQ Copy 'error out'), frame names read back, I32 -1 in frame 1 -> Max & Min x (outer, tunnel created by the crossing), I32 0 in frame 0 -> that tunnel's frame-0 inner face (case_frame_wire). ONE Error List read per scratch. Every copy deleted; LabVIEW killed and gone.",
+ "input": {"vi": "HARNESS_copyloop.vi", "md5": "eb8dad78209440fbbb9d87afad3d8ad6", "graph": "tools/bench/graph_harness_copyloop_c95.json"},
+ "imaq": {"uid": 240, "diagram": 334, "err_out": 360, "err_name": "error out"},
+ "const_t": {"vi": "DonorRingConst_v0.vi", "uid": 249, "value": -1},
+ "const_f": {"vi": "DonorSRInit_v0.vi", "uid": 248, "value": 0},
+ "vilib_dir": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\vi.lib\\Utility\\error.llb",
+ "vilib": ["Error to Warning.vi", "Find First Error.vi", "Merge Errors.vi", "Error Cluster From Error Code.vi", "Simple Error Handler.vi", "Clear Errors.vi", "General Error Handler.vi", "General Error Handler CORE.vi"],
+ "claudedev_donors": ["DONOR_Ex3_PrimitiveFunctions.vi", "DONOR_arrayops.vi"],
+ "original": "Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi",
+ "bed": {"vi": "D1_ring_p3a_20261001_180540.vi", "unb_uid": 10764},
+ "names": {"sink_x": "x", "sel_in": ["s", "t", "f"], "status": "status"},
+ "pos": {"unb": [520, 40], "sel": [640, 40], "kt": [560, 110], "kf": [560, 160], "mm": [760, 40], "case": [520, 200], "mm2": [760, 200], "k_in_frame": [40, 40]},
+ "decisions": [
+  {"id": "D-0", "action": "stage", "what": "stagekit Stage on HARNESS_copyloop.vi, preload False (the ORIGINAL is never opened at its own path); work copy = scratch 1, discard_work"},
+  {"id": "B-1", "action": "measure", "what": "per candidate: renamed byte copy DonorCand_c128_2_<i>.vi, report_all GObject (count + class counts), allterms rows (count), EMPTY READ flag, Unbundle owners + 'status' source, Select = Function owner with sinks {s,t,f} (whitespace-insensitive) and one source, Function/Comparison signatures"},
+  {"id": "C1-0", "action": "create", "what": "scratch 1: Unbundle By Name (donor), Select (donor), I32 -1, I32 0, Max & Min - only with both donors"},
+  {"id": "W-1", "action": "wire", "what": "scratch 1: Unbundle input <- IMAQ Copy error out t360"},
+  {"id": "W-2", "action": "wire", "what": "scratch 1: Select s <- Unbundle output"},
+  {"id": "W-3", "action": "wire", "what": "scratch 1: Select t <- I32 -1"},
+  {"id": "W-4", "action": "wire", "what": "scratch 1: Select f <- I32 0"},
+  {"id": "W-5", "action": "wire", "what": "scratch 1: Max & Min x <- Select output"},
+  {"id": "W-6", "action": "wire", "what": "scratch 2: case_wired - Case Structure selector <- IMAQ Copy 'error out' (DonorCase_v0 copy)"},
+  {"id": "C2-0", "action": "create", "what": "scratch 2: Max & Min on Diagram #334, I32 -1 on frame 1, I32 0 on frame 0"},
+  {"id": "W-7", "action": "wire", "what": "scratch 2: Max & Min x <- I32 -1 (frame 1) across the case border"},
+  {"id": "W-8", "action": "wire", "what": "scratch 2: case_frame_wire frame 0: I32 0 -> the new output tunnel's frame-0 inner face"},
+  {"id": "M-1", "action": "measure", "what": "ExecState per scratch; ONE Error List read per scratch"},
+  {"id": "B-2", "action": "measure", "what": "census of the 3StateClamping ORIGINAL's renamed byte copy (read last)"},
+  {"id": "X", "action": "discard", "what": "close(): scratches + candidate copies deleted, input md5 unchanged, LabVIEW killed and gone"}
+ ]
+}

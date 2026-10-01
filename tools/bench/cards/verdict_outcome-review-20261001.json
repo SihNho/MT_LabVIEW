@@ -1,0 +1,42 @@
+{
+ "schema": "verdict/1",
+ "id": "outcome-review-20261001",
+ "verdict": "refuted",
+ "alternative": "The ring-buffer files are necessary steps toward a camera/tracking split that pays off at 150 Hz. Unsupported: the display-loop VI already loses 12-16 frames at 15 beads/90 Hz, no 150 Hz run exists, and the first ring run is 3+ build steps away.",
+ "discriminating_test": "Add the R8 frame-rate control to D1_s1_disp_20260927_041648.vi and run 150 Hz at 8 and 15 picks, plus one supervised bead run of minutes. Loss near 0 => hand off, park the ring. Loss at 150 Hz => resume the ring on the loop the numbers name.",
+ "violations": [
+  {
+   "slug": "wrong-ordering",
+   "loss_min": 1087,
+   "loss_usd": 387.72,
+   "evidence": "tools/bench/cycle_runner.log:765,781,796,803,816,833,848,863,878,893,910; STATUS.md:54,94"
+  }
+ ],
+ "sources": [
+  "STATUS.md:12",
+  "STATUS.md:47",
+  "STATUS.md:51",
+  "STATUS.md:54",
+  "STATUS.md:59",
+  "STATUS.md:81",
+  "STATUS.md:94",
+  "STATUS.md:95",
+  "archive/benchmarks/INDEX.md:80",
+  "archive/2026-10-01-status-cycle123-relocate.md:28",
+  "tools/bench/disp_110_abba.json:19",
+  "docs/goalmap.json:21",
+  "docs/goalmap.json:27",
+  "docs/goalmap.json:33",
+  "docs/goalmap.json:75",
+  "docs/goalmap.json:199",
+  "tools/bench/decisions_pending.json:104",
+  "tools/bench/decisions_pending.json:121",
+  "tools/bench/decisions_pending.json:283",
+  "docs/d1-loop12-17-split-plan.md:2262",
+  "docs/chat-handoff.md:61",
+  "docs/chat-handoff.md:97",
+  "tools/bench/heartbeat_latest.md:14",
+  "tools/bench/cycle_runner.log:803"
+ ],
+ "note": "Cycles 117-127: 4 files (pool, P2a, P2b, P3a), all ExecState 0 never run; 0 INDEX rows; >=$387.72 + $190 decbench; cycle 120 cost unrecorded. Display-loop VI untouched and archived out of STATUS; user not asked. Third consecutive refutation => stop and re-plan with the user."
+}

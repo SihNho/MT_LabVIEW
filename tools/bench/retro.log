@@ -5434,3 +5434,134 @@ VIOLATION: inference-over-measurement | loss_min=24 | loss_usd=1.2944 | evidence
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle127","verdict":"refuted","alternative":"The timeout was a LabVIEW hang in S_latest's post-connect census read, not the clock: the kill landed in those reads, 64 s after the last raw file (review :74-79).","discriminating_test":"Rerun fsinner S_latest only, timestamped, one Error List read at the end (dump_tree=False): CENSUS S_latest within ~60 s of its connect and total ~20 min means budget; a stall >3 min means a hang.","violations":[{"slug":"inference-over-measurement","loss_min":24,"loss_usd":1.2944,"evidence":"tools/bench/cards/brief_127-1.md:18"}],"sources":["tools/bench/cards/brief_127-1.md:18","tools/bench/stage_d1_ring_p3a_el_scratch.log:89","tools/bench/diag_c127_1_fsinner.log:116","archive/peer/2026-10-01-c127-1-fsinner-timeout.md:7","tools/bench/cards/guard_card.log:562","docs/d1-loop12-17-split-plan.md:2822"],"note":"Brief ordered 5 per-wire Error List reads at a measured 386 s each into a 50-min card; the 40-min run timed out, 3 reads were uninformative (61/24 unchanged), the offline lane idled ~28 min. No listed device failed."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle127.md
 BGRUN END rc=0 after 321s
+BGRUN START 2026-10-02 00:50:28 limit 10.0 min: py tools/retrospective.py --cycle 128
+BGRUN PID 2660
+   window 2026-10-01 23:46:14 .. 2026-10-02 00:50:29 (64 min); 37 build logs, 12 machinery logs, 43 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle128.txt (34761 chars)
+   review card tools\bench\cards\review_retrospective-cycle128.json
+BGRUN START 2026-10-02 00:50:39 limit 20.0 min: C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\retrospective.py --cycle 128
+BGRUN PID 23656
+   window 2026-10-01 23:46:14 .. 2026-10-02 00:50:39 (64 min); 37 build logs, 12 machinery logs, 43 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle128.txt (34762 chars)
+   review card tools\bench\cards\review_retrospective-cycle128.json
+OUTCOME: ANSWERED (322s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-10-02-retrospective-cycle128.md
+COST: $1.9024  in 38 / out 30383 / cache-create 116920 / cache-read 1796337  (320s, 34 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle128 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle128.json
+--- ANSWER ---
+# Retrospective, cycle 128 (window 2026-10-01 23:46:14 – 2026-10-02 00:50:39)
+
+**The cycle.** The judgement session ran from 23:56:21 to about 00:50 (`tools/bench/cycle_128.log:1,211`) and cost $26.45. It ran five cards, and all five came back FAIL:
+
+| Card | Kind | Bound at (`guard_card.log`) | Returned by | Claimed minutes |
+|---|---|---|---|---|
+| 128-1 | offline | 00:00:06 (:570) | about 00:09 | 16 |
+| 128-2 | LabVIEW | 00:00:07 (:571) | about 00:21 | 30 |
+| 128-3 | offline | 00:12:05 (:573) | about 00:20 | 24 |
+| 128-4 | offline | 00:24:43 (:574) | about 00:40 | 50 |
+| 128-5 | offline | 00:41:33 (:575) | about 00:49 | 45 |
+
+- No VI was saved and no stage was launched.
+- What the cycle did produce was real: the guard's donor nodes were found (`diag_c128_2_donors.log:29-38`), a gate false positive (fp-19, check X5) was fixed with a self-test, `name#k` addressing for repeated terminal names was built, and a 70-action P3b plan input now replays end to end.
+- Cycle 129 still has to split that plan, write the recipes and prior-art review it, before the one LabVIEW launch.
+
+## The structural fault: `inference-over-measurement` (card 128-5 was not out of budget)
+
+**What happened**
+- Card 128-5 returned FAIL with `first_fail: "budget: 50-min card budget spent after pass criteria 1-2"` and `minutes: 45` (`tools/bench/cards/result_128-5.json:2,26`).
+- The logs say otherwise:
+  - The card bound at 00:41:33 (`guard_card.log:575`).
+  - It could not have started before 128-4's last review ended at 00:39:33 (`peer_c128_4_c106e.log:25`).
+  - Its last work ended at 00:48:28 (`plan_ring_p3b_make_c128_5.log`).
+  - The judgement session was already starting the retrospective at 00:50:25 (`jev_gate.log:3317`).
+- So the card ran 8 to 11 minutes of its 50 and then stopped, leaving pass items 3–5 undone: the split, the recipes, dry + prerun, the prior-art review, the c106e rerun and the fp-19 drain.
+- The judgement session took the claim at face value. Its PD263 header reads "card budget spent" (`docs/d1-loop12-17-split-plan.md:2877`), STATUS repeats "(budget)" (`STATUS.md:61`), and the session closed the cycle.
+- Checking the claim would have cost nothing. The bind time sits in the same `guard_card.log` the session's own hooks write. The runner prompt also says never to infer an outcome from wording (`cycle_128.log:17-18`).
+
+**What it cost**
+- About 42 minutes of card budget went unused (50 minus about 8), so the plan's remainder moves to cycle 129.
+- That remainder is exactly the next cycle's card 1 (`STATUS.md:56`), so cycle 129 again opens on an offline card instead of the deliverable launch.
+- The steering card (`steer_127.json:12`) asks for that launch.
+- The session stopped with about 126 of its 180 minutes and one of its six dispatches still unused (5 sub-agents were spawned, `cycle_128.log:210`).
+- No log records a dollar figure for this, so the dollar loss is unknown.
+
+**Counterfactual**
+- At about 00:49 the session could have compared `result_128-5.json:2` with `guard_card.log:575`. It could then have re-dispatched the remainder (or sent 128-5 back) as its sixth and last dispatch.
+- The work involved is a split, two recipes, offline dry and prerun runs (seconds each), and a prior-art review (about 10 minutes).
+- The cycle would then have ended at about 01:35 with P3b-1 ready to launch, instead of at 00:50 without it. Cycle 129 would have opened with the LabVIEW scratch run and the one launch.
+
+**Slug.** I filed this as `inference-over-measurement`: the decision to stop was made on a stated budget when a measured one was available. It could also be read as `unreported-fact`, because a false fact reached PD263 and STATUS. I see no second fault of the same size.
+
+## Findings
+
+**1. Repeated failure**
+- The X5 refusal mixed two problems:
+  - A real false positive: the pattern at `stage_prerun.py:109` counts `wire_remove_loose_ends` but the plan-side count at `:901` does not, giving 41 against 26.
+  - A test-harness artefact that tripled the count: 128-1 ran `--dry` and `--prerun` in one process (`diag_c128_3_x5.log:12`).
+- The same harness also caused the "pred file NOT written" fault, because the replaced `open` was never restored (`result_128-1.json:21`).
+- Both are the same class: hidden module state in `stage_prerun`. The approach should have changed at attempt 1. 128-1 should have run its checks out of process, which brief 128-4 later made the rule.
+- Fixing one defect per card came back:
+  - 128-1 found the X5 false positive.
+  - 128-4 found that the new Unbundler's three outputs all read `element` (`result_128-4.json:23-24`).
+  - 128-5 then built `name#k`.
+- Cycle 127's disposition had promised to audit every row at once (`retrospective-cycle127.md:377-378`).
+
+**2. Missing tool**
+- No check compares the minutes a card claims with its bind and return times.
+- That check would have caught 128-5's false budget claim and the inflated minutes on every card. For example, 128-4 claims 50 minutes for about 15 actual (`guard_card.log:574` to `peer_c128_4_c106e.log:25`).
+- The time-budget prerun check from cycle 127 is also still unbuilt (`retrospective-cycle127.md:379`).
+
+**3. Unmeasured steps**
+- The fault above.
+- Brief 128-4 §3 said terminal names would come "from 128-2's measured rows only" (`brief_128-4.md:24`). Those rows already showed all three outputs named `element` (`diag_c128_2_donors.log:57,83`, written about 00:21). The brief was written about 00:24 without reading them, so the binder gap cost a card round-trip.
+
+**4. Rule compliance**
+- **Time arithmetic in briefs.** The cycle-127 disposition says "every brief I write from cycle 128 states its time arithmetic" (`retrospective-cycle127.md:372-373`).
+  - Only `brief_128-2.md:44-46` does.
+  - `brief_128-3.md` and `brief_128-4.md` do not; brief 128-4 packs five sections into 55 minutes.
+  - Card 128-5 has no brief at all.
+- **120-line limit.** `diag_c128_2_donors.py` is 124 lines (limit at `STATUS.md:106`).
+- **Retrospective last.** This was satisfied, but not by the session: its `retro_due` and `retrospective` commands were permission-denied (`cycle_128.log:210`), and the runner ran the retrospective afterwards (`retro.log:5442`).
+- **What the audit does not cover:**
+  - A1 flags 16 child self-test logs that ran inside the bgrun of `diag_c128_4_checks` (rc=1 at `:23`).
+  - A3 is met by any later archived review. The M1 failure in `diag_c128_3_x5.log:10` was the card's own arithmetic slip (42 against 41), and no review addresses it.
+  - A4 lists blank reviews from earlier days.
+  - C6 calls `material_marker.log:2975,2977` "judgement-session attempts", but both were material commands.
+  - C7's 46 files include the cycle's own briefs.
+  - Nothing checks claimed card minutes or brief time arithmetic.
+
+**5. Ordering**
+- Running 128-1 and 128-2 in parallel was sound.
+- But both inherited guard_peer's debt on 127-5, so two reviews attacked the same claim: `peer_c128_1_errsel.log:4` ($1.01) and `peer_c128_2_errsel.log:4` ($2.63).
+- The binder limit should have been checked before 128-4 was briefed (Finding 3).
+
+**6. What was not reported**
+- 128-5's false budget claim.
+- Inflated `minutes` on every result card.
+- `selftest_stage_prerun_c106e` has been red since X16 was added in cycle 125 (`result_128-4.json:22`). Three cycles passed it unnoticed.
+- The session's final message says "The retrospective is running in the background. I'll stay in this turn", yet the command was denied and the turn ended (`cycle_128.log:210`).
+- The plan md5 in `next.json:6` was not recomputed by the session, because its hash command was denied (same line).
+
+**7. Judgement inside a material session**
+- 128-5's material session decided to stop with about 40 minutes left (`result_128-5.json:2`).
+- Brief 128-2 handed the annotation of a review to the material session (`brief_128-2.md:13`, "Wait for ANSWERED, archive, annotate"). That review's annotation, which accepts its finding, was written there (`result_128-2.json:17`). Judgement only ratified it afterwards, in PD261(a).
+- Brief 128-3's Step 0 is the sanctioned Jev-ladder "if review owed, dispatch" step, so it is not counted.
+
+## Device effect
+
+No listed device let its own fault through inside the window.
+- **Working:**
+  - Inner-failure rc: the failing diagnostics ended rc=1 (`diag_c128_1_checks.log:42`, `diag_c128_4_checks.log:23`).
+  - Cost-line parsing: 7 seen, 7 parsed.
+  - `gates_due` (`cycle_128.json:31-52`).
+  - The prerun gate refused a recipe launch under an offline card (`material_marker.log:2975`).
+- **Not exercised:** the stop record, the prior-art gate, the memory prediction and `hygiene_run`.
+- **Near misses that are not failures:**
+  - `BGRUN STAGE-RUN ... card=None` again (`diag_c128_2_donors.log:3`); the run was still counted.
+  - guard_peer held 128-2 for about 3 minutes on an offline card's log, a known carry from cycle 122.
+  - The census-prediction device reported CENSUS-UNPREDICTED, and PD261(c) replaced it with the mandatory scratch measurement. No prediction was typed by inference.
+
+VIOLATION: inference-over-measurement | loss_min=42 | loss_usd=? | evidence=tools/bench/cards/result_128-5.json:2
+
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle128","verdict":"refuted","alternative":"128-5's 'budget spent' was a unit error (agent counted from an earlier spawn or a token budget), and the session would have closed anyway to keep P3b-1's remainder and launch in one cycle under the 6-dispatch cap.","discriminating_test":"Compare 128-5's first tool timestamp in its agent transcript with result_128-5.json's write time: a start >=00:39:33 and a return <=00:50 means <=11 of 50 min used, so the stop was unforced.","violations":[{"slug":"inference-over-measurement","loss_min":42,"loss_usd":"?","evidence":"tools/bench/cards/result_128-5.json:2"}],"sources":["tools/bench/cards/result_128-5.json:2","tools/bench/cards/guard_card.log:575","tools/bench/peer_c128_4_c106e.log:25","tools/bench/jev_gate.log:3317","docs/d1-loop12-17-split-plan.md:2877","STATUS.md:61","tools/bench/cycle_128.log:210"],"note":"Card 128-5 claimed its 50-min budget spent after ~8-11 min (bound 00:41:33); judgement accepted it and closed at 00:50 with 1 dispatch and ~126 min left, deferring split/recipes/dry/prerun/prior-art to cycle 129. No listed device failed."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle128.md
+BGRUN END rc=0 after 327s

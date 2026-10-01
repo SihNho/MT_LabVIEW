@@ -1,0 +1,31 @@
+ATTACK this claim about a failed LabVIEW diagnostic. Read-only; cite file:line.
+
+FAILURE: tools/bench/diag_c127_5_errsel.log (script tools/bench/diag_c127_5_errsel.py, plan tools/bench/diag_c127_5_errsel_plan.json).
+Gate D1 FAILED at log line 31: "D1 donors found: Unbundle None | Select None". The script byte-copied 7 single-file NI examples
+(plan :8-16) into claudeDev, read each copy's whole terminal table with allterms.read_terms (tools/allterms.py:68-91, op
+OpAllTerms_v1, Traverse class 'Terminal'), and looked for (a) an owner whose owner_class == "NamedUnbundler" (script :41) and
+(b) an owner whose sorted terminal names == ["f","s","s? t: f","t"] (plan :18, script :42). Every copy logged [] for both
+(log :24-30). The script never logged the per-copy terminal ROW COUNT, the owner classes seen, or whether the copy loaded.
+
+CLAIM (ours, to be attacked): "no Select / Unbundle By Name donor is reachable over our scripting path" - i.e. none of those
+files contains either node, and the donor-copy creation route (gscript.create_primitive_nested(donor=...), tools/gscript.py:4782)
+has nothing to copy from.
+
+Framing we want you to attack hardest:
+1. The census may have searched by the wrong identity. Select is a primitive: over VI Server its class may be a generic
+   primitive/function class with a name or PrimIndex, not a class called "Select"; its terminal NAMES as returned by our op may
+   not be exactly "s", "t", "f", "s? t: f" (newlines, spacing, localisation, empty names). Unbundle By Name's class may not be
+   "NamedUnbundler" in this LabVIEW 2026 install. Is there any evidence in our own files (docs/NAMES.md, tools/bench/*.log,
+   tools/bench/graph_*.json, archive/peer/) of the exact owner_class / terminal names our readers report for Select or
+   Unbundle By Name?
+2. Per-file row counts were not logged, so an EMPTY READ (copy failed to load, op error swallowed, wrong frame/diagram scope)
+   is indistinguishable from "no such node". Is read_terms able to return [] without raising (tools/allterms.py:78-85)?
+3. Were the 7 candidate examples plausible holders of Select / Unbundle By Name at all? Name a shipped file (examples or
+   vi.lib, e.g. error-handling VIs such as General Error Handler, Clear Errors, Merge Errors, Simple Error Handler) that is
+   known to contain both, citing a primary source if you search the web.
+4. The bed graph tools/bench/graph_ring_p3a_20261001_190155.json is said to hold 16 NamedUnbundler rows (result_127-5.json
+   facts[0]) - if so, the bed itself is an Unbundle By Name donor. Check whether that file also holds a Select (by any
+   identity) and give uids.
+
+Give: the strongest reason the claim is wrong; an alternative explanation of the 0-hit log; what would falsify the claim;
+the cheapest discriminating measurement (which file, which reader, what count to log).

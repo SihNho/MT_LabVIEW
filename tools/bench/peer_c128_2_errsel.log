@@ -1,0 +1,58 @@
+BGRUN START 2026-10-02 00:02:09 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c128-2-errsel-donor -TaskFile tools/bench/peer_c128_2_errsel_task.txt
+BGRUN PID 17152
+OUTCOME: ANSWERED (257s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-02-c128-2-errsel-donor.md
+COST: $2.6262  in 62 / out 20360 / cache-create 157074 / cache-read 4280179  (253s, 52 turn(s))
+--- ANSWER ---
+**The claim is wrong for Unbundle By Name and unproven for Select.** Our own bed file already holds Unbundle By Name nodes our tools accept as donors. The 0-hit census cannot tell "the node is absent" from "the read came back empty".
+
+## 1. Strongest reason the claim is wrong
+**Unbundle By Name:** the bed graph `tools/bench/graph_ring_p3a_20261001_190155.json` contains several `owner_class: "NamedUnbundler"` nodes. Some have both terminals unwired and are clean copy sources:
+- #10764 (input t10806 unwired, output "Source" t10790 unwired, diagram 10213)
+- #32083 (t32085 / t32089, diagram 32067)
+- #32194 (t32200 / t32212, diagram 32166)
+- Wired ones too: #27462, #15145, #15364, #15355
+
+The copy function accepts any donor file under claudeDev, not only registered ones (`tools/gscript.py:4801-4803`). The bed file `D1_ring_p3a_20261001_180540.vi` is listed in claudeDev (`diag_c127_5_errsel.json:55`). So an Unbundle By Name donor is reachable today.
+
+Caveat: none of these donors has a `status` output (`result_127-5.json:10`). After it is re-wired to an error cluster, the selected element may not re-bind ("Source" vs the error cluster's `source`). That is a re-wiring question, not a missing donor.
+
+## 2. Your framing points, answered from the files
+- **Identity of the nodes (point 1).**
+  - `NamedUnbundler` is the class name our reader really reports (bed rows above), so that test was right.
+  - Primitives report as class `Function`, `GrowableFunction` or `Comparison` (`diag_donor_census.log:19-81,131`; `allterms_bed_20260923.json:433`), never "Select". Matching by terminal names was the right idea. Primitive terminal names do come back in the Context Help form (`x*y`, `x+1`, `size(s)`: `allterms_bed_20260923.json:1877-1993`).
+  - **But the Select signature `["f","s","s? t: f","t"]` has never been measured in any of our files.** `s? t: f` appears only in scripts and peer briefs. It was typed by hand in `diag_c123_ring_p3_routes.py:27` and copied into the plan (`diag_c127_5_errsel_plan.json:18`). The bed shows no `s`/`t`/`f` terminal at all, so we have never seen a real Select row. The spacing (`s? t: f` vs `s?t:f`) is unchecked.
+  - 1,355 bed terminals have an empty name (`allterms_bed_20260923.json`, count). The rows I sampled belong to subVIs, tunnels, constants and diagrams. Whether a primitive can report empty names is not measured. If one does, an exact `sorted(names) == sig` match (`diag_c127_5_errsel.py:42`) misses it silently.
+  - NI's public sources only describe the terminals as s/t/f ([LabVIEW Wiki: Select function](https://labviewwiki.org/wiki/Select_function), [NI forum](https://forums.ni.com/t5/LabVIEW-Idea-Exchange/Swap-T-F-Terminals-in-Select-Function/idi-p/1007147)). Nothing I found confirms the exact string VI Server returns.
+- **Empty read (point 2).** Yes, `read_terms` can return `[]` without raising. It raises only on the op's error out (`allterms.py:80-82`). If the indicator arrays come back empty, `n = min(len…) = 0` and it returns `[]` (`allterms.py:83-85`). The script never logged `len(rows)` (`diag_c127_5_errsel.py:39-43`).
+  - The only sign the copies were in memory is indirect. `close_panel` failed with "panel not open" for every copy (`diag_c127_5_errsel.log:35-41`), and references opened/closed were 11/11. That shows the VIs were opened, not that any terminals were traversed.
+- **Were the 7 files plausible holders (point 3)?** Weakly.
+  - The earlier working donor search (`diag_c103_wait_donor2.log:4-9`) found its node by **node label**. This run switched to an untested terminal-name signature.
+  - Only `Comparison Functions.vi` is a strong Select candidate by name.
+  - The census also skipped donor-type files already in claudeDev: `DONOR_Ex3_PrimitiveFunctions.vi` ("Example 3 - Primitive Functions", `docs/REFERENCES.md:134`) and `DONOR_arrayops.vi`.
+  - I could not find a primary source that names a shipped VI containing both nodes. NI does not publish block diagrams. The error-handling VIs in vi.lib (General Error Handler, Simple Error Handler, Merge Errors) are likely holders of Unbundle By Name on `status`, but that is my unsourced guess.
+  - A copied vi.lib VI finds its vi.lib subVIs through LabVIEW's `<vilib>` path. That is my recollection, not verified. If wrong, the copy would load with a "Find the VI" dialog.
+- **Select in the bed (point 4):** none. No term named `s`, `t`, `f` or any `?…:` pattern in `graph_ring_p3a_20261001_190155.json`. This matches the earlier "Select 0 hits" result in `result_127-5.json:10`. But because the signature itself is unmeasured, this is not independent evidence.
+
+## 3. Alternative explanation of the 0-hit log
+- **(a)** The terminal reads on the copies came back empty or partial, and nothing logged the row count.
+- **(b)** Select's real terminal names differ from the typed signature (spacing, or an empty name), so an exact list match finds nothing.
+
+Either one produces the identical log lines 24-30. The measurement does not separate them from "the node is absent".
+
+## 4. What would falsify the claim
+- **Unbundle By Name:** already falsified by #10764/#32083/#32194 in the bed.
+- **Select:** any claudeDev-reachable file whose terminal read shows a `Function` owner whose terminals are a boolean input, two inputs and one output, labelled "Select". Or a non-zero row count on `Comparison Functions.vi` that shows a node labelled Select.
+
+## 5. Cheapest discriminating test
+Rerun only the donor search (step D1, about 2 minutes, no edits) with these changes:
+1. For each candidate, log `len(rows)`, the owner-class counts, and the sorted terminal names of every `Function` owner, without matching against the signature.
+2. Add `DONOR_Ex3_PrimitiveFunctions.vi`, `DONOR_arrayops.vi` and a byte copy of `D1_ring_p3a_20261001_180540.vi` to the candidates.
+3. Also search by node label "Select", using the method that worked in `diag_c103_wait_donor.py`.
+
+How to read the result:
+- `len(rows) == 0` on a copy means the read is broken, not that the node is absent.
+- Rows present but no Select by label in any file supports the claim for Select only.
+- A Select found under a different name tuple means the signature was wrong.
+
+I did not take the LabVIEW lock, run anything or edit any file. Plan mode was on and file writes were disabled, so this review exists only in this reply. Two web searches turned up nothing that settles the exact terminal strings over VI Server.
+BGRUN END rc=0 after 258s

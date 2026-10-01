@@ -1,0 +1,45 @@
+BGRUN START 2026-10-02 00:04:15 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c128-2-bedcensus -TaskFile tools/bench/peer_c128_2_bedcensus_task.txt
+BGRUN PID 25976
+OUTCOME: ANSWERED (121s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-02-c128-2-bedcensus.md
+COST: $1.2371  in 26 / out 10236 / cache-create 97114 / cache-read 1276954  (116s, 24 turn(s))
+--- ANSWER ---
+**Verdict: your explanation is partly wrong.** The F1 diagnosis is right, but its fix reads the wrong file. The F2 "wrong unit" claim is contradicted by your own records: the number 16 was never measured. I made no external claims, so I ran no web search; everything below comes from files in this repo.
+
+## 1. Strongest reason it is wrong: the F1 fix swaps in an unrelated VI
+
+- **The replacement file describes a different VI.** `tools/bench/allterms_s1.json` is not a terminal table of the copy of the original. It is the report of the build step that saved `OpAllTerms_v0_s1.vi`, the small scaffold for one of your own tools (`allterms_s1.json:2-7`, `tools/bench/allterms_s1.py:1`).
+- **It is tiny and has no terminal table.** That VI holds about one For loop, five tunnels, two property nodes and one subVI (`allterms_s1.py:23-25`). The file has no `"terminals"` key and no `"owner_uid"` field (searched: 0 hits).
+- **"S1" is a name collision.** It does not mean "stage 1 copy of the original".
+- **What the patched rerun will do.** `diag_c128_2_bedcensus.py:10` will fail F1 again with 0 rows. Worse, if the file did hold rows, it would count the scaffold VI's objects and label them "copy of original".
+- **The copy-of-original census already exists.** `graph_s1_20260924.json` names `D1_s1_copy.vi` (`:2`). Its `cls` map (uid → class, 1750 entries, `:42`) is a per-object class list. Run 1 never read that key; the patch should switch to it.
+
+## 2. Alternative explanation for F2: "16" is a copying error, not a different unit
+
+- **Three independent records of the same VI agree on 12 + 3, with the same 15 uids:**
+  - **Objects list (`objs`)** of `graph_ring_p3a_20261001_190155.json`: `NamedUnbundler: 12`, `Unbundler: 3` (`diag_c127_3_facts.log:13`). The 15 matching object lines are at `:44 … :759`. So "127-5 counted objs" is already falsified: objs gives 12, not 16.
+  - **Terminal-owner count:** run 1 found the same 15 uids (`diag_c128_2_bedcensus.log:7`).
+  - **The copy of the original:** `graph_s1_20260924.json`'s `cls` map has the same 15 uids, 12 NamedUnbundler and 3 Unbundler (`:148 … :1779`).
+- **The "zero-terminal owners" mechanism cannot apply.** An Unbundle By Name always has at least two terminals (input cluster plus one element), so no terminal table can hide one.
+- **Where "16" came from:** `result_127-5.json:10`. It is the only fact on that card with no `file:line` citation. Compare facts 3–6 at `:12-15`, which all have one. No log line contains 16.
+- **It has already spread.** It was copied into `docs/d1-loop12-17-split-plan.md:2818` and into `archive/peer/2026-10-02-c128-1-errsel-donors.md:58`, which "expects" 16. What actually went wrong is that the prediction was taken from a session summary, not from a log.
+- **The proposed gate `NamedUnbundler >= 12` would hide a real loss.** It passes for 12, 13 or 16, so it adjusts the gate to fit the data. A gate that would catch a lost or extra object in this class:
+  - NamedUnbundler == 12 and Unbundler == 3;
+  - the bed's uid set equals the uid set in `graph_s1`'s `cls` map.
+
+## 3. What would falsify your explanation
+
+- **F1:** your fix holds only if `allterms_s1.json` yields more than 1000 terminal rows from `D1_s1_copy.vi`. It cannot: there is no `terminals` key, and the VI path is `OpAllTerms_v0_s1.vi`.
+- **F2:** your claim holds only if some count of the P3a graph's objects gives 16. The record shows 12 (`diag_c127_3_facts.log:13`). On the evidence already on disk, this is falsified.
+
+## 4. Cheapest discriminating check
+
+No LabVIEW run is needed, and three of the checks are already answered by the searches above. Before you rerun under bgrun:
+
+1. **Fix the input:** read `graph_s1_20260924.json` and count `d["cls"]` values. Add a gate that the file's `vi` field contains `D1_s1_copy`, so a wrong-VI substitution fails loudly instead of passing quietly.
+2. **Fix the gate:** compare the uid sets: bed objs (NamedUnbundler + Unbundler) = bed terminal owners = `graph_s1` `cls`, which should be the 15 uids above. Drop the 16, and correct it in the plan document at `:2818`. That correction is a judgement-session edit.
+3. **Separate "no Select exists" from "empty read":** log the terminal-name signatures of the 166 `Function` owners (your patch already does this, line 48). The "0 Select" result only holds if primitive terminal names are filled in.
+   - If many `Function` owners show empty names, the bed's 0 Select is not settled. It would be the same "no node vs empty read" gap that 127-5 left open (`result_127-5.json:13`).
+   - Your current Select filter does catch the measured name `s? t:f` through its `?`-and-`:` clause (line 30), so name spacing is not the risk; empty names are.
+
+**What would change my mind:** a logged count of 16 for any class view of `graph_ring_p3a`, or a version of `allterms_s1.json` whose `vi`/`work` field is `D1_s1_copy.vi`.
+BGRUN END rc=0 after 122s

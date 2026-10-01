@@ -1,0 +1,21 @@
+ATTACK this explanation of a failed OFFLINE census (no LabVIEW). Read-only; cite file:line.
+
+FAILURE: tools/bench/diag_c128_2_bedcensus.log (script tools/bench/diag_c128_2_bedcensus.py, run 1 at 00:02), 1 pass / 2 fail:
+ F1 "s1_copy_of_original not an empty read (terminal rows > 1000)" -> 0 rows (log: top-level keys cls/edges/flags/md5/method/note/vi).
+ F2 "bed_p3a NamedUnbundler owners == 16 (127-5)" -> 15 owners of class NamedUnbundler OR Unbundler; owner_class counts say
+    NamedUnbundler 12 + Unbundler 3 (log line with 'owner classes').
+The script reads tools/bench/graph_ring_p3a_20261001_190155.json and tools/bench/graph_s1_20260924.json, groups the
+"terminals" rows by owner_uid, counts owner_class, and looks for Unbundle and Select-signature owners.
+
+OUR EXPLANATION (attack it):
+ F1 = wrong input chosen by us: graph_s1_20260924.json is an edge-list graph (keys cls/edges), not a terminal table, so 0 rows
+     is a schema mismatch, NOT an empty read of a VI. Fix in place: read tools/bench/allterms_s1.json (a terminal table) instead.
+ F2 = our prediction used the wrong unit: result_127-5.json facts[0] says "16 NamedUnbundler rows" - we believe that counted
+     objects in the graph's "objs" list (or terminal rows), not distinct terminal OWNERS; owners with zero terminals are
+     invisible to a terminal table. Fix: also count classes in "objs" and gate on owner_class NamedUnbundler >= 12.
+Neither fix changes what the card measures (does the bed hold a Select / an Unbundle By Name with 'status'?).
+Run 1 also found: 0 Select-signature owners in the bed (no owner with terminals s/t/f/'s? t: f'), 0 Unbundle owners with a
+'status' terminal; generic primitive class 'Function' has 166 owners, 'Comparison' 15.
+
+Give: the strongest reason our explanation is wrong; an alternative explanation; what would falsify ours; the cheapest
+discriminating check (we will rerun the patched offline script under bgrun and log objs class counts + Function signatures).

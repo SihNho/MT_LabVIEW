@@ -280,6 +280,9 @@ ROUTE_CENSUS = {"case_frame_wire": {"new_wire": {"Wire": 1}, "branch": {}},
 for _n, _v in SS._cross_variants().items():
     if _n in SS.FS_BORDER_SIG.values():
         ROUTE_CENSUS["connect_term_uid"].setdefault(_n, dict(_v["delta"]))
+# card 128-1 (PD260): the inner-face branch (stagesim FS_INNER_BRANCH, a 2nd+ sink into a frame the source already entered)
+# MEASURED census {} n=3 by card 127-1 (census_samples.json connect_term_uid 'fs_inner_face_branch', diag_c127_1_fsinner.log:83,93,103)
+ROUTE_CENSUS["connect_term_uid"]["fs_inner_face_branch"] = {}
 CONNECT_TERM_UID_HOW = ("gscript.connect_term_uid(target, sink_uid, src_uid) - OpConnectTermUid_v0, any terminal -> any "
                         "terminal by uid; the register inner face <-> node in a case frame makes ONE SelectorTunnel (R1/R2, "
                         "diag_c124_p3a_scratch.log:53,61); junk Invokes purged inside the verb")
@@ -886,6 +889,9 @@ def bind_new(prev_real, real, sim_prev, sim_now, bind):
     for cls in cs:
         su = [u for u, rs in new_sim.items() if V.node_class(rs[0]) == cls]
         ru = [u for u, rs in new_real.items() if V.node_class(rs[0]) == cls]
+        if len(su) != 1 and cls in MULTI_BORDER_CLS:
+            made.update(bind_by_frames(cls, su, ru, new_sim, new_real, dg, bind))
+            continue
         if len(su) != 1:
             raise ExecStop("BINDING: {0} new {1} objects in one op - ambiguous".format(len(su), cls))
         s_rows, r_rows = new_sim[su[0]], new_real[ru[0]]
@@ -900,8 +906,11 @@ def bind_new(prev_real, real, sim_prev, sim_now, bind):
         # graph_harness_copyloop_c95.json: 3 unnamed sinks; #6810 on the P3a bed: 8). A repeated key is accepted ONLY when its
         # name is '' and every such row is unwired on both sides (a fresh create); those rows are paired in read order. No plan
         # row can address an unnamed terminal (addresses are by name), so the pairing carries no wiring meaning.
+        # card 128-5 (PD262(b)): a REPEATED NAMED key of ONE fresh node (the new Unbundler's three 'element' outputs,
+        # diag_c128_2_donors.log:57) is paired the same way - read order, every such row unwired on both sides. Plan rows
+        # address them as '<name>#k' (stagesim.resolve_addr), the k-th same-named row in that order. Wired repeats still stop.
         rep = [k for k, v in ks.items() if v != 1]
-        unnamed_ok = (bool(rep) and all(isinstance(k, tuple) and k[-1] == "" for k in rep)
+        unnamed_ok = (bool(rep) and all(isinstance(k, tuple) for k in rep)
                       and all(not r.get("wire_uid") for r in s_rows + r_rows if key(r) in rep))
         if ks != kr or (any(v != 1 for v in ks.values()) and not unnamed_ok):
             raise ExecStop("BINDING: {0} terminal keys sim {1} vs real {2}".format(cls, dict(ks), dict(kr)))
@@ -912,6 +921,42 @@ def bind_new(prev_real, real, sim_prev, sim_now, bind):
             rr = next(x for x in r_rows if key(x) == key(sr) and x["term_uid"] not in used)
             used.add(rr["term_uid"])
             bind["term"][sr["term_uid"]] = rr["term_uid"]
+    return made
+
+
+# card 128-1 (PD260(b), review archive/peer/2026-10-01-c127-4-dry-pool.md): ONE connect_term_uid across several structure
+# borders (stagesim._fs_border_wire, census variant for_body_unwired_src_to_fs_frame_multi_border) makes one tunnel PER
+# BORDER, several of one class (B3: 2 LoopTunnel + 3 FlatSequenceOuterTunnel, diag_c126_6_cross.log:69-78). Their uids
+# DESCEND along the chain while the simulator creates them ascending from the source side, so ORDER pairing would swap the
+# For/While tunnels silently. They are bound by FRAMES: each tunnel's faces sit on (parent, body/frame) diagrams that no other
+# tunnel of the same crossing shares in the same directions. Names are never keyed (the For face reads 'New Image').
+MULTI_BORDER_CLS = ("LoopTunnel", "FlatSequenceOuterTunnel")
+
+
+def bind_by_frames(cls, su, ru, new_sim, new_real, dg, bind):
+    """Bind several created `cls` objects of ONE op by their faces' frames. Object key = the sorted (term_class, is_source,
+    frame) of its rows; a sim frame goes through bind['diag'] (a plan-made frame) and stays itself otherwise (a base frame).
+    Every key must be unique on each side and the two key sets equal; anything else => ExecStop, never an order fallback."""
+    D = dict((int(k), int(v)) for k, v in (dg or {}).items())
+    rk_s = lambda x: (x["term_class"], bool(x["is_source"]), D.get(int(x["frame_diagram"] or 0), int(x["frame_diagram"] or 0)))  # noqa: E731
+    rk_r = lambda x: (x["term_class"], bool(x["is_source"]), int(x["frame_diagram"] or 0))                                      # noqa: E731
+    ks = dict((u, tuple(sorted(rk_s(x) for x in new_sim[u]))) for u in su)
+    kr = dict((u, tuple(sorted(rk_r(x) for x in new_real[u]))) for u in ru)
+    dup_s = [k for k, v in collections.Counter(ks.values()).items() if v != 1]
+    dup_r = [k for k, v in collections.Counter(kr.values()).items() if v != 1]
+    if dup_s or dup_r or sorted(ks.values()) != sorted(kr.values()):
+        raise ExecStop("BINDING: {0} new {1} objects in one op - frame keys ambiguous or unmatched: sim {2} vs real {3}".format(
+            len(su), cls, sorted(ks.values())[:6], sorted(kr.values())[:6]))
+    by_key = dict((k, u) for u, k in kr.items())
+    made = {}
+    for s_u in su:
+        r_u = by_key[ks[s_u]]
+        if any(v != 1 for v in collections.Counter(rk_s(x) for x in new_sim[s_u]).values()):
+            raise ExecStop("BINDING: {0} #{1}: two rows share (term_class, source?, frame) {2}".format(cls, s_u, ks[s_u]))
+        bind["obj"][s_u] = r_u
+        made[s_u] = r_u
+        for sr in new_sim[s_u]:
+            bind["term"][sr["term_uid"]] = next(x for x in new_real[r_u] if rk_r(x) == rk_s(sr))["term_uid"]
     return made
 
 
@@ -4472,6 +4517,8 @@ def selftest():
     _selftest_c106c(gate, fin, opsx, md, q)
     _selftest_c112(gate, tmp, gp, md, q)
     _selftest_c127_4(gate, fin, md, q)
+    _selftest_c128_1(gate)
+    _selftest_c128_5(gate)
     gate("T14 nothing LabVIEW-side imported",not any(m in sys.modules for m in ("gscript", "win32com", "pythoncom", "stagekit")),
          [m for m in ("gscript", "win32com", "pythoncom", "stagekit") if m in sys.modules])
     n_pass = sum(1 for _l, ok in gates if ok)
@@ -4947,6 +4994,90 @@ def _selftest_c127_4(gate, fin, md, q):
     st6, ff6, _ = dry_run(fin, fault={"at": 5, "kind": "sim_error"}, log=q, model_dir=md, require_final=False)   # T13 touched a step
     gate("T127f a SimError inside the dry backend returns FAIL 'SIM-INTERNAL:' (no crash, so the RESULT line follows)",
          st6 == "FAIL" and str(ff6).startswith("SIM-INTERNAL: injected"), ff6)
+
+
+def _selftest_c128_1(gate):
+    """card 128-1 (PD260(b)): bind_new on the ONE measured multi-border crossing, B3 of diag_c126_6_cross.log:69-78 (real
+    tunnel uids as LabVIEW issued them, DESCENDING along the chain). Sim side = stagesim._border_tunnel's shapes, created
+    from the source side (For exit first). T128a positive, T128b order-invariance, T128c uid-order negative, T128d tie."""
+    def row(t, name, src, own, cls, fd, tcl):
+        return {"term_uid": t, "term_name": name, "is_source": src, "wire_uid": 0, "owner_uid": own, "owner_class": cls,
+                "frame_diagram": fd, "term_class": tcl}
+    # (border, class, real tunnel uid, (outer/inner face) rows as (term_class, is_source, frame, name)) - log :78
+    B3 = [("For exit", "LoopTunnel", 28345, [("OuterTerminal", True, 13236, ""), ("InnerTerminal", False, 23169, "New Image")]),
+          ("FS #12938 out", "FlatSequenceOuterTunnel", 28302, [("Terminal", True, 536, ""), ("Terminal", False, 13236, "")]),
+          ("FS #681 in", "FlatSequenceOuterTunnel", 28254, [("Terminal", False, 536, ""), ("Terminal", True, 686, "")]),
+          ("While entry", "LoopTunnel", 28146, [("OuterTerminal", False, 686, ""), ("InnerTerminal", True, 639, "")]),
+          ("new FS in", "FlatSequenceOuterTunnel", 27902, [("Terminal", False, 27219, ""), ("Terminal", True, -50, "")])]
+    D = {-50: 28470}                                       # the plan-made FS frame, bound by its create (bind['diag'])
+    sim, real, truth, nu = [], [], {}, -100
+    for border, cls, ru, faces in B3:                       # sim: created in chain order, uids from -101 down (stagesim.new_uid)
+        nu -= 1
+        su = nu
+        truth[su] = ru
+        for k, (tc, src, fd, nm) in enumerate(faces):
+            nu -= 1
+            sim.append(row(nu, "", src, su, cls, fd, tc))
+            real.append(row(ru * 10 + k, nm, src, ru, cls, D.get(fd, fd), tc))
+    b = {"obj": {}, "term": {}, "diag": dict(D)}
+    try:
+        made = bind_new([], real, [], sim, b)
+        ok = made == truth and all(
+            next(r for r in real if r["term_uid"] == b["term"][s["term_uid"]])["frame_diagram"] == D.get(s["frame_diagram"], s["frame_diagram"])
+            and next(r for r in real if r["term_uid"] == b["term"][s["term_uid"]])["owner_uid"] == truth[s["owner_uid"]] for s in sim)
+        gate("T128a B3 multi-border crossing: 2 LoopTunnel + 3 FSOT each bound to ITS border's real tunnel, faces by frame",
+             ok, (made, truth))
+    except ExecStop as e:
+        gate("T128a B3 multi-border crossing: 2 LoopTunnel + 3 FSOT each bound to ITS border's real tunnel, faces by frame", False, e)
+    b2 = {"obj": {}, "term": {}, "diag": dict(D)}
+    try:
+        made2 = bind_new([], list(reversed(real)), [], sim, b2)
+        gate("T128b the same binding when the real rows arrive in the opposite order (no order is read)", made2 == truth, made2)
+    except ExecStop as e:
+        gate("T128b the same binding when the real rows arrive in the opposite order (no order is read)", False, e)
+    # T128c NEGATIVE: the binder a uid-order rule would be - sim objects in creation order paired with real objects in uid order
+    order_bind = {}
+    for cls in ("LoopTunnel", "FlatSequenceOuterTunnel"):
+        s_o = list(collections.OrderedDict((r["owner_uid"], 1) for r in sim if r["owner_class"] == cls))
+        r_o = sorted(set(r["owner_uid"] for r in real if r["owner_class"] == cls))
+        order_bind.update(zip(s_o, r_o))
+    swapped = [(B3[i][0], order_bind[s], truth[s]) for i, s in enumerate(sorted(truth, reverse=True)) if order_bind[s] != truth[s]]
+    gate("T128c NEGATIVE: a uid-order binder MIS-BINDS B3 (For exit -> the While tunnel, ...), which is why frames are keyed",
+         any(x[0] == "For exit" and x[1] == 28146 for x in swapped), swapped)
+    tie = [dict(r) for r in real]
+    for r in tie:                                           # the While tunnel's faces moved onto the For tunnel's frames
+        if r["owner_uid"] == 28146:
+            r["frame_diagram"] = 13236 if r["term_class"] == "OuterTerminal" else 23169
+            r["is_source"] = r["term_class"] == "OuterTerminal"
+    try:
+        bind_new([], tie, [], sim, {"obj": {}, "term": {}, "diag": dict(D)})
+        gate("T128d NEGATIVE: two real tunnels with the same frame key STOP (no order fallback)", False, "bound")
+    except ExecStop as e:
+        gate("T128d NEGATIVE: two real tunnels with the same frame key STOP (no order fallback)", "frame keys" in str(e), e)
+
+
+def _selftest_c128_5(gate):
+    """card 128-5 (PD262(b)): bind_new pairs a REPEATED NAMED key of one fresh node in read order - the new Unbundler of
+    diag_c128_2_donors.log:57 (#380: 'cluster' sink t399 + 'element' sources t412/t418/t422, all unwired). T1285a the three
+    'element' rows bind in read order (element#0 -> t412 = status after wiring, :83); T1285b a WIRED repeated named key STOPS."""
+    def row(t, name, src, own, cls, w=0):
+        return {"term_uid": t, "term_name": name, "is_source": src, "wire_uid": w, "owner_uid": own, "owner_class": cls,
+                "frame_diagram": 334, "term_class": "Terminal"}
+    sim = [row(-2, "cluster", False, -1, "Unbundler")] + [row(-3 - k, "element", True, -1, "Unbundler") for k in range(3)]
+    real = [row(399, "cluster", False, 380, "Unbundler")] + [row(t, "element", True, 380, "Unbundler") for t in (412, 418, 422)]
+    b = {"obj": {}, "term": {}}
+    try:
+        made = bind_new([], real, [], sim, b)
+        gate("T1285a new Unbundler: 3 'element' sources bound in read order (element#0 -> t412), cluster -> t399",
+             made == {-1: 380} and b["term"] == {-2: 399, -3: 412, -4: 418, -5: 422}, (made, b["term"]))
+    except ExecStop as e:
+        gate("T1285a new Unbundler: 3 'element' sources bound in read order (element#0 -> t412), cluster -> t399", False, e)
+    realw = [dict(r, wire_uid=(77 if r["term_uid"] == 418 else 0)) for r in real]
+    try:
+        bind_new([], realw, [], sim, {"obj": {}, "term": {}})
+        gate("T1285b NEGATIVE: a WIRED row under a repeated named key STOPS (no read-order pairing once wired)", False, "bound")
+    except ExecStop as e:
+        gate("T1285b NEGATIVE: a WIRED row under a repeated named key STOPS (no read-order pairing once wired)", "BINDING" in str(e), e)
 
 
 def main(argv):
