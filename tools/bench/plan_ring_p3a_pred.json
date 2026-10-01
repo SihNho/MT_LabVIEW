@@ -7,8 +7,101 @@
  "bed": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p2b_20261001_140658.vi",
  "bed_md5": "652b1447ebbda761a7d5ba36455a0fa1",
  "bufnum_canon": "I32",
+ "rows": [
+  {
+   "id": "p3a_k_prev",
+   "donor_uid": 249,
+   "canon": "I32",
+   "class": "DigitalNumericConstant"
+  },
+  {
+   "id": "p3a_k_cnt",
+   "donor_uid": 248,
+   "canon": "I32",
+   "class": "DigitalNumericConstant"
+  },
+  {
+   "id": "p3a_k20",
+   "donor_uid": 214,
+   "canon": "I32",
+   "class": "DigitalNumericConstant"
+  }
+ ],
+ "census": {
+  "LoopTunnel": 0,
+  "Wire": 11,
+  "WhileLoop": 0,
+  "Diagram": 2,
+  "SubVI": 0,
+  "Local": 0,
+  "ControlTerminal": 0,
+  "ArrayConstant": 0,
+  "DigitalNumericConstant": 4,
+  "CaseStructure": 1,
+  "Tunnel": 1,
+  "OuterTerminal": 7,
+  "InnerTerminal": 10,
+  "SelectorTunnel": 2
+ },
+ "census_sources": [
+  "case_wired new_wire (SAMPLED diag_c123_wired.log:88)",
+  "connect_term_uid x2 (SAMPLED diag_c124_p3a_scratch.log:53,61)",
+  "case_frame_wire new_wire p3a_w_true_pass (SAMPLED :71)",
+  "case_frame_wire branch p3a_w_qr_x (SAMPLED :77,80)",
+  "const_donor scalar x3 KP1/KC1/K20 (SAMPLED stage_d1_ring_p2b.log:121)",
+  "MODEL const_on_term WK1: one wired constant (unsampled)",
+  "MODEL const_sr x2 + const K20->Q&R.y: Wire +1 each (PD247(a) 'Measured per call ... Wire +1'; not a census sample)",
+  "MODEL wire_sr LeftIn SP1L.inner -> Equal?.y: new wire (source unwired); wire_sr RightIn + cfw Equal?.x branch w3747: +0",
+  "MODEL add_shift_reg x2: each register pair = 2 outer + 2 inner faces (UNMEASURED: 124-5 A1 logged Nodes only)"
+ ],
+ "census_note": "UNPREDICTED overall by census_predict (rows without a sample rule); the scratch run measures it before the ONE launch (PD247(e))",
+ "ops": [
+  "create",
+  "create",
+  "add_sr",
+  "create",
+  "connect",
+  "wire_sr",
+  "create",
+  "connect",
+  "wire_sr",
+  "create",
+  "add_sr",
+  "create",
+  "connect",
+  "create",
+  "connect_term_uid",
+  "connect_term_uid",
+  "case_frame_wire",
+  "create",
+  "case_frame_wire",
+  "create",
+  "connect"
+ ],
+ "cdiff_rows": [
+  "11261|Terminal|array|0",
+  "11261|Terminal|element|0",
+  "2626|Terminal|array|0",
+  "2626|Terminal|array|1",
+  "2626|Terminal|array|2",
+  "2626|Terminal|array|3",
+  "2626|Terminal|element|0",
+  "2626|Terminal|element|1",
+  "2626|Terminal|element|2",
+  "28083|Terminal|Magnet position|0",
+  "29625|Terminal|index (col)|0",
+  "29973|Terminal|element|1",
+  "376|Terminal|current frame data array in|0",
+  "376|Terminal|frame index|0",
+  "5058|Terminal|Image In|0",
+  "8634|Terminal|index (col)|0"
+ ],
  "errorlist": {
-  "new_items_predicted": "see plan_ring_p3a_sim.log",
-  "derivation": "pending stagesim"
+  "bed_total": 54,
+  "predicted_total": 54,
+  "new_items_predicted": 0,
+  "alternative_total": 55,
+  "base_file": "tools/bench/errorlist_expected_D1_ring_p2b_20261001_140658.json",
+  "derivation": "every sink P3a makes is wired: Wait (ms) input (1), Equal? x/y, the case selector, both register LEFT outer faces initialised (const_sr), both RIGHT inner faces, TI1/TO1 in BOTH frames (False via Increment, True pass-through), Increment x, Q&R x/y; unwired OUTPUTS (Wait's timer value, both Q&R outputs, the registers' right outer faces) make no Error List item; no existing net is cut (branches only) => 0 new; alternative 55 if LabVIEW flags an item the model does not see (pinned on the scratch, PD235(f))"
  }
 }

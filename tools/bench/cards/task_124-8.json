@@ -1,0 +1,72 @@
+{
+ "schema": "task/1",
+ "id": "124-8",
+ "kind": "build",
+ "goal": "Retry 124-7: owed hypothesis review; declare MEASURED term_class on every created node in plan_ring_p3a.json; dry, prerun; scratch run; ONE launch of ring P3a",
+ "why": "124-7's scratch stopped at op 1 on a sim/real terminal-class key (Terminal vs ParameterTerminal) because the plan left term_class undeclared. Decision and steps: brief_124-8.md.",
+ "retry_of_card": "124-7",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_124-8.md"},
+  {"path": "tools/bench/cards/brief_124-7.md"},
+  {"path": "tools/bench/cards/result_124-7.json"},
+  {"path": "tools/bench/stage_d1_ring_p3a_scratch_pin.log"},
+  {"path": "tools/bench/plan_ring_p3a.json"},
+  {"path": "tools/bench/plan_ring_p3a_make_v3.py"},
+  {"path": "tools/bench/diag_c124_p3a_scratch.log"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p2b_20261001_140658.vi", "md5": "652b1447ebbda761a7d5ba36455a0fa1"}
+ ],
+ "requires": [
+  {"kind": "op", "name": "OpConnectTermUid_v0"},
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p3a_scratch.py"},
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p3a_el.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p3a.py"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3a_make_v3.py"},
+  {"kind": "file", "name": "tools/errorlist_check.py"}
+ ],
+ "pass": [
+  "S0 hypothesis review ANSWERED, archived, naming stage_d1_ring_p3a_scratch_pin.log; not a refutation",
+  "S1 every created node's declared terminals carry a measured term_class, each cited; plan simulates FINAL; pred unchanged",
+  "S2 dry + prerun PASS; scratch run: all object gates PASS, census sample, scratch Error List pin 54 or 55",
+  "S3 ONE launch saves D1_ring_p3a_<ts>.vi; final Error List == pin; expected file reverdicts OK; refs balanced",
+  "S4 LabVIEW verified gone (tasklist)"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3a_<ts>.vi",
+  "tools/bench/errorlist_expected_D1_ring_p3a_<ts>.json",
+  "tools/bench/plan_ring_p3a.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/*ring_p3a*",
+   "tools/recipes/stage_d1_ring_p3a.py",
+   "tools/bench/sim/ring_p3a*/**",
+   "tools/bench/sim/**",
+   "tools/bench/prerun/**",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/errorlist*ring_p3a*",
+   "tools/bench/graph_ring_p3a*",
+   "tools/bench/census_samples.json",
+   "tools/bench/diag_c124_*",
+   "archive/peer/**",
+   "tools/bench/cards/review_124-8*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 75
+ },
+ "rules": [
+  "Follow brief_124-8.md; stagesim.py not edited; recipe edited only for a pinned plan md5",
+  "Bed never saved over; GUI via lv_gui.ps1 -Exception Approved only; capture, locate, act, capture, confirm",
+  "Owed hypothesis review dispatched first, never bypassed",
+  "Return at the first unexpected result (finish the step, LabVIEW closed, facts recorded)"
+ ],
+ "advances": ["M3", "M4"]
+}

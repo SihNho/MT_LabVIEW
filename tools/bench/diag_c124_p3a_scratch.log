@@ -1,0 +1,112 @@
+BGRUN START 2026-10-01 16:43:28 limit 25.0 min: py -u tools/bench/diag_c124_p3a_scratch.py
+BGRUN PID 15696
+BGRUN STAGE-RUN recorded diag_c124_p3a_scratch.py cycle='cycle 124' card=None pid=16112 -> stage_runs.jsonl
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 316 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 652b1447ebbda761a7d5ba36455a0fa1  got 652b1447ebbda761a7d5ba36455a0fa1
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33964
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_c124_p3a_20261001_164328.vi
+  FACT  ExecState [after open] scratch_c124_p3a_20261001_164328.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so scratch_c124_p3a_20261001_164328.vi is deleted at close
+  PASS  K0 donor DonorSRInit_v0.vi md5 == 8b1a5afe
+  PASS  K0 donor DonorCase_v0.vi md5 == df825c18
+  FACT  add_shift_reg node census: 639 rows
+  FACT  OP add_shift_reg loop[4] y=120 -> err '' (0.1 s)
+  FACT  A1 after add_shift_reg AFTER node census: 639 rows
+  FACT  A1 after add_shift_reg CENSUS DIFF: Node 639 -> 639 ; 0 new uid(s): []
+  FACT  SHIFT REGISTER on WhileLoop #637: {'right': 26802, 'left': 26825, 'k': 4, 'right_uids': [1117, 862, 15197, 580, 26802], 'loop_index': 4}
+  PASS  A1 add_shift_reg on #637: exactly ONE new bare sink (left outer face)  {'sr': {'right': 26802, 'left': 26825, 'k': 4, 'right_uids': [1117, 862, 15197, 580, 26802], 'loop_index': 4}, 'new_bare_sinks': [27033]}
+  FACT  wire_const_sr node census: 639 rows
+  OBSERVED uid 26984 -> owner 'Diagram' uid 686 | self 'DigitalNumericConstant'#26984 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP wire_const_sr A2 sr_init_const I32 0 -> err '' (5.6 s)
+  PASS  A2 sr_init_const: face wired, op err ''  {'const_uid': 26984, 'const_cls': 'DigitalNumericConstant', 'const_i': 94, 'loop_i': 4, 'face_index': 25, 'face_index_before': 25, 'wire_delta': 1, 'op_err': '', 'face_wire': 27229}
+  FACT  create_primitive_nested node census: 639 rows
+  OBSERVED uid 27051 -> owner 'Diagram' uid 639 | self 'Comparison'#27051 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested A3 Equal? E1 -> err '' (2.3 s)
+  FACT  case_wired node census: 640 rows
+  OBSERVED uid 26760 -> owner 'Diagram' uid 639 | self 'CaseStructure'#26760 | 482 says 'Diagram' cast 'Diagram' |  
+      op readback {'UID': 26760, 'Name': 'index', 'UID 2': 0, 'Is Broken?': False}
+      junk Invoke purge: 1 purged, left []
+  FACT  OP case_wired A3 case <- E1 -> err '' (4.8 s)
+  PASS  A3 case_wired: frames {False, True}  {'names': ['False', 'True'], 'frames': [27137, 27158], 'case': 26760, 'purged': 0}
+  FACT  create_primitive_nested node census: 641 rows
+  OBSERVED uid 27189 -> owner 'Diagram' uid 27137 | self 'Function'#27189 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested A4 Increment I1 False -> err '' (2.3 s)
+  FACT  create_primitive_nested node census: 642 rows
+  OBSERVED uid 27235 -> owner 'Diagram' uid 27137 | self 'Function'#27235 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested A4 Q&R Q1 False -> err '' (2.3 s)
+  PASS  A5 register inner faces on #639: one left source, one right sink  {'left': [{'term_uid': 27033, 'is_source': False, 'wire_uid': 27229, 'frame_diagram': 686, 'owner_class': 'LeftShiftRegister'}, {'term_uid': 27031, 'is_source': True, 'wire_uid': 0, 'frame_diagram': 639, 'owner_class': 'LeftShiftRegister'}], 'right': [{'term_uid': 27023, 'is_source': True, 'wire_uid': 0, 'frame_diagram': 686, 'owner_class': 'RightShiftRegister'}, {'term_uid': 26834, 'is_source': False, 'wire_uid': 0, 'frame_diagram': 639, 'owner_class': 'RightShiftRegister'}]}
+  FACT  connect_term_uid node census: 643 rows
+  FACT  OP connect_term_uid R1 I1.x <- SR left inner -> err '' (5.4 s)
+  FACT  CENSUS R1 I1.x <- SR left inner {"InnerTerminal": 2, "OuterTerminal": 1, "SelectorTunnel": 1, "Wire": 2}
+  FACT  INVOKE R1 I1.x <- SR left inner delta []
+  OBSERVED uid 27278 -> owner 'CaseStructure' uid 26760 | self 'SelectorTunnel'#27278 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 27278 -> owner 'CaseStructure' uid 26760 | self 'SelectorTunnel'#27278 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 27278 -> owner 'CaseStructure' uid 26760 | self 'SelectorTunnel'#27278 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  PASS  R1 I1.x <- SR left inner: wire != 0, Is Broken? False, ONE new tunnel owned by case #26760, one inner face per frame, Invoke +0  {'call': {'wire_uid': 27261, 'broken': False, 'sink_echo': 27225, 'src_echo': 27031, 'err': '', 'purged': 0, 'invoke_left': []}, 'err': '', 'new_by_class': {'OuterTerminal': 1, 'InnerTerminal': 2, 'Wire': 2, 'SelectorTunnel': 1}, 'invoke_delta': [], 'new_tunnels': [(27278, 'SelectorTunnel')], 'owners': {27278: ['CaseStructure', 26760]}, 'faces_per_frame': [{'term_uid': 27283, 'tunnel_uid': 27278, 'frame_index': 0, 'diagram_uid': 27137}, {'term_uid': 27295, 'tunnel_uid': 27278, 'frame_index': 1, 'diagram_uid': 27158}], 'tunnel_terms': [{'term_uid': 27314, 'is_source': False, 'wire_uid': 27319, 'frame_diagram': 639, 'owner_class': 'SelectorTunnel'}, {'term_uid': 27283, 'is_source': True, 'wire_uid': 27261, 'frame_diagram': 27137, 'owner_class': 'SelectorTunnel'}, {'term_uid': 27295, 'is_source': True, 'wire_uid': 0, 'frame_diagram': 27158, 'owner_class': 'SelectorTunnel'}]}
+  FACT  connect_term_uid node census: 643 rows
+  FACT  OP connect_term_uid R2 SR right inner <- I1.x+1 -> err '' (5.4 s)
+  FACT  CENSUS R2 SR right inner <- I1.x+1 {"InnerTerminal": 2, "OuterTerminal": 1, "SelectorTunnel": 1, "Wire": 2}
+  FACT  INVOKE R2 SR right inner <- I1.x+1 delta []
+  OBSERVED uid 27311 -> owner 'CaseStructure' uid 26760 | self 'SelectorTunnel'#27311 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 27311 -> owner 'CaseStructure' uid 26760 | self 'SelectorTunnel'#27311 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 27311 -> owner 'CaseStructure' uid 26760 | self 'SelectorTunnel'#27311 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  PASS  R2 SR right inner <- I1.x+1: wire != 0, Is Broken? False, ONE new tunnel owned by case #26760, one inner face per frame, Invoke +0  {'call': {'wire_uid': 27269, 'broken': False, 'sink_echo': 26834, 'src_echo': 27206, 'err': '', 'purged': 0, 'invoke_left': []}, 'err': '', 'new_by_class': {'OuterTerminal': 1, 'InnerTerminal': 2, 'Wire': 2, 'SelectorTunnel': 1}, 'invoke_delta': [], 'new_tunnels': [(27311, 'SelectorTunnel')], 'owners': {27311: ['CaseStructure', 26760]}, 'faces_per_frame': [{'term_uid': 27315, 'tunnel_uid': 27311, 'frame_index': 0, 'diagram_uid': 27137}, {'term_uid': 27334, 'tunnel_uid': 27311, 'frame_index': 1, 'diagram_uid': 27158}], 'tunnel_terms': [{'term_uid': 27342, 'is_source': True, 'wire_uid': 27269, 'frame_diagram': 639, 'owner_class': 'SelectorTunnel'}, {'term_uid': 27315, 'is_source': False, 'wire_uid': 27347, 'frame_diagram': 27137, 'owner_class': 'SelectorTunnel'}, {'term_uid': 27334, 'is_source': False, 'wire_uid': 0, 'frame_diagram': 27158, 'owner_class': 'SelectorTunnel'}]}
+  FACT  case_frame_wire node census: 643 rows
+  OBSERVED uid 27278 -> owner 'CaseStructure' uid 26760 | self 'SelectorTunnel'#27278 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 27311 -> owner 'CaseStructure' uid 26760 | self 'SelectorTunnel'#27311 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  FACT  OP case_frame_wire R3 True: tin -> tout -> err '' (29.8 s)
+  FACT  CENSUS R3 True: tin -> tout {"Wire": 1}
+  FACT  INVOKE R3 True: tin -> tout delta []
+  PASS  R3 True: tin -> tout: wire != 0, Is Broken? False, Invoke +0  {'call': {'wire_uid': 27290, 'src_term_uid': 27295, 'dst_term_uid': 27334, 'broken': False, 'purged': 0, 'invoke_left': []}, 'err': '', 'new_by_class': {'Wire': 1}, 'invoke_delta': []}
+  FACT  case_frame_wire node census: 643 rows
+  OBSERVED uid 27278 -> owner 'CaseStructure' uid 26760 | self 'SelectorTunnel'#27278 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  FACT  OP case_frame_wire R4 False: tin -> Q1.x -> err '' (17.9 s)
+  FACT  CENSUS R4 False: tin -> Q1.x {}
+  FACT  INVOKE R4 False: tin -> Q1.x delta []
+  PASS  R4 False: tin -> Q1.x: wire != 0, Is Broken? False, Invoke +0  {'call': {'wire_uid': 27261, 'src_term_uid': 27283, 'dst_term_uid': 27257, 'broken': False, 'purged': 0, 'invoke_left': []}, 'err': '', 'new_by_class': {}, 'invoke_delta': []}
+  ROW   R4 branch: tin False-face wire before/after vs Q1.x wire : observed={'before': [27261], 'after': [27261], 'q1x_wire': 27261, 'branched_existing': True} expected=None
+  OBSERVED uid 27278 -> owner 'CaseStructure' uid 26760 | self 'SelectorTunnel'#27278 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 27278 -> owner 'CaseStructure' uid 26760 | self 'SelectorTunnel'#27278 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 27311 -> owner 'CaseStructure' uid 26760 | self 'SelectorTunnel'#27311 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 27311 -> owner 'CaseStructure' uid 26760 | self 'SelectorTunnel'#27311 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  ROW   FINAL per-frame faces and register terminals : observed={'tin_terms': [{'term_uid': 27314, 'is_source': False, 'wire_uid': 27319, 'frame_diagram': 639, 'owner_class': 'SelectorTunnel'}, {'term_uid': 27283, 'is_source': True, 'wire_uid': 27261, 'frame_diagram': 27137, 'owner_class': 'SelectorTunnel'}, {'term_uid': 27295, 'is_source': True, 'wire_uid': 27290, 'frame_diagram': 27158, 'owner_class': 'SelectorTunnel'}], 'tout_terms': [{'term_uid': 27342, 'is_source': True, 'wire_uid': 27269, 'frame_diagram': 639, 'owner_class': 'SelectorTunnel'}, {'term_uid': 27315, 'is_source': False, 'wire_uid': 27347, 'frame_diagram': 27137, 'owner_class': 'SelectorTunnel'}, {'term_uid': 27334, 'is_source': False, 'wire_uid': 27290, 'frame_diagram': 27158, 'owner_class': 'SelectorTunnel'}], 'tin_faces': [{'term_uid': 27283, 'tunnel_uid': 27278, 'frame_index': 0, 'diagram_uid': 27137}, {'term_uid': 27295, 'tunnel_uid': 27278, 'frame_index': 1, 'diagram_uid': 27158}], 'tout_faces': [{'term_uid': 27315, 'tunnel_uid': 27311, 'frame_index': 0, 'diagram_uid': 27137}, {'term_uid': 27334, 'tunnel_uid': 27311, 'frame_index': 1, 'diagram_uid': 27158}], 'left_terms': [{'term_uid': 27033, 'is_source': False, 'wire_uid': 27229, 'frame_diagram': 686, 'owner_class': 'LeftShiftRegister'}, {'term_uid': 27031, 'is_source': True, 'wire_uid': 27319, 'frame_diagram': 639, 'owner_class': 'LeftShiftRegister'}], 'right_terms': [{'term_uid': 27023, 'is_source': True, 'wire_uid': 0, 'frame_diagram': 686, 'owner_class': 'RightShiftRegister'}, {'term_uid': 26834, 'is_source': False, 'wire_uid': 27269, 'frame_diagram': 639, 'owner_class': 'RightShiftRegister'}], 'invoke_total_delta': []} expected=None
+  PASS  I Invoke +0 over R1-R4
+  FACT  ExecState [after R4] scratch_c124_p3a_20261001_164328.vi = 0
+  FACT  RECORDS G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\scratch_verify\gscript.connect_term_uid_case_frame_wire_c124_5_20261001_164328.json
+
+---------- [H] HYGIENE
+  FACT  close_panel(scratch_c124_p3a_20261001_164328.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 6, 'closed': 6, 'live': 0, 'cached_op_vis': 15}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 6, 'closed': 6, 'live': 0, 'cached_op_vis': 15}
+  FACT  LabVIEW handle count AFTER the work: 46089
+  PASS  H4 scratch deleted: scratch_c124_p3a_20261001_164328.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c124_p3a_20261001_164328.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 652b1447ebbda761a7d5ba36455a0fa1 / after 652b1447ebbda761a7d5ba36455a0fa1
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33964
+
+====================================================================================================
+=== GATES: 19 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c124_p3a_scratch.json   elapsed 587.2 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":19,"fail":0},"first_fail":null,"artefacts":[]}
+LabVIEW gone at exit: True
+BGRUN END rc=0 after 592s

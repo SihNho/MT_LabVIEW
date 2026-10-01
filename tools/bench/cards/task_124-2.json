@@ -1,0 +1,66 @@
+{
+ "schema": "task/1",
+ "id": "124-2",
+ "kind": "build",
+ "goal": "PD249(d): a frame field on case-tunnel faces in stageplan/stagesim/stagexec (route case_frame_wire), offline, so P3a action 20 passes stagesim",
+ "why": "123-8: the plan format cannot address a case tunnel's face in the non-body frame. Runs offline beside LabVIEW card 124-1 against the fixed interface in brief_124-2.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_124-2.md"},
+  {"path": "tools/bench/cards/result_123-8.json", "md5": "6561c70c9aaa16a9445ba1ef7f073094"},
+  {"path": "tools/bench/diag_c123_casetun.log", "md5": "3b2363e707f75fc30ff617c3d7eedc87"},
+  {"path": "tools/bench/plan_ring_p3a_in.json", "md5": "0a27116f334059d37ef4be264358fdf0"},
+  {"path": "tools/stagesim.py", "md5": "5e20117c5c60f8e5f3844c4a76e36fca"},
+  {"path": "tools/stagexec.py", "md5": "80d652c14376744cd9ad65c09da8bb66"},
+  {"path": "docs/protocol/stageplan.json", "md5": "6100149d43ab628fc0b21ab506059787"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "docs/protocol/stageplan.json"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3a_in.json"}
+ ],
+ "pass": [
+  "stageplan schema: optional frame on case-tunnel wire ends",
+  "stagesim: case data tunnel modelled per 123-9 (one inner face per frame); frame resolves the inner face; in-frame wire simulated",
+  "stagexec: in-frame wire compiles to route case_frame_wire with the brief's call shape and the right frame index; census declared UNMEASURED",
+  "selftest_case_frame_c124 PASS; plan_ring_p3a_in_v2.json (action 20 by frame) passes stagesim end to end",
+  "existing self-tests green (stagexec 124/0, case_wired 14/0, census hook-in 12/0, launch_gate 29/0, c120_routes 29/0, census_predict 14/0)"
+ ],
+ "outputs": [
+  "tools/stagesim.py",
+  "tools/stagexec.py",
+  "docs/protocol/stageplan.json",
+  "tools/bench/plan_ring_p3a_in_v2.json",
+  "tools/bench/selftest_case_frame_c124.py"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagesim.py",
+   "tools/stagexec.py",
+   "docs/protocol/stageplan.json",
+   "tools/bench/plan_ring_p3a_in_v2.json",
+   "tools/bench/plan_ring_p3a_sim*",
+   "tools/bench/selftest_case_frame_c124*",
+   "tools/bench/selftest_stagexec*",
+   "tools/bench/selftest_stagesim*",
+   "tools/bench/sim/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 50
+ },
+ "rules": [
+  "Follow brief_124-2.md; compile to the fixed interface, never call LabVIEW",
+  "Do not edit gscript.py, stagekit.py, census_samples.json, stage_prerun.py or hooks (card 124-1 / gates)",
+  "Related edits land together and self-tested, or not at all; return at the first unexpected result"
+ ],
+ "advances": ["M4", "M3"]
+}

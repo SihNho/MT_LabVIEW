@@ -1,0 +1,56 @@
+BGRUN START 2026-10-01 17:25:52 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c124-8-p3a-termclass-hyp -TaskFile tools/bench/cards/review_124-8_hyp_task.md
+BGRUN PID 2480
+OUTCOME: ANSWERED (153s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-01-c124-8-p3a-termclass-hyp.md
+COST: $1.5558  in 34 / out 12575 / cache-create 112192 / cache-read 1894217  (150s, 29 turn(s))
+--- ANSWER ---
+Partly. The missing class declaration does fully explain the op-1 stop. But the fix will only work if each terminal's class is copied from its own measured row, not assumed to be `ParameterTerminal` everywhere. And nothing has yet read back the classes of freshly copied primitives, apart from Wait (ms) in this run.
+
+**1. Strongest reason the claim is wrong as stated**
+
+The classes are not the same across primitives. In the base VI graph, Increment's output is a different class from its input:
+- `x+1` (row 2037) is `OverridableParameterTerminal`.
+- `x` (row 2042) is `ParameterTerminal`.
+
+That class is the one carrying a Representation (output-configuration) override in VI Scripting ([labviewwiki](https://labviewwiki.org/wiki/OverridableParameterTerminal_class/Representation_property)). The Q&R and Equal? terminals are all plain `ParameterTerminal`. So any fix that copies "ParameterTerminal" from the Wait/Equal? pattern will stop again at the Increment create.
+
+Also note how the check behaves once the classes differ. With one `Overridable` and one `Parameter` terminal, `bind_new` compares the class alone (`tools/stagexec.py:756-764`), not the class and name. Any difference in class between the donor and the copy is then fatal, and the name can't rescue it.
+
+**2. Alternative explanation of the same evidence**
+
+The plan's omission is the immediate cause. The deeper fault is that the offline check let a primitive be created with no class declared, and that was knowable before any LabVIEW run:
+- In the base VI graph, no row owned by a `Function` or `Comparison` has the class `Terminal`. I counted 0 matches. So the simulator's default `t.get("term_class") or "Terminal"` (`tools/stagesim.py:1317`) can never match a created primitive.
+- Earlier plans did declare it: `tools/bench/sim/disp/plan_disp.json:630-643` gives the same Wait (ms) `ParameterTerminal` on both terminals, and `plan_qrt_pool_in.json:31-59` does the same. The p3a plan dropped it in v1, v2 and v3.
+
+Regenerating this one plan fixes this run, but not the cause. The next plan can make the same mistake and cost another LabVIEW run. Leaving `stagesim.py`'s default unchanged is fine, but the pre-run should refuse a primitive create (`Function`/`Comparison` with `prim`) that has an undeclared class.
+
+**3. Your specific questions**
+
+- **Constants (`p3a_k_prev`, `p3a_k_cnt`, `K20`, and `WK1` from the constant-on-terminal step):** every DigitalNumericConstant row in the base graph is `Terminal`, and each constant has exactly one row. The check therefore compares the class alone, and the default matches. The derived `WK1` row (named "milliseconds to wait", class `Terminal`) is fine for the same reason. Low risk.
+- **Case selector and case tunnels (`TI1`, `TO1`):** these go through `bind_case_faces` (`stagexec.py:776-820`), which matches by frame and by `Inner`/`OuterTerminal`. The simulator builds `SelectorTunnel` objects with those classes (`stagesim.py:864-866`). The diagnostic run measured exactly that shape (`diag_c124_p3a_scratch.log:53,61`). Low risk.
+- **Donor vs fresh copy:** this is untested. The diagnostic created Equal? E1, Increment I1 and Q&R Q1 on the same base VI (`diag_c124_p3a_scratch.log:36-49`) but never read their terminal classes back. Since a Representation override is a per-terminal setting, the `Overridable` class is most likely tied to the primitive's terminal type rather than to the copy, so a duplicate of #1978 should keep it. I haven't verified that on a fresh copy.
+- **Wait (ms):** this run measured it (`log:66-67`), and that agrees with plan_disp.
+
+**4. What would falsify the fix**
+
+Either of these, read on a fresh copy:
+- Increment's `x+1` comes back as anything other than `OverridableParameterTerminal`.
+- Any Q&R or Equal? terminal comes back as anything other than `ParameterTerminal`.
+
+Or the regenerated plan carries a class that wasn't copied row by row from its donor.
+
+**5. Cheapest test that separates the claim from the alternative (offline, no LabVIEW)**
+
+Run `bind_new`'s key logic (`stagexec.py:756-764`) on the regenerated plan's created rows from `stagesim` and compare against:
+- donor rows #10019, #1978 and #2136 in `graph_ring_p2b_20261001_154542.json`,
+- the Wait (ms) rows in plan_disp,
+- one base-graph DigitalNumericConstant row.
+
+It passes if, for every create action, the counts of `(term_class, is_source, name)` are equal on both sides. It also confirms the "Overridable" point in seconds.
+
+The only part this can't settle is donor vs fresh copy. If that needs settling before the stage run, the cheapest LabVIEW act is a short scratch check: copy #1978 and #2136 once and read their terminal tables back. Otherwise it is settled by the rerun itself, which now stops at the first mismatch.
+
+I still believe the cause is correct. I'd stop believing it if the rerun with per-row measured classes failed BINDING at Wait (ms) or Equal? again.
+
+Sources:
+- [OverridableParameterTerminal class / Representation property — LabVIEW Wiki](https://labviewwiki.org/wiki/OverridableParameterTerminal_class/Representation_property)
+BGRUN END rc=0 after 159s

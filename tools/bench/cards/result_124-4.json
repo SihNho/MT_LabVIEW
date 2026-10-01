@@ -1,0 +1,23 @@
+{"schema":"result/1","id":"124-4","status":"FAIL","gates":{"pass":11,"fail":1},
+"first_fail":"hygiene: g.op() refused new OpConnectTermUid_v0 (OpHygieneRefused, no record); diag_c124_opconnecttermuid.py:92 calls it outside g.hygiene_probe (r2.log:37-45)",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/gscript.py","md5":"81b74522919578f9173d86ae10a11141"},
+ {"path":"tools/bench/opconnecttermuid_v0_labels.json","md5":"37fd8b9fa3a368daea1135d2a349e0e1"},
+ {"path":"tools/bench/diag_c124_opconnecttermuid_r2.log","md5":"5b4811ee999bdae134234628f4da8ada"},
+ {"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpConnectTermUid_v0.vi","md5":"34120e6314dc44522dee07dcb04ea55a"}],
+"facts":[
+ "Owner-check fix applied: create_primitive_nested accepts ('TopLevelDiagram', diagram_uid) besides ('Diagram', diagram_uid); nothing else changed (gscript.py:4726-4730)",
+ "Fix proven on LabVIEW: T2 second TMSC copied #683 -> #428 on top diagram #3 and both Close Reference copies [125, 675] passed (diag_c124_opconnecttermuid_r2.log:29,33)",
+ "OpConnectTermUid_v0.vi built: assembled ExecState 1, saved by script md5 34120e63..., COLD ExecState 1 in a fresh LabVIEW (r2.log:34,35,37)",
+ "Labels: sink_echo 'UID 2', src_echo 'UID 3', wire_uid 'UID 4', broken 'Is Broken?', Err 'error out 2', src_uid control 'UID' (r2.log:36; opconnecttermuid_v0_labels.json)",
+ "FAIL: hygiene()->call()->g.op(OP) raised OpHygieneRefused 'no readable record'; sole exemption = context manager gscript.hygiene_probe (gscript.py:239-249,299-305)",
+ "Not reached: F1 first call, 2,000-call hygiene, the R1-R4 scratch, census samples, scratch_verify record (scratch script not written)",
+ "Hygiene: LabVIEW gone (r2.log GATE X; Get-Process count 0 after), scratch_c124_hyg_*.vi deleted; BGRUN END rc=1 after 140s; the bed D1_ring_p2b was never opened by this card",
+ "Offline self-tests after the gscript edit, all green: case_wired 14/0, census hook-in 12/0, census_predict 14/0, c120_routes 29/0, launch_gate 29/0, stagexec selftest 124/0 (selftest_*_c124_4.log)",
+ "Jev ladder: no JEV-LADDER row yet for the r2 log (jev_gate.log; newest c124 row :3016 = r1 log, our-script-bug 0.854); guard_peer writes it at the next build command"],
+"open":[
+ "Rerun the op build with hygiene(lab) wrapped in `with g.hygiene_probe(OP):` (one-line script fix) - and rebuild the op, or keep the saved OpConnectTermUid_v0.vi (md5 34120e63...) and run only the hygiene probe?",
+ "connect_term_uid itself does not purge junk Invokes (only case_frame_wire does, gscript.py:4960-4963); for R1/R2 should the scratch purge after the call, or should connect_term_uid purge like case_wired (interface brief_124-1 is fixed)?"],
+"cost":{"usd":null,"minutes":22,"labview_runs":1},
+"note":"diag_c124_opconnecttermuid_r2.log | (no ladder row yet) | - | returned at first unexpected result (chat-P2), no diagnosis/retry | -. Second failure of the same build script (r1: owner check, r2: hygiene gate)."}

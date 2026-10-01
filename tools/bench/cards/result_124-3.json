@@ -1,0 +1,20 @@
+{"schema":"result/1","id":"124-3","status":"FAIL","gates":{"pass":0,"fail":1},
+"first_fail":"brief premise falsified: routes 15/16 fail on the plan-made SHIFT REGISTER's inner face (SC1L / SC1R), not on the case-frame node; no measured function wires a register inner face across a case border",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/sim/diag_p3a_route_124_3.log","md5":"b35d32fd3fe6b19a081af3d7b22d2379"}],
+"facts":[
+ "#10000032 = new:SC1L (LeftShiftRegister), #10000029 = new:SC1R, #10000043 = new:TI1 (sym map, diag_p3a_route_124_3.log:5)",
+ "Route 15 fails on term #10000034 = SC1L INNER source (bare, frame 639); route 16 on #10000030 = SC1R INNER sink (diag_p3a_route_124_3.log:3-4)",
+ "The case-frame end is NOT the failure: route 15's dst INC1.x (frame #10000025) resolves; dst triple runs first (stagexec.py:951), src fails after at :1027",
+ "A register is never a Nodes[] entry: listed_as_node excludes SR_CLS (stagexec.py:815), so Addr._triple ends in 'node not in Nodes[]' (stagexec.py:1285)",
+ "123-9's connect_nested_v1 crossings had a NODE on both ends (#6810 / Increment I2 on #639, diag_c123_casetun.log:38,45); no register end was measured",
+ "wire_sr (the only register-inner-face function) addresses Nodes[] of Loop.Diagram only, not a case frame (gscript.py:858-860)",
+ "Route 19 cause confirmed: TI1 has 2 inner source faces, both wired (f0 w10000042, f1 w10000053 after act 21), so branch's len!=1 check fails (stagexec.py:2790)",
+ "No edit made: stagexec.py / stagesim.py md5 unchanged (b82ee36f / f66a3624); plan v3 not written (fix 3 alone cannot meet pass[3]; edits land together)",
+ "JEV-LADDER: no row for plan_ring_p3a_sim_v2.log in jev_gate.log; diag run itself ended BGRUN END rc=0"],
+"open":[
+ "How should a tunnel group whose outside end is a plan-made register's INNER face be wired? (a) scratch-measure wire_sr/connect_from_wire with the body end in a case frame, or (b) re-plan so a node sits outside the crossing",
+ "Fix 3 (p3a_w_qr_x with frame 'False') compiles as a second case_frame_wire row (CREATE-NO-VERB until 124-1 lands): should pass[3] allow that row too?"],
+"cost":{"usd":null,"minutes":14,"labview_runs":0},
+"note":"Returned at the first unexpected result (card chat-P2). One offline diagnostic (dry_run with an Addr._triple trace, scratchpad script) under bgrun --material, no LabVIEW."}

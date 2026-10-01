@@ -1,0 +1,26 @@
+{"schema":"result/1","id":"124-1","status":"FAIL","gates":{"pass":6,"fail":1},
+"first_fail":"S1 op build: create_primitive_nested('TMSC' on #3) refused its own copy - new node #428 owned by ('TopLevelDiagram', 3), post-condition wants class 'Diagram' (diag_c124_opconnecttermuid.log:37)",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/gscript.py","md5":"742d4a2f291d7e48946ffa7378db67ab"},
+ {"path":"tools/bench/diag_c124_opconnecttermuid.py","md5":"af35338442acfb583b2d73da287002d5"},
+ {"path":"tools/bench/diag_c124_opconnecttermuid.log","md5":"149e05416081b76c454a7d4c1f9db954"},
+ {"path":"tools/recipes/build_opconnectnested_v1.py","md5":"8d4e6f62995c61b77edb35026444fe0a"},
+ {"path":"tools/recipes/build_opconnectfromwire_v0.py","md5":"2654906fac76ae9214a8d18bef2db49e"}],
+"facts":[
+ "Fact peer (gemini research_plan.md, linked from archive/peer/2026-10-01-c124-1-casetun-innerface-fact-gemini.md:41): Tunnel.Inside Terminals[] = 1 per frame, order undocumented; Tunnel is not a Node",
+ "Hypothesis peer: ConditionalTunnel 'Link Input Tunnel And Wire' 5D251802 wires every unwired frame (archive/peer/2026-10-01-c124-1-casetun-innerface-hyp.md:54-61); not used, interface fixed",
+ "Writer chosen: new OpConnectTermUid_v0 = sink Traverse('Terminal')[i] + source U2G(UID), each TMSC(Terminal) uid-echoed; OpSetIndexMode_v0 copy, c100 pattern (diag_c124_opconnecttermuid.py:1-12)",
+ "Build reached: donor ES1, IndexMode PN deleted ES1, Terminal seed -> TMSC #683 -> echo PN #118 ES1, U2G #119 dropped (diag_c124_opconnecttermuid.log:3,15,25,26)",
+ "U2G terminals read: 'UID' i10, 'Owning VI' i11, 'error in (no error)' i8, 'GObject' i2 (diag_c124_opconnecttermuid.log:27)",
+ "FAIL: 2nd TMSC copy #428 landed on TopLevelDiagram #3 but create_primitive_nested's owner check (gscript.py:4726) demands class 'Diagram' -> exception; nothing saved (log:37,40-42)",
+ "Hygiene: LabVIEW gone, scratch deleted, no OpConnectTermUid_v0.vi left (log:38-39); bed D1_ring_p2b never opened this card; BGRUN END rc=1 after 80s (log:42)",
+ "gscript.connect_term_uid:4900 / case_inner_face:4921 / case_frame_wire:4942 written to the brief's signatures and return shapes; UNRUN (op file absent)",
+ "STEP 3 code: _purge_new_invokes added inside connect_nested_v1 (build_opconnectnested_v1.py:418) and connect_from_wire (build_opconnectfromwire_v0.py:381); return shapes kept; UNPROVEN on LabVIEW",
+ "Self-tests green after the edits: case_wired 14/0, census hook-in 12/0, census_predict 14/0, launch_gate 29/0, c120_routes 29/0 (selftest_*_c124_1.log); stagexec self-test not run"],
+"open":[
+ "Retry: relax create_primitive_nested's owner check to accept TopLevelDiagram when diagram_uid is the top diagram (gscript.py:4726), or copy the 2nd TMSC by copy_by_index - which?",
+ "Use ConditionalTunnel.Link Input Tunnel And Wire 5D251802 for the pure tunnel->tunnel pass-through instead of a new writer (persistent link = rule-1a question)?",
+ "Build script was moved from tools/recipes to tools/bench/diag_c124_* after guard_cycle asked for a prior-art review (bench = precedent for op builds, c100/c122); accept or require the review?"],
+"cost":{"usd":null,"minutes":40,"labview_runs":1},
+"note":"diag_c124_opconnecttermuid.log | our-script-bug p=0.854 (jev_gate.log:3016) | patch the script and rerun | returned at first unexpected result (chat-P2) | -. Owed hypothesis review for diag_c123_casetun.log dispatched + annotated (ANSWERED, $1.95)."}

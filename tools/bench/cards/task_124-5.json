@@ -1,0 +1,76 @@
+{
+ "schema": "task/1",
+ "id": "124-5",
+ "kind": "build",
+ "goal": "Retry 124-4: hygiene record of the saved OpConnectTermUid_v0 (inside hygiene_probe), connect_term_uid purge, then the P3a counter scratch R1-R4",
+ "why": "124-4 built and saved the op but its script called it outside hygiene_probe; the R1-R4 measurement is what P3a and P4 need. Brief: brief_124-5.md (+ brief_124-4.md scratch section).",
+ "retry_of_card": "124-4",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_124-5.md"},
+  {"path": "tools/bench/cards/brief_124-4.md"},
+  {"path": "tools/bench/cards/result_124-4.json", "md5": "ef04392362bc1f0672c089e3263e42de"},
+  {"path": "tools/bench/diag_c124_opconnecttermuid.py", "md5": "af35338442acfb583b2d73da287002d5"},
+  {"path": "tools/gscript.py", "md5": "81b74522919578f9173d86ae10a11141"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpConnectTermUid_v0.vi", "md5": "34120e6314dc44522dee07dcb04ea55a"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p2b_20261001_140658.vi", "md5": "652b1447ebbda761a7d5ba36455a0fa1"}
+ ],
+ "requires": [
+  {"kind": "op", "name": "OpConnectTermUid_v0"},
+  {"kind": "verb", "name": "hygiene_probe", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "connect_term_uid", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "case_frame_wire", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "case_inner_face", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "case_wired", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "add_shift_reg", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "sr_init_const", "where": "tools/gscript.py"}
+ ],
+ "pass": [
+  "op md5 34120e63... unchanged; hygiene record >= 2000 calls, 0 errors, handles flat +-100 (inside hygiene_probe)",
+  "connect_term_uid purges its junk Invokes; existing return keys unchanged",
+  "scratch R1/R2 register crossings and R3/R4 case_frame_wire per brief_124-4.md, read back per frame, Is Broken? False",
+  "Invoke +0; census samples for connect_term_uid and case_frame_wire; scratch_verify record",
+  "self-tests green (stagexec 124/0 and the 124-4 set); bed md5 unchanged; scratch deleted; LabVIEW verified gone"
+ ],
+ "outputs": [
+  "tools/gscript.py",
+  "tools/bench/scratch_verify/",
+  "tools/bench/census_samples.json",
+  "tools/bench/op_hygiene/"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/gscript.py",
+   "tools/stagekit.py",
+   "tools/census_predict.py",
+   "tools/bench/census_*",
+   "tools/bench/opmodels/**",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/op_hygiene/**",
+   "tools/bench/diag_c124_*",
+   "tools/bench/selftest_*c124*",
+   "tools/bench/selftest_case_wired*",
+   "docs/NAMES.md",
+   "archive/peer/**",
+   "tools/bench/cards/review_124-5*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c124*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "fact"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "rules": [
+  "Follow brief_124-5.md; the saved op is not rebuilt; brief_124-1.md interface stays fixed",
+  "Do not edit tools/stagesim.py, tools/stagexec.py, docs/protocol/stageplan.json",
+  "No stage recipe is run; stagekit scripts <= 120 lines; byte copies of the bed only",
+  "Return at the first unexpected result; failing log -> Jev ladder row; owed hypothesis review dispatched"
+ ],
+ "advances": ["M4", "M3"]
+}

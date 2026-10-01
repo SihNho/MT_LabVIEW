@@ -1,0 +1,96 @@
+BGRUN START 2026-10-01 17:18:27 limit 45.0 min: py -u tools/bench/stage_d1_ring_p3a_scratch.py pin
+BGRUN PID 20868
+stage_d1_ring_p3a_scratch - card 124-7: SCRATCH RUN of RING P3a BEFORE the one launch (brief_124-7.md step 1, PD246(d), PD247(e)).
+Runs the stage recipe's OWN body (tools/recipes/stage_d1_ring_p3a.py, imported UNCHANGED) on a dated byte copy
+claudeDev\scratch_c124_ring_p3a_<ts>.vi of the P2b bed (md5 652b1447) - same Executor, LVBackend and every recipe gate
+(L1 E1 ST R4 D CEN2 TD FU PB HB PS). No VI is run; the bed is never opened for edit.
+MODE (argv[1]):
+  nosave : SAVE off - structural verification only, NO GUI; the work copy is dropped by the Stage hygiene.
+  pin    : SAVE on (rule-6 gui_save of the SCRATCH) so stage_d1_ring_p3a_el.py scratch can pin its Error List (that script deletes it).
+Observation only (wrapper-side, the recipe is not touched): Executor.run's real terminal rows are kept and, at CEN2, every NEW object
+uid is printed with its class and (for terminals) its owner uid/class and frame (NEWOBJ lines) - the owner evidence for any MODEL census
+line the scratch corrects (brief decision 1); the FULL-class census (incl. Invoke) before/after is printed (CENSUS-ALL lines).
+PRIOR ART: tools/bench/stage_d1_ring_p2b_scratch.py (card 122-6; this is its cut + the NEWOBJ/CENSUS-ALL print).
+PREDICTION: every recipe gate PASS except possibly CEN2 on the MODEL lines (OuterTerminal 7 / InnerTerminal 10 / Wire 11); Invoke delta 0;
+LabVIEW gone; PASS writes tools/bench/scratch_verify/stagexec.ring_p3a_counter_<mode>_<ts>.json.
+    py tools/bgrun.py --material --max-min 45 --log tools/bench/stage_d1_ring_p3a_scratch_pin.log -- py -u tools/bench/stage_d1_ring_p3a_scratch.py pin
+MODE pin (SAVE True)
+stage_d1_ring_p3a - card 124-6, RING P3a (d1-loop12-17-split-plan.md PD246(c)(d), 247, 248(a), 249(c), 250(c)(d)): on the SAVED P2b bed
+D1_ring_p2b_20261001_140658.vi (md5 652b1447) build loop 1.1's control in While #637 (body #639): Wait (ms) 1; previous-BufNum register
+(I32 -1) + Equal?(BufNum, prev) -> case_wired; new-frame counter register (I32 0) through the case (False: +1 by Increment, True:
+pass-through) and Quotient & Remainder(count, 20) in the False frame. FRESH LabVIEW -> claudeDev\D1_ring_p3a_<ts>.vi (rule-6 GUI save,
+ExecState 0 by design: the P2b bed is broken, never run) + tools\bench\errorlist_expected_D1_ring_p3a_<ts>.json (P2b's 54 + the
+predicted new items). ROWS ONLY FROM plan_ring_p3a.json (stagesim FINAL of plan_ring_p3a_in_v3.json, plan_ring_p3a_make_v3.py);
+expected values only from plan_ring_p3a_pred.json. PRIOR ART: stage_d1_ring_p2b.py (Executor/LVBackend/DryPlanBE, D/TD/FU/PB/HB/PS
+gates, save); routes connect_term_uid (R1/R2) and case_frame_wire new_wire/branch (R3/R4) measured by card 124-5
+(diag_c124_p3a_scratch.log:53,61,71,77). No new op.
+PREDICTION: L1 25 actions -> 21 ops == pred kinds; E1 every checkpoint == sim; ST 2 new SelectorTunnels, each one inner face per case
+frame; R4 Q&R.x on Increment.x's wire; D new wires == sim's, none lost; CEN2 == pred census (UNVERIFIED-DRY in a dry run); TD every
+base terminal keeps its wire; FU frames == base + the case's 2; PB cdiff(S1, end) == the P2b bed's 16 rows (FATAL, before save);
+HB open->save handles <= +700; PS saved, input unchanged; EL errorlist_expected written (54 + 0).
+    py tools/bgrun.py --material --max-min 45 --log tools/bench/stage_d1_ring_p3a.log -- py -u tools/recipes/stage_d1_ring_p3a.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p3a_in_v3; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == P2b's rows  ('3f32526086781463604e0a45adbb1482', {'path': 'tools/bench/graph_ring_p2b_20261001_154542.json', 'md5': '69b23e0821482acf118bb268d92589fe'}, '652b1447ebbda761a7d5ba36455a0fa1')
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 316 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 652b1447ebbda761a7d5ba36455a0fa1  got 652b1447ebbda761a7d5ba36455a0fa1
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 34002
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_c124_ring_p3a_20261001_171828.vi
+  FACT  ExecState [after open] scratch_c124_ring_p3a_20261001_171828.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so scratch_c124_ring_p3a_20261001_171828.vi is deleted at close
+  PASS  L1 the 25 actions compile into 21 real ops == pred kinds, each action once  ['create', 'create', 'add_sr', 'create', 'connect', 'wire_sr', 'create', 'connect', 'wire_sr', 'create', 'add_sr', 'create', 'connect', 'create', 'connect_term_uid', 'connect_term_uid', 'case_frame_wire', 'create', 'case_frame_wire', 'create', 'connect']
+  METER start  k   0  private 565.4 MB (d -)  handles 45712 (d -)
+  METER read   k   0  private 571.5 MB (d +6.1)  handles 45740 (d +28)
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 2 touched diagram(s) [639, 686]: one-side-only Nodes[] entries 0
+  PRIME 1 terminal indexes proved at base; 0 ControlTerminal end(s) by 179(b); unprovable []
+  METER pre    k   1  private 563.6 MB (d -7.9)  handles 45799 (d +59)
+  FACT  create_primitive_nested node census: 639 rows
+  OBSERVED uid 26747 -> owner 'Diagram' uid 639 | self 'Function'#26747 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'Wait (ms)' on #639 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpWaitDonor_v0.vi', 'uid': 163} -> err '' (1.9 s)
+  FACT  create primitive p3a_wait AFTER node census: 640 rows
+  FACT  create primitive p3a_wait CENSUS DIFF: Node 639 -> 640 ; 1 new uid(s): [(26747, 'Function', (6471, 1089))]
+  FACT  create primitive p3a_wait new #26747 #26747 lives at: {'diagram_index': 56, 'diagram_uid': 639, 'diagram_class': 'Diagram', 'nodes_index': 51, 'nodes_on_diagram': 52, 'label': 'Wait (ms)'}  (57 diagram(s) scanned of 174, 2.1 s)
+  FACT  create primitive p3a_wait new #26747 terminal table of #26747 (Diagram idx 56, Nodes[51], echo 26747): 2 terminal(s)
+  FACT      create primitive p3a_wait new #26747 t0  'millisecond timer value'          is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive p3a_wait new #26747 t1  'milliseconds to wait'             is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT  create primitive p3a_wait NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #26747 class 'Function' label 'Wait (ms)', 2 terminal(s), 0 wired - REPORTED, left alone
+  METER op     k   1  private 566.0 MB (d +2.4)  handles 45872 (d +73)
+  METER read   k   1  private 570.2 MB (d +4.2)  handles 45866 (d -6)
+  FAIL  E1 the run reached its last op (record mode; stopped IN op {'k': 1, 'op': 'create', 'acts': [1], 'ids': ['p3a_wait']})  BINDING: Function terminal keys sim {('Terminal', False, 'milliseconds to wait'): 1, ('Terminal', True, 'millisecond timer value'): 1} vs real {('ParameterTerminal', True, 'millisecond timer value'): 1, ('ParameterTerminal', False, 'milliseconds to wait'): 1}
+  FAIL  STOP at gate: E1 the run reached its last op (record mode; stopped IN op {'k': 1, 'op': 'create', 'acts': [1], 'ids': ['p3a_wait']})
+
+---------- [H] HYGIENE
+  FACT  close_panel(scratch_c124_ring_p3a_20261001_171828.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 6}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 6}
+  FACT  LabVIEW handle count AFTER the work: 45870
+  PASS  H4 scratch deleted: scratch_c124_ring_p3a_20261001_171828.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c124_ring_p3a_20261001_171828.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 652b1447ebbda761a7d5ba36455a0fa1 / after 652b1447ebbda761a7d5ba36455a0fa1
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33996
+
+====================================================================================================
+=== GATES: 10 pass / 2 fail; failing: E1 the run reached its last op (record mode; stopped IN op {'k': 1, 'op': 'create', 'acts': [1], 'ids': ['p3a_wait']}), STOP at gate: E1 the run reached its last op (record mode; stopped IN op {'k': 1, 'op': 'create', 'acts': [1], 'ids': ['p3a_wait']})
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\stage_d1_ring_p3a_scratch_pin.json   elapsed 181.5 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":10,"fail":2},"first_fail":"E1 the run reached its last op (record mode; stopped IN op {'k': 1, 'op': 'create', 'acts': [1], 'ids': ['p3a_wait']})","artefacts":[]}
+LabVIEW gone at exit: True
+BGRUN END rc=1 after 187s

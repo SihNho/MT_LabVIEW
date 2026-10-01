@@ -332,6 +332,23 @@ def parse_addr(a):
     return {"uid": head, "term": term}
 
 
+CASE_FACE_CLS = ("SelectorTunnel", "Tunnel")        # card 124-2: a case data tunnel / a case selector (one inner per frame)
+
+
+def case_frame_of(st, frame_diag):
+    """card 124-2 (PD249(d)): (case uid, frame index, frame name) of `frame_diag` when it is a frame of a case THIS plan
+    created (st['case_frames'], written by _create_case / _create_case_wired in the case's frame order), else None. The
+    frame index is the case's frame order (boolean case: False = 0, True = 1), the index gscript.case_frame_wire takes."""
+    own = (st.get("owners") or {}).get(str(int(frame_diag or 0)))
+    if not own or own[0] != "CaseStructure":
+        return None
+    fr = (st.get("case_frames") or {}).get(str(int(own[1] or 0)))
+    for k, (nm, f) in enumerate(fr or []):
+        if int(f) == int(frame_diag or 0):
+            return int(own[1]), k, nm
+    return None
+
+
 def resolve_addr(st, a, want_source):
     """The ONE terminal row an address names. Selector order: term_uid, then name; `inner`/`outer` (or `side`)
     pick the tunnel/register face by class when no terminal carries that name. Exactly one row or SimError -
@@ -354,9 +371,25 @@ def resolve_addr(st, a, want_source):
             rows = named
     if side:
         rows = [r for r in rows if r["term_class"] == ("InnerTerminal" if side == "inner" else "OuterTerminal")]
+    frame = a.get("frame")
+    if frame is not None:
+        # card 124-2 (PD249(d)): `frame` = the frame NAME whose INNER face of a case tunnel (data tunnel or selector) this
+        # end is - one inner face per frame (diag_c123_casetun.log:38,45). Names come from st['case_frames'] (a case THIS
+        # plan created); a base-graph case carries no names, so its faces are not addressable by frame (SimError)
+        if side == "outer":
+            raise SimError("address {0}: `frame` names an INNER face, not side 'outer'".format(a))
+        rows = [r for r in rows if r["term_class"] == "InnerTerminal" and r["owner_class"] in CASE_FACE_CLS]
+        if not rows:
+            raise SimError("address {0}: `frame` {1!r} on #{2}, which has no case-tunnel inner face".format(a, frame, uid))
+        named = [(r, case_frame_of(st, r["frame_diagram"])) for r in rows]
+        hit = [r for r, cf in named if cf is not None and cf[2] == frame]
+        if not hit:
+            raise SimError("address {0}: #{1} has no inner face on a frame named {2!r} (frames {3}; only a case this plan "
+                           "created carries frame names)".format(a, uid, frame, sorted(set(cf[2] for _r, cf in named if cf))))
+        rows = hit
     rows = [r for r in rows if bool(r["is_source"]) == bool(want_source)]
     ctf = (st.get("case_tunnel_frame") or {}).get(str(uid))
-    if ctf is not None and len(set(int(r["frame_diagram"] or 0) for r in rows)) > 1:
+    if frame is None and ctf is not None and len(set(int(r["frame_diagram"] or 0) for r in rows)) > 1:
         # card 120-3 R2: a case tunnel THIS plan made has one inner face per frame; its group wires the frame named by
         # the `tunnel` action's `body` (op_tunnel -> _case_tunnel) - only that frame's face is the address
         rows = [r for r in rows if r["term_class"] != "InnerTerminal" or int(r["frame_diagram"] or 0) == int(ctf)]
@@ -814,10 +847,14 @@ def _case_tunnel(st, a, case, body, parent):
     MEASURED shape (tools/bench/selftest_c120_caseshape.log, graph_qrt_pool_20260928.json #2222/#2857/#3826): ONE
     SelectorTunnel object (owner CaseStructure), ONE OuterTerminal on the parent diagram and ONE InnerTerminal on EVERY frame;
     dir 'in' = outer sink + inner sources, dir 'out' = outer source + inner sinks. The group wires the frame `body` only;
-    the other frames' inner faces stay UNWIRED. ASSUMED, UNMEASURED here (no sample of a freshly scripted case tunnel):
-    (1) connecting across a case border makes exactly this object (as a loop border makes a LoopTunnel, tunnel.json);
-    (2) an OUTPUT tunnel is created with 'Use Default If Unwired' OFF (LabVIEW's default), so each unwired frame breaks
-    the VI until it is wired or the flag is set - recorded as `broken_unless_wired`, never hidden."""
+    the other frames' inner faces stay UNWIRED and are addressed by a later wire end's `frame` (card 124-2, resolve_addr).
+    MEASURED by card 123-9 (tools/bench/diag_c123_casetun.log:38,45,69): a cross-border connect_nested_v1 into a
+    case_wired case makes exactly this object - SelectorTunnel +1, OuterTerminal +1, InnerTerminal +2 (one per frame) - for
+    an input and for an output tunnel, and the case's Terminals[] lists the selector and the OUTER faces only (the inner
+    faces are not on it; SimReader lists outer faces on the owner the same way). The Invoke the output connect left is junk
+    (purged, card 124-1): modelled +0. ASSUMED, still UNMEASURED: an OUTPUT tunnel is created with 'Use Default If
+    Unwired' OFF (LabVIEW's default), so each unwired frame breaks the VI until it is wired or the flag is set - recorded
+    as `broken_unless_wired`, never hidden."""
     frames = [int(k) for k, v in (st.get("owners") or {}).items() if v[0] == "CaseStructure" and int(v[1] or 0) == case]
     if body not in frames:
         raise SimError("tunnel {0}: body #{1} is not a frame of CaseStructure #{2} (frames {3})".format(a.get("as"), body, case, frames))
@@ -832,7 +869,12 @@ def _case_tunnel(st, a, case, body, parent):
     unw = [f for f in frames if f != body]
     eff = {"tunnel": _sym(st, a.get("as") or "T{0}".format(-T), T), "case": case, "dir": a.get("dir", "in"), "indexing": False,
            "outer": o, "inner": dict(inners)[body], "inners": [t for _f, t in inners], "body": body, "parent": parent,
-           "frame": body, "unwired_frames": unw, "model": "measured shape (selftest_c120_caseshape.log); creation UNMEASURED"}
+           "frame": body, "unwired_frames": unw, "model": "measured shape (selftest_c120_caseshape.log); creation measured "
+                                                                    "(diag_c123_casetun.log:38,45)"}
+    # card 124-6 (PD250(c)): the group's OUTSIDE end on a shift register's INNER face = stagexec route connect_term_uid, the
+    # SAME object shape measured by card 124-5 (R1 input / R2 output: SelectorTunnel +1, OuterTerminal +1, InnerTerminal +2,
+    # Wire +2, Invoke +0; diag_c124_p3a_scratch.log:53,61) - the model above already makes exactly that
+    eff["model_r1r2"] = "connect_term_uid R1/R2 (diag_c124_p3a_scratch.log:53,61): same shape, +2 Wire"
     if not din:
         eff.update(use_default_if_unwired="ASSUMED False (LabVIEW default; UNMEASURED for a scripted case tunnel)",
                    broken_unless_wired=unw)
@@ -1030,6 +1072,17 @@ def op_wire(st, a, P, S1, labels):
            "detached_from": detached, "joined": joined, "kept_stub_uid": how == "join_stub"}
     if recreated:                                # only then: every other effect record stays byte-identical
         eff.update(recreated_from=recreated, rewired=sorted(rewired))
+    if any(isinstance(e, dict) and e.get("frame") is not None for e in (a["src"], a["dst"])):
+        # card 124-2 (PD249(d)): a wire INSIDE one frame of a plan-made case (stagexec route case_frame_wire); both ends are
+        # on that frame's diagram (same_diagram above), and the frame index is the case's frame order
+        cf = case_frame_of(st, s["frame_diagram"])
+        if cf is None or int(s["frame_diagram"] or 0) != int(d["frame_diagram"] or 0):
+            raise SimError("wire {0} -> {1}: a `frame` wire must lie inside ONE frame of a case this plan created (src on {2}, "
+                           "dst on {3})".format(a["src"], a["dst"], s["frame_diagram"], d["frame_diagram"]))
+        eff["case_frame"] = {"case": cf[0], "index": cf[1], "name": cf[2], "diagram": int(s["frame_diagram"] or 0),
+                             # card 124-6 (PD250(c)): R4 = a second sink on a wired face is a BRANCH, census {} (measured,
+                             # diag_c124_p3a_scratch.log:77,80); R3 = the first wire, Wire +1 (:71)
+                             "variant": "branch" if how == "branch" else "new_wire"}
     if st.get("unflip"):                         # card 81-5 F1 (measured l2a1_unflip_81_run1.log); absent = old behaviour
         eff["unflipped"] = _unflip_restored_tunnels(st, [d], st["unflip"].get("cascade", False))
     return eff, []
@@ -1124,6 +1177,7 @@ def _create_case(st, a, dg, name, eff):
     si = [_new_term(st, S, "Tunnel", "InnerTerminal", True, f) for f in frames]
     key = _sym(st, name, u)
     fk = [_sym(st, "{0}.f{1}".format(name, k), f) for k, f in enumerate(frames)]
+    st.setdefault("case_frames", {})[str(u)] = [[n_, f_] for n_, f_ in zip(names, frames)]     # card 124-2: frame by name
     eff.update(node=key, frames=frames, frame_syms=fk, frame_names=names, selector=_sym(st, a["selector_as"], S),
                selector_outer=so, selector_inners=si, selector_ct=cts[0]["term_uid"], selector_ct_wired=bool(cts[0]["wire_uid"]),
                assumed=list(CASE_ASSUMED))
@@ -1165,6 +1219,7 @@ def _create_case_wired(st, a, dg, name, eff, names):
     si = [_new_term(st, S, "Tunnel", "InnerTerminal", True, f) for f in frames]
     key = _sym(st, name, u)
     fk = [_sym(st, "{0}.f{1}".format(name, k), f) for k, f in enumerate(frames)]
+    st.setdefault("case_frames", {})[str(u)] = [[n_, f_] for n_, f_ in zip(names, frames)]     # card 124-2: frame by name
     row = next(r for r in st["terminals"] if r["term_uid"] == so)
     eff["src_branch"] = bool(s["wire_uid"])
     eff["wire"] = _join(st, s, row)

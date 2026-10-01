@@ -1,0 +1,77 @@
+{
+ "schema": "task/1",
+ "id": "124-6",
+ "kind": "build",
+ "goal": "PD250(c)(d): routes connect_term_uid / case_frame_wire branch + SP_WIRING; P3a FINAL plan, census + Error List predictions, recipe, dry, prerun, prior-art, scratch-required",
+ "why": "124-5 proved P3a's counter subgraph on a scratch; the plan tools still refuse routes 15/16/19 (124-3). This makes P3a launch-ready for the next cycle. Brief: brief_124-6.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_124-6.md"},
+  {"path": "tools/bench/cards/result_124-5.json", "md5": "c80d331a51917498e67002d8b99b1094"},
+  {"path": "tools/bench/cards/result_124-3.json"},
+  {"path": "tools/bench/plan_ring_p3a_in_v2.json", "md5": "5308f51512fe3b9cc19e33a6935e05c5"},
+  {"path": "tools/stagesim.py", "md5": "f66a3624b1f01b11f97f17460e5773ef"},
+  {"path": "tools/stagexec.py", "md5": "b82ee36f2071c7cc66de21157d742372"},
+  {"path": "tools/stage_prerun.py", "md5": "870705eb1a21950bb2183f8c360d99d1"},
+  {"path": "tools/bench/census_samples.json", "md5": "e5315b0c599dc247b7b63e5aca0920eb"},
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "a1acb0fdb04b0bfb9c035f2aaac42c35"}
+ ],
+ "requires": [
+  {"kind": "verb", "name": "connect_term_uid", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "case_frame_wire", "where": "tools/gscript.py"},
+  {"kind": "op", "name": "OpConnectTermUid_v0"},
+  {"kind": "file", "name": "tools/bench/selftest_case_frame_c124.py"},
+  {"kind": "file", "name": "tools/bench/graph_ring_p2b_20261001_154542.json"},
+  {"kind": "file", "name": "tools/bench/errorlist_expected_D1_ring_p2b_20261001_140658.json"}
+ ],
+ "pass": [
+  "routes: register-inner-face crossing -> connect_term_uid (R1/R2 model); second sink -> case_frame_wire branch (census {}); SP_WIRING has both",
+  "plan_ring_p3a_in_v3.json simulates all actions with NO UNROUTABLE row; selftest_case_frame_c124 extended and PASS; existing self-tests green",
+  "FINAL plan_ring_p3a.json (<= 25 rows) with census and Error List predictions",
+  "tools/recipes/stage_d1_ring_p3a.py: dry PASS, prerun PASS (X15 census PASS), prior-art review archived with a verdict",
+  "--scratch-required exit code recorded"
+ ],
+ "outputs": [
+  "tools/stagesim.py",
+  "tools/stagexec.py",
+  "tools/stage_prerun.py",
+  "tools/bench/plan_ring_p3a.json",
+  "tools/recipes/stage_d1_ring_p3a.py"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagesim.py",
+   "tools/stagexec.py",
+   "tools/stage_prerun.py",
+   "tools/bench/plan_ring_p3a*",
+   "tools/recipes/stage_d1_ring_p3a*",
+   "tools/bench/stage_d1_ring_p3a*",
+   "tools/bench/selftest_case_frame_c124*",
+   "tools/bench/selftest_stagexec*",
+   "tools/bench/selftest_stagesim*",
+   "tools/bench/selftest_launch_gate*",
+   "tools/bench/selftest_c120_stageplan_proposed.json",
+   "tools/bench/sim/**",
+   "tools/bench/prerun/**",
+   "tools/bench/priorart*",
+   "archive/peer/**",
+   "tools/bench/cards/review_124-6*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "rules": [
+  "Follow brief_124-6.md and Pre-decided 250; do not re-design P3a",
+  "No LabVIEW; no stage recipe launched; recipe <= 120 lines on stagekit",
+  "Related edits land together and self-tested, or not at all; return at the first unexpected result"
+ ],
+ "advances": ["M4", "M3"]
+}

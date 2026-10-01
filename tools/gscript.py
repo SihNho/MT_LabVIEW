@@ -4723,7 +4723,10 @@ def create_primitive_nested(target, diagram_uid, prim_name, pos, donor=None):
         _c97_paths()
         import build_d1_v0 as B
         own = B.owner_of(target, new[0], strict=False)
-        if tuple(own) != ("Diagram", int(diagram_uid)):
+        # card 124-4 (brief decision 1): the VI's TOP-LEVEL diagram reads back as class 'TopLevelDiagram' (owner_of on a node
+        # copied onto it, diag_c124_opconnecttermuid.log:28,36); accepted ONLY when its uid IS diagram_uid, i.e. the target
+        # diagram is that top-level diagram. Every nested Diagram still has to read back as ('Diagram', diagram_uid).
+        if tuple(own) not in (("Diagram", int(diagram_uid)), ("TopLevelDiagram", int(diagram_uid))):
             probs.append("new node #%s is owned by %r, not Diagram #%s" % (new[0], own, diagram_uid))
     if probs:
         raise RuntimeError("create_primitive_nested(%r on #%s): %s" % (prim_name, diagram_uid, " | ".join(probs)))
@@ -4885,4 +4888,88 @@ def case_wired(target, diagram_uid, src_node_uid, src_term, pos=(40, 40), donor=
     if err or not out["selector_wire"] or out["selector_wire"] != out["src_wire"]:
         raise RuntimeError("case_wired: selector wire %s, source wire %s, op error %r (case #%s)"
                            % (out["selector_wire"], out["src_wire"], err, c))
+    return out
+
+
+# ==== CARD 124-1 (PD249(f)): a case tunnel's INNER face per frame, and a wire between two terminals of ONE frame ===========
+# The case node's Terminals[] lists OUTER faces only (diag_c123_casetun.log:69); a tunnel is not in Diagram.Nodes[] (peer
+# archive/peer/2026-10-01-c124-1-casetun-innerface-hyp.md §3). Inner faces: OpAllTerms_v1 rows whose owner_uid is the tunnel
+# and whose frame_diagram is the frame's Diagram uid (docs/toolkit-capabilities.md:339-347); frame order = case_frames'
+# Frames[] order, read back, never assumed. Writer: OpConnectTermUid_v0 (tools/bench/diag_c124_opconnecttermuid.py): SINK by
+# Traverse('Terminal')[index] -> TMSC(Terminal), SOURCE by `UID to GObject Reference.vi` -> TMSC(Terminal), both uid-echoed.
+CONNECT_TERM_UID_LABELS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench", "opconnecttermuid_v0_labels.json")
+
+
+def connect_term_uid(target, sink_uid, src_uid):
+    """OpConnectTermUid_v0: Terminal.Connect Wire on terminal #sink_uid with Wire Source = terminal #src_uid (any owner, any
+    diagram). Returns {wire_uid, broken, sink_echo, src_echo, err, purged, invoke_left}. Card 124-5 (brief_124-5 decision 2):
+    the junk Invokes the writer leaves are purged here (_purge_new_invokes, as case_wired); RuntimeError on an op error, an
+    echo != the uid passed, or an Invoke left after the purge."""
+    with open(CONNECT_TERM_UID_LABELS, encoding="utf-8") as f:
+        lab = json.load(f)["OpConnectTermUid_v0"]
+    ensure_loaded(target)
+    inv0 = set(uids(target, "Invoke"))
+    ti = _uid_index(target, "Terminal", sink_uid)
+    vi = op(os.path.join(CLAUDEDEV, "OpConnectTermUid_v0.vi"))
+    vi.SetControlValue(lab["vi_path"], target)
+    vi.SetControlValue(lab["class_name"], "Terminal")
+    vi.SetControlValue(lab["index"], int(ti))
+    vi.SetControlValue(lab["src_uid"], int(src_uid))
+    _run(vi)
+    out = {"wire_uid": int(vi.GetControlValue(lab["wire_uid"]) or 0), "broken": bool(vi.GetControlValue(lab["broken"])),
+           "sink_echo": int(vi.GetControlValue(lab["sink_echo"]) or 0), "src_echo": int(vi.GetControlValue(lab["src_echo"]) or 0),
+           "err": _err(vi, lab["Err"]) or ""}
+    out["purged"], out["invoke_left"] = _purge_new_invokes(target, inv0)
+    if out["err"] or out["sink_echo"] != int(sink_uid) or out["src_echo"] != int(src_uid) or out["invoke_left"]:
+        raise RuntimeError("connect_term_uid(#%s <- #%s): %r" % (sink_uid, src_uid, out))
+    return out
+
+
+def case_inner_face(target, tunnel_uid, frame_index):
+    """The inner terminal of tunnel #tunnel_uid in frame `frame_index` of its case (case_frames' Frames[] order; a boolean
+    case_wired case reads False = 0, True = 1). Returns {term_uid, tunnel_uid, frame_index, diagram_uid}. ValueError on a
+    bad index or a tunnel not owned by a CaseStructure; RuntimeError when the frame does not hold exactly one inner face."""
+    _c97_paths()
+    import build_d1_v0 as B
+    import allterms
+    own = B.owner_of(target, tunnel_uid, strict=False)
+    if not own or own[0] != "CaseStructure":
+        raise ValueError("case_inner_face: #%s is owned by %r, not a CaseStructure" % (tunnel_uid, own))
+    fr = case_frames(target, int(own[1]))
+    if fr["err"] or not 0 <= int(frame_index) < len(fr["frames"]):
+        raise ValueError("case_inner_face: frame %r of case #%s (frames %r, err %r)" % (frame_index, own[1], fr["frames"], fr["err"]))
+    d = int(fr["frames"][int(frame_index)])
+    rows, _dt = allterms.read_terms(target, allterms.OP_ALLTERMS_V1)
+    hit = [r for r in rows if int(r["owner_uid"]) == int(tunnel_uid) and int(r.get("frame_diagram") or 0) == d]
+    if len(hit) != 1:
+        raise RuntimeError("case_inner_face: %d inner face(s) of #%s on frame Diagram #%s: %r" % (len(hit), tunnel_uid, d, hit[:4]))
+    return {"term_uid": int(hit[0]["term_uid"]), "tunnel_uid": int(tunnel_uid), "frame_index": int(frame_index), "diagram_uid": d}
+
+
+def case_frame_wire(target, case_uid, frame_index, src, dst):
+    """A wire on frame `frame_index` of case #case_uid. `src` / `dst` = {"tunnel": uid} (that tunnel's inner face in this
+    frame) or {"node": uid, "term": name} (a node on this frame's diagram, by term_index, which raises). Purges the junk
+    Invokes the writer leaves, like case_wired. Returns {wire_uid, src_term_uid, dst_term_uid, broken, purged, invoke_left}."""
+    fr = case_frames(target, case_uid)
+    if fr["err"] or not 0 <= int(frame_index) < len(fr["frames"]):
+        raise ValueError("case_frame_wire: frame %r of case #%s (frames %r, err %r)" % (frame_index, case_uid, fr["frames"], fr["err"]))
+    d = int(fr["frames"][int(frame_index)])
+
+    def term(end, is_source):
+        if "tunnel" in end:
+            f = case_inner_face(target, end["tunnel"], frame_index)
+            if f["diagram_uid"] != d:
+                raise ValueError("case_frame_wire: tunnel #%s face is on Diagram #%s, not #%s" % (end["tunnel"], f["diagram_uid"], d))
+            return f["term_uid"]
+        _di, _ni, _ti, row = term_index(target, d, end["node"], end["term"], is_source)
+        return int(row["uid"])
+
+    s_uid, d_uid = term(src, True), term(dst, False)
+    inv0 = set(uids(target, "Invoke"))
+    r = connect_term_uid(target, d_uid, s_uid)
+    purged, left = _purge_new_invokes(target, inv0)
+    out = {"wire_uid": r["wire_uid"], "src_term_uid": s_uid, "dst_term_uid": d_uid, "broken": r["broken"],
+           "purged": purged + int(r.get("purged") or 0), "invoke_left": left}
+    if left or not out["wire_uid"]:
+        raise RuntimeError("case_frame_wire: %r" % out)
     return out

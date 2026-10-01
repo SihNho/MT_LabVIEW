@@ -1,0 +1,373 @@
+BGRUN START 2026-10-01 17:33:16 limit 45.0 min: py -u tools/bench/stage_d1_ring_p3a_scratch.py pin
+BGRUN PID 4416
+stage_d1_ring_p3a_scratch - card 124-7: SCRATCH RUN of RING P3a BEFORE the one launch (brief_124-7.md step 1, PD246(d), PD247(e)).
+Runs the stage recipe's OWN body (tools/recipes/stage_d1_ring_p3a.py, imported UNCHANGED) on a dated byte copy
+claudeDev\scratch_c124_ring_p3a_<ts>.vi of the P2b bed (md5 652b1447) - same Executor, LVBackend and every recipe gate
+(L1 E1 ST R4 D CEN2 TD FU PB HB PS). No VI is run; the bed is never opened for edit.
+MODE (argv[1]):
+  nosave : SAVE off - structural verification only, NO GUI; the work copy is dropped by the Stage hygiene.
+  pin    : SAVE on (rule-6 gui_save of the SCRATCH) so stage_d1_ring_p3a_el.py scratch can pin its Error List (that script deletes it).
+Observation only (wrapper-side, the recipe is not touched): Executor.run's real terminal rows are kept and, at CEN2, every NEW object
+uid is printed with its class and (for terminals) its owner uid/class and frame (NEWOBJ lines) - the owner evidence for any MODEL census
+line the scratch corrects (brief decision 1); the FULL-class census (incl. Invoke) before/after is printed (CENSUS-ALL lines).
+PRIOR ART: tools/bench/stage_d1_ring_p2b_scratch.py (card 122-6; this is its cut + the NEWOBJ/CENSUS-ALL print).
+PREDICTION: every recipe gate PASS except possibly CEN2 on the MODEL lines (OuterTerminal 7 / InnerTerminal 10 / Wire 11); Invoke delta 0;
+LabVIEW gone; PASS writes tools/bench/scratch_verify/stagexec.ring_p3a_counter_<mode>_<ts>.json.
+    py tools/bgrun.py --material --max-min 45 --log tools/bench/stage_d1_ring_p3a_scratch_pin.log -- py -u tools/bench/stage_d1_ring_p3a_scratch.py pin
+MODE pin (SAVE True)
+stage_d1_ring_p3a - card 124-6, RING P3a (d1-loop12-17-split-plan.md PD246(c)(d), 247, 248(a), 249(c), 250(c)(d)): on the SAVED P2b bed
+D1_ring_p2b_20261001_140658.vi (md5 652b1447) build loop 1.1's control in While #637 (body #639): Wait (ms) 1; previous-BufNum register
+(I32 -1) + Equal?(BufNum, prev) -> case_wired; new-frame counter register (I32 0) through the case (False: +1 by Increment, True:
+pass-through) and Quotient & Remainder(count, 20) in the False frame. FRESH LabVIEW -> claudeDev\D1_ring_p3a_<ts>.vi (rule-6 GUI save,
+ExecState 0 by design: the P2b bed is broken, never run) + tools\bench\errorlist_expected_D1_ring_p3a_<ts>.json (P2b's 54 + the
+predicted new items). ROWS ONLY FROM plan_ring_p3a.json (stagesim FINAL of plan_ring_p3a_in_v3.json, plan_ring_p3a_make_v3.py);
+expected values only from plan_ring_p3a_pred.json. PRIOR ART: stage_d1_ring_p2b.py (Executor/LVBackend/DryPlanBE, D/TD/FU/PB/HB/PS
+gates, save); routes connect_term_uid (R1/R2) and case_frame_wire new_wire/branch (R3/R4) measured by card 124-5
+(diag_c124_p3a_scratch.log:53,61,71,77). No new op.
+PREDICTION: L1 25 actions -> 21 ops == pred kinds; E1 every checkpoint == sim; ST 2 new SelectorTunnels, each one inner face per case
+frame; R4 Q&R.x on Increment.x's wire; D new wires == sim's, none lost; CEN2 == pred census (UNVERIFIED-DRY in a dry run); TD every
+base terminal keeps its wire; FU frames == base + the case's 2; PB cdiff(S1, end) == the P2b bed's 16 rows (FATAL, before save);
+HB open->save handles <= +700; PS saved, input unchanged; EL errorlist_expected written (54 + 0).
+    py tools/bgrun.py --material --max-min 45 --log tools/bench/stage_d1_ring_p3a.log -- py -u tools/recipes/stage_d1_ring_p3a.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p3a_in_v3; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == P2b's rows  ('234efaaa890c5d2ac255d746048ddb84', {'path': 'tools/bench/graph_ring_p2b_20261001_154542.json', 'md5': '69b23e0821482acf118bb268d92589fe'}, '652b1447ebbda761a7d5ba36455a0fa1')
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 316 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 652b1447ebbda761a7d5ba36455a0fa1  got 652b1447ebbda761a7d5ba36455a0fa1
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33949
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_c124_ring_p3a_20261001_173317.vi
+  FACT  ExecState [after open] scratch_c124_ring_p3a_20261001_173317.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so scratch_c124_ring_p3a_20261001_173317.vi is deleted at close
+  PASS  L1 the 25 actions compile into 21 real ops == pred kinds, each action once  ['create', 'create', 'add_sr', 'create', 'connect', 'wire_sr', 'create', 'connect', 'wire_sr', 'create', 'add_sr', 'create', 'connect', 'create', 'connect_term_uid', 'connect_term_uid', 'case_frame_wire', 'create', 'case_frame_wire', 'create', 'connect']
+  METER start  k   0  private 555.6 MB (d -)  handles 45658 (d -)
+  METER read   k   0  private 561.7 MB (d +6.1)  handles 45711 (d +53)
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 2 touched diagram(s) [639, 686]: one-side-only Nodes[] entries 0
+  PRIME 1 terminal indexes proved at base; 0 ControlTerminal end(s) by 179(b); unprovable []
+  METER pre    k   1  private 565.6 MB (d +3.9)  handles 45768 (d +57)
+  FACT  create_primitive_nested node census: 639 rows
+  OBSERVED uid 26747 -> owner 'Diagram' uid 639 | self 'Function'#26747 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'Wait (ms)' on #639 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpWaitDonor_v0.vi', 'uid': 163} -> err '' (3.0 s)
+  FACT  create primitive p3a_wait AFTER node census: 640 rows
+  FACT  create primitive p3a_wait CENSUS DIFF: Node 639 -> 640 ; 1 new uid(s): [(26747, 'Function', (6471, 1089))]
+  FACT  create primitive p3a_wait new #26747 #26747 lives at: {'diagram_index': 56, 'diagram_uid': 639, 'diagram_class': 'Diagram', 'nodes_index': 51, 'nodes_on_diagram': 52, 'label': 'Wait (ms)'}  (57 diagram(s) scanned of 174, 2.9 s)
+  FACT  create primitive p3a_wait new #26747 terminal table of #26747 (Diagram idx 56, Nodes[51], echo 26747): 2 terminal(s)
+  FACT      create primitive p3a_wait new #26747 t0  'millisecond timer value'          is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive p3a_wait new #26747 t1  'milliseconds to wait'             is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT  create primitive p3a_wait NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #26747 class 'Function' label 'Wait (ms)', 2 terminal(s), 0 wired - REPORTED, left alone
+  METER op     k   1  private 570.4 MB (d +4.8)  handles 45844 (d +76)
+  METER read   k   1  private 577.8 MB (d +7.4)  handles 45845 (d +1)
+  STEPX 01 create         acts [1] ids ['p3a_wait'] bound {-1: 26747} diff 0
+  METER pre    k   2  private 577.8 MB (d +0.0)  handles 45840 (d -5)
+  FACT  create_const_on_term node census: 640 rows
+  FACT  OP create_const_on_term loop[4] N[51].t1 value 1 -> err '' (0.1 s)
+  FACT  create const_on_term p3a_wait_k after const AFTER node census: 640 rows
+  FACT  create const_on_term p3a_wait_k after const CENSUS DIFF: Node 640 -> 640 ; 0 new uid(s): []
+  FACT  create const_on_term p3a_wait_k AFTER node census: 640 rows
+  FACT  create const_on_term p3a_wait_k CENSUS DIFF: Node 640 -> 640 ; 0 new uid(s): []
+  METER op     k   2  private 577.8 MB (d +0.0)  handles 45872 (d +32)
+  METER read   k   2  private 578.0 MB (d +0.2)  handles 45868 (d -4)
+  STEPX 02 create         acts [2] ids ['p3a_wait_k'] bound {-4: 26984} diff 0
+  METER pre    k   3  private 582.0 MB (d +4.0)  handles 45868 (d +0)
+  FACT  add_shift_reg node census: 640 rows
+  FACT  OP add_shift_reg loop[4] y=120 -> err '' (0.1 s)
+  FACT  add_sr #637 AFTER node census: 640 rows
+  FACT  add_sr #637 CENSUS DIFF: Node 640 -> 640 ; 0 new uid(s): []
+  METER op     k   3  private 578.4 MB (d -3.6)  handles 45891 (d +23)
+  METER read   k   3  private 582.3 MB (d +3.9)  handles 45891 (d +0)
+  STEPX 03 add_sr         acts [3] ids ['p3a_sr_prev'] bound {-7: 27039, -8: 27056} diff 0
+  METER pre    k   4  private 582.9 MB (d +0.6)  handles 45892 (d +1)
+  FACT  create_primitive_nested node census: 640 rows
+  OBSERVED uid 27095 -> owner 'Diagram' uid 686 | self 'DigitalNumericConstant'#27095 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'const_donor' on #686 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRingConst_v0.vi', 'uid': 249} -> err '' (2.1 s)
+  FACT  create primitive p3a_k_prev AFTER node census: 640 rows
+  FACT  create primitive p3a_k_prev CENSUS DIFF: Node 640 -> 640 ; 0 new uid(s): []
+  METER op     k   4  private 587.7 MB (d +4.8)  handles 45892 (d +0)
+  METER read   k   4  private 587.9 MB (d +0.2)  handles 45894 (d +2)
+  STEPX 04 create         acts [4] ids ['p3a_k_prev'] bound {-13: 27095} diff 0
+  METER pre    k   5  private 587.9 MB (d +0.0)  handles 45894 (d +0)
+  FACT  wire_const_sr node census: 640 rows
+  FACT  OP wire_const_sr DigitalNumericConstant[95] #27095 -> WhileLoop[4] #637.t25 (L register #27056 outer) -> err '' (0.3 s)
+  FACT  connect #27094->#27122 AFTER node census: 640 rows
+  FACT  connect #27094->#27122 CENSUS DIFF: Node 640 -> 640 ; 0 new uid(s): []
+  METER op     k   5  private 587.9 MB (d +0.0)  handles 45927 (d +33)
+  METER read   k   5  private 594.5 MB (d +6.6)  handles 45927 (d +0)
+  STEPX 05 connect        acts [5] ids ['p3a_w_kprev'] bound {} diff 0
+  METER pre    k   6  private 594.5 MB (d +0.0)  handles 45926 (d -1)
+  FACT  wire_sr node census: 640 rows
+  FACT  OP wire_sr RightIn loop[4] reg[4] {'node_index': 2, 'term_index': 10} -> err '' (0.1 s)
+  FACT  wire_sr RightIn AFTER node census: 640 rows
+  FACT  wire_sr RightIn CENSUS DIFF: Node 640 -> 640 ; 0 new uid(s): []
+  METER op     k   6  private 591.1 MB (d -3.4)  handles 45981 (d +55)
+  METER read   k   6  private 593.1 MB (d +2.0)  handles 45981 (d +0)
+  STEPX 06 wire_sr        acts [6] ids ['p3a_w_bn_r'] bound {} diff 0
+  METER pre    k   7  private 593.4 MB (d +0.3)  handles 45981 (d +0)
+  FACT  create_primitive_nested node census: 640 rows
+  OBSERVED uid 26879 -> owner 'Diagram' uid 639 | self 'Comparison'#26879 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'Equal?' on #639 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c124_ring_p3a_20261001_173317.vi', 'uid': 10019} -> err '' (1.7 s)
+  FACT  create primitive p3a_eq AFTER node census: 641 rows
+  FACT  create primitive p3a_eq CENSUS DIFF: Node 640 -> 641 ; 1 new uid(s): [(26879, 'Comparison', (6571, 2529))]
+  FACT  create primitive p3a_eq new #26879 #26879 lives at: {'diagram_index': 56, 'diagram_uid': 639, 'diagram_class': 'Diagram', 'nodes_index': 52, 'nodes_on_diagram': 53, 'label': 'Equal?'}  (57 diagram(s) scanned of 174, 2.3 s)
+  FACT  create primitive p3a_eq new #26879 terminal table of #26879 (Diagram idx 56, Nodes[52], echo 26879): 3 terminal(s)
+  FACT      create primitive p3a_eq new #26879 t0  'x = y?'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive p3a_eq new #26879 t1  'y'                                is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive p3a_eq new #26879 t2  'x'                                is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT  create primitive p3a_eq NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #26879 class 'Comparison' label 'Equal?', 3 terminal(s), 0 wired - REPORTED, left alone
+  METER op     k   7  private 594.1 MB (d +0.7)  handles 45981 (d +0)
+  METER read   k   7  private 598.6 MB (d +4.5)  handles 45980 (d -1)
+  STEPX 07 create         acts [7] ids ['p3a_eq'] bound {-16: 26879} diff 0
+  METER pre    k   8  private 598.6 MB (d +0.0)  handles 45980 (d +0)
+  FACT  connect_from_wire node census: 641 rows
+  FACT  OP connect_from_wire sink D[56].N[52].t2 <- w3747[0] -> err '' (0.5 s)
+  FACT  connect #6897->#27161 AFTER node census: 641 rows
+  FACT  connect #6897->#27161 CENSUS DIFF: Node 641 -> 641 ; 0 new uid(s): []
+  METER op     k   8  private 598.6 MB (d +0.0)  handles 46119 (d +139)
+  METER read   k   8  private 606.6 MB (d +8.0)  handles 46118 (d -1)
+  STEPX 08 connect        acts [8] ids ['p3a_w_bn_x'] bound {} diff 0
+  METER pre    k   9  private 606.6 MB (d +0.0)  handles 46119 (d +1)
+  FACT  wire_sr node census: 641 rows
+  FACT  OP wire_sr LeftIn loop[4] reg[4] {'node_index': 52, 'term_index': 1} -> err '' (0.1 s)
+  FACT  wire_sr LeftIn AFTER node census: 641 rows
+  FACT  wire_sr LeftIn CENSUS DIFF: Node 641 -> 641 ; 0 new uid(s): []
+  METER op     k   9  private 606.6 MB (d +0.0)  handles 46142 (d +23)
+  METER read   k   9  private 606.6 MB (d +0.0)  handles 46140 (d -2)
+  STEPX 09 wire_sr        acts [9] ids ['p3a_w_prev_y'] bound {} diff 0
+  METER pre    k  10  private 606.6 MB (d +0.0)  handles 46140 (d +0)
+  FACT  case_wired node census: 641 rows
+  OBSERVED uid 22694 -> owner 'Diagram' uid 639 | self 'CaseStructure'#22694 | 482 says 'Diagram' cast 'Diagram' |  
+      op readback {'UID': 22694, 'Name': 'index', 'UID 2': 0, 'Is Broken?': False}
+      junk Invoke purge: 1 purged, left []
+  FACT  OP case_wired selector <- #26879.'x = y?' on Diagram #639 -> err '' (2.3 s)
+  FACT  create case_wired p3a_case AFTER node census: 642 rows
+  FACT  create case_wired p3a_case CENSUS DIFF: Node 641 -> 642 ; 1 new uid(s): [(22694, 'CaseStructure', (6871, 2479))]
+  FACT  create case_wired p3a_case new #22694 #22694 lives at: {'diagram_index': 56, 'diagram_uid': 639, 'diagram_class': 'Diagram', 'nodes_index': 53, 'nodes_on_diagram': 54, 'label': 'Case Structure'}  (57 diagram(s) scanned of 176, 2.2 s)
+  FACT  create case_wired p3a_case new #22694 terminal table of #22694 (Diagram idx 56, Nodes[53], echo 22694): 1 terminal(s)
+  FACT      create case_wired p3a_case new #22694 t0  ''                                 is_source=False wire=27245   errs=[0, 0, 0, 0]
+  FACT  create case_wired p3a_case NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #22694 class 'CaseStructure' label 'Case Structure', 1 terminal(s), 1 wired - REPORTED, left alone
+  METER op     k  10  private 610.6 MB (d +4.0)  handles 46218 (d +78)
+  METER read   k  10  private 611.6 MB (d +1.0)  handles 46216 (d -2)
+  STEPX 10 create         acts [10] ids ['p3a_case'] bound {-21: 22694, -22: 27219, -23: 27232, -24: 27185} diff 0
+  METER pre    k  11  private 611.6 MB (d +0.0)  handles 46217 (d +1)
+  FACT  add_shift_reg node census: 642 rows
+  FACT  OP add_shift_reg loop[4] y=120 -> err '' (0.0 s)
+  FACT  add_sr #637 AFTER node census: 642 rows
+  FACT  add_sr #637 CENSUS DIFF: Node 642 -> 642 ; 0 new uid(s): []
+  METER op     k  11  private 611.6 MB (d +0.0)  handles 46217 (d +0)
+  METER read   k  11  private 611.7 MB (d +0.1)  handles 46216 (d -1)
+  STEPX 11 add_sr         acts [11] ids ['p3a_sr_cnt'] bound {-29: 27250, -30: 27258} diff 0
+  METER pre    k  12  private 611.7 MB (d +0.0)  handles 46216 (d +0)
+  FACT  create_primitive_nested node census: 642 rows
+  OBSERVED uid 27269 -> owner 'Diagram' uid 686 | self 'DigitalNumericConstant'#27269 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'const_donor' on #686 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorSRInit_v0.vi', 'uid': 248} -> err '' (2.1 s)
+  FACT  create primitive p3a_k_cnt AFTER node census: 642 rows
+  FACT  create primitive p3a_k_cnt CENSUS DIFF: Node 642 -> 642 ; 0 new uid(s): []
+  METER op     k  12  private 615.7 MB (d +4.0)  handles 46217 (d +1)
+  METER read   k  12  private 615.8 MB (d +0.1)  handles 46217 (d +0)
+  STEPX 12 create         acts [12] ids ['p3a_k_cnt'] bound {-35: 27269} diff 0
+  METER pre    k  13  private 615.7 MB (d -0.1)  handles 46216 (d -1)
+  FACT  wire_const_sr node census: 642 rows
+  FACT  OP wire_const_sr DigitalNumericConstant[96] #27269 -> WhileLoop[4] #637.t27 (L register #27258 outer) -> err '' (0.3 s)
+  FACT  connect #27266->#27281 AFTER node census: 642 rows
+  FACT  connect #27266->#27281 CENSUS DIFF: Node 642 -> 642 ; 0 new uid(s): []
+  METER op     k  13  private 621.8 MB (d +6.1)  handles 46216 (d +0)
+  METER read   k  13  private 621.9 MB (d +0.1)  handles 46216 (d +0)
+  STEPX 13 connect        acts [13] ids ['p3a_w_kcnt'] bound {} diff 0
+  METER pre    k  14  private 621.9 MB (d +0.0)  handles 46216 (d +0)
+  FACT  create_primitive_nested node census: 642 rows
+  OBSERVED uid 27311 -> owner 'Diagram' uid 27219 | self 'Function'#27311 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'Increment' on #27219 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c124_ring_p3a_20261001_173317.vi', 'uid': 1978} -> err '' (1.8 s)
+  FACT  create primitive p3a_inc AFTER node census: 643 rows
+  FACT  create primitive p3a_inc CENSUS DIFF: Node 642 -> 643 ; 1 new uid(s): [(27311, 'Function', (6937, 2545))]
+  FACT  create primitive p3a_inc new #27311 #27311 lives at: {'diagram_index': 57, 'diagram_uid': 27219, 'diagram_class': 'Diagram', 'nodes_index': 0, 'nodes_on_diagram': 1, 'label': 'Increment'}  (58 diagram(s) scanned of 176, 2.2 s)
+  FACT  create primitive p3a_inc new #27311 terminal table of #27311 (Diagram idx 57, Nodes[0], echo 27311): 2 terminal(s)
+  FACT      create primitive p3a_inc new #27311 t0  'x+1'                              is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive p3a_inc new #27311 t1  'x'                                is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT  create primitive p3a_inc NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #27311 class 'Function' label 'Increment', 2 terminal(s), 0 wired - REPORTED, left alone
+  METER op     k  14  private 622.0 MB (d +0.1)  handles 46216 (d +0)
+  METER read   k  14  private 626.1 MB (d +4.1)  handles 46216 (d +0)
+  STEPX 14 create         acts [14] ids ['p3a_inc'] bound {-38: 27311} diff 0
+  METER pre    k  15  private 626.1 MB (d +0.0)  handles 46217 (d +1)
+  FACT  connect_term_uid node census: 643 rows
+  FACT  OP connect_term_uid connect_term_uid #27322 <- #27278 -> err '' (5.4 s)
+  FACT  connect_term_uid #27322 <- #27278 AFTER node census: 643 rows
+  FACT  connect_term_uid #27322 <- #27278 CENSUS DIFF: Node 643 -> 643 ; 0 new uid(s): []
+  METER op     k  15  private 626.2 MB (d +0.1)  handles 46239 (d +22)
+  METER read   k  15  private 630.2 MB (d +4.0)  handles 46239 (d +0)
+  STEPX 15 connect_term_uid acts [15, 16, 17] ids ['p3a_t_in', 'p3a_w_cnt_in', 'p3a_w_cnt_inc'] bound {-41: 27344} diff 0
+  METER pre    k  16  private 630.2 MB (d +0.0)  handles 46238 (d -1)
+  FACT  connect_term_uid node census: 643 rows
+  FACT  OP connect_term_uid connect_term_uid #27261 <- #27315 -> err '' (5.4 s)
+  FACT  connect_term_uid #27261 <- #27315 AFTER node census: 643 rows
+  FACT  connect_term_uid #27261 <- #27315 CENSUS DIFF: Node 643 -> 643 ; 0 new uid(s): []
+  METER op     k  16  private 630.2 MB (d +0.0)  handles 46238 (d +0)
+  METER read   k  16  private 630.3 MB (d +0.1)  handles 46238 (d +0)
+  STEPX 16 connect_term_uid acts [18, 19, 20] ids ['p3a_t_out', 'p3a_w_inc_out', 'p3a_w_out_r'] bound {-47: 27359} diff 0
+  METER pre    k  17  private 630.5 MB (d +0.2)  handles 46239 (d +1)
+  FACT  case_frame_wire node census: 643 rows
+  OBSERVED uid 27344 -> owner 'CaseStructure' uid 22694 | self 'SelectorTunnel'#27344 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 27359 -> owner 'CaseStructure' uid 22694 | self 'SelectorTunnel'#27359 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  FACT  OP case_frame_wire case #22694 frame 1: {'tunnel': 27344} -> {'tunnel': 27359} -> err '' (29.3 s)
+  FACT  case_frame_wire #22694 frame 1 AFTER node census: 643 rows
+  FACT  case_frame_wire #22694 frame 1 CENSUS DIFF: Node 643 -> 643 ; 0 new uid(s): []
+  METER op     k  17  private 631.7 MB (d +1.2)  handles 46241 (d +2)
+  METER read   k  17  private 633.6 MB (d +1.9)  handles 46240 (d -1)
+  STEPX 17 case_frame_wire acts [21] ids ['p3a_w_true_pass'] bound {} diff 0
+  METER pre    k  18  private 633.9 MB (d +0.3)  handles 46241 (d +1)
+  FACT  create_primitive_nested node census: 643 rows
+  OBSERVED uid 27373 -> owner 'Diagram' uid 27219 | self 'Function'#27373 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'Quotient & Remainder' on #27219 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c124_ring_p3a_20261001_173317.vi', 'uid': 2136} -> err '' (1.8 s)
+  FACT  create primitive p3a_qr AFTER node census: 644 rows
+  FACT  create primitive p3a_qr CENSUS DIFF: Node 643 -> 644 ; 1 new uid(s): [(27373, 'Function', (6937, 2645))]
+  FACT  create primitive p3a_qr new #27373 #27373 lives at: {'diagram_index': 57, 'diagram_uid': 27219, 'diagram_class': 'Diagram', 'nodes_index': 1, 'nodes_on_diagram': 2, 'label': 'Quotient & Remainder'}  (58 diagram(s) scanned of 176, 2.2 s)
+  FACT  create primitive p3a_qr new #27373 terminal table of #27373 (Diagram idx 57, Nodes[1], echo 27373): 4 terminal(s)
+  FACT      create primitive p3a_qr new #27373 t0  'floor(x/y)'                       is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive p3a_qr new #27373 t1  'x-y*floor(x/y)'                   is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive p3a_qr new #27373 t2  'y'                                is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive p3a_qr new #27373 t3  'x'                                is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT  create primitive p3a_qr NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #27373 class 'Function' label 'Quotient & Remainder', 4 terminal(s), 0 wired - REPORTED, left alone
+  METER op     k  18  private 643.1 MB (d +9.2)  handles 46240 (d -1)
+  METER read   k  18  private 647.6 MB (d +4.5)  handles 46240 (d +0)
+  STEPX 18 create         acts [22] ids ['p3a_qr'] bound {-54: 27373} diff 0
+  METER pre    k  19  private 647.6 MB (d +0.0)  handles 46241 (d +1)
+  FACT  case_frame_wire node census: 644 rows
+  OBSERVED uid 27344 -> owner 'CaseStructure' uid 22694 | self 'SelectorTunnel'#27344 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  FACT  OP case_frame_wire case #22694 frame 0: {'tunnel': 27344} -> {'node': 27373, 'term': 'x'} -> err '' (17.8 s)
+  FACT  case_frame_wire #22694 frame 0 AFTER node census: 644 rows
+  FACT  case_frame_wire #22694 frame 0 CENSUS DIFF: Node 644 -> 644 ; 0 new uid(s): []
+  METER op     k  19  private 647.7 MB (d +0.1)  handles 46241 (d +0)
+  METER read   k  19  private 651.7 MB (d +4.0)  handles 46239 (d -2)
+  STEPX 19 case_frame_wire acts [23] ids ['p3a_w_qr_x'] bound {} diff 0
+  METER pre    k  20  private 651.7 MB (d +0.0)  handles 46239 (d +0)
+  FACT  create_primitive_nested node census: 644 rows
+  OBSERVED uid 27433 -> owner 'Diagram' uid 27219 | self 'DigitalNumericConstant'#27433 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'const_donor' on #27219 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorPool_v0.vi', 'uid': 214} -> err '' (2.1 s)
+  FACT  create primitive p3a_k20 AFTER node census: 644 rows
+  FACT  create primitive p3a_k20 CENSUS DIFF: Node 644 -> 644 ; 0 new uid(s): []
+  METER op     k  20  private 651.7 MB (d +0.0)  handles 46238 (d -1)
+  METER read   k  20  private 651.8 MB (d +0.1)  handles 46239 (d +1)
+  STEPX 20 create         acts [24] ids ['p3a_k20'] bound {-59: 27433} diff 0
+  METER pre    k  21  private 651.8 MB (d +0.0)  handles 46239 (d +0)
+  FACT  wire_const node census: 644 rows
+  FACT  OP wire_const DigitalNumericConstant[59] #27433 -> Function[57].t2 -> err '' (0.4 s)
+  FACT  connect #27430->#27416 AFTER node census: 644 rows
+  FACT  connect #27430->#27416 CENSUS DIFF: Node 644 -> 644 ; 0 new uid(s): []
+  METER op     k  21  private 655.8 MB (d +4.0)  handles 46238 (d -1)
+  METER read   k  21  private 655.9 MB (d +0.1)  handles 46239 (d +1)
+  STEPX 21 connect        acts [25] ids ['p3a_w_k20'] bound {} diff 0
+  PASS  E1 every checkpoint's real graph == its simulated step (21 ops)
+  PASS  ST 2 new SelectorTunnels (TI1 in, TO1 out) on case #22694, each ONE outer face + ONE inner face on each frame [27219, 27232]  [[{'term_uid': 27365, 'term_name': '', 'is_source': False, 'wire_uid': 27378, 'owner_uid': 27344, 'owner_class': 'SelectorTunnel', 'frame_diagram': 639, 'term_class': 'OuterTerminal'}, {'term_uid': 27347, 'term_name': '', 'is_source': True, 'wire_uid': 27331, 'owner_uid': 27344, 'owner_class': 'SelectorTunnel', 'frame_diagram': 27219, 'term_class': 'InnerTerminal'}, {'term_uid': 27353, 'term_name': '', 'is_source': True, 'wire_uid': 27350, 'owner_uid': 27344, 'owner_class': 'SelectorTunnel', 'frame_diagram': 27232, 'term_class': 'InnerTerminal'}], [{'term_uid': 27400, 'term_name': '', 'is_source': True, 'wire_uid': 27337, 'owner_uid': 27359, 'owner_class': 'SelectorTunnel', 'frame_diagram': 639, 'term_class': 'OuterTerminal'}, {'term_uid': 27368, 'term_name': '', 'is_source': False, 'wire_uid': 27404, 'owner_uid': 27359, 'owner_class': 'SelectorTunnel', 'frame_diagram': 27219, 'term_class': 'InnerTerminal'}, {'term_uid': 27392, 'term_name': '', 'is_source': False, 'wire_uid': 27350, 'owner_uid': 27359, 'owner_class': 'SelectorTunnel', 'frame_diagram': 27232, 'term_class': 'InnerTerminal'}]]
+  PASS  R4 Q&R.x sits on Increment.x's wire (the False face BRANCHED, PD250(c))  ([{'term_uid': 27424, 'term_name': 'x', 'is_source': False, 'wire_uid': 27331, 'owner_uid': 27373, 'owner_class': 'Function', 'frame_diagram': 27219, 'term_class': 'ParameterTerminal'}], [{'term_uid': 27322, 'term_name': 'x', 'is_source': False, 'wire_uid': 27331, 'owner_uid': 27311, 'owner_class': 'Function', 'frame_diagram': 27219, 'term_class': 'ParameterTerminal'}])
+  PASS  D new wires 11 == sim's 11; lost 0 == sim's 0  {'new': [27073, 27167, 27245, 27331, 27337, 27350, 27378, 27404, 27911, 39296, 39360], 'lost': []}
+  PASS  CEN2 new-object census (classes of the pred) == plan_ring_p3a_pred.json census  {'measured': {'Wire': 11, 'InnerTerminal': 10, 'DigitalNumericConstant': 4, 'OuterTerminal': 7, 'CaseStructure': 1, 'Tunnel': 1, 'SelectorTunnel': 2, 'Diagram': 2}, 'declared': {'LoopTunnel': 0, 'Wire': 11, 'WhileLoop': 0, 'Diagram': 2, 'SubVI': 0, 'Local': 0, 'ControlTerminal': 0, 'ArrayConstant': 0, 'DigitalNumericConstant': 4, 'CaseStructure': 1, 'Tunnel': 1, 'OuterTerminal': 7, 'InnerTerminal': 10, 'SelectorTunnel': 2}, 'diff (measured, declared)': {}}
+  CENSUS-ALL net delta (every class) {"CaseStructure": 1, "Comparison": 1, "Diagram": 2, "DigitalNumericConstant": 4, "Function": 3, "InnerTerminal": 10, "LeftShiftRegister": 2, "OuterTerminal": 7, "OverridableParameterTerminal": 1, "ParameterTerminal": 10, "RightShiftRegister": 2, "SelectorTunnel": 2, "Terminal": 4, "Tunnel": 1, "Wire": 11}
+  CENSUS-ALL new uids by class (every class) {"CaseStructure": 1, "Comparison": 1, "Diagram": 2, "DigitalNumericConstant": 4, "Function": 3, "InnerTerminal": 10, "LeftShiftRegister": 2, "OuterTerminal": 7, "OverridableParameterTerminal": 1, "ParameterTerminal": 10, "RightShiftRegister": 2, "SelectorTunnel": 2, "Terminal": 4, "Tunnel": 1, "Wire": 11}
+  NEWOBJ uid 22694 class CaseStructure | not a terminal row
+  NEWOBJ uid 26747 class Function | not a terminal row
+  NEWOBJ uid 26807 class ParameterTerminal | owner #26747 Function frame 639 term 'millisecond timer value' src True wire 0
+  NEWOBJ uid 26829 class ParameterTerminal | owner #26747 Function frame 639 term 'milliseconds to wait' src False wire 27073
+  NEWOBJ uid 26879 class Comparison | not a terminal row
+  NEWOBJ uid 26984 class DigitalNumericConstant | not a terminal row
+  NEWOBJ uid 27039 class RightShiftRegister | not a terminal row
+  NEWOBJ uid 27043 class Terminal | owner #26984 DigitalNumericConstant frame 639 term 'milliseconds to wait' src True wire 27073
+  NEWOBJ uid 27056 class LeftShiftRegister | not a terminal row
+  NEWOBJ uid 27073 class Wire | not a terminal row
+  NEWOBJ uid 27084 class InnerTerminal | owner #27039 RightShiftRegister frame 639 term 'current image number' src False wire 3747
+  NEWOBJ uid 27094 class Terminal | owner #27095 DigitalNumericConstant frame 686 term '' src True wire 39296
+  NEWOBJ uid 27095 class DigitalNumericConstant | not a terminal row
+  NEWOBJ uid 27103 class OuterTerminal | owner #27039 RightShiftRegister frame 686 term 'current image number' src True wire 0
+  NEWOBJ uid 27119 class InnerTerminal | owner #27056 LeftShiftRegister frame 639 term 'current image number' src True wire 27167
+  NEWOBJ uid 27122 class OuterTerminal | owner #27056 LeftShiftRegister frame 686 term 'current image number' src False wire 39296
+  NEWOBJ uid 27144 class ParameterTerminal | owner #26879 Comparison frame 639 term 'x = y?' src True wire 27245
+  NEWOBJ uid 27154 class ParameterTerminal | owner #26879 Comparison frame 639 term 'y' src False wire 27167
+  NEWOBJ uid 27161 class ParameterTerminal | owner #26879 Comparison frame 639 term 'x' src False wire 3747
+  NEWOBJ uid 27167 class Wire | not a terminal row
+  NEWOBJ uid 27182 class OuterTerminal | owner #27185 Tunnel frame 639 term '' src False wire 27245
+  NEWOBJ uid 27185 class Tunnel | not a terminal row
+  NEWOBJ uid 27192 class InnerTerminal | owner #27185 Tunnel frame 27219 term '' src True wire 0
+  NEWOBJ uid 27196 class InnerTerminal | owner #27185 Tunnel frame 27232 term '' src True wire 0
+  NEWOBJ uid 27219 class Diagram | not a terminal row
+  NEWOBJ uid 27232 class Diagram | not a terminal row
+  NEWOBJ uid 27245 class Wire | not a terminal row
+  NEWOBJ uid 27250 class RightShiftRegister | not a terminal row
+  NEWOBJ uid 27258 class LeftShiftRegister | not a terminal row
+  NEWOBJ uid 27261 class InnerTerminal | owner #27250 RightShiftRegister frame 639 term '' src False wire 27337
+  NEWOBJ uid 27266 class Terminal | owner #27269 DigitalNumericConstant frame 686 term '' src True wire 39360
+  NEWOBJ uid 27269 class DigitalNumericConstant | not a terminal row
+  NEWOBJ uid 27273 class OuterTerminal | owner #27250 RightShiftRegister frame 686 term '' src True wire 0
+  NEWOBJ uid 27278 class InnerTerminal | owner #27258 LeftShiftRegister frame 639 term '' src True wire 27378
+  NEWOBJ uid 27281 class OuterTerminal | owner #27258 LeftShiftRegister frame 686 term '' src False wire 39360
+  NEWOBJ uid 27311 class Function | not a terminal row
+  NEWOBJ uid 27315 class OverridableParameterTerminal | owner #27311 Function frame 27219 term 'x+1' src True wire 27404
+  NEWOBJ uid 27322 class ParameterTerminal | owner #27311 Function frame 27219 term 'x' src False wire 27331
+  NEWOBJ uid 27331 class Wire | not a terminal row
+  NEWOBJ uid 27337 class Wire | not a terminal row
+  NEWOBJ uid 27344 class SelectorTunnel | not a terminal row
+  NEWOBJ uid 27347 class InnerTerminal | owner #27344 SelectorTunnel frame 27219 term '' src True wire 27331
+  NEWOBJ uid 27350 class Wire | not a terminal row
+  NEWOBJ uid 27353 class InnerTerminal | owner #27344 SelectorTunnel frame 27232 term '' src True wire 27350
+  NEWOBJ uid 27359 class SelectorTunnel | not a terminal row
+  NEWOBJ uid 27365 class OuterTerminal | owner #27344 SelectorTunnel frame 639 term '' src False wire 27378
+  NEWOBJ uid 27368 class InnerTerminal | owner #27359 SelectorTunnel frame 27219 term '' src False wire 27404
+  NEWOBJ uid 27373 class Function | not a terminal row
+  NEWOBJ uid 27378 class Wire | not a terminal row
+  NEWOBJ uid 27392 class InnerTerminal | owner #27359 SelectorTunnel frame 27232 term '' src False wire 27350
+  NEWOBJ uid 27394 class ParameterTerminal | owner #27373 Function frame 27219 term 'floor(x/y)' src True wire 0
+  NEWOBJ uid 27400 class OuterTerminal | owner #27359 SelectorTunnel frame 639 term '' src True wire 27337
+  NEWOBJ uid 27401 class ParameterTerminal | owner #27373 Function frame 27219 term 'x-y*floor(x/y)' src True wire 0
+  NEWOBJ uid 27404 class Wire | not a terminal row
+  NEWOBJ uid 27416 class ParameterTerminal | owner #27373 Function frame 27219 term 'y' src False wire 27911
+  NEWOBJ uid 27424 class ParameterTerminal | owner #27373 Function frame 27219 term 'x' src False wire 27331
+  NEWOBJ uid 27430 class Terminal | owner #27433 DigitalNumericConstant frame 27219 term '' src True wire 27911
+  NEWOBJ uid 27433 class DigitalNumericConstant | not a terminal row
+  NEWOBJ uid 27911 class Wire | not a terminal row
+  NEWOBJ uid 39296 class Wire | not a terminal row
+  NEWOBJ uid 39360 class Wire | not a terminal row
+  PASS  TD every base terminal keeps its wire, none lost  {'changed': [], 'lost_rows': []}
+  PASS  FU frame diagrams == base + the case's 2 frames  [27219, 27232]
+  FACT  ExecState [after all rows (ExecState 0 expected: the P2b bed is broken by design)] scratch_c124_ring_p3a_20261001_173317.vi = 0
+  PASS  PB frame-keyed cdiff(S1, real end) == the P2b bed's 16 rows and the plan's 11 open (node, term) pairs (FATAL, before save)  {'extra': [], 'missing': []}
+  FACT  PH handles: post-open 45591 -> before-save 46241
+  PASS  HB open->save handle growth <= +700 (PD236(b) band; refs balance is H5)  (45591, 46241)
+
+---------- [SAVE] scratch_c124_ring_p3a_20261001_173317.vi
+  FACT  ExecState [before the save] scratch_c124_ring_p3a_20261001_173317.vi = 0
+  FACT  SAVE ROUTE = gui_save, the APPROVED broken-intermediate route (CLAUDE.md split-rule 6; evidence "user 2026-09-22 broken-intermediate save"). The artefact is BROKEN BY DESIGN and is NEVER RUN (34(f)).
+  PASS  S1 the save returned without raising (gui_save route)
+  FACT  SAVED ARTEFACT: scratch_c124_ring_p3a_20261001_173317.vi md5 b6028ee7f92aa36dc99f77b553e60d08 size 311845 B; version bytes [0, 38]
+  PASS  S2 the artefact is on disk and non-empty  311845 B
+  FACT  S3 COLD re-open check SKIPPED BY RULE: ExecState was 0, and a broken-saved VI is never cold-loaded headless (recompile spin).
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  b6028ee7f92aa36dc99f77b553e60d08
+  PASS  EL errorlist_expected written: total 54 == P2b 54 + predicted new 0  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\errorlist_expected_scratch_c124_ring_p3a_20261001_173317.json
+
+---------- [H] HYGIENE
+  FACT  gscript ref_counts: {'opened': 9, 'closed': 9, 'live': 0, 'cached_op_vis': 0}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 9, 'closed': 9, 'live': 0, 'cached_op_vis': 0}
+  FACT  LabVIEW handle count AFTER the work: 34125
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 652b1447ebbda761a7d5ba36455a0fa1 / after 652b1447ebbda761a7d5ba36455a0fa1
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: ['scratch_c124_ring_p3a_20261001_173317.vi']  (removed: [])
+  PASS  H6 the files left on disk == ['scratch_c124_ring_p3a_20261001_173317.vi'] and nothing was removed  added ['scratch_c124_ring_p3a_20261001_173317.vi'] removed []
+  FACT  LabVIEW handle count at exit: 34126
+
+====================================================================================================
+=== GATES: 22 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\stage_d1_ring_p3a_scratch_pin.json   elapsed 774.3 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":22,"fail":0},"first_fail":null,"artefacts":[{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c124_ring_p3a_20261001_173317.vi","md5":"b6028ee7f92aa36dc99f77b553e60d08"}]}
+LabVIEW gone at exit: True
+BGRUN END rc=0 after 780s

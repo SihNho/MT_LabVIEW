@@ -1,0 +1,17 @@
+BGRUN START 2026-10-01 16:54:24 limit 5.0 min: py -u tools/bench/selftest_census_hookin_c123.py
+BGRUN PID 14588
+  PASS  H01 prerun census gate, cycle-122 fixture (DNC +1): FAIL with ONE line 'CENSUS FAIL <plan> DigitalNumericConstant derived +5 declared +1'  ['CENSUS FAIL tools/bench/plan_ring_p2b.json DigitalNumericConstant derived +5 declared +1']
+  PASS  H02 corrected prediction (the current plan_ring_p2b_pred.json) -> PASS  ['INFO  CENSUS PASS tools/bench/plan_ring_p2b.json (tools/bench/plan_ring_p2b_pred.json)']
+  PASS  H03 P2a + pool plans -> no FAIL (gate ok) and an ADVISORY CENSUS-UNPREDICTED line each  ['ADVISORY CENSUS-UNPREDICTED tools/bench/plan_ring_p2a.json rows [1, 2, 3, 4, 5, 6, 7, 8] (prerun verdict unchanged; --scratch-required exits 3)', 'ADVISORY CENSUS-UNPREDICTED tools/bench/plan_qrt_pool.json rows [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] (prerun verdict unchanged; --scratc
+  PASS  H04 census_check of a plan with no prediction file -> None (INFO, no gate)  
+  PASS  H05 scratch_requirement(stage_d1_ring_p2a.py) -> required, reason CENSUS-UNPREDICTED  CENSUS-UNPREDICTED tools/bench/plan_ring_p2a.json rows [1, 2, 3, 4, 5, 6, 7, 8] - the scratch run measures the census before the ONE launch
+  PASS  H06 CLI --scratch-required stage_d1_ring_p2a.py exits 3 naming CENSUS-UNPREDICTED  (3, 'SCRATCH-REQUIRED | stage_d1_ring_p2a.py | CENSUS-UNPREDICTED tools/bench/plan_ring_p2a.json rows [1, 2, 3, 4, 5, 6, 7, 8] - the scratch run measures the census before the ONE launch\n', '')
+  PASS  H07 record with a cite that does not hold -> refused, samples file unchanged  record: cite(s) do not hold: tools/bench/diag_c123_wired.log:88 does not carry 'NOT ON THAT LINE'
+  PASS  H08 record with a holding cite -> variant written, its classes added to classes_measured  {'name': 'v', 'delta': {'Wire': 1, 'Foo': 2}, 'n': 1, 'why': '', 'cites': [{'file': 'tools/bench/diag_c123_wired.log', 'line': 88, 'expect': '"Wire": 1'}]}
+  PASS  H09 stagekit census_gate in a DRY run prints UNVERIFIED-DRY, returns None, records no PASS  UNVERIFIED-DRY  CEN x  (census not measured in a dry run; declared {"Wire": 1})
+  PASS  H10 stagekit census_gate real: measured {Wire 1, CaseStructure 1} == declared -> PASS; Wire 1 vs 2 -> FAIL  ({'Wire': 1, 'CaseStructure': 1}, {'Wire': 1}, ['CEN real'], ['CEN real bad'])
+  PASS  H11 case_wired on a fresh source -> SAMPLED variant new_wire with the measured delta (diag_c123_wired.log:88)  {'k': 2, 'id': 'c1', 'op': 'case_wired', 'variant': 'new_wire', 'delta': {'CaseStructure': 1, 'Diagram': 2, 'Tunnel': 1, 'OuterTerminal': 1, 'InnerTerminal': 2, 'Wire': 1}, 'why': 'case_wired new_wire', 'verdict': 'SAMPLED'}
+  PASS  H12 a second case_wired on the SAME source = branch -> CENSUS-UNPREDICTED (never measured)  {'k': 3, 'id': 'c2', 'op': 'case_wired', 'variant': None, 'delta': None, 'why': "no sample for case_wired variant branch (selector source 'new:E1.x = y?')", 'verdict': 'CENSUS-UNPREDICTED'}
+=== GATES: 12 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":12,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

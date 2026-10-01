@@ -1,0 +1,64 @@
+{
+ "schema": "task/1",
+ "id": "124-3",
+ "kind": "build",
+ "goal": "P3a route gaps (offline): resolve tunnel groups into a plan-made case frame in the route check; re-address p3a_w_qr_x by frame; plan v3 simulates with only the 124-1 verb missing",
+ "why": "124-2 left FINALIZE refused on routes 15/16 (ADDRESS) and 19 (branch from a two-face tunnel); P3a cannot finalize without them. Facts and work: brief_124-3.md.",
+ "retry_of_card": "124-2",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_124-3.md"},
+  {"path": "tools/bench/cards/result_124-2.json"},
+  {"path": "tools/bench/plan_ring_p3a_in_v2.json", "md5": "5308f51512fe3b9cc19e33a6935e05c5"},
+  {"path": "tools/bench/plan_ring_p3a_sim_v2.log", "md5": "b2ce0220b8feac4325f5500a452b9d6f"},
+  {"path": "tools/stagesim.py", "md5": "f66a3624b1f01b11f97f17460e5773ef"},
+  {"path": "tools/stagexec.py", "md5": "b82ee36f2071c7cc66de21157d742372"},
+  {"path": "tools/bench/diag_c123_casetun.log", "md5": "3b2363e707f75fc30ff617c3d7eedc87"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3a_in_v2.json"},
+  {"kind": "file", "name": "tools/bench/selftest_case_frame_c124.py"}
+ ],
+ "pass": [
+  "route check resolves cross-border wires into/out of a plan-made case frame (routes 15/16 routable)",
+  "p3a_w_qr_x re-addressed by frame False from the input tunnel inner face; second-sink noted in the row",
+  "plan_ring_p3a_in_v3.json simulates all 25 actions; only UNROUTABLE row allowed = ROUTE 17 CREATE-NO-VERB (or none)",
+  "selftest_case_frame_c124 extended with one case per fix, PASS; existing self-tests green"
+ ],
+ "outputs": [
+  "tools/stagexec.py",
+  "tools/stagesim.py",
+  "tools/bench/plan_ring_p3a_in_v3.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagesim.py",
+   "tools/stagexec.py",
+   "tools/bench/plan_ring_p3a_in_v3.json",
+   "tools/bench/plan_ring_p3a_sim*",
+   "tools/bench/selftest_case_frame_c124*",
+   "tools/bench/selftest_stagexec*",
+   "tools/bench/selftest_stagesim*",
+   "tools/bench/selftest_c120_stageplan_proposed.json",
+   "tools/bench/sim/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 45
+ },
+ "rules": [
+  "Follow brief_124-3.md; never call LabVIEW",
+  "Do not edit gscript.py, stagekit.py, census_samples.json, stage_prerun.py or hooks",
+  "Related edits land together and self-tested, or not at all; return at the first unexpected result"
+ ],
+ "advances": ["M4", "M3"]
+}

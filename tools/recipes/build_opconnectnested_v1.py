@@ -419,6 +419,7 @@ def connect_nested_v1(target, sink_diag, sink_node, sink_term, src_diag, src_nod
     """Wire Diagram[src_diag].Nodes[src_node].Terminals[src_term] (SOURCE) into
     Diagram[sink_diag].Nodes[sink_node].Terminals[sink_term] (SINK). Returns (wire delta, ExecState, error)."""
     g.ensure_loaded(target)
+    inv0 = set(g.uids(target, "Invoke"))     # card 124-1 STEP 3 (PD249(f)): the junk Invoke a cross-border connect leaves is purged
     w0 = g.count(target, "Wire")
     vi = g.op(OP)
     vi.SetControlValue(labels["vi_path"], target)
@@ -450,6 +451,11 @@ def connect_nested_v1(target, sink_diag, sink_node, sink_term, src_diag, src_nod
         except Exception:
             pass
     print(f"      op readback {rd}", flush=True)
+    purged, left = g._purge_new_invokes(target, inv0)       # same protocol as gscript.case_wired (no Remove Bad Wires)
+    if purged or left:
+        print(f"      junk Invoke purge: {purged} purged, left {left}", flush=True)
+    if left:
+        err = err or f"junk Invoke(s) {left} left after the purge"
     return g.count(target, "Wire") - w0, g.exec_state(target), err
 
 

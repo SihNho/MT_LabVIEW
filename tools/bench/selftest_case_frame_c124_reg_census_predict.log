@@ -1,0 +1,20 @@
+BGRUN START 2026-10-01 16:21:27 limit 3.0 min: py -u tools/bench/selftest_census_predict.py
+BGRUN PID 26076
+selftest_census_predict  samples md5 c64a4e4637b933d1dea6ca90d6709a1c  tool md5 59fb2fd2ee2b012f5d29eb44f3bd959d
+  PASS  S1a every sample cites log file:line and each cited line carries its expect string  45 cites, bad []
+  PASS  S1b run-log md5s == census_samples.json runs[]  ['tools/bench/stage_d1_ring_p2b_scratch_pin.log', 'tools/bench/stage_d1_ring_p2b.log']
+  PASS  S1c OpConstInd_v0 and const_donor each have array + scalar variants  {'create_primitive_nested:const_donor': ['array', 'scalar'], 'OpConstInd_v0': ['array', 'scalar'], 'case_wired': ['new_wire']}
+  PASS  S2 census_predict.py imports none of stagesim/stagekit/stagexec/gscript  ['hashlib', 'json', 'os', 'sys']
+  PASS  A0 current P2b pred md5 == 98ca9b30... and its census DigitalNumericConstant == +5  {'ControlTerminal': 5, 'Wire': 5, 'ArrayConstant': 4, 'DigitalNumericConstant': 5}
+  PASS  A1 c122 prediction (+1) -> FAIL naming DigitalNumericConstant derived +5 declared +1, the only failing class  [('DigitalNumericConstant', 5, 1)]
+  PASS  A2 CLI exit 1 and RESULT FAIL whose first_fail names DigitalNumericConstant +5  (1, {'schema': 'result-line/1', 'status': 'FAIL', 'gates': {'pass': 12, 'fail': 1}, 'first_fail': 'CENSUS FAIL DigitalNumericConstant derived +5 declared +1', 'artefacts': []})
+  PASS  B1 current pred -> PASS on every class, no unpredicted row  {'derived': {'ArrayConstant': 4, 'DigitalNumericConstant': 5, 'ControlTerminal': 5, 'Wire': 5}, 'declared': {'ControlTerminal': 5, 'Wire': 5, 'ArrayConstant': 4, 'DigitalNumericConstant': 5}}
+  PASS  B2 CLI exit 0 and RESULT PASS  (0, {'schema': 'result-line/1', 'status': 'PASS', 'gates': {'pass': 13, 'fail': 0}, 'first_fail': None, 'artefacts': []})
+  PASS  C plan_ring_p2a.json -> no class FAIL, UNPREDICTED, 8 unsampled rows listed, RESULT SKIP (never PASS)  {'unpredicted': [1, 2, 3, 4, 5, 6, 7, 8], 'rc': 2, 'status': 'SKIP', 'ops': ['delete_object', 'delete_wire']}
+  PASS  C plan_qrt_pool.json -> no class FAIL, UNPREDICTED, 15 unsampled rows listed, RESULT SKIP (never PASS)  {'unpredicted': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], 'rc': 2, 'status': 'SKIP', 'ops': ['create:ArrayConstant:pool_names', 'create:DigitalNumericConstant:i32_20', 'create:ForLoop', 'create:Function', 'create:RingConstant:ring_dup', 'create:SubVI', 'tunnel', 'wire']}
+  PASS  D1 fabricated row (create Function prim made_up) -> CENSUS-UNPREDICTED, overall UNPREDICTED, no class PASS  ({'k': 11, 'id': 'fab_x', 'op': 'create:Function:made_up', 'variant': None, 'delta': None, 'why': 'no sample for op create:Function:made_up', 'verdict': 'CENSUS-UNPREDICTED'}, 'UNPREDICTED')
+  PASS  D2 const_donor row with unmeasured canon Array1D<U8> (and its indicator) -> UNPREDICTED, never PASS  [1, 2, 7, 8]
+  PASS  D3 CLI on the fabricated plan: exit 2, RESULT SKIP with fail 0 (never PASS)  (2, {'schema': 'result-line/1', 'status': 'SKIP', 'gates': {'pass': 0, 'fail': 0}, 'first_fail': 'CENSUS-UNPREDICTED rows [11]', 'artefacts': []})
+SELFTEST 14 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":14,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/census_predict.py","md5":"59fb2fd2ee2b012f5d29eb44f3bd959d"},{"path":"tools/bench/census_samples.json","md5":"c64a4e4637b933d1dea6ca90d6709a1c"}]}
+BGRUN END rc=0 after 1s

@@ -1,0 +1,166 @@
+BGRUN START 2026-10-01 17:07:42 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_ring_p3a.py
+BGRUN PID 14764
+stage_d1_ring_p3a - card 124-6, RING P3a (d1-loop12-17-split-plan.md PD246(c)(d), 247, 248(a), 249(c), 250(c)(d)): on the SAVED P2b bed
+D1_ring_p2b_20261001_140658.vi (md5 652b1447) build loop 1.1's control in While #637 (body #639): Wait (ms) 1; previous-BufNum register
+(I32 -1) + Equal?(BufNum, prev) -> case_wired; new-frame counter register (I32 0) through the case (False: +1 by Increment, True:
+pass-through) and Quotient & Remainder(count, 20) in the False frame. FRESH LabVIEW -> claudeDev\D1_ring_p3a_<ts>.vi (rule-6 GUI save,
+ExecState 0 by design: the P2b bed is broken, never run) + tools\bench\errorlist_expected_D1_ring_p3a_<ts>.json (P2b's 54 + the
+predicted new items). ROWS ONLY FROM plan_ring_p3a.json (stagesim FINAL of plan_ring_p3a_in_v3.json, plan_ring_p3a_make_v3.py);
+expected values only from plan_ring_p3a_pred.json. PRIOR ART: stage_d1_ring_p2b.py (Executor/LVBackend/DryPlanBE, D/TD/FU/PB/HB/PS
+gates, save); routes connect_term_uid (R1/R2) and case_frame_wire new_wire/branch (R3/R4) measured by card 124-5
+(diag_c124_p3a_scratch.log:53,61,71,77). No new op.
+PREDICTION: L1 25 actions -> 21 ops == pred kinds; E1 every checkpoint == sim; ST 2 new SelectorTunnels, each one inner face per case
+frame; R4 Q&R.x on Increment.x's wire; D new wires == sim's, none lost; CEN2 == pred census (UNVERIFIED-DRY in a dry run); TD every
+base terminal keeps its wire; FU frames == base + the case's 2; PB cdiff(S1, end) == the P2b bed's 16 rows (FATAL, before save);
+HB open->save handles <= +700; PS saved, input unchanged; EL errorlist_expected written (54 + 0).
+    py tools/bgrun.py --material --max-min 45 --log tools/bench/stage_d1_ring_p3a.log -- py -u tools/recipes/stage_d1_ring_p3a.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p3a_in_v3; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == P2b's rows  ('3f32526086781463604e0a45adbb1482', {'path': 'tools/bench/graph_ring_p2b_20261001_154542.json', 'md5': '69b23e0821482acf118bb268d92589fe'}, '652b1447ebbda761a7d5ba36455a0fa1')
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 652b1447ebbda761a7d5ba36455a0fa1  got 652b1447ebbda761a7d5ba36455a0fa1
+  PASS  DRY graph JSON for input md5 652b1447ebbda761a7d5ba36455a0fa1  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_ring_p2b_20261001_154542.json
+  PASS  L1 the 25 actions compile into 21 real ops == pred kinds, each action once  ['create', 'create', 'add_sr', 'create', 'connect', 'wire_sr', 'create', 'connect', 'wire_sr', 'create', 'add_sr', 'create', 'connect', 'create', 'connect_term_uid', 'connect_term_uid', 'case_frame_wire', 'create', 'case_frame_wire', 'create', 'connect']
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 2 touched diagram(s) [639, 686]: one-side-only Nodes[] entries 0
+  PRIME 1 terminal indexes proved at base; 0 ControlTerminal end(s) by 179(b); unprovable []
+  FACT  OP create [1] -> err '' (0.0 s)
+  STEPX 01 create         acts [1] ids ['p3a_wait'] bound {-1: 10000001} diff 0
+  FACT  OP create [2] -> err '' (0.0 s)
+  STEPX 02 create         acts [2] ids ['p3a_wait_k'] bound {-4: 10000005} diff 0
+  FACT  OP add_sr [3] -> err '' (0.0 s)
+  STEPX 03 add_sr         acts [3] ids ['p3a_sr_prev'] bound {-7: 10000007, -8: 10000010} diff 0
+  FACT  OP create [4] -> err '' (0.0 s)
+  STEPX 04 create         acts [4] ids ['p3a_k_prev'] bound {-13: 10000013} diff 0
+  FACT  OP wire_connect [5] -> err '' (0.0 s)
+  STEPX 05 connect        acts [5] ids ['p3a_w_kprev'] bound {} diff 0
+  FACT  OP wire_wire_sr [6] -> err '' (0.0 s)
+  STEPX 06 wire_sr        acts [6] ids ['p3a_w_bn_r'] bound {} diff 0
+  FACT  OP create [7] -> err '' (0.0 s)
+  STEPX 07 create         acts [7] ids ['p3a_eq'] bound {-16: 10000016} diff 0
+  FACT  OP wire_connect [8] -> err '' (0.0 s)
+  STEPX 08 connect        acts [8] ids ['p3a_w_bn_x'] bound {} diff 0
+  FACT  OP wire_wire_sr [9] -> err '' (0.0 s)
+  STEPX 09 wire_sr        acts [9] ids ['p3a_w_prev_y'] bound {} diff 0
+  FACT  OP create [10] -> err '' (0.0 s)
+  STEPX 10 create         acts [10] ids ['p3a_case'] bound {-21: 10000028, -22: 10000025, -23: 10000027, -24: 10000022} diff 0
+  FACT  OP add_sr [11] -> err '' (0.0 s)
+  STEPX 11 add_sr         acts [11] ids ['p3a_sr_cnt'] bound {-29: 10000029, -30: 10000032} diff 0
+  FACT  OP create [12] -> err '' (0.0 s)
+  STEPX 12 create         acts [12] ids ['p3a_k_cnt'] bound {-35: 10000035} diff 0
+  FACT  OP wire_connect [13] -> err '' (0.0 s)
+  STEPX 13 connect        acts [13] ids ['p3a_w_kcnt'] bound {} diff 0
+  FACT  OP create [14] -> err '' (0.0 s)
+  STEPX 14 create         acts [14] ids ['p3a_inc'] bound {-38: 10000038} diff 0
+  FACT  OP wire_connect_term_uid [15, 16, 17] -> err '' (0.0 s)
+  STEPX 15 connect_term_uid acts [15, 16, 17] ids ['p3a_t_in', 'p3a_w_cnt_in', 'p3a_w_cnt_inc'] bound {-41: 10000043} diff 0
+  FACT  OP wire_connect_term_uid [18, 19, 20] -> err '' (0.0 s)
+  STEPX 16 connect_term_uid acts [18, 19, 20] ids ['p3a_t_out', 'p3a_w_inc_out', 'p3a_w_out_r'] bound {-47: 10000049} diff 0
+  FACT  OP wire_case_frame_wire [21] -> err '' (0.0 s)
+  STEPX 17 case_frame_wire acts [21] ids ['p3a_w_true_pass'] bound {} diff 0
+  FACT  OP create [22] -> err '' (0.0 s)
+  STEPX 18 create         acts [22] ids ['p3a_qr'] bound {-54: 10000054} diff 0
+  FACT  OP wire_case_frame_wire [23] -> err '' (0.0 s)
+  STEPX 19 case_frame_wire acts [23] ids ['p3a_w_qr_x'] bound {} diff 0
+  FACT  OP create [24] -> err '' (0.0 s)
+  STEPX 20 create         acts [24] ids ['p3a_k20'] bound {-59: 10000059} diff 0
+  FACT  OP wire_connect [25] -> err '' (0.0 s)
+  STEPX 21 connect        acts [25] ids ['p3a_w_k20'] bound {} diff 0
+  PASS  E1 every checkpoint's real graph == its simulated step (21 ops)
+  UNVERIFIED  ST 2 new SelectorTunnels (TI1 in, TO1 out) on case #10000028, each ONE outer face + ONE inner face on each frame [-22, -23]  (dry: after mutation Stage._op create)
+  PASS  R4 Q&R.x sits on Increment.x's wire (the False face BRANCHED, PD250(c))  ([{'term_uid': 10000058, 'term_name': 'x', 'is_source': False, 'wire_uid': 10000042, 'owner_uid': 10000054, 'owner_class': 'Function', 'frame_diagram': 10000025, 'term_class': 'Terminal'}], [{'term_uid': 10000040, 'term_name': 'x', 'is_source': False, 'wire_uid': 10000042, 'owner_uid': 10000038, 'owner_class': 'Function', 'frame_diagram': 10000025, 'term_class': 'Terminal'}])
+  PASS  D new wires 11 == sim's 11; lost 0 == sim's 0  {'new': [10000004, 10000015, 10000020, 10000021, 10000037, 10000041, 10000042, 10000047, 10000048, 10000053, 10000061], 'lost': []}
+  UNVERIFIED-DRY  CEN2 new-object census (classes of the pred) == plan_ring_p3a_pred.json census  (census not measured in a dry run; declared {"ArrayConstant": 0, "CaseStructure": 1, "ControlTerminal": 0, "Diagram": 2, "DigitalNumericConstant": 4, "InnerTerminal": 10, "Local": 0, "LoopTunnel": 0, "OuterTerminal": 7, "SelectorTunnel": 2, "SubVI": 0, "Tunnel": 1, "WhileLoop": 0, "Wire": 11})
+  PASS  TD every base terminal keeps its wire, none lost  {'changed': [], 'lost_rows': []}
+  UNVERIFIED  FU frame diagrams == base + the case's 2 frames  (dry: after mutation Stage._op create)
+  FACT  ExecState [after all rows (ExecState 0 expected: the P2b bed is broken by design)] D1_ring_p3a_20261001_170743.vi = <dry:g.exec_state>
+  PASS  PB frame-keyed cdiff(S1, real end) == the P2b bed's 16 rows and the plan's 11 open (node, term) pairs (FATAL, before save)  {'extra': [], 'missing': []}
+  FACT  PH handles: post-open <dry:bench_prep.labview_handles> -> before-save None
+  PASS  HB open->save handle growth <= +700 (PD236(b) band; refs balance is H5)  (<dry:bench_prep.labview_handles>, None)
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  dry0dry0dry0dry0dry0dry0dry0dry0
+
+=== DRY PASS: first_fail=None coverage 70/79 lines, first mutation Stage._op create, unverified 2, graph tools/bench/graph_ring_p2b_20261001_154542.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 24s
+BGRUN START 2026-10-01 17:09:23 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_ring_p3a.py
+BGRUN PID 21584
+stage_d1_ring_p3a - card 124-6, RING P3a (d1-loop12-17-split-plan.md PD246(c)(d), 247, 248(a), 249(c), 250(c)(d)): on the SAVED P2b bed
+D1_ring_p2b_20261001_140658.vi (md5 652b1447) build loop 1.1's control in While #637 (body #639): Wait (ms) 1; previous-BufNum register
+(I32 -1) + Equal?(BufNum, prev) -> case_wired; new-frame counter register (I32 0) through the case (False: +1 by Increment, True:
+pass-through) and Quotient & Remainder(count, 20) in the False frame. FRESH LabVIEW -> claudeDev\D1_ring_p3a_<ts>.vi (rule-6 GUI save,
+ExecState 0 by design: the P2b bed is broken, never run) + tools\bench\errorlist_expected_D1_ring_p3a_<ts>.json (P2b's 54 + the
+predicted new items). ROWS ONLY FROM plan_ring_p3a.json (stagesim FINAL of plan_ring_p3a_in_v3.json, plan_ring_p3a_make_v3.py);
+expected values only from plan_ring_p3a_pred.json. PRIOR ART: stage_d1_ring_p2b.py (Executor/LVBackend/DryPlanBE, D/TD/FU/PB/HB/PS
+gates, save); routes connect_term_uid (R1/R2) and case_frame_wire new_wire/branch (R3/R4) measured by card 124-5
+(diag_c124_p3a_scratch.log:53,61,71,77). No new op.
+PREDICTION: L1 25 actions -> 21 ops == pred kinds; E1 every checkpoint == sim; ST 2 new SelectorTunnels, each one inner face per case
+frame; R4 Q&R.x on Increment.x's wire; D new wires == sim's, none lost; CEN2 == pred census (UNVERIFIED-DRY in a dry run); TD every
+base terminal keeps its wire; FU frames == base + the case's 2; PB cdiff(S1, end) == the P2b bed's 16 rows (FATAL, before save);
+HB open->save handles <= +700; PS saved, input unchanged; EL errorlist_expected written (54 + 0).
+    py tools/bgrun.py --material --max-min 45 --log tools/bench/stage_d1_ring_p3a.log -- py -u tools/recipes/stage_d1_ring_p3a.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p3a_in_v3; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == P2b's rows  ('3f32526086781463604e0a45adbb1482', {'path': 'tools/bench/graph_ring_p2b_20261001_154542.json', 'md5': '69b23e0821482acf118bb268d92589fe'}, '652b1447ebbda761a7d5ba36455a0fa1')
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 652b1447ebbda761a7d5ba36455a0fa1  got 652b1447ebbda761a7d5ba36455a0fa1
+  PASS  DRY graph JSON for input md5 652b1447ebbda761a7d5ba36455a0fa1  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_ring_p2b_20261001_154542.json
+  PASS  L1 the 25 actions compile into 21 real ops == pred kinds, each action once  ['create', 'create', 'add_sr', 'create', 'connect', 'wire_sr', 'create', 'connect', 'wire_sr', 'create', 'add_sr', 'create', 'connect', 'create', 'connect_term_uid', 'connect_term_uid', 'case_frame_wire', 'create', 'case_frame_wire', 'create', 'connect']
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 2 touched diagram(s) [639, 686]: one-side-only Nodes[] entries 0
+  PRIME 1 terminal indexes proved at base; 0 ControlTerminal end(s) by 179(b); unprovable []
+  FACT  OP create [1] -> err '' (0.0 s)
+  STEPX 01 create         acts [1] ids ['p3a_wait'] bound {-1: 10000001} diff 0
+  FACT  OP create [2] -> err '' (0.0 s)
+  STEPX 02 create         acts [2] ids ['p3a_wait_k'] bound {-4: 10000005} diff 0
+  FACT  OP add_sr [3] -> err '' (0.0 s)
+  STEPX 03 add_sr         acts [3] ids ['p3a_sr_prev'] bound {-7: 10000007, -8: 10000010} diff 0
+  FACT  OP create [4] -> err '' (0.0 s)
+  STEPX 04 create         acts [4] ids ['p3a_k_prev'] bound {-13: 10000013} diff 0
+  FACT  OP wire_connect [5] -> err '' (0.0 s)
+  STEPX 05 connect        acts [5] ids ['p3a_w_kprev'] bound {} diff 0
+  FACT  OP wire_wire_sr [6] -> err '' (0.0 s)
+  STEPX 06 wire_sr        acts [6] ids ['p3a_w_bn_r'] bound {} diff 0
+  FACT  OP create [7] -> err '' (0.0 s)
+  STEPX 07 create         acts [7] ids ['p3a_eq'] bound {-16: 10000016} diff 0
+  FACT  OP wire_connect [8] -> err '' (0.0 s)
+  STEPX 08 connect        acts [8] ids ['p3a_w_bn_x'] bound {} diff 0
+  FACT  OP wire_wire_sr [9] -> err '' (0.0 s)
+  STEPX 09 wire_sr        acts [9] ids ['p3a_w_prev_y'] bound {} diff 0
+  FACT  OP create [10] -> err '' (0.0 s)
+  STEPX 10 create         acts [10] ids ['p3a_case'] bound {-21: 10000028, -22: 10000025, -23: 10000027, -24: 10000022} diff 0
+  FACT  OP add_sr [11] -> err '' (0.0 s)
+  STEPX 11 add_sr         acts [11] ids ['p3a_sr_cnt'] bound {-29: 10000029, -30: 10000032} diff 0
+  FACT  OP create [12] -> err '' (0.0 s)
+  STEPX 12 create         acts [12] ids ['p3a_k_cnt'] bound {-35: 10000035} diff 0
+  FACT  OP wire_connect [13] -> err '' (0.0 s)
+  STEPX 13 connect        acts [13] ids ['p3a_w_kcnt'] bound {} diff 0
+  FACT  OP create [14] -> err '' (0.0 s)
+  STEPX 14 create         acts [14] ids ['p3a_inc'] bound {-38: 10000038} diff 0
+  FACT  OP wire_connect_term_uid [15, 16, 17] -> err '' (0.0 s)
+  STEPX 15 connect_term_uid acts [15, 16, 17] ids ['p3a_t_in', 'p3a_w_cnt_in', 'p3a_w_cnt_inc'] bound {-41: 10000043} diff 0
+  FACT  OP wire_connect_term_uid [18, 19, 20] -> err '' (0.0 s)
+  STEPX 16 connect_term_uid acts [18, 19, 20] ids ['p3a_t_out', 'p3a_w_inc_out', 'p3a_w_out_r'] bound {-47: 10000049} diff 0
+  FACT  OP wire_case_frame_wire [21] -> err '' (0.0 s)
+  STEPX 17 case_frame_wire acts [21] ids ['p3a_w_true_pass'] bound {} diff 0
+  FACT  OP create [22] -> err '' (0.0 s)
+  STEPX 18 create         acts [22] ids ['p3a_qr'] bound {-54: 10000054} diff 0
+  FACT  OP wire_case_frame_wire [23] -> err '' (0.0 s)
+  STEPX 19 case_frame_wire acts [23] ids ['p3a_w_qr_x'] bound {} diff 0
+  FACT  OP create [24] -> err '' (0.0 s)
+  STEPX 20 create         acts [24] ids ['p3a_k20'] bound {-59: 10000059} diff 0
+  FACT  OP wire_connect [25] -> err '' (0.0 s)
+  STEPX 21 connect        acts [25] ids ['p3a_w_k20'] bound {} diff 0
+  PASS  E1 every checkpoint's real graph == its simulated step (21 ops)
+  PASS  ST 2 new SelectorTunnels (TI1 in, TO1 out) on case #10000028, each ONE outer face + ONE inner face on each frame [10000025, 10000027]  [[{'term_uid': 10000044, 'term_name': '', 'is_source': False, 'wire_uid': 10000041, 'owner_uid': 10000043, 'owner_class': 'SelectorTunnel', 'frame_diagram': 639, 'term_class': 'OuterTerminal'}, {'term_uid': 10000045, 'term_name': '', 'is_source': True, 'wire_uid': 10000042, 'owner_uid': 10000043, 'owner_class': 'SelectorTunnel', 'frame_diagram': 10000025, 'term_class': 'InnerTerminal'}, {'term_uid': 10000046, 'term_name': '', 'is_source': True, 'wire_uid': 10000053, 'owner_uid': 10000043, 'owner_class': 'SelectorTunnel', 'frame_diagram': 10000027, 'term_class': 'InnerTerminal'}], [{'term_uid': 10000050, 'term_name': '', 'is_source': True, 'wire_uid': 10000047, 'owner_uid': 10000049, 'owner_class': 'SelectorTunnel', 'frame_diagram': 639, 'term_class': 'OuterTerminal'}, {'term_uid': 10000051, 'term_name': '', 'is_source': False, 'wire_uid': 10000048, 'owner_uid': 10000049, 'owner_class': 'SelectorTunnel', 'frame_diagram': 10000025, 'term_class': 'InnerTerminal'}, {'term_uid': 10000052, 'term_name': '', 'is_source': False, 'wire_uid': 10000053, 'owner_uid': 10000049, 'owner_class': 'SelectorTunnel', 'frame_diagram': 10000027, 'term_class': 'InnerTerminal'}]]
+  PASS  R4 Q&R.x sits on Increment.x's wire (the False face BRANCHED, PD250(c))  ([{'term_uid': 10000058, 'term_name': 'x', 'is_source': False, 'wire_uid': 10000042, 'owner_uid': 10000054, 'owner_class': 'Function', 'frame_diagram': 10000025, 'term_class': 'Terminal'}], [{'term_uid': 10000040, 'term_name': 'x', 'is_source': False, 'wire_uid': 10000042, 'owner_uid': 10000038, 'owner_class': 'Function', 'frame_diagram': 10000025, 'term_class': 'Terminal'}])
+  PASS  D new wires 11 == sim's 11; lost 0 == sim's 0  {'new': [10000004, 10000015, 10000020, 10000021, 10000037, 10000041, 10000042, 10000047, 10000048, 10000053, 10000061], 'lost': []}
+  UNVERIFIED-DRY  CEN2 new-object census (classes of the pred) == plan_ring_p3a_pred.json census  (census not measured in a dry run; declared {"ArrayConstant": 0, "CaseStructure": 1, "ControlTerminal": 0, "Diagram": 2, "DigitalNumericConstant": 4, "InnerTerminal": 10, "Local": 0, "LoopTunnel": 0, "OuterTerminal": 7, "SelectorTunnel": 2, "SubVI": 0, "Tunnel": 1, "WhileLoop": 0, "Wire": 11})
+  PASS  TD every base terminal keeps its wire, none lost  {'changed': [], 'lost_rows': []}
+  PASS  FU frame diagrams == base + the case's 2 frames  [10000025, 10000027]
+  FACT  ExecState [after all rows (ExecState 0 expected: the P2b bed is broken by design)] D1_ring_p3a_20261001_170924.vi = <dry:g.exec_state>
+  PASS  PB frame-keyed cdiff(S1, real end) == the P2b bed's 16 rows and the plan's 11 open (node, term) pairs (FATAL, before save)  {'extra': [], 'missing': []}
+  FACT  PH handles: post-open <dry:bench_prep.labview_handles> -> before-save None
+  PASS  HB open->save handle growth <= +700 (PD236(b) band; refs balance is H5)  (<dry:bench_prep.labview_handles>, None)
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  dry0dry0dry0dry0dry0dry0dry0dry0
+
+=== DRY PASS: first_fail=None coverage 70/79 lines, first mutation Stage._op create, unverified 0, graph tools/bench/graph_ring_p2b_20261001_154542.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 26s

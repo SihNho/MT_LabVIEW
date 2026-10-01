@@ -1,0 +1,23 @@
+{"schema":"result/1","id":"124-7","status":"FAIL","gates":{"pass":10,"fail":2},
+"first_fail":"E1 stopped IN op 1 (create p3a_wait, Wait (ms)): BINDING sim term_class 'Terminal' vs real 'ParameterTerminal' (stage_d1_ring_p3a_scratch_pin.log:71)",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/stage_d1_ring_p3a_scratch.py","md5":"9fe332320626aedd8a9fe89252c23563"},
+ {"path":"tools/bench/stage_d1_ring_p3a_el.py","md5":"59fe6419d90fc6b517a6ef0a1c9e4020"},
+ {"path":"tools/bench/stage_d1_ring_p3a_scratch_dry.log","md5":"b6dc4ccb635ac269942f80e269b64f20"},
+ {"path":"tools/bench/stage_d1_ring_p3a_scratch_prerun.log","md5":"72bfee065d6cb390d130f45e056d4fa4"},
+ {"path":"tools/bench/stage_d1_ring_p3a_scratch_pin.log","md5":"df268b51756ef874d181f394042c067e"},
+ {"path":"tools/bench/stage_d1_ring_p3a_scratch_pin.json","md5":"bc5b84e481d753da2b4db600e2c92614"}],
+"facts":[
+ "Scratch wrapper (recipe body imported unchanged, stage name scratch_c124_ring_p3a): dry PASS (scratch_dry.log:98), prerun 14/0 WARN X10/X13/X14 (scratch_prerun.log:120)",
+ "Scratch pin run 10/2, 187 s: L1 25 actions -> 21 ops PASS (scratch_pin.log:52); op 1 create Wait (ms) on #639 from OpWaitDonor_v0 uid 163, err '' -> new Function #26747 (log:60-63)",
+ "Real terminal table of #26747: 'millisecond timer value' src, 'milliseconds to wait' sink, both ParameterTerminal, unwired (log:65-67,71)",
+ "E1 FAIL: sim keys {('Terminal',False,'milliseconds to wait'),('Terminal',True,'millisecond timer value')} vs real ParameterTerminal (log:71); run stopped, nothing after op 1",
+ "Sim side: plan_ring_p3a.json:28-37 declares p3a_wait terminals without term_class; stagesim.py:1317 defaults a declared terminal to 'Terminal'",
+ "Hygiene: refs 4/4, input md5 652b1447 unchanged, all pins OK, scratch deleted, files left [] (log:76-88); LabVIEW gone (log:95; tasklist count 0)",
+ "NOT DONE (returned at first unexpected result): census sample, Error List pin, ONE launch, final Error List; plan, pred, recipe, census_samples.json untouched",
+ "JEV ladder | stage_d1_ring_p3a_scratch_pin.log | no JEV-LADDER row yet (jev_gate.log) | - | returned, no retry | -"],
+"open":[
+ "The plan's created-Function terminals need term_class 'ParameterTerminal' (plan regen) or stagesim's default must change for primitives: which, given plan_ring_p3a.json is frozen for this card?"],
+"cost":{"usd":null,"minutes":17,"labview_runs":1},
+"note":"chat-P2 return: one LabVIEW run, failed at op 1 on a sim/real binding key, no diagnosis or retry. stage_d1_ring_p3a_el.py is written (cut of the P2b one, 54/55 total gate) but never run. No GUI act was made."}

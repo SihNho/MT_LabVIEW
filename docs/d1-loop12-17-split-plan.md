@@ -2527,6 +2527,46 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
        ≥ 2,000 calls), then the `frame` field of (d); the two connect verbs get the same `Invoke` purge as `case_wired`. A5 is
        NOT redesigned: counting outside the case (`count + coerce(BufNum − prev, 0, 1)`) avoids the op but adds ~8 rows to
        P3a, and P4's `last` register needs the pass-through anyway.
+250. **(cycle 124 judgement, 2026-10-01 — after 124-1..124-5)**
+     USER-RULES: U1, U4 (relied on; tooling only, none contradicted).
+     - **(a) The case-tunnel tool is BUILT and the P3a counter subgraph is PROVEN on a scratch** (`result_124-5.json` PASS
+       25/0, `tools/bench/diag_c124_p3a_scratch.log`): new op `claudeDev\OpConnectTermUid_v0.vi` (md5 `34120e63…`, hygiene
+       2,000 calls 0 errors, handles flat, `tools/bench/op_hygiene/OpConnectTermUid_v0.json`); `gscript.connect_term_uid`
+       (any terminal → any terminal by uid, purges its own junk `Invoke`s), `case_inner_face`, `case_frame_wire`. Measured:
+       a shift register's inner face is a terminal row (`OpAllTerms_v1`), not a Nodes[] entry; register LEFT inner → node in
+       the False frame = ONE SelectorTunnel with one face per frame, +2 Wire, `Is Broken?` False (R1); node → register RIGHT
+       inner likewise (R2); True-frame tunnel → tunnel = Wire +1, no tunnel (R3); a second sink on an already-wired inner face
+       = LabVIEW BRANCHES the existing wire, census {} (R4). Owner-check fix in `create_primitive_nested` (TopLevelDiagram for
+       the top diagram only). Junk-`Invoke` purge added to `connect_nested_v1` / `connect_from_wire` (`result_124-1.json`).
+     - **(b) The plan format has `frame`** (`result_124-2.json`): stageplan `frame` (frame NAME) on a case-tunnel wire end;
+       stagesim per-frame inner faces; stagexec route `case_frame_wire`. 124-2 BLOCKED only on gate-fp fp-12 (the census
+       hook-in self-test refused under `labview: none`); that self-test ran green in 124-1/124-4/124-5.
+     - **(c) DECIDED for P3a/P4 plans:** a crossing whose outside end is a register inner face compiles to `connect_term_uid`
+       (route model = R1/R2); a second sink on a used inner face is a `case_frame_wire` row with variant `branch`, census {}
+       (R4) — 124-3's two route gaps (`result_124-3.json`) close this way, no re-plan of A5. `stage_prerun.SP_WIRING` gets
+       `case_frame_wire` and `connect_term_uid` (gate edit, made while no LabVIEW card is live).
+     - **(d) Order:** card 124-6 (offline) = these routes + P3a FINAL plan, recipe, dry, prerun, prior-art,
+       `--scratch-required`; the next cycle = the scratch run and ONE launch of P3a. **SUPERSEDED by 251** (both ran this cycle).
+251. **(cycle 124 judgement, 2026-10-01 — after 124-6 PASS, 124-7 FAIL 10/2, 124-8 PASS 5/0)**
+     USER-RULES: U1, U4, U9 (relied on; none contradicted).
+     - **(a) P3a DELIVERED — the new bed: `claudeDev\D1_ring_p3a_20261001_180540.vi`, md5 `4dfa44aac8fb32f706b3eb792ee7d3cc`.**
+       Scratch 22/0 then ONE launch 22/0 (`stage_d1_ring_p3a.log`), census == pred incl. the MODEL `add_shift_reg` lines
+       (sample recorded), refs 9/9, handles in band, P2b bed unchanged. Error List 55 == the scratch pin == the plan's
+       alternative (54 P2b items + 1 `Wire: Wire has loose ends.`); expected file
+       `tools/bench/errorlist_expected_D1_ring_p3a_20261001_180540.json` reverdicts OK. STRUCTURAL, `ExecState` 0 by design,
+       never run. Broken-intermediate count **2 of 6**. `current-bed:` moves to it; P2b is kept as its input.
+     - **(b) 124-7's FAIL was the plan's, not the tool's:** created-node terminals declared without `term_class` took
+       stagesim's default `Terminal`; LabVIEW's primitives have `ParameterTerminal` (and `Increment`'s `x+1` is
+       `OverridableParameterTerminal`). Fixed by declaring measured classes row by row (`plan_ring_p3a_make_v3b.py`);
+       hypothesis review `archive/peer/2026-10-01-c124-8-p3a-termclass-hyp.md` ANSWERED, cause kept. **DECIDED: a prerun
+       check that REFUSES a primitive create whose declared terminals lack `term_class`** (the review's suggestion; P3b and
+       P4 create primitives again) — an offline gate edit, made while no LabVIEW card is live.
+     - **(c) The 55th item is TRACED before P3b is planned** (a read-only Error List double-click / wire read on the P3a
+       bed): which wire has loose ends. If it is the expected open end that P3b consumes (the plan's alternative), P3b's
+       prediction takes it back to 54; anything else is an OPEN for judgement.
+     - **(d) Next, in order:** the trace (c) and the prerun check (b) (offline/read-only, may share one card); the Flat
+       Sequence creator (PD248(c), a NEW op with its hygiene record, own LabVIEW card); then P3b. P3b's size still waits for
+       **D-2026-10-01-01**; unanswered when P3b is ready ⇒ one step with a full scratch run (PD246(d)).
 
 ## OPEN (design choices — for judgement; not decided here)
 

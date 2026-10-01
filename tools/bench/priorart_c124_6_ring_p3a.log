@@ -1,0 +1,48 @@
+BGRUN START 2026-10-01 17:09:42 limit 20.0 min: py -u tools/prior_art_review.py --plan-file tools/bench/plan_ring_p3a.json --slug c124-6-ring-p3a --trigger new-op --recipe tools/recipes/stage_d1_ring_p3a.py
+BGRUN PID 9284
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c124-6-ring-p3a.txt (55281 chars)
+   review card tools\bench\cards\review_priorart-c124-6-ring-p3a.json
+OUTCOME: ANSWERED (55s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-01-priorart-c124-6-ring-p3a.md
+COST: $1.1518  in 12 / out 4334 / cache-create 117041 / cache-read 643671  (51s, 11 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c124-6-ring-p3a verdict=novel -> tools\bench\cards\verdict_priorart-c124-6-ring-p3a.json
+--- ANSWER ---
+The answer is **novel**. Nothing in the project files duplicates this work, refutes it, or contradicts it. The recipe is the P3a build that the design decisions call for, and it uses tools the project has already built and measured.
+
+**PART A: the direction**
+- **A1 (already settled):** Yes, and it was settled *for* this work, not against it. The P3a design comes from `docs/d1-loop12-17-split-plan.md:2408-2433` (PD246(c)(d), 2026-10-01). Those lines set the shape:
+  - two shift registers on While `#637`, initialised from constants on `686`;
+  - `Equal?`, with True meaning a duplicate frame;
+  - the counter is incremented in the False frame and passed through in the True frame;
+  - the slot number is the count mod 20;
+  - `Wait (ms)` 1.
+
+  The routes come from `:2544-2549` (PD250(c)(d)). This is the decision the recipe carries out, so it does not count as prior art against it.
+- **A2 (already refuted):** No. The earlier failures were tool gaps, not a wrong direction:
+  - 123-8 failed because no tool could address the face of a case tunnel in a given frame (`:2504-2510`).
+  - 123-9 failed for a related reason: no existing tool could reach a case tunnel's inner face in a given frame (`:2520-2529`).
+
+  Both rulings kept the counter design (A5) and built the tool. PD250(a) says that tool is now built (`:2532-2540`).
+- **A3 (contradicted):** No.
+  - The plan's I32 −1 constant from `DonorRingConst_v0` `#249` matches PD249(b) (`:2500-2502`), which supersedes the U32 possibility in PD246(c) A3 (`:2419`).
+  - The I32 0 counter constant from `#248` matches PD247(d) (`:2460`).
+  - The `$work` donors `Equal?` `#10019`, `Increment` `#1978` and `Quotient & Remainder` `#2136` have the terminal sets measured in PD247(b) (`:2452-2454`).
+- **A4 (unread evidence):** No. The recipe's docstring cites PD246–250 and `diag_c124_p3a_scratch.log:53,61,71,77`, which are the right sources.
+
+**PART B: the build**
+- **B1/B3 (already built, or a helper exists):** The build reuses existing helpers rather than duplicating them: `gscript.connect_term_uid` (`tools/gscript.py:4903`), `case_frame_wire` (`:4949`), `case_wired` (`:4840`) and `sr_init_const` (`:2241`). It also follows the `stage_d1_ring_p2b.py` executor pattern. The review was triggered as "new-op", but the only new op, `OpConnectTermUid_v0`, was built with its hygiene record in card 124-1 (`:2533-2534`). The recipe itself says "No new op" (`tools/recipes/stage_d1_ring_p3a.py:9`).
+- **B2 (already failed):** No launch of this recipe has been made. The only logs are a dry run and a pre-run check; the dry log reports PASS 1/0 twice (`tools/bench/stage_d1_ring_p3a_dry.log:82,165`). One thing to look at, outside prior-art scope: a dry pass of only 1/0 suggests the run stopped after the L0 gate and never executed the plan.
+- **B4 (already measured):** Only the parts were measured. Each route was measured once on a scratch copy: R1/R2 (one SelectorTunnel), R3 (wire +1, no tunnel) and R4 (a branch, census {}) (`:2536-2539`). The full P3a build on the P2b work VI has never been measured.
+
+**PART C: the user's design rules**
+- **C1:** No contradiction. The two places worth checking both follow the rules:
+  - **Control signals by local variable, never by queue (U4):** the new registers are local to loop 1.1, and the plan creates no queue.
+  - **The camera loop must never wait (U6):** the `Wait (ms)` 1 has no data dependency on the frame path. PD246 lists U6 as a rule it relies on (`:2396`), and the ring design keeps the camera loop from ever waiting on loop 1.2 (`:2257`).
+- **Original computation unchanged (U1):** no number computed per bead is touched. This step adds control logic only.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c124-6-ring-p3a","verdict":"novel","alternative":"Executes the design settled in PD246(c)(d)/247/249/250 with already-built tools (connect_term_uid, case_frame_wire, case_wired, sr_init_const); no duplicate, refutation or user-rule conflict found.","discriminating_test":"Scratch run on a P2b byte copy: ST gate (2 SelectorTunnels, one inner face per frame) and R4 (Q&R.x on Increment.x's wire) pass, as R1-R4 did in diag_c124_p3a_scratch.log:53,61,71,77.","violations":[],"sources":["docs/d1-loop12-17-split-plan.md:2408-2433","docs/d1-loop12-17-split-plan.md:2500-2510","docs/d1-loop12-17-split-plan.md:2520-2549","tools/gscript.py:4903","tools/gscript.py:4949","tools/recipes/stage_d1_ring_p3a.py:9"],"note":"Merit, not prior art: the dry log shows only 1 gate PASS (stage_d1_ring_p3a_dry.log:82,165); check that the dry run executed the plan beyond L0."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c124-6-ring-p3a.md
+   STOP RECORD: none - 2026-10-01-priorart-c124-6-ring-p3a.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_ring_p3a.py sha d6286f57dbc8 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 58s

@@ -1,0 +1,24 @@
+{
+ "schema_note": "card 124-5 (brief_124-5.md decision 3 = brief_124-4.md 'Scratch proof'): FINALIZED decision-row plan of tools/bench/diag_c124_p3a_scratch.py. ONE LabVIEW run on ONE never-saved byte copy of the P2b bed. P3a's counter subgraph (PD246(c) A3/A5) built with the functions P3a will use: add_shift_reg on While #637 + sr_init_const (DonorSRInit_v0 #248 I32 0, route const_sr); Equal? E1 ($work #10019) + case_wired on #639; Increment I1 ($work #10150) and Quotient & Remainder Q1 ($work #2136) in the False frame; R1-R4 by connect_term_uid / case_frame_wire with per-frame read-back. Scratch deleted; LabVIEW killed and verified gone.",
+ "input": {"vi": "D1_ring_p2b_20261001_140658.vi", "md5": "652b1447ebbda761a7d5ba36455a0fa1"},
+ "loop": {"uid": 637, "body": 639, "owner": 686},
+ "sr_donor": {"file": "DonorSRInit_v0.vi", "uid": 248, "md5": "8b1a5afe59b035cd088735bdba6368dd", "pos": [3000, 2400]},
+ "case_donor": {"file": "DonorCase_v0.vi", "uid": 742, "md5": "df825c180fe682af2a2cf64db893d64a", "pos": [3600, 1450]},
+ "eq": {"prim": "Equal?", "uid": 10019, "out": "x = y?", "pos": [3300, 1500]},
+ "inc": {"prim": "Increment", "uid": 10150, "x": "x", "out": "x+1", "pos": [60, 60]},
+ "qr": {"prim": "Quotient & Remainder", "uid": 2136, "x": "x", "pos": [60, 220]},
+ "decisions": [
+  {"id": "D-0", "action": "stage", "what": "stagekit Stage: restart LabVIEW, byte copy of the P2b bed = the work copy (never saved)"},
+  {"id": "A1", "action": "create", "what": "add_shift_reg on While #637; left outer face = the one new bare sink of #637's Terminals[]"},
+  {"id": "A2", "action": "wire", "what": "sr_init_const: DonorSRInit_v0 #248 (I32 0) copy onto #686 -> left outer face"},
+  {"id": "A3", "action": "create", "what": "create_primitive_nested $work #10019 Equal? E1 onto #639; case_wired on #639 <- E1 'x = y?' (frames False/True)"},
+  {"id": "A3w", "action": "wire", "what": "case_wired: selector (the copy's one bare sink) <- E1 'x = y?' (connect_nested_v1 inside the verb)"},
+  {"id": "A4", "action": "create", "what": "create_primitive_nested $work #10150 Increment I1 and $work #2136 Q&R Q1 onto the False frame"},
+  {"id": "A5", "action": "read", "what": "register inner faces from OpAllTerms_v1: left owner, is_source, frame_diagram 639; right owner, sink, frame_diagram 639"},
+  {"id": "R1", "action": "wire", "what": "connect_term_uid: sink I1 'x' (False) <- source left inner face: input tunnel; census, Invoke delta, faces per frame"},
+  {"id": "R2", "action": "wire", "what": "connect_term_uid: sink right inner face <- source I1 'x+1' (False): output tunnel; census, Invoke delta, faces per frame"},
+  {"id": "R3", "action": "wire", "what": "case_frame_wire True frame: input tunnel inner face -> output tunnel inner face"},
+  {"id": "R4", "action": "wire", "what": "case_frame_wire False frame: input tunnel inner face -> Q1 'x' (second sink; branch read back)"},
+  {"id": "X", "action": "discard", "what": "close(): scratch deleted, bed md5 unchanged, LabVIEW killed and gone"}
+ ]
+}

@@ -1,0 +1,432 @@
+{
+ "schema": "stageplan/1",
+ "stage": "ring_p3a",
+ "goal": "RING P3a (PD246(c)(d), 247, 248): loop-1.1 control on the SAVED P2b bed; v3 (card 124-6): routes connect_term_uid (R1/R2) and case_frame_wire branch (R4)",
+ "base": {
+  "path": "tools/bench/graph_ring_p2b_20261001_154542.json",
+  "md5": "69b23e0821482acf118bb268d92589fe"
+ },
+ "context": {
+  "s1_key": "D1_s1_copy"
+ },
+ "actions": [
+  {
+   "op": "create",
+   "id": "p3a_wait",
+   "class": "Function",
+   "diagram": 639,
+   "as": "WT1",
+   "pos": [
+    3200,
+    60
+   ],
+   "prim": "Wait (ms)",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpWaitDonor_v0.vi",
+    "uid": 163
+   },
+   "terminals": [
+    {
+     "name": "milliseconds to wait",
+     "is_source": false
+    },
+    {
+     "name": "millisecond timer value",
+     "is_source": true
+    }
+   ],
+   "why": "PD246(d): Wait (ms) 1 in loop 1.1, no data dependency on the frame path (donor facts_c100_oplabels.json:266-273)"
+  },
+  {
+   "op": "create",
+   "id": "p3a_wait_k",
+   "class": "DigitalNumericConstant",
+   "diagram": 639,
+   "as": "WK1",
+   "pos": [
+    3150,
+    60
+   ],
+   "on": "new:WT1.milliseconds to wait",
+   "value": 1,
+   "why": "PD246(d): the wait is 1 ms (const_on_term, a node in a While body)"
+  },
+  {
+   "op": "add_shift_reg",
+   "id": "p3a_sr_prev",
+   "loop": 637,
+   "body": 639,
+   "parent": 686,
+   "as": "SP1",
+   "why": "PD246(c) A3: previous-BufNum register on #637"
+  },
+  {
+   "op": "create",
+   "id": "p3a_k_prev",
+   "class": "DigitalNumericConstant",
+   "diagram": 686,
+   "as": "KP1",
+   "pos": [
+    -200,
+    400
+   ],
+   "prim": "const_donor",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRingConst_v0.vi",
+    "uid": 249
+   },
+   "terminals": [
+    {
+     "name": "",
+     "is_source": true
+    }
+   ],
+   "why": "PD246(c) A3 / PD247(a): I32 -1 (BufNum is I32, t6897) = DonorRingConst_v0 #249"
+  },
+  {
+   "op": "wire",
+   "id": "p3a_w_kprev",
+   "src": "new:KP1.value",
+   "dst": "new:SP1L.outer",
+   "why": "PD247(a): const_sr - register initialised at loop start"
+  },
+  {
+   "op": "wire",
+   "id": "p3a_w_bn_r",
+   "src": {
+    "uid": 6810,
+    "term": "current image number"
+   },
+   "dst": "new:SP1R.inner",
+   "why": "PD246(c) A5: the register's right terminal takes BufNum (branch of w3747), outside the case"
+  },
+  {
+   "op": "create",
+   "id": "p3a_eq",
+   "class": "Comparison",
+   "diagram": 639,
+   "as": "EQ1",
+   "pos": [
+    3300,
+    1500
+   ],
+   "prim": "Equal?",
+   "donor": {
+    "donor": "$work",
+    "uid": 10019
+   },
+   "terminals": [
+    {
+     "name": "x = y?",
+     "is_source": true
+    },
+    {
+     "name": "y",
+     "is_source": false
+    },
+    {
+     "name": "x",
+     "is_source": false
+    }
+   ],
+   "why": "PD246(c) A4 / PD247(b): Equal? $work dup of #10019 (Comparison {x = y?, y, x})"
+  },
+  {
+   "op": "wire",
+   "id": "p3a_w_bn_x",
+   "src": {
+    "uid": 6810,
+    "term": "current image number"
+   },
+   "dst": "new:EQ1.x",
+   "why": "Equal? x = BufNum (branch of w3747; PD248(b) branch proven, diag_c123_wired.log:51)"
+  },
+  {
+   "op": "wire",
+   "id": "p3a_w_prev_y",
+   "src": "new:SP1L.inner",
+   "dst": "new:EQ1.y",
+   "why": "Equal? y = previous BufNum"
+  },
+  {
+   "op": "create",
+   "id": "p3a_case",
+   "class": "CaseStructure",
+   "diagram": 639,
+   "as": "CS1",
+   "selector_as": "SEL1",
+   "pos": [
+    3600,
+    1450
+   ],
+   "frames": [
+    "False",
+    "True"
+   ],
+   "src": "new:EQ1.x = y?",
+   "why": "PD248(a): case_wired, True = duplicate (empty), False = new frame"
+  },
+  {
+   "op": "add_shift_reg",
+   "id": "p3a_sr_cnt",
+   "loop": 637,
+   "body": 639,
+   "parent": 686,
+   "as": "SC1",
+   "why": "PD246(c) A3 / PD247(d): new-frame counter on #637"
+  },
+  {
+   "op": "create",
+   "id": "p3a_k_cnt",
+   "class": "DigitalNumericConstant",
+   "diagram": 686,
+   "as": "KC1",
+   "pos": [
+    -200,
+    480
+   ],
+   "prim": "const_donor",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorSRInit_v0.vi",
+    "uid": 248
+   },
+   "terminals": [
+    {
+     "name": "",
+     "is_source": true
+    }
+   ],
+   "why": "PD247(d): counter I32 0 = DonorSRInit_v0 #248"
+  },
+  {
+   "op": "wire",
+   "id": "p3a_w_kcnt",
+   "src": "new:KC1.value",
+   "dst": "new:SC1L.outer",
+   "why": "PD247(a): const_sr"
+  },
+  {
+   "op": "create",
+   "id": "p3a_inc",
+   "class": "Function",
+   "diagram": "new:CS1.f0",
+   "as": "INC1",
+   "pos": [
+    60,
+    60
+   ],
+   "prim": "Increment",
+   "donor": {
+    "donor": "$work",
+    "uid": 1978
+   },
+   "terminals": [
+    {
+     "name": "x+1",
+     "is_source": true
+    },
+    {
+     "name": "x",
+     "is_source": false
+    }
+   ],
+   "why": "PD247(b): Increment $work dup of #1978"
+  },
+  {
+   "op": "tunnel",
+   "id": "p3a_t_in",
+   "loop": "new:CS1",
+   "body": "new:CS1.f0",
+   "parent": 639,
+   "dir": "in",
+   "as": "TI1",
+   "why": "count into the case (False frame)"
+  },
+  {
+   "op": "wire",
+   "id": "p3a_w_cnt_in",
+   "src": "new:SC1L.inner",
+   "dst": "new:TI1.outer",
+   "why": "the register's left value enters the case"
+  },
+  {
+   "op": "wire",
+   "id": "p3a_w_cnt_inc",
+   "src": "new:TI1.inner",
+   "dst": "new:INC1.x",
+   "why": "PD246(c) A5: +1 only on a new frame"
+  },
+  {
+   "op": "tunnel",
+   "id": "p3a_t_out",
+   "loop": "new:CS1",
+   "body": "new:CS1.f0",
+   "parent": 639,
+   "dir": "out",
+   "as": "TO1",
+   "why": "count out of the case"
+  },
+  {
+   "op": "wire",
+   "id": "p3a_w_inc_out",
+   "src": "new:INC1.x+1",
+   "dst": "new:TO1.inner",
+   "why": "False frame: count + 1"
+  },
+  {
+   "op": "wire",
+   "id": "p3a_w_out_r",
+   "src": "new:TO1.outer",
+   "dst": "new:SC1R.inner",
+   "why": "the case output feeds the counter's right terminal"
+  },
+  {
+   "op": "wire",
+   "id": "p3a_w_true_pass",
+   "src": {
+    "uid": "new:TI1",
+    "side": "inner",
+    "frame": "True"
+   },
+   "dst": {
+    "uid": "new:TO1",
+    "side": "inner",
+    "frame": "True"
+   },
+   "why": "PD246(c) A5: the True (duplicate) frame passes the count straight through; v2 (card 124-2, PD249(d)): `frame` = the frame NAME (was 'new:CS1.f1', which stageplan/1 did not accept)"
+  },
+  {
+   "op": "create",
+   "id": "p3a_qr",
+   "class": "Function",
+   "diagram": "new:CS1.f0",
+   "as": "QR1",
+   "pos": [
+    60,
+    160
+   ],
+   "prim": "Quotient & Remainder",
+   "donor": {
+    "donor": "$work",
+    "uid": 2136
+   },
+   "terminals": [
+    {
+     "name": "floor(x/y)",
+     "is_source": true
+    },
+    {
+     "name": "x-y*floor(x/y)",
+     "is_source": true
+    },
+    {
+     "name": "y",
+     "is_source": false
+    },
+    {
+     "name": "x",
+     "is_source": false
+    }
+   ],
+   "why": "PD247(b): Q&R $work dup of #2136; remainder (i) unconnected until P3b"
+  },
+  {
+   "op": "wire",
+   "id": "p3a_w_qr_x",
+   "src": {
+    "uid": "new:TI1",
+    "side": "inner",
+    "frame": "False"
+   },
+   "dst": "new:QR1.x",
+   "why": "x = the count (left value through the case); v3 (card 124-6, PD250(c)): addressed by frame 'False' on TI1's inner face, already wired by its group -> case_frame_wire variant branch (R4, census {}, diag_c124_p3a_scratch.log:77,80)"
+  },
+  {
+   "op": "create",
+   "id": "p3a_k20",
+   "class": "DigitalNumericConstant",
+   "diagram": "new:CS1.f0",
+   "as": "K20",
+   "pos": [
+    0,
+    200
+   ],
+   "prim": "const_donor",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorPool_v0.vi",
+    "uid": 214
+   },
+   "terminals": [
+    {
+     "name": "",
+     "is_source": true
+    }
+   ],
+   "why": "y = I32 20 (DonorPool_v0 #214, plan_qrt_pool_in.json p_i32)"
+  },
+  {
+   "op": "wire",
+   "id": "p3a_w_k20",
+   "src": "new:K20.value",
+   "dst": "new:QR1.y",
+   "why": "ring size 20"
+  }
+ ],
+ "open_rows": [
+  {
+   "node": 376,
+   "term": "current frame data array in",
+   "why": "carried from R2 (plan_l2r2_in.json): QRT (PD175)"
+  },
+  {
+   "node": 376,
+   "term": "frame index",
+   "why": "carried from R2: QRT (PD175)"
+  },
+  {
+   "node": 2626,
+   "term": "array",
+   "why": "carried from R2: licensed rename (plan_l2b1_licence.json)"
+  },
+  {
+   "node": 2626,
+   "term": "element",
+   "why": "carried from R2: QRT (PD182(c)/D5)"
+  },
+  {
+   "node": 5058,
+   "term": "Image In",
+   "why": "carried from R2: QRT (PD177(e))"
+  },
+  {
+   "node": 8634,
+   "term": "index (col)",
+   "why": "carried from R2: QRT (D5)"
+  },
+  {
+   "node": 11261,
+   "term": "array",
+   "why": "carried from R2: PD227(d)"
+  },
+  {
+   "node": 11261,
+   "term": "element",
+   "why": "carried from R2: QRT (D5)"
+  },
+  {
+   "node": 28083,
+   "term": "Magnet position",
+   "why": "carried from R2: QRT (D5)"
+  },
+  {
+   "node": 29625,
+   "term": "index (col)",
+   "why": "carried from R2: QRT (D5)"
+  },
+  {
+   "node": 29973,
+   "term": "element",
+   "why": "carried from R2: QRT (D5)"
+  }
+ ]
+}

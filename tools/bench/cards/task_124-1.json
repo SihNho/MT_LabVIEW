@@ -1,0 +1,78 @@
+{
+ "schema": "task/1",
+ "id": "124-1",
+ "kind": "build",
+ "goal": "PD249(f): gscript functions (op if needed) reaching a case tunnel's inner face per frame and wiring in one frame; scratch proof of the True-frame pass-through; junk-Invoke purge on connect paths",
+ "why": "P3a action 20 (counter passed through the duplicate frame) and P4's last-register need it; 123-9 measured that no existing function reaches the inner face. Steps and the fixed interface: brief_124-1.md.",
+ "retry_of_card": "123-9",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_124-1.md"},
+  {"path": "tools/bench/cards/result_123-9.json", "md5": "f5a1bf663b71420c174b136ff0ddb2ae"},
+  {"path": "tools/bench/diag_c123_casetun.log", "md5": "3b2363e707f75fc30ff617c3d7eedc87"},
+  {"path": "tools/bench/diag_c123_casetun.py", "md5": "e3250c3b2400c0adfddf6dc6f99703f7"},
+  {"path": "tools/gscript.py", "md5": "efef006e4763cadbc0246a4c86484272"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p2b_20261001_140658.vi", "md5": "652b1447ebbda761a7d5ba36455a0fa1"},
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "b4495cdefeb867e0030599c6828e6555"}
+ ],
+ "requires": [
+  {"kind": "verb", "name": "case_wired", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "term_index", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "_purge_new_invokes", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "create_primitive_nested", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "connect_from_wire", "where": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/recipes/build_opconnectnested_v1.py"},
+  {"kind": "file", "name": "tools/bench/diag_c123_casetun.py"}
+ ],
+ "pass": [
+  "S1 the inner-face property/method named by a -Kind fact answer and confirmed on the machine; any NEW op VI has a hygiene record (>= 2000 calls, 0 errors, handles flat +-100)",
+  "S1 gscript.case_inner_face and gscript.case_frame_wire exist with exactly the brief's signatures and return shapes",
+  "S2 scratch on a P2b byte copy: False via Increment, True input inner -> output inner by case_frame_wire; per-frame inner-face uids read back; Is Broken? False on every new wire",
+  "S2 census sample for case_frame_wire in census_samples.json + scratch_verify record; Invoke +0 after the purge",
+  "S3 existing self-tests green (case_wired 14/0, census hook-in 12/0, census_predict 14/0, launch_gate 29/0, c120_routes 29/0)",
+  "bed md5 652b1447... unchanged; scratch deleted; LabVIEW verified gone"
+ ],
+ "outputs": [
+  "tools/gscript.py",
+  "tools/bench/scratch_verify/",
+  "tools/bench/census_samples.json",
+  "tools/bench/op_hygiene/"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/gscript.py",
+   "tools/stagekit.py",
+   "tools/recipes/build_op*",
+   "tools/census_predict.py",
+   "tools/bench/census_*",
+   "tools/bench/opmodels/**",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/op_hygiene/**",
+   "tools/bench/diag_c124_*",
+   "tools/bench/selftest_*c124_1*",
+   "tools/bench/selftest_case_wired*",
+   "docs/NAMES.md",
+   "archive/peer/**",
+   "tools/bench/cards/review_124-1*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\Op*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c124*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "fact"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 75
+ },
+ "rules": [
+  "Follow brief_124-1.md; the interface in it is fixed (card 124-2 compiles to it in parallel)",
+  "Do not edit tools/stagesim.py, tools/stagexec.py, docs/protocol/stageplan.json (card 124-2 owns them)",
+  "No stage recipe is run; stagekit scripts <= 120 lines; byte copies of the bed only",
+  "Return at the first unexpected result; failing log -> Jev ladder row; owed hypothesis review dispatched, never bypassed"
+ ],
+ "advances": ["M4", "M3"]
+}

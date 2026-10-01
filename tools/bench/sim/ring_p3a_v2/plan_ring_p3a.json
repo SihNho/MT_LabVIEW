@@ -1,0 +1,959 @@
+{
+ "schema": "stageplan/1",
+ "stage": "ring_p3a",
+ "goal": "RING P3a (PD246(c)(d), 247, 248): loop-1.1 control on the SAVED P2b bed",
+ "base": {
+  "path": "tools/bench/graph_ring_p2b_20261001_154542.json",
+  "md5": "69b23e0821482acf118bb268d92589fe"
+ },
+ "context": {
+  "s1_key": "D1_s1_copy"
+ },
+ "actions": [
+  {
+   "op": "create",
+   "id": "p3a_wait",
+   "class": "Function",
+   "diagram": 639,
+   "as": "WT1",
+   "pos": [
+    3200,
+    60
+   ],
+   "prim": "Wait (ms)",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpWaitDonor_v0.vi",
+    "uid": 163
+   },
+   "terminals": [
+    {
+     "name": "milliseconds to wait",
+     "is_source": false
+    },
+    {
+     "name": "millisecond timer value",
+     "is_source": true
+    }
+   ],
+   "why": "PD246(d): Wait (ms) 1 in loop 1.1, no data dependency on the frame path (donor facts_c100_oplabels.json:266-273)"
+  },
+  {
+   "op": "create",
+   "id": "p3a_wait_k",
+   "class": "DigitalNumericConstant",
+   "diagram": 639,
+   "as": "WK1",
+   "pos": [
+    3150,
+    60
+   ],
+   "on": "new:WT1.milliseconds to wait",
+   "value": 1,
+   "why": "PD246(d): the wait is 1 ms (const_on_term, a node in a While body)"
+  },
+  {
+   "op": "add_shift_reg",
+   "id": "p3a_sr_prev",
+   "loop": 637,
+   "body": 639,
+   "parent": 686,
+   "as": "SP1",
+   "why": "PD246(c) A3: previous-BufNum register on #637"
+  },
+  {
+   "op": "create",
+   "id": "p3a_k_prev",
+   "class": "DigitalNumericConstant",
+   "diagram": 686,
+   "as": "KP1",
+   "pos": [
+    -200,
+    400
+   ],
+   "prim": "const_donor",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRingConst_v0.vi",
+    "uid": 249
+   },
+   "terminals": [
+    {
+     "name": "",
+     "is_source": true
+    }
+   ],
+   "why": "PD246(c) A3 / PD247(a): I32 -1 (BufNum is I32, t6897) = DonorRingConst_v0 #249"
+  },
+  {
+   "op": "wire",
+   "id": "p3a_w_kprev",
+   "src": "new:KP1.value",
+   "dst": "new:SP1L.outer",
+   "why": "PD247(a): const_sr - register initialised at loop start"
+  },
+  {
+   "op": "wire",
+   "id": "p3a_w_bn_r",
+   "src": {
+    "uid": 6810,
+    "term": "current image number"
+   },
+   "dst": "new:SP1R.inner",
+   "why": "PD246(c) A5: the register's right terminal takes BufNum (branch of w3747), outside the case"
+  },
+  {
+   "op": "create",
+   "id": "p3a_eq",
+   "class": "Comparison",
+   "diagram": 639,
+   "as": "EQ1",
+   "pos": [
+    3300,
+    1500
+   ],
+   "prim": "Equal?",
+   "donor": {
+    "donor": "$work",
+    "uid": 10019
+   },
+   "terminals": [
+    {
+     "name": "x = y?",
+     "is_source": true
+    },
+    {
+     "name": "y",
+     "is_source": false
+    },
+    {
+     "name": "x",
+     "is_source": false
+    }
+   ],
+   "why": "PD246(c) A4 / PD247(b): Equal? $work dup of #10019 (Comparison {x = y?, y, x})"
+  },
+  {
+   "op": "wire",
+   "id": "p3a_w_bn_x",
+   "src": {
+    "uid": 6810,
+    "term": "current image number"
+   },
+   "dst": "new:EQ1.x",
+   "why": "Equal? x = BufNum (branch of w3747; PD248(b) branch proven, diag_c123_wired.log:51)"
+  },
+  {
+   "op": "wire",
+   "id": "p3a_w_prev_y",
+   "src": "new:SP1L.inner",
+   "dst": "new:EQ1.y",
+   "why": "Equal? y = previous BufNum"
+  },
+  {
+   "op": "create",
+   "id": "p3a_case",
+   "class": "CaseStructure",
+   "diagram": 639,
+   "as": "CS1",
+   "selector_as": "SEL1",
+   "pos": [
+    3600,
+    1450
+   ],
+   "frames": [
+    "False",
+    "True"
+   ],
+   "src": "new:EQ1.x = y?",
+   "why": "PD248(a): case_wired, True = duplicate (empty), False = new frame"
+  },
+  {
+   "op": "add_shift_reg",
+   "id": "p3a_sr_cnt",
+   "loop": 637,
+   "body": 639,
+   "parent": 686,
+   "as": "SC1",
+   "why": "PD246(c) A3 / PD247(d): new-frame counter on #637"
+  },
+  {
+   "op": "create",
+   "id": "p3a_k_cnt",
+   "class": "DigitalNumericConstant",
+   "diagram": 686,
+   "as": "KC1",
+   "pos": [
+    -200,
+    480
+   ],
+   "prim": "const_donor",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorSRInit_v0.vi",
+    "uid": 248
+   },
+   "terminals": [
+    {
+     "name": "",
+     "is_source": true
+    }
+   ],
+   "why": "PD247(d): counter I32 0 = DonorSRInit_v0 #248"
+  },
+  {
+   "op": "wire",
+   "id": "p3a_w_kcnt",
+   "src": "new:KC1.value",
+   "dst": "new:SC1L.outer",
+   "why": "PD247(a): const_sr"
+  },
+  {
+   "op": "create",
+   "id": "p3a_inc",
+   "class": "Function",
+   "diagram": "new:CS1.f0",
+   "as": "INC1",
+   "pos": [
+    60,
+    60
+   ],
+   "prim": "Increment",
+   "donor": {
+    "donor": "$work",
+    "uid": 1978
+   },
+   "terminals": [
+    {
+     "name": "x+1",
+     "is_source": true
+    },
+    {
+     "name": "x",
+     "is_source": false
+    }
+   ],
+   "why": "PD247(b): Increment $work dup of #1978"
+  },
+  {
+   "op": "tunnel",
+   "id": "p3a_t_in",
+   "loop": "new:CS1",
+   "body": "new:CS1.f0",
+   "parent": 639,
+   "dir": "in",
+   "as": "TI1",
+   "why": "count into the case (False frame)"
+  },
+  {
+   "op": "wire",
+   "id": "p3a_w_cnt_in",
+   "src": "new:SC1L.inner",
+   "dst": "new:TI1.outer",
+   "why": "the register's left value enters the case"
+  },
+  {
+   "op": "wire",
+   "id": "p3a_w_cnt_inc",
+   "src": "new:TI1.inner",
+   "dst": "new:INC1.x",
+   "why": "PD246(c) A5: +1 only on a new frame"
+  },
+  {
+   "op": "tunnel",
+   "id": "p3a_t_out",
+   "loop": "new:CS1",
+   "body": "new:CS1.f0",
+   "parent": 639,
+   "dir": "out",
+   "as": "TO1",
+   "why": "count out of the case"
+  },
+  {
+   "op": "wire",
+   "id": "p3a_w_inc_out",
+   "src": "new:INC1.x+1",
+   "dst": "new:TO1.inner",
+   "why": "False frame: count + 1"
+  },
+  {
+   "op": "wire",
+   "id": "p3a_w_out_r",
+   "src": "new:TO1.outer",
+   "dst": "new:SC1R.inner",
+   "why": "the case output feeds the counter's right terminal"
+  },
+  {
+   "op": "wire",
+   "id": "p3a_w_true_pass",
+   "src": {
+    "uid": "new:TI1",
+    "side": "inner",
+    "frame": "True"
+   },
+   "dst": {
+    "uid": "new:TO1",
+    "side": "inner",
+    "frame": "True"
+   },
+   "why": "PD246(c) A5: the True (duplicate) frame passes the count straight through; v2 (card 124-2, PD249(d)): `frame` = the frame NAME (was 'new:CS1.f1', which stageplan/1 did not accept)"
+  },
+  {
+   "op": "create",
+   "id": "p3a_qr",
+   "class": "Function",
+   "diagram": "new:CS1.f0",
+   "as": "QR1",
+   "pos": [
+    60,
+    160
+   ],
+   "prim": "Quotient & Remainder",
+   "donor": {
+    "donor": "$work",
+    "uid": 2136
+   },
+   "terminals": [
+    {
+     "name": "floor(x/y)",
+     "is_source": true
+    },
+    {
+     "name": "x-y*floor(x/y)",
+     "is_source": true
+    },
+    {
+     "name": "y",
+     "is_source": false
+    },
+    {
+     "name": "x",
+     "is_source": false
+    }
+   ],
+   "why": "PD247(b): Q&R $work dup of #2136; remainder (i) unconnected until P3b"
+  },
+  {
+   "op": "wire",
+   "id": "p3a_w_qr_x",
+   "src": "new:TI1.inner",
+   "dst": "new:QR1.x",
+   "why": "x = the count (left value through the case)"
+  },
+  {
+   "op": "create",
+   "id": "p3a_k20",
+   "class": "DigitalNumericConstant",
+   "diagram": "new:CS1.f0",
+   "as": "K20",
+   "pos": [
+    0,
+    200
+   ],
+   "prim": "const_donor",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorPool_v0.vi",
+    "uid": 214
+   },
+   "terminals": [
+    {
+     "name": "",
+     "is_source": true
+    }
+   ],
+   "why": "y = I32 20 (DonorPool_v0 #214, plan_qrt_pool_in.json p_i32)"
+  },
+  {
+   "op": "wire",
+   "id": "p3a_w_k20",
+   "src": "new:K20.value",
+   "dst": "new:QR1.y",
+   "why": "ring size 20"
+  }
+ ],
+ "open_rows": [
+  {
+   "node": 376,
+   "term": "current frame data array in",
+   "why": "carried from R2 (plan_l2r2_in.json): QRT (PD175)"
+  },
+  {
+   "node": 376,
+   "term": "frame index",
+   "why": "carried from R2: QRT (PD175)"
+  },
+  {
+   "node": 2626,
+   "term": "array",
+   "why": "carried from R2: licensed rename (plan_l2b1_licence.json)"
+  },
+  {
+   "node": 2626,
+   "term": "element",
+   "why": "carried from R2: QRT (PD182(c)/D5)"
+  },
+  {
+   "node": 5058,
+   "term": "Image In",
+   "why": "carried from R2: QRT (PD177(e))"
+  },
+  {
+   "node": 8634,
+   "term": "index (col)",
+   "why": "carried from R2: QRT (D5)"
+  },
+  {
+   "node": 11261,
+   "term": "array",
+   "why": "carried from R2: PD227(d)"
+  },
+  {
+   "node": 11261,
+   "term": "element",
+   "why": "carried from R2: QRT (D5)"
+  },
+  {
+   "node": 28083,
+   "term": "Magnet position",
+   "why": "carried from R2: QRT (D5)"
+  },
+  {
+   "node": 29625,
+   "term": "index (col)",
+   "why": "carried from R2: QRT (D5)"
+  },
+  {
+   "node": 29973,
+   "term": "element",
+   "why": "carried from R2: QRT (D5)"
+  }
+ ],
+ "final": false,
+ "finalized": {
+  "base": {
+   "path": "tools/bench/graph_ring_p2b_20261001_154542.json",
+   "md5": "69b23e0821482acf118bb268d92589fe"
+  },
+  "plan_in": {
+   "path": "tools/bench/plan_ring_p3a_in_v2.json",
+   "md5": "5308f51512fe3b9cc19e33a6935e05c5"
+  },
+  "last_step": {
+   "path": "tools/bench/sim/ring_p3a_v2/ring_p3a/step_25_wire.json",
+   "md5": "7d758607c1b89425f8c225915d13e48a"
+  },
+  "summary": {
+   "path": "tools/bench/sim/ring_p3a_v2/ring_p3a/summary.json",
+   "md5": "5bcb59b1095403f943aefe704ecda97c"
+  },
+  "end_cdiff_rows": [
+   "11261|Terminal|array|0",
+   "11261|Terminal|element|0",
+   "2626|Terminal|array|0",
+   "2626|Terminal|array|1",
+   "2626|Terminal|array|2",
+   "2626|Terminal|array|3",
+   "2626|Terminal|element|0",
+   "2626|Terminal|element|1",
+   "2626|Terminal|element|2",
+   "28083|Terminal|Magnet position|0",
+   "29625|Terminal|index (col)|0",
+   "29973|Terminal|element|1",
+   "376|Terminal|current frame data array in|0",
+   "376|Terminal|frame index|0",
+   "5058|Terminal|Image In|0",
+   "8634|Terminal|index (col)|0"
+  ],
+  "failed": null,
+  "first_divergent": {
+   "n": 0,
+   "op": "base",
+   "id": null,
+   "rows_from_here": 16
+  },
+  "open_rows": [
+   [
+    376,
+    "current frame data array in"
+   ],
+   [
+    376,
+    "frame index"
+   ],
+   [
+    2626,
+    "array"
+   ],
+   [
+    2626,
+    "element"
+   ],
+   [
+    5058,
+    "Image In"
+   ],
+   [
+    8634,
+    "index (col)"
+   ],
+   [
+    11261,
+    "array"
+   ],
+   [
+    11261,
+    "element"
+   ],
+   [
+    28083,
+    "Magnet position"
+   ],
+   [
+    29625,
+    "index (col)"
+   ],
+   [
+    29973,
+    "element"
+   ]
+  ],
+  "open_rows_match": true,
+  "open_rows_match_legacy": true,
+  "open_rows_classed": {
+   "ok": false,
+   "want": [],
+   "c4_n": 0,
+   "c4_keys": 0,
+   "c4_bad": [],
+   "unclassed": [
+    [
+     376,
+     "current frame data array in"
+    ],
+    [
+     376,
+     "frame index"
+    ],
+    [
+     2626,
+     "array"
+    ],
+    [
+     2626,
+     "element"
+    ],
+    [
+     5058,
+     "Image In"
+    ],
+    [
+     8634,
+     "index (col)"
+    ],
+    [
+     11261,
+     "array"
+    ],
+    [
+     11261,
+     "element"
+    ],
+    [
+     28083,
+     "Magnet position"
+    ],
+    [
+     29625,
+     "index (col)"
+    ],
+    [
+     29973,
+     "element"
+    ]
+   ]
+  },
+  "cdiff_inputs": {
+   "labels": "node_labels_default",
+   "labels_n": 626,
+   "fs_pairs": "state",
+   "fs_pairs_n": 576
+  },
+  "step_files": [
+   {
+    "n": 0,
+    "op": "base",
+    "path": "tools/bench/sim/ring_p3a_v2/ring_p3a/step_00_base.json",
+    "md5": "e1235840f2486ba87720e184df5f630a"
+   },
+   {
+    "n": 1,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p3a_v2/ring_p3a/step_01_create.json",
+    "md5": "b374da4e1dcd92ce927f1e72a4030d38"
+   },
+   {
+    "n": 2,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p3a_v2/ring_p3a/step_02_create.json",
+    "md5": "0fbc48c2ef30154ab2e57d4a7eca7190"
+   },
+   {
+    "n": 3,
+    "op": "add_shift_reg",
+    "path": "tools/bench/sim/ring_p3a_v2/ring_p3a/step_03_add_shift_reg.json",
+    "md5": "68a8493a86d0e413b637ec4a6b54cf0d"
+   },
+   {
+    "n": 4,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p3a_v2/ring_p3a/step_04_create.json",
+    "md5": "f070637584010d0aec2b0c8cacdcb30e"
+   },
+   {
+    "n": 5,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3a_v2/ring_p3a/step_05_wire.json",
+    "md5": "8227eac00e9f36d33a4c5b95888b62d2"
+   },
+   {
+    "n": 6,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3a_v2/ring_p3a/step_06_wire.json",
+    "md5": "b3fde6ce2f5998f952292caf72c7a549"
+   },
+   {
+    "n": 7,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p3a_v2/ring_p3a/step_07_create.json",
+    "md5": "dee78199dcafc2080b5ce8922b0aa072"
+   },
+   {
+    "n": 8,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3a_v2/ring_p3a/step_08_wire.json",
+    "md5": "fba5992aae7e664c5d7a6ade8b7eca2f"
+   },
+   {
+    "n": 9,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3a_v2/ring_p3a/step_09_wire.json",
+    "md5": "69db5f7f293e5a69f089092fd5ba1c76"
+   },
+   {
+    "n": 10,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p3a_v2/ring_p3a/step_10_create.json",
+    "md5": "e498b8f18b151de4a463f5d1d74e5dc6"
+   },
+   {
+    "n": 11,
+    "op": "add_shift_reg",
+    "path": "tools/bench/sim/ring_p3a_v2/ring_p3a/step_11_add_shift_reg.json",
+    "md5": "d737ec53197f27aa3c9015f3b702d282"
+   },
+   {
+    "n": 12,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p3a_v2/ring_p3a/step_12_create.json",
+    "md5": "6096ff4d8ff9c063313d968e5378d933"
+   },
+   {
+    "n": 13,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3a_v2/ring_p3a/step_13_wire.json",
+    "md5": "e36365459ffaab5522655ddf0395df20"
+   },
+   {
+    "n": 14,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p3a_v2/ring_p3a/step_14_create.json",
+    "md5": "df1c0e0a485de3d3d104fb05e7d704da"
+   },
+   {
+    "n": 15,
+    "op": "tunnel",
+    "path": "tools/bench/sim/ring_p3a_v2/ring_p3a/step_15_tunnel.json",
+    "md5": "6f97051985910b3f4970c26235b82c28"
+   },
+   {
+    "n": 16,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3a_v2/ring_p3a/step_16_wire.json",
+    "md5": "456614b005bb24eb25d03a0d0c82b0c8"
+   },
+   {
+    "n": 17,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3a_v2/ring_p3a/step_17_wire.json",
+    "md5": "7301c57d77b9a7e1c19a068f77ff03a4"
+   },
+   {
+    "n": 18,
+    "op": "tunnel",
+    "path": "tools/bench/sim/ring_p3a_v2/ring_p3a/step_18_tunnel.json",
+    "md5": "8bb2508db42646333543816736ca43d7"
+   },
+   {
+    "n": 19,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3a_v2/ring_p3a/step_19_wire.json",
+    "md5": "57b136d4ca91859fa8fbab607bb7b13f"
+   },
+   {
+    "n": 20,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3a_v2/ring_p3a/step_20_wire.json",
+    "md5": "7112139bf71908a58bf4882be5ba26d9"
+   },
+   {
+    "n": 21,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3a_v2/ring_p3a/step_21_wire.json",
+    "md5": "3fc6af3600c9b04fe29bf97ac1270ff5"
+   },
+   {
+    "n": 22,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p3a_v2/ring_p3a/step_22_create.json",
+    "md5": "e616895cf32c80398208388dcfa12a8e"
+   },
+   {
+    "n": 23,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3a_v2/ring_p3a/step_23_wire.json",
+    "md5": "ce337c906cfb164b3d69e99e214be07b"
+   },
+   {
+    "n": 24,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p3a_v2/ring_p3a/step_24_create.json",
+    "md5": "e05bef6122d18992973e724cc7badc5c"
+   },
+   {
+    "n": 25,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3a_v2/ring_p3a/step_25_wire.json",
+    "md5": "7d758607c1b89425f8c225915d13e48a"
+   }
+  ],
+  "undecided": 0,
+  "at": "2026-10-01 16:17:01",
+  "route_check": {
+   "status": "FAIL",
+   "first_fail": "UNROUTABLE 4 row(s): acts [15, 16, 17] ['p3a_t_in', 'p3a_w_cnt_in', 'p3a_w_cnt_inc']: ADDRESS: node #10000032 not in Diagram[5] (#639).Nodes[]; acts [18, 19, 20] ['p3a_t_out', 'p3a_w_inc_out', 'p3a_w_out_r']: ADDRESS: node #10000029 not in Diagram[5] (#639).Nodes[]; acts [21] ['p3a_w_true_pass']: CREATE-NO-VERB case_frame_wire: not defined: ['gscript.case_frame_wire']; acts [23] ['p3a_w_qr_x']: branch: tunnel #10000043 has no wired inner source",
+   "rows": [
+    {
+     "k": 1,
+     "op": "create",
+     "ids": [
+      "p3a_wait"
+     ],
+     "route": "primitive",
+     "how": null,
+     "unroutable": null
+    },
+    {
+     "k": 2,
+     "op": "create",
+     "ids": [
+      "p3a_wait_k"
+     ],
+     "route": "const_on_term",
+     "how": "order-proof",
+     "unroutable": null
+    },
+    {
+     "k": 3,
+     "op": "add_sr",
+     "ids": [
+      "p3a_sr_prev"
+     ],
+     "route": "add_sr",
+     "how": null,
+     "unroutable": null
+    },
+    {
+     "k": 4,
+     "op": "create",
+     "ids": [
+      "p3a_k_prev"
+     ],
+     "route": "primitive",
+     "how": null,
+     "unroutable": null
+    },
+    {
+     "k": 5,
+     "op": "connect",
+     "ids": [
+      "p3a_w_kprev"
+     ],
+     "route": "const_sr",
+     "how": "unique live name '' on loop #637 (tracked index 25)",
+     "unroutable": null
+    },
+    {
+     "k": 6,
+     "op": "wire_sr",
+     "ids": [
+      "p3a_w_bn_r"
+     ],
+     "route": "wire_sr:RightIn",
+     "how": "cached index (proved by its wire uid while wired)",
+     "unroutable": null
+    },
+    {
+     "k": 7,
+     "op": "create",
+     "ids": [
+      "p3a_eq"
+     ],
+     "route": "primitive",
+     "how": null,
+     "unroutable": null
+    },
+    {
+     "k": 8,
+     "op": "connect",
+     "ids": [
+      "p3a_w_bn_x"
+     ],
+     "route": "cfw",
+     "how": "order-proof",
+     "unroutable": null
+    },
+    {
+     "k": 9,
+     "op": "wire_sr",
+     "ids": [
+      "p3a_w_prev_y"
+     ],
+     "route": "wire_sr:LeftIn",
+     "how": "order-proof",
+     "unroutable": null
+    },
+    {
+     "k": 10,
+     "op": "create",
+     "ids": [
+      "p3a_case"
+     ],
+     "route": "case_wired",
+     "how": "order-proof",
+     "unroutable": null
+    },
+    {
+     "k": 11,
+     "op": "add_sr",
+     "ids": [
+      "p3a_sr_cnt"
+     ],
+     "route": "add_sr",
+     "how": null,
+     "unroutable": null
+    },
+    {
+     "k": 12,
+     "op": "create",
+     "ids": [
+      "p3a_k_cnt"
+     ],
+     "route": "primitive",
+     "how": null,
+     "unroutable": null
+    },
+    {
+     "k": 13,
+     "op": "connect",
+     "ids": [
+      "p3a_w_kcnt"
+     ],
+     "route": "const_sr",
+     "how": "unique live name '' on loop #637 (tracked index 27)",
+     "unroutable": null
+    },
+    {
+     "k": 14,
+     "op": "create",
+     "ids": [
+      "p3a_inc"
+     ],
+     "route": "primitive",
+     "how": null,
+     "unroutable": null
+    },
+    {
+     "k": 15,
+     "op": "tunnel",
+     "ids": [
+      "p3a_t_in",
+      "p3a_w_cnt_in",
+      "p3a_w_cnt_inc"
+     ],
+     "route": "tunnel",
+     "how": null,
+     "unroutable": "ADDRESS: node #10000032 not in Diagram[5] (#639).Nodes[]"
+    },
+    {
+     "k": 16,
+     "op": "tunnel",
+     "ids": [
+      "p3a_t_out",
+      "p3a_w_inc_out",
+      "p3a_w_out_r"
+     ],
+     "route": "tunnel",
+     "how": null,
+     "unroutable": "ADDRESS: node #10000029 not in Diagram[5] (#639).Nodes[]"
+    },
+    {
+     "k": 17,
+     "op": "case_frame_wire",
+     "ids": [
+      "p3a_w_true_pass"
+     ],
+     "route": "case_frame_wire",
+     "how": null,
+     "unroutable": "CREATE-NO-VERB case_frame_wire: not defined: ['gscript.case_frame_wire']"
+    },
+    {
+     "k": 18,
+     "op": "create",
+     "ids": [
+      "p3a_qr"
+     ],
+     "route": "primitive",
+     "how": null,
+     "unroutable": null
+    },
+    {
+     "k": 19,
+     "op": "branch",
+     "ids": [
+      "p3a_w_qr_x"
+     ],
+     "route": "branch",
+     "how": null,
+     "unroutable": "branch: tunnel #10000043 has no wired inner source"
+    },
+    {
+     "k": 20,
+     "op": "create",
+     "ids": [
+      "p3a_k20"
+     ],
+     "route": "primitive",
+     "how": null,
+     "unroutable": null
+    },
+    {
+     "k": 21,
+     "op": "connect",
+     "ids": [
+      "p3a_w_k20"
+     ],
+     "route": "const",
+     "how": "order-proof",
+     "unroutable": null
+    }
+   ]
+  }
+ }
+}

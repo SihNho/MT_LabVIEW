@@ -895,7 +895,8 @@ def _uniq_paths(paths):
     return sorted(seen.values())
 
 
-SP_WIRING = ("tunnel", "connect", "wire_sr", "branch")     # stagexec compiled-op kinds that make a wire
+SP_WIRING = ("tunnel", "connect", "wire_sr", "branch",     # stagexec compiled-op kinds that make a wire
+             "case_frame_wire", "connect_term_uid")       # card 124-6 (PD250(c)): == stagexec.REC_WIRING
 # card 100-6: a `wire` action into a While loop's `new:X.cond` compiles to a `stop` op (stagexec compile_plan, self-test
 # T36b; OpStopFromNode_v0). It COVERS its wire action, but the dry trace records it as `stop`, not `wire_*`, so it is not
 # counted among the wiring ops executed (X5 first failed on plan_disp.json r8_stop: 24/25 covered).

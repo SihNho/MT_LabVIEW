@@ -15,7 +15,8 @@
   "CaseStructure",
   "Tunnel",
   "OuterTerminal",
-  "InnerTerminal"
+  "InnerTerminal",
+  "SelectorTunnel"
  ],
  "classes_note": "the class census the P2b runs counted (stage_d1_ring_p2b_scratch_pin.log:51,170; stage_d1_ring_p2b.log:40,159). A delta outside this set was never measured: a class outside it is CENSUS-UNPREDICTED for every row.",
  "attribution": "The two runs measured the census only before and after all 10 ops (scratch_pin:171, launch:160 = CT+5 Wire+5 AC+4 DNC+5). The per-op split is closed by the objects each op was observed to create: during each const_donor call the new constant was read with its owner (OBSERVED lines: an ArrayConstant copy owns its element DigitalNumericConstant, a scalar copy is one DigitalNumericConstant on the frame), and gate G per label read ONE new indicator terminal + ONE new wire. 4x(AC+1,DNC+1) + 1x(DNC+1) + 5x(CT+1,Wire+1) == the measured total delta, no class left over.",
@@ -29,6 +30,16 @@
    "log": "tools/bench/stage_d1_ring_p2b.log",
    "md5": "2070f65dca153464628bc520af4aecae",
    "what": "the P2b launch, cycle 123 (CEN2 PASS with the corrected +5)"
+  },
+  {
+   "log": "tools/bench/diag_c124_p3a_scratch.log",
+   "md5": "0eea1629cc54f43b19a9b2f8c4a39fdd",
+   "what": "card 124-5 scratch on a P2b byte copy: P3a's counter subgraph, R1-R4 by connect_term_uid / case_frame_wire (19/0)"
+  },
+  {
+   "log": "tools/bench/stage_d1_ring_p3a_scratch_pin2.log",
+   "md5": "185e27a495607034012884fcf0d7bd53",
+   "what": "card 124-8 scratch of the RING P3a recipe on a P2b byte copy (22/0, CEN2 == pred incl. the MODEL add_shift_reg lines)"
   }
  ],
  "ops": {
@@ -352,6 +363,149 @@
        "file": "tools/bench/diag_c123_struct.log",
        "line": 43,
        "expect": "'CaseStructure': 1, 'Wire': 1, 'InnerTerminal': 2, 'Tunnel': 1, 'Diagram': 2"
+      }
+     ]
+    }
+   ]
+  },
+  "connect_term_uid": {
+   "plan_match": "a wire whose one end is a shift register's INNER face on the loop body and whose other end is a node terminal in a frame of a case on that body (the wire crosses the case border once)",
+   "route": "gscript.connect_term_uid(target, sink_uid, src_uid) -> OpConnectTermUid_v0 (+ _purge_new_invokes since card 124-5)",
+   "variants": [
+    {
+     "name": "register_end_case_border",
+     "delta": {
+      "SelectorTunnel": 1,
+      "OuterTerminal": 1,
+      "InnerTerminal": 2,
+      "Wire": 2
+     },
+     "n": 2,
+     "why": "R1 (register LEFT inner face -> Increment.x in the False frame = an input tunnel) and R2 (Increment.x+1 in the False frame -> register RIGHT inner face = an output tunnel): each made ONE SelectorTunnel owned by the case with one inner face per frame, the outer wire + the inner wire, Invoke +0; census over report_all(GObject) before/after the call",
+     "cites": [
+      {
+       "file": "tools/bench/diag_c124_p3a_scratch.log",
+       "line": 53,
+       "expect": "CENSUS R1 I1.x <- SR left inner {\"InnerTerminal\": 2, \"OuterTerminal\": 1, \"SelectorTunnel\": 1, \"Wire\": 2}"
+      },
+      {
+       "file": "tools/bench/diag_c124_p3a_scratch.log",
+       "line": 54,
+       "expect": "INVOKE R1 I1.x <- SR left inner delta []"
+      },
+      {
+       "file": "tools/bench/diag_c124_p3a_scratch.log",
+       "line": 61,
+       "expect": "CENSUS R2 SR right inner <- I1.x+1 {\"InnerTerminal\": 2, \"OuterTerminal\": 1, \"SelectorTunnel\": 1, \"Wire\": 2}"
+      },
+      {
+       "file": "tools/bench/diag_c124_p3a_scratch.log",
+       "line": 62,
+       "expect": "INVOKE R2 SR right inner <- I1.x+1 delta []"
+      }
+     ]
+    }
+   ]
+  },
+  "case_frame_wire": {
+   "plan_match": "a wire inside ONE frame of a case whose ends are case tunnel inner faces ({tunnel}) or a node terminal of that frame ({node, term})",
+   "route": "gscript.case_frame_wire(target, case, frame_index, src, dst) -> case_inner_face + connect_term_uid (OpConnectTermUid_v0)",
+   "variants": [
+    {
+     "name": "new_wire",
+     "delta": {
+      "Wire": 1
+     },
+     "n": 1,
+     "why": "R3: True frame, input tunnel inner face (unwired) -> output tunnel inner face: ONE new Wire, no tunnel, Invoke +0",
+     "cites": [
+      {
+       "file": "tools/bench/diag_c124_p3a_scratch.log",
+       "line": 71,
+       "expect": "CENSUS R3 True: tin -> tout {\"Wire\": 1}"
+      },
+      {
+       "file": "tools/bench/diag_c124_p3a_scratch.log",
+       "line": 72,
+       "expect": "INVOKE R3 True: tin -> tout delta []"
+      }
+     ]
+    },
+    {
+     "name": "branch",
+     "delta": {},
+     "n": 1,
+     "why": "R4: False frame, input tunnel inner face that ALREADY carries a wire -> a second sink (Quotient & Remainder.x): LabVIEW branched the existing wire (the sink's wire == the face's wire 27261 before and after); a branch adds no Wire object",
+     "cites": [
+      {
+       "file": "tools/bench/diag_c124_p3a_scratch.log",
+       "line": 77,
+       "expect": "CENSUS R4 False: tin -> Q1.x {}"
+      },
+      {
+       "file": "tools/bench/diag_c124_p3a_scratch.log",
+       "line": 78,
+       "expect": "INVOKE R4 False: tin -> Q1.x delta []"
+      },
+      {
+       "file": "tools/bench/diag_c124_p3a_scratch.log",
+       "line": 80,
+       "expect": "'before': [27261], 'after': [27261], 'q1x_wire': 27261, 'branched_existing': True"
+      }
+     ]
+    }
+   ]
+  },
+  "add_shift_reg": {
+   "variants": [
+    {
+     "name": "while_body",
+     "delta": {
+      "OuterTerminal": 2,
+      "InnerTerminal": 2
+     },
+     "n": 2,
+     "why": "card 124-8 scratch (PD247(e)): each add_shift_reg on While #637 = one Left + one Right register, each ONE outer face (parent #686) + ONE inner face (body #639); no wire. Measured x2 (SP1 #27039/#27056, SC1 #27250/#27258); the scratch CEN2 matched the pred's MODEL +4/+4",
+     "cites": [
+      {
+       "file": "tools/bench/stage_d1_ring_p3a_scratch_pin2.log",
+       "line": 285,
+       "expect": "class InnerTerminal | owner #27039 RightShiftRegister frame 639"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p3a_scratch_pin2.log",
+       "line": 288,
+       "expect": "class OuterTerminal | owner #27039 RightShiftRegister frame 686"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p3a_scratch_pin2.log",
+       "line": 289,
+       "expect": "class InnerTerminal | owner #27056 LeftShiftRegister frame 639"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p3a_scratch_pin2.log",
+       "line": 290,
+       "expect": "class OuterTerminal | owner #27056 LeftShiftRegister frame 686"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p3a_scratch_pin2.log",
+       "line": 304,
+       "expect": "class InnerTerminal | owner #27250 RightShiftRegister frame 639"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p3a_scratch_pin2.log",
+       "line": 307,
+       "expect": "class OuterTerminal | owner #27250 RightShiftRegister frame 686"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p3a_scratch_pin2.log",
+       "line": 308,
+       "expect": "class InnerTerminal | owner #27258 LeftShiftRegister frame 639"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p3a_scratch_pin2.log",
+       "line": 309,
+       "expect": "class OuterTerminal | owner #27258 LeftShiftRegister frame 686"
       }
      ]
     }

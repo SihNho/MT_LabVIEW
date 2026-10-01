@@ -25,7 +25,11 @@ action it covers. `tunnel` + the wire into it + the wire out of it = ONE connect
 can create a bare one); every further wire out of the same tunnel = a branch off its outer wire (connect_from_wire).
 `wire` into new:SRkR.inner = wire_sr RightIn; from new:SRkL.inner = wire_sr LeftIn; a sink that is a front-panel
 ControlTerminal = wire_indicators (branch onto the source's existing wire); any other wire = connect_from_wire when the
-source is wired, else connect_nested_v1. delete_wire is resolved BY ITS TERMINALS (the plan's wire uid names a wire of
+source is wired, else connect_nested_v1; a wire with a `frame` end (a case tunnel's inner face in a named frame, card 124-2)
+= case_frame_wire (gscript.case_frame_wire, frame index = the case's frame order; variant 'branch' when its source is already
+wired by an earlier action, census {}, else 'new_wire', Wire +1 - card 124-6, measured R3/R4); a `tunnel` group on a plan-made
+CASE whose outside end is a plan-made register's INNER face = connect_term_uid (card 124-6, R1/R2: ONE SelectorTunnel, +2 Wire).
+delete_wire is resolved BY ITS TERMINALS (the plan's wire uid names a wire of
 the simulated state; LabVIEW re-creates a source's wire under a new uid on connect_from_wire - opmodels/connect_from_wire).
 COMPARE (pure): terminal-uid sets, edges (src term -> sink term, joined by wire inside ONE read), dangling terminals (on
 a wire with no source or no sink); new objects through the binding; a source terminal the step marks `allow_either`
@@ -238,7 +242,25 @@ ROUTE_VERBS = {
     "case_wired": [("gscript", "case_wired"), ("gscript", "struct_copy_nested"), ("gscript", "case_frames")],   # card 123-7
     "gate": [("gscript", "read_bool_const")],
     "stop": [("file", "tools/bench/opstopfromnode_labels.json")],
+    # card 124-2 (PD249(d)): a wire INSIDE one frame of a plan-made case, an end being a case tunnel's inner face in that
+    # frame (`frame` on the wire end). Contract fixed by brief_124-2.md; the LabVIEW side is card 124-1's.
+    "case_frame_wire": [("gscript", "case_frame_wire")],
+    # card 124-6 (PD250(c)): a tunnel group whose OUTSIDE end is a plan-made shift register's INNER face and whose loop is a
+    # plan-made case = ONE gscript.connect_term_uid (register face -> node in the frame, or back); LabVIEW makes the tunnel
+    "connect_term_uid": [("gscript", "connect_term_uid")],
 }
+# card 124-2: the class-count (census) delta of a non-create route, per variant. card 124-6: MEASURED by card 124-5 on a P2b
+# byte copy (tools/bench/census_samples.json ops connect_term_uid / case_frame_wire; diag_c124_p3a_scratch.log:53,61 R1/R2,
+# :71 R3 new_wire, :77,80 R4 branch). census_predict (a separate tool) still resolves only the rows it has rules for.
+ROUTE_CENSUS = {"case_frame_wire": {"new_wire": {"Wire": 1}, "branch": {}},
+                "connect_term_uid": {"register_end_case_border": {"SelectorTunnel": 1, "OuterTerminal": 1,
+                                                                  "InnerTerminal": 2, "Wire": 2}}}
+CONNECT_TERM_UID_HOW = ("gscript.connect_term_uid(target, sink_uid, src_uid) - OpConnectTermUid_v0, any terminal -> any "
+                        "terminal by uid; the register inner face <-> node in a case frame makes ONE SelectorTunnel (R1/R2, "
+                        "diag_c124_p3a_scratch.log:53,61); junk Invokes purged inside the verb")
+CASE_FRAME_WIRE_HOW = ("gscript.case_frame_wire(target, case_uid, frame_index, src, dst) - src/dst {'tunnel': uid} (that case "
+                       "tunnel's inner face in this frame) or {'node': uid, 'term': name}; returns wire_uid, src_term_uid, "
+                       "dst_term_uid, broken, purged, invoke_left (brief_124-2.md)")
 
 
 def verbs_missing(route):
@@ -426,6 +448,66 @@ def check_symbols(A):
     return defined
 
 
+def case_frame_op(A, i, fr):
+    """card 124-2 (PD249(d)): {frame, frame_index, case} of wire action i whose end(s) carry `frame` - read from the PLAN:
+    each such end names a case tunnel (`tunnel` action, loop = the case alias) or a case selector (`selector_as`) of a case
+    an EARLIER `create CaseStructure` made; the index is that create's `frames` order (default False, True = 0, 1). The
+    executor checks the same index against the simulated case (Executor.execute). Anything else -> ExecStop."""
+    if len(set(fr)) != 1:
+        raise ExecStop("action {0}: the wire's ends name different frames {1}".format(i, fr))
+    cases, owner = {}, {}                                 # case alias -> (alias, frames); tunnel/selector alias -> same
+    for b in A[:i - 1]:
+        if b["op"] == "create" and b.get("class") == "CaseStructure" and b.get("as") and b.get("donor_uid") is None:
+            cases["new:" + b["as"]] = ("new:" + b["as"], list(b.get("frames") or SS.CASE_FRAMES_DEFAULT))
+            if b.get("selector_as"):
+                owner["new:" + b["selector_as"]] = cases["new:" + b["as"]]
+        elif b["op"] == "tunnel" and b.get("as") and b.get("loop") in cases:
+            owner["new:" + b["as"]] = cases[b["loop"]]
+    a, got = A[i - 1], set()
+    for e in (a["src"], a["dst"]):
+        if not (isinstance(e, dict) and e.get("frame") is not None):
+            continue
+        hit = owner.get(e.get("uid"))
+        if hit is None:
+            raise ExecStop("action {0} ({1}): `frame` on {2!r} - only a tunnel or selector of a case an EARLIER create of this "
+                           "plan made has frame names".format(i, a.get("id"), e.get("uid")))
+        got.add(hit[0])
+        if fr[0] not in hit[1]:
+            raise ExecStop("action {0} ({1}): frame {2!r} is not a frame of {3} {4}".format(i, a.get("id"), fr[0], hit[0], hit[1]))
+        k = hit[1].index(fr[0])
+    if len(got) != 1:
+        raise ExecStop("action {0} ({1}): the `frame` ends name {2} cases".format(i, a.get("id"), len(got)))
+    case = got.pop()
+    return {"frame": fr[0], "frame_index": k, "case": case, "variant": _cfw_variant(A, i, case, k)}
+
+
+def _same_end(e1, e2):
+    """Two plan wire ends name the same terminal (symbol + side/term + frame), as far as the PLAN TEXT can tell."""
+    p1, p2 = _sym_of(e1), _sym_of(e2)
+    if p1[0] or p2[0]:
+        f1 = e1.get("frame") if isinstance(e1, dict) else None
+        f2 = e2.get("frame") if isinstance(e2, dict) else None
+        return p1 == p2 and f1 == f2
+    return json.dumps(e1, sort_keys=True) == json.dumps(e2, sort_keys=True)
+
+
+def _cfw_variant(A, i, case, k):
+    """card 124-6 (PD250(c), R4): 'branch' when the source of frame wire i is ALREADY wired by an earlier action - a case
+    tunnel's inner face in frame k taken by its own tunnel group (dir in, body = '<case>.f<k>') or an earlier wire from the
+    same end - else 'new_wire'. Measured: a second sink on a used inner face = LabVIEW branches the existing wire, census {}
+    (diag_c124_p3a_scratch.log:77,80); the first wire on an unwired face = Wire +1 (:71)."""
+    src = A[i - 1]["src"]
+    head, side = _sym_of(src)
+    sf = src.get("frame") if isinstance(src, dict) else None
+    for b in A[:i - 1]:
+        if (b["op"] == "tunnel" and head and sf is not None and "new:" + str(b.get("as")) == head and b.get("dir", "in") == "in"
+                and b.get("loop") == case and b.get("body") == "{0}.f{1}".format(case, k) and side == "inner"):
+            return "branch"
+        if b["op"] == "wire" and _same_end(b["src"], src):
+            return "branch"
+    return "new_wire"
+
+
 def compile_plan(plan):
     """[{kind, acts:[action indices 1-based], ...}] - one entry per REAL op, in order. Raises ExecStop on a shape the
     executor has no real op for (the pre-run gate)."""
@@ -440,6 +522,9 @@ def compile_plan(plan):
             created["new:" + a["as"]] = ("tunnel", i)
         elif a["op"] == "create" and a.get("class") == "WhileLoop" and a.get("as"):
             created["new:" + a["as"]] = ("while", i)
+        elif a["op"] == "create" and a.get("class") == "CaseStructure" and a.get("as") and a.get("donor_uid") is None \
+                and not a.get("prim"):                     # card 124-6: a plan-made case (its tunnel groups may be R1/R2)
+            created["new:" + a["as"]] = ("case", i)
     ops, i = [], 1
     while i <= len(A):
         a = A[i - 1]
@@ -453,18 +538,36 @@ def compile_plan(plan):
         elif op == "tunnel":
             t = "new:" + a["as"]
             nxt = A[i:i + 2]
-            ins = [k for k, b in enumerate(nxt, i + 1) if b["op"] == "wire" and _sym_of(b["dst"])[0] == t]
-            outs = [k for k, b in enumerate(nxt, i + 1) if b["op"] == "wire" and _sym_of(b["src"])[0] == t]
+            grp = lambda b: b["op"] == "wire" and not any(                 # noqa: E731 - card 124-2: a `frame` wire is
+                isinstance(e, dict) and e.get("frame") is not None for e in (b["src"], b["dst"]))   # never a group wire
+            ins = [k for k, b in enumerate(nxt, i + 1) if grp(b) and _sym_of(b["dst"])[0] == t]
+            outs = [k for k, b in enumerate(nxt, i + 1) if grp(b) and _sym_of(b["src"])[0] == t]
             if len(ins) != 1 or len(outs) != 1:
                 raise ExecStop("action {0}: tunnel {1} must be followed by exactly one wire into it and one out of it "
                                "(LabVIEW makes a tunnel only by wiring across the border)".format(i, t))
+            # card 124-6 (PD250(c)): the OUTSIDE end is the one paired with the tunnel's outer face; a plan-made register's
+            # INNER face there, on a plan-made case's tunnel = connect_term_uid (R1 dir in / R2 dir out, measured)
+            outside = A[ins[0] - 1]["src"] if _sym_of(A[ins[0] - 1]["dst"])[1] == "outer" else A[outs[0] - 1]["dst"]
+            oh, oside = _sym_of(outside)
+            reg = created.get(oh, ("",))[0] if oh else ""
+            if created.get(a.get("loop"), ("",))[0] == "case" and oside == "inner" and reg in ("srL", "srR"):
+                if (reg == "srL") != (a.get("dir", "in") == "in"):
+                    raise ExecStop("action {0}: tunnel {1} dir {2!r} with the register end {3} (srL feeds an INPUT tunnel, an "
+                                   "OUTPUT tunnel feeds srR)".format(i, t, a.get("dir", "in"), oh))
+                ops.append({"kind": "connect_term_uid", "acts": [i, i + 1, i + 2], "tunnel": t, "in_act": ins[0],
+                            "out_act": outs[0], "case": a["loop"], "variant": "register_end_case_border"})
+                i += 3
+                continue
             ops.append({"kind": "tunnel", "acts": [i, i + 1, i + 2], "tunnel": t, "in_act": ins[0], "out_act": outs[0]})
             i += 3
             continue
         elif op == "wire":
             ss, sside = _sym_of(a["src"])
             ds, dside = _sym_of(a["dst"])
-            if ds and created.get(ds, ("",))[0] == "while" and dside == "cond":
+            fr = [e.get("frame") for e in (a["src"], a["dst"]) if isinstance(e, dict) and e.get("frame") is not None]
+            if fr:                                         # card 124-2 (PD249(d)): a wire inside one frame of a case
+                ops.append(dict(case_frame_op(A, i, fr), kind="case_frame_wire", acts=[i]))
+            elif ds and created.get(ds, ("",))[0] == "while" and dside == "cond":
                 ops.append({"kind": "stop", "loop": ds, "acts": [i]})          # card 100-3 R8: OpStopFromNode_v0
             elif ds and created.get(ds, ("",))[0] == "srR" and dside == "inner":
                 ops.append({"kind": "wire_sr", "variant": "RightIn", "reg": ds, "acts": [i]})
@@ -1339,6 +1442,10 @@ def bind_state(st, bind):
         L["left_of"] = dict((str(m(int(k))), [m(int(x)) for x in (v if isinstance(v, list) else [v])])
                             for k, v in (L.get("left_of") or {}).items())
     s["sym"] = dict((k, m(v)) for k, v in (s.get("sym") or {}).items())
+    if s.get("case_frames"):                       # card 124-2: frame names by case (stagesim.case_frame_of) - uid-keyed
+        s["case_frames"] = dict((str(m(int(k))), [[n_, m(int(f_))] for n_, f_ in v]) for k, v in s["case_frames"].items())
+    if s.get("case_tunnel_frame"):                 # card 124-2: the group frame of a plan-made case tunnel - uid-keyed
+        s["case_tunnel_frame"] = dict((str(m(int(k))), m(int(v))) for k, v in s["case_tunnel_frame"].items())
     return s, sorted(miss)
 
 
@@ -1353,7 +1460,8 @@ def bound_owners(owners, bind):
 
 
 # ============================================================================================ the executor
-BIND_KINDS = ("add_sr", "tunnel", "create")         # ops that make objects: a fresh read is required after each
+BIND_KINDS = ("add_sr", "tunnel", "create", "connect_term_uid")   # ops that make objects: a fresh read is required after each
+# (card 124-6: connect_term_uid makes the case's SelectorTunnel, bound by bind_case_faces)
 
 
 class Executor(object):
@@ -1755,6 +1863,13 @@ class Executor(object):
             src = self.real_term(prev, after, ai["src"], True)
             dst = self.real_term(prev, after, ao["dst"], False)
             return be.connect(src, dst, real, self.loop_of, op)
+        if kind == "connect_term_uid":                     # card 124-6 (PD250(c)): R1 / R2, one verb call per group
+            ai, ao = A[op["in_act"] - 1], A[op["out_act"] - 1]
+            src = self.real_term(prev, after, ai["src"], True)
+            dst = self.real_term(prev, after, ao["dst"], False)
+            return be.connect_term_uid(src, dst, real, op)
+        if kind == "case_frame_wire":                      # card 124-2 (PD249(d))
+            return self._case_frame_wire(op, a, prev, after, real)
         if kind == "branch":
             tun = self.bind["obj"].get(prev["sym"][op["tunnel"]])
             dst = self.real_term(prev, after, a["dst"], False)
@@ -1792,6 +1907,38 @@ class Executor(object):
         if kind == "remove_bad_wires":
             return be.rbw(op)
         raise ExecStop("no executor for {0}".format(kind))
+
+    def _case_frame_wire(self, op, a, prev, after, real):
+        """card 124-2 (PD249(d)): the plan's in-frame wire -> gscript.case_frame_wire's arguments. Each end is resolved on the
+        SIMULATED state (stagesim.resolve_addr, `frame` -> that frame's inner face); a case-tunnel face becomes {'tunnel': real
+        tunnel uid}, any other end {'node': real node uid, 'term': its terminal name}. The frame index is the simulated
+        case's frame order (stagesim.case_frame_of) and must equal the compiled one (the plan's `frames` order)."""
+        spec, cf = [], None
+        for end, want in ((a["src"], True), (a["dst"], False)):
+            try:
+                r = SS.resolve_addr(prev, end, want)
+            except SS.SimError as e:
+                raise ExecStop("case_frame_wire {0}: {1}".format(a.get("id"), e))
+            if isinstance(end, dict) and end.get("frame") is not None:
+                cf = SS.case_frame_of(prev, r["frame_diagram"])
+                tun = self.bind["obj"].get(r["owner_uid"], r["owner_uid"])
+                if tun < 0:
+                    raise ExecStop("case_frame_wire {0}: tunnel {1} (simulated #{2}) is not bound yet".format(
+                        a.get("id"), end.get("uid"), r["owner_uid"]))
+                spec.append({"tunnel": tun})
+            else:
+                t = self.real_term(prev, after, end, want)
+                rr = next((x for x in real if x["term_uid"] == t), None)
+                if rr is None:
+                    raise ExecStop("case_frame_wire {0}: terminal #{1} not in the live read".format(a.get("id"), t))
+                spec.append({"node": V.node_of(rr), "term": rr["term_name"]})
+        if cf is None or cf[1] != op["frame_index"] or cf[2] != op["frame"]:
+            raise ExecStop("case_frame_wire {0}: simulated case frame {1} != compiled frame {2!r} index {3}".format(
+                a.get("id"), cf, op["frame"], op["frame_index"]))
+        case = self.bind["obj"].get(cf[0], cf[0])
+        if case < 0:
+            raise ExecStop("case_frame_wire {0}: case #{1} is not bound yet".format(a.get("id"), cf[0]))
+        return self.be.case_frame_wire(case, cf[1], spec[0], spec[1], real, op)
 
     def _right_of(self, st, sym_left):
         return self.bind["obj"].get(st["sym"][sym_left[:-1] + "R"])
@@ -2350,6 +2497,53 @@ class LVBackend(object):
         out["how"] = ["cfw off tunnel outer", hd]
         return out
 
+    def case_frame_wire(self, case, k, src, dst, real, op):
+        """card 124-2 (PD249(d)): gscript.case_frame_wire (card 124-1's verb, the contract in brief_124-2.md) wires src -> dst
+        on frame k of case #case. A broken wire or a junk Invoke left after its purge STOPS."""
+        missing = verbs_missing("case_frame_wire")
+        if missing:
+            raise ExecStop("case_frame_wire: verb(s) not defined: {0}".format(missing))
+        tag = "case_frame_wire #{0} frame {1}".format(case, k)
+        rec = self.s._op("case_frame_wire", lambda: self.g.case_frame_wire(self.s.work, case, k, src, dst),
+                         "case #{0} frame {1}: {2} -> {3}".format(case, k, src, dst))
+        res = rec.get("result") or {}
+        out = self._done(rec, tag)
+        if not isinstance(res, dict) or not res.get("wire_uid"):
+            raise ExecStop("{0}: no wire came back ({1!r})".format(tag, res))
+        if res.get("broken"):
+            raise ExecStop("{0}: wire #{1} reads Is Broken? True".format(tag, res.get("wire_uid")))
+        if res.get("invoke_left"):
+            raise ExecStop("{0}: {1} junk Invoke(s) left after case_frame_wire's purge".format(tag, res["invoke_left"]))
+        var = op.get("variant") or "new_wire"
+        # card 124-6 (R4): a 'branch' must land on the source face's EXISTING wire (when the pre-op read carries it)
+        sw = next((int(r["wire_uid"] or 0) for r in real if r["term_uid"] == res.get("src_term_uid")), 0)
+        if var == "branch" and sw and int(res["wire_uid"]) != sw:
+            raise ExecStop("{0}: variant branch, but wire #{1} != the source face's wire #{2}".format(tag, res["wire_uid"], sw))
+        out.update(wire_uid=res["wire_uid"], src_term_uid=res.get("src_term_uid"), dst_term_uid=res.get("dst_term_uid"),
+                   purged=res.get("purged"), how=CASE_FRAME_WIRE_HOW, variant=var, census=ROUTE_CENSUS["case_frame_wire"].get(var))
+        return out
+
+    def connect_term_uid(self, src, dst, real, op):
+        """card 124-6 (PD250(c)): gscript.connect_term_uid(work, sink=dst, src=src) for an R1/R2 tunnel group. A missing verb,
+        no wire back, a broken wire or a junk Invoke left after the verb's purge STOPS."""
+        missing = verbs_missing("connect_term_uid")
+        if missing:
+            raise ExecStop("connect_term_uid: verb(s) not defined: {0}".format(missing))
+        tag = "connect_term_uid #{0} <- #{1}".format(dst, src)
+        rec = self.s._op("connect_term_uid", lambda: self.g.connect_term_uid(self.s.work, dst, src), tag)
+        res = rec.get("result") or {}
+        out = self._done(rec, tag)
+        if not isinstance(res, dict) or not res.get("wire_uid"):
+            raise ExecStop("{0}: no wire came back ({1!r})".format(tag, res))
+        if res.get("broken"):
+            raise ExecStop("{0}: wire #{1} reads Is Broken? True".format(tag, res.get("wire_uid")))
+        if res.get("invoke_left"):
+            raise ExecStop("{0}: {1} junk Invoke(s) left after the verb's purge".format(tag, res["invoke_left"]))
+        var = op.get("variant") or "register_end_case_border"
+        out.update(wire_uid=res["wire_uid"], purged=res.get("purged"), how=CONNECT_TERM_UID_HOW, variant=var,
+                   census=ROUTE_CENSUS["connect_term_uid"].get(var))
+        return out
+
     def index_mode_fix(self, tun, indexing):
         want = 1 if indexing else 0
         li = self.s.uid_index("LoopTunnel", tun)
@@ -2491,6 +2685,9 @@ class SimBackend(object):
         self.st["sym"] = dict((k, rn(v)) for k, v in self.st["sym"].items())
         if self.st.get("case_tunnel_frame"):                 # card 120-3 R2: {case tunnel: frame} is uid-keyed too
             self.st["case_tunnel_frame"] = dict((str(rn(int(k))), rn(int(v))) for k, v in self.st["case_tunnel_frame"].items())
+        if self.st.get("case_frames"):                       # card 124-2: {case: [[name, frame], ...]} is uid-keyed too
+            self.st["case_frames"] = dict((str(rn(int(k))), [[n_, rn(int(f_))] for n_, f_ in v])
+                                          for k, v in self.st["case_frames"].items())
         f = self.fault
         if f.get("at") == op["acts"][-1]:
             if f.get("kind") == "drop_edge":                   # a real op that made one edge fewer
@@ -2685,6 +2882,84 @@ class SimBackend(object):
             return self._unroutable(op, e)
         return self._apply(op, chk)
 
+    def case_frame_wire(self, case, k, src, dst, real, op):
+        """card 124-2 (PD249(d)): the dry side of gscript.case_frame_wire - the verb is defined, the case exists with a frame
+        k (this backend's own case_frames, renumbered like every uid), each {'tunnel'} end is a case tunnel owning an inner
+        face ON frame k and each {'node', 'term'} end a terminal of that name on frame k. The census stays UNMEASURED."""
+        try:
+            miss = verbs_missing("case_frame_wire")
+            if miss:
+                raise ExecStop("CREATE-NO-VERB case_frame_wire: not defined: {0}".format(miss))
+            fr = (self.st.get("case_frames") or {}).get(str(int(case)))
+            if not fr or not 0 <= int(k) < len(fr):
+                raise ExecStop("case_frame_wire: case #{0} has no frame {1} ({2})".format(case, k, fr))
+            fd = int(fr[int(k)][1])
+            faces = []
+            for e, want in ((src, True), (dst, False)):
+                if "tunnel" in e:
+                    rs = [r for r in real if r["owner_uid"] == e["tunnel"] and r["owner_class"] in SS.CASE_FACE_CLS and
+                          r["term_class"] == "InnerTerminal" and int(r["frame_diagram"] or 0) == fd]
+                else:
+                    rs = [r for r in real if V.node_of(r) == e.get("node") and r["term_name"] == e.get("term") and
+                          int(r["frame_diagram"] or 0) == fd]
+                rs = [r for r in rs if bool(r["is_source"]) == want]
+                if len(rs) != 1:
+                    raise ExecStop("case_frame_wire: end {0} has {1} {2} terminal(s) on frame {3} (#{4}) of case #{5}".format(
+                        e, len(rs), "source" if want else "sink", k, fd, case))
+                faces.append(rs[0]["term_uid"])
+            # card 124-6 (R4): the compiled variant must match the graph - 'branch' iff the source is already wired
+            var = op.get("variant") or "new_wire"
+            sw = next(int(r["wire_uid"] or 0) for r in real if r["term_uid"] == faces[0])
+            if (var == "branch") != bool(sw):
+                raise ExecStop("case_frame_wire: compiled variant {0!r} but the source #{1} is {2}".format(
+                    var, faces[0], "wired (w{0})".format(sw) if sw else "unwired"))
+            dw = next(int(r["wire_uid"] or 0) for r in real if r["term_uid"] == faces[1])
+            if dw:
+                raise ExecStop("case_frame_wire: the sink #{0} is already wired (w{1})".format(faces[1], dw))
+            chk = {"route": "case_frame_wire", "case": case, "frame_index": int(k), "frame_name": fr[int(k)][0],
+                   "frame_diagram": fd, "src": src, "dst": dst, "src_term": faces[0], "dst_term": faces[1],
+                   "variant": var, "census": ROUTE_CENSUS["case_frame_wire"].get(var)}
+        except ExecStop as e:
+            return self._unroutable(op, e)
+        return self._apply(op, chk)
+
+    def connect_term_uid(self, src, dst, real, op):
+        """card 124-6 (PD250(c)): the dry side of an R1/R2 group - the verb is defined; one end is a shift register's INNER
+        face (srL inner = the source of an input tunnel, srR inner = the sink of an output tunnel) on a diagram D, the other
+        a node terminal on a FRAME of a case whose parent is D (the wire crosses exactly one case border); both ends
+        unwired except a wired source (branch at the source, as R1's register face was unwired: diag_c124_p3a_scratch.log:53)."""
+        try:
+            miss = verbs_missing("connect_term_uid")
+            if miss:
+                raise ExecStop("CREATE-NO-VERB connect_term_uid: not defined: {0}".format(miss))
+            rs, rd = (next((x for x in real if x["term_uid"] == t), None) for t in (src, dst))
+            if rs is None or rd is None or not rs["is_source"] or rd["is_source"]:
+                raise ExecStop("connect_term_uid: src #{0} / dst #{1} not a (source, sink) pair in the live read".format(src, dst))
+            if rd["wire_uid"]:
+                raise ExecStop("connect_term_uid: the sink #{0} is already wired (w{1})".format(dst, rd["wire_uid"]))
+            own = self.addr.owners or self.st.get("owners") or {}
+            reg, other = (rs, rd) if rs["owner_class"] in SR_CLS else (rd, rs)
+            if reg["owner_class"] not in SR_CLS or reg["term_class"] != "InnerTerminal":
+                raise ExecStop("connect_term_uid: neither end is a shift register's inner face ({0} / {1})".format(
+                    rs["owner_class"], rd["owner_class"]))
+            if (reg is rs) != (reg["owner_class"] == "LeftShiftRegister"):
+                raise ExecStop("connect_term_uid: {0} inner face as the {1}".format(reg["owner_class"], "source" if reg is rs else "sink"))
+            fo = own.get(str(int(other["frame_diagram"] or 0)))
+            if not fo or fo[0] != "CaseStructure":
+                raise ExecStop("connect_term_uid: the node end #{0} is on #{1}, not a case frame ({2})".format(
+                    other["term_uid"], other["frame_diagram"], fo))
+            case_d = (self.st.get("diagrams") or {}).get(str(int(other["frame_diagram"] or 0)))     # frame -> parent diagram
+            if case_d is None or int(case_d) != int(reg["frame_diagram"] or 0):
+                raise ExecStop("connect_term_uid: case #{0} sits on #{1}, the register face on #{2} (one border only)".format(
+                    fo[1], case_d, reg["frame_diagram"]))
+            var = op.get("variant") or "register_end_case_border"
+            chk = {"route": "connect_term_uid", "src_term": src, "dst_term": dst, "case": int(fo[1]),
+                   "frame_diagram": int(other["frame_diagram"] or 0), "register": reg["owner_uid"], "variant": var,
+                   "census": ROUTE_CENSUS["connect_term_uid"].get(var), "how": CONNECT_TERM_UID_HOW}
+        except ExecStop as e:
+            return self._unroutable(op, e)
+        return self._apply(op, chk)
+
     def index_mode_fix(self, tun, indexing):
         return 1 if indexing else 0
 
@@ -2712,7 +2987,8 @@ def from_step_state(plan_path, from_step, binding):
 # ============================================================================================ recipe helpers (card 106-3)
 # Moved out of tools/recipes/stage_d1_disp.py (PD216(c)/(g): the recipe is <= 120 lines, helpers live here). Each one is
 # the recipe's code unchanged, parameterised by the plan / Stage / executor it used to read from module globals.
-REC_WIRING = ("tunnel", "connect", "wire_sr", "branch")
+REC_WIRING = ("tunnel", "connect", "wire_sr", "branch", "case_frame_wire",     # card 124-2: + the in-frame case wire
+              "connect_term_uid")                                               # card 124-6: + the R1/R2 tunnel group
 CUT = 10 ** 3
 
 

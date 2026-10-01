@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"124-5","status":"PASS","gates":{"pass":25,"fail":0},
+"first_fail":null,
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/gscript.py","md5":"e06f8b33e10cc2c78f51ada271563db3"},
+ {"path":"tools/bench/op_hygiene/OpConnectTermUid_v0.json","md5":"c43044b726105a8b3e715ced23720b8b"},
+ {"path":"tools/bench/scratch_verify/gscript.connect_term_uid_case_frame_wire_c124_5_20261001_164328.json","md5":"df2976fd7b9ee3b28a69aa5c4e6e20fd"},
+ {"path":"tools/bench/census_samples.json","md5":"e5315b0c599dc247b7b63e5aca0920eb"},
+ {"path":"tools/bench/diag_c124_opctu_hyg.log","md5":"3130ef056efbb1761feef70e6fa82f3d"},
+ {"path":"tools/bench/diag_c124_p3a_scratch.log","md5":"0eea1629cc54f43b19a9b2f8c4a39fdd"},
+ {"path":"tools/bench/diag_c124_opctu_hyg.py","md5":"68caeb1c988e64d97eeaf7f41991a83e"},
+ {"path":"tools/bench/diag_c124_p3a_scratch.py","md5":"b98dd68f56f28ec2418bbcad1060bba7"},
+ {"path":"tools/bench/diag_c124_p3a_scratch_plan.json","md5":"66e315acd9723baf2cdbbd93ac16d8dd"}],
+"facts":[
+ "Hygiene of the saved op (not rebuilt, md5 34120e63 before/after) inside g.hygiene_probe: 2,000 calls, 0 errors, handles 34161->34155, wires +0, Invoke +0, 51.6 s; PASS 6/0 (diag_c124_opctu_hyg.log)",
+ "connect_term_uid now purges its junk Invokes and returns purged/invoke_left (gscript.py:4911,4922); case_frame_wire keeps its keys and adds the inner purge count (gscript.py:4972)",
+ "Scratch on a P2b byte copy PASS 19/0: SR #26802/#26825 on #637, I32 0 init wired (w27229), case #26760 frames False #27137 / True #27158 (diag_c124_p3a_scratch.log)",
+ "Register inner faces are OpAllTerms_v1 rows: left source #27031 and right sink #26834 on frame_diagram 639; outer faces on 686 (diag_c124_p3a_scratch.log A5)",
+ "R1 left inner -> I1.x: ONE SelectorTunnel #27278 on the case, faces False #27283 / True #27295, wire 27261, Is Broken? False, +2 Wire (log:53)",
+ "R2 I1.x+1 -> right inner: ONE SelectorTunnel #27311, faces False #27315 / True #27334, wire 27269, Is Broken? False, census as R1 (log:61)",
+ "R3 True frame #27295 -> #27334: wire 27290, Is Broken? False, Wire +1, no tunnel (log:71); R4 False #27283 -> Q&R.x: LabVIEW BRANCHED the existing wire 27261, census {} (log:77,80)",
+ "Invoke +0 on every R row and over R1-R4; purged 0 in all four calls (the op left no junk Invoke here); scratch ExecState 0 after R4 (recorded, not gated) (log:87)",
+ "Bed md5 652b1447 unchanged (H2), scratch deleted (H4), LabVIEW gone (log:111; tasklist 0); census_samples.json gets connect_term_uid + case_frame_wire (new_wire, branch) + run entry",
+ "Self-tests green: stagexec 124/0, case_wired 14/0, census hook-in 12/0, census_predict 14/0, c120_routes 29/0, launch_gate 29/0 (selftest_*_c124_5.log)"],
+"open":[
+ "R4 shows a second sink on an already-wired tunnel face is a BRANCH (no Wire object): P3a/P4 plan rows and census predictions should declare case_frame_wire variant 'branch' (delta {}) for such rows - accept?"],
+"cost":{"usd":null,"minutes":26,"labview_runs":2},
+"note":"No failing log in this card, so no Jev ladder row and no hypothesis review owed. Dry + prerun of the scratch passed (13/0) after one prerun X5 fail (verb labels R1-R4 not counted as wiring; renamed to connect_term_uid/case_frame_wire and split A3w) - an offline build step, no LabVIEW."}

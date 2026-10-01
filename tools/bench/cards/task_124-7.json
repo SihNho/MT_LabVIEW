@@ -1,0 +1,71 @@
+{
+ "schema": "task/1",
+ "id": "124-7",
+ "kind": "build",
+ "goal": "Ring P3a per PD246/247(e)/250: scratch run on a P2b byte copy (census sample, MODEL lines corrected), Error List pin, ONE launch -> claudeDev D1_ring_p3a_<ts>.vi + expected EL file",
+ "why": "124-6 made P3a launch-ready (dry, prerun, prior-art novel, scratch required). P3a is the next saved file of the ring buffer. Steps and the two decisions: brief_124-7.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_124-7.md"},
+  {"path": "tools/bench/cards/result_124-6.json"},
+  {"path": "tools/recipes/stage_d1_ring_p3a.py", "md5": "3aa685dea0abfb69203f1a5832a4b84c"},
+  {"path": "tools/bench/plan_ring_p3a.json", "md5": "3f32526086781463604e0a45adbb1482"},
+  {"path": "tools/bench/plan_ring_p3a_pred.json", "md5": "152bd4d66cfc426e32219d3711d2917e"},
+  {"path": "tools/bench/stage_d1_ring_p3a_prerun.log", "md5": "6356e842395603cb45bf01da898a68c4"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p2b_20261001_140658.vi", "md5": "652b1447ebbda761a7d5ba36455a0fa1"},
+  {"path": "tools/bench/errorlist_expected_D1_ring_p2b_20261001_140658.json"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "op", "name": "OpConnectTermUid_v0"},
+  {"kind": "verb", "name": "connect_term_uid", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "case_frame_wire", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "case_wired", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "sr_init_const", "where": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p3a.py"}
+ ],
+ "pass": [
+  "S1 scratch: all recipe object gates PASS, Is Broken? False on new wires, Invoke +0; census sample recorded; only MODEL pred lines corrected, cited",
+  "S1 scratch Error List pin (count-only, role scratch) = 54 or 55 as predicted; scratch deleted",
+  "S2 ONE launch saves D1_ring_p3a_<ts>.vi; object gates hold; census == pred",
+  "S3 final Error List (role final) == pin; errorlist_expected_D1_ring_p3a_<ts>.json reverdicts OK; refs balanced; PD236(b) band",
+  "S4 LabVIEW verified gone (tasklist)"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3a_<ts>.vi",
+  "tools/bench/errorlist_expected_D1_ring_p3a_<ts>.json",
+  "tools/bench/plan_ring_p3a_pred.json",
+  "tools/bench/census_samples.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/*ring_p3a*",
+   "tools/bench/sim/ring_p3a*/**",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/errorlist*ring_p3a*",
+   "tools/bench/graph_ring_p3a*",
+   "tools/bench/census_samples.json",
+   "tools/bench/diag_c124_*",
+   "archive/peer/**",
+   "tools/bench/cards/review_124-7*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 75
+ },
+ "rules": [
+  "Follow brief_124-7.md; stage_d1_ring_p3a.py and plan_ring_p3a.json are NOT edited",
+  "Bed never saved over; GUI via lv_gui.ps1 -Exception Approved only; capture, locate, act, capture, confirm",
+  "guard_peer hold -> Jev ladder row; an owed hypothesis review is dispatched, never bypassed",
+  "Return at the first unexpected result (finish the step, LabVIEW closed, facts recorded)"
+ ],
+ "advances": ["M3", "M4"]
+}

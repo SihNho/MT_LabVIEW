@@ -1,0 +1,53 @@
+BGRUN START 2026-10-01 16:30:47 limit 30.0 min: py -u tools/bench/diag_c124_opconnecttermuid.py
+BGRUN PID 24244
+  GATE PASS  D donor OpSetIndexMode_v0 copy ES 1  
+net_map: node 0 uid 43 (0 s)
+net_map: node 1 uid 124 (2 s)
+net_map: node 2 uid 308 (3 s)
+net_map: node 3 uid 683 (4 s)
+net_map: node 4 uid 316 (5 s)
+net_map: node 5 uid 220 (6 s)
+net_map: node 6 uid 334 (7 s)
+net_map: purged 20/65 junk Invokes (1 s)
+net_map: purged 40/65 junk Invokes (3 s)
+net_map: purged 60/65 junk Invokes (4 s)
+net_map: 6 nodes walked in 7.5 s; 65 junk Invoke(s) purged in 4.9 s
+  GATE PASS  OpConnectTermUid_v0 X donor IndexMode PN #220 deleted, ES 1  
+net_map: node 0 uid 43 (0 s)
+net_map: node 1 uid 124 (0 s)
+net_map: node 2 uid 308 (1 s)
+net_map: node 3 uid 683 (1 s)
+net_map: node 4 uid 316 (1 s)
+net_map: node 5 uid 118 (1 s)
+net_map: purged 20/57 junk Invokes (0 s)
+net_map: purged 40/57 junk Invokes (1 s)
+net_map: 5 nodes walked in 1.6 s; 57 junk Invoke(s) purged in 1.1 s
+  GATE PASS  OpConnectTermUid_v0 S VI Server:Terminal seed 'reference' -> TMSC #683 -> PN #118: ES 1  
+  GATE PASS  U `UID to GObject Reference.vi` dropped  [119]
+  FACT  U2G terminals: [(0, 'error out', True), (1, '', False), (2, 'GObject', True), (3, 'dup Owning VI', True), (4, '', False), (5, '', False), (6, '', False), (7, '', False), (8, 'error in (no error)', False), (9, '', False), (10, 'UID', False), (11, 'Owning VI', False)]
+  OBSERVED uid 428 -> owner 'TopLevelDiagram' uid 3 | self 'Function'#428 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  GATE PASS  T2 second TMSC copied from #683 -> #428  
+  FACT  Invoke terminals: [(0, 'reference', False, 0), (1, 'reference out', True, 0), (2, 'error in (no error)', False, 0), (3, 'error out', True, 0), (4, 'Connect Wire', False, 0), (5, 'Connect Wire', True, 0), (6, 'Wire Source', False, 0), (7, 'Wire Source', True, 0), (8, 'Auto Wire? (T)', False, 0), (9, 'Auto Wire? (T)', True, 0), (10, 'Wiring Specs', False, 0), (11, 'Wiring Specs', True, 0), (12, 'Auto Route? (F)', Fal
+  OBSERVED uid 125 -> owner 'TopLevelDiagram' uid 3 | self 'Function'#125 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  OBSERVED uid 675 -> owner 'TopLevelDiagram' uid 3 | self 'Function'#675 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  GATE PASS  C two Close Reference copies [125, 675]  
+  GATE PASS  OpConnectTermUid_v0 A assembled ExecState 1  1
+  GATE PASS  OpConnectTermUid_v0 V saved by script  (13155, '34120e6314dc44522dee07dcb04ea55a')
+  FACT  labels: {'tmsc1': 683, 'echo1': 118, 'top': 3, 'src_uid': 'UID', 'u2g': 119, 'tmsc2': 428, 'echo2': 120, 'inv': 121, 'cw': 122, 'pw': 123, 'crs': [125, 675], 'data_out': ['UID', 'Broken?'], 'sink_echo': 'UID 2', 'src_echo': 'UID 3', 'wire_uid': 'UID 4', 'broken': 'Is Broken?', 'Err': 'error out 2', 'vi_path': 'vi path', 'class_name': 'Class Name', 'index': 'index', 'method': '6349C03', 'donor': 'OpSetInde
+  GATE PASS  C COLD ExecState 1 (fresh LabVIEW)  34120e6314dc44522dee07dcb04ea55a
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c124_opconnecttermuid.py", line 143, in <module>
+    hygiene(lab)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c124_opconnecttermuid.py", line 110, in hygiene
+    r1, e1 = call(lab, SCR, ti, src["term_uid"])
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c124_opconnecttermuid.py", line 92, in call
+    vi = g.op(OP)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 305, in op
+    raise OpHygieneRefused(refusal)
+gscript.OpHygieneRefused: op-hygiene: op VI OpConnectTermUid_v0 (file 2026-10-01 16:32 newer than the device install 2026-09-28 11:30) is refused - no readable record (FileNotFoundError); record G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\op_hygiene\OpConnectTermUid_v0.json. Run its hygiene probe (gscript.hygiene_probe) and write a PASS op-hygiene/1 record first (docs/violation-decisions.md rule-evaded 2026-09-28 10:37).
+  GATE FAIL  the run completed without an unhandled exception  OpHygieneRefused('op-hygiene: op VI OpConnectTermUid_v0 (file 2026-10-01 16:32 newer than the device install 2026-09-28 11:30) is refused - no readable record (FileNotFoundError); record G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\op_hygien
+  GATE PASS  X LabVIEW gone  
+  GATE PASS  X scratch deleted  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c124_hyg_20261001_163048.vi
+=== GATES: 11 pass / 1 fail; failing: ['the run completed without an unhandled exception']
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":11,"fail":1},"first_fail":"the run completed without an unhandled exception","artefacts":[]}
+BGRUN END rc=1 after 140s

@@ -1,0 +1,118 @@
+BGRUN START 2026-10-01 16:42:42 limit 1.0 min: py -u tools/stage_prerun.py --prerun tools/bench/diag_c124_p3a_scratch.py --graph tools/bench/graph_ring_p2b_20261001_154542.json
+BGRUN PID 12744
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 652b1447ebbda761a7d5ba36455a0fa1  got 652b1447ebbda761a7d5ba36455a0fa1
+  PASS  DRY graph JSON for input md5 652b1447ebbda761a7d5ba36455a0fa1  tools/bench/graph_ring_p2b_20261001_154542.json
+  PASS  K0 donor DonorSRInit_v0.vi md5 == 8b1a5afe
+  PASS  K0 donor DonorCase_v0.vi md5 == df825c18
+  FACT  OP add_shift_reg loop[4] y=120 -> err '' (0.0 s)
+  FACT  SHIFT REGISTER on WhileLoop #637: {'right': 0, 'left': 0, 'k': 0, 'right_uids': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'loop_index': 4}
+  PASS  A1 add_shift_reg on #637: exactly ONE new bare sink (left outer face)  {'sr': {'right': 0, 'left': 0, 'k': 0, 'right_uids': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'loop_index': 4}, 'new_bare_sinks': []}
+  FACT  OP wire_const_sr A2 sr_init_const I32 0 -> err '' (0.0 s)
+  PASS  A2 sr_init_const: face wired, op err ''  <dry:g.sr_init_const>
+  FACT  OP create_primitive_nested A3 Equal? E1 -> err '' (0.0 s)
+  FACT  OP case_wired A3 case <- E1 -> err '' (0.0 s)
+  PASS  A3 case_wired: frames {False, True}  {'names': [], 'frames': <dry:g.case_wired.get()>, 'case': <dry:g.case_wired.get()>, 'purged': <dry:g.case_wired.get()>}
+  FACT  OP create_primitive_nested A4 Increment I1 False -> err '' (0.0 s)
+  FACT  OP create_primitive_nested A4 Q&R Q1 False -> err '' (0.0 s)
+  PASS  A5 register inner faces on #639: one left source, one right sink  {'left': [], 'right': []}
+  FACT  OP R1 R1 I1.x <- SR left inner -> err '' (0.0 s)
+  FACT  CENSUS R1 I1.x <- SR left inner {}
+  FACT  INVOKE R1 I1.x <- SR left inner delta []
+  PASS  R1 I1.x <- SR left inner: wire != 0, Is Broken? False, ONE new tunnel owned by case #<dry:g.case_wired.get()>, one inner face per frame, Invoke +0  {'call': {}, 'err': '', 'new_by_class': {}, 'invoke_delta': [], 'new_tunnels': [], 'owners': {}, 'faces_per_frame': [], 'tunnel_terms': []}
+  FACT  OP R2 R2 SR right inner <- I1.x+1 -> err '' (0.0 s)
+  FACT  CENSUS R2 SR right inner <- I1.x+1 {}
+  FACT  INVOKE R2 SR right inner <- I1.x+1 delta []
+  PASS  R2 SR right inner <- I1.x+1: wire != 0, Is Broken? False, ONE new tunnel owned by case #<dry:g.case_wired.get()>, one inner face per frame, Invoke +0  {'call': {}, 'err': '', 'new_by_class': {}, 'invoke_delta': [], 'new_tunnels': [], 'owners': {}, 'faces_per_frame': [], 'tunnel_terms': []}
+  FACT  OP R3 R3 True: tin -> tout -> err '' (0.0 s)
+  FACT  CENSUS R3 True: tin -> tout {}
+  FACT  INVOKE R3 True: tin -> tout delta []
+  PASS  R3 True: tin -> tout: wire != 0, Is Broken? False, Invoke +0  {'call': {}, 'err': '', 'new_by_class': {}, 'invoke_delta': []}
+  FACT  OP R4 R4 False: tin -> Q1.x -> err '' (0.0 s)
+  FACT  CENSUS R4 False: tin -> Q1.x {}
+  FACT  INVOKE R4 False: tin -> Q1.x delta []
+  PASS  R4 False: tin -> Q1.x: wire != 0, Is Broken? False, Invoke +0  {'call': {}, 'err': '', 'new_by_class': {}, 'invoke_delta': []}
+  ROW   R4 branch: tin False-face wire before/after vs Q1.x wire : observed={'before': [], 'after': [], 'q1x_wire': None, 'branched_existing': False} expected=None
+  ROW   FINAL per-frame faces and register terminals : observed={'tin_terms': [], 'tout_terms': [], 'tin_faces': [], 'tout_faces': [], 'left_terms': [], 'right_terms': [], 'invoke_total_delta': []} expected=None
+  PASS  I Invoke +0 over R1-R4
+  FACT  ExecState [after R4] scratch_c124_p3a_20261001_164243.vi = <dry:g.exec_state>
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  PASS  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['tools/bench/diag_c124_p3a_scratch_plan.json']
+  PASS  X3 every plan row decided  11 rows + 0 stageplan actions
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  0 stageplan(s)
+  PASS  X11 no row wires one Build Array input while a sibling input is an open row (unless pb-licence/1)  0 stageplan(s)
+  PASS  X12 no row names a wire uid an earlier border-crossing connect re-created (connect_from_wire.json:266)  0 stageplan(s), 0 re-created source wire(s), none named later
+  PASS  X13 opmodel conformance: every recorded sample of the plan ops' model files replays in stagesim  0 op(s) []; files {}
+  PASS  X4 every end addressable offline (0 ends)  []
+  FAIL  X5 wiring ops executed in the dry run == plan wire rows  ops 2 vs plan wire rows 5 + stageplan wiring real ops 0 (covering 0/0 wire actions); delete ops {} vs plan delete rows {}
+  PASS  X6 ast lint: no re-typed uid / terminal name  uids []; names []
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c124_p3a_20261001_164243.vi; decisions rows NOT dispatched (recipe calls neither run_rows nor from_decision)
+  PASS  X10 predicted LabVIEW private MB < 690.0 (error-2 point; MEMSTOP 700.0) over the ops this run dispatches (UNMEASURED - no covering record)  {'why': 'UNMEASURED: no recorded meter of diag_c124_p3a_scratch.py covers ops 1..end (0 record(s))'}
+  WARN  X10 WARN unmeasured: UNMEASURED: no recorded meter of diag_c124_p3a_scratch.py covers ops 1..end (0 record(s))
+  INFO  X14 rows 11, budget 25 (proven: diag_c111b_tunnelitems.py, diag_c118_p1b.py, diag_c123_routes.py, diag_c123_wired.py)
+
+=== DRY PASS: first_fail=None coverage 102/109 lines, first mutation Stage._op add_shift_reg, unverified 0, graph tools/bench/graph_ring_p2b_20261001_154542.json
+=== PRERUN FAIL: 12 pass / 1 fail; first X5 wiring ops executed in the dry run == plan wire rows: ops 2 vs plan wire rows 5 + stageplan wiring real ops 0 (covering 0/0 wire actions); delete ops {} vs plan delete rows {
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":12,"fail":1},"first_fail":"X5 wiring ops executed in the dry run == plan wire rows: ops 2 vs plan wire rows 5 + stageplan wiring real ops 0 (covering 0/0 wire actions); delete ops {} vs plan delete rows { [X10 WARN unmeasured]","artefacts":[]}
+BGRUN END rc=1 after 3s
+BGRUN START 2026-10-01 16:43:18 limit 1.0 min: py -u tools/stage_prerun.py --prerun tools/bench/diag_c124_p3a_scratch.py --graph tools/bench/graph_ring_p2b_20261001_154542.json
+BGRUN PID 16740
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 652b1447ebbda761a7d5ba36455a0fa1  got 652b1447ebbda761a7d5ba36455a0fa1
+  PASS  DRY graph JSON for input md5 652b1447ebbda761a7d5ba36455a0fa1  tools/bench/graph_ring_p2b_20261001_154542.json
+  PASS  K0 donor DonorSRInit_v0.vi md5 == 8b1a5afe
+  PASS  K0 donor DonorCase_v0.vi md5 == df825c18
+  FACT  OP add_shift_reg loop[4] y=120 -> err '' (0.0 s)
+  FACT  SHIFT REGISTER on WhileLoop #637: {'right': 0, 'left': 0, 'k': 0, 'right_uids': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'loop_index': 4}
+  PASS  A1 add_shift_reg on #637: exactly ONE new bare sink (left outer face)  {'sr': {'right': 0, 'left': 0, 'k': 0, 'right_uids': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'loop_index': 4}, 'new_bare_sinks': []}
+  FACT  OP wire_const_sr A2 sr_init_const I32 0 -> err '' (0.0 s)
+  PASS  A2 sr_init_const: face wired, op err ''  <dry:g.sr_init_const>
+  FACT  OP create_primitive_nested A3 Equal? E1 -> err '' (0.0 s)
+  FACT  OP case_wired A3 case <- E1 -> err '' (0.0 s)
+  PASS  A3 case_wired: frames {False, True}  {'names': [], 'frames': <dry:g.case_wired.get()>, 'case': <dry:g.case_wired.get()>, 'purged': <dry:g.case_wired.get()>}
+  FACT  OP create_primitive_nested A4 Increment I1 False -> err '' (0.0 s)
+  FACT  OP create_primitive_nested A4 Q&R Q1 False -> err '' (0.0 s)
+  PASS  A5 register inner faces on #639: one left source, one right sink  {'left': [], 'right': []}
+  FACT  OP connect_term_uid R1 I1.x <- SR left inner -> err '' (0.0 s)
+  FACT  CENSUS R1 I1.x <- SR left inner {}
+  FACT  INVOKE R1 I1.x <- SR left inner delta []
+  PASS  R1 I1.x <- SR left inner: wire != 0, Is Broken? False, ONE new tunnel owned by case #<dry:g.case_wired.get()>, one inner face per frame, Invoke +0  {'call': {}, 'err': '', 'new_by_class': {}, 'invoke_delta': [], 'new_tunnels': [], 'owners': {}, 'faces_per_frame': [], 'tunnel_terms': []}
+  FACT  OP connect_term_uid R2 SR right inner <- I1.x+1 -> err '' (0.0 s)
+  FACT  CENSUS R2 SR right inner <- I1.x+1 {}
+  FACT  INVOKE R2 SR right inner <- I1.x+1 delta []
+  PASS  R2 SR right inner <- I1.x+1: wire != 0, Is Broken? False, ONE new tunnel owned by case #<dry:g.case_wired.get()>, one inner face per frame, Invoke +0  {'call': {}, 'err': '', 'new_by_class': {}, 'invoke_delta': [], 'new_tunnels': [], 'owners': {}, 'faces_per_frame': [], 'tunnel_terms': []}
+  FACT  OP case_frame_wire R3 True: tin -> tout -> err '' (0.0 s)
+  FACT  CENSUS R3 True: tin -> tout {}
+  FACT  INVOKE R3 True: tin -> tout delta []
+  PASS  R3 True: tin -> tout: wire != 0, Is Broken? False, Invoke +0  {'call': {}, 'err': '', 'new_by_class': {}, 'invoke_delta': []}
+  FACT  OP case_frame_wire R4 False: tin -> Q1.x -> err '' (0.0 s)
+  FACT  CENSUS R4 False: tin -> Q1.x {}
+  FACT  INVOKE R4 False: tin -> Q1.x delta []
+  PASS  R4 False: tin -> Q1.x: wire != 0, Is Broken? False, Invoke +0  {'call': {}, 'err': '', 'new_by_class': {}, 'invoke_delta': []}
+  ROW   R4 branch: tin False-face wire before/after vs Q1.x wire : observed={'before': [], 'after': [], 'q1x_wire': None, 'branched_existing': False} expected=None
+  ROW   FINAL per-frame faces and register terminals : observed={'tin_terms': [], 'tout_terms': [], 'tin_faces': [], 'tout_faces': [], 'left_terms': [], 'right_terms': [], 'invoke_total_delta': []} expected=None
+  PASS  I Invoke +0 over R1-R4
+  FACT  ExecState [after R4] scratch_c124_p3a_20261001_164319.vi = <dry:g.exec_state>
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  PASS  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['tools/bench/diag_c124_p3a_scratch_plan.json']
+  PASS  X3 every plan row decided  12 rows + 0 stageplan actions
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  0 stageplan(s)
+  PASS  X11 no row wires one Build Array input while a sibling input is an open row (unless pb-licence/1)  0 stageplan(s)
+  PASS  X12 no row names a wire uid an earlier border-crossing connect re-created (connect_from_wire.json:266)  0 stageplan(s), 0 re-created source wire(s), none named later
+  PASS  X13 opmodel conformance: every recorded sample of the plan ops' model files replays in stagesim  0 op(s) []; files {}
+  PASS  X4 every end addressable offline (0 ends)  []
+  PASS  X5 wiring ops executed in the dry run == plan wire rows  ops 6 vs plan wire rows 6 + stageplan wiring real ops 0 (covering 0/0 wire actions); delete ops {} vs plan delete rows {}
+  PASS  X6 ast lint: no re-typed uid / terminal name  uids []; names []
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c124_p3a_20261001_164319.vi; decisions rows NOT dispatched (recipe calls neither run_rows nor from_decision)
+  PASS  X10 predicted LabVIEW private MB < 690.0 (error-2 point; MEMSTOP 700.0) over the ops this run dispatches (UNMEASURED - no covering record)  {'why': 'UNMEASURED: no recorded meter of diag_c124_p3a_scratch.py covers ops 1..end (0 record(s))'}
+  WARN  X10 WARN unmeasured: UNMEASURED: no recorded meter of diag_c124_p3a_scratch.py covers ops 1..end (0 record(s))
+  INFO  X14 rows 12, budget 25 (proven: diag_c111b_tunnelitems.py, diag_c118_p1b.py, diag_c123_routes.py, diag_c123_wired.py)
+
+=== DRY PASS: first_fail=None coverage 102/109 lines, first mutation Stage._op add_shift_reg, unverified 0, graph tools/bench/graph_ring_p2b_20261001_154542.json
+=== PRERUN PASS: 13 pass / 0 fail; first None
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":"X10 WARN unmeasured: UNMEASURED: no recorded meter of diag_c124_p3a_scratch.py covers ops 1..end (0 record(s))","artefacts":[]}
+BGRUN END rc=0 after 3s
