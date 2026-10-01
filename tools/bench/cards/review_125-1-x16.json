@@ -1,0 +1,23 @@
+{
+ "schema": "review/1",
+ "id": "125-1-x16",
+ "role": "hypothesis",
+ "claim": "c125_1_regress.log FAIL 'prerun plan_ring_p2b.json' is new check X16 (stage_prerun.py:1904) working as designed: P2b's plan, executed before X16 existed, has 5 const_donor creates whose terminal lacks term_class (plan_ring_p2b.json:28-33). X16 should keep refusing them; P2b is never relaunched.",
+ "predicted": "Card 125-1's regression set would stay green; for P2b the brief said only 'still PASS if it creates no primitives (record which)', with no prediction for a plan that does create primitives.",
+ "observed": "X16 FAILs plan_ring_p2b.json on 5 const_donor creates whose terminal lacks term_class; P3a plan 9/0 and recipe 15/0 PASS with X16; all other self-tests green (launch_gate 29/0, stagexec 124/0, census 12/0, case_frame 29/0, protocol 48/0, wiring 66/0, chat_p1 46/0).",
+ "ruled_out": [
+  "X16 refusing P3a: it passes (c125_1_regress.log:21-22)",
+  "124-7's failure class was a created PRIMITIVE's terminals defaulting to stagesim 'Terminal' while LabVIEW gave ParameterTerminal (archive/peer/2026-10-01-c124-8-p3a-termclass-hyp.md)",
+  "const_donor terminal class: P3a declared 'Terminal' for its constant creates and the scratch + launch census matched (stage_d1_ring_p3a.log)"
+ ],
+ "attachments": [
+  {"path": "tools/bench/c125_1_regress.log"},
+  {"path": "tools/bench/c125_1_regress.py"},
+  {"path": "tools/stage_prerun.py"},
+  {"path": "tools/bench/plan_ring_p2b.json"},
+  {"path": "tools/bench/plan_ring_p3a.json"},
+  {"path": "tools/bench/cards/result_125-1.json"},
+  {"path": "archive/peer/2026-10-01-c124-8-p3a-termclass-hyp.md"}
+ ],
+ "ask": "refute"
+}

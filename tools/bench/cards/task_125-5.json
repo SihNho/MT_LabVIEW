@@ -1,0 +1,74 @@
+{
+ "schema": "task/1",
+ "id": "125-5",
+ "kind": "build",
+ "goal": "PD252(d)(e): new op OpFsAddFrame_v0 + frame-order reader, 3-frame Flat Sequence in case #22694 False frame on a byte copy; then scratch check of connect_term_uid's case-border stub",
+ "why": "P3b needs a Flat Sequence creator (PD246(c) A1); 125-4 measured Add Frame 3578B800 but no op invokes it by uid. 125-4 also traced the 55th item to a stub left by connect_term_uid (w27378), which P3b/P4 call again. Brief: brief_125-5.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_125-5.md"},
+  {"path": "tools/bench/cards/result_125-4.json"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3a_20261001_180540.vi", "md5": "4dfa44aac8fb32f706b3eb792ee7d3cc"},
+  {"path": "tools/bench/graph_ring_p3a_20261001_190155.json", "md5": "2fa6ce0c3e8a3014fa916085cb852f68"},
+  {"path": "tools/bench/diag_c125_4fsm.py", "md5": "32ce5cf1f91b232036c8231e08b10b0d"},
+  {"path": "tools/bench/diag_c125_joints.py", "md5": "55ef135d6fcb974c4b0bb134882f26e3"},
+  {"path": "tools/gscript.py", "md5": "d566b5966cdba4f900079553a5d46c8b"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "verb", "name": "wire_joints", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "connect_term_uid", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "case_wired", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "struct_copy_nested", "where": "tools/gscript.py"},
+  {"kind": "op", "name": "OpWireJoints_v1"},
+  {"kind": "op", "name": "OpConnectTermUid_v0"},
+  {"kind": "file", "name": "tools/stagekit.py"}
+ ],
+ "pass": [
+  "OpFsAddFrame_v0 built; hygiene >= 2,000 calls, 0 errors, handles flat +-100; references closed",
+  "frame-order reader (Diagrams[]) available (existing op reused or new op with hygiene record)",
+  "3-frame Flat Sequence in case #22694 False frame on a byte copy: count, left-to-right order, per-frame diagram uid, census delta read back",
+  "frame-1 -> frame-2 sequence-tunnel wire: tunnel class, Is Broken? False, wire_joints free ends 0",
+  "gscript function(s) + census sample + scratch_verify record; route/model needs listed",
+  "STEP 2: stub reproduced or not on a scratch VI; if yes, one targeted removal measured (joints, terminals, Is Broken?)",
+  "beds unchanged; LabVIEW closed and verified gone"
+ ],
+ "outputs": [
+  "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/OpFsAddFrame_v0.vi",
+  "tools/gscript.py",
+  "tools/bench/op_hygiene/*",
+  "tools/bench/census_samples.json",
+  "tools/bench/scratch_verify/*"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/gscript.py",
+   "tools/bench/diag_c125*",
+   "tools/bench/c125_5*",
+   "tools/bench/census_samples.json",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/op_hygiene/**",
+   "tools/bench/cards/result_125-5*",
+   "tools/bench/cards/review_125-5*",
+   "tools/bench/peer_*",
+   "archive/peer/**",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["fact", "hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "rules": [
+  "Follow brief_125-5.md; route (a) is decided; beds never saved over; no stage recipe launched",
+  "No whole-VI Remove Broken Wires; no change to connect_term_uid in this card",
+  "Return at the first unexpected result in STEP 1, then still run STEP 2 if LabVIEW is clean"
+ ],
+ "advances": ["M4", "M3"]
+}

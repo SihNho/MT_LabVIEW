@@ -1,0 +1,48 @@
+BGRUN START 2026-10-01 19:48:20 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c125-5-addframe-hyg -TaskFile tools/bench/peer_c125_5_addframe_hyg_task.txt
+BGRUN PID 25356
+OUTCOME: ANSWERED (88s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-01-c125-5-addframe-hyg.md
+COST: $0.9960  in 16 / out 6730 / cache-create 84271 / cache-read 693732  (84s, 14 turn(s))
+--- ANSWER ---
+**The claim is not established.** The probe was set up in a way that cannot separate a per-call cost from a per-round cost. It also broke the "equal VI state" condition that earlier probes of ops that create objects had to meet. The +116 is unexplained, and there is not yet evidence that it comes from loading the copies.
+
+## 1. Strongest reason the claim is wrong: the probe broke its own acceptance condition, so "it's the workload" was never measured
+
+- The hygiene rule for an op that creates objects says to measure handles **at the same VI state each time**. Either delete what was created, or "recycle the scratch VI without saving at fixed call counts" (`docs/d1-loop12-17-split-plan.md:2339-2342`, PD242(b)).
+- The accepted precedent did that. OpConstInd_v0 used "a fresh never-saved byte copy … (recycled per round, PD242(b))". Its criterion reads "flat ±100 **at equal VI state**", and it stayed flat across 21 samples, 42783 → 42766 (`tools/bench/op_hygiene/OpConstInd_v0.json:12-38`). So a fresh copy plus `ensure_loaded` (which opens the panel) every round, **with the copy closed again**, costs about 0 handles net.
+- `hyg_adder` never closes anything (`tools/bench/diag_c125_5_opfs.py:136-142`). Each round leaves one more VI, one more panel and 100 more frames in memory. The VI state grows every round, so the rule does not even define a pass for this run.
+- The "+6 per load" figure is inferred from the result it is meant to explain. Nothing in the log measures what one load plus one panel costs.
+- The log actually hints at a different size. Between the end of the read-only run (34075, `diag_c125_5_opfs.log:61`) and the start of AH (34101, `:64`), the session made one copy, loaded it, opened its panel and called Add Frame once. That step cost **+26**, not +6. The workload story therefore needs an extra assumption: later loads cost a quarter of the first. Nothing supports that.
+
+## 2. Alternative explanations of the same numbers
+
+- **(A) A slow per-call cost hidden by end-of-round sampling.** Samples are taken only after each 100-call block (`:140`). So "+6 per round" is equally consistent with about 0.06 handles per call: say 6 calls in 100 leave a handle, or LabVIEW reuses most of them. Claim (a), "growth is per round, not per call", is an assumption: the data has no point inside a round. The dip at sample 11 (34168 → 34163) suggests some cleanup or reuse is going on, which is exactly what would hide a per-call rate.
+- **(B) The size of the edited VI, not the op's references.** Each Add Frame on a VI whose panel is open probably records an undo step and grows the diagram. By the end, 2,000 frames are alive across 20 VIs. This is a cost of mutation, not a leak in OpFsAddFrame_v0, and it is not "load + panel" either. The read-only sibling (claim b) cannot speak to it: it creates nothing, mutates nothing, and ran on one VI.
+- **(C) The metric cannot see the leak being ruled out.** `labview_handles()` reads `Get-Process … .HandleCount` (`tools/bench/bench_prep.py:64-71`). That counts **kernel-object handles only**. GDI and USER objects such as windows are counted separately and need `GetGuiResources` ([GetProcessHandleCount](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getprocesshandlecount), [GDI Objects](https://learn.microsoft.com/en-gb/windows/win32/sysinfo/gdi-objects)). A VI Server refnum is a LabVIEW memory object, not a kernel handle ([LabVIEW Wiki: Reference data type](https://labviewwiki.org/wiki/Reference_data_type), [NI forum: Close VI reference](https://forums.ni.com/t5/LabVIEW/Close-vi-reference-doesnt-close-the-VI/td-p/1431934)). LabVIEW also auto-closes VI Server references when the top-level VI that opened them goes idle, and each op call runs as its own top-level VI. Two consequences:
+  - Claim (a), "a refnum leak would show up as far more handles", is wrong: a leaked refnum need not show up in HandleCount at all.
+  - The same blindness undercuts claim (c). Matching OpConnectTermUid's references only means it matches that op's flat kernel-handle count. And that op's run was "2000 idempotent re-connects", which create nothing per call (`op_hygiene/OpConnectTermUid_v0.json:35`). It never exercised a returned new-object reference like the Add Frame return.
+
+  On (C), the evidence does not settle whether +116 is kernel handles from panels, from undo/diagram growth, or from something per call. What it does show is that "0 errors and refs closed in the graph" is a **structural** fact, not a measured one.
+
+## 3. What would falsify the claim
+
+The claim says the cost is per VI loaded with its panel, not per Add Frame call. It is false if either of these is seen:
+
+- With each round's copy **closed without saving** before the next (equal VI state, as OpConstInd did), handles still climb about +6 per round.
+- Handles sampled immediately **after `ensure_loaded` and before the 100 calls** show the growth falling inside the call block rather than at the load step.
+
+## 4. Cheapest test that separates the claim from (A) and (B)
+
+Rerun the AH block with one change and one extra sample:
+
+1. Take `h_pre` right after `ensure_loaded(t)` and `_uid_index`, before the 100 calls. Keep `h_post` after them.
+2. At the end of each round, close the copy without saving, as the OpConstInd recycle did, then sample again (`h_closed`).
+
+How to read the result:
+- **Claim holds:** `h_pre − previous h_closed` ≈ the load cost, `h_post − h_pre` ≈ 0, and `h_closed` stays flat across the 20 rounds.
+- **(A) holds:** `h_post − h_pre` ≈ +6 every round.
+- **(B) holds:** `h_post − h_pre` > 0, but `h_closed` returns to baseline.
+
+Also record the process's private memory and its GDI/USER counts (`GetGuiResources`) at each sample, so (C) is no longer blind. This costs no new LabVIEW tooling and runs in under 4 minutes; the whole script took 222 s (`diag_c125_5_opfs.log:75`).
+
+Until that rerun exists, OpFsAddFrame_v0 has no valid hygiene record. A failed gate cannot be explained away by a cause that was never measured.
+BGRUN END rc=0 after 89s

@@ -1,0 +1,25 @@
+ATTACK this claim about a failed prediction in tools/bench/diag_c125_5_opfs.log (script tools/bench/diag_c125_5_opfs.py, card 125-5).
+
+What was predicted: the hygiene probe of a NEW LabVIEW op VI, OpFsAddFrame_v0 (Traverse('FlatSequence')[index] -> To More Specific
+Class -> Property GObject.UID echo -> Invoke FlatSequence.Add Frame 3578B800 -> the returned frame reference wired into Close
+Reference), would show "20 rounds x 100 Add Frame calls: 0 errors, 101 frames every round, LabVIEW process handle count flat +-100".
+
+Observed (diag_c125_5_opfs.log, gate AH): 0 errors, every round ended with exactly 101 frames, but the LabVIEW handle count went
+34101 -> 34217 (+116). Per-round samples (taken after each round's 100 calls): 34107, 34114, 34119, 34126, 34131, 34137, 34143,
+34150, 34158, 34168, 34163, 34168, 34177, 34182, 34188, 34195, 34200, 34205, 34212, 34217 (about +6 per round, one dip).
+
+Workload detail (diag_c125_5_opfs.py hyg_adder): EACH round makes a NEW byte copy of a small NI example VI (54 objects, one
+1-frame Flat Sequence), calls gscript.ensure_loaded on it (which OPENS ITS FRONT PANEL), then makes 100 Add Frame calls on it.
+The copies are never closed during the run (20 panels + 20 VIs stay open). In the same run the sibling READ-ONLY op
+OpFsDiagrams_v0 was called 2,000 times on ONE scratch copy and the handles stayed flat (34083 -> 34075).
+
+THE CLAIM TO ATTACK: the +116 is the workload (one new VI loaded + one front-panel window opened per round, roughly +6 handles
+each), not a reference leak in OpFsAddFrame_v0, because (a) the growth is per ROUND, not per CALL (100 calls/round would leak
+far more if each call leaked a refnum-backed handle), (b) the read-only sibling on a single VI was flat, (c) the op closes the
+only new reference it creates (the Add Frame return) and its other references are the same as the accepted OpConnectTermUid_v0
+(2,000 calls flat, op_hygiene/OpConnectTermUid_v0.json).
+
+Give: the strongest reason the claim is wrong (e.g. a per-call leak hidden by LabVIEW's handle reuse; refnums do not map 1:1 to OS
+handles; a growing diagram allocating GDI objects per frame), an alternative explanation, what would falsify the claim, and the
+cheapest discriminating test (e.g. sample handles BEFORE and AFTER the 100 calls inside each round; or 2,000 calls on ONE copy;
+or close each round's panel/VI before the next and compare).

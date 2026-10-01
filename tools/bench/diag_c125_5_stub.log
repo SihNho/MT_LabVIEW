@@ -1,0 +1,22 @@
+BGRUN START 2026-10-01 19:50:20 limit 20.0 min: py -u tools/bench/diag_c125_5_stub.py
+BGRUN PID 1032
+  FACT  S loop / body / right SR: ["{43}", [110], 126]
+  OBSERVED uid 44 -> owner 'Diagram' uid 110 | self 'Comparison'#44 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 45 -> owner 'Diagram' uid 110 | self 'CaseStructure'#45 | 482 says 'Diagram' cast 'Diagram' |  
+      op readback {'UID': 45, 'Name': 'index', 'UID 2': 0, 'Is Broken?': False}
+      junk Invoke purge: 1 purged, left []
+  OBSERVED uid 46 -> owner 'Diagram' uid 158 | self 'Comparison'#46 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  S case / frames / node A / node B / left SR inner face / B inputs: [45, {"echo": 45, "names": [" 0, Default ", " 1 "], "frames": [158, 164], "err": ""}, 44, 46, [[137, 129]], [[183, "y"], [186, "x"]]]
+  PASS  S scratch built: 1 loop, 1 body, case, node in frame 0, ONE left SR inner face  ({43}, [110], 1, 2)
+  FACT  C connect_term_uid: [{"wire_uid": 236, "broken": true, "sink_echo": 183, "src_echo": 137, "err": "", "purged": 0, "invoke_left": []}, [236, 254]]
+  FAIL  C connect_term_uid err '', Is Broken? False  {'wire_uid': 236, 'broken': True, 'sink_echo': 183, 'src_echo': 137, 'err': '', 'purged': 0, 'invoke_left': []}
+  FACT  C terminals on the new wires (owner class, owner, name, src, frame, wire): [["SelectorTunnel", 242, "", false, 110, 254], ["Comparison", 46, "y", false, 158, 236], ["SelectorTunnel", 242, "", true, 158, 236], ["LeftShiftRegister", 129, "", true, 110, 254]]
+  FACT  J joints raw: {"236": [[[540, 286], 1, 1, 1, -1, -1, -1], [[540, 200], 1, 1, -1, 0, -1, -1]], "254": [[[540, 200], 1, 1, 2, -1, -1, -1], [[202, 186], 1, 1, -1, -1, -1, 2], [[540, 186], 0, 2, -1, 0, 1, -1]]}
+  FACT  J decoded (joints, loose, terms, free ends): {"236": {"joints": 2, "loose": 0, "terms": 2, "free": []}, "254": {"joints": 3, "loose": 0, "terms": 2, "free": []}}
+  PASS  J every new wire read (echo, err '')  [(236, 236, ''), (254, 254, '')]
+  FACT  STUB (wires with a free segment end): []
+  PASS  X LabVIEW gone  
+  PASS  X scratch deleted  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c125_5_stub_20261001_195021.vi
+=== GATES: 4 pass / 1 fail; failing: ["C connect_term_uid err '', Is Broken? False"]
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":4,"fail":1},"first_fail":"C connect_term_uid err '', Is Broken? False","artefacts":[]}
+BGRUN END rc=1 after 66s

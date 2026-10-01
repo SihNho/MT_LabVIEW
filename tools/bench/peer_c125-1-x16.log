@@ -1,0 +1,36 @@
+BGRUN START 2026-10-01 18:52:14 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c125-1-x16-hyp -ReviewCard tools/bench/cards/review_125-1-x16.json
+BGRUN PID 24644
+OUTCOME: ANSWERED (72s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-01-c125-1-x16-hyp.md
+COST: $1.1251  in 18 / out 6031 / cache-create 106087 / cache-read 778745  (68s, 14 turn(s))
+VERDICT-CARD: VERDICT-CARD 125-1-x16 verdict=refuted -> tools\bench\cards\verdict_125-1-x16.json
+--- ANSWER ---
+**Refuted, in part.** X16 does what its code says. But the claim that refusing P2b is "working as designed", and that it "should keep refusing" those creates, does not hold up against the decision X16 was built from or against what LabVIEW actually measured.
+
+**1. The strongest reason the claim is wrong: the 5 refused rows are a false positive by measurement, and they fall outside what PD251(b) decided.**
+- **What was decided.** PD251(b) says "a prerun check that REFUSES a **primitive** create whose declared terminals lack `term_class`" (`docs/d1-loop12-17-split-plan.md:2561-2563`). The cause it answers is created primitives (Wait, Equal?, Increment, Q&R) getting the default `Terminal` while LabVIEW gives `ParameterTerminal` (`:2558-2560`).
+- **What the code does.** `termclass_undeclared` applies to every action whose `op` is in `CREATE_OPS` and has a `terminals` list (`tools/stage_prerun.py:1895-1900`). It never looks at `prim` or `class`. So it also catches `prim: "const_donor"` ArrayConstant creates (`tools/bench/plan_ring_p2b.json:14-33`). Those are constants copied from a donor VI, not primitive nodes.
+- **What LabVIEW measured for those exact terminals.** The P2b launch log reads back each ArrayConstant's source terminal as `'term_class': 'Terminal'` (`tools/bench/stage_d1_ring_p2b.log:138, 142, 146`). That is the same value the simulator assigns when nothing is declared (`tools/stagesim.py:1317`: `t.get("term_class") or "Terminal"`). P3a's DigitalNumericConstant rows are also measured as `Terminal` (`plan_ring_p3a.json:84-87, 203-206, 376-379`).
+- **Conclusion.** For const_donor creates, the default equals the measured value. The failure 124-7 suffered (default ≠ actual) cannot happen on these rows. X16 refuses a plan that LabVIEW executed correctly. That is a gate false positive, not "as designed".
+
+**2. Alternative explanation of the same evidence.** X16's scope is wider than the decision: "create with a terminals list" was used where "primitive create" was meant. Under this reading, the right handling is a gate false-positive entry (`tools/gate_fp.py` → `gate_fp_queue.jsonl`, the batch-drain route in CLAUDE.md), not "P2b is never relaunched, so leave it red." Two practical costs follow:
+- The regression suite now carries a permanent BAD row (`c125_1_regress.log:23`, top-level `RESULT` FAIL at `:31`). An expected-red row trains readers to ignore red.
+- Every future const_donor create (P3b and P4 will add constants) must carry boilerplate `term_class: "Terminal"` to get past a check that adds no information for that class.
+
+A secondary point: the X16 comment cites `stagesim.py:261` as the default (`stage_prerun.py:1887`). That line sets `""`. The `Terminal` default is at `:1317`. The rationale text points at the wrong line.
+
+**3. What would falsify my objection and support the claim:**
+- an ArrayConstant or DigitalNumericConstant created via const_donor whose LabVIEW-measured source terminal is *not* `Terminal`; or
+- a stated decision, in PD251 or a later judgement entry, that X16 is meant to cover every create including constants.
+
+I found neither. The P2b launch shows `Terminal` for all four ArrayConstants checked at `:138/142/146` (the fifth is at `:150`, the omitted line), and P3a's measured rows agree.
+
+**4. Cheapest discriminating test (offline, no LabVIEW):**
+- Read `stage_d1_ring_p2b.log:150` and the DigitalNumericConstant `G` row to confirm all 5 created constants read back `term_class 'Terminal'`.
+- Run `x16_gate` on `plan_ring_p2b.json` with `prim == "const_donor"` excluded, expecting 0 bad. Run it on P3a and the `p3a_wait` self-test case (E1), expecting P3a still PASS and E1 still FAIL.
+
+If all 5 read `Terminal` and the scoped gate keeps E1 failing, the claim's "should keep refusing" is wrong. If any reads otherwise, the claim stands.
+
+This review settles the scope question, not whether the rule-1a computation is affected: neither reading touches computation. The judgement session has to choose between narrowing X16 to non-donor primitives and requiring explicit `Terminal` on constants. Both are defensible, but "working as designed" is not an accurate description of the current behaviour.
+
+VERDICT {"schema":"verdict/1","id":"125-1-x16","verdict":"refuted","alternative":"X16 is scoped wider than PD251(b) ('primitive create'): it refuses const_donor ArrayConstant creates whose LabVIEW-measured class is 'Terminal' == stagesim default (stagesim.py:1317), so the P2b refusal is a gate false positive, not design.","discriminating_test":"Offline: confirm stage_d1_ring_p2b.log G rows give term_class 'Terminal' for all 5 created constants; rerun x16_gate on plan_ring_p2b.json excluding prim=='const_donor' -> expect 0 bad while selftest E1 (p3a_wait) still FAILs and P3a still PASSes.","violations":[],"sources":["docs/d1-loop12-17-split-plan.md:2561","tools/stage_prerun.py:1895","tools/bench/plan_ring_p2b.json:23","tools/bench/stage_d1_ring_p2b.log:138","tools/stagesim.py:1317","tools/bench/plan_ring_p3a.json:84"],"note":"X16 comment cites stagesim.py:261 as the default; that line sets '' - the 'Terminal' default is :1317. Leaving P2b as an expected-red regression row erodes the regression signal; route via gate_fp queue."}
+BGRUN END rc=0 after 73s

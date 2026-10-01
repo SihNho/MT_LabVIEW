@@ -1,0 +1,17 @@
+{
+ "schema": "verdict/1",
+ "id": "125-1-x16",
+ "verdict": "refuted",
+ "alternative": "X16 is scoped wider than PD251(b) ('primitive create'): it refuses const_donor ArrayConstant creates whose LabVIEW-measured class is 'Terminal' == stagesim default (stagesim.py:1317), so the P2b refusal is a gate false positive, not design.",
+ "discriminating_test": "Offline: confirm stage_d1_ring_p2b.log G rows give term_class 'Terminal' for all 5 created constants; rerun x16_gate on plan_ring_p2b.json excluding prim=='const_donor' -> expect 0 bad while selftest E1 (p3a_wait) still FAILs and P3a still PASSes.",
+ "violations": [],
+ "sources": [
+  "docs/d1-loop12-17-split-plan.md:2561",
+  "tools/stage_prerun.py:1895",
+  "tools/bench/plan_ring_p2b.json:23",
+  "tools/bench/stage_d1_ring_p2b.log:138",
+  "tools/stagesim.py:1317",
+  "tools/bench/plan_ring_p3a.json:84"
+ ],
+ "note": "X16 comment cites stagesim.py:261 as the default; that line sets '' - the 'Terminal' default is :1317. Leaving P2b as an expected-red regression row erodes the regression signal; route via gate_fp queue."
+}

@@ -1,0 +1,22 @@
+BGRUN START 2026-10-01 18:42:21 limit 3.0 min: py -u tools/bench/selftest_c125_1.py
+BGRUN PID 14544
+  ok   A1 fp-10 cmd, labview:build card, other card's log: before 2 / after 0 (2, 0, 'RULE-OFFLINE-CMD | 2026-10-01 18:42:30 | C:\\Users\\KimLab\\AppData\\Local\\Temp\\c125st_ak7ux7v')
+  ok   A2 an LV recipe under the same card is still refused               2
+  ok   A3 the card's OWN failing log (ledger) still gates the offline cmd 2
+  ok   A4 a corrupt ledger reads as owned (fail closed)                   
+  ok   B1 fp-11 selftest_case_frame_c124 exempt: before False / after True (False, True)
+  ok   B2 an unlisted LV self-test (selftest_c118_primnested) is not exempt 
+  ok   B3 offline_command: listed self-test True, stagexec run False      
+  ok   C1 fp-12 census hook-in self-test, labview none: before refused / after allowed ("flags.labview is 'none' - this command touches LabVIEW (tools\\bench\\selftest_census_hookin_c123.py)", None)
+  ok   C2 an LV diagnostic of the same shape (diag_c123_struct) is still refused 
+  ok   C3 an unlisted LV self-test (selftest_c118_primnested) is still refused 
+  ok   D1 fp-13 stagexec selftest, labview none: before refused / after allowed ("flags.labview is 'none' - this command touches LabVIEW (tools\\stagexec.py)", None)
+  ok   D2 `stagexec.py run <plan>` is still refused                       
+  ok   D3 `stagexec.py selftest; stagexec.py run <plan>` is refused       
+  ok   D4 soft alert: listed self-test not refused, diagnostic still refused (None, 'SOFT ALERT (card chat-P2 item 2, user 2026-09-28): this card was bound 180 min ago (> 60) - no NEW recipe/diagnostic launch (tools\\bench\\dia
+  ok   E1 X16 FAIL: a create terminal without term_class is named         [{'action': 'p3a_wait', 'terminal': 'milliseconds to wait', 'stage': 'ring_p3a'}]
+  ok   E2 X16 PASS: the same plan with the class declared                 7 create action(s) with declared terminals, all classed
+  ok   E3 X16 PASS on plan_ring_p3a.json as committed                     7 create action(s) with declared terminals, all classed
+=== selftest_c125_1: 17 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":17,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 25s

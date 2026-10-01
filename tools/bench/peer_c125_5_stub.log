@@ -1,0 +1,58 @@
+BGRUN START 2026-10-01 19:52:14 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c125-5-stub -TaskFile tools/bench/peer_c125_5_stub_task.txt
+BGRUN PID 3956
+OUTCOME: ANSWERED (190s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-01-c125-5-stub.md
+COST: $1.3613  in 18 / out 16827 / cache-create 100751 / cache-read 851499  (186s, 19 turn(s))
+--- ANSWER ---
+**The claim is not established, and half of part (2) is already contradicted by P3a's own record.** Part (1), the untyped register as the cause of `Is Broken? True`, is plausible but untested. Part (2)'s list of missing conditions leaves out the one difference the joint data actually shows: the wire's route geometry.
+
+## 1. Strongest reason the claim is wrong
+
+**The "branched an existing wire" condition is ruled out by the record, and the stub follows the route, not the type.**
+
+- **No existing wire on the register's inner face.** Register `#27258` was created in this same build at STEPX 11 (`tools/bench/stage_d1_ring_p3a.log:154`). Nothing touched its inner face `#27278` before the connect at STEPX 15 (`:188`). The resulting net `w27378` has exactly two ends: register inner face → tunnel `#27344` outer face `#27365` (`tools/bench/diag_c125_loose.log:16`; joints show terms=2 at `diag_c125_joints.log:26`). A LabVIEW wire is one object per source terminal, so there was no branch.
+- **The order condition doesn't match P3a either.** At STEPX 15 the register's left outer face was already fed by an I32 constant (STEPX 13, `:166`). Its right face was still unwired; the Increment result reached it only at STEPX 16 (`:196-201`). So the test proposed in the brief, "right face wired before the connect", is not P3a's state.
+- **The joints show a routing leftover** (`tools/bench/diag_c125_joints_raw.json:677-740`):
+  - j0 (3277,1143): register inner face
+  - j1 (6957,1143): bend
+  - j2 (6957,2513): a three-way junction
+  - j4 (6960,2513): the tunnel outer face, **3 px off the route line**
+  - j3 (6957,2555): the LOOSE end, 42 px further down, pointing at the sink. Increment `#27311` sits at (6937,2545) (`stage_d1_ring_p3a.log:177`).
+
+  So LabVIEW routed the outer wire toward the sink's position. It placed the tunnel beside the route rather than on it, and left the part of the route past the junction dangling.
+- **The scratch had clean geometry.** In the scratch the tunnel sat exactly on the route: (202,186) → (540,186) → tunnel (540,200), with no three-way junction (`diag_c125_5_stub.log:14`). That difference alone explains "no stub" with no appeal to type.
+- **Caveat:** I am assuming joint coordinates and node `Position` share one diagram coordinate space. That is likely but not measured.
+
+## 2. Alternative explanations
+
+- **(A) Geometry / tunnel placement, covering both observations.** The stub appears when LabVIEW places the auto-created tunnel off the route's border crossing. Possible triggers: a long route on a crowded ~7000 px diagram; the sink sitting ~30–40 px inside the top border, close to where the route enters; or something already on that border, such as the case's input tunnel `#27185` (`:146`). The scratch's short, unobstructed route never forced that. The scratch's broken wire is then a separate, expected effect (see the next bullet).
+- **(B) Part (1) is likely correct but proves nothing about the connect function.** A wire from a shift register holding no data is void and shows broken ([microcontrollerslab tutorial](https://microcontrollerslab.com/shift-registers-labview-examples/)). Max & Min also refuses a void input. But the scratch did not read `Is Broken?` on `w254`, so "void source" versus "the connect produced a bad wire" is still inferred. The stage log also never recorded `Is Broken?` for P3a's connect at STEPX 15 (`:188` prints only `err`). So nobody knows whether the P3a call returned a broken wire either. **This is an unreported fact.**
+- **(C) Not an alternative: which case frame was visible.** Both sinks sit in frame index 0 (`#27219` = bound −22, `:146`; scratch frame 158 = first frame). That difference does not separate the two runs unless P3a's visible frame was changed.
+
+## 3. What would falsify the claim
+
+- **Typed register, still no stub:** a scratch matching P3a's register state exactly (I32 constant on the left outer face, right face unwired, short clean route) shows **no** stub. Type is then not the cause.
+- **Void register, stub anyway:** the void-register scratch, rebuilt with P3a's geometry, **does** show a loose end. That falsifies (2) outright.
+- **Tunnel on the route, stub anyway:** a stub appears even when the tunnel sits exactly on the route. That would refute alternative (A).
+
+## 4. Cheapest discriminating test
+
+One scratch script, run twice with a switch. Both runs read `Is Broken?` and joints on **both** new wires.
+
+- **Variant T (type, matches P3a's state):** before the connect, run `wire_const_sr` (I32 constant to the left outer face) and leave the right face unwired. Keep the current short layout.
+  - Stub → type matters.
+  - No stub plus `Is Broken? False` → part (1) is confirmed, and type is ruled out for the stub.
+- **Variant G (geometry, void register):** move the case far right and down of the register (a few thousand px, like P3a's 3680 × 1370 offset). Put B ~20 px left of and ~35 px below the top-border crossing, with an existing input tunnel near that point.
+  - Stub on a void wire → geometry, and the claim is falsified.
+
+If T shows no stub and G shows one, the stub is a routing artefact. Its fix belongs at the tunnel/route step, not in register initialisation.
+
+For STEP 2 (removing the stub), check the per-wire **`Wire.Clean Up Wire`** method first: it "cleans up wires so that they have no loose ends" and keeps all terminal connections ([LabVIEW Wiki](https://labviewwiki.org/wiki/Wire_class/Clean_Up_Wire_method)). It looks scoped to the one wire, unlike `AbstractDiagram.Remove Wire Loose Ends`, which clears the whole diagram ([LabVIEW Wiki](https://labviewwiki.org/wiki/AbstractDiagram_class/Remove_Wire_Loose_Ends_method)). That diagram-wide method would also hit the 28 known loose wires if any sit on diagram 639. Neither method has been measured here, and Clean Up Wire may also re-route the wire.
+
+**What would change my mind:** Variant T showing the stub and Variant G not showing it.
+
+Sources:
+- [Shift Registers in LabVIEW (microcontrollerslab)](https://microcontrollerslab.com/shift-registers-labview-examples/)
+- [Wire class / Clean Up Wire method – LabVIEW Wiki](https://labviewwiki.org/wiki/Wire_class/Clean_Up_Wire_method)
+- [AbstractDiagram class / Remove Wire Loose Ends method – LabVIEW Wiki](https://labviewwiki.org/wiki/AbstractDiagram_class/Remove_Wire_Loose_Ends_method)
+- [NI Community: Script connect existing loose wires to case tunnels](https://forums.ni.com/t5/LabVIEW/Script-connect-existing-loose-wires-to-case-tunnels/td-p/4195933)
+BGRUN END rc=0 after 191s

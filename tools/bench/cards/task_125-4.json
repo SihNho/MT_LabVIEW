@@ -1,0 +1,71 @@
+{
+ "schema": "task/1",
+ "id": "125-4",
+ "kind": "measure",
+ "goal": "PD252: build + measure the Flat Sequence creator (3 frames in P3a case #22694's False frame, byte copy); then read-only wire_joints diff P2b vs P3a for the 55th item",
+ "why": "P3b needs a Flat Sequence creator (PD246(c) A1, PD248(c)); 125-2 measured the P3a graph but its terminal-row criterion could not see the new loose segment; the existing OpWireJoints_v1 can. Brief: brief_125-4.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_125-4.md"},
+  {"path": "tools/bench/cards/result_125-2.json"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3a_20261001_180540.vi", "md5": "4dfa44aac8fb32f706b3eb792ee7d3cc"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p2b_20261001_140658.vi", "md5": "652b1447ebbda761a7d5ba36455a0fa1"},
+  {"path": "tools/bench/graph_ring_p3a_20261001_190155.json", "md5": "2fa6ce0c3e8a3014fa916085cb852f68"},
+  {"path": "tools/bench/diag_c125_fsmethods.py", "md5": "dcdd7bbef641c203c8fed150c358c6dd"},
+  {"path": "archive/peer/2026-10-01-c125-2-loose-hyp.md"},
+  {"path": "archive/peer/2026-10-01-c125-2-flatseq-addframe-gemini.md"},
+  {"path": "tools/bench/stage_d1_ring_p3a.log"}
+ ],
+ "requires": [
+  {"kind": "verb", "name": "wire_joints", "where": "tools/gscript.py"},
+  {"kind": "op", "name": "OpWireJoints_v1"},
+  {"kind": "verb", "name": "struct_copy_nested", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "connect_term_uid", "where": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/stagekit.py"}
+ ],
+ "pass": [
+  "FlatSequence frame-add mechanism measured (method id + terminal names, or a donor route chosen and stated)",
+  "3-frame Flat Sequence inside case #22694's False frame on a byte copy; read back frame count, left-to-right order, per-frame diagram uid, census delta",
+  "frame-1 -> frame-2 wire through a sequence tunnel; tunnel class and Is Broken? False read back",
+  "gscript function + census sample + scratch_verify record; any new op VI has a hygiene record",
+  "wire_joints read on both beds for every net P3a's stage touched; free segment ends listed per net; P3a-vs-P2b extras reported",
+  "both beds' md5 unchanged; LabVIEW closed and verified gone"
+ ],
+ "outputs": [
+  "tools/gscript.py",
+  "tools/bench/census_samples.json",
+  "tools/bench/scratch_verify/*",
+  "tools/bench/diag_c125_joints.log"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/gscript.py",
+   "tools/bench/diag_c125*",
+   "tools/bench/c125_4*",
+   "tools/bench/census_samples.json",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/op_hygiene/**",
+   "tools/bench/cards/result_125-4*",
+   "tools/bench/cards/review_125-4*",
+   "tools/bench/peer_*",
+   "archive/peer/**",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["fact", "hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "rules": [
+  "Follow brief_125-4.md; STEP B first, STEP C second; both beds never saved over; no stage recipe launched",
+  "STEP C is a measurement: no prediction on how many extra free ends exist",
+  "Return at the first unexpected result in STEP B, but still run read-only STEP C if LabVIEW is clean"
+ ],
+ "advances": ["M4", "M3"]
+}

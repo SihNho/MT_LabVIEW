@@ -254,7 +254,10 @@ def selftest_exempt(start_line):
     scoped = [s for s in scripts if _SCOPE_SCRIPT_RE.search(s)]
     if not scoped or not all(_SELFTEST_SCRIPT_RE.search(s) for s in scoped):
         return False
-    return not any(script_touches_labview(s if os.path.isabs(s) else os.path.join(ROOT, s)) for s in scoped)
+    # gate-fp fp-11 (card 125-1): a MEASURED offline self-test entry (protocol.OFFLINE_SELFTESTS) is not followed into
+    # function-local imports it never executes (stagexec.py:2058-2059 via selftest_case_frame_c124.py:27).
+    ab = [s if os.path.isabs(s) else os.path.join(ROOT, s) for s in scoped]
+    return not any(script_touches_labview(s) and not protocol.offline_selftest(s, cmd) for s in ab)
 
 
 def _rel(p):
@@ -392,6 +395,8 @@ def offline_command(cmd):
         mode = OFFLINE_MODES.get(b)
         if mode is not None and mode.search(cmd):
             continue
+        if protocol.offline_selftest(s, cmd):          # gate-fp fp-11 (card 125-1): measured offline self-test
+            continue
         if script_touches_labview(s):
             return False
     return judged > 0
@@ -413,6 +418,29 @@ def offline_card(payload, cmd):
     if str((card.get("flags") or {}).get("labview") or "none") != "none":
         return None
     return card.get("id") if offline_command(cmd) else None
+
+
+def offline_cmd_lv_card(payload, cmd, log_path):
+    """gate-fp fp-10 (card 125-1), the REVERSE of offline_card: (card id, labview flag) when the caller is bound to a card
+    with flags.labview read/build, `cmd` is offline_command, and the failing `log_path` is NOT in that card's launch
+    ledger (protocol.card_owns_log; unreadable ledger = owned = gated). Else None. The card's own failing log, an
+    LV-touching command, an unbound caller and a labview:none card (offline_card's case) are not handled here."""
+    aid = (payload or {}).get("agent_id")
+    if not aid:
+        return None
+    try:
+        b = protocol.binding(aid)
+        if not b:
+            return None
+        card = protocol.load_card(protocol._abs(b["card"]), None)
+    except Exception:                    # noqa: BLE001 - unreadable binding/card: not exempt
+        return None
+    lv = str((card.get("flags") or {}).get("labview") or "none")
+    if lv == "none" or not offline_command(cmd):
+        return None
+    if protocol.card_owns_log(card.get("id"), log_path):
+        return None
+    return card.get("id"), lv
 
 
 def failure_names(path, text):
@@ -912,6 +940,15 @@ def main():
     if oc:
         line = "RULE-OFFLINE-CARD | %s | %s not gated for card %s (flags.labview none; command offline)" % (
             time.strftime("%Y-%m-%d %H:%M:%S"), _rel(path), oc)
+        sys.stderr.write(line + "\n")
+        _gate_log(line)
+        return 0
+    # --- RULE-OFFLINE-CMD (gate-fp fp-10, card 125-1): the reverse - an offline command under a LabVIEW card is not held
+    # back by a failing log that card did not launch (launch ledger). Its own failing log still gates it.
+    ol = offline_cmd_lv_card(payload, cmd, path)
+    if ol:
+        line = "RULE-OFFLINE-CMD | %s | %s not gated for card %s (flags.labview %s; command offline; log not launched " \
+               "by this card)" % (time.strftime("%Y-%m-%d %H:%M:%S"), _rel(path), ol[0], ol[1])
         sys.stderr.write(line + "\n")
         _gate_log(line)
         return 0

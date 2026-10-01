@@ -68,6 +68,9 @@ PRE-RUN (decision 2, 3, 8), all offline, on the same graph JSON + the dry run's 
      replay through stagesim with the in-force params and reproduce the measured wire outcome (source/sink wire fate,
      wire groups, old source wire members); a FAIL names the sample and the field. No model file / no replayer = WARN.
      `--opmodel-conformance [op ...] [--disable cfw_border_rule]` (exit 0/2). Self-test: selftest_stage_prerun_c115a.py
+  X16 (card 125-1, PD251(b)) every entry of a create action's declared `terminals` list carries a `term_class` (no
+     stagesim default). `prim: "const_donor"` creates are exempt (card 125-3, PD252(a): measured class == default
+     `Terminal`, stagesim.py:1317). Both --prerun paths (recipe and stageplan/1). Self-test: selftest_c125_1.py
 Records: tools/bench/prerun_records.jsonl, one line per dry/prerun, keyed by the script's sha256 + the plan files'
 md5s. Launch gate (decisions 1/2/4): a `tools/recipes/stage_*.py` launch needs a dry PASS and a prerun PASS for the
 script's CURRENT sha256 and plan md5s, both newer than the newest failing run of that script (a failed run
@@ -1880,6 +1883,44 @@ def census_unpredicted(recipe):
     return out
 
 
+# card 125-1 (PD251(b)): X16 - a primitive CREATE whose declared terminal list has an entry without `term_class`.
+# Cause: archive/peer/2026-10-01-c124-8-p3a-termclass-hyp.md - 124-7 failed at op 1 because created-node terminals took
+# stagesim's default class `Terminal` (stagesim.py:1317, `t.get("term_class") or "Terminal"`) while LabVIEW gives
+# ParameterTerminal (Increment's `x+1` = OverridableParameterTerminal). The class is declared per terminal from a
+# measured donor graph, never defaulted.
+# card 125-3 (PD252(a), review archive/peer/2026-10-01-c125-1-x16-hyp.md ACCEPTED): `prim: "const_donor"` creates are
+# OUT of scope - a donor constant's measured terminal class IS the default `Terminal` (stage_d1_ring_p2b.log:138-154,
+# 5/5), so refusing it was a gate false positive. Every other create (primitives) is still checked.
+CREATE_OPS = ("create", "primitive", "primitive_create", "create_primitive")
+X16_EXEMPT_PRIMS = ("const_donor",)
+
+
+def x16_in_scope(a):
+    """True for a create action with a declared `terminals` list that is not a const_donor constant."""
+    return (a.get("op") in CREATE_OPS and isinstance(a.get("terminals"), list)
+            and a.get("prim") not in X16_EXEMPT_PRIMS)
+
+
+def termclass_undeclared(plan):
+    """X16 core: [{action, terminal}] for every in-scope create action's declared `terminals` entry with no term_class."""
+    out = []
+    for a in (plan or {}).get("actions") or []:
+        if not x16_in_scope(a):
+            continue
+        for t in a["terminals"]:
+            if not (isinstance(t, dict) and str(t.get("term_class") or "").strip()):
+                out.append({"action": a.get("id"), "terminal": t.get("name") if isinstance(t, dict) else t})
+    return out
+
+
+def x16_gate(plans):
+    """(ok, detail) of X16 over loaded stageplan dicts."""
+    bad = [dict(x, stage=(pl or {}).get("stage")) for pl in plans for x in termclass_undeclared(pl)]
+    n = sum(1 for pl in plans for a in (pl or {}).get("actions") or [] if x16_in_scope(a))
+    return not bad, (bad[:6] if bad else "{0} non-const_donor create action(s) with declared terminals, all classed"
+                     .format(n))
+
+
 def prerun(recipe, graph=None, stop_after=None, from_step=None):
     """card 103-2 (PD216(b)): stop_after=k (the recipe's own `--stop-after k`, PART-A mode) makes X5 expect only the
     stageplan wiring real ops 1..k - exactly the ops the run dispatches; the wire-action COVERAGE check stays over the
@@ -1938,6 +1979,9 @@ def prerun(recipe, graph=None, stop_after=None, from_step=None):
     gate("X13 opmodel conformance: every recorded sample of the plan ops' model files replays in stagesim", x13_ok, x13_det)
     for w_ in x13_w:
         print("  WARN  {0}".format(w_), flush=True)
+    # card 125-1 (PD251(b)): every declared terminal of a created primitive carries its term_class
+    x16_ok, x16_det = x16_gate([pl or json.load(open(p, encoding="utf-8")) for p, (_ok, _d, pl, _o) in spc.items()])
+    gate("X16 every declared terminal of a created primitive carries term_class (PD251(b))", x16_ok, x16_det)
     # card 123-7 (PD247(e)): the census of every stageplan that carries a prediction file; a gate only when one does
     cen_plans = [p for p in sps if census_check(p) is not None]
     if cen_plans:
@@ -3162,6 +3206,11 @@ def main(argv=None):
             g_ = g_ + [("X13 opmodel conformance (card 115-1)", x13_ok, json.dumps(x13_det, default=str)[:600])]
             print("  {0}  {1}  {2}".format("PASS" if x13_ok else "FAIL", g_[-1][0], g_[-1][2][:400]), flush=True)
             ok = ok and not cpl and not bao and x13_ok
+            x16_ok, x16_det = x16_gate([json.load(open(recipe, encoding="utf-8"))])   # card 125-1 (PD251(b))
+            g_ = g_ + [("X16 created-primitive terminals carry term_class (card 125-1)", x16_ok,
+                        json.dumps(x16_det, default=str)[:600])]
+            print("  {0}  {1}  {2}".format("PASS" if x16_ok else "FAIL", g_[-1][0], g_[-1][2][:400]), flush=True)
+            ok = ok and x16_ok
             if census_check(recipe) is not None:            # card 123-7 (PD247(e)): census FAIL fails the prerun
                 c_ok, c_det, _cl = census_gate([recipe], out=lambda s_: print(s_, flush=True))
                 g_ = g_ + [("X15 census derived == declared (card 123-7)", c_ok, json.dumps(c_det, default=str)[:600])]

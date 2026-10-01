@@ -1,0 +1,74 @@
+{
+ "schema": "task/1",
+ "id": "125-2",
+ "kind": "measure",
+ "goal": "PD251(c)(d)+PD248(c): read P3a bed's graph, trace the new loose-end wire (55th item); build + measure the Flat Sequence creator (3 frames in P3a's new-frame case frame, byte copy)",
+ "why": "P3b's plan needs the real P3a graph as its base, the 55th item's identity (PD251(c)), and a Flat Sequence creator (PD246(c) A1); none exists today (diag_c123_struct.log:47). Brief: brief_125-2.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_125-2.md"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3a_20261001_180540.vi", "md5": "4dfa44aac8fb32f706b3eb792ee7d3cc"},
+  {"path": "tools/bench/graph_ring_p2b_20261001_154542.json", "md5": "69b23e0821482acf118bb268d92589fe"},
+  {"path": "tools/bench/plan_ring_p3a.json", "md5": "234efaaa890c5d2ac255d746048ddb84"},
+  {"path": "tools/bench/errorlist_D1_ring_p3a_20261001_180540_20261001_183225_reuse.json"},
+  {"path": "tools/bench/cards/result_123-5.json"},
+  {"path": "tools/bench/cards/result_124-5.json"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c123_graph_p2b.py"},
+  {"kind": "verb", "name": "struct_copy_nested", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "case_wired", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "connect_term_uid", "where": "tools/gscript.py"},
+  {"kind": "op", "name": "OpConnectTermUid_v0"},
+  {"kind": "file", "name": "tools/stagekit.py"}
+ ],
+ "pass": [
+  "graph_ring_p3a_<ts>.json written from the bed; bed md5 4dfa44aa... unchanged",
+  "the loose-end wires new in P3a vs P2b listed with uid, connected terminal(s), diagram, and the plan_ring_p3a row that made each",
+  "a Flat Sequence of 3 frames created inside the False frame of P3a's case on a byte copy; read back: frame count, left-to-right order, per-frame diagram uid, census delta",
+  "a frame-1 -> frame-2 wire through a sequence tunnel made and read back (tunnel class, Is Broken? False)",
+  "gscript function + census sample + scratch_verify record; any new op VI has a hygiene record (>= 2,000 calls, 0 errors, handles flat +-100)",
+  "result lists what the stagexec route / stagesim model will need (arguments, returned uids, created classes, frame naming)",
+  "LabVIEW closed and verified gone; scratch copies deleted or md5-recorded"
+ ],
+ "outputs": [
+  "tools/bench/graph_ring_p3a_*.json",
+  "tools/gscript.py",
+  "tools/bench/census_samples.json",
+  "tools/bench/scratch_verify/*",
+  "tools/bench/op_hygiene/*"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/gscript.py",
+   "tools/bench/graph_ring_p3a*",
+   "tools/bench/diag_c125*",
+   "tools/bench/c125_2*",
+   "tools/bench/census_samples.json",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/op_hygiene/**",
+   "tools/bench/cards/result_125-2*",
+   "tools/bench/cards/review_125-2*",
+   "tools/bench/peer_*",
+   "archive/peer/**",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["fact", "hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "rules": [
+  "Follow brief_125-2.md; bed never saved over; no stage recipe launched; scripts <= 120 lines on stagekit",
+  "GUI only for STEP A's Error List fallback: capture, locate, act, capture, confirm; lv_gui.ps1 -Exception Approved",
+  "Return at the first unexpected result; finish the step, close LabVIEW, record facts"
+ ],
+ "advances": ["M4", "M3"]
+}

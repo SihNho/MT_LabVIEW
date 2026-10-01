@@ -2567,6 +2567,79 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
      - **(d) Next, in order:** the trace (c) and the prerun check (b) (offline/read-only, may share one card); the Flat
        Sequence creator (PD248(c), a NEW op with its hygiene record, own LabVIEW card); then P3b. P3b's size still waits for
        **D-2026-10-01-01**; unanswered when P3b is ready ⇒ one step with a full scratch run (PD246(d)).
+252. **(cycle 125 judgement, 2026-10-01 — after 125-1 PASS 38/0, 125-3 PASS 5/0, 125-2 FAIL 13/1)**
+     USER-RULES: U1 (relied on; tooling only, none contradicted).
+     - **(a) Gate work DONE (cycle card `gates_due` gate-fp):** fp-10..fp-13 drained (`result_125-1.json`: RULE-OFFLINE-CMD
+       `guard_peer.py:946` with a launch ledger `tools/bench/cards/launches.jsonl`; a named list `OFFLINE_SELFTESTS`
+       `protocol.py:398` for the three measured COM-free self-tests; `c125_1_offline_measure.log` 0 COM trips). PD251(b)'s
+       prerun check is **X16** (`stage_prerun.py:1904`). The hypothesis review `archive/peer/2026-10-01-c125-1-x16-hyp.md`
+       REFUTED my claim that X16 should also refuse constants and was ACCEPTED: a `const_donor` constant's measured class is
+       `Terminal` == stagesim's default (`stage_d1_ring_p2b.log:138`, `stagesim.py:1317`), so X16 now skips `const_donor`
+       (card 125-3, `stage_prerun.py:1898`, fp-14 drained); `plan_ring_p2b.json` prerun PASS again. **Rule for cards:** a
+       card that edits `stagexec.py`, `stagekit.py` or a listed self-test reruns `tools/bench/c125_1_offline_measure.py`
+       (the `OFFLINE_SELFTESTS` list is not md5-pinned).
+     - **(b) The 55th item is NOT traced yet.** The real P3a graph is read (`tools/bench/graph_ring_p3a_20261001_190155.json`,
+       md5 `2fa6ce0c…`; case `#22694`, frames `27219`/`27232`). By terminal rows P3a and P2b carry the SAME 28 loose wires
+       (`diag_c125_loose.log:3`) — my prediction "exactly one new" was wrong before it ran (review
+       `archive/peer/2026-10-01-c125-2-loose-hyp.md` §1: ≥ 17 of the 24 loose-ends items sit on nets with a source and a
+       sink, so a terminal-row criterion cannot see them). DECIDED: read it with the existing `gscript.wire_joints`
+       (`OpWireJoints_v1`) on the nets P3a's stage touched, both beds, as a measurement with no count prediction (card
+       125-4 STEP C). P3b's Error List prediction keeps the item until it is attributed.
+     - **(c) The Flat Sequence creator (PD248(c)) is card 125-4 STEP B, before STEP C** (it is on the deliverable path):
+       measure the FlatSequence frame-add method with `diag_c125_fsmethods.py` (an unsourced fact answer names `Add Frame`,
+       `archive/peer/2026-10-01-c125-2-flatseq-addframe-gemini.md`), else a donor + `struct_copy_nested`; 3 frames in the
+       False frame of `#22694` on a byte copy; a frame-1 → frame-2 sequence tunnel read back. The stagexec route, stagesim
+       model and self-tests follow in an offline card.
+     - **(d) 125-4 RESULTS (`result_125-4.json`).** The 55th item IS TRACED: `w27378`, the wire on the OUTER face `#27365`
+       of case `#22694`'s input SelectorTunnel `#27344`, has ONE dangling segment end (joint 3 at (6957, 2555), flag LOOSE
+       0x100, no terminal; `diag_c125_joints.log:26,39`), made by P3a's row `p3a_w_cnt_in` = `connect_term_uid` across the
+       case border (`stage_d1_ring_p3a.log:193,255`). Every other new P3a wire and w3747 have 0 free ends. So it is NOT an
+       open end P3b consumes — it is a stub left by our own op, and P3b/P4 call that op again. **DECIDED:** a scratch-VI
+       check of `connect_term_uid` reproduces the stub and measures ONE targeted removal on that wire (never a whole-VI
+       "Remove Broken Wires": it would delete the 28 known loose wires too) before P3b is planned; the op's fix and a
+       cleanup row for w27378 follow from that measurement. P3b's Error List prediction counts w27378 until then.
+       FlatSequence methods MEASURED (`diag_c125_4fsm.log:23-54`, `gscript.FS_METHODS`): `Add Frame` `3578B800`
+       (inputs `Reference Frame Index`, `After(T)`; returns the new frame), Remove Frame `…801`, AutoSize `…802`, Remove
+       Structure `…803`, Size Frame `…804`, ConvertToTimedSequence `…805`; none on FlatSequenceFrame.
+     - **(e) Flat Sequence creator = ROUTE (a), a NEW op `claudeDev\OpFsAddFrame_v0.vi`** (uid → FlatSequence → Invoke
+       `3578B800`, hygiene ≥ 2,000 calls) plus a `Diagrams[]` frame-order reader. REJECTED (b) a 3-frame donor +
+       `struct_copy_nested`: building the donor needs the same Add Frame call, P4 needs a different frame count, and
+       frame order must be read in either route. Card 125-5: STEP 1 the op + scratch (3 frames in `#22694`'s False frame,
+       a sequence-tunnel wire with 0 free ends); STEP 2 the `connect_term_uid` stub check of (d).
+253. **(cycle 125 judgement, 2026-10-01 — after 125-5 FAIL 22/2)**
+     USER-RULES: U1 (relied on; tooling only, none contradicted).
+     - **(a) Both Flat Sequence ops are BUILT (`result_125-5.json`):** `claudeDev\OpFsDiagrams_v0.vi` (md5 `be211e18…`,
+       frame-order reader; hygiene PASS 2,000 calls, 0 errors, handles 34,083 → 34,075) and `claudeDev\OpFsAddFrame_v0.vi`
+       (md5 `cfaa304f…`; Add Frame(0, T) turns frames [1319] into [1319, 139], frame 0 unchanged). First frame: donor
+       `claudeDev\DonorFs_v0.vi` (md5 `d785a181…`, a 1-frame FS from the NI example "VI Scripting with Structures - For
+       Loop.vi", its tunnel removed, ES 1). **ACCEPTED: both ops address the FS by Traverse('FlatSequence') index plus a
+       UID echo** instead of the brief's UID → GObject route; the echo makes a wrong object a refusal, as in the other
+       verified ops.
+     - **(b) `OpFsAddFrame_v0`'s hygiene FAILED on handles only** (+116 > 100, about +6 per round, 0 errors,
+       `diag_c125_5_opfs.log:64`); its record says FAIL, so `gscript.op` refuses the op. Review
+       `archive/peer/2026-10-01-c125-5-addframe-hyg.md` ACCEPTED: the workload never closed its VI copies (PD242(b)
+       equal-state rule). DECIDED: rerun the 2,000 calls with the copies recycled (close without save each round) and
+       record h_pre / h_post / h_closed plus GDI/USER counts; PASS only by the usual ±100 band. Not a change to the op.
+       **Retrospective cycle 125 (ACCEPTED, `repeated-failure-class`, `archive/peer/2026-10-01-retrospective-cycle125.md`):**
+       the rerun goes through ONE shared runner built first, `gscript.hygiene_run(op, workload, recycle=True)` (wraps
+       `hygiene_probe`, closes each copy without saving, handles before/after calls and after close, GDI/USER); every
+       later op hygiene check uses only that runner, and a brief quotes PD242(b)'s equal-state clause verbatim.
+     - **(c) Still owed before P3b's plan:** the scratch run `tools/bench/diag_c125_5_fsscr.py` (written, not run; 3 frames
+       in `#22694`'s False frame on a P3a byte copy, a frame-1 → frame-2 sequence-tunnel wire, `wire_joints` free ends 0),
+       a census sample, a `scratch_verify` record, then the stagexec route / stagesim model / self-tests (offline card).
+       `gscript.fs_donor` / `fs_frames` / `fs_add_frame` are NOT machine-tested yet. `diag_c125_5_opfs.py` is 203 lines,
+       over the 120-line rule; it is a one-off op build and is not reused.
+     - **(d) The stub did NOT reproduce on a minimal scratch VI** (`diag_c125_5_stub.log:14-17`: 0 free ends; review
+       `archive/peer/2026-10-01-c125-5-stub.md`). DECIDED: measure the REMOVAL on the real wire, not a third
+       reproduction attempt. On a P3a byte copy, look up and apply the Wire method that cleans up one wire (Clean Up
+       Wire; id not measured) to `w27378`, then read `wire_joints` (free ends 0?), `Is Broken?`, and the Error List count
+       only (`--count-only --role scratch`; 54 expected if the stub was the 55th item). If it works, P3b gets a cleanup
+       row after each case-border `connect_term_uid`, and P3a's stub is removed in P3b. Preventing the stub inside the
+       op waits until a reproduction exists.
+     - **(e) Next cycle, in order:** card A (LabVIEW) = (b) the hygiene rerun, then (c) the scratch run, census sample and
+       `scratch_verify` record; card B (LabVIEW, after A) = (d); beside B, the offline card for the FS stagexec route,
+       stagesim model and self-tests on A's measured facts. P3b's plan follows. D-2026-10-01-01 still open (PD246(d)
+       applies if unanswered).
 
 ## OPEN (design choices — for judgement; not decided here)
 

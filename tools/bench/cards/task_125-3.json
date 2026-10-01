@@ -1,0 +1,62 @@
+{
+ "schema": "task/1",
+ "id": "125-3",
+ "kind": "build",
+ "goal": "Scope prerun X16 to non-const_donor creates (review c125-1-x16 ACCEPTED); fix its default citation; rerun c125_1_regress green",
+ "why": "Review archive/peer/2026-10-01-c125-1-x16-hyp.md: a const_donor's measured class is Terminal == stagesim default (stagesim.py:1317), so X16 refusing P2b's 5 constants is a gate false positive. Gate edit before the LabVIEW card 125-2.",
+ "inputs": [
+  {"path": "archive/peer/2026-10-01-c125-1-x16-hyp.md"},
+  {"path": "tools/bench/cards/verdict_125-1-x16.json"},
+  {"path": "tools/bench/cards/result_125-1.json"},
+  {"path": "tools/stage_prerun.py", "md5": "5add59ba20da9e1923944509565928b2"},
+  {"path": "tools/bench/selftest_c125_1.py", "md5": "43fda7ed309681de77f35ff7cb1934da"},
+  {"path": "tools/bench/c125_1_regress.py", "md5": "11bf38b850efd2efdb6d1e788b8002a6"},
+  {"path": "tools/bench/plan_ring_p2b.json"},
+  {"path": "tools/bench/stage_d1_ring_p2b.log"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/gate_fp.py"},
+  {"kind": "file", "name": "tools/stagesim.py"}
+ ],
+ "pass": [
+  "the review's discriminating test run first: stage_d1_ring_p2b.log gives term_class Terminal for all 5 created constants (facts with log lines)",
+  "X16 skips const_donor creates; X16 comment cites stagesim.py:1317 as the default",
+  "selftest_c125_1 extended: a const_donor create without term_class PASSES X16; E1 (p3a_wait primitive) still FAILs; all prior cases green",
+  "c125_1_regress.py rerun: plan_ring_p2b.json prerun PASS, P3a plan + recipe PASS, every self-test green",
+  "the P2b refusal logged with gate_fp.py log and drained with the fixed path:line and self-test name"
+ ],
+ "outputs": [
+  "tools/stage_prerun.py",
+  "tools/bench/selftest_c125_1.py",
+  "tools/bench/c125_1_regress.log",
+  "tools/bench/gate_fp_queue.jsonl"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_prerun.py",
+   "tools/bench/selftest_c125_1*",
+   "tools/bench/c125_1_regress*",
+   "tools/bench/c125_3*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prerun/**",
+   "tools/bench/cards/result_125-3*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 25
+ },
+ "rules": [
+  "No LabVIEW; X16 still refuses a non-constant primitive with an undeclared term_class",
+  "If the discriminating test shows a constant whose class is NOT Terminal, stop and return the facts",
+  "Return at the first unexpected result"
+ ],
+ "unblocks": "M4"
+}

@@ -1,0 +1,24 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle125",
+ "verdict": "refuted",
+ "alternative": "The +116 handles may be a real per-call leak in OpFsAddFrame_v0, in which case the rerun only confirms a FAIL; the waste is then the unreadable first probe, not a lost PASS.",
+ "discriminating_test": "Rerun AH with each round's copy closed without save, sampling h_pre/h_post/h_closed + GDI/USER (review c125-5-addframe-hyg.md:82-92); flat h_closed => harness fault confirmed.",
+ "violations": [
+  {
+   "slug": "repeated-failure-class",
+   "loss_min": 15,
+   "loss_usd": null,
+   "evidence": "tools/bench/diag_c125_5_opfs.log:64"
+  }
+ ],
+ "sources": [
+  "tools/bench/diag_c125_5_opfs.log:64",
+  "tools/bench/diag_c125_5_opfs.py:136",
+  "tools/bench/diag_c122_hyg.py:74",
+  "tools/bench/cards/result_124-4.json:2",
+  "docs/d1-loop12-17-split-plan.md:2339",
+  "tools/bench/next.json:4"
+ ],
+ "note": "Window spans cycles 123-125; cycle 125 = 18:32-19:58. Second candidate (125-2 inferred loose-wire count, $2.44 review) ranked below. No device failed."
+}

@@ -1,0 +1,69 @@
+{
+ "schema": "task/1",
+ "id": "125-1",
+ "kind": "build",
+ "goal": "Drain gate-fp queue fp-10..fp-13 (gates_due: gate-fp DUE) and add the PD251(b) prerun refusal of a primitive create whose declared terminals lack term_class, each with self-tests",
+ "why": "fp-12 blocks offline cards that need their own self-tests green; P3b and P4 create primitives again and 124-7 lost a run to an undeclared term_class. Gate edits must land while no LabVIEW card is live, so this runs first. Brief: brief_125-1.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_125-1.md"},
+  {"path": "tools/bench/gate_fp_queue.jsonl", "md5": "836ae25a0da9314b3ca2b6346ce420d8"},
+  {"path": "tools/hooks/guard_peer.py", "md5": "7212f5b3e422a94e02c2c676a41ccb65"},
+  {"path": "tools/hooks/guard_bash.py", "md5": "2e2e77cd77cf52c060e9b1f26485c91a"},
+  {"path": "tools/protocol.py", "md5": "b3953057fab25e9eaf9888265e9b4bd9"},
+  {"path": "tools/stage_prerun.py", "md5": "9a1eab08277865bcb1066cea80bd8d02"},
+  {"path": "tools/bench/plan_ring_p3a.json", "md5": "234efaaa890c5d2ac255d746048ddb84"},
+  {"path": "archive/peer/2026-10-01-c124-8-p3a-termclass-hyp.md"},
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "1f139531a81cb9626df242628ab27aff"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/gate_fp.py"},
+  {"kind": "file", "name": "tools/bench/selftest_census_hookin_c123.py"},
+  {"kind": "file", "name": "tools/bench/selftest_case_frame_c124.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p3a.py"},
+  {"kind": "file", "name": "tools/stagexec.py"}
+ ],
+ "pass": [
+  "fp-10, fp-11, fp-12, fp-13 each drained via gate_fp.py drain with a fixed path:line and a named self-test that refuses-before / allows-after the entry's command",
+  "for each fixed gate, a self-test case shows a really LabVIEW-touching command of the same shape is still refused",
+  "stage_prerun --prerun has a new X-line that FAILs a create-primitive action with a declared terminal lacking term_class; self-test FAIL/PASS pair green",
+  "plan_ring_p3a.json / stage_d1_ring_p3a.py prerun still PASS",
+  "existing self-tests green: launch_gate, stagexec selftest, census hook-in c123, case_frame_c124, guard_peer selftests, protocol selftests (counts reported)"
+ ],
+ "outputs": [
+  "tools/hooks/guard_peer.py",
+  "tools/protocol.py",
+  "tools/stage_prerun.py",
+  "tools/bench/gate_fp_queue.jsonl"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/hooks/guard_peer.py",
+   "tools/hooks/guard_bash.py",
+   "tools/protocol.py",
+   "tools/stage_prerun.py",
+   "tools/gate_fp.py",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/selftest_*",
+   "tools/bench/prerun/**",
+   "tools/bench/c125_1*",
+   "tools/bench/cards/result_125-1*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 55
+ },
+ "rules": [
+  "Follow brief_125-1.md and Pre-decided 251(b); no LabVIEW, no stage recipe launched",
+  "Narrow, explicit gate rules over regex loosening; a COM-opening recipe/diagnostic stays refused under labview none",
+  "Related edits land together and self-tested, or not at all; return at the first unexpected result"
+ ],
+ "unblocks": "M4"
+}

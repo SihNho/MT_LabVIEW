@@ -1,0 +1,25 @@
+ATTACK this claim about a failed prediction in tools/bench/diag_c125_5_stub.log (script tools/bench/diag_c125_5_stub.py, card 125-5 STEP 2).
+
+Background: on the P3a work VI, ONE call of our wrapper gscript.connect_term_uid (op OpConnectTermUid_v0 = Terminal.Connect Wire
+6349C03 on the sink terminal with Wire Source = the source terminal, both addressed by uid) from a While loop's LEFT shift register
+INNER face into a node inside a case structure left wire w27378 on the case's input SelectorTunnel OUTER face with one dangling
+segment end (Wire.Joints[]: joint 3 flag LOOSE 0x100, 1 neighbour, no terminal; tools/bench/diag_c125_joints.log:26,39). In P3a
+that register is typed and initialised (I32 constant on the left outer face, an Increment result on the right inner face) and the
+inner face may already have had other wires.
+
+The minimal reproduction (diag_c125_5_stub.log): byte copy of an EMPTY VI -> While loop -> add_shift_reg (both register faces left
+UNWIRED, no initial value, no type) -> Max & Min A in the body -> case_wired (selector <- A's output, numeric case frames
+"0, Default"/"1") -> Max & Min B in frame 0 -> ONE connect_term_uid(sink = B's 'y' input, source = left register inner face).
+Predicted: op error '', Is Broken? False; free ends counted (no count predicted).
+Observed: op error '', echoes correct, but Is Broken? TRUE on the returned wire w236 (tunnel inner face in frame 0 -> B.y); the other
+new wire w254 (left register inner face -> SelectorTunnel outer face) also appeared; Wire.Joints[]: w236 2 joints / 0 loose / 2
+terminal joints / 0 free ends; w254 3 joints / 0 loose / 2 terminal joints / 0 free ends. So NO stub appeared.
+
+THE CLAIM TO ATTACK: (1) Is Broken? True comes from the scratch, not from connect_term_uid: an unwired, uninitialised shift register
+has no data type, so any wire from it is broken; (2) the P3a stub is therefore NOT a property of a single register-inner -> case-node
+connect; it depends on a condition the minimal scratch lacked (a typed/initialised register, a pre-existing wire on the same inner
+face that the connect BRANCHED, or the order in which P3a's rows wired the register and the case).
+
+Give: the strongest reason the claim is wrong, an alternative explanation of both observations (broken wire AND no stub), what would
+falsify the claim, and the cheapest discriminating test (e.g. the same scratch with the register initialised by a constant and its
+right face wired before the connect; and a second variant where the inner face already drives a wire, so the connect is a branch).

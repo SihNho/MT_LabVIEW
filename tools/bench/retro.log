@@ -5134,3 +5134,95 @@ VIOLATION: inference-over-measurement | loss_min=20 | loss_usd=? | evidence=tool
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle122","verdict":"refuted","alternative":"CEN2 +5 was a genuinely unknown cause needing a fresh LabVIEW read, so closing at 13:37 was correct and nothing was lost.","discriminating_test":"Read scratch_pin.log:60,78,96,114,132: four new DigitalNumericConstants owned by the four new ArrayConstants plus #26495 on #4866 = +5, already measured.","violations":[{"slug":"inference-over-measurement","loss_min":20,"loss_usd":"?","evidence":"tools/bench/stage_d1_ring_p2b_scratch_pin.log:60"}],"sources":["tools/bench/stage_d1_ring_p2b_scratch_pin.log:172","tools/bench/cards/result_122-6.json:24","tools/bench/next.json:4","tools/bench/session_6a03e9b3-88d7-472f-af86-32647b474e84.json:1","tools/recipes/stage_d1_ring_p2b.py:98"],"note":"Window includes ~2.7 days of chat work; cycle ran 12:27-13:37. Repeated FS-frame strict owner read (c120 F1a, 122-5 S0) is a finding, ~6 min + $1.47."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle122.md
 BGRUN END rc=0 after 282s
+BGRUN START 2026-10-01 19:58:28 limit 10.0 min: py tools/retrospective.py --cycle 125
+BGRUN PID 24724
+   window 2026-10-01 13:42:20 .. 2026-10-01 19:58:29 (376 min); 115 build logs, 18 machinery logs, 42 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle125.txt (38758 chars)
+   review card tools\bench\cards\review_retrospective-cycle125.json
+OUTCOME: ANSWERED (191s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-10-01-retrospective-cycle125.md
+COST: $1.4275  in 24 / out 18787 / cache-create 106212 / cache-read 1009903  (189s, 32 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle125 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle125.json
+--- ANSWER ---
+The fault is that card 125-5's hygiene test was invalid, so the new Add Frame op can't be used yet. It ranks first because it set how the cycle ended; the full review follows.
+
+**Window note.** The 13:42–19:58 window covers three cycles, not one: cycle 123 (`cycle_123.log`), cycle 124 (`cycle_124.log`) and cycle 125, which starts at 18:32:33 (`tools/bench/cycle_125.log:1`). The audit's C3 (465 min), C4c ($112.75, from cycle_123/124 only) and C5 therefore add up three cycles. Cycle 125's own judgement-session cost is unknown: `cycle_125.log` has no END line. Below, "this cycle" means 18:32–19:58 (86 min, five cards). Cycle 124's facts are used only where they show a recurrence.
+
+## Verdict on the claim
+The claim is "Cycle 125 was run without a costly structural fault." I refute it, narrowly. The cycle was tight: five cards in 86 min, failures returned quickly, and reviews cost $0.99–$2.44 each. But one fault decided how it ended.
+
+**The fault.** Card 125-5's hygiene test for `OpFsAddFrame_v0` broke the plan's own equal-VI-state rule, PD242(b) (`docs/d1-loop12-17-split-plan.md:2339-2342`).
+- `hyg_adder` opened a fresh copy every round and never closed it (`tools/bench/diag_c125_5_opfs.py:136-142`).
+- Handles rose +116 and the gate failed (`diag_c125_5_opfs.log:64`).
+- The review accepted that this reading is invalid, not a measured leak (`archive/peer/2026-10-01-c125-5-addframe-hyg.md:55-61, 100-107`).
+- Consequences:
+  - The op's record says FAIL, so `gscript.op` refuses it.
+  - The already-written 3-frame scratch (`diag_c125_5_fsscr.py`) never ran.
+  - Cycle 126's first act is the rerun (`tools/bench/next.json:4`).
+- The correct pattern already existed: `diag_c122_hyg.py:66-74` closes the copy every round (`s.drop_scratch`) and measures at equal state.
+- Why it is a repeat, not a one-off:
+  - Card 124-4 also failed on its hand-written hygiene script, which called the op outside `hygiene_probe`. Its note says "Second failure of the same build script" (`tools/bench/cards/result_124-4.json:2,23`).
+  - So 125-5 is the third hand-written hygiene script, and the second in a row to fail on the script rather than the op.
+- The brief made it easier: `brief_125-5.md:13-14` gives "2,000 calls, 0 errors, ±100" but leaves out PD242(b)'s equal-state clause.
+
+**Loss.**
+- Logged: the review, $0.996 / 89 s (`peer_c125_5_addframe_hyg.log:4,48`), plus the invalid AH block inside a 222 s run (`diag_c125_5_opfs.log:75`).
+- Not logged: a LabVIEW card in cycle 126 spent on the rerun. The review puts the rerun itself under 4 min; with card setup, about 15 min in total.
+- No log carries the full dollar figure, so it is `?`.
+
+**Counterfactual.** Suppose `hyg_adder` had copied `diag_c122_hyg.py:74`'s per-round `drop_scratch` at the 19:43:41 launch.
+- AH would have been a valid reading by about 19:47.
+- If it passed, `diag_c125_5_fsscr.py` could have run inside the same card: the card used 30 of its 60 budgeted minutes (`result_125-5.json`).
+- The cycle would have ended around 20:05 with the Flat Sequence creator verified, and cycle 126 would open on card B instead of a rerun.
+- If the op really leaks, the cycle would have ended with a genuine FAIL rather than an unreadable one. Either way the rerun card is waste.
+
+## FINDINGS
+
+**1. Repeated failure.** Hand-written hygiene scripts failed on the script itself twice running: 124-4 (`result_124-4.json:2`) and 125-5 (`diag_c125_5_opfs.log:64`). The approach should have changed at 124-4, the second such failure: one shared hygiene runner instead of a new loop per op. A smaller repeat: `c125_1_offline_measure.py` run 1 failed on its own harness, which pre-imported win32com (`c125_1_offline_measure.log:6-10`), and was fixed and rerun inside the card.
+
+**2. Missing tool.** A shared runner, e.g. `gscript.hygiene_run(op, workload, recycle=True)`: it wraps `hygiene_probe`, closes each copy without saving, samples handles before and after the calls and after the close, and adds GDI/USER counts. That would have caught both 124-4 (op called outside the probe) and 125-5 (no equal-state recycle). Three separate scripts exist today: `diag_c122_hyg.py`, `diag_c124_opctu_hyg.py`, `diag_c125_5_opfs.py`.
+
+**3. Unmeasured steps.** Second-ranked candidate, below the threshold.
+- The judgement session predicted "exactly one new loose wire" by counting terminal rows. The plan admits this was "wrong before it ran" (`d1-loop12-17-split-plan.md:2583`).
+- The right measurement already existed: `wire_joints` (`OpWireJoints_v1`, already passed its hygiene check), which pinned `w27378` in about 20 min in card 125-4 (`diag_c125_joints.log:26,39`).
+- Cost: a $2.44 / 425 s review (`peer_c125_2_loose_hyp.log:4,52`). The Flat Sequence creator (STEP B) never started in 125-2 (`result_125-2.json`), so the creator took three cards (125-2, 125-4, 125-5).
+- Also inferred: the stub reproduction used an untyped, unwired shift register, unlike P3a. It could not reproduce P3a's case, and it cost a $1.36 review (`peer_c125_5_stub.log:4`; `diag_c125_5_stub.log:12`).
+
+**4. Rule compliance.**
+- PD242(b) was met only formally: the call count was right, the equal-state condition was dropped.
+- The ≤120-line rule was broken by `diag_c125_5_opfs.py` (203 lines; `jev_gate.log:3125`, flagged as advisory only) and by `selftest_c125_1.py` (241 lines; `jev_gate.log:3103`).
+- "Return at the first unexpected result" was bent in 125-1, which fixed and reran its offline measure inside the card (`c125_1_offline_measure.log:10-11`). It cost about 2 min.
+- The audit's A4 FAIL entries are not this cycle's: three are chat G6 files, and `priorart-c124-6-ring-p3a.md:1234-1236` is blank from cycle 124 (its verdict was `novel`, so nothing was blocked).
+- What the audit does not check:
+  - whether a probe met its own acceptance conditions (A8 only checks that a RESULT line exists);
+  - script length;
+  - briefs that drop part of a Pre-decided item;
+  - the fact that the window spans three cycles.
+
+**5. Ordering.** Mostly defensible: gate-fp was DUE (`cycle_125.json:45-48`) and was drained first, offline. The weak point was putting the deliverable-path Flat Sequence step behind a speculative trace in the same card (125-2), so one failed prediction stalled both. PD251(d) set this order, but the trace and the creator should have been separate cards.
+
+**6. What was not reported.**
+- STATUS reports "hygiene FAIL until rerun" (`STATUS.md:59,65`). It does not say the probe was invalid by our own rule. Nor does it say this is the second hygiene-script failure in a row.
+- `c125_1_probe.log:15` ended "rc=0 (NO RESULT LINE)" and was left in `tools/bench`.
+- `c125_1_regress.py` has stayed red 18/3 since card 125-1, on companion files that are not real plans (`result_125-3.json`). STATUS mentions it, but as expected-red, so a real failure there would be easy to miss.
+
+**7. Judgement inside a material session.**
+- Card 125-5's material session replaced the brief's decided addressing route (`brief_125-5.md:9-10`: uid → GObject) with lookup by Traverse index plus a UID echo, and built both ops that way (`result_125-5.json` facts[0], open[2]). Judgement accepted it afterwards (PD253(a), `d1-loop12-17-split-plan.md:2615-2617`). That was a design change taken inside a material session.
+- The brief also pre-scripted a branch ("If it appears: measure ONE candidate removal", `brief_125-5.md:29`). It did not fire, because the stub did not reproduce.
+- In 125-1, material corrected the brief's premise about fp-10 and designed the launch ledger itself (`result_125-1.json` facts[1]). That is within a tooling brief that invited it (`brief_125-1.md:19-20`).
+
+## Device effect
+No device failed inside 18:32–19:58:
+- **Inner-failure rc** (bgrun): worked. `diag_c125_5_opfs.log:75` shows rc=1 matching FAIL, and the missing RESULT line was flagged at `c125_1_probe.log:15`.
+- **Confirm-bait refusal** (peer.ps1): worked. The reviews were framed "ATTACK this claim" (`c125-5-addframe-hyg.md:16`).
+- **Cost-line parsing**: worked. C4b parsed 9 of 9 lines.
+- **Op-hygiene record and refusal** (2026-09-28 10:37): worked. It is what stopped the faulty op from being used (`result_125-5.json` facts[3]).
+- **Gate-fp queue**: worked. fp-10 to fp-13 were drained, and fp-14 was logged and drained within the cycle (`result_125-3.json`).
+- **Prior-art disposition gate**: not exercised. No prior-art review was dispatched after the blank c124-6 one.
+- **Census-prediction device**: not exercised in cycle 125 (no stage ran).
+- **Stop-record and launch gates**: not exercised (no stage launched).
+
+VIOLATION: repeated-failure-class | loss_min=15 | loss_usd=? | evidence=tools/bench/diag_c125_5_opfs.log:64
+
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle125","verdict":"refuted","alternative":"The +116 handles may be a real per-call leak in OpFsAddFrame_v0, in which case the rerun only confirms a FAIL; the waste is then the unreadable first probe, not a lost PASS.","discriminating_test":"Rerun AH with each round's copy closed without save, sampling h_pre/h_post/h_closed + GDI/USER (review c125-5-addframe-hyg.md:82-92); flat h_closed => harness fault confirmed.","violations":[{"slug":"repeated-failure-class","loss_min":15,"loss_usd":"?","evidence":"tools/bench/diag_c125_5_opfs.log:64"}],"sources":["tools/bench/diag_c125_5_opfs.log:64","tools/bench/diag_c125_5_opfs.py:136","tools/bench/diag_c122_hyg.py:74","tools/bench/cards/result_124-4.json:2","docs/d1-loop12-17-split-plan.md:2339","tools/bench/next.json:4"],"note":"Window spans cycles 123-125; cycle 125 = 18:32-19:58. Second candidate (125-2 inferred loose-wire count, $2.44 review) ranked below. No device failed."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle125.md
+BGRUN END rc=0 after 197s

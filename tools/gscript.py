@@ -4743,8 +4743,75 @@ def create_primitive_nested(target, diagram_uid, prim_name, pos, donor=None):
 # read back by uid echo. Donor: claudeDev\DonorCase_v0.vi (built by tools/bench/diag_c123_struct.py: an empty Case with a
 # numeric selector, frames '0, Default' / '1'); a Boolean wired into it renames them False / True on the SAME frame uids
 # (docs/toolkit-capabilities.md:823).
+# Card 125-4 STEP B.1 (tools/bench/diag_c125_4fsm.log:23-38, build_invoke on a P3a-bed byte copy): the FlatSequence METHOD ids, measured
+# by the Invoke's own terminal names. Add Frame takes `Reference Frame Index` + `After(T)` and has a return terminal named `Add Frame`
+# (the new frame's reference). 3578B806..0F and FlatSequenceFrame 18E76400..0F make an Invoke with a generic `Method` pair = no method.
+FS_METHODS = {"Add Frame": "3578B800", "Remove Frame": "3578B801", "AutoSize": "3578B802", "Remove Structure": "3578B803",
+              "Size Frame": "3578B804", "ConvertToTimedSequence": "3578B805"}
 DONOR_CASE = os.path.join(CLAUDEDEV, "DonorCase_v0.vi")
 DONOR_CASE_UID = 742            # DonorCase_v0.vi md5 df825c18..., case #742 (diag_c123_struct.log:27)
+# Card 125-5 STEP 1 (PD252(e) route (a)): two op VIs built by tools/bench/diag_c125_5_opfs.py, labels in tools/bench/opfs_v0_labels.json
+# (also the 1-frame FS donor claudeDev\DonorFs_v0.vi, FS #1309 with an EMPTY frame, a stripped byte copy of the NI example `VI Scripting
+# with Structures - For Loop.vi`). Both ops address the FS by Traverse('FlatSequence')[index] + a GObject.UID echo (the OpSetIndexMode_v0
+# head), so the wrappers resolve uid -> index and REFUSE a wrong echo. First frame: struct_copy_nested(target, diag, 'FlatSequence',
+# fs_donor()); every further frame: fs_add_frame; frame order: fs_frames (FlatSequence.Diagrams[] 3578BC00, left to right).
+OPFS_LABELS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench", "opfs_v0_labels.json")
+
+
+def _opfs_labels():
+    with open(OPFS_LABELS, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def fs_donor():
+    """{'donor': claudeDev\\DonorFs_v0.vi, 'uid': its FS uid} for struct_copy_nested (a 1-frame, EMPTY Flat Sequence)."""
+    d = _opfs_labels()["DonorFs_v0"]
+    return {"donor": d["donor"], "uid": int(d["uid"])}
+
+
+def fs_frames(target, fs_uid, max_frames=200):
+    """OpFsDiagrams_v0: the frame Diagram uids of Flat Sequence #fs_uid, LEFT TO RIGHT (Diagrams[] index k = 0, 1, ... until the
+    first error / zero uid). Returns {frames, echo, err (the terminating read's error)}. RuntimeError on an echo != fs_uid."""
+    lab = _opfs_labels()["OpFsDiagrams_v0"]
+    ensure_loaded(target)
+    ti = _uid_index(target, "FlatSequence", fs_uid)
+    vi = op(os.path.join(CLAUDEDEV, "OpFsDiagrams_v0.vi"))
+    out, last = [], ""
+    for k in range(int(max_frames)):
+        _set_common(vi, target, lab, "FlatSequence", ti)
+        vi.SetControlValue(lab["k"], k)
+        vi.SetControlValue(lab["diag_uid"], 0)
+        _run(vi)
+        echo, d, e = int(vi.GetControlValue(lab["fs_echo"]) or 0), int(vi.GetControlValue(lab["diag_uid"]) or 0), _err(vi, lab["Err"]) or ""
+        if echo != int(fs_uid):
+            raise RuntimeError("fs_frames(#%s): Traverse('FlatSequence')[%s] echoed #%s (err %r)" % (fs_uid, ti, echo, e))
+        if e or not d:
+            last = e
+            break
+        out.append(d)
+    return {"frames": out, "echo": int(fs_uid), "err": last}
+
+
+def fs_add_frame(target, fs_uid, ref_index, after=True):
+    """OpFsAddFrame_v0: FlatSequence.Add Frame 3578B800 on Flat Sequence #fs_uid (`Reference Frame Index` = ref_index, `After(T)`); the
+    returned frame reference is closed inside the op. Returns {echo, err, frames_before, frames_after, new_frame (the Diagram uid that
+    appeared), purged, invoke_left}. RuntimeError on an op error, a wrong echo, or not exactly one new frame Diagram."""
+    lab = _opfs_labels()["OpFsAddFrame_v0"]
+    f0 = fs_frames(target, fs_uid)["frames"]
+    inv0 = set(uids(target, "Invoke"))
+    vi = op(os.path.join(CLAUDEDEV, "OpFsAddFrame_v0.vi"))
+    _set_common(vi, target, lab, "FlatSequence", _uid_index(target, "FlatSequence", fs_uid))
+    vi.SetControlValue(lab["rfi"], int(ref_index))
+    vi.SetControlValue(lab["after"], bool(after))
+    _run(vi)
+    out = {"echo": int(vi.GetControlValue(lab["fs_echo"]) or 0), "err": _err(vi, lab["Err"]) or "", "frames_before": f0}
+    out["purged"], out["invoke_left"] = _purge_new_invokes(target, inv0)
+    out["frames_after"] = fs_frames(target, fs_uid)["frames"]
+    new = [d for d in out["frames_after"] if d not in f0]
+    out["new_frame"] = new[0] if len(new) == 1 else None
+    if out["err"] or out["echo"] != int(fs_uid) or len(new) != 1 or out["invoke_left"]:
+        raise RuntimeError("fs_add_frame(#%s, %s, %s): %r" % (fs_uid, ref_index, after, out))
+    return out
 
 
 def _purge_new_invokes(target, inv0):

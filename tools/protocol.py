@@ -386,6 +386,51 @@ LV_IMPORT_RE = re.compile(r"^\s*(?:import|from)\s+(?:gscript|lvclick|stagekit|wi
 LV_CMD_RE = re.compile(r"lv_gui\.ps1|LabVIEW\.exe|Stop-Process\s+-Name\s+LabVIEW|import\s+(?:gscript|lvclick)|"
                        r"from\s+(?:gscript|lvclick)", re.I)
 RECIPE_PATH_RE = re.compile(r"tools[\\/]recipes[\\/]", re.I)
+# gate-fp fp-11 / fp-12 / fp-13 (card 125-1): VERIFIED-OFFLINE SELF-TEST ENTRY POINTS - a NAMED LIST, not a regex
+# loosening. LV_IMPORT_RE runs over a script's whole source (function-local imports included) and guard_peer follows
+# imports transitively, so a pure-Python self-test that imports stagekit / stagexec only to call one function on fakes
+# was judged LabVIEW-touching (selftest_census_hookin_c123.py:76; stagexec.py:2058-2059,3141,3316 never run by its
+# selftest). Each entry below was MEASURED COM-free: run with every win32com Dispatch / DispatchEx / GetActiveObject /
+# EnsureDispatch replaced by a tripwire, zero trips, exit 0, no LabVIEW process (tools/bench/c125_1_offline_measure.log).
+# key = project-relative script; value = None (any argv) or the ONE argument that selects the measured path - every
+# occurrence of that script in the command must carry exactly that argument (`stagexec.py run <plan>` stays LabVIEW).
+# A new entry needs its own measurement; a changed self-test that starts opening COM must be taken off this list.
+OFFLINE_SELFTESTS = {
+    "tools/bench/selftest_census_hookin_c123.py": None,
+    "tools/bench/selftest_case_frame_c124.py": None,
+    "tools/stagexec.py": "selftest",
+}
+
+
+def offline_selftest(path, cmd):
+    """True when `path` (a launched script) is an OFFLINE_SELFTESTS entry and every command-position occurrence of it in
+    `cmd` carries the measured argument (when the entry names one)."""
+    try:
+        rel = os.path.relpath(os.path.abspath(path), ROOT).replace("\\", "/")
+    except ValueError:
+        return False
+    key = next((k for k in OFFLINE_SELFTESTS if os.path.normcase(k) == os.path.normcase(rel)), None)
+    if key is None:
+        return False
+    arg = OFFLINE_SELFTESTS[key]
+    if arg is None:
+        return True
+    hits = [m for m in PY_TOKEN_RE.finditer(cmd or "")
+            if _norm(_abs(next(g for g in m.groups() if g))) == _norm(path)]
+    tail_re = re.compile(r"[\"']?[ \t]+" + re.escape(arg) + r"[ \t]*(?:$|[;&|)\n\r])")
+    return bool(hits) and all(tail_re.match(cmd, m.end()) for m in hits)
+
+
+def lv_script(path, cmd, src=None):
+    """The check_command / soft-alert notion of a LabVIEW-touching launched script: a recipe, or a script whose code
+    imports a LabVIEW module (LV_IMPORT_RE) - unless it is a measured OFFLINE_SELFTESTS entry run in its measured form."""
+    if RECIPE_PATH_RE.search(path):
+        return True
+    if not LV_IMPORT_RE.search(code_only(src if src is not None else _src(path))):
+        return False
+    return not offline_selftest(path, cmd)
+
+
 SAVE_SRC_RE = re.compile(r"\b(?:gscript\.|gs\.)?(?:gui_save|save)\s*\(|SaveInstrument|\.SaveVI\b", re.I)
 GUI_STATE_ACTIONS = ("click", "clickprobe", "rclick", "dclick", "drag", "wire", "keys", "key", "activate")  # lv_gui.ps1:669
 GUI_ACTION_RE = re.compile(r"lv_gui\.ps1\b[^|;&]*?-Action\s+['\"]?(\w+)", re.I)
@@ -833,8 +878,7 @@ def soft_alert_refusal(card, cmd, scripts, srcs=None, now=None):
         return None
     srcs = srcs or {}
     runs = [p for p in scripts if not BGRUN_SCRIPT_RE.search(p) and (
-        RECIPE_PATH_RE.search(p) or DIAG_PATH_RE.search(p)
-        or LV_IMPORT_RE.search(code_only(srcs.get(p) if p in srcs else _src(p))))]
+        DIAG_PATH_RE.search(p) or lv_script(p, cmd, srcs.get(p) if p in srcs else None))]
     if not runs:
         return None
     return ("SOFT ALERT (card chat-P2 item 2, user 2026-09-28): this card was bound %d min ago (> %d) - no NEW "
@@ -872,7 +916,7 @@ def check_command(card, cmd):
         if RUNNER_CMD_RE.search(ran) and not re.search(r"--dry-run|--dry-cmd|--no-motor-hooks", cmd):
             return "flags.hardware is 'none' - a real cycle_runner run opens the motor session; use --dry-run"
     recipes = [p for p in scripts if RECIPE_PATH_RE.search(p)]
-    lv_scripts = [p for p in scripts if LV_IMPORT_RE.search(code_only(srcs[p])) or RECIPE_PATH_RE.search(p)]
+    lv_scripts = [p for p in scripts if lv_script(p, cmd, srcs[p])]      # gate-fp fp-12/fp-13: OFFLINE_SELFTESTS
     feats = {p: src_features(srcs[p]) for p in scripts}
     lv = fl.get("labview", "none")
     if lv == "none" and (LV_CMD_RE.search(cmd) or lv_scripts):
@@ -955,7 +999,57 @@ def hook_decision(payload):
         why = None
     if why:
         return False, "CARD %s (%s): %s" % (card.get("id"), b.get("card"), why)
+    if tool in ("Bash", "PowerShell"):
+        try:
+            record_launch(card.get("id"), cmd)        # gate-fp fp-10: which card launched which bgrun log
+        except Exception:                             # noqa: BLE001 - a ledger failure never refuses a command
+            pass
     return True, None
+
+
+# ------------------------------------------------------------------ gate-fp fp-10 (card 125-1): the LAUNCH LEDGER
+# guard_peer's failing log is GLOBAL. RULE-OFFLINE-CARD frees a labview:none card's offline command from another card's
+# failing log; fp-10 is the reverse: card 121-2 (labview build) ran an offline md5 script (tools/bench/ring_p2a_md5.py,
+# hashlib + protocol only) and was refused on chat-P3's failing self-test log. To free an offline command under a
+# LabVIEW card only from a log it DID NOT PRODUCE, ownership must be a record, not a guess: every allowed bgrun command
+# of a bound card appends {card, log basename} here (written at the PreToolUse allow, so a launch refused later by
+# another hook still counts as the card's - conservative). Read by card_owns_log; unreadable => owned (fail closed).
+LAUNCHES = os.environ.get("PROTOCOL_LAUNCHES") or os.path.join(CARDS_DIR, "launches.jsonl")
+BGRUN_LOG_ARG_RE = re.compile(r"--log\s+(?:\"([^\"]+)\"|'([^']+)'|([^\s\"';&|]+))", re.I)
+
+
+def record_launch(card_id, cmd):
+    """Append one ledger row per `--log` of a bgrun command run under `card_id`. Returns the rows written."""
+    if not card_id or not any(BGRUN_SCRIPT_RE.search(p) for p in _launched_scripts(cmd)):
+        return []
+    rows = [{"card": card_id, "log": os.path.basename(next(g for g in m.groups() if g)).lower(),
+             "t": time.strftime("%Y-%m-%d %H:%M:%S")} for m in BGRUN_LOG_ARG_RE.finditer(cmd)]
+    if rows:
+        with io.open(LAUNCHES, "a", encoding="utf-8") as f:
+            for r in rows:
+                f.write(json.dumps(r) + "\n")
+    return rows
+
+
+def card_owns_log(card_id, log_path):
+    """True when the ledger says `card_id` launched `log_path` (by basename) - or when the ledger cannot be read
+    (fail closed). A missing ledger = the card launched nothing = False."""
+    name = os.path.basename(log_path or "").lower()
+    try:
+        with io.open(LAUNCHES, encoding="utf-8") as f:
+            lines = f.read().splitlines()
+    except FileNotFoundError:
+        return False
+    except OSError:
+        return True
+    for ln in lines:
+        try:
+            r = json.loads(ln)
+        except ValueError:
+            return True
+        if r.get("card") == card_id and r.get("log") == name:
+            return True
+    return False
 
 
 # ------------------------------------------------------------------------------------------ C4/C5 review/verdict
