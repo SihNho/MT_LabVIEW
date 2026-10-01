@@ -5834,3 +5834,78 @@ VIOLATION: none
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle131","verdict":"none","alternative":"Brief 131-5 predicted EL 53 (55-2) through a helper whose header says it debits the last entry (count 1); that cost 131-6 as a separate dispatch (~8 min, $1.18) and the 6th, last dispatch slot.","discriminating_test":"Had brief 131-5 (~05:58) carried PD274(b)'s class debit, would the final read have run in 131-5 (06:23-06:35) and the cycle ended ~06:37, with an unused dispatch going to the P3b-1 graph read?","violations":[],"sources":["tools/bench/cards/result_131-5.json:2","tools/bench/stage_d1_ring_p3b1_el.py:3","tools/hooks/guard_session.py:53","tools/bench/diag_c131_5_stubs.py:42","archive/peer/2026-10-02-hyp-c131-5-s4el.md:77","tools/bench/peer_hyp_c131_6_eldebit.log:4"],"note":"Deliverable met (P3b-1 bed, 53 EL items, loose ends 24 to 22). Avoidable cost ~20 min / $3.30 over 3 unrelated misses. Owed: el53/s4el dispositions, fp-28 closed as a correct refusal, stubs.py conditional PASS, w27378 out of pred.removed."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle131.md
 BGRUN END rc=0 after 326s
+BGRUN START 2026-10-02 08:04:10 limit 10.0 min: py tools/retrospective.py --cycle 132
+BGRUN PID 19092
+   window 2026-10-02 06:50:33 .. 2026-10-02 08:04:11 (74 min); 45 build logs, 5 machinery logs, 46 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle132.txt (36258 chars)
+   review card tools\bench\cards\review_retrospective-cycle132.json
+OUTCOME: ANSWERED (338s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-10-02-retrospective-cycle132.md
+COST: $2.7157  in 44 / out 33042 / cache-create 187903 / cache-read 2757245  (336s, 40 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle132 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle132.json
+--- ANSWER ---
+# Retrospective, cycle 132 (06:50:33 – 08:04:11)
+
+**What it produced:** no new VI, and P3b-2 was never dry-run. The cycle used all six material dispatches (`tools/bench/cards/guard_card.log:610-615`), ending at 08:03 with 106 of its 180 budget minutes unused. The limit it hit was dispatches, not time. It did leave six self-tested tool changes and one real graph read of the P3b-1 bed.
+
+## The most costly structural fault: two of six dispatches spent on BLOCKED cards (wrong-ordering)
+
+The plan made at cycle start (PD275, `docs/d1/tooling.md:74-89`) dispatched two cards together at 06:54:31:
+- **Card 132-1** (offline) was editing `tools/stage_prerun.py`, including the memory gate X10 (`x10_gate`).
+- **Card 132-2** (LabVIEW) was to read the bed's graph. That reader is itself launch-gated by `stage_prerun --dry/--prerun`, because it calls `discard_work`.
+
+The 132-2 brief forbade running `stage_prerun` (`tools/bench/cards/brief_132-2.md:5`). The launch was refused at 06:56:41 (`tools/hooks/material_marker.log:3045`) and the card returned BLOCKED (`tools/bench/cards/result_132-2.json:1`). The judgement session admitted this was its own rule (`docs/d1/tooling.md:101-102`). The template it named already showed the reader needs a prerun record (`tools/bench/diag_c125_graph_p3a_prerun.log`, cited in `result_132-2.json`).
+
+The re-issue, card 132-3, was then refused by X10 itself. Since PD268(a), X10 treats any script with no Executor plan as UNMEASURED and fails it. The judgement session's own cycle-130 rule had broken the read-only reader (`tools/bench/diag_c132_2_graph_p3b1_prerun.log:21,25`, logged as gate false positive fp-29). Card 132-1 was editing that same `x10_gate` function at that very hour.
+
+- **Loss:** 4 + 5 = 9 card-minutes (`result_132-2.json`, `result_132-3.json`, `cost.minutes`). The real cost is two of the cycle's six dispatch slots. No log carries a dollar figure: audit line C4b shows 0 cost lines seen.
+- **Counterfactual:** at ~06:53, put the reader exemption into 132-1's part A and dispatch the graph read after 132-1 returned (~07:17). Card 132-4's chain would then have started about 07:17 as the third dispatch, and 132-4/-5/-6 would have finished by about 07:56 with two dispatches left. Those two would have gone to the route-check binding card (now cycle 133's first act, `STATUS.md:57`) and P3b-2's dry/prerun. The cycle would have ended about 08:20 with P3b-2 dry-checked, instead of at 08:03 stuck on the op-24 gap.
+
+## FINDINGS
+
+**1. Repeated failure.** The rebase stopped three times: name keys (`stage_prerun_c132_4_rebase_p3b2.log:3`), the Flat Sequence frame map (`stage_prerun_c132_5_rebase_p3b2.log:35-36`), and route-check binding (`stage_prerun_c132_6_rebase_p3b2.log:76`). PD280(b) calls these three different gaps, and the fixes support that: each was separate code with its own self-test.
+- The third stop is close kin to fp-21, which has been open since cycle 129. Both are the "unbound" check in `stagexec.compare` (`tools/stagexec.py:786`) finding negative (simulator-made) object ids with no real binding.
+- PD276(b) had declared fp-21 "NOT on P3b-2's path". By attempt 3 (card 132-6) the binding of simulator-created objects should have been treated as one class.
+- The route check stops at op 24. Ops 26–38 are also wire connections and were never route-checked, so cycle 133 may find another gap behind this one.
+
+**2. Missing tool.** `--rebase` had never been run end to end across a Flat Sequence created by the previous stage before the cycle depended on it. A rebase against P3b-1's simulator end graph, converted to the real-graph shape, would have surfaced the frame-map and route-check gaps without LabVIEW. Its absence is why the gaps arrived one dispatch at a time.
+
+**3. Unmeasured steps.**
+- **Memory model start term.** The brief asked for the memory after loading P3b-1 "so X10's base term… is measured" (`brief_132-2.md:11-12`). It was measured at 584.1 MB (`diag_c132_2_graph_p3b1.log:24`), but `memory_model.json:6` still uses 570.0, which was measured with P3a as the base. That is 14.1 MB higher, and P3b-2's predicted peak is 681.7 MB against a 690 MB limit, a margin of 8.3 MB. Nothing recomputed the prediction.
+- **X10 under-predicted the reader.** Predicted peak 592.5 MB (`diag_c132_4_graph_p3b1_prerun.log:21`) against 599.9 MB measured (`diag_c132_2_graph_p3b1.log:271`).
+- **PD280(c)'s question is half answered already.** It asks whether the "unbound" refusal predates card 132-1's edit. For the dry path it does: cycle 129 shows the same BASE-unbound refusal (`stage_prerun_c129_1_p3b2_dry.log:23`). The simulator's finalize path is different: it finalized b25c1ecb in cycle 131 but refused at 07:54 (`stagesim_c132_6_recover_p3b2.log:42`). That points to a regression inside this cycle, from 132-1's `stagexec` edit or 132-6's `stagesim` edit.
+
+**4. Rule compliance.**
+- **Failed-prediction reviews.** Audit check A3 fails: 13 failing logs, and none has a hypothesis review or a Jev-ladder (failure-triage) row (`jev_gate.log` has only preflight and drift lines for c132). Several are red-to-green self-test iterations, but three rebase runs and the recovery run were real failed predictions. The judgement session decided each one from result cards alone.
+- **Check skipped to avoid a failing log.** Card 132-1 did not rerun `diag_c131_5_stubs.py` because it "would write a FAIL log" (`result_132-1.json:24`). Choosing not to run a check because it would fail evades the rule.
+- **Audit check A4** (blank dispositions) concerns cycle-130 reviews, not this cycle.
+- **What the audit does not cover:** dispatch-slot waste, briefs that contradict a gate, and model coefficients left stale after a fresh measurement.
+
+**5. Ordering.** Draining the gate-false-positive queue first was required (`cycle_132.json:45-47`). Running the gate edit in parallel with a card that needs that gate was not defensible (see the fault above).
+
+**6. Not reported.**
+- STATUS says P3b-2 was "recovered 98992a59". The recovery's own finalize was REFUSED, so the plan is final=false (`stagesim_c132_6_recover_p3b2.log:42-44`).
+- 132-5's failed rebase destroyed b25c1ecb, which is in neither the working tree nor git (`result_132-5.json:20`).
+- The 584.1 MB reading against the model's 570 start term (point 3).
+
+**7. Judgement inside material sessions.** Card 132-1 made several judgement calls itself:
+- It narrowed the tunnel-name gate to Flat Sequence border crossings after finding the inner-tunnel naming mismatch (`result_132-1.json:21`).
+- It re-pinned the c106e test's E1 expectation to the new X10 (`result_132-1.json:25`).
+- It decided not to rerun the stubs check (point 4).
+
+The first two were surfaced as open questions and ratified in PD276(a), so they are minor. Card 132-2 also decided on its own that its refusal was "the gate working as designed" and logged no false positive (`result_132-2.json:1`); that happened to be correct.
+
+## DEVICE EFFECT
+
+No device's target fault occurred in the window:
+- **X10 (decided 02:57).** No stage was launched, and the reader stayed under 690 MB. Its one false positive, fp-29, was queued and fixed with a 6/0 self-test within 30 minutes. That is not "routinely bypassed".
+- **Offline-command and stop-record exemptions (04:52 and earlier).** `stage_prerun --dry/--prerun` on the reader ran (`diag_c132_2_graph_p3b1_dry.log`). The 07:51:42 refusal (`material_marker.log:3066`) was a foreground diagnostic outside the background runner, re-run under it 7 seconds later.
+- **Runner exit-code check.** `rc` matched the FAIL lines in every rebase and self-test log checked.
+- **Fresh agent per dispatch (instead of SendMessage).** Each card was a new agent (`guard_card.log:610-615`).
+- **Annotated-review gate.** The newest retrospective is annotated (`archive/peer/2026-10-02-retrospective-cycle131.md:357-361`).
+- **Prior-art, premature-build and recipe gates.** No recipe build happened.
+
+VIOLATION: wrong-ordering | loss_min=9 | loss_usd=? | evidence=tools/bench/cards/result_132-2.json:1
+
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle132","verdict":"refuted","alternative":"The two BLOCKs were cheap (9 card-min) and the cycle would still have stalled at the op-24 route-check gap, so no structural fault: the dispatch cap, not the ordering, set the end.","discriminating_test":"Replay: with the X10 reader branch in 132-1 and the graph read after it, count dispatches to reach the op-24 refusal (expect 4 of 6); then check whether one card closes the route-check binding (cycle 133 card 1).","violations":[{"slug":"wrong-ordering","loss_min":9,"loss_usd":"?","evidence":"tools/bench/cards/result_132-2.json:1"}],"sources":["tools/bench/cards/result_132-2.json:1","tools/bench/cards/result_132-3.json:1","tools/hooks/material_marker.log:3045","tools/bench/cards/brief_132-2.md:5","docs/d1/tooling.md:101-102","tools/bench/diag_c132_2_graph_p3b1_prerun.log:21","tools/bench/diag_c132_2_graph_p3b1.log:24","tools/bench/memory_model.json:6","tools/bench/stage_prerun_c129_1_p3b2_dry.log:23","tools/bench/stagesim_c132_6_recover_p3b2.log:42"],"note":"Findings: X10 start term 570 vs measured P3b-1 load 584.1 (P3b-2 margin 8.3 MB, not recomputed); recovered plan is final=false; dry-path 'unbound' predates 132-1 (c129 log) but stagesim finalize regressed in-cycle; no device failed."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle132.md
+BGRUN END rc=0 after 343s

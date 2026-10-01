@@ -87,7 +87,9 @@ def l0_conditions(tag):
     return all(v for _n, v in atoms)
 
 
-for tag, text, want in (("T1 129-1 bytes (read after every op)", r1, 728.9), ("T2 129-8 bytes ({0, len} | BIND)", r8, 688.5)):
+# card 132-1 (PD275(a)): the model gained final_read_mb 17.4 (memory_model.json) - both peaks +17.4 (728.9 -> 746.3,
+# 688.5 -> 705.9); verdicts unchanged (both > fail_above_mb 690).
+for tag, text, want in (("T1 129-1 bytes (read after every op)", r1, 746.3), ("T2 129-8 bytes ({0, len} | BIND)", r8, 705.9)):
     gate("{0} L0 atoms on the fixtures: all 8 TRUE".format(tag[:2]), l0_conditions(tag[:2]))
     ok, det = x10(probe_copy(text, tag[:2] + ".py"))
     runs = det.get("runs") or []

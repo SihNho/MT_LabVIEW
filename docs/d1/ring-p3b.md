@@ -75,3 +75,63 @@ How to add: see the 5-line note at the top of `docs/d1/INDEX.md` (next number = 
        P3a's except `wire has loose ends` −2 (24 → 22). Met ⇒ `current-bed:` moves to the P3b-1 file (broken-file count 3 of 6).
      - **(d) Carry:** the recipe has no explicit tunnel-name gate (names are covered only through E1 checkpoint == sim) —
        add one for P3b-2 with the X10 final-read term (PD272(d)) in the stage_prerun tooling card.
+278. **(cycle 132 judgement, 2026-10-02 07:4x — after 132-4 FAIL 3/1, `stage_prerun_c132_4_rebase_p3b2.log:3`, `diag_c132_4_rebind_keys.log:4-7`)**
+     USER-RULES: U1, U9 (relied on: a rebind must map every plan-referenced terminal to the SAME physical terminal — a wrong
+     map, e.g. Unbundler `code` for `status`, would change what the guard selects on; the rule below forbids that; none contradicted).
+     - **(a) Facts accepted:** real P3b-1 graph `graph_ring_p3b1_20261002_073225.json` (6cfa6ecb; bed md5 unchanged); wire uids
+       1958/1958 real vs sim, `#6810` nets 9/9 wires with the same terminals, 0 swapped loose ends (answers 131-6's open point);
+       memory after load 584.1 / after read 599.9 MB.
+     - **(b) The rebase refusal is a SIMULATOR LABEL gap, not a graph difference:** the rebind key includes `term_name`
+       (`stage_prerun.py:2896`) and stagesim labels FS inner tunnels `''` (real `error out`, PD276(a)) and the donor Unbundler's
+       outputs `element` (real `code`/`source`/`status`).
+     - **(c) Rebind rule:** bind created terminals by CONNECTIVITY first (a terminal on a wire whose other end is already bound
+       takes that wire's real terminal), then by (class, owner, frame, direction, position among same-owner terminals); names are
+       LOGGED as label diffs, never keyed. A terminal the P3b-2 plan REFERENCES must bind uniquely by connectivity or by a
+       measured map, else REFUSE. The Unbundler's `status` output must bind to the terminal wired to the `Select` (self-test
+       asserts it on the real graph). Not modelling the names in stagesim (labels only, two classes, PD276(a)).
+     - **(d) Card 132-5:** rebind rule + self-test → `--rebase` → dry 39/39 + prerun → expected-EL range → `--scratch-required` →
+       full scratch run of P3b-2 on a byte copy (D-2026-10-01-01; stop 690, name gate, Error List count-only in the range).
+       The ONE launch + final read is the next cycle's first act (dispatch cap).
+279. **(cycle 132 judgement, 2026-10-02 07:5x — after 132-5 FAIL 2/1, `stage_prerun_c132_5_rebase_p3b2.log:3-10,35-36`)**
+     USER-RULES: U1 (relied on; rebase/simulator plumbing only — the plan's actions are unchanged; none contradicted).
+     - **(a) Rebind rule accepted** (`stage_prerun.py:2890`, `selftest_rebind_c132_5` 7/0: Unbundler `-29 status` → `28082` by
+       connectivity, wired to `Select` 10579; a referenced name address / position-only terminal refuses; chat_p1 46/0).
+     - **(b) The re-sim stop at step 24 is the FS frame map, not the plan:** stagesim routes FS borders only via `fs_frames` +
+       `owners[frame] = [FS, uid]` (`stagesim.py:402-410,1139-1145`); the real graph JSON has no `fs_frames` and frame owners
+       `['FlatSequenceFrame', 0]`. Rule: `--rebase` CARRIES the provisional base's FS map through the binding (FS −1 → real FS
+       uid; frames −2/−3/−4 → 27641/32464/27722; owners set to the real FS uid). The graph reader is not changed now.
+     - **(c) A rebase whose re-sim fails must NOT write the plan** (it wrote 31bea1c5 over b25c1ecb). Fix + self-test. Recover the
+       provisional plan by re-finalizing `plan_ring_p3b2_in.json` on the provisional base (same stagesim; md5 reported, expected
+       b25c1ecb or the difference explained), then rebase it — never re-simulate the half-rebased 31bea1c5 in place.
+     - **(d) Card 132-6 (last dispatch of cycle 132):** (b)+(c) → `--rebase` PASS (all 39 steps) → dry 39/39 + prerun → EL range →
+       `--scratch-required` → full scratch run on a byte copy (PD278(d)). Launch = cycle 133.
+280. **(cycle 132 judgement, 2026-10-02 08:0x — after 132-6 FAIL 1/1, `stage_prerun_c132_6_rebase_p3b2.log:36,51,76-77`)**
+     USER-RULES: U1 (relied on; rebase/route-check plumbing only, the plan's 39 actions unchanged; none contradicted).
+     - **(a) Accepted:** `stage_prerun.carry_fs` (FS −1 → 27509, frames → 27641/32464/27722, twin −43 → 28333) and the
+       no-write-on-failure rebase (`selftest_rebase_c132_6` 8/0; rebind 7/0; chat_p1 46/0). Recovered provisional P3b-2
+       `plan_ring_p3b2.json` 98992a59 has the SAME 39 actions as b25c1ecb's rebase (`diag_c132_6_actions.log`); the
+       half-rebased 31bea1c5 is kept as `plan_ring_p3b2_rebased_c132_5.json`, never launched.
+     - **(b) Remaining gap = the ROUTE CHECK, not the plan or the simulator:** re-sim on the real base runs 39/39, cdiff 16; the
+       route check (collecting backend) after op 24 `p3b_x_i_f1` (`cfw`) cannot bind the FS OUTER tunnel created on the carried
+       FS (sim −50 / −51 / −52 vs backend 10000052 / 53 / 54). Three rebase stops in this cycle were three DIFFERENT plumbing
+       gaps (name keys → FS map → route-check binding), each closed and self-tested — not one failure repeated.
+     - **(c) Cycle 133 first card (offline):** make the route check bind objects created inside a CARRIED FS the same way it does
+       inside a plan-created FS (P3b-1's route check passed that way); self-test = the op-24 case; and MEASURE whether the
+       `stagexec.compare` 'unbound' refusal on a provisional base (`stagexec.py:786,1864-1869`) predates card 132-1's 07:02
+       stagexec edit (`git diff 83dd0e70 -- tools/stagexec.py`) — a regression from 132-1 is reverted, a pre-existing one is
+       logged as fp. Then `--rebase` → dry 39/39 + prerun → EL range → `--scratch-required`. Card 2 = P3b-2 scratch run
+       (PD278(d)); card 3 = ONE launch + final read; bed moves → 4 of 6.
+     - **(d) If the route-check binding cannot be closed in ONE card**, fall back to finalizing `plan_ring_p3b2_in.json`
+       DIRECTLY on `sim/ring_p3b2_base_real_fsmap.json` (the real graph + carried FS map), as P3b-1 was finalized on P3a's real
+       graph — the rebase path is pipeline tooling, P3b-2 does not need it.
+281. **(cycle 132 judgement, 2026-10-02 08:1x — after `archive/peer/2026-10-02-retrospective-cycle132.md`, `VIOLATION: wrong-ordering` 9 min)**
+     USER-RULES: U1 (relied on; card ordering and a memory margin — no computation; none contradicted).
+     - **(a) Ordering rule:** a LabVIEW card whose script needs `stage_prerun` dry/prerun records is never dispatched beside a
+       card that edits `stage_prerun.py` / `stagexec.py` / `stagesim.py`; it follows it.
+     - **(b) FIRST check of cycle 133:** X10 with the MEASURED start term for a stage starting from P3b-1 (584.1 MB after load,
+       `diag_c132_2_graph_p3b1.log:24`; model start 570.0, `memory_model.json:6`) ⇒ P3b-2 ≈ 681.7 + 14.1 = 695.8 > 690. Recompute
+       from the code, not by hand; > 690 ⇒ PD266(b): no third half without the user → `decisions_pending.json`, stop.
+     - **(c) Widened PD280(c):** the recovered P3b-2 plan 98992a59 is `final: false` (its own finalize refused,
+       `stagesim_c132_6_recover_p3b2.log:42-44`) although cycle 131 finalized b25c1ecb — measure whether 132-1's `stagexec.py`
+       or 132-6's `stagesim.py` edit regressed finalize (git 83dd0e70). Route-check ALL 39 ops; fp-21 and the op-24 stop are one
+       class (binding simulator-made uids). Rerun `diag_c131_5_stubs.py` and record its result whatever it is.

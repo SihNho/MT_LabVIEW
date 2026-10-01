@@ -1,0 +1,83 @@
+{
+ "schema": "task/1",
+ "id": "132-6",
+ "kind": "build",
+ "goal": "PD279: rebase carries the FS frame map, no plan write on failed re-sim, provisional P3b-2 recovered, --rebase PASS 39 steps, dry + prerun, EL range, --scratch-required, P3b-2 scratch run",
+ "why": "132-5: rebind PASS but re-sim on the real base stopped at step 24 (no fs_frames in the real graph) and the failed rebase overwrote the plan. PD279.",
+ "retry_of_card": "132-5",
+ "inputs": [
+  {"path": "docs/d1/ring-p3b.md"},
+  {"path": "tools/bench/cards/result_132-5.json"},
+  {"path": "tools/stage_prerun.py", "md5": "25936d47466dd7fa2e93543f1e8500b4"},
+  {"path": "tools/stagesim.py"},
+  {"path": "tools/bench/graph_ring_p3b1_20261002_073225.json", "md5": "6cfa6ecb25d9bd98fe31a6cb703679cb"},
+  {"path": "tools/bench/plan_ring_p3b2_in.json"},
+  {"path": "tools/recipes/stage_d1_ring_p3b2.py", "md5": "bbdd03281c4bbf96dddfb7ecb78a2068"},
+  {"path": "tools/bench/errorlist_expect_p3b2.py", "md5": "3a06d26c9b37033afd7a295f24bdfc1b"},
+  {"path": "tools/bench/stage_d1_ring_p3b1_scratch.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b1_20261002_060910.vi", "md5": "9d7bf28738b7c154280e5e7c2c9d4961"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/bench/graph_ring_p3b1_20261002_073225.json"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3b2_in.json"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p3b2.py"},
+  {"kind": "file", "name": "tools/bench/errorlist_expect_p3b2.py"},
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p3b1_scratch.py"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/wait_logs.py"},
+  {"kind": "file", "name": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_ring_p3b1_20261002_060910.vi"}
+ ],
+ "pass": [
+  "1 rebase carries FS map (-1 -> real FS, -2/-3/-4 -> 27641/32464/27722) and never writes on a failed re-sim; self-tests both; provisional P3b-2 re-finalized (md5 vs b25c1ecb)",
+  "2 --rebase PASS, re-sim all 39 steps; p3b2 recipe --dry 39/39 + --prerun PASS (X10 <= 690, name gate); EL range on rebased plan; --scratch-required exit",
+  "3 full scratch run of P3b-2 on a byte copy: gates PASS incl. name gate, peak <= 690 MB, Error List count-only in range; bed md5 unchanged; LabVIEW gone"
+ ],
+ "outputs": [
+  "tools/stage_prerun.py",
+  "tools/bench/plan_ring_p3b2.json",
+  "tools/bench/stage_d1_ring_p3b2_scratch.py",
+  "tools/bench/cards/result_132-6.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_prerun.py",
+   "tools/stagesim.py",
+   "tools/bench/selftest_*",
+   "tools/bench/diag_c132_6*",
+   "tools/bench/*ring_p3b2*",
+   "tools/bench/errorlist_expect_p3b2*",
+   "tools/bench/errorlist*",
+   "tools/recipes/stage_d1_ring_p3b2.py",
+   "tools/bench/sim/**",
+   "tools/bench/prerun/**",
+   "tools/bench/stage_prerun*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/c125_1*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prior_art*",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_132-6*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 80},
+ "rules": [
+  "The bed is never edited or saved; scratch on a byte copy only; NO real launch in this card",
+  "Never re-simulate the half-rebased 31bea1c5 in place; rebase the recovered provisional plan",
+  "Never end the turn while a run lacks BGRUN END (material.md:92-98); wait with wait_logs.py ticks",
+  "GUI only via lv_gui.ps1 -Exception Approved; capture, locate, act, capture, confirm",
+  "Steps in order; return at the first unexpected result, step finished, LabVIEW closed; no STATUS edit"
+ ],
+ "advances": ["M3", "M4"]
+}

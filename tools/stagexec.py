@@ -930,6 +930,32 @@ def bind_new(prev_real, real, sim_prev, sim_now, bind):
 # DESCEND along the chain while the simulator creates them ascending from the source side, so ORDER pairing would swap the
 # For/While tunnels silently. They are bound by FRAMES: each tunnel's faces sit on (parent, body/frame) diagrams that no other
 # tunnel of the same crossing shares in the same directions. Names are never keyed (the For face reads 'New Image').
+def tunnel_name_check(sim_prev, sim_now, real_prev, real_now):
+    """card 132-1 (PD275(c)): the per-op TUNNEL-NAME gate. The NEW rows owned by a *Tunnel object (term_uid absent from the
+    previous state) are keyed (owner_class, term_class, is_source) and their term_name multisets compared, simulator
+    (sim_prev -> sim_now = the plan's step files, stagesim's naming rule stagesim.py:1499-1543) vs real (real_prev ->
+    real_now = the whole-VI reads around the op). Names are never typed: both sides come from data. Returns
+    (ok, {"sim": {key: [names]}, "real": {...}, "mismatch": [key, ...]}); no new tunnel row on either side = ok."""
+    def new_rows(prev, now):
+        seen = set(int(r["term_uid"]) for r in prev or [])
+        out = collections.defaultdict(list)
+        for r in now or []:
+            if int(r["term_uid"]) not in seen and str(r.get("owner_class") or "").endswith("Tunnel"):
+                out["{0}|{1}|{2}".format(r["owner_class"], r["term_class"], bool(r["is_source"]))].append(str(r.get("term_name") or ""))
+        return dict((k, sorted(v)) for k, v in out.items())
+    s, r = new_rows(sim_prev, sim_now), new_rows(real_prev, real_now)
+    bad = sorted(k for k in set(s) | set(r) if s.get(k) != r.get(k))
+    return not bad, {"sim": s, "real": r, "mismatch": bad}
+
+
+def is_crossing_op(step_effects):
+    """card 132-1 (PD275(c)): an op is a CROSSING op when one of its plan actions' simulated steps lists created border tunnels
+    (effect.tunnels non-empty: stagesim's fs_border routes, the ones its naming rule stagesim.py:1499-1543 covers). A
+    fs_frame_to_frame wire's FlatSequenceInnerTunnel is NOT one: stagesim names it '' while LabVIEW read 'error out'
+    (ring_p3b1 step 16 vs stage_d1_ring_p3b1_scratch_pin4.log NEWOBJ 28340/28345/28361/28371) and E1 accepted it."""
+    return any((e or {}).get("tunnels") for e in step_effects)
+
+
 MULTI_BORDER_CLS = ("LoopTunnel", "FlatSequenceOuterTunnel")
 
 
@@ -1731,7 +1757,7 @@ class Executor(object):
     RETRY_KINDS = ("connect", "tunnel", "wire_sr")
 
     def __init__(self, plan_path, backend, log=print, checkpoints=None, require_final=True, record=False, stop_after=None,
-                 from_step=None, binding=None):
+                 from_step=None, binding=None, name_gate=False):
         # card 101-4 RECORD MODE: a STEP-DIFF is logged into self.diffs and the run CONTINUES on the (unsaved) scratch;
         # any other ExecStop (binding, addressing, op error, MEMSTOP) still stops, and self.cur names the op it stopped
         # in. The caller saves nothing unless self.diffs is empty.
@@ -1739,6 +1765,9 @@ class Executor(object):
         # returned read is compared with simulated step k) and dispatches NO op > k; self.stopped_after records k.
         self.stop_after = None if stop_after is None else int(stop_after)
         self.stopped_after = None
+        # card 132-1 (PD275(c)): name_gate=True runs tunnel_name_check after every BIND op's whole-VI read (every crossing
+        # op is a BIND op and so a checkpoint); a mismatch is ExecStop NAME-GATE before binding. Checked ops -> name_checks.
+        self.name_gate, self.name_checks = bool(name_gate), []
         self.record = bool(record)
         self.diffs, self.cur = [], None
         self.checkpoints = None if checkpoints is None else set(int(k) for k in checkpoints)
@@ -1970,6 +1999,7 @@ class Executor(object):
             self.log("  CHECKPOINTS whole-VI read+diff after ops {0} of {1}".format(sorted(k for k in cp if k), len(self.ops)))
         stale = False
         last_read_k = fs or 0
+        sim_at_real = None                         # card 132-1: the simulated terminals at the moment `real` was read
         for k, op in enumerate(self.ops, 1):
             if k > last_k:                         # card 103-1 PART-A MODE: no op > stop_after is ever dispatched
                 break
@@ -1995,6 +2025,7 @@ class Executor(object):
                     self.log("  STALE-ADDRESS op {0}: fresh read + one retry ({1})".format(k, str(e)[:200]))
                     self.stale_retries.append({"k": k, "err": str(e)[:200]})
                     real, stale, be.strict = be.read(), False, False
+                    sim_at_real = prev["terminals"]
                     meter("read_retry", k)
                     res = self.execute(op, prev, after["state"], real)
             except ExecStop as e:                  # card 111-3: a collecting backend records an op-level stop and
@@ -2025,6 +2056,18 @@ class Executor(object):
             made = {}
             if op["kind"] == "create":                     # card 100-3: a loop owns no row - bound from the op's return
                 made = self._bind_create(op, after["state"], res)
+            if (op["kind"] in BIND_KINDS and self.name_gate      # card 132-1 (PD275(c)): per-op tunnel-name gate, crossing ops
+                    and is_crossing_op([self.step(n).get("effect") for n in op["acts"]])):
+                ok_n, det_n = tunnel_name_check(prev["terminals"] if sim_at_real is None else sim_at_real,
+                                                after["state"]["terminals"], real, real_new)
+                if det_n["sim"] or det_n["real"]:
+                    self.name_checks.append({"k": k, "ok": ok_n, "sim": det_n["sim"], "real": det_n["real"]})
+                    self.log("  NAMEGATE op {0} {1}: sim {2} real {3}".format(k, "ok" if ok_n else "MISMATCH", det_n["sim"],
+                                                                         det_n["real"]))
+                if not ok_n:
+                    raise ExecStop("NAME-GATE: op {0} ({1}, acts {2}) new tunnel names sim {3} vs real {4}".format(
+                        k, op["kind"], op["acts"], dict((x, det_n["sim"].get(x)) for x in det_n["mismatch"]),
+                        dict((x, det_n["real"].get(x)) for x in det_n["mismatch"])))
             if op["kind"] in BIND_KINDS:
                 # card 120-3 R2: a created case selector / case tunnel first ({} for every other op), then bind_new as before
                 made.update(bind_fs_tunnel(real, real_new, prev["terminals"], after["state"]["terminals"], self.bind))
@@ -2074,6 +2117,7 @@ class Executor(object):
                                                 "STEP-DIFF" + (" later refs {0}".format(hit) if hit else "")) + msg[:1600])
             last_read_k = k
             real = real_new
+            sim_at_real = after["state"]["terminals"]
         if self.stop_after is not None:
             self.stopped_after = last_k
             self.log("  STOP-AFTER op {0} of {1}: ops {2}..{1} NOT dispatched (PART-A mode)".format(

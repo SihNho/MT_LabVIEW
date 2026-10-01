@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"132-4","status":"FAIL","gates":{"pass":3,"fail":1},
+"first_fail":"4 --rebase P3b-2: REBASE REFUSED BINDING: created objects differ (FlatSequenceInnerTunnel, Unbundler sim vs real terminal-name keys) (stage_prerun_c132_4_rebase_p3b2.log:3)",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/stage_prerun.py","md5":"0494054aaaa639963e0ccef11c11be62"},
+ {"path":"tools/bench/selftest_x10_c132_4.py","md5":"43bf6babe72b379cc2b1156928000a50"},
+ {"path":"tools/bench/graph_ring_p3b1_20261002_073225.json","md5":"6cfa6ecb25d9bd98fe31a6cb703679cb"},
+ {"path":"tools/bench/diag_c132_2_graph_p3b1.log","md5":"5160d04298cdd1ee6f7c0c26b7575c19"},
+ {"path":"tools/bench/diag_c132_4_diff.py","md5":"b23d3cab8cdf63a360fe45b998da38b9"},
+ {"path":"tools/bench/diag_c132_4_diff.log","md5":"83e82ff8cbf084d0f53a5b71d45909c6"},
+ {"path":"tools/bench/stage_prerun_c132_4_rebase_p3b2.log","md5":"b44283942f16312ff2cfe602958e022f"},
+ {"path":"tools/bench/diag_c132_4_rebind_keys.log","md5":"a681d3a642000fe008ec1ee23ad40fd2"},
+ {"path":"tools/bench/plan_ring_p3b2.json","md5":"b25c1ecbc53f44158426b904beddf5c2"}],
+"facts":[
+ "1 X10 read-only branch stage_prerun.py:1978 x10_readonly + x10_gate(trace=); selftest_x10_c132_4.log 6/0; c132_1 3/0, c130_1 9/0, c106e 15/0, c106c 6/0; fp-29 DRAINED",
+ "2 reader prerun 14/0 PASS, X10 N 0 R 2 peak 592.5 MB (diag_c132_4_graph_p3b1_prerun.log:21-22); launch BGRUN END rc=0 169s, RESULT 12/0 (diag_c132_2_graph_p3b1.log:298)",
+ "2 MEM after load 584.1 MB, after full read 599.9 MB (diag_c132_2_graph_p3b1.log:24,271); bed md5 9d7bf287 before/after (:4,:276 + recheck); LabVIEW gone (:299, tasklist 0); scratch deleted",
+ "2 graph_ring_p3b1_20261002_073225.json: 5920 terminal rows, 10313 objs, 24 loops; G1-G3 PASS (diag_c132_2_graph_p3b1.log:272-275)",
+ "3 real vs sim(step_31): objs 10313/10223 (+90: Wire +25, Terminal/Tunnel +42, node +20, Diagram +3); terminal rows 5920/5890 (+30); wire uids 1958/1958; loops 24/24 (diag_c132_4_diff.log)",
+ "3 #6810 nets: 9 wires each side, same terminals; Image Out w28644 1/1, error out w28884 1/2 (sim w-81, w-117), none loose; one-sided wires 7/7, same signatures, 0 swapped (diag_c132_4_diff.log)",
+ "4 refusal (stage_prerun.py:2913): sim FSIT #-42 terms '' x4 vs real #28333 'error out' x4; sim Unbundler #-27 'element' x3 vs real #6814 code/source/status (diag_c132_4_rebind_keys.log:4-7)",
+ "4 the FSIT name gap is the one 132-1 noted and PD276(a) accepted as unmodelled (docs/d1/tooling.md:93-95); the rebind's tkey includes term_name (stage_prerun.py:2896)",
+ "4 not run after the refusal: p3b2 --dry/--prerun, errorlist_expect_p3b2 on the rebased plan, --scratch-required; plan_ring_p3b2.json still provisional (unchanged by the refused rebase)",
+ "JEV ladder: no JEV-LADDER row for stage_prerun_c132_4_rebase_p3b2.log in tools/bench/jev_gate.log; nothing dispatched"],
+"open":[
+ "rebind keys include term_name, so simulator label gaps (FSIT '' vs 'error out', Unbundler 'element' vs code/source/status) refuse the rebase: drop/relax term_name in rebind's tkey for these classes, or model the names in stagesim?"],
+"cost":{"usd":null,"minutes":14,"labview_runs":1},
+"note":"bind 07:24, return ~07:38. Graph read is done and reusable: the next card can start at --rebase with --graph tools/bench/graph_ring_p3b1_20261002_073225.json."}

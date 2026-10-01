@@ -1,0 +1,80 @@
+{
+ "schema": "task/1",
+ "id": "132-5",
+ "kind": "build",
+ "goal": "PD278(c)(d): rebind by connectivity (names logged), --rebase P3b-2, dry 39/39 + prerun, EL range, --scratch-required, then the full P3b-2 scratch run on a byte copy",
+ "why": "132-4 rebase refused on simulator label gaps (FSIT '' vs 'error out', Unbundler element vs code/source/status), not graph differences. PD278.",
+ "retry_of_card": "132-4",
+ "inputs": [
+  {"path": "docs/d1/ring-p3b.md"},
+  {"path": "docs/d1/tooling.md"},
+  {"path": "tools/bench/cards/result_132-4.json"},
+  {"path": "tools/stage_prerun.py", "md5": "0494054aaaa639963e0ccef11c11be62"},
+  {"path": "tools/bench/graph_ring_p3b1_20261002_073225.json", "md5": "6cfa6ecb25d9bd98fe31a6cb703679cb"},
+  {"path": "tools/bench/plan_ring_p3b2.json", "md5": "b25c1ecbc53f44158426b904beddf5c2"},
+  {"path": "tools/recipes/stage_d1_ring_p3b2.py", "md5": "bbdd03281c4bbf96dddfb7ecb78a2068"},
+  {"path": "tools/bench/errorlist_expect_p3b2.py", "md5": "3a06d26c9b37033afd7a295f24bdfc1b"},
+  {"path": "tools/bench/stage_d1_ring_p3b1_scratch.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b1_20261002_060910.vi", "md5": "9d7bf28738b7c154280e5e7c2c9d4961"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/bench/graph_ring_p3b1_20261002_073225.json"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3b2.json"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p3b2.py"},
+  {"kind": "file", "name": "tools/bench/errorlist_expect_p3b2.py"},
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p3b1_scratch.py"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/wait_logs.py"},
+  {"kind": "file", "name": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_ring_p3b1_20261002_060910.vi"}
+ ],
+ "pass": [
+  "1 rebind per PD278(c): connectivity first, names logged; self-test on the real graph: all bound, Unbundler status -> terminal wired to Select; ambiguous referenced terminal refuses",
+  "2 --rebase PASS (label diffs listed); p3b2 recipe --dry 39/39 + --prerun PASS (X10 <= 690, name gate); EL range on rebased plan; --scratch-required exit",
+  "3 full scratch run of P3b-2 on a byte copy of the bed: gates PASS incl. name gate (p3b_x_rot 'Value'), peak <= 690 MB, Error List count-only in the predicted range; bed md5 unchanged; LabVIEW gone"
+ ],
+ "outputs": [
+  "tools/stage_prerun.py",
+  "tools/bench/plan_ring_p3b2.json",
+  "tools/bench/stage_d1_ring_p3b2_scratch.py",
+  "tools/bench/cards/result_132-5.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_prerun.py",
+   "tools/bench/selftest_*",
+   "tools/bench/diag_c132_5*",
+   "tools/bench/*ring_p3b2*",
+   "tools/bench/errorlist_expect_p3b2*",
+   "tools/bench/errorlist*",
+   "tools/recipes/stage_d1_ring_p3b2.py",
+   "tools/bench/sim/**",
+   "tools/bench/prerun/**",
+   "tools/bench/stage_prerun*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prior_art*",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_132-5*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 75},
+ "rules": [
+  "The bed is never edited or saved; scratch on a byte copy only, deleted or md5-recorded; NO real launch in this card",
+  "Never end the turn while a run lacks BGRUN END (material.md:92-98); wait with wait_logs.py ticks",
+  "GUI only via lv_gui.ps1 -Exception Approved; capture, locate, act, capture, confirm",
+  "Steps in order; return at the first unexpected result, step finished, LabVIEW closed; cost.minutes = bind->return",
+  "No STATUS edit"
+ ],
+ "advances": ["M3", "M4"]
+}

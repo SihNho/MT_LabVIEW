@@ -71,3 +71,41 @@ How to add: see the 5-line note at the top of `docs/d1/INDEX.md`.
        recipes). Not following subprocess/runpy is accepted: a real launch goes through a recipe/bgrun path that is still
        held. fp-27 (the tool's own measurement log, before the fix landed) is not `device-failed`. Open gate-fp: fp-19/20/21
        (stage_prerun) — drained by ONE stage_prerun tooling card after P3b-1's launch, never while a stage card is live.
+275. **(cycle 132 judgement, 2026-10-02 — at cycle start, before cards 132-1 / 132-2)**
+     USER-RULES: U1 (relied on; gate thresholds and tool code only — no computation, no design change; none contradicted).
+     - **(a) X10 gets the FINAL whole-VI read term** (+17.4 MB measured once, `stage_d1_ring_p3b1_scratch_pin4.log:446-447`;
+       launch 680.4 MB `stage_d1_ring_p3b1.log:430`), each coefficient cited in `memory_model.json`. Self-test: P3b-1's
+       bytes predict 680.4 ± 3 MB.
+     - **(b) Once the model carries that term, its FAIL threshold is 690 MB** (PD272(b)'s launch stop), not 675: 675 was the
+       planning margin for a model that LACKED the final read; a model that predicts the measured peak is compared with the
+       measured-peak stop. MEMSTOP 700 and LabVIEW's ~695 error are unchanged. A predicted peak > 690 = re-cut (third half =
+       user, PD266(b)).
+     - **(c) The tunnel-name gate is per-op and data-driven:** after each crossing op the recipe compares every NEW tunnel's
+       name with the simulator's predicted name for that op (read from the finalized plan/sim files, never typed); a
+       mismatch stops the run like E1. Built for P3b-2 now; P4/P5 reuse it.
+     - **(d) P3b-2's expected Error List is COMPUTED** by a script from the simulator's retired/loose-end wire set and the
+       P3b-1 expected file (class totals, PD274(b)), never typed (retrospective-cycle131 carry).
+     - **(e) gate-fp drain:** fp-19/20/21 fixed in this card with self-tests; fp-28 closed as a CORRECT refusal, no code change
+       (retrospective-cycle131).
+276. **(cycle 132 judgement, 2026-10-02 — after 132-1 FAIL 3/1, 132-2 BLOCKED)**
+     USER-RULES: U1 (relied on; tool scope and prediction form only — no computation, no design change).
+     - **(a) 132-1 A/B/C accepted:** X10 + final read 17.4 MB, FAIL 690: P3b-1 bytes 680.8 vs measured 680.4; P3b-2 681.7
+       (provisional). Name gate `stagexec.tunnel_name_check` (self-test 5/0) scoped to `fs_border` crossing ops; the
+       FS INNER tunnel naming (`fs_frame_to_frame`, real `error out` vs sim `''`, pin4 NEWOBJ 28340-28371) is unmodelled
+       — a label only, accepted, not gated. c106e E1 re-pin to the X10 model accepted (15/0). fp-19/20 drained.
+     - **(b) fp-21 is NOT on P3b-2's path:** PD264(b) already orders P3b-2's dry AFTER `--rebase` onto the real graph. Binding a
+       provisional base's negative uids (`stagexec.py:786,1851`) is tooling for the NEXT pipeline prep (P4), stays open.
+     - **(c) P3b-2's expected Error List is a RANGE** (total 50..52, loose ends 19..21, every other class = P3b-1's; computed by
+       `errorlist_expect_p3b2.py`, P3b-1 calibration brackets its own read). The scratch read must fall in it; its measured
+       per-class counts then become the launch's expected file (as PD274(b)). No extra LabVIEW act to pin w3268/w30592.
+     - **(d) fp-28 stays open only because `gate_fp.py` has no close verb** — not a defect of the gate; add the verb in the
+       next tooling card. 132-2's block was my card's own rule (no stage_prerun), not a gate fault: re-issued as 132-3.
+277. **(cycle 132 judgement, 2026-10-02 07:2x — after 132-3 BLOCKED on fp-29, `diag_c132_2_graph_p3b1_prerun.log:21,25`)**
+     USER-RULES: U1 (relied on; gate code only).
+     - **(a) fp-29 is a real false positive:** X10 (`stage_prerun.py:1984-1987`) returns UNMEASURED for a script with no
+       Executor plan, which includes read-only readers — it blocks the run that would record the meter. Rule: a script with
+       NO Executor plan whose prerun shows 0 edit ops (X5: 0 create / wire / delete / RLE; `discard_work` = close without
+       save) is modelled as N = 0, R = its whole-VI reads, + the final-read term; FAIL > 690 as PD275(b). A script with edit
+       ops and no Executor plan stays UNMEASURED = FAIL (PD268(a) unchanged). Self-test both sides; drain fp-29.
+     - **(b) Card 132-4 chains:** fix → reader dry/prerun → graph read → offline diff → `--rebase` P3b-2 → dry 39/39 + prerun
+       → `errorlist_expect_p3b2.py` on the rebased plan → `--scratch-required`. Scratch and launch are cards 132-5 / 132-6.

@@ -1,0 +1,54 @@
+{
+ "schema": "errorlist-expect-computed/1",
+ "card": "132-1",
+ "stage": "D1_ring_p3b2",
+ "plan": {
+  "path": "tools/bench/plan_ring_p3b2.json",
+  "md5": "b25c1ecbc53f44158426b904beddf5c2"
+ },
+ "base_file": "bench\\errorlist_expected_D1_ring_p3b1_20261002_060910.json",
+ "rule": "(stated before the run; PD274(b) class debit):\n  LOST = wires of the stage's sim step_00 absent from its last step (stagexec D gate's \"lost\"); profile = (sources, sinks) in step_00.\n  - a LOST source-only wire (1/0, base uid > 0) carried a `wire has loose ends` item  -> CERTAIN debit 1 each\n    (P3b-1: w3040 #6810 Image Out, 0 sinks, diag_c131_5_stubs.log:20);\n  - a LOST sink-only wire (0/n) carried `connects ... sinks but has no source`        -> CERTAIN debit 1 each;\n  - a LOST two-sided wire of the BASE (uid > 0) MAY carry a dangling-branch loose end (invisible in terminal data: the Error\n    List items carry no uid, result_131-5.json:13)                                   -> UNCERTAIN debit 0..1 each;\n  - a LOST wire created by the previous stage (sim uid < 0) was RLE'd by it (PD256(b))  -> 0;\n  - a NEW stub in the last step (one-sided, not in step_00) -> CERTAIN credit to its class; + pred errorlist new_items_predicted.",
+ "lost": [
+  -62,
+  3268,
+  4878,
+  30592
+ ],
+ "why": {
+  "-62": "created by the previous stage (RLE'd)",
+  "3268": "two-sided 1/7: dangling branch unknown",
+  "4878": "source-only stub 1/0",
+  "30592": "two-sided 1/1: dangling branch unknown"
+ },
+ "per_class_lo": {
+  "buildarraybuildarraycontainsunwiredorbadterminal": 3,
+  "looptunnelwireconnectedtoanundirectedtunnel": 3,
+  "subyitracknbeadsfourfoldoyerkernely3yireguiredinputimageinisnotwired": 1,
+  "thiswireconnectsoneormoredatasinksbuthasnosource": 1,
+  "thiswireisnotconnectedtoanything": 20,
+  "wirewirehaslooseends": 19,
+  "youhayeconnectedanoutputlooptunneltoaninputofreplacearraysubsetchangetheinputtoanoutputoraddasource": 1,
+  "youhayeconnectedanoutputlooptunneltoaninputofsubyichangetheinputtoanoutputoraddasource": 1,
+  "youhayeconnectedtwoterminalsofdifferenttypes": 1
+ },
+ "per_class_hi": {
+  "buildarraybuildarraycontainsunwiredorbadterminal": 3,
+  "looptunnelwireconnectedtoanundirectedtunnel": 3,
+  "subyitracknbeadsfourfoldoyerkernely3yireguiredinputimageinisnotwired": 1,
+  "thiswireconnectsoneormoredatasinksbuthasnosource": 1,
+  "thiswireisnotconnectedtoanything": 20,
+  "wirewirehaslooseends": 21,
+  "youhayeconnectedanoutputlooptunneltoaninputofreplacearraysubsetchangetheinputtoanoutputoraddasource": 1,
+  "youhayeconnectedanoutputlooptunneltoaninputofsubyichangetheinputtoanoutputoraddasource": 1,
+  "youhayeconnectedtwoterminalsofdifferenttypes": 1
+ },
+ "total_lo": 50,
+ "total_hi": 52,
+ "exact": false,
+ "calibration_p3b1": {
+  "lo": 21,
+  "hi": 23,
+  "measured": 22
+ },
+ "provisional": "P3b-2 base is P3b-1's SIMULATED end; re-run after stage_prerun --rebase (card 132-3)"
+}

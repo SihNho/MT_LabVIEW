@@ -1,12 +1,13 @@
 {
  "schema": "memory_model/1",
- "card": "130-1",
- "decided": "docs/d1-loop12-17-split-plan.md:2918-2933 (PD265(b)(c)), :2946-2953 (PD266(b)), :2963-2970 (PD267(b))",
- "formula": "peak_mb = start_mb + R * read_mb + N * (edit_mb + other_mb); R = whole-VI checkpoint reads (k 0 included), N = ops dispatched",
+ "card": "130-1; final_read_mb + fail_above_mb 690 card 132-1",
+ "decided": "docs/d1-loop12-17-split-plan.md:2918-2933 (PD265(b)(c)), :2946-2953 (PD266(b)), :2963-2970 (PD267(b)); docs/d1/tooling.md:76-82 (PD275(a)(b))",
+ "formula": "peak_mb = start_mb + R * read_mb + N * (edit_mb + other_mb) + final_read_mb; R = whole-VI checkpoint reads (k 0 included), N = ops dispatched; final_read_mb once per Executor run (its last whole-VI read)",
  "start_mb": {"value": 570.0, "cite": "tools/bench/stage_d1_ring_p3b1_scratch_pin2.log:55 (METER read k 0 private 570.0 MB)"},
  "read_mb": {"value": 2.53, "cite": "tools/bench/diag_c129_6_mem.log:55 (W1 15 checkpoint reads, slope 2.529 MB/rep; rows :40-54)"},
  "edit_mb": {"value": 0.58, "cite": "tools/bench/diag_c129_6_mem.log:87 (W2 15 edits, slope 0.576 MB/rep; rows :58-86)"},
  "other_mb": {"value": 0.8, "cite": "docs/d1-loop12-17-split-plan.md:2927 (PD265(b): pin2 ~3.9 MB/op = read 2.5 + edit 0.6 + ~0.8 unattributed)"},
- "fail_above_mb": {"value": 675.0, "cite": "docs/d1-loop12-17-split-plan.md:2951 (PD266(b): pass = larger predicted peak <= 675 MB, >= 15 MB under 690)"},
+ "final_read_mb": {"value": 17.4, "cite": "tools/bench/stage_d1_ring_p3b1_scratch_pin4.log:446-447 (METER op k 31 663.4 MB -> METER read k 31 680.8 MB, d +17.4); launch check tools/bench/stage_d1_ring_p3b1.log:429-430 (663.0 -> 680.4, d +17.4); PD275(a) docs/d1/tooling.md:76-78"},
+ "fail_above_mb": {"value": 690.0, "cite": "docs/d1/tooling.md:79-82 (PD275(b): a model WITH the final-read term is compared with PD272(b)'s measured-peak stop 690; was 675 = PD266(b) planning margin for the model without it)"},
  "note": "never tuned to reach a number (card 130-1 rule 2); the cut is the only free variable"
 }

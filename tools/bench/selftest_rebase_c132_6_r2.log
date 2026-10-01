@@ -1,0 +1,24 @@
+BGRUN START 2026-10-02 08:01:28 limit 4.0 min: py -u tools/bench/selftest_rebase_c132_6.py
+BGRUN PID 520
+  FACT  plan tools/bench/plan_ring_p3b2.json md5 98992a598c9551e56a57393489c469d7 base {'path': 'tools/bench/sim/ring_p3b2_base_provisional.json', 'md5': '93d600e26c0694761e4a16e59441712a', 'provisional': True, 'sim_of': {'plan': 'tools/bench/plan_ring_p3b1.json', 'md5': 'edbdba9909cc5130f8710f49a510b8ad'}}
+  FACT  rebind why=None M=116
+  FACT  fs_bound (-1, 27509); fs_map {"fs_frames": {"27509": [27641, 32464, 27722]}, "fs_tunnels": {"28333": {"fs": 27509, "twin": 28333, "frames": [32464, 27722], "link": [28371, 28345]}}, "fs_alias": {"27509": "FS1"}, "fs_border_entries": {"27401|27722": {"face": 28398, "act": "p3b_x_i_f3"}, "27401|32464": {"face": 28428, "act": "p3b_x_i_ia1"}, "6897|27722": {"face": 28434, "act": "p3b_x_bn_n3"}, "6865|32464": {"face": 28470, "act": "p3b_x_img_src"}, "23289|32464": {"face": 28502, "act": "p3b_x_pool"}, "6924|32464": {"face": 28626, "act": "p3b_x_err_in"}}, "fs_frame_inferred": {"686": 536, "13236": 536}, "diagrams": {"27641": 27219, "32464": 27219, "27722": 27219}, "fs_pairs_added": 2}; owners_changed [('27641', ['FlatSequenceFrame', 0], ['FlatSequence', 27509]), ('27509', None, ['Diagram', 27219]), ('32464', ['FlatSequenceFrame', 0], ['FlatSequence', 27509]), ('27722', ['FlatSequenceFrame', 0], ['FlatSequence', 27509])]
+PASS  F1 FS -1 -> one new real FlatSequence; fs_frames {FS: [27641,32464,27722]}  (None, (-1, 27509), {'27509': [27641, 32464, 27722]})
+PASS  F2 frame owners -> ['FlatSequence', FS]; diagrams[27641] == 27219  ([['FlatSequence', 27509], ['FlatSequence', 27509], ['FlatSequence', 27509]], {'27641': 27219, '32464': 27219, '27722': 27219})
+PASS  F3 FS tables carry no negative uid; twin -43 -> 28333; 2 fs_pairs added on 28333  ([], {-43: 28333}, [(28333, 28361, 28340), (28333, 28340, 28361)], {'28333': {'fs': 27509, 'twin': 28333, 'frames': [32464, 27722], 'link': [28371, 28345]}})
+PASS  F4 base_state(augmented): fs_of 27641 -> (FS,0), 27722 -> (FS,2); terminals unchanged  ((27509, 0), (27509, 2))
+PASS  F5 an unbound created frame REFUSES  FS-CARRY: created uid(s) in the FS map not bound: [-3]
+PASS  F6 an owners disagreement REFUSES  FS-CARRY: owners[32464] real ['Diagram', 5] vs carried ['FlatSequence', 27509] (from #-3)
+  LOG   REBIND 23 node(s), 3 frame(s), terminals by {'conn': 26, 'pos': 36}; unbound created terminals []; frames {-4: '27722 (row #-70)', -3: '32464 (row #-80)', -2: '27641 (only new FlatSequenceFrame Diagram left)'}
+  LOG   LABEL-DIFF Unbundler #-29 -> #28082: sim 'element' real 'status' (by conn)
+  LOG   LABEL-DIFF FlatSequenceInnerTunnel #-47 -> #28361: sim '' real 'error out' (by conn)
+  LOG   LABEL-DIFF Unbundler #-30 -> #28104: sim 'element' real 'code' (by pos)
+  LOG   LABEL-DIFF Unbundler #-31 -> #28116: sim 'element' real 'source' (by pos)
+  LOG   LABEL-DIFF FlatSequenceInnerTunnel #-48 -> #28340: sim '' real 'error out' (by pos)
+  LOG   LABEL-DIFF FlatSequenceInnerTunnel #-49 -> #28371: sim '' real 'error out' (by pos)
+  LOG   LABEL-DIFF FlatSequenceInnerTunnel #-50 -> #28345: sim '' real 'error out' (by pos)
+  LOG   FS-CARRY fs (-1, 27509); fs_frames {'27509': [27641, 32464, 27722]}; fs_tunnels ['28333']; twins {-43: 28333}; fs_pairs added 2; owners changed [('27641', ['FlatSequenceFrame', 0], ['FlatSequence', 27509]), ('27509', None, ['Diagram', 27219]), ('32464', ['FlatSequenceFrame', 0], ['FlatSequence', 275
+PASS  F7 non-final re-sim: plan file byte-identical, rebase FAILS  (False, "json; re-simulated on the real base: final=False failed={'n': 24}; C:/Users/KimLab/AppData/Local/Temp/c132_6_rebase_j4ecarwv/plan_ring_p3b2.json NOT written (md5 98992a598c9551e56a57393489c469d7 kept)")
+PASS  F8 final re-sim: plan written, base = augmented file, md5 matches  (True, ') bound, base -> C:/Users/KimLab/AppData/Local/Temp/c132_6_rebase_j4ecarwv/ring_p3b2_base_real_fsmap.json; re-simulated on the real base: final=True failed=None', {'path': 'C:/Users/KimLab/AppData/Local/Temp/c132_6_rebase_j4ecarwv/ring_p3b2_base_real_fsmap.json', 'md5': '75e64374c76f11a36de096afa5ebda37'})
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":8,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 2s

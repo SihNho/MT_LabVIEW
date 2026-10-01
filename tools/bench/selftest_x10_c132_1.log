@@ -1,0 +1,48 @@
+BGRUN START 2026-10-02 06:56:36 limit 6.0 min: py -u tools/bench/selftest_x10_c132_1.py
+BGRUN PID 24784
+stage_d1_ring_p3b1 - card 129-1 (WRITTEN, NOT LAUNCHED), RING P3b-1 (d1-loop12-17-split-plan.md PD246(c) A1/A2, PD254(d),
+PD256(b)(c), PD258(a)(c), PD261(a)(d), PD262(b), PD263(b); cut re-set by docs/d1/ring-p3b.md PD269(a)-(c), card 130-6): on the
+SAVED P3a bed D1_ring_p3a_20261001_180540.vi (md5 4dfa44aa) build, in case #22694's False frame 27219, a 3-frame Flat Sequence
+whose frame f0 stays EMPTY here (its [Num(i) = -1] group, 9 rows, moved to P3b-2 by the memory cut, PD269(a)(b)) ->
+f1 [IMAQ Copy #6810 Image Out -> Img(i), error in <- #6810 error out] -> f2 [Num(i) = status ? -1 : BufNum (Unbundler #157
+element#0 -> Select #529 s, I32 -1 -> t, BufNum -> f)]; wire_remove_loose_ends on w27378 and after every crossing. 31 actions
+(N 31, BIND 18, R 20, predicted peak 663.4 MB). f0's Num(i)=-1, TransPos/RotPos/FrameIdx and Latest are P3b-2's.
+FRESH LabVIEW -> claudeDev\D1_ring_p3b1_<ts>.vi (rule-6 GUI save, ExecState 0 by design: the P3a bed is broken, never run) +
+tools\bench\errorlist_expected_D1_ring_p3b1_<ts>.json (54 = P3a's 55 - w27378, + 0 own). ROWS ONLY FROM plan_ring_p3b1.json
+(stagesim FINAL of plan_ring_p3b1_in.json, plan_ring_p3b_split.py); expected values only from plan_ring_p3b1_pred.json.
+PRIOR ART: stage_d1_ring_p3a.py (Executor/LVBackend/DryPlanBE skeleton, D/TD/FU/PB/HB/PS/EL gates). No new op.
+PREDICTION: L1 31 actions -> pred ops; E1 every checkpoint == sim; FS 1 FlatSequence with 3 frames on 27219, terminals per frame ==
+the simulator's end state read from the plan's last step (f0 0 / f1 16 / f2 18 at plan 6934a0ed, PD269(c)); RB the Unbundler
+terminal on Select.s's wire reads back `status` (PD262(b); FAILS otherwise, UNVERIFIED-DRY in a dry run); D new/lost wires == sim's;
+TD every base terminal that was wired stays wired; CEN2 == pred census (CENSUS-UNPREDICTED rows: the scratch run pins them);
+PB cdiff(S1, end) == P3a's 16 rows (FATAL, before save); HB handles <= +700; PS saved, input unchanged; EL 54.
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/stage_d1_ring_p3b1.log -- py -u tools/recipes/stage_d1_ring_p3b1.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p3b1_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan  ('edbdba9909cc5130f8710f49a510b8ad', {'path': 'tools/bench/graph_ring_p3a_20261001_190155.json', 'md5': '2fa6ce0c3e8a3014fa916085cb852f68'}, '4dfa44aac8fb32f706b3eb792ee7d3cc')
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 4dfa44aac8fb32f706b3eb792ee7d3cc  got 4dfa44aac8fb32f706b3eb792ee7d3cc
+  PASS  DRY graph JSON for input md5 4dfa44aac8fb32f706b3eb792ee7d3cc  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_ring_p3a_20261001_190155.json
+PASS  T1 stage_d1_ring_p3b1.py: X10 PASS, predicted 680.8 within 3 MB of the launch's measured 680.4  [{'N': 31, 'bind': 18, 'R': 20, 'peak_mb': 680.8, 'fail_above_mb': 690.0}]
+PASS  T2 memory_model final_read_mb == measured pin4 d 17.4; fail_above_mb 690  (17.4, 690.0, 680.8)
+stage_d1_ring_p3b2 - card 129-1 (WRITTEN, NOT LAUNCHED), RING P3b-2 (d1-loop12-17-split-plan.md PD246(c) A2, PD238(c), PD240(a),
+PD257(a), PD258(a), PD261(d), PD263(b)): on P3b-1's SAVED artefact, in the Flat Sequence P3b-1 built on case #22694's False frame,
+add TransPos/RotPos/FrameIdx at i in frame f1 (local read -> Replace Array Subset -> local write; i by the INNER-FACE branch of
+P3b-1's entry tunnel; values #30117 Value, #4580 Value, #637 i) and Latest = BufNum in frame f2 (inner branch of P3b-1's BufNum
+tunnel); wire_remove_loose_ends after every crossing. BASE IS PROVISIONAL (P3b-1's simulated end, stage_prerun refuses the launch):
+`py tools/stage_prerun.py --rebase tools/bench/plan_ring_p3b2.json --graph <graph of P3b-1's saved VI>` first, then the pred again.
+FRESH LabVIEW -> claudeDev\D1_ring_p3b2_<ts>.vi (rule-6 GUI save, ExecState 0 by design) + errorlist_expected (54 + 0 own).
+ROWS ONLY FROM plan_ring_p3b2.json (stagesim FINAL of plan_ring_p3b2_in.json, plan_ring_p3b_split.py); expected values only from
+plan_ring_p3b2_pred.json. PRIOR ART: stage_d1_ring_p3b1.py / stage_d1_ring_p3a.py (same skeleton and gates). No new op.
+PREDICTION: L1 30 actions -> pred ops; E1 every checkpoint == sim; FR every created object sits on a frame of the base's FS, no
+new frame; D new/lost wires == sim's; TD every base terminal that was wired stays wired; CEN2 == pred census; PB cdiff(S1, end)
+== the 16 rows (FATAL, before save); HB handles <= +700; PS saved, input unchanged; EL 54.
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/stage_d1_ring_p3b2.log -- py -u tools/recipes/stage_d1_ring_p3b2.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p3b2_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan  ('b25c1ecbc53f44158426b904beddf5c2', {'path': 'tools/bench/sim/ring_p3b2_base_provisional.json', 'md5': '93d600e26c0694761e4a16e59441712a'}, '4dfa44aac8fb32f706b3eb792ee7d3cc')
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 4dfa44aac8fb32f706b3eb792ee7d3cc  got 4dfa44aac8fb32f706b3eb792ee7d3cc
+  PASS  DRY graph JSON for input md5 4dfa44aac8fb32f706b3eb792ee7d3cc  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_ring_p3a_20261001_190155.json
+  FACT  X10 P3b-2 (provisional plan): ok True, runs [{'plan': 'tools/bench/plan_ring_p3b2.json', 'N': 39, 'bind': 14, 'R': 16, 'peak_mb': 681.7, 'fail_above_mb': 690.0}], why None
+PASS  T3 stage_d1_ring_p3b2.py: X10 returns a model run (prediction printed above)  None
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":3,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 6s

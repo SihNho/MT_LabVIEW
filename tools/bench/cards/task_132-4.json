@@ -1,0 +1,79 @@
+{
+ "schema": "task/1",
+ "id": "132-4",
+ "kind": "build",
+ "goal": "PD277: X10 models a 0-edit no-Executor reader (fp-29); P3b-1 graph read + memory; offline diff; --rebase P3b-2; dry 39/39 + prerun; EL range on rebased plan; --scratch-required",
+ "why": "132-3 BLOCKED on fp-29 (X10 UNMEASURED for a read-only reader). PD277(a)(b). brief_132-2.md parts A/B still apply.",
+ "retry_of_card": "132-3",
+ "inputs": [
+  {"path": "docs/d1/tooling.md"},
+  {"path": "tools/bench/cards/brief_132-2.md"},
+  {"path": "tools/bench/cards/result_132-3.json"},
+  {"path": "tools/bench/cards/result_132-1.json"},
+  {"path": "tools/stage_prerun.py", "md5": "489d7be9991949ffeb466b8ed66a81f9"},
+  {"path": "tools/bench/diag_c132_2_graph_p3b1.py", "md5": "07ad691474d68ba2777d03e68d7979a4"},
+  {"path": "tools/bench/plan_ring_p3b2.json"},
+  {"path": "tools/recipes/stage_d1_ring_p3b2.py", "md5": "bbdd03281c4bbf96dddfb7ecb78a2068"},
+  {"path": "tools/bench/errorlist_expect_p3b2.py", "md5": "3a06d26c9b37033afd7a295f24bdfc1b"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b1_20261002_060910.vi", "md5": "9d7bf28738b7c154280e5e7c2c9d4961"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/gate_fp.py"},
+  {"kind": "file", "name": "tools/bench/diag_c132_2_graph_p3b1.py"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3b2.json"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p3b2.py"},
+  {"kind": "file", "name": "tools/bench/errorlist_expect_p3b2.py"},
+  {"kind": "file", "name": "tools/wait_logs.py"},
+  {"kind": "file", "name": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_ring_p3b1_20261002_060910.vi"}
+ ],
+ "pass": [
+  "1 X10 per PD277(a): 0-edit no-Executor script -> N=0, R=its reads + final read, FAIL>690; edit-op script w/o Executor still UNMEASURED; self-test both + X10 suites green; fp-29 drained",
+  "2 reader dry + prerun PASS; graph read launched once to BGRUN END: graph_ring_p3b1_<ts>.json, memory after load and after read, bed md5 9d7bf287 before/after, LabVIEW gone",
+  "3 offline: counts real vs sim end of ring_p3b1; #6810-net loose-end wires from the real graph",
+  "4 --rebase P3b-2 plan on 2's graph PASS; p3b2 recipe --dry 39/39 + --prerun PASS (X10 value, name gate); errorlist_expect_p3b2 range on rebased plan; --scratch-required exit"
+ ],
+ "outputs": [
+  "tools/stage_prerun.py",
+  "tools/bench/graph_ring_p3b1_*.json",
+  "tools/bench/plan_ring_p3b2.json",
+  "tools/bench/cards/result_132-4.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_prerun.py",
+   "tools/bench/memory_model.json",
+   "tools/bench/selftest_*",
+   "tools/bench/diag_c132_2*",
+   "tools/bench/diag_c132_4*",
+   "tools/bench/graph_ring_p3b1_*",
+   "tools/bench/*ring_p3b2*",
+   "tools/bench/errorlist_expect_p3b2*",
+   "tools/recipes/stage_d1_ring_p3b2.py",
+   "tools/bench/sim/**",
+   "tools/bench/prerun/**",
+   "tools/bench/stage_prerun*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_132-4*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 55},
+ "rules": [
+  "The bed is never edited or saved; md5 checked before and after; no stage recipe is LAUNCHED (dry/prerun only)",
+  "Never end the turn while a run lacks BGRUN END (material.md:92-98); wait with wait_logs.py ticks",
+  "Steps in order; return at the first unexpected result, step finished, LabVIEW closed; cost.minutes = bind->return",
+  "No STATUS edit"
+ ],
+ "advances": ["M3", "M4"]
+}

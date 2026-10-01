@@ -1,0 +1,27 @@
+{"schema":"result/1","id":"132-5","status":"FAIL","gates":{"pass":2,"fail":1},
+"first_fail":"2 --rebase: binding PASS, re-sim on real base FAIL step 24 p3b_x_i_f1: sink on f0 27641, 'a border needs a tunnel' (stage_prerun_c132_5_rebase_p3b2.log:35-36)",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/stage_prerun.py","md5":"25936d47466dd7fa2e93543f1e8500b4"},
+ {"path":"tools/bench/selftest_rebind_c132_5.py","md5":"df1b285e71c66493ce22ff33940a434e"},
+ {"path":"tools/bench/selftest_rebind_c132_5.log","md5":"715015fde3fd65152e333c5983394103"},
+ {"path":"tools/bench/selftest_chat_p1_c132_5.log","md5":"e603800a8418d8b7846b92a5f7eebe1a"},
+ {"path":"tools/bench/stage_prerun_c132_5_rebase_p3b2.log","md5":"ac993fdcc95e9d8ca2fd006ea09e70d3"},
+ {"path":"tools/bench/plan_ring_p3b2.json","md5":"31bea1c5a4f8ebb7934bd993f4e597b8"},
+ {"path":"tools/bench/diag_c132_5_frames.log","md5":"4831ff66b9b2197d86faa28cc2825f4c"}],
+"facts":[
+ "1 rebind rewritten per PD278(c) (stage_prerun.py:2890): connectivity -> position in bound node -> unique name-free shape -> empty FS frame by elimination; names only logged",
+ "1 selftest_rebind_c132_5.log:64 7/0 on the real graph: 23 nodes, conn 26 / pos 36 terms; -29 status->28082 by conn, wired to Select 10579 (:19); -2/-3/-4 -> 27641/32464/27722 (:20)",
+ "1 referenced-terminal rule: name address {-27,'element'} and term_uid -30 (pos only) REFUSE, -29 (conn) passes -> {6814,28082}; selftest_chat_p1 R1-R6 still pass, 46/0 (selftest_chat_p1_c132_5.log:59)",
+ "2 --rebase binding PASS: 116 uids, 7 LABEL-DIFF lines FSIT ''->'error out' x4, Unbundler element->status/code/source (stage_prerun_c132_5_rebase_p3b2.log:3-10)",
+ "2 re-sim on the real base FAILS at step 24 p3b_x_i_f1 (27373 i -> new:RAN1.index in f0 27641): steps 1-23 ok (stage_prerun_c132_5_rebase_p3b2.log:35-36)",
+ "2 cause read, not guessed: stagesim routes FS-border wires only via fs_of() = st['fs_frames'] + owners[frame]=[FS,uid] (stagesim.py:402-410,1139-1145); provisional base had fs_frames {-1:[-2,-3,-4]}",
+ "2 the real graph JSON has no fs_frames key and owners '27641'/'32464'/'27722' = ['FlatSequenceFrame', 0] (graph_ring_p3b1_20261002_073225.json; diag_c132_5_frames.log keys)",
+ "2 plan_ring_p3b2.json is now the rebased, non-final plan (31bea1c5, base real, final false); provisional b25c1ecb is not on disk or in git HEAD (788f41fb), so --rebase cannot be re-run on it",
+ "not run: dry/prerun, EL range, --scratch-required, scratch run (step 3). LabVIEW never opened (tasklist 0); bed untouched",
+ "JEV: no JEV-LADDER row for stage_prerun_c132_5_rebase_p3b2.log | - | - | nothing dispatched | -"],
+"open":[
+ "Re-simulating on a real graph needs the earlier stage's FS frame map: should rebase carry fs_frames/owners through the binding (-1 -> real FS uid, frames -> 27641/32464/27722), or should the graph reader record FS frames?",
+ "Recover the provisional plan (re-simulate plan_ring_p3b2_in.json on sim/ring_p3b2_base_provisional.json), or re-simulate the rebased plan in place once the FS map exists?"],
+"cost":{"usd":null,"minutes":11,"labview_runs":0},
+"note":"bind 07:39, return ~07:50. Binding part is done and self-tested; only stagesim's knowledge of P3b-1's FS frames on a real base blocks the re-simulation."}

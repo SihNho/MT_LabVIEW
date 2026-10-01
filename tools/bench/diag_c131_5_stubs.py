@@ -39,5 +39,13 @@ for k in gone:
         k, sb[k][0], sb[k][1], k in we, (we[k][0], we[k][1]) if k in we else None, sb[k][2][:4]))
 for k in new:
     print('NEW     w%s src/snk %d/%d terms=%s' % (k, se[k][0], se[k][1], se[k][2][:4]))
-print('RESULT ' + json.dumps({'schema': 'result-line/1', 'status': 'PASS', 'gates': {'pass': 1, 'fail': 0},
-                              'first_fail': None, 'artefacts': []}))
+# card 132-1 (retrospective-cycle131 finding 3b): PASS now depends on the docstring's prediction (:5-7), checked here;
+# it printed PASS unconditionally before (the measured retired set was [3040], without w27378).
+checks = [('S1 base has >= 1 one-sided wire', len(sb) >= 1),
+          ('S2 the retired set contains w27378 (row p3b_rle_w27378)', 27378 in gone)]
+for nm, ok in checks:
+    print('%s  %s  retired=%s' % ('PASS' if ok else 'FAIL', nm, gone))
+nf = sum(1 for _n, ok in checks if not ok)
+print('RESULT ' + json.dumps({'schema': 'result-line/1', 'status': 'FAIL' if nf else 'PASS',
+                              'gates': {'pass': len(checks) - nf, 'fail': nf},
+                              'first_fail': next((n for n, ok in checks if not ok), None), 'artefacts': []}))

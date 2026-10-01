@@ -1,0 +1,59 @@
+{
+ "schema": "task/1",
+ "id": "132-3",
+ "kind": "measure",
+ "goal": "Re-issue of 132-2: dry + prerun of diag_c132_2_graph_p3b1.py, then the read-only graph read of the P3b-1 bed + memory readings, then the offline diff vs sim end",
+ "why": "132-2 BLOCKED only by its own card rule (no stage_prerun while 132-1 edited it); 132-1 has returned. PD276(d). brief_132-2.md applies unchanged.",
+ "retry_of_card": "132-2",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_132-2.md"},
+  {"path": "tools/bench/cards/result_132-2.json"},
+  {"path": "tools/bench/diag_c132_2_graph_p3b1.py", "md5": "07ad691474d68ba2777d03e68d7979a4"},
+  {"path": "tools/bench/diag_c132_2_graph_p3b1_plan.json", "md5": "652bd5b8f170f65888cfc98ad26a9a31"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b1_20261002_060910.vi", "md5": "9d7bf28738b7c154280e5e7c2c9d4961"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c132_2_graph_p3b1.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/wait_logs.py"},
+  {"kind": "file", "name": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_ring_p3b1_20261002_060910.vi"}
+ ],
+ "pass": [
+  "0 stage_prerun --dry and --prerun PASS on diag_c132_2_graph_p3b1.py (records written)",
+  "A graph_ring_p3b1_<ts>.json written (same shape as the P3a graph), bed md5 9d7bf287 before and after, LabVIEW closed and gone; memory after load and after full read reported",
+  "B offline: counts real vs sim end of ring_p3b1 and the #6810-net loose-end wires from the REAL graph (sim has no joints: say so, list real only)"
+ ],
+ "outputs": [
+  "tools/bench/graph_ring_p3b1_*.json",
+  "tools/bench/cards/result_132-3.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c132_2*",
+   "tools/bench/diag_c132_3*",
+   "tools/bench/graph_ring_p3b1_*",
+   "tools/bench/prerun/**",
+   "tools/bench/stage_prerun*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_132-3*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 35},
+ "rules": [
+  "Read only: the bed is never edited or saved; md5 checked before and after",
+  "Never end the turn while a run lacks BGRUN END (material.md:92-98); wait with wait_logs.py ticks",
+  "No STATUS edit; return at the first unexpected result; cost.minutes = bind->return"
+ ],
+ "advances": ["M3", "M4"]
+}

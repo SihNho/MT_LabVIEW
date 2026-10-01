@@ -1,0 +1,28 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle132",
+ "verdict": "refuted",
+ "alternative": "The two BLOCKs were cheap (9 card-min) and the cycle would still have stalled at the op-24 route-check gap, so no structural fault: the dispatch cap, not the ordering, set the end.",
+ "discriminating_test": "Replay: with the X10 reader branch in 132-1 and the graph read after it, count dispatches to reach the op-24 refusal (expect 4 of 6); then check whether one card closes the route-check binding (cycle 133 card 1).",
+ "violations": [
+  {
+   "slug": "wrong-ordering",
+   "loss_min": 9,
+   "loss_usd": null,
+   "evidence": "tools/bench/cards/result_132-2.json:1"
+  }
+ ],
+ "sources": [
+  "tools/bench/cards/result_132-2.json:1",
+  "tools/bench/cards/result_132-3.json:1",
+  "tools/hooks/material_marker.log:3045",
+  "tools/bench/cards/brief_132-2.md:5",
+  "docs/d1/tooling.md:101-102",
+  "tools/bench/diag_c132_2_graph_p3b1_prerun.log:21",
+  "tools/bench/diag_c132_2_graph_p3b1.log:24",
+  "tools/bench/memory_model.json:6",
+  "tools/bench/stage_prerun_c129_1_p3b2_dry.log:23",
+  "tools/bench/stagesim_c132_6_recover_p3b2.log:42"
+ ],
+ "note": "Findings: X10 start term 570 vs measured P3b-1 load 584.1 (P3b-2 margin 8.3 MB, not recomputed); recovered plan is final=false; dry-path 'unbound' predates 132-1 (c129 log) but stagesim finalize regressed in-cycle; no device failed."
+}

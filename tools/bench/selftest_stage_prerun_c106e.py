@@ -14,8 +14,8 @@ PREDICTION CONTRACT (all must hold):
   L1 NEGATIVE-shape: `py -V<NL>py -u tools/recipes/stage_d1_disp.py` -> the stage path is found (HEAD code: not, O1 of
      diag_c106e_oldcode.py); L1u `wc -l x<NL>py -u <stage>` -> found (HEAD finds it too)
   L2 a bash `\\<NL>` continuation stays one command: found exactly once ; L3 `echo py tools/x.py` is not a launch
-  E1 `--prerun <recipe> --from-step 33 --base <dispA> --no-record` with PRERUN_LOG_DIR = an empty dir: exit 0, stdout has
-     `WARN  X10 WARN unmeasured` and a RESULT line status PASS whose first_fail starts `X10 WARN unmeasured`
+  E1 `--prerun <recipe> --from-step 33 --base <dispA> --no-record` with PRERUN_LOG_DIR = an empty dir: exit 0, RESULT PASS,
+     the X10 gate PASS from the card-130-1 model (re-pinned by card 132-1; was `X10 WARN unmeasured` before PD267(b))
   E2 (card F5) `--dry <recipe> --from-step 33 --base <dispA> --no-record`: exit 0, RESULT PASS, the B1 entry gate PASS
      with diff_n 0, the E3 gate PASS with `rows 6 == want 6`
 Usage: py tools/bgrun.py --material --max-min 8 --log tools/bench/selftest_stage_prerun_c106e.log -- py -u tools/bench/selftest_stage_prerun_c106e.py
@@ -89,10 +89,15 @@ with tempfile.TemporaryDirectory() as td:
                         "--from-step", "33", "--base", PARTA["file"]], cwd=ROOT, capture_output=True, text=True, timeout=400, env=env)
 res = P.all_result_lines(p.stdout)
 ff = (res[-1].get("first_fail") or "") if res else ""
-gate("E1 Part-B prerun, no meter record: exit 0, WARN line, RESULT PASS first_fail 'X10 WARN unmeasured'",
-     p.returncode == 0 and "WARN  X10 WARN unmeasured" in p.stdout and res and res[-1]["status"] == "PASS"
-     and ff.startswith("X10 WARN unmeasured"), (p.returncode, ff, [ln for ln in p.stdout.splitlines() if "X10" in ln][:3],
-                                                 p.stderr[-300:]))
+# card 132-1 (gate-fp fp-20): E1 was red from X16 refusing plan_disp's `Local` create (fixed: X16_EXEMPT_CLASSES) AND from
+# card 130-1 (PD267(b)), which REPLACED the record-only X10 (no record -> `X10 WARN unmeasured`, PASS) by the model from the
+# compiled plan: a Part-B run with no meter record is now PREDICTED (FACT X10 ... predicted peak), the record's UNMEASURED
+# stays as detail. Same argv, contract re-pinned to the X10 in force: exit 0, RESULT PASS, the X10 gate PASS with a model peak.
+x10l = [ln for ln in p.stdout.splitlines() if "X10" in ln]
+gate("E1 Part-B prerun, no meter record: exit 0, RESULT PASS, X10 PASS from the model (record UNMEASURED kept as detail)",
+     p.returncode == 0 and res and res[-1]["status"] == "PASS"
+     and any(ln.strip().startswith("PASS  X10 predicted") for ln in x10l)
+     and any("FACT  X10" in ln and "predicted peak" in ln for ln in x10l), (p.returncode, ff, x10l[:3], p.stderr[-300:]))
 
 # E2 = card F5: the Part-B DRY of the 90-line recipe through stage_prerun (--no-record: prerun_records.jsonl is outside the
 # card's write list). The top-level command was refused by stop_record's launch gate (recipe sha changed since its prior-art

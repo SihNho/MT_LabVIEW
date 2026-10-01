@@ -1,0 +1,55 @@
+{
+ "schema": "task/1",
+ "id": "132-2",
+ "kind": "measure",
+ "goal": "PD264(b): read-only graph read of the P3b-1 bed -> graph_ring_p3b1_<ts>.json for the P3b-2 rebase; memory after load/read; offline diff vs sim end incl. #6810 loose-end wires",
+ "why": "P3b-2 is planned on a provisional (simulated) base; --rebase needs the real graph of P3b-1's saved file. brief_132-2.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_132-2.md"},
+  {"path": "docs/d1/ring-p3b.md"},
+  {"path": "tools/bench/diag_c125_graph_p3a.py"},
+  {"path": "tools/bench/graph_ring_p3a_20261001_190155.json", "md5": "2fa6ce0c3e8a3014fa916085cb852f68"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b1_20261002_060910.vi", "md5": "9d7bf28738b7c154280e5e7c2c9d4961"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c125_graph_p3a.py"},
+  {"kind": "file", "name": "tools/wait_logs.py"},
+  {"kind": "file", "name": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_ring_p3b1_20261002_060910.vi"}
+ ],
+ "pass": [
+  "A graph_ring_p3b1_<ts>.json written (same shape as the P3a graph), bed md5 9d7bf287 before and after, LabVIEW closed and gone; memory after load and after full read reported",
+  "B offline: counts real vs sim end of ring_p3b1 (objects/nodes/terminals/wires) and the #6810-net loose-end wire lists on both sides, as facts"
+ ],
+ "outputs": [
+  "tools/bench/diag_c132_2_graph_p3b1.py",
+  "tools/bench/graph_ring_p3b1_*.json",
+  "tools/bench/cards/result_132-2.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c132_2*",
+   "tools/bench/graph_ring_p3b1_*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_132-2*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 35},
+ "rules": [
+  "Read only: the bed is never edited or saved; md5 checked before and after",
+  "Never end the turn while a run lacks BGRUN END (material.md:92-98); wait with wait_logs.py ticks",
+  "Do not run tools/stage_prerun.py (card 132-1 is editing it)",
+  "No STATUS edit; return at the first unexpected result; cost.minutes = bind->return"
+ ],
+ "advances": ["M3", "M4"]
+}

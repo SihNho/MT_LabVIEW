@@ -26,7 +26,7 @@ not enough. Long history stays where it was; nothing here replaces the full text
 - **Work VI (bed):** `claudeDev\D1_ring_p3b1_20261002_060910.vi`, md5 `9d7bf28738b7c154280e5e7c2c9d4961` (STATUS `current-bed:`; PD274 — [ring-p3b:64](ring-p3b.md)). Error List 53 items, expected file `tools/bench/errorlist_expected_D1_ring_p3b1_20261002_060910.json`. STRUCTURAL, `ExecState` 0 by design, never run. (Before: P3a `D1_ring_p3a_20261001_180540.vi` `4dfa44aa…`, 55 items.)
 - **Broken-intermediate count (CLAUDE.md "AT MOST 6"):** 3 of 6 (P2b 1, P3a 2, P3b-1 3). After P3b-2: 4 of 6; P4 and P5 use 5 and 6; P6 must run (PD261(d) — [split-plan:2847](../d1-loop12-17-split-plan.md)).
 - **Plan of record for the frame handoff:** `docs/ring-buffer-design.md` (user design 2026-09-28; PD238(a)). User rules checked by every design item: `docs/user-rules.md`.
-- **Next act (cycle 132):** P3b-2 — a stage_prerun tooling card (X10 final-read term PD272(d), tunnel-name gate PD274(d), fp-19/20/21/28) beside a LabVIEW graph read of the P3b-1 file; then `--rebase` P3b-2 (PD264(b)), dry/prerun, scratch, ONE launch. `tools/bench/next.json` holds the act. (Cycle 131: naming rule measured PD271; P3b-1 launched + accepted PD272–274.)
+- **Next act (cycle 133):** P3b-2 — offline card: route-check binding inside a carried FS (op 24) + `stagexec.compare` provisional-'unbound' origin, then `--rebase` → dry 39/39 + prerun → EL range → `--scratch-required` (PD280(c)(d)); then scratch run; then ONE launch. Real P3b-1 graph `tools/bench/graph_ring_p3b1_20261002_073225.json`. (Cycle 132: X10 final-read term + reader branch, name gate, rebind by connectivity, FS-map carry, no-write rebase — PD275–280.)
 
 ## Ring-buffer step table (PD238(g) — [split-plan:2260](../d1-loop12-17-split-plan.md))
 
@@ -151,6 +151,13 @@ delivered step that later items build on; it is in force as a fact, not as an or
 - PD272(a)-(d) Scratch pin4 accepted structurally (22/0, names right); peak 680.8 MB (final read +17.4) ⇒ launch memory stop 690, X10 planning stays 675; X10 final-read term = tooling carry — docs/d1/ring-p3b.md:35
 - PD273(a)-(d) Scratch Error List 53 (pred 54, one extra loose end): hypothesis = RLE cleared an original stub on the same net; launch proceeds, missing item named offline, bed moves only after judgement — docs/d1/ring-p3b.md:50
 - PD274(a)-(d) P3b-1 LAUNCHED `D1_ring_p3b1_20261002_060910.vi` (9d7bf287, 22/0, 680.4 MB); Error List debit by CLASS; bed moves when final read = 53 with loose ends 24→22 only — docs/d1/ring-p3b.md:64
+- PD275(a)-(e) X10 final-read term (+17.4) and FAIL threshold 690 once the term is in; per-op tunnel-name gate from sim; P3b-2 expected EL computed; fp-19/20/21 fixed, fp-28 closed — docs/d1/tooling.md:74
+- PD276(a)-(d) 132-1 accepted (X10 680.8/681.7, name gate fs_border only); fp-21 not on P3b-2's path (dry after rebase); P3b-2 expected EL = range 50..52 checked by scratch; fp-28 needs a close verb — docs/d1/tooling.md:92
+- PD277(a)(b) X10 models a 0-edit reader without Executor plan as N=0 + reads + final read (fp-29); card 132-4 chain read → rebase → dry/prerun — docs/d1/tooling.md:109
+- PD278(a)-(d) real P3b-1 graph read (6cfa6ecb, no swapped loose ends); rebase refusal = sim label gap; rebind by connectivity, names logged, plan-referenced terminals unique (Unbundler status ↔ Select); card 132-5 → scratch — docs/d1/ring-p3b.md:78
+- PD279(a)-(d) rebind accepted (7/0); `--rebase` carries the provisional FS frame map; a failed re-sim never writes the plan; recover provisional P3b-2, rebase, dry/prerun, scratch (card 132-6) — docs/d1/ring-p3b.md:95
+- PD280(a)-(d) carry_fs + no-write rebase accepted (8/0); recovered P3b-2 98992a59 = same 39 actions; remaining gap = route-check binding in a carried FS (op 24); cycle 133 card 1 closes it (or finalizes P3b-2 directly on the real+FS-map base), then scratch, launch — docs/d1/ring-p3b.md:109
+- PD281(a)-(c) no LabVIEW card beside a card editing its pre-check tools; cycle 133 FIRST recomputes X10 with the measured P3b-1 start 584.1 MB (≈695.8 > 690 ⇒ user); recovered P3b-2 is final=false — check for a finalize regression, route-check all 39 ops — docs/d1/ring-p3b.md:130
 - PD268(d) 130-2 accepted; open tooling queue fp-20/21/22/24/25, guard_cycle:40, stop_record H1–H3 — docs/d1/tooling.md:34
 
 ### Older items that PD238+ cite as still applying

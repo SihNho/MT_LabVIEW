@@ -61,6 +61,9 @@ PRE-RUN (decision 2, 3, 8), all offline, on the same graph JSON + the dry run's 
      REPLACED by card 130-1 (PD267(b)): X10 predicts every stagexec.Executor the dry run builds from its COMPILED plan +
      checkpoint set, peak = start + R*read + N*(edit+other) (tools/bench/memory_model.json, each value cited); FAIL above
      its fail_above_mb (675); FAIL UNMEASURED when nothing compiles and no recorded meter covers the run (x10_gate).
+     card 132-1 (PD275(a)(b)): + final_read_mb (17.4, the run's last whole-VI read) and fail_above_mb 690.
+    card 132-4 (PD277(a), fp-29): a 0-edit script with no Executor (x10_readonly) is modelled N 0, R 1 + its whole-VI
+    read call sites, + final_read_mb; an edit-op script without an Executor stays UNMEASURED = FAIL.
      Self-test: tools/bench/selftest_x10_c130_1.py
      card 130-5 (PD268(b)): `--dry` FAILs (EXECUTOR-STOP / EXECUTOR-NOT-RUN, executor_stops) when a stagexec.Executor
      the recipe built ran fewer ops than its window (from_step+1 .. stop_after|last). Self-test:
@@ -487,13 +490,44 @@ def _stub(name):
     return f
 
 
+def provisional_dry_graph(recipe):
+    """card 132-1 (gate-fp fp-21, PD275(e)): (path | None, error | None). A recipe whose plan base is PROVISIONAL (base =
+    {path, md5, provisional: true, sim_of: {plan, md5}}, the simulated END of the previous stage) is dry-run against THAT
+    graph, not the graph of the input VI's md5 (the P3a bed the simulated state inherits): the input VI's graph lacks every
+    object stage N created, so the dry's step-0 compare was unbound by construction (stage_prerun_c129_1_p3b2_dry.log:19-20).
+    Refused (error) when sim_of.plan changed since the base was simulated, or the base file moved off its pin. The launch
+    stays refused for a provisional base (provisional_plans, card chat-P1 item 1); --rebase replaces it."""
+    try:
+        plans = plan_files(recipe)[0]
+    except Exception:                                                              # noqa: BLE001
+        return None, None
+    for p in plans:
+        try:
+            b = (json.load(REAL_OPEN(p, encoding="utf-8")) or {}).get("base")
+        except Exception:                                                          # noqa: BLE001
+            continue
+        if not (isinstance(b, dict) and b.get("provisional")):
+            continue
+        so = b.get("sim_of") or {}
+        sp = os.path.join(ROOT, so.get("plan") or "")
+        bp = b.get("path") if os.path.isabs(b.get("path") or "") else os.path.join(ROOT, b.get("path") or "")
+        if not so.get("plan") or not os.path.isfile(sp) or md5(sp) != so.get("md5"):
+            return None, "provisional base of {0}: sim_of.plan {1} changed or missing (md5 {2} != {3}) - re-plan".format(
+                rel(p), so.get("plan"), md5(sp) if os.path.isfile(sp) else None, so.get("md5"))
+        if not os.path.isfile(bp) or md5(bp) != b.get("md5"):
+            return None, "provisional base of {0}: {1} missing or off its pin {2}".format(rel(p), b.get("path"), b.get("md5"))
+        return os.path.normpath(bp), None
+    return None, None
+
+
 def _graph():
     if D.graph is None:
-        p = D.graph_override or (find_graph(D.input_md5, plan_base_graphs(D.recipe) if D.recipe else ())
-                                 if D.input_md5 else None)                       # card 106-5: the plan's base graph
+        pv, pv_err = (None, None) if D.graph_override or not D.recipe else provisional_dry_graph(D.recipe)
+        p = D.graph_override or pv or (None if pv_err else (find_graph(D.input_md5, plan_base_graphs(D.recipe) if D.recipe else ())
+                                                            if D.input_md5 else None))   # card 106-5: the plan's base graph
         D.graph_path = p
-        D.graph_error = None
-        if not p and not D.graph_override and FIND_SKIPPED:
+        D.graph_error = pv_err                         # card 132-1 (fp-21): a stale provisional base is named, not guessed
+        if not p and not D.graph_override and not pv_err and FIND_SKIPPED:
             D.graph_error = "no terminal-list graph JSON carries md5 {0}; skipped other shapes: {1}".format(
                 D.input_md5, "; ".join("{0}: {1}".format(a, b) for a, b in FIND_SKIPPED))
         try:
@@ -1825,7 +1859,7 @@ class X10Probe(BaseException):
 
 def load_memory_model(path=None):
     m = json.load(REAL_OPEN(path or MEMORY_MODEL, encoding="utf-8"))
-    for k in ("start_mb", "read_mb", "edit_mb", "other_mb", "fail_above_mb"):
+    for k in ("start_mb", "read_mb", "edit_mb", "other_mb", "final_read_mb", "fail_above_mb"):   # final_read_mb: card 132-1
         if not isinstance(m.get(k), dict) or not isinstance(m[k].get("value"), (int, float)) or not m[k].get("cite"):
             raise ValueError("memory_model {0}: needs {{value, cite}}".format(k))
     return m
@@ -1911,7 +1945,9 @@ def executor_stops(executors):
 def x10_model_peak(kinds, checkpoints, stop_after=None, from_step=None, model=None):
     """card 130-1 (PD267(b)): the predicted private-MB peak of ONE Executor run. N = ops dispatched (from_step+1 ..
     stop_after|end); R = whole-VI reads = {from_step|0} + the checkpoints in the window + the ops the Executor forces
-    (every BIND_KINDS op and the last op, stagexec.py:1960); checkpoints None = a read after every op (R = N + 1)."""
+    (every BIND_KINDS op and the last op, stagexec.py:1960); checkpoints None = a read after every op (R = N + 1).
+    card 132-1 (PD275(a)): + final_read_mb ONCE per run - the run's last whole-VI read cost +17.4 MB measured
+    (stage_d1_ring_p3b1_scratch_pin4.log:446-447; launch stage_d1_ring_p3b1.log:429-430) vs ~2.5 for a checkpoint read."""
     import stagexec as SX
     m = model or load_memory_model()
     first, last = int(from_step or 0), int(stop_after or len(kinds))
@@ -1923,20 +1959,81 @@ def x10_model_peak(kinds, checkpoints, stop_after=None, from_step=None, model=No
                  | set(k for k in win if kinds[k - 1] in SX.BIND_KINDS) | set([last]))
     N, R = len(win), len(reads)
     v = lambda k: float(m[k]["value"])                                             # noqa: E731
-    peak = round(v("start_mb") + R * v("read_mb") + N * (v("edit_mb") + v("other_mb")), 1)
+    peak = round(v("start_mb") + R * v("read_mb") + N * (v("edit_mb") + v("other_mb")) + v("final_read_mb"), 1)
     return {"N": N, "R": R, "bind": sum(1 for k in win if kinds[k - 1] in SX.BIND_KINDS), "peak_mb": peak,
             "fail_above_mb": v("fail_above_mb"), "ok": peak <= v("fail_above_mb"),
             "checkpoints": "every op" if checkpoints is None else sorted(reads)}
 
 
-def x10_gate(recipe, executors, stop_after=None, from_step=None, model=None):
+# card 132-4 (PD277(a), gate-fp fp-29): a script with NO Executor plan and 0 edit ops is a READ-ONLY reader; X10 models it as
+# N = 0, R = 1 (the load, k 0) + its whole-VI read call sites, + final_read_mb once; FAIL > fail_above_mb (690). A script
+# with ANY edit op (dry trace: a Stage._op, a mutating stub call, a wire/delete/RLE verb; source: a MODIFY_VERBS call other
+# than discard_work = close without save, or a create/wire/delete/save-named call) and no Executor stays UNMEASURED = FAIL.
+X10_RO_READS = frozenset(("read_live", "live_graph", "census", "uid_index"))   # whole-VI reads (wiki_build / stagekit)
+X10_RO_EDIT_RE = re.compile(r"create|connect|wire|delete|remove_loose|fs_inner|move_in|loop_in|save|copy_in|add_s|"
+                            r"const_row|plan_rows|from_decision|junk|purge|relink|set_(visible|control|default)", re.I)
+# (str.replace / list.insert / list.remove are not edit verbs: sys.path.insert is in every bench script)
+
+
+def x10_readonly(recipe, trace):
+    """card 132-4 (PD277(a)): (ok, detail). ok True iff the dry trace shows no Executor, no Stage._op, no mutating stub
+    call AND the source (ast) calls no edit verb; detail carries reads (whole-VI read call sites) or the reasons it is not
+    read-only. A whole-VI read inside a loop body cannot be counted offline -> not modelled (stays UNMEASURED)."""
+    why = []
+    tr = trace or {}
+    if tr.get("executors"):
+        why.append("Executor plan present")
+    if tr.get("ops"):
+        why.append("dry ran {0} Stage._op edit op(s) {1}".format(len(tr["ops"]), sorted(set(tr["ops"]))[:6]))
+    if tr.get("first_mutation"):
+        why.append("dry mutation {0}".format(tr["first_mutation"]))
+    try:
+        tree = ast.parse(REAL_OPEN(recipe, encoding="utf-8", errors="replace").read(), filename=recipe)
+    except (OSError, SyntaxError, ValueError) as e:
+        return False, {"why": ["source unreadable: {0}".format(e)]}
+    edits, reads, loop_reads = set(), 0, 0
+    loops = [n for n in ast.walk(tree) if isinstance(n, (ast.For, ast.While, ast.ListComp, ast.GeneratorExp,
+                                                         ast.SetComp, ast.DictComp))]
+    in_loop = set(id(c) for lp in loops for c in ast.walk(lp) if c is not lp)
+    for n in ast.walk(tree):
+        if not isinstance(n, ast.Call):
+            continue
+        f = n.func
+        name = f.attr if isinstance(f, ast.Attribute) else (f.id if isinstance(f, ast.Name) else None)
+        if not name or name == "discard_work":
+            continue
+        if name in MODIFY_VERBS or X10_RO_EDIT_RE.search(name) or (WIRE_VERB_RE.search(name)):
+            edits.add(name)
+        if name in X10_RO_READS:
+            reads += 1
+            loop_reads += id(n) in in_loop
+    if edits:
+        why.append("source calls edit verb(s) {0}".format(sorted(edits)))
+    if loop_reads:
+        why.append("{0} whole-VI read(s) inside a loop body (count not offline)".format(loop_reads))
+    return (not why), {"why": why, "reads": reads}
+
+
+def x10_gate(recipe, executors, stop_after=None, from_step=None, model=None, trace=None):
     """card 130-1 (PD267(b)): (ok, detail dict). ok False = a predicted peak > fail_above_mb, or UNMEASURED (no Executor
-    whose plan compiled AND no covering recorded meter), or a recorded meter >= 690 (mem_margin, kept)."""
+    whose plan compiled AND no covering recorded meter), or a recorded meter >= 690 (mem_margin, kept).
+    card 132-4 (PD277(a)): with `trace` (the dry result), a read-only script (x10_readonly) is MODELLED, not UNMEASURED."""
     try:
         m = model or load_memory_model()
     except Exception as e:                                                         # noqa: BLE001
         return False, {"why": "UNMEASURED: memory model unreadable ({0})".format(e)}
-    runs, bad = [], []
+    runs, bad, bad_ro = [], [], None
+    if not executors and trace is not None:
+        ro_ok, ro = x10_readonly(recipe, trace)
+        if ro_ok:
+            v = lambda k: float(m[k]["value"])                                     # noqa: E731
+            R = 1 + int(ro["reads"])
+            peak = round(v("start_mb") + R * v("read_mb") + v("final_read_mb"), 1)
+            runs.append({"plan": "read-only " + rel(recipe), "N": 0, "R": R, "bind": 0, "peak_mb": peak,
+                         "fail_above_mb": v("fail_above_mb"), "ok": peak <= v("fail_above_mb"),
+                         "checkpoints": "k 0 + {0} whole-VI read call site(s)".format(ro["reads"])})
+        else:
+            bad_ro = "not read-only: " + "; ".join(ro["why"])
     for ex in executors or []:
         if ex.get("error") or not ex.get("kinds"):
             bad.append("{0}: plan/checkpoint set not compilable ({1})".format(ex.get("plan"), ex.get("error")))
@@ -1949,7 +2046,8 @@ def x10_gate(recipe, executors, stop_after=None, from_step=None, model=None):
            "recorded": dict((k, mm.get(k)) for k in ("ok", "peak_mb", "source", "why") if mm.get(k) is not None)}
     if bad or (not runs and mm["ok"] is None):
         det["why"] = "UNMEASURED: " + ("; ".join(bad) if bad else
-                                       "no stagexec.Executor plan in the dry run and no recorded meter covers the run")
+                                       "no stagexec.Executor plan in the dry run and no recorded meter covers the run"
+                                       + (" (" + bad_ro + ")" if bad_ro else ""))
         return False, det
     det["peak_mb"] = max([r["peak_mb"] for r in runs] or [mm.get("peak_mb") or 0])
     return all(r["ok"] for r in runs) and mm["ok"] is not False, det
@@ -2084,14 +2182,18 @@ def census_unpredicted(recipe):
 # card 125-3 (PD252(a), review archive/peer/2026-10-01-c125-1-x16-hyp.md ACCEPTED): `prim: "const_donor"` creates are
 # OUT of scope - a donor constant's measured terminal class IS the default `Terminal` (stage_d1_ring_p2b.log:138-154,
 # 5/5), so refusing it was a gate false positive. Every other create (primitives) is still checked.
+# card 132-1 (PD275(e), gate-fp fp-20; PD262(c)): a `Local` (local variable) create is OUT of scope for the same reason -
+# its measured terminal class IS the default `Terminal` (stage_d1_ring_p3b1_scratch_pin4.log:478,485: Local #27601 'Num'
+# and #28037 'Num', class Terminal), so plan_disp r6_lr_ring's undeclared class defaults to what LabVIEW gives.
 CREATE_OPS = ("create", "primitive", "primitive_create", "create_primitive")
 X16_EXEMPT_PRIMS = ("const_donor",)
+X16_EXEMPT_CLASSES = ("Local",)
 
 
 def x16_in_scope(a):
-    """True for a create action with a declared `terminals` list that is not a const_donor constant."""
+    """True for a create action with a declared `terminals` list that is not a const_donor constant nor a Local."""
     return (a.get("op") in CREATE_OPS and isinstance(a.get("terminals"), list)
-            and a.get("prim") not in X16_EXEMPT_PRIMS)
+            and a.get("prim") not in X16_EXEMPT_PRIMS and a.get("class") not in X16_EXEMPT_CLASSES)
 
 
 def termclass_undeclared(plan):
@@ -2262,7 +2364,7 @@ def prerun(recipe, graph=None, stop_after=None, from_step=None):
              "NOT dispatched (recipe calls neither run_rows nor from_decision)"))
     # card 130-1 (PD267(b)): X10 = the MODEL prediction from each Executor's compiled plan + checkpoint set (memory_model.json),
     # FAIL > fail_above_mb (675) and FAIL UNMEASURED; a recorded meter (card 106-3/106-5 mem_margin) still fails at >= 690
-    x10_ok, x10_det = x10_gate(recipe, tr.get("executors"), stop_after, from_step)
+    x10_ok, x10_det = x10_gate(recipe, tr.get("executors"), stop_after, from_step, trace=tr)   # trace: card 132-4 PD277(a)
     tr["mem_margin"] = x10_det
     for r_ in x10_det.get("runs", []):
         print("  FACT  X10 {0}: N {1} ops, BIND {2}, R {3} reads, predicted peak {4} MB (fail above {5})".format(
@@ -2748,9 +2850,10 @@ def new_structure_classes(recipe, runs=None, recs=None, sig=None):
 # it (_check_units refuses). When N's saved artefact exists, `--rebase <plan> --graph <real graph of N's artefact>`:
 #   1. refuses when N's plan (sim_of.plan) is not the md5 N+1 was simulated on (N changed -> re-plan N+1);
 #   2. binds every object the simulation of N CREATED (negative uids in the provisional base) to the real object that
-#      appeared between N's base graph and the real graph - grouped by (class, terminal keys), exactly one on each side
-#      or it REFUSES (ambiguous); terminals by (term_class, direction, name); wires and new frame diagrams through the
-#      bound terminals; a uid LabVIEW re-issued to another object (stagexec.uid_reuse) refuses;
+#      appeared between N's base graph and the real graph - card 132-5 (PD278(c)): by CONNECTIVITY first, then position
+#      inside a bound node, then a unique name-free shape; names are LOGGED (LABEL-DIFF), never keyed; a terminal the plan
+#      references must bind by connectivity, else REFUSE; wires and new frame diagrams through the bound terminals (an
+#      empty FS frame by elimination); a uid LabVIEW re-issued to another object (stagexec.uid_reuse) refuses;
 #   3. rewrites N+1's uid fields through that binding (stagexec.translate's rule, applied to the plan's fields), refuses
 #      an unbound negative or a positive uid the real graph does not hold, sets base = the real graph {path, md5} and
 #      drops provisional / sim_of / final / finalized;
@@ -2784,58 +2887,202 @@ def _terms(path):
     return d, [dict(r) for r in d.get("terminals") or []]
 
 
-def rebind(before, prov, real):
-    """(M: {negative uid -> real uid} | None, why). See the block comment, step 2."""
+def rebind(before, prov, real, prov_doc=None, real_doc=None, before_doc=None, info=None):
+    """(M: {negative uid -> real uid} | None, why). See the block comment, step 2.
+    card 132-5 (PD278(c), docs/d1/ring-p3b.md:87-91): names are NEVER keyed - stagesim labels FS inner tunnels '' (real
+    'error out') and the donor Unbundler's outputs 'element' (real code/source/status), diag_c132_4_rebind_keys.log:4-7.
+    Order: (A) CONNECTIVITY - a created sim terminal on a wire whose other end is already bound takes the unique real
+    terminal of the same node class / term class / direction / frame on that end's real wire; pre-existing terminals are
+    bound to themselves; (B) POSITION - inside a bound node, (term_class, direction, frame) groups pair in read order
+    (bind_new's convention, stagexec.py:905-911), never against a connectivity pair; (C) SHAPE - a still-unbound node
+    pairs with the one real node of the same (class, (term_class, direction) multiset, frames) only when unique;
+    (D) FS FRAMES - a created frame with no terminal rows (an empty f0) takes the one new FlatSequenceFrame Diagram left.
+    Names are LOGGED (info['labels']); info['mode'] records how each created terminal bound ('conn' | 'pos' | 'shape').
+    Every created node must bind; every sim wire's bound ends must land on ONE real wire (else REFUSE)."""
     import stagexec as SX
     import vigraph as V
+    info = {} if info is None else info
+    info.update({"mode": {}, "labels": [], "nodes": {}, "frames": {}, "how_frame": {}, "unbound_terms": []})
     ru = SX.uid_reuse(before, real)
     if ru:
         return None, "UID-REUSE between N's base and the real graph: {0}".format(ru[:6])
-    tkey = lambda r: (r.get("term_class", ""), bool(r["is_source"]), r.get("term_name", ""))   # noqa: E731
-    sim_new, real_new = {}, {}
+    old_t = set(r["term_uid"] for r in before)
+    sim_new, real_new = collections.OrderedDict(), collections.OrderedDict()
     for r in prov:
         if V.node_of(r) < 0:
             sim_new.setdefault(V.node_of(r), []).append(r)
-    old_t = set(r["term_uid"] for r in before)
     for r in real:
         if r["term_uid"] not in old_t:
             real_new.setdefault(V.node_of(r), []).append(r)
+    dirk = lambda r: (r.get("term_class", ""), bool(r["is_source"]))               # noqa: E731
 
-    def sig(rows):
-        return (V.node_class(rows[0]), tuple(sorted(tkey(r) for r in rows)))
-    gs, gr = {}, {}
-    for u, rows in sim_new.items():
-        gs.setdefault(sig(rows), []).append(u)
-    for u, rows in real_new.items():
-        gr.setdefault(sig(rows), []).append(u)
-    bad = ["{0} x{1} simulated vs x{2} real".format(k[0], len(gs.get(k, [])), len(gr.get(k, [])))
-           for k in sorted(set(gs) | set(gr), key=str) if len(gs.get(k, [])) != len(gr.get(k, []))]
-    if bad:
-        return None, "BINDING: the created objects differ: {0}".format(bad[:6])
-    amb = ["{0} ({1} objects)".format(k[0], len(v)) for k, v in gs.items() if len(v) > 1]
-    if amb:
-        return None, "BINDING: ambiguous - several created objects share one signature: {0}".format(amb[:6])
+    def shape(rows):
+        return (V.node_class(rows[0]), tuple(sorted(dirk(r) for r in rows)))
+    cs = collections.Counter(shape(v) for v in sim_new.values())
+    cr = collections.Counter(shape(v) for v in real_new.values())
+    if cs != cr:
+        bad = ["{0} x{1} simulated vs x{2} real".format(k[0], cs.get(k, 0), cr.get(k, 0))
+               for k in sorted(set(cs) | set(cr), key=str) if cs.get(k, 0) != cr.get(k, 0)]
+        return None, "BINDING: the created objects differ (name-free shape): {0}".format(bad[:6])
+    srow = dict((r["term_uid"], r) for r in prov)
+    rrow = dict((r["term_uid"], r) for r in real)
+    swire, rwire = collections.defaultdict(list), collections.defaultdict(list)
+    for r in prov:
+        if r.get("wire_uid"):
+            swire[r["wire_uid"]].append(r)
+    for r in real:
+        if r.get("wire_uid"):
+            rwire[r["wire_uid"]].append(r)
+    real_new_t = set(r["term_uid"] for rows in real_new.values() for r in rows)
+    new_rf = set(r.get("frame_diagram") for r in real) - set(r.get("frame_diagram") for r in before)
+    T = dict((u, u) for u in srow if u > 0 and u in rrow)       # pre-existing terminals: themselves
+    Tinv = dict(T)
+    N, Ninv, D, Dinv, mode = {}, {}, {}, {}, info["mode"]
+
+    def frame_ok(sr, rr):
+        sf, rf = sr.get("frame_diagram") or 0, rr.get("frame_diagram") or 0
+        if isinstance(sf, int) and sf < 0:
+            return D[sf] == rf if sf in D else (rf not in Dinv)
+        return sf == rf
+
+    def bind_t(st, rt, how):
+        sr, rr = srow[st], rrow[rt]
+        sn, rn = V.node_of(sr), V.node_of(rr)
+        if N.get(sn, rn) != rn or Ninv.get(rn, sn) != sn:
+            return "BINDING: node #{0} would map to #{1} and #{2}".format(sn, N.get(sn), rn)
+        sf, rf = sr.get("frame_diagram") or 0, rr.get("frame_diagram") or 0
+        if isinstance(sf, int) and sf < 0:
+            if D.get(sf, rf) != rf or Dinv.get(rf, sf) != sf:
+                return "BINDING: frame #{0} would map to #{1} and #{2}".format(sf, D.get(sf), rf)
+            if sf not in D:
+                info["how_frame"][sf] = "row #{0}".format(st)
+            D[sf], Dinv[rf] = rf, sf
+        N[sn], Ninv[rn] = rn, sn
+        T[st], Tinv[rt], mode[st] = rt, st, how
+        return None
+    snew_t = [r["term_uid"] for rows in sim_new.values() for r in rows]
+    for _round in range(10000):
+        progress = False
+        for st in snew_t:                                                    # (A) connectivity
+            sr = srow[st]
+            if st in T or not sr.get("wire_uid"):
+                continue
+            ends = [T[o["term_uid"]] for o in swire[sr["wire_uid"]] if o["term_uid"] != st and o["term_uid"] in T]
+            rws = set(rrow[e].get("wire_uid") for e in ends)
+            if len(rws) > 1:
+                return None, "CONNECTIVITY: sim wire {0}'s bound ends sit on real wires {1}".format(sr["wire_uid"], sorted(rws))
+            if not rws or not next(iter(rws)):
+                continue
+            sn = V.node_of(sr)
+            cand = [x for x in rwire[next(iter(rws))] if x["term_uid"] in real_new_t and x["term_uid"] not in Tinv
+                    and V.node_class(x) == V.node_class(sr) and dirk(x) == dirk(sr) and frame_ok(sr, x)
+                    and (sn not in N or V.node_of(x) == N[sn]) and Ninv.get(V.node_of(x), sn) == sn]
+            if len(cand) == 1:
+                e = bind_t(st, cand[0]["term_uid"], "conn")
+                if e:
+                    return None, e
+                progress = True
+        if progress:
+            continue
+        for sn, rn in list(N.items()):                                     # (B) position inside a bound node
+            # a row on a created frame not bound yet keys as NEW; it pairs only with a real row on a new real frame not
+            # bound yet, and only one-to-one (an FS tunnel's inner face is how its frame binds: the outer face connects)
+            groups = collections.defaultdict(lambda: ([], []))
+            for r in sim_new[sn]:
+                f = r.get("frame_diagram") or 0
+                f = D.get(f, "NEW") if isinstance(f, int) and f < 0 else f
+                groups[dirk(r) + (f,)][0].append(r["term_uid"])
+            for r in real_new.get(rn, []):
+                f = r.get("frame_diagram") or 0
+                groups[dirk(r) + ("NEW" if f in new_rf and f not in Dinv else f,)][1].append(r["term_uid"])
+            for k, (ss, rs) in groups.items():
+                if len(ss) != len(rs) or all(s in T for s in ss) or (k[-1] == "NEW" and len(ss) != 1):
+                    continue
+                if any(s in T and T[s] != r for s, r in zip(ss, rs)) or any(r in Tinv and Tinv[r] != s for s, r in zip(ss, rs)):
+                    info.setdefault("pos_conflicts", []).append((sn, rn, k))
+                    continue
+                for s, r in zip(ss, rs):
+                    if s not in T:
+                        e = bind_t(s, r, "pos")
+                        if e:
+                            return None, e
+                        progress = True
+        if progress:
+            continue
+        def fkey(rows, sim):                                                    # (C) unique shape among the unbound
+            fs = []
+            for r in rows:
+                f = r.get("frame_diagram") or 0
+                fs.append(D.get(f, "?") if sim and isinstance(f, int) and f < 0 else f)
+            return shape(rows) + (tuple(sorted(fs, key=str)),)
+        us = collections.defaultdict(list)
+        ur = collections.defaultdict(list)
+        for sn, rows in sim_new.items():
+            if sn not in N:
+                us[fkey(rows, True)].append(sn)
+        for rn, rows in real_new.items():
+            if rn not in Ninv:
+                ur[fkey(rows, False)].append(rn)
+        for k, sl in us.items():
+            if len(sl) == 1 and len(ur.get(k, [])) == 1 and "?" not in k[2]:
+                N[sl[0]], Ninv[ur[k][0]] = ur[k][0], sl[0]
+                info.setdefault("shape_nodes", []).append((sl[0], ur[k][0]))
+                progress = True
+        if not progress:
+            break
+    for st in snew_t:
+        if st in T and mode.get(st) == "pos" and V.node_of(srow[st]) in dict(info.get("shape_nodes", [])):
+            mode[st] = "shape"
+    unb_n = [n for n in sim_new if n not in N]
+    if unb_n:
+        return None, "BINDING: created object(s) not bound by connectivity, position or a unique shape: {0}".format(
+            ["#{0} {1}".format(n, V.node_class(sim_new[n][0])) for n in unb_n[:8]])
+    if prov_doc and real_doc:                                                 # (D) FS frames without rows
+        bo = set(o.get("uid") for o in (before_doc or {}).get("objs") or [] if isinstance(o, dict))
+        newf = [o["uid"] for o in real_doc.get("objs") or [] if isinstance(o, dict) and o.get("uid") not in bo
+                and o.get("class") == "Diagram" and o.get("owner") == "FlatSequenceFrame"]
+        for _fs, frs in sorted((prov_doc.get("fs_frames") or {}).items()):
+            left = [f for f in frs if isinstance(f, int) and f < 0 and f not in D]
+            free = [u for u in newf if u not in Dinv]
+            if len(left) == 1 and len(free) == 1:
+                D[left[0]], Dinv[free[0]] = free[0], left[0]
+                info["how_frame"][left[0]] = "only new FlatSequenceFrame Diagram left"
     M = {}
-    for k, (su,) in gs.items():
-        (rn,) = gr[k]
-        M[su] = rn
-        rrows = dict((tkey(r), r) for r in real_new[rn])
-        if len(rrows) != len(real_new[rn]):
-            return None, "BINDING: {0} has repeated terminal keys".format(k[0])
-        for sr in sim_new[su]:
-            rr = rrows[tkey(sr)]
-            for f in ("term_uid", "wire_uid", "frame_diagram"):
-                sv, rv = sr.get(f), rr.get(f)
-                if isinstance(sv, int) and sv < 0 and isinstance(rv, int):
-                    if M.get(sv, rv) != rv:
-                        return None, "BINDING: #{0} maps to both {1} and {2}".format(sv, M[sv], rv)
-                    M[sv] = rv
+    for sn, rn in N.items():
+        M[sn] = rn
+    for sf, rf in D.items():
+        M[sf] = rf
+    for st, rt in T.items():
+        if st < 0:
+            M[st] = rt
+            sn_, rn_ = srow[st].get("term_name", ""), rrow[rt].get("term_name", "")
+            if sn_ != rn_:
+                info["labels"].append((st, rt, V.node_class(srow[st]), sn_, rn_))
+    for st in snew_t:                                                         # wires through bound terminals
+        if st not in T:
+            info["unbound_terms"].append(st)
+            continue
+        sv, rv = srow[st].get("wire_uid"), rrow[T[st]].get("wire_uid")
+        if isinstance(sv, int) and sv < 0:
+            if not rv:
+                return None, "CONNECTIVITY: created terminal #{0} is wired in the simulation (w{1}), unwired in the real graph".format(st, sv)
+            if M.get(sv, rv) != rv:
+                return None, "BINDING: #{0} maps to both {1} and {2}".format(sv, M[sv], rv)
+            M[sv] = rv
+    for w, rows in swire.items():                                             # every sim wire lands on ONE real wire
+        imgs = set(rrow[T[r["term_uid"]]].get("wire_uid") for r in rows if r["term_uid"] in T)
+        if len(imgs) > 1:
+            return None, "CONNECTIVITY: sim wire {0} lands on real wires {1}".format(w, sorted(imgs, key=str))
+    info["nodes"], info["frames"] = dict(N), dict(D)
     return M, None
 
 
-def _remap_plan(plan, M, known):
-    """(new plan, unbound negatives, unknown positives) - uid fields only (UID_FIELDS, ADDR_FIELDS, nodes, open_rows)."""
+def _remap_plan(plan, M, known, rename=None):
+    """(new plan, unbound negatives, unknown positives) - uid fields only (UID_FIELDS, ADDR_FIELDS, nodes, open_rows).
+    rename {(created node uid, sim term name): real term name} - card 132-5: a name address on a created node takes the
+    bound terminal's REAL label (rebase checked it binds uniquely)."""
     unb, unk = set(), set()
+    rename = rename or {}
 
     def m(v):
         if isinstance(v, bool) or not isinstance(v, int):
@@ -2853,6 +3100,8 @@ def _remap_plan(plan, M, known):
         if isinstance(a, dict):
             a = dict(a)
             if "uid" in a:
+                if isinstance(a.get("term"), str) and (a["uid"], a["term"]) in rename:
+                    a["term"] = rename[(a["uid"], a["term"])]
                 a["uid"] = m(a["uid"])
             if "term_uid" in a:
                 a["term_uid"] = m(a["term_uid"])
@@ -2860,7 +3109,10 @@ def _remap_plan(plan, M, known):
         if isinstance(a, str):
             mm = re.match(r"^(-?\d+)(\..*)$", a)
             if mm:
-                return "{0}{1}".format(m(int(mm.group(1))), mm.group(2))
+                nm = mm.group(2)[1:]
+                if (int(mm.group(1)), nm) in rename:
+                    nm = rename[(int(mm.group(1)), nm)]
+                return "{0}.{1}".format(m(int(mm.group(1))), nm)
         return a
     p = copy.deepcopy(plan)
     for a in p.get("actions") or []:
@@ -2877,8 +3129,113 @@ def _remap_plan(plan, M, known):
     return p, sorted(unb), sorted(unk)
 
 
+FS_CARRY_KEYS = ("fs_frames", "fs_tunnels", "fs_alias", "fs_border_entries", "fs_frame_inferred", "diagrams")
+
+
+def carry_fs(prov_doc, real_doc, before_doc, M, info=None):
+    """card 132-6 (PD279(b), docs/d1/ring-p3b.md:95-100): (augmented real doc | None, why). The provisional base (stagesim's
+    END state of stage N) knows the Flat Sequences N created - fs_frames order, fs_tunnels, fs_alias, fs_border_entries,
+    fs_frame_inferred, the created frames' parent `diagrams`, owners[frame] = [FlatSequence, FS] - and the real graph read
+    does not (no fs_frames key, frame owners ['FlatSequenceFrame', 0]: diag_c132_5_frames.log). Carry them THROUGH THE BINDING
+    M: every created uid maps by M; a created FS (no terminal rows, so rebind never binds it) takes the ONE new FlatSequence
+    object of the real graph when exactly one is created and one appeared; any created uid left unmapped REFUSES. owners:
+    a real entry is replaced only when absent or the reader's [FlatSequenceFrame, 0] gap; any other disagreement REFUSES.
+    The real terminals/objs are untouched - the result is the real graph + these keys + fs_carried (provenance)."""
+    info = {} if info is None else info
+    fsf = prov_doc.get("fs_frames") or {}
+    if not fsf:
+        return None, None
+    M = dict(M)
+    bo = set(o.get("uid") for o in (before_doc or {}).get("objs") or [] if isinstance(o, dict))
+    new_fs = [o["uid"] for o in real_doc.get("objs") or [] if isinstance(o, dict) and o.get("class") == "FlatSequence"
+              and o.get("uid") not in bo]
+    sim_fs = [int(k) for k in fsf if int(k) < 0 and int(k) not in M]
+    free = [u for u in new_fs if u not in M.values()]
+    if sim_fs:
+        if len(sim_fs) != 1 or len(free) != 1:
+            return None, "FS-CARRY: created Flat Sequence(s) {0} vs new real FlatSequence object(s) {1} - not 1:1".format(sim_fs, free)
+        M[sim_fs[0]] = free[0]
+        info["fs_bound"] = (sim_fs[0], free[0])
+    # the SWAPPED TWIN of a cross-frame FS tunnel (stagesim._fs_frame_wire: a second FSIT object with no rows, one fs_pairs
+    # entry with the faces swapped) is a simulator object: LabVIEW files the physical tunnel's four rows under ONE uid
+    # (stagexec.bind_fs_tunnel, diag_c125_5_fsscr.log:57), so the twin takes its tunnel's real uid
+    twins = {}
+    for k, v in (prov_doc.get("fs_tunnels") or {}).items():
+        tw = v.get("twin")
+        if isinstance(tw, int) and tw < 0 and tw not in M and int(k) in M:
+            M[tw] = twins[tw] = M[int(k)]
+    info["twins"] = twins
+    miss = set()
+
+    def mp(v):
+        if isinstance(v, bool) or not isinstance(v, int):
+            return v
+        if v < 0:
+            if v not in M:
+                miss.add(v)
+                return v
+            return M[v]
+        return v
+
+    def mk(k):
+        return str(mp(int(k)))
+    out = {}
+    out["fs_frames"] = dict((mk(k), [mp(int(f)) for f in v]) for k, v in fsf.items())
+    out["fs_tunnels"] = dict((mk(k), {"fs": mp(v.get("fs")), "twin": mp(v.get("twin")), "frames": [mp(x) for x in v.get("frames") or []],
+                                      "link": [mp(x) for x in v.get("link") or []]})
+                             for k, v in (prov_doc.get("fs_tunnels") or {}).items())
+    out["fs_alias"] = dict((mk(k), v) for k, v in (prov_doc.get("fs_alias") or {}).items())
+    be = {}
+    for k, v in (prov_doc.get("fs_border_entries") or {}).items():
+        t, fd = k.split("|")
+        be["{0}|{1}".format(mp(int(t)), mp(int(fd)))] = dict(v, face=mp(v.get("face")))
+    out["fs_border_entries"] = be
+    out["fs_frame_inferred"] = dict((mk(k), mp(int(v))) for k, v in (prov_doc.get("fs_frame_inferred") or {}).items())
+    out["diagrams"] = dict((mk(k), mp(int(v))) for k, v in (prov_doc.get("diagrams") or {}).items() if int(k) < 0)
+    own = dict((str(k), list(v)) for k, v in (real_doc.get("owners") or {}).items())
+    changed = []
+    for k, v in (prov_doc.get("owners") or {}).items():
+        if int(k) >= 0:
+            continue
+        rk, rv = mk(k), [v[0], mp(int(v[1] or 0))]
+        cur = own.get(rk)
+        if cur is None or (cur[0] == "FlatSequenceFrame" and int(cur[1] or 0) == 0) or (cur[0] == rv[0] and int(cur[1] or 0) == rv[1]):
+            if cur != rv:
+                changed.append((rk, cur, rv))
+            own[rk] = rv
+        else:
+            return None, "FS-CARRY: owners[{0}] real {1} vs carried {2} (from #{3})".format(rk, cur, rv, k)
+    # the created tunnels' fs_pairs entries (stagesim appends them; the real read files none for the new FSIT, diag_c132_6_fspairs.log)
+    rpairs = list(real_doc.get("fs_tunnel_pairs") or [])
+    have = set((p.get("uid"), p.get("term_a"), p.get("term_b")) for p in rpairs)
+    added = []
+    for p in prov_doc.get("fs_pairs") or []:
+        if isinstance(p.get("uid"), int) and p["uid"] < 0:
+            q = dict(p, uid=mp(p["uid"]), term_a=mp(p.get("term_a")), term_b=mp(p.get("term_b")),
+                     model="{0} - carried by rebase (card 132-6)".format(p.get("model", "")))
+            if (q["uid"], q["term_a"], q["term_b"]) not in have:
+                rpairs.append(q)
+                added.append(q)
+    out["fs_pairs_added"] = len(added)
+    if miss:
+        return None, "FS-CARRY: created uid(s) in the FS map not bound: {0}".format(sorted(miss)[:12])
+    aug = dict(real_doc)
+    aug.update(dict((k, v) for k, v in out.items() if k != "fs_pairs_added"))
+    aug["fs_tunnel_pairs"] = rpairs
+    aug["owners"] = own
+    aug["fs_carried"] = {"by": "stage_prerun.carry_fs (card 132-6, PD279(b))", "owners_changed": changed,
+                         "fs_bound": info.get("fs_bound"), "twins": dict((str(k), v) for k, v in twins.items()),
+                         "fs_pairs_added": added}
+    info["owners_changed"] = changed
+    info["fs_map"] = out
+    return aug, None
+
+
 def rebase(plan_path, graph_path, log=print, simulate=True, out_root=None, model_dir=None):
-    """(ok, detail) - see the block comment. Writes the rebased plan to plan_path only when every check passes."""
+    """(ok, detail) - see the block comment. Writes the rebased plan to plan_path only when every check passes.
+    card 132-6 (PD279(b)(c)): the provisional base's FS map is CARRIED through the binding into an augmented copy of the
+    real graph (`tools/bench/sim/<stage>_base_real_fsmap.json`; carry_fs) which becomes the plan's base when the provisional base
+    had a plan-made Flat Sequence; and a re-simulation that is not final NEVER writes plan_path (it simulates a temp copy)."""
     plan = json.load(REAL_OPEN(plan_path, encoding="utf-8"))
     b = plan.get("base") if isinstance(plan.get("base"), dict) else {}
     if not b.get("provisional"):
@@ -2897,38 +3254,108 @@ def rebase(plan_path, graph_path, log=print, simulate=True, out_root=None, model
     _gb, before = _terms(bn["path"] if os.path.isabs(bn["path"]) else os.path.join(ROOT, bn["path"]))
     _gp, prov = _terms(b["path"] if os.path.isabs(b["path"]) else os.path.join(ROOT, b["path"]))
     greal, real = _terms(graph_path)
-    M, why = rebind(before, prov, real)
+    info = {}
+    M, why = rebind(before, prov, real, prov_doc=_gp, real_doc=greal, before_doc=_gb, info=info)
     if M is None:
         return False, "REBASE REFUSED: " + why
+    modes = collections.Counter(info["mode"].values())
+    log("REBIND {0} node(s), {1} frame(s), terminals by {2}; unbound created terminals {3}; frames {4}".format(
+        len(info["nodes"]), len(info["frames"]), dict(modes), info["unbound_terms"][:12],
+        dict((k, "{0} ({1})".format(v, info["how_frame"].get(k, "?"))) for k, v in sorted(info["frames"].items()))))
+    for st, rt, cls, sn_, rn_ in info["labels"]:
+        log("LABEL-DIFF {0} #{1} -> #{2}: sim {3!r} real {4!r} (by {5})".format(cls, st, rt, sn_, rn_, info["mode"].get(st)))
+    # PD278(c): a terminal the plan REFERENCES binds by connectivity (or is pre-existing), else REFUSE
+    srow = dict((r["term_uid"], r) for r in prov)
+    rrow = dict((r["term_uid"], r) for r in real)
+    refs, named = set(), []
+    for a in plan.get("actions") or []:
+        for f in ADDR_FIELDS:
+            v = a.get(f)
+            if isinstance(v, dict):
+                if isinstance(v.get("term_uid"), int) and v["term_uid"] < 0:
+                    refs.add(v["term_uid"])
+                if isinstance(v.get("uid"), int) and v["uid"] < 0 and isinstance(v.get("term"), str):
+                    named.append((v["uid"], v["term"]))
+            elif isinstance(v, str):
+                mm = re.match(r"^(-\d+)\.(.*)$", v)
+                if mm:
+                    named.append((int(mm.group(1)), mm.group(2)))
+        for f in UID_FIELDS:
+            if isinstance(a.get(f), int) and a[f] < 0 and a[f] in srow:
+                refs.add(a[f])
+    weak = sorted(t for t in refs if t in srow and info["mode"].get(t) != "conn")
+    if weak:
+        return False, "REBASE REFUSED: plan-referenced terminal(s) not bound by connectivity: {0}".format(
+            ["#{0} {1!r} by {2}".format(t, srow[t].get("term_name"), info["mode"].get(t, "unbound")) for t in weak[:8]])
+    rename = {}
+    for n, nm in named:
+        mk = re.match(r"^(.*)#(\d+)$", nm)                  # '<name>#k' = k-th (0-based) same-named row, stagesim.py:471
+        base_nm, k = (mk.group(1), int(mk.group(2))) if mk else (nm, None)
+        ss = [r for r in prov if r["owner_uid"] == n and r.get("term_name", "") == base_nm]
+        st = (ss[0]["term_uid"] if len(ss) == 1 else None) if k is None else (ss[k]["term_uid"] if k < len(ss) else None)
+        rt = M.get(st) if st is not None else None
+        rn = rrow[rt].get("term_name", "") if rt in rrow else None
+        same = [r for r in real if r["owner_uid"] == M.get(n) and r.get("term_name", "") == rn]
+        if st is None or rt is None or len(same) != 1 or (rn != base_nm and info["mode"].get(st) != "conn"):
+            return False, ("REBASE REFUSED: plan-referenced terminal #{0}.{1!r} does not bind uniquely ({2} sim row(s), "
+                           "by {3}, real name {4!r} x{5})").format(n, nm, len(ss), info["mode"].get(st, "unbound"), rn, len(same))
+        rename[(n, nm)] = rn
     known = set()
     for r in real:
         known.update(x for x in (r.get("owner_uid"), r.get("term_uid"), r.get("frame_diagram"), r.get("wire_uid"))
                      if isinstance(x, int))
     known.update(int(o["uid"]) for o in greal.get("objs") or [] if isinstance(o, dict) and isinstance(o.get("uid"), int))
-    new, unb, unk = _remap_plan(plan, M, known)
+    # card 132-6 (PD279(b)): carry the provisional base's FS map through the binding (FS -1 -> the new real FlatSequence)
+    aug, why = carry_fs(_gp, greal, _gb, M, info)
+    if why:
+        return False, "REBASE REFUSED: " + why
+    base_path = graph_path
+    if aug is not None:
+        log("FS-CARRY fs {0}; fs_frames {1}; fs_tunnels {2}; twins {3}; fs_pairs added {4}; owners changed {5}".format(
+            info.get("fs_bound"), info["fs_map"]["fs_frames"], sorted(info["fs_map"]["fs_tunnels"]), info.get("twins"),
+            info["fs_map"].get("fs_pairs_added"), info["owners_changed"]))
+        base_path = os.path.join(out_root or os.path.join(ROOT, "tools", "bench", "sim"),
+                                 "{0}_base_real_fsmap.json".format(plan.get("stage") or "plan"))
+        aug["fs_carried"].update(real_graph={"path": rel(graph_path).replace("\\", "/"), "md5": md5(graph_path)},
+                                 provisional={"path": b.get("path"), "md5": b.get("md5")})
+        with REAL_OPEN(base_path, "w", encoding="utf-8") as f:
+            json.dump(aug, f, separators=(",", ":"))
+        known.update(int(k) for k in aug["owners"] if re.match(r"^-?\d+$", str(k)))
+    new, unb, unk = _remap_plan(plan, M, known, rename=rename)
     if unb or unk:
         return False, ("REBASE REFUSED: unbound created uid(s) {0}; uid(s) the real graph does not hold {1}".format(
             unb[:12], unk[:12]))
-    new["base"] = {"path": rel(graph_path).replace("\\", "/"), "md5": md5(graph_path)}
+    new["base"] = {"path": rel(base_path).replace("\\", "/"), "md5": md5(base_path)}
     new.pop("final", None)
     new.pop("finalized", None)
-    with REAL_OPEN(plan_path, "w", encoding="utf-8") as f:
-        json.dump(new, f, indent=1)
     detail = "rebased {0}: {1} uid(s) bound, base -> {2}".format(rel(plan_path), len(M), new["base"]["path"])
     if not simulate:
+        with REAL_OPEN(plan_path, "w", encoding="utf-8") as f:
+            json.dump(new, f, indent=1)
         return True, detail + " (not re-simulated)"
+    # PD279(c): simulate a TEMP copy; plan_path is written only when the re-simulation is FINAL
+    import tempfile
     import stagesim as SS
-    kw = {"plan_out_dir": os.path.dirname(os.path.abspath(plan_path)), "log": log}
+    tmp = tempfile.mkdtemp(prefix="rebase_")
+    tp = os.path.join(tmp, os.path.basename(plan_path))
+    with REAL_OPEN(tp, "w", encoding="utf-8") as f:
+        json.dump(new, f, indent=1)
+    kw = {"plan_out_dir": tmp, "log": log}
     if out_root:
         kw["out_root"] = out_root
     if model_dir:
         kw["model_dir"] = model_dir
-    S = SS.simulate(plan_path, graph_path, **kw)
-    outp = S["plan_out"]["path"]
-    outp = outp if os.path.isabs(outp) else os.path.join(ROOT, outp)
-    if os.path.normcase(os.path.abspath(outp)) != os.path.normcase(os.path.abspath(plan_path)):
+    try:
+        S = SS.simulate(tp, base_path, **kw)
+        detail += "; re-simulated on the real base: final={0} failed={1}".format(S["final"], S["failed"])
+        if not S["final"]:
+            return False, detail + "; {0} NOT written (md5 {1} kept)".format(rel(plan_path), md5(plan_path))
+        outp = S["plan_out"]["path"]
+        outp = outp if os.path.isabs(outp) else os.path.join(ROOT, outp)
         shutil.copyfile(outp, plan_path)
-    return bool(S["final"]), detail + "; re-simulated on the real base: final={0} failed={1}".format(S["final"], S["failed"])
+        return True, detail
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
 
 
 def record_stage_run(s, ck, card_id, cmd, by=COUNTED_BY, extra=None):

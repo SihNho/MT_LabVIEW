@@ -1,0 +1,82 @@
+{
+ "schema": "task/1",
+ "id": "132-1",
+ "kind": "build",
+ "goal": "PD275: X10 final-read term (threshold 690), per-op tunnel-name gate for P3b-2 from sim, P3b-2 expected Error List computed by script, gate-fp fp-19/20/21 fixed + fp-28 closed",
+ "why": "gate-fp queue DUE (oldest cycle 128); X10 under-predicted P3b-1 by the final read (PD272(d)); PD274(d) name gate; retrospective-cycle131 carries. brief_132-1.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_132-1.md"},
+  {"path": "docs/d1/tooling.md"},
+  {"path": "docs/d1/ring-p3b.md"},
+  {"path": "tools/stage_prerun.py"},
+  {"path": "tools/bench/memory_model.json"},
+  {"path": "tools/recipes/stage_d1_ring_p3b2.py"},
+  {"path": "tools/bench/plan_ring_p3b2.json"},
+  {"path": "tools/bench/errorlist_expected_D1_ring_p3b1_20261002_060910.json"},
+  {"path": "tools/bench/gate_fp_queue.jsonl"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/gate_fp.py"},
+  {"kind": "file", "name": "tools/bench/memory_model.json"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p3b2.py"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3b2.json"},
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p3b1_scratch_pin4.log"},
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p3b1.log"},
+  {"kind": "file", "name": "tools/bench/diag_c131_5_stubs.py"},
+  {"kind": "file", "name": "tools/bench/errorlist_expected_D1_ring_p3b1_20261002_060910.json"}
+ ],
+ "pass": [
+  "A X10 carries the cited final-read term; P3b-1 bytes predict 680.4 +- 3 MB; FAIL threshold 690 for the model with the term; P3b-2 provisional prediction reported",
+  "B per-op tunnel-name gate (names read from plan/sim files) in the P3b-2 recipe or a reusable helper; self-test: recorded match passes, pin3 op26 mismatch stops",
+  "C errorlist_expect_p3b2.py computes P3b-2 class totals from sim retired/loose-end wires + P3b-1 expected file; diag_c131_5_stubs PASS depends on its check",
+  "D fp-19/20/21 drained with self-tests (c106e E1 green); fp-28 closed as correct refusal or reported; stage_prerun self-test suites all counted"
+ ],
+ "outputs": [
+  "tools/stage_prerun.py",
+  "tools/bench/memory_model.json",
+  "tools/recipes/stage_d1_ring_p3b2.py",
+  "tools/bench/errorlist_expect_p3b2.py",
+  "tools/bench/cards/result_132-1.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_prerun.py",
+   "tools/stagekit.py",
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/bench/memory_model.json",
+   "tools/recipes/stage_d1_ring_p3b2.py",
+   "tools/bench/*ring_p3b2*",
+   "tools/bench/errorlist_expect_p3b2*",
+   "tools/bench/diag_c131_5_stubs.py",
+   "tools/bench/diag_c132_1*",
+   "tools/bench/selftest_*",
+   "tools/bench/c125_1*",
+   "tools/bench/sim/**",
+   "tools/bench/prerun/**",
+   "tools/bench/stage_prerun*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_132-1*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 55},
+ "rules": [
+  "Offline only; no LabVIEW, no recipe launch (card 132-2 holds LabVIEW)",
+  "Every coefficient and predicted name cited to a log/plan/sim line, never typed",
+  "If stagexec.py or stagekit.py is edited, rerun tools/bench/c125_1_offline_measure.py (PD252(a))",
+  "Return at the first unexpected result; cost.minutes = bind->return"
+ ],
+ "advances": ["M3", "M4"]
+}

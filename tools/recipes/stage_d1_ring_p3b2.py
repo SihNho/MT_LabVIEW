@@ -7,7 +7,8 @@ tunnel); wire_remove_loose_ends after every crossing. BASE IS PROVISIONAL (P3b-1
 FRESH LabVIEW -> claudeDev\D1_ring_p3b2_<ts>.vi (rule-6 GUI save, ExecState 0 by design) + errorlist_expected (54 + 0 own).
 ROWS ONLY FROM plan_ring_p3b2.json (stagesim FINAL of plan_ring_p3b2_in.json, plan_ring_p3b_split.py); expected values only from
 plan_ring_p3b2_pred.json. PRIOR ART: stage_d1_ring_p3b1.py / stage_d1_ring_p3a.py (same skeleton and gates). No new op.
-PREDICTION: L1 30 actions -> pred ops; E1 every checkpoint == sim; FR every created object sits on a frame of the base's FS, no
+PREDICTION: L1 30 actions -> pred ops; E1 every checkpoint == sim; NG (card 132-1, PD275(c)) every crossing op's new tunnel
+names == the step files' (a mismatch = ExecStop NAME-GATE at that op); FR every created object sits on a frame of the base's FS, no
 new frame; D new/lost wires == sim's; TD every base terminal that was wired stays wired; CEN2 == pred census; PB cdiff(S1, end)
 == the 16 rows (FATAL, before save); HB handles <= +700; PS saved, input unchanged; EL 54.
     py tools/bgrun.py --material --max-min 50 --log tools/bench/stage_d1_ring_p3b2.log -- py -u tools/recipes/stage_d1_ring_p3b2.py"""
@@ -36,7 +37,7 @@ def body(s):
            and sorted(P["finalized"]["end_cdiff_rows"]) == PRED["cdiff_rows"] and PRED["plan"]["md5"] == K.md5(PLAN), (K.md5(PLAN), P["finalized"]["base"], BASE["md5"]), fatal=True)
     s.start(); s.discard_work(); bp = K.mod("bench_prep"); h0 = bp.labview_handles(); c0 = snap(s)   # noqa: E702
     be = SX.DryPlanBE(s, P, PLAN, BASE) if DRY else SX.LVBackend(s, FSPAIRS, sink_gates=[], gates={}, mem_stop_mb=SX.MEM_STOP_MB)
-    x = SX.Executor(PLAN, be, log=lambda m: print(m, flush=True), checkpoints=CHECKPOINTS)
+    x = SX.Executor(PLAN, be, log=lambda m: print(m, flush=True), checkpoints=CHECKPOINTS, name_gate=True)   # card 132-1 PD275(c)
     s.gate("L1 the {0} actions compile into {1} real ops == pred kinds, each action once; checkpoints {2}".format(len(A), len(x.ops), CHECKPOINTS),
            [o["kind"] for o in x.ops] == PRED["ops"] and sorted(n for o in x.ops for n in o["acts"]) == list(range(1, len(A) + 1)), [o["kind"] for o in x.ops], fatal=True)
     try:
@@ -44,6 +45,8 @@ def body(s):
     except SX.ExecStop as e:
         return SX.report_stop(s, x, be, e)
     s.R["stagexec"] = x.report
+    s.gate("NG every crossing op's NEW tunnel names == the simulator's (stagexec.tunnel_name_check, per op, from the step files): {0} op(s) {1}".format(
+        len(x.name_checks), [c["k"] for c in x.name_checks]), all(c["ok"] for c in x.name_checks), x.name_checks[:6])
     L = x.step(len(A))["state"]
     rb = lambda sym: x.bind["obj"].get(L["sym"][sym], x.bind["diag"].get(L["sym"][sym], L["sym"][sym]))   # noqa: E731
     made = [rb("new:" + a["as"]) for a in A if a["op"] == "create" and a.get("as")]

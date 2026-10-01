@@ -309,7 +309,19 @@ def base_state(graph, context=None):
             if k in ("diagrams", "fs_pairs", "removed_nodes") or k not in st:
                 st[k] = copy.deepcopy(v)
         st["neg"], st["sym"] = min(0, int(graph["neg"])), {}
+    elif isinstance(graph.get("fs_carried"), dict):
+        # card 132-6 (PD279(b), docs/d1/ring-p3b.md): a REAL graph re-based by `stage_prerun --rebase` carries the previous
+        # stage's simulated Flat Sequence map through the binding (fs_frames / fs_tunnels / ... with real uids; the owners
+        # it fixed are already in graph['owners']; `diagrams` = the created frames' parent diagram). The graph reader
+        # records no FS frame order, so without it fs_of() and the FS border model cannot see a plan-made Flat Sequence
+        # (stage_prerun_c132_5_rebase_p3b2.log:35-36).
+        for k in FS_CARRY_KEYS:
+            if isinstance(graph.get(k), dict):
+                st[k] = copy.deepcopy(graph[k])
     return st
+
+
+FS_CARRY_KEYS = ("fs_frames", "fs_tunnels", "fs_alias", "fs_border_entries", "fs_frame_inferred", "diagrams")
 
 
 def new_uid(st):
