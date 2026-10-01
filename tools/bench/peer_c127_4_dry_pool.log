@@ -1,0 +1,60 @@
+BGRUN START 2026-10-01 23:33:02 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c127-4-dry-pool -TaskFile tools/bench/peer_c127_4_dry_pool_task.txt
+BGRUN PID 2036
+BGRUN REAP marked KILLED: diag_c127_5_dry.log pid=7824
+OUTCOME: ANSWERED (181s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-01-c127-4-dry-pool.md
+COST: $1.5596  in 28 / out 13820 / cache-create 121382 / cache-read 1560025  (177s, 21 turn(s))
+--- ANSWER ---
+I could not refute the core claim. The dry run almost certainly stops at `p3b_x_pool`, the cause is a missing binder rule in `stagexec` rather than the plan, and the 127-4 remap did not create the two objects. But one part of it is wrong: the suggested fix, pairing same-class tunnels by border order, would mis-bind them silently. The claim also rests on an inference, not on a logged step, and it understates how many classes need the new rule.
+
+No web search was needed; nothing here depends on an external tool, API or error code. Everything below cites local files.
+
+### 1. Strongest reason the claim is wrong: "pair by border order" fails on LabVIEW's measured uid order
+The one real LabVIEW sample of this crossing (`tools/bench/diag_c126_6_cross.log:69-78`, B3) recorded these tunnel uids in border order:
+
+| border (in order) | tunnel uid |
+|---|---|
+| For exit LoopTunnel | 28345 |
+| FS #12938 FlatSequenceOuterTunnel (FSOT) | 28302 |
+| FS #681 FSOT | 28254 |
+| While LoopTunnel | 28146 |
+| Case SelectorTunnel | 28045 |
+| new FS FSOT | 27902 |
+
+The uids go **down** along the chain. The simulator creates its objects in the opposite direction, starting with the For exit (`stagesim.py:1527-1546`). Any rule that matches sim objects to real objects by creation or uid order would therefore swap the For and While LoopTunnels, and reverse the three FSOTs. The swap raises no error, and every later wire would land on the wrong face.
+
+The rule that matches what was measured is frame-keyed, the same pattern `bind_case_faces` already uses (`stagexec.py:955-999`). Each tunnel's inner face sits on a different diagram: 23169, 13236, 686, 639 and 28470 (`diag_c126_6_cross.log:78`). Key on (class, the inner face's frame through `bind['diag']`). Do not key on names: the For tunnel's face carries "New Image" while the others carry `''`.
+
+### 2. Alternative explanations, and how far the evidence goes
+- **Which row failed is inferred, not observed.** The dry error names no row. `diag_c127_4_checks.py:34` drops the Executor's `STEP` lines, and the dry entry at `prerun_records.jsonl:518` has only `first_fail`. The census list at log lines 43-70 comes from the C1 **simulate** run (`diag_c127_4_checks.py:45,61-68`), not from the dry run.
+- **Why the inference still holds:**
+  - The count that fails is `len(su)` on the **simulated** side (`stagexec.py:887-890`). That side is computed from the plan's step states (`sim_now − sim_prev`, `:855-863`), not from the dry backend's remapped graph. So the 127-4 remap cannot have produced those two objects.
+  - Only pool's step creates any LoopTunnel. Every other row creates at most one object per class, so no other row can raise this message.
+  - The class named first is the one pool creates first: the For exit border is the first entry of `cs` in insertion order.
+  - The check at `:882` (simulated class counts == real class counts) passed, so the dry backend agrees with the simulation on what was created.
+  - So yes, the failing op is pool's `connect_term_uid`. But "every row up to pool passes" is a deduction, not a record.
+- **The fix is not LoopTunnel-only.** Once the LoopTunnel pair binds, the same loop at `:886-891` stops again on `3 new FlatSequenceOuterTunnel`. The SelectorTunnel in the same crossing is fine: it has inner faces on two frames (27219 and 27232), so `bind_case_faces` already takes it before `bind_new` (`:967-968, 1986`).
+
+### 3. Is this an inconsistency in our own tools? Yes.
+- Card 127-2 admitted the variant to the simulator: `stagesim.FS_BORDER_SIG` (`stagesim.py:165-170`), plus `ROUTE_CENSUS` (`stagexec.py:277-282`).
+- `connect_term_uid` is in `BIND_KINDS` (`:1676`), so every crossing goes through the three binders.
+- None of them handles several same-class objects from one op:
+  - `bind_fs_tunnel` covers only one FlatSequenceInnerTunnel (`:937`).
+  - `bind_case_faces` covers only SelectorTunnel and Tunnel (`:952`).
+  - the unnamed-terminal pairing added by card 127-3 (`:899-914`) pairs terminals **inside** one object, never objects.
+- The 126-6 measurement was a census only; no executor has ever bound this variant. No self-test does either: T127a–f (`:4908-4948`) cover only the renumber pass.
+- So the simulator accepted a variant whose objects the executor cannot bind. It is not a plan defect, and the simulator's census is the measured one (`census_samples.json:514-537`, n=1).
+
+### 4. What would falsify the claim
+- An unfiltered dry run whose last passed op is not `p3b_rle_fidx`, or whose failing op is not `p3b_x_pool`.
+- A pool step state containing no LoopTunnel nodes, or one whose two LoopTunnel nodes already appear in `sim_prev`.
+
+### 5. Cheapest discriminating test (offline, no LabVIEW)
+1. Re-run `stage_prerun.main(["--dry", "tools/bench/plan_ring_p3b.json"])` without the line filter at `:34`. Read the last `STEP`/`STEPX` line: expect `p3b_rle_fidx` passed and `p3b_x_pool` failed. This settles the row question, which is still open.
+2. Before writing any binder, build a self-test from the B3 tunnel table (`diag_c126_6_cross.log:78`) with real uids:
+   - frame-keyed pairing of 2 LoopTunnels + 3 FSOTs must bind each tunnel to its own border;
+   - a negative case must show that uid-order pairing swaps For and While.
+
+   If the negative case does not fail, my point 1 is wrong. Order-keyed pairing would then be harmless, but it would still have no measured basis.
+
+What would change my mind on point 1: a second B3-shaped LabVIEW sample with ascending tunnel uids. Even then, n=2 in both directions would make uid order unreliable, so the frame-keyed rule would still be the right one.
+BGRUN END rc=0 after 182s

@@ -1,0 +1,24 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle127",
+ "verdict": "refuted",
+ "alternative": "The timeout was a LabVIEW hang in S_latest's post-connect census read, not the clock: the kill landed in those reads, 64 s after the last raw file (review :74-79).",
+ "discriminating_test": "Rerun fsinner S_latest only, timestamped, one Error List read at the end (dump_tree=False): CENSUS S_latest within ~60 s of its connect and total ~20 min means budget; a stall >3 min means a hang.",
+ "violations": [
+  {
+   "slug": "inference-over-measurement",
+   "loss_min": 24,
+   "loss_usd": 1.2944,
+   "evidence": "tools/bench/cards/brief_127-1.md:18"
+  }
+ ],
+ "sources": [
+  "tools/bench/cards/brief_127-1.md:18",
+  "tools/bench/stage_d1_ring_p3a_el_scratch.log:89",
+  "tools/bench/diag_c127_1_fsinner.log:116",
+  "archive/peer/2026-10-01-c127-1-fsinner-timeout.md:7",
+  "tools/bench/cards/guard_card.log:562",
+  "docs/d1-loop12-17-split-plan.md:2822"
+ ],
+ "note": "Brief ordered 5 per-wire Error List reads at a measured 386 s each into a 50-min card; the 40-min run timed out, 3 reads were uninformative (61/24 unchanged), the offline lane idled ~28 min. No listed device failed."
+}

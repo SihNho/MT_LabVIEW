@@ -129,6 +129,12 @@ PROVISIONAL = {
     "gate": {"params": {}, "evidence": "card 100-3: a VALUE gate reads a constant's value at run time and stops the stage; "
                                        "the graph carries no values, so the simulation only checks the object exists",
              "gaps": ["the value itself is read only by the real run (OpConstValueB_v0)"]},
+    # card 127-2 (PD257(c)): Wire.RemoveLooseEnds 6370C08 on the wire(s) of a named earlier row / a pre-existing wire uid
+    "wire_remove_loose_ends": {"params": {},
+                               "evidence": "diag_c126_4_op.log:52-60 (w27378 census delta {}, both terminals kept); "
+                                           "diag_c126_6_cross.log:61-65 (RLE census delta empty)",
+                               "gaps": ["the graph carries no joints: a loose end is not simulated, the op is a no-op on "
+                                        "the terminal table (census {})"]},
 }
 LOOP_CLS = ("WhileLoop", "ForLoop")
 # card 126-3 (PD253(c)(e)): FLAT SEQUENCE plan support, from card 126-1's ONE scratch run on a P3a byte copy
@@ -152,6 +158,20 @@ FS_MEASURED = {
                           "unmeasured": ["a source that is ALREADY wired (branch variant)", "non-adjacent frames",
                                          "right-to-left (frame k+1 -> k)"]},
 }
+# card 127-2 (PD257(c)): a wire from a node OUTSIDE a plan-made Flat Sequence into one of its frames = ONE
+# gscript.connect_term_uid; LabVIEW makes one tunnel per border crossed (126-4 / 126-6, census_samples.json connect_term_uid).
+# The border signature (direction, structure class per border, top-down) + 'source already wired' picks the MEASURED variant;
+# the model's census must equal that variant's delta, any other signature is refused as UNMEASURED.
+FS_BORDER_SIG = {
+    ((("in", "FlatSequence"),), False): "case_frame_to_fs_frame",
+    ((("in", "FlatSequence"),), True): "case_frame_to_fs_frame_branch",
+    ((("in", "CaseStructure"), ("in", "FlatSequence")), True): "loop_body_wired_src_to_fs_frame_in_case",
+    ((("out", "ForLoop"), ("out", "FlatSequence"), ("in", "FlatSequence"), ("in", "WhileLoop"), ("in", "CaseStructure"),
+      ("in", "FlatSequence")), False): "for_body_unwired_src_to_fs_frame_multi_border"}
+FS_INNER_BRANCH = {"census": {}, "status": "PROVISIONAL pending card 127-1 (PD257(d): a 2nd+ sink into a frame the source "
+                                           "already entered = a same-frame wire from that FS tunnel's INNER face, the R4 "
+                                           "branch analogue, census {} as R4 diag_c124_p3a_scratch.log:77,80)"}
+CENSUS_SAMPLES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench", "census_samples.json")
 MODEL_ALIASES = {"wire": ("wire", "connect_from_wire", "wire_sr", "connect_nested", "connect"),
                  "tunnel": ("tunnel", "tunnel_create", "create_tunnel"),
                  "create": ("create", "const_create", "primitive_create", "create_const", "create_primitive", "const",
@@ -1095,6 +1115,8 @@ def op_wire(st, a, P, S1, labels):
     lf, ld = fs_of(st, s["frame_diagram"]), fs_of(st, d["frame_diagram"])
     if lf and ld and lf[0] == ld[0] and lf[1] != ld[1]:   # card 126-3: across two frames of ONE plan-made Flat Sequence
         return _fs_frame_wire(st, a, s, d, lf[0], lf[1], ld[1])
+    if ld and not lf and int(s["frame_diagram"] or 0) != int(d["frame_diagram"] or 0):
+        return _fs_border_wire(st, a, s, d, labels)       # card 127-2 (PD257(c)(d)): outside node -> plan-made FS frame
     if P.get("same_diagram", True) and int(s["frame_diagram"] or 0) != int(d["frame_diagram"] or 0):
         raise SimError("wire {0} -> {1}: source on diagram {2}, sink on diagram {3} - a border needs a tunnel/"
                        "register action first".format(a["src"], a["dst"], s["frame_diagram"], d["frame_diagram"]))
@@ -1398,6 +1420,186 @@ def _fs_frame_wire(st, a, s, d, fs, i, j):
     return eff, []
 
 
+def _cross_variants():
+    d = _j(CENSUS_SAMPLES)
+    return dict((v["name"], v) for v in d["ops"]["connect_term_uid"]["variants"])
+
+
+def _fsot_parent(st, d):
+    """card 127-2: the parent of a Flat Sequence FRAME the owners map / tree do not know (P3a graph: frames #13236 of FS
+    #12938 and #686 of FS #681 are ['FlatSequenceFrame', 0], diag_c127_2_chain2.log). A FlatSequenceInnerTunnel (one uid)
+    files its two FACES on two adjacent frames (fs_tunnel_pairs term_a/term_b) and two non-face rows on the FS's OWNER
+    diagram (vigraph.build4 step 4b; diag_c127_2_chain3.log: 12 FSITs on #13236 read diagrams {536, 13236, 14840}, 28 on
+    #686 read {536, 686, 4866}). So the parent of `d` = the owner diagram of every FSIT with a FACE on `d`; None when 0 or
+    >1 candidates."""
+    faces = set()
+    for p in st.get("fs_pairs") or []:
+        faces |= set((p.get("term_a"), p.get("term_b")))
+    by = collections.defaultdict(list)
+    for r in st["terminals"]:
+        if r["owner_class"] == FSIT_CLS:
+            by[r["owner_uid"]].append(r)
+    cand = set()
+    for rs in by.values():
+        fd = set(int(r["frame_diagram"] or 0) for r in rs if r["term_uid"] in faces)
+        if d in fd:
+            own_d = set(int(r["frame_diagram"] or 0) for r in rs) - fd
+            if len(own_d) == 1:
+                cand |= own_d
+    return cand.pop() if len(cand) == 1 else None
+
+
+def _diag_chain(st, d, par):
+    out, seen = [], set()
+    while d is not None and d not in seen:
+        out.append(d)
+        seen.add(d)
+        p = st["diagrams"].get(str(d))
+        p = int(p) if p is not None else par.get(d)
+        if p is None and ((st.get("owners") or {}).get(str(d)) or [None, 0])[1] in (None, 0):
+            p = _fsot_parent(st, d)
+            if p is not None:
+                st.setdefault("fs_frame_inferred", {})[str(d)] = int(p)
+        d = int(p) if p is not None else None
+    return out
+
+
+def _border_tunnel(st, kind, x, parent, cls, struct):
+    """ONE tunnel LabVIEW makes at the border of `struct` (class cls, frame/body diagram x, parent diagram): kind 'in' =
+    sink on the parent, source(s) on the frame; 'out' = sink on the frame, source on the parent. -> (obj uid, the face that
+    takes the incoming wire, the face the next segment leaves from). Shapes MEASURED in 126-6 (diag_c126_6_cross.log:77-78)."""
+    fin = kind == "in"
+    if cls in LOOP_CLS:
+        T = _new_obj(st, "LoopTunnel", cls)
+        for x_ in st["objs"]:
+            if x_["uid"] == T:
+                x_["indexing"] = cls == "ForLoop"            # B3: For exit IndexMode 1, While entry IndexMode 0
+        o = _new_term(st, T, "LoopTunnel", "OuterTerminal", not fin, parent)
+        i = _new_term(st, T, "LoopTunnel", "InnerTerminal", fin, x)
+        return T, (o, i) if fin else (i, o)
+    if cls == "CaseStructure":
+        frames = [int(k) for k, v in (st.get("owners") or {}).items() if v[0] == "CaseStructure" and int(v[1] or 0) == struct]
+        T = _new_obj(st, "SelectorTunnel", "CaseStructure")
+        o = _new_term(st, T, "SelectorTunnel", "OuterTerminal", not fin, parent)
+        inn = dict((f, _new_term(st, T, "SelectorTunnel", "InnerTerminal", fin, f)) for f in frames)
+        if x not in inn:
+            raise SimError("border tunnel: #{0} is not a frame of CaseStructure #{1} ({2})".format(x, struct, frames))
+        return T, (o, inn[x]) if fin else (inn[x], o)
+    if cls in (FS_CLS, "Sequence"):
+        T = _new_obj(st, "FlatSequenceOuterTunnel", FS_CLS)
+        o = _new_term(st, T, "FlatSequenceOuterTunnel", "Terminal", not fin, parent)
+        i = _new_term(st, T, "FlatSequenceOuterTunnel", "Terminal", fin, x)
+        return T, (o, i) if fin else (i, o)
+    raise SimError("border tunnel: no model for a {0} border (#{1})".format(cls, struct))
+
+
+def _fs_border_wire(st, a, s, d, labels):
+    """card 127-2 (PD257(c)): a source OUTSIDE a plan-made Flat Sequence -> a sink on one of its frames = ONE
+    gscript.connect_term_uid (stagexec variant fs_border). LabVIEW makes ONE tunnel per border between the source's diagram
+    and the sink's frame (exits bottom-up, then entries top-down) and one wire per segment; a WIRED source's net is
+    RE-CREATED (new uid, every old sink kept, + the first tunnel face; 126-6 B1/B2: 3747 -> 27995, 3268 -> 28038). The
+    border signature picks the census_samples.json variant and the model's census must equal its measured delta.
+    PD257(d): when an earlier crossing of THIS plan already brought the same source terminal into the sink's frame, the
+    row is a same-frame wire from that tunnel's INNER face (FS_INNER_BRANCH, PROVISIONAL pending card 127-1)."""
+    if d["wire_uid"]:
+        raise SimError("wire {0} -> {1}: the sink is already wired (w{2})".format(a["src"], a["dst"], d["wire_uid"]))
+    fd = int(d["frame_diagram"])
+    ent = (st.get("fs_border_entries") or {}).get("{0}|{1}".format(s["term_uid"], fd))
+    if ent:
+        face = next((r for r in st["terminals"] if r["term_uid"] == ent["face"]), None)
+        if face is None or not face["wire_uid"] or int(face["frame_diagram"] or 0) != fd:
+            raise SimError("wire {0} -> {1}: the entry face #{2} of the earlier crossing is gone or unwired".format(
+                a["src"], a["dst"], ent["face"]))
+        d["wire_uid"] = face["wire_uid"]
+        st.setdefault("act_wires", {})[str(a.get("id"))] = [face["wire_uid"]]
+        return {"wire": face["wire_uid"], "how": "fs_inner_branch", "src_term_uid": s["term_uid"], "dst_term_uid": d["term_uid"],
+                "face": face["term_uid"], "tunnel": face["owner_uid"], "entry_of": ent["act"], "new_wires": [face["wire_uid"]],
+                "census": dict(FS_INNER_BRANCH["census"]), "status": FS_INNER_BRANCH["status"]}, []
+    par = dict((int(k), int(v)) for k, v in graph(st, labels)["tree"]["parent"].items() if v is not None)
+    cs, cd = _diag_chain(st, int(s["frame_diagram"] or 0), par), _diag_chain(st, fd, par)
+    top = next((x for x in cd if x in cs), None)
+    if top is None:
+        raise SimError("wire {0} -> {1}: no common diagram of #{2} and #{3}".format(a["src"], a["dst"], s["frame_diagram"], fd))
+    own = dict(st.get("owners") or {})
+    for k in list(st.get("fs_frame_inferred") or {}) + [k for k, v in own.items() if v[0] == FS_FRAME_CLS]:
+        if (own.get(k) or [None])[0] in (None, FS_FRAME_CLS):  # a Flat Sequence frame whose FS uid the read lacks (0)
+            own[k] = [FS_CLS, 0]
+    borders = [("out", x) for x in cs[:cs.index(top)]] + [("in", x) for x in reversed(cd[:cd.index(top)])]
+    sig = []
+    for kind, x in borders:
+        o = own.get(str(x))
+        if not o:
+            raise SimError("wire {0} -> {1}: the structure owning diagram #{2} is unknown (owners map)".format(a["src"], a["dst"], x))
+        sig.append((kind, o[0]))
+    wired = bool(s["wire_uid"])
+    vn = FS_BORDER_SIG.get((tuple(sig), wired))
+    if vn is None:
+        raise SimError("wire {0} -> {1}: border crossing {2} (source {3}) is UNMEASURED - no census_samples.json "
+                       "connect_term_uid variant".format(a["src"], a["dst"], sig, "wired" if wired else "unwired"))
+    n_obj0, n_term0 = len(st["objs"]), len(st["terminals"])
+    tunnels, faces = [], []
+    for kind, x in borders:
+        o = own[str(x)]
+        p = cs[cs.index(x) + 1] if kind == "out" else cd[cd.index(x) + 1]
+        T, (fin, fout) = _border_tunnel(st, kind, x, p, o[0], int(o[1] or 0))
+        tunnels.append(T)
+        faces.append((fin, fout))
+    rows = dict((r["term_uid"], r) for r in st["terminals"])
+    wires, recreated, rewired = [], None, []
+    cur = s
+    for k, (fin, fout) in enumerate(faces + [(d["term_uid"], None)]):
+        sink = rows[fin] if fout is not None else d
+        if k == 0 and cur["wire_uid"]:
+            recreated = cur["wire_uid"]
+            w = new_uid(st)
+            for r in wire_rows(st, recreated):
+                r["wire_uid"] = w
+                if r is not cur:
+                    rewired.append(r["term_uid"])
+        else:
+            w = new_uid(st)
+            cur["wire_uid"] = w
+        sink["wire_uid"] = w
+        wires.append(w)
+        cur = rows[fout] if fout is not None else None
+    census = collections.Counter(o["class"] for o in st["objs"][n_obj0:])
+    census.update(r["term_class"] for r in st["terminals"][n_term0:])
+    census["Wire"] += len(wires)
+    census = dict(census)
+    V_ = _cross_variants()[vn]
+    if census != V_["delta"]:
+        raise SimError("wire {0} -> {1}: border model census {2} != measured variant {3} delta {4}".format(
+            a["src"], a["dst"], census, vn, V_["delta"]))
+    st.setdefault("fs_border_entries", {})["{0}|{1}".format(s["term_uid"], fd)] = {"face": faces[-1][1], "act": a.get("id")}
+    st.setdefault("act_wires", {})[str(a.get("id"))] = list(wires)
+    eff = {"wire": wires[-1], "how": "fs_border", "variant": vn, "src_term_uid": s["term_uid"], "dst_term_uid": d["term_uid"],
+           "borders": [list(b) for b in sig], "tunnels": tunnels, "faces": [list(f) for f in faces], "new_wires": wires,
+           "census": census, "model": "measured n={0}: {1}".format(V_.get("n"), "; ".join(
+               "{0}:{1}".format(c["file"], c["line"]) for c in V_.get("cites") or []))}
+    if recreated:
+        eff.update(recreated_from=recreated, rewired=sorted(rewired))
+    return eff, []
+
+
+def op_wire_remove_loose_ends(st, a, P, S1, labels):
+    """card 127-2 (PD255(b)/256(b)): gscript.wire_remove_loose_ends on a pre-existing wire (`wire_uid`) or on every wire the
+    earlier row `of` created / touched. MEASURED census {} and no terminal change (diag_c126_4_op.log:52-60,
+    diag_c126_6_cross.log:61-65); the graph has no joints, so the state is unchanged. Refused: an absent wire, an unknown or
+    later row, both or neither target."""
+    if (a.get("wire_uid") is None) == (a.get("of") is None):
+        raise SimError("wire_remove_loose_ends {0}: give exactly one of `wire_uid` / `of`".format(a.get("id")))
+    if a.get("wire_uid") is not None:
+        ws = [int(a["wire_uid"])]
+        if not wire_rows(st, ws[0]):
+            raise SimError("wire_remove_loose_ends {0}: wire {1} is not in the current graph".format(a.get("id"), ws[0]))
+    else:
+        ws = (st.get("act_wires") or {}).get(str(a["of"]))
+        if ws is None:
+            raise SimError("wire_remove_loose_ends {0}: `of` {1!r} names no earlier crossing row".format(a.get("id"), a["of"]))
+        ws = [w for w in ws if wire_rows(st, w)]
+    return {"wires": ws, "census": {}, "how": "remove_loose_ends", "model": PROVISIONAL["wire_remove_loose_ends"]["evidence"]}, []
+
+
 def _join(st, s, d):
     """Wire source row s to sink row d (d must be unwired): s's wire is branched, else a new (negative) wire."""
     if d["wire_uid"]:
@@ -1550,7 +1752,8 @@ def op_decide(st, a, P, S1, labels):
 
 OPS = {"move_in": op_move_in, "add_shift_reg": op_add_shift_reg, "tunnel": op_tunnel, "delete_wire": op_delete_wire,
        "delete_object": op_delete_object, "wire": op_wire, "remove_bad_wires": op_remove_bad_wires,
-       "create": op_create, "decide": op_decide, "gate": op_gate}
+       "create": op_create, "decide": op_decide, "gate": op_gate,
+       "wire_remove_loose_ends": op_wire_remove_loose_ends}                  # card 127-2
 
 
 # ------------------------------------------------------------------------------------------------ compare

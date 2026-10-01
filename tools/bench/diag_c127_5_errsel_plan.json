@@ -1,0 +1,37 @@
+{
+ "schema_note": "card 127-5 (PD259(c)): FINALIZED decision-row plan of tools/bench/diag_c127_5_errsel.py. Scratch 1 = never-saved byte copy of claudeDev\\HARNESS_copyloop.vi (graph_harness_copyloop_c95.json; IMAQ Copy #240 on Diagram #334, its error out t360 unwired): IMAQ Copy error out -> Unbundle By Name (default element) -> Select s, I32 -1 const -> t, I32 0 const -> f, Select output -> Max & Min x (the I32 sink). Scratch 2 = a second byte copy: error out -> Select s DIRECTLY, same t/f/sink. Donors for Unbundle By Name / Select: byte copies of NI examples found by terminal signature (allterms), kept in claudeDev as DonorUnbundle_v0.vi / DonorSelect_v0.vi. Census per create and per wire, Is Broken? per wire, ExecState per scratch, ONE Error List read at the end (scratch 1). Never saved; scratches deleted; LabVIEW killed and gone.",
+ "input": {"vi": "HARNESS_copyloop.vi", "md5": "eb8dad78209440fbbb9d87afad3d8ad6", "graph": "tools/bench/graph_harness_copyloop_c95.json"},
+ "imaq": {"uid": 240, "diagram": 334, "err_out": 360},
+ "const_t": {"vi": "DonorRingConst_v0.vi", "uid": 249, "value": -1},
+ "const_f": {"vi": "DonorSRInit_v0.vi", "uid": 248, "value": 0},
+ "examples": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\examples",
+ "candidates": [
+  "Comparison\\Comparison Functions.vi",
+  "Comparison\\In Range and Coerce.vi",
+  "Synchronization\\Queue\\Simple Queue.vi",
+  "Synchronization\\Queue\\Queue Overflow and Underflow.vi",
+  "Synchronization\\Notifier\\Simple Notifier.vi",
+  "Synchronization\\Queue\\Using a Queue As a Multiplexer.vi",
+  "Structures\\Case Structure\\Case Structure - Selector Data Types.vi"
+ ],
+ "candidates_note": "single-file NI examples only (no support subVIs, so a claudeDev copy loads without a Find-the-VI dialog); examples\\ is only READ (rule 1)",
+ "select_sig": ["f", "s", "s? t: f", "t"],
+ "pos": {"unb": [520, 40], "sel": [640, 40], "kt": [560, 110], "kf": [560, 160], "mm": [760, 40]},
+ "decisions": [
+  {"id": "D-0", "action": "stage", "what": "stagekit Stage on HARNESS_copyloop.vi: restart LabVIEW, byte copy = work copy (scratch 1), discard_work (never saved)"},
+  {"id": "D-1", "action": "measure", "what": "donor census: byte-copy candidates to claudeDev, allterms per copy; first NamedUnbundler (prefer a source named status) and first Select signature owner; keep DonorUnbundle_v0.vi / DonorSelect_v0.vi"},
+  {"id": "C-1", "action": "create", "what": "scratch 1: Unbundle By Name (donor), Select (donor), I32 -1 (DonorRingConst_v0 #249), I32 0 (DonorSRInit_v0 #248), Max & Min (registry) on Diagram #334; census + terminal rows per create"},
+  {"id": "W-1", "action": "wire", "what": "scratch 1: Unbundle input <- IMAQ Copy error out t360"},
+  {"id": "W-2", "action": "wire", "what": "scratch 1: Select s <- Unbundle output (default element read back)"},
+  {"id": "W-3", "action": "wire", "what": "scratch 1: Select t <- I32 -1"},
+  {"id": "W-4", "action": "wire", "what": "scratch 1: Select f <- I32 0"},
+  {"id": "W-5", "action": "wire", "what": "scratch 1: Max & Min x <- Select output"},
+  {"id": "C-2", "action": "create", "what": "scratch 2 (second byte copy): Select, I32 -1, I32 0, Max & Min on Diagram #334"},
+  {"id": "W-6", "action": "wire", "what": "scratch 2: Select s <- IMAQ Copy error out t360 DIRECTLY"},
+  {"id": "W-7", "action": "wire", "what": "scratch 2: Select t <- I32 -1"},
+  {"id": "W-8", "action": "wire", "what": "scratch 2: Select f <- I32 0"},
+  {"id": "W-9", "action": "wire", "what": "scratch 2: Max & Min x <- Select output"},
+  {"id": "M-1", "action": "measure", "what": "ExecState of both scratches; ONE Error List read (scratch 1)"},
+  {"id": "X", "action": "discard", "what": "close(): scratches + candidate copies deleted, donors kept, input md5 unchanged, LabVIEW killed and gone"}
+ ]
+}

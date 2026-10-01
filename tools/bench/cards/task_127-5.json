@@ -1,0 +1,59 @@
+{
+ "schema": "task/1",
+ "id": "127-5",
+ "kind": "measure",
+ "goal": "PD259(c): on a minimal scratch VI, measure IMAQ Copy error out -> Unbundle By Name (status) -> Select s (t=-1, f=I32) -> I32 sink, and the direct error-cluster -> Select s form",
+ "why": "PD258(c)'s U9 guard rows in P3b have no recorded creation route or terminal facts (127-3). Plan Pre-decided 259(c).",
+ "inputs": [
+  {"path": "tools/bench/cards/result_127-3.json"},
+  {"path": "tools/bench/graph_harness_copyloop_c95.json"},
+  {"path": "tools/gscript.py", "md5": "6ba524f9b23042b6690b081d8cf6d721"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "verb", "name": "create_primitive_nested", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "connect_term_uid", "where": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/errorlist_check.py"}
+ ],
+ "pass": [
+  "creation route for Unbundle By Name and Select named (verb, prim name or donor); every terminal name + term_class recorded",
+  "census per create and per wire; Is Broken? per wire; Unbundle default element read back (expected status)",
+  "direct error cluster -> Select s tried on a second scratch: broken or not, recorded",
+  "ONE Error List read at the end; census samples + scratch_verify record; scratches deleted; LabVIEW closed and gone"
+ ],
+ "outputs": [
+  "tools/bench/census_samples.json",
+  "tools/bench/scratch_verify/*"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c127_5*",
+   "tools/bench/census_samples.json",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/errorlist_*",
+   "tools/bench/cards/result_127-5*",
+   "tools/bench/cards/review_127-5*",
+   "tools/bench/peer_*",
+   "archive/peer/**",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["fact", "hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 45
+ },
+ "rules": [
+  "Scratch VI only (new blank VI in claudeDev); bed and original untouched; diagnostic <=120 lines on stagekit",
+  "No edit to gscript/stagexec/stagesim (127-4 edits stagexec offline); ONE Error List read at the end",
+  "Return at the first unexpected result (finish the step, LabVIEW closed, facts recorded)"
+ ],
+ "advances": ["M4", "M3"]
+}

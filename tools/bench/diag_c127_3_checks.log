@@ -1,0 +1,26 @@
+BGRUN START 2026-10-01 23:17:56 limit 6.0 min: py -u tools/bench/diag_c127_3_checks.py
+BGRUN PID 15564
+PASS  C1 simulate plan_ring_p3b_in: no failed step, final, 63 steps, end cdiff == P3a's 16 rows  {'failed': None, 'final': True, 'steps': 63, 'end_cdiff': 16}
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c127_3_checks.py", line 44, in <module>
+    rc, out = run(SX.main, ["stagexec.py", mode, po])
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c127_3_checks.py", line 26, in run
+    rc = fn(*a)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagexec.py", line 4833, in main
+    st, ff, ex = dry_run(plan, require_final="--nonfinal" not in argv, from_step=fsk,
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagexec.py", line 3561, in dry_run
+    ex.run()                                       # raises UNROUTABLE at the end when any row was unroutable
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagexec.py", line 1929, in run
+    res = self.execute(op, prev, after["state"], real)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagexec.py", line 2082, in execute
+    return be.connect_term_uid(src, dst, real, dict(op, sim_census=eff.get("census"), sim_variant=eff.get("variant")))
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagexec.py", line 3299, in connect_term_uid
+    return self._apply(op, self._fs_connect_check(rs, rd, op))
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagexec.py", line 2961, in _apply
+    SS.OPS[a["op"]](self.st, a, P, self.S1, {})
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagesim.py", line 1119, in op_wire
+    return _fs_border_wire(st, a, s, d, labels)       # card 127-2 (PD257(c)(d)): outside node -> plan-made FS frame
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagesim.py", line 1511, in _fs_border_wire
+    raise SimError("wire {0} -> {1}: the entry face #{2} of the earlier crossing is gone or unwired".format(
+stagesim.SimError: wire {'uid': 27373, 'term': 'x-y*floor(x/y)'} -> new:RAT1.index: the entry face #-91 of the earlier crossing is gone or unwired
+BGRUN END rc=1 after 73s (NO RESULT LINE)

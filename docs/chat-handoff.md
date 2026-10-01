@@ -204,6 +204,11 @@ laozhang blog posts: the $100/$250 cloud-session promo credit is drawn FIRST for
 mobile / desktop / `claude --cloud`, "after claiming the offer"; routines are not mentioned. So the conclusion above
 holds for routines only. Proposed (awaiting user): check the claim status, open an interactive cloud session, spend
 ~$1–2, compare credit balance and 5-hour meter before/after.
+**USER MEASURED 2026-10-01 ~22:2x:** an interactive cloud session (opened from the app) used ONLY the cloud credit
+(~$1 off the $250; usage panel at that time: Max 20x, 5-hour 19 %, weekly 61 %, Fable 6 %). Routines → subscription;
+interactive cloud sessions → credit first. Still unmeasured: nested `claude -p` INSIDE an interactive cloud session
+(asked the user to run one from that session and read the credit). If it bills the credit → revive the Linux port of
+the benches (hook paths, `py`, workspace trust) and run LabVIEW-free benches in user-opened cloud sessions.
 **CLOUD PLAN DROPPED (user 2026-09-29 ~20:0x KST: "그럼 클라우드는 그냥 잊어버리자").** No Linux port of benches/hooks;
 benches stay local. Both probe routines were run-once and are spent. Open next: user asked whether to bring Gemini back
 for web search; chat proposed (awaiting answer) a headless-permission fix test + a 6–8 question known-answer comparison

@@ -180,8 +180,10 @@ def main():
         base_ok, base_msg = protocol.hook_decision({"agent_id": "selftest81", "agent_type": "material",
                                                     "tool_name": "Bash",
                                                     "tool_input": {"command": "py tools/stagexec.py selftest"}})
-        gate("K0 baseline: protocol alone refuses the self-test on labview:none", not base_ok and
-             "flags.labview" in (base_msg or ""), base_msg)
+        # RE-PINNED by card 127-3 (PD258(d)/(e)): card 125-1 put `tools/stagexec.py selftest` on protocol.OFFLINE_SELFTESTS
+        # (protocol.py:398-403, measured 0 COM trips), so protocol ALONE now allows the measured form on labview:none.
+        gate("K0 baseline: protocol alone ALLOWS the measured self-test form on labview:none (OFFLINE_SELFTESTS, card 125-1)",
+             base_ok, base_msg)
         allow = ["py tools/stagexec.py selftest",
                  'cd "%s" && py -u tools/stagexec.py selftest' % ROOT,
                  "MATERIAL=1 py tools/bgrun.py --max-min 5 --log tools/bench/x.log -- py -u tools/stagexec.py selftest"]
@@ -202,9 +204,12 @@ def main():
         # the reviewer predicted the cd-prefixed foreign form is exempted (rc 0) - a guard_card hole, measured by card 81-3.
         # RE-PINNED by card 116-3 D2 (the one pin change allowed): guard_card.py now accepts `cd` only to the project
         # root, so the foreign form must be REFUSED (rc 2); K2 above still allows `cd "<ROOT>" && ...`.
+        # RE-PINNED by card 127-3 (PD258(d)): since card 125-1 protocol.offline_selftest resolves the script against ROOT
+        # (protocol.py:406-422), so the cd-prefixed form is the SAME measured self-test and passes protocol (rc 0). The foreign
+        # file does not exist (K8: guard_card's matcher still rejects a foreign ABSOLUTE path).
         rc9, msg9 = dec('cd "C:/elsewhere" && py tools/stagexec.py selftest')
-        gate("K9 cd <foreign dir> && py tools/stagexec.py selftest is REFUSED (rc 2, hole closed by card 116-3)",
-             rc9 == 2, (rc9, msg9))
+        gate("K9 cd <foreign dir> && py tools/stagexec.py selftest is ALLOWED via protocol.OFFLINE_SELFTESTS (rc 0, card 125-1)",
+             rc9 == 0, (rc9, msg9))
     finally:
         protocol.binding = orig_b
     shutil.rmtree(tmp, ignore_errors=True)

@@ -1,14 +1,12 @@
 {
  "schema": "ring-p3b-rows/1",
- "card": "126-8",
+ "card": "127-3",
  "plan_in": "tools/bench/plan_ring_p3b_in.json",
- "n_rows": 47,
- "n_actions": 45,
+ "n_rows": 63,
+ "n_actions": 63,
  "status_counts": {
-  "MEASURED": 11,
-  "PRECEDENT": 30,
-  "UNMEASURED": 4,
-  "HELD": 2
+  "MEASURED": 33,
+  "PRECEDENT": 30
  },
  "created_non_crossing": {
   "FlatSequence": 1,
@@ -24,38 +22,45 @@
   "p3b_x_i_f1": "case_frame_to_fs_frame",
   "p3b_x_i_f3": "case_frame_to_fs_frame_branch",
   "p3b_x_i_ia1": "case_frame_to_fs_frame_branch",
-  "p3b_x_i_rat1": "UNMEASURED",
-  "p3b_x_i_rar1": "UNMEASURED",
-  "p3b_x_i_raf1": "UNMEASURED",
+  "p3b_x_i_rat1": "fs_inner_branch (PD257(d))",
+  "p3b_x_i_rar1": "fs_inner_branch (PD257(d))",
+  "p3b_x_i_raf1": "fs_inner_branch (PD257(d))",
   "p3b_x_bn_n3": "loop_body_wired_src_to_fs_frame_in_case",
-  "p3b_x_bn_latest": "UNMEASURED",
+  "p3b_x_bn_latest": "fs_inner_branch (PD257(d))",
   "p3b_x_img_src": "loop_body_wired_src_to_fs_frame_in_case",
+  "p3b_x_trans": "loop_body_wired_src_to_fs_frame_in_case",
+  "p3b_x_rot": "loop_body_wired_src_to_fs_frame_in_case",
   "p3b_x_fidx": "loop_body_wired_src_to_fs_frame_in_case",
   "p3b_x_pool": "for_body_unwired_src_to_fs_frame_multi_border",
-  "p3b_x_trans": "loop_body_wired_src_to_fs_frame_in_case",
-  "p3b_x_rot": "loop_body_wired_src_to_fs_frame_in_case"
+  "p3b_x_err_in": "loop_body_wired_src_to_fs_frame_in_case"
  },
  "compile": {
+  "('wire_remove_loose_ends', None)": 15,
   "('create', 'fs_create')": 1,
   "('create', 'fs_frame')": 2,
   "('create', 'local_read')": 5,
   "('create', 'primitive')": 7,
   "('create', 'local_write')": 6,
   "('create', 'subvi')": 1,
-  "('connect', None)": 23
+  "('connect', None)": 12,
+  "('connect_term_uid', 'fs_border')": 10,
+  "('connect_term_uid', 'fs_border_inner_branch')": 4
  },
  "compile_crossings": {
-  "p3b_x_i_f1": "connect:None",
-  "p3b_x_i_f3": "connect:None",
-  "p3b_x_i_ia1": "connect:None",
-  "p3b_x_i_rat1": "connect:None",
-  "p3b_x_i_rar1": "connect:None",
-  "p3b_x_i_raf1": "connect:None",
-  "p3b_x_bn_n3": "connect:None",
-  "p3b_x_bn_latest": "connect:None",
-  "p3b_x_img_src": "connect:None",
-  "p3b_x_fidx": "connect:None",
-  "p3b_x_pool": "connect:None"
+  "p3b_x_i_f1": "connect_term_uid:fs_border",
+  "p3b_x_i_f3": "connect_term_uid:fs_border",
+  "p3b_x_i_ia1": "connect_term_uid:fs_border",
+  "p3b_x_i_rat1": "connect_term_uid:fs_border_inner_branch",
+  "p3b_x_i_rar1": "connect_term_uid:fs_border_inner_branch",
+  "p3b_x_i_raf1": "connect_term_uid:fs_border_inner_branch",
+  "p3b_x_bn_n3": "connect_term_uid:fs_border",
+  "p3b_x_bn_latest": "connect_term_uid:fs_border_inner_branch",
+  "p3b_x_img_src": "connect_term_uid:fs_border",
+  "p3b_x_trans": "connect_term_uid:fs_border",
+  "p3b_x_rot": "connect_term_uid:fs_border",
+  "p3b_x_fidx": "connect_term_uid:fs_border",
+  "p3b_x_pool": "connect_term_uid:fs_border",
+  "p3b_x_err_in": "connect_term_uid:fs_border"
  },
  "sim": {
   "A": {
@@ -83,19 +88,280 @@
    ]
   },
   "B": {
-   "rows": 45,
-   "ok_steps": 34,
-   "failed": {
-    "n": 35,
-    "op": "wire",
-    "id": "p3b_x_i_f1",
-    "error": "wire {'uid': 27373, 'term': 'x-y*floor(x/y)'} -> new:RAN1.index: source on diagram 27219, sink on diagram -2 - a border needs a tunnel/register action first"
-   },
-   "final": false,
-   "end_cdiff": null
+   "rows": 63,
+   "ok_steps": 63,
+   "failed": null,
+   "final": true,
+   "end_cdiff": [
+    "11261|Terminal|array|0",
+    "11261|Terminal|element|0",
+    "2626|Terminal|array|0",
+    "2626|Terminal|array|1",
+    "2626|Terminal|array|2",
+    "2626|Terminal|array|3",
+    "2626|Terminal|element|0",
+    "2626|Terminal|element|1",
+    "2626|Terminal|element|2",
+    "28083|Terminal|Magnet position|0",
+    "29625|Terminal|index (col)|0",
+    "29973|Terminal|element|1",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|frame index|0",
+    "5058|Terminal|Image In|0",
+    "8634|Terminal|index (col)|0"
+   ],
+   "crossings": {
+    "p3b_x_i_f1": {
+     "how": "fs_border",
+     "variant": "case_frame_to_fs_frame",
+     "census": {
+      "FlatSequenceOuterTunnel": 1,
+      "Terminal": 2,
+      "Wire": 2
+     },
+     "borders": [
+      [
+       "in",
+       "FlatSequence"
+      ]
+     ]
+    },
+    "p3b_x_i_f3": {
+     "how": "fs_border",
+     "variant": "case_frame_to_fs_frame_branch",
+     "census": {
+      "FlatSequenceOuterTunnel": 1,
+      "Terminal": 2,
+      "Wire": 2
+     },
+     "borders": [
+      [
+       "in",
+       "FlatSequence"
+      ]
+     ]
+    },
+    "p3b_x_i_ia1": {
+     "how": "fs_border",
+     "variant": "case_frame_to_fs_frame_branch",
+     "census": {
+      "FlatSequenceOuterTunnel": 1,
+      "Terminal": 2,
+      "Wire": 2
+     },
+     "borders": [
+      [
+       "in",
+       "FlatSequence"
+      ]
+     ]
+    },
+    "p3b_x_i_rat1": {
+     "how": "fs_inner_branch",
+     "variant": null,
+     "census": {},
+     "borders": null
+    },
+    "p3b_x_i_rar1": {
+     "how": "fs_inner_branch",
+     "variant": null,
+     "census": {},
+     "borders": null
+    },
+    "p3b_x_i_raf1": {
+     "how": "fs_inner_branch",
+     "variant": null,
+     "census": {},
+     "borders": null
+    },
+    "p3b_x_bn_n3": {
+     "how": "fs_border",
+     "variant": "loop_body_wired_src_to_fs_frame_in_case",
+     "census": {
+      "SelectorTunnel": 1,
+      "FlatSequenceOuterTunnel": 1,
+      "OuterTerminal": 1,
+      "InnerTerminal": 2,
+      "Terminal": 2,
+      "Wire": 3
+     },
+     "borders": [
+      [
+       "in",
+       "CaseStructure"
+      ],
+      [
+       "in",
+       "FlatSequence"
+      ]
+     ]
+    },
+    "p3b_x_bn_latest": {
+     "how": "fs_inner_branch",
+     "variant": null,
+     "census": {},
+     "borders": null
+    },
+    "p3b_x_img_src": {
+     "how": "fs_border",
+     "variant": "loop_body_wired_src_to_fs_frame_in_case",
+     "census": {
+      "SelectorTunnel": 1,
+      "FlatSequenceOuterTunnel": 1,
+      "OuterTerminal": 1,
+      "InnerTerminal": 2,
+      "Terminal": 2,
+      "Wire": 3
+     },
+     "borders": [
+      [
+       "in",
+       "CaseStructure"
+      ],
+      [
+       "in",
+       "FlatSequence"
+      ]
+     ]
+    },
+    "p3b_x_trans": {
+     "how": "fs_border",
+     "variant": "loop_body_wired_src_to_fs_frame_in_case",
+     "census": {
+      "SelectorTunnel": 1,
+      "FlatSequenceOuterTunnel": 1,
+      "OuterTerminal": 1,
+      "InnerTerminal": 2,
+      "Terminal": 2,
+      "Wire": 3
+     },
+     "borders": [
+      [
+       "in",
+       "CaseStructure"
+      ],
+      [
+       "in",
+       "FlatSequence"
+      ]
+     ]
+    },
+    "p3b_x_rot": {
+     "how": "fs_border",
+     "variant": "loop_body_wired_src_to_fs_frame_in_case",
+     "census": {
+      "SelectorTunnel": 1,
+      "FlatSequenceOuterTunnel": 1,
+      "OuterTerminal": 1,
+      "InnerTerminal": 2,
+      "Terminal": 2,
+      "Wire": 3
+     },
+     "borders": [
+      [
+       "in",
+       "CaseStructure"
+      ],
+      [
+       "in",
+       "FlatSequence"
+      ]
+     ]
+    },
+    "p3b_x_fidx": {
+     "how": "fs_border",
+     "variant": "loop_body_wired_src_to_fs_frame_in_case",
+     "census": {
+      "SelectorTunnel": 1,
+      "FlatSequenceOuterTunnel": 1,
+      "OuterTerminal": 1,
+      "InnerTerminal": 2,
+      "Terminal": 2,
+      "Wire": 3
+     },
+     "borders": [
+      [
+       "in",
+       "CaseStructure"
+      ],
+      [
+       "in",
+       "FlatSequence"
+      ]
+     ]
+    },
+    "p3b_x_pool": {
+     "how": "fs_border",
+     "variant": "for_body_unwired_src_to_fs_frame_multi_border",
+     "census": {
+      "LoopTunnel": 2,
+      "FlatSequenceOuterTunnel": 3,
+      "SelectorTunnel": 1,
+      "OuterTerminal": 3,
+      "InnerTerminal": 4,
+      "Terminal": 6,
+      "Wire": 7
+     },
+     "borders": [
+      [
+       "out",
+       "ForLoop"
+      ],
+      [
+       "out",
+       "FlatSequence"
+      ],
+      [
+       "in",
+       "FlatSequence"
+      ],
+      [
+       "in",
+       "WhileLoop"
+      ],
+      [
+       "in",
+       "CaseStructure"
+      ],
+      [
+       "in",
+       "FlatSequence"
+      ]
+     ]
+    },
+    "p3b_x_err_in": {
+     "how": "fs_border",
+     "variant": "loop_body_wired_src_to_fs_frame_in_case",
+     "census": {
+      "SelectorTunnel": 1,
+      "FlatSequenceOuterTunnel": 1,
+      "OuterTerminal": 1,
+      "InnerTerminal": 2,
+      "Terminal": 2,
+      "Wire": 3
+     },
+     "borders": [
+      [
+       "in",
+       "CaseStructure"
+      ],
+      [
+       "in",
+       "FlatSequence"
+      ]
+     ]
+    }
+   }
   }
  },
  "rows": [
+  {
+   "id": "p3b_rle_w27378",
+   "op": "wire_remove_loose_ends",
+   "route": "wire_remove_loose_ends",
+   "status": "MEASURED",
+   "created": {}
+  },
   {
    "id": "p3b_fs",
    "op": "create",
@@ -104,8 +370,7 @@
    "created": {
     "FlatSequence": 1,
     "Diagram": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_fr2",
@@ -114,8 +379,7 @@
    "status": "MEASURED",
    "created": {
     "Diagram": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_fr3",
@@ -124,8 +388,7 @@
    "status": "MEASURED",
    "created": {
     "Diagram": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_lr_num1",
@@ -134,8 +397,7 @@
    "status": "PRECEDENT",
    "created": {
     "Local": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_ras_num1",
@@ -144,8 +406,7 @@
    "status": "PRECEDENT",
    "created": {
     "GrowableFunction": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_k_m1",
@@ -154,8 +415,7 @@
    "status": "MEASURED",
    "created": {
     "DigitalNumericConstant": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_lw_num1",
@@ -164,8 +424,7 @@
    "status": "PRECEDENT",
    "created": {
     "Local": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_ia",
@@ -174,8 +433,7 @@
    "status": "PRECEDENT",
    "created": {
     "IndexArray": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_copy",
@@ -184,8 +442,7 @@
    "status": "PRECEDENT",
    "created": {
     "SubVI": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_lr_transpos",
@@ -194,8 +451,7 @@
    "status": "PRECEDENT",
    "created": {
     "Local": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_ras_transpos",
@@ -204,8 +460,7 @@
    "status": "PRECEDENT",
    "created": {
     "GrowableFunction": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_lw_transpos",
@@ -214,8 +469,7 @@
    "status": "PRECEDENT",
    "created": {
     "Local": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_lr_rotpos",
@@ -224,8 +478,7 @@
    "status": "PRECEDENT",
    "created": {
     "Local": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_ras_rotpos",
@@ -234,8 +487,7 @@
    "status": "PRECEDENT",
    "created": {
     "GrowableFunction": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_lw_rotpos",
@@ -244,8 +496,7 @@
    "status": "PRECEDENT",
    "created": {
     "Local": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_lr_frameidx",
@@ -254,8 +505,7 @@
    "status": "PRECEDENT",
    "created": {
     "Local": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_ras_frameidx",
@@ -264,8 +514,7 @@
    "status": "PRECEDENT",
    "created": {
     "GrowableFunction": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_lw_frameidx",
@@ -274,8 +523,7 @@
    "status": "PRECEDENT",
    "created": {
     "Local": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_lr_num3",
@@ -284,8 +532,7 @@
    "status": "PRECEDENT",
    "created": {
     "Local": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_ras_num3",
@@ -294,8 +541,7 @@
    "status": "PRECEDENT",
    "created": {
     "GrowableFunction": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_lw_num3",
@@ -304,8 +550,7 @@
    "status": "PRECEDENT",
    "created": {
     "Local": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_lw_latest",
@@ -314,8 +559,7 @@
    "status": "PRECEDENT",
    "created": {
     "Local": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_w_n1_arr",
@@ -324,8 +568,7 @@
    "status": "PRECEDENT",
    "created": {
     "Wire": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_w_m1_new",
@@ -334,8 +577,7 @@
    "status": "PRECEDENT",
    "created": {
     "Wire": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_w_n1_out",
@@ -344,8 +586,7 @@
    "status": "PRECEDENT",
    "created": {
     "Wire": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_w_ia_dst",
@@ -354,8 +595,7 @@
    "status": "PRECEDENT",
    "created": {
     "Wire": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_w_t_arr",
@@ -364,8 +604,7 @@
    "status": "PRECEDENT",
    "created": {
     "Wire": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_w_t_out",
@@ -374,8 +613,7 @@
    "status": "PRECEDENT",
    "created": {
     "Wire": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_w_r_arr",
@@ -384,8 +622,7 @@
    "status": "PRECEDENT",
    "created": {
     "Wire": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_w_r_out",
@@ -394,8 +631,7 @@
    "status": "PRECEDENT",
    "created": {
     "Wire": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_w_f_arr",
@@ -404,8 +640,7 @@
    "status": "PRECEDENT",
    "created": {
     "Wire": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_w_f_out",
@@ -414,8 +649,7 @@
    "status": "PRECEDENT",
    "created": {
     "Wire": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_w_n3_arr",
@@ -424,8 +658,7 @@
    "status": "PRECEDENT",
    "created": {
     "Wire": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_w_n3_out",
@@ -434,8 +667,7 @@
    "status": "PRECEDENT",
    "created": {
     "Wire": 1
-   },
-   "held": false
+   }
   },
   {
    "id": "p3b_x_i_f1",
@@ -449,8 +681,14 @@
      "Terminal": 2,
      "Wire": 2
     }
-   },
-   "held": false
+   }
+  },
+  {
+   "id": "p3b_rle_i_f1",
+   "op": "wire_remove_loose_ends",
+   "route": "wire_remove_loose_ends",
+   "status": "MEASURED",
+   "created": {}
   },
   {
    "id": "p3b_x_i_f3",
@@ -464,8 +702,14 @@
      "Terminal": 2,
      "Wire": 2
     }
-   },
-   "held": false
+   }
+  },
+  {
+   "id": "p3b_rle_i_f3",
+   "op": "wire_remove_loose_ends",
+   "route": "wire_remove_loose_ends",
+   "status": "MEASURED",
+   "created": {}
   },
   {
    "id": "p3b_x_i_ia1",
@@ -479,32 +723,65 @@
      "Terminal": 2,
      "Wire": 2
     }
-   },
-   "held": false
+   }
+  },
+  {
+   "id": "p3b_rle_i_ia1",
+   "op": "wire_remove_loose_ends",
+   "route": "wire_remove_loose_ends",
+   "status": "MEASURED",
+   "created": {}
   },
   {
    "id": "p3b_x_i_rat1",
    "op": "wire",
    "route": "connect_term_uid ACROSS FS border (27219 -> f1), BRANCH into f1 already entered",
-   "status": "UNMEASURED",
-   "created": "UNMEASURED: 2nd+ sink of one source into a frame it ALREADY entered: not measured (126-4/126-6 measured only a NEW frame)",
-   "held": false
+   "status": "MEASURED",
+   "created": {
+    "variant": "fs_inner_branch (PD257(d))",
+    "delta": {}
+   }
+  },
+  {
+   "id": "p3b_rle_i_rat1",
+   "op": "wire_remove_loose_ends",
+   "route": "wire_remove_loose_ends",
+   "status": "MEASURED",
+   "created": {}
   },
   {
    "id": "p3b_x_i_rar1",
    "op": "wire",
    "route": "connect_term_uid ACROSS FS border (27219 -> f1), BRANCH into f1 already entered",
-   "status": "UNMEASURED",
-   "created": "UNMEASURED: 2nd+ sink of one source into a frame it ALREADY entered: not measured (126-4/126-6 measured only a NEW frame)",
-   "held": false
+   "status": "MEASURED",
+   "created": {
+    "variant": "fs_inner_branch (PD257(d))",
+    "delta": {}
+   }
+  },
+  {
+   "id": "p3b_rle_i_rar1",
+   "op": "wire_remove_loose_ends",
+   "route": "wire_remove_loose_ends",
+   "status": "MEASURED",
+   "created": {}
   },
   {
    "id": "p3b_x_i_raf1",
    "op": "wire",
    "route": "connect_term_uid ACROSS FS border (27219 -> f1), BRANCH into f1 already entered",
-   "status": "UNMEASURED",
-   "created": "UNMEASURED: 2nd+ sink of one source into a frame it ALREADY entered: not measured (126-4/126-6 measured only a NEW frame)",
-   "held": false
+   "status": "MEASURED",
+   "created": {
+    "variant": "fs_inner_branch (PD257(d))",
+    "delta": {}
+   }
+  },
+  {
+   "id": "p3b_rle_i_raf1",
+   "op": "wire_remove_loose_ends",
+   "route": "wire_remove_loose_ends",
+   "status": "MEASURED",
+   "created": {}
   },
   {
    "id": "p3b_x_bn_n3",
@@ -521,16 +798,31 @@
      "Terminal": 2,
      "Wire": 3
     }
-   },
-   "held": false
+   }
+  },
+  {
+   "id": "p3b_rle_bn_n3",
+   "op": "wire_remove_loose_ends",
+   "route": "wire_remove_loose_ends",
+   "status": "MEASURED",
+   "created": {}
   },
   {
    "id": "p3b_x_bn_latest",
    "op": "wire",
    "route": "connect_term_uid ACROSS case border (639 -> 27219) + FS border (-> f2)",
-   "status": "UNMEASURED",
-   "created": "UNMEASURED: 2nd+ sink of one source into a frame it ALREADY entered: not measured (126-4/126-6 measured only a NEW frame)",
-   "held": false
+   "status": "MEASURED",
+   "created": {
+    "variant": "fs_inner_branch (PD257(d))",
+    "delta": {}
+   }
+  },
+  {
+   "id": "p3b_rle_bn_latest",
+   "op": "wire_remove_loose_ends",
+   "route": "wire_remove_loose_ends",
+   "status": "MEASURED",
+   "created": {}
   },
   {
    "id": "p3b_x_img_src",
@@ -547,8 +839,62 @@
      "Terminal": 2,
      "Wire": 3
     }
-   },
-   "held": false
+   }
+  },
+  {
+   "id": "p3b_rle_img_src",
+   "op": "wire_remove_loose_ends",
+   "route": "wire_remove_loose_ends",
+   "status": "MEASURED",
+   "created": {}
+  },
+  {
+   "id": "p3b_x_trans",
+   "op": "wire",
+   "route": "connect_term_uid ACROSS case border (639 -> 27219) + FS border (-> f1)",
+   "status": "MEASURED",
+   "created": {
+    "variant": "loop_body_wired_src_to_fs_frame_in_case",
+    "delta": {
+     "FlatSequenceOuterTunnel": 1,
+     "InnerTerminal": 2,
+     "OuterTerminal": 1,
+     "SelectorTunnel": 1,
+     "Terminal": 2,
+     "Wire": 3
+    }
+   }
+  },
+  {
+   "id": "p3b_rle_trans",
+   "op": "wire_remove_loose_ends",
+   "route": "wire_remove_loose_ends",
+   "status": "MEASURED",
+   "created": {}
+  },
+  {
+   "id": "p3b_x_rot",
+   "op": "wire",
+   "route": "connect_term_uid ACROSS case border (639 -> 27219) + FS border (-> f1)",
+   "status": "MEASURED",
+   "created": {
+    "variant": "loop_body_wired_src_to_fs_frame_in_case",
+    "delta": {
+     "FlatSequenceOuterTunnel": 1,
+     "InnerTerminal": 2,
+     "OuterTerminal": 1,
+     "SelectorTunnel": 1,
+     "Terminal": 2,
+     "Wire": 3
+    }
+   }
+  },
+  {
+   "id": "p3b_rle_rot",
+   "op": "wire_remove_loose_ends",
+   "route": "wire_remove_loose_ends",
+   "status": "MEASURED",
+   "created": {}
   },
   {
    "id": "p3b_x_fidx",
@@ -565,8 +911,14 @@
      "Terminal": 2,
      "Wire": 3
     }
-   },
-   "held": false
+   }
+  },
+  {
+   "id": "p3b_rle_fidx",
+   "op": "wire_remove_loose_ends",
+   "route": "wire_remove_loose_ends",
+   "status": "MEASURED",
+   "created": {}
   },
   {
    "id": "p3b_x_pool",
@@ -584,191 +936,84 @@
      "Terminal": 6,
      "Wire": 7
     }
-   },
-   "held": false
+   }
   },
   {
-   "id": "p3b_x_trans",
-   "op": "wire",
-   "route": "connect_term_uid ACROSS case border (639 -> 27219) + FS border (-> f1)",
-   "status": "HELD",
-   "created": {
-    "variant": "loop_body_wired_src_to_fs_frame_in_case",
-    "delta": {
-     "FlatSequenceOuterTunnel": 1,
-     "InnerTerminal": 2,
-     "OuterTerminal": 1,
-     "SelectorTunnel": 1,
-     "Terminal": 2,
-     "Wire": 3
-    }
-   },
-   "held": true
-  },
-  {
-   "id": "p3b_x_rot",
-   "op": "wire",
-   "route": "connect_term_uid ACROSS case border (639 -> 27219) + FS border (-> f1)",
-   "status": "HELD",
-   "created": {
-    "variant": "loop_body_wired_src_to_fs_frame_in_case",
-    "delta": {
-     "FlatSequenceOuterTunnel": 1,
-     "InnerTerminal": 2,
-     "OuterTerminal": 1,
-     "SelectorTunnel": 1,
-     "Terminal": 2,
-     "Wire": 3
-    }
-   },
-   "held": true
-  }
- ],
- "held_rows": [
-  {
-   "op": "wire",
-   "id": "p3b_x_trans",
-   "src": {
-    "uid": 30117,
-    "term": "Value"
-   },
-   "dst": "new:RAT1.new element/subarray",
-   "why": "ROUTE connect_term_uid ACROSS case border (639 -> 27219) + FS border (-> f1) | HELD | PD238(c) TransPos(i) = #30117 Value t30145 | census_samples.json connect_term_uid loop_body_wired_src_to_fs_frame_in_case (diag_c126_6_cross.log:49,60): source net RE-CREATED (PD256(c)) (form) | PD256(e) HELD"
-  },
-  {
-   "op": "wire",
-   "id": "p3b_x_rot",
-   "src": {
-    "uid": 4580,
-    "term": "Value"
-   },
-   "dst": "new:RAR1.new element/subarray",
-   "why": "ROUTE connect_term_uid ACROSS case border (639 -> 27219) + FS border (-> f1) | HELD | PD238(c) RotPos(i) = #4580 Value t4728 | census_samples.json connect_term_uid loop_body_wired_src_to_fs_frame_in_case (diag_c126_6_cross.log:49,60): source net RE-CREATED (PD256(c)) (form) | PD256(e) HELD"
-  }
- ],
- "post_rows": [
-  {
-   "op": "wire_remove_loose_ends",
-   "id": "p3b_rle_w27378",
-   "before": "p3b_fs",
-   "wire_uid": 27378,
-   "status": "MEASURED",
-   "why": "ROUTE gscript.wire_remove_loose_ends (tools/gscript.py:4972, OpWireRemoveLooseEnds_v0) | MEASURED | diag_c126_4_op.log:52-60; diag_c126_6_cross.log:61-65 | PD253(d)/PD255(b) P3a stub w27378 (Error List 55 -> 54)"
-  },
-  {
-   "op": "wire_remove_loose_ends",
-   "id": "p3b_rle_i_f1",
-   "after": "p3b_x_i_f1",
-   "wires": "every NEW Wire of p3b_x_i_f1 (census delta)",
-   "status": "MEASURED",
-   "why": "ROUTE gscript.wire_remove_loose_ends (tools/gscript.py:4972, OpWireRemoveLooseEnds_v0) | MEASURED | diag_c126_4_op.log:52-60; diag_c126_6_cross.log:61-65 | PD256(b) every new crossing wire"
-  },
-  {
-   "op": "wire_remove_loose_ends",
-   "id": "p3b_rle_i_f3",
-   "after": "p3b_x_i_f3",
-   "wires": "every NEW Wire of p3b_x_i_f3 (census delta)",
-   "status": "MEASURED",
-   "why": "ROUTE gscript.wire_remove_loose_ends (tools/gscript.py:4972, OpWireRemoveLooseEnds_v0) | MEASURED | diag_c126_4_op.log:52-60; diag_c126_6_cross.log:61-65 | PD256(b) every new crossing wire"
-  },
-  {
-   "op": "wire_remove_loose_ends",
-   "id": "p3b_rle_i_ia1",
-   "after": "p3b_x_i_ia1",
-   "wires": "every NEW Wire of p3b_x_i_ia1 (census delta)",
-   "status": "MEASURED",
-   "why": "ROUTE gscript.wire_remove_loose_ends (tools/gscript.py:4972, OpWireRemoveLooseEnds_v0) | MEASURED | diag_c126_4_op.log:52-60; diag_c126_6_cross.log:61-65 | PD256(b) every new crossing wire"
-  },
-  {
-   "op": "wire_remove_loose_ends",
-   "id": "p3b_rle_i_rat1",
-   "after": "p3b_x_i_rat1",
-   "wires": "every NEW Wire of p3b_x_i_rat1 (census delta)",
-   "status": "MEASURED",
-   "why": "ROUTE gscript.wire_remove_loose_ends (tools/gscript.py:4972, OpWireRemoveLooseEnds_v0) | MEASURED | diag_c126_4_op.log:52-60; diag_c126_6_cross.log:61-65 | PD256(b) every new crossing wire"
-  },
-  {
-   "op": "wire_remove_loose_ends",
-   "id": "p3b_rle_i_rar1",
-   "after": "p3b_x_i_rar1",
-   "wires": "every NEW Wire of p3b_x_i_rar1 (census delta)",
-   "status": "MEASURED",
-   "why": "ROUTE gscript.wire_remove_loose_ends (tools/gscript.py:4972, OpWireRemoveLooseEnds_v0) | MEASURED | diag_c126_4_op.log:52-60; diag_c126_6_cross.log:61-65 | PD256(b) every new crossing wire"
-  },
-  {
-   "op": "wire_remove_loose_ends",
-   "id": "p3b_rle_i_raf1",
-   "after": "p3b_x_i_raf1",
-   "wires": "every NEW Wire of p3b_x_i_raf1 (census delta)",
-   "status": "MEASURED",
-   "why": "ROUTE gscript.wire_remove_loose_ends (tools/gscript.py:4972, OpWireRemoveLooseEnds_v0) | MEASURED | diag_c126_4_op.log:52-60; diag_c126_6_cross.log:61-65 | PD256(b) every new crossing wire"
-  },
-  {
-   "op": "wire_remove_loose_ends",
-   "id": "p3b_rle_bn_n3",
-   "after": "p3b_x_bn_n3",
-   "wires": "every NEW Wire of p3b_x_bn_n3 (census delta)",
-   "status": "MEASURED",
-   "why": "ROUTE gscript.wire_remove_loose_ends (tools/gscript.py:4972, OpWireRemoveLooseEnds_v0) | MEASURED | diag_c126_4_op.log:52-60; diag_c126_6_cross.log:61-65 | PD256(b) every new crossing wire"
-  },
-  {
-   "op": "wire_remove_loose_ends",
-   "id": "p3b_rle_bn_latest",
-   "after": "p3b_x_bn_latest",
-   "wires": "every NEW Wire of p3b_x_bn_latest (census delta)",
-   "status": "MEASURED",
-   "why": "ROUTE gscript.wire_remove_loose_ends (tools/gscript.py:4972, OpWireRemoveLooseEnds_v0) | MEASURED | diag_c126_4_op.log:52-60; diag_c126_6_cross.log:61-65 | PD256(b) every new crossing wire"
-  },
-  {
-   "op": "wire_remove_loose_ends",
-   "id": "p3b_rle_img_src",
-   "after": "p3b_x_img_src",
-   "wires": "every NEW Wire of p3b_x_img_src (census delta)",
-   "status": "MEASURED",
-   "why": "ROUTE gscript.wire_remove_loose_ends (tools/gscript.py:4972, OpWireRemoveLooseEnds_v0) | MEASURED | diag_c126_4_op.log:52-60; diag_c126_6_cross.log:61-65 | PD256(b) every new crossing wire"
-  },
-  {
-   "op": "wire_remove_loose_ends",
-   "id": "p3b_rle_fidx",
-   "after": "p3b_x_fidx",
-   "wires": "every NEW Wire of p3b_x_fidx (census delta)",
-   "status": "MEASURED",
-   "why": "ROUTE gscript.wire_remove_loose_ends (tools/gscript.py:4972, OpWireRemoveLooseEnds_v0) | MEASURED | diag_c126_4_op.log:52-60; diag_c126_6_cross.log:61-65 | PD256(b) every new crossing wire"
-  },
-  {
-   "op": "wire_remove_loose_ends",
    "id": "p3b_rle_pool",
-   "after": "p3b_x_pool",
-   "wires": "every NEW Wire of p3b_x_pool (census delta)",
+   "op": "wire_remove_loose_ends",
+   "route": "wire_remove_loose_ends",
    "status": "MEASURED",
-   "why": "ROUTE gscript.wire_remove_loose_ends (tools/gscript.py:4972, OpWireRemoveLooseEnds_v0) | MEASURED | diag_c126_4_op.log:52-60; diag_c126_6_cross.log:61-65 | PD256(b) every new crossing wire"
+   "created": {}
   },
   {
-   "op": "wire_remove_loose_ends",
-   "id": "p3b_rle_trans",
-   "after": "p3b_x_trans",
-   "wires": "every NEW Wire of p3b_x_trans (census delta)",
-   "status": "HELD",
-   "why": "ROUTE gscript.wire_remove_loose_ends (tools/gscript.py:4972, OpWireRemoveLooseEnds_v0) | MEASURED | diag_c126_4_op.log:52-60; diag_c126_6_cross.log:61-65 | PD256(b) every new crossing wire"
+   "id": "p3b_x_err_in",
+   "op": "wire",
+   "route": "connect_term_uid ACROSS case border (639 -> 27219) + FS border (-> f1)",
+   "status": "MEASURED",
+   "created": {
+    "variant": "loop_body_wired_src_to_fs_frame_in_case",
+    "delta": {
+     "FlatSequenceOuterTunnel": 1,
+     "InnerTerminal": 2,
+     "OuterTerminal": 1,
+     "SelectorTunnel": 1,
+     "Terminal": 2,
+     "Wire": 3
+    }
+   }
   },
   {
+   "id": "p3b_rle_err_in",
    "op": "wire_remove_loose_ends",
-   "id": "p3b_rle_rot",
-   "after": "p3b_x_rot",
-   "wires": "every NEW Wire of p3b_x_rot (census delta)",
-   "status": "HELD",
-   "why": "ROUTE gscript.wire_remove_loose_ends (tools/gscript.py:4972, OpWireRemoveLooseEnds_v0) | MEASURED | diag_c126_4_op.log:52-60; diag_c126_6_cross.log:61-65 | PD256(b) every new crossing wire"
+   "route": "wire_remove_loose_ends",
+   "status": "MEASURED",
+   "created": {}
   }
  ],
  "recreated_nets": {
   "old_terms": {
    "3747": 8,
    "3268": 8,
-   "3040": 1
+   "3040": 1,
+   "30592": 2,
+   "4878": 1,
+   "653": 2
   },
   "new_terms_126_6": {
    "3747": 9,
    "3268": 9
+  },
+  "end_keep": {
+   "3747": {
+    "old_terms": 8,
+    "on_src_net": 8,
+    "end_wire": -101
+   },
+   "3268": {
+    "old_terms": 8,
+    "on_src_net": 8,
+    "end_wire": -141
+   },
+   "3040": {
+    "old_terms": 1,
+    "on_src_net": 1,
+    "end_wire": -111
+   },
+   "30592": {
+    "old_terms": 2,
+    "on_src_net": 2,
+    "end_wire": -121
+   },
+   "4878": {
+    "old_terms": 1,
+    "on_src_net": 1,
+    "end_wire": -131
+   },
+   "653": {
+    "old_terms": 2,
+    "on_src_net": 2,
+    "end_wire": -177
+   }
   }
  },
  "dedupe": {
@@ -798,11 +1043,111 @@
   "nonidentical": []
  },
  "open": [
-  "TOOLING: stagesim has no model for a border-crossing connect (126-6's connect_term_uid variants); replay B stops at p3b_x_i_f1 - so no end cdiff for P3b; stagexec compiles the crossings to ['connect:None']",
-  "TOOLING: stageplan/1 has no wire_remove_loose_ends op (docs/protocol/stageplan.json:252-263); the 14 RLE rows live in plan_ring_p3b_rows.json post_rows - a recipe must apply them",
-  "PD256(e): STEP 1 shows the ORIGINAL's #2626 element <- #30117 Value / #4580 Value (diag_c126_8_orig.log); release the 2 HELD rows? w4878's #2626 sink was opened at L2-B1 (open row (2626,'element'))",
-  "UNMEASURED: 4 rows are a 2nd+ sink of one source into a frame it already entered (i -> f1 x3, BufNum -> f2 Latest)",
-  "IMAQ Copy 'error in'/'error out' left UNWIRED (PD256(f) open)",
-  "ROWS: 45 actions + 14 RLE post rows > 25 (proven-pattern cap); PD255(c): ONE step with a full scratch run"
+  "PD258(c) HELD (UNMEASURED): Unbundle By Name `status` + Select + const -1 + 4 wires + BufNum retarget to Select.f - no donor in the OpPrimCopyNested_v0 registry and no recorded terminal table for Select / an error-cluster Unbundle By Name",
+  "IMAQ Copy 'error out' left UNWIRED until the HELD rows land; 'error in' <- #6810 error out is IN (p3b_x_err_in)",
+  "IMAQ Copy: 3 connector slots measured UNNAMED ('' x3, graph_harness_copyloop_c95.json #11 t132/t138/t144); stagexec binds them by order",
+  "ROWS: 63 actions > 40 (D-2026-10-01-01 cap for P3b); PD255(c): ONE step with a full scratch run"
+ ],
+ "held_rows": [
+  {
+   "op": "create",
+   "id": "p3b_ub_status",
+   "class": "NamedUnbundler",
+   "diagram": "new:FS1.f2",
+   "as": "UB1",
+   "pos": [
+    60,
+    120
+   ],
+   "prim": "Unbundle By Name",
+   "donor": null,
+   "terminals": [
+    {
+     "name": "input cluster",
+     "is_source": false,
+     "term_class": "Terminal",
+     "src": "MEASURED class/name: bed NamedUnbundler #27462 t27464"
+    },
+    {
+     "name": "status",
+     "is_source": true,
+     "term_class": "Terminal",
+     "src": "UNMEASURED name (error-cluster element); class as #27462's outputs"
+    }
+   ],
+   "why": "ROUTE primitive donor ? | UNMEASURED | PD258(c) Unbundle By Name status | no donor registered/recorded; terminal table not recorded - scratch/donor owed"
+  },
+  {
+   "op": "create",
+   "id": "p3b_sel",
+   "class": "?",
+   "diagram": "new:FS1.f2",
+   "as": "SEL1",
+   "pos": [
+    120,
+    120
+   ],
+   "prim": "Select",
+   "donor": null,
+   "terminals": "UNMEASURED (s / t / f / output: names and term_class recorded nowhere)",
+   "why": "ROUTE primitive donor ? | UNMEASURED | PD258(c) Select | no donor registered/recorded; terminal table not recorded - scratch/donor owed"
+  },
+  {
+   "op": "create",
+   "id": "p3b_k_m3",
+   "class": "DigitalNumericConstant",
+   "diagram": "new:FS1.f2",
+   "as": "KM3",
+   "pos": [
+    60,
+    200
+   ],
+   "prim": "const_donor",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRingConst_v0.vi",
+    "uid": 249
+   },
+   "terminals": [
+    {
+     "name": "",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE primitive const_donor | MEASURED | PD238(c) Num(i)=-1 | const in a FS frame: diag_c125_5_fsscr.log:41-47 (C-3a); I32 -1 = DonorRingConst_v0 #249 (PD247(a))"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_w_err_ub",
+   "src": "new:CP1.error out",
+   "dst": "new:UB1.input cluster",
+   "why": "ROUTE fs_frame_to_frame (f1 -> f2) | MEASURED | PD258(c) | stagesim FS_MEASURED"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_w_ub_sel",
+   "src": "new:UB1.status",
+   "dst": "new:SEL1.s",
+   "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD258(c) s = status | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run | UNMEASURED terminal names"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_w_m3_sel",
+   "src": "new:KM3.value",
+   "dst": "new:SEL1.t",
+   "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD258(c) t = -1 | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run | UNMEASURED terminal names"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_w_sel_n3",
+   "src": "new:SEL1.output",
+   "dst": "new:RAN3.new element/subarray",
+   "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD258(c) element = status ? -1 : BufNum | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run"
+  },
+  {
+   "retarget": "p3b_x_bn_n3",
+   "dst": "new:SEL1.f",
+   "why": "PD258(c): BufNum feeds Select.f, not RAN3 directly (Latest = BufNum unchanged)"
+  }
  ]
 }

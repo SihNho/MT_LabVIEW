@@ -5318,3 +5318,119 @@ VIOLATION: none
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle126","verdict":"none","alternative":"Brief defects on the offline track (126-5 no hypothesis peer, dedupe_rows not named, 126-7 given the bed graph for a question about the original) cost ~12 min; would be structural only if counted as changing the ending.","discriminating_test":"Replay task_126-7 with main_vi_nodeterms.json + V.dedupe_rows: if it PASSes in <=5 min, the loss is the 126-8 card (~12 min); output identical either way.","violations":[],"sources":["tools/bench/cards/task_126-7.json:12","tools/bench/cards/task_126-5.json:49","tools/vigraph.py:260","tools/bench/diag_c126_8_orig.log:45","tools/bench/cards/guard_card.log:546","tools/bench/peer_c126_2_wiremethods.log:4"],"note":"8 cards/113 min; all failures returned at first gate; devices worked (hygiene_run in 3/3 checks). Findings: own-gate literal compares (126-2, 126-4), >120-line diagnostics, unqueued gate-fp at guard_card.log:549."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle126.md
 BGRUN END rc=0 after 320s
+BGRUN START 2026-10-01 23:40:53 limit 10.0 min: py tools/retrospective.py --cycle 127
+BGRUN PID 21224
+   window 2026-10-01 22:07:43 .. 2026-10-01 23:40:54 (93 min); 33 build logs, 9 machinery logs, 43 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle127.txt (33368 chars)
+   review card tools\bench\cards\review_retrospective-cycle127.json
+OUTCOME: ANSWERED (316s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-10-01-retrospective-cycle127.md
+COST: $2.0676  in 54 / out 29842 / cache-create 118838 / cache-read 2598981  (314s, 46 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle127 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle127.json
+--- ANSWER ---
+I'm naming one structural fault for cycle 127, and the judgement session caused it. The brief told the LabVIEW diagnostic to read the Error List after every wire, although logs on file already showed each such read takes about 6.5 minutes. The run timed out, and about 24 minutes of the 93 were lost to it.
+
+The evidence window is 22:07:43–23:40:54. The judgement session started at 22:13:12 (`tools/bench/cycle_127.log:1`). It ran five cards:
+
+| Card | Kind | Status | Bound at |
+|---|---|---|---|
+| 127-1 | LabVIEW | FAIL | 22:15:48 |
+| 127-2 | offline | PASS | 22:15:49 |
+| 127-3 | offline | FAIL | 23:10:08 |
+| 127-4 | offline | FAIL | 23:24:34 |
+| 127-5 | LabVIEW | FAIL | 23:24:35 |
+
+The bind times are at `tools/bench/cards/guard_card.log:555-568`. The cycle saved no new VI and launched no stage.
+
+## The structural fault: `inference-over-measurement`, card 127-1
+
+**What happened**
+- `tools/bench/cards/brief_127-1.md:18` asked for an Error List read (`--count-only --role scratch`) after each second-sink wire. The script also read once after the first crossings, so five reads were planned (`diag_c127_1_fsinner.py:37-44`, log `:79,88,98,108`).
+- The cost of one such read was already measured that afternoon: 385.8 s, on 55 items (`tools/bench/stage_d1_ring_p3a_el_scratch.log:89`, run at 17:47). Earlier runs gave the same figure (`stage_d1_ring_p2b_el_scratch.log:88`, `p2a:88`).
+- Five reads come to about 32 min of reads alone. Add the LabVIEW restart and about 100 s per wire, and the run needs about 48 min. The card gave it 50 min in total (`task_127-1.json:59`). The run was launched with a 40-min limit (`diag_c127_1_fsinner.log:1`).
+- That arithmetic was free, and nobody did it.
+
+**What it cost**
+- The run went from 22:22:32 to `BGRUN TIMEOUT killed after 2402s` (`diag_c127_1_fsinner.log:116`).
+- The fourth route row, BufNum → `Latest`, never had its census read.
+- It needed a hypothesis review costing $1.2944 (`archive/peer/2026-10-01-c127-1-fsinner-timeout.md:7`) and a cleanup script that ran twice, 23:03:33 → 23:06:51 (`tools/hooks/material_marker.log:2954-2955`).
+- The three reads after the first one each returned 61 / 24, unchanged (`:88,98,108`). They told us nothing.
+- The review estimates the same diagnostic with one read at the end at about 20 min (`:102`).
+- My loss estimate is about 24 min: about 20 min of LabVIEW time plus about 4 min of review and cleanup. The session's own figure is about 28 min (`docs/d1-loop12-17-split-plan.md:2822`).
+
+**Why it changed how the cycle ended**
+- The offline card 127-2 finished about 22:42. The session dispatched both cards in one message, so it could not continue until 127-1 also returned.
+- Card 127-3 was therefore not bound until 23:10:08. Nothing in the offline lane ran for about 28 min.
+
+**Counterfactual:** Suppose the brief had said "one Error List read at the end" at 22:15. That is exactly the rule PD258(a) made afterwards, at `plan:2759`.
+- The diagnostic ends about 22:43, with all 4 of 4 rows measured.
+- Card 127-3 is dispatched about 22:47 instead of 23:10.
+- The 127-3 → 127-4/127-5 chain ends about 23:18 instead of 23:40.
+- Alternatively, the multi-object binder card that `next.json:4` now leaves for cycle 128 fits into the freed time.
+
+I see no second fault of the same size.
+
+## Findings
+
+**1. Repeated failure.**
+- Three dry runs in a row each stopped at one new simulator defect in code that 127-2 had just added:
+  - the IMAQ Copy binding (`diag_c127_2_checks.log:5-8`);
+  - a `SimError` that escaped the dry run, renumbering bug, with no RESULT line (`diag_c127_3_checks.log:25-26`);
+  - the binding of two new LoopTunnels (`diag_c127_4_checks.log:4-6`). The review for this one already predicts that the 3 FSOT binding fails next.
+- In each case `stagesim` simulated the plan cleanly, but the `stagexec` dry run failed.
+- The approach should have changed at attempt 2 (127-3): audit every row through the simulated backend before fixing the next one, instead of fixing one defect per card.
+- These fixes were real work, though, so I count this as a finding rather than a fault.
+- The Error List time sink is also a repeat across cycles. The count-only mode (card chat-P2) still costs about 6.5 min per read.
+
+**2. Missing tool.**
+- The pre-run checks predict memory (the 2026-09-27 03:30 device) but not wall-clock time.
+- A check that adds up the measured cost of each op and read and compares it with `--max-min` and the card's minutes would have refused 127-1 before launch.
+- Separately, `Stage(deadline_min)` stops nothing on its own (`tools/stagekit.py:294-295`, from the review at `:54`). That remains unfixed.
+
+**3. Unmeasured steps.**
+- The main one is the fault above.
+- 127-5's zero-hit donor search did not log a row count per file (`result_127-5.json:13`). "No such node" and "empty read" cannot be told apart, so a rerun is owed.
+
+**4. Rule compliance (CLAUDE.md).**
+- **Failed prediction without review:** `diag_c127_5_errsel.log` failed and got no archived review (audit A3; CLAUDE.md:673). The judgement session dealt with it directly in PD260(c).
+- **Return at first unexpected result evaded:** 127-2 ran its plan maker three times, fixing failures 1 and 2 inside the card (`result_127-2.json:32`).
+- **"A step leaves a file" broken:** the diagnostic writes OUT only at the end (review `:107`).
+- **What the audit does not cover:**
+  - A4's four blank reviews belong to earlier cycles. A4 works by date only, so it contradicts the window.
+  - C6 calls `material_marker.log:2937,2939` "judgement-session attempts", but both were material-session commands.
+  - C7 lists 371 files, including this cycle's own briefs, so it cannot show scope creep.
+  - No check compares a run's time against its measured costs.
+
+**5. Ordering.** Running the LabVIEW and offline cards side by side (PD257(e)) was sound. The weak point was batching: the session dispatched both in one message, so the offline lane sat idle behind the slow LabVIEW card.
+
+**6. Not reported.**
+- STATUS.md:60 says "MEASURED 3/3". The plan had four rows, so it was 3 of 4; the fourth is deferred to P3b's scratch run.
+- STATUS.md:64 states "no creation route" more firmly than the evidence allows, given the unseparated zero-hit read in Finding 3.
+- Both `BGRUN STAGE-RUN` lines carry `card=None` (`diag_c127_1_fsinner.log:3`, `diag_c127_5_errsel.log:3`).
+- Every result card has `usd: null`. The only dollar figure is the $4.09 spent on reviews.
+
+**7. Judgement inside a material session.**
+- 127-1's material session cut the run limit to 40 min, below the script's documented 45 and the Stage's 42 (review `:57`, `:120`).
+- 127-2 chose an explanation for FS frames whose owner uid is 0, inferring the parent from FSIT rows (`result_127-2.json:19`).
+- 127-3 chose to pair unnamed terminal keys by read order (`result_127-3.json:20`). The 127-4 review later says order-based pairing is wrong for borders.
+- The judgement session accepted all three only afterwards, in PD258(d) and PD259(a).
+
+## Device effect
+
+No listed device failed to stop its own fault inside the window.
+- **Exercised and working:**
+  - `gates_due` (`cycle_127.json:28-49`).
+  - Cost-line parsing (C4b 3/3).
+  - The bgrun inner-failure rc (the `diag_c127_3_checks.log` and `diag_c127_5_errsel` runs both ended rc=1).
+  - The review card's "attack the claim" instructions (review `:39-44`).
+  - The pre-run gate refused the launch before its dry run (`material_marker.log:2939`), then allowed it after `prerun_records.jsonl:512-517`.
+- **Not exercised:** the stop record, the prior-art gate, the memory prediction and the opmodels replay, because no recipe was launched.
+- **Covers a different failure:** the "collect every failure" dry device (2026-09-25 16:10 / 09-27 20:20) covers routing and checkpoint failures. The binding and `SimError` failures in Finding 1 are outside its stated scope.
+- **Near misses that are not on the list:**
+  - `guard_peer` fired wrongly three times (fp-16 and fp-18 in `gate_fp_queue.jsonl:16,18`, plus 127-5's roughly 3-min hold, `plan:2823`).
+  - C7 is saturated at 371 files.
+
+VIOLATION: inference-over-measurement | loss_min=24 | loss_usd=1.2944 | evidence=tools/bench/cards/brief_127-1.md:18
+
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle127","verdict":"refuted","alternative":"The timeout was a LabVIEW hang in S_latest's post-connect census read, not the clock: the kill landed in those reads, 64 s after the last raw file (review :74-79).","discriminating_test":"Rerun fsinner S_latest only, timestamped, one Error List read at the end (dump_tree=False): CENSUS S_latest within ~60 s of its connect and total ~20 min means budget; a stall >3 min means a hang.","violations":[{"slug":"inference-over-measurement","loss_min":24,"loss_usd":1.2944,"evidence":"tools/bench/cards/brief_127-1.md:18"}],"sources":["tools/bench/cards/brief_127-1.md:18","tools/bench/stage_d1_ring_p3a_el_scratch.log:89","tools/bench/diag_c127_1_fsinner.log:116","archive/peer/2026-10-01-c127-1-fsinner-timeout.md:7","tools/bench/cards/guard_card.log:562","docs/d1-loop12-17-split-plan.md:2822"],"note":"Brief ordered 5 per-wire Error List reads at a measured 386 s each into a 50-min card; the 40-min run timed out, 3 reads were uninformative (61/24 unchanged), the offline lane idled ~28 min. No listed device failed."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle127.md
+BGRUN END rc=0 after 321s

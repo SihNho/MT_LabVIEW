@@ -1147,6 +1147,12 @@ appears among the windows). gscript's watchdog reports it correctly as a modal (
   BROKEN wires — it never restores a healthy one you deleted). The per-sink primitive, if ever needed on a wire
   that must survive, is **`Wire.Disconnect Terminal` 6370C0D** (no `Terminal.Disconnect Wire` exists; the
   counterpart is `Terminal.Connect Wire` 6349C03).
+- **Wire methods MEASURED 2026-10-01 (card 126-2, `tools/bench/diag_c126_2_op.log:8-16`, the Invoke's own method
+  terminal name; data names have NO spaces):** `6370C05` **`CleanUpWire`** (re-routes the whole wire) · `6370C08`
+  **`RemoveLooseEnds`** (the P3b stub removal, PD254(c); op `OpWireRemoveLooseEnds_v0`, `gscript.wire_remove_loose_ends`)
+  · `6370C0B` **`DeleteJoint`** (`POint`, `Aggressive?`) · `6370C0D` **`DisconnectTerminal`** (`Term`).
+- **`FlatSequence.Add Frame` 3578B800** (`Reference Frame Index`, `After(T)`; `tools/bench/diag_c125_4fsm.log:23`,
+  `gscript.FS_METHODS`, op `OpFsAddFrame_v0`) — card 127-2 record.
 - **Lossless bytes out of an op (measured 2026-09-15 05:06–05:11, `OpConstValue_v1.vi`):** a LabVIEW string
   indicator reaches Python through `GetControlValue` **code-page DECODED (cp949)** — binary strings are corrupted
   (chars > U+00FF); a string route can never be proven lossless. Route that works: `Flatten To String` →

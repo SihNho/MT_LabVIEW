@@ -316,6 +316,22 @@ def norm(s):
     return re.sub(r"[^a-z0-9]", "", (s or "").lower())
 
 
+# card 127-2 (PD255(a) carry; review archive/peer/2026-10-01-c126-4-elocr.md:73): OCR reads 'SubVI' as 'subvl' and
+# 'anything' as 'anvthing'. ADD-ONLY: norm() is unchanged (expected files store its keys); norm_ocr() is the alias-folded
+# form, applied to BOTH sides only where a caller opts in (_hit's fallback, class_counts(ocr=True)).
+OCR_ALIASES = (("vl", "vi"), ("v", "y"))
+
+
+def ocr_fold(k):
+    for a, b in OCR_ALIASES:
+        k = k.replace(a, b)
+    return k
+
+
+def norm_ocr(s):
+    return ocr_fold(norm(s))
+
+
 # EXPECTED ERRORS FROM THE PLAN (card chat-E2): a staged bed is broken BY DESIGN - its plan
 # (tools/bench/plan_<stage>*.json, schema stageplan/1) declares `open_rows` [{node, term, why}] left for a later
 # stage. Each open row licenses the Error List items LabVIEW raises for it, derived per node class from the plan's
@@ -386,8 +402,14 @@ def _hit(rule, txt):
         return rule["match"].lower() in txt.lower()
     n = norm(txt)
     if "norm_all" in rule:
-        return all(k in n for k in rule["norm_all"])
-    return any(k in n for k in rule.get("norm_any") or [])
+        if all(k in n for k in rule["norm_all"]):
+            return True
+        n2 = ocr_fold(n)                                   # card 127-2: OCR-alias fallback (only adds matches)
+        return all(ocr_fold(k) in n2 for k in rule["norm_all"])
+    if any(k in n for k in rule.get("norm_any") or []):
+        return True
+    n2 = ocr_fold(n)
+    return any(ocr_fold(k) in n2 for k in rule.get("norm_any") or [])
 
 
 def compare(items, expected, derived=()):
@@ -446,11 +468,12 @@ def license_headers(items):
 # item's text and the per-class counts are read) and compares the per-class counts with the expected file; if they
 # differ (any extra, any missing, or items != the window's own N) the FULL read runs at once on the same scratch,
 # exactly as before. `--role final` (the default) ALWAYS gets the full read: --count-only is refused for it and said so.
-def class_counts(items):
-    """{norm(raw): n} over the read items - the per-class counts a count-only read is judged by."""
+def class_counts(items, ocr=False):
+    """{norm(raw): n} over the read items - the per-class counts a count-only read is judged by. card 127-2: ocr=True
+    keys by norm_ocr (OCR aliases folded, e.g. subvi/subvl one class); the default is unchanged."""
     out = {}
     for it in items or []:
-        k = norm(it.get("raw"))
+        k = norm_ocr(it.get("raw")) if ocr else norm(it.get("raw"))
         out[k] = out.get(k, 0) + 1
     return dict(sorted(out.items()))
 

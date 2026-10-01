@@ -1,0 +1,67 @@
+{
+ "schema": "task/1",
+ "id": "127-1",
+ "kind": "measure",
+ "goal": "PD257(d)+256(f): on a P3a copy with a 3-frame FS, measure a 2nd+ sink into an already-entered FS frame wired from the FS tunnel's INNER face; read Automatic Error Handling",
+ "why": "P3b has 4 UNMEASURED rows (i -> f1 x3, BufNum -> Latest f2); IMAQ Copy's error terminals wait on the AEH property. Brief: brief_127-1.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_127-1.md"},
+  {"path": "tools/bench/cards/result_126-6.json"},
+  {"path": "tools/bench/cards/result_126-8.json"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3a_20261001_180540.vi", "md5": "4dfa44aac8fb32f706b3eb792ee7d3cc"},
+  {"path": "tools/bench/diag_c126_4_fs.py", "md5": "da7a851ef674031d6048e3974039da58"},
+  {"path": "tools/bench/diag_c126_6_cross.py", "md5": "79d648501cda3108c44b29ea6ff3a675"},
+  {"path": "tools/gscript.py", "md5": "6ba524f9b23042b6690b081d8cf6d721"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "verb", "name": "connect_term_uid", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "case_frame_wire", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "wire_remove_loose_ends", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "fs_add_frame", "where": "tools/gscript.py"},
+  {"kind": "op", "name": "OpConnectTermUid_v0"},
+  {"kind": "op", "name": "OpWireRemoveLooseEnds_v0"},
+  {"kind": "file", "name": "tools/bench/diag_c126_6_cross.py"},
+  {"kind": "file", "name": "tools/errorlist_check.py"}
+ ],
+ "pass": [
+  "STEP A: first crossings (i -> f1, BufNum -> f2) made by connect_term_uid + wire_remove_loose_ends; FS tunnel + inner-face uids recorded",
+  "STEP A: second sinks by a same-frame wire from the inner face: verb named; per wire census, FS outer tunnel count, Is Broken?, loose ends before/after, Error List count-only",
+  "STEP B: Automatic Error Handling value read on the bed and on a byte copy of the original (nothing saved, original never opened)",
+  "census sample + scratch_verify record written; bed md5 unchanged; scratch deleted; LabVIEW closed and gone"
+ ],
+ "outputs": [
+  "tools/bench/census_samples.json",
+  "tools/bench/scratch_verify/*"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c127_1*",
+   "tools/bench/census_samples.json",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/errorlist_*",
+   "tools/bench/cards/result_127-1*",
+   "tools/bench/cards/review_127-1*",
+   "tools/bench/peer_*",
+   "archive/peer/**",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["fact", "hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 50
+ },
+ "rules": [
+  "Follow brief_127-1.md; measure only; bed never saved over; original via byte copy only; no stage recipe",
+  "No edit to gscript/stagexec/stagesim (card 127-2 edits stagexec/stagesim offline); never a whole-VI Remove Broken Wires",
+  "Return at the first unexpected result (finish the step, LabVIEW closed, facts recorded)"
+ ],
+ "advances": ["M4", "M3"]
+}

@@ -1,0 +1,81 @@
+{
+ "schema": "task/1",
+ "id": "127-2",
+ "kind": "build",
+ "goal": "PD257(c) offline: plan op wire_remove_loose_ends, crossings -> connect_term_uid, stagesim crossing models; P3b input (+2 released, +14 RLE rows) replays end to end; OCR aliases; fp log",
+ "why": "Decision 8: P3b's rows come only from the finalised plan file; 126-8's replay stopped at the first crossing (no border model) and compiled crossings to generic connect. Brief: brief_127-2.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_127-2.md"},
+  {"path": "tools/bench/cards/result_126-6.json"},
+  {"path": "tools/bench/cards/result_126-8.json"},
+  {"path": "tools/bench/plan_ring_p3b_in.json", "md5": "f3faa01faf74bc86b9093d9f0d49acb5"},
+  {"path": "tools/bench/plan_ring_p3b_rows.json", "md5": "15dfc1bc23de8f98aa883a6a991a7ce9"},
+  {"path": "tools/bench/census_samples.json", "md5": "ab835ce69fe605096e5034f212330a23"},
+  {"path": "tools/stagexec.py", "md5": "d532171190d6ea5108ca257580b09d11"},
+  {"path": "tools/stagesim.py", "md5": "433d9ae4a1e0d238df69d3231072f397"},
+  {"path": "tools/errorlist_check.py", "md5": "751aec6a12029af5db52e2d5062facea"},
+  {"path": "docs/protocol/stageplan.json", "md5": "9c1579a38b2a22838556ff85312281d6"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "verb", "name": "connect_term_uid", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "wire_remove_loose_ends", "where": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3b_make.py"},
+  {"kind": "file", "name": "tools/bench/c125_1_offline_measure.py"},
+  {"kind": "file", "name": "tools/gate_fp.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"}
+ ],
+ "pass": [
+  "stageplan/1 has wire_remove_loose_ends; stagexec compiles border crossings to connect_term_uid and RLE rows to wire_remove_loose_ends; stagesim models them from census_samples variants",
+  "the 4 2nd+-sink rows modelled per PD257(d), tagged PROVISIONAL pending 127-1",
+  "plan_ring_p3b_in.json (2 released rows in actions, 14 RLE rows in plan) replays end to end; end census + cdiff reported; re-created nets keep every old sink",
+  "self-tests green; c125_1_offline_measure.py rerun 0 COM trips",
+  "errorlist_check norm() OCR aliases + self-test; guard_card.log:549 logged with gate_fp.py"
+ ],
+ "outputs": [
+  "tools/stagexec.py",
+  "tools/stagesim.py",
+  "docs/protocol/stageplan.json",
+  "tools/bench/plan_ring_p3b_in.json",
+  "tools/errorlist_check.py"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/stage_prerun.py",
+   "tools/protocol.py",
+   "tools/errorlist_check.py",
+   "docs/protocol/stageplan.json",
+   "docs/NAMES.md",
+   "tools/bench/plan_ring_p3b*",
+   "tools/bench/opmodels/**",
+   "tools/bench/selftest_*",
+   "tools/bench/c125_1_offline_measure*",
+   "tools/bench/diag_c127_2*",
+   "tools/bench/sim/**",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/cards/result_127-2*",
+   "tools/bench/cards/review_127-2*",
+   "tools/bench/peer_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "rules": [
+  "Offline only: no LabVIEW, no COM; facts only from recorded logs/records",
+  "No gscript.py edit (127-1 uses it); self-tests stay green; errorlist_check edit add-only and LAST",
+  "Return at the first unexpected result"
+ ],
+ "advances": ["M4", "M3"]
+}

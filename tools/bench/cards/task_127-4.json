@@ -1,0 +1,71 @@
+{
+ "schema": "task/1",
+ "id": "127-4",
+ "kind": "build",
+ "goal": "PD259(b) offline: fix SimBackend renumber pass (fs_border_entries, act_wires, fs_frame_inferred) + SimError -> RESULT FAIL in dry_run; then P3b prediction file, dry, prerun, scratch-required",
+ "why": "127-3's dry on plan_ring_p3b.json died at the first inner-face branch row on our simulator's renumber pass (review c127-3-dry-innerbranch ANSWERED). Plan Pre-decided 259.",
+ "inputs": [
+  {"path": "tools/bench/cards/result_127-3.json"},
+  {"path": "archive/peer/2026-10-01-c127-3-dry-innerbranch.md", "md5": "bcf85d5cbd9415ecca80a487d5d97b2d"},
+  {"path": "tools/bench/plan_ring_p3b.json", "md5": "5e1ab19630706a1f2dc4fa34afa3baad"},
+  {"path": "tools/bench/plan_ring_p3b_make.py", "md5": "b120b719dc221c35acdaa17431dfcda2"},
+  {"path": "tools/stagexec.py", "md5": "2395194d23977c50fa6d5ca45b4edf06"},
+  {"path": "tools/recipes/stage_d1_ring_p3b.py", "md5": "178b0c01d3337d39b4d7f7f6a98e50a8"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c127_3_checks.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/prior_art_review.py"}
+ ],
+ "pass": [
+  "renumber pass remaps fs_border_entries, act_wires, fs_frame_inferred; SimError in dry_run ends in a RESULT FAIL line; RLE of-rows checked in dry",
+  "new self-test case for an inner-face branch after a renumber; stagexec/stagesim self-tests green; c125_1_offline_measure 0 COM trips",
+  "plan_ring_p3b_pred.json written (census + Error List 54 + own items, with row sources); dry + prerun PASS",
+  "--scratch-required output recorded; prior-art review dispatched for the new classes and annotated (Unbundle/Select rows may be listed as held)"
+ ],
+ "outputs": [
+  "tools/stagexec.py",
+  "tools/bench/plan_ring_p3b_pred.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/stage_prerun.py",
+   "tools/bench/plan_ring_p3b*",
+   "tools/recipes/stage_d1_ring_p3b*",
+   "tools/bench/sim/**",
+   "tools/bench/selftest_*",
+   "tools/bench/c125_1_offline_measure*",
+   "tools/bench/errorlist_expected_*",
+   "tools/bench/diag_c127_3*",
+   "tools/bench/diag_c127_4*",
+   "tools/bench/prior_art*",
+   "tools/bench/stage_prerun*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/cards/result_127-4*",
+   "tools/bench/cards/review_127-4*",
+   "tools/bench/cards/verdict_127-4*",
+   "tools/bench/peer_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 50
+ },
+ "rules": [
+  "Offline only: no LabVIEW, no COM; no gscript.py edit (127-5 uses it live)",
+  "Recipe never launched; existing self-tests stay green",
+  "Return at the first unexpected result"
+ ],
+ "advances": ["M4", "M3"]
+}

@@ -2746,6 +2746,82 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
        (offline) = (c). Then judgement decides `IMAQ Copy`'s error terminals, the P3b FINAL plan is made (rows, census and
        Error List predictions: 54 after w27378's removal + P3b's own), dry + prerun + prior-art (new classes FS /
        GrowableFunction / IndexArray), full scratch run (D-2026-10-01-01 unanswered ⇒ PD246(d)), ONE launch.
+258. **(cycle 127 judgement, 2026-10-01 — after 127-1 FAIL 2/2 (timeout) and 127-2 PASS 5/0)**
+     USER-RULES: U1, U6, U9, U11 (relied on; none contradicted — (c) adds a U9 guard and keeps the original error chain).
+     - **(a) PD257(d)'s route is MEASURED — 127-1 accepted as measured, its FAIL is our diagnostic's clock.** 2nd sink into an
+       FS frame the source already entered = `gscript.connect_term_uid(sink, inner-face terminal)`: 3 of 3 measured rows census
+       {}, FS outer tunnels 60 → 60 (no second tunnel), the call BRANCHES the existing inner wire, `Is Broken?` False, loose
+       ends 0 before and after RLE, Error List count unchanged (`diag_c127_1_fsinner.log:81-109`; census variant
+       `fs_inner_branch` n=3). The 4th (BufNum → `Latest` f2) ran the same call, no error, branched wire 27589; its census
+       was not read because the 40-min deadline hit (`:112-116`). No re-measure card: P3b's full scratch run reads it.
+       stagesim's `FS_INNER_BRANCH` model is no longer PROVISIONAL. Cause of the timeout (review
+       `archive/peer/2026-10-01-c127-1-fsinner-timeout.md` ANSWERED): each Error List GUI read takes ~7 min. **RULE for
+       diagnostics from now: ONE Error List read at the end of a diagnostic, never one per step.**
+     - **(b) Automatic Error Handling is NOT readable over our COM path** (`labview.tlb` VirtualInstrument has no member,
+       `diag_c127_1_tlb.log`). Not needed: (c) wires `IMAQ Copy`'s error out, so AEH cannot fire for that node. No reader op.
+     - **(c) DECIDED — `IMAQ Copy`'s error terminals (closes PD255(f)/256(f)):** error in ← `#6810` error out (a branch of
+       the existing net that goes to LoopTunnel `#649`; `#639` source → FS frame 2, a measured crossing kind; the old sink
+       stays, PD256(c)), so the copy runs only after `#6810` and an upstream error skips it. error out → frame 3
+       (`fs_frame_to_frame`, measured) → `Unbundle By Name` `status` → `Select` (status ? −1 : BufNum) → the element written
+       by frame 3's `Num(i)` write. So a failed or skipped copy leaves slot i at −1 and never labels stale pixels with a new
+       BufNum (U9, priority 1 of U11); an unwired error out could also raise the AEH dialog and suspend the camera loop
+       (U6). `Latest = BufNum` stays unconditional: a reader that finds slot i at −1 waits for the next frame — a gap, not
+       a mismatched pair (PD246(c)). The original's error chain `#6810 → #649` is not changed (U1). New classes
+       (`Unbundle By Name`, `Select`) ⇒ the prior-art review is owed for P3b anyway (PD257(e)).
+     - **(d) 127-2 ACCEPTED** (`result_127-2.json`): stageplan/1 `wire_remove_loose_ends`; stagexec compiles 9 border
+       crossings + 4 inner-face branches to `connect_term_uid` and 14 RLE rows; stagesim `_fs_border_wire` from the census
+       variants; `plan_ring_p3b_in.json` (61 actions) replays END TO END, end cdiff 16 == P3a's, every old sink of re-created
+       nets kept (M11). Remaining before launch: dry FAIL / prerun X4 = the `IMAQ Copy` create declares 3 unnamed sink
+       terminals (BINDING) — the plan must name IMAQ Copy's terminals from a recorded graph (or the scratch records them).
+       `selftest_errorlist_reuse_81` K0/K9 still expect the pre-125-1 refusal of `stagexec selftest` under labview none —
+       a stale expectation of our own self-test; update it.
+     - **(e) Order:** one offline card = P3b FINAL plan ((c)'s rows, X4 fix, Error List prediction 54 + P3b's own items,
+       census prediction), dry + prerun + `--scratch-required` + prior-art; the self-test fix. Then the LabVIEW card: full
+       scratch run on a P3a byte copy (ONE Error List read at its end), then ONE launch.
+259. **(cycle 127 judgement, 2026-10-01 — after 127-3 FAIL 4/1)**
+     USER-RULES: U1, U9 (relied on; tooling and measurement only, none contradicted).
+     - **(a) 127-3 accepted as far as it ran:** final plan `plan_ring_p3b.json` (md5 `5e1ab196…`, 63 actions: 22 create, 12
+       wires, 14 crossings all MEASURED, 15 RLE) replays END TO END, cdiff 16, old sink `#649` kept (M11); `IMAQ Copy`'s
+       terminals MEASURED from `graph_harness_copyloop_c95.json` #11 (5 named + 3 unnamed sinks, class `Terminal`) and
+       `stagexec.bind_new` pairs repeated unnamed keys in read order; `p3b_x_err_in` (`#6810` error out → `IMAQ Copy` error
+       in) is in the plan; recipe `tools/recipes/stage_d1_ring_p3b.py` written, NOT launched; reuse_81 self-test re-pinned
+       18/0. **K9 accepted:** `stagexec selftest` is offline whatever the working directory (protocol resolves against ROOT).
+     - **(b) The dry FAIL is our simulator** (review `archive/peer/2026-10-01-c127-3-dry-innerbranch.md` ANSWERED):
+       `SimBackend._apply`'s renumber pass (`stagexec.py:2964-2989`) does not remap `fs_border_entries`, `act_wires`,
+       `fs_frame_inferred`, so the first inner-face branch row loses its entry face; and a `SimError` escapes `dry_run`
+       with no RESULT line. Fix both (the review's disposition), make RLE `of` rows non-vacuous in dry, then run the rest
+       of the checks (prediction file, prerun, `--scratch-required`, prior-art). Offline card.
+     - **(c) PD258(c)'s `Unbundle By Name` / `Select` rows are UNMEASURED** (no donor, no recorded row). Measured on a
+       minimal SCRATCH VI in a small LabVIEW card, the subgraph exactly as P3b uses it: `IMAQ Copy` error out →
+       `Unbundle By Name` (default first element = `status`) → `Select` s, an I32 −1 constant → t, an I32 → f, output →
+       an I32 sink. Record the creation route, every terminal name + `term_class`, census per create, `Is Broken?`; ONE
+       Error List read at the end. If wiring the error cluster DIRECTLY to `Select` s is accepted by LabVIEW (no broken
+       wire), record that too — the plan then takes the form with fewer classes (same value: the cluster's `status`).
+260. **(cycle 127 judgement, 2026-10-01 — after 127-4 FAIL 3/2 and 127-5 FAIL 16/1)**
+     USER-RULES: U1, U9 (relied on; tooling and measurement only, none contradicted).
+     - **(a) 127-4 ACCEPTED as far as it ran:** `_fs_entries_remap` (`stagexec.py:1648`, called in `SimBackend._apply`),
+       `SIM-INTERNAL:` FAIL instead of an escaping `SimError`, RLE rows checked in dry; stagexec self-test 130/0;
+       `c125_1_offline_measure` 0 COM trips. **`plan_ring_p3b.json` md5 `4003eaa5…` (the C1 re-simulation output) is the
+       plan of record**; `plan_ring_p3b_pred.json` (`6dca647f…`) is keyed to it: census 22 create / 12 connect / 14 cut /
+       15 RLE, Error List 54 + 0 own (until (c)'s rows are added).
+     - **(b) Next simulator gap = a MULTI-OBJECT binder** (review `archive/peer/2026-10-01-c127-4-dry-pool.md` ANSWERED):
+       `bind_new` (`stagexec.py:886-891`) refuses an op that creates several objects of one class — `p3b_x_pool` (pool For
+       exit → FS frame) creates 2 LoopTunnel + 3 FS outer tunnels. Build a FRAME-KEYED binder (per border, from the census
+       variant), never uid order (126-6's B3 uids descend, `diag_c126_6_cross.log:69-78`), with a B3 self-test (positive +
+       uid-order negative). Same card: `ROUTE_CENSUS` gets `connect_term_uid` `fs_inner_face_branch` = {} (127-1's variant;
+       `selftest_case_frame_c124` U01 is red without it). Then C4/C5 (recipe dry + prerun, `--scratch-required`) and the
+       prior-art review.
+     - **(c) No creation route for `Select` / `Unbundle By Name` yet** (127-5: registry donors are only Max & Min and Wait;
+       7 NI example copies showed 0 hits, but per-file row counts were not logged, so "no node" and "empty read" are not
+       separated). Next: a DONOR SCAN of BYTE COPIES of shipped `vi.lib` VIs (never edit vi.lib; error-handling VIs first)
+       logging every candidate's terminal-row count, for one file that holds a `Select` and a `NamedUnbundler`; the bed's
+       16 `NamedUnbundler`s are a second Unbundle donor (copy, wire to an error cluster, read whether the name re-resolves
+       to `status`). The scratch measurement of PD259(c) then reruns `diag_c127_5_errsel.py` rows W-1..W-9 on the donor.
+       Only if NO Select donor exists does judgement re-decide PD258(c)'s form (e.g. an error-cluster case structure);
+       GUI placement stays out until scripting is shown unreachable.
+     - **(d) Cost note:** 127-1 lost ~28 min to four ~7-min Error List GUI reads (PD258(a) rule now in force); 127-5 waited
+       ~3 min on `guard_peer` for 127-4's failing log (a LabVIEW card held by an OFFLINE card's log — the reverse of
+       RULE-OFFLINE-CARD, already a cycle-122 carry).
 
 ## OPEN (design choices — for judgement; not decided here)
 

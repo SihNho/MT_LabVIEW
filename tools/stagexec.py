@@ -257,7 +257,11 @@ ROUTE_VERBS = {
     # card 126-3 (PD253(c)): Flat Sequence creators
     "fs_create": [("gscript", "struct_copy_nested"), ("gscript", "fs_donor"), ("gscript", "fs_frames")],
     "fs_frame": [("gscript", "fs_add_frame"), ("gscript", "fs_frames")],
+    # card 127-2 (PD255(b)/256(b)): Wire.RemoveLooseEnds 6370C08 (OpWireRemoveLooseEnds_v0, gscript.py:4972)
+    "wire_remove_loose_ends": [("gscript", "wire_remove_loose_ends")],
 }
+# card 127-2: the simulated effect `how` each Flat Sequence border variant must carry (Executor.execute cross-check)
+FS_VARIANT_HOW = {"fs_border": "fs_border", "fs_border_inner_branch": "fs_inner_branch"}
 # card 124-2: the class-count (census) delta of a non-create route, per variant. card 124-6: MEASURED by card 124-5 on a P2b
 # byte copy (tools/bench/census_samples.json ops connect_term_uid / case_frame_wire; diag_c124_p3a_scratch.log:53,61 R1/R2,
 # :71 R3 new_wire, :77,80 R4 branch). census_predict (a separate tool) still resolves only the rows it has rules for.
@@ -270,6 +274,12 @@ ROUTE_CENSUS = {"case_frame_wire": {"new_wire": {"Wire": 1}, "branch": {}},
                                      "fs_frame_to_frame": dict(SS.FS_MEASURED["fs_frame_to_frame"]["census"])},
                 "fs_create": {"flat_sequence_donor": dict(SS.FS_MEASURED["fs_create"]["census"])},
                 "fs_frame": {"add_one_frame": dict(SS.FS_MEASURED["fs_add_frame"]["census"])}}
+# card 127-2 (PD257(c)): + the four Flat Sequence BORDER variants card 126-6 recorded (census_samples.json connect_term_uid;
+# selftest_case_frame_c124 U01 compares ROUTE_CENSUS with every recorded variant). A fs_border row reports stagesim's per-row
+# census (the variant its borders select), not a .get on this table.
+for _n, _v in SS._cross_variants().items():
+    if _n in SS.FS_BORDER_SIG.values():
+        ROUTE_CENSUS["connect_term_uid"].setdefault(_n, dict(_v["delta"]))
 CONNECT_TERM_UID_HOW = ("gscript.connect_term_uid(target, sink_uid, src_uid) - OpConnectTermUid_v0, any terminal -> any "
                         "terminal by uid; the register inner face <-> node in a case frame makes ONE SelectorTunnel (R1/R2, "
                         "diag_c124_p3a_scratch.log:53,61); junk Invokes purged inside the verb")
@@ -561,7 +571,7 @@ def fs_wire_ops(A):
     ends sit on two DIFFERENT frames of one plan-made FS -> variant 'fs_frame_to_frame' (gscript.connect_term_uid, measured
     n=1); a wire with an end on a FS tunnel FACE (`frame` 'f<k>' / '#<diagram uid>') -> variant 'fs_face' (connect_term_uid by
     terminal uid, census UNMEASURED). stagesim decides the same thing from the graph; Executor.execute cross-checks."""
-    frames, loc, tun, out, seq = {}, {}, {}, {}, [0]
+    frames, loc, tun, out, seq, entered = {}, {}, {}, {}, [0], set()
 
     def token():
         seq[0] += 1
@@ -611,6 +621,14 @@ def fs_wire_ops(A):
                     tun["new:" + a["as"]] = ls[0]
             elif face_s or face_d:
                 out[i] = {"variant": "fs_face"}
+            elif ld and not ls:
+                # card 127-2 (PD257(c)(d)): a source OUTSIDE the plan-made FS -> a node on one of its frames = ONE
+                # connect_term_uid (126-6's measured route; stagesim picks the census variant from the graph's borders).
+                # The same source end into a frame an earlier crossing of this plan already entered = a same-frame wire
+                # from that tunnel's INNER face (PD257(d), PROVISIONAL pending card 127-1)
+                key = (json.dumps(a["src"], sort_keys=True), ld)
+                out[i] = {"variant": "fs_border_inner_branch" if key in entered else "fs_border", "fs": ld[0]}
+                entered.add(key)
     return out
 
 
@@ -690,6 +708,15 @@ def compile_plan(plan):
                 ops.append({"kind": "connect", "acts": [i]})
         elif op in ("delete_wire", "delete_object", "remove_bad_wires"):
             ops.append({"kind": op, "acts": [i]})
+        elif op == "wire_remove_loose_ends":              # card 127-2 (PD255(b)/256(b)): gscript.wire_remove_loose_ends
+            if (a.get("wire_uid") is None) == (a.get("of") is None):
+                raise ExecStop("action {0}: wire_remove_loose_ends needs exactly one of `wire_uid` / `of`".format(i))
+            of_act = None
+            if a.get("of") is not None:
+                of_act = next((k for k, b in enumerate(A[:i - 1], 1) if b.get("id") == a["of"]), None)
+                if of_act is None:
+                    raise ExecStop("action {0}: wire_remove_loose_ends `of` {1!r} names no EARLIER action".format(i, a["of"]))
+            ops.append({"kind": "wire_remove_loose_ends", "acts": [i], "of_act": of_act, "wire_uid": a.get("wire_uid")})
         elif op == "create":                              # card 100-3: exec_create
             try:
                 ops.append({"kind": "create", "route": create_route(a), "acts": [i]})
@@ -869,12 +896,21 @@ def bind_new(prev_real, real, sim_prev, sim_now, bind):
             key = lambda r: (r["term_class"], bool(r["is_source"]), r["term_name"])  # noqa: E731
         ks = collections.Counter(key(r) for r in s_rows)
         kr = collections.Counter(key(r) for r in r_rows)
-        if ks != kr or any(v != 1 for v in ks.values()):
+        # card 127-3 (PD258(d)): a SubVI's connector slots with NO label read back as name '' (IMAQ Copy #11 of
+        # graph_harness_copyloop_c95.json: 3 unnamed sinks; #6810 on the P3a bed: 8). A repeated key is accepted ONLY when its
+        # name is '' and every such row is unwired on both sides (a fresh create); those rows are paired in read order. No plan
+        # row can address an unnamed terminal (addresses are by name), so the pairing carries no wiring meaning.
+        rep = [k for k, v in ks.items() if v != 1]
+        unnamed_ok = (bool(rep) and all(isinstance(k, tuple) and k[-1] == "" for k in rep)
+                      and all(not r.get("wire_uid") for r in s_rows + r_rows if key(r) in rep))
+        if ks != kr or (any(v != 1 for v in ks.values()) and not unnamed_ok):
             raise ExecStop("BINDING: {0} terminal keys sim {1} vs real {2}".format(cls, dict(ks), dict(kr)))
         bind["obj"][su[0]] = ru[0]
         made[su[0]] = ru[0]
+        used = set()
         for sr in s_rows:
-            rr = next(x for x in r_rows if key(x) == key(sr))
+            rr = next(x for x in r_rows if key(x) == key(sr) and x["term_uid"] not in used)
+            used.add(rr["term_uid"])
             bind["term"][sr["term_uid"]] = rr["term_uid"]
     return made
 
@@ -1609,6 +1645,23 @@ def _fs_remap(s, m):
                 p[k] = m(p[k])
 
 
+def _fs_entries_remap(s, m):
+    """card 127-4 (PD259(b), review archive/peer/2026-10-01-c127-3-dry-innerbranch.md s1): stagesim's border-crossing
+    tables are uid-keyed too and were missed by the dry renumber pass - fs_border_entries {"<src term>|<frame>": {face, act}}
+    (stagesim._fs_border_wire), act_wires {row id: [wire...]} (+ the inner-branch row) and fs_frame_inferred {frame: parent}
+    (_diag_chain). Without this the first inner-face branch row looked its entry face up by a stale negative uid.
+    SimBackend only: bind_state keeps wire uids as they are, so it does not call this."""
+    def mk(k):
+        a, b = k.split("|")
+        return "{0}|{1}".format(m(int(a)), m(int(b)))
+    if s.get("fs_border_entries"):
+        s["fs_border_entries"] = dict((mk(k), dict(v, face=m(int(v["face"])))) for k, v in s["fs_border_entries"].items())
+    if s.get("act_wires"):
+        s["act_wires"] = dict((k, [m(int(w)) for w in v]) for k, v in s["act_wires"].items())
+    if s.get("fs_frame_inferred"):
+        s["fs_frame_inferred"] = dict((str(m(int(k))), m(int(v))) for k, v in s["fs_frame_inferred"].items())
+
+
 def bound_owners(owners, bind):
     """card 104-2: a SIMULATED step's owners map (str(frame diagram uid) -> [structure class, structure uid]) with every
     created (negative) uid replaced by its bound real uid - keys through bind['diag'], structure uids through bind['obj'].
@@ -2029,13 +2082,35 @@ class Executor(object):
         if kind == "connect_term_uid" and str(op.get("variant", "")).startswith("fs_"):
             # card 126-3: a Flat Sequence wire - ONE action, ends by terminal uid (an FS tunnel face by owner uid + frame);
             # the compiled variant must be the one stagesim applied from the graph
-            how = (self.step(op["acts"][0]).get("effect") or {}).get("how")
-            if (how == "fs_frame_to_frame") != (op["variant"] == "fs_frame_to_frame"):
+            eff = self.step(op["acts"][0]).get("effect") or {}
+            how = eff.get("how")
+            want = FS_VARIANT_HOW.get(op["variant"])
+            if (how == "fs_frame_to_frame") != (op["variant"] == "fs_frame_to_frame") or (want and how != want):
                 raise ExecStop("connect_term_uid {0}: compiled variant {1!r}, simulated effect how={2!r}".format(
                     a.get("id"), op["variant"], how))
-            src = self.real_term(prev, after, a["src"], True)
+            if op["variant"] == "fs_border_inner_branch":
+                # card 127-2 (PD257(d)): the source is the entry tunnel's INNER face in the sink's frame (simulated #face)
+                src = self.bind["term"].get(eff.get("face"), eff.get("face"))
+                if src is None or src < 0:
+                    raise ExecStop("connect_term_uid {0}: entry face #{1} is not bound yet".format(a.get("id"), eff.get("face")))
+            else:
+                src = self.real_term(prev, after, a["src"], True)
             dst = self.real_term(prev, after, a["dst"], False)
-            return be.connect_term_uid(src, dst, real, op)
+            return be.connect_term_uid(src, dst, real, dict(op, sim_census=eff.get("census"), sim_variant=eff.get("variant")))
+        if kind == "wire_remove_loose_ends":               # card 127-2: the plan wire(s) -> live wire uid(s) by terminals
+            if op.get("wire_uid") is not None:
+                sim_ws = [int(op["wire_uid"])]
+            else:
+                sim_ws = (self.step(op["of_act"]).get("effect") or {}).get("new_wires") or []
+            live = []
+            for w in sim_ws:
+                ts = set(self.bind["term"].get(r["term_uid"], r["term_uid"]) for r in prev["terminals"] if r["wire_uid"] == w)
+                lw = sorted(set(r["wire_uid"] for r in real if r["term_uid"] in ts and r["wire_uid"]))
+                if len(lw) != 1:
+                    raise ExecStop("wire_remove_loose_ends {0}: plan wire w{1}'s {2} terminals sit on {3} live wires {4}".format(
+                        a.get("id"), w, len(ts), len(lw), lw))
+                live.append(lw[0])
+            return be.rle(sorted(set(live)), op)
         if kind == "connect_term_uid":                     # card 124-6 (PD250(c)): R1 / R2, one verb call per group
             ai, ao = A[op["in_act"] - 1], A[op["out_act"] - 1]
             src = self.real_term(prev, after, ai["src"], True)
@@ -2755,14 +2830,34 @@ class LVBackend(object):
         out = self._done(rec, tag)
         if not isinstance(res, dict) or not res.get("wire_uid"):
             raise ExecStop("{0}: no wire came back ({1!r})".format(tag, res))
-        if res.get("broken"):
+        var = op.get("variant") or "register_end_case_border"
+        if res.get("broken") and var not in FS_VARIANT_HOW:
             raise ExecStop("{0}: wire #{1} reads Is Broken? True".format(tag, res.get("wire_uid")))
         if res.get("invoke_left"):
             raise ExecStop("{0}: {1} junk Invoke(s) left after the verb's purge".format(tag, res["invoke_left"]))
-        var = op.get("variant") or "register_end_case_border"
+        # card 127-2: a border crossing may read Is Broken? True from a LOOSE joint (126-6 B2 w27927) - the plan's next
+        # wire_remove_loose_ends row clears it (diag_c126_6_cross.log:61-65); recorded, not a stop here
         out.update(wire_uid=res["wire_uid"], purged=res.get("purged"), how=CONNECT_TERM_UID_HOW, variant=var,
-                   census=ROUTE_CENSUS["connect_term_uid"].get(var))
+                   census=op.get("sim_census") if var in FS_VARIANT_HOW else ROUTE_CENSUS["connect_term_uid"].get(var),
+                   broken_until_rle=bool(res.get("broken")) if var in FS_VARIANT_HOW else None)
         return out
+
+    def rle(self, wires, op):
+        """card 127-2: gscript.wire_remove_loose_ends on each live wire; a uid echo error or a wire still Is Broken? True after
+        the call STOPS (126-6: every crossing wire read False after RLE)."""
+        missing = verbs_missing("wire_remove_loose_ends")
+        if missing:
+            raise ExecStop("wire_remove_loose_ends: verb(s) not defined: {0}".format(missing))
+        res = []
+        for w in wires:
+            tag = "wire_remove_loose_ends w{0}".format(w)
+            rec = self.s._op("wire_remove_loose_ends", lambda w=w: self.g.wire_remove_loose_ends(self.s.work, w), tag)
+            r = rec.get("result") or {}
+            self._done(rec, tag)
+            if not isinstance(r, dict) or r.get("err") or r.get("broken_after"):
+                raise ExecStop("{0}: {1!r}".format(tag, r))
+            res.append(dict(r, wire=w))
+        return {"rle": res, "census": {}}
 
     def index_mode_fix(self, tun, indexing):
         want = 1 if indexing else 0
@@ -2877,10 +2972,12 @@ class SimBackend(object):
 
     def _apply(self, op, check=None):
         self.calls.append(op["kind"])
+        self.last_effects = []
         for n in op["acts"]:
             a = self.plan["actions"][n - 1]
             P = SS.model_for(a["op"], self.models)[0]
-            SS.OPS[a["op"]](self.st, a, P, self.S1, {})
+            res = SS.OPS[a["op"]](self.st, a, P, self.S1, {})
+            self.last_effects.append(res[0] if isinstance(res, tuple) and res else res)
         ren = {}
 
         def rn(v):                                     # every created (negative) id -> a fresh positive one, once
@@ -2909,6 +3006,7 @@ class SimBackend(object):
             self.st["case_frames"] = dict((str(rn(int(k))), [[n_, rn(int(f_))] for n_, f_ in v])
                                           for k, v in self.st["case_frames"].items())
         _fs_remap(self.st, rn)                               # card 126-3: fs_frames / fs_alias / fs_tunnels / fs_pairs
+        _fs_entries_remap(self.st, rn)                       # card 127-4: fs_border_entries / act_wires / fs_frame_inferred
         f = self.fault
         if f.get("at") == op["acts"][-1]:
             if f.get("kind") == "drop_edge":                   # a real op that made one edge fewer
@@ -2922,6 +3020,8 @@ class SimBackend(object):
                 for r in self.st["terminals"]:
                     if r["term_uid"] in f["terms"]:
                         r["wire_uid"] = 0
+            elif f.get("kind") == "sim_error":                  # card 127-4: a simulator fault inside the dry backend
+                raise SS.SimError("injected simulator fault at act {0}".format(f["at"]))
         return {"applied": op["acts"], "check": check}
 
     def _check(self, real, term, is_source, loop_of=None):
@@ -3167,6 +3267,23 @@ class SimBackend(object):
         var = op["variant"]
         if rd["wire_uid"]:
             raise ExecStop("connect_term_uid {0}: the sink #{1} is already wired (w{2})".format(var, rd["term_uid"], rd["wire_uid"]))
+        if var in FS_VARIANT_HOW:
+            # card 127-2: fs_border = ends on DIFFERENT diagrams, the sink on a frame of a FlatSequence; inner branch = the
+            # source is a FlatSequenceOuterTunnel face on the sink's own frame, already wired (PD257(d))
+            own = self.addr.owners or self.st.get("owners") or {}
+            fo = own.get(str(int(rd["frame_diagram"] or 0)))
+            if not fo or fo[0] != SS.FS_CLS:
+                raise ExecStop("connect_term_uid {0}: the sink #{1} is on #{2}, not a Flat Sequence frame ({3})".format(
+                    var, rd["term_uid"], rd["frame_diagram"], fo))
+            same = int(rs["frame_diagram"] or 0) == int(rd["frame_diagram"] or 0)
+            if var == "fs_border" and same:
+                raise ExecStop("connect_term_uid fs_border: both ends on #{0} - no border".format(rd["frame_diagram"]))
+            if var == "fs_border_inner_branch" and (not same or rs["owner_class"] != "FlatSequenceOuterTunnel" or not rs["wire_uid"]):
+                raise ExecStop("connect_term_uid fs_border_inner_branch: source #{0} ({1} on #{2}, w{3}) is not a wired FS "
+                               "tunnel face on the sink's frame #{4}".format(rs["term_uid"], rs["owner_class"],
+                                                                             rs["frame_diagram"], rs["wire_uid"], rd["frame_diagram"]))
+            return {"route": "connect_term_uid", "variant": var, "src_term": rs["term_uid"], "dst_term": rd["term_uid"],
+                    "census": op.get("sim_census"), "sim_variant": op.get("sim_variant"), "how": CONNECT_TERM_UID_HOW}
         if var == "fs_face":
             if SS.FSIT_CLS not in (rs["owner_class"], rd["owner_class"]) or int(rs["frame_diagram"] or 0) != int(rd["frame_diagram"] or 0):
                 raise ExecStop("connect_term_uid fs_face: ends {0}@#{1} / {2}@#{3} - one FS tunnel face, one diagram".format(
@@ -3238,6 +3355,20 @@ class SimBackend(object):
 
     def rbw(self, op):
         return self._apply(op)
+
+    def rle(self, wires, op):                          # card 127-2: the dry side - the verb is defined, census {}
+        miss = verbs_missing("wire_remove_loose_ends")
+        if miss:
+            return self._unroutable(op, ExecStop("CREATE-NO-VERB wire_remove_loose_ends: not defined: {0}".format(miss)))
+        r = self._apply(op, {"route": "wire_remove_loose_ends", "wires": list(wires), "census": {}})
+        # card 127-4 (review c127-3-dry-innerbranch, 'Problems you didn't raise'): the row is NOT vacuous in the dry - the
+        # simulator's own wire list for it (act_wires of the `of` row, renumbered) must be non-empty and equal the live wires
+        # the executor addressed by terminals
+        sim = sorted(set(int(w) for e in self.last_effects for w in ((e or {}).get("wires") or [])))
+        if not sim or sim != sorted(set(int(w) for w in wires)):
+            raise ExecStop("RLE-DRY {0}: simulator wires {1} != executor live wires {2} (empty = a vacuous row)".format(
+                [self.plan["actions"][n - 1].get("id") for n in op["acts"]], sim, sorted(set(wires))))
+        return r
 
 
 def from_step_state(plan_path, from_step, binding):
@@ -3467,6 +3598,11 @@ def dry_run(plan_path, fault=None, log=print, model_dir=None, require_final=True
             msg = "UNROUTABLE {0} row(s) before the stop: {1} | STOP {2}".format(
                 len(be.unroutable), "; ".join("acts {0} {1}".format(u["acts"], u["ids"]) for u in be.unroutable), msg)
         return "FAIL", msg[:4000], ex
+    except SS.SimError as e:                           # card 127-4 (review c127-3-dry-innerbranch s4): a simulator fault
+        import traceback                               # inside the dry backend is a FAIL with a RESULT line, not a crash
+        tb = traceback.extract_tb(e.__traceback__)     # (and not an ExecStop: collect mode would re-apply the same act)
+        where = " < ".join("{0}:{1} {2}".format(os.path.basename(f_.filename), f_.lineno, f_.name) for f_ in reversed(tb[-6:]))
+        return "FAIL", ("SIM-INTERNAL: {0} | at {1}".format(e, where))[:4000], ex
 
 
 def prerun_plan(plan_path, log=print, model_dir=None):
@@ -4335,6 +4471,7 @@ def selftest():
     _selftest_create(gate, tmp, q)
     _selftest_c106c(gate, fin, opsx, md, q)
     _selftest_c112(gate, tmp, gp, md, q)
+    _selftest_c127_4(gate, fin, md, q)
     gate("T14 nothing LabVIEW-side imported",not any(m in sys.modules for m in ("gscript", "win32com", "pythoncom", "stagekit")),
          [m for m in ("gscript", "win32com", "pythoncom", "stagekit") if m in sys.modules])
     n_pass = sum(1 for _l, ok in gates if ok)
@@ -4719,6 +4856,97 @@ def _selftest_live_const(gate, fin, md, q, n_acts):
     ow = bound_owners({"-5": ["WhileLoop", -4], "639": ["CaseStructure", 600]}, {"diag": {"-5": 23073}, "obj": {"-4": 23070}})
     gate("T43b bound_owners: created body key + loop uid -> real; a base entry unchanged",
          ow == {"23073": ["WhileLoop", 23070], "639": ["CaseStructure", 600]}, ow)
+
+
+def _selftest_c127_4(gate, fin, md, q):
+    """card 127-4 (PD259(b)): the dry backend's renumber pass on stagesim's border-crossing tables. A crossing row records its
+    entry face / wires / inferred frame under created (negative) uids; SimBackend._apply renumbers them; the next inner-face
+    branch row (stagesim._fs_border_wire's entry path, unchanged) and an RLE `of` row must find them. T127a-f."""
+    def row(t, name, src, w, own, cls, fd, tcl="Terminal"):
+        return {"term_uid": t, "term_name": name, "is_source": src, "wire_uid": w, "owner_uid": own, "owner_class": cls,
+                "frame_diagram": fd, "term_class": tcl}
+
+    def t_entry(st, a, P, S1, labels):              # what a fs_border crossing leaves behind (stagesim.py _fs_border_wire)
+        fd, T, w = 2, SS.new_uid(st), SS.new_uid(st)         # a BASE frame, as in P3b (the key stays valid; the face did not)
+        face = SS.new_uid(st)
+        st["terminals"] += [row(face, "", True, w, T, "FlatSequenceOuterTunnel", fd),
+                            row(SS.new_uid(st), "x", False, w, 6000, "Add", fd),
+                            row(SS.new_uid(st), "sink2", False, 0, 6001, "Add", fd)]
+        st["objs"].append({"uid": T, "class": "FlatSequenceOuterTunnel", "owner_class": SS.FS_CLS})
+        nf, nt = SS.new_uid(st), SS.new_uid(st)             # a created frame + created source: the KEY must be remapped too
+        st.setdefault("fs_border_entries", {})["5000|{0}".format(fd)] = {"face": face, "act": a["id"]}
+        st["fs_border_entries"]["{0}|{1}".format(nt, nf)] = {"face": SS.new_uid(st), "act": a["id"]}
+        st.setdefault("act_wires", {})[a["id"]] = [w]
+        st.setdefault("fs_frame_inferred", {})[str(nf)] = SS.new_uid(st)
+        return {"how": "t127_entry", "wires": [w]}, []
+
+    def t_branch(st, a, P, S1, labels):
+        s = next(r for r in st["terminals"] if r["term_uid"] == 5000)
+        d = next(r for r in st["terminals"] if r["term_name"] == "sink2")
+        return SS._fs_border_wire(st, a, s, d, {})
+
+    def mk():
+        st = {"terminals": [row(5000, "y", True, 7000, 4999, "Add", 1), row(5001, "z", False, 7000, 4998, "Add", 1)],
+              "objs": [], "loops": [], "diagrams": {}, "owners": {}, "sym": {}, "neg": -100}
+        plan = {"actions": [{"op": "_t127_entry", "id": "x_e"}, {"op": "_t127_branch", "id": "x_b", "src": "y", "dst": "sink2"},
+                            {"op": "wire_remove_loose_ends", "id": "x_r", "of": "x_e"}]}
+        return SimBackend(plan, st, {})
+    saved_ops = dict(SS.OPS)
+    saved_prov = dict(SS.PROVISIONAL)
+    g_ = globals()
+    real_remap = g_["_fs_entries_remap"]
+    try:
+        SS.OPS.update(_t127_entry=t_entry, _t127_branch=t_branch)
+        SS.PROVISIONAL.update(_t127_entry={"params": {}, "evidence": "selftest", "gaps": []},
+                              _t127_branch={"params": {}, "evidence": "selftest", "gaps": []})
+        be = mk()
+        be._apply({"kind": "t", "acts": [1]})
+        ent = be.st.get("fs_border_entries") or {}
+        uids = [int(x) for k in ent for x in k.split("|")] + [int(v["face"]) for v in ent.values()] + \
+            [int(w) for v in (be.st.get("act_wires") or {}).values() for w in v] + \
+            [int(x) for k, v in (be.st.get("fs_frame_inferred") or {}).items() for x in (k, v)]
+        gate("T127a dry renumber: fs_border_entries (key + face), act_wires, fs_frame_inferred carry POSITIVE uids after the "
+             "crossing row", uids and all(u > 0 for u in uids), (ent, be.st.get("act_wires"), be.st.get("fs_frame_inferred")))
+        try:
+            be._apply({"kind": "t", "acts": [2]})
+            eff = be.last_effects[0]
+            face_w = next(r["wire_uid"] for r in be.st["terminals"] if r["term_uid"] == eff["face"])
+            sk = next(r for r in be.st["terminals"] if r["term_name"] == "sink2")
+            gate("T127b an inner-face branch AFTER a renumber finds its entry face and branches its wire",
+                 eff["how"] == "fs_inner_branch" and sk["wire_uid"] == face_w and face_w > 0, eff)
+        except SS.SimError as e:
+            gate("T127b an inner-face branch AFTER a renumber finds its entry face and branches its wire", False, e)
+            face_w = None
+        rle_op = {"kind": "wire_remove_loose_ends", "acts": [3], "of_act": 1}
+        try:
+            be.rle([face_w], rle_op)
+            gate("T127c RLE `of` row in the dry: the simulator's wires (renumbered act_wires) == the executor's live wires", True)
+        except ExecStop as e:
+            gate("T127c RLE `of` row in the dry: the simulator's wires (renumbered act_wires) == the executor's live wires", False, e)
+        try:
+            be.rle([face_w + 1], rle_op)
+            gate("T127d NEGATIVE: an RLE row whose live wires differ from the simulator's FAILS (RLE-DRY)", False, "passed")
+        except ExecStop as e:
+            gate("T127d NEGATIVE: an RLE row whose live wires differ from the simulator's FAILS (RLE-DRY)", "RLE-DRY" in str(e), e)
+        g_["_fs_entries_remap"] = lambda s, m: None            # the pre-127-4 renumber pass
+        be0 = mk()
+        be0._apply({"kind": "t", "acts": [1]})
+        try:
+            be0._apply({"kind": "t", "acts": [2]})
+            gate("T127e NEGATIVE: without the entries remap the branch row loses its entry face (the 127-3 dry failure)",
+                 False, "passed")
+        except SS.SimError as e:
+            gate("T127e NEGATIVE: without the entries remap the branch row loses its entry face (the 127-3 dry failure)",
+                 "gone or unwired" in str(e), e)
+    finally:
+        g_["_fs_entries_remap"] = real_remap
+        SS.OPS.clear()
+        SS.OPS.update(saved_ops)
+        SS.PROVISIONAL.clear()
+        SS.PROVISIONAL.update(saved_prov)
+    st6, ff6, _ = dry_run(fin, fault={"at": 5, "kind": "sim_error"}, log=q, model_dir=md, require_final=False)   # T13 touched a step
+    gate("T127f a SimError inside the dry backend returns FAIL 'SIM-INTERNAL:' (no crash, so the RESULT line follows)",
+         st6 == "FAIL" and str(ff6).startswith("SIM-INTERNAL: injected"), ff6)
 
 
 def main(argv):

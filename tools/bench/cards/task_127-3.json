@@ -1,0 +1,76 @@
+{
+ "schema": "task/1",
+ "id": "127-3",
+ "kind": "build",
+ "goal": "PD258(c)-(e) offline: P3b FINAL plan with IMAQ Copy error rows and named terminals; census + Error List predictions; dry, prerun, scratch-required, prior-art; recipe not launched",
+ "why": "P3b is the next build step; its plan replays but lacks PD258(c)'s rows and fails X4 on IMAQ Copy's unnamed terminals. Brief: brief_127-3.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_127-3.md"},
+  {"path": "tools/bench/cards/result_127-1.json"},
+  {"path": "tools/bench/cards/result_127-2.json"},
+  {"path": "tools/bench/plan_ring_p3b_in.json", "md5": "6e52b85d4c8af156224a02bdc53a88cd"},
+  {"path": "tools/bench/plan_ring_p3b_make.py", "md5": "1110a40428b41b588d54de0361c33a11"},
+  {"path": "tools/bench/graph_ring_p3a_20261001_190155.json", "md5": "2fa6ce0c3e8a3014fa916085cb852f68"},
+  {"path": "tools/stagexec.py", "md5": "9b83247820795c59d350de974cec5316"},
+  {"path": "tools/stagesim.py", "md5": "1af5950df47c90482bdda79866e54b85"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "verb", "name": "create_primitive_nested", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "connect_term_uid", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "wire_remove_loose_ends", "where": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/prior_art_review.py"},
+  {"kind": "file", "name": "tools/stagekit.py"}
+ ],
+ "pass": [
+  "PD258(c) rows in the plan: error in <- #6810 error out (old sink #649 kept), error out -> f3 -> Unbundle status -> Select -> Num(i) element",
+  "IMAQ Copy, Unbundle By Name, Select terminals named with measured term_class from recorded sources, or listed OPEN",
+  "final plan replays end to end; census + Error List predictions written with their row sources",
+  "dry + prerun PASS; --scratch-required output recorded; prior-art review dispatched and annotated",
+  "recipe written (<=120 lines, rows from plan file), NOT launched; reuse_81 self-test updated and green"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p3b.json",
+  "tools/recipes/stage_d1_ring_p3b.py"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p3b*",
+   "tools/recipes/stage_d1_ring_p3b*",
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/stage_prerun.py",
+   "tools/bench/opmodels/**",
+   "tools/bench/sim/**",
+   "tools/bench/selftest_*",
+   "tools/bench/errorlist_expected_*",
+   "tools/bench/diag_c127_3*",
+   "tools/bench/prior_art*",
+   "tools/bench/stage_prerun*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/cards/result_127-3*",
+   "tools/bench/cards/review_127-3*",
+   "tools/bench/cards/verdict_127-3*",
+   "tools/bench/peer_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 55
+ },
+ "rules": [
+  "Offline only: no LabVIEW, no COM; terminal facts only from recorded graphs/logs, else OPEN",
+  "Recipe written, never launched; no gscript.py edit; existing self-tests stay green",
+  "Return at the first unexpected result"
+ ],
+ "advances": ["M4", "M3"]
+}

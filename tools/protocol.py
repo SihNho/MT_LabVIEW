@@ -398,6 +398,7 @@ RECIPE_PATH_RE = re.compile(r"tools[\\/]recipes[\\/]", re.I)
 OFFLINE_SELFTESTS = {
     "tools/bench/selftest_census_hookin_c123.py": None,
     "tools/bench/selftest_case_frame_c124.py": None,
+    "tools/bench/selftest_fs_c126.py": None,          # card 127-2: measured by c125_1_offline_measure.py (0 COM trips)
     "tools/stagexec.py": "selftest",
 }
 

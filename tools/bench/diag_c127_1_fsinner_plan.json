@@ -1,0 +1,35 @@
+{
+ "schema_note": "card 127-1 STEP A (brief_127-1.md, PD257(d)): FINALIZED decision-row plan of tools/bench/diag_c127_1_fsinner.py = the diag_c126_6_cross_plan.json FS build (3-frame FS in case #22694's False frame #27219), two FIRST crossings by connect_term_uid exactly as 126-6 B2/B1 (wire_remove_loose_ends on every new wire), then the 4 P3b 2nd+ sinks (p3b_x_i_rat1/rar1/raf1, p3b_x_bn_latest; plan_ring_p3b_rows.json:486-534) as SAME-FRAME wires from the FS outer tunnel's INNER face in that frame (connect_term_uid(sink, inner-face uid)). Never saved; scratch deleted; LabVIEW killed and gone. Frame indexes are 0-based fs_frames order (126-6: i -> frames[1], BufNum -> frames[2]).",
+ "input": {"vi": "D1_ring_p3a_20261001_180540.vi", "md5": "4dfa44aac8fb32f706b3eb792ee7d3cc", "graph": "tools/bench/graph_ring_p3a_20261001_190155.json"},
+ "case": 22694, "false_frame": 27219,
+ "first": [
+  {"tag": "A_i", "src": 644, "src_frame": 639, "frame": 1, "row": "p3b_x_i_ia1",
+   "predict": {"FlatSequenceOuterTunnel": 1, "InnerTerminal": 2, "OuterTerminal": 1, "SelectorTunnel": 1, "Terminal": 2, "Wire": 3},
+   "why": "126-6 B2 (diag_c126_6_cross.log:60): While #637 i #644 on #639 -> Max & Min x in FS frames[1]"},
+  {"tag": "A_bn", "src": 6897, "src_frame": 639, "frame": 2, "row": "p3b_x_bn_n3",
+   "predict": {"FlatSequenceOuterTunnel": 1, "InnerTerminal": 2, "OuterTerminal": 1, "SelectorTunnel": 1, "Terminal": 2, "Wire": 3},
+   "why": "126-6 B1 (diag_c126_6_cross.log:49): BufNum #6897 on #639 -> Max & Min x in FS frames[2]"}
+ ],
+ "second": [
+  {"tag": "S_rat1", "of": "A_i", "row": "p3b_x_i_rat1"},
+  {"tag": "S_rar1", "of": "A_i", "row": "p3b_x_i_rar1"},
+  {"tag": "S_raf1", "of": "A_i", "row": "p3b_x_i_raf1"},
+  {"tag": "S_latest", "of": "A_bn", "row": "p3b_x_bn_latest"}
+ ],
+ "second_predict": {"allowed_deltas": [{}, {"Wire": 1}], "fs_outer_tunnels": "unchanged", "why": "PD257(d)/brief_127-1 step 4: a branch from the inner face (R4 analogue, PD250(a))"},
+ "sink_positions": {"1": [[60, 40], [60, 140], [160, 40], [160, 140]], "2": [[60, 40], [60, 140]]},
+ "errorlist_base": "errorlist_D1_ring_p3a_20261001_180540_20261001_181801.json",
+ "decisions": [
+  {"id": "D-0", "action": "stage", "what": "stagekit Stage on the P3a bed: restart LabVIEW, byte copy = work copy, discard_work (never saved)"},
+  {"id": "C-1", "action": "create", "what": "struct_copy_nested(FlatSequence, gscript.fs_donor()) onto the False frame of case #22694; fs_add_frame x2 -> 3 frames"},
+  {"id": "C-2", "action": "create", "what": "4 Max & Min on FS frames[1], 2 Max & Min on FS frames[2] (registry donor)"},
+  {"id": "W-1a", "action": "wire", "what": "A_i: connect_term_uid(frames[1] Max & Min #1 x <- While i #644); census delta gate == predict; wire_remove_loose_ends on every new wire; record FS outer tunnel uid + inner-face term uid"},
+  {"id": "W-1b", "action": "wire", "what": "A_bn: connect_term_uid(frames[2] Max & Min #1 x <- BufNum #6897); the same gates and records"},
+  {"id": "M-0", "action": "measure", "what": "Error List count-only after the first crossings (baseline for the 2nd sinks)"},
+  {"id": "W-2a", "action": "wire", "what": "S_rat1: connect_term_uid(frames[1] Max & Min #2 x <- A_i inner-face uid); census delta, FS outer tunnel count, Is Broken?, joints before/after wire_remove_loose_ends on new + source wires, Error List count-only. Stop at the first prediction miss."},
+  {"id": "W-2b", "action": "wire", "what": "S_rar1: frames[1] Max & Min #3 x <- A_i inner face; the same reads"},
+  {"id": "W-2c", "action": "wire", "what": "S_raf1: frames[1] Max & Min #4 x <- A_i inner face; the same reads"},
+  {"id": "W-2d", "action": "wire", "what": "S_latest: frames[2] Max & Min #2 x <- A_bn inner face; the same reads"},
+  {"id": "X", "action": "discard", "what": "close(): scratch deleted, bed md5 unchanged, LabVIEW killed and gone"}
+ ]
+}
