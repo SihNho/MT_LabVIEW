@@ -1,0 +1,22 @@
+{
+ "schema": "result/1",
+ "id": "129-5",
+ "status": "FAIL",
+ "gates": {"pass": 10, "fail": 2},
+ "first_fail": "E1 stopped IN op k33 connect_term_uid p3b_x_bn_n3: FlatSequenceOuterTunnel keys sim name '' vs real 'current image number' (pin2 line 477)",
+ "facts": [
+  "JEV-TRIAGE | stage_d1_ring_p3b1_scratch_pin2.log | unknown p=0.46 | FAIL E1 ... stopped IN op k33 connect_term_uid ... BINDING: FlatSequence",
+  "FILE pin2: BGRUN START 01:34:51 line 1; BGRUN END rc=1 after 2146s line 502; elapsed 2140.4 s line 499; GATES 10/2 line 498",
+  "Q1 pin2 private MB (read): k0 570.0 l55, k5 588.8 l119, k10 606.1 l203, k15 638.0 l305, k20 650.5 l352, k25 672.3 l398, k30 689.0 l448, k33 697.3 l476; ~+4 MB/op",
+  "Q1 MEMSTOP stagexec.MEM_STOP_MB 700 per stage_prerun.py:59; X10_FAIL_MB=690.0 at stage_prerun.py:1764 (error 2 seen at 695 MB, line 1761)",
+  "Q2 P3a scratch_pin: start 565.4 l53, max/end 571.5 (k0) l54 / 570.2 (k1) l70, 1 op reached, rc=1 187s l96. P3a launch: start 566.1 l39, end=max 652.3 k21 l252, 22/0 PASS, rc=0 721s l296",
+  "Q3 ops 27/29/31 (pin2 l412,432,452): src #27373 'x-y*floor(x/y)' across FS border (plan 551-590), bound new tunnels -68/-73/-78, diff 0 (sim '' matched)",
+  "Q3 op 33 (l472): #28345 <- #6897; plan 599-605 src uid 6810 'current image number' -> SEL1.f, across case border 639->27219 + FS border; real tunnel named 'current image number' (l477)",
+  "Q3 diag_c126_6_cross B1 #27881 <- #6897 err '' l45-46; FSOuterTunnel #27893 on FlatSequence 27509 l48; census l49; review says l50 names both faces 'current image number'; B2 '' (review cites l61)",
+  "Q4 log has NO per-step timestamps; hygiene l480-495: close_panel 0x47D 'Cannot close ... a closed front panel' (l481), H5/H4/H2/H3/H6 PASS, handles 46129->33995 at exit; minutes per step not recorded",
+  "Q5 review (archive/peer/...fsot.md:61-65): compare op33 rows vs cross.log:50; fix sim per measured case, not copy-source-label (:52); ops 27/29/31 stay ''"
+ ],
+ "open": [
+  "Q4 per-step durations of the hygiene phase cannot be read from pin2 log (no timestamps); stage_d1_ring_p3b1_scratch_pin.json (line 499) may hold them"
+ ]
+}

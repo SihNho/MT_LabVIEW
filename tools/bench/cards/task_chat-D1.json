@@ -1,0 +1,36 @@
+{
+ "schema": "task/1",
+ "id": "chat-D1",
+ "kind": "build",
+ "goal": "Freeze long plan docs in place (lines unchanged); docs/d1/INDEX.md of decisions in force + per-topic decision files; next.json/STATUS point at INDEX; doc_lint 400-line cap",
+ "why": "User 2026-10-02 chose the full doc reorganisation and 'test it once'; runner stopped between cycles 129 and 130. Detail: brief_chat-D1.md",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_chat-D1.md", "md5": "2a3bb2750685607364e5d658acd5bd1f"},
+  {"path": "tools/doc_lint.py", "md5": "f7c20e494d674a09875853651c8db71b"}
+ ],
+ "pass": [
+  "each frozen file: old lines 1..N byte-identical at the same line numbers (script check logged); status value frozen; footer appended",
+  "docs/d1/INDEX.md <= 300 lines with Pre-decided in force (each linked file:line), step table, open decisions, UNSURE list; per-topic files + how-to note",
+  "next.json plan -> INDEX (protocol validate OK); STATUS START HERE pointer updated; STOP line kept",
+  "doc_lint: frozen accepted, 400-line cap for active docs, exempt list warns; self-test green; runner dry path green",
+  "report: places that name the split plan as where to write decisions (edited or listed), CLAUDE.md lines to change"
+ ],
+ "outputs": ["docs/d1/INDEX.md", "tools/doc_lint.py"],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": ["docs/**", "tools/doc_lint.py", "tools/bench/**", "tools/cycle_runner.py", ".claude/agents/*.md", "STATUS.md"],
+  "status_edit": true,
+  "git_commit": true,
+  "peers": ["audit"]
+ },
+ "budget": {"failures": 2, "minutes": 90},
+ "unblocks": "M4",
+ "rules": [
+  "Runner is stopped; do not start it",
+  "Never delete or rewrite old content of a frozen file; no lines inserted above it",
+  "Do not edit CLAUDE.md; keep the STATUS STOP line"
+ ]
+}

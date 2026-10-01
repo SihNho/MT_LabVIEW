@@ -1,0 +1,36 @@
+{
+ "schema": "result/1",
+ "id": "129-8",
+ "status": "PASS",
+ "gates": {"pass": 5, "fail": 0},
+ "first_fail": null,
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/recipes/stage_d1_ring_p3b1.py", "md5": "5e25813aa1fd889e148e0352506c1922"},
+  {"path": "tools/recipes/stage_d1_ring_p3b2.py", "md5": "f4564e37c8bc067d80baf2c2b1b351ae"},
+  {"path": "tools/bench/stage_d1_ring_p3b1_scratch.py", "md5": "c3ac8ce405b66ae31b8cf358e9542a83"},
+  {"path": "tools/bench/plan_ring_p3b1_pred.json", "md5": "d59c3982d100a06f263a5bb6ee17ca9b"},
+  {"path": "tools/bench/plan_ring_p3b2_pred.json", "md5": "0c85c68b1f51013acce5d427b45223c2"},
+  {"path": "tools/card_clock.py", "md5": "80c7a69c04be3fa16b3c4fe360e525a3"},
+  {"path": "tools/bench/selftest_card_clock.py", "md5": "a55c87ca66085e0d32e8b180d862aa68"},
+  {"path": "tools/bench/diag_c129_8_mempred.py", "md5": "1cb46511cc30531c1e604858141e947c"}
+ ],
+ "facts": [
+  "P1 both recipes: BIND/CHECKPOINTS lines after SRC + Executor(checkpoints=CHECKPOINTS) + set in L1 text (stage_d1_ring_p3b1.py:24-25,39-40; p3b2.py:23-24,39-40); plan md5s unchanged",
+  "P3b-1: N 40, BIND 23, checkpoints (0,2..16,23,27,29,31,33,35,37,39,40), R 25, peak 688.5 MB vs X10 690 (margin 1.5 MB) diag_c129_8_mempred.log:3",
+  "P3b-2 (compiled offline only): N 30, BIND 10, checkpoints (0..10,30), R 12, peak 641.8 MB vs X10 690 diag_c129_8_mempred.log:5",
+  "peak = 570 + R*2.53 + N*1.4 written into both preds as memory_pred with citations (pin2.log:55, diag_c129_6_mem.log:55/:87); no set tuned",
+  "dry PASS recipe (stage_prerun_c129_8_dry_recipe.log:120) + helper (dry_scratch.log:138); prerun PASS 15/0 both (pre_recipe.log:143, pre_scratch.log)",
+  "X10 still WARN unmeasured in prerun (no recorded meter for this recipe; pre_recipe.log:139); X14 WARN rows 40 budget 15 proven no (:140)",
+  "scratch helper: LOGTAG pin -> pin3 + docstring launch line (stage_d1_ring_p3b1_scratch.py:15,24); CARD id left 129-4 in the record",
+  "launch gate stop_record refused the new P3b-1 bytes (released e5ebcb, disk cca5d8) -> prior-art c129-8-ring-p3b1 ANSWERED 59s verdict=novel, STOP RECORD none (priorart_c129_8_ring_p3b1.log)",
+  "card_clock.py:76-79 UNMEASURED now prints SKIP RESULT (first_fail 'CLOCK-UNMEASURED: <reason>'), exit 2; selftest 5/0 (selftest_card_clock_c129_8.log:8)",
+  "gate FP not logged: guard_cycle refused a read-only md5sum naming recipe paths as a launch; gate_fp.py log itself refused (stop_record matched the --cmd text)"
+ ],
+ "open": [
+  "P3b-1 predicted peak 688.5 MB is 1.5 MB under X10 690 and 11.5 under MEMSTOP 700 with the BIND set (R 25): run the scratch as is, or change the set/split (judgement; the card forbids tuning here)",
+  "Prior-art review archive/peer/2026-10-02-priorart-c129-8-ring-p3b1.md is left unannotated per brief s3"
+ ],
+ "cost": {"usd": null, "minutes": 7, "labview_runs": 0},
+ "note": "Offline only; no LabVIEW, no recipe launched, no gate code edited. Extra helpers: tools/bench/diag_c129_8_pagate.py, diag_c129_8_md5.py (read-only)."
+}

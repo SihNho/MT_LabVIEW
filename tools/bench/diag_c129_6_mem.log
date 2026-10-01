@@ -1,0 +1,120 @@
+BGRUN START 2026-10-02 02:25:00 limit 30.0 min: py -u tools/bench/diag_c129_6_mem.py
+BGRUN PID 1724
+BGRUN STAGE-RUN recorded diag_c129_6_mem.py cycle='cycle 129' card=None pid=2996 -> stage_runs.jsonl
+diag_c129_6_mem - card 129-6 (brief_129-6.md): WHERE does LabVIEW's private memory grow ~4 MB per stage op?
+MEASUREMENT ONLY. A dated byte copy claudeDev\scratch_c129_mem_<ts>.vi of the P3a bed (md5 4dfa44aa; the bed is never opened
+for edit) in a FRESH LabVIEW; private MB + handles at: M0 (after open) - W1 15 x the Executor's per-op checkpoint read, no edit
+between - W2 15 x one cheap scripted edit on diagram 27219, no checkpoint read between - W3 close WITHOUT saving, reopen.
+PRIOR ART (checked, reused, nothing new built): the W1 read is EXACTLY stagexec.Executor.run's checkpoint read (stagexec.py:2021
+`real_new = be.read()` -> LVBackend.read :2391-2395 = wiki_build.read_live(work, fs_pairs=BASE fs_tunnel_pairs) (wiki_build.py:233:
+report_all GObject + allterms.read_terms OP_ALLTERMS_V1 + join_wires) then dedupe); the W2 edit is the plan's constant route
+(stagexec.py:2650-2656 `primitive` -> gscript.create_primitive_nested, prim 'const_donor', donor DonorRingConst_v0.vi #249,
+plan_ring_p3b1_in.json); the meter is stagexec.Meter (:72) on stagekit.private_bytes + bench_prep.labview_handles (as LVBackend :2373);
+skeleton diag_c122_hyg.py. No tool, plan or recipe edited; no LabVIEW option or ini touched.
+PREDICTION (mechanics only - the slopes are the measurement, not predicted): S0 W1 15 reads, each returns > 0 terminal rows, row
+count constant; S1 W2 15 creates, 0 errors, Constant count +15 exactly; S2 after W3 reopen the copy's md5 == input (never saved)
+and Constant count == M0's; a window stops early (ROW, not a gate) if private MB >= 680 (error 2 seen at 695). LabVIEW gone, copy deleted.
+    py tools/bgrun.py --material --max-min 30 --log tools/bench/diag_c129_6_mem.log -- py -u tools/bench/diag_c129_6_mem.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 323 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 4dfa44aac8fb32f706b3eb792ee7d3cc  got 4dfa44aac8fb32f706b3eb792ee7d3cc
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 34002
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_c129_mem_20261002_022501.vi
+  FACT  ExecState [after open] scratch_c129_mem_20261002_022501.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so scratch_c129_mem_20261002_022501.vi is deleted at close
+  METER M0     k   0  private 557.4 MB (d -)  handles 45646 (d -)
+  FACT  M0 Constant count 318
+  METER M0cnt  k   0  private 557.4 MB (d +0.0)  handles 45709 (d +63)
+  METER W1     k   1  private 569.7 MB (d +12.3)  handles 45752 (d +43)
+  METER W1     k   2  private 571.6 MB (d +1.9)  handles 45749 (d -3)
+  METER W1     k   3  private 576.3 MB (d +4.7)  handles 45745 (d -4)
+  METER W1     k   4  private 577.5 MB (d +1.2)  handles 45742 (d -3)
+  METER W1     k   5  private 581.4 MB (d +3.9)  handles 45741 (d -1)
+  METER W1     k   6  private 583.2 MB (d +1.8)  handles 45741 (d +0)
+  METER W1     k   7  private 583.2 MB (d +0.0)  handles 45736 (d -5)
+  METER W1     k   8  private 587.2 MB (d +4.0)  handles 45738 (d +2)
+  METER W1     k   9  private 589.9 MB (d +2.7)  handles 45739 (d +1)
+  METER W1     k  10  private 593.9 MB (d +4.0)  handles 45738 (d -1)
+  METER W1     k  11  private 593.9 MB (d +0.0)  handles 45738 (d +0)
+  METER W1     k  12  private 597.8 MB (d +3.9)  handles 45737 (d -1)
+  METER W1     k  13  private 601.8 MB (d +4.0)  handles 45738 (d +1)
+  METER W1     k  14  private 601.8 MB (d +0.0)  handles 45740 (d +2)
+  METER W1     k  15  private 605.8 MB (d +4.0)  handles 45735 (d -5)
+  FACT  W1 15 reps in 336.0 s; slope 2.529 MB/rep (all), 2.521 MB/rep (reps 2..); MB [569.7, 571.6, 576.3, 577.5, 581.4, 583.2, 583.2, 587.2, 589.9, 593.9, 593.9, 597.8, 601.8, 601.8, 605.8]
+  PASS  S0 W1 15 checkpoint reads, every read > 0 rows, row count constant [5828]  [5828, 5828, 5828, 5828, 5828, 5828, 5828, 5828, 5828, 5828, 5828, 5828, 5828, 5828, 5828]
+  OBSERVED uid 27616 -> owner 'Diagram' uid 27219 | self 'DigitalNumericConstant'#27616 | 482 says 'Diagram' cast 'Diagram' |  
+  METER W2     k   1  private 604.1 MB (d -1.7)  handles 45819 (d +84)
+  OBSERVED uid 28451 -> owner 'Diagram' uid 27219 | self 'DigitalNumericConstant'#28451 | 482 says 'Diagram' cast 'Diagram' |  
+  METER W2     k   2  private 604.2 MB (d +0.1)  handles 45820 (d +1)
+  OBSERVED uid 32690 -> owner 'Diagram' uid 27219 | self 'DigitalNumericConstant'#32690 | 482 says 'Diagram' cast 'Diagram' |  
+  METER W2     k   3  private 604.1 MB (d -0.1)  handles 45820 (d +0)
+  OBSERVED uid 35294 -> owner 'Diagram' uid 27219 | self 'DigitalNumericConstant'#35294 | 482 says 'Diagram' cast 'Diagram' |  
+  METER W2     k   4  private 604.1 MB (d +0.0)  handles 45819 (d -1)
+  OBSERVED uid 37682 -> owner 'Diagram' uid 27219 | self 'DigitalNumericConstant'#37682 | 482 says 'Diagram' cast 'Diagram' |  
+  METER W2     k   5  private 604.1 MB (d +0.0)  handles 45819 (d +0)
+  OBSERVED uid 39895 -> owner 'Diagram' uid 27219 | self 'DigitalNumericConstant'#39895 | 482 says 'Diagram' cast 'Diagram' |  
+  METER W2     k   6  private 604.1 MB (d +0.0)  handles 45816 (d -3)
+  OBSERVED uid 42129 -> owner 'Diagram' uid 27219 | self 'DigitalNumericConstant'#42129 | 482 says 'Diagram' cast 'Diagram' |  
+  METER W2     k   7  private 605.6 MB (d +1.5)  handles 45815 (d -1)
+  OBSERVED uid 44546 -> owner 'Diagram' uid 27219 | self 'DigitalNumericConstant'#44546 | 482 says 'Diagram' cast 'Diagram' |  
+  METER W2     k   8  private 605.6 MB (d +0.0)  handles 45815 (d +0)
+  OBSERVED uid 46547 -> owner 'Diagram' uid 27219 | self 'DigitalNumericConstant'#46547 | 482 says 'Diagram' cast 'Diagram' |  
+  METER W2     k   9  private 605.6 MB (d +0.0)  handles 45816 (d +1)
+  OBSERVED uid 48546 -> owner 'Diagram' uid 27219 | self 'DigitalNumericConstant'#48546 | 482 says 'Diagram' cast 'Diagram' |  
+  METER W2     k  10  private 606.4 MB (d +0.8)  handles 45816 (d +0)
+  OBSERVED uid 50582 -> owner 'Diagram' uid 27219 | self 'DigitalNumericConstant'#50582 | 482 says 'Diagram' cast 'Diagram' |  
+  METER W2     k  11  private 606.8 MB (d +0.4)  handles 45815 (d -1)
+  OBSERVED uid 52590 -> owner 'Diagram' uid 27219 | self 'DigitalNumericConstant'#52590 | 482 says 'Diagram' cast 'Diagram' |  
+  METER W2     k  12  private 610.8 MB (d +4.0)  handles 45815 (d +0)
+  OBSERVED uid 54589 -> owner 'Diagram' uid 27219 | self 'DigitalNumericConstant'#54589 | 482 says 'Diagram' cast 'Diagram' |  
+  METER W2     k  13  private 610.9 MB (d +0.1)  handles 45815 (d +0)
+  OBSERVED uid 56588 -> owner 'Diagram' uid 27219 | self 'DigitalNumericConstant'#56588 | 482 says 'Diagram' cast 'Diagram' |  
+  METER W2     k  14  private 610.9 MB (d +0.0)  handles 45816 (d +1)
+  OBSERVED uid 58630 -> owner 'Diagram' uid 27219 | self 'DigitalNumericConstant'#58630 | 482 says 'Diagram' cast 'Diagram' |  
+  METER W2     k  15  private 610.9 MB (d +0.0)  handles 45816 (d +0)
+  FACT  W2 15 reps in 38.4 s; slope 0.576 MB/rep (all), 0.628 MB/rep (reps 2..); MB [604.1, 604.2, 604.1, 604.1, 604.1, 604.1, 605.6, 605.6, 605.6, 606.4, 606.8, 610.8, 610.9, 610.9, 610.9]
+  PASS  S1 W2 15 creates, 0 errors, Constant 318 -> 333 (+15 expected)
+  METER W2cnt  k   0  private 610.9 MB (d +0.0)  handles 45816 (d +0)
+  METER W3close k   0  private 610.9 MB (d +0.0)  handles 37358 (d -8458)
+  METER W3close5 k   0  private 610.9 MB (d +0.0)  handles 37358 (d +0)
+  METER W3open k   0  private 610.9 MB (d +0.0)  handles 37358 (d +0)
+  PASS  S2 W3 reopened copy: md5 == input (never saved) and Constant 318 == M0's 318  4dfa44aac8fb32f706b3eb792ee7d3cc
+  METER W3cnt  k   0  private 609.7 MB (d -1.2)  handles 34385 (d -2973)
+  FACT  METER ROWS [["M0", 0, 557.4, 45646], ["M0cnt", 0, 557.4, 45709], ["W1", 1, 569.7, 45752], ["W1", 2, 571.6, 45749], ["W1", 3, 576.3, 45745], ["W1", 4, 577.5, 45742], ["W1", 5, 581.4, 45741], ["W1", 6, 583.2, 45741], ["W1", 7, 583.2, 45736], ["W1", 8, 587.2, 45738], ["W1", 9, 589.9, 45739], ["W1", 10, 593.9, 45738], ["W1", 11, 593.9, 45738], ["W1", 12, 597.8, 45737], ["W1", 13, 601.8, 45738], ["W1", 14, 601.8, 45740], ["W1", 15, 605.8, 45735], ["W2", 1, 604.1, 45819], ["W2", 2, 604.2, 45820], ["W2", 3, 604.1, 45820], ["W2", 4, 604.1, 45819], ["W2", 5, 604.1, 45819], ["W2", 6, 604.1, 45816], ["W2", 7, 605.6, 45815], ["W2", 8, 605.6, 45815], ["W2", 9, 605.6, 45816], ["W2", 10, 606.4, 45816], ["W2", 11, 606.8, 45815], ["W2", 12, 610.8, 45815], ["W2", 13, 610.9, 45815], ["W2", 14, 610.9, 45816], ["W2", 15, 610.9, 45816], ["W2cnt", 0, 610.9, 45816], ["W3close", 0, 610.9, 37358], ["W3close5", 0, 610.9, 37358], ["W3open", 0, 610.9, 37358], ["W3cnt", 0, 609.7, 34385]]
+
+---------- [H] HYGIENE
+  FACT  close_panel(scratch_c129_mem_20261002_022501.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  close_panel(scratch_c129_mem_20261002_022501.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 5}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 5}
+  FACT  LabVIEW handle count AFTER the work: 45823
+  PASS  H4 scratch deleted: scratch_c129_mem_20261002_022501.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c129_mem_20261002_022501.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 4dfa44aac8fb32f706b3eb792ee7d3cc / after 4dfa44aac8fb32f706b3eb792ee7d3cc
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33996
+
+====================================================================================================
+=== GATES: 11 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c129_6_mem.json   elapsed 567.8 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":11,"fail":0},"first_fail":null,"artefacts":[]}
+LabVIEW gone at exit: True
+BGRUN END rc=0 after 573s

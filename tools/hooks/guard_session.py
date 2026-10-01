@@ -65,7 +65,10 @@ PREP_BUDGET = 3             # offline cards dispatched while a LabVIEW card is l
 LIVE_FACTOR = 1.5           # a card with no result is dead after budget.minutes x this
 CARD_RE = re.compile(r"^\s*CARD\s+(\S+)", re.M)
 WORKFLOW_TOOLS = ("Workflow",)  # (f) multi-agent orchestration counts as one dispatch
-CHAT_CONTEXT_LIMIT = 500_000    # (f) tokens = 50 % of the 1M window; above it the chat hands off instead of dispatching
+# (f) DISABLED 2026-10-02 (user: "세션이 50% 넘으면 새 세션 열도록 강요하지 말고 그냥 문맥 압축하는 방향으로 가자" -
+# the user is remote and cannot open a new chat): the chat runs on and relies on automatic context compaction. Was
+# 500_000 (50 % of the 1M window). Set a number again to re-enable; None = no chat context bound.
+CHAT_CONTEXT_LIMIT = None
 TAIL_BYTES = 4_000_000          # read only the transcript's tail for the last assistant usage
 
 
@@ -100,6 +103,8 @@ def last_context_tokens(transcript_path):
 
 def chat_context_refusal(data):
     """(f) The chat's bound: refuse a counted dispatch once its context passed CHAT_CONTEXT_LIMIT. '' = allow."""
+    if CHAT_CONTEXT_LIMIT is None:
+        return ""
     n = last_context_tokens((data or {}).get("transcript_path"))
     if n is None or n <= CHAT_CONTEXT_LIMIT:
         return ""

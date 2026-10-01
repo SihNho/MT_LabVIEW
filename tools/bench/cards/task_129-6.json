@@ -1,0 +1,60 @@
+{
+ "schema": "task/1",
+ "id": "129-6",
+ "kind": "measure",
+ "goal": "Measure where LabVIEW's private memory grows ~4 MB per stage op: checkpoint reads only (W1) vs scripted edits only (W2) vs close+reopen (W3), plus a fact question on undo history",
+ "why": "129-4: P3b-1 scratch reached 697.3 MB at op 33/40 (MEMSTOP 700, error 2 at 695); P3a launch +4.1 MB/op. Whether a 40-op ring step can fit depends on the cause. brief_129-6.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_129-6.md"},
+  {"path": "tools/bench/cards/result_129-5.json"},
+  {"path": "tools/bench/stage_d1_ring_p3b1_scratch_pin2.log"},
+  {"path": "tools/stagexec.py"},
+  {"path": "tools/stagekit.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3a_20261001_180540.vi", "md5": "4dfa44aac8fb32f706b3eb792ee7d3cc"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/peer.ps1"},
+  {"kind": "file", "name": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_ring_p3a_20261001_180540.vi"}
+ ],
+ "pass": [
+  "F1 fact question ANSWERED (gemini first arm or Opus fallback); answer + source URLs returned; no LabVIEW setting or ini changed",
+  "M1 diag_c129_6_mem.py <=120 lines on stagekit, dry + prerun PASS, on a dated byte copy of the P3a bed (bed untouched)",
+  "M2 MB + handles at M0, after each of 15 W1 reads and 15 W2 edits, after W3 close and reopen; W1/W2 slopes in MB/op",
+  "M3 the W1 read functions named with file:line (the same ones the scratch run's per-op checkpoints call)",
+  "M4 copy deleted, LabVIEW verified gone; card_clock OK"
+ ],
+ "outputs": [
+  "tools/bench/diag_c129_6_mem.py",
+  "tools/bench/diag_c129_6_mem.log",
+  "tools/bench/cards/result_129-6.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c129_6*",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/stage_prerun*",
+   "tools/bench/prerun/**",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_129-6*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["fact", "hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 35},
+ "rules": [
+  "Measurement only: no tool, plan or recipe edited; no LabVIEW option or ini changed",
+  "Never end the turn while a run you started lacks BGRUN END (material.md:92-98)",
+  "Return at the first unexpected result (step finished, LabVIEW closed, copy deleted); cost.minutes = bind→return"
+ ],
+ "advances": ["M3", "M4"]
+}

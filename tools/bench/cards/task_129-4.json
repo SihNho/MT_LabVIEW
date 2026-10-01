@@ -1,0 +1,79 @@
+{
+ "schema": "task/1",
+ "id": "129-4",
+ "kind": "build",
+ "goal": "Retry of 129-2: clean the orphan, rerun the P3b-1 scratch pin run from the start (waited on in-turn), scratch Error List pin, measured census into the pred, dry+prerun; NO launch",
+ "why": "129-2's scratch run was killed at 01:28 by its agent's exit (log has no BGRUN END; bgrun PID 16692 gone; LabVIEW 15600 orphaned). Prior-art novel already. PD264(c)(e); brief_129-4.md.",
+ "retry_of_card": "129-2",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_129-4.md"},
+  {"path": "tools/bench/cards/brief_129-2.md"},
+  {"path": "tools/bench/stage_d1_ring_p3b1_scratch_pin.log"},
+  {"path": "tools/bench/stage_d1_ring_p3b1_scratch.py"},
+  {"path": "tools/bench/stage_d1_ring_p3b1_el.py"},
+  {"path": "tools/recipes/stage_d1_ring_p3b1.py", "md5": "4dc77962470e38208f7f0cb091a82b64"},
+  {"path": "tools/bench/plan_ring_p3b1.json", "md5": "3ca2d056cf5dceffe8d1e74efaff7fc7"},
+  {"path": "tools/bench/plan_ring_p3b1_pred.json"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3a_20261001_180540.vi", "md5": "4dfa44aac8fb32f706b3eb792ee7d3cc"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p3b1_scratch.py"},
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p3b1_el.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p3b1.py"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3b1_pred.json"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/card_clock.py"},
+  {"kind": "file", "name": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_ring_p3a_20261001_180540.vi"}
+ ],
+ "pass": [
+  "C1 orphan LabVIEW 15600 killed and verified gone; scratch_c129_ring_p3b1_20261002_012612.vi deleted; bed untouched",
+  "C2 helpers dry + prerun PASS again (own processes); any gate hold answered by the Jev row or an ANSWERED hypothesis review",
+  "C3 scratch pin rerun (log _pin2), waited on in-turn to BGRUN END: every recipe gate PASS (RB 'status', FS 3 frames, PB cdiff 16)",
+  "C4 scratch Error List count-only == 54 (or named alternative 57); scratch deleted; LabVIEW verified gone",
+  "C5 measured census written into the pred by script (cited); recipe dry + prerun PASS; recipe NOT launched; card_clock OK"
+ ],
+ "outputs": [
+  "tools/bench/stage_d1_ring_p3b1_scratch_pin2.log",
+  "tools/bench/plan_ring_p3b1_pred.json",
+  "tools/bench/cards/result_129-4.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/*ring_p3b1*",
+   "tools/bench/stage_d1_ring_p3b1_scratch.py",
+   "tools/bench/stage_d1_ring_p3b1_el.py",
+   "tools/bench/sim/**",
+   "tools/bench/prerun/**",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/errorlist*ring_p3b1*",
+   "tools/bench/graph_ring_p3b1*",
+   "tools/bench/census_samples.json",
+   "tools/bench/diag_c129_4*",
+   "tools/bench/stage_prerun*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_129-4*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 50
+ },
+ "rules": [
+  "Never end the turn while a run you started lacks BGRUN END (material.md:92-98); 129-2's exit killed its run",
+  "Real recipe NOT launched; only the scratch helper runs, on a dated byte copy; bed never opened for edit",
+  "GUI via lv_gui.ps1 -Exception Approved only; capture, locate, act, capture, confirm",
+  "Return at the first unexpected result (step finished, LabVIEW closed, scratch cleaned); cost.minutes = bind→return"
+ ],
+ "advances": ["M3", "M4"]
+}

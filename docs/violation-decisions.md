@@ -1716,3 +1716,70 @@ state. Every later op hygiene check goes through it only; a brief for one quotes
 - Acceptance: a self-test shows the runner closes its copies (copy count back to the start value after each round) and its
   record carries all three handle reads; `OpFsAddFrame_v0`'s rerun through it decides PASS/FAIL by the usual ±100 band.
 - If a later op hygiene check is again written outside `hygiene_run`, or fails on unclosed copies, that is `device-failed`.
+
+## inference-over-measurement — 2026-10-02 01:01 (cycle 129 judgement, after archive/peer/2026-10-02-retrospective-cycle128.md:377)
+
+`VIOLATION: inference-over-measurement | loss_min=42 | loss_usd=? | evidence=tools/bench/cards/result_128-5.json:2`: ACCEPTED,
+and re-measured before accepting: card 128-5 was bound at 00:41:33 (`tools/bench/cards/guard_card.log:575`) and its result
+file was written at 00:49:02 (file mtime), about 8 of its 50 minutes, yet the result says `first_fail: "budget: 50-min card
+budget spent"` and `cost.minutes: 45`. The cycle-128 judgement copied the claim into PD263 and STATUS and closed the cycle
+with about 126 minutes and one dispatch unused. The retrospective's missing-tool finding (`:322-325`) names the cause under
+the slip: nothing compares the minutes a card claims with the minutes the files show.
+
+DECISION: device. Built in the offline tooling card AFTER this cycle's P3b-1 LabVIEW card returns (deliverable first; no gate
+code is edited while a LabVIEW card is live, retrospective-cycle121 disposition):
+- **`py tools/protocol.py validate <result_X.json>` prints a CLOCK line computed from files only**: the card's bind time (the
+  newest `BOUND ... (id X)` line in `tools/bench/cards/guard_card.log`), the result file's mtime, the measured minutes between
+  them, the result's `cost.minutes` and the task card's `budget.minutes`.
+- **It fails validation with `CLOCK-MISMATCH`** when the result's `first_fail` or `blocked_by` cites the budget or minutes
+  while measured < 0.8 × `budget.minutes`, or when `cost.minutes` exceeds the measured minutes by more than max(5 min, 25 %).
+  A card with no bind line prints `CLOCK-UNMEASURED`, never a pass. The material session validates its own result before
+  returning, so a false budget claim is refused where it is written; the judgement session reads the same line.
+- Acceptance (offline self-test): `result_128-5.json` → CLOCK-MISMATCH (about 8 measured, 45 claimed, budget cited); an honest
+  result of cycle 128 → pass; a synthetic result with no bind line → CLOCK-UNMEASURED.
+- If a later judgement decision rests on a false budget or minutes claim that this check passed, that is `device-failed`.
+- Status (cycle 129 close): the standalone half is BUILT — `tools/card_clock.py` (83 lines) + `tools/bench/selftest_card_clock.py`
+  4/0; real runs: 128-5 → CLOCK-MISMATCH, 129-1, 129-4, 129-6, 129-7 → OK (card 129-3 and by hand). 129-5 (a log-reader
+  result with no `cost.minutes`) → CLOCK-UNMEASURED, and the script then CRASHED printing its RESULT line (status `BLOCKED`
+  is not a result-line status, `card_clock.py:77`) — fixed in card 129-8 (UNMEASURED → RESULT status SKIP, exit 2 kept).
+  The wiring into `protocol.py validate` is NOT done: no window without a live LabVIEW card remained; it is in cycle 130's
+  tooling card (PD265(d)), where UNMEASURED warns and only MISMATCH fails.
+
+## device-failed — 2026-10-02 02:57 (cycle 129 judgement, after archive/peer/2026-10-02-retrospective-cycle129.md:337-338)
+
+**(1) `VIOLATION: device-failed | loss_min=25 | loss_usd=2.08 | evidence=tools/bench/stage_prerun_c129_1_p3b1_prerun.log:137`
+— the X10 memory-margin check. ACCEPTED.** X10 passed the 40-op P3b-1 recipe as `PASS … (UNMEASURED - no covering record)`
+twice (`:137-138`, and `stage_d1_ring_p3b1_scratch_prerun2.log:156-157`) because it reads meters only from runs of the SAME
+recipe (`tools/stage_prerun.py:57-60,1735`) and every ring step is a new recipe. P3a's launch meter (566.1 → 652.3 MB over 22
+ops, `stage_d1_ring_p3a.log:39,252`) predicted ≈ 723 MB offline; pin2 then reached 697.3 MB at op 33. A gate that answers
+PASS when it has measured nothing is the fault, not bad luck.
+
+DECISION: device — FIX X10 BEFORE THE NEXT BUILD (cycle 130's first card, offline, before any LabVIEW card):
+- X10 predicts the step's peak from the COMPILED plan, across recipes: peak = start + R × read + N × (edit + other), with
+  R = whole-VI reads in the recipe's checkpoint set (incl. 0 and the end) and N = ops; the coefficients come from a model file
+  with citations (start 570 = `stage_d1_ring_p3b1_scratch_pin2.log:55`; read 2.53 and edit 0.58 = `diag_c129_6_mem.log:55,87`;
+  other 0.8 = pin2's 3.9/op minus both), and a same-recipe meter, when one exists, still wins.
+- It FAILS a predicted peak above 675 MB (PD266(b)'s margin: heap grows in ~4 MB steps, error 2 measured at 695); 690 stays
+  the line for MEASURED meters. `UNMEASURED` (no compiled plan, no model) is a FAIL for a LabVIEW stage recipe, never a PASS.
+- Acceptance (offline self-test): the 129-1 P3b-1 bytes (md5 `4dc77962…`, a read after every op) → FAIL ≈ 723; the 129-8
+  bytes (md5 `5e25813a…`, R 25) → FAIL 688.5; the re-balanced halves of cycle 130 → PASS ≤ 675; a recipe with neither plan
+  nor meter → FAIL UNMEASURED; existing prerun self-tests stay green.
+- If a later LabVIEW run exceeds X10's predicted peak by more than 10 MB, or X10 passes a run that reaches error 2, that is
+  `device-failed` again.
+
+**(2) `VIOLATION: device-failed | loss_min=2 | loss_usd=? | evidence=tools/hooks/material_marker.log:2989` — the stop record's
+read-only release. ACCEPTED.** It refused a read-only `md5sum` that named a recipe path as a launch, then refused the
+`gate_fp.py log` command meant to queue that false positive (its `--cmd` text named the same path), so the sanctioned escape
+was closed too; 129-8 worked around it with `diag_c129_8_md5.py`. The retrospective counts this the sixth repair of the same
+read-only class (2026-09-24 05:54; 09-27 03:30, 07:46, 15:49, 22:20; 09-28 07:05): patching one more read-only verb at a time
+has not converged.
+
+DECISION: device — FIX THE PREDICATE, not one more verb, in cycle 130's tooling card. Its failure mode is a false REFUSAL,
+which cannot let a bad build through, so it follows the deliverable cards:
+- The stop record treats a segment as a LAUNCH only when a recipe path is in PYTHON COMMAND POSITION (`py [-u] <recipe>`, or
+  after `bgrun … --`), via the shared `launchunit.segments` + BUILD_RE predicate; a recipe path that appears as an ARGUMENT
+  (`md5sum`, `grep`, `cat`, `gate_fp.py log --cmd "…"`) never stops anything.
+- Acceptance (offline self-test): `md5sum tools/recipes/X.py`, `grep … tools/recipes/X.py`, and `py tools/gate_fp.py log --cmd "py
+  -u tools/recipes/X.py"` on a STOPPED recipe → allowed; `py -u tools/recipes/X.py` and `py tools/bgrun.py … -- py -u
+  tools/recipes/X.py` → still refused; the six earlier read-only repairs' cases stay allowed.
+- Logged as fp-22 in the same card. A seventh read-only refusal after this fix is `device-failed`.

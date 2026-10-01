@@ -215,6 +215,43 @@ for nested `claude -p` inside an app-opened cloud session. Constraints measured:
 ("--cloud requires an interactive terminal") → automation needs a pseudo-terminal (pywinpty, not installed; download
 needs user OK); the session clones origin at the current branch (user pushes); the cloud names its own branch
 (`claude/billing-test-summary-…`); the chat CAN read a cloud session's log with RemoteTrigger get_run_log.
+Test result: the task finished in 99 s and pushed; the user's first `--cloud` from C:\Windows\system32 ALSO created a
+session, so two sessions ran (≈$2 each). Both test branches DELETED on 2026-10-02 01:3x (user OK); the chat's
+`git push origin --delete` worked this time.
+**CLOUD OFFLOAD — DESIGN PROPOSED, NOT BUILT (user 2026-10-02: "앞으로의 벤치나 러너의 오프라인 준비 작업 해보면 좋을듯.
+git push도 각 싸이클마다 잡아야 하겠고, 클라우드 세션에서 할 작업과 통신 방법 및 프로토콜 등도 다시 규정해야겠다"):**
+(1) scope: phase 1 = benches (decbench/ucbench/matbench; not gsearch — no agy in the cloud); phase 2 = runner cards
+with labview:none, chosen by the judgement agent via a card field `where: cloud|local`; LabVIEW/motors/camera,
+judgement and hypothesis reviews stay local. (2) dispatch: `--cloud` needs a TTY — first try launching it in a NEW
+console window (Start-Process, no download); fallback pywinpty (download → user OK). (3) protocol: send the existing
+task/1 card (card id in session title + prompt); cloud writes ONLY under tools/bench/cloud/<card_id>/ (result/1 +
+artefacts), commits on its own claude/* branch; local fetches that dir and deletes the branch; cloud never edits
+existing files (proposals only, local judgement applies); progress via RemoteTrigger get_run_log. (4) runner pushes
+after its per-cycle commit (needs explicit user OK). (5) hooks are Windows-only (`py "G:/…"`) → in the cloud every
+hook fails, so cloud cards run with NO guards; make hook commands cross-platform or restrict cloud tools; fix the
+untrusted-workspace warning. (6) cost: $244 left (expires 11-05), ≈$2 per small task; card carries model + cost cap.
+Asked the user: auto push per cycle? start with benches? continue in a NEW chat (this one is at 525k context, over the
+500k dispatch limit)? Usage at 01:3x: 5-hour 20 %, weekly 67 %.
+**2026-10-02 ~01:5x user:** (a) "세션이 50% 넘으면 새 세션 열도록 강요하지 말고 그냥 문맥 압축하는 방향으로 가자. 내가 당분간
+로컬에 접속이 어려움" → DONE: guard_session `CHAT_CONTEXT_LIMIT = None` (self-test 27/27,
+`tools/bench/selftest_guard_session_20261002.log`), CLAUDE.md §3 item 2 amended, memory chat_compacts_instead_of_handoff.
+Uncommitted. (b) "클라우드 세션이 더 비효율적이고 결과가 안좋을 것 같으면 그냥 로컬 세션에서 돌리자" → chat's call: runner
+stays LOCAL (prep cards need the freshest local files; push/clone/merge round trip; no guards in the cloud; user is
+remote). Cloud only for a self-contained bench, decided case by case. Cloud design above NOT to be built.
+(c) Performance asked: cycles 122–128, 12:27→00:56, $281.77, deliverables P2b + P3a (~35 ring edit ops), ~165 left
+(P3b-1 40, P3b-2 30, P4 ~70, P5 ~25); most time went to ~8–9 new tools; 09-28 estimate (9–13 h) already exceeded.
+Card 129-2's material agent exited "Waiting for the scratch run to finish", killing its scratch run (same class as
+128-5's false 45-of-50-min budget claim, caught by the new card_clock.py).
+(d) Long docs: cycle27-plan.md 3,798 lines, d1-loop12-17-split-plan.md 2,945, violation-decisions.md 1,740. User:
+"쪼개서 링크 거는 방식이 더 좋지 않은지?" → chat proposed (awaiting OK): FREEZE the long files in place (citations
+stay valid), new short index of decisions in force linking to frozen lines, new decisions in short per-topic files
+(e.g. docs/ring/P3b.md), doc_lint line cap (~400) on active docs; done by a judgement agent between cycles.
+**APPROVED 2026-10-02 ~02:1x ("문서 정리안 전체" + "이렇게 하고 한번 테스트해보자").** Chat wrote a graceful STOP line at
+the top of STATUS (cycle 129 finishes, runner exits). Card `tools/bench/cards/task_chat-D1.json` (brief_chat-D1.md,
+validated) is READY: dispatch it (Agent material) as soon as cycle 129's CYCLE line + RUNNER STOP appear; after PASS,
+apply the CLAUDE.md line changes it lists, remove the STOP line, relaunch the supervisor detached
+(`Start-Process py tools/bgrun.py --max-min 10080 --log tools/runner_supervisor_bgrun.log -- py -u
+tools/runner_supervisor.py --start-now`), and report cycle 130 as the test of the new layout.
 **CLOUD PLAN DROPPED (user 2026-09-29 ~20:0x KST: "그럼 클라우드는 그냥 잊어버리자").** No Linux port of benches/hooks;
 benches stay local. Both probe routines were run-once and are spent. Open next: user asked whether to bring Gemini back
 for web search; chat proposed (awaiting answer) a headless-permission fix test + a 6–8 question known-answer comparison

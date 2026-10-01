@@ -1,0 +1,68 @@
+{
+ "schema": "task/1",
+ "id": "129-7",
+ "kind": "build",
+ "goal": "Model the FS outer tunnel's name after a crossing from MEASURED cases only (table first), fix stagesim, re-finalize P3b-1/P3b-2, preds, P3b-1 recipe dry+prerun",
+ "why": "129-4 op 33: E1 BINDING, real FS tunnel named 'current image number', sim ''; ops 27/29/31 '' matched. Review hyp-c129-4 fsot: model the measured case, not the source label. brief_129-7.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_129-7.md"},
+  {"path": "tools/bench/stage_d1_ring_p3b1_scratch_pin2.log"},
+  {"path": "tools/bench/diag_c126_6_cross.log"},
+  {"path": "archive/peer/2026-10-02-hyp-c129-4-ring-p3b1-fsot.md"},
+  {"path": "tools/bench/plan_ring_p3b1_in.json", "md5": "0f4f40b27277e6260e35d0ccb0f9ff93"},
+  {"path": "tools/bench/plan_ring_p3b2_in.json", "md5": "922b05e33e16728919adb70b69814170"},
+  {"path": "tools/stagesim.py", "md5": "d03f0a4ab7a0ce4fbdf490ca38bca463"},
+  {"path": "tools/bench/graph_ring_p3a_20261001_190155.json"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/plan_ring_p3b1_in.json"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3b2_in.json"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3b_split.py"},
+  {"kind": "file", "name": "tools/bench/diag_c126_6_cross.log"},
+  {"kind": "file", "name": "tools/bench/graph_ring_p3a_20261001_190155.json"},
+  {"kind": "file", "name": "tools/card_clock.py"}
+ ],
+ "pass": [
+  "T1 table of every measured FS-border crossing: log:line, source uid/class/terminal name, tunnel source?, route, real tunnel name",
+  "T2 ONE recorded attribute separates named from '' in every row (else return the table, nothing changed)",
+  "T3 stagesim models it; a self-test row per measured case; stagesim + stagexec self-tests green",
+  "T4 P3b-1/P3b-2 re-finalized (same split), equivalence to the unsplit replay holds, preds updated by script",
+  "T5 P3b-1 recipe dry PASS + prerun PASS (own processes); card_clock OK; no gate code touched"
+ ],
+ "outputs": [
+  "tools/stagesim.py",
+  "tools/bench/plan_ring_p3b1.json",
+  "tools/bench/plan_ring_p3b2.json",
+  "tools/bench/plan_ring_p3b1_pred.json",
+  "tools/bench/plan_ring_p3b2_pred.json",
+  "tools/bench/cards/result_129-7.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagesim.py",
+   "tools/stagexec.py",
+   "tools/bench/plan_ring_p3b1*",
+   "tools/bench/plan_ring_p3b2*",
+   "tools/bench/plan_ring_p3b_split*",
+   "tools/bench/sim/**",
+   "tools/bench/selftest_*",
+   "tools/bench/diag_c129_7*",
+   "tools/bench/stage_prerun*",
+   "tools/bench/cards/result_129-7*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 30},
+ "rules": [
+  "Offline only; no gate code (stage_prerun.py, protocol.py, tools/hooks/*) edited; recipes never launched",
+  "Model only measured cases; a rule no recorded attribute supports is not invented — return the table",
+  "Return at the first unexpected result; cost.minutes = bind→return"
+ ],
+ "advances": ["M3", "M4"]
+}

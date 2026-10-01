@@ -1,0 +1,32 @@
+{
+ "schema": "result/1",
+ "id": "129-6",
+ "status": "PASS",
+ "gates": {"pass": 11, "fail": 0},
+ "first_fail": null,
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/diag_c129_6_mem.py", "md5": "430a698e909f3d136021dec472ce1e82"},
+  {"path": "tools/bench/diag_c129_6_mem.log", "md5": "c81201bb72ed2ee64e42013b92d5344e"},
+  {"path": "tools/bench/diag_c129_6_mem_plan.json", "md5": "b6859e31a1f3775836a720aa8dde745c"},
+  {"path": "tools/bench/diag_c129_6_mem.json", "md5": "677b96161fb3672b8a410b3cdc4fbd3f"},
+  {"path": "archive/peer/2026-10-02-c129-6-undo-history-opus.md", "md5": "a6f9740f4af318fb24b3ca469ea67674"}
+ ],
+ "facts": [
+  "W1 read = Executor checkpoint read stagexec.py:2021 -> LVBackend.read :2391-2395 -> wiki_build.read_live wiki_build.py:233 (report_all GObject + OP_ALLTERMS_V1) + dedupe",
+  "M0 557.4 MB / 45646 handles after fresh open; Constant 318 (diag_c129_6_mem.log:37-38)",
+  "W1 15 reads only, 5828 rows each: 569.7..605.8 MB, slope 2.53 MB/read (2.52 excl. first, first +12.3 = op-VI load), 22.4 s/read, handles flat (diag_c129_6_mem.log:40-56)",
+  "W2 15 const_donor creates only (stagexec.py:2655 route) on 27219, 0 err, Constant +15: 604.1..610.9 MB, slope 0.58 MB/edit, 2.6 s/edit (diag_c129_6_mem.log:58-88)",
+  "W3 close w/o save: private 610.9 -> 610.9 MB (+5 s same), handles -8458; reopen 610.9 MB, md5 unchanged, Constant 318 (diag_c129_6_mem.log:89-94)",
+  "So ~2.5 of the ~3.9-4.1 MB/op (pin2, P3a launch) is the per-op whole-VI checkpoint read; edits alone ~0.6 MB; closing the VI returns no private MB (diag_c129_6_mem.log:55,87,90)",
+  "W1 deltas come in ~4 MB steps alternating with 0 (heap growth granularity), e.g. k6 +1.8, k7 +0.0, k8 +4.0 (diag_c129_6_mem.log:45-47)",
+  "F1 gemini first arm ANSWERED but with no content/URLs (wrote to its own artefacts) (tools/bench/peer_c129_6_undo.log:6-24); re-asked claude fact role (peer_c129_6_undo_opus.log:3)",
+  "F1 Opus: undo limit Tools>Options>Environment 'Maximum undo steps per VI' 1-99 default 99; ini token maxUndoSteps from a LAVA post only, no NI doc (2026-10-02-c129-6-undo-history-opus.md)",
+  "F1 Opus: no NI API clears/limits undo; NI engineer (2009): unwrapped scripting ops 'can clear' undo stack; per-edit entry + memory/step NOT established (2026-10-02-c129-6-undo-history-opus.md)"
+ ],
+ "open": [
+  "W1 grows 2.5 MB per read with no edit and close does not return it: is a stage step's read count (checkpoint set, PD193(a)) the lever, rather than undo history? (diag_c129_6_mem.log:55,90)"
+ ],
+ "cost": {"usd": null, "minutes": 18, "labview_runs": 1},
+ "note": "Measurement only, nothing else edited. Dry PASS (dry2.log:66), prerun 14/0 (prerun2.log:84). Build fixes: dry STUB md5, X6 reserve_s. LabVIEW run 9.6 min (W1 5.6, W2 0.6); fact 4+2 min bg. Bed md5 same (H2), copy deleted (H4), LabVIEW 0."
+}

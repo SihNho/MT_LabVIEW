@@ -2886,6 +2886,91 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
        dependency-closed, IMAQ Copy + guard together, RLE with its loose end), finalize both, predictions, recipes, dry +
        prerun out of process, `--scratch-required`, prior-art for P3b-1; c106e E1 rerun listing every FAIL; fp-19 drain.
        Then in the SAME cycle (pipeline): P3b-1 full scratch run on a P3a byte copy, ONE Error List read, ONE launch.
+264. **(cycle 129 judgement, 2026-10-02 — after 129-1 FAIL 3/2, 13 min measured)**
+     USER-RULES: U1, U9 (relied on; plan split and tooling only, none contradicted). D-2026-10-01-01 (option 1) applied.
+     - **(a) 129-1 ACCEPTED as far as it ran:** P3b-1 = 40 actions (15 create + 10 wire + 7 crossing + 8 RLE; IMAQ Copy and
+       every guard row in it), P3b-2 = 30 (10 + 6 + 7 + 7), cut at `p3b_lr_transpos` (P3b-1 is at the cap; one
+       TransPos/RotPos/FrameIdx group needs ≥ 9 rows; BufNum → Latest needs BufNum → SEL1.f first). P3b-1 then P3b-2 replays
+       to the SAME end graph as the unsplit 70 (cdiff 16/16; objects 10244, owners 1763, terminals 5933, wires 1974;
+       `plan_ring_p3b_split.log:4-14`). `stagesim.py:303-311` keeps a simulated end state as a base (self-tests 80/0,
+       136/0). Recipe `stage_d1_ring_p3b1.py` (97 lines) dry PASS, prerun PASS 15/0. Pred: Error List 55 → 54 (alternative
+       +3 = CP1's three unnamed slots), census {} (every row CENSUS-UNPREDICTED).
+     - **(b) P3b-2's dry/prerun are NOT owed on its provisional base.** The dry run compares the REAL input VI with the plan
+       base (`stage_prerun_c129_1_p3b2_dry.log:23`); a dry on a simulated base is promised at `stage_prerun.py:2569-2571` but
+       not implemented. Not built: P3b-2's plan-level check is the stagesim replay already done in (a); its recipe-level
+       dry + prerun (and its X1/X5 lines) run after `--rebase` onto the graph read of P3b-1's saved file. fp-21 is closed in
+       the gate-fp drain as NOT a false positive, and that comment is corrected to say dry/prerun follow the rebase.
+     - **(c) Census, PD261(c) applied:** the P3b-1 scratch run's measured census delta is written into
+       `plan_ring_p3b1_pred.json` by a script that cites the scratch log line (never typed); dry + prerun run again on the
+       new pred bytes; the ONE launch's CEN2 compares against it.
+     - **(d) The prior-art hold** (guard_peer) was the unwritten annotation of
+       `archive/peer/2026-10-01-priorart-c124-6-ring-p3a.md`, written now. P3b-1's review opens the scratch card.
+     - **(e) Order — TWO LabVIEW cards:** 129-2 = prior-art + scratch helpers (cuts of the P3a ones) + full scratch run +
+       scratch Error List pin (count-only, role scratch) + measured census into the pred + dry/prerun; it does NOT launch.
+       129-3 = ONE launch + final full Error List read + expected file. Measured reason: P3a's scratch + launch + reads took
+       66 min in one card (`guard_card.log:537` 17:24:28 → `result_124-8.json` 18:30:28) for 22 rows; 40 rows in one card
+       would start the final read past the 60-min new-bgrun backstop. Then the gate-fp drain + CLOCK device card (offline,
+       no LabVIEW card live).
+265. **(cycle 129 judgement, 2026-10-02 — after 129-4 FAIL 2/1, 129-5 log facts, 129-6 PASS 11/0, 129-7 PASS 5/0)**
+     USER-RULES: U1 (relied on; checkpoint frequency and a simulator naming rule only — no computation, no design change).
+     - **(a) 129-4's stop is a SIMULATOR naming gap, now modelled from measured cases (129-7 ACCEPTED):** a new Selector/FS
+       outer tunnel created by a crossing takes the non-empty name already carried by tunnel terminals on the SOURCE NET
+       (net w3747 from SubVI #6897: 4 named tunnels → `current image number`; B1 `diag_c126_6_cross.log:50`, A_bn
+       `diag_c127_1_fsinner.log:70`, op 33 `stage_d1_ring_p3b1_scratch_pin2.log:477`), else `''` (#644 w3268, #23289, #27401:
+       `cross.log:61,78`, `fs.log:53,57`, pin2 `:417,437,457`). `stagesim.py` `CROSS_NAME_FROM_CLS` + `_cross_tunnel_name`,
+       self-test 88/0, stagexec 136/0; P3b-1/P3b-2 re-finalized, equivalence to the unsplit 70 holds (`plan_ring_p3b_split_c129_7.log`).
+       It is ONE positive source net measured three times — a proxy for LabVIEW's name propagation; the next scratch run is
+       its test (a second named net is not measured first: the scratch IS the measurement, and E1 stops at the first miss).
+       A For-exit LoopTunnel inner face named from an unwired SubVI (`cross.log:78`) is not modelled and not in P3b.
+     - **(b) Memory — PD193's OPEN question is CLOSED by 129-6:** with no edit, each whole-VI checkpoint read adds
+       +2.53 MB (15 reads, 22.4 s each; `diag_c129_6_mem.log:40-56`); edits alone +0.58 MB each (`:58-88`); closing the VI
+       returns nothing (`:89-94`) — only a LabVIEW restart frees it. Pin2's ≈ 3.9 MB/op = read 2.5 + edit 0.6 + ≈ 0.8
+       unattributed. The 40-op P3b-1 with a read after EVERY op ends near 730 MB (error 2 at 695). The undo-history
+       hypothesis is not needed (fact review `archive/peer/2026-10-02-c129-6-undo-history-opus.md`: no NI API, and the
+       edits are the cheap part).
+     - **(c) DECIDED: P3b-1 and P3b-2 use PD193(a)'s checkpoint set**, the established form `{0, len(ops)} | BIND`
+       (`tools/recipes/stage_d1_l2b3.py:16-18`; the Executor itself refuses a set missing a binding op, `stagexec.py:1726-1733`,
+       T35c). Rule 1a holds as in PD193(a): every checkpoint diffs the WHOLE graph, each op keeps its connect read-back.
+       The prerun records the predicted peak = 570 + R × 2.53 + 40 × 1.4 MB (R = reads in the set; 570 = pin2 k0) against
+       X10's 690. A predicted peak over 690 is NOT launched: it comes back to judgement (a further split needs the user,
+       PD261(d)).
+     - **(d) Not this cycle:** a third LabVIEW scratch run. Pin2 took 36 min (ops ~19, FAIL hygiene ~16), the session's hard
+       stop is 03:56 and the close needs ~20 min. The scratch rerun + ONE launch is cycle 130's first act; the gate-fp drain
+       (fp-15..fp-21) + the CLOCK wiring into `protocol.py validate` follow it in cycle 130's tooling card.
+266. **(cycle 129 judgement, 2026-10-02 — after 129-8 PASS 5/0)**
+     USER-RULES: U1 (relied on; split balance only). D-2026-10-01-01 (≤ ~40 actions per ring step; fewer is allowed) applied.
+     - **(a) 129-8 ACCEPTED:** both recipes pass `{0, len(ops)} | BIND` (`stage_d1_ring_p3b1.py:24-25,39-40`). P3b-1: N 40,
+       BIND 23, R 25 reads, predicted peak **688.5 MB**; P3b-2: N 30, BIND 10, R 12, **641.8 MB** (`diag_c129_8_mempred.log:3,5`),
+       written as `memory_pred` into both preds. Recipe and scratch helper dry PASS + prerun 15/0; prior-art c129-8 `novel`;
+       `card_clock.py` UNMEASURED → RESULT SKIP, self-test 5/0.
+     - **(b) DECIDED: P3b-1 is NOT scratch-run at 688.5 MB.** That is 1.5 MB under X10's 690 and 6.5 under error 2 (695,
+       measured twice), and the heap grows in ~4 MB steps (`diag_c129_6_mem.log:45-47`) — a coin-flip on a ~36-min run.
+       **The P3b split is RE-BALANCED BY PREDICTED MEMORY:** the cut that minimises the LARGER of the two predicted peaks
+       (570 + R × 2.53 + N × 1.4), under PD261(d)'s constraints (each ≤ 40, dependency-closed, IMAQ Copy + guard together,
+       each RLE with its loose end). Bound: 33 BIND ops + 4 end reads over 70 ops ≈ 666 MB per half at best.
+       **Pass: the larger predicted peak ≤ 675 MB** (≥ 15 MB under X10). No valid cut reaching it ⇒ the card returns: a third
+       half needs the user (PD261(d)); a scoped (non-whole-VI) checkpoint read is a tool project for judgement.
+     - **(c)** Still two files: the broken-file count stays P3b-1 = 3, P3b-2 = 4 of 6.
+     - **(d) Cycle 130 order:** offline re-balance card (split, finalize both, preds with `memory_pred`, both recipes' sets,
+       P3b-1 recipe + helper dry/prerun, prior-art if the gate asks for the new bytes) → LabVIEW P3b-1 scratch `pin3`
+       (PD264(e): scratch + Error List pin + measured census into the pred + dry/prerun; measured memory per checkpoint
+       compared with `memory_pred`) → LabVIEW ONE launch + final full Error List read + expected file → offline tooling:
+       gate-fp drain fp-15..fp-21 + the read-only `md5sum` that guard_cycle refused as a launch in 129-8 (gate_fp.py could
+       not log it: stop_record matched its `--cmd` text) + CLOCK wiring into `protocol.py validate` (UNMEASURED warns,
+       MISMATCH fails) + `docs/ring-buffer-design.md:23-24` marked superseded by PD238(c).
+267. **(cycle 129 judgement, 2026-10-02 02:5x — after `archive/peer/2026-10-02-retrospective-cycle129.md`: two `device-failed`)**
+     USER-RULES: U1 (relied on; gate and order only, no design change).
+     - **(a) Accepted:** the memory check X10 passed the 40-op P3b-1 as UNMEASURED (`stage_prerun_c129_1_p3b1_prerun.log:137`)
+       although P3a's launch meter predicted ≈ 723 MB offline; the 40-action cut was sized by the user's cap alone. Decisions:
+       `docs/violation-decisions.md` 2026-10-02 02:57.
+     - **(b) Cycle 130's FIRST card (offline) = the X10 fix, then the re-cut it checks:** X10 predicts peak = start + R × read +
+       N × (edit + other) from the compiled plan across recipes (cited model file), FAILS > 675 MB and FAILS UNMEASURED for a
+       LabVIEW stage recipe; self-test on the 129-1 bytes (≈ 723, FAIL), the 129-8 bytes (688.5, FAIL) and a no-plan recipe
+       (FAIL). Then PD266(b)'s memory-balanced re-cut, accepted only when X10 itself PASSes both halves (≤ 675). This replaces
+       PD266(d)'s separate prediction script as the check.
+     - **(c)** Cards 2 and 3 (P3b-1 scratch, ONE launch) unchanged from PD266(d); every brief that starts a run quotes the wait
+       clause of `.claude/agents/material.md:92-98`. Card 4 (tooling) adds the stop-record predicate fix (recipe path a launch
+       only in python command position) with fp-22, beside the gate-fp drain and the CLOCK wiring.
 
 ## OPEN (design choices — for judgement; not decided here)
 

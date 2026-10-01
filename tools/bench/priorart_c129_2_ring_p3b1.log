@@ -1,0 +1,41 @@
+BGRUN START 2026-10-02 01:21:12 limit 20.0 min: py -u tools/prior_art_review.py --plan-file tools/bench/plan_ring_p3b1.json --slug c129-2-ring-p3b1 --trigger new-op --recipe tools/recipes/stage_d1_ring_p3b1.py
+BGRUN PID 16296
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c129-2-ring-p3b1.txt (68941 chars)
+   review card tools\bench\cards\review_priorart-c129-2-ring-p3b1.json
+OUTCOME: ANSWERED (68s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-02-priorart-c129-2-ring-p3b1.md
+COST: $1.3080  in 18 / out 5300 / cache-create 122206 / cache-read 1121413  (64s, 12 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c129-2-ring-p3b1 verdict=novel -> tools\bench\cards\verdict_priorart-c129-2-ring-p3b1.json
+--- ANSWER ---
+I checked the project files and found no prior art that blocks P3b-1, so the verdict is `novel`. There is one stale line in a design doc, described under A3.
+
+**PART A — direction**
+- **A1 (decided already, but not as a blocker).** The direction itself was decided earlier, and this plan carries out those decisions rather than repeating a question:
+  - The ring buffer and its per-slot number check: user rule U13, `docs/ring-buffer-design.md:25-28`.
+  - The write order inside the camera loop, "`Num(i) = -1` → `IMAQ Copy 'Cam' → Img(i)` → … → `Num(i) = BufNum`": `docs/d1-loop12-17-split-plan.md:2256` (PD238(c)).
+  - The guard's form, Unbundler #157 → Select #529, t = −1, f = BufNum: `:2828-2833` (PD261(a)).
+  - Addressing the Unbundler output as `element#0`: `:2862-2866` (PD262(b)).
+  - The P3b-1 / P3b-2 split: `:2847-2852` (PD261(d)), `:2891-2897` (PD264(a)).
+  - The scratch run on a copy, then ONE launch: `:2908-2912` (PD264(e)).
+- **A2 (refuted already).** Nothing was found. The earlier search that claimed "no Select/Unbundle donor exists" (`:2814-2821`, PD260(c)) was retracted as a typo in the search pattern (`:2834-2835`). The stale `plan_ring_p3b.json` and `stage_d1_ring_p3b.py` are marked never-launch (`:2883-2884`). No `stage_d1_ring_p3b*.log` exists under `tools/bench/`, so P3b has never been launched or failed.
+- **A3 (contradicted, documentation only).** `docs/ring-buffer-design.md:23-24` says "the camera acquires DIRECTLY into `Img(k mod 20)` — no extra copy". The plan's `p3b_copy` row uses an `IMAQ Copy` instead. That doc line was overruled by `d1-loop12-17-split-plan.md:2225`: wiring `#6810`'s own Image Dst "would stop `#6810` working in place … (rule 1a)". It was reaffirmed at `:2234` and `:2256`. The plan follows the newer decision, so this is a stale line in the design doc, not a defect in the plan. It should be corrected or marked superseded in a doc-hygiene pass.
+- **A4 (unread evidence).** Nothing was found. The plan's row notes cite the measured logs it depends on (`diag_c128_2_donors.log`, `diag_c126_4_fs.log`, `diag_c126_6_cross.log`, `diag_c125_5_fsscr.log`).
+
+**PART B — the build file**
+- **B1 (already built).** No `D1_ring_p3b1_*.vi` exists. The build script is a cut of the P3a script, as its header says (`tools/recipes/stage_d1_ring_p3b1.py:9`, "No new op"). The review was triggered as `new-op`, but no new op is added.
+- **B2 (already failed).** Nothing was found. The cycle-124 scratch failure (created terminals left without a declared terminal class, `:2891`-era STATUS line 124-7) is addressed: every created node in this plan declares `term_class`, including Select's `ParameterTerminal`.
+- **B3 (an existing helper already does this).** No hand-rolled work. The script uses the existing toolkit: `stagexec.Executor` / `LVBackend` / `DryPlanBE`, `gscript.wire_remove_loose_ends` (`gscript.py:4972`), `stagekit.Stage.save` / `census_gate`, and `vigraph.computation_diff_frame`.
+- **B4 (already measured).** Each piece has been measured on its own (Flat Sequence creation, the four kinds of wire crossing, the guard wiring on a donor copy). The combined 40-row step in Flat Sequence frames has not been run. PD264(e) assigns that check to the scratch run.
+
+**PART C — the user's rules.** No conflicts.
+- **U4 (no queues for control signals):** `Num` is read and written through local variables.
+- **U6 / U13 (the camera never waits; slot index from the camera loop):** the slot index is the camera loop's own count mod 20 (`#27373`). The Select guard puts no wait on the camera path.
+- **U9 (no corruption):** a failed copy leaves the slot at −1, so the tracking loop discards it.
+- **U1 (original computation unchanged):** the copy moves pixels unchanged (`:2406`). The original's own wires are kept or re-created; the base-terminal check (gate TD) and the computation diff (gate PB) enforce this.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c129-2-ring-p3b1","verdict":"novel","alternative":"Only a doc conflict: ring-buffer-design.md:23-24 says acquire directly into Img(i), no copy; overruled for rule 1a by d1-loop12-17-split-plan.md:2225,2234,2256 (PD238(c)); the plan follows the newer one.","discriminating_test":"P3b-1 scratch run on a P3a byte copy (PD264(e)): Unbundler output on Select.s reads back 'status', census and Error List pinned before the ONE launch.","violations":[],"sources":["docs/d1-loop12-17-split-plan.md:2225","docs/d1-loop12-17-split-plan.md:2256","docs/d1-loop12-17-split-plan.md:2828-2866","docs/d1-loop12-17-split-plan.md:2889-2912","docs/ring-buffer-design.md:23-28","tools/recipes/stage_d1_ring_p3b1.py:9"],"note":"Doc hygiene: mark ring-buffer-design.md:24 superseded by PD238(c). Trigger said new-op, but the build script adds none."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c129-2-ring-p3b1.md
+   STOP RECORD: none - 2026-10-02-priorart-c129-2-ring-p3b1.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_ring_p3b1.py sha e5ebcb031159 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 71s

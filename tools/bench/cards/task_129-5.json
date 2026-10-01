@@ -1,0 +1,39 @@
+{
+ "schema": "task/1",
+ "id": "129-5",
+ "kind": "read-log",
+ "goal": "Facts from the P3b-1 scratch pin2 log and the P3a logs: memory per op, the FS-tunnel naming cases, and the 16-min hygiene phase",
+ "why": "129-4 FAIL at op 33/40: E1 binding, FS outer tunnel named 'current image number' (sim ''); memory 697 MB vs MEMSTOP 700. The fix and the step size depend on these measurements.",
+ "inputs": [
+  {"path": "tools/bench/stage_d1_ring_p3b1_scratch_pin2.log"},
+  {"path": "tools/bench/stage_d1_ring_p3a_scratch_pin.log"},
+  {"path": "tools/bench/stage_d1_ring_p3a.log"},
+  {"path": "tools/bench/diag_c126_6_cross.log"},
+  {"path": "archive/peer/2026-10-02-hyp-c129-4-ring-p3b1-fsot.md"},
+  {"path": "tools/bench/plan_ring_p3b1.json"}
+ ],
+ "pass": [
+  "Q1 pin2: every memory reading (private MB) with op index and time, L0 to FAIL; where MEMSTOP 700 and the X10 690 point are defined (file:line)",
+  "Q2 P3a scratch_pin and P3a launch logs: memory at start, max, end, and op count",
+  "Q3 ops 27, 29, 31, 33 of pin2 (+ plan rows): source uid + terminal name, crossing kind, sim vs real tunnel names; diag_c126_6_cross.log B1 the same",
+  "Q4 pin2 hygiene FAIL to END: each step's start/end time, which took the minutes, what close_panel 0x47D was",
+  "Q5 the review's own proposed discriminating test and its fix rule (review file :25-40), quoted"
+ ],
+ "outputs": ["tools/bench/cards/result_129-5.json"],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": ["tools/bench/cards/result_129-5*"],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 1, "minutes": 15},
+ "rules": [
+  "Read-only: targeted greps and line ranges, file:line for every fact; no judgement, no proposed fix",
+  "cost.minutes = bind to return"
+ ],
+ "advances": ["M3", "M4"]
+}

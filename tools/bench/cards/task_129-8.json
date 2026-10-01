@@ -1,0 +1,74 @@
+{
+ "schema": "task/1",
+ "id": "129-8",
+ "kind": "build",
+ "goal": "PD265(c): P3b-1/P3b-2 recipes pass the PD193(a) checkpoint set {0,len}|BIND; predicted peak memory into the preds; dry+prerun; card_clock UNMEASURED crash fix",
+ "why": "129-6: each whole-VI read +2.53 MB, edit +0.58 MB; a 40-op step with a read after every op ends near 730 MB (error 2 at 695). PD193(a) checkpoint sets fit (L2-A1). brief_129-8.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_129-8.md"},
+  {"path": "tools/recipes/stage_d1_ring_p3b1.py"},
+  {"path": "tools/recipes/stage_d1_ring_p3b2.py"},
+  {"path": "tools/recipes/stage_d1_l2b3.py"},
+  {"path": "tools/bench/plan_ring_p3b1.json", "md5": "10a0f401a877061f224900cf00ed6071"},
+  {"path": "tools/bench/plan_ring_p3b2.json", "md5": "0afc87adb9582bfdc463b89ddf3d2204"},
+  {"path": "tools/bench/diag_c129_6_mem.log", "md5": "c81201bb72ed2ee64e42013b92d5344e"},
+  {"path": "tools/card_clock.py", "md5": "47be2991ebd08de136b950642744462a"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p3b1.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p3b2.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_l2b3.py"},
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p3b1_scratch.py"},
+  {"kind": "file", "name": "tools/bench/selftest_card_clock.py"},
+  {"kind": "file", "name": "tools/bench/cards/result_129-5.json"}
+ ],
+ "pass": [
+  "P1 both recipes pass checkpoints={0,len(ops)}|BIND as stage_d1_l2b3.py:16-18; the set printed in L1; nothing else changed",
+  "P2 R, N and predicted peak (570 + R*2.53 + N*1.4) for both halves, written into the preds by script with citations",
+  "P3 dry PASS + prerun PASS (own processes) for the P3b-1 recipe and the scratch helper; P3b-2 set compiled offline only",
+  "P4 a prior-art review only if the gate demands one for the new bytes: ANSWERED, verdict returned, not annotated",
+  "P5 card_clock UNMEASURED prints a valid RESULT line (SKIP), exit 2; selftest_card_clock 5/5; card_clock OK on this result"
+ ],
+ "outputs": [
+  "tools/recipes/stage_d1_ring_p3b1.py",
+  "tools/recipes/stage_d1_ring_p3b2.py",
+  "tools/bench/plan_ring_p3b1_pred.json",
+  "tools/bench/plan_ring_p3b2_pred.json",
+  "tools/card_clock.py",
+  "tools/bench/cards/result_129-8.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/recipes/stage_d1_ring_p3b1.py",
+   "tools/recipes/stage_d1_ring_p3b2.py",
+   "tools/bench/plan_ring_p3b1_pred*",
+   "tools/bench/plan_ring_p3b2_pred*",
+   "tools/bench/diag_c129_8*",
+   "tools/bench/stage_prerun*",
+   "tools/bench/stage_d1_ring_p3b1_scratch*",
+   "tools/card_clock.py",
+   "tools/bench/selftest_card_clock*",
+   "tools/bench/card_clock*",
+   "tools/bench/prior_art*",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_129-8*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 25},
+ "rules": [
+  "Offline only; no recipe launched; no gate code (stage_prerun.py, protocol.py, tools/hooks/*) edited",
+  "Report the predicted peak; never tune the checkpoint set to reach a number",
+  "Return at the first unexpected result; cost.minutes = bind→return"
+ ],
+ "advances": ["M3", "M4"]
+}

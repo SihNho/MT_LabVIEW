@@ -1,0 +1,23 @@
+{"schema":"result/1","id":"129-7","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+ {"path":"tools/stagesim.py","md5":"0fb9ff8babbc190ca6c604c34c8f8a22"},
+ {"path":"tools/bench/plan_ring_p3b1.json","md5":"10a0f401a877061f224900cf00ed6071"},
+ {"path":"tools/bench/plan_ring_p3b2.json","md5":"0afc87adb9582bfdc463b89ddf3d2204"},
+ {"path":"tools/bench/plan_ring_p3b1_pred.json","md5":"adf80e04984c78b738cc0d8f0081cdcb"},
+ {"path":"tools/bench/plan_ring_p3b2_pred.json","md5":"6b1ba57397cb9281026c8dc7450b25e2"},
+ {"path":"tools/bench/plan_ring_p3b2_in.json","md5":"8a67b3553812dc7a7d13ebcf29d870e3"}],
+"facts":[
+ "T1 named 'current image number' (Selector 3 faces + FSOT 2): src #6897 SubVI on w3747, B1 diag_c126_6_cross.log:50, A_bn diag_c127_1_fsinner.log:70, op33 pin2.log:477",
+ "T1 '' : #644 Diagram w3268 (B2 cross.log:61, A_i fsinner.log:57); #23289 SubVI unwired (B3 cross.log:78); #27401 Function unwired/rewired (fs.log:53,57; pin2.log:417,437,457)",
+ "T2 ONE attribute separates every Selector/FSOT face: non-empty names on tunnel terms already on the source net (w3747: 4 named, graph_ring_p3a json; w3268 tunnels ''; others unwired/'')",
+ "T2 outside it: B3 For-exit LoopTunnel INNER face 'New Image' from an UNWIRED SubVI source (cross.log:78); not modelled (binder ignores loop names stagexec.py:932); named net through loop -> SimError",
+ "T3 stagesim.py: CROSS_NAME_FROM_CLS + _cross_tunnel_name before _border_tunnel; name on Selector/FSOT faces; selftest G74x5 G75 G76 G77 -> 88/0 (selftest_c129_7_stagesim.log)",
+ "T3 stagexec selftest 136/0 (tools/bench/selftest_c129_7_stagexec.log); sim step_33_wire.json now names Selector -83 (3 faces) + FSOT -87 (2 faces)",
+ "T4 plan_ring_p3b_split.py re-run 9/0 (plan_ring_p3b_split_c129_7.log): S5 split end == unsplit 70-row (objects 10244, terminals 5933, wires 1974, cdiff 16/16, diff [])",
+ "T4 p3b1_in md5 unchanged 0f4f40b2; p3b2_in 922b05e3 -> 8a67b355 (only its provisional base md5 + P3b-1 plan md5 changed, plan_ring_p3b2_in.json:65-71)",
+ "T5 dry PASS, STEPX 33 diff 0 (stage_prerun_c129_7_p3b1_dry.log); prerun PASS 15/0 with X10 WARN no meter for stage_d1_ring_p3b1.py (stage_prerun_c129_7_p3b1_prerun.log)",
+ "No gate code touched; no LabVIEW; helper fact dumps tools/bench/diag_c129_7_a1.py/.log, diag_c129_7_a2.py/.log"],
+"open":[
+ "The positive set is one source (#6897, 3 runs); 'tunnels on the net named' is a proxy for LabVIEW's data-name propagation. Accept it as the model, or measure a 2nd named net first?"],
+"cost":{"usd":null,"minutes":11,"labview_runs":0},
+"note":"Jev ladder: no failed gate in this card. Prerun X10 is advisory: the memory meter covered the scratch script, not the recipe."}

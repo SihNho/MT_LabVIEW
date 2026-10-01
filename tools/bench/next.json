@@ -1,16 +1,15 @@
 {
  "schema": "next/1",
- "cycle": 128,
- "act": "Build ring step P3b-1 (PD263(b)): split plan_ring_p3b_in.json (08fa2241) into P3b-1/P3b-2 <=40 each, dry+prerun+prior-art; then P3b-1 scratch on a P3a copy and ONE launch",
+ "cycle": 129,
+ "act": "PD267(b): offline card fixes the X10 memory check (cross-recipe peak prediction, fail >675 MB and UNMEASURED), then re-cuts P3b so X10 PASSes both halves; then P3b-1 scratch, ONE launch",
  "task_kind": "build",
- "plan": {"path": "docs/d1-loop12-17-split-plan.md", "md5": "67c6bc5feb483b01d9db45480e6ba7db"},
+ "plan": {"path": "docs/d1-loop12-17-split-plan.md", "md5": "bc4909e72fef17d18e46f9f8a276bf77"},
  "pass": [
-  "plan_ring_p3b1.json + plan_ring_p3b2.json each <=40 actions, dry + prerun PASS out of process, prior-art annotated",
-  "P3b-1 scratch on a P3a byte copy: census == plan, Unbundler element#0 reads back 'status' after its wire, ONE Error List read",
-  "ONE launch saves claudeDev D1_ring_p3b1_*.vi with census and Error List == scratch; broken-file count 3 of 6"
+  "X10 self-test: 129-1 bytes FAIL (~723 MB), 129-8 bytes FAIL (688.5), no-plan recipe FAIL UNMEASURED; old prerun self-tests green",
+  "Re-cut plan_ring_p3b1/p3b2: each <=40, dependency-closed, Copy+guard together; X10 PASS <=675 MB on both; dry+prerun PASS",
+  "P3b-1 scratch pin3 every gate PASS (op-33 tunnel name, peak <= prediction), then ONE launch saves claudeDev D1_ring_p3b1_*.vi"
  ],
  "blocked_by": null,
  "stop_requested": false,
- "advances": ["M3", "M4"],
- "steer": {"item": "outcome:decision-starved+goal-requirement-not-advanced+ordering-stale+product-not-runnable+tooling-over-delivery", "response": "follow"}
+ "advances": ["M3", "M4"]
 }

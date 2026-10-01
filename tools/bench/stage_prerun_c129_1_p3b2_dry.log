@@ -1,0 +1,27 @@
+BGRUN START 2026-10-02 01:13:35 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_ring_p3b2.py
+BGRUN PID 22436
+stage_d1_ring_p3b2 - card 129-1 (WRITTEN, NOT LAUNCHED), RING P3b-2 (d1-loop12-17-split-plan.md PD246(c) A2, PD238(c), PD240(a),
+PD257(a), PD258(a), PD261(d), PD263(b)): on P3b-1's SAVED artefact, in the Flat Sequence P3b-1 built on case #22694's False frame,
+add TransPos/RotPos/FrameIdx at i in frame f1 (local read -> Replace Array Subset -> local write; i by the INNER-FACE branch of
+P3b-1's entry tunnel; values #30117 Value, #4580 Value, #637 i) and Latest = BufNum in frame f2 (inner branch of P3b-1's BufNum
+tunnel); wire_remove_loose_ends after every crossing. BASE IS PROVISIONAL (P3b-1's simulated end, stage_prerun refuses the launch):
+`py tools/stage_prerun.py --rebase tools/bench/plan_ring_p3b2.json --graph <graph of P3b-1's saved VI>` first, then the pred again.
+FRESH LabVIEW -> claudeDev\D1_ring_p3b2_<ts>.vi (rule-6 GUI save, ExecState 0 by design) + errorlist_expected (54 + 0 own).
+ROWS ONLY FROM plan_ring_p3b2.json (stagesim FINAL of plan_ring_p3b2_in.json, plan_ring_p3b_split.py); expected values only from
+plan_ring_p3b2_pred.json. PRIOR ART: stage_d1_ring_p3b1.py / stage_d1_ring_p3a.py (same skeleton and gates). No new op.
+PREDICTION: L1 30 actions -> pred ops; E1 every checkpoint == sim; FR every created object sits on a frame of the base's FS, no
+new frame; D new/lost wires == sim's; TD every base terminal that was wired stays wired; CEN2 == pred census; PB cdiff(S1, end)
+== the 16 rows (FATAL, before save); HB handles <= +700; PS saved, input unchanged; EL 54.
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/stage_d1_ring_p3b2.log -- py -u tools/recipes/stage_d1_ring_p3b2.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p3b2_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan  ('35b15e630bd8830fda705c966b09c691', {'path': 'tools/bench/sim/ring_p3b2_base_provisional.json', 'md5': 'dcd96432bf8b1b580b997120e1e9246a'}, '4dfa44aac8fb32f706b3eb792ee7d3cc')
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 4dfa44aac8fb32f706b3eb792ee7d3cc  got 4dfa44aac8fb32f706b3eb792ee7d3cc
+  PASS  DRY graph JSON for input md5 4dfa44aac8fb32f706b3eb792ee7d3cc  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_ring_p3a_20261001_190155.json
+  PASS  L1 the 30 actions compile into 30 real ops == pred kinds, each action once  ['create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'connect', 'connect', 'connect', 'connect', 'connect', 'connect', 'connect', 'wire_remove_loose_ends', 'connect', 'wire_remove_loose_ends', 'connect', 'wire_remove_loose_ends', 'connect', 'wire_remove_loose_ends', 'connect', 'wire_remove_loose_ends', 'connect', 'wire_remove_loose_ends', 'connect', 'wire_remove_loose_ends']
+  STEPX 00 base read vs step_00: diff 71
+  FAIL  E1 the run reached its last op (record mode; stopped IN op None)  BASE: the scratch copy's graph differs from the plan's base graph: {'unbound': [-135, -134, -132, -131, -130, -121]}
+
+=== DRY FAIL: first_fail=GATE E1 the run reached its last op (record mode; stopped IN op None) coverage 34/75 lines, first mutation None, unverified 0, graph tools/bench/graph_ring_p3a_20261001_190155.json
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"GATE E1 the run reached its last op (record mode; stopped IN op None)","artefacts":[]}
+BGRUN END rc=1 after 3s

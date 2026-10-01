@@ -1,0 +1,65 @@
+BGRUN START 2026-10-02 01:26:11 limit 45.0 min: py -u tools/bench/stage_d1_ring_p3b1_scratch.py pin
+BGRUN PID 16692
+stage_d1_ring_p3b1_scratch - card 129-2: SCRATCH RUN of RING P3b-1 BEFORE the one launch (brief_129-2.md step 3, D-2026-10-01-01, PD264(c)(e)).
+Runs the stage recipe's OWN body (tools/recipes/stage_d1_ring_p3b1.py, imported UNCHANGED) on a dated byte copy
+claudeDev\scratch_c129_ring_p3b1_<ts>.vi of the P3a bed (md5 4dfa44aa) - same Executor, LVBackend and every recipe gate
+(L0 L1 E1 FS RB D CEN2 TD FU PB HB PS EL). No VI is run; the bed is never opened for edit.
+MODE (argv[1]):
+  nosave : SAVE off - structural verification only, NO GUI; the work copy is dropped by the Stage hygiene.
+  pin    : SAVE on (rule-6 gui_save of the SCRATCH) so stage_d1_ring_p3b1_el.py scratch can pin its Error List (that script deletes it).
+Observation only (wrapper-side, the recipe is not touched): Executor.run's real terminal rows are kept and, at CEN2, every NEW object
+uid is printed with its class and (for terminals) its owner uid/class and frame (NEWOBJ lines); the FULL-class census before/after is
+printed (CENSUS-ALL lines) - the pred's census is EMPTY (all 40 rows CENSUS-UNPREDICTED), so CEN2 is vacuous here and these lines are
+the measurement PD264(c) writes into plan_ring_p3b1_pred.json.
+PRIOR ART: tools/bench/stage_d1_ring_p3a_scratch.py (card 124-7/124-8; this is its cut - recipe module, plan, stage name, record key).
+PREDICTION: L1 40 actions; E1 every checkpoint == sim; FS 1 FlatSequence with 3 frames on 27219; RB reads `status`; D == sim; TD; PB cdiff 16;
+HB <= +700; PS saved (scratch only); CEN2 vacuous PASS; LabVIEW gone; PASS writes tools/bench/scratch_verify/stagexec.ring_p3b1_fs_<mode>_<ts>.json.
+    py tools/bgrun.py --material --max-min 45 --log tools/bench/stage_d1_ring_p3b1_scratch_pin.log -- py -u tools/bench/stage_d1_ring_p3b1_scratch.py pin
+MODE pin (SAVE True)
+stage_d1_ring_p3b1 - card 129-1 (WRITTEN, NOT LAUNCHED), RING P3b-1 (d1-loop12-17-split-plan.md PD246(c) A1/A2, PD254(d),
+PD256(b)(c), PD258(a)(c), PD261(a)(d), PD262(b), PD263(b)): on the SAVED P3a bed D1_ring_p3a_20261001_180540.vi (md5 4dfa44aa)
+build, in case #22694's False frame 27219, a 3-frame Flat Sequence with [Num(i) = -1] -> [IMAQ Copy #6810 Image Out -> Img(i),
+error in <- #6810 error out] -> [Num(i) = status ? -1 : BufNum (Unbundler #157 element#0 -> Select #529 s, I32 -1 -> t,
+BufNum -> f)]; wire_remove_loose_ends on w27378 and after every crossing. TransPos/RotPos/FrameIdx and Latest are P3b-2's.
+FRESH LabVIEW -> claudeDev\D1_ring_p3b1_<ts>.vi (rule-6 GUI save, ExecState 0 by design: the P3a bed is broken, never run) +
+tools\bench\errorlist_expected_D1_ring_p3b1_<ts>.json (54 = P3a's 55 - w27378, + 0 own). ROWS ONLY FROM plan_ring_p3b1.json
+(stagesim FINAL of plan_ring_p3b1_in.json, plan_ring_p3b_split.py); expected values only from plan_ring_p3b1_pred.json.
+PRIOR ART: stage_d1_ring_p3a.py (Executor/LVBackend/DryPlanBE skeleton, D/TD/FU/PB/HB/PS/EL gates). No new op.
+PREDICTION: L1 40 actions -> pred ops; E1 every checkpoint == sim; FS 1 FlatSequence with 3 frames on 27219; RB the Unbundler
+terminal on Select.s's wire reads back `status` (PD262(b); FAILS otherwise, UNVERIFIED-DRY in a dry run); D new/lost wires == sim's;
+TD every base terminal that was wired stays wired; CEN2 == pred census (CENSUS-UNPREDICTED rows: the scratch run pins them);
+PB cdiff(S1, end) == P3a's 16 rows (FATAL, before save); HB handles <= +700; PS saved, input unchanged; EL 54.
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/stage_d1_ring_p3b1.log -- py -u tools/recipes/stage_d1_ring_p3b1.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p3b1_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan  ('3ca2d056cf5dceffe8d1e74efaff7fc7', {'path': 'tools/bench/graph_ring_p3a_20261001_190155.json', 'md5': '2fa6ce0c3e8a3014fa916085cb852f68'}, '4dfa44aac8fb32f706b3eb792ee7d3cc')
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 323 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 4dfa44aac8fb32f706b3eb792ee7d3cc  got 4dfa44aac8fb32f706b3eb792ee7d3cc
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33993
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_c129_ring_p3b1_20261002_012612.vi
+  FACT  ExecState [after open] scratch_c129_ring_p3b1_20261002_012612.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so scratch_c129_ring_p3b1_20261002_012612.vi is deleted at close
+  PASS  L1 the 40 actions compile into 40 real ops == pred kinds, each action once  ['wire_remove_loose_ends', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'connect', 'connect', 'connect', 'connect', 'connect', 'connect', 'connect_term_uid', 'connect', 'connect', 'connect', 'connect_term_uid', 'wire_remove_loose_ends', 'connect_term_uid', 'wire_remove_loose_ends', 'connect_term_uid', 'wire_remove_loose_ends', 'connect_term_uid', 'wire_remove_loose_ends', 'connect_term_uid', 'wire_remove_loose_ends', 'connect_term_uid', 'wire_remove_loose_ends', 'connect_term_uid', 'wire_remove_loose_ends']
+  METER start  k   0  private 568.2 MB (d -)  handles 45701 (d -)
+  METER read   k   0  private 574.1 MB (d +5.9)  handles 45727 (d +26)
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 3 touched diagram(s) [639, 23169, 27219]: one-side-only Nodes[] entries 0
+  PRIME 0 terminal indexes proved at base; 0 ControlTerminal end(s) by 179(b); unprovable []
+  METER pre    k   1  private 567.1 MB (d -7.0)  handles 45756 (d +29)
+  FACT  wire_remove_loose_ends node census: 644 rows
+  FACT  OP wire_remove_loose_ends wire_remove_loose_ends w27378 -> err '' (1.8 s)
+  FACT  wire_remove_loose_ends w27378 AFTER node census: 644 rows
+  FACT  wire_remove_loose_ends w27378 CENSUS DIFF: Node 644 -> 644 ; 0 new uid(s): []
+  METER op     k   1  private 567.1 MB (d +0.0)  handles 45778 (d +22)
+BGRUN KILLED (external) pid=16692 marked 2026-10-02 01:32:59 by bgrun pid=25680: no END/TIMEOUT and the runner process is gone

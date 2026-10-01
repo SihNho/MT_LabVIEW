@@ -1,0 +1,85 @@
+BGRUN START 2026-10-02 02:24:37 limit 5.0 min: py -u tools/stage_prerun.py --prerun tools/bench/diag_c129_6_mem.py
+BGRUN PID 2600
+diag_c129_6_mem - card 129-6 (brief_129-6.md): WHERE does LabVIEW's private memory grow ~4 MB per stage op?
+MEASUREMENT ONLY. A dated byte copy claudeDev\scratch_c129_mem_<ts>.vi of the P3a bed (md5 4dfa44aa; the bed is never opened
+for edit) in a FRESH LabVIEW; private MB + handles at: M0 (after open) - W1 15 x the Executor's per-op checkpoint read, no edit
+between - W2 15 x one cheap scripted edit on diagram 27219, no checkpoint read between - W3 close WITHOUT saving, reopen.
+PRIOR ART (checked, reused, nothing new built): the W1 read is EXACTLY stagexec.Executor.run's checkpoint read (stagexec.py:2021
+`real_new = be.read()` -> LVBackend.read :2391-2395 = wiki_build.read_live(work, fs_pairs=BASE fs_tunnel_pairs) (wiki_build.py:233:
+report_all GObject + allterms.read_terms OP_ALLTERMS_V1 + join_wires) then dedupe); the W2 edit is the plan's constant route
+(stagexec.py:2650-2656 `primitive` -> gscript.create_primitive_nested, prim 'const_donor', donor DonorRingConst_v0.vi #249,
+plan_ring_p3b1_in.json); the meter is stagexec.Meter (:72) on stagekit.private_bytes + bench_prep.labview_handles (as LVBackend :2373);
+skeleton diag_c122_hyg.py. No tool, plan or recipe edited; no LabVIEW option or ini touched.
+PREDICTION (mechanics only - the slopes are the measurement, not predicted): S0 W1 15 reads, each returns > 0 terminal rows, row
+count constant; S1 W2 15 creates, 0 errors, Constant count +15 exactly; S2 after W3 reopen the copy's md5 == input (never saved)
+and Constant count == M0's; a window stops early (ROW, not a gate) if private MB >= 680 (error 2 seen at 695). LabVIEW gone, copy deleted.
+    py tools/bgrun.py --material --max-min 30 --log tools/bench/diag_c129_6_mem.log -- py -u tools/bench/diag_c129_6_mem.py
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 4dfa44aac8fb32f706b3eb792ee7d3cc  got 4dfa44aac8fb32f706b3eb792ee7d3cc
+  PASS  DRY graph JSON for input md5 4dfa44aac8fb32f706b3eb792ee7d3cc  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_ring_p3a_20261001_190155.json
+  METER M0     k   0  private None MB (d -)  handles None (d -)
+  FACT  M0 Constant count 1
+  METER M0cnt  k   0  private None MB (d -)  handles None (d -)
+  METER W1     k   1  private None MB (d -)  handles None (d -)
+  METER W1     k   2  private None MB (d -)  handles None (d -)
+  METER W1     k   3  private None MB (d -)  handles None (d -)
+  METER W1     k   4  private None MB (d -)  handles None (d -)
+  METER W1     k   5  private None MB (d -)  handles None (d -)
+  METER W1     k   6  private None MB (d -)  handles None (d -)
+  METER W1     k   7  private None MB (d -)  handles None (d -)
+  METER W1     k   8  private None MB (d -)  handles None (d -)
+  METER W1     k   9  private None MB (d -)  handles None (d -)
+  METER W1     k  10  private None MB (d -)  handles None (d -)
+  METER W1     k  11  private None MB (d -)  handles None (d -)
+  METER W1     k  12  private None MB (d -)  handles None (d -)
+  METER W1     k  13  private None MB (d -)  handles None (d -)
+  METER W1     k  14  private None MB (d -)  handles None (d -)
+  METER W1     k  15  private None MB (d -)  handles None (d -)
+  FACT  W1 15 reps in 0.3 s; slope None MB/rep (all), None MB/rep (reps 2..); MB [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+  PASS  S0 W1 15 checkpoint reads, every read > 0 rows, row count constant [5828]  [5828, 5828, 5828, 5828, 5828, 5828, 5828, 5828, 5828, 5828, 5828, 5828, 5828, 5828, 5828]
+  METER W2     k   1  private None MB (d -)  handles None (d -)
+  METER W2     k   2  private None MB (d -)  handles None (d -)
+  METER W2     k   3  private None MB (d -)  handles None (d -)
+  METER W2     k   4  private None MB (d -)  handles None (d -)
+  METER W2     k   5  private None MB (d -)  handles None (d -)
+  METER W2     k   6  private None MB (d -)  handles None (d -)
+  METER W2     k   7  private None MB (d -)  handles None (d -)
+  METER W2     k   8  private None MB (d -)  handles None (d -)
+  METER W2     k   9  private None MB (d -)  handles None (d -)
+  METER W2     k  10  private None MB (d -)  handles None (d -)
+  METER W2     k  11  private None MB (d -)  handles None (d -)
+  METER W2     k  12  private None MB (d -)  handles None (d -)
+  METER W2     k  13  private None MB (d -)  handles None (d -)
+  METER W2     k  14  private None MB (d -)  handles None (d -)
+  METER W2     k  15  private None MB (d -)  handles None (d -)
+  FACT  W2 15 reps in 0.0 s; slope None MB/rep (all), None MB/rep (reps 2..); MB [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+  PASS  S1 W2 15 creates, 0 errors, Constant 1 -> 1 (+15 expected)
+  METER W2cnt  k   0  private None MB (d -)  handles None (d -)
+  METER W3close k   0  private None MB (d -)  handles None (d -)
+  METER W3close5 k   0  private None MB (d -)  handles None (d -)
+  METER W3open k   0  private None MB (d -)  handles None (d -)
+  PASS  S2 W3 reopened copy: md5 == input (never saved) and Constant 1 == M0's 1
+  METER W3cnt  k   0  private None MB (d -)  handles None (d -)
+  FACT  METER ROWS [["M0", 0, null, null], ["M0cnt", 0, null, null], ["W1", 1, null, null], ["W1", 2, null, null], ["W1", 3, null, null], ["W1", 4, null, null], ["W1", 5, null, null], ["W1", 6, null, null], ["W1", 7, null, null], ["W1", 8, null, null], ["W1", 9, null, null], ["W1", 10, null, null], ["W1", 11, null, null], ["W1", 12, null, null], ["W1", 13, null, null], ["W1", 14, null, null], ["W1", 15, null, null], ["W2", 1, null, null], ["W2", 2, null, null], ["W2", 3, null, null], ["W2", 4, null, null], ["W2", 5, null, null], ["W2", 6, null, null], ["W2", 7, null, null], ["W2", 8, null, null], ["W2", 9, null, null], ["W2", 10, null, null], ["W2", 11, null, null], ["W2", 12, null, null], ["W2", 13, null, null], ["W2", 14, null, null], ["W2", 15, null, null], ["W2cnt", 0, null, null], ["W3close", 0, null, null], ["W3close5", 0, null, null], ["W3open", 0, null, null], ["W3cnt", 0, null, null]]
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  PASS  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['tools/bench/diag_c129_6_mem_plan.json']
+  PASS  X3 every plan row decided  4 rows + 0 stageplan actions
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  0 stageplan(s)
+  PASS  X11 no row wires one Build Array input while a sibling input is an open row (unless pb-licence/1)  0 stageplan(s)
+  PASS  X12 no row names a wire uid an earlier border-crossing connect re-created (connect_from_wire.json:266)  0 stageplan(s), 0 re-created source wire(s), none named later
+  PASS  X13 opmodel conformance: every recorded sample of the plan ops' model files replays in stagesim  0 op(s) []; files {}
+  PASS  X16 every declared terminal of a created primitive carries term_class (PD251(b))  0 non-const_donor create action(s) with declared terminals, all classed
+  PASS  X4 every end addressable offline (0 ends)  []
+  PASS  X5 wiring ops executed in the dry run == plan wire rows  ops 0 vs plan wire rows 0 + stageplan wiring real ops 0 (covering 0/0 wire actions); delete ops {} vs plan delete rows {}; RLE ops 0 vs plan RLE rows 0
+  PASS  X6 ast lint: no re-typed uid / terminal name  uids []; names []
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c129_mem_20261002_022438.vi; decisions rows NOT dispatched (recipe calls neither run_rows nor from_decision)
+  PASS  X10 predicted LabVIEW private MB < 690.0 (error-2 point; MEMSTOP 700.0) over the ops this run dispatches (UNMEASURED - no covering record)  {'why': 'UNMEASURED: no recorded meter of diag_c129_6_mem.py covers ops 1..end (0 record(s))'}
+  WARN  X10 WARN unmeasured: UNMEASURED: no recorded meter of diag_c129_6_mem.py covers ops 1..end (0 record(s))
+  INFO  X14 rows 4, budget 15 (proven: no)
+
+=== DRY PASS: first_fail=None coverage 75/82 lines, first mutation g.create_primitive_nested, unverified 0, graph tools/bench/graph_ring_p3a_20261001_190155.json
+=== PRERUN PASS: 14 pass / 0 fail; first None
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":14,"fail":0},"first_fail":"X10 WARN unmeasured: UNMEASURED: no recorded meter of diag_c129_6_mem.py covers ops 1..end (0 record(s))","artefacts":[]}
+BGRUN END rc=0 after 8s

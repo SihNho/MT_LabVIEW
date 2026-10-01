@@ -298,7 +298,10 @@ background notification is a full turn over the whole conversation. Standing rul
    dispatches after the retrospective has run in that session and above the per-session cap (`MAX_DISPATCHES`, 6 in
    code) — **in RUNNER cycle sessions only (`CYCLE_SESSION=1`; user 2026-09-29 "수정안대로 진행하도록", after the cap
    blocked the interactive chat's offline benches): the chat has no dispatch cap and is bounded by its context size
-   instead (a counted dispatch is refused above 500k tokens → write `docs/chat-handoff.md`, open a new chat); the
+   instead (a counted dispatch is refused above 500k tokens → write `docs/chat-handoff.md`, open a new chat) —
+   **that bound is DISABLED 2026-10-02 (user: "세션이 50% 넘으면 새 세션 열도록 강요하지 말고 그냥 문맥 압축하는
+   방향으로 가자", the user is remote): `CHAT_CONTEXT_LIMIT = None`, the chat runs on and relies on automatic
+   compaction; keep `docs/chat-handoff.md` current so a compaction loses nothing**; the
    Workflow tool counts as one dispatch in both** — plus a separate budget of 3 offline prep cards run beside a LabVIEW card (pipeline, 2026-09-28); at most 2
    cards live and at most one of them touching LabVIEW. **A ROUTINE runner end (budget / cycle count) starts the next
    runner automatically** — `tools/runner_supervisor.py` (user 2026-09-28); real stops still stop. **The interactive

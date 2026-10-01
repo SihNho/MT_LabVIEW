@@ -300,6 +300,15 @@ def base_state(graph, context=None):
     st["owners"] = dict((str(k), [v[0], int(v[1] or 0)]) for k, v in (own or {}).items())
     for r in st["terminals"]:
         r.setdefault("term_class", "")
+    # card 129-1 (pipeline, PD261(d)/PD263(b)): a PROVISIONAL base may be the previous stage's simulated END STATE (a step
+    # file's `state`: it has `sym` and `neg`). Keep its simulator-only keys (diagrams, fs_pairs, fs_tunnels, fs_border_entries,
+    # removed_nodes, ...) and continue the negative-uid counter BELOW its uids, so the next stage's created objects never reuse a
+    # uid the previous stage's simulation created. A real graph (no `neg`) is untouched.
+    if isinstance(graph.get("sym"), dict) and isinstance(graph.get("neg"), int):
+        for k, v in graph.items():
+            if k in ("diagrams", "fs_pairs", "removed_nodes") or k not in st:
+                st[k] = copy.deepcopy(v)
+        st["neg"], st["sym"] = min(0, int(graph["neg"])), {}
     return st
 
 
@@ -1479,12 +1488,41 @@ def _diag_chain(st, d, par):
     return out
 
 
-def _border_tunnel(st, kind, x, parent, cls, struct):
+# card 129-7: the NAME of the new tunnels' terminals after a fs_border crossing - MEASURED cases only. ONE recorded attribute
+# separates every measured SelectorTunnel / FlatSequenceOuterTunnel face: the non-empty names on the tunnel terminals ALREADY
+# on the source's net before the op. Named: src #6897 'current image number' on w3747 (4 tunnel terms of that name in
+# graph_ring_p3a_20261001_190155.json) - 126-6 B1 diag_c126_6_cross.log:50, 127-1 A_bn diag_c127_1_fsinner.log:70, 129-4 op 33
+# stage_d1_ring_p3b1_scratch_pin2.log:477. '' : unwired source (B3 :78, 126-4 Q1 diag_c126_4_fs.log:53, pin2 op 27 :417) or a
+# net whose tunnels are '' (B2 :61 / A_i :57 #644 w3268, Q3 :57, pin2 ops 29/31 :437,457). A LoopTunnel face is NOT modelled
+# (B3's For-exit inner face reads 'New Image' from an UNWIRED source, outside this attribute; the multi-border binder never keys
+# names, stagexec.py:932); a named net through a loop border is refused as unmeasured.
+CROSS_NAME_FROM_CLS = ("SelectorTunnel", "LoopTunnel", "RightShiftRegister", "LeftShiftRegister", "FlatSequenceOuterTunnel",
+                       FSIT_CLS, "Tunnel")
+
+
+def _cross_tunnel_name(st, s, a):
+    if not s["wire_uid"]:
+        return ""
+    names = set(r["term_name"] for r in wire_rows(st, s["wire_uid"])
+                if r["owner_class"] in CROSS_NAME_FROM_CLS and r["term_uid"] != s["term_uid"]) - {""}
+    if not names:
+        return ""
+    if names != {s["term_name"]}:
+        raise SimError("wire {0} -> {1}: the source net's tunnels carry names {2} (source '{3}') - UNMEASURED tunnel naming "
+                       "(card 129-7)".format(a["src"], a["dst"], sorted(names), s["term_name"]))
+    return s["term_name"]
+
+
+def _border_tunnel(st, kind, x, parent, cls, struct, name=""):
     """ONE tunnel LabVIEW makes at the border of `struct` (class cls, frame/body diagram x, parent diagram): kind 'in' =
     sink on the parent, source(s) on the frame; 'out' = sink on the frame, source on the parent. -> (obj uid, the face that
-    takes the incoming wire, the face the next segment leaves from). Shapes MEASURED in 126-6 (diag_c126_6_cross.log:77-78)."""
+    takes the incoming wire, the face the next segment leaves from). Shapes MEASURED in 126-6 (diag_c126_6_cross.log:77-78).
+    `name` (card 129-7, _cross_tunnel_name) goes on every face of a SelectorTunnel / FlatSequenceOuterTunnel (B1 :50)."""
     fin = kind == "in"
     if cls in LOOP_CLS:
+        if name:
+            raise SimError("border tunnel: a {0} border on a crossing from a NAMED net ('{1}') - UNMEASURED (card 129-7)".format(
+                cls, name))
         T = _new_obj(st, "LoopTunnel", cls)
         for x_ in st["objs"]:
             if x_["uid"] == T:
@@ -1495,15 +1533,15 @@ def _border_tunnel(st, kind, x, parent, cls, struct):
     if cls == "CaseStructure":
         frames = [int(k) for k, v in (st.get("owners") or {}).items() if v[0] == "CaseStructure" and int(v[1] or 0) == struct]
         T = _new_obj(st, "SelectorTunnel", "CaseStructure")
-        o = _new_term(st, T, "SelectorTunnel", "OuterTerminal", not fin, parent)
-        inn = dict((f, _new_term(st, T, "SelectorTunnel", "InnerTerminal", fin, f)) for f in frames)
+        o = _new_term(st, T, "SelectorTunnel", "OuterTerminal", not fin, parent, name)
+        inn = dict((f, _new_term(st, T, "SelectorTunnel", "InnerTerminal", fin, f, name)) for f in frames)
         if x not in inn:
             raise SimError("border tunnel: #{0} is not a frame of CaseStructure #{1} ({2})".format(x, struct, frames))
         return T, (o, inn[x]) if fin else (inn[x], o)
     if cls in (FS_CLS, "Sequence"):
         T = _new_obj(st, "FlatSequenceOuterTunnel", FS_CLS)
-        o = _new_term(st, T, "FlatSequenceOuterTunnel", "Terminal", not fin, parent)
-        i = _new_term(st, T, "FlatSequenceOuterTunnel", "Terminal", fin, x)
+        o = _new_term(st, T, "FlatSequenceOuterTunnel", "Terminal", not fin, parent, name)
+        i = _new_term(st, T, "FlatSequenceOuterTunnel", "Terminal", fin, x, name)
         return T, (o, i) if fin else (i, o)
     raise SimError("border tunnel: no model for a {0} border (#{1})".format(cls, struct))
 
@@ -1551,12 +1589,13 @@ def _fs_border_wire(st, a, s, d, labels):
     if vn is None:
         raise SimError("wire {0} -> {1}: border crossing {2} (source {3}) is UNMEASURED - no census_samples.json "
                        "connect_term_uid variant".format(a["src"], a["dst"], sig, "wired" if wired else "unwired"))
+    nm = _cross_tunnel_name(st, s, a)                    # card 129-7: read BEFORE the net is re-created below
     n_obj0, n_term0 = len(st["objs"]), len(st["terminals"])
     tunnels, faces = [], []
     for kind, x in borders:
         o = own[str(x)]
         p = cs[cs.index(x) + 1] if kind == "out" else cd[cd.index(x) + 1]
-        T, (fin, fout) = _border_tunnel(st, kind, x, p, o[0], int(o[1] or 0))
+        T, (fin, fout) = _border_tunnel(st, kind, x, p, o[0], int(o[1] or 0), nm)
         tunnels.append(T)
         faces.append((fin, fout))
     rows = dict((r["term_uid"], r) for r in st["terminals"])
@@ -2691,6 +2730,59 @@ def selftest():
     except SimError as e:
         e73 = str(e)
     gate("G73 the same node on a body the plan did NOT create (diagram 20, base loop A) is still refused", "same diagram" in e73, e73)
+    # card 129-7: the crossing tunnels' NAME, one row per MEASURED case (rows as in graph_ring_p3a_20261001_190155.json)
+    def nrow(t, name, src, w, own, ocls, fd=639, tc="Terminal"):
+        return {"term_uid": t, "term_name": name, "is_source": src, "wire_uid": w, "owner_uid": own, "owner_class": ocls,
+                "frame_diagram": fd, "term_class": tc}
+    CIN = "current image number"
+    n3747 = [nrow(6897, CIN, True, 3747, 6810, "SubVI"), nrow(27161, "x", False, 3747, 26879, "Comparison"),
+             nrow(3312, CIN, False, 3747, 3078, "SelectorTunnel", tc="OuterTerminal"),
+             nrow(2194, CIN, False, 3747, 2179, "SelectorTunnel", tc="OuterTerminal"),
+             nrow(1607, CIN, False, 3747, 1605, "LoopTunnel", tc="OuterTerminal"),
+             nrow(27084, CIN, False, 3747, 27039, "RightShiftRegister"), nrow(34217, CIN, False, 3747, 639, "Diagram")]
+    n3268 = [nrow(644, "", True, 3268, 639, "Diagram"), nrow(12200, "", False, 3268, 12195, "FlatSequenceOuterTunnel"),
+             nrow(3272, "", False, 3268, 3045, "SelectorTunnel", tc="OuterTerminal"), nrow(3509, "index i", False, 3268, 1114, "SubVI"),
+             nrow(2218, "", False, 3268, 2213, "LoopTunnel", tc="OuterTerminal")]
+    q3 = [nrow(27401, "x-y*floor(x/y)", True, 27899, 27373, "Function", 27219, "ParameterTerminal"),
+          nrow(27891, "", False, 27899, 27889, "FlatSequenceOuterTunnel", 27219)]
+    cases = [("B1/A_bn/op33 #6897 w3747 (cross.log:50, fsinner.log:70, pin2.log:477)", n3747, 6897, CIN),
+             ("B2/A_i #644 w3268 (cross.log:61, fsinner.log:57)", n3268, 644, ""),
+             ("B3 #23289 unwired (cross.log:78)", [nrow(23289, "New Image", True, 0, 23099, "SubVI", 23169)], 23289, ""),
+             ("Q1/op27 #27401 unwired (fs.log:53, pin2.log:417)",
+              [nrow(27401, "x-y*floor(x/y)", True, 0, 27373, "Function", 27219, "ParameterTerminal")], 27401, ""),
+             ("Q3/op29/op31 #27401 on a net whose FSOT faces are '' (fs.log:57, pin2.log:437,457)", q3, 27401, "")]
+    got = []
+    for lab, rows_, su, want in cases:
+        s_ = {"terminals": [dict(r) for r in rows_], "objs": [], "neg": 0}
+        src_ = next(r for r in s_["terminals"] if r["term_uid"] == su)
+        got.append((lab, _cross_tunnel_name(s_, src_, {"src": su, "dst": "x"}), want))
+    for lab, g_, want in got:
+        gate("G74 crossing tunnel name, measured case {0}: '{1}'".format(lab, want), g_ == want, g_)
+    s75 = {"terminals": [], "objs": [], "neg": 0, "owners": {"27219": ["CaseStructure", 22694], "27232": ["CaseStructure", 22694]}}
+    _T, (fi, fo) = _border_tunnel(s75, "in", 27219, 639, "CaseStructure", 22694, CIN)
+    _T2, (gi, go) = _border_tunnel(s75, "in", 27722, 27219, FS_CLS, 27509, CIN)
+    nm75 = collections.Counter((r["owner_class"], r["term_class"], r["term_name"]) for r in s75["terminals"])
+    gate("G75 B1 shape: SelectorTunnel 3 faces + FlatSequenceOuterTunnel 2 faces ALL named '{0}' (cross.log:50)".format(CIN),
+         nm75 == collections.Counter({("SelectorTunnel", "OuterTerminal", CIN): 1, ("SelectorTunnel", "InnerTerminal", CIN): 2,
+                                      ("FlatSequenceOuterTunnel", "Terminal", CIN): 2}), dict(nm75))
+    s76 = {"terminals": [], "objs": [], "neg": 0}
+    _T3, _f = _border_tunnel(s76, "in", 27722, 27219, FS_CLS, 27509)
+    gate("G76 default (no name): FSOT faces '' as before (ops 27/29/31 matched '')",
+         [r["term_name"] for r in s76["terminals"]] == ["", ""], s76["terminals"])
+    try:
+        _border_tunnel({"terminals": [], "objs": [], "neg": 0}, "out", 23169, 13236, "ForLoop", 23093, CIN)
+        e77 = "no error"
+    except SimError as e:
+        e77 = str(e)
+    try:
+        bad = [dict(r) for r in n3747]
+        bad[2]["term_name"] = "other"
+        _cross_tunnel_name({"terminals": bad, "objs": [], "neg": 0}, bad[0], {"src": 6897, "dst": "x"})
+        e77b = "no error"
+    except SimError as e:
+        e77b = str(e)
+    gate("G77 NEGATIVE: a loop border from a named net, and a net with a different tunnel name, are refused as UNMEASURED",
+         "UNMEASURED" in e77 and "UNMEASURED" in e77b, (e77, e77b))
     n_pass = sum(1 for _l, ok in gates if ok)
     n_fail = len(gates) - n_pass
     first = next((l for l, ok in gates if not ok), None)

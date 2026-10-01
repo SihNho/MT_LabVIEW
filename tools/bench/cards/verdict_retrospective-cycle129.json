@@ -1,0 +1,30 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle129",
+ "verdict": "refuted",
+ "alternative": "Memory was unknowable before 129-6, so pin2 was the cheapest probe and nothing was lost. Refuted: P3a's launch meter (566.1->652.3 MB over 22 ops, stage_d1_ring_p3a.log:39,252) predicted about 723 MB for 40 ops at 01:13, offline.",
+ "discriminating_test": "Feed X10 the P3a launch meter as a sibling-recipe record and rerun --prerun on the 129-1 P3b-1 bytes (md5 4dc77962): it must FAIL above 690 MB; it currently PASSes as UNMEASURED.",
+ "violations": [
+  {
+   "slug": "device-failed",
+   "loss_min": 25,
+   "loss_usd": 2.08,
+   "evidence": "tools/bench/stage_prerun_c129_1_p3b1_prerun.log:137"
+  },
+  {
+   "slug": "device-failed",
+   "loss_min": 2,
+   "loss_usd": null,
+   "evidence": "tools/hooks/material_marker.log:2989"
+  }
+ ],
+ "sources": [
+  "tools/bench/stage_d1_ring_p3b1_scratch_pin2.log:476",
+  "tools/bench/stage_d1_ring_p3a.log:252",
+  "tools/stage_prerun.py:1735",
+  "docs/violation-decisions.md:1475",
+  "tools/bench/cards/result_129-8.json:28",
+  "tools/bench/cards/result_129-2.json:2"
+ ],
+ "note": "Ranked second, not emitted: 129-2's agent exit killed its scratch run (about 9 min, repeated class, material.md:92-98). Line 2 is emitted only under the threshold-1 device rule; it also blocked gate_fp logging."
+}

@@ -1,0 +1,10 @@
+BGRUN START 2026-10-02 02:41:15 limit 3.0 min: py -u tools/bench/selftest_card_clock.py
+BGRUN PID 564
+PASS a 128-5 copy | CLOCK id=128-5 bound=00:41:33 (guard_card.log:2) written=00:49:02 measured=7.5 claimed=45 budget=50 verdict=CLOCK-MISMATCH reason=(i) failure text cites budget/minutes but measured 7.5 < 0.8*budget 40.0; (ii) claimed 45 > measured 7.5 + 5.0
+PASS b 129-1 copy | CLOCK id=129-1 bound=01:02:52 (guard_card.log:3) written=01:15:23 measured=12.5 claimed=13 budget=50 verdict=OK reason=-
+PASS c no bind | CLOCK id=t-c bound=- (guard_card.log:-) written=02:41:16 measured=- claimed=3 budget=20 verdict=CLOCK-UNMEASURED reason=no bind line for id t-c in guard_card.log
+PASS d honest short | CLOCK id=t-d bound=02:00:00 (guard_card.log:4) written=02:06:00 measured=6.0 claimed=6 budget=50 verdict=OK reason=-
+PASS e main() no cost.minutes -> exit 2 + SKIP RESULT | {'schema': 'result-line/1', 'status': 'SKIP', 'gates': {'pass': 0, 'fail': 0}, 'first_fail': 'CLOCK-UNMEASURED: no bind line for id 129-5 in guard_card.log; no task card / budget.minutes (task_129-5.json); no cost.minutes', 'artefacts': []}
+SELFTEST card_clock 5/0
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

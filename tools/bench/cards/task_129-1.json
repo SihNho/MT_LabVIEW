@@ -1,0 +1,88 @@
+{
+ "schema": "task/1",
+ "id": "129-1",
+ "kind": "build",
+ "goal": "PD263(b) offline remainder: split plan_ring_p3b_in.json into P3b-1/P3b-2 (<=40 actions each), finalize, predictions, recipes, dry+prerun out of process, --scratch-required, prior-art P3b-1",
+ "why": "128-5 stopped after ~8 of 50 min (guard_card.log:575 vs result mtime 00:49:02) with the split undone. P3b-1 is the next deliverable launch (card 129-2). Plan PD261(d), PD262(b), PD263(b); brief_129-1.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_129-1.md"},
+  {"path": "tools/bench/plan_ring_p3b_in.json", "md5": "08fa224112606aedd4a15ec378268d88"},
+  {"path": "tools/bench/plan_ring_p3b_make.py", "md5": "d42782a5063503134d0c3daa9f2592ee"},
+  {"path": "tools/bench/plan_ring_p3b_make_c128_5.log"},
+  {"path": "tools/bench/plan_ring_p3b_make_c127_3.log"},
+  {"path": "tools/recipes/stage_d1_ring_p3a.py", "md5": "3aa685dea0abfb69203f1a5832a4b84c"},
+  {"path": "tools/bench/plan_ring_p3a.json"},
+  {"path": "tools/stage_prerun.py", "md5": "88abd9c6c54bbe50ab93077d4de338bf"},
+  {"path": "tools/stagexec.py", "md5": "a7380a637e0f26bbd7c4abc808e7cf11"},
+  {"path": "tools/stagesim.py", "md5": "cb47ae2abfb17433bd85b6773097c3ec"},
+  {"path": "tools/bench/census_samples.json", "md5": "205a7f23802f41342ed25d06dc212bc5"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/plan_ring_p3b_in.json"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3b_make.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p3a.py"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3a.json"},
+  {"kind": "file", "name": "tools/prior_art_review.py"},
+  {"kind": "file", "name": "tools/gate_fp.py"},
+  {"kind": "file", "name": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_ring_p3a_20261001_180540.vi"},
+  {"kind": "file", "name": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/DonorErrSel_ErrToWarning.vi"},
+  {"kind": "file", "name": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/DonorErrSel_MergeErrors.vi"}
+ ],
+ "pass": [
+  "p3b1/p3b2 plans: each <=40 actions, dependency-closed, IMAQ Copy + all guard rows in one half, RLE rows with their loose ends; P3b-2 base provisional (sim_of P3b-1)",
+  "P3b-1 then P3b-2 replayed in sequence reaches the same END graph as the unsplit 70-action replay (end cdiff + object/terminal/wire counts, both)",
+  "Pred file per half: Error List total + per class, new items named by row; Unbundler read-back 'status' gate in P3b-1 recipe; census derived or CENSUS-UNPREDICTED",
+  "Recipes p3b1/p3b2 on stagekit, <=120 lines, rows only from the plans; dry PASS + prerun PASS for both, each in its own process; --scratch-required lines recorded",
+  "Prior-art for P3b-1 (and P3b-2 unless proven pattern) ANSWERED; verdict + archive path + verdict card returned; not annotated here"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p3b1.json",
+  "tools/bench/plan_ring_p3b2.json",
+  "tools/bench/plan_ring_p3b1_pred.json",
+  "tools/bench/plan_ring_p3b2_pred.json",
+  "tools/recipes/stage_d1_ring_p3b1.py",
+  "tools/recipes/stage_d1_ring_p3b2.py",
+  "tools/bench/cards/result_129-1.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/bench/plan_ring_p3b1*",
+   "tools/bench/plan_ring_p3b2*",
+   "tools/bench/plan_ring_p3b_split*",
+   "tools/recipes/stage_d1_ring_p3b1.py",
+   "tools/recipes/stage_d1_ring_p3b2.py",
+   "tools/bench/sim/**",
+   "tools/bench/selftest_*",
+   "tools/bench/diag_c129_1*",
+   "tools/bench/prior_art*",
+   "tools/bench/stage_prerun*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/cards/result_129-1*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "tools/bench/peer_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 50
+ },
+ "rules": [
+  "Offline only: no LabVIEW, no COM; recipes never launched; dry and prerun each in its own process",
+  "Stale plan_ring_p3b.json / _pred / stage_d1_ring_p3b.py are not used, launched or deleted",
+  "Reviews are dispatched and their verdicts returned; annotation and REFUTED/FIXED lines are the judgement session's",
+  "Return at the first unexpected result (finish the step, record facts, return result/1); cost.minutes = bind to return"
+ ],
+ "advances": ["M3", "M4"]
+}

@@ -1,0 +1,56 @@
+{
+ "schema": "task/1",
+ "id": "129-3",
+ "kind": "build",
+ "goal": "CLOCK device, standalone half: tools/card_clock.py measures a card's minutes (guard_card.log bind -> result mtime) and flags false budget/minutes claims; self-test",
+ "why": "Retrospective cycle 128 (inference-over-measurement, loss 42 min): 128-5 claimed 45 min and 'budget spent' after ~8 min. DECISION: device (docs/violation-decisions.md 2026-10-02 01:01). brief_129-3.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_129-3.md"},
+  {"path": "tools/bench/cards/guard_card.log"},
+  {"path": "tools/bench/cards/result_128-5.json", "md5": null},
+  {"path": "tools/bench/cards/task_128-5.json"},
+  {"path": "tools/bench/cards/result_129-1.json"},
+  {"path": "tools/bench/cards/task_129-1.json"},
+  {"path": "docs/violation-decisions.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/cards/guard_card.log"},
+  {"kind": "file", "name": "tools/bench/cards/result_128-5.json"},
+  {"kind": "file", "name": "tools/bench/cards/result_129-1.json"}
+ ],
+ "pass": [
+  "tools/card_clock.py prints one CLOCK line + a RESULT line; exit 0 OK / 1 CLOCK-MISMATCH / 2 CLOCK-UNMEASURED per brief section 1",
+  "Self-test selftest_card_clock.py 4/4 on temp fixtures: 128-5 copy MISMATCH, 129-1 copy OK, no-bind UNMEASURED, honest-short OK",
+  "Real runs: result_128-5.json -> CLOCK-MISMATCH; result_129-1.json -> OK; both lines reported",
+  "No gate code edited (protocol.py, tools/hooks/*, stage_prerun.py untouched)"
+ ],
+ "outputs": [
+  "tools/card_clock.py",
+  "tools/bench/selftest_card_clock.py",
+  "tools/bench/cards/result_129-3.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/card_clock.py",
+   "tools/bench/selftest_card_clock*",
+   "tools/bench/card_clock*",
+   "tools/bench/cards/result_129-3*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 20
+ },
+ "rules": [
+  "Offline only; stdlib only; no gate code edited while the LabVIEW card 129-2 is live",
+  "Return at the first unexpected result; cost.minutes = bind to return"
+ ],
+ "unblocks": "M4"
+}

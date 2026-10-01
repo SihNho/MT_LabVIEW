@@ -1,0 +1,38 @@
+BGRUN START 2026-10-02 02:42:59 limit 20.0 min: py -u tools/prior_art_review.py --plan-file tools/bench/plan_ring_p3b1.json --slug c129-8-ring-p3b1 --trigger new-op --recipe tools/recipes/stage_d1_ring_p3b1.py
+BGRUN PID 26496
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c129-8-ring-p3b1.txt (69303 chars)
+   review card tools\bench\cards\review_priorart-c129-8-ring-p3b1.json
+OUTCOME: ANSWERED (59s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-02-priorart-c129-8-ring-p3b1.md
+COST: $1.2985  in 12 / out 5005 / cache-create 131645 / cache-read 725918  (55s, 15 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c129-8-ring-p3b1 verdict=novel -> tools\bench\cards\verdict_priorart-c129-8-ring-p3b1.json
+--- ANSWER ---
+Still checking, nearly done: I'm confirming that the changed P3b-1 build-script bytes only bring in patterns that already exist here.
+
+**Verdict: `novel`.** Nothing in the project files blocks the P3b-1 build. The build script changed since the last review (md5 `4dc77962…` → `5e25813a…`), but the change only reuses a decided pattern. The one earlier failure of this step has its cause fixed.
+
+**PART A: direction**
+- **A1, decided already (not a blocker):** the direction was settled before this review. The full record is in `archive/peer/2026-10-02-priorart-c129-2-ring-p3b1.md:1311-1317`: the ring buffer (U13), the write order (PD238(c)), the guard form (PD261(a)), `element#0` (PD262(b)), the split (PD261(d)/PD264(a)), and a scratch run before ONE launch (PD264(e)). That review returned `novel` at `:1334` and the cycle-129 judgement accepted it at `:1345`.
+- **The one new item, the checkpoint set, is also decided:** `docs/d1-loop12-17-split-plan.md:2931` says "(c) DECIDED: P3b-1 and P3b-2 use PD193(a)'s checkpoint set `{0, len(ops)} | BIND`". The recipe copies it at `tools/recipes/stage_d1_ring_p3b1.py:24-25`, from `tools/recipes/stage_d1_l2b3.py:17-18`. This carries out a decision; it is not a repeat of one.
+- **A2, refuted already:** nothing found.
+- **A3, contradicted:** only the documentation conflict the last review found. `docs/ring-buffer-design.md:23-24` says there is no copy; PD238(c) overrules it (c129-2 review `:1319`, `:1349`). It is still not marked as superseded. That is doc cleanup, not a blocker.
+- **A4, unread evidence:** nothing found. The recipe and card 129-8's brief cite the memory measurement (`diag_c129_6_mem.log:55,87`) and the pin2 log.
+
+**PART B: the build file**
+- **B1, already built:** no. There is no `D1_ring_p3b1_*.vi` in `claudeDev` (glob, 0 hits). The trigger says `new-op`, but the script adds no new op; it uses `SX.Executor` and `SX.BIND_KINDS` as `stage_d1_l2b3.py` does.
+- **B2, already failed:** the scratch run of this build failed once. Its cause is addressed, so I give no slug.
+  - **The failure:** `tools/bench/stage_d1_ring_p3b1_scratch_pin2.log:477` stopped at op 33 (`p3b_x_bn_n3`). The simulator left a FlatSequence outer tunnel's terminals unnamed; LabVIEW named them `current image number`.
+  - **The review:** `archive/peer/2026-10-02-hyp-c129-4-ring-p3b1-fsot.md:47-52` warned that copying the source name onto every tunnel would break ops 27/29/31.
+  - **The fix:** card 129-7 (`tools/bench/cards/result_129-7.json:11-15`) names tunnels from the net instead (`CROSS_NAME_FROM_CLS`). The stagesim self-test is 88/0, the simulated step 33 now names the tunnel, and the dry run shows STEPX 33 diff 0.
+  - **The second risk in pin2:** private memory reached 697.3 MB against the 700 MB stop. Card 129-6 measured about 2.5 MB per whole-VI read (`diag_c129_6_mem.log:55`). Cutting reads to the decided checkpoint set (BIND ops plus the two ends) is the change under review.
+- **B3, an existing helper already does this:** no hand-rolled work. The script uses `SX.Executor(checkpoints=…)`, `SX.compile_plan` and `gscript.wire_remove_loose_ends` (`gscript.py:4972`).
+- **B4, already measured:** each part is measured on its own (c129-2 review `:1326`). The combined 40-operation run is still unmeasured; the scratch run (pin3) measures it.
+
+**PART C: the user's rules.** No conflicts.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c129-8-ring-p3b1","verdict":"novel","alternative":"Bytes changed only by PD265(c)'s decided checkpoint set {0,len}|BIND (split-plan:2931, copied from stage_d1_l2b3.py:17-18); the pin2 op-33 failure's cause (unnamed FSOT in the simulator) was fixed by card 129-7.","discriminating_test":"P3b-1 scratch run pin3 on a P3a byte copy: op 33 STEPX diff 0 with the FSOT named 'current image number', peak private memory below 700 MB, every checkpoint == its simulated step.","violations":[],"sources":["docs/d1-loop12-17-split-plan.md:2931","tools/recipes/stage_d1_ring_p3b1.py:24-25","tools/recipes/stage_d1_l2b3.py:17-18","tools/bench/stage_d1_ring_p3b1_scratch_pin2.log:477","tools/bench/cards/result_129-7.json:11-15","tools/bench/diag_c129_6_mem.log:55","archive/peer/2026-10-02-priorart-c129-2-ring-p3b1.md:1334"],"note":"ring-buffer-design.md:23-24 (no copy) is still not marked superseded by PD238(c); doc cleanup only. The FSOT naming model rests on one named net (result_129-7 open)."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c129-8-ring-p3b1.md
+   STOP RECORD: none - 2026-10-02-priorart-c129-8-ring-p3b1.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_ring_p3b1.py sha cca5d88cfbb8 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 62s

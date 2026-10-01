@@ -1,0 +1,502 @@
+BGRUN START 2026-10-02 01:34:51 limit 45.0 min: py -u tools/bench/stage_d1_ring_p3b1_scratch.py pin
+BGRUN PID 17492
+stage_d1_ring_p3b1_scratch - card 129-2: SCRATCH RUN of RING P3b-1 BEFORE the one launch (brief_129-2.md step 3, D-2026-10-01-01, PD264(c)(e)).
+Runs the stage recipe's OWN body (tools/recipes/stage_d1_ring_p3b1.py, imported UNCHANGED) on a dated byte copy
+claudeDev\scratch_c129_ring_p3b1_<ts>.vi of the P3a bed (md5 4dfa44aa) - same Executor, LVBackend and every recipe gate
+(L0 L1 E1 FS RB D CEN2 TD FU PB HB PS EL). No VI is run; the bed is never opened for edit.
+MODE (argv[1]):
+  nosave : SAVE off - structural verification only, NO GUI; the work copy is dropped by the Stage hygiene.
+  pin    : SAVE on (rule-6 gui_save of the SCRATCH) so stage_d1_ring_p3b1_el.py scratch can pin its Error List (that script deletes it).
+Observation only (wrapper-side, the recipe is not touched): Executor.run's real terminal rows are kept and, at CEN2, every NEW object
+uid is printed with its class and (for terminals) its owner uid/class and frame (NEWOBJ lines); the FULL-class census before/after is
+printed (CENSUS-ALL lines) - the pred's census is EMPTY (all 40 rows CENSUS-UNPREDICTED), so CEN2 is vacuous here and these lines are
+the measurement PD264(c) writes into plan_ring_p3b1_pred.json.
+PRIOR ART: tools/bench/stage_d1_ring_p3a_scratch.py (card 124-7/124-8; this is its cut - recipe module, plan, stage name, record key).
+PREDICTION: L1 40 actions; E1 every checkpoint == sim; FS 1 FlatSequence with 3 frames on 27219; RB reads `status`; D == sim; TD; PB cdiff 16;
+HB <= +700; PS saved (scratch only); CEN2 vacuous PASS; LabVIEW gone; PASS writes tools/bench/scratch_verify/stagexec.ring_p3b1_fs_<mode>_<ts>.json.
+    py tools/bgrun.py --material --max-min 45 --log tools/bench/stage_d1_ring_p3b1_scratch_pin.log -- py -u tools/bench/stage_d1_ring_p3b1_scratch.py pin
+MODE pin (SAVE True)
+stage_d1_ring_p3b1 - card 129-1 (WRITTEN, NOT LAUNCHED), RING P3b-1 (d1-loop12-17-split-plan.md PD246(c) A1/A2, PD254(d),
+PD256(b)(c), PD258(a)(c), PD261(a)(d), PD262(b), PD263(b)): on the SAVED P3a bed D1_ring_p3a_20261001_180540.vi (md5 4dfa44aa)
+build, in case #22694's False frame 27219, a 3-frame Flat Sequence with [Num(i) = -1] -> [IMAQ Copy #6810 Image Out -> Img(i),
+error in <- #6810 error out] -> [Num(i) = status ? -1 : BufNum (Unbundler #157 element#0 -> Select #529 s, I32 -1 -> t,
+BufNum -> f)]; wire_remove_loose_ends on w27378 and after every crossing. TransPos/RotPos/FrameIdx and Latest are P3b-2's.
+FRESH LabVIEW -> claudeDev\D1_ring_p3b1_<ts>.vi (rule-6 GUI save, ExecState 0 by design: the P3a bed is broken, never run) +
+tools\bench\errorlist_expected_D1_ring_p3b1_<ts>.json (54 = P3a's 55 - w27378, + 0 own). ROWS ONLY FROM plan_ring_p3b1.json
+(stagesim FINAL of plan_ring_p3b1_in.json, plan_ring_p3b_split.py); expected values only from plan_ring_p3b1_pred.json.
+PRIOR ART: stage_d1_ring_p3a.py (Executor/LVBackend/DryPlanBE skeleton, D/TD/FU/PB/HB/PS/EL gates). No new op.
+PREDICTION: L1 40 actions -> pred ops; E1 every checkpoint == sim; FS 1 FlatSequence with 3 frames on 27219; RB the Unbundler
+terminal on Select.s's wire reads back `status` (PD262(b); FAILS otherwise, UNVERIFIED-DRY in a dry run); D new/lost wires == sim's;
+TD every base terminal that was wired stays wired; CEN2 == pred census (CENSUS-UNPREDICTED rows: the scratch run pins them);
+PB cdiff(S1, end) == P3a's 16 rows (FATAL, before save); HB handles <= +700; PS saved, input unchanged; EL 54.
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/stage_d1_ring_p3b1.log -- py -u tools/recipes/stage_d1_ring_p3b1.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p3b1_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan  ('3ca2d056cf5dceffe8d1e74efaff7fc7', {'path': 'tools/bench/graph_ring_p3a_20261001_190155.json', 'md5': '2fa6ce0c3e8a3014fa916085cb852f68'}, '4dfa44aac8fb32f706b3eb792ee7d3cc')
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 323 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 4dfa44aac8fb32f706b3eb792ee7d3cc  got 4dfa44aac8fb32f706b3eb792ee7d3cc
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33992
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_c129_ring_p3b1_20261002_013452.vi
+  FACT  ExecState [after open] scratch_c129_ring_p3b1_20261002_013452.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so scratch_c129_ring_p3b1_20261002_013452.vi is deleted at close
+  PASS  L1 the 40 actions compile into 40 real ops == pred kinds, each action once  ['wire_remove_loose_ends', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'connect', 'connect', 'connect', 'connect', 'connect', 'connect', 'connect_term_uid', 'connect', 'connect', 'connect', 'connect_term_uid', 'wire_remove_loose_ends', 'connect_term_uid', 'wire_remove_loose_ends', 'connect_term_uid', 'wire_remove_loose_ends', 'connect_term_uid', 'wire_remove_loose_ends', 'connect_term_uid', 'wire_remove_loose_ends', 'connect_term_uid', 'wire_remove_loose_ends', 'connect_term_uid', 'wire_remove_loose_ends']
+  METER start  k   0  private 564.0 MB (d -)  handles 45699 (d -)
+  METER read   k   0  private 570.0 MB (d +6.0)  handles 45727 (d +28)
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 3 touched diagram(s) [639, 23169, 27219]: one-side-only Nodes[] entries 0
+  PRIME 0 terminal indexes proved at base; 0 ControlTerminal end(s) by 179(b); unprovable []
+  METER pre    k   1  private 567.1 MB (d -2.9)  handles 45757 (d +30)
+  FACT  wire_remove_loose_ends node census: 644 rows
+  FACT  OP wire_remove_loose_ends wire_remove_loose_ends w27378 -> err '' (1.8 s)
+  FACT  wire_remove_loose_ends w27378 AFTER node census: 644 rows
+  FACT  wire_remove_loose_ends w27378 CENSUS DIFF: Node 644 -> 644 ; 0 new uid(s): []
+  METER op     k   1  private 567.1 MB (d +0.0)  handles 45776 (d +19)
+  METER read   k   1  private 569.6 MB (d +2.5)  handles 45769 (d -7)
+  STEPX 01 wire_remove_loose_ends acts [1] ids ['p3b_rle_w27378'] bound {} diff 0
+  METER pre    k   2  private 569.6 MB (d +0.0)  handles 45769 (d +0)
+  FACT  struct_copy_nested node census: 644 rows
+  OBSERVED uid 27509 -> owner 'Diagram' uid 27219 | self 'FlatSequence'#27509 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP struct_copy_nested FlatSequence (fs_donor) onto Diagram #27219 -> err '' (0.8 s)
+  FACT  create fs_create p3b_fs AFTER node census: 644 rows
+  FACT  create fs_create p3b_fs CENSUS DIFF: Node 644 -> 644 ; 0 new uid(s): []
+  METER op     k   2  private 574.7 MB (d +5.1)  handles 45867 (d +98)
+  METER read   k   2  private 575.8 MB (d +1.1)  handles 45859 (d -8)
+  STEPX 02 create         acts [2] ids ['p3b_fs'] bound {-1: 27509, -2: 27641} diff 0
+  METER pre    k   3  private 575.8 MB (d +0.0)  handles 45859 (d +0)
+  FACT  fs_add_frame node census: 644 rows
+  FACT  OP fs_add_frame FS #27509 after frame 0 (#27641) -> err '' (0.3 s)
+  FACT  create fs_frame p3b_fr2 AFTER node census: 644 rows
+  FACT  create fs_frame p3b_fr2 CENSUS DIFF: Node 644 -> 644 ; 0 new uid(s): []
+  METER op     k   3  private 580.1 MB (d +4.3)  handles 45879 (d +20)
+  METER read   k   3  private 580.1 MB (d +0.0)  handles 45880 (d +1)
+  STEPX 03 create         acts [3] ids ['p3b_fr2'] bound {-3: 32464} diff 0
+  METER pre    k   4  private 580.1 MB (d +0.0)  handles 45880 (d +0)
+  FACT  fs_add_frame node census: 644 rows
+  FACT  OP fs_add_frame FS #27509 after frame 1 (#32464) -> err '' (0.4 s)
+  FACT  create fs_frame p3b_fr3 AFTER node census: 644 rows
+  FACT  create fs_frame p3b_fr3 CENSUS DIFF: Node 644 -> 644 ; 0 new uid(s): []
+  METER op     k   4  private 578.8 MB (d -1.3)  handles 45880 (d +0)
+  METER read   k   4  private 581.6 MB (d +2.8)  handles 45879 (d -1)
+  STEPX 04 create         acts [4] ids ['p3b_fr3'] bound {-4: 27722} diff 0
+  METER pre    k   5  private 581.6 MB (d +0.0)  handles 45879 (d +0)
+  FACT  create_local_read node census: 644 rows
+  OBSERVED uid 27752 -> owner 'TopLevelDiagram' uid 536 | self 'Local'#27752 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  FACT  OP create_local_read 'Num' panel[118] (READ mode) -> err '' (0.2 s)
+  FACT  create local_read p3b_lr_num1 AFTER node census: 645 rows
+  FACT  create local_read p3b_lr_num1 CENSUS DIFF: Node 644 -> 645 ; 1 new uid(s): [(27752, 'Local', (3972, 1220))]
+  FACT  create local_read p3b_lr_num1 new #27752 #27752 lives at: {'diagram_index': 0, 'diagram_uid': 536, 'diagram_class': 'TopLevelDiagram', 'nodes_index': 0, 'nodes_on_diagram': 1, 'label': 'scratch_c129_ring_p3b1_20261002_013452.vi'}  (1 diagram(s) scanned of 179, 0.2 s)
+  FACT  create local_read p3b_lr_num1 new #27752 terminal table of #27752 (Diagram idx 0, Nodes[0], echo 27752): 1 terminal(s)
+  FACT      create local_read p3b_lr_num1 new #27752 t0  'Num'                              is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  create local_read p3b_lr_num1 NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #27752 class 'Local' label 'scratch_c129_ring_p3b1_20261002_013452.vi', 1 terminal(s), 0 wired - REPORTED, left alone
+  FACT  move_in node census: 645 rows
+  FACT  OP move_in #27752 -> Diagram[58] at (20, 220) -> err '' (0.1 s)
+  FACT  create local_read p3b_lr_num1 move_in AFTER node census: 646 rows
+  FACT  create local_read p3b_lr_num1 move_in CENSUS DIFF: Node 645 -> 646 ; 1 new uid(s): [(9317, 'Invoke', (7083, 2535))]
+  FACT  create local_read p3b_lr_num1 move_in new #9317 #9317 lives at: {'diagram_index': 58, 'diagram_uid': 27641, 'diagram_class': 'Diagram', 'nodes_index': 1, 'nodes_on_diagram': 2, 'label': 'Invoke Node'}  (59 diagram(s) scanned of 179, 2.1 s)
+  FACT  create local_read p3b_lr_num1 move_in new #9317 terminal table of #9317 (Diagram idx 58, Nodes[1], echo 9317): 6 terminal(s)
+  FACT      create local_read p3b_lr_num1 move_in new #9317 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_read p3b_lr_num1 move_in new #9317 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_read p3b_lr_num1 move_in new #9317 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_read p3b_lr_num1 move_in new #9317 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_read p3b_lr_num1 move_in new #9317 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_read p3b_lr_num1 move_in new #9317 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  create local_read p3b_lr_num1 move_in the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  create local_read p3b_lr_num1 move_in purge delete Node #9317 at index 221: gone [9317], error '', census 646 -> 645, still present False (1.32 s)
+  FACT  create local_read p3b_lr_num1 move_in AFTER THE PURGE node census: 645 rows
+  FACT  create local_read p3b_lr_num1 move_in purge arithmetic: Node 645 -> 646 -> 645
+  METER op     k   5  private 581.8 MB (d +0.2)  handles 46031 (d +152)
+  METER read   k   5  private 588.8 MB (d +7.0)  handles 46031 (d +0)
+  STEPX 05 create         acts [5] ids ['p3b_lr_num1'] bound {-5: 27752} diff 0
+  METER pre    k   6  private 588.8 MB (d +0.0)  handles 46030 (d -1)
+  FACT  create_primitive_nested node census: 645 rows
+  OBSERVED uid 27595 -> owner 'Diagram' uid 27641 | self 'GrowableFunction'#27595 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'Replace Array Subset' on #27641 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c129_ring_p3b1_20261002_013452.vi', 'uid': 29157} -> err '' (1.8 s)
+  FACT  create primitive p3b_ras_num1 AFTER node census: 646 rows
+  FACT  create primitive p3b_ras_num1 CENSUS DIFF: Node 645 -> 646 ; 1 new uid(s): [(27595, 'GrowableFunction', (7203, 2755))]
+  FACT  create primitive p3b_ras_num1 new #27595 #27595 lives at: {'diagram_index': 58, 'diagram_uid': 27641, 'diagram_class': 'Diagram', 'nodes_index': 1, 'nodes_on_diagram': 2, 'label': 'Insert Into Array'}  (59 diagram(s) scanned of 179, 2.1 s)
+  FACT  create primitive p3b_ras_num1 new #27595 terminal table of #27595 (Diagram idx 58, Nodes[1], echo 27595): 4 terminal(s)
+  FACT      create primitive p3b_ras_num1 new #27595 t0  'array'                            is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive p3b_ras_num1 new #27595 t1  'output array'                     is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive p3b_ras_num1 new #27595 t2  'index'                            is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive p3b_ras_num1 new #27595 t3  'new element/subarray'             is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT  create primitive p3b_ras_num1 NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #27595 class 'GrowableFunction' label 'Insert Into Array', 4 terminal(s), 0 wired - REPORTED, left alone
+  METER op     k   6  private 588.8 MB (d +0.0)  handles 46031 (d +1)
+  METER read   k   6  private 592.8 MB (d +4.0)  handles 46032 (d +1)
+  STEPX 06 create         acts [6] ids ['p3b_ras_num1'] bound {-7: 27595} diff 0
+  METER pre    k   7  private 592.8 MB (d +0.0)  handles 46032 (d +0)
+  FACT  create_primitive_nested node census: 646 rows
+  OBSERVED uid 27896 -> owner 'Diagram' uid 27641 | self 'DigitalNumericConstant'#27896 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'const_donor' on #27641 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRingConst_v0.vi', 'uid': 249} -> err '' (2.1 s)
+  FACT  create primitive p3b_k_m1 AFTER node census: 646 rows
+  FACT  create primitive p3b_k_m1 CENSUS DIFF: Node 646 -> 646 ; 0 new uid(s): []
+  METER op     k   7  private 592.8 MB (d +0.0)  handles 46032 (d +0)
+  METER read   k   7  private 593.0 MB (d +0.2)  handles 46033 (d +1)
+  STEPX 07 create         acts [7] ids ['p3b_k_m1'] bound {-12: 27896} diff 0
+  METER pre    k   8  private 593.0 MB (d +0.0)  handles 46033 (d +0)
+  FACT  create_local_write node census: 646 rows
+  OBSERVED uid 28127 -> owner 'Diagram' uid 27641 | self 'Local'#28127 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_local_write 'Num' panel[118] -> Diagram #27641 -> err '' (0.9 s)
+  FACT  create local_write p3b_lw_num1 AFTER node census: 648 rows
+  FACT  create local_write p3b_lw_num1 CENSUS DIFF: Node 646 -> 648 ; 2 new uid(s): [(9317, 'Invoke', (7083, 2535)), (28127, 'Local', (7303, 2755))]
+  FACT  create local_write p3b_lw_num1 new #9317 #9317 lives at: {'diagram_index': 58, 'diagram_uid': 27641, 'diagram_class': 'Diagram', 'nodes_index': 3, 'nodes_on_diagram': 4, 'label': 'Invoke Node'}  (59 diagram(s) scanned of 179, 2.2 s)
+  FACT  create local_write p3b_lw_num1 new #9317 terminal table of #9317 (Diagram idx 58, Nodes[3], echo 9317): 6 terminal(s)
+  FACT      create local_write p3b_lw_num1 new #9317 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_write p3b_lw_num1 new #9317 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_write p3b_lw_num1 new #9317 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_write p3b_lw_num1 new #9317 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_write p3b_lw_num1 new #9317 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_write p3b_lw_num1 new #9317 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  create local_write p3b_lw_num1 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  create local_write p3b_lw_num1 purge delete Node #9317 at index 221: gone [9317], error '', census 648 -> 647, still present False (1.31 s)
+  FACT  create local_write p3b_lw_num1 new #28127 #28127 lives at: {'diagram_index': 58, 'diagram_uid': 27641, 'diagram_class': 'Diagram', 'nodes_index': 2, 'nodes_on_diagram': 3, 'label': 'scratch_c129_ring_p3b1_20261002_013452.vi'}  (59 diagram(s) scanned of 179, 2.2 s)
+  FACT  create local_write p3b_lw_num1 new #28127 terminal table of #28127 (Diagram idx 58, Nodes[2], echo 28127): 1 terminal(s)
+  FACT      create local_write p3b_lw_num1 new #28127 t0  'Num'                              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT  create local_write p3b_lw_num1 NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #28127 class 'Local' label 'scratch_c129_ring_p3b1_20261002_013452.vi', 1 terminal(s), 0 wired - REPORTED, left alone
+  FACT  create local_write p3b_lw_num1 AFTER THE PURGE node census: 647 rows
+  FACT  create local_write p3b_lw_num1 purge arithmetic: Node 646 -> 648 -> 647
+  METER op     k   8  private 600.9 MB (d +7.9)  handles 46033 (d +0)
+  METER read   k   8  private 600.9 MB (d +0.0)  handles 46032 (d -1)
+  STEPX 08 create         acts [8] ids ['p3b_lw_num1'] bound {-14: 28127} diff 0
+  METER pre    k   9  private 600.9 MB (d +0.0)  handles 46032 (d +0)
+  FACT  create_primitive_nested node census: 647 rows
+  OBSERVED uid 27909 -> owner 'Diagram' uid 32464 | self 'IndexArray'#27909 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'Index Array' on #32464 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c129_ring_p3b1_20261002_013452.vi', 'uid': 3163} -> err '' (1.9 s)
+  FACT  create primitive p3b_ia AFTER node census: 648 rows
+  FACT  create primitive p3b_ia CENSUS DIFF: Node 647 -> 648 ; 1 new uid(s): [(27909, 'IndexArray', (7246, 2595))]
+  FACT  create primitive p3b_ia new #27909 #27909 lives at: {'diagram_index': 59, 'diagram_uid': 32464, 'diagram_class': 'Diagram', 'nodes_index': 0, 'nodes_on_diagram': 1, 'label': 'Index Array'}  (60 diagram(s) scanned of 179, 2.2 s)
+  FACT  create primitive p3b_ia new #27909 terminal table of #27909 (Diagram idx 59, Nodes[0], echo 27909): 3 terminal(s)
+  FACT      create primitive p3b_ia new #27909 t0  'array'                            is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive p3b_ia new #27909 t1  'element'                          is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive p3b_ia new #27909 t2  'index'                            is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT  create primitive p3b_ia NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #27909 class 'IndexArray' label 'Index Array', 3 terminal(s), 0 wired - REPORTED, left alone
+  METER op     k   9  private 600.9 MB (d +0.0)  handles 46032 (d +0)
+  METER read   k   9  private 601.9 MB (d +1.0)  handles 46032 (d +0)
+  STEPX 09 create         acts [9] ids ['p3b_ia'] bound {-16: 27909} diff 0
+  METER pre    k  10  private 602.0 MB (d +0.1)  handles 46032 (d +0)
+  FACT  drop_subvi node census: 648 rows
+  FACT  OP drop_subvi IMAQ Copy on Diagram[59] #32464 -> err '' (0.1 s)
+  FACT  create subvi p3b_copy AFTER node census: 649 rows
+  FACT  create subvi p3b_copy CENSUS DIFF: Node 648 -> 649 ; 1 new uid(s): [(9317, 'SubVI', (7286, 2575))]
+  FACT  create subvi p3b_copy new #9317 #9317 lives at: {'diagram_index': 59, 'diagram_uid': 32464, 'diagram_class': 'Diagram', 'nodes_index': 1, 'nodes_on_diagram': 2, 'label': 'IMAQ Copy'}  (60 diagram(s) scanned of 179, 2.2 s)
+  FACT  create subvi p3b_copy new #9317 terminal table of #9317 (Diagram idx 59, Nodes[1], echo 9317): 8 terminal(s)
+  FACT      create subvi p3b_copy new #9317 t0  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create subvi p3b_copy new #9317 t1  'Image Dst'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create subvi p3b_copy new #9317 t2  ''                                 is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create subvi p3b_copy new #9317 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create subvi p3b_copy new #9317 t4  ''                                 is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create subvi p3b_copy new #9317 t5  'Image Src'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create subvi p3b_copy new #9317 t6  ''                                 is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create subvi p3b_copy new #9317 t7  'Image Dst Out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  create subvi p3b_copy NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #9317 class 'SubVI' label 'IMAQ Copy', 8 terminal(s), 0 wired - REPORTED, left alone
+  METER op     k  10  private 602.0 MB (d +0.0)  handles 46077 (d +45)
+  METER read   k  10  private 606.1 MB (d +4.1)  handles 46079 (d +2)
+  STEPX 10 create         acts [10] ids ['p3b_copy'] bound {-20: 9317} diff 0
+  METER pre    k  11  private 606.1 MB (d +0.0)  handles 46080 (d +1)
+  FACT  create_local_read node census: 649 rows
+  OBSERVED uid 28086 -> owner 'TopLevelDiagram' uid 536 | self 'Local'#28086 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  FACT  OP create_local_read 'Num' panel[118] (READ mode) -> err '' (0.2 s)
+  FACT  create local_read p3b_lr_num3 AFTER node census: 650 rows
+  FACT  create local_read p3b_lr_num3 CENSUS DIFF: Node 649 -> 650 ; 1 new uid(s): [(28086, 'Local', (3972, 1220))]
+  FACT  create local_read p3b_lr_num3 new #28086 #28086 lives at: {'diagram_index': 0, 'diagram_uid': 536, 'diagram_class': 'TopLevelDiagram', 'nodes_index': 0, 'nodes_on_diagram': 1, 'label': 'scratch_c129_ring_p3b1_20261002_013452.vi'}  (1 diagram(s) scanned of 179, 0.2 s)
+  FACT  create local_read p3b_lr_num3 new #28086 terminal table of #28086 (Diagram idx 0, Nodes[0], echo 28086): 1 terminal(s)
+  FACT      create local_read p3b_lr_num3 new #28086 t0  'Num'                              is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  create local_read p3b_lr_num3 NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #28086 class 'Local' label 'scratch_c129_ring_p3b1_20261002_013452.vi', 1 terminal(s), 0 wired - REPORTED, left alone
+  FACT  move_in node census: 650 rows
+  FACT  OP move_in #28086 -> Diagram[60] at (20, 320) -> err '' (0.1 s)
+  FACT  create local_read p3b_lr_num3 move_in AFTER node census: 651 rows
+  FACT  create local_read p3b_lr_num3 move_in CENSUS DIFF: Node 650 -> 651 ; 1 new uid(s): [(10579, 'Invoke', (7169, 2535))]
+  FACT  create local_read p3b_lr_num3 move_in new #10579 #10579 lives at: {'diagram_index': 60, 'diagram_uid': 27722, 'diagram_class': 'Diagram', 'nodes_index': 1, 'nodes_on_diagram': 2, 'label': 'Invoke Node'}  (61 diagram(s) scanned of 179, 2.3 s)
+  FACT  create local_read p3b_lr_num3 move_in new #10579 terminal table of #10579 (Diagram idx 60, Nodes[1], echo 10579): 6 terminal(s)
+  FACT      create local_read p3b_lr_num3 move_in new #10579 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_read p3b_lr_num3 move_in new #10579 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_read p3b_lr_num3 move_in new #10579 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_read p3b_lr_num3 move_in new #10579 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_read p3b_lr_num3 move_in new #10579 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_read p3b_lr_num3 move_in new #10579 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  create local_read p3b_lr_num3 move_in the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  create local_read p3b_lr_num3 move_in purge delete Node #10579 at index 226: gone [10579], error '', census 651 -> 650, still present False (1.33 s)
+  FACT  create local_read p3b_lr_num3 move_in AFTER THE PURGE node census: 650 rows
+  FACT  create local_read p3b_lr_num3 move_in purge arithmetic: Node 650 -> 651 -> 650
+  METER op     k  11  private 612.1 MB (d +6.0)  handles 46079 (d -1)
+  METER read   k  11  private 616.3 MB (d +4.2)  handles 46076 (d -3)
+  STEPX 11 create         acts [11] ids ['p3b_lr_num3'] bound {-29: 28086} diff 0
+  METER pre    k  12  private 616.3 MB (d +0.0)  handles 46076 (d +0)
+  FACT  create_primitive_nested node census: 650 rows
+  OBSERVED uid 28091 -> owner 'Diagram' uid 27722 | self 'GrowableFunction'#28091 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'Replace Array Subset' on #27722 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c129_ring_p3b1_20261002_013452.vi', 'uid': 29157} -> err '' (1.8 s)
+  FACT  create primitive p3b_ras_num3 AFTER node census: 651 rows
+  FACT  create primitive p3b_ras_num3 CENSUS DIFF: Node 650 -> 651 ; 1 new uid(s): [(28091, 'GrowableFunction', (7289, 2855))]
+  FACT  create primitive p3b_ras_num3 new #28091 #28091 lives at: {'diagram_index': 60, 'diagram_uid': 27722, 'diagram_class': 'Diagram', 'nodes_index': 1, 'nodes_on_diagram': 2, 'label': 'Insert Into Array'}  (61 diagram(s) scanned of 179, 2.3 s)
+  FACT  create primitive p3b_ras_num3 new #28091 terminal table of #28091 (Diagram idx 60, Nodes[1], echo 28091): 4 terminal(s)
+  FACT      create primitive p3b_ras_num3 new #28091 t0  'array'                            is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive p3b_ras_num3 new #28091 t1  'output array'                     is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive p3b_ras_num3 new #28091 t2  'index'                            is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive p3b_ras_num3 new #28091 t3  'new element/subarray'             is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT  create primitive p3b_ras_num3 NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #28091 class 'GrowableFunction' label 'Insert Into Array', 4 terminal(s), 0 wired - REPORTED, left alone
+  METER op     k  12  private 616.3 MB (d +0.0)  handles 46075 (d -1)
+  METER read   k  12  private 620.4 MB (d +4.1)  handles 46071 (d -4)
+  STEPX 12 create         acts [12] ids ['p3b_ras_num3'] bound {-31: 28091} diff 0
+  METER pre    k  13  private 620.4 MB (d +0.0)  handles 46071 (d +0)
+  FACT  create_local_write node census: 651 rows
+  OBSERVED uid 28262 -> owner 'Diagram' uid 27722 | self 'Local'#28262 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_local_write 'Num' panel[118] -> Diagram #27722 -> err '' (0.9 s)
+  FACT  create local_write p3b_lw_num3 AFTER node census: 653 rows
+  FACT  create local_write p3b_lw_num3 CENSUS DIFF: Node 651 -> 653 ; 2 new uid(s): [(10579, 'Invoke', (7169, 2535)), (28262, 'Local', (7389, 2855))]
+  FACT  create local_write p3b_lw_num3 new #10579 #10579 lives at: {'diagram_index': 60, 'diagram_uid': 27722, 'diagram_class': 'Diagram', 'nodes_index': 3, 'nodes_on_diagram': 4, 'label': 'Invoke Node'}  (61 diagram(s) scanned of 179, 2.3 s)
+  FACT  create local_write p3b_lw_num3 new #10579 terminal table of #10579 (Diagram idx 60, Nodes[3], echo 10579): 6 terminal(s)
+  FACT      create local_write p3b_lw_num3 new #10579 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_write p3b_lw_num3 new #10579 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_write p3b_lw_num3 new #10579 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_write p3b_lw_num3 new #10579 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_write p3b_lw_num3 new #10579 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_write p3b_lw_num3 new #10579 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  create local_write p3b_lw_num3 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  create local_write p3b_lw_num3 purge delete Node #10579 at index 226: gone [10579], error '', census 653 -> 652, still present False (1.35 s)
+  FACT  create local_write p3b_lw_num3 new #28262 #28262 lives at: {'diagram_index': 60, 'diagram_uid': 27722, 'diagram_class': 'Diagram', 'nodes_index': 2, 'nodes_on_diagram': 3, 'label': 'scratch_c129_ring_p3b1_20261002_013452.vi'}  (61 diagram(s) scanned of 179, 2.4 s)
+  FACT  create local_write p3b_lw_num3 new #28262 terminal table of #28262 (Diagram idx 60, Nodes[2], echo 28262): 1 terminal(s)
+  FACT      create local_write p3b_lw_num3 new #28262 t0  'Num'                              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT  create local_write p3b_lw_num3 NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #28262 class 'Local' label 'scratch_c129_ring_p3b1_20261002_013452.vi', 1 terminal(s), 0 wired - REPORTED, left alone
+  FACT  create local_write p3b_lw_num3 AFTER THE PURGE node census: 652 rows
+  FACT  create local_write p3b_lw_num3 purge arithmetic: Node 651 -> 653 -> 652
+  METER op     k  13  private 620.5 MB (d +0.1)  handles 46072 (d +1)
+  METER read   k  13  private 624.6 MB (d +4.1)  handles 46074 (d +2)
+  STEPX 13 create         acts [13] ids ['p3b_lw_num3'] bound {-36: 28262} diff 0
+  METER pre    k  14  private 624.6 MB (d +0.0)  handles 46074 (d +0)
+  FACT  create_primitive_nested node census: 652 rows
+  OBSERVED uid 10579 -> owner 'Diagram' uid 27722 | self 'Unbundler'#10579 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'Unbundle' on #27722 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorErrSel_ErrToWarning.vi', 'uid': 157} -> err '' (1.9 s)
+  FACT  create primitive p3b_ub_status AFTER node census: 653 rows
+  FACT  create primitive p3b_ub_status CENSUS DIFF: Node 652 -> 653 ; 1 new uid(s): [(10579, 'Unbundler', (7229, 2655))]
+  FACT  create primitive p3b_ub_status new #10579 #10579 lives at: {'diagram_index': 60, 'diagram_uid': 27722, 'diagram_class': 'Diagram', 'nodes_index': 3, 'nodes_on_diagram': 4, 'label': 'Unbundle'}  (61 diagram(s) scanned of 179, 2.4 s)
+  FACT  create primitive p3b_ub_status new #10579 terminal table of #10579 (Diagram idx 60, Nodes[3], echo 10579): 4 terminal(s)
+  FACT      create primitive p3b_ub_status new #10579 t0  'cluster'                          is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive p3b_ub_status new #10579 t1  'element'                          is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive p3b_ub_status new #10579 t2  'element'                          is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive p3b_ub_status new #10579 t3  'element'                          is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  create primitive p3b_ub_status NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #10579 class 'Unbundler' label 'Unbundle', 4 terminal(s), 0 wired - REPORTED, left alone
+  METER op     k  14  private 624.6 MB (d +0.0)  handles 46073 (d -1)
+  METER read   k  14  private 624.7 MB (d +0.1)  handles 46073 (d +0)
+  STEPX 14 create         acts [14] ids ['p3b_ub_status'] bound {-38: 10579} diff 0
+  METER pre    k  15  private 624.7 MB (d +0.0)  handles 46074 (d +1)
+  FACT  create_primitive_nested node census: 653 rows
+  OBSERVED uid 10583 -> owner 'Diagram' uid 27722 | self 'Function'#10583 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'Select' on #27722 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorErrSel_MergeErrors.vi', 'uid': 529} -> err '' (1.9 s)
+  FACT  create primitive p3b_sel AFTER node census: 654 rows
+  FACT  create primitive p3b_sel CENSUS DIFF: Node 653 -> 654 ; 1 new uid(s): [(10583, 'Function', (7289, 2655))]
+  FACT  create primitive p3b_sel new #10583 #10583 lives at: {'diagram_index': 60, 'diagram_uid': 27722, 'diagram_class': 'Diagram', 'nodes_index': 4, 'nodes_on_diagram': 5, 'label': 'Select'}  (61 diagram(s) scanned of 179, 2.4 s)
+  FACT  create primitive p3b_sel new #10583 terminal table of #10583 (Diagram idx 60, Nodes[4], echo 10583): 4 terminal(s)
+  FACT      create primitive p3b_sel new #10583 t0  's? t:f'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive p3b_sel new #10583 t1  'f'                                is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive p3b_sel new #10583 t2  's'                                is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive p3b_sel new #10583 t3  't'                                is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT  create primitive p3b_sel NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #10583 class 'Function' label 'Select', 4 terminal(s), 0 wired - REPORTED, left alone
+  METER op     k  15  private 628.7 MB (d +4.0)  handles 46073 (d -1)
+  METER read   k  15  private 638.0 MB (d +9.3)  handles 46073 (d +0)
+  STEPX 15 create         acts [15] ids ['p3b_sel'] bound {-43: 10583} diff 0
+  METER pre    k  16  private 638.0 MB (d +0.0)  handles 46073 (d +0)
+  FACT  create_primitive_nested node census: 654 rows
+  OBSERVED uid 28363 -> owner 'Diagram' uid 27722 | self 'DigitalNumericConstant'#28363 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'const_donor' on #27722 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRingConst_v0.vi', 'uid': 249} -> err '' (2.2 s)
+  FACT  create primitive p3b_k_m3 AFTER node census: 654 rows
+  FACT  create primitive p3b_k_m3 CENSUS DIFF: Node 654 -> 654 ; 0 new uid(s): []
+  METER op     k  16  private 638.1 MB (d +0.1)  handles 46073 (d +0)
+  METER read   k  16  private 638.1 MB (d +0.0)  handles 46065 (d -8)
+  STEPX 16 create         acts [16] ids ['p3b_k_m3'] bound {-48: 28363} diff 0
+  METER pre    k  17  private 638.1 MB (d +0.0)  handles 46066 (d +1)
+  FACT  connect_nested_v1 node census: 654 rows
+      op readback {'UID': 27595, 'Name': 'array', 'UID 2': 0, 'Is Broken?': False}
+      junk Invoke purge: 1 purged, left []
+  FACT  OP connect_nested_v1 D[58].N[1].t0 <- D[58].N[0].t0 -> err '' (0.6 s)
+  FACT  connect #27857->#27774 AFTER node census: 654 rows
+  FACT  connect #27857->#27774 CENSUS DIFF: Node 654 -> 654 ; 0 new uid(s): []
+  METER op     k  17  private 642.1 MB (d +4.0)  handles 46109 (d +43)
+  METER read   k  17  private 642.2 MB (d +0.1)  handles 46110 (d +1)
+  STEPX 17 connect        acts [17] ids ['p3b_w_n1_arr'] bound {} diff 0
+  METER pre    k  18  private 642.2 MB (d +0.0)  handles 46110 (d +0)
+  FACT  wire_const node census: 654 rows
+  FACT  OP wire_const DigitalNumericConstant[59] #27896 -> GrowableFunction[76].t3 -> err '' (0.4 s)
+  FACT  connect #27894->#27887 AFTER node census: 654 rows
+  FACT  connect #27894->#27887 CENSUS DIFF: Node 654 -> 654 ; 0 new uid(s): []
+  METER op     k  18  private 642.2 MB (d +0.0)  handles 46126 (d +16)
+  METER read   k  18  private 646.3 MB (d +4.1)  handles 46128 (d +2)
+  STEPX 18 connect        acts [18] ids ['p3b_w_m1_new'] bound {} diff 0
+  METER pre    k  19  private 646.3 MB (d +0.0)  handles 46129 (d +1)
+  FACT  connect_nested_v1 node census: 654 rows
+      op readback {'UID': 28127, 'Name': 'Num', 'UID 2': 0, 'Is Broken?': False}
+      junk Invoke purge: 1 purged, left []
+  FACT  OP connect_nested_v1 D[58].N[2].t0 <- D[58].N[1].t1 -> err '' (0.5 s)
+  FACT  connect #27876->#28154 AFTER node census: 654 rows
+  FACT  connect #27876->#28154 CENSUS DIFF: Node 654 -> 654 ; 0 new uid(s): []
+  METER op     k  19  private 646.4 MB (d +0.1)  handles 46129 (d +0)
+  METER read   k  19  private 646.4 MB (d +0.0)  handles 46129 (d +0)
+  STEPX 19 connect        acts [19] ids ['p3b_w_n1_out'] bound {} diff 0
+  METER pre    k  20  private 646.4 MB (d +0.0)  handles 46129 (d +0)
+  FACT  connect_nested_v1 node census: 654 rows
+      op readback {'UID': 9317, 'Name': 'Image Dst', 'UID 2': 0, 'Is Broken?': False}
+      junk Invoke purge: 1 purged, left []
+  FACT  OP connect_nested_v1 D[59].N[1].t1 <- D[59].N[0].t1 -> err '' (0.6 s)
+  FACT  connect #27922->#28003 AFTER node census: 654 rows
+  FACT  connect #27922->#28003 CENSUS DIFF: Node 654 -> 654 ; 0 new uid(s): []
+  METER op     k  20  private 646.4 MB (d +0.0)  handles 46128 (d -1)
+  METER read   k  20  private 650.5 MB (d +4.1)  handles 46129 (d +1)
+  STEPX 20 connect        acts [20] ids ['p3b_w_ia_dst'] bound {} diff 0
+  METER pre    k  21  private 650.5 MB (d +0.0)  handles 46128 (d -1)
+  FACT  connect_nested_v1 node census: 654 rows
+      op readback {'UID': 28091, 'Name': 'array', 'UID 2': 0, 'Is Broken?': False}
+      junk Invoke purge: 1 purged, left []
+  FACT  OP connect_nested_v1 D[60].N[1].t0 <- D[60].N[0].t0 -> err '' (0.6 s)
+  FACT  connect #28122->#28158 AFTER node census: 654 rows
+  FACT  connect #28122->#28158 CENSUS DIFF: Node 654 -> 654 ; 0 new uid(s): []
+  METER op     k  21  private 650.5 MB (d +0.0)  handles 46128 (d +0)
+  METER read   k  21  private 650.6 MB (d +0.1)  handles 46129 (d +1)
+  STEPX 21 connect        acts [21] ids ['p3b_w_n3_arr'] bound {} diff 0
+  METER pre    k  22  private 650.6 MB (d +0.0)  handles 46129 (d +0)
+  FACT  connect_nested_v1 node census: 654 rows
+      op readback {'UID': 28262, 'Name': 'Num', 'UID 2': 0, 'Is Broken?': False}
+      junk Invoke purge: 1 purged, left []
+  FACT  OP connect_nested_v1 D[60].N[2].t0 <- D[60].N[1].t1 -> err '' (0.6 s)
+  FACT  connect #28191->#28277 AFTER node census: 654 rows
+  FACT  connect #28191->#28277 CENSUS DIFF: Node 654 -> 654 ; 0 new uid(s): []
+  METER op     k  22  private 650.6 MB (d +0.0)  handles 46129 (d +0)
+  METER read   k  22  private 654.7 MB (d +4.1)  handles 46127 (d -2)
+  STEPX 22 connect        acts [22] ids ['p3b_w_n3_out'] bound {} diff 0
+  METER pre    k  23  private 654.7 MB (d +0.0)  handles 46127 (d +0)
+  FACT  connect_term_uid node census: 654 rows
+  FACT  OP connect_term_uid connect_term_uid #28266 <- #28024 -> err '' (5.6 s)
+  FACT  connect_term_uid #28266 <- #28024 AFTER node census: 654 rows
+  FACT  connect_term_uid #28266 <- #28024 CENSUS DIFF: Node 654 -> 654 ; 0 new uid(s): []
+  METER op     k  23  private 654.7 MB (d +0.0)  handles 46148 (d +21)
+  METER read   k  23  private 654.8 MB (d +0.1)  handles 46148 (d +0)
+  STEPX 23 connect_term_uid acts [23] ids ['p3b_w_err_ub'] bound {-56: 28437} diff 0
+  METER pre    k  24  private 654.8 MB (d +0.0)  handles 46149 (d +1)
+  FACT  connect_nested_v1 node census: 654 rows
+      op readback {'UID': 10583, 'Name': 's', 'UID 2': 0, 'Is Broken?': False}
+      junk Invoke purge: 1 purged, left []
+  FACT  OP connect_nested_v1 D[60].N[4].t2 <- D[60].N[3].t1 -> err '' (0.6 s)
+  FACT  connect #28296->#28350 AFTER node census: 654 rows
+  FACT  connect #28296->#28350 CENSUS DIFF: Node 654 -> 654 ; 0 new uid(s): []
+  METER op     k  24  private 654.8 MB (d +0.0)  handles 46148 (d -1)
+  METER read   k  24  private 658.9 MB (d +4.1)  handles 46149 (d +1)
+  STEPX 24 connect        acts [24] ids ['p3b_w_ub_sel'] bound {} diff 0
+  METER pre    k  25  private 658.9 MB (d +0.0)  handles 46149 (d +0)
+  FACT  wire_const node census: 654 rows
+  FACT  OP wire_const DigitalNumericConstant[60] #28363 -> Function[57].t3 -> err '' (0.4 s)
+  FACT  connect #28361->#28355 AFTER node census: 654 rows
+  FACT  connect #28361->#28355 CENSUS DIFF: Node 654 -> 654 ; 0 new uid(s): []
+  METER op     k  25  private 658.9 MB (d +0.0)  handles 46148 (d -1)
+  METER read   k  25  private 672.3 MB (d +13.4)  handles 46149 (d +1)
+  STEPX 25 connect        acts [25] ids ['p3b_w_m3_sel'] bound {} diff 0
+  METER pre    k  26  private 672.3 MB (d +0.0)  handles 46149 (d +0)
+  FACT  connect_nested_v1 node census: 654 rows
+      op readback {'UID': 28091, 'Name': 'new element/subarray', 'UID 2': 0, 'Is Broken?': False}
+      junk Invoke purge: 1 purged, left []
+  FACT  OP connect_nested_v1 D[60].N[1].t3 <- D[60].N[4].t0 -> err '' (0.6 s)
+  FACT  connect #28341->#28253 AFTER node census: 654 rows
+  FACT  connect #28341->#28253 CENSUS DIFF: Node 654 -> 654 ; 0 new uid(s): []
+  METER op     k  26  private 672.3 MB (d +0.0)  handles 46149 (d +0)
+  METER read   k  26  private 676.4 MB (d +4.1)  handles 46149 (d +0)
+  STEPX 26 connect        acts [26] ids ['p3b_w_sel_n3'] bound {} diff 0
+  METER pre    k  27  private 676.4 MB (d +0.0)  handles 46148 (d -1)
+  FACT  connect_term_uid node census: 654 rows
+  FACT  OP connect_term_uid connect_term_uid #27882 <- #27401 -> err '' (6.3 s)
+  FACT  connect_term_uid #27882 <- #27401 AFTER node census: 654 rows
+  FACT  connect_term_uid #27882 <- #27401 CENSUS DIFF: Node 654 -> 654 ; 0 new uid(s): []
+  METER op     k  27  private 676.5 MB (d +0.1)  handles 46149 (d +1)
+  METER read   k  27  private 680.5 MB (d +4.0)  handles 46148 (d -1)
+  STEPX 27 connect_term_uid acts [27] ids ['p3b_x_i_f1'] bound {-68: 28558} diff 0
+  METER pre    k  28  private 680.5 MB (d +0.0)  handles 46148 (d +0)
+  FACT  wire_remove_loose_ends node census: 654 rows
+  FACT  OP wire_remove_loose_ends wire_remove_loose_ends w28513 -> err '' (1.9 s)
+  FACT  wire_remove_loose_ends w28513 AFTER node census: 654 rows
+  FACT  wire_remove_loose_ends w28513 CENSUS DIFF: Node 654 -> 654 ; 0 new uid(s): []
+  FACT  wire_remove_loose_ends node census: 654 rows
+  FACT  OP wire_remove_loose_ends wire_remove_loose_ends w28626 -> err '' (2.0 s)
+  FACT  wire_remove_loose_ends w28626 AFTER node census: 654 rows
+  FACT  wire_remove_loose_ends w28626 CENSUS DIFF: Node 654 -> 654 ; 0 new uid(s): []
+  METER op     k  28  private 680.5 MB (d +0.0)  handles 46149 (d +1)
+  METER read   k  28  private 684.7 MB (d +4.2)  handles 46148 (d -1)
+  STEPX 28 wire_remove_loose_ends acts [28] ids ['p3b_rle_i_f1'] bound {} diff 0
+  METER pre    k  29  private 684.7 MB (d +0.0)  handles 46148 (d +0)
+  FACT  connect_term_uid node census: 654 rows
+  FACT  OP connect_term_uid connect_term_uid #28226 <- #27401 -> err '' (6.1 s)
+  FACT  connect_term_uid #28226 <- #27401 AFTER node census: 654 rows
+  FACT  connect_term_uid #28226 <- #27401 CENSUS DIFF: Node 654 -> 654 ; 0 new uid(s): []
+  METER op     k  29  private 681.1 MB (d -3.6)  handles 46149 (d +1)
+  METER read   k  29  private 683.3 MB (d +2.2)  handles 46146 (d -3)
+  STEPX 29 connect_term_uid acts [29] ids ['p3b_x_i_f3'] bound {-73: 28624} diff 0
+  METER pre    k  30  private 683.3 MB (d +0.0)  handles 46146 (d +0)
+  FACT  wire_remove_loose_ends node census: 654 rows
+  FACT  OP wire_remove_loose_ends wire_remove_loose_ends w28525 -> err '' (1.9 s)
+  FACT  wire_remove_loose_ends w28525 AFTER node census: 654 rows
+  FACT  wire_remove_loose_ends w28525 CENSUS DIFF: Node 654 -> 654 ; 0 new uid(s): []
+  FACT  wire_remove_loose_ends node census: 654 rows
+  FACT  OP wire_remove_loose_ends wire_remove_loose_ends w28671 -> err '' (1.9 s)
+  FACT  wire_remove_loose_ends w28671 AFTER node census: 654 rows
+  FACT  wire_remove_loose_ends w28671 CENSUS DIFF: Node 654 -> 654 ; 0 new uid(s): []
+  METER op     k  30  private 683.7 MB (d +0.4)  handles 46146 (d +0)
+  METER read   k  30  private 689.0 MB (d +5.3)  handles 46149 (d +3)
+  STEPX 30 wire_remove_loose_ends acts [30] ids ['p3b_rle_i_f3'] bound {} diff 0
+  METER pre    k  31  private 689.0 MB (d +0.0)  handles 46148 (d -1)
+  FACT  connect_term_uid node census: 654 rows
+  FACT  OP connect_term_uid connect_term_uid #27929 <- #27401 -> err '' (5.8 s)
+  FACT  connect_term_uid #27929 <- #27401 AFTER node census: 654 rows
+  FACT  connect_term_uid #27929 <- #27401 CENSUS DIFF: Node 654 -> 654 ; 0 new uid(s): []
+  METER op     k  31  private 689.1 MB (d +0.1)  handles 46149 (d +1)
+  METER read   k  31  private 689.2 MB (d +0.1)  handles 46149 (d +0)
+  STEPX 31 connect_term_uid acts [31] ids ['p3b_x_i_ia1'] bound {-78: 28659} diff 0
+  METER pre    k  32  private 689.2 MB (d +0.0)  handles 46149 (d +0)
+  FACT  wire_remove_loose_ends node census: 654 rows
+  FACT  OP wire_remove_loose_ends wire_remove_loose_ends w28593 -> err '' (1.9 s)
+  FACT  wire_remove_loose_ends w28593 AFTER node census: 654 rows
+  FACT  wire_remove_loose_ends w28593 CENSUS DIFF: Node 654 -> 654 ; 0 new uid(s): []
+  FACT  wire_remove_loose_ends node census: 654 rows
+  FACT  OP wire_remove_loose_ends wire_remove_loose_ends w28723 -> err '' (1.9 s)
+  FACT  wire_remove_loose_ends w28723 AFTER node census: 654 rows
+  FACT  wire_remove_loose_ends w28723 CENSUS DIFF: Node 654 -> 654 ; 0 new uid(s): []
+  METER op     k  32  private 689.2 MB (d +0.0)  handles 46148 (d -1)
+  METER read   k  32  private 693.2 MB (d +4.0)  handles 46148 (d +0)
+  STEPX 32 wire_remove_loose_ends acts [32] ids ['p3b_rle_i_ia1'] bound {} diff 0
+  METER pre    k  33  private 693.2 MB (d +0.0)  handles 46148 (d +0)
+  FACT  connect_term_uid node census: 654 rows
+  FACT  OP connect_term_uid connect_term_uid #28345 <- #6897 -> err '' (6.3 s)
+  FACT  connect_term_uid #28345 <- #6897 AFTER node census: 654 rows
+  FACT  connect_term_uid #28345 <- #6897 CENSUS DIFF: Node 654 -> 654 ; 0 new uid(s): []
+  METER op     k  33  private 693.3 MB (d +0.1)  handles 46148 (d +0)
+  METER read   k  33  private 697.3 MB (d +4.0)  handles 46148 (d +0)
+  FAIL  E1 the run reached its last op (record mode; stopped IN op {'k': 33, 'op': 'connect_term_uid', 'acts': [33], 'ids': ['p3b_x_bn_n3']})  BINDING: FlatSequenceOuterTunnel terminal keys sim {('Terminal', False, ''): 1, ('Terminal', True, ''): 1} vs real {('Terminal', False, 'current image number'): 1, ('Terminal', True, 'current image number'): 1}
+  FAIL  STOP at gate: E1 the run reached its last op (record mode; stopped IN op {'k': 33, 'op': 'connect_term_uid', 'acts': [33], 'ids': ['p3b_x_bn_n3']})
+
+---------- [H] HYGIENE
+  FACT  close_panel(scratch_c129_ring_p3b1_20261002_013452.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 11, 'closed': 11, 'live': 0, 'cached_op_vis': 18}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 11, 'closed': 11, 'live': 0, 'cached_op_vis': 18}
+  FACT  LabVIEW handle count AFTER the work: 46129
+  PASS  H4 scratch deleted: scratch_c129_ring_p3b1_20261002_013452.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c129_ring_p3b1_20261002_013452.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 4dfa44aac8fb32f706b3eb792ee7d3cc / after 4dfa44aac8fb32f706b3eb792ee7d3cc
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33995
+
+====================================================================================================
+=== GATES: 10 pass / 2 fail; failing: E1 the run reached its last op (record mode; stopped IN op {'k': 33, 'op': 'connect_term_uid', 'acts': [33], 'ids': ['p3b_x_bn_n3']}), STOP at gate: E1 the run reached its last op (record mode; stopped IN op {'k': 33, 'op': 'connect_term_uid', 'acts': [33], 'ids': ['p3b_x_bn_n3']})
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\stage_d1_ring_p3b1_scratch_pin.json   elapsed 2140.4 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":10,"fail":2},"first_fail":"E1 the run reached its last op (record mode; stopped IN op {'k': 33, 'op': 'connect_term_uid', 'acts': [33], 'ids': ['p3b_x_bn_n3']})","artefacts":[]}
+LabVIEW gone at exit: True
+BGRUN END rc=1 after 2146s

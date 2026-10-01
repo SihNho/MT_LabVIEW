@@ -1233,4 +1233,9 @@ VERDICT {"schema":"verdict/1","id":"priorart-c124-6-ring-p3a","verdict":"novel",
 
 ## What was done with it
 
-(Claude fills in)
+(cycle 129 judgement, 2026-10-02 01:2x — owed since cycle 124; its placeholder held card 129-1's prior-art dispatch at guard_peer)
+- `PRIOR-ART: novel` accepted; the build went ahead. P3a was delivered by card 124-8: scratch 22/0, ONE launch 22/0,
+  census == prediction, Error List 55 (`claudeDev\D1_ring_p3a_20261001_180540.vi`, md5 `4dfa44aa…`; STATUS cycle-124 brief).
+- B2's note (dry PASS 1/0 only): consistent with 124-7, whose scratch stopped at op 1 because created-node `term_class` was
+  undeclared in the plan; 124-8's corrected plan ran every row in the scratch and in the launch.
+- B4 (only the parts measured): the full build was then measured by 124-8's scratch run before the launch.

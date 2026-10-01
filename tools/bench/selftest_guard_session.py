@@ -183,7 +183,10 @@ def main():
     gate("G21 chat: 8 dispatches allowed and counted", rc == 0 and std.get("dispatches") == 8,
          "exit %d, counter %s" % (rc, std.get("dispatches")))
     rc, err = agent_call(SID_D, "material", cycle=False, transcript=big)
-    gate("G22 chat over the context limit refused", rc == 2 and "CHAT CONTEXT" in err, "exit %d" % rc)
+    if guard_session.CHAT_CONTEXT_LIMIT is None:   # disabled 2026-10-02 (user): compaction instead of a hand-off
+        gate("G22 chat context bound DISABLED: 600k-token chat still dispatches", rc == 0, "exit %d" % rc)
+    else:
+        gate("G22 chat over the context limit refused", rc == 2 and "CHAT CONTEXT" in err, "exit %d" % rc)
     rc, _ = agent_call(SID_D, "material", cycle=False, transcript=os.path.join(ROOT, "no_such_transcript.jsonl"))
     gate("G23 chat, unreadable transcript -> fail open", rc == 0, "exit %d" % rc)
     rc, _ = agent_call(SID_B, "material", cycle=False, transcript=small)
@@ -204,8 +207,11 @@ def main():
          "exit %d / %d" % (rc, rc7))
     rc, _ = wf(SID_D, False, small)
     rc2, err2 = wf(SID_D, False, big)
-    gate("G27 chat: Workflow allowed under the limit, refused over it", rc == 0 and rc2 == 2 and "CHAT CONTEXT" in err2,
-         "exit %d / %d" % (rc, rc2))
+    if guard_session.CHAT_CONTEXT_LIMIT is None:
+        gate("G27 chat: Workflow allowed at any context (bound disabled)", rc == 0 and rc2 == 0, "exit %d / %d" % (rc, rc2))
+    else:
+        gate("G27 chat: Workflow allowed under the limit, refused over it",
+             rc == 0 and rc2 == 2 and "CHAT CONTEXT" in err2, "exit %d / %d" % (rc, rc2))
     for p in (small, big):
         try:
             os.remove(p)

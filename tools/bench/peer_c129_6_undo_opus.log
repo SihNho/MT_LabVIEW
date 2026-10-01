@@ -1,0 +1,41 @@
+BGRUN START 2026-10-02 02:24:38 limit 20.0 min: powershell -NoProfile -ExecutionPolicy Bypass -File tools/peer.ps1 -Agent claude -Kind fact -Slug c129-6-undo-history-opus -TaskFile tools/bench/diag_c129_6_factq.md
+BGRUN PID 12060
+OUTCOME: ANSWERED (113s)  model: claude-opus-5-5 (effort medium; peer.ps1 default for role fact)  archived: archive\peer\2026-10-02-c129-6-undo-history-opus.md
+COST: $0.7778  in 24 / out 5509 / cache-create 26360 / cache-read 420480  (111s, 26 turn(s))
+--- ANSWER ---
+I couldn't find a primary source that fully answers the main questions. Nothing on ni.com, the NI knowledge base, or NI staff posts gives LabVIEW 2023–2026 behaviour for each scripting edit. Most ni.com/docs pages load their content with JavaScript and came back empty when I fetched them. Some NI help text below is quoted from old LabVIEW Help mirrors and search snippets, and I mark where that's the case.
+
+### 1. Does each VI Scripting edit add an undo entry?
+**Not established.** The closest primary statement is from Darren Nattinger, an NI Principal Engineer: *"a scripting operation that is not wrapped with these transaction methods can clear the existing Undo stack of a VI."* The methods he means are Transaction.Begin Undo and Transaction.End Undo. It's from 2009 and says "can", not "always does". It implies that scripting edits outside a transaction may wipe the history rather than add to it. http://labviewartisan.blogspot.com/2009/06/labview-scripting-tip-2-supporting-undo.html
+
+The documented way to put scripting edits into undo history is to wrap them:
+- **Begin Undo** starts a transaction. The LabVIEW Wiki copy of NI's help page says it was introduced in LabVIEW 2018, but the blog post above already used these methods in 2009. https://labviewwiki.org/wiki/VI_class/Transaction.Begin_Undo_method
+- **End Undo** commits the scripted changes and creates one Edit > Undo entry under the name you gave Begin Undo. Old NI help URL: http://zone.ni.com/reference/en-XX/help/371361R-01/lvscript/vi_transaction058end_undo/ (it now redirects; I couldn't read the current text).
+- A forum user (Hooovahh) confirmed that one Ctrl+Z reverts everything between Begin and End Undo. Nested transactions in subVIs each need their own Ctrl+Z. No NI staff replied. https://forums.ni.com/t5/LabVIEW/Merge-Transaction-Undo-History/td-p/3250704
+
+I found no NI source on whether Create Object, Connect Wire or Create Tunnel each add a separate step when there is no transaction.
+
+### 2. Is memory per undo step proportional to diagram size?
+**Not established.** What exists:
+- Matthew B. (NI Offering Manager) quoted NI's VI Memory Usage help page: *"using the undo feature creates temporary copies of objects."* He saw Front Panel Objects memory shrink a lot when he set the maximum undo steps to 1 instead of 99. He also observed that saving the VI only purges copies that have already been undone (the redo side). That was LabVIEW 2013-era. https://forums.ni.com/t5/LabVIEW/Front-Panel-Object-Memory-Explosion/td-p/2851276
+- In an Idea Exchange thread, altenbach (a Knight of NI, not NI staff) asked how much memory an undo step really takes. NI never answered, and the idea ("limit undo by memory") was declined in 2016. https://forums.ni.com/t5/LabVIEW-Idea-Exchange/Undo-Limited-by-Steps-or-Memory/idi-p/1054207
+
+So memory grows with the number of undo steps and the objects copied. Whether NI copies the whole diagram or only the changed objects for each step is not documented anywhere I found.
+
+### 3. Setting the number of undo steps
+- **Where:** Tools » Options » Environment » "Maximum undo steps per VI". From NI's Environment page as summarized in search results (the pages didn't render when fetched): default 99, minimum 1, maximum 99. https://www.ni.com/docs/en-TT/bundle/labview-api-ref/page/resource/dialog/preferencesdialog/preferencepages/prefpage-misc.html (older copy: http://zone.ni.com/reference/en-XX/help/371361P-01/lvdialog/miscellaneous_options/)
+- **History:** the default went from 8 to 99 in LabVIEW 2010, an idea Darren (NI) pushed for. https://forums.ni.com/t5/LabVIEW-Idea-Exchange/quot-Maximum-Undo-Step-by-VI-quot-should-default-to-99-and-not/idi-p/922412
+- **LabVIEW.ini token:** `maxUndoSteps` (for example `maxUndoSteps=10`). This comes only from a user's LabVIEW.ini posted on LAVA, not from NI. https://lavag.org/profile/9534-lecroy/content/ I found no NI document naming the token.
+
+### 4. A VI Server property or method that limits or clears undo history
+**None found in NI documentation.**
+- **VI: Clear History** clears the VI's *revision* history (the same as Reset in the History window), not its undo stack. https://labviewwiki.org/wiki/VI_class/Clear_History_method
+- **Defer Panel Updates** only defers front-panel redraws. Nothing documented ties it to undo. https://labviewwiki.org/wiki/Panel_class/Defer_Panel_Updates_property
+- **Indirect ways to drop undo history** (not dedicated APIs):
+  - Saving the VI. Forum members say it clears the undo list, but NI staff measured that only the redo copies get purged, so these sources disagree.
+  - Changes that LabVIEW Help says delete undo information, such as connector pane or data type changes. https://forums.ni.com/t5/LabVIEW/Strange-undo-behavior/td-p/746416
+  - Unwrapped scripting operations, which the Nattinger quote above says can clear the stack.
+- **Limiting the history** seems possible only through the global `maxUndoSteps` setting. Changing it at run time through VI Server (for example a private Application property) is undocumented and I didn't confirm it.
+
+To settle questions 1 and 2 for 2023–2026, you'd have to measure it yourself or ask NI directly.
+BGRUN END rc=0 after 114s

@@ -384,4 +384,19 @@ VERDICT {"schema":"verdict/1","id":"retrospective-cycle128","verdict":"refuted",
 
 ## What was done with it
 
-(Claude fills in)
+(cycle 129 judgement, 2026-10-02 01:0x)
+- **ACCEPTED: `inference-over-measurement`**, re-measured first: 128-5 bound 00:41:33 (`tools/bench/cards/guard_card.log:575`),
+  result written 00:49:02 (mtime) — about 8 of 50 minutes against a claimed 45 and "budget spent". The verdict's alternative
+  (a unit error, and a session that would have closed anyway) does not survive the two timestamps: the stop was unforced.
+  Device decided in `docs/violation-decisions.md` (2026-10-02 01:01): `protocol.py validate` prints a CLOCK line from the
+  bind line and the result mtime and fails a result whose budget/minutes claim the files contradict. Built in this cycle's
+  offline tooling card, after the P3b-1 LabVIEW card returns.
+- The unfinished remainder of 128-5 is cycle 129's first card (129-1: split, finalize, predictions, recipes, dry + prerun,
+  prior-art), then 129-2 (P3b-1 scratch run + ONE launch), as PD263(b) orders.
+- Finding 4 (time arithmetic): every cycle-129 brief opens with its time arithmetic.
+- Finding 6 (`selftest_stage_prerun_c106e` red since cycle 125): the c106e E1 rerun listing every FAIL line and the fp-19 /
+  fp-20 drains go into the gate-fp tooling card (the queue is DUE: 6 open).
+- Finding 7 (a review's annotation written inside a material session, `brief_128-2.md:13`): from cycle 129 a material session
+  dispatches a review and returns its verdict; the annotation and any `REFUTED:` / `FIXED:` release lines are written by the
+  judgement session.
+- Finding 2's other half (a time-budget prerun check; `Stage(deadline_min)` stopping nothing) stays tooling debt, not built now.

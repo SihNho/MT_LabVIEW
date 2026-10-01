@@ -1,0 +1,15 @@
+{
+ "schema_note": "card 129-6 (brief_129-6.md): FINALIZED decision-row plan of tools/bench/diag_c129_6_mem.py. MEASUREMENT ONLY: where LabVIEW's private memory grows per stage op. The Stage's work copy claudeDev\\scratch_c129_mem_<ts>.vi (a byte copy of the P3a bed) is a scratch, never saved; the bed is never opened for edit. No VI run, no wire, no LabVIEW option changed.",
+ "input": {"vi": "D1_ring_p3a_20261001_180540.vi", "md5": "4dfa44aac8fb32f706b3eb792ee7d3cc", "graph": "tools/bench/graph_ring_p3a_20261001_190155.json"},
+ "reps": 15,
+ "diagram": 27219,
+ "donor": {"donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRingConst_v0.vi", "uid": 249},
+ "pos": [60, 160],
+ "soft_ceiling_mb": 680.0,
+ "decisions": [
+  {"id": "M-0", "action": "stage", "what": "stagekit Stage: fresh LabVIEW, dated byte copy of the P3a bed = scratch (discard_work), M0 = private MB + handles after open"},
+  {"id": "M-W1", "action": "read", "what": "15 x the Executor's per-op checkpoint read (stagexec.py:2021 be.read -> LVBackend.read :2391 -> wiki_build.read_live(work, fs_pairs) :233 + dedupe), no edit between; MB + handles after each"},
+  {"id": "M-W2", "action": "edit", "what": "15 x gscript.create_primitive_nested(work, 27219, 'const_donor', pos, donor=DonorRingConst_v0.vi #249) = the plan's constant route (stagexec.py:2655), no checkpoint read / junk purge between; MB + handles after each"},
+  {"id": "M-W3", "action": "read", "what": "close the copy WITHOUT saving (gscript.close_panel), MB at once and +5 s; reopen (ensure_loaded), MB; md5 unchanged and Constant count == M0's (edits discarded)"}
+ ]
+}

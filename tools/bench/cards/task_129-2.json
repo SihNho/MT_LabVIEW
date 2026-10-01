@@ -1,0 +1,83 @@
+{
+ "schema": "task/1",
+ "id": "129-2",
+ "kind": "build",
+ "goal": "Ring P3b-1 SCRATCH: prior-art review, scratch helpers, full scratch run on a P3a byte copy, scratch Error List pin, measured census into the pred, dry+prerun; NO launch",
+ "why": "129-1 split P3b (P3b-1 40 actions, recipe dry PASS, prerun 15/0). D-2026-10-01-01 needs a full scratch run before every ring step; PD264(c)(e): the scratch census becomes the launch prediction; launch is card 129-3. brief_129-2.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_129-2.md"},
+  {"path": "tools/bench/cards/result_129-1.json"},
+  {"path": "tools/recipes/stage_d1_ring_p3b1.py", "md5": "4dc77962470e38208f7f0cb091a82b64"},
+  {"path": "tools/bench/plan_ring_p3b1.json", "md5": "3ca2d056cf5dceffe8d1e74efaff7fc7"},
+  {"path": "tools/bench/plan_ring_p3b1_pred.json", "md5": "2d8de9405ca3e55ea4cb626f8b4e2f27"},
+  {"path": "tools/bench/stage_d1_ring_p3a_scratch.py"},
+  {"path": "tools/bench/stage_d1_ring_p3a_el.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3a_20261001_180540.vi", "md5": "4dfa44aac8fb32f706b3eb792ee7d3cc"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p3b1.py"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3b1.json"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3b1_pred.json"},
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p3a_scratch.py"},
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p3a_el.py"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/prior_art_review.py"},
+  {"kind": "file", "name": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_ring_p3a_20261001_180540.vi"},
+  {"kind": "file", "name": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/DonorErrSel_ErrToWarning.vi"},
+  {"kind": "file", "name": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/DonorErrSel_MergeErrors.vi"}
+ ],
+ "pass": [
+  "S0 --scratch-required line recorded; S1 prior-art for P3b-1 ANSWERED, verdict novel, path returned, not annotated here",
+  "S2 helpers stage_d1_ring_p3b1_scratch.py / _el.py, cuts of the P3a ones, <=120 lines, dry+prerun as the gate needs",
+  "S3 scratch pin run on a byte copy of the P3a bed: every recipe gate PASS (RB reads 'status', FS 3 frames, PB cdiff 16); census measured",
+  "S4 scratch Error List count-only == 54 (or the named alternative 57); scratch deleted; LabVIEW verified gone",
+  "S5 measured census written into plan_ring_p3b1_pred.json by script (cited); recipe dry + prerun PASS again; recipe NOT launched"
+ ],
+ "outputs": [
+  "tools/bench/stage_d1_ring_p3b1_scratch.py",
+  "tools/bench/stage_d1_ring_p3b1_el.py",
+  "tools/bench/plan_ring_p3b1_pred.json",
+  "tools/bench/cards/result_129-2.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/*ring_p3b1*",
+   "tools/bench/stage_d1_ring_p3b1_scratch.py",
+   "tools/bench/stage_d1_ring_p3b1_el.py",
+   "tools/bench/sim/**",
+   "tools/bench/prerun/**",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/errorlist*ring_p3b1*",
+   "tools/bench/graph_ring_p3b1*",
+   "tools/bench/census_samples.json",
+   "tools/bench/diag_c129_2*",
+   "tools/bench/prior_art*",
+   "tools/bench/stage_prerun*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_129-2*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 55
+ },
+ "rules": [
+  "Real recipe NOT launched here; only the scratch helper runs, on a dated byte copy; bed never opened for edit",
+  "GUI via lv_gui.ps1 -Exception Approved only; capture, locate, act, capture, confirm",
+  "Reviews dispatched, verdicts returned; annotation and REFUTED/FIXED lines are the judgement session's",
+  "Return at the first unexpected result (step finished, LabVIEW closed, scratch cleaned); cost.minutes = bind→return"
+ ],
+ "advances": ["M3", "M4"]
+}

@@ -1,0 +1,163 @@
+BGRUN START 2026-10-02 01:34:11 limit 5.0 min: py -u tools/stage_prerun.py --prerun tools/bench/stage_d1_ring_p3b1_scratch.py pin
+BGRUN PID 18028
+stage_d1_ring_p3b1_scratch - card 129-2: SCRATCH RUN of RING P3b-1 BEFORE the one launch (brief_129-2.md step 3, D-2026-10-01-01, PD264(c)(e)).
+Runs the stage recipe's OWN body (tools/recipes/stage_d1_ring_p3b1.py, imported UNCHANGED) on a dated byte copy
+claudeDev\scratch_c129_ring_p3b1_<ts>.vi of the P3a bed (md5 4dfa44aa) - same Executor, LVBackend and every recipe gate
+(L0 L1 E1 FS RB D CEN2 TD FU PB HB PS EL). No VI is run; the bed is never opened for edit.
+MODE (argv[1]):
+  nosave : SAVE off - structural verification only, NO GUI; the work copy is dropped by the Stage hygiene.
+  pin    : SAVE on (rule-6 gui_save of the SCRATCH) so stage_d1_ring_p3b1_el.py scratch can pin its Error List (that script deletes it).
+Observation only (wrapper-side, the recipe is not touched): Executor.run's real terminal rows are kept and, at CEN2, every NEW object
+uid is printed with its class and (for terminals) its owner uid/class and frame (NEWOBJ lines); the FULL-class census before/after is
+printed (CENSUS-ALL lines) - the pred's census is EMPTY (all 40 rows CENSUS-UNPREDICTED), so CEN2 is vacuous here and these lines are
+the measurement PD264(c) writes into plan_ring_p3b1_pred.json.
+PRIOR ART: tools/bench/stage_d1_ring_p3a_scratch.py (card 124-7/124-8; this is its cut - recipe module, plan, stage name, record key).
+PREDICTION: L1 40 actions; E1 every checkpoint == sim; FS 1 FlatSequence with 3 frames on 27219; RB reads `status`; D == sim; TD; PB cdiff 16;
+HB <= +700; PS saved (scratch only); CEN2 vacuous PASS; LabVIEW gone; PASS writes tools/bench/scratch_verify/stagexec.ring_p3b1_fs_<mode>_<ts>.json.
+    py tools/bgrun.py --material --max-min 45 --log tools/bench/stage_d1_ring_p3b1_scratch_pin.log -- py -u tools/bench/stage_d1_ring_p3b1_scratch.py pin
+MODE pin (SAVE True)
+stage_d1_ring_p3b1 - card 129-1 (WRITTEN, NOT LAUNCHED), RING P3b-1 (d1-loop12-17-split-plan.md PD246(c) A1/A2, PD254(d),
+PD256(b)(c), PD258(a)(c), PD261(a)(d), PD262(b), PD263(b)): on the SAVED P3a bed D1_ring_p3a_20261001_180540.vi (md5 4dfa44aa)
+build, in case #22694's False frame 27219, a 3-frame Flat Sequence with [Num(i) = -1] -> [IMAQ Copy #6810 Image Out -> Img(i),
+error in <- #6810 error out] -> [Num(i) = status ? -1 : BufNum (Unbundler #157 element#0 -> Select #529 s, I32 -1 -> t,
+BufNum -> f)]; wire_remove_loose_ends on w27378 and after every crossing. TransPos/RotPos/FrameIdx and Latest are P3b-2's.
+FRESH LabVIEW -> claudeDev\D1_ring_p3b1_<ts>.vi (rule-6 GUI save, ExecState 0 by design: the P3a bed is broken, never run) +
+tools\bench\errorlist_expected_D1_ring_p3b1_<ts>.json (54 = P3a's 55 - w27378, + 0 own). ROWS ONLY FROM plan_ring_p3b1.json
+(stagesim FINAL of plan_ring_p3b1_in.json, plan_ring_p3b_split.py); expected values only from plan_ring_p3b1_pred.json.
+PRIOR ART: stage_d1_ring_p3a.py (Executor/LVBackend/DryPlanBE skeleton, D/TD/FU/PB/HB/PS/EL gates). No new op.
+PREDICTION: L1 40 actions -> pred ops; E1 every checkpoint == sim; FS 1 FlatSequence with 3 frames on 27219; RB the Unbundler
+terminal on Select.s's wire reads back `status` (PD262(b); FAILS otherwise, UNVERIFIED-DRY in a dry run); D new/lost wires == sim's;
+TD every base terminal that was wired stays wired; CEN2 == pred census (CENSUS-UNPREDICTED rows: the scratch run pins them);
+PB cdiff(S1, end) == P3a's 16 rows (FATAL, before save); HB handles <= +700; PS saved, input unchanged; EL 54.
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/stage_d1_ring_p3b1.log -- py -u tools/recipes/stage_d1_ring_p3b1.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p3b1_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan  ('3ca2d056cf5dceffe8d1e74efaff7fc7', {'path': 'tools/bench/graph_ring_p3a_20261001_190155.json', 'md5': '2fa6ce0c3e8a3014fa916085cb852f68'}, '4dfa44aac8fb32f706b3eb792ee7d3cc')
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 4dfa44aac8fb32f706b3eb792ee7d3cc  got 4dfa44aac8fb32f706b3eb792ee7d3cc
+  PASS  DRY graph JSON for input md5 4dfa44aac8fb32f706b3eb792ee7d3cc  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_ring_p3a_20261001_190155.json
+  PASS  L1 the 40 actions compile into 40 real ops == pred kinds, each action once  ['wire_remove_loose_ends', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'connect', 'connect', 'connect', 'connect', 'connect', 'connect', 'connect_term_uid', 'connect', 'connect', 'connect', 'connect_term_uid', 'wire_remove_loose_ends', 'connect_term_uid', 'wire_remove_loose_ends', 'connect_term_uid', 'wire_remove_loose_ends', 'connect_term_uid', 'wire_remove_loose_ends', 'connect_term_uid', 'wire_remove_loose_ends', 'connect_term_uid', 'wire_remove_loose_ends', 'connect_term_uid', 'wire_remove_loose_ends']
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 3 touched diagram(s) [639, 23169, 27219]: one-side-only Nodes[] entries 0
+  PRIME 0 terminal indexes proved at base; 0 ControlTerminal end(s) by 179(b); unprovable []
+  FACT  OP wire_remove_loose_ends [1] -> err '' (0.0 s)
+  STEPX 01 wire_remove_loose_ends acts [1] ids ['p3b_rle_w27378'] bound {} diff 0
+  FACT  OP create [2] -> err '' (0.0 s)
+  STEPX 02 create         acts [2] ids ['p3b_fs'] bound {-1: 10000001, -2: 10000002} diff 0
+  FACT  OP create [3] -> err '' (0.0 s)
+  STEPX 03 create         acts [3] ids ['p3b_fr2'] bound {-3: 10000003} diff 0
+  FACT  OP create [4] -> err '' (0.0 s)
+  STEPX 04 create         acts [4] ids ['p3b_fr3'] bound {-4: 10000004} diff 0
+  FACT  OP create [5] -> err '' (0.0 s)
+  STEPX 05 create         acts [5] ids ['p3b_lr_num1'] bound {-5: 10000005} diff 0
+  FACT  OP create [6] -> err '' (0.0 s)
+  STEPX 06 create         acts [6] ids ['p3b_ras_num1'] bound {-7: 10000007} diff 0
+  FACT  OP create [7] -> err '' (0.0 s)
+  STEPX 07 create         acts [7] ids ['p3b_k_m1'] bound {-12: 10000012} diff 0
+  FACT  OP create [8] -> err '' (0.0 s)
+  STEPX 08 create         acts [8] ids ['p3b_lw_num1'] bound {-14: 10000014} diff 0
+  FACT  OP create [9] -> err '' (0.0 s)
+  STEPX 09 create         acts [9] ids ['p3b_ia'] bound {-16: 10000016} diff 0
+  FACT  OP create [10] -> err '' (0.0 s)
+  STEPX 10 create         acts [10] ids ['p3b_copy'] bound {-20: 10000020} diff 0
+  FACT  OP create [11] -> err '' (0.0 s)
+  STEPX 11 create         acts [11] ids ['p3b_lr_num3'] bound {-29: 10000029} diff 0
+  FACT  OP create [12] -> err '' (0.0 s)
+  STEPX 12 create         acts [12] ids ['p3b_ras_num3'] bound {-31: 10000031} diff 0
+  FACT  OP create [13] -> err '' (0.0 s)
+  STEPX 13 create         acts [13] ids ['p3b_lw_num3'] bound {-36: 10000036} diff 0
+  FACT  OP create [14] -> err '' (0.0 s)
+  STEPX 14 create         acts [14] ids ['p3b_ub_status'] bound {-38: 10000038} diff 0
+  FACT  OP create [15] -> err '' (0.0 s)
+  STEPX 15 create         acts [15] ids ['p3b_sel'] bound {-43: 10000043} diff 0
+  FACT  OP create [16] -> err '' (0.0 s)
+  STEPX 16 create         acts [16] ids ['p3b_k_m3'] bound {-48: 10000048} diff 0
+  FACT  OP wire_connect [17] -> err '' (0.0 s)
+  STEPX 17 connect        acts [17] ids ['p3b_w_n1_arr'] bound {} diff 0
+  FACT  OP wire_connect [18] -> err '' (0.0 s)
+  STEPX 18 connect        acts [18] ids ['p3b_w_m1_new'] bound {} diff 0
+  FACT  OP wire_connect [19] -> err '' (0.0 s)
+  STEPX 19 connect        acts [19] ids ['p3b_w_n1_out'] bound {} diff 0
+  FACT  OP wire_connect [20] -> err '' (0.0 s)
+  STEPX 20 connect        acts [20] ids ['p3b_w_ia_dst'] bound {} diff 0
+  FACT  OP wire_connect [21] -> err '' (0.0 s)
+  STEPX 21 connect        acts [21] ids ['p3b_w_n3_arr'] bound {} diff 0
+  FACT  OP wire_connect [22] -> err '' (0.0 s)
+  STEPX 22 connect        acts [22] ids ['p3b_w_n3_out'] bound {} diff 0
+  FACT  OP wire_connect_term_uid [23] -> err '' (0.0 s)
+  STEPX 23 connect_term_uid acts [23] ids ['p3b_w_err_ub'] bound {-56: 10000058} diff 0
+  FACT  OP wire_connect [24] -> err '' (0.0 s)
+  STEPX 24 connect        acts [24] ids ['p3b_w_ub_sel'] bound {} diff 0
+  FACT  OP wire_connect [25] -> err '' (0.0 s)
+  STEPX 25 connect        acts [25] ids ['p3b_w_m3_sel'] bound {} diff 0
+  FACT  OP wire_connect [26] -> err '' (0.0 s)
+  STEPX 26 connect        acts [26] ids ['p3b_w_sel_n3'] bound {} diff 0
+  FACT  OP wire_connect_term_uid [27] -> err '' (0.0 s)
+  STEPX 27 connect_term_uid acts [27] ids ['p3b_x_i_f1'] bound {-68: 10000070} diff 0
+  FACT  OP wire_remove_loose_ends [28] -> err '' (0.0 s)
+  STEPX 28 wire_remove_loose_ends acts [28] ids ['p3b_rle_i_f1'] bound {} diff 0
+  FACT  OP wire_connect_term_uid [29] -> err '' (0.0 s)
+  STEPX 29 connect_term_uid acts [29] ids ['p3b_x_i_f3'] bound {-73: 10000075} diff 0
+  FACT  OP wire_remove_loose_ends [30] -> err '' (0.0 s)
+  STEPX 30 wire_remove_loose_ends acts [30] ids ['p3b_rle_i_f3'] bound {} diff 0
+  FACT  OP wire_connect_term_uid [31] -> err '' (0.0 s)
+  STEPX 31 connect_term_uid acts [31] ids ['p3b_x_i_ia1'] bound {-78: 10000080} diff 0
+  FACT  OP wire_remove_loose_ends [32] -> err '' (0.0 s)
+  STEPX 32 wire_remove_loose_ends acts [32] ids ['p3b_rle_i_ia1'] bound {} diff 0
+  FACT  OP wire_connect_term_uid [33] -> err '' (0.0 s)
+  STEPX 33 connect_term_uid acts [33] ids ['p3b_x_bn_n3'] bound {-83: 10000085, -87: 10000090} diff 0
+  FACT  OP wire_remove_loose_ends [34] -> err '' (0.0 s)
+  STEPX 34 wire_remove_loose_ends acts [34] ids ['p3b_rle_bn_n3'] bound {} diff 0
+  FACT  OP wire_connect_term_uid [35] -> err '' (0.0 s)
+  STEPX 35 connect_term_uid acts [35] ids ['p3b_x_img_src'] bound {-93: 10000095, -97: 10000100} diff 0
+  FACT  OP wire_remove_loose_ends [36] -> err '' (0.0 s)
+  STEPX 36 wire_remove_loose_ends acts [36] ids ['p3b_rle_img_src'] bound {} diff 0
+  FACT  OP wire_connect_term_uid [37] -> err '' (0.0 s)
+  STEPX 37 connect_term_uid acts [37] ids ['p3b_x_pool'] bound {-115: 10000121, -103: 10000105, -112: 10000117, -106: 10000109, -109: 10000113, -119: 10000126} diff 0
+  FACT  OP wire_remove_loose_ends [38] -> err '' (0.0 s)
+  STEPX 38 wire_remove_loose_ends acts [38] ids ['p3b_rle_pool'] bound {} diff 0
+  FACT  OP wire_connect_term_uid [39] -> err '' (0.0 s)
+  STEPX 39 connect_term_uid acts [39] ids ['p3b_x_err_in'] bound {-129: 10000131, -133: 10000136} diff 0
+  FACT  OP wire_remove_loose_ends [40] -> err '' (0.0 s)
+  STEPX 40 wire_remove_loose_ends acts [40] ids ['p3b_rle_err_in'] bound {} diff 0
+  PASS  E1 every checkpoint's real graph == its simulated step (40 ops)
+  PASS  FS one FlatSequence #10000001 with 3 distinct frames [10000002, 10000003, 10000004], every frame holds created rows  [10000002, 10000003, 10000004]
+  PASS  RB PD262(b) read-back: the Unbundler terminal on Select.s's wire reads `element`, expected `status` (UNVERIFIED-DRY)  {'sel_s': [{'term_uid': 10000046, 'term_name': 's', 'is_source': False, 'wire_uid': 10000065, 'owner_uid': 10000043, 'owner_class': 'Function', 'frame_diagram': 10000004, 'term_class': 'ParameterTerminal'}], 'ub': [{'term_uid': 10000040, 'term_name': 'element', 'is_source': True, 'wire_uid': 10000065, 'owner_uid': 10000038, 'owner_class': 'Unbundler', 'frame_diagram': 10000004, 'term_class': 'Terminal'}]}
+  PASS  D new wires 32 == sim's 32; lost 3 == sim's 3 (re-created source nets, PD256(c))  {'new': [10000050, 10000051, 10000052, 10000053, 10000054, 10000055, 10000056, 10000057, 10000062, 10000065, 10000066, 10000067, 10000069, 10000074, 10000078, 10000079, 10000083, 10000084, 10000088, 10000093, 10000094, 10000098, 10000103, 10000104, 10000107, 10000111, 10000116, 10000120, 10000124, 10000129, 10000130, 10000134], 'lost': [653, 3040, 3747]}
+  UNVERIFIED-DRY  CEN2 new-object census (classes of the pred) == plan_ring_p3b1_pred.json census  (census not measured in a dry run; declared {})
+  CENSUS-ALL net delta (every class) {}
+  CENSUS-ALL new uids by class (every class) {}
+  CENSUS-ALL lost uids 0
+  PASS  TD every base terminal that was wired is still wired, no base row lost  {'unwired': [], 'lost_rows': []}
+  PASS  FU frame diagrams == base + the FS's 3 frames  [10000002, 10000003, 10000004]
+  FACT  ExecState [after all rows (ExecState 0 expected: the P3a bed is broken by design)] scratch_c129_ring_p3b1_20261002_013412.vi = <dry:g.exec_state>
+  PASS  PB frame-keyed cdiff(S1, real end) == the P3a bed's 16 rows and the plan's 11 open (node, term) pairs (FATAL, before save)  {'extra': [], 'missing': []}
+  FACT  PH handles: post-open <dry:bench_prep.labview_handles> -> before-save None
+  PASS  HB open->save handle growth <= +700 (PD236(b) band; refs balance is H5)  (<dry:bench_prep.labview_handles>, None)
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  dry0dry0dry0dry0dry0dry0dry0dry0
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  PASS  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['tools/bench/plan_ring_p3b1.json']
+  PASS  X3 every plan row decided  0 rows + 40 stageplan actions
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  1 stageplan(s)
+  PASS  X11 no row wires one Build Array input while a sibling input is an open row (unless pb-licence/1)  1 stageplan(s)
+  PASS  X12 no row names a wire uid an earlier border-crossing connect re-created (connect_from_wire.json:266)  1 stageplan(s), 0 re-created source wire(s), none named later
+  PASS  X13 opmodel conformance: every recorded sample of the plan ops' model files replays in stagesim  3 op(s) ['create', 'wire', 'wire_remove_loose_ends']; files {'const.json': 'not-replayed (2)', 'primitive.json': 'not-replayed (2)', 'connect_from_wire.json': 'PASS (2)', 'wire_sr.json': 'not-replayed (2)'}
+  WARN  X13 WARN op 'wire_remove_loose_ends': no model file in tools/bench/opmodels (provisional rule; aliases ['wire_remove_loose_ends'])
+  WARN  X13 WARN const.json: 2 sample(s), no replayer for op 'const' (only ['connect_from_wire', 'tunnel', 'delete_object', 'delete_wire', 'remove_bad_wires'])
+  WARN  X13 WARN primitive.json: 2 sample(s), no replayer for op 'primitive' (only ['connect_from_wire', 'tunnel', 'delete_object', 'delete_wire', 'remove_bad_wires'])
+  WARN  X13 WARN wire_sr.json: 2 sample(s), no replayer for op 'wire_sr' (only ['connect_from_wire', 'tunnel', 'delete_object', 'delete_wire', 'remove_bad_wires'])
+  PASS  X16 every declared terminal of a created primitive carries term_class (PD251(b))  10 non-const_donor create action(s) with declared terminals, all classed
+  ADVISORY CENSUS-UNPREDICTED tools/bench/plan_ring_p3b1.json rows [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40] (prerun verdict unchanged; --scratch-required exits 3)
+  PASS  X15 census: no class with derived != declared (tools/census_predict.py over census_samples.json)  no derived != declared class
+  PASS  X4 every end addressable offline (0 ends)  []
+  PASS  X5 wiring ops executed in the dry run == plan wire rows  ops 17 vs plan wire rows 0 + stageplan wiring real ops 17 (covering 17/17 wire actions); delete ops {} vs plan delete rows {}; RLE ops 8 vs plan RLE rows 8
+  PASS  X6 ast lint: no re-typed uid / terminal name  uids []; names []
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c129_ring_p3b1_20261002_013412.vi; decisions rows NOT dispatched (recipe calls neither run_rows nor from_decision)
+  PASS  X10 predicted LabVIEW private MB < 690.0 (error-2 point; MEMSTOP 700.0) over the ops this run dispatches (UNMEASURED - no covering record)  {'why': 'UNMEASURED: no recorded meter of stage_d1_ring_p3b1_scratch.py covers ops 1..end (0 record(s))'}
+  WARN  X10 WARN unmeasured: UNMEASURED: no recorded meter of stage_d1_ring_p3b1_scratch.py covers ops 1..end (0 record(s))
+  WARN  X14 rows 40, budget 15 (proven: no)
+
+=== DRY PASS: first_fail=None coverage 46/60 lines, first mutation Stage._op wire_remove_loose_ends, unverified 0, graph tools/bench/graph_ring_p3a_20261001_190155.json
+=== PRERUN PASS: 15 pass / 0 fail; first None
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":15,"fail":0},"first_fail":"X10 WARN unmeasured: UNMEASURED: no recorded meter of stage_d1_ring_p3b1_scratch.py covers ops 1..end (0 record(s))","artefacts":[]}
+BGRUN END rc=0 after 33s
