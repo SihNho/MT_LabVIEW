@@ -1,0 +1,52 @@
+BGRUN START 2026-10-01 15:17:49 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c123-5-s1a-branch -TaskFile tools/bench/cards/review_123-5_s1a.md
+BGRUN PID 24076
+OUTCOME: ANSWERED (108s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-01-c123-5-s1a-branch.md
+COST: $1.0670  in 20 / out 8388 / cache-create 86605 / cache-read 909219  (104s, 15 turn(s))
+--- ANSWER ---
+**The branch explanation isn't proven yet.** It's consistent with the facts, but this run's evidence fits "the connect quietly did nothing" just as well. The claim borrows its proof that the connect step works from the case-selector call (gate S1c), and that call is the wrong comparison. It's also the strongest reason the claim could be wrong.
+
+**1. Strongest reason the claim could be wrong**
+- S1c wired from a source that had no wire yet (Equal?'s `x = y?` output), so LabVIEW had to make a new Wire object. S1a is the one call in the run where the source is already wired, and it is the only call that changed nothing you can count.
+- So "the connect step works on this diagram" was only shown for new wires. Whether Connect Wire branches from an already-wired source, or does nothing without an error, was never tested.
+- The run left no artefact that separates the two. The bed is a scratch copy deleted at close (log line 22), x's wire uid was never read, and nothing counts the sinks on `w3747`.
+- The plan document already names the correct check for a branch: "`Is Broken?` False plus a sink count of +1 on that wire" (`docs/d1-loop12-17-split-plan.md:1116`). The S1a gate ignored it and the run didn't measure it. The claim then fills that gap with a rule from the documents instead of a reading.
+
+**2. Alternative explanations for the same evidence (wire delta 0, error '')**
+- **(a) The connect silently did nothing and x is still unwired.** The wrapper sets `"error in" = (True, 1, "neutralised creator")` (`tools/recipes/build_opconnectnested_v1.py:432`). The op's internal error routing differs by path: on the branch path the invoke may be skipped, or its error may land somewhere other than the `error out` the wrapper reads at line 441. S1c doesn't rule this out, because S1c went down the new-wire path.
+- **(b) It wired the wrong source terminal.** `tidx` falls back to terminal index 0 without raising when the name doesn't match (`tools/bench/diag_c123_struct.py:35`, `t[0]["i"] if t else 0`).
+  - If `current image number` / `is_source` doesn't match in `node_terms_uids` rows on the P2b bed, the source becomes #6810 terminal 0, which is an input.
+  - Connecting x to an input that is already wired would branch that other net, also with no wire delta and no error.
+  - The name does match in the P2a graph (`diag_c122_graph_p2a.json`: t6897, `current image number`, `is_source: true`, w3747, owner 6810, diagram 639). But nothing checked that against the P2b bed or the row format `tidx` actually reads.
+- **(c) A branch plus an unrelated wire deletion netting to 0.** Unlikely, and the run didn't measure it.
+
+**3. Evidence for and against the claim**
+- **For the claim (it holds up):**
+  - `w3747` really is a multi-sink net in diagram #639. t6897 is the source, and at least six sinks share that one wire uid (t7680, t3312, t2194, t1607, t34217…) in `diag_c122_graph_p2a.json`. So "a branch lives inside the existing Wire object" fits this VI's own graph, not just `SKILL.md:36`.
+  - The readback `'UID 2': 0` doesn't argue against the claim. S1c's readback also printed `'UID 2': 0` (log line 41), and that wire demonstrably landed (selector wire 27314, log line 44). That field is useless as evidence either way.
+- **What would falsify the branch explanation**, after the same connect call on a fresh copy:
+  - Equal? `x` reports wire uid 0, or a uid other than 3747. That points to (a) or (b).
+  - Or the sink count of `w3747` doesn't rise by exactly 1.
+  - A different non-zero uid with `Is Broken?` True points to (b).
+- **External check:** I found no NI documentation stating what Terminal Connect Wire does when the source already has a wire.
+  - The LabVIEW Wiki page on Node.Connect Wires covers the node-level method, not this case ([LabVIEW Wiki](https://labviewwiki.org/wiki/Node_class/Connect_Wires_method)).
+  - An NI forum thread treats branching from an existing wire as awkward to script ([NI Community](https://forums.ni.com/t5/LabVIEW/Script-connect-existing-loose-wires-to-case-tunnels/td-p/4195933)).
+  - "Branch adds no Wire object" therefore rests on this project's own earlier measurement (`docs/toolkit-capabilities.md:78`, the w12256 case), not on vendor documentation. It's likely, but the earlier measurement may not have used the same op and the same error-in setup.
+
+**4. Cheapest test that separates them** (no extra LabVIEW run: add it to the next run that touches this bed)
+- Right after `connect_nested_v1` in `s1()`, call the `tidx`/`node_terms_uids` read the script already uses on the Equal? node and on #6810.
+- Log three numbers:
+  1. x's `wire`
+  2. #6810 `current image number`'s `wire`
+  3. how many terminals in #639 carry wire 3747, before and after
+- Reading them is enough to decide:
+  - **x = 3747 and sinks +1:** branch, claim holds.
+  - **x = 0:** the connect did nothing, alternative (a).
+  - **x ≠ 0 and x ≠ 3747:** wrong source terminal, alternative (b).
+- Also log the resolved `bt` with its row name, to close (b) directly.
+
+**Verdict:** the claim is more plausible than not, but unproven. S1a's gate was the wrong gate (the plan's own line 1116 gives the right one). Don't record the wiring as having worked until the x-terminal read above returns 3747. A single non-3747 reading changes my mind; so would a vendor document saying Terminal Connect Wire refuses an already-wired source.
+
+Sources:
+- [Node class/Connect Wires method – LabVIEW Wiki](https://labviewwiki.org/wiki/Node_class/Connect_Wires_method)
+- [Script connect existing loose wires to case tunnels – NI Community](https://forums.ni.com/t5/LabVIEW/Script-connect-existing-loose-wires-to-case-tunnels/td-p/4195933)
+BGRUN END rc=0 after 109s

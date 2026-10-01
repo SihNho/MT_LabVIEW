@@ -1,0 +1,15 @@
+{"schema":"result/1","id":"123-6","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"STATUS.md","md5":"cdc0def72a2cd649ec85c25ed6bee3db"},{"path":"archive/2026-10-01-status-cycle123-relocate.md","md5":"38d1dba54b2c76611b2d8fc415edde2d"},{"path":"docs/d1-build-plan.md","md5":"bc8060df16974dfc6a9e91ba5be41655"}],
+"facts":[
+"STATUS.md 601 -> 95 lines; doc_lint L3 now PASS '95 lines (limit 110)'; 5 pointer lines added (STATUS.md lines 8, 12, 76, 82, 95)",
+"Archive holds STATUS lines 8,10-20 (§1), 23-24 (§2), 88-105 (§3), 111-589 minus 389 (§4), 601 (§5); line-multiset old == new - pointers + archive - headings: True; per-group order: True",
+"Kept: live STARTED 2026-10-01 + NEW CHAT lines, lock YAML, HARDWARE incl. rig-state (STATUS.md:40), OPEN, NEXT blocks, current-bed (STATUS.md:79) + comment + bed paragraph, byte-identical",
+"Old line 389 = STATUS.md:83 (standing rule: card peers / gui:true / read Error List on ExecState 0) kept in STATUS after the §4 pointer, not relocated; no line begins with STOP",
+"STATUS.md md5 re-checked == 96896ee0... immediately before the write (script aborts otherwise); no concurrent edit",
+"docs/d1-build-plan.md:566 one marker line added under §9 heading (git numstat 1 added / 0 removed)",
+"doc_lint before: 1 fail / 6 warn / 5 pass; after: 1 fail / 5 warn / 6 pass. Only FAIL is pre-existing L6 (183 undisposed reviews, unchanged)",
+"doc_lint L5 WARN still: d1-build-plan.md frontmatter `status: current` though ring-buffer-design.md supersedes it (frontmatter left untouched per brief)"
+],
+"open":["d1-build-plan.md keeps `status: current` (L5 WARN); brief said change nothing else there — should its frontmatter become superseded/partial?","Kept pointer block STATUS.md:84-89 (cycle-81 relocation 'still-live' items) includes a FOR THE USER item already done per relocated §4 (commit 252fd99) — prune?"],
+"cost":{"usd":null,"minutes":12,"labview_runs":0},
+"note":"Relocation script: scratchpad relocate_c123.py (md5-guarded, dry then --write). doc_lint output not saved to tools/bench/doc_lint_c123* because shell redirection was refused by the permission layer; counts above are from the console."}

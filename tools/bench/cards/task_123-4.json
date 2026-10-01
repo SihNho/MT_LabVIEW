@@ -1,0 +1,62 @@
+{
+ "schema": "task/1",
+ "id": "123-4",
+ "kind": "build",
+ "goal": "Census device core, OFFLINE, new files only: census_samples.json (measured, cited), tools/census_predict.py (PASS/FAIL/CENSUS-UNPREDICTED), selftest_census_predict.py",
+ "why": "Device decided for inference-over-measurement (docs/violation-decisions.md 2026-10-01 13:56): class-count predictions are computed from measured samples, never typed. Steps: brief_123-4.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_123-4.md"},
+  {"path": "docs/violation-decisions.md", "md5": "faae08f9b07aabc96e928b750e960bc5"},
+  {"path": "tools/bench/plan_ring_p2b.json", "md5": "ce18e794994b94b251d76cb2c828ef7b"},
+  {"path": "tools/bench/plan_ring_p2b_pred.json", "md5": "98ca9b303451bef5d2e2164b5a98d170"},
+  {"path": "tools/bench/stage_d1_ring_p2b_scratch_pin.log", "md5": "e58d552c43f123d03599450ca36ac100"},
+  {"path": "tools/bench/stage_d1_ring_p2b.log", "md5": "2070f65dca153464628bc520af4aecae"},
+  {"path": "tools/bench/plan_ring_p2a.json", "md5": "ad1be164996dcdf26e11b50d36f6a5f0"},
+  {"path": "tools/bench/plan_qrt_pool.json", "md5": "bb3393b0d754b61960731af462af08ad"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/plan_ring_p2b.json"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p2b_pred.json"},
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p2b_scratch_pin.log"}
+ ],
+ "pass": [
+  "census_samples.json: every sample cites the log file:line that measured it; OpConstInd_v0 array and scalar variants present",
+  "census_predict.py is standalone (no stagesim/stagekit/stagexec/gscript import) and ends with one RESULT line",
+  "selftest (a): P2b plan + DNC +1 fixture -> FAIL naming DigitalNumericConstant, derived +5",
+  "selftest (b): P2b plan + current pred 98ca9b30... -> PASS",
+  "selftest (c): plan_ring_p2a.json and plan_qrt_pool.json -> no FAIL (UNPREDICTED rows listed)",
+  "selftest (d): a row whose op has no sample -> CENSUS-UNPREDICTED, never PASS"
+ ],
+ "outputs": [
+  "tools/census_predict.py",
+  "tools/bench/census_samples.json",
+  "tools/bench/selftest_census_predict.py"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/census_predict.py",
+   "tools/bench/census_samples.json",
+   "tools/bench/census_*",
+   "tools/bench/selftest_census_predict*",
+   "archive/peer/**",
+   "tools/bench/cards/review_123*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 45
+ },
+ "rules": [
+  "Follow brief_123-4.md; no LabVIEW, GUI or hardware",
+  "No edit to stage_prerun/stagekit/stagexec/stagesim/gscript/hooks or existing opmodels; hook-in is card 123-5",
+  "A sample is only what a log measured (file:line); return at the first unexpected result"
+ ],
+ "unblocks": "M4"
+}

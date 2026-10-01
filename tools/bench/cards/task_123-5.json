@@ -1,0 +1,80 @@
+{
+ "schema": "task/1",
+ "id": "123-5",
+ "kind": "build",
+ "goal": "P3 structure creators (PD246(c), 247(c)): Case with a selector wired from a node output, Flat Sequence of N frames; then the census hook-in into stage_prerun and stagekit (PD247(e))",
+ "why": "case_in takes only a panel control as selector (247(c)) and no Flat Sequence creator exists; P3a/P3b and P4 need both. The census device core exists (123-4) but is not yet in the prerun. Steps: brief_123-5.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_123-5.md"},
+  {"path": "tools/bench/cards/result_123-3.json", "md5": "ca151fa94c7e93442da6d67593929245"},
+  {"path": "tools/bench/cards/result_123-4.json", "md5": "ed2a3c942a41b1855372bc2683e6d100"},
+  {"path": "tools/bench/diag_c123_routes.log", "md5": "f6bde061c9d42d79a2af39c20a7f8421"},
+  {"path": "tools/census_predict.py", "md5": "63ee7b075ee23204b425e5b6300f6f41"},
+  {"path": "tools/bench/census_samples.json", "md5": "721a81029171f7f8d53b5ae95137fbc5"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p2b_20261001_140658.vi", "md5": "652b1447ebbda761a7d5ba36455a0fa1"},
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "b9fb908e17e942fa8603c690439b74f9"}
+ ],
+ "requires": [
+  {"kind": "verb", "name": "create_primitive_nested", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "sr_init_const", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "case_in", "where": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/census_predict.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"}
+ ],
+ "pass": [
+  "S1 case on body 639 with selector wired from Equal? x = y? (inputs BufNum w3747 + a constant); frames True/False read back",
+  "S1 verb + stagexec route + stagesim model + opmodel with created classes + self-test + scratch_verify record",
+  "S2 Flat Sequence of 3 frames in the case's False frame; count, order, frame diagram uids read back; same deliverables",
+  "S2 any NEW op VI has a hygiene record (>= 2000 calls, 0 errors, handles flat +-100)",
+  "S3 prerun: derived != declared census -> FAIL; CENSUS-UNPREDICTED advisory and --scratch-required exit 3",
+  "S3 sample recording from a scratch log; stagekit dry census helper prints UNVERIFIED-DRY; existing recipes untouched",
+  "S3 self-tests: c122 fixture FAIL, corrected PASS, P2a/pool no FAIL; launch_gate, stagexec, census, sr_init stay green",
+  "bed md5 652b1447... unchanged; scratch deleted or md5-recorded; LabVIEW verified gone"
+ ],
+ "outputs": [
+  "tools/gscript.py",
+  "tools/stagexec.py",
+  "tools/stagesim.py",
+  "tools/stage_prerun.py",
+  "tools/stagekit.py",
+  "tools/census_predict.py",
+  "tools/bench/census_samples.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/gscript.py",
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/stage_prerun.py",
+   "tools/stagekit.py",
+   "tools/census_predict.py",
+   "tools/bench/census_*",
+   "tools/bench/opmodels/**",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/op_hygiene/**",
+   "tools/bench/diag_c123_*",
+   "tools/bench/selftest_*",
+   "docs/NAMES.md",
+   "archive/peer/**",
+   "tools/bench/cards/review_123*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 75
+ },
+ "rules": [
+  "Follow brief_123-5.md; byte copies of the bed only; the bed is never saved over",
+  "No stage recipe is run; stagekit scripts <= 120 lines; existing recipes not edited",
+  "LabVIEW steps S1-S2 first, then S3; return at the first unexpected result",
+  "A failing log -> Jev ladder row; an owed hypothesis review is dispatched, never bypassed"
+ ],
+ "advances": ["M4", "M3"]
+}

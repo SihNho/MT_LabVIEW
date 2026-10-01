@@ -1,0 +1,72 @@
+BGRUN START 2026-10-01 15:13:32 limit 30.0 min: py -u tools/bench/diag_c123_struct.py
+BGRUN PID 8636
+BGRUN STAGE-RUN recorded diag_c123_struct.py cycle='cycle 123' card=None pid=23964 -> stage_runs.jsonl
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 314 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 652b1447ebbda761a7d5ba36455a0fa1  got 652b1447ebbda761a7d5ba36455a0fa1
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33993
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_c123_struct_20261001_151333.vi
+  FACT  ExecState [after open] scratch_c123_struct_20261001_151333.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so scratch_c123_struct_20261001_151333.vi is deleted at close
+  FACT  build_case node census: 639 rows
+  FACT  OP build_case donor case -> err '' (1.0 s)
+  PASS  D1 donor case created on DonorCase_v0 top level #742, frames [' 0, Default ', ' 1 ']  {'echo': 742, 'names': [' 0, Default ', ' 1 '], 'frames': [773, 779], 'err': ''}
+  PASS  D2 donor ExecState 1 -> saved
+  FACT  DONOR RECORD {"case_uid": 742, "frames": {"echo": 742, "names": [" 0, Default ", " 1 "], "frames": [773, 779], "err": ""}, "md5": "df825c180fe682af2a2cf64db893d64a"}
+  FACT  create_primitive_nested node census: 639 rows
+  OBSERVED uid 26802 -> owner 'Diagram' uid 639 | self 'Comparison'#26802 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested Equal? $work -> err '' (2.6 s)
+  FACT  connect_nested_v1 node census: 640 rows
+      op readback {'UID': 26802, 'Name': 'x', 'UID 2': 0, 'Is Broken?': False}
+  FACT  OP connect_nested_v1 Equal? x <- BufNum -> err '' (0.5 s)
+  FACT  create_const_on_term node census: 641 rows
+  FACT  OP create_const_on_term Equal? y const -> err '' (0.2 s)
+  FAIL  S1a Equal? #26802 on #639: x wire +1, y const wired  {'x': (0, 0, ''), 'y': {'err': '', 'inv_err': '', 'created_uid': 27136}}
+  FACT  negative raised ValueError: case_wired: node echo 26802 / 0 output(s) named 'no such terminal' on #26802
+  PASS  S1b bad source name -> ValueError, no new CaseStructure  ValueError: case_wired: node echo 26802 / 0 output(s) named 'no such terminal' on #26802
+  FACT  case_wired node census: 641 rows
+  OBSERVED uid 26771 -> owner 'Diagram' uid 639 | self 'CaseStructure'#26771 | 482 says 'Diagram' cast 'Diagram' |  
+      op readback {'UID': 26771, 'Name': 'index', 'UID 2': 0, 'Is Broken?': False}
+  FACT  OP case_wired case on #639 <- Equal? #26802 -> err '' (3.8 s)
+  PASS  S1c case_wired: CaseStructure +1 on #639, Diagram +2, wire +1, selector wire == Equal? output wire, frames ['False', 'True']  {'call': {'case': 26771, 'new_diagrams': [27206, 27229], 'selector_term': 27164, 'selector_index': 0, 'selector_wire': 27314, 'src_term_uid': 26825, 'src_wire': 27314, 'wire_delta': 1, 'exec_state': 0, 'op_err': '', 'names': ['False', 'True'], 'frames': [27206, 27229], 'frames_err': ''}, 'new_by_class': {'Terminal': 6, 'OuterTerminal': 1, 'Invoke': 1, 'CaseStructure': 1, 'Wire': 1, 'InnerTerminal': 2, 'Tunnel': 1, 'Diagram': 2}, 'err': ''}
+  ROW   S1c selector terminals before/after : observed={'before': [{'i': 0, 'name': 'index', 'is_source': False, 'wire': 0, 'uid': 27164, 'uid_err': 0, 'node_uid': 26771}], 'after': [{'i': 0, 'name': '', 'is_source': False, 'wire': 27314, 'uid': 27164, 'uid_err': 0, 'node_uid': 26771}]} expected=None
+  OBSERVED uid 27322 -> owner 'Diagram' uid 27206 | self 'Comparison'#27322 | 482 says 'Diagram' cast 'Diagram' |  
+  ROW   S1d a node placed into the False frame (frame diagram addressable) : observed={'uid': 27322, 'err': ''} expected=None
+  FACT  S2 FACT Erdos Miller Create Sequence.vi front panel (index, label, is_indicator): [(0, 'error in (no error)', False), (1, 'error out', True), (2, 'Diagram in', False), (3, 'location (0, 0)', False), (4, 'Inputs', False), (5, 'Diagram out', True), (6, 'Inputs', True)]
+  FACT  RECORDS G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\scratch_verify\gscript.case_wired_c123_20261001_151333.json G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\opmodels\case_wired.json
+
+---------- [H] HYGIENE
+  FACT  close_panel(scratch_c123_struct_20261001_151333.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 12, 'closed': 12, 'live': 0, 'cached_op_vis': 11}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 12, 'closed': 12, 'live': 0, 'cached_op_vis': 11}
+  FACT  LabVIEW handle count AFTER the work: 46108
+  PASS  H4 scratch deleted: scratch_c123_struct_20261001_151333.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c123_struct_20261001_151333.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 652b1447ebbda761a7d5ba36455a0fa1 / after 652b1447ebbda761a7d5ba36455a0fa1
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: ['DonorCase_v0.vi']  (removed: [])
+  PASS  H6 the files left on disk == ['DonorCase_v0.vi'] and nothing was removed  added ['DonorCase_v0.vi'] removed []
+  FACT  LabVIEW handle count at exit: 34002
+
+====================================================================================================
+=== GATES: 12 pass / 1 fail; failing: S1a Equal? #26802 on #639: x wire +1, y const wired
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c123_struct.json   elapsed 151.5 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":12,"fail":1},"first_fail":"S1a Equal? #26802 on #639: x wire +1, y const wired","artefacts":[]}
+LabVIEW gone at exit: True
+BGRUN END rc=1 after 157s

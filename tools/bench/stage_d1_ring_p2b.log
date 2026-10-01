@@ -1,0 +1,198 @@
+BGRUN START 2026-10-01 14:06:57 limit 45.0 min: py -u tools/recipes/stage_d1_ring_p2b.py
+BGRUN PID 3020
+BGRUN STAGE-RUN recorded stage_d1_ring_p2b.py cycle='cycle 123' card=None pid=13588 -> stage_runs.jsonl
+stage_d1_ring_p2b - card 122-6, RING P2b (d1-loop12-17-split-plan.md PD240(a)-(e), PD241(b), PD244(a)-(d)): on the SAVED P2a bed
+D1_ring_p2a_20260928_191739.vi ADD five indicators Num I32[20] / TransPos DBL[20] / RotPos DBL[20] / FrameIdx I32[20] / Latest I32, each born on a
+VALUED donor constant (claudeDev\DonorRingConst_v0.vi: Num/FrameIdx -1 x20, TransPos/RotPos 0.0 x20, Latest -1) on FS1 frame #4866 (the frame
+before #686), outside every loop; NO existing net touched. FRESH LabVIEW -> claudeDev\D1_ring_p2b_<ts>.vi (rule-6 GUI save, ExecState 0 by
+design, never run). ROWS ONLY FROM plan_ring_p2b.json (stagesim FINAL of plan_ring_p2b_in.json, plan_ring_p2b_make.py); expected values only from
+plan_ring_p2b_pred.json. PRIOR ART: stage_d1_ring_p2a.py (Executor/LVBackend/DryPlanBE, D/TD/FU/PB/HB/PS gates, save) + diag_c122_route.py
+verify() (per-label read-back: panel_wiring label/wire, read_term_type canon, read_const_value, frame) + stagexec const_born_on route
+(create_primitive_nested const_donor -> create_indicator_on_const = gscript.const_indicator_on_diagram's two calls). No new op.
+Review archive/peer/2026-10-01-c122-route-s0.md: NO owner_of call on #4866; placement is gated by the live read (gate F, FATAL).
+PREDICTION: L1 10 actions -> 10 create ops; E1 every checkpoint == sim; per label: ONE new indicator (panel label exact, wired), ONE new constant
+on the same wire, both on #4866 (F), canon == pred on both ends (T), constant value == pred (V); D new wires == 5 == sim, none lost;
+CEN2 ControlTerminal +5, Wire +5, ArrayConstant +4, DigitalNumericConstant +1, LoopTunnel/WhileLoop/Diagram/SubVI/Local 0; TD every base
+terminal keeps its wire, rows added == the 10 new; FU frames unchanged; PB cdiff(S1, end) == the P2a bed's 16 rows (FATAL, before save);
+HB open->save handles <= +700 (PD236(b)); PS saved, input unchanged.
+    py tools/bgrun.py --material --max-min 45 --log tools/bench/stage_d1_ring_p2b.log -- py -u tools/recipes/stage_d1_ring_p2b.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p2b_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == the P2a bed's rows  ('ce18e794994b94b251d76cb2c828ef7b', {'path': 'tools/bench/diag_c122_graph_p2a.json', 'md5': '3f6f5d36808cc205771a8349b5a737ff'}, 'c22a473f26ebcc67296d1c2441f8a47a')
+  PASS  L0c 10 create rows on #4866: 5 constants (donor DonorRingConst_v0.vi, md5 pinned) + 5 indicators labelled == pred  {'labels': ['Num', 'TransPos', 'RotPos', 'FrameIdx', 'Latest']}
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 312 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == c22a473f26ebcc67296d1c2441f8a47a  got c22a473f26ebcc67296d1c2441f8a47a
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33990
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  D1_ring_p2b_20261001_140658.vi
+  FACT  ExecState [after open] D1_ring_p2b_20261001_140658.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so D1_ring_p2b_20261001_140658.vi is deleted at close
+  FACT  CENSUS before P2b D1_ring_p2b_20261001_140658.vi: {'LoopTunnel': 139, 'Wire': 1937, 'WhileLoop': 6, 'Diagram': 174, 'SubVI': 98, 'Local': 12, 'ControlTerminal': 118, 'ArrayConstant': 17, 'DigitalNumericConstant': 181}
+  PASS  L1 the 10 actions compile into 10 real ops == pred kinds, each action once  ['create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'create']
+  METER start  k   0  private 562.3 MB (d -)  handles 45696 (d -)
+  METER read   k   0  private 570.8 MB (d +8.5)  handles 45740 (d +44)
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 1 touched diagram(s) [4866]: one-side-only Nodes[] entries 0
+  PRIME 0 terminal indexes proved at base; 0 ControlTerminal end(s) by 179(b); unprovable []
+  METER pre    k   1  private 566.3 MB (d -4.5)  handles 45769 (d +29)
+  FACT  create_primitive_nested node census: 639 rows
+  OBSERVED uid 25535 -> owner 'ArrayConstant' uid 25465 | self 'DigitalNumericConstant'#25535 | 482 says 'ArrayConstant' cast 'ArrayConstant' |  
+  OBSERVED uid 25465 -> owner 'Diagram' uid 4866 | self 'ArrayConstant'#25465 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'const_donor' on #4866 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRingConst_v0.vi', 'uid': 130} -> err '' (2.3 s)
+  FACT  create primitive p2b_c_Num AFTER node census: 639 rows
+  FACT  create primitive p2b_c_Num CENSUS DIFF: Node 639 -> 639 ; 0 new uid(s): []
+  METER op     k   1  private 566.9 MB (d +0.6)  handles 45846 (d +77)
+  METER read   k   1  private 570.3 MB (d +3.4)  handles 45838 (d -8)
+  STEPX 01 create         acts [1] ids ['p2b_c_Num'] bound {-1: 25465} diff 0
+  METER pre    k   2  private 570.3 MB (d +0.0)  handles 45839 (d +1)
+  FACT  indicator_on_const node census: 639 rows
+  FACT  OP indicator_on_const ArrayConstant #25465 terminal #25464 (gscript.create_indicator_on_const -> OpConstInd_v0 (Constant.Terminal -> Terminal.Create Indicator, card 122-3)) -> err '' (0.7 s)
+  FACT  create indicator p2b_i_Num AFTER node census: 639 rows
+  FACT  create indicator p2b_i_Num CENSUS DIFF: Node 639 -> 639 ; 0 new uid(s): []
+  METER op     k   2  private 575.6 MB (d +5.3)  handles 45902 (d +63)
+  METER read   k   2  private 577.1 MB (d +1.5)  handles 45901 (d -1)
+  STEPX 02 create         acts [2] ids ['p2b_i_Num'] bound {-3: 35255} diff 0
+  METER pre    k   3  private 577.0 MB (d -0.1)  handles 45897 (d -4)
+  FACT  create_primitive_nested node census: 639 rows
+  OBSERVED uid 25774 -> owner 'ArrayConstant' uid 25632 | self 'DigitalNumericConstant'#25774 | 482 says 'ArrayConstant' cast 'ArrayConstant' |  
+  OBSERVED uid 25632 -> owner 'Diagram' uid 4866 | self 'ArrayConstant'#25632 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'const_donor' on #4866 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRingConst_v0.vi', 'uid': 101} -> err '' (2.2 s)
+  FACT  create primitive p2b_c_TransPos AFTER node census: 639 rows
+  FACT  create primitive p2b_c_TransPos CENSUS DIFF: Node 639 -> 639 ; 0 new uid(s): []
+  METER op     k   3  private 578.2 MB (d +1.2)  handles 45893 (d -4)
+  METER read   k   3  private 578.2 MB (d +0.0)  handles 45893 (d +0)
+  STEPX 03 create         acts [3] ids ['p2b_c_TransPos'] bound {-5: 25632} diff 0
+  METER pre    k   4  private 578.2 MB (d +0.0)  handles 45893 (d +0)
+  FACT  indicator_on_const node census: 639 rows
+  FACT  OP indicator_on_const ArrayConstant #25632 terminal #25623 (gscript.create_indicator_on_const -> OpConstInd_v0 (Constant.Terminal -> Terminal.Create Indicator, card 122-3)) -> err '' (0.7 s)
+  FACT  create indicator p2b_i_TransPos AFTER node census: 639 rows
+  FACT  create indicator p2b_i_TransPos CENSUS DIFF: Node 639 -> 639 ; 0 new uid(s): []
+  METER op     k   4  private 582.2 MB (d +4.0)  handles 45894 (d +1)
+  METER read   k   4  private 584.0 MB (d +1.8)  handles 45893 (d -1)
+  STEPX 04 create         acts [4] ids ['p2b_i_TransPos'] bound {-7: 35215} diff 0
+  METER pre    k   5  private 584.0 MB (d +0.0)  handles 45893 (d +0)
+  FACT  create_primitive_nested node census: 639 rows
+  OBSERVED uid 26122 -> owner 'ArrayConstant' uid 25898 | self 'DigitalNumericConstant'#26122 | 482 says 'ArrayConstant' cast 'ArrayConstant' |  
+  OBSERVED uid 25898 -> owner 'Diagram' uid 4866 | self 'ArrayConstant'#25898 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'const_donor' on #4866 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRingConst_v0.vi', 'uid': 101} -> err '' (2.2 s)
+  FACT  create primitive p2b_c_RotPos AFTER node census: 639 rows
+  FACT  create primitive p2b_c_RotPos CENSUS DIFF: Node 639 -> 639 ; 0 new uid(s): []
+  METER op     k   5  private 584.0 MB (d +0.0)  handles 45893 (d +0)
+  METER read   k   5  private 584.1 MB (d +0.1)  handles 45893 (d +0)
+  STEPX 05 create         acts [5] ids ['p2b_c_RotPos'] bound {-9: 25898} diff 0
+  METER pre    k   6  private 584.1 MB (d +0.0)  handles 45893 (d +0)
+  FACT  indicator_on_const node census: 639 rows
+  FACT  OP indicator_on_const ArrayConstant #25898 terminal #25889 (gscript.create_indicator_on_const -> OpConstInd_v0 (Constant.Terminal -> Terminal.Create Indicator, card 122-3)) -> err '' (0.7 s)
+  FACT  create indicator p2b_i_RotPos AFTER node census: 639 rows
+  FACT  create indicator p2b_i_RotPos CENSUS DIFF: Node 639 -> 639 ; 0 new uid(s): []
+  METER op     k   6  private 588.1 MB (d +4.0)  handles 45892 (d -1)
+  METER read   k   6  private 588.1 MB (d +0.0)  handles 45895 (d +3)
+  STEPX 06 create         acts [6] ids ['p2b_i_RotPos'] bound {-11: 35319} diff 0
+  METER pre    k   7  private 588.1 MB (d +0.0)  handles 45895 (d +0)
+  FACT  create_primitive_nested node census: 639 rows
+  OBSERVED uid 26401 -> owner 'ArrayConstant' uid 26244 | self 'DigitalNumericConstant'#26401 | 482 says 'ArrayConstant' cast 'ArrayConstant' |  
+  OBSERVED uid 26244 -> owner 'Diagram' uid 4866 | self 'ArrayConstant'#26244 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'const_donor' on #4866 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRingConst_v0.vi', 'uid': 130} -> err '' (2.2 s)
+  FACT  create primitive p2b_c_FrameIdx AFTER node census: 639 rows
+  FACT  create primitive p2b_c_FrameIdx CENSUS DIFF: Node 639 -> 639 ; 0 new uid(s): []
+  METER op     k   7  private 590.8 MB (d +2.7)  handles 45894 (d -1)
+  METER read   k   7  private 590.8 MB (d +0.0)  handles 45894 (d +0)
+  STEPX 07 create         acts [7] ids ['p2b_c_FrameIdx'] bound {-13: 26244} diff 0
+  METER pre    k   8  private 590.8 MB (d +0.0)  handles 45894 (d +0)
+  FACT  indicator_on_const node census: 639 rows
+  FACT  OP indicator_on_const ArrayConstant #26244 terminal #26236 (gscript.create_indicator_on_const -> OpConstInd_v0 (Constant.Terminal -> Terminal.Create Indicator, card 122-3)) -> err '' (0.7 s)
+  FACT  create indicator p2b_i_FrameIdx AFTER node census: 639 rows
+  FACT  create indicator p2b_i_FrameIdx CENSUS DIFF: Node 639 -> 639 ; 0 new uid(s): []
+  METER op     k   8  private 594.8 MB (d +4.0)  handles 45894 (d +0)
+  METER read   k   8  private 594.8 MB (d +0.0)  handles 45894 (d +0)
+  STEPX 08 create         acts [8] ids ['p2b_i_FrameIdx'] bound {-15: 27025} diff 0
+  METER pre    k   9  private 594.8 MB (d +0.0)  handles 45894 (d +0)
+  FACT  create_primitive_nested node census: 639 rows
+  OBSERVED uid 26495 -> owner 'Diagram' uid 4866 | self 'DigitalNumericConstant'#26495 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'const_donor' on #4866 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRingConst_v0.vi', 'uid': 249} -> err '' (2.1 s)
+  FACT  create primitive p2b_c_Latest AFTER node census: 639 rows
+  FACT  create primitive p2b_c_Latest CENSUS DIFF: Node 639 -> 639 ; 0 new uid(s): []
+  METER op     k   9  private 594.8 MB (d +0.0)  handles 45895 (d +1)
+  METER read   k   9  private 594.8 MB (d +0.0)  handles 45895 (d +0)
+  STEPX 09 create         acts [9] ids ['p2b_c_Latest'] bound {-17: 26495} diff 0
+  METER pre    k  10  private 594.8 MB (d +0.0)  handles 45895 (d +0)
+  FACT  indicator_on_const node census: 639 rows
+  FACT  OP indicator_on_const DigitalNumericConstant #26495 terminal #26494 (gscript.create_indicator_on_const -> OpConstInd_v0 (Constant.Terminal -> Terminal.Create Indicator, card 122-3)) -> err '' (0.8 s)
+  FACT  create indicator p2b_i_Latest AFTER node census: 639 rows
+  FACT  create indicator p2b_i_Latest CENSUS DIFF: Node 639 -> 639 ; 0 new uid(s): []
+  METER op     k  10  private 598.8 MB (d +4.0)  handles 45895 (d +0)
+  METER read   k  10  private 602.7 MB (d +3.9)  handles 45893 (d -2)
+  STEPX 10 create         acts [10] ids ['p2b_i_Latest'] bound {-19: 35418} diff 0
+  PASS  E1 every checkpoint's real graph == its simulated step (10 ops)
+  PASS  D new wires == 5 == sim's count, none lost  {'new': [27075, 35265, 35270, 35334, 35433], 'sim_new': [-20, -16, -12, -8, -4], 'lost': []}
+  PASS  G Num: ONE new indicator terminal (sink) + ONE new ArrayConstant (source) on ONE new wire, both on #4866  ([{'term_uid': 35255, 'term_name': 'Num', 'is_source': False, 'wire_uid': 35270, 'owner_uid': 4866, 'owner_class': 'Diagram', 'frame_diagram': 4866, 'term_class': 'ControlTerminal'}], [{'term_uid': 25464, 'term_name': 'pos in cal image in', 'is_source': True, 'wire_uid': 35270, 'owner_uid': 25465, 'owner_class': 'ArrayConstant', 'frame_diagram': 4866, 'term_class': 'Terminal'}])
+  PASS  P Num: panel object label exact, indicator, wired to that wire  [{'label': 'Num', 'indicator': True, 'uid': 35224, 'is_source': False, 'wire': 35270, 'term_err': 0, 'wire_err': 0}]
+  PASS  T Num: read_term_type canon == Array1D<I32> on the constant and the indicator terminal  ['Array1D<I32>', 'Array1D<I32>']
+  PASS  V Num: constant #25465 value == [-1, -1, '...']  {'value': '(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1)', 'err': ''}
+  PASS  G TransPos: ONE new indicator terminal (sink) + ONE new ArrayConstant (source) on ONE new wire, both on #4866  ([{'term_uid': 35215, 'term_name': 'TransPos', 'is_source': False, 'wire_uid': 35265, 'owner_uid': 4866, 'owner_class': 'Diagram', 'frame_diagram': 4866, 'term_class': 'ControlTerminal'}], [{'term_uid': 25623, 'term_name': 'x,y,z array', 'is_source': True, 'wire_uid': 35265, 'owner_uid': 25632, 'owner_class': 'ArrayConstant', 'frame_diagram': 4866, 'term_class': 'Terminal'}])
+  PASS  P TransPos: panel object label exact, indicator, wired to that wire  [{'label': 'TransPos', 'indicator': True, 'uid': 35183, 'is_source': False, 'wire': 35265, 'term_err': 0, 'wire_err': 0}]
+  PASS  T TransPos: read_term_type canon == Array1D<DBL> on the constant and the indicator terminal  ['Array1D<DBL>', 'Array1D<DBL>']
+  PASS  V TransPos: constant #25632 value == [0.0, 0.0, '...']  {'value': '(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)', 'err': ''}
+  PASS  G RotPos: ONE new indicator terminal (sink) + ONE new ArrayConstant (source) on ONE new wire, both on #4866  ([{'term_uid': 35319, 'term_name': 'RotPos', 'is_source': False, 'wire_uid': 35334, 'owner_uid': 4866, 'owner_class': 'Diagram', 'frame_diagram': 4866, 'term_class': 'ControlTerminal'}], [{'term_uid': 25889, 'term_name': 'x,y,z array', 'is_source': True, 'wire_uid': 35334, 'owner_uid': 25898, 'owner_class': 'ArrayConstant', 'frame_diagram': 4866, 'term_class': 'Terminal'}])
+  PASS  P RotPos: panel object label exact, indicator, wired to that wire  [{'label': 'RotPos', 'indicator': True, 'uid': 35290, 'is_source': False, 'wire': 35334, 'term_err': 0, 'wire_err': 0}]
+  PASS  T RotPos: read_term_type canon == Array1D<DBL> on the constant and the indicator terminal  ['Array1D<DBL>', 'Array1D<DBL>']
+  PASS  V RotPos: constant #25898 value == [0.0, 0.0, '...']  {'value': '(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)', 'err': ''}
+  PASS  G FrameIdx: ONE new indicator terminal (sink) + ONE new ArrayConstant (source) on ONE new wire, both on #4866  ([{'term_uid': 27025, 'term_name': 'FrameIdx', 'is_source': False, 'wire_uid': 27075, 'owner_uid': 4866, 'owner_class': 'Diagram', 'frame_diagram': 4866, 'term_class': 'ControlTerminal'}], [{'term_uid': 26236, 'term_name': 'pos in cal image in', 'is_source': True, 'wire_uid': 27075, 'owner_uid': 26244, 'owner_class': 'ArrayConstant', 'frame_diagram': 4866, 'term_class': 'Terminal'}])
+  PASS  P FrameIdx: panel object label exact, indicator, wired to that wire  [{'label': 'FrameIdx', 'indicator': True, 'uid': 26841, 'is_source': False, 'wire': 27075, 'term_err': 0, 'wire_err': 0}]
+  PASS  T FrameIdx: read_term_type canon == Array1D<I32> on the constant and the indicator terminal  ['Array1D<I32>', 'Array1D<I32>']
+  PASS  V FrameIdx: constant #26244 value == [-1, -1, '...']  {'value': '(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1)', 'err': ''}
+  PASS  G Latest: ONE new indicator terminal (sink) + ONE new DigitalNumericConstant (source) on ONE new wire, both on #4866  ([{'term_uid': 35418, 'term_name': 'Latest', 'is_source': False, 'wire_uid': 35433, 'owner_uid': 4866, 'owner_class': 'Diagram', 'frame_diagram': 4866, 'term_class': 'ControlTerminal'}], [{'term_uid': 26494, 'term_name': '', 'is_source': True, 'wire_uid': 35433, 'owner_uid': 26495, 'owner_class': 'DigitalNumericConstant', 'frame_diagram': 4866, 'term_class': 'Terminal'}])
+  PASS  P Latest: panel object label exact, indicator, wired to that wire  [{'label': 'Latest', 'indicator': True, 'uid': 35404, 'is_source': False, 'wire': 35433, 'term_err': 0, 'wire_err': 0}]
+  PASS  T Latest: read_term_type canon == I32 on the constant and the indicator terminal  ['I32', 'I32']
+  PASS  V Latest: constant #26495 value == -1  {'value': '-1', 'err': ''}
+  PASS  F every new indicator and constant terminal reads frame_diagram == #4866 (FATAL; review c122-route-s0 (c))  [('ArrayConstant', 4866), ('Diagram', 4866), ('DigitalNumericConstant', 4866)]
+  FACT  CENSUS after P2b D1_ring_p2b_20261001_140658.vi: {'LoopTunnel': 139, 'Wire': 1942, 'WhileLoop': 6, 'Diagram': 174, 'SubVI': 98, 'Local': 12, 'ControlTerminal': 123, 'ArrayConstant': 21, 'DigitalNumericConstant': 186}
+  FACT  CENSUS DELTA {'LoopTunnel': 0, 'Wire': 5, 'WhileLoop': 0, 'Diagram': 0, 'SubVI': 0, 'Local': 0, 'ControlTerminal': 5, 'ArrayConstant': 4, 'DigitalNumericConstant': 5}
+  PASS  CEN2 class census == {'LoopTunnel': 0, 'Wire': 5, 'WhileLoop': 0, 'Diagram': 0, 'SubVI': 0, 'Local': 0, 'ControlTerminal': 5, 'ArrayConstant': 4, 'DigitalNumericConstant': 5}  {'LoopTunnel': 0, 'Wire': 5, 'WhileLoop': 0, 'Diagram': 0, 'SubVI': 0, 'Local': 0, 'ControlTerminal': 5, 'ArrayConstant': 4, 'DigitalNumericConstant': 5}
+  PASS  TD every base terminal keeps its wire; rows added == the 10 new (5 constants + 5 indicators)  {'changed': [], 'lost_rows': [], 'added': 10}
+  PASS  FU the set of frame diagrams is unchanged
+  FACT  ExecState [after all rows (ExecState 0 expected: the P2a bed is broken by design)] D1_ring_p2b_20261001_140658.vi = 0
+  PASS  PB frame-keyed cdiff(S1, real end) == the P2a bed's 16 rows and the plan's 11 open (node, term) pairs (FATAL, before save)  {'extra': [], 'missing': []}
+  FACT  PH handles: post-open 45633 -> before-save 45994
+  PASS  HB open->save handle growth <= +700 (PD236(b) band; refs balance is H5)  (45633, 45994)
+
+---------- [SAVE] D1_ring_p2b_20261001_140658.vi
+  FACT  ExecState [before the save] D1_ring_p2b_20261001_140658.vi = 0
+  FACT  SAVE ROUTE = gui_save, the APPROVED broken-intermediate route (CLAUDE.md split-rule 6; evidence "user 2026-09-22 broken-intermediate save"). The artefact is BROKEN BY DESIGN and is NEVER RUN (34(f)).
+  PASS  S1 the save returned without raising (gui_save route)
+  FACT  SAVED ARTEFACT: D1_ring_p2b_20261001_140658.vi md5 652b1447ebbda761a7d5ba36455a0fa1 size 310515 B; version bytes [0, 38]
+  PASS  S2 the artefact is on disk and non-empty  310515 B
+  FACT  S3 COLD re-open check SKIPPED BY RULE: ExecState was 0, and a broken-saved VI is never cold-loaded headless (recompile spin).
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  652b1447ebbda761a7d5ba36455a0fa1
+
+---------- [H] HYGIENE
+  FACT  gscript ref_counts: {'opened': 7, 'closed': 7, 'live': 0, 'cached_op_vis': 0}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 7, 'closed': 7, 'live': 0, 'cached_op_vis': 0}
+  FACT  LabVIEW handle count AFTER the work: 34123
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before c22a473f26ebcc67296d1c2441f8a47a / after c22a473f26ebcc67296d1c2441f8a47a
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: ['D1_ring_p2b_20261001_140658.vi']  (removed: [])
+  PASS  H6 the files left on disk == ['D1_ring_p2b_20261001_140658.vi'] and nothing was removed  added ['D1_ring_p2b_20261001_140658.vi'] removed []
+  FACT  LabVIEW handle count at exit: 34123
+
+====================================================================================================
+=== GATES: 41 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\stage_d1_ring_p2b.json   elapsed 445.9 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":41,"fail":0},"first_fail":null,"artefacts":[{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p2b_20261001_140658.vi","md5":"652b1447ebbda761a7d5ba36455a0fa1"}]}
+LabVIEW gone at exit: True
+BGRUN END rc=0 after 451s

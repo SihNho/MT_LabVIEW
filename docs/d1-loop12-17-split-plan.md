@@ -2392,6 +2392,141 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
      - **(c) Repeated class noted for the retrospective:** an FS-frame owner read under a strict check failed twice (cycle 120
        F1a, 122-5 S0) — review `archive/peer/2026-10-01-c122-route-s0.md:90`. PD244(b) is the rule; the slug is the
        retrospective's to assign.
+246. **(cycle 123 judgement, 2026-10-01 — after 123-1 PASS 7/0 and 123-2 BLOCKED 19/0)**
+     USER-RULES: U1, U4, U6, U9, U13 (relied on; none contradicted).
+     - **(a) P2b DELIVERED — the new bed: `claudeDev\D1_ring_p2b_20261001_140658.vi`, md5 `652b1447ebbda761a7d5ba36455a0fa1`.**
+       ONE launch 41/0 (`stage_d1_ring_p2b.log`): 5 labels, types and values == PD240(a)/(b), all on `#4866`, 5 new wires, none
+       lost, CEN2 DigitalNumericConstant +5 == the corrected prediction (PD245(b′)), cdiff 16. Error List 54 == the scratch pin
+       (0 new); expected file `tools/bench/errorlist_expected_D1_ring_p2b_20261001_140658.json` (md5 `85b05c69…`) reverdicts
+       OK. Handles open→save +361 (band ≤ 700), refs 7/7. STRUCTURAL, `ExecState` 0 by design, never run. Broken-intermediate
+       count (CLAUDE.md "AT MOST 6"): **1 of 6**. `current-bed:` moves to it; the P2a bed is kept as its input.
+     - **(b) PD242(c)'s OPEN is CLOSED — no pixel conversion.** The Image Type inputs of `IMAQ Create #20436` (Ring `#20327`),
+       `#13938` (Ring `#13245`) and the pool's `#23099` in For `#23093` (Ring `#26846`) all read value 0, representation code 6
+       (`tools/bench/facts_c123_imgtype.json`, `diag_c123_imgtype.log`, 16/0). A ring passes its NUMBER to IMAQ Create, so all
+       three create the same image type, and `IMAQ Copy` from `#6810` Image Out into a pool slot copies pixels unchanged (U1).
+       The ring's item text is not needed.
+     - **(c) P3's open design choices (card 123-2's ASSUMPTIONS, `tools/bench/ring_p3_steps.md`) are DECIDED:**
+       - **A1 → a Flat Sequence of 3 frames inside the new-frame case:** [`Num(i) = −1`] → [`IMAQ Copy` + `TransPos`/`RotPos`/
+         `FrameIdx` at i] → [`Num(i) = BufNum`, `Latest = BufNum`]. `Latest` unordered with `Num(i) = BufNum` inside frame 3 is
+         accepted: a reader that sees `Latest` first finds that slot still −1 (or old) and looks again after its 1 ms wait — a
+         delay, never a mismatched pair (U9). REJECTED: `Value` property nodes chained by error (they run in the UI thread and
+         can stall the camera loop, U6; PD238(d) names locals); a slot-write subVI (it cannot write the caller's locals; by
+         reference it becomes the property-node form).
+       - **A2 → local read → `Replace Array Subset` → local write**, the indicator's value is the master copy (one writer, loop
+         1.1, U4). Frame 3 may reuse frame 1's `Num` array through a sequence tunnel instead of a second local read — the same
+         value; the plan takes the form with fewer rows.
+       - **A3 → both new shift registers on While `#637`, initialised at loop start from constants on FS1 frame `686`:**
+         previous-BufNum = −1 in BufNum's own representation (4294967295 if it is U32; never a real first buffer number, so
+         buffer 0 is never skipped as a duplicate); new-frame counter = 0. REJECTED: uninitialised registers (a first BufNum
+         of 0 would be skipped, and the last run's value carries into the next run — the OPEN-58 (2) class). Needs the
+         SR-initialisation route, which is MISSING → built in (e).
+       - **A4 → `Equal?`** (8 donors in the bed): True = duplicate (empty frame), False = new frame. No `Not Equal?` donor.
+       - **A5 → the counter increments inside the new-frame (False) frame**, the True frame passes it through; `i = count mod
+         20` is computed in the False frame from the register's LEFT value (the first new frame goes to slot 0). The
+         previous-BufNum register's right terminal takes BufNum directly, outside the case.
+     - **(d) P3 = two steps:** P3a = loop-1.1 control (`Wait (ms)` 1 with no data dependency on the frame path, the two
+       registers and their initial values, `Equal?`, the case, the counter, `Quotient & Remainder` mod 20) ≈ 24 rows →
+       `claudeDev\D1_ring_p3a_<ts>.vi`; P3b = the slot writes (flat sequence, the five array writes and `Latest`, `IMAQ Copy`,
+       `Index Array`, the For `#23093` exit) ≈ 50 rows → `claudeDev\D1_ring_p3b_<ts>.vi`. **The broken-file cap and the
+       rows-per-step rule cannot both hold** for P3 + P4 + P5 (≈ 170 rows, 5 files left before P6's run) → user decision
+       **D-2026-10-01-01**. P3a fits ≤ 25 rows under every option, so it proceeds; only P3b's size waits for the answer.
+       If P3b is launch-ready with no answer, it proceeds under the recommended option (one step, a full scratch run first).
+     - **(e) Tools (2026-09-24 tools rule: they unblock P3a/P3b, and P4 needs both again — `last` in a 1.2 shift register,
+       and the n1 → track → n2 order of local reads):** card 123-3 (LabVIEW, scratch only) builds the SR-initialisation
+       route (a constant on the loop's owner diagram wired to the left register's outer face) and MEASURES `case_in` into a
+       While body, the `$work` node donor for `Equal?`/`Increment`/`Quotient & Remainder`, and the For-loop output tunnel
+       made by route `nested` (indexing mode read back). Card 123-4 (offline, beside it) builds the census device's core in
+       NEW files only (`docs/violation-decisions.md`, inference-over-measurement 2026-10-01 13:56). Card 123-5 (LabVIEW,
+       after 123-3) builds the Flat Sequence creator (N frames on a given diagram, including a case frame inside a While
+       body) and hooks the census device into `stage_prerun --prerun` and stagekit's dry census line. P3a's plan follows
+       in the next cycle on the real P2b graph.
+247. **(cycle 123 judgement, 2026-10-01 — after 123-3 PASS 6/0 and 123-4 PASS 14/0)**
+     USER-RULES: U1 (relied on; tooling and representation only, none contradicted).
+     - **(a) The SR-initialisation route is ACCEPTED** (`result_123-3.json`): `gscript.sr_init_const` / `wire_const_sr` /
+       `loop_face_index` and the stagexec route `const_sr`, on EXISTING ops (`OpPrimCopyNested_v0`, `OpConstWire_v1`), so no
+       hygiene record is owed; self-test `selftest_sr_init_c123.log` 10/0, stagexec self-test 124/0. Scratch: a register on
+       `#637` initialised from I32 −1 and from U32 4294967295 constants on `#686`, value/type/wire read back
+       (`diag_c123_routes.log:40,51`). Measured per call: DigitalNumericConstant +1, Terminal +1, Wire +1. Donor
+       `claudeDev\DonorSRInit_v0.vi` md5 `8b1a5afe…` (U32 4294967295 `#134`, U32 0 `#156`, I32 0 `#248`); I32 −1 stays
+       `DonorRingConst_v0` `#249`.
+     - **(b) Measured routes (`diag_c123_routes.log:55,76`):** `$work` donors — `Equal?` = Comparison {`x = y?`, `y`, `x`};
+       `Increment` = Function {`x+1`, `x`}; `Quotient & Remainder` = Function {`floor(x/y)`, `x-y*floor(x/y)`, `y`, `x`}. The
+       For exit by route `nested` from `#23099` New Image gives For output tunnel `#27423` with IndexMode 1 (indexing), a
+       tunnel on `#637` and FS outer tunnels `#681`/`#12938`; the sink receives `Array1D<IMAQ Image>`. P3b's For exit needs
+       no indexing fix.
+     - **(c) `case_in` is NOT usable for P3a:** its selector is a front-panel control found by label; a body terminal
+       (`'Auto-Focus'`) raised a modal dialog (`diag_c123_routes.log:78`). Card 123-5 builds a case creator whose selector is
+       wired from a node's output terminal (`Equal?`'s `x = y?`).
+     - **(d) The new-frame counter is I32, initial 0** (`DonorSRInit_v0` `#248`): it feeds `Quotient & Remainder` and the
+       I32 index inputs of `Index Array` / `Replace Array Subset` with no coercion; I32 lasts 165 days at 150 Hz. The
+       previous-BufNum register follows BufNum's own representation (246(c) A3), read by `read_term_type` on `t6897`.
+     - **(e) Census device (`result_123-4.json`):** the per-row split is ACCEPTED (const donor, array value {ArrayConstant
+       +1, DigitalNumericConstant +1}, scalar {DigitalNumericConstant +1}; `OpConstInd_v0` {ControlTerminal +1, Wire +1});
+       the sum is the measured total. **Hook-in rule for card 123-5:** a derived ≠ declared class count is a prerun FAIL; a
+       `CENSUS-UNPREDICTED` row is advisory in the prerun but makes `--scratch-required` exit 3 (an unmeasured census cannot
+       skip the run that measures it); the scratch run's measured census is recorded as a sample before the ONE launch.
+       stagekit's dry-mode census line prints `UNVERIFIED-DRY`, for new recipes; existing recipes are not edited.
+248. **(cycle 123 judgement, 2026-10-01 — after 123-5 FAIL 12/1 and 123-6 PASS 5/0)**
+     USER-RULES: U1 (relied on; tooling only, none contradicted).
+     - **(a) The wired-selector case creator WORKS on existing ops** (`gscript.struct_copy_nested` + `case_wired`, donor
+       `claudeDev\DonorCase_v0.vi` md5 `df825c18…`): case `#26771` on `#639`, frames False `#27206` / True `#27229`, selector
+       wired to `Equal?`'s `x = y?` (wire 27314), wire delta 1 (`diag_c123_struct.log:43-44`). NOT yet plan-usable: it leaves
+       an unpurged `Invoke` (census Invoke +1) and has no stagexec route, stagesim model or self-test.
+     - **(b) S1a's FAIL is a gate premise:** a wire COUNT was used for a branch onto an existing net, and a branch adds a sink
+       to the existing Wire object. The gate for a branch is the plan's own form (`:1116` — `Is Broken?` False and the
+       existing wire's sink count +1); review `archive/peer/2026-10-01-c123-5-s1a-branch.md`, ACCEPTED. The branch is
+       UNPROVEN until the discriminating read: `Equal?`'s `x` wire uid == 3747, `#639` terminals on w3747 +1, and `tidx`
+       raising instead of its silent index-0 fallback (`tools/bench/diag_c123_struct.py:35`).
+     - **(c) Flat Sequence creator: no donor, no frame-add op, no `Diagrams[]` reader** (`diag_c123_struct.log:47`). DECIDED:
+       build it as a NEW op (a frame-add method or a scripting library's Create Sequence, plus a `FlatSequence.Diagrams[]`
+       reader for frame order) with its hygiene record, in its own LabVIEW card. P3b and P4 need it (246(c) A1); P3a does
+       not, so P3a goes first.
+     - **(d) Card 123-7 (this cycle):** the discriminating read, the `Invoke` purge, `tidx` raising, and the stagexec route,
+       stagesim model, census samples and self-test for `case_wired`; then the census hook-in as `brief_123-5.md` STEP 3 and
+       247(e).
+     - **(e) STATUS.md is 95 lines** (card 123-6; history VERBATIM in `archive/2026-10-01-status-cycle123-relocate.md`).
+       `docs/d1-build-plan.md` keeps `status: current` with §9 marked superseded (doc_lint L5 warning; not on the delivery
+       path).
+249. **(cycle 123 judgement, 2026-10-01 — after 123-7 PASS 7/0 and 123-8 FAIL 1/1)**
+     USER-RULES: U1 (relied on; tooling only, none contradicted).
+     - **(a) 123-7 ACCEPTED — `case_wired` can be used in plans:** the branch onto w3747 is PROVEN (`x` wire 3747, terminals
+       6 → 7, `Is Broken?` False; `diag_c123_wired.log:51,80`); the junk `Invoke` is purged; `term_index` raises on an unknown
+       name; stagexec route `case_wired`, stagesim model `_create_case_wired` (frames False/True), census sample
+       `case_wired/new_wire`. Self-tests: case_wired 14/0, census hook-in 12/0, census_predict 14/0, launch_gate 29/0, stagexec
+       124/0, sr_init 10/0, c120_routes 29/0. **The census device of the 2026-10-01 13:56 decision is BUILT and in force:**
+       `stage_prerun --prerun` line X15 (FAIL on derived ≠ declared; `CENSUS-UNPREDICTED` advisory plus `--scratch-required`
+       exit 3); stagekit `census_gate` prints `UNVERIFIED-DRY`; P2b's own prerun with X15: CENSUS PASS, 14/0. The branch
+       variant of `case_wired` has no census sample (P3a does not use it).
+     - **(b) 123-8 measured the real P2b graph** (`tools/bench/graph_ring_p2b_20261001_154542.json`, md5 `69b23e08…`, 5,826
+       rows): **BufNum `t6897` is I32**, so the previous-BufNum register starts from `DonorRingConst_v0` `#249` (I32 −1). Real
+       indicator terminals on `#4866`: `Num` t35255, `TransPos` t35215, `RotPos` t35319, `FrameIdx` t27025, `Latest` t35418.
+       The P3a plan input `tools/bench/plan_ring_p3a_in.json` (25 actions) exists.
+     - **(c) 123-8's FAIL is a tool gap, not a design fault:** the plan format cannot address a case tunnel's face in the
+       non-body frame — stagesim keeps only the body frame's inner face of a plan-made case tunnel (`stagesim.py:358-362`),
+       stagexec sends a wire from a created tunnel to kind `branch` (`stagexec.py:473-474`), and case data-tunnel creation is
+       itself unmeasured in stagesim (`stagesim.py:812-820`). **DECIDED: A5 stays** (count incremented in the new-frame
+       frame, passed through in the duplicate frame) **and the tool is built** — P4 needs the same (its `last` register is
+       updated in one frame and passed through in the other). Changing A5 instead needs a `Boolean To (0,1)` or `Select`
+       donor, which does not exist, so it is not cheaper.
+     - **(d) Cycle 124's first card (LabVIEW tooling):** a `frame` selector on case-tunnel faces in stageplan/stagesim/
+       stagexec, and a scratch run on a P2b byte copy that MEASURES case data tunnels — an input and an output tunnel on a
+       `case_wired` case, the False frame wired through `Increment`, the True frame wired input → output — read back per
+       frame (tunnel uids, wires, `Is Broken?` False), with an opmodel/census sample and self-tests. Then P3a resumes from
+       `plan_ring_p3a_in.json` (only action 20's addressing changes): FINAL plan, census and Error List predictions, recipe,
+       dry + prerun + prior-art, scratch run, ONE launch.
+     - **(e) SUPERSEDED by (f):** the tool card was first held back from the session's last 55 minutes (a stagesim/stagexec
+       edit killed by the 180-minute cap could be left half-done), then dispatched as 123-9 under a hard 16:35 return limit
+       and with code edits only after its measurement passed, because this cycle's cards had measured 11–23 minutes.
+     - **(f) 123-9 FAIL 13/1 (`diag_c123_casetun.log`) — measured, nothing half-changed (S2 not started):** an INPUT tunnel
+       made by `connect_nested_v1` into a `case_wired` case = SelectorTunnel +1, OuterTerminal +1, InnerTerminal +2 (one per
+       frame); an OUTPUT tunnel likewise, plus one junk `Invoke`; `Is Broken?` False on both new wires (`:38,45,46-62`). The
+       case's `Terminals[]` lists only the selector and the two OUTER faces (`:69`), and no existing verb reaches a
+       SelectorTunnel's inner face in a given frame, so the True-frame input → output wire could not be made (`:70`). Three
+       junk `Invoke`s come from cross-border `connect_nested_v1` / `connect_from_wire` (`:71`). **DECIDED: build a NEW op
+       that returns a tunnel's inner terminal for a given frame and wires inner → inner in that frame** (hygiene record
+       ≥ 2,000 calls), then the `frame` field of (d); the two connect verbs get the same `Invoke` purge as `case_wired`. A5 is
+       NOT redesigned: counting outside the case (`count + coerce(BufNum − prev, 0, 1)`) avoids the op but adds ~8 rows to
+       P3a, and P4's `last` register needs the pass-through anyway.
 
 ## OPEN (design choices — for judgement; not decided here)
 

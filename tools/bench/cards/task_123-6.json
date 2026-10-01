@@ -1,0 +1,53 @@
+{
+ "schema": "task/1",
+ "id": "123-6",
+ "kind": "doc",
+ "goal": "STATUS.md back to one screen: relocate history VERBATIM to archive/2026-10-01-status-cycle123-relocate.md, keep live markers/lock/hardware/OPEN/NEXT; mark d1-build-plan.md section 9 superseded",
+ "why": "Owed since retrospective-cycle121 (ACCEPTED); STATUS.md is ~600 lines against CLAUDE.md rule 4's ~100, and every session pays for it. Steps: brief_123-6.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_123-6.md"},
+  {"path": "STATUS.md", "md5": "96896ee05375ee1d4325b79efe60c8b1"},
+  {"path": "docs/d1-build-plan.md", "md5": "3edaabf39519c54b4b911cea7c1e618e"},
+  {"path": "CLAUDE.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/doc_lint.py"}
+ ],
+ "pass": [
+  "archive/2026-10-01-status-cycle123-relocate.md holds every relocated line verbatim, in order (line-multiset check PASS)",
+  "STATUS.md <= ~120 lines; live markers, labview-lock block, HARDWARE section with rig-state line, OPEN, NEXT kept",
+  "current-bed: line + its comment and the bed paragraph unchanged; no line begins with STOP unless the user wrote it",
+  "docs/d1-build-plan.md section 9 carries one superseded marker; nothing else changed there",
+  "doc_lint error/warning counts before and after reported; no new error"
+ ],
+ "outputs": [
+  "STATUS.md",
+  "archive/2026-10-01-status-cycle123-relocate.md",
+  "docs/d1-build-plan.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "STATUS.md",
+   "archive/2026-10-01-status-cycle123-relocate.md",
+   "docs/d1-build-plan.md",
+   "tools/bench/doc_lint_c123*"
+  ],
+  "status_edit": true,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 40
+ },
+ "rules": [
+  "Follow brief_123-6.md; relocate, never reword or delete",
+  "Re-read STATUS.md right before writing; keep any user/chat edit made meanwhile",
+  "No LabVIEW, GUI, hardware or code edits"
+ ],
+ "unblocks": "M4"
+}

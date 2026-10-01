@@ -563,6 +563,7 @@ judgement call this plan does not take.** D1 proceeds under §11a.1's written as
 overturned, only the kernel subVI is swapped.
 
 ## 9. Queues, names and types (from the proven core, not invented)
+⚠️ **SUPERSEDED 2026-10-01 (card 123-6)** by `docs/ring-buffer-design.md` and `docs/d1-loop12-17-split-plan.md` Pre-decided 238 — for the Q_free/Q_work pool queues only.
 
 `stage2-assembly-step-c.md:21-26` — **no composite elements**; each direction is lock-stepped queues written by one
 producer in one iteration, error-chained so a partial set cannot be published.

@@ -1817,6 +1817,68 @@ def x5_count(verbs, rows, spc, stop_after=None, from_step=None):
         dict(sorted(dgot.items())), dict(sorted(dwant.items())))
 
 
+# card 123-7 (PD247(e), brief_123-5.md STEP 3): the CENSUS hook-in. tools/census_predict.py derives each stageplan row's
+# class delta from measured samples (tools/bench/census_samples.json) and compares the sum with the `census` block of the
+# plan's prediction file `<plan>_pred.json`. derived != declared -> prerun FAIL (one line: class, derived, declared);
+# CENSUS-UNPREDICTED -> an ADVISORY line, prerun verdict unchanged, but --scratch-required exits 3 (an unmeasured census cannot
+# skip the scratch run that measures it). No prediction file / no census block -> INFO only.
+def census_check(plan_path, pred_path=None, samples_path=None):
+    """-> None (no prediction file beside the plan) or {'plan', 'pred', 'overall', 'fails': [(cls, derived, declared)],
+    'unpredicted': [rows], 'rep'}."""
+    import census_predict as CP
+    pred_path = pred_path or (plan_path[:-5] + "_pred.json" if plan_path.endswith(".json") else None)
+    if not pred_path or not os.path.isfile(pred_path):
+        return None
+    with open(plan_path, encoding="utf-8") as f:
+        plan = json.load(f)
+    with open(pred_path, encoding="utf-8") as f:
+        pred = json.load(f)
+    with open(samples_path or CP.DEFAULT_SAMPLES, encoding="utf-8") as f:
+        samples = json.load(f)
+    rep = CP.predict(plan, pred, samples)
+    return {"plan": rel(plan_path), "pred": rel(pred_path), "overall": rep["overall"], "rep": rep,
+            "fails": [(p["class"], p["derived"], p["declared"]) for p in rep["classes"] if p["verdict"] == "FAIL"],
+            "unpredicted": rep["unpredicted"]}
+
+
+def census_gate(plan_paths, pred_override=None, samples_path=None, out=print):
+    """(ok, detail, lines). ok False only on a derived != declared class (CENSUS FAIL). Prints one line per plan:
+    'CENSUS FAIL <plan> <class> derived +d declared +x' / 'ADVISORY CENSUS-UNPREDICTED <plan> rows [..]' / 'INFO ...'."""
+    ok, det, lines = True, [], []
+    for p in plan_paths:
+        c = census_check(p, (pred_override or {}).get(p), samples_path)
+        if c is None:
+            lines.append("INFO  CENSUS no prediction file beside {0}".format(rel(p)))
+        elif c["overall"] == "FAIL":
+            ok = False
+            for cls, d, x in c["fails"]:
+                lines.append("CENSUS FAIL {0} {1} derived {2:+d} declared {3:+d}".format(c["plan"], cls, d, x))
+            det.append({"plan": c["plan"], "fails": c["fails"]})
+        elif c["overall"] == "UNPREDICTED":
+            lines.append("ADVISORY CENSUS-UNPREDICTED {0} rows {1} (prerun verdict unchanged; --scratch-required exits 3)".format(
+                c["plan"], c["unpredicted"] or "[classes never measured]"))
+        else:
+            lines.append("INFO  CENSUS {0} {1} ({2})".format(c["overall"], c["plan"], c["pred"]))
+    for ln in lines:
+        out("  " + ln)
+    return ok, det or "no derived != declared class", lines
+
+
+def census_unpredicted(recipe):
+    """card 123-7: the stageplans a recipe names whose census is CENSUS-UNPREDICTED (for --scratch-required)."""
+    try:
+        plans, _named = plan_files(recipe)
+    except Exception:                                                           # noqa: BLE001
+        return []
+    out = []
+    for p in plans:
+        if is_stageplan(p):
+            c = census_check(p)
+            if c is not None and c["overall"] == "UNPREDICTED":
+                out.append("{0} rows {1}".format(c["plan"], c["unpredicted"]))
+    return out
+
+
 def prerun(recipe, graph=None, stop_after=None, from_step=None):
     """card 103-2 (PD216(b)): stop_after=k (the recipe's own `--stop-after k`, PART-A mode) makes X5 expect only the
     stageplan wiring real ops 1..k - exactly the ops the run dispatches; the wire-action COVERAGE check stays over the
@@ -1875,6 +1937,11 @@ def prerun(recipe, graph=None, stop_after=None, from_step=None):
     gate("X13 opmodel conformance: every recorded sample of the plan ops' model files replays in stagesim", x13_ok, x13_det)
     for w_ in x13_w:
         print("  WARN  {0}".format(w_), flush=True)
+    # card 123-7 (PD247(e)): the census of every stageplan that carries a prediction file; a gate only when one does
+    cen_plans = [p for p in sps if census_check(p) is not None]
+    if cen_plans:
+        c_ok, c_det, _c_lines = census_gate(cen_plans, out=lambda s_: print(s_, flush=True))
+        gate("X15 census: no class with derived != declared (tools/census_predict.py over census_samples.json)", c_ok, c_det)
     bad = []
     if OG is None:
         gate("X4 every end addressable offline", False, "no graph JSON for input md5 {0}".format(tr["input_md5"]))
@@ -2885,6 +2952,9 @@ def scratch_requirement(recipe, runs=None, recs=None, now=None):
     s = os.path.abspath(recipe)
     if not STAGE_RE.search(s):
         return True, "not a tools/recipes/stage_*.py recipe - the scratch rule is unchanged", []
+    cu = census_unpredicted(s)                       # card 123-7 (PD247(e)): an unmeasured census needs the scratch run
+    if cu:
+        return True, "CENSUS-UNPREDICTED {0} - the scratch run measures the census before the ONE launch".format("; ".join(cu)), []
     key = unit_key(s)
     fails = [ts for ts, failed, _fn in stage_run_segments(key, now) if failed]
     if fails:
@@ -3091,6 +3161,10 @@ def main(argv=None):
             g_ = g_ + [("X13 opmodel conformance (card 115-1)", x13_ok, json.dumps(x13_det, default=str)[:600])]
             print("  {0}  {1}  {2}".format("PASS" if x13_ok else "FAIL", g_[-1][0], g_[-1][2][:400]), flush=True)
             ok = ok and not cpl and not bao and x13_ok
+            if census_check(recipe) is not None:            # card 123-7 (PD247(e)): census FAIL fails the prerun
+                c_ok, c_det, _cl = census_gate([recipe], out=lambda s_: print(s_, flush=True))
+                g_ = g_ + [("X15 census derived == declared (card 123-7)", c_ok, json.dumps(c_det, default=str)[:600])]
+                ok = ok and c_ok
             # card chat-P1 item 4: X14 rows-per-step ADVISORY on the plan's own actions (never a gate)
             x14_advisory(recipe, len(json.load(open(recipe, encoding="utf-8")).get("actions") or []))
             st = "PASS" if ok else "FAIL"

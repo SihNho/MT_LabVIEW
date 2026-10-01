@@ -216,6 +216,10 @@ CREATE_ROUTES = {
     "case": "gscript.case_in (build_case on the top level, selector from panel control `label`, OpMoveIn_v0 into the loop "
             "body - the move severs the selector wire; owner + frames read back by case_frames, gscript.py:3479-3543); "
             "the selector is wired by a later plain `wire` to new:<selector_as>.outer",
+    # card 123-7 (PD248(d)): a case whose selector is wired IN THE SAME ACT from `src` (a node output on the same diagram)
+    "case_wired": "gscript.case_wired (struct_copy_nested OpPrimCopyNested_v0 of DonorCase_v0 #742 + connect_nested_v1 "
+                  "selector <- src + case_frames + junk-Invoke purge); frames False/True; measured census CaseStructure 1, "
+                  "Diagram 2, Tunnel 1, OuterTerminal 1, InnerTerminal 2, Wire 1 (0 on a branch) - diag_c123_wired.log",
 }
 ROUTE_VERBS = {
     "while": [("gscript", "loop_in")], "for": [("gscript", "loop_in")],
@@ -231,6 +235,7 @@ ROUTE_VERBS = {
     "queue": [("gscript", "queue_node")],
     "subvi": [("gscript", "drop_subvi")],
     "case": [("gscript", "case_in"), ("gscript", "case_frames")],          # card 120-3 R2
+    "case_wired": [("gscript", "case_wired"), ("gscript", "struct_copy_nested"), ("gscript", "case_frames")],   # card 123-7
     "gate": [("gscript", "read_bool_const")],
     "stop": [("file", "tools/bench/opstopfromnode_labels.json")],
 }
@@ -311,6 +316,11 @@ def create_route(a):
         return "control"
     if c == "CaseStructure" and a.get("donor_uid") is None and not a.get("prim"):
         # card 120-3 R2: a NEW case in a loop body (gscript.case_in); a copied case (donor_uid) keeps the copy_in route
+        if a.get("src") is not None and not a.get("label"):     # card 123-7: selector wired from `src` (gscript.case_wired)
+            if not a.get("as") or not a.get("selector_as"):
+                raise ExecStop("create case_wired needs `as`, `selector_as` (the selector's alias) and `src` (a node output "
+                               "on the same diagram)")
+            return "case_wired"
         if not a.get("as") or not a.get("selector_as") or not a.get("label"):
             raise ExecStop("create case needs `as`, `selector_as` (the selector's alias) and `label` (the top-level panel "
                            "control case_in wires to the selector)")
@@ -929,6 +939,22 @@ def connect_route(addr, real, src, dst, loop_of):
                            "among its node's sink terminals (wire_control is name-addressed)".format(src, dst, nm))
         info.update(ctl_label=rs["term_name"], ctl_didx=c["didx"], dst_name=nm)
         return "ctl", rs, rd, info
+    if is_const(rs) and rd["owner_class"] == "LeftShiftRegister" and rd["term_class"] == "OuterTerminal":
+        # card 123-3 S2 (PD246(c) A3/(e)): SHIFT-REGISTER INITIALISATION = a bare constant on the loop's OWNER diagram ->
+        # the LEFT register's OUTER face. The face is addressed like any register face (Addr._triple: the loop is the node,
+        # the face its Terminals[] entry by uid echo); gscript.wire_const (OpConstWire_v1) then indexes the LOOP by its
+        # class traverse (a loop is a Node, so TMSC(Node) -> Node.Terminals[] reaches the face). Same op, no new op VI.
+        loop = int((loop_of or {}).get(rd["owner_uid"]) or 0)
+        ocls = sorted(set(v[0] for v in (addr.owners or {}).values() if int(v[1] or 0) == loop))
+        if not loop or len(ocls) != 1 or ocls[0] not in ("WhileLoop", "ForLoop"):
+            raise ExecStop("CONNECT-NO-VERB: const_sr: register #{0}'s loop #{1} has class(es) {2} in the owner map".format(
+                rd["owner_uid"], loop, ocls))
+        if int(rs["frame_diagram"] or 0) != int(rd["frame_diagram"] or 0):
+            raise ExecStop("CONNECT-NO-VERB: const_sr: constant on diagram #{0}, register outer face on #{1} (place the "
+                           "constant on the loop's owner diagram)".format(rs["frame_diagram"], rd["frame_diagram"]))
+        c, hc = addr.const(real, src)
+        info.update(const=c, const_how=hc, dst_term=dt[2], loop=loop, loop_cls=ocls[0])
+        return "const_sr", rs, rd, info
     if is_const(rs):                                       # PD188(c), card 85-1: gscript.wire_const (OpConstWire_v1)
         if rd["owner_class"] in FACE_ROUTED or rd["owner_class"] in SR_CLS or rd["owner_class"] == FSIT_CLS \
                 or V.node_of(rd) != rd["owner_uid"]:
@@ -1774,7 +1800,7 @@ class Executor(object):
         """A created LOOP owns no terminal row: bind its object and its body diagram from the uids the op returned
         (res 'uid', 'body'); a missing or non-positive return STOPS (the body could not be addressed)."""
         a = self.plan["actions"][op["acts"][0] - 1]
-        if op["route"] == "case":
+        if op["route"] in ("case", "case_wired"):                 # card 123-7: case_wired binds the same way
             # card 120-3 R2: the case object and each FRAME diagram from the op's return (res 'uid', 'frames' in the plan's
             # `frames` order); the selector's faces are bound by bind_case_faces (by frame) right after
             su = after["sym"]["new:" + a["as"]]
@@ -1811,6 +1837,8 @@ class Executor(object):
         if a.get("donor_uid") is not None:
             out["donor_uid"] = int(a["donor_uid"])
         if a.get("queue_kind") and a.get("src") is not None:          # card 118-1: the queue node's type/refnum source
+            out["src"] = self.real_term(prev, prev, a["src"], True)
+        if a.get("class") == "CaseStructure" and a.get("src") is not None and not a.get("label"):   # card 123-7: case_wired
             out["src"] = self.real_term(prev, prev, a["src"], True)
         return out
 
@@ -2023,6 +2051,23 @@ class LVBackend(object):
             out = self._done(rec, "connect #{0}->#{1}".format(src, dst))
             out["how"] = ["ctl", info["src_ct"], hd]
             return out
+        if kind == "const_sr":                             # card 123-3 S2: gscript.wire_const_sr (OpConstWire_v1, loop sink)
+            c = info["const"]
+            si = self.s.uid_index(c["cls"], c["const"])
+            li = self.s.uid_index(info["loop_cls"], info["loop"])
+            if si is None or li is None:
+                raise ExecStop("const_sr: {0} #{1} -> {2} #{3} not in their class traverses ({4}, {5})".format(
+                    c["cls"], c["const"], info["loop_cls"], info["loop"], si, li))
+            rec = self.s._op("wire_const_sr", lambda: self.g.wire_const_sr(self.s.work, c["cls"], si, info["loop_cls"], li,
+                                                                           dt[2]),
+                             "{0}[{1}] #{2} -> {3}[{4}] #{5}.t{6} (L register #{7} outer)".format(
+                                 c["cls"], si, c["const"], info["loop_cls"], li, info["loop"], dt[2], rd["owner_uid"]))
+            res = rec.get("result")
+            if isinstance(res, (list, tuple)) and len(res) > 1 and res[1]:
+                rec["err"] = rec.get("err") or res[1]
+            out = self._done(rec, "connect #{0}->#{1}".format(src, dst))
+            out["how"] = ["const_sr", info["const_how"], hd]
+            return out
         if kind == "const":                                # card 85-1: OpConstWire_v1 (tools/recipes/build_opconstwire_v1.py)
             c = info["const"]
             si = self.s.uid_index(c["cls"], c["const"])
@@ -2180,6 +2225,31 @@ class LVBackend(object):
                 raise ExecStop("{0}: {1} new LoopTunnel(s) {2}, expected {3} (src {4})".format(tag, len(nt), nt, 1 if cross else 0,
                                                                                              "on the parent" if cross else "same diagram"))
             out.update(uid=int(new[0]), how=CREATE_ROUTES[route], auto_tunnel=(nt[0] if nt else None))
+            return out
+        if route == "case_wired":                             # card 123-7: gscript.case_wired (selector <- src, same act)
+            names = list(a.get("frames") or SS.CASE_FRAMES_DEFAULT)
+            rs = next(r for r in real if r["term_uid"] == args["src"])
+            if int(rs["frame_diagram"] or 0) != int(dg) or not rs["is_source"]:
+                raise ExecStop("{0}: src #{1} is on diagram #{2} (source={3}), case on #{4} - case_wired needs a node OUTPUT on "
+                               "the same diagram".format(tag, args["src"], rs["frame_diagram"], rs["is_source"], dg))
+            node = V.node_of(rs)
+            t0 = set(int(u) for u in g.uids(W, "Tunnel"))
+            rec = s._op("case_wired", lambda: g.case_wired(W, dg, node, rs["term_name"], pos),
+                        "selector <- #{0}.{1!r} on Diagram #{2}".format(node, rs["term_name"], dg))
+            res = rec.get("result") or {}
+            out = self._done(rec, tag)
+            byname = dict(zip([str(x) for x in res.get("names") or []], res.get("frames") or []))
+            if sorted(byname) != sorted(names) or len(res.get("frames") or []) != len(names):
+                raise ExecStop("{0}: frame names read back {1} (frames {2}), asked {3}".format(tag, res.get("names"), res.get("frames"), names))
+            if res.get("invoke_left"):
+                raise ExecStop("{0}: {1} junk Invoke(s) left after case_wired's purge".format(tag, res["invoke_left"]))
+            if not res.get("selector_wire") or res.get("selector_wire") != res.get("src_wire"):
+                raise ExecStop("{0}: selector wire {1} != source wire {2}".format(tag, res.get("selector_wire"), res.get("src_wire")))
+            nt = sorted(set(int(u) for u in g.uids(W, "Tunnel")) - t0)
+            if len(nt) != 1:
+                raise ExecStop("{0}: {1} new Tunnel(s) {2}, expected the one selector".format(tag, len(nt), nt))
+            out.update(uid=int(res["case"]), frames=[int(byname[n]) for n in names], selector=nt[0], names_back=list(res["names"]),
+                       selector_wire=res["selector_wire"], how=CREATE_ROUTES[route])
             return out
         if route == "case":                                   # card 120-3 R2: gscript.case_in (+ its case_frames read-back)
             names = list(a.get("frames") or SS.CASE_FRAMES_DEFAULT)
@@ -2512,6 +2582,13 @@ class SimBackend(object):
                     raise ExecStop("create queue: src on diagram #{0}, node on #{1} (same diagram, or a loop body of that diagram "
                                    "created by this plan - PD234(i))".format(s_["frame_diagram"], sd))
                 chk.update(self._node_end(real, args["src"], True, "queue_node"), auto_tunnel=int(s_["frame_diagram"] or 0) != int(sd))
+            elif route == "case_wired":                              # card 123-7: gscript.case_wired's preconditions
+                chk.update(self._node_end(real, args["src"], True, "case_wired (connect_nested_v1 source)"),
+                           frames=list(a.get("frames") or SS.CASE_FRAMES_DEFAULT))
+                rs = next(x for x in real if x["term_uid"] == args["src"])
+                if int(rs["frame_diagram"] or 0) != int(args["diagram"]):
+                    raise ExecStop("create case_wired: src #{0} on diagram #{1}, case on #{2} (same diagram only)".format(
+                        args["src"], rs["frame_diagram"], args["diagram"]))
             elif route == "case":                                    # card 120-3 R2: gscript.case_in's preconditions
                 own = (self.addr.owners or {}).get(str(int(args["diagram"])))
                 if not own or own[0] not in ("WhileLoop", "ForLoop") or int(own[1] or 0) <= 0:
@@ -2527,7 +2604,7 @@ class SimBackend(object):
         out = self._apply(op, chk)
         if route in ("while", "for"):
             out.update(uid=self.st["sym"]["new:" + a["as"]], body=self.st["sym"]["new:" + a["as"] + ".body"])
-        elif route == "case":                                        # card 120-3 R2: what LVBackend returns
+        elif route in ("case", "case_wired"):                        # card 120-3 R2 / 123-7: what LVBackend returns
             n_ = len(a.get("frames") or SS.CASE_FRAMES_DEFAULT)
             out.update(uid=self.st["sym"]["new:" + a["as"]], selector=self.st["sym"]["new:" + a["selector_as"]],
                        frames=[self.st["sym"]["new:{0}.f{1}".format(a["as"], k)] for k in range(n_)])

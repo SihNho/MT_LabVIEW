@@ -1,0 +1,26 @@
+{
+ "schema_note": "card 123-9 (PD249(d), brief_123-9.md STEP 1): FINALIZED decision-row plan of tools/bench/diag_c123_casetun.py. ONE LabVIEW run on ONE never-saved byte copy of the P2b bed. Case data tunnels measured: Equal? E1 ($work dup of #10019) on #639 -> case_wired (DonorCase_v0 #742); Increment I1 ($work dup of #10150) in the False frame, x <- #6810 'current image number' across the case border (connect_nested_v1, input tunnel); Increment I2 on #639, x <- I1 'x+1' across the border (output tunnel); per-frame faces read from the case's Terminals[] and the wire walks; True-frame inner->inner attempted ONLY on a Terminals[] entry the read finds (no route is invented). Scratch deleted; LabVIEW killed and verified gone.",
+ "input": {"vi": "D1_ring_p2b_20261001_140658.vi", "md5": "652b1447ebbda761a7d5ba36455a0fa1", "graph": "tools/bench/graph_ring_p2b_20261001_154542.json"},
+ "loop": {"uid": 637, "body": 639},
+ "donor": {"file": "DonorCase_v0.vi", "md5": "df825c180fe682af2a2cf64db893d64a", "uid": 742},
+ "eq": {"prim": "Equal?", "uid": 10019, "out": "x = y?", "pos": [3300, 1500]},
+ "inc": {"prim": "Increment", "uid": 10150, "x": "x", "out": "x+1", "pos_in": [60, 60], "pos_out": [4100, 1500]},
+ "bufnum": {"node": 6810, "name": "current image number", "wire": 3747},
+ "case": {"pos": [3600, 1450], "want_names": ["False", "True"]},
+ "decisions": [
+  {"id": "D-0", "action": "stage", "what": "stagekit Stage: restart LabVIEW, byte copy of the P2b bed = the work copy (never saved)"},
+  {"id": "S1-1", "action": "create", "what": "create_primitive_nested $work #10019 Equal? E1 onto #639"},
+  {"id": "S1-2", "action": "create", "what": "case_wired on #639 <- E1 'x = y?' (DonorCase_v0 #742), frames False/True"},
+  {"id": "S1-2w", "action": "wire", "what": "case_wired: selector (the copy's one bare sink) <- E1 'x = y?' (connect_nested_v1 inside the verb)"},
+  {"id": "S1-3", "action": "create", "what": "create_primitive_nested $work #10150 Increment I1 onto the False frame"},
+  {"id": "S1-4", "action": "wire", "what": "connect_nested_v1: I1 'x' (False frame) <- #6810 'current image number' (#639) = INPUT case tunnel"},
+  {"id": "S1-5", "action": "create", "what": "create_primitive_nested $work #10150 Increment I2 onto #639"},
+  {"id": "S1-6", "action": "wire", "what": "connect_nested_v1: I2 'x' (#639) <- I1 'x+1' (False frame) = OUTPUT case tunnel"},
+  {"id": "S1-7a", "action": "wire", "what": "ordered second pass: connect_from_wire I1 'x' <- its own wire (Is Broken? readback, wire delta 0)"},
+  {"id": "S1-7b", "action": "wire", "what": "ordered second pass: connect_from_wire I2 'x' <- its own wire (Is Broken? readback, wire delta 0)"},
+  {"id": "S1-7", "action": "read", "what": "case Terminals[] (node_terms_uids), wire walks of I1 x / I1 x+1 / I2 x"},
+  {"id": "S1-8", "action": "wire", "what": "True frame: input tunnel inner face -> output tunnel inner face, ONLY through Terminals[] entries the read found"},
+  {"id": "S1-9", "action": "read", "what": "class census delta (report_all GObject before/after), case Terminals[] after"},
+  {"id": "X", "action": "discard", "what": "close(): scratch deleted, bed md5 unchanged, LabVIEW killed and gone"}
+ ]
+}

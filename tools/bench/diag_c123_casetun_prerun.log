@@ -1,0 +1,91 @@
+BGRUN START 2026-10-01 15:59:45 limit 1.0 min: py -u tools/stage_prerun.py --prerun tools/bench/diag_c123_casetun.py --graph tools/bench/graph_ring_p2b_20261001_154542.json
+BGRUN PID 17832
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 652b1447ebbda761a7d5ba36455a0fa1  got 652b1447ebbda761a7d5ba36455a0fa1
+  PASS  DRY graph JSON for input md5 652b1447ebbda761a7d5ba36455a0fa1  tools/bench/graph_ring_p2b_20261001_154542.json
+  PASS  K0 donor DonorCase_v0.vi md5 == df825c180fe682af2a2cf64db893d64a
+  FACT  OP create_primitive_nested Equal? E1 $work -> err '' (0.0 s)
+  FACT  OP case_wired case on #639 <- E1 -> err '' (0.0 s)
+  PASS  C case_wired: frames ['False', 'True']  {'names': {}, 'case': <dry:g.case_wired.get()>}
+  FACT  OP create_primitive_nested Increment I1 in False #0 -> err '' (0.0 s)
+  FACT  OP connect_nested_v1 I1 x <- #6810 (input tunnel) -> err '' (0.0 s)
+  PASS  T-in I1 #<dry:g.create_primitive_nested> x <- #6810 across the case border: SelectorTunnel +1, I1 x wired  {'connect': <dry:build_opconnectnested_v1.connect_nested_v1>, 'new_by_class': {}, 'wire_delta': 0, 'x_wire': 0}
+  FACT  OP create_primitive_nested Increment I2 on #639 -> err '' (0.0 s)
+  FACT  OP connect_nested_v1 I2 x <- I1 x+1 (output tunnel) -> err '' (0.0 s)
+  PASS  T-out I2 #<dry:g.create_primitive_nested> x <- I1 x+1 across the border: SelectorTunnel +1, I2 x wired  {'connect': <dry:build_opconnectnested_v1.connect_nested_v1>, 'new_by_class': {}, 'wire_delta': 0, 'x_wire': 0}
+  FACT  NET w0: source-terminal owners [] ; every owner [] ; PD85 1
+  FACT  OP connect_from_wire sink D[<dry:g.term_index[0]>].N[<dry:g.term_index[1]>].t<dry:g.term_index[2]> <- w0[0] -> err '' (0.0 s)
+  FACT  NET w0: source-terminal owners [] ; every owner [] ; PD85 1
+  FACT  OP connect_from_wire sink D[<dry:g.term_index[0]>].N[<dry:g.term_index[1]>].t<dry:g.term_index[2]> <- w0[0] -> err '' (0.0 s)
+  PASS  B Is Broken? False on both ordered second passes  {'in': {'tag': 'I1 x (inner face of the input tunnel, False)', 'wire': 0, 'src_index': [], 'uid2': None, 'is_broken': None, 'walk': []}, 'out': {'tag': 'I2 x (outer face of the output tunnel)', 'wire': 0, 'src_index': [], 'uid2': None, 'is_broken': None, 'walk': []}}
+  FACT  NET w0: source-terminal owners [] ; every owner [] ; PD85 1
+  FACT  CASE TERMS before 0 / after 0: "<dry:g.node_terms_uids[1]>"
+  PASS  P True-frame pass-through: one unwired source + one unwired sink on the case's Terminals[] and connect_nested_v1 wires them  {'unwired_sources': [], 'unwired_sinks': [], 'connect': None, 'rows_final': <dry:g.node_terms_uids[1]>}
+  FACT  CENSUS casetun total {}
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  PASS  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['tools/bench/diag_c123_casetun_plan.json']
+  PASS  X3 every plan row decided  11 rows + 0 stageplan actions
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  0 stageplan(s)
+  PASS  X11 no row wires one Build Array input while a sibling input is an open row (unless pb-licence/1)  0 stageplan(s)
+  PASS  X12 no row names a wire uid an earlier border-crossing connect re-created (connect_from_wire.json:266)  0 stageplan(s), 0 re-created source wire(s), none named later
+  PASS  X13 opmodel conformance: every recorded sample of the plan ops' model files replays in stagesim  0 op(s) []; files {}
+  PASS  X4 every end addressable offline (0 ends)  []
+  FAIL  X5 wiring ops executed in the dry run == plan wire rows  ops 5 vs plan wire rows 3 + stageplan wiring real ops 0 (covering 0/0 wire actions); delete ops {} vs plan delete rows {}
+  PASS  X6 ast lint: no re-typed uid / terminal name  uids []; names []
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c123_casetun_20261001_155946.vi; decisions rows NOT dispatched (recipe calls neither run_rows nor from_decision)
+  PASS  X10 predicted LabVIEW private MB < 690.0 (error-2 point; MEMSTOP 700.0) over the ops this run dispatches (UNMEASURED - no covering record)  {'why': 'UNMEASURED: no recorded meter of diag_c123_casetun.py covers ops 1..end (0 record(s))'}
+  WARN  X10 WARN unmeasured: UNMEASURED: no recorded meter of diag_c123_casetun.py covers ops 1..end (0 record(s))
+  INFO  X14 rows 11, budget 25 (proven: diag_c111b_tunnelitems.py, diag_c118_p1b.py, diag_c123_routes.py, diag_c123_wired.py)
+
+=== DRY PASS: first_fail=None coverage 95/101 lines, first mutation Stage._op create_primitive_nested, unverified 0, graph tools/bench/graph_ring_p2b_20261001_154542.json
+=== PRERUN FAIL: 12 pass / 1 fail; first X5 wiring ops executed in the dry run == plan wire rows: ops 5 vs plan wire rows 3 + stageplan wiring real ops 0 (covering 0/0 wire actions); delete ops {} vs plan delete rows {
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":12,"fail":1},"first_fail":"X5 wiring ops executed in the dry run == plan wire rows: ops 5 vs plan wire rows 3 + stageplan wiring real ops 0 (covering 0/0 wire actions); delete ops {} vs plan delete rows { [X10 WARN unmeasured]","artefacts":[]}
+BGRUN END rc=1 after 3s
+BGRUN START 2026-10-01 16:00:09 limit 1.0 min: py -u tools/stage_prerun.py --prerun tools/bench/diag_c123_casetun.py --graph tools/bench/graph_ring_p2b_20261001_154542.json
+BGRUN PID 26020
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 652b1447ebbda761a7d5ba36455a0fa1  got 652b1447ebbda761a7d5ba36455a0fa1
+  PASS  DRY graph JSON for input md5 652b1447ebbda761a7d5ba36455a0fa1  tools/bench/graph_ring_p2b_20261001_154542.json
+  PASS  K0 donor DonorCase_v0.vi md5 == df825c180fe682af2a2cf64db893d64a
+  FACT  OP create_primitive_nested Equal? E1 $work -> err '' (0.0 s)
+  FACT  OP case_wired case on #639 <- E1 -> err '' (0.0 s)
+  PASS  C case_wired: frames ['False', 'True']  {'names': {}, 'case': <dry:g.case_wired.get()>}
+  FACT  OP create_primitive_nested Increment I1 in False #0 -> err '' (0.0 s)
+  FACT  OP connect_nested_v1 I1 x <- #6810 (input tunnel) -> err '' (0.0 s)
+  PASS  T-in I1 #<dry:g.create_primitive_nested> x <- #6810 across the case border: SelectorTunnel +1, I1 x wired  {'connect': <dry:build_opconnectnested_v1.connect_nested_v1>, 'new_by_class': {}, 'wire_delta': 0, 'x_wire': 0}
+  FACT  OP create_primitive_nested Increment I2 on #639 -> err '' (0.0 s)
+  FACT  OP connect_nested_v1 I2 x <- I1 x+1 (output tunnel) -> err '' (0.0 s)
+  PASS  T-out I2 #<dry:g.create_primitive_nested> x <- I1 x+1 across the border: SelectorTunnel +1, I2 x wired  {'connect': <dry:build_opconnectnested_v1.connect_nested_v1>, 'new_by_class': {}, 'wire_delta': 0, 'x_wire': 0}
+  FACT  NET w0: source-terminal owners [] ; every owner [] ; PD85 1
+  FACT  OP connect_from_wire sink D[<dry:g.term_index[0]>].N[<dry:g.term_index[1]>].t<dry:g.term_index[2]> <- w0[0] -> err '' (0.0 s)
+  FACT  NET w0: source-terminal owners [] ; every owner [] ; PD85 1
+  FACT  OP connect_from_wire sink D[<dry:g.term_index[0]>].N[<dry:g.term_index[1]>].t<dry:g.term_index[2]> <- w0[0] -> err '' (0.0 s)
+  PASS  B Is Broken? False on both ordered second passes  {'in': {'tag': 'I1 x (inner face of the input tunnel, False)', 'wire': 0, 'src_index': [], 'uid2': None, 'is_broken': None, 'walk': []}, 'out': {'tag': 'I2 x (outer face of the output tunnel)', 'wire': 0, 'src_index': [], 'uid2': None, 'is_broken': None, 'walk': []}}
+  FACT  NET w0: source-terminal owners [] ; every owner [] ; PD85 1
+  FACT  CASE TERMS before 0 / after 0: "<dry:g.node_terms_uids[1]>"
+  FACT  OP connect_nested_v1 True pass-through via case Terms[] -> err '' (0.0 s)
+  PASS  P True-frame pass-through: one unwired source + one unwired sink on the case's Terminals[] and connect_nested_v1 wires them  {'unwired_sources': [], 'unwired_sinks': [], 'connect': <dry:build_opconnectnested_v1.connect_nested_v1>, 'rows_final': <dry:g.node_terms_uids[1]>}
+  FACT  CENSUS casetun total {}
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  PASS  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['tools/bench/diag_c123_casetun_plan.json']
+  PASS  X3 every plan row decided  14 rows + 0 stageplan actions
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  0 stageplan(s)
+  PASS  X11 no row wires one Build Array input while a sibling input is an open row (unless pb-licence/1)  0 stageplan(s)
+  PASS  X12 no row names a wire uid an earlier border-crossing connect re-created (connect_from_wire.json:266)  0 stageplan(s), 0 re-created source wire(s), none named later
+  PASS  X13 opmodel conformance: every recorded sample of the plan ops' model files replays in stagesim  0 op(s) []; files {}
+  PASS  X4 every end addressable offline (0 ends)  []
+  PASS  X5 wiring ops executed in the dry run == plan wire rows  ops 6 vs plan wire rows 6 + stageplan wiring real ops 0 (covering 0/0 wire actions); delete ops {} vs plan delete rows {}
+  PASS  X6 ast lint: no re-typed uid / terminal name  uids []; names []
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c123_casetun_20261001_160010.vi; decisions rows NOT dispatched (recipe calls neither run_rows nor from_decision)
+  PASS  X10 predicted LabVIEW private MB < 690.0 (error-2 point; MEMSTOP 700.0) over the ops this run dispatches (UNMEASURED - no covering record)  {'why': 'UNMEASURED: no recorded meter of diag_c123_casetun.py covers ops 1..end (0 record(s))'}
+  WARN  X10 WARN unmeasured: UNMEASURED: no recorded meter of diag_c123_casetun.py covers ops 1..end (0 record(s))
+  INFO  X14 rows 14, budget 25 (proven: diag_c111b_tunnelitems.py, diag_c118_p1b.py, diag_c123_routes.py, diag_c123_wired.py)
+
+=== DRY PASS: first_fail=None coverage 98/102 lines, first mutation Stage._op create_primitive_nested, unverified 0, graph tools/bench/graph_ring_p2b_20261001_154542.json
+=== PRERUN PASS: 13 pass / 0 fail; first None
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":"X10 WARN unmeasured: UNMEASURED: no recorded meter of diag_c123_casetun.py covers ops 1..end (0 record(s))","artefacts":[]}
+BGRUN END rc=0 after 3s

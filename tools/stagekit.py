@@ -259,6 +259,30 @@ class Stage(object):
         print(_a("  ROW   {0} : observed={1} expected={2}".format(label, observed, expected)), flush=True)
         return rec
 
+    # ------------------------------------------------------------------ card 123-7 (PD247(e)): the census helper
+    def census_snapshot(self, target=None):
+        """{uid: class} of every GObject of `target` (default the work copy) - ONE report_all run. {} in a dry run."""
+        if getattr(g.report_all, "_dry", False):
+            return {}
+        return dict((int(o["uid"]), str(o["class"])) for o in g.report_all(target or self.work, "GObject"))
+
+    def census_gate(self, label, before, after, declared):
+        """Compare the measured NEW-object census (after - before, by class) with `declared` {class: n} (e.g. the plan's
+        `<plan>_pred.json` census block). DRY run -> prints 'UNVERIFIED-DRY' and returns None: a stubbed census is never a
+        PASS. Real run -> a gate (PASS iff every class of either side matches), returns the measured {class: n}."""
+        if getattr(g.report_all, "_dry", False) or not isinstance(before, dict) or not isinstance(after, dict):
+            print(_a("  UNVERIFIED-DRY  {0}  (census not measured in a dry run; declared {1})".format(
+                label, json.dumps(declared, sort_keys=True))), flush=True)
+            return None
+        new = set(after) - set(before)
+        got = {}
+        for u in new:
+            got[after[u]] = got.get(after[u], 0) + 1
+        diff = dict((c, (got.get(c, 0), int(declared.get(c, 0)))) for c in set(got) | set(declared or {})
+                    if got.get(c, 0) != int((declared or {}).get(c, 0)))
+        self.gate(label, not diff, {"measured": got, "declared": declared, "diff (measured, declared)": diff})
+        return got
+
     def safe(self, label, fn, default=None):
         try:
             return fn(), ""

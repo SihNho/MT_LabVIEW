@@ -1,0 +1,25 @@
+BGRUN START 2026-10-01 15:28:07 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/bench/diag_c123_wired.py --graph tools/bench/diag_c122_graph_p2a.json
+BGRUN PID 17308
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 652b1447ebbda761a7d5ba36455a0fa1  got 652b1447ebbda761a7d5ba36455a0fa1
+  PASS  DRY graph JSON for input md5 652b1447ebbda761a7d5ba36455a0fa1  tools/bench/diag_c122_graph_p2a.json
+  PASS  K0 donor DonorCase_v0.vi md5 == df825c180fe682af2a2cf64db893d64a
+  FACT  OP create_primitive_nested Equal? E1 $work -> err '' (0.0 s)
+  FACT  NET w0: source-terminal owners [] ; every owner [] ; PD85 1
+  FACT  OP connect_nested_v1 E1 x <- #6810 -> err '' (0.0 s)
+  FACT  NET w0: source-terminal owners [] ; every owner [] ; PD85 1
+  PASS  S1a E1 #<dry:g.create_primitive_nested> x <- #6810 (connect_nested_v1): src wire == 3747, x wire == src wire, w terminals +1  {'src_wire': 0, 'x_wire': 0, 'sinks_before': 0, 'sinks_after': 0, 'connect': <dry:build_opconnectnested_v1.connect_nested_v1>, 'src_row': <dry:g.term_index[3]>}
+  FACT  OP create_primitive_nested Equal? E2 $work -> err '' (0.0 s)
+  FACT  NET w0: source-terminal owners [] ; every owner [] ; PD85 1
+  FACT  OP connect_from_wire sink D[<dry:g.term_index[0]>].N[<dry:g.term_index[1]>].t<dry:g.term_index[2]> <- w0[0] -> err '' (0.0 s)
+  FACT  NET w0: source-terminal owners [] ; every owner [] ; PD85 1
+  PASS  S1a2 E2 #<dry:g.create_primitive_nested> x <- w0 (connect_from_wire): UID 2 == w, Is Broken? False, x wire == w, terminals +1  {'src_index': [], 'connect': <dry:build_opconnectfromwire_v0.connect_from_wire>, 'x_wire': 0, 'sinks_after': 0}
+  PASS  S1b term_index(unknown name) -> ValueError (no index-0 fallback)
+  FACT  OP case_wired case on #639 <- E1 #<dry:g.create_primitive_nested> -> err '' (0.0 s)
+  PASS  S1c case_wired: CaseStructure +1, Diagram +2, frames ['False', 'True'], selector wire == src wire, NO Invoke left  {'call': {}, 'new_by_class': {}, 'invoke_delta': [], 'err': ''}
+  FACT  CENSUS case_wired (after purge) {}
+
+=== DRY PASS: first_fail=None coverage 69/81 lines, first mutation Stage._op create_primitive_nested, unverified 0, graph tools/bench/diag_c122_graph_p2a.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

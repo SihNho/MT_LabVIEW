@@ -1,0 +1,19 @@
+BGRUN START 2026-10-01 15:35:16 limit 3.0 min: py -u tools/bench/selftest_case_wired_c123.py
+BGRUN PID 20040
+  PASS  R01 create_route: CaseStructure + src, no label -> 'case_wired'; with label -> 'case'  
+  PASS  R02 verbs_missing('case_wired') == [] (gscript.case_wired / struct_copy_nested / case_frames defined)  []
+  PASS  R03 case_wired without selector_as is refused by create_route  refused: create case_wired needs `as`, `selector_as` (the selector's alias) and `src` (a node output on the same diagram)
+  PASS  M01 new wire: CaseStructure + 2 frames on body 20, selector Tunnel = 1 outer SINK + 1 inner SOURCE per frame, outer on a NEW wire == src's wire, src_branch False  {'class': 'CaseStructure', 'diagram': 20, 'src_branch': False, 'wire': -8, 'node': 'new:C1', 'frames': [-2, -3], 'frame_syms': ['new:C1.f0', 'new:C1.f1'], 'frame_names': ['False', 'True'], 'selector': 'new:S1', 'selector_outer': -5, 'selector_inners': [-6, -7], 'selector_src': 1025, 'wired': True, '
+  PASS  M02 branch: an already-wired src (2.out, w6) -> selector outer on w6, src_branch True  {'class': 'CaseStructure', 'diagram': 20, 'src_branch': True, 'wire': 6, 'node': 'new:C2', 'frames': [-2, -3], 'frame_syms': ['new:C2.f0', 'new:C2.f1'], 'frame_names': ['False', 'True'], 'selector': 'new:S2', 'selector_outer': -5, 'selector_inners': [-6, -7], 'selector_src': 1023, 'wired': True, 'as
+  PASS  M03 frames other than False/True are refused (donor + Boolean selector)  refused: create CaseStructure C1 (case_wired): frames ['0, Default', '1'] - the donor case + a Boolean selector gives exactly ['False', 'True']
+  PASS  M04 src on another diagram (20) than the case (30) is refused  refused: create CaseStructure C1 (case_wired): src #1025 source=True on diagram 20, case on 30 - needs a SOURCE on the same diagram (connect_nested_v1 same-diagram triple)
+  PASS  M05 a CONSTANT source is refused (not a Node; case_wired resolves Nodes[])  refused: create CaseStructure C1 (case_wired): src #1001 is owned by Constant #1, not a Node (Nodes[] route)
+  PASS  P01 compile_plan: the row compiles to ONE create op with route 'case_wired'  [{'kind': 'create', 'route': 'case_wired', 'acts': [1]}]
+  PASS  P02 simulate + DRY RUN PASS: case, selector bound to positive uids, both frames bound  (None, 'PASS', 'None')
+  PASS  L01 LVBackend 'case_wired': case_wired(W, 20, node 2, 'flag', pos); frames in the PLAN's order by name ([901, 902]); the one new Tunnel = the selector  ([('case_wired', 20, 2, 'flag', (40, 40))], {'err': None, 's': 0.0, 'uid': 900, 'frames': [901, 902], 'selector': 12, 'names_back': ['True', 'False'], 'selector_wire': 77, 'how': 'gscript.case_wired (struct_copy_nested OpPrimCopyNested_v0 of DonorCase_v0 #742 + connect_nested_v1 selector <- src + ca
+  PASS  L02 NEGATIVE: a junk Invoke left after the verb's purge STOPS  refused: create case_wired cw: [5] junk Invoke(s) left after case_wired's purge
+  PASS  L03 NEGATIVE: selector wire != source wire STOPS  refused: create case_wired cw: selector wire 78 != source wire 77
+  PASS  A01 the 'case' (label) route keeps its verbs; every earlier CREATE_ROUTES key kept  ['case', 'case_wired', 'const_on_term', 'control', 'copy_in', 'for', 'indicator', 'local_read', 'local_write', 'primitive', 'queue', 'subvi', 'while']
+=== GATES: 14 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":14,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

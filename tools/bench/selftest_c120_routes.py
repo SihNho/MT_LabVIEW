@@ -309,7 +309,7 @@ gate("L05 bind_case_faces: {} on an op that made no multi-frame face (a loop cre
 # ------------------------------------------------------------------ A: existing routes unchanged (R4)
 OLD = {"while", "for", "local_read", "local_write", "indicator", "control", "primitive", "copy_in", "const_on_term", "queue", "subvi"}
 gate("A01 CREATE_ROUTES / ROUTE_VERBS: every old key kept, only 'case' added; the queue route still resolves obtain/enqueue",
-     set(SX.CREATE_ROUTES) == OLD | {"case"} and set(SX.ROUTE_VERBS) >= OLD and SX.ROUTE_VERBS["queue"] == [("gscript", "queue_node")]
+     set(SX.CREATE_ROUTES) == OLD | {"case", "case_wired"} and set(SX.ROUTE_VERBS) >= OLD and SX.ROUTE_VERBS["queue"] == [("gscript", "queue_node")]
      and SX.create_route(dict(dq, queue_kind="obtain")) == "queue" and SX.create_route(dict(dq, queue_kind="enqueue")) == "queue"
      and not SX.verbs_missing("case"), sorted(SX.CREATE_ROUTES))
 e = raises(lambda: SS.resolve_diag(state(1)[0], "new:DL1"), SS.SimError)

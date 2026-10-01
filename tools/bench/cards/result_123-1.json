@@ -1,0 +1,29 @@
+{"schema":"result/1","id":"123-1","status":"PASS","gates":{"pass":7,"fail":0},
+"first_fail":null,
+"blocked_by":null,
+"artefacts":[
+{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p2b_20261001_140658.vi","md5":"652b1447ebbda761a7d5ba36455a0fa1"},
+{"path":"tools/bench/errorlist_expected_D1_ring_p2b_20261001_140658.json","md5":"85b05c699545f4e8956d1d27900ee00d"},
+{"path":"tools/bench/plan_ring_p2b_pred.json","md5":"98ca9b303451bef5d2e2164b5a98d170"},
+{"path":"tools/bench/plan_ring_p2b_pin.json","md5":"2538f0f6faa7c5c4b6d6dede264fbcc2"},
+{"path":"tools/bench/facts_c123_imgtype.json","md5":"886e1b7411598e3524ec524c5ac3a575"},
+{"path":"tools/bench/diag_c123_imgtype.py","md5":"4038ca3ef198edc7dfdf23e80e1e97db"},
+{"path":"tools/bench/diag_c123_imgtype_offline.py","md5":"cafadba00718d11b2d8931705aad5607"}],
+"facts":[
+"S1 pred census DigitalNumericConstant 1->5 + census_cite (scratch_pin.log:60,78,96,114,132); plan ce18e794, recipe 93a8ad5a unchanged",
+"S2 launch gate ALLOW with the edited pred (records not keyed on it), so no dry/prerun re-run (stage_prerun --check-launch)",
+"S3 scratch md5 a18b92d5 (gate K); Error List 54 items, new 0, missing []; scratch deleted; 17/0 (stage_d1_ring_p2b_el_scratch.log)",
+"S4 ONE launch 41/0: 5 labels exact, canon+values == pred, all on #4866, 5 new wires none lost, CEN2 DNC +5 PASS, cdiff 16 (stage_d1_ring_p2b.log)",
+"S4 handles open->save 45633->45994 (+361, band <=700); refs 7/7; ExecState 0 by design; input c22a473f unchanged (stage_d1_ring_p2b.log)",
+"S5 final Error List 54 == pin (0 new), expected file written, reverdict OK, 19/0 (stage_d1_ring_p2b_el_final.log)",
+"S6 IMAQ Create nodes = #13938, #20436, #23099 (in For #23093, owner_of #23169 == ForLoop 23093) (diag_c123_imgtype.log)",
+"S6 Image Type sources: #20436<-Ring #20327, #13938<-Ring #13245, #23099<-Ring #26846; all value 0, representation code 6, 16/0 (diag_c123_imgtype.log)",
+"S7 LabVIEW verified gone (tasklist, no LabVIEW.exe) after every run; no GUI act outside the Error List reader",
+"JEV ladder | stage_d1_ring_p2b_scratch_pin.log | our-script-bug p=0.804 | patch the script and rerun | pred fixed per PD245(b'), launched | PASS 41/0"
+],
+"open":[
+"Accept D1_ring_p2b_20261001_140658.vi (md5 652b1447) as the new bed (move current-bed: key in STATUS)? status_edit was false here.",
+"All three Image Type rings read value 0; the enum text was not read (no reader). Treat 0 as Grayscale (U8) per the IMAQ Create ring order, or read the text first?"
+],
+"cost":{"usd":null,"minutes":38,"labview_runs":4},
+"note":"All steps PASS. LabVIEW runs: scratch EL pin, ONE stage launch, final EL, read-only Image Type read on a deleted byte copy. STATUS untouched (status_edit false), no commit."}

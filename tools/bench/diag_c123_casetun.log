@@ -1,0 +1,96 @@
+BGRUN START 2026-10-01 16:00:18 limit 20.0 min: py -u tools/bench/diag_c123_casetun.py
+BGRUN PID 22524
+BGRUN STAGE-RUN recorded diag_c123_casetun.py cycle='cycle 123' card=None pid=5524 -> stage_runs.jsonl
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 315 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 652b1447ebbda761a7d5ba36455a0fa1  got 652b1447ebbda761a7d5ba36455a0fa1
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 34002
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_c123_casetun_20261001_160019.vi
+  FACT  ExecState [after open] scratch_c123_casetun_20261001_160019.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so scratch_c123_casetun_20261001_160019.vi is deleted at close
+  PASS  K0 donor DonorCase_v0.vi md5 == df825c180fe682af2a2cf64db893d64a
+  FACT  create_primitive_nested node census: 639 rows
+  OBSERVED uid 26802 -> owner 'Diagram' uid 639 | self 'Comparison'#26802 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested Equal? E1 $work -> err '' (2.2 s)
+  FACT  case_wired node census: 640 rows
+  OBSERVED uid 26747 -> owner 'Diagram' uid 639 | self 'CaseStructure'#26747 | 482 says 'Diagram' cast 'Diagram' |  
+      op readback {'UID': 26747, 'Name': 'index', 'UID 2': 0, 'Is Broken?': False}
+  FACT  OP case_wired case on #639 <- E1 -> err '' (4.4 s)
+  PASS  C case_wired: frames ['False', 'True']  {'names': {'False': 27051, 'True': 27084}, 'case': 26747}
+  FACT  create_primitive_nested node census: 641 rows
+  OBSERVED uid 27133 -> owner 'Diagram' uid 27051 | self 'Function'#27133 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested Increment I1 in False #27051 -> err '' (2.2 s)
+  FACT  connect_nested_v1 node census: 642 rows
+      op readback {'UID': 27133, 'Name': 'x', 'UID 2': 0, 'Is Broken?': False}
+  FACT  OP connect_nested_v1 I1 x <- #6810 (input tunnel) -> err '' (0.4 s)
+  PASS  T-in I1 #27133 x <- #6810 across the case border: SelectorTunnel +1, I1 x wired  {'connect': (1, 0, ''), 'new_by_class': {'ParameterTerminal': 1, 'OuterTerminal': 1, 'Function': 1, 'Wire': 2, 'OverridableParameterTerminal': 1, 'SelectorTunnel': 1, 'Terminal': 6, 'InnerTerminal': 2}, 'wire_delta': 1, 'x_wire': 27158}
+  FACT  create_primitive_nested node census: 643 rows
+  OBSERVED uid 27257 -> owner 'Diagram' uid 639 | self 'Function'#27257 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested Increment I2 on #639 -> err '' (2.2 s)
+  FACT  connect_nested_v1 node census: 644 rows
+      op readback {'UID': 27257, 'Name': 'x', 'UID 2': 0, 'Is Broken?': False}
+  FACT  OP connect_nested_v1 I2 x <- I1 x+1 (output tunnel) -> err '' (0.6 s)
+  PASS  T-out I2 #27257 x <- I1 x+1 across the border: SelectorTunnel +1, I2 x wired  {'connect': (2, 0, ''), 'new_by_class': {'ParameterTerminal': 1, 'OuterTerminal': 1, 'Invoke': 1, 'Function': 1, 'Wire': 2, 'OverridableParameterTerminal': 1, 'SelectorTunnel': 1, 'Terminal': 6, 'InnerTerminal': 2}, 'wire_delta': 2, 'x_wire': 27278}
+  FACT  w27158 OpWireSource_v5(UID 2 = 27158): 3 row(s), 2 with a REAL owner
+  FACT      w27158   t0  is_source=True  owner_class='SelectorTunnel'           owner_uid=27170   recip=27158
+  FACT      w27158   t1  is_source=False owner_class='Function'                 owner_uid=27133   recip=27158
+  FACT      w27158   t2  is_source=None  owner_class=None                       owner_uid=None    recip=None  READ ERROR errO=error 1055: Property Node in OpWireSource_v5.vi; errU=error 1055: Property Node in OpWireSource_v5.vi; errG=error 1055: Property Node in OpWireSource_v5.vi; errS=error 1055: Property Node in OpWireSource_v5.vi; errWU=error 1055: Property Node in OpWireSource_v5.vi; errCO=error 1055: Property Node in OpWireSource_v5.vi
+  FACT  w27158 PD85 PRECONDITION: 2 real-owner row(s), 0 violate recip==queried_uid
+  FACT  NET w27158: source-terminal owners [('SelectorTunnel', 27170)] ; every owner [('Function', 27133), ('SelectorTunnel', 27170)] ; PD85 0
+  FACT  connect_from_wire node census: 645 rows
+  FACT  OP connect_from_wire sink D[57].N[0].t1 <- w27158[0] -> err '' (0.3 s)
+  FACT  w27278 OpWireSource_v5(UID 2 = 27278): 3 row(s), 2 with a REAL owner
+  FACT      w27278   t0  is_source=True  owner_class='SelectorTunnel'           owner_uid=27301   recip=27278
+  FACT      w27278   t1  is_source=False owner_class='Function'                 owner_uid=27257   recip=27278
+  FACT      w27278   t2  is_source=None  owner_class=None                       owner_uid=None    recip=None  READ ERROR errO=error 1055: Property Node in OpWireSource_v5.vi; errU=error 1055: Property Node in OpWireSource_v5.vi; errG=error 1055: Property Node in OpWireSource_v5.vi; errS=error 1055: Property Node in OpWireSource_v5.vi; errWU=error 1055: Property Node in OpWireSource_v5.vi; errCO=error 1055: Property Node in OpWireSource_v5.vi
+  FACT  w27278 PD85 PRECONDITION: 2 real-owner row(s), 0 violate recip==queried_uid
+  FACT  NET w27278: source-terminal owners [('SelectorTunnel', 27301)] ; every owner [('Function', 27257), ('SelectorTunnel', 27301)] ; PD85 0
+  FACT  connect_from_wire node census: 646 rows
+  FACT  OP connect_from_wire sink D[56].N[53].t1 <- w27278[0] -> err '' (0.3 s)
+  PASS  B Is Broken? False on both ordered second passes  {'in': {'tag': 'I1 x (inner face of the input tunnel, False)', 'wire': 27158, 'src_index': [0], 'uid2': 27158, 'is_broken': False, 'walk': [{'i': 0, 'owner_class': 'SelectorTunnel', 'owner_uid': 27170, 'is_source': True}, {'i': 1, 'owner_class': 'Function', 'owner_uid': 27133, 'is_source': False}, {'i': 2, 'err': 'errO=error 1055: Property Node in OpWireSource_v5.vi; errU=error 1055: Property Node in OpWireSource_v5.vi; errG=error 1055: Property Node in OpWireSource_v5.vi; errS=error 1055: Property Node in OpWireSource_v5.vi; errWU=error 1055: Property Node in OpWireSource_v5.vi; errCO=error 1055: Property Node in OpWireSource_v5.vi'}]}, 'out': {'tag': 'I2 x (outer face of the output tunnel)', 'wire': 27278, 'src_index': [0], 'uid2': 27278, 'is_broken': False, 'walk': [{'i': 0, 'owner_class': 'SelectorTunnel', 'owner_uid': 27301, 'is_source': True}, {'i': 1, 'owner_class': 'Function', 'owner_uid': 27257, 'is_source': False}, {'i': 2, 'err': 'errO=error 1055: Property Node in OpWireSource_v5.vi; errU=error 1055: Property Node in OpWireSource_v5.vi; errG=error 1055: Property Node in OpWireSource_v5.vi; errS=error 1055: Property Node in OpWireSource_v5.vi; errWU=error 1055: Property Node in OpWireSource_v5.vi; errCO=error 1055: Property Node in OpWireSource_v5.vi'}]}}
+  FACT  w27337 OpWireSource_v5(UID 2 = 27337): 3 row(s), 2 with a REAL owner
+  FACT      w27337   t0  is_source=True  owner_class='Function'                 owner_uid=27133   recip=27337
+  FACT      w27337   t1  is_source=False owner_class='SelectorTunnel'           owner_uid=27301   recip=27337
+  FACT      w27337   t2  is_source=None  owner_class=None                       owner_uid=None    recip=None  READ ERROR errO=error 1055: Property Node in OpWireSource_v5.vi; errU=error 1055: Property Node in OpWireSource_v5.vi; errG=error 1055: Property Node in OpWireSource_v5.vi; errS=error 1055: Property Node in OpWireSource_v5.vi; errWU=error 1055: Property Node in OpWireSource_v5.vi; errCO=error 1055: Property Node in OpWireSource_v5.vi
+  FACT  w27337 PD85 PRECONDITION: 2 real-owner row(s), 0 violate recip==queried_uid
+  FACT  NET w27337: source-terminal owners [('Function', 27133)] ; every owner [('Function', 27133), ('SelectorTunnel', 27301)] ; PD85 0
+  FACT  CASE TERMS before 1 / after 3: [{"i": 0, "name": "", "is_source": false, "wire": 27126, "uid": 27034, "uid_err": 0, "node_uid": 26747}, {"i": 1, "name": "current image number", "is_source": false, "wire": 27226, "uid": 27212, "uid_err": 0, "node_uid": 26747}, {"i": 2, "name": "", "is_source": true, "wire": 27278, "uid": 27331, "uid_err": 0, "node_uid": 26747}]
+  FAIL  P True-frame pass-through: one unwired source + one unwired sink on the case's Terminals[] and connect_nested_v1 wires them  {'unwired_sources': [], 'unwired_sinks': [], 'connect': None, 'rows_final': [{'i': 0, 'name': '', 'is_source': False, 'wire': 27126, 'uid': 27034, 'uid_err': 0, 'node_uid': 26747}, {'i': 1, 'name': 'current image number', 'is_source': False, 'wire': 27226, 'uid': 27212, 'uid_err': 0, 'node_uid': 26747}, {'i': 2, 'name': '', 'is_source': True, 'wire': 27278, 'uid': 27331, 'uid_err': 0, 'node_uid': 26747}]}
+  FACT  CENSUS casetun total {"CaseStructure": 1, "Comparison": 1, "Diagram": 2, "Function": 2, "InnerTerminal": 6, "Invoke": 3, "OuterTerminal": 3, "OverridableParameterTerminal": 2, "ParameterTerminal": 5, "SelectorTunnel": 2, "Terminal": 24, "Tunnel": 1, "Wire": 5}
+  FACT  RECORDS G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\scratch_verify\gscript.case_data_tunnel_c123_9_20261001_160019.json
+
+---------- [H] HYGIENE
+  FACT  close_panel(scratch_c123_casetun_20261001_160019.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 9, 'closed': 9, 'live': 0, 'cached_op_vis': 11}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 9, 'closed': 9, 'live': 0, 'cached_op_vis': 11}
+  FACT  LabVIEW handle count AFTER the work: 46049
+  PASS  H4 scratch deleted: scratch_c123_casetun_20261001_160019.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c123_casetun_20261001_160019.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 652b1447ebbda761a7d5ba36455a0fa1 / after 652b1447ebbda761a7d5ba36455a0fa1
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33995
+
+====================================================================================================
+=== GATES: 13 pass / 1 fail; failing: P True-frame pass-through: one unwired source + one unwired sink on the case's Terminals[] and connect_nested_v1 wires them
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c123_casetun.json   elapsed 185.1 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":13,"fail":1},"first_fail":"P True-frame pass-through: one unwired source + one unwired sink on the case's Terminals[] and connect_nested_v1 wires them","artefacts":[]}
+LabVIEW gone at exit: True
+BGRUN END rc=1 after 190s

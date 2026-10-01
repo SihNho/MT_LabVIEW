@@ -1096,11 +1096,14 @@ def _create_case(st, a, dg, name, eff):
     unnamed InnerTerminal SOURCE per frame. The selector comes out UNWIRED (case_in's move severs it) and is wired by a later
     `wire` to 'new:<selector_as>.outer'. Symbols: new:<as>, new:<as>.f<k> (frame k, in `frames` order), new:<selector_as>."""
     names = list(a.get("frames") or CASE_FRAMES_DEFAULT)
-    if not name or not a.get("selector_as") or not a.get("label"):
+    wired = a.get("src") is not None and not a.get("label")      # card 123-7: gscript.case_wired (selector wired from `src`)
+    if not name or not a.get("selector_as") or not (a.get("label") or wired):
         raise SimError("create CaseStructure needs `as`, `selector_as` and `label` (the top-level panel control case_in wires "
-                       "to the selector before the move severs it)")
+                       "to the selector before the move severs it) or `src` (case_wired: a node OUTPUT on the same diagram)")
     if len(names) < 2 or len(set(names)) != len(names):
         raise SimError("create CaseStructure {0}: frames {1} (need >= 2 distinct names)".format(name, names))
+    if wired:
+        return _create_case_wired(st, a, dg, name, eff, names)
     own = (st.get("owners") or {}).get(str(dg))
     if not own or own[0] not in LOOP_CLS:
         raise SimError("create CaseStructure on diagram {0}: not a For/While body in the owners map ({1}) - gscript.case_in "
@@ -1124,6 +1127,49 @@ def _create_case(st, a, dg, name, eff):
     eff.update(node=key, frames=frames, frame_syms=fk, frame_names=names, selector=_sym(st, a["selector_as"], S),
                selector_outer=so, selector_inners=si, selector_ct=cts[0]["term_uid"], selector_ct_wired=bool(cts[0]["wire_uid"]),
                assumed=list(CASE_ASSUMED))
+    return eff, []
+
+
+CASE_WIRED_ASSUMED = ("the source must be a Node output (gscript.case_wired resolves it through Diagram.Nodes[]; constants, "
+                      "tunnels and shift registers are not Nodes) - a refusal here, not a measurement",)
+
+
+def _create_case_wired(st, a, dg, name, eff, names):
+    """card 123-7 (PD248(d)): gscript.case_wired = struct_copy_nested(CaseStructure, DonorCase_v0 #742) onto Diagram dg (ANY
+    diagram - no loop-body rule) + the selector's outer face <- `src` (a node OUTPUT on the SAME diagram, connect_nested_v1)
+    + the junk-Invoke purge. MEASURED (diag_c123_struct.log:43-44 / diag_c123_wired.log): the same object shape as
+    _create_case (CaseStructure, one frame Diagram per frame, a selector 'Tunnel' with one OUTER SINK on dg and one INNER
+    SOURCE per frame) and the selector WIRED from `src` (a branch when `src` is already wired). Frames: the donor's numeric
+    '0, Default'/'1' are renamed by the Boolean source to False/True, so ONLY ('False','True') is accepted."""
+    if list(names) != list(CASE_FRAMES_DEFAULT):
+        raise SimError("create CaseStructure {0} (case_wired): frames {1} - the donor case + a Boolean selector gives exactly "
+                       "{2}".format(name, names, list(CASE_FRAMES_DEFAULT)))
+    s = resolve_addr(st, a["src"], True)
+    if not s["is_source"] or int(s["frame_diagram"] or 0) != int(dg):
+        raise SimError("create CaseStructure {0} (case_wired): src #{1} source={2} on diagram {3}, case on {4} - needs a SOURCE "
+                       "on the same diagram (connect_nested_v1 same-diagram triple)".format(name, s["term_uid"], s["is_source"],
+                                                                                           s["frame_diagram"], dg))
+    oc = str(s["owner_class"])
+    if oc.endswith("Constant") or "Tunnel" in oc or "ShiftRegister" in oc or s["term_class"] in ("OuterTerminal", "InnerTerminal"):
+        raise SimError("create CaseStructure {0} (case_wired): src #{1} is owned by {2} #{3}, not a Node (Nodes[] route)".format(
+            name, s["term_uid"], oc, s["owner_uid"]))
+    u = _new_obj(st, "CaseStructure", "Diagram")
+    frames = []
+    for _k in names:
+        f = new_uid(st)
+        st["diagrams"][str(f)] = dg
+        st.setdefault("owners", {})[str(f)] = ["CaseStructure", u]
+        frames.append(f)
+    S = _new_obj(st, "Tunnel", "CaseStructure")
+    so = _new_term(st, S, "Tunnel", "OuterTerminal", False, dg)
+    si = [_new_term(st, S, "Tunnel", "InnerTerminal", True, f) for f in frames]
+    key = _sym(st, name, u)
+    fk = [_sym(st, "{0}.f{1}".format(name, k), f) for k, f in enumerate(frames)]
+    row = next(r for r in st["terminals"] if r["term_uid"] == so)
+    eff["src_branch"] = bool(s["wire_uid"])
+    eff["wire"] = _join(st, s, row)
+    eff.update(node=key, frames=frames, frame_syms=fk, frame_names=list(names), selector=_sym(st, a["selector_as"], S),
+               selector_outer=so, selector_inners=si, selector_src=s["term_uid"], wired=True, assumed=list(CASE_WIRED_ASSUMED))
     return eff, []
 
 

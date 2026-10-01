@@ -1,0 +1,14 @@
+BGRUN START 2026-10-01 15:36:34 limit 6.0 min: py -u tools/bench/selftest_sr_init_c123.py
+BGRUN PID 25632
+  PASS  T1 const #900 -> L register #311 OUTER face = 'const_sr': loop #300 WhileLoop, face by uid echo, constant by its class listing  {'dst': (0, 1, 1), 'dst_how': "uid echo: owner #300 Terminals[1] uid == #3111 (name '')", 'const': {'const': 900, 'cls': 'DigitalNumericConstant', 'term': 901}, 'const_how': 'constant route 188(c): DigitalNumericConstant #900 in report_all, terminal #901', 'dst_term': 1, 'loop': 300, 'loop_cls': 'Wh
+  PASS  T2 a second register's L outer face (#3211) -> a DIFFERENT Terminals[] index of the same loop  (1, 3)
+  PASS  T3 NEGATIVE: a constant on the loop BODY (#8) -> the outer face (#1) is refused  CONNECT-NO-VERB: const_sr: constant on diagram #8, register outer face on #1 (place the constant on the loop's owner diagram)
+  PASS  T4 NEGATIVE: const -> LoopTunnel outer sink still refused (unchanged route)  CONNECT-NO-VERB: bare constant source #901 -> sink #211 on LoopTunnel #210: wire_const addresses the sink NODE by class traverse; this sink's owner is not that 
+  PASS  T5 NEGATIVE: the register's loop unknown (loop_of empty) -> STOP  ADDRESS: register #311's loop is unknown
+  PASS  T6 LVBackend.connect 'const_sr' -> gscript.wire_const_sr(work, DigitalNumericConstant, 4, WhileLoop, 2, face index)  ([('W.vi', 'DigitalNumericConstant', 4, 'WhileLoop', 2, 1)], {'err': '', 's': None, 'how': ['const_sr', 'constant route 188(c): DigitalNumericConstant #900 in report_all, terminal #901', "uid echo: owner #300 Terminals[1] uid == #3111 (name '')"]})
+  PASS  T7 the simulated backend's reader routes the same row (connect_route is shared)  const_sr
+  PASS  T8 stagesim op_wire: const -> L outer face on the same diagram = ONE new wire carrying exactly both ends  ({'wire': -1, 'how': 'new', 'src_term_uid': 901, 'dst_term_uid': 3111, 'detached_from': None, 'joined': [], 'kept_stub_uid': False}, [3111, 901])
+  PASS  T9 gscript defines sr_init_const / wire_const_sr / loop_face_index with the documented arguments  {'sr_init_const': ['target', 'loop_uid', 'face_uid', 'diagram_uid', 'donor', 'pos', 'loop_cls'], 'wire_const_sr': ['target', 'const_cls', 'const_i', 'loop_cls', 'loop_i', 'face_index', 'labels'], 'loop_face_index': ['target', 'diagram_uid', 'loop_uid', 'face_uid']}
+  PASS  T10 opmodels/sr_init_const.json loads with samples  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\opmodels\sr_init_const.json
+RESULT {"status":"PASS","gates":{"pass":10,"fail":0},"first_fail":null,"artefacts":[],"schema":"result-line/1"}
+BGRUN END rc=0 after 1s

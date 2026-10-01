@@ -1,0 +1,365 @@
+{
+ "schema": "census-samples/1",
+ "card": "123-4 (docs/violation-decisions.md 'inference-over-measurement - 2026-10-01 13:56')",
+ "rule": "A sample is only what a log MEASURED; every number below cites the log lines (file:line + the substring that line must carry, checked by tools/bench/selftest_census_predict.py). A plan row whose op/variant is not here is CENSUS-UNPREDICTED, never PASS.",
+ "classes_measured": [
+  "LoopTunnel",
+  "Wire",
+  "WhileLoop",
+  "Diagram",
+  "SubVI",
+  "Local",
+  "ControlTerminal",
+  "ArrayConstant",
+  "DigitalNumericConstant",
+  "CaseStructure",
+  "Tunnel",
+  "OuterTerminal",
+  "InnerTerminal"
+ ],
+ "classes_note": "the class census the P2b runs counted (stage_d1_ring_p2b_scratch_pin.log:51,170; stage_d1_ring_p2b.log:40,159). A delta outside this set was never measured: a class outside it is CENSUS-UNPREDICTED for every row.",
+ "attribution": "The two runs measured the census only before and after all 10 ops (scratch_pin:171, launch:160 = CT+5 Wire+5 AC+4 DNC+5). The per-op split is closed by the objects each op was observed to create: during each const_donor call the new constant was read with its owner (OBSERVED lines: an ArrayConstant copy owns its element DigitalNumericConstant, a scalar copy is one DigitalNumericConstant on the frame), and gate G per label read ONE new indicator terminal + ONE new wire. 4x(AC+1,DNC+1) + 1x(DNC+1) + 5x(CT+1,Wire+1) == the measured total delta, no class left over.",
+ "runs": [
+  {
+   "log": "tools/bench/stage_d1_ring_p2b_scratch_pin.log",
+   "md5": "e58d552c43f123d03599450ca36ac100",
+   "what": "scratch copy of the P2a bed, cycle 122 (CEN2 FAILED there: +1 declared, +5 measured)"
+  },
+  {
+   "log": "tools/bench/stage_d1_ring_p2b.log",
+   "md5": "2070f65dca153464628bc520af4aecae",
+   "what": "the P2b launch, cycle 123 (CEN2 PASS with the corrected +5)"
+  }
+ ],
+ "ops": {
+  "create_primitive_nested:const_donor": {
+   "plan_match": "action op 'create' with prim 'const_donor' (donor copy of a valued constant; stagexec const_born_on route, first call)",
+   "route": "gscript.create_primitive_nested(target, diagram, 'const_donor', pos, donor=) (gscript.py const_indicator_on_diagram, first call)",
+   "variants": [
+    {
+     "name": "array",
+     "match": {
+      "class": "ArrayConstant",
+      "canon_in": [
+       "Array1D<I32>",
+       "Array1D<DBL>"
+      ]
+     },
+     "delta": {
+      "ArrayConstant": 1,
+      "DigitalNumericConstant": 1
+     },
+     "n": 8,
+     "why": "an ArrayConstant copy brings its element DigitalNumericConstant inside it (owner = the new ArrayConstant)",
+     "cites": [
+      {
+       "file": "tools/bench/stage_d1_ring_p2b_scratch_pin.log",
+       "line": 60,
+       "expect": "self 'DigitalNumericConstant'#25535 | 482 says 'ArrayConstant'"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b_scratch_pin.log",
+       "line": 61,
+       "expect": "self 'ArrayConstant'#25465 | 482 says 'Diagram'"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b_scratch_pin.log",
+       "line": 62,
+       "expect": "'uid': 130} -> err ''"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b_scratch_pin.log",
+       "line": 78,
+       "expect": "self 'DigitalNumericConstant'#25774 | 482 says 'ArrayConstant'"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b_scratch_pin.log",
+       "line": 79,
+       "expect": "self 'ArrayConstant'#25632 | 482 says 'Diagram'"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b_scratch_pin.log",
+       "line": 80,
+       "expect": "'uid': 101} -> err ''"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b_scratch_pin.log",
+       "line": 96,
+       "expect": "self 'DigitalNumericConstant'#26122 | 482 says 'ArrayConstant'"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b_scratch_pin.log",
+       "line": 97,
+       "expect": "self 'ArrayConstant'#25898 | 482 says 'Diagram'"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b_scratch_pin.log",
+       "line": 98,
+       "expect": "'uid': 101} -> err ''"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b_scratch_pin.log",
+       "line": 114,
+       "expect": "self 'DigitalNumericConstant'#26401 | 482 says 'ArrayConstant'"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b_scratch_pin.log",
+       "line": 115,
+       "expect": "self 'ArrayConstant'#26244 | 482 says 'Diagram'"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b_scratch_pin.log",
+       "line": 116,
+       "expect": "'uid': 130} -> err ''"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b_scratch_pin.log",
+       "line": 171,
+       "expect": "'ArrayConstant': 4, 'DigitalNumericConstant': 5"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b.log",
+       "line": 49,
+       "expect": "self 'DigitalNumericConstant'#25535 | 482 says 'ArrayConstant'"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b.log",
+       "line": 67,
+       "expect": "self 'DigitalNumericConstant'#25774 | 482 says 'ArrayConstant'"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b.log",
+       "line": 85,
+       "expect": "self 'DigitalNumericConstant'#26122 | 482 says 'ArrayConstant'"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b.log",
+       "line": 103,
+       "expect": "self 'DigitalNumericConstant'#26401 | 482 says 'ArrayConstant'"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b.log",
+       "line": 160,
+       "expect": "'ArrayConstant': 4, 'DigitalNumericConstant': 5"
+      }
+     ]
+    },
+    {
+     "name": "scalar",
+     "match": {
+      "class": "DigitalNumericConstant",
+      "canon_in": [
+       "I32"
+      ]
+     },
+     "delta": {
+      "DigitalNumericConstant": 1
+     },
+     "n": 2,
+     "why": "a scalar numeric copy is one DigitalNumericConstant owned by the frame diagram",
+     "cites": [
+      {
+       "file": "tools/bench/stage_d1_ring_p2b_scratch_pin.log",
+       "line": 132,
+       "expect": "self 'DigitalNumericConstant'#26495 | 482 says 'Diagram'"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b_scratch_pin.log",
+       "line": 133,
+       "expect": "'uid': 249} -> err ''"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b.log",
+       "line": 121,
+       "expect": "self 'DigitalNumericConstant'#26495 | 482 says 'Diagram'"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b.log",
+       "line": 122,
+       "expect": "'uid': 249} -> err ''"
+      }
+     ]
+    }
+   ]
+  },
+  "OpConstInd_v0": {
+   "plan_match": "action op 'create', class 'ControlTerminal', indicator true, born_on {'uid': 'new:<as of a const_donor row>'}; the variant is the born-on constant's (class, canon)",
+   "route": "gscript.create_indicator_on_const -> OpConstInd_v0 (Constant.Terminal -> Terminal.Create Indicator, card 122-3) (gscript.py const_indicator_on_diagram, second call)",
+   "variants": [
+    {
+     "name": "array",
+     "match": {
+      "const_class": "ArrayConstant",
+      "canon_in": [
+       "Array1D<I32>",
+       "Array1D<DBL>"
+      ]
+     },
+     "delta": {
+      "ControlTerminal": 1,
+      "Wire": 1
+     },
+     "n": 8,
+     "why": "gate G read ONE new indicator terminal + ONE new wire per label; the constant's own classes belong to the const_donor row",
+     "cites": [
+      {
+       "file": "tools/bench/stage_d1_ring_p2b_scratch_pin.log",
+       "line": 70,
+       "expect": "OP indicator_on_const ArrayConstant #25465"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b_scratch_pin.log",
+       "line": 88,
+       "expect": "OP indicator_on_const ArrayConstant #25632"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b_scratch_pin.log",
+       "line": 106,
+       "expect": "OP indicator_on_const ArrayConstant #25898"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b_scratch_pin.log",
+       "line": 124,
+       "expect": "OP indicator_on_const ArrayConstant #26244"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b_scratch_pin.log",
+       "line": 149,
+       "expect": "PASS  G Num: ONE new indicator terminal"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b_scratch_pin.log",
+       "line": 153,
+       "expect": "PASS  G TransPos: ONE new indicator terminal"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b_scratch_pin.log",
+       "line": 157,
+       "expect": "PASS  G RotPos: ONE new indicator terminal"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b_scratch_pin.log",
+       "line": 161,
+       "expect": "PASS  G FrameIdx: ONE new indicator terminal"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b_scratch_pin.log",
+       "line": 171,
+       "expect": "'Wire': 5"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b.log",
+       "line": 59,
+       "expect": "OP indicator_on_const ArrayConstant #25465"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b.log",
+       "line": 138,
+       "expect": "PASS  G Num: ONE new indicator terminal"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b.log",
+       "line": 142,
+       "expect": "PASS  G TransPos: ONE new indicator terminal"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b.log",
+       "line": 146,
+       "expect": "PASS  G RotPos: ONE new indicator terminal"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b.log",
+       "line": 150,
+       "expect": "PASS  G FrameIdx: ONE new indicator terminal"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b.log",
+       "line": 160,
+       "expect": "'ControlTerminal': 5"
+      }
+     ]
+    },
+    {
+     "name": "scalar",
+     "match": {
+      "const_class": "DigitalNumericConstant",
+      "canon_in": [
+       "I32"
+      ]
+     },
+     "delta": {
+      "ControlTerminal": 1,
+      "Wire": 1
+     },
+     "n": 2,
+     "why": "gate G read ONE new indicator terminal + ONE new wire for Latest",
+     "cites": [
+      {
+       "file": "tools/bench/stage_d1_ring_p2b_scratch_pin.log",
+       "line": 141,
+       "expect": "OP indicator_on_const DigitalNumericConstant #26495"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b_scratch_pin.log",
+       "line": 165,
+       "expect": "PASS  G Latest: ONE new indicator terminal"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b.log",
+       "line": 130,
+       "expect": "OP indicator_on_const DigitalNumericConstant #26495"
+      },
+      {
+       "file": "tools/bench/stage_d1_ring_p2b.log",
+       "line": 154,
+       "expect": "PASS  G Latest: ONE new indicator terminal"
+      }
+     ]
+    }
+   ]
+  },
+  "case_wired": {
+   "variants": [
+    {
+     "name": "new_wire",
+     "delta": {
+      "CaseStructure": 1,
+      "Diagram": 2,
+      "Tunnel": 1,
+      "OuterTerminal": 1,
+      "InnerTerminal": 2,
+      "Wire": 1
+     },
+     "n": 2,
+     "why": "gscript.case_wired with a selector source that had NO wire (Equal? 'x = y?'): census over report_all(GObject) before/after the verb, junk Invoke purged inside it (123-5 run: same classes plus the unpurged Invoke +1, Terminal +6)",
+     "cites": [
+      {
+       "file": "tools/bench/diag_c123_wired.log",
+       "line": 88,
+       "expect": "CENSUS case_wired (after purge) {\"CaseStructure\": 1, \"Diagram\": 2, \"InnerTerminal\": 2, \"OuterTerminal\": 1, \"Tunnel\": 1, \"Wire\": 1}"
+      },
+      {
+       "file": "tools/bench/diag_c123_wired.log",
+       "line": 87,
+       "expect": "'purged': 1, 'invoke_left': []"
+      },
+      {
+       "file": "tools/bench/diag_c123_wired.log",
+       "line": 87,
+       "expect": "'invoke_delta': []"
+      },
+      {
+       "file": "tools/bench/diag_c123_struct.log",
+       "line": 43,
+       "expect": "'CaseStructure': 1, 'Wire': 1, 'InnerTerminal': 2, 'Tunnel': 1, 'Diagram': 2"
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "not_sampled": {
+  "delete_wire / delete_object (plan_ring_p2a.json)": "stage_d1_ring_p2a.log:124 measured only the run's TOTAL (LoopTunnel -1, Wire -4); per op only Node counts were logged (:48-115), and the LoopTunnel loss is context-dependent (a tunnel auto-removed with its last wire, :11) - no per-op class sample",
+  "create ForLoop/SubVI/Function, const prims pool_names/i32_20/ring_dup, tunnel, wire (plan_qrt_pool.json)": "stage_d1_qrt_pool.log logged per-op Node diffs only (:45-204) and a census AFTER only (:232), no BEFORE census - no class sample"
+ }
+}

@@ -1675,3 +1675,29 @@ DECISION: device. Per steer_116 it is built AFTER this cycle's deliverable launc
 The A9 witness counted a self-test that PINS the hole. Fix, in the same card 117-3: A9 counts as witness only the file the
 disposition's fix names, never `tools/bench/selftest_*`. Acceptance: A9's report on the current dispositions lists which of
 its 12 "absent" items are real (owed code) and which are not.
+
+## inference-over-measurement — 2026-10-01 13:56 (cycle 123 judgement, after archive/peer/2026-10-01-retrospective-cycle122.md:322)
+
+`VIOLATION: inference-over-measurement | loss_min=20 | loss_usd=? | evidence=tools/bench/stage_d1_ring_p2b_scratch_pin.log:60`:
+ACCEPTED by the cycle-122 annotation (`:332`). The P2b scratch run failed only its class-count gate CEN2 (DigitalNumericConstant
++5 against +1). The owners of all five were already in the same log (`:60,78,96,114,132`), and the cycle-122 judgement still
+closed with "measure the owners" as the next act instead of reading them. The retrospective's "missing tool" finding (`:279`)
+names the cause under the slip: the census prediction is TYPED BY HAND (`plan_ring_p2b_make.py:82`), and in dry mode the recipe's
+census gate cannot fail (`DRY or dc == exp`, `tools/recipes/stage_d1_ring_p2b.py:98`), so the prerun's 13/0 counted a CEN2 PASS
+against an all-zero change and the wrong number first surfaced inside LabVIEW.
+
+DECISION: device. Built in an OFFLINE tooling card AFTER this cycle's P2b launch card returns (deliverable first; and no gate code
+is edited while a LabVIEW card is live, retrospective-cycle121 disposition):
+- **(1) The census prediction is computed, not typed.** `stage_prerun --prerun` derives each create row's class-count delta from
+  the op's MEASURED samples (a `created_classes` field in `tools/bench/opmodels/<op>.json`; the first sample for
+  `OpConstInd_v0` is taken from `stage_d1_ring_p2b_scratch_pin.log:60-132`: an array value adds its ArrayConstant AND the element
+  DigitalNumericConstant inside it, a scalar adds one DigitalNumericConstant). The prerun FAILS when the plan's census prediction
+  file differs from the derived delta, and reports a create row whose op has no `created_classes` sample as
+  `CENSUS-UNPREDICTED` (never as PASS).
+- **(2) A census gate cannot pass in dry mode.** stagekit gets one census-gate helper that prints `UNVERIFIED-DRY` in dry mode
+  instead of PASS; recipes written from now on use it. P2b's own recipe is NOT edited (its dry/prerun/prior-art records are keyed
+  on its bytes and it is launched this cycle).
+- Acceptance (self-test, offline): the prerun on `plan_ring_p2b.json` with cycle 122's hand-typed prediction (+1) FAILS naming
+  DigitalNumericConstant (+5 derived); with the corrected prediction it PASSES; the prerun of `plan_ring_p2a.json` and
+  `plan_qrt_pool.json` shows no new FAIL; a dry run of a recipe using the helper prints `UNVERIFIED-DRY`, not PASS.
+- If a later stage again meets a class count that its op samples could have predicted, that is `device-failed` (threshold 1).

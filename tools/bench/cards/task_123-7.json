@@ -1,0 +1,82 @@
+{
+ "schema": "task/1",
+ "id": "123-7",
+ "kind": "build",
+ "goal": "Make case_wired plan-usable (PD248(b)(d): discriminating read, Invoke purge, tidx raises, route/model/sample/self-test), then the census hook-in (PD247(e))",
+ "why": "123-5 proved the wired-selector case works but returned at a wrong wire-count gate before the route, model, self-test and census hook-in. P3a needs case_wired; its prerun must carry the census check. Steps: brief_123-7.md.",
+ "retry_of_card": "123-5",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_123-7.md"},
+  {"path": "tools/bench/cards/brief_123-5.md"},
+  {"path": "tools/bench/cards/result_123-5.json", "md5": "937c83afba6e15bdbea04f42be79473a"},
+  {"path": "tools/bench/diag_c123_struct.log", "md5": "b096b8f457b1d1bb645c19cff6f00921"},
+  {"path": "archive/peer/2026-10-01-c123-5-s1a-branch.md", "md5": "6fe66bd30d3f69f1418e8cad373e6a10"},
+  {"path": "tools/census_predict.py", "md5": "63ee7b075ee23204b425e5b6300f6f41"},
+  {"path": "tools/bench/census_samples.json", "md5": "721a81029171f7f8d53b5ae95137fbc5"},
+  {"path": "tools/gscript.py", "md5": "342a13a8df98e2ab118e211f40217d16"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p2b_20261001_140658.vi", "md5": "652b1447ebbda761a7d5ba36455a0fa1"},
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "af9963373f24faec96144b8eda931f45"}
+ ],
+ "requires": [
+  {"kind": "verb", "name": "case_wired", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "struct_copy_nested", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "create_primitive_nested", "where": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/census_predict.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"}
+ ],
+ "pass": [
+  "S1 Equal? x from #6810 on w3747: x wire uid == 3747, w3747 terminal count +1, Is Broken? False (no wire-count gate)",
+  "S1 case_wired on #639: frames False/True, selector wire == source wire, no Invoke left; per-class census recorded",
+  "S1 tidx raises on an unknown terminal name (no index-0 fallback)",
+  "S1 case_wired: stagexec route + stagesim model + census sample (log cited) + self-test PASS",
+  "S2 prerun FAIL on derived != declared; CENSUS-UNPREDICTED advisory + --scratch-required exit 3; UNVERIFIED-DRY helper",
+  "S2 self-tests: c122 fixture FAIL, corrected PASS, P2a/pool no FAIL; launch_gate, stagexec, census, sr_init stay green",
+  "bed md5 652b1447... unchanged; scratch deleted or md5-recorded; LabVIEW verified gone"
+ ],
+ "outputs": [
+  "tools/gscript.py",
+  "tools/stagexec.py",
+  "tools/stagesim.py",
+  "tools/stage_prerun.py",
+  "tools/stagekit.py",
+  "tools/census_predict.py",
+  "tools/bench/census_samples.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/gscript.py",
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/stage_prerun.py",
+   "tools/stagekit.py",
+   "tools/census_predict.py",
+   "tools/bench/census_*",
+   "tools/bench/opmodels/**",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/op_hygiene/**",
+   "tools/bench/diag_c123_*",
+   "tools/bench/selftest_*",
+   "docs/NAMES.md",
+   "archive/peer/**",
+   "tools/bench/cards/review_123*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 55
+ },
+ "rules": [
+  "Follow brief_123-7.md; byte copies of the bed only; no stage recipe is run",
+  "S1 (LabVIEW) first, then S2 (offline code); existing recipes not edited",
+  "Return at the first unexpected result; every bgrun starts within 60 min of binding",
+  "A failing log -> Jev ladder row; an owed hypothesis review is dispatched, never bypassed"
+ ],
+ "advances": ["M4", "M3"]
+}

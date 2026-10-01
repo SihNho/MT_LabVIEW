@@ -1,0 +1,23 @@
+{
+ "schema_note": "card 123-5 (PD246(c) A4/A5, PD247(c), brief_123-5.md): FINALIZED decision-row plan of tools/bench/diag_c123_struct.py. ONE LabVIEW run on ONE never-saved byte copy of the P2b bed (the bed is never saved over). D: the donor DonorCase_v0.vi = a byte copy of OpCaseFrames_v1.vi + build_case on its top-level diagram (selector = its panel control 'index', frames '0, Default'/'1'), ExecState 1, SAVED (claudeDev, md5 recorded). S1: Equal? ($work dup of #10019) on While #637's body #639, x <- #6810 'current image number', y <- a constant 0 (const_row); then gscript.case_wired on #639 with the selector wired from Equal?'s 'x = y?'. S2: facts only (no Flat Sequence creator route exists: the Erdos Miller 'Create Sequence.vi' front panel is read for the next card). Scratch deleted; LabVIEW killed and verified gone.",
+ "input": {"vi": "D1_ring_p2b_20261001_140658.vi", "md5": "652b1447ebbda761a7d5ba36455a0fa1", "graph": "tools/bench/diag_c122_graph_p2a.json"},
+ "loop": {"uid": 637, "body": 639},
+ "donor": {"file": "DonorCase_v0.vi", "from": "OpCaseFrames_v1.vi", "selector_label": "index", "frames": ["0, Default", "1"], "pos": [900, 60]},
+ "eq": {"prim": "Equal?", "uid": 10019, "x": "x", "y": "y", "out": "x = y?", "y_value": 0, "pos": [3300, 1500]},
+ "bufnum": {"node": 6810, "name": "current image number"},
+ "case": {"pos": [3600, 1450], "want_names": ["False", "True"], "bad_term": "no such terminal"},
+ "s2": {"erdos_seq": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\vi.lib\\Erdos Miller\\LV-Scripting\\Create Sequence.vi"},
+ "decisions": [
+  {"id": "D-0", "action": "stage", "what": "stagekit Stage: restart LabVIEW, byte copy of the P2b bed = the work copy (never saved)"},
+  {"id": "D-1", "action": "create", "what": "DonorCase_v0.vi = byte copy of OpCaseFrames_v1.vi; build_case(top level, selector 'index', frames '0, Default'/'1'); ExecState 1; saved; case uid recorded"},
+  {"id": "S1-1", "action": "create", "what": "create_primitive_nested $work #10019 Equal? onto #639"},
+  {"id": "S1-2", "action": "wire", "what": "connect_nested_v1: Equal? 'x' <- #6810 'current image number' (same diagram #639)"},
+  {"id": "S1-3", "action": "create", "what": "const_row: a constant 0 on Equal? 'y' (OpCreateConstOnTerm_v0, typed by the sink, wired)"},
+  {"id": "S1-4", "action": "read", "what": "negative: case_wired with a source terminal name that does not exist -> ValueError, CaseStructure count unchanged"},
+  {"id": "S1-5", "action": "create", "what": "case_wired: struct_copy_nested(CaseStructure, DonorCase_v0) onto #639 (OpPrimCopyNested_v0)"},
+  {"id": "S1-6", "action": "wire", "what": "case_wired: selector (the copy's one bare sink) <- Equal? 'x = y?' (connect_nested_v1)"},
+  {"id": "S1-7", "action": "read", "what": "frames + names (case_frames), selector wire == source wire, class census delta (report_all GObject before/after)"},
+  {"id": "S2-1", "action": "read", "what": "fp_labels of Erdos Miller Create Sequence.vi (read-only, never saved) - facts for a Flat Sequence creator"},
+  {"id": "X", "action": "discard", "what": "close(): scratch deleted, bed md5 unchanged, LabVIEW killed and gone"}
+ ]
+}

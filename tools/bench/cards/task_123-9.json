@@ -1,0 +1,74 @@
+{
+ "schema": "task/1",
+ "id": "123-9",
+ "kind": "build",
+ "goal": "PD249(d): measure case data tunnels (False via Increment, True input->output) on a scratch, then a frame field for case-tunnel faces in stageplan/stagesim/stagexec. Return by 16:35",
+ "why": "123-8's P3a plan failed stagesim on action 20: a case tunnel's face in the non-body frame cannot be addressed. P3a and P4 need it. Steps and the hard time limit: brief_123-9.md.",
+ "retry_of_card": "123-8",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_123-9.md"},
+  {"path": "tools/bench/cards/result_123-8.json", "md5": "6561c70c9aaa16a9445ba1ef7f073094"},
+  {"path": "tools/bench/plan_ring_p3a_in.json", "md5": "0a27116f334059d37ef4be264358fdf0"},
+  {"path": "tools/bench/plan_ring_p3a_sim.log", "md5": "b5c4fcf71859b8c541fbdbcf6150db42"},
+  {"path": "tools/stagesim.py", "md5": "5e20117c5c60f8e5f3844c4a76e36fca"},
+  {"path": "tools/stagexec.py", "md5": "80d652c14376744cd9ad65c09da8bb66"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p2b_20261001_140658.vi", "md5": "652b1447ebbda761a7d5ba36455a0fa1"},
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "52e8c557b38b32d00179fdd325ba653d"}
+ ],
+ "requires": [
+  {"kind": "verb", "name": "case_wired", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "create_primitive_nested", "where": "tools/gscript.py"},
+  {"kind": "file", "name": "docs/protocol/stageplan.json"},
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stagexec.py"}
+ ],
+ "pass": [
+  "S1 scratch: case_wired case with input + output tunnel; False via Increment, True input->output; per-frame faces read back",
+  "S1 Is Broken? False on the new wires; census sample with log lines; bed md5 unchanged; LabVIEW gone",
+  "S2 stageplan frame field on case-tunnel faces; stagesim per-frame inner face; stagexec wire in a named frame",
+  "S2 self-tests: pass-through plan simulates + compiles; plan_ring_p3a_in.json action 20 passes stagesim; existing tests green",
+  "returned by 16:35; no file of stagesim/stagexec/schema left half-changed"
+ ],
+ "outputs": [
+  "tools/stagesim.py",
+  "tools/stagexec.py",
+  "docs/protocol/stageplan.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagesim.py",
+   "tools/stagexec.py",
+   "tools/stagekit.py",
+   "tools/gscript.py",
+   "tools/protocol.py",
+   "docs/protocol/stageplan.json",
+   "tools/census_predict.py",
+   "tools/bench/census_*",
+   "tools/bench/opmodels/**",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/diag_c123_*",
+   "tools/bench/selftest_*",
+   "tools/bench/*ring_p3a*",
+   "docs/NAMES.md",
+   "archive/peer/**",
+   "tools/bench/cards/review_123*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 35
+ },
+ "rules": [
+  "HARD: return by 16:35; start no LabVIEW run or multi-file code change after 16:25",
+  "S1 (measure) before S2 (code); related code edits land together and self-tested, or not at all",
+  "No stage recipe is run; return at the first unexpected result"
+ ],
+ "advances": ["M4", "M3"]
+}

@@ -1,0 +1,39 @@
+BGRUN START 2026-10-01 15:12:50 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/bench/diag_c123_struct.py --graph tools/bench/diag_c122_graph_p2a.json
+BGRUN PID 9124
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 652b1447ebbda761a7d5ba36455a0fa1  got 652b1447ebbda761a7d5ba36455a0fa1
+  PASS  DRY graph JSON for input md5 652b1447ebbda761a7d5ba36455a0fa1  tools/bench/diag_c122_graph_p2a.json
+  FACT  OP create_primitive_nested Equal? $work -> err '' (0.0 s)
+  FACT  OP connect_nested_v1 Equal? x <- BufNum -> err '' (0.0 s)
+  UNVERIFIED  address {'uid': '<fake>', 'term': 'y', 'diagram': 639, 'owner_class': '', 'term_class': ''} after mutation Stage._op create_primitive_nested: #0 not in Diagram[56].Nodes[]
+  FACT  OP create_const_on_term loop[4] N[<dry:ni>].t<dry:ti> value 0 -> err '' (0.0 s)
+  PASS  S1a Equal? #<dry:g.create_primitive_nested> on #639: x wire +1, y const wired  {'x': <dry:build_opconnectnested_v1.connect_nested_v1>, 'y': <dry:build_opcreateconstonterm_v0.create_const_on_term>}
+  PASS  S1b bad source name -> ValueError, no new CaseStructure
+  FACT  OP case_wired case on #639 <- Equal? #<dry:g.create_primitive_nested> -> err '' (0.0 s)
+  PASS  S1c case_wired: CaseStructure +1 on #639, Diagram +2, wire +1, selector wire == Equal? output wire, frames ['False', 'True']  {'call': {}, 'new_by_class': {}, 'err': ''}
+  ROW   S1c selector terminals before/after : observed={'before': None, 'after': None} expected=None
+  FACT  S2 FACT Erdos Miller Create Sequence.vi front panel (index, label, is_indicator): <dry:g.fp_labels>
+
+=== DRY PASS: first_fail=None coverage 55/78 lines, first mutation Stage._op create_primitive_nested, unverified 1, graph tools/bench/diag_c122_graph_p2a.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s
+BGRUN START 2026-10-01 15:13:18 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/bench/diag_c123_struct.py --graph tools/bench/diag_c122_graph_p2a.json
+BGRUN PID 12660
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 652b1447ebbda761a7d5ba36455a0fa1  got 652b1447ebbda761a7d5ba36455a0fa1
+  PASS  DRY graph JSON for input md5 652b1447ebbda761a7d5ba36455a0fa1  tools/bench/diag_c122_graph_p2a.json
+  FACT  OP create_primitive_nested Equal? $work -> err '' (0.0 s)
+  FACT  OP connect_nested_v1 Equal? x <- BufNum -> err '' (0.0 s)
+  FACT  OP create_const_on_term Equal? y const -> err '' (0.0 s)
+  PASS  S1a Equal? #<dry:g.create_primitive_nested> on #639: x wire +1, y const wired  {'x': <dry:build_opconnectnested_v1.connect_nested_v1>, 'y': <dry:build_opcreateconstonterm_v0.create_const_on_term>}
+  PASS  S1b bad source name -> ValueError, no new CaseStructure
+  FACT  OP case_wired case on #639 <- Equal? #<dry:g.create_primitive_nested> -> err '' (0.0 s)
+  PASS  S1c case_wired: CaseStructure +1 on #639, Diagram +2, wire +1, selector wire == Equal? output wire, frames ['False', 'True']  {'call': {}, 'new_by_class': {}, 'err': ''}
+  ROW   S1c selector terminals before/after : observed={'before': None, 'after': None} expected=None
+  FACT  S2 FACT Erdos Miller Create Sequence.vi front panel (index, label, is_indicator): <dry:g.fp_labels>
+
+=== DRY PASS: first_fail=None coverage 56/79 lines, first mutation Stage._op create_primitive_nested, unverified 0, graph tools/bench/diag_c122_graph_p2a.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

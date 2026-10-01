@@ -1,0 +1,74 @@
+{
+ "schema": "task/1",
+ "id": "123-3",
+ "kind": "build",
+ "goal": "P3a's routes (PD246(e)): measure case_in in a While body, the $work donor for Equal?/Increment/Q&R, the For output tunnel; build the SR-init-from-constant route; scratch copies only",
+ "why": "P3a needs SR initialisation (MISSING) and three routes that were never run (123-2 routes_c123_ring_p3.json); P4 needs the SR route again. Steps: brief_123-3.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_123-3.md"},
+  {"path": "tools/bench/routes_c123_ring_p3.json", "md5": "1a49663f005085d145c2adf6f5cdbbc1"},
+  {"path": "tools/bench/facts_c123_p3.json", "md5": "ee20bb858941b5465d141cc1d9d0ced7"},
+  {"path": "tools/bench/ring_p3_steps.md", "md5": "6617a5e921b5671e6362da3848fb14cf"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p2b_20261001_140658.vi", "md5": "652b1447ebbda761a7d5ba36455a0fa1"},
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "3b02d606d732a5daa773b05407316b91"}
+ ],
+ "requires": [
+  {"kind": "verb", "name": "case_in", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "add_shift_reg", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "wire_sr", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "create_primitive_nested", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "const_indicator_on_diagram", "where": "tools/gscript.py"},
+  {"kind": "op", "name": "OpConstInd_v0"}
+ ],
+ "pass": [
+  "S1a scratch_verify record: case structure on body 639, selector from Equal?(BufNum w3747, placeholder); frames, selector, tunnels read back",
+  "S1b scratch_verify record: $work donor for Equal?, Increment, Quotient & Remainder; created classes and terminal names",
+  "S1c scratch_verify record: nested route from #23099 New Image t23289 (For #23093) into While #637; tunnel indexing mode read back",
+  "S2 SR-init route: verb + stagexec route + stagesim model + opmodel with created classes; self-test PASS",
+  "S2 scratch: SR on #637 initialised from I32 -1 and U32 4294967295 constants on frame 686; value, type, wire read back",
+  "S2 any NEW op VI has a hygiene record (>= 2000 calls, 0 errors, handles flat +-100)",
+  "bed md5 652b1447... unchanged; scratch copies deleted or md5-recorded; LabVIEW verified gone"
+ ],
+ "outputs": [
+  "tools/bench/scratch_verify/",
+  "tools/bench/opmodels/",
+  "tools/gscript.py",
+  "tools/stagexec.py",
+  "tools/stagesim.py"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/gscript.py",
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/stagekit.py",
+   "tools/bench/opmodels/**",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/op_hygiene/**",
+   "tools/bench/diag_c123_*",
+   "tools/bench/selftest_*c123*",
+   "tools/bench/selftest_sr_init*",
+   "docs/NAMES.md",
+   "archive/peer/**",
+   "tools/bench/cards/review_123*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 75
+ },
+ "rules": [
+  "Follow brief_123-3.md; byte copies of the bed only; the bed is never saved over",
+  "No stage recipe is run; stagekit scripts <= 120 lines",
+  "S1 outcomes are facts to record; S2 returns at the first unexpected result",
+  "A failing log -> Jev ladder row; an owed hypothesis review is dispatched, never bypassed"
+ ],
+ "advances": ["M4", "M3"]
+}

@@ -1,0 +1,66 @@
+{
+ "schema": "task/1",
+ "id": "123-8",
+ "kind": "build",
+ "goal": "P3a plan + recipe on the REAL P2b graph (PD246(c)(d), 247, 248), no build: graph read, plan_ring_p3a.json, stage_d1_ring_p3a.py, dry + prerun + prior-art, --scratch-required exit recorded",
+ "why": "Every route P3a needs now exists (const_sr, case_wired, $work donors, Wait donor) and the census line X15 is in the prerun; preparing P3a now lets cycle 124 start at the scratch run. Steps: brief_123-8.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_123-8.md"},
+  {"path": "tools/bench/ring_p3_steps.md", "md5": "6617a5e921b5671e6362da3848fb14cf"},
+  {"path": "tools/bench/facts_c123_p3.json", "md5": "ee20bb858941b5465d141cc1d9d0ced7"},
+  {"path": "tools/bench/cards/result_123-3.json", "md5": "ca151fa94c7e93442da6d67593929245"},
+  {"path": "tools/bench/cards/result_123-7.json"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p2b_20261001_140658.vi", "md5": "652b1447ebbda761a7d5ba36455a0fa1"},
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "af9963373f24faec96144b8eda931f45"}
+ ],
+ "requires": [
+  {"kind": "verb", "name": "case_wired", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "sr_init_const", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "add_shift_reg", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "create_primitive_nested", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "read_term_type", "where": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/census_predict.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"}
+ ],
+ "pass": [
+  "S1 graph_ring_p2b_<ts>.json read from the saved P2b bed (read-only); BufNum representation recorded; LabVIEW gone",
+  "S2 plan_ring_p3a.json on that graph, <= 25 rows, stagesim FINAL, rows per brief S2; Error List new-item prediction reasoned",
+  "S2 census prediction from census_samples.json where measured, unmeasured classes marked",
+  "S3 stage_d1_ring_p3a.py <= 120 lines on stagekit with the census gate helper",
+  "S4 dry + prerun PASS (X15 line shown); prior-art answered and recorded; --scratch-required exit code recorded"
+ ],
+ "outputs": [
+  "tools/bench/graph_ring_p2b_<ts>.json",
+  "tools/bench/plan_ring_p3a.json",
+  "tools/recipes/stage_d1_ring_p3a.py"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/graph_ring_p2b*",
+   "tools/bench/*ring_p3a*",
+   "tools/bench/sim/ring_p3a*/**",
+   "tools/recipes/stage_d1_ring_p3a*.py",
+   "tools/bench/diag_c123_*",
+   "tools/bench/stop_records.json",
+   "archive/peer/**",
+   "tools/bench/cards/review_123*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 40
+ },
+ "rules": [
+  "Follow brief_123-8.md; NO scratch run and NO launch; LabVIEW only for the S1 read",
+  "A fact contradicting PD246/247/248 is OPEN, not decided; return at the first unexpected result",
+  "If budget or backstop stops the card, return with the step and files recorded"
+ ],
+ "advances": ["M4", "M3"]
+}

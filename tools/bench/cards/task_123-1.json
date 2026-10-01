@@ -1,0 +1,78 @@
+{
+ "schema": "task/1",
+ "id": "123-1",
+ "kind": "build",
+ "goal": "Ring P2b per PD245(b'): fix pred (DNC +5), Error List pin on the kept scratch, ONE launch -> claudeDev D1_ring_p2b_<ts>.vi + expected EL file; then a read-only Image Type fact read",
+ "why": "P2b passed every object gate in cycle 122; CEN2 was a wrong prediction whose owners scratch_pin.log:60-132 already measured. P2b is the next saved file of the ring buffer (PD238(g)). Steps: brief_123-1.md.",
+ "retry_of_card": "122-6",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_123-1.md"},
+  {"path": "tools/bench/cards/result_122-6.json"},
+  {"path": "tools/bench/plan_ring_p2b.json", "md5": "ce18e794994b94b251d76cb2c828ef7b"},
+  {"path": "tools/bench/plan_ring_p2b_pred.json", "md5": "878314caed05af81a73cee3f41943da4"},
+  {"path": "tools/recipes/stage_d1_ring_p2b.py", "md5": "93a8ad5aabb0210f0c119a3fa12d83cc"},
+  {"path": "tools/bench/stage_d1_ring_p2b_el.py", "md5": "a19b02cc3b98ebd6fa07910afba6f2a7"},
+  {"path": "tools/bench/stage_d1_ring_p2b_scratch_pin.log", "md5": "e58d552c43f123d03599450ca36ac100"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c122_p2b_20261001_132703.vi"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p2a_20260928_191739.vi", "md5": "c22a473f26ebcc67296d1c2441f8a47a"},
+  {"path": "tools/bench/errorlist_expected_D1_ring_p2a_20260928_191739.json", "md5": "2154ffa9b8928cfbf12990319a027fc4"},
+  {"path": "tools/bench/diag_c122_graph_p2a.json", "md5": "3f6f5d36808cc205771a8349b5a737ff"},
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "5d5a66608062fa0bd93c0b3cc186a1c4"}
+ ],
+ "requires": [
+  {"kind": "op", "name": "OpConstInd_v0"},
+  {"kind": "op", "name": "OpConstValueRing_v0"},
+  {"kind": "verb", "name": "const_indicator_on_diagram", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "read_term_type", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "read_const_value", "where": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p2b_el.py"},
+  {"kind": "file", "name": "tools/errorlist_check.py"}
+ ],
+ "pass": [
+  "S1 plan_ring_p2b_pred.json: DNC +5 citing scratch_pin.log:60,78,96,114,132; no other line changed; plan + recipe md5 unchanged",
+  "S2 dry + prerun re-run if the launch gate keys records on the pred file; PASS",
+  "S3 scratch md5 a18b92d5...; stage_d1_ring_p2b_el.py pins 0 new Error List items, total 54; scratch deleted",
+  "S4 ONE launch saves D1_ring_p2b_<ts>.vi; scratch object gates hold (labels, types, values, #4866, 5 wires, cdiff 16); CEN2 == pred",
+  "S5 final Error List (--role final) == pin; errorlist_expected_D1_ring_p2b_<ts>.json reverdicts OK; refs balanced; PD236(b) band",
+  "S6 facts_c123_imgtype.json: Image Type source (uid/class or unwired) + value of #20436, #13938, IMAQ Create in For #23093",
+  "S7 LabVIEW verified gone (tasklist)"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p2b_<ts>.vi",
+  "tools/bench/errorlist_expected_D1_ring_p2b_<ts>.json",
+  "tools/bench/plan_ring_p2b_pred.json",
+  "tools/bench/facts_c123_imgtype.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/*ring_p2b*",
+   "tools/bench/sim/ring_p2b*/**",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/errorlist*ring_p2*",
+   "tools/bench/graph_ring_p2*",
+   "tools/bench/diag_c123_*",
+   "tools/bench/facts_c123_imgtype*",
+   "archive/peer/**",
+   "tools/bench/cards/review_123*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 75
+ },
+ "rules": [
+  "Follow brief_123-1.md; PD240-245 fix labels, types, values, frame #4866; a contradicting fact is returned as OPEN",
+  "stage_d1_ring_p2b.py and plan_ring_p2b.json are NOT edited",
+  "Bed never saved over; GUI via lv_gui.ps1 -Exception Approved only; capture, locate, act, capture, confirm",
+  "guard_peer hold -> Jev ladder row; an owed hypothesis review is dispatched, never bypassed",
+  "Return at the first unexpected result; a reader limit in S6 is OPEN, not a tool to build"
+ ],
+ "advances": ["M3", "M4"]
+}

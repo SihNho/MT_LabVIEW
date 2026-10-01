@@ -263,6 +263,23 @@
    ],
    "status": "answered",
    "answer": "moot: the pool was delivered in cycle 119 (D1_qrt_pool_20260928_141055.vi) before an answer was needed (chat 2026-09-28 15:3x)"
+  },
+  {
+   "id": "D-2026-10-01-01",
+   "asked": "2026-10-01T14:40",
+   "by": "cycle 123",
+   "question": "The rest of the ring-buffer work (camera-loop part ~74 rows, tracking-loop part ~70, results queue ~25) cannot fit both your limit of 6 unrun broken files (5 left before the first run) and 15-25 rows per build step. Which limit should give?",
+   "options": [
+    "keep 6 unrun files; allow up to ~40 rows per build step for these steps, each with a full test-copy run before the real build",
+    "keep 15-25 rows per step; raise the unrun-file limit to 9 (the first full run comes about 3 build steps later)",
+    "other (please say)"
+   ],
+   "recommendation": "the first option: the first end-to-end run (the reason for your limit) comes sooner, and recent steps passed first time after their test-copy run (P2a 27/0, P2b 41/0). The camera-loop control part (~24 rows) goes ahead under either answer.",
+   "blocks": [
+    "M4",
+    "M3"
+   ],
+   "status": "open"
   }
  ]
 }

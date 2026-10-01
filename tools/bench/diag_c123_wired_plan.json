@@ -1,0 +1,23 @@
+{
+ "schema_note": "card 123-7 (PD248(b)(d), brief_123-7.md STEP 1): FINALIZED decision-row plan of tools/bench/diag_c123_wired.py. ONE LabVIEW run on ONE never-saved byte copy of the P2b bed. Donor DonorCase_v0.vi (md5 df825c18..., case #742) is REUSED, not rebuilt. S1a: Equal? E1 ($work dup of #10019) on #639, x <- #6810 'current image number' by connect_nested_v1 (the 123-5 call) + the discriminating read (x wire uid, w3747 sink count). S1a2: Equal? E2, x <- w3747 by connect_from_wire (OpConnectFromWire_v0, the ORDERED Is Broken? reader, NAMES.md:1088-1094). S1b: gscript.term_index raises on an unknown name. S1c: case_wired on #639 <- E1 'x = y?', purge inside the verb, census per class. Scratch deleted; LabVIEW killed and verified gone.",
+ "input": {"vi": "D1_ring_p2b_20261001_140658.vi", "md5": "652b1447ebbda761a7d5ba36455a0fa1", "graph": "tools/bench/diag_c122_graph_p2a.json"},
+ "loop": {"uid": 637, "body": 639},
+ "donor": {"file": "DonorCase_v0.vi", "md5": "df825c180fe682af2a2cf64db893d64a", "uid": 742},
+ "eq": {"prim": "Equal?", "uid": 10019, "x": "x", "out": "x = y?", "pos": [3300, 1500], "pos2": [3300, 1600]},
+ "bufnum": {"node": 6810, "name": "current image number", "wire": 3747},
+ "case": {"pos": [3600, 1450], "want_names": ["False", "True"], "bad_term": "no such terminal"},
+ "decisions": [
+  {"id": "D-0", "action": "stage", "what": "stagekit Stage: restart LabVIEW, byte copy of the P2b bed = the work copy (never saved)"},
+  {"id": "S1-1", "action": "create", "what": "create_primitive_nested $work #10019 Equal? E1 onto #639"},
+  {"id": "S1-2", "action": "read", "what": "term_index: #6810 'current image number' (source) wire, E1 'x' (sink); w3747 sink walk BEFORE"},
+  {"id": "S1-3", "action": "wire", "what": "connect_nested_v1: E1 'x' <- #6810 'current image number' (same diagram #639)"},
+  {"id": "S1-4", "action": "read", "what": "E1 'x' wire uid (3747 = branch, 0 = declined, other = wrong source) + w3747 sink walk AFTER (+1)"},
+  {"id": "S1-5", "action": "create", "what": "create_primitive_nested $work #10019 Equal? E2 onto #639"},
+  {"id": "S1-6", "action": "wire", "what": "connect_from_wire: E2 'x' <- w3747's source terminal (ordered Is Broken? readback)"},
+  {"id": "S1-7", "action": "read", "what": "negative: term_index with a name that does not exist -> ValueError"},
+  {"id": "S1-8", "action": "create", "what": "case_wired on #639: struct_copy_nested(CaseStructure, DonorCase_v0 #742) (OpPrimCopyNested_v0)"},
+  {"id": "S1-8w", "action": "wire", "what": "case_wired: selector (the copy's one bare sink) <- E1 'x = y?' (connect_nested_v1), then the junk-Invoke purge"},
+  {"id": "S1-9", "action": "read", "what": "frames/names, selector wire == source wire, class census delta (report_all GObject before/after), Invoke delta 0"},
+  {"id": "X", "action": "discard", "what": "close(): scratch deleted, bed md5 unchanged, LabVIEW killed and gone"}
+ ]
+}

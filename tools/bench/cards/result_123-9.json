@@ -1,0 +1,25 @@
+{"schema":"result/1","id":"123-9","status":"FAIL","gates":{"pass":13,"fail":1},
+"first_fail":"S1 P True-frame pass-through: case Terminals[] = selector + 2 OUTER tunnel faces, no inner face; no existing verb reaches a SelectorTunnel inner face (diag_c123_casetun.log:69-70)",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/diag_c123_casetun.py","md5":"e3250c3b2400c0adfddf6dc6f99703f7"},
+ {"path":"tools/bench/diag_c123_casetun_plan.json","md5":"f23a14756167a3cf146f2d77f6b1884f"},
+ {"path":"tools/bench/diag_c123_casetun.log","md5":"3b2363e707f75fc30ff617c3d7eedc87"},
+ {"path":"tools/bench/diag_c123_casetun.json","md5":"8fca185d20c026a2e7b382d5dfcbb76e"},
+ {"path":"tools/bench/scratch_verify/gscript.case_data_tunnel_c123_9_20261001_160019.json","md5":"8518df856be1a70662762625889ac575"}],
+"facts":[
+ "case_wired on #639: case #26747, frames False #27051 / True #27084 (diag_c123_casetun.log:31)",
+ "INPUT tunnel = connect_nested_v1 I1 x (False) <- #6810: SelectorTunnel +1 (#27170), OuterTerminal +1, InnerTerminal +2 (one per frame), wire count +1 / Wire objs +2 (log:38)",
+ "OUTPUT tunnel = connect_nested_v1 I2 x (#639) <- I1 x+1 (False): SelectorTunnel +1, Outer +1, Inner +2, wire count +2, plus Invoke +1 junk (log:45)",
+ "Ordered second passes (connect_from_wire): Is Broken? False on I1 x (w27158, source = SelectorTunnel #27170 inner face) and on I2 x (w27278) (log:46-62)",
+ "Case Terminals[] after both tunnels = 3 rows: selector #27034, input outer #27212 (named 'current image number'), output outer #27331; NO inner face listed (log:69)",
+ "P FAIL: no unwired source/sink on the case's Terminals[], so the True-frame inner->inner wire was not attempted; stagexec FACE_ROUTES also route OUTER faces only (log:70)",
+ "Census total: CaseStructure 1, Diagram 2, SelectorTunnel 2, Tunnel 1, InnerTerminal 6, OuterTerminal 3, Wire 5, Invoke 3 - 3 junk Invokes outside case_wired's purge (log:71)",
+ "OpWireSource_v5 walk of w27158: 3rd row error 1055 (no owner), 2 real-owner rows, PD85 0 (log:46-51)",
+ "Hygiene: bed md5 652b1447 unchanged (H2), scratch deleted (H4), refs 9/9 (H5), no LabVIEW process after the run (log:77-88; tasklist empty 16:03)",
+ "S2 NOT started (brief: only after STEP 1 passes): stagesim.py / stagexec.py / stageplan.json untouched. Jev: no JEV-LADDER row yet for diag_c123_casetun.log"],
+"open":[
+ "True-frame inner->inner needs a NEW op that addresses a SelectorTunnel inner face per frame (e.g. Tunnel inner terminals by frame, connect by terminal UID), or change PD246(c) A5 (count arithmetic outside the case / no True-frame output)?",
+ "3 junk Invokes appear on cross-border connect_nested_v1 / connect_from_wire (1 at the output tunnel): purge them in those verbs as case_wired does?"],
+"cost":{"usd":null,"minutes":10,"labview_runs":1},
+"note":"log | ladder class p | NEXT-ACTION | what you did | result => diag_c123_casetun.log | no JEV-LADDER row yet | - | returned at the first unexpected result (card chat-P2) | -. Prerun first failed X5 (wire rows 3 vs ops 5); plan rows S1-2w/S1-7a/S1-7b added, prerun PASS 13/0 before the LabVIEW run."}

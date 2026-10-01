@@ -1,0 +1,71 @@
+{
+ "schema": "task/1",
+ "id": "123-2",
+ "kind": "build",
+ "goal": "OFFLINE prep of ring P3 (PD238(c)(i), 241(d), 242(c)): facts from files, route check, P3 step list, then P3a plan + recipe on the provisional P2b end graph; dry + prerun + prior-art",
+ "why": "PIPELINE: P2b launches in card 123-1; this prepares P3 without LabVIEW so P3a can be rebased and launched once P2b's file exists. Steps and rules: brief_123-2.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_123-2.md"},
+  {"path": "tools/bench/facts_c122_p3.json", "md5": "9170281ef4992b35ed8ee884a2f27320"},
+  {"path": "tools/bench/facts_c122_p3_rows.md", "md5": "3fce7a75792ff5681327827b6a4e9d2b"},
+  {"path": "tools/bench/diag_c122_graph_p2a.json", "md5": "3f6f5d36808cc205771a8349b5a737ff"},
+  {"path": "tools/bench/sim/ring_p2b/step_10_create.json", "md5": "830fbe679b461cfa0bdc7d0f479c4591"},
+  {"path": "tools/bench/sim/ring_p2b/summary.json", "md5": "87888dbedebc67df14c4940b02a05e84"},
+  {"path": "tools/bench/plan_ring_p2b.json", "md5": "ce18e794994b94b251d76cb2c828ef7b"},
+  {"path": "docs/ring-buffer-design.md", "md5": "48ac0e5778017cee6b7911c8defe4c4f"},
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "5d5a66608062fa0bd93c0b3cc186a1c4"},
+  {"path": "docs/user-rules.md", "md5": "9e0396da1b6fd9227a6e0ca850337cd5"},
+  {"path": "docs/camera-acquisition-facts.md"},
+  {"path": "tools/bench/p1_bufmode_121.json"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/protocol.py"}
+ ],
+ "pass": [
+  "S1 facts_c123_p3.json from files only: Image Type sources, For #23093 exit route, loop 1.1 terminals in the P2b sim end graph (brief S1 a-c), file:line each",
+  "S2 every op/verb/route P3 needs is PRESENT (file:line) or MISSING per protocol.py requires",
+  "S3 ring_p3_steps.md: <= 2 sub-steps (broken-intermediate cap), rows, saved file, pass each; open choices as ASSUMPTION lines",
+  "S4 plan_ring_p3a.json on the provisional base (sim_of plan_ring_p2b ce18e794...); stage_d1_ring_p3a.py <= 120 lines; dry + prerun PASS",
+  "S4 census prediction marks each create class as measured (opmodel sample cited) or NOT measured",
+  "S5 prior-art review of the P3a recipe answered; verdict and release recorded",
+  "A MISSING route that P3a needs ends the card after S3; the missing list is the result"
+ ],
+ "outputs": [
+  "tools/bench/facts_c123_p3.json",
+  "tools/bench/ring_p3_steps.md",
+  "tools/bench/plan_ring_p3a.json",
+  "tools/recipes/stage_d1_ring_p3a.py"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/facts_c123_p3*",
+   "tools/bench/ring_p3_steps.md",
+   "tools/bench/*ring_p3*",
+   "tools/bench/sim/ring_p3*/**",
+   "tools/recipes/stage_d1_ring_p3*.py",
+   "archive/peer/**",
+   "tools/bench/cards/review_123*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 90
+ },
+ "rules": [
+  "Follow brief_123-2.md; no LabVIEW, GUI or hardware; a fact contradicting PD238/240-242 is returned as OPEN",
+  "No edit to stage_prerun/stagekit/stagexec/stagesim/gscript/hooks while 123-1 is live; wrong refusal -> gate_fp.py",
+  "Design choices are ASSUMPTION lines for judgement, never decided here; a provisional plan is never launched",
+  "S1-S3 before any dry/prerun run; return at the first unexpected result"
+ ],
+ "advances": ["M3", "M4"]
+}

@@ -1366,3 +1366,24 @@ Inputs: the OpSetIndexMode_v0-donor ops take `vi path`, `vi path 2`, `Class Name
   joints as nested TUPLES; compare with a JSON-loaded reference only after `json.loads(json.dumps(x))` (`diag_c117a_cmp.log`).
 - **Deleting the node at a PASS-THROUGH terminal joint (flags 1, 2 neighbours) leaves NO loose end**: the joint is removed and its
   two neighbours are re-joined (w366: 5 joints → 4, no 0x100 anywhere). Deleting the only sink leaves the wire with loose joints.
+
+## Shift-register initialisation + three `$work` primitives (card 123-3, 2026-10-01, `tools/bench/diag_c123_routes.log`, 15/0)
+- **`add_shift_reg` on While `#637` adds TWO entries to the LOOP's `Terminals[]`** (read by `node_terms_uids` on its owner diagram `#686`):
+  the right register's outer face (source) and the **left register's outer face (bare SINK)** — the latter is the init-value sink
+  (I32 case: `#27023` src / `#27033` sink, indexes 24/25; U32 case: 26/27). Both unnamed.
+- **SR init route = `gscript.sr_init_const(target, loop_uid, face_uid, diagram_uid, donor, pos)`**: donor copy of a valued constant onto the
+  loop's owner diagram (OpPrimCopyNested_v0) + `wire_const_sr` = OpConstWire_v1 with the sink ladder on the LOOP (`Traverse('WhileLoop')[i]`
+  → TMSC(Node) → `Terminals[face]`). Per call LabVIEW adds exactly `{DigitalNumericConstant 1, Terminal 1, Wire 1}`; the constant is owned by
+  Diagram `#686`; the face reads I32 / U32 after the wire. stagexec route **`const_sr`** (constant and face on the same diagram).
+  Donors: `claudeDev\DonorRingConst_v0.vi` `#249` I32 −1; **`claudeDev\DonorSRInit_v0.vi`** (md5 `8b1a5afe…`): `#134` U32 4294967295,
+  `#156` U32 0, `#248` I32 0 (built from EMPTY_v0: Wait (ms) `milliseconds to wait` U32 sinks + OpCreateConstOnTerm_v0 with `Value` =
+  `VARIANT(VT_UI4, n)`; For N for the I32).
+- **`$work` duplicates onto body `#639`** (create_primitive_nested, donor = the work VI): `Equal?` (from `#10019`) = class `Comparison`,
+  terminals `x = y?` (src, i0) · `y` (i1) · `x` (i2). `Increment` (`#1978`) = `Function`: `x+1` (src, i0) · `x` (i1). `Quotient & Remainder`
+  (`#2136`) = `Function`: `floor(x/y)` (src, i0) · `x-y*floor(x/y)` (src, i1) · `y` (i2) · `x` (i3).
+- **For `#23093` output by route `nested`** (`connect_nested_v1`, IMAQ Create `#23099` `New Image` → an `Index Array` on `#639`): result
+  `(5, 0, '')`; new LoopTunnel on the For (`IndexMode` **1 = indexing**, inner `New Image`) + LoopTunnel on While `#637` + two
+  `FlatSequenceOuterTunnel`s (FS `#681`, FS `#12938`); the sink receives `Array1D<IMAQ Image typedef>`. A LoopTunnel is also listed by
+  `Traverse('Tunnel')`.
+- **`case_in` with selector label `Auto-Focus` (a Boolean whose terminal sits in `#639`) stopped behind a MODAL DIALOG** (watchdog, 8 s);
+  dialog text not captured. Case-in-a-While-body remains UNMEASURED.

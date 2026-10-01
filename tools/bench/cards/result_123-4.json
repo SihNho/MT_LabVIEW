@@ -1,0 +1,15 @@
+{"schema":"result/1","id":"123-4","status":"PASS","gates":{"pass":14,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/census_predict.py","md5":"63ee7b075ee23204b425e5b6300f6f41"},{"path":"tools/bench/census_samples.json","md5":"721a81029171f7f8d53b5ae95137fbc5"},{"path":"tools/bench/selftest_census_predict.py","md5":"be862ae7be77b8dbd0bed473727acdfb"},{"path":"tools/bench/selftest_census_predict.log","md5":"39b91970ced17df775f062113236f9ef"}],
+"facts":[
+"selftest 14/0, BGRUN END rc=0 (tools/bench/selftest_census_predict.log); 41 sample cites each re-checked as file:line + expected substring (gate S1a)",
+"Per plan row: const_donor array {AC+1,DNC+1} / scalar {DNC+1}; OpConstInd_v0 array/scalar {CT+1,Wire+1}; split closed by OBSERVED owners + gate G, stage_d1_ring_p2b_scratch_pin.log:60-171",
+"Only TOTAL census was measured per run (scratch_pin.log:171, stage_d1_ring_p2b.log:160); per-op attribution is the owner/G-gate object arithmetic, recorded in census_samples.json 'attribution'",
+"Variants are keyed by exact measured canon (Array1D<I32>, Array1D<DBL>, I32); canon comes from the pred file rows by donor_uid, since plan rows carry none (census_predict.py:50-66)",
+"(a) c122 +1 fixture -> FAIL 'CENSUS FAIL DigitalNumericConstant derived +5 declared +1', exit 1; (b) current pred 98ca9b30 -> PASS 9/0, exit 0 (selftest log A1-B2)",
+"(c) P2a 8/8 rows and pool 15/15 rows CENSUS-UNPREDICTED, no class FAIL: no per-op class census in stage_d1_ring_p2a.log:48-124 or stage_d1_qrt_pool.log:45-232 (no BEFORE census)",
+"(d) fabricated 'create Function prim made_up' -> CENSUS-UNPREDICTED, exit 2; unmeasured canon Array1D<U8> -> rows 1,2,7,8 UNPREDICTED (selftest D1-D3)",
+"Any unpredicted row makes EVERY class CENSUS-UNPREDICTED (census_predict.py:113-129); RESULT status for UNPREDICTED/UNDECLARED is SKIP with fail 0 (census_predict.py:150,155), never PASS",
+"census_predict.py imports only hashlib/json/os/sys (gate S2); no gate/build/hook/opmodel file edited"],
+"open":["result-line/1 allows only PASS/FAIL/SKIP: UNPREDICTED is printed as SKIP (exit 2). Should the 123-5 prerun hook treat it as a refusal (FAIL) or advisory? P2a/pool would be refused today",
+"The brief attributed array+DNC to OpConstInd_v0; the logs show those classes come from the const_donor call, so samples are split per plan row (sum unchanged). Accept the split?"],
+"cost":{"usd":null,"minutes":17,"labview_runs":0},"note":"offline only; no LabVIEW, GUI or hardware touched"}

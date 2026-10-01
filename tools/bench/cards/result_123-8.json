@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"123-8","status":"FAIL","gates":{"pass":1,"fail":1},
+"first_fail":"S2 stagesim: action 20 p3a_w_true_pass (True-frame count pass-through) fails stageplan/1 - no field names a case tunnel face off its body frame (plan_ring_p3a_sim.log:21)",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/graph_ring_p2b_20261001_154542.json","md5":"69b23e0821482acf118bb268d92589fe"},
+ {"path":"tools/bench/diag_c123_graph_p2b.py","md5":"a4201aaab4efc4b82dfc1d9d96192440"},
+ {"path":"tools/bench/diag_c123_graph_p2b_plan.json","md5":"41df44145666d1b1d37f070971701e9f"},
+ {"path":"tools/bench/diag_c123_graph_p2b.log","md5":"86ef56d2b7ad6215cc1d7a71f28c7907"},
+ {"path":"tools/bench/plan_ring_p3a_make.py","md5":"da2007f300fe92f52203c7c45eda4bdf"},
+ {"path":"tools/bench/plan_ring_p3a_in.json","md5":"0a27116f334059d37ef4be264358fdf0"},
+ {"path":"tools/bench/plan_ring_p3a_pred.json","md5":"03645948a94904afcb781ea2e76ae651"},
+ {"path":"tools/bench/plan_ring_p3a_sim.log","md5":"b5c4fcf71859b8c541fbdbcf6150db42"}],
+"facts":[
+ "S1 PASS 14/0, 167 s, rc 0: graph_ring_p2b_20261001_154542.json, 5826 rows / 10137 objs / 24 loops, bed md5 652b1447 unchanged, LabVIEW gone (diag_c123_graph_p2b.log:263-294)",
+ "BufNum #6810 t6897 = I32 (read_term_type canon I32, diag_c123_graph_p2b.log:268) -> prev-BufNum init = DonorRingConst_v0 #249 I32 -1 (brief S2 rule)",
+ "Real P2b indicator terminals on #4866: Num t35255 w35270, TransPos t35215, RotPos t35319, FrameIdx t27025, Latest t35418 (diag_c123_graph_p2b.log:267)",
+ "plan_ring_p3a_in.json: 25 actions on the real graph, maker 6/0 (plan_ring_p3a_make.log); Wait donor OpWaitDonor_v0 #163, I32 20 from DonorPool_v0 #214",
+ "stagesim FAIL at schema check: action 20 src/dst carry `frame` (unknown field) - stageplan/1 has no way to address a case tunnel face in the non-body frame (plan_ring_p3a_sim.log:21)",
+ "Cause in code: stagesim.resolve_addr keeps only the `body` frame's inner face of a plan-made case tunnel (stagesim.py:358-362); so the True frame cannot wire input tunnel -> output tunnel",
+ "Same gap in the executor: compile_plan sends a wire from a created tunnel to kind 'branch' (stagexec.py:473-474); a SelectorTunnel inner->inner connect in the 2nd frame has no measured route",
+ "Case data-tunnel creation itself is ASSUMED/UNMEASURED in stagesim (_case_tunnel docstring, stagesim.py:812-820); an output tunnel left unwired in True breaks the VI",
+ "Not done (stopped at the first unexpected result): plan FINAL, census prediction, Error List prediction, S3 recipe stage_d1_ring_p3a.py, S4 dry/prerun/prior-art/--scratch-required",
+ "Jev ladder: no JEV-LADDER row for plan_ring_p3a_sim.log in jev_gate.log | offline sim, no LabVIEW | - | - | -"],
+"open":[
+ "PD246(c) A5 needs the True frame to wire count-in -> count-out, which the plan format cannot express. Extend stageplan/stagesim/stagexec with a `frame` selector on case-tunnel faces (tool card + scratch run), or change A5 (counter arithmetic outside the case)?",
+ "If the tool route is chosen: should the same card also measure case data-tunnel creation (in and out, both frames wired), since stagesim marks it UNMEASURED?"],
+"cost":{"usd":null,"minutes":38,"labview_runs":1},
+"note":"diag_c123_graph_p2b.py needed a decisions plan file + --graph diag_c122_graph_p2a.json for its dry/prerun (no graph carried the P2b md5 yet). Plan maker's aliases were first rejected by the schema (^[A-Za-z]+[0-9]+$) and renamed. STATUS not edited (status_edit false)."}

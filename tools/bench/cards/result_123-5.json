@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"123-5","status":"FAIL","gates":{"pass":12,"fail":1},
+"first_fail":"S1a Equal? #26802 on #639: x wire +1, y const wired (connect_nested_v1 returned wire delta 0, err '') - diag_c123_struct.log",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/gscript.py","md5":"342a13a8df98e2ab118e211f40217d16"},
+ {"path":"tools/bench/diag_c123_struct.py","md5":"750fdb7a58ab2b86381b614f890dff30"},
+ {"path":"tools/bench/diag_c123_struct_plan.json","md5":"9a69c423b5e8343c0d63c5d6bcf6cf6e"},
+ {"path":"tools/bench/diag_c123_struct.log","md5":"b096b8f457b1d1bb645c19cff6f00921"},
+ {"path":"tools/bench/opmodels/case_wired.json","md5":"4e75963e8b4bf9f853ccaf97aa95205e"},
+ {"path":"tools/bench/scratch_verify/gscript.case_wired_c123_20261001_151333.json","md5":"ec4a053f61d360681864212cb7530565"},
+ {"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorCase_v0.vi","md5":"df825c180fe682af2a2cf64db893d64a"},
+ {"path":"archive/peer/2026-10-01-c123-5-s1a-branch.md","md5":"6fe66bd30d3f69f1418e8cad373e6a10"}],
+"facts":[
+ "S1 verbs gscript.struct_copy_nested + case_wired on EXISTING ops (OpPrimCopyNested_v0, connect_nested_v1, case_frames), no new op. Donor DonorCase_v0.vi case #742, frames '0, Default'/'1' (log:26-28)",
+ "S1c PASS: case #26771 owned by #639, frames False #27206 / True #27229, selector #27164 wire 27314 == Equal? 'x = y?' wire, wire delta 1, op err '' (diag_c123_struct.log:43-44)",
+ "case_wired census: CaseStructure+1 Diagram+2 Tunnel+1 OuterTerminal+1 InnerTerminal+2 Wire+1 Terminal+6 Invoke+1; the Invoke is an unpurged junk node - case_wired does not purge it yet (log:43)",
+ "S1a FAIL = my gate: x <- #6810 (already on w3747) gave wire delta 0, err ''; branch UNPROVEN, x wire never read (log:30-36; archive/peer/2026-10-01-c123-5-s1a-branch.md)",
+ "S1b PASS: unknown source name -> ValueError before any edit, CaseStructure count unchanged; S1d: Equal? copied into the False frame #27206, owner read back (log:37-38,45-46)",
+ "S2 NOT BUILT: no FS donor, no frame-add op, no Diagrams[] reader op. Erdos Create Sequence.vi panel: Diagram in, location, Inputs -> Diagram out, Inputs; no frame count (log:47)",
+ "S3 NOT DONE (returned at S1a, card chat-P2); census_predict.py edits reverted, md5 63ee7b07 again; stagexec/stagesim/stage_prerun/stagekit untouched",
+ "Bed md5 652b1447 unchanged (H2), scratch deleted (H4), only DonorCase_v0.vi left (H6), refs 12/12, LabVIEW gone, tasklist empty (log:57-71)",
+ "diag_c123_struct.log | new-problem p=0.778 | review owed | c123-5-s1a-branch ANSWERED $1.07, annotated ACCEPTED | no rerun (chat-P2)",
+ "Dry PASS + prerun 13/0 before launch (diag_c123_struct_dry.log, diag_c123_struct_prerun.log); one LabVIEW run, 157 s"],
+"open":[
+ "S2: build a Flat Sequence creator as a NEW op (wrapping Erdos Create Sequence.vi or a frame-add method, plus a FlatSequence.Diagrams[] reader for frame order, with a 2,000-call hygiene record) - its own card?",
+ "Re-run S1 with the review's discriminating read (Equal? x wire == 3747, w3747 sink count +1, tidx raising instead of index-0 fallback) and an Invoke purge in case_wired, then the stagexec route/stagesim model/self-test, then S3?"],
+"cost":{"usd":null,"minutes":24,"labview_runs":1},
+"note":"S1's deliverable verb works (S1c PASS) but the run FAILED on my own S1a wire-count gate; returned per card chat-P2 without retry. stagexec route, stagesim model and S1 self-test were not built (planned after the run)."}

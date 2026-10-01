@@ -2212,6 +2212,55 @@ def wire_const(target, src_cls, src_i, dst_cls, dst_i, dst_term_index, labels=No
     return _opcw_call(OP_CONST_WIRE, CONST_WIRE_LABELS, target, src_cls, src_i, dst_cls, dst_i, dst_term_index, labels)
 
 
+def wire_const_sr(target, const_cls, const_i, loop_cls, loop_i, face_index, labels=None):
+    """Card 123-3 S2 (PD246(e)): SHIFT-REGISTER INITIALISATION - a bare diagram constant -> the LEFT register's OUTER face.
+    The same op as wire_const (OpConstWire_v1, no new op VI); the sink ladder indexes the LOOP itself
+    (Traverse(loop_cls)[loop_i] -> TMSC(Node) -> Node.Terminals[face_index]), because a register face is not a Nodes[]
+    terminal of its own - it is an entry of its loop's Terminals[] (the PD185 owner route). `face_index` = that entry,
+    found by terminal-uid echo (sr_init_const / stagexec Addr._triple). Returns (wire delta, op error text)."""
+    if loop_cls not in ("WhileLoop", "ForLoop"):
+        raise ValueError("wire_const_sr: sink class %r is not a loop" % (loop_cls,))
+    return _opcw_call(OP_CONST_WIRE, CONST_WIRE_LABELS, target, const_cls, const_i, loop_cls, loop_i, face_index, labels)
+
+
+def loop_face_index(target, diagram_uid, loop_uid, face_uid):
+    """The Terminals[] index of terminal #face_uid on loop #loop_uid (a node of Diagram #diagram_uid), by UID ECHO through
+    node_terms_uids (OpNodeTermsUid_v0): (index, row, all rows). Exactly one entry must carry the uid; the node echo must be
+    the loop. Re-read at the call site (never carried across a mutation)."""
+    di = _uid_index(target, "Diagram", diagram_uid)
+    echo, rows = node_terms_uids(target, di, _node_index(target, di, loop_uid))
+    if echo != int(loop_uid):
+        raise RuntimeError("loop_face_index: node echo %r != loop #%s" % (echo, loop_uid))
+    hits = [r for r in rows if int(r.get("uid") or 0) == int(face_uid)]
+    if len(hits) != 1:
+        raise RuntimeError("loop_face_index: terminal #%s is %d entr(ies) of loop #%s's Terminals[] (%d entries)"
+                           % (face_uid, len(hits), loop_uid, len(rows)))
+    return int(hits[0]["i"]), hits[0], rows
+
+
+def sr_init_const(target, loop_uid, face_uid, diagram_uid, donor, pos=(40, 40), loop_cls="WhileLoop"):
+    """Card 123-3 S2 (PD246(c) A3 / (e)): INITIALISE a shift register from a VALUED constant on the loop's OWNER diagram.
+    (1) the face #face_uid must be a BARE sink entry of loop #loop_uid's Terminals[] (uid echo); (2) the constant is a DONOR
+    COPY onto Diagram #diagram_uid (create_primitive_nested(donor=): value + representation travel with the copy, the
+    route PD242(a)/243(a) proved for constants on a flat-sequence frame); (3) wire_const_sr from that constant to the face.
+    Returns {const_uid, const_cls, const_i, loop_i, face_index, wire_delta, op_err, face_wire}; face_wire = the face's wire
+    uid read back by uid echo (0 = the wire did not land)."""
+    if loop_cls not in ("WhileLoop", "ForLoop"):
+        raise ValueError("sr_init_const: %r is not a loop class" % (loop_cls,))
+    t0, r0, _rows = loop_face_index(target, diagram_uid, loop_uid, face_uid)
+    if r0.get("is_source") or int(r0.get("wire") or 0):
+        raise RuntimeError("sr_init_const: face #%s is %s, wire %s (need a BARE sink: the LEFT register's outer face)"
+                           % (face_uid, "a source" if r0.get("is_source") else "a sink", r0.get("wire")))
+    cu = create_primitive_nested(target, diagram_uid, "sr_init_const", pos, donor=donor)
+    cls, ci = const_class_index(target, cu)
+    li = _uid_index(target, loop_cls, loop_uid)
+    t, _r, _rows = loop_face_index(target, diagram_uid, loop_uid, face_uid)
+    dw, err = wire_const_sr(target, cls, ci, loop_cls, li, t)
+    _t2, r2, _rows2 = loop_face_index(target, diagram_uid, loop_uid, face_uid)
+    return {"const_uid": int(cu), "const_cls": cls, "const_i": ci, "loop_i": li, "face_index": t, "face_index_before": t0,
+            "wire_delta": dw, "op_err": err or "", "face_wire": int(r2.get("wire") or 0)}
+
+
 # PD191 (card 85-2): two siblings of OpConstWire_v1, same four inputs (Class Name/index, Class Name 2/index 2, the IA index
 # control, the error indicator), built by tools/recipes/build_opctlsinkwire_v1.py and build_optunouter_v1.py.
 OP_CTLSINK_WIRE = os.path.join(CLAUDEDEV, "ops", "OpCtlSinkWire_v1.vi")
@@ -4679,3 +4728,161 @@ def create_primitive_nested(target, diagram_uid, prim_name, pos, donor=None):
     if probs:
         raise RuntimeError("create_primitive_nested(%r on #%s): %s" % (prim_name, diagram_uid, " | ".join(probs)))
     return int(new[0])
+
+
+# ==== CARD 123-5 S1 (PD246(c) A4/A5, PD247(c)): a Case structure whose SELECTOR is wired from a NODE OUTPUT ==============
+# case_in's selector is a top-level panel control found by label (PD247(c); diag_c123_routes.log:78 modal dialog on a body
+# terminal). Route here, NO new op VI: (1) struct_copy_nested = the SAME op as create_primitive_nested (OpPrimCopyNested_v0,
+# GObject.Move duplicate=True from a claudeDev donor file) with a CLASS post-condition instead of the one-Node rule (a
+# structure copy brings its frame Diagrams and its selector Tunnel with it); (2) the copied case's ONE bare sink in its
+# Terminals[] (the selector's outer face, uid echo) <- the source node's output terminal named `src_term` through
+# connect_nested_v1 (OpConnectNested_v1, same-diagram triples); (3) frames read back (case_frames) and the selector's wire
+# read back by uid echo. Donor: claudeDev\DonorCase_v0.vi (built by tools/bench/diag_c123_struct.py: an empty Case with a
+# numeric selector, frames '0, Default' / '1'); a Boolean wired into it renames them False / True on the SAME frame uids
+# (docs/toolkit-capabilities.md:823).
+DONOR_CASE = os.path.join(CLAUDEDEV, "DonorCase_v0.vi")
+DONOR_CASE_UID = 742            # DonorCase_v0.vi md5 df825c18..., case #742 (diag_c123_struct.log:27)
+
+
+def _purge_new_invokes(target, inv0):
+    """Card 123-7 (PD248(d)): delete every Invoke of `target` whose uid is not in `inv0` (the snapshot taken before the verb),
+    highest Traverse index first (indices stay valid), then re-read. Returns (n purged, uids still left). The same protocol as
+    net_map's s33 purge (gscript.py net_map) WITHOUT Remove Bad Wires: a broken-by-design bed keeps its own broken wires."""
+    new = set(uids(target, "Invoke")) - set(inv0)
+    if not new:
+        return 0, []
+    order = [int(o["uid"]) for o in report_all(target, "Invoke")]
+    for i in sorted((order.index(u) for u in new if u in order), reverse=True):
+        delete_object(target, "Invoke", i, verify=False)
+    left = sorted(set(uids(target, "Invoke")) - set(inv0))
+    return len(new) - len(left), left
+
+
+def term_index(target, diagram_uid, node_uid, name, is_source):
+    """Card 123-7 (PD248(b)): (diagram index, node index, terminal index, row) of the ONE terminal named `name` with direction
+    `is_source` on node #node_uid of Diagram #diagram_uid. ValueError when the node echo differs or the name/direction matches
+    0 or >1 rows - never the silent index-0 fallback of the old bench `tidx` helpers (diag_c123_struct.py:35)."""
+    di = _uid_index(target, "Diagram", diagram_uid)
+    ni = _node_index(target, di, node_uid)
+    echo, rows = node_terms_uids(target, di, ni)
+    hit = [r for r in rows if str(r["name"]) == str(name) and bool(r["is_source"]) == bool(is_source)]
+    if echo != int(node_uid) or len(hit) != 1:
+        raise ValueError("term_index: node echo %r (want #%s), %d terminal(s) named %r is_source=%s; names %r"
+                         % (echo, node_uid, len(hit), name, is_source, [(r["name"], r["is_source"]) for r in rows]))
+    return di, ni, int(hit[0]["i"]), hit[0]
+
+
+def struct_copy_nested(target, diagram_uid, cls, donor, pos=(40, 40)):
+    """Copy structure `donor['uid']` (class `cls`) of the claudeDev file `donor['donor']` onto Diagram #diagram_uid of `target`
+    (ANY nesting depth) through OpPrimCopyNested_v0 (the create_primitive_nested op). Post-conditions: op error '', both uid
+    echoes, EXACTLY one new `cls` object, owned by Diagram #diagram_uid. Returns {uid, new_diagrams}. ValueError before any
+    edit when the donor is not under claudeDev / missing or the diagram is not a Diagram of `target`."""
+    reg = dict(donor)
+    if not os.path.normcase(os.path.abspath(reg["donor"])).startswith(os.path.normcase(CLAUDEDEV)):
+        raise ValueError("donor %r is not under claudeDev" % reg["donor"])
+    if not os.path.exists(reg["donor"]):
+        raise ValueError("donor file missing: %s" % reg["donor"])
+    lab = _c100("OpPrimCopyNested_v0")
+    ensure_loaded(target)
+    di = _uid_index(target, "Diagram", diagram_uid)
+    s0, d0 = uids(target, cls), uids(target, "Diagram")
+    vi = op(os.path.join(CLAUDEDEV, "OpPrimCopyNested_v0.vi"))
+    vi.SetControlValue("vi path", target)
+    vi.SetControlValue("Class Name", "Diagram")
+    vi.SetControlValue("index", int(di))
+    vi.SetControlValue("vi path 2", reg["donor"])
+    if "index 2" in (lab.get("controls") or []):
+        vi.SetControlValue("index 2", 0)
+    vi.SetControlValue(lab["DonorUIDin"], int(reg["uid"]))
+    vi.SetControlValue(lab["position"], tuple(int(v) for v in pos))
+    if lab.get("duplicate"):
+        vi.SetControlValue(lab["duplicate"], True)
+    vi.SetControlValue(lab["DonorUID"], 0)
+    vi.SetControlValue(lab["DiagUID"], 0)
+    err = ""
+    try:
+        _run(vi)
+    except RuntimeError as e:
+        err = "modal dialog (dismissed)" if "modal dialog" in str(e) else "EXC %s" % str(e)[:140]
+    err = err or _err(vi, lab["Err"]) or ""
+    d_echo, g_echo = int(vi.GetControlValue(lab["DonorUID"])), int(vi.GetControlValue(lab["DiagUID"]))
+    new = sorted(uids(target, cls) - s0)
+    probs = []
+    if err:
+        probs.append("op error %s" % err)
+    if d_echo != int(reg["uid"]):
+        probs.append("donor uid echo %r != #%s" % (d_echo, reg["uid"]))
+    if g_echo != int(diagram_uid):
+        probs.append("diagram uid echo %r != #%s" % (g_echo, diagram_uid))
+    if len(new) != 1:
+        probs.append("%d new %s %r, expected 1" % (len(new), cls, new[:8]))
+    else:
+        _c97_paths()
+        import build_d1_v0 as B
+        own = B.owner_of(target, new[0], strict=False)
+        if tuple(own) != ("Diagram", int(diagram_uid)):
+            probs.append("new %s #%s is owned by %r, not Diagram #%s" % (cls, new[0], own, diagram_uid))
+    if probs:
+        raise RuntimeError("struct_copy_nested(%s on #%s): %s" % (cls, diagram_uid, " | ".join(probs)))
+    return {"uid": int(new[0]), "new_diagrams": sorted(int(d) for d in uids(target, "Diagram") - d0)}
+
+
+def _connect_labels():
+    _c97_paths()
+    import build_opconnectnested_v1 as NC
+    with open(NC.MAP_OUT, encoding="utf-8") as f:
+        return NC, json.load(f)
+
+
+def case_wired(target, diagram_uid, src_node_uid, src_term, pos=(40, 40), donor=None):
+    """Card 123-5 S1: a Case structure on Diagram #diagram_uid whose SELECTOR is wired from output terminal `src_term` (name)
+    of node #src_node_uid on the SAME diagram. Steps: struct_copy_nested(CaseStructure, donor) -> the copy's Terminals[]
+    must hold EXACTLY ONE bare sink (the selector's outer face) -> connect_nested_v1(sink = that entry, source = the named
+    output of #src_node_uid) -> read back. Returns {case, new_diagrams, selector_term, selector_index, selector_wire,
+    src_term_uid, src_wire, wire_delta, exec_state, op_err, names, frames, frames_err, terms_before, terms_after}.
+    RuntimeError (after the copy) when the selector is not the one bare sink, the source name is not exactly one output, or
+    the wire does not land (selector wire 0 or != the source's wire)."""
+    dn = dict(donor) if donor else {"donor": DONOR_CASE, "uid": DONOR_CASE_UID}
+    if dn.get("uid") is None:
+        raise ValueError("case_wired: donor uid not given (DonorCase_v0's case uid is recorded by diag_c123_struct.py)")
+    ensure_loaded(target)
+    inv0 = set(uids(target, "Invoke"))              # card 123-7 (PD248(d)): the junk Invoke this verb leaves is purged below
+    di = _uid_index(target, "Diagram", diagram_uid)
+    sn = _node_index(target, di, src_node_uid)                 # ValueError before any edit: the source is on the diagram
+    e0, srows = node_terms_uids(target, di, sn)
+    outs = [r for r in srows if r["is_source"] and str(r["name"]) == str(src_term)]
+    if e0 != int(src_node_uid) or len(outs) != 1:
+        raise ValueError("case_wired: node echo %r / %d output(s) named %r on #%s" % (e0, len(outs), src_term, src_node_uid))
+    cp = struct_copy_nested(target, diagram_uid, "CaseStructure", dn, pos)
+    c = cp["uid"]
+    di = _uid_index(target, "Diagram", diagram_uid)
+    cn = _node_index(target, di, c)
+    ce, crows = node_terms_uids(target, di, cn)
+    bare = [r for r in crows if not r["is_source"] and not int(r["wire"] or 0)]
+    if ce != c or len(bare) != 1:
+        raise RuntimeError("case_wired: case #%s echo %r, %d bare sink(s) in Terminals[] %r (need exactly 1: the selector)"
+                           % (c, ce, len(bare), crows))
+    sel = bare[0]
+    sn = _node_index(target, di, src_node_uid)
+    _e, srows = node_terms_uids(target, di, sn)
+    st = [r for r in srows if r["is_source"] and str(r["name"]) == str(src_term)][0]
+    NC, labels = _connect_labels()
+    dw, es, err = NC.connect_nested_v1(target, di, cn, int(sel["i"]), di, sn, int(st["i"]), labels)
+    cn = _node_index(target, di, c)
+    _e, after = node_terms_uids(target, di, cn)
+    sa = [r for r in after if int(r.get("uid") or 0) == int(sel["uid"])]
+    _e, srows2 = node_terms_uids(target, di, _node_index(target, di, src_node_uid))
+    sw = [int(r["wire"] or 0) for r in srows2 if int(r.get("uid") or 0) == int(st["uid"])]
+    fr = case_frames(target, c)
+    out = {"case": c, "new_diagrams": cp["new_diagrams"], "selector_term": int(sel["uid"]), "selector_index": int(sel["i"]),
+           "selector_wire": int(sa[0]["wire"] or 0) if sa else 0, "src_term_uid": int(st["uid"]),
+           "src_wire": sw[0] if sw else 0, "wire_delta": dw, "exec_state": es, "op_err": err or "",
+           "names": [str(n).strip() for n in fr["names"]], "frames": fr["frames"], "frames_err": fr["err"],
+           "terms_before": crows, "terms_after": after}
+    out["purged"], out["invoke_left"] = _purge_new_invokes(target, inv0)
+    if out["invoke_left"]:
+        raise RuntimeError("case_wired: %d junk Invoke(s) %r left after the purge (case #%s)" % (len(out["invoke_left"]), out["invoke_left"], c))
+    if err or not out["selector_wire"] or out["selector_wire"] != out["src_wire"]:
+        raise RuntimeError("case_wired: selector wire %s, source wire %s, op error %r (case #%s)"
+                           % (out["selector_wire"], out["src_wire"], err, c))
+    return out
