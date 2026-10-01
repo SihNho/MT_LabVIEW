@@ -1,0 +1,26 @@
+{
+ "schema_note": "card 126-6 STEP B (brief_126-6.md, PD255(g)): FINALIZED decision-row plan of tools/bench/diag_c126_6_cross.py = the diag_c126_4_fs_plan.json FS build (3-frame FS in case #22694's False frame #27219) + three multi-border crossings by connect_term_uid, each measured, then Wire.RemoveLooseEnds on each new wire and the same reads. Never saved; scratch deleted; LabVIEW killed and gone.",
+ "input": {"vi": "D1_ring_p3a_20261001_180540.vi", "md5": "4dfa44aac8fb32f706b3eb792ee7d3cc", "graph": "tools/bench/graph_ring_p3a_20261001_190155.json"},
+ "case": 22694, "false_frame": 27219,
+ "crossings": [
+  {"tag": "B1", "src": 6897, "src_frame": 639, "src_name": "current image number", "sink_frame_index": 2, "sink": "MaxMin", "sink_term": "x",
+   "why": "graph_ring_p3a: SubVI #6810 terminal #6897 'current image number' (source) on Diagram #639 = BufNum; case border + FS border"},
+  {"tag": "B2", "src": 644, "src_frame": 639, "src_name": "", "sink_frame_index": 1, "sink": "MaxMin", "sink_term": "x",
+   "why": "graph_ring_p3a: While #637 'i' terminal #644 (source, owner Diagram #639; listed twice in the graph - deduped by term_uid); case border + FS border"},
+  {"tag": "B3", "src": 23289, "src_frame": 23169, "src_name": "New Image", "sink_frame_index": 1, "sink": "IndexArray", "sink_term": "array",
+   "why": "graph_ring_p3a: SubVI #23099 terminal #23289 'New Image' (source, unwired) in For #23093 body Diagram #23169 = pool; For exit, FS1 frame, While #637, case, FS borders"}
+ ],
+ "ia_donor_uid": 3163,
+ "errorlist_base": "errorlist_D1_ring_p3a_20261001_180540_20261001_181801.json",
+ "decisions": [
+  {"id": "D-0", "action": "stage", "what": "stagekit Stage on the P3a bed: restart LabVIEW, byte copy = work copy, discard_work (never saved)"},
+  {"id": "C-1", "action": "create", "what": "struct_copy_nested(FlatSequence, gscript.fs_donor()) onto the False frame of case #22694 (case_frames read back)"},
+  {"id": "C-2", "action": "create", "what": "gscript.fs_add_frame x2 (after frame 0, after frame 1) -> 3 frames; census delta FlatSequence 1 + Diagram 3"},
+  {"id": "C-3", "action": "create", "what": "Max & Min on FS frame 3 and frame 2 (registry donor), Index Array on FS frame 2 (donor = the work copy's own #3163)"},
+  {"id": "W-1", "action": "wire", "what": "B1 connect_term_uid(frame-3 Max & Min x <- BufNum #6897); census delta, Is Broken?, joints/free ends, tunnels, LoopTunnel IndexMode; RemoveLooseEnds on each new wire, same reads"},
+  {"id": "W-2", "action": "wire", "what": "B2 connect_term_uid(frame-2 Max & Min x <- While #637 i #644); the same reads"},
+  {"id": "W-3", "action": "wire", "what": "B3 connect_term_uid(frame-2 Index Array 'array' <- IMAQ Create #23099 'New Image' #23289); the same reads; While-border tunnel IndexMode read back (rule 1a: must be 0)"},
+  {"id": "M-1", "action": "measure", "what": "Error List TOTAL and 'wire has loose ends' count vs the bed's 55 / 24 (count-only, PD255(a))"},
+  {"id": "X", "action": "discard", "what": "close(): scratch deleted, bed md5 unchanged, LabVIEW killed and gone"}
+ ]
+}

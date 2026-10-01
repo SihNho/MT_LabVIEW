@@ -1,0 +1,21 @@
+ATTACK this claim about a failed gate in tools/bench/plan_ring_p3b_make.py (log tools/bench/plan_ring_p3b_make.log, line 4).
+
+Context: an OFFLINE plan-maker (no LabVIEW) reads a graph dump of a LabVIEW VI, tools/bench/graph_ring_p3a_20261001_190155.json
+(5,858 terminal rows from our op OpAllTerms_v1), and checks that the uids it will bind plan rows to exist with the expected shape.
+Gate M1 FAILED only on: the While loop #637 iteration terminal `i` (term_uid 644, owner Diagram #639, wire 3268) came back as TWO
+rows, so the gate's expected list [(30145,639),(4728,639),(644,639)] became [(30145,639),(4728,639),(644,639),(644,639)].
+Every other bound uid matched.
+
+Measured offline (tools/bench/diag_c126_7_t644.log): the two t644 rows are byte-identical. The dump holds 30 duplicated term_uids,
+each exactly x2, each byte-identical, every one owner_class "Diagram" with term_name "" (loop-diagram inner terminals, e.g. 644 = `i`
+source w3268 and 648 = the conditional sink w3457 on the same #639). tools/vigraph.py:260-267 (dedupe_rows) records this as a
+MEASURED behaviour of OpAllTerms_v1 since 2026-09-24 (review archive/peer/2026-09-24-chat-s2-rbw.md): some Diagram-owned terminals
+are returned twice, byte-identical, 0 groups whose rows differ; stagesim (tools/stagesim.py:263) and stagexec (tools/stagexec.py:710)
+both dedupe before use. The maker read the raw terminal list without dedupe_rows.
+
+CLAIM: the FAIL is our maker's premise (it assumed one row per term_uid), not a fact about the VI. #637's `i` is one terminal on
+#639 with one wire (3268); the patched maker (dedupe by distinct (term_uid, frame) and a check that t644 has exactly one DISTINCT
+row) is the right fix, and nothing about the plan's binding of FrameIdx(i) = #637 i t644 changes.
+
+Already ruled out: (1) a second `i` terminal (both rows carry the same term_uid, wire, frame); (2) a stale dump (md5 pinned by M0
+PASS, 2fa6ce0c...); (3) a non-identical duplicate (vigraph's record lists none for this graph shape).

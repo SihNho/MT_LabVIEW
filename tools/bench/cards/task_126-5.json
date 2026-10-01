@@ -1,0 +1,61 @@
+{
+ "schema": "task/1",
+ "id": "126-5",
+ "kind": "build",
+ "goal": "P3b plan INPUT (offline): the action list for ring P3b on the real P3a graph per PD246(c)(d) + PD254(d), every row's route named, unmeasured routes tagged",
+ "why": "P3b (slot writes: 3-frame FS, Num/TransPos/RotPos/FrameIdx/Latest writes, IMAQ Copy, Index Array, For #23093 exit) is the next ring step. Its plan input can be written now from the P3a graph; 126-4 measures the missing crossing routes in parallel.",
+ "inputs": [
+  {"path": "tools/bench/ring_p3_steps.md", "md5": "6617a5e921b5671e6362da3848fb14cf"},
+  {"path": "tools/bench/graph_ring_p3a_20261001_190155.json", "md5": "2fa6ce0c3e8a3014fa916085cb852f68"},
+  {"path": "tools/bench/plan_ring_p3a.json", "md5": "234efaaa890c5d2ac255d746048ddb84"},
+  {"path": "tools/bench/cards/result_126-1.json"},
+  {"path": "tools/bench/cards/result_126-3.json"},
+  {"path": "tools/stagesim.py", "md5": "433d9ae4a1e0d238df69d3231072f397"},
+  {"path": "tools/stagexec.py", "md5": "d532171190d6ea5108ca257580b09d11"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3a_make_v3b.py"},
+  {"kind": "file", "name": "tools/census_predict.py"}
+ ],
+ "pass": [
+  "tools/bench/plan_ring_p3b_in.json: every P3b action from ring_p3_steps.md + PD246(c) A1/A2 + PD254(d), with uids from the P3a graph",
+  "each row names its route; rows on an unmeasured route (FS crossings from the case frame, branches into FS frames) tagged UNMEASURED",
+  "row count and per-row created classes listed; frame 3 uses a second Num local read (PD254(d))",
+  "stagesim replay of the measured-route rows on graph_ring_p3a: PASS or the first failing row with its reason",
+  "no rule-1a doubt left implicit: any row whose value differs from the original's path is listed as OPEN"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p3b_in.json",
+  "tools/bench/plan_ring_p3b_make.py"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p3b*",
+   "tools/bench/ring_p3b*",
+   "tools/bench/diag_c126_5*",
+   "tools/bench/cards/result_126-5*",
+   "tools/bench/cards/review_126-5*",
+   "tools/bench/peer_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "rules": [
+  "Offline only: no LabVIEW, no COM; do not edit gscript/stagexec/stagesim (other cards own them)",
+  "Plan INPUT only: no recipe, no launch; design choices come from PD246(c)/PD254(d), any new one is returned as OPEN",
+  "Return at the first unexpected result"
+ ],
+ "advances": ["M4", "M3"]
+}

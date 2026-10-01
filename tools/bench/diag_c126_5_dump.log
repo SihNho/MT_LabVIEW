@@ -1,0 +1,38 @@
+BGRUN START 2026-10-01 20:43:12 limit 2.0 min: py -u tools/bench/diag_c126_5_dump.py
+BGRUN PID 2444
+['schema', 'stage', 'goal', 'base', 'context', 'actions', 'open_rows', 'final', 'finalized']
+{"op": "create", "id": "p3a_wait", "class": "Function", "diagram": 639, "as": "WT1", "pos": [3200, 60], "prim": "Wait (ms)", "terminals": [{"name": "milliseconds to wait", "is_source": false, "term_class": "ParameterTerminal"}, {"name": "millisecond timer value", "is_source": true, "term_class": "ParameterTerminal"}]}
+{"op": "create", "id": "p3a_wait_k", "class": "DigitalNumericConstant", "diagram": 639, "as": "WK1", "pos": [3150, 60], "on": "new:WT1.milliseconds to wait", "value": 1}
+{"op": "add_shift_reg", "id": "p3a_sr_prev", "loop": 637, "body": 639, "parent": 686, "as": "SP1"}
+{"op": "create", "id": "p3a_k_prev", "class": "DigitalNumericConstant", "diagram": 686, "as": "KP1", "pos": [-200, 400], "prim": "const_donor", "terminals": [{"name": "", "is_source": true, "term_class": "Terminal"}]}
+{"op": "wire", "id": "p3a_w_kprev", "src": "new:KP1.value", "dst": "new:SP1L.outer"}
+{"op": "wire", "id": "p3a_w_bn_r", "src": {"uid": 6810, "term": "current image number"}, "dst": "new:SP1R.inner"}
+{"op": "create", "id": "p3a_eq", "class": "Comparison", "diagram": 639, "as": "EQ1", "pos": [3300, 1500], "prim": "Equal?", "terminals": [{"name": "x = y?", "is_source": true, "term_class": "ParameterTerminal"}, {"name": "y", "is_source": false, "term_class": "ParameterTerminal"}, {"name": "x", "is_source": false, "term_class": "ParameterTerminal"}]}
+{"op": "wire", "id": "p3a_w_bn_x", "src": {"uid": 6810, "term": "current image number"}, "dst": "new:EQ1.x"}
+{"op": "wire", "id": "p3a_w_prev_y", "src": "new:SP1L.inner", "dst": "new:EQ1.y"}
+{"op": "create", "id": "p3a_case", "class": "CaseStructure", "diagram": 639, "as": "CS1", "selector_as": "SEL1", "pos": [3600, 1450], "frames": ["False", "True"], "src": "new:EQ1.x = y?"}
+{"op": "add_shift_reg", "id": "p3a_sr_cnt", "loop": 637, "body": 639, "parent": 686, "as": "SC1"}
+{"op": "create", "id": "p3a_k_cnt", "class": "DigitalNumericConstant", "diagram": 686, "as": "KC1", "pos": [-200, 480], "prim": "const_donor", "terminals": [{"name": "", "is_source": true, "term_class": "Terminal"}]}
+{"op": "wire", "id": "p3a_w_kcnt", "src": "new:KC1.value", "dst": "new:SC1L.outer"}
+{"op": "create", "id": "p3a_inc", "class": "Function", "diagram": "new:CS1.f0", "as": "INC1", "pos": [60, 60], "prim": "Increment", "terminals": [{"name": "x+1", "is_source": true, "term_class": "OverridableParameterTerminal"}, {"name": "x", "is_source": false, "term_class": "ParameterTerminal"}]}
+{"op": "tunnel", "id": "p3a_t_in", "loop": "new:CS1", "body": "new:CS1.f0", "parent": 639, "dir": "in", "as": "TI1"}
+{"op": "wire", "id": "p3a_w_cnt_in", "src": "new:SC1L.inner", "dst": "new:TI1.outer"}
+{"op": "wire", "id": "p3a_w_cnt_inc", "src": "new:TI1.inner", "dst": "new:INC1.x"}
+{"op": "tunnel", "id": "p3a_t_out", "loop": "new:CS1", "body": "new:CS1.f0", "parent": 639, "dir": "out", "as": "TO1"}
+{"op": "wire", "id": "p3a_w_inc_out", "src": "new:INC1.x+1", "dst": "new:TO1.inner"}
+{"op": "wire", "id": "p3a_w_out_r", "src": "new:TO1.outer", "dst": "new:SC1R.inner"}
+{"op": "wire", "id": "p3a_w_true_pass", "src": {"uid": "new:TI1", "side": "inner", "frame": "True"}, "dst": {"uid": "new:TO1", "side": "inner", "frame": "True"}}
+{"op": "create", "id": "p3a_qr", "class": "Function", "diagram": "new:CS1.f0", "as": "QR1", "pos": [60, 160], "prim": "Quotient & Remainder", "terminals": [{"name": "floor(x/y)", "is_source": true, "term_class": "ParameterTerminal"}, {"name": "x-y*floor(x/y)", "is_source": true, "term_class": "ParameterTerminal"}, {"name": "y", "is_source": false, "term_class": "ParameterTerminal"}, {"name": "x", "is_source": false, "term_class": "ParameterTerminal"}]}
+{"op": "wire", "id": "p3a_w_qr_x", "src": {"uid": "new:TI1", "side": "inner", "frame": "False"}, "dst": "new:QR1.x"}
+{"op": "create", "id": "p3a_k20", "class": "DigitalNumericConstant", "diagram": "new:CS1.f0", "as": "K20", "pos": [0, 200], "prim": "const_donor", "terminals": [{"name": "", "is_source": true, "term_class": "Terminal"}]}
+{"op": "wire", "id": "p3a_w_k20", "src": "new:K20.value", "dst": "new:QR1.y"}
+schema "stageplan/1"
+stage "ring_p3a"
+goal "RING P3a (PD246(c)(d), 247, 248): loop-1.1 control on the SAVED P2b bed; v3 (card 124-6): routes connect_term_uid (R1/R2) and case_frame_wire branch (R4)"
+base {"path": "tools/bench/graph_ring_p2b_20261001_154542.json", "md5": "69b23e0821482acf118bb268d92589fe"}
+context {"s1_key": "D1_s1_copy"}
+open_rows [{"node": 376, "term": "current frame data array in", "why": "carried from R2 (plan_l2r2_in.json): QRT (PD175)"}, {"node": 376, "term": "frame index", "why": "carried from R2: QRT (PD175)"}, {"node": 2626, "term": "array", "why": "carried from R2: licensed rename (plan_l2b1_licence.json)"}, {"node": 2626, "term": "element", "why": "carried from R2: QRT (PD182(c)/D5)"}, {"node": 5058, "term": "Image In", "why": "carried from R2: QRT (PD177(e))"}, {"node": 8634, "term": "index (col)", "why": "carried from R2: QRT (D5)"}, {"node": 11261, "term": "array", "why": "carried from R2: PD227(d)"}, {"node": 11261, "term": "element", "why": "carried from R2: QRT (D5)"}, {"node": 28083, "term": "Magnet position", "why": "carried from R2: QRT (D5)"}, {"node": 29625, "term": "index (col)", "why": "carried from R2: QRT (D5)"}, {"node": 29973, "term": "element", "why": "carried from R2: QRT (D5)"}]
+final true
+finalized {"base": {"path": "tools/bench/graph_ring_p2b_20261001_154542.json", "md5": "69b23e0821482acf118bb268d92589fe"}, "plan_in": {"path": "tools/bench/plan_ring_p3a_in_v3.json", "md5": "195d6a2a6e3b306c585da2b92039ab9e"}, "last_step": {"path": "tools/bench/sim/ring_p3a/step_25_wire.json", "md5": "e51211b5377c734bbfc57c9ef7f7c97a"}, "summary": {"path": "tools/bench/sim/ring_p3a/summary.json", "md5": "0b4332a77c1d4c36d224acf8b24d44b1"}, "end_cdiff_rows": ["11261|Terminal|array|0", "11261|Terminal|element|0", "2626|Terminal|array|0", "2626|Terminal|array|1", "2626|Terminal|array|2", "2626|Terminal|array|3", "2626|Terminal|element|0", "2626|Terminal|element|1", "2626|Terminal|element|2", "28083|Terminal|Magnet position|0", "29625|Terminal|index (col)|0", "29973|Terminal|element|1", "376|Terminal|current frame data array in|0", "376|Terminal|frame index|0", "5058|Terminal|Image In|0", "8634|Terminal|index (col)|0"], "failed": null, "first_divergent": {"n": 0, "op": "base", "id": null, "rows_from_here": 16}, "open_rows": [[376, "current frame data array in"], [376, "frame index"], [2626, "array"], [2626, "element"], [5058, "Image In"], [8634, "index (col)"], [11261, "array"], [11261, "element"], [28083, "Magnet position"], [29625, "index (col)"], [29973, "element"]], "open_rows_match": true, "open_rows_match_legacy": true, "open_rows_classed": {"ok": false, "want": [], "c4_n": 0, "c4_keys": 0, "c4_bad": [], "unclassed": [[376, "current frame data array in"], [376, "frame index"], [2626,
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

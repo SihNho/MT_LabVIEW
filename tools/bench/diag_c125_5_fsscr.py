@@ -17,7 +17,8 @@ g = K.g
 PL = json.load(open(os.path.join(HERE, "diag_c125_5_fsscr_plan.json"), encoding="utf-8"))
 DON, DONM = os.path.join(g.CLAUDEDEV, PL["input"]["vi"]), PL["input"]["md5"]
 DRY = bool(getattr(g.report_all, "_dry", False))
-CASE, CONST = 22694, {"donor": os.path.join(g.CLAUDEDEV, "DonorSRInit_v0.vi"), "uid": 248}
+CASE, FF0 = PL["case"], PL["false_frame"]            # card 126-1: from the plan (prerun X6), dry runs the whole path (prerun X5)
+CONST = {"donor": os.path.join(g.CLAUDEDEV, PL["const_donor"]["vi"]), "uid": PL["const_donor"]["uid"]}
 s = K.Stage(DON, DONM, "scratch_c125_5_fsscr", preload=False, deadline_min=28, reserve_s=150,
             out_json=os.path.join(HERE, "diag_c125_5_fsscr.json"), task="card 125-5 STEP 1")
 OUT = {}
@@ -36,15 +37,13 @@ def terms(W):
 
 def body(_):
     s.start(); s.discard_work(); W = s.work                                                  # noqa: E702
-    if DRY:
-        return s.dump()
     fr = g.case_frames(W, CASE); names = [str(n).strip() for n in fr["names"]]              # noqa: E702
-    ff = int(fr["frames"][names.index("False")]) if "False" in names else 0
-    s.gate("K case #%s frames %s, False = Diagram #%s" % (CASE, names, ff), ff == 27219, fr)
+    ff = FF0 if DRY else (int(fr["frames"][names.index("False")]) if "False" in names else 0)
+    s.gate("K case #%s frames %s, False = Diagram #%s" % (CASE, names, ff), DRY or ff == FF0, fr)
     c0, w0 = s.census_snapshot(), set(g.uids(W, "Wire"))
     cp = s._op("struct_copy_nested", lambda: g.struct_copy_nested(W, ff, "FlatSequence", g.fs_donor(), (60, 60)), "FS -> #%s" % ff)["result"] or {}
-    fs = int(cp.get("uid") or 0)
-    s.gate("F1 one new FlatSequence #%s owned by Diagram #%s (new diagrams %s)" % (fs, ff, cp.get("new_diagrams")), bool(fs), cp)
+    fs = 1 if DRY else int(cp.get("uid") or 0)
+    s.gate("F1 one new FlatSequence #%s owned by Diagram #%s (new diagrams %s)" % (fs, ff, cp.get("new_diagrams")), DRY or bool(fs), cp)
     if not fs:
         return s.dump()
     f1 = g.fs_frames(W, fs)
@@ -53,8 +52,9 @@ def body(_):
     f3 = g.fs_frames(W, fs)["frames"]
     OUT.update(fs=fs, frames_1=f1, add1=a1, add2=a2, frames=f3)
     s.fact("FRAMES left->right %s (start %s, add1 new %s, add2 new %s)" % (f3, f1["frames"], a1.get("new_frame"), a2.get("new_frame")))
-    s.gate("F2 3 frames; first stays leftmost; add(0,T) new at 1, add(1,T) new at 2", len(f3) == 3 and f3[0] == f1["frames"][0]
-           and f3[1] == a1.get("new_frame") and f3[2] == a2.get("new_frame"), (f1, f3))
+    s.gate("F2 3 frames; first stays leftmost; add(0,T) new at 1, add(1,T) new at 2", DRY or (len(f3) == 3 and f3[0] == f1["frames"][0]
+           and f3[1] == a1.get("new_frame") and f3[2] == a2.get("new_frame")), (f1, f3))
+    f3 = [0, 0, 0] if DRY else f3
     c1 = s.census_snapshot()
     for u in sorted(set(c1) - set(c0)):
         s.fact("CENSUS-NEW class %s #%s" % (c1[u], u))
@@ -67,11 +67,12 @@ def body(_):
     src = [r for r in rows if int(r["owner_uid"]) == int(k or 0) and r["is_source"]]
     snk = [r for r in rows if int(r["owner_uid"]) == int(m or 0) and not r["is_source"] and str(r["term_name"]) == "x"]
     s.fact("TERMS const #%s src %s | Max & Min #%s x %s" % (k, [(r["term_uid"], r["frame_diagram"]) for r in src], m, [(r["term_uid"], r["frame_diagram"]) for r in snk]))
-    if not (len(src) == 1 and len(snk) == 1):
+    if not DRY and not (len(src) == 1 and len(snk) == 1):
         s.gate("W0 exactly one const output and one Max & Min x", False, (len(src), len(snk)))
         return s.dump()
+    ku, su = (0, 0) if DRY else (int(snk[0]["term_uid"]), int(src[0]["term_uid"]))
     c2, wb = s.census_snapshot(), set(g.uids(W, "Wire"))
-    cw = s._op("connect_term_uid", lambda: g.connect_term_uid(W, int(snk[0]["term_uid"]), int(src[0]["term_uid"])), "x <- const")["result"] or {}
+    cw = s._op("connect_term_uid", lambda: g.connect_term_uid(W, ku, su), "x <- const")["result"] or {}
     c3, wn = s.census_snapshot(), sorted(set(g.uids(W, "Wire")) - wb)
     tun = [(c3[u], u) for u in sorted(set(c3) - set(c2)) if "Tunnel" in c3[u] or "Terminal" in c3[u]]
     for u in sorted(set(c3) - set(c2)):
@@ -79,13 +80,13 @@ def body(_):
     rows = terms(W)
     path = [(r["owner_class"], r["owner_uid"], r["term_name"], r["is_source"], r["frame_diagram"], r["wire_uid"]) for r in rows if int(r["wire_uid"] or 0) in wn]
     s.fact("WIRE %s new wires %s; terminals on them %s" % (cw, wn, path))
-    s.gate("W1 op err '', Is Broken? False, >= 1 tunnel-class object new %s" % tun, cw and not cw.get("err") and cw.get("broken") is False and bool(tun), (cw, tun))
+    s.gate("W1 op err '', Is Broken? False, >= 1 tunnel-class object new %s" % tun, DRY or (cw and not cw.get("err") and cw.get("broken") is False and bool(tun)), (cw, tun))
     jt = dict((w, dec(g.wire_joints(W, w))) for w in wn)
     s.fact("JOINTS %s" % jt)
-    s.gate("W2 wire_joints free ends 0 on every new wire %s" % wn, bool(jt) and all(not v["free"] for v in jt.values()), jt)
-    OUT.update(wire=cw, new_wires=wn, tunnels=tun, path=path, joints=jt, census_wire=dict((c3[u], c3[u]) for u in set(c3) - set(c2)))
+    s.gate("W2 wire_joints free ends 0 on every new wire %s" % wn, DRY or (bool(jt) and all(not v["free"] for v in jt.values())), jt)
+    OUT.update(wire=cw, new_wires=wn, tunnels=tun, path=path, joints=jt, census_wire=[(c3[u], u) for u in sorted(set(c3) - set(c2))])
     s.gate("X bed md5 unchanged", K.md5(DON) == DONM, K.md5(DON))
-    if not s.fails:
+    if not s.fails and not DRY:
         json.dump({"function": "fs_add_frame", "status": "PASS", "t": time.time(), "card": "125-5", "log": "tools/bench/diag_c125_5_fsscr.log",
                    "also": ["fs_frames", "fs_donor"], "out": OUT}, open(os.path.join(HERE, "scratch_verify", "fs_add_frame_%s.json" % s.stamp), "w",
                   encoding="utf-8"), default=str, indent=1)

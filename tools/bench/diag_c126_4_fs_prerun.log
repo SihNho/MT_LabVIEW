@@ -1,0 +1,49 @@
+BGRUN START 2026-10-01 20:48:21 limit 8.0 min: py -u tools/stage_prerun.py --prerun tools/bench/diag_c126_4_fs.py
+BGRUN PID 3780
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 4dfa44aac8fb32f706b3eb792ee7d3cc  got 4dfa44aac8fb32f706b3eb792ee7d3cc
+  PASS  DRY graph JSON for input md5 4dfa44aac8fb32f706b3eb792ee7d3cc  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_ring_p3a_20261001_190155.json
+  PASS  K case #22694 frames [], False = Diagram #27219  <dry:g.case_frames>
+  FACT  OP struct_copy_nested FS -> #27219 -> err '' (0.0 s)
+  PASS  F1 one new FlatSequence #1 owned by Diagram #27219  <dry:g.struct_copy_nested>
+  FACT  OP fs_add_frame after 0 -> err '' (0.0 s)
+  FACT  OP fs_add_frame after 1 -> err '' (0.0 s)
+  PASS  F2 3 frames; first stays leftmost; add(0,T) new at 1, add(1,T) new at 2  (<dry:g.fs_frames>, <dry:g.fs_frames[]>)
+  UNVERIFIED-DRY  CEN census delta of FS copy + 2 Add Frame == FlatSequence 1 + Diagram 3  (census not measured in a dry run; declared {"Diagram": 3, "FlatSequence": 1})
+  FACT  OP create_primitive_nested const -> frame 1 -> err '' (0.0 s)
+  FACT  OP create_primitive_nested Max & Min -> frame 2 -> err '' (0.0 s)
+  FACT  OP create_primitive_nested Max & Min -> frame 1 -> err '' (0.0 s)
+  FACT  OP create_primitive_nested Max & Min -> frame 3 -> err '' (0.0 s)
+  PASS  S0 one const output, one x on each Max & Min, one qr source on Diagram #27219  [0, 0, 0, 0, 0]
+  FACT  OP connect_term_uid x <- const -> err '' (0.0 s)
+  PASS  W1 op err '', Is Broken? False, >= 1 tunnel-class object new []  (<dry:g.connect_term_uid>, [])
+  FACT  W1 JOINTS {} (free ends are a measurement)
+  FACT  OP connect_term_uid Q1 x <- qr -> err '' (0.0 s)
+  FACT  Q1 {'op': <dry:g.connect_term_uid>, 'census_new': [], 'gone': [], 'new_wires': [], 'joints': {}, 'tunnels': {}, 'src_wires': []}
+  PASS  Q1 op err '' (values are a measurement)  <dry:g.connect_term_uid>
+  FACT  OP connect_term_uid Q3 x <- qr -> err '' (0.0 s)
+  FACT  Q3 {'op': <dry:g.connect_term_uid>, 'census_new': [], 'gone': [], 'new_wires': [], 'joints': {}, 'tunnels': {}, 'src_wires': []}
+  PASS  Q3 op err '' (values are a measurement)  <dry:g.connect_term_uid>
+  PASS  X bed md5 unchanged  4dfa44aac8fb32f706b3eb792ee7d3cc
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  PASS  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['tools/bench/diag_c126_4_fs_plan.json']
+  PASS  X3 every plan row decided  10 rows + 0 stageplan actions
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  0 stageplan(s)
+  PASS  X11 no row wires one Build Array input while a sibling input is an open row (unless pb-licence/1)  0 stageplan(s)
+  PASS  X12 no row names a wire uid an earlier border-crossing connect re-created (connect_from_wire.json:266)  0 stageplan(s), 0 re-created source wire(s), none named later
+  PASS  X13 opmodel conformance: every recorded sample of the plan ops' model files replays in stagesim  0 op(s) []; files {}
+  PASS  X16 every declared terminal of a created primitive carries term_class (PD251(b))  0 non-const_donor create action(s) with declared terminals, all classed
+  PASS  X4 every end addressable offline (0 ends)  []
+  PASS  X5 wiring ops executed in the dry run == plan wire rows  ops 3 vs plan wire rows 3 + stageplan wiring real ops 0 (covering 0/0 wire actions); delete ops {} vs plan delete rows {}
+  PASS  X6 ast lint: no re-typed uid / terminal name  uids []; names []
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c126_4_fs_20261001_204822.vi; decisions rows NOT dispatched (recipe calls neither run_rows nor from_decision)
+  PASS  X10 predicted LabVIEW private MB < 690.0 (error-2 point; MEMSTOP 700.0) over the ops this run dispatches (UNMEASURED - no covering record)  {'why': 'UNMEASURED: no recorded meter of diag_c126_4_fs.py covers ops 1..end (0 record(s))'}
+  WARN  X10 WARN unmeasured: UNMEASURED: no recorded meter of diag_c126_4_fs.py covers ops 1..end (0 record(s))
+  INFO  X14 rows 10, budget 15 (proven: no)
+
+=== DRY PASS: first_fail=None coverage 78/113 lines, first mutation Stage._op struct_copy_nested, unverified 0, graph tools/bench/graph_ring_p3a_20261001_190155.json
+=== PRERUN PASS: 14 pass / 0 fail; first None
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":14,"fail":0},"first_fail":"X10 WARN unmeasured: UNMEASURED: no recorded meter of diag_c126_4_fs.py covers ops 1..end (0 record(s))","artefacts":[]}
+BGRUN END rc=0 after 3s

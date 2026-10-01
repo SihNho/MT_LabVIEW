@@ -1,0 +1,18 @@
+BGRUN START 2026-10-01 20:13:52 limit 1.0 min: py -u tools/bench/selftest_hygiene_run.py
+BGRUN PID 17012
+PASS | T1 recycle 5x4: PASS, 20 calls, 5 rounds | ('PASS', 20, 5)
+PASS | T1 live copies 0 after every round | [0, 0, 0, 0, 0]
+PASS | T1 three handle series + gdi/user, one value per round | {'h_pre': [31540, 31540, 31540, 31540, 31540], 'h_post': [31540, 31540, 31540, 31540, 31540], 'h_closed': [31500, 31500, 31500, 31500, 31500]}
+PASS | T1 pre/post read with the copy open, closed read without it | ([31540, 31540, 31540, 31540, 31540], [31500, 31500, 31500, 31500, 31500])
+PASS | T6 one ensure_loaded + one close per round, distinct copies, none left on disk | (5, 5)
+PASS | T8 record file == returned record, schema op-hygiene/1, md5 of the op file | fe115034ed553e751b2092eda45cfcd6
+PASS | T2 a raising workload is counted as an error, FAIL, the run still completes | (1, ['r00 EXC boom'])
+PASS | T3 a returned error string is counted (8 of 8), FAIL | 8
+PASS | T4 h_closed drift +30/round over 5 rounds -> max_dev 120 > 100 -> FAIL | ([31530, 31560, 31590, 31620, 31650], 120)
+PASS | T5 a check problem fails the record | ['r00 frames 3 != 5', 'r01 frames 3 != 5']
+PASS | T7 recycle=False: one copy, one close, 12 calls, PASS | (1, 12, 'PASS')
+PASS | T9 warm runs once, not counted as a call | ({'n': 1}, 8)
+PASS | T10 the module's live-copy list is empty at the end | []
+=== GATES: 13 pass / 0 fail; failing: []
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 5s

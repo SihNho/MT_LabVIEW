@@ -1701,3 +1701,18 @@ is edited while a LabVIEW card is live, retrospective-cycle121 disposition):
   DigitalNumericConstant (+5 derived); with the corrected prediction it PASSES; the prerun of `plan_ring_p2a.json` and
   `plan_qrt_pool.json` shows no new FAIL; a dry run of a recipe using the helper prints `UNVERIFIED-DRY`, not PASS.
 - If a later stage again meets a class count that its op samples could have predicted, that is `device-failed` (threshold 1).
+
+## repeated-failure-class — 2026-10-01 20:12 (cycle 126 judgement, after archive/peer/2026-10-01-retrospective-cycle125.md:426)
+
+`VIOLATION: repeated-failure-class | loss_min=15 | loss_usd=? | evidence=tools/bench/diag_c125_5_opfs.log:64`: ACCEPTED (already
+accepted by the cycle-125 judgement, `docs/d1-loop12-17-split-plan.md` PD253(b)). `OpFsAddFrame_v0`'s 2,000-call hygiene check
+failed on handles (+116) because its workload never closed its VI copies — the same equal-state mistake PD242(b) had already
+named for `OpConstInd_v0`. Each op's hygiene workload is written by hand, so the rule is re-typed (or forgotten) per op.
+
+DECISION: device, FIRST in cycle 126's first card (126-1), before the op is used: one shared runner
+`gscript.hygiene_run(op, workload, recycle=True)` that wraps `hygiene_probe`, closes every VI copy without saving at a fixed
+call count, and records handles before the calls, after the calls and after the close, plus GDI/USER counts, at the SAME VI
+state. Every later op hygiene check goes through it only; a brief for one quotes PD242(b)'s equal-state clause verbatim.
+- Acceptance: a self-test shows the runner closes its copies (copy count back to the start value after each round) and its
+  record carries all three handle reads; `OpFsAddFrame_v0`'s rerun through it decides PASS/FAIL by the usual ±100 band.
+- If a later op hygiene check is again written outside `hygiene_run`, or fails on unclosed copies, that is `device-failed`.

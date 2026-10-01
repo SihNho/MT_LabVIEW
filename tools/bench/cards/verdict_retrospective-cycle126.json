@@ -1,0 +1,17 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle126",
+ "verdict": "none",
+ "alternative": "Brief defects on the offline track (126-5 no hypothesis peer, dedupe_rows not named, 126-7 given the bed graph for a question about the original) cost ~12 min; would be structural only if counted as changing the ending.",
+ "discriminating_test": "Replay task_126-7 with main_vi_nodeterms.json + V.dedupe_rows: if it PASSes in <=5 min, the loss is the 126-8 card (~12 min); output identical either way.",
+ "violations": [],
+ "sources": [
+  "tools/bench/cards/task_126-7.json:12",
+  "tools/bench/cards/task_126-5.json:49",
+  "tools/vigraph.py:260",
+  "tools/bench/diag_c126_8_orig.log:45",
+  "tools/bench/cards/guard_card.log:546",
+  "tools/bench/peer_c126_2_wiremethods.log:4"
+ ],
+ "note": "8 cards/113 min; all failures returned at first gate; devices worked (hygiene_run in 3/3 checks). Findings: own-gate literal compares (126-2, 126-4), >120-line diagnostics, unqueued gate-fp at guard_card.log:549."
+}

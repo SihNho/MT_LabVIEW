@@ -5226,3 +5226,95 @@ VIOLATION: repeated-failure-class | loss_min=15 | loss_usd=? | evidence=tools/be
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle125","verdict":"refuted","alternative":"The +116 handles may be a real per-call leak in OpFsAddFrame_v0, in which case the rerun only confirms a FAIL; the waste is then the unreadable first probe, not a lost PASS.","discriminating_test":"Rerun AH with each round's copy closed without save, sampling h_pre/h_post/h_closed + GDI/USER (review c125-5-addframe-hyg.md:82-92); flat h_closed => harness fault confirmed.","violations":[{"slug":"repeated-failure-class","loss_min":15,"loss_usd":"?","evidence":"tools/bench/diag_c125_5_opfs.log:64"}],"sources":["tools/bench/diag_c125_5_opfs.log:64","tools/bench/diag_c125_5_opfs.py:136","tools/bench/diag_c122_hyg.py:74","tools/bench/cards/result_124-4.json:2","docs/d1-loop12-17-split-plan.md:2339","tools/bench/next.json:4"],"note":"Window spans cycles 123-125; cycle 125 = 18:32-19:58. Second candidate (125-2 inferred loose-wire count, $2.44 review) ranked below. No device failed."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle125.md
 BGRUN END rc=0 after 197s
+BGRUN START 2026-10-01 22:02:23 limit 10.0 min: py tools/retrospective.py --cycle 126
+BGRUN PID 8884
+   window 2026-10-01 20:01:45 .. 2026-10-01 22:02:23 (121 min); 32 build logs, 9 machinery logs, 43 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle126.txt (32906 chars)
+   review card tools\bench\cards\review_retrospective-cycle126.json
+OUTCOME: ANSWERED (315s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-10-01-retrospective-cycle126.md
+COST: $2.3584  in 48 / out 29166 / cache-create 150686 / cache-read 2847096  (313s, 41 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle126 verdict=none -> tools\bench\cards\verdict_retrospective-cycle126.json
+--- ANSWER ---
+**Verdict:** the claim holds. Cycle 126 had no structural fault. I found several small faults that together cost about 12 minutes and about $2 of reviews, but none changed what the cycle produced.
+
+**Window check.** The window is 20:01:45–22:02:23. The cycle itself ran from 20:08:57 (`tools/bench/cycle_126.log:1`) to the retrospective dispatch at about 22:02. Nothing in the evidence falls outside it. The audit's A4 FAIL is not this cycle's: the three g6 chat files and `priorart-c124-6` were already blank in cycle 125's audit. The audit's C4c reads 0 because `cycle_126.log` has no END line yet, so this cycle's judgement-session cost is unknown. For comparison, cycle 125's was $29.50 (`wait_runner_event.log:156`).
+
+**What the cycle did.** 8 cards in 113 minutes. The judgement session's gaps between a card returning and the next dispatch were 2–4 minutes (`cards/guard_card.log:546-554`). Every failure returned at its first failed gate. Reviews cost $3.01 in total:
+- `peer_c126_2_wiremethods.log:4`: $1.0603
+- `peer_c126_4_elocr.log:4`: $0.9503
+- `peer_c126_7_t644.log:4`: $0.9969
+
+It delivered everything plan items PD253(e), PD254 and PD255 asked for:
+- **Hygiene runner:** the shared runner `gscript.hygiene_run` was built.
+- **Flat Sequence ops:** both ops have passed hygiene and been checked on a scratch copy.
+- **Simulator and executor:** the Flat Sequence routes and models went into the simulator and the executor.
+- **Stub wire:** a new op, `OpWireRemoveLooseEnds_v0`, was built. On a copy, the removal of `w27378` was measured: Error List 55 → 54.
+- **Crossings:** every border-crossing kind P3b needs was measured, 48/0.
+- **Rule-1a question:** it was settled against the original VI.
+- **P3b plan input:** written.
+
+No VI was delivered, and none was planned for this cycle.
+
+## The top candidate, and why it falls below the bar
+
+**What happened.** The offline track needed three cards (126-5 FAIL → 126-7 FAIL → 126-8 PASS) to produce one P3b plan input. All three causes were brief defects written by the judgement session:
+- **Missing peer flag.** Card 126-5 carried `peers: ["priorart"]` only (`task_126-5.json:49`). When the Jev ladder said a review was owed, `guard_peer` refused the rerun of the already-patched plan maker (`result_126-5.json`, `blocked_by`).
+- **Existing helper not named.** The maker failed on a duplicate terminal row (`t644`). That duplicate is a known one with a helper that has existed since 2026-09-24 (`tools/vigraph.py:260-267`, `dedupe_rows`). The brief did not name the helper, and a $1.00 review rediscovered it (`archive/peer/2026-10-01-c126-7-t644.md:87-96`).
+- **Wrong graph for the question.** Card 126-7 asked which source feeds "the original's per-frame result path" (`task_126-7.json:27`). The only graph it supplied was the bed's (`:12`, the P3a work VI). The material session read the bed, found no route, and returned a FAIL (`diag_c126_7_facts2.log:3-11`). Card 126-8 then read the original and confirmed plan item PD238(c) (`diag_c126_8_orig.log:3-8,45-48`).
+
+**Counterfactual.** Had card 126-7 listed `main_vi_nodeterms.json` (the original's graph) and named `V.dedupe_rows`, it would have passed at about 21:12. Card 126-8 would not have been needed. The cycle would have closed at about 21:50, when 126-6 returned, instead of 22:02.
+
+**Why it is not a structural fault:**
+- The loss is about 12 minutes, and no log carries a dollar figure for the judgement session.
+- The artefacts the cycle ended with would have been identical.
+- 126-7's bed reading was not wasted. It raised a real rule-1a question: had a sink been lost by one of our own earlier stages? 126-8 answered it: the sink was opened by design at stage L2-B1 (`diag_c126_8_transrot.log:21-39`).
+
+## FINDINGS
+
+**1. Repeated failure.** Four of the cycle's FAILs were defects in our own scripts, not the ops; 126-7's FAIL is the wrong-graph brief above.
+- **126-2:** the gate matched the spaced literal `'Clean Up Wire'`, but LabVIEW names the method `CleanUpWire` (`diag_c126_2_op.log:19`).
+- **126-4:** the gate compared Error List class keys read by OCR byte-for-byte. The variant spelling `subvl` appears in 161 recorded Error List files back to cycle 80, so it was known (`result_126-4.json`).
+- **126-5:** the maker hit the known duplicate-row case.
+- **`selftest_fs_c126.py`:** its run 1 failed on the script's own bug.
+
+The approach should have changed at 126-4, the second gate in a row that compared a LabVIEW string against a typed literal: gates should match on id plus a normalised name. 126-2's stop was useful, though: it prevented building the op on CleanUpWire, which re-routes the whole wire (`peer_c126_2_wiremethods.log:9`).
+
+**2. Missing tool.**
+- `errorlist_check.py` `norm()` has no aliases for the OCR variants (`vl`↔`vi`). That gap caused 126-4's FAIL and its $0.95 review. It is carried as a to-do in `STATUS.md:66`.
+- The Jev ladder sent all three own-script FAILs to "review owed" (`jev_gate.log:3150,3170,3173`). None was routed `our-script-bug` or `already-reviewed-class`.
+
+**3. Unmeasured steps.** The need to measure a second sink into a frame the source already entered was raised twice before brief 126-6 was written: `result_126-3.json` open[0] ("already-wired source") and `result_126-5.json` ("4 branches into f1"). Brief 126-6 measured a branch into a *different* frame only (`brief_126-6.md:8`). As a result, 4 rows are still unmeasured (`plan_ring_p3b_make_c126_8.log:11`) and cycle 127 needs a small LabVIEW card first. The counterfactual is uncertain: the route PD257(d) chose depends on 126-6's own result. Separately, the Automatic Error Handling property was asked of an offline card "from files only" (`task_126-7.json:28`), where it cannot be read. It could have gone in 126-6, which had LabVIEW open at the time.
+
+**4. Rule compliance.**
+- **Script length.** The ≤120-line rule for new diagnostics (`STATUS.md:96`) was broken again: `diag_c126_2_op.py` has 164 lines, `diag_c126_4_op.py` 143, and `selftest_fs_c126.py` 211, all without stagekit (`jev_gate.log:3151,3156,3162`). The ladder only flags this.
+- **Gate refusal not queued.** A gate refusal at 20:29:34 for a `stagexec.py` self-test under `labview: none` (`guard_card.log:549`) was routed around 17 s later. It was not logged to the gate false-positive queue (`gate_fp_queue.jsonl` stops at fp-14).
+- **Pre-scripted action.** Brief 126-4 kept one if-then line: "If a one-terminal stub appears … apply RemoveLooseEnds" (`brief_126-4.md:25`).
+- **Doc lint L8 FAIL.** This is this cycle's: the header at `docs/violation-decisions.md:1705`.
+- **What the audit does not cover:** script length; whether a brief's inputs can answer its own pass criterion (126-7); peer flags missing from a card (126-5); unlogged gate false positives.
+
+**5. Ordering.** Defensible overall: the device came first (126-1), with the LabVIEW and offline tracks paired after it. Because each pair is dispatched in one message, the session waited for both cards. 126-7's result waited from about 21:12 to 21:48 for 126-6. The three-card budget for offline cards running beside a LabVIEW card (126-3, 126-5, 126-7) was also used up, so 126-8 could not have run earlier anyway.
+
+**6. What was not reported.**
+- STATUS reports the 126-2 and 126-4 FAILs as "our own gates" (`STATUS.md:63`). It does not say the OCR variant was already in every recorded Error List file.
+- It does not say the t644 duplicate had a helper since 2026-09-24.
+- It does not say three diagnostics broke the 120-line rule.
+- The cycle's judgement-session cost is not in any log yet.
+
+**7. Judgement inside a material session.** I found none of substance. 126-5, 126-7 and 126-8 returned rule-1a and design questions as OPEN (`result_126-5.json`, `result_126-7.json`, `result_126-8.json` "open" fields), and the judgement session decided them in PD255 to PD257. The 126-4 material session renamed `gscript.wire_cleanup`, but the brief told it to (`brief_126-4.md:8`).
+
+## Device effect
+
+No device failed in the window.
+- **Shared hygiene runner (2026-10-01, `hygiene_run`): worked.** All three op-hygiene checks went through it (`diag_c126_1_hyg.py:52`, `diag_c126_2_op.py:89`, `diag_c126_4_op.py:65`). It also turned 125-5's +116-handle failure into a PASS with max deviation 7 (`diag_c126_1_hyg.log:25-34`).
+- **Op-hygiene record (2026-09-28): worked.** The new op was accepted with a record (`op_hygiene/OpWireRemoveLooseEnds_v0.json`).
+- **bgrun inner-failure scan: worked.** It forced rc=1 when the process said 0 (`diag_c126_7_facts2.log:17`) and flagged runs with no RESULT line (`selftest_fs_c126.log:22`).
+- **guard_peer (review owed before a rerun): fired correctly** on 126-5.
+- **Census computed from samples: worked.** It flagged `CENSUS-UNPREDICTED` instead of guessing (`result_126-5.json`).
+- **Cost-line parsing: worked,** 3 of 3 (C4b).
+- **Not exercised:** the stop-record, launch, pre-run and prior-art gates (no stage launched).
+
+VIOLATION: none
+
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle126","verdict":"none","alternative":"Brief defects on the offline track (126-5 no hypothesis peer, dedupe_rows not named, 126-7 given the bed graph for a question about the original) cost ~12 min; would be structural only if counted as changing the ending.","discriminating_test":"Replay task_126-7 with main_vi_nodeterms.json + V.dedupe_rows: if it PASSes in <=5 min, the loss is the 126-8 card (~12 min); output identical either way.","violations":[],"sources":["tools/bench/cards/task_126-7.json:12","tools/bench/cards/task_126-5.json:49","tools/vigraph.py:260","tools/bench/diag_c126_8_orig.log:45","tools/bench/cards/guard_card.log:546","tools/bench/peer_c126_2_wiremethods.log:4"],"note":"8 cards/113 min; all failures returned at first gate; devices worked (hygiene_run in 3/3 checks). Findings: own-gate literal compares (126-2, 126-4), >120-line diagnostics, unqueued gate-fp at guard_card.log:549."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle126.md
+BGRUN END rc=0 after 320s

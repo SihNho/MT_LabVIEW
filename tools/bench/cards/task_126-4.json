@@ -1,0 +1,74 @@
+{
+ "schema": "task/1",
+ "id": "126-4",
+ "kind": "measure",
+ "goal": "PD254(c)(e): RemoveLooseEnds op (6370C08) + hygiene, w27378 removal on a P3a copy; outer -> FS frame crossings (frame 1 + branch to frame 3)",
+ "why": "Retry of 126-2 (FAIL = our gate M1 literal). P3b needs the stub removal and case-frame -> FS-frame crossings with a branch, neither measured yet. Brief: brief_126-4.md.",
+ "retry_of_card": "126-2",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_126-4.md"},
+  {"path": "tools/bench/cards/result_126-2.json"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3a_20261001_180540.vi", "md5": "4dfa44aac8fb32f706b3eb792ee7d3cc"},
+  {"path": "tools/bench/diag_c126_2_op.py", "md5": "ad2f8dc2e1c56daf1b4e8560e5088406"},
+  {"path": "tools/bench/diag_c126_2_fs.py", "md5": "e54def1de78fac7cf78234b906c73e5e"},
+  {"path": "tools/bench/graph_ring_p3a_20261001_190155.json", "md5": "2fa6ce0c3e8a3014fa916085cb852f68"},
+  {"path": "tools/gscript.py", "md5": "0ff055e97f342f7e36c639779e50e405"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "verb", "name": "hygiene_run", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "wire_joints", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "connect_term_uid", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "fs_add_frame", "where": "tools/gscript.py"},
+  {"kind": "op", "name": "OpWireJoints_v1"},
+  {"kind": "op", "name": "OpConnectTermUid_v0"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/bench/diag_c126_2_op.py"},
+  {"kind": "file", "name": "tools/bench/diag_c126_2_fs.py"}
+ ],
+ "pass": [
+  "STEP 0: op on 6370C08 built (M1 by id + data name), hygiene via hygiene_run >= 2,000 calls, 0 errors, +-100; refs closed",
+  "STEP 1: w27378 before/after RemoveLooseEnds: free ends, Is Broken?, terminals, census delta, count-only Error List per class",
+  "STEP 2: case frame -> FS frame 1 and branch -> FS frame 3: census, Is Broken?, free ends, tunnels, Error List count delta",
+  "bed md5 unchanged; scratch copies deleted; LabVIEW closed and verified gone"
+ ],
+ "outputs": [
+  "tools/gscript.py",
+  "tools/bench/op_hygiene/*",
+  "tools/bench/census_samples.json",
+  "tools/bench/scratch_verify/*"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/gscript.py",
+   "tools/bench/diag_c126_2*",
+   "tools/bench/diag_c126_4*",
+   "tools/bench/census_samples.json",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/op_hygiene/**",
+   "tools/bench/errorlist_*",
+   "tools/bench/cards/result_126-4*",
+   "tools/bench/cards/review_126-4*",
+   "tools/bench/peer_*",
+   "archive/peer/**",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["fact", "hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "rules": [
+  "Follow brief_126-4.md; measurement only; beds never saved over; no stage recipe launched",
+  "Never a whole-VI Remove Broken Wires; no change to connect_term_uid; do not edit stagexec/stagesim",
+  "Return at the first unexpected result (finish the step, LabVIEW closed, facts recorded)"
+ ],
+ "advances": ["M4", "M3"]
+}

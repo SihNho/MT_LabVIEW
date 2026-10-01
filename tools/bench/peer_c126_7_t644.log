@@ -1,0 +1,39 @@
+BGRUN START 2026-10-01 21:08:28 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c126-7-t644 -TaskFile tools/bench/cards/review_126-7_task.txt
+BGRUN PID 25732
+OUTCOME: ANSWERED (99s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-01-c126-7-t644.md
+COST: $0.9969  in 16 / out 7844 / cache-create 84211 / cache-read 713038  (95s, 12 turn(s))
+--- ANSWER ---
+**Verdict: I could not refute the cause. The two `t644` rows are a known defect in how our terminal dump (OpAllTerms_v1) reports the VI; they are not a second terminal. But two parts of the claim go beyond the evidence: that the patch is the right fix, and that `t644` is `i`.**
+
+### 1. Strongest reason the claim is wrong
+"The patched maker is the right fix" is the weak part. This same mistake was already caught once. The 2026-09-24 review said to "Dedupe the rows once, where they are loaded … not only in `op_remove_bad_wires`" (`archive/peer/2026-09-24-chat-s2-rbw.md:68`). The project followed that advice by adding `vigraph.dedupe_rows`, which stagesim and stagexec both call (`tools/stagesim.py:263`, `tools/stagexec.py:710`).
+
+The maker still reads the raw list (`T = G["terminals"]`, `tools/bench/plan_ring_p3b_make.py:35`). It patches one gate for one terminal (`:45-47`). Every other read of `T` in the maker, through `row`, `tab` and the M2 counter, is still unprotected. The patch also keys on (term_uid, frame), while stagexec keys on term_uid alone and lists any duplicates whose rows differ (`tools/vigraph.py:268-278`). The maker never checks that list.
+
+So the patch does not remove the wrong premise. It moves it to the next terminal that someone binds by a raw count. This is a repeat of a known failure class, not a new one.
+
+There is a second problem. "#637's `i` = t644" is inferred, not read from LabVIEW. Every duplicated row has `term_name ""` and owner class `Diagram`. The 09-24 review called the identity of these terminals "possibly an iteration or selector terminal … That guess is not verified" (`archive/peer/...-chat-s2-rbw.md:70`). The inference is strong but structural:
+- it is a source terminal owned by #639, the inside of the While loop;
+- the only other unnamed Diagram-owned terminal there, 648, is a sink on wire 3457, which fits the stop terminal.
+
+No dump records the result of reading the loop's own iteration terminal by property. Under rule 1a, binding FrameIdx to the wrong terminal would change what is computed, so this identity matters more than the duplicate does.
+
+### 2. Alternative explanation of the same evidence
+OpAllTerms may visit some inner loop diagrams twice, for example once through the structure's list of diagrams and once in the general walk. That would be harmless, and nothing in the evidence rules it out. A worse reading: the two rows are separate terminal objects whose uid read-back collapses to the same value. Both rows having the same direction, wire and frame makes this unlikely, but no live read tested it.
+
+The 30 duplicates print `x2` for the 20 shown (`tools/bench/diag_c126_7_t644.log:7-26`). The log ends `NO RESULT LINE` (`:29`), so "every one ×2 and byte-identical" comes from the script's printout. No gate checked it.
+
+### 3. What would falsify the claim
+- `vigraph.dedupe_rows` on the pinned graph returns `nonidentical != []`, or drops a number other than 30.
+- A live read of While loop #637's iteration terminal returns a uid other than 644.
+- Wire 3268's source on a live read is not 644.
+
+### 4. Cheapest discriminating test (offline, no LabVIEW)
+On `graph_ring_p3a_20261001_190155.json`, run `V.dedupe_rows(G["terminals"])[1]`. Expect `dropped == 30` and `nonidentical == []`. Also confirm that #639 has exactly one unnamed Diagram-owned source terminal (644) and one unnamed sink (648).
+
+If both hold, the dump defect is settled. The maker should then call `V.dedupe_rows` once at load and gate on `nonidentical == []` instead of the special case for 644.
+
+The identity of `i` needs one live property read, for example during the next scheduled LabVIEW session. Until then it should stay marked UNMEASURED in the plan row `p3b_x_fidx` (`plan_ring_p3b_make.py:136-137`). That read would change my mind on point 1.
+
+The web search found nothing that documents how VI Scripting reports a loop's inner-diagram terminals. The closest hit is the [NI forum thread on locating the loop iteration and conditional terminals](https://forums.ni.com/t5/LabVIEW/VI-Scripting-locate-loop-iteration-and-conditional-terminals/td-p/4344904). So the question of why they come back twice is still open. My claims rest on the local files above, not on vendor documentation.
+BGRUN END rc=0 after 100s

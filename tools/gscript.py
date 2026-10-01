@@ -308,6 +308,136 @@ def op(path):
     return _cache[path]
 
 
+# --- SHARED HYGIENE RUNNER (card 126-1; docs/violation-decisions.md repeated-failure-class 2026-10-01, PD253(b)) --------------
+# EXISTING FIRST: hygiene_probe (the exemption, above), diag_c122_hyg.py's recycle loop (stagekit scratch/drop_scratch = close_panel +
+# delete), bench_prep.labview_handles, stagekit.private_bytes. Each op so far wrote its own loop and OpFsAddFrame_v0's never closed its
+# copies (archive/peer/2026-10-01-c125-5-addframe-hyg.md:80-94). PD242(b) equal-state clause: "For a CREATOR the probe may delete each
+# created constant+indicator after its call, or recycle the scratch VI without saving at fixed call counts, measuring handles at the
+# same VI state each time." -> every round reads h_pre (copy loaded, before the calls), h_post (after them) and h_closed (copy closed
+# WITHOUT saving and deleted); the band is judged on h_closed only. Pure Python around injectable COM pieces, so it is self-tested
+# offline (tools/bench/selftest_hygiene_run.py).
+HYG_BAND = 100
+_hyg_live = []                 # paths of hygiene copies currently open (the self-test checks it returns to [] each round)
+
+
+def lv_counts():
+    """{handles, private, gdi, user} of the LabVIEW process (first instance), Nones when it is not running."""
+    out = {"handles": None, "private": None, "gdi": None, "user": None}
+    try:
+        r = subprocess.run(["powershell", "-NoProfile", "-Command",
+                            "$p = Get-Process LabVIEW -ErrorAction SilentlyContinue | Select-Object -First 1; "
+                            "if ($p) { '{0} {1} {2}' -f $p.Id, $p.HandleCount, $p.PrivateMemorySize64 }"],
+                           capture_output=True, text=True, timeout=60)
+        pid, out["handles"], out["private"] = (int(x) for x in r.stdout.split())
+    except Exception:                                                              # noqa: BLE001
+        return out
+    try:
+        import ctypes
+        h = ctypes.windll.kernel32.OpenProcess(0x1000, False, pid)                  # PROCESS_QUERY_LIMITED_INFORMATION
+        if h:
+            out["gdi"], out["user"] = ctypes.windll.user32.GetGuiResources(h, 0), ctypes.windll.user32.GetGuiResources(h, 1)
+            ctypes.windll.kernel32.CloseHandle(h)
+    except Exception:                                                              # noqa: BLE001
+        pass
+    return out
+
+
+def _hyg_close(path):
+    """Close a hygiene copy WITHOUT saving (close_panel of a never-saved copy discards its edits) and delete the file."""
+    try:
+        close_panel(path)
+    finally:
+        for _ in range(6):
+            try:
+                os.path.exists(path) and os.remove(path)
+                break
+            except OSError:
+                time.sleep(2.0)
+        if path in _hyg_live:
+            _hyg_live.remove(path)
+
+
+def hygiene_run(op_path, workload, source, total=2000, per_round=100, recycle=True, check=None, warm=None, card="", log="",
+                workload_text="", counts=None, scratch_dir=None, record_path=None, band=HYG_BAND, say=print):
+    """THE op-hygiene measurement: `total` calls of `workload(copy)` (ONE op call on an open copy; returns ''/None when good, else an
+    error string; an exception is counted as an error) under hygiene_probe(op_path). recycle=True: each round = a fresh byte copy of
+    `source`, `per_round` calls, close WITHOUT saving + delete; recycle=False: one copy for all calls, closed at the end.
+    Per round: h_pre / h_post / h_closed + GDI/USER/private at each. `check(copy)` (optional, before the close) returns a list of
+    problems (e.g. a wrong frame count); `warm(copy)` runs once on the first copy before its calls (not counted).
+    PASS = 0 errors, 0 check problems, every h_closed within +-band of the first h_closed, in-process refs live unchanged.
+    Writes the op-hygiene/1 record (record_path, default tools/bench/op_hygiene/<op>.json) and returns it."""
+    counts = counts or lv_counts
+    sd = scratch_dir or CLAUDEDEV
+    key = os.path.splitext(os.path.basename(op_path))[0]
+    stamp, rounds = time.strftime("%Y%m%d_%H%M%S"), -(-int(total) // int(per_round)) if recycle else 1
+    S = {k: [] for k in ("h_pre", "h_post", "h_closed", "gdi_pre", "gdi_post", "gdi_closed", "user_pre", "user_post", "user_closed",
+                         "private_closed", "live_after_close")}
+    errs, probs, calls, refs0, t0 = [], [], 0, ref_counts()["live"], time.time()
+
+    def snap(tag):
+        c = counts()
+        S["h_" + tag].append(c["handles"]); S["gdi_" + tag].append(c["gdi"]); S["user_" + tag].append(c["user"])   # noqa: E702
+        return c
+
+    with hygiene_probe(op_path):
+        copy = None
+        for rnd in range(rounds):
+            if copy is None:
+                copy = os.path.join(sd, "scratch_hyg_%s_%s_r%02d.vi" % (key[:20], stamp, rnd))
+                shutil_copy(source, copy)
+                _hyg_live.append(copy)
+                ensure_loaded(copy)
+            if rnd == 0 and warm:
+                warm(copy)
+            snap("pre")
+            n = min(int(per_round), int(total) - calls) if recycle else int(total)
+            for _ in range(n):
+                try:
+                    e = workload(copy)
+                except Exception as x:                                             # noqa: BLE001
+                    e = "EXC %s" % str(x)[:160]
+                calls += 1
+                if e:
+                    errs.append("r%02d %s" % (rnd, e))
+            snap("post")
+            p = list(check(copy) or []) if check else []
+            probs.extend("r%02d %s" % (rnd, x) for x in p)
+            if recycle or rnd == rounds - 1:
+                _hyg_close(copy)
+                copy = None
+            c = snap("closed")
+            S["private_closed"].append(c["private"]); S["live_after_close"].append(len(_hyg_live))   # noqa: E702
+            say("HYG %s round %d: %d calls, errors %d, check %s, h_pre %s h_post %s h_closed %s, gdi %s user %s, live %d, t %.0fs"
+                % (key, rnd, n, len(errs), p, S["h_pre"][-1], S["h_post"][-1], S["h_closed"][-1], S["gdi_closed"][-1],
+                   S["user_closed"][-1], len(_hyg_live), time.time() - t0))
+    hc = [h for h in S["h_closed"] if h is not None]
+    dev = max(abs(h - hc[0]) for h in hc) if hc else None
+    refs_d = ref_counts()["live"] - refs0
+    ok = not errs and not probs and dev is not None and dev <= band and refs_d == 0
+    rec = {"schema": "op-hygiene/1", "op": key, "path": op_path, "md5": _md5_file(op_path), "status": "PASS" if ok else "FAIL",
+           "calls": calls, "errors": len(errs), "error_samples": errs[:10], "check_problems": probs[:10],
+           "handles_before": hc[0] if hc else None, "handles_after": hc[-1] if hc else None, "handles_per_round": S["h_closed"],
+           "max_dev_closed": dev, "band": band, "refs_live_delta": refs_d, "rounds": rounds, "per_round": per_round, "recycle": recycle,
+           "workload": workload_text, "card": card, "log": log, "runner": "gscript.hygiene_run", "date": time.strftime("%Y-%m-%d %H:%M"),
+           "criterion": "docs/violation-decisions.md 2026-09-28 10:37 (1) + PD242(b): >= 2,000 calls, 0 errors, h_closed flat +-%d "
+                        "at equal VI state (copy closed without saving)" % band}
+    rec.update(S)
+    with open(record_path or op_hygiene_record_path(op_path), "w", encoding="utf-8") as f:
+        json.dump(rec, f, indent=1)
+    return rec
+
+
+def shutil_copy(src, dst):
+    import shutil
+    shutil.copyfile(src, dst)
+    time.sleep(0.2)
+
+
+def _md5_file(path):
+    with open(path, "rb") as f:
+        return hashlib.md5(f.read()).hexdigest()
+
+
 # --- REFERENCE HYGIENE, COUNTED IN-PROCESS (CLAUDE.md §3 "close every reference, and PROVE it") -----
 # AUDIT, 2026-09-19 (cycle-38 P3). What crosses COM into Python, measured by reading every call site:
 #   * `report_all()`/`report()` NEVER return a refnum. The `Traverse for GObjects` array lives and dies
@@ -4826,6 +4956,36 @@ def _purge_new_invokes(target, inv0):
         delete_object(target, "Invoke", i, verify=False)
     left = sorted(set(uids(target, "Invoke")) - set(inv0))
     return len(new) - len(left), left
+
+
+# ==== CARD 126-4 STEP 0 (PD254(c), PD253(d)): `Wire.RemoveLooseEnds` 6370C08 on ONE wire, addressed by uid ================
+# Wire method ids MEASURED by tools/bench/diag_c126_2_op.py (build_invoke 'VI Server:Wire' 6370C00..0F, the Invoke's own method
+# terminal name: 05 CleanUpWire, 08 RemoveLooseEnds, 0B DeleteJoint, 0D DisconnectTerminal - diag_c126_2_op.log:8-16).
+# OpWireRemoveLooseEnds_v0 (built by tools/bench/diag_c126_4_op.py on an OpSetIndexMode_v0 copy, the OpFsAddFrame_v0 head):
+# Traverse('Wire')[index] -> TMSC(Wire seed) -> PN [GObject.UID 632A813, Wire.Is Broken? 6371004] (echo + BEFORE) -> Invoke
+# 6370C08 RemoveLooseEnds -> PN [Is Broken?] on the Invoke's reference out (AFTER). Never a whole-VI Remove Broken Wires.
+# Labels: tools/bench/diag_c126_4_oplabels.json; hygiene record op_hygiene/OpWireRemoveLooseEnds_v0.json.
+# (Renamed from wire_cleanup / OpWireCleanUp_v0 by card 126-4; that op was never built.)
+C126_LABELS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench", "diag_c126_4_oplabels.json")
+
+
+def wire_remove_loose_ends(target, wire_uid, index=None):
+    """`Wire.RemoveLooseEnds` (6370C08) on Wire #wire_uid of `target` through OpWireRemoveLooseEnds_v0. `index` = the
+    Traverse('Wire') index when the caller already holds it for the SAME unmutated target. Returns {echo, broken_before,
+    broken_after, err}; an echo != wire_uid is appended to err. EDITS the target in memory; never saves."""
+    with open(C126_LABELS, encoding="utf-8") as f:
+        lab = json.load(f)["OpWireRemoveLooseEnds_v0"]
+    ensure_loaded(target)
+    i = int(index) if index is not None else _uid_index(target, "Wire", wire_uid)
+    vi = op(os.path.join(CLAUDEDEV, "OpWireRemoveLooseEnds_v0.vi"))
+    _set_common(vi, target, lab, "Wire", i)
+    vi.SetControlValue(lab["UID"], 0)
+    _run(vi)
+    out = {"echo": int(vi.GetControlValue(lab["UID"]) or 0), "broken_before": bool(vi.GetControlValue(lab["before"])),
+           "broken_after": bool(vi.GetControlValue(lab["after"])), "err": _err(vi, lab["Err"]) or ""}
+    if out["echo"] != int(wire_uid):
+        out["err"] = (out["err"] + " | " if out["err"] else "") + "uid echo %r != #%s" % (out["echo"], wire_uid)
+    return out
 
 
 def term_index(target, diagram_uid, node_uid, name, is_source):

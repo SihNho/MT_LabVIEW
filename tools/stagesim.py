@@ -131,6 +131,27 @@ PROVISIONAL = {
              "gaps": ["the value itself is read only by the real run (OpConstValueB_v0)"]},
 }
 LOOP_CLS = ("WhileLoop", "ForLoop")
+# card 126-3 (PD253(c)(e)): FLAT SEQUENCE plan support, from card 126-1's ONE scratch run on a P3a byte copy
+# (tools/bench/diag_c125_5_fsscr.log, 15/0; tools/bench/census_samples.json ops struct_copy_nested / fs_add_frame /
+# connect_term_uid fs_frame_to_frame). Plan shapes (stageplan/1, no schema change):
+#   create class FlatSequence, `as` FS<n>, `diagram` D      -> route fs_create (struct_copy_nested of gscript.fs_donor())
+#   create class FlatSequenceFrame, `diagram` 'new:FS<n>.f<k>' -> route fs_frame (gscript.fs_add_frame(fs, k, After=T))
+#   wire <node on FS frame k> -> <node on frame k+1>          -> stagexec connect_term_uid variant fs_frame_to_frame
+# 'new:FS<n>.f<k>' is the k-th frame LEFT TO RIGHT at the time the action runs (Add Frame renumbers the frames after it).
+FS_CLS, FSIT_CLS, FS_FRAME_CLS = "FlatSequence", "FlatSequenceInnerTunnel", "FlatSequenceFrame"
+FS_MEASURED = {
+    "fs_create": {"census": {"FlatSequence": 1, "Diagram": 1}, "n": 1,
+                  "evidence": "diag_c125_5_fsscr.log:27,34-35 (FS #27509 on Diagram #27219, new frame [27641]); no terminal row"},
+    "fs_add_frame": {"census": {"Diagram": 1}, "n": 2,
+                     "evidence": "diag_c125_5_fsscr.log:32,36-38 (add(0,T) new at 1, add(1,T) new at 2; FS 1 + Diagram 3)"},
+    "fs_frame_to_frame": {"census": {"FlatSequenceInnerTunnel": 2, "Terminal": 4, "Wire": 3}, "n": 1,
+                          "status": "PROVISIONAL pending card 126-2 (one sample; wire #32592 / tunnel #32599 not yet read)",
+                          "evidence": "diag_c125_5_fsscr.log:47-60: const (frame 1) -> Max & Min x (frame 2), Is Broken? False, "
+                                      "free ends 0; the 4 tunnel rows are filed under ONE FSIT uid (two faces + two non-face "
+                                      "terminals on the FS's owner diagram joined by one wire = vigraph.build4 step 4b's shape)",
+                          "unmeasured": ["a source that is ALREADY wired (branch variant)", "non-adjacent frames",
+                                         "right-to-left (frame k+1 -> k)"]},
+}
 MODEL_ALIASES = {"wire": ("wire", "connect_from_wire", "wire_sr", "connect_nested", "connect"),
                  "tunnel": ("tunnel", "tunnel_create", "create_tunnel"),
                  "create": ("create", "const_create", "primitive_create", "create_const", "create_primitive", "const",
@@ -349,6 +370,55 @@ def case_frame_of(st, frame_diag):
     return None
 
 
+def fs_of(st, frame_diag):
+    """card 126-3: (FS uid, frame index left to right) when `frame_diag` is a frame of a Flat Sequence THIS plan created
+    (st['fs_frames'], kept in LabVIEW's frame order by _create_fs / _add_fs_frame), else None."""
+    own = (st.get("owners") or {}).get(str(int(frame_diag or 0)))
+    if not own or own[0] != FS_CLS:
+        return None
+    fr = (st.get("fs_frames") or {}).get(str(int(own[1] or 0)))
+    if not fr or int(frame_diag) not in [int(x) for x in fr]:
+        return None
+    return int(own[1]), [int(x) for x in fr].index(int(frame_diag))
+
+
+def _fsit_rows(st, a, uid, rows, want_source):
+    """card 126-3 (126-1 open item 3): a FlatSequenceInnerTunnel's faces read back with EMPTY names
+    (diag_c125_5_fsscr.log:47 - every tunnel row `''`), and the traverse files ALL FOUR rows of a physical tunnel under ONE
+    uid (vigraph.build4 step 4b). So a face is addressed by OWNER UID + FRAME DIAGRAM, never by term_name: `frame` =
+    'f<k>' (frame k of the plan-made FS the tunnel belongs to) or '#<diagram uid>' (any FS, base graph included);
+    `term_uid` stays accepted. A plan-made tunnel's two non-face rows (on the FS's owner diagram) are not addressable."""
+    if a.get("term_uid") is not None:
+        rows = [r for r in rows if r["term_uid"] == a["term_uid"]]
+    else:
+        fr = a.get("frame")
+        if fr is None:
+            raise SimError("address {0}: #{1} is a FlatSequenceInnerTunnel - its faces read back with EMPTY names "
+                           "(diag_c125_5_fsscr.log:47); address it by owner uid + `frame` ('f<k>' or '#<diagram uid>')".format(a, uid))
+        m = re.match(r"^#(-?[0-9]+)$", str(fr)) or re.match(r"^f([0-9]+)$", str(fr))     # '#-n' = a simulated (created) frame
+        if not m:
+            raise SimError("address {0}: FSIT `frame` {1!r} is neither 'f<k>' nor '#<diagram uid>'".format(a, fr))
+        if str(fr).startswith("#"):
+            fd = int(m.group(1))
+        else:
+            tun = (st.get("fs_tunnels") or {}).get(str(uid))
+            fl = (st.get("fs_frames") or {}).get(str((tun or {}).get("fs")))
+            if not tun or not fl or int(m.group(1)) >= len(fl):
+                raise SimError("address {0}: 'f<k>' needs a tunnel of a Flat Sequence this plan created ({1} frame(s))".format(
+                    a, len(fl or [])))
+            fd = int(fl[int(m.group(1))])
+        tun = (st.get("fs_tunnels") or {}).get(str(uid))
+        if tun and fd not in [int(x) for x in tun["frames"]]:
+            raise SimError("address {0}: #{1} has no FACE on diagram #{2} (faces on {3}; the rows on the owner diagram are "
+                           "the non-face link)".format(a, uid, fd, tun["frames"]))
+        rows = [r for r in rows if int(r["frame_diagram"] or 0) == fd]
+    rows = [r for r in rows if bool(r["is_source"]) == bool(want_source)]
+    if len(rows) != 1:
+        raise SimError("address {0} (FSIT #{1}) resolves to {2} {3} face(s)".format(a, uid, len(rows),
+                                                                                    "source" if want_source else "sink"))
+    return rows[0]
+
+
 def resolve_addr(st, a, want_source):
     """The ONE terminal row an address names. Selector order: term_uid, then name; `inner`/`outer` (or `side`)
     pick the tunnel/register face by class when no terminal carries that name. Exactly one row or SimError -
@@ -358,6 +428,10 @@ def resolve_addr(st, a, want_source):
     rows = node_rows(st, uid)
     if not rows:
         raise SimError("#{0} ({1}) owns no terminal in the current graph".format(uid, a["uid"]))
+    if rows[0]["owner_class"] == FSIT_CLS and (str(uid) in (st.get("fs_tunnels") or {}) or a.get("frame") is not None):
+        # card 126-3: a tunnel THIS plan made (names empty), or any FSIT end carrying `frame`: owner uid + frame diagram.
+        # A base FSIT addressed by name keeps the old path below (existing plans/self-tests unchanged).
+        return _fsit_rows(st, a, uid, rows, want_source)
     if a.get("term_uid") is not None:
         rows = [r for r in rows if r["term_uid"] == a["term_uid"]]
     side = a.get("side")
@@ -1018,6 +1092,9 @@ def op_wire(st, a, P, S1, labels):
         return {"wire": s["wire_uid"], "how": how, "src_term_uid": s["term_uid"], "dst_term_uid": d["term_uid"],
                 "cond_of": loop}, []
     d = resolve_addr(st, a["dst"], False)
+    lf, ld = fs_of(st, s["frame_diagram"]), fs_of(st, d["frame_diagram"])
+    if lf and ld and lf[0] == ld[0] and lf[1] != ld[1]:   # card 126-3: across two frames of ONE plan-made Flat Sequence
+        return _fs_frame_wire(st, a, s, d, lf[0], lf[1], ld[1])
     if P.get("same_diagram", True) and int(s["frame_diagram"] or 0) != int(d["frame_diagram"] or 0):
         raise SimError("wire {0} -> {1}: source on diagram {2}, sink on diagram {3} - a border needs a tunnel/"
                        "register action first".format(a["src"], a["dst"], s["frame_diagram"], d["frame_diagram"]))
@@ -1228,6 +1305,99 @@ def _create_case_wired(st, a, dg, name, eff, names):
     return eff, []
 
 
+def _fs_rekey(st, fs):
+    """'new:<alias>.f<k>' = frame k LEFT TO RIGHT now (st['fs_frames'] order) - re-written after every Add Frame."""
+    al = (st.get("fs_alias") or {}).get(str(fs))
+    for k, f in enumerate(st["fs_frames"][str(fs)]):
+        st["sym"]["new:{0}.f{1}".format(al, k)] = int(f)
+
+
+def _create_fs(st, a, dg, name, eff):
+    """card 126-3 (PD253(c)): gscript.struct_copy_nested(W, dg, 'FlatSequence', gscript.fs_donor()) - the donor is a 1-frame
+    EMPTY Flat Sequence (claudeDev DonorFs_v0.vi). MEASURED (FS_MEASURED fs_create, diag_c125_5_fsscr.log:27,34-35): one
+    FlatSequence object owned by Diagram dg + ONE frame Diagram, no terminal row (the read stayed 644 rows, :26-28). Symbols:
+    new:<as> (the FS), new:<as>.f0 (its frame)."""
+    if not name:
+        raise SimError("create FlatSequence needs `as` (frames are addressed 'new:<as>.f<k>')")
+    u = _new_obj(st, FS_CLS, "Diagram")
+    f = new_uid(st)
+    st["diagrams"][str(f)] = dg
+    st.setdefault("owners", {})[str(f)] = [FS_CLS, u]
+    st["owners"][str(u)] = ["Diagram", dg]               # the structure -> its diagram (the graph's own owners rows, e.g. 22694)
+    st.setdefault("fs_frames", {})[str(u)] = [f]
+    st.setdefault("fs_alias", {})[str(u)] = name
+    key = _sym(st, name, u)
+    _sym(st, name + ".f0", f)
+    eff.update(node=key, fs=u, frames=[f], frame_syms=[key + ".f0"], route="fs_create", census=dict(FS_MEASURED["fs_create"]["census"]),
+               model="measured n=1: " + FS_MEASURED["fs_create"]["evidence"])
+    return eff, []
+
+
+def _add_fs_frame(st, a, dg, eff):
+    """card 126-3 (PD253(c)): gscript.fs_add_frame(W, fs, k, After=True) with `diagram` = 'new:<FS alias>.f<k>' (frame k = the
+    reference frame). MEASURED (FS_MEASURED fs_add_frame, diag_c125_5_fsscr.log:32): ONE new frame Diagram at index k+1, the
+    frames after it shift right (add(0,T) -> new at 1; add(1,T) -> new at 2; the first frame stays leftmost); no terminal row.
+    Only a Flat Sequence THIS plan created has a known frame order (st['fs_frames'])."""
+    loc = fs_of(st, dg)
+    if loc is None:
+        raise SimError("create FlatSequenceFrame: diagram #{0} is not a frame of a Flat Sequence this plan created (give "
+                       "'new:<FS alias>.f<k>')".format(dg))
+    fs, k = loc
+    if a.get("as"):
+        raise SimError("create FlatSequenceFrame takes no `as`: the new frame is 'new:<FS alias>.f{0}'".format(k + 1))
+    f = new_uid(st)
+    st["diagrams"][str(f)] = st["diagrams"].get(str(dg), (st.get("owners") or {}).get(str(fs), [None, None])[1])
+    st["owners"][str(f)] = [FS_CLS, fs]
+    st["fs_frames"][str(fs)].insert(k + 1, f)
+    _fs_rekey(st, fs)
+    eff.update(fs=fs, ref_index=k, new_frame=f, new_index=k + 1, frames=list(st["fs_frames"][str(fs)]), route="fs_frame",
+               census=dict(FS_MEASURED["fs_add_frame"]["census"]), model="measured n=2: " + FS_MEASURED["fs_add_frame"]["evidence"])
+    return eff, []
+
+
+def _fs_frame_wire(st, a, s, d, fs, i, j):
+    """card 126-3 (PD253(e)): a wire from a source on frame i to a sink on frame j of the SAME plan-made Flat Sequence = ONE
+    gscript.connect_term_uid (stagexec variant fs_frame_to_frame). MODEL = the ONE measured sample (FS_MEASURED
+    fs_frame_to_frame, diag_c125_5_fsscr.log:47-60; PROVISIONAL pending card 126-2): TWO FlatSequenceInnerTunnel objects, FOUR
+    'Terminal' rows all filed under the FIRST tunnel's uid with EMPTY names - the sink face on frame i (on the source's new
+    wire), the source face on frame j (on the sink's new wire), and two non-face terminals on the FS's owner diagram joined
+    only to each other by the third wire (#32592) - i.e. vigraph.build4 step 4b's shape; fs_tunnel_pairs gets the two
+    swapped Left/Right entries (one per tunnel uid). Refused (unmeasured): j != i + 1, an already-wired source."""
+    if j != i + 1:
+        raise SimError("wire {0} -> {1}: Flat Sequence frames {2} -> {3}; only an ADJACENT left-to-right wire (k -> k+1) is "
+                       "measured (diag_c125_5_fsscr.log:47-60)".format(a["src"], a["dst"], i, j))
+    if d["wire_uid"]:
+        raise SimError("wire {0} -> {1}: the sink is already wired (w{2})".format(a["src"], a["dst"], d["wire_uid"]))
+    if s["wire_uid"]:
+        raise SimError("wire {0} -> {1}: the source is already wired (w{2}) - a cross-frame BRANCH is UNMEASURED (126-1 measured "
+                       "an unwired constant only, diag_c125_5_fsscr.log:41-47)".format(a["src"], a["dst"], s["wire_uid"]))
+    fi, fj = int(s["frame_diagram"]), int(d["frame_diagram"])
+    parent = int(st["diagrams"].get(str(fi)))
+    ta, tb = _new_obj(st, FSIT_CLS, FS_CLS), _new_obj(st, FSIT_CLS, FS_CLS)
+    w1, w2, w3 = new_uid(st), new_uid(st), new_uid(st)
+    fin = _new_term(st, ta, FSIT_CLS, "Terminal", False, fi)
+    fout = _new_term(st, ta, FSIT_CLS, "Terminal", True, fj)
+    lsrc = _new_term(st, ta, FSIT_CLS, "Terminal", True, parent)
+    lsnk = _new_term(st, ta, FSIT_CLS, "Terminal", False, parent)
+    row = dict((r["term_uid"], r) for r in st["terminals"] if r["owner_uid"] == ta)
+    s["wire_uid"] = row[fin]["wire_uid"] = w1
+    row[lsrc]["wire_uid"] = row[lsnk]["wire_uid"] = w2
+    row[fout]["wire_uid"] = d["wire_uid"] = w3
+    if st.get("fs_pairs") is not None:
+        st["fs_pairs"].append({"uid": ta, "class": FSIT_CLS, "face_a": "LeftTerm", "term_a": fin, "face_b": "RightTerm",
+                               "term_b": fout, "err_a": "", "err_b": "", "model": "card 126-3 sim"})
+        st["fs_pairs"].append({"uid": tb, "class": FSIT_CLS, "face_a": "LeftTerm", "term_a": fout, "face_b": "RightTerm",
+                               "term_b": fin, "err_a": "", "err_b": "", "model": "card 126-3 sim (swapped twin)"})
+    st.setdefault("fs_tunnels", {})[str(ta)] = {"fs": fs, "twin": tb, "frames": [fi, fj], "link": [lsrc, lsnk]}
+    eff = {"wire": w3, "how": "fs_frame_to_frame", "src_term_uid": s["term_uid"], "dst_term_uid": d["term_uid"],
+           "fs_frame_to_frame": {"fs": fs, "from_index": i, "to_index": j, "tunnels": [ta, tb], "faces": {"in": fin, "out": fout},
+                                 "link": [lsrc, lsnk], "wires": [w1, w2, w3]},
+           "census": dict(FS_MEASURED["fs_frame_to_frame"]["census"]), "model": FS_MEASURED["fs_frame_to_frame"]["status"]}
+    if a.get("as"):
+        eff["tunnel"] = _sym(st, a["as"], ta)
+    return eff, []
+
+
 def _join(st, s, d):
     """Wire source row s to sink row d (d must be unwired): s's wire is branched, else a new (negative) wire."""
     if d["wire_uid"]:
@@ -1250,6 +1420,10 @@ def op_create(st, a, P, S1, labels):
     cls, dg = a["class"], resolve_diag(st, a["diagram"])
     name = a.get("as")
     eff = {"class": cls, "diagram": dg}
+    if cls == FS_CLS and a.get("donor_uid") is None and not a.get("prim"):     # card 126-3: route fs_create
+        return _create_fs(st, a, dg, name, eff)
+    if cls == FS_FRAME_CLS:                                                     # card 126-3: route fs_frame
+        return _add_fs_frame(st, a, dg, eff)
     if cls in LOOP_CLS:
         u = _new_obj(st, cls, "Diagram")
         body = new_uid(st)

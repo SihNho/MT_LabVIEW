@@ -1,0 +1,71 @@
+{
+ "schema": "task/1",
+ "id": "126-6",
+ "kind": "measure",
+ "goal": "PD255(g): measure every crossing kind P3b needs on P3a copies: case frame -> FS frames (+branch), and multi-border crossings into FS frames, each with RemoveLooseEnds",
+ "why": "126-5's P3b plan has 13 crossing rows on UNMEASURED routes; P3b cannot be finalised without their models and census samples. Brief: brief_126-6.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_126-6.md"},
+  {"path": "tools/bench/cards/result_126-4.json"},
+  {"path": "tools/bench/cards/result_126-5.json"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3a_20261001_180540.vi", "md5": "4dfa44aac8fb32f706b3eb792ee7d3cc"},
+  {"path": "tools/bench/diag_c126_4_fs.py", "md5": "da7a851ef674031d6048e3974039da58"},
+  {"path": "tools/bench/diag_c126_4_fs_plan.json", "md5": "d982538895be238487dd96a938b6e025"},
+  {"path": "tools/bench/graph_ring_p3a_20261001_190155.json", "md5": "2fa6ce0c3e8a3014fa916085cb852f68"},
+  {"path": "tools/gscript.py", "md5": "6ba524f9b23042b6690b081d8cf6d721"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "verb", "name": "connect_term_uid", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "connect_nested_v2", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "wire_remove_loose_ends", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "wire_joints", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "fs_add_frame", "where": "tools/gscript.py"},
+  {"kind": "op", "name": "OpWireRemoveLooseEnds_v0"},
+  {"kind": "op", "name": "OpConnectTermUid_v0"},
+  {"kind": "op", "name": "OpWireJoints_v1"},
+  {"kind": "file", "name": "tools/bench/diag_c126_4_fs.py"},
+  {"kind": "file", "name": "tools/errorlist_check.py"}
+ ],
+ "pass": [
+  "STEP A: case frame -> FS frame 1 and branch -> FS frame 3: census, tunnels, Is Broken?, free ends, before/after RemoveLooseEnds",
+  "STEP B: BufNum -> FS f3, While i -> FS f2, pool For exit -> FS f2 Index Array: route used, tunnels per border, index mode",
+  "STEP B per crossing: census, Is Broken?, free ends before/after RemoveLooseEnds; Error List total + loose-ends count",
+  "census samples + scratch_verify record written; bed md5 unchanged; scratch deleted; LabVIEW closed and gone"
+ ],
+ "outputs": [
+  "tools/bench/census_samples.json",
+  "tools/bench/scratch_verify/*"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c126_4_fs*",
+   "tools/bench/diag_c126_6*",
+   "tools/bench/census_samples.json",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/errorlist_*",
+   "tools/bench/cards/result_126-6*",
+   "tools/bench/cards/review_126-6*",
+   "tools/bench/peer_*",
+   "archive/peer/**",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["fact", "hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 55
+ },
+ "rules": [
+  "Follow brief_126-6.md; measurement only; beds never saved over; no stage recipe launched",
+  "No edit to gscript/stagexec/stagesim/connect_term_uid; never a whole-VI Remove Broken Wires",
+  "Return at the first unexpected result (finish the step, LabVIEW closed, facts recorded)"
+ ],
+ "advances": ["M4", "M3"]
+}

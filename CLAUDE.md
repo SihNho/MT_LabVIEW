@@ -513,6 +513,9 @@ at** (the "preserved" crash copies were byte-identical to the untouched original
    10–15 rows → census → final save). Not one script per wire (*"일일히 배선 하나하나 별도 스크립트를 쓰는 건 낭비"*).
    **Up to ~25 rows when the stage pattern is PROVEN** (≥2 earlier passing launches of the same pattern,
    `stage_prerun.proven_pattern`; advisory prerun X14) — user, 2026-09-28, acceleration item 4.
+   **Ring-buffer steps P3b, P4, P5: up to ~40 rows per build step, each with a FULL scratch run on a byte copy before the
+   real launch** — user 2026-10-01 ("1번으로 진행해보자", decision D-2026-10-01-01), so the remaining ~145 rows fit the
+   6-broken-file cap (item 7) and the first end-to-end run (P6) comes sooner. The cap of 6 is unchanged.
 3. **Re-splitting is triggered, not felt** (user: the decision is the judgement session's, the trigger is the
    machine's): the same stage failing twice at the same place, or a stage that ends without a saved artefact ⇒ the
    next cycle's FIRST act is a **decomposition plan** for that stage (one page: sub-steps, each's saved file name and

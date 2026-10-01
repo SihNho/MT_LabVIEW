@@ -1,0 +1,40 @@
+BGRUN START 2026-10-01 20:37:32 limit 5.0 min: py -u tools/bench/selftest_fs_c126.py
+BGRUN PID 24896
+  PASS  S0 the replay plan validates against stageplan/1 (no schema change)  OK stageplan/1
+  PASS  S1 6/6 actions simulated, no error  None
+  PASS  S2 frames left->right: f0 kept, add(0,T) new at 1, add(1,T) new at 2 (log:32)  ([-2, -3, -4], {'class': 'FlatSequenceFrame', 'diagram': -2, 'fs': -1, 'ref_index': 0, 'new_frame': -3, 'new_index': 1, 'frames': [-2, -3], 'route': 'fs_frame', 'census': {'Diagram': 1}, 'model': 'measured n=2: diag_c125_5_fsscr.log:32,36-38 (add(0,T) new at 1, add(1,T) new at 2; FS 1 + Diagram 3)'}, {'class': 'FlatSequenceFrame', 'diagram': -3, 'fs': -1, 'ref_index': 1, 'new_frame': -4, 'new_index': 2, 'frames': [-2, -3, -4], 'route': 'fs_frame', 'census': {'Diagram': 1}, 'model': 'measured n=2: diag_c125_5_fsscr.log:32,36-38 (add(0,T) new at 1, add(1,T) new at 2; FS 1 + Diagram 3)'})
+  PASS  S3 FS census FlatSequence 1 + Diagram 3 (log:38): effects and state delta  ({'FlatSequence': 1, 'Diagram': 3}, {'FlatSequence': 1}, 3)
+  PASS  S4 cross-frame wire census FSIT 2, Terminal 4, Wire 3 (log:47-56), PROVISIONAL pending 126-2  ({'FlatSequenceInnerTunnel': 2, 'Terminal': 4, 'Wire': 3}, {'FlatSequenceInnerTunnel': 2}, 4, 3, 'PROVISIONAL pending card 126-2 (one sample; wire #32592 / tunnel #32599 not yet read)')
+  PASS  S5 the 6 rows on the 3 new wires == diag_c125_5_fsscr.log:57 (all 4 FSIT rows under ONE uid, names empty)  ([('Comparison', False, 28470), ('DigitalNumericConstant', True, 27641), ('FlatSequenceInnerTunnel', False, 27219), ('FlatSequenceInnerTunnel', False, 27641), ('FlatSequenceInnerTunnel', True, 27219), ('FlatSequenceInnerTunnel', True, 28470)], [2, 2, 2], True)
+  PASS  S6 vigraph.build4: ONE exact fs edge (faces:<tunnel>) and const -> Max & Min x reachable through it  (1, ['-5|Terminal||0'], ['-7|Terminal|x|0'], 4)
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\selftest_fs_c126.py", line 211, in <module>
+    sys.exit(main())
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\selftest_fs_c126.py", line 143, in main
+    f_hash = R({"uid": "new:FT1", "frame": "#{0}".format(fr[1])})
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\selftest_fs_c126.py", line 140, in <lambda>
+    R = lambda ad, src_=True: SS.resolve_addr(s6, ad, src_)                                     # noqa: E731
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagesim.py", line 434, in resolve_addr
+    return _fsit_rows(st, a, uid, rows, want_source)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagesim.py", line 400, in _fsit_rows
+    raise SimError("address {0}: FSIT `frame` {1!r} is neither 'f<k>' nor '#<diagram uid>'".format(a, fr))
+stagesim.SimError: address {'uid': 'new:FT1', 'frame': '#-3'}: FSIT `frame` '#-3' is neither 'f<k>' nor '#<diagram uid>'
+BGRUN END rc=1 after 3s (NO RESULT LINE)
+BGRUN START 2026-10-01 20:37:49 limit 5.0 min: py -u tools/bench/selftest_fs_c126.py
+BGRUN PID 7268
+  PASS  S0 the replay plan validates against stageplan/1 (no schema change)  OK stageplan/1
+  PASS  S1 6/6 actions simulated, no error  None
+  PASS  S2 frames left->right: f0 kept, add(0,T) new at 1, add(1,T) new at 2 (log:32)  ([-2, -3, -4], {'class': 'FlatSequenceFrame', 'diagram': -2, 'fs': -1, 'ref_index': 0, 'new_frame': -3, 'new_index': 1, 'frames': [-2, -3], 'route': 'fs_frame', 'census': {'Diagram': 1}, 'model': 'measured n=2: diag_c125_5_fsscr.log:32,36-38 (add(0,T) new at 1, add(1,T) new at 2; FS 1 + Diagram 3)'}, {'class': 'FlatSequenceFrame', 'diagram': -3, 'fs': -1, 'ref_index': 1, 'new_frame': -4, 'new_index': 2, 'frames': [-2, -3, -4], 'route': 'fs_frame', 'census': {'Diagram': 1}, 'model': 'measured n=2: diag_c125_5_fsscr.log:32,36-38 (add(0,T) new at 1, add(1,T) new at 2; FS 1 + Diagram 3)'})
+  PASS  S3 FS census FlatSequence 1 + Diagram 3 (log:38): effects and state delta  ({'FlatSequence': 1, 'Diagram': 3}, {'FlatSequence': 1}, 3)
+  PASS  S4 cross-frame wire census FSIT 2, Terminal 4, Wire 3 (log:47-56), PROVISIONAL pending 126-2  ({'FlatSequenceInnerTunnel': 2, 'Terminal': 4, 'Wire': 3}, {'FlatSequenceInnerTunnel': 2}, 4, 3, 'PROVISIONAL pending card 126-2 (one sample; wire #32592 / tunnel #32599 not yet read)')
+  PASS  S5 the 6 rows on the 3 new wires == diag_c125_5_fsscr.log:57 (all 4 FSIT rows under ONE uid, names empty)  ([('Comparison', False, 28470), ('DigitalNumericConstant', True, 27641), ('FlatSequenceInnerTunnel', False, 27219), ('FlatSequenceInnerTunnel', False, 27641), ('FlatSequenceInnerTunnel', True, 27219), ('FlatSequenceInnerTunnel', True, 28470)], [2, 2, 2], True)
+  PASS  S6 vigraph.build4: ONE exact fs edge (faces:<tunnel>) and const -> Max & Min x reachable through it  (1, ['-5|Terminal||0'], ['-7|Terminal|x|0'], 4)
+  PASS  S7 FSIT faces by owner uid + frame: f1 source / f0 sink / '#<diag>'; no frame, f2, a name, the owner diagram -> SimError  (-15, -14, [])
+  PASS  S8 non-adjacent frames and an already-wired source are refused, naming the unmeasured gap  [True, True]
+  PASS  X1 compile: fs_create, fs_frame x2, primitive x2, connect_term_uid fs_frame_to_frame (0 -> 1)  [('create', 'fs_create'), ('create', 'fs_frame'), ('create', 'fs_frame'), ('create', 'primitive'), ('create', 'primitive'), ('connect_term_uid', 'fs_frame_to_frame')]
+  PASS  X2 stagexec dry (nonfinal, no S1): PASS, every op compared with diff 0, FS / frames / tunnel bound  ('PASS', '', [(None, 'base', 0, None), (1, 'create', 0, {-1: 10000001, -2: 10000002}), (2, 'create', 0, {-3: 10000003}), (3, 'create', 0, {-4: 10000004}), (4, 'create', 0, {-5: 10000005}), (5, 'create', 0, {-7: 10000007}), (6, 'connect_term_uid', 0, {-9: 10000011})])
+  PASS  X3 check_symbols / create_route refuse new:FS1.f1 before Add Frame and a FlatSequenceFrame not on 'new:FS<n>.f<k>'  []
+  PASS  X4 fs_wire_ops: move_in'd base nodes on f0/f1 -> fs_frame_to_frame; an end with `frame` -> fs_face  {5: {'variant': 'fs_frame_to_frame', 'fs': 'new:FS1', 'from_index': 0, 'to_index': 1}, 6: {'variant': 'fs_face'}}
+=== GATES: 13 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 4s

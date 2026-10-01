@@ -16,7 +16,11 @@
   "Tunnel",
   "OuterTerminal",
   "InnerTerminal",
-  "SelectorTunnel"
+  "SelectorTunnel",
+  "FlatSequence",
+  "FlatSequenceInnerTunnel",
+  "Terminal",
+  "FlatSequenceOuterTunnel"
  ],
  "classes_note": "the class census the P2b runs counted (stage_d1_ring_p2b_scratch_pin.log:51,170; stage_d1_ring_p2b.log:40,159). A delta outside this set was never measured: a class outside it is CENSUS-UNPREDICTED for every row.",
  "attribution": "The two runs measured the census only before and after all 10 ops (scratch_pin:171, launch:160 = CT+5 Wire+5 AC+4 DNC+5). The per-op split is closed by the objects each op was observed to create: during each const_donor call the new constant was read with its owner (OBSERVED lines: an ArrayConstant copy owns its element DigitalNumericConstant, a scalar copy is one DigitalNumericConstant on the frame), and gate G per label read ONE new indicator terminal + ONE new wire. 4x(AC+1,DNC+1) + 1x(DNC+1) + 5x(CT+1,Wire+1) == the measured total delta, no class left over.",
@@ -404,6 +408,133 @@
        "expect": "INVOKE R2 SR right inner <- I1.x+1 delta []"
       }
      ]
+    },
+    {
+     "name": "fs_frame_to_frame",
+     "delta": {
+      "FlatSequenceInnerTunnel": 2,
+      "Terminal": 4,
+      "Wire": 3
+     },
+     "n": 1,
+     "why": "card 126-1: const in FS frame 1 -> Max & Min x in frame 2 (FS inside a case frame); Is Broken? False; free ends 0 on all 3 wires",
+     "cites": [
+      {
+       "file": "tools/bench/diag_c125_5_fsscr.log",
+       "line": 48,
+       "expect": "CENSUS-NEW-W class Wire #32575"
+      },
+      {
+       "file": "tools/bench/diag_c125_5_fsscr.log",
+       "line": 49,
+       "expect": "CENSUS-NEW-W class FlatSequenceInnerTunnel #32584"
+      },
+      {
+       "file": "tools/bench/diag_c125_5_fsscr.log",
+       "line": 50,
+       "expect": "CENSUS-NEW-W class Terminal #32586"
+      },
+      {
+       "file": "tools/bench/diag_c125_5_fsscr.log",
+       "line": 53,
+       "expect": "CENSUS-NEW-W class FlatSequenceInnerTunnel #32599"
+      },
+      {
+       "file": "tools/bench/diag_c125_5_fsscr.log",
+       "line": 56,
+       "expect": "CENSUS-NEW-W class Wire #32608"
+      },
+      {
+       "file": "tools/bench/diag_c125_5_fsscr.log",
+       "line": 60,
+       "expect": "W2 wire_joints free ends 0 on every new wire [32575, 32592, 32608]"
+      }
+     ]
+    },
+    {
+     "name": "case_frame_to_fs_frame",
+     "delta": {
+      "FlatSequenceOuterTunnel": 1,
+      "Terminal": 2,
+      "Wire": 2
+     },
+     "n": 1,
+     "why": "card 126-6 STEP A Q1: case-frame node output (Q&R #27373 on False frame #27219) -> Max & Min x in FS frame 1 (FS in that frame): ONE FlatSequenceOuterTunnel + 2 Terminals + 2 Wires; Is Broken? False; outer wire 27899 has 1 loose joint. Census = new uids, report_all(GObject).",
+     "cites": [
+      {
+       "file": "tools/bench/diag_c126_4_fs.log",
+       "line": 53,
+       "expect": "'census_new': [('FlatSequenceOuterTunnel', 27889), ('Terminal', 27891), ('Terminal', 27896), ('Wire', 27731), ('Wire', 27899)], 'gone': []"
+      }
+     ]
+    },
+    {
+     "name": "case_frame_to_fs_frame_branch",
+     "delta": {
+      "FlatSequenceOuterTunnel": 1,
+      "Terminal": 2,
+      "Wire": 2
+     },
+     "n": 1,
+     "why": "card 126-6 STEP A Q3: a SECOND sink from the same wired source -> Max & Min x in FS frame 3: a NEW FlatSequenceOuterTunnel (Q1's not reused), 2 Terminals, 2 new Wires, and source wire 27899 GONE (replaced by 27919: 3 terms, 1 loose joint) - net Wire +1; Is Broken? False.",
+     "cites": [
+      {
+       "file": "tools/bench/diag_c126_4_fs.log",
+       "line": 57,
+       "expect": "'census_new': [('FlatSequenceOuterTunnel', 27898), ('Terminal', 27906), ('Terminal', 27912), ('Wire', 27884), ('Wire', 27919)], 'gone': [27899]"
+      }
+     ]
+    },
+    {
+     "name": "loop_body_wired_src_to_fs_frame_in_case",
+     "delta": {
+      "FlatSequenceOuterTunnel": 1,
+      "InnerTerminal": 2,
+      "OuterTerminal": 1,
+      "SelectorTunnel": 1,
+      "Terminal": 2,
+      "Wire": 3
+     },
+     "n": 2,
+     "why": "card 126-6 STEP B B1 (BufNum #6897) / B2 (While i #644): an ALREADY-WIRED source on loop body #639 -> sink in a FS frame inside case #22694's False frame: 1 SelectorTunnel (case) + 1 FlatSequenceOuterTunnel (FS) + faces, 3 new Wires and the source's old net wire GONE (3747 / 3268, re-created as 27995 / 28038). Is Broken? False.",
+     "cites": [
+      {
+       "file": "tools/bench/diag_c126_6_cross.log",
+       "line": 49,
+       "expect": "CENSUS B1 {\"FlatSequenceOuterTunnel\": 1, \"InnerTerminal\": 2, \"OuterTerminal\": 1, \"SelectorTunnel\": 1, \"Terminal\": 2, \"Wire\": 3}"
+      },
+      {
+       "file": "tools/bench/diag_c126_6_cross.log",
+       "line": 60,
+       "expect": "CENSUS B2 {\"FlatSequenceOuterTunnel\": 1, \"InnerTerminal\": 2, \"OuterTerminal\": 1, \"SelectorTunnel\": 1, \"Terminal\": 2, \"Wire\": 3}"
+      }
+     ]
+    },
+    {
+     "name": "for_body_unwired_src_to_fs_frame_multi_border",
+     "delta": {
+      "FlatSequenceOuterTunnel": 3,
+      "InnerTerminal": 4,
+      "LoopTunnel": 2,
+      "OuterTerminal": 3,
+      "SelectorTunnel": 1,
+      "Terminal": 6,
+      "Wire": 7
+     },
+     "n": 1,
+     "why": "card 126-6 STEP B B3: unwired IMAQ Create 'New Image' #23289 in For #23093 body -> Index Array 'array' in new FS frame 2: For exit LoopTunnel IndexMode 1, FS #12938 out, FS #681 in, While #637 LoopTunnel IndexMode 0, case SelectorTunnel, new FS outer tunnel; 7 wires, none gone. Is Broken? False.",
+     "cites": [
+      {
+       "file": "tools/bench/diag_c126_6_cross.log",
+       "line": 77,
+       "expect": "CENSUS B3 {\"FlatSequenceOuterTunnel\": 3, \"InnerTerminal\": 4, \"LoopTunnel\": 2, \"OuterTerminal\": 3, \"SelectorTunnel\": 1, \"Terminal\": 6, \"Wire\": 7}"
+      },
+      {
+       "file": "tools/bench/diag_c126_6_cross.log",
+       "line": 78,
+       "expect": "\"index_mode\": 0, \"owner\": [\"WhileLoop\", 637]"
+      }
+     ]
     }
    ]
   },
@@ -506,6 +637,70 @@
        "file": "tools/bench/stage_d1_ring_p3a_scratch_pin2.log",
        "line": 309,
        "expect": "class OuterTerminal | owner #27258 LeftShiftRegister frame 686"
+      }
+     ]
+    }
+   ]
+  },
+  "struct_copy_nested": {
+   "variants": [
+    {
+     "name": "flat_sequence_donor",
+     "delta": {
+      "FlatSequence": 1,
+      "Diagram": 1
+     },
+     "n": 1,
+     "why": "card 126-1: DonorFs_v0 FS (1 empty frame) copied onto case #22694 False frame of a P3a byte copy; frame 27641 = struct_copy_nested new_diagrams",
+     "cites": [
+      {
+       "file": "tools/bench/diag_c125_5_fsscr.log",
+       "line": 27,
+       "expect": "F1 one new FlatSequence #27509 owned by Diagram #27219 (new diagrams [27641])"
+      },
+      {
+       "file": "tools/bench/diag_c125_5_fsscr.log",
+       "line": 34,
+       "expect": "CENSUS-NEW class FlatSequence #27509"
+      },
+      {
+       "file": "tools/bench/diag_c125_5_fsscr.log",
+       "line": 35,
+       "expect": "CENSUS-NEW class Diagram #27641"
+      }
+     ]
+    }
+   ]
+  },
+  "fs_add_frame": {
+   "variants": [
+    {
+     "name": "add_one_frame",
+     "delta": {
+      "Diagram": 1
+     },
+     "n": 2,
+     "why": "card 126-1: two Add Frame(after k) calls, one new frame Diagram each (aggregate FS 1 + Diagram 3 incl. the copy's frame)",
+     "cites": [
+      {
+       "file": "tools/bench/diag_c125_5_fsscr.log",
+       "line": 32,
+       "expect": "FRAMES left->right [27641, 28470, 27722] (start [27641], add1 new 28470, add2 new 27722)"
+      },
+      {
+       "file": "tools/bench/diag_c125_5_fsscr.log",
+       "line": 36,
+       "expect": "CENSUS-NEW class Diagram #27722"
+      },
+      {
+       "file": "tools/bench/diag_c125_5_fsscr.log",
+       "line": 37,
+       "expect": "CENSUS-NEW class Diagram #28470"
+      },
+      {
+       "file": "tools/bench/diag_c125_5_fsscr.log",
+       "line": 38,
+       "expect": "'measured': {'Diagram': 3, 'FlatSequence': 1}"
       }
      ]
     }

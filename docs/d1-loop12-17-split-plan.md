@@ -2640,6 +2640,112 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
        `scratch_verify` record; card B (LabVIEW, after A) = (d); beside B, the offline card for the FS stagexec route,
        stagesim model and self-tests on A's measured facts. P3b's plan follows. D-2026-10-01-01 still open (PD246(d)
        applies if unanswered).
+254. **(cycle 126 judgement, 2026-10-01 — after 126-1 PASS 38/0, 126-3 PASS 13/0, 126-2 FAIL 3/1)**
+     USER-RULES: U1, U4, U9 (relied on; none contradicted).
+     - **(a) 126-1 ACCEPTED.** The repeated-failure-class device is BUILT: `gscript.hygiene_run` (`tools/gscript.py:360`, offline
+       self-test 13/0; `docs/violation-decisions.md` cycle-126 entry). `OpFsAddFrame_v0` (md5 `cfaa304f…`, unchanged) hygiene
+       PASS through it: 2,000 calls, 0 errors, closed-state handles max deviation 7 (`diag_c126_1_hyg.log:25-34`) — 125-5's +116
+       was the never-closed copies. FS scratch on a P3a byte copy 15/0: 3 frames in `#22694`'s False frame, frame-1 → frame-2
+       wire `Is Broken?` False, free ends 0, census FlatSequence +1 / Diagram +3 (`diag_c125_5_fsscr.log:27-60`); census sample
+       and `scratch_verify/fs_add_frame_20261001_201838.json` recorded.
+     - **(b) 126-3 ACCEPTED.** stagexec routes `fs_create` / `fs_frame`, stagesim models, cross-frame wire variant
+       `fs_frame_to_frame` (FSInnerTunnel +2, Terminal +4, Wire +3; faces addressed by owner uid + frame, never by
+       `term_name`, which reads back empty); self-test 13/0, regressions green. 126-1's "one-terminal wire" `w32592` and
+       unwired `#32599` are the normal FS tunnel graph shape (2 FSIT uids per physical tunnel, `vigraph.py:510-513`), NOT a
+       stub. Non-adjacent frames, right-to-left and an already-wired source are refused as UNMEASURED.
+     - **(c) 126-2 FAIL = our script** (gate M1 matched the literal `Clean Up Wire`; LabVIEW's data name is `CleanUpWire`).
+       Wire methods measured (`diag_c126_2_op.log:8-16`): `6370C05` CleanUpWire, `6370C08` RemoveLooseEnds, `6370C0B`
+       DeleteJoint, `6370C0D` DisconnectTerminal. **DECIDED: the stub removal uses `6370C08` RemoveLooseEnds** (the review
+       `archive/peer/2026-10-01-c126-2-wiremethods.md`: CleanUpWire re-routes the whole wire, a geometry change P3b does
+       not need). One new op, hygiene through `hygiene_run`; its workload may call the method on healthy wires (hygiene
+       measures references and handles, and a no-op call is a valid call). Then PD253(d)'s w27378 reads.
+     - **(d) P3b frame 3 takes `Num` by a SECOND local read, not a frame-1 → frame-3 tunnel** (PD246(c) A2 allows both): a
+       non-adjacent FS crossing is unmeasured, and the value is the same — loop 1.1 is `Num`'s only writer (U4), and frame 1's
+       write precedes frame 3's read by the sequence. Rule 1a: same array value, no computation change.
+     - **(e) Measured before P3b's plan is final (card 126-4 STEP 2, on the FS scratch):** a crossing from a node on the case
+       frame into FS frame 1 by `connect_term_uid`, and a SECOND sink from the same source into FS frame 3 (the `i` index
+       pattern of P3b); census, `Is Broken?`, free ends, Error List count-only. P3b's plan input is prepared offline beside
+       it (card 126-5) on the real P3a graph, every row whose route is unmeasured tagged as such.
+255. **(cycle 126 judgement, 2026-10-01 — after 126-4 FAIL 13/1 and 126-5 FAIL 8/1)**
+     USER-RULES: U1, U4, U6, U9, U13 (relied on; none contradicted).
+     - **(a) 126-4 STEP 0 + STEP 1 ACCEPTED as measured; the FAIL is our own gate.** New op `claudeDev\OpWireRemoveLooseEnds_v0.vi`
+       (md5 `0c354078…`, method `6370C08`, hygiene via `hygiene_run` 2,000 calls, 0 errors, max dev 5,
+       `op_hygiene/OpWireRemoveLooseEnds_v0.json`); `gscript.wire_remove_loose_ends` (`tools/gscript.py:4961-4990`). On a P3a
+       copy, w27378: 1 LOOSE joint → 0, `Is Broken?` True → False, both terminals (`#27365`, `#27278`) kept, census delta {},
+       Error List 55 → 54 with `Wire has loose ends` 24 → 23 and every other kind equal (`diag_c126_4_op.log:52-60`). The
+       failing gate compared OCR'd class keys byte-exactly (`subvi`/`subvl`, one OCR variant; review
+       `archive/peer/2026-10-01-c126-4-elocr.md`); the wire-level reads attribute the removal to w27378, the count only
+       corroborates — no Show-Error location check is owed. Carry (tooling): `errorlist_check.py` `norm()` OCR aliases.
+     - **(b) DECIDED for P3b:** a `wire_remove_loose_ends` row after EVERY `connect_term_uid` row that crosses a case or FS
+       border, plus one for P3a's w27378; each is a no-op when there is no loose end (hygiene workload, PD254(c)). P3b's
+       Error List prediction takes the w27378 item back (55 → 54 before P3b's own items).
+     - **(c) P3b is ONE step with a full scratch run** (PD246(d), D-2026-10-01-01 unanswered): 47 rows from card 126-5 plus
+       the (b) rows. GrowableFunction / IndexArray have no census sample (CENSUS-UNPREDICTED), so the scratch run is owed
+       anyway; it records the samples.
+     - **(d) 126-5's FAIL is our maker's premise** (#637's `i` t644 has two rows in the graph dump; every bound uid matched).
+       Jev routed it `new-problem` (p 0.774), so the hypothesis review is owed and the rerun waits for it (card 126-7).
+     - **(e) 126-5's rule-1a OPEN is already decided:** per-slot `TransPos`/`RotPos` = `#30117` / `#4580` Value on `#639`
+       (PD238(c), PD240(a), facts F1/F2 `tools/bench/facts_c120_types.json`). Card 126-7 CONFIRMS it from the graph as a fact
+       (which of `#30117`/`#3097` and `#4580`/`#3160` feeds the original's per-frame result path); a mismatch is returned
+       as OPEN, not improvised.
+     - **(f) `IMAQ Copy`'s error terminals: NOT decided yet.** Card 126-7 reads how `#6810`'s error in/out are wired in the
+       bed and the VI's automatic-error-handling setting; the plan keeps them unwired and tagged OPEN until then.
+     - **(g) The 13 UNMEASURED crossings (126-5) are measured in card 126-6 on P3a byte copies:** case frame → FS frame
+       (frame 1, then a branch to frame 3: `diag_c126_4_fs.py`, prerun 14/0), and the multi-border forms — `#639` source
+       (BufNum t6897) → FS frame, While `#637` `i` → FS frame, pool `#23099` For exit → FS frame (`Index Array`) — each
+       followed by `wire_remove_loose_ends`, read per wire (census, `Is Broken?`, free ends, tunnels per border).
+256. **(cycle 126 judgement, 2026-10-01 — after 126-6 PASS 48/0 and 126-7 FAIL 1/1)**
+     USER-RULES: U1, U4, U9, U13 (relied on; none contradicted).
+     - **(a) 126-6 ACCEPTED — every crossing kind P3b needs is MEASURED** (`diag_c126_4_fs.log`, `diag_c126_6_cross.log`; four
+       census variants under `connect_term_uid` in `census_samples.json`; two `scratch_verify` records). Case frame → FS frame
+       = 1 FlatSequenceOuterTunnel, Terminal +2, Wire +2; a branch to another frame makes a SECOND FS outer tunnel (not
+       reused); `#639` → FS frame (BufNum, While `i`) = SelectorTunnel + FS outer tunnel + 3 wires; pool For exit → FS frame
+       via FS1 frames, While border tunnel IndexMode 0 (non-indexed, rule 1a holds), For exit IndexMode 1 (PD247(b)).
+       `connect_term_uid` took every multi-border crossing; `connect_nested_v2` is not needed.
+     - **(b) DECIDED:** `wire_remove_loose_ends` on EVERY new crossing wire (126-6 STEP B cleared all; STEP A's tail, which
+       ran it only on one-terminal wires, left loose `w27919`) — PD255(b) stands as written.
+     - **(c) DECIDED:** a crossing from an already-wired source RE-CREATES the source net's wire (3747 → 27995, 3268 → 28038).
+       P3b's rows address terminals, never a pre-existing wire uid; the plan's `computation_diff` must show every old sink
+       of those nets still connected (no lost sink).
+     - **(d) 126-7's review ACCEPTED** (`archive/peer/2026-10-01-c126-7-t644.md:87-96`): the t644 pair is `OpAllTerms_v1`'s known
+       duplicate (30 term uids ×2, byte-identical, `vigraph.py:260-267`). The maker dedupes rows at load (`V.dedupe_rows`)
+       and gates `nonidentical == []`, not a t644 special case.
+     - **(e) 🔴 RULE-1a OPEN — PD238(c)'s per-slot `TransPos`/`RotPos` source is NOT confirmed.** In the P3a bed `#30117` Value
+       (w30592) never reaches the record build `#11608`/`#2626`, and `#4580` Value's wire w4878 has NO sink — already so in
+       the pool bed (`diag_c126_7_facts2.log:3-12`). The locals `#3097`/`#3160` on FS frame 759 feed Globals `#3115`
+       'Trans position' / `#3166` 'Rot position'. P3b's TransPos/RotPos rows are HELD until the ORIGINAL's graph answers:
+       (1) what feeds the original's per-frame record's translation/rotation values; (2) whether `#4580`'s Value wire has a
+       sink in the original — if it does, an earlier stage of ours dropped it, which is a computation change and goes to
+       judgement before any further build. Card 126-8 reads it (read-only; a copy of the original if a dump must be made).
+     - **(f) `IMAQ Copy`'s error terminals stay OPEN** (facts: `#6810`'s error in ← LoopTunnel `#924`, error out → LoopTunnel
+       `#649` on `#639`; the bed's Automatic Error Handling is recorded nowhere). Next judgement decides it, with the bed's
+       VI property read first.
+257. **(cycle 126 judgement, 2026-10-01 — after 126-8 PASS 18/0)**
+     USER-RULES: U1, U4, U6, U9, U13 (relied on; none contradicted).
+     - **(a) PD256(e) is ANSWERED — PD238(c) HOLDS.** In the ORIGINAL (`main_vi_nodeterms.json`; original md5 `2a78e17c…`
+       unchanged, only hashed) Build Array `#2626` takes `#5119` x−y, `#30117` Value and `#4580` Value as elements and
+       `#5058`'s array; its output w4517 goes to `#376` `save trace.vi` 'current frame data array in' = the per-frame record
+       (`diag_c126_8_orig.log:3-8,45-48`; S1 agrees). w4878 → `#2626` survived to L2-A3 and was opened BY DESIGN at
+       `D1_l2_b1_20260927_193100.vi` (the record build's inputs renamed `array` and left for QRT, PD182(c)/D5), carried since
+       as licensed open rows (`plan_ring_p3a.json:399-409`). No sink was lost by mistake. **The two HELD rows (per-slot
+       `TransPos` ← `#30117` Value, `RotPos` ← `#4580` Value) are RELEASED into P3b's actions.**
+     - **(b) P3b plan INPUT exists** (`tools/bench/plan_ring_p3b_in.json` md5 `f3faa01f…`, rows `plan_ring_p3b_rows.json`):
+       45 actions (22 create, 12 same-frame wires, 11 crossings) + the 2 released rows + 14 `wire_remove_loose_ends` rows;
+       maker dedupes at load (30 identical rows dropped); replay of the 34 non-crossing rows PASS, end cdiff == P3a's 16
+       rows; re-created nets keep every old sink (8 terminals + 1 tunnel == 9).
+     - **(c) TOOLING owed before P3b's launch (decision 8: row content comes ONLY from the finalised plan file):** stageplan/1
+       gets a `wire_remove_loose_ends` op; stagexec compiles a border crossing to `connect_term_uid` (126-6's measured
+       route), not generic `connect`; stagesim gets a border-crossing model from 126-4/126-6's census variants
+       (`census_samples.json`). One offline card.
+     - **(d) DECIDED for the 4 UNMEASURED rows (a 2nd+ sink into an FS frame the source already entered: `i` → f1 ×3,
+       BufNum → `Latest` f2):** route = a same-frame wire from the existing FS tunnel's INNER face in that frame (the R4
+       branch analogue, PD250(c)), not a fresh `connect_term_uid` (126-6 STEP A showed that makes a SECOND FS tunnel —
+       same value, extra objects). Measured on a P3a-copy scratch first (small LabVIEW card), together with the bed's
+       Automatic Error Handling property read (PD256(f)).
+     - **(e) Order next cycle:** card 1 (LabVIEW, small) = (d)'s scratch + the Automatic Error Handling read; beside it card 2
+       (offline) = (c). Then judgement decides `IMAQ Copy`'s error terminals, the P3b FINAL plan is made (rows, census and
+       Error List predictions: 54 after w27378's removal + P3b's own), dry + prerun + prior-art (new classes FS /
+       GrowableFunction / IndexArray), full scratch run (D-2026-10-01-01 unanswered ⇒ PD246(d)), ONE launch.
 
 ## OPEN (design choices — for judgement; not decided here)
 

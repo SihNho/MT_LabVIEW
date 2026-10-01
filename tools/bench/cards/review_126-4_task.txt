@@ -1,0 +1,21 @@
+ATTACK this claim about a failed gate in tools/bench/diag_c126_4_op.py (log tools/bench/diag_c126_4_op.log).
+
+Gate: "S1 Error List BEFORE == the bed's recorded 55, per-class delta {}" FAILED. The script read LabVIEW's Error List window
+(count-only, OCR of each row, tools/errorlist_check.py class_counts = normalised row text) on a never-saved BYTE COPY of the bed
+D1_ring_p3a_20261001_180540.vi (md5 4dfa44aa..., unchanged) and compared per-class counts with the recorded read of the same bed
+(tools/bench/errorlist_D1_ring_p3a_20261001_180540_20261001_181801.json, 55 items).
+Measured: N 55 items 55; the ONLY per-class difference was
+  'youhaveconnectedanoutputlooptunneltoaninputofsubvichangetheinputtoanoutputoraddasource': (bed 0, now 1)
+  'youhaveconnectedanoutputlooptunneltoaninputofsubvlchangetheinputtoanoutputoraddasource': (bed 1, now 0)
+(the same normalisation already carries 'thiswireisnotconnectedtoanvthing' 1 next to '...anything' 19 in both reads).
+
+CLAIM: this is an OCR spelling variant ('subVI' read as 'subvi' vs 'subvl') of ONE identical Error List item, so the copy's Error
+List equals the bed's 55 item for item; the gate failed because the script compared OCR'd text keys exactly. Nothing in LabVIEW
+differed. The later measurement (Wire.RemoveLooseEnds 6370C08 on w27378: Is Broken? True -> False, loose joint removed, 5 -> 4 joints,
+both terminals kept, census delta empty, Error List 55 -> 54 with 'wirewirehaslooseends' 24 -> 23 and the same subvi/subvl swap) is
+therefore valid.
+
+Give the strongest reason the claim is wrong, an alternative explanation (e.g. a real different item whose text happens to differ
+in that position, a different window/VI read, item order), what would falsify it, and the cheapest discriminating test (the raw
+JSON files tools/bench/errorlist_c126_4_s1_before_*_raw.json and errorlist_c126_4_s1_after_*_raw.json hold every OCR'd row; the
+bed's recorded JSON above holds its rows). Read those files.

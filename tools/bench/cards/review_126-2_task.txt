@@ -1,0 +1,18 @@
+ATTACK this claim about the failed run tools/bench/diag_c126_2_op.log (script tools/bench/diag_c126_2_op.py, card 126-2 STEP 0).
+
+CLAIM: gate M1 failed only because the script compared the Invoke's method-terminal name with the literal 'Clean Up Wire', while
+LabVIEW 2026 names that terminal 'CleanUpWire' (no spaces). The measurement itself succeeded: on a never-saved byte copy of an NI
+scripting example, build_invoke('VI Server:Wire', id) for ids 6370C00..0F gave named method terminals for 0x00 Attach Probe, 0x01 Remove
+Probe, 0x05 CleanUpWire, 0x06 Insert Node, 0x07 CopyProbesToCompanion, 0x08 RemoveLooseEnds, 0x0B DeleteJoint (POint, Aggressive?),
+0x0D DisconnectTerminal (Term), and the generic 'Method' pair (= no method) for 02,03,04,09,0A,0C,0E,0F (diag_c126_2_op.log:3-18).
+So Wire.Clean Up Wire = 6370C05, and the fix is to match 'CleanUpWire' (or the id) and rerun; nothing about LabVIEW is unexplained.
+
+Context (already ruled out): the probe pattern is the one that measured FlatSequence.Add Frame 3578B800 (diag_c125_4fsm.log:23), where
+the terminal name DID carry spaces ('Add Frame', 'Remove Frame', 'Reference Frame Index'); 6370C0A Get Error List is listed as private
+in docs/NAMES.md:1137-1138 and here returned the generic 'Method' pair.
+
+Questions: (1) is 6370C05 really the documented "Clean Up Wire" method (LabVIEW scripting class reference / labviewwiki Wire class), and
+is a terminal named without spaces consistent with how LabVIEW names private/compact method short names? (2) Does the generic 'Method'
+pair for 0x0A mean Get Error List is not reachable in this build, or only that build_invoke cannot show private methods? (3) For the
+card's goal - removing ONE stub segment (a loose joint) of one wire without a whole-VI Remove Broken Wires - is Clean Up Wire (re-route)
+the right method at all, or is RemoveLooseEnds 6370C08 / DeleteJoint 6370C0B the one that removes a loose end? Cite sources.

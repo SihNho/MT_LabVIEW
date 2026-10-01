@@ -1,0 +1,68 @@
+{
+ "schema": "task/1",
+ "id": "126-2",
+ "kind": "measure",
+ "goal": "PD253(d): measure a one-wire cleanup method on w27378 (P3a byte copy) and on the one-terminal wire a cross-frame connect_term_uid leaves in a Flat Sequence",
+ "why": "P3a's 55th Error List item is stub w27378 left by connect_term_uid; P3b calls it again many times. 126-1 found a similar one-terminal wire in the FS scratch. P3b's plan needs the cleanup row or another answer. Brief: brief_126-2.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_126-2.md"},
+  {"path": "tools/bench/cards/result_126-1.json"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3a_20261001_180540.vi", "md5": "4dfa44aac8fb32f706b3eb792ee7d3cc"},
+  {"path": "tools/bench/diag_c125_5_fsscr.py", "md5": "fd2d339f2fcd03469c808a6edfa686a9"},
+  {"path": "tools/gscript.py", "md5": "b9ea07fd9c7f7aa8f5bac2f1336db979"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "verb", "name": "hygiene_run", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "wire_joints", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "connect_term_uid", "where": "tools/gscript.py"},
+  {"kind": "op", "name": "OpWireJoints_v1"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/bench/diag_c125_4fsm.py"},
+  {"kind": "file", "name": "tools/bench/diag_c125_5_fsscr.py"}
+ ],
+ "pass": [
+  "STEP 0: Wire cleanup method id measured from LabVIEW; op that invokes it by uid exists, hygiene via hygiene_run PASS if new",
+  "STEP 1: w27378 before/after: wire_joints free ends, Is Broken?, terminals, census delta, count-only Error List per class",
+  "STEP 2: FS scratch one-terminal wire + unwired tunnel: Is Broken?, count-only Error List delta, same reads after cleanup",
+  "bed md5 unchanged; scratch copies deleted; LabVIEW closed and verified gone"
+ ],
+ "outputs": [
+  "tools/gscript.py",
+  "tools/bench/op_hygiene/*",
+  "tools/bench/census_samples.json",
+  "tools/bench/scratch_verify/*"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/gscript.py",
+   "tools/bench/diag_c126_2*",
+   "tools/bench/census_samples.json",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/op_hygiene/**",
+   "tools/bench/errorlist_*",
+   "tools/bench/cards/result_126-2*",
+   "tools/bench/cards/review_126-2*",
+   "tools/bench/peer_*",
+   "archive/peer/**",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["fact", "hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "rules": [
+  "Follow brief_126-2.md; measurement only; beds never saved over; no stage recipe launched",
+  "Never a whole-VI Remove Broken Wires; no change to connect_term_uid in this card",
+  "Return at the first unexpected result (finish the step, LabVIEW closed, facts recorded)"
+ ],
+ "advances": ["M4", "M3"]
+}

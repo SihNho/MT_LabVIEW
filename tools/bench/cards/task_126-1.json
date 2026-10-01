@@ -1,0 +1,77 @@
+{
+ "schema": "task/1",
+ "id": "126-1",
+ "kind": "build",
+ "goal": "PD253(b)(c): build gscript.hygiene_run (repeated-failure-class device), rerun OpFsAddFrame_v0's 2,000-call hygiene through it, then the FS scratch run diag_c125_5_fsscr.py on a P3a byte copy",
+ "why": "P3b needs the Flat Sequence creator (PD246(c) A1); OpFsAddFrame_v0 is refused by gscript.op until its hygiene record passes; the cycle-125 retrospective's repeated-failure-class names the shared runner as the device. Brief: brief_126-1.md.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_126-1.md"},
+  {"path": "tools/bench/cards/result_125-5.json"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3a_20261001_180540.vi", "md5": "4dfa44aac8fb32f706b3eb792ee7d3cc"},
+  {"path": "tools/bench/graph_ring_p3a_20261001_190155.json", "md5": "2fa6ce0c3e8a3014fa916085cb852f68"},
+  {"path": "tools/bench/diag_c125_5_fsscr.py", "md5": "b94735283d0df8832ef09eed7e9043ec"},
+  {"path": "tools/bench/op_hygiene/OpFsAddFrame_v0.json", "md5": "e581545be27118cc5a226742ee73b0e7"},
+  {"path": "tools/gscript.py", "md5": "78e543c177506445b9fe3174949a0000"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "verb", "name": "hygiene_probe", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "fs_donor", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "fs_frames", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "fs_add_frame", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "wire_joints", "where": "tools/gscript.py"},
+  {"kind": "op", "name": "OpFsAddFrame_v0"},
+  {"kind": "op", "name": "OpFsDiagrams_v0"},
+  {"kind": "op", "name": "OpWireJoints_v1"},
+  {"kind": "file", "name": "tools/bench/diag_c125_5_fsscr.py"},
+  {"kind": "file", "name": "tools/stagekit.py"}
+ ],
+ "pass": [
+  "STEP 1: gscript.hygiene_run + offline self-test PASS (copies closed each round, 3 handle series + GDI/USER in record, workload error counted)",
+  "STEP 2: OpFsAddFrame_v0 hygiene via hygiene_run, >= 2,000 calls: errors, h_pre/h_post/h_closed, GDI/USER, PASS/FAIL by +-100 band; op unchanged",
+  "STEP 3 (if STEP 2 PASS): 3-frame FS in #22694 False frame on a P3a copy; order, frame uids, tunnel class, Is Broken?, free ends, census read back",
+  "STEP 3 records: census sample + scratch_verify record written",
+  "bed md5 unchanged; LabVIEW closed and verified gone"
+ ],
+ "outputs": [
+  "tools/gscript.py",
+  "tools/bench/selftest_hygiene_run*",
+  "tools/bench/op_hygiene/*",
+  "tools/bench/census_samples.json",
+  "tools/bench/scratch_verify/*"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/gscript.py",
+   "tools/bench/diag_c126*",
+   "tools/bench/diag_c125_5_fsscr*",
+   "tools/bench/selftest_hygiene_run*",
+   "tools/bench/census_samples.json",
+   "tools/bench/scratch_verify/**",
+   "tools/bench/op_hygiene/**",
+   "tools/bench/cards/result_126-1*",
+   "tools/bench/cards/review_126-1*",
+   "tools/bench/peer_*",
+   "archive/peer/**",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["fact", "hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "rules": [
+  "Follow brief_126-1.md; beds never saved over; no stage recipe launched",
+  "Return at the first unexpected result (finish the step, LabVIEW closed, facts recorded)",
+  "No change to OpFsAddFrame_v0 or connect_term_uid in this card",
+  "Editing stagexec/stagekit/a listed self-test => rerun tools/bench/c125_1_offline_measure.py (PD252(a))"
+ ],
+ "advances": ["M4", "M3"]
+}

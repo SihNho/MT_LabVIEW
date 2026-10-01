@@ -1,0 +1,70 @@
+{
+ "schema": "task/1",
+ "id": "126-3",
+ "kind": "build",
+ "goal": "PD253(c)(e): offline Flat Sequence plan support - stagexec routes, stagesim models and self-tests for FS create, fs_add_frame and a cross-frame wire, from 126-1's measured facts",
+ "why": "P3b (PD246(c) A1) creates a 3-frame Flat Sequence in case #22694's False frame; the plan format cannot express it yet. 126-1 measured the creator on a P3a byte copy (15/0).",
+ "inputs": [
+  {"path": "tools/bench/cards/result_126-1.json"},
+  {"path": "tools/bench/diag_c125_5_fsscr.log", "md5": "a148de7aa0451c1c537c19bf06facf39"},
+  {"path": "tools/bench/diag_c125_5_fsscr_plan.json", "md5": "42b515cac4079ec467acaa70939f3915"},
+  {"path": "tools/bench/census_samples.json", "md5": "a0752eefa7b57f75383432250562b396"},
+  {"path": "tools/stagexec.py", "md5": "8346413a0937e3876804e0ac4374c360"},
+  {"path": "tools/stagesim.py", "md5": "5711e1f85de9b5971acbdfdcb5ab0a26"},
+  {"path": "tools/gscript.py", "md5": "b9ea07fd9c7f7aa8f5bac2f1336db979"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "verb", "name": "fs_donor", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "fs_add_frame", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "fs_frames", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "connect_term_uid", "where": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/bench/c125_1_offline_measure.py"}
+ ],
+ "pass": [
+  "stagexec route(s): FS create in a case frame (struct_copy_nested + fs_donor) and fs_add_frame by frame index",
+  "stagesim models: FS create (+FlatSequence 1, Diagram 1), add frame (+Diagram 1, new frame at ref+1), frame order",
+  "cross-frame wire model = measured (+FSInnerTunnel 2, Terminal 4, Wire 3), marked PROVISIONAL pending card 126-2",
+  "addressing of FS inner tunnels by owner uid + frame diagram, not term_name (names read back empty)",
+  "self-tests pass; the fsscr plan replays in stagesim to 126-1's census; c125_1_offline_measure.py rerun 0 COM trips"
+ ],
+ "outputs": [
+  "tools/stagexec.py",
+  "tools/stagesim.py",
+  "tools/stage_prerun.py",
+  "tools/bench/selftest_fs_*"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/stage_prerun.py",
+   "tools/bench/opmodels/**",
+   "tools/bench/selftest_fs_*",
+   "tools/bench/c125_1_offline_measure*",
+   "tools/bench/diag_c126_3*",
+   "tools/bench/cards/result_126-3*",
+   "tools/bench/cards/review_126-3*",
+   "tools/bench/peer_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "rules": [
+  "Offline only: no LabVIEW, no COM; facts come only from 126-1's logs and records",
+  "Do not edit gscript.py (card 126-2 may be editing it); existing routes and self-tests must stay green",
+  "Return at the first unexpected result"
+ ],
+ "advances": ["M4", "M3"]
+}

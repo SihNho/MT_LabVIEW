@@ -1,0 +1,58 @@
+BGRUN START 2026-10-01 20:34:21 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c126-2-wiremethods -TaskFile tools/bench/cards/review_126-2_task.txt
+BGRUN PID 20556
+OUTCOME: ANSWERED (107s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-01-c126-2-wiremethods.md
+COST: $1.0603  in 18 / out 7639 / cache-create 87613 / cache-read 821433  (103s, 16 turn(s))
+--- ANSWER ---
+**Verdict:** for question 1 the claim holds — 6370C05 is NI's "Clean Up Wire" and the space-less terminal name is expected. It goes wrong in two places: "nothing about LabVIEW is unexplained" overstates question 2, and question 3 has the wrong method for the card's goal. `RemoveLooseEnds` (6370C08) is the narrow match; `CleanUpWire` also re-routes the whole wire.
+
+### 1. Strongest reason the claim is wrong
+The fault is not in the M1 string match. It is in the step the claim takes after it: "match 'CleanUpWire' and rerun." The card wants ONE stub (a loose end) removed from one wire. The documentation says Clean Up Wire *"cleans up the wire so that it has no loose ends, no hidden wire, and few bends and branches"* while keeping all terminal connections ([labviewwiki: Clean Up Wire](https://labviewwiki.org/wiki/Wire_class/Clean_Up_Wire_method)). That re-routes the whole wire, which is a bigger edit than the card asks for. Remove Loose Ends 6370C08 does only *"Removes the loose ends of a wire"*, takes no parameters, and exists since LV2018 ([labviewwiki: Remove Loose Ends](https://labviewwiki.org/wiki/Wire_class/Remove_Loose_Ends_method)). The probe found it at `diag_c126_2_op.log:11`.
+
+Fixing the string and rerunning would also run the 2,000-call hygiene check against the For Loop example's healthy wires (`diag_c126_2_op.py:91`), so it would hammer the wrong method.
+
+### 2. Alternative explanation of the same evidence
+On names the claim is right, and the evidence is stronger than it says:
+- **The pattern:** the older methods show their display names (`Attach Probe`, `Remove Probe`, `Insert Node`, log lines 3, 4 and 9). The LV2018 additions show their internal data names (`CleanUpWire`, `RemoveLooseEnds`, `DeleteJoint`, `DisconnectTerminal`).
+- **The typo:** Delete Joint's parameter shows as `POint`, while the wiki's display name is `Point` ([labviewwiki: Delete Joint](https://labviewwiki.org/wiki/Wire_class/Delete_Joint_method)). That is the internal data name showing through.
+- **The wiki agrees:** it lists the data name `CleanUpWire` for 6370C05 ([labviewwiki: Wire class](https://labviewwiki.org/wiki/Wire_class)).
+
+So the Invoke node falls back to the data name when no display string exists. The Flat Sequence result with spaces (`diag_c125_4fsm.log:23`) does not contradict this.
+
+The real alternative is on question 2. The generic `'Method'` pair has at least three causes that this probe cannot tell apart:
+- **Not implemented:** 02, 03, 04 and 09 are documented as not implemented (labviewwiki class page).
+- **Private:** 0A, Get Error List, is private and dates from LV2018 ([labviewwiki: Get Error List](https://labviewwiki.org/wiki/Wire_class/Get_Error_List_method)).
+- **Unknown or absent:** 0C (Attach Sampling Probe), 0E and 0F could not be bound for reasons the probe cannot show.
+
+`e == ''` says nothing here. `build_invoke`'s error output is deliberately left unwired, and the dialog watchdog swallows the creator's error-7 dialog (`tools/gscript.py:2691-2711`). The project's own capability notes say a wrong or private method gives a node with no method terminals (`docs/toolkit-capabilities.md:156`). They also record that an earlier private-method probe series was inconclusive because of a reader defect (`docs/toolkit-capabilities.md:236-254`). The private-scripting INI keys were already True (`:222`), so they do not explain it either.
+
+**Answer to Q2: this measurement does not show that Get Error List is unreachable. It only shows that this probe's route did not bind 0A.**
+
+### 3. What would falsify the claim
+Applying 6370C05 to w27378 on a byte copy would falsify it in either of two ways:
+- the loose-joint count (the `0x100` flag, `diag_c126_2_op.py:97`) stays the same; or
+- the wire's terminal set changes: the source `#27365`'s tunnel or its sink loses its connection.
+
+Separately, if 6370C08 removes the loose joint and leaves every other joint alone, the claim's choice of method (Q3) is wrong even though its id mapping (Q1) is right.
+
+### 4. Cheapest test that separates the two
+Make two byte copies of P3a in one run. On copy A invoke 6370C05 on w27378; on copy B invoke 6370C08 on the same wire. On each, before and after, read:
+- `wire_joints`: the loose count and the full joint list;
+- the wire's terminals, from the `allterms` read;
+- `Is Broken?`;
+- a census of the whole diagram's wires.
+
+Remove Loose Ends is the right tool if 6370C08 drops only the loose joint and keeps the terminals and the other joints. Clean Up Wire is acceptable only if 6370C05 does the same.
+
+Fix M1 either way: match on the id plus the data name (`6370C05` / `CleanUpWire`, `6370C08` / `RemoveLooseEnds`), not on the display string. The brief asked for the id from LabVIEW's own class data (`brief_126-2.md:8-10`), and the data name is what the Invoke node showed.
+
+**Q3, Delete Joint (6370C0B):** it is the wrong tool for this. It removes *"the joint closest to Point"*, and an optional `Aggressive?` input sets how close the joint must be. It edits geometry by screen coordinates, and nothing documented says that removing that joint removes the stub segment. Use it only if Remove Loose Ends fails.
+
+**Not settled by any source:** whether either method acts on a wire that is already broken. Both wiki pages are silent on this, so only the test above can answer it for w27378.
+
+Sources:
+- [labviewwiki: Wire class](https://labviewwiki.org/wiki/Wire_class)
+- [labviewwiki: Clean Up Wire method](https://labviewwiki.org/wiki/Wire_class/Clean_Up_Wire_method)
+- [labviewwiki: Remove Loose Ends method](https://labviewwiki.org/wiki/Wire_class/Remove_Loose_Ends_method)
+- [labviewwiki: Delete Joint method](https://labviewwiki.org/wiki/Wire_class/Delete_Joint_method)
+- [labviewwiki: Get Error List method](https://labviewwiki.org/wiki/Wire_class/Get_Error_List_method)
+BGRUN END rc=0 after 108s

@@ -1,0 +1,64 @@
+{
+ "schema": "task/1",
+ "id": "126-7",
+ "kind": "build",
+ "goal": "Retry of 126-5 (offline): owed hypothesis review on the t644 duplicate-row FAIL, rerun the patched P3b maker with PD255(b) cleanup rows, two graph facts",
+ "why": "126-5 FAIL = our maker's premise (t644 two rows); Jev routed new-problem so a hypothesis review is owed before the rerun (PD255(d)). PD255(b)(e)(f) add cleanup rows and two fact reads.",
+ "retry_of_card": "126-5",
+ "inputs": [
+  {"path": "tools/bench/cards/result_126-5.json"},
+  {"path": "tools/bench/plan_ring_p3b_make.py", "md5": "2a4d45b72c24de83fe7dda61df9ceeef"},
+  {"path": "tools/bench/plan_ring_p3b_make.log", "md5": "c2f1ceba38dabc0068acd0f94ae2723d"},
+  {"path": "tools/bench/graph_ring_p3a_20261001_190155.json", "md5": "2fa6ce0c3e8a3014fa916085cb852f68"},
+  {"path": "tools/bench/facts_c120_types.json"},
+  {"path": "tools/bench/cards/result_126-4.json"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/census_predict.py"},
+  {"kind": "verb", "name": "wire_remove_loose_ends", "where": "tools/gscript.py"}
+ ],
+ "pass": [
+  "hypothesis review on plan_ring_p3b_make.log dispatched, ANSWERED, disposition written in the review file",
+  "patched maker rerun: plan_ring_p3b_in.json written; a wire_remove_loose_ends row after each border-crossing connect row + w27378",
+  "stagesim replay of MEASURED/PRECEDENT rows PASS on graph_ring_p3a (or first failing row + reason); row count reported",
+  "FACT: which of #30117/#3097 and #4580/#3160 feed the original's per-frame result path (file:line in the graph dump)",
+  "FACT: #6810 error in/out wiring in the bed and the VI's automatic-error-handling setting (from files only)"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p3b_in.json",
+  "tools/bench/plan_ring_p3b_make.py"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p3b*",
+   "tools/bench/ring_p3b*",
+   "tools/bench/diag_c126_5*",
+   "tools/bench/diag_c126_7*",
+   "tools/bench/cards/result_126-7*",
+   "tools/bench/cards/review_126-7*",
+   "tools/bench/cards/verdict_126-7*",
+   "tools/bench/peer_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 50
+ },
+ "rules": [
+  "Offline only: no LabVIEW, no COM; do not edit gscript/stagexec/stagesim",
+  "Plan INPUT only: no recipe, no launch; crossing rows stay UNMEASURED until card 126-6's facts are applied",
+  "A fact that contradicts PD238(c)/PD240(a) is returned as OPEN, never acted on; return at first unexpected result"
+ ],
+ "advances": ["M4", "M3"]
+}

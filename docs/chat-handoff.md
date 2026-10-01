@@ -199,6 +199,11 @@ cloud (routine) sessions and their nested calls draw on the SUBSCRIPTION windows
 limit is rejected, not paid from the credit. Hypothesis (unverified): the $250 is API-console credit usable only with
 an API key. Asked the user where the $250 is displayed. Direct cost readout = `total_cost_usd` per call (list price,
 7 decimals); pool readout = `rate_limit_event.rate_limit_info` (2-decimal utilization).
+**CAVEAT (2026-10-01 ~21:4x):** both probes ran as ROUTINES (RemoteTrigger). The user then cited remio.ai /
+laozhang blog posts: the $100/$250 cloud-session promo credit is drawn FIRST for cloud sessions opened from browser /
+mobile / desktop / `claude --cloud`, "after claiming the offer"; routines are not mentioned. So the conclusion above
+holds for routines only. Proposed (awaiting user): check the claim status, open an interactive cloud session, spend
+~$1–2, compare credit balance and 5-hour meter before/after.
 **CLOUD PLAN DROPPED (user 2026-09-29 ~20:0x KST: "그럼 클라우드는 그냥 잊어버리자").** No Linux port of benches/hooks;
 benches stay local. Both probe routines were run-once and are spent. Open next: user asked whether to bring Gemini back
 for web search; chat proposed (awaiting answer) a headless-permission fix test + a 6–8 question known-answer comparison
@@ -266,6 +271,10 @@ LabVIEW (pid 11128, open since 09-30 13:24) first, verified gone. Supervisor lau
 cycle 122 started on judgement Opus 5.5 high; errorlist REUSE OK; PI referenced + verify OK attempt 1/3, limits SET
 (`tools/bench/motor_session_start_cycle122.log`). Chat duties back on: report_gate acks, 30-min waiter
 (`wait_runner_event.py` under bgrun). When the user announces 실험중: write a STOP line at the top of STATUS (graceful).
+**D-2026-10-01-01 ANSWERED 2026-10-01 ~21:0x: option 1** (keep the 6 broken-file cap; ring steps P3b/P4/P5 up to ~40 edit
+operations per step with a full scratch run first). Recorded in decisions_pending.json and CLAUDE.md split-and-save item 2.
+The chat had left this decision unreported from 14:40 until the user asked for overall progress — check
+decisions_pending.json at EVERY cycle report. Words: say "편집 동작", not "행/rows", to the user.
 Terminology the user asked for (2026-09-29): "agent" = a Claude instance the runner/chat spawns (judgement agent,
 material agent); "session" = a new conversation window.
 

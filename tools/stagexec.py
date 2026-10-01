@@ -224,6 +224,12 @@ CREATE_ROUTES = {
     "case_wired": "gscript.case_wired (struct_copy_nested OpPrimCopyNested_v0 of DonorCase_v0 #742 + connect_nested_v1 "
                   "selector <- src + case_frames + junk-Invoke purge); frames False/True; measured census CaseStructure 1, "
                   "Diagram 2, Tunnel 1, OuterTerminal 1, InnerTerminal 2, Wire 1 (0 on a branch) - diag_c123_wired.log",
+    # card 126-3 (PD253(c)): FLAT SEQUENCE creators, measured by card 126-1 (diag_c125_5_fsscr.log 15/0)
+    "fs_create": "gscript.struct_copy_nested(W, dg, 'FlatSequence', gscript.fs_donor()) (OpPrimCopyNested_v0 of claudeDev "
+                 "DonorFs_v0.vi, a 1-frame EMPTY FS) + gscript.fs_frames read-back == new_diagrams; census FlatSequence 1, "
+                 "Diagram 1 (diag_c125_5_fsscr.log:27,34-35)",
+    "fs_frame": "gscript.fs_add_frame(W, fs, k, After=True) (OpFsAddFrame_v0) with k = the reference frame's index in "
+                "gscript.fs_frames; the new frame lands at k+1; census Diagram 1 (diag_c125_5_fsscr.log:32,36-37)",
 }
 ROUTE_VERBS = {
     "while": [("gscript", "loop_in")], "for": [("gscript", "loop_in")],
@@ -248,13 +254,22 @@ ROUTE_VERBS = {
     # card 124-6 (PD250(c)): a tunnel group whose OUTSIDE end is a plan-made shift register's INNER face and whose loop is a
     # plan-made case = ONE gscript.connect_term_uid (register face -> node in the frame, or back); LabVIEW makes the tunnel
     "connect_term_uid": [("gscript", "connect_term_uid")],
+    # card 126-3 (PD253(c)): Flat Sequence creators
+    "fs_create": [("gscript", "struct_copy_nested"), ("gscript", "fs_donor"), ("gscript", "fs_frames")],
+    "fs_frame": [("gscript", "fs_add_frame"), ("gscript", "fs_frames")],
 }
 # card 124-2: the class-count (census) delta of a non-create route, per variant. card 124-6: MEASURED by card 124-5 on a P2b
 # byte copy (tools/bench/census_samples.json ops connect_term_uid / case_frame_wire; diag_c124_p3a_scratch.log:53,61 R1/R2,
 # :71 R3 new_wire, :77,80 R4 branch). census_predict (a separate tool) still resolves only the rows it has rules for.
 ROUTE_CENSUS = {"case_frame_wire": {"new_wire": {"Wire": 1}, "branch": {}},
                 "connect_term_uid": {"register_end_case_border": {"SelectorTunnel": 1, "OuterTerminal": 1,
-                                                                  "InnerTerminal": 2, "Wire": 2}}}
+                                                                  "InnerTerminal": 2, "Wire": 2},
+                                     # card 126-3: measured n=1 (diag_c125_5_fsscr.log:47-60), PROVISIONAL pending card 126-2
+                                     # (== census_samples.json connect_term_uid variants, selftest_case_frame_c124 U01;
+                                     # variant 'fs_face' - an end on a FS tunnel FACE, same frame - is UNMEASURED: .get -> None)
+                                     "fs_frame_to_frame": dict(SS.FS_MEASURED["fs_frame_to_frame"]["census"])},
+                "fs_create": {"flat_sequence_donor": dict(SS.FS_MEASURED["fs_create"]["census"])},
+                "fs_frame": {"add_one_frame": dict(SS.FS_MEASURED["fs_add_frame"]["census"])}}
 CONNECT_TERM_UID_HOW = ("gscript.connect_term_uid(target, sink_uid, src_uid) - OpConnectTermUid_v0, any terminal -> any "
                         "terminal by uid; the register inner face <-> node in a case frame makes ONE SelectorTunnel (R1/R2, "
                         "diag_c124_p3a_scratch.log:53,61); junk Invokes purged inside the verb")
@@ -336,6 +351,15 @@ def create_route(a):
         if a.get("on") is None:
             raise ExecStop("create control needs `on` (the sink terminal it is created on)")
         return "control"
+    if c == SS.FS_CLS and a.get("donor_uid") is None and not a.get("prim"):     # card 126-3: struct_copy_nested + fs_donor
+        if not a.get("as"):
+            raise ExecStop("create FlatSequence needs `as` (its frames are 'new:<as>.f<k>')")
+        return "fs_create"
+    if c == SS.FS_FRAME_CLS:                              # card 126-3: fs_add_frame after the frame `diagram` names
+        if not (isinstance(a.get("diagram"), str) and re.match(r"^new:[A-Za-z]+[0-9]+\.f[0-9]+$", a["diagram"])):
+            raise ExecStop("create FlatSequenceFrame needs `diagram` 'new:<FS alias>.f<k>' (the reference frame), got {0!r}".format(
+                a.get("diagram")))
+        return "fs_frame"
     if c == "CaseStructure" and a.get("donor_uid") is None and not a.get("prim"):
         # card 120-3 R2: a NEW case in a loop body (gscript.case_in); a copied case (donor_uid) keeps the copy_in route
         if a.get("src") is not None and not a.get("label"):     # card 123-7: selector wired from `src` (gscript.case_wired)
@@ -416,6 +440,7 @@ def check_symbols(A):
     """card 100-3: every symbolic reference names an alias an EARLIER action created; '.body' only of a loop create,
     '.cond' only of a WhileLoop create. ExecStop names the action (unknown alias / use before create)."""
     defined = {}                                          # head -> kind ('srR','srL','tunnel','loop:<cls>','obj')
+    fs_n = {}                                             # card 126-3: plan-made Flat Sequence alias -> frame count now
     for i, a in enumerate(A, 1):
         for f in DIAG_FIELDS + END_FIELDS + ("loop", "uid"):
             v = a.get(f)
@@ -427,6 +452,12 @@ def check_symbols(A):
                 tail = v.partition(".")[2] if isinstance(v, str) else (v.get("term") if isinstance(v, dict) else "")
                 # card 120-3 R2: + 'new:<case alias>.f<k>' (a frame of a case this plan created); '.body' rule unchanged
                 case_frame = kind == "case" and tail[:1] == "f" and tail[1:].isdigit()
+                if f in DIAG_FIELDS and kind == "fs" and tail[:1] == "f" and tail[1:].isdigit():
+                    # card 126-3: 'new:<FS alias>.f<k>' = frame k left to right NOW (create 1 frame, each Add Frame +1)
+                    if int(tail[1:]) >= fs_n[h]:
+                        raise ExecStop("action {0} ({1}): {2}={3!r} - {4} has {5} frame(s) at this action".format(
+                            i, a.get("id"), f, v, h, fs_n[h]))
+                    case_frame = True
                 if f in DIAG_FIELDS and (tail != "body" or not kind.startswith("loop:")) and not case_frame:
                     raise ExecStop("action {0} ({1}): {2}={3!r} - a symbolic diagram is 'new:<loop alias>.body'".format(
                         i, a.get("id"), f, v))
@@ -434,10 +465,21 @@ def check_symbols(A):
                     raise ExecStop("action {0} ({1}): '.cond' of {2} ({3}) - only a WhileLoop has a conditional "
                                    "terminal".format(i, a.get("id"), h, kind))
         nm = a.get("as")
+        if a["op"] == "create" and a.get("class") == SS.FS_FRAME_CLS:            # card 126-3: one more frame
+            h = (_heads(a.get("diagram")) or [None])[0]
+            if h not in fs_n:
+                raise ExecStop("action {0} ({1}): FlatSequenceFrame diagram {2!r} is not a frame of a Flat Sequence an EARLIER "
+                               "create of this plan made".format(i, a.get("id"), a.get("diagram")))
+            fs_n[h] += 1
+            continue
         if a["op"] == "add_shift_reg" and nm:
             defined["new:" + nm + "R"], defined["new:" + nm + "L"] = "srR", "srL"
         elif a["op"] == "tunnel" and nm:
             defined["new:" + nm] = "tunnel"
+        elif a["op"] == "create" and nm and a.get("class") == SS.FS_CLS and a.get("donor_uid") is None and not a.get("prim"):
+            defined["new:" + nm], fs_n["new:" + nm] = "fs", 1                    # card 126-3
+        elif a["op"] == "wire" and nm:                    # card 126-3: the FS tunnel a cross-frame wire makes
+            defined["new:" + nm] = "fstun"
         elif a["op"] == "create" and nm and a.get("class") == "CaseStructure" and a.get("donor_uid") is None \
                 and not a.get("prim"):                    # card 120-3 R2: the case + its selector's alias
             defined["new:" + nm] = "case"
@@ -508,11 +550,76 @@ def _cfw_variant(A, i, case, k):
     return "new_wire"
 
 
+FS_FACE_RE = re.compile(r"^(#-?[0-9]+|f[0-9]+)$")
+
+
+def fs_wire_ops(A):
+    """card 126-3 (PD253(e)): {wire action index: op fields} for the wires a FLAT SEQUENCE route takes, read from the PLAN
+    alone (compile is pure): the plan's Flat Sequences are tracked as frame TOKENS in left-to-right order (create = 1 frame,
+    each FlatSequenceFrame create inserts after its reference frame - gscript.fs_add_frame After=T), and each node an action
+    PLACES on a frame ('create' with `as` on 'new:FS<n>.f<k>', 'move_in' with that dest) remembers its token. A wire whose
+    ends sit on two DIFFERENT frames of one plan-made FS -> variant 'fs_frame_to_frame' (gscript.connect_term_uid, measured
+    n=1); a wire with an end on a FS tunnel FACE (`frame` 'f<k>' / '#<diagram uid>') -> variant 'fs_face' (connect_term_uid by
+    terminal uid, census UNMEASURED). stagesim decides the same thing from the graph; Executor.execute cross-checks."""
+    frames, loc, tun, out, seq = {}, {}, {}, {}, [0]
+
+    def token():
+        seq[0] += 1
+        return seq[0]
+
+    def dframe(ref):
+        m = re.match(r"^(new:[A-Za-z]+[0-9]+)\.f([0-9]+)$", ref) if isinstance(ref, str) else None
+        if m and m.group(1) in frames and int(m.group(2)) < len(frames[m.group(1)]):
+            return m.group(1), frames[m.group(1)][int(m.group(2))]
+        return None
+
+    def where(e):
+        head, _t = _sym_of(e)
+        if isinstance(e, dict) and e.get("frame") is not None and FS_FACE_RE.match(str(e["frame"])):
+            if head in tun and str(e["frame"]).startswith("f") and int(e["frame"][1:]) < len(frames[tun[head]]):
+                return (tun[head], frames[tun[head]][int(e["frame"][1:])]), True
+            return None, True
+        if head:
+            return loc.get(head), False
+        u = e.get("uid") if isinstance(e, dict) else (e.split(".", 1)[0] if isinstance(e, str) else None)
+        try:
+            return loc.get(int(u)), False
+        except (TypeError, ValueError):
+            return None, False
+    for i, a in enumerate(A, 1):
+        if a["op"] == "create" and a.get("class") == SS.FS_CLS and a.get("as") and a.get("donor_uid") is None \
+                and not a.get("prim"):
+            frames["new:" + a["as"]] = [token()]
+        elif a["op"] == "create" and a.get("class") == SS.FS_FRAME_CLS:
+            d = dframe(a.get("diagram"))
+            if d:
+                frames[d[0]].insert(frames[d[0]].index(d[1]) + 1, token())
+        elif a["op"] == "create" and a.get("as"):
+            d = dframe(a.get("diagram"))
+            if d:
+                loc["new:" + a["as"]] = d
+        elif a["op"] == "move_in":
+            d = dframe(a.get("dest_diagram"))
+            for n in (a.get("nodes") or []) if d else []:
+                loc[int(n)] = d
+        elif a["op"] == "wire":
+            (ls, face_s), (ld, face_d) = where(a["src"]), where(a["dst"])
+            if ls and ld and ls[0] == ld[0] and ls[1] != ld[1]:
+                fl = frames[ls[0]]
+                out[i] = {"variant": "fs_frame_to_frame", "fs": ls[0], "from_index": fl.index(ls[1]), "to_index": fl.index(ld[1])}
+                if a.get("as"):
+                    tun["new:" + a["as"]] = ls[0]
+            elif face_s or face_d:
+                out[i] = {"variant": "fs_face"}
+    return out
+
+
 def compile_plan(plan):
     """[{kind, acts:[action indices 1-based], ...}] - one entry per REAL op, in order. Raises ExecStop on a shape the
     executor has no real op for (the pre-run gate)."""
     A = plan["actions"]
     check_symbols(A)
+    fsw = fs_wire_ops(A)                                 # card 126-3: Flat Sequence wires (pure, from the plan)
     created = {}                                         # 'new:X' -> ('sr'|'tunnel'|'loop', action index)
     for i, a in enumerate(A, 1):
         if a["op"] == "add_shift_reg":
@@ -565,7 +672,9 @@ def compile_plan(plan):
             ss, sside = _sym_of(a["src"])
             ds, dside = _sym_of(a["dst"])
             fr = [e.get("frame") for e in (a["src"], a["dst"]) if isinstance(e, dict) and e.get("frame") is not None]
-            if fr:                                         # card 124-2 (PD249(d)): a wire inside one frame of a case
+            if i in fsw:                                   # card 126-3: a Flat Sequence wire = ONE gscript.connect_term_uid
+                ops.append(dict(fsw[i], kind="connect_term_uid", acts=[i]))
+            elif fr:                                       # card 124-2 (PD249(d)): a wire inside one frame of a case
                 ops.append(dict(case_frame_op(A, i, fr), kind="case_frame_wire", acts=[i]))
             elif ds and created.get(ds, ("",))[0] == "while" and dside == "cond":
                 ops.append({"kind": "stop", "loop": ds, "acts": [i]})          # card 100-3 R8: OpStopFromNode_v0
@@ -768,6 +877,40 @@ def bind_new(prev_real, real, sim_prev, sim_now, bind):
             rr = next(x for x in r_rows if key(x) == key(sr))
             bind["term"][sr["term_uid"]] = rr["term_uid"]
     return made
+
+
+def bind_fs_tunnel(prev_real, real, sim_prev, sim_now, bind):
+    """card 126-3: bind the FlatSequenceInnerTunnel a cross-frame wire made (stagesim._fs_frame_wire). Its FOUR rows are filed
+    under ONE uid with EMPTY names (diag_c125_5_fsscr.log:47,57), so bind_new's (class, direction, name) key repeats; the rows
+    are told apart by (direction, frame diagram) - frames through bind['diag'] (the FS create / Add Frame bound them). Only a
+    created node of that class is touched; anything else returns {} and bind_new runs as before."""
+    sp = set(V.node_of(r) for r in sim_prev)
+    cand = collections.OrderedDict()
+    for r in sim_now:
+        n = V.node_of(r)
+        if n < 0 and n not in sp and n not in bind["obj"] and r["owner_class"] == FSIT_CLS:
+            cand.setdefault(n, []).append(r)
+    if not cand:
+        return {}
+    D = dict((int(k), int(v)) for k, v in (bind.get("diag") or {}).items())
+    old_t = set(r["term_uid"] for r in prev_real)
+    new_real = collections.OrderedDict()
+    for r in real:
+        if r["term_uid"] not in old_t and r["owner_class"] == FSIT_CLS and V.node_of(r) not in bind["obj"].values():
+            new_real.setdefault(V.node_of(r), []).append(r)
+    if len(cand) != 1 or len(new_real) != 1:
+        raise ExecStop("BINDING: FS tunnel nodes sim {0} vs real {1} (one node carrying all four rows expected, "
+                       "diag_c125_5_fsscr.log:57)".format(list(cand), list(new_real)))
+    (su, s_rows), (ru, r_rows) = next(iter(cand.items())), next(iter(new_real.items()))
+    key_s = lambda x: (bool(x["is_source"]), D.get(int(x["frame_diagram"] or 0), int(x["frame_diagram"] or 0)))   # noqa: E731
+    key_r = lambda x: (bool(x["is_source"]), int(x["frame_diagram"] or 0))                                        # noqa: E731
+    ks, kr = collections.Counter(key_s(x) for x in s_rows), collections.Counter(key_r(x) for x in r_rows)
+    if ks != kr or any(v != 1 for v in ks.values()):
+        raise ExecStop("BINDING: FS tunnel #{0} -> #{1} row keys (source?, frame) sim {2} vs real {3}".format(su, ru, dict(ks), dict(kr)))
+    bind["obj"][su] = ru
+    for sr in s_rows:
+        bind["term"][sr["term_uid"]] = next(x for x in r_rows if key_r(x) == key_s(sr))["term_uid"]
+    return {su: ru}
 
 
 MULTI_FRAME_CLS = ("Tunnel", "SelectorTunnel")
@@ -1446,7 +1589,24 @@ def bind_state(st, bind):
         s["case_frames"] = dict((str(m(int(k))), [[n_, m(int(f_))] for n_, f_ in v]) for k, v in s["case_frames"].items())
     if s.get("case_tunnel_frame"):                 # card 124-2: the group frame of a plan-made case tunnel - uid-keyed
         s["case_tunnel_frame"] = dict((str(m(int(k))), m(int(v))) for k, v in s["case_tunnel_frame"].items())
+    _fs_remap(s, m)                                # card 126-3: the Flat Sequence tables are uid-keyed too
     return s, sorted(miss)
+
+
+def _fs_remap(s, m):
+    """card 126-3: apply uid map `m` to stagesim's Flat Sequence tables (fs_frames {fs: [frame...]}, fs_alias {fs: alias},
+    fs_tunnels {tunnel: {fs, twin, frames, link}}) and to the created fs_pairs entries (uid / term_a / term_b)."""
+    if s.get("fs_frames"):
+        s["fs_frames"] = dict((str(m(int(k))), [m(int(x)) for x in v]) for k, v in s["fs_frames"].items())
+    if s.get("fs_alias"):
+        s["fs_alias"] = dict((str(m(int(k))), v) for k, v in s["fs_alias"].items())
+    if s.get("fs_tunnels"):
+        s["fs_tunnels"] = dict((str(m(int(k))), dict(v, fs=m(int(v["fs"])), twin=m(int(v["twin"])), frames=[m(int(x)) for x in v["frames"]],
+                                                    link=[m(int(x)) for x in v["link"]])) for k, v in s["fs_tunnels"].items())
+    for p in s.get("fs_pairs") or []:
+        for k in ("uid", "term_a", "term_b"):
+            if isinstance(p.get(k), int) and p[k] < 0:
+                p[k] = m(p[k])
 
 
 def bound_owners(owners, bind):
@@ -1654,8 +1814,10 @@ class Executor(object):
                        and base_sr_inner(a["dst"], False))
         primed, why, ct_primed = 0, [], 0
         why_acts = collections.OrderedDict()               # card 111-3: plan action -> its unprovable end(s)
+        # card 126-3: a Flat Sequence wire addresses its ends by TERMINAL uid (connect_term_uid) - no Nodes[] triple to prove
+        fs_acts = set(o["acts"][0] for o in self.ops if o["kind"] == "connect_term_uid" and str(o.get("variant", "")).startswith("fs_"))
         for i, a in enumerate(A, 1):
-            if i <= s_act:                                 # card 103-4: a Part-B entry primes the ends of ops > k only
+            if i <= s_act or i in fs_acts:                 # card 103-4: a Part-B entry primes the ends of ops > k only
                 continue
             for side, src in (("src", True), ("dst", False), ("at", None)):
                 e = a.get(side)
@@ -1767,6 +1929,7 @@ class Executor(object):
                 made = self._bind_create(op, after["state"], res)
             if op["kind"] in BIND_KINDS:
                 # card 120-3 R2: a created case selector / case tunnel first ({} for every other op), then bind_new as before
+                made.update(bind_fs_tunnel(real, real_new, prev["terminals"], after["state"]["terminals"], self.bind))
                 made.update(bind_case_faces(real, real_new, prev["terminals"], after["state"]["terminals"], self.bind))
                 made.update(bind_new(real, real_new, prev["terminals"], after["state"]["terminals"], self.bind))
                 if op["kind"] == "add_sr":
@@ -1863,6 +2026,16 @@ class Executor(object):
             src = self.real_term(prev, after, ai["src"], True)
             dst = self.real_term(prev, after, ao["dst"], False)
             return be.connect(src, dst, real, self.loop_of, op)
+        if kind == "connect_term_uid" and str(op.get("variant", "")).startswith("fs_"):
+            # card 126-3: a Flat Sequence wire - ONE action, ends by terminal uid (an FS tunnel face by owner uid + frame);
+            # the compiled variant must be the one stagesim applied from the graph
+            how = (self.step(op["acts"][0]).get("effect") or {}).get("how")
+            if (how == "fs_frame_to_frame") != (op["variant"] == "fs_frame_to_frame"):
+                raise ExecStop("connect_term_uid {0}: compiled variant {1!r}, simulated effect how={2!r}".format(
+                    a.get("id"), op["variant"], how))
+            src = self.real_term(prev, after, a["src"], True)
+            dst = self.real_term(prev, after, a["dst"], False)
+            return be.connect_term_uid(src, dst, real, op)
         if kind == "connect_term_uid":                     # card 124-6 (PD250(c)): R1 / R2, one verb call per group
             ai, ao = A[op["in_act"] - 1], A[op["out_act"] - 1]
             src = self.real_term(prev, after, ai["src"], True)
@@ -1875,6 +2048,9 @@ class Executor(object):
             dst = self.real_term(prev, after, a["dst"], False)
             return be.branch(tun, dst, real, self.loop_of, op, side=op.get("side", "outer"))
         if kind == "connect":
+            if (self.step(op["acts"][0]).get("effect") or {}).get("how") == "fs_frame_to_frame":     # card 126-3 cross-check
+                raise ExecStop("connect {0}: stagesim applied a Flat Sequence cross-frame wire, compile routed a plain connect "
+                               "(fs_wire_ops could not place an end on a frame)".format(a.get("id")))
             src = self.real_term(prev, after, a["src"], True)
             dst = self.real_term(prev, after, a["dst"], False)
             sr = base_sr_route(real, src, dst, getattr(self, "base_regs", {}))
@@ -1947,6 +2123,17 @@ class Executor(object):
         """A created LOOP owns no terminal row: bind its object and its body diagram from the uids the op returned
         (res 'uid', 'body'); a missing or non-positive return STOPS (the body could not be addressed)."""
         a = self.plan["actions"][op["acts"][0] - 1]
+        if op["route"] in ("fs_create", "fs_frame"):             # card 126-3: the FS and/or ONE frame Diagram (no rows)
+            eff = self.step(op["acts"][0]).get("effect") or {}
+            pairs = ([(eff.get("fs"), (res or {}).get("uid"), "obj"), (eff["frames"][0], ((res or {}).get("frames") or [None])[0], "diag")]
+                     if op["route"] == "fs_create" else [(eff.get("new_frame"), (res or {}).get("new_frame"), "diag")])
+            out = {}
+            for su, ru, kind_ in pairs:
+                if not isinstance(su, int) or not isinstance(ru, int) or ru <= 0:
+                    raise ExecStop("BINDING: create {0} ({1}) simulated #{2} -> returned {3!r}".format(a.get("id"), op["route"], su, ru))
+                self.bind[kind_][su] = ru
+                out[su] = ru
+            return out
         if op["route"] in ("case", "case_wired"):                 # card 123-7: case_wired binds the same way
             # card 120-3 R2: the case object and each FRAME diagram from the op's return (res 'uid', 'frames' in the plan's
             # `frames` order); the selector's faces are bound by bind_case_faces (by frame) right after
@@ -2398,6 +2585,39 @@ class LVBackend(object):
             out.update(uid=int(res["case"]), frames=[int(byname[n]) for n in names], selector=nt[0], names_back=list(res["names"]),
                        selector_wire=res["selector_wire"], how=CREATE_ROUTES[route])
             return out
+        if route == "fs_create":                              # card 126-3: struct_copy_nested of the 1-frame donor FS
+            rec = s._op("struct_copy_nested", lambda: g.struct_copy_nested(W, dg, SS.FS_CLS, g.fs_donor(), pos),
+                        "FlatSequence (fs_donor) onto Diagram #{0}".format(dg))
+            res = rec.get("result") or {}
+            out = self._done(rec, tag)
+            nd = list(res.get("new_diagrams") or [])
+            if not isinstance(res.get("uid"), int) or len(nd) != 1:
+                raise ExecStop("{0}: FS {1!r} new diagrams {2} (one FS + ONE frame expected, diag_c125_5_fsscr.log:27)".format(
+                    tag, res.get("uid"), nd))
+            fr = g.fs_frames(W, int(res["uid"]))["frames"]
+            if [int(x) for x in fr] != [int(nd[0])]:
+                raise ExecStop("{0}: fs_frames read back {1} != new diagram {2}".format(tag, fr, nd))
+            out.update(uid=int(res["uid"]), frames=[int(nd[0])], how=CREATE_ROUTES[route], census=ROUTE_CENSUS[route]["flat_sequence_donor"])
+            return out
+        if route == "fs_frame":                               # card 126-3: Add Frame after the reference frame dg
+            own = (self.addr.owners or {}).get(str(int(dg)))
+            if not own or own[0] != SS.FS_CLS or int(own[1] or 0) <= 0:
+                raise ExecStop("{0}: diagram #{1} has no REAL FlatSequence owner in the (bound) owners map ({2})".format(tag, dg, own))
+            fs = int(own[1])
+            f0 = [int(x) for x in g.fs_frames(W, fs)["frames"]]
+            if int(dg) not in f0:
+                raise ExecStop("{0}: #{1} is not a frame of FS #{2} ({3})".format(tag, dg, fs, f0))
+            k = f0.index(int(dg))
+            rec = s._op("fs_add_frame", lambda: g.fs_add_frame(W, fs, k, True), "FS #{0} after frame {1} (#{2})".format(fs, k, dg))
+            res = rec.get("result") or {}
+            out = self._done(rec, tag)
+            fa = [int(x) for x in res.get("frames_after") or []]
+            if not res.get("new_frame") or fa.index(int(res["new_frame"])) != k + 1 or [x for x in fa if x != int(res["new_frame"])] != f0:
+                raise ExecStop("{0}: new frame {1} in {2} - expected at index {3} with the old order {4} kept".format(
+                    tag, res.get("new_frame"), fa, k + 1, f0))
+            out.update(uid=fs, new_frame=int(res["new_frame"]), frames=fa, how=CREATE_ROUTES[route],
+                       census=ROUTE_CENSUS[route]["add_one_frame"])
+            return out
         if route == "case":                                   # card 120-3 R2: gscript.case_in (+ its case_frames read-back)
             names = list(a.get("frames") or SS.CASE_FRAMES_DEFAULT)
             t0 = set(int(u) for u in g.uids(W, "Tunnel"))
@@ -2688,6 +2908,7 @@ class SimBackend(object):
         if self.st.get("case_frames"):                       # card 124-2: {case: [[name, frame], ...]} is uid-keyed too
             self.st["case_frames"] = dict((str(rn(int(k))), [[n_, rn(int(f_))] for n_, f_ in v])
                                           for k, v in self.st["case_frames"].items())
+        _fs_remap(self.st, rn)                               # card 126-3: fs_frames / fs_alias / fs_tunnels / fs_pairs
         f = self.fault
         if f.get("at") == op["acts"][-1]:
             if f.get("kind") == "drop_edge":                   # a real op that made one edge fewer
@@ -2796,9 +3017,25 @@ class SimBackend(object):
                     raise ExecStop("create case: {0} panel CONTROL(s) labelled {1!r} (build_case wires the selector from "
                                    "exactly one, by label)".format(len(cts), a["label"]))
                 chk.update(selector_ct=cts[0]["term_uid"], frames=list(a.get("frames") or SS.CASE_FRAMES_DEFAULT))
+            elif route == "fs_create":                               # card 126-3: the census the real route checks
+                chk.update(census=ROUTE_CENSUS[route]["flat_sequence_donor"], how=CREATE_ROUTES[route])
+            elif route == "fs_frame":                                # card 126-3: the reference frame's REAL FS owner
+                own = (self.addr.owners or {}).get(str(int(args["diagram"])))
+                fl = (self.st.get("fs_frames") or {}).get(str(int(own[1] or 0))) if own and own[0] == SS.FS_CLS else None
+                if not fl or int(args["diagram"]) not in [int(x) for x in fl]:
+                    raise ExecStop("create fs_frame: diagram #{0} is not a frame of a (bound) FlatSequence ({1})".format(
+                        args["diagram"], own))
+                chk.update(fs=int(own[1]), ref_index=[int(x) for x in fl].index(int(args["diagram"])),
+                           census=ROUTE_CENSUS[route]["add_one_frame"], how=CREATE_ROUTES[route])
         except ExecStop as e:
             return self._unroutable(op, e)
         out = self._apply(op, chk)
+        if route == "fs_create":                                     # card 126-3: what LVBackend returns
+            fs_ = self.st["sym"]["new:" + a["as"]]
+            out.update(uid=fs_, frames=[self.st["sym"]["new:" + a["as"] + ".f0"]])
+        elif route == "fs_frame":
+            fl = self.st["fs_frames"][str(chk["fs"])]
+            out.update(uid=chk["fs"], new_frame=int(fl[chk["ref_index"] + 1]), frames=[int(x) for x in fl])
         if route in ("while", "for"):
             out.update(uid=self.st["sym"]["new:" + a["as"]], body=self.st["sym"]["new:" + a["as"] + ".body"])
         elif route in ("case", "case_wired"):                        # card 120-3 R2 / 123-7: what LVBackend returns
@@ -2923,6 +3160,34 @@ class SimBackend(object):
             return self._unroutable(op, e)
         return self._apply(op, chk)
 
+    def _fs_connect_check(self, rs, rd, op):
+        """card 126-3: the dry side of a Flat Sequence connect_term_uid. fs_frame_to_frame: source and sink on frames k and k+1
+        of ONE (bound) FlatSequence, both UNWIRED (the one measured shape, diag_c125_5_fsscr.log:41-60). fs_face: one end is a
+        FlatSequenceInnerTunnel face, both ends on ONE diagram, the sink unwired (census UNMEASURED)."""
+        var = op["variant"]
+        if rd["wire_uid"]:
+            raise ExecStop("connect_term_uid {0}: the sink #{1} is already wired (w{2})".format(var, rd["term_uid"], rd["wire_uid"]))
+        if var == "fs_face":
+            if SS.FSIT_CLS not in (rs["owner_class"], rd["owner_class"]) or int(rs["frame_diagram"] or 0) != int(rd["frame_diagram"] or 0):
+                raise ExecStop("connect_term_uid fs_face: ends {0}@#{1} / {2}@#{3} - one FS tunnel face, one diagram".format(
+                    rs["owner_class"], rs["frame_diagram"], rd["owner_class"], rd["frame_diagram"]))
+            return {"route": "connect_term_uid", "variant": var, "src_term": rs["term_uid"], "dst_term": rd["term_uid"],
+                    "census": None, "how": CONNECT_TERM_UID_HOW}
+        own = self.addr.owners or {}
+        lo = [own.get(str(int(r["frame_diagram"] or 0))) for r in (rs, rd)]
+        if not all(o and o[0] == SS.FS_CLS for o in lo) or int(lo[0][1]) != int(lo[1][1]):
+            raise ExecStop("connect_term_uid fs_frame_to_frame: ends on {0} / {1}, not two frames of ONE FlatSequence".format(lo[0], lo[1]))
+        fl = [int(x) for x in (self.st.get("fs_frames") or {}).get(str(int(lo[0][1]))) or []]
+        i, j = (fl.index(int(r["frame_diagram"])) if int(r["frame_diagram"]) in fl else None for r in (rs, rd))
+        if i is None or j is None or j != i + 1 or (i, j) != (op.get("from_index"), op.get("to_index")):
+            raise ExecStop("connect_term_uid fs_frame_to_frame: frames {0} -> {1} of {2}, compiled {3} -> {4} (adjacent k -> k+1 "
+                           "measured)".format(i, j, fl, op.get("from_index"), op.get("to_index")))
+        if rs["wire_uid"]:
+            raise ExecStop("connect_term_uid fs_frame_to_frame: the source #{0} is wired (w{1}) - branch UNMEASURED".format(
+                rs["term_uid"], rs["wire_uid"]))
+        return {"route": "connect_term_uid", "variant": var, "src_term": rs["term_uid"], "dst_term": rd["term_uid"], "fs": int(lo[0][1]),
+                "from_index": i, "to_index": j, "census": ROUTE_CENSUS["connect_term_uid"].get(var), "how": CONNECT_TERM_UID_HOW}
+
     def connect_term_uid(self, src, dst, real, op):
         """card 124-6 (PD250(c)): the dry side of an R1/R2 group - the verb is defined; one end is a shift register's INNER
         face (srL inner = the source of an input tunnel, srR inner = the sink of an output tunnel) on a diagram D, the other
@@ -2935,6 +3200,8 @@ class SimBackend(object):
             rs, rd = (next((x for x in real if x["term_uid"] == t), None) for t in (src, dst))
             if rs is None or rd is None or not rs["is_source"] or rd["is_source"]:
                 raise ExecStop("connect_term_uid: src #{0} / dst #{1} not a (source, sink) pair in the live read".format(src, dst))
+            if str(op.get("variant", "")).startswith("fs_"):          # card 126-3: the Flat Sequence variants
+                return self._apply(op, self._fs_connect_check(rs, rd, op))
             if rd["wire_uid"]:
                 raise ExecStop("connect_term_uid: the sink #{0} is already wired (w{1})".format(dst, rd["wire_uid"]))
             own = self.addr.owners or self.st.get("owners") or {}

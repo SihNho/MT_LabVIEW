@@ -1,0 +1,20 @@
+{
+ "schema_note": "card 126-4 STEP 2 (brief_126-4.md, PD254(e)): FINALIZED decision-row plan of tools/bench/diag_c126_4_fs.py = the diag_c126_2_fs_plan.json rows (FS build in case #22694's False frame, frame-1 const -> frame-2 Max & Min) + rows C-4/W-2/W-3 (case-frame Quotient & Remainder #27373 remainder output -> a Max & Min x in FS frame 1, then a SECOND sink from the same source -> a Max & Min x in FS frame 3) + M-1 (one-terminal wires: reads, then Wire.RemoveLooseEnds via gscript.wire_remove_loose_ends). Never saved; scratch deleted; LabVIEW killed and gone.",
+ "input": {"vi": "D1_ring_p3a_20261001_180540.vi", "md5": "4dfa44aac8fb32f706b3eb792ee7d3cc", "graph": "tools/bench/graph_ring_p3a_20261001_190155.json"},
+ "case": 22694, "false_frame": 27219, "const_donor": {"vi": "DonorSRInit_v0.vi", "uid": 248},
+ "qr": {"owner": 27373, "term": "x-y*floor(x/y)", "frame": 27219, "why": "graph_ring_p3a_20261001_190155.json: Function #27373 terminal #27401 'x-y*floor(x/y)' (source, unwired) on Diagram #27219"},
+ "sink_term": "x",
+ "errorlist_base": "errorlist_D1_ring_p3a_20261001_180540_20261001_181801.json",
+ "decisions": [
+  {"id": "D-0", "action": "stage", "what": "stagekit Stage on the P3a bed: restart LabVIEW, byte copy = work copy, discard_work (never saved)"},
+  {"id": "C-1", "action": "create", "what": "struct_copy_nested(FlatSequence, gscript.fs_donor()) onto the False frame of case #22694 (case_frames read back)"},
+  {"id": "C-2", "action": "create", "what": "gscript.fs_add_frame x2 (after frame 0, after frame 1) -> 3 frames; fs_frames left to right; census delta"},
+  {"id": "C-3", "action": "create", "what": "I32 constant (DonorSRInit_v0 #248) on frame 1, Max & Min on frame 2 (create_primitive_nested)"},
+  {"id": "W-1", "action": "wire", "what": "connect_term_uid(Max & Min x <- constant output); tunnel class, Is Broken?, wire_joints free ends of every new wire"},
+  {"id": "C-4", "action": "create", "what": "Max & Min on FS frame 1 and Max & Min on FS frame 3 (create_primitive_nested), sinks for W-2/W-3"},
+  {"id": "W-2", "action": "wire", "what": "connect_term_uid(frame-1 Max & Min x <- Quotient & Remainder #27373 'x-y*floor(x/y)' on case frame #27219); census delta, Is Broken?, joints, tunnels and faces"},
+  {"id": "W-3", "action": "wire", "what": "connect_term_uid(frame-3 Max & Min x <- the SAME source, a branch); the same reads"},
+  {"id": "M-1", "action": "measure", "what": "one-terminal new wires + unwired FS inner tunnels; Error List count-only per class vs the bed's 55; gscript.wire_remove_loose_ends on each one-terminal wire, the same reads after"},
+  {"id": "X", "action": "discard", "what": "close(): scratch deleted, bed md5 unchanged, LabVIEW killed and gone"}
+ ]
+}

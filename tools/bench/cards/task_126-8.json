@@ -1,0 +1,65 @@
+{
+ "schema": "task/1",
+ "id": "126-8",
+ "kind": "measure",
+ "goal": "PD256(e): read the ORIGINAL's per-frame trans/rot source and #4580's Value sink; then rerun the P3b maker (dedupe, cleanup rows, measured crossings)",
+ "why": "Rule-1a: PD238(c) assumed #30117/#4580 Value feed the per-frame record; the P3a bed shows neither does and #4580's wire is sinkless. P3b's TransPos/RotPos rows are held until the original answers.",
+ "inputs": [
+  {"path": "tools/bench/cards/result_126-7.json"},
+  {"path": "tools/bench/cards/result_126-6.json"},
+  {"path": "tools/bench/diag_c126_7_facts2.py", "md5": "30587ab3652bda5923de50360d66c812"},
+  {"path": "tools/bench/plan_ring_p3b_make.py", "md5": "2a4d45b72c24de83fe7dda61df9ceeef"},
+  {"path": "tools/bench/graph_ring_p3a_20261001_190155.json", "md5": "2fa6ce0c3e8a3014fa916085cb852f68"},
+  {"path": "tools/bench/census_samples.json", "md5": "ab835ce69fe605096e5034f212330a23"},
+  {"path": "archive/peer/2026-10-01-c126-7-t644.md", "md5": "2c2672260a0ca01c21e18f7d065d3edc"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/vigraph.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/census_predict.py"}
+ ],
+ "pass": [
+  "STEP 1 FACT: original's record build: which node/terminal feeds its trans and rot values per frame (file:line evidence)",
+  "STEP 1 FACT: #4580 (or its original uid) Value wire sinks in the original; if sinkless only in our beds, the first bed it is lost in",
+  "STEP 2: maker rerun with V.dedupe_rows + nonidentical==[] gate; plan_ring_p3b_in.json written",
+  "STEP 2: RLE row after every crossing + w27378; crossings MEASURED per 126-6; TransPos/RotPos rows tagged HELD (PD256(e))",
+  "STEP 2: stagesim replay PASS on graph_ring_p3a or first failing row + reason; row count; old sinks of re-created nets kept"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p3b_in.json",
+  "tools/bench/plan_ring_p3b_make.py",
+  "tools/bench/facts_c126_8_transrot.json"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p3b*",
+   "tools/bench/facts_c126_8*",
+   "tools/bench/diag_c126_8*",
+   "tools/bench/graph_orig*",
+   "tools/bench/cards/result_126-8*",
+   "tools/bench/cards/review_126-8*",
+   "tools/bench/peer_*",
+   "archive/peer/**",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "fact"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 35
+ },
+ "rules": [
+  "Rule 1: never open the original for edit, never save it; prefer an existing graph dump; else a headless read of a COPY",
+  "STEP 1 is facts only: a sink lost by our stages or a source other than PD238(c) is returned as OPEN, never fixed here",
+  "Do not edit gscript/stagexec/stagesim; plan INPUT only, no recipe or launch; return at the first unexpected result"
+ ],
+ "advances": ["M4", "M3"]
+}

@@ -1,0 +1,830 @@
+{
+ "schema": "stageplan/1",
+ "stage": "ring_p3b",
+ "goal": "RING P3b plan INPUT (cards 126-5/126-8; PD246(c) A1/A2, PD254(d), PD241(d), PD256): slot writes in a 3-frame Flat Sequence on case #22694 False frame 27219 of the P3a bed",
+ "base": {
+  "path": "tools/bench/graph_ring_p3a_20261001_190155.json",
+  "md5": "2fa6ce0c3e8a3014fa916085cb852f68"
+ },
+ "context": {
+  "s1_key": "D1_s1_copy"
+ },
+ "open_rows": [
+  {
+   "node": 376,
+   "term": "current frame data array in",
+   "why": "carried from R2 (plan_l2r2_in.json): QRT (PD175)"
+  },
+  {
+   "node": 376,
+   "term": "frame index",
+   "why": "carried from R2: QRT (PD175)"
+  },
+  {
+   "node": 2626,
+   "term": "array",
+   "why": "carried from R2: licensed rename (plan_l2b1_licence.json)"
+  },
+  {
+   "node": 2626,
+   "term": "element",
+   "why": "carried from R2: QRT (PD182(c)/D5)"
+  },
+  {
+   "node": 5058,
+   "term": "Image In",
+   "why": "carried from R2: QRT (PD177(e))"
+  },
+  {
+   "node": 8634,
+   "term": "index (col)",
+   "why": "carried from R2: QRT (D5)"
+  },
+  {
+   "node": 11261,
+   "term": "array",
+   "why": "carried from R2: PD227(d)"
+  },
+  {
+   "node": 11261,
+   "term": "element",
+   "why": "carried from R2: QRT (D5)"
+  },
+  {
+   "node": 28083,
+   "term": "Magnet position",
+   "why": "carried from R2: QRT (D5)"
+  },
+  {
+   "node": 29625,
+   "term": "index (col)",
+   "why": "carried from R2: QRT (D5)"
+  },
+  {
+   "node": 29973,
+   "term": "element",
+   "why": "carried from R2: QRT (D5)"
+  }
+ ],
+ "actions": [
+  {
+   "op": "create",
+   "id": "p3b_fs",
+   "class": "FlatSequence",
+   "as": "FS1",
+   "diagram": 27219,
+   "pos": [
+    200,
+    40
+   ],
+   "why": "ROUTE fs_create | MEASURED | PD246(c) A1 | diag_c125_5_fsscr.log:27 (FS on this same #27219 of a P3a copy)"
+  },
+  {
+   "op": "create",
+   "id": "p3b_fr2",
+   "class": "FlatSequenceFrame",
+   "diagram": "new:FS1.f0",
+   "why": "ROUTE fs_frame | MEASURED | PD246(c) A1 | diag_c125_5_fsscr.log:32 (add(0,T) new at 1, add(1,T) new at 2)"
+  },
+  {
+   "op": "create",
+   "id": "p3b_fr3",
+   "class": "FlatSequenceFrame",
+   "diagram": "new:FS1.f1",
+   "why": "ROUTE fs_frame | MEASURED | PD246(c) A1 | diag_c125_5_fsscr.log:32 (add(0,T) new at 1, add(1,T) new at 2)"
+  },
+  {
+   "op": "create",
+   "id": "p3b_lr_num1",
+   "class": "Local",
+   "diagram": "new:FS1.f0",
+   "as": "LRN1",
+   "label": "Num",
+   "mode": "read",
+   "pos": [
+    20,
+    220
+   ],
+   "terminals": [
+    {
+     "name": "Num",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE local_read (create_local_read + move_in) | PRECEDENT | PD246(c) A2 | run on loop body #639 (plan_l2a3_in.json:16); placement in a FS frame never run"
+  },
+  {
+   "op": "create",
+   "id": "p3b_ras_num1",
+   "class": "GrowableFunction",
+   "diagram": "new:FS1.f0",
+   "as": "RAN1",
+   "pos": [
+    120,
+    220
+   ],
+   "prim": "Replace Array Subset",
+   "donor": {
+    "donor": "$work",
+    "uid": 29157
+   },
+   "terminals": [
+    {
+     "name": "array",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "output array",
+     "is_source": true,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "index",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "new element/subarray",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE primitive $work donor #29157 | PRECEDENT | PD246(c) A2 Replace Array Subset | route measured in P3a (stage_d1_ring_p3a.log, Equal?/Increment/Q&R); class GrowableFunction never copied: census UNPREDICTED"
+  },
+  {
+   "op": "create",
+   "id": "p3b_k_m1",
+   "class": "DigitalNumericConstant",
+   "diagram": "new:FS1.f0",
+   "as": "KM1",
+   "pos": [
+    60,
+    160
+   ],
+   "prim": "const_donor",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRingConst_v0.vi",
+    "uid": 249
+   },
+   "terminals": [
+    {
+     "name": "",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE primitive const_donor | MEASURED | PD238(c) Num(i)=-1 | const in a FS frame: diag_c125_5_fsscr.log:41-47 (C-3a); I32 -1 = DonorRingConst_v0 #249 (PD247(a))"
+  },
+  {
+   "op": "create",
+   "id": "p3b_lw_num1",
+   "class": "Local",
+   "diagram": "new:FS1.f0",
+   "as": "LWN1",
+   "label": "Num",
+   "mode": "write",
+   "pos": [
+    220,
+    220
+   ],
+   "terminals": [
+    {
+     "name": "Num",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE local_write (create_local_write -> dest diagram) | PRECEDENT | PD246(c) A2 | stagexec.py:206 route; placement in a FS frame never run"
+  },
+  {
+   "op": "create",
+   "id": "p3b_ia",
+   "class": "IndexArray",
+   "diagram": "new:FS1.f1",
+   "as": "IA1",
+   "pos": [
+    120,
+    60
+   ],
+   "prim": "Index Array",
+   "donor": {
+    "donor": "$work",
+    "uid": 3163
+   },
+   "terminals": [
+    {
+     "name": "array",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "element",
+     "is_source": true,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "index",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE primitive $work donor #3163 | PRECEDENT | PD246(d) Index Array(pool, i) | route as P3a; class IndexArray never copied: census UNPREDICTED"
+  },
+  {
+   "op": "create",
+   "id": "p3b_copy",
+   "class": "SubVI",
+   "diagram": "new:FS1.f1",
+   "as": "CP1",
+   "pos": [
+    160,
+    40
+   ],
+   "subvi_path": "C:\\Program Files\\NI\\LVAddons\\nivision\\1\\vi.lib\\vision\\Management.llb\\IMAQ Copy",
+   "terminals": [
+    {
+     "name": "error in (no error)",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "Image Dst",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "error out",
+     "is_source": true,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "Image Src",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "Image Dst Out",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE subvi (drop_subvi llb member) | PRECEDENT | PD241(d) IMAQ Copy | IMAQ Create llb member in For body (diag_c118_p1b_plan.json:8); path docs/NAMES.md:967"
+  },
+  {
+   "op": "create",
+   "id": "p3b_lr_transpos",
+   "class": "Local",
+   "diagram": "new:FS1.f1",
+   "as": "LRT1",
+   "label": "TransPos",
+   "mode": "read",
+   "pos": [
+    20,
+    180
+   ],
+   "terminals": [
+    {
+     "name": "TransPos",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE local_read (create_local_read + move_in) | PRECEDENT | PD246(c) A2 | run on loop body #639 (plan_l2a3_in.json:16); placement in a FS frame never run"
+  },
+  {
+   "op": "create",
+   "id": "p3b_ras_transpos",
+   "class": "GrowableFunction",
+   "diagram": "new:FS1.f1",
+   "as": "RAT1",
+   "pos": [
+    120,
+    180
+   ],
+   "prim": "Replace Array Subset",
+   "donor": {
+    "donor": "$work",
+    "uid": 29157
+   },
+   "terminals": [
+    {
+     "name": "array",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "output array",
+     "is_source": true,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "index",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "new element/subarray",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE primitive $work donor #29157 | PRECEDENT | PD246(c) A2 Replace Array Subset | route measured in P3a (stage_d1_ring_p3a.log, Equal?/Increment/Q&R); class GrowableFunction never copied: census UNPREDICTED"
+  },
+  {
+   "op": "create",
+   "id": "p3b_lw_transpos",
+   "class": "Local",
+   "diagram": "new:FS1.f1",
+   "as": "LWT1",
+   "label": "TransPos",
+   "mode": "write",
+   "pos": [
+    220,
+    180
+   ],
+   "terminals": [
+    {
+     "name": "TransPos",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE local_write (create_local_write -> dest diagram) | PRECEDENT | PD246(c) A2 | stagexec.py:206 route; placement in a FS frame never run"
+  },
+  {
+   "op": "create",
+   "id": "p3b_lr_rotpos",
+   "class": "Local",
+   "diagram": "new:FS1.f1",
+   "as": "LRR1",
+   "label": "RotPos",
+   "mode": "read",
+   "pos": [
+    20,
+    360
+   ],
+   "terminals": [
+    {
+     "name": "RotPos",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE local_read (create_local_read + move_in) | PRECEDENT | PD246(c) A2 | run on loop body #639 (plan_l2a3_in.json:16); placement in a FS frame never run"
+  },
+  {
+   "op": "create",
+   "id": "p3b_ras_rotpos",
+   "class": "GrowableFunction",
+   "diagram": "new:FS1.f1",
+   "as": "RAR1",
+   "pos": [
+    120,
+    360
+   ],
+   "prim": "Replace Array Subset",
+   "donor": {
+    "donor": "$work",
+    "uid": 29157
+   },
+   "terminals": [
+    {
+     "name": "array",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "output array",
+     "is_source": true,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "index",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "new element/subarray",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE primitive $work donor #29157 | PRECEDENT | PD246(c) A2 Replace Array Subset | route measured in P3a (stage_d1_ring_p3a.log, Equal?/Increment/Q&R); class GrowableFunction never copied: census UNPREDICTED"
+  },
+  {
+   "op": "create",
+   "id": "p3b_lw_rotpos",
+   "class": "Local",
+   "diagram": "new:FS1.f1",
+   "as": "LWR1",
+   "label": "RotPos",
+   "mode": "write",
+   "pos": [
+    220,
+    360
+   ],
+   "terminals": [
+    {
+     "name": "RotPos",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE local_write (create_local_write -> dest diagram) | PRECEDENT | PD246(c) A2 | stagexec.py:206 route; placement in a FS frame never run"
+  },
+  {
+   "op": "create",
+   "id": "p3b_lr_frameidx",
+   "class": "Local",
+   "diagram": "new:FS1.f1",
+   "as": "LRF1",
+   "label": "FrameIdx",
+   "mode": "read",
+   "pos": [
+    20,
+    140
+   ],
+   "terminals": [
+    {
+     "name": "FrameIdx",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE local_read (create_local_read + move_in) | PRECEDENT | PD246(c) A2 | run on loop body #639 (plan_l2a3_in.json:16); placement in a FS frame never run"
+  },
+  {
+   "op": "create",
+   "id": "p3b_ras_frameidx",
+   "class": "GrowableFunction",
+   "diagram": "new:FS1.f1",
+   "as": "RAF1",
+   "pos": [
+    120,
+    140
+   ],
+   "prim": "Replace Array Subset",
+   "donor": {
+    "donor": "$work",
+    "uid": 29157
+   },
+   "terminals": [
+    {
+     "name": "array",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "output array",
+     "is_source": true,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "index",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "new element/subarray",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE primitive $work donor #29157 | PRECEDENT | PD246(c) A2 Replace Array Subset | route measured in P3a (stage_d1_ring_p3a.log, Equal?/Increment/Q&R); class GrowableFunction never copied: census UNPREDICTED"
+  },
+  {
+   "op": "create",
+   "id": "p3b_lw_frameidx",
+   "class": "Local",
+   "diagram": "new:FS1.f1",
+   "as": "LWF1",
+   "label": "FrameIdx",
+   "mode": "write",
+   "pos": [
+    220,
+    140
+   ],
+   "terminals": [
+    {
+     "name": "FrameIdx",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE local_write (create_local_write -> dest diagram) | PRECEDENT | PD246(c) A2 | stagexec.py:206 route; placement in a FS frame never run"
+  },
+  {
+   "op": "create",
+   "id": "p3b_lr_num3",
+   "class": "Local",
+   "diagram": "new:FS1.f2",
+   "as": "LRN3",
+   "label": "Num",
+   "mode": "read",
+   "pos": [
+    20,
+    320
+   ],
+   "terminals": [
+    {
+     "name": "Num",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE local_read (create_local_read + move_in) | PRECEDENT | PD246(c) A2 | run on loop body #639 (plan_l2a3_in.json:16); placement in a FS frame never run"
+  },
+  {
+   "op": "create",
+   "id": "p3b_ras_num3",
+   "class": "GrowableFunction",
+   "diagram": "new:FS1.f2",
+   "as": "RAN3",
+   "pos": [
+    120,
+    320
+   ],
+   "prim": "Replace Array Subset",
+   "donor": {
+    "donor": "$work",
+    "uid": 29157
+   },
+   "terminals": [
+    {
+     "name": "array",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "output array",
+     "is_source": true,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "index",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "new element/subarray",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE primitive $work donor #29157 | PRECEDENT | PD246(c) A2 Replace Array Subset | route measured in P3a (stage_d1_ring_p3a.log, Equal?/Increment/Q&R); class GrowableFunction never copied: census UNPREDICTED"
+  },
+  {
+   "op": "create",
+   "id": "p3b_lw_num3",
+   "class": "Local",
+   "diagram": "new:FS1.f2",
+   "as": "LWN3",
+   "label": "Num",
+   "mode": "write",
+   "pos": [
+    220,
+    320
+   ],
+   "terminals": [
+    {
+     "name": "Num",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE local_write (create_local_write -> dest diagram) | PRECEDENT | PD246(c) A2 | stagexec.py:206 route; placement in a FS frame never run"
+  },
+  {
+   "op": "create",
+   "id": "p3b_lw_latest",
+   "class": "Local",
+   "diagram": "new:FS1.f2",
+   "as": "LWL1",
+   "label": "Latest",
+   "mode": "write",
+   "pos": [
+    220,
+    320
+   ],
+   "terminals": [
+    {
+     "name": "Latest",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE local_write (create_local_write -> dest diagram) | PRECEDENT | PD246(c) A2 | stagexec.py:206 route; placement in a FS frame never run"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_w_n1_arr",
+   "src": "new:LRN1.value",
+   "dst": "new:RAN1.array",
+   "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD246(c) A2 frame 1 | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_w_m1_new",
+   "src": "new:KM1.value",
+   "dst": "new:RAN1.new element/subarray",
+   "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD238(c) Num(i) = -1 | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_w_n1_out",
+   "src": "new:RAN1.output array",
+   "dst": "new:LWN1.value",
+   "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD246(c) A2 frame 1 | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_w_ia_dst",
+   "src": "new:IA1.element",
+   "dst": "new:CP1.Image Dst",
+   "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD238(c) IMAQ Copy Dst = Img(i) | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_w_t_arr",
+   "src": "new:LRT1.value",
+   "dst": "new:RAT1.array",
+   "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD246(c) A2 frame 2 | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_w_t_out",
+   "src": "new:RAT1.output array",
+   "dst": "new:LWT1.value",
+   "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD246(c) A2 frame 2 | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_w_r_arr",
+   "src": "new:LRR1.value",
+   "dst": "new:RAR1.array",
+   "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD246(c) A2 frame 2 | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_w_r_out",
+   "src": "new:RAR1.output array",
+   "dst": "new:LWR1.value",
+   "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD246(c) A2 frame 2 | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_w_f_arr",
+   "src": "new:LRF1.value",
+   "dst": "new:RAF1.array",
+   "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD246(c) A2 frame 2 | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_w_f_out",
+   "src": "new:RAF1.output array",
+   "dst": "new:LWF1.value",
+   "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD246(c) A2 frame 2 | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_w_n3_arr",
+   "src": "new:LRN3.value",
+   "dst": "new:RAN3.array",
+   "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD254(d) frame 3 second Num read | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_w_n3_out",
+   "src": "new:RAN3.output array",
+   "dst": "new:LWN3.value",
+   "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD246(c) A2 frame 3 | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_x_i_f1",
+   "src": {
+    "uid": 27373,
+    "term": "x-y*floor(x/y)"
+   },
+   "dst": "new:RAN1.index",
+   "why": "ROUTE connect_term_uid ACROSS FS border (case frame 27219 -> FS f0) | MEASURED | PD246(c)(d) i = count mod 20 | census_samples.json connect_term_uid case_frame_to_fs_frame (diag_c126_4_fs.log:53)"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_x_i_f3",
+   "src": {
+    "uid": 27373,
+    "term": "x-y*floor(x/y)"
+   },
+   "dst": "new:RAN3.index",
+   "why": "ROUTE connect_term_uid ACROSS FS border (27219 -> f2), source already wired | MEASURED | PD246(c) i | census_samples.json connect_term_uid case_frame_to_fs_frame_branch: a NEW FS outer tunnel per frame (diag_c126_4_fs.log:57)"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_x_i_ia1",
+   "src": {
+    "uid": 27373,
+    "term": "x-y*floor(x/y)"
+   },
+   "dst": "new:IA1.index",
+   "why": "ROUTE connect_term_uid ACROSS FS border (27219 -> f1), 1st sink of i into f1 | MEASURED | PD246(c) i | census_samples.json connect_term_uid case_frame_to_fs_frame_branch: a NEW FS outer tunnel per frame (diag_c126_4_fs.log:57)"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_x_i_rat1",
+   "src": {
+    "uid": 27373,
+    "term": "x-y*floor(x/y)"
+   },
+   "dst": "new:RAT1.index",
+   "why": "ROUTE connect_term_uid ACROSS FS border (27219 -> f1), BRANCH into f1 already entered | UNMEASURED | PD246(c) i | 2nd+ sink of one source into a frame it ALREADY entered: not measured (126-4/126-6 measured only a NEW frame)"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_x_i_rar1",
+   "src": {
+    "uid": 27373,
+    "term": "x-y*floor(x/y)"
+   },
+   "dst": "new:RAR1.index",
+   "why": "ROUTE connect_term_uid ACROSS FS border (27219 -> f1), BRANCH into f1 already entered | UNMEASURED | PD246(c) i | 2nd+ sink of one source into a frame it ALREADY entered: not measured (126-4/126-6 measured only a NEW frame)"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_x_i_raf1",
+   "src": {
+    "uid": 27373,
+    "term": "x-y*floor(x/y)"
+   },
+   "dst": "new:RAF1.index",
+   "why": "ROUTE connect_term_uid ACROSS FS border (27219 -> f1), BRANCH into f1 already entered | UNMEASURED | PD246(c) i | 2nd+ sink of one source into a frame it ALREADY entered: not measured (126-4/126-6 measured only a NEW frame)"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_x_bn_n3",
+   "src": {
+    "uid": 6810,
+    "term": "current image number"
+   },
+   "dst": "new:RAN3.new element/subarray",
+   "why": "ROUTE connect_term_uid ACROSS case border (639 -> 27219) + FS border (-> f2) | MEASURED | PD238(c) Num(i) = BufNum; new sink on w3747 only (PD241(d)) | census_samples.json connect_term_uid loop_body_wired_src_to_fs_frame_in_case (diag_c126_6_cross.log:49,60): source net RE-CREATED (PD256(c)) B1 exact"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_x_bn_latest",
+   "src": {
+    "uid": 6810,
+    "term": "current image number"
+   },
+   "dst": "new:LWL1.value",
+   "why": "ROUTE connect_term_uid ACROSS case border (639 -> 27219) + FS border (-> f2) | UNMEASURED | PD238(c) Latest = BufNum | 2nd+ sink of one source into a frame it ALREADY entered: not measured (126-4/126-6 measured only a NEW frame)"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_x_img_src",
+   "src": {
+    "uid": 6810,
+    "term": "Image Out"
+   },
+   "dst": "new:CP1.Image Src",
+   "why": "ROUTE connect_term_uid ACROSS case border (639 -> 27219) + FS border (-> f1) | MEASURED | PD241(d) Src = #6810 Image Out t6865 (w3040, 0 sinks) | census_samples.json connect_term_uid loop_body_wired_src_to_fs_frame_in_case (diag_c126_6_cross.log:49,60): source net RE-CREATED (PD256(c)) (same form, other terminal)"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_x_fidx",
+   "src": {
+    "uid": 639,
+    "term_uid": 644
+   },
+   "dst": "new:RAF1.new element/subarray",
+   "why": "ROUTE connect_term_uid ACROSS case border (639 -> 27219) + FS border (-> f1) | MEASURED | PD240(a) FrameIdx(i) = #637 i t644 | census_samples.json connect_term_uid loop_body_wired_src_to_fs_frame_in_case (diag_c126_6_cross.log:49,60): source net RE-CREATED (PD256(c)) B2 exact"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_x_pool",
+   "src": {
+    "uid": 23099,
+    "term": "New Image"
+   },
+   "dst": "new:IA1.array",
+   "why": "ROUTE connect_term_uid ACROSS For #23093 exit (indexing) + FS2/FS1 + #637 + case + FS | MEASURED | PD241(d)/PD247(b) pool refnums, route nested | census_samples.json connect_term_uid for_body_unwired_src_to_fs_frame_multi_border (diag_c126_6_cross.log:77-78): While tunnel IndexMode 0 B3 exact"
+  }
+ ]
+}
