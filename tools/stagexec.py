@@ -1892,7 +1892,10 @@ class Executor(object):
     RETRY_KINDS = ("connect", "tunnel", "wire_sr")
 
     def __init__(self, plan_path, backend, log=print, checkpoints=None, require_final=True, record=False, stop_after=None,
-                 from_step=None, binding=None, name_gate=False):
+                 from_step=None, binding=None, name_gate=False, partial_reads=False):
+        # card chat-S4 B: partial_reads=True -> a checkpoint whose step created only op-returned objects is read per owner
+        # (backend.read_owners) and patched into the last read; reads_partial lists those k (reads_real keeps the whole ones)
+        self.partial_reads, self.reads_partial, self.partial_fallbacks = bool(partial_reads), [], []
         # card 101-4 RECORD MODE: a STEP-DIFF is logged into self.diffs and the run CONTINUES on the (unsaved) scratch;
         # any other ExecStop (binding, addressing, op error, MEMSTOP) still stops, and self.cur names the op it stopped
         # in. The caller saves nothing unless self.diffs is empty.
@@ -1965,6 +1968,64 @@ class Executor(object):
                    "loop_of": s(dict((u, v) for u, v in self.loop_of.items() if u not in getattr(self, "base_regs", {}))),
                    "sym_real": s(self.sym_real)}
         return a1, a2, detail, binding
+
+    def resume_record(self, stop_msg=""):
+        """card chat-S4 R: after an ExecStop IN op k (self.cur), the resume/1 record for from_step k-1 - the binding exactly as
+        part_a_record's (load_binding reads it), plus the actions-prefix fingerprint that lets a FIXED plan resume, the stop
+        and the reads. None when there is nothing to resume (stopped in op 1, or no op dispatched)."""
+        k = (self.cur or {}).get("k")
+        if not k or int(k) < 2:
+            return None
+        fs = int(k) - 1
+        s_act = self.ops[fs - 1]["acts"][-1]
+        s = lambda m: dict((str(a), b) for a, b in m.items())                     # noqa: E731
+        return {"schema": "resume/1", "stop_after": fs, "stop_op": int(k), "stop": str(stop_msg)[:600], "cur": self.cur,
+                "plan": self.plan_path, "plan_md5": SS.md5_file(_abs(self.plan_path)), "s_act": s_act,
+                "prefix_sha": prefix_fingerprint(self.plan, s_act),
+                "bind": dict((x, s(y)) for x, y in self.bind.items()),
+                "loop_of": s(dict((u, v) for u, v in self.loop_of.items() if u not in getattr(self, "base_regs", {}))),
+                "sym_real": s(self.sym_real), "reads": list(self.reads_real), "reads_partial": list(self.reads_partial)}
+
+    def _partial_owners(self, k, op, sim_last, after, res):
+        """card chat-S4 B: the REAL owner uids whose rows the simulated step changed since the last read (row keys, edges,
+        dangling ends), or None (-> whole read, reason in self.partial_fallbacks). Every owner the step CREATED must be
+        known without a read: exactly one new owner, bound by the op's returned uid. Owners of a class the backend cannot
+        read per owner (backend.read_owner_classes, None = all) also fall back."""
+        S0, S1 = dedupe(sim_last), dedupe(after["terminals"])
+        key = lambda r: (r["term_uid"], r["term_name"], bool(r["is_source"]), r["term_class"])   # noqa: E731
+        o0, o1, cls = collections.defaultdict(set), collections.defaultdict(set), {}
+        for r in S0:
+            o0[r["owner_uid"]].add(key(r)); cls[r["owner_uid"]] = r["owner_class"]   # noqa: E702
+        for r in S1:
+            o1[r["owner_uid"]].add(key(r)); cls[r["owner_uid"]] = r["owner_class"]   # noqa: E702
+        e0, d0 = edges(S0)
+        e1, d1 = edges(S1)
+        t2o = dict((r["term_uid"], r["owner_uid"]) for r in S0 + S1)
+        moved = set(t for e in (e0 ^ e1) for t in e) | (d0 ^ d1)
+        changed = set(u for u in set(o0) | set(o1) if o0.get(u) != o1.get(u)) | set(t2o[t] for t in moved if t in t2o)
+        new = sorted(u for u in changed if u not in o0)
+        why = None
+        ok_cls = getattr(self.be, "read_owner_classes", None)
+        bad = sorted(set(cls[u] for u in changed if ok_cls is not None and cls[u] not in ok_cls))
+        ru = (res or {}).get("uid") if isinstance(res, dict) else None
+        if op.get("route") in ("while", "for", "case", "case_wired", "fs_create", "fs_frame"):
+            why = "create route {0} makes a structure (its rows sit on a new diagram)".format(op.get("route"))
+        elif bad:
+            why = "owner class(es) {0} not readable per owner".format(bad)
+        elif len(new) > 1:
+            why = "{0} new owners {1} (only one, returned by the op, can be read per owner)".format(len(new), new[:6])
+        elif new and not (isinstance(ru, int) and not isinstance(ru, bool) and ru > 0):
+            why = "new owner #{0} but the op returned no uid ({1!r})".format(new[0], ru)
+        elif new and (new[0] in self.bind["obj"] or ru in self.bind["obj"].values()):
+            why = "new owner #{0} / returned #{1} already bound".format(new[0], ru)
+        if why:
+            self.partial_fallbacks.append({"k": k, "op": op["kind"], "why": why})
+            return None
+        real = set(self.bind["obj"].get(u, u) for u in changed if u not in new)
+        if any(u < 0 for u in real):
+            self.partial_fallbacks.append({"k": k, "op": op["kind"], "why": "unbound owner(s) {0}".format(sorted(u for u in real if u < 0)[:6])})
+            return None
+        return real | ({ru} if new else set())
 
     def sim_uid(self, st, ref):
         if isinstance(ref, int):
@@ -2203,10 +2264,19 @@ class Executor(object):
                 self.log("  STEPX {0:02d} {1:<14} acts {2} ids {3} diff skipped (not a checkpoint)".format(
                     k, op["kind"], op["acts"], rec["ids"]))
                 continue
-            real_new = be.read()
+            part = None
+            if self.partial_reads and k != last_k and callable(getattr(be, "read_owners", None)):
+                sim_last = sim_at_real if sim_at_real is not None else self.step(s_act if fs is not None else 0)["state"]["terminals"]
+                part = self._partial_owners(k, op, sim_last, after["state"], res)
+            if part is None:
+                real_new = be.read()
+                self.reads_real.append(k)
+                meter("read", k)
+            else:                                          # card chat-S4 B: per-owner read patched into the last read
+                real_new = dedupe([r for r in real if r["owner_uid"] not in part] + list(be.read_owners(sorted(part))))
+                self.reads_partial.append(k)
+                meter("read_part", k)
             stale = False
-            self.reads_real.append(k)
-            meter("read", k)
             made = {}
             if op["kind"] == "create":                     # card 100-3: a loop owns no row - bound from the op's return
                 made = self._bind_create(op, after["state"], res)
@@ -3227,11 +3297,21 @@ class SimBackend(object):
     def read(self):
         return copy.deepcopy(dedupe(self.st["terminals"]))
 
+    read_owner_classes = None                         # card chat-S4 B: the dry backend reads any owner
+
+    def read_owners(self, uids):
+        """card chat-S4 B: the per-owner read - the rows of these owner uids only (what read() would return for them)."""
+        U = set(int(u) for u in uids)
+        return copy.deepcopy([r for r in dedupe(self.st["terminals"]) if r["owner_uid"] in U])
+
     def obj_classes(self, real):
         return classes_of(real, self.st.get("objs"))
 
     def _apply(self, op, check=None):
         self.calls.append(op["kind"])
+        f0 = self.fault
+        if f0.get("kind") == "stop_pre" and f0.get("at") == op["acts"][-1]:   # card chat-S4 R: an op error BEFORE any edit
+            raise ExecStop("op error (injected, pre-mutation) at act {0}".format(f0["at"]))
         self.last_effects = []
         for n in op["acts"]:
             a = self.plan["actions"][n - 1]
@@ -3403,6 +3483,8 @@ class SimBackend(object):
         except ExecStop as e:
             return self._unroutable(op, e)
         out = self._apply(op, chk)
+        if a.get("as") and ("new:" + a["as"]) in self.st["sym"]:     # card chat-S4 B: the created uid, as LVBackend returns it
+            out.setdefault("uid", self.st["sym"]["new:" + a["as"]])
         if route == "fs_create":                                     # card 126-3: what LVBackend returns
             fs_ = self.st["sym"]["new:" + a["as"]]
             out.update(uid=fs_, frames=[self.st["sym"]["new:" + a["as"] + ".f0"]])
@@ -3665,6 +3747,236 @@ def from_step_state(plan_path, from_step, binding):
     if unb:
         raise ExecStop("FROM-STEP: step {0} holds created uid(s) the binding does not bind: {1}".format(s_act, unb[:12]))
     return st
+
+
+# ============================================================================================ card chat-S4 (user 2026-10-03)
+# "A, B는 도입하는게 좋겠고 4번의 경우 한 싸이클 내에서는 계속 이어서 작업하는게 좋겠음." ONE shared mechanism for every stage file -
+# a P4 session file or a small subVI file built and verified in its own VI (docs/d1/ring-p4b.md, user decision 2026-10-03):
+#  A  ADOPT: a scratch run on a BYTE COPY that passed every STOP gate (gateclass; LOG-class FAIL lines allowed) INCLUDING the
+#     step-end gates the recipe names (`required`, e.g. E1 / PB / PRIM / PS / IN / EL) IS the stage's result: adopt_scratch()
+#     checks the log + the saved file and appends adopt/1 to ADOPT_LOG; stage_prerun's launch gate then refuses a second run
+#     of the same stage + plan md5s on the bed (adopted_launch). A record is withdrawn only by a judgement edit ("revoked").
+#  R  RESUME within a cycle: an ExecStop at op k -> Executor.resume_record() (the binding as part_a_record at from_step k-1,
+#     the actions-prefix fingerprint) -> write_resume() with the scratch saved as-is (GUI save rule) and its md5 + the cycle.
+#     A later card IN THE SAME CYCLE calls load_resume() and runs Executor(from_step=k-1, binding=<that>) on a work copy of
+#     that file: the entry read must equal simulated step k-1 (FROM-STEP BASE). A FIXED plan is accepted when actions
+#     1..s_act and the base are unchanged (prefix_fingerprint). Another cycle, a changed file, or the bed itself -> refused.
+#  B  PARTIAL READS: Executor(partial_reads=True) replaces a checkpoint's whole-VI read with backend.read_owners(<owners
+#     the simulated step changed since the last read>) patched into the last read, when every object the step created is
+#     already bound (the op returned it); session start, the last op and every other checkpoint keep the whole read.
+#     Counted in reads_real (whole) vs reads_partial; stage_prerun X10 counts only the whole ones (x10_model_peak partial=).
+ADOPT_LOG = os.path.join(BENCH, "adopted_scratch.jsonl")
+RESUME_DIR = os.path.join(BENCH, "resume")
+GATE_LINE_RE = re.compile(r"^\s+(PASS|FAIL)\s{2}(.*)$")
+RESULT_RE = re.compile(r"^RESULT (\{.*\})\s*$")
+
+
+def adopt_stage_key(path):
+    """The stage a script belongs to: basename, lower case, `_vN` and a `_scratch<N>` suffix stripped
+    (stage_d1_ring_p4_s01_scratch.py -> stage_d1_ring_p4_s01.py)."""
+    b = os.path.basename(str(path)).lower()
+    b = re.sub(r"_scratch\d*(?=\.(?:py|json)$)", "", b)
+    return re.sub(r"_v\d+(?=\.(?:py|json)$)", "", b)
+
+
+def adopt_verdict(text, required=()):
+    """Pure: {ok, why, n_pass, stop_fails, log_fails, missing} for one scratch log segment. ok = a RESULT line exists, no
+    FAIL line that gateclass classifies STOP, no hard marker (exception / timeout / STOP at gate), and every `required`
+    label prefix has a PASS line ('E1' matches 'E1 ...', not 'E10 ...')."""
+    passes, stop_f, log_f = [], [], []
+    for ln in str(text or "").splitlines():
+        m = GATE_LINE_RE.match(ln)
+        if not m:
+            continue
+        if m.group(1) == "PASS":
+            passes.append(m.group(2).strip())
+        else:
+            (log_f if gateclass.classify_line(ln) == "log" else stop_f).append(m.group(2).strip()[:200])
+    res = []
+    for ln in str(text or "").splitlines():
+        m = RESULT_RE.match(ln.strip())
+        if m:
+            try:
+                res.append(json.loads(m.group(1)))
+            except ValueError:
+                pass
+    hard = getattr(gateclass, "HARD_MARK_RE", None)
+    hard_hit = bool(hard and hard.search(str(text or "")))
+    missing = [p for p in required if not any(x == p or x.startswith(p + " ") for x in passes)]
+    why = []
+    if not res:
+        why.append("no RESULT line")
+    if stop_f:
+        why.append("{0} STOP-class FAIL line(s): {1}".format(len(stop_f), stop_f[:3]))
+    if hard_hit:
+        why.append("hard marker in the log ({0})".format(hard.search(str(text)).group(0)[:80]))
+    if missing:
+        why.append("required step-end gate(s) without a PASS line: {0}".format(missing))
+    return {"ok": not why, "why": why, "n_pass": len(passes), "stop_fails": stop_f, "log_fails": log_f, "missing": missing}
+
+
+def _claudedev():
+    import gscript as g
+    return g.CLAUDEDEV
+
+
+def adopt_scratch(script, log_path, artefact, input_vi, input_md5, plan_md5s, required, path=None, claudedev=None,
+                  note="", now=None):
+    """A: (ok, record | reasons). The scratch run's own log segment (the last BGRUN segment) must pass adopt_verdict; the
+    artefact must be a saved file under claudeDev, not the input; the input's md5 unchanged. On ok the adopt/1 record is
+    appended to `path` (ADOPT_LOG). Nothing is copied or renamed: the recipe saved the work copy under the stage's normal
+    name (Stage(work_name=...)), so the file IS the stage file."""
+    text = open(log_path, encoding="utf-8", errors="replace").read() if os.path.exists(log_path) else ""
+    i = text.rfind("BGRUN START")
+    seg = text[i:] if i >= 0 else text
+    v = adopt_verdict(seg, required)
+    why = list(v["why"])
+    cd = os.path.normcase(os.path.abspath(claudedev or _claudedev()))
+    art = os.path.abspath(str(artefact or ""))
+    if not artefact or not os.path.isfile(art):
+        why.append("artefact {0!r} is not a file".format(artefact))
+    elif os.path.normcase(os.path.dirname(art)) != cd:
+        why.append("artefact {0} is not under claudeDev {1}".format(art, cd))
+    if artefact and os.path.normcase(art) == os.path.normcase(os.path.abspath(input_vi)):
+        why.append("artefact is the input VI itself (the bed is never the stage result)")
+    got_in = md5(input_vi) if os.path.isfile(input_vi) else "MISSING"
+    if got_in != input_md5:
+        why.append("input md5 {0} != pinned {1}".format(got_in, input_md5))
+    if why:
+        return False, why
+    def rel_(p):                                       # a path on another drive stays absolute (relpath raises)
+        try:
+            return os.path.relpath(os.path.abspath(p), ROOT)
+        except ValueError:
+            return os.path.abspath(p)
+    rec = {"schema": "adopt/1", "stage": adopt_stage_key(script), "script": rel_(script),
+           "log": rel_(log_path), "artefact": {"path": art, "md5": md5(art)},
+           "input": {"path": os.path.abspath(input_vi), "md5": input_md5}, "plan_md5s": dict(plan_md5s or {}),
+           "required": list(required), "gates": {"pass": v["n_pass"], "log_fails": len(v["log_fails"])},
+           "t": now or time.time(), "iso": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(now or time.time())), "note": note}
+    with open(path or ADOPT_LOG, "a", encoding="utf-8") as fh:
+        fh.write(json.dumps(rec) + "\n")
+    return True, rec
+
+
+def read_adoptions(path=None):
+    p = path or ADOPT_LOG
+    out = []
+    if os.path.exists(p):
+        for ln in open(p, encoding="utf-8", errors="replace"):
+            try:
+                out.append(json.loads(ln))
+            except ValueError:
+                pass
+    return out
+
+
+def adopted_launch(script, plan_md5s, path=None):
+    """A, the launch gate's question: the newest non-revoked adopt/1 record of this stage (the scratch wrapper and the stage
+    recipe share one key) for the SAME plan md5s, or None. A plan change (new md5) is a new stage run, not a second run."""
+    k, pm = adopt_stage_key(script), dict(plan_md5s or {})
+    hits = [r for r in read_adoptions(path) if r.get("stage") == k and not r.get("revoked")
+            and set((r.get("plan_md5s") or {}).values()) == set(pm.values())]
+    return max(hits, key=lambda r: r.get("t") or 0) if hits else None
+
+
+def prefix_fingerprint(plan, s_act):
+    """R: sha256 of the base graph md5 + actions 1..s_act - what must be unchanged for a FIXED plan to resume at s_act."""
+    import hashlib
+    base = ((plan.get("finalized") or {}).get("base") or plan.get("base") or {}).get("md5")
+    blob = json.dumps({"base": base, "actions": plan["actions"][:int(s_act)]}, sort_keys=True, default=str)
+    return hashlib.sha256(blob.encode("utf-8")).hexdigest()
+
+
+def plan_bed_vi(plan):
+    """The real bed VI a plan's base graph was read from (its `vi` key), or None."""
+    try:
+        return _j(_abs((plan.get("finalized") or {}).get("base", {}).get("path") or plan["base"]["path"])).get("vi")
+    except Exception:                                                              # noqa: BLE001
+        return None
+
+
+def write_resume(rec, file_path, cycle, out_path=None, plan=None):
+    """R: complete a resume_record with the scratch file saved as-is (path + md5) and the cycle, refuse the bed, write JSON.
+    Returns the path written."""
+    plan = plan or _j(_abs(rec["plan"]))
+    bed = plan_bed_vi(plan)
+    if bed and os.path.normcase(os.path.abspath(file_path)) == os.path.normcase(os.path.abspath(bed)):
+        raise ExecStop("RESUME: {0} is the plan's bed - a resume record names the saved SCRATCH, never the bed".format(file_path))
+    if not os.path.isfile(file_path):
+        raise ExecStop("RESUME: the saved scratch {0} does not exist".format(file_path))
+    r = dict(rec, file=os.path.abspath(file_path), md5=md5(file_path), cycle=cycle, written=time.strftime("%Y-%m-%d %H:%M:%S"))
+    out = out_path or os.path.join(RESUME_DIR, "resume_{0}_{1}.json".format(
+        os.path.splitext(adopt_stage_key(rec["plan"]))[0], time.strftime("%Y%m%d_%H%M%S")))
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    with open(out, "w", encoding="utf-8") as fh:
+        json.dump(r, fh, indent=1)
+    return out
+
+
+def load_resume(path, plan_path, cycle):
+    """R: the resume record -> the binding dict Executor(from_step=rec['stop_after'], binding=...) takes, after the checks:
+    same cycle (a new cycle restarts from the last accepted stage file), the saved file unchanged (md5), not the bed, and the
+    plan's actions-prefix + base fingerprint unchanged (a FIXED plan may differ only after the resume point). ExecStop else."""
+    rec = _j(_abs(path)) if isinstance(path, str) else dict(path)
+    if rec.get("schema") != "resume/1":
+        raise ExecStop("RESUME: {0} is not a resume/1 record".format(path))
+    if rec.get("cycle") != cycle:
+        raise ExecStop("RESUME: record of {0!r}, this is {1!r} - a new cycle restarts from the last accepted stage file".format(
+            rec.get("cycle"), cycle))
+    f = rec.get("file")
+    if not f or not os.path.isfile(f) or md5(f) != rec.get("md5"):
+        raise ExecStop("RESUME: the saved scratch {0} is missing or changed (md5 != {1})".format(f, rec.get("md5")))
+    plan = _j(_abs(plan_path))
+    bed = plan_bed_vi(plan)
+    if bed and os.path.normcase(os.path.abspath(f)) == os.path.normcase(os.path.abspath(bed)):
+        raise ExecStop("RESUME: the record names the bed {0} - never resume onto the real bed".format(f))
+    fp = prefix_fingerprint(plan, rec["s_act"])
+    if fp != rec.get("prefix_sha"):
+        raise ExecStop("RESUME: plan {0} changed actions 1..{1} or its base since the stop (prefix {2} != {3}) - restart from "
+                       "the last accepted stage file".format(os.path.basename(plan_path), rec["s_act"], fp[:12], str(rec.get("prefix_sha"))[:12]))
+    return dict(rec, plan_md5=SS.md5_file(_abs(plan_path)))      # the prefix is proved: load_binding's md5 pin follows the plan
+
+
+def save_for_resume(s, x, e, cycle=None):
+    """R, a recipe's ExecStop handler (before report_stop): the resume record of the stop, the scratch SAVED AS-IS (Stage.save
+    broken_ok -> the rule-6 GUI save), kept on disk (removed from the scratch list), and the record written. Returns the
+    record path or None (stopped in op 1, or the save failed). Never on the bed: Stage always works on a dated copy."""
+    rec = x.resume_record(str(e))
+    if rec is None:
+        s.fact("RESUME none: stopped in op {0} (nothing before it to keep)".format((x.cur or {}).get("k")))
+        return None
+    m = s.save(broken_ok=True)
+    if not m:
+        s.fact("RESUME not written: the scratch could not be saved")
+        return None
+    if s.work in s.scratches:
+        s.scratches.remove(s.work)
+    if cycle is None:
+        import stage_prerun as SPR
+        cycle = SPR.cycle_key()
+    p = write_resume(rec, s.work, cycle)
+    s.R["resume"] = {"record": p, "from_step": rec["stop_after"], "file": s.work, "md5": m}
+    s.fact("RESUME record {0}: from_step {1} (stop in op {2}), file {3} md5 {4}, {5}".format(
+        p, rec["stop_after"], rec["stop_op"], os.path.basename(s.work), m, cycle))
+    return p
+
+
+def adopt_cli(argv):
+    """`py tools/stagexec.py adopt --script S --log L --artefact VI --input VI --input-md5 M --required E1,PB,PS [--plan P ...]`
+    - offline, run after the scratch run's BGRUN END (its RESULT line is written at process exit)."""
+    def opt(n, d=None):
+        return argv[argv.index(n) + 1] if n in argv else d
+    plans = [argv[i + 1] for i, a in enumerate(argv) if a == "--plan"]
+    pm = dict((os.path.relpath(os.path.abspath(p), ROOT).replace("\\", "/"), md5(p)) for p in plans)
+    if not pm:
+        import stage_prerun as SPR
+        pm = SPR.plan_md5s(os.path.abspath(opt("--script")))
+    ok, r = adopt_scratch(opt("--script"), opt("--log"), opt("--artefact"), opt("--input"), opt("--input-md5"), pm,
+                          [x for x in (opt("--required") or "").split(",") if x], note=opt("--note", ""))
+    print(json.dumps(r, indent=1, default=str))
+    print(protocol.result_line(protocol.make_result(int(ok), int(not ok), None if ok else "; ".join(r)[:200])))
+    return 0 if ok else 1
 
 
 # ============================================================================================ recipe helpers (card 106-3)
@@ -5359,6 +5671,8 @@ def _selftest_c128_5(gate):
 def main(argv):
     if len(argv) >= 2 and argv[1] == "selftest":
         return selftest()
+    if len(argv) >= 2 and argv[1] == "adopt":           # card chat-S4 A
+        return adopt_cli(argv)
     if len(argv) >= 3 and argv[1] in ("dry", "prerun", "run"):
         plan = os.path.abspath(argv[2])
         if argv[1] == "dry":                       # card 103-4: `dry <plan> --from-step k --binding <Part-A json>`

@@ -1,0 +1,70 @@
+BGRUN START 2026-10-03 07:57:57 limit 8.0 min: py -u tools/bench/selftest_stagexec_s4.py
+BGRUN PID 7452
+  PASS  A1 PASS log with E1/PB/PS -> ok  {'ok': True, 'why': [], 'n_pass': 3, 'stop_fails': [], 'log_fails': [], 'missing': []}
+  PASS  A2 a STOP-class FAIL -> not ok  {'ok': False, 'why': ["1 STOP-class FAIL line(s): ['PB frame-keyed cdiff == pred']"], 'n_pass': 2, 'stop_fails': ['PB frame-keyed cdiff == pred'], 'log_fails': [], 'missing': []}
+  PASS  A3 required EL without PASS -> not ok (E1 does not match E10)  {'ok': False, 'why': ["required step-end gate(s) without a PASS line: ['EL']"], 'n_pass': 3, 'stop_fails': [], 'log_fails': [], 'missing': ['EL']}
+  PASS  A4 a Traceback in the segment -> not ok  
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\selftest_stagexec_s4.py", line 50, in <module>
+    ok, rec = SX.adopt_scratch(REC.replace(".py", "_scratch.py"), lg, art, inp, SX.md5(inp), pm, ("E1", "PB"), path=alog, claudedev=cd)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagexec.py", line 3848, in adopt_scratch
+    "log": os.path.relpath(os.path.abspath(log_path), ROOT), "artefact": {"path": art, "md5": md5(art)},
+  File "C:\Users\KimLab\AppData\Local\Programs\Python\Python310\lib\ntpath.py", line 744, in relpath
+    raise ValueError("path is on mount %r, start on mount %r" % (
+ValueError: path is on mount 'C:', start on mount 'G:'
+BGRUN END rc=1 after 1s (NO RESULT LINE)
+BGRUN START 2026-10-03 07:58:13 limit 8.0 min: py -u tools/bench/selftest_stagexec_s4.py
+BGRUN PID 5532
+  PASS  A1 PASS log with E1/PB/PS -> ok  {'ok': True, 'why': [], 'n_pass': 3, 'stop_fails': [], 'log_fails': [], 'missing': []}
+  PASS  A2 a STOP-class FAIL -> not ok  {'ok': False, 'why': ["1 STOP-class FAIL line(s): ['PB frame-keyed cdiff == pred']"], 'n_pass': 2, 'stop_fails': ['PB frame-keyed cdiff == pred'], 'log_fails': [], 'missing': []}
+  PASS  A3 required EL without PASS -> not ok (E1 does not match E10)  {'ok': False, 'why': ["required step-end gate(s) without a PASS line: ['EL']"], 'n_pass': 3, 'stop_fails': [], 'log_fails': [], 'missing': ['EL']}
+  PASS  A4 a Traceback in the segment -> not ok  
+  PASS  A5 adopt_scratch writes adopt/1 under the stage key  {'schema': 'adopt/1', 'stage': 'stage_d1_ring_p4_s01.py', 'script': 'tools\\recipes\\stage_d1_ring_p4_s01_scratch.py', 'log': 'C:\\Users\\KimLab\\AppData\\Local\\Temp\\s4_vt9jp_rz\\scr.log', 'artefact': {'path': 'C:\\Users\\KimLab\\AppData\\Local\\Temp\\s4_vt9jp_rz\\claudeDev\\D1_x_s01_1.vi', 'md5':
+  PASS  A5b adopted_launch: stage recipe + scratch wrapper found; other md5s / revoked not  {'tools/bench/plan_ring_p4_s01.json': 'f4831031c738c997391b5bcace19d9f0'}
+  PASS  A6 refused: the input VI as artefact; a file outside claudeDev  (['artefact is the input VI itself (the bed is never the stage result)'], ['artefact C:\\Users\\KimLab\\AppData\\Local\\Temp\\s4_vt9jp_rz\\scr.log is not under claudeDev c:\\users\\kimlab\\appdata\\local\\temp\\s4_vt9jp_rz\\claudedev'])
+  FAIL  A7 check_launch refuses the stage recipe after the adoption (no second run on the bed)  
+  PASS  A5c a revoked record is not an adoption  
+  PASS  R1a op error before mutation in op 25 -> resume_record from_step 24  op error (injected, pre-mutation) at act 25
+  PASS  R1 resume from_step 24: entry diff 0, ops 25..47 only, last op reached  0
+  PASS  R2 op 25 already mutated -> resume refused at entry (FROM-STEP BASE)  FROM-STEP BASE: the Part-A file's graph differs from simulated step 24 (fail): {"only_real_terms": [10000021], "only_sim_edges": [[57298, 57287]], "only_real_ed
+  PASS  R3 another cycle refused  RESUME: record of 'cycle T', this is 'cycle U' - a new cycle restarts from the last accepted stage file
+  PASS  R4 the saved file changed refused  RESUME: the saved scratch C:\Users\KimLab\AppData\Local\Temp\s4_vt9jp_rz\scratch_saved.vi is missing or changed (md5 != 64be597902d146d4226e1fc2370a0602)
+  PASS  R5 actions 1..s_act changed refused  RESUME: plan plan_bad.json changed actions 1..24 or its base since the stop (prefix 8e297263eb62 != 2845f7b903c8) - restart from the last accepted stage file
+  PASS  R5b a FIXED plan (change after s_act) accepted, md5 pin follows the plan  
+  PASS  R6 the bed as the resume file refused (write)  RESUME: C:\Users\KimLab\AppData\Local\Temp\s4_vt9jp_rz\scratch_saved.vi is the plan's bed - a resume record names the saved SCRATCH, never the bed
+  PASS  R6b the bed as the resume file refused (load)  RESUME: the record names the bed C:\Users\KimLab\AppData\Local\Temp\s4_vt9jp_rz\scratch_saved.vi - never resume onto the real bed
+  PASS  B1 plan_disp, every op a checkpoint: partial == whole (binding, every diff 0), partial reads 38, whole 47 -> 9, fallbacks 8  {'fallbacks': [{'k': 2, 'op': 'create', 'why': 'create route while makes a structure (its rows sit on a new diagram)'}, {'k': 3, 'op': 'create', 'why': 'create route for makes a structure (its rows sit on a new diagram)'}, {'k': 31, 'op': 'tunnel', 'why': 'new owner #-32 but the op returned no uid (
+  PASS  B2 plan_ring_p4_s01, BIND + last checkpoints: partial == whole (binding, every diff 0), partial reads 3, whole 4 -> 1, fallbacks 0  {'fallbacks': []}
+  PASS  B3 X10: partial {3,4} leave R (k 0 and the last op stay whole)  (48, 46, 2)
+  FAIL  B4 extra_obj missed by the partial read is caught by a later whole read  stopped at op 31 after partial reads [28, 29, 30]
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":20,"fail":2},"first_fail":"A7 check_launch refuses the stage recipe after the adoption (no second run on the bed)","artefacts":[]}
+BGRUN END rc=1 after 107s
+BGRUN START 2026-10-03 08:04:31 limit 8.0 min: py -u tools/bench/selftest_stagexec_s4.py
+BGRUN PID 20660
+  PASS  A1 PASS log with E1/PB/PS -> ok  {'ok': True, 'why': [], 'n_pass': 3, 'stop_fails': [], 'log_fails': [], 'missing': []}
+  PASS  A2 a STOP-class FAIL -> not ok  {'ok': False, 'why': ["1 STOP-class FAIL line(s): ['PB frame-keyed cdiff == pred']"], 'n_pass': 2, 'stop_fails': ['PB frame-keyed cdiff == pred'], 'log_fails': [], 'missing': []}
+  PASS  A3 required EL without PASS -> not ok (E1 does not match E10)  {'ok': False, 'why': ["required step-end gate(s) without a PASS line: ['EL']"], 'n_pass': 3, 'stop_fails': [], 'log_fails': [], 'missing': ['EL']}
+  PASS  A4 a Traceback in the segment -> not ok  
+  PASS  A5 adopt_scratch writes adopt/1 under the stage key  {'schema': 'adopt/1', 'stage': 'stage_d1_ring_p4_s01.py', 'script': 'tools\\recipes\\stage_d1_ring_p4_s01_scratch.py', 'log': 'C:\\Users\\KimLab\\AppData\\Local\\Temp\\s4_595cgrwi\\scr.log', 'artefact': {'path': 'C:\\Users\\KimLab\\AppData\\Local\\Temp\\s4_595cgrwi\\claudeDev\\D1_x_s01_1.vi', 'md5':
+  PASS  A5b adopted_launch: stage recipe + scratch wrapper found; other md5s / revoked not  {'tools/bench/plan_ring_p4_s01.json': 'f4831031c738c997391b5bcace19d9f0'}
+  PASS  A6 refused: the input VI as artefact; a file outside claudeDev  (['artefact is the input VI itself (the bed is never the stage result)'], ['artefact C:\\Users\\KimLab\\AppData\\Local\\Temp\\s4_595cgrwi\\scr.log is not under claudeDev c:\\users\\kimlab\\appdata\\local\\temp\\s4_595cgrwi\\claudedev'])
+  PASS  A7 check_launch refuses the stage recipe after the adoption (no second run on the bed)  LAUNCH GATE (card chat-S4 A, user 2026-10-03 "A 도입"): tools/recipes/stage_d1_ring_p4_s01.py was ADOPTED from the scratch run C:\Users\KimLab\AppData\Local\Temp\s4_595cgrwi\scr.log (2026-10-03 08:04:31
+  PASS  A5c a revoked record is not an adoption  
+  PASS  R1a op error before mutation in op 25 -> resume_record from_step 24  op error (injected, pre-mutation) at act 25
+  PASS  R1 resume from_step 24: entry diff 0, ops 25..47 only, last op reached  0
+  PASS  R2 op 25 already mutated -> resume refused at entry (FROM-STEP BASE)  FROM-STEP BASE: the Part-A file's graph differs from simulated step 24 (fail): {"only_real_terms": [10000021], "only_sim_edges": [[57298, 57287]], "only_real_ed
+  PASS  R3 another cycle refused  RESUME: record of 'cycle T', this is 'cycle U' - a new cycle restarts from the last accepted stage file
+  PASS  R4 the saved file changed refused  RESUME: the saved scratch C:\Users\KimLab\AppData\Local\Temp\s4_595cgrwi\scratch_saved.vi is missing or changed (md5 != 64be597902d146d4226e1fc2370a0602)
+  PASS  R5 actions 1..s_act changed refused  RESUME: plan plan_bad.json changed actions 1..24 or its base since the stop (prefix 8e297263eb62 != 2845f7b903c8) - restart from the last accepted stage file
+  PASS  R5b a FIXED plan (change after s_act) accepted, md5 pin follows the plan  
+  PASS  R6 the bed as the resume file refused (write)  RESUME: C:\Users\KimLab\AppData\Local\Temp\s4_595cgrwi\scratch_saved.vi is the plan's bed - a resume record names the saved SCRATCH, never the bed
+  PASS  R6b the bed as the resume file refused (load)  RESUME: the record names the bed C:\Users\KimLab\AppData\Local\Temp\s4_595cgrwi\scratch_saved.vi - never resume onto the real bed
+  PASS  B1 plan_disp, every op a checkpoint: partial == whole (binding, every diff 0), partial reads 38, whole 47 -> 9, fallbacks 8  {'fallbacks': [{'k': 2, 'op': 'create', 'why': 'create route while makes a structure (its rows sit on a new diagram)'}, {'k': 3, 'op': 'create', 'why': 'create route for makes a structure (its rows sit on a new diagram)'}, {'k': 31, 'op': 'tunnel', 'why': 'new owner #-32 but the op returned no uid (
+  PASS  B2 plan_ring_p4_s01, BIND + last checkpoints: partial == whole (binding, every diff 0), partial reads 3, whole 4 -> 1, fallbacks 0  {'fallbacks': []}
+  PASS  B3 X10: partial {3,4} leave R (k 0 and the last op stay whole)  (48, 46, 2)
+  PASS  B4a control: the same construction without a fault reaches op 47 with no stop  None
+  FACT  B4 stop message: BINDING: simulated new objects {'LoopTunnel': 1} != real new objects {'Invoke': 1, 'LoopTunnel': 1} (real owners [99999998, 10000034])
+  PASS  B4 extra_obj at op 25 (a partial read) is missed there and CAUGHT at the first whole read after it (op 31)  stopped at op 31; partial reads [27, 28, 29, 30]
+  PASS  A7a the absolute (space-containing) path is not a launch unit; the relative one is  
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":24,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 115s

@@ -1959,8 +1959,10 @@ def x10_capture_executors():
         try:
             out = orig_run(self, *a, **kw)
             rr["completed"], rr["executed"] = True, rr["planned"]
+            rec["partial"] = sorted(getattr(self, "reads_partial", None) or [])   # card chat-S4 B: per-owner reads, not R
             return out
         except BaseException as e:                                                 # noqa: BLE001 - recorded, re-raised
+            rec["partial"] = sorted(getattr(self, "reads_partial", None) or [])
             cur = self.cur or {}
             rr["stopped_in"] = {"k": cur.get("k"), "op": cur.get("op"), "ids": cur.get("ids")}
             rr["executed"] = max(0, int(cur.get("k") or first) - 1 - first) if cur.get("k") else 0
@@ -2026,7 +2028,7 @@ def x10_base_provisional(plan_path):
     return bool((pl.get("base") or {}).get("provisional"))
 
 
-def x10_model_peak(kinds, checkpoints, stop_after=None, from_step=None, model=None, start_mb=None):
+def x10_model_peak(kinds, checkpoints, stop_after=None, from_step=None, model=None, start_mb=None, partial=None):
     """card 130-1 (PD267(b)): the predicted private-MB peak of ONE Executor run. N = ops dispatched (from_step+1 ..
     stop_after|end); R = whole-VI reads = {from_step|0} + the checkpoints in the window + the ops the Executor forces
     (every BIND_KINDS op and the last op, stagexec.py:1960); checkpoints None = a read after every op (R = N + 1).
@@ -2041,11 +2043,17 @@ def x10_model_peak(kinds, checkpoints, stop_after=None, from_step=None, model=No
     else:
         reads = (set([first]) | set(k for k in checkpoints if first < k <= last)
                  | set(k for k in win if kinds[k - 1] in SX.BIND_KINDS) | set([last]))
+    # card chat-S4 B (user 2026-10-03): checkpoints the Executor read PER OWNER (Executor(partial_reads=True), its dry run's
+    # reads_partial) are not whole-VI reads: R counts only the whole ones; each partial read costs part_read_mb (memory_model,
+    # 0.0 until measured). The session start (k = from_step|0) and the last op are always whole (Executor.run).
+    part = set(int(k) for k in (partial or ()) if first < int(k) < last) & reads
+    reads = reads - part
     N, R = len(win), len(reads)
     v = lambda k: float(m[k]["value"])                                             # noqa: E731
+    pv = float((m.get("part_read_mb") or {}).get("value") or 0.0)
     st = float(start_mb) if start_mb is not None else v("start_mb")              # card 133-3: measured start of the input VI
-    peak = round(st + R * v("read_mb") + N * (v("edit_mb") + v("other_mb")) + v("final_read_mb"), 1)
-    return {"N": N, "R": R, "bind": sum(1 for k in win if kinds[k - 1] in SX.BIND_KINDS), "peak_mb": peak, "start_mb": st,
+    peak = round(st + R * v("read_mb") + len(part) * pv + N * (v("edit_mb") + v("other_mb")) + v("final_read_mb"), 1)
+    return {"N": N, "R": R, "P": len(part), "bind": sum(1 for k in win if kinds[k - 1] in SX.BIND_KINDS), "peak_mb": peak, "start_mb": st,
             "fail_above_mb": v("fail_above_mb"), "ok": peak <= v("fail_above_mb"),
             "checkpoints": "every op" if checkpoints is None else sorted(reads)}
 
@@ -2432,7 +2440,8 @@ def x10_gate(recipe, executors, stop_after=None, from_step=None, model=None, tra
         sa = ex.get("stop_after") if ex.get("stop_after") is not None else stop_after
         fs = ex.get("from_step") if ex.get("from_step") is not None else from_step
         xs = x10_plan_start(ex.get("plan"), m) if ex.get("plan") else None     # card 133-3: measured load of the input VI
-        r_ = dict(x10_model_peak(ex["kinds"], ex.get("checkpoints"), sa, fs, m, start_mb=xs[0] if xs else None),
+        r_ = dict(x10_model_peak(ex["kinds"], ex.get("checkpoints"), sa, fs, m, start_mb=xs[0] if xs else None,
+                                 partial=ex.get("partial")),
                   plan=ex.get("plan"), start_source=xs[1] if xs else "model start_mb (input VI load not measured)")
         # card 138-2: + the script's source-counted whole-VI reads (around the Executor, same LabVIEW session) at read_mb
         # each. exec_peak_mb keeps the Executor-only figure (what a METER inside the run measures; selftest pins).
@@ -4215,6 +4224,20 @@ def scratch_skip_log(line):
         pass
 
 
+ADOPT_LOG = os.environ.get("ADOPT_LOG") or os.path.join(BENCH, "adopted_scratch.jsonl")   # card chat-S4 A (stagexec.ADOPT_LOG)
+
+
+def adopted_record(script, pm):
+    """card chat-S4 A: stagexec.adopted_launch over ADOPT_LOG (None when nothing is adopted or stagexec cannot load)."""
+    if not os.path.exists(ADOPT_LOG):
+        return None
+    try:
+        import stagexec as SX
+    except Exception:                                                              # noqa: BLE001
+        return None
+    return SX.adopted_launch(script, pm, path=ADOPT_LOG)
+
+
 def check_launch(cmd):
     """(allow, why). Refuses a stage-recipe launch without a dry PASS and a prerun PASS for its CURRENT sha256 and
     plan md5s, both newer than the newest failing run of it (decision 4), and past RETRY_CAP runs in this cycle
@@ -4251,6 +4274,14 @@ def _check_units(units, cmd):
                                rel(prov[0][0]), prov[0][1])
         sha, pm = sha256(s), ({rel(plan): md5(plan)} if plan else plan_md5s(s))
         what = rel(plan) if plan else rel(s)             # a plan run is pre-run BY ITS PLAN (card chat-S3)
+        ad = adopted_record(plan or s, pm)               # card chat-S4 A: an adopted scratch IS the stage result
+        if ad:
+            return False, ("LAUNCH GATE (card chat-S4 A, user 2026-10-03 \"A 도입\"): {0} was ADOPTED from the scratch run {1} "
+                           "({2}): its saved file {3} (md5 {4}) IS this stage's result for plan md5s {5}; a second run of the same "
+                           "ops on the bed is refused. To run it again a judgement session marks that line of {6} "
+                           "\"revoked\": true with the reason.\n").format(
+                               what, ad.get("log"), ad.get("iso"), (ad.get("artefact") or {}).get("path"),
+                               (ad.get("artefact") or {}).get("md5"), pm, rel(ADOPT_LOG))
         ok = {}
         named_ok, named_why = unverified_card_names(cmd)
         uv_refused, old_rule = [], []

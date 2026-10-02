@@ -1,0 +1,145 @@
+BGRUN START 2026-10-03 07:52:54 limit 40.0 min: py -u tools/bench/diag_s4_readcost.py
+BGRUN PID 6344
+BGRUN STAGE-RUN recorded diag_s4_readcost.py cycle='chat 2026-10-03' card=None pid=20520 -> stage_runs.jsonl
+diag_s4_readcost - card chat-S4 item B, the LabVIEW MEASUREMENT: what one per-BIND whole-VI read costs today (seconds and
+private MB), split into its parts, and what the nearest EXISTING per-node route costs and returns, on a never-saved byte copy of
+the P4 session-1 file (path + md5 from diag_s4_readcost_plan.json). READ-ONLY: no edit, no save, no VI run; the copy is deleted
+at close (s.discard_work) and LabVIEW is killed at exit.
+EXISTING TOOLS FOUND FIRST: the whole read = wiki_build.read_live:233 (report_all GObject census + allterms.read_terms
+OpAllTerms_v1 + join); NO op reads ONE owner's terminals by uid - the 137-3 "read_terms by owner uid" row was a WHOLE read_terms
+filtered in Python (diag_c137_3_lookup.py:50-52). The nearest per-node route is report_all('Diagram') -> gscript.node_labels(d)
+(Diagram.Nodes[] uid order, gscript.py:3639) -> gscript.node_terms_uids(d, i) (OpNodeTermsUid_v0, gscript.py:1223): name /
+is_source / wire / term uid, but NOT term_class / owner_class / frame_diagram; a Constant is not in Nodes[] (diag_c137_3_lookup.log:39-43).
+PREDICTION: whole read_live 15-30 s and ~+2 MB each (diag_chat_m1_mem.log basis); the per-node route < 3 s and ~0 MB per node; per-node
+rows equal the whole read's (term_uid, name, is_source, wire) for Nodes[] owners; tunnels / registers / Diagram-owned control
+terminals not addressable this way. Gates check only that the measurement completed; the numbers are FACTS.
+    py tools/bgrun.py --material --max-min 40 --log tools/bench/diag_s4_readcost.log -- py -u tools/bench/diag_s4_readcost.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 331 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == dc61e193e0376ce760f88fdfcda7087b  got dc61e193e0376ce760f88fdfcda7087b
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 34260
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_s4_readcost_20261003_075255.vi
+  FACT  ExecState [after open] scratch_s4_readcost_20261003_075255.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so scratch_s4_readcost_20261003_075255.vi is deleted at close
+METER start private 593.64 MB
+COST whole read_live #1                       secs  105.72  dMB 4.3  private 597.94
+COST whole read_live #2                       secs   35.60  dMB 7.38  private 605.32
+COST whole read_live #3                       secs   24.72  dMB 5.15  private 610.47
+COST part report_all GObject #1               secs    9.22  dMB 1.23  private 611.7
+COST part report_all GObject #2               secs    9.26  dMB 0.0  private 611.7
+COST part read_terms OpAllTerms_v1 #1         secs   13.22  dMB 0.03  private 611.73
+COST part read_terms OpAllTerms_v1 #2         secs   13.22  dMB 0.0  private 611.73
+COST route report_all Diagram #1              secs    0.41  dMB 0.0  private 611.73
+COST route report_all Diagram #2              secs    0.41  dMB 0.0  private 611.73
+  FACT  W the whole read returned 5937 rows (the recorded graph holds 5967)
+COST node_labels d8 (#8 Property)             secs    0.25  dMB 0.0  private 611.73
+COST node_terms_uids #8 Property              secs    0.24  dMB -0.03  private 611.7
+NODE {"owner": 8, "class": "Property", "n_whole": 6, "term_classes": ["Terminal"], "frame": 113, "addressable": "yes", "echo": 8, "n_node": 6, "equal": true, "only_node": [], "only_whole": []}
+COST node_labels d8 (#16 Function)            secs    0.23  dMB 0.0  private 611.7
+COST node_terms_uids #16 Function             secs    0.23  dMB 0.0  private 611.7
+NODE {"owner": 16, "class": "Function", "n_whole": 2, "term_classes": ["ParameterTerminal"], "frame": 113, "addressable": "yes", "echo": 16, "n_node": 2, "equal": true, "only_node": [], "only_whole": []}
+COST node_labels d33 (#22 Property)           secs    0.24  dMB 0.0  private 611.7
+COST node_terms_uids #22 Property             secs    0.24  dMB 0.0  private 611.7
+NODE {"owner": 22, "class": "Property", "n_whole": 5, "term_classes": ["Terminal"], "frame": 25392, "addressable": "yes", "echo": 22, "n_node": 5, "equal": true, "only_node": [], "only_whole": []}
+COST node_labels d16 (#37 ControlReferenceConstant) secs    0.24  dMB 0.0  private 611.7
+COST node_terms_uids #37 ControlReferenceConstant secs    0.23  dMB 0.0  private 611.7
+NODE {"owner": 37, "class": "ControlReferenceConstant", "n_whole": 1, "term_classes": ["Terminal"], "frame": 3121, "addressable": "yes", "echo": 37, "n_node": 1, "equal": true, "only_node": [], "only_whole": []}
+COST node_labels d30 (#48 SubVI)              secs    0.24  dMB 0.0  private 611.7
+COST node_terms_uids #48 SubVI                secs    0.24  dMB 0.0  private 611.7
+NODE {"owner": 48, "class": "SubVI", "n_whole": 7, "term_classes": ["Terminal"], "frame": 23058, "addressable": "yes", "echo": 48, "n_node": 7, "equal": true, "only_node": [], "only_whole": []}
+COST node_labels d65 (#50 IndexArray)         secs    0.23  dMB 0.0  private 611.7
+COST node_terms_uids #50 IndexArray           secs    0.24  dMB 0.0  private 611.73
+NODE {"owner": 50, "class": "IndexArray", "n_whole": 4, "term_classes": ["Terminal"], "frame": 32166, "addressable": "yes", "echo": 50, "n_node": 4, "equal": true, "only_node": [], "only_whole": []}
+COST node_labels d56 (#63 DigitalNumericConstant) secs    0.26  dMB 0.0  private 611.73
+NODE {"owner": 63, "class": "DigitalNumericConstant", "n_whole": 1, "term_classes": ["Terminal"], "frame": 639, "addressable": "not in Diagram[56].Nodes[] (54 nodes)"}
+COST node_labels d95 (#66 GenClassTagRefConstant) secs    0.24  dMB 0.0  private 611.73
+NODE {"owner": 66, "class": "GenClassTagRefConstant", "n_whole": 1, "term_classes": ["Terminal"], "frame": 13236, "addressable": "not in Diagram[95].Nodes[] (15 nodes)"}
+COST node_labels d16 (#72 ControlReferenceConstant) secs    0.24  dMB 0.0  private 611.73
+COST node_terms_uids #72 ControlReferenceConstant secs    0.24  dMB -0.03  private 611.7
+NODE {"owner": 72, "class": "ControlReferenceConstant", "n_whole": 1, "term_classes": ["Terminal"], "frame": 3121, "addressable": "yes", "echo": 72, "n_node": 1, "equal": true, "only_node": [], "only_whole": []}
+COST node_labels d8 (#113 Diagram)            secs    0.24  dMB 0.0  private 611.7
+NODE {"owner": 113, "class": "Diagram", "n_whole": 2, "term_classes": ["ControlTerminal"], "frame": 113, "addressable": "not in Diagram[8].Nodes[] (7 nodes)"}
+COST node_labels d0 (#123 FlatSequenceInnerTunnel) secs    0.23  dMB 0.0  private 611.73
+NODE {"owner": 123, "class": "FlatSequenceInnerTunnel", "n_whole": 4, "term_classes": ["Terminal"], "frame": 536, "addressable": "not in Diagram[0].Nodes[] (0 nodes)"}
+COST node_labels d9 (#124 Diagram)            secs    0.23  dMB 0.0  private 611.73
+NODE {"owner": 124, "class": "Diagram", "n_whole": 3, "term_classes": ["ControlTerminal"], "frame": 124, "addressable": "not in Diagram[9].Nodes[] (9 nodes)"}
+COST node_labels d19 (#194 Function)          secs    0.24  dMB 0.0  private 611.73
+COST node_terms_uids #194 Function            secs    0.23  dMB -0.03  private 611.7
+NODE {"owner": 194, "class": "Function", "n_whole": 3, "term_classes": ["OverridableParameterTerminal", "ParameterTerminal"], "frame": 686, "addressable": "yes", "echo": 194, "n_node": 3, "equal": true, "only_node": [], "only_whole": []}
+COST node_labels d56 (#270 Tunnel)            secs    0.26  dMB 0.0  private 611.7
+NODE {"owner": 270, "class": "Tunnel", "n_whole": 3, "term_classes": ["InnerTerminal", "OuterTerminal"], "frame": 639, "addressable": "not in Diagram[56].Nodes[] (54 nodes)"}
+COST node_labels d0 (#317 FlatSequenceInnerTunnel) secs    0.23  dMB 0.0  private 611.7
+NODE {"owner": 317, "class": "FlatSequenceInnerTunnel", "n_whole": 4, "term_classes": ["Terminal"], "frame": 536, "addressable": "not in Diagram[0].Nodes[] (0 nodes)"}
+COST node_labels d20 (#376 SubVI)             secs    0.23  dMB 0.0  private 611.7
+COST node_terms_uids #376 SubVI               secs    0.24  dMB 0.0  private 611.7
+NODE {"owner": 376, "class": "SubVI", "n_whole": 12, "term_classes": ["Terminal"], "frame": 23405, "addressable": "yes", "echo": 376, "n_node": 12, "equal": true, "only_node": [], "only_whole": []}
+COST node_labels d14 (#451 DigitalNumericConstant) secs    0.25  dMB 0.0  private 611.7
+NODE {"owner": 451, "class": "DigitalNumericConstant", "n_whole": 1, "term_classes": ["Terminal"], "frame": 3293, "addressable": "not in Diagram[14].Nodes[] (0 nodes)"}
+COST node_labels d19 (#580 RightShiftRegister) secs    0.25  dMB 0.0  private 611.7
+NODE {"owner": 580, "class": "RightShiftRegister", "n_whole": 2, "term_classes": ["InnerTerminal", "OuterTerminal"], "frame": 686, "addressable": "not in Diagram[19].Nodes[] (24 nodes)"}
+COST node_labels d19 (#649 LoopTunnel)        secs    0.27  dMB 0.0  private 611.7
+NODE {"owner": 649, "class": "LoopTunnel", "n_whole": 2, "term_classes": ["InnerTerminal", "OuterTerminal"], "frame": 686, "addressable": "not in Diagram[19].Nodes[] (24 nodes)"}
+COST node_labels d19 (#665 LoopTunnel)        secs    0.26  dMB 0.0  private 611.7
+NODE {"owner": 665, "class": "LoopTunnel", "n_whole": 2, "term_classes": ["InnerTerminal", "OuterTerminal"], "frame": 686, "addressable": "not in Diagram[19].Nodes[] (24 nodes)"}
+COST node_labels d19 (#781 GrowableFunction)  secs    0.26  dMB -0.01  private 611.69
+COST node_terms_uids #781 GrowableFunction    secs    0.27  dMB 1.77  private 613.46
+NODE {"owner": 781, "class": "GrowableFunction", "n_whole": 4, "term_classes": ["Terminal"], "frame": 686, "addressable": "yes", "echo": 781, "n_node": 4, "equal": true, "only_node": [], "only_whole": []}
+COST node_labels d13 (#790 InRangeAndCoerce)  secs    0.27  dMB 0.02  private 613.48
+COST node_terms_uids #790 InRangeAndCoerce    secs    0.27  dMB 0.0  private 613.48
+NODE {"owner": 790, "class": "InRangeAndCoerce", "n_whole": 5, "term_classes": ["ParameterTerminal"], "frame": 3371, "addressable": "yes", "echo": 790, "n_node": 5, "equal": true, "only_node": [], "only_whole": []}
+COST node_labels d19 (#862 RightShiftRegister) secs    0.27  dMB 0.0  private 613.48
+NODE {"owner": 862, "class": "RightShiftRegister", "n_whole": 2, "term_classes": ["InnerTerminal", "OuterTerminal"], "frame": 686, "addressable": "not in Diagram[19].Nodes[] (24 nodes)"}
+COST node_labels d56 (#1034 SelectorTunnel)   secs    0.28  dMB -0.02  private 613.46
+NODE {"owner": 1034, "class": "SelectorTunnel", "n_whole": 3, "term_classes": ["InnerTerminal", "OuterTerminal"], "frame": 639, "addressable": "not in Diagram[56].Nodes[] (54 nodes)"}
+COST node_labels d1 (#1165 Tunnel)            secs    0.26  dMB 0.0  private 613.48
+NODE {"owner": 1165, "class": "Tunnel", "n_whole": 3, "term_classes": ["InnerTerminal", "OuterTerminal"], "frame": 3628, "addressable": "not in Diagram[1].Nodes[] (8 nodes)"}
+COST node_labels d29 (#1207 BooleanConstant)  secs    0.25  dMB 0.0  private 613.48
+NODE {"owner": 1207, "class": "BooleanConstant", "n_whole": 1, "term_classes": ["Terminal"], "frame": 5592, "addressable": "not in Diagram[29].Nodes[] (1 nodes)"}
+COST node_labels d56 (#1445 SelectorTunnel)   secs    0.29  dMB 0.0  private 613.48
+NODE {"owner": 1445, "class": "SelectorTunnel", "n_whole": 3, "term_classes": ["InnerTerminal", "OuterTerminal"], "frame": 639, "addressable": "not in Diagram[56].Nodes[] (54 nodes)"}
+COST node_labels d93 (#1652 StringConstant)   secs    0.26  dMB 0.0  private 613.48
+NODE {"owner": 1652, "class": "StringConstant", "n_whole": 1, "term_classes": ["Terminal"], "frame": 1610, "addressable": "not in Diagram[93].Nodes[] (0 nodes)"}
+COST node_labels d62 (#1753 IndexArray)       secs    0.26  dMB 0.0  private 613.48
+COST node_terms_uids #1753 IndexArray         secs    0.27  dMB 0.0  private 613.48
+NODE {"owner": 1753, "class": "IndexArray", "n_whole": 4, "term_classes": ["Terminal"], "frame": 2603, "addressable": "yes", "echo": 1753, "n_node": 4, "equal": true, "only_node": [], "only_whole": []}
+COST node_labels d19 (#1755 LeftShiftRegister) secs    0.29  dMB 0.0  private 613.46
+NODE {"owner": 1755, "class": "LeftShiftRegister", "n_whole": 2, "term_classes": ["InnerTerminal", "OuterTerminal"], "frame": 686, "addressable": "not in Diagram[19].Nodes[] (24 nodes)"}
+  PASS  N every sampled owner was measured (30 owners, 18 classes)  30
+  FACT  J measurement json -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_s4_readcost.json
+
+---------- [H] HYGIENE
+  FACT  close_panel(scratch_s4_readcost_20261003_075255.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 4}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 4}
+  FACT  LabVIEW handle count AFTER the work: 46091
+  PASS  H4 scratch deleted: scratch_s4_readcost_20261003_075255.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_s4_readcost_20261003_075255.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before dc61e193e0376ce760f88fdfcda7087b / after dc61e193e0376ce760f88fdfcda7087b
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33997
+
+====================================================================================================
+=== GATES: 9 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_s4_readcost_stage.json   elapsed 354.3 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":9,"fail":0},"first_fail":null,"artefacts":[]}
+LabVIEW gone at exit: True
+GATE GONE LabVIEW gone: PASS
+BGRUN END rc=0 after 359s

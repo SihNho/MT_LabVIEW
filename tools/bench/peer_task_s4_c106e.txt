@@ -1,0 +1,7 @@
+ATTACK this claim (failed prediction in tools/bench/s3_regress_c132_1.log, run by tools/bench/s2_regress.py --only selftest_x10_c132_1.py,selftest_stage_prerun_c106e.py; it blocks card chat-S4).
+
+Observed: tools/bench/selftest_stage_prerun_c106e.py rc=1, pass 14 fail 1. The failing gate is E1 ("Part-B prerun, no meter record: exit 0, RESULT PASS, X10 PASS from the model"); its detail shows the child prerun's first failing gate is X17 "every created primitive's donor label == its declared prim (PD323(b))" with [{'action': 'r7_wait', 'why': "prim 'Wait (ms)' with no donor uid - label not checkable ..."}].
+
+Claim to attack: this is NOT a regression of the code chat-S2/S3 changed (tools/gateclass.py, stagexec.py compare/bind_new, stage_prerun X10 threshold). It is the X17 offline prim gate added by card 141-1 (tools/stage_prerun.py:2626-2779) refusing an OLD fixture plan (tools/bench/plan_disp.json via tools/recipes/stage_d1_disp.py, Part-B --from-step 33) whose create action r7_wait declares prim 'Wait (ms)' without a donor uid. The fixture predates X17; X17 behaves as designed. Consequence: the self-test's E1 expectation is stale, and the fix belongs to the test (or an explicit X17 exemption for legacy plans), not to stagexec/gateclass.
+
+Cheapest discriminating test you can name: e.g. run stage_prerun --prerun on that recipe with X17 skipped, or check git log of stage_prerun.py around card 141-1 vs the last green run of selftest_stage_prerun_c106e (chat-S2 s2_regress logs list c106e E1 red before the S2 diff: tools/bench/cards/result_chat-S2.json:64).
