@@ -1,0 +1,286 @@
+BGRUN START 2026-10-03 00:52:14 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/bench/diag_chat_m1_mem.py
+BGRUN PID 15428
+diag_chat_m1_mem - card chat-M1 (user 2026-10-03 speed option (나)): where does LabVIEW REALLY run out of memory? MEASUREMENT ONLY.
+Today's limits: X10 FAIL > 690 MB predicted, MEMSTOP 700 MB (stagexec.MEM_STOP_MB), one error-2 observation ~770 MB
+(com-driving.md:308-312). Card 136-4 reached 653.5 MB in 40 reads with no error (diag_c136_4_mem.log). Here: a dated byte copy
+claudeDev\scratch_chat_m1_mem_<ts>.vi of the P3b2b bed (md5 39511877; the bed is never opened) in a FRESH LabVIEW, warn-only meter
+(stagexec.Meter stop_mb=None: MEMSTOP DISABLED FOR THIS SCRATCH RUN ONLY), leg 1 = whole-VI checkpoint reads, leg 2 = the edit ops a
+build uses (const_row create+wire, delete_object, Remove Bad Wires) with a checkpoint read every N cycles; until the first error /
+COM failure, 2000 MB private, or the time caps. Then close the scratch and see whether memory returns. Nothing is saved.
+PRIOR ART (reused, nothing new built): skeleton + read + meter = diag_c136_4_mem.py (read_ck == stagexec LVBackend.read =
+wiki_build.read_live(work, fs_pairs)); edit verbs = stagekit.Stage.const_row (OpCreateConstOnTerm_v0, stagexec const_on_term route),
+Stage.delete_object (build_opfsinnertunnelconnect_v0.del_node), Stage.broken_wire_count(allow_mutation=True) (stagexec LVBackend.rbw);
+GDI/USER/handles/private = gscript.lv_counts; responsiveness = lv_gui.ps1 -Action ping (SendMessageTimeout, read-only); kill =
+stagexec.kill_labview_at_exit. X10 NOT APPLICABLE: a warn-only measurement whose purpose is to cross 690/700 MB (as card 136-4).
+PREDICTION (mechanics; MB curve and error point are the measurement): R1 every leg-1 read returns the same > 0 row count; R2 leg-1
+handles flat (max-min <= 100); E1 every edit cycle creates a constant (uid > 0), deletes it, and RBW removes >= 0 wires with no
+error until the stop; E2 every leg-2 checkpoint read row count == leg-2 baseline (edits are net zero); S stop reason planned
+(error2 / com / error-other / mb / time / count); X bed md5 unchanged; H5 refs opened == closed; scratch deleted; LabVIEW gone.
+    py tools/bgrun.py --material --max-min 85 --log tools/bench/diag_chat_m1_mem.log -- py -u tools/bench/diag_chat_m1_mem.py
+  FACT  X10 NOT APPLICABLE (card chat-M1): warn-only measurement, Meter stop_mb=None = MEMSTOP DISABLED for this scratch run only
+  FACT  input md5 before: 395118775a52bc90073f4449b99f899d
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 395118775a52bc90073f4449b99f899d  got 395118775a52bc90073f4449b99f899d
+  PASS  DRY graph JSON for input md5 395118775a52bc90073f4449b99f899d  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_ring_p3b2b_20261002_133824.json
+  METER load   k   0  private None MB (d -)  handles None (d -)
+  GDIUSER load   k   0  gdi None user None
+  METER read   k   1  private None MB (d -)  handles None (d -)
+  GDIUSER read   k   1  gdi None user None
+  FACT  LEG1 reads: stop 'count' after 1 read(s) in 0.0 s; err ''
+  FACT  m1 baseline BROKEN-WIRE COUNT: Wire 1994 -> <dry:g.remove_bad_wires_scripted[0]> after Remove Bad Wires = <dry:g.remove_bad_wires_scripted[0]#> bad wire(s); ExecState after <dry:g.remove_bad_wires_scripted[1]>
+  METER read   k   B  private None MB (d -)  handles None (d -)
+  GDIUSER read   k   B  gdi None user None
+  FACT  OP create_const_on_term loop[0] N[2].t7 value None -> err '' (0.0 s)
+  METER op     k   1  private None MB (d -)  handles None (d -)
+  GDIUSER op     k   1  gdi None user None
+  STUB-LIMIT  dry path stopped on stub data after g.remove_bad_wires_scripted: TypeError: expected string or bytes-like object
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stage_prerun.py", line 823, in run
+    fn(stage)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_chat_m1_mem.py", line 146, in body
+    leg2["stop"], leg2["err"] = classify(e), "cycle {0}: {1}".format(j, e[:300])
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_chat_m1_mem.py", line 76, in classify
+    return "error2" if ERR2.search(err) else ("com" if COM.search(err) else "error-other")
+TypeError: expected string or bytes-like object
+
+
+=== DRY FAIL: first_fail=STUB-LIMIT: TypeError: expected string or bytes-like object coverage 81/170 lines, first mutation g.remove_bad_wires_scripted, unverified 0, graph tools/bench/graph_ring_p3b2b_20261002_133824.json
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"STUB-LIMIT: TypeError: expected string or bytes-like object","artefacts":[]}
+BGRUN END rc=1 after 1s
+BGRUN START 2026-10-03 00:52:41 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/bench/diag_chat_m1_mem.py
+BGRUN PID 22068
+diag_chat_m1_mem - card chat-M1 (user 2026-10-03 speed option (나)): where does LabVIEW REALLY run out of memory? MEASUREMENT ONLY.
+Today's limits: X10 FAIL > 690 MB predicted, MEMSTOP 700 MB (stagexec.MEM_STOP_MB), one error-2 observation ~770 MB
+(com-driving.md:308-312). Card 136-4 reached 653.5 MB in 40 reads with no error (diag_c136_4_mem.log). Here: a dated byte copy
+claudeDev\scratch_chat_m1_mem_<ts>.vi of the P3b2b bed (md5 39511877; the bed is never opened) in a FRESH LabVIEW, warn-only meter
+(stagexec.Meter stop_mb=None: MEMSTOP DISABLED FOR THIS SCRATCH RUN ONLY), leg 1 = whole-VI checkpoint reads, leg 2 = the edit ops a
+build uses (const_row create+wire, delete_object, Remove Bad Wires) with a checkpoint read every N cycles; until the first error /
+COM failure, 2000 MB private, or the time caps. Then close the scratch and see whether memory returns. Nothing is saved.
+PRIOR ART (reused, nothing new built): skeleton + read + meter = diag_c136_4_mem.py (read_ck == stagexec LVBackend.read =
+wiki_build.read_live(work, fs_pairs)); edit verbs = stagekit.Stage.const_row (OpCreateConstOnTerm_v0, stagexec const_on_term route),
+Stage.delete_object (build_opfsinnertunnelconnect_v0.del_node), Stage.broken_wire_count(allow_mutation=True) (stagexec LVBackend.rbw);
+GDI/USER/handles/private = gscript.lv_counts; responsiveness = lv_gui.ps1 -Action ping (SendMessageTimeout, read-only); kill =
+stagexec.kill_labview_at_exit. X10 NOT APPLICABLE: a warn-only measurement whose purpose is to cross 690/700 MB (as card 136-4).
+PREDICTION (mechanics; MB curve and error point are the measurement): R1 every leg-1 read returns the same > 0 row count; R2 leg-1
+handles flat (max-min <= 100); E1 every edit cycle creates a constant (uid > 0), deletes it, and RBW removes >= 0 wires with no
+error until the stop; E2 every leg-2 checkpoint read row count == leg-2 baseline (edits are net zero); S stop reason planned
+(error2 / com / error-other / mb / time / count); X bed md5 unchanged; H5 refs opened == closed; scratch deleted; LabVIEW gone.
+    py tools/bgrun.py --material --max-min 85 --log tools/bench/diag_chat_m1_mem.log -- py -u tools/bench/diag_chat_m1_mem.py
+  FACT  X10 NOT APPLICABLE (card chat-M1): warn-only measurement, Meter stop_mb=None = MEMSTOP DISABLED for this scratch run only
+  FACT  input md5 before: 395118775a52bc90073f4449b99f899d
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 395118775a52bc90073f4449b99f899d  got 395118775a52bc90073f4449b99f899d
+  PASS  DRY graph JSON for input md5 395118775a52bc90073f4449b99f899d  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_ring_p3b2b_20261002_133824.json
+  METER load   k   0  private None MB (d -)  handles None (d -)
+  GDIUSER load   k   0  gdi None user None
+  METER read   k   1  private None MB (d -)  handles None (d -)
+  GDIUSER read   k   1  gdi None user None
+  FACT  LEG1 reads: stop 'count' after 1 read(s) in 0.0 s; err ''
+  FACT  m1 baseline BROKEN-WIRE COUNT: Wire 1994 -> <dry:g.remove_bad_wires_scripted[0]> after Remove Bad Wires = <dry:g.remove_bad_wires_scripted[0]#> bad wire(s); ExecState after <dry:g.remove_bad_wires_scripted[1]>
+  METER read   k   B  private None MB (d -)  handles None (d -)
+  GDIUSER read   k   B  gdi None user None
+  FACT  OP create_const_on_term loop[0] N[2].t7 value None -> err '' (0.0 s)
+  FACT  OP delete_object DigitalNumericConstant #<dry:build_opcreateconstonterm_v0.create_const_on_term.get()> -> err '' (0.0 s)
+  FACT  m1 e1 BROKEN-WIRE COUNT: Wire 1994 -> <dry:g.remove_bad_wires_scripted[0]> after Remove Bad Wires = <dry:g.remove_bad_wires_scripted[0]#> bad wire(s); ExecState after <dry:g.remove_bad_wires_scripted[1]>
+  METER op     k   1  private None MB (d -)  handles None (d -)
+  GDIUSER op     k   1  gdi None user None
+  METER read   k   1  private None MB (d -)  handles None (d -)
+  GDIUSER read   k   1  gdi None user None
+  FACT  LEG2 edits: stop 'count' after 1 cycle(s) in 0.1 s; base rows 5933, base RBW <dry:g.remove_bad_wires_scripted[0]#>; err ''
+  FACT  LEG2 rbw per cycle (first/last 3): [<dry:g.remove_bad_wires_scripted[0]#>, <dry:g.remove_bad_wires_scripted[0]#>]
+  METER pre    k   C  private None MB (d -)  handles None (d -)
+  GDIUSER pre    k   C  gdi None user None
+  STUB-LIMIT  dry path stopped on stub data after g.remove_bad_wires_scripted: AttributeError: 'function' object has no attribute 'discard'
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stage_prerun.py", line 823, in run
+    fn(stage)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_chat_m1_mem.py", line 179, in body
+    g._loaded.discard(s.work)
+AttributeError: 'function' object has no attribute 'discard'
+
+
+=== DRY FAIL: first_fail=STUB-LIMIT: AttributeError: 'function' object has no attribute 'discard' coverage 109/175 lines, first mutation g.remove_bad_wires_scripted, unverified 0, graph tools/bench/graph_ring_p3b2b_20261002_133824.json
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"STUB-LIMIT: AttributeError: 'function' object has no attribute 'discard'","artefacts":[]}
+BGRUN END rc=1 after 1s
+BGRUN START 2026-10-03 00:52:52 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/bench/diag_chat_m1_mem.py
+BGRUN PID 11080
+diag_chat_m1_mem - card chat-M1 (user 2026-10-03 speed option (나)): where does LabVIEW REALLY run out of memory? MEASUREMENT ONLY.
+Today's limits: X10 FAIL > 690 MB predicted, MEMSTOP 700 MB (stagexec.MEM_STOP_MB), one error-2 observation ~770 MB
+(com-driving.md:308-312). Card 136-4 reached 653.5 MB in 40 reads with no error (diag_c136_4_mem.log). Here: a dated byte copy
+claudeDev\scratch_chat_m1_mem_<ts>.vi of the P3b2b bed (md5 39511877; the bed is never opened) in a FRESH LabVIEW, warn-only meter
+(stagexec.Meter stop_mb=None: MEMSTOP DISABLED FOR THIS SCRATCH RUN ONLY), leg 1 = whole-VI checkpoint reads, leg 2 = the edit ops a
+build uses (const_row create+wire, delete_object, Remove Bad Wires) with a checkpoint read every N cycles; until the first error /
+COM failure, 2000 MB private, or the time caps. Then close the scratch and see whether memory returns. Nothing is saved.
+PRIOR ART (reused, nothing new built): skeleton + read + meter = diag_c136_4_mem.py (read_ck == stagexec LVBackend.read =
+wiki_build.read_live(work, fs_pairs)); edit verbs = stagekit.Stage.const_row (OpCreateConstOnTerm_v0, stagexec const_on_term route),
+Stage.delete_object (build_opfsinnertunnelconnect_v0.del_node), Stage.broken_wire_count(allow_mutation=True) (stagexec LVBackend.rbw);
+GDI/USER/handles/private = gscript.lv_counts; responsiveness = lv_gui.ps1 -Action ping (SendMessageTimeout, read-only); kill =
+stagexec.kill_labview_at_exit. X10 NOT APPLICABLE: a warn-only measurement whose purpose is to cross 690/700 MB (as card 136-4).
+PREDICTION (mechanics; MB curve and error point are the measurement): R1 every leg-1 read returns the same > 0 row count; R2 leg-1
+handles flat (max-min <= 100); E1 every edit cycle creates a constant (uid > 0), deletes it, and RBW removes >= 0 wires with no
+error until the stop; E2 every leg-2 checkpoint read row count == leg-2 baseline (edits are net zero); S stop reason planned
+(error2 / com / error-other / mb / time / count); X bed md5 unchanged; H5 refs opened == closed; scratch deleted; LabVIEW gone.
+    py tools/bgrun.py --material --max-min 85 --log tools/bench/diag_chat_m1_mem.log -- py -u tools/bench/diag_chat_m1_mem.py
+  FACT  X10 NOT APPLICABLE (card chat-M1): warn-only measurement, Meter stop_mb=None = MEMSTOP DISABLED for this scratch run only
+  FACT  input md5 before: 395118775a52bc90073f4449b99f899d
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 395118775a52bc90073f4449b99f899d  got 395118775a52bc90073f4449b99f899d
+  PASS  DRY graph JSON for input md5 395118775a52bc90073f4449b99f899d  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_ring_p3b2b_20261002_133824.json
+  METER load   k   0  private None MB (d -)  handles None (d -)
+  GDIUSER load   k   0  gdi None user None
+  METER read   k   1  private None MB (d -)  handles None (d -)
+  GDIUSER read   k   1  gdi None user None
+  FACT  LEG1 reads: stop 'count' after 1 read(s) in 0.0 s; err ''
+  FACT  m1 baseline BROKEN-WIRE COUNT: Wire 1994 -> <dry:g.remove_bad_wires_scripted[0]> after Remove Bad Wires = <dry:g.remove_bad_wires_scripted[0]#> bad wire(s); ExecState after <dry:g.remove_bad_wires_scripted[1]>
+  METER read   k   B  private None MB (d -)  handles None (d -)
+  GDIUSER read   k   B  gdi None user None
+  FACT  OP create_const_on_term loop[0] N[2].t7 value None -> err '' (0.0 s)
+  FACT  OP delete_object DigitalNumericConstant #<dry:build_opcreateconstonterm_v0.create_const_on_term.get()> -> err '' (0.0 s)
+  FACT  m1 e1 BROKEN-WIRE COUNT: Wire 1994 -> <dry:g.remove_bad_wires_scripted[0]> after Remove Bad Wires = <dry:g.remove_bad_wires_scripted[0]#> bad wire(s); ExecState after <dry:g.remove_bad_wires_scripted[1]>
+  METER op     k   1  private None MB (d -)  handles None (d -)
+  GDIUSER op     k   1  gdi None user None
+  METER read   k   1  private None MB (d -)  handles None (d -)
+  GDIUSER read   k   1  gdi None user None
+  FACT  LEG2 edits: stop 'count' after 1 cycle(s) in 0.1 s; base rows 5933, base RBW <dry:g.remove_bad_wires_scripted[0]#>; err ''
+  FACT  LEG2 rbw per cycle (first/last 3): [<dry:g.remove_bad_wires_scripted[0]#>, <dry:g.remove_bad_wires_scripted[0]#>]
+  METER pre    k   C  private None MB (d -)  handles None (d -)
+  GDIUSER pre    k   C  gdi None user None
+  METER close  k   C  private None MB (d -)  handles None (d -)
+  GDIUSER close  k   C  gdi None user None
+  FACT  CLOSE scratch: private None -> None MB, handles None -> None, gdi None -> None, user None -> None
+  FACT  PEAK private None MB; first None MB
+  FACT  METER ROWS [["load", 0, null, null, null, null], ["read", 1, null, null, null, null], ["read", "B", null, null, null, null], ["op", 1, null, null, null, null], ["read", 1, null, null, null, null], ["pre", "C", null, null, null, null], ["close", "C", null, null, null, null]]
+  FACT  METER SUMMARY {"n": 7, "first_mb": null, "peak_mb": null, "last": {"tag": "close", "k": "C", "t": 1790956373.9, "mb": null, "handles": null, "d_mb": null, "d_h": null, "gdi": null, "user": null}, "sum_d_mb_op": 0, "sum_d_mb_read": 0, "mean_d_mb_op": null, "mean_d_mb_read": null, "warned_at": null}
+  PASS  R1 leg-1 1 read(s), each > 0 rows, row count constant [5933]  [5933]
+  PASS  R2 leg-1 handles flat across reads 2.. (max - min None <= 100)
+  PASS  E1 the first edit cycle created constant #<dry:build_opcreateconstonterm_v0.create_const_on_term.get()>, deleted it as DigitalNumericConstant, RBW removed <dry:g.remove_bad_wires_scripted[0]#>  {'uid': <dry:build_opcreateconstonterm_v0.create_const_on_term.get()>, 'cls': 'DigitalNumericConstant', 'rbw': <dry:g.remove_bad_wires_scripted[0]#>}
+  PASS  E2 leg-2 checkpoint row counts == baseline 5933: [5933]  [5933]
+  PASS  S stop reasons planned: leg1 'count', leg2 'count'
+  PASS  X input md5 unchanged  395118775a52bc90073f4449b99f899d
+
+=== DRY PASS: first_fail=None coverage 136/175 lines, first mutation g.remove_bad_wires_scripted, unverified 0, graph tools/bench/graph_ring_p3b2b_20261002_133824.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s
+BGRUN START 2026-10-03 00:54:04 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/bench/diag_chat_m1_mem.py
+BGRUN PID 26448
+diag_chat_m1_mem - card chat-M1 (user 2026-10-03 speed option (나)): where does LabVIEW REALLY run out of memory? MEASUREMENT ONLY.
+Today's limits: X10 FAIL > 690 MB predicted, MEMSTOP 700 MB (stagexec.MEM_STOP_MB), one error-2 observation ~770 MB
+(com-driving.md:308-312). Card 136-4 reached 653.5 MB in 40 reads with no error (diag_c136_4_mem.log). Here: a dated byte copy
+claudeDev\scratch_chat_m1_mem_<ts>.vi of the P3b2b bed (md5 39511877; the bed is never opened) in a FRESH LabVIEW, warn-only meter
+(stagexec.Meter stop_mb=None: MEMSTOP DISABLED FOR THIS SCRATCH RUN ONLY), leg 1 = whole-VI checkpoint reads, leg 2 = the edit ops a
+build uses (const_row create+wire, delete_object, Remove Bad Wires) with a checkpoint read every N cycles; until the first error /
+COM failure, 2000 MB private, or the time caps. Then close the scratch and see whether memory returns. Nothing is saved.
+PRIOR ART (reused, nothing new built): skeleton + read + meter = diag_c136_4_mem.py (read_ck == stagexec LVBackend.read =
+wiki_build.read_live(work, fs_pairs)); edit verbs = stagekit.Stage.const_row (OpCreateConstOnTerm_v0, stagexec const_on_term route),
+Stage.delete_object (build_opfsinnertunnelconnect_v0.del_node), Stage.broken_wire_count(allow_mutation=True) (stagexec LVBackend.rbw);
+GDI/USER/handles/private = gscript.lv_counts; responsiveness = lv_gui.ps1 -Action ping (SendMessageTimeout, read-only); kill =
+stagexec.kill_labview_at_exit. X10 NOT APPLICABLE: a warn-only measurement whose purpose is to cross 690/700 MB (as card 136-4).
+PREDICTION (mechanics; MB curve and error point are the measurement): R1 every leg-1 read returns the same > 0 row count; R2 leg-1
+handles flat (max-min <= 100); E1 every edit cycle creates a constant (uid > 0), deletes it, and RBW removes >= 0 wires with no
+error until the stop; E2 every leg-2 checkpoint read row count == leg-2 baseline (edits are net zero); S stop reason planned
+(error2 / com / error-other / mb / time / count); X bed md5 unchanged; H5 refs opened == closed; scratch deleted; LabVIEW gone.
+    py tools/bgrun.py --material --max-min 85 --log tools/bench/diag_chat_m1_mem.log -- py -u tools/bench/diag_chat_m1_mem.py
+  FACT  X10 NOT APPLICABLE (card chat-M1): warn-only measurement, Meter stop_mb=None = MEMSTOP DISABLED for this scratch run only
+  FACT  input md5 before: 395118775a52bc90073f4449b99f899d
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 395118775a52bc90073f4449b99f899d  got 395118775a52bc90073f4449b99f899d
+  PASS  DRY graph JSON for input md5 395118775a52bc90073f4449b99f899d  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_ring_p3b2b_20261002_133824.json
+  METER load   k   0  private None MB (d -)  handles None (d -)
+  GDIUSER load   k   0  gdi None user None
+  METER read   k   1  private None MB (d -)  handles None (d -)
+  GDIUSER read   k   1  gdi None user None
+  FACT  LEG1 reads: stop 'count' after 1 read(s) in 0.0 s; err ''
+  FACT  m1 baseline BROKEN-WIRE COUNT: Wire 1994 -> <dry:g.remove_bad_wires_scripted[0]> after Remove Bad Wires = <dry:g.remove_bad_wires_scripted[0]#> bad wire(s); ExecState after <dry:g.remove_bad_wires_scripted[1]>
+  METER read   k   B  private None MB (d -)  handles None (d -)
+  GDIUSER read   k   B  gdi None user None
+  FACT  OP create_const_on_term loop[0] N[2].t7 value None -> err '' (0.0 s)
+  FACT  OP delete_object DigitalNumericConstant #<dry:build_opcreateconstonterm_v0.create_const_on_term.get()> -> err '' (0.0 s)
+  FACT  m1 e1 BROKEN-WIRE COUNT: Wire 1994 -> <dry:g.remove_bad_wires_scripted[0]> after Remove Bad Wires = <dry:g.remove_bad_wires_scripted[0]#> bad wire(s); ExecState after <dry:g.remove_bad_wires_scripted[1]>
+  METER op     k   1  private None MB (d -)  handles None (d -)
+  GDIUSER op     k   1  gdi None user None
+  METER read   k   1  private None MB (d -)  handles None (d -)
+  GDIUSER read   k   1  gdi None user None
+  FACT  LEG2 edits: stop 'count' after 1 cycle(s) in 0.1 s; base rows 5933, base RBW <dry:g.remove_bad_wires_scripted[0]#>; err ''
+  FACT  LEG2 rbw per cycle (first/last 3): [<dry:g.remove_bad_wires_scripted[0]#>, <dry:g.remove_bad_wires_scripted[0]#>]
+  METER pre    k   C  private None MB (d -)  handles None (d -)
+  GDIUSER pre    k   C  gdi None user None
+  METER close  k   C  private None MB (d -)  handles None (d -)
+  GDIUSER close  k   C  gdi None user None
+  FACT  CLOSE scratch: private None -> None MB, handles None -> None, gdi None -> None, user None -> None
+  FACT  PEAK private None MB; first None MB
+  FACT  METER ROWS [["load", 0, null, null, null, null], ["read", 1, null, null, null, null], ["read", "B", null, null, null, null], ["op", 1, null, null, null, null], ["read", 1, null, null, null, null], ["pre", "C", null, null, null, null], ["close", "C", null, null, null, null]]
+  FACT  METER SUMMARY {"n": 7, "first_mb": null, "peak_mb": null, "last": {"tag": "close", "k": "C", "t": 1790956446.2, "mb": null, "handles": null, "d_mb": null, "d_h": null, "gdi": null, "user": null}, "sum_d_mb_op": 0, "sum_d_mb_read": 0, "mean_d_mb_op": null, "mean_d_mb_read": null, "warned_at": null}
+  PASS  R1 leg-1 1 read(s), each > 0 rows, row count constant [5933]  [5933]
+  PASS  R2 leg-1 handles flat across reads 2.. (max - min None <= 100)
+  PASS  E1 the first edit cycle created constant #<dry:build_opcreateconstonterm_v0.create_const_on_term.get()>, deleted it as DigitalNumericConstant, RBW removed <dry:g.remove_bad_wires_scripted[0]#>  {'uid': <dry:build_opcreateconstonterm_v0.create_const_on_term.get()>, 'cls': 'DigitalNumericConstant', 'rbw': <dry:g.remove_bad_wires_scripted[0]#>}
+  PASS  E2 leg-2 checkpoint row counts == baseline 5933: [5933]  [5933]
+  PASS  S stop reasons planned: leg1 'count', leg2 'count'
+  PASS  X input md5 unchanged  395118775a52bc90073f4449b99f899d
+
+=== DRY PASS: first_fail=None coverage 136/175 lines, first mutation g.remove_bad_wires_scripted, unverified 0, graph tools/bench/graph_ring_p3b2b_20261002_133824.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s
+BGRUN START 2026-10-03 00:59:56 limit 6.0 min: py -u tools/stage_prerun.py --dry tools/bench/diag_chat_m1_mem.py
+BGRUN PID 11232
+diag_chat_m1_mem - card chat-M1 (user 2026-10-03 speed option (나)): where does LabVIEW REALLY run out of memory? MEASUREMENT ONLY.
+Today's limits: X10 FAIL > 690 MB predicted, MEMSTOP 700 MB (stagexec.MEM_STOP_MB), one error-2 observation ~770 MB
+(com-driving.md:308-312). Card 136-4 reached 653.5 MB in 40 reads with no error (diag_c136_4_mem.log). Here: a dated byte copy
+claudeDev\scratch_chat_m1_mem_<ts>.vi of the P3b2b bed (md5 39511877; the bed is never opened) in a FRESH LabVIEW, warn-only meter
+(stagexec.Meter stop_mb=None: MEMSTOP DISABLED FOR THIS SCRATCH RUN ONLY), leg 1 = whole-VI checkpoint reads, leg 2 = the edit ops a
+build uses (const_row create+wire, delete_object, Remove Bad Wires) with a checkpoint read every N cycles; until the first error /
+COM failure, 2000 MB private, or the time caps. Then close the scratch and see whether memory returns. Nothing is saved.
+PRIOR ART (reused, nothing new built): skeleton + read + meter = diag_c136_4_mem.py (read_ck == stagexec LVBackend.read =
+wiki_build.read_live(work, fs_pairs)); edit verbs = stagekit.Stage.const_row (OpCreateConstOnTerm_v0, stagexec const_on_term route),
+Stage.delete_object (build_opfsinnertunnelconnect_v0.del_node), Stage.broken_wire_count(allow_mutation=True) (stagexec LVBackend.rbw);
+GDI/USER/handles/private = gscript.lv_counts; responsiveness = lv_gui.ps1 -Action ping (SendMessageTimeout, read-only); kill =
+stagexec.kill_labview_at_exit. X10 NOT APPLICABLE: a warn-only measurement whose purpose is to cross 690/700 MB (as card 136-4).
+PREDICTION (mechanics; MB curve and error point are the measurement): R1 every leg-1 read returns the same > 0 row count; R2 leg-1
+handles flat (max-min <= 100); E1 every edit cycle creates a constant (uid > 0), deletes it, and RBW removes >= 0 wires with no
+error until the stop; E2 every leg-2 checkpoint read row count == leg-2 baseline (edits are net zero); S stop reason planned
+(error2 / com / error-other / mb / time / count); X bed md5 unchanged; H5 refs opened == closed; scratch deleted; LabVIEW gone.
+    py tools/bgrun.py --material --max-min 85 --log tools/bench/diag_chat_m1_mem.log -- py -u tools/bench/diag_chat_m1_mem.py
+  FACT  X10 NOT APPLICABLE (card chat-M1): warn-only measurement, Meter stop_mb=None = MEMSTOP DISABLED for this scratch run only
+  FACT  input md5 before: 395118775a52bc90073f4449b99f899d
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 395118775a52bc90073f4449b99f899d  got 395118775a52bc90073f4449b99f899d
+  PASS  DRY graph JSON for input md5 395118775a52bc90073f4449b99f899d  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_ring_p3b2b_20261002_133824.json
+  METER load   k   0  private None MB (d -)  handles None (d -)
+  GDIUSER load   k   0  gdi None user None
+  METER read   k   1  private None MB (d -)  handles None (d -)
+  GDIUSER read   k   1  gdi None user None
+  FACT  LEG1 reads: stop 'count' after 1 read(s) in 0.0 s; err ''
+  FACT  m1 baseline BROKEN-WIRE COUNT: Wire 1994 -> <dry:g.remove_bad_wires_scripted[0]> after Remove Bad Wires = <dry:g.remove_bad_wires_scripted[0]#> bad wire(s); ExecState after <dry:g.remove_bad_wires_scripted[1]>
+  METER read   k   B  private None MB (d -)  handles None (d -)
+  GDIUSER read   k   B  gdi None user None
+  FACT  OP create_const_on_term loop[0] N[2].t7 value None -> err '' (0.0 s)
+  FACT  OP delete_object DigitalNumericConstant #<dry:build_opcreateconstonterm_v0.create_const_on_term.get()> -> err '' (0.0 s)
+  FACT  m1 e1 BROKEN-WIRE COUNT: Wire 1994 -> <dry:g.remove_bad_wires_scripted[0]> after Remove Bad Wires = <dry:g.remove_bad_wires_scripted[0]#> bad wire(s); ExecState after <dry:g.remove_bad_wires_scripted[1]>
+  METER op     k   1  private None MB (d -)  handles None (d -)
+  GDIUSER op     k   1  gdi None user None
+  METER read   k   1  private None MB (d -)  handles None (d -)
+  GDIUSER read   k   1  gdi None user None
+  FACT  LEG2 edits: stop 'count' after 1 cycle(s) in 0.1 s; base rows 5933, base RBW <dry:g.remove_bad_wires_scripted[0]#>; err ''
+  FACT  LEG2 rbw per cycle (first/last 3): [<dry:g.remove_bad_wires_scripted[0]#>, <dry:g.remove_bad_wires_scripted[0]#>]
+  METER pre    k   C  private None MB (d -)  handles None (d -)
+  GDIUSER pre    k   C  gdi None user None
+  METER close  k   C  private None MB (d -)  handles None (d -)
+  GDIUSER close  k   C  gdi None user None
+  FACT  CLOSE scratch: private None -> None MB, handles None -> None, gdi None -> None, user None -> None
+  FACT  PEAK private None MB; first None MB
+  FACT  METER ROWS [["load", 0, null, null, null, null], ["read", 1, null, null, null, null], ["read", "B", null, null, null, null], ["op", 1, null, null, null, null], ["read", 1, null, null, null, null], ["pre", "C", null, null, null, null], ["close", "C", null, null, null, null]]
+  FACT  METER SUMMARY {"n": 7, "first_mb": null, "peak_mb": null, "last": {"tag": "close", "k": "C", "t": 1790956797.5, "mb": null, "handles": null, "d_mb": null, "d_h": null, "gdi": null, "user": null}, "sum_d_mb_op": 0, "sum_d_mb_read": 0, "mean_d_mb_op": null, "mean_d_mb_read": null, "warned_at": null}
+  PASS  R1 leg-1 1 read(s), each > 0 rows, row count constant [5933]  [5933]
+  PASS  R2 leg-1 handles flat across reads 2.. (max - min None <= 100)
+  PASS  E1 the first edit cycle created constant #<dry:build_opcreateconstonterm_v0.create_const_on_term.get()>, deleted it as DigitalNumericConstant, RBW removed <dry:g.remove_bad_wires_scripted[0]#>  {'uid': <dry:build_opcreateconstonterm_v0.create_const_on_term.get()>, 'cls': 'DigitalNumericConstant', 'rbw': <dry:g.remove_bad_wires_scripted[0]#>}
+  PASS  E2 leg-2 checkpoint row counts == baseline 5933: [5933]  [5933]
+  PASS  S stop reasons planned: leg1 'count', leg2 'count'
+  PASS  X input md5 unchanged  395118775a52bc90073f4449b99f899d
+
+=== DRY PASS: first_fail=None coverage 137/176 lines, first mutation g.remove_bad_wires_scripted, unverified 0, graph tools/bench/graph_ring_p3b2b_20261002_133824.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

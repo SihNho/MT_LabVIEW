@@ -1,0 +1,219 @@
+BGRUN START 2026-10-03 01:00:36 limit 85.0 min: py -u tools/bench/diag_chat_m1_mem.py
+BGRUN PID 10340
+BGRUN STAGE-RUN recorded diag_chat_m1_mem.py cycle='cycle 141' card=None pid=2516 -> stage_runs.jsonl
+diag_chat_m1_mem - card chat-M1 (user 2026-10-03 speed option (나)): where does LabVIEW REALLY run out of memory? MEASUREMENT ONLY.
+Today's limits: X10 FAIL > 690 MB predicted, MEMSTOP 700 MB (stagexec.MEM_STOP_MB), one error-2 observation ~770 MB
+(com-driving.md:308-312). Card 136-4 reached 653.5 MB in 40 reads with no error (diag_c136_4_mem.log). Here: a dated byte copy
+claudeDev\scratch_chat_m1_mem_<ts>.vi of the P3b2b bed (md5 39511877; the bed is never opened) in a FRESH LabVIEW, warn-only meter
+(stagexec.Meter stop_mb=None: MEMSTOP DISABLED FOR THIS SCRATCH RUN ONLY), leg 1 = whole-VI checkpoint reads, leg 2 = the edit ops a
+build uses (const_row create+wire, delete_object, Remove Bad Wires) with a checkpoint read every N cycles; until the first error /
+COM failure, 2000 MB private, or the time caps. Then close the scratch and see whether memory returns. Nothing is saved.
+PRIOR ART (reused, nothing new built): skeleton + read + meter = diag_c136_4_mem.py (read_ck == stagexec LVBackend.read =
+wiki_build.read_live(work, fs_pairs)); edit verbs = stagekit.Stage.const_row (OpCreateConstOnTerm_v0, stagexec const_on_term route),
+Stage.delete_object (build_opfsinnertunnelconnect_v0.del_node), Stage.broken_wire_count(allow_mutation=True) (stagexec LVBackend.rbw);
+GDI/USER/handles/private = gscript.lv_counts; responsiveness = lv_gui.ps1 -Action ping (SendMessageTimeout, read-only); kill =
+stagexec.kill_labview_at_exit. X10 NOT APPLICABLE: a warn-only measurement whose purpose is to cross 690/700 MB (as card 136-4).
+PREDICTION (mechanics; MB curve and error point are the measurement): R1 every leg-1 read returns the same > 0 row count; R2 leg-1
+handles flat (max-min <= 100); E1 every edit cycle creates a constant (uid > 0), deletes it, and RBW removes >= 0 wires with no
+error until the stop; E2 every leg-2 checkpoint read row count == leg-2 baseline (edits are net zero); S stop reason planned
+(error2 / com / error-other / mb / time / count); X bed md5 unchanged; H5 refs opened == closed; scratch deleted; LabVIEW gone.
+    py tools/bgrun.py --material --max-min 85 --log tools/bench/diag_chat_m1_mem.log -- py -u tools/bench/diag_chat_m1_mem.py
+  FACT  X10 NOT APPLICABLE (card chat-M1): warn-only measurement, Meter stop_mb=None = MEMSTOP DISABLED for this scratch run only
+  FACT  input md5 before: 395118775a52bc90073f4449b99f899d
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 331 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 395118775a52bc90073f4449b99f899d  got 395118775a52bc90073f4449b99f899d
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33967
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_chat_m1_mem_20261003_010037.vi
+  FACT  ExecState [after open] scratch_chat_m1_mem_20261003_010037.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so scratch_chat_m1_mem_20261003_010037.vi is deleted at close
+  METER load   k   0  private 577.0 MB (d -)  handles 45630 (d -)
+  GDIUSER load   k   0  gdi 412 user 110
+  FACT  PING at load: ['ok 23ms  LabVIEW', 'ok 4ms  scratch_chat_m1_mem_20261003_010037.vi Front Panel', 'ok 0ms  LabVIEW']
+  METER read   k   1  private 585.2 MB (d +8.2)  handles 45725 (d +95)
+  GDIUSER read   k   1  gdi 408 user 110
+  METER read   k   2  private 585.9 MB (d +0.7)  handles 45719 (d -6)
+  GDIUSER read   k   2  gdi 408 user 110
+  METER read   k   3  private 586.6 MB (d +0.7)  handles 45718 (d -1)
+  GDIUSER read   k   3  gdi 408 user 110
+  METER read   k   4  private 587.7 MB (d +1.1)  handles 45707 (d -11)
+  GDIUSER read   k   4  gdi 408 user 110
+  METER read   k   5  private 587.7 MB (d +0.0)  handles 45707 (d +0)
+  GDIUSER read   k   5  gdi 408 user 110
+  METER read   k   6  private 589.5 MB (d +1.8)  handles 45708 (d +1)
+  GDIUSER read   k   6  gdi 408 user 110
+  METER read   k   7  private 589.4 MB (d -0.1)  handles 45707 (d -1)
+  GDIUSER read   k   7  gdi 408 user 110
+  METER read   k   8  private 589.4 MB (d +0.0)  handles 45707 (d +0)
+  GDIUSER read   k   8  gdi 408 user 110
+  METER read   k   9  private 592.1 MB (d +2.7)  handles 45708 (d +1)
+  GDIUSER read   k   9  gdi 408 user 110
+  METER read   k  10  private 592.1 MB (d +0.0)  handles 45705 (d -3)
+  GDIUSER read   k  10  gdi 408 user 110
+  METER read   k  11  private 592.1 MB (d +0.0)  handles 45706 (d +1)
+  GDIUSER read   k  11  gdi 408 user 110
+  METER read   k  12  private 592.1 MB (d +0.0)  handles 45705 (d -1)
+  GDIUSER read   k  12  gdi 408 user 110
+  METER read   k  13  private 600.0 MB (d +7.9)  handles 45706 (d +1)
+  GDIUSER read   k  13  gdi 408 user 110
+  METER read   k  14  private 604.1 MB (d +4.1)  handles 45711 (d +5)
+  GDIUSER read   k  14  gdi 408 user 111
+  METER read   k  15  private 604.0 MB (d -0.1)  handles 45707 (d -4)
+  GDIUSER read   k  15  gdi 408 user 111
+  METER read   k  16  private 605.0 MB (d +1.0)  handles 45706 (d -1)
+  GDIUSER read   k  16  gdi 408 user 112
+  METER read   k  17  private 605.1 MB (d +0.1)  handles 45706 (d +0)
+  GDIUSER read   k  17  gdi 408 user 112
+  METER read   k  18  private 605.2 MB (d +0.1)  handles 45706 (d +0)
+  GDIUSER read   k  18  gdi 408 user 112
+  METER read   k  19  private 611.2 MB (d +6.0)  handles 45702 (d -4)
+  GDIUSER read   k  19  gdi 408 user 111
+  METER read   k  20  private 615.3 MB (d +4.1)  handles 45705 (d +3)
+  GDIUSER read   k  20  gdi 408 user 111
+  METER read   k  21  private 615.3 MB (d +0.0)  handles 45705 (d +0)
+  GDIUSER read   k  21  gdi 408 user 111
+  METER read   k  22  private 619.4 MB (d +4.1)  handles 45704 (d -1)
+  GDIUSER read   k  22  gdi 408 user 111
+  METER read   k  23  private 619.5 MB (d +0.1)  handles 45705 (d +1)
+  GDIUSER read   k  23  gdi 408 user 111
+  METER read   k  24  private 619.5 MB (d +0.0)  handles 45705 (d +0)
+  GDIUSER read   k  24  gdi 408 user 111
+  METER read   k  25  private 623.6 MB (d +4.1)  handles 45704 (d -1)
+  GDIUSER read   k  25  gdi 408 user 111
+  METER read   k  26  private 623.7 MB (d +0.1)  handles 45705 (d +1)
+  GDIUSER read   k  26  gdi 408 user 111
+  METER read   k  27  private 623.9 MB (d +0.2)  handles 45706 (d +1)
+  GDIUSER read   k  27  gdi 408 user 111
+  METER read   k  28  private 628.0 MB (d +4.1)  handles 45707 (d +1)
+  GDIUSER read   k  28  gdi 408 user 111
+  METER read   k  29  private 636.9 MB (d +8.9)  handles 45702 (d -5)
+  GDIUSER read   k  29  gdi 408 user 110
+  METER read   k  30  private 641.0 MB (d +4.1)  handles 45702 (d +0)
+  GDIUSER read   k  30  gdi 408 user 110
+  METER read   k  31  private 641.1 MB (d +0.1)  handles 45703 (d +1)
+  GDIUSER read   k  31  gdi 408 user 110
+  METER read   k  32  private 641.1 MB (d +0.0)  handles 45700 (d -3)
+  GDIUSER read   k  32  gdi 408 user 110
+  METER read   k  33  private 645.4 MB (d +4.3)  handles 45701 (d +1)
+  GDIUSER read   k  33  gdi 408 user 110
+  METER read   k  34  private 645.4 MB (d +0.0)  handles 45702 (d +1)
+  GDIUSER read   k  34  gdi 408 user 110
+  METER read   k  35  private 645.5 MB (d +0.1)  handles 45703 (d +1)
+  GDIUSER read   k  35  gdi 408 user 110
+  METER read   k  36  private 649.6 MB (d +4.1)  handles 45702 (d -1)
+  GDIUSER read   k  36  gdi 408 user 110
+  METER read   k  37  private 649.6 MB (d +0.0)  handles 45702 (d +0)
+  GDIUSER read   k  37  gdi 408 user 110
+  METER read   k  38  private 649.7 MB (d +0.1)  handles 45701 (d -1)
+  GDIUSER read   k  38  gdi 408 user 110
+  METER read   k  39  private 653.7 MB (d +4.0)  handles 45700 (d -1)
+  GDIUSER read   k  39  gdi 408 user 110
+  METER read   k  40  private 653.8 MB (d +0.1)  handles 45701 (d +1)
+  GDIUSER read   k  40  gdi 408 user 110
+  METER read   k  41  private 657.9 MB (d +4.1)  handles 45702 (d +1)
+  GDIUSER read   k  41  gdi 408 user 110
+  METER read   k  42  private 658.0 MB (d +0.1)  handles 45703 (d +1)
+  GDIUSER read   k  42  gdi 408 user 110
+  METER read   k  43  private 671.3 MB (d +13.3)  handles 45702 (d -1)
+  GDIUSER read   k  43  gdi 408 user 110
+  METER read   k  44  private 675.4 MB (d +4.1)  handles 45701 (d -1)
+  GDIUSER read   k  44  gdi 408 user 110
+  METER read   k  45  private 675.5 MB (d +0.1)  handles 45700 (d -1)
+  GDIUSER read   k  45  gdi 408 user 110
+  METER read   k  46  private 675.5 MB (d +0.0)  handles 45700 (d +0)
+  GDIUSER read   k  46  gdi 408 user 110
+  METER read   k  47  private 679.6 MB (d +4.1)  handles 45703 (d +3)
+  GDIUSER read   k  47  gdi 408 user 110
+  METER read   k  48  private 679.8 MB (d +0.2)  handles 45703 (d +0)
+  GDIUSER read   k  48  gdi 408 user 110
+  METER read   k  49  private 679.9 MB (d +0.1)  handles 45703 (d +0)
+  GDIUSER read   k  49  gdi 408 user 110
+  METER read   k  50  private 683.9 MB (d +4.0)  handles 45702 (d -1)
+  GDIUSER read   k  50  gdi 408 user 110
+  METER read   k  51  private 684.0 MB (d +0.1)  handles 45700 (d -2)
+  GDIUSER read   k  51  gdi 408 user 110
+  METER read   k  52  private 688.1 MB (d +4.1)  handles 45702 (d +2)
+  GDIUSER read   k  52  gdi 408 user 110
+  METER read   k  53  private 688.1 MB (d +0.0)  handles 45702 (d +0)
+  GDIUSER read   k  53  gdi 408 user 110
+  METER read   k  54  private 688.2 MB (d +0.1)  handles 45703 (d +1)
+  GDIUSER read   k  54  gdi 408 user 110
+  METER read   k  55  private 692.3 MB (d +4.1)  handles 45702 (d -1)
+  GDIUSER read   k  55  gdi 408 user 110
+  METER read   k  56  private 692.4 MB (d +0.1)  handles 45703 (d +1)
+  GDIUSER read   k  56  gdi 408 user 110
+  METER read   k  57  private 692.4 MB (d +0.0)  handles 45700 (d -3)
+  GDIUSER read   k  57  gdi 408 user 110
+  METER read   k  58  private 696.5 MB (d +4.1)  handles 45701 (d +1)
+  GDIUSER read   k  58  gdi 408 user 110
+  METER read   k  59  private 696.5 MB (d +0.0)  handles 45702 (d +1)
+  GDIUSER read   k  59  gdi 408 user 110
+  METER read   k  60  private 696.6 MB (d +0.1)  handles 45703 (d +1)
+  GDIUSER read   k  60  gdi 408 user 110
+  METER read   k  61  private 700.7 MB (d +4.1)  handles 45702 (d -1)
+  METER WARN private bytes 700.7 MB crossed 700.0 MB at read k 61 (warn-only run)
+  GDIUSER read   k  61  gdi 408 user 110
+  METER read   k  62  private 700.7 MB (d +0.0)  handles 45703 (d +1)
+  GDIUSER read   k  62  gdi 408 user 110
+  METER read   k  63  private 704.8 MB (d +4.1)  handles 45700 (d -3)
+  GDIUSER read   k  63  gdi 408 user 110
+  FACT  read_live #64 raised RuntimeError: read_terms(scratch_chat_m1_mem_20261003_010037.vi): error 2: Invoke Node in TRef Traverse.vi->VI Scripting - Traverse.lvlib:Traverse for GObjects.vi->OpAllTerms_v1.vi | <APPEND> | Method Name: <b>Class Operator:Traverse</b> (Traverse Failed)
+  METER read   k  64  private 704.9 MB (d +0.1)  handles 45701 (d +1)
+  GDIUSER read   k  64  gdi 408 user 110
+  FACT  LEG1 reads: stop 'error2' after 64 read(s) in 1378.1 s; err 'RuntimeError: read_terms(scratch_chat_m1_mem_20261003_010037.vi): error 2: Invoke Node in TRef Traverse.vi->VI Scripting - Traverse.lvlib:Traverse for GObjects.vi->OpAllTerms_v1.vi | <APPEND> | Method'
+  FACT  PING after leg 1: ['ok 0ms  LabVIEW', 'ok 0ms  scratch_chat_m1_mem_20261003_010037.vi Front Panel', 'ok 0ms  LabVIEW']
+  FACT  LEG2 edits: stop 'skipped (leg 1 ended on an error)' after 0 cycle(s) in None s; base rows None, base RBW None; err 'None'
+  FACT  LEG2 rbw per cycle (first/last 3): []
+  FACT  PING after leg 2: ['ok 0ms  LabVIEW', 'ok 0ms  scratch_chat_m1_mem_20261003_010037.vi Front Panel', 'ok 0ms  LabVIEW']
+  METER pre    k   C  private 704.9 MB (d +0.0)  handles 45701 (d +0)
+  GDIUSER pre    k   C  gdi 408 user 110
+  METER close  k   C  private 704.9 MB (d +0.0)  handles 37359 (d -8342)
+  GDIUSER close  k   C  gdi 403 user 107
+  FACT  PING after close: ['HUNG 0ms  LabVIEW', 'HUNG 0ms  LabVIEW']
+  FACT  CLOSE scratch: private 704.9 -> 704.9 MB, handles 45701 -> 37359, gdi 408 -> 403, user 110 -> 107
+  FACT  PEAK private 704.9 MB; first 577.0 MB
+  FACT  METER ROWS [["load", 0, 577.0, 45630, 412, 110], ["read", 1, 585.2, 45725, 408, 110], ["read", 2, 585.9, 45719, 408, 110], ["read", 3, 586.6, 45718, 408, 110], ["read", 4, 587.7, 45707, 408, 110], ["read", 5, 587.7, 45707, 408, 110], ["read", 6, 589.5, 45708, 408, 110], ["read", 7, 589.4, 45707, 408, 110], ["read", 8, 589.4, 45707, 408, 110], ["read", 9, 592.1, 45708, 408, 110], ["read", 10, 592.1, 45705, 408, 110], ["read", 11, 592.1, 45706, 408, 110], ["read", 12, 592.1, 45705, 408, 110], ["read", 13, 600.0, 45706, 408, 110], ["read", 14, 604.1, 45711, 408, 111], ["read", 15, 604.0, 45707, 408, 111], ["read", 16, 605.0, 45706, 408, 112], ["read", 17, 605.1, 45706, 408, 112], ["read", 18, 605.2, 45706, 408, 112], ["read", 19, 611.2, 45702, 408, 111], ["read", 20, 615.3, 45705, 408, 111], ["read", 21, 615.3, 45705, 408, 111], ["read", 22, 619.4, 45704, 408, 111], ["read", 23, 619.5, 45705, 408, 111], ["read", 24, 619.5, 45705, 408, 111], ["read", 25, 623.6, 45704, 408, 111], ["read", 26, 623.7, 45705, 408, 111], ["read", 27, 623.9, 45706, 408, 111], ["read", 28, 628.0, 45707, 408, 111], ["read", 29, 636.9, 45702, 408, 110], ["read", 30, 641.0, 45702, 408, 110], ["read", 31, 641.1, 45703, 408, 110], ["read", 32, 641.1, 45700, 408, 110], ["read", 33, 645.4, 45701, 408, 110], ["read", 34, 645.4, 45702, 408, 110], ["read", 35, 645.5, 45703, 408, 110], ["read", 36, 649.6, 45702, 408, 110], ["read", 37, 649.6, 45702, 408, 110], ["read", 38, 649.7, 45701, 408, 110], ["read", 39, 653.7, 45700, 408, 110], ["read", 40, 653.8, 45701, 408, 110], ["read", 41, 657.9, 45702, 408, 110], ["read", 42, 658.0, 45703, 408, 110], ["read", 43, 671.3, 45702, 408, 110], ["read", 44, 675.4, 45701, 408, 110], ["read", 45, 675.5, 45700, 408, 110], ["read", 46, 675.5, 45700, 408, 110], ["read", 47, 679.6, 45703, 408, 110], ["read", 48, 679.8, 45703, 408, 110], ["read", 49, 679.9, 45703, 408, 110], ["read", 50, 683.9, 45702, 408, 110], ["read", 51, 684.0, 45700, 408, 110], ["read", 52, 688.1, 45702, 408, 110], ["read", 53, 688.1, 45702, 408, 110], ["read", 54, 688.2, 45703, 408, 110], ["read", 55, 692.3, 45702, 408, 110], ["read", 56, 692.4, 45703, 408, 110], ["read", 57, 692.4, 45700, 408, 110], ["read", 58, 696.5, 45701, 408, 110], ["read", 59, 696.5, 45702, 408, 110], ["read", 60, 696.6, 45703, 408, 110], ["read", 61, 700.7, 45702, 408, 110], ["read", 62, 700.7, 45703, 408, 110], ["read", 63, 704.8, 45700, 408, 110], ["read", 64, 704.9, 45701, 408, 110], ["pre", "C", 704.9, 45701, 408, 110], ["close", "C", 704.9, 37359, 403, 107]]
+  FACT  METER SUMMARY {"n": 67, "first_mb": 577.0, "peak_mb": 704.9, "last": {"tag": "close", "k": "C", "t": 1790958288.8, "mb": 704.9, "handles": 37359, "d_mb": 0.0, "d_h": -8342, "gdi": 403, "user": 107}, "sum_d_mb_op": 0, "sum_d_mb_read": 127.9, "mean_d_mb_op": null, "mean_d_mb_read": 2.0, "warned_at": {"tag": "read", "k": 61, "t": 1790958218.9, "mb": 700.7, "handles": 45702, "d_mb": 4.1, "d_h": -1, "gdi": 408, "user": 110}}
+  PASS  R1 leg-1 63 read(s), each > 0 rows, row count constant [5933]  [5933, 5933, 5933, 5933, 5933]
+  PASS  R2 leg-1 handles flat across reads 2.. (max - min 19 <= 100)  [45719, 45718, 45707, 45707, 45708]
+  PASS  E1 the first edit cycle created constant #None, deleted it as None, RBW removed None
+  PASS  E2 leg-2 checkpoint row counts == baseline None: []
+  PASS  S stop reasons planned: leg1 'error2', leg2 'skipped (leg 1 ended on an error)'  None
+  PASS  X input md5 unchanged  395118775a52bc90073f4449b99f899d
+
+---------- [H] HYGIENE
+  FACT  close_panel(scratch_chat_m1_mem_20261003_010037.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  close_panel(scratch_chat_m1_mem_20261003_010037.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 2}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 2}
+  FACT  LabVIEW handle count AFTER the work: 45701
+  PASS  H4 scratch deleted: scratch_chat_m1_mem_20261003_010037.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_chat_m1_mem_20261003_010037.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 395118775a52bc90073f4449b99f899d / after 395118775a52bc90073f4449b99f899d
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33992
+
+====================================================================================================
+=== GATES: 14 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_chat_m1_mem.json   elapsed 2832.2 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":14,"fail":0},"first_fail":null,"artefacts":[]}
+LabVIEW gone at exit: True
+BGRUN END rc=0 after 2837s
