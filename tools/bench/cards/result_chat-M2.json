@@ -1,0 +1,23 @@
+{"schema":"result/1","id":"chat-M2","status":"PASS","gates":{"pass":14,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+ {"path":"tools/stage_prerun.py","md5":"b3469cd621ce1bdc6de6ff8d9d2fb188"},
+ {"path":"tools/bench/selftest_x10_chat_m2.py","md5":"bdbccca3c083e75fcb592b87c8b2bed6"},
+ {"path":"tools/bench/diag_chat_m1_mem.py","md5":"b3d58c983ba27bea7f605e5c14c4bfa2"},
+ {"path":"tools/bench/diag_chat_m1_prerun.log","md5":"2b3f08d358865e24efc023ed1a4450d7"},
+ {"path":"tools/bench/diag_chat_m1_mem.log","md5":"299fd8eee42e0ca3da8ef7c273792f87"}],
+"facts":[
+ "x10_probe_release at tools/stage_prerun.py:2311 + x10_gate head; selftest_x10_chat_m2 9/0; X10 self-tests c130_1 9/0, c132_1 4/0, c132_4 6/0, c136_2 6/0, c138_2 12/0, c141_1 4/0 (*_chat_m2.log)",
+ "fp-35 DRAINED (fixed tools/stage_prerun.py:2311); probe prerun 15/0, X10 'PROBE-EXEMPT ... dry saves 0' (diag_chat_m1_prerun.log, last block); commits 4c5fbe16, 07d89e30",
+ "FIRST ERROR: LabVIEW error 2 (memory full) in Traverse for GObjects / OpAllTerms_v1 on read_live #64 at 704.8-704.9 MB private (diag_chat_m1_mem.log:170-173)",
+ "Peak 704.9 MB; load 577.0 MB, read 1 585.2; reads 2..63 = +118.9 MB / 61 = 1.95 MB/read, steps 0.0 / +4.1 / +8.9 MB (diag_chat_m1_mem.log:159-173); 64 reads in 1378 s (~21.5 s each)",
+ "MB/edit NOT measured: leg 2 skipped by script design after the leg-1 error (diag_chat_m1_mem.log:177); gate S counted error2 as a planned stop",
+ "Handles flat 45700-45725 across reads (R2 max-min 19); GDI 408, USER 110 during reads; lv_gui ping ok 0-23 ms at load / after leg 1 / after leg 2 (diag_chat_m1_mem.log:44,176,179)",
+ "Close: close_panel raised 0x47D (panel already closed); private 704.9 -> 704.9 MB, handles 45701 -> 37359, ping after close HUNG on both LabVIEW windows (diag_chat_m1_mem.log:182-185)",
+ "Bed md5 39511877 unchanged (H2), scratch deleted (H4), files left [] (H6), refs 5 == 5 (H5), pins hold (H3); LabVIEW gone at exit True, BGRUN END rc=0 2837s (diag_chat_m1_mem.log tail)",
+ "Safe ceiling 680 MB = error 704.8 minus 25 MB (~3 max +8.9 steps, ~12 reads); fail_above 690 leaves 15 MB, MEMSTOP 700 ~5 MB; memory_model/MEMSTOP unchanged (diag_chat_m1_mem.log:170)",
+ "Jev ladder: no failed gate in this card, no ladder row"],
+"open":[
+ "Lower X10 fail_above_mb / MEMSTOP toward ~680 / ~695 given error 2 at 704.8 MB (user decision via the chat)?",
+ "MB per edit cycle is still unmeasured: run leg 2 alone (edits from a fresh load, stop well below 700 MB) as a separate card?"],
+"cost":{"usd":null,"minutes":56,"labview_runs":1},
+"note":"Status PASS = all 14 run gates and card criteria 1 and 3 met; criterion 2 met except MB/edit (leg 2 skipped after error 2, by the script's own plan). No STATUS edit."}
