@@ -288,6 +288,18 @@ LabVIEW run is live; user must add one settings.json line; rec yes), -02 (does a
 count toward the 6-file cap; rec no; runner already proceeded so), -04 (supersedes -03: P4 = 159 edits; (가) cap 10,
 (나) P4 one step over several sessions (judgement rec), (다) make the current file runnable and run first; chat noted
 (다) is the one that matches the cap's purpose, at extra cost). Awaiting the user.
+**ANSWERED 2026-10-02 ~16:1x:** "벤치 결과는 보관하고 / 1.재료 에이전트는 중간에 갑자기 종료되지 않도록 장치 넣을 것 / 2.
+세지 않기 / 3.나 옵션". Recorded in decisions_pending.json (all four answered, none open) and CLAUDE.md split-and-save
+item 2. Bench: branch sonnet-bench-20261002 kept on GitHub; report copied to tools/bench/decbench/report_sonnet_cloud.md.
+D-01 device: the runner's judgement agent builds it (a guard refusing a material agent's final turn while a LabVIEW
+child it launched is alive); the settings.json registration line is then applied by the chat, or handed to the user
+if the permission layer refuses.
+**D-01 DONE 16:3x:** card chat-E1 PASS 11/0 (14 min): `tools/hooks/guard_agent_exit.py` = SubagentStop hook (docs
+code.claude.com/docs/en/hooks), refuses a material agent's stop while a bgrun run IT launched (own transcript --log
+paths, or launches.jsonl for its bound card) has START without END and a live PID; fail-open, dead-PID allow,
+4th-refusal loop breaker; log tools/bench/guard_agent_exit.log. Registered by the chat in .claude/settings.json
+(SubagentStop, matcher ^material; JSON validated; smoke rc 0 on bad input). Takes effect for sessions started after
+16:3x (next runner cycle). Uncommitted.
 **CLOUD PLAN DROPPED (user 2026-09-29 ~20:0x KST: "그럼 클라우드는 그냥 잊어버리자").** No Linux port of benches/hooks;
 benches stay local. Both probe routines were run-once and are spent. Open next: user asked whether to bring Gemini back
 for web search; chat proposed (awaiting answer) a headless-permission fix test + a 6–8 question known-answer comparison

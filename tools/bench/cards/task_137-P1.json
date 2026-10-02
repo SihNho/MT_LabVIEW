@@ -1,0 +1,56 @@
+{
+ "schema": "task/1",
+ "id": "137-P1",
+ "kind": "diagnose",
+ "goal": "Offline read-only: why stagesim stops at v3 step 102; v3 session table from measured loads; v3 unmeasured route classes; one-sided-wire diff P3b-1 vs P3b-2 (review c135e).",
+ "why": "PD301(a)(e); PD302(b)(c); disposition of archive/peer/2026-10-02-c136-3-c135e-elmismatch.md section 4.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_137.md"},
+  {"path": "tools/bench/plan_ring_p4_v3.json", "md5": "d14c1bbacb12ac30e8c58057c240786b"},
+  {"path": "tools/bench/graph_ring_p3b2b_20261002_133824.json", "md5": "50595c62d0332a94bf066538cf20c0ae"},
+  {"path": "tools/bench/graph_ring_p3b1_20261002_073225.json"},
+  {"path": "tools/bench/prep_c136_p2_p4v3.md", "md5": "0c64e55ad77d038a006f4de4cb2bc9bc"},
+  {"path": "tools/bench/prep_c136_p2_sim.log"},
+  {"path": "tools/bench/diag_c136_4_mem.log", "md5": "ee44748c9675c1365d44fb41fb1cc46f"},
+  {"path": "tools/bench/memory_model.json", "md5": "503140799e294c5da07f4f4083f824e9"},
+  {"path": "tools/bench/errorlist_expect_p3b2.py", "md5": "3a06d26c9b37033afd7a295f24bdfc1b"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p4_v3.json"},
+  {"kind": "file", "name": "tools/bench/graph_ring_p3b2b_20261002_133824.json"},
+  {"kind": "file", "name": "tools/bench/graph_ring_p3b1_20261002_073225.json"}
+ ],
+ "pass": [
+  "1 step 102: raising code path file:line, plan's address on 686, real row of t8936, which side differs (brief_137.md 137-P1 item 1); no tool edit",
+  "2 v3 session table from measured session loads + memory_model terms; totals per option of D-2026-10-02-04 (brief item 2)",
+  "3 unmeasured route classes: count, example id, which 137-1 route measures it or none + cheapest measurement (brief item 3)",
+  "4 one-sided-wire set difference P3b-1 vs P3b-2; equals {4878 + one of 3268/30592/28437} and nothing new? (brief item 4)",
+  "5 facts in tools/bench/prep_c137_p1_facts.md (<=80 lines), file:line on every claim"
+ ],
+ "outputs": [
+  "tools/bench/prep_c137_p1_facts.md",
+  "tools/bench/cards/result_137-P1.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/prep_c137_p1*",
+   "tools/bench/cards/result_137-P1*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 50},
+ "rules": [
+  "Read-only: no edit of any tools/*.py, plan or graph file (stagesim fix later, alone, PD301(e))",
+  "Facts and an OPEN line only; no P4 design decision",
+  "Grep targeted log lines; never read whole logs"
+ ],
+ "advances": ["M3", "R1"]
+}

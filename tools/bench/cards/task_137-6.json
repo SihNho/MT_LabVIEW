@@ -1,0 +1,49 @@
+{
+ "schema": "task/1",
+ "id": "137-6",
+ "kind": "build",
+ "goal": "Offline: plan_ring_p4_v7.json = v6 with decide p4_dec_reseed replaced by option 2 (PD300(b)); #10465 stays on raw #9647; replay + compile_plan.",
+ "why": "PD308(a): compile_plan(v6) stops at the decide action 158 (stagexec.py:742-743); PD300(b) already chose Select(valid, #9647 out, Local of the same flag) -> t25557.",
+ "inputs": [
+  {"path": "tools/bench/prep_c137_4_facts.md", "md5": "4cdce200e29e23796d032e34b9eab09e"},
+  {"path": "tools/bench/plan_ring_p4_v6.json", "md5": "99586b731001d2345b8def062152d5d2"},
+  {"path": "tools/bench/graph_ring_p3b2b_20261002_133824.json", "md5": "50595c62d0332a94bf066538cf20c0ae"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p4_v6.json"}
+ ],
+ "pass": [
+  "1 v7 = v6 with action 158 replaced by real actions for option 2 (plan_ring_p4_v6.json:2170-2183); each new action's route MEASURED/UNMEASURED with cite",
+  "2 #10465 keeps raw #9647 (computation unchanged); #10465's downstream sinks in the bed graph listed as facts (uid, class, loop/diagram)",
+  "3 stagesim replay of v7: last step, cdiff, first stop (expected: p4_x_n2_out, FS exit); compile_plan(v7): stop action+message or ops per step",
+  "4 step counts listed; facts in tools/bench/prep_c137_6_facts.md (<=50 lines); v7 md5 in the result"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p4_v7.json",
+  "tools/bench/prep_c137_6_facts.md",
+  "tools/bench/cards/result_137-6.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p4_v7*",
+   "tools/bench/prep_c137_6*",
+   "tools/bench/sim/ring_p4_v7/*",
+   "tools/bench/cards/result_137-6*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 30},
+ "rules": [
+  "No edit of any tools/*.py: plan file only; only the decide action changes",
+  "Return at the first unexpected result; facts and an OPEN line only; cost.minutes from the bind clock"
+ ],
+ "advances": ["M3", "R1"]
+}

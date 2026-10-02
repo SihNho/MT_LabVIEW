@@ -387,4 +387,20 @@ VERDICT {"schema":"verdict/1","id":"retrospective-cycle136","verdict":"refuted",
 
 ## What was done with it
 
-(Claude fills in)
+Cycle 137 judgement, 2026-10-02:
+- **Fault `wrong-ordering` — ACCEPTED.** Cycle 137 opened with the route rerun (137-1) and kept the deliverable chain first; it used all
+  six dispatches (137-1/3/4/5/6/7) plus three prep cards and ended with routes measured (A2, U1, U2, W1-Or, U5 PASS; U3/U6 causes
+  measured, PD309/PD311).
+- **Fault `device-failed` (X10 blind to reads) — ACCEPTED; DEVICE OWED:** X10 counts whole-VI reads from the script's SOURCE call sites
+  (not from the dry run), in cycle 138's tooling card (it edits `stage_prerun.py`, so it runs alone with the stagesim/stagexec work;
+  STATUS NEXT + `tools/bench/next.json`). Until then cards list call sites by hand (done in 137-1/5/7).
+- **F2 Stop-If-True / Mechanical Action reader — ACCEPTED, still undelivered:** card `tools/bench/cards/task_137-2.json` is written and
+  validated but was not dispatched (dispatch cap spent on the route blockers, PD309(d)); it is item (4) of cycle 138's first act.
+- **F2 wrong citation — FIXED:** PD302(b), `docs/d1/ring-p4.md:139` (pattern path is `tools/recipes/build_oploopendref_v0.py`).
+- **F3 single bed-load reading — ACCEPTED:** 137-P1's session table is given at 600.2, 576.5 and 567.7 MB (PD303(b)).
+- **F4 turn ended expecting resumption — ACCEPTED:** cycle 137 waited on every card's result file before closing. c135e disposition —
+  FIXED (PD302(c)). The two condterm review dispositions — NOT done this cycle (carry). STATUS/ring-p3b over their line caps — carry.
+- **F6 overstatements — ACCEPTED:** "memory wall refuted" means only the cumulative-growth premise; error 2 was not reached and the stops
+  are unchanged (PD301(b)). "P4 feasible in fresh sessions" is now backed by 137-P1's table (11 sessions under option 2 at 600.2/675).
+- **F7 136-P1 deferring "to 1.7 only when valid" to P5 — RATIFIED:** the 1.2 → 1.7 hand-off is built in P5 (results FIFO), so the valid gate
+  sits on its enqueue there; PD293(b) is unchanged in substance.

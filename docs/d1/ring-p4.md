@@ -131,3 +131,114 @@ How to add: see the 5-line note at the top of `docs/d1/INDEX.md`.
        (`tools/bench/build_oploopendref_v0.py:250-266`) — a tool the deliverable needs (PD298(e)).
      - **(e) stagesim step 102 (`#686 owns no terminal` while the real graph lists t8936 on 686)** is diagnosed offline next, read
        only first; a stagesim fix runs in a card with no LabVIEW card beside it.
+302. **(cycle 137 judgement, 2026-10-02 — at cycle start; cards 137-1 / 137-P1 / 137-2, brief `tools/bench/cards/brief_137.md`)**
+     USER-RULES: none apply (measurement, tooling and a review disposition; no VI design).
+     - **(a) Cards:** 137-1 (LabVIEW, scratch) = 136-3's routes rerun with the new-While-body lookup fixed (PD301(c)); 137-P1 (offline,
+       read-only) beside it; 137-2 (LabVIEW, after 137-1 returns) = the read-only stop-mode op (PD301(d)). One LabVIEW card at a time.
+     - **(b) PD301(d)'s pattern path is `tools/recipes/build_oploopendref_v0.py:250-266`** (it cited `tools/bench/`, which does not exist).
+       137-P1 also lists v3's unmeasured route classes against 137-1's routes, so the next scratch card closes ALL of them at once.
+     - **(c) Review `archive/peer/2026-10-02-c136-3-c135e-elmismatch.md` disposed:** its mechanism correction is accepted ("missing 2" =
+       loose ends 22 → 20, a real VI change — the class-level fact PD297 accepted the bed on; the bed stays, STRUCTURAL); its item-level
+       one-sided-wire test runs in 137-P1 (a difference other than {4878 + one of 3268/30592/28437} reopens the bed for judgement);
+       `errorlist_check.compare()` naming the missing classes is a tooling carry for a card with no LabVIEW card beside it.
+303. **(cycle 137 judgement, 2026-10-02 — after 137-P1 PASS 5/0, `tools/bench/prep_c137_p1_facts.md`)**
+     USER-RULES: none apply (plan addressing, session arithmetic and a structural check; no VI design).
+     - **(a) Step 102 is a PLAN fault, fixed in the plan:** v3 addresses ControlTerminal t8936 as {uid 686 (its owner diagram), term 8936};
+       `vigraph.node_of` (`tools/vigraph.py:57-60`) and the executor (`tools/stagexec.py:1493-1496`) both key a ControlTerminal by its OWN
+       uid. Simulator and executor agree, so the tools are not changed; v4 = v3 with the 5 CT ends (v3 steps 102, 104, 115, 116, 143)
+       re-addressed by own uid (card 137-P2). PD301(e)'s "stagesim fix" is not needed for this stop.
+     - **(b) Session table accepted as measurement:** at the bed load 600.2 and stop 675, option 1 = 12 sessions / option 2 = 11; build
+       unit U05 alone reaches 676.9 > 675 ⇒ U05 is re-cut before its launch (690 launch stop not used as a planning bound). Broken
+       files: option 1 → 10 total, option 2 → 6 total (exactly the cap, P5 then needs a run first). These numbers go to D-2026-10-02-04's
+       next report; the question itself is unchanged.
+     - **(c) Route coverage:** 24 unmeasured route classes / 113 actions; 137-1 covers 7 actions. The remaining 17 classes (78 of the 105
+       uncovered actions sit in 9 classes on base body `#23166`) are measured in ONE bed-byte-copy scratch run, one action per class, on
+       the lookup 137-1 fixes — written after 137-1 returns (it reuses that script), never a P4 build card before it.
+     - **(d) Review c135e §4 settled:** source-only one-sided wires P3b-1 → P3b-2 differ by {4878} only, sink-only identical, no new
+       loose-end wire. The "{4878 + one of 3268/30592/28437}" clause rested on those wires being one-sided; they are two-sided in P3b-1, so
+       the clause was a wrong premise, not a failed test. The falsifier that mattered (a NEW loose end) did not occur ⇒ the bed stays.
+       One of the two lost `Wire has loose ends` items is not traceable by `prof()` — recorded, not chased (structural only; P6 decides).
+304. **(cycle 137 judgement, 2026-10-02 — after 137-1 FAIL 3/1, `tools/bench/cards/result_137-1.json`)**
+     USER-RULES: none apply (tool verification; no VI design).
+     - **(a) Second failure on the SAME scripting function ⇒ scratch-VI verification, not a third route run** (CLAUDE.md "Scratch-VI
+       verification before a third try"): 136-3 and 137-1 both stopped at const `#29466`, created by `const_donor` in the new While body
+       `#29431`, which `node_labels` lists on NONE of the 180 Diagram indices (`diag_c137_1_routes.log:36-48`); the stale-index cause is
+       refuted. Card 137-3 measures, in a new empty VI and in a bed byte copy, which read method (node_labels per index, Diagram count,
+       read_terms by owner uid, Stage.address) finds a const and a primitive created in a new While body. No route card until it PASSes.
+     - **(b) The route rerun and the 17-class route run (PD303(c)) both wait on (a)'s result;** the stop-mode op (137-2) runs after 137-3.
+305. **(cycle 137 judgement, 2026-10-02 — after 137-P2 PASS 4/0, `tools/bench/prep_c137_p2_facts.md`)**
+     USER-RULES: none apply (plan routing; values unchanged, U1 untouched).
+     - **(a) v4 (`plan_ring_p4_v4.json` a30f7700) accepted:** the 5 CT ends now resolve; replay 1–101 unchanged, and step 102 stops on a
+       direct `connect_term_uid` across base While `#10170`'s border (`tools/stagesim.py:1366`), a class stagesim does not model. By the
+       PD298(b) precedent (explicit loop-input tunnel action on `#10170`, simulator not extended) the 3 crossings `p4_x_fd`, `p4_x_dt`,
+       `p4_x_n2_out` each get an explicit tunnel action first → v5 (card 137-P3). The tunnel route is on the scratch list (PD303(c)).
+306. **(cycle 137 judgement, 2026-10-02 — after 137-P3 FAIL 8/2, `tools/bench/prep_c137_p3_facts.md`)**
+     USER-RULES: none apply (plan routing and step size within the user's D-2026-10-01-01 bound).
+     - **(a) v5 `plan_ring_p4_v5.json` 91f6476e accepted as an intermediate:** 2 tunnels (`p4_t_fd`, `p4_t_dt`) on `#10170` + inner wires,
+       pool-crossing form (v4:1069-1095); the replay passes the old stop and reaches step 103. `p4_x_n2_out` is NOT a `#10170` crossing
+       (FS4 frame → body 23166) — left as is until the replay reaches it; PD305(a)'s "3 crossings" premise was wrong for it.
+     - **(b) The 2 RLE actions `p4_rle_x_fd` / `p4_rle_x_dt` are DROPPED (v6):** with an explicit tunnel both wires are same-diagram, the
+       PD255(b) RLE-after-crossing rule existed for `connect_term_uid`'s auto-tunnel stub (PD252(d)), and the pool form has no RLE. Whether
+       a loose end still appears is read from the tunnel-route scratch run's Error List count, not assumed.
+     - **(c) Step 3 = 41 actions is ACCEPTED** under the user's "≤ ~40" (D-2026-10-01-01, PD261(d)); a re-cut would add a broken file under
+       the 6-file cap for one action. A step above ~42 is re-cut.
+     - **(d) Next offline card:** v6 = v5 minus (b), replay to the next stop; dispatched when no LabVIEW card is live (prep budget 3/3 used).
+307. **(cycle 137 judgement, 2026-10-02 — after 137-3 PASS 5/0, `tools/bench/diag_c137_3_lookup.log`; review c137-p3-mkv5-stepcount)**
+     USER-RULES: none apply (tool behaviour and plan checking; no VI design).
+     - **(a) MEASURED (both legs, empty VI and bed copy): a `const_donor` constant in a new While body is NOT in `Diagram.Nodes[]`**
+       (`node_labels`, `Traverse Node`, hence `stagekit.address` — `stagekit.py:790,804-805`) but IS in `Traverse Constant` and in
+       `read_terms` (OpAllTerms_v1) by owner uid, which also returns its terminal uid (`diag_c137_3_lookup.log:36-45`). A primitive in the
+       same body is found by every method. ⇒ diagnostics look up body CONSTANTS by `read_terms` by owner uid (it yields the terminal
+       uid a wire needs); route rerun = card 137-5. **Tooling carry:** `stagekit.address`/`Stage.address` cannot address a constant in a
+       NEW body — before a P4 build card relies on it, an offline check names every v6 action that addresses a body constant that way.
+     - **(b) A replay is not executor acceptance:** `stagexec.compile_plan` requires a tunnel's two wires right after it
+       (`stagexec.py:676-685`); every plan-replay card from now also runs `compile_plan` (137-4 does it for v5 and v6).
+308. **(cycle 137 judgement, 2026-10-02 — after 137-4 FAIL 5/2, `tools/bench/prep_c137_4_facts.md`)**
+     USER-RULES: U1, U9 (relied on: valid frames run the original nodes unchanged; a torn frame has no effect outside 1.2; none contradicted).
+     - **(a) v6 `plan_ring_p4_v6.json` 99586b73 accepted as an intermediate:** 165 actions, steps 33/35/41/36/20, replay to 163 (cdiff 23),
+       `compile_plan` compiles 1–157 incl. both `#10170` tunnel groups. The placeholder `decide p4_dec_reseed` (v6:2170-2183) is NOT a
+       question: PD300(b) chose option 2 — Select(valid, `#9647` out, Local read of the same flag) → t25557. v7 = that (card 137-6).
+       `#10465` (the other sink of `#9647`) stays on the raw value — computation unchanged; its downstream sinks are reported as facts,
+       and if they leave loop 1.2 for saved data, PD298(d) is applied by a later judgement item, not inside the card.
+     - **(b) `p4_x_n2_out` (plan-made FS4 frame → body 23166, an FS EXIT) is the U6 route 137-5 measures;** stagesim models FS entry only
+       (`stagesim.py:1364-1365`). The simulator gets an FS-exit row MODELLED ON U6's MEASURED census (tunnel created, name, loose end),
+       in a tooling card with no LabVIEW card beside it — the next cycle's first act, after 137-5's U6 record exists.
+309. **(cycle 137 judgement, 2026-10-02 — after 137-5 FAIL 3/1, `tools/bench/diag_c137_5_routes.log`; review c137-4-mkv6-step164)**
+     USER-RULES: none apply (route measurement; no VI design).
+     - **(a) Routes MEASURED on scratch:** A2, U1 ×3, U2, W1-Or PASS; U5 (FS entry from a plan-made While's outer face) PASS after RLE with
+       the source wire re-created. **U3 FAIL** (Select.s ← `Greater?` on the Num array broken, w29730; LT.y ← KMX broken; KMX was created
+       DBL, not I32 — log:75,108-110,127-129). **U6 FAIL** (FS-frame EXIT: tunnel #29822 created, exit wire 29706 broken before and after
+       RLE, log:167-169). Both are measured "does not work", causes open ⇒ card 137-7 reads types, endpoints and per-combination
+       Is Broken? (with an external fact question on Select's Boolean-array selector) — no redesign before those facts.
+     - **(b) FS exit route (PD308(b) AMENDED):** both stagesim (refuses) and `compile_plan` (files it as a plain `connect`,
+       `stagexec.py:720-721`) lack an FS-exit route; it is built in BOTH from a PASSING U6, never as a loop `tunnel` action on a Flat
+       Sequence (would pass both checks on a wrong plan — review §1).
+     - **(c) Carry:** steps 160/162 replay "ok" without a measurement in that enclosing structure (`FS_BORDER_SIG` ignores it) — UNMEASURED.
+     - **(d) The stop-mode op (card 137-2, ready and validated) moves to cycle 138** — the 6-dispatch cap is spent on the route blockers.
+310. **(cycle 137 judgement, 2026-10-02 — after 137-6 FAIL 3/1, `tools/bench/prep_c137_6_facts.md`)**
+     USER-RULES: U1, U9 (relied on: original nodes unchanged on a valid frame; none contradicted).
+     - **(a) v7 `plan_ring_p4_v7.json` 01ab0893 accepted as the current P4 plan:** 172 actions (steps 33/35/41/36/27), the decide replaced by
+       PD300(b) option 2 (8 actions); **`compile_plan(v7)` compiles ALL actions to 160 ops** (37 in step 3). Replay stops at 159.
+     - **(b) The raw re-wire `#9647` → `#10465` t10469 STAYS:** `#10465` (Case `#10445` input tunnel) has no inner sink in either frame, so
+       dropping it would change no number — but keeping it keeps the original's structure (the least change, rule 1a); not re-opened.
+     - **(c) Stop 159 (`#10465 owns no terminal` after `delete_wire` w25415) is a SIMULATOR defect** (the graph has 3 rows for #10465): it goes
+       to the same stagesim tooling card as the FS-exit row (PD309(b)), with a self-test reproducing it, run with no LabVIEW card beside it.
+311. **(cycle 137 judgement, 2026-10-02 — after 137-7 PASS 5/0, `tools/bench/diag_c137_7_types.log`; reviews c137-7-hyp-c137-5-routes, c137-7-select-boolarray-fs-exit-gemini)**
+     USER-RULES: U9, U13 (relied on: the reader takes the smallest `Num > last` and verifies n1 == n2; a gap is fine). None contradicted
+     — this item changes only HOW the new reader computes its own index, not the original's computation (U1 untouched).
+     - **(a) MEASURED + externally confirmed: Select's `s` takes a SCALAR Boolean only.** A Boolean array on `s` breaks the wire whatever
+       `t`/`f` carry (C1/C2/C3 broken, scalar control C5 unbroken, `diag_c137_7_types.log:171-189`; LabVIEW's own Error List "source 1D array
+       of boolean, sink boolean", `errorlist_c137_5_routes_20261002_154406_raw.json:598-600`; NI docs via the fact peer). The P4 reader's
+       "Select on a Boolean array" (U3, PD293/v7's smallest-`Num > last` group) is IMPOSSIBLE as planned.
+     - **(b) REDESIGN of that group:** a For loop auto-indexing `Num` (20 elements); inside it ONE scalar `Select(Num[i] > last, Num[i], MAX)`
+       with MAX = I32 2147483647 made by `const_donor` (I32 measured, `:212-216`; `const_row` on Select.f before `t` gives DBL, `:218`); the
+       auto-indexed output → `Array Max & Min` (min) = the smallest `Num > last`, MAX when none — the same value the array form was
+       meant to give. The For loop + auto-index tunnels are a NEW structure class on this path ⇒ prior-art review and a scratch route
+       measurement before a build card; rejected: arithmetic masking (MAX − Num overflows I32 at Num = −1).
+     - **(c) FS EXIT works with a typed source** (U6′: tunnel faces I32, both wires unbroken, `:290-306,317,328`); U6 failed only because its
+       source `IAN.array` was unwired (void). The stagesim + stagexec FS-exit route (PD309(b)) is modelled on U6′. Carry: U6′'s new tunnel
+       faces carried the label `Index of closest\ncal image slice, bead 2` (`:301-302`) — the tunnel-name gate must predict it or flag it.
+     - **(d) Name fix:** Select's output terminal is `'s? t:f'` (no space, `diag_c128_2_donors.log:62`); plans saying `'s? t: f'` are wrong.
+     - **(e) Next cycle, in order:** ONE offline tooling card (no LabVIEW card beside it): stagesim FS-exit row from U6′ + the `delete_wire`
+       row-loss defect (PD310(c)), each with a self-test, and stagexec FS-exit route; then v8 = v7 with (b) + (d); then a scratch route run
+       of (b)'s For-loop group and the 17 uncovered route classes (PD303(c)); the stop-mode op (card 137-2) when the LabVIEW slot is free.

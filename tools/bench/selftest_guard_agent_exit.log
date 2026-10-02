@@ -1,0 +1,16 @@
+BGRUN START 2026-10-02 16:21:50 limit 5.0 min: py -u tools/bench/selftest_guard_agent_exit.py
+BGRUN PID 512
+PASS A live-child-refused rc=2 want=2 BLOCKED by tools/hooks/guard_agent_exit.py (user D-2026-10-02-01): you launched a bgrun run that is still alive - ending now KILLS it mid-run. Wait in this turn
+PASS B ended-allowed rc=0 want=0 
+PASS C dead-pid-allowed rc=0 want=0 marker=DEAD-NO-END 
+PASS D other-agent-run-allowed rc=0 want=0 
+PASS E unreadable-input-allowed rc=0 want=0 marker=FAIL-OPEN 
+PASS F missing-transcript-allowed rc=0 want=0 
+PASS G loop-breaker-4th-allowed rc=0 want=0 marker=LOOP-BREAKER rcs=[2, 2, 2, 0]
+PASS H reused-old-log-allowed rc=0 want=0 
+PASS I ledger-attribution-refused rc=2 want=2 BLOCKED by tools/hooks/guard_agent_exit.py (user D-2026-10-02-01): you launched a bgrun run that is still alive - ending now KILLS it mid-run. Wait in this turn
+PASS J quoted-and-equals-forms-refused rc=2 want=2 BLOCKED by tools/hooks/guard_agent_exit.py (user D-2026-10-02-01): you launched a bgrun run that is still alive - ending now KILLS it mid-run. Wait in this turn
+PASS K stop-event-not-guarded rc=0 want=0 
+SUMMARY 11 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":11,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 2s

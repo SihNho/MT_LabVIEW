@@ -1,0 +1,20 @@
+BGRUN START 2026-10-02 16:03:28 limit 15.0 min: powershell -Command & 'tools/peer.ps1' -Kind fact -Slug c137-7-select-boolarray-fs-exit -TaskFile tools/bench/diag_c137_7_peer_task.txt -TimeoutSec 780
+BGRUN PID 21728
+=== FACT CHAIN STEP 1/2: gemini gemini-3.1-pro-high (600s) -> c137-7-select-boolarray-fs-exit-gemini ===
+OUTCOME: ANSWERED (344s)  model: gemini-3.1-pro-high (pinned by -Model)  archived: archive\peer\2026-10-02-c137-7-select-boolarray-fs-exit-gemini.md
+--- ANSWER ---
+I have completed the research based on web sources and NI documentation, and I've compiled the answers to your LabVIEW questions in the [labview_research_findings.md](file:///C:/Users/KimLab/.gemini/antigravity-cli/brain/d0434919-d0c5-461b-9879-c7d611f8b51e/labview_research_findings.md) artifact. 
+
+Here is a quick summary of the findings:
+
+**Q1: Select Function**
+All combinations (a, b, c, d) will produce a **broken wire on `s`**. The `Select` function strictly expects a scalar Boolean and **does not support** a Boolean array on its `s` terminal in any current version of LabVIEW. Furthermore, if you use VI Scripting to create a constant on the `f` terminal before wiring anything to `t`, it defaults to a **DBL (Double Precision)** representation, as that is the default instance for the polymorphic Select function.
+
+**Q2: VI Scripting Tunnels**
+When scripting a wire from inside a Flat Sequence to the outside, LabVIEW creates a tunnel that inherits the source's data type. If the source is undetermined (like an unwired Index Array), the tunnel adopts that undetermined (Void) type. The inner wire successfully connects the undetermined source to the undetermined tunnel. However, the outer wire breaks because it cannot propagate an undetermined data type across the structure boundary to the sink, leading to a type conflict on the outside.
+
+Let me know if you need any further clarification on these findings!
+
+
+=== FACT CHAIN DONE: answered by gemini (step 1/2), no fallback; rc=0 ===
+BGRUN END rc=0 after 345s

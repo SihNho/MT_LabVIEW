@@ -1,0 +1,58 @@
+{
+ "schema": "task/1",
+ "id": "137-2",
+ "kind": "build",
+ "goal": "Build a read-only op on the OpLoopEndRef_v0 pattern reading While Loop Stop If True? and a Boolean's Mechanical Action; read #10170 and stop (end) on a bed byte copy.",
+ "why": "PD298(e), PD301(d), PD302(b): W1/1.2 stop route (local vs StopAll writer) depends on stop (end)'s mechanical action; 6362C01 is community-sourced (PD299(d)).",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_137.md"},
+  {"path": "tools/recipes/build_oploopendref_v0.py"},
+  {"path": "tools/bench/cards/result_136-3.json"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b2b_20261002_130007.vi", "md5": "395118775a52bc90073f4449b99f899d"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/recipes/build_oploopendref_v0.py"},
+  {"kind": "file", "name": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/stagekit.py"}
+ ],
+ "pass": [
+  "1 op VI(s) built from the OpLoopEndRef_v0 pattern (build_oploopendref_v0.py:250-266); ExecState 1; all refs closed",
+  "2 measured on a scratch VI first: While with Stop If True / Continue If True set by hand-known value read back correctly; Boolean of known mechanical action read back",
+  "3 on a bed byte copy: #10170 Stop If True? value and stop (end) Mechanical Action (name + numeric) recorded with log line",
+  "4 op hygiene per PD242(b) via gscript.hygiene_run (>= 2,000 calls, 0 errors, handles +-100) or the reason it was not run",
+  "5 LabVIEW gone; scratch files deleted after records; bed md5 unchanged; property ids/names added to tools/bench/diag_c137_2_facts.md"
+ ],
+ "outputs": [
+  "tools/bench/diag_c137_2_facts.md",
+  "tools/bench/cards/result_137-2.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/recipes/build_opstopmode*",
+   "tools/bench/build_opstopmode*",
+   "tools/bench/diag_c137_2*",
+   "tools/bench/hygiene_*",
+   "tools/bench/scratch_verify/*c137*",
+   "tools/bench/prerun_records*",
+   "tools/bench/cards/result_137-2*",
+   "tools/gscript.py",
+   "tools/ops/*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/OpStopMode*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/scratch_c137_2*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 55},
+ "rules": [
+  "Read-only op: it reads properties, never writes one; the bed is byte-copied, never edited",
+  "Scratch verification on known values before the bed copy is read",
+  "Return at the first unexpected result after finishing that step (LabVIEW closed)"
+ ],
+ "advances": ["M3", "R1"]
+}

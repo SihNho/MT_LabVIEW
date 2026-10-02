@@ -1,0 +1,15 @@
+ATTACK these explanations of the failed predictions in tools/bench/diag_c137_5_routes.log (script tools/bench/diag_c137_5_routes.py, card 137-5; result tools/bench/cards/result_137-5.json). Read the log lines cited.
+
+Prediction was: every connect_term_uid wire reads Wire.Is Broken? False (FS crossings after RemoveLooseEnds).
+
+Observed:
+(1) U3 Select.s <- Greater? out (x = Local read of control 'Num', y = I32 -1 const) reads Is Broken? True, wire 29730 (log:108-110). Before it, a numeric constant KMX (value 2147483647) was created by OpCreateConstOnTerm_v0 on Select.f BEFORE Select.t was wired; read_const_value says it is DBL (log:75, 104). Select.t <- Num was wired fine (log:101-103). Then U3d Less?.y <- KMX (branch) also broken, wire 29708 (log:127-129). U3b failed because Select's output terminal 's? t: f' was then not found as exactly one source (log:112-117).
+(2) U6: Equal?.y on the parent diagram <- Index Array.element inside Flat Sequence frame f0 (Index Array's 'array' input UNWIRED): connect_term_uid made a new FS outer tunnel #29822 and wires 29706 (broken before and after RemoveLooseEnds) and 29839 (not broken) (log:166-169). The sibling entry route U5 (log:159-163) passes.
+(3) The script then raised KeyError 'items' at the Error List base read (script :109): the expected file tools/bench/errorlist_expected_D1_ring_p3b2b_20261002_130007.json has keys 'total' and 'expected', not 'items' - a script bug.
+
+Claims to attack:
+C1 (U3): the break is a TYPE conflict at Select, not a connect-op defect: s gets a Boolean ARRAY (Num is an array), t gets an array, f carries a DBL scalar constant; either array-s Select needs t/f both arrays or both scalars, or the DBL/I32 mix is illegal there. The donor Select (#529 from DonorErrSel_MergeErrors.vi, an error-cluster context) might also carry a non-default type.
+C2 (U6): the outer wire 29706 is broken because the source Index Array.element has no determined type (array input unwired), so the exit tunnel's type is void/undefined; not a scripting-route defect.
+C3: (3) is a plain script bug, fixed by reading the expected file's 'total'/'expected' keys.
+
+The next measurement (card 137-7, script tools/bench/diag_c137_7_types.py, plan tools/bench/diag_c137_7_plan.json) reads terminal data types (OpTermDataType_v0) of Greater? out and Select s/t/f/out for four combinations (t/f = I32 arrays; I32 scalars; array + DBL KMX as 137-5; array + I32 scalar) plus a bare donor Select, and for U6 the exit tunnel face types, every wire's endpoints and Is Broken? before/after RemoveLooseEnds. Say what this measurement CANNOT discriminate and what result would refute C1 and C2.

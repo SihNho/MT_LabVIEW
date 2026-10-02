@@ -1,0 +1,23 @@
+{"schema":"result/1","id":"137-1","status":"FAIL","gates":{"pass":3,"fail":1},
+"first_fail":"item 3 run: ValueError #29466 (ks const, owner Diagram #29431 = new WS body) on no Diagram[0..179]: node_labels of all 180 diagrams, none lists it (diag_c137_1_routes.log:27,36-46)",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/diag_c137_1_routes.py","md5":"a8fe5ea56d191c0a770215c891960b75"},
+ {"path":"tools/bench/diag_c137_1_dry.log","md5":"4cb835d35b31a031a01969203893ba71"},
+ {"path":"tools/bench/diag_c137_1_prerun.log","md5":"af8f6f0a0dec564b677df14520733627"},
+ {"path":"tools/bench/diag_c137_1_routes.log","md5":"b9dd345334044607bf32e2bc85e8b8e5"},
+ {"path":"tools/bench/diag_c137_1_routes.json","md5":"9eeaa3e1f7e0ecd62b34837953acadc9"}],
+"facts":[
+ "Item 1 fix: ni() reads node_labels of the cached Diagram index, on a miss scans every index by distance; dry PASS, 27/27 lookups reached (diag_c137_1_routes.py:24-31; diag_c137_1_dry.log:75,86)",
+ "Item 2: 11 whole-VI read sites, all via rd() (R1-R4 Diagram/WhileLoop, U5 3, U6 3); hidden ones listed separately (node_mark per _op, const_row, local, scan) (diag_c137_1_routes.py:7-9)",
+ "Item 2 X10: prerun PASS 14/0, gate N 26 R 1 peak 661.9; source R 11 -> 606.1+11*2.53+26*1.38+17.4 = 687.2 <= 690 (diag_c137_1_prerun.log:98-105)",
+ "Item 3 run FAIL 12/1: WS #29407, body #29431, ks #29466 (owner #29431 per OBSERVED), iai #29574 all err ''; iai lookup on #23166 PASS (diag_c137_1_routes.log:24-34)",
+ "Item 3: node_labels on all 180 Diagram indices returned without error and none lists #29466; no LOOKUP move, no node_labels exception logged (diag_c137_1_routes.log:36-48)",
+ "Item 3: same stop point as 136-3 => the 136-3 cause is NOT a stale Diagram index; no route U1-U6/W1 reached, no wire made, no scratch_verify record, no EL read",
+ "Item 4 PASS: LabVIEW gone True; scratch deleted (H4); bed md5 395118775a52bc90073f4449b99f899d before = after (H2); handles 33992 -> 45947 -> 34009 (diag_c137_1_routes.log:17,54-56,65,71)",
+ "Jev ladder | diag_c137_1_routes.log | no JEV-LADDER row yet (jev_gate.log grep empty) | - | returned at first unexpected result (card chat-P2) | FAIL 12/1"],
+"open":[
+ "Competing causes untested: OpNodeLabels (Diagram.Nodes[]) does not list a constant made by const_donor, OR its Traverse 'Diagram' index never reaches new body #29431. Cheapest split: node_labels row count/uids of the body index + of #23166 for iai, one scratch run.",
+ "Alternative route for body nodes without node_labels: Stage.address (report_all Diagram per call, X10 cost) or allterms.read_terms by owner uid (whole-VI); which one to take is a judgement call."],
+"cost":{"usd":null,"minutes":12,"labview_runs":1},
+"note":"Gates = card pass items: 1 PASS, 2 PASS, 3 FAIL, 4 PASS (run log itself 12/1). Bed never edited. Part C reordered (creates before D2 read). STATUS not edited (status_edit false)."}

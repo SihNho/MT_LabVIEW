@@ -1,0 +1,56 @@
+{
+ "schema": "task/1",
+ "id": "137-3",
+ "kind": "measure",
+ "goal": "Scratch-VI verification of the node lookup that failed twice: can each read method find a constant and a primitive created inside a NEW While body? Record under scratch_verify/.",
+ "why": "PD304(a): 136-3 and 137-1 both stopped at #29466 (const in new WS body #29431) absent from node_labels of all 180 Diagram indices (diag_c137_1_routes.log:36-48).",
+ "inputs": [
+  {"path": "tools/bench/cards/result_137-1.json"},
+  {"path": "tools/bench/diag_c137_1_routes.py", "md5": "a8fe5ea56d191c0a770215c891960b75"},
+  {"path": "tools/bench/diag_c137_1_routes.log", "md5": "b9dd345334044607bf32e2bc85e8b8e5"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b2b_20261002_130007.vi", "md5": "395118775a52bc90073f4449b99f899d"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c137_1_routes.py"},
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"}
+ ],
+ "pass": [
+  "1 <=120-line stagekit script diag_c137_3_lookup.py; two legs, both always run: (A) a NEW empty scratch VI, (B) a bed byte copy",
+  "2 per leg: create While, then a const in its body by the same const_donor route as ks, then one primitive in its body by the iai create route",
+  "3 per leg, each read method -> found/not found for const and primitive: node_labels per Diagram index, Diagram count before/after, read_terms by owner uid, Stage.address",
+  "4 per leg the Traverse Diagram index count and the uid list of the new body's index (if any); X10 prerun PASS first; record in scratch_verify/",
+  "5 LabVIEW gone; scratch files deleted after records; bed md5 unchanged; handles before/after"
+ ],
+ "outputs": [
+  "tools/bench/diag_c137_3_lookup.py",
+  "tools/bench/diag_c137_3_lookup.log",
+  "tools/bench/scratch_verify/",
+  "tools/bench/cards/result_137-3.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c137_3*",
+   "tools/bench/scratch_verify/*c137*",
+   "tools/bench/prerun_records*",
+   "tools/bench/cards/result_137-3*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/scratch_c137_3*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 45},
+ "rules": [
+  "Measurement only: found/not found per method; no fix to gscript/stagekit/ops; no route run",
+  "Scratch only; the bed is byte-copied, never edited or saved",
+  "Report cost.minutes from the bind clock (137-1 failed the CLOCK check: claimed 20, measured 11.8)",
+  "Return at the first unexpected result after finishing that step (LabVIEW closed)"
+ ],
+ "advances": ["M3", "R1"]
+}

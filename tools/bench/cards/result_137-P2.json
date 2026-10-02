@@ -1,0 +1,18 @@
+{"schema":"result/1","id":"137-P2","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/bench/plan_ring_p4_v4.json","md5":"a30f7700dcc2e89293c28f89131d0070"},
+{"path":"tools/bench/prep_c137_p2_facts.md","md5":"dd8ed6ec1563632fbc60593817fa96e0"},
+{"path":"tools/bench/prep_c137_p2_sim.log","md5":"d82d3b59b78f06af92bad204445dd542"},
+{"path":"tools/bench/sim/ring_p4_v4/plan_ring_p4_v3.json","md5":"a50460d5b8eeb8697035c920405261ce"}],
+"facts":[
+"v4 vs v3: exactly 5 changed keys, the 5 CT ends' uid -> own CT uid (8936, 28844, 3173, 9519, 25573); stage/goal/finalized untouched (prep_c137_p2_mkv4.log:10-15)",
+"All 5 term_uids are ControlTerminal rows owned by Diagram 686/23166 in the bed graph; no other owner-form CT end left in v4 (prep_c137_p2_mkv4.log:4-9)",
+"stagesim replay: steps 1-101 ok, cdiff 16..20 identical to the v3 replay; last step reached 102 (prep_c137_p2_sim.log:100-104)",
+"New stop step 102 wire p4_x_fd: 'source on diagram 686, sink on diagram 23166 - a border needs a tunnel/register action first' (prep_c137_p2_sim.log:105; raised tools/stagesim.py:1366-1368)",
+"Address now resolves: old stop was resolve_addr stagesim.py:681 'owns no terminal'; op_wire passes both resolve_addr calls (stagesim.py:1341,1360)",
+"Not the same class: stagesim models cross-diagram wires only within/into a plan-made Flat Sequence (stagesim.py:1362-1365); base While #10170 border crossing is unmodelled",
+"Meta already marks this route class UNMEASURED: connect_term_uid @ base While #10170 body 23166 = p4_x_fd, p4_x_dt, p4_x_n2_out (plan_ring_p4_v3_meta.json:815-821)",
+"stage key unchanged, so sim output went to tools/bench/sim/ring_p4_v4/ring_p4_v3/ (step files) and sim/ring_p4_v4/plan_ring_p4_v3.json; v3/v4 in tools/bench not overwritten (prep_c137_p2_sim.log:107)",
+"Jev ladder: n/a - an offline simulator run, no LabVIEW gate; prediction (full replay or an address-form stop) not met -> returned without retry"],
+"open":["Step 102 now stops on a missing stagesim model (connect_term_uid across a base While border, stagesim.py:1366), not a plan address: model it in stagesim (tool card) or re-route the 3 crossings in the plan?"],
+"cost":{"usd":null,"minutes":6,"labview_runs":0},
+"note":"Replay reached step 102 of the plan; full replay not achieved. Facts: tools/bench/prep_c137_p2_facts.md"}

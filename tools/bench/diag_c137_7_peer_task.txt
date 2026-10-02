@@ -1,0 +1,10 @@
+Two LabVIEW 2026 facts, with primary sources (ni.com help pages / KB) where possible.
+
+Q1. The Select function (Comparison palette, "s? t: f"). When the s input is wired with a 1D ARRAY of Booleans (e.g. the output of Greater? comparing a 1D I32 array with an I32 scalar), which data types are allowed on t and f, and what is the output type? Specifically:
+ (a) t = 1D I32 array, f = 1D I32 array;
+ (b) t = I32 scalar, f = I32 scalar;
+ (c) t = 1D I32 array, f = DBL scalar constant;
+ (d) t = 1D I32 array, f = I32 scalar.
+Which of these produce a broken wire on s (or on t/f), and is "Boolean array on s" supported at all in current LabVIEW (since which version)? Also: when a numeric constant is created on Select.f by VI Scripting (Terminal "Create Constant"-style) BEFORE t is wired, what representation does it get (DBL default?).
+
+Q2. VI Scripting: when a wire is created with Terminal.Connect Wire from a node terminal INSIDE a Flat Sequence frame to a node terminal OUTSIDE the Flat Sequence (same parent diagram), LabVIEW creates an output tunnel on the sequence. What is known about the tunnel's inner and outer terminal data types in that case, and why could the outer wire (tunnel -> sink) be reported Wire.Is Broken? = True while the inner wire is not? E.g. a source whose type is undetermined (Index Array with its array input unwired), or a Flat Sequence output tunnel needing a specific creation method. Cite sources.

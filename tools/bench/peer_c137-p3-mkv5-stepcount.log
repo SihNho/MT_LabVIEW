@@ -1,0 +1,41 @@
+BGRUN START 2026-10-02 15:27:21 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c137-p3-mkv5-stepcount -TaskFile C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/d4a42ff9-4642-4e24-89bc-f9e57e6d5579/scratchpad/peer_c137_p3_mkv5_task.md
+BGRUN PID 16612
+OUTCOME: ANSWERED (164s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-02-c137-p3-mkv5-stepcount.md
+COST: $1.6206  in 32 / out 14340 / cache-create 122359 / cache-read 1774025  (160s, 25 turn(s))
+--- ANSWER ---
+**No. The overflow is not the real fault. v5 has a content defect in its action order: the real executor should reject it at action 102, and the RLE stop in the simulator is the visible part of the same mistake.**
+
+### 1. Strongest reason the claim is wrong: v5 breaks the executor's tunnel rule
+- `stagexec.compile_plan` requires the two actions right after a `tunnel` to be one wire into it and one wire out of it (`tools/stagexec.py:676-685`). It turns those three actions into one operation (`:699`); otherwise it stops with "tunnel … must be followed by exactly one wire into it and one out of it".
+- In v5 the order is: tunnel `p4_t_fd` → wire `p4_x_fd` → RLE `p4_rle_x_fd` → inner wire `p4_w_fd_in` (`plan_ring_p4_v5.json:1463-1498`). The same pattern repeats for `p4_t_dt`.
+- That ordering was a deliberate choice: "Inner wire placed AFTER the crossing's RLE so each (wire, RLE) pair stays adjacent" (`prep_c137_p3_facts.md:24`).
+- So the executor should stop at action 102. Fact 1 ("161 actions unchanged") is literally true, but two of those "unchanged" actions are wrong: the RLE existed only to clean up the stub that `connect_term_uid` leaves when it crosses a loop border (PD306(b), `docs/d1/ring-p4.md:180-182`). Once the plan uses an explicit tunnel, that reason is gone.
+- The simulator's tunnel step (`stagesim.py:1224-1238`) does not check this adjacency. "Replay passed steps 102–103" therefore says nothing about whether the executor would accept the plan.
+
+### 2. Your three questions
+- **Is the counting right?** Yes, assigning all four new actions to step 3 is correct. The tunnel and its two wires are one unit for the executor, and the inner wire's target `#10068` only enters the loop body in step 3 (`p4_mv_10068`, `plan_ring_p4_v3_meta.json:2030-2039`). Moving the tunnels to step 2, next to `p4_t_pool`, is not possible.
+- **Is 43 an artefact of counting actions the executor merges?** Yes. In executor operations, the old single `connect_term_uid` becomes a single tunnel operation, so step 3 stays at 39 operations, and 37 once the RLEs go.
+  - The 40 cap's unit is not fixed in the docs: "edit operations" (`docs/d1/INDEX.md:51`), "actions" (`d1-loop12-17-split-plan.md:2941`), "rows" (`CLAUDE.md:520`).
+  - The rule also says "≤ ~40", and PD306(c) already accepts 41 (`ring-p4.md:183`). The gate's hard `<= 40` (`prep_c137_p3_mkv5.py:139`) is stricter than the rule it checks.
+- **Does the RLE stop at step 104 mean the form is wrong?** Yes, partly. The two RLEs are left over from the old cross-border wiring. They are what the simulator stops on, and they are the extra actions that break the executor rule. Removing them changes the count (43 → 41 actions) and also fixes the order. It does not change the step boundaries.
+
+### 3. Alternative explanation of the same evidence
+Step 3 is not too big. The plan carries two leftover RLE actions, and the gate counts plan actions where the executor counts merged operations. Corrected, step 3 is 41 actions, which the user's "~40" and PD306(c) already allow, or 37 executor operations.
+
+### 4. What would falsify my reading
+If `compile_plan` accepts v5 as written (no stop at action 102), my main point is wrong. The reason would be some code path I did not see that lets a tunnel's wires sit apart.
+
+### 5. Cheapest discriminating test (offline, no LabVIEW, seconds)
+Run `tools.stagexec.compile_plan` (`stagexec.py:639`) on:
+- (a) `plan_ring_p4_v5.json` as it is, and
+- (b) v5 with `p4_rle_x_fd` and `p4_rle_x_dt` removed.
+
+Then count the operations per meta step for (b).
+
+**Prediction:** (a) stops at action 102 with the tunnel-group message; (b) compiles, with 37 operations in step 3. This also tells PD306(d)'s v6 replay to check `compile_plan`, not just the simulator.
+
+A few limits on this review:
+- I did not run anything; the predictions come from reading the code.
+- I made no claims about LabVIEW itself, so no web citations were needed. Every claim is about this project's files, cited by `file:line`.
+- The plan-mode write to the plan file was refused (`Write` is disabled in this session), so this reply is the whole review.
+BGRUN END rc=0 after 165s

@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"137-5","status":"FAIL","gates":{"pass":3,"fail":1},
+"first_fail":"item 3 run 57/6: routes U3 and U6 Is Broken? True (U3 log:108-110,127-129; U6 after RLE log:167-169); then KeyError 'items' at the EL base read (diag_c137_5_routes.py:109; log:180-186)",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/diag_c137_5_routes.py","md5":"ffef923556f08dbcde7fec6c5721a63b"},
+ {"path":"tools/bench/diag_c137_5_dry.log","md5":"10fe935f3335f43ca8e6d67ea094ac8d"},
+ {"path":"tools/bench/diag_c137_5_prerun.log","md5":"9ce994053adc26718fa3382b64e27823"},
+ {"path":"tools/bench/diag_c137_5_routes.log","md5":"37bf8e242215805f335b1ea2677c09bb"},
+ {"path":"tools/bench/errorlist_c137_5_routes_20261002_154406_raw.json","md5":"5b7b1c72124dfd2e781f5cbf60295ed6"},
+ {"path":"tools/bench/scratch_verify/gscript.connect_term_uid_c137_5_20261002_154406.json","md5":"372043b60e96a92a5f1fa2c9ee0d808d"},
+ {"path":"archive/peer/2026-10-02-c137-4-mkv6-step164.md","md5":"f99722c2ad73410a2ffd359f813ac093"}],
+"facts":[
+ "Item 1: 119 lines; ks/km1/kmx found by ONE read_terms by owner uid: 1 row each, all frame_diagram #29431 (log:76-79,93,125); ni lookups 26/26, const 3/3, no moves (log:170)",
+ "Item 2: source R 12 (k0 + 3 Diagram + read_terms + WhileLoop + 6 U5/U6) -> 689.7 MB <= 690; prerun 14/0, gate R 2 N 26 peak 664.4 (diag_c137_5_prerun.log:100-106). A2 moved after the creates",
+ "Item 3 PASS routes: A2 (w29705, ONE TS face #29727), U1 x3, U2 (KMX #29670 DBL 2147483647, wire 29708), W1-Or (cond wire 29755 == Or out) (log:74-104,133-145)",
+ "U3 FAIL: Select.s <- GT 'x > y?' Is Broken? True w29730 (log:108-110); Select source 's? t: f' then not found (log:112); U3b err 1055 on src #0; U3c ok; U3d LT.y <- KMX broken w29708 (log:127-129)",
+ "U5 PASS after RLE: new FS outer tunnel #29819, wires 29810/29828, gone [29705] = source wire RE-CREATED (log:160-163)",
+ "U6 FAIL: new FS outer tunnel #29822, new wires 29706/29839, 29706 broken before and after RLE; source wire not re-created (log:167-169)",
+ "ExecState end 0; EL n_reported 61 vs bed 51 (raw json :7); class diff not computed: base file has 'expected' not 'items' -> KeyError (script :109, inherited from 137-1 :110)",
+ "Item 4: LabVIEW gone True; scratch deleted (H4); bed md5 395118775a52bc90073f4449b99f899d before = after (H2); handles 33996 -> 43427 -> 33993; refs 17/17 (log:17,193-205,211)",
+ "scratch_verify record written by hand from the log (script died before its record line)",
+ "diag_c137_5_routes.log | no JEV-LADDER row | - | returned at first fail | FAIL 57/6. guard_peer blocked on prep_c137_4_mkv6.log: hypothesis ANSWERED 138s"],
+"open":[
+ "U3: is the Select.s break a type mismatch (GT on the Num array gives a Boolean ARRAY into Select.s with DBL KMX on f) and so a route-plan defect, not a connect defect? read_const_value says KMX is DBL (log:75), I32 expected?",
+ "U6: FS exit wire 29706 stays broken after RLE while U5's entry route passes - next measurement (tunnel faces/types of #29822) is a judgement call",
+ "archive/peer/2026-10-02-c137-4-mkv6-step164.md (dispatched for 137-4's log) needs its 'What was done with it' disposition - outside this card's write globs"],
+"cost":{"usd":null,"minutes":25,"labview_runs":1},
+"note":"Card gates: 1 PASS, 2 PASS, 3 FAIL (routes U3/U6 broken, script exception after the routes), 4 PASS. Bind 15:34:48 (guard_card.log:656), end ~16:00. Bed never edited; no gscript/stagekit/op edit; STATUS not edited."}

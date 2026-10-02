@@ -1,0 +1,20 @@
+{
+ "schema_note": "card 137-3 (PD304(a)): FINALIZED decision-row plan of tools/bench/diag_c137_3_lookup.py. Measurement only, never saved, no wire. Leg B = Stage work copy of the BED (md5 39511877), While on the 137-1 parent #23166; leg A = byte copy of claudeDev\\EMPTY_v0.vi, While on its top-level Diagram[0]. In each While body: KS = const_donor I32 0 (DonorSRInit_v0 #248, the 137-1 ks route) and IAI = Index Array (the bed's #3163 from the B work copy, the 137-1 iai route). Reads: Diagram count before/after, node_labels of every Diagram index, Traverse Node/Constant membership, read_terms by owner uid, Stage.address. Records under tools/bench/scratch_verify/.",
+ "input": {"vi": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b2b_20261002_130007.vi", "md5": "395118775a52bc90073f4449b99f899d"},
+ "parent": 23166,
+ "donors": {
+  "ia": {"donor": "$work", "uid": 3163},
+  "k_i32_0": {"donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorSRInit_v0.vi", "uid": 248}
+ },
+ "names": {"ia_idx": "index"},
+ "pos": {"B": {"ws": [3000, 400], "ks": [40, 40], "iai": [120, 40]}, "A": {"ws": [100, 100], "ks": [40, 40], "iai": [120, 40]}},
+ "decisions": [
+  {"id": "D-0", "action": "stage", "what": "stagekit Stage on the bed: restart LabVIEW, byte copy = work copy, discard_work (never saved)"},
+  {"id": "B-1", "action": "create", "what": "leg B: While = loop_in on #23166; KS const_donor (#248) in its body; IAI Index Array ($work #3163) in its body"},
+  {"id": "B-2", "action": "measure", "what": "leg B: Diagram count D0/D1/D2; node_labels of every Diagram index; Traverse Node/Constant; read_terms by owner uid; Stage.address"},
+  {"id": "A-1", "action": "create", "what": "leg A: scratch byte copy of EMPTY_v0; While = loop_in on Diagram[0] (on a loop_in error: while_loop, recorded); KS + IAI in its body as B-1"},
+  {"id": "A-2", "action": "measure", "what": "leg A: the B-2 reads"},
+  {"id": "R", "action": "record", "what": "scratch_verify/<function>_c137_3_<ts>.json for gscript.node_labels, allterms.read_terms, stagekit.address, gscript.report_all"},
+  {"id": "X", "action": "discard", "what": "close(): both copies deleted, bed md5 unchanged, LabVIEW killed and gone"}
+ ]
+}

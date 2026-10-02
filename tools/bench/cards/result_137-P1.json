@@ -1,0 +1,17 @@
+{"schema":"result/1","id":"137-P1","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/bench/prep_c137_p1_facts.md","md5":"b94c70dacceb11fe4a20aad8158624e8"}],
+"facts":[
+"1 step 102 raises at tools/stagesim.py:681: node_rows(686) empty because vigraph.node_of maps a ControlTerminal row to its own term_uid (tools/vigraph.py:57-60)",
+"1 plan uses {uid 686, term_uid 8936} (plan_ring_p4_v3.json:1465-1469); graph t8936 owner 686, class ControlTerminal; the PLAN side differs (stagexec.py:1493-1496 same own-uid rule)",
+"1 same Diagram-uid+CT form at v3 steps 104 p4_x_dt, 115, 116, 143 (plan:1484,1619,1632,1984); not replayed",
+"2 sessions (whole units, constant measured start): load 600.2 stop 675 = opt1 12 / opt2 11, U05 alone 676.9>675; stop 690 = 9/8 (prep_c137_p1_facts.md section 2)",
+"2 load 576.5: 675 -> 8/7, 690 -> 6/6; load 567.7: 675 -> 7/6, 690 -> 6/5; my N,R match all 18 meta sessions",
+"2 D-2026-10-02-04: opt1 = 6 new broken files (10 total), opt2 = 2 new (6 total), opt3 not computable offline (decisions_pending.json:330-342)",
+"3 24 unmeasured route classes / 113 actions (meta:501-860); 137-1 covers 7 actions: C07,C13 fully (W1-Or), C05 (U1,U2), C12 (U3), C24 (U5), C21 (U6) partly",
+"3 17 classes none + C22 decide; 9 base-body-23166 classes hold 78 of the 105 uncovered actions -> one bed-byte-copy run, one action per class",
+"4 one-sided wires P3b-1 vs P3b-2b (prof() errorlist_expect_p3b2.py:33-38): source-only diff = {4878} only, nothing new; sink-only {10166,28684,29766} identical",
+"4 3268/30592/28437 are two-sided in P3b-1, so the set cannot be {4878 + one of them}; the 2nd lost loose-end item is invisible to prof()"],
+"open":["Fix p4_x_fd etc. by re-addressing the 5 CT ends by own uid in the plan, or by teaching stagesim the owner form (PD301(e) sim fix later)?",
+"Does the clean {4878}, no-new-wire result settle review c135e section 4, given its literal 'exactly {4878 + one of 3}' clause is not met?"],
+"cost":{"usd":null,"minutes":7,"labview_runs":0},
+"note":"Bash denied python runs; probes ran through PowerShell from scratchpad p1_a..p1_i.py. No tool, plan or graph file edited."}

@@ -1,0 +1,57 @@
+{
+ "schema": "task/1",
+ "id": "137-7",
+ "kind": "measure",
+ "goal": "Measure WHY routes U3 (Select.s <- Greater? on an array) and U6 (FS frame EXIT wire) come back broken: terminal data types, wire endpoints, per-combination Is Broken?. Scratch only.",
+ "why": "PD309(a): 137-5 measured U3 and U6 broken (diag_c137_5_routes.log:108-110,127-129,167-169); KMX const came out DBL, not I32 (log:75).",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_137.md"},
+  {"path": "tools/bench/cards/result_137-5.json"},
+  {"path": "tools/bench/diag_c137_5_routes.py", "md5": "ffef923556f08dbcde7fec6c5721a63b"},
+  {"path": "tools/bench/diag_c137_5_routes.log", "md5": "37bf8e242215805f335b1ea2677c09bb"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b2b_20261002_130007.vi", "md5": "395118775a52bc90073f4449b99f899d"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c137_5_routes.py"},
+  {"kind": "op", "name": "OpTermDataType_v0"},
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"}
+ ],
+ "pass": [
+  "1 fact peer (-Kind fact) first: LabVIEW Select with a Boolean-ARRAY s (allowed t/f types) and scripting an FS output tunnel; answer archived",
+  "2 U3: types (OpTermDataType_v0) of Greater? out, Select s/t/f; Is Broken? for s<-array with t/f I32 arrays and with scalars; I32 const route + type",
+  "3 U6 on a bed byte copy: exit tunnel inner/outer face types, wire 29706-equivalent endpoints (src/dst term uids), sink's source count, Is Broken? each",
+  "4 diag_c137_7_types.py <=120 lines, EL base read uses the expected-file key (fixes 137-5's KeyError); X10 PASS; record in scratch_verify/",
+  "5 LabVIEW gone; scratch files deleted after records; handles before/after; bed md5 unchanged"
+ ],
+ "outputs": [
+  "tools/bench/diag_c137_7_types.py",
+  "tools/bench/diag_c137_7_types.log",
+  "tools/bench/scratch_verify/",
+  "tools/bench/cards/result_137-7.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c137_7*",
+   "tools/bench/scratch_verify/*c137*",
+   "tools/bench/errorlist_*c137*",
+   "tools/bench/prerun_records*",
+   "tools/bench/cards/result_137-7*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/scratch_c137_7*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "fact"]
+ },
+ "budget": {"failures": 2, "minutes": 55},
+ "rules": [
+  "Measurement only: types, endpoints, Is Broken?; no route redesign, no gscript/stagekit/stagexec/op edit",
+  "Scratch only; the bed is byte-copied, never edited or saved",
+  "Return at the first unexpected result after finishing that step (LabVIEW closed); cost.minutes from the bind clock"
+ ],
+ "advances": ["M3", "R1"]
+}

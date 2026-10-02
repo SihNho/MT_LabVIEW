@@ -1,0 +1,59 @@
+{
+ "schema": "task/1",
+ "id": "137-5",
+ "kind": "measure",
+ "goal": "Rerun the P4 scratch routes U1 U2 U3 U5 U6 + W1 Or with body CONSTANTS looked up by read_terms by owner uid (PD307(a)); PASS/FAIL per route under scratch_verify/. Bed never edited.",
+ "why": "PD307(a): 137-3 measured that a const in a new While body is absent from Diagram.Nodes[]; read_terms by owner uid finds it (diag_c137_3_lookup.log:36-39).",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_137.md"},
+  {"path": "tools/bench/cards/brief_136.md"},
+  {"path": "tools/bench/cards/result_137-1.json"},
+  {"path": "tools/bench/cards/result_137-3.json"},
+  {"path": "tools/bench/diag_c137_1_routes.py", "md5": "a8fe5ea56d191c0a770215c891960b75"},
+  {"path": "tools/bench/diag_c137_3_lookup.py", "md5": "9aed2101c2b701c3b06f9a3450abf402"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b2b_20261002_130007.vi", "md5": "395118775a52bc90073f4449b99f899d"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c137_1_routes.py"},
+  {"kind": "file", "name": "tools/bench/diag_c137_3_lookup.py"},
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"}
+ ],
+ "pass": [
+  "1 diag_c137_5_routes.py = diag_c137_1_routes.py with constants in new bodies found by read_terms by owner uid (as diag_c137_3_lookup.py); <=120 lines",
+  "2 whole-VI read call sites listed with counts (the extra read_terms included); X10 prerun PASS with source-counted R",
+  "3 ONE run: per route U1 U2 U3 U5 U6 W1-Or PASS/FAIL, Is Broken?, census delta; one scratch EL count at the end; record in scratch_verify/",
+  "4 LabVIEW gone; scratch files deleted after records; handles before/after; bed md5 unchanged"
+ ],
+ "outputs": [
+  "tools/bench/diag_c137_5_routes.py",
+  "tools/bench/diag_c137_5_routes.log",
+  "tools/bench/scratch_verify/",
+  "tools/bench/cards/result_137-5.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c137_5*",
+   "tools/bench/scratch_verify/*c137*",
+   "tools/bench/errorlist_*c137*",
+   "tools/bench/prerun_records*",
+   "tools/bench/cards/result_137-5*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/scratch_c137_5*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 50},
+ "rules": [
+  "Scratch only: the bed is byte-copied and read, never edited or saved",
+  "Do not change X10 thresholds; X10 FAIL with source-counted reads => return, no run",
+  "Measurement only; no gscript/stagekit/stagexec/op edit; no P4 plan decision",
+  "Return at the first unexpected result after finishing that step (LabVIEW closed); cost.minutes from the bind clock"
+ ],
+ "advances": ["M3", "R1"]
+}

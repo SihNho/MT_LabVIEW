@@ -1,0 +1,50 @@
+{
+ "schema": "task/1",
+ "id": "137-P3",
+ "kind": "build",
+ "goal": "Offline: plan_ring_p4_v5.json = v4 with the 3 crossings of base While #10170 (p4_x_fd, p4_x_dt, p4_x_n2_out) each given an explicit loop-tunnel action first, as v3's p4_x_pool; replay.",
+ "why": "PD305(a): v4 replay stops at step 102 on a direct connect_term_uid across #10170's border (stagesim.py:1366); PD298(b) precedent = explicit tunnel action, simulator not extended.",
+ "inputs": [
+  {"path": "tools/bench/prep_c137_p2_facts.md", "md5": "dd8ed6ec1563632fbc60593817fa96e0"},
+  {"path": "tools/bench/plan_ring_p4_v4.json", "md5": "a30f7700dcc2e89293c28f89131d0070"},
+  {"path": "tools/bench/graph_ring_p3b2b_20261002_133824.json", "md5": "50595c62d0332a94bf066538cf20c0ae"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p4_v4.json"},
+  {"kind": "file", "name": "tools/bench/graph_ring_p3b2b_20261002_133824.json"}
+ ],
+ "pass": [
+  "1 v5 = v4 + one explicit tunnel action on #10170 per crossing, in the same form as v3's p4_x_pool tunnel action (cite its plan line); wires re-pointed through the tunnel",
+  "2 every other action unchanged; json diff listed in the facts file; new action count and per-build-step counts (<=40 each)",
+  "3 stagesim replay of v5 on the bed graph: last step reached, cdiff, first stop (step, action, message, file:line) if any",
+  "4 the new tunnel actions' route class marked MEASURED/UNMEASURED with its cite; facts in tools/bench/prep_c137_p3_facts.md (<=60 lines); v5 md5 in the result"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p4_v5.json",
+  "tools/bench/prep_c137_p3_facts.md",
+  "tools/bench/cards/result_137-P3.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p4_v5*",
+   "tools/bench/prep_c137_p3*",
+   "tools/bench/sim/ring_p4_v5/*",
+   "tools/bench/cards/result_137-P3*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 40},
+ "rules": [
+  "No edit of any tools/*.py: plan file only",
+  "Only the 3 #10170 crossings change; no launch, no recipe",
+  "Return at the first unexpected result; facts and an OPEN line only"
+ ],
+ "advances": ["M3", "R1"]
+}

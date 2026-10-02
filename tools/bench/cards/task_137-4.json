@@ -1,0 +1,51 @@
+{
+ "schema": "task/1",
+ "id": "137-4",
+ "kind": "build",
+ "goal": "Offline: plan_ring_p4_v6.json = v5 minus the 2 RLE actions p4_rle_x_fd / p4_rle_x_dt; stagesim replay on the bed graph to the next stop or full replay.",
+ "why": "PD306(b)(d): RLE after an explicit-tunnel crossing is not in the pool form and stagesim has no crossing row for it (stagesim.py:1950-1952).",
+ "inputs": [
+  {"path": "tools/bench/prep_c137_p3_facts.md", "md5": "18eaa39730d24cf504ebe6bff2fd1dd0"},
+  {"path": "tools/bench/plan_ring_p4_v5.json", "md5": "91f6476e269afd2d0c54a3e0cc72f2d1"},
+  {"path": "tools/bench/graph_ring_p3b2b_20261002_133824.json", "md5": "50595c62d0332a94bf066538cf20c0ae"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p4_v5.json"},
+  {"kind": "file", "name": "tools/bench/graph_ring_p3b2b_20261002_133824.json"}
+ ],
+ "pass": [
+  "1 v6 differs from v5 only by the 2 removed RLE actions (json diff in the facts file); step counts listed (step 3 expected 41)",
+  "2 stagesim replay of v6 on the bed graph: last step reached, cdiff, first stop (step, action, message, file:line) if any",
+  "3 if the replay stops: the stop's class, and every other v6 action of the same class (ids); no fix",
+  "4 if the replay completes: end cdiff and final flag; facts in tools/bench/prep_c137_4_facts.md (<=50 lines); v6 md5 in the result",
+  "5 stagexec.compile_plan (stagexec.py:639) on v5 as-is and on v6: stop action+message or compiled op count per meta step (review c137-p3 s5)"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p4_v6.json",
+  "tools/bench/prep_c137_4_facts.md",
+  "tools/bench/cards/result_137-4.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p4_v6*",
+   "tools/bench/prep_c137_4*",
+   "tools/bench/sim/ring_p4_v6/*",
+   "tools/bench/cards/result_137-4*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 30},
+ "rules": [
+  "No edit of any tools/*.py: plan file only; only the 2 RLE actions removed",
+  "Return at the first unexpected result; facts and an OPEN line only",
+  "cost.minutes from the bind clock (137-P3 first claimed 14, measured 6.1)"
+ ],
+ "advances": ["M3", "R1"]
+}

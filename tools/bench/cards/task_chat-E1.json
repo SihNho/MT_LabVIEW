@@ -2,56 +2,32 @@
  "schema": "task/1",
  "id": "chat-E1",
  "kind": "build",
- "goal": "errorlist_check: wait for LabVIEW COM readiness after launching it; runner errorlist_hook retries once on a COM-not-ready FAIL",
- "why": "Runner restart 2026-09-25 01:02 stopped in 22 s: errorlist_check launched LabVIEW and hit com_error -2147221231 (ClassFactory cannot supply class) before the ActiveX server was up. Bed is fine (0 items yesterday).",
+ "goal": "SubagentStop guard: refuse a material agent's stop while a bgrun LabVIEW child it launched is still alive; fail open, loop breaker, self-test; settings snippet returned, not applied",
+ "why": "User answered D-2026-10-02-01 (2026-10-02): build the device. Detail: brief_chat-E1.md",
  "inputs": [
-  {
-   "path": "tools/errorlist_check.py",
-   "md5": "68bffc802f8a8a1819dddbbc5d92bec3"
-  },
-  {
-   "path": "tools/cycle_runner.py",
-   "md5": "fd0a71832559b228ca82ad655673cbfe"
-  },
-  {
-   "path": "tools/bench/errorlist_check_cycle74.log",
-   "md5": "4671f722cd2e63f318b759150fca5eb8"
-  }
+  {"path": "tools/bench/cards/brief_chat-E1.md", "md5": "219b016c821c394fae8815269ac35370"}
  ],
  "pass": [
-  "labview_up(): after starting LabVIEW, poll Dispatch(LabVIEW.Application) until it answers (Version property) up to 60 s, then handles settle; log the wait",
-  "errorlist_hook: on a FAIL whose errors contain com_error -2147221231 or ClassFactory, retry the check once after 20 s; second FAIL -> RUNNER STOP as now",
-  "live proof: close LabVIEW, run errorlist_check on D1_s4_loop17 from cold: verdict OK, 0 items, ExecState 1, scratch deleted, bed md5 4b621946 unchanged, LabVIEW closed after",
-  "selftest_cycle_runner_ff and the errorlist self-tests green; RESULT line; commit"
+  "SubagentStop event name, input fields and blocking behaviour verified against the official hooks docs (URL cited)",
+  "tools/hooks/guard_agent_exit.py refuses only this agent's live bgrun child; fail-open on errors; loop breaker",
+  "selftest_guard_agent_exit.py: refuse/allow cases all pass, no LabVIEW used",
+  "settings.json NOT edited; exact registration snippet returned"
  ],
- "outputs": [
-  "tools/errorlist_check.py",
-  "tools/bench/errorlist_check_cold_20260925.log"
- ],
+ "outputs": ["tools/hooks/guard_agent_exit.py", "tools/bench/selftest_guard_agent_exit.py"],
  "flags": {
-  "labview": "read",
-  "gui": true,
+  "labview": "none",
+  "gui": false,
   "hardware": "none",
   "run_vi": false,
-  "write": [
-   "tools/errorlist_check.py",
-   "tools/lv_errorlist.py",
-   "tools/cycle_runner.py",
-   "tools/bench/**"
-  ],
+  "write": ["tools/hooks/guard_agent_exit.py", "tools/bench/selftest_guard_agent_exit.py", "tools/bench/selftest_guard_agent_exit*.log"],
   "status_edit": false,
-  "git_commit": true,
-  "peers": [
-   "hypothesis"
-  ]
+  "git_commit": false,
+  "peers": ["fact", "audit"]
  },
- "budget": {
-  "failures": 2,
-  "minutes": 45
- },
- "unblocks": "M8",
+ "budget": {"failures": 2, "minutes": 60},
+ "unblocks": "M4",
  "rules": [
-  "GUI only where scripting is VERIFIED unreachable",
-  "Reference hygiene"
+  "Offline only; the runner is live - never touch its LabVIEW or its cards",
+  "Do not edit .claude/settings.json or any existing hook"
  ]
 }

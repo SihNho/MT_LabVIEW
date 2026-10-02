@@ -6210,3 +6210,106 @@ VIOLATION: device-failed | loss_min=15 | loss_usd=? | evidence=tools/bench/diag_
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle136","verdict":"refuted","alternative":"The session ended at 14:56 because something not in the files forced it (an unlogged guard refusal of a 6th dispatch, or a budget it misread), so the order of 136-4 before the route rerun cost nothing.","discriminating_test":"Look in the cycle-136 session transcript and the guard_session/guard_card logs after 14:53 for a refused dispatch. If one exists, the early end was forced and the wrong-ordering loss falls to the 136-4 slot alone.","violations":[{"slug":"wrong-ordering","loss_min":33,"loss_usd":"?","evidence":"tools/bench/cards/task_136-4.json:22"},{"slug":"device-failed","loss_min":15,"loss_usd":"?","evidence":"tools/bench/diag_c136_3_prerun.log:90"}],"sources":["tools/bench/diag_c136_3_routes.log:36-46","tools/bench/session_8c25435c-d4a0-451f-a71a-3c8f8910def2.json:1","tools/bench/cycle_136.log:214-215","docs/d1/ring-p4.md:111-126","tools/bench/cards/result_136-P2.json:19","tools/bench/diag_c136_4_mem.log:84-86","tools/bench/diag_c136_4_prerun.log:105","tools/bench/gate_fp_queue.jsonl:29,33"],"note":"The window also covers cycle 135 (12:15-13:26). Cycle 136 alone: 13:26:50-14:56:12, judgement $42.76. X10 refused wrongly (fp-33), and after its patch it counts 0 of 10 reads; PD299(b) replaced its count with a hand count."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle136.md
 BGRUN END rc=0 after 469s
+BGRUN START 2026-10-02 16:40:02 limit 10.0 min: py tools/retrospective.py --cycle 137
+BGRUN PID 9296
+   window 2026-10-02 15:04:01 .. 2026-10-02 16:40:02 (96 min); 25 build logs, 8 machinery logs, 49 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle137.txt (36212 chars)
+   review card tools\bench\cards\review_retrospective-cycle137.json
+BGRUN START 2026-10-02 16:40:33 limit 20.0 min: C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\retrospective.py --cycle 137
+BGRUN PID 20376
+   window 2026-10-02 15:04:01 .. 2026-10-02 16:40:34 (97 min); 25 build logs, 8 machinery logs, 49 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle137.txt (36212 chars)
+   review card tools\bench\cards\review_retrospective-cycle137.json
+OUTCOME: ANSWERED (386s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-10-02-retrospective-cycle137.md
+COST: $2.2863  in 52 / out 36608 / cache-create 126347 / cache-read 2715614  (384s, 44 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle137 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle137.json
+--- ANSWER ---
+I'm writing this review as plain text instead of an artifact: it's a read-only review, plan mode is on, and the runner parses the closing lines from this reply.
+
+# Retrospective, cycle 137 (15:04:01 – 16:40:34)
+
+**Verdict: the claim is refuted.** The cycle had one costly structural fault. Card 137-1 repeated cycle 136's failure on the same constant (#29466) at the same point in the script. The brief had named two fixes; the material session used neither and went with its own guess, a stale diagram index. The dry run reported that this fix worked, but it never actually ran it. That cost about 26 minutes and one LabVIEW dispatch. That dispatch slot is why the stop-mode op card 137-2 was written and validated but never dispatched (`STATUS.md:57`).
+
+A second line is required by the device rule rather than by size. The cycle-133 dry-run device, which should mark a gate checked only against stubbed LabVIEW (COM) calls as unverified, never fired in any of the four LabVIEW dry runs this cycle.
+
+What the cycle produced: the P4 plan went from v4 to v7, and v7 compiles end to end (160 ops). Four route causes were measured: constants in a new loop body are invisible to the node lookup; Select's `s` input takes only a scalar; an FS-frame exit works when its source is typed; and stagesim loses a tunnel's rows after `delete_wire`. No VI was delivered.
+
+## The fault: 137-1 repeated 136-3 (`repeated-failure-class`)
+
+- **What happened.** Brief item 1 named two fixes for the failed node lookup: "Address the body diagram by its owner uid, or read the node by `read_terms` on the body" (`tools/bench/cards/brief_137.md:6-7`).
+  - The material session rejected both on cost grounds it never computed: "too many reads for X10" (`tools/bench/diag_c137_1_routes.py:3-4`). It wrote a third fix instead, which scans the node list of every diagram index on the theory that the cached index was stale (`:18`, `:24-31`).
+  - The real run stopped on exactly the same node as 136-3: `ValueError: #29466 on no Diagram[0..179]` (`tools/bench/diag_c137_1_routes.log:36-46`; compare `brief_137.md:5`).
+- **Why the dry run didn't catch it.** The lookup returns immediately in a dry run (`if DRY: return di, 0`, `diag_c137_1_routes.py:26`). So "L every per-node lookup reached: 27 (want 27)" (`diag_c137_1_dry.log:75`) only counted calls.
+- **What it forced.** Two failures on the same function triggered the scratch-VI rule (PD304(a), `docs/d1/ring-p4.md:163-167`). That required card 137-3. 137-5 then used the brief's own option 2: one `read_terms` by owner uid, at a predicted peak of 689.7 MB against the 690 MB stop (`result_137-5.json:13-14`).
+- **Loss.**
+  - 137-1 took 12 min (`result_137-1.json:22`) and 137-3 took 14 min (`result_137-3.json:29`): about 26 min.
+  - Two of the six main dispatches went on this, against one if the fix had worked.
+  - No log has a dollar figure for these cards (`usd: null`), so loss_usd is `?`.
+- **Counterfactual.** 137-1 was bound at 15:07:24 (`tools/bench/cards/guard_card.log:650`). Had it used `read_terms` by owner uid, the route results would have been in by about 15:33 instead of from 137-5 at about 16:00 (`guard_card.log:656`). 137-3 would not have been owed. The type-cause card 137-7 would have started about 15:35 and finished about 16:12.
+  - The cycle would have ended about 16:14 instead of 16:40 with the same output.
+  - Or, at 16:40, it would also have had 137-2 dispatched in the freed slot.
+
+## FINDINGS
+
+**1. Repeated failure.** The same failure happened on attempt 1 (136-3) and attempt 2 (137-1), on the same uids. The approach should have changed at attempt 2, to option 2 of the brief, as 137-5 later did.
+
+The offline replays also stopped once per card: at step 102 (P2), 104 (P3), 164 (137-4) and 159 (137-6) (`result_137-P2.json:9`, `result_137-P3.json:2`, `result_137-4.json:1`, `result_137-6.json:2`). These were five different modelling gaps, each found in 6–7 minutes in a parallel slot. That is a one-gap-at-a-time pattern but not a repeated class, and it is cheap.
+
+**2. Missing tool.**
+- **X10 read count.** X10 still counts whole-VI reads from the dry run, not from the script's source. 137-1's prerun shows "gate R 1" against a hand-counted source R of 11 (`result_137-1.json:13`). Every LabVIEW card had to hand-list its reads. The repair was owed by retrospective-cycle136 and is pushed to cycle 138 (`next.json:10`).
+- **Body-constant lookup.** stagekit still cannot address a constant in a new body: `Stage.address` fails (`result_137-3.json:19`; PD307(a)).
+- **Memory peak.** The route logs record no measured memory peak (no MB or MEMSTOP lines in `diag_c137_{1,3,5,7}_*.log`). X10's predictions of 661.9 to 689.7 MB were never checked against a measurement.
+
+**3. Unmeasured steps.**
+- 137-1 rejected `read_terms` because of X10 cost without running the offline prerun, which takes seconds. The prerun in 137-5 showed it fits.
+- The brief asked for the fix to be proven by "a `--dry` run that reaches every lookup" (`brief_137.md:7`). A dry run with LabVIEW calls stubbed cannot prove a LabVIEW lookup, so that proof was empty by design.
+- Whether Select accepts a Boolean array on `s` was answered by a fact peer in seconds: "does not support a Boolean array on its `s` terminal" (`archive/peer/2026-10-02-c137-7-select-boolarray-fs-exit-gemini.md:37`). It was asked only in 137-7, after a LabVIEW run (137-5's U3) had already broken on it. The reader core of the P4 design depended on that fact, and v4 to v7 were all built around it.
+
+**4. Rule compliance.**
+- **Failed-prediction review.** CLAUDE.md requires a peer review after a failed prediction (`CLAUDE.md:686-704`). No `archive/peer` file cites `diag_c137_1_routes` (search is empty); PD304 sent the failure to a scratch-verification card instead. Audit A3 nevertheless reports "unreviewed: none", so A3 does not check failures per log.
+- **Offline dry run.** The "dry-run first" rule (`CLAUDE.md:491`) was satisfied only formally. All four LabVIEW cards' dry runs printed `DRY PASS … unverified 0` (`diag_c137_1_dry.log:86`, `diag_c137_5_dry.log:178`, `diag_c137_7_dry.log:100`).
+- **Dispatch budget.** 9 material dispatches (6 main + 3 prep) is within the rules, but the cycle card says `dispatches: 8` (`cycle_137.json:21`).
+- **Ending the turn.** The judgement session ended its turn saying "Waiting on the cycle-137 retrospective", but all three retrospective launches had been refused by the permission layer (`cycle_137.log:211`). CLAUDE.md says never to end a turn expecting to be resumed. It did no harm, because the runner runs the retrospective.
+- **Lint.**
+  - L2: the wrong path in `docs/d1/ring-p4.md:131` was spotted in the brief (`brief_137.md:34`) but not corrected.
+  - L10: `docs/d1/ring-p3b.md` is 419 lines, over the 400 cap.
+- **What the audit does not cover:**
+  - dry runs that pass without checking anything;
+  - judgement taken inside material sessions;
+  - X10 predictions against measured memory;
+  - the card's dispatch budget against actual spawns;
+  - C7's list of 207 files outside the plan, which is too noisy to judge scope from.
+
+**5. Ordering.** The pairing of 137-1 with P1 was defensible. Two things were not:
+- The fact-peer question about Select should have come before 137-5's route U3, not after it. It was step 1 of 137-7.
+- The offline plan cards 137-4 and 137-6 were bound one second before their LabVIEW partners (`guard_card.log:655-658`). They went into main slots because P1–P3 had already used the prep budget of 3, and those two slots are why 137-2 never ran.
+
+**6. Not reported.**
+- STATUS records "137-1 FAIL 3/1 → 137-3" (`STATUS.md:60`). It does not say the failure was identical to 136-3's, or that the fix was never exercised before the run.
+- "no new VI (6-dispatch cap)" (`STATUS.md:58`) does not say the cap was reached partly because of that repeat.
+- 137-5's script crashed with `KeyError 'items'`, a bug carried over from 137-1, and its scratch_verify record was written by hand from the log (`result_137-5.json:19,21`).
+- The judgement session cost $39.38, against $5.52 for all reviews (audit C4 and C4c).
+
+**7. Judgement inside a material session.**
+- **137-1.** The material session chose between explanations (stale index or not), and between design routes (it rejected both of the brief's options) (`diag_c137_1_routes.py:1-6,18`). The brief's "or" had already handed that choice down (`brief_137.md:6-7`).
+- **137-7.** The material session accepted a hypothesis-review finding and changed the experiment. It replaced case C4 with a C5 control and added U6′, which the card did not ask for (`result_137-7.json:24,30`; `task_137-7.json:22-23`). U6′ produced the fact PD311 rests on: the outcome was useful, but the decision belonged to the judgement session.
+- **Reviews.** The review dispositions themselves were written by the judgement session, correctly (`archive/peer/2026-10-02-c137-7-hyp-c137-5-routes.md:101-104`).
+
+## DEVICE EFFECT
+
+**Failed: the dry-run device decided 2026-10-02 10:10** (`docs/violation-decisions.md:1850-1857`). Its acceptance case is "a stub-only gate → PASS-UNVERIFIED".
+- In this window, a gate checked only against a stubbed LabVIEW call printed PASS: `PASS W U3 Select.s <- GT out … Is Broken? False <dry:g.connect_term_uid>` (`diag_c137_5_dry.log:48`). The dry run then ended with "unverified 0" (`:178`).
+- The real run then found that wire broken (`diag_c137_5_routes.log:108-110`).
+- The cause is how the diagnostic scripts write their gates: `s.gate(..., DRY or ok, ...)` (`diag_c137_1_routes.py:59`). This idiom appears 29 times across all four c137 diagnostic scripts. `stage_prerun.py:724` only detects a stub object passed to the gate directly, and `DRY or ok` turns it into a plain `True` first. The device never fired once in four dry runs.
+- Its 12-minute share (137-1) is already inside the 26 minutes of the first fault. The device line below therefore carries 0 so the two losses are not added twice.
+
+**Other devices:**
+- **Worked:** the scratch-VI third-run refusal (PD304(a)), the dispatch caps, bgrun forcing rc=1 on failure (`prep_c137_4_mkv6.log` ends rc=1), and COST parsing (3 of 3).
+- **Not exercised this cycle:** the stop record, guard_cycle, and the wrong-ordering pairing check (no card wrote stage tools).
+- **X10 (decided 02:57):** it still under-counts reads. That was already flagged by retrospective-cycle136 and the repair is owed in cycle 138. The fault it exists to stop, a memory overrun, was not observed, but nothing measured the peaks.
+
+VIOLATION: repeated-failure-class | loss_min=26 | loss_usd=? | evidence=tools/bench/diag_c137_1_routes.log:46
+VIOLATION: device-failed | loss_min=0 | loss_usd=? | evidence=tools/bench/diag_c137_5_dry.log:178
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle137","verdict":"refuted","alternative":"137-1's repeat was unavoidable: read_terms would have broken X10, and only scratch card 137-3 could show a body constant is absent from Diagram.Nodes[].","discriminating_test":"Prerun diag_c137_1_routes.py with ni() replaced by one read_terms by owner uid (as diag_c137_5_routes.py does): X10 <= 690 means avoidable; 137-5 measured 689.7 (result_137-5.json:14).","violations":[{"slug":"repeated-failure-class","loss_min":26,"loss_usd":"?","evidence":"tools/bench/diag_c137_1_routes.log:46"},{"slug":"device-failed","loss_min":0,"loss_usd":"?","evidence":"tools/bench/diag_c137_5_dry.log:178"}],"sources":["tools/bench/cards/brief_137.md:6","tools/bench/diag_c137_1_routes.py:26","tools/bench/diag_c137_1_routes.py:59","tools/bench/diag_c137_5_dry.log:48","tools/bench/cards/result_137-5.json:14","docs/violation-decisions.md:1851","tools/stage_prerun.py:724"],"note":"Device line is threshold-1 mandated; its 12 min sit inside line 1's 26 (not additive). 'DRY or ok' in 29 gates across all four c137 diag scripts evades the stub detector."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle137.md
+BGRUN END rc=0 after 391s

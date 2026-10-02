@@ -519,6 +519,9 @@ at** (the "preserved" crash copies were byte-identical to the untouched original
    **Ring-buffer steps P3b, P4, P5: up to ~40 rows per build step, each with a FULL scratch run on a byte copy before the
    real launch** — user 2026-10-01 ("1번으로 진행해보자", decision D-2026-10-01-01), so the remaining ~145 rows fit the
    6-broken-file cap (item 7) and the first end-to-end run (P6) comes sooner. The cap of 6 is unchanged.
+   **User 2026-10-02 (D-2026-10-02-02 "세지 않기", D-2026-10-02-04 "나 옵션"):** a step that LabVIEW memory forces into
+   several sessions saves in-between files that do NOT count toward the cap of 6 (deleted once the step's file is
+   accepted); P4 (~165 edits) is ONE step = one counted file, built over several sessions of ≤ 40 edits each.
 3. **Re-splitting is triggered, not felt** (user: the decision is the judgement session's, the trigger is the
    machine's): the same stage failing twice at the same place, or a stage that ends without a saved artefact ⇒ the
    next cycle's FIRST act is a **decomposition plan** for that stage (one page: sub-steps, each's saved file name and

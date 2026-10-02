@@ -1,0 +1,52 @@
+{
+ "schema": "task/1",
+ "id": "137-P2",
+ "kind": "build",
+ "goal": "Offline: plan_ring_p4_v4.json = v3 with ONLY the 5 ControlTerminal ends re-addressed by their own uid; stagesim replay on the real bed graph; report the next stop or full replay.",
+ "why": "PD303(a): 137-P1 found step 102 stops because the plan addresses CT t8936 by owner 686 while vigraph and stagexec use the CT's own uid.",
+ "inputs": [
+  {"path": "tools/bench/prep_c137_p1_facts.md", "md5": "b94c70dacceb11fe4a20aad8158624e8"},
+  {"path": "tools/bench/plan_ring_p4_v3.json", "md5": "d14c1bbacb12ac30e8c58057c240786b"},
+  {"path": "tools/bench/graph_ring_p3b2b_20261002_133824.json", "md5": "50595c62d0332a94bf066538cf20c0ae"},
+  {"path": "tools/bench/prep_c136_p2_p4v3.md", "md5": "0c64e55ad77d038a006f4de4cb2bc9bc"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/vigraph.py"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p4_v3.json"},
+  {"kind": "file", "name": "tools/bench/graph_ring_p3b2b_20261002_133824.json"}
+ ],
+ "pass": [
+  "1 v4 differs from v3 only at the 5 CT ends (v3 plan:1465,1484,1619,1632,1984); a json diff listing every changed key is in the facts file",
+  "2 stagesim replay of v4 on graph_ring_p3b2b_20261002_133824.json: last step reached, cdiff, and the first stop (step, action id, message, file:line) if any",
+  "3 if a further stop is the SAME class (an address form the simulator rejects), list every plan action using that form; do not fix it",
+  "4 facts in tools/bench/prep_c137_p2_facts.md (<=60 lines), file:line on every claim; v4 md5 in the result"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p4_v4.json",
+  "tools/bench/prep_c137_p2_facts.md",
+  "tools/bench/cards/result_137-P2.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p4_v4*",
+   "tools/bench/prep_c137_p2*",
+   "tools/bench/sim/ring_p4_v4/*",
+   "tools/bench/cards/result_137-P2*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 40},
+ "rules": [
+  "No edit of any tools/*.py (stagesim/stagekit/stagexec/vigraph): plan file only",
+  "No other plan change than the 5 CT addresses; no launch, no recipe",
+  "Return at the first unexpected result; facts and an OPEN line only"
+ ],
+ "advances": ["M3", "R1"]
+}

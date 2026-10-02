@@ -1,0 +1,30 @@
+BGRUN START 2026-10-02 15:23:22 limit 3.0 min: py -u tools/bench/prep_c137_p3_mkv5.py
+BGRUN PID 20224
+v4 md5 a30f7700dcc2e89293c28f89131d0070
+v4 actions 163
+p4_x_n2_out new:IAN1.element -> new:EQ2.y | IAN1 diagram new:FS4.f0 | EQ2 diagram 23166
+GATE PASS | p4_x_n2_out is FS4 frame -> body 23166 (no #10170 border)
+GATE PASS | p4_x_fd src is a CT uid form
+GATE PASS | p4_x_fd followed by its RLE
+GATE PASS | p4_x_dt src is a CT uid form
+GATE PASS | p4_x_dt followed by its RLE
+v5 actions 167
+GATE PASS | v5 = v4 + 4 actions
+unchanged actions 161 changed [('p4_x_fd', ['dst', 'why']), ('p4_x_dt', ['dst', 'why'])]
+GATE PASS | only dst/why of the 2 crossing wires changed
+GATE PASS | no top-level key changed ([])
+DIFF ('p4_x_fd', 'insert', 102, 'p4_t_fd')
+DIFF ('p4_x_fd', 'dst', 103, '{"uid": 10068, "term": "y"}', 'new:TFD1.outer')
+DIFF ('p4_x_fd', 'why', 103, "ROUTE connect_term_uid | PRECEDENT | #686 control '# FD poin", "ROUTE branch | PRECEDENT | card 137-P3: #686 control '# FD p")
+DIFF ('p4_x_fd', 'insert', 105, 'p4_w_fd_in')
+DIFF ('p4_x_dt', 'insert', 106, 'p4_t_dt')
+DIFF ('p4_x_dt', 'dst', 107, '{"uid": 29240, "term": "y"}', 'new:TDT1.outer')
+DIFF ('p4_x_dt', 'why', 107, "ROUTE connect_term_uid | PRECEDENT | #686 control '# DT poin", "ROUTE branch | PRECEDENT | card 137-P3: #686 control '# DT p")
+DIFF ('p4_x_dt', 'insert', 109, 'p4_w_dt_in')
+meta step of crossings {'p4_x_fd': (3, 'U12 C sinks', '3.3'), 'p4_x_dt': (3, 'U12 C sinks', '3.3')} n2_out (5, 'U09 n2', '5.4')
+ids without meta step []
+step counts v4 {1: 33, 2: 35, 3: 39, 4: 36, 5: 20} v5 {1: 33, 2: 35, 3: 43, 4: 36, 5: 20}
+GATE FAIL | v5 per-build-step counts <= 40 (v3 meta cut)
+v5 md5 91f6476e269afd2d0c54a3e0cc72f2d1
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":8,"fail":1},"first_fail":"v5 per-build-step counts <= 40 (v3 meta cut)","artefacts":[{"path":"tools/bench/plan_ring_p4_v5.json","md5":"91f6476e269afd2d0c54a3e0cc72f2d1"}]}
+BGRUN END rc=1 after 1s (RESULT: status=FAIL gates 8/1 first_fail=v5 per-build-step counts <= 40 (v3 meta cut); the process itself said 0)
