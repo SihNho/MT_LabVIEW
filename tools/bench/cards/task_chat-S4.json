@@ -1,0 +1,17 @@
+{
+ "schema": "task/1", "id": "chat-S4", "kind": "build",
+ "goal": "Adopt a fully passing scratch file as the stage result; per-node reads instead of per-BIND whole-VI reads; resume from the stop point within a cycle; measure B on a scratch",
+ "why": "User 2026-10-03 approved A, B and resume-within-cycle. Detail: brief_chat-S4.md",
+ "inputs": [{"path": "tools/bench/cards/brief_chat-S4.md", "md5": "6955981f0286dd368baa28152e764083"}],
+ "pass": [
+  "A: adopted-scratch path accepted by launch gate/recipes, self-test; no second run on the bed after a full scratch pass",
+  "B: per-node bind equals whole-read bind on recorded graphs (self-test); X10 counts only whole-VI reads; LabVIEW scratch check reports s and MB per BIND vs today",
+  "resume: stop record + same-cycle resume verified against sim state (pass and fail self-tests); new cycle restarts from the last accepted file",
+  "existing stagexec/stagekit/stage_prerun/gateclass self-tests green or explained; PD in tooling.md + INDEX"
+ ],
+ "outputs": ["tools/stagexec.py"],
+ "flags": {"labview": "read", "gui": true, "hardware": "none", "run_vi": false,
+  "write": ["tools/**", "docs/d1/tooling.md", "docs/d1/INDEX.md"], "status_edit": false, "git_commit": true, "peers": ["hypothesis", "audit"]},
+ "budget": {"failures": 2, "minutes": 150}, "unblocks": "M4",
+ "rules": ["Runner stopped; scratch copies only in LabVIEW, never the bed", "GUI only for the existing broken-intermediate save rule", "Edit tool only"]
+}

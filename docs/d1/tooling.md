@@ -142,3 +142,36 @@ How to add: see the 5-line note at the top of `docs/d1/INDEX.md`.
        a new row on a tunnel that existed before the op as a new object. Face rows + an extra tunnel object, or + a wire
        difference, or a row on a non-tunnel owner, STOP. Self-tests `selftest_gateclass_s3.py` 13/0, `stagexec selftest`
        141/0 (T120–T124).
+329. **(chat card chat-S4, 2026-10-03 — USER: "A, B는 도입하는게 좋겠고 4번의 경우 한 싸이클 내에서는 계속 이어서 작업하는게
+     좋겠음")** One mechanism in `tools/stagexec.py` (section "card chat-S4"), generic for a P4 session file or a small subVI
+     file built in its own VI. Self-test `tools/bench/selftest_stagexec_s4.py` 24/0. STRUCTURAL + offline; no stage run yet.
+     - **(a) ADOPT the scratch (A):** after the scratch run's BGRUN END, `py tools/stagexec.py adopt --script <scratch
+       recipe> --log <its log> --artefact <saved file> --input <bed> --input-md5 <md5> --required E1,PB,PS,...` checks the
+       log's last segment (RESULT line, no STOP-class FAIL by gateclass, no hard marker, every required step-end gate has a
+       PASS line), the artefact (a claudeDev file, not the input) and the input md5, then appends `adopt/1` to
+       `tools/bench/adopted_scratch.jsonl`. The scratch recipe must SAVE its work copy under the stage's normal name
+       (`Stage(work_name=...)`, rule-6 GUI save) instead of deleting it. `stage_prerun` launch gate: a stage recipe (or its
+       `_scratch` wrapper — one key) with an adoption for the SAME plan md5s is REFUSED (no second run on the bed); a judgement
+       session withdraws a record by adding `"revoked": "<reason>"`.
+     - **(b) RESUME within a cycle (R):** in a recipe's ExecStop handler `stagexec.save_for_resume(s, x, e)` saves the scratch
+       as-is, keeps it, and writes `tools/bench/resume/resume_<stage>_<ts>.json` (`resume/1`: from_step k-1, the binding as
+       Part A's, the actions-prefix fingerprint, file md5, cycle). A later card in the SAME cycle: `bd = load_resume(rec, plan,
+       cycle)` then `Executor(plan, be, from_step=bd["stop_after"], binding=bd)` on a work copy of that file — the existing
+       Part-B entry compares the whole-VI read with simulated step k-1 and stops (FROM-STEP BASE) if op k had already changed
+       the file. Refused: another cycle, a changed file, the bed itself, a plan whose actions 1..k-1 or base changed (a plan
+       changed only after the stop point is accepted). Shift registers created before the stop: no resume (load_binding rule).
+     - **(c) PARTIAL READS (B), dry side only:** `Executor(partial_reads=True)` replaces a checkpoint's whole-VI read with
+       `backend.read_owners(<owners the simulated step changed since the last read>)` patched into the last read, when every
+       new owner is the op's returned uid; structure creates, multi-owner creates (tunnels) and the last op stay whole
+       (`partial_fallbacks`). Dry: same binding and every step diff 0 vs whole reads on plan_disp (38 of 47 reads partial) and
+       plan_ring_p4_s01 (3 of 4). Trade-off measured: a real change outside the simulated diff is missed by a partial read and
+       caught at the next whole read (B4: junk at op 25, stop at op 31). X10: `x10_model_peak(partial=)` counts only whole reads
+       in R (+ `part_read_mb`, 0 until measured); the dry run's `reads_partial` feeds it.
+     - **(d) LabVIEW read cost, measured** (`tools/bench/diag_s4_readcost.log`, read-only copy of the P4 session-1 file, fresh
+       LabVIEW): whole `read_live` 105.7 / 35.6 / 24.7 s and +4.3 / +7.4 / +5.2 MB (:37-39) — parts: GObject census 9.2 s
+       (+1.2 MB first, then 0), OpAllTerms_v1 13.2 s (~0 MB) (:40-43). Nearest per-node route: Diagram list 0.41 s, node_labels
+       ~0.25 s + node_terms_uids ~0.24 s, ~0 MB; rows equal the whole read for 11/11 addressable owners (Property, Function,
+       ControlReferenceConstant, SubVI, IndexArray, GrowableFunction, InRangeAndCoerce). NOT addressable (19/30): numeric /
+       boolean / string / GenClassTagRef constants, every tunnel class, shift registers, Diagram-owned control terminals; and
+       the route returns no term_class / owner_class / frame_diagram, which binding needs. So `LVBackend` has NO `read_owners`
+       yet: partial reads stay off on LabVIEW until an owner-uid reader op exists (a build card; OPEN in result_chat-S4).

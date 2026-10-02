@@ -211,6 +211,7 @@ delivered step that later items build on; it is in force as a fact, not as an or
 - PD326(a)-(e) P4 SESSION 1 DELIVERED `D1_ring_p4s01_20261002_232547.vi` dc61e193 (EL 51 OK, peak 605.0, graph `graph_ring_p4s01_20261002_234419.json`, load 596.5); term_identity_gates accepted; X10 not recalibrated yet (start 596.5 for s02); binding raw-uid carry; cycle 142 = s02 rebase → scratch → gated launch ‖ s03 prep — docs/d1/ring-p4b.md:73
 - PD327(a)-(e) STOP vs LOG-only gates in one table `tools/gateclass.py`: names and non-semantic counts within max(5, 25 %) log to `gate_soft_log.jsonl` and continue; semantic classes, cdiff, wires, md5, MEMSTOP stop; guard_peer skips soft-only logs — docs/d1/tooling.md:112
 - PD328(a)-(c) memory limits lowered (X10 FAIL 680, MEMSTOP 695, one source `memory_model.json`); tunnel OBJECT count differences stay STOP; E1 diffs of tunnel face rows only are LOG-only — docs/d1/tooling.md:126
+- PD329(a)-(d) adopt a fully passing scratch file as the stage result (adopted_scratch.jsonl; launch gate refuses a 2nd run); resume within a cycle from a saved scratch (resume/1, Part-B entry); per-owner partial reads (dry only — no LabVIEW owner reader yet); whole read 25-36 s / +4-7 MB vs per-node 0.5 s / ~0 MB — docs/d1/tooling.md:145
 - PD268(d) 130-2 accepted; open tooling queue fp-20/21/22/24/25, guard_cycle:40, stop_record H1–H3 — docs/d1/tooling.md:34
 
 ### Older items that PD238+ cite as still applying

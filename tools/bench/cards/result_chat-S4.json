@@ -1,0 +1,36 @@
+{
+ "schema": "result/1",
+ "id": "chat-S4",
+ "status": "FAIL",
+ "gates": {"pass": 3, "fail": 1},
+ "first_fail": "B LabVIEW part: no plan could run with partial reads - no op reads one owner's terminals with term_class/owner_class/frame_diagram; measured the components instead",
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/stagexec.py", "md5": "7e1f7cc580f2c73458f687559d286cc9"},
+  {"path": "tools/stage_prerun.py", "md5": "fd59737e0bfe3619e226355e429d9d21"},
+  {"path": "tools/bench/selftest_stagexec_s4.py", "md5": "6557cac2150666af7962d6a1fd145806"},
+  {"path": "tools/bench/diag_s4_readcost.py", "md5": "c06c4d36ede756dd4833ef0007df31ac"},
+  {"path": "tools/bench/diag_s4_readcost.json", "md5": "b66fbe6deea67e9c8126b02df50338de"},
+  {"path": "docs/d1/tooling.md", "md5": "9f12ea6cc247977ede39f44a4076d020"},
+  {"path": "docs/d1/INDEX.md", "md5": "1495b6cca221406181e70e7485cecf22"}
+ ],
+ "facts": [
+  "A: stagexec adopt CLI + adopt_verdict/adopt_scratch -> adopted_scratch.jsonl; stage_prerun._check_units refuses a 2nd run of the stage or its _scratch (same plan md5s); selftest_stagexec_s4 A1-A7 PASS",
+  "R: resume_record/save_for_resume/write/load_resume reuse the Part-B entry; stop before op 25 resumes to op 47, mutated op 25 refused; cycle/file/bed/prefix refused (selftest_stagexec_s4 R1-R6)",
+  "B dry: Executor(partial_reads=True) == whole reads (same binding, all diffs 0): plan_disp 38/47 reads partial, plan_ring_p4_s01 3/4; X10 R counts whole only (stage_prerun x10_model_peak partial=)",
+  "B trade-off measured: junk object at op 25 (partial read) is not seen there, caught at op 31 (next whole read) as BINDING (selftest_stagexec_s4.log B4)",
+  "LabVIEW whole read_live 105.7/35.6/24.7 s, +4.3/+7.4/+5.2 MB; GObject census 9.2 s, read_terms 13.2 s ~0 MB (diag_s4_readcost.log:37-43)",
+  "Per-node route Diagram list 0.41 s + node_labels ~0.25 s + node_terms_uids ~0.24 s, ~0 MB; rows == whole read for 11/11 addressable owners (diag_s4_readcost.json)",
+  "Not addressable by Nodes[] (19/30): numeric/bool/string constants, all tunnel classes, shift registers, Diagram control terminals; route gives no term_class (binding key, stagexec.py bind_new)",
+  "So LVBackend has no read_owners: partial reads stay off on LabVIEW (Executor falls back to whole reads automatically)",
+  "Regress s4_regress.log 29/5: stagexec selftest 141/0, gateclass, x10 all green; reds = same as chat-S3: c106e X17, c114 R4, 3 guard_peer NO-RESULT",
+  "c106e red explained by review archive/peer/2026-10-03-s4-c106e-x17-fixture.md + s4_c106e_e1_full.log:86-94: X17 only (r7_wait, r7_max), X10 PASS 634.5"
+ ],
+ "open": [
+  "B on LabVIEW needs a new op reading one owner uid's terminals incl. term_class (or a list of uids) - a labview:build card; or accept node_terms_uids for Nodes[] owners only, with term_class taken from a class read?",
+  "X17 (stage_prerun.prim_donor_check :2674) refuses plans that rely on the labels-file donor lookup (gscript.py:4801), e.g. plan_disp r7_wait/r7_max - fix X17 or the fixture?",
+  "Review dispositions not written: card write flags exclude archive/peer/ (2026-10-03-s4-c106e-x17-fixture.md, -s4-selftest-a7-b4.md 'What was done with it' still placeholders)"
+ ],
+ "cost": {"usd": null, "minutes": 39, "labview_runs": 1},
+ "note": "LabVIEW used once, read-only on a deleted byte copy; LabVIEW gone. Scratch recipes not yet switched to SAVE + adopt (no stage run in this card); the next stage card wires adopt/save_for_resume into its recipe. STATUS not edited."
+}
