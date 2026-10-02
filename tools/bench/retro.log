@@ -6109,3 +6109,104 @@ VIOLATION: repeated-failure-class | loss_min=24 | loss_usd=? | evidence=tools/be
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle134","verdict":"refuted","alternative":"The FS owner gap was new: the reader spec could not foresee FS 27509 had no owner entry, and 134-3's measure-then-decide was protocol-correct, so the two dispatches were the protocol's price, not a fault.","discriminating_test":"Read ring-p3b.md:99-103 and :110 (PD279(b)/PD280(a), cycle 132): frame owners ['FlatSequenceFrame',0] recorded and set by carry_fs; then task_134-1.json:36-37 - reader spec omits owners. Recorded+omitted => fault.","violations":[{"slug":"repeated-failure-class","loss_min":24,"loss_usd":"?","evidence":"tools/bench/diag_c134_2_finalize_b.log:6"}],"sources":["tools/bench/diag_c134_2_finalize_b.log:6","docs/d1/ring-p3b.md:100","docs/d1/ring-p3b.md:303","tools/bench/cards/result_134-2.json:22","tools/bench/cards/guard_card.log:625","tools/bench/cards/guard_card.log:632","tools/bench/peer_c134_4_fs_chain.log:4"],"note":"Only logged $ for this fault is the fs-chain review $1.7334; material/judgement cost unlogged. Counterfactual launch at ~11:50 ending ~12:45 is tight vs minute-150 NEXT rule."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle134.md
 BGRUN END rc=0 after 348s
+BGRUN START 2026-10-02 14:55:59 limit 10.0 min: py tools/retrospective.py --cycle 136
+BGRUN PID 18864
+   window 2026-10-02 12:14:25 .. 2026-10-02 14:56:00 (162 min); 57 build logs, 12 machinery logs, 49 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle136.txt (38595 chars)
+   review card tools\bench\cards\review_retrospective-cycle136.json
+BGRUN START 2026-10-02 14:56:12 limit 20.0 min: C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\retrospective.py --cycle 136
+BGRUN PID 21128
+   window 2026-10-02 12:14:25 .. 2026-10-02 14:56:12 (162 min); 57 build logs, 12 machinery logs, 49 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle136.txt (38611 chars)
+   review card tools\bench\cards\review_retrospective-cycle136.json
+OUTCOME: ANSWERED (463s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-10-02-retrospective-cycle136.md
+COST: $2.4000  in 58 / out 44166 / cache-create 123706 / cache-read 2634217  (461s, 47 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle136 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle136.json
+--- ANSWER ---
+I traced every cycle-136 card to its log. One fault changed how the cycle ended, and the X10 memory gate counts as a failed device in this window.
+
+**The window covers two cycles.** The window starts at 12:14:25, but cycle 135 ran from 12:15:23 to 13:26:32 (`cycle_runner_main_20261002_1215.log:3-8`). Cycle 136 ran from 13:26:50 to 14:56:12 (`cycle_136.log:1,215`). All `*_c135*` logs, `motor_session_*_cycle135`, and `cycle_135.log`'s $28.29 belong to cycle 135. The audit's C4c figure of $71.06 adds the two cycles together. Cycle 136's judgement session alone cost **$42.76 over 5362 s** (`cycle_136.log:214-215`). C3's 232 build-minutes are also mostly cycle 135. I charge only cycle 136 below.
+
+## The most costly structural fault: the deliverable was ordered behind a measurement that could not answer its question, and the session then stopped with budget left
+
+The cycle's job was the P4 route checks: routes U1–U3, U5, U6 and the W1 `Or` (`brief_136.md:3-13`). Card 136-3 ran them at 14:18. It crashed on op 3 with `#29466 is not in Diagram[22].Nodes[]` (`diag_c136_3_routes.log:36-46`). The material session named the fix as a lookup patch in our own script (`result_136-3.json:24`).
+
+At 14:21 the judgement session did not dispatch that patch and rerun. It dispatched 136-4, a 40-read memory run (`guard_card.log:649`), on the strength of PD300(c): "MEMORY IS THE BINDING CONSTRAINT" (`docs/d1/ring-p4.md:111-116`). That premise was a fit of 0.543 MB/op with SD 10.6. The material's own result next to it said that one file loaded twice differed by 28.8 MB (`result_136-P2.json:19`). Thirty minutes later the session itself called the fit "baseline noise" (`ring-p4.md:121`).
+
+136-4 was also unable to answer the question it was sent for. Its goal was "until error 2 or 1300 MB" (`task_136-4.json:5`), but its stop conditions were 40 reads or 20 minutes (`:22`). From a 576.5 MB start, 40 reads at the model's 2.53 MB per read reaches about 677 MB, not the ~770 MB where error 2 was once seen. The run ended at 653.5 MB, "NOT REACHED" (`diag_c136_4_mem.log:84`).
+
+Then the session ended at 14:56, 89 minutes into a 180-minute budget (`cycle_136.json:20`). It had used 5 of 6 dispatches (`session_8c25435c-….json:1`; `guard_session.py:60`). It wrote the work it had not done into the next cycle's first act (`next.json:4`).
+
+- **Slug:** `wrong-ordering`. It also has an inference component: an unexamined fit set the order, and the read cap was not checked against its target.
+- **Loss:** 33 min. That is 136-4's slot from 14:21 to 14:53 (`result_136-4.json:15`), which went ahead of the deliverable, plus a full cycle's deferral. No log ties a dollar figure to this fault, so `loss_usd=?`.
+- **Counterfactual:** had the patch-and-rerun gone out at 14:21, the routes would have had verdicts by about 14:40. 136-3's whole card took 15 min, and its run took 125 s (`diag_c136_3_routes.log:72`). 136-4 could then have run from about 14:41 to 15:15. The cycle would have ended about 15:20 with U1–U6 and W1 measured, still 66 minutes inside its budget. Even without reordering, one dispatch and about 90 minutes were left at 14:54. Instead the cycle ended with zero routes measured.
+
+## Device effect
+
+**X10 failed** (`device-failed`, decided 2026-10-02 02:57, "X10 predicts the step's peak"). It failed two ways inside the window.
+
+- **It refused the wrong thing.** At 13:45 it blocked 136-1 as UNMEASURED. It had no branch for stagekit edit diagnostics, a form the card prescribed and "X10 can never pass" (`gate_fp_queue.jsonl:33`). This is the second refusal of the same class after fp-29 (`:29`), and each was patched on its own branch (`stage_prerun.py:1978`, then `:2083`). That is the "one patch per hole" pattern the 2026-09-24 decision rejected.
+- **The patch it got is blind to reads, and judgement worked around it by hand.** After 136-2's patch, X10 judged 136-3 with "R 1 reads … 0 executed whole-VI read(s)", predicting 661.9 MB (`diag_c136_3_prerun.log:90-91`). The script has 10 read call sites, which comes to 687.2 MB (`diag_c136_3_routes.py:4-5`). On 136-4 it predicted 592.5 MB with R 2 (`diag_c136_4_prerun.log:105-106`); the run made 40 reads and measured 653.5 MB. Judgement replaced the device's read count with a hand count (PD299(b), `ring-p4.md:96-99`).
+
+Cost: card 136-2, about 15 of its 17 minutes. The $0.48 in that card was the unrelated Stop-If-True fact peer, so `loss_usd=?`. Counterfactual: had fp-29's drain at 07:32 modelled any non-Executor script with reads counted from source, 136-1's prerun at 13:45 would have returned a numeric FAIL inside 136-1. That is about 50 reads, roughly 760 MB on my arithmetic. The reads would have been cut in the same card, and the 136-2 dispatch would not have existed.
+
+The other devices held or were not exercised:
+- **bgrun inner-FAIL → rc=1:** worked (`diag_c136_3_routes.log:70-72`).
+- **peer.ps1 adversarial set:** worked (`archive/peer/2026-10-02-c136-3-c135e-elmismatch.md:34-40`).
+- **guard_peer refusal while a review is owed:** fired correctly at 136-3 (`result_136-3.json:21`), but it was satisfied by dispatching the review alone; the disposition is still blank.
+- **Cost regex:** worked (C4b 4/4).
+- **LabVIEW-card-beside-tool-writer refusal:** held. 136-2 wrote `stage_prerun.py` only after 136-1 had returned.
+- **C7 scope counter:** saturated at 219 files, so it carries no signal. It is a counter by design, so I record this as a finding.
+- **Prior-art review, guard_cycle and the stop record:** no recipe build this cycle, so not exercised.
+
+## FINDINGS
+
+**1. Repeated failure.**
+- X10 refused a non-Executor script as UNMEASURED twice: fp-29 in cycle 132, read-only, and fp-33 in cycle 136, edit (`gate_fp_queue.jsonl:29,33`). The approach should have changed at fp-29, the first occurrence: model any script from its source call sites instead of adding a branch per script kind.
+- The same offline self-test was refused by two gates on two occasions: fp-30 in guard_bash, then fp-32 in guard_peer (`gate_fp_queue.jsonl:30,32`; `guard_card.log:643-644`, refused at 13:32 and 13:36).
+- The two plan-replay stops have different causes, so they are not a repeat: P1 at action 64 (`prep_c136_p1_sim.log:78-80`) and P2 at step 102 (`prep_c136_p2_sim.log:105`).
+
+**2. Missing tool.**
+- **A source-counted read meter for X10.** Its absence produced fp-33 and the blind PASSes on 136-3 and 136-4.
+- **A Stop-If-True / Mechanical Action reader.** It was asked for in three cards and delivered in none: 136-1 item 4, 136-2 item 5 (where building it was forbidden, `task_136-2.json:53`), and 136-3 item 4 (permitted but not reached). PD298(e) depends on it.
+- **A wrong citation in the cycle's own documents.** `ring-p4.md:131` and `STATUS.md:57` cite the reader's pattern at `tools/bench/build_oploopendref_v0.py`. The file is at `tools/recipes/` (audit L2).
+
+**3. Unmeasured steps.**
+- PD300(c) was accepted against its own evidence. The discriminating measurement, a fresh-start memory read, took about 60 s (`diag_c136_4_mem.log:114`). A 40-read run was not needed for it.
+- 136-4's read cap was never checked against its 770 MB target.
+- The bed load entered into the memory model as 600.2 MB (`diag_c136_1_graph.log:24`) is one reading. The same file loaded at 576.5 MB in 136-4 (`diag_c136_4_mem.log:85`).
+
+**4. Rule compliance.**
+- **Ended a turn expecting to be resumed.** The session's last message reads "The retrospective is running in the background. I'll wait for it and record what it finds." (`cycle_136.log:214`). That breaks the session's own rule at `cycle_136.log:183-187`.
+- **A3, failing log not reviewed.** `diag_c136_3_routes.log` failed with rc=1 and has no review. PD301(c) waives one ("no review owed"), so it complies only on paper, and guard_peer may refuse cycle 137's first LabVIEW card on it.
+- **A4, dispositions left blank.** The c135e review says the bed's expected Error List was "fitted to the result it is supposed to judge" (`elmismatch.md:65`). Its disposition is blank (`:91-93`), and so are both condterm reviews.
+- **Doc limits:** STATUS is 124 lines, over the 110 cap; `ring-p3b.md` is 419 lines, over the 400 cap.
+- **Not done:** 136-P2's "delete v2 step files" rule; the permission layer refused it, and the card reported that.
+- **What the audit does not cover:**
+  - whether the cycle delivered its act;
+  - unused budget and dispatches;
+  - X10's predicted peak against the measured peak;
+  - whether a review's substance was acted on;
+  - that the window spans two cycles;
+  - the session's final message.
+
+**5. Ordering.** Not defensible, as set out in the fault above. Also, 136-1 was written in a form that, by `result_136-1.json:20`, no edit diagnostic had passed prerun in since card 130. The X10 edit branch should have come first.
+
+**6. What was not reported.**
+- **"Memory wall … refuted" overstates.** STATUS line 58 says this, but error 2 was never reached and the 690/700 stops are unchanged (`ring-p4.md:125-126`). Only the cumulative-growth premise was refuted.
+- **"P4 feasible in fresh sessions" is not measured.** STATUS line 64 says this, but v3's session table is still owed (`next.json:11`).
+- **X10's 61 MB under-prediction is not reported as an X10 miss.**
+- **The c135e finding is reduced to a "carry".** The review questions the current bed's acceptance; STATUS:57 lists it only as a carry.
+- **Unused budget and cycle cost are not stated:** 89 of 180 minutes, 5 of 6 dispatches, and $42.76.
+- **A dropped measurement is mentioned only in a note:** 136-3 stopped reading the TS index_mode (`result_136-3.json:28`).
+
+**7. Judgement inside a material session.**
+- **136-3** reordered its parts and dropped the index_mode read (`result_136-3.json:28`). That is a measurement-scope decision.
+- **136-P1** deferred PD293(b)'s "to 1.7 only when valid" clause to P5 (`result_136-P1.json:22`). I found no ratification in PD298 (`ring-p4.md:63-91`).
+- **136-P2** chose t5111 for the n2 source. It flagged the choice, and PD300(b) ratified it (`ring-p4.md:109-110`), so that one is acceptable.
+
+VIOLATION: wrong-ordering | loss_min=33 | loss_usd=? | evidence=tools/bench/cards/task_136-4.json:22
+VIOLATION: device-failed | loss_min=15 | loss_usd=? | evidence=tools/bench/diag_c136_3_prerun.log:90
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle136","verdict":"refuted","alternative":"The session ended at 14:56 because something not in the files forced it (an unlogged guard refusal of a 6th dispatch, or a budget it misread), so the order of 136-4 before the route rerun cost nothing.","discriminating_test":"Look in the cycle-136 session transcript and the guard_session/guard_card logs after 14:53 for a refused dispatch. If one exists, the early end was forced and the wrong-ordering loss falls to the 136-4 slot alone.","violations":[{"slug":"wrong-ordering","loss_min":33,"loss_usd":"?","evidence":"tools/bench/cards/task_136-4.json:22"},{"slug":"device-failed","loss_min":15,"loss_usd":"?","evidence":"tools/bench/diag_c136_3_prerun.log:90"}],"sources":["tools/bench/diag_c136_3_routes.log:36-46","tools/bench/session_8c25435c-d4a0-451f-a71a-3c8f8910def2.json:1","tools/bench/cycle_136.log:214-215","docs/d1/ring-p4.md:111-126","tools/bench/cards/result_136-P2.json:19","tools/bench/diag_c136_4_mem.log:84-86","tools/bench/diag_c136_4_prerun.log:105","tools/bench/gate_fp_queue.jsonl:29,33"],"note":"The window also covers cycle 135 (12:15-13:26). Cycle 136 alone: 13:26:50-14:56:12, judgement $42.76. X10 refused wrongly (fp-33), and after its patch it counts 0 of 10 reads; PD299(b) replaced its count with a hand count."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle136.md
+BGRUN END rc=0 after 469s

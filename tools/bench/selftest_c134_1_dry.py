@@ -82,7 +82,12 @@ cur = os.path.join(ROOT, "tools", "recipes", "stage_d1_ring_p3b2a.py")
 gate("T2a fixed recipe md5 == bb5ba064", md5b(open(cur, "rb").read()).startswith("bb5ba064"), md5b(open(cur, "rb").read()))
 rc, ln, out = dry(cur)
 gate("T2 bb5ba064 -> DRY PASS (no unverified)", ln.startswith("=== DRY PASS:") and rc == 0 and "unverified 0" in ln, ln[:260])
-gate("T7a its empty-declared CEN2 printed UNPREDICTED, not PASS", "UNPREDICTED  CEN2" in out and "PASS  CEN2" not in out,
+# card 136-P1 (fp-30): since 135-2 the recipe's CEN2 carries a DECLARED census (plan_ring_p3b2a_pred.json), and a dry run
+# prints it `UNVERIFIED-DRY  CEN2 ... (census not measured in a dry run; declared {...})`
+# (tools/bench/selftest_c134_1_dry_c136_p1_t2.log:75), no longer `UNPREDICTED`. The invariant this gate guards is
+# unchanged: an unmeasured census is never a PASS in a dry run. The empty-declared case stays covered by T7 below.
+gate("T7a its CEN2 printed UNPREDICTED or UNVERIFIED-DRY, never PASS",
+     ("UNPREDICTED  CEN2" in out or "UNVERIFIED-DRY  CEN2" in out) and "PASS  CEN2" not in out,
      [x for x in out.splitlines() if "CEN2" in x][:2])
 # T3 - stub-only fixture
 BASE = json.load(open(os.path.join(ROOT, "tools", "bench", "sim", "ring_p3b2_base_real_fsmap.json"), encoding="utf-8"))

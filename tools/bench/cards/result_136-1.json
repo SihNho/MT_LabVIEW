@@ -1,0 +1,25 @@
+{"schema":"result/1","id":"136-1","status":"BLOCKED","gates":{"pass":16,"fail":1},
+"first_fail":"prerun X10 of tools/bench/diag_c136_1_routes.py: UNMEASURED (no stagexec.Executor plan, no recorded meter, not read-only)",
+"blocked_by":{"device":"gate-fp:fp-33","message":"stage_prerun X10 FAILs every stagekit EDIT diagnostic outside stagexec.Executor (tools/stage_prerun.py:2094-2098; only a read-only branch exists, :2071-2081). Items 1-3 (U1 U2 U3 U5 U6, W1 Or) are written, dry PASS, prerun 13/1, NOT run. No accepted equivalent form, no release."},
+"artefacts":[
+ {"path":"tools/bench/graph_ring_p3b2b_20261002_133824.json","md5":"50595c62d0332a94bf066538cf20c0ae"},
+ {"path":"tools/bench/diag_c136_1_graph.log","md5":"dbd8d27d10dce4c0bd4adab7ad24f16f"},
+ {"path":"tools/bench/diag_c136_1_graph.py","md5":"22e2256a1fa6679c6f086392f87b80ad"},
+ {"path":"tools/bench/diag_c136_1_routes.py","md5":"be8f651304d97f24c7284647a5966d1f"},
+ {"path":"tools/bench/diag_c136_1_routes_plan.json","md5":"b7d3c65fc669ce896c9a3b552205e0c5"}],
+"facts":[
+ "Item 5 PASS 16/0: graph of the UNEDITED bed written, 5963 rows / 10393 objs / 24 loops / 22 FS / 70 border tunnels; bed md5 39511877 unchanged before+after (diag_c136_1_graph.log:300,307,315)",
+ "Graph gate B: 7 FS border tunnels UNMEASURED (nested FS) [14430,31050,34409,34489,43605,44160,44164] of 70 (diag_c136_1_graph.log:305)",
+ "Item 4: #10171 rows = out 'x = y?' t23276 w23310; x t23292 and y t23283 both on w23255 (diag_c136_1_graph.log:294)",
+ "Item 4: While #10170 cond term #23246, IsSource False, cond wire 23310 == #10171 out wire, err '' (OpLoopEndRef_v0, diag_c136_1_graph.log:295)",
+ "Item 4: #10170 conditional-terminal MODE (Stop/Continue if True) UNMEASURED: no reader op exists, OpLoopEndRef_v0 reads term/wire/IsSource only (toolkit-capabilities.md:67; diag_c136_1_graph.log:296)",
+ "Item 6: memory 600.2 MB after load, 611.5 after reads (diag_c136_1_graph.log:24,271); handles 33991 fresh -> 45655 loaded -> 45958 after work -> 33988 at exit (:18,24,313,324)",
+ "Item 6: LabVIEW gone at exit True, byte copy deleted, no *c136* file left in claudeDev (diag_c136_1_graph.log:314,330; Glob 0 hits)",
+ "Items 1-3 script diag_c136_1_routes.py (120 lines, draft's own donors incl. bed Or #10247 for W1): dry PASS dry_rule 2; prerun 13 pass / 1 fail = X10 only (tools/bench/diag_c136_1_routes_prerun.json)",
+ "Or donor for W1's stop FOUND offline: bed Function #10247 'x .or. y?' on #23166 (graph_ring_p3b2a_fs_20261002_123012.json row t10253); creation/wiring not run",
+ "gate-fp fp-33 logged (checker:stage_prerun:X10); since card 130 no non-stagexec edit diagnostic has passed prerun (prerun_records.jsonl:589-615 are read-only only)"],
+"open":[
+ "Items 1-3 need either an X10 branch modelling a stagekit edit diagnostic from its dry op count (fp-33 drain, start 600.2 + 26*1.38 + reads + 17.4 ~ 654-680 MB) or the 12 wires + 14 creates re-expressed as a stagexec plan run; which?",
+ "The #10170 Stop/Continue-if-True mode has no reader op; build one (WhileLoop conditional-terminal property) or read it from a GUI capture of the diagram?"],
+"cost":{"usd":null,"minutes":16,"labview_runs":1},
+"note":"No Jev ladder row: the only LabVIEW run (diag_c136_1_graph.log) ended BGRUN END rc=0, 16/0. Dry used --graph graph_ring_p3b2a_fs_20261002_123012.json for the graph reader (133-5 precedent) and the new graph for the routes script."}

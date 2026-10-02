@@ -1,0 +1,116 @@
+BGRUN START 2026-10-02 14:26:52 limit 30.0 min: py -u tools/bench/diag_c136_4_mem.py
+BGRUN PID 24520
+BGRUN STAGE-RUN recorded diag_c136_4_mem.py cycle='cycle 136' card=None pid=3936 -> stage_runs.jsonl
+diag_c136_4_mem - card 136-4 (PD298(f)/PD300(c)): WHERE does LabVIEW error 2 really appear today? MEASUREMENT ONLY.
+The 700 MB stop (stagexec.MEM_STOP_MB) sits on ONE error-2 observation at ~770 MB (com-driving.md:308-312). A dated byte copy
+claudeDev\scratch_c136_4_mem_<ts>.vi of the P3b2b bed (md5 39511877; the bed is never opened) in a FRESH LabVIEW; warn-only meter
+(stagexec.Meter stop_mb=None, stagexec.py:72-97); the Executor's checkpoint read repeated until the first error 2, 1300 MB, 40 reads
+or 20 min. Nothing is saved (an error-2 state writes stale files).
+PRIOR ART (reused, nothing new built): skeleton + read + meter = diag_c129_6_mem.py W1 (read_ck == stagexec LVBackend.read =
+wiki_build.read_live(work, fs_pairs) :233); fs_pairs from graph_qrt_pool_20260928.json as diag_c136_1_graph.py; error text from
+gscript.report_all :739-741 / allterms.read_terms :80-82 (RuntimeError '... error <code>: <source>'); fresh start =
+bench_prep.restart_labview :74-79; kill = stagexec.kill_labview_at_exit :3666. X10 (stage_prerun memory margin) is NOT APPLICABLE:
+this is a warn-only measurement whose purpose is to cross the 690/700 MB lines; its model counts read call sites, not iterations.
+PREDICTION (mechanics; the MB curve and the error-2 point are the measurement): P1 LabVIEW.exe PE Machine 0x8664 (64-bit);
+R1 >= 1 read, every successful read returns the same > 0 terminal row count; R2 handles flat across reads 2.. (max - min <= 100);
+R3 stop reason one of error2 / mb / reads / time and, if an exception stopped it, its text is classified; X bed md5 unchanged;
+H5 ref counter opened == closed; scratch deleted; LabVIEW gone; fresh-start read after the kill.
+    py tools/bgrun.py --material --max-min 30 --log tools/bench/diag_c136_4_mem.log -- py -u tools/bench/diag_c136_4_mem.py
+  FACT  P1 C:\Program Files\National Instruments\LabVIEW 2026\LabVIEW.exe PE header: {'e_lfanew': '0x148', 'sig_ok': True, 'machine': '0x8664', 'magic': '0x20b', 'bits': 64}
+  PASS  P1 LabVIEW.exe PE header read: Machine 0x8664, magic 0x20b -> 64-bit  {'e_lfanew': '0x148', 'sig_ok': True, 'machine': '0x8664', 'magic': '0x20b', 'bits': 64}
+  FACT  X10 NOT APPLICABLE (card 136-4 rule 2): warn-only measurement, Meter stop_mb=None; it must cross 690/700 MB
+  FACT  input md5 before: 395118775a52bc90073f4449b99f899d
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 325 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 395118775a52bc90073f4449b99f899d  got 395118775a52bc90073f4449b99f899d
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33989
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_c136_4_mem_20261002_142653.vi
+  FACT  ExecState [after open] scratch_c136_4_mem_20261002_142653.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so scratch_c136_4_mem_20261002_142653.vi is deleted at close
+  METER load   k   0  private 576.5 MB (d -)  handles 45653 (d -)
+  METER read   k   1  private 584.5 MB (d +8.0)  handles 45748 (d +95)
+  METER read   k   2  private 585.3 MB (d +0.8)  handles 45741 (d -7)
+  METER read   k   3  private 586.2 MB (d +0.9)  handles 45740 (d -1)
+  METER read   k   4  private 587.3 MB (d +1.1)  handles 45733 (d -7)
+  METER read   k   5  private 587.3 MB (d +0.0)  handles 45732 (d -1)
+  METER read   k   6  private 589.3 MB (d +2.0)  handles 45731 (d -1)
+  METER read   k   7  private 589.3 MB (d +0.0)  handles 45728 (d -3)
+  METER read   k   8  private 589.3 MB (d +0.0)  handles 45727 (d -1)
+  METER read   k   9  private 592.0 MB (d +2.7)  handles 45730 (d +3)
+  METER read   k  10  private 591.9 MB (d -0.1)  handles 45729 (d -1)
+  METER read   k  11  private 592.0 MB (d +0.1)  handles 45730 (d +1)
+  METER read   k  12  private 592.1 MB (d +0.1)  handles 45728 (d -2)
+  METER read   k  13  private 596.0 MB (d +3.9)  handles 45728 (d +0)
+  METER read   k  14  private 596.0 MB (d +0.0)  handles 45733 (d +5)
+  METER read   k  15  private 600.0 MB (d +4.0)  handles 45728 (d -5)
+  METER read   k  16  private 601.1 MB (d +1.1)  handles 45727 (d -1)
+  METER read   k  17  private 601.1 MB (d +0.0)  handles 45727 (d +0)
+  METER read   k  18  private 605.2 MB (d +4.1)  handles 45728 (d +1)
+  METER read   k  19  private 611.2 MB (d +6.0)  handles 45728 (d +0)
+  METER read   k  20  private 611.3 MB (d +0.1)  handles 45729 (d +1)
+  METER read   k  21  private 615.3 MB (d +4.0)  handles 45728 (d -1)
+  METER read   k  22  private 615.4 MB (d +0.1)  handles 45724 (d -4)
+  METER read   k  23  private 615.5 MB (d +0.1)  handles 45724 (d +0)
+  METER read   k  24  private 619.6 MB (d +4.1)  handles 45727 (d +3)
+  METER read   k  25  private 619.6 MB (d +0.0)  handles 45726 (d -1)
+  METER read   k  26  private 623.7 MB (d +4.1)  handles 45727 (d +1)
+  METER read   k  27  private 623.7 MB (d +0.0)  handles 45726 (d -1)
+  METER read   k  28  private 623.8 MB (d +0.1)  handles 45726 (d +0)
+  METER read   k  29  private 636.8 MB (d +13.0)  handles 45724 (d -2)
+  METER read   k  30  private 636.8 MB (d +0.0)  handles 45724 (d +0)
+  METER read   k  31  private 636.9 MB (d +0.1)  handles 45724 (d +0)
+  METER read   k  32  private 641.0 MB (d +4.1)  handles 45725 (d +1)
+  METER read   k  33  private 641.1 MB (d +0.1)  handles 45724 (d -1)
+  METER read   k  34  private 645.2 MB (d +4.1)  handles 45727 (d +3)
+  METER read   k  35  private 645.2 MB (d +0.0)  handles 45727 (d +0)
+  METER read   k  36  private 645.3 MB (d +0.1)  handles 45727 (d +0)
+  METER read   k  37  private 649.3 MB (d +4.0)  handles 45726 (d -1)
+  METER read   k  38  private 649.4 MB (d +0.1)  handles 45718 (d -8)
+  METER read   k  39  private 653.4 MB (d +4.0)  handles 45718 (d +0)
+  METER read   k  40  private 653.5 MB (d +0.1)  handles 45721 (d +3)
+  FACT  R stop reason 'reads' after 40 read(s) in 879.9 s; at stop private 653.5 MB handles 45721; err ''
+  FACT  R first error 2: NOT REACHED; max private 653.5 MB
+  FACT  METER ROWS [["load", 0, 576.5, 45653], ["read", 1, 584.5, 45748], ["read", 2, 585.3, 45741], ["read", 3, 586.2, 45740], ["read", 4, 587.3, 45733], ["read", 5, 587.3, 45732], ["read", 6, 589.3, 45731], ["read", 7, 589.3, 45728], ["read", 8, 589.3, 45727], ["read", 9, 592.0, 45730], ["read", 10, 591.9, 45729], ["read", 11, 592.0, 45730], ["read", 12, 592.1, 45728], ["read", 13, 596.0, 45728], ["read", 14, 596.0, 45733], ["read", 15, 600.0, 45728], ["read", 16, 601.1, 45727], ["read", 17, 601.1, 45727], ["read", 18, 605.2, 45728], ["read", 19, 611.2, 45728], ["read", 20, 611.3, 45729], ["read", 21, 615.3, 45728], ["read", 22, 615.4, 45724], ["read", 23, 615.5, 45724], ["read", 24, 619.6, 45727], ["read", 25, 619.6, 45726], ["read", 26, 623.7, 45727], ["read", 27, 623.7, 45726], ["read", 28, 623.8, 45726], ["read", 29, 636.8, 45724], ["read", 30, 636.8, 45724], ["read", 31, 636.9, 45724], ["read", 32, 641.0, 45725], ["read", 33, 641.1, 45724], ["read", 34, 645.2, 45727], ["read", 35, 645.2, 45727], ["read", 36, 645.3, 45727], ["read", 37, 649.3, 45726], ["read", 38, 649.4, 45718], ["read", 39, 653.4, 45718], ["read", 40, 653.5, 45721]]
+  FACT  METER SUMMARY {"n": 41, "first_mb": 576.5, "peak_mb": 653.5, "last": {"tag": "read", "k": 40, "t": 1790919750.6, "mb": 653.5, "handles": 45721, "d_mb": 0.1, "d_h": 3}, "sum_d_mb_op": 0, "sum_d_mb_read": 77.0, "mean_d_mb_op": null, "mean_d_mb_read": 1.92, "warned_at": null}
+  PASS  R1 40 successful read(s), each > 0 rows, row count constant [5933]  [5933, 5933, 5933, 5933, 5933]
+  PASS  R2 handles flat across reads 2.. (max - min 23 <= 100)  [45741, 45740, 45733, 45732, 45731, 45728, 45727, 45730, 45729, 45730, 45728, 45728, 45733, 45728, 45727, 45727, 45728, 45728, 45729, 45728, 45724, 45724, 45727, 45726, 45727, 45726, 45726, 45724, 45724, 45724, 45725, 45724, 45727, 45727, 45727, 45726, 45718, 45718, 45721]
+  PASS  R3 stop reason 'reads' is a planned one (error2 / mb / reads / time)
+  PASS  X input md5 unchanged  395118775a52bc90073f4449b99f899d
+
+---------- [H] HYGIENE
+  FACT  close_panel(scratch_c136_4_mem_20261002_142653.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 2}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 2}
+  FACT  LabVIEW handle count AFTER the work: 45723
+  PASS  H4 scratch deleted: scratch_c136_4_mem_20261002_142653.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c136_4_mem_20261002_142653.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 395118775a52bc90073f4449b99f899d / after 395118775a52bc90073f4449b99f899d
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33987
+
+====================================================================================================
+=== GATES: 13 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c136_4_mem.json   elapsed 1506.6 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":null,"artefacts":[]}
+LabVIEW gone at exit: True
+FRESH-START after kill: private 567.7 MB, handles 33984 (~60 s after start)
+LabVIEW gone at exit: True
+BGRUN END rc=0 after 1582s

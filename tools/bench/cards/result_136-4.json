@@ -1,0 +1,16 @@
+{"schema":"result/1","id":"136-4","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/bench/diag_c136_4_mem.log","md5":"ee44748c9675c1365d44fb41fb1cc46f"},{"path":"tools/bench/diag_c136_4_mem.json","md5":"136c331fea934bf2d2665669e17ba2fd"},{"path":"tools/bench/diag_c136_4_mem.py","md5":"c824bc227353ad681b381885a2b1ce3e"},{"path":"tools/bench/diag_c136_4_mem_plan.json","md5":"fe1cc01f0987724ebd60697a464429a9"}],
+"facts":[
+"P1 LabVIEW.exe is 64-bit: PE e_lfanew 0x148, Machine 0x8664, opt magic 0x20b (PE32+) (diag_c136_4_mem.log:18-19)",
+"Error 2 NOT REACHED: 40/40 whole-VI reads (wiki_build.read_live, 5933 rows each) succeeded; max private 653.5 MB at read 40 (log:82-84,87)",
+"Bed byte copy load in fresh LabVIEW: 576.5 MB private, 45653 handles; read 1 584.5 MB (+8.0) (log:85)",
+"Growth 576.5 -> 653.5 MB = +77.0 MB over 40 reads, mean 1.92 MB/read, step-wise (+4 MB every ~2 reads, one +13.0 at read 29) (log:71,86)",
+"Handles flat: reads 2..40 within 45718-45741 (range 23 <= 100); gscript refs opened 4 == closed 4 (log:88,94-95)",
+"Fresh LabVIEW, nothing loaded, ~60 s after start: 567.7 MB private, 33984 handles; the ~410 MB 'after restart' in com-driving.md:310 does not hold today (log:114)",
+"No save: bed md5 39511877 unchanged, 5 pins hold, scratch deleted, files left [] ; LabVIEW killed and verified gone twice (log:97-106,113-115)",
+"Timing: loop 879.9 s (22 s/read); whole run 1582 s of the 1800 s bgrun cap - [H] hygiene block took ~8 min after the loop (log:83,111,116)",
+"X10 not applicable (warn-only, stated in log:20); prerun modelled it as read-only R=2 peak 592.5 MB because reads sit in a helper (diag_c136_4_prerun.log:105-110)",
+"JEV ladder: no failed gate in this run -> no ladder row; first prerun FAIL X6 (typed 4096/0x8664) fixed by moving the PE constants to the plan (diag_c136_4_prerun.log:46,110)"],
+"open":["Error 2 was not reached within the card's 40-read cap (653.5 MB, ~1.9 MB/read): reaching ~770 MB would need ~60 more reads (~23 min) - extend the cap or accept 'not reproduced below 654 MB'?"],
+"cost":{"usd":null,"minutes":33,"labview_runs":1},
+"note":"Measurement only; no threshold, memory_model or tool change. Fresh-start baseline 567.7 MB means the bed adds only ~9 MB at load."}

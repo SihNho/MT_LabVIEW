@@ -1,0 +1,62 @@
+{
+ "schema": "task/1",
+ "id": "136-P1",
+ "kind": "build",
+ "goal": "OFFLINE P4 plan v2 from the draft with PD293(b)-(d) + PD295(a)(c)(d), cut into <=40-action build steps with X10 per LabVIEW session; step 0 = fp-30.",
+ "why": "PD293/PD295, docs/d1/ring-p4.md:21-62. Draft d9d66246 lacks rollback Selects, BufDiff, W1 stop, 1.2 stop, amended n2 route; D-2026-10-02-03 open => <=40-action steps (PD293(a)). fp-30 is due.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_136.md"},
+  {"path": "docs/d1/ring-p4.md", "md5": "f389834d38db7aa1de1cdbd35a979598"},
+  {"path": "tools/bench/plan_ring_p4_draft.json", "md5": "d9d6624637477cbb8b03379fb4747e3b"},
+  {"path": "tools/bench/prep_c135_p2_facts.md", "md5": "2bc10d2b45ee54a1dae97d5f6ccca708"},
+  {"path": "tools/bench/prep_c135_p4_sizing.md", "md5": "485c5d1fe989c10ce943cbba3338357b"},
+  {"path": "docs/ring-buffer-design.md"},
+  {"path": "docs/user-rules.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/plan_ring_p4_draft.json"},
+  {"kind": "file", "name": "tools/bench/selftest_c134_1_dry.py"},
+  {"kind": "file", "name": "tools/gate_fp.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/stagesim.py"}
+ ],
+ "pass": [
+  "0 fp-30: selftest_c134_1_dry passes on its own content, run under this card, gate_fp drain; guard_bash change needed => no edit, fp-30 OPEN, continue - brief_136.md 136-P1 item 0",
+  "1 tools/bench/plan_ring_p4_v2.json with PD293(b)(c)(d) + PD295(a)(c)(d) applied: rollback Selects, valid test, W1 stop Or, 1.2 stop, n2 FS, BufDiff - brief item 1(a)-(f)",
+  "2 cut into dependency-closed build steps <= 40 actions; per step action count, X10 per LabVIEW session from 578.0 MB, sessions under 675 - brief item 2",
+  "3 every action's route MEASURED (cited) or UNMEASURED (named 136-1 item); counts - brief item 3",
+  "4 stagesim replay of the whole v2 on the newest bed/P3b-2 graph (provisional base, sim_of); replay result + computation_diff; no launch - brief item 4",
+  "5 rule-1a list: original terminals whose wiring changes and why each keeps the computation - brief item 5"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p4_v2.json",
+  "tools/bench/prep_c136_p1_p4v2.md",
+  "tools/bench/cards/result_136-P1.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p4_v2*",
+   "tools/bench/prep_c136_p1*",
+   "tools/bench/sim/*p4*",
+   "tools/bench/selftest_c134_1_dry*",
+   "tools/bench/gate_fp*",
+   "tools/bench/cards/result_136-P1*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 70},
+ "rules": [
+  "No LabVIEW, no VI opened; offline files only",
+  "Never edit stage_prerun/stagexec/stagesim/stagekit.py or hooks/guard_bash|guard_peer.py (LabVIEW card live)",
+  "Plan follows PD293/PD295 exactly; a choice they do not settle is written OPEN with options, not decided",
+  "Return at the first unexpected result after finishing that step",
+  "No docs/ edit; facts and OPEN only"
+ ],
+ "advances": ["M3", "R1"]
+}

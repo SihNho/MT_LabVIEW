@@ -1,0 +1,48 @@
+BGRUN START 2026-10-02 14:16:13 limit 14.0 min: powershell -NoProfile -ExecutionPolicy Bypass -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c136-3-c135e-elmismatch -TaskFile C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/8c25435c-d4a0-451f-a71a-3c8f8910def2/scratchpad/peer_c136_3_c135e.txt
+BGRUN PID 26308
+OUTCOME: ANSWERED (87s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-02-c136-3-c135e-elmismatch.md
+COST: $1.2594  in 16 / out 7482 / cache-create 116819 / cache-read 875730  (84s, 16 turn(s))
+--- ANSWER ---
+**Verdict: half right.** The run did exit `rc=1` only because the verdict was MISMATCH. The checker returns 1 for MISMATCH (`tools/errorlist_check.py:644`), and all 11 read gates were True (`errorlist_D1_ring_p3b2b_20261002_130007_20261002_130834.json:5498-5509`). But the claim's explanation of the "missing 2" is wrong. And "not a defect of the VI" goes further than this Error List read can show.
+
+## 1. Strongest reason the claim is wrong
+
+**There are no "NULL entries" in the expected file.** The nulls come from how the checker reports what is missing. `compare()` builds that list as `e.get("match")` (`errorlist_check.py:432`). Every entry in this expected file is written as `norm_all` and has no `"match"` key, so any count left unused is printed as `null`. The `from` fields in the usage list are null for the same reason (`:433`, `json:5444-5490`).
+
+The usage list shows what was actually missing. Entry 10, "Wire has loose ends", was pinned at 22 in the file the recipe wrote (`..._recipe_stale.json:86-92`) and only 20 of those were used (`json:5487-5490`). So "missing 2" means **the VI has two fewer "Wire has loose ends" items than P3b-1 had**. That is a real change in the VI, measured, not a by-product of how the file was built.
+
+The claim's description ("two NULL entries") also hides a reporting fault: every MISMATCH on a `norm_all` expected file gives a list of nulls that cannot be read. Cards 134-5 and 135-4 both repeated `[null, null]` without anyone resolving it (`result_134-5.json:26`, `result_135-4.json:18,22`).
+
+## 2. Alternative explanation of the same evidence
+
+The class counts cannot tell these two cases apart:
+
+- **(a) By design.** Session b's planned loss of wire 4878 is a source-only stub, which certainly removes one loose end (`errorlist_expect_p3b2.log:6`). One more wire that was lost by plan (3268, 30592 or 28437) was carrying a dangling branch. Net −2.
+- **(b) Not by design.** A different combination gives the same net −2 per class: for example, three loose ends retired and one new loose end appears, or the planned losses retire none of them and something else does.
+
+The range model allows anything from 18 to 21 loose ends (`errorlist_expect_p3b2ab.json:8,19`): one certain debit, three uncertain ones from 0 to 1, across four lost wires. An observed 20 is inside that range but does not identify which wires produced it.
+
+The plan's own prediction was also not met. The recipe's file says "P3b-1's 53 + 0 new" (`_recipe_stale.json:5`). The class *range* passed, but the point prediction failed. Card 134-5 raised exactly this limit and recommended an item-level test before the launch (`result_134-5.json:26`). There is no sign that test was run.
+
+Since then the expected file has been rewritten with loose ends at 20, measured from this same read (`errorlist_expected_D1_ring_p3b2b_20261002_130007.json:5,86-92`). The comparison file was fitted to the result it is supposed to judge, so a re-check against it is circular.
+
+## 3. Observation that would falsify the claim
+
+Either of these, from a graph read of the final VI (`graph_ring_p3b2b_20261002_133824.json`):
+
+- The source-only wire set does not equal P3b-1's set minus 4878, minus one of the planned-lost wires that had a dangling branch.
+- Any loose-end wire exists in P3b-2 that was not in P3b-1.
+
+Separately, the Error List says nothing about rule 1a (computation unchanged). "Not a defect of the VI" covers structure only; nothing in this read is functional evidence.
+
+## 4. Cheapest test that separates the claim from the alternative
+
+This is offline, with no LabVIEW. Compare the profile of one-sided wires (source-only and sink-only, with their uids) in P3b-1's graph read against `graph_ring_p3b2b_20261002_133824.json`, using the `prof()` logic in `tools/bench/errorlist_expect_p3b2.py:33-38`.
+
+- The claim holds if the difference is exactly {4878 plus one of 3268/30592/28437} and nothing new.
+- Any other difference refutes it.
+
+As a separate fix, `compare()` should report `e.get("match") or e.get("label") or e.get("norm_all")`, so missing classes are named instead of shown as null.
+
+**Bottom line:** the cause of the exit code is correct. The mechanism ("NULL entries of the expected file") is wrong. Acceptance of the VI rests on a class-level match that this measurement cannot resolve to individual items. What would change my mind is the one-sided wire comparison above coming back clean.
+BGRUN END rc=0 after 89s

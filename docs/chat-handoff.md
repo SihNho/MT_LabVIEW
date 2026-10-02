@@ -282,6 +282,12 @@ SMX 0.97 (5/6 full). For reference decbench v1 (local, 09-29): Opus high 0.742 /
 defect hit MX 0.97. Reading: Sonnet high clearly below Opus high; Sonnet max ≈ Opus max in score and cost but ~40 %
 slower; Opus high reproduced in the cloud within noise (0.667 vs 0.742). 6 of 10 cases discriminate; 63 mech/blind
 disagreements. No model change proposed.
+**OPEN DECISIONS reported to the user only at 14:3x (missed since 03:00 — the chat did not read decisions_pending at
+each 30-min report; do it EVERY report):** D-2026-10-02-01 (guard against a material agent exiting while its own
+LabVIEW run is live; user must add one settings.json line; rec yes), -02 (does a two-session step's in-between file
+count toward the 6-file cap; rec no; runner already proceeded so), -04 (supersedes -03: P4 = 159 edits; (가) cap 10,
+(나) P4 one step over several sessions (judgement rec), (다) make the current file runnable and run first; chat noted
+(다) is the one that matches the cap's purpose, at extra cost). Awaiting the user.
 **CLOUD PLAN DROPPED (user 2026-09-29 ~20:0x KST: "그럼 클라우드는 그냥 잊어버리자").** No Linux port of benches/hooks;
 benches stay local. Both probe routines were run-once and are spent. Open next: user asked whether to bring Gemini back
 for web search; chat proposed (awaiting answer) a headless-permission fix test + a 6–8 question known-answer comparison

@@ -1,0 +1,56 @@
+{
+ "schema": "task/1",
+ "id": "136-2",
+ "kind": "build",
+ "goal": "Drain fp-33: X10 models a stagekit EDIT diagnostic (no Executor) from its dry trace like the Executor model; re-prerun diag_c136_1_routes.py. Plus: find the reader for #10170's Stop/Continue mode.",
+ "why": "136-1 BLOCKED on fp-33 (stage_prerun.py:2094-2098 FAILs every non-Executor edit diagnostic as UNMEASURED; only a read-only branch :2071-2081). PD295(c) needs #10170's mode before the P4 plan finalizes.",
+ "inputs": [
+  {"path": "tools/bench/cards/result_136-1.json"},
+  {"path": "tools/stage_prerun.py", "md5": "5026f1664d7b3567ab5a5487c9e74060"},
+  {"path": "tools/bench/diag_c136_1_routes.py", "md5": "be8f651304d97f24c7284647a5966d1f"},
+  {"path": "tools/bench/diag_c136_1_routes_prerun.json"},
+  {"path": "tools/bench/graph_ring_p3b2b_20261002_133824.json", "md5": "50595c62d0332a94bf066538cf20c0ae"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/gate_fp.py"},
+  {"kind": "file", "name": "tools/bench/diag_c136_1_routes.py"}
+ ],
+ "pass": [
+  "1 x10_gate: a dry trace with edit ops and no Executor is MODELLED: N = edit ops, R = whole-VI reads, start = measured load of the opened VI (x10_plan_start style), same terms as x10_model_peak",
+  "2 UNMEASURED kept when the opened VI's load is unmeasured or the trace has no op count; self-test (new fixtures: edit-modelled pass, over-limit fail, unmeasured fail) green, prior X10 self-tests green",
+  "3 prerun of tools/bench/diag_c136_1_routes.py rerun: X10 line printed with N, R, start, peak; report PASS/FAIL as measured (no threshold change)",
+  "4 gate_fp drain fp-33 --fixed <stage_prerun.py:line> --selftest <name>",
+  "5 FACT, no LabVIEW: VI Scripting property that READS a While conditional terminal's Stop/Continue-if-True mode (name, class, id); NAMES.md, then peer.ps1 -Kind fact; cite"
+ ],
+ "outputs": [
+  "tools/bench/cards/result_136-2.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_prerun.py",
+   "tools/bench/selftest_x10*",
+   "tools/bench/selftest_stage_prerun*",
+   "tools/bench/diag_c136_1_routes_prerun*",
+   "tools/bench/prerun_records*",
+   "tools/bench/gate_fp*",
+   "tools/bench/diag_c136_2*",
+   "tools/bench/cards/result_136-2*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["fact"]
+ },
+ "budget": {"failures": 2, "minutes": 45},
+ "rules": [
+  "No LabVIEW; offline only. Do not change X10 thresholds or the memory model values",
+  "Only the new branch; existing Executor and read-only branches unchanged (self-tests prove it)",
+  "Return at the first unexpected result after finishing that step",
+  "Item 5 is a fact search only: no op VI built in this card"
+ ],
+ "unblocks": "M3"
+}

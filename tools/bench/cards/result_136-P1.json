@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"136-P1","status":"FAIL","gates":{"pass":5,"fail":1},
+"first_fail":"4 replay: action 64 p4_x_pool #23099 (diag 23169) -> IAI1.array (23166) 'a border needs a tunnel/register action first'; 1-63 ok, cdiff 16 (prep_c136_p1_sim.log:78-80)",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/plan_ring_p4_v2.json","md5":"0d67d7045590dc54366781c0331bb3b3"},
+ {"path":"tools/bench/plan_ring_p4_v2_meta.json","md5":"f06bbd57b60f92f34c41d3ca786a2553"},
+ {"path":"tools/bench/prep_c136_p1_p4v2.md","md5":"c0d4de474b604c0412c2096a9cf343d3"},
+ {"path":"tools/bench/sim/ring_p4_v2_base_p3b2b_end.json","md5":"37598c84e5dcbfeec5122c7e2fa8db33"},
+ {"path":"tools/bench/sim/ring_p4_v2/summary.json","md5":"cbd2c6914e0cb4a0a051912e118056e7"},
+ {"path":"tools/bench/prep_c136_p1_sim.log","md5":"61c6020a9eede04d021d6fa2f3359118"},
+ {"path":"tools/bench/selftest_c134_1_dry.py","md5":"3018edd2384cd96e518991ba0bf8b21a"}],
+"facts":[
+ "0 fp-30 failing gate = T7a: dry now prints 'UNVERIFIED-DRY  CEN2' not 'UNPREDICTED' (selftest_c134_1_dry_c136_p1_t2.log:75); fixed selftest_c134_1_dry.py:85-91",
+ "0 T0-T6 re-run singly as predicted (selftest_c134_1_dry_c136_p1_diag*.log); full self-test refused by guard_peer (stagekit import :157) -> fp-32 logged; fp-30 OPEN, not drained",
+ "1 v2 = 159 actions/154 ops (draft 93/87): rollback Selects on all 6 #10170 registers 43 (no single-sink disconnect op, stagesim.py:2107), BufDiff 16, stops 10 (prep_c136_p1_p4v2.md:16-25)",
+ "1 n2 FS input with no inner sink: draft's {diagram,border_only} is not a stageplan/1 addr (stageplan.json:204-243), no tool route -> written as a 'decide' action (prep_c136_p1_p4v2.md:22)",
+ "1 program stop = 'stop (end)' CT 642 on #639; loops #23041/#23032 still stop on x==x scaffolds #23042/#23035 (graph step_18); its mechanical action is unread (latch => no local)",
+ "2 5 build steps 33/39/39/36/12 actions, 7 LabVIEW sessions, X10 @578.0 flat max 674.5; with 0.719 MB/op load growth sessions 2.1/3.1/4.1/5.1 = 692.7/722.7/741.5/724.2 (prep_c136_p1_p4v2.md:31-40)",
+ "3 routes MEASURED 51 / UNMEASURED 108; to 136-1 items: item1 3, item2 2, item3 2, item4 1; 100 covered by NO 136-1 item (96 never-run diagram contexts) (plan_ring_p4_v2_meta.json counts)",
+ "4 base = step_18 STATE extracted (step file gave KeyError 'terminals', prep_c136_p1_sim.log:3-12); multi-border wire modelled only into a plan-made FS (stagesim.py:1361-1368)",
+ "5 rule-1a list: #5058 Image In, #2626 t2832/t4160/t4165, #9503 t9508, #10068/#29240 x,y, 6 SR right faces (Select), #10170 cond; each with reason (prep_c136_p1_p4v2.md:52-63)",
+ "1 PD293(b) 'to 1.7 only when valid': no 1.2->1.7 hand-off exists in the base (#2626 t2813 unwired, 376 open row QRT/P5); valid = new:AND1 output left for P5"],
+"open":[
+ "Replay stops at p4_x_pool: route this crossing via an explicit tunnel on #10170 (new actions) or extend stagesim's multi-border connect_term_uid model to a base While body?",
+ "n2 ordering (PD295(d)): no route makes an FS input tunnel with no inner sink and no 136-1 item measures it - add an inner no-effect consumer, build the route, or another carrier?",
+ "Tracking publishes outside the registers (autofocus reseed flag t25557, reset count t25573, Pos indicators t3173/t9519): roll them back too, or registers only as PD293(b) says?"],
+"cost":{"usd":null,"minutes":22,"labview_runs":0},
+"note":"No LabVIEW, no VI opened, no docs/STATUS edit. stage tools and hooks unedited. 65 sim step files (~2 MB each) left in tools/bench/sim/ring_p4_v2/. fp-30 release needs a protocol.py OFFLINE_SELFTESTS entry (outside write flags)."}

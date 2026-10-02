@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"136-3","status":"FAIL","gates":{"pass":3,"fail":2},
+"first_fail":"item 3 run: ValueError #29466 (ks const in WS body #29431) is not in Diagram[22].Nodes[] at the A2 per-node lookup (diag_c136_3_routes.log:36-46); items U1-U6/W1 not reached",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/memory_model.json","md5":"503140799e294c5da07f4f4083f824e9"},
+ {"path":"tools/bench/diag_c136_3_routes.py","md5":"634a97b7fa9fc1ed00570f5b45ae9356"},
+ {"path":"tools/bench/diag_c136_3_prerun.log","md5":"3416c60f1c36366133d61cd17ccfcc48"},
+ {"path":"tools/bench/diag_c136_3_routes.log","md5":"28246462e44c35e3cf0c35956ad8dfba"},
+ {"path":"tools/bench/diag_c136_3_routes.json","md5":"e02a9abdc3ad87b1f19ba9dbb47133d1"},
+ {"path":"tools/bench/diag_c136_3_peer_c135e.log","md5":"6fe372de2edaf8841ceeabb0865e6089"},
+ {"path":"archive/peer/2026-10-02-c136-3-c135e-elmismatch.md","md5":"b2c7aea6d5304951e61c7a8ef3e9e4e4"}],
+"facts":[
+ "Item 1 PASS: memory_model.json load_by_vi[395118775a52bc90073f4449b99f899d]=600.2, cite diag_c136_1_graph.log:24 (memory_model.json load_by_vi last entry)",
+ "Item 2: diag_c136_3_routes.py = 136-1 script, same plan/ops/gates; terminals by PER-NODE read; 10 whole-VI read call sites, all via rd(), none in a loop (diag_c136_3_routes.py:4-5,22-24)",
+ "Item 2 hidden (not call sites): Stage._op.node_mark report_all('Node') once per _op (stagekit.py:590,602); const_row uid_index+address+junk_purge (stagekit.py:903-909)",
+ "Item 3 X10: prerun PASS 14/0, gate N 26 R 1 peak 661.9; source-counted R 11 -> 687.2 <= 690 (diag_c136_3_prerun.log:90-96)",
+ "Item 3 run FAIL 12/1: WS #29407 + body #29431 OK, ks #29466, iai #29574 created err ''; iai lookup on #23166 OK; ks lookup on D1 index 22 raised (diag_c136_3_routes.log:25-46)",
+ "Item 3: no wire was made (A2 not reached); no scratch_verify record written; ExecState after open 0 (diag_c136_3_routes.log:21)",
+ "Item 4 NOT DONE: no generic property reader exists (cycle27-plan.md:1703); StopIfTrue 6362C01 needs a new op (OpLoopEndRef_v0 variant, build_oploopendref_v0.py:250-266 pattern); not built",
+ "Item 5 PASS: LabVIEW gone True, scratch deleted, input md5 unchanged; handles 33982 fresh -> 45938 after work -> 33997 exit (diag_c136_3_routes.log:17,54-56,65,71)",
+ "guard_peer refused the run on launch_p3b2_c135_e.log (review owed since cycle 135); hypothesis review dispatched, ANSWERED $1.26 87 s (archive/peer/2026-10-02-c136-3-c135e-elmismatch.md:9)",
+ "Jev ladder | diag_c136_3_routes.log | no JEV-LADDER row yet (jev_gate.log grep empty) | - | returned at first unexpected result (card chat-P2) | FAIL 12/1"],
+"open":[
+ "Run failed at the per-node lookup of a node in the NEW While body: report_all('Diagram') position 22 for #29431 did not reach #29466 via node_labels. Patch the lookup (or use read_terms for body nodes) and rerun?",
+ "Review c135e says 'missing 2' = two fewer 'Wire has loose ends' (22->20), not null file entries (errorlist_check.py:432); its offline one-sided-wire test and compare() naming fix are owed. Its disposition section is unwritten: archive/peer is outside this card's write globs.",
+ "Item 4 (StopIfTrue 6362C01 on #10170, stop (end) MechanicalAction) needs 1-2 new read-only op VIs; a separate build card?"],
+"cost":{"usd":1.26,"minutes":15,"labview_runs":1},
+"note":"usd = the hypothesis peer only. Run order changed to A (WS+A2) -> B (body) -> C (FS U5 U6) so Diagram indices read at a part start stay valid; TS index_mode no longer read. STATUS not edited (status_edit false)."}

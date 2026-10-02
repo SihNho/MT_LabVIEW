@@ -1,0 +1,18 @@
+{
+ "schema_note": "card 136-4 (PD298(f)/PD300(c)): FINALIZED decision-row plan of tools/bench/diag_c136_4_mem.py. MEASUREMENT ONLY: where LabVIEW error 2 really appears today. The Stage's work copy claudeDev\\scratch_c136_4_mem_<ts>.vi (a byte copy of the P3b2b bed) is a scratch, never saved; the bed is never opened. Warn-only meter (stagexec.Meter stop_mb=None). No VI run, no edit, no wire, no LabVIEW option changed, no threshold or memory_model change.",
+ "input": {"vi": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b2b_20261002_130007.vi", "md5": "395118775a52bc90073f4449b99f899d"},
+ "fs_pairs_from": "tools/bench/graph_qrt_pool_20260928.json",
+ "lv_exe": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\LabVIEW.exe",
+ "pe": {"read_bytes": 4096, "x64": {"machine": "0x8664", "magic": "0x20b"}, "x86": {"machine": "0x14c", "magic": "0x10b"}},
+ "max_reads": 40,
+ "max_mb": 1300.0,
+ "max_loop_min": 20.0,
+ "handle_flat": 100,
+ "fresh_wait_s": 60,
+ "decisions": [
+  {"id": "P-1", "action": "offline", "what": "LabVIEW.exe PE header: e_lfanew @0x3C, 'PE\\0\\0', COFF Machine (0x8664 = x64, 0x14c = i386) and optional-header magic (0x20b PE32+, 0x10b PE32)"},
+  {"id": "M-0", "action": "stage", "what": "stagekit Stage: fresh LabVIEW, dated byte copy of the bed = scratch (discard_work, never saved); METER load = private MB + handles after open"},
+  {"id": "M-R", "action": "read", "what": "repeat the Executor's per-op checkpoint read (wiki_build.read_live(work, fs_pairs), stagexec LVBackend.read) until the first exception (error 2 classified by 'error 2:' / 'Memory is full'), or private >= 1300 MB, or 40 reads, or 20 min; METER read k after each"},
+  {"id": "M-K", "action": "kill", "what": "close without save (Stage hygiene), taskkill LabVIEW, verify gone; then a SEPARATE fresh LabVIEW start (bench_prep.restart_labview + wait to 60 s), private MB + handles, kill and verify gone"}
+ ]
+}

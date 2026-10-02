@@ -64,6 +64,8 @@ PRE-RUN (decision 2, 3, 8), all offline, on the same graph JSON + the dry run's 
      card 132-1 (PD275(a)(b)): + final_read_mb (17.4, the run's last whole-VI read) and fail_above_mb 690.
     card 132-4 (PD277(a), fp-29): a 0-edit script with no Executor (x10_readonly) is modelled N 0, R 1 + its whole-VI
     read call sites, + final_read_mb; an edit-op script without an Executor stays UNMEASURED = FAIL.
+    card 136-2 (fp-33): ... unless its dry trace carries the ops and the opened VI's load is measured (x10_edit): N = dry
+    Stage._op ops, R = 1 + executed whole-VI reads, start = load_by_vi[input md5] + op-0. Self-test selftest_x10_c136_2.py
      Self-test: tools/bench/selftest_x10_c130_1.py
      card 130-5 (PD268(b)): `--dry` FAILs (EXECUTOR-STOP / EXECUTOR-NOT-RUN, executor_stops) when a stagexec.Executor
      the recipe built ran fewer ops than its window (from_step+1 .. stop_after|last). Self-test:
@@ -795,6 +797,15 @@ def patch_stagekit():
 
     S.__init__, S.gate, S._op, S.address = init, gate, op, address
     S.start, S.save, S.close, S.scratch, S.discard_work = start, save, close, scratch, discard_work
+    # card 136-2 (gate-fp fp-33): count every EXECUTED Stage whole-VI read (X10_RO_READS names) into D.calls, so X10's
+    # edit-diagnostic model (x10_edit) has R from the dry trace. Originals kept once on the class (card 128-4 pattern).
+    if not hasattr(S, "_dry_orig_reads"):
+        S._dry_orig_reads = dict((k, getattr(S, k)) for k in ("uid_index", "census") if hasattr(S, k))
+    for k_, f_ in S._dry_orig_reads.items():
+        def rd(self, *a, _f=f_, _k=k_, **kw):
+            D.calls.append(("Stage." + _k, False))
+            return _f(self, *a, **kw)
+        setattr(S, k_, rd)
     for k in ("restart", "_preload_enter", "_preload_exit", "drop_scratch", "pin_check"):
         setattr(S, k, lambda self, *a, **kw: None)
 
@@ -939,7 +950,8 @@ def dry(recipe, graph=None):
             "coverage": [len(hit & code_lines), len(code_lines)], "ops": D.ops, "addresses": D.addresses,
             "jev": D.jev, "graph": rel(D.graph_path) if D.graph_path else None, "input_md5": D.input_md5,
             "input_vi": D.input_vi, "blocked": sorted(set(D.blocked)), "secs": round(time.time() - t0, 1),
-            "calls": len(D.calls), "works": list(D.works), "executors": list(D.executors)}
+            "calls": len(D.calls), "works": list(D.works), "executors": list(D.executors),
+            "x10_reads": [n for n, _m in D.calls if n.split(".")[-1] in X10_EDIT_READS]}   # card 136-2 (fp-33)
 
 
 # ---------------------------------------------------------------------------------------------- the pre-run
@@ -2059,6 +2071,36 @@ def x10_readonly(recipe, trace):
     return (not why), {"why": why, "reads": reads}
 
 
+# card 136-2 (gate-fp fp-33): a stagekit EDIT diagnostic (dry trace: Stage._op edit ops, no stagexec.Executor) is MODELLED
+# from its dry trace in the Executor model's terms: N = the dry's Stage._op ops, R = 1 (k 0) + the whole-VI reads the dry
+# EXECUTED (X10_EDIT_READS names in D.calls), start = the MEASURED load of the opened VI (input md5 -> x10_start, the
+# x10_plan_start rule) + op-0 read; peak = start + R*read + N*(edit + other) + final_read; FAIL > fail_above_mb (690).
+# UNMEASURED (FAIL) when the opened VI's load is not in memory_model.json load_by_vi or the trace has no op / read count.
+# Reads a script skips in its DRY branch (e.g. census_snapshot / read_terms behind `if DRY`) are not seen by this count.
+X10_EDIT_READS = X10_RO_READS | frozenset(("read_terms",))     # + allterms.read_terms: every terminal of the VI
+
+
+def x10_edit(recipe, trace, model):
+    """card 136-2 (fp-33): (run dict | None, why | None). why None = not an edit trace (no ops: the caller's text stands)."""
+    tr = trace or {}
+    if tr.get("executors") or not tr.get("ops"):
+        return None, None
+    xs = x10_start(tr.get("input_md5"), model)
+    if xs is None:
+        return None, "edit model: opened VI load unmeasured (md5 {0} not in memory_model load_by_vi)".format(tr.get("input_md5"))
+    if not isinstance(tr.get("x10_reads"), list):
+        return None, "edit model: dry trace carries no whole-VI read count (x10_reads)"
+    v = lambda k: float(model[k]["value"])                                         # noqa: E731
+    N, R = len(tr["ops"]), 1 + len(tr["x10_reads"])
+    peak = round(xs[0] + R * v("read_mb") + N * (v("edit_mb") + v("other_mb")) + v("final_read_mb"), 1)
+    rc = {}
+    for n in tr["x10_reads"]:
+        rc[n] = rc.get(n, 0) + 1
+    return {"plan": "edit diagnostic " + rel(recipe), "edit": True, "N": N, "R": R, "bind": 0, "peak_mb": peak,
+            "start_mb": xs[0], "start_source": xs[1], "fail_above_mb": v("fail_above_mb"), "ok": peak <= v("fail_above_mb"),
+            "checkpoints": "k 0 + {0} executed whole-VI read(s) {1}".format(len(tr["x10_reads"]), rc)}, None
+
+
 def x10_gate(recipe, executors, stop_after=None, from_step=None, model=None, trace=None):
     """card 130-1 (PD267(b)): (ok, detail dict). ok False = a predicted peak > fail_above_mb, or UNMEASURED (no Executor
     whose plan compiled AND no covering recorded meter), or a recorded meter >= 690 (mem_margin, kept).
@@ -2079,6 +2121,11 @@ def x10_gate(recipe, executors, stop_after=None, from_step=None, model=None, tra
                          "checkpoints": "k 0 + {0} whole-VI read call site(s)".format(ro["reads"])})
         else:
             bad_ro = "not read-only: " + "; ".join(ro["why"])
+            er, ewhy = x10_edit(recipe, trace, m)                              # card 136-2 (fp-33): edit diagnostic
+            if er:
+                runs.append(er)
+            elif ewhy:
+                bad_ro += "; " + ewhy
     for ex in executors or []:
         if ex.get("error") or not ex.get("kinds"):
             bad.append("{0}: plan/checkpoint set not compilable ({1})".format(ex.get("plan"), ex.get("error")))
@@ -2418,6 +2465,9 @@ def prerun(recipe, graph=None, stop_after=None, from_step=None):
     for r_ in x10_det.get("runs", []):
         print("  FACT  X10 {0}: N {1} ops, BIND {2}, R {3} reads, predicted peak {4} MB (fail above {5})".format(
             r_["plan"], r_["N"], r_["bind"], r_["R"], r_["peak_mb"], r_["fail_above_mb"]), flush=True)
+        if r_.get("edit"):                                                         # card 136-2 (fp-33)
+            print("  FACT  X10 edit model: start {0} MB ({1}); reads {2}".format(r_["start_mb"], r_["start_source"],
+                                                                                 r_["checkpoints"]), flush=True)
     gate("X10 predicted LabVIEW private MB <= model fail_above_mb, from the compiled plan + checkpoint set ({0})".format(
         x10_det.get("why") or "peak {0} MB".format(x10_det.get("peak_mb"))), x10_ok,
         dict((k, x10_det.get(k)) for k in ("peak_mb", "why", "recorded", "not_compiled", "model") if x10_det.get(k)))

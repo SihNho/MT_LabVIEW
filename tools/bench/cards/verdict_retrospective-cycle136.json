@@ -1,0 +1,32 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle136",
+ "verdict": "refuted",
+ "alternative": "The session ended at 14:56 because something not in the files forced it (an unlogged guard refusal of a 6th dispatch, or a budget it misread), so the order of 136-4 before the route rerun cost nothing.",
+ "discriminating_test": "Look in the cycle-136 session transcript and the guard_session/guard_card logs after 14:53 for a refused dispatch. If one exists, the early end was forced and the wrong-ordering loss falls to the 136-4 slot alone.",
+ "violations": [
+  {
+   "slug": "wrong-ordering",
+   "loss_min": 33,
+   "loss_usd": null,
+   "evidence": "tools/bench/cards/task_136-4.json:22"
+  },
+  {
+   "slug": "device-failed",
+   "loss_min": 15,
+   "loss_usd": null,
+   "evidence": "tools/bench/diag_c136_3_prerun.log:90"
+  }
+ ],
+ "sources": [
+  "tools/bench/diag_c136_3_routes.log:36-46",
+  "tools/bench/session_8c25435c-d4a0-451f-a71a-3c8f8910def2.json:1",
+  "tools/bench/cycle_136.log:214-215",
+  "docs/d1/ring-p4.md:111-126",
+  "tools/bench/cards/result_136-P2.json:19",
+  "tools/bench/diag_c136_4_mem.log:84-86",
+  "tools/bench/diag_c136_4_prerun.log:105",
+  "tools/bench/gate_fp_queue.jsonl:29,33"
+ ],
+ "note": "The window also covers cycle 135 (12:15-13:26). Cycle 136 alone: 13:26:50-14:56:12, judgement $42.76. X10 refused wrongly (fp-33), and after its patch it counts 0 of 10 reads; PD299(b) replaced its count with a hand count."
+}

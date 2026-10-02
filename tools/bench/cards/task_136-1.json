@@ -1,0 +1,61 @@
+{
+ "schema": "task/1",
+ "id": "136-1",
+ "kind": "measure",
+ "goal": "PD295(e) scratch-only: measure P4 routes U1 U2 U3 U5 U6 + W1 stop via Or, read #10170's conditional mode, real FS-aware graph read of the bed. No bed edit.",
+ "why": "PD293(f)(3) + PD295(c)(d)(e), docs/d1/ring-p4.md:41-62. The P4 plan (93 actions) may not be finalized on unmeasured routes; P4's rebase needs a real graph of the new bed D1_ring_p3b2b_20261002_130007.vi.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_136.md"},
+  {"path": "docs/d1/ring-p4.md", "md5": "f389834d38db7aa1de1cdbd35a979598"},
+  {"path": "tools/bench/prep_c135_p2_facts.md", "md5": "2bc10d2b45ee54a1dae97d5f6ccca708"},
+  {"path": "tools/bench/plan_ring_p4_draft.json", "md5": "d9d6624637477cbb8b03379fb4747e3b"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b2b_20261002_130007.vi", "md5": "395118775a52bc90073f4449b99f899d"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/bench/census_samples.json"},
+  {"kind": "file", "name": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_ring_p3b2b_20261002_130007.vi"},
+  {"kind": "file", "name": "tools/bench/graph_ring_p3b2a_fs_20261002_123012.json", "where": "format precedent of the FS-aware graph read (reader used in card 134-1/134-4)"}
+ ],
+ "pass": [
+  "1 scratch VI: U1+U2+U3 (Select with Boolean-array s, I32 MAX const on untyped f, Greater? array->s, Array Max&Min) PASS/FAIL per route - brief_136.md 136-1 item 1",
+  "2 Or for W1's stop: donor/creator route found, created, wired into a While cond terminal; route + Is Broken? reported - brief item 2",
+  "3 scratch byte copy of the bed: U5 (While outer face -> FS frame) and U6 (FS frame exit) with RLE; Is Broken?, census delta, source-wire re-created? - brief item 3",
+  "4 #10170 conditional-terminal mode and #10171's input wire uids READ (no edit) - brief item 4",
+  "5 FS-aware whole-VI graph of the UNEDITED bed -> tools/bench/graph_ring_p3b2b_<stamp>.json; bed md5 unchanged - brief item 5",
+  "6 LabVIEW closed + verified gone; scratch files deleted after records (md5 kept); handles before/after - brief item 6"
+ ],
+ "outputs": [
+  "tools/bench/scratch_verify/",
+  "tools/bench/graph_ring_p3b2b_<stamp>.json",
+  "tools/bench/cards/result_136-1.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c136_1*",
+   "tools/bench/scratch_verify/*c136*",
+   "tools/bench/graph_ring_p3b2b*",
+   "tools/bench/errorlist_*c136*",
+   "tools/bench/cards/result_136-1*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/scratch_c136_1*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 70},
+ "rules": [
+  "Scratch only: the bed is read (graph read, md5) and byte-copied, never edited or saved",
+  "Measurement only: report per route PASS/FAIL and the read values; no P4 plan or design decision",
+  "Every new diagnostic <=120 lines on stagekit; dry + prerun before each LabVIEW run (Stages are SIMULATED)",
+  "Return at the first unexpected result after finishing that step (LabVIEW closed); report routes already measured",
+  "Scratch Error List reads: --count-only --role scratch, one read at the END of a diagnostic (PD258(a))",
+  "LabVIEW closed and verified gone before returning"
+ ],
+ "advances": ["M3", "R1"]
+}

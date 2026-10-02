@@ -399,6 +399,7 @@ OFFLINE_SELFTESTS = {
     "tools/bench/selftest_census_hookin_c123.py": None,
     "tools/bench/selftest_case_frame_c124.py": None,
     "tools/bench/selftest_fs_c126.py": None,          # card 127-2: measured by c125_1_offline_measure.py (0 COM trips)
+    "tools/bench/selftest_c134_1_dry.py": None,       # card 136-P2 (fp-30/fp-32): 135-2 measured 0 COM trips; T7a fixed 136-P1
     "tools/stagexec.py": "selftest",
 }
 

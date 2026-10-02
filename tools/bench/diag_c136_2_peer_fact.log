@@ -1,0 +1,41 @@
+BGRUN START 2026-10-02 13:57:25 limit 14.0 min: powershell -NoProfile -ExecutionPolicy Bypass -File tools/peer.ps1 -Kind fact -Slug c136-2-condterm-mode -TaskFile tools/bench/diag_c136_2_fact_task.txt
+BGRUN PID 12944
+=== FACT CHAIN STEP 1/2: gemini gemini-3.1-pro-high (600s) -> c136-2-condterm-mode-gemini ===
+OUTCOME: ERROR (295s)  model: gemini-3.1-pro-high (pinned by -Model)  archived: archive\peer\2026-10-02-c136-2-condterm-mode-gemini.md
+=== FACT CHAIN STEP 2/2: FALLBACK to claude role fact (180s) -> c136-2-condterm-mode-claude; gemini step ended ERROR (incl. empty or content-empty answer / agy no output) (rc 4) ===
+OUTCOME: ANSWERED (80s)  model: claude-opus-5-5 (effort medium; peer.ps1 default for role fact)  archived: archive\peer\2026-10-02-c136-2-condterm-mode-claude.md
+COST: $0.4776  in 18 / out 3296 / cache-create 20437 / cache-read 290142  (78s, 14 turn(s))
+--- ANSWER ---
+The property you want is **WhileLoop › Stop If True?**. It is a property of the While Loop itself, not of the conditional terminal. My only source for its details is LabVIEW Wiki. I could not open the official ni.com page for it (details at the end).
+
+**1. Name**
+- Name in the Class Browser: **Stop If True?**
+- Short (data) name: **StopIfTrue**
+- Source: https://labviewwiki.org/wiki/WhileLoop_class/Stop_If_True%3F_property
+
+**2. Class**
+- It belongs to the **WhileLoop class** (class ID 16435). That is the same class as the "Loop End Ref" property you already use.
+- Inheritance: Generic → GObject → Node → Structure → Loop → WhileLoop. TimedLoop is a child class of WhileLoop.
+- The WhileLoop class lists three properties: Loop End Ref (6362C00, read only), Stop If True? (6362C01, read/write) and Iteration Terminal Hidden? (6362C02).
+- No source I found shows a mode property on the Terminal object that Loop End Ref returns. That absence is unverified, because I did not search the Terminal class's property list.
+- Source: https://labviewwiki.org/wiki/WhileLoop_class
+
+**3. Type and meaning**
+- Type: **Boolean**. Permissions: **Read/Write**. Scope: VI Scripting.
+- Description: "Specifies whether the While Loop stops if you wire TRUE to the end terminal of the loop."
+- So **TRUE = Stop if True** and **FALSE = Continue if True**. This is my reading of that description, and no source states it word for word.
+- It cannot be set while the VI is running, and it is not available in the Run-Time Engine.
+- The wiki gives the version as "LabVIEW 2018 or later" and adds "More info to come". Nothing I found confirms it for LabVIEW 2026 specifically.
+- Source: https://labviewwiki.org/wiki/WhileLoop_class/Stop_If_True%3F_property
+
+**4. Property ID**
+- **0x6362C01**. It sits right after Loop End Ref (0x6362C00), which matches the id you measured.
+- The For Loop has a separate property with the same name and data name, ForLoop › Stop If True? (ID 6362003, ForLoop class 16434), for its conditional terminal: https://labviewwiki.org/wiki/ForLoop_class/Stop_If_True%3F_property
+
+**What isn't verified**
+- **No primary NI source.** LabVIEW Wiki is a community wiki, not an NI page. The ni.com API reference loads its pages with JavaScript, so fetching them returned only the site navigation. I tried a guessed property page under `.../labview-api-ref/page/properties-and-methods/vi-server/...` and a guessed While Loop properties index next to the real [Loop Methods page](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/node/structure/loop-m.html); both returned no content.
+- **Checking it locally.** In LabVIEW's Class Browser, look under VI Scripting › WhileLoop for "Stop If True?". Or add a Property Node on a WhileLoop reference and read the property before and after switching the terminal's mode.
+
+NI's general documentation on the two modes, not the scripting property itself: [Specifying Conditions for While Loops](https://www.ni.com/docs/en-AS/bundle/labview/page/specifying-conditions-for-while-loops.html), [While Loop (API reference)](https://www.ni.com/docs/en-AS/bundle/labview-api-ref/page/structures/while-loop.html).
+=== FACT CHAIN DONE: gemini ERROR (incl. empty or content-empty answer / agy no output) (rc 4) -> fallback claude rc=0; answered by claude (step 2/2) ===
+BGRUN END rc=0 after 376s

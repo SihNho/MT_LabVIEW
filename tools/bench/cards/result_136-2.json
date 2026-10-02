@@ -1,0 +1,26 @@
+{"schema":"result/1","id":"136-2","status":"FAIL","gates":{"pass":3,"fail":2},
+"first_fail":"item 3: prerun diag_c136_1_routes.py X10 FAIL UNMEASURED: edit model reached, opened VI load unmeasured (md5 39511877 not in memory_model load_by_vi); no start/peak",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/stage_prerun.py","md5":"c59b5b6cc414a5d77b78fb056cd8cade"},
+ {"path":"tools/bench/selftest_x10_c136_2.py","md5":"739d793452181cfdb806c65da1d68c97"},
+ {"path":"tools/bench/selftest_x10_c136_2.log","md5":"8c9f314463dfe85eea1b88c4da1b094b"},
+ {"path":"tools/bench/diag_c136_2_prerun.log","md5":"145a7bf8286582b95c5d3627af1cf887"},
+ {"path":"tools/bench/diag_c136_2_peer_fact.log","md5":"4e3311502ff5fd7dfbcbf45ec590157a"}],
+"facts":[
+ "Item 1: new x10_edit (stage_prerun.py:2083) inside x10_gate's not-read-only branch: N = dry Stage._op ops, R = 1 + executed whole-VI reads (trace x10_reads), start = x10_start(input md5)",
+ "Item 2: selftest_x10_c136_2 6/0 (E1 PASS N26 R6 start 610.9 peak 679.4; E2 726.3 FAIL; E3 load-unmeasured, E4 no reads, E5 no ops -> UNMEASURED) selftest_x10_c136_2.log:117",
+ "Prior self-tests: c132_4 6/0, c130_1 9/0, stage_prerun_c106c 6/0 (selftest_*_c136_2.log RESULT lines); c132_1 3/1",
+ "c132_1 T3 FAIL is NOT this change: K1 input md5 6cc69221 'got MISSING' (selftest_x10_c132_1_c136_2.log:67); scratch_c133_6 VI gone from claudeDev; x10_gate called without trace there",
+ "Item 3: prerun 13/1, X10 'edit model: opened VI load unmeasured (md5 39511877...)' (diag_c136_2_prerun.log:124,129); bed load 600.2 measured (diag_c136_1_graph.log:24) but not in memory_model.json",
+ "If load_by_vi[39511877]=600.2 existed: start 606.1, N 26, R 4 (3 dry reads), peak 669.5 <= 690 (arithmetic only, not run)",
+ "Dry cannot see the script's DRY-guarded reads: census_snapshot returns {} in dry (stagekit.py:265; ~42 calls) and terms() skips read_terms (diag_c136_1_routes.py:22); R=4 undercounts real",
+ "Item 4: gate_fp drain fp-33 --fixed tools/stage_prerun.py:2083 --selftest selftest_x10_c136_2 -> DRAINED",
+ "Item 5: NAMES.md has no mode property (only LoopTunnel/ForLoop rows, NAMES.md:78,257). Peer (gemini ERROR -> claude ANSWERED): WhileLoop 'Stop If True?' data StopIfTrue id 0x6362C01 R/W Boolean",
+ "Item 5 source: labviewwiki.org/wiki/WhileLoop_class/Stop_If_True%3F_property only (community, not NI); TRUE=Stop-if-True is the peer's reading, unverified (diag_c136_2_peer_fact.log:9-37)"],
+"open":[
+ "Add load_by_vi['395118775a52bc90073f4449b99f899d'] = 600.2 (diag_c136_1_graph.log:24) to memory_model.json? This card's write globs do not include that file, so X10 stays UNMEASURED until it is added",
+ "R counts only the reads the dry actually runs (3). The ~42 census_snapshot + ~8 read_terms reads skipped by the dry are not counted. Is the model acceptable as it is, or should those call sites be counted from the source?",
+ "Reading 6362C01 on #10170 needs a new op VI (this card forbids building one): build an OpLoopEndRef_v0 variant that also reads StopIfTrue?"],
+"cost":{"usd":0.48,"minutes":17,"labview_runs":0},
+"note":"No LabVIEW, no GUI. Jev ladder: no JEV-LADDER row for diag_c136_2_prerun.log or selftest_x10_c132_1_c136_2.log (jev_gate.log grep empty). Existing Executor and read-only branches are unchanged; the T3 why-text now appends '; edit model: ...' and still passes. usd = the peer fact call only."}

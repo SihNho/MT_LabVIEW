@@ -1,0 +1,78 @@
+BGRUN START 2026-10-02 14:25:26 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/bench/diag_c136_4_mem.py
+BGRUN PID 25108
+diag_c136_4_mem - card 136-4 (PD298(f)/PD300(c)): WHERE does LabVIEW error 2 really appear today? MEASUREMENT ONLY.
+The 700 MB stop (stagexec.MEM_STOP_MB) sits on ONE error-2 observation at ~770 MB (com-driving.md:308-312). A dated byte copy
+claudeDev\scratch_c136_4_mem_<ts>.vi of the P3b2b bed (md5 39511877; the bed is never opened) in a FRESH LabVIEW; warn-only meter
+(stagexec.Meter stop_mb=None, stagexec.py:72-97); the Executor's checkpoint read repeated until the first error 2, 1300 MB, 40 reads
+or 20 min. Nothing is saved (an error-2 state writes stale files).
+PRIOR ART (reused, nothing new built): skeleton + read + meter = diag_c129_6_mem.py W1 (read_ck == stagexec LVBackend.read =
+wiki_build.read_live(work, fs_pairs) :233); fs_pairs from graph_qrt_pool_20260928.json as diag_c136_1_graph.py; error text from
+gscript.report_all :739-741 / allterms.read_terms :80-82 (RuntimeError '... error <code>: <source>'); fresh start =
+bench_prep.restart_labview :74-79; kill = stagexec.kill_labview_at_exit :3666. X10 (stage_prerun memory margin) is NOT APPLICABLE:
+this is a warn-only measurement whose purpose is to cross the 690/700 MB lines; its model counts read call sites, not iterations.
+PREDICTION (mechanics; the MB curve and the error-2 point are the measurement): P1 LabVIEW.exe PE Machine 0x8664 (64-bit);
+R1 >= 1 read, every successful read returns the same > 0 terminal row count; R2 handles flat across reads 2.. (max - min <= 100);
+R3 stop reason one of error2 / mb / reads / time and, if an exception stopped it, its text is classified; X bed md5 unchanged;
+H5 ref counter opened == closed; scratch deleted; LabVIEW gone; fresh-start read after the kill.
+    py tools/bgrun.py --material --max-min 30 --log tools/bench/diag_c136_4_mem.log -- py -u tools/bench/diag_c136_4_mem.py
+  FACT  P1 C:\Program Files\National Instruments\LabVIEW 2026\LabVIEW.exe PE header: {'e_lfanew': '0x148', 'sig_ok': True, 'machine': '0x8664', 'magic': '0x20b', 'bits': 64}
+  PASS  P1 LabVIEW.exe PE header read: Machine 0x8664, magic 0x20b -> 64-bit  {'e_lfanew': '0x148', 'sig_ok': True, 'machine': '0x8664', 'magic': '0x20b', 'bits': 64}
+  FACT  X10 NOT APPLICABLE (card 136-4 rule 2): warn-only measurement, Meter stop_mb=None; it must cross 690/700 MB
+  FACT  input md5 before: 395118775a52bc90073f4449b99f899d
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 395118775a52bc90073f4449b99f899d  got 395118775a52bc90073f4449b99f899d
+  PASS  DRY graph JSON for input md5 395118775a52bc90073f4449b99f899d  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_ring_p3b2b_20261002_133824.json
+  METER load   k   0  private None MB (d -)  handles None (d -)
+  METER read   k   1  private None MB (d -)  handles None (d -)
+  FACT  R stop reason 'reads' after 1 read(s) in 0.0 s; at stop private None MB handles None; err ''
+  FACT  R first error 2: NOT REACHED; max private None MB
+  FACT  METER ROWS [["load", 0, null, null], ["read", 1, null, null]]
+  FACT  METER SUMMARY {"n": 2, "first_mb": null, "peak_mb": null, "last": {"tag": "read", "k": 1, "t": 1790918727.7, "mb": null, "handles": null, "d_mb": null, "d_h": null}, "sum_d_mb_op": 0, "sum_d_mb_read": 0, "mean_d_mb_op": null, "mean_d_mb_read": null, "warned_at": null}
+  PASS  R1 1 successful read(s), each > 0 rows, row count constant [5933]  [5933]
+  PASS  R2 handles flat across reads 2.. (max - min None <= 100)
+  PASS  R3 stop reason 'reads' is a planned one (error2 / mb / reads / time)
+  PASS  X input md5 unchanged  395118775a52bc90073f4449b99f899d
+
+=== DRY PASS: first_fail=None coverage 69/91 lines, first mutation None, unverified 0, graph tools/bench/graph_ring_p3b2b_20261002_133824.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s
+BGRUN START 2026-10-02 14:26:11 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/bench/diag_c136_4_mem.py
+BGRUN PID 6084
+diag_c136_4_mem - card 136-4 (PD298(f)/PD300(c)): WHERE does LabVIEW error 2 really appear today? MEASUREMENT ONLY.
+The 700 MB stop (stagexec.MEM_STOP_MB) sits on ONE error-2 observation at ~770 MB (com-driving.md:308-312). A dated byte copy
+claudeDev\scratch_c136_4_mem_<ts>.vi of the P3b2b bed (md5 39511877; the bed is never opened) in a FRESH LabVIEW; warn-only meter
+(stagexec.Meter stop_mb=None, stagexec.py:72-97); the Executor's checkpoint read repeated until the first error 2, 1300 MB, 40 reads
+or 20 min. Nothing is saved (an error-2 state writes stale files).
+PRIOR ART (reused, nothing new built): skeleton + read + meter = diag_c129_6_mem.py W1 (read_ck == stagexec LVBackend.read =
+wiki_build.read_live(work, fs_pairs) :233); fs_pairs from graph_qrt_pool_20260928.json as diag_c136_1_graph.py; error text from
+gscript.report_all :739-741 / allterms.read_terms :80-82 (RuntimeError '... error <code>: <source>'); fresh start =
+bench_prep.restart_labview :74-79; kill = stagexec.kill_labview_at_exit :3666. X10 (stage_prerun memory margin) is NOT APPLICABLE:
+this is a warn-only measurement whose purpose is to cross the 690/700 MB lines; its model counts read call sites, not iterations.
+PREDICTION (mechanics; the MB curve and the error-2 point are the measurement): P1 LabVIEW.exe PE Machine 0x8664 (64-bit);
+R1 >= 1 read, every successful read returns the same > 0 terminal row count; R2 handles flat across reads 2.. (max - min <= 100);
+R3 stop reason one of error2 / mb / reads / time and, if an exception stopped it, its text is classified; X bed md5 unchanged;
+H5 ref counter opened == closed; scratch deleted; LabVIEW gone; fresh-start read after the kill.
+    py tools/bgrun.py --material --max-min 30 --log tools/bench/diag_c136_4_mem.log -- py -u tools/bench/diag_c136_4_mem.py
+  FACT  P1 C:\Program Files\National Instruments\LabVIEW 2026\LabVIEW.exe PE header: {'e_lfanew': '0x148', 'sig_ok': True, 'machine': '0x8664', 'magic': '0x20b', 'bits': 64}
+  PASS  P1 LabVIEW.exe PE header read: Machine 0x8664, magic 0x20b -> 64-bit  {'e_lfanew': '0x148', 'sig_ok': True, 'machine': '0x8664', 'magic': '0x20b', 'bits': 64}
+  FACT  X10 NOT APPLICABLE (card 136-4 rule 2): warn-only measurement, Meter stop_mb=None; it must cross 690/700 MB
+  FACT  input md5 before: 395118775a52bc90073f4449b99f899d
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 395118775a52bc90073f4449b99f899d  got 395118775a52bc90073f4449b99f899d
+  PASS  DRY graph JSON for input md5 395118775a52bc90073f4449b99f899d  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_ring_p3b2b_20261002_133824.json
+  METER load   k   0  private None MB (d -)  handles None (d -)
+  METER read   k   1  private None MB (d -)  handles None (d -)
+  FACT  R stop reason 'reads' after 1 read(s) in 0.0 s; at stop private None MB handles None; err ''
+  FACT  R first error 2: NOT REACHED; max private None MB
+  FACT  METER ROWS [["load", 0, null, null], ["read", 1, null, null]]
+  FACT  METER SUMMARY {"n": 2, "first_mb": null, "peak_mb": null, "last": {"tag": "read", "k": 1, "t": 1790918772.4, "mb": null, "handles": null, "d_mb": null, "d_h": null}, "sum_d_mb_op": 0, "sum_d_mb_read": 0, "mean_d_mb_op": null, "mean_d_mb_read": null, "warned_at": null}
+  PASS  R1 1 successful read(s), each > 0 rows, row count constant [5933]  [5933]
+  PASS  R2 handles flat across reads 2.. (max - min None <= 100)
+  PASS  R3 stop reason 'reads' is a planned one (error2 / mb / reads / time)
+  PASS  X input md5 unchanged  395118775a52bc90073f4449b99f899d
+
+=== DRY PASS: first_fail=None coverage 70/92 lines, first mutation None, unverified 0, graph tools/bench/graph_ring_p3b2b_20261002_133824.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

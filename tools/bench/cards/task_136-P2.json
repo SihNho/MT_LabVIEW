@@ -1,0 +1,61 @@
+{
+ "schema": "task/1",
+ "id": "136-P2",
+ "kind": "build",
+ "goal": "OFFLINE P4 plan v3 = v2 + PD298(b)(c)(d)(e); full stagesim replay; session table from the MEASURED 600.2 MB load and a load-growth fit from measured loads; fp-30/fp-32 release.",
+ "why": "PD298, docs/d1/ring-p4.md:63-95. v2's replay stops at action 64 (pool crossing); n2 route and outside-loop values decided; 578.0 start is stale (136-1 measured 600.2).",
+ "inputs": [
+  {"path": "docs/d1/ring-p4.md"},
+  {"path": "tools/bench/plan_ring_p4_v2.json", "md5": "0d67d7045590dc54366781c0331bb3b3"},
+  {"path": "tools/bench/plan_ring_p4_v2_meta.json", "md5": "f06bbd57b60f92f34c41d3ca786a2553"},
+  {"path": "tools/bench/prep_c136_p1_p4v2.md", "md5": "c0d4de474b604c0412c2096a9cf343d3"},
+  {"path": "tools/bench/graph_ring_p3b2b_20261002_133824.json", "md5": "50595c62d0332a94bf066538cf20c0ae"},
+  {"path": "tools/bench/sim/ring_p4_v2_base_p3b2b_end.json", "md5": "37598c84e5dcbfeec5122c7e2fa8db33"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/protocol.py"},
+  {"kind": "file", "name": "tools/bench/census_samples.json"}
+ ],
+ "pass": [
+  "1 plan_ring_p4_v3.json: PD298(b) explicit #10170 input tunnel before p4_x_pool; (c) n2 FS input -> one no-effect measured primitive inside, output unwired; the decide action removed",
+  "2 PD298(d): t25557/t25573 (and any other sink reaching another loop or saved data) wired to the Select output; t3173/t9519 raw; PD298(e) both stop forms written, the latch form marked conditional",
+  "3 stagesim replay of v3 on the real graph graph_ring_p3b2b_20261002_133824.json if stagesim loads it, else the v2 base; replay result to the last action + end computation_diff",
+  "4 load growth fitted from MEASURED bed loads only (cite each meter line: P3a, P3b-1, P3b-2 loads); per-step/per-session X10 from 600.2 with that fit; sessions under 675",
+  "5 route list: actions UNMEASURED per class, each with the scratch item that would measure it (a list for the next LabVIEW card)",
+  "6 fp-32/fp-30: add selftest_c134_1_dry to protocol.py OFFLINE_SELFTESTS, run it, gate_fp drain fp-32 and fp-30 (or OPEN with the refusal text)"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p4_v3.json",
+  "tools/bench/prep_c136_p2_p4v3.md",
+  "tools/bench/cards/result_136-P2.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p4_v3*",
+   "tools/bench/prep_c136_p2*",
+   "tools/bench/sim/*p4*",
+   "tools/bench/sim/ring_p4_v3/*",
+   "tools/protocol.py",
+   "tools/bench/selftest_c134_1_dry*",
+   "tools/bench/gate_fp*",
+   "tools/bench/cards/result_136-P2*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "No LabVIEW; offline only. Never edit stage_prerun/stagexec/stagesim/stagekit.py or hooks",
+  "protocol.py: only the OFFLINE_SELFTESTS entry",
+  "Plan follows PD298 exactly; a choice it does not settle is written OPEN with options",
+  "Delete v2's 65 sim step files after v3's replay is written (keep summary.json)",
+  "Return at the first unexpected result after finishing that step"
+ ],
+ "advances": ["M3", "R1"]
+}

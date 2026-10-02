@@ -1,0 +1,50 @@
+{
+ "schema": "task/1",
+ "id": "136-4",
+ "kind": "measure",
+ "goal": "PD298(f)/PD300(c): where does LabVIEW error 2 really appear today? Bed byte copy, warn-only meter, repeated whole-VI reads until error 2 or 1300 MB. No save.",
+ "why": "The 700 MB stop sits under ONE error-2 observation at ~770 MB blamed on leaked refs (com-driving.md:308-312). Measured load growth makes P4 infeasible under it (PD300(c)).",
+ "inputs": [
+  {"path": "docs/d1/ring-p4.md"},
+  {"path": ".claude/skills/labview-automation/references/com-driving.md"},
+  {"path": "tools/bench/diag_c136_1_graph.py", "md5": "22e2256a1fa6679c6f086392f87b80ad"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b2b_20261002_130007.vi", "md5": "395118775a52bc90073f4449b99f899d"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagexec.py", "where": "Meter(stop_mb=None) warn-only mode"},
+  {"kind": "file", "name": "tools/bench/diag_c136_1_graph.py"}
+ ],
+ "pass": [
+  "1 offline: LabVIEW.exe bitness from its PE header (32/64-bit), cited",
+  "2 fresh LabVIEW, bed BYTE COPY opened, warn-only meter (stop_mb=None): private bytes + handles after load and after each whole-VI read",
+  "3 reads repeated until the first error 2, or 1300 MB, or 40 reads, or 20 min; report MB and read number at the first error 2 (or 'not reached' + max MB)",
+  "4 every reference opened by the script closed (handles flat per read except the read's own growth); no save of any file",
+  "5 LabVIEW killed and verified gone; byte copy deleted; a separate fresh-start handle read after the kill"
+ ],
+ "outputs": [
+  "tools/bench/diag_c136_4_mem.log",
+  "tools/bench/cards/result_136-4.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c136_4*",
+   "tools/bench/cards/result_136-4*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/scratch_c136_4*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 45},
+ "rules": [
+  "Scratch only; the bed is byte-copied and never edited; nothing is saved (error-2 state writes stale files)",
+  "<=120-line stagekit diagnostic; dry + prerun first; X10 not applicable to a warn-only measurement - say so in the log",
+  "bgrun --max-min 30 around the run; LabVIEW killed at the end whatever the outcome",
+  "Measurement only: no threshold or memory_model change"
+ ],
+ "advances": ["M3", "R1"]
+}
