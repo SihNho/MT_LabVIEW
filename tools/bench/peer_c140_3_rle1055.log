@@ -1,0 +1,42 @@
+BGRUN START 2026-10-02 20:39:11 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c140-3-rle1055 -TaskFile tools/bench/prep_c140_3_peer_task.txt -ReviewCard tools/bench/cards/review_c140_3_rle1055.json
+BGRUN PID 26124
+OUTCOME: ANSWERED (89s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-02-c140-3-rle1055.md
+COST: $0.9194  in 10 / out 7075 / cache-create 83953 / cache-read 415896  (85s, 8 turn(s))
+VERDICT-CARD: VERDICT-CARD c140-3-rle1055 verdict=unverified -> tools\bench\cards\verdict_c140-3-rle1055.json
+--- ANSWER ---
+**Verdict: unverified.** The run shows where the error came from, but it never checked whether the wire itself was gone, and that is the core of the claim.
+
+**1. Strongest reason the claim may be wrong: "the whole wire was deleted" was never measured.**
+- The only count after op 3 is the **node** count (`diag_c140_2_scratch.log:71-74`, 663 → 663). Wires are not nodes, so this count could not show w23255 disappearing.
+- There is no earlier example of this case. The P3b precedent the plan cites, w27378, still had a sink: its rows are `(27344,'',False)` plus the source `(27258,'',True)` (`plan_ring_p3b_make_c127_2.log:12`). ring-p4.md:396 itself says P3b only ever used the op on "wires that kept a sink".
+- So "a wire with no sinks is deleted whole" is the first guess about how `Wire.RemoveLooseEnds` (6370C08) behaves in this case. The vendor page does not cover it: [labviewwiki: Wire class/Remove Loose Ends](https://labviewwiki.org/wiki/Wire_class/Remove_Loose_Ends_method) says only "removes the loose ends of a wire", with no parameters and no word on what happens to the reference.
+
+**What the evidence does support: the error came from the after-read.**
+- `echo` = 23255 and `broken_before` = True were both written (`diag_c140_2_scratch.log:75`). Since `broken_before`'s unwritten default is False, the first property read (uid + `Is Broken?`, `gscript.py:4965`) finished cleanly.
+- An error in the Invoke would be reported as "Invoke Node", not "Property Node".
+- That leaves the after property read on the Invoke's reference out (`gscript.py:4966`). This assumes the op contains no other property read at its end; I can't check that, because .vi files are off-limits to me.
+- "The reference died after the method ran" is therefore well supported. **Why** it died is not.
+
+**2. Alternative explanations for the same evidence**
+- **(A) The wire object was replaced, not removed.** RemoveLooseEnds may rebuild the wire, so the old reference becomes invalid while a stub, possibly under a new uid, stays on the tunnel's inner terminal t23435. Same 1055, same node count, different end graph.
+- **(B) A third property read at the end of the op** (a reference or diagram read) failed for some other reason. This is less likely, and only reading the op's object list can rule it out.
+
+**Side defect in the log:** line 72 says `err ''` for op 3, while line 75 carries the 1055. The executor's FACT line reports a different field from the op's own error output. A clean-looking FACT line cannot be trusted for this op.
+
+**3. What would falsify the claim**
+After op 3 on a fresh scratch copy, the Wire list either still contains 23255, or contains a new wire whose source is t23435.
+
+**4. Cheapest test that separates the claim from (A)**
+Rerun scratch ops 1–3 (about 3 minutes, already measured) and read `uids(target,"Wire")` plus t23435's connected wire before and after op 3.
+- Claim holds: 23255 is gone and nothing new is attached to t23435.
+- (A) holds: there is a new wire uid on t23435.
+
+**About the proposed fix and the tunnel #23417**
+- `delete_wire w23255` then `delete_object #10171` leaves #23417 with its outer wire, and its inner face (t23435, which is a source, so this is an input tunnel) with nothing wired. That is a legal state: an input tunnel with an unwired inner side does not break the VI.
+- It is the same state the claim says RLE produced. It differs from what RLE actually produced only if (A) is true, in which case the v14 end graph was already wrong about that stub.
+- The fix's correctness does not depend on the hypothesis being right. delete_wire is measured (op 1 here), and the sink-set check is already in place (`prep_c140_3_gate.log:11`).
+- v15's scratch should still compare the whole VI after the new op 2, so the end graph is measured rather than taken over from v14's simulation.
+- **What does depend on the hypothesis:** whether RLE can still be planned on a wire whose sinks are all deleted. Until the test above is run, the planner should refuse that case.
+
+VERDICT {"schema":"verdict/1","id":"c140-3-rle1055","verdict":"unverified","alternative":"RemoveLooseEnds rebuilt/replaced the wire (old ref invalid) leaving a stub, possibly new uid, on tunnel inner t23435; only a NODE census was taken, so wire removal is unmeasured. 1055 localisation to the after-read is supported (echo+broken_before written).","discriminating_test":"Rerun scratch ops 1-3 with uids(target,'Wire') and t23435's connected wire read before/after op 3: 23255 gone and nothing on t23435 = claim; new wire uid on t23435 = alternative.","violations":[],"sources":["tools/bench/diag_c140_2_scratch.log:71-75","tools/gscript.py:4964-4988","tools/bench/prep_c140_3_gate.log:4-16","tools/bench/plan_ring_p3b_make_c127_2.log:12","docs/d1/ring-p4.md:393-399","https://labviewwiki.org/wiki/Wire_class/Remove_Loose_Ends_method"],"note":"Fix (delete_wire then delete_object) is sound regardless; verify end graph by whole-VI diff in v15 scratch. Stagexec FACT line 72 printed err '' while op returned 1055: reporting defect. Gate RLE on sink-less wires until tested."}
+BGRUN END rc=0 after 90s

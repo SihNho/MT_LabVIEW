@@ -1,0 +1,21 @@
+{"schema":"result/1","id":"140-3","status":"FAIL","gates":{"pass":4,"fail":1},
+"first_fail":"4 scratch Error List 52 != predicted 51 (alt 53): extra 'Insert Into Array: Contains unwired or bad terminal'; launch gate not met, no launch",
+"blocked_by":null,
+"artefacts":[{"path":"tools/bench/plan_ring_p4_v15.json","md5":"eb4ffb6e2a27993a372064470c1c325b"},{"path":"tools/bench/plan_ring_p4_v15_meta.json","md5":"d012bd2c2d065aed1e16ddab394010e7"},{"path":"tools/bench/plan_ring_p4_s01.json","md5":"ff041e6c8cdb91c7ff3593a7d029a148"},{"path":"tools/bench/plan_ring_p4_s01_pred.json","md5":"567daa6ed4527128de3cb829b40e146e"},{"path":"tools/bench/diag_c140_3_facts.md","md5":"11cd5a1f0cca498068ab189b139fc350"}],
+"facts":[
+"Gate PD321(b) PASS: w23255 sinks only #10171 x/y, source tunnel #23417 t23435 (prep_c140_3_gate.log:4-9)",
+"v15 PASS 16/0: replay END 186, end cdiff == v14 24, compile 167==167, route diff only changed ids, fs_routes regen (prep_c140_3_mkv15.log)",
+"s01 FINAL from v15 PASS 10/0; dry PASS; prerun 15/0 both; X10 launch 678.5 / scratch 673.4 (prep_c140_3_prerun.log, prep_c140_3_scr_prerun.log)",
+"Scratch PASS 19/0 + MEM/IN/GONE: ops real == sim, PB cdiff == pred, lost wires 23255/23310, peak 615.5 MB (diag_c140_3_scratch.log)",
+"Scratch Error List 52 (window count 52); vs bed expected 51: extra 1 Insert Into Array unwired/bad terminal, missing 0 (diag_c140_3_elcmp.log:3-4)",
+"No launch, no in-between file, no graph read (diag_c140_3_graph.py written, unrun); scratch deleted, bed md5 39511877 unchanged, no LabVIEW (prep_c140_3_cleanup.log)",
+"Review c140-3-rle1055 unverified/not refuted: 1055 from after-read; FACT line printed err '' while op returned 1055 (diag_c140_2_scratch.log:72 vs :75)",
+"Review c140-3-el52 SUPPORTED: 52nd item = node of p4_ras_bufdiff (donor #29157); says #29157 is Insert Into Array, plan prim says Replace Array Subset (archive/peer/2026-10-02-c140-3-el52.md)",
+"JEV: diag_c140_2_scratch.log no row -> review dispatched; diag_c140_3_elcmp.log new-problem 0.782 review owed -> c140-3-el52 ANSWERED (jev_gate.log)",
+"errorlist_scratch_c140_3.log rc 1 = MISMATCH because the scratch read had no expected file (expected_file null), not a read failure"],
+"open":[
+"Rule 1a: is the ring's per-slot write node (donor #29157; bed #29265/#29316 from P3b-2 per review) an Insert Into Array where Replace Array Subset is meant?",
+"If the node class is right, accept 52 as session 1's predicted Error List (pred rule counted terminals, LabVIEW one item per node) and re-issue the launch?",
+"brief pre-scripted: the launch was conditional on EL == prediction; not taken"],
+"cost":{"usd":null,"minutes":48,"labview_runs":2},
+"note":"Card 140-3 returned at the first unexpected result (chat-P2). Recipes stage_d1_ring_p4_s01*.py edited in names only (logs, out json, card id)."}

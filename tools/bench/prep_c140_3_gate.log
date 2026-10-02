@@ -1,0 +1,19 @@
+BGRUN START 2026-10-02 20:38:18 limit 5.0 min: py -u tools/bench/prep_c140_3_gate.py
+BGRUN PID 11680
+GATE PASS | M0 graph md5 == 50595c62 / v14 == 22f58271 | 
+W23255 ROW {"term_uid": 23283, "term_name": "y", "is_source": false, "wire_uid": 23255, "owner_uid": 10171, "owner_class": "Comparison", "frame_diagram": 23166, "term_class": "ParameterTerminal"}
+W23255 ROW {"term_uid": 23292, "term_name": "x", "is_source": false, "wire_uid": 23255, "owner_uid": 10171, "owner_class": "Comparison", "frame_diagram": 23166, "term_class": "ParameterTerminal"}
+W23255 ROW {"term_uid": 23435, "term_name": "", "is_source": true, "wire_uid": 23255, "owner_uid": 23417, "owner_class": "LoopTunnel", "frame_diagram": 23166, "term_class": "InnerTerminal"}
+N10171 TERM {"term_uid": 23276, "term_name": "x = y?", "is_source": true, "wire_uid": 23310, "owner_uid": 10171, "owner_class": "Comparison", "frame_diagram": 23166, "term_class": "ParameterTerminal"}
+N10171 TERM {"term_uid": 23283, "term_name": "y", "is_source": false, "wire_uid": 23255, "owner_uid": 10171, "owner_class": "Comparison", "frame_diagram": 23166, "term_class": "ParameterTerminal"}
+N10171 TERM {"term_uid": 23292, "term_name": "x", "is_source": false, "wire_uid": 23255, "owner_uid": 10171, "owner_class": "Comparison", "frame_diagram": 23166, "term_class": "ParameterTerminal"}
+GATE PASS | W1 w23255: one source row, >= 1 sink row | {'src': 1, 'sinks': 2}
+GATE PASS | GS every sink of w23255 is a terminal of #10171 | [(10171, 23283, 'y'), (10171, 23292, 'x')]
+WIRE on #10171 23255 [(10171, 'y', False), (10171, 'x', False), (23417, '', True)]
+WIRE on #10171 23310 [(10171, 'x = y?', True), (23166, '', False), (23166, '', False)]
+V14 #1 {"op": "delete_wire", "id": "p4_dw_23310", "wire_uid": 23310, "why": "ROUTE delete_wire | MEASURED | PD295(c) scaffold stop #10171 x=y? -> #10170 cond #23246 (graph step_18: w23310); delete_wire route launched in P2a (plan_ring_p2a_in.json actions 1-4, stage_d1_ring_p2a.log:124)"}
+V14 #2 {"op": "delete_object", "id": "p4_do_10171", "uid": 10171, "why": "ROUTE delete_object | MEASURED | PD295(c) #10171 = S2 scaffold (stage_d1_s2_loops.log:61-69), not original; delete_object launched in P2a (plan_ring_p2a_in.json actions 5-8; scratch_verify/stagexec.ring_p2a_deletes_pin_20260928_185329.json)"}
+V14 #3 {"op": "wire_remove_loose_ends", "id": "p4_rle_w23255", "wire_uid": 23255, "why": "ROUTE wire_remove_loose_ends | MEASURED | w23255 (tunnel #23417 inner -> #10171 x,y) loses both sinks; RLE wire_uid form = P3b-1 p3b_rle_w27378 (launched)"}
+V14 #4 {"op": "create", "id": "p4_c_stopall_f", "class": "BooleanConstant", "diagram": 4866, "as": "KSF1", "prim": "const_donor", "donor": {"donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorBoolF_v0.vi", "uid": 126}, "terminals": [{"name": "", "is_source": true, "term_class": "Terminal"}], "why": "ROUTE create const_donor | MEASURED donor | PD313(d)/PD240(b)(c): False constant on FS1 frame #4866 (P2b p2b_c_Num form, launched); DonorBoolF_v0.vi md5 2346e9d8 Boole
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":3,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

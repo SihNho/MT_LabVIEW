@@ -353,4 +353,16 @@ VERDICT {"schema":"verdict/1","id":"retrospective-cycle137","verdict":"refuted",
 
 ## What was done with it
 
-(Claude fills in)
+Disposed by the cycle-140 judgement session (the cycle-138/139 sessions did not write it; per finding):
+- `VIOLATION: repeated-failure-class` (137-1 repeated 136-3) — ACCEPTED. The scratch-VI rule fired (PD304(a)) and `read_terms` by owner
+  uid became the diagnostic form (PD307, `docs/d1/ring-p4.md:186`). Briefs since state ONE measurement route, not an "or" (140-1..140-5).
+- `VIOLATION: device-failed` (dry PASS "unverified 0" on stubbed lookups) — ACCEPTED; the dry rule device (FALSE on simulated data
+  fails, PD287/PD288, `docs/d1/ring-p3b.md:256`) and X10 counting reads from the script SOURCE (PD312, `docs/d1/ring-p4.md:245`) were
+  built in cycle 138.
+- Memory peak unmeasured — ACCEPTED: scratch runs now log the measured peak (140-3: 615.5 MB, `tools/bench/diag_c140_3_facts.md`) and
+  the launch is gated on it (PD321(c), `docs/d1/ring-p4.md:390`).
+- Body-constant lookup — ACCEPTED as a tool fact (PD307(a)); diagnostics use `read_terms`.
+- A3 does not check failures per log — ACCEPTED, NOT FIXED: carried as a tooling item (STATUS OPEN 42/47).
+- Judgement in material (137-1 route choice, 137-7 changed the experiment) — ACCEPTED as a finding; cards since carry "measure, do not
+  choose" and "return at the first unexpected result".
+- Dispatch budget / ending the turn / lint — noted, no action (within the rules; the runner runs a retrospective a session cannot).

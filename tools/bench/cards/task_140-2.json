@@ -1,0 +1,74 @@
+{
+ "schema": "task/1",
+ "id": "140-2",
+ "kind": "build",
+ "goal": "P4 LabVIEW session 1 = v14 ops 1..16: plan + recipe, dry/prerun/X10, ONE scratch run; if every gate PASSes, ONE launch saving the in-between file, then its load + graph read.",
+ "why": "PD320 (judgement 140): sessions cut by X10 with table A's read model; session 1 predicted 673.4 MB; op 17 moves to session 2 with its RLE (of pair).",
+ "inputs": [
+  {"path": "tools/bench/plan_ring_p4_v14.json", "md5": "22f582715e3d303ea0625fbe98bb590e"},
+  {"path": "tools/bench/plan_ring_p4_v14_meta.json", "md5": "29f6535b1f280b3a33a07dbdeeff8893"},
+  {"path": "tools/bench/plan_ring_p4s1.json", "md5": "e6992800a425445311b7cb5fdf5f59ad"},
+  {"path": "tools/recipes/stage_d1_ring_p4s1.py", "md5": "9f60aeba54c83b850b532c9b9b31ee6e"},
+  {"path": "tools/bench/diag_c140_1_facts.md", "md5": "393390fc8d4fe1519424e114f09a7e87"},
+  {"path": "tools/bench/diag_c140_1_sessions.json", "md5": "4e2d72c6763df8669d464065935c8b3b"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b2b_20261002_130007.vi", "md5": "395118775a52bc90073f4449b99f899d"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/bench/prep_c139_7_s1.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p4s1_scratch.py"}
+ ],
+ "pass": [
+  "1 plan_ring_p4_s01.json = v14 ops 1..16, FINAL, base rows as declared open rows, no of-pair crossing the cut (brief_140-2.md item 1)",
+  "2 recipe dry PASS, prerun PASS, X10 PASS <= 675 (pred 673.4); --scratch-required verdict; predicted Error List count written",
+  "3 ONE scratch run on a bed byte copy: ops real == sim, census + Is Broken? per op, peak, EL count-only vs prediction; LabVIEW gone",
+  "4 launch ONLY if every scratch gate PASSed and EL == prediction: fresh instance, in-between file saved, same gates, full EL read",
+  "5 after launch: in-between file load MB + whole graph read in a fresh instance; LabVIEW gone; scratch deleted; bed md5 unchanged",
+  "6 diag_c140_2_facts.md (<= 40 lines) + result card; STATUS bed key not moved"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p4_s01.json",
+  "tools/recipes/stage_d1_ring_p4_s01.py",
+  "tools/bench/diag_c140_2_facts.md",
+  "tools/bench/cards/result_140-2.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p4_s01*",
+   "tools/bench/prep_c140_2*",
+   "tools/bench/diag_c140_2*",
+   "tools/bench/launch_c140_2*",
+   "tools/bench/graph_ring_p4s01*",
+   "tools/bench/sim/ring_p4_s01*/*",
+   "tools/bench/sim/stage_d1_ring_p4_s01*/*",
+   "tools/recipes/stage_d1_ring_p4_s01*",
+   "tools/bench/prerun_records*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/errorlist_*p4s01*",
+   "tools/bench/errorlist_*p4_s01*",
+   "tools/bench/errorlist_*scratch_c140_2*",
+   "tools/bench/cards/result_140-2*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/scratch_c140_2*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_ring_p4s01_*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 90},
+ "rules": [
+  "Bed byte-copied, never edited, never run; scratch deleted after its records; full brief brief_140-2.md",
+  "No tools/*.py edit except the new stage_d1_ring_p4_s01*.py recipes",
+  "Launch only on all-PASS scratch + EL == prediction; else return before the launch with the facts",
+  "Return at the first unexpected result after finishing that step (LabVIEW closed); facts + OPEN line only"
+ ],
+ "advances": ["M3", "R1"]
+}

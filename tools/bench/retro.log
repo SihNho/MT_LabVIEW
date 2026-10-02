@@ -6313,3 +6313,95 @@ VIOLATION: device-failed | loss_min=0 | loss_usd=? | evidence=tools/bench/diag_c
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle137","verdict":"refuted","alternative":"137-1's repeat was unavoidable: read_terms would have broken X10, and only scratch card 137-3 could show a body constant is absent from Diagram.Nodes[].","discriminating_test":"Prerun diag_c137_1_routes.py with ni() replaced by one read_terms by owner uid (as diag_c137_5_routes.py does): X10 <= 690 means avoidable; 137-5 measured 689.7 (result_137-5.json:14).","violations":[{"slug":"repeated-failure-class","loss_min":26,"loss_usd":"?","evidence":"tools/bench/diag_c137_1_routes.log:46"},{"slug":"device-failed","loss_min":0,"loss_usd":"?","evidence":"tools/bench/diag_c137_5_dry.log:178"}],"sources":["tools/bench/cards/brief_137.md:6","tools/bench/diag_c137_1_routes.py:26","tools/bench/diag_c137_1_routes.py:59","tools/bench/diag_c137_5_dry.log:48","tools/bench/cards/result_137-5.json:14","docs/violation-decisions.md:1851","tools/stage_prerun.py:724"],"note":"Device line is threshold-1 mandated; its 12 min sit inside line 1's 26 (not additive). 'DRY or ok' in 29 gates across all four c137 diag scripts evades the stub detector."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle137.md
 BGRUN END rc=0 after 391s
+BGRUN START 2026-10-02 21:41:55 limit 10.0 min: py tools/retrospective.py --cycle 140
+BGRUN PID 18792
+   window 2026-10-02 16:47:04 .. 2026-10-02 21:41:55 (295 min); 85 build logs, 16 machinery logs, 49 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle140.txt (40344 chars)
+   review card tools\bench\cards\review_retrospective-cycle140.json
+OUTCOME: ANSWERED (397s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-10-02-retrospective-cycle140.md
+COST: $2.5958  in 68 / out 37100 / cache-create 138850 / cache-read 3713591  (395s, 46 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle140 verdict=none -> tools\bench\cards\verdict_retrospective-cycle140.json
+--- ANSWER ---
+**Verdict: no structural fault in this window.** The most important event is a success. Cycle 140 found a computation defect that was built before this window, and it found it the first time the defect showed up inside the window. The time lost to faults in the window is small, about 20–25 minutes out of 295, and none of it changed how a cycle ended.
+
+**About the window.** 16:47–21:41 covers three runner cycles, not one: cycle 138 (`tools/bench/cycle_runner.log:1090`), cycle 139 (`:1105`) and cycle 140, which started at 19:55:04 (`:1112`). Cycles 138 and 139 closed with "retro not due" (`:1083`, `:1098`). I review all three as the prompt directs. Cycle 140's own judgement-session cost is not logged yet: there is no `CYCLE 140` line, and the audit's C4c covers only `cycle_138.log` and `cycle_139.log`.
+
+**Cost and outcome.** Judgement sessions for 138 and 139 cost $78.72; reviews cost $16.06, of which cycle 140's six reviews account for $9.35 (`peer_c140_*.log:4`, `priorart_c140_*.log:6`). Cycle 140 itself was ≥ $9.35 and lasted about 106 of its 180 budgeted minutes. No P4 work VI was saved in any of the three cycles: the bed md5 `39511877…` has not changed since 13:00 (`cycle_runner.log:1109`). What the window did produce:
+- the X10 memory-based session cut;
+- plans v8 to v15;
+- three measured donors, including `DonorRAS1D_v0.vi`, which was run on known values (`result_140-5.json:5-10`);
+- the finding that all six ring slot writes are Insert Into Array instead of Replace Array Subset (`docs/d1/ring-p4.md:411-416`).
+
+That last finding alone justifies the window. Building P4 on that bed would have shipped a ring buffer that grows every frame.
+
+## Ranking
+
+1. **Cycle 139 sized step 1 by edit count, not by the memory model (X10).** PD303(b) had already measured about 12 sessions (`ring-p4.md:150-151`), and 138-2 had made X10 stricter (`:250-251`). Even so, cards 139-4 to 139-7 built a 39-action step-1 plan and re-cut steps 2–5 (`:352-354`). X10 refused it only at the last gate (`result_139-7.json:2`).
+   - Loss: about 25 minutes (139-6, 139-7 and 140-1). No log carries a dollar figure.
+   - The X10 check itself worked as designed and refused the plan before LabVIEW opened.
+   - Every cycle would still have ended the same way: the 1055 error and the Insert Into Array defect were still waiting.
+2. **The Insert Into Array donor defect.** It began in P3b-1/P3b-2, before this window. Inside the window it first appeared at `diag_c140_3_scratch.log:219` and was caught in the same card. A prim gate would have saved roughly the 17-minute Error List read (`errorlist_scratch_c140_3.log:164`), but that reader is pre-window tool debt.
+3. **Card 140-P1's provisional dry failure** repeated a known class (see Q1). It ran in parallel and was not on the critical path.
+
+## FINDINGS
+
+**1. Repeated failure.**
+- **Provisional-base dry.** 140-P1's dry stopped on session-1 objects in the provisional base (`prep_c140_p1_dry.log:28`). This is the same failure as fp-21, which was closed as only PARTIAL in card 132-1 (`gate_fp_queue.jsonl:21`; `stage_prerun_c132_1_p3b2_dry.log:21-26`). This is the third occurrence. The approach should have changed at PD320(e): plan the prep card as cut and plan only, with the dry deferred until after `--rebase`. PD321(e) adopted exactly that afterwards (`ring-p4.md:405-407`).
+- **`create_control_nested` on a top-level node.** 140-5's first attempt failed this way (`diag_c140_5_run.log:35-36`). That is the class PD313(b) had recorded three hours earlier (`ring-p4.md:278-279`). Cost: 68 seconds plus a patch.
+
+**2. Missing tool.** No gate compared a created node's read-back class with the plan's declared prim (PD322(d), `ring-p4.md:425-427`). It would have answered 140-3's Error List mismatch of 52 against 51 (`diag_c140_3_elcmp.log:3-4`) directly, and the 140-4 census. `next.json:4` builds it first, which is correct.
+
+**3. Unmeasured steps.**
+- **Step-1 sizing.** See ranking item 1.
+- **X10 over-predicts.** The first P4 scratch measured 615.5 MB against an X10 prediction of 673.4 MB, an over-prediction of 57.9 MB (`diag_c140_3_scratch.log:316`). The failed-logs review had already measured a 21–38 MB high bias (`archive/peer/2026-10-02-c140-2-failed-logs.md:56-59`). Even so, `next.json:10` re-cuts sessions at ≤ 675 on the uncalibrated model. Each extra session costs a scratch run plus a launch. Recalibrating is cheap and offline.
+
+**4. Rule compliance (CLAUDE.md).**
+- **400-line cap on active docs (§4, `CLAUDE.md:587`): broken.** Cycle 140's PD320–322 took `ring-p4.md` from about 371 to 429 lines (audit L10).
+- **STATUS stays one screen: broken.** STATUS.md is 152 lines and accumulates "CYCLE 13x in brief" narrative (`STATUS.md:58-75`).
+- **Every archived review gets a disposition: broken.** `c140-2-failed-logs` and `c140-2-provisional-base` were left blank (A4; `c140-2-failed-logs.md:107-109`). The card could not write to `archive/peer/`, and the judgement session never filled them in.
+- **Rule 1a, "stop and ask the user" (`CLAUDE.md:37`): satisfied, defensibly.** PD322(b) repairs toward the written design and does not ask (`ring-p4.md:417-420`). The donor was verified functionally, not only structurally (`result_140-5.json:10`).
+- **What the audit does not cover:**
+  - created-node class against plan intent;
+  - review findings that are disposed in the archive but never acted on in the plan;
+  - result-dependent clauses in briefs;
+  - the fact that the window spans three runner cycles;
+  - cycle 140's own judgement cost, so the C5 total is understated.
+  - C7 (597 files) is too noisy to judge scope from.
+
+**5. Ordering.** Defensible. The sequence was: 140-1 offline measurement, then the session-1 scratch, then the PD321 plan fix, the census and the donor. The prim gate comes first next cycle, and it was cheaper than the 140-3 card that exposed the problem. The one bad ordering is cycle 139's X10-last gate chain (ranking item 1).
+
+**6. What was not reported.** The `c140-2-failed-logs` review found three tool defects:
+- X10 silently falls back to a 570 MB start on a provisional base, 36 MB low (`:50-54`);
+- the scratch recipe's `x10()` takes its limit from the last line of a log instead of the pinned prediction file (`:73-76`);
+- the plan maker writes the live plan before its gates pass (`:71`).
+
+None of these appears in PD321/322, STATUS or `next.json`; a search for them finds nothing. Also, the executor's FACT line printed `err ''` while the op returned error 1055 (`diag_c140_2_scratch.log:72` against `:75`). The material session named this a fact for judgement (`priorart-c140-3-p4s01.md:719-720`), and the judgement session never picked it up. Finally, the runner heartbeat counts artefacts as "deliverables" (`cycle_runner.log:1103`), which hides that no work VI was saved in three cycles. STATUS does say so honestly.
+
+**7. Judgement inside a material session.** `brief_140-3.md:6` ("If it refutes (a) AND the gate in 1 fails, return") and `:18-19` (a "mechanical" launch gate) pre-script result-dependent actions. Calling the gate "mechanical" satisfies the brief rule (`CLAUDE.md:353-357`) only formally. Material card 140-3 also accepted review findings itself:
+- "A3 accepted" (`priorart-c140-2-p4s01.md:696`, `priorart-c140-3-p4s01.md:718-720`);
+- proceeding past an `unverified` 1055 review under item 0 (`c140-3-rle1055.md:114-116`).
+
+It correctly left the rule-1a decision to judgement (`c140-3-el52.md:127-130`). None of this changed the outcome, because no launch was taken.
+
+## DEVICE EFFECT
+
+No device failed inside the window.
+
+| Device | Expected fault | What happened in the window |
+|---|---|---|
+| bgrun inner-failure → rc | failing run reported as passed | Fired correctly: `diag_c140_2_scratch.log:104`, `diag_c140_5_run.log:42`, `diag_c140_3_elcmp.log:18` all rc=1 |
+| Confirm-bait refusal | review asked to confirm | Every prompt was refute-framed (`c140-3-el52.md:28,56-61`) |
+| Prior-art before build; premature-build guard | recipe run before review | Reviews ended before both scratch starts (`priorart_c140_2_p4s01.log:33` before 20:29:59; `priorart_c140_3_p4s01.log:37` before 20:51:16) |
+| Undisposed-review refusal | new review while the last one is blank | `retrospective-cycle137` disposed before this dispatch (`:354-358`) |
+| C3/C4 cost parsing | cost lines missed | 10 seen, 10 parsed |
+| X10 peak | memory over the stop | Refused the 39-op step before LabVIEW (`result_139-7.json:2`); measured peaks 585.2 and 615.5 MB |
+| "Finalize writes only on success" | plan overwritten by a failed run | Finalize succeeded (`prep_c140_2_s01_r2.log:78`). The later failure was the maker's RB gate, and the L0 pin caught the stale plan |
+| guard_peer | — | Fired wrongly on `--scratch-required` rc 3 (fp-34, the 6th such log). It was queued, not bypassed, and the review it forced found three real defects |
+
+None of the stop-record or launch-gate refusals in this window went to the gate false-positive queue except fp-34.
+
+VIOLATION: none
+
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle140","verdict":"none","alternative":"Strongest case: cycle 139 sized P4 step 1 by edit count although PD303(b) and X10 already sized sessions; 139-6/139-7 and 140-1 (~25 min) followed. The X10 device fired before LabVIEW and no cycle's end changed.","discriminating_test":"Run X10 on v12's 39-action prefix at 139-4 time (offline, seconds): if it exceeds 690, the 139-6/139-7 step re-cut was avoidable; then check whether any cycle could have ended with a launch (it could not: 1055 and the Insert Into Array defect still waited).","violations":[],"sources":["tools/bench/cards/result_139-7.json:2","docs/d1/ring-p4.md:150","docs/d1/ring-p4.md:411","tools/bench/diag_c140_3_scratch.log:219","tools/bench/diag_c140_3_scratch.log:316","archive/peer/2026-10-02-c140-2-failed-logs.md:107","tools/bench/prep_c140_p1_dry.log:28","tools/bench/cycle_runner.log:1112"],"note":"Window = runner cycles 138-140. In-window losses minor (~25 min). Undisposed failed-logs review (3 tool defects) and the 58 MB X10 over-prediction are the carries that matter next."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle140.md
+BGRUN END rc=0 after 403s

@@ -1,0 +1,56 @@
+{
+ "schema": "task/1",
+ "id": "140-1",
+ "kind": "measure",
+ "goal": "PD319(c) offline: X10 session table of the whole P4 plan v14 (current read model), and how far BIND reads can be merged (step 1 + whole plan) with the merged-model table. No LabVIEW.",
+ "why": "PD319(b) (judgement 139): P4's LabVIEW sessions are cut by X10, not by meta steps. Step-1 plan e6992800 is refused at 750.7 MB (start 606.1, N 39, R 29 reads, diag_c139_7_facts.md:17-19). Judgement picks the cut and decides whether a bind-merge tool is worth building only from these numbers.",
+ "inputs": [
+  {"path": "tools/bench/plan_ring_p4_v14.json", "md5": "22f582715e3d303ea0625fbe98bb590e"},
+  {"path": "tools/bench/plan_ring_p4_v14_meta.json", "md5": "29f6535b1f280b3a33a07dbdeeff8893"},
+  {"path": "tools/bench/plan_ring_p4s1.json", "md5": "e6992800a425445311b7cb5fdf5f59ad"},
+  {"path": "tools/bench/plan_ring_p4s1_pred.json", "md5": "93ae6129ca838c2816cbcc501a2ee3e4"},
+  {"path": "tools/bench/diag_c139_7_facts.md", "md5": "3024f9a1df4bd8619f844087054e2d9e"},
+  {"path": "tools/recipes/stage_d1_ring_p4s1.py", "md5": "9f60aeba54c83b850b532c9b9b31ee6e"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/stagesim.py"}
+ ],
+ "pass": [
+  "1 X10 formula + constants from stage_prerun.py with file:line; step 1's 750.7 reproduced within 0.5 MB (brief_140-1.md item 1)",
+  "2 step 1's 29 reads classified (checkpoint/BIND); per BIND: create action, first use, binder matching key, file:line (brief item 2)",
+  "3 merge facts: minimal read count (step 1 + whole v14), ambiguity per merged group, deferred-bind support yes/no + file:line (brief item 3)",
+  "4 session table A (current read model), greedy dependency-closed sessions each <= 675: ids, counts, op kinds, R, peak, total (brief item 4)",
+  "5 session table B (merged reads, unambiguous groups only), same columns and total (brief item 5)",
+  "6 dependency check per session; actions forcing a cut and boundaries inside one-unit groups named (brief item 6)",
+  "7 diag_c140_1_facts.md (<= 45 lines) + diag_c140_1_sessions.json + result card; no cut picked, no tool built"
+ ],
+ "outputs": [
+  "tools/bench/diag_c140_1_facts.md",
+  "tools/bench/diag_c140_1_sessions.json",
+  "tools/bench/cards/result_140-1.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c140_1*",
+   "tools/bench/prep_c140_1*",
+   "tools/bench/cards/result_140-1*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 45},
+ "rules": [
+  "Offline: one <=120-line script tools/bench/prep_c140_1_sessions.py under bgrun; no tools/*.py edit, no plan rewritten",
+  "Measure, do not choose: both tables + merge facts; no cut picked, no merge tool built; full brief brief_140-1.md",
+  "Return at the first unexpected result (e.g. 750.7 not reproducible) with the facts so far"
+ ],
+ "advances": ["M3", "R1"]
+}

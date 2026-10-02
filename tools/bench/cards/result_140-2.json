@@ -1,0 +1,33 @@
+{"schema": "result/1", "id": "140-2", "status": "FAIL",
+ "gates": {"pass": 2, "fail": 1},
+ "first_fail": "3 scratch run: E1 stopped IN op 3 wire_remove_loose_ends w23255 (error 1055: Property Node in OpWireRemoveLooseEnds_v0.vi; broken_before True, broken_after False) after op 2 deleted Comparison #10171",
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/plan_ring_p4_s01.json", "md5": "6fa94e2e421c0b19963a101df5841832"},
+  {"path": "tools/bench/plan_ring_p4_s01_in.json", "md5": "571a636ee213d4b2dbf10253bee17bc6"},
+  {"path": "tools/bench/plan_ring_p4_s01_pred.json", "md5": "6ae28374aee4ecbb1ea5ca701b74508d"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s01.py", "md5": "73b5eac38c39611043731addd32afdc4"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s01_scratch.py", "md5": "ffeab599211ce24f90b2b29e5139b69e"},
+  {"path": "tools/bench/prep_c140_2_s01.py", "md5": "67e5718126d0d3bf7088b515cf6945d3"},
+  {"path": "tools/bench/diag_c140_2_scratch.log", "md5": "02bf30667ec4c145393ce6cf448bd455"},
+  {"path": "tools/bench/diag_c140_2_facts.md", "md5": "bce99441702238deb421d64374aee317"}
+ ],
+ "facts": [
+  "Plan PASS 10/0: 16 actions p4_dw_23310..p4_w_b_out, FINAL, route PASS, no of-pair crosses the cut, 16 end rows all bed-declared (prep_c140_2_s01_r3.log)",
+  "v14 base has a STALE provisional flag; check_launch (stage_prerun.py:4033) and --rebase refuse it (prep_c140_2_s01_r2.log); maker drops it for s01 only, gate PV on diag_c136_1_graph.log:8,300",
+  "dry PASS, prerun PASS 15/0 for recipe and scratch (prep_c140_2_dry_r3.log, prep_c140_2_prerun_r3.log, prep_c140_2_scr_*); scratch-required rc 3 CENSUS-UNPREDICTED rows 1..16",
+  "X10 at start 606.1: Executor-only R 11 = 673.4 (== PD320); launch recipe adds its 2 census reads -> R 13 = 678.5 MB > 675 card limit, < 690 fail (prep_c140_2_prerun_r3.log)",
+  "Error List predicted at session end 51 (alt 53 = + 2 unwired sinks of p4_ras_bufdiff) - not read: scratch stopped before save",
+  "Scratch FAIL 10/2: ops 1-2 ran (delete #10171 node 664->663, diag_c140_2_scratch.log:63-67); op 3 RLE w23255 -> error 1055 in OpWireRemoveLooseEnds_v0.vi (:72-75)",
+  "Scratch peak 585.2 MB; bed md5 39511877 unchanged; LabVIEW gone (tasklist 20:33 empty); scratch deleted (H4/H6); refs 4/4 closed (H5). No launch, no in-between file",
+  "Reviews (archive/peer/2026-10-02-*): priorart-c140-2-p4s01 NOVEL; c140-2-provisional-base not refuted; c140-2-failed-logs. 'What was done' unfilled: archive/peer outside write flags",
+  "gate-fp fp-34 logged: guard_peer counts --scratch-required rc 3 (verdict) as a failed run (6th such log)",
+  "JEV-LADDER: s01_r2.log new-problem 0.734 -> review ANSWERED; prep_c139_7_s1.log new-problem 0.656 -> reviewed; diag_c140_2_scratch.log no row yet (jev_gate.log)"
+ ],
+ "open": [
+  "Op 3 RLE of w23255 directly after op 2 deleted #10171 hits error 1055 on the wire reference: plan order (RLE after the delete) or op behaviour?",
+  "Accept 678.5 MB (recipe incl. its 2 census reads) vs the card's 675, or drop/merge the census reads in the launch recipe?",
+  "Strip the stale provisional flag from v14 itself (affects later session plans) - not done here"
+ ],
+ "cost": {"usd": null, "minutes": 27, "labview_runs": 1},
+ "note": "Returned at the first unexpected LabVIEW result (chat-P2). Card items 4-5 not run. STATUS untouched."}

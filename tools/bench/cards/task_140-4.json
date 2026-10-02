@@ -1,0 +1,54 @@
+{
+ "schema": "task/1",
+ "id": "140-4",
+ "kind": "measure",
+ "goal": "Offline census: every ring array-write node (P3a..P4 v15) intended vs real primitive, Replace Array Subset donors, terminal map, node-swap tools, item-52 image.",
+ "why": "Review c140-3-el52 (supported): donor #29157 is Insert Into Array; bed #29265/#29316 and P4's p4_ras_bufdiff copy it where the design says Replace Array Subset (rule 1a).",
+ "inputs": [
+  {"path": "archive/peer/2026-10-02-c140-3-el52.md"},
+  {"path": "tools/bench/plan_ring_p4_v15.json", "md5": "eb4ffb6e2a27993a372064470c1c325b"},
+  {"path": "tools/bench/graph_ring_p3b2b_20261002_133824.json"},
+  {"path": "tools/bench/diag_c140_3_facts.md", "md5": "11cd5a1f0cca498068ab189b139fc350"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/main_vi_node_labels.json"},
+  {"kind": "file", "name": "tools/bench/launch_p3b2_c135_b.log"},
+  {"kind": "file", "name": "tools/bench/diag_c140_3_scratch.log"},
+  {"kind": "file", "name": "tools/bench/errorlist_shots/bd_210806_after11.png"},
+  {"kind": "file", "name": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/stagexec.py"}
+ ],
+ "pass": [
+  "1 census table: every ring array-write action P3a..P4 v15 with declared prim, donor, bed uid, read-back label/class, REAL == INTENDED",
+  "2 Replace Array Subset donors listed (uid, file, terminals), the measured one in the original named",
+  "3 terminal map RAS vs Insert Into Array with any unmatched terminal flagged",
+  "4 node-swap tools: replace-in-place yes/no + file:line; delete+create+reconnect routes and which are measured",
+  "5 item-52 image read: selected node identified",
+  "6 diag_c140_4_facts.md (<= 40 lines) + result card; no plan/tool edit, no LabVIEW"
+ ],
+ "outputs": [
+  "tools/bench/diag_c140_4_facts.md",
+  "tools/bench/cards/result_140-4.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c140_4*",
+   "tools/bench/prep_c140_4*",
+   "tools/bench/cards/result_140-4*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 35},
+ "rules": [
+  "Offline, measure only; full brief brief_140-4.md; no plan, tool or LabVIEW",
+  "Every read-back cited file:line; a row without a read-back is marked UNMEASURED, never inferred",
+  "Return at the first unexpected result with the facts so far"
+ ],
+ "advances": ["M3", "R1"]
+}

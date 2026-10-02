@@ -1,0 +1,17 @@
+{
+ "schema": "verdict/1",
+ "id": "c140-3-rle1055",
+ "verdict": "unverified",
+ "alternative": "RemoveLooseEnds rebuilt/replaced the wire (old ref invalid) leaving a stub, possibly new uid, on tunnel inner t23435; only a NODE census was taken, so wire removal is unmeasured. 1055 localisation to the after-read is supported (echo+broken_before written).",
+ "discriminating_test": "Rerun scratch ops 1-3 with uids(target,'Wire') and t23435's connected wire read before/after op 3: 23255 gone and nothing on t23435 = claim; new wire uid on t23435 = alternative.",
+ "violations": [],
+ "sources": [
+  "tools/bench/diag_c140_2_scratch.log:71-75",
+  "tools/gscript.py:4964-4988",
+  "tools/bench/prep_c140_3_gate.log:4-16",
+  "tools/bench/plan_ring_p3b_make_c127_2.log:12",
+  "docs/d1/ring-p4.md:393-399",
+  "https://labviewwiki.org/wiki/Wire_class/Remove_Loose_Ends_method"
+ ],
+ "note": "Fix (delete_wire then delete_object) is sound regardless; verify end graph by whole-VI diff in v15 scratch. Stagexec FACT line 72 printed err '' while op returned 1055: reporting defect. Gate RLE on sink-less wires until tested."
+}

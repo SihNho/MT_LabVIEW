@@ -1,0 +1,3042 @@
+{
+ "schema": "p4v3-meta/0",
+ "card": "136-P2",
+ "plan_in": "tools/bench/plan_ring_p4_v3_in.json",
+ "plan_in_md5": "ded2d5567b8a2b601bbeae3a5f1e2860",
+ "latch_plan_in": "tools/bench/plan_ring_p4_v3_latch_in.json",
+ "latch_md5": "d26c954f488a75130c618ed908e2ee42",
+ "from_v2": {
+  "path": "tools/bench/plan_ring_p4_v2.json",
+  "md5": "0d67d7045590dc54366781c0331bb3b3"
+ },
+ "counts": {
+  "actions": 163,
+  "ops": 164,
+  "by_group": {
+   "D stops (PD293(d)/PD295(c))": 10,
+   "F BufDiff (PD295(a))": 16,
+   "R reader core": 68,
+   "C slot-value consumers": 25,
+   "A rollback Selects (PD293(b))": 44
+  },
+  "level": {
+   "MEASURED": 50,
+   "UNMEASURED": 113
+  },
+  "route_level_3way": {
+   "MEASURED": 50,
+   "PRECEDENT": 107,
+   "UNMEASURED": 6
+  }
+ },
+ "pd298d_routing": [
+  {
+   "sr": "A",
+   "sink": "#10757 t10871",
+   "source": "Select RB1 output",
+   "why": "#10757 Index Array -> indicator 'index' t23541, READ BY Local #23523 on diagram 23058 (another loop)"
+  },
+  {
+   "sr": "A",
+   "sink": "#10969 t10975",
+   "source": "raw #5058 t5171",
+   "why": "#10969 -> indicator 'min value' t17272 only; no Local of it in the graph (display)"
+  },
+  {
+   "sr": "A",
+   "sink": "#23166 t3173",
+   "source": "raw #5058 t5171",
+   "why": "'Pos within cal image' display (PD298(d) names it)"
+  },
+  {
+   "sr": "A",
+   "sink": "#23166 t9519",
+   "source": "raw #5058 t5171",
+   "why": "'Pos: Diffraction Pattern' display (PD298(d) names it)"
+  },
+  {
+   "sr": "B",
+   "sink": "#2626 t4168",
+   "source": "Select RB2 output",
+   "why": "#2626 Build Array = the saved-trace row (#2626 -> #376, PD295(a), diag_c126_8_orig.log:5-6,32)"
+  },
+  {
+   "sr": "B",
+   "sink": "#2765 t2811",
+   "source": "raw #5058 t5124",
+   "why": "#2765 case tunnel -> registers E/F (rolled back) + 'Extension (nm) vs Time (Frame #)' graph t28786 (display); stays inside 1.2"
+  },
+  {
+   "sr": "D",
+   "sink": "#23166 t25573",
+   "source": "Select RB4 output",
+   "why": "'autofocus reset count (1.2 to 1.1)' read by Local #25578 on 639 (loop 1.1) - PD298(d) names it"
+  }
+ ],
+ "load_fit": {
+  "points": [
+   {
+    "ops_since_p3a": 0,
+    "mb": 561.8,
+    "file": "P3a bed 4dfa44aa",
+    "cite": "tools/bench/stage_d1_ring_p3b1.log:42 (METER start k 0 private 561.8 MB)"
+   },
+   {
+    "ops_since_p3a": 31,
+    "mb": 584.1,
+    "file": "P3b-1 file 9d7bf287",
+    "cite": "tools/bench/diag_c132_2_graph_p3b1.log:24 (MEM after load: 584.1 MB)"
+   },
+   {
+    "ops_since_p3a": 31,
+    "mb": 576.4,
+    "file": "P3b-1 file 9d7bf287",
+    "cite": "tools/bench/launch_p3b2_c135_a.log:48 (METER start k 0 private 576.4 MB)"
+   },
+   {
+    "ops_since_p3a": 52,
+    "mb": 605.0,
+    "file": "P3b-2a file 49cf7f77",
+    "cite": "tools/bench/launch_p3b2_c135_g.log:23 (MEM after load: 605.0 MB)"
+   },
+   {
+    "ops_since_p3a": 52,
+    "mb": 576.2,
+    "file": "P3b-2a file 49cf7f77",
+    "cite": "tools/bench/launch_p3b2_c135_b.log:56 (METER start k 0 private 576.2 MB)"
+   },
+   {
+    "ops_since_p3a": 70,
+    "mb": 600.2,
+    "file": "P3b-2b bed 39511877",
+    "cite": "tools/bench/diag_c136_1_graph.log:24 (MEM after load: 600.2 MB)"
+   }
+  ],
+  "ops_cite": [
+   "P3b-1 31 ops: stage_d1_ring_p3b1.log:41",
+   "P3b-2a 21 ops: launch_p3b2_c135_a.log:47",
+   "P3b-2b 18 ops: launch_p3b2_c135_b.log:55"
+  ],
+  "excluded": "P3b-2a SCRATCH 6cc69221 588.5/588.1 (diag_c133_6_graph_p3b2a.log:24, diag_c134_1_graph.log:24): an earlier P3b-2a plan whose op count is not this chain's",
+  "slope_mb_per_op": 0.543,
+  "intercept_mb": 562.6,
+  "residuals": [
+   -0.8,
+   4.7,
+   -3.0,
+   14.2,
+   -14.6,
+   -0.4
+  ],
+  "resid_sd": 10.6,
+  "same_file_spread_mb": {
+   "P3b-1 file": 7.7,
+   "P3b-2a file": 28.8
+  }
+ },
+ "x10": {
+  "formula": "peak_mb = start_mb + R * read_mb + N * (edit_mb + other_mb) + final_read_mb; R = whole-VI checkpoint reads (k 0 included), N = ops dispatched; final_read_mb once per Executor run (its last whole-VI read)",
+  "start_rule": "600.2 (diag_c136_1_graph.log:24) + slope x applied ops + op-0 read 5.9",
+  "limit_mb": 675.0,
+  "whole_plan_one_run": {
+   "N": 164,
+   "R": 63,
+   "start_mb": 606.1,
+   "peak_mb": 1009.2
+  },
+  "empty_session_over_675_after_ops": 85.6
+ },
+ "steps": [
+  {
+   "step": 1,
+   "units": [
+    "U01 1.2 stop",
+    "U02 BufDiff 1.1",
+    "U03 registers",
+    "U04 W1 creates"
+   ],
+   "actions": 33,
+   "sessions": [
+    {
+     "session": "1.1",
+     "units": [
+      "U01 1.2 stop",
+      "U02 BufDiff 1.1"
+     ],
+     "actions": 16,
+     "ops": 16,
+     "x10": {
+      "N": 16,
+      "R": 10,
+      "start_mb": 606.1,
+      "peak_mb": 670.9,
+      "start_rule": "600.2 + 0.543 x 0 applied ops + op-0 read 5.9"
+     },
+     "over_675": false
+    },
+    {
+     "session": "1.2",
+     "units": [
+      "U03 registers"
+     ],
+     "actions": 6,
+     "ops": 6,
+     "x10": {
+      "N": 6,
+      "R": 6,
+      "start_mb": 614.8,
+      "peak_mb": 655.6,
+      "start_rule": "600.2 + 0.543 x 16 applied ops + op-0 read 5.9"
+     },
+     "over_675": false
+    },
+    {
+     "session": "1.3",
+     "units": [
+      "U04 W1 creates"
+     ],
+     "actions": 11,
+     "ops": 11,
+     "x10": {
+      "N": 11,
+      "R": 12,
+      "start_mb": 618.0,
+      "peak_mb": 681.0,
+      "start_rule": "600.2 + 0.543 x 22 applied ops + op-0 read 5.9"
+     },
+     "over_675": true
+    }
+   ]
+  },
+  {
+   "step": 2,
+   "units": [
+    "U05 body creates",
+    "U06 W1 wiring",
+    "U07 W1 out tunnels",
+    "U08 image"
+   ],
+   "actions": 35,
+   "sessions": [
+    {
+     "session": "2.1",
+     "units": [
+      "U05 body creates"
+     ],
+     "actions": 13,
+     "ops": 13,
+     "x10": {
+      "N": 13,
+      "R": 14,
+      "start_mb": 624.0,
+      "peak_mb": 694.8,
+      "start_rule": "600.2 + 0.543 x 33 applied ops + op-0 read 5.9"
+     },
+     "over_675": true
+    },
+    {
+     "session": "2.2",
+     "units": [
+      "U06 W1 wiring"
+     ],
+     "actions": 12,
+     "ops": 10,
+     "x10": {
+      "N": 10,
+      "R": 3,
+      "start_mb": 631.1,
+      "peak_mb": 669.9,
+      "start_rule": "600.2 + 0.543 x 46 applied ops + op-0 read 5.9"
+     },
+     "over_675": false
+    },
+    {
+     "session": "2.3",
+     "units": [
+      "U07 W1 out tunnels",
+      "U08 image"
+     ],
+     "actions": 10,
+     "ops": 6,
+     "x10": {
+      "N": 6,
+      "R": 5,
+      "start_mb": 636.5,
+      "peak_mb": 674.8,
+      "start_rule": "600.2 + 0.543 x 56 applied ops + op-0 read 5.9"
+     },
+     "over_675": false
+    }
+   ]
+  },
+  {
+   "step": 3,
+   "units": [
+    "U10 valid",
+    "U11 C reads",
+    "U12 C sinks"
+   ],
+   "actions": 39,
+   "sessions": [
+    {
+     "session": "3.1",
+     "units": [
+      "U10 valid"
+     ],
+     "actions": 14,
+     "ops": 14,
+     "x10": {
+      "N": 14,
+      "R": 2,
+      "start_mb": 639.8,
+      "peak_mb": 681.5,
+      "start_rule": "600.2 + 0.543 x 62 applied ops + op-0 read 5.9"
+     },
+     "over_675": true
+    },
+    {
+     "session": "3.2",
+     "units": [
+      "U11 C reads"
+     ],
+     "actions": 12,
+     "ops": 12,
+     "x10": {
+      "N": 12,
+      "R": 8,
+      "start_mb": 647.3,
+      "peak_mb": 701.5,
+      "start_rule": "600.2 + 0.543 x 76 applied ops + op-0 read 5.9"
+     },
+     "over_675": true
+    },
+    {
+     "session": "3.3",
+     "units": [
+      "U12 C sinks"
+     ],
+     "actions": 13,
+     "ops": 13,
+     "x10": {
+      "N": 13,
+      "R": 4,
+      "start_mb": 653.9,
+      "peak_mb": 699.3,
+      "start_rule": "600.2 + 0.543 x 88 applied ops + op-0 read 5.9"
+     },
+     "over_675": true
+    }
+   ]
+  },
+  {
+   "step": 4,
+   "units": [
+    "U13 BufDiff 1.2",
+    "U14 rollback SR A",
+    "U14 rollback SR B",
+    "U14 rollback SR C",
+    "U14 rollback SR D"
+   ],
+   "actions": 36,
+   "sessions": [
+    {
+     "session": "4.1",
+     "units": [
+      "U13 BufDiff 1.2"
+     ],
+     "actions": 5,
+     "ops": 5,
+     "x10": {
+      "N": 5,
+      "R": 4,
+      "start_mb": 660.9,
+      "peak_mb": 695.3,
+      "start_rule": "600.2 + 0.543 x 101 applied ops + op-0 read 5.9"
+     },
+     "over_675": true
+    },
+    {
+     "session": "4.2",
+     "units": [
+      "U14 rollback SR A"
+     ],
+     "actions": 10,
+     "ops": 10,
+     "x10": {
+      "N": 10,
+      "R": 3,
+      "start_mb": 663.6,
+      "peak_mb": 702.4,
+      "start_rule": "600.2 + 0.543 x 106 applied ops + op-0 read 5.9"
+     },
+     "over_675": true
+    },
+    {
+     "session": "4.3",
+     "units": [
+      "U14 rollback SR B"
+     ],
+     "actions": 8,
+     "ops": 8,
+     "x10": {
+      "N": 8,
+      "R": 3,
+      "start_mb": 669.1,
+      "peak_mb": 705.1,
+      "start_rule": "600.2 + 0.543 x 116 applied ops + op-0 read 5.9"
+     },
+     "over_675": true
+    },
+    {
+     "session": "4.4",
+     "units": [
+      "U14 rollback SR C"
+     ],
+     "actions": 6,
+     "ops": 6,
+     "x10": {
+      "N": 6,
+      "R": 3,
+      "start_mb": 673.4,
+      "peak_mb": 706.7,
+      "start_rule": "600.2 + 0.543 x 124 applied ops + op-0 read 5.9"
+     },
+     "over_675": true
+    },
+    {
+     "session": "4.5",
+     "units": [
+      "U14 rollback SR D"
+     ],
+     "actions": 7,
+     "ops": 7,
+     "x10": {
+      "N": 7,
+      "R": 3,
+      "start_mb": 676.7,
+      "peak_mb": 711.3,
+      "start_rule": "600.2 + 0.543 x 130 applied ops + op-0 read 5.9"
+     },
+     "over_675": true
+    }
+   ]
+  },
+  {
+   "step": 5,
+   "units": [
+    "U14 rollback SR E",
+    "U14 rollback SR F",
+    "U15 reseed flag",
+    "U09 n2"
+   ],
+   "actions": 20,
+   "sessions": [
+    {
+     "session": "5.1",
+     "units": [
+      "U14 rollback SR E"
+     ],
+     "actions": 6,
+     "ops": 6,
+     "x10": {
+      "N": 6,
+      "R": 3,
+      "start_mb": 680.5,
+      "peak_mb": 713.7,
+      "start_rule": "600.2 + 0.543 x 137 applied ops + op-0 read 5.9"
+     },
+     "over_675": true
+    },
+    {
+     "session": "5.2",
+     "units": [
+      "U14 rollback SR F"
+     ],
+     "actions": 6,
+     "ops": 6,
+     "x10": {
+      "N": 6,
+      "R": 3,
+      "start_mb": 683.7,
+      "peak_mb": 717.0,
+      "start_rule": "600.2 + 0.543 x 143 applied ops + op-0 read 5.9"
+     },
+     "over_675": true
+    },
+    {
+     "session": "5.3",
+     "units": [
+      "U15 reseed flag"
+     ],
+     "actions": 1,
+     "ops": 8,
+     "x10": {
+      "N": 8,
+      "R": 4,
+      "start_mb": 687.0,
+      "peak_mb": 725.5,
+      "start_rule": "600.2 + 0.543 x 149 applied ops + op-0 read 5.9"
+     },
+     "over_675": true
+    },
+    {
+     "session": "5.4",
+     "units": [
+      "U09 n2"
+     ],
+     "actions": 7,
+     "ops": 7,
+     "x10": {
+      "N": 7,
+      "R": 5,
+      "start_mb": 691.3,
+      "peak_mb": 731.0,
+      "start_rule": "600.2 + 0.543 x 157 applied ops + op-0 read 5.9"
+     },
+     "over_675": true
+    }
+   ]
+  }
+ ],
+ "routes_unmeasured": [
+  {
+   "class": "local_read @ base While #10170 body 23166",
+   "n": 2,
+   "actions": [
+    "p4_lr_stop12",
+    "p4_lr_bufdiff12"
+   ],
+   "scratch": "R01: on a bed byte copy, ONE local_read @ base While #10170 body 23166, census before/after + Is Broken? (pattern of 126-6 / 136-1 items)",
+   "measured_by_v2": {
+    "none in 136-1 (route ran on #639; 'stop (end)' mechanical action unread)": 1,
+    "none in 136-1 (route ran on another diagram class; this context never run)": 1
+   }
+  },
+  {
+   "class": "stop @ base While #10170 body 23166",
+   "n": 1,
+   "actions": [
+    "p4_w_stop12"
+   ],
+   "scratch": "R02: on a bed byte copy, ONE stop @ base While #10170 body 23166, census before/after + Is Broken? (pattern of 126-6 / 136-1 items)",
+   "measured_by_v2": {
+    "136-1 item 4 (mode of #10170 cond)": 1
+   }
+  },
+  {
+   "class": "create const_donor @ base FS #681 frame 4866",
+   "n": 1,
+   "actions": [
+    "p4_c_bufdiff"
+   ],
+   "scratch": "R03: on a bed byte copy, ONE create const_donor @ base FS #681 frame 4866, census before/after + Is Broken? (pattern of 126-6 / 136-1 items)",
+   "measured_by_v2": {
+    "none in 136-1 (#5119 output type unread)": 1
+   }
+  },
+  {
+   "class": "create @ base While #10170 body 23166",
+   "n": 16,
+   "actions": [
+    "p4_w1",
+    "p4_ia_img",
+    "p4_fs_n2",
+    "p4_eq_seq",
+    "p4_gt_n1",
+    "p4_and",
+    "p4_lr_latest",
+    "p4_dec",
+    "p4_inc_disc",
+    "p4_lr_transpos",
+    "p4_ia_transpos",
+    "p4_lr_rotpos",
+    "p4_ia_rotpos",
+    "p4_lr_frameidx",
+    "p4_ia_frameidx",
+    "p4_ia_bufdiff"
+   ],
+   "scratch": "R04: on a bed byte copy, ONE create @ base While #10170 body 23166, census before/after + Is Broken? (pattern of 126-6 / 136-1 items)",
+   "measured_by_v2": {
+    "none in 136-1 (route ran on another diagram class; this context never run)": 16
+   }
+  },
+  {
+   "class": "create @ plan-made While W1 body (in base While body 23166)",
+   "n": 6,
+   "actions": [
+    "p4_lr_num_a",
+    "p4_gt_last",
+    "p4_sel_mask",
+    "p4_k_max",
+    "p4_amm",
+    "p4_lt_found"
+   ],
+   "scratch": "R05: on a bed byte copy, ONE create @ plan-made While W1 body (in base While body 23166), census before/after + Is Broken? (pattern of 126-6 / 136-1 items)",
+   "measured_by_v2": {
+    "none in 136-1 (route ran on another diagram class; this context never run)": 4,
+    "136-1 item 1 (U1 Select with Boolean-array s)": 1,
+    "136-1 item 1 (U2 I32 MAX const on untyped Select f)": 1
+   }
+  },
+  {
+   "class": "local_read @ plan-made While W1 body (in base While body 23166)",
+   "n": 1,
+   "actions": [
+    "p4_lr_stop_w1"
+   ],
+   "scratch": "R06: on a bed byte copy, ONE local_read @ plan-made While W1 body (in base While body 23166), census before/after + Is Broken? (pattern of 126-6 / 136-1 items)",
+   "measured_by_v2": {
+    "none in 136-1 (inside a plan-made While never run; mechanical action unread)": 1
+   }
+  },
+  {
+   "class": "create primitive @ plan-made While W1 body (in base While body 23166)",
+   "n": 1,
+   "actions": [
+    "p4_or_w1"
+   ],
+   "scratch": "R07: on a bed byte copy, ONE create primitive @ plan-made While W1 body (in base While body 23166), census before/after + Is Broken? (pattern of 126-6 / 136-1 items)",
+   "measured_by_v2": {
+    "136-1 item 2 (Or route + While cond)": 1
+   }
+  },
+  {
+   "class": "create @ plan-made FS4 frame (in base While body 23166)",
+   "n": 3,
+   "actions": [
+    "p4_lr_num_b",
+    "p4_ia_n2",
+    "p4_ia_n2sink"
+   ],
+   "scratch": "R08: on a bed byte copy, ONE create @ plan-made FS4 frame (in base While body 23166), census before/after + Is Broken? (pattern of 126-6 / 136-1 items)",
+   "measured_by_v2": {
+    "none in 136-1 (route ran on another diagram class; this context never run)": 2,
+    "S-FSW: scratch create Index Array in a plan-made FS frame on a base While body": 1
+   }
+  },
+  {
+   "class": "tunnel @ W1 border (tunnel/cond)",
+   "n": 3,
+   "actions": [
+    "p4_t_last",
+    "p4_t_n1",
+    "p4_t_slot"
+   ],
+   "scratch": "R09: on a bed byte copy, ONE tunnel @ W1 border (tunnel/cond), census before/after + Is Broken? (pattern of 126-6 / 136-1 items)",
+   "measured_by_v2": {
+    "none in 136-1 (route ran on another diagram class; this context never run)": 3
+   }
+  },
+  {
+   "class": "in_group @ W1 border (tunnel/cond)",
+   "n": 3,
+   "actions": [
+    "p4_t_last_in",
+    "p4_t_n1_in",
+    "p4_t_slot_in"
+   ],
+   "scratch": "R10: on a bed byte copy, ONE in_group @ W1 border (tunnel/cond), census before/after + Is Broken? (pattern of 126-6 / 136-1 items)",
+   "measured_by_v2": {
+    "none in 136-1 (route ran on another diagram class; this context never run)": 3
+   }
+  },
+  {
+   "class": "in_group @ plan-made While W1 body (in base While body 23166)",
+   "n": 1,
+   "actions": [
+    "p4_t_last_out"
+   ],
+   "scratch": "R11: on a bed byte copy, ONE in_group @ plan-made While W1 body (in base While body 23166), census before/after + Is Broken? (pattern of 126-6 / 136-1 items)",
+   "measured_by_v2": {
+    "none in 136-1 (route ran on another diagram class; this context never run)": 1
+   }
+  },
+  {
+   "class": "connect @ plan-made While W1 body (in base While body 23166)",
+   "n": 8,
+   "actions": [
+    "p4_w_num_gt",
+    "p4_w_num_sel",
+    "p4_w_gt_sel",
+    "p4_w_sel_amm",
+    "p4_w_min_lt",
+    "p4_w_max_lt",
+    "p4_w_lt_or",
+    "p4_w_stop_or"
+   ],
+   "scratch": "R12: on a bed byte copy, ONE connect @ plan-made While W1 body (in base While body 23166), census before/after + Is Broken? (pattern of 126-6 / 136-1 items)",
+   "measured_by_v2": {
+    "none in 136-1 (route ran on another diagram class; this context never run)": 7,
+    "136-1 item 1 (U3 Greater?(array,scalar) -> Select s)": 1
+   }
+  },
+  {
+   "class": "stop @ W1 border (tunnel/cond)",
+   "n": 1,
+   "actions": [
+    "p4_w_or_cond"
+   ],
+   "scratch": "R13: on a bed byte copy, ONE stop @ W1 border (tunnel/cond), census before/after + Is Broken? (pattern of 126-6 / 136-1 items)",
+   "measured_by_v2": {
+    "136-1 item 2 (Or out -> While cond)": 1
+   }
+  },
+  {
+   "class": "in_group @ base While #10170 body 23166",
+   "n": 2,
+   "actions": [
+    "p4_t_n1_out",
+    "p4_t_slot_out"
+   ],
+   "scratch": "R14: on a bed byte copy, ONE in_group @ base While #10170 body 23166, census before/after + Is Broken? (pattern of 126-6 / 136-1 items)",
+   "measured_by_v2": {
+    "none in 136-1 (route ran on another diagram class; this context never run)": 2
+   }
+  },
+  {
+   "class": "tunnel @ base While #10170 border",
+   "n": 1,
+   "actions": [
+    "p4_t_pool"
+   ],
+   "scratch": "R15: on a bed byte copy, ONE tunnel @ base While #10170 border, census before/after + Is Broken? (pattern of 126-6 / 136-1 items)",
+   "measured_by_v2": {
+    "S-TUN: scratch 'base While, input tunnel from the parent diagram' (no census_samples.json record)": 1
+   }
+  },
+  {
+   "class": "branch @ base While #10170 border",
+   "n": 1,
+   "actions": [
+    "p4_x_pool"
+   ],
+   "scratch": "R16: on a bed byte copy, ONE branch @ base While #10170 border, census before/after + Is Broken? (pattern of 126-6 / 136-1 items)",
+   "measured_by_v2": {
+    "S-TUN (branch of a base FSOT source face into the new tunnel)": 1
+   }
+  },
+  {
+   "class": "connect @ base While #10170 body 23166",
+   "n": 37,
+   "actions": [
+    "p4_w_pool_in",
+    "p4_w_img_trk",
+    "p4_w_eq_and",
+    "p4_w_gt_and",
+    "p4_w_lat_dec",
+    "p4_w_dec_sel",
+    "p4_w_and_sel",
+    "p4_w_inc_sel",
+    "p4_w_and_seld",
+    "p4_w_arr_transpos",
+    "p4_w_arr_rotpos",
+    "p4_w_arr_frameidx",
+    "p4_w_tp_mag",
+    "p4_w_tp_row",
+    "p4_w_rp_row",
+    "p4_w_fi_10068",
+    "p4_w_fi_29240",
+    "p4_w_10068_out",
+    "p4_w_29240_out",
+    "p4_w_arr_bufdiff",
+    "p4_w_bd_row",
+    "p4_rbA_re0",
+    "p4_rbA_re1",
+    "p4_rbA_re2",
+    "p4_rbA_t",
+    "p4_rbA_s",
+    "p4_rbB_re0",
+    "p4_rbB_t",
+    "p4_rbB_s",
+    "p4_rbC_t",
+    "p4_rbC_s",
+    "p4_rbD_t",
+    "p4_rbD_s",
+    "p4_rbE_t",
+    "p4_rbE_s",
+    "p4_rbF_t",
+    "p4_rbF_s"
+   ],
+   "scratch": "R17: on a bed byte copy, ONE connect @ base While #10170 body 23166, census before/after + Is Broken? (pattern of 126-6 / 136-1 items)",
+   "measured_by_v2": {
+    "none in 136-1 (route ran on another diagram class; this context never run)": 37
+   }
+  },
+  {
+   "class": "branch @ base While #10170 body 23166",
+   "n": 9,
+   "actions": [
+    "p4_w_n1_gt",
+    "p4_w_n1_sel",
+    "p4_w_idx_transpos",
+    "p4_w_idx_rotpos",
+    "p4_w_idx_frameidx",
+    "p4_w_idx_bufdiff",
+    "p4_rbA_sel_t10871",
+    "p4_rbB_sel_t4168",
+    "p4_rbD_sel_t25573"
+   ],
+   "scratch": "R18: on a bed byte copy, ONE branch @ base While #10170 body 23166, census before/after + Is Broken? (pattern of 126-6 / 136-1 items)",
+   "measured_by_v2": {
+    "none in 136-1 (route ran on another diagram class; this context never run)": 6,
+    "S-SELB: scratch branch of a plan-made Select output to a base sink in a base While body": 3
+   }
+  },
+  {
+   "class": "wire_sr @ base While #10170 body 23166",
+   "n": 7,
+   "actions": [
+    "p4_w_last_gt",
+    "p4_rbA_f",
+    "p4_rbB_f",
+    "p4_rbC_f",
+    "p4_rbD_f",
+    "p4_rbE_f",
+    "p4_rbF_f"
+   ],
+   "scratch": "R19: on a bed byte copy, ONE wire_sr @ base While #10170 body 23166, census before/after + Is Broken? (pattern of 126-6 / 136-1 items)",
+   "measured_by_v2": {
+    "none in 136-1 (route ran on another diagram class; this context never run)": 7
+   }
+  },
+  {
+   "class": "move_in @ base While #10170 body 23166",
+   "n": 2,
+   "actions": [
+    "p4_mv_10068",
+    "p4_mv_29240"
+   ],
+   "scratch": "R20: on a bed byte copy, ONE move_in @ base While #10170 body 23166, census before/after + Is Broken? (pattern of 126-6 / 136-1 items)",
+   "measured_by_v2": {
+    "none in 136-1 (route ran on another diagram class; this context never run)": 2
+   }
+  },
+  {
+   "class": "connect_term_uid @ base While #10170 body 23166",
+   "n": 3,
+   "actions": [
+    "p4_x_fd",
+    "p4_x_dt",
+    "p4_x_n2_out"
+   ],
+   "scratch": "R21: on a bed byte copy, ONE connect_term_uid @ base While #10170 body 23166, census before/after + Is Broken? (pattern of 126-6 / 136-1 items)",
+   "measured_by_v2": {
+    "none in 136-1 (route ran on another diagram class; this context never run)": 2,
+    "136-1 item 3 (U6 FS frame -> parent exit)": 1
+   }
+  },
+  {
+   "class": "decide @ base While #10170 body 23166",
+   "n": 1,
+   "actions": [
+    "p4_dec_reseed"
+   ],
+   "scratch": "none (a judgement decide, not a route)",
+   "measured_by_v2": {
+    "judgement: which rollback form for a non-register value (PD298(d) does not settle it)": 1
+   }
+  },
+  {
+   "class": "connect @ plan-made FS4 frame (in base While body 23166)",
+   "n": 1,
+   "actions": [
+    "p4_w_n2_arr"
+   ],
+   "scratch": "R23: on a bed byte copy, ONE connect @ plan-made FS4 frame (in base While body 23166), census before/after + Is Broken? (pattern of 126-6 / 136-1 items)",
+   "measured_by_v2": {
+    "none in 136-1 (route ran on another diagram class; this context never run)": 1
+   }
+  },
+  {
+   "class": "connect_term_uid @ plan-made FS4 frame (in base While body 23166)",
+   "n": 2,
+   "actions": [
+    "p4_x_n2_order",
+    "p4_x_slot_fs"
+   ],
+   "scratch": "R24: on a bed byte copy, ONE connect_term_uid @ plan-made FS4 frame (in base While body 23166), census before/after + Is Broken? (pattern of 126-6 / 136-1 items)",
+   "measured_by_v2": {
+    "S-FSW: scratch base-While-body source -> plan-made FS frame (wired source)": 1,
+    "136-1 item 3 (U5 While outer face -> FS frame)": 1
+   }
+  }
+ ],
+ "actions": [
+  {
+   "id": "p4_dw_23310",
+   "group": "D stops (PD293(d)/PD295(c))",
+   "unit": "U01 1.2 stop",
+   "xkind": "delete_wire",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "PD295(c) scaffold stop #10171 x=y? -> #10170 cond #23246 (graph step_18: w23310); delete_wire route launched in P2a (plan_ring_p2a_in.json actions 1-4, stage_d1_ring_p2a.log:124) [v2]",
+   "step": 1,
+   "session": "1.1"
+  },
+  {
+   "id": "p4_dw_23255",
+   "group": "D stops (PD293(d)/PD295(c))",
+   "unit": "U01 1.2 stop",
+   "xkind": "delete_wire",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "PD321(b): w23255 (tunnel #23417 inner -> #10171 x,y; graph: its only 2 sinks are #10171's, prep_c140_3_gate.log) deleted BEFORE #10171 instead of RLE after it (RLE -> error 1055, diag_c140_2_scratch.log:72-75); delete_wire route = op 1 p4_dw_23310 (launched P2a) [v15]",
+   "step": 1,
+   "session": "1.1"
+  },
+  {
+   "id": "p4_do_10171",
+   "group": "D stops (PD293(d)/PD295(c))",
+   "unit": "U01 1.2 stop",
+   "xkind": "delete_object",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "PD295(c) #10171 = S2 scaffold (stage_d1_s2_loops.log:61-69), not original; delete_object launched in P2a (plan_ring_p2a_in.json actions 5-8; scratch_verify/stagexec.ring_p2a_deletes_pin_20260928_185329.json) [v2]",
+   "step": 1,
+   "session": "1.1"
+  },
+  {
+   "id": "p4_lr_stop12",
+   "group": "D stops (PD293(d)/PD295(c))",
+   "unit": "U01 1.2 stop",
+   "xkind": "local_read",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on #639; 'stop (end)' mechanical action unread)",
+   "cite": "local_read of 'stop (end)' (panel uid 7, CT 642 on #639, main-vi-stop-and-save.md:41-49); mechanical action of 'stop (end)' NOT read anywhere (a latch-action Boolean cannot have a local); local_read on a base While body ran (plan_l2a3_in.json:16) [v2]",
+   "step": 1,
+   "session": "1.1"
+  },
+  {
+   "id": "p4_w_stop12",
+   "group": "D stops (PD293(d)/PD295(c))",
+   "unit": "U01 1.2 stop",
+   "xkind": "stop",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "136-1 item 4 (mode of #10170 cond)",
+   "cite": "PD295(c) program stop -> #10170 cond #23246; OpStopFromNode_v0 onto #23246 ran in S2 (stage_d1_s2_loops.log:61-69); conditional-terminal MODE of #10170 unread [v2]",
+   "step": 1,
+   "session": "1.1"
+  },
+  {
+   "id": "p4_c_bufdiff",
+   "group": "F BufDiff (PD295(a))",
+   "unit": "U02 BufDiff 1.1",
+   "xkind": "create const_donor",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (#5119 output type unread)",
+   "cite": "PD295(a)/PD240: like P2b p2b_c_Num (DonorRingConst_v0 #130 I32[20] -1, launched); TYPE of #5119 x-y NOT readable offline (no Terminal.Data Type reader, d1-loop12-17-split-plan.md:1922) - I32[20] is PROVISIONAL [v2]",
+   "step": 1,
+   "session": "1.1"
+  },
+  {
+   "id": "p4_i_bufdiff",
+   "group": "F BufDiff (PD295(a))",
+   "unit": "U02 BufDiff 1.1",
+   "xkind": "create OpConstInd_v0",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "PD295(a)/PD240(a)(c): indicator born on its constant on FS1 frame #4866 = P2b p2b_i_Num route (census_samples.json OpConstInd_v0) [v2]",
+   "step": 1,
+   "session": "1.1"
+  },
+  {
+   "id": "p4_lr_bufdiff11",
+   "group": "F BufDiff (PD295(a))",
+   "unit": "U02 BufDiff 1.1",
+   "xkind": "local_read",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "P3b-2 p3b_lr_rotpos same frame 32464 (local_read in a FS frame) [v2]",
+   "step": 1,
+   "session": "1.1"
+  },
+  {
+   "id": "p4_ras_bufdiff",
+   "group": "F BufDiff (PD295(a))",
+   "unit": "U02 BufDiff 1.1",
+   "xkind": "create primitive",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "P3b-2 p3b_ras_rotpos ($work #29157) same frame 32464 [v2]",
+   "step": 1,
+   "session": "1.1"
+  },
+  {
+   "id": "p4_lw_bufdiff",
+   "group": "F BufDiff (PD295(a))",
+   "unit": "U02 BufDiff 1.1",
+   "xkind": "local_write",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "P3b-2 p3b_lw_rotpos same frame 32464 (local_write) [v2]",
+   "step": 1,
+   "session": "1.1"
+  },
+  {
+   "id": "p4_w_b_arr",
+   "group": "F BufDiff (PD295(a))",
+   "unit": "U02 BufDiff 1.1",
+   "xkind": "connect",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "P3b-2 p3b_w_r_arr pattern [v2]",
+   "step": 1,
+   "session": "1.1"
+  },
+  {
+   "id": "p4_w_b_out",
+   "group": "F BufDiff (PD295(a))",
+   "unit": "U02 BufDiff 1.1",
+   "xkind": "connect",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "P3b-2 p3b_w_r_out pattern [v2]",
+   "step": 1,
+   "session": "1.1"
+  },
+  {
+   "id": "p4_x_i_rab1",
+   "group": "F BufDiff (PD295(a))",
+   "unit": "U02 BufDiff 1.1",
+   "xkind": "connect_term_uid",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "P3b-2 p3b_x_i_rar1: INNER-FACE branch of the entry FS tunnel (diag_c127_1_fsinner.log:81-109) [v2]",
+   "step": 1,
+   "session": "1.1"
+  },
+  {
+   "id": "p4_rle_i_rab1",
+   "group": "F BufDiff (PD295(a))",
+   "unit": "U02 BufDiff 1.1",
+   "xkind": "wire_remove_loose_ends",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "gscript.py:4972 OpWireRemoveLooseEnds_v0; PD256(b) [v2]",
+   "step": 1,
+   "session": "1.1"
+  },
+  {
+   "id": "p4_x_bufdiff",
+   "group": "F BufDiff (PD295(a))",
+   "unit": "U02 BufDiff 1.1",
+   "xkind": "connect_term_uid",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "PD295(a) BufDiff(i) = #5119 x-y t6323 (on #639, w16483 wired); = P3b-2 p3b_x_rot route loop_body_wired_src_to_fs_frame_in_case (census_samples.json connect_term_uid) [v2]",
+   "step": 1,
+   "session": "1.1"
+  },
+  {
+   "id": "p4_rle_bufdiff",
+   "group": "F BufDiff (PD295(a))",
+   "unit": "U02 BufDiff 1.1",
+   "xkind": "wire_remove_loose_ends",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "gscript.py:4972; PD256(b) [v2]",
+   "step": 1,
+   "session": "1.1"
+  },
+  {
+   "id": "p4_sr_last",
+   "group": "R reader core",
+   "unit": "U03 registers",
+   "xkind": "add_sr",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "plan_ring_p3a_in_v3.json actions 3-5/11-13 (launched P3a, stage_d1_ring_p3a); census_samples.json add_shift_reg while_body n=2 | context: While #10170 (P3a was #637) [draft d9d66246] [v2]",
+   "step": 1,
+   "session": "1.2"
+  },
+  {
+   "id": "p4_k_last",
+   "group": "R reader core",
+   "unit": "U03 registers",
+   "xkind": "create",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "P3a p3a_k_prev (DonorRingConst_v0 #249, I32 -1) [draft d9d66246] [v2]",
+   "step": 1,
+   "session": "1.2"
+  },
+  {
+   "id": "p4_w_klast",
+   "group": "R reader core",
+   "unit": "U03 registers",
+   "xkind": "connect",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "P3a p3a_w_kprev (const_sr) [draft d9d66246] [v2]",
+   "step": 1,
+   "session": "1.2"
+  },
+  {
+   "id": "p4_sr_disc",
+   "group": "R reader core",
+   "unit": "U03 registers",
+   "xkind": "add_sr",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "plan_ring_p3a_in_v3.json actions 3-5/11-13 (launched P3a, stage_d1_ring_p3a); census_samples.json add_shift_reg while_body n=2 [draft d9d66246] [v2]",
+   "step": 1,
+   "session": "1.2"
+  },
+  {
+   "id": "p4_k_disc",
+   "group": "R reader core",
+   "unit": "U03 registers",
+   "xkind": "create",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "P3a p3a_k_cnt (DonorSRInit_v0 #248, I32 0) [draft d9d66246] [v2]",
+   "step": 1,
+   "session": "1.2"
+  },
+  {
+   "id": "p4_w_kdisc",
+   "group": "R reader core",
+   "unit": "U03 registers",
+   "xkind": "connect",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "P3a p3a_w_kcnt (const_sr) [draft d9d66246] [v2]",
+   "step": 1,
+   "session": "1.2"
+  },
+  {
+   "id": "p4_w1",
+   "group": "R reader core",
+   "unit": "U04 W1 creates",
+   "xkind": "create",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "loop_in('while') OpWhileLoopIn_v0, sim/disp/plan_disp.json:31 (DL1 on #686); inside a While BODY never run [draft d9d66246] [v2]",
+   "step": 1,
+   "session": "1.3"
+  },
+  {
+   "id": "p4_lr_num_a",
+   "group": "R reader core",
+   "unit": "U04 W1 creates",
+   "xkind": "create",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "local_read route (stagexec.py:205); P3b-1/2 local reads in FS frames; inside a plan-made While never run [draft d9d66246] [v2]",
+   "step": 1,
+   "session": "1.3"
+  },
+  {
+   "id": "p4_gt_last",
+   "group": "R reader core",
+   "unit": "U04 W1 creates",
+   "xkind": "create",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "$work donor #11721 Comparison 'x > y?' (only Greater? in the bed, diagram 12617) [draft d9d66246] [v2]",
+   "step": 1,
+   "session": "1.3"
+  },
+  {
+   "id": "p4_sel_mask",
+   "group": "R reader core",
+   "unit": "U04 W1 creates",
+   "xkind": "create",
+   "route_level": "UNMEASURED",
+   "level": "UNMEASURED",
+   "measured_by": "136-1 item 1 (U1 Select with Boolean-array s)",
+   "cite": "vilib donor DonorErrSel_MergeErrors #529 MEASURED for SCALAR s (P3b-1); s = Boolean ARRAY (elementwise) never measured [draft d9d66246] [v2]",
+   "step": 1,
+   "session": "1.3"
+  },
+  {
+   "id": "p4_k_max",
+   "group": "R reader core",
+   "unit": "U04 W1 creates",
+   "xkind": "create",
+   "route_level": "UNMEASURED",
+   "level": "UNMEASURED",
+   "measured_by": "136-1 item 1 (U2 I32 MAX const on untyped Select f)",
+   "cite": "const_on_term with value (P3a p3a_wait_k pattern) on an ARRAY-typed or not-yet-typed f; no I32 2147483647 donor measured [draft d9d66246] [v2]",
+   "step": 1,
+   "session": "1.3"
+  },
+  {
+   "id": "p4_amm",
+   "group": "R reader core",
+   "unit": "U04 W1 creates",
+   "xkind": "create",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "$work donor #10969 Array Max & Min (on #23166 itself) [draft d9d66246] [v2]",
+   "step": 1,
+   "session": "1.3"
+  },
+  {
+   "id": "p4_lt_found",
+   "group": "R reader core",
+   "unit": "U04 W1 creates",
+   "xkind": "create",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "$work donor #10950 Comparison 'x < y?' (found = min < MAX; no Not Equal? donor in the bed) [draft d9d66246] [v2]",
+   "step": 1,
+   "session": "1.3"
+  },
+  {
+   "id": "p4_wait",
+   "group": "R reader core",
+   "unit": "U04 W1 creates",
+   "xkind": "create",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "P3a p3a_wait (OpWaitDonor_v0 #163) on #639 [draft d9d66246] [v2]",
+   "step": 1,
+   "session": "1.3"
+  },
+  {
+   "id": "p4_wait_k",
+   "group": "R reader core",
+   "unit": "U04 W1 creates",
+   "xkind": "create",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "P3a p3a_wait_k (const_on_term value 1) [draft d9d66246] [v2]",
+   "step": 1,
+   "session": "1.3"
+  },
+  {
+   "id": "p4_lr_stop_w1",
+   "group": "D stops (PD293(d)/PD295(c))",
+   "unit": "U04 W1 creates",
+   "xkind": "local_read",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (inside a plan-made While never run; mechanical action unread)",
+   "cite": "PD293(d) W1 stop exit; local_read of 'stop (end)' (panel uid 7, CT 642 on #639, main-vi-stop-and-save.md:41-49); mechanical action of 'stop (end)' NOT read anywhere (a latch-action Boolean cannot have a local) [v2]",
+   "step": 1,
+   "session": "1.3"
+  },
+  {
+   "id": "p4_or_w1",
+   "group": "D stops (PD293(d)/PD295(c))",
+   "unit": "U04 W1 creates",
+   "xkind": "create primitive",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "136-1 item 2 (Or route + While cond)",
+   "cite": "PD293(d) Or(found, stop) -> W1.cond; $work donor #10247 'x .or. y?' (on #23166, graph step_18); no Or create ever run [v2]",
+   "step": 1,
+   "session": "1.3"
+  },
+  {
+   "id": "p4_ia_img",
+   "group": "R reader core",
+   "unit": "U05 body creates",
+   "xkind": "create",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "$work donor #3163 Index Array (P3b-1 p3b_ia) [draft d9d66246] [v2]",
+   "step": 2,
+   "session": "2.1"
+  },
+  {
+   "id": "p4_fs_n2",
+   "group": "R reader core",
+   "unit": "U05 body creates",
+   "xkind": "create",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "fs_create MEASURED on case frame #27219 (P3b-1 p3b_fs); on a While body never run [draft d9d66246] [v2]",
+   "step": 2,
+   "session": "2.1"
+  },
+  {
+   "id": "p4_lr_num_b",
+   "group": "R reader core",
+   "unit": "U05 body creates",
+   "xkind": "create",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "local_read in a FS frame (P3b-1 p3b_lr_num3) [draft d9d66246] [v2]",
+   "step": 2,
+   "session": "2.1"
+  },
+  {
+   "id": "p4_ia_n2",
+   "group": "R reader core",
+   "unit": "U05 body creates",
+   "xkind": "create",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "$work donor #3163 Index Array [draft d9d66246] [v2]",
+   "step": 2,
+   "session": "2.1"
+  },
+  {
+   "id": "p4_eq_seq",
+   "group": "R reader core",
+   "unit": "U05 body creates",
+   "xkind": "create",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "$work donor #10171 Comparison 'x = y?' (on #23166) [draft d9d66246] [v2]",
+   "step": 2,
+   "session": "2.1"
+  },
+  {
+   "id": "p4_gt_n1",
+   "group": "R reader core",
+   "unit": "U05 body creates",
+   "xkind": "create",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "$work donor #11721 'x > y?' (n1 > -1 == n1 >= 0; no 'x >= 0?' in the bed) [draft d9d66246] [v2]",
+   "step": 2,
+   "session": "2.1"
+  },
+  {
+   "id": "p4_and",
+   "group": "R reader core",
+   "unit": "U05 body creates",
+   "xkind": "create",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "$work donor #9647 And (on #23166) [draft d9d66246] [v2]",
+   "step": 2,
+   "session": "2.1"
+  },
+  {
+   "id": "p4_lr_latest",
+   "group": "R reader core",
+   "unit": "U05 body creates",
+   "xkind": "create",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "local_read route [draft d9d66246] [v2]",
+   "step": 2,
+   "session": "2.1"
+  },
+  {
+   "id": "p4_dec",
+   "group": "R reader core",
+   "unit": "U05 body creates",
+   "xkind": "create",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "$work donor #9179 Decrement (on #686) [draft d9d66246] [v2]",
+   "step": 2,
+   "session": "2.1"
+  },
+  {
+   "id": "p4_sel_last",
+   "group": "R reader core",
+   "unit": "U05 body creates",
+   "xkind": "create",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "vilib donor #529 Select, scalar s (P3b-1) [draft d9d66246] [v2]",
+   "step": 2,
+   "session": "2.1"
+  },
+  {
+   "id": "p4_sel_disc",
+   "group": "R reader core",
+   "unit": "U05 body creates",
+   "xkind": "create",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "vilib donor #529 Select, scalar s (P3b-1) [draft d9d66246] [v2]",
+   "step": 2,
+   "session": "2.1"
+  },
+  {
+   "id": "p4_inc_disc",
+   "group": "R reader core",
+   "unit": "U05 body creates",
+   "xkind": "create",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "$work donor #1978 Increment (P3a p3a_inc) [draft d9d66246] [v2]",
+   "step": 2,
+   "session": "2.1"
+  },
+  {
+   "id": "p4_ia_n2sink",
+   "group": "R reader core",
+   "unit": "U05 body creates",
+   "xkind": "create",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "S-FSW: scratch create Index Array in a plan-made FS frame on a base While body",
+   "cite": "PD298(c) the ONE no-effect consumer inside FS4.f0 (array <- a #5058 output, index + element unwired); $work donor #3163 Index Array = P3b-1 p3b_ia route; created in a plan-made FS frame on a While body never run",
+   "step": 2,
+   "session": "2.1"
+  },
+  {
+   "id": "p4_t_last",
+   "group": "R reader core",
+   "unit": "U06 W1 wiring",
+   "xkind": "tunnel",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "tunnel group into a plan-made While (P3a TI1 was a case tunnel); register inner face -> new loop tunnel never run [draft d9d66246] [v2]",
+   "step": 2,
+   "session": "2.2"
+  },
+  {
+   "id": "p4_t_last_in",
+   "group": "R reader core",
+   "unit": "U06 W1 wiring",
+   "xkind": "in_group",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "tunnel group into a plan-made While (P3a TI1 was a case tunnel); register inner face -> new loop tunnel never run [draft d9d66246] [v2]",
+   "step": 2,
+   "session": "2.2"
+  },
+  {
+   "id": "p4_t_last_out",
+   "group": "R reader core",
+   "unit": "U06 W1 wiring",
+   "xkind": "in_group",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "tunnel group into a plan-made While (P3a TI1 was a case tunnel); register inner face -> new loop tunnel never run [draft d9d66246] [v2]",
+   "step": 2,
+   "session": "2.2"
+  },
+  {
+   "id": "p4_w_num_gt",
+   "group": "R reader core",
+   "unit": "U06 W1 wiring",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "same-diagram connect [draft d9d66246] [v2]",
+   "step": 2,
+   "session": "2.2"
+  },
+  {
+   "id": "p4_w_num_sel",
+   "group": "R reader core",
+   "unit": "U06 W1 wiring",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "same-diagram branch [draft d9d66246] [v2]",
+   "step": 2,
+   "session": "2.2"
+  },
+  {
+   "id": "p4_w_gt_sel",
+   "group": "R reader core",
+   "unit": "U06 W1 wiring",
+   "xkind": "connect",
+   "route_level": "UNMEASURED",
+   "level": "UNMEASURED",
+   "measured_by": "136-1 item 1 (U3 Greater?(array,scalar) -> Select s)",
+   "cite": "Boolean ARRAY into Select.s: type legality UNMEASURED [draft d9d66246] [v2]",
+   "step": 2,
+   "session": "2.2"
+  },
+  {
+   "id": "p4_w_sel_amm",
+   "group": "R reader core",
+   "unit": "U06 W1 wiring",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "same-diagram connect [draft d9d66246] [v2]",
+   "step": 2,
+   "session": "2.2"
+  },
+  {
+   "id": "p4_w_min_lt",
+   "group": "R reader core",
+   "unit": "U06 W1 wiring",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "same-diagram connect [draft d9d66246] [v2]",
+   "step": 2,
+   "session": "2.2"
+  },
+  {
+   "id": "p4_w_max_lt",
+   "group": "R reader core",
+   "unit": "U06 W1 wiring",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "same-diagram branch from a constant [draft d9d66246] [v2]",
+   "step": 2,
+   "session": "2.2"
+  },
+  {
+   "id": "p4_w_lt_or",
+   "group": "D stops (PD293(d)/PD295(c))",
+   "unit": "U06 W1 wiring",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "PD293(d) found -> Or x (replaces draft p4_w_stop LT1 -> W1.cond) [v2]",
+   "step": 2,
+   "session": "2.2"
+  },
+  {
+   "id": "p4_w_stop_or",
+   "group": "D stops (PD293(d)/PD295(c))",
+   "unit": "U06 W1 wiring",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "PD293(d) program stop -> Or y [v2]",
+   "step": 2,
+   "session": "2.2"
+  },
+  {
+   "id": "p4_w_or_cond",
+   "group": "D stops (PD293(d)/PD295(c))",
+   "unit": "U06 W1 wiring",
+   "xkind": "stop",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "136-1 item 2 (Or out -> While cond)",
+   "cite": "PD293(d) Or -> W1 cond; stop route OpStopFromNode_v0 (stagexec.py:711; plan_disp DL1) [v2]",
+   "step": 2,
+   "session": "2.2"
+  },
+  {
+   "id": "p4_t_n1",
+   "group": "R reader core",
+   "unit": "U07 W1 out tunnels",
+   "xkind": "tunnel",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "output tunnel of a plan-made While (last value) never run [draft d9d66246] [v2]",
+   "step": 2,
+   "session": "2.3"
+  },
+  {
+   "id": "p4_t_n1_in",
+   "group": "R reader core",
+   "unit": "U07 W1 out tunnels",
+   "xkind": "in_group",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "output tunnel of a plan-made While (last value) never run [draft d9d66246] [v2]",
+   "step": 2,
+   "session": "2.3"
+  },
+  {
+   "id": "p4_t_n1_out",
+   "group": "R reader core",
+   "unit": "U07 W1 out tunnels",
+   "xkind": "in_group",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "output tunnel of a plan-made While (last value) never run [draft d9d66246] [v2]",
+   "step": 2,
+   "session": "2.3"
+  },
+  {
+   "id": "p4_t_slot",
+   "group": "R reader core",
+   "unit": "U07 W1 out tunnels",
+   "xkind": "tunnel",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "output tunnel of a plan-made While never run [draft d9d66246] [v2]",
+   "step": 2,
+   "session": "2.3"
+  },
+  {
+   "id": "p4_t_slot_in",
+   "group": "R reader core",
+   "unit": "U07 W1 out tunnels",
+   "xkind": "in_group",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "output tunnel of a plan-made While never run [draft d9d66246] [v2]",
+   "step": 2,
+   "session": "2.3"
+  },
+  {
+   "id": "p4_t_slot_out",
+   "group": "R reader core",
+   "unit": "U07 W1 out tunnels",
+   "xkind": "in_group",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "output tunnel of a plan-made While never run [draft d9d66246] [v2]",
+   "step": 2,
+   "session": "2.3"
+  },
+  {
+   "id": "p4_t_pool",
+   "group": "R reader core",
+   "unit": "U08 image",
+   "xkind": "tunnel",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "S-TUN: scratch 'base While, input tunnel from the parent diagram' (no census_samples.json record)",
+   "cite": "PD298(b): explicit loop-input tunnel on base While #10170 (body 23166, parent FS #681 frame 686, graph_ring_p3b2b_20261002_133824 tree) before the pool wire, as stagesim requires (stagesim.py:1366-1368); tunnel op ran only on plan-made loops",
+   "step": 2,
+   "session": "2.3"
+  },
+  {
+   "id": "p4_x_pool",
+   "group": "R reader core",
+   "unit": "U08 image",
+   "xkind": "branch",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "S-TUN (branch of a base FSOT source face into the new tunnel)",
+   "cite": "PD298(b): the pool array already on 686 = FSOT #28809 source face t28816 (w28794 -> loop 1.1 tunnel #28771 t28791; chain #23099 -> For exit #28975 -> FSOT #28907 -> #28809, P3b-1 p3b_x_pool) -> TP1 outer: same-diagram BRANCH; values unchanged (same IMAQ Create pool, U1)",
+   "step": 2,
+   "session": "2.3"
+  },
+  {
+   "id": "p4_w_pool_in",
+   "group": "R reader core",
+   "unit": "U08 image",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "PD298(b) TP1 inner -> Index Array array (same pattern as p4_t_last_out)",
+   "step": 2,
+   "session": "2.3"
+  },
+  {
+   "id": "p4_w_img_trk",
+   "group": "R reader core",
+   "unit": "U08 image",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "same-diagram connect; #5058 Image In t5089 is an open row (PD177(e)) [draft d9d66246] [v2]",
+   "step": 2,
+   "session": "2.3"
+  },
+  {
+   "id": "p4_w_n1_gt",
+   "group": "R reader core",
+   "unit": "U10 valid",
+   "xkind": "branch",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "branch of plan-made tunnel outer face [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.1"
+  },
+  {
+   "id": "p4_w_last_gt",
+   "group": "R reader core",
+   "unit": "U10 valid",
+   "xkind": "wire_sr",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "PD293(c) valid = n1==n2 AND n1 > last: GT2.y = last (branch of the register inner face; the draft's n1 > -1 const KM1 and its wire p4_k_m1/p4_w_km1_gt are DROPPED) [v2] | card 139-5 PD316(a): moved step 3 -> 2 (before p4_t_last)",
+   "step": 2,
+   "session": "2.2"
+  },
+  {
+   "id": "p4_w_eq_and",
+   "group": "R reader core",
+   "unit": "U10 valid",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "same-diagram connect [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.1"
+  },
+  {
+   "id": "p4_w_gt_and",
+   "group": "R reader core",
+   "unit": "U10 valid",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "same-diagram connect [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.1"
+  },
+  {
+   "id": "p4_w_lat_dec",
+   "group": "R reader core",
+   "unit": "U10 valid",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "same-diagram connect [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.1"
+  },
+  {
+   "id": "p4_w_dec_sel",
+   "group": "R reader core",
+   "unit": "U10 valid",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "same-diagram connect [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.1"
+  },
+  {
+   "id": "p4_w_n1_sel",
+   "group": "R reader core",
+   "unit": "U10 valid",
+   "xkind": "branch",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "branch of plan-made tunnel outer face [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.1"
+  },
+  {
+   "id": "p4_w_and_sel",
+   "group": "R reader core",
+   "unit": "U10 valid",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "same-diagram connect [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.1"
+  },
+  {
+   "id": "p4_w_sel_last",
+   "group": "R reader core",
+   "unit": "U10 valid",
+   "xkind": "wire_sr",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "wire_sr RightIn (P3a p3a_w_bn_r) [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.1"
+  },
+  {
+   "id": "p4_w_disc_inc",
+   "group": "R reader core",
+   "unit": "U10 valid",
+   "xkind": "wire_sr",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "wire_sr LeftIn (P3a) [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.1"
+  },
+  {
+   "id": "p4_w_disc_sel",
+   "group": "R reader core",
+   "unit": "U10 valid",
+   "xkind": "wire_sr",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "wire_sr LeftIn branch [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.1"
+  },
+  {
+   "id": "p4_w_inc_sel",
+   "group": "R reader core",
+   "unit": "U10 valid",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "same-diagram connect [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.1"
+  },
+  {
+   "id": "p4_w_and_seld",
+   "group": "R reader core",
+   "unit": "U10 valid",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "same-diagram branch [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.1"
+  },
+  {
+   "id": "p4_w_seld_r",
+   "group": "R reader core",
+   "unit": "U10 valid",
+   "xkind": "wire_sr",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "wire_sr RightIn [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.1"
+  },
+  {
+   "id": "p4_lr_transpos",
+   "group": "C slot-value consumers",
+   "unit": "U11 C reads",
+   "xkind": "create",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "local_read route [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.2"
+  },
+  {
+   "id": "p4_ia_transpos",
+   "group": "C slot-value consumers",
+   "unit": "U11 C reads",
+   "xkind": "create",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "$work donor #3163 Index Array [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.2"
+  },
+  {
+   "id": "p4_w_arr_transpos",
+   "group": "C slot-value consumers",
+   "unit": "U11 C reads",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "same-diagram connect [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.2"
+  },
+  {
+   "id": "p4_w_idx_transpos",
+   "group": "C slot-value consumers",
+   "unit": "U11 C reads",
+   "xkind": "branch",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "branch of plan-made tunnel outer face [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.2"
+  },
+  {
+   "id": "p4_lr_rotpos",
+   "group": "C slot-value consumers",
+   "unit": "U11 C reads",
+   "xkind": "create",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "local_read route [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.2"
+  },
+  {
+   "id": "p4_ia_rotpos",
+   "group": "C slot-value consumers",
+   "unit": "U11 C reads",
+   "xkind": "create",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "$work donor #3163 Index Array [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.2"
+  },
+  {
+   "id": "p4_w_arr_rotpos",
+   "group": "C slot-value consumers",
+   "unit": "U11 C reads",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "same-diagram connect [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.2"
+  },
+  {
+   "id": "p4_w_idx_rotpos",
+   "group": "C slot-value consumers",
+   "unit": "U11 C reads",
+   "xkind": "branch",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "branch of plan-made tunnel outer face [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.2"
+  },
+  {
+   "id": "p4_lr_frameidx",
+   "group": "C slot-value consumers",
+   "unit": "U11 C reads",
+   "xkind": "create",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "local_read route [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.2"
+  },
+  {
+   "id": "p4_ia_frameidx",
+   "group": "C slot-value consumers",
+   "unit": "U11 C reads",
+   "xkind": "create",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "$work donor #3163 Index Array [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.2"
+  },
+  {
+   "id": "p4_w_arr_frameidx",
+   "group": "C slot-value consumers",
+   "unit": "U11 C reads",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "same-diagram connect [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.2"
+  },
+  {
+   "id": "p4_w_idx_frameidx",
+   "group": "C slot-value consumers",
+   "unit": "U11 C reads",
+   "xkind": "branch",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "branch of plan-made tunnel outer face [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.2"
+  },
+  {
+   "id": "p4_w_tp_mag",
+   "group": "C slot-value consumers",
+   "unit": "U12 C sinks",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "into For #1359's LoopTunnel #9503 outer face t9508 (-> #28083 Magnet position, facts_c117_qrt.md:17) [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.3"
+  },
+  {
+   "id": "p4_w_tp_row",
+   "group": "C slot-value consumers",
+   "unit": "U12 C sinks",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "#2626 element|1 t4160 <- Trans Pos (facts_c117_qrt.json pair (2626,element)) [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.3"
+  },
+  {
+   "id": "p4_w_rp_row",
+   "group": "C slot-value consumers",
+   "unit": "U12 C sinks",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "#2626 element|2 t4165 <- Rot pos (facts_c117_qrt.json) [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.3"
+  },
+  {
+   "id": "p4_mv_10068",
+   "group": "C slot-value consumers",
+   "unit": "U12 C sinks",
+   "xkind": "move_in",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "move_in route (stagexec.py:670, opmodel move_in.json cut_clears moved); PD233(g)/237(g) MOVE [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.3"
+  },
+  {
+   "id": "p4_mv_29240",
+   "group": "C slot-value consumers",
+   "unit": "U12 C sinks",
+   "xkind": "move_in",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "move_in route; PD233(g)/237(g) MOVE [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.3"
+  },
+  {
+   "id": "p4_w_fi_10068",
+   "group": "C slot-value consumers",
+   "unit": "U12 C sinks",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "same-diagram connect (x = this frame's #637 i, PD233(f)(3)) [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.3"
+  },
+  {
+   "id": "p4_w_fi_29240",
+   "group": "C slot-value consumers",
+   "unit": "U12 C sinks",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "same-diagram branch [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.3"
+  },
+  {
+   "id": "p4_x_fd",
+   "group": "C slot-value consumers",
+   "unit": "U12 C sinks",
+   "xkind": "connect_term_uid",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "#686 control '# FD points' t8936 (wired, net 9000) across While #10170 border [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.3"
+  },
+  {
+   "id": "p4_rle_x_fd",
+   "group": "C slot-value consumers",
+   "unit": "U12 C sinks",
+   "xkind": "wire_remove_loose_ends",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "gscript.py:4972 OpWireRemoveLooseEnds_v0; PD255(b)/256(b) one RLE per crossing [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.3"
+  },
+  {
+   "id": "p4_x_dt",
+   "group": "C slot-value consumers",
+   "unit": "U12 C sinks",
+   "xkind": "connect_term_uid",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "#686 control '# DT points' t28844 (wired, net 29006) across While #10170 border [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.3"
+  },
+  {
+   "id": "p4_rle_x_dt",
+   "group": "C slot-value consumers",
+   "unit": "U12 C sinks",
+   "xkind": "wire_remove_loose_ends",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "gscript.py:4972 OpWireRemoveLooseEnds_v0; PD255(b)/256(b) one RLE per crossing [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.3"
+  },
+  {
+   "id": "p4_w_10068_out",
+   "group": "C slot-value consumers",
+   "unit": "U12 C sinks",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "into For #1359 LoopTunnel #10177 outer t10182 (-> #8634 index (col)) [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.3"
+  },
+  {
+   "id": "p4_w_29240_out",
+   "group": "C slot-value consumers",
+   "unit": "U12 C sinks",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "into For #29874 LoopTunnel #29777 outer t29782 (-> #29625 index (col), #29973 element) [draft d9d66246] [v2]",
+   "step": 3,
+   "session": "3.3"
+  },
+  {
+   "id": "p4_lr_bufdiff12",
+   "group": "F BufDiff (PD295(a))",
+   "unit": "U13 BufDiff 1.2",
+   "xkind": "local_read",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "local_read route (as draft p4_lr_transpos) [v2]",
+   "step": 4,
+   "session": "4.1"
+  },
+  {
+   "id": "p4_ia_bufdiff",
+   "group": "F BufDiff (PD295(a))",
+   "unit": "U13 BufDiff 1.2",
+   "xkind": "create",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "$work donor #3163 Index Array (as draft p4_ia_transpos) [v2]",
+   "step": 4,
+   "session": "4.1"
+  },
+  {
+   "id": "p4_w_arr_bufdiff",
+   "group": "F BufDiff (PD295(a))",
+   "unit": "U13 BufDiff 1.2",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "same-diagram connect [v2]",
+   "step": 4,
+   "session": "4.1"
+  },
+  {
+   "id": "p4_w_idx_bufdiff",
+   "group": "F BufDiff (PD295(a))",
+   "unit": "U13 BufDiff 1.2",
+   "xkind": "branch",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "branch of plan-made tunnel outer face [v2]",
+   "step": 4,
+   "session": "4.1"
+  },
+  {
+   "id": "p4_w_bd_row",
+   "group": "F BufDiff (PD295(a))",
+   "unit": "U13 BufDiff 1.2",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "PD295(a) #2626 element|0 t2832 <- BufDiff(i) (was #5119 x-y in S1, prep_c135_p2_facts.md:5) [v2]",
+   "step": 4,
+   "session": "4.1"
+  },
+  {
+   "id": "p4_rbA_dw",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR A",
+   "xkind": "delete_wire",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "PD293(b) SR A (#23508/#23792 on #10170, graph step_18) new = #5058 'pos in cal image out': detach w23807 (no single-sink disconnect op exists); delete_wire route launched P2a [v2]",
+   "step": 4,
+   "session": "4.2"
+  },
+  {
+   "id": "p4_rbA_re0",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR A",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "PD293(b) SR A (#23508/#23792 on #10170) new = #5058 'pos in cal image out': restore sink t10975 RAW (PD298(d) display-only / stays in 1.2: #10969 -> indicator 'min value' t17272 only; no Local of it in the graph (display))",
+   "step": 4,
+   "session": "4.2"
+  },
+  {
+   "id": "p4_rbA_re1",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR A",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "PD293(b) SR A (#23508/#23792 on #10170) new = #5058 'pos in cal image out': restore sink t3173 RAW (PD298(d) display-only / stays in 1.2: 'Pos within cal image' display (PD298(d) names it))",
+   "step": 4,
+   "session": "4.2"
+  },
+  {
+   "id": "p4_rbA_re2",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR A",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "PD293(b) SR A (#23508/#23792 on #10170) new = #5058 'pos in cal image out': restore sink t9519 RAW (PD298(d) display-only / stays in 1.2: 'Pos: Diffraction Pattern' display (PD298(d) names it))",
+   "step": 4,
+   "session": "4.2"
+  },
+  {
+   "id": "p4_rbA_sel",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR A",
+   "xkind": "create primitive",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "PD293(b) SR A (#23508/#23792 on #10170, graph step_18) new = #5058 'pos in cal image out': Select (vilib donor #529, scalar s; diag_c128_2_donors.log:61-63, P3b-1 p3b_sel launched) [v2]",
+   "step": 4,
+   "session": "4.2"
+  },
+  {
+   "id": "p4_rbA_t",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR A",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "PD293(b) SR A (#23508/#23792 on #10170, graph step_18) new = #5058 'pos in cal image out': new -> Select t (array/cluster t,f with scalar s never run) [v2]",
+   "step": 4,
+   "session": "4.2"
+  },
+  {
+   "id": "p4_rbA_f",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR A",
+   "xkind": "wire_sr",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "PD293(b) SR A (#23508/#23792 on #10170, graph step_18) new = #5058 'pos in cal image out': old (left SR inner, branch) -> Select f [v2]",
+   "step": 4,
+   "session": "4.2"
+  },
+  {
+   "id": "p4_rbA_s",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR A",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "PD293(b) SR A (#23508/#23792 on #10170, graph step_18) new = #5058 'pos in cal image out': valid -> Select s (branch) [v2]",
+   "step": 4,
+   "session": "4.2"
+  },
+  {
+   "id": "p4_rbA_out",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR A",
+   "xkind": "wire_sr",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "PD293(b) SR A (#23508/#23792 on #10170, graph step_18) new = #5058 'pos in cal image out': Select -> right SR inner (wire_sr RightIn, P3a p3a_w_bn_r) [v2]",
+   "step": 4,
+   "session": "4.2"
+  },
+  {
+   "id": "p4_rbA_sel_t10871",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR A",
+   "xkind": "branch",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "S-SELB: scratch branch of a plan-made Select output to a base sink in a base While body",
+   "cite": "PD293(b) SR A (#23508/#23792 on #10170) new = #5058 'pos in cal image out': PD298(d) sink t10871 takes the Select output (rolled-back value): #10757 Index Array -> indicator 'index' t23541, READ BY Local #23523 on diagram 23058 (another loop)",
+   "step": 4,
+   "session": "4.2"
+  },
+  {
+   "id": "p4_rbB_dw",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR B",
+   "xkind": "delete_wire",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "PD293(b) SR B (#10850/#25240 on #10170, graph step_18) new = #5058 'x,y,z array out': detach w25283 (no single-sink disconnect op exists); delete_wire route launched P2a [v2]",
+   "step": 4,
+   "session": "4.3"
+  },
+  {
+   "id": "p4_rbB_re0",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR B",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "PD293(b) SR B (#10850/#25240 on #10170) new = #5058 'x,y,z array out': restore sink t2811 RAW (PD298(d) display-only / stays in 1.2: #2765 case tunnel -> registers E/F (rolled back) + 'Extension (nm) vs Time (Frame #)' graph t28786 (display); stays inside 1.2)",
+   "step": 4,
+   "session": "4.3"
+  },
+  {
+   "id": "p4_rbB_sel",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR B",
+   "xkind": "create primitive",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "PD293(b) SR B (#10850/#25240 on #10170, graph step_18) new = #5058 'x,y,z array out': Select (vilib donor #529, scalar s; diag_c128_2_donors.log:61-63, P3b-1 p3b_sel launched) [v2]",
+   "step": 4,
+   "session": "4.3"
+  },
+  {
+   "id": "p4_rbB_t",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR B",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "PD293(b) SR B (#10850/#25240 on #10170, graph step_18) new = #5058 'x,y,z array out': new -> Select t (array/cluster t,f with scalar s never run) [v2]",
+   "step": 4,
+   "session": "4.3"
+  },
+  {
+   "id": "p4_rbB_f",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR B",
+   "xkind": "wire_sr",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "PD293(b) SR B (#10850/#25240 on #10170, graph step_18) new = #5058 'x,y,z array out': old (left SR inner, branch) -> Select f [v2]",
+   "step": 4,
+   "session": "4.3"
+  },
+  {
+   "id": "p4_rbB_s",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR B",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "PD293(b) SR B (#10850/#25240 on #10170, graph step_18) new = #5058 'x,y,z array out': valid -> Select s (branch) [v2]",
+   "step": 4,
+   "session": "4.3"
+  },
+  {
+   "id": "p4_rbB_out",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR B",
+   "xkind": "wire_sr",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "PD293(b) SR B (#10850/#25240 on #10170, graph step_18) new = #5058 'x,y,z array out': Select -> right SR inner (wire_sr RightIn, P3a p3a_w_bn_r) [v2]",
+   "step": 4,
+   "session": "4.3"
+  },
+  {
+   "id": "p4_rbB_sel_t4168",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR B",
+   "xkind": "branch",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "S-SELB: scratch branch of a plan-made Select output to a base sink in a base While body",
+   "cite": "PD293(b) SR B (#10850/#25240 on #10170) new = #5058 'x,y,z array out': PD298(d) sink t4168 takes the Select output (rolled-back value): #2626 Build Array = the saved-trace row (#2626 -> #376, PD295(a), diag_c126_8_orig.log:5-6,32)",
+   "step": 4,
+   "session": "4.3"
+  },
+  {
+   "id": "p4_rbC_dw",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR C",
+   "xkind": "delete_wire",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "PD293(b) SR C (#25339/#25344 on #10170, graph step_18) new = #5058 'Bead is good? array out': detach w25348 (no single-sink disconnect op exists); delete_wire route launched P2a [v2]",
+   "step": 4,
+   "session": "4.4"
+  },
+  {
+   "id": "p4_rbC_sel",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR C",
+   "xkind": "create primitive",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "PD293(b) SR C (#25339/#25344 on #10170, graph step_18) new = #5058 'Bead is good? array out': Select (vilib donor #529, scalar s; diag_c128_2_donors.log:61-63, P3b-1 p3b_sel launched) [v2]",
+   "step": 4,
+   "session": "4.4"
+  },
+  {
+   "id": "p4_rbC_t",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR C",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "PD293(b) SR C (#25339/#25344 on #10170, graph step_18) new = #5058 'Bead is good? array out': new -> Select t (array/cluster t,f with scalar s never run) [v2]",
+   "step": 4,
+   "session": "4.4"
+  },
+  {
+   "id": "p4_rbC_f",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR C",
+   "xkind": "wire_sr",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "PD293(b) SR C (#25339/#25344 on #10170, graph step_18) new = #5058 'Bead is good? array out': old (left SR inner, branch) -> Select f [v2]",
+   "step": 4,
+   "session": "4.4"
+  },
+  {
+   "id": "p4_rbC_s",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR C",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "PD293(b) SR C (#25339/#25344 on #10170, graph step_18) new = #5058 'Bead is good? array out': valid -> Select s (branch) [v2]",
+   "step": 4,
+   "session": "4.4"
+  },
+  {
+   "id": "p4_rbC_out",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR C",
+   "xkind": "wire_sr",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "PD293(b) SR C (#25339/#25344 on #10170, graph step_18) new = #5058 'Bead is good? array out': Select -> right SR inner (wire_sr RightIn, P3a p3a_w_bn_r) [v2]",
+   "step": 4,
+   "session": "4.4"
+  },
+  {
+   "id": "p4_rbD_dw",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR D",
+   "xkind": "delete_wire",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "PD293(b) SR D (#25371/#25382 on #10170, graph step_18) new = SelectorTunnel #11336 'Value' (Auto-reset zero): detach w25386 (no single-sink disconnect op exists); delete_wire route launched P2a [v2]",
+   "step": 4,
+   "session": "4.5"
+  },
+  {
+   "id": "p4_rbD_sel",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR D",
+   "xkind": "create primitive",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "PD293(b) SR D (#25371/#25382 on #10170, graph step_18) new = SelectorTunnel #11336 'Value' (Auto-reset zero): Select (vilib donor #529, scalar s; diag_c128_2_donors.log:61-63, P3b-1 p3b_sel launched) [v2]",
+   "step": 4,
+   "session": "4.5"
+  },
+  {
+   "id": "p4_rbD_t",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR D",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "PD293(b) SR D (#25371/#25382 on #10170, graph step_18) new = SelectorTunnel #11336 'Value' (Auto-reset zero): new -> Select t (array/cluster t,f with scalar s never run) [v2]",
+   "step": 4,
+   "session": "4.5"
+  },
+  {
+   "id": "p4_rbD_f",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR D",
+   "xkind": "wire_sr",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "PD293(b) SR D (#25371/#25382 on #10170, graph step_18) new = SelectorTunnel #11336 'Value' (Auto-reset zero): old (left SR inner, branch) -> Select f [v2]",
+   "step": 4,
+   "session": "4.5"
+  },
+  {
+   "id": "p4_rbD_s",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR D",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "PD293(b) SR D (#25371/#25382 on #10170, graph step_18) new = SelectorTunnel #11336 'Value' (Auto-reset zero): valid -> Select s (branch) [v2]",
+   "step": 4,
+   "session": "4.5"
+  },
+  {
+   "id": "p4_rbD_out",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR D",
+   "xkind": "wire_sr",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "PD293(b) SR D (#25371/#25382 on #10170, graph step_18) new = SelectorTunnel #11336 'Value' (Auto-reset zero): Select -> right SR inner (wire_sr RightIn, P3a p3a_w_bn_r) [v2]",
+   "step": 4,
+   "session": "4.5"
+  },
+  {
+   "id": "p4_rbD_sel_t25573",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR D",
+   "xkind": "branch",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "S-SELB: scratch branch of a plan-made Select output to a base sink in a base While body",
+   "cite": "PD293(b) SR D (#25371/#25382 on #10170) new = SelectorTunnel #11336 'Value' (Auto-reset zero): PD298(d) sink t25573 takes the Select output (rolled-back value): 'autofocus reset count (1.2 to 1.1)' read by Local #25578 on 639 (loop 1.1) - PD298(d) names it",
+   "step": 4,
+   "session": "4.5"
+  },
+  {
+   "id": "p4_rbE_dw",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR E",
+   "xkind": "delete_wire",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "PD293(b) SR E (#9603/#10544 on #10170, graph step_18) new = For LoopTunnel #9227: detach w25638 (no single-sink disconnect op exists); delete_wire route launched P2a [v2]",
+   "step": 5,
+   "session": "5.1"
+  },
+  {
+   "id": "p4_rbE_sel",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR E",
+   "xkind": "create primitive",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "PD293(b) SR E (#9603/#10544 on #10170, graph step_18) new = For LoopTunnel #9227: Select (vilib donor #529, scalar s; diag_c128_2_donors.log:61-63, P3b-1 p3b_sel launched) [v2]",
+   "step": 5,
+   "session": "5.1"
+  },
+  {
+   "id": "p4_rbE_t",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR E",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "PD293(b) SR E (#9603/#10544 on #10170, graph step_18) new = For LoopTunnel #9227: new -> Select t (array/cluster t,f with scalar s never run) [v2]",
+   "step": 5,
+   "session": "5.1"
+  },
+  {
+   "id": "p4_rbE_f",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR E",
+   "xkind": "wire_sr",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "PD293(b) SR E (#9603/#10544 on #10170, graph step_18) new = For LoopTunnel #9227: old (left SR inner, branch) -> Select f [v2]",
+   "step": 5,
+   "session": "5.1"
+  },
+  {
+   "id": "p4_rbE_s",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR E",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "PD293(b) SR E (#9603/#10544 on #10170, graph step_18) new = For LoopTunnel #9227: valid -> Select s (branch) [v2]",
+   "step": 5,
+   "session": "5.1"
+  },
+  {
+   "id": "p4_rbE_out",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR E",
+   "xkind": "wire_sr",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "PD293(b) SR E (#9603/#10544 on #10170, graph step_18) new = For LoopTunnel #9227: Select -> right SR inner (wire_sr RightIn, P3a p3a_w_bn_r) [v2]",
+   "step": 5,
+   "session": "5.1"
+  },
+  {
+   "id": "p4_rbF_dw",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR F",
+   "xkind": "delete_wire",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "PD293(b) SR F (#25545/#25582 on #10170, graph step_18) new = For LoopTunnel #29616: detach w25645 (no single-sink disconnect op exists); delete_wire route launched P2a [v2]",
+   "step": 5,
+   "session": "5.2"
+  },
+  {
+   "id": "p4_rbF_sel",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR F",
+   "xkind": "create primitive",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "PD293(b) SR F (#25545/#25582 on #10170, graph step_18) new = For LoopTunnel #29616: Select (vilib donor #529, scalar s; diag_c128_2_donors.log:61-63, P3b-1 p3b_sel launched) [v2]",
+   "step": 5,
+   "session": "5.2"
+  },
+  {
+   "id": "p4_rbF_t",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR F",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "PD293(b) SR F (#25545/#25582 on #10170, graph step_18) new = For LoopTunnel #29616: new -> Select t (array/cluster t,f with scalar s never run) [v2]",
+   "step": 5,
+   "session": "5.2"
+  },
+  {
+   "id": "p4_rbF_f",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR F",
+   "xkind": "wire_sr",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "PD293(b) SR F (#25545/#25582 on #10170, graph step_18) new = For LoopTunnel #29616: old (left SR inner, branch) -> Select f [v2]",
+   "step": 5,
+   "session": "5.2"
+  },
+  {
+   "id": "p4_rbF_s",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR F",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "PD293(b) SR F (#25545/#25582 on #10170, graph step_18) new = For LoopTunnel #29616: valid -> Select s (branch) [v2]",
+   "step": 5,
+   "session": "5.2"
+  },
+  {
+   "id": "p4_rbF_out",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U14 rollback SR F",
+   "xkind": "wire_sr",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "PD293(b) SR F (#25545/#25582 on #10170, graph step_18) new = For LoopTunnel #29616: Select -> right SR inner (wire_sr RightIn, P3a p3a_w_bn_r) [v2]",
+   "step": 5,
+   "session": "5.2"
+  },
+  {
+   "id": "p4_dec_reseed",
+   "group": "A rollback Selects (PD293(b))",
+   "unit": "U15 reseed flag",
+   "xkind": "decide",
+   "route_level": "UNMEASURED",
+   "level": "UNMEASURED",
+   "measured_by": "judgement: which rollback form for a non-register value (PD298(d) does not settle it)",
+   "cite": "PD298(d) says t25557 takes 'the Select output', but t25557 is fed by #9647 'x .and. y?' t9668 (w25415, also -> Tunnel #10465; inputs #10950 x<y? and 'Auto-Reset' t17487), NOT by one of the 6 registers - no rollback Select carries it. Counted as 8 ops (delete w25415, re-wire #10465, Select, f-source, t/f/s, out)",
+   "step": 5,
+   "session": "5.3"
+  },
+  {
+   "id": "p4_w_n2_arr",
+   "group": "R reader core",
+   "unit": "U09 n2",
+   "xkind": "connect",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "none in 136-1 (route ran on another diagram class; this context never run)",
+   "cite": "same-frame connect (P3b-2 p3b_w_r_arr pattern) [draft d9d66246] [v2]",
+   "step": 5,
+   "session": "5.4"
+  },
+  {
+   "id": "p4_x_n2_order",
+   "group": "R reader core",
+   "unit": "U09 n2",
+   "xkind": "connect_term_uid",
+   "route_level": "PRECEDENT",
+   "level": "UNMEASURED",
+   "measured_by": "S-FSW: scratch base-While-body source -> plan-made FS frame (wired source)",
+   "cite": "PD298(c)/PD295(d): #5058 'Bead is good? array out' t5111 -> FS4 input tunnel -> IAZ1 (no-effect consumer) = FS4 starts only after #5058; fs_border variant case_frame_to_fs_frame_branch (wired source, measured on a CASE frame) - on a While body never run. Placed AFTER rollback C: the crossing re-creates t5111's net (stagesim.py:1906-1912), and p4_rbC_dw deletes w25348 by uid. Output choice t5111 vs t5124/t5171 not settled by PD298(c)",
+   "step": 5,
+   "session": "5.4"
+  },
+  {
+   "id": "p4_rle_x_n2_order",
+   "group": "R reader core",
+   "unit": "U09 n2",
+   "xkind": "wire_remove_loose_ends",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "gscript.py:4972; PD256(b) one RLE per crossing",
+   "step": 5,
+   "session": "5.4"
+  },
+  {
+   "id": "p4_x_slot_fs",
+   "group": "R reader core",
+   "unit": "U09 n2",
+   "xkind": "connect_term_uid",
+   "route_level": "UNMEASURED",
+   "level": "UNMEASURED",
+   "measured_by": "136-1 item 3 (U5 While outer face -> FS frame)",
+   "cite": "branch from a plan-made While tunnel outer face ACROSS a plan-made FS border: no measured variant [draft d9d66246] [v2]",
+   "step": 5,
+   "session": "5.4"
+  },
+  {
+   "id": "p4_rle_x_slot_fs",
+   "group": "R reader core",
+   "unit": "U09 n2",
+   "xkind": "wire_remove_loose_ends",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "gscript.py:4972 OpWireRemoveLooseEnds_v0; PD255(b)/256(b) one RLE per crossing [draft d9d66246] [v2]",
+   "step": 5,
+   "session": "5.4"
+  },
+  {
+   "id": "p4_x_n2_out",
+   "group": "R reader core",
+   "unit": "U09 n2",
+   "xkind": "connect_term_uid",
+   "route_level": "UNMEASURED",
+   "level": "UNMEASURED",
+   "measured_by": "136-1 item 3 (U6 FS frame -> parent exit)",
+   "cite": "FS frame -> enclosing body EXIT (only entries and frame_to_frame measured) [draft d9d66246] [v2]",
+   "step": 5,
+   "session": "5.4"
+  },
+  {
+   "id": "p4_rle_x_n2_out",
+   "group": "R reader core",
+   "unit": "U09 n2",
+   "xkind": "wire_remove_loose_ends",
+   "route_level": "MEASURED",
+   "level": "MEASURED",
+   "measured_by": null,
+   "cite": "gscript.py:4972 OpWireRemoveLooseEnds_v0; PD255(b)/256(b) one RLE per crossing [draft d9d66246] [v2]",
+   "step": 5,
+   "session": "5.4"
+  }
+ ],
+ "recut_c139_5": {
+  "moved": "p4_w_last_gt",
+  "to_step": 2,
+  "from_md5": "8dd37a54c3730b955430db7f71cfceff",
+  "why": "PD316(a), docs/d1/ring-p4.md:329-331"
+ },
+ "inherited_c139_6": [
+  {
+   "id": "p4_c_stopall_f",
+   "step": 1,
+   "session": "1.1",
+   "unit": "inherited from p4_lr_stop12",
+   "cite": "prep_c139_p2_mkv11.py:164-174 (copied by prep_c139_6_mkv14.py), card 139-6 PD317(b)"
+  },
+  {
+   "id": "p4_i_stopall_k",
+   "step": 1,
+   "session": "1.1",
+   "unit": "inherited from p4_lr_stop12",
+   "cite": "prep_c139_p2_mkv11.py:164-174 (copied by prep_c139_6_mkv14.py), card 139-6 PD317(b)"
+  },
+  {
+   "id": "p4_lw_stopall_639",
+   "step": 1,
+   "session": "1.1",
+   "unit": "inherited from p4_lr_stop12",
+   "cite": "prep_c139_p2_mkv11.py:164-174 (copied by prep_c139_6_mkv14.py), card 139-6 PD317(b)"
+  },
+  {
+   "id": "p4_w_stopall_639",
+   "step": 1,
+   "session": "1.1",
+   "unit": "inherited from p4_lr_stop12",
+   "cite": "prep_c139_p2_mkv11.py:164-174 (copied by prep_c139_6_mkv14.py), card 139-6 PD317(b)"
+  },
+  {
+   "id": "p4_f_min",
+   "step": 1,
+   "session": "1.3",
+   "unit": "inherited from p4_gt_last",
+   "cite": "prep_c139_p2_mkv11.py:164-174 (copied by prep_c139_6_mkv14.py), card 139-6 PD317(b)"
+  },
+  {
+   "id": "p4_k_max_found",
+   "step": 1,
+   "session": "1.3",
+   "unit": "inherited from p4_k_max",
+   "cite": "prep_c139_p2_mkv11.py:164-174 (copied by prep_c139_6_mkv14.py), card 139-6 PD317(b)"
+  },
+  {
+   "id": "p4_t_fnum",
+   "step": 2,
+   "session": "2.2",
+   "unit": "inherited from p4_w_num_sel",
+   "cite": "prep_c139_p2_mkv11.py:164-174 (copied by prep_c139_6_mkv14.py), card 139-6 PD317(b)"
+  },
+  {
+   "id": "p4_t_fnum_in",
+   "step": 2,
+   "session": "2.2",
+   "unit": "inherited from p4_w_num_sel",
+   "cite": "prep_c139_p2_mkv11.py:164-174 (copied by prep_c139_6_mkv14.py), card 139-6 PD317(b)"
+  },
+  {
+   "id": "p4_t_fnum_out",
+   "step": 2,
+   "session": "2.2",
+   "unit": "inherited from p4_w_num_sel",
+   "cite": "prep_c139_p2_mkv11.py:164-174 (copied by prep_c139_6_mkv14.py), card 139-6 PD317(b)"
+  },
+  {
+   "id": "p4_t_fgt",
+   "step": 2,
+   "session": "2.2",
+   "unit": "inherited from p4_w_gt_sel",
+   "cite": "prep_c139_p2_mkv11.py:164-174 (copied by prep_c139_6_mkv14.py), card 139-6 PD317(b)"
+  },
+  {
+   "id": "p4_t_fgt_in",
+   "step": 2,
+   "session": "2.2",
+   "unit": "inherited from p4_w_gt_sel",
+   "cite": "prep_c139_p2_mkv11.py:164-174 (copied by prep_c139_6_mkv14.py), card 139-6 PD317(b)"
+  },
+  {
+   "id": "p4_t_fgt_out",
+   "step": 2,
+   "session": "2.2",
+   "unit": "inherited from p4_w_gt_sel",
+   "cite": "prep_c139_p2_mkv11.py:164-174 (copied by prep_c139_6_mkv14.py), card 139-6 PD317(b)"
+  },
+  {
+   "id": "p4_w_max_sel",
+   "step": 2,
+   "session": "2.2",
+   "unit": "inherited from p4_w_gt_sel",
+   "cite": "prep_c139_p2_mkv11.py:164-174 (copied by prep_c139_6_mkv14.py), card 139-6 PD317(b)"
+  },
+  {
+   "id": "p4_t_fsel",
+   "step": 2,
+   "session": "2.2",
+   "unit": "inherited from p4_w_sel_amm",
+   "cite": "prep_c139_p2_mkv11.py:164-174 (copied by prep_c139_6_mkv14.py), card 139-6 PD317(b)"
+  },
+  {
+   "id": "p4_t_fsel_in",
+   "step": 2,
+   "session": "2.2",
+   "unit": "inherited from p4_w_sel_amm",
+   "cite": "prep_c139_p2_mkv11.py:164-174 (copied by prep_c139_6_mkv14.py), card 139-6 PD317(b)"
+  },
+  {
+   "id": "p4_t_fsel_out",
+   "step": 2,
+   "session": "2.2",
+   "unit": "inherited from p4_w_sel_amm",
+   "cite": "prep_c139_p2_mkv11.py:164-174 (copied by prep_c139_6_mkv14.py), card 139-6 PD317(b)"
+  },
+  {
+   "id": "p4_t_fd",
+   "step": 3,
+   "session": "3.3",
+   "unit": "inherited from p4_x_fd",
+   "cite": "prep_c139_p2_mkv11.py:164-174 (copied by prep_c139_6_mkv14.py), card 139-6 PD317(b)"
+  },
+  {
+   "id": "p4_w_fd_in",
+   "step": 3,
+   "session": "3.3",
+   "unit": "inherited from p4_x_fd",
+   "cite": "prep_c139_p2_mkv11.py:164-174 (copied by prep_c139_6_mkv14.py), card 139-6 PD317(b)"
+  },
+  {
+   "id": "p4_t_dt",
+   "step": 3,
+   "session": "3.3",
+   "unit": "inherited from p4_x_dt",
+   "cite": "prep_c139_p2_mkv11.py:164-174 (copied by prep_c139_6_mkv14.py), card 139-6 PD317(b)"
+  },
+  {
+   "id": "p4_w_dt_in",
+   "step": 3,
+   "session": "3.3",
+   "unit": "inherited from p4_x_dt",
+   "cite": "prep_c139_p2_mkv11.py:164-174 (copied by prep_c139_6_mkv14.py), card 139-6 PD317(b)"
+  },
+  {
+   "id": "p4_rbR_dw",
+   "step": 5,
+   "session": "5.3",
+   "unit": "inherited from p4_dec_reseed",
+   "cite": "prep_c139_p2_mkv11.py:164-174 (copied by prep_c139_6_mkv14.py), card 139-6 PD317(b)"
+  },
+  {
+   "id": "p4_rbR_re0",
+   "step": 5,
+   "session": "5.3",
+   "unit": "inherited from p4_dec_reseed",
+   "cite": "prep_c139_p2_mkv11.py:164-174 (copied by prep_c139_6_mkv14.py), card 139-6 PD317(b)"
+  },
+  {
+   "id": "p4_rbR_sel",
+   "step": 5,
+   "session": "5.3",
+   "unit": "inherited from p4_dec_reseed",
+   "cite": "prep_c139_p2_mkv11.py:164-174 (copied by prep_c139_6_mkv14.py), card 139-6 PD317(b)"
+  },
+  {
+   "id": "p4_rbR_lr",
+   "step": 5,
+   "session": "5.3",
+   "unit": "inherited from p4_dec_reseed",
+   "cite": "prep_c139_p2_mkv11.py:164-174 (copied by prep_c139_6_mkv14.py), card 139-6 PD317(b)"
+  },
+  {
+   "id": "p4_rbR_t",
+   "step": 5,
+   "session": "5.3",
+   "unit": "inherited from p4_dec_reseed",
+   "cite": "prep_c139_p2_mkv11.py:164-174 (copied by prep_c139_6_mkv14.py), card 139-6 PD317(b)"
+  },
+  {
+   "id": "p4_rbR_f",
+   "step": 5,
+   "session": "5.3",
+   "unit": "inherited from p4_dec_reseed",
+   "cite": "prep_c139_p2_mkv11.py:164-174 (copied by prep_c139_6_mkv14.py), card 139-6 PD317(b)"
+  },
+  {
+   "id": "p4_rbR_s",
+   "step": 5,
+   "session": "5.3",
+   "unit": "inherited from p4_dec_reseed",
+   "cite": "prep_c139_p2_mkv11.py:164-174 (copied by prep_c139_6_mkv14.py), card 139-6 PD317(b)"
+  },
+  {
+   "id": "p4_rbR_out",
+   "step": 5,
+   "session": "5.3",
+   "unit": "inherited from p4_dec_reseed",
+   "cite": "prep_c139_p2_mkv11.py:164-174 (copied by prep_c139_6_mkv14.py), card 139-6 PD317(b)"
+  }
+ ],
+ "recut_c139_6": {
+  "from_md5": "549f4e4518c2b7d0b7047447ffb36b74",
+  "added": 28,
+  "why": "PD317(b): v13 maker did not copy the step inheritance"
+ },
+ "recut_c140_3": {
+  "from_md5": "29f6535b1f280b3a33a07dbdeeff8893",
+  "plan": "plan_ring_p4_v15.json",
+  "removed": [
+   "p4_rle_w23255"
+  ],
+  "added": [
+   "p4_dw_23255"
+  ],
+  "why": "PD321(b): delete_wire w23255 before delete_object #10171 (RLE after the delete hit error 1055, diag_c140_2_scratch.log:72-75)"
+ }
+}

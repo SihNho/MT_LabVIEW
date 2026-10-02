@@ -1,0 +1,42 @@
+BGRUN START 2026-10-02 21:38:16 limit 20.0 min: py -u tools/bench/diag_c140_5_run.py
+BGRUN PID 18072
+  GATE PASS  bed md5 before  
+  GATE PASS  1 bed byte copy md5 == bed  
+  OBSERVED uid 138 -> owner 'Diagram' uid 114 | self 'DigitalNumericConstant'#138 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 156 -> owner 'TopLevelDiagram' uid 3 | self 'Comparison'#156 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  OBSERVED uid 175 -> owner 'TopLevelDiagram' uid 3 | self 'GrowableFunction'#175 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  FACT  1 created: {'top': 3, 'FG': 43, 'fgb': 114, 'k0': 138, 'GH': 156, 'RAS': 175, 'wires': {}}
+  FACT  1 RAS terminals as copied: [('array', False, 182, 0), ('output array', True, 185, 0), ('new element/subarray', False, 188, 0), ('index (row)', False, 191, 0), ('index (col)', False, 194, 0)]
+  GATE PASS  T one terminal {'owner_uid': 156, 'term_name': 'y'}  [(166, 'y', 0)]
+  GATE PASS  T one terminal {'owner_uid': 138, 'is_source': True}  [(137, '', 0)]
+  FACT  1 WIRE GH.y <- k0 (FG out): {'wire_uid': 206, 'broken': False, 'sink_echo': 166, 'src_echo': 137, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  1 wire GH.y <- k0 (FG out) err '' and Is Broken? False  {'wire_uid': 206, 'broken': False, 'sink_echo': 166, 'src_echo': 137, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  T one terminal {'owner_uid': 156, 'term_name': 'x'}  [(169, 'x', 231)]
+  GATE PASS  T one terminal {'wire_uid': 231, 'is_source': True}  [(215, 'x', 231)]
+  GATE PASS  1 array control created on Greater?.x  ([{'i': 0, 'class': 'ControlTerminal', 'uid': 215, 'pos': (246, 406), 'owner': 'TopLevelDiagram'}], 'x', {'term_uid': 215, 'term_name': 'x', 'is_source': True, 'wire_uid': 231, 'owner_uid': 3, 'owner_class': 'TopLevelDiagram', 'frame_diagram': 3})
+  GATE PASS  T one terminal {'owner_uid': 175, 'term_name': 'array'}  [(182, 'array', 0)]
+  FACT  1 WIRE RAS.array <- array control: {'wire_uid': 231, 'broken': False, 'sink_echo': 182, 'src_echo': 215, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  1 wire RAS.array <- array control err '' and Is Broken? False  {'wire_uid': 231, 'broken': False, 'sink_echo': 182, 'src_echo': 215, 'err': '', 'purged': 0, 'invoke_left': []}
+  FACT  1 RAS terminals after the 1-D wire: [('array', False, 182, 231), ('output array', True, 185, 0), ('new element/subarray', False, 188, 0), ('index', False, 191, 0)]
+  GATE PASS  1 RAS adapted to 4 terminals (1-D)  ['array', 'output array', 'new element/subarray', 'index']
+  GATE PASS  1 exactly one index sink  [('index', False, 191, 0)]
+  FACT  1 index/new/out: ({'ret': ([{'i': 1, 'class': 'ControlTerminal', 'uid': 234, 'pos': (554, 201), 'owner': 'TopLevelDiagram'}], 'index'), 'new_panel': [{'label': 'index', 'indicator': False, 'uid': 194, 'is_source': True, 'wire': 244, 'term_err': 0, 'wire_err': 0}], 'created_uid': 194, 'err': ''}, {'ret': ([{'i': 2, 'class': 'ControlTerminal', 'uid': 250, 'pos': (554, 210), 'owner': 'TopLevelDiagram'}], 'new element/subarray'), 'new_panel': [{'label': 'new element/subarray', 'indicator': False, 'uid': 236, 'is_source': True, 'wire': 260, 'term_err': 0, 'wire_err': 0}], 'created_uid': 236, 'err': ''}, {'ret': [{'
+  GATE PASS  1 index/new controls + out indicator, err ''  
+  FACT  1 panel before rename: [(150, 'x', False, 231), (194, 'index', False, 244), (236, 'new element/subarray', False, 260), (252, 'output array', True, 294)]
+  GATE PASS  1 exactly one other panel object (the array control)  [150]
+  FACT  1 panel after rename: [(150, 'array', False, 231), (194, 'index', False, 244), (236, 'new', False, 260), (252, 'out', True, 294)]
+  GATE PASS  1 panel labels == {array, index, new, out}, 'out' the only indicator  [(150, 'array', False, 231), (194, 'index', False, 244), (236, 'new', False, 260), (252, 'out', True, 294)]
+  FACT  2 RAS uid/label/class/terminals: (175, [{'uid': 175, 'label': 'Replace Array Subset'}], ['GrowableFunction'], [('array', False, 182, 231), ('output array', True, 185, 294), ('new element/subarray', False, 188, 260), ('index', False, 191, 244)])
+  GATE PASS  2 label == 'Replace Array Subset' (NOT 'Insert Into Array')  [{'uid': 175, 'label': 'Replace Array Subset'}]
+  FACT  2 RAS terminal type sigs: {'array': '001240400001ffffffff0000056172726179', 'output array': '001240400001ffffffff0000056172726179', 'new element/subarray': '0009400300036e6577', 'index': '0005000300'}
+  FACT  4 terminal map IIA #29157 -> RAS (None = unmatched): [('array', 'array'), ('index', 'index'), ('new element/subarray', 'new element/subarray'), ('output array', 'output array')]
+  GATE PASS  1 ExecState 1  1
+  GATE PASS  1 saved by script  e8a9417ce4b75d27e8fd2f172a5dc9cd
+  FACT  3 RUN out: [0, 1, 2, 99, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+  GATE PASS  3 RUN out len 20, out[3] == 99, others unchanged  [0, 1, 2, 99, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+  GATE PASS  5 LabVIEW gone  
+  GATE PASS  5 scratch files deleted  ['C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c140_5_bdon_213817.vi']
+  GATE PASS  5 bed md5 unchanged; donor kept  e8a9417ce4b75d27e8fd2f172a5dc9cd
+=== GATES: 22 pass / 0 fail; failing: []
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":22,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 73s

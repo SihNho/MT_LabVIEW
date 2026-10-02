@@ -1,0 +1,33 @@
+BGRUN START 2026-10-02 20:12:39 limit 20.0 min: py tools/prior_art_review.py --plan-file docs/d1/ring-p4.md --slug c140-2-p4s01 --trigger cycle-start --recipe tools/recipes/stage_d1_ring_p4_s01.py
+BGRUN PID 24368
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c140-2-p4s01.txt (103458 chars)
+   review card tools\bench\cards\review_priorart-c140-2-p4s01.json
+OUTCOME: ANSWERED (42s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-02-priorart-c140-2-p4s01.md
+COST: $1.3226  in 8 / out 3150 / cache-create 146724 / cache-read 429116  (38s, 6 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c140-2-p4s01 verdict=novel -> tools\bench\cards\verdict_priorart-c140-2-p4s01.json
+--- ANSWER ---
+**Verdict: novel.** The recipe under review, `tools/recipes/stage_d1_ring_p4_s01.py`, has not been built, launched or refuted before. It carries out a cut that was decided on 2026-10-02, and that decision is the reason the recipe exists. Nothing I found blocks it.
+
+**PART A, the direction**
+- **A1 (already settled?):** The direction was decided, but the recipe is that decision being carried out, not a repeat of it. `docs/d1/ring-p4.md` PD320(c), 2026-10-02, says: "Session 1 = v14 ops 1..16 (`p4_dw_23310` .. `p4_w_b_out`, R 11, predicted 673.4)". PD320(e) adds "ONE scratch run on a bed byte copy … then ONE launch". The recipe header (`stage_d1_ring_p4_s01.py:1-12`) cites exactly this. Its numbers match the prep record: 16 ops, R 11, peak 673.4 at start 606.1 (`tools/bench/prep_c140_2_s01.log:83-84`, RESULT PASS 8/0).
+- **A2 (already refuted?):** No. The earlier attempt at the same first step, `stage_d1_ring_p4s1.py` (39 actions), was refused by the memory check, X10 750.7 > 690 (PD319(a)). It was never run. The fix chosen was to cut P4's LabVIEW sessions by the memory model (PD319(b), PD320(c)), and this recipe is that 16-op cut. The cause of the refusal is dealt with, not repeated.
+- **A3 (contradicted?):** Nothing blocking. One thing to know: PD320(d) says each session's start load is "the MEASURED load of its input file". The prep used 600.2 + 5.9 = 606.1 (`prep_c140_2_s01.log:83`). PD301(a) measured the same bed loading at 576.5 MB in a fresh instance (`diag_c136_4_mem.log:85`). Both figures are measurements, and the one used is the higher, more cautious one, so this is not a conflict.
+- **A4 (unread evidence?):** None that applies to these 16 ops.
+  - The constant-addressing carry (PD307(a)) concerns the two new I32 MAX constants in new loop bodies. Those come later in P4, not in ops 1..16.
+  - The nested Flat Sequence border carry from cycle 134 ("check P4") applies only if a session's route crosses one of those borders. The prep's route check passed.
+
+**PART B, the artifact**
+- **B1 (already built?):** The recipe is a declared copy of `stage_d1_ring_p4s1.py`, with only names changed (`:4-5`). That copying is intended, so it does not count as already built.
+- **B2 (already failed?):** No earlier launch of this 16-op cut exists. The only matching files are this cycle's prep outputs.
+- **B3 (helper exists?):** It already uses the existing toolkit: `stagexec.Executor`, `LVBackend`, `census_gate`, `vigraph.computation_diff_frame` and `stagekit` save. Nothing is hand-rolled.
+- **B4 (already measured?):** Not yet. What this session will measure, the real graph after ops 1..16 and the load of its saved in-between file, has no record so far.
+
+**PART C, the user's rules:** No contradictions. The recipe only applies plan edits on a byte copy and then the bed. It adds no queue, no serial call and no change to the per-bead computation (U1, U3, U4 and U6 are untouched).
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c140-2-p4s01","verdict":"novel","alternative":"Could be read as settled-already by PD320(c), but that item is the decision this recipe carries out; the 39-action predecessor stage_d1_ring_p4s1.py was refused by X10 and never run.","discriminating_test":"The scratch run on a bed byte copy: peak <= 675 MB (pred 673.4), Error List 51 (alt. 53), the before-save cdiff check (PB) == pred rows.","violations":[],"sources":["docs/d1/ring-p4.md PD320(c)(e)","docs/d1/ring-p4.md PD319(a)(b)","tools/bench/prep_c140_2_s01.log:83-84","tools/recipes/stage_d1_ring_p4_s01.py:1-12"],"note":"Start load 606.1 uses the measured 600.2 load, higher than the 576.5 fresh-instance measurement (PD301(a)), so it is the cautious figure. The PD307(a) constant-addressing carry applies to later P4 sessions (the MAX constants), not ops 1..16."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c140-2-p4s01.md
+   STOP RECORD: none - 2026-10-02-priorart-c140-2-p4s01.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_ring_p4_s01.py sha 3781b303f4be -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 45s

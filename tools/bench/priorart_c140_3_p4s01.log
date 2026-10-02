@@ -1,0 +1,37 @@
+BGRUN START 2026-10-02 20:49:58 limit 20.0 min: py tools/prior_art_review.py --plan-file docs/d1/ring-p4.md --slug c140-3-p4s01 --trigger cycle-start --recipe tools/recipes/stage_d1_ring_p4_s01_scratch.py
+BGRUN PID 22104
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c140-3-p4s01.txt (105553 chars)
+   review card tools\bench\cards\review_priorart-c140-3-p4s01.json
+OUTCOME: ANSWERED (48s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-02-priorart-c140-3-p4s01.md
+COST: $1.4467  in 12 / out 3781 / cache-create 150915 / cache-read 818629  (44s, 9 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c140-3-p4s01 verdict=novel -> tools\bench\cards\verdict_priorart-c140-3-p4s01.json
+--- ANSWER ---
+**Verdict: novel.** Scratch session 1 of P4 has not already been built, measured or refuted here. The only change since the last review is the delete order (delete the wire first, then the node), and it has a passing precedent.
+
+**PART A, the direction**
+- **A1 (settled already?):** No. The recipe carries out a decision rather than repeating one. `docs/d1/ring-p4.md` PD320(c)(e) set session 1 as v14 ops 1..16, with one scratch run on a byte copy of the work VI. PD321(b) (`docs/d1/ring-p4.md:392`, `docs/d1/INDEX.md:202`) then changed only ops 2-3 to `delete_wire w23255` followed by `delete_object #10171`. The recipe header says the same (`tools/recipes/stage_d1_ring_p4_s01_scratch.py:1-2`).
+- **A2 (refuted already?):** No.
+  - The previous scratch run of this session (card 140-2) stopped at op 3 with error 1055 (`archive/peer/2026-10-02-priorart-c140-2-p4s01.md:696-701`).
+  - The hypothesis review left the cause unverified, but it calls the new order "sound regardless" of the cause (`archive/peer/2026-10-02-c140-3-rle1055.md:102`). Its disposition records that the sink check passed, so card 140-3 went ahead (`:114-121`).
+  - Nothing in the archive argues against deleting the wire before its node.
+- **A3 (contradicted?):** Nothing that blocks. One point to know: the hypothesis review found the executor's report line for op 3 printed `err ''` while the op actually returned 1055 (`archive/peer/2026-10-02-c140-3-rle1055.md:89`, against `diag_c140_2_scratch.log:72,75`). So a clean-looking report line from this scratch run should not be trusted on its own. The disposition passed this to the judgement session as a fact (`:121`). It is a reporting defect, not a reason to stop.
+- **A4 (unread evidence?):** None. The review that bears on this and the sink check (`tools/bench/prep_c140_3_gate.log`) are both cited by the work.
+
+**PART B, the artifact**
+- **B1 (already built?):** No. The scratch recipe is a declared copy of `stage_d1_ring_p4s1_scratch.py` with only names changed (`stage_d1_ring_p4_s01_scratch.py:3-5`). That copy is intended.
+- **B2 (already failed?):** The 140-2 run of this same session failed at op 3 (1055). That cause is addressed, not repeated: the remove-loose-ends call on w23255 is gone from the plan.
+- **B3 (helper exists?):** It already uses the toolkit: `stagekit.Stage`, `stagexec` with `MEM_STOP_MB`, `census_snapshot`/`census_gate`, and `kill_labview_at_exit`. The wrapper around `census_gate` only adds a printout of all classes; it does not replace the gate.
+- **B4 (already measured?):** Partly, and it supports the plan rather than blocking it:
+  - Deleting the wires first and the nodes after is a measured form here: `archive/peer/2026-09-28-c115e-sel.md:39` deleted 11 stub wires and then each node.
+  - `delete_wire` itself passed as op 1 of run 140-2 and as step 159 of P4 v7.
+  - What is still unmeasured is how the remove-loose-ends call behaves on a wire with no sinks left (`archive/peer/2026-10-02-c140-3-rle1055.md:120`). This plan no longer makes that call.
+
+**PART C, the user's rules:** No contradictions. The run edits only a byte copy, runs no VI, and adds no queue, no serial call and no change to the per-bead computation.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c140-3-p4s01","verdict":"novel","alternative":"Could read as already-failed (140-2 scratch stopped at op 3, RLE w23255 error 1055), but v15 removes that RLE; delete-wires-then-node is a measured form (c115e) and delete_wire passed as op 1 in 140-2.","discriminating_test":"The scratch run itself: op 2 delete_wire w23255 err '' with the whole-VI census showing w23255 gone and #23417 inner face unwired; peak <= X10+10 and <= 690; Error List 51 (alt. 53).","violations":[],"sources":["docs/d1/INDEX.md:202","archive/peer/2026-10-02-c140-3-rle1055.md:89,102,114-121","archive/peer/2026-10-02-priorart-c140-2-p4s01.md:696-701","archive/peer/2026-09-28-c115e-sel.md:39","tools/recipes/stage_d1_ring_p4_s01_scratch.py:1-11"],"note":"Executor FACT line printed err '' while op returned 1055 (diag_c140_2_scratch.log:72 vs :75); judge this scratch on op return values and census, not on FACT lines. RLE on a sink-less wire stays unmeasured; plan no longer uses it."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c140-3-p4s01.md
+   STOP RECORD: none - 2026-10-02-priorart-c140-3-p4s01.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_ring_p4_s01_scratch.py sha 38ceb14a74d4 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 51s

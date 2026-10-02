@@ -1,0 +1,30 @@
+BGRUN START 2026-10-02 20:17:15 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_ring_p4_s01_scratch.py
+BGRUN PID 26472
+stage_d1_ring_p4_s01_scratch - card 140-2 item 3: the ONE SCRATCH RUN of RING P4 LabVIEW SESSION 1 (PD320(e), D-2026-10-01-01).
+COPIED from tools/recipes/stage_d1_ring_p4s1_scratch.py (card 139-7) with ONLY names changed (recipe module, plan, log, prerun log,
+scratch name, out json, result key, card id). Runs tools/recipes/stage_d1_ring_p4_s01.py's OWN body (imported UNCHANGED) with
+plan_ring_p4_s01.json on a dated byte copy claudeDev\scratch_c140_2_ring_p4s01_<ts>.vi of the P3b-2b bed D1_ring_p3b2b_20261002_130007.vi
+(395118775a52) - same Executor, LVBackend (per-op census + Is Broken?), every recipe gate (L0 L1 E1 NG FR D CEN2 TD PB HB PS) and the
+ExecState read. No VI is run; the bed is never edited. SAVE on (rule-6 gui_save of the work copy) so the Error List can be read
+count-only (--role scratch) next; the scratch file is deleted after that read.
+PREDICTION: L1 16 ops; E1 every checkpoint == sim; NG; FR; D == sim; TD; CEN2 == pred; PB cdiff == pred rows; HB <= +700; PS saved;
+peak private MB <= 690 and <= X10 (673.4) + 10; bed md5 unchanged; LabVIEW gone. Error List (next, separate run) 51 (alt. 53).
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/diag_c140_2_scratch.log -- py -u tools/recipes/stage_d1_ring_p4_s01_scratch.py
+MEM_STOP_MB 690.0; X10 from prerun 637.3
+stage_d1_ring_p4_s01 - card 140-2, RING P4 LabVIEW SESSION 1 (PD320(c)(e): v14 #1..#16, p4_dw_23310 .. p4_w_b_out; D-2026-10-01-01,
+D-2026-10-02-02/04): on P3b-2b's SAVED bed D1_ring_p3b2b_20261002_130007.vi (graph_ring_p3b2b_20261002_133824.json 50595c62), apply the
+16 actions of plan_ring_p4_s01.json (stagesim FINAL of plan_ring_p4_s01_in.json, tools/bench/prep_c140_2_s01.py).
+COPIED from tools/recipes/stage_d1_ring_p4s1.py (9f60aeba, card 139-5/139-7) with ONLY names changed (plan / pred / out json / stage
+name / result key / card id). FRESH LabVIEW -> claudeDev\D1_ring_p4s01_<ts>.vi (rule-6 GUI save, ExecState 0 by design) = an IN-BETWEEN
+file of step P4 (not counted, D-2026-10-02-02/04). The FIRST run is the full SCRATCH run on a bed byte copy (stage_d1_ring_p4_s01_scratch.py).
+ROWS ONLY FROM plan_ring_p4_s01.json; expected values only from plan_ring_p4_s01_pred.json. No new op.
+PREDICTION: L1 16 actions -> 16 pred ops; E1 every checkpoint == sim; NG crossing tunnel names == step files'; FR created objects on the
+sim end's frames; D new/lost wires == sim's; TD every base terminal that was wired stays wired; CEN2 == pred census; PB cdiff(S1, end) ==
+pred rows (FATAL, before save); HB handles <= +700; PS saved, input unchanged. X10 = pred memory_pred (start 606.1, R 11, 673.4 MB).
+Error List of the end predicted 51 (alternative 53 = + 2 unwired created sinks of p4_ras_bufdiff).
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/launch_c140_2.log -- py -u tools/recipes/stage_d1_ring_p4_s01.py
+  FAIL  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p4_s01_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan  ('3d9aea08c6a412ba1cacf898deb03f75', {'path': 'tools/bench/graph_ring_p3b2b_20261002_133824.json', 'md5': '50595c62d0332a94bf066538cf20c0ae'}, '395118775a52bc90073f4449b99f899d')
+
+=== DRY FAIL: first_fail=GATE L0 plan FINAL, open_rows_match, plan_in = plan_ring_p4_s01_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan coverage 30/61 lines, first mutation None, unverified 0, graph None
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"GATE L0 plan FINAL, open_rows_match, plan_in = plan_ring_p4_s01_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan","artefacts":[]}
+BGRUN END rc=1 after 1s

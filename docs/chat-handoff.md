@@ -300,6 +300,12 @@ paths, or launches.jsonl for its bound card) has START without END and a live PI
 4th-refusal loop breaker; log tools/bench/guard_agent_exit.log. Registered by the chat in .claude/settings.json
 (SubagentStop, matcher ^material; JSON validated; smoke rc 0 on bad input). Takes effect for sessions started after
 16:3x (next runner cycle). Uncommitted.
+**DEFECT FOUND 2026-10-02 ~21:3x (card 140-4):** all 6 ring "Replace Array Subset" creates (P3b-1 #27928, P3b-2a #28916
+/ #29048, P3b-2b #29265 / #29316, P4 s01 scratch #29489) are really **Insert Into Array** (donor #29157) — would grow the
+ring arrays every frame. Build gates checked counts/wires/names but never the node's function. Caught before any run.
+Card 140-5 built `claudeDev\DonorRAS1D_v0.vi` (real 1-D Replace Array Subset, label read back; a 2-D RAS copied from the
+bed adapts to 1-D when a 1-D array is wired). Repair of the 5 bed nodes + P4 plan is for the judgement agent; may touch
+the broken-file count → watch for a decision item. Reported to the user.
 **CLOUD PLAN DROPPED (user 2026-09-29 ~20:0x KST: "그럼 클라우드는 그냥 잊어버리자").** No Linux port of benches/hooks;
 benches stay local. Both probe routines were run-once and are spent. Open next: user asked whether to bring Gemini back
 for web search; chat proposed (awaiting answer) a headless-permission fix test + a 6–8 question known-answer comparison

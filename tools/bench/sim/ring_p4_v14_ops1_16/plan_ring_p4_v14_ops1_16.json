@@ -1,0 +1,416 @@
+{
+ "schema": "stageplan/1",
+ "context": {
+  "s1_key": "D1_s1_copy"
+ },
+ "stage": "ring_p4_v14_ops1_16",
+ "goal": "card 140-P1: v14 ops 1..16 (session 1 of P4, PD320(c)) simulated on the P3b-2b graph; its end state = session 2's provisional base",
+ "base": {
+  "path": "tools/bench/graph_ring_p3b2b_20261002_133824.json",
+  "md5": "50595c62d0332a94bf066538cf20c0ae"
+ },
+ "actions": [
+  {
+   "op": "delete_wire",
+   "id": "p4_dw_23310",
+   "wire_uid": 23310,
+   "why": "ROUTE delete_wire | MEASURED | PD295(c) scaffold stop #10171 x=y? -> #10170 cond #23246 (graph step_18: w23310); delete_wire route launched in P2a (plan_ring_p2a_in.json actions 1-4, stage_d1_ring_p2a.log:124)"
+  },
+  {
+   "op": "delete_object",
+   "id": "p4_do_10171",
+   "uid": 10171,
+   "why": "ROUTE delete_object | MEASURED | PD295(c) #10171 = S2 scaffold (stage_d1_s2_loops.log:61-69), not original; delete_object launched in P2a (plan_ring_p2a_in.json actions 5-8; scratch_verify/stagexec.ring_p2a_deletes_pin_20260928_185329.json)"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rle_w23255",
+   "wire_uid": 23255,
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | w23255 (tunnel #23417 inner -> #10171 x,y) loses both sinks; RLE wire_uid form = P3b-1 p3b_rle_w27378 (launched)"
+  },
+  {
+   "op": "create",
+   "id": "p4_c_stopall_f",
+   "class": "BooleanConstant",
+   "diagram": 4866,
+   "as": "KSF1",
+   "prim": "const_donor",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorBoolF_v0.vi",
+    "uid": 126
+   },
+   "terminals": [
+    {
+     "name": "",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE create const_donor | MEASURED donor | PD313(d)/PD240(b)(c): False constant on FS1 frame #4866 (P2b p2b_c_Num form, launched); DonorBoolF_v0.vi md5 2346e9d8 BooleanConstant uid 126 value False (card 139-3, diag_c139_3_facts.md:11-14, PD315(a))"
+  },
+  {
+   "op": "create",
+   "id": "p4_i_stopall_k",
+   "class": "ControlTerminal",
+   "diagram": 4866,
+   "as": "ISK1",
+   "label": "StopAll",
+   "indicator": true,
+   "born_on": {
+    "uid": "new:KSF1"
+   },
+   "why": "ROUTE create indicator on const | PRECEDENT | PD314: non-latch Boolean indicator StopAll born on its False constant KSF1 on FS1 frame #4866 (initial value False every run, PD313(d)); P2b const-indicator form p2b_i_Num (plan_ring_p2b.json, launched, stage_d1_ring_p2b.py const_born_on -> create_indicator_on_const); replaces v10 p4_i_stopall (UNROUTABLE on CT t642)"
+  },
+  {
+   "op": "create",
+   "id": "p4_lw_stopall_639",
+   "class": "Local",
+   "diagram": 639,
+   "as": "LWS2",
+   "label": "StopAll",
+   "mode": "write",
+   "terminals": [
+    {
+     "name": "StopAll",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE local_write | PRECEDENT | PD314: ONE writer of StopAll = #637 body #639 owning 'stop (end)' t642, written every iteration; local_write in a loop body = v8 p4_lw_bufdiff form (32464); on #639 UNMEASURED"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_stopall_639",
+   "src": {
+    "uid": 642,
+    "term_uid": 642
+   },
+   "dst": "new:LWS2.value",
+   "why": "ROUTE branch | PRECEDENT | PD314: 'stop (end)' t642 (w6929 -> #11639, sink kept) -> LWS2.value, same-diagram BRANCH on #639; src form of v10 p4_x_fd (control t8936 {uid, term_uid})"
+  },
+  {
+   "op": "create",
+   "id": "p4_lr_stop12",
+   "class": "Local",
+   "diagram": 23166,
+   "as": "LRS2",
+   "label": "StopAll",
+   "mode": "read",
+   "terminals": [
+    {
+     "name": "StopAll",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE local_read | PRECEDENT | PD312(d)/PD298(e) LATCH branch: 'stop (end)' Mechanical Action 4 (diag_c138_5_facts.md, OpStopModeB_v0) -> Local of the non-latch indicator StopAll (U4); local of a plan-made indicator = P3b-2 p3b_lr_rotpos (v8 p4_lr_bufdiff11 form); local_read on a base While body ran (plan_l2a3_in.json:16)"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_stop12",
+   "src": "new:LRS2.value",
+   "dst": {
+    "uid": 10170,
+    "term": "cond"
+   },
+   "why": "ROUTE stop | MEASURED verb | card 139-5 (PD316(b)): base While #10170 (owner of body #23166, graph owners) cond <- LRS2.value; compile kind 'stop' (stagexec.base_cond) = OpStopFromNode_v0 by WhileLoop index (ran onto #23246 in S2, stage_d1_s2_loops.log:61-69); the scaffold wire w23310 on the cond is deleted by p4_dw_23310 (action 1, prep_c139_5_probe.log); was dst {\"uid\": 23166, \"term_uid\": 23246}"
+  },
+  {
+   "op": "create",
+   "id": "p4_c_bufdiff",
+   "class": "ArrayConstant",
+   "diagram": 4866,
+   "as": "K6",
+   "prim": "const_donor",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRingConst_v0.vi",
+    "uid": 130
+   },
+   "terminals": [
+    {
+     "name": "",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE create const_donor | PRECEDENT | PD295(a)/PD240: like P2b p2b_c_Num (DonorRingConst_v0 #130 I32[20] -1, launched); TYPE of #5119 x-y NOT readable offline (no Terminal.Data Type reader, d1-loop12-17-split-plan.md:1922) - I32[20] is PROVISIONAL"
+  },
+  {
+   "op": "create",
+   "id": "p4_i_bufdiff",
+   "class": "ControlTerminal",
+   "diagram": 4866,
+   "as": "I6",
+   "label": "BufDiff",
+   "indicator": true,
+   "born_on": {
+    "uid": "new:K6"
+   },
+   "why": "ROUTE create OpConstInd_v0 | MEASURED | PD295(a)/PD240(a)(c): indicator born on its constant on FS1 frame #4866 = P2b p2b_i_Num route (census_samples.json OpConstInd_v0)"
+  },
+  {
+   "op": "create",
+   "id": "p4_lr_bufdiff11",
+   "class": "Local",
+   "diagram": 32464,
+   "as": "LRB1",
+   "label": "BufDiff",
+   "mode": "read",
+   "terminals": [
+    {
+     "name": "BufDiff",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE local_read | MEASURED | P3b-2 p3b_lr_rotpos same frame 32464 (local_read in a FS frame)"
+  },
+  {
+   "op": "create",
+   "id": "p4_ras_bufdiff",
+   "class": "GrowableFunction",
+   "diagram": 32464,
+   "as": "RAB1",
+   "prim": "Replace Array Subset",
+   "donor": {
+    "donor": "$work",
+    "uid": 29157
+   },
+   "terminals": [
+    {
+     "name": "array",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "output array",
+     "is_source": true,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "index",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "new element/subarray",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE create primitive | MEASURED | P3b-2 p3b_ras_rotpos ($work #29157) same frame 32464"
+  },
+  {
+   "op": "create",
+   "id": "p4_lw_bufdiff",
+   "class": "Local",
+   "diagram": 32464,
+   "as": "LWB1",
+   "label": "BufDiff",
+   "mode": "write",
+   "terminals": [
+    {
+     "name": "BufDiff",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE local_write | MEASURED | P3b-2 p3b_lw_rotpos same frame 32464 (local_write)"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_b_arr",
+   "src": "new:LRB1.value",
+   "dst": "new:RAB1.array",
+   "why": "ROUTE connect | MEASURED | P3b-2 p3b_w_r_arr pattern"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_b_out",
+   "src": "new:RAB1.output array",
+   "dst": "new:LWB1.value",
+   "why": "ROUTE connect | MEASURED | P3b-2 p3b_w_r_out pattern"
+  }
+ ],
+ "final": false,
+ "finalized": {
+  "base": {
+   "path": "tools/bench/graph_ring_p3b2b_20261002_133824.json",
+   "md5": "50595c62d0332a94bf066538cf20c0ae"
+  },
+  "plan_in": {
+   "path": "tools/bench/sim/ring_p4_v14_ops1_16/plan_ring_p4_v14_ops1_16_in.json",
+   "md5": "c51931f5c29fcafb1459ff66d6e0a775"
+  },
+  "last_step": {
+   "path": "tools/bench/sim/ring_p4_v14_ops1_16/step_16_wire.json",
+   "md5": "90198e1b871ce8a3d6024777f039f8ee"
+  },
+  "summary": {
+   "path": "tools/bench/sim/ring_p4_v14_ops1_16/summary.json",
+   "md5": "c03bef12bd53d0138b96c65ef4b7cb2f"
+  },
+  "end_cdiff_rows": [
+   "11261|Terminal|array|0",
+   "11261|Terminal|element|0",
+   "2626|Terminal|array|0",
+   "2626|Terminal|array|1",
+   "2626|Terminal|array|2",
+   "2626|Terminal|array|3",
+   "2626|Terminal|element|0",
+   "2626|Terminal|element|1",
+   "2626|Terminal|element|2",
+   "28083|Terminal|Magnet position|0",
+   "29625|Terminal|index (col)|0",
+   "29973|Terminal|element|1",
+   "376|Terminal|current frame data array in|0",
+   "376|Terminal|frame index|0",
+   "5058|Terminal|Image In|0",
+   "8634|Terminal|index (col)|0"
+  ],
+  "failed": null,
+  "first_divergent": {
+   "n": 0,
+   "op": "base",
+   "id": null,
+   "rows_from_here": 16
+  },
+  "open_rows": [],
+  "open_rows_match": false,
+  "open_rows_match_legacy": false,
+  "open_rows_classed": {
+   "ok": false,
+   "want": [],
+   "c4_n": 0,
+   "c4_keys": 0,
+   "c4_bad": [],
+   "unclassed": []
+  },
+  "cdiff_inputs": {
+   "labels": "node_labels_default",
+   "labels_n": 626,
+   "fs_pairs": "state",
+   "fs_pairs_n": 576
+  },
+  "step_files": [
+   {
+    "n": 0,
+    "op": "base",
+    "path": "tools/bench/sim/ring_p4_v14_ops1_16/step_00_base.json",
+    "md5": "2aaae4e14841f443c3c1cb13b80a8ae5"
+   },
+   {
+    "n": 1,
+    "op": "delete_wire",
+    "path": "tools/bench/sim/ring_p4_v14_ops1_16/step_01_delete_wire.json",
+    "md5": "2a493aad2ce78a6d271685f69c8c1e0f"
+   },
+   {
+    "n": 2,
+    "op": "delete_object",
+    "path": "tools/bench/sim/ring_p4_v14_ops1_16/step_02_delete_object.json",
+    "md5": "e843aec4288245c58c664e3cb9f7b125"
+   },
+   {
+    "n": 3,
+    "op": "wire_remove_loose_ends",
+    "path": "tools/bench/sim/ring_p4_v14_ops1_16/step_03_wire_remove_loose_ends.json",
+    "md5": "85a7f107edb612d6824d5bb0d48b9e9c"
+   },
+   {
+    "n": 4,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_v14_ops1_16/step_04_create.json",
+    "md5": "dbbd433075f19c91e530c6f0b3b4ce6f"
+   },
+   {
+    "n": 5,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_v14_ops1_16/step_05_create.json",
+    "md5": "029cc893f89830c7f54557422291bb94"
+   },
+   {
+    "n": 6,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_v14_ops1_16/step_06_create.json",
+    "md5": "9633d7d50870b2d95673564eb3bfdfba"
+   },
+   {
+    "n": 7,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_v14_ops1_16/step_07_wire.json",
+    "md5": "8d8590f8bd95b49146e6060ba5ea82be"
+   },
+   {
+    "n": 8,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_v14_ops1_16/step_08_create.json",
+    "md5": "21ff332b2d1a6d65322702fa428dbc82"
+   },
+   {
+    "n": 9,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_v14_ops1_16/step_09_wire.json",
+    "md5": "ae91fc444e34a925a2369a2cc7f42453"
+   },
+   {
+    "n": 10,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_v14_ops1_16/step_10_create.json",
+    "md5": "62b639da326d9abb859910b3d661dbb3"
+   },
+   {
+    "n": 11,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_v14_ops1_16/step_11_create.json",
+    "md5": "7812315c38612caab5b2a22a0d495015"
+   },
+   {
+    "n": 12,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_v14_ops1_16/step_12_create.json",
+    "md5": "718f533ea1187691a7d64df319e51c20"
+   },
+   {
+    "n": 13,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_v14_ops1_16/step_13_create.json",
+    "md5": "861360a0b20e6646ffca9c9398e96717"
+   },
+   {
+    "n": 14,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_v14_ops1_16/step_14_create.json",
+    "md5": "fc9929efa49828b63ed60e0d03ae45a8"
+   },
+   {
+    "n": 15,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_v14_ops1_16/step_15_wire.json",
+    "md5": "9871424b714decc741f04677e98bbda0"
+   },
+   {
+    "n": 16,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_v14_ops1_16/step_16_wire.json",
+    "md5": "90198e1b871ce8a3d6024777f039f8ee"
+   }
+  ],
+  "undecided": 0,
+  "at": "2026-10-02 20:14:06",
+  "fs_routes": {},
+  "fs_border_gate": {
+   "status": "PASS",
+   "unmeasured": [
+    14430,
+    31050,
+    34409,
+    34489,
+    43605,
+    44160,
+    44164
+   ],
+   "used": {}
+  }
+ }
+}

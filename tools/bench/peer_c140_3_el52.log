@@ -1,0 +1,49 @@
+BGRUN START 2026-10-02 21:18:16 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c140-3-el52 -TaskFile tools/bench/prep_c140_3_peer_task2.txt -ReviewCard tools/bench/cards/review_c140_3_el52.json
+BGRUN PID 18536
+OUTCOME: ANSWERED (131s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-02-c140-3-el52.md
+COST: $1.7268  in 24 / out 9961 / cache-create 147172 / cache-read 1526365  (127s, 21 turn(s))
+VERDICT-CARD: VERDICT-CARD c140-3-el52 verdict=supported -> tools\bench\cards\verdict_c140-3-el52.json
+--- ANSWER ---
+**Verdict: the count explanation mostly holds. The extra Error List item is almost certainly the new node #29489. But the claim waves away the important part.** The donor #29157 really is an Insert Into Array, so this plan, and the P3b-2 bed before it, are building Insert Into Array where the design says Replace Array Subset. That is a rule-1a computation change, not a wrong label.
+
+**1. Strongest reason the claim is wrong**
+
+The claim calls the `prim` label a cosmetic mistake. It is not, and the evidence is all in the machine's own records:
+- The original's node #29157 is labelled "Insert Into Array" (`tools/bench/main_vi_node_labels.json:1120-1121`).
+- The created node #29489 reads back with label 'Insert Into Array' and class GrowableFunction (`tools/bench/diag_c140_3_scratch.log:219,225`). That is a scripting read, not OCR.
+- The Error List names objects as "type 'label'". In the same list a real Replace Array Subset appears by that name (`errorlist_scratch_c140_3_…205859.json:316`). So the type of the new node is Insert Into Array too.
+
+Insert Into Array makes the array longer by the number of elements inserted ([LabVIEW Wiki](https://labviewwiki.org/wiki/Insert_Into_Array_function)). Replace Array Subset keeps the length the same. Once later sessions wire it, BufDiff (I32[20]) would grow by one element per frame instead of acting as a fixed 20-slot ring buffer. That changes both the numbers and memory use.
+
+The same donor already produced two such nodes in the P3b-2 bed, both launched as 'Replace Array Subset':
+- #29265 (`p3b_ras_rotpos`): `launch_p3b2_c135_b.log:94-103`
+- #29316 (`p3b_ras_frameidx`): `launch_p3b2_c135_b.log:164-173`
+
+The plan's route reason "MEASURED | P3b-2 p3b_ras_rotpos ($work #29157)" (`plan_ring_p4_s01.json:258`) therefore cites a precedent that has the same defect. The logs have printed 'Insert Into Array' since cycle 135 and nothing flagged it.
+
+**2. Alternative explanations**
+- **(a) A different reason for "one item".** The claim says LabVIEW reports one item per node, not per terminal. An equally good reading: Insert Into Array's `index` input is optional (unwired means append at the end, per the wiki above), so only one required input is open. Both readings give 52. This measurement does not tell them apart, and the difference matters for the next prediction rule.
+- **(b) A bed node broke instead.** An Insert Into Array already in the bed (#29265 or #29316) could have been broken by deleting w23255 / w23310 / #10171. This is weakly supported at best:
+  - The TD gate shows no base terminal lost its wire (`diag_c140_3_scratch.log:281`).
+  - The lost wires are exactly the planned ones (`:276`).
+  - #10171 is a Comparison (`:75`), not an array node.
+- **(c) The OCR misnamed the item.** Ruled out: the scripting label read agrees with the Error List.
+
+**3. What would falsify the claim**
+- The item's "show error" selection lands on a node other than #29489 (for example #29265 or #29316, or one outside frame 32464).
+- Or #29489's `new element/subarray` input turns out to be wired in the saved scratch.
+
+The Error List read never resolved the item to a uid (`uid_route: none`, `errorlist…205859.json:550`), so the claim currently rests on the class name and on what the plan left unwired.
+
+**4. Cheapest discriminating test**
+
+No LabVIEW needed: open `tools/bench/errorlist_shots/bd_210806_after11.png`, the diagram after "show error" on item 11. Check that the selected node is the new one in frame 32464, sitting between the BufDiff local read and the local write, and not #29265 or #29316.
+
+For rule 1a, before session 2 wires anything: confirm against the original's dataflow what #29157 does there. Then stop and ask the user (rule 1a) whether ring P3b-2 and P4 are meant to use Replace Array Subset. If so, the bed's #29265 and #29316, and the P4 node, all need a real Replace Array Subset donor.
+
+What would change my mind on the rule-1a point: the design document explicitly choosing Insert Into Array with a later trim step. The design I found reads "local read → Replace Array Subset → local write" (`docs/d1/INDEX.md:87`).
+
+Sources: [LabVIEW Wiki – Insert Into Array](https://labviewwiki.org/wiki/Insert_Into_Array_function)
+
+VERDICT {"schema":"verdict/1","id":"c140-3-el52","verdict":"supported","alternative":"Count holds (new node #29489 is the 52nd item) but '1 item' may be because Insert Into Array's index is optional, not per-node counting; and donor #29157 is a real Insert Into Array (grows array) where design needs Replace Array Subset - also in bed nodes #29265/#29316.","discriminating_test":"View errorlist_shots/bd_210806_after11.png: selected node must be the new one in frame 32464 (not #29265/#29316). Then check #29157's role in the original and ask user (rule 1a) before session 2 wires RAB1.","violations":[],"sources":["tools/bench/diag_c140_3_scratch.log:219-225","tools/bench/launch_p3b2_c135_b.log:94-103","tools/bench/main_vi_node_labels.json:1120","docs/d1/INDEX.md:87","https://labviewwiki.org/wiki/Insert_Into_Array_function"],"note":"Rule-1a risk: Insert Into Array lengthens the ring buffer every frame; plan cites a P3b-2 'MEASURED' precedent with the same defect. Unreported since cycle 135 (logs printed label 'Insert Into Array'). Stop before wiring."}
+BGRUN END rc=0 after 132s

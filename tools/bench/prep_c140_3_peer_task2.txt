@@ -1,0 +1,25 @@
+ATTACK this explanation of a failed prediction (card 140-3; failing log tools/bench/diag_c140_3_elcmp.log, script
+tools/bench/diag_c140_3_elcmp.py). Refute it if you can.
+
+PREDICTED (tools/bench/plan_ring_p4_s01_pred.json, maker tools/bench/prep_c140_3_s01.py): after P4 LabVIEW session 1 (16 ops of
+tools/bench/plan_ring_p4_s01.json) the Error List of the work VI holds 51 items (= the bed's expected file
+tools/bench/errorlist_expected_D1_ring_p3b2b_20261002_130007.json), alternative 53 (= + 2 "unwired created sinks" of p4_ras_bufdiff:
+`index`, `new element/subarray`).
+
+OBSERVED: the scratch run passed every gate (tools/bench/diag_c140_3_scratch.log, 19/0 + MEM/IN/GONE, peak 615.5 MB). The full Error
+List read of the saved scratch (tools/bench/errorlist_scratch_c140_3.log, window's own count "52 errors and warnings", 52 items read)
+compared with the bed's expected file (diag_c140_3_elcmp.log): extra 1 = "Insert Into Array 'Insert Into Array': Contains unwired or
+bad terminal", missing 0, every other class count equal.
+
+CLAIM: the one extra item is the node created by plan action p4_ras_bufdiff (create GrowableFunction on diagram 32464, prim
+"Replace Array Subset", donor = the work VI's own node #29157; its terminals in the bed graph are array / output array / index /
+new element/subarray). Its `index` and `new element/subarray` inputs are wired only by a LATER session (v15 ops >= 17), so at session 1's
+end LabVIEW reports the node ONCE ("contains unwired or bad terminal" is one item per node, not per terminal). The prediction's rule
+(stage_d1_ring_p3b1_el.py:6: total in {pred, pred + unwired created sinks}) counts terminals, so it offered 51 or 53 and never 52.
+The donor #29157 is an Insert Into Array, not a Replace Array Subset (the Error List names it so), so the plan's `prim` label is wrong
+but the created node is a copy of whatever #29157 is.
+
+Questions: strongest reason this is wrong; alternative explanations (e.g. the extra item is a DIFFERENT node, or an Insert Into Array
+somewhere in the bed now broken by the deletion of #10171 / w23255 / w23310, or the donor is right and the OCR misnamed it); what
+observation falsifies it; the cheapest discriminating test. Also: if #29157 really is Insert Into Array while the plan meant Replace
+Array Subset, does that change the computation (rule 1a) once later sessions wire it?

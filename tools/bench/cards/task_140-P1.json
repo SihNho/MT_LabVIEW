@@ -1,0 +1,59 @@
+{
+ "schema": "task/1",
+ "id": "140-P1",
+ "kind": "build",
+ "goal": "PREP (offline) P4 session 2: provisional plan on stagesim's end graph of v14 ops 1..16, cut by PD320(c), recipe dry + prerun + X10 PASS; never launched.",
+ "why": "PD320(e): pipeline prep beside the session-1 LabVIEW card 140-2; rebased on the real graph of session 1's in-between file after its launch.",
+ "inputs": [
+  {"path": "tools/bench/plan_ring_p4_v14.json", "md5": "22f582715e3d303ea0625fbe98bb590e"},
+  {"path": "tools/bench/plan_ring_p4_v14_meta.json", "md5": "29f6535b1f280b3a33a07dbdeeff8893"},
+  {"path": "tools/bench/diag_c140_1_facts.md", "md5": "393390fc8d4fe1519424e114f09a7e87"},
+  {"path": "tools/bench/diag_c140_1_sessions.json", "md5": "4e2d72c6763df8669d464065935c8b3b"},
+  {"path": "tools/recipes/stage_d1_ring_p4s1.py", "md5": "9f60aeba54c83b850b532c9b9b31ee6e"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/bench/prep_c139_7_s1.py"}
+ ],
+ "pass": [
+  "1 base = stagesim end graph of v14 ops 1..16, its own sim dir; plan base {path, md5, provisional: true, sim_of: v14 ops 1..16}",
+  "2 session 2 = longest prefix from v14 op 17 with X10 peak <= 675 at start 606.1 that splits no of pair; first/last ids, N, R, peak",
+  "3 plan_ring_p4_s02.json + recipe stage_d1_ring_p4_s02.py (<= 120 lines): dry PASS, prerun PASS, X10 PASS on the provisional base",
+  "4 list every new: symbol session 2 takes from session 1 (resolved at --rebase on the real graph); prep_c140_p1_facts.md <= 30 lines"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p4_s02.json",
+  "tools/recipes/stage_d1_ring_p4_s02.py",
+  "tools/bench/prep_c140_p1_facts.md",
+  "tools/bench/cards/result_140-P1.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p4_s02*",
+   "tools/bench/prep_c140_p1*",
+   "tools/bench/sim/ring_p4_s02*/*",
+   "tools/bench/sim/ring_p4_v14_ops1_16*/*",
+   "tools/bench/sim/stage_d1_ring_p4_s02*/*",
+   "tools/recipes/stage_d1_ring_p4_s02*",
+   "tools/bench/prerun_records*",
+   "tools/bench/cards/result_140-P1*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "Offline only; no tools/*.py edit except the new stage_d1_ring_p4_s02*.py recipe; never launched",
+  "Do not touch plan_ring_p4_s01* or stage_d1_ring_p4_s01* (card 140-2 owns them)",
+  "Return at the first unexpected result with the facts so far; facts + OPEN line only"
+ ],
+ "advances": ["M3", "R1"]
+}

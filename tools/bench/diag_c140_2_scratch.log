@@ -1,0 +1,104 @@
+BGRUN START 2026-10-02 20:29:59 limit 50.0 min: py -u tools/recipes/stage_d1_ring_p4_s01_scratch.py
+BGRUN PID 17828
+BGRUN STAGE-RUN recorded stage_d1_ring_p4_s01_scratch.py cycle='cycle 140' card=None pid=20716 -> stage_runs.jsonl
+stage_d1_ring_p4_s01_scratch - card 140-2 item 3: the ONE SCRATCH RUN of RING P4 LabVIEW SESSION 1 (PD320(e), D-2026-10-01-01).
+COPIED from tools/recipes/stage_d1_ring_p4s1_scratch.py (card 139-7) with ONLY names changed (recipe module, plan, log, prerun log,
+scratch name, out json, result key, card id). Runs tools/recipes/stage_d1_ring_p4_s01.py's OWN body (imported UNCHANGED) with
+plan_ring_p4_s01.json on a dated byte copy claudeDev\scratch_c140_2_ring_p4s01_<ts>.vi of the P3b-2b bed D1_ring_p3b2b_20261002_130007.vi
+(395118775a52) - same Executor, LVBackend (per-op census + Is Broken?), every recipe gate (L0 L1 E1 NG FR D CEN2 TD PB HB PS) and the
+ExecState read. No VI is run; the bed is never edited. SAVE on (rule-6 gui_save of the work copy) so the Error List can be read
+count-only (--role scratch) next; the scratch file is deleted after that read.
+PREDICTION: L1 16 ops; E1 every checkpoint == sim; NG; FR; D == sim; TD; CEN2 == pred; PB cdiff == pred rows; HB <= +700; PS saved;
+peak private MB <= 690 and <= X10 (673.4) + 10; bed md5 unchanged; LabVIEW gone. Error List (next, separate run) 51 (alt. 53).
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/diag_c140_2_scratch.log -- py -u tools/recipes/stage_d1_ring_p4_s01_scratch.py
+MEM_STOP_MB 690.0; X10 from prerun 673.4
+stage_d1_ring_p4_s01 - card 140-2, RING P4 LabVIEW SESSION 1 (PD320(c)(e): v14 #1..#16, p4_dw_23310 .. p4_w_b_out; D-2026-10-01-01,
+D-2026-10-02-02/04): on P3b-2b's SAVED bed D1_ring_p3b2b_20261002_130007.vi (graph_ring_p3b2b_20261002_133824.json 50595c62), apply the
+16 actions of plan_ring_p4_s01.json (stagesim FINAL of plan_ring_p4_s01_in.json, tools/bench/prep_c140_2_s01.py).
+COPIED from tools/recipes/stage_d1_ring_p4s1.py (9f60aeba, card 139-5/139-7) with ONLY names changed (plan / pred / out json / stage
+name / result key / card id). FRESH LabVIEW -> claudeDev\D1_ring_p4s01_<ts>.vi (rule-6 GUI save, ExecState 0 by design) = an IN-BETWEEN
+file of step P4 (not counted, D-2026-10-02-02/04). The FIRST run is the full SCRATCH run on a bed byte copy (stage_d1_ring_p4_s01_scratch.py).
+ROWS ONLY FROM plan_ring_p4_s01.json; expected values only from plan_ring_p4_s01_pred.json. No new op.
+PREDICTION: L1 16 actions -> 16 pred ops; E1 every checkpoint == sim; NG crossing tunnel names == step files'; FR created objects on the
+sim end's frames; D new/lost wires == sim's; TD every base terminal that was wired stays wired; CEN2 == pred census; PB cdiff(S1, end) ==
+pred rows (FATAL, before save); HB handles <= +700; PS saved, input unchanged. X10 = pred memory_pred (start 606.1, R 11, 673.4 MB).
+Error List of the end predicted 51 (alternative 53 = + 2 unwired created sinks of p4_ras_bufdiff).
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/launch_c140_2.log -- py -u tools/recipes/stage_d1_ring_p4_s01.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p4_s01_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan  ('6fa94e2e421c0b19963a101df5841832', {'path': 'tools/bench/graph_ring_p3b2b_20261002_133824.json', 'md5': '50595c62d0332a94bf066538cf20c0ae'}, '395118775a52bc90073f4449b99f899d')
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 329 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 395118775a52bc90073f4449b99f899d  got 395118775a52bc90073f4449b99f899d
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33982
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_c140_2_ring_p4s01_20261002_203000.vi
+  FACT  ExecState [after open] scratch_c140_2_ring_p4s01_20261002_203000.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so scratch_c140_2_ring_p4s01_20261002_203000.vi is deleted at close
+  PASS  L1 the 16 actions compile into 16 real ops == pred kinds, each action once; checkpoints (0, 4, 5, 6, 8, 10, 11, 12, 13, 14, 16)  ['delete_wire', 'delete_object', 'wire_remove_loose_ends', 'create', 'create', 'create', 'connect', 'create', 'stop', 'create', 'create', 'create', 'create', 'create', 'connect', 'connect']
+  METER start  k   0  private 579.6 MB (d -)  handles 45710 (d -)
+  METER read   k   0  private 585.2 MB (d +5.6)  handles 45740 (d +30)
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 4 touched diagram(s) [639, 4866, 23166, 32464]: one-side-only Nodes[] entries 0
+  PRIME 0 terminal indexes proved at base; 1 ControlTerminal end(s) by 179(b); unprovable []
+  CHECKPOINTS whole-VI read+diff after ops [4, 5, 6, 8, 10, 11, 12, 13, 14, 16] of 16
+  METER pre    k   1  private 569.2 MB (d -16.0)  handles 45771 (d +31)
+  FACT  delete_wire node census: 664 rows
+      stagexecdeleted wire w23310
+  FACT  OP delete_wire w23310 -> err '' (1.8 s)
+  FACT  delete_wire w23310 (plan w23310) AFTER node census: 664 rows
+  FACT  delete_wire w23310 (plan w23310) CENSUS DIFF: Node 664 -> 664 ; 0 new uid(s): []
+  METER op     k   1  private 569.3 MB (d +0.1)  handles 45783 (d +12)
+  STEPX 01 delete_wire    acts [1] ids ['p4_dw_23310'] diff skipped (not a checkpoint)
+  METER pre    k   2  private 569.3 MB (d +0.0)  handles 45783 (d +0)
+  FACT  delete_object node census: 664 rows
+      stagexecdeleted Comparison #10171 -> gone [10171]
+  FACT  OP delete_object Comparison #10171 -> err '' (0.1 s)
+  FACT  delete_object Comparison #10171 AFTER node census: 663 rows
+  FACT  delete_object Comparison #10171 CENSUS DIFF: Node 664 -> 663 ; 0 new uid(s): []
+  METER op     k   2  private 569.3 MB (d +0.0)  handles 45786 (d +3)
+  STEPX 02 delete_object  acts [2] ids ['p4_do_10171'] diff skipped (not a checkpoint)
+  METER pre    k   3  private 569.3 MB (d +0.0)  handles 45787 (d +1)
+  FACT  wire_remove_loose_ends node census: 663 rows
+  FACT  OP wire_remove_loose_ends wire_remove_loose_ends w23255 -> err '' (1.8 s)
+  FACT  wire_remove_loose_ends w23255 AFTER node census: 663 rows
+  FACT  wire_remove_loose_ends w23255 CENSUS DIFF: Node 663 -> 663 ; 0 new uid(s): []
+  FAIL  E1 the run reached its last op (record mode; stopped IN op {'k': 3, 'op': 'wire_remove_loose_ends', 'acts': [3], 'ids': ['p4_rle_w23255']})  wire_remove_loose_ends w23255: {'echo': 23255, 'broken_before': True, 'broken_after': False, 'err': 'error 1055: Property Node in OpWireRemoveLooseEnds_v0.vi'}
+  FAIL  STOP at gate: E1 the run reached its last op (record mode; stopped IN op {'k': 3, 'op': 'wire_remove_loose_ends', 'acts': [3], 'ids': ['p4_rle_w23255']})
+
+---------- [H] HYGIENE
+  FACT  close_panel(scratch_c140_2_ring_p4s01_20261002_203000.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 5}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 5}
+  FACT  LabVIEW handle count AFTER the work: 45800
+  PASS  H4 scratch deleted: scratch_c140_2_ring_p4s01_20261002_203000.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c140_2_ring_p4s01_20261002_203000.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 395118775a52bc90073f4449b99f899d / after 395118775a52bc90073f4449b99f899d
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 34010
+
+====================================================================================================
+=== GATES: 10 pass / 2 fail; failing: E1 the run reached its last op (record mode; stopped IN op {'k': 3, 'op': 'wire_remove_loose_ends', 'acts': [3], 'ids': ['p4_rle_w23255']}), STOP at gate: E1 the run reached its last op (record mode; stopped IN op {'k': 3, 'op': 'wire_remove_loose_ends', 'acts': [3], 'ids': ['p4_rle_w23255']})
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c140_2_scratch.json   elapsed 169.1 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":10,"fail":2},"first_fail":"E1 the run reached its last op (record mode; stopped IN op {'k': 3, 'op': 'wire_remove_loose_ends', 'acts': [3], 'ids': ['p4_rle_w23255']})","artefacts":[]}
+LabVIEW gone at exit: True
+SCRATCH-P4S01 peak 585.2 MB (X10 673.4, d -88.2); final None md5 None; bed md5 395118775a52bc90073f4449b99f899d
+GATE MEM peak <= 690 and peak <= X10 + 10 (PD285(d)): PASS
+GATE IN bed md5 unchanged: PASS
+GATE GONE LabVIEW gone: PASS
+BGRUN END rc=1 after 174s

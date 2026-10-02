@@ -1,0 +1,41 @@
+BGRUN START 2026-10-02 20:17:12 limit 8.0 min: py -u tools/stage_prerun.py --prerun tools/recipes/stage_d1_ring_p4_s01.py
+BGRUN PID 8164
+stage_d1_ring_p4_s01 - card 140-2, RING P4 LabVIEW SESSION 1 (PD320(c)(e): v14 #1..#16, p4_dw_23310 .. p4_w_b_out; D-2026-10-01-01,
+D-2026-10-02-02/04): on P3b-2b's SAVED bed D1_ring_p3b2b_20261002_130007.vi (graph_ring_p3b2b_20261002_133824.json 50595c62), apply the
+16 actions of plan_ring_p4_s01.json (stagesim FINAL of plan_ring_p4_s01_in.json, tools/bench/prep_c140_2_s01.py).
+COPIED from tools/recipes/stage_d1_ring_p4s1.py (9f60aeba, card 139-5/139-7) with ONLY names changed (plan / pred / out json / stage
+name / result key / card id). FRESH LabVIEW -> claudeDev\D1_ring_p4s01_<ts>.vi (rule-6 GUI save, ExecState 0 by design) = an IN-BETWEEN
+file of step P4 (not counted, D-2026-10-02-02/04). The FIRST run is the full SCRATCH run on a bed byte copy (stage_d1_ring_p4_s01_scratch.py).
+ROWS ONLY FROM plan_ring_p4_s01.json; expected values only from plan_ring_p4_s01_pred.json. No new op.
+PREDICTION: L1 16 actions -> 16 pred ops; E1 every checkpoint == sim; NG crossing tunnel names == step files'; FR created objects on the
+sim end's frames; D new/lost wires == sim's; TD every base terminal that was wired stays wired; CEN2 == pred census; PB cdiff(S1, end) ==
+pred rows (FATAL, before save); HB handles <= +700; PS saved, input unchanged. X10 = pred memory_pred (start 606.1, R 11, 673.4 MB).
+Error List of the end predicted 51 (alternative 53 = + 2 unwired created sinks of p4_ras_bufdiff).
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/launch_c140_2.log -- py -u tools/recipes/stage_d1_ring_p4_s01.py
+  FAIL  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p4_s01_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan  ('3d9aea08c6a412ba1cacf898deb03f75', {'path': 'tools/bench/graph_ring_p3b2b_20261002_133824.json', 'md5': '50595c62d0332a94bf066538cf20c0ae'}, '395118775a52bc90073f4449b99f899d')
+  FAIL  X1 dry run PASS (whole Python path, COM stubbed)  GATE L0 plan FINAL, open_rows_match, plan_in = plan_ring_p4_s01_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan
+  PASS  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['tools/bench/plan_ring_p4_s01.json']
+  PASS  X3 every plan row decided  0 rows + 16 stageplan actions
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  1 stageplan(s)
+  PASS  X11 no row wires one Build Array input while a sibling input is an open row (unless pb-licence/1)  1 stageplan(s)
+  PASS  X12 no row names a wire uid an earlier border-crossing connect re-created (connect_from_wire.json:266)  1 stageplan(s), 0 re-created source wire(s), none named later
+  PASS  X13 opmodel conformance: every recorded sample of the plan ops' model files replays in stagesim  5 op(s) ['create', 'delete_object', 'delete_wire', 'wire', 'wire_remove_loose_ends']; files {'const.json': 'not-replayed (2)', 'primitive.json': 'not-replayed (2)', 'delete_object.json': 'PASS (2)', 'delete_wire.json': 'PASS (2)', 'connect_from_wire.json': 'PASS (2)', 'wire_sr.json': 'not-replayed (2)'}
+  WARN  X13 WARN op 'wire_remove_loose_ends': no model file in tools/bench/opmodels (provisional rule; aliases ['wire_remove_loose_ends'])
+  WARN  X13 WARN const.json: 2 sample(s), no replayer for op 'const' (only ['connect_from_wire', 'tunnel', 'delete_object', 'delete_wire', 'remove_bad_wires'])
+  WARN  X13 WARN primitive.json: 2 sample(s), no replayer for op 'primitive' (only ['connect_from_wire', 'tunnel', 'delete_object', 'delete_wire', 'remove_bad_wires'])
+  WARN  X13 WARN wire_sr.json: 2 sample(s), no replayer for op 'wire_sr' (only ['connect_from_wire', 'tunnel', 'delete_object', 'delete_wire', 'remove_bad_wires'])
+  PASS  X16 every declared terminal of a created primitive carries term_class (PD251(b))  1 non-const_donor create action(s) with declared terminals, all classed
+  ADVISORY CENSUS-UNPREDICTED tools/bench/plan_ring_p4_s01.json rows [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] (prerun verdict unchanged; --scratch-required exits 3)
+  PASS  X15 census: no class with derived != declared (tools/census_predict.py over census_samples.json)  no derived != declared class
+  PASS  X4 every end addressable offline (0 ends)  []
+  FAIL  X5 wiring ops executed in the dry run == plan wire rows  ops 0 vs plan wire rows 0 + stageplan wiring real ops 3 (covering 4/4 wire actions); delete ops {} vs plan delete rows {'delete_object': 1, 'delete_wire': 1}; RLE ops 0 vs plan RLE rows 1
+  PASS  X6 ast lint: no re-typed uid / terminal name  uids []; names []
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_ring_p4s01_20261002_201713.vi; decisions rows NOT dispatched (recipe calls neither run_rows nor from_decision)
+  FAIL  X10 predicted LabVIEW private MB <= model fail_above_mb, from the compiled plan + checkpoint set (UNMEASURED: no stagexec.Executor plan in the dry run and no recorded meter covers the run (not read-only: source calls edit verb(s) ['save', 'wires']))  {'why': "UNMEASURED: no stagexec.Executor plan in the dry run and no recorded meter covers the run (not read-only: source calls edit verb(s) ['save', 'wires'])", 'recorded': {'why': 'UNMEASURED: no recorded meter of stage_d1_ring_p4_s01.py covers ops 1..end (0 record(s))'}, 'model': 'tools/bench/memory_model.json'}
+  WARN  X14 rows 16, budget 15 (proven: no)
+
+=== DRY FAIL: first_fail=GATE L0 plan FINAL, open_rows_match, plan_in = plan_ring_p4_s01_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan coverage 28/75 lines, first mutation None, unverified 0, graph None
+=== PRERUN FAIL: 12 pass / 3 fail; first X1 dry run PASS (whole Python path, COM stubbed): GATE L0 plan FINAL, open_rows_match, plan_in = plan_ring_p4_s01_in; base graph md5 == pred == file; bed md5 == pred; pla
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":12,"fail":3},"first_fail":"X1 dry run PASS (whole Python path, COM stubbed): GATE L0 plan FINAL, open_rows_match, plan_in = plan_ring_p4_s01_in; base graph md5 == pred == file; bed md5 == pred; pla","artefacts":[]}
+BGRUN END rc=1 after 3s

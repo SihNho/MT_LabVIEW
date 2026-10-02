@@ -369,3 +369,61 @@ How to add: see the 5-line note at the top of `docs/d1/INDEX.md`.
      - **(c) Measure before cutting:** (1) the X10 session table of the WHOLE v14 action list at the current read model; (2) how many of
        step 1's 29 BIND reads could be merged into one read before the uid's first use (fewer reads ⇒ fewer sessions). Offline; the
        judgement session then picks the cut (and whether a bind-merge tool is worth building, under the 2026-09-24 tool grant).
+320. **(cycle 140 judgement, 2026-10-02 — after 140-1 PASS 7/0 offline (`tools/bench/diag_c140_1_facts.md`))**
+     USER-RULES: U1 (relied on: session cuts change only when edits are applied, the planned edits are unchanged; none contradicted).
+     - **(a) MEASURED:** X10 = start + R×2.53 + N×1.38 + 17.4 reproduces 750.7 exactly; table A (current reads) 9 sessions, table B
+       (merged reads, unambiguous groups) 8; merging needs a stagexec binder edit (deferred bind unsupported, `stagexec.py:2031-2037,926-930`).
+     - **(b) DECISION: table A's read model, NO bind-merge tool now.** One session saved does not pay for an edit to the core binder
+       (class-only matching, ambiguity rules) on the path every P4 session uses. Revisit only if (d)'s load growth makes sessions scarce.
+     - **(c) Cut rule:** a session is the longest prefix of the remaining v14 ops with predicted X10 peak ≤ 675 that splits no `of` pair
+       (an RLE stays with its wire, PD261(d); a cross-plan `of` is a compile stop, `stagexec.py:761-764`). Session 1 = v14 ops 1..16
+       (`p4_dw_23310` .. `p4_w_b_out`, R 11, predicted 673.4); `p4_x_i_rab1` (17) moves to session 2 with `p4_rle_i_rab1` (18).
+       Each session saves an in-between file (not counted, user D-02 / D-04); later sessions are planned by `--rebase` on the REAL graph of
+       the previous in-between file (P3b-2 a/b precedent, PD286–291).
+     - **(d) Start load per session = the MEASURED load of its input file**, read in a fresh instance after the save (PD301 method). The
+       +0.719 MB/op growth is one pair (`memory_model.json:61-64`); session 1's file is its second measurement. If growth holds, P4 stalls
+       near op 64 at 675 — that is a judgement question when measured, not now.
+     - **(e) Session 1 card:** plan + recipe from v14 ops 1..16, dry/prerun/X10, predicted Error List, ONE scratch run on a bed byte copy;
+       when EVERY scratch gate PASSes and the Error List count equals the prediction, ONE launch in a fresh instance saving the in-between
+       file, then its load + graph read in a fresh instance. Any other scratch result ⇒ return before the launch. Beside it, ONE offline
+       prep card: session 2's plan, provisional on stagesim's end graph of v14 ops 1..16 (rebased on the real graph after the launch).
+321. **(cycle 140 judgement, 2026-10-02 — after 140-2 FAIL 2/1 (`tools/bench/diag_c140_2_facts.md`) and 140-P1 FAIL 13/1
+     (`tools/bench/prep_c140_p1_facts.md`))**
+     USER-RULES: U1 (relied on: the end graph and computation_diff are unchanged; only the edit form of removing the scaffold changes).
+     - **(a) Hypothesis (to be attacked by the hypothesis review, not assumed):** scratch op 3 `wire_remove_loose_ends` w23255 hit error 1055
+       because w23255's ONLY sinks were the just-deleted scaffold `#10171` (`x == x`), so RemoveLooseEnds deleted the WHOLE wire and the op's
+       after-read used a dead reference (`diag_c140_2_scratch.log:72-75`, broken_before True). First failure of this form; no scratch-VI
+       escalation (P3b used the op 30+ times on wires that kept a sink).
+     - **(b) DECISION — plan form, no tool edit:** v15 = v14 with ops 2-3 (`delete_object #10171`, RLE w23255) replaced by
+       `delete_wire w23255` THEN `delete_object #10171` (delete_wire is measured: op 1 here, P4 v7 159). GATE before use: w23255's sink set
+       on the bed graph ⊆ `#10171`'s terminals (else return — deleting the wire would cut a live sink). v15's replay end cdiff == v14's.
+       Session 1 plan `plan_ring_p4_s01.json` re-made from v15 ops 1..16 (same N; R unchanged — neither op binds).
+     - **(c) Memory:** the launch recipe's 2 census reads give 678.5 MB > 675 (planning) < 690 (launch stop, PD272). ACCEPTED, with the
+       launch additionally gated on the scratch's MEASURED peak ≤ 675 (140-2's scratch read 585.2 MB at op 3; the model's start 606.1 is
+       conservative).
+     - **(d) v14's stale `provisional` flag:** session plans drop it with gate PV (140-2's maker); v15 is written without it.
+     - **(e) Session 2 prep (140-P1) ACCEPTED as far as offline goes:** cut ops 17..31 (674.6), plan s02 2d6725fb; its dry can PASS only
+       after `--rebase` onto session 1's REAL graph (provisional base holds session-1 objects; c132_1 / PD286 precedent). Its base must be
+       rebuilt anyway since s01 changes; `sim_of` then names `plan_ring_p4_s01.json`.
+322. **(cycle 140 judgement, 2026-10-02 — after 140-3 FAIL 4/1 (`tools/bench/diag_c140_3_facts.md`), review `archive/peer/2026-10-02-c140-3-el52.md`
+     (supported), 140-4 census (`tools/bench/diag_c140_4_facts.md`))**
+     USER-RULES: U1 (relied on: the ring's slot write must keep 20 slots — the user's ring design; none contradicted).
+     - **(a) MEASURED DEFECT (rule 1a):** REAL == INTENDED 0 of 6. Every ring slot write planned as Replace Array Subset was built from donor
+       `#29157`, which is an **Insert Into Array** (`main_vi_node_labels.json:1120`): bed nodes `#27928` (P3b-1 num3), `#28916` / `#29048`
+       (P3b-2a num1 / transpos), `#29265` / `#29316` (P3b-2b rotpos / frameidx), and P4's `p4_ras_bufdiff` (#29489 on the scratch). Insert
+       Into Array LENGTHENS the array every frame; the design is "local read → Replace Array Subset → local write" (PD246(c)), a fixed
+       20-slot ring. The logs printed 'Insert Into Array' since cycle 131 and no gate compared a created node's read-back label with the
+       plan's declared prim — `unreported-fact` for the retrospective.
+     - **(b) DECISION — repair toward the design, no user question:** the design document already decides Replace Array Subset; Insert
+       Into Array was our donor mistake, not a design choice. The five bed nodes are replaced (delete + create from a 1-D Replace Array
+       Subset donor + reconnect their 4 terminals by terminal uid; `#29048/#29265/#29316` share index wire w28367) and `p4_ras_bufdiff`
+       takes the same donor. The repair actions go FIRST in P4 plan v16 (P4 stays one counted file; in-between files not counted).
+     - **(c) Donor first:** no 1-D Replace Array Subset exists in the original (all 23 are 2-D) or any donor VI. Build
+       `claudeDev\DonorRAS1D_v0.vi` (1-D I32 Replace Array Subset), read its uid and terminal names, and RUN it once on known values
+       (array 0..19, index 3, new 99 ⇒ length 20, element 3 = 99) — functional, not only structural. Its terminal names give the
+       Insert-Into-Array → Replace-Array-Subset map (`index` is the one unmatched name, `prep_c140_4_census.log:184-187`).
+     - **(d) Device owed (tool grant 2026-09-24):** a stagekit/stagexec gate that compares every created node's read-back label/class
+       with the plan's declared prim and FAILS on mismatch — the census of (a) was possible offline from existing logs, so the check is
+       cheap; build it with v16 so the repair is verified by it.
+     - **(e) Error List prediction rule:** LabVIEW gives one "unwired or bad terminal" item per NODE (52 measured), not per terminal —
+       the maker's `{pred, pred + unwired sinks}` rule (`stage_d1_ring_p3b1_el.py:6`) counts per created node from now on.

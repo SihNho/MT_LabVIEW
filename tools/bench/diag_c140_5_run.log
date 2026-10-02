@@ -1,0 +1,42 @@
+BGRUN START 2026-10-02 21:32:48 limit 20.0 min: py -u tools/bench/diag_c140_5_run.py
+BGRUN PID 21128
+  GATE PASS  bed md5 before  
+  GATE PASS  1 bed byte copy md5 == bed  
+  OBSERVED uid 138 -> owner 'Diagram' uid 114 | self 'DigitalNumericConstant'#138 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 156 -> owner 'TopLevelDiagram' uid 3 | self 'Comparison'#156 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  OBSERVED uid 175 -> owner 'TopLevelDiagram' uid 3 | self 'GrowableFunction'#175 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  FACT  1 created: {'top': 3, 'FG': 43, 'fgb': 114, 'k0': 138, 'GH': 156, 'RAS': 175, 'wires': {}}
+  FACT  1 RAS terminals as copied: [('array', False, 182, 0), ('output array', True, 185, 0), ('new element/subarray', False, 188, 0), ('index (row)', False, 191, 0), ('index (col)', False, 194, 0)]
+  GATE PASS  T one terminal {'owner_uid': 156, 'term_name': 'y'}  [(166, 'y', 0)]
+  GATE PASS  T one terminal {'owner_uid': 138, 'is_source': True}  [(137, '', 0)]
+  FACT  1 WIRE GH.y <- k0 (FG out): {'wire_uid': 206, 'broken': False, 'sink_echo': 166, 'src_echo': 137, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  1 wire GH.y <- k0 (FG out) err '' and Is Broken? False  {'wire_uid': 206, 'broken': False, 'sink_echo': 166, 'src_echo': 137, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  T one terminal {'owner_uid': 156, 'term_name': 'x'}  [(169, 'x', 231)]
+  GATE PASS  T one terminal {'wire_uid': 231, 'is_source': True}  [(215, 'x', 231)]
+  GATE PASS  1 array control created on Greater?.x  ([{'i': 0, 'class': 'ControlTerminal', 'uid': 215, 'pos': (246, 406), 'owner': 'TopLevelDiagram'}], 'x', {'term_uid': 215, 'term_name': 'x', 'is_source': True, 'wire_uid': 231, 'owner_uid': 3, 'owner_class': 'TopLevelDiagram', 'frame_diagram': 3})
+  GATE PASS  T one terminal {'owner_uid': 175, 'term_name': 'array'}  [(182, 'array', 0)]
+  FACT  1 WIRE RAS.array <- array control: {'wire_uid': 231, 'broken': False, 'sink_echo': 182, 'src_echo': 215, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  1 wire RAS.array <- array control err '' and Is Broken? False  {'wire_uid': 231, 'broken': False, 'sink_echo': 182, 'src_echo': 215, 'err': '', 'purged': 0, 'invoke_left': []}
+  FACT  1 RAS terminals after the 1-D wire: [('array', False, 182, 231), ('output array', True, 185, 0), ('new element/subarray', False, 188, 0), ('index', False, 191, 0)]
+  GATE PASS  1 RAS adapted to 4 terminals (1-D)  ['array', 'output array', 'new element/subarray', 'index']
+  GATE PASS  1 exactly one index sink  [('index', False, 191, 0)]
+  OBSERVED uid 175 -> owner 'TopLevelDiagram' uid 3 | self 'GrowableFunction'#175 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c140_5_run.py", line 78, in <module>
+    main()
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c140_5_run.py", line 75, in main
+    step1()
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c140_5_run.py", line 46, in step1
+    B["ctl_index"] = g.create_control_nested(DON, RAS, tidx(RAS, ix[0][0], False))
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 4348, in create_control_nested
+    row = _node_term_row(target, node_uid, terminal_index)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 4149, in _node_term_row
+    raise ValueError("#%s is owned by %s #%s, not by a Diagram" % (node_uid, c, o))
+ValueError: #175 is owned by TopLevelDiagram #3, not by a Diagram
+  GATE FAIL  the run completed without an unhandled exception  ValueError('#175 is owned by TopLevelDiagram #3, not by a Diagram')
+  GATE PASS  5 LabVIEW gone  
+  GATE PASS  5 scratch files deleted  ['C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c140_5_bdon_213249.vi']
+  GATE PASS  5 bed md5 unchanged; donor kept  6544be40470e80763764089fd2767f2a
+=== GATES: 15 pass / 1 fail; failing: ['the run completed without an unhandled exception']
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":15,"fail":1},"first_fail":"the run completed without an unhandled exception","artefacts":[]}
+BGRUN END rc=1 after 68s

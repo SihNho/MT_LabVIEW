@@ -1,0 +1,81 @@
+{
+ "schema": "task/1",
+ "id": "140-3",
+ "kind": "build",
+ "goal": "P4 session 1 again per PD321: gate w23255's sinks, v15 (delete_wire w23255 then delete #10171), s01 re-made, ONE scratch; gated launch + load/graph read.",
+ "why": "PD321 (judgement 140): 140-2's scratch stopped at op 3 (RLE w23255, error 1055); plan-form fix, no tool edit; launch accepted at 678.5 < 690 if scratch peak <= 675.",
+ "retry_of_card": "140-2",
+ "inputs": [
+  {"path": "tools/bench/plan_ring_p4_v14.json", "md5": "22f582715e3d303ea0625fbe98bb590e"},
+  {"path": "tools/bench/plan_ring_p4_v14_meta.json", "md5": "29f6535b1f280b3a33a07dbdeeff8893"},
+  {"path": "tools/bench/plan_ring_p4_s01.json", "md5": "6fa94e2e421c0b19963a101df5841832"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s01.py", "md5": "73b5eac38c39611043731addd32afdc4"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s01_scratch.py", "md5": "ffeab599211ce24f90b2b29e5139b69e"},
+  {"path": "tools/bench/prep_c140_2_s01.py", "md5": "67e5718126d0d3bf7088b515cf6945d3"},
+  {"path": "tools/bench/diag_c140_2_facts.md", "md5": "bce99441702238deb421d64374aee317"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b2b_20261002_130007.vi", "md5": "395118775a52bc90073f4449b99f899d"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/bench/graph_ring_p3b2b_20261002_133824.json"}
+ ],
+ "pass": [
+  "0 JEV row for diag_c140_2_scratch.log reported; hypothesis review dispatched unless discharged, disposition written (brief_140-3.md 0)",
+  "1 gate: every sink of w23255 on the bed graph is a terminal of #10171 (else return)",
+  "2 v15: ops 2-3 replaced, no provisional flag, fs_routes regenerated, replay END, end cdiff == v14, compile ALL, route diff only changed ids",
+  "3 s01 re-made from v15 ops 1..16; recipes dry PASS, prerun 15/0, X10 < 690 (Executor 673.4 / recipe 678.5)",
+  "4 ONE scratch run on a bed byte copy: ops real == sim, census + Is Broken? per op, measured peak, EL count-only vs prediction",
+  "5 launch only if all scratch gates PASS, EL == prediction, scratch peak <= 675: in-between file saved, full EL read",
+  "6 after launch: load MB + graph read in a fresh instance; LabVIEW gone; scratch deleted; bed md5 unchanged; diag_c140_3_facts.md"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p4_v15.json",
+  "tools/bench/plan_ring_p4_s01.json",
+  "tools/bench/diag_c140_3_facts.md",
+  "tools/bench/cards/result_140-3.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p4_v15*",
+   "tools/bench/plan_ring_p4_s01*",
+   "tools/bench/prep_c140_2*",
+   "tools/bench/prep_c140_3*",
+   "tools/bench/diag_c140_3*",
+   "tools/bench/launch_c140_3*",
+   "tools/bench/graph_ring_p4s01*",
+   "tools/bench/sim/ring_p4_v15*/*",
+   "tools/bench/sim/ring_p4_s01*/*",
+   "tools/bench/sim/stage_d1_ring_p4_s01*/*",
+   "tools/recipes/stage_d1_ring_p4_s01*",
+   "tools/bench/prerun_records*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/errorlist_*p4s01*",
+   "tools/bench/errorlist_*p4_s01*",
+   "tools/bench/errorlist_*scratch_c140_3*",
+   "tools/bench/cards/review_c140*",
+   "tools/bench/cards/result_140-3*",
+   "archive/peer/2026-10-02-*c140*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/scratch_c140_3*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_ring_p4s01_*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 90},
+ "rules": [
+  "Bed byte-copied, never edited, never run; scratch deleted after its records; full brief brief_140-3.md",
+  "No tools/*.py edit except stage_d1_ring_p4_s01*.py recipes and the prep_c140_* makers",
+  "Launch only on all-PASS scratch + EL == prediction + scratch peak <= 675; else return before the launch",
+  "Return at the first unexpected result after finishing that step (LabVIEW closed); facts + OPEN line only"
+ ],
+ "advances": ["M3", "R1"]
+}

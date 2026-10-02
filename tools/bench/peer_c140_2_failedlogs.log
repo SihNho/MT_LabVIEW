@@ -1,0 +1,63 @@
+BGRUN START 2026-10-02 20:26:35 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c140-2-failed-logs -TaskFile tools/bench/prep_c140_2_peer_task2.txt
+BGRUN PID 7476
+OUTCOME: ANSWERED (176s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-02-c140-2-failed-logs.md
+COST: $1.8013  in 28 / out 15194 / cache-create 140660 / cache-read 1860068  (172s, 25 turn(s))
+--- ANSWER ---
+The three claims are only partly right: two of the three "no defect, nothing to fix" conclusions don't hold up. The memory gate can pass on a number that is 36 MB too low, and the scratch run takes its memory limit from the last line of a log file. All evidence below is local; I did no web search, because every claim concerns the project's own tools and logs.
+
+## Claim 1: the 750.7 MB failure
+
+**Strongest reason it's wrong.** The plan-size verdict is probably right, but "no code defect" is not. The memory gate (X10) in `stage_prerun.py` falls back to a default starting memory when the plan's base graph is marked provisional:
+- `x10_plan_start` returns `None` for a provisional base (`tools/stage_prerun.py:1997-1998`).
+- X10 then uses the default start of 570.0 MB (`tools/bench/memory_model.json:7-9`, start rule at `:65`).
+- The measured start for this VI is 600.2 + 5.9 = 606.1 MB (`memory_model.json:55-58`), so the default is 36.1 MB low.
+
+This has already happened. On the r1 plan (md5 95f45bef, 16 operations, 11 whole-VI reads), the prerun reported 637.3 MB and passed (`prep_c140_2_scr_prerun.log:101-103`). For the same plan, the maker had predicted 673.4. 570 + 11×2.53 + 16×1.38 + 17.4 = 637.3, which proves the fallback was used. The r3 maker's new PB0 check (`prep_c140_2_s01.py:165`, "base is NOT provisional") only hides this in one maker script. The fallback in `stage_prerun` is still there for every other maker.
+
+**Alternative explanation.** The memory is driven mainly by the forced whole-VI reads (29 of them, 73 MB), not by the edits themselves (54 MB). So "the plan was too big" really means "the executor forces too many reads". The model is also biased high: in all three earlier scratch runs the measured peak was 21–38 MB below X10:
+- `stage_d1_ring_p3b2a_scratch_c133_6.log:390`
+- `stage_d1_ring_p3b2a_scratch.log:375`
+- `stage_d1_ring_p3b2b_scratch_c134_5.log:362`
+
+Still, 750.7 − 690 = 60.7 MB is larger than any observed bias, so splitting the 39 edits was probably the right call. That is a model verdict, not a measurement.
+
+**What would falsify it.** A measured session peak more than 60 MB below its X10 prediction.
+
+**Cheapest test.** Copy `plan_ring_p4_s01.json`, set `base.provisional: true` in the copy, and run `stage_prerun.py --prerun` against it. Prediction: X10 passes at 637.3. That shows the fallback lets a too-low number through.
+
+## Claim 2: the L0 failure from a stale md5 pin
+
+The mechanism is confirmed. The r2 RESULT line lists the plan file (3d9aea08) and no pred file (`prep_c140_2_s01_r2.log:81`). L0 did its job.
+
+**Strongest reason "nothing to fix" is wrong.** The maker writes the live plan file before its gates pass. This time L0 caught it only because r2 died before writing the pred file. If a run fails after writing the pred, it leaves a matching plan and pred on disk, and L0 accepts them. That is exactly what c139_7 did: its SP check failed after `plan_ring_p4s1_pred.json` was written (`prep_c139_7_s1.log:152-153`).
+
+**A second defect in the same area.** The scratch recipe's `x10()` (`tools/recipes/stage_d1_ring_p4_s01_scratch.py:48-52`) takes the memory-check limit from the **last matching line of `prep_c140_2_scr_prerun.log`**. It should take it from the pred file, which is pinned to the plan's md5.
+- During the r3 prerun it printed `X10 from prerun 637.3` (line 176), which is the stale r1 value.
+- It reads 673.4 now only because a later run appended a newer line (line 264).
+- With the stale value, the memory check would require a peak ≤ 647.3 MB. Given the 21–38 MB bias, the real peak should be around 635–652 MB, so the check could fail falsely.
+
+**What would falsify it.** Re-running only the main recipe's prerun leaves the scratch log unchanged. If `x10()` still returns the value matching the current plan's pred after that, the defect is not live.
+
+**Cheapest test.** Compare `x10()`'s output with `plan_ring_p4_s01_pred.json`'s `memory_pred` peak right before the scratch launch, and refuse the launch if they differ.
+
+## Claim 3: rc 3 from `--scratch-required`
+
+The meaning is correct: exit 3 is the documented "scratch run required" answer (`stage_prerun.py:2404-2405`, `:3961`, `:4178-4180`). An empty census in the pred file is handled as "unpredicted", not a pass (`stagekit.py:273-284`).
+
+**Strongest reason it's still wrong.** The review gate treats it as a failure. The log has no RESULT line and ends `BGRUN END rc=3`. `guard_peer.log_failure` hands it to `protocol.run_verdict` (`tools/hooks/guard_peer.py:170-176`), which counts it as a failed run. That is why it is in this review at all, and it is the 6th log of this kind (two earlier `stage_d1_ring_p3a_scratchreq*` logs, `stage_prerun_c131_1_p3b1_scratchreq.log`, and the three c140_2 ones). Every time, a normal answer costs a peer review.
+
+**What would falsify it.** If `run_verdict` treated a log ending in `SCRATCH-REQUIRED` and rc 3 as passed, then nothing was owed.
+
+**Cheapest test.** Run `log_failure_file` on `prep_c140_2_scrreq_r3.log` alone. If it returns `(True, …)`, the classification is the defect. Two fixes are possible: have `--scratch-required` print a RESULT line marked PASS together with the decision, or add rc 3 for that command to the failure classifier's list of non-failures.
+
+## Summary
+- **Plan-size verdict and the r3 artefacts:** the claims hold.
+- **"No code defect, nothing to fix":** wrong on three counts:
+  1. X10 silently falls back to a 570 MB start on provisional bases.
+  2. The scratch recipe reads its memory limit from the last line of a log, not from the pinned pred file.
+  3. A normal "scratch required" answer is logged as a failure, which costs a review each time.
+
+The second matters most before the scratch run is launched.
+
+I could not save this review to the plan file because the Write tool is disabled in this session.
+BGRUN END rc=0 after 177s

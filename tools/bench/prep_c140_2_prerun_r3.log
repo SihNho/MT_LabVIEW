@@ -1,0 +1,95 @@
+BGRUN START 2026-10-02 20:24:46 limit 8.0 min: py -u tools/stage_prerun.py --prerun tools/recipes/stage_d1_ring_p4_s01.py
+BGRUN PID 3616
+stage_d1_ring_p4_s01 - card 140-2, RING P4 LabVIEW SESSION 1 (PD320(c)(e): v14 #1..#16, p4_dw_23310 .. p4_w_b_out; D-2026-10-01-01,
+D-2026-10-02-02/04): on P3b-2b's SAVED bed D1_ring_p3b2b_20261002_130007.vi (graph_ring_p3b2b_20261002_133824.json 50595c62), apply the
+16 actions of plan_ring_p4_s01.json (stagesim FINAL of plan_ring_p4_s01_in.json, tools/bench/prep_c140_2_s01.py).
+COPIED from tools/recipes/stage_d1_ring_p4s1.py (9f60aeba, card 139-5/139-7) with ONLY names changed (plan / pred / out json / stage
+name / result key / card id). FRESH LabVIEW -> claudeDev\D1_ring_p4s01_<ts>.vi (rule-6 GUI save, ExecState 0 by design) = an IN-BETWEEN
+file of step P4 (not counted, D-2026-10-02-02/04). The FIRST run is the full SCRATCH run on a bed byte copy (stage_d1_ring_p4_s01_scratch.py).
+ROWS ONLY FROM plan_ring_p4_s01.json; expected values only from plan_ring_p4_s01_pred.json. No new op.
+PREDICTION: L1 16 actions -> 16 pred ops; E1 every checkpoint == sim; NG crossing tunnel names == step files'; FR created objects on the
+sim end's frames; D new/lost wires == sim's; TD every base terminal that was wired stays wired; CEN2 == pred census; PB cdiff(S1, end) ==
+pred rows (FATAL, before save); HB handles <= +700; PS saved, input unchanged. X10 = pred memory_pred (start 606.1, R 11, 673.4 MB).
+Error List of the end predicted 51 (alternative 53 = + 2 unwired created sinks of p4_ras_bufdiff).
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/launch_c140_2.log -- py -u tools/recipes/stage_d1_ring_p4_s01.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p4_s01_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan  ('6fa94e2e421c0b19963a101df5841832', {'path': 'tools/bench/graph_ring_p3b2b_20261002_133824.json', 'md5': '50595c62d0332a94bf066538cf20c0ae'}, '395118775a52bc90073f4449b99f899d')
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 395118775a52bc90073f4449b99f899d  got 395118775a52bc90073f4449b99f899d
+  PASS  DRY graph JSON for input md5 395118775a52bc90073f4449b99f899d  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_ring_p3b2b_20261002_133824.json
+  PASS  L1 the 16 actions compile into 16 real ops == pred kinds, each action once; checkpoints (0, 4, 5, 6, 8, 10, 11, 12, 13, 14, 16)  ['delete_wire', 'delete_object', 'wire_remove_loose_ends', 'create', 'create', 'create', 'connect', 'create', 'stop', 'create', 'create', 'create', 'create', 'create', 'connect', 'connect']
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 4 touched diagram(s) [639, 4866, 23166, 32464]: one-side-only Nodes[] entries 0
+  PRIME 0 terminal indexes proved at base; 1 ControlTerminal end(s) by 179(b); unprovable []
+  CHECKPOINTS whole-VI read+diff after ops [4, 5, 6, 8, 10, 11, 12, 13, 14, 16] of 16
+  FACT  OP delete_wire [1] -> err '' (0.0 s)
+  STEPX 01 delete_wire    acts [1] ids ['p4_dw_23310'] diff skipped (not a checkpoint)
+  FACT  OP delete_object [2] -> err '' (0.0 s)
+  STEPX 02 delete_object  acts [2] ids ['p4_do_10171'] diff skipped (not a checkpoint)
+  FACT  OP wire_remove_loose_ends [3] -> err '' (0.0 s)
+  STEPX 03 wire_remove_loose_ends acts [3] ids ['p4_rle_w23255'] diff skipped (not a checkpoint)
+  FACT  OP create [4] -> err '' (0.0 s)
+  STEPX 04 create         acts [4] ids ['p4_c_stopall_f'] bound {-1: 10000001} diff 0
+  FACT  OP create [5] -> err '' (0.0 s)
+  STEPX 05 create         acts [5] ids ['p4_i_stopall_k'] bound {-3: 10000004} diff 0
+  FACT  OP create [6] -> err '' (0.0 s)
+  STEPX 06 create         acts [6] ids ['p4_lw_stopall_639'] bound {-5: 10000005} diff 0
+  FACT  OP wire_connect [7] -> err '' (0.0 s)
+  STEPX 07 connect        acts [7] ids ['p4_w_stopall_639'] diff skipped (not a checkpoint)
+  FACT  OP create [8] -> err '' (0.0 s)
+  STEPX 08 create         acts [8] ids ['p4_lr_stop12'] bound {-7: 10000007} diff 0
+  FACT  OP stop [9] -> err '' (0.0 s)
+  STEPX 09 stop           acts [9] ids ['p4_w_stop12'] diff skipped (not a checkpoint)
+  FACT  OP create [10] -> err '' (0.0 s)
+  STEPX 10 create         acts [10] ids ['p4_c_bufdiff'] bound {-10: 10000010} diff 0
+  FACT  OP create [11] -> err '' (0.0 s)
+  STEPX 11 create         acts [11] ids ['p4_i_bufdiff'] bound {-12: 10000013} diff 0
+  FACT  OP create [12] -> err '' (0.0 s)
+  STEPX 12 create         acts [12] ids ['p4_lr_bufdiff11'] bound {-14: 10000014} diff 0
+  FACT  OP create [13] -> err '' (0.0 s)
+  STEPX 13 create         acts [13] ids ['p4_ras_bufdiff'] bound {-16: 10000016} diff 0
+  FACT  OP create [14] -> err '' (0.0 s)
+  STEPX 14 create         acts [14] ids ['p4_lw_bufdiff'] bound {-21: 10000021} diff 0
+  FACT  OP wire_connect [15] -> err '' (0.0 s)
+  STEPX 15 connect        acts [15] ids ['p4_w_b_arr'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect [16] -> err '' (0.0 s)
+  STEPX 16 connect        acts [16] ids ['p4_w_b_out'] bound {} diff 0
+  PASS  E1 every checkpoint's real graph == its simulated step (16 ops)
+  PASS  NG every crossing op's NEW tunnel names == the simulator's (stagexec.tunnel_name_check, per op, from the step files): 0 op(s) []
+  PASS  FR the 9 created objects sit on [639, 4866, 23166, 32464] frame(s) of the simulated end; real frames == the sim end's  {'on': [639, 4866, 23166, 32464], 'extra': [], 'missing': []}
+  PASS  D new wires 5 == sim's 5; lost 1 == sim's 1  {'new': [10000003, 10000009, 10000012, 10000023, 10000024], 'lost': [23310]}
+  UNPREDICTED  CEN2 new-object census (classes of the pred) == plan_ring_p4_s01_pred.json census  (declared set empty {}; measured not in a dry run)
+  PASS  TD every base terminal the sim keeps wired is still wired; rows lost == the plan's deletes  {'unwired': [], 'lost_rows': [23276, 23283, 23292], 'plan_deletes': [23276, 23283, 23292]}
+  FACT  ExecState [after all rows (ExecState 0 expected: the P3b-2b bed is broken by design)] D1_ring_p4s01_20261002_202447.vi = <dry:g.exec_state>
+  PASS  PB frame-keyed cdiff(S1, real end) == the pred's 16 rows and the plan's 11 open (node, term) pairs (FATAL, before save)  {'extra': [], 'missing': []}
+  FACT  PH handles: post-open <dry:bench_prep.labview_handles> -> before-save None
+  PASS  HB open->save handle growth <= +700 (PD236(b) band; refs balance is H5)  (<dry:bench_prep.labview_handles>, None)
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  dry0dry0dry0dry0dry0dry0dry0dry0
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  []
+  PASS  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['tools/bench/plan_ring_p4_s01.json']
+  PASS  X3 every plan row decided  0 rows + 16 stageplan actions
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  1 stageplan(s)
+  PASS  X11 no row wires one Build Array input while a sibling input is an open row (unless pb-licence/1)  1 stageplan(s)
+  PASS  X12 no row names a wire uid an earlier border-crossing connect re-created (connect_from_wire.json:266)  1 stageplan(s), 0 re-created source wire(s), none named later
+  PASS  X13 opmodel conformance: every recorded sample of the plan ops' model files replays in stagesim  5 op(s) ['create', 'delete_object', 'delete_wire', 'wire', 'wire_remove_loose_ends']; files {'const.json': 'not-replayed (2)', 'primitive.json': 'not-replayed (2)', 'delete_object.json': 'PASS (2)', 'delete_wire.json': 'PASS (2)', 'connect_from_wire.json': 'PASS (2)', 'wire_sr.json': 'not-replayed (2)'}
+  WARN  X13 WARN op 'wire_remove_loose_ends': no model file in tools/bench/opmodels (provisional rule; aliases ['wire_remove_loose_ends'])
+  WARN  X13 WARN const.json: 2 sample(s), no replayer for op 'const' (only ['connect_from_wire', 'tunnel', 'delete_object', 'delete_wire', 'remove_bad_wires'])
+  WARN  X13 WARN primitive.json: 2 sample(s), no replayer for op 'primitive' (only ['connect_from_wire', 'tunnel', 'delete_object', 'delete_wire', 'remove_bad_wires'])
+  WARN  X13 WARN wire_sr.json: 2 sample(s), no replayer for op 'wire_sr' (only ['connect_from_wire', 'tunnel', 'delete_object', 'delete_wire', 'remove_bad_wires'])
+  PASS  X16 every declared terminal of a created primitive carries term_class (PD251(b))  1 non-const_donor create action(s) with declared terminals, all classed
+  ADVISORY CENSUS-UNPREDICTED tools/bench/plan_ring_p4_s01.json rows [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] (prerun verdict unchanged; --scratch-required exits 3)
+  PASS  X15 census: no class with derived != declared (tools/census_predict.py over census_samples.json)  no derived != declared class
+  PASS  X4 every end addressable offline (0 ends)  []
+  PASS  X5 wiring ops executed in the dry run == plan wire rows  ops 3 vs plan wire rows 0 + stageplan wiring real ops 3 (covering 4/4 wire actions); delete ops {'delete_object': 1, 'delete_wire': 1} vs plan delete rows {'delete_object': 1, 'delete_wire': 1}; RLE ops 1 vs plan RLE rows 1
+  PASS  X6 ast lint: no re-typed uid / terminal name  uids []; names []
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_ring_p4s01_20261002_202447.vi; decisions rows NOT dispatched (recipe calls neither run_rows nor from_decision)
+  FACT  X10 tools/bench/plan_ring_p4_s01.json: N 16 ops, BIND 9, R 13 reads, predicted peak 678.5 MB (fail above 690.0)
+  FACT  X10 whole-VI reads: source 2 [census_snapshot@28x2]; dry executed 0; sessions 1; Executor-only peak 673.4 MB, R 11
+  PASS  X10 predicted LabVIEW private MB <= model fail_above_mb, from the compiled plan + checkpoint set (peak 678.5 MB)  {'peak_mb': 678.5, 'recorded': {'why': 'UNMEASURED: no recorded meter of stage_d1_ring_p4_s01.py covers ops 1..end (0 record(s))'}, 'model': 'tools/bench/memory_model.json'}
+  WARN  X14 rows 16, budget 15 (proven: no)
+
+=== DRY PASS: first_fail=None coverage 73/75 lines, first mutation Stage._op delete_wire, unverified 0, graph tools/bench/graph_ring_p3b2b_20261002_133824.json
+=== PRERUN PASS: 15 pass / 0 fail; first None
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":15,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 16s

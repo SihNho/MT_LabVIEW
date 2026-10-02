@@ -1,0 +1,32 @@
+BGRUN START 2026-10-02 20:15:30 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_ring_p4_s02.py
+BGRUN PID 16356
+stage_d1_ring_p4_s02 - card 140-P1 (WRITTEN, NOT LAUNCHED), RING P4 LabVIEW SESSION 2 (PD320(c)(e), D-2026-10-01-01,
+D-2026-10-02-02/04): on session 1's SAVED in-between file (stage_d1_ring_p4_s01.py, card 140-2), apply the 15 actions of
+plan_ring_p4_s02.json = v14 ops 17..31 (p4_x_i_rab1 .. p4_sel_mask): the two FS crossings into RAB1 (session 1's Replace Array Subset)
+each with its RLE, the last/disc shift registers + their constants, the While w1 and its first nodes.
+Copied from stage_d1_ring_p4s1.py (9f60aeba; the P4 step-1 pattern) with names changed only.
+BASE IS PROVISIONAL (session 1's simulated end, tools/bench/sim/ring_p4_v14_ops1_16/base_provisional.json; stage_prerun refuses the
+launch): after session 1's file exists, read its graph, put its MEASURED load into memory_model.json load_by_vi (PD320(d)), then
+`py tools/stage_prerun.py --rebase tools/bench/plan_ring_p4_s02.json --graph <graph of session 1's saved VI>`, regenerate
+plan_ring_p4_s02_pred.json (start = that load + op-0), dry + prerun. The 2 refs to session 1's RAB1 (#-16 here) re-bind at the rebase.
+FRESH LabVIEW -> claudeDev\D1_ring_p4s02_<ts>.vi (rule-6 GUI save, ExecState 0 by design) = an IN-BETWEEN file of step P4 (not counted,
+D-2026-10-02-02); no Error List expected file (pred errorlist.checked False). The FIRST run of this recipe is the full SCRATCH run on a
+byte copy of its input (D-2026-10-01-01), never the launch.
+ROWS ONLY FROM plan_ring_p4_s02.json (stagesim FINAL of plan_ring_p4_s02_in.json, prep_c140_p1_s02.py); expected values only from
+plan_ring_p4_s02_pred.json. No new op.
+PREDICTION: L1 actions -> pred ops; E1 every checkpoint == sim; NG crossing tunnel names == step files'; FR created objects on the sim end's
+frames; D new/lost wires == sim's; TD every base terminal that was wired stays wired; CEN2 == pred census; PB cdiff(S1, end) == pred rows
+(FATAL, before save); HB handles <= +700; PS saved, input unchanged. X10 = plan_ring_p4_s02_pred.json memory_pred (planned 674.6 at 606.1).
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/stage_d1_ring_p4_s02.log -- py -u tools/recipes/stage_d1_ring_p4_s02.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p4_s02_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan  ('2d6725fb9bef452ade8e6abef9d58e46', {'path': 'tools/bench/sim/ring_p4_v14_ops1_16/base_provisional.json', 'md5': 'e3230e07dfd74fd6ab94f8cbee1258e9'}, '395118775a52bc90073f4449b99f899d')
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 395118775a52bc90073f4449b99f899d  got 395118775a52bc90073f4449b99f899d
+  PASS  DRY graph JSON for input md5 395118775a52bc90073f4449b99f899d  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\sim\ring_p4_v14_ops1_16\base_provisional.json
+  PASS  L1 the 15 actions compile into 15 real ops == pred kinds, each action once; checkpoints (0, 1, 3, 5, 6, 8, 9, 11, 12, 13, 14, 15)  ['connect_term_uid', 'wire_remove_loose_ends', 'connect_term_uid', 'wire_remove_loose_ends', 'add_sr', 'create', 'connect', 'add_sr', 'create', 'connect', 'create', 'create', 'create', 'create', 'create']
+  STEPX 00 base read vs step_00: diff 12
+  FAIL  E1 the run reached its last op (record mode; stopped IN op None)  BASE: the scratch copy's graph differs from the plan's base graph: {'unbound': [-22, -20, -19, -18, -17, -15]}
+
+=== DRY FAIL: first_fail=EXECUTOR-STOP tools/bench/plan_ring_p4_s02.json: executed 0 of 15 ops, stopped IN op {'k': None, 'op': None, 'ids': None}: ExecStop: BASE: the scratch copy's graph differs from the plan's base graph: {'unbound': [-22, -20, -19, -18, -17, -15]} coverage 37/74 lines, first mutation None, unverified 0, graph tools/bench/sim/ring_p4_v14_ops1_16/base_provisional.json
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"EXECUTOR-STOP tools/bench/plan_ring_p4_s02.json: executed 0 of 15 ops, stopped IN op {'k': None, 'op': None, 'ids': None}: ExecStop: BASE: the scratch copy's graph differs from the plan's base graph: ","artefacts":[]}
+BGRUN END rc=1 after 3s

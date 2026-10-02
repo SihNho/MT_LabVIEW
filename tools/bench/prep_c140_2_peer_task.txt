@@ -1,0 +1,20 @@
+ATTACK this claim (card 140-2, failing log tools/bench/prep_c140_2_s01_r2.log, script tools/bench/prep_c140_2_s01.py, gate RB).
+
+FACTS: The session-1 plan tools/bench/plan_ring_p4_s01.json is built from tools/bench/plan_ring_p4_v14.json, whose top-level "base"
+is {path: tools/bench/graph_ring_p3b2b_20261002_133824.json, md5 50595c62..., provisional: true, sim_of: {plan: tools/bench/plan_ring_p3b2b.json,
+md5 ae6b6111...}} (flag present in v10..v14 and plan_ring_p4s1.json). stage_prerun.check_launch (tools/stage_prerun.py:4033-4039) refuses
+any launch of a plan whose base is provisional and prescribes --rebase. In r2 the maker called stage_prerun.rebase(plan, that same graph):
+REFUSED "BINDING: the created objects differ (name-free shape): FlatSequenceOuterTunnel x0 simulated vs x2 real, GrowableFunction x0 vs x2,
+Local x0 vs x2 (twice), SelectorTunnel x0 vs x2" (prep_c140_2_s01_r2.log, RB line).
+
+CLAIM: the provisional flag is STALE. The graph file is a REAL read of the saved bed: its own header says vi = claudeDev\D1_ring_p3b2b_20261002_130007.vi,
+md5 395118775a52bc90073f4449b99f899d (= the bed), source "tools/bench/diag_c136_1_graph.py (read_live ...)". rebase() compares the
+provisional graph (here the same real file) against the real graph after binding P3b-2b's simulated creations (negative uids), which do not
+exist in a real read, hence "x0 simulated vs x2 real". So rebase cannot clear this flag, and the correct fix is for the session-1 maker to
+drop provisional/sim_of from the copied base ONLY after verifying mechanically: graph md5 field == bed md5, source contains read_live, and
+zero negative uids in the graph's terminal rows (owner/term/wire/frame); base path and md5 unchanged. The plan is then simulated on that
+same real graph (as it already was, stagesim.simulate(S1IN, GRAPH)).
+
+Questions: is there any way the base graph is NOT the real bed state (e.g. a graph read of a DIFFERENT file, or a later bed)? Does dropping
+the flag lose any check that rebase would have done for session 1 (P3b-2b's created objects already exist in the real read)? Cheapest
+discriminating test?

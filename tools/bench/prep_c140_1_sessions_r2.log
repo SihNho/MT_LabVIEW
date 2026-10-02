@@ -1,0 +1,28 @@
+BGRUN START 2026-10-02 20:02:41 limit 10.0 min: py -u tools/bench/prep_c140_1_sessions.py
+BGRUN PID 24936
+FACT formula peak = start + R*2.53 + N*(0.58+0.8) + 17.4; fail_above_mb 690.0; start 606.1
+GATE PASS G1 step 1 X10 peak reproduced {"N": 39, "R": 29, "bind": 28, "peak_mb": 750.7, "start_mb": 606.1, "fail_above_mb": 690.0, "ok": false, "checkpoints": [0, 4, 5, 6, 8, 10, 11, 12, 13, 14, 17, 19, 21, 22, 24, 25, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39]}
+GATE PASS G2 step 1 R 29 = {0, 39} | BIND {"bind": [4, 5, 6, 8, 10, 11, 12, 13, 14, 17, 19, 21, 22, 24, 25, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39], "N": 39}
+GATE PASS G3 every 'new:'/'of' use follows its creator in v14 op order []
+A s01 ops [1, 17] p4_dw_23310..p4_x_i_rab1 acts 17 N 17 R 11 peak 674.8 kinds {'delete_wire': 1, 'delete_object': 1, 'wire_remove_loose_ends': 1, 'create': 9, 'connect': 3, 'stop': 1, 'connect_term_uid': 1} cut_by p4_rle_i_rab1 unit_split U02 BufDiff 1.1 cross_uses 2
+A s02 ops [18, 32] p4_rle_i_rab1..p4_k_max acts 15 N 15 R 12 peak 674.6 kinds {'wire_remove_loose_ends': 2, 'connect_term_uid': 1, 'add_sr': 2, 'create': 8, 'connect': 2} cut_by p4_k_max_found unit_split None cross_uses 21
+A s03 ops [33, 44] p4_k_max_found..p4_eq_seq acts 12 N 12 R 13 peak 672.9 kinds {'create': 12} cut_by p4_gt_n1 unit_split U05 body creates cross_uses 15
+A s04 ops [45, 57] p4_gt_n1..p4_t_fgt_out acts 19 N 13 R 12 peak 671.8 kinds {'create': 8, 'wire_sr': 1, 'tunnel': 3, 'connect': 1} cut_by p4_w_max_sel unit_split None cross_uses 21
+A s05 ops [58, 82] p4_w_max_sel..p4_lr_transpos acts 33 N 25 R 6 peak 673.2 kinds {'connect': 13, 'tunnel': 4, 'stop': 1, 'branch': 2, 'wire_sr': 4, 'create': 1} cut_by p4_ia_transpos unit_split U11 C reads cross_uses 6
+A s06 ops [83, 102] p4_ia_transpos..p4_w_dt_in acts 24 N 20 R 8 peak 671.3 kinds {'create': 5, 'connect': 8, 'branch': 3, 'move_in': 2, 'tunnel': 2} cut_by p4_w_10068_out unit_split None cross_uses 0
+A s07 ops [103, 128] p4_w_10068_out..p4_rbC_dw acts 26 N 26 R 6 peak 674.6 kinds {'connect': 18, 'create': 4, 'branch': 1, 'delete_wire': 3} cut_by p4_rbC_sel unit_split U14 rollback SR C cross_uses 0
+A s08 ops [129, 154] p4_rbC_sel..p4_rbR_re0 acts 26 N 26 R 6 peak 674.6 kinds {'create': 4, 'connect': 18, 'delete_wire': 4} cut_by p4_rbR_sel unit_split None cross_uses 0
+A s09 ops [155, 167] p4_rbR_sel..p4_rle_x_n2_out acts 13 N 13 R 7 peak 659.1 kinds {'create': 2, 'connect': 5, 'connect_term_uid': 3, 'wire_remove_loose_ends': 3} cut_by None unit_split None cross_uses 0
+B s01 ops [1, 17] p4_dw_23310..p4_x_i_rab1 acts 17 N 17 R 10 peak 672.3 kinds {'delete_wire': 1, 'delete_object': 1, 'wire_remove_loose_ends': 1, 'create': 9, 'connect': 3, 'stop': 1, 'connect_term_uid': 1} cut_by p4_rle_i_rab1 unit_split U02 BufDiff 1.1 cross_uses 2
+B s02 ops [18, 34] p4_rle_i_rab1..p4_amm acts 17 N 17 R 10 peak 672.3 kinds {'wire_remove_loose_ends': 2, 'connect_term_uid': 1, 'add_sr': 2, 'create': 10, 'connect': 2} cut_by p4_lt_found unit_split U04 W1 creates cross_uses 21
+B s03 ops [35, 49] p4_lt_found..p4_sel_last acts 15 N 15 R 11 peak 672.0 kinds {'create': 15} cut_by p4_sel_disc unit_split U05 body creates cross_uses 30
+B s04 ops [50, 66] p4_sel_disc..p4_t_slot_out acts 29 N 17 R 10 peak 672.3 kinds {'create': 3, 'wire_sr': 1, 'tunnel': 6, 'connect': 6, 'stop': 1} cut_by p4_t_pool unit_split None cross_uses 13
+B s05 ops [67, 94] p4_t_pool..p4_w_tp_mag acts 30 N 28 R 5 peak 674.8 kinds {'tunnel': 1, 'connect': 12, 'branch': 5, 'wire_sr': 4, 'create': 6} cut_by p4_w_tp_row unit_split U12 C sinks cross_uses 4
+B s06 ops [95, 118] p4_w_tp_row..p4_rbA_out acts 28 N 24 R 7 peak 674.3 kinds {'connect': 15, 'move_in': 2, 'tunnel': 2, 'create': 3, 'branch': 1, 'delete_wire': 1} cut_by p4_rbA_sel_t10871 unit_split U14 rollback SR A cross_uses 1
+B s07 ops [119, 144] p4_rbA_sel_t10871..p4_rbE_f acts 26 N 26 R 6 peak 674.6 kinds {'connect': 18, 'delete_wire': 4, 'create': 4} cut_by p4_rbE_s unit_split U14 rollback SR E cross_uses 2
+B s08 ops [145, 167] p4_rbE_s..p4_rle_x_n2_out acts 23 N 23 R 7 peak 673.0 kinds {'connect': 12, 'delete_wire': 2, 'create': 3, 'connect_term_uid': 3, 'wire_remove_loose_ends': 3} cut_by None unit_split None cross_uses 0
+GATE PASS G4 tables A and B: every session <= 675; every use follows its creator (G3) so prefixes are dependency-closed [9, 8]
+GATE PASS G5 B total <= A total [9, 8]
+FACT totals {'A': 9, 'B': 8, 'A_grow': {'sessions_ok': 13, 'first_failing_session_ops': [64, 64]}, 'B_grow': {'sessions_ok': 11, 'first_failing_session_ops': [64, 64]}, 'grow_empty_session_over_675_after_op': 63, 'A_690': 7, 'B_690': 7} | step1 merged reads 14 | v14 merged reads 31 | ambiguous groups s1 2 v14 5
+RESULT {"schema": "result-line/1", "status": "PASS", "gates": {"pass": 5, "fail": 0}, "first_fail": null, "artefacts": [{"path": "tools/bench/diag_c140_1_sessions.json"}]}
+BGRUN END rc=0 after 5s

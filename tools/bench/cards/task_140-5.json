@@ -1,0 +1,51 @@
+{
+ "schema": "task/1",
+ "id": "140-5",
+ "kind": "build",
+ "goal": "Build claudeDev\\DonorRAS1D_v0.vi: one 1-D I32 Replace Array Subset, uid + terminal names read back, label/class read back, ONE run on known values.",
+ "why": "PD322(c): every ring slot write is Insert Into Array (donor #29157); no 1-D Replace Array Subset donor exists. The donor unblocks the bed repair and P4 v16.",
+ "inputs": [
+  {"path": "tools/bench/diag_c140_4_facts.md", "md5": "8dd8a265fa87bf5d34a0738e6376c72d"},
+  {"path": "tools/bench/prep_c140_4_census.log", "md5": "d7ffc7ef036f1e742335d48e266f35f6"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/gscript.py"},
+  {"kind": "file", "name": ".claude/skills/labview-automation/references/vi-scripting.md"}
+ ],
+ "pass": [
+  "1 DonorRAS1D_v0.vi saved by script in claudeDev: controls array (I32 1-D), index (I32), new (I32); indicator out (I32 1-D); ExecState 1",
+  "2 read back: RAS node uid, label == 'Replace Array Subset', class, Terminals[] names in order; NOT 'Insert Into Array'",
+  "3 ONE run: array 0..19, index 3, new 99 => out length 20, out[3] == 99, all other elements unchanged",
+  "4 terminal map Insert Into Array (#29157 names, prep_c140_4_census.log:184-187) -> RAS names, unmatched flagged",
+  "5 refs closed, LabVIEW gone; diag_c140_5_facts.md (<= 25 lines) with donor md5 + uid; donor kept"
+ ],
+ "outputs": [
+  "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/DonorRAS1D_v0.vi",
+  "tools/bench/diag_c140_5_facts.md",
+  "tools/bench/cards/result_140-5.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": true,
+  "write": [
+   "tools/bench/diag_c140_5*",
+   "tools/bench/scratch_verify/*",
+   "tools/bench/cards/result_140-5*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/DonorRAS1D_v0*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/scratch_c140_5*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 35},
+ "rules": [
+  "<= 120-line stagekit script under bgrun; precedent donors DonorI32Max_v0 / DonorBoolF_v0 (cycles 138-139)",
+  "run_vi covers DonorRAS1D_v0.vi only; the bed is not opened; no tools/*.py edit",
+  "Return at the first unexpected result after finishing that step (LabVIEW closed); facts + OPEN line only"
+ ],
+ "advances": ["M3", "R1"]
+}

@@ -1,0 +1,17 @@
+ATTACK these explanations of four failing logs (card 140-2). Each claim is short; refute any you can.
+
+1. tools/bench/prep_c139_7_s1.log (script tools/bench/prep_c139_7_s1.py, card 139-7), gate "SP pred written: ... peak below fail" FAILED
+   with X10 750.7 MB > 690 for the 39-action step-1 plan. CLAIM: the gate was right; the plan was too large for one LabVIEW session
+   (start 606.1 + 29 whole-VI reads x 2.53 + 39 x 1.38 + 17.4). Judgement handled it: docs/d1/ring-p4.md PD319(b) (sessions cut by X10)
+   and PD320(c) (session 1 = v14 #1..#16, R 11, 673.4 MB). Card 140-2's maker tools/bench/prep_c140_2_s01.py reproduced 673.4 for that cut
+   (tools/bench/prep_c140_2_s01_r3.log, SP gate PASS). No code defect; nothing to fix.
+2. tools/bench/prep_c140_2_prerun_r2.log and the middle run in tools/bench/prep_c140_2_scr_prerun.log: L0 FAILED because
+   plan_ring_p4_s01.json had been rewritten (md5 3d9aea08) by the r2 maker run, which then stopped at its RB gate before rewriting
+   plan_ring_p4_s01_pred.json, so the pred still pinned the r1 plan md5 95f45bef. CLAIM: a stale-pin artefact of an aborted maker run
+   (r2's RB gate, reviewed in archive/peer/2026-10-02-c140-2-provisional-base.md); the r3 maker rewrote plan + pred together
+   (6fa94e2e / 6ae28374) and dry + prerun of both recipes then PASSED (prep_c140_2_dry_r3.log, prep_c140_2_prerun_r3.log,
+   prep_c140_2_scr_dry_r3.log, last run in prep_c140_2_scr_prerun.log).
+3. tools/bench/prep_c140_2_scrreq.log / prep_c140_2_scrreq_r3.log rc 3: `stage_prerun.py --scratch-required` answered SCRATCH-REQUIRED
+   (CENSUS-UNPREDICTED rows 1..16). CLAIM: rc 3 is that tool's documented verdict code (keep the scratch run), not a failure; the card
+   already requires the scratch run.
+Cheapest discriminating test for each?

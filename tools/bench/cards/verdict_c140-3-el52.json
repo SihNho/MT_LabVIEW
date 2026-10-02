@@ -1,0 +1,16 @@
+{
+ "schema": "verdict/1",
+ "id": "c140-3-el52",
+ "verdict": "supported",
+ "alternative": "Count holds (new node #29489 is the 52nd item) but '1 item' may be because Insert Into Array's index is optional, not per-node counting; and donor #29157 is a real Insert Into Array (grows array) where design needs Replace Array Subset - also in bed nodes #29265/#29316.",
+ "discriminating_test": "View errorlist_shots/bd_210806_after11.png: selected node must be the new one in frame 32464 (not #29265/#29316). Then check #29157's role in the original and ask user (rule 1a) before session 2 wires RAB1.",
+ "violations": [],
+ "sources": [
+  "tools/bench/diag_c140_3_scratch.log:219-225",
+  "tools/bench/launch_p3b2_c135_b.log:94-103",
+  "tools/bench/main_vi_node_labels.json:1120",
+  "docs/d1/INDEX.md:87",
+  "https://labviewwiki.org/wiki/Insert_Into_Array_function"
+ ],
+ "note": "Rule-1a risk: Insert Into Array lengthens the ring buffer every frame; plan cites a P3b-2 'MEASURED' precedent with the same defect. Unreported since cycle 135 (logs printed label 'Insert Into Array'). Stop before wiring."
+}

@@ -1,0 +1,25 @@
+ATTACK this explanation of a failed scratch run (card 140-2, log tools/bench/diag_c140_2_scratch.log). Refute it if you can.
+
+OBSERVED (tools/bench/diag_c140_2_scratch.log:55-76): on a byte copy of the LabVIEW work VI, op 1 delete_wire w23310 (err ''), op 2
+delete_object Comparison #10171 (err '', node census 664 -> 663), then op 3 gscript.wire_remove_loose_ends(target, 23255)
+(tools/gscript.py:4972-4988, op VI claudeDev\OpWireRemoveLooseEnds_v0.vi = Wire.RemoveLooseEnds 6370C08) returned
+{'echo': 23255, 'broken_before': True, 'broken_after': False, 'err': 'error 1055: Property Node in OpWireRemoveLooseEnds_v0.vi'};
+node census unchanged 663 -> 663.
+
+GRAPH FACT (tools/bench/prep_c140_3_gate.log, read from the real graph tools/bench/graph_ring_p3b2b_20261002_133824.json): wire w23255
+has ONE source (LoopTunnel #23417 inner terminal t23435) and exactly TWO sinks, both on #10171 (terminals 'x' t23292 and 'y' t23283).
+No other sink.
+
+CLAIM (PD321(a), docs/d1/ring-p4.md:393-396): error 1055 ("object reference invalid") came from the op's AFTER-read ('Is Broken?' on the
+wire reference): once #10171 was deleted, w23255 had no sink left, so RemoveLooseEnds deleted the WHOLE wire and the reference died.
+broken_after False is just the default of an output not written after the error. The edit itself happened as intended.
+PROPOSED FIX (plan form, no tool edit): replace ops 2-3 with delete_wire w23255 THEN delete_object #10171 (delete_wire is measured: op 1
+of the same run and P4 v7 step 159). End graph and computation_diff unchanged.
+
+Already ruled out: wrong wire uid (echo 23255 == request); traversal index stale (index computed fresh via _uid_index after op 2);
+memory (569.3 MB, handles flat).
+
+Questions: strongest reason the claim is wrong; an alternative explanation (e.g. 1055 from the BEFORE read, or a Traverse index that
+now points at a different wire, or RemoveLooseEnds leaving a dangling stub on the tunnel); what observation would falsify it; the cheapest
+discriminating test. Also: does delete_wire w23255 followed by delete_object #10171 leave the tunnel #23417 in a different state than the
+intended end graph (an inner tunnel face with no wire)?
