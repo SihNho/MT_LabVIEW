@@ -1,0 +1,25 @@
+{"schema":"result/1","id":"135-3","status":"FAIL","gates":{"pass":2,"fail":1},
+"first_fail":"0b: B state non-ignorable diffs == 0 on every step: 19/19 step states differ in state/vi (diag_c135_3_plandiff.log:125); launch NOT run",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/diag_c135_3_plandiff.py","md5":null},
+ {"path":"tools/bench/diag_c135_3_plandiff.log","md5":null},
+ {"path":"tools/bench/peer_c135_3_plandiff_task.txt","md5":null},
+ {"path":"tools/bench/peer_c135_3_plandiff.log","md5":null},
+ {"path":"archive/peer/2026-10-02-c135-3-plandiff.md","md5":null}],
+"facts":[
+ "0 A: plan fae25fb3 vs ae6b6111: 0 non-ignorable diffs, 27 ignorable (base/finalized md5/path/at only) (diag_c135_3_plandiff.log:5-33)",
+ "0 B: 19/19 step files; each state differs in exactly one key outside the ignore set: state/vi = a-file path vs scratch_c133_6 path (diag_c135_3_plandiff.log:34-112)",
+ "0 B: step_00 file also differs in effect/graph + effect/graph_md5 (123012 d0a32178 vs 102553 b885fa4a); candidates.json identical; summary.json 14 diffs, 8 shown all 'secs' (log:113-122)",
+ "JEV row | diag_c135_3_plandiff.log | new-problem p=0.496 | hypothesis review owed (guard_peer 12:53:47) | dispatched claude hypothesis | ANSWERED $1.49, partly refuted",
+ "review: state.vi copied at stagesim.py:287, never read back; owners/terminals graph-derived, equal => plan b edits apply to a-file (archive/peer/2026-10-02-c135-3-plandiff.md:41-42)",
+ "review point 1: X10 is keyed on input md5 (stage_prerun.py:1963-1984); plan b pred start 594.4/peak 667.0 from scratch 588.5; a-file load 605.0 (+16.5) => ~683.5 (review :47-53)",
+ "resume runner gate B = pk <= 690.0 AND pk <= x10 + 10 (launch_p3b2_resume_c135.py:60); x10 from plan b 667.0 => effective 677 < predicted ~683.5",
+ "LabVIEW never opened by this card (no LabVIEW command run); bed, a-file, 6cc69221 untouched; no file deleted; no STATUS/INDEX edit",
+ "md5sum/tasklist/py -c commands were permission-denied after the review, so artefact md5s are null; LabVIEW-gone not re-checked by tasklist"],
+"open":[
+ "Accept 0b as satisfied (remaining diffs are base-file identity: state/vi, effect/graph, graph_md5) and relaunch the resume runner?",
+ "Gate B effective limit 677 (x10 667 + 10) vs a-file prediction ~683.5: re-predict X10 from start 610.9 (x10_model_peak) or change the gate before launch?",
+ "summary.json: 6 of 14 diffs unprinted (diag_c135_3_plandiff.py prints r2[:8]); look before trusting 'timings only'?"],
+"cost":{"usd":null,"minutes":6,"labview_runs":0},
+"note":"Card 0b non-empty => returned before the launch, no patch. Hypothesis review dispatched per guard_peer and disposition written."}

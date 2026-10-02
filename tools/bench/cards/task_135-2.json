@@ -1,0 +1,81 @@
+{
+ "schema": "task/1",
+ "id": "135-2",
+ "kind": "build",
+ "goal": "OFFLINE tooling for PD294(b)-(e): restore plan b, strict re-annotated compare, finalize-writes-only-on-success + completeness gate, resume runner (dry), Jev routing, fp-30 drain.",
+ "why": "135-1: session a PASS (a-file 49cf7f77), compare DIFFERENT only on a reader annotation, finalize F3 FAIL but plan b overwritten (fae25fb3). PD294 decides the repair; the launch resumes from the a-file in card 135-3.",
+ "inputs": [
+  {"path": "docs/d1/ring-p3b.md"},
+  {"path": "tools/bench/cards/result_135-1.json"},
+  {"path": "docs/violation-decisions.md"},
+  {"path": "tools/bench/launch_p3b2_c135_pre_plan_ring_p3b2b.json", "md5": "ae6b6111d766a4ba27d0695f29958c23"},
+  {"path": "tools/bench/graph_ring_p3b2a_fs_20261002_123012.json", "md5": "d0a32178a87b2c9593b0d0773d332215"},
+  {"path": "tools/bench/launch_p3b2_c135.py", "md5": "16e941a61d3cf0695d58f6a921fc767f"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b2a_20261002_122043.vi", "md5": "49cf7f770fc331e06607687af640ad5e"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/launch_p3b2_c135_pre_plan_ring_p3b2b_in.json"},
+  {"kind": "file", "name": "tools/bench/launch_p3b2_c135_pre_plan_ring_p3b2b_pred.json"},
+  {"kind": "file", "name": "tools/bench/diag_c134_1_finalize_b.py"},
+  {"kind": "file", "name": "tools/bench/selftest_c134_4_owners.py"},
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/gate_fp.py"},
+  {"kind": "file", "name": "tools/bench/launch_p3b2_c135_b.py"}
+ ],
+ "pass": [
+  "1 plan_ring_p3b2b.json, _in, _pred restored from launch_p3b2_c135_pre_*.json; plan b md5 == ae6b6111; dry rule 2 + prerun PASS on recipe b",
+  "2 compare re-annotates BOTH graphs with the current border annotation, drops no field; self-test: annotation-only diff EQUAL, real border/terminal/wire/frame diff DIFFERENT",
+  "3 offline compare graph 123012 vs re-annotated 102553: result + diff recorded (EQUAL predicted)",
+  "4 device (violation-decisions 2026-10-02 12:2x): finalize/rebase write plan files only on success; completeness gate; acceptance tests as written there, results logged",
+  "5 resume runner (<=120 lines, stagekit): a-file+graph md5, bed md5, compare, check_launch(b), session b, full final EL; DIFFERENT => stop; --dry PASS",
+  "6 JEV-LADDER row for launch_p3b2_c135.log reported; review owed => hypothesis review via peer.ps1 -ReviewCard, ANSWERED, disposition written",
+  "7 fp-30 drained: gate_fp.py drain --id fp-30 --fixed <path:line> --selftest <name>, self-test green; c125_1_offline_measure rerun if stage tools edited"
+ ],
+ "outputs": [
+  "tools/bench/launch_p3b2_resume_c135.py",
+  "tools/bench/cards/result_135-2.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p3b2b*",
+   "tools/bench/launch_p3b2_c135*",
+   "tools/bench/launch_p3b2_resume_c135*",
+   "tools/bench/diag_c134_1_finalize_b*",
+   "tools/bench/diag_c135_2*",
+   "tools/bench/selftest_c135_2*",
+   "tools/bench/selftest_c134_4_owners*",
+   "tools/bench/selftest_c134_1_dry*",
+   "tools/bench/c125_1_offline_measure*",
+   "tools/stagesim.py",
+   "tools/stage_prerun.py",
+   "tools/hooks/guard_bash.py",
+   "tools/protocol.py",
+   "tools/bench/sim/**",
+   "tools/bench/prerun/**",
+   "tools/bench/stage_prerun*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_135-2*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "No LabVIEW; the a-file, the bed and both in-between files are read-only (md5 only)",
+  "Compare stays strict (PD288(e), rule 1a): no field dropped, no difference absorbed",
+  "No change to plan b's actions or the end graph; a tool gap = return",
+  "Return at the first unexpected result; no STATUS or docs/ edit"
+ ],
+ "advances": ["M3", "R1", "R3"]
+}

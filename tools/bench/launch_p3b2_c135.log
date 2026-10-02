@@ -1,0 +1,50 @@
+BGRUN START 2026-10-02 12:20:40 limit 200.0 min: py -u tools/bench/launch_p3b2_c135.py --launch
+BGRUN PID 22816
+launch_p3b2_c135 - card 134-P1 (PD290(d)): the ONE chained launch runner of RING P3b-2 for cycle 135 (WRITTEN, NOT LAUNCHED).
+CHAIN (live, `--launch`): L0 pins + bed md5 + no LabVIEW + stage_prerun.check_launch of BOTH recipes -> A session a from the BED
+(child launch_p3b2_c135_a.py = recipe a unchanged, saves claudeDev\D1_ring_p3b2a_<ts>.vi) -> LabVIEW gone -> G FS graph read of
+that file (child launch_p3b2_c135_graph.py = diag_c134_1_graph.py unchanged + 4 literals) -> LabVIEW gone -> C compare with
+graph_ring_p3b2a_fs_20261002_102553.json (node classes = (uid, class) of every obj; terminal rows; wires = wire uid -> its term uids;
+fs_measured fs_frames + borders; PD290(b)) -> EQUAL: plan b ae6b6111 as is, check_launch(recipe b) again | DIFFERENT: snapshot plan b
+/ in / pred, memory_model load_by_vi[a md5] from G's 'MEM after load' FACT, plan b bytes restored to 1451ba90 from commit 0b72718d
+(the pin of the unchanged finalize script, as diag_c134_4_restore_b.py did), diag_c134_1_finalize_b.py <new graph>, stage_prerun
+--dry + --prerun recipe b, check_launch -> B session b on the a-file (child launch_p3b2_c135_b.py = recipe b unchanged, saves
+D1_ring_p3b2b_<ts>.vi) -> LabVIEW gone -> E FULL Error List read (child launch_p3b2_c135_el.py) -> total in 49..52 and every class
+in lo..hi of errorlist_expect_p3b2ab.json -> LabVIEW gone. The FIRST failing gate stops the chain (no later LabVIEW child), LabVIEW
+is killed and verified gone, RESULT FAIL. The bed is read-only throughout (md5 checked before, after every child, at the end).
+Every child runs under a NESTED tools/bgrun.py (its own deadline + END line; stage runs of child commands are not counted by
+record_started, so the runner gates each recipe with stage_prerun.check_launch on the recipe's own command - dry rule 2 + prerun
+records of its current sha/plan, decision 4, retry cap, scratch rule - before its child starts).
+WHAT EXISTED (reused, nothing rewritten): stage_d1_ring_p3b2{a,b}_scratch.py (Stage + R.body wrapper), diag_c134_1_graph.py,
+diag_c134_1_finalize_b.py, diag_c134_4_restore_b.py (git cat-file --filters), stage_d1_ring_p3b1_el.py (EC.main + max_steps 180),
+stage_prerun.check_launch/--dry/--prerun, stagexec.kill_labview_at_exit's taskkill/tasklist pair.
+MODES: no argument / --dry = OFFLINE walk, NOTHING spawned and nothing killed (children, tasklist, taskkill, git restore and file
+writes are stubbed; check_launch and md5 reads are real and read-only); `--branch equal|different|fail-a|fail-graph|fail-b|fail-el`
+picks the stubbed outcome (default equal). `--launch` = the live chain (cycle 135 card: labview build, gui true).
+CARD 134-6 (PD291(d)): the graph child runs with gate B SCOPED (diag_c134_1_graph.py, uses_plan = plan b): the 7 nested tunnels are
+LISTED, the gate passes unless plan b uses one, so the child ends rc 0; the old rc=1 special case (the 7-tunnel set) is removed. R and FS2 are
+skipped in the child (same_rows_as / fs_watch null): this runner's compare C covers terminals, wires, fs_frames and borders.
+PREDICTION (live): A peak <= 690 (scratch a 650.9); G rc 0, gates G1 G2 G3 FS1 B X PASS (B lists 7 UNMEASURED); C EQUAL
+(LabVIEW uid allocation deterministic, PD290(d)); B peak <= 690 and <= X10 667.0 + 10; E total 49..52, classes in lo..hi; bed unchanged.
+    py tools/bgrun.py --material --max-min 200 --log tools/bench/launch_p3b2_c135.log -- py -u tools/bench/launch_p3b2_c135.py --launch
+MODE LAUNCH
+  PASS  L0c no LabVIEW running before the chain (one COM client)  
+  PASS  L0a pins: recipes a/b, plans a/b, graph 102553, graph diag, finalize script  {}
+  PASS  L0b bed md5 == 9d7bf287 (read-only, never saved)  
+  PASS  L0d check_launch(stage_d1_ring_p3b2a.py) ALLOW  
+  PASS  L0d check_launch(stage_d1_ring_p3b2b.py) ALLOW  
+  RUN   A: py tools\bgrun.py --material --max-min 45 --log tools/bench/launch_p3b2_c135_a.log -- py -u tools\bench\launch_p3b2_c135_a.py
+  PASS  A session a: rc 0, saved file == its md5, peak 645.7 <= 690  {'rc': 0, 'final': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b2a_20261002_122043.vi', 'md5': '49cf7f770fc331e06607687af640ad5e'}
+  PASS  A2 LabVIEW gone; bed unchanged  
+  RUN   G: py tools\bgrun.py --material --max-min 15 --log tools/bench/launch_p3b2_c135_g.log -- py -u tools\bench\launch_p3b2_c135_graph.py
+  PASS  G graph read: rc 0 and ('G1', 'G2', 'G3', 'FS1', 'B', 'X') all PASS, no FAIL line  {'gates': {'K1': 'PASS', 'K2': 'PASS', 'K3': 'PASS', 'G1': 'PASS', 'G2': 'PASS', 'G3': 'PASS', 'FS1': 'PASS', 'B': 'PASS', 'X': 'PASS', 'H5': 'PASS', 'H4': 'PASS', 'H2': 'PASS', 'H3': 'PASS', 'H6': 'PASS'}, 'rc': 0}
+  PASS  G2 graph JSON written for the a-file (G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_ring_p3b2a_fs_20261002_123012.json)  
+  PASS  G3 LabVIEW gone; bed + a-file unchanged; 'MEM after load' read (605.0)  
+  FACT  C compare vs tools/bench/graph_ring_p3b2a_fs_20261002_102553.json: DIFFERENT {"borders": {"new": "{\"12195\": {\"entry\": true, \"frame\": 16565, \"fs\": 16543, \"inner_face\": 12197, \"outer_face\": 12200, \"outer_frame\": 639, \"src_term\": null}, \"14430\": {\"faces\": [[14429, 13236, true], [14432, 14435, false]]", "ref": "{\"12195\": {\"entry\": true, \"frame\": 16565, \"fs\": 16543, \"inner_face\": 12197, \"outer_face\": 12200, \"outer_frame\": 639, \"src_term\": null}, \"14430\": {\"faces\": [[14429, 13236, true], [14432, 14435, false]]"}}
+  PASS  R plan b bytes restored to 1451ba90 from commit 0b72718d (finalize_b's F-1 pin)  
+  RUN   F: py tools\bgrun.py --material --max-min 10 --log tools/bench/launch_p3b2_c135_f.log -- py -u tools/bench/diag_c134_1_finalize_b.py G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_ring_p3b2a_fs_20261002_123012.json
+  FAIL  F tools/bench/diag_c134_1_finalize_b.py G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_ring_p3b2a_fs_20261002_123012.json rc 0  d counts == 04204133's end {'objects': 10334, 'owners': 1763, 'terminals': 5933, 'wires': 1974}","artefacts":[{"path":"tools/bench/plan_ring_p3b2b_in.json","md5":"c1c50529bdc497c276da940793a240a2"},{"path":"tools/bench/plan_ring_p3b2b.json","md5":"fae25fb3a81cd1a4dc73d19bf2d00e42"},{"path":"tools/bench/plan_ring_p3b2b_pred.json","md5":"509554bbabc3456955b982e74874bcb4"}]}
+BGRUN END rc=1 after 24s
+
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":11,"fail":1},"first_fail":"F tools/bench/diag_c134_1_finalize_b.py G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\graph_ring_p3b2a_fs_20261002_123012.json rc 0","artefacts":[]}
+BGRUN END rc=1 after 773s

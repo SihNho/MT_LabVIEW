@@ -1,0 +1,21 @@
+{"schema":"result/1","id":"135-P1","status":"PASS","gates":{"pass":6,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/bench/plan_ring_p4_draft.json","md5":"d9d6624637477cbb8b03379fb4747e3b"},{"path":"tools/bench/prep_c135_p4_sizing.md","md5":"485c5d1fe989c10ce943cbba3338357b"}],
+"facts":[
+"Loop 1.2 = While #10170 body #23166 on #686; its stop = #10171 Equal? with x,y on the SAME wire 23255 (from #8486) => TRUE always, 1 iteration as built (prep_c135_p4_sizing.md:12)",
+"Draft (provisional, never_launch, base sim END graph md5 81ed697b): 93 actions = R reader 68 + C consumers 25; 87 ops, R 43 reads, 41 BIND (plan_ring_p4_draft.json:26-60)",
+"X10 at measured P3b-2 b start 578.0 (stage_d1_ring_p3b2b_scratch_c134_5.log:57-58): R+C 824.2 MB, R only 769.5; at load-growth 590.9: 837.1/782.4 (prep_c135_p4_sizing.md:27-30)",
+"N<=40: NO (93; R alone 68). peak<=675: NO. Largest op prefix <=675 MB = 21 ops (<=690: 24) => R needs >=3 LabVIEW sessions, R+C >=5 (plan_ring_p4_draft.json:60)",
+"Routes R: MEASURED 20 / PRECEDENT 42 / UNMEASURED 6; C: MEASURED 2 / PRECEDENT 23 (per-action route_level+cite; prep_c135_p4_sizing.md:33-38)",
+"UNMEASURED: Select on Boolean-array s, I32 MAX const, FS input tunnel w/o inner sink (n2 order), branch across new FS border, FS-frame exit (plan_ring_p4_draft.json:215,231,706,741,760)",
+"Nested FS 2499/14682 (FS2 frame 13236) and 43914 (FS1 frame 124) are siblings, on no P4 path; pool path = P3b-1 action 28's measured FS2 12938/FS1 681 borders (prep_c135_p4_sizing.md:37-38)",
+"#10068/#29240 sit in loop 1.1 #639, x on #637 i net -40, outputs w10187/w29787 have 0 sinks; consumers = unwired 1.2 tunnel faces t10182/t29782 (prep_c135_p4_sizing.md:13-15)",
+"#2626 element|0 t2832 <- #5119 x-y (BufNum - LastBufferNumber) is NOT a ring per-slot value; #11363 t11369 <- #11608 likewise (facts_c117_qrt.md:16-17, docs/ring-buffer-design.md:27)",
+"USER-RULES relied: U4 U6 U8 U9 U11 U13 (locals, 1.1 never waits, seqlock, jump) + U1 via PD233(f)(3); tension U9: a discarded frame still updates SRs #23508/#25339/#10850 (docs/user-rules.md:29-38)"
+],
+"open":[
+"P4 is ~4x the 21-op memory session and 93 > 40 actions with 2 broken files left (INDEX.md:27): split P4 into sessions within one file, cut scope (C to P5, drop n1>-1 = -7 ops), or ask the user for more files?",
+"Reader shape: inner wait-for-new While (adds >=1 ms per frame, cannot exit when the camera stops) vs a case around the original 1.2 nodes; jump as last:=Latest-1; n2 ordering by FS vs count-1 For (PD237(d))?",
+"Discarded (n1!=n2) frames still run #5058 and update 1.2's shift registers (pos in cal image, Bead is good?, x,y,z) - roll back, gate, or accept under U9? And #5119 x-y / #11608: recompute in 1.2 or add per-slot arrays?"
+],
+"cost":{"usd":null,"minutes":12,"labview_runs":0},
+"note":"Offline only; no LabVIEW, no tool or docs/ edit; draft not simulated (stagesim not run) - counts are from the action list; prior-art not dispatched (nothing built)."}

@@ -1,0 +1,55 @@
+{
+ "schema": "task/1",
+ "id": "135-5",
+ "kind": "doc",
+ "goal": "PD297: P3b-2 acceptance bookkeeping - expected Error List from the final read, current-bed key moved, in-between files deleted. Offline.",
+ "why": "135-4 PASS 13/0: final D1_ring_p3b2b_20261002_130007.vi 39511877, EL 51 (loose ends 22->20); reader MISMATCH only vs recipe b's auto-written expected file, which PD291(d) says is not used.",
+ "inputs": [
+  {"path": "docs/d1/ring-p3b.md"},
+  {"path": "tools/bench/cards/result_135-4.json"},
+  {"path": "tools/bench/errorlist_D1_ring_p3b2b_20261002_130007_20261002_130834.json", "md5": "7a17dad72388fc32de4a8ebbbd710c68"},
+  {"path": "tools/bench/errorlist_expected_D1_ring_p3b1_20261002_060910.json"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b2b_20261002_130007.vi", "md5": "395118775a52bc90073f4449b99f899d"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/bench/errorlist_expected_D1_ring_p3b2b_20261002_130007.json"},
+  {"kind": "file", "name": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_ring_p3b2a_20261002_122043.vi"},
+  {"kind": "file", "name": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/scratch_c133_6_ring_p3b2a_20261002_093837.vi"}
+ ],
+ "pass": [
+  "1 MEASURE: the current errorlist_expected_..._130007.json item list equals P3b-1's 53-item expected list (count + entries); PREDICTION yes. Otherwise return, nothing moved",
+  "2 keep it as *_recipe_stale.json; write the expected file from the final read (51 items) with a cite to errorlist_..._130834.json; errorlist_check reverdict of the final read = OK",
+  "3 STATUS.md `current-bed:` key -> D1_ring_p3b2b_20261002_130007.vi + its comment line (md5 39511877, 51 items, expected file, PD297); errorlist_check current_bed_text reads it",
+  "4 md5-check then delete claudeDev D1_ring_p3b2a_20261002_122043.vi (49cf7f77) and scratch_c133_6_ring_p3b2a_20261002_093837.vi (6cc69221); bed P3b-1 and P3a kept"
+ ],
+ "outputs": [
+  "tools/bench/errorlist_expected_D1_ring_p3b2b_20261002_130007.json",
+  "tools/bench/cards/result_135-5.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/errorlist_expected_D1_ring_p3b2b*",
+   "tools/bench/errorlist_D1_ring_p3b2b*",
+   "tools/bench/diag_c135_5*",
+   "STATUS.md",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_ring_p3b2a_20261002_122043.vi",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/scratch_c133_6_ring_p3b2a_20261002_093837.vi",
+   "tools/bench/cards/result_135-5*"
+  ],
+  "status_edit": true,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 20},
+ "rules": [
+  "STATUS.md: change only the `current-bed:` key and its comment line; nothing else",
+  "Delete only the two named in-between files, each after its md5 matches; never the bed, P3b-1, P3a or any original",
+  "Return at the first unexpected result"
+ ],
+ "advances": ["M3", "R1", "R3"]
+}

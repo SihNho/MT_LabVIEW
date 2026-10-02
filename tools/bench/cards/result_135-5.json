@@ -1,0 +1,23 @@
+{"schema":"result/1","id":"135-5","status":"PASS","gates":{"pass":18,"fail":0},
+"first_fail":null,
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/errorlist_expected_D1_ring_p3b2b_20261002_130007.json","md5":"eac21f43cb205566bcb8bbe746e253c3"},
+ {"path":"tools/bench/errorlist_expected_D1_ring_p3b2b_20261002_130007_recipe_stale.json","md5":"6e215b14fb85fd60bf5579a1f9322cd4"},
+ {"path":"tools/bench/errorlist_D1_ring_p3b2b_20261002_130007_20261002_132351_reuse.json","md5":"f8c10604d09f466cb65abd5e2051c91d"},
+ {"path":"tools/bench/diag_c135_5_accept.py","md5":"e4a64f3f216c01aa871c87e66c203c17"},
+ {"path":"STATUS.md","md5":null}],
+"facts":[
+ "step1: recipe expected file == P3b-1's list: total 53, 10 entries, norm_all+count and labels equal (diag_c135_5_measure2.log:3-5)",
+ "step2: final read 51 items, 0 unmatched, 0 matching two keys; only loose ends changed 22->20, all other key groups equal (diag_c135_5_write.log:4-9)",
+ "step2: recipe file kept as *_recipe_stale.json 6e215b14; new expected file eac21f43, total 51, measured_from the 130834 read (diag_c135_5_write.log:11-12)",
+ "step2: errorlist_check.reverdict with the new file = OK, extra [] missing [] (diag_c135_5_write.log:13)",
+ "step3: STATUS.md current-bed -> D1_ring_p3b2b_20261002_130007.vi + comment (md5, 51 items, expected file, PD297); current_bed() resolves it (diag_c135_5_status.log:3)",
+ "step4: D1_ring_p3b2a_20261002_122043.vi 49cf7f77 and scratch_c133_6_ring_p3b2a_20261002_093837.vi 6cc69221 md5-matched and deleted (diag_c135_5_delete.log:3-6)",
+ "step4: kept P3b-1 9d7bf287, P3a 4dfa44aa, new bed 39511877 (diag_c135_5_delete.log:7-9)",
+ "own-script bug: first --measure run printed a RESULT line with an extra 'mode' field, bgrun rc=1 (diag_c135_5_measure.log); fixed to protocol.result_line and rerun PASS",
+ "JEV row: diag_c135_5_measure.log | not read | - | own RESULT-line format fixed, rerun as measure2.log | PASS"],
+"open":[
+ "STATUS.md's bed narrative line (STATUS.md:93, 'THE WORK VI (bed) IS NOW ...p3b1...') still names P3b-1; the card allowed only the key + comment, so it was not changed."],
+"cost":{"usd":null,"minutes":3,"labview_runs":0},
+"note":"Offline only; no LabVIEW, no GUI. The failing measure.log is my own RESULT-line format error, not a prediction failure."}

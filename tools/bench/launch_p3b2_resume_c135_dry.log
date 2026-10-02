@@ -1,0 +1,21 @@
+BGRUN START 2026-10-02 12:47:59 limit 5.0 min: py -u tools/bench/launch_p3b2_resume_c135.py --dry
+BGRUN PID 9704
+MODE DRY (nothing spawned, nothing killed, nothing written), branch equal
+  PASS  L0c no LabVIEW running before the chain  
+  PASS  L0a pins: recipe b, plan b ae6b6111, graphs 123012 + 102553  {}
+  PASS  L0b a-file 49cf7f77 + bed 9d7bf287 md5 (read-only)  
+  FACT  C re-annotation changes new 0 / ref 7
+  PASS  C compare 123012 vs 102553 (both re-annotated, strict) EQUAL - DIFFERENT stops (no finalize branch)  {}
+  PASS  C2 check_launch(stage_d1_ring_p3b2b.py) ALLOW on plan b ae6b6111  
+  DRY   child B launch_p3b2_c135_b.py -> PASS (stub)
+  PASS  B session b on the a-file: rc 0, saved == md5, peak 667.0 <= 690 and <= X10 667.0 + 10  {'rc': 0, 'final': '<dry b-file>', 'md5': 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'}
+  PASS  B2 LabVIEW gone; bed + a-file unchanged  
+  DRY   child E launch_p3b2_c135_el.py -> PASS (stub)
+  FACT  E verdict MISMATCH; items 49; per class {"buildarraybuildarraycontainsunwiredorbadterminal": 3, "looptunnelwireconnectedtoanundirectedtunnel": 3, "subyitracknbeadsfourfoldoyerkernely3yireguiredinputimageinisnotwired": 1, "thiswireconnectsoneormoredatasinksbuthasnosource": 1, "thiswireisnotconnectedtoanything": 20, "wirewirehaslooseends": 18, "youhayeconnectedanoutputlooptunneltoaninputofreplacearraysubsetchangetheinputtoanoutputoraddasource": 1, "youhayeconnectedanoutputlooptunneltoaninputofsubyichangetheinputtoanoutputoraddasource": 1, "youhayeconnectedtwoterminalsofdifferenttypes": 1}
+  PASS  E full final Error List: reader gates all True, rc in (0, 1)  {'window_opened': True}
+  PASS  E2 total 49 in 49..52  
+  PASS  E3 every class within lo..hi of tools/bench/errorlist_expect_p3b2ab.json  {}
+  PASS  E4 LabVIEW gone; final, a-file and bed unchanged  
+  FACT  DRY calls ['gone', 'write:launch_p3b2_c135_state.json', 'B', 'write:launch_p3b2_c135_state.json', 'gone', 'E', 'gone', 'gone']
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":11,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

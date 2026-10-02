@@ -442,6 +442,98 @@ def fs_border_gate(graph, uses):
     return {"status": "FAIL" if used else "PASS", "unmeasured": sorted(um), "used": dict((str(k), v) for k, v in used.items())}
 
 
+def completeness_gate(g, uses=None, st=None):
+    """card 135-2 (docs/violation-decisions.md 2026-10-02 12:2x, device (1); selftest_c134_4_owners O1-O3 made a gate): a
+    MEASURED base graph is complete when every Flat Sequence frame's owner is its FS from fs_frames ([FS_CLS, fs]) and
+    _diag_chain walks it to a non-frame diagram WITHOUT an inferred link (fs_frame_inferred) - or its FS is UNMEASURED
+    (st['fs_unmeasured']) and `uses` ({where: obj}, as fs_border_gate) names neither the FS nor any of its frames. Run by
+    finalize and by rebase BEFORE any simulation. `st` = an already built base state (self-tests); default base_state(g).
+    A graph without fs_measured -> status 'N/A' (not a measured base; nothing checked, said so). Returns {status PASS|FAIL|N/A,
+    fs, frames, unmeasured, bad_owner {frame: owner}, stuck {frame: chain|error}, inferred {frame: chain}, used {fs: [where]}}."""
+    if st is None and not isinstance(g.get("fs_measured"), dict):
+        return {"status": "N/A", "why": "graph has no fs_measured (not a measured base)", "fs": 0, "frames": 0}
+    st = st if st is not None else base_state(g)
+    par = dict((int(k), int(v)) for k, v in graph(st)["tree"]["parent"].items() if v is not None)
+    fsf = dict((int(k), [int(x) for x in v]) for k, v in (st.get("fs_frames") or {}).items())
+    frames = set(f for fl in fsf.values() for f in fl)
+    um = set(int(x) for x in st.get("fs_unmeasured") or [])
+    bad_owner, stuck, inferred, used = {}, {}, {}, {}
+    for fs, fl in sorted(fsf.items()):
+        if fs in um:
+            ids = set([fs]) | set(fl)
+            for where, obj in (uses or {}).items():
+                hit = _ints(obj, set()) & ids
+                if hit:
+                    used.setdefault(str(fs), []).append("{0}: {1}".format(where, sorted(hit)))
+            continue
+        for f in fl:
+            own = (st.get("owners") or {}).get(str(f))
+            if own != [FS_CLS, fs]:
+                bad_owner[str(f)] = {"fs": fs, "owner": own}
+                continue
+            before = copy.deepcopy(st.get("fs_frame_inferred"))
+            try:
+                ch = _diag_chain(st, f, par)
+            except SimError as e:
+                stuck[str(f)] = str(e)
+                continue
+            if st.get("fs_frame_inferred") != before:
+                inferred[str(f)] = ch
+                if before is None:
+                    st.pop("fs_frame_inferred", None)
+                else:
+                    st["fs_frame_inferred"] = before
+            if len(ch) < 2 or ch[-1] in frames:
+                stuck[str(f)] = ch
+    bad = bad_owner or stuck or inferred or used
+    return {"status": "FAIL" if bad else "PASS", "fs": len(fsf), "frames": len(frames), "unmeasured": sorted(um),
+            "bad_owner": bad_owner, "stuck": stuck, "inferred": inferred, "used": used}
+
+
+class WriteGuard(object):
+    """card 135-2 (docs/violation-decisions.md 2026-10-02 12:2x, device (2); PD279(c) extended to finalize and to the step
+    files): snapshot the BYTES of `files` and of every file directly in `dirs` before a finalize/rebase writes; restore()
+    puts every byte back (and removes files that did not exist), so a FAILED finalize leaves the plan files and the stage's
+    sim step files exactly as they were. unchanged() says whether the current bytes equal the snapshot."""
+
+    def __init__(self, files=(), dirs=()):
+        self.files = dict((os.path.abspath(p), open(p, "rb").read() if os.path.isfile(p) else None) for p in files)
+        self.dirs = {}
+        for d in dirs:
+            d = os.path.abspath(d)
+            self.dirs[d] = dict((n, open(os.path.join(d, n), "rb").read()) for n in (os.listdir(d) if os.path.isdir(d) else [])
+                                if os.path.isfile(os.path.join(d, n)))
+
+    def _now(self):
+        f = dict((p, open(p, "rb").read() if os.path.isfile(p) else None) for p in self.files)
+        d = dict((k, dict((n, open(os.path.join(k, n), "rb").read()) for n in (os.listdir(k) if os.path.isdir(k) else [])
+                          if os.path.isfile(os.path.join(k, n)))) for k in self.dirs)
+        return f, d
+
+    def unchanged(self):
+        return self._now() == (self.files, self.dirs)
+
+    def restore(self):
+        for p, b in self.files.items():
+            if b is None:
+                if os.path.isfile(p):
+                    os.remove(p)
+            else:
+                with open(p, "wb") as fh:
+                    fh.write(b)
+        for d, m in self.dirs.items():
+            if os.path.isdir(d):
+                for n in os.listdir(d):
+                    if n not in m and os.path.isfile(os.path.join(d, n)):
+                        os.remove(os.path.join(d, n))
+            elif m:
+                os.makedirs(d)
+            for n, b in m.items():
+                with open(os.path.join(d, n), "wb") as fh:
+                    fh.write(b)
+        return self.unchanged()
+
+
 def new_uid(st):
     st["neg"] -= 1
     return st["neg"]

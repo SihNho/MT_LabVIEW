@@ -7,7 +7,13 @@ plan_ring_p3b2b_in.json (1451ba90's input); only `base` changes (rule 1a, PD287(
 PREDICTION: F0 b's actions name no negative (simulator) uid; F1 stagesim FINAL on the real graph, route check PASS, 0 unbound;
 F2 end cdiff == plan_ring_p3b2.json 04204133's 16 rows; F3 end object / terminal / wire counts == 04204133's end (10334 / 5933 /
 1974) or the diff listed; F4 pred written, ops == compile, X10 start = a's MEASURED load (memory_model load_by_vi) + op-0, peak <= 690.
-    py tools/bgrun.py --material --max-min 6 --log tools/bench/diag_c134_1_finalize_b.log -- py -u tools/bench/diag_c134_1_finalize_b.py <graph>"""
+    py tools/bgrun.py --material --max-min 6 --log tools/bench/diag_c134_1_finalize_b.log -- py -u tools/bench/diag_c134_1_finalize_b.py <graph>
+CARD 135-2 (docs/violation-decisions.md 2026-10-02 12:2x device; PD294(c)): (1) FC base-graph COMPLETENESS gate
+(stagesim.completeness_gate, uses = b's actions) runs BEFORE anything is written or simulated; (2) every file this script writes
+(plan b, _in, _pred, the provisional copy, the stage's sim step dir) is snapshotted by stagesim.WriteGuard and RESTORED byte for byte
+when any gate FAILS - the plan files are written only on success (135-1 wrote fae25fb3 / c1c50529 / 509554bb and 19 step files
+despite F3 FAIL, launch_p3b2_c135_f.log:13). `--bench DIR` (self-tests only) reads/writes the plan files in DIR and simulates
+into DIR/sim instead of tools/bench (selftest_c135_2_device.py)."""
 import collections, copy, hashlib, json, os, shutil, sys                                     # noqa: E401
 B = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(B))
@@ -17,6 +23,11 @@ md5 = lambda p: hashlib.md5(open(p, "rb").read()).hexdigest()                   
 rel = lambda p: os.path.relpath(p, ROOT).replace("\\", "/")                       # noqa: E731
 J = lambda p: json.load(open(p if os.path.isabs(p) else os.path.join(ROOT, p), encoding="utf-8"))   # noqa: E731
 ok, arts = [], []
+SIM_OUT = SS.SIM_ROOT
+if "--bench" in sys.argv:
+    B = os.path.abspath(sys.argv[sys.argv.index("--bench") + 1])
+    SIM_OUT = os.path.join(B, "sim")
+GUARD = []
 
 
 def gate(name, c, det=""):
@@ -26,10 +37,22 @@ def gate(name, c, det=""):
 
 def finish():
     np_, nf = sum(1 for _n, c in ok if c), sum(1 for _n, c in ok if not c)
+    if nf and GUARD:
+        print("  FACT  WRITE-GUARD: a gate FAILED -> plan files + sim step dir restored, bytes unchanged = {0}".format(
+            GUARD[0].restore()), flush=True)
+        del arts[:]
     print(P.result_line(P.make_result(np_, nf, next((n for n, c in ok if not c), None), arts)), flush=True)
     sys.exit(1 if nf else 0)
 
 
+def _restore_on_exception(t, v, tb):
+    if GUARD:
+        print("  FACT  WRITE-GUARD: exception -> plan files + sim step dir restored, bytes unchanged = {0}".format(
+            GUARD[0].restore()), flush=True)
+    sys.__excepthook__(t, v, tb)
+
+
+sys.excepthook = _restore_on_exception
 G = os.path.abspath(sys.argv[1])
 REF = os.path.join(B, "plan_ring_p3b2.json")
 PBI, PB = os.path.join(B, "plan_ring_p3b2b_in.json"), os.path.join(B, "plan_ring_p3b2b.json")
@@ -42,6 +65,15 @@ if not ok[-1][1]:
     finish()
 GJ, REFP = J(G), J(REF)
 FZ = REFP["finalized"]
+STAGE = J(PBI).get("stage") or "ring_p3b2b"
+GUARD.append(SS.WriteGuard(files=(PBI, PB, PBI_OLD, os.path.join(B, "plan_ring_p3b2b_pred.json")), dirs=(os.path.join(SIM_OUT, STAGE),)))
+_old_acts = J(PBI_OLD if os.path.isfile(PBI_OLD) else PBI)["actions"]
+CG = SS.completeness_gate(GJ, uses={"actions": _old_acts})
+gate("FC base-graph completeness (violation-decisions 2026-10-02 12:2x): {0} FS / {1} frames, UNMEASURED {2} unused".format(
+    CG.get("fs"), CG.get("frames"), CG.get("unmeasured")), CG["status"] == "PASS",
+    dict((k, CG.get(k)) for k in ("status", "why", "bad_owner", "stuck", "inferred", "used") if CG.get(k)))
+if CG["status"] != "PASS":
+    finish()
 if not os.path.isfile(PBI_OLD):
     shutil.copyfile(PBI, PBI_OLD)                                     # the provisional input, kept verbatim
 old = J(PBI_OLD)
@@ -67,7 +99,7 @@ new_in.update(goal="RING P3b-2 session b (card 134-1, PD287(c)): the same {0} ac
               base={"path": rel(G), "md5": md5(G)}, actions=AB)
 json.dump(new_in, open(PBI, "w", encoding="utf-8"), indent=1)
 gate("F0b b input validates (stageplan/1, real base)", P.validate_obj(J(PBI))[0], P.validate_obj(J(PBI)))
-SB = SS.simulate(PBI, G, plan_out_dir=B, log=lambda *x: None, route_check=True)
+SB = SS.simulate(PBI, G, out_root=SIM_OUT, plan_out_dir=B, log=lambda *x: None, route_check=True)
 pb = J(PB)
 rc = (pb.get("finalized") or {}).get("route_check") or {}
 unb = [x for x in rc.get("rows") or [] if "unbound" in json.dumps(x).lower()]

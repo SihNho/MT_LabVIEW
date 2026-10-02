@@ -23,10 +23,10 @@ not enough. Long history stays where it was; nothing here replaces the full text
 
 ## Current state
 
-- **Work VI (bed):** `claudeDev\D1_ring_p3b1_20261002_060910.vi`, md5 `9d7bf28738b7c154280e5e7c2c9d4961` (STATUS `current-bed:`; PD274 — [ring-p3b:64](ring-p3b.md)). Error List 53 items, expected file `tools/bench/errorlist_expected_D1_ring_p3b1_20261002_060910.json`. STRUCTURAL, `ExecState` 0 by design, never run. (Before: P3a `D1_ring_p3a_20261001_180540.vi` `4dfa44aa…`, 55 items.)
-- **Broken-intermediate count (CLAUDE.md "AT MOST 6"):** 3 of 6 (P2b 1, P3a 2, P3b-1 3). After P3b-2: 4 of 6; P4 and P5 use 5 and 6; P6 must run (PD261(d) — [split-plan:2847](../d1-loop12-17-split-plan.md)).
+- **Work VI (bed):** `claudeDev\D1_ring_p3b2b_20261002_130007.vi`, md5 `395118775a52bc90073f4449b99f899d` (STATUS `current-bed:`; PD297 — [ring-p3b](ring-p3b.md)). Error List 51 items, expected file `tools/bench/errorlist_expected_D1_ring_p3b2b_20261002_130007.json`. STRUCTURAL, `ExecState` 0 by design, never run. (Before: P3b-1 `D1_ring_p3b1_20261002_060910.vi` `9d7bf287…`, 53 items.)
+- **Broken-intermediate count (CLAUDE.md "AT MOST 6"):** 4 of 6 (P2b 1, P3a 2, P3b-1 3, P3b-2 4). P4 measured at 93 actions (PD293) — how many files it may use is the open user decision D-2026-10-02-03; P6 must run (PD261(d) — [split-plan:2847](../d1-loop12-17-split-plan.md)).
 - **Plan of record for the frame handoff:** `docs/ring-buffer-design.md` (user design 2026-09-28; PD238(a)). User rules checked by every design item: `docs/user-rules.md`.
-- **Next act (cycle 135):** the ONE launch of P3b-2 (both sessions from the bed) with `tools/bench/launch_p3b2_c135.py --launch` (PD291(f)); offline step 0 = whatever of PD291(b)(c)(d) card 134-6 left open (`tools/bench/cards/result_134-6.json`). (Cycle 134: dry rule device, FS reader (f0 == 27641 measured), b finalized on the measured graph ae6b6111, scratch b PASS 20/0 629.0 MB EL 51, launch runner prepared — PD288–291.)
+- **Next act (cycle 136):** P4 preparation (PD295(e)): ONE LabVIEW card = scratch verification of the 5 unmeasured P4 routes + `Or` donor, plus a real graph read of the new bed; beside it ONE offline prep card = P4 draft v2 with PD293(b)-(d)/PD295(a)(c)(d) (rollback Selects, `BufDiff`, W1 stop exit, 1.2 stop) cut into ≤ 40-action steps with X10 per session. (Cycle 135: P3b-2 DELIVERED = bed, PD294–297; P4 sized, PD293/295.)
 
 ## Ring-buffer step table (PD238(g) — [split-plan:2260](../d1-loop12-17-split-plan.md))
 
@@ -37,14 +37,16 @@ not enough. Long history stays where it was; nothing here replaces the full text
 | P2b | `Num`/`TransPos`/`RotPos`/`FrameIdx`/`Latest` + their init on FS1 `#4866` | DELIVERED `D1_ring_p2b_20261001_140658.vi` (`652b1447…`) | PD246(a) :2397 |
 | P3a | loop-1.1 control: wait, two registers, `Equal?`, case, counter, mod 20 | DELIVERED `D1_ring_p3a_20261001_180540.vi` (`4dfa44aa…`) | PD251(a) :2552 |
 | P3b-1 | slot writes part 1 (IMAQ Copy + error guard; 31 actions) | DELIVERED `D1_ring_p3b1_20261002_060910.vi` (`9d7bf287…`) = bed; 680.4 MB, EL 53 | PD271–274 (tooling.md:56, ring-p3b.md:35–64) |
-| P3b-2 | slot writes part 2 (TransPos/RotPos/FrameIdx groups, Latest); 39 actions applied in TWO LabVIEW sessions (a 21 / b 18) by memory | LAUNCH-READY — scratch a PASS (650.9 MB), scratch b PASS (629.0 MB, EL 51); b plan ae6b6111 on the measured graph; launch runner `launch_p3b2_c135.py` (stop 690, EL 49..52) | PD283–291 (ring-p3b.md:155–360) |
-| P4 | tracking-loop 1.2 rows (seqlock read, `last` register, jump to `Latest`) | NOT STARTED — size it with the memory formula first | PD238(e) :2258, PD266(b) :2946 |
+| P3b-2 | slot writes part 2 (TransPos/RotPos/FrameIdx groups, Latest); 39 actions applied in TWO LabVIEW sessions (a 21 / b 18) by memory | DELIVERED `D1_ring_p3b2b_20261002_130007.vi` (`39511877…`) = bed; a 645.7 / b 620.6 MB, EL 51 | PD283–297 (ring-p3b.md:155–) |
+| P4 | tracking-loop 1.2 reader (seqlock, `last`, jump, rollback Selects, `BufDiff` 5th per-slot array, 1.2 stop) | SIZED 93 actions / X10 824 MB (draft `plan_ring_p4_draft.json`); routes to verify; file count = D-2026-10-02-03 | PD293, PD295 (ring-p4.md) |
 | P5 | results queue 1.2 → 1.7 (lossless FIFO) | NOT STARTED | PD238(d) :2257 |
 | P6 | recorded-frame replay (X/Y/Z bit-identical) + real ABBA at 90/150 Hz | NOT STARTED — first RUN of the chain | PD238(f) :2259 |
 | after P6 | ONE interface-contract step (every loop's published/read locals) | NOT STARTED | STATUS `## NEXT` parallelism rule |
 
 ## Open user decisions (`tools/bench/decisions_pending.json`)
 
+- **D-2026-10-02-03 (open):** P4 is 93 edits — raise the 6-file cap to 8, allow one 93-edit step in ~5 LabVIEW sessions, or run the chain first?
+- **D-2026-10-02-02 (open):** do in-between files count toward the 6-file cap (we proceed as "no").
 - **D-2026-10-02-01 (open):** a check that stops a helper agent finishing while its own LabVIEW run is live (129-2's run was killed that way).
 - D-2026-10-01-01 ANSWERED 2026-10-01 (option 1): ≤ ~40 edit operations per ring step, full scratch run before each, 6-file cap kept (PD261 — [split-plan:2827](../d1-loop12-17-split-plan.md)).
 - D-2026-09-28-01 ANSWERED by user rule U13 (jump to the newest slot; PD238(a)).
@@ -169,6 +171,11 @@ delivered step that later items build on; it is in force as a fact, not as an or
 - PD290(a)-(d) session b FINALIZED on the measured graph (ae6b6111, 18/18, cdiff 16, dry rule 2 + prerun 15/0, X10 667.0); object-row +29 = representation (compare node classes/terminals/wires/cdiff); fp-30 queued; 134-5 scratch b ‖ prep 134-P1 launch runner — docs/d1/ring-p3b.md:317
 - PD291(a)-(f) scratch b ACCEPTED (20/0, 629.0 MB, EL 51); a's census from the two real graph reads; name the 2 vanished EL items offline before launch; no failing-by-design graph log; equal-branch provenance accepted; cycle 135 = ONE launch via launch_p3b2_c135.py — docs/d1/ring-p3b.md:337
 - PD292(a)-(c) launch preconditions closed (a's census from graph-read uids; gate B scoped; runner 16e941a6); vanished EL items accepted at class level (loose ends 22→20, PD274 precedent); a's CEN2 instrument check offline before launch — docs/d1/ring-p3b.md:361
+- PD294(a)-(e) launch session a ACCEPTED as in-between (49cf7f77, 20/0); compare DIFFERENT = reader annotation only → re-annotate both sides; plan b restored to ae6b6111; finalize-writes-only-on-success + completeness gate built now; resume runner (no finalize branch) then ONE resume launch of session b — docs/d1/ring-p3b.md:374
+- PD297(a)-(c) P3b-2 DELIVERED = bed `D1_ring_p3b2b_20261002_130007.vi` 39511877, EL 51 (loose ends 22→20), expected file from the final read; broken count 4 of 6; next = P4 — docs/d1/ring-p3b.md:409
+- PD296(a)-(d) plan b applies to the a-file (same actions; step diffs = base-file identity only); resume memory gate kept (≤ 677); fp-30 stays queued (its self-test fails 10/1 on content); card 135-4 = ONE resume launch — docs/d1/ring-p3b.md:396
+- PD295(a)-(e) `#5119` value is SAVED ⇒ 5th per-slot array `BufDiff` in P4; `#11608`/`#1359` display only (display track); 1.2's x==x scaffold stop replaced by the program stop; n2 ordered by a one-frame FS on a `#5058` output (amends PD293(e)); scratch verification of 5 unmeasured routes before P4 plans — docs/d1/ring-p4.md:46
+- PD293(a)-(f) P4 sized (93 actions, X10 824 MB; ≤40-action steps, file count = D-2026-10-02-03); torn/stale frame rolls back every 1.2 register (Select) and is not handed to 1.7; valid = n1==n2 AND n1>last; W1 wait-for-new with stop exit; n2 ordered by data dependency; facts owed (#5119/#11608 use in the original, 1.2 stop, 6 unmeasured routes) — docs/d1/ring-p4.md:21
 - PD268(d) 130-2 accepted; open tooling queue fp-20/21/22/24/25, guard_cycle:40, stop_record H1–H3 — docs/d1/tooling.md:34
 
 ### Older items that PD238+ cite as still applying

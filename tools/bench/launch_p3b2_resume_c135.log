@@ -1,0 +1,20 @@
+BGRUN START 2026-10-02 13:00:04 limit 120.0 min: py -u tools/bench/launch_p3b2_resume_c135.py --launch
+BGRUN PID 21868
+MODE LAUNCH
+  PASS  L0c no LabVIEW running before the chain  
+  PASS  L0a pins: recipe b, plan b ae6b6111, graphs 123012 + 102553  {}
+  PASS  L0b a-file 49cf7f77 + bed 9d7bf287 md5 (read-only)  
+  FACT  C re-annotation changes new 0 / ref 7
+  PASS  C compare 123012 vs 102553 (both re-annotated, strict) EQUAL - DIFFERENT stops (no finalize branch)  {}
+  PASS  C2 check_launch(stage_d1_ring_p3b2b.py) ALLOW on plan b ae6b6111  
+  RUN   B: py tools\bgrun.py --material --max-min 45 --log tools/bench/launch_p3b2_c135_b.log -- py -u tools\bench\launch_p3b2_c135_b.py
+  PASS  B session b on the a-file: rc 0, saved == md5, peak 620.6 <= 690 and <= X10 667.0 + 10  {'rc': 0, 'final': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b2b_20261002_130007.vi', 'md5': '395118775a52bc90073f4449b99f899d'}
+  PASS  B2 LabVIEW gone; bed + a-file unchanged  
+  RUN   E: py tools\bgrun.py --material --max-min 40 --log tools/bench/launch_p3b2_c135_e.log -- py -u tools\bench\launch_p3b2_c135_el.py
+  FACT  E verdict MISMATCH; items 51; per class {"buildarraybuildarraycontainsunwiredorbadterminal": 3, "looptunnelwireconnectedtoanundirectedtunnel": 3, "subyitracknbeadsfourfoldoyerkernely3yireguiredinputimageinisnotwired": 1, "thiswireconnectsoneormoredatasinksbuthasnosource": 1, "thiswireisnotconnectedtoanything": 20, "wirewirehaslooseends": 20, "youhayeconnectedanoutputlooptunneltoaninputofreplacearraysubsetchangetheinputtoanoutputoraddasource": 1, "youhayeconnectedanoutputlooptunneltoaninputofsubyichangetheinputtoanoutputoraddasource": 1, "youhayeconnectedtwoterminalsofdifferenttypes": 1}
+  PASS  E full final Error List: reader gates all True, rc in (0, 1)  {'window_opened': True, 'count_read': True, 'all_items_read': True, 'every_item_dclicked': True, 'closed_with_esc': True, 'scratch_identical': True, 'scratch_deleted': True, 'bed_md5_unchanged': True, 'block_diagram_open': True, 'refs_balanced': True, 'handles_baseline_up': True}
+  PASS  E2 total 51 in 49..52  
+  PASS  E3 every class within lo..hi of tools/bench/errorlist_expect_p3b2ab.json  {}
+  PASS  E4 LabVIEW gone; final, a-file and bed unchanged  
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":11,"fail":0},"first_fail":null,"artefacts":[{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b2b_20261002_130007.vi","md5":"395118775a52bc90073f4449b99f899d"}]}
+BGRUN END rc=0 after 1187s

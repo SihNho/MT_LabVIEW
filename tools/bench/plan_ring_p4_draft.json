@@ -1,0 +1,1244 @@
+{
+ "schema": "stageplan/1",
+ "stage": "ring_p4_draft",
+ "provisional": true,
+ "never_launch": true,
+ "goal": "DRAFT for sizing only (card 135-P1, PD238(e) / PD266(b)); not finalized, not simulated, never launched",
+ "context": {
+  "s1_key": "D1_s1_copy"
+ },
+ "base": {
+  "path": "tools/bench/sim/ring_p3b2b/step_18_wire_remove_loose_ends.json",
+  "md5": "81ed697b3df03de35854ac5e974e88c1",
+  "note": "stagesim END graph of P3b-2 b (provisional base: P3b-2 not launched yet; rebase onto its real graph before any use)"
+ },
+ "loop_1_2": {
+  "while": 10170,
+  "body": 23166,
+  "parent": 686
+ },
+ "design_choices_open": [
+  "wait-for-new inner While W1 instead of a case around the original nodes",
+  "jump = last := Latest - 1",
+  "n2 ordered by a FS border",
+  "consumers group C in P4 (not P5)"
+ ],
+ "counts": {
+  "actions": 93,
+  "actions_R": 68,
+  "actions_C": 25,
+  "ops": 87,
+  "ops_R": 62,
+  "x10_all_meas": {
+   "N": 87,
+   "R": 43,
+   "bind": 41,
+   "start_mb": 578.0,
+   "peak_mb": 824.2
+  },
+  "x10_all_pred": {
+   "N": 87,
+   "R": 43,
+   "bind": 41,
+   "start_mb": 590.9,
+   "peak_mb": 837.1
+  },
+  "x10_R_meas": {
+   "N": 62,
+   "R": 35,
+   "bind": 33,
+   "start_mb": 578.0,
+   "peak_mb": 769.5
+  },
+  "x10_R_pred": {
+   "N": 62,
+   "R": 35,
+   "bind": 33,
+   "start_mb": 590.9,
+   "peak_mb": 782.4
+  },
+  "max_prefix_ops_le_675": 21,
+  "max_prefix_ops_le_690": 24,
+  "created_by_class": {
+   "<add_shift_reg>": 2,
+   "<move_in>": 2,
+   "<tunnel>": 3,
+   "<wire:branch>": 5,
+   "<wire:connect>": 28,
+   "<wire:connect_term_uid>": 6,
+   "<wire:stop>": 1,
+   "<wire:wire_sr>": 4,
+   "<wire_remove_loose_ends>": 6,
+   "Comparison/Equal?": 1,
+   "Comparison/Greater?": 2,
+   "Comparison/Less?": 1,
+   "DigitalNumericConstant": 2,
+   "DigitalNumericConstant/const_donor": 3,
+   "FlatSequence": 1,
+   "Function/And": 1,
+   "Function/Array Max & Min": 1,
+   "Function/Decrement": 1,
+   "Function/Increment": 1,
+   "Function/Select": 3,
+   "Function/Wait (ms)": 1,
+   "IndexArray/Index Array": 5,
+   "Local": 6,
+   "WhileLoop": 1
+  },
+  "levels": {
+   "C MEASURED": 2,
+   "C PRECEDENT": 23,
+   "R MEASURED": 20,
+   "R PRECEDENT": 42,
+   "R UNMEASURED": 6
+  }
+ },
+ "actions": [
+  {
+   "op": "add_shift_reg",
+   "id": "p4_sr_last",
+   "loop": 10170,
+   "body": 23166,
+   "parent": 686,
+   "as": "SL1",
+   "draft_group": "R reader core",
+   "route_level": "MEASURED",
+   "cite": "plan_ring_p3a_in_v3.json actions 3-5/11-13 (launched P3a, stage_d1_ring_p3a); census_samples.json add_shift_reg while_body n=2 | context: While #10170 (P3a was #637)",
+   "xkind": "add_sr"
+  },
+  {
+   "op": "create",
+   "id": "p4_k_last",
+   "class": "DigitalNumericConstant",
+   "diagram": 686,
+   "as": "KL1",
+   "prim": "const_donor",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRingConst_v0.vi",
+    "uid": 249
+   },
+   "draft_group": "R reader core",
+   "route_level": "MEASURED",
+   "cite": "P3a p3a_k_prev (DonorRingConst_v0 #249, I32 -1)",
+   "xkind": "create"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_klast",
+   "src": "new:KL1.value",
+   "dst": "new:SL1L.outer",
+   "draft_group": "R reader core",
+   "route_level": "MEASURED",
+   "cite": "P3a p3a_w_kprev (const_sr)",
+   "xkind": "connect"
+  },
+  {
+   "op": "add_shift_reg",
+   "id": "p4_sr_disc",
+   "loop": 10170,
+   "body": 23166,
+   "parent": 686,
+   "as": "SD1",
+   "draft_group": "R reader core",
+   "route_level": "MEASURED",
+   "cite": "plan_ring_p3a_in_v3.json actions 3-5/11-13 (launched P3a, stage_d1_ring_p3a); census_samples.json add_shift_reg while_body n=2",
+   "xkind": "add_sr"
+  },
+  {
+   "op": "create",
+   "id": "p4_k_disc",
+   "class": "DigitalNumericConstant",
+   "diagram": 686,
+   "as": "KD1",
+   "prim": "const_donor",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorSRInit_v0.vi",
+    "uid": 248
+   },
+   "draft_group": "R reader core",
+   "route_level": "MEASURED",
+   "cite": "P3a p3a_k_cnt (DonorSRInit_v0 #248, I32 0)",
+   "xkind": "create"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_kdisc",
+   "src": "new:KD1.value",
+   "dst": "new:SD1L.outer",
+   "draft_group": "R reader core",
+   "route_level": "MEASURED",
+   "cite": "P3a p3a_w_kcnt (const_sr)",
+   "xkind": "connect"
+  },
+  {
+   "op": "create",
+   "id": "p4_w1",
+   "class": "WhileLoop",
+   "diagram": 23166,
+   "as": "W1",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "loop_in('while') OpWhileLoopIn_v0, sim/disp/plan_disp.json:31 (DL1 on #686); inside a While BODY never run",
+   "xkind": "create"
+  },
+  {
+   "op": "create",
+   "id": "p4_lr_num_a",
+   "class": "Local",
+   "diagram": "new:W1.body",
+   "as": "LRN4",
+   "label": "Num",
+   "mode": "read",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "local_read route (stagexec.py:205); P3b-1/2 local reads in FS frames; inside a plan-made While never run",
+   "xkind": "create"
+  },
+  {
+   "op": "create",
+   "id": "p4_gt_last",
+   "class": "Comparison",
+   "diagram": "new:W1.body",
+   "as": "GT1",
+   "prim": "Greater?",
+   "donor": {
+    "donor": "$work",
+    "uid": 11721
+   },
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "$work donor #11721 Comparison 'x > y?' (only Greater? in the bed, diagram 12617)",
+   "xkind": "create"
+  },
+  {
+   "op": "create",
+   "id": "p4_sel_mask",
+   "class": "Function",
+   "diagram": "new:W1.body",
+   "as": "SW1",
+   "prim": "Select",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorErrSel_MergeErrors.vi",
+    "uid": 529
+   },
+   "draft_group": "R reader core",
+   "route_level": "UNMEASURED",
+   "cite": "vilib donor DonorErrSel_MergeErrors #529 MEASURED for SCALAR s (P3b-1); s = Boolean ARRAY (elementwise) never measured",
+   "xkind": "create"
+  },
+  {
+   "op": "create",
+   "id": "p4_k_max",
+   "class": "DigitalNumericConstant",
+   "diagram": "new:W1.body",
+   "as": "KMX",
+   "on": "new:SW1.f",
+   "value": 2147483647,
+   "draft_group": "R reader core",
+   "route_level": "UNMEASURED",
+   "cite": "const_on_term with value (P3a p3a_wait_k pattern) on an ARRAY-typed or not-yet-typed f; no I32 2147483647 donor measured",
+   "xkind": "create"
+  },
+  {
+   "op": "create",
+   "id": "p4_amm",
+   "class": "Function",
+   "diagram": "new:W1.body",
+   "as": "AMM1",
+   "prim": "Array Max & Min",
+   "donor": {
+    "donor": "$work",
+    "uid": 10969
+   },
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "$work donor #10969 Array Max & Min (on #23166 itself)",
+   "xkind": "create"
+  },
+  {
+   "op": "create",
+   "id": "p4_lt_found",
+   "class": "Comparison",
+   "diagram": "new:W1.body",
+   "as": "LT1",
+   "prim": "Less?",
+   "donor": {
+    "donor": "$work",
+    "uid": 10950
+   },
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "$work donor #10950 Comparison 'x < y?' (found = min < MAX; no Not Equal? donor in the bed)",
+   "xkind": "create"
+  },
+  {
+   "op": "create",
+   "id": "p4_wait",
+   "class": "Function",
+   "diagram": "new:W1.body",
+   "as": "WT2",
+   "prim": "Wait (ms)",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpWaitDonor_v0.vi",
+    "uid": 163
+   },
+   "draft_group": "R reader core",
+   "route_level": "MEASURED",
+   "cite": "P3a p3a_wait (OpWaitDonor_v0 #163) on #639",
+   "xkind": "create"
+  },
+  {
+   "op": "create",
+   "id": "p4_wait_k",
+   "class": "DigitalNumericConstant",
+   "diagram": "new:W1.body",
+   "as": "WK2",
+   "on": "new:WT2.milliseconds to wait",
+   "value": 1,
+   "draft_group": "R reader core",
+   "route_level": "MEASURED",
+   "cite": "P3a p3a_wait_k (const_on_term value 1)",
+   "xkind": "create"
+  },
+  {
+   "op": "create",
+   "id": "p4_ia_img",
+   "class": "IndexArray",
+   "diagram": 23166,
+   "as": "IAI",
+   "prim": "Index Array",
+   "donor": {
+    "donor": "$work",
+    "uid": 3163
+   },
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "$work donor #3163 Index Array (P3b-1 p3b_ia)",
+   "xkind": "create"
+  },
+  {
+   "op": "create",
+   "id": "p4_fs_n2",
+   "class": "FlatSequence",
+   "diagram": 23166,
+   "as": "FS4",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "fs_create MEASURED on case frame #27219 (P3b-1 p3b_fs); on a While body never run",
+   "xkind": "create"
+  },
+  {
+   "op": "create",
+   "id": "p4_lr_num_b",
+   "class": "Local",
+   "diagram": "new:FS4.f0",
+   "as": "LRN5",
+   "label": "Num",
+   "mode": "read",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "local_read in a FS frame (P3b-1 p3b_lr_num3)",
+   "xkind": "create"
+  },
+  {
+   "op": "create",
+   "id": "p4_ia_n2",
+   "class": "IndexArray",
+   "diagram": "new:FS4.f0",
+   "as": "IAN",
+   "prim": "Index Array",
+   "donor": {
+    "donor": "$work",
+    "uid": 3163
+   },
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "$work donor #3163 Index Array",
+   "xkind": "create"
+  },
+  {
+   "op": "create",
+   "id": "p4_eq_seq",
+   "class": "Comparison",
+   "diagram": 23166,
+   "as": "EQ2",
+   "prim": "Equal?",
+   "donor": {
+    "donor": "$work",
+    "uid": 10171
+   },
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "$work donor #10171 Comparison 'x = y?' (on #23166)",
+   "xkind": "create"
+  },
+  {
+   "op": "create",
+   "id": "p4_gt_n1",
+   "class": "Comparison",
+   "diagram": 23166,
+   "as": "GT2",
+   "prim": "Greater?",
+   "donor": {
+    "donor": "$work",
+    "uid": 11721
+   },
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "$work donor #11721 'x > y?' (n1 > -1 == n1 >= 0; no 'x >= 0?' in the bed)",
+   "xkind": "create"
+  },
+  {
+   "op": "create",
+   "id": "p4_k_m1",
+   "class": "DigitalNumericConstant",
+   "diagram": 23166,
+   "as": "KM1",
+   "prim": "const_donor",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRingConst_v0.vi",
+    "uid": 249
+   },
+   "draft_group": "R reader core",
+   "route_level": "MEASURED",
+   "cite": "DonorRingConst_v0 #249 I32 -1 (P3b-1 p3b_k_m3)",
+   "xkind": "create"
+  },
+  {
+   "op": "create",
+   "id": "p4_and",
+   "class": "Function",
+   "diagram": 23166,
+   "as": "AND1",
+   "prim": "And",
+   "donor": {
+    "donor": "$work",
+    "uid": 9647
+   },
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "$work donor #9647 And (on #23166)",
+   "xkind": "create"
+  },
+  {
+   "op": "create",
+   "id": "p4_lr_latest",
+   "class": "Local",
+   "diagram": 23166,
+   "as": "LRL",
+   "label": "Latest",
+   "mode": "read",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "local_read route",
+   "xkind": "create"
+  },
+  {
+   "op": "create",
+   "id": "p4_dec",
+   "class": "Function",
+   "diagram": 23166,
+   "as": "DEC1",
+   "prim": "Decrement",
+   "donor": {
+    "donor": "$work",
+    "uid": 9179
+   },
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "$work donor #9179 Decrement (on #686)",
+   "xkind": "create"
+  },
+  {
+   "op": "create",
+   "id": "p4_sel_last",
+   "class": "Function",
+   "diagram": 23166,
+   "as": "SLL",
+   "prim": "Select",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorErrSel_MergeErrors.vi",
+    "uid": 529
+   },
+   "draft_group": "R reader core",
+   "route_level": "MEASURED",
+   "cite": "vilib donor #529 Select, scalar s (P3b-1)",
+   "xkind": "create"
+  },
+  {
+   "op": "create",
+   "id": "p4_inc_disc",
+   "class": "Function",
+   "diagram": 23166,
+   "as": "INC2",
+   "prim": "Increment",
+   "donor": {
+    "donor": "$work",
+    "uid": 1978
+   },
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "$work donor #1978 Increment (P3a p3a_inc)",
+   "xkind": "create"
+  },
+  {
+   "op": "create",
+   "id": "p4_sel_disc",
+   "class": "Function",
+   "diagram": 23166,
+   "as": "SLD",
+   "prim": "Select",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorErrSel_MergeErrors.vi",
+    "uid": 529
+   },
+   "draft_group": "R reader core",
+   "route_level": "MEASURED",
+   "cite": "vilib donor #529 Select, scalar s (P3b-1)",
+   "xkind": "create"
+  },
+  {
+   "op": "tunnel",
+   "id": "p4_t_last",
+   "loop": "new:W1",
+   "body": "new:W1.body",
+   "parent": 23166,
+   "dir": "in",
+   "as": "TL1",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "tunnel group into a plan-made While (P3a TI1 was a case tunnel); register inner face -> new loop tunnel never run",
+   "xkind": "tunnel"
+  },
+  {
+   "op": "wire",
+   "id": "p4_t_last_in",
+   "src": "new:SL1L.inner",
+   "dst": "new:TL1.outer",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "tunnel group into a plan-made While (P3a TI1 was a case tunnel); register inner face -> new loop tunnel never run",
+   "xkind": "in_group"
+  },
+  {
+   "op": "wire",
+   "id": "p4_t_last_out",
+   "src": "new:TL1.inner",
+   "dst": "new:GT1.y",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "tunnel group into a plan-made While (P3a TI1 was a case tunnel); register inner face -> new loop tunnel never run",
+   "xkind": "in_group"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_num_gt",
+   "src": "new:LRN4.value",
+   "dst": "new:GT1.x",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "same-diagram connect",
+   "xkind": "connect"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_num_sel",
+   "src": "new:LRN4.value",
+   "dst": "new:SW1.t",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "same-diagram branch",
+   "xkind": "connect"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_gt_sel",
+   "src": "new:GT1.x > y?",
+   "dst": "new:SW1.s",
+   "draft_group": "R reader core",
+   "route_level": "UNMEASURED",
+   "cite": "Boolean ARRAY into Select.s: type legality UNMEASURED",
+   "xkind": "connect"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_sel_amm",
+   "src": "new:SW1.s? t:f",
+   "dst": "new:AMM1.array",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "same-diagram connect",
+   "xkind": "connect"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_min_lt",
+   "src": "new:AMM1.min value",
+   "dst": "new:LT1.x",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "same-diagram connect",
+   "xkind": "connect"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_max_lt",
+   "src": "new:KMX.value",
+   "dst": "new:LT1.y",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "same-diagram branch from a constant",
+   "xkind": "connect"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_stop",
+   "src": "new:LT1.x < y?",
+   "dst": "new:W1.cond",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "stop route OpStopFromNode_v0 (stagexec.py:711; plan_disp DL1)",
+   "xkind": "stop"
+  },
+  {
+   "op": "tunnel",
+   "id": "p4_t_n1",
+   "loop": "new:W1",
+   "body": "new:W1.body",
+   "parent": 23166,
+   "dir": "out",
+   "as": "TN1",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "output tunnel of a plan-made While (last value) never run",
+   "xkind": "tunnel"
+  },
+  {
+   "op": "wire",
+   "id": "p4_t_n1_in",
+   "src": "new:AMM1.min value",
+   "dst": "new:TN1.inner",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "output tunnel of a plan-made While (last value) never run",
+   "xkind": "in_group"
+  },
+  {
+   "op": "wire",
+   "id": "p4_t_n1_out",
+   "src": "new:TN1.outer",
+   "dst": "new:EQ2.x",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "output tunnel of a plan-made While (last value) never run",
+   "xkind": "in_group"
+  },
+  {
+   "op": "tunnel",
+   "id": "p4_t_slot",
+   "loop": "new:W1",
+   "body": "new:W1.body",
+   "parent": 23166,
+   "dir": "out",
+   "as": "TS1",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "output tunnel of a plan-made While never run",
+   "xkind": "tunnel"
+  },
+  {
+   "op": "wire",
+   "id": "p4_t_slot_in",
+   "src": "new:AMM1.min index (indices)",
+   "dst": "new:TS1.inner",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "output tunnel of a plan-made While never run",
+   "xkind": "in_group"
+  },
+  {
+   "op": "wire",
+   "id": "p4_t_slot_out",
+   "src": "new:TS1.outer",
+   "dst": "new:IAI.index",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "output tunnel of a plan-made While never run",
+   "xkind": "in_group"
+  },
+  {
+   "op": "wire",
+   "id": "p4_x_pool",
+   "src": {
+    "uid": 23099,
+    "term": "New Image"
+   },
+   "dst": "new:IAI.array",
+   "draft_group": "R reader core",
+   "route_level": "MEASURED",
+   "cite": "P3b-1 p3b_x_pool (plan_ring_p3b1_in.json action 28, launched): #23099 New Image across For #23093 exit + FS2 12938 / FS1 681 to #686 MEASURED; last hop into While #10170 = new class context",
+   "xkind": "connect_term_uid"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rle_x_pool",
+   "of": "p4_x_pool",
+   "draft_group": "R reader core",
+   "route_level": "MEASURED",
+   "cite": "gscript.py:4972 OpWireRemoveLooseEnds_v0; PD255(b)/256(b) one RLE per crossing",
+   "xkind": "wire_remove_loose_ends"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_img_trk",
+   "src": "new:IAI.element",
+   "dst": {
+    "uid": 5058,
+    "term": "Image In"
+   },
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "same-diagram connect; #5058 Image In t5089 is an open row (PD177(e))",
+   "xkind": "connect"
+  },
+  {
+   "op": "wire",
+   "id": "p4_x_xyz_fs",
+   "src": {
+    "uid": 5058,
+    "term": "x,y,z array out"
+   },
+   "dst": {
+    "diagram": "new:FS4.f0",
+    "border_only": true
+   },
+   "draft_group": "R reader core",
+   "route_level": "UNMEASURED",
+   "cite": "ORDERING-ONLY input: #5058 x,y,z array out into FS4 f0 with NO inner sink; no route makes an inner-unwired tunnel (PD237(d) assumed a count-1 For)",
+   "xkind": "connect_term_uid"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rle_x_xyz_fs",
+   "of": "p4_x_xyz_fs",
+   "draft_group": "R reader core",
+   "route_level": "MEASURED",
+   "cite": "gscript.py:4972 OpWireRemoveLooseEnds_v0; PD255(b)/256(b) one RLE per crossing",
+   "xkind": "wire_remove_loose_ends"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_n2_arr",
+   "src": "new:LRN5.value",
+   "dst": "new:IAN.array",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "same-frame connect (P3b-2 p3b_w_r_arr pattern)",
+   "xkind": "connect"
+  },
+  {
+   "op": "wire",
+   "id": "p4_x_slot_fs",
+   "src": "new:TS1.outer",
+   "dst": "new:IAN.index",
+   "draft_group": "R reader core",
+   "route_level": "UNMEASURED",
+   "cite": "branch from a plan-made While tunnel outer face ACROSS a plan-made FS border: no measured variant",
+   "xkind": "connect_term_uid"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rle_x_slot_fs",
+   "of": "p4_x_slot_fs",
+   "draft_group": "R reader core",
+   "route_level": "MEASURED",
+   "cite": "gscript.py:4972 OpWireRemoveLooseEnds_v0; PD255(b)/256(b) one RLE per crossing",
+   "xkind": "wire_remove_loose_ends"
+  },
+  {
+   "op": "wire",
+   "id": "p4_x_n2_out",
+   "src": "new:IAN.element",
+   "dst": "new:EQ2.y",
+   "draft_group": "R reader core",
+   "route_level": "UNMEASURED",
+   "cite": "FS frame -> enclosing body EXIT (only entries and frame_to_frame measured)",
+   "xkind": "connect_term_uid"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rle_x_n2_out",
+   "of": "p4_x_n2_out",
+   "draft_group": "R reader core",
+   "route_level": "MEASURED",
+   "cite": "gscript.py:4972 OpWireRemoveLooseEnds_v0; PD255(b)/256(b) one RLE per crossing",
+   "xkind": "wire_remove_loose_ends"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_n1_gt",
+   "src": "new:TN1.outer",
+   "dst": "new:GT2.x",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "branch of plan-made tunnel outer face",
+   "xkind": "branch"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_km1_gt",
+   "src": "new:KM1.value",
+   "dst": "new:GT2.y",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "same-diagram connect",
+   "xkind": "connect"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_eq_and",
+   "src": "new:EQ2.x = y?",
+   "dst": "new:AND1.x",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "same-diagram connect",
+   "xkind": "connect"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_gt_and",
+   "src": "new:GT2.x > y?",
+   "dst": "new:AND1.y",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "same-diagram connect",
+   "xkind": "connect"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_lat_dec",
+   "src": "new:LRL.value",
+   "dst": "new:DEC1.x",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "same-diagram connect",
+   "xkind": "connect"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_dec_sel",
+   "src": "new:DEC1.x-1",
+   "dst": "new:SLL.f",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "same-diagram connect",
+   "xkind": "connect"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_n1_sel",
+   "src": "new:TN1.outer",
+   "dst": "new:SLL.t",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "branch of plan-made tunnel outer face",
+   "xkind": "branch"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_and_sel",
+   "src": "new:AND1.x .and. y?",
+   "dst": "new:SLL.s",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "same-diagram connect",
+   "xkind": "connect"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_sel_last",
+   "src": "new:SLL.s? t:f",
+   "dst": "new:SL1R.inner",
+   "draft_group": "R reader core",
+   "route_level": "MEASURED",
+   "cite": "wire_sr RightIn (P3a p3a_w_bn_r)",
+   "xkind": "wire_sr"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_disc_inc",
+   "src": "new:SD1L.inner",
+   "dst": "new:INC2.x",
+   "draft_group": "R reader core",
+   "route_level": "MEASURED",
+   "cite": "wire_sr LeftIn (P3a)",
+   "xkind": "wire_sr"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_disc_sel",
+   "src": "new:SD1L.inner",
+   "dst": "new:SLD.t",
+   "draft_group": "R reader core",
+   "route_level": "MEASURED",
+   "cite": "wire_sr LeftIn branch",
+   "xkind": "wire_sr"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_inc_sel",
+   "src": "new:INC2.x+1",
+   "dst": "new:SLD.f",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "same-diagram connect",
+   "xkind": "connect"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_and_seld",
+   "src": "new:AND1.x .and. y?",
+   "dst": "new:SLD.s",
+   "draft_group": "R reader core",
+   "route_level": "PRECEDENT",
+   "cite": "same-diagram branch",
+   "xkind": "connect"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_seld_r",
+   "src": "new:SLD.s? t:f",
+   "dst": "new:SD1R.inner",
+   "draft_group": "R reader core",
+   "route_level": "MEASURED",
+   "cite": "wire_sr RightIn",
+   "xkind": "wire_sr"
+  },
+  {
+   "op": "create",
+   "id": "p4_lr_transpos",
+   "class": "Local",
+   "diagram": 23166,
+   "as": "LRVT",
+   "label": "TransPos",
+   "mode": "read",
+   "draft_group": "C slot-value consumers",
+   "route_level": "PRECEDENT",
+   "cite": "local_read route",
+   "xkind": "create"
+  },
+  {
+   "op": "create",
+   "id": "p4_ia_transpos",
+   "class": "IndexArray",
+   "diagram": 23166,
+   "as": "IAVT",
+   "prim": "Index Array",
+   "donor": {
+    "donor": "$work",
+    "uid": 3163
+   },
+   "draft_group": "C slot-value consumers",
+   "route_level": "PRECEDENT",
+   "cite": "$work donor #3163 Index Array",
+   "xkind": "create"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_arr_transpos",
+   "src": "new:LRVT.value",
+   "dst": "new:IAVT.array",
+   "draft_group": "C slot-value consumers",
+   "route_level": "PRECEDENT",
+   "cite": "same-diagram connect",
+   "xkind": "connect"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_idx_transpos",
+   "src": "new:TS1.outer",
+   "dst": "new:IAVT.index",
+   "draft_group": "C slot-value consumers",
+   "route_level": "PRECEDENT",
+   "cite": "branch of plan-made tunnel outer face",
+   "xkind": "branch"
+  },
+  {
+   "op": "create",
+   "id": "p4_lr_rotpos",
+   "class": "Local",
+   "diagram": 23166,
+   "as": "LRVR",
+   "label": "RotPos",
+   "mode": "read",
+   "draft_group": "C slot-value consumers",
+   "route_level": "PRECEDENT",
+   "cite": "local_read route",
+   "xkind": "create"
+  },
+  {
+   "op": "create",
+   "id": "p4_ia_rotpos",
+   "class": "IndexArray",
+   "diagram": 23166,
+   "as": "IAVR",
+   "prim": "Index Array",
+   "donor": {
+    "donor": "$work",
+    "uid": 3163
+   },
+   "draft_group": "C slot-value consumers",
+   "route_level": "PRECEDENT",
+   "cite": "$work donor #3163 Index Array",
+   "xkind": "create"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_arr_rotpos",
+   "src": "new:LRVR.value",
+   "dst": "new:IAVR.array",
+   "draft_group": "C slot-value consumers",
+   "route_level": "PRECEDENT",
+   "cite": "same-diagram connect",
+   "xkind": "connect"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_idx_rotpos",
+   "src": "new:TS1.outer",
+   "dst": "new:IAVR.index",
+   "draft_group": "C slot-value consumers",
+   "route_level": "PRECEDENT",
+   "cite": "branch of plan-made tunnel outer face",
+   "xkind": "branch"
+  },
+  {
+   "op": "create",
+   "id": "p4_lr_frameidx",
+   "class": "Local",
+   "diagram": 23166,
+   "as": "LRVF",
+   "label": "FrameIdx",
+   "mode": "read",
+   "draft_group": "C slot-value consumers",
+   "route_level": "PRECEDENT",
+   "cite": "local_read route",
+   "xkind": "create"
+  },
+  {
+   "op": "create",
+   "id": "p4_ia_frameidx",
+   "class": "IndexArray",
+   "diagram": 23166,
+   "as": "IAVF",
+   "prim": "Index Array",
+   "donor": {
+    "donor": "$work",
+    "uid": 3163
+   },
+   "draft_group": "C slot-value consumers",
+   "route_level": "PRECEDENT",
+   "cite": "$work donor #3163 Index Array",
+   "xkind": "create"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_arr_frameidx",
+   "src": "new:LRVF.value",
+   "dst": "new:IAVF.array",
+   "draft_group": "C slot-value consumers",
+   "route_level": "PRECEDENT",
+   "cite": "same-diagram connect",
+   "xkind": "connect"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_idx_frameidx",
+   "src": "new:TS1.outer",
+   "dst": "new:IAVF.index",
+   "draft_group": "C slot-value consumers",
+   "route_level": "PRECEDENT",
+   "cite": "branch of plan-made tunnel outer face",
+   "xkind": "branch"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_tp_mag",
+   "src": "new:IAVT.element",
+   "dst": {
+    "uid": 9503,
+    "term_uid": 9508
+   },
+   "draft_group": "C slot-value consumers",
+   "route_level": "PRECEDENT",
+   "cite": "into For #1359's LoopTunnel #9503 outer face t9508 (-> #28083 Magnet position, facts_c117_qrt.md:17)",
+   "xkind": "connect"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_tp_row",
+   "src": "new:IAVT.element",
+   "dst": {
+    "uid": 2626,
+    "term_uid": 4160
+   },
+   "draft_group": "C slot-value consumers",
+   "route_level": "PRECEDENT",
+   "cite": "#2626 element|1 t4160 <- Trans Pos (facts_c117_qrt.json pair (2626,element))",
+   "xkind": "connect"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_rp_row",
+   "src": "new:IAVR.element",
+   "dst": {
+    "uid": 2626,
+    "term_uid": 4165
+   },
+   "draft_group": "C slot-value consumers",
+   "route_level": "PRECEDENT",
+   "cite": "#2626 element|2 t4165 <- Rot pos (facts_c117_qrt.json)",
+   "xkind": "connect"
+  },
+  {
+   "op": "move_in",
+   "id": "p4_mv_10068",
+   "nodes": [
+    10068
+   ],
+   "dest_diagram": 23166,
+   "pos": [
+    40,
+    900
+   ],
+   "draft_group": "C slot-value consumers",
+   "route_level": "PRECEDENT",
+   "cite": "move_in route (stagexec.py:670, opmodel move_in.json cut_clears moved); PD233(g)/237(g) MOVE",
+   "xkind": "move_in"
+  },
+  {
+   "op": "move_in",
+   "id": "p4_mv_29240",
+   "nodes": [
+    29240
+   ],
+   "dest_diagram": 23166,
+   "pos": [
+    40,
+    960
+   ],
+   "draft_group": "C slot-value consumers",
+   "route_level": "PRECEDENT",
+   "cite": "move_in route; PD233(g)/237(g) MOVE",
+   "xkind": "move_in"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_fi_10068",
+   "src": "new:IAVF.element",
+   "dst": {
+    "uid": 10068,
+    "term": "x"
+   },
+   "draft_group": "C slot-value consumers",
+   "route_level": "PRECEDENT",
+   "cite": "same-diagram connect (x = this frame's #637 i, PD233(f)(3))",
+   "xkind": "connect"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_fi_29240",
+   "src": "new:IAVF.element",
+   "dst": {
+    "uid": 29240,
+    "term": "x"
+   },
+   "draft_group": "C slot-value consumers",
+   "route_level": "PRECEDENT",
+   "cite": "same-diagram branch",
+   "xkind": "connect"
+  },
+  {
+   "op": "wire",
+   "id": "p4_x_fd",
+   "src": {
+    "uid": 686,
+    "term_uid": 8936
+   },
+   "dst": {
+    "uid": 10068,
+    "term": "y"
+   },
+   "draft_group": "C slot-value consumers",
+   "route_level": "PRECEDENT",
+   "cite": "#686 control '# FD points' t8936 (wired, net 9000) across While #10170 border",
+   "xkind": "connect_term_uid"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rle_x_fd",
+   "of": "p4_x_fd",
+   "draft_group": "C slot-value consumers",
+   "route_level": "MEASURED",
+   "cite": "gscript.py:4972 OpWireRemoveLooseEnds_v0; PD255(b)/256(b) one RLE per crossing",
+   "xkind": "wire_remove_loose_ends"
+  },
+  {
+   "op": "wire",
+   "id": "p4_x_dt",
+   "src": {
+    "uid": 686,
+    "term_uid": 28844
+   },
+   "dst": {
+    "uid": 29240,
+    "term": "y"
+   },
+   "draft_group": "C slot-value consumers",
+   "route_level": "PRECEDENT",
+   "cite": "#686 control '# DT points' t28844 (wired, net 29006) across While #10170 border",
+   "xkind": "connect_term_uid"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rle_x_dt",
+   "of": "p4_x_dt",
+   "draft_group": "C slot-value consumers",
+   "route_level": "MEASURED",
+   "cite": "gscript.py:4972 OpWireRemoveLooseEnds_v0; PD255(b)/256(b) one RLE per crossing",
+   "xkind": "wire_remove_loose_ends"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_10068_out",
+   "src": {
+    "uid": 10068,
+    "term": "x-y*floor(x/y)"
+   },
+   "dst": {
+    "uid": 10177,
+    "term_uid": 10182
+   },
+   "draft_group": "C slot-value consumers",
+   "route_level": "PRECEDENT",
+   "cite": "into For #1359 LoopTunnel #10177 outer t10182 (-> #8634 index (col))",
+   "xkind": "connect"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_29240_out",
+   "src": {
+    "uid": 29240,
+    "term": "x-y*floor(x/y)"
+   },
+   "dst": {
+    "uid": 29777,
+    "term_uid": 29782
+   },
+   "draft_group": "C slot-value consumers",
+   "route_level": "PRECEDENT",
+   "cite": "into For #29874 LoopTunnel #29777 outer t29782 (-> #29625 index (col), #29973 element)",
+   "xkind": "connect"
+  }
+ ]
+}

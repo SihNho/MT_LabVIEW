@@ -1,0 +1,27 @@
+{"schema":"result/1","id":"135-1","status":"FAIL","gates":{"pass":11,"fail":1},
+"first_fail":"F diag_c134_1_finalize_b.py rc 1: F3 end counts objects 10363 != 04204133's 10334 (launch_p3b2_c135.log:46, launch_p3b2_c135_f.log:9)",
+"blocked_by":null,
+"artefacts":[
+ {"path":"C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_ring_p3b2a_20261002_122043.vi","md5":"49cf7f770fc331e06607687af640ad5e"},
+ {"path":"tools/bench/graph_ring_p3b2a_fs_20261002_123012.json","md5":"d0a32178a87b2c9593b0d0773d332215"},
+ {"path":"tools/bench/launch_p3b2_c135.log","md5":"baabf65168b18bbe5c61f03ce89fb016"},
+ {"path":"tools/bench/plan_ring_p3b2b.json","md5":"fae25fb3a81cd1a4dc73d19bf2d00e42"},
+ {"path":"tools/bench/launch_p3b2_c135_pre_plan_ring_p3b2b.json","md5":"ae6b6111d766a4ba27d0695f29958c23"},
+ {"path":"tools/bench/memory_model.json","md5":"8401560dda0b4d3cb402fa4e8f50b04a"}],
+"facts":[
+ "0 code read: CEN2 not fatal before save (census_gate->gate fatal=False, stagekit.py:295; save at stage_d1_ring_p3b2a.py:78) but rc 1 stops the chain (launch_p3b2_c135.py:192)",
+ "0 same instrument: census_snapshot = report_all(GObject) uid->class (stagekit.py:263-267); graph objs = same call in wiki_build.read_live (wiki_build.py:239-244), used by diag_c134_1_graph.py:41",
+ "A PASS: session a 20/0, CEN2 measured == pred exactly (diff {}), peak 645.7 MB, a-file D1_ring_p3b2a_20261002_122043.vi 49cf7f77, bed 9d7bf287 unchanged (launch_p3b2_c135_a.log:350,384,387)",
+ "G PASS: graph read rc 0, G1 G2 G3 FS1 B X all PASS, MEM after load 605.0 MB (launch_p3b2_c135.log:40-42)",
+ "C DIFFERENT (unpredicted): node_classes/terminals/wires/fs_frames EQUAL; only 'borders' differs (launch_p3b2_c135.log:43)",
+ "C detail: the 7 nested-FS borders 14430 31050 34409 34489 43605 44160 44164 carry a new key status:'UNMEASURED' in the new read, absent in ref 102553; all other border fields identical",
+ "DIFFERENT branch ran: plan b/in/pred snapshotted (pre_ plan b md5 == ae6b6111), memory_model load_by_vi[49cf7f77]=605.0 written, plan b restored to 1451ba90 (launch_p3b2_c135.log:44)",
+ "F FAIL: finalize_b F3 objects 10363 vs 10334: +29 = Terminal 18, InnerTerminal 2, OuterTerminal 1, Wire 8 (= a's census less 2 removed wires); owners/terminals/wires equal (launch_p3b2_c135_f.log:9)",
+ "finalize_b still wrote plan b fae25fb3, in c1c50529, pred 509554bb despite F3 FAIL (launch_p3b2_c135_f.log:13); session b and Error List never ran",
+ "LabVIEW gone (tasklist none); bed md5 9d7bf287 unchanged; no file deleted; no STATUS/INDEX edit; Jev ladder: no JEV-LADDER row for launch_p3b2_c135.log yet (jev_gate.log)"],
+"open":[
+ "Compare C treats a reader-schema key (status UNMEASURED, added by the scoped gate-B diag) as a graph difference: should compare drop that key, so the a-file counts EQUAL and plan b ae6b6111 (snapshot kept) is reused?",
+ "finalize_b's F3 reference (04204133's end, 10334 objects) does not include a's 29 created objects; is F3 the wrong reference for a rebase on the a-file, and should finalize write plan b only on success (retrospective-134 device)?",
+ "plan_ring_p3b2b.json now fae25fb3 (pin ae6b6111 in the runner will refuse a relaunch at L0a); restore from launch_p3b2_c135_pre_plan_ring_p3b2b.json is judgement's call"],
+"cost":{"usd":null,"minutes":16,"labview_runs":2},
+"note":"Step 0 prediction held (instruments agree; CEN2 PASS live). Returned at the first unexpected result (compare DIFFERENT -> finalize F3 FAIL); no retry, no patch, no stage tool or runner edited."}

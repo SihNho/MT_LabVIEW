@@ -371,3 +371,49 @@ How to add: see the 5-line note at the top of `docs/d1/INDEX.md` (next number = 
        (offline, code read): if CEN2 is fatal BEFORE the save and the two instruments key/count differently (created uids by
        class), the launch card names CEN2 of session a as an expected unverified gate and the launch records the measured set
        (PD261(c): the census prediction is not a P3b launch precondition); if they agree, CEN2 gates as written.
+294. **(cycle 135 judgement, 2026-10-02 — after 135-1 FAIL 11/1, `tools/bench/cards/result_135-1.json`)**
+     USER-RULES: U1 (relied on: compare stays strict on every graph field; no action or end graph changes; none contradicted).
+     - **(a) Session a of the launch ACCEPTED as the in-between file:** `claudeDev\D1_ring_p3b2a_20261002_122043.vi` 49cf7f77
+       (20/0, CEN2 == pred exactly, peak 645.7 MB, `launch_p3b2_c135_a.log:350,384,387`), graph `graph_ring_p3b2a_fs_20261002_123012.json`
+       d0a32178 (G1 G2 G3 FS1 B X PASS, MEM after load 605.0). It is NOT rebuilt; P3b-2 resumes from it. PD292(c) closed: same
+       instrument (`stagekit.py:263-267` == `wiki_build.py:239-244`), CEN2 non-fatal before the save.
+     - **(b) Compare C DIFFERENT = our-script-bug:** the only difference is the reader annotation `status: UNMEASURED` on the 7
+       nested-FS borders, added to the reader in card 134-6 after the reference 102553 was read. Fix: compare runs BOTH graphs
+       through the same current border annotation before comparing (the reference is re-annotated); no field is dropped. Self-test:
+       annotation-only difference ⇒ EQUAL; any real border/terminal/wire/frame difference ⇒ DIFFERENT. Then compare 123012 vs the
+       re-annotated 102553 OFFLINE; EQUAL ⇒ plan b ae6b6111 runs on the a-file (PD291(e)).
+     - **(c) Plan b, plan_in and pred are restored from `launch_p3b2_c135_pre_*.json`** (pre plan b md5 == ae6b6111), md5-checked.
+       finalize_b wrote all three despite its F3 FAIL — the device owed by `docs/violation-decisions.md` (2026-10-02 12:2x) is
+       built NOW, before any further finalize: finalize/rebase write plan files only on success, plus the base-graph completeness
+       gate. F3's reference (04204133's end) is wrong for a finalize on the a-file — carry; until it is fixed, a DIFFERENT compare
+       STOPS the resume runner (no finalize branch).
+     - **(d) Resume runner** (≤ 120 lines on stagekit, dry first): a-file + graph 123012 md5-verified, bed unchanged, offline compare
+       (b), check_launch(recipe b) on ae6b6111, session b, then the full final Error List read (`--role final`) and the expected
+       file. Predictions: b peak ≤ 690 (scratch delta +56.5 over its start), final Error List in 49..52, loose ends 22 → 20.
+     - **(e) Cycle 135 cards:** 135-2 offline tooling = (b)(c)(d) + the JEV-LADDER routing of `launch_p3b2_c135.log` (a review
+       if it says review owed) + the gate-fp drain fp-30 (cycle card `gates_due`); 135-3 LabVIEW = the ONE resume launch. Both
+       in-between files (6cc69221, 49cf7f77) kept until P3b-2 is accepted.
+296. **(cycle 135 judgement, 2026-10-02 — after 135-2 FAIL 6/1 and 135-3 FAIL 2/1 (returned before the launch))**
+     USER-RULES: U1 (relied on: plan b's actions unchanged; none contradicted).
+     - **(a) Plan b applies to the a-file:** the failed finalize on 123012 produced the SAME actions as ae6b6111 (0 non-ignorable
+       diffs, `diag_c135_3_plandiff.log:5-33`); the 19 step states differ only in base-file identity (`state/vi`, step 0's
+       `effect/graph`/`graph_md5`), which stagesim copies and never reads back (`stagesim.py:287`;
+       `archive/peer/2026-10-02-c135-3-plandiff.md:41-42`). 135-3's 0b prediction ("both diffs empty") was too strict, not wrong
+       about the plan. Precondition kept: the 6 unprinted `summary.json` diffs are printed and must be timings or base identity.
+     - **(b) The resume runner's memory gate stays `peak ≤ min(690, X10 667.0 + 10)`.** The a-file's reader load 605.0 is a
+       reader number; stage-context peaks tracked the scratch (launch a 645.7 vs scratch a 650.9), so b is predicted near its
+       scratch 629.0. A peak in 677..690 stops the runner as a failed prediction — safe, no edit.
+     - **(c) fp-30 stays queued:** `selftest_c134_1_dry.py` is COM-free but fails 10/1 on its own content (135-2); fixing that
+       self-test is the next tooling card, not this cycle's.
+     - **(d) Card 135-4 (LabVIEW) = the ONE resume launch** with the 135-3 card's pass list minus its step 0, plus (a)'s summary check.
+297. **(cycle 135 judgement, 2026-10-02 — after 135-4 PASS 13/0 and 135-5 PASS 18/0)**
+     USER-RULES: U1 (relied on: acceptance bookkeeping only; none contradicted).
+     - **(a) P3b-2 DELIVERED and ACCEPTED as the bed:** `claudeDev\D1_ring_p3b2b_20261002_130007.vi` md5 39511877 (session a 20/0 at
+       645.7 MB in 135-1; session b 11/0 runner + 12 recipe gates at 620.6 MB in 135-4; compare EQUAL; D: new wires 10 == sim, lost
+       2 == sim). Error List 51 = P3b-1's 53 minus 2 loose wire ends (22 → 20), every other entry unchanged; expected file
+       `tools/bench/errorlist_expected_D1_ring_p3b2b_20261002_130007.json` eac21f43 written from the final read, reverdict OK
+       (recipe b's stale copy kept as `*_recipe_stale.json`). STRUCTURAL, `ExecState` 0 by design, never run.
+     - **(b) Broken-file count 4 of 6** (P2b, P3a, P3b-1, P3b-2; in-between files not counted — assumption D-2026-10-02-02,
+       both deleted after md5 check). P3b (all 70 slot-write actions) is complete; P3 is complete.
+     - **(c) Next: P4** (`docs/d1/ring-p4.md` PD293/295) — the file-count answer D-2026-10-02-03 is open; P4 is planned in
+       ≤ 40-action build steps meanwhile.

@@ -1,0 +1,38 @@
+BGRUN START 2026-10-02 12:54:18 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c135-3-plandiff -TaskFile tools/bench/peer_c135_3_plandiff_task.txt
+BGRUN PID 18452
+OUTCOME: ANSWERED (155s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-02-c135-3-plandiff.md
+COST: $1.4942  in 32 / out 13158 / cache-create 109611 / cache-read 1770217  (151s, 21 turn(s))
+--- ANSWER ---
+**Verdict: partly refuted.** The diagnosis of why the gate failed is right. The conclusion that "plan b applies unchanged to the a-file" is wrong in one measurable place: the plan's memory prediction depends on which VI file is the input, and the a-file loads 16.5 MB heavier.
+
+**What holds**
+- **The gate failed because of key names.** Each step's `state` has exactly one difference outside the ignore set, `vi`, and the only ignored one is `md5`. This is true for all 19 steps (`diag_c135_3_plandiff.log:35-112`).
+- **`state.vi` is never used inside the simulator.** `stagesim.py:287` copies `graph["vi"]` into the state, and nothing in `stagesim.py` reads it back (the only other `"vi"` is the synthetic graph at `:2480`). It cannot change owner lookups or the simulated graph.
+- **The rest of the state is graph-derived and compared.** The plan's `context` is only `{"s1_key"}`, so there are no `loops`/`owners`/`fs_pairs_wiki` overrides. That means `terminals`, `objs`, `loops`, `owners`, `fs_frames` and `dedupe` all come from the two different graphs (`stagesim.py:283-300`), and they came out equal. This closes the `owners` gap that review r2 raised (its point 2).
+- **The diff code cannot hide a difference.**
+  - Lists are compared position by position, with a length row, and different types fall through to `!=` (`diag_c135_3_plandiff.py:36-42`). That is stricter than needed, not looser.
+  - The rule "ignore a key anywhere in the path" could in principle hide a nested `path`/`md5`. But the state's ignored count is 1 on every step, and all 27 plan-level ignored rows are printed and are metadata.
+
+**1. Strongest reason the claim is wrong.** The base VI identity is not inert outside the simulator. The memory prediction is keyed on the input VI's md5:
+- `stage_prerun.x10_start` reads `load_by_vi[md5]` (`stage_prerun.py:1963-1972`), and `x10_plan_start` takes that md5 from the finalized base graph (`:1975-1984`).
+- Plan b's prediction uses the scratch file's load. `plan_ring_p3b2b_pred.json:296-298` says `start_mb 594.4` = "588.5 + op-0 read 5.9", giving `peak_mb 667.0`.
+- The a-file loads heavier. `memory_model.json` records 6cc69221 (scratch) at 588.5 MB and 49cf7f77 (a-file) at 605.0 MB, which is +16.5 MB.
+- Session b's gate uses that 667 directly: `X10 = R.PRED memory_pred.peak_mb` (`launch_p3b2_c135_b.py:10,27`), and it requires `peak <= X10 + 10` = 677 (`:52`).
+
+If the peak is the start plus per-step increments (`x10_model_peak` takes `start_mb`, `stage_prerun.py:1989`), the a-file predicts about 667 + 16.5 ≈ 683.5 MB. That is above the 677 limit and 6.5 MB under the 690 memory stop. Your diff never looked at `plan_ring_p3b2b_pred.json`, so it could not have caught this.
+
+**2. Alternative explanation of the same evidence.** Two files with different bytes (49cf7f77 vs 6cc69221) giving identical graph reads does not show that they differ only by name. It shows that the graph reader is blind to whatever differs between them. One consequence of that difference is already measured: the 16.5 MB higher load. There may be others the reader does not capture.
+
+**Smaller holes**
+- **Six differences in `summary.json` were never shown.** It has 14 non-ignorable differences, but the script prints only the first 8 (`diag_c135_3_plandiff.py:96`, `r2[:8]`), so 6 are unseen. They are probably timings too, but nobody has looked.
+- **A dry run does not test the a-file.** In dry mode, session b's input is `R.BASE["vi"]`, which is the scratch file (`launch_p3b2_c135_b.py:41`).
+- **The target VI comes from the runner, not the plan.** Through the standard executor, plan b "unchanged" would target and pin the scratch file (`stagexec.py:3820-3827`). It reaches the a-file only because the runner overrides the input (`launch_p3b2_c135_b.py:3-7,41`). That is fine, but the plan alone does not carry it.
+
+**3. What would falsify the claim.** Either of these:
+- A memory prediction for plan b's steps, re-run from the a-file's start (605.0 + 5.9 = 610.9 MB), comes out above 677.
+- A live session b on the a-file peaks above X10 + 10.
+
+**4. Cheapest test that separates the two (offline, seconds).** Call `stage_prerun.x10_model_peak` with the same step kinds and checkpoints as `plan_ring_p3b2b_pred.json`, but with `start_mb = x10_start("49cf7f770fc331e06607687af640ad5e")`. Compare the result to 677 and 690.
+- If it is ≤ 677, the claim holds in full.
+- If it is above 677, the edit actions of plan b do apply to the a-file, but its memory prediction and gate do not. Session b would then fail the memory gate, or nearly hit the memory stop, until X10 is recomputed for the a-file.
+BGRUN END rc=0 after 156s

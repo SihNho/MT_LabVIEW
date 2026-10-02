@@ -3415,6 +3415,14 @@ def rebase(plan_path, graph_path, log=print, simulate=True, out_root=None, model
     # PD279(c): simulate a TEMP copy; plan_path is written only when the re-simulation is FINAL
     import tempfile
     import stagesim as SS
+    # card 135-2 (docs/violation-decisions.md 2026-10-02 12:2x device): (1) base-graph COMPLETENESS gate before any simulation;
+    # (2) the stage's sim step files are snapshotted and restored when the re-simulation is not FINAL (the plan file already is
+    # written only on success, PD279(c)) - a failed rebase leaves every file it could touch byte-identical.
+    cg = SS.completeness_gate(json.load(REAL_OPEN(base_path, encoding="utf-8")), uses={"actions": new.get("actions")})
+    if cg["status"] == "FAIL":
+        return False, detail + "; REBASE REFUSED: base-graph completeness FAIL {0}".format(
+            json.dumps(dict((k, cg[k]) for k in ("bad_owner", "stuck", "inferred", "used") if cg.get(k)))[:600])
+    detail += "; completeness {0}".format(cg["status"])
     tmp = tempfile.mkdtemp(prefix="rebase_")
     tp = os.path.join(tmp, os.path.basename(plan_path))
     with REAL_OPEN(tp, "w", encoding="utf-8") as f:
@@ -3424,11 +3432,13 @@ def rebase(plan_path, graph_path, log=print, simulate=True, out_root=None, model
         kw["out_root"] = out_root
     if model_dir:
         kw["model_dir"] = model_dir
+    wg = SS.WriteGuard(dirs=(os.path.join(kw.get("out_root") or SS.SIM_ROOT, new.get("stage") or "plan"),))
     try:
         S = SS.simulate(tp, base_path, **kw)
         detail += "; re-simulated on the real base: final={0} failed={1}".format(S["final"], S["failed"])
         if not S["final"]:
-            return False, detail + "; {0} NOT written (md5 {1} kept)".format(rel(plan_path), md5(plan_path))
+            return False, detail + "; {0} NOT written (md5 {1} kept); sim step files restored {2}".format(
+                rel(plan_path), md5(plan_path), wg.restore())
         outp = S["plan_out"]["path"]
         outp = outp if os.path.isabs(outp) else os.path.join(ROOT, outp)
         # card 133-3 (PD283(e), 133-1 first_fail): stagesim records the TEMP copy it simulated as finalized.plan_in; the
@@ -3445,6 +3455,9 @@ def rebase(plan_path, graph_path, log=print, simulate=True, out_root=None, model
         with REAL_OPEN(plan_path, "w", encoding="utf-8") as f:
             json.dump(out, f, indent=1)
         return True, detail + "; plan_in kept = {0}".format(fz["plan_in"]["path"])
+    except BaseException:
+        wg.restore()                                   # card 135-2: an exception is a failed rebase too
+        raise
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 

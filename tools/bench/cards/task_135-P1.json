@@ -1,0 +1,61 @@
+{
+ "schema": "task/1",
+ "id": "135-P1",
+ "kind": "measure",
+ "goal": "OFFLINE P4 sizing (loop 1.2 reader, PD238(e)): draft action list on the sim END graph of P3b-2 b (tools/bench/sim/ring_p3b2b/), count, X10 peak, routes measured/unmeasured. Facts + OPEN only.",
+ "why": "INDEX step table: P4 NOT STARTED, 'size it with the memory formula first' (PD266(b), docs/d1/ring-p4.md carries). Pipeline rule: the next ring step's offline prep runs beside the LabVIEW launch of P3b-2. Broken-file cap leaves P4 and P5 one file each unless split (INDEX:27).",
+ "inputs": [
+  {"path": "docs/d1/ring-p4.md"},
+  {"path": "docs/d1/INDEX.md"},
+  {"path": "docs/ring-buffer-design.md", "md5": "edba76b556d51dc8ef8938d3eed13c0a"},
+  {"path": "docs/user-rules.md"},
+  {"path": "tools/bench/plan_ring_p3b2b.json", "md5": "ae6b6111d766a4ba27d0695f29958c23"},
+  {"path": "tools/bench/memory_model.json"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "docs/ring-buffer-design.md"}
+ ],
+ "pass": [
+  "1 draft actions for loop 1.2's reader (last register, Num/Latest seqlock reads, smallest Num > last, slot reads, jump to Latest, discard count, 1 ms wait) in plan_ring_p4_draft.json",
+  "1b each action names its base-graph uid/terminal; the draft is marked provisional and is never launched",
+  "2 counts: N actions, created objects R by class; X10 peak (PD266(b)) from the measured P3b-2 start with its cite; N <= 40? peak <= 675?",
+  "3 each route/crossing MEASURED (cite) or UNMEASURED (incl. nested FS 2499/14682/43914); each original node touched (incl. #10068/#29240) with its loop owner",
+  "4 USER-RULES rows relied on / contradicted, as facts; 5 OPEN: at most 5 design questions for judgement"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p4_draft.json",
+  "tools/bench/prep_c135_p4_sizing.md",
+  "tools/bench/cards/result_135-P1.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p4*",
+   "tools/bench/prep_c135_p4*",
+   "tools/bench/sim/ring_p4*/**",
+   "tools/bench/cards/result_135-P1*",
+   "tools/bench/peer_*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 50},
+ "rules": [
+  "No LabVIEW, no VI opened; read graph JSONs and sim outputs only",
+  "No stage tool edited (stagesim/stagexec/stage_prerun/stagekit/guards); a tool gap is a FACT to report",
+  "No docs/ edit: judgement writes the P4 Pre-decided items",
+  "A design choice the draft needs and the design doc does not settle is an OPEN line, not a decision (CLAUDE.md §3)",
+  "Return at the first unexpected result"
+ ],
+ "advances": ["M3", "R1"]
+}

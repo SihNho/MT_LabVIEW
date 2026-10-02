@@ -1,0 +1,46 @@
+{
+ "schema": "task/1",
+ "id": "135-P2",
+ "kind": "measure",
+ "goal": "OFFLINE facts owed by PD293(f) before the P4 plan: use of #5119/#11608 values in the ORIGINAL, origin of loop 1.2's always-TRUE stop, cheapest measurement per UNMEASURED P4 route.",
+ "why": "PD293(f), docs/d1/ring-p4.md. A per-frame value computed in 1.1 that reaches saved data needs its own per-slot array (rule 1a); the stop and routes decide the P4 plan's actions.",
+ "inputs": [
+  {"path": "docs/d1/ring-p4.md"},
+  {"path": "tools/bench/plan_ring_p4_draft.json", "md5": "d9d6624637477cbb8b03379fb4747e3b"},
+  {"path": "tools/bench/prep_c135_p4_sizing.md", "md5": "485c5d1fe989c10ce943cbba3338357b"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/plan_ring_p4_draft.json"},
+  {"kind": "file", "name": "tools/bench/prep_c135_p4_sizing.md"}
+ ],
+ "pass": [
+  "1 ORIGINAL VI, from existing offline graph/census/facts files only: where #2626 element|0 (<- #5119 x-y) and #11363 (<- #11608) lead: saved file, display, or nothing; cite file:line",
+  "2 loop 1.2 stop #10171 Equal? x,y on one wire: the stage/plan that created it (cite) and the ORIGINAL tracking loop's stop wiring (cite)",
+  "3 each UNMEASURED route of the draft not removed by PD293(c)-(e): the cheapest measurement (scratch VI or existing record), as a list",
+  "4 any fact not readable offline is reported UNMEASURED with what would read it; no LabVIEW opened"
+ ],
+ "outputs": [
+  "tools/bench/prep_c135_p2_facts.md",
+  "tools/bench/cards/result_135-P2.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/prep_c135_p2*",
+   "tools/bench/cards/result_135-P2*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 40},
+ "rules": [
+  "No LabVIEW, no VI opened; read existing JSON/MD records only",
+  "No tool or docs/ edit; facts and OPEN only, no design decision",
+  "Do not read archive/ except a file a cited record points to"
+ ],
+ "advances": ["M3", "R1"]
+}

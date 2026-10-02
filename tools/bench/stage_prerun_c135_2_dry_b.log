@@ -1,0 +1,41 @@
+BGRUN START 2026-10-02 12:38:27 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_ring_p3b2b.py
+BGRUN PID 3448
+stage_d1_ring_p3b2b - card 133-3 (WRITTEN, NOT LAUNCHED), RING P3b-2 SESSION b of two (PD283(c)(e); from stage_d1_ring_p3b2.py
+bbdd0328, the one-session reference, never launched): on session a's SAVED file (stage_d1_ring_p3b2a.py), apply actions
+[8-13, 20-23, 28-31, 36-39] of plan_ring_p3b2.json 04204133 = RotPos and FrameIdx at i in frame f1 (local read -> Replace Array
+Subset -> local write; i by the inner branch of the entry tunnel session a made), each crossing followed by its wire_remove_loose_ends.
+BASE IS PROVISIONAL (session a's simulated end; stage_prerun refuses the launch): after a's file exists, read its graph, put its
+MEASURED load into memory_model.json load_by_vi (PD283(c)), then `py tools/stage_prerun.py --rebase tools/bench/plan_ring_p3b2b.json
+--graph <graph of a's saved VI>`, regenerate plan_ring_p3b2b_pred.json, dry + prerun.
+FRESH LabVIEW -> claudeDev\D1_ring_p3b2b_<ts>.vi (rule-6 GUI save, ExecState 0 by design) = step P3b-2's FINAL file +
+errorlist_expected; Error List count-only in the class range tools/bench/errorlist_expect_p3b2ab.json (49..52).
+ROWS ONLY FROM plan_ring_p3b2b.json (stagesim FINAL of plan_ring_p3b2b_in.json, plan_ring_p3b_split_p3b2.py); expected values only
+from plan_ring_p3b2b_pred.json. No new op.
+PREDICTION: L1 18 actions -> pred ops; E1 every checkpoint == sim; NG every crossing op's new tunnel names == the step files';
+FR the created objects (count from the plan) sit on frames of the base's FS, no new frame; D new/lost wires == sim's; TD every base
+terminal that was wired stays wired; CEN2 == pred census; PB cdiff(S1, end) == the 16 rows (FATAL, before save); HB handles <= +700;
+PS saved, input unchanged; EL file written. X10 (predicted start 605.1 = a's predicted load 599.2 + op-0 5.9) 677.7 MB <= 690.
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/stage_d1_ring_p3b2b.log -- py -u tools/recipes/stage_d1_ring_p3b2b.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p3b2b_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan  ('ae6b6111d766a4ba27d0695f29958c23', {'path': 'tools/bench/graph_ring_p3b2a_fs_20261002_102553.json', 'md5': 'b885fa4af1df203a8dd68b631ab86752'}, '6cc6922192b3e330f163561bb95a8115')
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 6cc6922192b3e330f163561bb95a8115  got 6cc6922192b3e330f163561bb95a8115
+  PASS  DRY graph JSON for input md5 6cc6922192b3e330f163561bb95a8115  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_ring_p3b2a_fs_20261002_102553.json
+  FAIL  dry: unhandled exception ExecStop: 19 step file(s) missing or changed since finalize (['tools/bench/sim/ring_p3b2b/step_00_base.json', 'tools/bench/sim/ring_p3b2b/step_01_create.json']...) - re-s
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stage_prerun.py", line 803, in run
+    fn(stage)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\stage_d1_ring_p3b2b.py", line 44, in body
+    x = SX.Executor(PLAN, be, log=lambda m: print(m, flush=True), checkpoints=CHECKPOINTS, name_gate=True)   # card 132-1 PD275(c)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stage_prerun.py", line 1914, in cap
+    return orig(self, *a, **kw)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagexec.py", line 1786, in __init__
+    self.plan, self.step_paths = load_final_plan(plan_path, require_final)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagexec.py", line 182, in load_final_plan
+    raise ExecStop("{0} step file(s) missing or changed since finalize ({1}...) - re-simulate".format(len(stale), stale[:2]))
+stagexec.ExecStop: 19 step file(s) missing or changed since finalize (['tools/bench/sim/ring_p3b2b/step_00_base.json', 'tools/bench/sim/ring_p3b2b/step_01_create.json']...) - re-simulate
+
+
+=== DRY FAIL: first_fail=EXECUTOR-NOT-RUN tools/bench/plan_ring_p3b2b.json: built, run() never called - 0 ops executed coverage 32/82 lines, first mutation None, unverified 0, graph tools/bench/graph_ring_p3b2a_fs_20261002_102553.json
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"EXECUTOR-NOT-RUN tools/bench/plan_ring_p3b2b.json: built, run() never called - 0 ops executed","artefacts":[]}
+BGRUN END rc=1 after 2s

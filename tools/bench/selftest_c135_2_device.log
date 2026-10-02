@@ -1,0 +1,33 @@
+BGRUN START 2026-10-02 12:46:32 limit 8.0 min: py -u tools/bench/selftest_c135_2_device.py
+BGRUN PID 25536
+  PASS  D1 pre-134-4 base FAILS naming FS 27509's frames  {"bad_owner_n": 60, "27509": [{"fs": 27509, "owner": ["FlatSequenceFrame", 0]}, {"fs": 27509, "owner": ["FlatSequenceFrame", 0]}, {"fs": 27509, "owner": ["FlatSequenceFrame", 0]}]}
+  PASS  D2 current base PASSES, UNMEASURED [2499, 14682, 43914]  {"status": "PASS", "fs": 22, "frames": 60, "unmeasured": [2499, 14682, 43914], "bad_owner": {}, "stuck": {}, "inferred": {}, "used": {}}
+  PASS  D3 a use of frame 14037 (UNMEASURED FS 14682) FAILS  {"14682": ["probe: [14037]"]}
+  PASS  D4 graph without fs_measured -> N/A  ""
+    
+  FAIL  D5 failed finalize (F3, md5 1451ba90 base 1451ba90) -> rc 1, temp bench bytes unchanged, real bench untouched  {"rc": 1, "tmp_unchanged": true, "real_unchanged": true, "stderr": "s.path.relpath(p, ROOT).replace(\"\\\\\", \"/\")                       # noqa: E731\n  File \"C:\\Users\\KimLab\\AppData\\Local\\Programs\\Python\\Python310\\lib\\ntpath.py\", line 744, in relpath\n    raise ValueError(\"path is on mount %r, start on mount %r\" % (\nValueError: path is on mount 'C:', start on mount 'G:'\n"}
+  PASS  D6 WriteGuard restores changed/removed/added files  ""
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":5,"fail":1},"first_fail":"D5 failed finalize (F3, md5 1451ba90 base 1451ba90) -> rc 1, temp bench bytes unchanged, real bench untouched","artefacts":[]}
+BGRUN END rc=1 after 2s
+BGRUN START 2026-10-02 12:47:11 limit 8.0 min: py -u tools/bench/selftest_c135_2_device.py
+BGRUN PID 2608
+  PASS  D1 pre-134-4 base FAILS naming FS 27509's frames  {"bad_owner_n": 60, "27509": [{"fs": 27509, "owner": ["FlatSequenceFrame", 0]}, {"fs": 27509, "owner": ["FlatSequenceFrame", 0]}, {"fs": 27509, "owner": ["FlatSequenceFrame", 0]}]}
+  PASS  D2 current base PASSES, UNMEASURED [2499, 14682, 43914]  {"status": "PASS", "fs": 22, "frames": 60, "unmeasured": [2499, 14682, 43914], "bad_owner": {}, "stuck": {}, "inferred": {}, "used": {}}
+  PASS  D3 a use of frame 14037 (UNMEASURED FS 14682) FAILS  {"14682": ["probe: [14037]"]}
+  PASS  D4 graph without fs_measured -> N/A  ""
+    PASS  F-1 inputs md5 == card (plan_ring_p3b2 04204133, plan_ring_p3b2b 1451ba90)  {'tools/bench/selftest_c135_2_device_tmp/plan_ring_p3b2.json': '04204133d6c55929f368ec3761f70445', 'tools/bench/selftest_c135_2_device_tmp
+    PASS  FC base-graph completeness (violation-decisions 2026-10-02 12:2x): 22 FS / 60 frames, UNMEASURED [2499, 14682, 43914] unused  {'status': 'PASS'}
+    PASS  F0 b's 18 actions name no negative (simulator) uid  []
+    PASS  F0b b input validates (stageplan/1, real base)  (True, 'OK stageplan/1')
+    PASS  F1 b FINAL on the real graph, route check PASS (18 rows, 0 unbound), fs_routes 4  {'failed': None, 'final': True, 'md5': 'd7144da5c24be4b69f85335d9e8bb82a', 'unbound': []}
+    PASS  FB gate B scoped: 7 UNMEASURED border tunnel(s) listed, none used by an action / route / entry  {'status': 'PASS', 'unmeasured': [14430, 31050, 34409, 34489, 43605, 44160, 44164], 'used': {}}
+    PASS  F2 end cdiff == 04204133's 16 rows  {'extra': [], 'missing': []}
+    FAIL  F3 end counts == 04204133's end {'objects': 10334, 'owners': 1763, 'terminals': 5933, 'wires': 1974}  {'ref': {'objects': 10334, 'owners': 1763, 'terminals': 5933, 'wires': 1974}, 'b_on_real': {'objects': 10363, 'o
+    PASS  F4a X10 start from a's MEASURED load (memory_model load_by_vi[49cf7f770fc331e06607687af640ad5e])  (610.9, '605.0 + op-0 read 5.9 (tools/bench/launch_p3b2_c135_g.log (MEM after load: 605.0 MB private); tools/bench/s
+    PASS  F4 pred written: ops == compile (each action once); X10 peak 683.5 <= 690.0  683.5
+      FACT  WRITE-GUARD: a gate FAILED -> plan files + sim step dir restored, bytes unchanged = True
+    RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":9,"fail":1},"first_fail":"F3 end counts == 04204133's end {'objects': 10334, 'owners': 1763, 'terminals': 5933, 'wires': 1974}","artefacts":[]}
+  PASS  D5 failed finalize (F3, md5 1451ba90 base 1451ba90) -> rc 1, temp bench bytes unchanged, real bench untouched  {"rc": 1, "tmp_unchanged": true, "real_unchanged": true, "stderr": ""}
+  PASS  D6 WriteGuard restores changed/removed/added files  ""
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":6,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 25s

@@ -267,6 +267,21 @@ launch_cloud_sonnet.ps1 (Start-Transcript + `claude --cloud <prompt file>`) via 
 `session_017seeroLA1Wz7MP15AdPxhg` (12:06). Cloud base = origin/master 188500d (decbench v1 is there). Result →
 branch sonnet-bench-20261002 (or its claude/* branch), report tools/bench/decbench/report_sonnet_cloud.md. Monitor
 with RemoteTrigger get_run_log.
+**WEEKLY 90 % STOP (user 2026-10-02 ~12:5x: "주간 사용량 90퍼센트 되면 사이클 진행 멈춰줘"; weekly was 80 %, reset
+10-04 22:00 UTC):** `tools/usage_stop_watch.py` runs detached under bgrun (log `logs_usage_stop_watch.log`, root;
+the tools/bench path tripped guard_bash's PowerShell-comma parse). Probe = haiku `claude -p` stream-json
+rate_limit_event seven_day utilization every 10 min (first test read 79 % vs app 80 %); at >= 90 % it inserts a
+graceful STOP line after the STATUS frontmatter (tested on a temp copy; the runner's STOP_LINE_RE sees it) and exits.
+Restart only on the user's word. Memory: stop_runner_at_weekly_90.md.
+Also: runner hit its 8-h budget at 12:15 and the supervisor relaunched (cycle 135); report_gate only reads the newest
+runner log, so CYCLE 134 / RUNNER STOP / FINAL went unflagged — logged as fp-31.
+**SONNET BENCH DONE (cloud, $64.99 credit, 60/60 valid; origin/sonnet-bench-20261002
+tools/bench/decbench/report_sonnet_cloud.md):** blind mean / usd per run / min per run — Opus 5.5 high 0.667 / 0.61 /
+1.1; Sonnet 5.5 high 0.446 / 0.31 / 0.7; Sonnet 5.5 max 0.854 / 2.25 / 9.0. Peer-review defect hit: H 0.56, SH 0.36,
+SMX 0.97 (5/6 full). For reference decbench v1 (local, 09-29): Opus high 0.742 / 0.78, Opus max 0.904 / 2.27 / 6.4,
+defect hit MX 0.97. Reading: Sonnet high clearly below Opus high; Sonnet max ≈ Opus max in score and cost but ~40 %
+slower; Opus high reproduced in the cloud within noise (0.667 vs 0.742). 6 of 10 cases discriminate; 63 mech/blind
+disagreements. No model change proposed.
 **CLOUD PLAN DROPPED (user 2026-09-29 ~20:0x KST: "그럼 클라우드는 그냥 잊어버리자").** No Linux port of benches/hooks;
 benches stay local. Both probe routines were run-once and are spent. Open next: user asked whether to bring Gemini back
 for web search; chat proposed (awaiting answer) a headless-permission fix test + a 6–8 question known-answer comparison
