@@ -1,0 +1,25 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle134",
+ "verdict": "refuted",
+ "alternative": "The FS owner gap was new: the reader spec could not foresee FS 27509 had no owner entry, and 134-3's measure-then-decide was protocol-correct, so the two dispatches were the protocol's price, not a fault.",
+ "discriminating_test": "Read ring-p3b.md:99-103 and :110 (PD279(b)/PD280(a), cycle 132): frame owners ['FlatSequenceFrame',0] recorded and set by carry_fs; then task_134-1.json:36-37 - reader spec omits owners. Recorded+omitted => fault.",
+ "violations": [
+  {
+   "slug": "repeated-failure-class",
+   "loss_min": 24,
+   "loss_usd": null,
+   "evidence": "tools/bench/diag_c134_2_finalize_b.log:6"
+  }
+ ],
+ "sources": [
+  "tools/bench/diag_c134_2_finalize_b.log:6",
+  "docs/d1/ring-p3b.md:100",
+  "docs/d1/ring-p3b.md:303",
+  "tools/bench/cards/result_134-2.json:22",
+  "tools/bench/cards/guard_card.log:625",
+  "tools/bench/cards/guard_card.log:632",
+  "tools/bench/peer_c134_4_fs_chain.log:4"
+ ],
+ "note": "Only logged $ for this fault is the fs-chain review $1.7334; material/judgement cost unlogged. Counterfactual launch at ~11:50 ending ~12:45 is tight vs minute-150 NEXT rule."
+}

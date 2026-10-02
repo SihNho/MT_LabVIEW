@@ -1,0 +1,27 @@
+{"schema":"result/1","id":"134-P1","status":"PASS","gates":{"pass":5,"fail":0},
+"first_fail":null,
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/launch_p3b2_c135.py","md5":"b4a273a4ca36d0aabd830674747e202d"},
+ {"path":"tools/bench/launch_p3b2_c135_a.py","md5":"52a11f1624534ca8e00039eea358b481"},
+ {"path":"tools/bench/launch_p3b2_c135_b.py","md5":"4cd5c25689d2d94ee165df2581a98f95"},
+ {"path":"tools/bench/launch_p3b2_c135_graph.py","md5":"c5d9e062dbf1e759fd497cbc61615a6d"},
+ {"path":"tools/bench/launch_p3b2_c135_el.py","md5":"089158b8ff684e87616e5a1cf5f93ae9"},
+ {"path":"tools/bench/selftest_c134_p1.py","md5":"218bc38e85a162ef8dbd404ec576a49f"}],
+"facts":[
+ "1 a re-dried: dry PASS dry_rule 2 unverified 0 (stage_prerun_c134_p1_p3b2a_dry.log:83), prerun 15/0 X10 671.8 (..._prerun.log:106); plan a a419f23f, recipe a bb5ba064 unchanged",
+ "2 runner = 4 children under nested bgrun (a, graph, b, EL) + offline compare; check_launch on both recipe commands at L0 and on b again before b (launch_p3b2_c135.py:157)",
+ "3 compare = (uid,class) objs + terminal rows + wire->terms + fs_frames + borders (launch_p3b2_c135.py:66); selftest_c134_p1.log:16 13/0: equal->reuse, 1 uid->refinalize",
+ "4 dry walks 6 branches (equal, different, fail-a/graph/b/el) T5-T10 PASS; nothing spawned/killed; live run 17/0 gates in launch_p3b2_c135_dry.log:52 (check_launch real: ALLOW a+b)",
+ "4 children COM-stubbed dry: child a PASS (stage_prerun_c134_p1_child_a_dry.log:93), child b PASS on graph 102553 (..._child_b_dry.log:95); --no-record",
+ "Plan b's base graph names the SCRATCH a-file 6cc69221, so recipe b alone would edit it; child b opens the chain's a-file instead (launch_p3b2_c135_b.py:41)",
+ "Different branch: finalize_b's F-1 pin needs plan b == 1451ba90; runner restores those bytes from commit 0b72718d (verified T11) after snapshotting ae6b6111/in/pred",
+ "Graph child ends rc=1 BY DESIGN (gate B FAIL on 7 nested tunnels, diag_c134_1_graph.log:303); runner accepts only that set (launch_p3b2_c135.py:42)",
+ "EL: recipe b writes an expected file of 53 (plan_ring_p3b2b_pred.json:225) vs range 49..52; runner gates range + per-class lo..hi only, reader verdict reported as FACT",
+ "LabVIEW is killed only after the runner's own first child started (launch_p3b2_c135.py:169); L0c refuses to start if any LabVIEW runs"],
+"open":[
+ "Equal branch runs plan b ae6b6111 (base = scratch 6cc69221's graph) on the launched a-file: accept that provenance, or always re-finalize b on the new read?",
+ "The graph child's failing log (gate B by design) will reach guard_peer/audit in cycle 135: pre-log a gate-fp, or accept a Jev ladder row?",
+ "Cycle-135 card needs labview build + gui true + writes: launch_p3b2_c135*, graph_ring_p3b2a_fs_*, errorlist_*, plan_ring_p3b2b*, memory_model.json, stage_prerun*."],
+"cost":{"usd":null,"minutes":12,"labview_runs":0},
+"note":"RUN: py tools/bgrun.py --material --max-min 200 --log tools/bench/launch_p3b2_c135.log -- py -u tools/bench/launch_p3b2_c135.py --launch. PRED: a peak 650.9, stop 690 -> graph EQUAL -> b peak <= 667.0+10, stop 690 -> full Error List 49..52. Offline here; no LabVIEW opened."}

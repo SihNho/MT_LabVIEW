@@ -1,0 +1,42 @@
+BGRUN START 2026-10-02 11:18:39 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c134-4-objdiff -TaskFile tools/bench/peer_c134_4_objdiff_task.txt
+BGRUN PID 11484
+OUTCOME: ANSWERED (118s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-02-c134-4-objdiff.md
+COST: $1.2760  in 16 / out 10034 / cache-create 115036 / cache-read 774734  (114s, 12 turn(s))
+--- ANSWER ---
+The claim's conclusion about where the +29 comes from probably holds, but its arithmetic does not prove it, and it hides the finding that actually matters.
+
+## 1. Strongest reason the claim is wrong: its arithmetic is circular, and the error it hides carries into b's real run
+
+- **Non-contiguity is confirmed.** a's actions are [1–7, 14–19, 24–27, 32–35] (`plan_ring_p3b_split_p3b2_c133_3.log:7-12`), so ref step 21 is not a's end. That part of the claim stands.
+- **The node-class balance proves nothing.** The end diff has no node classes, so ref's total node counts already equal b-on-real's. "a's delta = ref total − b's delta" is that same equation rearranged. Take SelectorTunnel: ref total 3 = a_sim + b_prov, and b-on-real total 3 = a_real 1 + b_real 2. If a's simulation predicted ST 2 and b on the provisional base made ST 1, the totals still balance. In that case b's routing really did change on the real base, through which border tunnels it crosses (gate FB lists 7 unmeasured ones, `diag_c134_4_finalize_b.log:7`). The measurement never looked at b on the provisional base. "b's delta" in the diagnostic is b-on-real only, because `plan_ring_p3b2b.json` had already been overwritten by ae6b6111 (`diag_c134_4_finalize_b.log:13`) before the diagnostic read it.
+- **The +29 is a simulator defect, and it applies to b too.** a's real run made 10 new wires and lost 2, and the simulator predicted exactly that (`stage_d1_ring_p3b2a_scratch_c133_6.log:353`). Net +8 is exactly the +8 Wire rows. So the simulator gets the wire table right but adds no Wire or Terminal entries to the object list (`objs`) for what an action creates. b makes 6 nodes, 4 tunnel crossings and 8 wires, so it will create the same kind of rows when it really runs. The predicted end of 10363 objects will be short by b's own share. "Not a change in b's end graph" is true only inside the simulator. Any post-run gate that compares b's real object count with the prediction will fail the same way.
+
+## 2. Alternative explanations of the same evidence
+
+- **Compensating errors:** a's simulated tunnels differ from a's real ones, b's tunnel count differs between the two bases, and the two differences cancel. The end diff cannot tell this apart from the claim.
+- **Some of the 29 rows may not come from a.** If the reader lists Terminal entries for tunnel terminals that the simulator never models, a few of them could belong to tunnels that b's fs_border routes reuse or touch. The 2 InnerTerminal and 1 OuterTerminal do not map cleanly onto a's 2 flat-sequence outer tunnels and 1 selector tunnel.
+
+## 3. What would falsify the claim
+
+Compare a's simulated end with a's real read. If any node class differs (FlatSequenceOuterTunnel, SelectorTunnel, GrowableFunction, Local, DigitalNumericConstant), the claim is falsified. So is it if any of the 29 extra entries is not attached to something a created.
+
+## 4. Cheapest discriminating test (offline, read-only, two JSON files)
+
+1. Count classes in the `objs` list of `tools/bench/sim/ring_p3b2b_base_provisional.json` (a's simulated end; written by the split, md5 d8aa6ca3, `plan_ring_p3b_split_p3b2_c133_3.log:37`) and of b's `step_00_base.json` (a's real read).
+   - Claim survives only if the diff is exactly {OuterTerminal 1, InnerTerminal 2, Terminal 18, Wire 8} with zero node classes. This replaces gate O1's step-21 indexing with no arithmetic at all.
+2. For those 29 entries in the real graph (`graph_ring_p3b2a_fs_20261002_102553.json`), check what they belong to:
+   - Wire entries: their uids should be in a's new-wire set {28871, 29097, 29131, 29144, 29154, 29168, 29176, 29260, 29270, 29305}, minus whatever the read-back renumbered.
+   - Terminal entries: their owners should be a-created nodes.
+   - If any entry instead belongs to a pre-existing node that b's routes use, the alternative wins.
+
+## Verdict
+
+I expect step 1 to show exactly the +29 with no node difference. The diff's composition (Wire +8 = a's net wires) fits the claim far better than the alternative. Even then, the right conclusion is not "base-model difference, harmless". It is "the simulator omits Wire and Terminal entries for created objects". So:
+
+- The F3 object-count gate should compare node classes only, or count the expected Wire and Terminal entries from the plan.
+- b's predicted object count must not be used as a pass criterion for b's real read.
+
+Step 1 showing a node-class difference would change my mind. So would any of the 29 entries belonging to an object a did not create.
+
+No external search was used: every claim here is about this project's own logs and files.
+BGRUN END rc=0 after 119s

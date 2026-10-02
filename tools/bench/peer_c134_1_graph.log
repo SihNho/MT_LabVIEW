@@ -1,0 +1,43 @@
+BGRUN START 2026-10-02 10:35:39 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c134-1-graph-borders -TaskFile tools/bench/peer_c134_1_graph_task.txt
+BGRUN PID 13612
+OUTCOME: ANSWERED (124s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-02-c134-1-graph-borders.md
+COST: $1.2184  in 30 / out 9902 / cache-create 88585 / cache-read 1441773  (120s, 18 turn(s))
+--- ANSWER ---
+**Verdict: your explanation probably holds as far as it goes. All 7 failures fit "nested Flat Sequence, both faces on Flat Sequence frames", and the frame census is complete. The weak part is the proposed fix: it is circular for exactly the nested Flat Sequences that failed.**
+
+**What the recorded graph shows (`tools/bench/graph_ring_p3b2a_fs_20261002_102553.json`):**
+- **Frame census is complete.** The graph's `owners` map lists exactly 60 diagrams of class `FlatSequenceFrame`. The 22 measured frame lists also total 60 (log line 300), and no frame appears in two lists. So no read was cut short early and no frame is missing.
+- **The failures are exactly the nested Flat Sequences' tunnels** (`diag_c134_1_graph.log:303`):
+  - FS #14682: tunnels 14430 and 31050, faces on 13236 (a frame of #12938) and 14435.
+  - FS #2499: tunnels 34409 and 34489, faces on 13236 and 33688.
+  - FS #43914: tunnels 43605, 44160 and 44164, faces on 124 (a frame of #681) and 43928/44169.
+- **None of those three Flat Sequences has a single classified tunnel** (grep for `"fs": 14682|43914|2499` finds 0). Every classified tunnel I sampled belongs to #681 or #12938, with the outer face on 536.
+- **Data direction agrees with your reading.** The face on the outer frame is the source for exits from the last inner frame (14430, 34409, 44160) and the sink for the entry into the first frame (43605).
+
+**1. Strongest reason the claim could be wrong.** No recorded field says which Flat Sequence a tunnel belongs to:
+- The tunnel object's `owner` is stored as the class name `"FlatSequence"` only, with no uid.
+- The terminal rows carry the tunnel uid and `frame_diagram`, nothing more.
+- The `owners` map has no entry for the Flat Sequence nodes 14682, 2499 or 43914.
+
+So "FS #14682 sits on frame 13236" is never measured anywhere; it rests on the tunnels you are trying to classify. The other reading of tunnel 14430 is that it belongs to #12938, with 14435 as its outer face. That would mean #12938 is nested inside #14682's frame. Only one thing rules that out: #12938's other tunnels have their outer face on 536 (e.g. tunnel 28907: frame 13236, outer frame 536). That is good evidence, but it is indirect.
+
+Frames returned under the wrong Flat Sequence would also produce this failure. It would need two lists swapped, since the census leaves no frame unassigned. I consider that unlikely, but uid closeness (14435 next to 14682) is the only evidence against it.
+
+**2. What would falsify the claim using the JSON alone:**
+- (a) Any nested Flat Sequence with a tunnel that did classify.
+- (b) A failed tunnel whose two frames do not come out nested in one direction only. For example, #12938 having some other tunnel with an outer face on a #14682 frame.
+- (c) A failure where both faces sit on frames of the same Flat Sequence.
+
+None of these appear in the 7 failures. (b) needs a full scan, which I only sampled.
+
+**3. Where the proposed fix still misclassifies:**
+- **It is circular.** `fs_parent` (`tools/stagesim.py:388-392`) is built from the classified tunnels' outer faces. The nested Flat Sequences have no classified tunnels, so their parent diagram is unknown at the moment the fix asks for it.
+- **It only resolves one level of nesting.** It works for the two-level case because the outer Flat Sequence's parent comes from its own tunnels. For a chain A ⊃ B ⊃ C, or any nested Flat Sequence with no independent anchor, it reduces to "pick whichever nesting direction isn't contradicted", which is underdetermined.
+- **Diagram membership is the wrong test.** LabVIEW states inner and outer explicitly. Per labviewwiki, a `FlatSequenceFrame` has an `Outer Tunnels[]` property, and the tunnel exposes `Outer Terminal` and `Inner Terminal` ([FlatSequence class](https://labviewwiki.org/wiki/FlatSequence_class), [Category: VI Scripting Class](https://labviewwiki.org/wiki/Category:VI_Scripting_Class)). I have not checked the exact property names on this LabVIEW 2026 install.
+
+**Cheapest test that separates the claim from the alternative:**
+- **Offline, nothing to run:** for every Flat Sequence in `fs_measured`, list the set of `frame_diagram` values across its classified tunnels' outer faces. Then confirm that 13236 and 124 each belong to exactly one Flat Sequence (#12938 and #681), and that 14435, 33688, 43928 and 44169 belong to Flat Sequences with no outer-face set at all. That is consistent with the claim but does not prove it.
+- **The test that settles it:** in the next LabVIEW pass, read `Outer Tunnels[]` (with the tunnel's `Outer Terminal` uid) for each of the 60 frames. That replaces the derivation with a measurement and needs no parent diagram, so the circularity goes away.
+
+**What would change my mind:** a read of `Outer Tunnels[]` showing 14430 under a #12938 frame.
+BGRUN END rc=0 after 125s

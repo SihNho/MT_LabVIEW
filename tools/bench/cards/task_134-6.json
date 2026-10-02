@@ -1,0 +1,67 @@
+{
+ "schema": "task/1",
+ "id": "134-6",
+ "kind": "build",
+ "goal": "PD291(b)(c)(d), offline launch preconditions: a's census from two real graph reads; name the 2 vanished Error List items; graph-read gate B scoped, runner rc=1 special case removed.",
+ "why": "134-5: scratch b PASS but a has no measured census; the class-level EL check does not say WHICH 2 of P3b-1's 53 items vanished; the graph read ends rc=1 by design (PD291).",
+ "inputs": [
+  {"path": "docs/d1/ring-p3b.md"},
+  {"path": "tools/bench/cards/result_134-5.json"},
+  {"path": "tools/bench/cards/result_134-P1.json"},
+  {"path": "tools/bench/graph_ring_p3b1_20261002_073225.json", "md5": "6cfa6ecb25d9bd98fe31a6cb703679cb"},
+  {"path": "tools/bench/graph_ring_p3b2a_fs_20261002_102553.json", "md5": "b885fa4af1df203a8dd68b631ab86752"},
+  {"path": "tools/bench/errorlist_scratch_c134_5_ring_p3b2b_20261002_112928_20261002_113807.json", "md5": "2a5840d09a59acba8b47099a84ec7570"},
+  {"path": "tools/bench/launch_p3b2_c135.py", "md5": "b4a273a4ca36d0aabd830674747e202d"},
+  {"path": "tools/bench/diag_c134_1_graph.py", "md5": "6a1b61ab26b7ded2bdb66932971eaf41"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "archive/peer/2026-10-02-c134-5-el-classrange.md"},
+  {"kind": "file", "name": "tools/bench/errorlist_expected_D1_ring_p3b1_20261002_060910.json"},
+  {"kind": "file", "name": "tools/bench/launch_p3b2_c135_graph.py"}
+ ],
+ "pass": [
+  "1 a's census = per-class object-row difference graph_ring_p3b1_073225 -> graph_ring_p3b2a_fs_102553, written into plan_ring_p3b2a_pred.json by a script citing both files",
+  "2 item-level: the review's _hit + OCR fallback names the 2 P3b-1 items missing from the scratch read; report each (class, text, net) and whether it is a loose end on a net b rebuilds",
+  "3 graph-read gate B per PD288(b): the 7 UNMEASURED listed, PASS unless used; launch_p3b2_c135.py:42 rc=1 special case removed; selftest_c134_p1 green",
+  "4 launch runner dry (COM stubbed) still walks all branches PASS; md5s of every changed file"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p3b2a_pred.json",
+  "tools/bench/launch_p3b2_c135.py",
+  "tools/bench/cards/result_134-6.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p3b2a_pred*",
+   "tools/bench/launch_p3b2_c135*",
+   "tools/bench/diag_c134_1_graph*",
+   "tools/bench/diag_c134_6*",
+   "tools/bench/selftest_c134_p1*",
+   "tools/bench/selftest_c134_6*",
+   "tools/bench/prerun/**",
+   "tools/bench/stage_prerun_c134_6*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_134-6*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 25},
+ "rules": [
+  "Offline only: no LabVIEW, no VI opened; never launch the runner",
+  "No stage tool, recipe or plan a/b edited; only the pred file, the launch runner files and the graph diag",
+  "Step 2 reports facts; it does not decide whether to launch",
+  "Return at the first unexpected result, files saved; no STATUS edit",
+  "Never end the turn while a run lacks BGRUN END; wait with wait_logs.py ticks (material.md:92-98)"
+ ],
+ "advances": ["M3", "R1", "R3"]
+}

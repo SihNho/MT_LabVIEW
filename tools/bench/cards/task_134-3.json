@@ -1,0 +1,73 @@
+{
+ "schema": "task/1",
+ "id": "134-3",
+ "kind": "build",
+ "goal": "PD289(c)-(e), offline: FS frame/FS owners in the base graph from MEASURED rows; restore plan b to 1451ba90; finalize P3b-2 session b on the measured graph; b dry + prerun.",
+ "why": "134-2 F1: sim of b on graph_ring_p3b2a_fs_102553 stops at action 15 - FS 27509 has no owner entry and its frames carry owner ['FlatSequenceFrame', 0], so #639 and #32464 share no diagram (PD289(b)).",
+ "retry_of_card": "134-2",
+ "inputs": [
+  {"path": "docs/d1/ring-p3b.md"},
+  {"path": "tools/bench/cards/result_134-2.json"},
+  {"path": "tools/stagesim.py", "md5": "75f59e67f66da9777d811436af8e9c8b"},
+  {"path": "tools/stage_prerun.py", "md5": "04cd5553d344efee4176e0cfd4c00ea3"},
+  {"path": "tools/bench/diag_c134_1_finalize_b.py", "md5": "4dce0e4cfa51295c542cb132aff77556"},
+  {"path": "tools/bench/graph_ring_p3b2a_fs_20261002_102553.json", "md5": "b885fa4af1df203a8dd68b631ab86752"},
+  {"path": "tools/bench/plan_ring_p3b2.json", "md5": "04204133d6c55929f368ec3761f70445"},
+  {"path": "tools/recipes/stage_d1_ring_p3b2b.py", "md5": "e6636785aa3483ff313bf75ec452e3d6"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c134_1_finalize_b.py"},
+  {"kind": "file", "name": "tools/bench/graph_ring_p3b2a_fs_20261002_102553.json"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3b2b_c134_2_fail.json"}
+ ],
+ "pass": [
+  "1 measure first: report where graph_ring_p3b2a_fs_102553 holds FS 27509's node row and its diagram (file:key); if absent, RETURN (no inference)",
+  "2 reader->base_state: each FS frame's owner = its FS uid; each FS's owner = the diagram its node row was read on, from that graph's rows only",
+  "3 self-test: on the measured graph all 22 FS owner chains reach a loop/case/VI diagram; frames' owner = their FS; selftest_c134_2_gates + c125_1 still green",
+  "4 plan_ring_p3b2b.json restored to md5 1451ba90 from git HEAD by a script; finalize b: 18/18, no unbound uid, end vs 04204133 (10334/5933/1974, cdiff 16) equal or diffs listed",
+  "5 b dry PASS under rule 2 + prerun all X PASS, X10 <= 690 naming its load; plan/recipe b md5s; --scratch-required exit code"
+ ],
+ "outputs": [
+  "tools/stagesim.py",
+  "tools/bench/plan_ring_p3b2b.json",
+  "tools/bench/cards/result_134-3.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagesim.py",
+   "tools/stage_prerun.py",
+   "tools/stagekit.py",
+   "tools/recipes/stage_d1_ring_p3b2b.py",
+   "tools/bench/*ring_p3b2b*",
+   "tools/bench/sim/**",
+   "tools/bench/prerun/**",
+   "tools/bench/stage_prerun*",
+   "tools/bench/stagesim*",
+   "tools/bench/diag_c134_*",
+   "tools/bench/selftest_c134_*",
+   "tools/bench/c125_1_offline_measure*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_134-3*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "outcome", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 45},
+ "rules": [
+  "Offline only: no LabVIEW, no VI opened; steps 1 -> 5 in order",
+  "Owners come from MEASURED graph rows only - never from the simulator, a carried map or the provisional base",
+  "Plan b's 18 actions and end graph unchanged (rule 1a); a diff vs 04204133 is LISTED and returned",
+  "Return at the first unexpected result, files saved; no scratch, no launch, no STATUS edit",
+  "Never end the turn while a run lacks BGRUN END; wait with wait_logs.py ticks (material.md:92-98)"
+ ],
+ "advances": ["M3", "R1", "R3"]
+}

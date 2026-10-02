@@ -1,19 +1,28 @@
 {
  "schema": "ring-p3b-pred/1",
- "card": "133-3",
- "note": "P3b-2 session b (PD283(c)); PROVISIONAL base = session a's simulated end; regenerate after stage_prerun --rebase onto a's saved file",
+ "card": "134-1",
+ "note": "P3b-2 session b (PD287(c)): base = the REAL graph of session a's kept in-between file read with FS frames (diag_c134_1_graph.py); finalized directly on it, not rebased",
  "plan": {
   "path": "tools/bench/plan_ring_p3b2b.json",
-  "md5": "1451ba90aadc594fe74f97793eb04e92"
+  "md5": "ae6b6111d766a4ba27d0695f29958c23"
  },
  "graph": {
-  "path": "tools/bench/sim/ring_p3b2b_base_provisional.json",
-  "md5": "d8aa6ca31fc34cb464fddf520c915b2e"
+  "path": "tools/bench/graph_ring_p3b2a_fs_20261002_102553.json",
+  "md5": "b885fa4af1df203a8dd68b631ab86752"
  },
- "bed": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b1_20261002_060910.vi",
- "bed_md5": "9d7bf28738b7c154280e5e7c2c9d4961",
- "census": {},
- "census_overall": "UNPREDICTED",
+ "bed": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c133_6_ring_p3b2a_20261002_093837.vi",
+ "bed_md5": "6cc6922192b3e330f163561bb95a8115",
+ "census": {
+  "FlatSequenceOuterTunnel": 2,
+  "GrowableFunction": 2,
+  "InnerTerminal": 4,
+  "Local": 4,
+  "OuterTerminal": 2,
+  "SelectorTunnel": 2,
+  "Terminal": 16,
+  "Wire": 10
+ },
+ "census_overall": "MEASURED-SCRATCH",
  "census_unpredicted": [
   "p3b_lr_rotpos",
   "p3b_ras_rotpos",
@@ -235,7 +244,7 @@
   "decided": "PD262(b)"
  },
  "memory_pred": {
-  "card": "133-3",
+  "card": "134-1",
   "checkpoints": [
    0,
    1,
@@ -284,19 +293,29 @@
    "connect_term_uid",
    "wire_remove_loose_ends"
   ],
-  "start_mb": 605.1,
-  "start_cite": "PREDICTED: a's load 599.2 = 584.1 + 0.719 x N_a 21 (load_growth_mb_per_op) + op-0 5.9; re-check with the MEASURED load of a's saved file before b's prerun (PD283(c))",
-  "peak_mb": 677.7,
+  "start_mb": 594.4,
+  "start_cite": "588.5 + op-0 read 5.9 (tools/bench/diag_c133_6_graph_p3b2a.log:24 (MEM after load: 588.5 MB private); tools/bench/stage_d1_ring_p3b1.log:42-43 (METER start k 0 561.8 MB -> METER read k 0 567.7 MB, d +5.9); pin4 :59-60 +6.0 (result_133-2.json); card 133-3, PD283(b))",
+  "peak_mb": 667.0,
   "fail_above_mb": 690.0,
   "below_fail": true,
   "model": {
    "path": "tools/bench/memory_model.json",
-   "md5": "87268eeb1a364ac07cf342968b6d88df"
+   "md5": "4af62ca8cdaf0980cb5948362b66ef66"
   },
-  "how": "stage_prerun.x10_model_peak on the compiled plan, checkpoints {0, len} | BIND, measured start of the input VI"
+  "how": "stage_prerun.x10_model_peak on the compiled plan, checkpoints {0, len} | BIND, start = x10_start(a's file md5)"
  },
  "summary": {
   "path": "tools/bench/sim/ring_p3b2b/summary.json",
-  "md5": "692fe4cc15e4a3048902fa143ee25d24"
+  "md5": "19624439926b66cf4acd01505eb89f55"
+ },
+ "census_source": {
+  "card": "134-5",
+  "decided": "PD264(c) / PD290(d): the scratch census becomes the launch prediction",
+  "log": "tools/bench/stage_d1_ring_p3b2b_scratch_c134_5.log",
+  "line": 324,
+  "expect": "CENSUS-ALL new uids by class (every class)",
+  "log_md5": "b822152364ea384edf9dc77df9532051",
+  "what": "stagekit.census_gate counts NEW uids per class (after - before); the scratch measured it on every class",
+  "previous": {}
  }
 }

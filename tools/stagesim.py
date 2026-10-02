@@ -309,6 +309,25 @@ def base_state(graph, context=None):
             if k in ("diagrams", "fs_pairs", "removed_nodes") or k not in st:
                 st[k] = copy.deepcopy(v)
         st["neg"], st["sym"] = min(0, int(graph["neg"])), {}
+    elif isinstance(graph.get("fs_measured"), dict):
+        # card 134-1 (PD287(b)): a REAL graph whose reader MEASURED every Flat Sequence's frames left to right (one
+        # OpFsDiagrams_v0 read per FS, gscript.fs_frames) and its border tunnels' faces. Frames, their owners and the border
+        # entries come from that read, never by elimination (fs_carried) - the binder gaps of cycles 132-133 were all here.
+        m = fs_measured_state(graph)
+        st["fs_frames"] = m["fs_frames"]
+        st["fs_border_entries"] = m["fs_border_entries"]
+        # card 134-4 (PD289(f)): the two MEASURED owner links. Frame -> FS from fs_frames (replaces the reader's broken
+        # ['FlatSequenceFrame', 0]); FS -> diagram = the frame_diagram of its border tunnels' OUTER faces, only when ALL agree
+        # (fs_parent). An FS with no border or disagreeing faces is UNMEASURED: listed in st['fs_unmeasured'], no owner entry,
+        # and _diag_chain refuses to walk through its frames (gated like PD288(b): fails only a plan that crosses it).
+        for f, fs in m["frame_owner"].items():
+            st["owners"][str(f)] = [FS_CLS, int(fs)]
+        for fs, p in m["fs_parent"].items():
+            st["owners"][str(fs)] = ["Diagram", int(p)]
+        st["fs_unmeasured"] = sorted(int(fs) for fs in m["fs_frames"] if int(fs) not in m["fs_parent"])
+        for k in ("fs_alias",):
+            if isinstance(graph.get(k), dict):
+                st[k] = copy.deepcopy(graph[k])
     elif isinstance(graph.get("fs_carried"), dict):
         # card 132-6 (PD279(b), docs/d1/ring-p3b.md): a REAL graph re-based by `stage_prerun --rebase` carries the previous
         # stage's simulated Flat Sequence map through the binding (fs_frames / fs_tunnels / ... with real uids; the owners
@@ -322,6 +341,105 @@ def base_state(graph, context=None):
 
 
 FS_CARRY_KEYS = ("fs_frames", "fs_tunnels", "fs_alias", "fs_border_entries", "fs_frame_inferred", "diagrams")
+TUNNEL_CLASSES = ("FlatSequenceOuterTunnel", "Tunnel", "LoopTunnel", "SelectorTunnel", "FlatSequenceInnerTunnel")
+
+
+def fs_measured_state(graph):
+    """card 134-1 (PD287(b)): the Flat Sequence map of a REAL graph from what its reader MEASURED - graph['fs_measured'] =
+    {"fs_frames": {fs uid: [frame diagram uids LEFT TO RIGHT]} (gscript.fs_frames = OpFsDiagrams_v0, one read per FS)} - plus
+    the terminal rows: every FlatSequenceOuterTunnel's faces with their diagrams. Returns {fs_frames, frame_owner {frame: fs},
+    borders {tunnel uid: {fs, frame, inner_face, outer_face, src_term}}, fs_border_entries {"<src term>|<frame>": {face, act}}}
+    in stagesim's own shapes (_fs_border_wire writes the same key: the crossing's SOURCE terminal uid | the sink's frame, face =
+    the tunnel face inside that frame). src_term walks the outer face's net upstream through tunnels (inner face -> outer face of
+    the same tunnel) to the first non-tunnel source; a face whose net has no source keeps src_term None and makes no entry."""
+    fm = dict((int(k), [int(x) for x in v]) for k, v in ((graph.get("fs_measured") or {}).get("fs_frames") or {}).items())
+    owner = dict((f, fs) for fs, fl in fm.items() for f in fl)
+    rows = graph.get("terminals") or []
+    by_owner, by_wire = collections.defaultdict(list), collections.defaultdict(list)
+    for r in rows:
+        by_owner[int(r["owner_uid"])].append(r)
+        if r.get("wire_uid"):
+            by_wire[int(r["wire_uid"])].append(r)
+
+    def src_of(r, hops=0):
+        srcs = [x for x in by_wire.get(int(r.get("wire_uid") or 0), []) if x.get("is_source")]
+        if len(srcs) != 1 or hops > 8:
+            return None
+        s = srcs[0]
+        if s.get("owner_class") in TUNNEL_CLASSES and int(s["owner_uid"]) != int(r["owner_uid"]):
+            ins = [x for x in by_owner[int(s["owner_uid"])] if not x.get("is_source")
+                   and int(x.get("frame_diagram") or 0) != int(s.get("frame_diagram") or 0)]
+            if len(ins) == 1:
+                return src_of(ins[0], hops + 1)
+            return None
+        return int(s["term_uid"])
+    borders, entries = {}, {}
+    for u, rs in sorted(by_owner.items()):
+        if not rs or rs[0].get("owner_class") != "FlatSequenceOuterTunnel":
+            continue
+        inner = [r for r in rs if int(r.get("frame_diagram") or 0) in owner]
+        outer = [r for r in rs if int(r.get("frame_diagram") or 0) not in owner]
+        if len(inner) != 1 or len(outer) != 1:
+            # card 134-2 (PD288(b)): e.g. a NESTED Flat Sequence's tunnel (both faces on FS frames, FS 14682 inside 12938's
+            # frame 13236) - the derivation cannot tell inner from outer. UNMEASURED, never used for binding; fs_border_gate
+            # fails a plan that references one.
+            borders[u] = {"fs": None, "status": "UNMEASURED",
+                          "faces": [[int(r["term_uid"]), int(r.get("frame_diagram") or 0), bool(r.get("is_source"))]
+                                    for r in rs], "why": "not one inner + one outer face"}
+            continue
+        i, o = inner[0], outer[0]
+        fr = int(i["frame_diagram"])
+        st_ = src_of(o) if not o.get("is_source") else None        # an ENTRY tunnel: outer face is a sink
+        borders[u] = {"fs": owner[fr], "frame": fr, "inner_face": int(i["term_uid"]), "outer_face": int(o["term_uid"]),
+                      "outer_frame": int(o.get("frame_diagram") or 0), "entry": not o.get("is_source"), "src_term": st_}
+        if st_ is not None and i.get("wire_uid"):
+            entries["{0}|{1}".format(st_, fr)] = {"face": int(i["term_uid"]), "act": "measured"}
+    par = collections.defaultdict(set)                  # the diagram each FS sits on = its border tunnels' OUTER faces
+    for b in borders.values():
+        if b.get("fs") is not None:
+            par[b["fs"]].add(b["outer_frame"])
+    fs_parent = dict((fs, next(iter(p))) for fs, p in par.items() if len(p) == 1)
+    return {"fs_frames": dict((str(k), v) for k, v in fm.items()), "frame_owner": owner, "borders": borders,
+            "fs_border_entries": entries, "fs_parent": fs_parent}
+
+
+def _ints(x, out):
+    if isinstance(x, bool):
+        return out
+    if isinstance(x, int):
+        out.add(x)
+    elif isinstance(x, str):
+        for p in x.replace(":", "|").split("|"):            # entry keys "<src term>|<frame>", sym keys "new:x"
+            if p.strip().lstrip("-").isdigit():
+                out.add(int(p.strip()))
+    elif isinstance(x, dict):
+        for k, v in x.items():
+            _ints(k, out)
+            _ints(v, out)
+    elif isinstance(x, (list, tuple, set)):
+        for v in x:
+            _ints(v, out)
+    return out
+
+
+def fs_border_gate(graph, uses):
+    """card 134-2 (PD288(b)): gate B SCOPED, never relaxed. Every FlatSequenceOuterTunnel of a measured graph that
+    fs_measured_state could not classify (status UNMEASURED: e.g. a nested FS's tunnel) is listed; the gate FAILS iff `uses`
+    (a dict {where: obj} - plan actions, fs_routes, route-check rows, carried / end-state border entries) names the tunnel's uid
+    or one of its face terminal uids anywhere (any int, any '|'-separated key part). A graph without `fs_measured` -> PASS
+    with nothing listed (not a measured graph). Returns {status PASS|FAIL, unmeasured [uids], used {uid: [where]}}."""
+    if not isinstance(graph.get("fs_measured"), dict):
+        return {"status": "PASS", "unmeasured": [], "used": {}, "note": "graph has no fs_measured"}
+    m = fs_measured_state(graph)
+    um = dict((u, set([u]) | set(f[0] for f in b.get("faces") or []))
+              for u, b in m["borders"].items() if b.get("fs") is None)
+    used = {}
+    for where, obj in (uses or {}).items():
+        got = _ints(obj, set())
+        for u, ids in um.items():
+            if got & ids:
+                used.setdefault(u, []).append("{0}: {1}".format(where, sorted(got & ids)))
+    return {"status": "FAIL" if used else "PASS", "unmeasured": sorted(um), "used": dict((str(k), v) for k, v in used.items())}
 
 
 def new_uid(st):
@@ -1492,6 +1610,16 @@ def _diag_chain(st, d, par):
         seen.add(d)
         p = st["diagrams"].get(str(d))
         p = int(p) if p is not None else par.get(d)
+        own_d = (st.get("owners") or {}).get(str(d)) or [None, 0]
+        if p is None and own_d[0] == FS_CLS and int(own_d[1] or 0) and "fs_unmeasured" in st:
+            # card 134-4 (PD289(f)): a MEASURED graph's frame -> its FS (fs_frames) -> the FS's diagram (border outer faces)
+            fs = int(own_d[1])
+            if fs in st["fs_unmeasured"]:
+                raise SimError("diagram chain: frame #{0} belongs to FS #{1} whose diagram is UNMEASURED (no border outer face, "
+                               "or faces disagree; PD289(f))".format(d, fs))
+            fo = (st.get("owners") or {}).get(str(fs)) or [None, 0]
+            if fo[0] == "Diagram" and int(fo[1] or 0):
+                p = int(fo[1])
         if p is None and ((st.get("owners") or {}).get(str(d)) or [None, 0])[1] in (None, 0):
             p = _fsot_parent(st, d)
             if p is not None:
@@ -2175,6 +2303,16 @@ def simulate(plan_path, graph_path, out_root=SIM_ROOT, plan_out_dir=BENCH, model
     # frame of a Flat Sequence the plan did NOT create - a carried/base FS, P3b-2 on P3b-1's FS), so that wire compiles to
     # the measured connect_term_uid route (a BIND op) instead of a plain connect (stage_prerun_c132_6_rebase_p3b2.log:76).
     out_plan["finalized"]["fs_routes"] = fs_routes_of(steps)
+    # card 134-2 (PD288(b)): gate B scoped - an UNMEASURED border tunnel of a measured base graph may sit in the graph, but a
+    # plan action, an FS route or a carried / end-state border entry that names it refuses the finalize
+    gj = _j(graph_path)
+    gb_uses = {"actions": plan["actions"], "fs_routes": out_plan["finalized"]["fs_routes"],
+               "end_fs_border_entries": st.get("fs_border_entries"), "carried": gj.get("fs_carried")}
+    gb = fs_border_gate(gj, gb_uses)
+    out_plan["finalized"]["fs_border_gate"] = gb
+    if gb["status"] != "PASS" and final:
+        final = out_plan["final"] = summary["final"] = False
+        log("  FINALIZE REFUSED: gate B: plan uses UNMEASURED FS border(s) {0}".format(str(gb["used"])[:600]))
     pp = os.path.join(plan_out_dir, "plan_{0}.json".format(stage))
     with open(pp, "w", encoding="utf-8") as f:
         json.dump(out_plan, f, indent=1, default=str)
@@ -2188,6 +2326,11 @@ def simulate(plan_path, graph_path, out_root=SIM_ROOT, plan_out_dir=BENCH, model
         if rc["status"] != "PASS":
             final = out_plan["final"] = summary["final"] = False
             log("  FINALIZE REFUSED: route check {0}: {1}".format(rc["status"], str(rc["first_fail"])[:600]))
+        gb = fs_border_gate(gj, dict(gb_uses, route_check=rc.get("rows")))          # card 134-2: routes too
+        out_plan["finalized"]["fs_border_gate"] = gb
+        if gb["status"] != "PASS":
+            final = out_plan["final"] = summary["final"] = False
+            log("  FINALIZE REFUSED: gate B: a route uses UNMEASURED FS border(s) {0}".format(str(gb["used"])[:600]))
         with open(pp, "w", encoding="utf-8") as f:
             json.dump(out_plan, f, indent=1, default=str)
         summary["route_check"] = rc

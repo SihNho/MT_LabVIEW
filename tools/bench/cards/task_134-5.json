@@ -1,0 +1,76 @@
+{
+ "schema": "task/1",
+ "id": "134-5",
+ "kind": "build",
+ "goal": "PD290(d): scratch run of P3b-2 session b on a COPY of the kept in-between file -> save -> Error List count-only 49..52 -> measured census into both preds. No launch.",
+ "why": "134-4: session b finalized on the measured graph (ae6b6111, 18/18, cdiff 16, dry rule 2, prerun 15/0, X10 667.0). D-2026-10-01-01 requires a full scratch run before the launch.",
+ "inputs": [
+  {"path": "docs/d1/ring-p3b.md"},
+  {"path": "tools/bench/cards/result_134-4.json"},
+  {"path": "tools/bench/plan_ring_p3b2b.json", "md5": "ae6b6111d766a4ba27d0695f29958c23"},
+  {"path": "tools/recipes/stage_d1_ring_p3b2b.py", "md5": "e6636785aa3483ff313bf75ec452e3d6"},
+  {"path": "tools/bench/stage_d1_ring_p3b2b_scratch.py", "md5": "a1e3b5d214812ad81de298599842c2f6"},
+  {"path": "tools/stagesim.py", "md5": "b810741e3d9b39cc274dfead44e3a7ed"},
+  {"path": "tools/bench/errorlist_expect_p3b2ab.json", "md5": "3a06345781c5678a78f968958e3ada6d"},
+  {"path": "tools/bench/plan_ring_p3b2a_pred.json", "md5": "dd332eb65c72f8f61d7163f2f330f808"},
+  {"path": "tools/bench/plan_ring_p3b2b_pred.json", "md5": "290cb33101c49405588ca0bd143f748d"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c133_6_ring_p3b2a_20261002_093837.vi", "md5": "6cc6922192b3e330f163561bb95a8115"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p3b2b_scratch.py"},
+  {"kind": "file", "name": "tools/bench/selftest_c134_1_dry.py"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/wait_logs.py"},
+  {"kind": "file", "name": "tools/lv_gui.ps1"},
+  {"kind": "file", "name": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/scratch_c133_6_ring_p3b2a_20261002_093837.vi"}
+ ],
+ "pass": [
+  "0 selftest_c134_1_dry run on the current stagesim/stage_prerun (fp-30 route): green, or the failure named",
+  "1 scratch wrapper b points at plan b ae6b6111 and a byte COPY of 6cc69221 (never the original in-between, never the bed); its dry rule 2 + prerun PASS",
+  "2 scratch b: every gate PASS (E1, NG, FR, D, CEN2, TD, PB, HB, PS); peak <= 690 MB and <= X10 667.0 + 10; saved by rule-6 GUI save, md5",
+  "3 Error List count-only (--role scratch) of the scratch final: total in 49..52, per-class counts vs errorlist_expect_p3b2ab",
+  "4 measured census into plan_ring_p3b2a_pred + _p3b2b_pred by a script citing the log line (PD264(c)); scratch final deleted; 6cc69221 kept; bed unchanged; LabVIEW gone"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p3b2a_pred.json",
+  "tools/bench/plan_ring_p3b2b_pred.json",
+  "tools/bench/cards/result_134-5.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/*ring_p3b2b*",
+   "tools/bench/*ring_p3b2a_pred*",
+   "tools/bench/sim/**",
+   "tools/bench/prerun/**",
+   "tools/bench/stage_prerun*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/errorlist*",
+   "tools/bench/memory_model.json",
+   "tools/bench/diag_c134_5*",
+   "tools/bench/selftest_c134_1_dry*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_134-5*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "outcome", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 55},
+ "rules": [
+  "Byte copies only: the bed and 6cc69221 are never edited or saved; the scratch gets a scratch_ name, deleted after md5",
+  "No stage tool edited (stage_prerun/stagexec/stagesim/stagekit); a tool gap = return",
+  "rule-6 GUI save via lv_gui.ps1 -Exception Approved; capture, locate, act, capture, confirm",
+  "ONE Error List read, at the end (PD258(a)); each LabVIEW session closed and verified gone before the next",
+  "Return at the first unexpected result, LabVIEW closed, files saved; NO launch; no STATUS edit",
+  "Never end the turn while a run lacks BGRUN END; wait with wait_logs.py ticks (material.md:92-98)"
+ ],
+ "advances": ["M3", "R1", "R3"]
+}

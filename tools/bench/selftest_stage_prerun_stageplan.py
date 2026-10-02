@@ -27,8 +27,9 @@ def case(name, plan, n_wire_ops, key="stageplan"):
     json.dump(plan, open(pp, "w", encoding="utf-8"), indent=1)
     rp = os.path.join(SAND, "stage_{0}.py".format(name))
     open(rp, "w", encoding="utf-8").write("PLAN = 'plan_{0}.json'\n".format(name))
+    # card 134-2: dry() always returns "unverified" since card 134-1 (stage_prerun.py:937); prerun reads it (:2277)
     SP.dry = lambda recipe, graph=None: {"status": "PASS", "first_fail": None, "addresses": [], "jev": [], "input_md5": None,
-                                         "ops": ["move_in"] * 3 + ["add_sr"] + ["wire_tunnel"] * n_wire_ops}
+                                         "unverified": [], "ops":["move_in"] * 3 + ["add_sr"] + ["wire_tunnel"] * n_wire_ops}
     print("--- case", name, flush=True)
     pr = SP.prerun(rp)["prerun"]
     return dict((g_[0][:2], g_[1]) for g_ in pr["gates"]), pr, rp, pp

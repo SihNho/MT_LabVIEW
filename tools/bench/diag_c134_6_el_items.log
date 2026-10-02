@@ -1,0 +1,20 @@
+BGRUN START 2026-10-02 12:04:17 limit 3.0 min: py -u tools/bench/diag_c134_6_el_items.py
+BGRUN PID 11064
+  GATE PASS  E1 read file at card md5  2a5840d09a59acba8b47099a84ec7570
+  FACT expected file md5 e61c82f2e45885ef9addd946fda73eba
+  GATE PASS  E2 compare's missing count == verdict file's (2 vs 2)  
+  ENTRY  0 count 1 used 1 could-match 1 rule ["imagein", "isnotwired"] | SubVI 'Track N beads four-fold over-kernel-v3.vi': required input 'Image In' is not wired
+  ENTRY  1 count 1 used 1 could-match 3 rule ["buildarray", "containsunwiredorbadterminal"] | Build Array: Contains unwired or bad terminal (L2-A3)
+  ENTRY  2 count 2 used 2 could-match 3 rule ["buildarray", "containsunwiredorbadterminal"] | Build Array: Contains unwired or bad terminal (open rows)
+  ENTRY  3 count 2 used 2 could-match 2 rule ["outputlooptunneltoaninput"] | output loop tunnel wired to an input (L2-A3)
+  ENTRY  4 count 3 used 3 could-match 3 rule ["wireconnectedtoanundirectedtunnel"] | Loop Tunnel: Wire connected to an undirected tunnel (open rows)
+  ENTRY  5 count 1 used 1 could-match 1 rule ["twoterminalsofdifferenttypes"] | You have connected two terminals of different types.
+  ENTRY  6 count 1 used 1 could-match 1 rule ["connectsoneormoredatasinksbuthasnosource"] | This wire connects one or more data sinks but has no source. (B1-new sink-only RBW wires, less 2 retired stubs)
+  ENTRY  7 count 9 used 9 could-match 20 rule ["completelyunconnectedwire"] | This wire is not connected to anything. (L2-A3)
+  ENTRY  8 count 11 used 11 could-match 20 rule ["completelyunconnectedwire"] | This wire is not connected to anything. (B1-new termless RBW wires)
+  ENTRY  9 count 22 used 20 could-match 20 rule ["wirewirehaslooseends"] | Wire: Wire has loose ends. (measured, card 131-6 final read)
+  UNMATCHED entry 9 x2: {"norm_all": ["wirewirehaslooseends"], "count": 22, "label": "Wire: Wire has loose ends. (measured, card 131-6 final read)", "cite": "card 131-6: re-pinned from the measured final read tools\\bench\\errorlist_D1_ring_p3b1_20261002_060910_20261002_063113.json (PD274(b)); class 24 -> 22"}
+  GATE PASS  E3 unmatched slots == 2 ([(9, 2)])  [(9, 2)]
+  GATE PASS  E4 every unmatched entry is a loose-ends class entry  [['wirewirehaslooseends']]
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

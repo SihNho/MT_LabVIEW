@@ -1,0 +1,85 @@
+BGRUN START 2026-10-02 11:29:46 limit 8.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_ring_p3b2a.py
+BGRUN PID 17272
+stage_d1_ring_p3b2a - card 133-3 (WRITTEN, NOT LAUNCHED), RING P3b-2 SESSION a of two (PD283(c)(e); from stage_d1_ring_p3b2.py
+bbdd0328, the one-session reference, never launched): on P3b-1's SAVED artefact (9d7bf287), in the Flat Sequence P3b-1 built on
+case #22694's False frame, apply actions [1-7, 14-19, 24-27, 32-35] of plan_ring_p3b2.json 04204133 = Num(i) = -1 in f0, TransPos
+at i in f1 (local read -> Replace Array Subset -> local write), Latest = BufNum in f2, each crossing followed by its
+wire_remove_loose_ends. Session b (stage_d1_ring_p3b2b.py) applies the rest on THIS stage's saved file after `--rebase`.
+FRESH LabVIEW -> claudeDev\D1_ring_p3b2a_<ts>.vi (rule-6 GUI save, ExecState 0 by design). The file is the IN-BETWEEN file of step
+P3b-2 (PD283(c) assumption): never a bed, no Error List expected file (the range is checked on b's final file only).
+ROWS ONLY FROM plan_ring_p3b2a.json (stagesim FINAL of plan_ring_p3b2a_in.json on sim/ring_p3b2_base_real_fsmap.json, route check
+PASS, fs_routes; plan_ring_p3b_split_p3b2.py); expected values only from plan_ring_p3b2a_pred.json. No new op.
+PREDICTION: L1 21 actions -> pred ops; E1 every checkpoint == sim; NG every crossing op's new tunnel names == the step files';
+FR the created objects (count from the plan) sit on frames of the base's FS, no new frame; D new/lost wires == sim's; TD every base
+terminal that was wired stays wired; CEN2 == pred census; PB cdiff(S1, end) == the 16 rows (FATAL, before save); HB handles <= +700;
+PS saved, input unchanged. X10 (measured start 590.0 = P3b-1 load 584.1 + op-0 5.9) 671.8 MB <= 690.
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/stage_d1_ring_p3b2a.log -- py -u tools/recipes/stage_d1_ring_p3b2a.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p3b2a_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan  ('a419f23f29760447da8b43e1154fa470', {'path': 'tools/bench/sim/ring_p3b2_base_real_fsmap.json', 'md5': '75e64374c76f11a36de096afa5ebda37'}, '9d7bf28738b7c154280e5e7c2c9d4961')
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 9d7bf28738b7c154280e5e7c2c9d4961  got 9d7bf28738b7c154280e5e7c2c9d4961
+  PASS  DRY graph JSON for input md5 9d7bf28738b7c154280e5e7c2c9d4961  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\sim\ring_p3b2_base_real_fsmap.json
+  PASS  L1 the 21 actions compile into 21 real ops == pred kinds, each action once; checkpoints (0, 1, 2, 3, 4, 5, 6, 7, 8, 14, 16, 18, 20, 21)  ['create', 'create', 'create', 'create', 'create', 'create', 'create', 'create', 'connect', 'connect', 'connect', 'connect', 'connect', 'connect_term_uid', 'wire_remove_loose_ends', 'connect_term_uid', 'wire_remove_loose_ends', 'connect_term_uid', 'wire_remove_loose_ends', 'connect_term_uid', 'wire_remove_loose_ends']
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 4 touched diagram(s) [639, 27219, 27722, 32464]: one-side-only Nodes[] entries 0
+  PRIME 0 terminal indexes proved at base; 0 ControlTerminal end(s) by 179(b); unprovable []
+  CHECKPOINTS whole-VI read+diff after ops [1, 2, 3, 4, 5, 6, 7, 8, 14, 16, 18, 20, 21] of 21
+  FACT  OP create [1] -> err '' (0.0 s)
+  STEPX 01 create         acts [1] ids ['p3b_lr_num1'] bound {-1: 10000001} diff 0
+  FACT  OP create [2] -> err '' (0.0 s)
+  STEPX 02 create         acts [2] ids ['p3b_ras_num1'] bound {-3: 10000003} diff 0
+  FACT  OP create [3] -> err '' (0.0 s)
+  STEPX 03 create         acts [3] ids ['p3b_k_m1'] bound {-8: 10000008} diff 0
+  FACT  OP create [4] -> err '' (0.0 s)
+  STEPX 04 create         acts [4] ids ['p3b_lw_num1'] bound {-10: 10000010} diff 0
+  FACT  OP create [5] -> err '' (0.0 s)
+  STEPX 05 create         acts [5] ids ['p3b_lr_transpos'] bound {-12: 10000012} diff 0
+  FACT  OP create [6] -> err '' (0.0 s)
+  STEPX 06 create         acts [6] ids ['p3b_ras_transpos'] bound {-14: 10000014} diff 0
+  FACT  OP create [7] -> err '' (0.0 s)
+  STEPX 07 create         acts [7] ids ['p3b_lw_transpos'] bound {-19: 10000019} diff 0
+  FACT  OP create [8] -> err '' (0.0 s)
+  STEPX 08 create         acts [8] ids ['p3b_lw_latest'] bound {-21: 10000021} diff 0
+  FACT  OP wire_connect [9] -> err '' (0.0 s)
+  STEPX 09 connect        acts [9] ids ['p3b_w_n1_arr'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect [10] -> err '' (0.0 s)
+  STEPX 10 connect        acts [10] ids ['p3b_w_m1_new'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect [11] -> err '' (0.0 s)
+  STEPX 11 connect        acts [11] ids ['p3b_w_n1_out'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect [12] -> err '' (0.0 s)
+  STEPX 12 connect        acts [12] ids ['p3b_w_t_arr'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect [13] -> err '' (0.0 s)
+  STEPX 13 connect        acts [13] ids ['p3b_w_t_out'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect_term_uid [14] -> err '' (0.0 s)
+  NAMEGATE op 14 ok: sim {'FlatSequenceOuterTunnel|Terminal|False': [''], 'FlatSequenceOuterTunnel|Terminal|True': ['']} real {'FlatSequenceOuterTunnel|Terminal|False': [''], 'FlatSequenceOuterTunnel|Terminal|True': ['']}
+  STEPX 14 connect_term_uid acts [14] ids ['p3b_x_i_f1'] bound {-28: 10000030} diff 0
+  FACT  OP wire_remove_loose_ends [15] -> err '' (0.0 s)
+  STEPX 15 wire_remove_loose_ends acts [15] ids ['p3b_rle_i_f1'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect_term_uid [16] -> err '' (0.0 s)
+  STEPX 16 connect_term_uid acts [16] ids ['p3b_x_i_rat1'] bound {} diff 0
+  FACT  OP wire_remove_loose_ends [17] -> err '' (0.0 s)
+  STEPX 17 wire_remove_loose_ends acts [17] ids ['p3b_rle_i_rat1'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect_term_uid [18] -> err '' (0.0 s)
+  STEPX 18 connect_term_uid acts [18] ids ['p3b_x_bn_latest'] bound {} diff 0
+  FACT  OP wire_remove_loose_ends [19] -> err '' (0.0 s)
+  STEPX 19 wire_remove_loose_ends acts [19] ids ['p3b_rle_bn_latest'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect_term_uid [20] -> err '' (0.0 s)
+  NAMEGATE op 20 ok: sim {'SelectorTunnel|OuterTerminal|False': ['Value'], 'SelectorTunnel|InnerTerminal|True': ['Value', 'Value'], 'FlatSequenceOuterTunnel|Terminal|False': ['Value'], 'FlatSequenceOuterTunnel|Terminal|True': ['Value']} real {'SelectorTunnel|OuterTerminal|False': ['Value'], 'SelectorTunnel|InnerTerminal|True': ['Value', 'Value'], 'FlatSequenceOuterTunnel|Terminal|False': ['Value'], 'FlatSequenceOuterTunnel|Terminal|True': ['Value']}
+  STEPX 20 connect_term_uid acts [20] ids ['p3b_x_trans'] bound {-33: 10000035, -37: 10000040} diff 0
+  FACT  OP wire_remove_loose_ends [21] -> err '' (0.0 s)
+  STEPX 21 wire_remove_loose_ends acts [21] ids ['p3b_rle_trans'] bound {} diff 0
+  PASS  E1 every checkpoint's real graph == its simulated step (21 ops)
+  PASS  NG every crossing op's NEW tunnel names == the simulator's (stagexec.tunnel_name_check, per op, from the step files): 2 op(s) [14, 20]  [{'k': 14, 'ok': True, 'sim': {'FlatSequenceOuterTunnel|Terminal|False': [''], 'FlatSequenceOuterTunnel|Terminal|True': ['']}, 'real': {'FlatSequenceOuterTunnel|Terminal|False': [''], 'FlatSequenceOuterTunnel|Terminal|True': ['']}}, {'k': 20, 'ok': True, 'sim': {'SelectorTunnel|OuterTerminal|False': ['Value'], 'SelectorTunnel|InnerTerminal|True': ['Value', 'Value'], 'FlatSequenceOuterTunnel|Terminal|False': ['Value'], 'FlatSequenceOuterTunnel|Terminal|True': ['Value']}, 'real': {'SelectorTunnel|OuterTerminal|False': ['Value'], 'SelectorTunnel|InnerTerminal|True': ['Value', 'Value'], 'FlatSequenceOuterTunnel|Terminal|False': ['Value'], 'FlatSequenceOuterTunnel|Terminal|True': ['Value']}}]
+  PASS  FR the 8 created objects sit on [27641, 27722, 32464] frame(s) of the base, no new frame  {'on': [27641, 27722, 32464]}
+  PASS  D new wires 10 == sim's 10; lost 2 == sim's 2 (re-created source nets, PD256(c))  {'new': [10000023, 10000024, 10000025, 10000026, 10000027, 10000028, 10000029, 10000033, 10000034, 10000038], 'lost': [28437, 30592]}
+  UNPREDICTED  CEN2 new-object census (classes of the pred) == plan_ring_p3b2a_pred.json census  (declared set empty {}; measured not in a dry run)
+  PASS  TD every base terminal that was wired is still wired, no base row lost  {'unwired': [], 'lost_rows': []}
+  FACT  ExecState [after all rows (ExecState 0 expected: the P3b-1 bed is broken by design)] D1_ring_p3b2a_20261002_112947.vi = <dry:g.exec_state>
+  PASS  PB frame-keyed cdiff(S1, real end) == the bed's 16 rows and the plan's 11 open (node, term) pairs (FATAL, before save)  {'extra': [], 'missing': []}
+  FACT  PH handles: post-open <dry:bench_prep.labview_handles> -> before-save None
+  PASS  HB open->save handle growth <= +700 (PD236(b) band; refs balance is H5)  (<dry:bench_prep.labview_handles>, None)
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  dry0dry0dry0dry0dry0dry0dry0dry0
+
+=== DRY PASS: first_fail=None coverage 72/81 lines, first mutation Stage._op create, unverified 0, graph tools/bench/sim/ring_p3b2_base_real_fsmap.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 19s

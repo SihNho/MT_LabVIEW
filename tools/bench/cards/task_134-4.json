@@ -1,0 +1,74 @@
+{
+ "schema": "task/1",
+ "id": "134-4",
+ "kind": "build",
+ "goal": "PD289(f), offline: FS owners from measured links (fs_frames; border outer faces, all agree); restore plan b to 1451ba90; finalize P3b-2 session b on the measured graph; b dry + prerun.",
+ "why": "134-3 step 1: graph owners hold no FS; frames carry owner ['FlatSequenceFrame', 0]. Measured links exist: fs_measured.fs_frames and FS 27509's 8/8 border outer faces on diagram 27219 (PD289(f)).",
+ "retry_of_card": "134-3",
+ "inputs": [
+  {"path": "docs/d1/ring-p3b.md"},
+  {"path": "tools/bench/cards/result_134-3.json"},
+  {"path": "tools/bench/diag_c134_3_owners.log", "md5": "f86832f6fcd75c74b67536a810e082ac"},
+  {"path": "tools/stagesim.py", "md5": "75f59e67f66da9777d811436af8e9c8b"},
+  {"path": "tools/stage_prerun.py", "md5": "04cd5553d344efee4176e0cfd4c00ea3"},
+  {"path": "tools/bench/diag_c134_1_finalize_b.py", "md5": "4dce0e4cfa51295c542cb132aff77556"},
+  {"path": "tools/bench/graph_ring_p3b2a_fs_20261002_102553.json", "md5": "b885fa4af1df203a8dd68b631ab86752"},
+  {"path": "tools/bench/plan_ring_p3b2.json", "md5": "04204133d6c55929f368ec3761f70445"},
+  {"path": "tools/recipes/stage_d1_ring_p3b2b.py", "md5": "e6636785aa3483ff313bf75ec452e3d6"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c134_1_finalize_b.py"},
+  {"kind": "file", "name": "tools/bench/graph_ring_p3b2a_fs_20261002_102553.json"},
+  {"kind": "file", "name": "tools/bench/diag_c134_3_owners.py"}
+ ],
+ "pass": [
+  "1 base_state: frames' owner = their FS from fs_measured.fs_frames; FS diagram = its border outer faces' frame_diagram when ALL agree; else UNMEASURED (gated as PD288(b))",
+  "2 the broken ['FlatSequenceFrame', 0] owner is replaced and never used; self-test: 22 FS chains reach a diagram or are UNMEASURED+listed; FS 27509 -> 27219 -> 639",
+  "3 selftest_c134_2_gates, selftest_c134_1_fsmap, selftest_c134_1_dry and c125_1_offline_measure still green",
+  "4 plan_ring_p3b2b.json restored to md5 1451ba90 from git HEAD by a script; finalize b: 18/18, no unbound uid, end vs 04204133 (10334/5933/1974, cdiff 16) equal or diffs listed",
+  "5 b dry PASS under rule 2 + prerun all X PASS, X10 <= 690 naming its load; plan/recipe b md5s; --scratch-required exit code"
+ ],
+ "outputs": [
+  "tools/stagesim.py",
+  "tools/bench/plan_ring_p3b2b.json",
+  "tools/bench/cards/result_134-4.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagesim.py",
+   "tools/stage_prerun.py",
+   "tools/stagekit.py",
+   "tools/recipes/stage_d1_ring_p3b2b.py",
+   "tools/bench/*ring_p3b2b*",
+   "tools/bench/sim/**",
+   "tools/bench/prerun/**",
+   "tools/bench/stage_prerun*",
+   "tools/bench/stagesim*",
+   "tools/bench/diag_c134_*",
+   "tools/bench/selftest_c134_*",
+   "tools/bench/c125_1_offline_measure*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_134-4*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "outcome", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 45},
+ "rules": [
+  "Offline only: no LabVIEW, no VI opened; steps 1 -> 5 in order",
+  "Owners only from the two measured links of PD289(f); never from the simulator, a carried map or the provisional base",
+  "Plan b's 18 actions and end graph unchanged (rule 1a); a diff vs 04204133 is LISTED and returned",
+  "Return at the first unexpected result, files saved; no scratch, no launch, no STATUS edit",
+  "Never end the turn while a run lacks BGRUN END; wait with wait_logs.py ticks (material.md:92-98)"
+ ],
+ "advances": ["M3", "R1", "R3"]
+}

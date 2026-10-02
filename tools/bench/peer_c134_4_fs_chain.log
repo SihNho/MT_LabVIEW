@@ -1,0 +1,52 @@
+BGRUN START 2026-10-02 11:06:59 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c134-4-fs-chain -TaskFile tools/bench/peer_c134_4_task.txt
+BGRUN PID 8004
+OUTCOME: ANSWERED (194s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-02-c134-4-fs-chain.md
+COST: $1.7334  in 32 / out 16854 / cache-create 120908 / cache-read 1864104  (190s, 30 turn(s))
+--- ANSWER ---
+I could not refute the diagnosis: frame 32464's chain really did stop at the frame. The fix is right for wire routes. But the claim that nothing else changed is wrong, and two of the 19 parent links rest on a single reading.
+
+I only read files and searched the web. Nothing was built, run or edited, and I did not take the LabVIEW lock.
+
+**Strongest reason the claim is wrong: the fix changes more than `_diag_chain`.** `base_state` now adds `owners[fs] = ["Diagram", p]` for 19 Flat Sequences (`tools/stagesim.py:325-326`). `closure_of`, which decides what a move carries, follows exactly those `"Diagram"` rows (`tools/stagesim.py:885-887`).
+- **Before:** a move of a structure that encloses a measured Flat Sequence carried the Flat Sequence's tunnels but none of the nodes inside its frames.
+- **Now:** it carries everything inside them, for example everything in 27641, 32464 and 27722 when While loop 637 or case 22694 moves.
+- That is closer to what LabVIEW does. But it changes every move prediction (and its census) on a measured graph, and no test covers it. Selftest O1–O7 only checks owners and chains (`tools/bench/selftest_c134_4_owners.py:31-65`).
+- Plan b has no move (create / wire / wire_remove_loose_ends only), so this does not affect plan b. It affects the next plan that moves something.
+- The fix also changes what stagexec's `tunnel_owner` returns (Flat Sequence uid instead of 0). That reaches execution addressing through `be.addr.owners = st0["owners"]` (`tools/stagexec.py:1391-1398`, `:1908`).
+
+**Q1 – is the outer face's `frame_diagram` the diagram that holds the Flat Sequence?** Mostly yes.
+- The column is read from LabVIEW's `Terminal.Diagram` (`docs/toolkit-capabilities.md:344`), documented as the terminal's owning diagram ([NI: Terminal](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/propertyitem/terminal.html), [LabVIEW Wiki: Terminal class](https://labviewwiki.org/wiki/Terminal_class)).
+- A tunnel's outer terminal sits on the diagram that owns the structure, not on some enclosing loop or case further out.
+- Caveat: the project's own record says Flat Sequence inner-tunnel terminals that are not faces read "mostly the TopLevelDiagram" (`tools/vigraph.py:514`). So `Terminal.Diagram` does not always return the nearest diagram for Flat Sequence terminals. For an outer-tunnel row that would show up as two outer faces, which the code marks UNMEASURED, so that case fails safe.
+- The unsafe case: a Flat Sequence whose only outer readings all fall back to 536. Its parent would be recorded as 536, and the chain would skip the loops and cases in between. Flat Sequences 681 and 12938 both read 536 (`diag_c134_4_chain.log:4,19`). Those two look plausible as top-level structures, but nothing independent checks them.
+
+**Q2 – does any other route change?** Not for routes that already worked.
+- The chain is only extended past the frame where it used to stop. Anything added lies above the old meeting point, so the first diagram shared by the source's chain and the sink's chain cannot move.
+- Only routes that used to be refused now go through.
+- The change is in moves (above), not in wires.
+
+**Q3 – is "all outer faces agree" enough when there is only one?** No: with one face there is nothing to compare, so it is a single reading, not a check.
+- Flat Sequence 26415 sits on 25846 (1 face) and 28381 on 18065 (1 face) (`diag_c134_4_chain.log:60,76`).
+- Selftest O6 only shows that two disagreeing faces are caught. It cannot catch a single wrong face.
+
+**Alternative explanation of the same evidence.** The real fault is that card 134-1 itself turned off the `_fsot_parent` fallback (the frame-parent derivation measured in card 127, `tools/stagesim.py:1582-1603`, `:1623`). The fix then brought in a second derivation without checking it against the first. If the two disagree on any frame, the selftest's 19/19 only shows the new rule is consistent with itself.
+
+**What would falsify the claim.** Any of these:
+- `_fsot_parent` gives a parent different from `fs_parent` for some frame.
+- The plan that created Flat Sequence 26415 or 28381 put it on a different diagram.
+- Finalizing plan b still stops at action 15, this time with an UNMEASURED crossing signature. The signature this route needs exists for a wired source only (`tools/stagesim.py:168`), so if 4580 'Value' is unwired it will still be refused.
+
+**Cheapest discriminating test (offline, about a second, no LabVIEW):**
+1. On `graph_ring_p3b2a_fs_20261002_102553.json`, copy the state, put every frame's owner back to `['FlatSequenceFrame', 0]`, and run `_fsot_parent` on all 60 frames.
+2. Compare each non-None result with `fs_parent[fs]` for that frame's Flat Sequence.
+3. Any mismatch means one of the two derivations is wrong. Pay most attention to 681, 12938, 26415 and 28381.
+4. In the same script, run `closure_of(37637?)`-style moves before and after the fix (for example on While loop 637 and case 22694) and diff them. That shows the move change from the first point.
+5. Then re-finalize plan b and check that action 15's signature resolves to `loop_body_wired_src_to_fs_frame_in_case`.
+
+If the frame parents all match, the single-face ones match where they were created, and the move change is accepted on purpose, I would accept the claim.
+
+Sources:
+- [NI – Terminal (VI Server)](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/propertyitem/terminal.html)
+- [LabVIEW Wiki – Terminal class](https://labviewwiki.org/wiki/Terminal_class)
+- [Programmatically Scripting VIs in LabVIEW](https://rajsite.github.io/unofficial-lvdocs/lvconcepts/scripting_property_method.html)
+BGRUN END rc=0 after 195s

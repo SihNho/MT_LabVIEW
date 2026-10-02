@@ -270,6 +270,18 @@ class Stage(object):
         """Compare the measured NEW-object census (after - before, by class) with `declared` {class: n} (e.g. the plan's
         `<plan>_pred.json` census block). DRY run -> prints 'UNVERIFIED-DRY' and returns None: a stubbed census is never a
         PASS. Real run -> a gate (PASS iff every class of either side matches), returns the measured {class: n}."""
+        if not declared:
+            # card 134-1 (PD287(a)): an EMPTY declared set predicts nothing - CEN2 passed on two empty sets
+            # (stage_d1_ring_p3b2a_scratch_c133_6.log:354). Never a PASS: printed UNPREDICTED, returns the measured census.
+            got = None
+            if not getattr(g.report_all, "_dry", False) and isinstance(before, dict) and isinstance(after, dict):
+                got = {}
+                for u in set(after) - set(before):
+                    got[after[u]] = got.get(after[u], 0) + 1
+            print(_a("  UNPREDICTED  {0}  (declared set empty {1!r}; measured {2})".format(
+                label, declared, json.dumps(got, sort_keys=True) if got is not None else "not in a dry run")), flush=True)
+            self.R.setdefault("unpredicted", []).append(label)
+            return got
         if getattr(g.report_all, "_dry", False) or not isinstance(before, dict) or not isinstance(after, dict):
             print(_a("  UNVERIFIED-DRY  {0}  (census not measured in a dry run; declared {1})".format(
                 label, json.dumps(declared, sort_keys=True))), flush=True)

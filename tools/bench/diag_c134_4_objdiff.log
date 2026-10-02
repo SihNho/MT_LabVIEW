@@ -1,0 +1,23 @@
+BGRUN START 2026-10-02 11:16:21 limit 2.0 min: py -u tools/bench/diag_c134_4_objdiff.py
+BGRUN PID 13076
+  FACT  ref step files 40 (first tools/bench/sim/ring_p3b2/step_00_base.json, last tools/bench/sim/ring_p3b2/step_39_wire_remove_loose_ends.json); b step files 19 (first tools/bench/sim/ring_p3b2b/step_00_base.json)
+  FACT  ref first-step objs 10313, end 10334; b first-step objs 10353, end 10363
+  FACT  first-step diff (b - ref) {'OuterTerminal': 1, 'Wire': 8, 'SelectorTunnel': 1, 'Terminal': 18, 'Local': 5, 'FlatSequenceOuterTunnel': 2, 'GrowableFunction': 2, 'InnerTerminal': 2, 'DigitalNumericConstant': 1}
+  FACT  end diff (b - ref) {'OuterTerminal': 1, 'Wire': 8, 'Terminal': 18, 'InnerTerminal': 2}
+  FACT  delta over the session (end - first): ref {'SelectorTunnel': 3, 'Local': 9, 'FlatSequenceOuterTunnel': 4, 'GrowableFunction': 4, 'DigitalNumericConstant': 1}; b {'SelectorTunnel': 2, 'Local': 4, 'FlatSequenceOuterTunnel': 2, 'GrowableFunction': 2}
+FAIL  O1 the +29 is in the first-step state (base), b's own delta identical: False
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"O1 objdiff not in the base","artefacts":[]}
+BGRUN END rc=1 after 1s (RESULT: status=FAIL gates 0/1 first_fail=O1 objdiff not in the base; the process itself said 0)
+BGRUN START 2026-10-02 11:16:44 limit 2.0 min: py -u tools/bench/diag_c134_4_objdiff.py
+BGRUN PID 3584
+  FACT  ref step files 40 (first tools/bench/sim/ring_p3b2/step_00_base.json, last tools/bench/sim/ring_p3b2/step_39_wire_remove_loose_ends.json); b step files 19 (first tools/bench/sim/ring_p3b2b/step_00_base.json)
+  FACT  ref first-step objs 10313, end 10334; b first-step objs 10353, end 10363
+  FACT  first-step diff (b - ref) {'FlatSequenceOuterTunnel': 2, 'OuterTerminal': 1, 'SelectorTunnel': 1, 'DigitalNumericConstant': 1, 'GrowableFunction': 2, 'InnerTerminal': 2, 'Local': 5, 'Wire': 8, 'Terminal': 18}
+  FACT  end diff (b - ref) {'OuterTerminal': 1, 'InnerTerminal': 2, 'Wire': 8, 'Terminal': 18}
+  FACT  delta over the session (end - first): ref {'FlatSequenceOuterTunnel': 4, 'SelectorTunnel': 3, 'DigitalNumericConstant': 1, 'GrowableFunction': 4, 'Local': 9}; b {'FlatSequenceOuterTunnel': 2, 'SelectorTunnel': 2, 'GrowableFunction': 2, 'Local': 4}
+  FACT  ref step [21] = tools/bench/sim/ring_p3b2/step_21_wire.json (a's simulated end): objs 10327
+  FACT  base diff: a's REAL read (b first) - a's SIMULATED end {'FlatSequenceOuterTunnel': 2, 'OuterTerminal': 1, 'SelectorTunnel': 1, 'GrowableFunction': -2, 'InnerTerminal': 2, 'Local': -4, 'Wire': 8, 'Terminal': 18}
+  FACT  b's delta: on a's simulated end {'FlatSequenceOuterTunnel': 4, 'SelectorTunnel': 3}; on a's real read {'FlatSequenceOuterTunnel': 2, 'SelectorTunnel': 2, 'GrowableFunction': 2, 'Local': 4}
+FAIL  O1 the end diff == the base diff (a real vs a simulated), b's own delta identical on both bases
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"O1 objdiff not in the base","artefacts":[]}
+BGRUN END rc=1 after 1s (RESULT: status=FAIL gates 0/1 first_fail=O1 objdiff not in the base; the process itself said 0)

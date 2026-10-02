@@ -6018,3 +6018,94 @@ VIOLATION: wrong-ordering | loss_min=13 | loss_usd=? | evidence=tools/bench/card
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle133","verdict":"refuted","alternative":"FR was an ordinary recipe bug that the mandated scratch run exists to catch, and the dry is not designed to judge gates after an edit; the cycle still ended on the cap because the -30 rebase gap was unknowable until a's real file existed.","discriminating_test":"Re-run stage_prerun --dry on stage_d1_ring_p3b2a.py md5 ababd4ed with the after-edit relabelling disabled for gates computed on non-stub data: if FR alone FAILs offline in seconds, the 891 s LabVIEW run was avoidable.","violations":[{"slug":"repeated-failure-class","loss_min":20,"loss_usd":"?","evidence":"tools/bench/stage_prerun_c133_3_p3b2a_dry.log:73"},{"slug":"wrong-ordering","loss_min":13,"loss_usd":"?","evidence":"tools/bench/cards/guard_card.log:620"}],"sources":["tools/bench/stage_prerun_c133_3_p3b2a_dry.log:73","tools/bench/stage_d1_ring_p3b2a_scratch.log:350","tools/bench/stage_d1_ring_p3b2a_scratch.log:379","tools/stage_prerun.py:726","tools/stage_prerun.py:906","docs/d1/tooling.md:27","tools/bench/peer_c133_6_fr.log:4","docs/violation-decisions.md:1828","tools/bench/cards/guard_card.log:620","tools/hooks/guard_session.py:71","docs/d1/ring-p3b.md:228"],"note":"Unfixed: the after-edit relabelling (stage_prerun.py:726-730) will apply to session b's dry in cycle 134; PD286 carries no fix. FS frame/border reader still deferred despite CLAUDE.md:480 reader rule."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle133.md
 BGRUN END rc=0 after 468s
+BGRUN START 2026-10-02 12:08:38 limit 10.0 min: py tools/retrospective.py --cycle 134
+BGRUN PID 14644
+   window 2026-10-02 10:06:30 .. 2026-10-02 12:08:39 (122 min); 56 build logs, 10 machinery logs, 48 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle134.txt (37633 chars)
+   review card tools\bench\cards\review_retrospective-cycle134.json
+OUTCOME: ANSWERED (342s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-10-02-retrospective-cycle134.md
+COST: $2.2076  in 50 / out 32671 / cache-create 126076 / cache-read 2726977  (340s, 38 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle134 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle134.json
+--- ANSWER ---
+# Retrospective, cycle 134 (10:06:30 – 12:08:39)
+
+**Verdict: one structural fault, `repeated-failure-class`.** Session b was finalized on the measured graph two dispatches late. It stopped on a Flat Sequence (FS) owner fact that the plan had already recorded in cycle 132.
+
+Cycle 134 is sound work: it made P3b-2 launch-ready, and its two hypothesis reviews caught real defects. But it closed on the six-dispatch cap without a new bed (`STATUS.md:58`). Two of those six dispatches went to a gap that was knowable before the cycle started.
+
+## The fault
+
+**What happened.** Session b's finalize stopped at action 15 of 18: "no common diagram of #639 and #32464" (`tools/bench/diag_c134_2_finalize_b.log:6`). The cause was that the FS 27509 frames carry owner `['FlatSequenceFrame', 0]` and FS 27509 has no owner entry (`tools/bench/cards/result_134-2.json:22`).
+
+**This fact was already in the plan.** In cycle 132, PD279(b) recorded that "the real graph JSON has no `fs_frames` and frame owners `['FlatSequenceFrame', 0]`" and that stagesim routes FS borders through `owners[frame]` (`docs/d1/ring-p3b.md:99-101`). The rebase path covered it at the time: `carry_fs` set the owners (`ring-p3b.md:110`).
+
+**How it got lost.** PD287(c) dropped the rebase and finalized b directly on the real graph. The FS reader spec that replaced it records frames and borders only (`ring-p3b.md:265-266`; `task_134-1.json:36-37`). Its acceptance fixture compared only the carried map's 6 entries (`result_134-1.json:20`). The owner half of `carry_fs` was dropped and nothing checked for it.
+
+**The plan itself calls it a repeat.** PD289(b) says "Sixth gap, and the same kind as the five before it" (`ring-p3b.md:303`).
+
+**What it cost:**
+- The step-4 failure of 134-2.
+- All of 134-3: 3 minutes, which ended with "if absent, RETURN" (`result_134-3.json:1`).
+- Most of 134-4 (bound 11:02:51). Its first job was the owner fix plus a plan restore. The restore was only needed because the failed finalize had overwritten `plan_ring_p3b2b.json` (`result_134-2.json:23`).
+- Finalize then passed in 134-4 (`diag_c134_4_finalize_b.log`, 11:15:59). The next build dispatch bound at 11:24:23 (`guard_card.log:632`). Without the gap it would have bound at about 11:00.
+
+**Loss:** about 24 minutes and 2 of the 6 dispatch slots. The only dollar figure a log carries is the review this gap caused, c134-4-fs-chain, at $1.7334 (`peer_c134_4_fs_chain.log:4`). Material and judgement time carry no cost line, so the dollar loss is unknown.
+
+**Counterfactual.** Suppose 134-1's step b2, or 134-2's step 4, had included the owner conversion that 134-4 later did offline: frame→FS from `fs_frames`, FS→diagram from agreeing outer faces (`ring-p3b.md:313-320`). Then:
+- Finalize b would have passed in 134-2 at about 10:58.
+- 134-5 and the prep card P1 would have bound at about 11:00 instead of 11:24.
+- 134-6 would have been finished by about 11:45, as dispatch 4.
+- Dispatch 5 could then have been the one P3b-2 launch. 134-5's scratch b plus its full Error List read took 11:24 → 11:55 (`errorlist_c134_5_scratch_b.log`), and session a is similar, so the launch would have ended around 12:45.
+
+12:45 is inside the 180-minute session cap (13:10), though past the "NEXT by minute 150" guideline. So at best the cycle would have ended with the bed moved to P3b-2 instead of only launch-ready. This is tight but realistic.
+
+## Findings
+
+**1. Repeated failure.**
+- The FS-owner gap above: the attempt that should have caught it was 134-1. Step b2's acceptance should have asserted that every FS owner chain closes. That is exactly what `selftest_c134_4_owners` (7/0) checked later.
+- A second repeat: the failed finalize overwrote the plan file (`result_134-2.json:23`). PD279(c) had fixed this for rebase only (`ring-p3b.md:103`); finalize has no equivalent protection. Restoring it took a git restore that needed approval and wasn't done (134-2/134-3), then a scripted `cat-file` in 134-4 (`diag_c134_4_restore_b.log`).
+
+**2. Missing tool.**
+- A base-graph completeness check: every FS and frame reaches a loop, case or VI diagram. It would have answered 134-2's F1 failure and made 134-3 unnecessary. It now exists as a self-test (`selftest_c134_4_owners`), not as a gate.
+- A finalize that does not write the plan on failure.
+- An Error List item→uid reader (a `Selection List[]` op). Without it, which 2 items vanished is accepted at class level only (`result_134-6.json:16-17`, PD292(b)).
+
+**3. Unmeasured steps.**
+- 134-5's pass list required a *measured* census of session a, but none existed. The CEN2 gate had measured an empty set, `{}`, in cycle 133 (`stage_d1_ring_p3b2a_scratch_c133_6.log:354`), and the retrospective for cycle 133 named that. As a result 134-5 returned FAIL 4/1 (`result_134-5.json:2`), and the item moved to dispatch 6.
+- Recipe b writes P3b-1's 53-item list as the expected Error List file. That made the scratch's count-only read fall through to a 1025 s full read by construction (`result_134-5.json:18,27`). This was predictable from the recipe (`stage_d1_ring_p3b2b.py:83-92`).
+
+**4. Rule compliance.**
+- CLAUDE.md "guessed twice, build the reader" (`CLAUDE.md:475-481`) is met only formally. The reader was built, but its acceptance omitted a fact the plan had recorded. FS→diagram was then taken from outer-face terminal rows rather than an FS Owner read (PD289(f)). Those rows are LabVIEW-read, so this is defensible.
+- Card 134-4 tried the fp-30-refused command 4 times in 7 minutes (`guard_card.log:627-630`), then returned BLOCKED. Chat-P1 item 3 allows equivalent command forms, so this is borderline, not a breach.
+- Audit gaps:
+  - A4's four blank reviews are cycle-130 files. A4 is day-granular, so it charges them here; all five cycle-134 reviews are annotated.
+  - C3 (156 min) and C5 (168 min) exceed the 122-minute window, so nested or parallel bgrun time is double-counted.
+  - The audit does not see dispatch-slot use, a plan file overwritten by a failed run, or how much of a recipe a dry actually covered.
+
+**5. Ordering.** 134-2 put the finalize last (step 4), after the a4 debts, gate scoping and `dry_rule`. Yet the finalize is a 15 s offline run (`diag_c134_2_finalize_b.log:9`) and it was the cycle's real unknown. Run first, it would have exposed the gap about 15 minutes earlier, at roughly 10:41 instead of 10:56. Otherwise the order was defensible: the dry-rule device came first, the LabVIEW scratch beside the offline prep card, and the launch deferred because of the cap (PD290(d)).
+
+**6. Not reported.**
+- STATUS gives 134-2 → 134-3 → 134-4 as a sequence. It does not say the failure was a fact recorded in PD279(b) (cycle 132).
+- It does not say the plan file was overwritten again.
+- It presents the 53-item expected file as "not used", which hides its 1025 s cost.
+- The PD headers carry impossible clock times: PD290 "12:1x" and PD291 "12:5x" (`ring-p3b.md:321,338`), for decisions dispatched at 11:24 (`guard_card.log:631-632`). PD291's time is after this window ended.
+
+**7. Judgement inside a material session.**
+- In card 134-1, the material session accepted all three points of the review of its dry self-test, and changed how the dry gate scopes taint (`archive/peer/2026-10-02-c134-1-dry-selftest.md:122-125`). That is accepting a review finding and changing gate behaviour, which belongs to the judgement session. PD288(a) ratified it afterwards (`ring-p3b.md:280-281`); no cost observed.
+- 134-4 chose the "representation, not computation" explanation for the +29 objects (`result_134-4.json:22`). It did so through a hypothesis review, and PD290(b) re-decided it.
+- 134-3's "if absent, RETURN" is a scripted conditional, but its action is the protocol default, so it is acceptable.
+
+## Device effect
+
+No device on file failed inside the window.
+
+- **Gate-editing card beside a LabVIEW card (08:25 device):** held. P1's write list holds no stage tool (`task_134-P1.json:40-51`).
+- **Dry-rule device (10:10):** no LabVIEW run failed on a gate its dry had computed FALSE. Scratch b passed 20/0 (`stage_d1_ring_p3b2b_scratch_c134_5.log:360-366`). The 134-1 graph read did fail on gate B (`diag_c134_1_graph.log:324`). Its dry never evaluated that gate: coverage 21/83, "unverified 0" (`stage_prerun_c134_1_graph_dry.log:9`). That breaks the spirit but not the letter, and costs nothing, because the read produced the graph that was used later.
+- **Offline-classification device (04:52):** it is guard_peer's. fp-30 came from `protocol.check_command`'s deliberately measured named list (`protocol.py:389-398`), was queued as designed, and cost about 7 minutes.
+- **Retrospective-debt device:** satisfied. The cycle-133 retrospective is annotated (`retrospective-cycle133.md:394`).
+- **rc masking (`unreported-fact`):** the failing self-test in 134-2 ended rc=1 (`selftest_stage_prerun_stageplan_c134_2.log:12`).
+
+VIOLATION: repeated-failure-class | loss_min=24 | loss_usd=? | evidence=tools/bench/diag_c134_2_finalize_b.log:6
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle134","verdict":"refuted","alternative":"The FS owner gap was new: the reader spec could not foresee FS 27509 had no owner entry, and 134-3's measure-then-decide was protocol-correct, so the two dispatches were the protocol's price, not a fault.","discriminating_test":"Read ring-p3b.md:99-103 and :110 (PD279(b)/PD280(a), cycle 132): frame owners ['FlatSequenceFrame',0] recorded and set by carry_fs; then task_134-1.json:36-37 - reader spec omits owners. Recorded+omitted => fault.","violations":[{"slug":"repeated-failure-class","loss_min":24,"loss_usd":"?","evidence":"tools/bench/diag_c134_2_finalize_b.log:6"}],"sources":["tools/bench/diag_c134_2_finalize_b.log:6","docs/d1/ring-p3b.md:100","docs/d1/ring-p3b.md:303","tools/bench/cards/result_134-2.json:22","tools/bench/cards/guard_card.log:625","tools/bench/cards/guard_card.log:632","tools/bench/peer_c134_4_fs_chain.log:4"],"note":"Only logged $ for this fault is the fs-chain review $1.7334; material/judgement cost unlogged. Counterfactual launch at ~11:50 ending ~12:45 is tight vs minute-150 NEXT rule."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle134.md
+BGRUN END rc=0 after 348s

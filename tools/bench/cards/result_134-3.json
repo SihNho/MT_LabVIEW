@@ -1,0 +1,23 @@
+{"schema":"result/1","id":"134-3","status":"FAIL","gates":{"pass":0,"fail":1},
+"first_fail":"1: FS 27509 node row is objs[3439] but its diagram is ABSENT - row owner = class string 'Diagram' (no uid), owners has no key '27509' (diag_c134_3_owners.log, UID 27509 line)",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/diag_c134_3_fsrow.py","md5":"35ee42d2093861330f743c03e98fa81e"},
+ {"path":"tools/bench/diag_c134_3_owners.py","md5":"e6d23ea3ae1aeca7a27a99203f1a2bf4"},
+ {"path":"tools/bench/diag_c134_3_fsrow.log","md5":"a53a44c7fbbf7887cfa422d9330754e6"},
+ {"path":"tools/bench/diag_c134_3_owners.log","md5":"f86832f6fcd75c74b67536a810e082ac"},
+ {"path":"tools/bench/diag_c134_3_owners2.log","md5":"0a1cb53c0849ff49384efa7f50c5f66b"}],
+"facts":[
+ "1 FS 27509 node row = graph_..._fs_102553.json objs[3439] {uid 27509, class FlatSequence, pos [7077,2525], owner 'Diagram'}; objs rows carry only uid/class/pos/owner-class (diag_c134_3_owners.log)",
+ "1 owners dict (246 keys) has NO entry for any of the 22 FS; it is filled by owner_of on class=='Diagram' objs only (diag_c134_1_graph.py:40-46) plus loop entries (637 -> ['Diagram',686])",
+ "1 Frame diagrams 27641/32464/27722 -> owners ['FlatSequenceFrame', 0] (uid 0); fs_measured.fs_frames[27509] = [27641,32464,27722] is the only measured FS->frame link",
+ "1 Other measured route (terminal rows, not the node row): all 8 border tunnels of FS 27509 have outer-face frame_diagram 27219 (fs_measured.borders 28395..29243; stagesim.py:385-396 fs_parent)",
+ "1 Chain: 27219 = Diagram owned by ['CaseStructure',22694]; 22694 owned by ['Diagram',639]; 639 owned by ['WhileLoop',637] -> via 27219 the common diagram of #639 and #32464 would be 639",
+ "Steps 2-5 NOT RUN (card: 'if absent, RETURN'): stagesim.py unchanged 75f59e67; plan_ring_p3b2b.json still d2bbd289 (not restored to 1451ba90); no dry, no prerun, no scratch",
+ "No LabVIEW (tasklist 0), no VI opened, no STATUS edit, no commit; diagnostics were 3 offline bgrun --material reads, each BGRUN END rc=0",
+ "JEV | no failing run log in this card (diag logs rc=0, RESULT PASS) | - | no review dispatched | -"],
+"open":[
+ "Does an FS's diagram taken from its border tunnels' outer-face frame_diagram (terminal rows, 8/8 agree on 27219) count as 'measured' for step 2, or must the reader re-read the FS node's Owner uid in LabVIEW (labview card)?",
+ "plan_ring_p3b2b.json restore to 1451ba90 is still owed before any finalize (F-1 pins it)."],
+"cost":{"usd":null,"minutes":3,"labview_runs":0},
+"note":"Returned at step 1 per card rule 'if absent, RETURN (no inference)': the node row exists, its diagram uid does not exist in the measured graph."}

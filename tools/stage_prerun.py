@@ -352,7 +352,8 @@ class DryState(object):
     def __init__(self):
         self.taint = 0
         self.gate_taint = 0
-        self.mutated = None                  # first mutating call name
+        self.line_taint = None               # card 134-1: taint at the recipe's last line event (dry()'s tracer)
+        self.mutated = None                 # first mutating call name
         self.calls = []                      # (name, mutating)
         self.graph = None
         self.graph_path = None
@@ -440,7 +441,8 @@ class Fake(object):
         return 0.0
 
     def __str__(self):
-        self._t()
+        # card 134-1 (review archive/peer/2026-10-02-c134-1-dry-selftest.md:63,109): turning a stub into TEXT (a fact line,
+        # a gate's detail) cannot feed a boolean, so it no longer counts as taint
         return "<dry:{0}>".format(self._n)
 
     __repr__ = __str__
@@ -541,6 +543,8 @@ def _graph_call(meth, default):
     def f(*a, **k):
         G = _graph()
         D.calls.append((meth, False))
+        if D.mutated:
+            D.taint += 1          # card 134-1: the static base graph read after a mutation is stale = stub data
         if G is None:
             return Fake(meth)
         return getattr(G, meth)(*a, **k)
@@ -721,12 +725,20 @@ def patch_stagekit():
             print("  UNVERIFIED  {0}  (dry: stub value)".format(label), flush=True)
             return True
         ok = bool(ok)
-        tainted = D.taint != D.gate_taint
+        # card 134-1 (review archive/peer/2026-10-02-c134-1-dry-selftest.md:62-73,110): taint is scoped to the STATEMENT that
+        # calls the gate (snapshot at the recipe's last line event, dry()'s tracer), not "since the previous gate": a stub
+        # used by an unrelated statement between two gates (s.es) no longer relabels a FALSE gate on simulated data.
+        tainted = D.taint != (D.line_taint if D.line_taint is not None else D.gate_taint)
         D.gate_taint = D.taint
-        if not ok and (D.mutated or tainted):
+        # card 134-1 (PD287(a), docs/violation-decisions.md repeated-failure-class 2026-10-02 10:10): a gate FALSE on
+        # simulated / real-graph (non-stub) data FAILS the dry, whatever op it follows. The old rule relabelled ANY false
+        # gate after the first mutation UNVERIFIED (`not ok and (D.mutated or tainted)`) and hid FR three times (133-3).
+        # Only a gate whose inputs touched a COM stub (taint moved since the previous gate; a read of the STATIC base
+        # graph after a mutation counts as stub data, _graph_call) may stay UNVERIFIED.
+        if not ok and tainted:
             D.unverified.append(label)
-            print("  UNVERIFIED  {0}  (dry: {1})".format(label, "after mutation " + D.mutated if D.mutated
-                                                          else "read stub data"), flush=True)
+            print("  UNVERIFIED  {0}  (dry: stub input{1})".format(label, ", after mutation " + D.mutated if D.mutated
+                                                                    else ""), flush=True)
             return False
         if not ok:
             D.fails.append("GATE " + label)
@@ -881,6 +893,8 @@ def dry(recipe, graph=None):
     def tracer(frame, event, arg):
         if frame.f_code.co_filename == path:
             hit.add(frame.f_lineno)
+            if event == "line":
+                D.line_taint = D.taint            # card 134-1: the gate's taint is scoped to its statement
             return tracer
         return None
     t0 = time.time()
@@ -912,8 +926,12 @@ def dry(recipe, graph=None):
         # PASS anyway (the recipe's E1 is downgraded to UNVERIFIED in a dry run): c128b stopped at op 48 of 63 and PASSed.
         # A dry that does not cover every op is no evidence for a launch -> FAIL. (Probe mode stops at the first Executor.)
         if not D.x10_probe:
-            D.fails.extend(executor_stops(D.executors))
-    status ="PASS" if (D.reached_end and not D.fails) else "FAIL"
+            # card 134-1: the executor stop is the ROOT cause; since PD287(a) the recipe's own FALSE gate after it (E1 via
+            # report_stop) FAILs too, so the stop is listed FIRST (first_fail names the cause, selftest_dry_c130_5 T2)
+            D.fails[:0] = executor_stops(D.executors)
+    status = "PASS" if (D.reached_end and not D.fails) else "FAIL"
+    if status == "PASS" and D.unverified:
+        status = "PASS-UNVERIFIED"      # card 134-1 (PD287(a)): refused at launch unless the card names each gate
     first = D.fails[0] if D.fails else (None if D.reached_end else "STUB-LIMIT: " + str(D.stub_limit)
                                         if D.stub_limit else "body did not reach its end")
     return {"status": status, "first_fail": first, "fails": D.fails, "unverified": D.unverified,
@@ -2255,7 +2273,9 @@ def prerun(recipe, graph=None, stop_after=None, from_step=None):
     def gate(label, ok, detail=""):
         gates.append((label, bool(ok), detail))
         print("  {0}  {1}  {2}".format("PASS" if ok else "FAIL", label, str(detail)[:400]), flush=True)
-    gate("X1 dry run PASS (whole Python path, COM stubbed)", tr["status"] == "PASS", tr["first_fail"])
+    gate("X1 dry run PASS (whole Python path, COM stubbed)", tr["status"] in ("PASS", "PASS-UNVERIFIED"),
+         tr["first_fail"] or (tr["unverified"] and "PASS-UNVERIFIED {0} (launch needs a card naming each)".format(
+             tr["unverified"])))
     OG = _graph()
     plans, named = plan_files(recipe)
     sps = [p for p in plans if is_stageplan(p)]                  # card 79-6: stageplan/1 plans, checked, not trusted
@@ -2451,6 +2471,8 @@ def write_record(kind, recipe, status, first_fail, extra=None):
     rec = {"t": time.time(), "iso": time.strftime("%Y-%m-%d %H:%M:%S"), "kind": kind, "script": rel(recipe),
            "sha256": sha256(recipe), "plan_md5s": plan_md5s(recipe), "status": status, "first_fail": first_fail}
     rec.update(extra or {})
+    if kind == "dry":
+        rec.setdefault("dry_rule", DRY_RULE)   # card 134-2: a dry written by THIS code ran under this code's rule
     with REAL_OPEN(RECORDS, "a", encoding="utf-8") as f:
         f.write(json.dumps(rec, ensure_ascii=True) + "\n")
     return rec
@@ -2571,6 +2593,8 @@ def plan_record(kind, plan, status, first_fail, extra=None):
            "sha256": sha256(STAGEXEC), "plan_md5s": {rel(plan): md5(plan)}, "status": status, "first_fail": first_fail,
            "plan": rel(plan)}
     rec.update(extra or {})
+    if kind == "dry":
+        rec.setdefault("dry_rule", DRY_RULE)   # card 134-2: same stamp as write_record (check_launch filters every dry)
     with REAL_OPEN(RECORDS, "a", encoding="utf-8") as f:
         f.write(json.dumps(rec, ensure_ascii=True) + "\n")
     return rec
@@ -2659,6 +2683,32 @@ RETRY_CARD_RE = re.compile(r"(?:\bRETRY_CARD\s*=\s*|(?:^|\s)--retry-card(?:\s+|=
 # run past the cap is `--retry-card <path>` on the bgrun command line (a flag, not an env prefix: the permission
 # layer refuses `$env:` / `X=1 cmd` forms under claude -p); `RETRY_CARD=<path>` is still read.
 COUNTED_BY = "bgrun"
+# card 134-1 (PD287(a)): dry rule 2 = a FALSE gate on non-stub data fails the dry; stub-input gates stay UNVERIFIED and
+# the dry ends PASS-UNVERIFIED, which check_launch refuses unless the card on `--unverified-card <path>` names each gate
+# in a `rules`/`pass` string "DRY-UNVERIFIED-OK: <label prefix>; <label prefix>".
+DRY_RULE = 2
+UNVERIFIED_CARD_RE = re.compile(r"(?:^|\s)--unverified-card(?:\s+|=)['\"]?([^\s'\";|&]+)")
+UNVERIFIED_OK_RE = re.compile(r"^\s*DRY-UNVERIFIED-OK:\s*(.+)$")
+
+
+def unverified_card_names(cmd):
+    """([label prefixes], why|None) from the task/1 card named by `--unverified-card <path>` in the command."""
+    m = UNVERIFIED_CARD_RE.search(cmd or "")
+    if not m:
+        return [], "no --unverified-card <task card path> in the command"
+    p = m.group(1) if os.path.isabs(m.group(1)) else os.path.join(ROOT, m.group(1))
+    try:
+        card = json.load(open(p, encoding="utf-8"))
+    except (OSError, ValueError) as e:
+        return [], "--unverified-card {0} does not load: {1}".format(rel(p), str(e)[:120])
+    if not isinstance(card, dict) or card.get("schema") != "task/1":
+        return [], "--unverified-card {0} is not a task/1 card".format(rel(p))
+    out = []
+    for t in list(card.get("rules") or []) + list(card.get("pass") or []):
+        mm = UNVERIFIED_OK_RE.match(str(t))
+        if mm:
+            out.extend(x.strip() for x in mm.group(1).split(";") if x.strip())
+    return out, (None if out else "card {0} names no DRY-UNVERIFIED-OK gate".format(rel(p)))
 
 
 def stage_key(script):
@@ -3730,11 +3780,38 @@ def _check_units(units, cmd):
         sha, pm = sha256(s), ({rel(plan): md5(plan)} if plan else plan_md5s(s))
         what = rel(plan) if plan else rel(s)             # a plan run is pre-run BY ITS PLAN (card chat-S3)
         ok = {}
+        named_ok, named_why = unverified_card_names(cmd)
+        uv_refused, old_rule = [], []
         for kind in ("dry", "prerun"):
-            m = [r for r in recs if r.get("kind") == kind and r.get("sha256") == sha and r.get("status") == "PASS"
-                 and r.get("plan_md5s") == pm and not r.get("replay")]
+            m = [r for r in recs if r.get("kind") == kind and r.get("sha256") == sha and r.get("plan_md5s") == pm
+                 and not r.get("replay") and r.get("status") in (("PASS", "PASS-UNVERIFIED") if kind == "dry" else ("PASS",))]
+            if kind == "dry":
+                # card 134-2 (PD288(c)): a dry recorded under the OLD rule (before PD287(a): a FALSE gate on simulated data
+                # was downgraded to UNVERIFIED and PASSed - the rule that hid FR) is no evidence; only dry_rule == DRY_RULE counts
+                old_rule = [r for r in m if r.get("dry_rule") != DRY_RULE]
+                m = [r for r in m if r.get("dry_rule") == DRY_RULE]
+            if kind == "dry":                       # card 134-1 (PD287(a)): PASS-UNVERIFIED needs the card's naming
+                keep = []
+                for r in m:
+                    left = [u for u in r.get("unverified") or [] if not any(u.startswith(n) for n in named_ok)] \
+                        if r.get("status") == "PASS-UNVERIFIED" else []
+                    (uv_refused.append((r, left)) if left else keep.append(r))
+                m = keep
             ok[kind] = max((r["t"] for r in m), default=None)
+        if ok["dry"] is None and uv_refused:
+            r, left = max(uv_refused, key=lambda x: x[0]["t"])
+            return False, ("LAUNCH GATE (card 134-1, PD287(a)): {0}'s newest dry is PASS-UNVERIFIED ({1}); the gates {2} were "
+                           "never evaluated on non-stub data. Name each as expected in the bound card (a `rules`/`pass` "
+                           "string 'DRY-UNVERIFIED-OK: <label prefix>; ...') and pass `--unverified-card <card path>` on "
+                           "the command{3}.\n").format(rel(s), r.get("iso"), left,
+                                                       (" (" + named_why + ")") if named_why else "")
         missing = [k for k, v in ok.items() if v is None]
+        if ok["dry"] is None and old_rule:
+            return False, ("LAUNCH GATE (card 134-2, PD288(c)): {0}'s dry PASS ({1}) was recorded under dry rule {2}, not "
+                           "dry_rule == {3} (a FALSE gate on simulated data now fails the dry). Re-dry (offline, seconds):\n"
+                           "  py tools/stage_prerun.py --dry {0}\n").format(
+                               what, max(old_rule, key=lambda r: r["t"]).get("iso"),
+                               max(old_rule, key=lambda r: r["t"]).get("dry_rule", 1), DRY_RULE)
         if missing:
             return False, ("LAUNCH GATE (CLAUDE.md §3 'Stages are SIMULATED', decisions 1/2): {0} has no {1} PASS "
                            "record for sha256 {2}... and plan md5s {3}. Run first:\n  py tools/stage_prerun.py --dry {0}\n"
@@ -3898,12 +3975,16 @@ def main(argv=None):
         builtins.open = REAL_OPEN
     sys.stdout = real_stdout
     import protocol as P
-    print("\n=== DRY {0}: first_fail={1} coverage {2}/{3} lines, first mutation {4}, unverified {5}, graph {6}".format(
+    print("\n=== DRY {0}{7}: first_fail={1} coverage {2}/{3} lines, first mutation {4}, unverified {5}, graph {6}".format(
         tr["status"], tr["first_fail"], tr["coverage"][0], tr["coverage"][1], tr["first_mutation"],
-        len(tr["unverified"]), tr["graph"]), flush=True)
+        len(tr["unverified"]), tr["graph"], (" " + "; ".join(tr["unverified"])) if tr["status"] == "PASS-UNVERIFIED"
+        else ""), flush=True)
     if not a.no_record:
-        write_record("dry", recipe, tr["status"], tr["first_fail"], {"input_md5": tr["input_md5"], "graph": tr["graph"]})
-    status, npass, nfail, first = tr["status"], int(tr["status"] == "PASS"), int(tr["status"] != "PASS"), tr["first_fail"]
+        write_record("dry", recipe, tr["status"], tr["first_fail"], {"input_md5": tr["input_md5"], "graph": tr["graph"],
+                                                                    "unverified": list(tr["unverified"]),
+                                                                    "dry_rule": DRY_RULE})
+    dpass = tr["status"] in ("PASS", "PASS-UNVERIFIED")
+    status, npass, nfail, first = ("PASS" if dpass else tr["status"]), int(dpass), int(not dpass), tr["first_fail"]
     if a.prerun:
         pr = tr["prerun"]
         print("=== PRERUN {0}: {1} pass / {2} fail; first {3}".format(pr["status"], pr["pass"], pr["fail"], pr["first_fail"]))

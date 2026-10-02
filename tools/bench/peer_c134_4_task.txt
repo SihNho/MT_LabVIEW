@@ -1,0 +1,22 @@
+ATTACK this claim (failed prediction in tools/bench/diag_c134_2_finalize_b.log, script tools/bench/diag_c134_1_finalize_b.py).
+
+OBSERVED: finalizing plan b (tools/bench/plan_ring_p3b2b_in.json, 18 actions) with stagesim on the MEASURED graph
+tools/bench/graph_ring_p3b2a_fs_20261002_102553.json stopped at action 15 (p3b_x_rot, a wire {uid 4580 'Value'} -> a node on
+frame diagram #32464 of Flat Sequence #27509): "no common diagram of #639 and #32464" (stagesim._fs_border_wire, the
+_diag_chain walk).
+
+CLAIM (our script bug, now fixed): stagesim._diag_chain walks diagram -> parent via st['diagrams'] (simulator-made structures)
+or the graph tree parent; neither knows a MEASURED Flat Sequence frame's parent (the reader leaves FS frames owned by
+['FlatSequenceFrame', 0] and records no owner row for any FS). base_state already set frame owners to [FlatSequence, fs] from
+fs_measured.fs_frames, which also disabled the old _fsot_parent fallback, so every one of the 60 frame chains stopped at the
+frame (tools/bench/diag_c134_4_chain.log). Fix (tools/stagesim.py base_state and _diag_chain, card 134-4, decision PD289(f) in
+docs/d1/ring-p3b.md:313-320): frame -> FS from fs_frames; FS -> diagram = frame_diagram of its border tunnels' OUTER faces only
+when ALL agree (stagesim.fs_measured_state fs_parent), else the FS is UNMEASURED and a chain through it raises. Self-test
+tools/bench/selftest_c134_4_owners.log 7/0: 19 FS reach the top diagram 536, FS 2499/14682/43914 UNMEASURED, 32464 -> 27219 ->
+639 -> 686 -> 536.
+
+Questions: (1) Is an outer face's frame_diagram really the diagram that holds the Flat Sequence (could a FlatSequenceOuterTunnel's
+outer face be filed on another diagram, e.g. a case frame or a loop body that merely encloses it)? (2) Does adding this chain step
+change any OTHER route stagesim computes on this graph in a way that differs from what LabVIEW does (e.g. a wire that previously
+stayed same-diagram now being modelled as a border crossing)? (3) Is "all outer faces agree" a sufficient test, given FS 26415
+and 28381 have only ONE classified outer face each?

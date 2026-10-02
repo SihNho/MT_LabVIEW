@@ -1,0 +1,22 @@
+ATTACK this claim (card 134-1, failing log tools/bench/diag_c134_1_graph.log, script tools/bench/diag_c134_1_graph.py).
+
+Run: READ-ONLY graph read of a byte copy of claudeDev\scratch_c133_6_ring_p3b2a_20261002_093837.vi (md5 6cc69221) plus one
+gscript.fs_frames (OpFsDiagrams_v0) read per Flat Sequence. 15 pass / 1 fail. Passed: rows identical to the earlier read
+(5941 rows), all 22 Flat Sequences read (each read ends on error 1055 at index k = frame count, the op's documented terminator,
+gscript.py:4902-4922), no frame in two FS, FS #27509 frames LEFT TO RIGHT [27641, 32464, 27722] (f0 == 27641 as bound by
+elimination before), input md5 unchanged, LabVIEW handles back to 33997, LabVIEW gone. Output graph
+tools/bench/graph_ring_p3b2a_fs_20261002_102553.json (md5 b885fa4a).
+
+Failed gate B "every FlatSequenceOuterTunnel has one inner + one outer face (68)": e.g. tunnel #14430 faces [14429 on diagram
+13236, 14432 on diagram 14435]; #31050 [13236, 14435]; #34409 [13236, 33688]. 13236 is a frame of FS #12938, 14435 a frame of
+FS #14682, 33688 a frame of FS #2499.
+
+Claim: the failure is in MY OFFLINE DERIVATION (tools/stagesim.py fs_measured_state, called by the reader after the read), not in
+the measurement: it classifies a face as "inner" when its diagram is ANY Flat Sequence frame, so a border tunnel of a Flat
+Sequence NESTED in another Flat Sequence's frame has both faces on FS frames and is rejected. The measured frame lists are
+correct; FS #27509 (session b's FS) is not nested (it sits on case frame 27219) and its border tunnels all classified. The fix
+would be: the tunnel's FS is the FS whose frame holds one face AND whose own parent diagram holds the other face.
+
+Questions: (1) strongest reason this explanation is wrong (e.g. could OpFsDiagrams_v0 have returned frames of the wrong FS, or
+could 13236/14435 be frames of the SAME FS)? (2) what would falsify it offline from the written graph JSON alone? (3) is there a
+case where the proposed fix still misclassifies (FS directly on another FS's frame, both faces' diagrams frames)?

@@ -275,3 +275,99 @@ How to add: see the 5-line note at the top of `docs/d1/INDEX.md` (next number = 
        Error List count-only 49..52 → census into both preds; 3 = ONE launch: a from the bed → in-between → FS-reader graph read
        → b finalized on it → dry/prerun → b → full Error List read; bed → 4 of 6 (assumption, D-2026-10-02-02). Card 2 and the
        tooling carries of PD286(e) go in the prep slot where they can.
+288. **(cycle 134 judgement, 2026-10-02 10:5x — after 134-1 FAIL 5/2, `tools/bench/cards/result_134-1.json`)**
+     USER-RULES: U1 (relied on: gate scoping and dry bookkeeping only; b's 18 actions and the end graph unchanged; none contradicted).
+     - **(a) Accepted:** dry rule device (FALSE on simulated data fails; `DRY PASS-UNVERIFIED <names>` refused at launch unless
+       named; empty census → UNPREDICTED; `selftest_c134_1_dry` 11/0, 133-3's bytes rebuilt to md5 ababd4ed and FAIL on FR).
+       FS reader: graph JSON `fs_measured {fs_frames, borders}`, stagesim uses it (fixture 6/0). **f0 of FS #27509 is MEASURED =
+       27641** (left-to-right [27641, 32464, 27722], `graph_ring_p3b2a_fs_20261002_102553.json`), no longer bound by elimination.
+     - **(b) Gate B is SCOPED, not widened:** 7 of 68 outer tunnels belong to the NESTED FS 14682 (both faces on FS frames) and
+       the derivation cannot classify them. They are listed `UNMEASURED` in the graph JSON and never used for binding; gate B
+       FAILS only when a plan action, route or carried map entry references one. Not a PASS-on-nothing: the gate verifies every
+       border the plan uses, and names the rest. Measuring nested borders (an `Outer Tunnels[]` read) is a carry for the first
+       plan that routes through a nested FS (check P4 when it is planned).
+     - **(c) check_launch requires `dry_rule == 2`** on the dry record: a dry recorded under the old rule does not launch. Re-dry is
+       offline, seconds.
+     - **(d) a4 debts first in card 134-2:** rerun `selftest_c130_5` (first_fail ordering changed to executor-stop-first) and the
+       stageplan self-test (rc=1 in 0 s, cause unread), plus c125_1_offline_measure; green or a named our-script-bug fix.
+     - **(e) Then finalize b on the measured graph** with `diag_c134_1_finalize_b.py`: base_state loading all 22 FS frame lists
+       may move other routes vs 04204133 — any difference from 04204133's end is LISTED and returned, not absorbed (rule 1a).
+289. **(cycle 134 judgement, 2026-10-02 11:3x — after 134-2 FAIL 3/1, `tools/bench/cards/result_134-2.json`)**
+     USER-RULES: U1 (relied on: base-graph owner bookkeeping only; b's 18 actions and the end graph unchanged; none contradicted).
+     - **(a) Accepted:** stageplan self-test stub fixed (12/0), `selftest_dry_c130_5` 3/0, c125_1 5/0; gate B scoped
+       (`stagesim.fs_border_gate`, B1-B7); check_launch drops dry records without `dry_rule` 2 (D1-D4). Correction to PD288(b):
+       the 7 UNMEASURED tunnels sit on FS 14682, FS 2499 and frames 43928/44169 — none on FS 27509, none used by b.
+     - **(b) Finalize on the measured graph stops at action 15/18** (`diag_c134_2_finalize_b.log:6`: no common diagram of #639
+       and #32464): in `graph_ring_p3b2a_fs_20261002_102553.json` FS 27509's frames carry owner `['FlatSequenceFrame', 0]` and FS
+       27509 has NO owner entry, so the frame → FS → diagram chain is broken; the provisional base had it from simulation.
+       Sixth gap, and the same kind as the five before it: the base graph lacked an owner/frame fact. The reader exists now, so
+       the fix goes into the reader → base_state conversion, not into another binder.
+     - **(c) Rule:** every FS frame's owner is its FS, and every FS's owner is the diagram its node row was read on — both
+       from MEASURED rows of that graph (the reader's per-diagram traversal), never from the simulator or a carried map. If the
+       graph JSON does not hold FS 27509's diagram, the card RETURNS (a one-read reader fix is then the next card, LabVIEW).
+       Self-test: the measured graph's owner chain for all 22 FS reaches a loop/case/VI diagram; frames' owner = their FS uid.
+     - **(d)** `plan_ring_p3b2b.json` is restored to 1451ba90 from git (`git show HEAD:<path>` written by a script) before
+       finalize; the failed d2bbd289 copy stays as `_c134_2_fail.json`.
+     - **(e) Card 134-3** = (c) + (d) + finalize b + b dry/prerun; scratch b and the launch follow as 134-4 / 134-5 if the cycle
+       has time, else NEXT.
+     - **(f) (after 134-3 returned at step 1, `diag_c134_3_owners.log`)** The graph's `owners` dict holds no FS (filled from
+       `Diagram` rows only, `diag_c134_1_graph.py:40-46`); FS 27509's row carries owner class `'Diagram'` without uid. Two
+       MEASURED links exist and are accepted as the owner facts of (c): FS → frames = `fs_measured.fs_frames` (OpFsDiagrams read),
+       and FS → diagram = the `frame_diagram` of its border tunnels' OUTER faces (terminal rows read by LabVIEW; a tunnel's outer
+       face lies on the diagram that holds the structure). FS 27509: 8/8 outer faces on 27219 (case 22694 → 639 → While 637).
+       Rule: frames' owner = their FS from fs_frames; FS's diagram from outer faces only when ALL agree; an FS with no border or
+       disagreeing faces is `UNMEASURED` and gates like PD288(b). The broken frame owner `['FlatSequenceFrame', 0]` is replaced,
+       never used. Reading the FS node's Owner in LabVIEW is not needed for b. Card 134-4 = 134-3's steps 2-5 under this rule.
+290. **(cycle 134 judgement, 2026-10-02 12:1x — after 134-4 BLOCKED 4/0 on gate-fp fp-30, `tools/bench/cards/result_134-4.json`)**
+     USER-RULES: U1 (relied on: b's 18 actions unchanged, cdiff equal to the unsplit plan's; none contradicted).
+     - **(a) Accepted: session b FINALIZED on the measured graph** — `plan_ring_p3b2b.json` ae6b6111: 18/18, route check 18/0
+       unbound, fs_routes 4, cdiff 16 == 04204133's; dry PASS rule 2 unverified 0; prerun 15/0; X10 peak 667.0 ≤ 690 from a's
+       MEASURED load 588.5 + 5.9. stagesim owner chain (PD289(f)) `selftest_c134_4_owners` 7/0; FS 2499/14682/43914 UNMEASURED.
+     - **(b) The object-count difference +29 (10363 vs 10334) is ACCEPTED as a representation difference, not a computation one:**
+       they are Wire/Terminal object rows of a's REAL read for objects a created, which the simulator does not emit as object rows;
+       node classes equal (`diag_c134_4_objdiff2.log` Q1), terminals 5933 / wires 1974 / owners 1763 equal, cdiff equal. Rule for
+       real-vs-simulated base comparisons: compare node classes + terminals + wires + cdiff; total object rows are not compared.
+     - **(c) fp-30** (`labview: none` refuses `selftest_c134_1_dry.py` for its `import stagekit`) stays queued; the self-test runs
+       as step 0 of the LabVIEW card 134-5.
+     - **(d) Cards:** 134-5 (LabVIEW) = scratch b on a COPY of the kept in-between 6cc69221 → save → Error List count-only 49..52
+       → census into both preds. Beside it, PREP card 134-P1 (offline) = the launch runner for cycle 135: both sessions from the
+       bed in ONE chained runner; after a, the in-between graph read is compared with `graph_ring_p3b2a_fs_20261002_102553.json`
+       by node classes/terminals/wires/FS fields — equal ⇒ plan b ae6b6111 is used as is (LabVIEW uid allocation measured
+       deterministic); different ⇒ b is finalized on the new read (134-4's script) + dry/prerun before b runs; then b, save, the
+       FULL Error List read of the final file, expected file. The launch itself is cycle 135's first act.
+291. **(cycle 134 judgement, 2026-10-02 12:5x — after 134-5 FAIL 4/1 and prep 134-P1 PASS 5/0)**
+     USER-RULES: U1 (relied on: launch bookkeeping and gate scoping only; no action or end graph changes; none contradicted).
+     - **(a) Scratch b ACCEPTED structurally** (`stage_d1_ring_p3b2b_scratch_c134_5.log:360-366`): 20/0, E1 18 ops real == sim,
+       PB cdiff 16, peak 629.0 MB (X10 667.0, start 572.5), Error List 51 in 49..52 with every class in range
+       (`diag_c134_5_el2.log`). b's census MEASURED into `plan_ring_p3b2b_pred.json` (1ad11cce). **P3b-2 is launch-ready.**
+     - **(b) a's census = the class-count difference of the two REAL graph reads** (bed P3b-1 `graph_ring_p3b1_20261002_073225.json`
+       vs `graph_ring_p3b2a_fs_20261002_102553.json`, same reader, object rows by class), written into
+       `plan_ring_p3b2a_pred.json` by a script citing both files; the launch's CEN2 for a must equal it. Not a simulator number,
+       not left UNPREDICTED.
+     - **(c) Which 2 of P3b-1's 53 Error List items vanish is named BEFORE the launch** by the review's offline item-level test
+       (`archive/peer/2026-10-02-c134-5-el-classrange.md`, `_hit` with OCR fallback on the unmatched entries of the scratch read
+       `errorlist_scratch_c134_5_ring_p3b2b_20261002_112928_20261002_113807.json`); they must be loose ends on nets b rebuilds,
+       as in P3b-1 (PD274). Anything else ⇒ no launch, judgement.
+     - **(d) No failing log by design:** the graph read's gate B follows PD288(b) (UNMEASURED listed, PASS unless used); the launch
+       runner's special case accepting rc=1 (`launch_p3b2_c135.py:42`) is removed. Recipe b's expected-file write of P3b-1's 53
+       (`stage_d1_ring_p3b2b.py:83-92`) is not used for the final; the new bed's expected file = the launch's full final read.
+     - **(e) Equal-branch provenance accepted:** plan b (base = the scratch in-between's graph) runs on the launched in-between
+       when the runner's compare (uid+class rows, terminals, wire→terms, fs_frames, borders) is EQUAL — equality is exactly the
+       condition under which the base file is irrelevant. Different ⇒ re-finalize, as written.
+     - **(f) Cycle 135 card 1 (LabVIEW, `gui: true`):** offline step 0 = (b)(c)(d) if card 134-6 did not close them; then the ONE
+       launch `py tools/bgrun.py --material --max-min 200 --log tools/bench/launch_p3b2_c135.log -- py -u
+       tools/bench/launch_p3b2_c135.py --launch`; bed → 4 of 6 (assumption, D-2026-10-02-02); both in-between files deleted
+       after acceptance (6cc69221 and the launch's).
+292. **(cycle 134 judgement, 2026-10-02 12:3x — after 134-6 PASS 4/0, `tools/bench/cards/result_134-6.json`)**
+     USER-RULES: U1 (relied on: acceptance bookkeeping only; none contradicted).
+     - **(a) PD291(b)(c)(d) closed:** a's census = new uids of the two real graph reads (Terminal 18, Wire 10 created / 2
+       removed, Local 5, FSOuterTunnel 2, GrowableFunction 2, InnerTerm 2, OuterTerm 1, SelectorTunnel 1, DigitalNumericConstant 1;
+       `diag_c134_6_census.log`) in `plan_ring_p3b2a_pred.json` 45eb0b67; graph-read gate B scoped, runner rc=1 case removed
+       (`selftest_c134_p1` 18/0, runner dry 17/0); runner `launch_p3b2_c135.py` 16e941a6.
+     - **(b) The vanished Error List items are accepted at CLASS level** (PD274's precedent for P3b-1): the only unmatched entry of
+       P3b-1's 53 is the aggregated `Wire: Wire has loose ends` 22 → 20; every other entry matched (`diag_c134_6_el_items.log`).
+       Neither Error List read carries uids (no `Selection List[]` op), so nets are not named; not built for this step.
+     - **(c) a's CEN2 in the launch:** the pred comes from the graph reader, CEN2 counts with stagekit's own maps. Cycle 135 step 0
+       (offline, code read): if CEN2 is fatal BEFORE the save and the two instruments key/count differently (created uids by
+       class), the launch card names CEN2 of session a as an expected unverified gate and the launch records the measured set
+       (PD261(c): the census prediction is not a P3b launch precondition); if they agree, CEN2 gates as written.

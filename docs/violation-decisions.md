@@ -1871,3 +1871,18 @@ written decision writes the reason into the plan BEFORE the dispatch. A repetiti
 "beside the LabVIEW card" executed in a main slot) makes it a device: guard_session would then refuse a main-slot dispatch
 of a card whose id a decision block names as a prep card.
 
+
+## repeated-failure-class — 2026-10-02 12:2x (cycle 134 judgement, after archive/peer/2026-10-02-retrospective-cycle134.md:88)
+
+`VIOLATION: repeated-failure-class | loss_min=24 | loss_usd=? | evidence=tools/bench/diag_c134_2_finalize_b.log:6`:
+ACCEPTED. Finalizing P3b-2 session b on the measured graph stopped at action 15/18 on FS 27509's missing owner chain — a
+fact PD279(b) had recorded in cycle 132 and `carry_fs` had covered; PD287(c) dropped the rebase and the reader spec that
+replaced it recorded frames/borders only, with no check that owner chains close. Cost 134-2 step 4, all of 134-3, most of
+134-4 (~24 min, 2 of 6 dispatches); the failed finalize also overwrote the plan file again (PD279(c) covered rebase only).
+
+DECISION: device — (1) a base-graph COMPLETENESS gate run by finalize and by rebase before any simulation: every FS and
+every FS frame reaches a loop/case/VI diagram through measured links, or is UNMEASURED and unused by the plan
+(`selftest_c134_4_owners` becomes a gate, not only a test); (2) finalize writes the plan file only on success (PD279(c)
+extended). Acceptance (offline): the pre-134-4 stagesim on `graph_ring_p3b2a_fs_20261002_102553.json` FAILS the gate before
+step 1 naming FS 27509's frames; the current stagesim PASSES; a failed finalize leaves the plan bytes unchanged. Built in
+cycle 135 after the P3b-2 launch (deliverable first), or before it if the launch runner takes its re-finalize branch.

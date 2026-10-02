@@ -1,0 +1,65 @@
+{
+ "schema": "task/1",
+ "id": "134-P1",
+ "kind": "build",
+ "goal": "PD290(d) PREP, offline: write and dry-check the ONE chained launch runner of P3b-2 (session a from the bed -> in-between -> FS graph read -> compare -> b -> full Error List) for cycle 135.",
+ "why": "Session b is finalized (ae6b6111); scratch b runs beside this card. The launch is cycle 135's first act; preparing its runner offline now saves that cycle's time (pipeline, card chat-P1).",
+ "inputs": [
+  {"path": "docs/d1/ring-p3b.md"},
+  {"path": "tools/bench/cards/result_134-4.json"},
+  {"path": "tools/bench/plan_ring_p3b2a.json", "md5": "a419f23f29760447da8b43e1154fa470"},
+  {"path": "tools/bench/plan_ring_p3b2b.json", "md5": "ae6b6111d766a4ba27d0695f29958c23"},
+  {"path": "tools/recipes/stage_d1_ring_p3b2a.py", "md5": "bb5ba064b6220d16e3a5c77d19b9c70f"},
+  {"path": "tools/recipes/stage_d1_ring_p3b2b.py", "md5": "e6636785aa3483ff313bf75ec452e3d6"},
+  {"path": "tools/bench/stage_d1_ring_p3b2a_scratch.py", "md5": "4d08f9572e720e53ffbbcf86e4d6b806"},
+  {"path": "tools/bench/diag_c134_1_graph.py", "md5": "6a1b61ab26b7ded2bdb66932971eaf41"},
+  {"path": "tools/bench/diag_c134_1_finalize_b.py", "md5": "4dce0e4cfa51295c542cb132aff77556"},
+  {"path": "tools/bench/graph_ring_p3b2a_fs_20261002_102553.json", "md5": "b885fa4af1df203a8dd68b631ab86752"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c134_1_graph.py"},
+  {"kind": "file", "name": "tools/bench/diag_c134_1_finalize_b.py"},
+  {"kind": "file", "name": "tools/errorlist_check.py"}
+ ],
+ "pass": [
+  "1 session a re-dried under dry rule 2 (old records no longer launch, PD288(c)) + prerun PASS; plan a / recipe a md5 reported, unchanged",
+  "2 runner tools/bench/launch_p3b2_c135.py: a -> GUI save in-between -> FS graph read -> compare -> (equal: plan b as is | else finalize + dry/prerun) -> b -> save -> full EL",
+  "3 compare = node classes + terminals + wires + fs_measured vs graph_ring_p3b2a_fs_102553 (PD290(b)); offline self-test equal -> reuse, one changed uid -> refinalize",
+  "4 runner's offline dry (COM stubbed) walks every branch; LabVIEW closed and verified gone between sessions; bed md5 checked before and never saved",
+  "5 a one-paragraph run order + predicted values (MEM peaks a 650.9 / b 667.0 stop 690, EL range 49..52) in the result card"
+ ],
+ "outputs": [
+  "tools/bench/launch_p3b2_c135.py",
+  "tools/bench/cards/result_134-P1.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/launch_p3b2_c135*",
+   "tools/bench/selftest_c134_p1*",
+   "tools/bench/stage_prerun_c134_p1*",
+   "tools/bench/prerun/**",
+   "tools/bench/prior_art*",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_134-P1*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 50},
+ "rules": [
+  "Offline only: no LabVIEW, no VI opened; never launch the runner",
+  "Never edit stage tools, recipes or plans a/b; reuse the existing scratch wrappers' code paths",
+  "The runner touches the bed read-only (byte copy for session a); every save is a new claudeDev file",
+  "Return at the first unexpected result, files saved; no STATUS edit",
+  "Never end the turn while a run lacks BGRUN END; wait with wait_logs.py ticks (material.md:92-98)"
+ ],
+ "advances": ["M3", "R1", "R3"]
+}

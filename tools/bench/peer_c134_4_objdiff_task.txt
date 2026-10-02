@@ -1,0 +1,24 @@
+ATTACK this claim (failed prediction in tools/bench/diag_c134_4_objdiff.log, script tools/bench/diag_c134_4_objdiff.py).
+
+CONTEXT: finalizing plan b (18 actions) on the MEASURED real graph of session a's file
+(tools/bench/graph_ring_p3b2a_fs_20261002_102553.json) passed 18/18 with end cdiff == 04204133's 16 rows, but end object rows
+differ: b-on-real 10363 vs 04204133's end 10334 (+29 = OuterTerminal 1, InnerTerminal 2, Terminal 18, Wire 8); terminals 5933,
+wires 1974 and owners 1763 equal (tools/bench/diag_c134_4_finalize_b.log, gate F3). 04204133 = tools/bench/plan_ring_p3b2.json,
+sessions a + b in ONE plan finalized on the pre-a provisional base (40 step files).
+
+OBSERVED in diag_c134_4_objdiff.log: (1) first-step objs: b 10353 (a's real read), ref 10313 (pre-a base); diff = {FSOT 2,
+SelectorTunnel 1, DNC 1, GrowableFunction 2, Local 5, OuterTerminal 1, InnerTerminal 2, Wire 8, Terminal 18}. (2) node deltas over
+each session: ref (a+b) {FSOT 4, ST 3, GF 4, Local 9, DNC 1}; b on real {FSOT 2, ST 2, GF 2, Local 4}. (3) gate O1 FAILED: it took
+ref step file [40-19=21] as "a's simulated end", which gave GF -2 / Local -4 against the real read.
+
+CLAIM: O1's failure is the diagnostic's own wrong assumption - the combined plan's actions are not a-then-b contiguous, so step 21
+is not a's end. By arithmetic from (1) and (2): a's node delta = ref total - b's delta = {FSOT 2, ST 1, GF 2, Local 5, DNC 1},
+which is exactly the node part of (1); the remainder of (1) = {OuterTerminal 1, InnerTerminal 2, Wire 8, Terminal 18} = the +29 at
+the end. So the +29 object rows are rows LabVIEW's reader lists for a's real file that the simulator's model of a never creates
+(the simulator adds node objects only), b's own node delta is the same on both bases, and the end difference is a base-model
+difference, not a change in b's 18 actions or end graph (terminals/wires/cdiff equal).
+
+Attack: is the arithmetic sound (could b's delta on the provisional base differ while the totals still balance)? Is there a
+reading in which the +29 rows are created by b's actions on the real graph (e.g. the 4 fs_border crossings creating tunnel
+terminals as objs rows) rather than inherited from a? What is the cheapest offline test that separates the two (e.g. objs rows of
+classes Terminal/Wire with uid present in the real graph file vs created in b's step files)?

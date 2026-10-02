@@ -260,6 +260,13 @@ stop). chat-D1 PASS 5/0, 16 min, commit 689c565e: 5 docs frozen in place (0 old 
 and CLAUDE.md rule 4 (freeze-in-place paragraph); STOP line lifted; supervisor relaunched (pid 21392), cycle 130
 started 03:12 = the test. Uncommitted chat edits: CLAUDE.md, cycle_prompt.md, guard_session.py + self-test, STATUS,
 this file (the runner's per-cycle commit will include them).
+**SONNET 5.5 BENCH IN THE CLOUD (user 2026-10-02 ~12:0x: "sonnet 5.5가 opus5.5와 거의 비슷한 성능 … 벤치 필요할듯.
+클라우드세션으로"):** decbench (10 known-answer cases) arms H = Opus 5.5 high (control), SH = Sonnet 5.5 high,
+SMX = Sonnet 5.5 max, 2 reps, blind Opus scorer, $90 stop. Launched UNATTENDED from this PC: scratchpad
+launch_cloud_sonnet.ps1 (Start-Transcript + `claude --cloud <prompt file>`) via Start-Process powershell → session
+`session_017seeroLA1Wz7MP15AdPxhg` (12:06). Cloud base = origin/master 188500d (decbench v1 is there). Result →
+branch sonnet-bench-20261002 (or its claude/* branch), report tools/bench/decbench/report_sonnet_cloud.md. Monitor
+with RemoteTrigger get_run_log.
 **CLOUD PLAN DROPPED (user 2026-09-29 ~20:0x KST: "그럼 클라우드는 그냥 잊어버리자").** No Linux port of benches/hooks;
 benches stay local. Both probe routines were run-once and are spent. Open next: user asked whether to bring Gemini back
 for web search; chat proposed (awaiting answer) a headless-permission fix test + a 6–8 question known-answer comparison

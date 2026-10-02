@@ -1,0 +1,27 @@
+{"schema":"result/1","id":"134-6","status":"PASS","gates":{"pass":4,"fail":0},
+"first_fail":null,
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/plan_ring_p3b2a_pred.json","md5":"45eb0b6761716e2d7aa86f56d5b4a750"},
+ {"path":"tools/bench/launch_p3b2_c135.py","md5":"16e941a61d3cf0695d58f6a921fc767f"},
+ {"path":"tools/bench/launch_p3b2_c135_graph.py","md5":"e4adb72ba909503d9a56e35c73a4b080"},
+ {"path":"tools/bench/diag_c134_1_graph.py","md5":"3bd108c5e07fc002b0f4aae3d44064b4"},
+ {"path":"tools/bench/selftest_c134_p1.py","md5":"bc75cc622afd829ecff289dd01fb7a48"},
+ {"path":"tools/bench/diag_c134_6_census.py","md5":"2aed9c969cb68f0722bce6b6d56572ba"},
+ {"path":"tools/bench/diag_c134_6_el_items.py","md5":"45f034daa0b323fc3f9042d744b5746c"}],
+"facts":[
+ "1 a's census = new uids after-before over graph objs, 4/0 (diag_c134_6_census.log): Terminal 18, Wire 10, Local 5, FSOuterTunnel 2, GrowableFn 2, InnerTerm 2, OuterTerm 1, SelTunnel 1, DigNumConst 1",
+ "1 removed uids: Wire 2, so count diff has Wire 8 (not 10); 0 uids changed class; pred census_overall MEASURED-GRAPH-DIFF, both files + md5 cited in census_source",
+ "2 diag_c134_6_el_items.log 4/0: the only unmatched entry of P3b-1's 53 is entry 9 'Wire: Wire has loose ends' (count 22, 20 matched, 2 short); every other entry is fully matched",
+ "2 the 22 loose ends are ONE aggregated entry with no net (errorlist_expected_..._060910.json entry 9), and no read item carries a uid (show_error.uid null: 'needs a Selection List[] op (unbuilt)')",
+ "2 so the vanished 2 are named by class and text only ('Wire has loose ends', detail 'wire has loose ends'); which nets cannot be read offline from either Error List file",
+ "3 diag_c134_1_graph.py gate B = stagesim.fs_border_gate(graph, uses of plan `uses_plan`): 7 UNMEASURED listed as a FACT, gate fails only if used; R/FS2 are skipped when the plan sets them null",
+ "3 runner: NESTED_B and the rc=1 acceptance removed; G needs rc 0 + G1 G2 G3 FS1 B X PASS; its graph plan sets same_rows_as/fs_watch null, uses_plan = plan b (launch_p3b2_c135.py:42,199-201,205-206)",
+ "3 selftest_c134_p1 18/0 (selftest_c134_p1_c134_6.log): T14 plan b on graph 102553 gives gate B PASS with 7 UNMEASURED; T15 a use FAILS; T17 rc 1 stops at G; T18 the graph plan's fields",
+ "4 runner dry 17/0 rc 0 (launch_p3b2_c135_dry_c134_6.log); T5-T10 walk equal/different/fail-a/graph/b/el PASS; diag pin 6a1b61ab->3bd108c5 in both runner files; diag py_compile rc 0",
+ "4 the diag's new gate-B branch runs only live (DRY returns at diag_c134_1_graph.py:35); it is covered offline by T14/T15 with the same uses construction"],
+"open":[
+ "PD291(c) asks that the 2 vanished items be loose ends on nets b rebuilds. Class: confirmed. Net: cannot be read offline, because neither Error List read records uids. Accept the class-level match, or measure the nets first (needs a Selection List[] op)?",
+ "a's census comes from the graph reader's objs rows (read_live). The launch's CEN2 counts with stagekit.census_gate's own before/after maps. If the two instruments cover different object sets, CEN2 can differ with no real change (134-4 saw +29 Wire/Terminal rows)."],
+"cost":{"usd":null,"minutes":6,"labview_runs":0},
+"note":"Offline only: no LabVIEW, no VI opened, runner not launched, no STATUS edit, no commit. Plans a/b, recipes, stage tools unchanged. Pins: diag 3bd108c5 in launch_p3b2_c135.py PINS and launch_p3b2_c135_graph.py SRC_MD5."}

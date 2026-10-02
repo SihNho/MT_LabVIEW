@@ -1,0 +1,83 @@
+{
+ "schema": "task/1",
+ "id": "134-2",
+ "kind": "build",
+ "goal": "PD288(b)-(e), offline: a4 self-test debts; gate B scoped to borders the plan uses; check_launch needs dry_rule 2; finalize P3b-2 session b on the measured graph; b dry + prerun.",
+ "why": "134-1 FAIL 5/2: dry rule + FS reader accepted, f0 == 27641 measured; gate B failed on 7 nested-FS tunnels b never uses; c130_5 and stageplan self-tests left red/unread; d/e not run (PD288).",
+ "retry_of_card": "134-1",
+ "inputs": [
+  {"path": "docs/d1/ring-p3b.md"},
+  {"path": "tools/bench/cards/result_134-1.json"},
+  {"path": "tools/stage_prerun.py", "md5": "c41ceb1c507e24fc0d0bff0e330d6849"},
+  {"path": "tools/stagekit.py", "md5": "b1f77050db7b25c6e81d4f273d0465dd"},
+  {"path": "tools/stagesim.py", "md5": "74179f8ab7d88f31dba781c0bc398116"},
+  {"path": "tools/bench/diag_c134_1_finalize_b.py", "md5": "661ed274e4559a0533c15aa96e80ded5"},
+  {"path": "tools/bench/graph_ring_p3b2a_fs_20261002_102553.json", "md5": "b885fa4af1df203a8dd68b631ab86752"},
+  {"path": "tools/bench/plan_ring_p3b2.json", "md5": "04204133d6c55929f368ec3761f70445"},
+  {"path": "tools/bench/plan_ring_p3b2b.json", "md5": "1451ba90aadc594fe74f97793eb04e92"},
+  {"path": "tools/recipes/stage_d1_ring_p3b2b.py", "md5": "e6636785aa3483ff313bf75ec452e3d6"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c134_1_finalize_b.py"},
+  {"kind": "file", "name": "tools/bench/graph_ring_p3b2a_fs_20261002_102553.json"},
+  {"kind": "file", "name": "tools/bench/c125_1_offline_measure.py"},
+  {"kind": "file", "name": "tools/bench/selftest_c134_1_dry.py"},
+  {"kind": "file", "name": "tools/bench/selftest_c134_1_fsmap.py"}
+ ],
+ "pass": [
+  "1 selftest_c130_5 rerun green (or the T2 expectation fixed with a cited reason); stageplan self-test rc=1 cause read and fixed or named; c125_1_offline_measure green",
+  "2 gate B: borders a plan action/route/carried entry uses must be classified; the 7 nested-FS 14682 tunnels listed UNMEASURED, unused; self-test: unused -> PASS, used -> FAIL",
+  "3 check_launch refuses a dry record without dry_rule == 2; self-test both ways; selftest_c134_1_dry + _fsmap still green",
+  "4 diag_c134_1_finalize_b.py on graph_ring_p3b2a_fs_..._102553: no unbound created uid; sim end vs 04204133 end (10334/5933/1974, cdiff 16): equal, or every diff listed",
+  "5 b dry PASS under rule 2 (no UNVERIFIED, or each named) + prerun all X PASS, X10 <= 690 naming its load; plan/recipe b md5s; --scratch-required exit code"
+ ],
+ "outputs": [
+  "tools/stage_prerun.py",
+  "tools/stagesim.py",
+  "tools/bench/plan_ring_p3b2b.json",
+  "tools/bench/cards/result_134-2.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_prerun.py",
+   "tools/stagekit.py",
+   "tools/stagesim.py",
+   "tools/stagexec.py",
+   "tools/stageplan.py",
+   "tools/recipes/stage_d1_ring_p3b2b.py",
+   "tools/bench/*ring_p3b2b*",
+   "tools/bench/sim/**",
+   "tools/bench/prerun/**",
+   "tools/bench/stage_prerun*",
+   "tools/bench/stagesim*",
+   "tools/bench/diag_c134_*",
+   "tools/bench/selftest_c134_*",
+   "tools/bench/selftest_c130_5*",
+   "tools/bench/selftest_stageplan*",
+   "tools/bench/selftest_stage_prerun*",
+   "tools/bench/c125_1_offline_measure*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_134-2*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "outcome", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 50},
+ "rules": [
+  "Offline only: no LabVIEW, no VI opened; steps 1 -> 5 in order",
+  "Plan b's 18 actions and end graph unchanged (rule 1a, PD287(c)); a diff vs 04204133 is LISTED and returned",
+  "Gate B is scoped, never relaxed: a border the plan uses and the reader did not classify still FAILS",
+  "Return at the first unexpected result, files saved; no scratch, no launch, no STATUS edit",
+  "Never end the turn while a run lacks BGRUN END; wait with wait_logs.py ticks (material.md:92-98)"
+ ],
+ "advances": ["M3", "R1", "R3"]
+}

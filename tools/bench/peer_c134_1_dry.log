@@ -1,0 +1,73 @@
+BGRUN START 2026-10-02 10:19:42 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c134-1-dry-selftest -TaskFile tools/bench/peer_c134_1_dry_task.txt
+BGRUN PID 16280
+OUTCOME: ANSWERED (152s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-02-c134-1-dry-selftest.md
+COST: $1.4521  in 28 / out 12480 / cache-create 111457 / cache-read 1553559  (149s, 22 turn(s))
+--- ANSWER ---
+**Verdict: the claim is half wrong.** The T0 failure is a fault of the test's premise, as the session says. But "not a fault of the device under test" does not follow from the evidence, and the code says the device has a real hole.
+
+## 1. Strongest reason the claim is wrong
+
+**The 8 passes contain no evidence for the property the device exists to provide.** That property is: a FALSE gate on non-stub data after a mutation must FAIL the dry run.
+- In the first run, T0 failed with `b = None`, so T1 never ran (`selftest_c134_1_dry.py:75-79`, log lines 3-4).
+- T1 is the only check that feeds the device a FALSE non-stub gate after a mutation.
+- T2 only shows that `bb5ba064` produces zero UNVERIFIED gates. The taint test in `stage_prerun.py:733` is consulted only when `ok` is False, so a passing FR says nothing about whether FR would have been tainted.
+- T3 to T7 test the stub side and the launch gate.
+
+So "8 pass" does not cover the device's core claim, card pass a1.
+
+That is the evidence gap. The code also contains a concrete instance of the hole the second question asks about:
+
+**Q2: yes, the proxy is too permissive, and this recipe already exposes it.**
+- `Fake.__str__`/`__repr__`/`__format__` increment taint (`stage_prerun.py:442-449`).
+- `Stage.es` formats the stub exec state into a FACT line (`stagekit.py:424-427`).
+- In the recipe, `s.es(...)` at line 67 runs right before the PB gate at line 73.
+- The 133-3 dry log shows the formatting happened: `FACT ExecState [...] = <dry:g.exec_state>` (`stage_prerun_c133_3_p3b2a_dry.log:77`), immediately before PB (`:78`).
+
+So a FALSE PB would be relabelled UNVERIFIED by `if not ok and tainted`, even though PB is computed only from non-stub data: S1 wiki, `real` and `L` from `DryPlanBE`. PB is the FATAL computation-diff gate, the rule-1a gate. That is the same failure as 133-3, moved from FR to PB.
+
+There is a second leak path:
+- `D.gate_taint` is set before `orig["gate"]` prints `detail` (`stage_prerun.py:726-740`).
+- So a Fake inside one gate's detail charges taint to the next gate.
+- Example: HB's detail `(<dry:bench_prep.labview_handles>, None)` (`:80`) taints PS.
+
+## 2. Alternative explanation of the same evidence
+
+The 8/1 result is equally consistent with "the dry rule still hides FALSE non-stub gates whenever any stub was printed or touched between gates." The current self-test cannot tell these two readings apart.
+
+On the reconstruction itself, the session's account holds up:
+- The 133-5 result puts FR at lines 55-57 (`result_133-5.json:17`); now it is at 56-58 with `basef` added at line 30.
+- Dry coverage went from 71/80 lines (`stage_prerun_c133_3_p3b2a_dry.log:83`) to 72/81 (T2 log).
+- Both point to a single inserted line, so the undo is probably exact.
+
+I could not run `git log` myself (no shell), so the "one commit" fact is the session's. I found no other copy of `ababd4ed` in `~/.claude/file-history`.
+
+## 3. Observations that would falsify the claim
+
+- **For "the device is fine":** a fixture with a FALSE pure-Python gate placed after any stringified stub ends `DRY PASS-UNVERIFIED` instead of `DRY FAIL`. From the code it should.
+- **Against the revised test:** the revised T0 is vacuous. In the fallback branch it is `gate(..., b is not None, ...)`, and `cands[0]` always exists, so T0 can no longer fail. Its md5 result is only a label.
+  - Make T0 a real check: reconstruction md5 == `ababd4ed`.
+  - If the md5 does not match, require the reconstruction's OLD-rule dry output to reproduce `stage_prerun_c133_3_p3b2a_dry.log:71-83`: UNVERIFIED FR, coverage 71/80, unverified 1.
+  - Otherwise, report T1 as "FR rule on a synthetic file", not "133-3 bytes".
+- The revised script has not been re-run; the log holds only the 10:17:57 run.
+
+## 4. Cheapest discriminating test (offline, about 10 lines, one T3b in the same self-test)
+
+Write a fixture recipe whose `body` does:
+```
+s.start(); s._op("create", lambda: None)   # first mutation
+s.es("x")                                  # formats a Fake -> taint moves
+s.gate("ZN plain false", 1 == 2)           # non-stub FALSE
+```
+- **Correct rule:** `=== DRY FAIL ... GATE ZN`.
+- **Current code (predicted):** `DRY PASS-UNVERIFIED ZN`.
+
+Add a variant T3c: gate A carries a Fake in `detail`, then gate B is `1 == 2`. That checks the detail-print leak.
+
+Likely fix direction, if T3b fails as predicted:
+- Stop counting `__str__`/`__repr__`/`__format__` as taint. Turning a stub into text cannot feed a boolean.
+- Scope taint to the statement that calls `s.gate`, for example with a line-level `sys.settrace` snapshot. A stub value computed earlier and compared outside the gate statement would then show as FAIL, which is the safe direction.
+
+**What would change my mind:** T3b and T3c both end `DRY FAIL`, and T1 runs on a reconstruction checked as above and FAILs naming FR.
+
+No web search was needed; every claim here is about this project's code and logs, cited by file:line. Two connector notes: claude.ai Figma and the amplitude, amplitude-eu, atlassian, bigquery and hex data plugins need authorization, and `plugin:data:definite` failed to connect. None of them was needed for this review.
+BGRUN END rc=0 after 154s
