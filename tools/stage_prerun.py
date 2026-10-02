@@ -382,6 +382,7 @@ class DryState(object):
         self.recipe = None                   # card 106-5: the recipe under dry run (find_graph reads its plans' base)
         self.executors = []                  # card 130-1 (PD267(b)): every stagexec.Executor the recipe built (X10 model)
         self.x10_probe = False               # card 130-1: stop the recipe at its first Executor (self-test probe)
+        self.discards = []                   # card chat-M2 (fp-35): every Stage work path the recipe declared a scratch
 
 
 D = DryState()
@@ -803,6 +804,7 @@ def patch_stagekit():
 
     def discard_work(self):
         self.scratches.append(self.work)
+        D.discards.append(self.work)                   # card chat-M2 (fp-35): X10 PROBE-EXEMPT evidence
 
     S.__init__, S.gate, S._op, S.address = init, gate, op, address
     S.start, S.save, S.close, S.scratch, S.discard_work = start, save, close, scratch, discard_work
@@ -960,7 +962,9 @@ def dry(recipe, graph=None):
             "jev": D.jev, "graph": rel(D.graph_path) if D.graph_path else None, "input_md5": D.input_md5,
             "input_vi": D.input_vi, "blocked": sorted(set(D.blocked)), "secs": round(time.time() - t0, 1),
             "calls": len(D.calls), "works": list(D.works), "executors": list(D.executors),
-            "x10_reads": [n for n, _m in D.calls if n.split(".")[-1] in X10_EDIT_READS]}   # card 136-2 (fp-33)
+            "x10_reads": [n for n, _m in D.calls if n.split(".")[-1] in X10_EDIT_READS],   # card 136-2 (fp-33)
+            "discards": list(D.discards),                                                   # card chat-M2 (fp-35)
+            "saves": [n for n, _m in D.calls if X10_SAVE_RE.search(n.split(".")[-1])]}
 
 
 # ---------------------------------------------------------------------------------------------- the pre-run
@@ -2292,10 +2296,94 @@ def x10_edit(recipe, trace, model):
                 used, src["reads"], dry_n, rc)}, None
 
 
+# card chat-M2 (gate-fp fp-35, user 2026-10-03 option (나)): ONE narrow release. A MEMORY-CEILING PROBE must loop its
+# whole-VI reads and is MEANT to cross 690 MB, so no X10 model can pass it (chat-M1 BLOCKED, diag_chat_m1_prerun.log:71-72).
+# A script that declares the module-level literal X10_PROBE = X10_PROBE_LITERAL passes X10 as PROBE-EXEMPT ONLY IF its dry
+# trace + source show ALL of: no stagexec.Executor (a probe is not a build); the K1 input-md5 gate passed and every Stage work
+# path is a dated byte copy in claudeDev (never the input VI); every work path was declared a scratch (Stage.discard_work, so
+# Stage.close deletes it); NO save call in the dry trace and NO save-named call in the source (scratch deletion is
+# Stage.close's drop_scratch, not a save); a warn-only meter (`<name> = ...Meter(..., stop_mb=None, ...)`) that is CALLED.
+# Anything else carrying the literal FAILS X10 (never falls through to the models); no literal = behaviour unchanged.
+X10_PROBE_LITERAL = "memory ceiling, scratch only"
+X10_SAVE_RE = re.compile(r"save", re.I)
+
+
+def x10_probe_release(recipe, trace):
+    """card chat-M2 (fp-35): (declared, ok, detail). declared False = no X10_PROBE literal (the caller's rules stand)."""
+    try:
+        tree = ast.parse(REAL_OPEN(recipe, encoding="utf-8", errors="replace").read(), filename=recipe)
+    except (OSError, SyntaxError, ValueError):
+        return False, False, {}
+    declared = any(isinstance(n, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "X10_PROBE" for t in n.targets)
+                   for n in tree.body)
+    if not declared:
+        return False, False, {}
+    why, facts = [], []
+    lit = [n.value.value for n in tree.body if isinstance(n, ast.Assign) and isinstance(n.value, ast.Constant)
+           and any(isinstance(t, ast.Name) and t.id == "X10_PROBE" for t in n.targets)]
+    if lit != [X10_PROBE_LITERAL]:
+        why.append("X10_PROBE must be the module-level literal {0!r} (got {1!r})".format(X10_PROBE_LITERAL, lit))
+    tr = trace or {}
+    if tr.get("executors"):
+        why.append("a stagexec.Executor plan is present (a probe is not a build)")
+    if not tr.get("input_md5") or not tr.get("input_vi"):
+        why.append("dry trace has no Stage input VI/md5 (K1 byte-copy gate not run)")
+    if any("K1" in str(f) for f in tr.get("fails") or []):
+        why.append("K1 input md5 gate failed in the dry")
+    norm = lambda p: os.path.normcase(os.path.abspath(str(p)))                     # noqa: E731
+    works = tr.get("works") or []
+    if not works:
+        why.append("no Stage work copy in the dry trace")
+    for w in works:
+        if tr.get("input_vi") and norm(w) == norm(tr["input_vi"]):
+            why.append("work path IS the input VI {0}".format(w))
+        if os.path.basename(os.path.dirname(str(w))).lower() != "claudedev":
+            why.append("work path {0} is not a copy in claudeDev".format(w))
+        if norm(w) not in set(norm(d) for d in tr.get("discards") or []):
+            why.append("work path {0} not declared a scratch (Stage.discard_work not called)".format(w))
+    if not isinstance(tr.get("saves"), list):
+        why.append("dry trace carries no save-call record")
+    elif tr["saves"]:
+        why.append("dry executed save call(s) {0}".format(sorted(set(tr["saves"]))[:6]))
+    src_saves, meters, called = set(), [], set()
+    for n in ast.walk(tree):
+        if isinstance(n, ast.Call):
+            nm = _x10_name(n.func)
+            if nm and X10_SAVE_RE.search(nm):
+                src_saves.add(nm)
+            if isinstance(n.func, ast.Name):
+                called.add(n.func.id)
+        if (isinstance(n, ast.Assign) and isinstance(n.value, ast.Call) and _x10_name(n.value.func) == "Meter"
+                and len(n.targets) == 1 and isinstance(n.targets[0], ast.Name)):
+            kw = dict((k.arg, k.value) for k in n.value.keywords)
+            warn_only = isinstance(kw.get("stop_mb"), ast.Constant) and kw["stop_mb"].value is None
+            meters.append((n.targets[0].id, warn_only, n.lineno))
+    if src_saves:
+        why.append("source calls save-named function(s) {0}".format(sorted(src_saves)))
+    live = [m_ for m_ in meters if m_[1] and m_[0] in called]
+    if not live:
+        why.append("no warn-only meter (`X = ...Meter(..., stop_mb=None)` that is called) in the source {0}".format(meters))
+    else:
+        facts.append("warn-only meter {0} (line {1}) called".format(live[0][0], live[0][2]))
+    facts.append("works {0}, discarded {1}, dry saves {2}, input md5 {3}".format(
+        [os.path.basename(str(w)) for w in works], len(tr.get("discards") or []), len(tr.get("saves") or []),
+        tr.get("input_md5")))
+    return True, not why, {"why": why, "facts": facts}
+
+
 def x10_gate(recipe, executors, stop_after=None, from_step=None, model=None, trace=None):
     """card 130-1 (PD267(b)): (ok, detail dict). ok False = a predicted peak > fail_above_mb, or UNMEASURED (no Executor
     whose plan compiled AND no covering recorded meter), or a recorded meter >= 690 (mem_margin, kept).
-    card 132-4 (PD277(a)): with `trace` (the dry result), a read-only script (x10_readonly) is MODELLED, not UNMEASURED."""
+    card 132-4 (PD277(a)): with `trace` (the dry result), a read-only script (x10_readonly) is MODELLED, not UNMEASURED.
+    card chat-M2 (fp-35): a declared memory-ceiling probe (x10_probe_release) is PROBE-EXEMPT or FAILS, nothing else."""
+    if trace is not None:
+        declared, p_ok, p_det = x10_probe_release(recipe, trace)
+        if declared:
+            if p_ok:
+                return True, {"why": "PROBE-EXEMPT: declared memory-ceiling probe, scratch only, no save, warn-only meter ("
+                              + "; ".join(p_det["facts"]) + ")", "runs": [], "probe": p_det}
+            return False, {"why": "X10_PROBE declared but NOT exempt: " + "; ".join(p_det["why"]), "runs": [],
+                           "probe": p_det}
     try:
         m = model or load_memory_model()
     except Exception as e:                                                         # noqa: BLE001

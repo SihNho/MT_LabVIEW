@@ -1,0 +1,17 @@
+{
+ "schema": "task/1", "id": "chat-M2", "kind": "build",
+ "goal": "X10 PROBE-EXEMPT release for a declared scratch-only memory-ceiling probe, then launch chat-M1's probe once and report LabVIEW's real memory ceiling",
+ "why": "chat-M1 BLOCKED by X10 (fp-35) before LabVIEW opened; user approved option (나). Detail: brief_chat-M2.md",
+ "inputs": [{"path": "tools/bench/cards/brief_chat-M2.md", "md5": "ddf4e60006f4e805cead19285ccd8728"}, {"path": "tools/bench/diag_chat_m1_mem.py", "md5": "61c35e634b08dc1e55e76b0ccb155b8c"}],
+ "pass": [
+  "X10 PROBE-EXEMPT only for a declared probe that dry-proves scratch-only and no save; self-test 3 cases; X10 self-tests green; fp-35 drained",
+  "probe launched once under bgrun --material, waited in-turn to BGRUN END; peak MB, first error or none, MB/read, MB/edit reported",
+  "bed md5 unchanged, scratch deleted, LabVIEW gone; safe ceiling suggested; memory_model/MEMSTOP unchanged"
+ ],
+ "outputs": ["tools/bench/diag_chat_m1_mem.log"],
+ "flags": {"labview": "read", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/stage_prerun.py", "tools/bench/selftest_x10_*", "tools/bench/diag_chat_m1_*", "tools/bench/gate_fp_queue.jsonl"],
+  "status_edit": false, "git_commit": true, "peers": ["hypothesis"]},
+ "budget": {"failures": 2, "minutes": 120}, "unblocks": "M4",
+ "rules": ["Runner stopped; no other live card", "Never save the bed or any original", "Edit tool only"]
+}

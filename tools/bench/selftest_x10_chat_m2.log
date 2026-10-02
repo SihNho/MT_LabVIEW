@@ -1,0 +1,14 @@
+BGRUN START 2026-10-03 00:58:51 limit 6.0 min: py -u tools/bench/selftest_x10_chat_m2.py
+BGRUN PID 7800
+PASS  P1 declared probe -> PROBE-EXEMPT pass  PROBE-EXEMPT: declared memory-ceiling probe, scratch only, no save, warn-only meter (warn-only meter M (line 4) called; works ['scratch_probe_20261003_000000.vi'], discarded 1, dry saves 0, input md5 49cf7f770fc331e06607687af640ad5e)
+PASS  P2 same literal, script saves -> FAIL naming the save  X10_PROBE declared but NOT exempt: dry executed save call(s) ['Stage.save']; source calls save-named function(s) ['save']
+PASS  P3 no literal, looped read -> unchanged FAIL UNMEASURED 'inside a loop'  UNMEASURED: no stagexec.Executor plan in the dry run and no recorded meter covers the run (not read-only: dry ran 1 Stage._op edit op(s) ['const_row']; dry mutation Stage._op const_row; source calls edit verb(s) ['const_row']; 1 whole-VI read(s) inside a loop body (count not offline): ['census_snapshot line 9: inside a loop body (For at line 8)']; edit model: whole-VI read count not bounded from the source (census_snapshot line 9: inside a loop body (For at line 8)))
+PASS  P3b no literal, read-only script -> unchanged modelled PASS (one run, no PROBE)  [{'plan': 'read-only C:/Users/KimLab/AppData/Local/Temp/x10probe_chat_m2_8b1rzxk6.py', 'N': 0, 'R': 2, 'bind': 0, 'peak_mb': 592.5, 'fail_above_mb': 690.0, 'ok': True, 'src_reads': 1, 'dry_reads': 1, 'reads_line': 'source 1 [census_snapshot@5x1]; dry executed 1; sessions 1', 'checkpoints': 'k 0 + 1 whole-VI read call site(s)'}]
+PASS  P4 literal + meter stop_mb=700 -> FAIL (no warn-only meter)  X10_PROBE declared but NOT exempt: no warn-only meter (`X = ...Meter(..., stop_mb=None)` that is called) in the source [('M', False, 4)]
+PASS  P5 literal + work IS the input VI -> FAIL  X10_PROBE declared but NOT exempt: work path IS the input VI C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\bed.vi
+PASS  P6 literal + work not discarded -> FAIL  X10_PROBE declared but NOT exempt: work path C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_probe_20261003_000000.vi not declared a scratch (Stage.discard_work not called)
+PASS  P7 literal + an Executor -> FAIL  X10_PROBE declared but NOT exempt: a stagexec.Executor plan is present (a probe is not a build)
+PASS  P8 wrong literal text -> FAIL  X10_PROBE declared but NOT exempt: X10_PROBE must be the module-level literal 'memory ceiling, scratch only' (got ['anything'])
+=== SELFTEST x10 chat-M2: 9 pass / 0 fail
+RESULT {"status":"PASS","gates":{"pass":9,"fail":0},"first_fail":null,"artefacts":[],"schema":"result-line/1"}
+BGRUN END rc=0 after 3s

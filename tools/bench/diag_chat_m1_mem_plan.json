@@ -1,0 +1,28 @@
+{
+ "schema_note": "card chat-M1 (user 2026-10-03 speed option (나)): FINALIZED decision-row plan of tools/bench/diag_chat_m1_mem.py. MEASUREMENT ONLY: LabVIEW's real memory ceiling on a byte copy of the P3b2b bed. The Stage's work copy claudeDev\\scratch_chat_m1_mem_<ts>.vi is a scratch, never saved; the bed is never opened. Warn-only meter (stagexec.Meter stop_mb=None = MEMSTOP disabled for THIS scratch run only). No VI run, no LabVIEW option changed, no memory_model / stage_prerun / MEMSTOP change.",
+ "input": {"vi": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b2b_20261002_130007.vi", "md5": "395118775a52bc90073f4449b99f899d"},
+ "fs_pairs_from": "tools/bench/graph_qrt_pool_20260928.json",
+ "lv_gui": "tools/lv_gui.ps1",
+ "max_mb": 2000.0,
+ "reads_leg_min": 30.0,
+ "total_loop_min": 57.0,
+ "max_reads": 400,
+ "max_edits": 600,
+ "edit_read_every": 4,
+ "handle_flat": 100,
+ "settle_s": 15,
+ "deadline_min": 72,
+ "reserve_s": 240,
+ "edit_site": {"loop_uid": 23041, "body_diagram": 23405, "node": 376, "term": "frame index", "value": null,
+               "why": "an UNWIRED numeric input of SubVI #376 in WhileLoop #23041's body (graph_ring_p3b2b_20261002_133824.json); const_row = OpCreateConstOnTerm_v0 creates a constant typed by the sink and wired"},
+ "const_classes": ["DigitalNumericConstant", "Constant"],
+ "decisions": [
+  {"id": "M-0", "action": "stage", "what": "stagekit Stage: fresh LabVIEW, dated byte copy of the bed = scratch (discard_work, never saved); METER load = private MB + handles + GDI/USER (gscript.lv_counts) after open; lv_gui ping"},
+  {"id": "M-R", "action": "read", "what": "leg 1: repeat the Executor's per-op checkpoint read (wiki_build.read_live(work, fs_pairs) = stagexec LVBackend.read) until the first exception (error 2 / COM / other), private >= max_mb, max_reads or reads_leg_min; METER read k after each"},
+  {"id": "M-E0", "action": "rbw", "what": "leg 2 baseline: one Remove Bad Wires on the scratch (the bed is broken by design; pre-existing bad wires go once) + a read = the leg-2 row baseline"},
+  {"id": "M-E", "action": "edit", "what": "leg 2: per cycle const_row on edit_site (create const + wire), delete_object of the created uid (const_classes), Remove Bad Wires (the dangling wire), METER op k; a checkpoint read every edit_read_every cycles (row count == baseline); until the first error, max_mb, max_edits or total_loop_min"},
+  {"id": "M-E-del", "action": "delete_object", "what": "inside M-E: delete the constant const_row created (its uid from the op's own return), class tried in const_classes order; the dry run executes ONE cycle = one delete_object"},
+  {"id": "M-C", "action": "close", "what": "lv_gui ping; close the scratch's panel (unloads it, no save), wait settle_s, METER close + GDI/USER, ping again"},
+  {"id": "M-K", "action": "kill", "what": "Stage hygiene (restart, delete scratch, md5 pins), taskkill LabVIEW, verify gone"}
+ ]
+}
