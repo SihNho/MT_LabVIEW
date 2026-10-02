@@ -2,83 +2,34 @@
  "schema": "result/1",
  "id": "chat-S3",
  "status": "PASS",
- "gates": {
-  "pass": 152,
-  "fail": 0
- },
+ "gates": {"pass": 3, "fail": 0},
  "first_fail": null,
  "blocked_by": null,
  "artefacts": [
-  {
-   "path": "tools/stagexec.py",
-   "md5": "9299475b762b50e07d690152a832c146"
-  },
-  {
-   "path": "tools/stagesim.py",
-   "md5": "6d10eee9b1141be5fd94d2246a0ab090"
-  },
-  {
-   "path": "tools/stage_prerun.py",
-   "md5": "c57e35220670070666adbcdf5720edad"
-  },
-  {
-   "path": "tools/hooks/guard_bash.py",
-   "md5": "d9ab94588a5840dc0135d8557afa669a"
-  },
-  {
-   "path": "docs/protocol/stageplan.json",
-   "md5": "ab23c4c31b1cb54785849f91ece5c320"
-  },
-  {
-   "path": "tools/bench/plan_l7_split.json",
-   "md5": "3ad72b602c2469d9be590ee429d88716"
-  },
-  {
-   "path": "tools/bench/stagexec_l7_bench_r2.log",
-   "md5": "2360cdaadc4ef4ca99e4f05163641e63"
-  },
-  {
-   "path": "tools/bench/stagexec_l7_bench.log",
-   "md5": "d606a9e9b487a768b5cb5364fce18598"
-  },
-  {
-   "path": "tools/bench/opmodels_onlysink.log",
-   "md5": "a8a5931afd7a9c94945989a43f9e6345"
-  },
-  {
-   "path": "tools/bench/opmodels/onlysink_samples.json",
-   "md5": "9dc0d433858af31b5c98238980da8ab9"
-  },
-  {
-   "path": "tools/bench/opmodels/move_in.json",
-   "md5": "ae6bbadb8058bce47da1d645c955cd68"
-  },
-  {
-   "path": "tools/bench/opmodels/delete_object.json",
-   "md5": "872644df5c0e7f59dfef1cb44637a8ed"
-  }
+  {"path": "tools/gateclass.py", "md5": "df83729d1ee70c4122e6c13ddb4e5ecc"},
+  {"path": "tools/stagexec.py", "md5": "843da1b03b0e4e87d31c8386a7a7bd90"},
+  {"path": "tools/stage_prerun.py", "md5": "2014f43bc013b51e3bf8cfbd5ec75073"},
+  {"path": "tools/bench/memory_model.json", "md5": "db163e039b89281a1ad178db95da4c72"},
+  {"path": "tools/bench/selftest_gateclass_s3.py", "md5": "9c554ac747a8eed848fb6dccc8ac8744"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s02_scratch.py", "md5": "3f53b484bbc57266e9b7375ed0d14eb6"},
+  {"path": "docs/d1/tooling.md", "md5": "f0fb21b21af58200d3c2323503d0b820"}
  ],
  "facts": [
-  "BENCH stagexec_l7_bench_r2.log 14/0: 45 plan actions -> 35 real ops, every op diff 0 vs its step file; ExecState 1 warm; end cdiff == open row 376; canon diff 0 vs D1_s4_loop17",
-  "Binding reproduced the original stages' uids: SRs 24083/24133, 24150/24187, tunnels 24357/24361/25223; TFP 5073, TFN 9599 (L7-R had 5204/10404) - stagexec_l7_bench_r2.log BINDING",
-  "Run 1 stagexec_l7_bench.log stopped at op 8 err_init (edge 4965->24291 vs sim 4965->24205): our face-index tracking aligned on names, which wire_sr changes; fixed, selftest T15",
-  "Only-sink: 15 samples in 8 fresh-scratch cases (opmodels_onlysink.log 64/0). Delete: constant 3 deleted/2 kept, node 1/4, tunnel 0/2. Move: constant 1/1, node 0/1",
-  "Only-sink: R1/R2 repeat the earlier move fates exactly on fresh scratches, so edit history is not the cause; constant-vs-node does not separate the fates either",
-  "Only-sink rule = 'ambiguous' in move_in.json/delete_object.json `sim`; the executor accepts either fate on those source terminals (allow_either, selftest T09/T10)",
-  "Hint, not a rule: all 5 deleted wires had the source object's pos 24-45 px left of the node; 9 of 10 kept had >=45 px (onlysink_samples.json src_pos/node_pos)",
-  "stagesim: every step now runs on a measured model (sim_l7_split.log C9); open_rows finalize rule; plan_l7_split.json is final; selftest_stagesim.log 39/0",
-  "Compile rule: tunnel + the wire into it + the wire out of it = 1 real op (LabVIEW makes a tunnel only by wiring across), compared after the out-wire step - stagexec.py compile_plan",
-  "Launch gate: stage_prerun --dry/--prerun <plan.json> records stagexec sha256 + plan md5; check_launch covers `stagexec.py run <plan>`; selftest_stagexec_gate.log 7/0"
+  "One source: memory_model.json:27 fail_above_mb 680, :31 memstop_mb 695; stagexec.py:92 loads both (raises if missing); stage_prerun.py:1865 X10_FAIL_MB reads the same json",
+  "s02 scratch recipe stop/gate now SX.X10_FAIL_MB (680); s01 scratch NOT changed: prior-art launch gate holds its sha (archive/peer/2026-10-02-priorart-c141-3-p4s01.md), edit reverted",
+  "Left as history (not re-run): stage_d1_l2a1.py:22 MEMSTOP 700, p4s1_scratch 690, bench c135/p3b2a/p3b2b scripts 690, tools/bench/sim/c138_1_head copies",
+  "Tunnel objects STOP: gateclass.py:58 TUNNEL_OBJECT_CLASSES, asserted disjoint from NON_SEMANTIC_CLASSES; selftest_gateclass_s3 T1/T2",
+  "E1 face-row-only LOG: gateclass.py:307 step_face_rows_verdict; stagexec.py:895 compare->face_rows; :2268 Executor soft-logs (one jsonl line per new row) and continues; record class 'log'",
+  "Needed beyond E1: stagexec.py:988 bind_new skips new rows on a tunnel present before the op, else BINDING stopped first (selftest_gateclass_s3 F7); a new tunnel object still BINDING-stops",
+  "Self-tests: selftest_gateclass_s3 13/0 (selftest_gateclass_s3.log), stagexec selftest 141/0 incl T120-T124 (selftest_stagexec_s3.log:64-68)",
+  "s3_regress.log: 34 tests; only reds = chat-S2's pre-existing c106e E1 (X17 donor), c114 R4 (plan_ring_p4_v10), 3 guard_peer NO-RESULT; gateclass_s2 12/0, x10 c130_1/c132_4/c136_2/chat_m2 green",
+  "selftest_x10_c132_1 T1 re-pinned: cycle-131 P3b-1 bytes predict 683.6 MB > 680 -> now X10 FAIL (accuracy 678.5 vs 680.4 kept); s3_regress_c132_1.log 4/0",
+  "PD328(a)-(c) at docs/d1/tooling.md:126 with the user's words; INDEX line added; commit f1b39287"
  ],
  "open": [
-  "Review archive/peer/2026-09-24-chatS3-stagexec-r1.md (ANSWERED, $1.34): register-face order unmeasured; run 2 had 0 DISAGREES in 4 face addresses. Should DISAGREES stop the run and should every op log the loop's Terminals[]?",
-  "That review's '## What was done with it' is unwritten (card write glob excludes archive/peer). Proposed text: fix = identity/(dir,wire) retrack + name-first; test 1 run on run 2: 0 DISAGREES; tests 2-3 open.",
-  "Only-sink fate stays ambiguous. Measure wire geometry (source-to-node distance) as the next discriminator, or leave both fates allowed?"
+  "bind_new now ignores new rows on a pre-existing tunnel (needed so the face-row LOG can reach E1) - accept this binding-side widening?",
+  "NEXT's launch limit 675 (PD321(c)) is below the new 680; keep 675 or align the card limit to 680?"
  ],
- "cost": {
-  "usd": 1.34,
-  "minutes": 75,
-  "labview_runs": 3
- },
- "note": "No VI run, nothing saved, all scratches deleted, both beds + 5 pins unchanged, refs 0 live. No JEV-LADDER line for run 1: review dispatched, run 2 was the last budgeted attempt. stagexec_l7_bench.log = run 1 (FAIL); the PASS is stagexec_l7_bench_r2.log. usd = the review only."
+ "cost": {"usd": null, "minutes": 40, "labview_runs": 0},
+ "note": "Offline only; no LabVIEW touched. gate_soft_log.jsonl untouched by tests (0 lines). STATUS not edited (status_edit false)."
 }
