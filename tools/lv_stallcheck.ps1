@@ -134,6 +134,15 @@ try {
         # returns `VERDICT: BLOCKED` (all four records say "no modal dialog", so it writes zero of them) - is a
         # DESIGN CHANGE and was deliberately NOT made by the material session that wrote this clause.
         if ($cl -and $cl -like '*wait_logs.py*') { Say-Why $p.Id 'skip - tools/wait_logs.py waiter (holds no LabVIEW client)'; continue }
+        # 2026-10-02 (chat, user: "랩뷰 스톨 경고가 많이 보이는 것 같은데"): the chat's report waiter and the weekly-usage
+        # watcher are the same class as wait_logs.py - idle sleepers under bgrun that hold no LabVIEW client - and were
+        # accused as "STALLED LabVIEW client" (stall_pid500_200926.log:1-3 = wait_runner_event.py). Excluded by WHAT
+        # THEY ARE, exactly like wait_logs.py above.
+        if ($cl -and ($cl -like '*wait_runner_event.py*' -or $cl -like '*usage_stop_watch.py*')) { Say-Why $p.Id 'skip - chat waiter / usage watcher (holds no LabVIEW client)'; continue }
+        # 2026-10-03 (user saw "STALLED LabVIEW client(s): pid 26440"): pid 26440 was cycle_runner.py itself, sleeping
+        # out its usage-limit wait (a leaf only while it sleeps; otherwise a wrapper of its claude -p session). The runner
+        # and its supervisor hold no LabVIEW client - recipes do, as their own bgrun children.
+        if ($cl -and ($cl -like '*cycle_runner.py*' -or $cl -like '*runner_supervisor.py*')) { Say-Why $p.Id 'skip - cycle runner / supervisor (holds no LabVIEW client)'; continue }
         # 2026-09-14: a WRAPPER (py.exe launcher, bgrun.py, peer dispatch) is idle by construction while its
         # child works - it matched the stall signature on every long probe and produced false "STALLED"
         # alerts while the real client (its grandchild) was burning CPU. Only LEAF processes can stall.

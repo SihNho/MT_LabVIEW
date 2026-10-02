@@ -1,0 +1,126 @@
+BGRUN START 2026-10-02 21:53:08 limit 20.0 min: C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe -u G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\outcome_review.py
+BGRUN PID 19260
+   cadence: 5 cycle retrospectives since 2026-10-02-outcome-review-20261002.md (every 5)
+   task written to C:\Users\KimLab\AppData\Local\Temp\outcome-review-20261002.txt (7683 chars)
+   review card tools\bench\cards\review_outcome-review-20261002.json
+OUTCOME: ANSWERED (177s)  model: fable (effort medium; peer.ps1 default for role outcome)  archived: archive\peer\2026-10-02-outcome-review-20261002.md
+COST: $3.0196  in 162 / out 11316 / cache-create 117861 / cache-read 379917  (175s, 28 turn(s))
+VERDICT-CARD: VERDICT-CARD outcome-review-20261002 verdict=refuted -> tools\bench\cards\verdict_outcome-review-20261002.json
+--- ANSWER ---
+**Verdict on the claim: refuted.** Cycles 133 through 140 produced one more structural file that has never executed, a 185-action plan for the next one, three donor VIs, and the discovery that every ring slot write built since cycle 131 uses the wrong primitive. Nothing the user can run today is different from what they could run at the 08:13 review. This is the fifth consecutive refutation.
+
+Limits of this review: `claudeDev\` is outside the repository, so file states are as the logs record them. Costs come from `tools/bench/cycle_runner.log`. No external claims were needed, so no URLs are cited. Two counter faults in the attached brief: the cadence line says 5 retrospectives since the last review, but 8 cycles ran (133 to 140); cycles 135, 138 and 139 have no retrospective file in `archive/peer/`, so the review cadence undercounts spend by three cycles. And `Track_v6_CPU_core_v0.vi` / `Track_v6_CPU_queue_v0.vi` are still listed as deliverables while no file of that name exists under `2. Tracking`; only recipe scripts name them (`tools/recipes/build_track_v6_core.py:48`). Fifth review to report the same phantom. Also, this review carries the same id as the morning one, so its archive file will collide with `archive/peer/2026-10-02-outcome-review-20261002.md`.
+
+## 1. Deliverable
+
+Nothing new is runnable.
+
+| Artefact | Cycle | Evidence offered | Source |
+|---|---|---|---|
+| `D1_ring_p3b2b_20261002_130007.vi` (bed) | 135 | 20/0 gates, 620.6 MB, Error List 51, "STRUCTURAL, ExecState 0 by design, never run" | `STATUS.md:136`, `docs/d1/INDEX.md:26` |
+| `DonorI32Max_v0.vi`, `DonorBoolF_v0.vi`, `DonorRAS1D_v0.vi` | 138–140 | each ran once on a scratch (RAS1D: index 3 → 99, len 20) | `STATUS.md:63,68,77` |
+| P4 plan v15 (`plan_ring_p4_v15.json`), X10 session table | 136–140 | replay and compile checks, no LabVIEW execution | `STATUS.md:57-62` |
+| none | 133, 134, 136, 137, 139 | tool fixes, rebases, memory measurements, route scratches | `STATUS.md:65-113` |
+
+A donor VI that runs is a test of one LabVIEW primitive. The bed has been through four accepted files (P2b, P3a, P3b-1, P3b-2), all ExecState 0, and the 140-4 census then found that 0 of 6 ring slot writes are the Replace Array Subset the design calls for (`STATUS.md:58,62`, PD322). The two files delivered since the 10-01 review therefore both have to be repaired before P4 begins. The benchmark catalogue still ends at row 59, dated 2026-09-27 (`archive/benchmarks/INDEX.md:80`). No frame-loss number has been produced since then.
+
+## 2. Goal alignment
+
+Against `project-requirements/parallelization-requirement.md:10-18` and `docs/goalmap.json`:
+
+- **1, split the post-pick loop.** Structural only. Chain at P3b-2 of P2 to P6, with a repair now prepended to P4; first run is still P6 (`docs/d1/INDEX.md:33-44`).
+- **2.1 motor control.** `met` in the original (`goalmap.json:15`).
+- **2.2 motor reading, the bottleneck the user named.** `open`, untouched since 2026-08-24 (`goalmap.json:21`).
+- **2.3 camera acquisition in its own loop.** `open` (`:27`). Eight more build steps, no loop that runs.
+- **2.4 scheduler.** `open`, untouched since project start (`:33`).
+- **2.5 merge and save.** On the unrun chain only.
+- **3, functions run in parallel.** No running VI has more loops than the display-loop VI of cycle 110.
+- **Frame loss at load (R4), 150 Hz.** `open` (`:199`). Never run.
+- **R8, camera settings inside the VI.** `open` since the user chose it on 09-25 (`:75`). Nothing built.
+- **R6, GPU default path.** `open` (`:63`). Parked since 09-13.
+
+Not moved since the project began: 2.2 motor reading, 2.4 scheduler, 2.3 as a running loop, 150 Hz, in-VI frame rate.
+
+## 3. Cost versus product
+
+| Cycle | Cost | Minutes | Bought | Source |
+|---|---|---|---|---|
+| 133 | $42.04 | 117 | P3b-2 cut into two sessions, scratch of session a | `cycle_runner.log:1009` |
+| 134 | $39.15 | 125 | dry rule, FS reader, session b finalized, launch runner | `:1025` |
+| 135 | $28.29 | 71 | P3b-2 file (unrun), P4 sized at 93 edits | `:1042` |
+| 136 | $42.76 | 90 | memory wall refuted, P4 v3, no VI | `:1058` |
+| 137 | $39.38 | 96 | P4 v7, four route facts, no VI | `:1074` |
+| 138 | $43.76 | 107 | simulator fixes, P4 v8, stop-mode ops, one donor | `:1090` |
+| 139 | $34.96 | 78 | P4 v14, For-group donor, X10 refuses step 1 | `:1105` |
+| 140 | $34.61 | 117 | session table, RLE fix, defect found, RAS donor | `:1120` |
+| Total | $304.96 | ~801 | 1 unrun file, 3 primitive donors, 0 frame-loss runs | |
+
+Combined with the morning's window that is $467 and about 21 hours today for zero runnable product. Not defensible. A competent engineer would have skipped:
+
+- **The P4 plan versions v2 through v15** (`STATUS.md:57-93`). Fourteen revisions of an edit script, each validated by a simulator that itself needed repair in cycles 136, 137 and 138, for a loop that will not execute until P6.
+- **The memory model and the session-cut machinery** (X10, PD283 to PD320). It exists because the build method reads the whole VI 2.53 MB at a time. A build that reads less, or a human edit in the LabVIEW editor, would not need it. P3b-2 alone took two sessions, a runner, a resume runner and a finalize guard (`STATUS.md:95-105`).
+- **Cycles 136 to 139 entirely.** Each one measured a LabVIEW fact (Select takes a scalar, a constant in a new While body is invisible to `Diagram.Nodes[]`, `stop (end)` is a latch) that a LabVIEW engineer knows, then rebuilt the tool around it.
+- **The error-list pinning on broken beds** (expected files per bed, class-level debits, PD273 to PD292). Counting error items on a VI that is broken by design tells no one whether it works.
+
+Scale now: 330 op VIs, 205 recipes, 1,085 peer exchanges, 112 retrospectives, behind one measured improvement from 2026-09-27.
+
+## 4. Ordering at project scale
+
+The standing order (`STATUS.md:56-57`, `docs/d1/INDEX.md:29`) is: repair the five slot writes, P4 in several sessions, P5, P6, then an interface-contract step, then design the display, motor, scheduler and focus tracks. It is still wrong, and now worse: the 140-4 defect means the first act of cycle 141 is a repair of files already accepted, and the parallelism rule forbids designing the motor-reading or scheduler tracks until P6 (`STATUS.md:56`). The one requirement the user called a bottleneck (2.2) is thereby last by rule.
+
+What should come first, unchanged from the last three reviews:
+
+- **R8 in-VI frame-rate control** on `D1_s1_disp_20260927_041648.vi`, so 150 Hz can be measured at all.
+- **The hand-off of the display-loop VI**, the only artefact that beat the original (lost 16 / 12 vs 3,359 / 5,860 at 15 beads, `archive/benchmarks/INDEX.md:79`). It lives only in an archive line (`archive/2026-10-01-status-cycle123-relocate.md:28`).
+- **One 150 Hz run** before more money goes into the ring.
+
+The steering card for this window, `steer_132.json`, was marked FOLLOWED at 10:10 (`cycle_runner.log:1012`) by a cycle whose product was two LabVIEW sessions of ring edits. That is the tenth FOLLOWED mark with no change of act (`:242,293,333,455,528,629,694,768,932,1012`).
+
+## 5. Stale decisions
+
+The user was reachable and answered three questions at about 16:10 today (`decisions_pending.json:298,314,332,350`). All three were about the unrun-file cap. Every item they were asked today was a question about how to continue the ring. Not asked:
+
+| Item | Open since | Blocks | Source |
+|---|---|---|---|
+| "Will you run the display-loop VI with beads while you watch?" | asked for loop15 on 09-25, never for the disp VI | the only path to a used product | `decisions_pending.json:93`, last four reviews |
+| R8 build | 09-25 | 150 Hz measurement | `decisions_pending.json:111`, `goalmap.json:75` |
+| Five refuted outcome reviews shown as a table | 09-28 onward | the stop-and-replan rule | this file's predecessor, "What was done with it" blank at `:206-208` |
+| OPEN 53, controller zero vs physical zero | 09-18 | trust in the motor envelope | `STATUS.md:49` |
+| OPEN 58, autofocus limits | answered 09-25, still listed | nothing; remove it | `STATUS.md:53`, `decisions_pending.json:85` |
+
+The morning review's "What was done with it" is still "(Claude fills in)" (`archive/peer/2026-10-02-outcome-review-20261002.md:206-208`). Its refuted verdict reached the user as a file-cap question.
+
+## 6. The experiment test
+
+**The original.** The display-loop VI has run only 120-second ABBA legs without a sample, has no in-VI frame-rate control, and STATUS still says it is not used in experiments until the user says so (`archive/2026-10-01-status-cycle123-relocate.md:28`). The ring bed is ExecState 0 by design. Nothing in cycles 133 to 140 touched either fact.
+
+## 7. Termination
+
+Shortest path, unchanged for the fifth review:
+
+1. Write one page describing `D1_s1_disp_20260927_041648.vi` in the user's terms. No LabVIEW.
+2. Ask for one supervised bead run at 8 and 15 beads, minutes long.
+3. Add the R8 frame-rate control to that VI and run 150 Hz once.
+4. Resume the ring only if step 3 loses frames, and on the loop the numbers name.
+
+Abandon or park: the P4 plan and its sessions, the slot-write repair, the memory model, the simulator and route machinery, error-list pinning, and the interface-contract step. The project's own rule says a repeated outcome verdict means stop and re-plan with the user. Five repetitions, $467 today, ten FOLLOWED steering marks with no change of act. The runner should stop and the user should see the five-review table.
+
+Mapping notes:
+- `goal-requirement-not-advanced`: 2.2, 2.3, 2.4, R4 at 150 Hz, R8 unmoved.
+- `product-not-runnable`: P3b-2 ExecState 0 by design; its slot writes are the wrong primitive.
+- `tooling-over-delivery`: cycles 136 to 139, fourteen P4 plan versions, the memory and session machinery.
+- `ordering-stale`: the parallelism rule puts the user's named bottleneck last; R8 and the hand-off unscheduled.
+- `decision-starved`: the user answered three cap questions today and was never asked for a run or shown the refutations.
+- Not flagged: `scope-inflation`, `measurement-without-product` (no off-goal benchmark ran).
+
+OUTCOME-VIOLATION: goal-requirement-not-advanced
+OUTCOME-VIOLATION: product-not-runnable
+OUTCOME-VIOLATION: tooling-over-delivery
+OUTCOME-VIOLATION: ordering-stale
+OUTCOME-VIOLATION: decision-starved
+
+VERDICT {"schema":"verdict/1","id":"outcome-review-20261002","verdict":"refuted","alternative":"P3b-2 and the P4 plan are necessary steps toward a camera/tracking split that pays off at 150 Hz. Unsupported: no 150 Hz run exists, the display-loop VI already loses 12-16 frames at 15 beads/90 Hz, the bed's slot writes are the wrong primitive, and the first ring run is P6.","discriminating_test":"Add the R8 frame-rate control to D1_s1_disp_20260927_041648.vi and run 150 Hz at 8 and 15 picks, plus one supervised bead run of minutes. Loss near 0 => hand off, park the ring. Loss at 150 Hz => resume the ring on the loop the numbers name.","violations":[{"slug":"wrong-ordering","loss_min":801,"loss_usd":304.96,"evidence":"tools/bench/cycle_runner.log:1009,1025,1042,1058,1074,1090,1105,1120; STATUS.md:56-58,136; docs/d1/INDEX.md:26,29,41-44"}],"sources":["STATUS.md:49","STATUS.md:53","STATUS.md:56","STATUS.md:58","STATUS.md:62","STATUS.md:136","docs/d1/INDEX.md:26","docs/d1/INDEX.md:29","docs/d1/INDEX.md:41","archive/benchmarks/INDEX.md:79","archive/benchmarks/INDEX.md:80","archive/2026-10-01-status-cycle123-relocate.md:28","docs/goalmap.json:21","docs/goalmap.json:27","docs/goalmap.json:33","docs/goalmap.json:75","docs/goalmap.json:199","tools/bench/decisions_pending.json:93","tools/bench/decisions_pending.json:111","tools/bench/decisions_pending.json:298","tools/bench/decisions_pending.json:350","tools/bench/cycle_runner.log:1012","tools/bench/cycle_runner.log:1120","archive/peer/2026-10-02-outcome-review-20261002.md:206","tools/bench/outcome_review_cycle141.log:3","tools/recipes/build_track_v6_core.py:48"],"note":"Cycles 133-140: 1 file (P3b-2) ExecState 0 never run, slot writes wrong primitive (PD322); 0 INDEX rows; $304.96 / ~801 min; retrospectives missing for 135/138/139 so cadence undercounts. Steer FOLLOWED 10x, no change of act. Fifth refutation => stop and re-plan with the user."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-outcome-review-20261002.md
+   STEER: tools\bench\cards\steer_140.json (repeated: ['decision-starved', 'goal-requirement-not-advanced', 'ordering-stale', 'product-not-runnable', 'tooling-over-delivery'])
+   Now annotate it: 'why asked' and 'verdict', and act on the OUTCOME-VIOLATION lines.
+BGRUN END rc=0 after 179s

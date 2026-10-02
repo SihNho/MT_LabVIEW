@@ -1,7 +1,7 @@
 ---
 type: decision
 kind: topic
-status: current
+status: frozen
 date: 2026-10-02
 parent: docs/d1/INDEX.md
 tags: [d1, ring-buffer, p4, tracking-loop, pre-decided]
@@ -427,3 +427,7 @@ How to add: see the 5-line note at the top of `docs/d1/INDEX.md`.
        cheap; build it with v16 so the repair is verified by it.
      - **(e) Error List prediction rule:** LabVIEW gives one "unwired or bad terminal" item per NODE (52 measured), not per terminal —
        the maker's `{pred, pred + unwired sinks}` rule (`stage_d1_ring_p3b1_el.py:6`) counts per created node from now on.
+
+---
+
+**FROZEN 2026-10-02 by the cycle-141 judgement session** (429 lines > the 400-line cap, card chat-D1 rule). Lines and line numbers above are unchanged; every item stays in force as listed in `docs/d1/INDEX.md`. Do NOT append here: P4 decisions continue in `docs/d1/ring-p4b.md` from PD323.

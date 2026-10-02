@@ -306,6 +306,33 @@ ring arrays every frame. Build gates checked counts/wires/names but never the no
 Card 140-5 built `claudeDev\DonorRAS1D_v0.vi` (real 1-D Replace Array Subset, label read back; a 2-D RAS copied from the
 bed adapts to 1-D when a 1-D array is wired). Repair of the 5 bed nodes + P4 plan is for the judgement agent; may touch
 the broken-file count → watch for a decision item. Reported to the user.
+**USAGE STOP 23:04:** usage_stop_watch wrote the STOP line (weekly 90 %); the runner finishes cycle 141 then exits; the
+supervisor treats it as a real stop. Restart only on the user's word (weekly reset 10-05 07:00 KST); remove the STOP
+line, relaunch the supervisor, and restart usage_stop_watch if the user still wants the limit.
+**Stall warnings (user 23:3x "랩뷰 스톨 경고가 많이 보이는 것 같은데"):** false positives from the chat's own sleepers
+(wait_runner_event.py, usage_stop_watch.py) — same class as wait_logs.py. lv_stallcheck.ps1 now skips them (-Explain
+confirmed 3 pids skipped; the live runner client was progressing). Uncommitted.
+**Cycle 141 rerun problem (23:50):** the runner logged "usage-limit attempt 1, non-result; sleeping 40 min then
+RERUNNING" (5-hour window was 2 %; likely the session text quoting the STOP line's "usage" tripped limit_wait_s —
+unverified). The rerun path did not check STOP. The chat's `taskkill` of runner pid 23984 was refused by the permission
+classifier [Interfere With Workloads]; the user was asked (let it run once more, or kill it locally). Motor limits stay
+SET until that cycle's end hooks run. FIX (uncommitted): cycle_runner.py checks stop_marker before and after the
+usage-limit sleep and skips the rerun; card chat-R1 PASS 32/0 (existing 10+5+13 + new stoprerun 4/4). Applies to the
+NEXT runner process, not the sleeping one. User (00:0x): "그대로 두고 자연스럽게 종료되도록" → let the rerun run once,
+it stops at that cycle's end.
+Stall false positive #2 (00:06): pid 26440 = cycle_runner.py sleeping the usage-limit wait → lv_stallcheck.ps1 now
+also skips cycle_runner.py / runner_supervisor.py (-Explain confirmed). Watchdog still 0 true positives on record.
+**Speed options asked of the user (awaiting):** (가) split build gates into STOP-gates (prim/function, broken wires,
+ExecState, computation diff, lost wires, input md5, MEMSTOP) vs LOG-only (tunnel/terminal names, ±1 non-semantic
+counts, script arithmetic, stale fixtures, loose-end counts) — log-only mismatches batch-reviewed at cycle end, no
+per-mismatch hypothesis review; (나) re-measure the real LabVIEW memory limit on a scratch copy (64-bit; 653 MB fine)
+— could cut P4 from 11 sessions to 3–4; (다) one review per failure class per cycle. Chat recommended (나) → (가) → (다).
+**APPROVED 2026-10-03 00:1x: (가) + (나)** ("가, 나 둘 다 적용하면 좋겠음"; "+-1개는 너무 적은듯"). Chat proposed the
+tolerance as: non-semantic classes LOG-only within max(5, 25 % of predicted delta), semantic classes 0 tolerance,
+step-end checks unchanged (awaiting objection; proceed as proposed if none). Cards READY, validated:
+`task_chat-S2.json` (gates, offline, 120 min) and `task_chat-M1.json` (memory ceiling, LabVIEW scratch, 90 min).
+Dispatch BOTH (M1 is the only LabVIEW one) as soon as cycle 141's rerun ends and the runner has stopped (STOP line
+stays). Then propose new memory limits from M1 to the user; restart only on the user's word.
 **CLOUD PLAN DROPPED (user 2026-09-29 ~20:0x KST: "그럼 클라우드는 그냥 잊어버리자").** No Linux port of benches/hooks;
 benches stay local. Both probe routines were run-once and are spent. Open next: user asked whether to bring Gemini back
 for web search; chat proposed (awaiting answer) a headless-permission fix test + a 6–8 question known-answer comparison

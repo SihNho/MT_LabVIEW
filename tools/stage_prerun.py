@@ -2002,6 +2002,15 @@ def x10_plan_start(plan_path, model=None):
         return None
 
 
+def x10_base_provisional(plan_path):
+    """card 141-1: True when the plan's top-level base is provisional (a simulated graph, no measured VI load)."""
+    try:
+        pl = json.load(REAL_OPEN(plan_path if os.path.isabs(plan_path) else os.path.join(ROOT, plan_path), encoding="utf-8"))
+    except Exception:                                                              # noqa: BLE001
+        return False
+    return bool((pl.get("base") or {}).get("provisional"))
+
+
 def x10_model_peak(kinds, checkpoints, stop_after=None, from_step=None, model=None, start_mb=None):
     """card 130-1 (PD267(b)): the predicted private-MB peak of ONE Executor run. N = ops dispatched (from_step+1 ..
     stop_after|end); R = whole-VI reads = {from_step|0} + the checkpoints in the window + the ops the Executor forces
@@ -2314,6 +2323,13 @@ def x10_gate(recipe, executors, stop_after=None, from_step=None, model=None, tra
         if ex.get("error") or not ex.get("kinds"):
             bad.append("{0}: plan/checkpoint set not compilable ({1})".format(ex.get("plan"), ex.get("error")))
             continue
+        if ex.get("plan") and x10_base_provisional(ex["plan"]):
+            # card 141-1 (review c140-2-failed-logs, retrospective-cycle140): a PROVISIONAL base (stagesim's simulated end of
+            # the previous session) has no measured input load - x10_plan_start returns None for it (:1997-1998) and the run
+            # used to fall back to the model's start_mb. REFUSED instead: --rebase onto the real graph first.
+            bad.append("{0}: base is PROVISIONAL - input VI load not measured; X10 refuses (no fallback to the model start_mb; "
+                       "--rebase onto the real graph first)".format(ex.get("plan")))
+            continue
         sa = ex.get("stop_after") if ex.get("stop_after") is not None else stop_after
         fs = ex.get("from_step") if ex.get("from_step") is not None else from_step
         xs = x10_plan_start(ex.get("plan"), m) if ex.get("plan") else None     # card 133-3: measured load of the input VI
@@ -2502,6 +2518,94 @@ def x16_gate(plans):
                      .format(n))
 
 
+# card 141-1 (PD322(d), PD323(b)): the OFFLINE half of the created-node PRIM GATE (X17). A create with a `prim` (not const_donor)
+# copies its node from a donor; the donor's LABEL must equal the declared prim BEFORE any LabVIEW run. `$work` donors are nodes
+# of the work VI = the original's uids (tools/bench/main_vi_node_labels.json; #29157 there is 'Insert Into Array', :1120 - the
+# P3b donor mistake, tools/bench/diag_c140_4_facts.md). A `$work` donor an EARLIER action of the same plan deletes is refused
+# (the run-time create would find no donor). External donor VIs are listed below with the label read back on the machine;
+# an unlisted external donor is UNMEASURED = refused. The run-time half is stagexec.prim_check.
+PRIM_DONOR_LABELS = os.path.join(BENCH, "main_vi_node_labels.json")
+PRIM_DONORS = {   # (donor file basename, donor uid): (label, class, md5 of the donor VI, where the label was read back)
+    ("DonorRAS1D_v0.vi", 175): ("Replace Array Subset", "GrowableFunction", "e8a9417ce4b75d27e8fd2f172a5dc9cd",
+                                "tools/bench/diag_c140_5_run2.log:29-30 (node_labels; diag_c140_5_facts.md:12)"),
+    ("DonorErrSel_MergeErrors.vi", 529): ("Select", "Function", None,
+                                          "tools/bench/stage_d1_ring_p3b1.log:212 (created #10579 read back label 'Select')"),
+    ("OpWaitDonor_v0.vi", 163): ("Wait (ms)", "Function", None,
+                                 "tools/bench/stage_d1_ring_p3a.log:54 (created #26747 read back label 'Wait (ms)')"),
+}
+
+
+def prim_donor_labels(path=None):
+    """{uid: label} of the original main VI (main_vi_node_labels.json: `diagrams` lists + `explicit` / `implicit` maps)."""
+    d = json.load(REAL_OPEN(path or PRIM_DONOR_LABELS, encoding="utf-8"))
+    out = {}
+    for rows in (d.get("diagrams") or {}).values():
+        for r in rows or []:
+            if isinstance(r, dict) and r.get("uid") is not None:
+                out.setdefault(int(r["uid"]), r.get("label"))
+    for k in ("explicit", "implicit"):
+        for u, r in (d.get(k) or {}).items():
+            if isinstance(r, dict):
+                out.setdefault(int(u), r.get("label"))
+    return out
+
+
+def prim_donor_check(plan, labels=None, registry=None, base_uids=None):
+    """X17 core: [{action, why}] for every create action with a non-const_donor `prim` whose donor label is not the prim, is
+    unknown, or whose `$work` donor an earlier action deletes / the base graph lacks. labels = {uid: label} (default
+    prim_donor_labels()); base_uids = the plan base graph's object uids when known (None = not checked)."""
+    labels = prim_donor_labels() if labels is None else labels
+    reg = PRIM_DONORS if registry is None else registry
+    out, deleted = [], set()
+    for a in (plan or {}).get("actions") or []:
+        if a.get("op") == "delete_object" and a.get("uid") is not None:
+            try:
+                deleted.add(int(a["uid"]))
+            except (TypeError, ValueError):
+                pass
+        if a.get("op") not in CREATE_OPS or not a.get("prim") or a.get("prim") in X16_EXEMPT_PRIMS:
+            continue
+        dn = a.get("donor") or {}
+        if not isinstance(dn, dict) or dn.get("uid") is None:
+            if a.get("donor_uid") is None:
+                out.append({"action": a.get("id"), "why": "prim {0!r} with no donor uid - label not checkable".format(a["prim"])})
+            continue
+        u = int(dn["uid"])
+        if dn.get("donor") == "$work":
+            lab = labels.get(u)
+            if u in deleted:
+                out.append({"action": a.get("id"), "why": "$work donor #{0} is deleted by an EARLIER action of this plan".format(u)})
+            elif base_uids is not None and u not in base_uids:
+                out.append({"action": a.get("id"), "why": "$work donor #{0} is not in the plan's base graph".format(u)})
+            elif lab != a["prim"]:
+                out.append({"action": a.get("id"), "why": "$work donor #{0} label {1!r} != plan prim {2!r}{3}".format(
+                    u, lab, a["prim"], "" if lab is not None else " (uid not in main_vi_node_labels.json: UNMEASURED)")})
+            continue
+        key = (os.path.basename(str(dn.get("donor"))), u)
+        ent = reg.get(key)
+        if ent is None:
+            out.append({"action": a.get("id"), "why": "external donor {0} uid {1}: label UNMEASURED (not in PRIM_DONORS)".format(*key)})
+        elif ent[0] != a["prim"] or (a.get("class") and ent[1] != a.get("class")):
+            out.append({"action": a.get("id"), "why": "external donor {0} uid {1} label {2!r} class {3!r} != plan prim {4!r} class {5!r}"
+                        .format(key[0], u, ent[0], ent[1], a["prim"], a.get("class"))})
+        elif ent[2] and os.path.isfile(str(dn.get("donor"))) and md5(str(dn["donor"])) != ent[2]:
+            out.append({"action": a.get("id"), "why": "external donor {0} md5 {1} != the measured {2}".format(
+                dn["donor"], md5(str(dn["donor"])), ent[2])})
+    return out
+
+
+def x17_gate(plans, labels=None):
+    """(ok, detail) of X17 (card 141-1) over loaded stageplan dicts."""
+    try:
+        labels = prim_donor_labels() if labels is None else labels
+    except Exception as e:                                                         # noqa: BLE001
+        return False, "UNMEASURED: main_vi_node_labels.json unreadable ({0})".format(e)
+    bad = [dict(x, stage=(pl or {}).get("stage")) for pl in plans for x in prim_donor_check(pl, labels)]
+    n = sum(1 for pl in plans for a in (pl or {}).get("actions") or []
+            if a.get("op") in CREATE_OPS and a.get("prim") and a.get("prim") not in X16_EXEMPT_PRIMS)
+    return not bad, (bad[:6] if bad else "{0} primitive create action(s), every donor label == its prim".format(n))
+
+
 def prerun(recipe, graph=None, stop_after=None, from_step=None):
     """card 103-2 (PD216(b)): stop_after=k (the recipe's own `--stop-after k`, PART-A mode) makes X5 expect only the
     stageplan wiring real ops 1..k - exactly the ops the run dispatches; the wire-action COVERAGE check stays over the
@@ -2565,6 +2669,9 @@ def prerun(recipe, graph=None, stop_after=None, from_step=None):
     # card 125-1 (PD251(b)): every declared terminal of a created primitive carries its term_class
     x16_ok, x16_det = x16_gate([pl or json.load(open(p, encoding="utf-8")) for p, (_ok, _d, pl, _o) in spc.items()])
     gate("X16 every declared terminal of a created primitive carries term_class (PD251(b))", x16_ok, x16_det)
+    # card 141-1 (PD322(d)/PD323(b)): the offline prim gate - every created primitive's donor label == its declared prim
+    x17_ok, x17_det = x17_gate([pl or json.load(open(p, encoding="utf-8")) for p, (_ok, _d, pl, _o) in spc.items()])
+    gate("X17 every created primitive's donor label == its declared prim (PD323(b))", x17_ok, x17_det)
     # card 123-7 (PD247(e)): the census of every stageplan that carries a prediction file; a gate only when one does
     cen_plans = [p for p in sps if census_check(p) is not None]
     if cen_plans:

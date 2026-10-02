@@ -1,0 +1,24 @@
+{"schema":"result/1","id":"141-2","status":"FAIL","gates":{"pass":24,"fail":1},
+"first_fail":"scratch gate TD: base terminal rows lost (6) != plan deletes (8); diff {28004, 28979} (diag_c141_p4s01_scratch.log:280)",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/diag_c141_2_facts.md","md5":"278bd25a669e7edfb3057ba73f976ce8"},
+ {"path":"tools/bench/diag_c141_p4s01_scratch.log","md5":"17c5caf6fc8c1dece1a099a51e444e8e"},
+ {"path":"archive/peer/2026-10-02-c141-2-scratch-td.md","md5":"e6536a54daf7f592ec05482d3de788a1"},
+ {"path":"tools/bench/diag_c141_2_cleanup.log","md5":"41200735056394e97dfe4c7908319e72"}],
+"facts":[
+ "Scratch 21 pass / 1 fail: E1 real==sim 24 ops, PB cdiff==pred 16 rows, D, FR, NG, HB PASS (diag_c141_p4s01_scratch.log:272-283,311)",
+ "PRIM gate 3/3 PASS: every created node reads back 'Replace Array Subset' GrowableFunction (#6942 :160, #6805 :246)",
+ "TD FAIL: lost [27997,28018,28030,28973,28983,28989] vs plan_deletes adds 28004,28979 (:280; recipe stage_d1_ring_p4_s01.py:65-69)",
+ "28004/28979 are the real sinks of ops 12 and 24 on new nodes #6942 t0 / #6805 t2 (diag_c141_p4s01_scratch.log:167,267)",
+ "Peak 601.4 MB vs X10 669.3 (d -67.9); MEM and MEML (<=675) PASS (diag_c141_p4s01_scratch.log:315-317)",
+ "CEN2 UNPREDICTED (pred census set empty); CENSUS-ALL net GrowableFunction +1, Terminal +4 (diag_c141_p4s01_scratch.log:276-279)",
+ "Jev row | diag_c141_p4s01_scratch.log | new-problem p=0.664 | review owed | dispatched hypothesis | ANSWERED (jev_gate.log, peer log)",
+ "Review: LabVIEW re-used deleted uids in-session; TD/unw/D key on raw uid, should key (uid,owner,name); scratch likely OK (2026-10-02-c141-2-scratch-td.md:64-78)",
+ "No EL read, no launch, no in-between file, no graph read (card rule: return before launch on any non-PASS scratch)",
+ "Cleanup 3/0: scratch_c141_p4s01_20261002_223304.vi deleted, bed md5 395118775a52 unchanged, no LabVIEW (diag_c141_2_cleanup.log:3-5)"],
+"open":[
+ "Accept the review (uid re-use) and fix TD/unw/D to key on (uid, owner, name) in stage_d1_ring_p4_s01.py, then rerun the scratch? (offline log-only owner check first, review :70-76)",
+ "Should the pred census for session 1 declare the 3 created GrowableFunction nodes so CEN2 is predicted rather than UNPREDICTED?"],
+"cost":{"usd":null,"minutes":14,"labview_runs":1},
+"note":"Return at first unexpected result (chat-P2). Card write globs named scratch_c141_2*/launch_c141_2* while the given recipes use scratch_c141_p4s01/launch_c141_p4s01 names; no refusal occurred for the scratch."}

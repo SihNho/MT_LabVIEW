@@ -2,27 +2,27 @@
  "schema": "verdict/1",
  "id": "outcome-review-20261002",
  "verdict": "refuted",
- "alternative": "P3b-1 is a necessary step toward a camera/tracking split that pays off at 150 Hz. Unsupported: no 150 Hz run exists, the display-loop VI already loses 12-16 frames at 15 beads/90 Hz, and the first ring run is 3+ steps and a likely re-split away (PD281(b)).",
+ "alternative": "P3b-2 and the P4 plan are necessary steps toward a camera/tracking split that pays off at 150 Hz. Unsupported: no 150 Hz run exists, the display-loop VI already loses 12-16 frames at 15 beads/90 Hz, the bed's slot writes are the wrong primitive, and the first ring run is P6.",
  "discriminating_test": "Add the R8 frame-rate control to D1_s1_disp_20260927_041648.vi and run 150 Hz at 8 and 15 picks, plus one supervised bead run of minutes. Loss near 0 => hand off, park the ring. Loss at 150 Hz => resume the ring on the loop the numbers name.",
  "violations": [
   {
    "slug": "wrong-ordering",
-   "loss_min": 486,
-   "loss_usd": 162.57,
-   "evidence": "tools/bench/cycle_runner.log:929,945,962,977,991; STATUS.md:56-57,105; docs/d1/INDEX.md:26,40-43"
+   "loss_min": 801,
+   "loss_usd": 304.96,
+   "evidence": "tools/bench/cycle_runner.log:1009,1025,1042,1058,1074,1090,1105,1120; STATUS.md:56-58,136; docs/d1/INDEX.md:26,29,41-44"
   }
  ],
  "sources": [
-  "STATUS.md:7",
   "STATUS.md:49",
   "STATUS.md:53",
   "STATUS.md:56",
   "STATUS.md:58",
-  "STATUS.md:85",
-  "STATUS.md:105",
+  "STATUS.md:62",
+  "STATUS.md:136",
   "docs/d1/INDEX.md:26",
-  "docs/d1/INDEX.md:33",
-  "docs/d1/ring-p3b.md:131",
+  "docs/d1/INDEX.md:29",
+  "docs/d1/INDEX.md:41",
+  "archive/benchmarks/INDEX.md:79",
   "archive/benchmarks/INDEX.md:80",
   "archive/2026-10-01-status-cycle123-relocate.md:28",
   "docs/goalmap.json:21",
@@ -30,15 +30,15 @@
   "docs/goalmap.json:33",
   "docs/goalmap.json:75",
   "docs/goalmap.json:199",
-  "tools/bench/decisions_pending.json:104",
-  "tools/bench/decisions_pending.json:121",
-  "tools/bench/decisions_pending.json:286",
-  "tools/bench/cycle_runner.log:929",
-  "tools/bench/cycle_runner.log:932",
-  "tools/bench/cards/steer_127.json:12",
-  "docs/chat-handoff.md:135",
-  "archive/peer/2026-10-02-retrospective-cycle128.md:160",
-  "archive/peer/2026-09-28-outcome-review-20260928.md:235"
+  "tools/bench/decisions_pending.json:93",
+  "tools/bench/decisions_pending.json:111",
+  "tools/bench/decisions_pending.json:298",
+  "tools/bench/decisions_pending.json:350",
+  "tools/bench/cycle_runner.log:1012",
+  "tools/bench/cycle_runner.log:1120",
+  "archive/peer/2026-10-02-outcome-review-20261002.md:206",
+  "tools/bench/outcome_review_cycle141.log:3",
+  "tools/recipes/build_track_v6_core.py:48"
  ],
- "note": "Cycles 128-132: 1 file (P3b-1), ExecState 0 never run; 0 INDEX rows; $162.57 / 486 min. Steering card marked FOLLOWED 9 times with no change of act. Display-loop VI untouched; user not asked. Fourth consecutive refutation => stop and re-plan with the user."
+ "note": "Cycles 133-140: 1 file (P3b-2) ExecState 0 never run, slot writes wrong primitive (PD322); 0 INDEX rows; $304.96 / ~801 min; retrospectives missing for 135/138/139 so cadence undercounts. Steer FOLLOWED 10x, no change of act. Fifth refutation => stop and re-plan with the user."
 }

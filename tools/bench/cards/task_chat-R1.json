@@ -1,0 +1,42 @@
+{
+ "schema": "task/1",
+ "id": "chat-R1",
+ "kind": "measure",
+ "goal": "Self-test the chat's cycle_runner.py edit (usage-limit rerun skipped when STATUS has a STOP marker): run existing runner self-tests + one new stop-rerun test",
+ "why": "2026-10-02 23:50 cycle 141 slept to rerun despite the user's weekly-90% STOP; the chat added a stop_marker check before and after the sleep",
+ "inputs": [
+  {
+   "path": "tools/cycle_runner.py",
+   "md5": "0a67ee51ae38d08feebeb170f582b5c3"
+  }
+ ],
+ "pass": [
+  "tools/bench/selftest_cycle_runner.py, selftest_cycle_runner_ff.py, selftest_cycle_runner_ladder.py run under bgrun --material; pass/fail counts and log paths reported",
+  "new selftest_cycle_runner_stoprerun.py: temp STATUS with a STOP line, usage-limit rerun path shows 'rerun SKIPPED'; or say why it is unreachable without editing cycle_runner.py"
+ ],
+ "outputs": [
+  "tools/bench/selftest_cycle_runner_stoprerun.py"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/selftest_cycle_runner_stoprerun.py",
+   "tools/bench/selftest_cycle_runner*_20261002*.log"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 30
+ },
+ "unblocks": "M4",
+ "rules": [
+  "Offline only; never touch the live runner process or LabVIEW",
+  "Do not edit tools/cycle_runner.py or any hook"
+ ]
+}

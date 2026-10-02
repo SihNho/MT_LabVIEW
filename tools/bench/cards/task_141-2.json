@@ -1,0 +1,74 @@
+{
+ "schema": "task/1",
+ "id": "141-2",
+ "kind": "build",
+ "goal": "P4 session 1 of v16 (24 actions, bed repair of #27928/#28916 + #29048 started): ONE scratch on a bed byte copy; gated launch saving the in-between file; load + graph read.",
+ "why": "PD320(e), PD323(d), PD324(d) (judgement 141): first P4 build session of the deliverable (M3) with the Insert-Into-Array repair verified by the new prim gate.",
+ "inputs": [
+  {"path": "tools/bench/plan_ring_p4_v16.json", "md5": "36981c838a0177a6a44cdd9edb8dc32f"},
+  {"path": "tools/bench/plan_ring_p4_s01.json", "md5": "f4831031c738c997391b5bcace19d9f0"},
+  {"path": "tools/bench/plan_ring_p4_s01_pred.json", "md5": "fc87180a2fc31d5ae920f817591ee5f8"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s01.py", "md5": "b90f4003d141d2bc1d469018d8071071"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s01_scratch.py", "md5": "2022eca8313ab0acff6b79fe9a974470"},
+  {"path": "tools/bench/prep_c141_1_facts.md", "md5": "6a1985c9f6f9aa48aba091a6d112dd67"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRAS1D_v0.vi", "md5": "e8a9417ce4b75d27e8fd2f172a5dc9cd"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b2b_20261002_130007.vi", "md5": "395118775a52bc90073f4449b99f899d"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/bench/diag_c140_3_graph.py"}
+ ],
+ "pass": [
+  "1 ONE scratch run (stage_d1_ring_p4_s01_scratch.py) on a bed byte copy: ops real == sim, prim gate PASS per created node, census, Is Broken?, measured peak",
+  "2 scratch Error List by --count-only --role scratch, compared with the prediction 51 (full read only if class counts differ)",
+  "3 launch only if every scratch gate PASSes, EL == 51 and scratch peak <= 675: ONE launch in a fresh instance saving claudeDev D1_ring_p4s01_*.vi; full EL read",
+  "4 after the launch: load MB + graph read of the in-between file in a fresh instance (graph_ring_p4s01_*.json, base = diag_c140_3_graph.py)",
+  "5 LabVIEW gone; scratch deleted; bed md5 unchanged; diag_c141_2_facts.md <= 30 lines (gates, peaks, EL, file md5, graph path)"
+ ],
+ "outputs": [
+  "tools/bench/diag_c141_2_facts.md",
+  "tools/bench/cards/result_141-2.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c141_2*",
+   "tools/bench/diag_c141_p4s01*",
+   "tools/bench/launch_c141_2*",
+   "tools/bench/graph_ring_p4s01*",
+   "tools/bench/sim/stage_d1_ring_p4_s01*/*",
+   "tools/bench/prerun_records*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/errorlist_*p4s01*",
+   "tools/bench/errorlist_*p4_s01*",
+   "tools/bench/errorlist_*scratch_c141*",
+   "tools/bench/errorlist_shots/*",
+   "tools/bench/scratch_verify/*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/cards/review_c141*",
+   "tools/bench/cards/verdict_c141*",
+   "tools/bench/cards/result_141-2*",
+   "archive/peer/2026-10-02-*c141*",
+   "archive/peer/2026-10-03-*c141*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/scratch_c141_2*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_ring_p4s01_*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 100},
+ "rules": [
+  "Bed byte-copied, never edited, never run; scratch deleted after its records",
+  "No tools/*.py edit; recipes and plans used as given (md5 above)",
+  "Any scratch result other than all-PASS + EL 51 + peak <= 675: return BEFORE the launch",
+  "Return at the first unexpected result after finishing that step (LabVIEW closed); facts + OPEN"
+ ],
+ "advances": ["M3", "R1"]
+}

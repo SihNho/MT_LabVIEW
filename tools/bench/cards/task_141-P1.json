@@ -1,0 +1,68 @@
+{
+ "schema": "task/1",
+ "id": "141-P1",
+ "kind": "build",
+ "goal": "Offline prep: v17 = v16 with p4_eq_seq on a surviving bed Equal? donor (ops 1..24 unchanged); session-2 plan + recipes provisional on stagesim's end graph of s01.",
+ "why": "PD324(c)(d) (judgement 141): X17 refuses p4_eq_seq ($work #10171 deleted by p4_do_10171); session 2 must be ready to --rebase once session 1's in-between file exists (M3).",
+ "inputs": [
+  {"path": "tools/bench/plan_ring_p4_v16.json", "md5": "36981c838a0177a6a44cdd9edb8dc32f"},
+  {"path": "tools/bench/plan_ring_p4_v16_meta.json", "md5": "1a169e10b2c16a4b2733a28ca58aa563"},
+  {"path": "tools/bench/plan_ring_p4_s01.json", "md5": "f4831031c738c997391b5bcace19d9f0"},
+  {"path": "tools/bench/prep_c141_1_sessions.json", "md5": "d9eb0d6cb66de4341e3ae7948047ef60"},
+  {"path": "tools/bench/prep_c141_1_facts.md", "md5": "6a1985c9f6f9aa48aba091a6d112dd67"},
+  {"path": "tools/bench/graph_ring_p3b2b_20261002_133824.json", "md5": "50595c62d0332a94bf066538cf20c0ae"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/bench/main_vi_node_labels.json"}
+ ],
+ "pass": [
+  "1 donor: an Equal? node of the bed graph that v16 never deletes, I32 x/y preferred; label from main_vi_node_labels.json; X17 PASS over all of v17",
+  "2 v17: only p4_eq_seq's donor changes; ops 1..24 identical to v16/s01; replay END; end cdiff == v16's; compile ALL; route diff only on p4_eq_seq",
+  "3 s02 = next PD320(c) cut after s01 on v17 (start 606.1), base provisional = stagesim end of s01 (sim_of s01 f4831031)",
+  "4 s02 recipes (launch + _scratch) written; dry/prerun run on the provisional base; every refusal that is ONLY provisional-base (X10, created-object binding) listed by name",
+  "5 prior-art review if guard_cycle asks, disposed; prep_c141_p1_facts.md <= 25 lines (donor uid, v17 md5, s02 cut/md5, prerun table)"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p4_v17.json",
+  "tools/bench/plan_ring_p4_s02.json",
+  "tools/recipes/stage_d1_ring_p4_s02.py",
+  "tools/recipes/stage_d1_ring_p4_s02_scratch.py",
+  "tools/bench/prep_c141_p1_facts.md",
+  "tools/bench/cards/result_141-P1.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p4_v17*",
+   "tools/bench/plan_ring_p4_s02*",
+   "tools/bench/prep_c141_p1*",
+   "tools/bench/sim/ring_p4_v17*/*",
+   "tools/bench/sim/ring_p4_s02*/*",
+   "tools/bench/sim/stage_d1_ring_p4_s02*/*",
+   "tools/recipes/stage_d1_ring_p4_s02*",
+   "tools/bench/prerun_records*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/cards/review_c141*",
+   "tools/bench/cards/verdict_c141*",
+   "tools/bench/cards/result_141-P1*",
+   "archive/peer/2026-10-02-*c141*",
+   "archive/peer/2026-10-03-*c141*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "No LabVIEW; no tools/*.py edit (a LabVIEW card runs beside this one)",
+  "Never touch plan_ring_p4_s01*, plan_ring_p4_v16* or the s01 recipes",
+  "Donor and rows taken from graph/label files, never re-typed",
+  "Return at the first unexpected result after finishing that step; facts + OPEN"
+ ],
+ "advances": ["M3", "R1"]
+}

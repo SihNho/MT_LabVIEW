@@ -1,0 +1,54 @@
+BGRUN START 2026-10-02 22:38:31 limit 15.0 min: py -u tools/bench/prep_c141_p1_mk.py
+BGRUN PID 10304
+GATE PASS | M0 input md5 == card (v16, meta16, s01, sessions, bed graph) | {'plan_ring_p4_v16.json': '36981c838a0177a6a44cdd9edb8dc32f', 'plan_ring_p4_v16_meta.json': '1a169e10b2c16a4b2733a28ca58aa563', 'plan_ring_p4_s01.json': 'f4831031c738c997391b5bcace19d9f0', 'prep_c141_1_sessions.json': 'd9eb0d6cb66de4341e3ae7948047ef60', 'graph_ring_p3b2b_20261002_133824.json': '50595c62d0332a94bf066538cf20c0ae'}
+GATE PASS | D Equal? donors that survive v16 (label file x bed graph objs - v16 deletes): [3812, 10019, 22284, 22731, 29111]; pick #10019 label 'Equal?' (NAMES.md:1387 measured $work duplicate) | {'deleted': [10171, 27928, 28916, 29048, 29265, 29316]}
+GATE PASS | A17 v17 == v16 except p4_eq_seq donor (+why): [('p4_eq_seq', ['why', 'donor'])] | {'old': {'donor': '$work', 'uid': 10171}, 'new': {'donor': '$work', 'uid': 10019}}
+GATE PASS | V17 v17_in validates (stageplan/1) | OK stageplan/1
+GATE PASS | S17 simulate returned | 
+GATE PASS | FR17 v17 actions == A17; fs_routes regenerated (5 keys) == v16's; base not provisional | {'bad': []}
+GATE PASS | R17 replay END (base + 235 steps, no error) | (236, None)
+GATE PASS | E17 end cdiff rows == v16's (24) | []
+GATE PASS | SM16 v16's summary file still on its pin | {'path': 'tools/bench/sim/ring_p4_v16/ring_p4_v3/summary.json', 'md5': '0911ad64996e29a0c308413839678e04'}
+GATE PASS | PS17 per-step cdiff == v16's summary for every action id | []
+GATE PASS | RC17 route_check PASS | None
+GATE PASS | C17 compile ALL: v17 ops 217 == v16 ops 217; every action once | (217, 217)
+GATE PASS | RD17 route compare v16->v17: differing ops [], none without p4_eq_seq | []
+GATE PASS | X17 over the whole v17 | 33 primitive create action(s), every donor label == its prim
+GATE PASS | O24 v17 actions 1..24 == plan_ring_p4_s01.json's 24 actions == v16's | ['p4_rp27928_c', 'p4_rp27928_arr', 'p4_rp27928_idx']
+GATE PASS | MT meta17: p4_eq_seq cite updated (1 entry), every v17 id stepped | []
+V17 md5 e19d7e142fef66f9e118ae4061e9e718 actions 235 ops 217
+GATE PASS | T session table on v17 (11 sessions) == prep_c141_1_sessions.json's (v16) table; start 606.1 | []
+GATE PASS | C1 session 1 = s01's ids; session 2 = v17 ops 25..54 (p4_rp29048_dwo..p4_c_stopall_f), 30 actions, N 30, R 4, peak 675.0 <= 675.0 | {'session': 2, 'ops': [25, 54], 'first': 'p4_rp29048_dwo', 'last': 'p4_c_stopall_f', 'actions': 30, 'N': 30, 'R': 4, 'start_mb': 606.1, 'peak_mb': 675.0, 'kinds': {'delete_wire': 5, 'delete_object': 4, 'wire_remove_loose_ends': 9, 'connect': 9, 'create': 3}}
+GATE PASS | P0 s01 re-sim replays to its end; end rows == s01's finalized (16); every row tied | {'failed': None, 'untied': []}
+FACT provisional base tools/bench/sim/ring_p4_s02_s01end/base_provisional.json 2d0c2c99a5525713edd638f89229e028 sym {"new:RX1": -1, "new:RX2": -7, "new:RX3": -13} neg -17
+CROSS {"action": "p4_rp29048_out", "field": "src", "symbol": "new:RX3.output array", "provisional_uid": -13}
+GATE PASS | C2 1 session-2 ref(s) to session-1 symbols, each a negative uid of the provisional base; no ref to a LATER session's symbol | {'bad': [], 'late': []}
+GATE PASS | S0 pass-A input validates (30 actions) | OK stageplan/1
+GATE PASS | SA pass A replays to its end | None
+TIE 11261|Terminal|array|0 {"n": 0, "id": "bed", "op": "base", "class": "step0-declared"}
+TIE 11261|Terminal|element|0 {"n": 0, "id": "bed", "op": "base", "class": "step0-declared"}
+TIE 2626|Terminal|array|0 {"n": 0, "id": "bed", "op": "base", "class": "step0-declared"}
+TIE 2626|Terminal|array|1 {"n": 0, "id": "bed", "op": "base", "class": "step0-declared"}
+TIE 2626|Terminal|array|2 {"n": 0, "id": "bed", "op": "base", "class": "step0-declared"}
+TIE 2626|Terminal|array|3 {"n": 0, "id": "bed", "op": "base", "class": "step0-declared"}
+TIE 2626|Terminal|element|0 {"n": 0, "id": "bed", "op": "base", "class": "step0-declared"}
+TIE 2626|Terminal|element|1 {"n": 0, "id": "bed", "op": "base", "class": "step0-declared"}
+TIE 2626|Terminal|element|2 {"n": 0, "id": "bed", "op": "base", "class": "step0-declared"}
+TIE 28083|Terminal|Magnet position|0 {"n": 0, "id": "bed", "op": "base", "class": "step0-declared"}
+TIE 29625|Terminal|index (col)|0 {"n": 0, "id": "bed", "op": "base", "class": "step0-declared"}
+TIE 29973|Terminal|element|1 {"n": 0, "id": "bed", "op": "base", "class": "step0-declared"}
+TIE 376|Terminal|current frame data array in|0 {"n": 0, "id": "bed", "op": "base", "class": "step0-declared"}
+TIE 376|Terminal|frame index|0 {"n": 0, "id": "bed", "op": "base", "class": "step0-declared"}
+TIE 5058|Terminal|Image In|0 {"n": 0, "id": "bed", "op": "base", "class": "step0-declared"}
+TIE 8634|Terminal|index (col)|0 {"n": 0, "id": "bed", "op": "base", "class": "step0-declared"}
+GATE PASS | TIE every end row tied to a session-2 action or to a step-0 pair (bed-declared / session-1 action) | {'untied': [], 'own': 0, 'step0': 16}
+GATE PASS | SB session-2 plan FINAL on the provisional base, end rows == pass A, open_rows_match (11 pairs) | {'final': True, 'failed': None, 'base': {'path': 'tools/bench/sim/ring_p4_s02_s01end/base_provisional.json', 'md5': '2d0c2c99a5525713edd638f89229e028', 'provisional': True, 'sim_of': {'plan': 'tools/bench/plan_ring_p4_s01.json', 'md5': 'f4831031c738c997391b5bcace19d9f0'}}}
+GATE PASS | X10s2 compiled session-2 plan at start 606.1: N 30 R 4 peak 675.0 == table 675.0 <= 675.0; kinds == v17 ops 25..54 | {'ops2': ['delete_wire', 'delete_object', 'wire_remove_loose_ends', 'wire_remove_loose_ends', 'wire_remove_loose_ends', 'connect', 'create', 'connect', 'connect', 'connect', 'delete_wire', 'delete_object', 'wire_remove_loose_ends', 'wire_remove_loose_ends', 'wire_remove_loose_ends', 'connect', 'create', 'connect', 'connect', 'connect', 'delete_wire', 'delete_object', 'wire_remove_loose_ends', 'wire_remove_loose_ends', 'wire_remove_loose_ends', 'connect', 'delete_wire', 'delete_wire', 'delete_object', 'create']}
+GATE PASS | X17s2 over session 2 | 2 primitive create action(s), every donor label == its prim
+GATE PASS | EL0 s01 pred keyed to s01 (plan md5 f4831031) | {'path': 'tools/bench/plan_ring_p4_s01.json', 'md5': 'f4831031c738c997391b5bcace19d9f0'}
+EL session-1 predicted total 51 | s02-created nodes with an unwired input [] | base nodes newly unwired [(23166, [''])]
+FACT s02 ops {'delete_wire': 5, 'delete_object': 4, 'wire_remove_loose_ends': 9, 'connect': 9, 'create': 3} census {} unpredicted 30 | EL 51 alt 52 | end rows 16 open pairs 11
+GATE PASS | SP pred written: ops == compile, each action once | 30
+GATE PASS | U v16 / meta16 / s01 untouched | 
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":29,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/plan_ring_p4_v17.json","md5":"e19d7e142fef66f9e118ae4061e9e718"},{"path":"tools/bench/plan_ring_p4_v17_in.json","md5":"57b87e42b42796810a987de14207bea0"},{"path":"tools/bench/plan_ring_p4_v17_meta.json","md5":"dfc15cb7fcd1f840dad670308b2b47a9"},{"path":"tools/bench/prep_c141_p1_sessions.json","md5":"83a9de8da74cb01b5abd89ba3ba88107"},{"path":"tools/bench/sim/ring_p4_s02_s01end/plan_ring_p4_s02_s01end_in.json","md5":"271dc9f90cf9afb756ca001c1e5f9656"},{"path":"tools/bench/sim/ring_p4_s02_s01end/base_provisional.json","md5":"2d0c2c99a5525713edd638f89229e028"},{"path":"tools/bench/plan_ring_p4_s02_in.json","md5":"98feab544db46b97d98a90d15840b072"},{"path":"tools/bench/plan_ring_p4_s02.json","md5":"5e483ea6ccf9897f37da71b975bcde29"},{"path":"tools/bench/plan_ring_p4_s02_pred.json","md5":"b108c5cd1a291c9ac2103a26308923fc"}]}
+BGRUN END rc=0 after 432s

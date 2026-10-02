@@ -1,0 +1,43 @@
+BGRUN START 2026-10-02 22:47:16 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_ring_p4_s02_scratch.py
+BGRUN PID 22108
+stage_d1_ring_p4_s02_scratch - card 141-P1 (WRITTEN, NOT LAUNCHED): the ONE SCRATCH RUN of RING P4 v17 LabVIEW SESSION 2
+(PD320(e), PD323(d), PD324(d), D-2026-10-01-01). COPIED from stage_d1_ring_p4_s01_scratch.py (card 141-1) with names changed only
+(recipe module, plan, pred, log, scratch name, out/sum json, card id). x10() takes the limit from the md5-PINNED pred file
+(plan_ring_p4_s02_pred.json memory_pred.peak_mb, used only when pred.plan.md5 == md5(plan_ring_p4_s02.json)).
+Runs tools/recipes/stage_d1_ring_p4_s02.py's OWN body (imported UNCHANGED) with plan_ring_p4_s02.json on a dated byte copy
+claudeDev\scratch_c141_p4s02_<ts>.vi of session 1's in-between file (the plan's base after `stage_prerun --rebase`) - same Executor,
+LVBackend (per-op census + Is Broken? + the run-time PRIM gate), every recipe gate and the ExecState read. No VI is run; the input
+file is never edited. SAVE on (rule-6 gui_save of the work copy) so the Error List can be read count-only next; the scratch file is
+deleted after that read. Until the rebase the plan's base is PROVISIONAL and the launch gate refuses this file.
+PREDICTION (numbers in plan_ring_p4_s02_pred.json): every recipe gate PASS incl. PRIM; peak private MB <= 690 and <= X10 + 10 and,
+for the launch, <= 675 (PD321(c)); input md5 unchanged; LabVIEW gone. Error List (next, separate run) == pred predicted_total.
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/diag_c141_p4s02_scratch.log -- py -u tools/recipes/stage_d1_ring_p4_s02_scratch.py
+MEM_STOP_MB 690.0; X10 from the md5-pinned pred 675.0
+stage_d1_ring_p4_s02 - card 141-P1 (WRITTEN, NOT LAUNCHED), RING P4 LabVIEW SESSION 2 of plan v17 (PD320(c)(e), PD324(c)(d);
+D-2026-10-01-01, D-2026-10-02-02/04): on session 1's SAVED in-between file (stage_d1_ring_p4_s01.py, card 141-1), apply the 30 actions
+of plan_ring_p4_s02.json = v17 ops 25..54 (p4_rp29048_dwo .. p4_c_stopall_f): the rest of the #29048 repair, the #29265 and #29316
+repairs (Replace Array Subset from claudeDev\DonorRAS1D_v0.vi uid 175, create-first), the v15 deletes and the False constant.
+v17 = v16 with p4_eq_seq's $work donor #10171 -> #10019 (X17, tools/bench/prep_c141_p1_mk.py); v17 ops 1..24 == plan_ring_p4_s01.json.
+The plan's base is PROVISIONAL (stagesim's END of plan_ring_p4_s01.json f4831031): `stage_prerun --rebase plan_ring_p4_s02.json
+--graph <session 1 file's graph>` before any launch, then the pred is regenerated (start = session 1 file's measured load, PD320(d)).
+COPIED from stage_d1_ring_p4_s01.py (card 141-1) with ONLY names changed (plan, pred, card id, out json, stage name, docstring).
+FRESH LabVIEW -> claudeDev\D1_ring_p4s02_<ts>.vi (rule-6 GUI save, ExecState 0 by design) = an IN-BETWEEN file of step P4 (not counted,
+D-2026-10-02-02/04). The FIRST run is the full SCRATCH run on a byte copy of session 1's file (stage_d1_ring_p4_s02_scratch.py).
+ROWS ONLY FROM plan_ring_p4_s02.json; expected values only from plan_ring_p4_s02_pred.json. No new op.
+PREDICTION (numbers in the pred file): L1 actions -> pred ops; E1 every checkpoint == sim; NG crossing tunnel names == step files';
+PRIM every created primitive's label == plan prim; FR created objects on the sim end's frames; D new/lost wires == sim's; TD every base
+terminal that was wired stays wired; CEN2 == pred census; PB cdiff(S1, end) == pred rows (FATAL, before save); HB handles <= +700;
+PS saved, input unchanged. X10 = pred memory_pred. Error List of the end = pred errorlist.predicted_total (PD322(e) per-node rule).
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/launch_c141_p4s02.log -- py -u tools/recipes/stage_d1_ring_p4_s02.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p4_s02_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan  ('5e483ea6ccf9897f37da71b975bcde29', {'path': 'tools/bench/sim/ring_p4_s02_s01end/base_provisional.json', 'md5': '2d0c2c99a5525713edd638f89229e028'}, '395118775a52bc90073f4449b99f899d')
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 395118775a52bc90073f4449b99f899d  got 395118775a52bc90073f4449b99f899d
+  PASS  DRY graph JSON for input md5 395118775a52bc90073f4449b99f899d  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\sim\ring_p4_s02_s01end\base_provisional.json
+  PASS  L1 the 30 actions compile into 30 real ops == pred kinds, each action once; checkpoints (0, 7, 17, 30)  ['delete_wire', 'delete_object', 'wire_remove_loose_ends', 'wire_remove_loose_ends', 'wire_remove_loose_ends', 'connect', 'create', 'connect', 'connect', 'connect', 'delete_wire', 'delete_object', 'wire_remove_loose_ends', 'wire_remove_loose_ends', 'wire_remove_loose_ends', 'connect', 'create', 'connect', 'connect', 'connect', 'delete_wire', 'delete_object', 'wire_remove_loose_ends', 'wire_remove_loose_ends', 'wire_remove_loose_ends', 'connect', 'delete_wire', 'delete_wire', 'delete_object', 'create']
+  STEPX 00 base read vs step_00: diff 12
+  FAIL  E1 the run reached its last op (record mode; stopped IN op None)  BASE: the scratch copy's graph differs from the plan's base graph: {'unbound': [-17, -16, -15, -14, -11, -10]}
+
+=== DRY FAIL: first_fail=EXECUTOR-STOP tools/bench/plan_ring_p4_s02.json: executed 0 of 30 ops, stopped IN op {'k': None, 'op': None, 'ids': None}: ExecStop: BASE: the scratch copy's graph differs from the plan's base graph: {'unbound': [-17, -16, -15, -14, -11, -10]} coverage 33/66 lines, first mutation None, unverified 0, graph tools/bench/sim/ring_p4_s02_s01end/base_provisional.json
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"EXECUTOR-STOP tools/bench/plan_ring_p4_s02.json: executed 0 of 30 ops, stopped IN op {'k': None, 'op': None, 'ids': None}: ExecStop: BASE: the scratch copy's graph differs from the plan's base graph: ","artefacts":[]}
+BGRUN END rc=1 after 3s

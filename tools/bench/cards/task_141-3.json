@@ -1,0 +1,83 @@
+{
+ "schema": "task/1",
+ "id": "141-3",
+ "kind": "build",
+ "goal": "Retry P4 session 1: terminal gates keyed by (uid, owner, name) + self-test; measured census into s01 pred; ONE scratch rerun; gated launch; load + graph read.",
+ "why": "PD325(a)-(d) (judgement 141): 141-2's scratch matched the simulation; the only FAIL was gate TD keyed on raw uids that LabVIEW re-used after deletes. Delivers P4 session 1's in-between file (M3).",
+ "retry_of_card": "141-2",
+ "inputs": [
+  {"path": "tools/bench/diag_c141_2_facts.md", "md5": "278bd25a669e7edfb3057ba73f976ce8"},
+  {"path": "tools/bench/diag_c141_p4s01_scratch.log", "md5": "17c5caf6fc8c1dece1a099a51e444e8e"},
+  {"path": "archive/peer/2026-10-02-c141-2-scratch-td.md", "md5": "e6536a54daf7f592ec05482d3de788a1"},
+  {"path": "tools/bench/plan_ring_p4_s01.json", "md5": "f4831031c738c997391b5bcace19d9f0"},
+  {"path": "tools/bench/plan_ring_p4_s01_pred.json", "md5": "fc87180a2fc31d5ae920f817591ee5f8"},
+  {"path": "tools/bench/graph_ring_p3b2b_20261002_133824.json", "md5": "50595c62d0332a94bf066538cf20c0ae"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b2b_20261002_130007.vi", "md5": "395118775a52bc90073f4449b99f899d"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p4_s01.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p4_s01_scratch.py"},
+  {"kind": "file", "name": "tools/bench/diag_c140_3_graph.py"}
+ ],
+ "pass": [
+  "1 OFFLINE owner check from logs: 28004/28979 owned by deleted nodes in the base graph and by #6942/#6805 in the scratch (else return)",
+  "2 TD/unwired/D compare terminals by (uid, owner uid, name) where computed (stagekit first); self-test: 141-2 case PASS + a real lost terminal still FAIL; c125_1 rerun if stagekit/stagexec edited",
+  "3 s01 pred census from the 141-2 scratch measurement by script citing the log line (PD264(c)); both recipes dry + prerun PASS; prior-art FIXED/REFUTED line if the gate asks",
+  "4 ONE scratch rerun: all gates PASS incl. TD and prim; EL --count-only --role scratch == 51; peak <= 675",
+  "5 only then ONE launch in a fresh instance saving claudeDev D1_ring_p4s01_*.vi + full EL read; load MB + graph read in a fresh instance (graph_ring_p4s01_*.json)",
+  "6 LabVIEW gone; scratch deleted; bed md5 unchanged; diag_c141_3_facts.md <= 30 lines (gates, peaks, EL, file md5, graph path, load MB)"
+ ],
+ "outputs": [
+  "tools/bench/diag_c141_3_facts.md",
+  "tools/bench/cards/result_141-3.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagekit.py",
+   "tools/stagexec.py",
+   "tools/bench/selftest_td_key*",
+   "tools/bench/c125_1_*",
+   "tools/recipes/stage_d1_ring_p4_s01*",
+   "tools/bench/plan_ring_p4_s01_pred*",
+   "tools/bench/prep_c141_3*",
+   "tools/bench/diag_c141_3*",
+   "tools/bench/diag_c141_p4s01*",
+   "tools/bench/launch_c141*",
+   "tools/bench/graph_ring_p4s01*",
+   "tools/bench/sim/stage_d1_ring_p4_s01*/*",
+   "tools/bench/prerun_records*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/errorlist_*p4s01*",
+   "tools/bench/errorlist_*p4_s01*",
+   "tools/bench/errorlist_*scratch_c141*",
+   "tools/bench/errorlist_shots/*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/cards/review_c141*",
+   "tools/bench/cards/verdict_c141*",
+   "tools/bench/cards/result_141-3*",
+   "archive/peer/2026-10-02-*c141*",
+   "archive/peer/2026-10-03-*c141*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/scratch_c141*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_ring_p4s01_*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 100},
+ "rules": [
+  "Bed byte-copied, never edited, never run; scratch deleted after its records",
+  "No change to plan_ring_p4_s01.json's actions; only the gate key and the pred census change",
+  "Any scratch result other than all-PASS + EL 51 + peak <= 675: return BEFORE the launch",
+  "Return at the first unexpected result after finishing that step (LabVIEW closed); facts + OPEN"
+ ],
+ "advances": ["M3", "R1"]
+}

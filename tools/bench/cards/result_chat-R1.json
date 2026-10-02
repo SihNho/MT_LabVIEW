@@ -1,0 +1,20 @@
+{"schema":"result/1","id":"chat-R1","status":"PASS","gates":{"pass":32,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+{"path":"tools/bench/selftest_cycle_runner_stoprerun.py","md5":"91281508daceabea299406ed3f334815"},
+{"path":"tools/bench/selftest_cycle_runner_20261002.log","md5":"e3e98e4999287540aaec59cd0a252f14"},
+{"path":"tools/bench/selftest_cycle_runner_ff_20261002.log","md5":"77791ea4745d1457bef72e8b2dad2016"},
+{"path":"tools/bench/selftest_cycle_runner_ladder_20261002.log","md5":"b07eb089657a2a46c90f19cedd96329a"},
+{"path":"tools/bench/selftest_cycle_runner_stoprerun_20261002.log","md5":"ef0eeb722e600a0a56ff058a66fdf406"}],
+"facts":[
+"selftest_cycle_runner.py 10/10 PASS, BGRUN END rc=0 after 28s (selftest_cycle_runner_20261002.log)",
+"selftest_cycle_runner_ff.py 5/5 PASS, BGRUN END rc=0 after 70s (selftest_cycle_runner_ff_20261002.log)",
+"selftest_cycle_runner_ladder.py 13/13 PASS, BGRUN END rc=0 after 28s (selftest_cycle_runner_ladder_20261002.log)",
+"new stoprerun test 4/4 PASS, rc=0 after 22s (selftest_cycle_runner_stoprerun_20261002.log:3-7)",
+"S1: session writes STOP then prints limit msg -> 'usage-limit attempt 1: rerun SKIPPED' (cycle_runner.py:1491), 1 session, exit 0",
+"S2 control (no STOP) -> 'non-result; sleeping' logged, no SKIPPED: the new check discriminates (cycle_runner.py:1496)",
+"S3: real ~12s sleep (resetsAt now-108s), test writes STOP mid-sleep -> 'rerun SKIPPED after the wait' (cycle_runner.py:1502), 1 session",
+"STOP must be written during the session: loop top (cycle_runner.py:1310) stops before any cycle otherwise; test uses --dry-cmd + --no-motor-hooks",
+"cycle_runner.py unchanged, md5 0a67ee51ae38d08feebeb170f582b5c3 = card input; stoprerun .py md5 is after a docstring-only fix (gate count 6->4)"],
+"open":[],
+"cost":{"usd":null,"minutes":6,"labview_runs":0},
+"note":"offline only; temp STATUS/bench dirs removed; no LabVIEW, no motor hooks"}

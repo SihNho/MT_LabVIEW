@@ -1485,6 +1485,13 @@ def _loop(a, status_path, bench, runner_log, prompt, run_t0, hb):
                 wait = 300.0
             if wait is None or attempt == LIMIT_RETRIES:
                 break
+            # A STOP MARKER BEATS THE RERUN (2026-10-02 23:50: cycle 141 slept to rerun although usage_stop_watch had
+            # written the user's weekly-90 % STOP at 23:04 - and the chat could not kill the sleeping runner). Checked
+            # before the sleep and again after it; the cycle then ends normally (end hooks below still run).
+            if stop_marker(read(status_path)):
+                log_line(runner_log, "CYCLE %d | %s | %s | usage-limit attempt %d: rerun SKIPPED - STATUS carries a "
+                                     "STOP marker" % (n, start, end, attempt))
+                break
             # RERUN, DON'T RESUME (CLAUDE.md's usage-limit protocol): the partial attempt is a non-result.
             log_line(runner_log, "CYCLE %d | %s | %s | usage-limit attempt %d, non-result; sleeping %.0f min "
                                  "(renewal + 2 min) then RERUNNING this cycle"
@@ -1492,6 +1499,10 @@ def _loop(a, status_path, bench, runner_log, prompt, run_t0, hb):
             if a.no_sleep:
                 break
             time.sleep(wait)
+            if stop_marker(read(status_path)):
+                log_line(runner_log, "CYCLE %d | %s | rerun SKIPPED after the wait - STATUS carries a STOP marker"
+                         % (n, time.strftime("%Y-%m-%d %H:%M:%S")))
+                break
 
         env = result_json(fresh)
         land_retrospective(bench, runner_log)

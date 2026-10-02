@@ -1,0 +1,115 @@
+BGRUN START 2026-10-02 22:59:28 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_ring_p4_s01_scratch.py
+BGRUN PID 11068
+stage_d1_ring_p4_s01_scratch - card 141-1: the ONE SCRATCH RUN of RING P4 v16 LabVIEW SESSION 1 (PD320(e), PD323(d),
+D-2026-10-01-01). COPIED from the card 140-3 version with names changed (log, scratch name, out/sum json, card id) and ONE fix
+(review c140-2-failed-logs / retrospective-cycle140, card 141-1 item 4): x10() takes the limit from the md5-PINNED pred file
+(plan_ring_p4_s01_pred.json memory_pred.peak_mb, used only when pred.plan.md5 == md5(plan_ring_p4_s01.json)) instead of the last
+'X10 ... predicted peak' line of a prerun log (the 140-3 copy read None: its regex missed the log line, diag_c140_3_scratch.log:14).
+Runs tools/recipes/stage_d1_ring_p4_s01.py's OWN body (imported UNCHANGED) with plan_ring_p4_s01.json on a dated byte copy
+claudeDev\scratch_c141_p4s01_<ts>.vi of the P3b-2b bed D1_ring_p3b2b_20261002_130007.vi (395118775a52) - same Executor, LVBackend
+(per-op census + Is Broken? + the run-time PRIM gate), every recipe gate and the ExecState read. No VI is run; the bed is never
+edited. SAVE on (rule-6 gui_save of the work copy) so the Error List can be read count-only next; the scratch file is deleted
+after that read.
+PREDICTION (numbers in plan_ring_p4_s01_pred.json): every recipe gate PASS incl. PRIM; peak private MB <= 690 and <= X10 + 10 and,
+for the launch, <= 675 (PD321(c)); bed md5 unchanged; LabVIEW gone. Error List (next, separate run) == pred predicted_total.
+CARD 141-3 RERUN (PD325(d)): only the log / json names change (scratch2, so 141-2's log stays the cited record); the recipe's D/TD
+gates are now identity-keyed (stagekit.term_identity_gates) and CEN2 is predicted from 141-2's measured census (PD325(c)).
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/diag_c141_p4s01_scratch2.log -- py -u tools/recipes/stage_d1_ring_p4_s01_scratch.py
+MEM_STOP_MB 690.0; X10 from the md5-pinned pred 669.3
+stage_d1_ring_p4_s01 - card 141-1, RING P4 LabVIEW SESSION 1 of plan v16 (PD320(c)(e), PD322(b), PD323(a)(d); D-2026-10-01-01,
+D-2026-10-02-02/04): on P3b-2b's SAVED bed D1_ring_p3b2b_20261002_130007.vi (graph_ring_p3b2b_20261002_133824.json 50595c62), apply
+the actions of plan_ring_p4_s01.json = v16's first X10 session (stagesim FINAL of plan_ring_p4_s01_in.json,
+tools/bench/prep_c141_1_s01.py; the session table tools/bench/prep_c141_1_sessions.json). v16 starts with the REPAIR of the five
+bed slot-write nodes that are Insert Into Array -> Replace Array Subset from claudeDev\DonorRAS1D_v0.vi uid 175 (create-first order,
+tools/bench/prep_c141_1_mkv16.py). Every created primitive passes the RUN-TIME prim gate (stagexec.prim_check, card 141-1): its
+read-back label/class must equal the plan prim, else the run stops.
+COPIED from the card 140-3 version of this file (stage_d1_ring_p4s1.py lineage) with ONLY names changed (card id, out json, docstring).
+FRESH LabVIEW -> claudeDev\D1_ring_p4s01_<ts>.vi (rule-6 GUI save, ExecState 0 by design) = an IN-BETWEEN file of step P4 (not counted,
+D-2026-10-02-02/04). The FIRST run is the full SCRATCH run on a bed byte copy (stage_d1_ring_p4_s01_scratch.py).
+ROWS ONLY FROM plan_ring_p4_s01.json; expected values only from plan_ring_p4_s01_pred.json. No new op.
+CARD 141-3 (PD325(b)): gates D / TD and the unwired check now compare IDENTITIES (term uid, owner uid, name; wires by uid + source
+identity) through stagekit.term_identity_gates - LabVIEW re-used deleted uids in 141-2's scratch (diag_c141_p4s01_scratch.log:280);
+the real end rows are dumped to the out json (real_end_rows). Plan actions unchanged.
+PREDICTION (numbers in the pred file): L1 actions -> pred ops; E1 every checkpoint == sim; NG crossing tunnel names == step files';
+PRIM every created primitive's label == plan prim; FR created objects on the sim end's frames; D new/lost wires == sim's; TD every base
+terminal that was wired stays wired, identities lost == plan deletes; CEN2 == pred census; PB cdiff(S1, end) == pred rows (FATAL, before save); HB handles <= +700;
+PS saved, input unchanged. X10 = pred memory_pred. Error List of the end = pred errorlist.predicted_total (PD322(e) per-node rule).
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/launch_c141_p4s01.log -- py -u tools/recipes/stage_d1_ring_p4_s01.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p4_s01_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan  ('f4831031c738c997391b5bcace19d9f0', {'path': 'tools/bench/graph_ring_p3b2b_20261002_133824.json', 'md5': '50595c62d0332a94bf066538cf20c0ae'}, '395118775a52bc90073f4449b99f899d')
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 395118775a52bc90073f4449b99f899d  got 395118775a52bc90073f4449b99f899d
+  PASS  DRY graph JSON for input md5 395118775a52bc90073f4449b99f899d  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_ring_p3b2b_20261002_133824.json
+  PASS  L1 the 24 actions compile into 24 real ops == pred kinds, each action once; checkpoints (0, 1, 11, 21, 24)  ['create', 'connect', 'connect', 'connect', 'delete_wire', 'delete_object', 'wire_remove_loose_ends', 'wire_remove_loose_ends', 'wire_remove_loose_ends', 'connect', 'create', 'connect', 'connect', 'connect', 'delete_wire', 'delete_object', 'wire_remove_loose_ends', 'wire_remove_loose_ends', 'wire_remove_loose_ends', 'connect', 'create', 'connect', 'connect', 'connect']
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 3 touched diagram(s) [27641, 27722, 32464]: one-side-only Nodes[] entries 0
+  PRIME 2 terminal indexes proved at base; 0 ControlTerminal end(s) by 179(b); unprovable []
+  CHECKPOINTS whole-VI read+diff after ops [1, 11, 21, 24] of 24
+  FACT  OP create [1] -> err '' (0.0 s)
+  STEPX 01 create         acts [1] ids ['p4_rp27928_c'] bound {-1: 10000001} diff 0
+  FACT  OP wire_connect [2] -> err '' (0.0 s)
+  STEPX 02 connect        acts [2] ids ['p4_rp27928_arr'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect [3] -> err '' (0.0 s)
+  STEPX 03 connect        acts [3] ids ['p4_rp27928_idx'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect [4] -> err '' (0.0 s)
+  STEPX 04 connect        acts [4] ids ['p4_rp27928_new'] diff skipped (not a checkpoint)
+  FACT  OP delete_wire [5] -> err '' (0.0 s)
+  STEPX 05 delete_wire    acts [5] ids ['p4_rp27928_dwo'] diff skipped (not a checkpoint)
+  FACT  OP delete_object [6] -> err '' (0.0 s)
+  STEPX 06 delete_object  acts [6] ids ['p4_rp27928_do'] diff skipped (not a checkpoint)
+  FACT  OP wire_remove_loose_ends [7] -> err '' (0.0 s)
+  STEPX 07 wire_remove_loose_ends acts [7] ids ['p4_rp27928_rle_arr'] diff skipped (not a checkpoint)
+  FACT  OP wire_remove_loose_ends [8] -> err '' (0.0 s)
+  STEPX 08 wire_remove_loose_ends acts [8] ids ['p4_rp27928_rle_idx'] diff skipped (not a checkpoint)
+  FACT  OP wire_remove_loose_ends [9] -> err '' (0.0 s)
+  STEPX 09 wire_remove_loose_ends acts [9] ids ['p4_rp27928_rle_new'] diff skipped (not a checkpoint)
+  STALE-ADDRESS op 10: fresh read + one retry (ADDRESS: #28052 'Num' on node #28037: 0 (name,dir,wire) matches in [('Num', False, 0)])
+  FACT  OP wire_connect [10] -> err '' (0.0 s)
+  STEPX 10 connect        acts [10] ids ['p4_rp27928_out'] diff skipped (not a checkpoint)
+  FACT  OP create [11] -> err '' (0.0 s)
+  STEPX 11 create         acts [11] ids ['p4_rp28916_c'] bound {-7: 10000007} diff 0
+  FACT  OP wire_connect [12] -> err '' (0.0 s)
+  STEPX 12 connect        acts [12] ids ['p4_rp28916_arr'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect [13] -> err '' (0.0 s)
+  STEPX 13 connect        acts [13] ids ['p4_rp28916_idx'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect [14] -> err '' (0.0 s)
+  STEPX 14 connect        acts [14] ids ['p4_rp28916_new'] diff skipped (not a checkpoint)
+  FACT  OP delete_wire [15] -> err '' (0.0 s)
+  STEPX 15 delete_wire    acts [15] ids ['p4_rp28916_dwo'] diff skipped (not a checkpoint)
+  FACT  OP delete_object [16] -> err '' (0.0 s)
+  STEPX 16 delete_object  acts [16] ids ['p4_rp28916_do'] diff skipped (not a checkpoint)
+  FACT  OP wire_remove_loose_ends [17] -> err '' (0.0 s)
+  STEPX 17 wire_remove_loose_ends acts [17] ids ['p4_rp28916_rle_arr'] diff skipped (not a checkpoint)
+  FACT  OP wire_remove_loose_ends [18] -> err '' (0.0 s)
+  STEPX 18 wire_remove_loose_ends acts [18] ids ['p4_rp28916_rle_idx'] diff skipped (not a checkpoint)
+  FACT  OP wire_remove_loose_ends [19] -> err '' (0.0 s)
+  STEPX 19 wire_remove_loose_ends acts [19] ids ['p4_rp28916_rle_new'] diff skipped (not a checkpoint)
+  STALE-ADDRESS op 20: fresh read + one retry (ADDRESS: #29190 'Num' on node #29175: 0 (name,dir,wire) matches in [('Num', False, 0)])
+  FACT  OP wire_connect [20] -> err '' (0.0 s)
+  STEPX 20 connect        acts [20] ids ['p4_rp28916_out'] diff skipped (not a checkpoint)
+  FACT  OP create [21] -> err '' (0.0 s)
+  STEPX 21 create         acts [21] ids ['p4_rp29048_c'] bound {-13: 10000013} diff 0
+  FACT  OP wire_connect [22] -> err '' (0.0 s)
+  STEPX 22 connect        acts [22] ids ['p4_rp29048_arr'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect [23] -> err '' (0.0 s)
+  STEPX 23 connect        acts [23] ids ['p4_rp29048_idx'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect [24] -> err '' (0.0 s)
+  STEPX 24 connect        acts [24] ids ['p4_rp29048_new'] bound {} diff 0
+  PASS  E1 every checkpoint's real graph == its simulated step (24 ops)
+  PASS  NG every crossing op's NEW tunnel names == the simulator's (stagexec.tunnel_name_check, per op, from the step files): 0 op(s) []
+  PASS  FR the 3 created objects sit on [27641, 27722, 32464] frame(s) of the simulated end; real frames == the sim end's  {'on': [27641, 27722, 32464], 'extra': [], 'missing': []}
+  PASS  D new wires 2 == sim's 2; lost 2 == sim's 2 (wire uid + source identity, stagekit.wire_keys)  {'new': ['10000006', '10000012'], 'lost': ['28296', '29144']}
+  UNVERIFIED-DRY  CEN2 new-object census (classes of the pred) == plan_ring_p4_s01_pred.json census  (census not measured in a dry run; declared {"GrowableFunction": 3, "Terminal": 9, "Wire": 2})
+  CENSUS-ALL net delta (every class) {}
+  CENSUS-ALL new uids by class (every class) {}
+  CENSUS-ALL lost uids 0
+  PASS  TD every base terminal the sim keeps wired is still wired; identities lost == the plan's deletes (key uid/owner/name, stagekit.term_identity_gates)  {'unwired': [], 'lost': [(27997, 27928, 'array'), (28004, 27928, 'output array'), (28018, 27928, 'index'), (28030, 27928, 'new element/subarray'), (28973, 28916, 'array'), (28979, 28916, 'output array'), (28983, 28916, 'index'), (28989, 28916, 'new element/subarray')], 'plan_deletes': [(27997, 27928, 'array'), (28004, 27928, 'output array'), (28018, 27928, 'index'), (28030, 27928, 'new element/subarray'), (28973, 28916, 'array'), (28979, 28916, 'output array'), (28983, 28916, 'index'), (28989, 28916, 'new element/subarray')], 'recycled_uids': [], 'raw_lost': [27997, 28004, 28018, 28030, 28973, 28979, 28983, 28989]}
+  FACT  ExecState [after all rows (ExecState 0 expected: the P3b-2b bed is broken by design)] scratch_c141_p4s01_20261002_225929.vi = <dry:g.exec_state>
+  PASS  PB frame-keyed cdiff(S1, real end) == the pred's 16 rows and the plan's 11 open (node, term) pairs (FATAL, before save)  {'extra': [], 'missing': []}
+  FACT  PH handles: post-open <dry:bench_prep.labview_handles> -> before-save None
+  PASS  HB open->save handle growth <= +700 (PD236(b) band; refs balance is H5)  (<dry:bench_prep.labview_handles>, None)
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  dry0dry0dry0dry0dry0dry0dry0dry0
+
+=== DRY PASS: first_fail=None coverage 46/66 lines, first mutation Stage._op create, unverified 0, graph tools/bench/graph_ring_p3b2b_20261002_133824.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 19s

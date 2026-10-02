@@ -1,0 +1,52 @@
+BGRUN START 2026-10-02 22:28:17 limit 20.0 min: py tools/prior_art_review.py --plan-file docs/d1/ring-p4b.md --slug c141-1-p4s01 --trigger cycle-start --recipe tools/recipes/stage_d1_ring_p4_s01.py --recipe tools/recipes/stage_d1_ring_p4_s01_scratch.py
+BGRUN PID 25976
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c141-1-p4s01.txt (63707 chars)
+   review card tools\bench\cards\review_priorart-c141-1-p4s01.json
+OUTCOME: ANSWERED (38s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-02-priorart-c141-1-p4s01.md
+COST: $0.9673  in 6 / out 2923 / cache-create 107019 / cache-read 263312  (34s, 5 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c141-1-p4s01 verdict=novel -> tools\bench\cards\verdict_priorart-c141-1-p4s01.json
+--- ANSWER ---
+# Prior-art review of the cycle-141 P4 repair (card priorart-c141-1-p4s01)
+
+**Verdict: novel.** I found nothing in the project's files that already builds this repair, refutes it or contradicts it. The plan carries out decisions the project has already made, and each of them applies here.
+
+## Part A: the direction
+
+- **A1, settled already:** the direction was decided, and the plan follows that decision. It does not re-open it.
+  - `docs/d1/ring-p4.md:417-420` (PD322(b), cycle 140) decided to repair toward the design: delete the five bed nodes, re-create them from a one-dimensional Replace Array Subset donor, and reconnect them, as the first actions of P4 plan v16.
+  - `docs/d1/ring-p4.md:425-427` (PD322(d)) requires the prim gate, the check that every created node is the primitive the plan declared.
+  - PD323 only gives the details: the order of the steps, the two halves of the gate, and where the extra memory check sits.
+  - This is the plan carrying out an earlier decision, so it does not get a `settled-already` flag.
+- **A2, refuted already:** none found. The repair has not been tried before. The Insert Into Array mistake it fixes is written up at `docs/d1/ring-p4.md:411-416`.
+- **A3, contradicted:** none.
+  - The plan's facts match the earlier records: the five node uids, the shared index wire w28367 (`ring-p4.md:419`), donor uid 175, and the 140-3 memory reading of 615.5 MB against the predicted 673.4 MB (STATUS cycle-140 brief).
+  - One small wording difference: PD322(b) says "reconnect their 4 terminals by terminal uid", while PD323(a) says "by name". PD323(a) also requires every terminal's endpoints to be read from the graph, not typed in, so the two agree in substance. The names come from `diag_c140_5_facts.md:22-24`.
+- **A4, unread evidence:** none. PD323 cites the documents this direction needs:
+  - PD321's error-1055 hazard (removing loose ends on a wire whose only sinks were deleted);
+  - PD320(e), which sets the session and scratch-run order;
+  - `diag_c140_5_facts.md`, which records the donor build and its test run.
+
+## Part B: the artifact
+
+- **B1, already built:** no. Before cycle 141 the toolkit had no gate comparing a node's label as read back from LabVIEW with the plan's declared prim. `ring-p4.md:415-416` records that gap explicitly.
+  - `tools/stagexec.py:449` (`prim_check`), `tools/stage_prerun.py:2553` (`prim_donor_check`) and `tools/bench/selftest_prim_gate_c141_1.py` all say "card 141-1" in their docstrings. They are this card's own output, not earlier work.
+- **B2, already failed:** no. This repair has never been attempted. The two nearby failures are named and handled:
+  - the 1055 error from removing loose ends on a fully deleted wire (PD321, 140-2), which PD323(a)'s ordering avoids;
+  - the 140-5 first attempt, which failed only because our own script used the nested-diagram route on a top-level node.
+- **B3, helper exists:** the plan already uses the existing calls: `delete_wire`, `delete_object`, `wire_remove_loose_ends`, `connect_term_uid`, the existing `DonorRAS1D_v0.vi`, and `main_vi_node_labels.json` for the offline half of the prim gate. It hand-rolls nothing.
+- **B4, already measured:** the questions this work depends on are already measured, and the plan cites those measurements rather than measuring them again:
+  - the donor's terminals, and a test run giving length 20 with element 3 = 99 (`diag_c140_5_facts.md`);
+  - which slot writes are wrong, 0 of 6 correct (`diag_c140_4_facts.md`).
+
+## Part C: the user's rules
+
+None contradicted. The repair puts back the fixed 20-slot write that rule U13 requires. Insert Into Array lengthened the array every frame, which broke both U13 and U1, so the repair restores the original computation rather than changing it. It adds no queue, no serial call and no camera wait.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c141-1-p4s01","verdict":"novel","alternative":"PD323 carries out PD322(b)(d) (ring-p4.md:417-427); prim_check/prim_donor_check are card 141-1's own output, not earlier work.","discriminating_test":"git log -S 'def prim_check' tools/stagexec.py: the first commit should be cycle 141; an earlier commit would make it already-built.","violations":[],"sources":["docs/d1/ring-p4.md:411-427","docs/d1/ring-p4b.md:19-40","tools/stagexec.py:449-461","tools/stage_prerun.py:2553","docs/user-rules.md U1,U13"],"note":"PD322(b) says reconnect by terminal uid, PD323(a) by name; both take endpoints from the graph, so no conflict."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c141-1-p4s01.md
+   STOP RECORD: none - 2026-10-02-priorart-c141-1-p4s01.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_ring_p4_s01.py sha 4cb8667348a9 -> these bytes are released by this review; editing them again re-arms the gate
+   NOVEL RECORD written: tools/recipes/stage_d1_ring_p4_s01_scratch.py sha 4f9f5d78ab8f -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 41s

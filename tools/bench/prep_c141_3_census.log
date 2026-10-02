@@ -1,0 +1,10 @@
+BGRUN START 2026-10-02 22:58:16 limit 3.0 min: py -u tools/bench/prep_c141_3_census.py
+BGRUN PID 20152
+  GATE PASS  C0 inputs md5 == card (log 17c5caf6, pred fc87180a)  ('17c5caf6fc8c1dece1a099a51e444e8e', 'fc87180a2fc31d5ae920f817591ee5f8')
+  GATE PASS  C1 the 141-2 RESULT fails ONLY on gate TD (fail 1, first_fail TD)  ({'pass': 21, 'fail': 1}, "TD every base terminal the sim keeps wired is still wired; rows lost == the plan's deletes")
+  GATE PASS  C2 exactly one 'CENSUS-ALL new uids by class (every class)' line in the log  [278]
+  GATE PASS  C3 the log line == run summary census_all.new_by_class  ({'GrowableFunction': 3, 'Terminal': 9, 'Wire': 2}, {'net_delta': {'GrowableFunction': 1, 'Terminal': 4}, 'new_by_class': {'Wire': 2, 'Terminal': 9, 'GrowableFunction': 3}, 'lost': 9})
+  GATE PASS  C4 pred census written == measured; plan md5 key unchanged  5d70ae634e64ddc57c54f5b414962329
+  FACT measured new-by-class {"GrowableFunction": 3, "Terminal": 9, "Wire": 2} (log line 278)
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"artefacts":[{"path":"tools\\bench\\plan_ring_p4_s01_pred.json","md5":"5d70ae634e64ddc57c54f5b414962329"}]}
+BGRUN END rc=0 after 1s

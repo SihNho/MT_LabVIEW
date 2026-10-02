@@ -425,6 +425,42 @@ def create_route(a):
     raise ExecStop("create class {0!r} has no executor (no donor_uid / prim / on)".format(c))
 
 
+# card 141-1 (PD322(d), PD323(b)): the RUN-TIME half of the created-node PRIM GATE. Every node a `primitive` create makes is
+# read back by the junk purge (stagekit.Stage.junk_purge -> build_opfsinnertunnelconnect_v0.purge_junk: node census diff +
+# node_view label, `reported_not_deleted` entries {uid, class, label}); its label must equal the action's declared `prim` and
+# its class the declared `class`. Why: P3b-1/P3b-2 built five ring slot writes from donor #29157 = an Insert Into Array where
+# the plan said 'Replace Array Subset'; every log printed the label (stage_d1_ring_p3b1.log:149,155) and no gate compared it
+# (tools/bench/diag_c140_4_facts.md). const_donor constants are not Diagram.Nodes[] (no label row) - exempt here; their class
+# is still matched by the binder. The offline half (donor label == prim before any run) is stage_prerun.prim_donor_check.
+PRIM_GATE_EXEMPT = ("const_donor",)
+
+
+def purge_entry(purge, uid):
+    """The junk purge's read-back entry {uid, class, label, ...} of the created node #uid, else None."""
+    for e in ((purge or {}).get("reported_not_deleted") or []):
+        try:
+            if int(e.get("uid")) == int(uid):
+                return e
+        except (TypeError, ValueError):
+            continue
+    return None
+
+
+def prim_check(a, entry, uid=None):
+    """card 141-1: (ok, detail) for ONE created primitive: read-back label == a['prim'] and class == a['class'].
+    Exempt (ok) when the action declares no prim or a const_donor. No read-back entry = FAIL (the node cannot be verified)."""
+    p = a.get("prim")
+    if not p or p in PRIM_GATE_EXEMPT:
+        return True, "PRIM-GATE {0}: exempt (prim {1!r})".format(a.get("id"), p)
+    if not entry:
+        return False, ("PRIM-GATE FAIL {0}: created node #{1} has no read-back entry (not among the purge's new nodes) - its "
+                       "label cannot be compared with plan prim {2!r}".format(a.get("id"), uid, p))
+    lab, cls = entry.get("label"), entry.get("class")
+    ok = lab == p and (not a.get("class") or cls == a.get("class"))
+    return ok, "PRIM-GATE {0} {1}: plan prim {2!r} class {3!r} | read back #{4} label {5!r} class {6!r}".format(
+        "PASS" if ok else "FAIL", a.get("id"), p, a.get("class"), entry.get("uid", uid), lab, cls)
+
+
 # card 108-6 (PD222(g)): the tunnel classes whose OUTER SOURCE face gscript.create_indicator_nested(W, face, None) takes.
 # LoopTunnel -> OpTunnelInd_v0 (card 100-4); SelectorTunnel -> its owner CaseStructure's Terms[] entry on the face's wire,
 # OpCreateIndicatorNested_v0 (card 108-4, gscript.py:3867-3879; scratch record
@@ -2485,7 +2521,7 @@ class LVBackend(object):
         return classes_of(real, getattr(self, "last_objs", None))
 
     def _done(self, rec, tag):
-        self.s.junk_purge(tag)
+        self.last_purge = self.s.junk_purge(tag)       # card 141-1: kept for the created-node prim gate (prim_check)
         if rec.get("err"):
             raise ExecStop("{0}: op error {1}".format(tag, rec["err"]))
         return {"err": rec.get("err"), "s": rec.get("s")}
@@ -2742,6 +2778,11 @@ class LVBackend(object):
             rec = s._op("create_primitive_nested", lambda: g.create_primitive_nested(W, dg, a["prim"], pos, donor=dn),
                         "{0!r} on #{1} donor {2}".format(a["prim"], dg, dn))
             out = self._done(rec, tag)
+            if a.get("prim") not in PRIM_GATE_EXEMPT:      # card 141-1 (PD322(d)/PD323(b)): read-back label/class == plan prim
+                ok, det = prim_check(a, purge_entry(getattr(self, "last_purge", None), rec.get("result")), rec.get("result"))
+                s.gate("PRIM created node label/class == plan prim ({0})".format(a.get("id")), ok, det)
+                if not ok:
+                    raise ExecStop(det)
             out.update(uid=rec.get("result"), how=CREATE_ROUTES[route])
             return out
         if route == "queue":                                  # card 118-1: queue_node; card 118-3: src on the body's PARENT too

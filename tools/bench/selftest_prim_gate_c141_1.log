@@ -1,0 +1,35 @@
+BGRUN START 2026-10-02 22:12:10 limit 2.0 min: py -u tools/bench/selftest_prim_gate_c141_1.py
+BGRUN PID 21320
+GATE PASS | R1 140-3 case: 'Insert Into Array' read back where the plan says 'Replace Array Subset' -> FAIL | PRIM-GATE FAIL p4_ras_bufdiff: plan prim 'Replace Array Subset' class 'GrowableFunction' | read back #29489 label 'Insert Into Array' class 'GrowableFunction'
+GATE PASS | R2 matching label + class -> PASS | PRIM-GATE PASS p4_ras_bufdiff: plan prim 'Replace Array Subset' class 'GrowableFunction' | read back #29489 label 'Replace Array Subset' class 'GrowableFunction'
+GATE PASS | R3 no read-back entry -> FAIL | PRIM-GATE FAIL p4_ras_bufdiff: created node #29489 has no read-back entry (not among the purge's new nodes) - its label cannot be compared with plan prim 'Replace Array Subset'
+GATE PASS | R4 const_donor exempt | PRIM-GATE p4_ras_bufdiff: exempt (prim 'const_donor')
+GATE PASS | R4b purge_entry finds the entry by uid | 
+GATE PASS | R5 LVBackend.create primitive with the 140-3 read-back: ExecStop 'PRIM-GATE FAIL' + one FAIL gate | ("PRIM-GATE FAIL p4_ras_bufdiff: plan prim 'Replace Array Subset' class 'GrowableFunction' | read back #29489 label 'Insert Into Array' class 'GrowableFunction'", [('PRIM created node label/class == plan prim (p4_ras_bufdiff)', False, "PRIM-GATE FAIL p4_ras_bufdiff: plan prim 'Replace Array Subset' class 'GrowableFunction' | read back #29489 label 'Insert Into Array' class 'GrowableFunction'")])
+GATE PASS | R6 the same with 'Replace Array Subset' read back: uid returned + one PASS gate | ({'err': None, 's': 0.0, 'uid': 29489, 'how': 'gscript.create_primitive_nested (100-2)'}, None, [('PRIM created node label/class == plan prim (p4_ras_bufdiff)', True, "PRIM-GATE PASS p4_ras_bufdiff: plan prim 'Replace Array Subset' class 'GrowableFunction' | read back #29489 label 'Replace Array Subset' class 'GrowableFunction'")])
+GATE PASS | O0 main_vi_node_labels.json: #29157 = 'Insert Into Array' | Insert Into Array
+GATE PASS | O1 create 'Replace Array Subset' from $work #29157 refused | [{'action': 'p4_ras_bufdiff', 'why': "$work donor #29157 label 'Insert Into Array' != plan prim 'Replace Array Subset'"}]
+GATE PASS | O2 from DonorRAS1D_v0.vi uid 175 passes (registry label + md5 e8a9417c on disk) | ([], True)
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\selftest_prim_gate_c141_1.py", line 93, in <module>
+    b3 = SPR.prim_donor_check({"actions": [{"op": "delete_object", "id": "d", "uid": 10171}, EQ]}, dict(L, **{10171: "Equal?"}))
+TypeError: keywords must be strings
+BGRUN END rc=1 after 1s (NO RESULT LINE)
+BGRUN START 2026-10-02 22:12:21 limit 2.0 min: py -u tools/bench/selftest_prim_gate_c141_1.py
+BGRUN PID 17712
+GATE PASS | R1 140-3 case: 'Insert Into Array' read back where the plan says 'Replace Array Subset' -> FAIL | PRIM-GATE FAIL p4_ras_bufdiff: plan prim 'Replace Array Subset' class 'GrowableFunction' | read back #29489 label 'Insert Into Array' class 'GrowableFunction'
+GATE PASS | R2 matching label + class -> PASS | PRIM-GATE PASS p4_ras_bufdiff: plan prim 'Replace Array Subset' class 'GrowableFunction' | read back #29489 label 'Replace Array Subset' class 'GrowableFunction'
+GATE PASS | R3 no read-back entry -> FAIL | PRIM-GATE FAIL p4_ras_bufdiff: created node #29489 has no read-back entry (not among the purge's new nodes) - its label cannot be compared with plan prim 'Replace Array Subset'
+GATE PASS | R4 const_donor exempt | PRIM-GATE p4_ras_bufdiff: exempt (prim 'const_donor')
+GATE PASS | R4b purge_entry finds the entry by uid | 
+GATE PASS | R5 LVBackend.create primitive with the 140-3 read-back: ExecStop 'PRIM-GATE FAIL' + one FAIL gate | ("PRIM-GATE FAIL p4_ras_bufdiff: plan prim 'Replace Array Subset' class 'GrowableFunction' | read back #29489 label 'Insert Into Array' class 'GrowableFunction'", [('PRIM created node label/class == plan prim (p4_ras_bufdiff)', False, "PRIM-GATE FAIL p4_ras_bufdiff: plan prim 'Replace Array Subset' class 'GrowableFunction' | read back #29489 label 'Insert Into Array' class 'GrowableFunction'")])
+GATE PASS | R6 the same with 'Replace Array Subset' read back: uid returned + one PASS gate | ({'err': None, 's': 0.0, 'uid': 29489, 'how': 'gscript.create_primitive_nested (100-2)'}, None, [('PRIM created node label/class == plan prim (p4_ras_bufdiff)', True, "PRIM-GATE PASS p4_ras_bufdiff: plan prim 'Replace Array Subset' class 'GrowableFunction' | read back #29489 label 'Replace Array Subset' class 'GrowableFunction'")])
+GATE PASS | O0 main_vi_node_labels.json: #29157 = 'Insert Into Array' | Insert Into Array
+GATE PASS | O1 create 'Replace Array Subset' from $work #29157 refused | [{'action': 'p4_ras_bufdiff', 'why': "$work donor #29157 label 'Insert Into Array' != plan prim 'Replace Array Subset'"}]
+GATE PASS | O2 from DonorRAS1D_v0.vi uid 175 passes (registry label + md5 e8a9417c on disk) | ([], True)
+GATE PASS | O3 a $work donor deleted by an earlier action is refused | [{'action': 'eq', 'why': '$work donor #10171 is deleted by an EARLIER action of this plan'}]
+GATE PASS | O4 an unlisted external donor is refused (UNMEASURED) | [{'action': 'p4_ras_bufdiff', 'why': 'external donor Unknown_v0.vi uid 5: label UNMEASURED (not in PRIM_DONORS)'}]
+GATE PASS | O5 x17_gate over v15 refuses p4_ras_bufdiff ($work #29157) | [{'action': 'p4_ras_bufdiff', 'why': "$work donor #29157 label 'Insert Into Array' != plan prim 'Replace Array Subset'", 'stage': 'ring_p4_v3'}, {'action': 'p4_eq_seq', 'why': '$work donor #10171 is deleted by an EARLIER action of this plan', 'stage': 'ring_p4_v3'}]
+FACT O5 v15 refusals: [{"action": "p4_ras_bufdiff", "why": "$work donor #29157 label 'Insert Into Array' != plan prim 'Replace Array Subset'", "stage": "ring_p4_v3"}, {"action": "p4_eq_seq", "why": "$work donor #10171 is deleted by an EARLIER action of this plan", "stage": "ring_p4_v3"}]
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

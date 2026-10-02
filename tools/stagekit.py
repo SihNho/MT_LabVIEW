@@ -1271,6 +1271,63 @@ def uid_edges(G, kinds=("wire", "fs")):
     return out
 
 
+# ---------------------------------------------------------------------------------------------- TERMINAL IDENTITY (card 141-3)
+# PD325(b), review archive/peer/2026-10-02-c141-2-scratch-td.md: LabVIEW RE-USES a deleted object's uid inside one session
+# (141-2 scratch: base 'output array' terminals 28004/28979 of the deleted #27928/#28916 came back as terminals of the NEW
+# #6942/#6805, diag_c141_p4s01_scratch.log:167,267; wire uid 28296 came back as a terminal uid, :181). A raw-uid key cannot tell
+# the old object from the new one: gate TD failed falsely (:280) and could equally hide a real loss. So TD / the unwired check /
+# gate D compare terminals by IDENTITY = (term uid, owner uid, term name), and wires by (wire uid, its source terminals'
+# identities). Pure functions, no LabVIEW. Offline test: tools/bench/selftest_td_key_c141_3.py.
+def _iv(v):
+    try:
+        return int(v)
+    except (TypeError, ValueError):
+        return str(v)
+
+
+def term_key(r):
+    """A terminal row's identity: (term uid, owner uid, term name)."""
+    return (_iv(r["term_uid"]), _iv(r.get("owner_uid")), str(r.get("term_name") or ""))
+
+
+def wire_keys(rows):
+    """{(wire uid, frozenset of its SOURCE rows' term_key)} over the wired rows. A recycled wire uid on a new source is a
+    different key, so it counts as one lost + one new wire, never as 'kept'."""
+    src = {}
+    for r in rows:
+        w = _iv(r.get("wire_uid") or 0)
+        if w in (0, "", "0", "None"):
+            continue
+        src.setdefault(w, set())
+        if r.get("is_source"):
+            src[w].add(term_key(r))
+    return set((w, frozenset(s)) for w, s in src.items())
+
+
+def term_identity_gates(base, sim, real):
+    """TD / unwired / D computed on identities (base = graph rows before, sim = the simulated end rows, real = the read-back
+    end rows). Returns {td_ok, unwired, lost, gone, recycled, raw_lost, d_ok, new, lost_w, sim_new, sim_lost_w}:
+      lost  = base identities absent from real; gone = base identities absent from the sim end (= the plan's deletes);
+      unwired = base identities wired in base, kept AND wired in the sim end, but not wired (or absent) in real;
+      td_ok = not unwired and lost == gone;
+      d_ok  = |new wires| == |sim new| and |lost wires| == |sim lost| (wire_keys);
+      recycled = base uids whose identity is lost while the uid itself is present in real under another owner/name (info);
+      raw_lost = base uids absent from real by raw uid (the old key, info)."""
+    wv = lambda rows: dict((term_key(r), _iv(r.get("wire_uid") or 0)) for r in rows)   # noqa: E731
+    on = lambda w: w not in (0, "", "0", "None")                                       # noqa: E731
+    bk, sk, rk = wv(base), wv(sim), wv(real)
+    lost, gone = set(bk) - set(rk), set(bk) - set(sk)
+    unw = sorted(k for k, w in bk.items() if on(w) and k not in gone and on(sk.get(k, 0)) and not on(rk.get(k, 0)))
+    ru = set(k[0] for k in rk)
+    bw, sw, rw = wire_keys(base), wire_keys(sim), wire_keys(real)
+    new, lost_w, sim_new, sim_lost = rw - bw, bw - rw, sw - bw, bw - sw
+    return {"td_ok": not unw and lost == gone, "unwired": unw, "lost": sorted(lost), "gone": sorted(gone),
+            "recycled": sorted(k[0] for k in lost if k[0] in ru), "raw_lost": sorted(set(k[0] for k in bk) - ru),
+            "d_ok": len(new) == len(sim_new) and len(lost_w) == len(sim_lost),
+            "new": sorted(str(k[0]) for k in new), "lost_w": sorted(str(k[0]) for k in lost_w),
+            "sim_new": sorted(str(k[0]) for k in sim_new), "sim_lost_w": sorted(str(k[0]) for k in sim_lost)}
+
+
 # ---------------------------------------------------------------------------------------------- RULE D4
 # Card 112-4 (judgement, cycle 112), after review archive/peer/2026-09-27-c112c-b2a-e1.md s1-s3: LabVIEW's type
 # propagation restores S1-form terminals on polymorphic nodes (IndexArray #8741/#30331 grew 'disabled index (col)',

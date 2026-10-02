@@ -1,17 +1,22 @@
-r"""stage_d1_ring_p4_s01 - card 140-2, RING P4 LabVIEW SESSION 1 (PD320(c)(e): v14 #1..#16, p4_dw_23310 .. p4_w_b_out; D-2026-10-01-01,
-D-2026-10-02-02/04): on P3b-2b's SAVED bed D1_ring_p3b2b_20261002_130007.vi (graph_ring_p3b2b_20261002_133824.json 50595c62), apply the
-16 actions of plan_ring_p4_s01.json (stagesim FINAL of plan_ring_p4_s01_in.json, tools/bench/prep_c140_2_s01.py).
-COPIED from tools/recipes/stage_d1_ring_p4s1.py (9f60aeba, card 139-5/139-7) with ONLY names changed (plan / pred / out json / stage
-name / result key / card id). FRESH LabVIEW -> claudeDev\D1_ring_p4s01_<ts>.vi (rule-6 GUI save, ExecState 0 by design) = an IN-BETWEEN
-file of step P4 (not counted, D-2026-10-02-02/04). The FIRST run is the full SCRATCH run on a bed byte copy (stage_d1_ring_p4_s01_scratch.py).
+r"""stage_d1_ring_p4_s01 - card 141-1, RING P4 LabVIEW SESSION 1 of plan v16 (PD320(c)(e), PD322(b), PD323(a)(d); D-2026-10-01-01,
+D-2026-10-02-02/04): on P3b-2b's SAVED bed D1_ring_p3b2b_20261002_130007.vi (graph_ring_p3b2b_20261002_133824.json 50595c62), apply
+the actions of plan_ring_p4_s01.json = v16's first X10 session (stagesim FINAL of plan_ring_p4_s01_in.json,
+tools/bench/prep_c141_1_s01.py; the session table tools/bench/prep_c141_1_sessions.json). v16 starts with the REPAIR of the five
+bed slot-write nodes that are Insert Into Array -> Replace Array Subset from claudeDev\DonorRAS1D_v0.vi uid 175 (create-first order,
+tools/bench/prep_c141_1_mkv16.py). Every created primitive passes the RUN-TIME prim gate (stagexec.prim_check, card 141-1): its
+read-back label/class must equal the plan prim, else the run stops.
+COPIED from the card 140-3 version of this file (stage_d1_ring_p4s1.py lineage) with ONLY names changed (card id, out json, docstring).
+FRESH LabVIEW -> claudeDev\D1_ring_p4s01_<ts>.vi (rule-6 GUI save, ExecState 0 by design) = an IN-BETWEEN file of step P4 (not counted,
+D-2026-10-02-02/04). The FIRST run is the full SCRATCH run on a bed byte copy (stage_d1_ring_p4_s01_scratch.py).
 ROWS ONLY FROM plan_ring_p4_s01.json; expected values only from plan_ring_p4_s01_pred.json. No new op.
-PREDICTION: L1 16 actions -> 16 pred ops; E1 every checkpoint == sim; NG crossing tunnel names == step files'; FR created objects on the
-sim end's frames; D new/lost wires == sim's; TD every base terminal that was wired stays wired; CEN2 == pred census; PB cdiff(S1, end) ==
-pred rows (FATAL, before save); HB handles <= +700; PS saved, input unchanged. X10 = pred memory_pred (start 606.1, R 11, 673.4 MB).
-Error List of the end predicted 51 (alternative 53 = + 2 unwired created sinks of p4_ras_bufdiff).
-Card 140-3 (PD321(b)): plan_ring_p4_s01.json re-made from v15 (ops 2-3 = delete_wire w23255 then delete_object #10171); this file
-changed ONLY in names (out json, card id, log).
-    py tools/bgrun.py --material --max-min 50 --log tools/bench/launch_c140_3.log -- py -u tools/recipes/stage_d1_ring_p4_s01.py"""
+CARD 141-3 (PD325(b)): gates D / TD and the unwired check now compare IDENTITIES (term uid, owner uid, name; wires by uid + source
+identity) through stagekit.term_identity_gates - LabVIEW re-used deleted uids in 141-2's scratch (diag_c141_p4s01_scratch.log:280);
+the real end rows are dumped to the out json (real_end_rows). Plan actions unchanged.
+PREDICTION (numbers in the pred file): L1 actions -> pred ops; E1 every checkpoint == sim; NG crossing tunnel names == step files';
+PRIM every created primitive's label == plan prim; FR created objects on the sim end's frames; D new/lost wires == sim's; TD every base
+terminal that was wired stays wired, identities lost == plan deletes; CEN2 == pred census; PB cdiff(S1, end) == pred rows (FATAL, before save); HB handles <= +700;
+PS saved, input unchanged. X10 = pred memory_pred. Error List of the end = pred errorlist.predicted_total (PD322(e) per-node rule).
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/launch_c141_p4s01.log -- py -u tools/recipes/stage_d1_ring_p4_s01.py"""
 import copy, json, os, sys                                                         # noqa: E401
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import stagekit as K, gscript as g, vigraph as V, stagexec as SX, jev_candidates as JC   # noqa: E401,E402
@@ -55,16 +60,16 @@ def body(s):
     sf = set(int(x.bind["diag"].get(f, f)) for f in frames(L["terminals"]))     # the simulated end's frames, through the diagram binding
     s.gate("FR the {0} created objects sit on {1} frame(s) of the simulated end; real frames == the sim end's".format(len(made), on),
            len(made) == NC and on and set(on) <= sf and frames(real) == sf, {"on": on, "extra": sorted(frames(real) - sf), "missing": sorted(sf - frames(real))}, fatal=True)
-    sim_new, sim_lost = wires(L["terminals"]) - wires(BASE["terminals"]), wires(BASE["terminals"]) - wires(L["terminals"])
-    new, lost = wires(real) - wires(BASE["terminals"]), wires(BASE["terminals"]) - wires(real)
-    s.gate("D new wires {0} == sim's {1}; lost {2} == sim's {3}".format(len(new), len(sim_new), len(lost), len(sim_lost)),
-           len(new) == len(sim_new) and len(lost) == len(sim_lost), {"new": sorted(new), "lost": sorted(lost)[:20]})
+    # card 141-3 (PD325(b)): D / TD / unwired keyed by IDENTITY (term uid, owner uid, name) - LabVIEW re-uses deleted uids in-session
+    ti = K.term_identity_gates(BASE["terminals"], L["terminals"], real)
+    s.gate("D new wires {0} == sim's {1}; lost {2} == sim's {3} (wire uid + source identity, stagekit.wire_keys)".format(
+        len(ti["new"]), len(ti["sim_new"]), len(ti["lost_w"]), len(ti["sim_lost_w"])), ti["d_ok"], {"new": ti["new"], "lost": ti["lost_w"][:20]})
     dc = s.census_gate("CEN2 new-object census (classes of the pred) == plan_ring_p4_s01_pred.json census", c0, snap(s), PRED["census"])
-    bw, rw = dict((int(r["term_uid"]), int(r["wire_uid"] or 0)) for r in BASE["terminals"]), dict((int(r["term_uid"]), int(r["wire_uid"] or 0)) for r in real)
-    gone = set(int(r["term_uid"]) for r in BASE["terminals"]) - set(int(r["term_uid"]) for r in L["terminals"])   # rows the PLAN deletes (sim)
-    unw = [t for t, w_ in bw.items() if w_ and not rw.get(t) and t not in gone and any(int(r["term_uid"]) == t and r["wire_uid"] for r in L["terminals"])]
-    s.gate("TD every base terminal the sim keeps wired is still wired; rows lost == the plan's deletes", not unw and set(bw) - set(rw) == gone,
-           {"unwired": unw[:20], "lost_rows": sorted(set(bw) - set(rw))[:20], "plan_deletes": sorted(gone)[:20]})
+    s.gate("TD every base terminal the sim keeps wired is still wired; identities lost == the plan's deletes (key uid/owner/name, stagekit.term_identity_gates)",
+           ti["td_ok"], {"unwired": ti["unwired"][:20], "lost": ti["lost"][:20], "plan_deletes": ti["gone"][:20], "recycled_uids": ti["recycled"][:20],
+                         "raw_lost": ti["raw_lost"][:20]})
+    s.R["term_identity"] = ti
+    s.R["real_end_rows"] = [[r["term_uid"], r.get("owner_uid"), r.get("term_name"), r.get("wire_uid"), bool(r.get("is_source"))] for r in real]   # review c141-2 s4.2
     s.es("after all rows (ExecState 0 expected: the P3b-2b bed is broken by design)")
     s1p = J(JC.WIKI, JC.S1_KEY + ".json")
     S1f = V.build4(s1p["terminals"], J(JC._newest("graph_objs_s1_*.json"))["objects"], J(JC._newest("graph_loops_s1_*.json"))["loops"], LAB, s1p["fs_tunnel_pairs"], frame_keyed=True)
@@ -86,7 +91,7 @@ def body(s):
 
 
 if __name__ == "__main__":
-    st = K.Stage(BASE["vi"], BASE["md5"], "D1_ring_p4s01", preload=False, deadline_min=45, out_json=os.path.join(K.BENCH, "launch_c140_3.json"), task="card 140-3 RING P4 session 1")
+    st = K.Stage(BASE["vi"], BASE["md5"], "D1_ring_p4s01", preload=False, deadline_min=45, out_json=os.path.join(K.BENCH, "launch_c141_p4s01.json"), task="card 141-3 RING P4 v16 session 1")
     rc = K.run(body, st)
     DRY or SX.kill_labview_at_exit()
     sys.exit(rc)

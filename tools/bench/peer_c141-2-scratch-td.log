@@ -1,0 +1,46 @@
+BGRUN START 2026-10-02 22:41:18 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c141-2-scratch-td -TaskFile tools/bench/diag_c141_2_hyp_task.md
+BGRUN PID 10020
+OUTCOME: ANSWERED (130s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-02-c141-2-scratch-td.md
+COST: $1.3275  in 26 / out 9912 / cache-create 107025 / cache-read 1364701  (126s, 17 turn(s))
+--- ANSWER ---
+**The claim is wrong about the cause.** The simulator does not re-key or drop terminal rows on a connect. Its conclusion is probably still right: the scratch graph matches the plan, and TD is the defect. But TD fails because LabVIEW gave freed uids to new terminals, not for the reason the claim gives. The proposed fix ("add E1's binding to TD") would not cover that.
+
+### 1. Strongest reason the claim is wrong
+28004 and 28979 are not terminals a connect touched. They are the `output array` terminals of the two old Insert Into Array nodes that the plan deletes:
+- Base graph `graph_ring_p3b2b_20261002_133824.json`:
+  - 28004 is `output array`, owner #27928, wire 28296.
+  - 28979 is `output array`, owner #28916, wire 29144.
+- Both owners are really deleted in the scratch run:
+  - #27928 at op 6 (`diag_c141_p4s01_scratch.log:109-112`, node census 665 → 664).
+  - #28916 at op 16 (`:195-198`).
+
+So the simulator is right to drop those rows. The claim's premise that "the real VI still has them" is false. The real end has *different* objects that carry the same numbers:
+- The connect log tag prints the bound **real** sink uid (`tools/stagexec.py:2568-2586`).
+- Op 12 is `connect #28962->#28004`, and its sink is `D[58].N[3].t0`. That is the new node #6942's terminal t0, `'array'` (`:155`, `:166-167`).
+- Op 24 is `connect #29252->#28979`, and its sink is `D[59].N[11].t2`. That is the new node #6805's `'new element/subarray'` (`:243`, `:266-267`).
+
+The timing shows the pattern:
+- RX1 was created before any deletion and got a fresh uid, #29407 (`:77`).
+- RX2 and RX3 were created after deletions and got low recycled uids, #6942 and #6805 (`:163`, `:249`).
+- Each uid that reappears was freed by the previous group's delete and taken by the next group's create.
+- The third old node, #29048, is not deleted in this session, so there is no third collision.
+
+This pattern comes from this run's log only. I found no NI documentation on uid reuse, so it is not a documented LabVIEW guarantee.
+
+### 2. Alternative explanation
+**LabVIEW recycled uids inside one session.** TD (`stage_d1_ring_p4_s01.py:65-68`) treats a raw `term_uid` as an identity: it compares `set(bw) - set(rw)` against `gone`. A deleted terminal whose number was given to a new terminal no longer counts as lost.
+
+This blind spot runs in both directions:
+- **TD**: here it gave a false FAIL. It could also hide a real loss.
+- **`unw` check (line 67)**: `rw.get(t)` could read a recycled terminal's wire.
+- **D gate (`:60-63`)**: it compares wire-uid sets by count only. If a base wire uid is recycled for a new wire, a real loss goes missing from the count. The deleted wire 28296 already came back as op 14's sink uid (`:181`), so recycling also reaches wire numbers, not only terminals.
+
+### 3. What would falsify my alternative (and support the claim)
+The real end rows with `term_uid` 28004 or 28979 still being owned by #27928 or #28916, or still named `output array` with `is_source=True`. That would mean the old terminals survived the delete, which would be a real graph difference, not a gate defect. The log already makes this unlikely: the census drops (`:111`, `:197`) and the sink addresses point at the new nodes. But the real terminal table itself was not saved: `diag_c141_p4s01_scratch.json` holds only the tags, and the bind map is not dumped either.
+
+### 4. Cheapest offline test (no LabVIEW)
+1. **From the log alone:** for every uid in `plan_deletes − lost_rows`, find the `connect #…->#<uid>` tag, check that its sink triple is a node created in this run (`made`), and check that the base owner of that uid is a node removed by a `delete_object` op. Both uids pass this test today (`:166-167` with `:153`; `:266-267` with `:239`). Any uid that fails it means the claim needs a real explanation.
+2. **To make it mechanical:** add a dump of `real` (term_uid, owner_uid, term_name, wire_uid) to the json. Then re-run TD offline with the identity key `(term_uid, owner_uid, term_name)`, or remove rows owned by `made` from `rw` before the set difference. The prediction: TD passes with `lost_rows == plan_deletes`, all 8. If it still differs, the scratch run is not acceptable.
+
+**Verdict:** the conclusion that the scratch run is acceptable and the gate should be fixed rather than the plan is likely correct, but for the uid-recycling reason above. The fix must key identity on (uid, owner, name), not on E1's binding alone. The same fix should go into the D gate and the `unw` check, which have the same blind spot and can turn a real loss into a false PASS. One fact would change my mind: a real end row 28004 or 28979 still owned by #27928 or #28916.
+BGRUN END rc=0 after 131s

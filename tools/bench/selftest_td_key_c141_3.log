@@ -1,0 +1,22 @@
+BGRUN START 2026-10-02 22:57:21 limit 3.0 min: py -u tools/bench/selftest_td_key_c141_3.py
+BGRUN PID 15428
+GATE PASS | T0 base graph md5 == 50595c62 (card input) | 50595c62d0332a94bf066538cf20c0ae
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\selftest_td_key_c141_3.py", line 61, in <module>
+    wmap.setdefault(w, next(neww))
+StopIteration
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"StopIteration: ","artefacts":[]}
+BGRUN END rc=1 after 1s
+BGRUN START 2026-10-02 22:57:33 limit 3.0 min: py -u tools/bench/selftest_td_key_c141_3.py
+BGRUN PID 16676
+GATE PASS | T0 base graph md5 == 50595c62 (card input) | 50595c62d0332a94bf066538cf20c0ae
+GATE PASS | T0b reconstruction: 3 new owners x 4 terminals, 2 new wires, 6 logged uids placed | [(-12, 6945), (-6, 6978)]
+GATE PASS | T1 OLD raw-uid key reproduces the logged 141-2 FAIL (lost 6 / plan deletes 8 / diff {28004, 28979}, log :280) | {'td_ok': False, 'lost_rows': [27997, 28018, 28030, 28973, 28983, 28989], 'plan_deletes': [27997, 28004, 28018, 28030, 28973, 28979, 28983, 28989], 'unwired': [], 'd_ok': True}
+GATE PASS | T2 NEW identity key on the 141-2 case: TD PASS, D PASS, recycled == [28004, 28979] | {'td_ok': True, 'd_ok': True, 'recycled': [28004, 28979], 'raw_lost': [27997, 28018, 28030, 28973, 28983, 28989], 'new': ['6945', '6978'], 'lost_w': ['28296', '29144']}
+GATE PASS | T3 a kept wired base terminal #6121 missing from real -> NEW TD FAIL | [(6121, 10673, 'error out')]
+GATE PASS | T4 loss MASKED by uid re-use (#6121 given to #29407 'output array'): OLD key blind (lost/unwired == T1's), NEW TD FAILS | {'old_lost': [27997, 28018, 28030, 28973, 28983, 28989], 'old_unw': [], 'new': False, 'recycled': [6121, 28004, 28979]}
+GATE PASS | T5 kept base terminal #6121 present but unwired in real -> NEW TD FAIL | [(6121, 10673, 'error out')]
+GATE PASS | T6 a new wire re-uses lost base wire uid 29144: OLD D FAILS falsely, NEW D PASSES | {'old': False, 'new': {'td_ok': True, 'unwired': [], 'lost': [(27997, 27928, 'array'), (28004, 27928, 'output array'), (28018, 27928, 'index'), (28030, 27928, 'new element/subarray'), (28973, 28916, 'array'), (28979, 28916, 'output array'), (28983, 28916, 'index'), (28989, 28916, 'new element/subarray')], 'gone': [(27997, 27928, 'array'), (28004, 27928, 'output array'), (28018, 27928, 'index'), (28030, 27928, 'new element/subarray'), (28973, 28916, 'array'), (28979, 28916, 'output array'), (28983, 28916, 'index'), (28989, 28916, 'new element/subarray')], 'recycled': [28004, 28979], 'raw_lost':
+GATE PASS | T7 kept base wire w86546 lost in real -> NEW D FAILS | {'lost_w': ['28296', '29144', '86546'], 'sim_lost_w': ['28296', '29144']}
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":9,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

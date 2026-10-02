@@ -26,7 +26,9 @@ not enough. Long history stays where it was; nothing here replaces the full text
 - **Work VI (bed):** `claudeDev\D1_ring_p3b2b_20261002_130007.vi`, md5 `395118775a52bc90073f4449b99f899d` (STATUS `current-bed:`; PD297 — [ring-p3b](ring-p3b.md)). Error List 51 items, expected file `tools/bench/errorlist_expected_D1_ring_p3b2b_20261002_130007.json`. STRUCTURAL, `ExecState` 0 by design, never run. (Before: P3b-1 `D1_ring_p3b1_20261002_060910.vi` `9d7bf287…`, 53 items.)
 - **Broken-intermediate count (CLAUDE.md "AT MOST 6"):** 4 of 6 (P2b 1, P3a 2, P3b-1 3, P3b-2 4). P4 measured at 93 actions (PD293) — how many files it may use is the open user decision D-2026-10-02-03; P6 must run (PD261(d) — [split-plan:2847](../d1-loop12-17-split-plan.md)).
 - **Plan of record for the frame handoff:** `docs/ring-buffer-design.md` (user design 2026-09-28; PD238(a)). User rules checked by every design item: `docs/user-rules.md`.
-- **Next act (cycle 141):** PD322 — offline card ALONE: created-node prim gate + P4 v16 (the 5 Insert-Into-Array bed slot writes swapped to `DonorRAS1D_v0.vi` uid 175 first, then v15) + session-1 re-cut and dry/prerun/X10; then the LabVIEW session-1 scratch → gated launch (PD320(e)). (Cycle 140: X10 session table, cut rule PD320; RLE 1055 → v15 PD321; ALL ring slot writes are Insert Into Array — rule-1a defect, repair decided PD322; 1-D RAS donor built and run.)
+- **P4 in progress (cycle 141, PD326):** session 1 of 11 saved as the in-between file `claudeDev\D1_ring_p4s01_20261002_232547.vi` (dc61e193, EL 51, not counted); plan v17 `plan_ring_p4_v17.json` e19d7e14; session 2 plan `plan_ring_p4_s02.json` 5e483ea6 (provisional, rebase on `graph_ring_p4s01_20261002_234419.json`).
+- **Next act (cycle 142):** PD326(e) — P4 session 2: rebase → cut check at 596.5 → dry/prerun → ONE scratch → gated launch → load + graph read; beside it session 3 prep.
+- (history) **Next act (cycle 141):** PD322 — offline card ALONE: created-node prim gate + P4 v16 (the 5 Insert-Into-Array bed slot writes swapped to `DonorRAS1D_v0.vi` uid 175 first, then v15) + session-1 re-cut and dry/prerun/X10; then the LabVIEW session-1 scratch → gated launch (PD320(e)). (Cycle 140: X10 session table, cut rule PD320; RLE 1055 → v15 PD321; ALL ring slot writes are Insert Into Array — rule-1a defect, repair decided PD322; 1-D RAS donor built and run.)
 
 ## Ring-buffer step table (PD238(g) — [split-plan:2260](../d1-loop12-17-split-plan.md))
 
@@ -38,14 +40,15 @@ not enough. Long history stays where it was; nothing here replaces the full text
 | P3a | loop-1.1 control: wait, two registers, `Equal?`, case, counter, mod 20 | DELIVERED `D1_ring_p3a_20261001_180540.vi` (`4dfa44aa…`) | PD251(a) :2552 |
 | P3b-1 | slot writes part 1 (IMAQ Copy + error guard; 31 actions) | DELIVERED `D1_ring_p3b1_20261002_060910.vi` (`9d7bf287…`) = bed; 680.4 MB, EL 53 | PD271–274 (tooling.md:56, ring-p3b.md:35–64) |
 | P3b-2 | slot writes part 2 (TransPos/RotPos/FrameIdx groups, Latest); 39 actions applied in TWO LabVIEW sessions (a 21 / b 18) by memory | DELIVERED `D1_ring_p3b2b_20261002_130007.vi` (`39511877…`) = bed; a 645.7 / b 620.6 MB, EL 51 | PD283–297 (ring-p3b.md:155–) |
-| P4 | tracking-loop 1.2 reader (seqlock, `last`, jump, rollback Selects, `BufDiff` 5th per-slot array, 1.2 stop) | PLAN v14 185 actions (`plan_ring_p4_v14.json` 22f58271, 0 UNROUTABLE), step-1 plan `plan_ring_p4s1.json` e6992800 FINAL; donors I32 MAX uid 127 / Bool False uid 126; For group MEASURED; sessions to be cut by X10 (PD319); one counted file (CLAUDE.md, D-02/D-04 answered) | PD293, PD295, PD298–319 (ring-p4.md) |
+| P4 | tracking-loop 1.2 reader (seqlock, `last`, jump, rollback Selects, `BufDiff` 5th per-slot array, 1.2 stop) | IN PROGRESS — plan v17 (`plan_ring_p4_v17.json` e19d7e14, 235 actions incl. the 50-action Insert-Into-Array → Replace Array Subset repair, 11 sessions by X10); session 1 SAVED `D1_ring_p4s01_20261002_232547.vi` (dc61e193, in-between, not counted); one counted file at the end (CLAUDE.md, D-02/D-04 answered) | PD293–PD322 (ring-p4.md, frozen), PD323–326 (ring-p4b.md) |
 | P5 | results queue 1.2 → 1.7 (lossless FIFO) | NOT STARTED | PD238(d) :2257 |
 | P6 | recorded-frame replay (X/Y/Z bit-identical) + real ABBA at 90/150 Hz | NOT STARTED — first RUN of the chain | PD238(f) :2259 |
 | after P6 | ONE interface-contract step (every loop's published/read locals) | NOT STARTED | STATUS `## NEXT` parallelism rule |
 
 ## Open user decisions (`tools/bench/decisions_pending.json`)
 
-- **D-2026-10-02-03 (open):** P4 is 93 edits — raise the 6-file cap to 8, allow one 93-edit step in ~5 LabVIEW sessions, or run the chain first?
+- **None open** (file read by the cycle-141 judgement session: all 20 items `answered`). The three lines below are history.
+- D-2026-10-02-03 (answered; P4 = one counted file, built over several sessions, CLAUDE.md "Big or blocked work" item 2): P4 is 93 edits — raise the 6-file cap to 8, allow one 93-edit step in ~5 LabVIEW sessions, or run the chain first?
 - **D-2026-10-02-02 (open):** do in-between files count toward the 6-file cap (we proceed as "no").
 - **D-2026-10-02-01 (open):** a check that stops a helper agent finishing while its own LabVIEW run is live (129-2's run was killed that way).
 - D-2026-10-01-01 ANSWERED 2026-10-01 (option 1): ≤ ~40 edit operations per ring step, full scratch run before each, 6-file cap kept (PD261 — [split-plan:2827](../d1-loop12-17-split-plan.md)).
@@ -201,6 +204,10 @@ delivered step that later items build on; it is in force as a fact, not as an or
 - PD320(a)-(e) X10 reproduced; table A read model (9 sessions), no bind-merge tool; cut = longest ≤ 675 prefix splitting no `of` pair; session 1 = v14 ops 1..16 (673.4); start = measured load of the input file; session-1 card scratch → gated launch, session-2 prep beside it — docs/d1/ring-p4.md:372
 - PD321(a)-(e) scratch op 3 RLE w23255 → 1055 (hypothesis: whole wire removed); v15 = delete_wire w23255 then delete_object #10171, gated on w23255's sinks ⊆ #10171; launch 678.5 accepted (< 690) if scratch peak ≤ 675; s02 = ops 17..31, dry after rebase — docs/d1/ring-p4.md:390
 - PD322(a)-(e) ALL 6 ring slot writes are Insert Into Array (donor #29157) where the design says Replace Array Subset — repair toward the design: 1-D RAS donor `DonorRAS1D_v0.vi` built + run first, then the 5 bed nodes replaced FIRST in P4 v16; created-node prim gate owed; EL rule = one item per node — docs/d1/ring-p4.md:408
+- PD323(a)-(f) bed repair form per node (delete wires/node, create from DonorRAS1D uid 175, reconnect by name); prim gate run-time + offline; X10 not recalibrated (scratch-peak gate); cycle 141 = 141-1 alone, then session-1 scratch → gated launch ‖ session-2 prep; repair functional only at P6 — docs/d1/ring-p4b.md:19
+- PD324(a)-(d) v16 36981c83 + prim gates accepted; CREATE-FIRST repair order ratified (delete-first unroutable on FS faces); p4_eq_seq gets a surviving bed `Equal?` donor (v17, ops 1..24 unchanged); s01 f4831031 24 actions, X10 669.3/674.4, EL 51 — docs/d1/ring-p4b.md:43
+- PD325(a)-(e) s01 scratch real == sim, prim gate 3/3, peak 601.4; TD FAIL = LabVIEW re-used deleted uids → key terminals by (uid, owner, name) + self-test; measured census into s01 pred; retry 141-3 then gated launch; v17 e19d7e14 / s02 5e483ea6 accepted, s02 cut re-checked after rebase — docs/d1/ring-p4b.md:55
+- PD326(a)-(e) P4 SESSION 1 DELIVERED `D1_ring_p4s01_20261002_232547.vi` dc61e193 (EL 51 OK, peak 605.0, graph `graph_ring_p4s01_20261002_234419.json`, load 596.5); term_identity_gates accepted; X10 not recalibrated yet (start 596.5 for s02); binding raw-uid carry; cycle 142 = s02 rebase → scratch → gated launch ‖ s03 prep — docs/d1/ring-p4b.md:73
 - PD268(d) 130-2 accepted; open tooling queue fp-20/21/22/24/25, guard_cycle:40, stop_record H1–H3 — docs/d1/tooling.md:34
 
 ### Older items that PD238+ cite as still applying
@@ -236,5 +243,6 @@ delivered step that later items build on; it is in force as a fact, not as an or
 | file | scope |
 |---|---|
 | `docs/d1/ring-p3b.md` | P3b-1 / P3b-2: split, memory, scratch, launch |
-| `docs/d1/ring-p4.md` | P4 tracking loop 1.2 (and P5/P6 until they get their own file) |
+| `docs/d1/ring-p4.md` | P4 tracking loop 1.2, PD293–PD322 — FROZEN 2026-10-02 (429 lines) |
+| `docs/d1/ring-p4b.md` | P4 tracking loop 1.2 from PD323 (and P5/P6 until they get their own file) |
 | `docs/d1/tooling.md` | gates, simulator, prerun, ops and other tool decisions on the D1 path |

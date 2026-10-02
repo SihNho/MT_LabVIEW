@@ -1,0 +1,42 @@
+BGRUN START 2026-10-02 23:01:15 limit 20.0 min: py tools/prior_art_review.py --plan-file docs/d1/ring-p4b.md --slug c141-3-p4s01 --trigger cycle-start --recipe tools/recipes/stage_d1_ring_p4_s01.py --recipe tools/recipes/stage_d1_ring_p4_s01_scratch.py
+BGRUN PID 3680
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c141-3-p4s01.txt (67522 chars)
+   review card tools\bench\cards\review_priorart-c141-3-p4s01.json
+OUTCOME: ANSWERED (50s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-02-priorart-c141-3-p4s01.md
+COST: $1.0592  in 8 / out 4032 / cache-create 112218 / cache-read 404090  (46s, 7 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c141-3-p4s01 verdict=novel -> tools\bench\cards\verdict_priorart-c141-3-p4s01.json
+--- ANSWER ---
+**Verdict: novel.** Nothing in the project's files shows this fix (comparing terminals by uid, owner uid and name in the TD/unwired/D checks) built or tried before card 141-3. There are no user-rule contradictions. The finding below is non-blocking: older evidence already on file supports the plan.
+
+**PART A — the direction**
+- **A1 (settled already): none.** The idea "a raw uid is not a stable identity" is already on file, but nobody had applied it to the stage gates:
+  - `.claude/skills/labview-automation/references/vi-scripting.md:601` says "`Nodes[]` is CREATION order (uids are reused, so uid rank is wrong)".
+  - `archive/peer/2026-09-17-rbw-deleted-wires-run9.md:151` says "Use UID only as one field in an object snapshot, not as the survival criterion" (with an NI-wiki citation).
+  - PD325(b) does what that advice says, so it agrees with the earlier decision rather than repeating a rejected one.
+- **A2 (refuted already): none.** No archived review or retrospective argues against keying terminals by (uid, owner, name).
+- **A3 (contradicted): none blocking.** `docs/d1/ring-p4b.md:60` calls uid re-use a "Hypothesis (review, supported in substance)". The archive has already seen it several times:
+  - `archive/peer/2026-09-17-priorart-priorart-routeb-build.md:356` (#5058 after deleting and re-dropping a subVI).
+  - `archive/peer/2026-09-24-priorart-c73-l7r-r2.md:247` ("LabVIEW reuses deleted uids (4337, 1397)").
+  - `docs/keystone-op-spec.md:407` (uids 90/98 reused).
+
+  The 2026-09-17 review downgraded it to "leading explanation, not a measured…" (`archive/peer/2026-09-17-d1-s3b-uid-reuse-after-delete.md:118-120`). Later cases (c73) treat it as observed. This supports PD325's decision; it does not contradict it.
+- **A4 (unread evidence), non-blocking:** PD325(a)/(b) should have cited the documents above. Doing so would let PD325(b)'s "offline owner check first" be marked as confirming known behaviour, not testing a new hypothesis. That is only an annotation; the work does not change.
+
+**PART B — the artifact**
+- **B1 (already built):** `tools/stagekit.py:1279-1294` (`term_key` = (term uid, owner uid, term name), plus wire identity by its source terminals' keys) and `tools/bench/selftest_td_key_c141_3.py` (T1–T7) already exist. They are card 141-3's own work in progress (the docstring says "card 141-3 pass item 2 (PD325(b))"). That makes them the work under review, not earlier prior art. No older helper did this: `gscript.py`'s `owner_uid` uses (`:3798`, `:3973`) map terminals to owners for routing, not for comparing before and after.
+- **B2 (already failed):** no earlier attempt at this gate fix. The 140-2 error 1055 (removing loose ends on a wire whose only sinks were deleted) is avoided by the create-first order in PD324(b), and 141-2's measured scratch showed no repeat (`docs/d1/ring-p4b.md:58-60`).
+- **B3 (helper exists):** `allterms.py:45` already supplies `owner_uid` on every terminal row, and the new key reuses it, so nothing is hand-rolled.
+- **B4 (already measured):** uid re-use itself is measured (sources under A3). Whether the identity-keyed TD passes on 141-2's case is new; it is the self-test's job.
+
+**PART C — the user's rules**
+- The plan relies on U1 and U13 correctly: the repair restores the 20-slot Replace Array Subset that `docs/ring-buffer-design.md` specifies, and the per-bead maths is untouched.
+- No queue, nothing on the camera loop, no serial on the frame path.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c141-3-p4s01","verdict":"novel","alternative":"Re-use after delete is already on file (vi-scripting.md:601, rbw-deleted-wires-run9.md:151, priorart-c73-l7r-r2.md:247); PD325 should cite it instead of calling it a new hypothesis. Non-blocking.","discriminating_test":"Run selftest_td_key_c141_3.py: T1 must reproduce 141-2's logged FAIL (lost 6, plan deletes 8, {28004,28979}) and T2 must PASS under the (uid, owner, name) key.","violations":[],"sources":[".claude/skills/labview-automation/references/vi-scripting.md:601","archive/peer/2026-09-17-rbw-deleted-wires-run9.md:151","archive/peer/2026-09-24-priorart-c73-l7r-r2.md:247","docs/keystone-op-spec.md:407","archive/peer/2026-09-17-d1-s3b-uid-reuse-after-delete.md:118","tools/stagekit.py:1288"],"note":"stagekit.term_key and selftest_td_key_c141_3.py are card 141-3's own work, not prior art. No user-rule contradiction."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c141-3-p4s01.md
+   STOP RECORD: none - 2026-10-02-priorart-c141-3-p4s01.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_ring_p4_s01.py sha dff1f0131bdb -> these bytes are released by this review; editing them again re-arms the gate
+   NOVEL RECORD written: tools/recipes/stage_d1_ring_p4_s01_scratch.py sha a4db811f66d4 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 53s

@@ -1,0 +1,10 @@
+BGRUN START 2026-10-02 22:54:19 limit 3.0 min: py -u tools/bench/prep_c141_3_owner.py
+BGRUN PID 11396
+  GATE PASS  O0 inputs md5 == card (graph 50595c62, log 17c5caf6)  ('50595c62d0332a94bf066538cf20c0ae', '17c5caf6fc8c1dece1a099a51e444e8e')
+  GATE PASS  O1 base: 28004/28979 are 'output array' of #27928/#28916  {28004: 27928, 28979: 28916}
+  GATE PASS  O2 log: #27928 and #28916 deleted (gone, node census 665 -> 664 each)  {'deleted_at': {27928: 109, 28916: 195}, 'census_lines': [112, 198]}
+  GATE PASS  O3 log: the one TD FAIL line's plan_deletes - lost_rows == {28004, 28979}  {'line': [280], 'diff': [28004, 28979]}
+  GATE PASS  O4 log: in the scratch, 28004 is a terminal of NEW #6942 and 28979 of NEW #6805 (connect sink address -> created node)  {28004: {'line': 167, 'sink': 'sink D[58].N[3].t0', 'owner': 6942, 'name': 'array'}, 28979: {'line': 267, 'sink': 'sink D[59].N[11].t2', 'owner': 6805, 'name': 'new element/subarray'}}
+  GATE PASS  O5 sim end: no row 28004/28979 (so the plan 'deletes' them) and the new nodes' rows carry non-base owners  {'new_owner_rows': 12, 'sample': [{'term_uid': -2, 'owner_uid': -1, 'term_name': 'array', 'wire_uid': 28278}, {'term_uid': -3, 'owner_uid': -1, 'term_name': 'output array', 'wire_uid': -6}, {'term_uid': -4, 'owner_uid': -1, 'term_name': 'index', 'wire_uid': 28358}, {'term_uid': -5, 'owner_uid': -1, 'term_name': 'new element/subarray', 'wire_uid': 28349}]}
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":6,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 8s

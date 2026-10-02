@@ -1,0 +1,86 @@
+{
+ "schema": "task/1",
+ "id": "141-1",
+ "kind": "build",
+ "goal": "Offline: created-node prim gate (run-time + offline) + self-test; P4 plan v16 = 5 bed slot-write repairs to RAS uid 175 first, then v15; session 1 re-cut, FINAL, dry/prerun/X10, EL per node.",
+ "why": "PD322(a)-(e) (judgement 140) + PD323 (judgement 141): every ring slot write is Insert Into Array (rule-1a defect); the repair is decided; the gate makes the repair verifiable and stops the same donor mistake. Unblocks the session-1 LabVIEW scratch + launch of P4 (M3).",
+ "inputs": [
+  {"path": "tools/bench/plan_ring_p4_v15.json", "md5": "eb4ffb6e2a27993a372064470c1c325b"},
+  {"path": "tools/bench/plan_ring_p4_v15_meta.json", "md5": "d012bd2c2d065aed1e16ddab394010e7"},
+  {"path": "tools/bench/plan_ring_p4_s01.json", "md5": "ff041e6c8cdb91c7ff3593a7d029a148"},
+  {"path": "tools/bench/diag_c140_3_facts.md", "md5": "11cd5a1f0cca498068ab189b139fc350"},
+  {"path": "tools/bench/diag_c140_4_facts.md", "md5": "8dd8a265fa87bf5d34a0738e6376c72d"},
+  {"path": "tools/bench/diag_c140_5_facts.md", "md5": "797b3f2b0263f8e2437188fcad7d0921"},
+  {"path": "tools/bench/prep_c140_4_census.log", "md5": "d7ffc7ef036f1e742335d48e266f35f6"},
+  {"path": "tools/bench/graph_ring_p3b2b_20261002_133824.json", "md5": "50595c62d0332a94bf066538cf20c0ae"},
+  {"path": "tools/bench/memory_model.json", "md5": "503140799e294c5da07f4f4083f824e9"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRAS1D_v0.vi", "md5": "e8a9417ce4b75d27e8fd2f172a5dc9cd"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/bench/c125_1_offline_measure.py"},
+  {"kind": "file", "name": "tools/bench/main_vi_node_labels.json"},
+  {"kind": "file", "name": "docs/d1/ring-p4.md"}
+ ],
+ "pass": [
+  "1 run-time prim gate: every CREATED node's read-back label/class == plan prim, else named FAIL; self-test: 140-3 case ('Insert Into Array' vs 'Replace Array Subset') FAIL + a match PASS",
+  "2 offline prim gate in stage_prerun: donor label != prim refused; self-test #29157 FAIL, DonorRAS1D uid 175 PASS; c125_1_offline_measure.py rerun PASS (PD252(a))",
+  "3 v16: repair of #27928 #28916 #29048 #29265 #29316 first (PD323(a)), bufdiff on uid 175; fs_routes regenerated; replay END; cdiff == v15 + 5 swaps; compile ALL; prim gate PASS",
+  "4 X10 refuses a provisional base (stage_prerun.py:1997-1998) with self-test; scratch recipe x10() limit from the md5-pinned pred file",
+  "5 s01 = longest X10<=675 prefix of v16, no split `of` pair (PD320(c)), start 600.2; FINAL; both recipes dry+prerun PASS, X10 shown; EL pred per node (PD322(e)); --scratch-required logged",
+  "6 prior-art review if guard_cycle asks, disposed; prep_c141_1_facts.md <= 30 lines: gate file:lines, self-tests, v16 md5/actions, whole-v16 session table, s01 md5 + EL pred"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p4_v16.json",
+  "tools/bench/plan_ring_p4_v16_meta.json",
+  "tools/bench/plan_ring_p4_s01.json",
+  "tools/bench/plan_ring_p4_s01_pred.json",
+  "tools/recipes/stage_d1_ring_p4_s01.py",
+  "tools/recipes/stage_d1_ring_p4_s01_scratch.py",
+  "tools/bench/prep_c141_1_facts.md",
+  "tools/bench/cards/result_141-1.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagekit.py",
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/stage_prerun.py",
+   "tools/bench/selftest_prim_gate*",
+   "tools/bench/selftest_x10*",
+   "tools/bench/c125_1_*",
+   "tools/bench/plan_ring_p4_v16*",
+   "tools/bench/plan_ring_p4_s01*",
+   "tools/bench/prep_c141_1*",
+   "tools/bench/sim/ring_p4_v16*/*",
+   "tools/bench/sim/ring_p4_s01*/*",
+   "tools/bench/sim/stage_d1_ring_p4_s01*/*",
+   "tools/recipes/stage_d1_ring_p4_s01*",
+   "tools/bench/prerun_records*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/cards/review_c141*",
+   "tools/bench/cards/verdict_c141*",
+   "tools/bench/cards/result_141-1*",
+   "archive/peer/2026-10-02-*c141*",
+   "archive/peer/2026-10-03-*c141*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 80},
+ "rules": [
+  "No LabVIEW; bed/donor used only via graph JSON + facts files",
+  "Repair rows from the bed graph, never re-typed; RAS terminals connected BY NAME (diag_c140_5_facts.md:22-24)",
+  "No X10 recalibration (PD323(c)); wrong refusal -> tools/gate_fp.py log, never an env bypass",
+  "Return at the first unexpected result after finishing that step; facts + OPEN; JEV row per failing log"
+ ],
+ "advances": ["M3", "R1"]
+}

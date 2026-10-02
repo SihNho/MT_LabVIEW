@@ -1,21 +1,19 @@
-r"""stage_d1_ring_p4_s02 - card 140-P1 (WRITTEN, NOT LAUNCHED), RING P4 LabVIEW SESSION 2 (PD320(c)(e), D-2026-10-01-01,
-D-2026-10-02-02/04): on session 1's SAVED in-between file (stage_d1_ring_p4_s01.py, card 140-2), apply the 15 actions of
-plan_ring_p4_s02.json = v14 ops 17..31 (p4_x_i_rab1 .. p4_sel_mask): the two FS crossings into RAB1 (session 1's Replace Array Subset)
-each with its RLE, the last/disc shift registers + their constants, the While w1 and its first nodes.
-Copied from stage_d1_ring_p4s1.py (9f60aeba; the P4 step-1 pattern) with names changed only.
-BASE IS PROVISIONAL (session 1's simulated end, tools/bench/sim/ring_p4_v14_ops1_16/base_provisional.json; stage_prerun refuses the
-launch): after session 1's file exists, read its graph, put its MEASURED load into memory_model.json load_by_vi (PD320(d)), then
-`py tools/stage_prerun.py --rebase tools/bench/plan_ring_p4_s02.json --graph <graph of session 1's saved VI>`, regenerate
-plan_ring_p4_s02_pred.json (start = that load + op-0), dry + prerun. The 2 refs to session 1's RAB1 (#-16 here) re-bind at the rebase.
+r"""stage_d1_ring_p4_s02 - card 141-P1 (WRITTEN, NOT LAUNCHED), RING P4 LabVIEW SESSION 2 of plan v17 (PD320(c)(e), PD324(c)(d);
+D-2026-10-01-01, D-2026-10-02-02/04): on session 1's SAVED in-between file (stage_d1_ring_p4_s01.py, card 141-1), apply the 30 actions
+of plan_ring_p4_s02.json = v17 ops 25..54 (p4_rp29048_dwo .. p4_c_stopall_f): the rest of the #29048 repair, the #29265 and #29316
+repairs (Replace Array Subset from claudeDev\DonorRAS1D_v0.vi uid 175, create-first), the v15 deletes and the False constant.
+v17 = v16 with p4_eq_seq's $work donor #10171 -> #10019 (X17, tools/bench/prep_c141_p1_mk.py); v17 ops 1..24 == plan_ring_p4_s01.json.
+The plan's base is PROVISIONAL (stagesim's END of plan_ring_p4_s01.json f4831031): `stage_prerun --rebase plan_ring_p4_s02.json
+--graph <session 1 file's graph>` before any launch, then the pred is regenerated (start = session 1 file's measured load, PD320(d)).
+COPIED from stage_d1_ring_p4_s01.py (card 141-1) with ONLY names changed (plan, pred, card id, out json, stage name, docstring).
 FRESH LabVIEW -> claudeDev\D1_ring_p4s02_<ts>.vi (rule-6 GUI save, ExecState 0 by design) = an IN-BETWEEN file of step P4 (not counted,
-D-2026-10-02-02); no Error List expected file (pred errorlist.checked False). The FIRST run of this recipe is the full SCRATCH run on a
-byte copy of its input (D-2026-10-01-01), never the launch.
-ROWS ONLY FROM plan_ring_p4_s02.json (stagesim FINAL of plan_ring_p4_s02_in.json, prep_c140_p1_s02.py); expected values only from
-plan_ring_p4_s02_pred.json. No new op.
-PREDICTION: L1 actions -> pred ops; E1 every checkpoint == sim; NG crossing tunnel names == step files'; FR created objects on the sim end's
-frames; D new/lost wires == sim's; TD every base terminal that was wired stays wired; CEN2 == pred census; PB cdiff(S1, end) == pred rows
-(FATAL, before save); HB handles <= +700; PS saved, input unchanged. X10 = plan_ring_p4_s02_pred.json memory_pred (planned 674.6 at 606.1).
-    py tools/bgrun.py --material --max-min 50 --log tools/bench/stage_d1_ring_p4_s02.log -- py -u tools/recipes/stage_d1_ring_p4_s02.py"""
+D-2026-10-02-02/04). The FIRST run is the full SCRATCH run on a byte copy of session 1's file (stage_d1_ring_p4_s02_scratch.py).
+ROWS ONLY FROM plan_ring_p4_s02.json; expected values only from plan_ring_p4_s02_pred.json. No new op.
+PREDICTION (numbers in the pred file): L1 actions -> pred ops; E1 every checkpoint == sim; NG crossing tunnel names == step files';
+PRIM every created primitive's label == plan prim; FR created objects on the sim end's frames; D new/lost wires == sim's; TD every base
+terminal that was wired stays wired; CEN2 == pred census; PB cdiff(S1, end) == pred rows (FATAL, before save); HB handles <= +700;
+PS saved, input unchanged. X10 = pred memory_pred. Error List of the end = pred errorlist.predicted_total (PD322(e) per-node rule).
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/launch_c141_p4s02.log -- py -u tools/recipes/stage_d1_ring_p4_s02.py"""
 import copy, json, os, sys                                                         # noqa: E401
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import stagekit as K, gscript as g, vigraph as V, stagexec as SX, jev_candidates as JC   # noqa: E401,E402
@@ -69,7 +67,7 @@ def body(s):
     unw = [t for t, w_ in bw.items() if w_ and not rw.get(t) and t not in gone and any(int(r["term_uid"]) == t and r["wire_uid"] for r in L["terminals"])]
     s.gate("TD every base terminal the sim keeps wired is still wired; rows lost == the plan's deletes", not unw and set(bw) - set(rw) == gone,
            {"unwired": unw[:20], "lost_rows": sorted(set(bw) - set(rw))[:20], "plan_deletes": sorted(gone)[:20]})
-    s.es("after all rows (ExecState 0 expected: P4's in-between file is broken by design)")
+    s.es("after all rows (ExecState 0 expected: session 1's in-between file is broken by design)")
     s1p = J(JC.WIKI, JC.S1_KEY + ".json")
     S1f = V.build4(s1p["terminals"], J(JC._newest("graph_objs_s1_*.json"))["objects"], J(JC._newest("graph_loops_s1_*.json"))["loops"], LAB, s1p["fs_tunnel_pairs"], frame_keyed=True)
     G1 = V.build4(real, getattr(be, "last_objs", None) or be.st["objs"], copy.deepcopy(L["loops"]), LAB, FSPAIRS, frame_keyed=True)
@@ -85,11 +83,12 @@ def body(s):
     _x = m and m != s.input_md5 and s.work in s.scratches and s.scratches.remove(s.work)   # noqa: F841
     el = PRED["errorlist"]                                                          # in-between file: checked False, no EL file written
     s.R["ring_p4_s02"] = {"final": s.work if m else None, "md5": m, "cdiff_rows": rk, "handles": [h0, h1], "census_delta": dc, "frames": on,
-                          "errorlist_predicted_total": el["predicted_total"], "level": "STRUCTURAL, in-between file of P4 (session 2), broken by design, never run"}; s.dump()   # noqa: E702
+                          "errorlist_predicted_total": el["predicted_total"], "errorlist_alternative_total": el["alternative_total"],
+                          "level": "STRUCTURAL, in-between file of P4 (session 2), broken by design, never run"}; s.dump()   # noqa: E702
 
 
 if __name__ == "__main__":
-    st = K.Stage(BASE["vi"], BASE["md5"], "D1_ring_p4s02", preload=False, deadline_min=45, out_json=os.path.join(K.BENCH, "stage_d1_ring_p4_s02.json"), task="card 140-P1 RING P4 session 2")
+    st = K.Stage(BASE["vi"], BASE["md5"], "D1_ring_p4s02", preload=False, deadline_min=45, out_json=os.path.join(K.BENCH, "launch_c141_p4s02.json"), task="card 141-P1 RING P4 v17 session 2")
     rc = K.run(body, st)
     DRY or SX.kill_labview_at_exit()
     sys.exit(rc)
