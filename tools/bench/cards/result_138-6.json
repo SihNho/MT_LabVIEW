@@ -1,0 +1,27 @@
+{"schema":"result/1","id":"138-6","status":"FAIL","gates":{"pass":23,"fail":1},
+"first_fail":"step 2: create_control_nested(Greater? #46, top level) ValueError 'owned by TopLevelDiagram #3, not by a Diagram' (gscript.py:4149); diag_c138_6_run.log:42-54",
+"blocked_by":null,
+"artefacts":[
+ {"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorI32Max_v0.vi","md5":"c0c8db654c98bb6833b8935dccefb3ee"},
+ {"path":"tools/bench/diag_c138_6_facts.md","md5":"4f9809ca04b8350315e56785b7874128"},
+ {"path":"tools/bench/diag_c138_6_run.py","md5":"18404a03432f035689f69af8c632d008"},
+ {"path":"tools/bench/diag_c138_6_out.json","md5":"ef6b523e14d67d77d56d350efa81dd21"},
+ {"path":"tools/bench/op_hygiene/OpStopMode_v0.json","md5":"93e513124e34cfc6c46aa545910701f9"},
+ {"path":"tools/bench/op_hygiene/OpStopModeB_v0.json","md5":"481310ca6594139b58f65314ab7b5d7b"}],
+"facts":[
+ "Item 0 PASS: both hygiene records are now in tools/bench/op_hygiene/; gscript.op(OpStopModeB_v0) opened and read Mechanical Action outside hygiene_probe (diag_c138_6_run.log:5-7,24)",
+ "Item 1 PASS: DonorI32Max_v0.vi has constant uid 127 (DigitalNumericConstant, I32 repr 3, value 2147483647) on a For N, ExecState 1, saved by script; v9's uid-0 placeholder should become 127 (log:8-12)",
+ "Item 3: after delete_wire w25415 on a bed byte copy, Case tunnel #10465 STILL EXISTS with all 3 rows, now all unwired; ExecState 0; Error List 52 items (bed expected file: 51) (log:14-19)",
+ "Item 4 PASS: action 4 written and read back; the local WAS created (no refusal), then ExecState 0 with Error List 'Boolean latch action is incompatible with local variables' (log:24-28)",
+ "Item 2 stopped: read_terms lists NO terminal owned by a For loop, so the i terminal cannot be reached that way; Num fell back to an I32 0 constant (log:34-36)",
+ "Item 2: connect_term_uid from a constant in a For body to Greater?.x on the top level made LoopTunnel #331 itself; wire 325 Is Broken? False (log:38-40). IndexMode was not read before the stop",
+ "Item 2 FAIL = our script's bug: create_control_nested refuses a top-level node (gscript.py:4149). Not reached: 3 For tunnels, IndexMode read-back, ExecState, runs (log:42-54)",
+ "Item 5 PASS: LabVIEW gone, all 5 scratch files deleted, bed md5 395118775a52bc90073f4449b99f899d unchanged (log:55-57); facts in tools/bench/diag_c138_6_facts.md (38 lines)",
+ "guard_peer blocked the launch on 138-P1's failing prep_c138_p1_cmp.log (Jev new-problem p=0.754); cleared by review archive/peer/2026-10-02-c138-6-p1cmp-routes.md (ANSWERED, $1.06)",
+ "Jev table row: diag_c138_6_run.log | no JEV-LADDER row yet (jev_gate.log has none) | - | returned at the first unexpected result, nothing retried | FAIL 23/1"],
+"open":[
+ "Rerun step 2 by itself? Either create the y control on a node inside a body diagram, or let _node_term_row accept a node on the TopLevelDiagram (that means editing a tools/*.py file, which this card did not allow)",
+ "Review c138-6-p1cmp-routes (about 138-P1's route diff) says the cause is a stale finalized.fs_routes table that is indexed by position: mkv9 copied it unchanged from v8 after inserting an action. Its 'What was done with it' section is not written (archive/ was not in this card's write list)",
+ "Error List went 51 -> 52 after delete_wire w25415; the new item was not identified (only the count was read)"],
+"cost":{"usd":null,"minutes":33,"labview_runs":1},
+"note":"Scratch only. The bed was never edited and never run; the only VI run was the step-4 Mechanical Action op on a scratch target. Item 2 still owes its measurement."}

@@ -1,0 +1,64 @@
+BGRUN START 2026-10-02 17:51:12 limit 20.0 min: py -u tools/prior_art_review.py --plan-file tools/bench/prep_c138_4_priorart_plan.md --slug c138-4-p4v8-forloop --trigger new-op --no-recipe card 138-4 is an offline plan card (flags.labview none); the v8 plan is not launched here
+BGRUN PID 11060
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c138-4-p4v8-forloop.txt (53457 chars)
+   review card tools\bench\cards\review_priorart-c138-4-p4v8-forloop.json
+OUTCOME: ANSWERED (247s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-02-priorart-c138-4-p4v8-forloop.md
+COST: $2.3004  in 56 / out 14982 / cache-create 150023 / cache-read 4001881  (243s, 47 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c138-4-p4v8-forloop verdict=settled-already -> tools\bench\cards\verdict_priorart-c138-4-p4v8-forloop.json
+--- ANSWER ---
+**Verdict: not novel. Most of this structure has already been built here, and the open questions about indexing and the I32 constant were answered in earlier cycles.**
+
+## PART A: the direction
+
+**A1, settled already (this is the plan's own source, not a blocker).** The design itself (a For loop, a scalar Select, then Array Max & Min, with MAX = I32 2147483647 from `const_donor`) was decided in PD311(b), `docs/d1/ring-p4.md:233-237`. The plan moves Greater? outside the For loop and says so, so it does not contradict PD311(b).
+
+**A1, settled already: how the indexing mode is enforced.** The plan asks this as an open question, but it was answered in PD235(c), `docs/d1-loop12-17-split-plan.md:2212` (cycle 119): *"The names tunnel keeps an explicit set-indexing row plus its read-back gate, even though LabVIEW auto-indexed it … The build must not depend on that automatic behaviour. `stagexec.py:1561` (index_mode_fix only under `if lost:`) is NOT changed."* The way it is applied:
+- The recipe calls `be.index_mode_fix(...)` itself after `Executor.run`: `tools/recipes/stage_d1_qrt_pool.py:46-47`. The rule is written down in `tools/bench/plan_qrt_pool_pred.json:18`.
+- On the real launch the gate passed, IndexMode 1: `tools/bench/stage_d1_qrt_pool.log:222` (*"TI names tunnel #26131 IndexMode == 1 (plan indexing True), set + read back by index_mode_fix"*).
+- So v8's three tunnels TFN1, TFB1 and TFS1 each need the same gate in the recipe, as on the pool stage. The plan does not mention it.
+
+**A4, evidence the plan did not use: a constant in a NEW body cannot be addressed.** PD307(a), `docs/d1/ring-p4.md:188-193`, measured that a `const_donor` constant in a new While body is not in `Diagram.Nodes[]`, so `stagekit.address` cannot see it. STATUS NEXT carries this forward as *"list v8 actions that rely on it"*. KMX1 (on the For body) and KMX2 (on W1's body) are both `const_donor` constants in NEW bodies, and the brief does not say how their wires will be addressed.
+
+**A2 / A3:** I found nothing.
+
+## PART B: the artefact
+
+**B1, already built: a plan-made For inside a plan-made While, with indexing tunnels, run through stagexec.**
+- The display-loop stage (`tools/bench/sim/c109c_post/plan_disp.json`):
+  - `create ForLoop DLF1` on `new:DL1.body` (`:36-43`).
+  - `tunnel` TRING1, input, `indexing: true` (`:425-434`), and TOUT1, output, `indexing: true` (`:556-565`).
+  - DLF1's N is never wired: no `N`/`count` wire anywhere in the plan.
+- It ran through `stagexec` (STEPX tunnel ops, `tools/bench/stage_d1_disp_c104B3.log:90,130`). It ended at ExecState 1 and was saved by script (`:311-324`), and the display VI was accepted functionally in cycle 110 (STATUS, DELIVERED line).
+- So "a For loop with N unwired and only auto-indexed inputs, built by our scripting" has been done once, and it compiled.
+- The pool stage did the same with For PF1 (`plan_qrt_pool.json:316-321`), but on an existing diagram (parent 13236), and in a broken-by-design bed.
+- Caveat: no `index_mode` line appears in any disp log, so LabVIEW's default modes were right there without the fix. Whether that default holds was not measured for a For inside a While that sits in a Flat Sequence frame.
+
+**B3, a helper exists, for KMX2 only.**
+- `stagekit.const_row` (`tools/stagekit.py:897-910`, `OpCreateConstOnTerm_v0`) creates a constant typed by the sink, with a chosen value, on a node in a While body. It was measured with the value read back (`docs/d1-route-b-plan.md:154`).
+- It accepts a value of 2147483647 (`diag_c137_7_types.log:77`). It came out DBL there only because Select.f's sink had no type yet (`:218`, PD311(b)).
+- Less?.y on W1's body, created after Less?.x is wired, is the typed-sink case. So KMX2 probably does not need a donor; the I32 result after x is wired has not been measured.
+- KMX1 on the For body is different: `const_row` looks up a WhileLoop by `loop_uid` (`stagekit.py:903`), so it does not cover a For body. The existing donors (`DonorSRInit_v0` #134 U32 max, #248 I32 0; `DonorRingConst_v0` #249 I32 −1, `ring-p4`/`d1-loop12-17-split-plan.md:2448-2451`) hold no I32 MAX. A new donor, or a For-body route, really is needed for KMX1 only.
+
+**B4, already measured: the Select pieces.**
+- A scalar Boolean on `s` leaves the wire unbroken; a Boolean array breaks it (`diag_c137_7_types.log:171-189`, PD311(a)).
+- Greater? on (I32 array, I32 scalar) gives Boolean[] (`:220-224`).
+- What has not been measured: an auto-indexed Boolean tunnel feeding Select.s inside a For. Nothing I found covers that.
+- I could not confirm a precedent in the original VI for Greater? on an array followed by an auto-indexed For. That remains unread, not refuted.
+
+## PART C: the user's rules
+
+I found no contradiction. The plan uses no queue, adds no wait or gate on the camera, puts no serial on the frame path, and changes no per-bead number. MAX is a value used only by the new reader (U1, U4, U6, U13 hold).
+
+PRIOR-ART: settled-already
+PRIOR-ART: already-built
+PRIOR-ART: helper-exists
+PRIOR-ART: unread-evidence
+
+VERDICT {"schema":"verdict/1","id":"priorart-c138-4-p4v8-forloop","verdict":"settled-already","alternative":"Copy the disp DLF1-in-DL1 pattern (ExecState 1) and PD235(c)'s recipe-level index_mode_fix + read-back gate (stage_d1_qrt_pool.py:46-47) for TFN1/TFB1/TFS1; use const_row for KMX2 after Less?.x is wired; a new I32-MAX donor only for KMX1 in the For body.","discriminating_test":"Scratch run: for each of TFN1/TFB1/TFS1, read IndexMode with index_mode_fix (want 1), check Select.s unbroken on the auto-indexed b[i], and read the KMX2 type (I32) when created by const_row after x is wired.","violations":[],"sources":["docs/d1-loop12-17-split-plan.md:2212","tools/recipes/stage_d1_qrt_pool.py:46-47","tools/bench/stage_d1_qrt_pool.log:222","tools/bench/sim/c109c_post/plan_disp.json:36-43","tools/bench/stage_d1_disp_c104B3.log:311-324","tools/stagekit.py:897-910","docs/d1/ring-p4.md:188-193"],"note":"Release by FIXED: add TI-style IndexMode gates for the 3 tunnels and list the KMX1/KMX2 wires that PD307(a) affects."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c138-4-p4v8-forloop.md
+   NO-RECIPE opt-out recorded in archive\peer\2026-10-02-priorart-c138-4-p4v8-forloop.md: card 138-4 is an offline plan card (flags.labview none); the v8 plan is not launched here
+   STOP RECORD: NOT ARMED BY EXPLICIT OPT-OUT - verdicts settled-already, already-built, helper-exists, unread-evidence block, and --no-recipe was given:
+     reason: card 138-4 is an offline plan card (flags.labview none); the v8 plan is not launched here
+   If this review does become a recipe, plant the record by hand:
+     py tools/stop_record.py write --recipe <recipe> --review archive\peer\2026-10-02-priorart-c138-4-p4v8-forloop.md --verdict settled-already already-built helper-exists unread-evidence
+BGRUN END rc=0 after 250s

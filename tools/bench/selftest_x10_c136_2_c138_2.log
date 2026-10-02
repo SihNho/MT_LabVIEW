@@ -1,0 +1,354 @@
+BGRUN START 2026-10-02 16:59:56 limit 8.0 min: py -u tools/bench/selftest_x10_c136_2.py
+BGRUN PID 12660
+PASS  E1 edit trace modelled: PASS N 26 R 6 start 610.9 peak 679.4 == 679.4 <= 690  {'model': 'tools/bench/memory_model.json', 'runs': [{'plan': 'edit diagnostic C:/Users/KimLab/AppData/Local/Temp/x10ed_c136_2_75nkwyxf.py', 'edit': True, 'N': 26, 'R': 6, 'bind': 0, 'peak_mb': 679.4, 'start_mb': 610.9, 'start_source': '605.0 + op-0 read 5.9 (tools/bench/launch_p3b2_c135_g.log (MEM after load: 605.0 MB private); tools/bench/stage_d1_ring_p3b1.log:42-43 (METER start k 0 561.8 MB -> METER read k 0 567.7 MB, d +5.9); pin4 :59-60 +6.0 (result_133-2.json); card 133-3, PD283(b))', 'fail_above_mb': 690.0, 'ok': True, 'src_reads': 0, 'dry_reads': 5, 'reads_line': 'source 0 []; dry executed 5; sessions 1', 'checkpoints': "k 0 + 5 whole-VI read(s) = max(source 0, dry executed 5 {'Stage.uid_index': 5})"}], 'not_compiled': [], 'recorded': {'why': 'UNMEASURED: no recorded meter of x10ed_c136_2_75nkwyxf.py covers ops 1..end (0 record(s))'}, 'peak_mb': 679.4}
+PASS  E2 over limit: FAIL peak 726.3 == 726.3 > 690, not UNMEASURED  {'model': 'tools/bench/memory_model.json', 'runs': [{'plan': 'edit diagnostic C:/Users/KimLab/AppData/Local/Temp/x10ed_c136_2_75nkwyxf.py', 'edit': True, 'N': 60, 'R': 6, 'bind': 0, 'peak_mb': 726.3, 'start_mb': 610.9, 'start_source': '605.0 + op-0 read 5.9 (tools/bench/launch_p3b2_c135_g.log (MEM after load: 605.0 MB private); tools/bench/stage_d1_ring_p3b1.log:42-43 (METER start k 0 561.8 MB -> METER read k 0 567.7 MB, d +5.9); pin4 :59-60 +6.0 (result_133-2.json); card 133-3, PD283(b))', 'fail_above_mb': 690.0, 'ok': False, 'src_reads': 0, 'dry_reads': 5, 'reads_line': 'source 0 []; dry executed 5; sessions 1', 'checkpoints': "k 0 + 5 whole-VI read(s) = max(source 0, dry executed 5 {'Stage.uid_index': 5})"}], 'not_compiled': [], 'recorded': {'why': 'UNMEASURED: no recorded meter of x10ed_c136_2_75nkwyxf.py covers ops 1..end (0 record(s))'}, 'peak_mb': 726.3}
+PASS  E3 opened VI load unmeasured -> FAIL UNMEASURED  UNMEASURED: no stagexec.Executor plan in the dry run and no recorded meter covers the run (not read-only: dry ran 26 Stage._op edit op(s) ['connect_term_uid']; dry mutation Stage._op connect_term_uid; source calls edit verb(s) ['connect']; edit model: opened VI load unmeasured (md5 00000000000000000000000000000000 not in memory_model load_by_vi))
+PASS  E4 no whole-VI read count in the trace -> FAIL UNMEASURED  UNMEASURED: no stagexec.Executor plan in the dry run and no recorded meter covers the run (not read-only: dry ran 26 Stage._op edit op(s) ['connect_term_uid']; dry mutation Stage._op connect_term_uid; source calls edit verb(s) ['connect']; edit model: dry trace carries no whole-VI read count (x10_reads))
+PASS  E5 no ops (old T2 shape) -> FAIL UNMEASURED, no edit-model text  UNMEASURED: no stagexec.Executor plan in the dry run and no recorded meter covers the run (not read-only: source calls edit verb(s) ['connect'])
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 395118775a52bc90073f4449b99f899d  got 395118775a52bc90073f4449b99f899d
+  PASS  DRY graph JSON for input md5 395118775a52bc90073f4449b99f899d  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_ring_p3b2b_20261002_133824.json
+  FACT  OP loop_in while on #23166 -> err '' (0.0 s)
+  PASS  A1 one While #<dry:g.loop_in> with ONE new body Diagram #0  <dry:g.loop_in>
+  FACT  OP create_primitive_nested ks const_donor -> err '' (0.0 s)
+  FACT  CREATE ks #<dry:g.create_primitive_nested> census {}
+  PASS  C ks op err '' and a node  <dry:g.create_primitive_nested>
+  FACT  OP create_primitive_nested iai Index Array -> err '' (0.0 s)
+  FACT  CREATE iai #<dry:g.create_primitive_nested> census {}
+  PASS  C iai op err '' and a node  <dry:g.create_primitive_nested>
+  PASS  T #0 index sink: exactly one terminal
+  PASS  T #0 None src: exactly one terminal
+  FACT  OP connect_term_uid A2 IAI.index <- KS (body -> parent) #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE A2 IAI.index <- KS (body -> parent) Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W A2 IAI.index <- KS (body -> parent) op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  FACT  TS #0 faces []; index_mode None
+  PASS  A2b TS #0 has ONE outer face on #23166, wired
+  FACT  OP struct_copy_nested FS -> #23166 -> err '' (0.0 s)
+  PASS  A3 FS #<dry:g.struct_copy_nested.get()> frame f0 #0  <dry:g.struct_copy_nested>
+  FACT  OP create_primitive_nested ian Index Array -> err '' (0.0 s)
+  FACT  CREATE ian #<dry:g.create_primitive_nested> census {}
+  PASS  C ian op err '' and a node  <dry:g.create_primitive_nested>
+  FACT  OP create_primitive_nested eq2 Equal? -> err '' (0.0 s)
+  FACT  CREATE eq2 #<dry:g.create_primitive_nested> census {}
+  PASS  C eq2 op err '' and a node  <dry:g.create_primitive_nested>
+  PASS  T #0 index sink: exactly one terminal
+  FACT  OP connect_term_uid U5 IAN.index (FS f0) <- TS outer face #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE U5 IAN.index (FS f0) <- TS outer face Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W U5 IAN.index (FS f0) <- TS outer face op err '' and Is Broken? False after RLE  <dry:g.connect_term_uid>
+  PASS  T #0 y sink: exactly one terminal
+  PASS  T #0 element src: exactly one terminal
+  FACT  OP connect_term_uid U6 EQ2.y (#23166) <- IAN.element (FS f0 exit) #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE U6 EQ2.y (#23166) <- IAN.element (FS f0 exit) Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W U6 EQ2.y (#23166) <- IAN.element (FS f0 exit) op err '' and Is Broken? False after RLE  <dry:g.connect_term_uid>
+  FACT  OP move_in #0 -> Diagram[None] at (40, 120) -> err '' (0.0 s)
+  PASS  C lrn Local read 'Num' moved into #0  {'uid': 0}
+  FACT  OP create_primitive_nested gt Greater? -> err '' (0.0 s)
+  FACT  CREATE gt #<dry:g.create_primitive_nested> census {}
+  PASS  C gt op err '' and a node  <dry:g.create_primitive_nested>
+  FACT  OP create_primitive_nested km1 const_donor -> err '' (0.0 s)
+  FACT  CREATE km1 #<dry:g.create_primitive_nested> census {}
+  PASS  C km1 op err '' and a node  <dry:g.create_primitive_nested>
+  FACT  OP create_primitive_nested sel Select -> err '' (0.0 s)
+  FACT  CREATE sel #<dry:g.create_primitive_nested> census {}
+  PASS  C sel op err '' and a node  <dry:g.create_primitive_nested>
+  FACT  OP create_primitive_nested amm Array Max & Min -> err '' (0.0 s)
+  FACT  CREATE amm #<dry:g.create_primitive_nested> census {}
+  PASS  C amm op err '' and a node  <dry:g.create_primitive_nested>
+  FACT  OP create_primitive_nested lt Less? -> err '' (0.0 s)
+  FACT  CREATE lt #<dry:g.create_primitive_nested> census {}
+  PASS  C lt op err '' and a node  <dry:g.create_primitive_nested>
+  FACT  OP create_primitive_nested or Or -> err '' (0.0 s)
+  FACT  CREATE or #<dry:g.create_primitive_nested> census {}
+  PASS  C or op err '' and a node  <dry:g.create_primitive_nested>
+  FACT  OP move_in #0 -> Diagram[None] at (580, 220) -> err '' (0.0 s)
+  PASS  C lrs Local read 'stop (end)' moved into #0  {'uid': 0}
+  PASS  U2 KMX created on Select.f before t is wired (#0)
+  PASS  T #0 x sink: exactly one terminal
+  PASS  T #0 None src: exactly one terminal
+  FACT  OP connect_term_uid U1a GT.x <- Num #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE U1a GT.x <- Num Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W U1a GT.x <- Num op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  PASS  T #0 y sink: exactly one terminal
+  PASS  T #0 None src: exactly one terminal
+  FACT  OP connect_term_uid U1b GT.y <- I32 -1 #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE U1b GT.y <- I32 -1 Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W U1b GT.y <- I32 -1 op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  PASS  T #0 t sink: exactly one terminal
+  PASS  T #0 None src: exactly one terminal
+  FACT  OP connect_term_uid U1c Select.t <- Num (branch) #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE U1c Select.t <- Num (branch) Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W U1c Select.t <- Num (branch) op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  PASS  T #0 s sink: exactly one terminal
+  PASS  T #0 x > y? src: exactly one terminal
+  FACT  OP connect_term_uid U3 Select.s <- GT out (Boolean array) #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE U3 Select.s <- GT out (Boolean array) Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W U3 Select.s <- GT out (Boolean array) op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  PASS  T #0 array sink: exactly one terminal
+  PASS  T #0 s? t: f src: exactly one terminal
+  FACT  OP connect_term_uid U3b AMM.array <- Select out #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE U3b AMM.array <- Select out Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W U3b AMM.array <- Select out op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  PASS  T #0 x sink: exactly one terminal
+  PASS  T #0 min value src: exactly one terminal
+  FACT  OP connect_term_uid U3c LT.x <- AMM.min value #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE U3c LT.x <- AMM.min value Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W U3c LT.x <- AMM.min value op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  PASS  T #0 y sink: exactly one terminal
+  PASS  T #0 None src: exactly one terminal
+  FACT  OP connect_term_uid U3d LT.y <- KMX (branch) #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE U3d LT.y <- KMX (branch) Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W U3d LT.y <- KMX (branch) op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  PASS  T #0 x sink: exactly one terminal
+  PASS  T #0 x < y? src: exactly one terminal
+  FACT  OP connect_term_uid W1a Or.x <- LT out #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE W1a Or.x <- LT out Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W W1a Or.x <- LT out op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  PASS  T #0 y sink: exactly one terminal
+  PASS  T #0 None src: exactly one terminal
+  FACT  OP connect_term_uid W1b Or.y <- stop (end) Local #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE W1b Or.y <- stop (end) Local Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W W1b Or.y <- stop (end) Local op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  FACT  W1 WS cond read-back {}; Or out wire 0
+  PASS  W1c WS cond wired from the Or (cond wire == Or out wire)  ({}, 0)
+  FACT  ExecState end None
+  PASS  X bed md5 unchanged  395118775a52bc90073f4449b99f899d
+PASS  E6 dry of diag_c136_1_routes PASS: ops 26, x10_reads 3 (X10 False: UNMEASURED: no stagexec.Executor plan in the dry run and no recorded meter covers the run (not read-only: dry ran 26 Stage._op edit op(s) ['connect_term_uid', 'create_primitive_nested', 'loop_in', 'move_in', 'struct_copy_nested']; dry mutation Stage._op loop_in; source calls edit verb(s) ['connect_term_uid', 'const_row', 'create', 'create_local_read', 'create_primitive_nested', 'loop_in', 'move_in', 'wire', 'wire_remove_loose_ends']; 11 whole-VI read call site(s) not bounded offline: ['census_snapshot line 59: function body used as a value (call count not offline)', 'uid_index line 59: function body used as a value (call count not offline)', 'uid_index line 59: function body used as a value (call count not offline)', 'census_snapshot line 59: function body used as a value (call count not offline)']; edit model: whole-VI read count not bounded from the source (census_snapshot line 59: function body used as a value (call count not offline); uid_index line 59: function body used as a value (call count not offline); uid_index line 59: function body used as a value (call count not offline); census_snapshot line 59: function body used as a value (call count not offline))))  {'model': 'tools/bench/memory_model.json', 'runs': [], 'not_compiled': [], 'recorded': {'why': 'UNMEASURED: no recorded meter of diag_c136_1_routes.py covers ops 1..end (0 record(s))'}, 'why': "UNMEASURED: no stagexec.Executor plan in the dry run and no recorded meter covers the run (not read-only: dry ran 26 Stage._op edit op(s) ['connect_term_uid', 'create_primitive_nested', 'loop_in', 'move_in', 'struct_copy_nested']; dry mutation Stage._op loop_in; source calls edit verb(s) ['connect_term_uid', 'const_row', 'create', 'create_local_read', 'create_primitive_nested', 'loop_in', 'move_in', 'wire', 'wire_remove_loose_ends']; 11 whole-VI read call site(s) not bounded offline: ['census_snapshot line 59: function body used as a value (call count not offline)', 'uid_index line 59: function body used as a value (call count not offline)', 'uid_index line 59: function body used as a value (call 
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":6,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 7s
+BGRUN START 2026-10-02 17:01:49 limit 8.0 min: py -u tools/bench/selftest_x10_c136_2.py
+BGRUN PID 22736
+PASS  E1 edit trace modelled: PASS N 26 R 6 start 610.9 peak 679.4 == 679.4 <= 690  {'model': 'tools/bench/memory_model.json', 'runs': [{'plan': 'edit diagnostic C:/Users/KimLab/AppData/Local/Temp/x10ed_c136_2_i85dji8r.py', 'edit': True, 'N': 26, 'R': 6, 'bind': 0, 'peak_mb': 679.4, 'start_mb': 610.9, 'start_source': '605.0 + op-0 read 5.9 (tools/bench/launch_p3b2_c135_g.log (MEM after load: 605.0 MB private); tools/bench/stage_d1_ring_p3b1.log:42-43 (METER start k 0 561.8 MB -> METER read k 0 567.7 MB, d +5.9); pin4 :59-60 +6.0 (result_133-2.json); card 133-3, PD283(b))', 'fail_above_mb': 690.0, 'ok': True, 'src_reads': 0, 'dry_reads': 5, 'reads_line': 'source 0 []; dry executed 5; sessions 1', 'checkpoints': "k 0 + 5 whole-VI read(s) = max(source 0, dry executed 5 {'Stage.uid_index': 5})"}], 'not_compiled': [], 'recorded': {'why': 'UNMEASURED: no recorded meter of x10ed_c136_2_i85dji8r.py covers ops 1..end (0 record(s))'}, 'peak_mb': 679.4}
+PASS  E2 over limit: FAIL peak 726.3 == 726.3 > 690, not UNMEASURED  {'model': 'tools/bench/memory_model.json', 'runs': [{'plan': 'edit diagnostic C:/Users/KimLab/AppData/Local/Temp/x10ed_c136_2_i85dji8r.py', 'edit': True, 'N': 60, 'R': 6, 'bind': 0, 'peak_mb': 726.3, 'start_mb': 610.9, 'start_source': '605.0 + op-0 read 5.9 (tools/bench/launch_p3b2_c135_g.log (MEM after load: 605.0 MB private); tools/bench/stage_d1_ring_p3b1.log:42-43 (METER start k 0 561.8 MB -> METER read k 0 567.7 MB, d +5.9); pin4 :59-60 +6.0 (result_133-2.json); card 133-3, PD283(b))', 'fail_above_mb': 690.0, 'ok': False, 'src_reads': 0, 'dry_reads': 5, 'reads_line': 'source 0 []; dry executed 5; sessions 1', 'checkpoints': "k 0 + 5 whole-VI read(s) = max(source 0, dry executed 5 {'Stage.uid_index': 5})"}], 'not_compiled': [], 'recorded': {'why': 'UNMEASURED: no recorded meter of x10ed_c136_2_i85dji8r.py covers ops 1..end (0 record(s))'}, 'peak_mb': 726.3}
+PASS  E3 opened VI load unmeasured -> FAIL UNMEASURED  UNMEASURED: no stagexec.Executor plan in the dry run and no recorded meter covers the run (not read-only: dry ran 26 Stage._op edit op(s) ['connect_term_uid']; dry mutation Stage._op connect_term_uid; source calls edit verb(s) ['connect']; edit model: opened VI load unmeasured (md5 00000000000000000000000000000000 not in memory_model load_by_vi))
+PASS  E4 no whole-VI read count in the trace -> FAIL UNMEASURED  UNMEASURED: no stagexec.Executor plan in the dry run and no recorded meter covers the run (not read-only: dry ran 26 Stage._op edit op(s) ['connect_term_uid']; dry mutation Stage._op connect_term_uid; source calls edit verb(s) ['connect']; edit model: dry trace carries no whole-VI read count (x10_reads))
+PASS  E5 no ops (old T2 shape) -> FAIL UNMEASURED, no edit-model text  UNMEASURED: no stagexec.Executor plan in the dry run and no recorded meter covers the run (not read-only: source calls edit verb(s) ['connect'])
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 395118775a52bc90073f4449b99f899d  got 395118775a52bc90073f4449b99f899d
+  PASS  DRY graph JSON for input md5 395118775a52bc90073f4449b99f899d  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_ring_p3b2b_20261002_133824.json
+  FACT  OP loop_in while on #23166 -> err '' (0.0 s)
+  PASS  A1 one While #<dry:g.loop_in> with ONE new body Diagram #0  <dry:g.loop_in>
+  FACT  OP create_primitive_nested ks const_donor -> err '' (0.0 s)
+  FACT  CREATE ks #<dry:g.create_primitive_nested> census {}
+  PASS  C ks op err '' and a node  <dry:g.create_primitive_nested>
+  FACT  OP create_primitive_nested iai Index Array -> err '' (0.0 s)
+  FACT  CREATE iai #<dry:g.create_primitive_nested> census {}
+  PASS  C iai op err '' and a node  <dry:g.create_primitive_nested>
+  PASS  T #0 index sink: exactly one terminal
+  PASS  T #0 None src: exactly one terminal
+  FACT  OP connect_term_uid A2 IAI.index <- KS (body -> parent) #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE A2 IAI.index <- KS (body -> parent) Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W A2 IAI.index <- KS (body -> parent) op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  FACT  TS #0 faces []; index_mode None
+  PASS  A2b TS #0 has ONE outer face on #23166, wired
+  FACT  OP struct_copy_nested FS -> #23166 -> err '' (0.0 s)
+  PASS  A3 FS #<dry:g.struct_copy_nested.get()> frame f0 #0  <dry:g.struct_copy_nested>
+  FACT  OP create_primitive_nested ian Index Array -> err '' (0.0 s)
+  FACT  CREATE ian #<dry:g.create_primitive_nested> census {}
+  PASS  C ian op err '' and a node  <dry:g.create_primitive_nested>
+  FACT  OP create_primitive_nested eq2 Equal? -> err '' (0.0 s)
+  FACT  CREATE eq2 #<dry:g.create_primitive_nested> census {}
+  PASS  C eq2 op err '' and a node  <dry:g.create_primitive_nested>
+  PASS  T #0 index sink: exactly one terminal
+  FACT  OP connect_term_uid U5 IAN.index (FS f0) <- TS outer face #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE U5 IAN.index (FS f0) <- TS outer face Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W U5 IAN.index (FS f0) <- TS outer face op err '' and Is Broken? False after RLE  <dry:g.connect_term_uid>
+  PASS  T #0 y sink: exactly one terminal
+  PASS  T #0 element src: exactly one terminal
+  FACT  OP connect_term_uid U6 EQ2.y (#23166) <- IAN.element (FS f0 exit) #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE U6 EQ2.y (#23166) <- IAN.element (FS f0 exit) Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W U6 EQ2.y (#23166) <- IAN.element (FS f0 exit) op err '' and Is Broken? False after RLE  <dry:g.connect_term_uid>
+  FACT  OP move_in #0 -> Diagram[None] at (40, 120) -> err '' (0.0 s)
+  PASS  C lrn Local read 'Num' moved into #0  {'uid': 0}
+  FACT  OP create_primitive_nested gt Greater? -> err '' (0.0 s)
+  FACT  CREATE gt #<dry:g.create_primitive_nested> census {}
+  PASS  C gt op err '' and a node  <dry:g.create_primitive_nested>
+  FACT  OP create_primitive_nested km1 const_donor -> err '' (0.0 s)
+  FACT  CREATE km1 #<dry:g.create_primitive_nested> census {}
+  PASS  C km1 op err '' and a node  <dry:g.create_primitive_nested>
+  FACT  OP create_primitive_nested sel Select -> err '' (0.0 s)
+  FACT  CREATE sel #<dry:g.create_primitive_nested> census {}
+  PASS  C sel op err '' and a node  <dry:g.create_primitive_nested>
+  FACT  OP create_primitive_nested amm Array Max & Min -> err '' (0.0 s)
+  FACT  CREATE amm #<dry:g.create_primitive_nested> census {}
+  PASS  C amm op err '' and a node  <dry:g.create_primitive_nested>
+  FACT  OP create_primitive_nested lt Less? -> err '' (0.0 s)
+  FACT  CREATE lt #<dry:g.create_primitive_nested> census {}
+  PASS  C lt op err '' and a node  <dry:g.create_primitive_nested>
+  FACT  OP create_primitive_nested or Or -> err '' (0.0 s)
+  FACT  CREATE or #<dry:g.create_primitive_nested> census {}
+  PASS  C or op err '' and a node  <dry:g.create_primitive_nested>
+  FACT  OP move_in #0 -> Diagram[None] at (580, 220) -> err '' (0.0 s)
+  PASS  C lrs Local read 'stop (end)' moved into #0  {'uid': 0}
+  PASS  U2 KMX created on Select.f before t is wired (#0)
+  PASS  T #0 x sink: exactly one terminal
+  PASS  T #0 None src: exactly one terminal
+  FACT  OP connect_term_uid U1a GT.x <- Num #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE U1a GT.x <- Num Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W U1a GT.x <- Num op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  PASS  T #0 y sink: exactly one terminal
+  PASS  T #0 None src: exactly one terminal
+  FACT  OP connect_term_uid U1b GT.y <- I32 -1 #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE U1b GT.y <- I32 -1 Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W U1b GT.y <- I32 -1 op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  PASS  T #0 t sink: exactly one terminal
+  PASS  T #0 None src: exactly one terminal
+  FACT  OP connect_term_uid U1c Select.t <- Num (branch) #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE U1c Select.t <- Num (branch) Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W U1c Select.t <- Num (branch) op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  PASS  T #0 s sink: exactly one terminal
+  PASS  T #0 x > y? src: exactly one terminal
+  FACT  OP connect_term_uid U3 Select.s <- GT out (Boolean array) #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE U3 Select.s <- GT out (Boolean array) Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W U3 Select.s <- GT out (Boolean array) op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  PASS  T #0 array sink: exactly one terminal
+  PASS  T #0 s? t: f src: exactly one terminal
+  FACT  OP connect_term_uid U3b AMM.array <- Select out #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE U3b AMM.array <- Select out Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W U3b AMM.array <- Select out op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  PASS  T #0 x sink: exactly one terminal
+  PASS  T #0 min value src: exactly one terminal
+  FACT  OP connect_term_uid U3c LT.x <- AMM.min value #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE U3c LT.x <- AMM.min value Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W U3c LT.x <- AMM.min value op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  PASS  T #0 y sink: exactly one terminal
+  PASS  T #0 None src: exactly one terminal
+  FACT  OP connect_term_uid U3d LT.y <- KMX (branch) #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE U3d LT.y <- KMX (branch) Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W U3d LT.y <- KMX (branch) op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  PASS  T #0 x sink: exactly one terminal
+  PASS  T #0 x < y? src: exactly one terminal
+  FACT  OP connect_term_uid W1a Or.x <- LT out #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE W1a Or.x <- LT out Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W W1a Or.x <- LT out op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  PASS  T #0 y sink: exactly one terminal
+  PASS  T #0 None src: exactly one terminal
+  FACT  OP connect_term_uid W1b Or.y <- stop (end) Local #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE W1b Or.y <- stop (end) Local Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W W1b Or.y <- stop (end) Local op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  FACT  W1 WS cond read-back {}; Or out wire 0
+  PASS  W1c WS cond wired from the Or (cond wire == Or out wire)  ({}, 0)
+  FACT  ExecState end None
+  PASS  X bed md5 unchanged  395118775a52bc90073f4449b99f899d
+PASS  E6 dry of diag_c136_1_routes PASS: ops 26, x10_reads 3 (X10 False: UNMEASURED: no stagexec.Executor plan in the dry run and no recorded meter covers the run (not read-only: dry ran 26 Stage._op edit op(s) ['connect_term_uid', 'create_primitive_nested', 'loop_in', 'move_in', 'struct_copy_nested']; dry mutation Stage._op loop_in; source calls edit verb(s) ['connect_term_uid', 'const_row', 'create', 'create_local_read', 'create_primitive_nested', 'loop_in', 'move_in', 'wire', 'wire_remove_loose_ends']; 1 whole-VI read call site(s) not bounded offline: ['uid_index line 67: function _c used as a value (call count not offline)']; edit model: whole-VI read count not bounded from the source (uid_index line 67: function _c used as a value (call count not offline))))  {'model': 'tools/bench/memory_model.json', 'runs': [], 'not_compiled': [], 'recorded': {'why': 'UNMEASURED: no recorded meter of diag_c136_1_routes.py covers ops 1..end (0 record(s))'}, 'why': "UNMEASURED: no stagexec.Executor plan in the dry run and no recorded meter covers the run (not read-only: dry ran 26 Stage._op edit op(s) ['connect_term_uid', 'create_primitive_nested', 'loop_in', 'move_in', 'struct_copy_nested']; dry mutation Stage._op loop_in; source calls edit verb(s) ['connect_term_uid', 'const_row', 'create', 'create_local_read', 'create_primitive_nested', 'loop_in', 'move_in', 'wire', 'wire_remove_loose_ends']; 1 whole-VI read call site(s) not bounded offline: ['uid_index line 67: function _c used as a value (call count not offline)']; edit model: whole-VI read count not bounded from the source (uid_index line 67: function _c used as a value (call count not offline)))"}
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":6,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 7s
+BGRUN START 2026-10-02 17:03:23 limit 8.0 min: py -u tools/bench/selftest_x10_c136_2.py
+BGRUN PID 16832
+PASS  E1 edit trace modelled: PASS N 26 R 6 start 610.9 peak 679.4 == 679.4 <= 690  {'model': 'tools/bench/memory_model.json', 'runs': [{'plan': 'edit diagnostic C:/Users/KimLab/AppData/Local/Temp/x10ed_c136_2_hc7uzie7.py', 'edit': True, 'N': 26, 'R': 6, 'bind': 0, 'peak_mb': 679.4, 'start_mb': 610.9, 'start_source': '605.0 + op-0 read 5.9 (tools/bench/launch_p3b2_c135_g.log (MEM after load: 605.0 MB private); tools/bench/stage_d1_ring_p3b1.log:42-43 (METER start k 0 561.8 MB -> METER read k 0 567.7 MB, d +5.9); pin4 :59-60 +6.0 (result_133-2.json); card 133-3, PD283(b))', 'fail_above_mb': 690.0, 'ok': True, 'src_reads': 0, 'dry_reads': 5, 'reads_line': 'source 0 []; dry executed 5; sessions 1', 'checkpoints': "k 0 + 5 whole-VI read(s) = max(source 0, dry executed 5 {'Stage.uid_index': 5})"}], 'not_compiled': [], 'recorded': {'why': 'UNMEASURED: no recorded meter of x10ed_c136_2_hc7uzie7.py covers ops 1..end (0 record(s))'}, 'peak_mb': 679.4}
+PASS  E2 over limit: FAIL peak 726.3 == 726.3 > 690, not UNMEASURED  {'model': 'tools/bench/memory_model.json', 'runs': [{'plan': 'edit diagnostic C:/Users/KimLab/AppData/Local/Temp/x10ed_c136_2_hc7uzie7.py', 'edit': True, 'N': 60, 'R': 6, 'bind': 0, 'peak_mb': 726.3, 'start_mb': 610.9, 'start_source': '605.0 + op-0 read 5.9 (tools/bench/launch_p3b2_c135_g.log (MEM after load: 605.0 MB private); tools/bench/stage_d1_ring_p3b1.log:42-43 (METER start k 0 561.8 MB -> METER read k 0 567.7 MB, d +5.9); pin4 :59-60 +6.0 (result_133-2.json); card 133-3, PD283(b))', 'fail_above_mb': 690.0, 'ok': False, 'src_reads': 0, 'dry_reads': 5, 'reads_line': 'source 0 []; dry executed 5; sessions 1', 'checkpoints': "k 0 + 5 whole-VI read(s) = max(source 0, dry executed 5 {'Stage.uid_index': 5})"}], 'not_compiled': [], 'recorded': {'why': 'UNMEASURED: no recorded meter of x10ed_c136_2_hc7uzie7.py covers ops 1..end (0 record(s))'}, 'peak_mb': 726.3}
+PASS  E3 opened VI load unmeasured -> FAIL UNMEASURED  UNMEASURED: no stagexec.Executor plan in the dry run and no recorded meter covers the run (not read-only: dry ran 26 Stage._op edit op(s) ['connect_term_uid']; dry mutation Stage._op connect_term_uid; source calls edit verb(s) ['connect']; edit model: opened VI load unmeasured (md5 00000000000000000000000000000000 not in memory_model load_by_vi))
+PASS  E4 no whole-VI read count in the trace -> FAIL UNMEASURED  UNMEASURED: no stagexec.Executor plan in the dry run and no recorded meter covers the run (not read-only: dry ran 26 Stage._op edit op(s) ['connect_term_uid']; dry mutation Stage._op connect_term_uid; source calls edit verb(s) ['connect']; edit model: dry trace carries no whole-VI read count (x10_reads))
+PASS  E5 no ops (old T2 shape) -> FAIL UNMEASURED, no edit-model text  UNMEASURED: no stagexec.Executor plan in the dry run and no recorded meter covers the run (not read-only: source calls edit verb(s) ['connect'])
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 395118775a52bc90073f4449b99f899d  got 395118775a52bc90073f4449b99f899d
+  PASS  DRY graph JSON for input md5 395118775a52bc90073f4449b99f899d  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_ring_p3b2b_20261002_133824.json
+  FACT  OP loop_in while on #23166 -> err '' (0.0 s)
+  PASS  A1 one While #<dry:g.loop_in> with ONE new body Diagram #0  <dry:g.loop_in>
+  FACT  OP create_primitive_nested ks const_donor -> err '' (0.0 s)
+  FACT  CREATE ks #<dry:g.create_primitive_nested> census {}
+  PASS  C ks op err '' and a node  <dry:g.create_primitive_nested>
+  FACT  OP create_primitive_nested iai Index Array -> err '' (0.0 s)
+  FACT  CREATE iai #<dry:g.create_primitive_nested> census {}
+  PASS  C iai op err '' and a node  <dry:g.create_primitive_nested>
+  PASS  T #0 index sink: exactly one terminal
+  PASS  T #0 None src: exactly one terminal
+  FACT  OP connect_term_uid A2 IAI.index <- KS (body -> parent) #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE A2 IAI.index <- KS (body -> parent) Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W A2 IAI.index <- KS (body -> parent) op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  FACT  TS #0 faces []; index_mode None
+  PASS  A2b TS #0 has ONE outer face on #23166, wired
+  FACT  OP struct_copy_nested FS -> #23166 -> err '' (0.0 s)
+  PASS  A3 FS #<dry:g.struct_copy_nested.get()> frame f0 #0  <dry:g.struct_copy_nested>
+  FACT  OP create_primitive_nested ian Index Array -> err '' (0.0 s)
+  FACT  CREATE ian #<dry:g.create_primitive_nested> census {}
+  PASS  C ian op err '' and a node  <dry:g.create_primitive_nested>
+  FACT  OP create_primitive_nested eq2 Equal? -> err '' (0.0 s)
+  FACT  CREATE eq2 #<dry:g.create_primitive_nested> census {}
+  PASS  C eq2 op err '' and a node  <dry:g.create_primitive_nested>
+  PASS  T #0 index sink: exactly one terminal
+  FACT  OP connect_term_uid U5 IAN.index (FS f0) <- TS outer face #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE U5 IAN.index (FS f0) <- TS outer face Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W U5 IAN.index (FS f0) <- TS outer face op err '' and Is Broken? False after RLE  <dry:g.connect_term_uid>
+  PASS  T #0 y sink: exactly one terminal
+  PASS  T #0 element src: exactly one terminal
+  FACT  OP connect_term_uid U6 EQ2.y (#23166) <- IAN.element (FS f0 exit) #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE U6 EQ2.y (#23166) <- IAN.element (FS f0 exit) Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W U6 EQ2.y (#23166) <- IAN.element (FS f0 exit) op err '' and Is Broken? False after RLE  <dry:g.connect_term_uid>
+  FACT  OP move_in #0 -> Diagram[None] at (40, 120) -> err '' (0.0 s)
+  PASS  C lrn Local read 'Num' moved into #0  {'uid': 0}
+  FACT  OP create_primitive_nested gt Greater? -> err '' (0.0 s)
+  FACT  CREATE gt #<dry:g.create_primitive_nested> census {}
+  PASS  C gt op err '' and a node  <dry:g.create_primitive_nested>
+  FACT  OP create_primitive_nested km1 const_donor -> err '' (0.0 s)
+  FACT  CREATE km1 #<dry:g.create_primitive_nested> census {}
+  PASS  C km1 op err '' and a node  <dry:g.create_primitive_nested>
+  FACT  OP create_primitive_nested sel Select -> err '' (0.0 s)
+  FACT  CREATE sel #<dry:g.create_primitive_nested> census {}
+  PASS  C sel op err '' and a node  <dry:g.create_primitive_nested>
+  FACT  OP create_primitive_nested amm Array Max & Min -> err '' (0.0 s)
+  FACT  CREATE amm #<dry:g.create_primitive_nested> census {}
+  PASS  C amm op err '' and a node  <dry:g.create_primitive_nested>
+  FACT  OP create_primitive_nested lt Less? -> err '' (0.0 s)
+  FACT  CREATE lt #<dry:g.create_primitive_nested> census {}
+  PASS  C lt op err '' and a node  <dry:g.create_primitive_nested>
+  FACT  OP create_primitive_nested or Or -> err '' (0.0 s)
+  FACT  CREATE or #<dry:g.create_primitive_nested> census {}
+  PASS  C or op err '' and a node  <dry:g.create_primitive_nested>
+  FACT  OP move_in #0 -> Diagram[None] at (580, 220) -> err '' (0.0 s)
+  PASS  C lrs Local read 'stop (end)' moved into #0  {'uid': 0}
+  PASS  U2 KMX created on Select.f before t is wired (#0)
+  PASS  T #0 x sink: exactly one terminal
+  PASS  T #0 None src: exactly one terminal
+  FACT  OP connect_term_uid U1a GT.x <- Num #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE U1a GT.x <- Num Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W U1a GT.x <- Num op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  PASS  T #0 y sink: exactly one terminal
+  PASS  T #0 None src: exactly one terminal
+  FACT  OP connect_term_uid U1b GT.y <- I32 -1 #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE U1b GT.y <- I32 -1 Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W U1b GT.y <- I32 -1 op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  PASS  T #0 t sink: exactly one terminal
+  PASS  T #0 None src: exactly one terminal
+  FACT  OP connect_term_uid U1c Select.t <- Num (branch) #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE U1c Select.t <- Num (branch) Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W U1c Select.t <- Num (branch) op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  PASS  T #0 s sink: exactly one terminal
+  PASS  T #0 x > y? src: exactly one terminal
+  FACT  OP connect_term_uid U3 Select.s <- GT out (Boolean array) #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE U3 Select.s <- GT out (Boolean array) Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W U3 Select.s <- GT out (Boolean array) op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  PASS  T #0 array sink: exactly one terminal
+  PASS  T #0 s? t: f src: exactly one terminal
+  FACT  OP connect_term_uid U3b AMM.array <- Select out #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE U3b AMM.array <- Select out Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W U3b AMM.array <- Select out op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  PASS  T #0 x sink: exactly one terminal
+  PASS  T #0 min value src: exactly one terminal
+  FACT  OP connect_term_uid U3c LT.x <- AMM.min value #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE U3c LT.x <- AMM.min value Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W U3c LT.x <- AMM.min value op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  PASS  T #0 y sink: exactly one terminal
+  PASS  T #0 None src: exactly one terminal
+  FACT  OP connect_term_uid U3d LT.y <- KMX (branch) #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE U3d LT.y <- KMX (branch) Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W U3d LT.y <- KMX (branch) op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  PASS  T #0 x sink: exactly one terminal
+  PASS  T #0 x < y? src: exactly one terminal
+  FACT  OP connect_term_uid W1a Or.x <- LT out #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE W1a Or.x <- LT out Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W W1a Or.x <- LT out op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  PASS  T #0 y sink: exactly one terminal
+  PASS  T #0 None src: exactly one terminal
+  FACT  OP connect_term_uid W1b Or.y <- stop (end) Local #0 <- #0 -> err '' (0.0 s)
+  FACT  WIRE W1b Or.y <- stop (end) Local Is Broken? <dry:g.connect_term_uid.get()> err '' census {} gone [] new [] tunnels [] rle None ES None
+  PASS  W W1b Or.y <- stop (end) Local op err '' and Is Broken? False  <dry:g.connect_term_uid>
+  FACT  W1 WS cond read-back {}; Or out wire 0
+  PASS  W1c WS cond wired from the Or (cond wire == Or out wire)  ({}, 0)
+  FACT  ExecState end None
+  PASS  X bed md5 unchanged  395118775a52bc90073f4449b99f899d
+PASS  E6 dry of diag_c136_1_routes PASS: ops 26, x10_reads 3 (X10 False: [{'plan': 'edit diagnostic tools/bench/diag_c136_1_routes.py', 'edit': True, 'N': 26, 'R': 58, 'bind': 0, 'peak_mb': 806.1, 'start_mb': 606.1, 'start_source': '600.2 + op-0 read 5.9 (tools/bench/diag_c136_1_graph.log:24 (MEM after load: 600.2 MB private); tools/bench/stage_d1_ring_p3b1.log:42-43 (METER start k 0 561.8 MB -> METER read k 0 567.7 MB, d +5.9); pin4 :59-60 +6.0 (result_133-2.json); card 133-3, PD283(b))', 'fail_above_mb': 690.0, 'ok': False, 'src_reads': 57, 'dry_reads': 3, 'reads_line': 'source 57 [read_terms@22x6, census_snapshot@26x10, census_snapshot@28x10, uid_index@34x2, census_snapshot@42x12, census_snapshot@44x12, uid_index@59x1, uid_index@64x1, uid_index@68x1, uid_index@73x1, uid_index@81x1]; dry executed 3; sessions 1', 'checkpoints': "k 0 + 57 whole-VI read(s) = max(source 57, dry executed 3 {'Stage.uid_index': 3})"}])  {'model': 'tools/bench/memory_model.json', 'runs': [{'plan': 'edit diagnostic tools/bench/diag_c136_1_routes.py', 'edit': True, 'N': 26, 'R': 58, 'bind': 0, 'peak_mb': 806.1, 'start_mb': 606.1, 'start_source': '600.2 + op-0 read 5.9 (tools/bench/diag_c136_1_graph.log:24 (MEM after load: 600.2 MB private); tools/bench/stage_d1_ring_p3b1.log:42-43 (METER start k 0 561.8 MB -> METER read k 0 567.7 MB, d +5.9); pin4 :59-60 +6.0 (result_133-2.json); card 133-3, PD283(b))', 'fail_above_mb': 690.0, 'ok': False, 'src_reads': 57, 'dry_reads': 3, 'reads_line': 'source 57 [read_terms@22x6, census_snapshot@26x10, census_snapshot@28x10, uid_index@34x2, census_snapshot@42x12, census_snapshot@44x12, uid_index@59x1, uid_index@64x1, uid_index@68x1, uid_index@73x1, uid_index@81x1]; dry executed 3; sessions 1', 'checkpoints': "k 0 + 57 whole-VI read(s) = max(source 57, dry executed 3 {'Stage.uid_index': 3}
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":6,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 7s

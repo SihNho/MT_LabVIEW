@@ -1,0 +1,19 @@
+ATTACK this claim about a failed prediction in tools/bench/prep_c138_p1_cmp.log (script tools/bench/prep_c138_p1_cmp.py), an offline (no LabVIEW) comparison of compile_plan output for two build plans of a LabVIEW VI-scripting project.
+
+Facts (read them yourself): tools/bench/prep_c138_p1_facts.md section 5; tools/bench/prep_c138_p1_cmp.log lines 3-6.
+Plan v8 = tools/bench/plan_ring_p4_v8.json (181 actions), plan v9 = tools/bench/plan_ring_p4_v9.json (182 actions). v9 adds ONE action,
+`p4_i_stopall` (a new indicator `StopAll` created on diagram 639 as a branch of existing wire w6929), and edits only `why` text plus
+`label`/`terminals` of p4_lr_stop12 and p4_lr_stop_w1. Prediction was: compile_plan(v9) == compile_plan(v8) op by op except the ops
+of p4_i_stopall and the two relabelled locals. Observed: three UNCHANGED actions compile to a different route:
+  p4_w_b_out   v8 connect                          -> v9 connect_term_uid/fs_border_inner_branch
+  p4_x_bufdiff v8 connect_term_uid/fs_border       -> v9 connect
+  p4_x_i_rab1  v8 connect_term_uid/fs_border_inner_branch -> v9 connect
+
+CLAIM TO ATTACK: the route kind of a Flat-Sequence-crossing wire is chosen in tools/stagexec.py compile_plan (fs_wire_ops / the
+`connect` vs `connect_term_uid` branch, around stagexec.py:640-730) from per-step simulated effects (tools/stagesim.py), and the
+inserted action shifts the step numbering or the simulated census so that compile_plan looks up the WRONG step's effect for these
+three wires (an off-by-one between plan action index and simulated step index), i.e. a defect in our tools, not a real change of
+route. The alternative is that the new StopAll indicator / relabelled locals genuinely change which terminals the three wires end on.
+
+Use the code and the two plan files; state which explanation the code supports, the strongest reason the claim is wrong, and the
+cheapest offline test that separates the two (e.g. compile v8 with a no-op action inserted at the same position).

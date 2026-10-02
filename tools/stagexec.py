@@ -261,7 +261,9 @@ ROUTE_VERBS = {
     "wire_remove_loose_ends": [("gscript", "wire_remove_loose_ends")],
 }
 # card 127-2: the simulated effect `how` each Flat Sequence border variant must carry (Executor.execute cross-check)
-FS_VARIANT_HOW = {"fs_border": "fs_border", "fs_border_inner_branch": "fs_inner_branch"}
+# card 138-1 (PD309(b)): + 'fs_exit' = a node on a plan-made FS frame -> a sink on the FS's own diagram, ONE
+# gscript.connect_term_uid(W, sink, src) as U6' ran it (diag_c137_7_types.py:30,64), census stagesim.FS_EXIT
+FS_VARIANT_HOW = {"fs_border": "fs_border", "fs_border_inner_branch": "fs_inner_branch", "fs_exit": "fs_exit"}
 FS_HOW_VARIANT = dict((v, k) for k, v in FS_VARIANT_HOW.items())          # card 133-1: finalized.fs_routes how -> variant
 # card 124-2: the class-count (census) delta of a non-create route, per variant. card 124-6: MEASURED by card 124-5 on a P2b
 # byte copy (tools/bench/census_samples.json ops connect_term_uid / case_frame_wire; diag_c124_p3a_scratch.log:53,61 R1/R2,
@@ -283,6 +285,9 @@ for _n, _v in SS._cross_variants().items():
         ROUTE_CENSUS["connect_term_uid"].setdefault(_n, dict(_v["delta"]))
 # card 128-1 (PD260): the inner-face branch (stagesim FS_INNER_BRANCH, a 2nd+ sink into a frame the source already entered)
 # MEASURED census {} n=3 by card 127-1 (census_samples.json connect_term_uid 'fs_inner_face_branch', diag_c127_1_fsinner.log:83,93,103)
+# card 138-1: 'fs_exit' is NOT added to ROUTE_CENSUS - selftest_case_frame_c124 U01
+# requires ROUTE_CENSUS == census_samples.json's recorded variants, and the FS-exit sample (U6/U6') is not in that file yet;
+# like fs_border, the fs_exit op carries stagesim's per-row census (stagesim.FS_EXIT) as op['sim_census'] (FS_VARIANT_HOW)
 ROUTE_CENSUS["connect_term_uid"]["fs_inner_face_branch"] = {}
 CONNECT_TERM_UID_HOW = ("gscript.connect_term_uid(target, sink_uid, src_uid) - OpConnectTermUid_v0, any terminal -> any "
                         "terminal by uid; the register inner face <-> node in a case frame makes ONE SelectorTunnel (R1/R2, "
@@ -633,6 +638,10 @@ def fs_wire_ops(A):
                 key = (json.dumps(a["src"], sort_keys=True), ld)
                 out[i] = {"variant": "fs_border_inner_branch" if key in entered else "fs_border", "fs": ld[0]}
                 entered.add(key)
+            elif ls and not ld:
+                # card 138-1 (PD309(b)): a node on a plan-made FS frame -> a sink OFF that FS's frames = the FS EXIT, ONE
+                # connect_term_uid (U6', diag_c137_7_types.py:30,64); stagesim._fs_exit_wire refuses every unmeasured shape
+                out[i] = {"variant": "fs_exit", "fs": ls[0], "from_index": frames[ls[0]].index(ls[1])}
     return out
 
 
@@ -3366,6 +3375,18 @@ class SimBackend(object):
         var = op["variant"]
         if rd["wire_uid"]:
             raise ExecStop("connect_term_uid {0}: the sink #{1} is already wired (w{2})".format(var, rd["term_uid"], rd["wire_uid"]))
+        if var == "fs_exit":
+            # card 138-1 (PD309(b)): the SOURCE on a Flat Sequence frame, unwired; the sink on another diagram (U6' shape)
+            own = self.addr.owners or self.st.get("owners") or {}
+            fo = own.get(str(int(rs["frame_diagram"] or 0)))
+            if not fo or fo[0] != SS.FS_CLS:
+                raise ExecStop("connect_term_uid fs_exit: the source #{0} is on #{1}, not a Flat Sequence frame ({2})".format(
+                    rs["term_uid"], rs["frame_diagram"], fo))
+            if int(rs["frame_diagram"] or 0) == int(rd["frame_diagram"] or 0) or rs["wire_uid"]:
+                raise ExecStop("connect_term_uid fs_exit: source #{0} (w{1}) and sink on #{2} - not an unwired-source exit".format(
+                    rs["term_uid"], rs["wire_uid"], rd["frame_diagram"]))
+            return {"route": "connect_term_uid", "variant": var, "src_term": rs["term_uid"], "dst_term": rd["term_uid"],
+                    "census": op.get("sim_census"), "sim_variant": op.get("sim_variant"), "how": CONNECT_TERM_UID_HOW}
         if var in FS_VARIANT_HOW:
             # card 127-2: fs_border = ends on DIFFERENT diagrams, the sink on a frame of a FlatSequence; inner branch = the
             # source is a FlatSequenceOuterTunnel face on the sink's own frame, already wired (PD257(d))

@@ -1,0 +1,58 @@
+{
+ "schema": "task/1",
+ "id": "138-P1",
+ "kind": "build",
+ "goal": "Offline prep: plan_ring_p4_v9.json = v8 + one I32-MAX donor for KMX1/KMX2 + IndexMode gate per auto-index tunnel + StopAll stop route (PD312(c)(d)); replay, compile_plan.",
+ "why": "PD312(c)(d)(e) (docs/d1/ring-p4.md:245-272): prior-art on v8 found IndexMode unenforced (stagexec.py:2104-2109); stop (end) is a latch (diag_c138_5_facts.md) so PD298(e)'s StopAll writer applies.",
+ "inputs": [
+  {"path": "tools/bench/plan_ring_p4_v8.json", "md5": "059b52964d4d05a67049add4798cb9b0"},
+  {"path": "tools/bench/prep_c138_4_facts.md", "md5": "3c8e43e4ec77439f2f97a7d14cee4a44"},
+  {"path": "tools/bench/diag_c138_5_facts.md", "md5": "f4a633748fdccf99b2cd12a778866ec3"},
+  {"path": "tools/bench/graph_ring_p3b2b_20261002_133824.json", "md5": "50595c62d0332a94bf066538cf20c0ae"},
+  {"path": "archive/peer/2026-10-02-priorart-c138-4-p4v8-forloop.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_qrt_pool.py"},
+  {"kind": "file", "name": "tools/bench/prep_c138_4_mkv8.py"}
+ ],
+ "pass": [
+  "1 v9 = v8 + KMX1/KMX2 const_donor from claudeDev DonorI32Max_v0.vi (uid stays SENTINEL, marked to bind after 138-6); diff by action id",
+  "2 per auto-index tunnel (TFN1/TFB1/TFS1) an index_mode_fix + read-back gate in PD235(c) form (stage_d1_qrt_pool.py:46-47), as plan rows or recipe notes",
+  "3 stop route: what v8 does for W1 and 1.2 stop listed; if not PD298(e) latch branch, v9 adds StopAll writer in #639 + locals in W1/1.2 (route classes cited)",
+  "4 replay v9 on the bed graph: END or first stop; cdiff vs v8; compile_plan(v9) ops per step (<= ~40); facts in tools/bench/prep_c138_p1_facts.md (<=40 lines)",
+  "5 prior-art release lines under '## What was done with it' in the review file: FIXED (IndexMode, v9 path:line) + REFUTED (KMX2 const_row, diag_c137_7_types.log:218)",
+  "6 docs/NAMES.md rows: 6362C01 StopIfTrue, 6333808 MechAction, Traverse Target 0 = front panel (cite diag_c138_5_facts.md)"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p4_v9.json",
+  "tools/bench/prep_c138_p1_facts.md",
+  "tools/bench/cards/result_138-P1.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p4_v9*",
+   "tools/bench/prep_c138_p1*",
+   "tools/bench/sim/ring_p4_v9*/*",
+   "tools/bench/sim/c138_p1*/*",
+   "archive/peer/2026-10-02-priorart-c138-4-p4v8-forloop.md",
+   "docs/NAMES.md",
+   "tools/bench/cards/result_138-P1*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 45},
+ "rules": [
+  "No edit of any tools/*.py (a LabVIEW card runs beside this one); plan, facts, review annotation and NAMES rows only",
+  "Only the items in pass 1-3 change vs v8; every other action identical (prove by diff)",
+  "Return at the first unexpected result after finishing that step; facts + OPEN line only"
+ ],
+ "advances": ["M3", "R1"]
+}

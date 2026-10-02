@@ -66,6 +66,10 @@ PRE-RUN (decision 2, 3, 8), all offline, on the same graph JSON + the dry run's 
     read call sites, + final_read_mb; an edit-op script without an Executor stays UNMEASURED = FAIL.
     card 136-2 (fp-33): ... unless its dry trace carries the ops and the opened VI's load is measured (x10_edit): N = dry
     Stage._op ops, R = 1 + executed whole-VI reads, start = load_by_vi[input md5] + op-0. Self-test selftest_x10_c136_2.py
+    card 138-2 (PD299(b)): whole-VI reads are counted from the SOURCE (x10_source_reads: call sites x calls of the enclosing
+    function; a read in a loop / unbounded = UNMEASURED FAIL). Edit + read-only: R = 1 + max(source, dry); Executor runs:
+    R = plan checkpoints + the script's source reads (exec_peak_mb keeps the Executor-only figure). Self-test
+    selftest_x10_c138_2.py
      Self-test: tools/bench/selftest_x10_c130_1.py
      card 130-5 (PD268(b)): `--dry` FAILs (EXECUTOR-STOP / EXECUTOR-NOT-RUN, executor_stops) when a stagexec.Executor
      the recipe built ran fewer ops than its window (from_step+1 .. stop_after|last). Self-test:
@@ -2048,10 +2052,7 @@ def x10_readonly(recipe, trace):
         tree = ast.parse(REAL_OPEN(recipe, encoding="utf-8", errors="replace").read(), filename=recipe)
     except (OSError, SyntaxError, ValueError) as e:
         return False, {"why": ["source unreadable: {0}".format(e)]}
-    edits, reads, loop_reads = set(), 0, 0
-    loops = [n for n in ast.walk(tree) if isinstance(n, (ast.For, ast.While, ast.ListComp, ast.GeneratorExp,
-                                                         ast.SetComp, ast.DictComp))]
-    in_loop = set(id(c) for lp in loops for c in ast.walk(lp) if c is not lp)
+    edits = set()
     for n in ast.walk(tree):
         if not isinstance(n, ast.Call):
             continue
@@ -2061,14 +2062,16 @@ def x10_readonly(recipe, trace):
             continue
         if name in MODIFY_VERBS or X10_RO_EDIT_RE.search(name) or (WIRE_VERB_RE.search(name)):
             edits.add(name)
-        if name in X10_RO_READS:
-            reads += 1
-            loop_reads += id(n) in in_loop
     if edits:
         why.append("source calls edit verb(s) {0}".format(sorted(edits)))
-    if loop_reads:
-        why.append("{0} whole-VI read(s) inside a loop body (count not offline)".format(loop_reads))
-    return (not why), {"why": why, "reads": reads}
+    sr = x10_source_reads(recipe)                          # card 138-2 (PD299(b)): call sites x times each site runs
+    loop_u = [u for u in sr["unbounded"] if "inside a loop" in u]
+    if loop_u:
+        why.append("{0} whole-VI read(s) inside a loop body (count not offline): {1}".format(len(loop_u), loop_u[:4]))
+    other_u = [u for u in sr["unbounded"] if u not in loop_u]
+    if other_u:
+        why.append("{0} whole-VI read call site(s) not bounded offline: {1}".format(len(other_u), other_u[:4]))
+    return (not why), {"why": why, "reads": sr["reads"], "source": sr}
 
 
 # card 136-2 (gate-fp fp-33): a stagekit EDIT diagnostic (dry trace: Stage._op edit ops, no stagexec.Executor) is MODELLED
@@ -2078,6 +2081,173 @@ def x10_readonly(recipe, trace):
 # UNMEASURED (FAIL) when the opened VI's load is not in memory_model.json load_by_vi or the trace has no op / read count.
 # Reads a script skips in its DRY branch (e.g. census_snapshot / read_terms behind `if DRY`) are not seen by this count.
 X10_EDIT_READS = X10_RO_READS | frozenset(("read_terms",))     # + allterms.read_terms: every terminal of the VI
+
+# card 138-2 (PD299(b), retrospective-cycle136 device-failed): R is counted from the recipe SOURCE, not from what the dry
+# executes - the dry skips DRY-guarded reads (stagekit.census_snapshot returns {} in a dry, stagekit.py:263-267), so a
+# dry-counted R undercounted (3 vs ~50 call sites). Every call site of a whole-VI read (X10_SRC_READS) counts x the number
+# of times its enclosing function/lambda is called (summed over THAT function's call sites, recursively; a function passed
+# to a known call-once caller counts once: stagekit.run(body), Stage._op(verb, fn) and Stage.safe(label, fn), each calling
+# fn exactly once, stagekit.py:298-300, :587-592). A read inside a loop, a lambda/function passed to any OTHER call or used
+# as a value, or recursion is UNBOUNDED -> X10 UNMEASURED (FAIL), never counted once. A for loop's `iter` and a
+# comprehension's first generator `iter` run once. Both branches of an `if DRY` count (upper bound).
+_X10_ONCE_CALLERS = frozenset(("run", "_op", "safe"))
+X10_SRC_READS = X10_EDIT_READS | frozenset(("census_snapshot", "report_all"))   # + stagekit census_snapshot / gscript report_all
+X10_SESSION_STARTS = frozenset(("start", "restart"))                            # Stage.start (fresh LabVIEW) / Stage.restart
+_X10_LOOPS = (ast.For, ast.AsyncFor, ast.While, ast.ListComp, ast.GeneratorExp, ast.SetComp, ast.DictComp)
+_X10_ITER_CALLS = frozenset(("map", "filter", "sorted", "min", "max", "reduce", "sum", "any", "all", "list", "tuple", "set",
+                             "dict", "zip", "enumerate"))
+
+
+class _X10Unbounded(Exception):
+    pass
+
+
+def _x10_name(f):
+    return f.attr if isinstance(f, ast.Attribute) else (f.id if isinstance(f, ast.Name) else None)
+
+
+def x10_source_reads(recipe, names=X10_SRC_READS):
+    """card 138-2 (PD299(b)): the recipe's whole-VI reads counted from its SOURCE. Returns {"reads": n | None (None = some
+    site unbounded), "sites": [{line, read, times}], "unbounded": [text], "sessions": n | None, "session_sites": [...]}.
+    `sessions` = Stage.start/restart call sites x times (each a fresh LabVIEW); with more than one session the reads are
+    NOT split per session - the total is the per-session upper bound (said in `per_session`)."""
+    try:
+        tree = ast.parse(REAL_OPEN(recipe, encoding="utf-8", errors="replace").read(), filename=recipe)
+    except (OSError, SyntaxError, ValueError) as e:
+        return {"reads": None, "sites": [], "unbounded": ["source unreadable: {0}".format(e)], "sessions": None,
+                "session_sites": [], "per_session": None}
+    parent = {}
+    for n in ast.walk(tree):
+        for c in ast.iter_child_nodes(n):
+            parent[c] = n
+    defs = {}
+    for n in ast.walk(tree):
+        if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            defs.setdefault(n.name, []).append(n)
+        elif (isinstance(n, ast.Assign) and isinstance(n.value, ast.Lambda) and len(n.targets) == 1
+              and isinstance(n.targets[0], ast.Name)):
+            defs.setdefault(n.targets[0].id, []).append(n.value)
+    fn_name = dict((id(d), nm) for nm, ds in defs.items() for d in ds)
+    calls_by, refs_by = {}, {}
+
+    def shadowed(nm_node):
+        """a Name that an enclosing def/lambda binds as a PARAMETER is that local, not the module function
+        (diag_c136_1_routes.py:58-59 `def stop(loop, body, ...)` vs `def body(_)`)."""
+        p = parent.get(nm_node)
+        while p is not None:
+            if isinstance(p, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+                a = p.args
+                names_ = set(x.arg for x in a.posonlyargs + a.args + a.kwonlyargs)
+                names_ |= set(x.arg for x in (a.vararg, a.kwarg) if x is not None)
+                if nm_node.id in names_:
+                    return True
+            p = parent.get(p)
+        return False
+    for n in ast.walk(tree):
+        if isinstance(n, ast.Call) and _x10_name(n.func) in defs:
+            if isinstance(n.func, ast.Name) and shadowed(n.func):
+                continue
+            calls_by.setdefault(_x10_name(n.func), []).append(n)
+        elif isinstance(n, ast.Name) and isinstance(n.ctx, ast.Load) and n.id in defs and not shadowed(n):
+            p = parent.get(n)
+            if not (isinstance(p, ast.Call) and p.func is n):
+                refs_by.setdefault(n.id, []).append(n)
+    memo = {}
+
+    def scope(node):
+        """(innermost enclosing def/lambda | None, the first loop between them | None). Evaluated ONCE, so not a loop: a
+        for loop's `iter` and a comprehension's FIRST generator's `iter` (`dict(... for u in s.census_snapshot()...)`)."""
+        loop, c, p, once = None, node, parent.get(node), None
+        while p is not None:
+            if isinstance(p, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+                return p, loop
+            if isinstance(p, ast.comprehension) and c is p.iter:
+                once = p                                   # reached the comprehension node next: once iff generators[0]
+            elif loop is None and isinstance(p, _X10_LOOPS):
+                first_iter = (isinstance(p, (ast.For, ast.AsyncFor)) and c is p.iter) or (
+                    not isinstance(p, (ast.For, ast.AsyncFor, ast.While)) and once is not None and c is once
+                    and p.generators and p.generators[0] is once)
+                if not first_iter:
+                    loop = p
+            c, p = p, parent.get(p)
+        return None, loop
+
+    def site(node, stack):
+        sc, loop = scope(node)
+        if loop is not None:
+            raise _X10Unbounded("line {0}: inside a loop body ({1} at line {2})".format(
+                node.lineno, type(loop).__name__, loop.lineno))
+        return 1 if sc is None else mult(sc, stack)
+
+    def mult(fn, stack):
+        if id(fn) in memo:
+            return memo[id(fn)]
+        if id(fn) in stack:
+            raise _X10Unbounded("line {0}: recursion".format(fn.lineno))
+        stack = stack | frozenset([id(fn)])
+        name = fn_name.get(id(fn))
+        if name is None:                                   # an anonymous lambda: runs where it is passed
+            p = parent.get(fn)
+            kw = None
+            if isinstance(p, ast.keyword):
+                kw, p = p.arg, parent.get(p)
+            if not isinstance(p, ast.Call) or p.func is fn:
+                raise _X10Unbounded("line {0}: lambda used as a value (call count not offline)".format(fn.lineno))
+            if kw == "key" or _x10_name(p.func) in _X10_ITER_CALLS:
+                raise _X10Unbounded("line {0}: lambda passed to {1}(key={2}) runs per item".format(
+                    fn.lineno, _x10_name(p.func), kw))
+            if _x10_name(p.func) not in _X10_ONCE_CALLERS:
+                raise _X10Unbounded("line {0}: lambda passed to {1}() (not a known call-once caller {2})".format(
+                    fn.lineno, _x10_name(p.func), sorted(_X10_ONCE_CALLERS)))
+            k = site(p, stack)
+        else:
+            k, n_sites = 0, 0
+            for c in calls_by.get(name, []):
+                k += site(c, stack)
+                n_sites += 1
+            for r in refs_by.get(name, []):
+                p = parent.get(r)
+                if isinstance(p, ast.Call) and _x10_name(p.func) in _X10_ONCE_CALLERS and r in p.args:
+                    k += site(p, stack)                    # K.run(body, st) / s._op(verb, fn) / s.safe(label, fn): once
+                    n_sites += 1
+                else:
+                    raise _X10Unbounded("line {0}: function {1} used as a value (call count not offline)".format(
+                        r.lineno, name))
+            if not n_sites:
+                k = 1                                      # never called in this file: counted once (upper bound)
+        memo[id(fn)] = k
+        return k
+
+    def count(want, attr_only=False):
+        out, unb, total = [], [], 0
+        for n in ast.walk(tree):
+            if not isinstance(n, ast.Call) or _x10_name(n.func) not in want:
+                continue
+            if attr_only and not isinstance(n.func, ast.Attribute):
+                continue
+            try:
+                k = site(n, frozenset())
+                out.append({"line": n.lineno, "read": _x10_name(n.func), "times": k})
+                total += k
+            except _X10Unbounded as e:
+                unb.append("{0} {1}".format(_x10_name(n.func), e))
+        return out, unb, total
+    sites, unb, total = count(names)
+    ss, sunb, stot = count(X10_SESSION_STARTS, attr_only=True)
+    sessions = None if sunb else stot
+    return {"reads": None if unb else total, "sites": sorted(sites, key=lambda s: s["line"]), "unbounded": unb,
+            "sessions": sessions, "session_sites": ss + [{"unbounded": u} for u in sunb],
+            "per_session": None if unb else ("{0} (one session)".format(total) if (sessions or 0) <= 1 else
+                                            "<= {0} (total over {1} sessions, not split)".format(total, sessions))}
+
+
+def x10_reads_line(src, dry_n=None):
+    """card 138-2: one printable line - source count (+ sites), dry count, unbounded sites."""
+    return "source {0} [{1}]{2}; dry executed {3}; sessions {4}".format(
+        src.get("reads") if src.get("reads") is not None else "UNBOUNDED",
+        ", ".join("{0}@{1}x{2}".format(s["read"], s["line"], s["times"]) for s in src.get("sites", [])),
+        (" unbounded " + "; ".join(src["unbounded"][:4])) if src.get("unbounded") else "",
+        dry_n if dry_n is not None else "n/a", src.get("sessions"))
 
 
 def x10_edit(recipe, trace, model):
@@ -2090,15 +2260,22 @@ def x10_edit(recipe, trace, model):
         return None, "edit model: opened VI load unmeasured (md5 {0} not in memory_model load_by_vi)".format(tr.get("input_md5"))
     if not isinstance(tr.get("x10_reads"), list):
         return None, "edit model: dry trace carries no whole-VI read count (x10_reads)"
+    src = x10_source_reads(recipe)                       # card 138-2 (PD299(b)): the SOURCE count, never the smaller one
+    if src["reads"] is None:
+        return None, "edit model: whole-VI read count not bounded from the source ({0})".format("; ".join(src["unbounded"][:4]))
     v = lambda k: float(model[k]["value"])                                         # noqa: E731
-    N, R = len(tr["ops"]), 1 + len(tr["x10_reads"])
+    dry_n = len(tr["x10_reads"])
+    used = max(src["reads"], dry_n)
+    N, R = len(tr["ops"]), 1 + used
     peak = round(xs[0] + R * v("read_mb") + N * (v("edit_mb") + v("other_mb")) + v("final_read_mb"), 1)
     rc = {}
     for n in tr["x10_reads"]:
         rc[n] = rc.get(n, 0) + 1
     return {"plan": "edit diagnostic " + rel(recipe), "edit": True, "N": N, "R": R, "bind": 0, "peak_mb": peak,
             "start_mb": xs[0], "start_source": xs[1], "fail_above_mb": v("fail_above_mb"), "ok": peak <= v("fail_above_mb"),
-            "checkpoints": "k 0 + {0} executed whole-VI read(s) {1}".format(len(tr["x10_reads"]), rc)}, None
+            "src_reads": src["reads"], "dry_reads": dry_n, "reads_line": x10_reads_line(src, dry_n),
+            "checkpoints": "k 0 + {0} whole-VI read(s) = max(source {1}, dry executed {2} {3})".format(
+                used, src["reads"], dry_n, rc)}, None
 
 
 def x10_gate(recipe, executors, stop_after=None, from_step=None, model=None, trace=None):
@@ -2114,11 +2291,14 @@ def x10_gate(recipe, executors, stop_after=None, from_step=None, model=None, tra
         ro_ok, ro = x10_readonly(recipe, trace)
         if ro_ok:
             v = lambda k: float(m[k]["value"])                                     # noqa: E731
-            R = 1 + int(ro["reads"])
+            dry_n = len(trace["x10_reads"]) if isinstance(trace.get("x10_reads"), list) else 0
+            used = max(int(ro["reads"]), dry_n)                   # card 138-2: never the smaller of source / dry
+            R = 1 + used
             peak = round(v("start_mb") + R * v("read_mb") + v("final_read_mb"), 1)
             runs.append({"plan": "read-only " + rel(recipe), "N": 0, "R": R, "bind": 0, "peak_mb": peak,
                          "fail_above_mb": v("fail_above_mb"), "ok": peak <= v("fail_above_mb"),
-                         "checkpoints": "k 0 + {0} whole-VI read call site(s)".format(ro["reads"])})
+                         "src_reads": ro["reads"], "dry_reads": dry_n, "reads_line": x10_reads_line(ro["source"], dry_n),
+                         "checkpoints": "k 0 + {0} whole-VI read call site(s)".format(used)})
         else:
             bad_ro = "not read-only: " + "; ".join(ro["why"])
             er, ewhy = x10_edit(recipe, trace, m)                              # card 136-2 (fp-33): edit diagnostic
@@ -2126,6 +2306,10 @@ def x10_gate(recipe, executors, stop_after=None, from_step=None, model=None, tra
                 runs.append(er)
             elif ewhy:
                 bad_ro += "; " + ewhy
+    src = x10_source_reads(recipe) if executors else None    # card 138-2 (PD299(b)): the script's own whole-VI reads
+    if src is not None and src["reads"] is None:
+        bad.append("script whole-VI read count not bounded from the source ({0})".format("; ".join(src["unbounded"][:4])))
+    dry_n = len(trace["x10_reads"]) if isinstance((trace or {}).get("x10_reads"), list) else None
     for ex in executors or []:
         if ex.get("error") or not ex.get("kinds"):
             bad.append("{0}: plan/checkpoint set not compilable ({1})".format(ex.get("plan"), ex.get("error")))
@@ -2133,8 +2317,16 @@ def x10_gate(recipe, executors, stop_after=None, from_step=None, model=None, tra
         sa = ex.get("stop_after") if ex.get("stop_after") is not None else stop_after
         fs = ex.get("from_step") if ex.get("from_step") is not None else from_step
         xs = x10_plan_start(ex.get("plan"), m) if ex.get("plan") else None     # card 133-3: measured load of the input VI
-        runs.append(dict(x10_model_peak(ex["kinds"], ex.get("checkpoints"), sa, fs, m, start_mb=xs[0] if xs else None),
-                         plan=ex.get("plan"), start_source=xs[1] if xs else "model start_mb (input VI load not measured)"))
+        r_ = dict(x10_model_peak(ex["kinds"], ex.get("checkpoints"), sa, fs, m, start_mb=xs[0] if xs else None),
+                  plan=ex.get("plan"), start_source=xs[1] if xs else "model start_mb (input VI load not measured)")
+        # card 138-2: + the script's source-counted whole-VI reads (around the Executor, same LabVIEW session) at read_mb
+        # each. exec_peak_mb keeps the Executor-only figure (what a METER inside the run measures; selftest pins).
+        sr = (src or {}).get("reads") or 0
+        r_.update(exec_R=r_["R"], exec_peak_mb=r_["peak_mb"], src_reads=(src or {}).get("reads"), dry_reads=dry_n,
+                  reads_line=x10_reads_line(src or {}, dry_n), R=r_["R"] + sr,
+                  peak_mb=round(r_["peak_mb"] + sr * float(m["read_mb"]["value"]), 1))
+        r_["ok"] = r_["peak_mb"] <= r_["fail_above_mb"]
+        runs.append(r_)
     mm = mem_margin(recipe, stop_after, from_step)
     det = {"model": rel(MEMORY_MODEL), "runs": runs, "not_compiled": bad,
            "recorded": dict((k, mm.get(k)) for k in ("ok", "peak_mb", "source", "why") if mm.get(k) is not None)}
@@ -2468,6 +2660,11 @@ def prerun(recipe, graph=None, stop_after=None, from_step=None):
         if r_.get("edit"):                                                         # card 136-2 (fp-33)
             print("  FACT  X10 edit model: start {0} MB ({1}); reads {2}".format(r_["start_mb"], r_["start_source"],
                                                                                  r_["checkpoints"]), flush=True)
+        if r_.get("reads_line"):                                                   # card 138-2 (PD299(b))
+            print("  FACT  X10 whole-VI reads: {0}{1}".format(r_["reads_line"], "; Executor-only peak {0} MB, R {1}".format(
+                r_["exec_peak_mb"], r_["exec_R"]) if "exec_peak_mb" in r_ else ""), flush=True)
+    if not x10_det.get("runs") and "not bounded" in str(x10_det.get("why")):
+        print("  FACT  X10 whole-VI reads UNBOUNDED: {0}".format(x10_det.get("why")), flush=True)
     gate("X10 predicted LabVIEW private MB <= model fail_above_mb, from the compiled plan + checkpoint set ({0})".format(
         x10_det.get("why") or "peak {0} MB".format(x10_det.get("peak_mb"))), x10_ok,
         dict((k, x10_det.get(k)) for k in ("peak_mb", "why", "recorded", "not_compiled", "model") if x10_det.get(k)))

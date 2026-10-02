@@ -1,0 +1,32 @@
+{"schema": "result/1", "id": "138-1", "status": "FAIL",
+ "gates": {"pass": 5, "fail": 1},
+ "first_fail": "pass 2: selftest_c133_1_fsroutes R1 'base is not provisional' + selftest_c133_6_fr KeyError 'fs_frames' (prep_c138_1_regress2.log:3-8); cause vs 138-2 stage_prerun edits not separated",
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/stagesim.py", "md5": "345ad14b2fb94a0ff71c4c89e9bbae25"},
+  {"path": "tools/stagexec.py", "md5": "8e57b67bc2f2d4a0e803de273488de16"},
+  {"path": "tools/bench/selftest_stagesim_fsexit_c138_1.py", "md5": "3f6b5b1437eaf849243b557d933137c6"},
+  {"path": "tools/bench/prep_c138_1_facts.md", "md5": "f8fde43f8ae4254ffc76d6a7131a6ca9"},
+  {"path": "tools/bench/prep_c138_1_replay.py", "md5": "3ad02bcdc4bbce12d3923ee835e1a8b0"},
+  {"path": "tools/bench/prep_c138_1_regress.py", "md5": "3ecc27dc5db279e5f2d44b5c3b51355f"},
+  {"path": "tools/bench/sim/c138_1_v7/ring_p4_v3/summary.json", "md5": "5674203d54fa5e6d9674da1b0808fe74"}
+ ],
+ "facts": [
+  "FS exit modelled on U6/U6' (stagesim.py:190 FS_EXIT, :1989 _fs_exit_wire, :1399): 1 FSOT, 2 rows, 2 wires; self-test 14/0 (selftest_stagesim_fsexit_c138_1.log)",
+  "1b: reproduces 'Index of closest\\ncal image slice, bead 2' (diag_c137_7_types.log:301-302) for IAN fed by 'Num'; else faces 'UNPREDICTED-NAME' + flagged; void source refused (E4-E6)",
+  "delete_wire root cause: HEAD stagesim.py:62 DROP_WHEN_UNWIRED included 'Tunnel' with no sample (evidence = LoopTunnels #1929/#5020, stage_d1_l7_r.json:221,228); now stagesim.py:67 LoopTunnel only",
+  "Before/after: HEAD stagesim D1,D2 FAIL / D3 PASS (selftest_stagesim_fsexit_c138_1_prefix.log); fixed 3/3; unwired Case tunnel kept + effect unmeasured_unwired_tunnels",
+  "stagexec: fs_wire_ops variant fs_exit (stagexec.py:644) -> ONE connect_term_uid as diag_c137_7_types.py:30,64; FS_VARIANT_HOW :266; dry check :3378; not in ROUTE_CENSUS (U01 rule)",
+  "compile_plan(v7): OK 160 ops, per meta step {1:33,2:27,3:37,4:36,5:27}; #171 = connect_term_uid/fs_exit (prep_c138_1_replay.log)",
+  "c125_1_offline_measure rerun: RESULT PASS 6/0, COM trips 0, stagexec selftest 136/0, case_frame_c124 29/0 (c125_1_offline_measure_c138_1.log)",
+  "v7 replay fixed sim: END, 172/172 actions, no error; 159 ok, 171 how fs_exit; final False: end cdiff 24 rows vs 11 open_rows (sim/c138_1_v7/ring_p4_v3/summary.json)",
+  "Regression 18 tests (prep_c138_1_regress.log): 15 PASS incl. stagesim selftest 105/0, k79, l2a1_80, unflip_81, pin, tunnel_naming; case_frame U01 (mine) fixed; 2 still FAIL",
+  "Jev ladder: no JEV-LADDER row read - no LabVIEW/stage run failed in this card; failures are offline self-tests"
+ ],
+ "open": [
+  "Are selftest_c133_1_fsroutes R1 (rebase 'base is not provisional') and selftest_c133_6_fr KeyError 'fs_frames' from 138-2's uncommitted stage_prerun.py edits (224 lines) or from this card's stagesim/stagexec edits? (HEAD-module run broke on a file-relative path, prep_c138_1_regress_head.log)",
+  "Replay is final=False: end cdiff 24 rows vs the plan's 11 open_rows (classed ok False) - re-declare v8's open rows, or is a row wrong?",
+  "LabVIEW may also auto-remove Case tunnel #10465 after delete_wire w25415 (UNMEASURED; LoopTunnels are removed) - real step 159 would then fail; measure on scratch before P4?"
+ ],
+ "cost": {"usd": null, "minutes": 41, "labview_runs": 0},
+ "note": "FS-exit face name is predicted only for the one measured feed; census_samples.json (not writable here) has no FS-exit sample. No LabVIEW opened."}

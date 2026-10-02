@@ -1,0 +1,56 @@
+{
+ "schema": "task/1",
+ "id": "138-3",
+ "kind": "diagnose",
+ "goal": "Offline: attribute the 2 red self-tests after 138-1/138-2 (c133_1_fsroutes R1, c133_6_fr fs_frames) to HEAD / stagesim+stagexec / stage_prerun edits; fix the cause; rerun.",
+ "why": "result_138-1.json first_fail: selftest_c133_1_fsroutes R1 'base is not provisional' + selftest_c133_6_fr KeyError 'fs_frames' (prep_c138_1_regress2.log:3-8); 138-1 and 138-2 edited disjoint tools in parallel, cause not separated.",
+ "inputs": [
+  {"path": "tools/bench/cards/result_138-1.json"},
+  {"path": "tools/bench/cards/result_138-2.json"},
+  {"path": "tools/stagesim.py", "md5": "345ad14b2fb94a0ff71c4c89e9bbae25"},
+  {"path": "tools/stagexec.py", "md5": "8e57b67bc2f2d4a0e803de273488de16"},
+  {"path": "tools/stage_prerun.py", "md5": "878d530dcedbb19aec90234f8bbbd89c"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/prep_c138_1_regress.py"},
+  {"kind": "file", "name": "tools/bench/prep_c138_1_regress2.log"}
+ ],
+ "pass": [
+  "1 the 2 tests run in 4 combinations (all HEAD / new sim+exec only / new prerun only / all new) in a git worktree under the scratchpad or tools/bench/wt_c138_3/; table of results",
+  "2 cause named with file:line (or: red at HEAD = pre-existing, with the commit that last passed it if findable)",
+  "3 if caused by 138-1/138-2 edits: fixed, both tests green, and the 138-1 + 138-2 self-tests still green (counts)",
+  "4 if pre-existing at HEAD: no tool edit; logged with tools/gate_fp.py or listed as a stale fixture, as the facts show",
+  "5 facts in tools/bench/prep_c138_3_facts.md (<=30 lines); worktree removed at the end"
+ ],
+ "outputs": [
+  "tools/bench/prep_c138_3_facts.md",
+  "tools/bench/cards/result_138-3.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagesim.py",
+   "tools/stagexec.py",
+   "tools/stage_prerun.py",
+   "tools/bench/selftest_c133_1_fsroutes*",
+   "tools/bench/selftest_c133_6_fr*",
+   "tools/bench/prep_c138_3*",
+   "tools/bench/wt_c138_3/**",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/cards/result_138-3*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 30},
+ "rules": [
+  "Measure the 4 combinations BEFORE editing any tool; a fixture edit needs the measured cause first",
+  "Never git stash/checkout in the main tree; worktree only, removed at the end",
+  "Return at the first unexpected result after finishing that step; facts + OPEN line only"
+ ],
+ "advances": ["M3", "R1"]
+}

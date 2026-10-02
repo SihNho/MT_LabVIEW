@@ -1,0 +1,568 @@
+BGRUN START 2026-10-02 17:48:12 limit 12.0 min: py -u tools/bench/prep_c138_4_mkv8.py
+BGRUN PID 22676
+GATE PASS | input md5 plan_ring_p4_v7.json | 01ab0893f3a9440e02bbc180bc467bdf
+GATE PASS | input md5 graph_ring_p3b2b_20261002_133824.json | 50595c62d0332a94bf066538cf20c0ae
+GATE PASS | new as/ids unused in v7 | []
+GATE PASS | anchor ids in v7 | 
+v7 actions 172 v8 actions 181 v8 md5 bb412ee69cc08b9ac4b3dbd42c1ad988
+GATE PASS | v8 = 172 - 3 + 2 + 9 + 1 = 181 actions | 181
+DIFF removed ['p4_w_num_sel', 'p4_w_gt_sel', 'p4_w_sel_amm']
+DIFF added [(26, 'p4_f_min', 'create'), (29, 'p4_k_max_found', 'create'), (53, 'p4_t_fnum', 'tunnel'), (54, 'p4_t_fnum_in', 'wire'), (55, 'p4_t_fnum_out', 'wire'), (56, 'p4_t_fgt', 'tunnel'), (57, 'p4_t_fgt_in', 'wire'), (58, 'p4_t_fgt_out', 'wire'), (59, 'p4_w_max_sel', 'wire'), (60, 'p4_t_fsel', 'tunnel'), (61, 'p4_t_fsel_in', 'wire'), (62, 'p4_t_fsel_out', 'wire')]
+DIFF modified ['p4_sel_mask', 'p4_k_max', 'p4_w_max_lt']
+  MOD p4_sel_mask keys ['diagram', 'why']
+  MOD p4_k_max keys ['diagram', 'donor', 'on', 'prim', 'terminals', 'value', 'why']
+  MOD p4_w_max_lt keys ['src', 'why']
+GATE PASS | removed = the 3 replaced wires | ['p4_w_num_sel', 'p4_w_gt_sel', 'p4_w_sel_amm']
+GATE PASS | modified exactly 3 | ['p4_sel_mask', 'p4_k_max', 'p4_w_max_lt']
+GATE PASS | unchanged v7 actions keep v7 order | 166
+GATE PASS | no top-level key changed except goal | []
+GATE PASS | 's? t: f' occurrences in v8 = 0 (v7: 0) | 24
+STEP of group anchors {'p4_gt_last': 1, 'p4_k_max': 1, 'p4_w_num_sel': 2, 'p4_w_gt_sel': 2, 'p4_w_sel_amm': 2}
+v8 ACTIONS per meta step {1: 35, 2: 42, 3: 41, 4: 36, 5: 27} no meta step []
+COMPILE v8 OK ops=163 per meta step {1: 35, 2: 28, 3: 37, 4: 36, 5: 27}
+COMPILE kinds {'add_sr': 2, 'branch': 6, 'connect': 68, 'connect_term_uid/fs_border': 3, 'connect_term_uid/fs_border_inner_branch': 1, 'connect_term_uid/fs_exit': 1, 'create': 50, 'delete_object': 1, 'delete_wire': 8, 'move_in': 2, 'stop': 1, 'tunnel': 9, 'wire_remove_loose_ends': 6, 'wire_sr/LeftIn': 3, 'wire_sr/RightIn': 2}
+COMPILE NEW ('create', 'for', ['p4_f_min'])
+COMPILE NEW ('create', 'primitive', ['p4_sel_mask'])
+COMPILE NEW ('create', 'primitive', ['p4_k_max'])
+COMPILE NEW ('create', 'primitive', ['p4_k_max_found'])
+COMPILE NEW ('tunnel', None, ['p4_t_fnum', 'p4_t_fnum_in', 'p4_t_fnum_out'])
+COMPILE NEW ('tunnel', None, ['p4_t_fgt', 'p4_t_fgt_in', 'p4_t_fgt_out'])
+COMPILE NEW ('connect', None, ['p4_w_max_sel'])
+COMPILE NEW ('tunnel', None, ['p4_t_fsel', 'p4_t_fsel_in', 'p4_t_fsel_out'])
+COMPILE NEW ('connect', None, ['p4_w_max_lt'])
+GATE PASS | 3 new tunnel groups compile as kind tunnel | 
+GATE PASS | ops per meta step <= ~40 (re-cut above 42, PD306(c)) | {1: 35, 2: 28, 3: 37, 4: 36, 5: 27}
+SIM EXCEPTION SimError plan does not validate against stageplan/1: $.goal: 419 chars > limit 400
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\prep_c138_4_mkv8.py", line 224, in main
+    S = SS.simulate(V8, GRAPH, out_root=SIMDIR, plan_out_dir=SIMDIR)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagesim.py", line 2382, in simulate
+    raise SimError("plan does not validate against stageplan/1: " + why)
+stagesim.SimError: plan does not validate against stageplan/1: $.goal: 419 chars > limit 400
+GATE FAIL | simulate returned | 
+GATE PASS | v7 not written | 01ab0893f3a9440e02bbc180bc467bdf
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":13,"fail":1},"first_fail":"simulate returned","artefacts":[{"path":"tools/bench/plan_ring_p4_v8.json","md5":"bb412ee69cc08b9ac4b3dbd42c1ad988"}]}
+BGRUN END rc=1 after 1s
+BGRUN START 2026-10-02 17:48:51 limit 12.0 min: py -u tools/bench/prep_c138_4_mkv8.py
+BGRUN PID 26464
+GATE PASS | input md5 plan_ring_p4_v7.json | 01ab0893f3a9440e02bbc180bc467bdf
+GATE PASS | input md5 graph_ring_p3b2b_20261002_133824.json | 50595c62d0332a94bf066538cf20c0ae
+GATE PASS | new as/ids unused in v7 | []
+GATE PASS | anchor ids in v7 | 
+v7 actions 172 v8 actions 181 v8 md5 2bd89e971080967343647f760bf8e2d5
+GATE PASS | v8 = 172 - 3 + 2 + 9 + 1 = 181 actions | 181
+DIFF removed ['p4_w_num_sel', 'p4_w_gt_sel', 'p4_w_sel_amm']
+DIFF added [(26, 'p4_f_min', 'create'), (29, 'p4_k_max_found', 'create'), (53, 'p4_t_fnum', 'tunnel'), (54, 'p4_t_fnum_in', 'wire'), (55, 'p4_t_fnum_out', 'wire'), (56, 'p4_t_fgt', 'tunnel'), (57, 'p4_t_fgt_in', 'wire'), (58, 'p4_t_fgt_out', 'wire'), (59, 'p4_w_max_sel', 'wire'), (60, 'p4_t_fsel', 'tunnel'), (61, 'p4_t_fsel_in', 'wire'), (62, 'p4_t_fsel_out', 'wire')]
+DIFF modified ['p4_sel_mask', 'p4_k_max', 'p4_w_max_lt']
+  MOD p4_sel_mask keys ['diagram', 'why']
+  MOD p4_k_max keys ['diagram', 'donor', 'on', 'prim', 'terminals', 'value', 'why']
+  MOD p4_w_max_lt keys ['src', 'why']
+GATE PASS | removed = the 3 replaced wires | ['p4_w_num_sel', 'p4_w_gt_sel', 'p4_w_sel_amm']
+GATE PASS | modified exactly 3 | ['p4_sel_mask', 'p4_k_max', 'p4_w_max_lt']
+GATE PASS | unchanged v7 actions keep v7 order | 166
+GATE PASS | no top-level key changed | []
+GATE PASS | 's? t: f' occurrences in v8 = 0 (v7: 0) | 24
+STEP of group anchors {'p4_gt_last': 1, 'p4_k_max': 1, 'p4_w_num_sel': 2, 'p4_w_gt_sel': 2, 'p4_w_sel_amm': 2}
+v8 ACTIONS per meta step {1: 35, 2: 42, 3: 41, 4: 36, 5: 27} no meta step []
+COMPILE v8 OK ops=163 per meta step {1: 35, 2: 28, 3: 37, 4: 36, 5: 27}
+COMPILE kinds {'add_sr': 2, 'branch': 6, 'connect': 68, 'connect_term_uid/fs_border': 3, 'connect_term_uid/fs_border_inner_branch': 1, 'connect_term_uid/fs_exit': 1, 'create': 50, 'delete_object': 1, 'delete_wire': 8, 'move_in': 2, 'stop': 1, 'tunnel': 9, 'wire_remove_loose_ends': 6, 'wire_sr/LeftIn': 3, 'wire_sr/RightIn': 2}
+COMPILE NEW ('create', 'for', ['p4_f_min'])
+COMPILE NEW ('create', 'primitive', ['p4_sel_mask'])
+COMPILE NEW ('create', 'primitive', ['p4_k_max'])
+COMPILE NEW ('create', 'primitive', ['p4_k_max_found'])
+COMPILE NEW ('tunnel', None, ['p4_t_fnum', 'p4_t_fnum_in', 'p4_t_fnum_out'])
+COMPILE NEW ('tunnel', None, ['p4_t_fgt', 'p4_t_fgt_in', 'p4_t_fgt_out'])
+COMPILE NEW ('connect', None, ['p4_w_max_sel'])
+COMPILE NEW ('tunnel', None, ['p4_t_fsel', 'p4_t_fsel_in', 'p4_t_fsel_out'])
+COMPILE NEW ('connect', None, ['p4_w_max_lt'])
+GATE PASS | 3 new tunnel groups compile as kind tunnel | 
+GATE PASS | ops per meta step <= ~40 (re-cut above 42, PD306(c)) | {1: 35, 2: 28, 3: 37, 4: 36, 5: 27}
+SIM EXCEPTION SimError plan does not validate against stageplan/1: $.actions[27].why: 419 chars > limit 400
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\prep_c138_4_mkv8.py", line 224, in main
+    S = SS.simulate(V8, GRAPH, out_root=SIMDIR, plan_out_dir=SIMDIR)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagesim.py", line 2382, in simulate
+    raise SimError("plan does not validate against stageplan/1: " + why)
+stagesim.SimError: plan does not validate against stageplan/1: $.actions[27].why: 419 chars > limit 400
+GATE FAIL | simulate returned | 
+GATE PASS | v7 not written | 01ab0893f3a9440e02bbc180bc467bdf
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":13,"fail":1},"first_fail":"simulate returned","artefacts":[{"path":"tools/bench/plan_ring_p4_v8.json","md5":"2bd89e971080967343647f760bf8e2d5"}]}
+BGRUN END rc=1 after 1s
+BGRUN START 2026-10-02 17:49:38 limit 12.0 min: py -u tools/bench/prep_c138_4_mkv8.py
+BGRUN PID 13480
+GATE PASS | input md5 plan_ring_p4_v7.json | 01ab0893f3a9440e02bbc180bc467bdf
+GATE PASS | input md5 graph_ring_p3b2b_20261002_133824.json | 50595c62d0332a94bf066538cf20c0ae
+GATE PASS | new as/ids unused in v7 | []
+GATE PASS | anchor ids in v7 | 
+GATE PASS | every action string <= 400 chars (stageplan/1) | []
+v7 actions 172 v8 actions 181 v8 md5 19039ac38c654c614576d5cd1bdf3e5a
+GATE FAIL | v8 validates against stageplan/1 (protocol.validate_obj, as stagesim.py:2380) | $.actions[27].donor.uid: expected integer, got NoneType
+GATE PASS | v8 = 172 - 3 + 2 + 9 + 1 = 181 actions | 181
+DIFF removed ['p4_w_num_sel', 'p4_w_gt_sel', 'p4_w_sel_amm']
+DIFF added [(26, 'p4_f_min', 'create'), (29, 'p4_k_max_found', 'create'), (53, 'p4_t_fnum', 'tunnel'), (54, 'p4_t_fnum_in', 'wire'), (55, 'p4_t_fnum_out', 'wire'), (56, 'p4_t_fgt', 'tunnel'), (57, 'p4_t_fgt_in', 'wire'), (58, 'p4_t_fgt_out', 'wire'), (59, 'p4_w_max_sel', 'wire'), (60, 'p4_t_fsel', 'tunnel'), (61, 'p4_t_fsel_in', 'wire'), (62, 'p4_t_fsel_out', 'wire')]
+DIFF modified ['p4_sel_mask', 'p4_k_max', 'p4_w_max_lt']
+  MOD p4_sel_mask keys ['diagram', 'why']
+  MOD p4_k_max keys ['diagram', 'donor', 'on', 'prim', 'terminals', 'value', 'why']
+  MOD p4_w_max_lt keys ['src', 'why']
+GATE PASS | removed = the 3 replaced wires | ['p4_w_num_sel', 'p4_w_gt_sel', 'p4_w_sel_amm']
+GATE PASS | modified exactly 3 | ['p4_sel_mask', 'p4_k_max', 'p4_w_max_lt']
+GATE PASS | unchanged v7 actions keep v7 order | 166
+GATE PASS | no top-level key changed | []
+GATE PASS | 's? t: f' occurrences in v8 = 0 (v7: 0) | 24
+STEP of group anchors {'p4_gt_last': 1, 'p4_k_max': 1, 'p4_w_num_sel': 2, 'p4_w_gt_sel': 2, 'p4_w_sel_amm': 2}
+v8 ACTIONS per meta step {1: 35, 2: 42, 3: 41, 4: 36, 5: 27} no meta step []
+COMPILE v8 OK ops=163 per meta step {1: 35, 2: 28, 3: 37, 4: 36, 5: 27}
+COMPILE kinds {'add_sr': 2, 'branch': 6, 'connect': 68, 'connect_term_uid/fs_border': 3, 'connect_term_uid/fs_border_inner_branch': 1, 'connect_term_uid/fs_exit': 1, 'create': 50, 'delete_object': 1, 'delete_wire': 8, 'move_in': 2, 'stop': 1, 'tunnel': 9, 'wire_remove_loose_ends': 6, 'wire_sr/LeftIn': 3, 'wire_sr/RightIn': 2}
+COMPILE NEW ('create', 'for', ['p4_f_min'])
+COMPILE NEW ('create', 'primitive', ['p4_sel_mask'])
+COMPILE NEW ('create', 'primitive', ['p4_k_max'])
+COMPILE NEW ('create', 'primitive', ['p4_k_max_found'])
+COMPILE NEW ('tunnel', None, ['p4_t_fnum', 'p4_t_fnum_in', 'p4_t_fnum_out'])
+COMPILE NEW ('tunnel', None, ['p4_t_fgt', 'p4_t_fgt_in', 'p4_t_fgt_out'])
+COMPILE NEW ('connect', None, ['p4_w_max_sel'])
+COMPILE NEW ('tunnel', None, ['p4_t_fsel', 'p4_t_fsel_in', 'p4_t_fsel_out'])
+COMPILE NEW ('connect', None, ['p4_w_max_lt'])
+GATE PASS | 3 new tunnel groups compile as kind tunnel | 
+GATE PASS | ops per meta step <= ~40 (re-cut above 42, PD306(c)) | {1: 35, 2: 28, 3: 37, 4: 36, 5: 27}
+SIM EXCEPTION SimError plan does not validate against stageplan/1: $.actions[27].donor.uid: expected integer, got NoneType
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\prep_c138_4_mkv8.py", line 231, in main
+    S = SS.simulate(V8, GRAPH, out_root=SIMDIR, plan_out_dir=SIMDIR)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagesim.py", line 2382, in simulate
+    raise SimError("plan does not validate against stageplan/1: " + why)
+stagesim.SimError: plan does not validate against stageplan/1: $.actions[27].donor.uid: expected integer, got NoneType
+GATE FAIL | simulate returned | 
+GATE PASS | v7 not written | 01ab0893f3a9440e02bbc180bc467bdf
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":14,"fail":2},"first_fail":"v8 validates against stageplan/1 (protocol.validate_obj, as stagesim.py:2380)","artefacts":[{"path":"tools/bench/plan_ring_p4_v8.json","md5":"19039ac38c654c614576d5cd1bdf3e5a"}]}
+BGRUN END rc=1 after 1s
+BGRUN START 2026-10-02 17:50:25 limit 12.0 min: py -u tools/bench/prep_c138_4_mkv8.py
+BGRUN PID 18072
+GATE PASS | input md5 plan_ring_p4_v7.json | 01ab0893f3a9440e02bbc180bc467bdf
+GATE PASS | input md5 graph_ring_p3b2b_20261002_133824.json | 50595c62d0332a94bf066538cf20c0ae
+GATE PASS | new as/ids unused in v7 | []
+GATE PASS | anchor ids in v7 | 
+GATE PASS | every action string <= 400 chars (stageplan/1) | []
+v7 actions 172 v8 actions 181 v8 md5 059b52964d4d05a67049add4798cb9b0
+GATE PASS | v8 validates against stageplan/1 (protocol.validate_obj, as stagesim.py:2380) | OK stageplan/1
+GATE PASS | v8 = 172 - 3 + 2 + 9 + 1 = 181 actions | 181
+DIFF removed ['p4_w_num_sel', 'p4_w_gt_sel', 'p4_w_sel_amm']
+DIFF added [(26, 'p4_f_min', 'create'), (29, 'p4_k_max_found', 'create'), (53, 'p4_t_fnum', 'tunnel'), (54, 'p4_t_fnum_in', 'wire'), (55, 'p4_t_fnum_out', 'wire'), (56, 'p4_t_fgt', 'tunnel'), (57, 'p4_t_fgt_in', 'wire'), (58, 'p4_t_fgt_out', 'wire'), (59, 'p4_w_max_sel', 'wire'), (60, 'p4_t_fsel', 'tunnel'), (61, 'p4_t_fsel_in', 'wire'), (62, 'p4_t_fsel_out', 'wire')]
+DIFF modified ['p4_sel_mask', 'p4_k_max', 'p4_w_max_lt']
+  MOD p4_sel_mask keys ['diagram', 'why']
+  MOD p4_k_max keys ['diagram', 'donor', 'on', 'prim', 'terminals', 'value', 'why']
+  MOD p4_w_max_lt keys ['src', 'why']
+GATE PASS | removed = the 3 replaced wires | ['p4_w_num_sel', 'p4_w_gt_sel', 'p4_w_sel_amm']
+GATE PASS | modified exactly 3 | ['p4_sel_mask', 'p4_k_max', 'p4_w_max_lt']
+GATE PASS | unchanged v7 actions keep v7 order | 166
+GATE PASS | no top-level key changed | []
+GATE PASS | 's? t: f' occurrences in v8 = 0 (v7: 0) | 24
+STEP of group anchors {'p4_gt_last': 1, 'p4_k_max': 1, 'p4_w_num_sel': 2, 'p4_w_gt_sel': 2, 'p4_w_sel_amm': 2}
+v8 ACTIONS per meta step {1: 35, 2: 42, 3: 41, 4: 36, 5: 27} no meta step []
+COMPILE v8 OK ops=163 per meta step {1: 35, 2: 28, 3: 37, 4: 36, 5: 27}
+COMPILE kinds {'add_sr': 2, 'branch': 6, 'connect': 68, 'connect_term_uid/fs_border': 3, 'connect_term_uid/fs_border_inner_branch': 1, 'connect_term_uid/fs_exit': 1, 'create': 50, 'delete_object': 1, 'delete_wire': 8, 'move_in': 2, 'stop': 1, 'tunnel': 9, 'wire_remove_loose_ends': 6, 'wire_sr/LeftIn': 3, 'wire_sr/RightIn': 2}
+COMPILE NEW ('create', 'for', ['p4_f_min'])
+COMPILE NEW ('create', 'primitive', ['p4_sel_mask'])
+COMPILE NEW ('create', 'primitive', ['p4_k_max'])
+COMPILE NEW ('create', 'primitive', ['p4_k_max_found'])
+COMPILE NEW ('tunnel', None, ['p4_t_fnum', 'p4_t_fnum_in', 'p4_t_fnum_out'])
+COMPILE NEW ('tunnel', None, ['p4_t_fgt', 'p4_t_fgt_in', 'p4_t_fgt_out'])
+COMPILE NEW ('connect', None, ['p4_w_max_sel'])
+COMPILE NEW ('tunnel', None, ['p4_t_fsel', 'p4_t_fsel_in', 'p4_t_fsel_out'])
+COMPILE NEW ('connect', None, ['p4_w_max_lt'])
+GATE PASS | 3 new tunnel groups compile as kind tunnel | 
+GATE PASS | ops per meta step <= ~40 (re-cut above 42, PD306(c)) | {1: 35, 2: 28, 3: 37, 4: 36, 5: 27}
+  BASE-FLIPS seeded 6 terminal(s) on 3 undirected tunnel(s): [9503, 10177, 29777]
+  STEP 01 delete_wire      ok cands=0 cdiff=16 measured:tools/bench/opmodels/delete_wire.json@3ee49994f25b3d2d38f85b9310f3a32a
+  STEP 02 delete_object    ok cands=0 cdiff=16 measured:tools/bench/opmodels/delete_object.json@872644df5c0e7f59dfef1cb44637a8ed
+  STEP 03 wire_remove_loose_ends ok cands=0 cdiff=16 provisional
+  STEP 04 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 05 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 06 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 07 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 08 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 09 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 10 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 11 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 12 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 13 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 14 wire_remove_loose_ends ok cands=0 cdiff=16 provisional
+  STEP 15 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 16 wire_remove_loose_ends ok cands=0 cdiff=16 provisional
+  STEP 17 add_shift_reg    ok cands=0 cdiff=16 measured:tools/bench/opmodels/add_shift_reg.json@c184ce030aea6aaee181fc7b97eeca83
+  STEP 18 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 19 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 20 add_shift_reg    ok cands=0 cdiff=16 measured:tools/bench/opmodels/add_shift_reg.json@c184ce030aea6aaee181fc7b97eeca83
+  STEP 21 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 22 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 23 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 24 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 25 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 26 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 27 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 28 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 29 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 30 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 31 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 32 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 33 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 34 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 35 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 36 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 37 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 38 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 39 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 40 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 41 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 42 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 43 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 44 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 45 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 46 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 47 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 48 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 49 tunnel           ok cands=0 cdiff=16 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 50 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 51 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 52 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 53 tunnel           ok cands=0 cdiff=16 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 54 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 55 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 56 tunnel           ok cands=0 cdiff=16 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 57 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 58 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 59 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 60 tunnel           ok cands=0 cdiff=16 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 61 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 62 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 63 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 64 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 65 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 66 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 67 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 68 tunnel           ok cands=0 cdiff=16 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 69 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 70 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 71 tunnel           ok cands=0 cdiff=16 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 72 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 73 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 74 tunnel           ok cands=0 cdiff=16 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 75 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 76 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 77 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 78 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 79 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 80 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 81 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 82 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 83 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 84 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 85 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 86 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 87 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 88 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 89 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 90 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 91 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 92 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 93 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 94 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 95 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 96 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 97 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 98 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 99 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 100 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 101 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 102 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 103 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 104 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 105 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 106 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 107 move_in          ok cands=9 cdiff=18 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 108 move_in          ok cands=9 cdiff=20 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 109 wire             ok cands=0 cdiff=20 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 110 wire             ok cands=0 cdiff=20 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 111 tunnel           ok cands=0 cdiff=20 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 112 wire             ok cands=0 cdiff=20 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 113 wire             ok cands=0 cdiff=19 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 114 tunnel           ok cands=0 cdiff=19 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 115 wire             ok cands=0 cdiff=19 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 116 wire             ok cands=0 cdiff=18 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 117 wire             ok cands=0 cdiff=17 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 118 wire             ok cands=0 cdiff=15 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 119 create           ok cands=0 cdiff=15 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 120 create           ok cands=0 cdiff=15 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 121 wire             ok cands=0 cdiff=15 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 122 wire             ok cands=0 cdiff=15 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 123 wire             ok cands=0 cdiff=15 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 124 delete_wire      ok cands=0 cdiff=20 measured:tools/bench/opmodels/delete_wire.json@3ee49994f25b3d2d38f85b9310f3a32a
+  STEP 125 wire             ok cands=0 cdiff=19 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 126 wire             ok cands=0 cdiff=18 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 127 wire             ok cands=0 cdiff=17 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 128 create           ok cands=0 cdiff=17 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 129 wire             ok cands=0 cdiff=17 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 130 wire             ok cands=0 cdiff=17 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 131 wire             ok cands=0 cdiff=17 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 132 wire             ok cands=0 cdiff=17 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 133 wire             ok cands=0 cdiff=17 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 134 delete_wire      ok cands=0 cdiff=20 measured:tools/bench/opmodels/delete_wire.json@3ee49994f25b3d2d38f85b9310f3a32a
+  STEP 135 wire             ok cands=0 cdiff=18 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 136 create           ok cands=0 cdiff=18 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 137 wire             ok cands=0 cdiff=18 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 138 wire             ok cands=0 cdiff=18 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 139 wire             ok cands=0 cdiff=18 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 140 wire             ok cands=0 cdiff=18 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 141 wire             ok cands=0 cdiff=18 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 142 delete_wire      ok cands=0 cdiff=19 measured:tools/bench/opmodels/delete_wire.json@3ee49994f25b3d2d38f85b9310f3a32a
+  STEP 143 create           ok cands=0 cdiff=19 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 144 wire             ok cands=0 cdiff=19 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 145 wire             ok cands=0 cdiff=19 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 146 wire             ok cands=0 cdiff=19 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 147 wire             ok cands=0 cdiff=19 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 148 delete_wire      ok cands=0 cdiff=21 measured:tools/bench/opmodels/delete_wire.json@3ee49994f25b3d2d38f85b9310f3a32a
+  STEP 149 create           ok cands=0 cdiff=21 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 150 wire             ok cands=0 cdiff=21 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 151 wire             ok cands=0 cdiff=21 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 152 wire             ok cands=0 cdiff=21 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 153 wire             ok cands=0 cdiff=21 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 154 wire             ok cands=0 cdiff=21 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 155 delete_wire      ok cands=0 cdiff=22 measured:tools/bench/opmodels/delete_wire.json@3ee49994f25b3d2d38f85b9310f3a32a
+  STEP 156 create           ok cands=0 cdiff=22 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 157 wire             ok cands=0 cdiff=22 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 158 wire             ok cands=0 cdiff=22 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 159 wire             ok cands=0 cdiff=22 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 160 wire             ok cands=0 cdiff=22 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 161 delete_wire      ok cands=0 cdiff=23 measured:tools/bench/opmodels/delete_wire.json@3ee49994f25b3d2d38f85b9310f3a32a
+  STEP 162 create           ok cands=0 cdiff=23 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 163 wire             ok cands=0 cdiff=23 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 164 wire             ok cands=0 cdiff=23 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 165 wire             ok cands=0 cdiff=23 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 166 wire             ok cands=0 cdiff=23 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 167 delete_wire      ok cands=0 cdiff=24 measured:tools/bench/opmodels/delete_wire.json@3ee49994f25b3d2d38f85b9310f3a32a
+  STEP 168 wire             ok cands=0 cdiff=24 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 169 create           ok cands=0 cdiff=24 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 170 create           ok cands=0 cdiff=24 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 171 wire             ok cands=0 cdiff=24 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 172 wire             ok cands=0 cdiff=24 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 173 wire             ok cands=0 cdiff=24 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 174 wire             ok cands=0 cdiff=24 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 175 wire             ok cands=0 cdiff=24 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 176 wire             ok cands=0 cdiff=24 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 177 wire_remove_loose_ends ok cands=0 cdiff=24 provisional
+  STEP 178 wire             ok cands=0 cdiff=24 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 179 wire_remove_loose_ends ok cands=0 cdiff=24 provisional
+  STEP 180 wire             ok cands=0 cdiff=24 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 181 wire_remove_loose_ends ok cands=0 cdiff=24 provisional
+  ROUTE 1 delete_wire ['p4_dw_23310']: delete_wire
+  ROUTE 2 delete_object ['p4_do_10171']: delete_object
+  ROUTE 3 wire_remove_loose_ends ['p4_rle_w23255']: wire_remove_loose_ends
+  ROUTE 4 create ['p4_lr_stop12']: local_read
+  ROUTE 5 connect ['p4_w_stop12']: connect  UNROUTABLE ADDRESS: node #23166 not in Diagram[122] (#23166).Nodes[]
+  ROUTE 6 create ['p4_c_bufdiff']: primitive
+  ROUTE 7 create ['p4_i_bufdiff']: indicator
+  ROUTE 8 create ['p4_lr_bufdiff11']: local_read
+  ROUTE 9 create ['p4_ras_bufdiff']: primitive
+  ROUTE 10 create ['p4_lw_bufdiff']: local_write
+  ROUTE 11 connect ['p4_w_b_arr']: nested
+  ROUTE 12 connect ['p4_w_b_out']: nested
+  ROUTE 13 connect_term_uid ['p4_x_i_rab1']: connect_term_uid
+  ROUTE 14 wire_remove_loose_ends ['p4_rle_i_rab1']: wire_remove_loose_ends
+  ROUTE 15 connect_term_uid ['p4_x_bufdiff']: connect_term_uid
+  ROUTE 16 wire_remove_loose_ends ['p4_rle_bufdiff']: wire_remove_loose_ends
+  ROUTE 17 add_sr ['p4_sr_last']: add_sr
+  ROUTE 18 create ['p4_k_last']: primitive
+  ROUTE 19 connect ['p4_w_klast']: const_sr
+  ROUTE 20 add_sr ['p4_sr_disc']: add_sr
+  ROUTE 21 create ['p4_k_disc']: primitive
+  ROUTE 22 connect ['p4_w_kdisc']: const_sr
+  ROUTE 23 create ['p4_w1']: while
+  ROUTE 24 create ['p4_lr_num_a']: local_read
+  ROUTE 25 create ['p4_gt_last']: primitive
+  ROUTE 26 create ['p4_f_min']: for
+  ROUTE 27 create ['p4_sel_mask']: primitive
+  ROUTE 28 create ['p4_k_max']: primitive
+  ROUTE 29 create ['p4_k_max_found']: primitive
+  ROUTE 30 create ['p4_amm']: primitive
+  ROUTE 31 create ['p4_lt_found']: primitive
+  ROUTE 32 create ['p4_wait']: primitive
+  ROUTE 33 create ['p4_wait_k']: const_on_term
+  ROUTE 34 create ['p4_lr_stop_w1']: local_read
+  ROUTE 35 create ['p4_or_w1']: primitive
+  ROUTE 36 create ['p4_ia_img']: primitive
+  ROUTE 37 create ['p4_fs_n2']: fs_create
+  ROUTE 38 create ['p4_lr_num_b']: local_read
+  ROUTE 39 create ['p4_ia_n2']: primitive
+  ROUTE 40 create ['p4_eq_seq']: primitive
+  ROUTE 41 create ['p4_gt_n1']: primitive
+  ROUTE 42 create ['p4_and']: primitive
+  ROUTE 43 create ['p4_lr_latest']: local_read
+  ROUTE 44 create ['p4_dec']: primitive
+  ROUTE 45 create ['p4_sel_last']: primitive
+  ROUTE 46 create ['p4_sel_disc']: primitive
+  ROUTE 47 create ['p4_inc_disc']: primitive
+  ROUTE 48 create ['p4_ia_n2sink']: primitive
+  ROUTE 49 tunnel ['p4_t_last', 'p4_t_last_in', 'p4_t_last_out']: tunnel  UNROUTABLE ADDRESS: node #10000032 not in Diagram[122] (#23166).Nodes[]
+  ROUTE 50 connect ['p4_w_num_gt']: nested
+  ROUTE 51 tunnel ['p4_t_fnum', 'p4_t_fnum_in', 'p4_t_fnum_out']: cfw
+  ROUTE 52 tunnel ['p4_t_fgt', 'p4_t_fgt_in', 'p4_t_fgt_out']: nested
+  ROUTE 53 connect ['p4_w_max_sel']: const
+  ROUTE 54 tunnel ['p4_t_fsel', 'p4_t_fsel_in', 'p4_t_fsel_out']: nested
+  ROUTE 55 connect ['p4_w_min_lt']: nested
+  ROUTE 56 connect ['p4_w_max_lt']: const
+  ROUTE 57 connect ['p4_w_lt_or']: nested
+  ROUTE 58 connect ['p4_w_stop_or']: nested
+  ROUTE 59 stop ['p4_w_or_cond']: stop
+  ROUTE 60 tunnel ['p4_t_n1', 'p4_t_n1_in', 'p4_t_n1_out']: cfw
+  ROUTE 61 tunnel ['p4_t_slot', 'p4_t_slot_in', 'p4_t_slot_out']: nested
+  ROUTE 62 tunnel ['p4_t_pool', 'p4_x_pool', 'p4_w_pool_in']: cfw
+  ROUTE 63 connect ['p4_w_img_trk']: nested
+  ROUTE 64 branch ['p4_w_n1_gt']: branch
+  ROUTE 65 wire_sr ['p4_w_last_gt']: wire_sr:LeftIn
+  ROUTE 66 connect ['p4_w_eq_and']: nested
+  ROUTE 67 connect ['p4_w_gt_and']: nested
+  ROUTE 68 connect ['p4_w_lat_dec']: nested
+  ROUTE 69 connect ['p4_w_dec_sel']: nested
+  ROUTE 70 branch ['p4_w_n1_sel']: branch
+  ROUTE 71 connect ['p4_w_and_sel']: nested
+  ROUTE 72 wire_sr ['p4_w_sel_last']: wire_sr:RightIn
+  ROUTE 73 wire_sr ['p4_w_disc_inc']: wire_sr:LeftIn
+  ROUTE 74 wire_sr ['p4_w_disc_sel']: wire_sr:LeftIn
+  ROUTE 75 connect ['p4_w_inc_sel']: nested
+  ROUTE 76 connect ['p4_w_and_seld']: cfw
+  ROUTE 77 wire_sr ['p4_w_seld_r']: wire_sr:RightIn
+  ROUTE 78 create ['p4_lr_transpos']: local_read
+  ROUTE 79 create ['p4_ia_transpos']: primitive
+  ROUTE 80 connect ['p4_w_arr_transpos']: nested
+  ROUTE 81 branch ['p4_w_idx_transpos']: branch
+  ROUTE 82 create ['p4_lr_rotpos']: local_read
+  ROUTE 83 create ['p4_ia_rotpos']: primitive
+  ROUTE 84 connect ['p4_w_arr_rotpos']: nested
+  ROUTE 85 branch ['p4_w_idx_rotpos']: branch
+  ROUTE 86 create ['p4_lr_frameidx']: local_read
+  ROUTE 87 create ['p4_ia_frameidx']: primitive
+  ROUTE 88 connect ['p4_w_arr_frameidx']: nested
+  ROUTE 89 branch ['p4_w_idx_frameidx']: branch
+  ROUTE 90 connect ['p4_w_tp_mag']: nested
+  ROUTE 91 connect ['p4_w_tp_row']: cfw
+  ROUTE 92 connect ['p4_w_rp_row']: nested
+  ROUTE 93 move_in ['p4_mv_10068']: move_in
+  ROUTE 94 move_in ['p4_mv_29240']: move_in
+  ROUTE 95 connect ['p4_w_fi_10068']: nested
+  ROUTE 96 connect ['p4_w_fi_29240']: cfw
+  ROUTE 97 tunnel ['p4_t_fd', 'p4_x_fd', 'p4_w_fd_in']: cfw
+  ROUTE 98 tunnel ['p4_t_dt', 'p4_x_dt', 'p4_w_dt_in']: cfw
+  ROUTE 99 connect ['p4_w_10068_out']: nested
+  ROUTE 100 connect ['p4_w_29240_out']: nested
+  ROUTE 101 create ['p4_lr_bufdiff12']: local_read
+  ROUTE 102 create ['p4_ia_bufdiff']: primitive
+  ROUTE 103 connect ['p4_w_arr_bufdiff']: nested
+  ROUTE 104 branch ['p4_w_idx_bufdiff']: branch
+  ROUTE 105 connect ['p4_w_bd_row']: nested
+  ROUTE 106 delete_wire ['p4_rbA_dw']: delete_wire
+  ROUTE 107 connect ['p4_rbA_re0']: nested
+  ROUTE 108 connect ['p4_rbA_re1']: connect
+  ROUTE 109 connect ['p4_rbA_re2']: connect
+  ROUTE 110 create ['p4_rbA_sel']: primitive
+  ROUTE 111 connect ['p4_rbA_t']: cfw
+  ROUTE 112 connect ['p4_rbA_f']: wire_sr:LeftIn
+  ROUTE 113 connect ['p4_rbA_s']: cfw
+  ROUTE 114 connect ['p4_rbA_out']: wire_sr:RightIn
+  ROUTE 115 connect ['p4_rbA_sel_t10871']: cfw
+  ROUTE 116 delete_wire ['p4_rbB_dw']: delete_wire
+  ROUTE 117 connect ['p4_rbB_re0']: nested
+  ROUTE 118 create ['p4_rbB_sel']: primitive
+  ROUTE 119 connect ['p4_rbB_t']: cfw
+  ROUTE 120 connect ['p4_rbB_f']: wire_sr:LeftIn
+  ROUTE 121 connect ['p4_rbB_s']: cfw
+  ROUTE 122 connect ['p4_rbB_out']: wire_sr:RightIn
+  ROUTE 123 connect ['p4_rbB_sel_t4168']: cfw
+  ROUTE 124 delete_wire ['p4_rbC_dw']: delete_wire
+  ROUTE 125 create ['p4_rbC_sel']: primitive
+  ROUTE 126 connect ['p4_rbC_t']: nested
+  ROUTE 127 connect ['p4_rbC_f']: wire_sr:LeftIn
+  ROUTE 128 connect ['p4_rbC_s']: cfw
+  ROUTE 129 connect ['p4_rbC_out']: wire_sr:RightIn
+  ROUTE 130 delete_wire ['p4_rbD_dw']: delete_wire
+  ROUTE 131 create ['p4_rbD_sel']: primitive
+  ROUTE 132 connect ['p4_rbD_t']: nested
+  ROUTE 133 connect ['p4_rbD_f']: wire_sr:LeftIn
+  ROUTE 134 connect ['p4_rbD_s']: cfw
+  ROUTE 135 connect ['p4_rbD_out']: wire_sr:RightIn
+  ROUTE 136 connect ['p4_rbD_sel_t25573']: connect
+  ROUTE 137 delete_wire ['p4_rbE_dw']: delete_wire
+  ROUTE 138 create ['p4_rbE_sel']: primitive
+  ROUTE 139 connect ['p4_rbE_t']: nested
+  ROUTE 140 connect ['p4_rbE_f']: wire_sr:LeftIn
+  ROUTE 141 connect ['p4_rbE_s']: cfw
+  ROUTE 142 connect ['p4_rbE_out']: wire_sr:RightIn
+  ROUTE 143 delete_wire ['p4_rbF_dw']: delete_wire
+  ROUTE 144 create ['p4_rbF_sel']: primitive
+  ROUTE 145 connect ['p4_rbF_t']: nested
+  ROUTE 146 connect ['p4_rbF_f']: wire_sr:LeftIn
+  ROUTE 147 connect ['p4_rbF_s']: cfw
+  ROUTE 148 connect ['p4_rbF_out']: wire_sr:RightIn
+  ROUTE 149 delete_wire ['p4_rbR_dw']: delete_wire
+  ROUTE 150 connect ['p4_rbR_re0']: nested
+  ROUTE 151 create ['p4_rbR_sel']: primitive
+  ROUTE 152 create ['p4_rbR_lr']: local_read
+  ROUTE 153 connect ['p4_rbR_t']: cfw
+  ROUTE 154 connect ['p4_rbR_f']: nested
+  ROUTE 155 connect ['p4_rbR_s']: cfw
+  ROUTE 156 connect ['p4_rbR_out']: ctlsink
+  ROUTE 157 connect ['p4_w_n2_arr']: nested
+  ROUTE 158 connect_term_uid ['p4_x_n2_order']: connect_term_uid
+  ROUTE 159 wire_remove_loose_ends ['p4_rle_x_n2_order']: wire_remove_loose_ends
+  ROUTE 160 connect_term_uid ['p4_x_slot_fs']: connect_term_uid
+  ROUTE 161 wire_remove_loose_ends ['p4_rle_x_slot_fs']: wire_remove_loose_ends
+  ROUTE 162 connect_term_uid ['p4_x_n2_out']: connect_term_uid
+  ROUTE 163 wire_remove_loose_ends ['p4_rle_x_n2_out']: wire_remove_loose_ends
+GATE PASS | simulate returned | 
+SIM final=False failed=None steps=182 last=181 p4_rle_x_n2_out error=None
+SIM first stop none (END)
+STEP 26 create p4_f_min ok {'class': 'ForLoop', 'diagram': -48, 'count_terminal': -60, 'node': 'new:FMN1', 'body': -58, 'terminals': [-59, -61, -62]} cdiff ['11261|Terminal|array|0', '11261|Terminal|element|0', '2626|Terminal|array|0', '2626|Terminal|array|1', '2626|Terminal|array|2', '2626|Terminal|array|3', '2626|Terminal|element|0', '2626|Terminal|element|1', '2626|Terminal|element|2', '28083|Terminal|Magnet position|0', '29625|Terminal|index (col)|0', '29973|Terminal|element|1', '376|Terminal|current frame data array in|0', '376|Terminal|frame index|0', '5058|Terminal|Image In|0', '8634|Terminal|index (col)|0']
+STEP 27 create p4_sel_mask ok {'class': 'Function', 'diagram': -58, 'node': 'new:SW1', 'terminals': [-64, -65, -66, -67]} cdiff ['11261|Terminal|array|0', '11261|Terminal|element|0', '2626|Terminal|array|0', '2626|Terminal|array|1', '2626|Terminal|array|2', '2626|Terminal|array|3', '2626|Terminal|element|0', '2626|Terminal|element|1', '2626|Terminal|element|2', '28083|Terminal|Magnet position|0', '29625|Terminal|index (col)|0', '29973|Terminal|element|1', '376|Terminal|current frame data array in|0', '376|Terminal|frame index|0', '5058|Terminal|Image In|0', '8634|Terminal|index (col)|0']
+STEP 28 create p4_k_max ok {'class': 'DigitalNumericConstant', 'diagram': -58, 'node': 'new:KMX1', 'terminals': [-69]} cdiff ['11261|Terminal|array|0', '11261|Terminal|element|0', '2626|Terminal|array|0', '2626|Terminal|array|1', '2626|Terminal|array|2', '2626|Terminal|array|3', '2626|Terminal|element|0', '2626|Terminal|element|1', '2626|Terminal|element|2', '28083|Terminal|Magnet position|0', '29625|Terminal|index (col)|0', '29973|Terminal|element|1', '376|Terminal|current frame data array in|0', '376|Terminal|frame index|0', '5058|Terminal|Image In|0', '8634|Terminal|index (col)|0']
+STEP 29 create p4_k_max_found ok {'class': 'DigitalNumericConstant', 'diagram': -48, 'node': 'new:KMX2', 'terminals': [-71]} cdiff ['11261|Terminal|array|0', '11261|Terminal|element|0', '2626|Terminal|array|0', '2626|Terminal|array|1', '2626|Terminal|array|2', '2626|Terminal|array|3', '2626|Terminal|element|0', '2626|Terminal|element|1', '2626|Terminal|element|2', '28083|Terminal|Magnet position|0', '29625|Terminal|index (col)|0', '29973|Terminal|element|1', '376|Terminal|current frame data array in|0', '376|Terminal|frame index|0', '5058|Terminal|Image In|0', '8634|Terminal|index (col)|0']
+STEP 53 tunnel p4_t_fnum ok {'tunnel': 'new:TFN1', 'loop': -57, 'dir': 'in', 'indexing': True, 'outer': -147, 'inner': -148, 'body': -58, 'parent': -48} cdiff ['11261|Terminal|array|0', '11261|Terminal|element|0', '2626|Terminal|array|0', '2626|Terminal|array|1', '2626|Terminal|array|2', '2626|Terminal|array|3', '2626|Terminal|element|0', '2626|Terminal|element|1', '2626|Terminal|element|2', '28083|Terminal|Magnet position|0', '29625|Terminal|index (col)|0', '29973|Terminal|element|1', '376|Terminal|current frame data array in|0', '376|Terminal|frame index|0', '5058|Terminal|Image In|0', '8634|Terminal|index (col)|0']
+STEP 54 wire p4_t_fnum_in ok {'wire': -149, 'how': 'recreate', 'src_term_uid': -52, 'dst_term_uid': -147, 'detached_from': None, 'joined': [], 'kept_stub_uid': False, 'recreated_from': -145, 'rewired': [-56], 'unflipped': []} cdiff ['11261|Terminal|array|0', '11261|Terminal|element|0', '2626|Terminal|array|0', '2626|Terminal|array|1', '2626|Terminal|array|2', '2626|Terminal|array|3', '2626|Terminal|element|0', '2626|Terminal|element|1', '2626|Terminal|element|2', '28083|Terminal|Magnet position|0', '29625|Terminal|index (col)|0', '29973|Terminal|element|1', '376|Terminal|current frame data array in|0', '376|Terminal|frame index|0', '5058|Terminal|Image In|0', '8634|Terminal|index (col)|0']
+STEP 55 wire p4_t_fnum_out ok {'wire': -150, 'how': 'new', 'src_term_uid': -148, 'dst_term_uid': -67, 'detached_from': None, 'joined': [], 'kept_stub_uid': False, 'unflipped': []} cdiff ['11261|Terminal|array|0', '11261|Terminal|element|0', '2626|Terminal|array|0', '2626|Terminal|array|1', '2626|Terminal|array|2', '2626|Terminal|array|3', '2626|Terminal|element|0', '2626|Terminal|element|1', '2626|Terminal|element|2', '28083|Terminal|Magnet position|0', '29625|Terminal|index (col)|0', '29973|Terminal|element|1', '376|Terminal|current frame data array in|0', '376|Terminal|frame index|0', '5058|Terminal|Image In|0', '8634|Terminal|index (col)|0']
+STEP 56 tunnel p4_t_fgt ok {'tunnel': 'new:TFB1', 'loop': -57, 'dir': 'in', 'indexing': True, 'outer': -152, 'inner': -153, 'body': -58, 'parent': -48} cdiff ['11261|Terminal|array|0', '11261|Terminal|element|0', '2626|Terminal|array|0', '2626|Terminal|array|1', '2626|Terminal|array|2', '2626|Terminal|array|3', '2626|Terminal|element|0', '2626|Terminal|element|1', '2626|Terminal|element|2', '28083|Terminal|Magnet position|0', '29625|Terminal|index (col)|0', '29973|Terminal|element|1', '376|Terminal|current frame data array in|0', '376|Terminal|frame index|0', '5058|Terminal|Image In|0', '8634|Terminal|index (col)|0']
+STEP 57 wire p4_t_fgt_in ok {'wire': -154, 'how': 'new', 'src_term_uid': -54, 'dst_term_uid': -152, 'detached_from': None, 'joined': [], 'kept_stub_uid': False, 'unflipped': []} cdiff ['11261|Terminal|array|0', '11261|Terminal|element|0', '2626|Terminal|array|0', '2626|Terminal|array|1', '2626|Terminal|array|2', '2626|Terminal|array|3', '2626|Terminal|element|0', '2626|Terminal|element|1', '2626|Terminal|element|2', '28083|Terminal|Magnet position|0', '29625|Terminal|index (col)|0', '29973|Terminal|element|1', '376|Terminal|current frame data array in|0', '376|Terminal|frame index|0', '5058|Terminal|Image In|0', '8634|Terminal|index (col)|0']
+STEP 58 wire p4_t_fgt_out ok {'wire': -155, 'how': 'new', 'src_term_uid': -153, 'dst_term_uid': -66, 'detached_from': None, 'joined': [], 'kept_stub_uid': False, 'unflipped': []} cdiff ['11261|Terminal|array|0', '11261|Terminal|element|0', '2626|Terminal|array|0', '2626|Terminal|array|1', '2626|Terminal|array|2', '2626|Terminal|array|3', '2626|Terminal|element|0', '2626|Terminal|element|1', '2626|Terminal|element|2', '28083|Terminal|Magnet position|0', '29625|Terminal|index (col)|0', '29973|Terminal|element|1', '376|Terminal|current frame data array in|0', '376|Terminal|frame index|0', '5058|Terminal|Image In|0', '8634|Terminal|index (col)|0']
+STEP 59 wire p4_w_max_sel ok {'wire': -156, 'how': 'new', 'src_term_uid': -69, 'dst_term_uid': -65, 'detached_from': None, 'joined': [], 'kept_stub_uid': False, 'unflipped': []} cdiff ['11261|Terminal|array|0', '11261|Terminal|element|0', '2626|Terminal|array|0', '2626|Terminal|array|1', '2626|Terminal|array|2', '2626|Terminal|array|3', '2626|Terminal|element|0', '2626|Terminal|element|1', '2626|Terminal|element|2', '28083|Terminal|Magnet position|0', '29625|Terminal|index (col)|0', '29973|Terminal|element|1', '376|Terminal|current frame data array in|0', '376|Terminal|frame index|0', '5058|Terminal|Image In|0', '8634|Terminal|index (col)|0']
+STEP 60 tunnel p4_t_fsel ok {'tunnel': 'new:TFS1', 'loop': -57, 'dir': 'out', 'indexing': True, 'outer': -158, 'inner': -159, 'body': -58, 'parent': -48} cdiff ['11261|Terminal|array|0', '11261|Terminal|element|0', '2626|Terminal|array|0', '2626|Terminal|array|1', '2626|Terminal|array|2', '2626|Terminal|array|3', '2626|Terminal|element|0', '2626|Terminal|element|1', '2626|Terminal|element|2', '28083|Terminal|Magnet position|0', '29625|Terminal|index (col)|0', '29973|Terminal|element|1', '376|Terminal|current frame data array in|0', '376|Terminal|frame index|0', '5058|Terminal|Image In|0', '8634|Terminal|index (col)|0']
+STEP 61 wire p4_t_fsel_in ok {'wire': -160, 'how': 'new', 'src_term_uid': -64, 'dst_term_uid': -159, 'detached_from': None, 'joined': [], 'kept_stub_uid': False, 'unflipped': []} cdiff ['11261|Terminal|array|0', '11261|Terminal|element|0', '2626|Terminal|array|0', '2626|Terminal|array|1', '2626|Terminal|array|2', '2626|Terminal|array|3', '2626|Terminal|element|0', '2626|Terminal|element|1', '2626|Terminal|element|2', '28083|Terminal|Magnet position|0', '29625|Terminal|index (col)|0', '29973|Terminal|element|1', '376|Terminal|current frame data array in|0', '376|Terminal|frame index|0', '5058|Terminal|Image In|0', '8634|Terminal|index (col)|0']
+STEP 62 wire p4_t_fsel_out ok {'wire': -161, 'how': 'new', 'src_term_uid': -158, 'dst_term_uid': -73, 'detached_from': None, 'joined': [], 'kept_stub_uid': False, 'unflipped': []} cdiff ['11261|Terminal|array|0', '11261|Terminal|element|0', '2626|Terminal|array|0', '2626|Terminal|array|1', '2626|Terminal|array|2', '2626|Terminal|array|3', '2626|Terminal|element|0', '2626|Terminal|element|1', '2626|Terminal|element|2', '28083|Terminal|Magnet position|0', '29625|Terminal|index (col)|0', '29973|Terminal|element|1', '376|Terminal|current frame data array in|0', '376|Terminal|frame index|0', '5058|Terminal|Image In|0', '8634|Terminal|index (col)|0']
+STEP 64 wire p4_w_max_lt ok {'wire': -163, 'how': 'new', 'src_term_uid': -71, 'dst_term_uid': -80, 'detached_from': None, 'joined': [], 'kept_stub_uid': False, 'unflipped': []} cdiff ['11261|Terminal|array|0', '11261|Terminal|element|0', '2626|Terminal|array|0', '2626|Terminal|array|1', '2626|Terminal|array|2', '2626|Terminal|array|3', '2626|Terminal|element|0', '2626|Terminal|element|1', '2626|Terminal|element|2', '28083|Terminal|Magnet position|0', '29625|Terminal|index (col)|0', '29973|Terminal|element|1', '376|Terminal|current frame data array in|0', '376|Terminal|frame index|0', '5058|Terminal|Image In|0', '8634|Terminal|index (col)|0']
+GATE PASS | replay END (base + 181 steps, no error) | 182
+END cdiff rows 24 open_rows 11 open_rows_match False classed ok False first_divergent {'n': 0, 'op': 'base', 'id': None, 'rows_from_here': 24}
+  CDIFF 10068|ParameterTerminal|x|0                   open_row=False in_v7_end=True
+  CDIFF 10150|ParameterTerminal|x|0                   open_row=False in_v7_end=True
+  CDIFF 10382|ParameterTerminal|x|0                   open_row=False in_v7_end=True
+  CDIFF 10757|Terminal|array|0                        open_row=False in_v7_end=True
+  CDIFF 11261|Terminal|array|0                        open_row=True in_v7_end=True
+  CDIFF 11261|Terminal|element|0                      open_row=True in_v7_end=True
+  CDIFF 11529|ParameterTerminal|x|0                   open_row=False in_v7_end=True
+  CDIFF 2626|Terminal|array|0                         open_row=True in_v7_end=True
+  CDIFF 2626|Terminal|array|1                         open_row=True in_v7_end=True
+  CDIFF 2626|Terminal|array|2                         open_row=True in_v7_end=True
+  CDIFF 2626|Terminal|array|3                         open_row=True in_v7_end=True
+  CDIFF 2626|Terminal|element|0                       open_row=True in_v7_end=True
+  CDIFF 2626|Terminal|element|1                       open_row=True in_v7_end=True
+  CDIFF 2626|Terminal|element|2                       open_row=True in_v7_end=True
+  CDIFF 28083|Terminal|Magnet position|0              open_row=True in_v7_end=True
+  CDIFF 29240|ParameterTerminal|x|0                   open_row=False in_v7_end=True
+  CDIFF 29625|Terminal|array|0                        open_row=False in_v7_end=True
+  CDIFF 376|Terminal|current frame data array in|0    open_row=True in_v7_end=True
+  CDIFF 376|Terminal|frame index|0                    open_row=True in_v7_end=True
+  CDIFF 5058|Terminal|Bead is good? array in|0        open_row=False in_v7_end=True
+  CDIFF 5058|Terminal|Image In|0                      open_row=True in_v7_end=True
+  CDIFF 5058|Terminal|pos in cal image in|0           open_row=False in_v7_end=True
+  CDIFF 5058|Terminal|x,y,z array|0                   open_row=False in_v7_end=True
+  CDIFF 8634|Terminal|array|0                         open_row=False in_v7_end=True
+CDIFF only in v8 [] only in v7 []
+GATE PASS | end cdiff rows == v7's 24 (no new row from the re-cut) | []
+SIM plan_out {'path': 'tools/bench/sim/c138_4_v8/plan_ring_p4_v3.json', 'md5': '4e575a76d9309ce8b9ff645e390f3228'} candidates 18 undecided 0
+GATE PASS | v7 not written | 01ab0893f3a9440e02bbc180bc467bdf
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":18,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/plan_ring_p4_v8.json","md5":"059b52964d4d05a67049add4798cb9b0"}]}
+BGRUN END rc=0 after 289s

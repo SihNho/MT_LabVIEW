@@ -59,7 +59,13 @@ import protocol                # noqa: E402
 TUN1 = ("LoopTunnel", "Tunnel")                     # single-object tunnels (kept for reference; the flip uses TUN_FLIP)
 TUN_FLIP = ("LoopTunnel", "Tunnel", "SelectorTunnel")   # single-object tunnels that go undirected (k_op3_read_79.log)
 TUN_SIDES = {"InnerTerminal": "OuterTerminal", "OuterTerminal": "InnerTerminal"}
-DROP_WHEN_UNWIRED = ("LoopTunnel", "Tunnel")
+# card 138-1 (PD310(c)): ONLY the MEASURED class. The evidence (delete_wire.json:5, stage_d1_l7_r.json:221,228,588-589) is two
+# LoopTunnels (#1929/#5020); "Tunnel" (a Case structure's data tunnel) was listed without a sample, and dropped Case tunnel
+# #10465 (inner faces t10467/t10468 already unwired) after v7's delete_wire w25415, so the next row's address failed
+# ("owns no terminal", plan_ring_p4_v7 step 159). A Tunnel/SelectorTunnel left with no wire is KEPT and reported
+# (effect `unmeasured_unwired_tunnels`): whether LabVIEW removes it is UNMEASURED.
+DROP_WHEN_UNWIRED = ("LoopTunnel",)
+KEEP_UNMEASURED_WHEN_UNWIRED = ("Tunnel", "SelectorTunnel")
 SR_CLS = ("RightShiftRegister", "LeftShiftRegister")
 
 # The plan table's ops with the provisional rule each one runs until chat-S1's measured model lands.
@@ -171,6 +177,27 @@ FS_BORDER_SIG = {
 FS_INNER_BRANCH = {"census": {}, "status": "PROVISIONAL pending card 127-1 (PD257(d): a 2nd+ sink into a frame the source "
                                            "already entered = a same-frame wire from that FS tunnel's INNER face, the R4 "
                                            "branch analogue, census {} as R4 diag_c124_p3a_scratch.log:77,80)"}
+# card 138-1 (PD309(b), PD311(c)): a wire from a node on a frame of a plan-made Flat Sequence to a sink on the diagram the FS
+# sits on = an FS EXIT = ONE gscript.connect_term_uid(W, sink, src) (diag_c137_7_types.py:30,64; U6/U6') followed by the plan's
+# wire_remove_loose_ends row (:77). MEASURED n=2 shape: ONE FlatSequenceOuterTunnel, its sink face on the frame (on the source's
+# new wire), its source face on the parent diagram (on the sink's new wire), 2 terminal rows, 2 wires, the source net NOT
+# re-created (diag_c137_5_routes.log:168 U6 delta {"FlatSequenceOuterTunnel": 1, "Terminal": 2, "Wire": 2}, src_wire_recreated
+# false; diag_c137_7_types.log:299-302 U6/U6' ENDS; :101,208 6018 -> 6024 rows = 3 FSOTs x 2 faces). Faces carry the SOURCE's
+# type (U6' I32 on both, :290,305-306); both wires unbroken before and after RLE for a typed source (U6' :317,328). A VOID
+# source (Index Array with 'array' unwired) gives void faces and a wire broken before and after RLE (U6 :195,303-304,325;
+# diag_c137_5_routes.log:168-169) -> REFUSED. The face NAME is not the source terminal's name ('element'): U6' read the label in
+# FS_EXIT_NAMES (:301-302), U6 (void) read ''. Any case outside the measured rows is refused or flagged UNMEASURED.
+FS_EXIT = {"census": {"FlatSequenceOuterTunnel": 1, "Terminal": 2, "Wire": 2}, "n": 2,
+           "evidence": "diag_c137_5_routes.log:168 (U6 delta); diag_c137_7_types.log:299-306,317,328 (U6/U6' ENDS, types, "
+                       "Is Broken? before/after RLE); route diag_c137_7_types.py:30,64 connect_term_uid + :77 RLE",
+           "unmeasured": ["a WIRED source (branch)", "more than one border / a sink not on the FS's own diagram",
+                          "a source class other than IndexArray (wire Is Broken? not measured)",
+                          "a face name for any source other than FS_EXIT_NAMES' measured row"]}
+# (source owner class, name of the source of that node's 'array' net) -> (face name on BOTH faces, cite). U6': IAN2.array <- Local
+# 'Num' through an FS entry whose faces are named 'Num' (the entry naming rule, Local = named like a SubVI); the data comes
+# from the 'Num' control's array type - the graph carries no type names, so only this measured row is predicted.
+FS_EXIT_NAMES = {("IndexArray", "Num"): ("Index of closest\ncal image slice, bead 2", "diag_c137_7_types.log:301-302")}
+UNPREDICTED_NAME = "UNPREDICTED-NAME"
 CENSUS_SAMPLES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench", "census_samples.json")
 MODEL_ALIASES = {"wire": ("wire", "connect_from_wire", "wire_sr", "connect_nested", "connect"),
                  "tunnel": ("tunnel", "tunnel_create", "create_tunnel"),
@@ -1270,14 +1297,19 @@ def op_delete_wire(st, a, P, S1, labels):
     owners = set(r["owner_uid"] for r in rows)
     for r in rows:
         r["wire_uid"] = 0
-    dropped = []
+    dropped, kept = [], []
     if P.get("drop_unwired_tunnel", True):
         for u in sorted(owners):
             rs = node_rows(st, u)
             if rs and rs[0]["owner_class"] in DROP_WHEN_UNWIRED and not any(r["wire_uid"] for r in rs):
                 _drop_node(st, u)
                 dropped.append(u)
-    return {"wire": w, "n_terminals": len(rows), "auto_removed_tunnels": dropped}, []
+            elif rs and rs[0]["owner_class"] in KEEP_UNMEASURED_WHEN_UNWIRED and not any(r["wire_uid"] for r in rs):
+                kept.append(u)                        # card 138-1: kept, auto-removal UNMEASURED for this class
+    eff = {"wire": w, "n_terminals": len(rows), "auto_removed_tunnels": dropped}
+    if kept:                                          # only then: every other effect record stays byte-identical
+        eff["unmeasured_unwired_tunnels"] = kept
+    return eff, []
 
 
 def op_delete_object(st, a, P, S1, labels):
@@ -1363,6 +1395,8 @@ def op_wire(st, a, P, S1, labels):
         return _fs_frame_wire(st, a, s, d, lf[0], lf[1], ld[1])
     if ld and not lf and int(s["frame_diagram"] or 0) != int(d["frame_diagram"] or 0):
         return _fs_border_wire(st, a, s, d, labels)       # card 127-2 (PD257(c)(d)): outside node -> plan-made FS frame
+    if lf and not ld and int(s["frame_diagram"] or 0) != int(d["frame_diagram"] or 0):
+        return _fs_exit_wire(st, a, s, d, lf)             # card 138-1 (PD309(b)): plan-made FS frame -> its own diagram
     if P.get("same_diagram", True) and int(s["frame_diagram"] or 0) != int(d["frame_diagram"] or 0):
         raise SimError("wire {0} -> {1}: source on diagram {2}, sink on diagram {3} - a border needs a tunnel/"
                        "register action first".format(a["src"], a["dst"], s["frame_diagram"], d["frame_diagram"]))
@@ -1935,6 +1969,85 @@ def _fs_border_wire(st, a, s, d, labels):
     return eff, []
 
 
+def _fs_exit_name(st, s):
+    """card 138-1: (face name, status, cite) for an FS exit from source row `s` - FS_EXIT_NAMES' measured row, else
+    UNPREDICTED-NAME (the sentinel goes on the faces, so a later name address or the real run's tunnel-name gate cannot pass
+    it silently as '')."""
+    cls = s.get("owner_class")
+    feed = None
+    if cls == "IndexArray":
+        arr = [r for r in node_rows(st, V.node_of(s)) if not r["is_source"] and r["term_name"] == "array" and r["wire_uid"]]
+        srcs = [r for r in wire_rows(st, arr[0]["wire_uid"]) if r["is_source"]] if len(arr) == 1 else []
+        feed = srcs[0]["term_name"] if len(srcs) == 1 else None
+    hit = FS_EXIT_NAMES.get((cls, feed))
+    if hit:
+        return hit[0], "MEASURED", hit[1]
+    return UNPREDICTED_NAME, "UNPREDICTED-NAME", "source {0} '{1}' fed by {2!r}: no measured FS-exit name row".format(
+        cls, s.get("term_name"), feed)
+
+
+def _fs_exit_wire(st, a, s, d, lf):
+    """card 138-1 (PD309(b), PD311(c)): source on frame k of a plan-made FS -> sink on the diagram that FS sits on. ONE
+    FlatSequenceOuterTunnel (sink face on the frame, source face on the parent), 2 new wires, source net not re-created -
+    the U6/U6' measured shape (FS_EXIT). Refused (UNMEASURED or measured-broken): a wired sink, a wired source, a sink on
+    any other diagram than the FS's own (more than one border), an Index Array source whose 'array' is unwired (void, U6)."""
+    fs, k = lf
+    fr = int(s["frame_diagram"])
+    own = (st.get("owners") or {}).get(str(fs)) or [None, 0]
+    parent = int(own[1] or 0) if own[0] == "Diagram" else int(st["diagrams"].get(str(fr)) or 0)
+    if d["wire_uid"]:
+        raise SimError("wire {0} -> {1}: FS exit - the sink is already wired (w{2})".format(a["src"], a["dst"], d["wire_uid"]))
+    if s["wire_uid"]:
+        raise SimError("wire {0} -> {1}: FS exit from an ALREADY-WIRED source (w{2}) is UNMEASURED (U6/U6' sources were "
+                       "unwired, diag_c137_7_types.log:192,203)".format(a["src"], a["dst"], s["wire_uid"]))
+    if int(d["frame_diagram"] or 0) != parent:
+        raise SimError("wire {0} -> {1}: FS exit to diagram #{2}, the FS #{3} sits on #{4} - only ONE border (frame -> the FS's own "
+                       "diagram) is MEASURED (U6/U6')".format(a["src"], a["dst"], d["frame_diagram"], fs, parent))
+    unm = []
+    if s.get("owner_class") == "IndexArray":
+        arr = [r for r in node_rows(st, V.node_of(s)) if not r["is_source"] and r["term_name"] == "array"]
+        if len(arr) != 1:
+            raise SimError("wire {0} -> {1}: FS exit source Index Array #{2} has {3} 'array' sink row(s)".format(
+                a["src"], a["dst"], V.node_of(s), len(arr)))
+        if not arr[0]["wire_uid"]:
+            raise SimError("wire {0} -> {1}: FS exit from a VOID source (Index Array #{2} 'array' unwired) - MEASURED broken "
+                           "before and after RLE, faces void (U6: diag_c137_5_routes.log:168-169, diag_c137_7_types.log:195,"
+                           "303-304,325)".format(a["src"], a["dst"], V.node_of(s)))
+        broken = False
+    else:
+        broken = "UNMEASURED"
+        unm.append("source class {0}: Is Broken? after the exit not measured (U6' measured an Index Array)".format(
+            s.get("owner_class")))
+    nm, nst, ncite = _fs_exit_name(st, s)
+    if nst != "MEASURED":
+        unm.append("face name: " + ncite)
+        st.setdefault("unpredicted_names", {})
+    n_obj0, n_term0 = len(st["objs"]), len(st["terminals"])
+    T = _new_obj(st, "FlatSequenceOuterTunnel", FS_CLS)
+    fin = _new_term(st, T, "FlatSequenceOuterTunnel", "Terminal", False, fr, nm)
+    fout = _new_term(st, T, "FlatSequenceOuterTunnel", "Terminal", True, parent, nm)
+    rows = dict((r["term_uid"], r) for r in st["terminals"][n_term0:])
+    w1, w2 = new_uid(st), new_uid(st)
+    s["wire_uid"] = rows[fin]["wire_uid"] = w1
+    rows[fout]["wire_uid"] = d["wire_uid"] = w2
+    census = collections.Counter(o["class"] for o in st["objs"][n_obj0:])
+    census.update(r["term_class"] for r in st["terminals"][n_term0:])
+    census["Wire"] += 2
+    census = dict(census)
+    if census != FS_EXIT["census"]:
+        raise SimError("wire {0} -> {1}: FS exit model census {2} != measured {3}".format(a["src"], a["dst"], census,
+                                                                                       FS_EXIT["census"]))
+    if nst != "MEASURED":
+        st["unpredicted_names"][str(T)] = {"faces": [fin, fout], "act": a.get("id"), "why": ncite}
+    st.setdefault("act_wires", {})[str(a.get("id"))] = [w1, w2]
+    eff = {"wire": w2, "how": "fs_exit", "variant": "fs_frame_exit", "src_term_uid": s["term_uid"], "dst_term_uid": d["term_uid"],
+           "fs": fs, "frame_index": k, "borders": [["out", FS_CLS]], "tunnels": [T], "faces": [[fin, fout]],
+           "new_wires": [w1, w2], "census": census, "name": nm, "name_status": nst, "name_cite": ncite,
+           "face_type": "= the source terminal's type (U6' I32 source -> I32 faces, diag_c137_7_types.log:290,305-306)",
+           "broken_predicted": broken, "unmeasured": unm, "model": "measured n={0}: {1}".format(FS_EXIT["n"], FS_EXIT["evidence"])}
+    return eff, []
+
+
 def op_wire_remove_loose_ends(st, a, P, S1, labels):
     """card 127-2 (PD255(b)/256(b)): gscript.wire_remove_loose_ends on a pre-existing wire (`wire_uid`) or on every wire the
     earlier row `of` created / touched. MEASURED census {} and no terminal change (diag_c126_4_op.log:52-60,
@@ -2247,7 +2360,7 @@ def route_report(plan_out_path, model_dir=OPMODEL_DIR, log=print, require_final=
     return {"status": st_, "first_fail": ff, "rows": rows}
 
 
-FS_BORDER_HOWS = ("fs_border", "fs_inner_branch")
+FS_BORDER_HOWS = ("fs_border", "fs_inner_branch", "fs_exit")         # card 138-1: + the FS exit (_fs_exit_wire)
 
 
 def fs_routes_of(steps):

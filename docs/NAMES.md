@@ -1393,3 +1393,13 @@ Inputs: the OpSetIndexMode_v0-donor ops take `vi path`, `vi path 2`, `Class Name
   `Traverse('Tunnel')`.
 - **`case_in` with selector label `Auto-Focus` (a Boolean whose terminal sits in `#639`) stopped behind a MODAL DIALOG** (watchdog, 8 s);
   dialog text not captured. Case-in-a-While-body remains UNMEASURED.
+
+## Stop mode and mechanical action readers (card 138-5, 2026-10-02, `tools/bench/diag_c138_5_facts.md`, `build_opstopmode_v0.log` 39/0)
+| class.property / input | id | data terminal short name | values (measured) | evidence |
+|---|---|---|---|---|
+| `WhileLoop.Stop If True?` | `6362C01` | **`StopIfTrue`** (Boolean) | True = Stop if True (fresh loop default), False = Continue if True | `diag_c138_5_facts.md` (log :19, :72-74) |
+| `Boolean.Mechanical Action` | `6333808` | **`MechAction`** (integer 0..5) | each of 0..5 written and read back equal; `stop (end)` #7 = 4 | `diag_c138_5_facts.md` (log :46, :78-83, :93-94) |
+| `Traverse for GObjects.vi` input `Traverse Target` | ring | `Traverse Target` | **0 = front panel**, 1 = block diagram (1 on a panel Boolean -> error 1055, uid 0) | `diag_c138_5_facts.md` (log :77) |
+- Ops: `claudeDev\OpStopMode_v0.vi` (md5 `87e43f4b…`, reads `Stop If True?`) and `claudeDev\OpStopModeB_v0.vi` (md5 `0ec05ebd…`, reads
+  `Mechanical Action`; `Traverse Target` is a control, set 0 for panel objects). The NAME of value 4 (Latch When Released) is from
+  labviewwiki's palette order, NOT measured (`archive/peer/2026-10-02-c138-5-mechaction.md`).

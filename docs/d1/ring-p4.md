@@ -242,3 +242,51 @@ How to add: see the 5-line note at the top of `docs/d1/INDEX.md`.
      - **(e) Next cycle, in order:** ONE offline tooling card (no LabVIEW card beside it): stagesim FS-exit row from U6′ + the `delete_wire`
        row-loss defect (PD310(c)), each with a self-test, and stagexec FS-exit route; then v8 = v7 with (b) + (d); then a scratch route run
        of (b)'s For-loop group and the 17 uncovered route classes (PD303(c)); the stop-mode op (card 137-2) when the LabVIEW slot is free.
+312. **(cycle 138 judgement, 2026-10-02 — after 138-1 FAIL 5/1, 138-2 PASS 5/0, 138-3 PASS 5/0, 138-4 PASS 5/0, 138-5 PASS 5/0)**
+     USER-RULES: U1, U4, U9, U13 (relied on: original nodes unchanged; the stop signal between loops is a local variable; the reader's
+     smallest `Num > last` with seqlock; none contradicted).
+     - **(a) Tooling accepted:** stagesim FS-exit row modelled on U6′ (`tools/stagesim.py:190,1399,1989`, self-test 14/0) and the
+       `delete_wire` row-loss fix (`DROP_WHEN_UNWIRED` had `Tunnel` with no sample; now LoopTunnel only, `stagesim.py:67`); stagexec
+       FS-exit route `fs_exit` (`stagexec.py:644`); c125_1 PASS 6/0; v7 replay END 172/172 (`tools/bench/prep_c138_1_facts.md`). X10 counts
+       reads from the SOURCE (`stage_prerun.py:2109,2268,2309`, self-test 12/0); diag_c136_1_routes now FAILs at 806 MB as it should;
+       P3b-2 a/b still PASS (`tools/bench/prep_c138_2_facts.md`). Conservative total kept as the X10 verdict; a multi-session script's total
+       reads are the per-session bound until that blocks a launch. 138-1's one FAIL = two STALE self-test fixtures, red at HEAD
+       (`tools/bench/prep_c138_3_facts.md`) — re-pin them on frozen copies (carry, tooling card).
+     - **(b) v8 `plan_ring_p4_v8.json` 059b5296 accepted as an intermediate** (181 actions, compile 163 ops, per step ≤ 37, replay END,
+       end cdiff 24 == v7's). `Greater?` stays OUTSIDE the For on the arrays: the auto-indexed mask element i equals `Num[i] > last`, the
+       same value (`tools/bench/prep_c138_4_facts.md:11-13`). The 11 unclassed end-cdiff rows are carried from v7, not caused by v8.
+     - **(c) MAX constant: ONE measured donor `claudeDev\DonorI32Max_v0.vi` (I32 2147483647) for BOTH KMX1 and KMX2.** The prior-art's
+       const_row for KMX2 is REFUTED for this plan: const_row's type depends on wiring order (DBL measured, `diag_c137_7_types.log:218`) and the
+       review itself marks the I32 outcome UNMEASURED. IndexMode: the review is RIGHT — v9 adds a recipe-level `index_mode_fix` + read-back
+       gate per auto-index tunnel (PD235(c) form, `docs/d1-loop12-17-split-plan.md:2212`), since the executor sets it only under `if lost:`
+       (`stagexec.py:2104-2109`).
+     - **(d) `stop (end)` reads Mechanical Action 4** and every bed While loop is Stop-if-True (`tools/bench/diag_c138_5_facts.md`, op
+       `OpStopModeB_v0`). 3–5 are the latch actions ⇒ PD298(e)'s LATCH branch applies: ONE writer (loop `#639`) writes a new non-latch
+       Boolean indicator `StopAll` each iteration; W1 and 1.2 read it by local (U4). The latch reading of 4 is confirmed on the machine by a
+       scratch Boolean set to 4 with a local variable (LabVIEW refuses a local of a latched Boolean) before v9 is launched.
+     - **(e) Next:** LabVIEW card 138-6 (scratch only): DonorI32Max_v0 built + read back; the For-loop group on a scratch VI with IndexMode
+       read-back and one functional run on known values; `#10465` after `delete_wire` w25415 on a bed byte copy (does LabVIEW remove the
+       unwired Case tunnel? UNMEASURED, `prep_c138_1_facts.md` OPEN); latch-local test; op hygiene records into `tools/bench/op_hygiene/`.
+       Beside it, offline prep 138-P1: v9 = v8 + (c) + (d) + IndexMode gates, replay + compile_plan, prior-art release lines, NAMES rows.
+313. **(cycle 138 judgement, 2026-10-02 — after 138-6 FAIL 23/1 (`tools/bench/diag_c138_6_facts.md`), 138-P1 FAIL 19/1 (`tools/bench/prep_c138_p1_facts.md`); review c138-6-p1cmp-routes)**
+     USER-RULES: U4, U6 (relied on: the stop signal is a local variable of a plain indicator; nothing paces acquisition; none contradicted).
+     - **(a) MEASURED:** `claudeDev\DonorI32Max_v0.vi` md5 c0c8db65, constant uid **127**, I32, 2147483647, ExecState 1 ⇒ KMX1/KMX2 bind uid 127.
+       Case tunnel `#10465` SURVIVES `delete_wire` w25415 with its 3 rows (as the fixed stagesim predicts); Error List 51 → 52, the new item
+       unidentified (count-only read) — v7's step 159 re-wires it at once; the item is named in the next scratch read. A local variable of a
+       Boolean at Mechanical Action 4 breaks the VI ("Boolean latch action is incompatible with local variables") ⇒ PD312(d)'s latch branch
+       is CONFIRMED on the machine. Op hygiene records for `OpStopMode_v0`/`OpStopModeB_v0` now in `tools/bench/op_hygiene/`.
+     - **(b) 138-6 step 2 (the For-loop group) stopped on OUR script:** the scratch put the group on the TOP-LEVEL diagram, where
+       `create_control_nested` refuses (`gscript.py:4149`). v8 puts the For inside W1's body, so the rerun builds the scratch the same way
+       (While → For inside), which is both the fix and the faithful measurement — no tool edit. `read_terms` lists no For-owned terminal
+       (the `i` terminal); v8 does not use `i` (N comes from auto-indexing), so it is a fact, not a blocker.
+     - **(c) 138-P1's route change is a PLAN-MAKER bug:** `prep_c138_p1_mkv9.py` copied v8's position-indexed `finalized.fs_routes` table
+       unchanged after inserting an action at #4, so 3 untouched wires (`p4_w_b_out`, `p4_x_bufdiff`, `p4_x_i_rab1`) compiled to other
+       routes (review c138-6-p1cmp-routes). v10 regenerates that table from the plan (never copies it); the route compare v8 → v10 must then
+       show changes ONLY on added/edited actions. v9 b91cf4d7 is NOT accepted.
+     - **(d) StopAll start value:** a plain indicator keeps the previous run's True at start, so W1/1.2 could stop before `#639` writes it.
+       v10 initialises `StopAll` = False on FS1 frame `#4866`, outside the loops, every run — the PD240(b)(c) mechanism already used for the
+       ring indicators (`docs/d1-loop12-17-split-plan.md:2287,2292`).
+     - **(e) Next cycle, two cards in one message:** LabVIEW scratch = 138-6 step 2 rerun inside a While body (For + 3 auto-index tunnels with
+       IndexMode read-back, scalar Select f = donor uid 127, Array Max & Min, ExecState 1, one run on known values) + a full Error List read of
+       a `delete_wire` w25415 byte copy naming item 52; offline = v10 per (a)(c)(d), replay + compile_plan + route compare v8→v10, disposition
+       of review c138-6-p1cmp-routes written. Then the 17-class scratch route run (PD303(c)), then P4 build sessions (D-2026-10-02-04 open).

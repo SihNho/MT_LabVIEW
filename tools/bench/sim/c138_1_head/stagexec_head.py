@@ -1,0 +1,5167 @@
+r"""stagexec - the STAGE EXECUTOR (docs/stage-simulator-plan.md "The method" step 6, build order 5; card chat-S3).
+Runs a FINAL stageplan/1 file (tools/stagesim.py wrote it, `final: true`) on a DATED SCRATCH COPY of the plan's base VI,
+action by action, under stagekit. After every real op it READS the real graph and compares it with the simulated step
+file of the last plan action that op covers; the first difference STOPS the run with a step-diff report. Objects the plan
+creates (new:SR1R, new:T1 ...) are BOUND to real uids by diffing the terminal table right before and right after the
+creating op; a class/count mismatch stops. Rows come ONLY from the plan file (no uid or terminal name is typed here).
+
+    py tools/stagexec.py run    <plan.json> [--reference <vi> <md5>] [--max-min N]   (LabVIEW; under bgrun + launch gate)
+    py tools/stagexec.py dry    <plan.json>          (no LabVIEW: the same executor on a SIMULATED backend)
+    py tools/stagexec.py prerun <plan.json>          (no LabVIEW: plan final, step files intact, every op compiles and
+                                                      every address resolves on its step's graph)
+    py tools/stagexec.py selftest
+
+WHAT EXISTED FIRST (checked 2026-09-24): tools/stagesim.py (the plan + step files + OPS - used, the executor replays
+its state files); tools/stagekit.py (Stage: pins, scratch, junk_purge, uid_index, es, close - used unchanged);
+gscript (report_all, node_labels, node_terms_uid, add_shift_reg, shift_reg, wire_sr, wire_indicators, tunnels,
+set_index_mode, remove_bad_wires_scripted); build_d1_v0.move_in/diag_index; build_opfsinnertunnelconnect_v0.del_wire/
+del_node; build_opconnectnested_v1.connect_nested_v1; build_opconnectfromwire_v0.connect_from_wire/wire_source_owner;
+wiki_build.read_live (the ~20 s graph read the L7 stages used); tools/bench/opmodels_lib.edges (terminal-uid edges).
+The per-action op choice is the one the L7 stages used (stage_d1_l7_1a.py, stage_d1_l7_1b.py, stage_d1_l7_r.py).
+No executor existed; no LabVIEW op VI is built here.
+
+COMPILE (pure): plan actions -> REAL OPS. One real op covers one or more actions; the comparison runs after the LAST
+action it covers. `tunnel` + the wire into it + the wire out of it = ONE connect (LabVIEW makes the tunnel; nothing
+can create a bare one); every further wire out of the same tunnel = a branch off its outer wire (connect_from_wire).
+`wire` into new:SRkR.inner = wire_sr RightIn; from new:SRkL.inner = wire_sr LeftIn; a sink that is a front-panel
+ControlTerminal = wire_indicators (branch onto the source's existing wire); any other wire = connect_from_wire when the
+source is wired, else connect_nested_v1; a wire with a `frame` end (a case tunnel's inner face in a named frame, card 124-2)
+= case_frame_wire (gscript.case_frame_wire, frame index = the case's frame order; variant 'branch' when its source is already
+wired by an earlier action, census {}, else 'new_wire', Wire +1 - card 124-6, measured R3/R4); a `tunnel` group on a plan-made
+CASE whose outside end is a plan-made register's INNER face = connect_term_uid (card 124-6, R1/R2: ONE SelectorTunnel, +2 Wire).
+delete_wire is resolved BY ITS TERMINALS (the plan's wire uid names a wire of
+the simulated state; LabVIEW re-creates a source's wire under a new uid on connect_from_wire - opmodels/connect_from_wire).
+COMPARE (pure): terminal-uid sets, edges (src term -> sink term, joined by wire inside ONE read), dangling terminals (on
+a wire with no source or no sink); new objects through the binding; a source terminal the step marks `allow_either`
+(the ambiguous only-sink rule) may be dangling or bare. Wire uids are never compared.
+"""
+import collections
+import copy
+import hashlib
+import json
+import os
+import re
+import sys
+import time
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(HERE)
+BENCH = os.path.join(HERE, "bench")
+for _p in (HERE, BENCH, os.path.join(HERE, "recipes")):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+import stagesim as SS          # noqa: E402
+import vigraph as V            # noqa: E402
+import protocol                # noqa: E402
+
+SR_CLS = ("RightShiftRegister", "LeftShiftRegister")
+FP = "ControlTerminal"
+
+
+class ExecStop(Exception):
+    """The executor stops here (a difference, an unbound object, an unaddressable terminal)."""
+
+
+# PD192(a), card 86-1: the MEMORY METER. LabVIEW error 2 ("memory full") was observed at ~770 MB private bytes on LV2026
+# (.claude/skills/labview-automation/references/com-driving.md:310; a restart dropped it to ~410 MB). The loud stop sits
+# 70 MB below that observation so the run ends with a report instead of an error-2 cascade (unroutable_l2a1_85.log:562).
+# Handles are logged beside it but gate nothing: the handle count is blind to VI Server refnums (stagekit.py:178).
+MEM_STOP_MB = 700.0
+
+
+class Meter(object):
+    """Private bytes (MB) + handle count, stamped per op and per read. `probe()` -> (private_bytes_int_or_None,
+    handles_int_or_None). stop_mb=None = warn-only (a measurement run that must reach error 2 to locate it)."""
+
+    def __init__(self, probe, stop_mb=MEM_STOP_MB, log=print):
+        self.probe, self.stop_mb, self.log = probe, stop_mb, log
+        self.rows = []
+        self.warned = None
+
+    def __call__(self, tag, k=None):
+        pb, hc = self.probe()
+        mb = round(pb / 1048576.0, 1) if pb else None
+        prev = self.rows[-1] if self.rows else {}
+        d_mb = round(mb - prev["mb"], 1) if mb is not None and prev.get("mb") is not None else None
+        d_h = hc - prev["handles"] if hc is not None and prev.get("handles") is not None else None
+        row = {"tag": tag, "k": k, "t": round(time.time(), 1), "mb": mb, "handles": hc, "d_mb": d_mb, "d_h": d_h}
+        self.rows.append(row)
+        self.log("  METER {0:<6} k {1!s:>3}  private {2} MB (d {3})  handles {4} (d {5})".format(
+            tag, k, mb, "{0:+.1f}".format(d_mb) if d_mb is not None else "-", hc, "{0:+d}".format(d_h) if d_h is not None else "-"))
+        if self.stop_mb and mb is not None and mb >= self.stop_mb:
+            raise ExecStop("MEMSTOP: LabVIEW private bytes {0} MB >= {1} MB at {2} k {3} (error 2 observed ~770 MB, "
+                           "com-driving.md:310)".format(mb, self.stop_mb, tag, k))
+        if mb is not None and mb >= MEM_STOP_MB and self.warned is None:
+            self.warned = row
+            self.log("  METER WARN private bytes {0} MB crossed {1} MB at {2} k {3} (warn-only run)".format(mb, MEM_STOP_MB, tag, k))
+        return row
+
+    def summary(self):
+        mbs = [r["mb"] for r in self.rows if r["mb"] is not None]
+        per = {"op": [r["d_mb"] for r in self.rows if r["tag"] == "op" and r["d_mb"] is not None],
+               "read": [r["d_mb"] for r in self.rows if r["tag"] == "read" and r["d_mb"] is not None]}
+        return {"n": len(self.rows), "first_mb": mbs[0] if mbs else None, "peak_mb": max(mbs) if mbs else None,
+                "last": self.rows[-1] if self.rows else None,
+                "sum_d_mb_op": round(sum(per["op"]), 1), "sum_d_mb_read": round(sum(per["read"]), 1),
+                "mean_d_mb_op": round(sum(per["op"]) / len(per["op"]), 2) if per["op"] else None,
+                "mean_d_mb_read": round(sum(per["read"]) / len(per["read"]), 2) if per["read"] else None,
+                "warned_at": self.warned}
+
+
+METER_LINE_RE = re.compile(r"METER (\w+)\s+k\s+(-?\d+|None)\s+private (-?[\d.]+|None) MB")
+
+
+def meter_rows_from_log(path):
+    """card 106-3: the recorded per-op meter of one run, read back from its log's `METER <tag> k <k> private <mb> MB` lines
+    (Meter.__call__'s own format) -> [{tag, k, mb}] in run order; rows whose mb is None are skipped."""
+    rows = []
+    with open(path, encoding="utf-8", errors="replace") as f:
+        for line in f:
+            m = METER_LINE_RE.search(line)
+            if m and m.group(3) != "None":
+                rows.append({"tag": m.group(1), "k": 0 if m.group(2) == "None" else int(m.group(2)), "mb": float(m.group(3))})
+    return rows
+
+
+def mem_predict(rows, stop_after=None, from_step=None, start_mb=None, memstop=MEM_STOP_MB, margin_mb=0.0):
+    """card 106-3 (retrospective-cycle103 `inference-over-measurement`, PD216(f)): the private-MB peak a run over ops
+    (from_step, stop_after] is predicted to reach, from ONE recorded per-op meter curve (meter_rows_from_log / Meter.rows).
+    entry = the last stamp at k <= from_step (a Part-B record's own start/read k 0, or a full record's read at k); window =
+    the stamps with from_step < k <= stop_after. start_mb (a fresh-load estimate) shifts the curve by start_mb - entry;
+    None = the recorded values stand (the record ran the same mode). ok = peak < memstop - margin_mb; covered = the record
+    reaches stop_after. Pure."""
+    lo = int(from_step or 0)
+    ks = [r["k"] for r in rows]
+    hi = int(stop_after) if stop_after is not None else (max(ks) if ks else 0)
+    pre = [r for r in rows if r["k"] <= lo]
+    win = [r for r in rows if lo < r["k"] <= hi]
+    if not rows or not win:
+        return {"ok": None, "covered": False, "peak_mb": None, "why": "no recorded stamp inside ops {0}..{1}".format(lo + 1, hi)}
+    entry = pre[-1]["mb"] if pre else win[0]["mb"]
+    shift = round(start_mb - entry, 1) if start_mb is not None else 0.0
+    top = max(win, key=lambda r: r["mb"])
+    peak = round(max([entry] + [r["mb"] for r in win]) + shift, 1)
+    return {"ok": peak < memstop - margin_mb, "covered": max(ks) >= hi, "peak_mb": peak, "at": (top["tag"], top["k"]),
+            "entry_mb": entry, "shift_mb": shift, "window": [lo + 1, hi], "n_window": len(win), "memstop": memstop,
+            "margin_mb": margin_mb, "headroom_mb": round(memstop - margin_mb - peak, 1)}
+
+
+def md5(p):
+    return SS.md5_file(p)
+
+
+def _j(p):
+    with open(p, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _abs(p):
+    return p if os.path.isabs(p) else os.path.join(ROOT, p)
+
+
+# ============================================================================================ plan + compile (pure)
+def load_final_plan(plan_path, require_final=True):
+    """The plan, its step states (md5-checked against `finalized.step_files`) and the actions' step numbers.
+    require_final=False is the DIAGNOSTIC dry run only (`dry --nonfinal`, card 100-3: routability of a plan whose end
+    computation rows are not settled yet); prerun_plan and lv_run always require final."""
+    plan = _j(plan_path)
+    ok, why = protocol.validate_obj(plan)
+    if not ok:
+        raise ExecStop("plan does not validate: " + why)
+    if require_final and plan.get("final") is not True:
+        raise ExecStop("plan is not final (final={0!r}, finalized={1})".format(
+            plan.get("final"), json.dumps((plan.get("finalized") or {}).get("first_divergent"))))
+    fz = plan.get("finalized") or {}
+    files = fz.get("step_files") or []
+    if fz.get("failed"):
+        raise ExecStop("the simulation stopped at action {0}: {1}".format(fz["failed"].get("n"), fz["failed"].get("error")))
+    if len(files) != len(plan["actions"]) + 1:
+        raise ExecStop("finalized.step_files has {0} entries for {1} actions + base".format(len(files), len(plan["actions"])))
+    stale = [f["path"] for f in files if not os.path.exists(_abs(f["path"])) or md5(_abs(f["path"])) != f["md5"]]
+    if stale:
+        raise ExecStop("{0} step file(s) missing or changed since finalize ({1}...) - re-simulate".format(len(stale), stale[:2]))
+    base = fz.get("base") or plan.get("base")
+    if not base or md5(_abs(base["path"])) != base["md5"]:
+        raise ExecStop("base graph {0} missing or changed".format(base))
+    return plan, [f["path"] for f in files]
+
+
+def _sym_of(ref):
+    """'new:SR1R.inner' / {'uid': 'new:T1', ...} -> ('new:SR1R', 'inner') ; plain -> (None, None)."""
+    if isinstance(ref, dict):
+        u = ref.get("uid")
+        return (u, ref.get("side") or ref.get("term")) if isinstance(u, str) and u.startswith("new:") else (None, None)
+    if isinstance(ref, str) and ref.startswith("new:"):
+        h, _d, t = ref.partition(".")
+        return h, t
+    return None, None
+
+
+# card 100-3: `create` rows -> the verb each one routes to (LVBackend.create; the dry backend checks the same table).
+# The LabVIEW verbs marked (100-2) are built by card 100-2 under the names fixed in requires_disp-stage.json.
+CREATE_ROUTES = {
+    "while": "gscript.loop_in('while') - OpWhileLoopIn_v0",
+    "for": "gscript.loop_in('for') - OpForLoopIn_v0",
+    "local_read": "stagekit.create_local_read (OpCreateLocalRead_v0, Write?=False) + stagekit.move_in",
+    "local_write": "stagekit.create_local_write (100-2) + stagekit.move_in when it does not place it",
+    "indicator": "gscript.create_indicator_nested (100-2) + set_control_label + set_visible (100-2); born_on a diagram "
+                 "CONSTANT's terminal -> gscript.create_indicator_on_const (OpConstInd_v0, card 122-3)",
+    "control": "gscript.create_control_nested (100-2) + set_control_label + set_default_in_memory",
+    "primitive": "gscript.create_primitive_nested (100-2)",
+    "copy_in": "stagekit.copy_in (OpMoveByIndex_v0 duplicate, donor = the base)",
+    "const_on_term": "stagekit.const_row (OpCreateConstOnTerm_v0, a node in a WhileLoop body)",
+    # card 118-1 P1 (PD234): the POOL stage's creators
+    "queue": "gscript.queue_node (OpQueueObtain_v0 / OpQueueEnqueue_v0): the node + the wire from `src` into its "
+             "`src_into` sink; same diagram, or (card 118-3, PD234(i)) `src` on the PARENT of a loop body this plan created "
+             "- the creator auto-makes the non-indexed LoopTunnel (build_track_v6_queue.py:202)",
+    "subvi": "gscript.drop_subvi (OpSubVI) of the file `subvi_path` on the diagram, unwired",
+    # card 120-3 (PD237(k)): the queue route above also takes queue_kind 'dequeue' (gscript.queue_node('dequeue'),
+    # OpQueueDequeue_v0, gscript.py:1339-1371) - same src/src_into/auto-tunnel rule as the Enqueue of card 118-3
+    "case": "gscript.case_in (build_case on the top level, selector from panel control `label`, OpMoveIn_v0 into the loop "
+            "body - the move severs the selector wire; owner + frames read back by case_frames, gscript.py:3479-3543); "
+            "the selector is wired by a later plain `wire` to new:<selector_as>.outer",
+    # card 123-7 (PD248(d)): a case whose selector is wired IN THE SAME ACT from `src` (a node output on the same diagram)
+    "case_wired": "gscript.case_wired (struct_copy_nested OpPrimCopyNested_v0 of DonorCase_v0 #742 + connect_nested_v1 "
+                  "selector <- src + case_frames + junk-Invoke purge); frames False/True; measured census CaseStructure 1, "
+                  "Diagram 2, Tunnel 1, OuterTerminal 1, InnerTerminal 2, Wire 1 (0 on a branch) - diag_c123_wired.log",
+    # card 126-3 (PD253(c)): FLAT SEQUENCE creators, measured by card 126-1 (diag_c125_5_fsscr.log 15/0)
+    "fs_create": "gscript.struct_copy_nested(W, dg, 'FlatSequence', gscript.fs_donor()) (OpPrimCopyNested_v0 of claudeDev "
+                 "DonorFs_v0.vi, a 1-frame EMPTY FS) + gscript.fs_frames read-back == new_diagrams; census FlatSequence 1, "
+                 "Diagram 1 (diag_c125_5_fsscr.log:27,34-35)",
+    "fs_frame": "gscript.fs_add_frame(W, fs, k, After=True) (OpFsAddFrame_v0) with k = the reference frame's index in "
+                "gscript.fs_frames; the new frame lands at k+1; census Diagram 1 (diag_c125_5_fsscr.log:32,36-37)",
+}
+ROUTE_VERBS = {
+    "while": [("gscript", "loop_in")], "for": [("gscript", "loop_in")],
+    "local_read": [("stagekit", "create_local_read"), ("stagekit", "move_in")],
+    "local_write": [("stagekit", "create_local_write")],
+    "indicator": [("gscript", "create_indicator_nested"), ("gscript", "set_control_label"), ("gscript", "set_visible"),
+                  ("gscript", "panel_wiring"), ("gscript", "create_indicator_on_const")],
+    "control": [("gscript", "create_control_nested"), ("gscript", "set_control_label"),
+                ("gscript", "set_default_in_memory"), ("gscript", "panel_wiring")],
+    "primitive": [("gscript", "create_primitive_nested")],
+    "copy_in": [("stagekit", "copy_in")],
+    "const_on_term": [("stagekit", "const_row")],
+    "queue": [("gscript", "queue_node")],
+    "subvi": [("gscript", "drop_subvi")],
+    "case": [("gscript", "case_in"), ("gscript", "case_frames")],          # card 120-3 R2
+    "case_wired": [("gscript", "case_wired"), ("gscript", "struct_copy_nested"), ("gscript", "case_frames")],   # card 123-7
+    "gate": [("gscript", "read_bool_const")],
+    "stop": [("file", "tools/bench/opstopfromnode_labels.json")],
+    # card 124-2 (PD249(d)): a wire INSIDE one frame of a plan-made case, an end being a case tunnel's inner face in that
+    # frame (`frame` on the wire end). Contract fixed by brief_124-2.md; the LabVIEW side is card 124-1's.
+    "case_frame_wire": [("gscript", "case_frame_wire")],
+    # card 124-6 (PD250(c)): a tunnel group whose OUTSIDE end is a plan-made shift register's INNER face and whose loop is a
+    # plan-made case = ONE gscript.connect_term_uid (register face -> node in the frame, or back); LabVIEW makes the tunnel
+    "connect_term_uid": [("gscript", "connect_term_uid")],
+    # card 126-3 (PD253(c)): Flat Sequence creators
+    "fs_create": [("gscript", "struct_copy_nested"), ("gscript", "fs_donor"), ("gscript", "fs_frames")],
+    "fs_frame": [("gscript", "fs_add_frame"), ("gscript", "fs_frames")],
+    # card 127-2 (PD255(b)/256(b)): Wire.RemoveLooseEnds 6370C08 (OpWireRemoveLooseEnds_v0, gscript.py:4972)
+    "wire_remove_loose_ends": [("gscript", "wire_remove_loose_ends")],
+}
+# card 127-2: the simulated effect `how` each Flat Sequence border variant must carry (Executor.execute cross-check)
+FS_VARIANT_HOW = {"fs_border": "fs_border", "fs_border_inner_branch": "fs_inner_branch"}
+FS_HOW_VARIANT = dict((v, k) for k, v in FS_VARIANT_HOW.items())          # card 133-1: finalized.fs_routes how -> variant
+# card 124-2: the class-count (census) delta of a non-create route, per variant. card 124-6: MEASURED by card 124-5 on a P2b
+# byte copy (tools/bench/census_samples.json ops connect_term_uid / case_frame_wire; diag_c124_p3a_scratch.log:53,61 R1/R2,
+# :71 R3 new_wire, :77,80 R4 branch). census_predict (a separate tool) still resolves only the rows it has rules for.
+ROUTE_CENSUS = {"case_frame_wire": {"new_wire": {"Wire": 1}, "branch": {}},
+                "connect_term_uid": {"register_end_case_border": {"SelectorTunnel": 1, "OuterTerminal": 1,
+                                                                  "InnerTerminal": 2, "Wire": 2},
+                                     # card 126-3: measured n=1 (diag_c125_5_fsscr.log:47-60), PROVISIONAL pending card 126-2
+                                     # (== census_samples.json connect_term_uid variants, selftest_case_frame_c124 U01;
+                                     # variant 'fs_face' - an end on a FS tunnel FACE, same frame - is UNMEASURED: .get -> None)
+                                     "fs_frame_to_frame": dict(SS.FS_MEASURED["fs_frame_to_frame"]["census"])},
+                "fs_create": {"flat_sequence_donor": dict(SS.FS_MEASURED["fs_create"]["census"])},
+                "fs_frame": {"add_one_frame": dict(SS.FS_MEASURED["fs_add_frame"]["census"])}}
+# card 127-2 (PD257(c)): + the four Flat Sequence BORDER variants card 126-6 recorded (census_samples.json connect_term_uid;
+# selftest_case_frame_c124 U01 compares ROUTE_CENSUS with every recorded variant). A fs_border row reports stagesim's per-row
+# census (the variant its borders select), not a .get on this table.
+for _n, _v in SS._cross_variants().items():
+    if _n in SS.FS_BORDER_SIG.values():
+        ROUTE_CENSUS["connect_term_uid"].setdefault(_n, dict(_v["delta"]))
+# card 128-1 (PD260): the inner-face branch (stagesim FS_INNER_BRANCH, a 2nd+ sink into a frame the source already entered)
+# MEASURED census {} n=3 by card 127-1 (census_samples.json connect_term_uid 'fs_inner_face_branch', diag_c127_1_fsinner.log:83,93,103)
+ROUTE_CENSUS["connect_term_uid"]["fs_inner_face_branch"] = {}
+CONNECT_TERM_UID_HOW = ("gscript.connect_term_uid(target, sink_uid, src_uid) - OpConnectTermUid_v0, any terminal -> any "
+                        "terminal by uid; the register inner face <-> node in a case frame makes ONE SelectorTunnel (R1/R2, "
+                        "diag_c124_p3a_scratch.log:53,61); junk Invokes purged inside the verb")
+CASE_FRAME_WIRE_HOW = ("gscript.case_frame_wire(target, case_uid, frame_index, src, dst) - src/dst {'tunnel': uid} (that case "
+                       "tunnel's inner face in this frame) or {'node': uid, 'term': name}; returns wire_uid, src_term_uid, "
+                       "dst_term_uid, broken, purged, invoke_left (brief_124-2.md)")
+
+
+def verbs_missing(route):
+    """The verbs a route calls that are NOT defined in the source (a text check - the dry run imports no LabVIEW side,
+    self-test T14; the same `def <name>(` rule as protocol.py requires)."""
+    import re
+    out = []
+    for mod_, name in ROUTE_VERBS.get(route, []):
+        if mod_ == "file":
+            if not os.path.exists(_abs(name)):
+                out.append(name)
+            continue
+        try:
+            txt = open(os.path.join(HERE, mod_ + ".py"), encoding="utf-8").read()
+        except OSError:
+            txt = ""
+        if not re.search(r"^\s*def {0}\(".format(re.escape(name)), txt, re.M):
+            out.append("{0}.{1}".format(mod_, name))
+    return out
+
+
+def _pre_copy_in(ctx):
+    w, d = ctx.get("work"), ctx.get("move_dst")
+    return bool(w) and bool(d) and os.path.normcase(os.path.abspath(w)) == os.path.normcase(os.path.abspath(d))
+
+
+# card 106-3 (retrospective-cycle102 `wrong-ordering`; stage_d1_disp_r7.log:807 stopped IN op 41 on it): a route whose verb
+# holds a PRECONDITION on the stage's own work file, which the simulated / dry backend never exercises (SimBackend applies
+# the step, it does not call the verb). stage_prerun X9 evaluates these OFFLINE for every op the run will dispatch.
+ROUTE_PRECONDITIONS = {
+    "copy_in": ("the stage work file IS gscript.MOVE_DST (stagekit.copy_in raises Stop otherwise: stagekit.py:813-814)",
+                _pre_copy_in),
+}
+
+
+def precondition_failures(plan, ctx, stop_after=None, from_step=None):
+    """card 106-3: [{k, route, acts, ids, needs, work}] - every op the run DISPATCHES (from_step < k <= stop_after) whose
+    route precondition fails in ctx ({"work": the Stage's work path, "move_dst": gscript.MOVE_DST}). Pure."""
+    ops = compile_plan(plan)
+    hi = int(stop_after) if stop_after is not None else len(ops)
+    out = []
+    for k, o in enumerate(ops, 1):
+        pre = ROUTE_PRECONDITIONS.get(o.get("route"))
+        if pre and int(from_step or 0) < k <= hi and not pre[1](ctx):
+            out.append({"k": k, "route": o["route"], "acts": o["acts"], "ids": [plan["actions"][i - 1].get("id") for i in o["acts"]],
+                        "needs": pre[0], "work": ctx.get("work")})
+    return out
+
+
+DIAG_FIELDS = ("diagram", "dest_diagram", "body", "parent")
+END_FIELDS = ("src", "dst", "at", "on", "born_on")
+
+
+def create_route(a):
+    """The CREATE_ROUTES key for a create action, else ExecStop (no executor for that shape)."""
+    c = a.get("class")
+    if c == "WhileLoop":
+        return "while"
+    if c == "ForLoop":
+        return "for"
+    if c == "Local":
+        m = a.get("mode")
+        if m not in ("read", "write") or not a.get("label"):
+            raise ExecStop("create Local needs `mode` read|write and the control's `label` (got {0!r}, {1!r})".format(m, a.get("label")))
+        return "local_" + m
+    if c == "ControlTerminal":
+        if not a.get("label"):
+            raise ExecStop("create ControlTerminal needs `label`")
+        if a.get("indicator"):
+            if a.get("born_on") is None:
+                raise ExecStop("create indicator needs `born_on` (the source terminal it is created on)")
+            return "indicator"
+        if a.get("on") is None:
+            raise ExecStop("create control needs `on` (the sink terminal it is created on)")
+        return "control"
+    if c == SS.FS_CLS and a.get("donor_uid") is None and not a.get("prim"):     # card 126-3: struct_copy_nested + fs_donor
+        if not a.get("as"):
+            raise ExecStop("create FlatSequence needs `as` (its frames are 'new:<as>.f<k>')")
+        return "fs_create"
+    if c == SS.FS_FRAME_CLS:                              # card 126-3: fs_add_frame after the frame `diagram` names
+        if not (isinstance(a.get("diagram"), str) and re.match(r"^new:[A-Za-z]+[0-9]+\.f[0-9]+$", a["diagram"])):
+            raise ExecStop("create FlatSequenceFrame needs `diagram` 'new:<FS alias>.f<k>' (the reference frame), got {0!r}".format(
+                a.get("diagram")))
+        return "fs_frame"
+    if c == "CaseStructure" and a.get("donor_uid") is None and not a.get("prim"):
+        # card 120-3 R2: a NEW case in a loop body (gscript.case_in); a copied case (donor_uid) keeps the copy_in route
+        if a.get("src") is not None and not a.get("label"):     # card 123-7: selector wired from `src` (gscript.case_wired)
+            if not a.get("as") or not a.get("selector_as"):
+                raise ExecStop("create case_wired needs `as`, `selector_as` (the selector's alias) and `src` (a node output "
+                               "on the same diagram)")
+            return "case_wired"
+        if not a.get("as") or not a.get("selector_as") or not a.get("label"):
+            raise ExecStop("create case needs `as`, `selector_as` (the selector's alias) and `label` (the top-level panel "
+                           "control case_in wires to the selector)")
+        return "case"
+    if a.get("queue_kind"):                              # card 118-1: Obtain / Enqueue through gscript.queue_node
+        # card 120-3 R1: + Dequeue (gscript.queue_node('dequeue')), same shape as Enqueue
+        if a["queue_kind"] not in ("obtain", "enqueue", "dequeue") or a.get("src") is None or not a.get("src_into") \
+                or not a.get("terminals"):
+            raise ExecStop("create queue needs queue_kind obtain|enqueue|dequeue, `src` (source addr), `src_into` (the new node's "
+                           "sink name) and the declared `terminals`")
+        return "queue"
+    if a.get("subvi_path"):                              # card 118-1: a subVI dropped unwired
+        if not a.get("terminals"):
+            raise ExecStop("create subvi needs the declared `terminals`")
+        return "subvi"
+    if a.get("donor_uid") is not None:
+        return "copy_in"
+    if a.get("prim"):
+        return "primitive"
+    if str(c).endswith("Constant") and a.get("on") is not None:
+        return "const_on_term"
+    raise ExecStop("create class {0!r} has no executor (no donor_uid / prim / on)".format(c))
+
+
+# card 108-6 (PD222(g)): the tunnel classes whose OUTER SOURCE face gscript.create_indicator_nested(W, face, None) takes.
+# LoopTunnel -> OpTunnelInd_v0 (card 100-4); SelectorTunnel -> its owner CaseStructure's Terms[] entry on the face's wire,
+# OpCreateIndicatorNested_v0 (card 108-4, gscript.py:3867-3879; scratch record
+# tools/bench/scratch_verify/gscript.create_indicator_nested_20260927_141618.json, 24/0). The case SELECTOR ("Tunnel") is not
+# one: it is a sink, and the verb has no route for it.
+FACE_ROUTES = {"LoopTunnel": "OpTunnelInd_v0",
+               "SelectorTunnel": "owner CaseStructure Terms[] -> OpCreateIndicatorNested_v0"}
+CONST_IND_ROUTE = "gscript.create_indicator_on_const -> OpConstInd_v0 (Constant.Terminal -> Terminal.Create Indicator, card 122-3)"
+
+
+def const_born_on(real, term, diagram):
+    """card 122-3 (PD241(a)): the row of terminal `term` when it is the OUTPUT terminal of a diagram CONSTANT (is_const) on
+    Diagram #diagram - the end gscript.create_indicator_on_const reaches (a constant is not in Traverse('Node'), so the
+    Nodes[] triple route cannot take it). None when `term` is not a constant's terminal; ExecStop when it is a constant's but
+    not a source or not on #diagram (the indicator terminal is born on the constant's own diagram)."""
+    r = next((x for x in real if x["term_uid"] == term), None)
+    if r is None or not is_const(r):
+        return None
+    if not r["is_source"] or int(r["frame_diagram"] or 0) != int(diagram):
+        raise ExecStop("indicator born on constant #{0} terminal #{1}: source {2}, on #{3} - needs the constant's OUTPUT on the "
+                       "create row's diagram #{4}".format(r["owner_uid"], term, r["is_source"], r["frame_diagram"], diagram))
+    return r
+
+
+def tunnel_outer_face(real, term, diagram):
+    """card 100-6 (PD213(f)3) + card 108-6 (PD222(g)): the row of terminal `term` when it is the OUTER SOURCE face of a
+    LoopTunnel or a SelectorTunnel (FACE_ROUTES) sitting on Diagram #diagram - the tunnel faces
+    gscript.create_indicator_nested(W, face, None) reaches. Anything else (an inner face, a sink face, another class,
+    another diagram) -> None, and the row takes the Node route, which refuses a non-Node owner (T38)."""
+    r = next((x for x in real if x["term_uid"] == term), None)
+    if (r is None or r["owner_class"] not in FACE_ROUTES or r["term_class"] != "OuterTerminal" or not r["is_source"]
+            or int(r["frame_diagram"] or 0) != int(diagram)):
+        return None
+    return r
+
+
+def _heads(v):
+    """The symbolic heads a field value names: 'new:X.body' / 'new:X.t' -> ['new:X'], {'uid': 'new:X'} -> ['new:X']."""
+    if isinstance(v, dict):
+        return _heads(v.get("uid"))
+    if isinstance(v, str) and v.startswith("new:"):
+        return [v.partition(".")[0]]
+    return []
+
+
+def check_symbols(A):
+    """card 100-3: every symbolic reference names an alias an EARLIER action created; '.body' only of a loop create,
+    '.cond' only of a WhileLoop create. ExecStop names the action (unknown alias / use before create)."""
+    defined = {}                                          # head -> kind ('srR','srL','tunnel','loop:<cls>','obj')
+    fs_n = {}                                             # card 126-3: plan-made Flat Sequence alias -> frame count now
+    for i, a in enumerate(A, 1):
+        for f in DIAG_FIELDS + END_FIELDS + ("loop", "uid"):
+            v = a.get(f)
+            for h in _heads(v):
+                if h not in defined:
+                    raise ExecStop("action {0} ({1}): {2}={3!r} names {4}, which no EARLIER action creates (unknown alias "
+                                   "or use before create)".format(i, a.get("id"), f, v, h))
+                kind = defined[h]
+                tail = v.partition(".")[2] if isinstance(v, str) else (v.get("term") if isinstance(v, dict) else "")
+                # card 120-3 R2: + 'new:<case alias>.f<k>' (a frame of a case this plan created); '.body' rule unchanged
+                case_frame = kind == "case" and tail[:1] == "f" and tail[1:].isdigit()
+                if f in DIAG_FIELDS and kind == "fs" and tail[:1] == "f" and tail[1:].isdigit():
+                    # card 126-3: 'new:<FS alias>.f<k>' = frame k left to right NOW (create 1 frame, each Add Frame +1)
+                    if int(tail[1:]) >= fs_n[h]:
+                        raise ExecStop("action {0} ({1}): {2}={3!r} - {4} has {5} frame(s) at this action".format(
+                            i, a.get("id"), f, v, h, fs_n[h]))
+                    case_frame = True
+                if f in DIAG_FIELDS and (tail != "body" or not kind.startswith("loop:")) and not case_frame:
+                    raise ExecStop("action {0} ({1}): {2}={3!r} - a symbolic diagram is 'new:<loop alias>.body'".format(
+                        i, a.get("id"), f, v))
+                if tail == "cond" and kind != "loop:WhileLoop":
+                    raise ExecStop("action {0} ({1}): '.cond' of {2} ({3}) - only a WhileLoop has a conditional "
+                                   "terminal".format(i, a.get("id"), h, kind))
+        nm = a.get("as")
+        if a["op"] == "create" and a.get("class") == SS.FS_FRAME_CLS:            # card 126-3: one more frame
+            h = (_heads(a.get("diagram")) or [None])[0]
+            if h not in fs_n:
+                raise ExecStop("action {0} ({1}): FlatSequenceFrame diagram {2!r} is not a frame of a Flat Sequence an EARLIER "
+                               "create of this plan made".format(i, a.get("id"), a.get("diagram")))
+            fs_n[h] += 1
+            continue
+        if a["op"] == "add_shift_reg" and nm:
+            defined["new:" + nm + "R"], defined["new:" + nm + "L"] = "srR", "srL"
+        elif a["op"] == "tunnel" and nm:
+            defined["new:" + nm] = "tunnel"
+        elif a["op"] == "create" and nm and a.get("class") == SS.FS_CLS and a.get("donor_uid") is None and not a.get("prim"):
+            defined["new:" + nm], fs_n["new:" + nm] = "fs", 1                    # card 126-3
+        elif a["op"] == "wire" and nm:                    # card 126-3: the FS tunnel a cross-frame wire makes
+            defined["new:" + nm] = "fstun"
+        elif a["op"] == "create" and nm and a.get("class") == "CaseStructure" and a.get("donor_uid") is None \
+                and not a.get("prim"):                    # card 120-3 R2: the case + its selector's alias
+            defined["new:" + nm] = "case"
+            if a.get("selector_as"):
+                defined["new:" + a["selector_as"]] = "obj"
+        elif a["op"] == "create" and nm:
+            defined["new:" + nm] = ("loop:" + a["class"]) if a.get("class") in ("WhileLoop", "ForLoop") else "obj"
+    return defined
+
+
+def case_frame_op(A, i, fr):
+    """card 124-2 (PD249(d)): {frame, frame_index, case} of wire action i whose end(s) carry `frame` - read from the PLAN:
+    each such end names a case tunnel (`tunnel` action, loop = the case alias) or a case selector (`selector_as`) of a case
+    an EARLIER `create CaseStructure` made; the index is that create's `frames` order (default False, True = 0, 1). The
+    executor checks the same index against the simulated case (Executor.execute). Anything else -> ExecStop."""
+    if len(set(fr)) != 1:
+        raise ExecStop("action {0}: the wire's ends name different frames {1}".format(i, fr))
+    cases, owner = {}, {}                                 # case alias -> (alias, frames); tunnel/selector alias -> same
+    for b in A[:i - 1]:
+        if b["op"] == "create" and b.get("class") == "CaseStructure" and b.get("as") and b.get("donor_uid") is None:
+            cases["new:" + b["as"]] = ("new:" + b["as"], list(b.get("frames") or SS.CASE_FRAMES_DEFAULT))
+            if b.get("selector_as"):
+                owner["new:" + b["selector_as"]] = cases["new:" + b["as"]]
+        elif b["op"] == "tunnel" and b.get("as") and b.get("loop") in cases:
+            owner["new:" + b["as"]] = cases[b["loop"]]
+    a, got = A[i - 1], set()
+    for e in (a["src"], a["dst"]):
+        if not (isinstance(e, dict) and e.get("frame") is not None):
+            continue
+        hit = owner.get(e.get("uid"))
+        if hit is None:
+            raise ExecStop("action {0} ({1}): `frame` on {2!r} - only a tunnel or selector of a case an EARLIER create of this "
+                           "plan made has frame names".format(i, a.get("id"), e.get("uid")))
+        got.add(hit[0])
+        if fr[0] not in hit[1]:
+            raise ExecStop("action {0} ({1}): frame {2!r} is not a frame of {3} {4}".format(i, a.get("id"), fr[0], hit[0], hit[1]))
+        k = hit[1].index(fr[0])
+    if len(got) != 1:
+        raise ExecStop("action {0} ({1}): the `frame` ends name {2} cases".format(i, a.get("id"), len(got)))
+    case = got.pop()
+    return {"frame": fr[0], "frame_index": k, "case": case, "variant": _cfw_variant(A, i, case, k)}
+
+
+def _same_end(e1, e2):
+    """Two plan wire ends name the same terminal (symbol + side/term + frame), as far as the PLAN TEXT can tell."""
+    p1, p2 = _sym_of(e1), _sym_of(e2)
+    if p1[0] or p2[0]:
+        f1 = e1.get("frame") if isinstance(e1, dict) else None
+        f2 = e2.get("frame") if isinstance(e2, dict) else None
+        return p1 == p2 and f1 == f2
+    return json.dumps(e1, sort_keys=True) == json.dumps(e2, sort_keys=True)
+
+
+def _cfw_variant(A, i, case, k):
+    """card 124-6 (PD250(c), R4): 'branch' when the source of frame wire i is ALREADY wired by an earlier action - a case
+    tunnel's inner face in frame k taken by its own tunnel group (dir in, body = '<case>.f<k>') or an earlier wire from the
+    same end - else 'new_wire'. Measured: a second sink on a used inner face = LabVIEW branches the existing wire, census {}
+    (diag_c124_p3a_scratch.log:77,80); the first wire on an unwired face = Wire +1 (:71)."""
+    src = A[i - 1]["src"]
+    head, side = _sym_of(src)
+    sf = src.get("frame") if isinstance(src, dict) else None
+    for b in A[:i - 1]:
+        if (b["op"] == "tunnel" and head and sf is not None and "new:" + str(b.get("as")) == head and b.get("dir", "in") == "in"
+                and b.get("loop") == case and b.get("body") == "{0}.f{1}".format(case, k) and side == "inner"):
+            return "branch"
+        if b["op"] == "wire" and _same_end(b["src"], src):
+            return "branch"
+    return "new_wire"
+
+
+FS_FACE_RE = re.compile(r"^(#-?[0-9]+|f[0-9]+)$")
+
+
+def fs_wire_ops(A):
+    """card 126-3 (PD253(e)): {wire action index: op fields} for the wires a FLAT SEQUENCE route takes, read from the PLAN
+    alone (compile is pure): the plan's Flat Sequences are tracked as frame TOKENS in left-to-right order (create = 1 frame,
+    each FlatSequenceFrame create inserts after its reference frame - gscript.fs_add_frame After=T), and each node an action
+    PLACES on a frame ('create' with `as` on 'new:FS<n>.f<k>', 'move_in' with that dest) remembers its token. A wire whose
+    ends sit on two DIFFERENT frames of one plan-made FS -> variant 'fs_frame_to_frame' (gscript.connect_term_uid, measured
+    n=1); a wire with an end on a FS tunnel FACE (`frame` 'f<k>' / '#<diagram uid>') -> variant 'fs_face' (connect_term_uid by
+    terminal uid, census UNMEASURED). stagesim decides the same thing from the graph; Executor.execute cross-checks."""
+    frames, loc, tun, out, seq, entered = {}, {}, {}, {}, [0], set()
+
+    def token():
+        seq[0] += 1
+        return seq[0]
+
+    def dframe(ref):
+        m = re.match(r"^(new:[A-Za-z]+[0-9]+)\.f([0-9]+)$", ref) if isinstance(ref, str) else None
+        if m and m.group(1) in frames and int(m.group(2)) < len(frames[m.group(1)]):
+            return m.group(1), frames[m.group(1)][int(m.group(2))]
+        return None
+
+    def where(e):
+        head, _t = _sym_of(e)
+        if isinstance(e, dict) and e.get("frame") is not None and FS_FACE_RE.match(str(e["frame"])):
+            if head in tun and str(e["frame"]).startswith("f") and int(e["frame"][1:]) < len(frames[tun[head]]):
+                return (tun[head], frames[tun[head]][int(e["frame"][1:])]), True
+            return None, True
+        if head:
+            return loc.get(head), False
+        u = e.get("uid") if isinstance(e, dict) else (e.split(".", 1)[0] if isinstance(e, str) else None)
+        try:
+            return loc.get(int(u)), False
+        except (TypeError, ValueError):
+            return None, False
+    for i, a in enumerate(A, 1):
+        if a["op"] == "create" and a.get("class") == SS.FS_CLS and a.get("as") and a.get("donor_uid") is None \
+                and not a.get("prim"):
+            frames["new:" + a["as"]] = [token()]
+        elif a["op"] == "create" and a.get("class") == SS.FS_FRAME_CLS:
+            d = dframe(a.get("diagram"))
+            if d:
+                frames[d[0]].insert(frames[d[0]].index(d[1]) + 1, token())
+        elif a["op"] == "create" and a.get("as"):
+            d = dframe(a.get("diagram"))
+            if d:
+                loc["new:" + a["as"]] = d
+        elif a["op"] == "move_in":
+            d = dframe(a.get("dest_diagram"))
+            for n in (a.get("nodes") or []) if d else []:
+                loc[int(n)] = d
+        elif a["op"] == "wire":
+            (ls, face_s), (ld, face_d) = where(a["src"]), where(a["dst"])
+            if ls and ld and ls[0] == ld[0] and ls[1] != ld[1]:
+                fl = frames[ls[0]]
+                out[i] = {"variant": "fs_frame_to_frame", "fs": ls[0], "from_index": fl.index(ls[1]), "to_index": fl.index(ld[1])}
+                if a.get("as"):
+                    tun["new:" + a["as"]] = ls[0]
+            elif face_s or face_d:
+                out[i] = {"variant": "fs_face"}
+            elif ld and not ls:
+                # card 127-2 (PD257(c)(d)): a source OUTSIDE the plan-made FS -> a node on one of its frames = ONE
+                # connect_term_uid (126-6's measured route; stagesim picks the census variant from the graph's borders).
+                # The same source end into a frame an earlier crossing of this plan already entered = a same-frame wire
+                # from that tunnel's INNER face (PD257(d), PROVISIONAL pending card 127-1)
+                key = (json.dumps(a["src"], sort_keys=True), ld)
+                out[i] = {"variant": "fs_border_inner_branch" if key in entered else "fs_border", "fs": ld[0]}
+                entered.add(key)
+    return out
+
+
+def compile_plan(plan):
+    """[{kind, acts:[action indices 1-based], ...}] - one entry per REAL op, in order. Raises ExecStop on a shape the
+    executor has no real op for (the pre-run gate)."""
+    A = plan["actions"]
+    check_symbols(A)
+    fsw = fs_wire_ops(A)                                 # card 126-3: Flat Sequence wires (pure, from the plan)
+    # card 133-1 (PD280(c)): a wire into a frame of a Flat Sequence the plan did NOT create (carried / base FS) cannot be
+    # placed from the plan alone; the finalized plan carries the border route stagesim applied from the graph
+    # (finalized.fs_routes, stagesim.fs_routes_of). Used only where fs_wire_ops is silent; Executor.execute still
+    # cross-checks the compiled variant against the step effect (FS_VARIANT_HOW).
+    for k_, r_ in ((plan.get("finalized") or {}).get("fs_routes") or {}).items():
+        i_ = int(k_)
+        v_ = FS_HOW_VARIANT.get((r_ or {}).get("how"))
+        if v_ and i_ not in fsw and 1 <= i_ <= len(A) and A[i_ - 1]["op"] == "wire":
+            fsw[i_] = {"variant": v_, "fs": None, "from": "finalized.fs_routes"}
+    created = {}                                       # 'new:X' -> ('sr'|'tunnel'|'loop', action index)
+    for i, a in enumerate(A, 1):
+        if a["op"] == "add_shift_reg":
+            nm = a.get("as")
+            created["new:" + nm + "R"], created["new:" + nm + "L"] = ("srR", i), ("srL", i)
+        elif a["op"] == "tunnel":
+            created["new:" + a["as"]] = ("tunnel", i)
+        elif a["op"] == "create" and a.get("class") == "WhileLoop" and a.get("as"):
+            created["new:" + a["as"]] = ("while", i)
+        elif a["op"] == "create" and a.get("class") == "CaseStructure" and a.get("as") and a.get("donor_uid") is None \
+                and not a.get("prim"):                     # card 124-6: a plan-made case (its tunnel groups may be R1/R2)
+            created["new:" + a["as"]] = ("case", i)
+    ops, i = [], 1
+    while i <= len(A):
+        a = A[i - 1]
+        op = a["op"]
+        if op == "move_in":
+            if len(a["nodes"]) != 1 or not a.get("pos"):
+                raise ExecStop("action {0}: move_in needs ONE node and a `pos`".format(i))
+            ops.append({"kind": "move_in", "acts": [i]})
+        elif op == "add_shift_reg":
+            ops.append({"kind": "add_sr", "acts": [i]})
+        elif op == "tunnel":
+            t = "new:" + a["as"]
+            nxt = A[i:i + 2]
+            grp = lambda b: b["op"] == "wire" and not any(                 # noqa: E731 - card 124-2: a `frame` wire is
+                isinstance(e, dict) and e.get("frame") is not None for e in (b["src"], b["dst"]))   # never a group wire
+            ins = [k for k, b in enumerate(nxt, i + 1) if grp(b) and _sym_of(b["dst"])[0] == t]
+            outs = [k for k, b in enumerate(nxt, i + 1) if grp(b) and _sym_of(b["src"])[0] == t]
+            if len(ins) != 1 or len(outs) != 1:
+                raise ExecStop("action {0}: tunnel {1} must be followed by exactly one wire into it and one out of it "
+                               "(LabVIEW makes a tunnel only by wiring across the border)".format(i, t))
+            # card 124-6 (PD250(c)): the OUTSIDE end is the one paired with the tunnel's outer face; a plan-made register's
+            # INNER face there, on a plan-made case's tunnel = connect_term_uid (R1 dir in / R2 dir out, measured)
+            outside = A[ins[0] - 1]["src"] if _sym_of(A[ins[0] - 1]["dst"])[1] == "outer" else A[outs[0] - 1]["dst"]
+            oh, oside = _sym_of(outside)
+            reg = created.get(oh, ("",))[0] if oh else ""
+            if created.get(a.get("loop"), ("",))[0] == "case" and oside == "inner" and reg in ("srL", "srR"):
+                if (reg == "srL") != (a.get("dir", "in") == "in"):
+                    raise ExecStop("action {0}: tunnel {1} dir {2!r} with the register end {3} (srL feeds an INPUT tunnel, an "
+                                   "OUTPUT tunnel feeds srR)".format(i, t, a.get("dir", "in"), oh))
+                ops.append({"kind": "connect_term_uid", "acts": [i, i + 1, i + 2], "tunnel": t, "in_act": ins[0],
+                            "out_act": outs[0], "case": a["loop"], "variant": "register_end_case_border"})
+                i += 3
+                continue
+            ops.append({"kind": "tunnel", "acts": [i, i + 1, i + 2], "tunnel": t, "in_act": ins[0], "out_act": outs[0]})
+            i += 3
+            continue
+        elif op == "wire":
+            ss, sside = _sym_of(a["src"])
+            ds, dside = _sym_of(a["dst"])
+            fr = [e.get("frame") for e in (a["src"], a["dst"]) if isinstance(e, dict) and e.get("frame") is not None]
+            if i in fsw:                                   # card 126-3: a Flat Sequence wire = ONE gscript.connect_term_uid
+                ops.append(dict(fsw[i], kind="connect_term_uid", acts=[i]))
+            elif fr:                                       # card 124-2 (PD249(d)): a wire inside one frame of a case
+                ops.append(dict(case_frame_op(A, i, fr), kind="case_frame_wire", acts=[i]))
+            elif ds and created.get(ds, ("",))[0] == "while" and dside == "cond":
+                ops.append({"kind": "stop", "loop": ds, "acts": [i]})          # card 100-3 R8: OpStopFromNode_v0
+            elif ds and created.get(ds, ("",))[0] == "srR" and dside == "inner":
+                ops.append({"kind": "wire_sr", "variant": "RightIn", "reg": ds, "acts": [i]})
+            elif ss and created.get(ss, ("",))[0] == "srL" and sside == "inner":
+                ops.append({"kind": "wire_sr", "variant": "LeftIn", "reg": ss, "acts": [i]})
+            elif ss and created.get(ss, ("",))[0] == "tunnel":
+                ops.append({"kind": "branch", "tunnel": ss, "side": sside or "outer", "acts": [i]})
+            elif (ss and created.get(ss, ("",))[0] == "tunnel") or (ds and created.get(ds, ("",))[0] == "tunnel"):
+                raise ExecStop("action {0}: a wire into a tunnel outside its tunnel group".format(i))
+            else:
+                ops.append({"kind": "connect", "acts": [i]})
+        elif op in ("delete_wire", "delete_object", "remove_bad_wires"):
+            ops.append({"kind": op, "acts": [i]})
+        elif op == "wire_remove_loose_ends":              # card 127-2 (PD255(b)/256(b)): gscript.wire_remove_loose_ends
+            if (a.get("wire_uid") is None) == (a.get("of") is None):
+                raise ExecStop("action {0}: wire_remove_loose_ends needs exactly one of `wire_uid` / `of`".format(i))
+            of_act = None
+            if a.get("of") is not None:
+                of_act = next((k for k, b in enumerate(A[:i - 1], 1) if b.get("id") == a["of"]), None)
+                if of_act is None:
+                    raise ExecStop("action {0}: wire_remove_loose_ends `of` {1!r} names no EARLIER action".format(i, a["of"]))
+            ops.append({"kind": "wire_remove_loose_ends", "acts": [i], "of_act": of_act, "wire_uid": a.get("wire_uid")})
+        elif op == "create":                              # card 100-3: exec_create
+            try:
+                ops.append({"kind": "create", "route": create_route(a), "acts": [i]})
+            except ExecStop as e:
+                raise ExecStop("action {0} ({1}): {2}".format(i, a.get("id"), e))
+        elif op == "gate":                                # card 100-3: a VALUE gate (stops the run when it holds)
+            if a.get("read") != "bool_const" or not isinstance(a.get("stop_if"), bool):
+                raise ExecStop("action {0}: gate needs read 'bool_const' and a boolean stop_if".format(i))
+            ops.append({"kind": "gate", "acts": [i]})
+        else:
+            raise ExecStop("action {0}: op {1!r} has no real executor (decide is not executable)".format(i, op))
+        i += 1
+    return ops
+
+
+# ============================================================================================ graph helpers (pure)
+def dedupe(terms):
+    return V.dedupe_rows(terms)[0]
+
+
+def edges(terms):
+    byw = collections.defaultdict(lambda: ([], []))
+    for r in terms:
+        if r["wire_uid"]:
+            byw[r["wire_uid"]][0 if r["is_source"] else 1].append(r["term_uid"])
+    E = set()
+    dang = set()
+    for w, (s, k) in byw.items():
+        for a in s:
+            for b in k:
+                E.add((a, b))
+        if not s or not k:
+            dang.update(s + k)
+    return E, dang
+
+
+def translate(state_terms, bind):
+    """Sim rows with created (negative) uids replaced by their bound real uids. Unbound negatives stay negative."""
+    out = []
+    for r in state_terms:
+        x = dict(r)
+        x["term_uid"] = bind["term"].get(r["term_uid"], r["term_uid"])
+        x["owner_uid"] = bind["obj"].get(r["owner_uid"], r["owner_uid"])
+        out.append(x)
+    return out
+
+
+def compare(sim_terms, real_terms, bind, allow_either=()):
+    """{n, only_sim_terms, only_real_terms, only_sim_edges, only_real_edges, dangling_sim_only, dangling_real_only}."""
+    S = translate(dedupe(sim_terms), bind)
+    R = dedupe(real_terms)
+    ts, tr = set(r["term_uid"] for r in S), set(r["term_uid"] for r in R)
+    es, ds = edges(S)
+    er, dr = edges(R)
+    wired_r = set(r["term_uid"] for r in R if r["wire_uid"])
+    wired_s = set(r["term_uid"] for r in S if r["wire_uid"])
+    allow = set(bind["term"].get(t, t) for t in allow_either)       # card 104-2: sim uids -> the real ones S/R carry
+    d_sim =sorted(t for t in ds - dr if not (t in allow and t not in wired_r))
+    d_real = sorted(t for t in dr - ds if not (t in allow and t not in wired_s))
+    info = dict((r["term_uid"], (r["owner_uid"], r["owner_class"], r["term_name"])) for r in R + S)
+    out = {"only_sim_terms": sorted(ts - tr), "only_real_terms": sorted(tr - ts),
+           "only_sim_edges": sorted(es - er), "only_real_edges": sorted(er - es),
+           "dangling_sim_only": d_sim, "dangling_real_only": d_real,
+           "unbound": sorted(t for t in ts if t < 0)}
+    out["n"] = sum(len(v) for v in out.values())
+    out["who"] = dict((str(t), info.get(t)) for k in ("only_sim_terms", "only_real_terms", "dangling_sim_only",
+                                                      "dangling_real_only") for t in out[k][:12])
+    return out
+
+
+def _ints_in(o, out):
+    if isinstance(o, bool):
+        return out
+    if isinstance(o, int):
+        out.add(o)
+    elif isinstance(o, dict):
+        for v in o.values():
+            _ints_in(v, out)
+    elif isinstance(o, (list, tuple)):
+        for v in o:
+            _ints_in(v, out)
+    return out
+
+
+def classify_step_diff(plan, last_act, d):
+    """PD214(c) (user-side plan decision, cycle 101): a step difference made ONLY of sourceless (dangling) terminals -
+    `dangling_sim_only` / `dangling_real_only` - whose uids NO LATER plan action references by uid is a WARN, not a
+    save blocker: a sourceless half-wire carries no data (rule 1a) and the symbolic binding is untouched. Anything
+    else (a terminal, an edge, an unbound id) stays 'fail'. Returns (class, later_refs): later_refs are the dangling
+    uids some later action (index > last_act) does name, which makes the diff 'fail'. Read from the plan, never by hand."""
+    if any(d.get(x) for x in ("only_sim_terms", "only_real_terms", "only_sim_edges", "only_real_edges", "unbound")):
+        return "fail", []
+    uids = set(d.get("dangling_sim_only") or []) | set(d.get("dangling_real_only") or [])
+    if not uids:
+        return "fail", []
+    refs = set()
+    for a in plan["actions"][last_act:]:
+        _ints_in(a, refs)
+    hit = sorted(uids & refs)
+    return ("fail" if hit else "warn"), hit
+
+
+def uid_reuse(prev_real, real):
+    """Evidence that LabVIEW re-issued a freed uid to a NEW object within one op (hyp-optunouter-uidreuse-85.md:78-82; NI:
+    'if you delete an object, LabVIEW might assign the UID for that deleted object to a different object'). A uid present
+    before and after whose identity changed: (1) owner uid with another owner_class, (2) terminal uid with another
+    term_class/owner_class, (3) non-Diagram owner uid whose terminal-uid sets before/after are both non-empty and DISJOINT
+    (same class re-issued, e.g. Property #136 in unroutable_l2a1_85_build_tun.log:34). Diagram owners are exempt from (3):
+    control terminals move between diagrams legitimately."""
+    oc0 = dict((r["owner_uid"], r["owner_class"]) for r in prev_real)
+    oc1 = dict((r["owner_uid"], r["owner_class"]) for r in real)
+    tk0 = dict((r["term_uid"], (r["term_class"], r["owner_class"])) for r in prev_real)
+    tk1 = dict((r["term_uid"], (r["term_class"], r["owner_class"])) for r in real)
+    ts0, ts1 = collections.defaultdict(set), collections.defaultdict(set)
+    for r in prev_real:
+        ts0[r["owner_uid"]].add(r["term_uid"])
+    for r in real:
+        ts1[r["owner_uid"]].add(r["term_uid"])
+    out = ["owner #{0} {1}->{2}".format(u, oc0[u], oc1[u]) for u in sorted(set(oc0) & set(oc1)) if oc0[u] != oc1[u]]
+    out += ["term #{0} {1}->{2}".format(t, tk0[t], tk1[t]) for t in sorted(set(tk0) & set(tk1)) if tk0[t] != tk1[t]]
+    out += ["owner #{0} ({1}) terminals {2}->{3}".format(u, oc1[u], sorted(ts0[u])[:4], sorted(ts1[u])[:4])
+            for u in sorted(set(ts0) & set(ts1)) if oc1[u] != "Diagram" and ts0[u] and ts1[u] and not ts0[u] & ts1[u]]
+    return out
+
+
+def bind_new(prev_real, real, sim_prev, sim_now, bind):
+    """Bind the objects the simulation created between sim_prev and sim_now to the real objects that appeared between
+    prev_real and real, by class and then by terminal class. Count/class mismatch => ExecStop. A uid re-issued to a new
+    object inside the op => ExecStop 'UID-REUSE' FIRST (it would otherwise be dropped as 'old' and misreported as a
+    sim/real mismatch; card 85-3 P4)."""
+    ru_ = uid_reuse(prev_real, real)
+    if ru_:
+        raise ExecStop("UID-REUSE: {0} uid(s) re-issued to a different object in one op: {1}".format(len(ru_), ru_[:6]))
+    # card 100-3: grouped by GRAPH NODE (vigraph.node_of), so a created ControlTerminal (its own node, owned by its
+    # Diagram) binds like any object; for every other row node_of == owner_uid (the old grouping, unchanged)
+    sp = set(V.node_of(r) for r in sim_prev)
+    # card 101-3 (c100-6-r2.md s2): a created loop's BODY Diagram is bound by the create op's return (bind['diag']), and
+    # its own unnamed i/cond rows (node = the body) are bound here by (term_class, direction, name) - never as an object
+    dg = bind.get("diag") or {}
+    new_sim = collections.OrderedDict()
+    for r in sim_now:
+        n = V.node_of(r)
+        if n < 0 and n not in sp and n not in bind["obj"] and n not in dg:
+            new_sim.setdefault(n, []).append(r)
+    old_t = set(r["term_uid"] for r in prev_real)
+    new_real = collections.OrderedDict()
+    for r in real:
+        if r["term_uid"] not in old_t and V.node_of(r) not in bind["obj"].values() and V.node_of(r) not in dg.values():
+            new_real.setdefault(V.node_of(r), []).append(r)
+    bkey = lambda r: (r["term_class"], bool(r["is_source"]), r["term_name"])        # noqa: E731
+    for sb, rb in dg.items():
+        s_b = [r for r in sim_now if V.node_of(r) == sb and sb not in sp and r["term_uid"] not in bind["term"]]
+        r_b = [r for r in real if V.node_of(r) == rb and r["term_uid"] not in old_t]
+        if not s_b and not r_b:
+            continue
+        ks, kr = collections.Counter(bkey(r) for r in s_b), collections.Counter(bkey(r) for r in r_b)
+        if ks != kr or any(v != 1 for v in ks.values()):
+            raise ExecStop("BINDING: body #{0} -> #{1} own rows sim {2} vs real {3}".format(sb, rb, dict(ks), dict(kr)))
+        for sr in s_b:
+            bind["term"][sr["term_uid"]] = next(x for x in r_b if bkey(x) == bkey(sr))["term_uid"]
+    cs = collections.Counter(V.node_class(rs[0]) for rs in new_sim.values())
+    cr = collections.Counter(V.node_class(rs[0]) for rs in new_real.values())
+    if cs != cr:
+        raise ExecStop("BINDING: simulated new objects {0} != real new objects {1} (real owners {2})".format(
+            dict(cs), dict(cr), list(new_real)[:8]))
+    made = {}
+    for cls in cs:
+        su = [u for u, rs in new_sim.items() if V.node_class(rs[0]) == cls]
+        ru = [u for u, rs in new_real.items() if V.node_class(rs[0]) == cls]
+        if len(su) != 1 and cls in MULTI_BORDER_CLS:
+            made.update(bind_by_frames(cls, su, ru, new_sim, new_real, dg, bind))
+            continue
+        if len(su) != 1:
+            raise ExecStop("BINDING: {0} new {1} objects in one op - ambiguous".format(len(su), cls))
+        s_rows, r_rows = new_sim[su[0]], new_real[ru[0]]
+        key = lambda r: r["term_class"]                                            # noqa: E731
+        if any(v != 1 for v in collections.Counter(key(r) for r in s_rows).values()):
+            # card 100-3: a created primitive has several ParameterTerminals - bind by (class, direction, NAME);
+            # registers/tunnels keep the class-only key (their names are not stable, stage_d1_l7_1b.log:274)
+            key = lambda r: (r["term_class"], bool(r["is_source"]), r["term_name"])  # noqa: E731
+        ks = collections.Counter(key(r) for r in s_rows)
+        kr = collections.Counter(key(r) for r in r_rows)
+        # card 127-3 (PD258(d)): a SubVI's connector slots with NO label read back as name '' (IMAQ Copy #11 of
+        # graph_harness_copyloop_c95.json: 3 unnamed sinks; #6810 on the P3a bed: 8). A repeated key is accepted ONLY when its
+        # name is '' and every such row is unwired on both sides (a fresh create); those rows are paired in read order. No plan
+        # row can address an unnamed terminal (addresses are by name), so the pairing carries no wiring meaning.
+        # card 128-5 (PD262(b)): a REPEATED NAMED key of ONE fresh node (the new Unbundler's three 'element' outputs,
+        # diag_c128_2_donors.log:57) is paired the same way - read order, every such row unwired on both sides. Plan rows
+        # address them as '<name>#k' (stagesim.resolve_addr), the k-th same-named row in that order. Wired repeats still stop.
+        rep = [k for k, v in ks.items() if v != 1]
+        unnamed_ok = (bool(rep) and all(isinstance(k, tuple) for k in rep)
+                      and all(not r.get("wire_uid") for r in s_rows + r_rows if key(r) in rep))
+        if ks != kr or (any(v != 1 for v in ks.values()) and not unnamed_ok):
+            raise ExecStop("BINDING: {0} terminal keys sim {1} vs real {2}".format(cls, dict(ks), dict(kr)))
+        bind["obj"][su[0]] = ru[0]
+        made[su[0]] = ru[0]
+        used = set()
+        for sr in s_rows:
+            rr = next(x for x in r_rows if key(x) == key(sr) and x["term_uid"] not in used)
+            used.add(rr["term_uid"])
+            bind["term"][sr["term_uid"]] = rr["term_uid"]
+    return made
+
+
+# card 128-1 (PD260(b), review archive/peer/2026-10-01-c127-4-dry-pool.md): ONE connect_term_uid across several structure
+# borders (stagesim._fs_border_wire, census variant for_body_unwired_src_to_fs_frame_multi_border) makes one tunnel PER
+# BORDER, several of one class (B3: 2 LoopTunnel + 3 FlatSequenceOuterTunnel, diag_c126_6_cross.log:69-78). Their uids
+# DESCEND along the chain while the simulator creates them ascending from the source side, so ORDER pairing would swap the
+# For/While tunnels silently. They are bound by FRAMES: each tunnel's faces sit on (parent, body/frame) diagrams that no other
+# tunnel of the same crossing shares in the same directions. Names are never keyed (the For face reads 'New Image').
+def tunnel_name_check(sim_prev, sim_now, real_prev, real_now):
+    """card 132-1 (PD275(c)): the per-op TUNNEL-NAME gate. The NEW rows owned by a *Tunnel object (term_uid absent from the
+    previous state) are keyed (owner_class, term_class, is_source) and their term_name multisets compared, simulator
+    (sim_prev -> sim_now = the plan's step files, stagesim's naming rule stagesim.py:1499-1543) vs real (real_prev ->
+    real_now = the whole-VI reads around the op). Names are never typed: both sides come from data. Returns
+    (ok, {"sim": {key: [names]}, "real": {...}, "mismatch": [key, ...]}); no new tunnel row on either side = ok."""
+    def new_rows(prev, now):
+        seen = set(int(r["term_uid"]) for r in prev or [])
+        out = collections.defaultdict(list)
+        for r in now or []:
+            if int(r["term_uid"]) not in seen and str(r.get("owner_class") or "").endswith("Tunnel"):
+                out["{0}|{1}|{2}".format(r["owner_class"], r["term_class"], bool(r["is_source"]))].append(str(r.get("term_name") or ""))
+        return dict((k, sorted(v)) for k, v in out.items())
+    s, r = new_rows(sim_prev, sim_now), new_rows(real_prev, real_now)
+    bad = sorted(k for k in set(s) | set(r) if s.get(k) != r.get(k))
+    return not bad, {"sim": s, "real": r, "mismatch": bad}
+
+
+def is_crossing_op(step_effects):
+    """card 132-1 (PD275(c)): an op is a CROSSING op when one of its plan actions' simulated steps lists created border tunnels
+    (effect.tunnels non-empty: stagesim's fs_border routes, the ones its naming rule stagesim.py:1499-1543 covers). A
+    fs_frame_to_frame wire's FlatSequenceInnerTunnel is NOT one: stagesim names it '' while LabVIEW read 'error out'
+    (ring_p3b1 step 16 vs stage_d1_ring_p3b1_scratch_pin4.log NEWOBJ 28340/28345/28361/28371) and E1 accepted it."""
+    return any((e or {}).get("tunnels") for e in step_effects)
+
+
+MULTI_BORDER_CLS = ("LoopTunnel", "FlatSequenceOuterTunnel")
+
+
+def bind_by_frames(cls, su, ru, new_sim, new_real, dg, bind):
+    """Bind several created `cls` objects of ONE op by their faces' frames. Object key = the sorted (term_class, is_source,
+    frame) of its rows; a sim frame goes through bind['diag'] (a plan-made frame) and stays itself otherwise (a base frame).
+    Every key must be unique on each side and the two key sets equal; anything else => ExecStop, never an order fallback."""
+    D = dict((int(k), int(v)) for k, v in (dg or {}).items())
+    rk_s = lambda x: (x["term_class"], bool(x["is_source"]), D.get(int(x["frame_diagram"] or 0), int(x["frame_diagram"] or 0)))  # noqa: E731
+    rk_r = lambda x: (x["term_class"], bool(x["is_source"]), int(x["frame_diagram"] or 0))                                      # noqa: E731
+    ks = dict((u, tuple(sorted(rk_s(x) for x in new_sim[u]))) for u in su)
+    kr = dict((u, tuple(sorted(rk_r(x) for x in new_real[u]))) for u in ru)
+    dup_s = [k for k, v in collections.Counter(ks.values()).items() if v != 1]
+    dup_r = [k for k, v in collections.Counter(kr.values()).items() if v != 1]
+    if dup_s or dup_r or sorted(ks.values()) != sorted(kr.values()):
+        raise ExecStop("BINDING: {0} new {1} objects in one op - frame keys ambiguous or unmatched: sim {2} vs real {3}".format(
+            len(su), cls, sorted(ks.values())[:6], sorted(kr.values())[:6]))
+    by_key = dict((k, u) for u, k in kr.items())
+    made = {}
+    for s_u in su:
+        r_u = by_key[ks[s_u]]
+        if any(v != 1 for v in collections.Counter(rk_s(x) for x in new_sim[s_u]).values()):
+            raise ExecStop("BINDING: {0} #{1}: two rows share (term_class, source?, frame) {2}".format(cls, s_u, ks[s_u]))
+        bind["obj"][s_u] = r_u
+        made[s_u] = r_u
+        for sr in new_sim[s_u]:
+            bind["term"][sr["term_uid"]] = next(x for x in new_real[r_u] if rk_r(x) == rk_s(sr))["term_uid"]
+    return made
+
+
+def bind_fs_tunnel(prev_real, real, sim_prev, sim_now, bind):
+    """card 126-3: bind the FlatSequenceInnerTunnel a cross-frame wire made (stagesim._fs_frame_wire). Its FOUR rows are filed
+    under ONE uid with EMPTY names (diag_c125_5_fsscr.log:47,57), so bind_new's (class, direction, name) key repeats; the rows
+    are told apart by (direction, frame diagram) - frames through bind['diag'] (the FS create / Add Frame bound them). Only a
+    created node of that class is touched; anything else returns {} and bind_new runs as before."""
+    sp = set(V.node_of(r) for r in sim_prev)
+    cand = collections.OrderedDict()
+    for r in sim_now:
+        n = V.node_of(r)
+        if n < 0 and n not in sp and n not in bind["obj"] and r["owner_class"] == FSIT_CLS:
+            cand.setdefault(n, []).append(r)
+    if not cand:
+        return {}
+    D = dict((int(k), int(v)) for k, v in (bind.get("diag") or {}).items())
+    old_t = set(r["term_uid"] for r in prev_real)
+    new_real = collections.OrderedDict()
+    for r in real:
+        if r["term_uid"] not in old_t and r["owner_class"] == FSIT_CLS and V.node_of(r) not in bind["obj"].values():
+            new_real.setdefault(V.node_of(r), []).append(r)
+    if len(cand) != 1 or len(new_real) != 1:
+        raise ExecStop("BINDING: FS tunnel nodes sim {0} vs real {1} (one node carrying all four rows expected, "
+                       "diag_c125_5_fsscr.log:57)".format(list(cand), list(new_real)))
+    (su, s_rows), (ru, r_rows) = next(iter(cand.items())), next(iter(new_real.items()))
+    key_s = lambda x: (bool(x["is_source"]), D.get(int(x["frame_diagram"] or 0), int(x["frame_diagram"] or 0)))   # noqa: E731
+    key_r = lambda x: (bool(x["is_source"]), int(x["frame_diagram"] or 0))                                        # noqa: E731
+    ks, kr = collections.Counter(key_s(x) for x in s_rows), collections.Counter(key_r(x) for x in r_rows)
+    if ks != kr or any(v != 1 for v in ks.values()):
+        raise ExecStop("BINDING: FS tunnel #{0} -> #{1} row keys (source?, frame) sim {2} vs real {3}".format(su, ru, dict(ks), dict(kr)))
+    bind["obj"][su] = ru
+    for sr in s_rows:
+        bind["term"][sr["term_uid"]] = next(x for x in r_rows if key_r(x) == key_s(sr))["term_uid"]
+    return {su: ru}
+
+
+MULTI_FRAME_CLS = ("Tunnel", "SelectorTunnel")
+
+
+def bind_case_faces(prev_real, real, sim_prev, sim_now, bind):
+    """card 120-3 R2: bind a created case SELECTOR ('Tunnel') or case DATA tunnel (SelectorTunnel) - one outer face plus ONE
+    INNER FACE PER FRAME, all unnamed or same-named, which bind_new's (class, direction, name) key cannot tell apart. Its
+    inner faces are bound by FRAME through bind['diag'] (the frames the case create bound). Only a created object of those
+    classes whose inner faces sit on >1 frame is touched; any other op returns {} and bind_new runs exactly as before.
+    Such an object is then in bind['obj'], so bind_new skips it on both sides."""
+    sp = set(V.node_of(r) for r in sim_prev)
+    cand = collections.OrderedDict()
+    for r in sim_now:
+        n = V.node_of(r)
+        if n < 0 and n not in sp and r["owner_class"] in MULTI_FRAME_CLS:
+            cand.setdefault(n, []).append(r)
+    cand = dict((n, rs) for n, rs in cand.items()
+                if len(set(int(x["frame_diagram"] or 0) for x in rs if x["term_class"] == "InnerTerminal")) > 1)
+    if not cand:
+        return {}
+    D = dict((int(k), int(v)) for k, v in (bind.get("diag") or {}).items())
+    old_t = set(r["term_uid"] for r in prev_real)
+    new_real = collections.OrderedDict()
+    for r in real:
+        if r["term_uid"] not in old_t and r["owner_class"] in MULTI_FRAME_CLS:
+            new_real.setdefault(V.node_of(r), []).append(r)
+    made = {}
+    for su, s_rows in cand.items():
+        cls = s_rows[0]["owner_class"]
+        want = sorted(D.get(int(x["frame_diagram"] or 0), int(x["frame_diagram"] or 0)) for x in s_rows
+                      if x["term_class"] == "InnerTerminal")
+        ru = [u for u, rs in new_real.items() if rs[0]["owner_class"] == cls and u not in bind["obj"].values()
+              and sorted(int(x["frame_diagram"] or 0) for x in rs if x["term_class"] == "InnerTerminal") == want]
+        if len(ru) != 1:
+            raise ExecStop("BINDING: created {0} #{1} (inner faces on real frames {2}): {3} real candidate(s) {4}".format(
+                cls, su, want, len(ru), ru[:4]))
+        r_rows = new_real[ru[0]]
+        key_s = lambda x: (x["term_class"], bool(x["is_source"]),                                  # noqa: E731
+                           D.get(int(x["frame_diagram"] or 0), int(x["frame_diagram"] or 0)) if x["term_class"] == "InnerTerminal" else 0)
+        key_r = lambda x: (x["term_class"], bool(x["is_source"]),                                  # noqa: E731
+                           int(x["frame_diagram"] or 0) if x["term_class"] == "InnerTerminal" else 0)
+        ks, kr = collections.Counter(key_s(x) for x in s_rows), collections.Counter(key_r(x) for x in r_rows)
+        if ks != kr or any(v != 1 for v in ks.values()):
+            raise ExecStop("BINDING: {0} #{1} -> #{2} face keys sim {3} vs real {4}".format(cls, su, ru[0], dict(ks), dict(kr)))
+        bind["obj"][su] = ru[0]
+        made[su] = ru[0]
+        for sr in s_rows:
+            bind["term"][sr["term_uid"]] = next(x for x in r_rows if key_r(x) == key_s(sr))["term_uid"]
+    return made
+
+
+# ============================================================================================ addressing
+# PD185 (card 81-8): a SelectorTunnel is NOT in Diagram.Nodes[] (stage_d1_l2a1.log:302). Its OUTER face is a terminal of
+# its OWNER STRUCTURE's Terminals[], measured EXACTLY ONE matching face for all five L2-A1 sink ends on D1_k
+# (tools/bench/l2a1_faces_81.log M1 5/5; prior build_d1_m3a1.log:1145-1154). The owner = the structure that owns the
+# tunnel's inner frame diagram (the plan state's `owners` map). A FlatSequenceInnerTunnel face is reachable only
+# through Left/Right Terminal (docs/NAMES.md:1245-1255), never as a (diagram, node, terminal) triple: its end STOPS
+# with that route named. The real Addr and SimReader use the SAME rule, so the offline gates see what LabVIEW does.
+OWNER_ROUTED = ("SelectorTunnel", "Tunnel")
+# "Tunnel" = a case structure's SELECTOR (#5603 on #5540, #10465 on #10445): run 2's PRIME stopped on both
+# (stage_d1_l2a1_r2.log:36). Their faces are measured on the owner's Terminals[] too: #5540 t0 ('', sink, w5709) and
+# #10445 t0 ('', sink, w9921), exactly one each (l2a1_faces_81.log, owner Terminals[] listings).
+FSIT_CLS = "FlatSequenceInnerTunnel"
+NOT_NODES = OWNER_ROUTED + (FSIT_CLS,)
+# card 112-2 (v) (PD225(h)3 (v), brief_110-3 (d), D1): a LoopTunnel's OUTER face is a terminal of its OWNER LOOP's
+# Terminals[] - the census read it there (tools/bench/d1_rewire_sources.json: row #1359 i1 = the outer face of LoopTunnel
+# #9087 on wire 9097) - exactly as a SelectorTunnel's face is one of its CaseStructure's (PD185). The owner = the loop that
+# owns the tunnel's INNER frame (tunnel_owner). Kept apart from OWNER_ROUTED so the routes built on OWNER_ROUTED alone
+# (tunouter's twin rule, face_twins, ctltun) keep their measured scope; a LoopTunnel face addressed by a class-traverse
+# verb (ctl, const, tunouter, ctlsink) is REFUSED in connect_route, because those verbs index the tunnel's OWN class.
+# card 113-2 T1: EXCEPT the two OWNER-addressed ControlTerminal routes - 'ctltun' (bare CT -> LoopTunnel OUTER sink) and
+# 'ctlsink' from a bare LoopTunnel OUTER source - which index the OWNER LOOP's class traverse, not the tunnel's.
+LOOP_ROUTED = ("LoopTunnel",)
+FACE_ROUTED = OWNER_ROUTED + LOOP_ROUTED
+# PD187(b) (card 82-1): a front-panel ControlTerminal is NEVER in Diagram.Nodes[] (stage_d1_l2a1_r3.log:439, #5634 moved
+# at op 10, bare at op 31). Its address is the 179(b) route: term_uid == its own uid, owner == its Diagram, membership
+# proved by report_all('ControlTerminal') (tools/bench/diag_ctlterm_read_80.py). Addr.ct() is that route, in the real
+# Addr and in SimReader alike; Addr.triple() REFUSES a ControlTerminal (it is not a Nodes[] triple).
+
+
+def is_ct(r):
+    return V.node_class(r) == FP
+
+
+# PD187(a) FIT (card 82-1, tools/bench/parity_l2a1_82.log + parity_l2a1_82_real.json, the REAL Diagram.Nodes[] of D1_k on
+# #639/#686/#23166): the real Nodes[] holds NO LoopTunnel, NO FlatSequenceOuterTunnel, NO *Constant (Digital/String/
+# Cluster measured), NO Diagram-owned terminal owner, NO ControlTerminal, and a loop only on its PARENT diagram (the old
+# SimReader appended all 23 loops to every diagram). Before the fit 231 one-side-only entries, all on the SimReader side.
+NOT_NODE_CLASSES = ("LoopTunnel", "FlatSequenceOuterTunnel", "Diagram", "TopLevelDiagram")
+
+
+def listed_as_node(r):
+    """Constant / Tunnel / Terminal are OUTSIDE the Node branch of the VI Server hierarchy (gobject/constant/..,
+    gobject/tunnel/.. - archive/peer/2026-09-25-parity-l2a1-82-hyp.md 1+2a), so every *Constant and every *Tunnel class
+    is excluded, not only the ones measured; owner-routed tunnels still list their OWNER structure (_routed)."""
+    c = r["owner_class"]
+    if c in NODE_CONSTANTS:
+        return True
+    return not (c in SR_CLS + NOT_NODES + NOT_NODE_CLASSES or c.endswith("Constant") or c.endswith("Tunnel") or is_ct(r))
+
+
+# HOLDOUT (all 173 diagrams of D1_k, tools/bench/parity_l2a1_82_holdout.log:45-50): the ONLY one-side-only entries left
+# were 21 real-only ControlReferenceConstant on 5 untouched diagrams - that class IS in Diagram.Nodes[].
+NODE_CONSTANTS = ("ControlReferenceConstant",)
+
+
+def is_const(r):
+    """PD188(c) (card 85-1): a diagram CONSTANT end - outside Diagram.Nodes[] (listed_as_node), addressed by its class
+    traverse (report_all(<class>), the same order OpConstWire_v1's Traverse uses), never by a Nodes[] triple."""
+    c = r["owner_class"]
+    return c.endswith("Constant") and c not in NODE_CONSTANTS and not is_ct(r)
+
+
+def loop_parent(st, L):
+    """The diagram uid a loop sits on: its own non-body rows, else its registers' / tunnels' OUTER faces (one value)."""
+    u = int(L["loop_uid"])
+    bodies = set(k for k, v in (st.get("owners") or {}).items() if int(v[1] or 0) == u)
+    T = st["terminals"]
+    ds = set(int(r["frame_diagram"] or 0) for r in T if r["owner_uid"] == u and str(int(r["frame_diagram"] or 0)) not in bodies)
+    if not ds:
+        regs = set(int(x) for x in L.get("right_uids") or []) | set(
+            int(y) for v in (L.get("left_of") or {}).values() for y in (v if isinstance(v, list) else [v]))
+        tuns = set(r["owner_uid"] for r in T if r["term_class"] == "InnerTerminal" and str(int(r["frame_diagram"] or 0)) in bodies)
+        ds = set(int(r["frame_diagram"] or 0) for r in T if (r["owner_uid"] in tuns or r["owner_uid"] in regs)
+                 and r["term_class"] == "OuterTerminal")
+    if not ds:                   # card 100-3: a loop the plan CREATED owns no row; its body's parent is in st['diagrams']
+        ds = set(int(v) for k, v in (st.get("diagrams") or {}).items() if k in bodies)
+    return ds.pop() if len(ds) == 1 else None
+
+
+# PD187(a) (card 82-1): READER PARITY. Three runs in cycle 81 stopped on one class - SimReader listed as a Nodes[] entry
+# something the real Diagram.Nodes[] does not (border tunnels -> selectors -> ControlTerminals). At PRIME, per diagram the
+# plan touches, SimReader's Nodes[] membership (class, uid) is compared with a REAL Nodes[] read; any one-side-only entry
+# STOPS before op 1, so the next member of the class shows up offline / at PRIME, not at op N.
+def touched_diagrams(plan, st):
+    """Base diagram uids the plan touches: moved nodes' source diagrams, move destinations, register/tunnel parent + body,
+    and the diagram of every base plan end (resolved on the base state)."""
+    base_d = set(int(r["frame_diagram"] or 0) for r in st["terminals"])
+    out = set()
+    for a in plan["actions"]:
+        if a["op"] == "move_in":
+            for u in a["nodes"]:
+                out |= set(int(r["frame_diagram"] or 0) for r in st["terminals"] if V.node_of(r) == int(u))
+            if isinstance(a["dest_diagram"], int):        # card 100-3: a symbolic body is not a base diagram
+                out.add(int(a["dest_diagram"]))
+        for k in ("parent", "body", "diagram"):
+            if isinstance(a.get(k), int) and not isinstance(a.get(k), bool):
+                out.add(int(a[k]))
+        for side, src in (("src", True), ("dst", False), ("at", True), ("born_on", True), ("on", False)):
+            e = a.get(side)
+            if e is None or _sym_of(e)[0]:
+                continue
+            try:
+                out.add(int(SS.resolve_addr(st, e, src)["frame_diagram"] or 0))
+            except SS.SimError:
+                pass
+    return sorted(out & base_d)
+
+
+def listing(rd, diag, cls):
+    """{(class, uid)} of reader rd's Nodes[] on diagram uid `diag` (None when the reader has no such diagram)."""
+    dl = rd.diagrams()
+    if diag not in dl:
+        return None
+    return set((cls.get(u, "?"), u) for u in rd.node_uids(dl.index(diag)))
+
+
+def reader_parity(real_rd, sim_rd, diags, cls_real, cls_sim):
+    """[{diagram, n_real, n_sim, only_real, only_sim}] per diagram; `n` = total one-side-only entries."""
+    rows, n = [], 0
+    for d in diags:
+        R, S = listing(real_rd, d, cls_real), listing(sim_rd, d, cls_sim)
+        miss = [k for k, v in (("real", R), ("sim", S)) if v is None]       # a diagram one side lacks = an EMPTY listing
+        R, S = R or set(), S or set()
+        orr, osm = sorted(R - S), sorted(S - R)
+        rows.append(dict({"diagram": d, "n_real": len(R), "n_sim": len(S), "only_real": orr, "only_sim": osm},
+                         **({"missing_on": miss} if miss else {})))
+        n += len(orr) + len(osm)
+    return rows, n
+
+
+def classes_of(st_or_rows, objs):
+    """uid -> class, from the objects list, else from the terminal rows (node_of / node_class)."""
+    c = dict((int(o["uid"]), o["class"]) for o in objs or [])
+    for r in st_or_rows:
+        c.setdefault(V.node_of(r), V.node_class(r))
+    return c
+
+
+class _StateHolder(object):
+    def __init__(self, st):
+        self.st = st
+
+
+def connect_route(addr, real, src, dst, loop_of):
+    """The connect route BOTH backends take (so the dry run sees what the real run does): 'indicator' (panel sink, wired
+    source: wire_indicators), 'cfw' (wired source: connect_from_wire), 'nested' (bare Nodes[] source: connect_nested_v1),
+    'ctl' (BARE ControlTerminal source, card 82-2: gscript.wire_control = OpWireCtl_v0, Get Controls by LABEL on the CT's own
+    Diagram index -> Wire Inputs onto Traverse(sink class)[i].<sink NAME>; measured on a D1_k scratch at op 31 for
+    rw_5634_10256 + rw_17487_9676: Wire +1, sole source = the CT, sole sink = the plan sink, ordered second pass wire_delta 0 /
+    Is Broken? False, plan step 35 compare 0 - tools/bench/ctsrc_l2a1_82.log). Both ends are NAME-addressed there, so the
+    route stops unless the CT's label is unique among the ControlTerminals on its Diagram and the sink's name is unique
+    among its node's sink terminals, and the sink's owner is the node itself (not an owner-routed face / register)."""
+    rs = next(r for r in real if r["term_uid"] == src)
+    rd = next(r for r in real if r["term_uid"] == dst)
+    info = {}
+    if is_ct(rs):
+        info["src_ct"] = addr.ct(real, src)[1]
+    if is_ct(rd):
+        info["dst_ct"] = addr.ct(real, dst)[1]
+        if not rs["wire_uid"]:
+            # card 113-2 T1 (review archive/peer/2026-09-28-c113b-route.md s1/s4; row b2_07 #29178 -> #28786): a BARE
+            # LoopTunnel OUTER face -> a ControlTerminal sink = 'ctlsink' with the source addressed through its OWNER LOOP's
+            # Terminals[] (the card-112-2 (v) owner route, Addr._triple FACE_ROUTED) - OpCtlSinkWire_v1's SOURCE ladder is
+            # Traverse(cls)[j] -> Node -> Terminals[t], and a loop is a Node. Only the OUTER face; an inner face stays refused.
+            if rs["owner_class"] in LOOP_ROUTED and rs["term_class"] == "OuterTerminal":
+                own = tunnel_owner(real, rs["owner_uid"], addr.owners)
+                ocls = sorted(set(v[0] for v in (addr.owners or {}).values() if int(v[1] or 0) == own))
+                if len(ocls) != 1:
+                    raise ExecStop("CONNECT-NO-VERB: ctlsink: owner #{0} of loop tunnel #{1} has class(es) {2} in the owner "
+                                   "map".format(own, rs["owner_uid"], ocls))
+                st_, hs = addr.triple(real, src, True, loop_of)
+                info.update(ct=addr.ct(real, dst)[0], src=st_, src_how=hs, src_term=st_[2], src_cls=ocls[0], src_owner=own)
+                return "ctlsink", rs, rd, info
+            # PD191(a) (card 85-2): a BARE node terminal -> a ControlTerminal sink = 'ctlsink' (gscript.wire_ctlsink,
+            # OpCtlSinkWire_v1: Connect Wire invoked ON the CT, Wire Source = Traverse(src class)[j].Terminals[t]).
+            # wire_indicators stays for WIRED sources only (its measured limit, tools/gscript.py:1835-1838).
+            if is_ct(rs) or is_const(rs) or rs["owner_class"] in NOT_NODES + SR_CLS + LOOP_ROUTED or V.node_of(rs) != rs["owner_uid"]:
+                raise ExecStop("CONNECT-NO-VERB: panel sink #{0} needs a WIRED source for wire_indicators; #{1} is bare and "
+                               "not a node's own terminal (ctlsink addresses the source NODE by class traverse)".format(dst, src))
+            st_, hs = addr.triple(real, src, True, loop_of)
+            info.update(ct=addr.ct(real, dst)[0], src=st_, src_how=hs, src_term=st_[2])
+            return "ctlsink", rs, rd, info
+        return "indicator", rs, rd, info
+    dt, hd = addr.triple(real, dst, False, loop_of)
+    info.update(dst=dt, dst_how=hd)
+    if rs["wire_uid"]:
+        return "cfw", rs, rd, info
+    if is_ct(rs):
+        c = addr.ct(real, src)[0]
+        same = [r for r in real if is_ct(r) and int(r["frame_diagram"] or 0) == c["diag"] and r["term_name"] == rs["term_name"]]
+        # card 113-2 T1: FACE_ROUTED (was OWNER_ROUTED) - a LoopTunnel OUTER face (rows b2_04/b2_05, CT -> ForLoop #1359's
+        # tunnel faces) takes the same owner route as a case tunnel's: tunnel_owner() finds the loop, the owner map its class.
+        if rd["owner_class"] in FACE_ROUTED and rd["term_class"] == "OuterTerminal":
+            # card 112-1 T2 (PD225(h)3 (ii), brief_110-3 (c); B2-15 #403 -> case selector Tunnel #2276, B2-16 -> SelectorTunnel
+            # #6132): the CT is addressed by its OWN uid (179(b), no label), the tunnel face by its OWNER structure's
+            # Terminals[] index (the PD185 owner route, dt above). gscript.wire_ctlsink (OpCtlSinkWire_v1) invokes Connect
+            # Wire ON the CT with `Wire Source` = that face - the SAME op as 'ctlsink' with the roles of the two ends
+            # reversed, so the route stands on LabVIEW wiring a Connect Wire pair by the terminals' directions, which
+            # tools/bench/scratch_verify/stagexec.ctl_to_tunnel_* measures (card 112-1).
+            own = tunnel_owner(real, rd["owner_uid"], addr.owners)
+            ocls = sorted(set(v[0] for v in (addr.owners or {}).values() if int(v[1] or 0) == own))
+            if len(ocls) != 1:
+                raise ExecStop("CONNECT-NO-VERB: ctltun: owner #{0} of tunnel #{1} has class(es) {2} in the owner map".format(
+                    own, rd["owner_uid"], ocls))
+            info.update(ct_uid=src, owner=own, owner_cls=ocls[0], owner_term=dt[2], dst_how=hd)
+            return "ctltun", rs, rd, info
+        if not rs["term_name"] or len(same) != 1:
+            raise ExecStop("CONNECT-NO-VERB: bare ControlTerminal source #{0} {1!r}: label not unique among the {2} "
+                           "ControlTerminal(s) of that name on Diagram #{3} (wire_control is label-addressed)".format(
+                               src, rs["term_name"], len(same), c["diag"]))
+        if rd["owner_class"] in FACE_ROUTED or rd["owner_class"] in SR_CLS or rd["owner_class"] == FSIT_CLS \
+                or V.node_of(rd) != rd["owner_uid"]:
+            raise ExecStop("CONNECT-NO-VERB: bare ControlTerminal source #{0} -> sink #{1} on {2} #{3}: wire_control "
+                           "addresses the sink NODE by class traverse; this sink's owner is not that node".format(
+                               src, dst, rd["owner_class"], rd["owner_uid"]))
+        _e, nt = addr.rd.node_terms(dt[0], dt[1])
+        nm = nt[dt[2]]["name"]
+        if not nm or sum(1 for x in nt if x["name"] == nm and not x["is_source"]) != 1:
+            raise ExecStop("CONNECT-NO-VERB: bare ControlTerminal source #{0} -> sink #{1} {2!r}: sink name not unique "
+                           "among its node's sink terminals (wire_control is name-addressed)".format(src, dst, nm))
+        info.update(ctl_label=rs["term_name"], ctl_didx=c["didx"], dst_name=nm)
+        return "ctl", rs, rd, info
+    if is_const(rs) and rd["owner_class"] == "LeftShiftRegister" and rd["term_class"] == "OuterTerminal":
+        # card 123-3 S2 (PD246(c) A3/(e)): SHIFT-REGISTER INITIALISATION = a bare constant on the loop's OWNER diagram ->
+        # the LEFT register's OUTER face. The face is addressed like any register face (Addr._triple: the loop is the node,
+        # the face its Terminals[] entry by uid echo); gscript.wire_const (OpConstWire_v1) then indexes the LOOP by its
+        # class traverse (a loop is a Node, so TMSC(Node) -> Node.Terminals[] reaches the face). Same op, no new op VI.
+        loop = int((loop_of or {}).get(rd["owner_uid"]) or 0)
+        ocls = sorted(set(v[0] for v in (addr.owners or {}).values() if int(v[1] or 0) == loop))
+        if not loop or len(ocls) != 1 or ocls[0] not in ("WhileLoop", "ForLoop"):
+            raise ExecStop("CONNECT-NO-VERB: const_sr: register #{0}'s loop #{1} has class(es) {2} in the owner map".format(
+                rd["owner_uid"], loop, ocls))
+        if int(rs["frame_diagram"] or 0) != int(rd["frame_diagram"] or 0):
+            raise ExecStop("CONNECT-NO-VERB: const_sr: constant on diagram #{0}, register outer face on #{1} (place the "
+                           "constant on the loop's owner diagram)".format(rs["frame_diagram"], rd["frame_diagram"]))
+        c, hc = addr.const(real, src)
+        info.update(const=c, const_how=hc, dst_term=dt[2], loop=loop, loop_cls=ocls[0])
+        return "const_sr", rs, rd, info
+    if is_const(rs):                                       # PD188(c), card 85-1: gscript.wire_const (OpConstWire_v1)
+        if rd["owner_class"] in FACE_ROUTED or rd["owner_class"] in SR_CLS or rd["owner_class"] == FSIT_CLS \
+                or V.node_of(rd) != rd["owner_uid"]:
+            raise ExecStop("CONNECT-NO-VERB: bare constant source #{0} -> sink #{1} on {2} #{3}: wire_const addresses the "
+                           "sink NODE by class traverse; this sink's owner is not that node".format(
+                               src, dst, rd["owner_class"], rd["owner_uid"]))
+        c, hc = addr.const(real, src)
+        info.update(const=c, const_how=hc, dst_term=dt[2])
+        return "const", rs, rd, info
+    if rs["owner_class"] in OWNER_ROUTED and rs["term_class"] == "OuterTerminal" and len(face_twins(real, rs, addr.owners)) > 1:
+        # PD191(b), card 85-2: by the TUNNEL uid - only where the owner's Terminals[] holds a TWIN face (same name and
+        # direction: R45 #6007 / R46 #6026 on #5540). A face with no twin keeps its measured owner route ('nested',
+        # rw_10594_10259 at op 34, constsrc_l2a1_85.log diff 0).
+        if rd["owner_class"] in FACE_ROUTED or rd["owner_class"] in SR_CLS or rd["owner_class"] == FSIT_CLS \
+                or V.node_of(rd) != rd["owner_uid"]:
+            raise ExecStop("CONNECT-NO-VERB: bare tunnel outer face #{0} -> sink #{1} on {2} #{3}: wire_tunouter addresses "
+                           "the sink NODE by class traverse; this sink's owner is not that node".format(
+                               src, dst, rd["owner_class"], rd["owner_uid"]))
+        c, hc = addr.tun(real, src)
+        info.update(tun=c, tun_how=hc, dst_term=dt[2])
+        return "tunouter", rs, rd, info
+    st_, hs = addr.triple(real, src, True, loop_of)
+    info.update(src=st_, src_how=hs)
+    return "nested", rs, rd, info
+
+
+def base_registers(st):
+    """card 112-1 T1: {register uid: {"loop": loop uid, "right": its RightShiftRegister uid, "cls": class}} for every
+    register on the BASE graph, from the graph's `loops` table (right_uids / left_of, as tools/bench/graph_*.json carry
+    it: graph_l2b1_20260927.json loop #10170 right 9603 -> left 10544). Only While/For loops that list registers."""
+    out = {}
+    for L in st.get("loops") or []:
+        loop = int(L.get("loop_uid") or 0)
+        for r_ in L.get("right_uids") or []:
+            out[int(r_)] = {"loop": loop, "right": int(r_), "cls": "RightShiftRegister", "loop_class": L.get("class")}
+        for r_, lefts in (L.get("left_of") or {}).items():
+            for l_ in (lefts if isinstance(lefts, list) else [lefts]):
+                out[int(l_)] = {"loop": loop, "right": int(r_), "cls": "LeftShiftRegister", "loop_class": L.get("class")}
+    return out
+
+
+def base_sr_route(real, src, dst, base_regs):
+    """card 112-1 T1: (variant, register uid, body-side terminal) when a plain `wire` row touches the INNER face of a
+    register that exists on the base graph - into a RightShiftRegister's inner sink = wire_sr 'RightIn' (the body
+    terminal is the SOURCE), out of a LeftShiftRegister's inner source = 'LeftIn' (the body terminal is the SINK) - the
+    same two variants compile_plan gives a register the plan creates. None otherwise (outer faces stay on connect)."""
+    rs = next((r for r in real if r["term_uid"] == src), None)
+    rd = next((r for r in real if r["term_uid"] == dst), None)
+    if rd and rd["owner_class"] == "RightShiftRegister" and rd["term_class"] == "InnerTerminal" and rd["owner_uid"] in base_regs:
+        return "RightIn", rd["owner_uid"], src
+    if rs and rs["owner_class"] == "LeftShiftRegister" and rs["term_class"] == "InnerTerminal" and rs["owner_uid"] in base_regs:
+        return "LeftIn", rs["owner_uid"], dst
+    return None
+
+
+def face_twins(rows, r, owners):
+    """PD191(b): the owner-routed OUTER faces on the same owner structure as row r with r's (name, direction) - r included.
+    A face whose owner is unknown has no twins (its owner route stops in Addr._triple as before)."""
+    def own(x):
+        try:
+            return tunnel_owner(rows, x["owner_uid"], owners)
+        except ExecStop:
+            return None
+    o = own(r)
+    if o is None:
+        return [r]
+    return [x for x in rows if x["owner_class"] in OWNER_ROUTED and x["term_class"] == "OuterTerminal"
+            and x["term_name"] == r["term_name"] and bool(x["is_source"]) == bool(r["is_source"]) and own(x) == o]
+
+
+def tunnel_owner(rows, tun, owners):
+    """The structure uid owning tunnel `tun` (via its inner frame diagrams in `owners`), else ExecStop."""
+    fr = set(str(int(r["frame_diagram"] or 0)) for r in rows if r["owner_uid"] == tun and r["term_class"] == "InnerTerminal")
+    own = set(int((owners or {})[f][1]) for f in fr if f in (owners or {}))
+    if len(own) != 1:
+        raise ExecStop("ADDRESS: tunnel #{0}: owner structure not unique from its inner frames {1} ({2} owners known)".format(
+            tun, sorted(fr), len(owners or {})))
+    return own.pop()
+
+
+class Addr(object):
+    """Terminal -> live index triple (Diagram idx, Nodes[] idx, Terminals[] idx). `rd` = reader with diagrams(),
+    node_uids(didx), node_terms(didx, nidx) -> (echo, rows[i,name,is_source,wire]). Graph rows = the LAST real read.
+    A node's terminal index is taken from the ORDER PROOF (the node's rows in the read, in read order, have the same
+    (name, direction, wire) sequence as node_terms) or else from a UNIQUE (name, direction, wire) match. A border
+    terminal of a created register (outer face) is a terminal of its LOOP (the loop the plan created it on)."""
+
+    def __init__(self, rd, owners=None):
+        self.rd = rd
+        self.owners = owners or {}  # str(frame diagram uid) -> [structure class, structure uid] (PD185)
+        self.cache = {}           # term_uid -> (node uid, Terminals[] index) proved while the terminal was WIRED
+        self.loops = {}           # loop uid -> {"diag": diagram uid, "keys": [(name, is_source)], "track": {term_uid: idx}}
+
+    # ------------------------------------------------------------------ REGISTER OUTER FACES (loop Terminals[] indexes)
+    # A created register's outer terminals are terminals of the LOOP and are UNWIRED when first used, and their names
+    # are not stable (stage_d1_l7_1b.log:274), so neither a wire nor a name can address them. They are TRACKED: the
+    # loop's Terminals[] list is read right before and right after add_shift_reg (the two inserted entries, one source
+    # and one sink, ARE the new R outer and L outer) and re-aligned after every later op (difflib on (name, direction):
+    # equal blocks and same-length replace blocks carry an index over; anything else loses it, and using a lost index
+    # stops the run).
+    def _loop_list(self, loop):
+        L = self.loops[loop]
+        didx = self.rd.diagrams().index(L["diag"])
+        nidx = self.rd.node_uids(didx).index(loop)
+        echo, nt = self.rd.node_terms(didx, nidx)
+        if echo != loop:
+            raise ExecStop("loop #{0} echo {1!r}".format(loop, echo))
+        return [(x["name"], bool(x["is_source"]), int(x["wire"] or 0)) for x in nt]
+
+    def snap_loop(self, loop, diag):
+        self.loops.setdefault(loop, {"diag": diag, "keys": None, "track": {}})
+        self.loops[loop]["keys"] = self._loop_list(loop)
+
+    def track_new(self, loop, r_outer, l_outer):
+        import difflib
+        L = self.loops[loop]
+        old, new = L["keys"], self._loop_list(loop)
+        ins = []
+        for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, old, new, autojunk=False).get_opcodes():
+            if tag == "insert":
+                ins += list(range(j1, j2))
+            elif tag != "equal":
+                raise ExecStop("add_shift_reg on #{0}: the loop's Terminals[] changed beyond an insertion ({1})".format(loop, tag))
+        src = [j for j in ins if new[j][1]]
+        snk = [j for j in ins if not new[j][1]]
+        if len(src) != 1 or len(snk) != 1:
+            raise ExecStop("add_shift_reg on #{0}: inserted entries {1} are not one source + one sink".format(loop, [new[j] for j in ins]))
+        L["track"][r_outer], L["track"][l_outer] = src[0], snk[0]
+        L["keys"] = new
+        return {"r_outer_idx": src[0], "l_outer_idx": snk[0]}
+
+    def retrack(self):
+        import difflib
+        lost = []
+        for loop, L in self.loops.items():
+            if not L["track"]:
+                continue
+            new = self._loop_list(loop)
+            m = {}
+            if len(new) == len(L["keys"]):
+                # the op added/removed no border terminal on this loop: indexes are unchanged. Names are NOT a key
+                # here - wiring a register's inner face renames its outer face ('' -> 'error out'), and aligning on
+                # names mis-mapped the faces (tools/bench/stagexec_l7_bench.log run 1, op 8 wired SR2L for SR1L)
+                m = dict((i, i) for i in range(len(new)))
+            else:
+                ko = [k[1:] for k in L["keys"]]          # (direction, wire): a wired face is anchored by its wire uid
+                kn = [k[1:] for k in new]
+                for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, ko, kn, autojunk=False).get_opcodes():
+                    if tag == "equal" or (tag == "replace" and i2 - i1 == j2 - j1):
+                        for k in range(i2 - i1):
+                            m[i1 + k] = j1 + k
+            for t, i in list(L["track"].items()):
+                if i in m:
+                    L["track"][t] = m[i]
+                else:
+                    L["track"][t] = None
+                    lost.append(t)
+            L["keys"] = new
+        return lost
+
+    def triple(self, real, term_uid, is_source, loop_of=None):
+        rows = [r for r in real if r["term_uid"] == term_uid]
+        if len(rows) != 1:
+            raise ExecStop("ADDRESS: terminal #{0}: {1} rows in the live read".format(term_uid, len(rows)))
+        r = rows[0]
+        if bool(r["is_source"]) != bool(is_source):
+            raise ExecStop("ADDRESS: terminal #{0} is_source {1}, wanted {2}".format(term_uid, r["is_source"], is_source))
+        t, how = self._triple(real, r, term_uid, loop_of)
+        if r["wire_uid"]:
+            self.cache[term_uid] = (self.rd.node_uids(t[0])[t[1]], t[2])
+        return t, how
+
+    def ct(self, real, term_uid):
+        """PD187(b) / 179(b): a ControlTerminal end -> {ct, diag, didx, name, is_source, wire}. term_uid == its own uid,
+        owner == its Diagram (which must be in the live Diagram list), membership in report_all('ControlTerminal')."""
+        rows = [r for r in real if r["term_uid"] == term_uid]
+        if len(rows) != 1:
+            raise ExecStop("ADDRESS-CT: #{0}: {1} rows in the live read".format(term_uid, len(rows)))
+        r = rows[0]
+        if not is_ct(r):
+            raise ExecStop("ADDRESS-CT: #{0} is {1}, not a ControlTerminal".format(term_uid, V.node_class(r)))
+        diag = int(r["frame_diagram"] or 0)
+        if r["owner_class"] not in ("Diagram", "TopLevelDiagram"):
+            raise ExecStop("ADDRESS-CT: #{0} owner {1} #{2} is not a Diagram".format(term_uid, r["owner_class"], r["owner_uid"]))
+        # the diagram is the row's frame_diagram: stagesim's move_in re-homes frame_diagram but leaves a ControlTerminal
+        # row's owner_uid at the old Diagram (prerun_l2a1_82.log, #5634 639 vs 23166); compare() never reads owner_uid
+        stale = int(r["owner_uid"]) != diag
+        if term_uid not in self.rd.ct_uids():
+            raise ExecStop("ADDRESS-CT: #{0} not in report_all('ControlTerminal')".format(term_uid))
+        dl = self.rd.diagrams()
+        if diag not in dl:
+            raise ExecStop("ADDRESS-CT: #{0}'s Diagram #{1} not in the live Diagram list".format(term_uid, diag))
+        a = {"ct": term_uid, "diag": diag, "didx": dl.index(diag), "name": r["term_name"], "is_source": bool(r["is_source"]),
+             "wire": int(r["wire_uid"] or 0)}
+        return a, "ControlTerminal route 179(b): own uid #{0}, owner Diagram #{1} (idx {2}), in report_all{3}".format(
+            term_uid, diag, a["didx"], " (row owner_uid #{0} stale)".format(r["owner_uid"]) if stale else "")
+
+    def const(self, real, term_uid):
+        """PD188(c): a bare diagram-CONSTANT source -> {const, cls, term}. Its terminal row must be the constant's own
+        (node == owner), and the owner must be in the reader's class listing (report_all(<class>) on the real reader)."""
+        rows = [r for r in real if r["term_uid"] == term_uid]
+        if len(rows) != 1:
+            raise ExecStop("ADDRESS-CONST: #{0}: {1} rows in the live read".format(term_uid, len(rows)))
+        r = rows[0]
+        if not is_const(r) or V.node_of(r) != r["owner_uid"]:
+            raise ExecStop("ADDRESS-CONST: #{0} is {1} #{2} (node #{3}), not a constant's own terminal".format(
+                term_uid, r["owner_class"], r["owner_uid"], V.node_of(r)))
+        cls, u = r["owner_class"], int(r["owner_uid"])
+        if u not in self.rd.obj_uids(cls):
+            raise ExecStop("ADDRESS-CONST: #{0} not in report_all({1!r})".format(u, cls))
+        return {"const": u, "cls": cls, "term": term_uid}, "constant route 188(c): {0} #{1} in report_all, terminal #{2}".format(
+            cls, u, term_uid)
+
+    def tun(self, real, term_uid):
+        """PD191(b): a structure tunnel's OUTER face -> {tun, cls, term}, addressed by the TUNNEL uid (Tunnel.Outside
+        Terminal 6356001), never through the owner's Terminals[] (T2c2, docs/NAMES.md:1132-1137). The tunnel must own exactly
+        ONE OuterTerminal row (this one) and be in the reader's class listing (report_all(<class>) on the real reader)."""
+        rows = [r for r in real if r["term_uid"] == term_uid]
+        if len(rows) != 1:
+            raise ExecStop("ADDRESS-TUN: #{0}: {1} rows in the live read".format(term_uid, len(rows)))
+        r = rows[0]
+        if r["owner_class"] not in OWNER_ROUTED or r["term_class"] != "OuterTerminal":
+            raise ExecStop("ADDRESS-TUN: #{0} is {1} {2}, not a tunnel's outer face".format(term_uid, r["owner_class"], r["term_class"]))
+        cls, u = r["owner_class"], int(r["owner_uid"])
+        outer = [x["term_uid"] for x in real if x["owner_uid"] == u and x["term_class"] == "OuterTerminal"]
+        if outer != [term_uid]:
+            raise ExecStop("ADDRESS-TUN: tunnel #{0} has outer faces {1}, not exactly #{2}".format(u, outer, term_uid))
+        if u not in self.rd.obj_uids(cls):
+            raise ExecStop("ADDRESS-TUN: tunnel #{0} not in report_all({1!r})".format(u, cls))
+        return {"tun": u, "cls": cls, "term": term_uid}, "tunnel route 191(b): {0} #{1} in report_all, Outside Terminal #{2}".format(
+            cls, u, term_uid)
+
+    def _triple(self, real, r, term_uid, loop_of):
+        node = V.node_of(r)
+        if is_ct(r):                                                         # PD187(b): never a Nodes[] triple
+            raise ExecStop("ADDRESS: #{0} is a ControlTerminal: not in any Diagram.Nodes[] - its route is 179(b) "
+                           "(Addr.ct: own uid, owner Diagram #{1}, report_all('ControlTerminal'))".format(term_uid, r["frame_diagram"]))
+        diag = int(r["frame_diagram"])
+        mine = [x for x in real if V.node_of(x) == node and int(x["frame_diagram"] or 0) == diag]
+        if r["owner_class"] == FSIT_CLS:
+            raise ExecStop("ADDRESS: #{0} is a FlatSequenceInnerTunnel face (#{1}): not a Nodes[] triple - its route is "
+                           "Left/Right Terminal (docs/NAMES.md:1245-1255, OpFsInnerTunnelConnect_v1)".format(term_uid, node))
+        if r["owner_class"] in FACE_ROUTED:          # PD185 + card 112-2 (v): via the owner structure's / loop's Terminals[]
+            if r["term_class"] != "OuterTerminal":
+                raise ExecStop("ADDRESS: #{0} is an INNER face of {1} #{2}: only the outer face's owner route is measured "
+                               "(l2a1_faces_81.log)".format(term_uid, r["owner_class"], node))
+            node, mine = tunnel_owner(real, node, self.owners), None
+        if r["owner_class"] in SR_CLS and r["term_class"] == "OuterTerminal":
+            if not loop_of or r["owner_uid"] not in loop_of:
+                raise ExecStop("ADDRESS: register #{0}'s loop is unknown".format(r["owner_uid"]))
+            node, mine = loop_of[r["owner_uid"]], None
+            tr = (self.loops.get(node) or {}).get("track", {})
+            if term_uid in tr:
+                if tr[term_uid] is None:
+                    raise ExecStop("ADDRESS: register face #{0}: its tracked loop index was lost by an earlier op".format(term_uid))
+                dl = self.rd.diagrams()
+                didx = dl.index(diag)
+                nidx = self.rd.node_uids(didx).index(node)
+                echo, nt = self.rd.node_terms(didx, nidx)
+                if echo != node:
+                    raise ExecStop("ADDRESS: loop #{0} echo {1!r}".format(node, echo))
+                # 1st: the face's LIVE name + direction + wire, if exactly one loop terminal has it (the stage_d1_l7_1b /
+                # stage_d1_l7_r route, which worked); 2nd: the tracked index. Both are reported.
+                want = (r["term_name"], bool(r["is_source"]), int(r["wire_uid"] or 0))
+                hits = [int(x["i"]) for x in nt if (x["name"], bool(x["is_source"]), int(x["wire"] or 0)) == want]
+                if len(hits) == 1:
+                    return (didx, nidx, hits[0]), "unique live name {0!r} on loop #{1} (tracked index {2}{3})".format(
+                        r["term_name"], node, tr[term_uid], "" if tr[term_uid] == hits[0] else " DISAGREES")
+                x = nt[tr[term_uid]]
+                if bool(x["is_source"]) != bool(r["is_source"]) or int(x["wire"] or 0) != int(r["wire_uid"] or 0):
+                    raise ExecStop("ADDRESS: register face #{0}: tracked index {1} reads {2}".format(term_uid, tr[term_uid], x))
+                return (didx, nidx, tr[term_uid]), "tracked loop index {0} ({1} loop terminals share its live name {2!r})".format(
+                    tr[term_uid], len(hits), r["term_name"])
+        dl = self.rd.diagrams()
+        if diag not in dl:
+            raise ExecStop("ADDRESS: diagram #{0} not in the live Diagram list".format(diag))
+        didx = dl.index(diag)
+        uids = self.rd.node_uids(didx)
+        if node not in uids:
+            raise ExecStop("ADDRESS: node #{0} not in Diagram[{1}] (#{2}).Nodes[]".format(node, didx, diag))
+        nidx = uids.index(node)
+        echo, nt = self.rd.node_terms(didx, nidx)
+        if echo != node:
+            raise ExecStop("ADDRESS: uid echo {0!r} != #{1}".format(echo, node))
+        if mine is None and not int(r["wire_uid"] or 0):
+            return self._by_uid(didx, nidx, node, nt, r, term_uid)
+        key = lambda x: (x["name"], bool(x["is_source"]), int(x["wire"] or 0))            # noqa: E731
+        c = self.cache.get(term_uid)
+        if c and c[0] == node and c[1] < len(nt):
+            x = nt[c[1]]
+            if bool(x["is_source"]) == bool(r["is_source"]) and int(x["wire"] or 0) == int(r["wire_uid"] or 0):
+                return (didx, nidx, c[1]), "cached index (proved by its wire uid while wired)"
+        if mine is not None and [key(x) for x in nt] == [(x["term_name"], bool(x["is_source"]), int(x["wire_uid"] or 0))
+                                                         for x in mine]:
+            return (didx, nidx, [x["term_uid"] for x in mine].index(term_uid)), "order-proof"
+        hits = [x for x in nt if key(x) == (r["term_name"], bool(r["is_source"]), int(r["wire_uid"] or 0))]
+        if len(hits) != 1:
+            raise ExecStop("ADDRESS: #{0} {1!r} on node #{2}: {3} (name,dir,wire) matches in {4}".format(
+                term_uid, r["term_name"], node, len(hits), [key(x) for x in nt][:14]))
+        return (didx, nidx, int(hits[0]["i"])), "unique-match"
+
+    def _by_uid(self, didx, nidx, node, nt, r, term_uid):
+        """card 112-2 D2 (CLAUDE.md 'Stages SIMULATED' item 2): a BARE face on an OWNER's Terminals[] (a tunnel's outer face,
+        a base register's outer face on its loop) -> owner node -> its terminal list -> the entry whose TERMINAL UID echoes
+        `term_uid`. Never (name, direction, wire): bare faces share ('', dir, 0) - 2 on loop #10170, 3 on case #2222
+        (diag_c112a_b2a_route2.log:11,17). The reader must return one uid per Terminals[] entry (rd.node_term_uids: the
+        OpNodeTermsUid_v0 reader on LabVIEW, the state rows offline); no uid list, a count mismatch, 0 or >1 hits, or a hit
+        whose direction / wire disagree with the graph row -> ExecStop. Ambiguity is a hard error, never a guess."""
+        fn = getattr(self.rd, "node_term_uids", None)
+        ul = fn(didx, nidx) if fn else None
+        if ul is None:
+            raise ExecStop("ADDRESS-UID: bare face #{0} on owner #{1}: the reader returns no per-terminal uids "
+                           "(OpNodeTermsUid_v0) - a bare face is never addressed by name or position".format(term_uid, node))
+        if len(ul) != len(nt):
+            raise ExecStop("ADDRESS-UID: owner #{0}: {1} terminal uids for {2} Terminals[] entries".format(node, len(ul), len(nt)))
+        hits = [i for i, u in enumerate(ul) if int(u or 0) == int(term_uid)]
+        if len(hits) != 1:
+            raise ExecStop("ADDRESS-UID: #{0} is {1} entr(ies) of owner #{2}'s Terminals[] uids {3}".format(
+                term_uid, len(hits), node, [int(u or 0) for u in ul][:20]))
+        x = nt[hits[0]]
+        if bool(x["is_source"]) != bool(r["is_source"]) or int(x["wire"] or 0) != int(r["wire_uid"] or 0):
+            raise ExecStop("ADDRESS-UID: #{0} = owner #{1} Terminals[{2}] reads (source {3}, wire {4}); the graph row says "
+                           "(source {5}, wire {6})".format(term_uid, node, hits[0], x["is_source"], x["wire"], r["is_source"],
+                                                           r["wire_uid"]))
+        return (didx, nidx, hits[0]), "uid echo: owner #{0} Terminals[{1}] uid == #{2} (name {3!r})".format(
+            node, hits[0], term_uid, x["name"])
+
+
+# ============================================================================================ card 103-4: PART-B entry
+def load_binding(src, plan_path, from_step):
+    """card 103-4 (PD215(b) Part B): the Part-A binding -> {bind, loop_of, sym_real} with INT keys. `src` = the dict
+    part_a_record returned, or a path to it / to the Part-A stage JSON (its `partA` key). STOPS (ExecStop 'FROM-STEP')
+    when the plan md5 differs from the one Part A ran, when its stop_after is not `from_step`, or when Part A created
+    shift registers (Addr's register-face tracking is in-memory and is not carried across LabVIEW sessions)."""
+    b = _j(_abs(src)) if isinstance(src, str) else dict(src or {})
+    b = b.get("partA", b)
+    want = SS.md5_file(_abs(plan_path))
+    if b.get("plan_md5") != want:
+        raise ExecStop("FROM-STEP: binding plan md5 {0} != plan {1} md5 {2} - Part A ran another plan".format(
+            b.get("plan_md5"), os.path.basename(plan_path), want))
+    if b.get("stop_after") != int(from_step):
+        raise ExecStop("FROM-STEP: binding stop_after {0!r} != from_step {1}".format(b.get("stop_after"), from_step))
+    if not isinstance(b.get("bind"), dict) or set(b["bind"]) != {"obj", "term", "diag"}:
+        raise ExecStop("FROM-STEP: binding has no bind.obj/term/diag ({0})".format(sorted(b.get("bind") or {})))
+    iv = lambda m: dict((int(k), int(v)) for k, v in (m or {}).items())            # noqa: E731
+    if b.get("loop_of"):
+        raise ExecStop("FROM-STEP: Part A created shift registers {0}; their outer-face tracking is not carried across "
+                       "sessions - no Part-B entry for such a plan".format(sorted(b["loop_of"])))
+    return {"bind": dict((x, iv(y)) for x, y in b["bind"].items()), "loop_of": iv(b.get("loop_of")),
+            "sym_real": dict(b.get("sym_real") or {})}
+
+
+def bind_state(st, bind):
+    """card 103-4: a simulated step state with every created (negative) uid replaced by its Part-A real uid - owner,
+    terminal, frame diagram, objs, diagrams, owners, loops, sym (wire uids are never compared and stay as they are).
+    Returns (state, unbound): unbound = the negative uids no binding covers (a Part-B entry must stop on any)."""
+    M = {}
+    for kind in ("obj", "term", "diag"):
+        for k, v in (bind.get(kind) or {}).items():
+            if int(k) in M and M[int(k)] != int(v):
+                raise ExecStop("FROM-STEP: binding maps #{0} to both {1} and {2}".format(k, M[int(k)], v))
+            M[int(k)] = int(v)
+    miss = set()
+
+    def m(v):
+        if isinstance(v, int) and not isinstance(v, bool) and v < 0:
+            if v in M:
+                return M[v]
+            miss.add(v)
+        return v
+    s = copy.deepcopy(st)
+    for r in s["terminals"]:
+        for k in ("owner_uid", "term_uid", "frame_diagram"):
+            r[k] = m(r[k])
+    for o in s.get("objs") or []:
+        o["uid"] = m(int(o["uid"]))
+    s["diagrams"] = dict((str(m(int(k))), m(int(v))) for k, v in (s.get("diagrams") or {}).items())
+    s["owners"] = dict((str(m(int(k))), [v[0], m(int(v[1] or 0))]) for k, v in (s.get("owners") or {}).items())
+    for L in s.get("loops") or []:
+        L["loop_uid"] = m(int(L["loop_uid"]))
+        L["right_uids"] = [m(int(u)) for u in L.get("right_uids") or []]
+        L["left_of"] = dict((str(m(int(k))), [m(int(x)) for x in (v if isinstance(v, list) else [v])])
+                            for k, v in (L.get("left_of") or {}).items())
+    s["sym"] = dict((k, m(v)) for k, v in (s.get("sym") or {}).items())
+    if s.get("case_frames"):                       # card 124-2: frame names by case (stagesim.case_frame_of) - uid-keyed
+        s["case_frames"] = dict((str(m(int(k))), [[n_, m(int(f_))] for n_, f_ in v]) for k, v in s["case_frames"].items())
+    if s.get("case_tunnel_frame"):                 # card 124-2: the group frame of a plan-made case tunnel - uid-keyed
+        s["case_tunnel_frame"] = dict((str(m(int(k))), m(int(v))) for k, v in s["case_tunnel_frame"].items())
+    _fs_remap(s, m)                                # card 126-3: the Flat Sequence tables are uid-keyed too
+    return s, sorted(miss)
+
+
+def _fs_remap(s, m):
+    """card 126-3: apply uid map `m` to stagesim's Flat Sequence tables (fs_frames {fs: [frame...]}, fs_alias {fs: alias},
+    fs_tunnels {tunnel: {fs, twin, frames, link}}) and to the created fs_pairs entries (uid / term_a / term_b)."""
+    if s.get("fs_frames"):
+        s["fs_frames"] = dict((str(m(int(k))), [m(int(x)) for x in v]) for k, v in s["fs_frames"].items())
+    if s.get("fs_alias"):
+        s["fs_alias"] = dict((str(m(int(k))), v) for k, v in s["fs_alias"].items())
+    if s.get("fs_tunnels"):
+        s["fs_tunnels"] = dict((str(m(int(k))), dict(v, fs=m(int(v["fs"])), twin=m(int(v["twin"])), frames=[m(int(x)) for x in v["frames"]],
+                                                    link=[m(int(x)) for x in v["link"]])) for k, v in s["fs_tunnels"].items())
+    for p in s.get("fs_pairs") or []:
+        for k in ("uid", "term_a", "term_b"):
+            if isinstance(p.get(k), int) and p[k] < 0:
+                p[k] = m(p[k])
+
+
+def _fs_entries_remap(s, m):
+    """card 127-4 (PD259(b), review archive/peer/2026-10-01-c127-3-dry-innerbranch.md s1): stagesim's border-crossing
+    tables are uid-keyed too and were missed by the dry renumber pass - fs_border_entries {"<src term>|<frame>": {face, act}}
+    (stagesim._fs_border_wire), act_wires {row id: [wire...]} (+ the inner-branch row) and fs_frame_inferred {frame: parent}
+    (_diag_chain). Without this the first inner-face branch row looked its entry face up by a stale negative uid.
+    SimBackend only: bind_state keeps wire uids as they are, so it does not call this."""
+    def mk(k):
+        a, b = k.split("|")
+        return "{0}|{1}".format(m(int(a)), m(int(b)))
+    if s.get("fs_border_entries"):
+        s["fs_border_entries"] = dict((mk(k), dict(v, face=m(int(v["face"])))) for k, v in s["fs_border_entries"].items())
+    if s.get("act_wires"):
+        s["act_wires"] = dict((k, [m(int(w)) for w in v]) for k, v in s["act_wires"].items())
+    if s.get("fs_frame_inferred"):
+        s["fs_frame_inferred"] = dict((str(m(int(k))), m(int(v))) for k, v in s["fs_frame_inferred"].items())
+
+
+def bound_owners(owners, bind):
+    """card 104-2: a SIMULATED step's owners map (str(frame diagram uid) -> [structure class, structure uid]) with every
+    created (negative) uid replaced by its bound real uid - keys through bind['diag'], structure uids through bind['obj'].
+    The live read carries REAL uids, so a lookup of a plan-created loop body in the untranslated map returned None
+    (stage_d1_disp_c104B.log:227-233, op 43 const_on_term). Unbound negatives stay negative (not created yet)."""
+    D = dict((int(k), int(v)) for k, v in ((bind or {}).get("diag") or {}).items())
+    O = dict((int(k), int(v)) for k, v in ((bind or {}).get("obj") or {}).items())
+    return dict((str(D.get(int(k), int(k))), [v[0], O.get(int(v[1] or 0), int(v[1] or 0))]) for k, v in (owners or {}).items())
+
+
+# ============================================================================================ the executor
+BIND_KINDS = ("add_sr", "tunnel", "create", "connect_term_uid")   # ops that make objects: a fresh read is required after each
+# (card 124-6: connect_term_uid makes the case's SelectorTunnel, bound by bind_case_faces)
+
+
+class Executor(object):
+    """PD193(a), card 86-4: `checkpoints` = the real-op numbers k after which the whole-VI read + step diff run. None =
+    every op (the default; unchanged behaviour). A set must hold every add_sr/tunnel op (bind_new needs the fresh read)
+    and the LAST op (the final state is always compared and returned); otherwise ExecStop CHECKPOINT before op 1.
+    Between checkpoints the last real read is reused; each op keeps its own connect read-back. A pre-mutation
+    addressing ExecStop on a reused read gets ONE fresh read + one retry (connect/tunnel/wire_sr), as meter_l2a1_86d.py."""
+    RETRY_KINDS = ("connect", "tunnel", "wire_sr")
+
+    def __init__(self, plan_path, backend, log=print, checkpoints=None, require_final=True, record=False, stop_after=None,
+                 from_step=None, binding=None, name_gate=False):
+        # card 101-4 RECORD MODE: a STEP-DIFF is logged into self.diffs and the run CONTINUES on the (unsaved) scratch;
+        # any other ExecStop (binding, addressing, op error, MEMSTOP) still stops, and self.cur names the op it stopped
+        # in. The caller saves nothing unless self.diffs is empty.
+        # card 103-1 PART-A MODE (PD215(b)): stop_after=k runs real ops 1..k ONLY (op k must be a checkpoint, so the
+        # returned read is compared with simulated step k) and dispatches NO op > k; self.stopped_after records k.
+        self.stop_after = None if stop_after is None else int(stop_after)
+        self.stopped_after = None
+        # card 132-1 (PD275(c)): name_gate=True runs tunnel_name_check after every BIND op's whole-VI read (every crossing
+        # op is a BIND op and so a checkpoint); a mismatch is ExecStop NAME-GATE before binding. Checked ops -> name_checks.
+        self.name_gate, self.name_checks = bool(name_gate), []
+        self.record = bool(record)
+        self.diffs, self.cur = [], None
+        self.checkpoints = None if checkpoints is None else set(int(k) for k in checkpoints)
+        self.reads_skipped, self.reads_real, self.stale_retries = [], [], []
+        self.plan_path = plan_path
+        self.plan, self.step_paths = load_final_plan(plan_path, require_final)
+        self.ops = compile_plan(self.plan)
+        self.be = backend
+        self.log = log
+        self.bind = {"obj": {}, "term": {}, "diag": {}}     # card 100-3: sim diagram uid -> real (a created loop's body)
+        self.loop_of = {}
+        self.allow = set()
+        self.report = []
+        self.sym_real = {}
+        # card 103-4 PART-B ENTRY (PD215(b)): from_step=k binds Part A's recorded uids (load_binding: plan md5 pinned,
+        # stop_after == k) instead of re-executing ops 1..k; run() compares the entry read with simulated step k (through
+        # the binding), re-reads the value gates of ops <= k, then parity/PRIME on step k and dispatches ops k+1.. only.
+        self.from_step = None if from_step is None else int(from_step)
+        if self.from_step is not None:
+            if not 1 <= self.from_step < len(self.ops):
+                raise ExecStop("FROM-STEP: {0} is outside 1..{1} - stop before any op".format(self.from_step, len(self.ops) - 1))
+            b = load_binding(binding, plan_path, self.from_step)
+            self.bind, self.loop_of, self.sym_real = b["bind"], b["loop_of"], b["sym_real"]
+
+    def step(self, n):
+        return _j(_abs(self.step_paths[n]))
+
+    def part_a_record(self):
+        """card 103-1 PART-A (PD215(b)), after run() with stop_after=k: (a1, a2, detail, binding).
+        a1 = ops 1..k executed and nothing after; a2 = every recorded diff is a PD214(c) WARN and step k was READ and equals the
+        simulated step k (or its own diff is a WARN); binding = what Part B binds instead of re-executing (JSON-safe keys)."""
+        k, last = self.stop_after, (self.report[-1] if self.report else {})
+        fails = [d for d in self.diffs if d.get("class") != "warn"]
+        a1 = k is not None and self.stopped_after == k and (self.cur or {}).get("k") == k and last.get("k") == k
+        a2 = bool(a1 and not fails and not last["diff"].get("skipped") and (last["diff"]["n"] == 0 or self.diffs[-1]["k"] == k))
+        detail = {"stopped_after": self.stopped_after, "cur": self.cur, "step_diff_n": last.get("diff", {}).get("n"),
+                  "diffs": [(d["k"], d["diff"]["n"], d.get("class")) for d in self.diffs], "reads": self.reads_real}
+        s = lambda m: dict((str(a), b) for a, b in m.items())                     # noqa: E731
+        binding = {"stop_after": k, "plan": self.plan_path, "plan_md5": SS.md5_file(_abs(self.plan_path)),
+                   "bind": dict((x, s(y)) for x, y in self.bind.items()),
+                   # card 112-1 T1: only registers this plan CREATED (load_binding refuses those); base registers come
+                   # back from the graph in run() on the Part-B side
+                   "loop_of": s(dict((u, v) for u, v in self.loop_of.items() if u not in getattr(self, "base_regs", {}))),
+                   "sym_real": s(self.sym_real)}
+        return a1, a2, detail, binding
+
+    def sim_uid(self, st, ref):
+        if isinstance(ref, int):
+            return ref
+        return st["sym"][ref]
+
+    def diag_real(self, st, ref):
+        """card 100-3: a diagram field -> the REAL diagram uid (an int as is; 'new:X.body' through the binding the create
+        of loop X recorded from the uid it returned)."""
+        if isinstance(ref, int) and not isinstance(ref, bool):
+            return ref
+        try:
+            su = SS.resolve_diag(st, ref)
+        except SS.SimError as e:
+            raise ExecStop(str(e))
+        r = self.bind["diag"].get(su)
+        if r is None:
+            raise ExecStop("diagram {0} (simulated #{1}) is not bound to a real diagram yet".format(ref, su))
+        return r
+
+    def obj_real(self, st, ref):
+        u = SS.resolve_uid(st, ref)
+        r = self.bind["obj"].get(u, u)
+        if r < 0:
+            raise ExecStop("object {0} (simulated #{1}) is not bound yet".format(ref, u))
+        return r
+
+    def real_term(self, st_prev, st_after, addr_ref, want_source):
+        """The plan end -> the REAL terminal uid: resolved on the simulated state (the plan's own resolver), then
+        through the binding."""
+        try:
+            r = SS.resolve_addr(st_prev, addr_ref, want_source)
+        except SS.SimError:
+            r = SS.resolve_addr(st_after, addr_ref, want_source)
+        t = self.bind["term"].get(r["term_uid"], r["term_uid"])
+        if t < 0:
+            raise ExecStop("terminal {0} of {1} is not bound yet".format(r["term_uid"], addr_ref))
+        return t
+
+    def run(self):
+        be, A = self.be, self.plan["actions"]
+        meter = getattr(be, "meter", None) or (lambda *_a, **_k: None)     # PD192(a): per op + per read; absent on dry runs
+        meter("start", 0)
+        real = be.read()
+        meter("read", 0)
+        fs, s_act = self.from_step, 0
+        if fs is None:
+            st0 = self.step(0)["state"]
+            d = compare(st0["terminals"], real, self.bind)
+            self.report.append({"op": "base", "acts": [0], "diff": d})
+            self.log("  STEPX 00 base read vs step_00: diff {0}".format(d["n"]))
+            if d["n"]:
+                raise ExecStop("BASE: the scratch copy's graph differs from the plan's base graph: {0}".format(
+                    {k: v[:6] for k, v in d.items() if isinstance(v, list) and v}))
+        else:                                              # card 103-4 PART-B ENTRY: the loaded Part-A file == step k
+            s_act = self.ops[fs - 1]["acts"][-1]
+            st0, unb = bind_state(self.step(s_act)["state"], self.bind)
+            if unb:
+                raise ExecStop("FROM-STEP: simulated step {0} (after op {1}) holds {2} created uid(s) the Part-A binding "
+                               "does not bind: {3} - stop before op {4}".format(s_act, fs, len(unb), unb[:12], fs + 1))
+            for n in range(1, s_act + 1):
+                self.allow.update((self.step(n).get("effect") or {}).get("allow_either") or [])
+            d = compare(self.step(s_act)["state"]["terminals"], real, self.bind, self.allow)
+            self.report.append({"op": "from_step", "k": fs, "acts": [s_act], "diff": d})
+            self.log("  STEPX {0:02d} FROM-STEP entry read vs step_{1:02d} (through the Part-A binding): diff {2}".format(
+                fs, s_act, d["n"]))
+            if d["n"]:
+                cls, hit = classify_step_diff(self.plan, s_act, d)
+                if not (self.record and cls == "warn"):
+                    raise ExecStop("FROM-STEP BASE: the Part-A file's graph differs from simulated step {0} ({1}): {2}".format(
+                        s_act, cls, json.dumps({k: v[:6] for k, v in d.items() if isinstance(v, list) and v}, default=str)[:1200]))
+                self.diffs.append({"k": fs, "op": "from_step", "acts": [s_act], "ids": [], "diff": d, "class": cls,
+                                   "later_refs": hit, "new_since_last_diff": {}, "ops_since_last_read": []})
+            rg = []
+            for k0, o0 in enumerate(self.ops[:fs], 1):     # the value gates Part A passed are READ again (no edit)
+                if o0["kind"] == "gate":
+                    a0 = A[o0["acts"][0] - 1]
+                    rg.append({"k": k0, "id": a0.get("id"), "res": be.recheck_gate(self.obj_real(st0, a0["uid"]), a0, o0)})
+            self.report[0]["regate"] = rg
+            self.log("  FROM-STEP value gates of ops <= {0} re-read: {1}".format(fs, rg))
+        # PRIME: every plan end on a BASE node whose terminal is wired now gets its Terminals[] index proved by its
+        # wire uid, before any edit (the stage_d1_l7_r A0 anchor for #2048 'length', generalised)
+        be.addr.owners = st0.get("owners") or be.addr.owners
+        # card 112-1 T1 (PD225(h)3 (i)): registers that EXIST on the base graph (made by an earlier stage and saved) get
+        # their loop from the graph's loops table, so their faces are addressable and their inner faces route to wire_sr
+        # (add_sr fills loop_of only for registers this plan creates, stagexec.py compile_plan / run add_sr branch)
+        self.base_regs = base_registers(st0)
+        for u, v in self.base_regs.items():
+            self.loop_of.setdefault(u, v["loop"])
+        # PD187(a): reader parity at base, per touched diagram, BEFORE any address is proved
+        diags = touched_diagrams(self.plan if fs is None else dict(self.plan, actions=A[s_act:]), st0)
+        rows, npar = reader_parity(be.addr.rd, SimReader(_StateHolder(st0)), diags, be.obj_classes(real),
+                                   classes_of(st0["terminals"], st0.get("objs")))
+        self.report[0]["parity"] = {"diagrams": diags, "n": npar, "rows": rows}
+        self.log("  PARITY {0} touched diagram(s) {1}: one-side-only Nodes[] entries {2}".format(len(diags), diags, npar))
+        # card 111-3 (violation-decisions device-failed 20:20): on a COLLECTING (dry) backend the pre-op checks below -
+        # PARITY, PRIME address proofs, the CHECKPOINT set - no longer stop before op 1. Each failure is recorded in
+        # be.unroutable (acts = the plan action(s) it belongs to, [] for a whole-plan one), the run simulates on to the
+        # last op collecting routing failures too, and the end raises ONE ExecStop naming every row (dry FAIL, no PASS
+        # record). plan_l2b1_dry.log:22 / dry2.log:22 stopped before op 1 and hid the 2 dead rows until dry 3. The REAL
+        # backend (no `unroutable` list) still stops at the first failure.
+        collect = isinstance(getattr(be, "unroutable", None), list)
+        self.pre_op_fails = []
+
+        def pre_fail(kind, acts, msg):
+            rec = {"acts": list(acts), "ids": [A[n - 1].get("id") for n in acts], "err": "{0}: {1}".format(kind, msg)[:300],
+                   "phase": "pre-op"}
+            self.pre_op_fails.append(rec)
+            be.unroutable.append(rec)
+        if npar:
+            ptxt = json.dumps([r for r in rows if r.get("only_real") or r.get("only_sim") or r.get("missing_on")], default=str)
+            if not collect:
+                raise ExecStop("PARITY: SimReader vs real Nodes[] differ on {0} entr(ies) - stop before op 1: {1}".format(
+                    npar, ptxt[:900]))
+            pre_fail("PARITY", [], "SimReader vs real Nodes[] differ on {0} entr(ies): {1}".format(npar, ptxt[:200]))
+        rightin = set(o["acts"][0] for o in self.ops if o["kind"] == "wire_sr" and o["variant"] == "RightIn")
+
+        def base_sr_inner(e, want_source):                # card 112-1 T1: a base register's inner face (wire_sr side)
+            try:
+                r_ = SS.resolve_addr(st0, e, want_source) if isinstance(e, dict) and not _sym_of(e)[0] else None
+            except SS.SimError:
+                return False
+            return bool(r_ and r_["owner_class"] in SR_CLS and r_["term_class"] == "InnerTerminal"
+                        and r_["owner_uid"] in self.base_regs)
+        rightin |= set(i for i, a in enumerate(A, 1) if a["op"] == "wire" and a.get("dst") is not None
+                       and base_sr_inner(a["dst"], False))
+        primed, why, ct_primed = 0, [], 0
+        why_acts = collections.OrderedDict()               # card 111-3: plan action -> its unprovable end(s)
+        # card 126-3: a Flat Sequence wire addresses its ends by TERMINAL uid (connect_term_uid) - no Nodes[] triple to prove
+        fs_acts = set(o["acts"][0] for o in self.ops if o["kind"] == "connect_term_uid" and str(o.get("variant", "")).startswith("fs_"))
+        for i, a in enumerate(A, 1):
+            if i <= s_act or i in fs_acts:                 # card 103-4: a Part-B entry primes the ends of ops > k only
+                continue
+            for side, src in (("src", True), ("dst", False), ("at", None)):
+                e = a.get(side)
+                if e is None or _sym_of(e)[0]:
+                    continue
+                if SS.obj_class(st0, e.get("uid") if isinstance(e, dict) else None) == FP:
+                    try:                                   # PD187(b): every ControlTerminal end, source or sink, bare or wired
+                        be.addr.ct(real, SS.resolve_addr(st0, e, src if src is not None else True)["term_uid"])
+                        ct_primed += 1
+                    except (ExecStop, SS.SimError) as x:
+                        why.append(str(x)[:160])
+                        why_acts.setdefault(i, []).append(str(x)[:160])
+                    continue
+                if side == "src" and i not in rightin:     # PD185: a connect source is routed by its WIRE, never by index
+                    continue
+                try:
+                    r = SS.resolve_addr(st0, e, src if src is not None else True)
+                except SS.SimError:
+                    continue
+                if r["owner_class"] in SR_CLS and r["term_class"] == "InnerTerminal" and r["owner_uid"] in self.base_regs:
+                    continue                               # card 112-1 T1: wire_sr addresses it by register index
+                if r["wire_uid"] and r["term_uid"] not in be.addr.cache:
+                    try:
+                        be.addr.triple(real, r["term_uid"], r["is_source"])
+                        primed += 1
+                    except ExecStop as x:
+                        why.append(str(x)[:160])
+                        why_acts.setdefault(i, []).append(str(x)[:160])
+        self.report[0]["primed"] = {"n": primed, "ct": ct_primed, "unprovable": why[:10]}
+        self.log("  PRIME {0} terminal indexes proved at base; {1} ControlTerminal end(s) by 179(b); unprovable {2}".format(
+            primed, ct_primed, why[:4] if not collect else why))
+        if why:                                            # PD185(3): an unprovable end STOPS before op 1 (real backend)
+            if not collect:
+                raise ExecStop("PRIME: {0} wired end(s) not addressable at base - stop before op 1: {1}".format(len(why), why[:6]))
+            for n, ws in why_acts.items():                 # card 111-3: one row per plan action, every end named
+                pre_fail("ADDRESS", [n], "{0} wired end(s) not addressable at base: {1}".format(len(ws), "; ".join(ws)))
+        cp = self.checkpoints
+        last_k = len(self.ops) if self.stop_after is None else self.stop_after
+        if not (fs or 0) + 1 <= last_k <= len(self.ops):
+            raise ExecStop("STOP-AFTER: {0} is outside {2}..{1} - stop before op {2}".format(last_k, len(self.ops), (fs or 0) + 1))
+        if cp is not None:
+            need = set(k for k, o in enumerate(self.ops, 1) if o["kind"] in BIND_KINDS and (fs or 0) < k <= last_k) | {last_k}
+            bad = sorted(need - cp) + sorted(k for k in cp if not 0 <= k <= len(self.ops))
+            if bad:
+                msg = "set {0} lacks binding/last op(s) or is out of range: {1} (need {2})".format(sorted(cp), bad, sorted(need))
+                if not collect:
+                    raise ExecStop("CHECKPOINT: " + msg + " - stop before op 1")
+                # card 111-3: recorded; the dry run goes on with the set it needs (cp | need, out-of-range dropped), so
+                # the binding ops still bind and every later address / route failure is still found
+                pre_fail("CHECKPOINT", [], msg)
+                cp = set(k for k in cp if 0 <= k <= len(self.ops)) | need
+            self.log("  CHECKPOINTS whole-VI read+diff after ops {0} of {1}".format(sorted(k for k in cp if k), len(self.ops)))
+        stale = False
+        last_read_k = fs or 0
+        sim_at_real = None                         # card 132-1: the simulated terminals at the moment `real` was read
+        for k, op in enumerate(self.ops, 1):
+            if k > last_k:                         # card 103-1 PART-A MODE: no op > stop_after is ever dispatched
+                break
+            if fs is not None and k <= fs:         # card 103-4 PART-B ENTRY: ops 1..k are Part A's, bound, not re-run
+                continue
+            self.cur = {"k": k, "op": op["kind"], "acts": op["acts"], "ids": [A[n - 1].get("id") for n in op["acts"]]}
+            first, last = op["acts"][0], op["acts"][-1]
+            prev = self.step(first - 1)["state"]
+            after = self.step(last)
+            be.addr.owners = bound_owners(prev.get("owners"), self.bind) or be.addr.owners   # card 104-2: sim -> real
+            t0 = time.time()
+            if op["kind"] == "add_sr":
+                a = A[first - 1]
+                be.addr.snap_loop(int(a["loop"]), int(after["state"]["diagrams"][str(a["body"])]))
+            meter("pre", k)                        # parity/PRIME (k=1) or retrack/bind reads since the last whole-VI read
+            try:
+                try:
+                    be.strict = stale and op["kind"] in self.RETRY_KINDS
+                    res = self.execute(op, prev, after["state"], real)
+                except ExecStop as e:              # PD193: a stale read may mis-address; one fresh read, one retry
+                    if not stale or op["kind"] not in self.RETRY_KINDS or "op error" in str(e):
+                        raise
+                    self.log("  STALE-ADDRESS op {0}: fresh read + one retry ({1})".format(k, str(e)[:200]))
+                    self.stale_retries.append({"k": k, "err": str(e)[:200]})
+                    real, stale, be.strict = be.read(), False, False
+                    sim_at_real = prev["terminals"]
+                    meter("read_retry", k)
+                    res = self.execute(op, prev, after["state"], real)
+            except ExecStop as e:                  # card 111-3: a collecting backend records an op-level stop and
+                if not collect or "op error" in str(e):    # simulates on (the op applied from the plan, as _unroutable)
+                    raise
+                be.strict = False
+                res = be._unroutable(op, e)
+            be.strict = False
+            meter("op", k)
+            if cp is not None and k not in cp:     # PD193(a): no whole-VI read/diff between checkpoints
+                self.reads_skipped.append(k)
+                stale = True
+                lost = be.addr.retrack()           # never add_sr/tunnel here (both are required checkpoints)
+                if lost:
+                    res = dict(res or {}, lost_register_faces=lost)
+                for n in op["acts"]:
+                    self.allow.update((self.step(n).get("effect") or {}).get("allow_either") or [])
+                rec = {"k": k, "op": op["kind"], "acts": op["acts"], "ids": [A[n - 1].get("id") for n in op["acts"]],
+                       "result": res, "bound": {}, "diff": {"n": 0, "skipped": True}, "secs": round(time.time() - t0, 1)}
+                self.report.append(rec)
+                self.log("  STEPX {0:02d} {1:<14} acts {2} ids {3} diff skipped (not a checkpoint)".format(
+                    k, op["kind"], op["acts"], rec["ids"]))
+                continue
+            real_new = be.read()
+            stale = False
+            self.reads_real.append(k)
+            meter("read", k)
+            made = {}
+            if op["kind"] == "create":                     # card 100-3: a loop owns no row - bound from the op's return
+                made = self._bind_create(op, after["state"], res)
+            if (op["kind"] in BIND_KINDS and self.name_gate      # card 132-1 (PD275(c)): per-op tunnel-name gate, crossing ops
+                    and is_crossing_op([self.step(n).get("effect") for n in op["acts"]])):
+                ok_n, det_n = tunnel_name_check(prev["terminals"] if sim_at_real is None else sim_at_real,
+                                                after["state"]["terminals"], real, real_new)
+                if det_n["sim"] or det_n["real"]:
+                    self.name_checks.append({"k": k, "ok": ok_n, "sim": det_n["sim"], "real": det_n["real"]})
+                    self.log("  NAMEGATE op {0} {1}: sim {2} real {3}".format(k, "ok" if ok_n else "MISMATCH", det_n["sim"],
+                                                                         det_n["real"]))
+                if not ok_n:
+                    raise ExecStop("NAME-GATE: op {0} ({1}, acts {2}) new tunnel names sim {3} vs real {4}".format(
+                        k, op["kind"], op["acts"], dict((x, det_n["sim"].get(x)) for x in det_n["mismatch"]),
+                        dict((x, det_n["real"].get(x)) for x in det_n["mismatch"])))
+            if op["kind"] in BIND_KINDS:
+                # card 120-3 R2: a created case selector / case tunnel first ({} for every other op), then bind_new as before
+                made.update(bind_fs_tunnel(real, real_new, prev["terminals"], after["state"]["terminals"], self.bind))
+                made.update(bind_case_faces(real, real_new, prev["terminals"], after["state"]["terminals"], self.bind))
+                made.update(bind_new(real, real_new, prev["terminals"], after["state"]["terminals"], self.bind))
+                if op["kind"] == "add_sr":
+                    a = A[first - 1]
+                    outer = {}
+                    for su, ru in made.items():
+                        self.loop_of[ru] = int(a["loop"])
+                        so = [r for r in after["state"]["terminals"] if r["owner_uid"] == su and r["term_class"] == "OuterTerminal"]
+                        outer[so[0]["owner_class"]] = self.bind["term"][so[0]["term_uid"]]
+                    res = dict(res or {}, track=be.addr.track_new(int(a["loop"]), outer["RightShiftRegister"],
+                                                                  outer["LeftShiftRegister"]))
+            lost = be.addr.retrack() if op["kind"] != "add_sr" else []
+            if lost:
+                res = dict(res or {}, lost_register_faces=lost)
+                if op["kind"] == "tunnel":
+                    res = dict(res or {}, index_mode=self.be.index_mode_fix(
+                        next(iter(made.values())), bool(A[first - 1].get("indexing"))))
+            for n in op["acts"]:
+                eff = self.step(n).get("effect") or {}
+                self.allow.update(eff.get("allow_either") or [])
+            d = compare(after["state"]["terminals"], real_new, self.bind, self.allow)
+            rec = {"k": k, "op": op["kind"], "acts": op["acts"], "ids": [A[n - 1].get("id") for n in op["acts"]],
+                   "checkpoint": [A[n - 1].get("checkpoint") for n in op["acts"] if A[n - 1].get("checkpoint")],
+                   "result": res, "bound": made, "diff": d, "secs": round(time.time() - t0, 1)}
+            self.report.append(rec)
+            self.log("  STEPX {0:02d} {1:<14} acts {2} ids {3} bound {4} diff {5}{6}".format(
+                k, op["kind"], op["acts"], rec["ids"], made, d["n"],
+                "  CHECKPOINT " + ",".join(rec["checkpoint"]) if rec["checkpoint"] else ""))
+            if d["n"]:
+                msg = "STEP-DIFF after real op {0} ({1}, plan actions {2} {3}): {4}".format(
+                    k, op["kind"], op["acts"], rec["ids"], json.dumps({x: y for x, y in d.items() if y and x != "n"},
+                                                                       default=str)[:1500])
+                if not self.record:
+                    raise ExecStop(msg)
+                prev = self.diffs[-1]["diff"] if self.diffs else {}
+                new = dict((x, sorted(set(map(json.dumps, y)) - set(map(json.dumps, prev.get(x) or []))))
+                           for x, y in d.items() if isinstance(y, list) and y)
+                cls, hit = classify_step_diff(self.plan, last, d)          # PD214(c): WARN vs FAIL, from the plan
+                self.diffs.append({"k": k, "op": op["kind"], "acts": op["acts"], "ids": rec["ids"], "diff": d, "class": cls,
+                                   "later_refs": hit,
+                                   "new_since_last_diff": dict((x, [json.loads(v) for v in y]) for x, y in new.items() if y),
+                                   "ops_since_last_read": list(range(last_read_k + 1, k + 1))})
+                self.log("  RECORD {0} ".format("WARN (dangling only, no later uid reference)" if cls == "warn" else
+                                                "STEP-DIFF" + (" later refs {0}".format(hit) if hit else "")) + msg[:1600])
+            last_read_k = k
+            real = real_new
+            sim_at_real = after["state"]["terminals"]
+        if self.stop_after is not None:
+            self.stopped_after = last_k
+            self.log("  STOP-AFTER op {0} of {1}: ops {2}..{1} NOT dispatched (PART-A mode)".format(
+                last_k, len(self.ops), last_k + 1))
+        un = getattr(be, "unroutable", None)      # a collecting (dry) backend: every unroutable row, reported at the end
+        if un:
+            # card 111-3: ONE line naming every failing ROW - a plan action seen at PRIME (ADDRESS) and again at its op
+            # (CONNECT-...) is one row with both reasons; whole-plan failures (CHECKPOINT, PARITY, acts []) are rows too
+            rows = collections.OrderedDict()
+            for n_, u in enumerate(un):
+                key = tuple(u["acts"]) if u["acts"] else ("plan", n_)
+                rows.setdefault(key, {"acts": u["acts"], "ids": u["ids"], "errs": []})["errs"].append(u["err"][:160])
+            raise ExecStop("UNROUTABLE {0} row(s): {1}".format(len(rows), "; ".join(
+                "acts {0} {1}: {2}".format(r["acts"], r["ids"], " | ".join(r["errs"])) for r in rows.values())))
+        fin = getattr(be, "run_deferred", None)   # card 80-3: deferred op errors are answered by their declared gates
+        if fin:
+            fin()
+        return real
+
+    # --------------------------------------------------------------------------- one real op
+    def execute(self, op, prev, after, real):
+        A, be = self.plan["actions"], self.be
+        a = A[op["acts"][0] - 1]
+        kind = op["kind"]
+        if kind == "move_in":
+            return be.move_in(int(a["nodes"][0]), self.diag_real(prev, a["dest_diagram"]), tuple(a["pos"]), op)
+        if kind == "create":                               # card 100-3: exec_create
+            return be.create(op["route"], a, self._create_args(a, prev, after), real, op)
+        if kind == "gate":
+            return be.value_gate(self.obj_real(prev, a["uid"]), a, op)
+        if kind == "stop":
+            loop = self.obj_real(prev, op["loop"])
+            src = self.real_term(prev, after, a["src"], True)
+            return be.stop(loop, src, real, op)
+        if kind == "add_sr":
+            return be.add_sr(int(a["loop"]), int(a.get("y") or 120), op)
+        if kind == "wire_sr":
+            reg = self.bind["obj"].get(prev["sym"][op["reg"]])
+            if reg is None:
+                raise ExecStop("wire_sr: {0} not bound".format(op["reg"]))
+            right = reg if op["variant"] == "RightIn" else self._right_of(prev, op["reg"])
+            end = a["src"] if op["variant"] == "RightIn" else a["dst"]
+            t = self.real_term(prev, after, end, op["variant"] == "RightIn")
+            loop = self.loop_of[reg]
+            return be.wire_sr(op["variant"], loop, right, t, real, op)
+        if kind == "tunnel":
+            ai, ao = A[op["in_act"] - 1], A[op["out_act"] - 1]
+            src = self.real_term(prev, after, ai["src"], True)
+            dst = self.real_term(prev, after, ao["dst"], False)
+            return be.connect(src, dst, real, self.loop_of, op)
+        if kind == "connect_term_uid" and str(op.get("variant", "")).startswith("fs_"):
+            # card 126-3: a Flat Sequence wire - ONE action, ends by terminal uid (an FS tunnel face by owner uid + frame);
+            # the compiled variant must be the one stagesim applied from the graph
+            eff = self.step(op["acts"][0]).get("effect") or {}
+            how = eff.get("how")
+            want = FS_VARIANT_HOW.get(op["variant"])
+            if (how == "fs_frame_to_frame") != (op["variant"] == "fs_frame_to_frame") or (want and how != want):
+                raise ExecStop("connect_term_uid {0}: compiled variant {1!r}, simulated effect how={2!r}".format(
+                    a.get("id"), op["variant"], how))
+            if op["variant"] == "fs_border_inner_branch":
+                # card 127-2 (PD257(d)): the source is the entry tunnel's INNER face in the sink's frame (simulated #face)
+                src = self.bind["term"].get(eff.get("face"), eff.get("face"))
+                if src is None or src < 0:
+                    raise ExecStop("connect_term_uid {0}: entry face #{1} is not bound yet".format(a.get("id"), eff.get("face")))
+            else:
+                src = self.real_term(prev, after, a["src"], True)
+            dst = self.real_term(prev, after, a["dst"], False)
+            return be.connect_term_uid(src, dst, real, dict(op, sim_census=eff.get("census"), sim_variant=eff.get("variant")))
+        if kind == "wire_remove_loose_ends":               # card 127-2: the plan wire(s) -> live wire uid(s) by terminals
+            if op.get("wire_uid") is not None:
+                sim_ws = [int(op["wire_uid"])]
+            else:
+                sim_ws = (self.step(op["of_act"]).get("effect") or {}).get("new_wires") or []
+            live = []
+            for w in sim_ws:
+                ts = set(self.bind["term"].get(r["term_uid"], r["term_uid"]) for r in prev["terminals"] if r["wire_uid"] == w)
+                lw = sorted(set(r["wire_uid"] for r in real if r["term_uid"] in ts and r["wire_uid"]))
+                if len(lw) != 1:
+                    raise ExecStop("wire_remove_loose_ends {0}: plan wire w{1}'s {2} terminals sit on {3} live wires {4}".format(
+                        a.get("id"), w, len(ts), len(lw), lw))
+                live.append(lw[0])
+            return be.rle(sorted(set(live)), op)
+        if kind == "connect_term_uid":                     # card 124-6 (PD250(c)): R1 / R2, one verb call per group
+            ai, ao = A[op["in_act"] - 1], A[op["out_act"] - 1]
+            src = self.real_term(prev, after, ai["src"], True)
+            dst = self.real_term(prev, after, ao["dst"], False)
+            return be.connect_term_uid(src, dst, real, op)
+        if kind == "case_frame_wire":                      # card 124-2 (PD249(d))
+            return self._case_frame_wire(op, a, prev, after, real)
+        if kind == "branch":
+            tun = self.bind["obj"].get(prev["sym"][op["tunnel"]])
+            dst = self.real_term(prev, after, a["dst"], False)
+            return be.branch(tun, dst, real, self.loop_of, op, side=op.get("side", "outer"))
+        if kind == "connect":
+            if (self.step(op["acts"][0]).get("effect") or {}).get("how") == "fs_frame_to_frame":     # card 126-3 cross-check
+                raise ExecStop("connect {0}: stagesim applied a Flat Sequence cross-frame wire, compile routed a plain connect "
+                               "(fs_wire_ops could not place an end on a frame)".format(a.get("id")))
+            src = self.real_term(prev, after, a["src"], True)
+            dst = self.real_term(prev, after, a["dst"], False)
+            sr = base_sr_route(real, src, dst, getattr(self, "base_regs", {}))
+            if sr:                                         # card 112-1 T1: an EXISTING register's inner face -> wire_sr
+                variant, reg, term = sr
+                return be.wire_sr(variant, self.base_regs[reg]["loop"], self.base_regs[reg]["right"], term, real, op)
+            return be.connect(src, dst, real, self.loop_of, op)
+        if kind == "delete_wire":
+            w = int(a["wire_uid"])
+            ts = set(self.bind["term"].get(r["term_uid"], r["term_uid"]) for r in prev["terminals"] if r["wire_uid"] == w)
+            live = set(r["wire_uid"] for r in real if r["term_uid"] in ts and r["wire_uid"])
+            if not live and ts and ts <= set(self.bind["term"].get(t, t) for t in self.allow):   # card 104-2: sim -> real
+                return {"already_gone": "w{0}: every terminal is an allow_either only-sink source, bare in the live "
+                                        "graph (LabVIEW deleted it with the node)".format(w)}
+            if len(live) != 1:
+                raise ExecStop("delete_wire w{0}: its {1} terminals sit on {2} live wires {3}".format(w, len(ts), len(live), sorted(live)))
+            lw = live.pop()
+            if set(r["term_uid"] for r in real if r["wire_uid"] == lw) != ts:
+                raise ExecStop("delete_wire w{0}: live wire {1} carries other terminals than the simulated one".format(w, lw))
+            return be.delete_wire(lw, op, plan_wire=w)
+        if kind == "delete_object":
+            u = SS.resolve_uid(prev, a["uid"])
+            u = self.bind["obj"].get(u, u)
+            rows = [r for r in real if r["owner_uid"] == u]
+            if not rows:
+                if a.get("missing_ok") and u not in set(r["owner_uid"] for r in prev["terminals"]):
+                    return {"already_absent": u}
+                raise ExecStop("delete_object #{0}: not in the live graph".format(u))
+            return be.delete_object(rows[0]["owner_class"], u, op)
+        if kind == "remove_bad_wires":
+            return be.rbw(op)
+        raise ExecStop("no executor for {0}".format(kind))
+
+    def _case_frame_wire(self, op, a, prev, after, real):
+        """card 124-2 (PD249(d)): the plan's in-frame wire -> gscript.case_frame_wire's arguments. Each end is resolved on the
+        SIMULATED state (stagesim.resolve_addr, `frame` -> that frame's inner face); a case-tunnel face becomes {'tunnel': real
+        tunnel uid}, any other end {'node': real node uid, 'term': its terminal name}. The frame index is the simulated
+        case's frame order (stagesim.case_frame_of) and must equal the compiled one (the plan's `frames` order)."""
+        spec, cf = [], None
+        for end, want in ((a["src"], True), (a["dst"], False)):
+            try:
+                r = SS.resolve_addr(prev, end, want)
+            except SS.SimError as e:
+                raise ExecStop("case_frame_wire {0}: {1}".format(a.get("id"), e))
+            if isinstance(end, dict) and end.get("frame") is not None:
+                cf = SS.case_frame_of(prev, r["frame_diagram"])
+                tun = self.bind["obj"].get(r["owner_uid"], r["owner_uid"])
+                if tun < 0:
+                    raise ExecStop("case_frame_wire {0}: tunnel {1} (simulated #{2}) is not bound yet".format(
+                        a.get("id"), end.get("uid"), r["owner_uid"]))
+                spec.append({"tunnel": tun})
+            else:
+                t = self.real_term(prev, after, end, want)
+                rr = next((x for x in real if x["term_uid"] == t), None)
+                if rr is None:
+                    raise ExecStop("case_frame_wire {0}: terminal #{1} not in the live read".format(a.get("id"), t))
+                spec.append({"node": V.node_of(rr), "term": rr["term_name"]})
+        if cf is None or cf[1] != op["frame_index"] or cf[2] != op["frame"]:
+            raise ExecStop("case_frame_wire {0}: simulated case frame {1} != compiled frame {2!r} index {3}".format(
+                a.get("id"), cf, op["frame"], op["frame_index"]))
+        case = self.bind["obj"].get(cf[0], cf[0])
+        if case < 0:
+            raise ExecStop("case_frame_wire {0}: case #{1} is not bound yet".format(a.get("id"), cf[0]))
+        return self.be.case_frame_wire(case, cf[1], spec[0], spec[1], real, op)
+
+    def _right_of(self, st, sym_left):
+        return self.bind["obj"].get(st["sym"][sym_left[:-1] + "R"])
+
+    def _bind_create(self, op, after, res):
+        """A created LOOP owns no terminal row: bind its object and its body diagram from the uids the op returned
+        (res 'uid', 'body'); a missing or non-positive return STOPS (the body could not be addressed)."""
+        a = self.plan["actions"][op["acts"][0] - 1]
+        if op["route"] in ("fs_create", "fs_frame"):             # card 126-3: the FS and/or ONE frame Diagram (no rows)
+            eff = self.step(op["acts"][0]).get("effect") or {}
+            pairs = ([(eff.get("fs"), (res or {}).get("uid"), "obj"), (eff["frames"][0], ((res or {}).get("frames") or [None])[0], "diag")]
+                     if op["route"] == "fs_create" else [(eff.get("new_frame"), (res or {}).get("new_frame"), "diag")])
+            out = {}
+            for su, ru, kind_ in pairs:
+                if not isinstance(su, int) or not isinstance(ru, int) or ru <= 0:
+                    raise ExecStop("BINDING: create {0} ({1}) simulated #{2} -> returned {3!r}".format(a.get("id"), op["route"], su, ru))
+                self.bind[kind_][su] = ru
+                out[su] = ru
+            return out
+        if op["route"] in ("case", "case_wired"):                 # card 123-7: case_wired binds the same way
+            # card 120-3 R2: the case object and each FRAME diagram from the op's return (res 'uid', 'frames' in the plan's
+            # `frames` order); the selector's faces are bound by bind_case_faces (by frame) right after
+            su = after["sym"]["new:" + a["as"]]
+            sf = [after["sym"]["new:{0}.f{1}".format(a["as"], k)] for k in range(len(a.get("frames") or SS.CASE_FRAMES_DEFAULT))]
+            ru, rf = (res or {}).get("uid"), list((res or {}).get("frames") or [])
+            if not isinstance(ru, int) or ru <= 0 or len(rf) != len(sf) or any(not isinstance(x, int) or x <= 0 for x in rf):
+                raise ExecStop("BINDING: create {0} returned case {1!r} frames {2!r} - the case and each of its {3} frames "
+                               "must come back".format(a.get("id"), ru, rf, len(sf)))
+            self.bind["obj"][su] = ru
+            out = {su: ru}
+            for s_, r_ in zip(sf, rf):
+                self.bind["diag"][s_] = r_
+                out[s_] = r_
+            return out
+        if op["route"] not in ("while", "for"):
+            return {}
+        su, sb = after["sym"]["new:" + a["as"]], after["sym"]["new:" + a["as"] + ".body"]
+        ru, rb = (res or {}).get("uid"), (res or {}).get("body")
+        if not isinstance(ru, int) or not isinstance(rb, int) or ru <= 0 or rb <= 0:
+            raise ExecStop("BINDING: create {0} returned uid {1!r} body {2!r} - a loop and its body must both come back".format(
+                a.get("id"), ru, rb))
+        self.bind["obj"][su] = ru
+        self.bind["diag"][sb] = rb
+        return {su: ru, sb: rb}
+
+    def _create_args(self, a, prev, after):
+        """The REAL inputs of a create row: its diagram, and the real terminal of born_on / on (resolved on the simulated
+        state, then through the binding)."""
+        out = {"diagram": self.diag_real(prev, a["diagram"]), "pos": a.get("pos")}
+        if a.get("born_on") is not None:
+            out["born_on"] = self.real_term(prev, after, a["born_on"], True)
+        if a.get("on") is not None:
+            out["on"] = self.real_term(prev, prev, a["on"], False)
+        if a.get("donor_uid") is not None:
+            out["donor_uid"] = int(a["donor_uid"])
+        if a.get("queue_kind") and a.get("src") is not None:          # card 118-1: the queue node's type/refnum source
+            out["src"] = self.real_term(prev, prev, a["src"], True)
+        if a.get("class") == "CaseStructure" and a.get("src") is not None and not a.get("label"):   # card 123-7: case_wired
+            out["src"] = self.real_term(prev, prev, a["src"], True)
+        return out
+
+
+# ============================================================================================ LabVIEW backend
+class LVReader(object):
+    def __init__(self, g, work):
+        self.g, self.work = g, work
+
+    def diagrams(self):
+        return [int(d["uid"]) for d in self.g.report_all(self.work, "Diagram")]
+
+    def node_uids(self, didx):
+        return [int(r["uid"]) for r in self.g.node_labels(self.work, didx)]
+
+    def node_terms(self, didx, nidx):
+        return self.g.node_terms_uid(self.work, didx, nidx)
+
+    def node_term_uids(self, didx, nidx):
+        """card 112-2 D2: one TERMINAL uid per Terminals[] entry of Nodes[nidx] (gscript.node_terms_uids, OpNodeTermsUid_v0),
+        None when that reader is not on disk. The node's own uid echo is checked here too."""
+        fn = getattr(self.g, "node_terms_uids", None)
+        if fn is None or not os.path.exists(getattr(self.g, "OP_NODE_TERMS_UID", "")):
+            return None
+        echo, rows = fn(self.work, didx, nidx)
+        uids = self.node_uids(didx)
+        if echo != (uids[nidx] if nidx < len(uids) else None):
+            raise ExecStop("ADDRESS-UID: OpNodeTermsUid_v0 node echo {0!r} != Nodes[{1}] #{2}".format(
+                echo, nidx, uids[nidx] if nidx < len(uids) else None))
+        return [int(x["uid"] or 0) for x in rows]
+
+    def ct_uids(self):
+        return set(int(o["uid"]) for o in self.g.report_all(self.work, "ControlTerminal"))
+
+    def obj_uids(self, cls):                                           # PD188(c): the class traverse wire_const indexes
+        return [int(o["uid"]) for o in self.g.report_all(self.work, cls)]
+
+
+def check_sink_gates(sink_gates, gates):
+    """SINK GATES (card 80-3, retrospective-cycle79 device-failed at the old whitelist here): a recipe may let a
+    wire_indicators op error pass ONLY by declaring, per sink, a NAMED gate it owns that reads that exact sink.
+    `sink_gates` = [{"gate": <label>, "sink": [<owner_uid>, <term_name>]}]; `gates` = {<label>: callable(entry) ->
+    (ok, detail)}. A declaration naming a gate absent from `gates` (or not callable), or a malformed sink, is REFUSED."""
+    out = []
+    for d in sink_gates or []:
+        name, sink = d.get("gate"), d.get("sink")
+        if not isinstance(sink, (list, tuple)) or len(sink) != 2:
+            raise ExecStop("sink gate {0!r}: sink must be [owner_uid, term_name], got {1!r}".format(name, sink))
+        if name not in (gates or {}) or not callable(gates[name]):
+            raise ExecStop("sink gate {0!r} for sink {1}: no such gate declared by the recipe (declared: {2})".format(
+                name, list(sink), sorted(gates or {})))
+        out.append({"gate": name, "sink": [int(sink[0]), str(sink[1])]})
+    return out
+
+
+def sink_gate_for(tag, err, sink, decls):
+    """The declaration whose sink == `sink` exactly, else ExecStop (the op error stops the run)."""
+    key = [int(sink[0]), str(sink[1])]
+    hit = [d for d in decls if d["sink"] == key]
+    if not hit:
+        raise ExecStop("{0}: op error {1} on sink {2} - no declared gate reads that sink (declared sinks: {3})".format(
+            tag, err, key, [d["sink"] for d in decls]))
+    return hit[0]
+
+
+class LVBackend(object):
+    """Every mutator is a stagekit / gscript verb the L7 stages used; each is followed by the measured junk purge."""
+
+    def __init__(self, s, fs_pairs, sink_gates=None, gates=None, mem_stop_mb=MEM_STOP_MB):
+        import stagekit as K
+        import gscript as g
+        self.K, self.g, self.s, self.fs = K, g, s, fs_pairs
+        self.B = K.mod("build_d1_v0")
+        self.C82 = K.mod("build_opfsinnertunnelconnect_v0")
+        self.addr = Addr(LVReader(g, s.work))
+        self.reads = []
+        bp = K.mod("bench_prep")                     # PD192(a): stagekit.private_bytes() + bench_prep.labview_handles()
+        self.meter = Meter(lambda: (K.private_bytes(), bp.labview_handles()), stop_mb=mem_stop_mb,
+                           log=lambda m: print(m, flush=True))
+        self._init_sink_gates(sink_gates, gates)
+
+    def _init_sink_gates(self, sink_gates, gates):
+        self.gates = dict(gates or {})
+        self.sink_gates = check_sink_gates(sink_gates, self.gates)
+        self.deferred = []
+
+    def run_deferred(self):
+        """Executor.run's last act: every deferred op error's declared gate READS its sink now; a gate that fails stops."""
+        for e in self.deferred:
+            ok, detail = self.gates[e["gate"]](dict(e))
+            self.s.gate("{0} (declared sink gate for {1} on {2})".format(e["gate"], e["tag"], e["sink"]), ok, detail)
+            e["gate_ok"] = bool(ok)
+            if not ok:
+                raise ExecStop("declared sink gate {0!r} failed on {1}: {2}".format(e["gate"], e["sink"], str(detail)[:300]))
+
+    def read(self):
+        lv = self.K.mod("wiki_build").read_live(self.s.work, fs_pairs=self.fs)
+        self.reads.append(lv["secs"])
+        self.last_objs = lv["objs"]
+        return dedupe(lv["terminals"])
+
+    def obj_classes(self, real):
+        return classes_of(real, getattr(self, "last_objs", None))
+
+    def _done(self, rec, tag):
+        self.s.junk_purge(tag)
+        if rec.get("err"):
+            raise ExecStop("{0}: op error {1}".format(tag, rec["err"]))
+        return {"err": rec.get("err"), "s": rec.get("s")}
+
+    def move_in(self, uid, dest, pos, op):
+        rec = self.s.move_in(uid, self.B.diag_index(self.s.work, dest), pos)
+        return self._done(rec, "move_in #{0}".format(uid))
+
+    def add_sr(self, loop, y, op):
+        rec = self.s.add_shift_reg(self.s.uid_index("WhileLoop", loop), y_position=y)
+        return self._done(rec, "add_sr #{0}".format(loop))
+
+    def _reg_index(self, li, right):
+        rights = []
+        for k in range(16):
+            u = self.g.shift_reg(self.s.work, li, k).get("uid")
+            if u is None:
+                break
+            rights.append(int(u))
+        if right not in rights:
+            raise ExecStop("register #{0} not in Shift Registers[] {1}".format(right, rights))
+        return rights.index(right)
+
+    def wire_sr(self, variant, loop, right, term, real, op):
+        li = self.s.uid_index("WhileLoop", loop)
+        k = self._reg_index(li, right)
+        (_d, n, t), how = self.addr.triple(real, term, variant == "RightIn")
+        rec = self.s.wire_sr(variant, li, k, node_index=n, term_index=t)
+        out = self._done(rec, "wire_sr {0}".format(variant))
+        out.update(how=how, triple=[_d, n, t], reg=k)
+        return out
+
+    def _cfw(self, w, owner, dst_triple):
+        F = self.K.mod("build_opconnectfromwire_v0")
+        hit = [x for x in F.wire_source_owner(self.s.work, w, n=8) if x.get("owner_uid") == owner and x.get("is_source")]
+        if len(hit) != 1:
+            raise ExecStop("w{0}: {1} source term(s) owned by #{2}".format(w, len(hit), owner))
+        rec = self.s.connect_from_wire(dst_triple[0], dst_triple[1], dst_triple[2], w, int(hit[0]["i"]))
+        res = rec.get("result")
+        if isinstance(res, (list, tuple)) and len(res) > 2 and res[2]:
+            rec["err"] = rec.get("err") or res[2]
+        return rec
+
+    def connect(self, src, dst, real, loop_of, op):
+        kind, rs, rd, info = connect_route(self.addr, real, src, dst, loop_of)   # PD187(b): the route both backends take
+        if kind == "indicator":
+            return self.indicator(rs, rd)
+        if kind == "ctlsink":                              # card 85-2, PD191(a): OpCtlSinkWire_v1 (build_opctlsinkwire_v1.py)
+            scls, sown = info.get("src_cls", rs["owner_class"]), int(info.get("src_owner", rs["owner_uid"]))  # card 113-2 T1
+            ci = self.s.uid_index("ControlTerminal", int(dst))
+            si = self.s.uid_index(scls, sown)
+            if ci is None or si is None:
+                raise ExecStop("ctlsink: CT #{0} / {1} #{2} not in their class traverses ({3}, {4})".format(
+                    dst, scls, sown, ci, si))
+            t = info["src_term"]
+            rec = self.s._op("wire_ctlsink", lambda: self.g.wire_ctlsink(self.s.work, ci, scls, si, t),
+                             "ControlTerminal[{0}] #{1} <- {2}[{3}].t{4}{5}".format(
+                                 ci, dst, scls, si, t, " (tunnel #{0} outer)".format(rs["owner_uid"]) if "src_owner" in info else ""))
+            res = rec.get("result")
+            if isinstance(res, (list, tuple)) and len(res) > 1 and res[1]:
+                rec["err"] = rec.get("err") or res[1]
+            out = self._done(rec, "connect #{0}->#{1}".format(src, dst))
+            out["how"] = ["ctlsink", info["dst_ct"], info["src_how"]]
+            return out
+        dt, hd = info["dst"], info["dst_how"]
+        if kind == "ctltun":                               # card 112-1 T2: OpCtlSinkWire_v1, roles reversed (see connect_route)
+            ci = self.s.uid_index("ControlTerminal", int(src))
+            oi = self.s.uid_index(info["owner_cls"], int(info["owner"]))
+            if ci is None or oi is None:
+                raise ExecStop("ctltun: CT #{0} / {1} #{2} not in their class traverses ({3}, {4})".format(
+                    src, info["owner_cls"], info["owner"], ci, oi))
+            t = info["owner_term"]
+            rec = self.s._op("wire_ctlsink", lambda: self.g.wire_ctlsink(self.s.work, ci, info["owner_cls"], oi, t),
+                             "ControlTerminal[{0}] #{1} -> {2}[{3}].t{4} (tunnel #{5} outer)".format(
+                                 ci, src, info["owner_cls"], oi, t, rd["owner_uid"]))
+            res = rec.get("result")
+            if isinstance(res, (list, tuple)) and len(res) > 1 and res[1]:
+                rec["err"] = rec.get("err") or res[1]
+            out = self._done(rec, "connect #{0}->#{1}".format(src, dst))
+            out["how"] = ["ctltun", info["src_ct"], hd]
+            return out
+        if kind == "tunouter":                             # card 85-2, PD191(b): OpTunOuterWire_v1 (build_optunouter_v1.py)
+            c = info["tun"]
+            ti = self.s.uid_index(c["cls"], c["tun"])
+            di = self.s.uid_index(rd["owner_class"], int(rd["owner_uid"]))
+            if ti is None or di is None:
+                raise ExecStop("tunouter: {0} #{1} -> {2} #{3} not in their class traverses ({4}, {5})".format(
+                    c["cls"], c["tun"], rd["owner_class"], rd["owner_uid"], ti, di))
+            rec = self.s._op("wire_tunouter", lambda: self.g.wire_tunouter(self.s.work, c["cls"], ti, rd["owner_class"], di, dt[2]),
+                             "{0}[{1}] #{2} -> {3}[{4}].t{5}".format(c["cls"], ti, c["tun"], rd["owner_class"], di, dt[2]))
+            res = rec.get("result")
+            if isinstance(res, (list, tuple)) and len(res) > 1 and res[1]:
+                rec["err"] = rec.get("err") or res[1]
+            out = self._done(rec, "connect #{0}->#{1}".format(src, dst))
+            out["how"] = ["tunouter", info["tun_how"], hd]
+            return out
+        if kind == "ctl":                                  # card 82-2: measured in tools/bench/ctsrc_l2a1_82.log
+            di = self.s.uid_index(rd["owner_class"], int(rd["owner_uid"]))
+            if di is None:
+                raise ExecStop("ctl: sink node {0} #{1} not in its class traverse".format(rd["owner_class"], rd["owner_uid"]))
+            rec = self.s._op("wire_control", lambda: self.g.wire_control(
+                self.s.work, [info["ctl_label"]], rd["owner_class"], di, [info["dst_name"]], src_diagram_index=info["ctl_didx"]),
+                "{0!r}@D[{1}] -> {2}[{3}].{4!r}".format(info["ctl_label"], info["ctl_didx"], rd["owner_class"], di, info["dst_name"]))
+            out = self._done(rec, "connect #{0}->#{1}".format(src, dst))
+            out["how"] = ["ctl", info["src_ct"], hd]
+            return out
+        if kind == "const_sr":                             # card 123-3 S2: gscript.wire_const_sr (OpConstWire_v1, loop sink)
+            c = info["const"]
+            si = self.s.uid_index(c["cls"], c["const"])
+            li = self.s.uid_index(info["loop_cls"], info["loop"])
+            if si is None or li is None:
+                raise ExecStop("const_sr: {0} #{1} -> {2} #{3} not in their class traverses ({4}, {5})".format(
+                    c["cls"], c["const"], info["loop_cls"], info["loop"], si, li))
+            rec = self.s._op("wire_const_sr", lambda: self.g.wire_const_sr(self.s.work, c["cls"], si, info["loop_cls"], li,
+                                                                           dt[2]),
+                             "{0}[{1}] #{2} -> {3}[{4}] #{5}.t{6} (L register #{7} outer)".format(
+                                 c["cls"], si, c["const"], info["loop_cls"], li, info["loop"], dt[2], rd["owner_uid"]))
+            res = rec.get("result")
+            if isinstance(res, (list, tuple)) and len(res) > 1 and res[1]:
+                rec["err"] = rec.get("err") or res[1]
+            out = self._done(rec, "connect #{0}->#{1}".format(src, dst))
+            out["how"] = ["const_sr", info["const_how"], hd]
+            return out
+        if kind == "const":                                # card 85-1: OpConstWire_v1 (tools/recipes/build_opconstwire_v1.py)
+            c = info["const"]
+            si = self.s.uid_index(c["cls"], c["const"])
+            di = self.s.uid_index(rd["owner_class"], int(rd["owner_uid"]))
+            if si is None or di is None:
+                raise ExecStop("const: {0} #{1} -> {2} #{3} not in their class traverses ({4}, {5})".format(
+                    c["cls"], c["const"], rd["owner_class"], rd["owner_uid"], si, di))
+            rec = self.s._op("wire_const", lambda: self.g.wire_const(self.s.work, c["cls"], si, rd["owner_class"], di, dt[2]),
+                             "{0}[{1}] #{2} -> {3}[{4}].t{5}".format(c["cls"], si, c["const"], rd["owner_class"], di, dt[2]))
+            res = rec.get("result")
+            if isinstance(res, (list, tuple)) and len(res) > 1 and res[1]:
+                rec["err"] = rec.get("err") or res[1]
+            out = self._done(rec, "connect #{0}->#{1}".format(src, dst))
+            out["how"] = ["const", info["const_how"], hd]
+            return out
+        if kind == "cfw":
+            rec = self._cfw(int(rs["wire_uid"]), V.node_of(rs) if V.node_class(rs) != FP else rs["owner_uid"], dt)
+            how = ["cfw", hd]
+        else:
+            st, hs = info["src"], info["src_how"]
+            N = self.K.mod("build_opconnectnested_v1")
+            lab = json.load(open(N.MAP_OUT, encoding="utf-8"))
+            rec = self.s._op("connect_nested_v1", lambda: N.connect_nested_v1(self.s.work, dt[0], dt[1], dt[2], st[0], st[1], st[2], lab),
+                             "D[{0}].N[{1}].t{2} <- D[{3}].N[{4}].t{5}".format(dt[0], dt[1], dt[2], st[0], st[1], st[2]))
+            res = rec.get("result")
+            if isinstance(res, (list, tuple)) and len(res) > 2 and res[2]:
+                rec["err"] = rec.get("err") or res[2]
+            how = ["nested", hs, hd]
+        out = self._done(rec, "connect #{0}->#{1}".format(src, dst))
+        out["how"] = how
+        return out
+
+    def indicator(self, rs, rd):
+        if not rs["wire_uid"]:
+            raise ExecStop("wire_indicators needs a WIRED source (#{0} is bare)".format(rs["term_uid"]))
+        di = self.B.diag_index(self.s.work, int(rs["frame_diagram"]))
+        rec = self.s.wire_indicators(self.s.uid_index(rs["owner_class"], rs["owner_uid"]), [rs["term_name"]],
+                                     [rd["term_name"]], diagram_index=di, node_class=rs["owner_class"])
+        tag = "wire_indicators #{0}".format(rs["owner_uid"])
+        if rec.get("err"):                        # no whitelist (card 80-3): stop unless a declared gate reads this sink
+            self.s.junk_purge(tag)
+            sink = [rd["owner_uid"], rd["term_name"]]
+            d = sink_gate_for(tag, rec["err"], sink, self.sink_gates)
+            self.deferred.append({"gate": d["gate"], "sink": d["sink"], "tag": tag, "err": str(rec["err"])[:300],
+                                  "source": [rs["owner_uid"], rs["term_name"]]})
+            self.s.fact("OP-ERROR {0} on sink {1} DEFERRED to declared gate {2!r}: {3}".format(tag, d["sink"], d["gate"],
+                                                                                                str(rec["err"])[:200]))
+            return {"err": rec["err"], "s": rec.get("s"), "how": "wire_indicators", "deferred_to": d["gate"]}
+        out = self._done(rec, tag)
+        out["how"] = "wire_indicators"
+        return out
+
+    # ------------------------------------------------------------------ card 100-3: exec_create / stop / value gate
+    def create(self, route, a, args, real, op):
+        """One `create` row -> its verb (CREATE_ROUTES). Returns {err, s, uid[, body], how}. Every verb is followed by the
+        junk purge (_done)."""
+        g, s, W = self.g, self.s, self.s.work
+        missing = verbs_missing(route)
+        if missing:
+            raise ExecStop("create {0} ({1}): verb(s) not defined: {2}".format(a.get("id"), route, missing))
+        dg, pos = args["diagram"], tuple(args.get("pos") or (40, 40))
+        di = self.B.diag_index(W, dg)
+        tag = "create {0} {1}".format(route, a.get("id"))
+        if route in ("while", "for"):
+            d0 = set(int(d["uid"]) for d in g.report_all(W, "Diagram"))
+            rec = s._op("loop_in", lambda: g.loop_in(route, W, di, pos), "{0} on Diagram[{1}] #{2}".format(route, di, dg))
+            out = self._done(rec, tag)
+            body = sorted(set(int(d["uid"]) for d in g.report_all(W, "Diagram")) - d0)
+            if len(body) != 1:
+                raise ExecStop("{0}: {1} new Diagram(s) after loop_in, expected the one body: {2}".format(tag, len(body), body))
+            out.update(uid=int(rec["result"]), body=body[0], how=CREATE_ROUTES[route])
+            return out
+        if route == "local_read":
+            l0 = set(int(u) for u in g.uids(W, "Local"))
+            out = self._done(s.create_local_read(a["label"], tag=tag), tag)
+            new = sorted(set(int(u) for u in g.uids(W, "Local")) - l0)
+            if len(new) != 1:
+                raise ExecStop("{0}: {1} new Local(s)".format(tag, len(new)))
+            if di != 0:
+                self._done(s.move_in(new[0], di, pos), tag + " move_in")
+            out.update(uid=new[0], how=CREATE_ROUTES[route])
+            return out
+        if route == "local_write":
+            rec = s.create_local_write(a["label"], dest_diagram_uid=dg, position=pos, tag=tag)
+            res = rec.get("result") or {}
+            if res.get("err"):
+                rec["err"] = rec.get("err") or res["err"]
+            out = self._done(rec, tag)
+            out.update(uid=res.get("uid"), how=CREATE_ROUTES[route])
+            return out
+        if route in ("indicator", "control"):
+            end = args["born_on"] if route == "indicator" else args["on"]
+            face = tunnel_outer_face(real, end, dg) if route == "indicator" else None
+            cst = const_born_on(real, end, dg) if route == "indicator" and face is None else None
+            if face is not None:                   # card 100-6 / 108-6: create_indicator_nested(W, <face term>, None)
+                how = "{0} #{1} outer face #{2} ({3})".format(face["owner_class"], face["owner_uid"], end,
+                                                              FACE_ROUTES[face["owner_class"]])
+                rec = s._op("indicator_nested", lambda: g.create_indicator_nested(W, int(end), None), how)
+            elif cst is not None:                  # card 122-3: an indicator born on a diagram constant
+                how = "{0} #{1} terminal #{2} ({3})".format(cst["owner_class"], cst["owner_uid"], end, CONST_IND_ROUTE)
+                rec = s._op("indicator_on_const", lambda: g.create_indicator_on_const(W, int(cst["owner_uid"])), how)
+            else:
+                (_d, _n, t), how = self.addr.triple(real, end, route == "indicator")
+                node = V.node_of(next(r for r in real if r["term_uid"] == end))
+                fn = g.create_indicator_nested if route == "indicator" else g.create_control_nested
+                rec = s._op(route + "_nested", lambda: fn(W, node, t), "#{0}.t{1}".format(node, t))
+            res = rec.get("result") or {}
+            if res.get("err") or len(res.get("new_panel") or []) != 1:
+                rec["err"] = rec.get("err") or res.get("err") or "{0} new panel objects".format(len(res.get("new_panel") or []))
+            out = self._done(rec, tag)
+            pu = int(res["new_panel"][0]["uid"])
+            pi = [int(r["uid"]) for r in g.panel_wiring(W)].index(pu)
+            lab = g.set_control_label(W, pi, a["label"])
+            if lab.get("err") or lab.get("text_back") != a["label"]:
+                raise ExecStop("{0}: label write read back {1!r} err {2!r}".format(tag, lab.get("text_back"), lab.get("err")))
+            if a.get("visible") is not None:
+                vis = g.set_visible(W, pu, bool(a["visible"]))
+                if vis.get("err") or bool(vis.get("visible_back")) != bool(a["visible"]):
+                    raise ExecStop("{0}: Visible read back {1!r} err {2!r}".format(tag, vis.get("visible_back"), vis.get("err")))
+            if route == "control" and a.get("default") is not None:
+                dv = g.set_default_in_memory(W, a["label"], a["default"], a["default"] + 1)
+                if dv.get("err") or dv.get("after_reinit") != a["default"]:
+                    raise ExecStop("{0}: default read back {1!r} err {2!r}".format(tag, dv.get("after_reinit"), dv.get("err")))
+            out.update(uid=pu, how=[CREATE_ROUTES[route], how])
+            return out
+        if route == "primitive":
+            dn = a.get("donor")                               # card 118-1: {"donor": file | "$work", "uid": n}
+            if dn:
+                dn = {"donor": W if dn["donor"] == "$work" else _abs(dn["donor"]) if not os.path.isabs(dn["donor"]) else dn["donor"],
+                      "uid": int(dn["uid"])}
+            rec = s._op("create_primitive_nested", lambda: g.create_primitive_nested(W, dg, a["prim"], pos, donor=dn),
+                        "{0!r} on #{1} donor {2}".format(a["prim"], dg, dn))
+            out = self._done(rec, tag)
+            out.update(uid=rec.get("result"), how=CREATE_ROUTES[route])
+            return out
+        if route == "queue":                                  # card 118-1: queue_node; card 118-3: src on the body's PARENT too
+            rs = next(r for r in real if r["term_uid"] == args["src"])
+            cross = int(rs["frame_diagram"] or 0) != int(dg)
+            own = (self.addr.owners or {}).get(str(int(dg)))
+            if cross and not (own and own[0] in ("ForLoop", "WhileLoop") and int(own[1] or 0) > 0):
+                raise ExecStop("{0}: src #{1} is on diagram #{2}, not #{3}, and #{3} is not a loop body (queue route: same "
+                               "diagram, or the creator's auto tunnel into a loop body - PD234(i))".format(tag, args["src"], rs["frame_diagram"], dg))
+            node = V.node_of(rs)
+            scls = rs["owner_class"]
+            sidx = [int(o["uid"]) for o in g.report_all(W, scls)].index(int(node))
+            t0 = set(int(u) for u in g.uids(W, "LoopTunnel"))
+            rec = s._op("queue_node", lambda: g.queue_node(a["queue_kind"], W, scls, sidx, rs["term_name"], di, pos),
+                        "{0} from {1}[{2}] #{3}.{4!r} on Diagram[{5}] #{6}".format(a["queue_kind"], scls, sidx, node, rs["term_name"], di, dg))
+            out = self._done(rec, tag)
+            new = rec.get("result") or []
+            if len(new) != 1:
+                raise ExecStop("{0}: {1} new Function(s) {2}, expected 1".format(tag, len(new), new))
+            nt = sorted(set(int(u) for u in g.uids(W, "LoopTunnel")) - t0)
+            if len(nt) != (1 if cross else 0):                # the auto tunnel is the measured effect (build_track_v6_queue.py:202)
+                raise ExecStop("{0}: {1} new LoopTunnel(s) {2}, expected {3} (src {4})".format(tag, len(nt), nt, 1 if cross else 0,
+                                                                                             "on the parent" if cross else "same diagram"))
+            out.update(uid=int(new[0]), how=CREATE_ROUTES[route], auto_tunnel=(nt[0] if nt else None))
+            return out
+        if route == "case_wired":                             # card 123-7: gscript.case_wired (selector <- src, same act)
+            names = list(a.get("frames") or SS.CASE_FRAMES_DEFAULT)
+            rs = next(r for r in real if r["term_uid"] == args["src"])
+            if int(rs["frame_diagram"] or 0) != int(dg) or not rs["is_source"]:
+                raise ExecStop("{0}: src #{1} is on diagram #{2} (source={3}), case on #{4} - case_wired needs a node OUTPUT on "
+                               "the same diagram".format(tag, args["src"], rs["frame_diagram"], rs["is_source"], dg))
+            node = V.node_of(rs)
+            t0 = set(int(u) for u in g.uids(W, "Tunnel"))
+            rec = s._op("case_wired", lambda: g.case_wired(W, dg, node, rs["term_name"], pos),
+                        "selector <- #{0}.{1!r} on Diagram #{2}".format(node, rs["term_name"], dg))
+            res = rec.get("result") or {}
+            out = self._done(rec, tag)
+            byname = dict(zip([str(x) for x in res.get("names") or []], res.get("frames") or []))
+            if sorted(byname) != sorted(names) or len(res.get("frames") or []) != len(names):
+                raise ExecStop("{0}: frame names read back {1} (frames {2}), asked {3}".format(tag, res.get("names"), res.get("frames"), names))
+            if res.get("invoke_left"):
+                raise ExecStop("{0}: {1} junk Invoke(s) left after case_wired's purge".format(tag, res["invoke_left"]))
+            if not res.get("selector_wire") or res.get("selector_wire") != res.get("src_wire"):
+                raise ExecStop("{0}: selector wire {1} != source wire {2}".format(tag, res.get("selector_wire"), res.get("src_wire")))
+            nt = sorted(set(int(u) for u in g.uids(W, "Tunnel")) - t0)
+            if len(nt) != 1:
+                raise ExecStop("{0}: {1} new Tunnel(s) {2}, expected the one selector".format(tag, len(nt), nt))
+            out.update(uid=int(res["case"]), frames=[int(byname[n]) for n in names], selector=nt[0], names_back=list(res["names"]),
+                       selector_wire=res["selector_wire"], how=CREATE_ROUTES[route])
+            return out
+        if route == "fs_create":                              # card 126-3: struct_copy_nested of the 1-frame donor FS
+            rec = s._op("struct_copy_nested", lambda: g.struct_copy_nested(W, dg, SS.FS_CLS, g.fs_donor(), pos),
+                        "FlatSequence (fs_donor) onto Diagram #{0}".format(dg))
+            res = rec.get("result") or {}
+            out = self._done(rec, tag)
+            nd = list(res.get("new_diagrams") or [])
+            if not isinstance(res.get("uid"), int) or len(nd) != 1:
+                raise ExecStop("{0}: FS {1!r} new diagrams {2} (one FS + ONE frame expected, diag_c125_5_fsscr.log:27)".format(
+                    tag, res.get("uid"), nd))
+            fr = g.fs_frames(W, int(res["uid"]))["frames"]
+            if [int(x) for x in fr] != [int(nd[0])]:
+                raise ExecStop("{0}: fs_frames read back {1} != new diagram {2}".format(tag, fr, nd))
+            out.update(uid=int(res["uid"]), frames=[int(nd[0])], how=CREATE_ROUTES[route], census=ROUTE_CENSUS[route]["flat_sequence_donor"])
+            return out
+        if route == "fs_frame":                               # card 126-3: Add Frame after the reference frame dg
+            own = (self.addr.owners or {}).get(str(int(dg)))
+            if not own or own[0] != SS.FS_CLS or int(own[1] or 0) <= 0:
+                raise ExecStop("{0}: diagram #{1} has no REAL FlatSequence owner in the (bound) owners map ({2})".format(tag, dg, own))
+            fs = int(own[1])
+            f0 = [int(x) for x in g.fs_frames(W, fs)["frames"]]
+            if int(dg) not in f0:
+                raise ExecStop("{0}: #{1} is not a frame of FS #{2} ({3})".format(tag, dg, fs, f0))
+            k = f0.index(int(dg))
+            rec = s._op("fs_add_frame", lambda: g.fs_add_frame(W, fs, k, True), "FS #{0} after frame {1} (#{2})".format(fs, k, dg))
+            res = rec.get("result") or {}
+            out = self._done(rec, tag)
+            fa = [int(x) for x in res.get("frames_after") or []]
+            if not res.get("new_frame") or fa.index(int(res["new_frame"])) != k + 1 or [x for x in fa if x != int(res["new_frame"])] != f0:
+                raise ExecStop("{0}: new frame {1} in {2} - expected at index {3} with the old order {4} kept".format(
+                    tag, res.get("new_frame"), fa, k + 1, f0))
+            out.update(uid=fs, new_frame=int(res["new_frame"]), frames=fa, how=CREATE_ROUTES[route],
+                       census=ROUTE_CENSUS[route]["add_one_frame"])
+            return out
+        if route == "case":                                   # card 120-3 R2: gscript.case_in (+ its case_frames read-back)
+            names = list(a.get("frames") or SS.CASE_FRAMES_DEFAULT)
+            t0 = set(int(u) for u in g.uids(W, "Tunnel"))
+            rec = s._op("case_in", lambda: g.case_in(W, dg, pos, a["label"], tuple(names)),
+                        "frames {0} selector {1!r} into Diagram #{2}".format(names, a["label"], dg))
+            res = rec.get("result") or {}
+            if res.get("err"):
+                rec["err"] = rec.get("err") or res["err"]
+            out = self._done(rec, tag)
+            if int(res.get("owner") or 0) != int(dg):
+                raise ExecStop("{0}: case #{1} read back owned by {2} #{3}, not Diagram #{4}".format(
+                    tag, res.get("case"), res.get("owner_class"), res.get("owner"), dg))
+            byname = dict(zip([str(x) for x in res.get("names") or []], res.get("frames") or []))
+            if sorted(byname) != sorted(names) or len(res.get("frames") or []) != len(names):
+                raise ExecStop("{0}: frame names read back {1} (frames {2}), asked {3}".format(tag, res.get("names"), res.get("frames"), names))
+            nt = sorted(set(int(u) for u in g.uids(W, "Tunnel")) - t0)
+            if len(nt) != 1:
+                raise ExecStop("{0}: {1} new Tunnel(s) {2}, expected the one selector".format(tag, len(nt), nt))
+            out.update(uid=int(res["case"]), frames=[int(byname[n]) for n in names], selector=nt[0], names_back=list(res["names"]),
+                       how=CREATE_ROUTES[route])
+            return out
+        if route == "subvi":
+            f0 = set(int(u) for u in g.uids(W, "SubVI"))
+            rec = s._op("drop_subvi", lambda: g.drop_subvi(W, a["subvi_path"], di, pos), "{0} on Diagram[{1}] #{2}".format(
+                os.path.basename(a["subvi_path"]), di, dg))
+            out = self._done(rec, tag)
+            new = sorted(set(int(u) for u in g.uids(W, "SubVI")) - f0)
+            if len(new) != 1:
+                raise ExecStop("{0}: {1} new SubVI(s) {2}, expected 1".format(tag, len(new), new))
+            out.update(uid=new[0], how=CREATE_ROUTES[route])
+            return out
+        if route == "copy_in":
+            u = s.copy_in(a["class"], args["donor_uid"], dg, pos, tag=tag)
+            return {"err": None, "uid": u, "how": CREATE_ROUTES[route]}
+        if route == "const_on_term":
+            rs = next(r for r in real if r["term_uid"] == args["on"])
+            own = self.addr.owners.get(str(int(rs["frame_diagram"])))
+            if not own or own[0] != "WhileLoop" or int(own[1] or 0) <= 0:      # card 104-2: stop here, not in int(None)
+                raise ExecStop("{0}: the sink's diagram #{1} has no REAL WhileLoop owner in the (bound) owners map ({2})".format(
+                    tag, rs["frame_diagram"], own))
+            loop = int(own[1])
+            rec = s.const_row({"loop_uid": loop, "body_diagram": int(rs["frame_diagram"]), "node": V.node_of(rs),
+                               "term": rs["term_name"], "value": a.get("value")}, tag=tag)
+            out = self._done(rec, tag)
+            out["how"] = CREATE_ROUTES[route]
+            return out
+        raise ExecStop("create route {0!r} has no LabVIEW executor".format(route))
+
+    def stop(self, loop, src, real, op):
+        """OpStopFromNode_v0 (tools/recipes/build_opcreateconstonterm_v0.py:528-537): the While loop's conditional terminal
+        <- Terminals[t] of Nodes[n] of the loop's BODY (the source addressed by the same Addr triple as any connect)."""
+        (_d, n, t), how = self.addr.triple(real, src, True)
+        lab = json.load(open(os.path.join(BENCH, "opstopfromnode_labels.json"), encoding="utf-8"))
+        li = self.s.uid_index("WhileLoop", loop)
+
+        def _call():
+            vs = self.g.op(os.path.join(self.g.CLAUDEDEV, "OpStopFromNode_v0.vi"))
+            vs.SetControlValue("vi path", self.s.work)
+            vs.SetControlValue("Class Name", "WhileLoop")
+            vs.SetControlValue("index", int(li))
+            vs.SetControlValue(lab["index_node"], int(n))
+            vs.SetControlValue(lab["index_term"], int(t))
+            self.g._run(vs)
+            return self.g._err(vs, "error out") or ""
+        rec = self.s._op("stop_from_node", _call, "WhileLoop[{0}] #{1} cond <- N[{2}].t{3}".format(li, loop, n, t))
+        if rec.get("result"):
+            rec["err"] = rec.get("err") or rec["result"]
+        out = self._done(rec, "stop #{0}".format(loop))
+        out["how"] = ["OpStopFromNode_v0", how]
+        return out
+
+    def value_gate(self, uid, a, op):
+        """read_bool_const (OpConstValueB_v0, card 100-2 V4): the stage STOPS when the value equals `stop_if`."""
+        r = self.g.read_bool_const(self.s.work, uid)
+        self.s.fact("VALUE GATE {0} #{1} = {2!r} (stop_if {3!r}) err {4!r}".format(a.get("id"), uid, r.get("value"),
+                                                                               a.get("stop_if"), r.get("err")))
+        if r.get("err") or r.get("echo") not in (None, uid) or not isinstance(r.get("value"), bool):
+            raise ExecStop("VALUE-GATE {0}: #{1} not read ({2})".format(a.get("id"), uid, r))
+        if r["value"] == a["stop_if"]:
+            raise ExecStop("VALUE-GATE {0}: #{1} is {2!r} - the plan says stop".format(a.get("id"), uid, r["value"]))
+        return {"err": None, "value": r["value"], "how": "read_bool_const"}
+
+    def recheck_gate(self, uid, a, op):
+        """card 103-4 PART-B ENTRY: the value gate Part A passed, READ again on the loaded file (same read, no edit)."""
+        return self.value_gate(uid, a, op)
+
+    def branch(self, tun, dst, real, loop_of, op, side="outer"):
+        face = "InnerTerminal" if side == "inner" else "OuterTerminal"     # card 100-3: an INPUT tunnel branches inside
+        outer = [r for r in real if r["owner_uid"] == tun and r["term_class"] == face and r["is_source"]]
+        if len(outer) != 1 or not outer[0]["wire_uid"]:
+            raise ExecStop("branch: tunnel #{0} has no wired {1} source".format(tun, side))
+        rd = next(r for r in real if r["term_uid"] == dst)
+        if V.node_class(rd) == FP:
+            return self.indicator(outer[0], rd)
+        dt, hd = self.addr.triple(real, dst, False, loop_of)
+        out = self._done(self._cfw(int(outer[0]["wire_uid"]), tun, dt), "branch #{0}".format(tun))
+        out["how"] = ["cfw off tunnel outer", hd]
+        return out
+
+    def case_frame_wire(self, case, k, src, dst, real, op):
+        """card 124-2 (PD249(d)): gscript.case_frame_wire (card 124-1's verb, the contract in brief_124-2.md) wires src -> dst
+        on frame k of case #case. A broken wire or a junk Invoke left after its purge STOPS."""
+        missing = verbs_missing("case_frame_wire")
+        if missing:
+            raise ExecStop("case_frame_wire: verb(s) not defined: {0}".format(missing))
+        tag = "case_frame_wire #{0} frame {1}".format(case, k)
+        rec = self.s._op("case_frame_wire", lambda: self.g.case_frame_wire(self.s.work, case, k, src, dst),
+                         "case #{0} frame {1}: {2} -> {3}".format(case, k, src, dst))
+        res = rec.get("result") or {}
+        out = self._done(rec, tag)
+        if not isinstance(res, dict) or not res.get("wire_uid"):
+            raise ExecStop("{0}: no wire came back ({1!r})".format(tag, res))
+        if res.get("broken"):
+            raise ExecStop("{0}: wire #{1} reads Is Broken? True".format(tag, res.get("wire_uid")))
+        if res.get("invoke_left"):
+            raise ExecStop("{0}: {1} junk Invoke(s) left after case_frame_wire's purge".format(tag, res["invoke_left"]))
+        var = op.get("variant") or "new_wire"
+        # card 124-6 (R4): a 'branch' must land on the source face's EXISTING wire (when the pre-op read carries it)
+        sw = next((int(r["wire_uid"] or 0) for r in real if r["term_uid"] == res.get("src_term_uid")), 0)
+        if var == "branch" and sw and int(res["wire_uid"]) != sw:
+            raise ExecStop("{0}: variant branch, but wire #{1} != the source face's wire #{2}".format(tag, res["wire_uid"], sw))
+        out.update(wire_uid=res["wire_uid"], src_term_uid=res.get("src_term_uid"), dst_term_uid=res.get("dst_term_uid"),
+                   purged=res.get("purged"), how=CASE_FRAME_WIRE_HOW, variant=var, census=ROUTE_CENSUS["case_frame_wire"].get(var))
+        return out
+
+    def connect_term_uid(self, src, dst, real, op):
+        """card 124-6 (PD250(c)): gscript.connect_term_uid(work, sink=dst, src=src) for an R1/R2 tunnel group. A missing verb,
+        no wire back, a broken wire or a junk Invoke left after the verb's purge STOPS."""
+        missing = verbs_missing("connect_term_uid")
+        if missing:
+            raise ExecStop("connect_term_uid: verb(s) not defined: {0}".format(missing))
+        tag = "connect_term_uid #{0} <- #{1}".format(dst, src)
+        rec = self.s._op("connect_term_uid", lambda: self.g.connect_term_uid(self.s.work, dst, src), tag)
+        res = rec.get("result") or {}
+        out = self._done(rec, tag)
+        if not isinstance(res, dict) or not res.get("wire_uid"):
+            raise ExecStop("{0}: no wire came back ({1!r})".format(tag, res))
+        var = op.get("variant") or "register_end_case_border"
+        if res.get("broken") and var not in FS_VARIANT_HOW:
+            raise ExecStop("{0}: wire #{1} reads Is Broken? True".format(tag, res.get("wire_uid")))
+        if res.get("invoke_left"):
+            raise ExecStop("{0}: {1} junk Invoke(s) left after the verb's purge".format(tag, res["invoke_left"]))
+        # card 127-2: a border crossing may read Is Broken? True from a LOOSE joint (126-6 B2 w27927) - the plan's next
+        # wire_remove_loose_ends row clears it (diag_c126_6_cross.log:61-65); recorded, not a stop here
+        out.update(wire_uid=res["wire_uid"], purged=res.get("purged"), how=CONNECT_TERM_UID_HOW, variant=var,
+                   census=op.get("sim_census") if var in FS_VARIANT_HOW else ROUTE_CENSUS["connect_term_uid"].get(var),
+                   broken_until_rle=bool(res.get("broken")) if var in FS_VARIANT_HOW else None)
+        return out
+
+    def rle(self, wires, op):
+        """card 127-2: gscript.wire_remove_loose_ends on each live wire; a uid echo error or a wire still Is Broken? True after
+        the call STOPS (126-6: every crossing wire read False after RLE)."""
+        missing = verbs_missing("wire_remove_loose_ends")
+        if missing:
+            raise ExecStop("wire_remove_loose_ends: verb(s) not defined: {0}".format(missing))
+        res = []
+        for w in wires:
+            tag = "wire_remove_loose_ends w{0}".format(w)
+            rec = self.s._op("wire_remove_loose_ends", lambda w=w: self.g.wire_remove_loose_ends(self.s.work, w), tag)
+            r = rec.get("result") or {}
+            self._done(rec, tag)
+            if not isinstance(r, dict) or r.get("err") or r.get("broken_after"):
+                raise ExecStop("{0}: {1!r}".format(tag, r))
+            res.append(dict(r, wire=w))
+        return {"rle": res, "census": {}}
+
+    def index_mode_fix(self, tun, indexing):
+        want = 1 if indexing else 0
+        li = self.s.uid_index("LoopTunnel", tun)
+        t = self.g.tunnels(self.s.work, li)
+        if t.get("index_mode") != want:
+            self.s._op("set_index_mode", lambda: self.g.set_index_mode(self.s.work, li, want), "#{0} -> {1}".format(tun, want))
+            t = self.g.tunnels(self.s.work, self.s.uid_index("LoopTunnel", tun))
+        if t.get("index_mode") != want:
+            raise ExecStop("tunnel #{0} IndexMode {1} != plan {2}".format(tun, t.get("index_mode"), want))
+        return want
+
+    def delete_wire(self, w, op, plan_wire=None):
+        rec = self.s.delete_wire(w, "stagexec")
+        return self._done(rec, "delete_wire w{0} (plan w{1})".format(w, plan_wire))
+
+    def delete_object(self, cls, uid, op):
+        rec = self.s.delete_object(cls, uid, "stagexec")
+        return self._done(rec, "delete_object {0} #{1}".format(cls, uid))
+
+    def rbw(self, op):
+        r = self.s.broken_wire_count(allow_mutation=True, tag="stagexec RBW")
+        return {"rbw": r}
+
+
+# ============================================================================================ SIMULATED backend (dry)
+class SimReader(object):
+    def __init__(self, be):
+        self.be = be
+
+    def diagrams(self):
+        # card 100-3: + every body the plan made (an EMPTY new body is in report_all('Diagram') as soon as its loop exists)
+        return sorted(set(int(r["frame_diagram"] or 0) for r in self.be.st["terminals"]) |
+                      set(int(k) for k in (self.be.st.get("diagrams") or {})))
+
+    def _routed(self, d):
+        """PD185: (owner structure, outer row) for every owner-routed tunnel face on diagram d - as LabVIEW lists them:
+        the tunnel is NOT a node, its outer face is a terminal of its owner structure."""
+        st, out = self.be.st, []
+        for r in st["terminals"]:
+            # card 112-2 (v): + LoopTunnel outer faces, listed on their OWNER LOOP (FACE_ROUTED)
+            if r["owner_class"] in FACE_ROUTED and r["term_class"] == "OuterTerminal" and int(r["frame_diagram"] or 0) == d:
+                try:
+                    out.append((tunnel_owner(st["terminals"], r["owner_uid"], st.get("owners")), r))
+                except ExecStop:
+                    pass            # owner unknown: listed nowhere, so addressing it stops in Addr._triple (as the real one)
+        return out
+
+    def node_uids(self, didx):
+        d = self.diagrams()[didx]
+        out = []
+        for r in self.be.st["terminals"]:
+            n = V.node_of(r)
+            if int(r["frame_diagram"] or 0) == d and n not in out and listed_as_node(r):
+                out.append(n)
+        for o, _r in self._routed(d):
+            if o not in out:
+                out.append(o)
+        for L in self.be.st["loops"] or []:                     # PD187 fit: a loop is a node of its PARENT diagram only
+            u = int(L["loop_uid"])
+            p = loop_parent(self.be.st, L)                      # unplaceable (no owners map) -> legacy: every diagram,
+            if u not in out and p in (d, None):                 # which the PRIME parity then reports as only_sim
+                out.append(u)
+        return out
+
+    def node_terms(self, didx, nidx):
+        d = self.diagrams()[didx]
+        u = self.node_uids(didx)[nidx]
+        rows = [r for r in self.be.st["terminals"] if V.node_of(r) == u and int(r["frame_diagram"] or 0) == d
+                and r["owner_class"] not in NOT_NODES and not is_ct(r)] + [r for o, r in self._routed(d) if o == u]
+        loop = next((L for L in self.be.st["loops"] or [] if int(L["loop_uid"]) == u), None)
+        if loop:
+            regs = set(int(x) for x in loop.get("right_uids") or []) | set(
+                int(y) for v in (loop.get("left_of") or {}).values() for y in (v if isinstance(v, list) else [v]))
+            rows = rows + [r for r in self.be.st["terminals"] if r["owner_uid"] in regs and r["term_class"] == "OuterTerminal"]
+        return u, [{"i": i, "name": r["term_name"], "is_source": r["is_source"], "wire": r["wire_uid"], "uid": r["term_uid"]}
+                   for i, r in enumerate(rows)]
+
+    def node_term_uids(self, didx, nidx):
+        """card 112-2 D2: the offline analogue of OpNodeTermsUid_v0 - each listed entry's own terminal uid."""
+        return [int(x["uid"]) for x in self.node_terms(didx, nidx)[1]]
+
+    def ct_uids(self):                                                  # the report_all('ControlTerminal') analogue
+        return set(r["term_uid"] for r in self.be.st["terminals"] if is_ct(r))
+
+    def obj_uids(self, cls):                                            # the report_all(<class>) analogue (PD188(c))
+        out = []
+        for r in self.be.st["terminals"]:
+            if r["owner_class"] == cls and int(r["owner_uid"]) not in out:
+                out.append(int(r["owner_uid"]))
+        return out
+
+
+class SimBackend(object):
+    """The DRY backend: every real op applies the plan actions it covers with stagesim's own OPS on a private state
+    (the measured models), then renumbers the created uids to fresh POSITIVE ones, as LabVIEW would; the executor's
+    compile / address / bind / compare path runs unchanged. `fault` injects one defect for the self-test."""
+
+    def __init__(self, plan, base_state, models, fault=None):
+        self.plan, self.st, self.models, self.fault = plan, copy.deepcopy(base_state), models, fault or {}
+        self.next = 10 ** 7
+        self.addr = Addr(SimReader(self))
+        self.calls = []
+        self.unroutable = []
+        self.S1 = SS.load_s1(plan)
+
+    def read(self):
+        return copy.deepcopy(dedupe(self.st["terminals"]))
+
+    def obj_classes(self, real):
+        return classes_of(real, self.st.get("objs"))
+
+    def _apply(self, op, check=None):
+        self.calls.append(op["kind"])
+        self.last_effects = []
+        for n in op["acts"]:
+            a = self.plan["actions"][n - 1]
+            P = SS.model_for(a["op"], self.models)[0]
+            res = SS.OPS[a["op"]](self.st, a, P, self.S1, {})
+            self.last_effects.append(res[0] if isinstance(res, tuple) and res else res)
+        ren = {}
+
+        def rn(v):                                     # every created (negative) id -> a fresh positive one, once
+            if isinstance(v, int) and v < 0:
+                if v not in ren:
+                    self.next += 1
+                    ren[v] = self.next
+                return ren[v]
+            return v
+        for r in self.st["terminals"]:
+            for k in ("owner_uid", "term_uid", "wire_uid", "frame_diagram"):     # card 100-3: + a created body diagram
+                r[k] = rn(r[k])
+        for o in self.st["objs"]:
+            o["uid"] = rn(int(o["uid"]))
+        for L in self.st["loops"] or []:
+            L["loop_uid"] = rn(int(L["loop_uid"]))
+            L["right_uids"] = [ren.get(int(u), int(u)) for u in L.get("right_uids") or []]
+            L["left_of"] = dict((str(ren.get(int(k), int(k))), [ren.get(int(x), int(x)) for x in (v if isinstance(v, list) else [v])])
+                                for k, v in (L.get("left_of") or {}).items())
+        self.st["diagrams"] = dict((str(rn(int(k))), rn(int(v))) for k, v in (self.st.get("diagrams") or {}).items())
+        self.st["owners"] = dict((str(rn(int(k))), [v[0], rn(int(v[1] or 0))]) for k, v in (self.st.get("owners") or {}).items())
+        self.st["sym"] = dict((k, rn(v)) for k, v in self.st["sym"].items())
+        if self.st.get("case_tunnel_frame"):                 # card 120-3 R2: {case tunnel: frame} is uid-keyed too
+            self.st["case_tunnel_frame"] = dict((str(rn(int(k))), rn(int(v))) for k, v in self.st["case_tunnel_frame"].items())
+        if self.st.get("case_frames"):                       # card 124-2: {case: [[name, frame], ...]} is uid-keyed too
+            self.st["case_frames"] = dict((str(rn(int(k))), [[n_, rn(int(f_))] for n_, f_ in v])
+                                          for k, v in self.st["case_frames"].items())
+        _fs_remap(self.st, rn)                               # card 126-3: fs_frames / fs_alias / fs_tunnels / fs_pairs
+        _fs_entries_remap(self.st, rn)                       # card 127-4: fs_border_entries / act_wires / fs_frame_inferred
+        f = self.fault
+        if f.get("at") == op["acts"][-1]:
+            if f.get("kind") == "drop_edge":                   # a real op that made one edge fewer
+                r = next(r for r in self.st["terminals"] if r["wire_uid"] and not r["is_source"])
+                r["wire_uid"] = 0
+            elif f.get("kind") == "extra_obj":                 # a junk object the purge missed
+                self.st["terminals"].append({"term_uid": 99999999, "term_name": "", "is_source": False, "wire_uid": 0,
+                                             "owner_uid": 99999998, "owner_class": "Invoke", "frame_diagram": 0,
+                                             "term_class": "Terminal"})
+            elif f.get("kind") == "delete_only_sink":           # LabVIEW took the other only-sink fate
+                for r in self.st["terminals"]:
+                    if r["term_uid"] in f["terms"]:
+                        r["wire_uid"] = 0
+            elif f.get("kind") == "sim_error":                  # card 127-4: a simulator fault inside the dry backend
+                raise SS.SimError("injected simulator fault at act {0}".format(f["at"]))
+        return {"applied": op["acts"], "check": check}
+
+    def _check(self, real, term, is_source, loop_of=None):
+        (d, n, t), how = self.addr.triple(real, term, is_source, loop_of)
+        u, rows = self.addr.rd.node_terms(d, n)
+        return {"triple": [d, n, t], "how": how, "resolved_name": rows[t]["name"]}
+
+    def move_in(self, uid, dest, pos, op):
+        if dest not in self.addr.rd.diagrams():                  # card 100-3: a symbolic dest must have been bound
+            return self._unroutable(op, ExecStop("move_in #{0}: destination diagram #{1} not in the diagram list".format(uid, dest)))
+        return self._apply(op)
+
+    def add_sr(self, loop, y, op):
+        return self._apply(op)
+
+    # ------------------------------------------------------------------ card 100-3: the dry side of exec_create
+    def _node_end(self, real, term, is_source, verb):
+        """The end a node-addressed creator needs: a terminal of a Diagram.Nodes[] node (Traverse('Node') by uid finds
+        nodes only - a tunnel face, register, constant or ControlTerminal is not one), then its Addr triple."""
+        r = next((x for x in real if x["term_uid"] == term), None)
+        if r is None:
+            raise ExecStop("{0}: terminal #{1} not in the live read".format(verb, term))
+        if not listed_as_node(r) or is_const(r) or V.node_of(r) != r["owner_uid"]:
+            raise ExecStop("{0} addresses Traverse('Node') by uid; #{1} {2!r} belongs to {3} #{4}, which is not a Node "
+                           "(a tunnel face / register / constant / panel terminal)".format(
+                               verb, term, r["term_name"], r["owner_class"], r["owner_uid"]))
+        return self._check(real, term, is_source)
+
+    def create(self, route, a, args, real, op):
+        try:
+            miss = verbs_missing(route)
+            if miss:
+                raise ExecStop("CREATE-NO-VERB {0}: not defined: {1}".format(route, miss))
+            dl = self.addr.rd.diagrams()
+            if args["diagram"] not in dl:
+                raise ExecStop("create {0}: diagram #{1} not in the diagram list".format(route, args["diagram"]))
+            chk = {"route": route, "verbs": ROUTE_VERBS.get(route)}
+            if route in ("local_read", "local_write"):
+                cts = [r for r in real if is_ct(r) and r["term_name"] == a["label"]]
+                if len(cts) != 1:
+                    raise ExecStop("create {0}: {1} front-panel terminal(s) labelled {2!r} (a local binds to exactly one)".format(
+                        route, len(cts), a["label"]))
+                chk["panel_ct"] = cts[0]["term_uid"]
+            elif route == "indicator":
+                face = tunnel_outer_face(real, args["born_on"], args["diagram"])
+                cst = const_born_on(real, args["born_on"], args["diagram"]) if face is None else None
+                if face is not None:                   # card 100-6 / 108-6: the tunnel-face route of the real backend
+                    chk.update(tunnel_face=face["term_uid"], tunnel=face["owner_uid"], tunnel_class=face["owner_class"],
+                               via="gscript.create_indicator_nested(W, face, None) -> " + FACE_ROUTES[face["owner_class"]])
+                elif cst is not None:                  # card 122-3: the constant route of the real backend
+                    chk.update(const=cst["owner_uid"], const_class=cst["owner_class"], via=CONST_IND_ROUTE)
+                else:
+                    chk.update(self._node_end(real, args["born_on"], True, "create_indicator_nested"))
+            elif route == "control":
+                chk.update(self._node_end(real, args["on"], False, "create_control_nested"))
+            elif route == "const_on_term":
+                chk.update(self._node_end(real, args["on"], False, "const_row (OpCreateConstOnTerm_v0)"))
+                rs = next(x for x in real if x["term_uid"] == args["on"])
+                # card 104-2: the SAME map the real backend reads (Executor sets addr.owners, bound to real uids), not this
+                # backend's private state - the private map hid the sim-keyed lookup from every dry run and pre-run
+                own = (self.addr.owners or {}).get(str(int(rs["frame_diagram"])))
+                if not own or own[0] != "WhileLoop" or int(own[1] or 0) <= 0:
+                    raise ExecStop("const_row: the sink's diagram #{0} is not a WhileLoop body ({1})".format(rs["frame_diagram"], own))
+            elif route == "copy_in":
+                S0 = SS.base_state(_j(_abs(self.plan["finalized"]["base"]["path"])), self.plan.get("context"))
+                if SS.obj_class(S0, args["donor_uid"]) != a["class"]:
+                    raise ExecStop("copy_in: donor #{0} is {1} in the base, not {2}".format(
+                        args["donor_uid"], SS.obj_class(S0, args["donor_uid"]), a["class"]))
+            elif route == "primitive" and not a.get("prim"):
+                raise ExecStop("create_primitive_nested needs `prim`")
+            elif route == "queue":                                   # card 118-1: same-diagram source; 118-3: or the body's parent
+                sd = SS.resolve_diag(self.st, a["diagram"])
+                s_ = SS.resolve_addr(self.st, a["src"], True)
+                par = (self.st.get("diagrams") or {}).get(str(int(sd)))
+                if int(s_["frame_diagram"] or 0) != int(sd) and not (par is not None and int(par) == int(s_["frame_diagram"] or 0)):
+                    raise ExecStop("create queue: src on diagram #{0}, node on #{1} (same diagram, or a loop body of that diagram "
+                                   "created by this plan - PD234(i))".format(s_["frame_diagram"], sd))
+                chk.update(self._node_end(real, args["src"], True, "queue_node"), auto_tunnel=int(s_["frame_diagram"] or 0) != int(sd))
+            elif route == "case_wired":                              # card 123-7: gscript.case_wired's preconditions
+                chk.update(self._node_end(real, args["src"], True, "case_wired (connect_nested_v1 source)"),
+                           frames=list(a.get("frames") or SS.CASE_FRAMES_DEFAULT))
+                rs = next(x for x in real if x["term_uid"] == args["src"])
+                if int(rs["frame_diagram"] or 0) != int(args["diagram"]):
+                    raise ExecStop("create case_wired: src #{0} on diagram #{1}, case on #{2} (same diagram only)".format(
+                        args["src"], rs["frame_diagram"], args["diagram"]))
+            elif route == "case":                                    # card 120-3 R2: gscript.case_in's preconditions
+                own = (self.addr.owners or {}).get(str(int(args["diagram"])))
+                if not own or own[0] not in ("WhileLoop", "ForLoop") or int(own[1] or 0) <= 0:
+                    raise ExecStop("create case: diagram #{0} is not a (bound) For/While body ({1}) - case_in places a case "
+                                   "in a loop body".format(args["diagram"], own))
+                cts = [r for r in real if is_ct(r) and r["term_name"] == a["label"] and r["is_source"]]
+                if len(cts) != 1:
+                    raise ExecStop("create case: {0} panel CONTROL(s) labelled {1!r} (build_case wires the selector from "
+                                   "exactly one, by label)".format(len(cts), a["label"]))
+                chk.update(selector_ct=cts[0]["term_uid"], frames=list(a.get("frames") or SS.CASE_FRAMES_DEFAULT))
+            elif route == "fs_create":                               # card 126-3: the census the real route checks
+                chk.update(census=ROUTE_CENSUS[route]["flat_sequence_donor"], how=CREATE_ROUTES[route])
+            elif route == "fs_frame":                                # card 126-3: the reference frame's REAL FS owner
+                own = (self.addr.owners or {}).get(str(int(args["diagram"])))
+                fl = (self.st.get("fs_frames") or {}).get(str(int(own[1] or 0))) if own and own[0] == SS.FS_CLS else None
+                if not fl or int(args["diagram"]) not in [int(x) for x in fl]:
+                    raise ExecStop("create fs_frame: diagram #{0} is not a frame of a (bound) FlatSequence ({1})".format(
+                        args["diagram"], own))
+                chk.update(fs=int(own[1]), ref_index=[int(x) for x in fl].index(int(args["diagram"])),
+                           census=ROUTE_CENSUS[route]["add_one_frame"], how=CREATE_ROUTES[route])
+        except ExecStop as e:
+            return self._unroutable(op, e)
+        out = self._apply(op, chk)
+        if route == "fs_create":                                     # card 126-3: what LVBackend returns
+            fs_ = self.st["sym"]["new:" + a["as"]]
+            out.update(uid=fs_, frames=[self.st["sym"]["new:" + a["as"] + ".f0"]])
+        elif route == "fs_frame":
+            fl = self.st["fs_frames"][str(chk["fs"])]
+            out.update(uid=chk["fs"], new_frame=int(fl[chk["ref_index"] + 1]), frames=[int(x) for x in fl])
+        if route in ("while", "for"):
+            out.update(uid=self.st["sym"]["new:" + a["as"]], body=self.st["sym"]["new:" + a["as"] + ".body"])
+        elif route in ("case", "case_wired"):                        # card 120-3 R2 / 123-7: what LVBackend returns
+            n_ = len(a.get("frames") or SS.CASE_FRAMES_DEFAULT)
+            out.update(uid=self.st["sym"]["new:" + a["as"]], selector=self.st["sym"]["new:" + a["selector_as"]],
+                       frames=[self.st["sym"]["new:{0}.f{1}".format(a["as"], k)] for k in range(n_)])
+        return out
+
+    def stop(self, loop, src, real, op):
+        try:
+            miss = verbs_missing("stop")
+            if miss:
+                raise ExecStop("CREATE-NO-VERB stop: {0}".format(miss))
+            if int(loop) not in [int(L["loop_uid"]) for L in self.st["loops"] or []]:
+                raise ExecStop("stop: loop #{0} not in the loop table".format(loop))
+            chk = self._node_end(real, src, True, "OpStopFromNode_v0 (body Nodes[] index)")
+        except ExecStop as e:
+            return self._unroutable(op, e)
+        return self._apply(op, chk)
+
+    def value_gate(self, uid, a, op):
+        try:
+            miss = verbs_missing("gate")
+            if miss:
+                raise ExecStop("CREATE-NO-VERB gate: {0}".format(miss))
+            if int(uid) not in self.addr.rd.obj_uids("BooleanConstant"):
+                raise ExecStop("gate: #{0} not in report_all('BooleanConstant')".format(uid))
+        except ExecStop as e:
+            return self._unroutable(op, e)
+        out = self._apply(op, {"value": "not read offline (the graph carries no values)"})
+        out["value"] = None
+        return out
+
+    def recheck_gate(self, uid, a, op):
+        """card 103-4: the dry side of a Part-B entry's gate re-read - the constant must still be a BooleanConstant of
+        the graph; nothing is applied (the gate op changed nothing in Part A)."""
+        if int(uid) not in self.addr.rd.obj_uids("BooleanConstant"):
+            raise ExecStop("FROM-STEP gate {0}: #{1} not in report_all('BooleanConstant')".format(a.get("id"), uid))
+        return {"err": None, "value": None, "how": "dry: presence only"}
+
+    def wire_sr(self, variant, loop, right, term, real, op):
+        try:
+            chk = self._check(real, term, variant == "RightIn")
+        except ExecStop as e:
+            return self._unroutable(op, e)
+        chk.update(route="wire_sr:" + variant, loop=loop, right=right)     # card 112-1 T4 route report
+        return self._apply(op, chk)
+
+    def _unroutable(self, op, e):
+        """violation-decisions 16:10 (card 85-1): the DRY run records EVERY unroutable row and keeps simulating (the op is
+        still applied from the plan), so one dry run lists them all; dry_run() then FAILS naming each. The real backend
+        never collects - it stops at the first."""
+        if getattr(self, "strict", False):             # PD193: on a reused (stale) read the executor retries once on a
+            raise e                                    # fresh read, as the real backend's pre-mutation stop would
+        rec = {"acts": op["acts"], "ids": [self.plan["actions"][n - 1].get("id") for n in op["acts"]], "err": str(e)[:300]}
+        self.unroutable.append(rec)
+        return self._apply(op, {"unroutable": rec["err"]})
+
+    def connect(self, src, dst, real, loop_of, op):
+        try:
+            if self.fault.get("kind") == "unroutable" and op["acts"][-1] in self.fault.get("at_acts", ()):
+                raise ExecStop("CONNECT-NO-VERB: injected unroutable row (self-test)")
+            kind, _rs, _rd, info = connect_route(self.addr, real, src, dst, loop_of)   # PD187(b): the real backend's route
+            chk = None if kind == "indicator" else ({"src_triple": list(info["src"]), "how": info["src_how"]}
+                                                     if kind == "ctlsink" else self._check(real, dst, False, loop_of))
+        except ExecStop as e:
+            return self._unroutable(op, e)
+        if chk is not None:
+            chk["route"] = kind
+        return self._apply(op, chk)
+
+    def branch(self, tun, dst, real, loop_of, op, side="outer"):
+        face = "InnerTerminal" if side == "inner" else "OuterTerminal"     # card 100-3: the real backend's face rule
+        try:
+            f = [r for r in real if r["owner_uid"] == tun and r["term_class"] == face and r["is_source"]]
+            if len(f) != 1 or not f[0]["wire_uid"]:
+                raise ExecStop("branch: tunnel #{0} has no wired {1} source".format(tun, side))
+            rd = next(r for r in real if r["term_uid"] == dst)
+            chk = None if is_ct(rd) else self._check(real, dst, False, loop_of)
+        except ExecStop as e:
+            return self._unroutable(op, e)
+        return self._apply(op, chk)
+
+    def case_frame_wire(self, case, k, src, dst, real, op):
+        """card 124-2 (PD249(d)): the dry side of gscript.case_frame_wire - the verb is defined, the case exists with a frame
+        k (this backend's own case_frames, renumbered like every uid), each {'tunnel'} end is a case tunnel owning an inner
+        face ON frame k and each {'node', 'term'} end a terminal of that name on frame k. The census stays UNMEASURED."""
+        try:
+            miss = verbs_missing("case_frame_wire")
+            if miss:
+                raise ExecStop("CREATE-NO-VERB case_frame_wire: not defined: {0}".format(miss))
+            fr = (self.st.get("case_frames") or {}).get(str(int(case)))
+            if not fr or not 0 <= int(k) < len(fr):
+                raise ExecStop("case_frame_wire: case #{0} has no frame {1} ({2})".format(case, k, fr))
+            fd = int(fr[int(k)][1])
+            faces = []
+            for e, want in ((src, True), (dst, False)):
+                if "tunnel" in e:
+                    rs = [r for r in real if r["owner_uid"] == e["tunnel"] and r["owner_class"] in SS.CASE_FACE_CLS and
+                          r["term_class"] == "InnerTerminal" and int(r["frame_diagram"] or 0) == fd]
+                else:
+                    rs = [r for r in real if V.node_of(r) == e.get("node") and r["term_name"] == e.get("term") and
+                          int(r["frame_diagram"] or 0) == fd]
+                rs = [r for r in rs if bool(r["is_source"]) == want]
+                if len(rs) != 1:
+                    raise ExecStop("case_frame_wire: end {0} has {1} {2} terminal(s) on frame {3} (#{4}) of case #{5}".format(
+                        e, len(rs), "source" if want else "sink", k, fd, case))
+                faces.append(rs[0]["term_uid"])
+            # card 124-6 (R4): the compiled variant must match the graph - 'branch' iff the source is already wired
+            var = op.get("variant") or "new_wire"
+            sw = next(int(r["wire_uid"] or 0) for r in real if r["term_uid"] == faces[0])
+            if (var == "branch") != bool(sw):
+                raise ExecStop("case_frame_wire: compiled variant {0!r} but the source #{1} is {2}".format(
+                    var, faces[0], "wired (w{0})".format(sw) if sw else "unwired"))
+            dw = next(int(r["wire_uid"] or 0) for r in real if r["term_uid"] == faces[1])
+            if dw:
+                raise ExecStop("case_frame_wire: the sink #{0} is already wired (w{1})".format(faces[1], dw))
+            chk = {"route": "case_frame_wire", "case": case, "frame_index": int(k), "frame_name": fr[int(k)][0],
+                   "frame_diagram": fd, "src": src, "dst": dst, "src_term": faces[0], "dst_term": faces[1],
+                   "variant": var, "census": ROUTE_CENSUS["case_frame_wire"].get(var)}
+        except ExecStop as e:
+            return self._unroutable(op, e)
+        return self._apply(op, chk)
+
+    def _fs_connect_check(self, rs, rd, op):
+        """card 126-3: the dry side of a Flat Sequence connect_term_uid. fs_frame_to_frame: source and sink on frames k and k+1
+        of ONE (bound) FlatSequence, both UNWIRED (the one measured shape, diag_c125_5_fsscr.log:41-60). fs_face: one end is a
+        FlatSequenceInnerTunnel face, both ends on ONE diagram, the sink unwired (census UNMEASURED)."""
+        var = op["variant"]
+        if rd["wire_uid"]:
+            raise ExecStop("connect_term_uid {0}: the sink #{1} is already wired (w{2})".format(var, rd["term_uid"], rd["wire_uid"]))
+        if var in FS_VARIANT_HOW:
+            # card 127-2: fs_border = ends on DIFFERENT diagrams, the sink on a frame of a FlatSequence; inner branch = the
+            # source is a FlatSequenceOuterTunnel face on the sink's own frame, already wired (PD257(d))
+            own = self.addr.owners or self.st.get("owners") or {}
+            fo = own.get(str(int(rd["frame_diagram"] or 0)))
+            if not fo or fo[0] != SS.FS_CLS:
+                raise ExecStop("connect_term_uid {0}: the sink #{1} is on #{2}, not a Flat Sequence frame ({3})".format(
+                    var, rd["term_uid"], rd["frame_diagram"], fo))
+            same = int(rs["frame_diagram"] or 0) == int(rd["frame_diagram"] or 0)
+            if var == "fs_border" and same:
+                raise ExecStop("connect_term_uid fs_border: both ends on #{0} - no border".format(rd["frame_diagram"]))
+            if var == "fs_border_inner_branch" and (not same or rs["owner_class"] != "FlatSequenceOuterTunnel" or not rs["wire_uid"]):
+                raise ExecStop("connect_term_uid fs_border_inner_branch: source #{0} ({1} on #{2}, w{3}) is not a wired FS "
+                               "tunnel face on the sink's frame #{4}".format(rs["term_uid"], rs["owner_class"],
+                                                                             rs["frame_diagram"], rs["wire_uid"], rd["frame_diagram"]))
+            return {"route": "connect_term_uid", "variant": var, "src_term": rs["term_uid"], "dst_term": rd["term_uid"],
+                    "census": op.get("sim_census"), "sim_variant": op.get("sim_variant"), "how": CONNECT_TERM_UID_HOW}
+        if var == "fs_face":
+            if SS.FSIT_CLS not in (rs["owner_class"], rd["owner_class"]) or int(rs["frame_diagram"] or 0) != int(rd["frame_diagram"] or 0):
+                raise ExecStop("connect_term_uid fs_face: ends {0}@#{1} / {2}@#{3} - one FS tunnel face, one diagram".format(
+                    rs["owner_class"], rs["frame_diagram"], rd["owner_class"], rd["frame_diagram"]))
+            return {"route": "connect_term_uid", "variant": var, "src_term": rs["term_uid"], "dst_term": rd["term_uid"],
+                    "census": None, "how": CONNECT_TERM_UID_HOW}
+        own = self.addr.owners or {}
+        lo = [own.get(str(int(r["frame_diagram"] or 0))) for r in (rs, rd)]
+        if not all(o and o[0] == SS.FS_CLS for o in lo) or int(lo[0][1]) != int(lo[1][1]):
+            raise ExecStop("connect_term_uid fs_frame_to_frame: ends on {0} / {1}, not two frames of ONE FlatSequence".format(lo[0], lo[1]))
+        fl = [int(x) for x in (self.st.get("fs_frames") or {}).get(str(int(lo[0][1]))) or []]
+        i, j = (fl.index(int(r["frame_diagram"])) if int(r["frame_diagram"]) in fl else None for r in (rs, rd))
+        if i is None or j is None or j != i + 1 or (i, j) != (op.get("from_index"), op.get("to_index")):
+            raise ExecStop("connect_term_uid fs_frame_to_frame: frames {0} -> {1} of {2}, compiled {3} -> {4} (adjacent k -> k+1 "
+                           "measured)".format(i, j, fl, op.get("from_index"), op.get("to_index")))
+        if rs["wire_uid"]:
+            raise ExecStop("connect_term_uid fs_frame_to_frame: the source #{0} is wired (w{1}) - branch UNMEASURED".format(
+                rs["term_uid"], rs["wire_uid"]))
+        return {"route": "connect_term_uid", "variant": var, "src_term": rs["term_uid"], "dst_term": rd["term_uid"], "fs": int(lo[0][1]),
+                "from_index": i, "to_index": j, "census": ROUTE_CENSUS["connect_term_uid"].get(var), "how": CONNECT_TERM_UID_HOW}
+
+    def connect_term_uid(self, src, dst, real, op):
+        """card 124-6 (PD250(c)): the dry side of an R1/R2 group - the verb is defined; one end is a shift register's INNER
+        face (srL inner = the source of an input tunnel, srR inner = the sink of an output tunnel) on a diagram D, the other
+        a node terminal on a FRAME of a case whose parent is D (the wire crosses exactly one case border); both ends
+        unwired except a wired source (branch at the source, as R1's register face was unwired: diag_c124_p3a_scratch.log:53)."""
+        try:
+            miss = verbs_missing("connect_term_uid")
+            if miss:
+                raise ExecStop("CREATE-NO-VERB connect_term_uid: not defined: {0}".format(miss))
+            rs, rd = (next((x for x in real if x["term_uid"] == t), None) for t in (src, dst))
+            if rs is None or rd is None or not rs["is_source"] or rd["is_source"]:
+                raise ExecStop("connect_term_uid: src #{0} / dst #{1} not a (source, sink) pair in the live read".format(src, dst))
+            if str(op.get("variant", "")).startswith("fs_"):          # card 126-3: the Flat Sequence variants
+                return self._apply(op, self._fs_connect_check(rs, rd, op))
+            if rd["wire_uid"]:
+                raise ExecStop("connect_term_uid: the sink #{0} is already wired (w{1})".format(dst, rd["wire_uid"]))
+            own = self.addr.owners or self.st.get("owners") or {}
+            reg, other = (rs, rd) if rs["owner_class"] in SR_CLS else (rd, rs)
+            if reg["owner_class"] not in SR_CLS or reg["term_class"] != "InnerTerminal":
+                raise ExecStop("connect_term_uid: neither end is a shift register's inner face ({0} / {1})".format(
+                    rs["owner_class"], rd["owner_class"]))
+            if (reg is rs) != (reg["owner_class"] == "LeftShiftRegister"):
+                raise ExecStop("connect_term_uid: {0} inner face as the {1}".format(reg["owner_class"], "source" if reg is rs else "sink"))
+            fo = own.get(str(int(other["frame_diagram"] or 0)))
+            if not fo or fo[0] != "CaseStructure":
+                raise ExecStop("connect_term_uid: the node end #{0} is on #{1}, not a case frame ({2})".format(
+                    other["term_uid"], other["frame_diagram"], fo))
+            case_d = (self.st.get("diagrams") or {}).get(str(int(other["frame_diagram"] or 0)))     # frame -> parent diagram
+            if case_d is None or int(case_d) != int(reg["frame_diagram"] or 0):
+                raise ExecStop("connect_term_uid: case #{0} sits on #{1}, the register face on #{2} (one border only)".format(
+                    fo[1], case_d, reg["frame_diagram"]))
+            var = op.get("variant") or "register_end_case_border"
+            chk = {"route": "connect_term_uid", "src_term": src, "dst_term": dst, "case": int(fo[1]),
+                   "frame_diagram": int(other["frame_diagram"] or 0), "register": reg["owner_uid"], "variant": var,
+                   "census": ROUTE_CENSUS["connect_term_uid"].get(var), "how": CONNECT_TERM_UID_HOW}
+        except ExecStop as e:
+            return self._unroutable(op, e)
+        return self._apply(op, chk)
+
+    def index_mode_fix(self, tun, indexing):
+        return 1 if indexing else 0
+
+    def delete_wire(self, w, op, plan_wire=None):
+        return self._apply(op)
+
+    def delete_object(self, cls, uid, op):
+        return self._apply(op)
+
+    def rbw(self, op):
+        return self._apply(op)
+
+    def rle(self, wires, op):                          # card 127-2: the dry side - the verb is defined, census {}
+        miss = verbs_missing("wire_remove_loose_ends")
+        if miss:
+            return self._unroutable(op, ExecStop("CREATE-NO-VERB wire_remove_loose_ends: not defined: {0}".format(miss)))
+        r = self._apply(op, {"route": "wire_remove_loose_ends", "wires": list(wires), "census": {}})
+        # card 127-4 (review c127-3-dry-innerbranch, 'Problems you didn't raise'): the row is NOT vacuous in the dry - the
+        # simulator's own wire list for it (act_wires of the `of` row, renumbered) must be non-empty and equal the live wires
+        # the executor addressed by terminals
+        sim = sorted(set(int(w) for e in self.last_effects for w in ((e or {}).get("wires") or [])))
+        if not sim or sim != sorted(set(int(w) for w in wires)):
+            raise ExecStop("RLE-DRY {0}: simulator wires {1} != executor live wires {2} (empty = a vacuous row)".format(
+                [self.plan["actions"][n - 1].get("id") for n in op["acts"]], sim, sorted(set(wires))))
+        return r
+
+
+def from_step_state(plan_path, from_step, binding):
+    """card 103-4: the offline stand-in for the saved Part-A file - simulated step (last act of op k) with every created
+    uid replaced by its Part-A real uid (bind_state). ExecStop when the binding does not load or leaves a uid unbound."""
+    plan, paths = load_final_plan(plan_path)
+    s_act = compile_plan(plan)[int(from_step) - 1]["acts"][-1]
+    st, unb = bind_state(_j(_abs(paths[s_act]))["state"], load_binding(binding, plan_path, from_step)["bind"])
+    if unb:
+        raise ExecStop("FROM-STEP: step {0} holds created uid(s) the binding does not bind: {1}".format(s_act, unb[:12]))
+    return st
+
+
+# ============================================================================================ recipe helpers (card 106-3)
+# Moved out of tools/recipes/stage_d1_disp.py (PD216(c)/(g): the recipe is <= 120 lines, helpers live here). Each one is
+# the recipe's code unchanged, parameterised by the plan / Stage / executor it used to read from module globals.
+REC_WIRING = ("tunnel", "connect", "wire_sr", "branch", "case_frame_wire",     # card 124-2: + the in-frame case wire
+              "connect_term_uid")                                               # card 124-6: + the R1/R2 tunnel group
+CUT = 10 ** 3
+
+
+class DryPlanBE(SimBackend):
+    """stage_prerun's dry backend for a plan-executing recipe (stage_d1_disp.DryBE, after stage_d1_l2a1.DryBE): the plan's
+    own simulated ops + ONE Stage op record per real op, so the pre-run's X5 counts the dispatched wiring ops.
+    PART-B (from_step): the simulated start is step from_step bound through the Part-A JSON (from_step_state)."""
+
+    def __init__(self, s, plan, plan_path, base, from_step=None, binding=None, models=None):
+        st = SS.base_state(base, plan.get("context")) if from_step is None else from_step_state(plan_path, from_step, binding)
+        models = SS.load_models() if models is None else models
+        if from_step is None:
+            SS.seed_base_flips_modelled(st, models)    # card 112-1 T3: the dry base == step_00 (saved flips seeded)
+        SimBackend.__init__(self, plan, st, models)
+        self.s = s
+
+    def _apply(self, op, check=None):
+        self.s._op(("wire_" if op["kind"] in REC_WIRING else "") + op["kind"], lambda: {"err": None}, str(op["acts"]))
+        return SimBackend._apply(self, op, check)
+
+
+def w0_wires(s, base, from_step, dry):
+    """W0: the pre-existing Wire uids W1 judges RBW against - S1's from the plan base graph for a PART-B run (== Part A's
+    W0), none in a dry run, else the live read of the work copy (allterms.all_wire_uids)."""
+    if from_step:
+        return set(r["wire_uid"] for r in base["terminals"] if r["wire_uid"])
+    if dry:
+        return set()
+    import allterms as AT
+    return set(int(u) for u in AT.all_wire_uids(s.work)[0])
+
+
+# ============================================================================================ RETIRE stages (card 115-2)
+# PD228(g)/(h), split plan §3 :158: a retire stage deletes only; the live-consumer gate is RE-READ on the live file BEFORE
+# EACH delete. Existed first (checked): Executor delete_object dispatch (:1652, missing_ok), LVBackend/DryPlanBE
+# delete_object, stagesim op_delete_object sr_pair; nothing re-read the live graph before a delete. Additive only.
+def retire_check(rows, uids):
+    """(ok, detail) on ONE terminal read: `uids` = the nodes one delete removes (a register pair). FAILS when a node of
+    the set has no row in the read, or when a SOURCE terminal of the set sits on a wire with a SINK owned by a node
+    OUTSIDE the set (that sink is a consumer which would lose its source - rule 1a)."""
+    U = set(int(u) for u in uids)
+    mine = [r for r in rows if int(r["owner_uid"]) in U]
+    missing = sorted(U - set(int(r["owner_uid"]) for r in mine))
+    cons = []
+    for r in mine:
+        if r["is_source"] and r["wire_uid"]:
+            cons += [(int(r["term_uid"]), int(x["owner_uid"]), int(x["term_uid"])) for x in rows
+                     if x["wire_uid"] == r["wire_uid"] and not x["is_source"] and int(x["owner_uid"]) not in U]
+    return not missing and not cons, {"uids": sorted(U), "rows": len(mine), "missing": missing, "consumers": cons[:20]}
+
+
+def retire_ends(base_rows, rows, retire):
+    """(ok, detail): every wire that carried a terminal of a retired node AND a terminal of a kept node still carries,
+    in `rows` (the read after the deletes), exactly its kept terminals under the SAME wire uid with the same source
+    terminal(s) - the ends of the shared nets read back (a live source keeps its live sinks)."""
+    R = set(int(u) for u in retire)
+    by = collections.defaultdict(list)
+    for r in base_rows:
+        if r["wire_uid"]:
+            by[int(r["wire_uid"])].append(r)
+    now = dict((int(r["term_uid"]), r) for r in rows)
+    bad, shared = [], {}
+    for w, rs in sorted(by.items()):
+        if not any(int(r["owner_uid"]) in R for r in rs) or all(int(r["owner_uid"]) in R for r in rs):
+            continue
+        kept = [r for r in rs if int(r["owner_uid"]) not in R]
+        shared[w] = sorted(int(r["term_uid"]) for r in kept)
+        for r in kept:
+            n = now.get(int(r["term_uid"]))
+            if n is None or int(n["wire_uid"] or 0) != w or bool(n["is_source"]) != bool(r["is_source"]):
+                bad.append((w, int(r["term_uid"]), None if n is None else (int(n["wire_uid"] or 0), bool(n["is_source"]))))
+        srcs = sorted(int(r["term_uid"]) for r in rows if int(r["wire_uid"] or 0) == w and r["is_source"])
+        if srcs != sorted(int(r["term_uid"]) for r in kept if r["is_source"]):
+            bad.append((w, "sources", srcs))
+    return not bad, {"shared_wires": shared, "bad": bad[:20]}
+
+
+class RetireGuardBE(object):
+    """Wraps a backend (LVBackend or DryPlanBE): delete_object first reads the graph (`read()` = the live file, or the
+    simulated state in a dry run) and gates retire_check on the pair `pairs[uid]`; a FAIL stops the run (ExecStop)
+    before anything is deleted. Every other attribute is the wrapped backend's."""
+
+    def __init__(self, be, s, pairs, read):
+        self.__dict__.update(_be=be, _s=s, _pairs=dict((int(k), list(v)) for k, v in pairs.items()), _rd=read, checks=[])
+
+    def __getattr__(self, n):
+        return getattr(self._be, n)
+
+    def __setattr__(self, n, v):
+        setattr(self._be, n, v)
+
+    def delete_object(self, cls, uid, op):
+        ok, det = retire_check(self._rd(), self._pairs.get(int(uid), [uid]))
+        self.checks.append(dict(det, ok=ok))
+        self._s.gate("LC live-consumer check re-read before deleting {0} #{1} (pair {2})".format(cls, uid, det["uids"]), ok, det)
+        if not ok:
+            raise ExecStop("LC: delete #{0} would remove a source with a live consumer or reads no row: {1}".format(uid, det))
+        return self._be.delete_object(cls, uid, op)
+
+
+def report_stop(s, x, be, e):
+    """An ExecStop inside Executor.run: record the report / meter / step diffs, list every unroutable row, FAIL E1 fatally."""
+    s.R["stagexec"] = x.report
+    s.R["meter"] = getattr(getattr(be, "meter", None), "rows", None)
+    s.R["step_diffs"] = x.diffs
+    for d in x.diffs:
+        s.fact("STEP-DIFF k {0} {1} ids {2} ops since last read {3}: {4}".format(d["k"], d["op"], d["ids"], d["ops_since_last_read"],
+               json.dumps(d["new_since_last_diff"], default=str)[:CUT]))
+    for u in getattr(be, "unroutable", None) or []:
+        s.fact("UNROUTABLE acts {0} ids {1}: {2}".format(u["acts"], u["ids"], u["err"]))
+    s.gate("E1 the run reached its last op (record mode; stopped IN op {0})".format(x.cur), False, str(e)[:CUT], fatal=True)
+
+
+def log_step_diffs(s, x):
+    """Every recorded step diff as a STEP-WARN / STEP-DIFF fact; returns the FAIL-class ones (PD214(c): WARN = dangling only,
+    no later uid reference)."""
+    for d in x.diffs:
+        s.fact("STEP-{0} k {1} {2} ids {3} ops since last read {4} later_refs {5}: new {6} | whole {7}".format(
+            "WARN" if d.get("class") == "warn" else "DIFF", d["k"], d["op"], d["ids"], d["ops_since_last_read"], d.get("later_refs"),
+            json.dumps(d["new_since_last_diff"], default=str)[:CUT],
+            json.dumps(dict((a, b) for a, b in d["diff"].items() if b and a not in ("n", "who")), default=str)[:CUT]))
+    return [d for d in x.diffs if d.get("class") != "warn"]
+
+
+def b1_gate(s, x, from_step):
+    """PART-B entry gate (card 103-4): the entry read == simulated step from_step (or a WARN), gates re-read, parity, PRIME,
+    first op == from_step + 1."""
+    r0 = x.report[0]
+    s.gate("B1 PART-B entry: read == simulated step {0} (or a WARN), gates re-read, parity {1}, PRIME ok; first op {2}".format(
+        from_step, r0.get("parity", {}).get("n"), x.report[1]["k"] if len(x.report) > 1 else None), r0["op"] == "from_step" and
+        (r0["diff"]["n"] == 0 or all(d["class"] == "warn" for d in x.diffs if d["k"] == from_step)) and x.report[1]["k"] == from_step + 1,
+        {"diff_n": r0["diff"]["n"], "regate": r0.get("regate"), "primed": r0.get("primed")})
+
+
+def part_a_gates(s, x, be, stop):
+    """card 103-1 PART-A (PD215(b)): ops 1..stop only, step stop real == sim (WARN only), gui_save, md5 + binding JSON."""
+    a1, a2, det, bind = x.part_a_record()
+    s.gate("A1 PART-A: ops 1..{0} of {1} executed, NO op > {0} dispatched".format(stop, len(x.ops)), a1, det, fatal=True)
+    s.gate("A2 E1 through op {0} WARN-class only; step {0} real read == simulated step {0} (or a WARN)".format(stop), a2, det, fatal=True)
+    m = s.save(broken_ok=True)                                                     # gui_save route at ExecState 0 (stagekit.save_route)
+    s.gate("AS Part-A artefact saved, md5 != input; input unchanged", m and m != s.input_md5 and md5(s.input_vi) == s.input_md5, m)
+    s.R["partA"] = dict(bind, file=s.work, md5=m, meter=getattr(getattr(be, "meter", None), "rows", None), level="STRUCTURAL, broken by design")
+    s.dump()
+
+
+def w1_rbw(s, be, w_pre):
+    """W1 (PD211(b) / PD212(f)): termless wires after the batch, then RBW on the work copy - it may remove only pre-existing
+    wire uids and lose no data edge, and leave no termless wire. Returns the backend's own read after RBW."""
+    import allterms as AT
+    import gscript as g
+    rows0 = AT.read_terms(s.work, AT.OP_ALLTERMS_V1)[0]
+    wh = g.wire_health(s.work, rows=rows0)
+    s.fact("W1 termless after the batch: {0} (new-uid termless {1})".format(wh["termless"], sorted(set(wh["termless"]) - w_pre)))
+    e0 = g._edge_pairs(rows0)
+    rb = s.broken_wire_count(allow_mutation=True, tag="RBW work")
+    rows1 = AT.read_terms(s.work, AT.OP_ALLTERMS_V1)[0]
+    w1 = set(int(u) for u in AT.all_wire_uids(s.work)[0])
+    gone, lost = sorted((wh["wires"] - w1)), sorted(e0 - g._edge_pairs(rows1))
+    s.fact("W1 RBW removed {0}; lost edges {1}".format(gone, lost[:20]))
+    s.gate("W1 RBW removed only pre-existing wire uids and lost no data edge; no termless wire left",
+           set(gone) <= w_pre and not lost and not g.wire_health(s.work, rows=rows1)["termless"],
+           {"new_uid_removed": sorted(set(gone) - w_pre), "lost": lost[:20], "rbw": rb}, fatal=True)
+    return be.read()
+
+
+def e3_gate(s, plan, x, be, real, wiki, dry, tag):
+    """PD217(c) E3 (FATAL, before save) on the executor's end - also in the dry run, where a failing E3 is a FAIL
+    (raised as ExecStop), never UNVERIFIED. Returns the e3_check dict."""
+    e3 = e3_check(plan, x, getattr(be, "last_objs", None) or be.st["objs"], real, wiki, tag)
+    s.fact("E3 detail {0}".format(json.dumps(e3, default=str)[:CUT]))
+    if dry and not e3["ok"]:
+        raise ExecStop("E3 dry: " + e3_line(e3))
+    s.gate("E3 (PD217(c), FATAL, before save) " + e3_line(e3), e3["ok"], {k: e3[k] for k in
+           ("extra", "missing", "unclassed", "c4_bad", "bad_added", "bad_removed")}, fatal=True)
+    return e3
+
+
+def kill_labview_at_exit():
+    """A live recipe's last act: taskkill LabVIEW and report whether it is gone (CLAUDE.md 1b grant: every cycle ends with
+    LabVIEW closed and verified gone)."""
+    import subprocess
+    subprocess.run(["taskkill", "/F", "/IM", "LabVIEW.exe"], capture_output=True, text=True, timeout=60)
+    time.sleep(4.0)
+    gone = "labview.exe" not in subprocess.run(["tasklist"], capture_output=True, text=True, timeout=60).stdout.lower()
+    print("LabVIEW gone at exit:", gone, flush=True)
+    return gone
+
+
+def dry_run(plan_path, fault=None, log=print, model_dir=None, require_final=True, from_step=None, binding=None):
+    """(status, first_fail, executor). No LabVIEW. require_final=False = the DIAGNOSTIC routability run (card 100-3).
+    card 103-4: from_step=k + binding = the Part-B dry run, on the bound step-k state (from_step_state)."""
+    plan, _paths = load_final_plan(plan_path, require_final)
+    base = _j(_abs(plan["finalized"]["base"]["path"]))
+    models = SS.load_models(model_dir or SS.OPMODEL_DIR)
+    st = SS.base_state(base, plan.get("context")) if from_step is None else from_step_state(plan_path, from_step, binding)
+    if from_step is None:
+        SS.seed_base_flips_modelled(st, models)        # card 112-1 T3: the dry base == step_00 (saved flips seeded)
+    be = SimBackend(plan, st, models, fault)
+    ex = Executor(plan_path, be, log, require_final=require_final, from_step=from_step, binding=binding)
+    ex.unroutable = be.unroutable
+    try:
+        ex.run()                                       # raises UNROUTABLE at the end when any row was unroutable
+        return "PASS", None, ex
+    except ExecStop as e:
+        for u in be.unroutable:                        # every unroutable row, not only the first (violation-decisions 16:10)
+            log("  UNROUTABLE acts {0} ids {1}: {2}".format(u["acts"], u["ids"], u["err"]))
+        msg = str(e)
+        if be.unroutable and not msg.startswith("UNROUTABLE"):     # a later hard stop: name the rows collected before it
+            msg = "UNROUTABLE {0} row(s) before the stop: {1} | STOP {2}".format(
+                len(be.unroutable), "; ".join("acts {0} {1}".format(u["acts"], u["ids"]) for u in be.unroutable), msg)
+        return "FAIL", msg[:4000], ex
+    except SS.SimError as e:                           # card 127-4 (review c127-3-dry-innerbranch s4): a simulator fault
+        import traceback                               # inside the dry backend is a FAIL with a RESULT line, not a crash
+        tb = traceback.extract_tb(e.__traceback__)     # (and not an ExecStop: collect mode would re-apply the same act)
+        where = " < ".join("{0}:{1} {2}".format(os.path.basename(f_.filename), f_.lineno, f_.name) for f_ in reversed(tb[-6:]))
+        return "FAIL", ("SIM-INTERNAL: {0} | at {1}".format(e, where))[:4000], ex
+
+
+def prerun_plan(plan_path, log=print, model_dir=None):
+    """Offline gates for a plan launch: final + step files intact (load_final_plan), compile, open_rows declared and
+    matched, the dry run PASS. Returns (gates list, ok)."""
+    gates = []
+
+    def gate(label, ok, detail=""):
+        gates.append((label, bool(ok), str(detail)[:300]))
+        log("  {0}  {1}  {2}".format("PASS" if ok else "FAIL", label, str(detail)[:300]))
+    try:
+        plan, paths = load_final_plan(plan_path)
+        gate("X1 plan final, base graph + {0} step files unchanged since finalize".format(len(paths)), True)
+    except ExecStop as e:
+        gate("X1 plan final, base graph + step files unchanged since finalize", False, e)
+        return gates, False
+    fz = plan["finalized"]
+    gate("X2 end cdiff rows == the plan's declared open_rows", fz.get("open_rows_match") is True,
+         (fz.get("end_cdiff_rows"), fz.get("open_rows")))
+    try:
+        ops = compile_plan(plan)
+        gate("X3 every action compiles to a real op ({0} actions -> {1} real ops)".format(len(plan["actions"]), len(ops)), True)
+    except ExecStop as e:
+        gate("X3 every action compiles to a real op", False, e)
+        return gates, False
+    st, fs, fl = dry_run(plan_path, log=lambda *_a: None, model_dir=model_dir)
+    gate("X4 dry run on the simulated backend: every real op matches its step, every address resolves", st == "PASS", fs)
+    return gates, all(g_[1] for g_ in gates)
+
+
+# ============================================================================================ E3 (shared)
+E3_CLASS_RE = SS.E3_CLASS_RE
+# PD217(c): a plan open row's PD213(d) class (a `class` field, else "PD213(d)(N)" in `why`; None = e3_eval FAILS, a class is
+# never guessed). Card 106-3 moved it into stagesim (the finalize rule uses it too); the same function, one copy.
+open_row_class = SS.open_row_class
+
+
+def e3_wiki(plan):
+    """The S1 wiki record whose fs tunnel pairs + graph summary build the E3 end graph (context fs_pairs_wiki, else s1_key)."""
+    import jev_candidates as JC
+    ctx = plan.get("context") or {}
+    if ctx.get("fs_pairs_wiki"):
+        return _j(_abs(ctx["fs_pairs_wiki"]["path"]))
+    return _j(os.path.join(JC.WIKI, ctx["s1_key"] + ".json"))
+
+
+def e3_graph(plan, ex, objs, real, wiki, tag="E3 end"):
+    """The END graph E3 compares with S1: the real (or dry) end terminals + objects, the plan's last-step loops translated
+    through the executor's binding, default node labels and the wiki fs pairs - the inputs every S1 deliverable's cdiff
+    used (PD217(b); stage_d1_l2a1.py, stage_d1_m4b.py)."""
+    import jev_candidates as JC
+    loops = copy.deepcopy(ex.step(len(plan["actions"]))["state"]["loops"])
+    ob = ex.bind["obj"]
+    for L in loops or []:
+        L["right_uids"] = [ob.get(int(u), int(u)) for u in L.get("right_uids") or []]
+        L["left_of"] = dict((str(ob.get(int(k), int(k))), [ob.get(int(y), int(y)) for y in (v if isinstance(v, list) else [v])])
+                            for k, v in (L.get("left_of") or {}).items())
+    return JC.from_parts({"terminals": real, "graph_summary": wiki["graph_summary"]}, objs, loops,
+                         JC.node_labels_default(), wiki["fs_tunnel_pairs"], tag)
+
+
+def e3_eval(plan, S1, G, created, deleted):
+    """PD217(c) E3, pure: cdiff(S1, G) rows == the plan open rows of PD213(d) classes (1)-(3) (want derived from each row's
+    class, never typed); every class-(4) row's end sources == its S1 sources; every added computation node is a plan-created
+    object (`created` = real uids bound from the plan's new: symbols); every removed one is a plan delete_object uid.
+    Returns a dict; ok is its verdict."""
+    cd = V.computation_diff(S1, G)
+    got = sorted(set((V.key_parts(r["sink"])[0], V.key_parts(r["sink"])[2]) for r in cd["rows"]))
+    cls = [(int(r["node"]), r["term"], open_row_class(r)) for r in plan.get("open_rows") or []]
+    unclassed = sorted(set((n, t) for n, t, c in cls if c not in (1, 2, 3, 4)))
+    want = sorted(set((n, t) for n, t, c in cls if c in (1, 2, 3)))
+    c4 = sorted(set((n, t) for n, t, c in cls if c == 4))
+    c4_bad, c4_keys = SS.c4_check(S1, G, c4)                  # card 106-3: shared with the stagesim finalize rule
+    added = [(a["node"], a["class"]) for a in cd["computation_nodes_added"]]
+    removed = [(a["node"], a["class"]) for a in cd["computation_nodes_removed"]]
+    bad_added = [a for a in added if a[0] not in set(created)]
+    bad_removed = [a for a in removed if a[0] not in set(deleted)]
+    extra, missing = sorted(set(got) - set(want)), sorted(set(want) - set(got))
+    ok = bool(cls) and not unclassed and not extra and not missing and not c4_bad and not bad_added and not bad_removed
+    return {"ok": ok, "got": got, "want": want, "n_open_rows": len(cls), "extra": extra, "missing": missing,
+            "unclassed": unclassed, "c4_n": len(c4), "c4_keys": c4_keys, "c4_equal": len(c4) - len(set(b["row"] for b in c4_bad)),
+            "c4_bad": c4_bad[:10], "added": added, "bad_added": bad_added, "removed": removed, "bad_removed": bad_removed}
+
+
+def e3_created(plan, ex):
+    """(created, deleted) for e3_eval: created = the real uids the binding holds for SIMULATED-created ids (sim ids < 0:
+    the last step's new: objects AND their own terminals, e.g. a created loop's condition terminal, card 104-4
+    diag_c104d_e3.log); deleted = the plan's delete_object uids."""
+    sym = ex.step(len(plan["actions"]))["state"].get("sym") or {}
+    created = set(ex.bind["obj"].get(int(u), int(u)) for s, u in sym.items() if s.startswith("new:") and "." not in s[4:])
+    created |= set(int(b) for m in ("obj", "term") for a, b in (ex.bind.get(m) or {}).items() if int(a) < 0)
+    return created, set(int(a["uid"]) for a in plan["actions"] if a.get("op") == "delete_object")
+
+
+def e3_check(plan, ex, objs, real, wiki, tag="E3 end"):
+    """PD217(c) E3 on an executor's end (live or dry): builds the end graph (e3_graph), S1 (stagesim.load_s1), the created
+    and deleted sets (e3_created), then e3_eval."""
+    G = e3_graph(plan, ex, objs, real, wiki, tag)
+    created, deleted = e3_created(plan, ex)
+    r = e3_eval(plan, SS.load_s1(plan), G, created, deleted)
+    r["created_n"] = len(created)
+    return r
+
+
+def e3_line(r):
+    """One-line E3 verdict for a gate label/detail."""
+    return ("rows {0} == want {1} (classes 1-3 of {2} open rows); class-4 sources equal {3}/{4}; added {5} all plan-created: {6}; "
+            "removed {7}").format(len(r["got"]), len(r["want"]), r["n_open_rows"], r["c4_equal"], r["c4_n"], len(r["added"]),
+                                  not r["bad_added"], len(r["removed"]))
+
+
+# ============================================================================================ LabVIEW run
+def lv_run(plan_path, reference=None, max_min=60):
+    import stagekit as K
+    plan, _p = load_final_plan(plan_path)
+    base = _j(_abs(plan["finalized"]["base"]["path"]))
+    vi, vi_md5 = base["vi"], base["md5"]
+    if reference and not os.path.isabs(reference[0]):
+        reference = (os.path.join(K.CLAUDEDEV, reference[0]), reference[1])      # a bare name = a claudeDev file
+    wiki = _j(_abs(plan["context"]["fs_pairs_wiki"]["path"]))
+    pins = tuple(K.DEFAULT_PINS) + (("plan base VI", vi, vi_md5),) + ((("reference VI", reference[0], reference[1]),) if reference else ())
+    name = "stagexec_" + plan["stage"]
+    s = K.Stage(vi, vi_md5, name, preload=False, deadline_min=max_min - 3, pins=pins,
+                out_json=os.path.join(BENCH, name + ".json"))
+    out = {}
+
+    def body(s):
+        s.head("stagexec {0}: plan {1} md5 {2} ({3} actions)".format(plan["stage"], plan_path, md5(plan_path), len(plan["actions"])))
+        s.start()
+        s.discard_work()                      # the scratch copy is never saved
+        be = LVBackend(s, wiki["fs_tunnel_pairs"])
+        ex = Executor(plan_path, be, log=lambda m: print(m, flush=True))
+        s.fact("COMPILED {0} real ops: {1}".format(len(ex.ops), [(o["kind"], o["acts"]) for o in ex.ops]))
+        out["ex"] = ex
+        try:
+            real = ex.run()
+            s.gate("E1 every real op's graph == its simulated step ({0} ops, first difference none)".format(len(ex.ops)), True)
+        except ExecStop as e:
+            s.R["stagexec"], s.R["meter"] = ex.report, be.meter.rows
+            s.fact("METER SUMMARY {0}".format(json.dumps(be.meter.summary(), default=str)))
+            s.gate("E1 every real op's graph == its simulated step", False, str(e)[:1500], fatal=True)
+        s.R["stagexec"], s.R["meter"] = ex.report, be.meter.rows
+        s.fact("METER SUMMARY {0}".format(json.dumps(be.meter.summary(), default=str)))
+        s.fact("BINDING obj {0}".format(ex.bind["obj"]))
+        s.fact("GRAPH READ seconds {0}".format([r.get("total") for r in be.reads]))
+        s.es("end (warm)")
+        es = s.R["es_timeline"][-1]["exec_state"]
+        s.gate("E2 ExecState 1 warm at the end", es == 1, es)
+        # PD217(c) E3 on the REAL end graph (register table = the simulation's, translated through the binding)
+        e3 = e3_check(plan, ex, be.last_objs, real, wiki, "stagexec end")
+        s.gate("E3 (PD217(c)) " + e3_line(e3), e3["ok"], {k: e3[k] for k in ("extra", "missing", "unclassed", "c4_bad", "bad_added", "bad_removed")})
+        if reference:
+            sc = s.scratch("ref", source=reference[0])
+            lv = K.mod("wiki_build").read_live(sc, fs_pairs=wiki["fs_tunnel_pairs"])
+            s.drop_scratch(sc, "H4 reference")
+            base_nodes = set(V.node_of(r) for r in base["terminals"])
+            d = canon_diff(real, dedupe(lv["terminals"]), base_nodes)
+            s.fact("REFERENCE canon diff {0}".format(json.dumps(d, default=str)[:1500]))
+            s.gate("E4 end graph == {0} up to new-uid naming (edges, terminals, node classes)".format(
+                os.path.basename(reference[0])), d["n"] == 0, d["n"])
+        s.dump()
+    rc = K.run(body, s)
+    K.mod("bench_prep").restart_labview()
+    return rc
+
+
+def canon_diff(real_a, real_b, base_nodes):
+    """Two real reads compared up to new-uid naming: a node outside `base_nodes` is its class."""
+    def canon(rows):
+        own = dict((r["term_uid"], (V.node_of(r), V.node_class(r), r["term_class"])) for r in rows)
+        key = lambda t: (own[t][0], t) if own[t][0] in base_nodes else ("NEW:" + own[t][1], own[t][2])  # noqa: E731
+        E, D = edges(rows)
+        e = collections.Counter((key(a), key(b)) for a, b in E)
+        n = collections.Counter(("B", own[t][0]) if own[t][0] in base_nodes else ("NEW", own[t][1]) for t in own)
+        t_ = collections.Counter(key(t) for t in own)
+        return e, n, t_
+    ea, na, ta = canon(real_a)
+    eb, nb, tb = canon(real_b)
+    out = {"edges_only_a": sorted((ea - eb).elements(), key=repr)[:20], "edges_only_b": sorted((eb - ea).elements(), key=repr)[:20],
+           "nodes_only_a": sorted(set(na) - set(nb), key=repr)[:20], "nodes_only_b": sorted(set(nb) - set(na), key=repr)[:20],
+           "terms_only_a": sorted((ta - tb).elements(), key=repr)[:20], "terms_only_b": sorted((tb - ta).elements(), key=repr)[:20]}
+    out["n"] = sum(len(v) for v in out.values())
+    return out
+
+
+# ============================================================================================ self-test
+def _selftest_c112(gate, tmp, gp, md, q):
+    """card 112-1 T1/T2: a register that EXISTS on the base (synthetic #50 R / #51 L on loop #100, the loops table) is
+    wired through wire_sr; a bare ControlTerminal -> a structure tunnel's outer sink routes 'ctltun'."""
+    base = _j(gp)
+    regs = base_registers(base)
+    gate("T112a base_registers: loop and right uid of an existing register pair from the graph's loops table",
+         regs.get(50, {}).get("loop") == 100 and regs.get(51, {}).get("right") == 50, regs)
+    rows = base["terminals"]
+    gate("T112b base_sr_route: into R.inner -> RightIn (body source), out of L.inner -> LeftIn (body sink), an OUTER face -> None",
+         [base_sr_route(rows, 1024, 1501, regs), base_sr_route(rows, 1512, 1022, regs), base_sr_route(rows, 1003, 1511, regs)]
+         == [("RightIn", 50, 1024), ("LeftIn", 51, 1022), None])
+    pl = {"schema": "stageplan/1", "stage": "c112", "goal": "rewire an existing register", "context": {"s1_graph": {"path": gp}},
+          "actions": [{"op": "delete_wire", "wire_uid": 5}, {"op": "delete_wire", "wire_uid": 4},
+                      {"op": "wire", "src": {"uid": 2, "term_uid": 1024}, "dst": {"uid": 50, "term_uid": 1501}},
+                      {"op": "wire", "src": {"uid": 51, "term_uid": 1512}, "dst": {"uid": 2, "term_uid": 1022}}]}
+    pp = os.path.join(tmp, "plan_in_c112.json")
+    json.dump(pl, open(pp, "w", encoding="utf-8"))
+    S = SS.simulate(pp, gp, out_root=os.path.join(tmp, "sim"), plan_out_dir=tmp, model_dir=md, log=q)
+    rc = S.get("route_check") or {}
+    routes = [x.get("route") for x in rc.get("rows") or []]
+    gate("T112c an EXISTING register's inner faces route to wire_sr RightIn / LeftIn (loop_of from the graph, dry PASS, final)",
+         S["final"] and rc.get("status") == "PASS" and routes[-2:] == ["wire_sr:RightIn", "wire_sr:LeftIn"], (S["final"], rc))
+    try:
+        ex = Executor(os.path.join(tmp, "plan_c112.json"), SimBackend(_j(os.path.join(tmp, "plan_c112.json")),
+                      SS.base_state(base), SS.load_models(md)), log=q, require_final=False)
+        ex.run()
+        lo = ex.loop_of
+    except ExecStop as e:
+        lo = {"stop": str(e)[:200]}
+    gate("T112d Executor.loop_of carries the base registers (no add_sr in the plan)", lo.get(50) == 100 and lo.get(51) == 100, lo)
+
+    def row(t, n, s, w, o, oc, fd, tc):
+        return {"term_uid": t, "term_name": n, "is_source": s, "wire_uid": w, "owner_uid": o, "owner_class": oc,
+                "frame_diagram": fd, "term_class": tc}
+
+    class FT(object):
+        st = {"loops": [], "owners": {"2": ["CaseStructure", 100], "3": ["CaseStructure", 100]}, "objs": [],
+              "terminals": [row(101, "", False, 8, 100, "CaseStructure", 1, "Terminal"),
+                            row(403, "Z/dZ", True, 0, 1, "Diagram", 1, FP),                  # B2-15: bare CT #403
+                            row(2282, "", False, 0, 2276, "Tunnel", 1, "OuterTerminal"),    # case selector outer (bare)
+                            row(2279, "", True, 0, 2276, "Tunnel", 2, "InnerTerminal"),
+                            row(2280, "", True, 0, 2276, "Tunnel", 3, "InnerTerminal"),
+                            row(401, "", False, 0, 400, FSIT_CLS, 1, "OuterTerminal")]}
+    sr = SimReader(FT())
+    ad = Addr(sr, FT.st["owners"])
+    try:
+        k_, _rs, _rd, inf = connect_route(ad, FT.st["terminals"], 403, 2282, {})
+        e_, nt_ = sr.node_terms(inf["dst"][0], inf["dst"][1])
+        gate("T112e bare CT -> case selector Tunnel outer sink = 'ctltun': CT by its own uid, sink by the OWNER CaseStructure's "
+             "Terminals[] index (the op is OpCtlSinkWire_v1 with the roles reversed)",
+             k_ == "ctltun" and inf["owner"] == 100 and inf["owner_cls"] == "CaseStructure" and e_ == 100 and
+             not nt_[inf["owner_term"]]["is_source"] and inf["ct_uid"] == 403, inf)
+    except ExecStop as e:
+        gate("T112e bare CT -> case selector Tunnel outer sink = 'ctltun'", False, e)
+    try:
+        connect_route(ad, FT.st["terminals"], 403, 401, {})
+        gate("T112f NEGATIVE: bare CT -> a FlatSequenceInnerTunnel face is still refused", False, "routed")
+    except ExecStop as e:
+        gate("T112f NEGATIVE: bare CT -> a FlatSequenceInnerTunnel face is still refused", "ADDRESS" in str(e) or "NO-VERB" in str(e), e)
+    _selftest_c112b(gate, row)
+
+
+def _selftest_c112b(gate, row):
+    """card 112-2 (v) + D2: a LoopTunnel's OUTER face routes through its OWNER LOOP's Terminals[]; a BARE face on an owner's
+    Terminals[] (twin tunnel faces on ForLoop #200, twin base-register outer faces on WhileLoop #300 - the B2-09/-12 and
+    B2-11/-14 shapes) is found by terminal-uid echo, never by (name, direction, wire); no uid list or a duplicate uid is a
+    hard error; a class-traverse verb never takes a LoopTunnel sink; a WIRED face keeps its unique-match route."""
+    T = [row(211, "", False, 0, 210, "LoopTunnel", 1, "OuterTerminal"), row(212, "", True, 30, 210, "LoopTunnel", 7, "InnerTerminal"),
+         row(221, "", False, 0, 220, "LoopTunnel", 1, "OuterTerminal"), row(222, "", True, 31, 220, "LoopTunnel", 7, "InnerTerminal"),
+         row(231, "", True, 50, 230, "LoopTunnel", 1, "OuterTerminal"), row(232, "", False, 51, 230, "LoopTunnel", 7, "InnerTerminal"),
+         row(3101, "", True, 0, 310, "RightShiftRegister", 1, "OuterTerminal"), row(3102, "", False, 0, 310, "RightShiftRegister", 8, "InnerTerminal"),
+         row(3111, "", False, 0, 311, "LeftShiftRegister", 1, "OuterTerminal"), row(3112, "", True, 0, 311, "LeftShiftRegister", 8, "InnerTerminal"),
+         row(3201, "", True, 0, 320, "RightShiftRegister", 1, "OuterTerminal"), row(3202, "", False, 0, 320, "RightShiftRegister", 8, "InnerTerminal"),
+         row(3211, "", False, 0, 321, "LeftShiftRegister", 1, "OuterTerminal"), row(3212, "", True, 0, 321, "LeftShiftRegister", 8, "InnerTerminal"),
+         row(901, "", True, 0, 900, "DigitalNumericConstant", 1, "Terminal"), row(1901, "x", True, 60, 190, "Add", 1, "Terminal")]
+
+    class FT(object):
+        st = {"owners": {"7": ["ForLoop", 200], "8": ["WhileLoop", 300]}, "objs": [], "terminals": T,
+              "loops": [{"class": "ForLoop", "loop_uid": 200, "left_of": {}, "right_uids": []},
+                        {"class": "WhileLoop", "loop_uid": 300, "left_of": {"310": [311], "320": [321]}, "right_uids": [310, 320]}]}
+    lo = {310: 300, 311: 300, 320: 300, 321: 300}
+    ad = Addr(SimReader(FT()), FT.st["owners"])
+    try:
+        (d1, n1, t1), h1 = ad.triple(T, 211, False, lo)
+        (d2, n2, t2), h2 = ad.triple(T, 221, False, lo)
+        own = SimReader(FT()).node_uids(d1)[n1]
+        gate("T112g (v) twin BARE LoopTunnel outer sinks -> the OWNER loop #200's Terminals[], told apart by uid echo",
+             own == 200 and n1 == n2 and t1 != t2 and "uid echo" in h1 and "uid echo" in h2, (own, t1, t2, h1, h2))
+    except ExecStop as e:
+        gate("T112g (v) twin BARE LoopTunnel outer sinks -> the OWNER loop's Terminals[], by uid echo", False, e)
+    try:
+        r1 = ad.triple(T, 3111, False, lo)
+        r2 = ad.triple(T, 3211, False, lo)
+        own = SimReader(FT()).node_uids(r1[0][0])[r1[0][1]]
+        gate("T112h twin BARE base-register L outer faces on loop #300 (B2-09/-12 shape) -> distinct indexes by uid echo",
+             own == 300 and r1[0][2] != r2[0][2] and "uid echo" in r1[1] and "uid echo" in r2[1], (own, r1, r2))
+    except ExecStop as e:
+        gate("T112h twin BARE base-register L outer faces -> distinct indexes by uid echo", False, e)
+
+    class NoUid(SimReader):
+        node_term_uids = None
+
+    class DupUid(SimReader):
+        def node_term_uids(self, didx, nidx):
+            return [211] * len(self.node_terms(didx, nidx)[1])
+    for tag, rd_, want in (("T112i no uid reader", NoUid(FT()), "no per-terminal uids"),
+                           ("T112j a uid listed more than once", DupUid(FT()), "is 3 entr(ies) of owner #200")):
+        try:
+            Addr(rd_, FT.st["owners"]).triple(T, 211, False, lo)
+            gate("{0}: a bare face STOPS (hard error, never a guess)".format(tag), False, "resolved")
+        except ExecStop as e:
+            gate("{0}: a bare face STOPS (hard error, never a guess)".format(tag), "ADDRESS-UID" in str(e) and want in str(e), e)
+    try:
+        (_d, _n, _t), hw = Addr(NoUid(FT()), FT.st["owners"]).triple(T, 231, True, lo)
+        gate("T112l a WIRED LoopTunnel outer face keeps the unique (name, dir, wire) route (no uid reader needed)",
+             hw == "unique-match", hw)
+    except ExecStop as e:
+        gate("T112l a WIRED LoopTunnel outer face keeps the unique (name, dir, wire) route", False, e)
+    try:
+        connect_route(ad, T, 901, 211, lo)
+        gate("T112k NEGATIVE: a bare constant -> LoopTunnel outer sink is refused (wire_const indexes the sink's own class)",
+             False, "routed")
+    except ExecStop as e:
+        gate("T112k NEGATIVE: a bare constant -> LoopTunnel outer sink is refused (wire_const indexes the sink's own class)",
+             "NO-VERB" in str(e), e)
+    try:
+        k_, _rs, _rd, inf = connect_route(ad, T, 1901, 221, lo)
+        gate("T112m a WIRED source -> bare LoopTunnel outer sink routes cfw with the owner-loop triple (uid echo)",
+             k_ == "cfw" and "uid echo" in str(inf.get("dst_how")), (k_, inf))
+    except ExecStop as e:
+        gate("T112m a WIRED source -> bare LoopTunnel outer sink routes cfw", False, e)
+    _selftest_c113(gate, row, T, lo)
+
+
+def _selftest_c113(gate, row, T0, lo):
+    """card 113-2 T1: a bare ControlTerminal -> a bare LoopTunnel OUTER sink routes 'ctltun' (b2_04/b2_05 shape) and a bare
+    LoopTunnel OUTER source -> a ControlTerminal sink routes 'ctlsink' (b2_07 shape), both through the OWNER LOOP's class
+    traverse + Terminals[] (uid echo); a LoopTunnel INNER face stays refused in both directions."""
+    T = list(T0) + [row(4001, "cs", True, 0, 1, "Diagram", 1, FP), row(4002, "ci", False, 0, 1, "Diagram", 1, FP),
+                    row(241, "", True, 0, 240, "LoopTunnel", 1, "OuterTerminal"), row(242, "", False, 52, 240, "LoopTunnel", 7, "InnerTerminal"),
+                    row(261, "", False, 0, 260, "LoopTunnel", 1, "OuterTerminal"), row(262, "", True, 0, 260, "LoopTunnel", 7, "InnerTerminal"),
+                    row(271, "", True, 0, 270, "LoopTunnel", 1, "OuterTerminal"), row(272, "", False, 0, 270, "LoopTunnel", 7, "InnerTerminal")]
+
+    class FT(object):
+        st = {"owners": {"7": ["ForLoop", 200], "8": ["WhileLoop", 300]}, "objs": [], "terminals": T, "loops": []}
+    sr = SimReader(FT())
+    ad = Addr(sr, FT.st["owners"])
+    try:
+        k_, _rs, _rd, inf = connect_route(ad, T, 4001, 211, lo)
+        e_, nt_ = sr.node_terms(inf["dst"][0], inf["dst"][1])
+        gate("T113a bare CT -> bare LoopTunnel OUTER sink = 'ctltun' via the OWNER ForLoop #200's Terminals[] (uid echo)",
+             k_ == "ctltun" and inf["owner"] == 200 and inf["owner_cls"] == "ForLoop" and e_ == 200 and
+             not nt_[inf["owner_term"]]["is_source"] and inf["ct_uid"] == 4001 and "uid echo" in str(inf["dst_how"]), inf)
+    except ExecStop as e:
+        gate("T113a bare CT -> bare LoopTunnel OUTER sink = 'ctltun'", False, e)
+    try:
+        k_, _rs, _rd, inf = connect_route(ad, T, 241, 4002, lo)
+        e_, nt_ = sr.node_terms(inf["src"][0], inf["src"][1])
+        gate("T113b bare LoopTunnel OUTER source -> CT sink = 'ctlsink' with src_cls ForLoop / src_owner #200 and the loop's "
+             "Terminals[] index of the face (uid echo)",
+             k_ == "ctlsink" and inf["src_cls"] == "ForLoop" and inf["src_owner"] == 200 and e_ == 200 and
+             nt_[inf["src_term"]]["is_source"] and nt_[inf["src_term"]]["uid"] == 241 and inf["ct"]["ct"] == 4002
+             and "uid echo" in str(inf["src_how"]), inf)
+    except ExecStop as e:
+        gate("T113b bare LoopTunnel OUTER source -> CT sink = 'ctlsink'", False, e)
+    for tag, s_, d_ in (("T113c NEGATIVE: bare LoopTunnel INNER source -> CT sink", 262, 4002),
+                        ("T113d NEGATIVE: bare CT -> LoopTunnel INNER sink", 4001, 272)):
+        try:
+            connect_route(ad, T, s_, d_, lo)
+            gate(tag + " is still refused", False, "routed")
+        except ExecStop as e:
+            gate(tag + " is still refused", "NO-VERB" in str(e) or "ADDRESS" in str(e), e)
+    try:
+        connect_route(ad, T, 901, 261, lo)
+        gate("T113e NEGATIVE: a bare CONSTANT -> LoopTunnel outer sink is still refused (only CT routes widened)", False, "routed")
+    except ExecStop as e:
+        gate("T113e NEGATIVE: a bare CONSTANT -> LoopTunnel outer sink is still refused", "NO-VERB" in str(e), e)
+
+
+def selftest():
+    import tempfile
+    gates = []
+
+    def gate(label, ok, detail=""):
+        gates.append((label, bool(ok)))
+        print("  {0}  {1}  {2}".format("PASS" if ok else "FAIL", label, str(detail)[:300]), flush=True)
+    tmp = tempfile.mkdtemp(prefix="stagexec_selftest_")
+    base = SS._synthetic()
+    gp = os.path.join(tmp, "graph_base.json")
+    json.dump(base, open(gp, "w", encoding="utf-8"))
+    pf = SS._plan_full("xs", gp)
+    # executable shape: a tunnel group is (tunnel, wire in, wire out) adjacent - so delete_wire 7 moves before tunnel T2
+    A = pf["actions"]
+    A[0]["pos"] = [0, 0]
+    pf["actions"] = A[:8] + [A[10], A[8], A[9], A[11]] + A[12:]
+    pp = os.path.join(tmp, "plan_in.json")
+    json.dump(dict(pf, stage="xs"), open(pp, "w", encoding="utf-8"))
+    md = os.path.join(tmp, "models")
+    os.makedirs(md)
+    json.dump({"op": "move_in", "sim": {"only_sink": "ambiguous"}}, open(os.path.join(md, "move_in.json"), "w"))
+    S = SS.simulate(pp, gp, out_root=os.path.join(tmp, "sim"), plan_out_dir=tmp, model_dir=md, log=lambda *_a: None)
+    fin = os.path.join(tmp, "plan_xs.json")
+    gate("T01 the synthetic executable plan simulates FINAL", S["final"], (S["failed"], S["end_cdiff_rows"]))
+    plan = _j(fin)
+    ops = compile_plan(plan)
+    kinds = [o["kind"] for o in ops]
+    gate("T02 compile: tunnel+in+out -> ONE real op; SR inner wires -> wire_sr; the rest 1:1",
+         kinds.count("tunnel") == 2 and kinds.count("wire_sr") == 2 and len(ops) == len(plan["actions"]) - 4, kinds)
+    bad = copy.deepcopy(plan)
+    bad["actions"] = [x for x in bad["actions"] if not (x["op"] == "wire" and x.get("dst") == "new:T1.outer")]
+    try:
+        compile_plan(bad)
+        gate("T03 a tunnel without its in-wire does not compile", False)
+    except ExecStop as e:
+        gate("T03 a tunnel without its in-wire does not compile", "exactly one wire" in str(e), e)
+    q = lambda *_a: None                                                           # noqa: E731
+    if True:
+        st, ff, ex = dry_run(fin, log=q, model_dir=md)
+        gate("T04 dry run PASS: every real op's state == its step file after binding", st == "PASS", ff)
+        gate("T05 binding: 2 SR objects + 2 tunnels bound to POSITIVE uids", len(ex.bind["obj"]) == 4 and
+             all(v > 0 for v in ex.bind["obj"].values()), ex.bind["obj"])
+        hows = [(r["result"].get("check") or {}).get("how") for r in ex.report[1:] if isinstance(r.get("result"), dict)
+                and r["result"].get("check")]
+        gate("T06 addressing: base ends primed by their wire, every checked end resolved to its own terminal name",
+             ex.report[0]["primed"]["n"] >= 4 and hows and all(hows) and
+             all((r["result"]["check"] or {}).get("resolved_name") is not None for r in ex.report[1:]
+                 if isinstance(r.get("result"), dict) and r["result"].get("check")),
+             (ex.report[0]["primed"], hows))
+        st2, ff2, ex2 = dry_run(fin, fault={"at": 5, "kind": "drop_edge"}, log=q, model_dir=md)
+        gate("T07 a real op that made one edge fewer STOPS at that op with a step-diff report",
+             st2 == "FAIL" and "STEP-DIFF" in str(ff2) and ex2.report[-1]["acts"][-1] == 5, ff2)
+        st3, ff3, _ = dry_run(fin, fault={"at": 2, "kind": "extra_obj"}, log=q, model_dir=md)
+        gate("T08 an extra real object after add_shift_reg stops at BINDING (count/class)", st3 == "FAIL" and "BINDING" in str(ff3), ff3)
+        st4, ff4, ex4 = dry_run(fin, fault={"at": 1, "kind": "delete_only_sink", "terms": [1602]}, log=q, model_dir=md)
+        gate("T09 the other only-sink fate on an allow_either terminal is accepted", st4 == "PASS" and 1602 in ex4.allow, ff4)
+        st5, ff5, _ = dry_run(fin, fault={"at": 1, "kind": "delete_only_sink", "terms": [1001]}, log=q, model_dir=md)
+        gate("T10 ... but not on a terminal the step does not allow", st5 == "FAIL" and "STEP-DIFF" in str(ff5), ff5)
+        g_, ok = prerun_plan(fin, log=q, model_dir=md)
+        gate("T11 prerun_plan passes the final plan", ok, [x for x in g_ if not x[1]])
+    nf = copy.deepcopy(plan)
+    nf["final"] = False
+    p2 = os.path.join(tmp, "plan_nf.json")
+    json.dump(nf, open(p2, "w", encoding="utf-8"))
+    g2, ok2 = prerun_plan(p2, log=q, model_dir=md)
+    gate("T12 prerun_plan refuses a non-final plan", not ok2 and "not final" in g2[0][2], g2[0])
+    stp = plan["finalized"]["step_files"][3]["path"]
+    with open(_abs(stp), "a", encoding="utf-8") as f:
+        f.write(" ")
+    g3, ok3 = prerun_plan(fin, log=q, model_dir=md)
+    gate("T13 prerun_plan refuses a plan whose step file changed after finalize", not ok3 and "changed" in g3[0][2], g3[0])
+    class FR(object):                     # a scripted loop Terminals[] list (regression of stagexec_l7_bench.log run 1)
+        cur = []
+
+        def diagrams(self):
+            return [686]
+
+        def node_uids(self, didx):
+            return [500]
+
+        def node_terms(self, didx, nidx):
+            return 500, [{"i": i, "name": n, "is_source": s, "wire": w} for i, (n, s, w) in enumerate(FR.cur)]
+    ad = Addr(FR())
+    FR.cur = [("x", False, 9)]
+    ad.snap_loop(500, 686)
+    FR.cur = [("x", False, 9), ("", True, 0), ("", False, 0)]
+    ad.track_new(500, 1, 2)
+    ad.snap_loop(500, 686)
+    FR.cur = FR.cur + [("", True, 0), ("", False, 0)]
+    ad.track_new(500, 3, 4)
+    FR.cur = [("x", False, 9), ("error out", True, 0), ("", False, 0), ("total", True, 0), ("", False, 0)]
+    lost = ad.retrack()
+    t15 = dict(ad.loops[500]["track"])
+    FR.cur = FR.cur + [("", False, 33)]
+    lost2 = ad.retrack()
+    gate("T15 register faces keep their loop index when inner wiring RENAMES them (no name alignment), and across an "
+         "appended tunnel face", not lost and not lost2 and t15 == {1: 1, 2: 2, 3: 3, 4: 4} and
+         ad.loops[500]["track"] == {1: 1, 2: 2, 3: 3, 4: 4}, (t15, ad.loops[500]["track"], lost, lost2))
+    # PD185 (card 81-8): owner-routed SelectorTunnel ends, FSIT ends, the legacy node listing, PRIME stop
+    def row(t, n, s, w, o, oc, fd, tc):
+        return {"term_uid": t, "term_name": n, "is_source": s, "wire_uid": w, "owner_uid": o, "owner_class": oc,
+                "frame_diagram": fd, "term_class": tc}
+
+    class FB(object):
+        st = {"loops": [], "owners": {"2": ["CaseStructure", 100]},
+              "terminals": [row(101, "", False, 8, 100, "CaseStructure", 1, "Terminal"),
+                            row(201, "", False, 9, 200, "SelectorTunnel", 1, "OuterTerminal"),
+                            row(202, "", True, 10, 200, "SelectorTunnel", 2, "InnerTerminal"),
+                            row(301, "out", True, 9, 300, "Function", 1, "Terminal"),
+                            row(302, "o2", True, 8, 300, "Function", 1, "Terminal"),
+                            row(401, "", True, 11, 400, FSIT_CLS, 1, "OuterTerminal"),
+                            row(501, "", False, 12, 500, "Tunnel", 1, "OuterTerminal"),      # the case SELECTOR (run 2)
+                            row(502, "", True, 13, 500, "Tunnel", 2, "InnerTerminal"),
+                            row(303, "o3", True, 12, 300, "Function", 1, "Terminal")]}
+    sr = SimReader(FB())
+    real = FB.st["terminals"]
+    nu = sr.node_uids(0)
+    gate("T16 SimReader lists the owner structure, never the SelectorTunnel / FSIT, as a Nodes[] entry (PD185)",
+         100 in nu and 200 not in nu and 400 not in nu, nu)
+    try:
+        (d_, n_, t_), how = Addr(sr, FB.st["owners"]).triple(real, 201, False)
+        e_, nt_ = sr.node_terms(d_, n_)
+        gate("T17 a SelectorTunnel outer sink resolves on its OWNER's Terminals[] (the measured route, l2a1_faces_81.log)",
+             e_ == 100 and nt_[t_]["wire"] == 9 and not nt_[t_]["is_source"], (d_, n_, t_, how))
+    except ExecStop as e:
+        gate("T17 a SelectorTunnel outer sink resolves on its OWNER's Terminals[]", False, e)
+    try:
+        (d_, n_, t_), how = Addr(sr, FB.st["owners"]).triple(real, 501, False)
+        e_, nt_ = sr.node_terms(d_, n_)
+        gate("T17b a case SELECTOR (class Tunnel) sink resolves on its owner's Terminals[] (stage_d1_l2a1_r2.log:36)",
+             e_ == 100 and nt_[t_]["wire"] == 12 and 500 not in sr.node_uids(0), (d_, n_, t_, how))
+    except ExecStop as e:
+        gate("T17b a case SELECTOR (class Tunnel) sink resolves on its owner's Terminals[]", False, e)
+
+    class Legacy(SimReader):                                                        # the pre-PD185 listing: tunnel = node
+        def node_uids(self, didx):
+            return [200, 300]
+    for lab_, ad_ in (("T18a owners unknown", Addr(sr, {})), ("T18b tunnel listed only as a node", Addr(Legacy(FB()), FB.st["owners"]))):
+        try:
+            ad_.triple(real, 201, False)
+            gate(lab_ + " -> the end is NOT addressable (negative)", False, "resolved")
+        except ExecStop as e:
+            gate(lab_ + " -> the end is NOT addressable (negative)", "ADDRESS" in str(e), e)
+    try:
+        Addr(sr, FB.st["owners"]).triple(real, 401, True)
+        gate("T19 an FSIT end stops with its Left/Right Terminal route named", False, "resolved")
+    except ExecStop as e:
+        gate("T19 an FSIT end stops with its Left/Right Terminal route named", "Left/Right Terminal" in str(e), e)
+    txt = open(_abs(stp), encoding="utf-8").read()                               # undo T13's appended space
+    with open(_abs(stp), "w", encoding="utf-8") as f:
+        f.write(txt[:-1] if txt.endswith(" ") else txt)
+    pl_, _pp = load_final_plan(fin)
+    be_ = SimBackend(pl_, SS.base_state(_j(_abs(pl_["finalized"]["base"]["path"])), pl_.get("context")), SS.load_models(md))
+
+    def _no(*_a, **_k):
+        raise ExecStop("ADDRESS: injected unprovable end")
+    be_.addr.triple = _no
+    be_.unroutable = None      # card 111-3: T20/T22b/T35c/T40b test the REAL-backend contract (a non-collecting backend
+    try:                       # stops before op 1); the dry run's collect-all is tools/bench/diag_c111c_dry_negative.py
+        Executor(fin, be_, log=q).run()
+        gate("T20 an unprovable PRIME end STOPS before op 1 (PD185(3))", False, "ran")
+    except ExecStop as e:
+        gate("T20 an unprovable PRIME end STOPS before op 1 (PD185(3))", "PRIME" in str(e) and be_.calls == [], (str(e)[:120], be_.calls))
+    # PD187(a) (card 82-1): reader parity at PRIME
+    gate("T21 PARITY recorded at PRIME on the synthetic plan: touched diagrams listed, 0 one-side-only entries",
+         ex.report[0].get("parity", {}).get("n") == 0 and ex.report[0]["parity"]["diagrams"], ex.report[0].get("parity", {}).get("diagrams"))
+    be2 = SimBackend(pl_, SS.base_state(_j(_abs(pl_["finalized"]["base"]["path"])), pl_.get("context")), SS.load_models(md))
+
+    class Extra(SimReader):                                     # a SimReader listing a node the "real" one lacks
+        def node_uids(self, didx):
+            return SimReader.node_uids(self, didx) + [99999]
+    rows_, n_ = reader_parity(SimReader(be2), Extra(be2), touched_diagrams(pl_, be2.st), be2.obj_classes(be2.read()),
+                              be2.obj_classes(be2.read()))
+    gate("T22a NEGATIVE: SimReader listing a class the real read lacks -> parity n > 0 with an only_sim entry",
+         n_ > 0 and any(r.get("only_sim") for r in rows_), n_)
+    be2.addr.rd = Extra(be2)                                    # the backend's "real" reader lacks nothing but lists extra
+    be2.unroutable = None                                       # card 111-3: the non-collecting contract (see T20)
+    try:
+        Executor(fin, be2, log=q).run()
+        gate("T22b NEGATIVE: a parity difference STOPS at PRIME before op 1", False, "ran")
+    except ExecStop as e:
+        gate("T22b NEGATIVE: a parity difference STOPS at PRIME before op 1", "PARITY" in str(e) and be2.calls == [], (str(e)[:120], be2.calls))
+    # PD187(b): ControlTerminal ends (source/sink, bare/wired) by the 179(b) route, never as a Nodes[] triple
+
+    class FC(object):
+        st = {"loops": [], "owners": {}, "objs": [],
+              "terminals": [row(601, "Reset Tracking", True, 0, 1, "Diagram", 1, FP),        # bare CT source (#5634 at op 31)
+                            row(602, "min value", False, 14, 1, "Diagram", 1, FP),           # wired CT sink (#17272)
+                            row(603, "Auto-Reset", True, 15, 1, "Diagram", 1, FP),           # wired CT source
+                            row(701, "y", False, 0, 700, "Function", 1, "ParameterTerminal"),
+                            row(702, "x", True, 14, 700, "Function", 1, "ParameterTerminal"),
+                            row(703, "z", False, 15, 700, "Function", 1, "ParameterTerminal")]}
+    sc = SimReader(FC())
+    adc, rc_ = Addr(sc, {}), FC.st["terminals"]
+    try:
+        got = [adc.ct(rc_, u)[0] for u in (601, 602, 603)]
+        gate("T23 ControlTerminal ends resolve by 179(b) (bare source, wired sink, wired source): own uid, owner Diagram, "
+             "in ct_uids; and SimReader never lists a ControlTerminal in Nodes[]",
+             [x["diag"] for x in got] == [1, 1, 1] and [x["is_source"] for x in got] == [True, False, True] and
+             not (set([601, 602, 603]) & set(sc.node_uids(0))) and 700 in sc.node_uids(0), (got, sc.node_uids(0)))
+    except ExecStop as e:
+        gate("T23 ControlTerminal ends resolve by 179(b)", False, e)
+
+    class LegacyCT(SimReader):                                  # the pre-PD187 listing: a ControlTerminal = a node
+        def node_uids(self, didx):
+            return [601, 602, 603, 700]
+    for lab_, rd_ in (("T24a", sc), ("T24b (reader lists the CT as a node)", LegacyCT(FC()))):
+        try:
+            Addr(rd_, {}).triple(rc_, 601, True)
+            gate(lab_ + " NEGATIVE: a ControlTerminal as a Nodes[] triple FAILS", False, "resolved")
+        except ExecStop as e:
+            gate(lab_ + " NEGATIVE: a ControlTerminal as a Nodes[] triple FAILS", "ControlTerminal" in str(e), e)
+
+    class NoCT(SimReader):
+        def ct_uids(self):
+            return set()
+    try:
+        Addr(NoCT(FC()), {}).ct(rc_, 601)
+        gate("T25a NEGATIVE: a ControlTerminal absent from report_all('ControlTerminal') is not addressable", False, "resolved")
+    except ExecStop as e:
+        gate("T25a NEGATIVE: a ControlTerminal absent from report_all('ControlTerminal') is not addressable", "ADDRESS-CT" in str(e), e)
+    kinds_ = []
+    for s_, d_ in ((603, 703), (702, 602), (601, 701)):
+        try:
+            kinds_.append(connect_route(adc, rc_, s_, d_, {})[0])
+        except ExecStop as e:
+            kinds_.append("STOP:" + str(e)[:40])
+    gate("T25b connect_route: wired CT source -> cfw; wired source -> CT sink = indicator; BARE CT source -> ctl "
+         "(wire_control, card 82-2; the same in the real and the simulated backend)",
+         kinds_ == ["cfw", "indicator", "ctl"], kinds_)
+    info_ = connect_route(adc, rc_, 601, 701, {})[3]
+    gate("T26 ctl route carries the CT label, its Diagram index and the sink NAME (what wire_control addresses)",
+         (info_.get("ctl_label"), info_.get("ctl_didx"), info_.get("dst_name")) == ("Reset Tracking", 0, "y"), info_)
+    negs = (("T27a NEGATIVE: a second CT with the same label on that Diagram -> STOP",
+             rc_ + [row(604, "Reset Tracking", True, 0, 1, "Diagram", 1, FP)], 601, 701, "label not unique"),
+            ("T27b NEGATIVE: a sink whose name repeats on its node -> STOP",
+             rc_ + [row(704, "y", False, 16, 700, "Function", 1, "ParameterTerminal")], 601, 701, "sink name not unique"),
+            ("T27c NEGATIVE: a sink owned by an owner-routed tunnel -> STOP (at addressing or at the owner check)",
+             rc_ + [row(801, "", False, 0, 800, "SelectorTunnel", 1, "OuterTerminal")], 601, 801, None))
+    for lab_, rows2, s_, d_, want in negs:
+        fn = SimReader(_StateHolder({"loops": [], "owners": {}, "objs": [], "terminals": rows2}))
+        try:
+            k_ = connect_route(Addr(fn, {}), rows2, s_, d_, {})[0]
+            gate(lab_, False, "routed " + k_)
+        except ExecStop as e:
+            gate(lab_, (want is None or want in str(e)), str(e)[:160])
+    # PD188(c) (card 85-1): a BARE diagram-constant source -> 'const' (gscript.wire_const, OpConstWire_v1), both backends
+    rk = rc_ + [row(901, "disabled index (col)", True, 0, 900, "DigitalNumericConstant", 1, "Terminal")]
+    sk = SimReader(_StateHolder({"loops": [], "owners": {}, "objs": [], "terminals": rk}))
+    try:
+        k_, _a1, _a2, i_ = connect_route(Addr(sk, {}), rk, 901, 701, {})
+        gate("T28 bare constant source -> 'const' route: constant #900 by its class listing, sink terminal index 0 ('y'), "
+             "and the constant is NOT a Nodes[] entry", k_ == "const" and i_["const"]["const"] == 900 and i_["dst_term"] == 0
+             and 900 not in sk.node_uids(0), (k_, i_))
+    except ExecStop as e:
+        gate("T28 bare constant source -> 'const' route", False, e)
+
+    class NoConst(SimReader):
+        def obj_uids(self, cls):
+            return []
+    negk = (("T28b NEGATIVE: a constant absent from report_all(<class>) is not addressable", Addr(NoConst(sk.be), {}), 901, 701, "ADDRESS-CONST"),
+            ("T28c NEGATIVE: constant -> a sink owned by an owner-routed tunnel -> STOP", Addr(SimReader(_StateHolder(
+                {"loops": [], "owners": {}, "objs": [], "terminals": rk + [row(801, "", False, 0, 800, "SelectorTunnel", 1, "OuterTerminal")]})), {}),
+             901, 801, None))
+    for lab_, ad_, s_, d_, want in negk:
+        rows3 = rk + [row(801, "", False, 0, 800, "SelectorTunnel", 1, "OuterTerminal")]
+        try:
+            k_ = connect_route(ad_, rows3, s_, d_, {})[0]
+            gate(lab_, False, "routed " + k_)
+        except ExecStop as e:
+            gate(lab_, (want is None or want in str(e)), str(e)[:160])
+    try:
+        Addr(sk, {}).triple(rk, 901, True)
+        gate("T28d NEGATIVE: a constant as a Nodes[] triple FAILS", False, "resolved")
+    except ExecStop as e:
+        gate("T28d NEGATIVE: a constant as a Nodes[] triple FAILS", "ADDRESS" in str(e), e)
+    # PD191 (card 85-2): 'ctlsink' (bare node terminal -> CT sink) and 'tunouter' (bare tunnel outer face, by the TUNNEL uid)
+    r30 = rc_ + [row(710, "min value", True, 0, 705, "Function", 1, "ParameterTerminal"),
+                 row(711, "x", False, 0, 705, "Function", 1, "ParameterTerminal"),
+                 row(606, "min value", False, 0, 1, "Diagram", 1, FP)]
+    s30 = SimReader(_StateHolder({"loops": [], "owners": {}, "objs": [], "terminals": r30}))
+    try:
+        k_, _a1, _a2, i_ = connect_route(Addr(s30, {}), r30, 710, 606, {})
+        gate("T30 bare node terminal -> ControlTerminal sink -> 'ctlsink': the CT by 179(b), the source by its node's "
+             "Terminals[] index", k_ == "ctlsink" and i_["ct"]["ct"] == 606 and i_["src_term"] == 0, (k_, i_))
+    except ExecStop as e:
+        gate("T30 bare node terminal -> ControlTerminal sink -> 'ctlsink'", False, e)
+    for lab_, s_ in (("T30b NEGATIVE: a bare ControlTerminal source -> CT sink STOPS", 601),
+                     ("T30c NEGATIVE: a bare constant source -> CT sink STOPS", 901)):
+        rr = r30 + [row(901, "c", True, 0, 900, "DigitalNumericConstant", 1, "Terminal")]
+        try:
+            k_ = connect_route(Addr(SimReader(_StateHolder({"loops": [], "owners": {}, "objs": [], "terminals": rr})), {}),
+                               rr, s_, 606, {})[0]
+            gate(lab_, False, "routed " + k_)
+        except ExecStop as e:
+            gate(lab_, "needs a WIRED source" in str(e), str(e)[:160])
+    ow31 = {"2": ["CaseStructure", 820]}
+    r31 = rc_ + [row(811, "", True, 0, 810, "SelectorTunnel", 1, "OuterTerminal"),
+                 row(812, "", False, 33, 810, "SelectorTunnel", 2, "InnerTerminal"),
+                 row(816, "", True, 0, 815, "SelectorTunnel", 1, "OuterTerminal"),          # the TWIN (#6026 beside #6007)
+                 row(817, "", False, 34, 815, "SelectorTunnel", 2, "InnerTerminal")]
+    s31 = SimReader(_StateHolder({"loops": [], "owners": ow31, "objs": [], "terminals": r31}))
+    try:
+        k_, _a1, _a2, i_ = connect_route(Addr(s31, ow31), r31, 811, 701, {})
+        gate("T31 bare tunnel outer face with a twin on its owner -> 'tunouter' by the TUNNEL uid (#810), sink terminal "
+             "index 0 ('y')", k_ == "tunouter" and i_["tun"]["tun"] == 810 and i_["dst_term"] == 0, (k_, i_))
+    except ExecStop as e:
+        gate("T31 bare tunnel outer face -> 'tunouter'", False, e)
+    r31d = rc_ + r31[-4:-2]
+    try:
+        k_ = connect_route(Addr(SimReader(_StateHolder({"loops": [], "owners": ow31, "objs": [], "terminals": r31d})), ow31),
+                           r31d, 811, 701, {})[0]
+    except ExecStop as e:
+        k_ = "STOP " + str(e)[:80]
+    gate("T31d a tunnel outer face WITHOUT a twin keeps its measured owner route (not 'tunouter')", k_ == "nested", k_)
+    r31b = r31 + [row(813, "", True, 0, 810, "SelectorTunnel", 1, "OuterTerminal")]
+    for lab_, ad_, rr in (("T31b NEGATIVE: a tunnel with TWO outer faces is not addressable by its uid",
+                           Addr(SimReader(_StateHolder({"loops": [], "owners": ow31, "objs": [], "terminals": r31b})), ow31), r31b),
+                          ("T31c NEGATIVE: a tunnel absent from report_all(<class>) is not addressable",
+                           Addr(NoConst(s31.be), ow31), r31)):
+        try:
+            k_ = connect_route(ad_, rr, 811, 701, {})[0]
+            gate(lab_, False, "routed " + k_)
+        except ExecStop as e:
+            gate(lab_, "ADDRESS-TUN" in str(e), str(e)[:160])
+    # violation-decisions 16:10 (card 85-1): the dry run reports EVERY unroutable row, not only the first
+    two =[o["acts"][-1] for o in ops if o["kind"] in ("tunnel", "connect")][:2]
+    st6, ff6, ex6 = dry_run(fin, fault={"kind": "unroutable", "at_acts": two}, log=q, model_dir=md)
+    gate("T29 two unroutable rows -> the dry run FAILS naming BOTH, and simulates on to the last op",
+         len(two) == 2 and st6 == "FAIL" and "UNROUTABLE 2" in str(ff6) and [u["acts"][-1] for u in ex6.unroutable] == two
+         and len(ex6.report) == len(ops) + 1, (two, str(ff6)[:200], len(ex6.report), len(ops)))
+    be7 = SimBackend(pl_, SS.base_state(_j(_abs(pl_["finalized"]["base"]["path"])), pl_.get("context")), SS.load_models(md),
+                     fault={"kind": "unroutable", "at_acts": two})
+    try:                                          # a recipe's own DryBE calls Executor.run() directly, not dry_run()
+        Executor(fin, be7, log=q).run()
+        gate("T29b NEGATIVE: Executor.run() on a collecting backend with unroutable rows RAISES at the end (never silent)", False, "ran clean")
+    except ExecStop as e:
+        gate("T29b NEGATIVE: Executor.run() on a collecting backend with unroutable rows RAISES at the end (never silent)",
+             str(e).startswith("UNROUTABLE 2"), str(e)[:160])
+    # card 85-3 P4 (hyp-optunouter-uidreuse-85.md:78-82): a uid re-issued inside one op is named, not misreported
+    p32 = [row(900, "Terminal", True, 0, 136, "Property", 5, "Terminal"), row(901, "ref", False, 0, 136, "Property", 5, "Terminal"),
+           row(910, "x", False, 0, 300, "WhileLoop", 5, "OuterTerminal"), row(920, "c", True, 0, 5, "Diagram", 5, "ControlTerminal")]
+    r32 = [row(950, "Outer Term", True, 0, 136, "Property", 5, "Terminal"), row(951, "ref", False, 0, 136, "Property", 5, "Terminal"),
+           row(910, "x", False, 0, 300, "WhileLoop", 5, "OuterTerminal"), row(920, "c", True, 0, 5, "Diagram", 5, "ControlTerminal")]
+    try:
+        bind_new(p32, r32, [], [], {"obj": {}, "term": {}})
+        gate("T32 NEGATIVE: Property #136 deleted and re-issued in one op (disjoint terminals) -> ExecStop UID-REUSE", False, "bound")
+    except ExecStop as e:
+        gate("T32 NEGATIVE: Property #136 deleted and re-issued in one op (disjoint terminals) -> ExecStop UID-REUSE",
+             str(e).startswith("UID-REUSE") and "#136" in str(e), str(e)[:200])
+    r32b = [dict(r, owner_class="Constant") if r["owner_uid"] == 136 else r for r in p32]
+    try:
+        bind_new(p32, r32b, [], [], {"obj": {}, "term": {}})
+        gate("T32b NEGATIVE: a uid whose class changed (Property -> Constant) -> ExecStop UID-REUSE", False, "bound")
+    except ExecStop as e:
+        gate("T32b NEGATIVE: a uid whose class changed (Property -> Constant) -> ExecStop UID-REUSE", str(e).startswith("UID-REUSE"),
+             str(e)[:200])
+    r32c = p32[:3] + [row(911, "", True, 0, 300, "WhileLoop", 5, "OuterTerminal"), row(920, "c", True, 0, 6, "Diagram", 6,
+                                                                                         "ControlTerminal")]
+    gate("T32c a structure GAINING a face and a control terminal MOVING diagram are not reuse", uid_reuse(p32, r32c) == [],
+         uid_reuse(p32, r32c))
+    # PD192(a), card 86-1: the memory meter (fake probe; no LabVIEW)
+    seq = iter([(400 << 20, 31500), (412 << 20, 31600), (409 << 20, 31550), (705 << 20, 40000)])
+    mt = Meter(lambda: next(seq), stop_mb=700.0, log=q)
+    r1, r2, r3 = mt("read", 0), mt("op", 1), mt("read", 1)
+    gate("T33 meter: MB from bytes, deltas vs the previous stamp (op +12.0 MB/+100 h, read -3.0 MB/-50 h)",
+         r1["mb"] == 400.0 and r1["d_mb"] is None and r2["d_mb"] == 12.0 and r2["d_h"] == 100 and r3["d_mb"] == -3.0
+         and r3["d_h"] == -50, (r1, r2, r3))
+    try:
+        mt("op", 2)
+        gate("T33b NEGATIVE: private bytes >= stop_mb -> ExecStop MEMSTOP", False, "no stop")
+    except ExecStop as e:
+        gate("T33b NEGATIVE: private bytes >= stop_mb -> ExecStop MEMSTOP", str(e).startswith("MEMSTOP") and "705.0" in str(e), str(e)[:160])
+    mw = Meter(lambda: (800 << 20, 1), stop_mb=None, log=q)
+    mw("op", 1)
+    mw("op", 2)
+    gate("T33c warn-only meter (stop_mb=None) passes 800 MB and records the FIRST crossing",
+         mw.warned is not None and mw.warned["k"] == 1 and len(mw.rows) == 2, mw.warned)
+    cnt = [0]
+
+    def fprobe(lim=None):
+        cnt[0] += 1
+        return ((300 + cnt[0]) << 20, 30000 + cnt[0])
+    bem = SimBackend(pl_, SS.base_state(_j(_abs(pl_["finalized"]["base"]["path"])), pl_.get("context")), SS.load_models(md))
+    bem.meter = Meter(fprobe, stop_mb=None, log=q)
+    exm = Executor(fin, bem, log=q)
+    exm.run()
+    tags = [r["tag"] for r in bem.meter.rows]
+    gate("T34 Executor stamps start + base read + (pre, op, read) per op on a backend with a meter",
+         tags[:2] == ["start", "read"] and tags[2:] == ["pre", "op", "read"] * len(exm.ops) and
+         [r["k"] for r in bem.meter.rows if r["tag"] == "op"] == list(range(1, len(exm.ops) + 1)), (len(tags), len(exm.ops), tags[:8]))
+    cnt[0] = 0
+    bes = SimBackend(pl_, SS.base_state(_j(_abs(pl_["finalized"]["base"]["path"])), pl_.get("context")), SS.load_models(md))
+    bes.meter = Meter(fprobe, stop_mb=300 + 2 + 3 * 3 + 0.5, log=q)   # 311.5: the 12th stamp (312) = op 4's 'pre'
+    exs = Executor(fin, bes, log=q)
+    try:
+        exs.run()
+        gate("T34b NEGATIVE: a meter crossing stop_mb mid-run STOPS the executor with MEMSTOP", False, "ran clean")
+    except ExecStop as e:
+        lr = bes.meter.rows[-1]
+        gate("T34b NEGATIVE: a meter crossing stop_mb mid-run STOPS the executor with MEMSTOP (last stamp = op 4 'pre')",
+             str(e).startswith("MEMSTOP") and (lr["tag"], lr["k"]) == ("pre", 4) and len(exs.report) == 4, (str(e)[:120], lr, len(exs.report)))
+    # PD193(a), card 86-4: the checkpoint read set
+    mkbe = lambda fault=None: SimBackend(pl_, SS.base_state(_j(_abs(pl_["finalized"]["base"]["path"])), pl_.get("context")),  # noqa: E731
+                                         SS.load_models(md), fault)
+    opsx = compile_plan(pl_)
+    bindk = set(k for k, o in enumerate(opsx, 1) if o["kind"] in ("add_sr", "tunnel"))
+    cps = bindk | {0, len(opsx)}
+    exc_ = Executor(fin, mkbe(), log=q, checkpoints=cps)
+    exc_.run()
+    gate("T35 checkpoint set (binding ops + last): run PASS, whole-VI reads only at the set, the rest skipped",
+         exc_.reads_real == sorted(cps - {0}) and exc_.reads_skipped == sorted(set(range(1, len(opsx) + 1)) - cps) and
+         len(exc_.reads_skipped) > 0, (sorted(cps), exc_.reads_real, exc_.reads_skipped))
+    gate("T35d a stale-read addressing stop is recovered by ONE fresh read + retry (no unroutable row left)",
+         len(exc_.stale_retries) >= 1 and not exc_.be.unroutable, (exc_.stale_retries, exc_.be.unroutable))
+    fk = next((k for k in range(1, len(opsx)) if k not in cps and any(c > k for c in cps)), None)
+    nxt = min(c for c in cps if fk is not None and c > fk) if fk else None
+    try:
+        Executor(fin, mkbe({"at": opsx[fk - 1]["acts"][-1], "kind": "drop_edge"}), log=q, checkpoints=cps).run()
+        gate("T35b NEGATIVE: an edge dropped at a skipped op is caught by the NEXT checkpoint diff", False, "ran clean")
+    except ExecStop as e:
+        gate("T35b NEGATIVE: an edge dropped at skipped op {0} is caught by the NEXT checkpoint diff (op {1})".format(fk, nxt),
+             "STEP-DIFF after real op {0} ".format(nxt) in str(e), str(e)[:200])
+    try:
+        b35c = mkbe()
+        b35c.unroutable = None                                  # card 111-3: the non-collecting contract (see T20)
+        Executor(fin, b35c, log=q, checkpoints={0, len(opsx)}).run()
+        gate("T35c NEGATIVE: a set missing a binding op (add_sr/tunnel) stops before op 1", False, "ran")
+    except ExecStop as e:
+        gate("T35c NEGATIVE: a set missing a binding op (add_sr/tunnel) stops before op 1", str(e).startswith("CHECKPOINT"), str(e)[:200])
+    # card 101-4: RECORD MODE - a STEP-DIFF is recorded and the run goes on; other stops still stop
+    kd = next(k for k, o in enumerate(opsx, 1) if o["acts"][-1] == 5)
+    exr = Executor(fin, mkbe({"at": 5, "kind": "drop_edge"}), log=q, record=True)
+    try:
+        exr.run()
+        gate("T39 record mode: the dropped edge (op {0}) is RECORDED and the run CONTINUES to the last op".format(kd),
+             exr.diffs and exr.diffs[0]["k"] == kd and exr.diffs[0]["diff"]["only_sim_edges"] and
+             exr.diffs[0]["new_since_last_diff"].get("only_sim_edges") and exr.cur["k"] == len(opsx) and
+             len(exr.report) == len(opsx) + 1, [(d["k"], d["diff"]["n"], d["new_since_last_diff"]) for d in exr.diffs][:4])
+        gate("T39b record mode attributes a persisting diff ONCE (later records carry no new entry for it)",
+             all("only_sim_edges" not in d["new_since_last_diff"] for d in exr.diffs[1:]), [d["k"] for d in exr.diffs])
+    except ExecStop as e:
+        gate("T39 record mode: the dropped edge is RECORDED and the run CONTINUES to the last op", False, str(e)[:200])
+    gate("T39e a dropped-edge diff (an edge entry) is classed 'fail' by PD214(c)",
+         exr.diffs and exr.diffs[0].get("class") == "fail", [d.get("class") for d in exr.diffs][:3])
+    # PD214(c) (cycle 102): a dangling-only diff is WARN unless a later action names the uid
+    planj = _j(fin)
+    dd = {"only_sim_terms": [], "only_real_terms": [], "only_sim_edges": [], "only_real_edges": [], "unbound": [],
+          "dangling_sim_only": [1611], "dangling_real_only": [], "n": 1}
+    n_act = len(planj["actions"])
+    gate("T39f classify_step_diff: dangling-only + no later reference -> warn; a later action naming the uid -> fail; an edge -> fail",
+         classify_step_diff(planj, n_act, dd) == ("warn", []) and
+         classify_step_diff(dict(planj, actions=planj["actions"] + [{"op": "delete_object", "uid": 1611}]), n_act, dd) == ("fail", [1611]) and
+         classify_step_diff(planj, 0, dict(dd, only_sim_edges=[[1, 2]]))[0] == "fail" and
+         classify_step_diff(planj, 0, dict(dd, dangling_sim_only=[]))[0] == "fail",
+         (classify_step_diff(planj, n_act, dd), classify_step_diff(planj, 0, dict(dd, only_sim_edges=[[1, 2]]))))
+    exr0 = Executor(fin, mkbe(), log=q, record=True)
+    exr0.run()
+    gate("T39c record mode on a clean run: no diff recorded", exr0.diffs == [] and exr0.cur["k"] == len(opsx), exr0.diffs)
+    try:
+        Executor(fin, mkbe({"at": 2, "kind": "extra_obj"}), log=q, record=True).run()
+        gate("T39d NEGATIVE: record mode does NOT swallow a BINDING stop", False, "ran clean")
+    except ExecStop as e:
+        gate("T39d NEGATIVE: record mode does NOT swallow a BINDING stop", "BINDING" in str(e), str(e)[:160])
+    # card 103-1 PART-A MODE (PD215(b)): stop_after=k dispatches ops 1..k only, op k read + compared, nothing after it
+    ksa = max(1, len(opsx) // 2)
+    exa = Executor(fin, mkbe(), log=q, record=True, stop_after=ksa)
+    exa.run()
+    gate("T40 stop_after={0}: ops 1..{0} run, step {0} read+compared (diff 0), NO op > {0} dispatched".format(ksa),
+         exa.stopped_after == ksa and exa.cur["k"] == ksa and len(exa.report) == ksa + 1 and
+         exa.report[-1]["k"] == ksa and exa.report[-1]["diff"]["n"] == 0 and not exa.report[-1]["diff"].get("skipped") and
+         exa.diffs == [], (exa.stopped_after, exa.cur, len(exa.report)))
+    pa1, pa2, _pd, pbind = exa.part_a_record()
+    gate("T40e part_a_record on the clean stop_after run: a1 and a2 True, binding JSON-serialisable with str keys, plan md5 pinned",
+         pa1 and pa2 and json.loads(json.dumps(pbind))["stop_after"] == ksa and set(pbind["bind"]) == {"obj", "term", "diag"} and
+         pbind["plan_md5"] == SS.md5_file(_abs(fin)), (pa1, pa2, sorted(pbind)))
+    exf = Executor(fin, mkbe({"at": 5, "kind": "drop_edge"}), log=q, record=True, stop_after=kd)   # T39's fault, stopped AT its op
+    exf.run()
+    fa1, fa2, fd, _fb = exf.part_a_record()
+    gate("T40f NEGATIVE: an edge dropped AT op k (a FAIL-class diff) -> part_a_record a1 True, a2 False",
+         fa1 and not fa2 and exf.diffs and exf.diffs[-1]["class"] == "fail", fd)
+    cpa = set(k for k in bindk if k <= ksa) | {0, len(opsx)}
+    try:
+        b40b = mkbe()
+        b40b.unroutable = None                                  # card 111-3: the non-collecting contract (see T20)
+        Executor(fin, b40b, log=q, checkpoints=cpa - {ksa}, stop_after=ksa).run()
+        gate("T40b NEGATIVE: stop_after op not in the checkpoint set stops before op 1", False, "ran")
+    except ExecStop as e:
+        gate("T40b NEGATIVE: stop_after op not in the checkpoint set stops before op 1", str(e).startswith("CHECKPOINT"), str(e)[:200])
+    exb = Executor(fin, mkbe(), log=q, checkpoints=cpa | {ksa}, stop_after=ksa)
+    exb.run()
+    gate("T40c stop_after with a checkpoint set holding a LATER last op: reads only at the set's ops <= k, ends at k",
+         exb.stopped_after == ksa and exb.reads_real == sorted(k for k in (cpa | {ksa}) - {0} if k <= ksa) and exb.cur["k"] == ksa,
+         (exb.reads_real, exb.cur))
+    try:
+        Executor(fin, mkbe(), log=q, stop_after=len(opsx) + 1).run()
+        gate("T40d NEGATIVE: stop_after beyond the last op stops before op 1", False, "ran")
+    except ExecStop as e:
+        gate("T40d NEGATIVE: stop_after beyond the last op stops before op 1", str(e).startswith("STOP-AFTER"), str(e)[:160])
+    _selftest_from_step(gate, fin, pl_, md, opsx, q)
+    _selftest_create(gate, tmp, q)
+    _selftest_c106c(gate, fin, opsx, md, q)
+    _selftest_c112(gate, tmp, gp, md, q)
+    _selftest_c127_4(gate, fin, md, q)
+    _selftest_c128_1(gate)
+    _selftest_c128_5(gate)
+    gate("T14 nothing LabVIEW-side imported",not any(m in sys.modules for m in ("gscript", "win32com", "pythoncom", "stagekit")),
+         [m for m in ("gscript", "win32com", "pythoncom", "stagekit") if m in sys.modules])
+    n_pass = sum(1 for _l, ok in gates if ok)
+    n_fail = len(gates) - n_pass
+    first = next((l for l, ok in gates if not ok), None)
+    print("=== GATES: {0} pass / {1} fail{2}".format(n_pass, n_fail, "; failing: " + first if first else ""))
+    print(protocol.result_line(protocol.make_result(n_pass, n_fail, first)))
+    return 0 if n_fail == 0 else 1
+
+
+def _selftest_from_step(gate, fin, pl_, md, opsx, q):
+    """card 103-4: PART-B ENTRY. (a) synthetic plan: Part A stop_after=k on a SimBackend, then Part B on a NEW backend
+    holding Part A's end state, bound from the JSON-round-tripped part_a_record -> reaches the last op with no diff and
+    dispatches only ops k+1..; (b) the real display plan + the Part-A JSON (when present): Part-B dry PASS from its step;
+    (c) negatives: plan md5 mismatch, a missing uid, stop_after != from_step, from_step out of range, registers."""
+    models = SS.load_models(md)
+    mk = lambda st=None: SimBackend(pl_, st if st is not None else SS.base_state(_j(_abs(pl_["finalized"]["base"]["path"])),   # noqa: E731
+                                                                               pl_.get("context")), models)
+    first_sr = min([k for k, o in enumerate(opsx, 1) if o["kind"] == "add_sr"] or [len(opsx) + 1])
+    cands = [k for k, o in enumerate(opsx, 1) if k < first_sr and k < len(opsx) and any(p["kind"] in BIND_KINDS for p in opsx[:k])]
+    kb = cands[-1] if cands else (first_sr - 1 if first_sr > 1 else None)
+    q("  T41 synthetic Part-A/B split at op {0} (first add_sr op {1}, {2} ops)".format(kb, first_sr, len(opsx)))
+    if kb:
+        exa = Executor(fin, mk(), log=q, record=True, stop_after=kb)
+        exa.run()
+        a1, a2, _d, pb = exa.part_a_record()
+        pb = json.loads(json.dumps(pb))
+        beB = mk(copy.deepcopy(exa.be.st))
+        beB.next = exa.be.next                        # the saved file's uids stay taken, as LabVIEW's would
+        exB = Executor(fin, beB, log=q, record=True, from_step=kb, binding=pb)
+        try:
+            exB.run()
+            gate("T41 Part-B entry from_step={0}: entry diff 0, ops {1}..{2} dispatched only, last op reached, no diff".format(
+                kb, kb + 1, len(opsx)), a1 and a2 and exB.report[0]["op"] == "from_step" and exB.report[0]["diff"]["n"] == 0 and
+                 [r["k"] for r in exB.report[1:]] == list(range(kb + 1, len(opsx) + 1)) and exB.diffs == [] and
+                 len(beB.calls) == len(opsx) - kb, (a1, a2, [r.get("k") for r in exB.report][:6], exB.diffs[:2], len(beB.calls)))
+        except ExecStop as e:
+            gate("T41 Part-B entry from_step={0} on the synthetic plan".format(kb), False, str(e)[:300])
+        try:
+            Executor(fin, mk(copy.deepcopy(exa.be.st)), log=q, from_step=kb, binding=dict(pb, stop_after=kb + 1))
+            gate("T41e NEGATIVE: binding stop_after != from_step stops", False, "constructed")
+        except ExecStop as e:
+            gate("T41e NEGATIVE: binding stop_after != from_step stops", "stop_after" in str(e), str(e)[:160])
+    else:
+        gate("T41 Part-B entry: the synthetic plan has a split point before its first add_sr", False, (first_sr, len(opsx)))
+    try:
+        Executor(fin, mk(), log=q, from_step=len(opsx), binding={})
+        gate("T41f NEGATIVE: from_step = the last op (nothing left) stops", False, "constructed")
+    except ExecStop as e:
+        gate("T41f NEGATIVE: from_step = the last op (nothing left) stops", str(e).startswith("FROM-STEP"), str(e)[:160])
+    ksr = next((k for k, o in enumerate(opsx, 1) if o["kind"] == "add_sr" and k < len(opsx)), None)
+    if ksr:
+        exs = Executor(fin, mk(), log=q, record=True, stop_after=ksr)
+        exs.run()
+        try:
+            Executor(fin, mk(copy.deepcopy(exs.be.st)), log=q, from_step=ksr, binding=exs.part_a_record()[3])
+            gate("T41g NEGATIVE: a Part A that created shift registers has no Part-B entry", False, "constructed")
+        except ExecStop as e:
+            gate("T41g NEGATIVE: a Part A that created shift registers has no Part-B entry", "shift registers" in str(e), str(e)[:160])
+    rp, rb = os.path.join(BENCH, "sim", "disp", "plan_disp.json"), os.path.join(BENCH, "stage_d1_dispA.json")
+    if not (os.path.exists(rp) and os.path.exists(rb)):
+        gate("T42 real display plan + Part-A JSON present", False, (rp, rb))
+        return
+    pa = _j(rb)["partA"]
+    k = int(pa["stop_after"])
+    st, ff, ex = dry_run(rp, log=q, from_step=k, binding=rb)
+    gate("T42 real plan: Part-B dry from_step={0} with the Part-A JSON PASS, ops {1}..{2} only, entry diff 0".format(
+        k, k + 1, len(ex.ops)), st == "PASS" and ex.report[0]["op"] == "from_step" and ex.report[0]["diff"]["n"] == 0 and
+         ex.report[1]["k"] == k + 1 and ex.report[-1]["k"] == len(ex.ops), (st, ff and ff[:300], [r.get("k") for r in ex.report][:3]))
+    for lab, bad, want in (("T42b NEGATIVE: plan md5 mismatch", dict(pa, plan_md5="0" * 32), "plan md5"),
+                           ("T42c NEGATIVE: a missing uid (one term binding dropped)",
+                            dict(pa, bind=dict(pa["bind"], term=dict(list(pa["bind"]["term"].items())[1:]))), "does not bind")):
+        try:
+            st2, ff2, _e = dry_run(rp, log=q, from_step=k, binding=bad)
+            gate(lab, False, (st2, ff2))
+        except ExecStop as e:
+            gate(lab, str(e).startswith("FROM-STEP") and want in str(e), str(e)[:200])
+    if st == "PASS":
+        _selftest_e3(gate, rp, ex, q)
+
+
+def _selftest_c106c(gate, fin, opsx, md, q):
+    """card 106-3: route preconditions (X9's pure half), the recorded-meter memory prediction (X10's pure half) on the real
+    103-2 r1 / 104-2 Part-B logs, and the recipe dry backend moved here (DryPlanBE)."""
+    fx = os.path.join(BENCH, "sim", "disp", "fixture_c106c_plan_disp_r7.json")
+    rp = os.path.join(BENCH, "sim", "disp", "plan_disp.json")
+    md = r"C:\x\NIScriptingExamples\Moving Objects\Test - Moving Objects Target.vi"
+    w7 = r"C:\x\claudeDev\D1_s1_disp_20260927_012948.vi"
+    if not (os.path.exists(fx) and os.path.exists(rp)):
+        gate("T45 fixture (cycle-102 plan_disp, r7's) + plan_disp present", False, (fx, rp))
+    else:
+        f1 = precondition_failures(_j(fx), {"work": w7, "move_dst": md})
+        f2 = precondition_failures(_j(fx), {"work": md, "move_dst": md})
+        f3 = precondition_failures(_j(rp), {"work": w7, "move_dst": md})
+        f4 = precondition_failures(_j(fx), {"work": w7, "move_dst": md}, stop_after=40)
+        f5 = precondition_failures(_j(fx), {"work": w7, "move_dst": md}, from_step=33)
+        gate("T45 NEGATIVE: r7's plan dispatches op 41 copy_in (r7_wait) on a non-MOVE_DST work file -> 1 failure; the same "
+             "plan with work == MOVE_DST, or Part A to op 40, -> none; Part B from 33 -> the same op 41 failure",
+             [(f["k"], f["route"], f["ids"]) for f in f1] == [(41, "copy_in", ["r7_wait"])] and f2 == [] and f4 == [] and
+             [f["k"] for f in f5] == [41], (f1, f2, f4, [f["k"] for f in f5]))
+        gate("T45b plan_disp (r7_wait = the Wait (ms) primitive, PD216(a)) has NO precondition failure", f3 == [], f3)
+    r1, b2 = os.path.join(BENCH, "stage_d1_dispA_r1.log"), os.path.join(BENCH, "stage_d1_disp_c104B2.log")
+    if not (os.path.exists(r1) and os.path.exists(b2)):
+        gate("T46 recorded meter logs (103-2 r1, 104-2 Part-B run 2) present", False, (r1, b2))
+    else:
+        rr1, rb2 = meter_rows_from_log(r1), meter_rows_from_log(b2)
+        p1, p2, p3 = mem_predict(rr1, 40, None), mem_predict(rb2, None, 33), mem_predict(rr1, 33, None)
+        gate("T46 NEGATIVE: the 103-2 r1 curve (Part A to op 40) predicts {0} MB at {1} >= MEMSTOP {2} -> refused".format(
+            p1["peak_mb"], p1["at"], MEM_STOP_MB), p1["ok"] is False and p1["peak_mb"] == 703.8 and p1["covered"], p1)
+        gate("T46b the 104-2 Part-B curve (ops 34..47) predicts {0} MB -> passes; r1's curve cut at op 33 predicts {1} MB -> "
+             "passes (the PD216(f) cut)".format(p2["peak_mb"], p3["peak_mb"]),
+             p2["ok"] is True and p2["peak_mb"] == 616.7 and p2["window"] == [34, 47] and p3["ok"] is True, (p2, p3))
+        syn = [{"tag": "start", "k": 0, "mb": 500.0}, {"tag": "read", "k": 0, "mb": 510.0}, {"tag": "op", "k": 1, "mb": 600.0},
+               {"tag": "read", "k": 1, "mb": 690.0}]
+        p4, p5 = mem_predict(syn, 1, None, start_mb=525.0), mem_predict(rb2, 50, 33)
+        gate("T46c NEGATIVE: a fresh-start shift (+15 MB) lifts 690 over 700 -> refused; a window past the record -> not covered",
+             p4["ok"] is False and p4["peak_mb"] == 705.0 and p5["covered"] is False, (p4, p5.get("covered")))
+    pl = _j(fin)
+    base = _j(_abs(pl["finalized"]["base"]["path"]))
+
+    class _S(object):
+        def __init__(self):
+            self.ops = []
+
+        def _op(self, verb, fn, detail=""):
+            self.ops.append(verb)
+            return fn()
+    s_ = _S()
+    ex = Executor(fin, DryPlanBE(s_, pl, fin, base, models=SS.load_models(md)), log=q)
+    ex.run()
+    gate("T47 DryPlanBE (moved from stage_d1_disp.py): one Stage op record per real op, wiring kinds prefixed 'wire_'",
+         len(s_.ops) == len(opsx) and s_.ops == [("wire_" if o["kind"] in REC_WIRING else "") + o["kind"] for o in opsx], s_.ops)
+
+
+def _selftest_e3(gate, rp, ex, q):
+    """card 104-4, PD217(c): E3 on the real display plan's Part-B dry end, plus negatives on the same end graph."""
+    P = _j(rp)
+    objs, real = ex.be.st["objs"], ex.be.read()
+    r = e3_check(P, ex, objs, real, e3_wiki(P), "selftest E3")
+    q("  T44 E3 detail {0}".format(json.dumps(r, default=str)[:600]))
+    gate("T44 E3 real plan, Part-B dry end: " + e3_line(r), r["ok"] and len(r["want"]) < r["n_open_rows"] and r["c4_n"] > 0 and
+         r["c4_equal"] == r["c4_n"] and r["added"], (len(r["want"]), r["n_open_rows"], r["c4_equal"], r["c4_n"], len(r["added"])))
+    G = e3_graph(P, ex, objs, real, e3_wiki(P), "selftest E3")
+    S1 = SS.load_s1(P)
+    created, deleted = e3_created(P, ex)
+    rows = P["open_rows"]
+    i13 = next(i for i, x in enumerate(rows) if open_row_class(x) in (1, 2, 3))
+    row13 = (int(rows[i13]["node"]), rows[i13]["term"])
+    p1 = dict(P, open_rows=rows[:i13] + rows[i13 + 1:])
+    r1 = e3_eval(p1, S1, G, created, deleted)
+    gate("T44b NEGATIVE: an unexpected row (a class 1-3 row not in the plan) FAILS as extra", not r1["ok"] and r1["extra"] == [row13],
+         r1["extra"])
+    p2 = dict(P, open_rows=[dict(x, **{"class": 4}) if i == i13 else x for i, x in enumerate(rows)])
+    r2 = e3_eval(p2, S1, G, created, deleted)
+    gate("T44c NEGATIVE: a class-4 row whose source changed FAILS", not r2["ok"] and any(tuple(b["row"]) == row13 for b in r2["c4_bad"]),
+         r2["c4_bad"][:2])
+    p3 = dict(P, open_rows=[dict((k, v) for k, v in x.items() if k != "why") for x in rows])
+    r3 = e3_eval(p3, S1, G, created, deleted)
+    gate("T44d NEGATIVE: rows without a class FAIL; the old all-rows want ({0}) is not E3's want ({1})".format(len(rows), len(r["want"])),
+         not r3["ok"] and len(r3["unclassed"]) == len(set((int(x["node"]), x["term"]) for x in rows)) and len(r["want"]) != len(rows),
+         len(r3["unclassed"]))
+    a0 = r["added"][0][0] if r["added"] else None
+    r4 = e3_eval(P, S1, G, created - {a0}, deleted)
+    gate("T44e NEGATIVE: an added computation node that the plan did not create FAILS", a0 is not None and not r4["ok"] and
+         [a[0] for a in r4["bad_added"]] == [a0], r4["bad_added"])
+
+
+PROPOSED_SCHEMA = os.path.join(BENCH, "sim", "disp", "stageplan_schema_proposed.json")
+
+
+def proposed_schema(on=True):
+    """TEST / DIAGNOSTIC ONLY (card 100-3): the installed docs/protocol/stageplan.json has integer-only diagram fields,
+    so a plan with 'new:X.body' does not validate until the proposed amendment replaces it. This swaps the IN-PROCESS
+    schema cache; simulate/prerun/run in any other process read the installed file. Returns the label of the schema used."""
+    p = protocol.schema_path("stageplan/1")
+    protocol._SCHEMAS.pop(p, None)
+    if not on:
+        return "installed"
+    inst = protocol.load_schema("stageplan/1")
+    if "diagref" in inst.get("definitions", {}) and "gate" in inst["definitions"]["action"]["properties"]["op"]["enum"]:
+        return "installed (already amended)"
+    protocol._SCHEMAS[p] = _j(PROPOSED_SCHEMA)
+    return "PROPOSED " + os.path.relpath(PROPOSED_SCHEMA, ROOT)
+
+
+def _selftest_create(gate, tmp, q):
+    """card 100-3: create executor + symbolic diagrams, on the synthetic graph plus a panel terminal 'Stop' and a
+    BooleanConstant #600."""
+    def row(t, n, s, w, o, oc, fd, tc="Terminal"):
+        return {"term_uid": t, "term_name": n, "is_source": s, "wire_uid": w, "owner_uid": o, "owner_class": oc,
+                "frame_diagram": fd, "term_class": tc}
+    base = SS._synthetic()
+    base["terminals"] += [row(5001, "Stop", True, 0, 10, "Diagram", 10, FP), row(6001, "", True, 0, 600, "BooleanConstant", 10)]
+    base["objs"].append({"uid": 600, "class": "BooleanConstant", "pos": [0, 0], "owner": "Diagram"})
+    gp = os.path.join(tmp, "graph_cr.json")
+    json.dump(base, open(gp, "w", encoding="utf-8"))
+    loc = lambda nm, d: {"op": "create", "id": "lr_" + nm, "class": "Local", "diagram": d, "as": nm, "label": "Stop",  # noqa: E731
+                         "mode": "read", "pos": [5, 5], "terminals": [{"name": "Stop", "is_source": True}]}
+    acts = [{"op": "gate", "id": "g600", "uid": 600, "class": "BooleanConstant", "read": "bool_const", "stop_if": True},
+            {"op": "create", "id": "dl", "class": "WhileLoop", "diagram": 10, "as": "DL1", "pos": [0, 0]},
+            {"op": "create", "id": "df", "class": "ForLoop", "diagram": "new:DL1.body", "as": "DF1", "pos": [0, 0]},
+            {"op": "move_in", "id": "mv4", "nodes": [4], "dest_diagram": "new:DF1.body", "pos": [10, 10]},
+            loc("LR1", "new:DL1.body"),
+            {"op": "wire", "id": "stop", "src": "new:LR1.value", "dst": "new:DL1.cond"},
+            loc("LR2", "new:DL1.body"),
+            {"op": "tunnel", "id": "t1", "loop": "new:DF1", "body": "new:DF1.body", "parent": "new:DL1.body", "dir": "in",
+             "as": "T1", "indexing": False},
+            {"op": "wire", "id": "t1o", "src": "new:LR2.value", "dst": "new:T1.outer"},
+            {"op": "wire", "id": "t1i", "src": "new:T1.inner", "dst": "4.y"},
+            {"op": "create", "id": "ind", "class": "ControlTerminal", "diagram": 20, "as": "IND1", "label": "plot",
+             "indicator": True, "visible": False, "born_on": "2.out"},
+            {"op": "create", "id": "cp", "class": "SubVI", "diagram": "new:DL1.body", "as": "CP1", "donor_uid": 4, "pos": [9, 9],
+             "terminals": [{"name": "x", "is_source": False}, {"name": "y", "is_source": False}]},
+            {"op": "create", "id": "one", "class": "DigitalNumericConstant", "diagram": "new:DL1.body", "as": "ONE1",
+             "on": "new:CP1.x", "value": 1}]
+    plan = {"schema": "stageplan/1", "stage": "xcr", "context": {"s1_graph": {"path": gp}}, "actions": acts}
+    which = proposed_schema(True)
+    try:
+        ok_v = protocol.validate_obj(plan)
+        pp = os.path.join(tmp, "plan_in_xcr.json")
+        json.dump(plan, open(pp, "w", encoding="utf-8"))
+        md = os.path.join(tmp, "models_cr")
+        os.makedirs(md, exist_ok=True)
+        S = SS.simulate(pp, gp, out_root=os.path.join(tmp, "sim"), plan_out_dir=tmp, model_dir=md, log=q)
+        gate("T36 [{0}] a create plan validates and SIMULATES to the end (loop body symbolic, For inside it, move into "
+             "new:DF1.body, locals, cond wire, tunnel across the new border)".format(which),
+             ok_v[0] and S["failed"] is None and "new:DL1.body" in S["sym"] and "new:DF1.body" in S["sym"],
+             (ok_v, S["failed"]))
+        ops = compile_plan(plan)
+        got = [(o["kind"], o.get("route")) for o in ops]
+        gate("T36b compile: gate / while / for / local_read / stop / tunnel / indicator / copy_in / const_on_term rows each "
+             "route to a real op", got == [("gate", None), ("create", "while"), ("create", "for"), ("move_in", None),
+                                            ("create", "local_read"), ("stop", None), ("create", "local_read"),
+                                            ("tunnel", None), ("create", "indicator"), ("create", "copy_in"),
+                                            ("create", "const_on_term")], got)
+        fin = os.path.join(tmp, "plan_xcr.json")
+        st, ff, ex = dry_run(fin, log=q, model_dir=md, require_final=False)
+        bd = ex.bind.get("diag") or {}
+        gate("T36c dry run (non-final diagnostic mode): every row routable, both bodies bound to POSITIVE diagram uids, "
+             "every created node bound", st == "PASS" and len(bd) == 2 and all(k < 0 < v for k, v in bd.items())
+             and len(ex.bind["obj"]) >= 8, (st, str(ff)[:300], bd, len(ex.bind["obj"])))
+        rt = dict((r["ids"][0], (r.get("result") or {}).get("check")) for r in ex.report[1:] if r.get("ids"))
+        last = ex.step(len(acts))["state"]
+        cp_terms = [r["term_uid"] for r in last["terminals"] if r["owner_uid"] == last["sym"]["new:CP1"]]
+        ind_t = last["sym"]["new:IND1"]
+        gate("T36d the copied SubVI's two sink terminals (same class twice) bind by NAME; the indicator binds as its own "
+             "node and was addressed on #2's Nodes[] entry",
+             len(cp_terms) == 2 and all(ex.bind["term"].get(t, -1) > 0 for t in cp_terms) and ex.bind["obj"].get(ind_t, -1) > 0
+             and (rt.get("ind") or {}).get("route") == "indicator" and (rt.get("ind") or {}).get("resolved_name") == "out",
+             (cp_terms, rt.get("ind")))
+        _selftest_live_const(gate, fin, md, q, len(acts))
+        negs =(("T37a NEGATIVE: an unknown alias in a diagram field", [{"op": "move_in", "nodes": [4], "dest_diagram": "new:ZZ1.body",
+                                                                         "pos": [0, 0]}], "no EARLIER action creates"),
+                ("T37b NEGATIVE: use before create", [acts[2], acts[1]], "no EARLIER action creates"),
+                ("T37c NEGATIVE: '.body' of a non-loop", [acts[1], acts[4], {"op": "move_in", "nodes": [4],
+                                                                             "dest_diagram": "new:LR1.body", "pos": [0, 0]}],
+                 "symbolic diagram"),
+                ("T37d NEGATIVE: '.cond' of a For loop", [acts[1], acts[2], dict(acts[4], diagram="new:DF1.body"),
+                                                          {"op": "wire", "src": "new:LR1.value", "dst": "new:DF1.cond"}],
+                 "only a WhileLoop"))
+        for lab_, aa, want in negs:
+            try:
+                compile_plan({"actions": aa})
+                gate(lab_ + " is refused by compile_plan", False, "compiled")
+            except ExecStop as e:
+                gate(lab_ + " is refused by compile_plan", want in str(e), str(e)[:160])
+        bad = dict(plan, stage="xcrbad", actions=acts[:2] + [{"op": "create", "id": "ind2", "class": "ControlTerminal",
+                                                               "diagram": 20, "as": "IND2", "label": "p2", "indicator": True,
+                                                               "born_on": {"uid": 60, "term_uid": 1602}}])
+        pb = os.path.join(tmp, "plan_in_xcrbad.json")
+        json.dump(bad, open(pb, "w", encoding="utf-8"))
+        SS.simulate(pb, gp, out_root=os.path.join(tmp, "sim"), plan_out_dir=tmp, model_dir=md, log=q)
+        st2, ff2, _ex2 = dry_run(os.path.join(tmp, "plan_xcrbad.json"), log=q, model_dir=md, require_final=False)
+        gate("T38 NEGATIVE: an indicator born on a LoopTunnel face is UNROUTABLE (create_indicator_nested finds Nodes only)",
+             st2 == "FAIL" and "UNROUTABLE 1" in str(ff2) and "not a Node" in str(ff2), str(ff2)[:200])
+        okf = dict(plan, stage="xcrface", actions=acts[:2] + [{"op": "create", "id": "ind3", "class": "ControlTerminal",
+                                                                "diagram": 10, "as": "IND3", "label": "p3", "indicator": True,
+                                                                "born_on": {"uid": 61, "term_uid": 1612}}])
+        pf3 = os.path.join(tmp, "plan_in_xcrface.json")
+        json.dump(okf, open(pf3, "w", encoding="utf-8"))
+        SS.simulate(pf3, gp, out_root=os.path.join(tmp, "sim"), plan_out_dir=tmp, model_dir=md, log=q)
+        st3, ff3, ex3 = dry_run(os.path.join(tmp, "plan_xcrface.json"), log=q, model_dir=md, require_final=False)
+        rt3 = dict((r["ids"][0], (r.get("result") or {}).get("check")) for r in ex3.report[1:] if r.get("ids"))
+        gate("T38d card 100-6: an indicator born on a LoopTunnel OUTER SOURCE face (#1612 of #61, on its diagram) ROUTES "
+             "as create_indicator_nested(W, face, None)", st3 == "PASS" and (rt3.get("ind3") or {}).get("tunnel_face") == 1612,
+             (st3, str(ff3)[:200], rt3.get("ind3")))
+        gate("T38e NEGATIVE: tunnel_outer_face refuses the inner face #1602, the sink outer face #1601, and #1612 on a "
+             "diagram it does not sit on", tunnel_outer_face(base["terminals"], 1602, 20) is None
+             and tunnel_outer_face(base["terminals"], 1601, 10) is None and tunnel_outer_face(base["terminals"], 1612, 20) is None
+             and tunnel_outer_face(base["terminals"], 1612, 10) is not None)
+        _selftest_selector_face(gate, tmp, q, md, base, plan, acts, row)
+        g_, okp = prerun_plan(fin, log=q, model_dir=md)
+        gate("T38b prerun_plan still REFUSES the non-final create plan (the diagnostic mode is not a launch gate)",
+             not okp and "not final" in g_[0][2], g_[0])
+        ROUTE_VERBS["zz"] = [("gscript", "nope_verb_c100")]
+        mz = verbs_missing("zz")
+        ROUTE_VERBS.pop("zz", None)
+        gate("T38c verbs_missing reads the source text: loop_in present, a made-up verb absent (NEGATIVE)",
+             not verbs_missing("while") and mz == ["gscript.nope_verb_c100"], (verbs_missing("while"), mz))
+    finally:
+        proposed_schema(False)
+
+
+def _selftest_selector_face(gate, tmp, q, md, base, plan, acts, row):
+    """card 108-6 (PD222(g)) T38f/g: a SelectorTunnel OUTER SOURCE face on its case's diagram ROUTES in the dry backend
+    (the L2-A3 row-2 shape: #11346 'Value' of #11336, frame 23166 == the row's diagram), and the faces the verb refuses
+    stay refused offline. Own graph file, so the T36-T38 fixture is unchanged."""
+    sb = copy.deepcopy(base)
+    sb["terminals"] += [row(1622, "Value", True, 8, 62, "SelectorTunnel", 10, "OuterTerminal"),
+                        row(1621, "Value", False, 9, 62, "SelectorTunnel", 20, "InnerTerminal"),
+                        row(1632, "", False, 11, 63, "Tunnel", 10, "OuterTerminal"),
+                        row(1642, "Value", False, 12, 64, "SelectorTunnel", 10, "OuterTerminal")]
+    sb["objs"] += [{"uid": u, "class": c, "pos": [0, 9], "owner": "Diagram"} for u, c in
+                   ((62, "SelectorTunnel"), (63, "Tunnel"), (64, "SelectorTunnel"))]
+    gps = os.path.join(tmp, "graph_cr_sel.json")
+    json.dump(sb, open(gps, "w", encoding="utf-8"))
+    sel = dict(plan, stage="xcrsel", context={"s1_graph": {"path": gps}},
+               actions=acts[:2] + [{"op": "create", "id": "ind4", "class": "ControlTerminal", "diagram": 10, "as": "IND4",
+                                    "label": "p4", "indicator": True, "visible": False, "born_on": {"uid": 62, "term_uid": 1622}}])
+    ps = os.path.join(tmp, "plan_in_xcrsel.json")
+    json.dump(sel, open(ps, "w", encoding="utf-8"))
+    S4 = SS.simulate(ps, gps, out_root=os.path.join(tmp, "sim"), plan_out_dir=tmp, model_dir=md, log=q)
+    st4, ff4, ex4 = dry_run(os.path.join(tmp, "plan_xcrsel.json"), log=q, model_dir=md, require_final=False)
+    rt4 = dict((r["ids"][0], (r.get("result") or {}).get("check")) for r in ex4.report[1:] if r.get("ids"))
+    c4 = rt4.get("ind4") or {}
+    gate("T38f card 108-6: an indicator born on a SelectorTunnel OUTER SOURCE face (#1622 of #62, on its diagram) simulates "
+         "and ROUTES as create_indicator_nested(W, face, None) via the owner CaseStructure's Terms[]",
+         S4["failed"] is None and st4 == "PASS" and c4.get("tunnel_face") == 1622 and c4.get("tunnel_class") == "SelectorTunnel"
+         and "CaseStructure Terms[]" in str(c4.get("via")), (S4["failed"], st4, str(ff4)[:200], c4))
+    T = sb["terminals"]
+    gate("T38g NEGATIVE: tunnel_outer_face refuses the SelectorTunnel inner face #1621, its outer face on another diagram, a "
+         "case SELECTOR ('Tunnel') face #1632 and an unwired sink SelectorTunnel face #1642",
+         tunnel_outer_face(T, 1621, 20) is None and tunnel_outer_face(T, 1622, 20) is None and tunnel_outer_face(T, 1632, 10) is None
+         and tunnel_outer_face(T, 1642, 10) is None and (tunnel_outer_face(T, 1622, 10) or {}).get("owner_class") == "SelectorTunnel")
+
+
+def _selftest_live_const(gate, fin, md, q, n_acts):
+    """card 104-2 T43: the LIVE const_on_term branch (LVBackend.create, the code op 43 ran) on the T36 plan, whose 'one' row
+    puts a constant on a node inside the CREATED loop DL1. The backend's ids are renumbered positive (as LabVIEW's), so real
+    ids != sim ids; stagekit.const_row is a recorder. PASS = the loop uid handed to const_row is DL1's REAL (bound) uid.
+    Before the fix the Executor put the sim-keyed owners map on addr, the lookup missed, loop_uid 0 reached const_row."""
+    cap = []
+
+    class _S(object):
+        work = "selftest_fake.vi"
+
+        def const_row(self, ex_, tag=""):
+            cap.append(dict(ex_))
+            return {"err": None}
+
+        def junk_purge(self, tag, hints=None):
+            return None
+
+    class _B(object):
+        def diag_index(self, W, d):
+            return 0
+
+    class _LiveConst(SimBackend):
+        _done = LVBackend._done
+
+        def create(self, route, a, args, real, op):
+            if route == "const_on_term":
+                self.g, self.s, self.B = None, _S(), _B()
+                try:
+                    LVBackend.create(self, route, a, args, real, op)
+                except ExecStop as e:
+                    cap.append({"stop": str(e)[:200]})
+            return SimBackend.create(self, route, a, args, real, op)
+    plx, _p = load_final_plan(fin, False)
+    bel = _LiveConst(plx, SS.base_state(_j(_abs(plx["finalized"]["base"]["path"])), plx.get("context")), SS.load_models(md))
+    exl = Executor(fin, bel, log=q, require_final=False)
+    try:
+        exl.run()
+        err = None
+    except ExecStop as e:
+        err = str(e)[:300]
+    sim_dl = exl.step(n_acts)["state"]["sym"]["new:DL1"]
+    real_dl = exl.bind["obj"].get(sim_dl)
+    gate("T43 card 104-2 LIVE const_on_term in a CREATED loop: const_row gets the loop's REAL uid (bound), not the sim id "
+         "nor 0", err is None and len(cap) == 1 and cap[0].get("loop_uid") == real_dl and isinstance(real_dl, int)
+         and real_dl > 0 and real_dl != sim_dl, (err, cap, sim_dl, real_dl))
+    ow = bound_owners({"-5": ["WhileLoop", -4], "639": ["CaseStructure", 600]}, {"diag": {"-5": 23073}, "obj": {"-4": 23070}})
+    gate("T43b bound_owners: created body key + loop uid -> real; a base entry unchanged",
+         ow == {"23073": ["WhileLoop", 23070], "639": ["CaseStructure", 600]}, ow)
+
+
+def _selftest_c127_4(gate, fin, md, q):
+    """card 127-4 (PD259(b)): the dry backend's renumber pass on stagesim's border-crossing tables. A crossing row records its
+    entry face / wires / inferred frame under created (negative) uids; SimBackend._apply renumbers them; the next inner-face
+    branch row (stagesim._fs_border_wire's entry path, unchanged) and an RLE `of` row must find them. T127a-f."""
+    def row(t, name, src, w, own, cls, fd, tcl="Terminal"):
+        return {"term_uid": t, "term_name": name, "is_source": src, "wire_uid": w, "owner_uid": own, "owner_class": cls,
+                "frame_diagram": fd, "term_class": tcl}
+
+    def t_entry(st, a, P, S1, labels):              # what a fs_border crossing leaves behind (stagesim.py _fs_border_wire)
+        fd, T, w = 2, SS.new_uid(st), SS.new_uid(st)         # a BASE frame, as in P3b (the key stays valid; the face did not)
+        face = SS.new_uid(st)
+        st["terminals"] += [row(face, "", True, w, T, "FlatSequenceOuterTunnel", fd),
+                            row(SS.new_uid(st), "x", False, w, 6000, "Add", fd),
+                            row(SS.new_uid(st), "sink2", False, 0, 6001, "Add", fd)]
+        st["objs"].append({"uid": T, "class": "FlatSequenceOuterTunnel", "owner_class": SS.FS_CLS})
+        nf, nt = SS.new_uid(st), SS.new_uid(st)             # a created frame + created source: the KEY must be remapped too
+        st.setdefault("fs_border_entries", {})["5000|{0}".format(fd)] = {"face": face, "act": a["id"]}
+        st["fs_border_entries"]["{0}|{1}".format(nt, nf)] = {"face": SS.new_uid(st), "act": a["id"]}
+        st.setdefault("act_wires", {})[a["id"]] = [w]
+        st.setdefault("fs_frame_inferred", {})[str(nf)] = SS.new_uid(st)
+        return {"how": "t127_entry", "wires": [w]}, []
+
+    def t_branch(st, a, P, S1, labels):
+        s = next(r for r in st["terminals"] if r["term_uid"] == 5000)
+        d = next(r for r in st["terminals"] if r["term_name"] == "sink2")
+        return SS._fs_border_wire(st, a, s, d, {})
+
+    def mk():
+        st = {"terminals": [row(5000, "y", True, 7000, 4999, "Add", 1), row(5001, "z", False, 7000, 4998, "Add", 1)],
+              "objs": [], "loops": [], "diagrams": {}, "owners": {}, "sym": {}, "neg": -100}
+        plan = {"actions": [{"op": "_t127_entry", "id": "x_e"}, {"op": "_t127_branch", "id": "x_b", "src": "y", "dst": "sink2"},
+                            {"op": "wire_remove_loose_ends", "id": "x_r", "of": "x_e"}]}
+        return SimBackend(plan, st, {})
+    saved_ops = dict(SS.OPS)
+    saved_prov = dict(SS.PROVISIONAL)
+    g_ = globals()
+    real_remap = g_["_fs_entries_remap"]
+    try:
+        SS.OPS.update(_t127_entry=t_entry, _t127_branch=t_branch)
+        SS.PROVISIONAL.update(_t127_entry={"params": {}, "evidence": "selftest", "gaps": []},
+                              _t127_branch={"params": {}, "evidence": "selftest", "gaps": []})
+        be = mk()
+        be._apply({"kind": "t", "acts": [1]})
+        ent = be.st.get("fs_border_entries") or {}
+        uids = [int(x) for k in ent for x in k.split("|")] + [int(v["face"]) for v in ent.values()] + \
+            [int(w) for v in (be.st.get("act_wires") or {}).values() for w in v] + \
+            [int(x) for k, v in (be.st.get("fs_frame_inferred") or {}).items() for x in (k, v)]
+        gate("T127a dry renumber: fs_border_entries (key + face), act_wires, fs_frame_inferred carry POSITIVE uids after the "
+             "crossing row", uids and all(u > 0 for u in uids), (ent, be.st.get("act_wires"), be.st.get("fs_frame_inferred")))
+        try:
+            be._apply({"kind": "t", "acts": [2]})
+            eff = be.last_effects[0]
+            face_w = next(r["wire_uid"] for r in be.st["terminals"] if r["term_uid"] == eff["face"])
+            sk = next(r for r in be.st["terminals"] if r["term_name"] == "sink2")
+            gate("T127b an inner-face branch AFTER a renumber finds its entry face and branches its wire",
+                 eff["how"] == "fs_inner_branch" and sk["wire_uid"] == face_w and face_w > 0, eff)
+        except SS.SimError as e:
+            gate("T127b an inner-face branch AFTER a renumber finds its entry face and branches its wire", False, e)
+            face_w = None
+        rle_op = {"kind": "wire_remove_loose_ends", "acts": [3], "of_act": 1}
+        try:
+            be.rle([face_w], rle_op)
+            gate("T127c RLE `of` row in the dry: the simulator's wires (renumbered act_wires) == the executor's live wires", True)
+        except ExecStop as e:
+            gate("T127c RLE `of` row in the dry: the simulator's wires (renumbered act_wires) == the executor's live wires", False, e)
+        try:
+            be.rle([face_w + 1], rle_op)
+            gate("T127d NEGATIVE: an RLE row whose live wires differ from the simulator's FAILS (RLE-DRY)", False, "passed")
+        except ExecStop as e:
+            gate("T127d NEGATIVE: an RLE row whose live wires differ from the simulator's FAILS (RLE-DRY)", "RLE-DRY" in str(e), e)
+        g_["_fs_entries_remap"] = lambda s, m: None            # the pre-127-4 renumber pass
+        be0 = mk()
+        be0._apply({"kind": "t", "acts": [1]})
+        try:
+            be0._apply({"kind": "t", "acts": [2]})
+            gate("T127e NEGATIVE: without the entries remap the branch row loses its entry face (the 127-3 dry failure)",
+                 False, "passed")
+        except SS.SimError as e:
+            gate("T127e NEGATIVE: without the entries remap the branch row loses its entry face (the 127-3 dry failure)",
+                 "gone or unwired" in str(e), e)
+    finally:
+        g_["_fs_entries_remap"] = real_remap
+        SS.OPS.clear()
+        SS.OPS.update(saved_ops)
+        SS.PROVISIONAL.clear()
+        SS.PROVISIONAL.update(saved_prov)
+    st6, ff6, _ = dry_run(fin, fault={"at": 5, "kind": "sim_error"}, log=q, model_dir=md, require_final=False)   # T13 touched a step
+    gate("T127f a SimError inside the dry backend returns FAIL 'SIM-INTERNAL:' (no crash, so the RESULT line follows)",
+         st6 == "FAIL" and str(ff6).startswith("SIM-INTERNAL: injected"), ff6)
+
+
+def _selftest_c128_1(gate):
+    """card 128-1 (PD260(b)): bind_new on the ONE measured multi-border crossing, B3 of diag_c126_6_cross.log:69-78 (real
+    tunnel uids as LabVIEW issued them, DESCENDING along the chain). Sim side = stagesim._border_tunnel's shapes, created
+    from the source side (For exit first). T128a positive, T128b order-invariance, T128c uid-order negative, T128d tie."""
+    def row(t, name, src, own, cls, fd, tcl):
+        return {"term_uid": t, "term_name": name, "is_source": src, "wire_uid": 0, "owner_uid": own, "owner_class": cls,
+                "frame_diagram": fd, "term_class": tcl}
+    # (border, class, real tunnel uid, (outer/inner face) rows as (term_class, is_source, frame, name)) - log :78
+    B3 = [("For exit", "LoopTunnel", 28345, [("OuterTerminal", True, 13236, ""), ("InnerTerminal", False, 23169, "New Image")]),
+          ("FS #12938 out", "FlatSequenceOuterTunnel", 28302, [("Terminal", True, 536, ""), ("Terminal", False, 13236, "")]),
+          ("FS #681 in", "FlatSequenceOuterTunnel", 28254, [("Terminal", False, 536, ""), ("Terminal", True, 686, "")]),
+          ("While entry", "LoopTunnel", 28146, [("OuterTerminal", False, 686, ""), ("InnerTerminal", True, 639, "")]),
+          ("new FS in", "FlatSequenceOuterTunnel", 27902, [("Terminal", False, 27219, ""), ("Terminal", True, -50, "")])]
+    D = {-50: 28470}                                       # the plan-made FS frame, bound by its create (bind['diag'])
+    sim, real, truth, nu = [], [], {}, -100
+    for border, cls, ru, faces in B3:                       # sim: created in chain order, uids from -101 down (stagesim.new_uid)
+        nu -= 1
+        su = nu
+        truth[su] = ru
+        for k, (tc, src, fd, nm) in enumerate(faces):
+            nu -= 1
+            sim.append(row(nu, "", src, su, cls, fd, tc))
+            real.append(row(ru * 10 + k, nm, src, ru, cls, D.get(fd, fd), tc))
+    b = {"obj": {}, "term": {}, "diag": dict(D)}
+    try:
+        made = bind_new([], real, [], sim, b)
+        ok = made == truth and all(
+            next(r for r in real if r["term_uid"] == b["term"][s["term_uid"]])["frame_diagram"] == D.get(s["frame_diagram"], s["frame_diagram"])
+            and next(r for r in real if r["term_uid"] == b["term"][s["term_uid"]])["owner_uid"] == truth[s["owner_uid"]] for s in sim)
+        gate("T128a B3 multi-border crossing: 2 LoopTunnel + 3 FSOT each bound to ITS border's real tunnel, faces by frame",
+             ok, (made, truth))
+    except ExecStop as e:
+        gate("T128a B3 multi-border crossing: 2 LoopTunnel + 3 FSOT each bound to ITS border's real tunnel, faces by frame", False, e)
+    b2 = {"obj": {}, "term": {}, "diag": dict(D)}
+    try:
+        made2 = bind_new([], list(reversed(real)), [], sim, b2)
+        gate("T128b the same binding when the real rows arrive in the opposite order (no order is read)", made2 == truth, made2)
+    except ExecStop as e:
+        gate("T128b the same binding when the real rows arrive in the opposite order (no order is read)", False, e)
+    # T128c NEGATIVE: the binder a uid-order rule would be - sim objects in creation order paired with real objects in uid order
+    order_bind = {}
+    for cls in ("LoopTunnel", "FlatSequenceOuterTunnel"):
+        s_o = list(collections.OrderedDict((r["owner_uid"], 1) for r in sim if r["owner_class"] == cls))
+        r_o = sorted(set(r["owner_uid"] for r in real if r["owner_class"] == cls))
+        order_bind.update(zip(s_o, r_o))
+    swapped = [(B3[i][0], order_bind[s], truth[s]) for i, s in enumerate(sorted(truth, reverse=True)) if order_bind[s] != truth[s]]
+    gate("T128c NEGATIVE: a uid-order binder MIS-BINDS B3 (For exit -> the While tunnel, ...), which is why frames are keyed",
+         any(x[0] == "For exit" and x[1] == 28146 for x in swapped), swapped)
+    tie = [dict(r) for r in real]
+    for r in tie:                                           # the While tunnel's faces moved onto the For tunnel's frames
+        if r["owner_uid"] == 28146:
+            r["frame_diagram"] = 13236 if r["term_class"] == "OuterTerminal" else 23169
+            r["is_source"] = r["term_class"] == "OuterTerminal"
+    try:
+        bind_new([], tie, [], sim, {"obj": {}, "term": {}, "diag": dict(D)})
+        gate("T128d NEGATIVE: two real tunnels with the same frame key STOP (no order fallback)", False, "bound")
+    except ExecStop as e:
+        gate("T128d NEGATIVE: two real tunnels with the same frame key STOP (no order fallback)", "frame keys" in str(e), e)
+
+
+def _selftest_c128_5(gate):
+    """card 128-5 (PD262(b)): bind_new pairs a REPEATED NAMED key of one fresh node in read order - the new Unbundler of
+    diag_c128_2_donors.log:57 (#380: 'cluster' sink t399 + 'element' sources t412/t418/t422, all unwired). T1285a the three
+    'element' rows bind in read order (element#0 -> t412 = status after wiring, :83); T1285b a WIRED repeated named key STOPS."""
+    def row(t, name, src, own, cls, w=0):
+        return {"term_uid": t, "term_name": name, "is_source": src, "wire_uid": w, "owner_uid": own, "owner_class": cls,
+                "frame_diagram": 334, "term_class": "Terminal"}
+    sim = [row(-2, "cluster", False, -1, "Unbundler")] + [row(-3 - k, "element", True, -1, "Unbundler") for k in range(3)]
+    real = [row(399, "cluster", False, 380, "Unbundler")] + [row(t, "element", True, 380, "Unbundler") for t in (412, 418, 422)]
+    b = {"obj": {}, "term": {}}
+    try:
+        made = bind_new([], real, [], sim, b)
+        gate("T1285a new Unbundler: 3 'element' sources bound in read order (element#0 -> t412), cluster -> t399",
+             made == {-1: 380} and b["term"] == {-2: 399, -3: 412, -4: 418, -5: 422}, (made, b["term"]))
+    except ExecStop as e:
+        gate("T1285a new Unbundler: 3 'element' sources bound in read order (element#0 -> t412), cluster -> t399", False, e)
+    realw = [dict(r, wire_uid=(77 if r["term_uid"] == 418 else 0)) for r in real]
+    try:
+        bind_new([], realw, [], sim, {"obj": {}, "term": {}})
+        gate("T1285b NEGATIVE: a WIRED row under a repeated named key STOPS (no read-order pairing once wired)", False, "bound")
+    except ExecStop as e:
+        gate("T1285b NEGATIVE: a WIRED row under a repeated named key STOPS (no read-order pairing once wired)", "BINDING" in str(e), e)
+
+
+def main(argv):
+    if len(argv) >= 2 and argv[1] == "selftest":
+        return selftest()
+    if len(argv) >= 3 and argv[1] in ("dry", "prerun", "run"):
+        plan = os.path.abspath(argv[2])
+        if argv[1] == "dry":                       # card 103-4: `dry <plan> --from-step k --binding <Part-A json>`
+            fsk = int(argv[argv.index("--from-step") + 1]) if "--from-step" in argv else None
+            try:
+                st, ff, ex = dry_run(plan, require_final="--nonfinal" not in argv, from_step=fsk,
+                                     binding=argv[argv.index("--binding") + 1] if "--binding" in argv else None)
+            except ExecStop as e:
+                st, ff = "FAIL", str(e)[:4000]
+            print(protocol.result_line(protocol.make_result(int(st == "PASS"), int(st != "PASS"), ff)))
+            return 0 if st == "PASS" else 1
+        if argv[1] == "prerun":
+            g_, ok = prerun_plan(plan)
+            n = sum(1 for x in g_ if x[1])
+            print(protocol.result_line(protocol.make_result(n, len(g_) - n, next((x[0] + ": " + x[2] for x in g_ if not x[1]), None))))
+            return 0 if ok else 1
+        ref = None
+        if "--reference" in argv:
+            i = argv.index("--reference")
+            ref = (argv[i + 1], argv[i + 2])
+        mm = int(argv[argv.index("--max-min") + 1]) if "--max-min" in argv else 60
+        return lv_run(plan, ref, mm)
+    print(__doc__)
+    return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

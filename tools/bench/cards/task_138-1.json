@@ -1,0 +1,57 @@
+{
+ "schema": "task/1",
+ "id": "138-1",
+ "kind": "build",
+ "goal": "Offline: stagesim FS-exit row from measured U6-prime + delete_wire row-loss fix (#10465), self-tests; stagexec FS-exit route kind; rerun c125_1; replay v7.",
+ "why": "PD311(c)(e)/PD309(b)/PD310(c) (ring-p4.md:213-244): stagesim models FS entry only (stagesim.py:1364), compile_plan files the FS exit as plain connect (stagexec.py:720); v7 replay stops at 159 '#10465 owns no terminal' (stagesim.py:680) though the graph has 3 rows.",
+ "inputs": [
+  {"path": "tools/bench/diag_c137_7_types.log"},
+  {"path": "tools/bench/prep_c137_6_facts.md"},
+  {"path": "tools/bench/plan_ring_p4_v7.json", "md5": "01ab0893f3a9440e02bbc180bc467bdf"},
+  {"path": "tools/bench/graph_ring_p3b2b_20261002_133824.json", "md5": "50595c62d0332a94bf066538cf20c0ae"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/bench/c125_1_offline_measure.py"},
+  {"kind": "file", "name": "tools/bench/diag_c137_7_types.log"}
+ ],
+ "pass": [
+  "1 stagesim FS-exit row predicts what U6-prime measured (diag_c137_7_types.log:290-306,317,328: tunnel on FS border, faces = source type, wires unbroken); self-test PASS",
+  "1b tunnel name: reproduces the label at diag_c137_7_types.log:301-302 or flags UNPREDICTED-NAME (never silent ''); void-source exit (U6, diag_c137_5_routes.log:167-169) refused/flagged",
+  "2 delete_wire row-loss: root cause file:line; self-test fails before fix, passes after; all existing stagesim self-tests green (counts listed)",
+  "3 compile_plan: FS exit = own route kind mapped to the calls U6-prime ran (cite diag script line); self-test; compile_plan(v7) all actions (ops, per-step counts)",
+  "4 tools/bench/c125_1_offline_measure.py rerun (PD252(a)); result line quoted",
+  "5 replay v7 on the bed graph with fixed sim: last step, cdiff, first stop or END; facts in tools/bench/prep_c138_1_facts.md (<=50 lines)"
+ ],
+ "outputs": [
+  "tools/bench/prep_c138_1_facts.md",
+  "tools/bench/cards/result_138-1.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagesim.py",
+   "tools/stagexec.py",
+   "tools/bench/selftest_*c138_1*",
+   "tools/bench/prep_c138_1*",
+   "tools/bench/sim/ring_p4_v7*/*",
+   "tools/bench/sim/c138_1*/*",
+   "tools/bench/c125_1_*",
+   "tools/bench/cards/result_138-1*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 55},
+ "rules": [
+  "No edit of tools/stage_prerun.py (138-2 edits it) nor plan_ring_p4_v7.json; replay output under tools/bench/sim/",
+  "Model the FS exit from MEASURED rows only (U6-prime); what the log does not show is flagged UNMEASURED, never guessed",
+  "Return at the first unexpected result after finishing that step; facts + OPEN line only"
+ ],
+ "advances": ["M3", "R1"]
+}

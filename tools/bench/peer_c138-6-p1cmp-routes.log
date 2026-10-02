@@ -1,0 +1,45 @@
+BGRUN START 2026-10-02 18:17:37 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c138-6-p1cmp-routes -TaskFile tools/bench/diag_c138_6_hyp_task.txt
+BGRUN PID 19416
+OUTCOME: ANSWERED (80s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-02-c138-6-p1cmp-routes.md
+COST: $1.0624  in 20 / out 6681 / cache-create 92135 / cache-read 958295  (76s, 17 turn(s))
+--- ANSWER ---
+The three changed routes come from a defect in our own tooling, not from a real change in which terminals the wires end on. But the claim's mechanism is wrong. `compile_plan` does not look up the wrong simulated step. It reads a stale route table that was copied verbatim from v8 into v9, and that table is keyed by action position.
+
+**1. Strongest reason the claim is wrong.** `compile_plan` reads no step effects from `stagesim` at all. For wires into a Flat Sequence the plan did not create, it reads the plan file's own `finalized.fs_routes` table. That table is keyed by position number. `compile_plan` ignores the `id` field stored beside each key (`tools/stagexec.py:658-662`).
+
+The table in v9 was not regenerated. It is identical to v8's:
+- v8 (`plan_ring_p4_v8.json:3179-3190`): `"13"` → `fs_inner_branch` (id `p4_x_i_rab1`) and `"15"` → `fs_border` (id `p4_x_bufdiff`).
+- v9 (`plan_ring_p4_v9.json:3193-3204`): the same two keys, `"13"` and `"15"`, with the same ids.
+
+The new action `p4_i_stopall` sits at position 4, so every later action moves down by one:
+
+| position | v8 | v9 |
+|---|---|---|
+| 12 | p4_w_b_out | p4_lw_bufdiff… (shifted) |
+| 13 | p4_x_i_rab1 | **p4_w_b_out** |
+| 14 | p4_rle_i_rab1 | p4_x_i_rab1 |
+| 15 | p4_x_bufdiff | **p4_rle_i_rab1** (`wire_remove_loose_ends`, not a wire) |
+| 16 | p4_rle_bufdiff | p4_x_bufdiff |
+
+Applying the stale keys reproduces all three observed differences exactly:
+- **Key "13"** now lands on `p4_w_b_out`, a wire, so it gets `fs_border_inner_branch` (cmp.log:4).
+- **Key "15"** now lands on a step that is not a wire, so line 661's `op == "wire"` check drops it silently.
+- **`p4_x_i_rab1` (14) and `p4_x_bufdiff` (16)** get no table entry, so they fall through to plain `connect` (cmp.log:5-6).
+
+**2. Alternative explanation of the same evidence.** The defect is in the plan-making script, not in `compile_plan`'s step lookup. `tools/bench/prep_c138_p1_mkv9.py` never mentions `fs_routes` or `finalized` (grep: 0 hits), so it copied v8's `finalized` block unchanged after inserting an action. The simulator itself is right. Its output plan, `tools/bench/sim/c138_p1_v9/plan_ring_p4_v3.json:3698-3708`, has the correct keys `"14"` → `p4_x_i_rab1` and `"16"` → `p4_x_bufdiff` (written by `stagesim.py:2510`). That also explains why the replay found every step equal (cdiff 0 differ, facts §5) while the compile did not.
+
+The other explanation in the brief, that StopAll or the relabelled locals really change where the three wires end, has no support. None of the three wires touches `StopAll`, `p4_lr_stop12` or `p4_lr_stop_w1`, and the simulated effects agree step by step.
+
+**3. What would falsify the claim and this explanation.** Run `compile_plan` on the simulator's output plan (`sim/c138_p1_v9/plan_ring_p4_v3.json`, md5 a4bf1c98) instead of the raw v9 file. If the three wires still compile to different routes than in v8, the stale table is not the cause and the routes really changed.
+
+**4. Cheapest discriminating test (offline, about 1 s).** Rerun the comparison script `prep_c138_p1_cmp.py` with two variants:
+- **(a)** v9 with `finalized.fs_routes` re-keyed by `id`, i.e. keys 14 and 16. Prediction: only `p4_i_stopall` differs.
+- **(b)** v8 with a do-nothing action inserted at position 4 and its `fs_routes` left as is. Prediction: the same three differences appear. This shows the cause is the action shift, with StopAll's meaning playing no part.
+
+The brief proposed a no-op test of its own; (b) is that test.
+
+**Risks to fix, beyond this one diff:**
+- `compile_plan` should look up `fs_routes` by `id`, or refuse to compile when `A[k-1]["id"]` does not match the stored `id`. Today a mismatch silently becomes a valid-looking route.
+- The executor's cross-check against the step effect (`stagexec.py:2190-2197`) only fires when an op was compiled as `connect_term_uid` with an `fs_` variant. A border wire that wrongly compiled to plain `connect`, like `p4_x_i_rab1` and `p4_x_bufdiff` here, would not be stopped by that check.
+- Every launch should compile from the simulator's output plan, never from the maker's raw output.
+BGRUN END rc=0 after 81s

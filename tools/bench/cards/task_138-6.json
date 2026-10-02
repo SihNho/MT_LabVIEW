@@ -1,0 +1,61 @@
+{
+ "schema": "task/1",
+ "id": "138-6",
+ "kind": "measure",
+ "goal": "Scratch only: build DonorI32Max_v0; For-loop min group on a scratch VI (IndexMode read-back, one run); #10465 after delete_wire on a bed copy; latch-local test.",
+ "why": "PD312(c)(d)(e) (docs/d1/ring-p4.md:245-272): v8's KMX constants have no donor, auto-index IndexMode is UNMEASURED, Case tunnel #10465 survival after delete_wire is UNMEASURED, latch reading of Mechanical Action 4 to confirm.",
+ "inputs": [
+  {"path": "tools/bench/plan_ring_p4_v8.json", "md5": "059b52964d4d05a67049add4798cb9b0"},
+  {"path": "tools/bench/prep_c138_4_facts.md", "md5": "3c8e43e4ec77439f2f97a7d14cee4a44"},
+  {"path": "tools/bench/diag_c138_5_facts.md", "md5": "f4a633748fdccf99b2cd12a778866ec3"},
+  {"path": "tools/bench/prep_c138_1_facts.md", "md5": "f8fde43f8ae4254ffc76d6a7131a6ca9"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b2b_20261002_130007.vi", "md5": "395118775a52bc90073f4449b99f899d"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/bench/hygiene_OpStopMode_v0.json"},
+  {"kind": "file", "name": "tools/bench/hygiene_OpStopModeB_v0.json"}
+ ],
+ "pass": [
+  "0 hygiene_OpStopMode_v0/B_v0 records copied into tools/bench/op_hygiene/ in the form gscript.op() reads; op call passes outside hygiene_probe",
+  "1 claudeDev DonorI32Max_v0.vi saved, ExecState 1: one numeric constant, representation I32 and value 2147483647 read back; its uid recorded",
+  "2 scratch VI: For loop, I32[20] + Bool[20] auto-indexed in, scalar Select(f = const_donor from DonorI32Max), auto-index out -> Array Max & Min",
+  "2b per tunnel IndexMode read back; every wire Is Broken? False; ExecState 1; runs on Num=[-1,5,3,9,..], last 2 -> min 3; all <= last -> 2147483647",
+  "3 bed byte copy: delete_wire w25415 then read #10465 rows (exists? terminals) + count-only Error List; bed md5 unchanged",
+  "4 scratch Boolean Mechanical Action 4 + a local variable of it: ExecState / Error List item recorded (latch => broken expected)",
+  "5 LabVIEW gone, scratch files deleted after records; facts in tools/bench/diag_c138_6_facts.md (<=40 lines)"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorI32Max_v0.vi",
+  "tools/bench/diag_c138_6_facts.md",
+  "tools/bench/cards/result_138-6.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": true,
+  "write": [
+   "tools/bench/op_hygiene/*",
+   "tools/bench/diag_c138_6*",
+   "tools/bench/build_donori32max*",
+   "tools/bench/scratch_verify/*c138*",
+   "tools/bench/prerun_records*",
+   "tools/bench/errorlist_*c138_6*",
+   "tools/bench/cards/result_138-6*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/DonorI32Max*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/scratch_c138_6*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 50},
+ "rules": [
+  "run_vi ONLY for the step-2 scratch VI (no subVI, no instrument); the bed and its copies are never run",
+  "Bed is byte-copied, never edited; no tools/*.py edit (an offline card runs beside this one)",
+  "Return at the first unexpected result after finishing that step (LabVIEW closed); facts + OPEN line only"
+ ],
+ "advances": ["M3", "R1"]
+}

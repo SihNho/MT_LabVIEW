@@ -1,0 +1,50 @@
+{
+ "schema": "task/1",
+ "id": "138-2",
+ "kind": "build",
+ "goal": "Offline: prerun X10 counts whole-VI reads from the script SOURCE call sites, not the dry-executed reads; self-test; repair stale selftest_x10_c132_1 T3 fixture.",
+ "why": "PD299(b) (ring-p4.md:96-99): the dry skips DRY-guarded reads (stagekit.py:265) so a dry-counted R undercounts (3 vs ~50 call sites) - the device owed by retrospective-cycle136 device-failed. PD299(c): c132_1 T3 stale fixture.",
+ "inputs": [
+  {"path": "docs/d1/ring-p4.md"},
+  {"path": "tools/bench/memory_model.json"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/bench/memory_model.json"}
+ ],
+ "pass": [
+  "1 X10 derives R per LabVIEW session from AST call sites of the read functions; prints source and dry counts; a read in a loop is UNMEASURED, never counted once",
+  "1b X10 FAILs or says UNMEASURED when the source count cannot be bounded - never PASS on the smaller count",
+  "2 self-test: DRY-guarded reads get the source count; loop read not counted as 1; selftest_x10_c136_2 (reader/edit branches) still passes; every selftest_x10_* listed with counts",
+  "3 selftest_x10_c132_1 T3 re-pinned on an existing fixture; PASS",
+  "4 X10 rerun on P3b-2 recipes a and b (cite paths): source count, dry count, verdict, changed vs recorded prerun; facts in tools/bench/prep_c138_2_facts.md (<=40 lines)"
+ ],
+ "outputs": [
+  "tools/bench/prep_c138_2_facts.md",
+  "tools/bench/cards/result_138-2.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_prerun.py",
+   "tools/bench/selftest_x10_*",
+   "tools/bench/fixtures_x10*/*",
+   "tools/bench/prep_c138_2*",
+   "tools/bench/cards/result_138-2*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 45},
+ "rules": [
+  "No edit of tools/stagesim.py, stagexec.py, stagekit.py (138-1 edits stagesim/stagexec in parallel)",
+  "A check that verified nothing must not answer PASS (docs/violation-decisions.md:1846-1857 class)",
+  "Return at the first unexpected result after finishing that step; facts + OPEN line only"
+ ],
+ "advances": ["M3", "R1"]
+}

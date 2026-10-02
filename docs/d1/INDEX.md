@@ -26,7 +26,7 @@ not enough. Long history stays where it was; nothing here replaces the full text
 - **Work VI (bed):** `claudeDev\D1_ring_p3b2b_20261002_130007.vi`, md5 `395118775a52bc90073f4449b99f899d` (STATUS `current-bed:`; PD297 — [ring-p3b](ring-p3b.md)). Error List 51 items, expected file `tools/bench/errorlist_expected_D1_ring_p3b2b_20261002_130007.json`. STRUCTURAL, `ExecState` 0 by design, never run. (Before: P3b-1 `D1_ring_p3b1_20261002_060910.vi` `9d7bf287…`, 53 items.)
 - **Broken-intermediate count (CLAUDE.md "AT MOST 6"):** 4 of 6 (P2b 1, P3a 2, P3b-1 3, P3b-2 4). P4 measured at 93 actions (PD293) — how many files it may use is the open user decision D-2026-10-02-03; P6 must run (PD261(d) — [split-plan:2847](../d1-loop12-17-split-plan.md)).
 - **Plan of record for the frame handoff:** `docs/ring-buffer-design.md` (user design 2026-09-28; PD238(a)). User rules checked by every design item: `docs/user-rules.md`.
-- **Next act (cycle 138):** PD311(e) — ONE offline tooling card alone (stagesim FS-exit row from U6′ + `delete_wire` row-loss fix, stagexec FS-exit route, self-tests); then v8 = v7 + For-loop reader (PD311(b)) + `'s? t:f'`; then one scratch route run (For-loop group + 17 uncovered classes); stop-mode op card `task_137-2.json` when LabVIEW is free. (Cycle 137: v7 compiles end to end; Select scalar-only; PD302–311.)
+- **Next act (cycle 139):** PD313(e) — two cards in one message: LabVIEW scratch (For-loop group inside a While body, IndexMode read-back, one run on known values; full Error List read naming item 52 after `delete_wire` w25415) ‖ offline v10 (regenerated fs_routes, KMX uid 127, StopAll init False on `#4866`; route compare v8→v10). (Cycle 138: stagesim FS exit + delete_wire fix, X10 source reads, v8 059b5296, stop (end) latch confirmed; PD312–313.)
 
 ## Ring-buffer step table (PD238(g) — [split-plan:2260](../d1-loop12-17-split-plan.md))
 
@@ -38,7 +38,7 @@ not enough. Long history stays where it was; nothing here replaces the full text
 | P3a | loop-1.1 control: wait, two registers, `Equal?`, case, counter, mod 20 | DELIVERED `D1_ring_p3a_20261001_180540.vi` (`4dfa44aa…`) | PD251(a) :2552 |
 | P3b-1 | slot writes part 1 (IMAQ Copy + error guard; 31 actions) | DELIVERED `D1_ring_p3b1_20261002_060910.vi` (`9d7bf287…`) = bed; 680.4 MB, EL 53 | PD271–274 (tooling.md:56, ring-p3b.md:35–64) |
 | P3b-2 | slot writes part 2 (TransPos/RotPos/FrameIdx groups, Latest); 39 actions applied in TWO LabVIEW sessions (a 21 / b 18) by memory | DELIVERED `D1_ring_p3b2b_20261002_130007.vi` (`39511877…`) = bed; a 645.7 / b 620.6 MB, EL 51 | PD283–297 (ring-p3b.md:155–) |
-| P4 | tracking-loop 1.2 reader (seqlock, `last`, jump, rollback Selects, `BufDiff` 5th per-slot array, 1.2 stop) | PLAN v7 172 actions (`plan_ring_p4_v7.json` 01ab0893), `compile_plan` all → 160 ops, replay to 158; reader min-group needs the For-loop redesign (PD311(b)); 11 sessions / 6 broken files under option 2; file count = D-2026-10-02-04 | PD293, PD295, PD298–311 (ring-p4.md) |
+| P4 | tracking-loop 1.2 reader (seqlock, `last`, jump, rollback Selects, `BufDiff` 5th per-slot array, 1.2 stop) | PLAN v8 181 actions (`plan_ring_p4_v8.json` 059b5296, For-loop min group), `compile_plan` 163 ops, replay END; v9 rejected → v10 owed (PD313(c)(d)); MAX donor uid 127 measured; For-group scratch owed; file count = D-2026-10-02-04 | PD293, PD295, PD298–313 (ring-p4.md) |
 | P5 | results queue 1.2 → 1.7 (lossless FIFO) | NOT STARTED | PD238(d) :2257 |
 | P6 | recorded-frame replay (X/Y/Z bit-identical) + real ABBA at 90/150 Hz | NOT STARTED — first RUN of the chain | PD238(f) :2259 |
 | after P6 | ONE interface-contract step (every loop's published/read locals) | NOT STARTED | STATUS `## NEXT` parallelism rule |
@@ -190,6 +190,8 @@ delivered step that later items build on; it is in force as a fact, not as an or
 - PD309(a)-(d) routes A2/U1/U2/W1-Or/U5 PASS, U3 (Select on Boolean array, KMX DBL) and U6 (FS exit) FAIL → 137-7 types/endpoints; FS-exit route built in stagesim AND stagexec from a passing U6, never a loop tunnel on an FS; stop-mode op → cycle 138 — docs/d1/ring-p4.md:206
 - PD310(a)-(c) v7 01ab0893 = current P4 plan (172 actions, compile_plan ALL 160 ops); #10465 raw re-wire stays; replay stop 159 after delete_wire = stagesim defect → same tooling card as FS exit — docs/d1/ring-p4.md:218
 - PD311(a)-(e) Select takes a SCALAR s only (measured + NI) ⇒ smallest-Num>last via For loop + scalar Select + Array Min (MAX I32 by const_donor); FS exit works with a typed source (U6′); Select out name 's? t:f'; cycle-138 order — docs/d1/ring-p4.md:226
+- PD312(a)-(e) stagesim FS-exit + delete_wire fix, stagexec fs_exit, X10 source-counted reads accepted; v8 059b5296 (For + scalar Select, Greater? outside) accepted; ONE I32-MAX donor for both constants; IndexMode gates per tunnel; stop (end) is a latch ⇒ StopAll writer (PD298(e)) — docs/d1/ring-p4.md:245
+- PD313(a)-(e) DonorI32Max uid 127 measured; #10465 survives delete_wire (EL 51→52, item unnamed); latch-local break confirmed; For-group rerun inside a While body; v9 rejected (copied positional fs_routes) → v10 regenerates it + StopAll init False on #4866 — docs/d1/ring-p4.md:273
 - PD268(d) 130-2 accepted; open tooling queue fp-20/21/22/24/25, guard_cycle:40, stop_record H1–H3 — docs/d1/tooling.md:34
 
 ### Older items that PD238+ cite as still applying

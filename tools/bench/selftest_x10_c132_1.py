@@ -4,6 +4,9 @@ PREDICTION: T1 tools/recipes/stage_d1_ring_p3b1.py (the bytes launched cycle 131
 launch's measured 680.4 (stage_d1_ring_p3b1.log:430), X10 PASS (<= 690); T2 memory_model final_read_mb == 17.4 (the measured
 d, stage_d1_ring_p3b1_scratch_pin4.log:447) and fail_above_mb == 690 (PD275(b)); T3 stage_d1_ring_p3b2.py (provisional plan):
 its prediction is PRINTED (a measurement, not a gate) - it passes T3 when X10 returns a run at all.
+card 138-2 (PD299(b)(c)): T1 compares the Executor-only exec_peak_mb (peak_mb now adds the source-counted script reads);
+T3 b is re-pinned on its EXISTING plan file plan_ring_p3b2b.json (its input VI scratch_c133_6 was deleted), a keeps the probe;
+T3 also requires a bounded source read count (src_reads int).
     py tools/bgrun.py --material --max-min 6 --log tools/bench/selftest_x10_c132_1.log -- py -u tools/bench/selftest_x10_c132_1.py"""
 import os, re, sys                                                                   # noqa: E401
 B = os.path.dirname(os.path.abspath(__file__))
@@ -34,22 +37,43 @@ launch_mb, _d = measured("stage_d1_ring_p3b1.log", 430)
 pin4_mb, pin4_d = measured("stage_d1_ring_p3b1_scratch_pin4.log", 447)
 ok, det = x10(os.path.join(ROOT, "tools", "recipes", "stage_d1_ring_p3b1.py"))
 runs = det.get("runs") or []
-gate("T1 stage_d1_ring_p3b1.py: X10 PASS, predicted {0} within 3 MB of the launch's measured {1}".format(
-    runs[0]["peak_mb"] if runs else None, launch_mb),
-    ok is True and len(runs) == 1 and launch_mb is not None and abs(runs[0]["peak_mb"] - launch_mb) <= 3.0,
-    [dict((k, r[k]) for k in ("N", "bind", "R", "peak_mb", "fail_above_mb")) for r in runs] or det)
+# card 138-2 (PD299(b)): peak_mb now adds the script's source-counted reads (2 census_snapshot via `snap`); the launch METER
+# (stage_d1_ring_p3b1.log:430) measured inside the Executor run, so T1 compares the Executor-only figure exec_peak_mb.
+gate("T1 stage_d1_ring_p3b1.py: X10 PASS, Executor-only predicted {0} within 3 MB of the launch's measured {1} (total {2})".format(
+    runs[0].get("exec_peak_mb") if runs else None, launch_mb, runs[0]["peak_mb"] if runs else None),
+    ok is True and len(runs) == 1 and launch_mb is not None and abs(runs[0]["exec_peak_mb"] - launch_mb) <= 3.0,
+    [dict((k, r.get(k)) for k in ("N", "bind", "exec_R", "R", "exec_peak_mb", "peak_mb", "fail_above_mb")) for r in runs] or det)
 m = SP.load_memory_model()
 gate("T2 memory_model final_read_mb == measured pin4 d {0}; fail_above_mb 690".format(pin4_d),
      m["final_read_mb"]["value"] == pin4_d and m["fail_above_mb"]["value"] == 690.0,
      (m["final_read_mb"]["value"], m["fail_above_mb"]["value"], pin4_mb))
 # card 133-3 (PD283(e)): stage_d1_ring_p3b2.py is the one-session REFERENCE (never launched; its plan 04204133 keeps the rebase
 # temp plan_in, so its L0 stops the dry before the Executor). T3 now probes the two session recipes that replace it.
-for rn in ("stage_d1_ring_p3b2a.py", "stage_d1_ring_p3b2b.py"):
-    ok, det = x10(os.path.join(ROOT, "tools", "recipes", rn))
+import json, stagexec as SX                                                         # noqa: E401,E402
+
+
+def plan_record(plan_rel):
+    """card 138-2 (PD299(c)): the Executor record x10_capture_executors would build, from the EXISTING plan file - recipe b's
+    dry stops at K1 because its input VI (claudeDev scratch_c133_6_ring_p3b2a_20261002_093837.vi, md5 6cc69221) was deleted
+    (selftest_x10_c132_1_c136_2.log:62 `K1 ... got MISSING`). Checkpoints = the recipe's own rule {0, len} | BIND
+    (stage_d1_ring_p3b2b.py:27-28)."""
+    pl = json.load(open(os.path.join(B, plan_rel), encoding="utf-8"))
+    ops = SX.compile_plan(pl)
+    cps = sorted({0, len(ops)} | set(k for k, o in enumerate(ops, 1) if o["kind"] in SX.BIND_KINDS))
+    return {"plan": "tools/bench/" + plan_rel, "kinds": [o["kind"] for o in ops], "checkpoints": cps, "stop_after": None,
+            "from_step": None, "error": None}
+
+
+# card 138-2 (PD299(c)): a keeps the probe (its input D1_ring_p3b1_20261002_060910.vi exists); b is re-pinned on its plan file.
+for rn, how in (("stage_d1_ring_p3b2a.py", "probe"), ("stage_d1_ring_p3b2b.py", "plan_ring_p3b2b.json")):
+    rp = os.path.join(ROOT, "tools", "recipes", rn)
+    ok, det = x10(rp) if how == "probe" else SP.x10_gate(rp, [plan_record(how)])
     runs = det.get("runs") or []
     print("  FACT  X10 {0}: ok {1}, runs {2}, why {3}".format(rn, ok, [dict((k, r.get(k)) for k in (
-        "plan", "N", "bind", "R", "start_mb", "start_source", "peak_mb", "fail_above_mb")) for r in runs], det.get("why")), flush=True)
-    gate("T3 {0}: X10 returns a model run (prediction printed above)".format(rn), len(runs) >= 1, det.get("why"))
+        "plan", "N", "bind", "exec_R", "R", "start_mb", "start_source", "exec_peak_mb", "peak_mb", "src_reads", "reads_line",
+        "fail_above_mb")) for r in runs], det.get("why")), flush=True)
+    gate("T3 {0} ({1}): X10 returns a model run with a bounded source read count (prediction printed above)".format(rn, how),
+         len(runs) >= 1 and all(isinstance(r.get("src_reads"), int) for r in runs), det.get("why"))
 npass, nfail = sum(1 for _n, c in res if c), sum(1 for _n, c in res if not c)
 print(P.result_line(P.make_result(npass, nfail, next((n for n, c in res if not c), None))), flush=True)
 sys.stdout.flush()

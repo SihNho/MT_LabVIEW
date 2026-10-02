@@ -95,9 +95,11 @@ for tag, text, want in (("T1 129-1 bytes (read after every op)", r1, 744.0), ("T
     gate("{0} L0 atoms on the fixtures: all 8 TRUE".format(tag[:2]), l0_conditions(tag[:2]))
     ok, det = x10(probe_copy(text, tag[:2] + ".py"))
     runs = det.get("runs") or []
-    gate("{0}: X10 FAILS, predicted peak {1} (expected {2})".format(tag, runs[0]["peak_mb"] if runs else None, want),
-         ok is False and len(runs) == 1 and abs(runs[0]["peak_mb"] - want) < 0.05,
-         [dict((k, r[k]) for k in ("N", "bind", "R", "peak_mb")) for r in runs] or det)
+    # card 138-2 (PD299(b)): peak_mb now adds the script's source-counted reads; the pinned figure is the Executor-only one
+    gate("{0}: X10 FAILS, Executor-only predicted peak {1} (expected {2}; with source reads {3})".format(
+        tag, runs[0].get("exec_peak_mb") if runs else None, want, runs[0]["peak_mb"] if runs else None),
+         ok is False and len(runs) == 1 and abs(runs[0]["exec_peak_mb"] - want) < 0.05,
+         [dict((k, r.get(k)) for k in ("N", "bind", "exec_R", "R", "exec_peak_mb", "peak_mb", "src_reads")) for r in runs] or det)
 np_ = os.path.join(tmp, "stage_noplan_c130_1.py")
 open(np_, "w", encoding="utf-8").write("import sys\nprint('no plan, no Executor')\nsys.exit(0)\n")
 ok, det = x10(np_)
@@ -105,7 +107,7 @@ gate("T3 a recipe with no plan: X10 FAILS UNMEASURED", ok is False and str(det.g
 ok, det = x10(os.path.join(ROOT, "tools", "recipes", "stage_d1_ring_p3a.py"))
 runs = det.get("runs") or []
 gate("T4 stage_d1_ring_p3a.py (passed cycle 124): X10 PASSES", ok is True and len(runs) == 1,
-     [dict((k, r[k]) for k in ("N", "bind", "R", "peak_mb")) for r in runs] or det)
+     [dict((k, r.get(k)) for k in ("N", "bind", "exec_R", "R", "exec_peak_mb", "peak_mb", "src_reads")) for r in runs] or det)
 m = SP.load_memory_model()
 gate("T5 memory_model.json: start/read/edit/other/fail each {value, cite}", all(m[k]["cite"] for k in
      ("start_mb", "read_mb", "edit_mb", "other_mb", "fail_above_mb")), dict((k, m[k]["value"]) for k in m if isinstance(m[k], dict) and "value" in m[k]))   # card 133-3: load_by_vi has no value

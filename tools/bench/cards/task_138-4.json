@@ -1,0 +1,57 @@
+{
+ "schema": "task/1",
+ "id": "138-4",
+ "kind": "build",
+ "goal": "Offline: plan_ring_p4_v8.json = v7 with the smallest-Num>last group as For loop + scalar Select + Array Min (PD311(b)), Select out 's? t:f' (PD311(d)); replay, compile_plan, prior-art.",
+ "why": "PD311(a)(b)(d)(e) (docs/d1/ring-p4.md:229-244): Select takes a scalar s only, so v7's Boolean-array Select group is impossible; 138-1 fixed stagesim (v7 replay END 172/172) and added the FS-exit route.",
+ "inputs": [
+  {"path": "tools/bench/plan_ring_p4_v7.json", "md5": "01ab0893f3a9440e02bbc180bc467bdf"},
+  {"path": "tools/bench/graph_ring_p3b2b_20261002_133824.json", "md5": "50595c62d0332a94bf066538cf20c0ae"},
+  {"path": "tools/bench/prep_c138_1_facts.md", "md5": "f8fde43f8ae4254ffc76d6a7131a6ca9"},
+  {"path": "tools/bench/diag_c137_7_types.log"},
+  {"path": "tools/bench/prep_c137_p1_facts.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/prior_art_review.py"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p4_v7.json"}
+ ],
+ "pass": [
+  "1 v8 = v7 with only the smallest-Num>last group replaced (For loop, auto-index Num in/out, scalar Select, MAX I32 via const_donor, Array Max & Min); diff listed by action id",
+  "2 each new action: route kind + MEASURED/PRECEDENT/UNMEASURED with cite; For loop create + auto-index tunnels named explicitly as measured or not",
+  "3 actions relying on stagekit.address for a constant in a NEW body (PD307(a)) listed; every 's? t: f' fixed to 's? t:f'",
+  "4 replay v8 on the bed graph: last step, final, END or first stop; the end cdiff rows listed and each classed expected/unexpected vs open_rows (138-1 open: 24 vs 11)",
+  "5 compile_plan(v8): ops total and per step (each <= ~40); prior_art_review.py run on v8 (new structure class), verdict quoted; facts in tools/bench/prep_c138_4_facts.md (<=50 lines)"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p4_v8.json",
+  "tools/bench/prep_c138_4_facts.md",
+  "tools/bench/cards/result_138-4.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p4_v8*",
+   "tools/bench/prep_c138_4*",
+   "tools/bench/sim/ring_p4_v8*/*",
+   "tools/bench/sim/c138_4*/*",
+   "tools/bench/cards/review_*138-4*",
+   "tools/bench/cards/verdict_*138-4*",
+   "tools/bench/cards/result_138-4*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 50},
+ "rules": [
+  "No edit of any tools/*.py (a LabVIEW card runs beside this one); plan files and facts only",
+  "Only the min-group and the Select name change; every other v7 action identical (prove by diff)",
+  "Return at the first unexpected result after finishing that step; facts + OPEN line only"
+ ],
+ "advances": ["M3", "R1"]
+}
