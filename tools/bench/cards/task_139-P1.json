@@ -1,0 +1,60 @@
+{
+ "schema": "task/1",
+ "id": "139-P1",
+ "kind": "build",
+ "goal": "Offline: plan_ring_p4_v10.json = v8 + StopAll writer + StopAll init False on #4866 + KMX uid 127 + IndexMode gates; fs_routes REGENERATED; replay, compile_plan, route compare v8->v10.",
+ "why": "PD313(c)(d)(e) (docs/d1/ring-p4.md:282-292): v9 b91cf4d7 copied v8's position-indexed fs_routes table, so 3 untouched wires changed route (review archive/peer/2026-10-02-c138-6-p1cmp-routes.md); StopAll needs a start value every run (PD240(b)(c) mechanism).",
+ "inputs": [
+  {"path": "tools/bench/plan_ring_p4_v8.json", "md5": "059b52964d4d05a67049add4798cb9b0"},
+  {"path": "tools/bench/plan_ring_p4_v9.json", "md5": "b91cf4d7e1d0e04ec6b1f5f6a6c777f0"},
+  {"path": "tools/bench/plan_ring_p4_v9_recipe_gates.json", "md5": "d9d0f2695c47569c43aa7601ac97e5f2"},
+  {"path": "tools/bench/prep_c138_p1_facts.md", "md5": "3912aee06cdc4d51719f449c46a5d4f3"},
+  {"path": "tools/bench/prep_c138_p1_mkv9.py", "md5": "82ea2ac240cc72537058f3ae20161936"},
+  {"path": "tools/bench/graph_ring_p3b2b_20261002_133824.json", "md5": "50595c62d0332a94bf066538cf20c0ae"},
+  {"path": "archive/peer/2026-10-02-c138-6-p1cmp-routes.md"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/bench/prep_c138_p1_mkv9.py"}
+ ],
+ "pass": [
+  "1 tools/bench/prep_c139_p1_mkv10.py: v8 + v9's p4_i_stopall actions BY ID + StopAll:=False on #4866 + KMX1/KMX2 uid 127 + IndexMode gates; diff v8->v10 by action id",
+  "2 finalized.fs_routes REGENERATED from v10 by the existing finalize path, never copied; no tool for it => BLOCKED naming the gap",
+  "3 replay v10 on the bed graph: END or first stop; cdiff vs v8; compile_plan(v10) ops per step (<= ~40)",
+  "4 route compare v8->v10 by action id: every changed route on an added/edited action (listed); any other change = FAIL",
+  "5 review c138-6-p1cmp-routes: 'FIXED: <mkv10 path:line> - <sentence>' under '## What was done with it'",
+  "6 facts in tools/bench/prep_c139_p1_facts.md (<=40 lines) with an OPEN line"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p4_v10.json",
+  "tools/bench/prep_c139_p1_mkv10.py",
+  "tools/bench/prep_c139_p1_facts.md",
+  "tools/bench/cards/result_139-P1.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p4_v10*",
+   "tools/bench/prep_c139_p1*",
+   "tools/bench/sim/ring_p4_v10*/*",
+   "tools/bench/sim/c139_p1*/*",
+   "archive/peer/2026-10-02-c138-6-p1cmp-routes.md",
+   "tools/bench/cards/result_139-P1*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 45},
+ "rules": [
+  "No edit of any tools/*.py (LabVIEW card beside); plan, maker under tools/bench/, facts, review note only",
+  "Only the items in pass 1 change vs v8; every other action identical (prove by diff)",
+  "Return at the first unexpected result after finishing that step; facts + OPEN line only"
+ ],
+ "advances": ["M3", "R1"]
+}

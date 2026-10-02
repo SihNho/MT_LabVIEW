@@ -186,6 +186,21 @@ def load_final_plan(plan_path, require_final=True):
     return plan, [f["path"] for f in files]
 
 
+def base_cond(ref):
+    """card 139-5 (PD316): {'uid': <BASE loop uid>, 'term': 'cond'} -> that uid (int), else None. The conditional terminal
+    of a While loop the plan did NOT create (the owner of its body diagram), addressed by the LOOP - compile kind 'stop'
+    (OpStopFromNode_v0 takes any loop uid, LVBackend.stop). Malformed (term_uid / frame / side beside it) -> ExecStop."""
+    if not (isinstance(ref, dict) and ref.get("term") == "cond"):
+        return None
+    u = ref.get("uid")
+    if isinstance(u, str) and u.startswith("new:"):
+        return None                                       # the plan-made form ('new:W1' + term cond) keeps its route
+    if set(ref) - {"uid", "term"} or isinstance(u, bool) or not (isinstance(u, int) or (isinstance(u, str) and u.isdigit())):
+        raise ExecStop("{0!r}: a base loop's conditional terminal is {{'uid': <loop uid>, 'term': 'cond'}} and nothing "
+                       "else".format(ref))
+    return int(u)
+
+
 def _sym_of(ref):
     """'new:SR1R.inner' / {'uid': 'new:T1', ...} -> ('new:SR1R', 'inner') ; plain -> (None, None)."""
     if isinstance(ref, dict):
@@ -461,6 +476,13 @@ def check_symbols(A):
     defined = {}                                          # head -> kind ('srR','srL','tunnel','loop:<cls>','obj')
     fs_n = {}                                             # card 126-3: plan-made Flat Sequence alias -> frame count now
     for i, a in enumerate(A, 1):
+        if a["op"] == "wire":                             # card 139-5 (PD316): a BASE loop's cond is a wire SINK only
+            try:
+                if base_cond(a.get("src")) is not None:
+                    raise ExecStop("a conditional terminal is a sink, not a wire source")
+                base_cond(a.get("dst"))
+            except ExecStop as e:
+                raise ExecStop("action {0} ({1}): {2}".format(i, a.get("id"), e))
         for f in DIAG_FIELDS + END_FIELDS + ("loop", "uid"):
             v = a.get(f)
             for h in _heads(v):
@@ -712,7 +734,9 @@ def compile_plan(plan):
             ss, sside = _sym_of(a["src"])
             ds, dside = _sym_of(a["dst"])
             fr = [e.get("frame") for e in (a["src"], a["dst"]) if isinstance(e, dict) and e.get("frame") is not None]
-            if i in fsw:                                   # card 126-3: a Flat Sequence wire = ONE gscript.connect_term_uid
+            if base_cond(a["dst"]) is not None:            # card 139-5 (PD316): a BASE While's cond, addressed by the loop
+                ops.append({"kind": "stop", "loop": base_cond(a["dst"]), "acts": [i]})      # OpStopFromNode_v0
+            elif i in fsw:                                 # card 126-3: a Flat Sequence wire = ONE gscript.connect_term_uid
                 ops.append(dict(fsw[i], kind="connect_term_uid", acts=[i]))
             elif fr:                                       # card 124-2 (PD249(d)): a wire inside one frame of a case
                 ops.append(dict(case_frame_op(A, i, fr), kind="case_frame_wire", acts=[i]))

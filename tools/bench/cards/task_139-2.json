@@ -1,0 +1,50 @@
+{
+ "schema": "task/1",
+ "id": "139-2",
+ "kind": "build",
+ "goal": "Drain gate-fp fp-31: report_gate.py reads unacked events from the runner log recorded in report_ack.json AND every newer one, not only the newest; self-test; gate_fp drain.",
+ "why": "gates_due gate-fp DUE (fp-31, cycle 135): CYCLE 134 + RUNNER STOP were written to the OLD runner log after the supervisor relaunched; report_gate.py:38-55 reads only the newest log, so they were never reported.",
+ "inputs": [
+  {"path": "tools/hooks/report_gate.py"},
+  {"path": "tools/bench/gate_fp_queue.jsonl"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/hooks/report_gate.py"},
+  {"kind": "file", "name": "tools/gate_fp.py"}
+ ],
+ "pass": [
+  "1 events(): every cycle_runner_main_*.log with mtime >= the log named in report_ack.json 'log' (all if none/missing); older logs never read",
+  "2 ack(): stores the union of the previous 'reported' hashes and the current events (no hash lost), 'log' = newest",
+  "3 self-test tools/bench/selftest_report_gate_fp31.py on temp dirs: missed-event-in-old-log flagged; acked flagged nowhere; older log ignored; >= 5 cases, all PASS",
+  "4 live check: py tools/hooks/report_gate.py on the real bench prints the same or more unacked events than before the change (count both), and never errors",
+  "5 py tools/gate_fp.py drain --id fp-31 --fixed <report_gate.py:line> --selftest selftest_report_gate_fp31 succeeds; fp-31 status closed"
+ ],
+ "outputs": [
+  "tools/hooks/report_gate.py",
+  "tools/bench/selftest_report_gate_fp31.py",
+  "tools/bench/cards/result_139-2.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/hooks/report_gate.py",
+   "tools/bench/selftest_report_gate_fp31*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/gate_fp*",
+   "tools/bench/cards/result_139-2*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 30},
+ "rules": [
+  "Do NOT run report_gate.py --ack on the real bench (the chat owns acks); temp dirs only for ack tests",
+  "Touch no stage tool (stagekit/stagexec/stagesim/stage_prerun/gscript); a LabVIEW card is live",
+  "Return at the first unexpected result after finishing that step; facts + OPEN line only"
+ ],
+ "unblocks": "M3"
+}

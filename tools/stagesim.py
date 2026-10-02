@@ -1361,8 +1361,13 @@ def cond_target(st, ref):
         head, _d, term = ref.partition(".")
     else:
         return None
-    if term != "cond" or not (isinstance(head, str) and head.startswith("new:")):
+    if term != "cond":
         return None
+    if not (isinstance(head, str) and head.startswith("new:")):
+        # card 139-5 (PD316): {'uid': <BASE loop uid>, 'term': 'cond'} - a While the plan did not create (the owner of its
+        # body diagram, `owners`); the same cond_row / already-wired rules as the plan-made form (stagexec.base_cond)
+        if not isinstance(ref, dict) or isinstance(head, bool) or not (isinstance(head, int) or str(head).isdigit()):
+            return None
     u = resolve_uid(st, head)
     if obj_class(st, u) != "WhileLoop":
         raise SimError("{0}: '.cond' names a While loop's conditional terminal; {1} is {2}".format(ref, head, obj_class(st, u)))

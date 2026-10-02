@@ -1,0 +1,57 @@
+{
+ "schema": "task/1",
+ "id": "139-P2",
+ "kind": "build",
+ "goal": "Offline: plan_ring_p4_v11.json = v10 with StopAll born on a False const on #4866 (P2b route) and written in #639 by a Local write from the stop (end) net; replay, compile_plan, routes v10->v11.",
+ "why": "PD314 (judgement 139): v10's p4_i_stopall (indicator on CT t642) is UNROUTABLE and its Local write on #4866 unmeasured (prep_c139_p1_facts.md:26,34); P2b's const_donor + create_indicator_on_const (stage_d1_ring_p2b.py:8) is measured.",
+ "inputs": [
+  {"path": "tools/bench/plan_ring_p4_v10.json", "md5": "9032dfcd256fbdd351b80b58cd88eb06"},
+  {"path": "tools/bench/prep_c139_p1_mkv10.py", "md5": "0a5170db03c15d9d305650e807aa4bab"},
+  {"path": "tools/bench/prep_c139_p1_facts.md", "md5": "6de9709c2a4ba37dfd350bad83b05d48"},
+  {"path": "tools/bench/plan_ring_p4_v10_recipe_gates.json", "md5": "386a05466dae7facc34b32022879f218"},
+  {"path": "tools/recipes/stage_d1_ring_p2b.py", "md5": "93a8ad5aabb0210f0c119a3fa12d83cc"},
+  {"path": "tools/bench/graph_ring_p3b2b_20261002_133824.json", "md5": "50595c62d0332a94bf066538cf20c0ae"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "verb", "name": "create_indicator_on_const", "where": "tools/gscript.py"}
+ ],
+ "pass": [
+  "1 prep_c139_p2_mkv11.py from v10: drop p4_i_stopall + p4_lw_stopall_init + p4_w_stopall_init; KSF1 const on #4866 kept (DonorBoolF_v0, uid SENTINEL)",
+  "2 add: StopAll indicator born on KSF1 by the P2b const-indicator action form; Local WRITE StopAll in #639 wired from t642's net (branch, old sink kept)",
+  "3 list where W1 and 1.2 read StopAll by Local (action ids) and that they reference the new indicator; fs_routes regenerated, never copied",
+  "4 replay v11 on the bed graph: END or first stop; cdiff vs v10; compile_plan ops per step (<= ~40); advisory route check: no UNROUTABLE",
+  "5 route compare v10->v11 by action id: changes only on added/edited/removed ids (listed); facts prep_c139_p2_facts.md (<=40 lines) + OPEN line"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p4_v11.json",
+  "tools/bench/prep_c139_p2_mkv11.py",
+  "tools/bench/prep_c139_p2_facts.md",
+  "tools/bench/cards/result_139-P2.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p4_v11*",
+   "tools/bench/prep_c139_p2*",
+   "tools/bench/sim/ring_p4_v11*/*",
+   "tools/bench/sim/c139_p2*/*",
+   "tools/bench/cards/result_139-P2*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 40},
+ "rules": [
+  "No edit of any tools/*.py (LabVIEW card beside); plan, maker under tools/bench/, facts only",
+  "Only the StopAll actions change vs v10; every other action identical (prove by diff)",
+  "Return at the first unexpected result after finishing that step; facts + OPEN line only"
+ ],
+ "advances": ["M3", "R1"]
+}

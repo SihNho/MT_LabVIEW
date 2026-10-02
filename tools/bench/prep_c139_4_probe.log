@@ -1,0 +1,32 @@
+BGRUN START 2026-10-02 19:13:36 limit 3.0 min: py -u tools/bench/prep_c139_4_probe.py
+BGRUN PID 19480
+graph keys ['vi', 'md5', 'source', 'terminals', 'objs', 'loops', 'fs_tunnel_pairs', 'owners', 'fs_measured']
+row keys ['term_uid', 'term_name', 'is_source', 'wire_uid', 'owner_uid', 'owner_class', 'frame_diagram', 'term_class']
+ROW {'term_uid': 23246, 'term_name': '', 'is_source': False, 'wire_uid': 23310, 'owner_uid': 23166, 'owner_class': 'Diagram', 'frame_diagram': 23166, 'term_class': 'Terminal'}
+ROW {'term_uid': 23246, 'term_name': '', 'is_source': False, 'wire_uid': 23310, 'owner_uid': 23166, 'owner_class': 'Diagram', 'frame_diagram': 23166, 'term_class': 'Terminal'}
+ROW {'term_uid': 642, 'term_name': 'stop (end)', 'is_source': True, 'wire_uid': 6929, 'owner_uid': 639, 'owner_class': 'Diagram', 'frame_diagram': 639, 'term_class': 'ControlTerminal'}
+OBJS {"uid": 10170, "class": "WhileLoop", "pos": [5424, 5813], "owner": "Diagram"}
+OBJS {"uid": 23166, "class": "Diagram", "pos": [5432, 5813], "owner": "WhileLoop"}
+ACT 8 {"op": "create", "id": "p4_lr_stop12", "class": "Local", "diagram": 23166, "as": "LRS2", "label": "StopAll", "mode": "read", "terminals": [{"name": "StopAll", "is_source": true, "term_class": "Terminal"}]}
+ACT 9 {"op": "wire", "id": "p4_w_stop12", "src": "new:LRS2.value", "dst": {"uid": 23166, "term_uid": 23246}}
+ACT 21 {"op": "add_shift_reg", "id": "p4_sr_last", "loop": 10170, "body": 23166, "parent": 686, "as": "SL1"}
+ACT 22 {"op": "create", "id": "p4_k_last", "class": "DigitalNumericConstant", "diagram": 686, "as": "KL1", "prim": "const_donor", "donor": {"donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRingConst_v0.vi", "uid": 249}, "terminals": [{"name": "", "is_source": true, "term_class": "Terminal"}]}
+ACT 23 {"op": "wire", "id": "p4_w_klast", "src": "new:KL1.value", "dst": "new:SL1L.outer"}
+ACT 27 {"op": "create", "id": "p4_w1", "class": "WhileLoop", "diagram": 23166, "as": "W1"}
+ACT 29 {"op": "create", "id": "p4_gt_last", "class": "Comparison", "diagram": "new:W1.body", "as": "GT1", "prim": "Greater?", "donor": {"donor": "$work", "uid": 11721}, "terminals": [{"name": "x > y?", "is_source": true, "term_class": "Terminal"}, {"name": "y", "is_source": false, "term_class": "Terminal"}, {"name": "x", "is_source": false, "term_class": "Terminal"}]}
+ACT 71 {"op": "wire", "id": "p4_w_or_cond", "src": "new:OR1.x .or. y?", "dst": "new:W1.cond"}
+ACT 72 {"op": "tunnel", "id": "p4_t_n1", "loop": "new:W1", "body": "new:W1.body", "parent": 23166, "dir": "out", "as": "TN1"}
+ACT 73 {"op": "wire", "id": "p4_t_n1_in", "src": "new:AMM1.min value", "dst": "new:TN1.inner"}
+ACT 74 {"op": "wire", "id": "p4_t_n1_out", "src": "new:TN1.outer", "dst": "new:EQ2.x"}
+ACT 75 {"op": "tunnel", "id": "p4_t_slot", "loop": "new:W1", "body": "new:W1.body", "parent": 23166, "dir": "out", "as": "TS1"}
+ACT 76 {"op": "wire", "id": "p4_t_slot_in", "src": "new:AMM1.min index (indices)", "dst": "new:TS1.inner"}
+ACT 77 {"op": "wire", "id": "p4_t_slot_out", "src": "new:TS1.outer", "dst": "new:IAI1.index"}
+ACT 78 {"op": "tunnel", "id": "p4_t_pool", "loop": 10170, "body": 23166, "parent": 686, "dir": "in", "as": "TP1"}
+ACT 79 {"op": "wire", "id": "p4_x_pool", "src": {"uid": 28809, "term_uid": 28816}, "dst": "new:TP1.outer"}
+ACT 80 {"op": "wire", "id": "p4_w_pool_in", "src": "new:TP1.inner", "dst": "new:IAI1.array"}
+finalized keys ['base', 'plan_in', 'last_step', 'summary', 'end_cdiff_rows', 'failed', 'first_divergent', 'open_rows', 'open_rows_match', 'open_rows_match_legacy', 'open_rows_classed', 'cdiff_inputs', 'step_files', 'undecided', 'at', 'fs_routes', 'fs_border_gate', 'route_check']
+route_check "FAIL"
+META keys ['schema', 'card', 'plan_in', 'plan_in_md5', 'latch_plan_in', 'latch_md5', 'from_v2', 'counts', 'pd298d_routing', 'load_fit', 'x10', 'steps', 'routes_unmeasured', 'actions']
+META head {"schema": "p4v3-meta/0", "card": "136-P2", "plan_in": "tools/bench/plan_ring_p4_v3_in.json", "plan_in_md5": "ded2d5567b8a2b601bbeae3a5f1e2860", "latch_plan_in": "tools/bench/plan_ring_p4_v3_latch_in.json", "latch_md5": "d26c954f488a75130c618ed908e2ee42", "from_v2": {"path": "tools/bench/plan_ring_p4_v2.json", "md5": "0d67d7045590dc54366781c0331bb3b3"}, "counts": {"actions": 163, "ops": 164, "by_group": {"D stops (PD293(d)/PD295(c))": 10, "F BufDiff (PD295(a))": 16, "R reader core": 68, "C slot-value consumers": 25, "A rollback Selects (PD293(b))": 44}, "level": {"MEASURED": 50, "UNMEASURED": 113}, "route_level_3way": {"MEASURED": 50, "PRECEDENT": 107, "UNMEASURED": 6}}, "pd298d_routing": [{"sr": "A", "sink": "#10757 t10871", "source": "Select RB1 output", "why": "#10757 Index Array -> indicator 'index' t23541, READ BY Local #23523 on diagram 23058 (another loop)"}, {"sr": "A", "sink": "#10969 t10975", "source": "raw #5058 t5171", "why": "#10969 -> indicator 'min value' t17272 only; no Local of it in the graph (display)"}, {"sr": "A", "sink": "#23166 t3173", "source": "raw #5058 t5171", "why": "'Pos within cal image' display (PD298(d) names it)"}, {"sr": "A", "sink": "#23166 t9519", "source": "raw #5058 t5171", "why": "'Pos: Diffraction Pattern' display (PD298(d) names it)"}, {"sr": "B", "sink": "#2626 t4168", "source": "Select RB2 output", "why": "#2626 Build Array = the saved-trace row (#2626 -> #376, PD295(a), diag_c126_8_orig.log:5-6,32)"}, {"sr": "B", "sink": "#2765 t281
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

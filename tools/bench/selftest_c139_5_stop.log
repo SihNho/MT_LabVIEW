@@ -1,0 +1,34 @@
+BGRUN START 2026-10-02 19:28:34 limit 10.0 min: py -u tools/bench/selftest_c139_5_stop.py
+BGRUN PID 15240
+GATE PASS | True | [('create', 'while', None), ('create', 'local_read', None), ('stop', None, 'new:DL1')]
+GATE PASS | True | [{'kind': 'stop', 'loop': 100, 'acts': [1]}]
+GATE PASS | True | [{'kind': 'stop', 'loop': 100, 'acts': [1]}]
+GATE PASS | True | action 1 (bad): {'uid': 23166, 'term': 'cond', 'term_uid': 23246}: a base loop's conditional terminal is {'uid': <loop uid>, 'term': 'cond'} and nothing else
+GATE PASS | True | action 1 (src): a conditional terminal is a sink, not a wire source
+GATE PASS | False | None
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\selftest_c139_5_stop.py", line 74, in <module>
+    e1, _c = SS.op_wire(st, {"src": "2.out", "dst": {"uid": 100, "term": "cond"}}, WP, None, {})
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagesim.py", line 1385, in op_wire
+    raise SimError("wire {0} -> {1}: the source is on diagram {2}, not on the loop's body {3}".format(
+stagesim.SimError: wire 2.out -> {'uid': 100, 'term': 'cond'}: the source is on diagram 20, not on the loop's body []
+BGRUN END rc=1 after 1s (NO RESULT LINE)
+BGRUN START 2026-10-02 19:28:58 limit 10.0 min: py -u tools/bench/selftest_c139_5_stop.py
+BGRUN PID 21412
+GATE PASS | C1 plan-made While form unchanged | [('create', 'while', None), ('create', 'local_read', None), ('stop', None, 'new:DL1')]
+GATE PASS | C2 base form {uid:100, term:cond} -> stop loop 100 | [{'kind': 'stop', 'loop': 100, 'acts': [1]}]
+GATE PASS | C2b digit-string uid -> stop loop 100 (int) | [{'kind': 'stop', 'loop': 100, 'acts': [1]}]
+GATE PASS | C3 malformed base cond (term_uid beside it) refused at check_symbols | action 1 (bad): {'uid': 23166, 'term': 'cond', 'term_uid': 23246}: a base loop's conditional terminal is {'uid': <loop uid>, 'term': 'cond'} and nothing else
+GATE PASS | C4 base cond as a wire SOURCE refused | action 1 (src): a conditional terminal is a sink, not a wire source
+GATE PASS | S0 synthetic: body 20 is owned by While #100 | ['WhileLoop', 100]
+GATE PASS | S1 base While #100 cond <- 2.out: cond_of 100, dst t1099, branch, row wired | {'wire': 6, 'how': 'branch', 'src_term_uid': 1023, 'dst_term_uid': 1099, 'cond_of': 100}
+GATE PASS | S2 cond row already wired -> SimError | wire -> {'uid': 100, 'term': 'cond'}: the conditional terminal is already wired
+GATE PASS | S3 '.cond' of a non-While (Constant #1) -> SimError | {'uid': 1, 'term': 'cond'}: '.cond' names a While loop's conditional terminal; 1 is Constant
+GATE PASS | S4 source on diagram 10 (not body 20) -> SimError | wire 1.v -> {'uid': 100, 'term': 'cond'}: the source is on diagram 10, not on the loop's body [20]
+GATE PASS | S5 plan-made 'new:DL1.cond' still cond_of the new loop | {'wire': -7, 'how': 'new', 'src_term_uid': -6, 'dst_term_uid': -4, 'cond_of': -1}
+RUN O1 stagesim selftest rc 0 gates {'pass': 105, 'fail': 0} first_fail None []
+GATE PASS | O1 stagesim selftest PASS, fail 0 (pass 105) | ({'pass': 105, 'fail': 0}, '')
+RUN O2 selftest_stagesim_fsexit_c138_1 rc 0 gates {'pass': 14, 'fail': 0} first_fail None []
+GATE PASS | O2 selftest_stagesim_fsexit_c138_1 PASS, fail 0 (pass 14) | ({'pass': 14, 'fail': 0}, '')
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 4s

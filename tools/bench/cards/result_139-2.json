@@ -1,0 +1,12 @@
+{"schema":"result/1","id":"139-2","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/hooks/report_gate.py","md5":"6267d42b59180d390a1b9427c7f604cb"},{"path":"tools/bench/selftest_report_gate_fp31.py","md5":"bf314d4d5799387ea437c35e51d4c1a1"},{"path":"tools/bench/selftest_report_gate_fp31.log","md5":"ab922ff473b8e152688fea3ba8209b36"}],
+"facts":["report_gate.py:55 logs_to_read(): reads every runner log with mtime >= acked log's mtime OR >= report_ack.json mtime; no ack / missing ack log -> all logs; older never read",
+"report_gate.py:126 ack(): writes union of previous 'reported' hashes + current events, 'log' = newest; events() dedups a line seen in two logs",
+"selftest_report_gate_fp31.log:19 RESULT PASS 10/0 (8 temp-dir cases C1-C8 incl. missed-event-in-old-log, acked-nowhere, older-log-ignored + live L1)",
+"selftest_report_gate_fp31.log:17 live: old logic 0 unreported, new 0; logs read = [cycle_runner_main_20261002_1215.log]; real report_ack.json md5 unchanged",
+"Extra floor (ack-file mtime) beyond pass-1 wording: catches an old log written after the ack when the acked log was written later still (case C7)",
+"gate_fp drain fp-31 -> 'DRAINED'; queue status is 'drained' (gate_fp.py:14-16 uses 'drained', not 'closed')",
+"wait_runner_event.py:14 imports report_gate.unreported(); signature unchanged"],
+"open":[],
+"cost":{"usd":null,"minutes":3,"labview_runs":0},
+"note":"No real --ack run; temp dirs only. Live check shows 0 unreported both before and after (no difference observable on today's bench)."}

@@ -1,0 +1,66 @@
+{
+ "schema": "task/1",
+ "id": "139-5",
+ "kind": "build",
+ "goal": "Tooling (alone): stop route onto an EXISTING loop's cond in compile_plan/check_symbols/stagesim; v13 = v12 + p4_w_stop12 on it + step 2/3 re-cut; step-1 plan + recipe, dry/prerun/X10.",
+ "why": "PD316 (judgement 139): stop compiles only for a plan-made While (stagexec.py:719-720,483-485; stagesim.py:1364) while LVBackend.stop takes any loop uid (stagexec.py:2852-2873); p4_w_stop12 targets loop 1.2's cond t23246 (diag_c139_4_facts.md).",
+ "inputs": [
+  {"path": "tools/bench/plan_ring_p4_v12.json", "md5": "831d899be8a470fae188261adb7fd53d"},
+  {"path": "tools/bench/prep_c139_4_mkv12.py", "md5": "55aebef4933018b68996304fecf765a6"},
+  {"path": "tools/bench/diag_c139_4_facts.md", "md5": "f540ed70561685f8f504ce2f1e750282"},
+  {"path": "tools/recipes/stage_d1_ring_p3b2a.py", "md5": "bb5ba064b6220d16e3a5c77d19b9c70f"},
+  {"path": "tools/bench/graph_ring_p3b2b_20261002_133824.json", "md5": "50595c62d0332a94bf066538cf20c0ae"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/bench/c125_1_offline_measure.py"}
+ ],
+ "pass": [
+  "1 stop onto a BASE loop: compile_plan + check_symbols + stagesim accept the loop's cond (owner of its body diagram) -> LVBackend.stop; self-test >= 4 cases incl. plan-made While unchanged",
+  "2 the cond's EXISTING incoming wire in the bed graph (1.2 scaffold stop) listed with the v12 action that removes it, or 'none' (measured from the graph)",
+  "3 c125_1_offline_measure.py rerun PASS (PD252(a)); older self-tests of stagexec/stagesim still PASS (counts)",
+  "4 v13: p4_w_stop12 on the new form, p4_w_last_gt in step 2; replay END, 0 UNROUTABLE, meta-step gate PASS, route compare v12->v13 only on edited ids",
+  "5 step-1 plan + tools/recipes/stage_d1_ring_p4s1.py (<=120 lines, P3b-2a pattern): dry PASS, prerun PASS, X10 PASS; --scratch-required verdict; facts prep_c139_5_facts.md"
+ ],
+ "outputs": [
+  "tools/stagexec.py",
+  "tools/stagesim.py",
+  "tools/bench/plan_ring_p4_v13.json",
+  "tools/recipes/stage_d1_ring_p4s1.py",
+  "tools/bench/prep_c139_5_facts.md",
+  "tools/bench/cards/result_139-5.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/bench/selftest_c139_5*",
+   "tools/bench/c125_1*",
+   "tools/bench/plan_ring_p4_v13*",
+   "tools/bench/plan_ring_p4s1*",
+   "tools/bench/prep_c139_5*",
+   "tools/bench/sim/ring_p4_v13*/*",
+   "tools/bench/sim/ring_p4s1*/*",
+   "tools/bench/sim/stage_d1_ring_p4s1*/*",
+   "tools/recipes/stage_d1_ring_p4s1*",
+   "tools/bench/prerun_records*",
+   "tools/bench/cards/result_139-5*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 50},
+ "rules": [
+  "Offline only; no LabVIEW. Only the stop-route branch changes in stagexec/stagesim; diff listed",
+  "Plan changes vs v12 only: p4_w_stop12 address + the step cut; every other action identical (prove by diff)",
+  "Return at the first unexpected result after finishing that step; facts + OPEN line only"
+ ],
+ "advances": ["M3", "R1"]
+}

@@ -1,0 +1,55 @@
+{
+ "schema": "task/1",
+ "id": "139-1",
+ "kind": "measure",
+ "goal": "Scratch only: For-loop min group INSIDE a While body (as v8), IndexMode read-back, run on known values; full Error List read of a bed copy after delete_wire w25415 naming item 52.",
+ "why": "PD313(b)(e) (docs/d1/ring-p4.md:278-292): 138-6 step 2 stopped on our script (group placed top-level, create_control_nested refuses at gscript.py:4149); v8 puts the For inside W1's body. Item 52 after delete_wire is unnamed (count-only read).",
+ "inputs": [
+  {"path": "tools/bench/diag_c138_6_run.py", "md5": "18404a03432f035689f69af8c632d008"},
+  {"path": "tools/bench/diag_c138_6_facts.md", "md5": "4f9809ca04b8350315e56785b7874128"},
+  {"path": "tools/bench/plan_ring_p4_v8.json", "md5": "059b52964d4d05a67049add4798cb9b0"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorI32Max_v0.vi"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b2b_20261002_130007.vi", "md5": "395118775a52bc90073f4449b99f899d"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/bench/diag_c138_6_run.py"}
+ ],
+ "pass": [
+  "1 scratch: While body holds a For; I32[20]+Bool[20] auto-indexed in, scalar Select(f = DonorI32Max uid 127), out -> Array Max & Min; node classes as v8's group (cite action ids)",
+  "2 per For tunnel IndexMode read back (3, all indexing); every wire Is Broken? False; ExecState 1",
+  "3 runs: Num=[-1,5,3,9,...], mask Num>last, last 2 -> min 3; every Num <= last -> 2147483647; both read back",
+  "4 bed byte copy: delete_wire w25415, ONE full Error List read (--role final); item 52 named (class, text, owner uid) vs the expected 51; bed md5 unchanged",
+  "5 LabVIEW gone, scratch files deleted after records; facts tools/bench/diag_c139_1_facts.md (<=40 lines) + OPEN line"
+ ],
+ "outputs": [
+  "tools/bench/diag_c139_1_facts.md",
+  "tools/bench/cards/result_139-1.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": true,
+  "write": [
+   "tools/bench/diag_c139_1*",
+   "tools/bench/scratch_verify/*c139*",
+   "tools/bench/prerun_records*",
+   "tools/bench/errorlist_*c139_1*",
+   "tools/bench/cards/result_139-1*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/scratch_c139_1*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 55},
+ "rules": [
+  "run_vi ONLY for the step-1 scratch VI (no subVI, no instrument); the bed and its copies are never run",
+  "Bed byte-copied, never edited; no tools/*.py edit; script based on diag_c138_6_run.py, <=120 lines on stagekit",
+  "Return at the first unexpected result after finishing that step (LabVIEW closed); facts + OPEN line only"
+ ],
+ "advances": ["M3", "R1"]
+}

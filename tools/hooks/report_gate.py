@@ -5,7 +5,8 @@ Why (user, 2026-09-23: "30분 간격으로 진행상황 보고하는거, 그리�
 the user asked at 03:19. A rule that lives in memory faded; this one lives in code.
 
 Mechanism
-  * The runner log (newest tools/bench/cycle_runner_main_*.log) carries one `CYCLE n | ...` line per finished
+  * The runner logs (every tools/bench/cycle_runner_main_*.log written since the last ack - logs_to_read(), fp-31;
+    the newest alone missed an OLD runner's last lines after a supervisor relaunch) carry one `CYCLE n | ...` line per finished
     cycle and a `RUNNER STOP | ...` line at the end. `tools/bench/report_ack.json` records which of those
     lines the chat has already reported (by their md5).
   * As a Stop hook: if any CYCLE/RUNNER STOP line is unacknowledged, the turn may NOT end -> exit 2 with the
@@ -42,25 +43,54 @@ def newest_runner_log():
     return max(logs, key=os.path.getmtime)
 
 
+def _ack_data():
+    try:
+        with open(ACK, encoding="utf-8") as f:
+            d = json.load(f)
+        return d if isinstance(d, dict) else {}
+    except Exception:
+        return {}
+
+
+def logs_to_read():
+    """fp-31 (cycle 135): the supervisor relaunches the runner at its budget, and the OLD runner then writes its last
+    CYCLE / RUNNER STOP / HEARTBEAT lines into the OLD log while a newer log already exists - reading only the newest
+    log missed them. So read every cycle_runner_main_*.log whose mtime is >= the mtime of the log named in
+    report_ack.json 'log' (the newest one at the last ack), OR >= the ack file's own mtime (written after the last
+    ack, even if the acked log has since been written later). No ack / ack log missing -> every log. Logs older than
+    both are never read. Returned oldest-first by mtime."""
+    logs = glob.glob(os.path.join(BENCH, "cycle_runner_main_*.log"))
+    ackd = _ack_data()
+    ack_log = ackd.get("log")
+    if not ack_log or not os.path.isfile(ack_log):
+        return sorted(logs, key=os.path.getmtime)
+    floor = os.path.getmtime(ack_log)
+    try:
+        floor_ack = os.path.getmtime(ACK)
+    except OSError:
+        floor_ack = floor
+    return sorted((p for p in logs if os.path.getmtime(p) >= floor or os.path.getmtime(p) >= floor_ack),
+                  key=os.path.getmtime)
+
+
 def events():
+    """(newest log, [(md5, line), ...]) over every log logs_to_read() names; a line seen twice counts once."""
     log = newest_runner_log()
-    if not log:
-        return log, []
-    out = []
-    with open(log, encoding="utf-8", errors="replace") as f:
-        for line in f:
-            line = line.rstrip("\n")
-            if EVENT_RE.match(line):
-                out.append((hashlib.md5(line.encode("utf-8")).hexdigest(), line))
+    out, seen = [], set()
+    for path in logs_to_read():
+        with open(path, encoding="utf-8", errors="replace") as f:
+            for line in f:
+                line = line.rstrip("\n")
+                if EVENT_RE.match(line):
+                    h = hashlib.md5(line.encode("utf-8")).hexdigest()
+                    if h not in seen:
+                        seen.add(h)
+                        out.append((h, line))
     return log, out
 
 
 def load_ack():
-    try:
-        with open(ACK, encoding="utf-8") as f:
-            return set(json.load(f).get("reported", []))
-    except Exception:
-        return set()
+    return set(_ack_data().get("reported", []) or [])
 
 
 def unreported():
@@ -92,8 +122,10 @@ def decisions_block(path=None):
 
 def ack():
     log, ev = events()
+    prev = [h for h in (_ack_data().get("reported", []) or [])]
+    merged = prev + [h for h, _ in ev if h not in set(prev)]   # fp-31: union, no hash lost
     with open(ACK, "w", encoding="utf-8") as f:
-        json.dump({"log": log, "reported": [h for h, _ in ev]}, f, indent=1)
+        json.dump({"log": log, "reported": merged}, f, indent=1)
     print("report_gate: acknowledged %d event(s) from %s" % (len(ev), log))
 
 

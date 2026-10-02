@@ -1,0 +1,67 @@
+{
+ "schema": "task/1",
+ "id": "139-7",
+ "kind": "build",
+ "goal": "P4 step 1 (39 actions, unaffected by the step-2 count): step-1 plan FINAL, dry/prerun/X10, ONE scratch run on a bed byte copy; then offline re-cut of steps 2-5 to <= 41 each.",
+ "why": "PD318 (judgement 139): 139-6 stopped on the meta-step gate (step 2 = 43, prep_c139_6_mkv14.log:8); step 1 = 39 does not depend on it. Base cdiff rows at step 0 are accepted only if declared open rows of plan_ring_p3b2b.json.",
+ "inputs": [
+  {"path": "tools/bench/plan_ring_p4_v14.json", "md5": "22f582715e3d303ea0625fbe98bb590e"},
+  {"path": "tools/bench/plan_ring_p4_v14_meta.json", "md5": "29f6535b1f280b3a33a07dbdeeff8893"},
+  {"path": "tools/bench/prep_c139_6_mkv14.py", "md5": "8a9d618ec9233e080593f0386beebabf"},
+  {"path": "tools/recipes/stage_d1_ring_p4s1.py", "md5": "9f60aeba54c83b850b532c9b9b31ee6e"},
+  {"path": "tools/recipes/stage_d1_ring_p4s1_scratch.py", "md5": "43b7c27c5f75e72f4cacc97820ccecd5"},
+  {"path": "tools/bench/diag_c139_6_facts.md", "md5": "14ded706cd71e5cf7b35c017eda83dcf"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b2b_20261002_130007.vi", "md5": "395118775a52bc90073f4449b99f899d"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/errorlist_check.py"}
+ ],
+ "pass": [
+  "1 step-1 plan: step-0 base rows accepted only as declared open rows of plan_ring_p3b2b.json; each new end-cdiff row tied to a step-1 action + class; FINAL true",
+  "2 stage_d1_ring_p4s1.py: dry PASS, prerun PASS, X10 PASS; --scratch-required verdict; predicted Error List count for the step-1 end written",
+  "3 ONE scratch run on a bed byte copy: every op real == simulated, census + Is Broken? per op, IndexMode gates, ExecState read; bed md5 unchanged",
+  "4 Error List count-only (--role scratch) vs predicted; LabVIEW gone, scratch deleted; route classes now measured listed",
+  "5 offline after 4: steps 2-5 re-cut dependency-closed, each <= 41, step 1 unchanged, meta-step gate PASS; facts diag_c139_7_facts.md (<=40 lines)"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p4s1.json",
+  "tools/bench/plan_ring_p4_v14_meta.json",
+  "tools/bench/diag_c139_7_facts.md",
+  "tools/bench/cards/result_139-7.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p4_v14*",
+   "tools/bench/plan_ring_p4s1*",
+   "tools/bench/prep_c139_7*",
+   "tools/bench/diag_c139_7*",
+   "tools/bench/sim/ring_p4_v14*/*",
+   "tools/bench/sim/ring_p4s1*/*",
+   "tools/bench/sim/stage_d1_ring_p4s1*/*",
+   "tools/recipes/stage_d1_ring_p4s1*",
+   "tools/bench/prerun_records*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/errorlist_*p4s1*",
+   "tools/bench/cards/result_139-7*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/scratch_c139_7*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 75},
+ "rules": [
+  "The bed is byte-copied, never edited, never run; the scratch file is deleted after its records",
+  "No tools/*.py edit except tools/recipes/stage_d1_ring_p4s1*.py; a cdiff row tied to no step-1 action => return",
+  "Return at the first unexpected result after finishing that step (LabVIEW closed); facts + OPEN line only"
+ ],
+ "advances": ["M3", "R1"]
+}

@@ -1,0 +1,67 @@
+{
+ "schema": "task/1",
+ "id": "139-6",
+ "kind": "build",
+ "goal": "P4 step 1: maker step inheritance fixed, step-1 plan with its OWN classed open rows, dry/prerun/X10; then ONE scratch run of step 1 on a bed byte copy.",
+ "why": "PD317 (judgement 139): 139-5 fixed the base-loop stop route (13/0) and v13 has 0 UNROUTABLE; its maker dropped the step of 28 added ids (prep_c139_5_facts.md); step 1 declares only the cdiff rows its own actions make.",
+ "inputs": [
+  {"path": "tools/bench/plan_ring_p4_v13.json", "md5": "88e3f33648f60ee24edd71774114d757"},
+  {"path": "tools/bench/plan_ring_p4_v13_meta.json", "md5": "549f4e4518c2b7d0b7047447ffb36b74"},
+  {"path": "tools/bench/prep_c139_5_mkv13.py", "md5": "6057e2b96e44b83809609b401202bac0"},
+  {"path": "tools/bench/prep_c139_p2_mkv11.py", "md5": "a582a5ca6fc7e6894e6d1931612e8813"},
+  {"path": "tools/recipes/stage_d1_ring_p4s1.py", "md5": "9f60aeba54c83b850b532c9b9b31ee6e"},
+  {"path": "tools/bench/prep_c139_5_facts.md", "md5": "ff754cf14ca6fede2c82ad6155a94d50"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b2b_20261002_130007.vi", "md5": "395118775a52bc90073f4449b99f899d"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/errorlist_check.py"}
+ ],
+ "pass": [
+  "1 maker rerun with mkv11.py:164-174 step inheritance copied verbatim: every v13 id has a step; meta-step gate PASS; plan diff vs v13 = step fields only",
+  "2 step-1 plan: end cdiff of step 1 computed; each row tied to the step-1 action that makes it (class + id), declared as its open_rows; FINAL true",
+  "3 stage_d1_ring_p4s1.py: dry PASS, prerun PASS, X10 PASS; --scratch-required verdict; predicted Error List count for the step-1 end written",
+  "4 ONE scratch run on a bed byte copy: every op real == simulated, census + Is Broken? per op, IndexMode gates, ExecState read; bed md5 unchanged",
+  "5 Error List count-only (--role scratch) vs predicted; LabVIEW gone, scratch deleted; facts diag_c139_6_facts.md (<=40 lines) + route classes now measured"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p4_v14.json",
+  "tools/bench/plan_ring_p4s1.json",
+  "tools/bench/diag_c139_6_facts.md",
+  "tools/bench/cards/result_139-6.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p4_v14*",
+   "tools/bench/plan_ring_p4s1*",
+   "tools/bench/prep_c139_6*",
+   "tools/bench/diag_c139_6*",
+   "tools/bench/sim/ring_p4_v14*/*",
+   "tools/bench/sim/ring_p4s1*/*",
+   "tools/bench/sim/stage_d1_ring_p4s1*/*",
+   "tools/recipes/stage_d1_ring_p4s1*",
+   "tools/bench/prerun_records*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/errorlist_*p4s1*",
+   "tools/bench/cards/result_139-6*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/scratch_c139_6*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 75},
+ "rules": [
+  "The bed is byte-copied, never edited, never run; the scratch file is deleted after its records",
+  "No tools/*.py edit except tools/recipes/stage_d1_ring_p4s1.py; a cdiff row tied to no step-1 action => return",
+  "Return at the first unexpected result after finishing that step (LabVIEW closed); facts + OPEN line only"
+ ],
+ "advances": ["M3", "R1"]
+}

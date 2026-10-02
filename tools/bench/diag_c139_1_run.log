@@ -1,0 +1,29 @@
+BGRUN START 2026-10-02 18:43:46 limit 50.0 min: py -u tools/bench/diag_c139_1_run.py
+BGRUN PID 11864
+  GATE PASS  bed md5 before  
+  GATE PASS  A bed byte copy md5 == bed  
+  FACT  A w25415 terminals before: [{'term_uid': 10469, 'term_name': '', 'is_source': False, 'wire_uid': 25415, 'owner_uid': 10465, 'owner_class': 'Tunnel', 'frame_diagram': 23166}, {'term_uid': 9668, 'term_name': 'x .and. y?', 'is_source': True, 'wire_uid': 25415, 'owner_uid': 9647, 'owner_class': 'Function', 'frame_diagram': 23166}, {'term_uid': 25557, 'term_name': 'autofocus reseed flag (1.2 to 1.1)', 'is_source': False, 'wire_uid': 25415, 'owner_uid': 23166, 'owner_class': 'Diagram', 'frame_diagram': 23166}]
+      A deleted wire w25415
+  GATE PASS  A delete_wire w25415  
+  FACT  A same terminals after: {'rows': [{'term_uid': 10469, 'term_name': '', 'is_source': False, 'wire_uid': 0, 'owner_uid': 10465, 'owner_class': 'Tunnel', 'frame_diagram': 23166}, {'term_uid': 9668, 'term_name': 'x .and. y?', 'is_source': True, 'wire_uid': 0, 'owner_uid': 9647, 'owner_class': 'Function', 'frame_diagram': 23166}, {'term_uid': 25557, 'term_name': 'autofocus reseed flag (1.2 to 1.1)', 'is_source': False, 'wire_uid': 0, 'owner_uid': 23166, 'owner_class': 'Diagram', 'frame_diagram': 23166}], 'es': 0}
+  FACT  A Error List FULL read: {'items': 52, 'n': 52, 'dclicked': 52, 'new_vs_base': [{'index': 6, 'object': '', 'reason': 'You haveconnectedan output loop tunnel toan input ofSubvi.Change the inputtoan output,oraddasource.', 'raw': 'You haveconnectedan output loop tunnel toan input ofSubvi.Change the inputtoan output,oraddasource.', 'detail': "A wire must be connected to one and only one data source, such as a control's terminal or a function output. This wire is connected to two data sinks but zero sources. You must add a source, perhaps by changing an indicator to a control."}, {'index': 9, 'object': '', 'reason': "Case 
+  GATE PASS  A full read: 52 items, all double-clicked  (52, 52)
+  GATE FAIL  A exactly one item new vs the 51 baseline  (['You haveconnectedan output loop tunnel toan input ofSubvi.Change the inputtoan output,oraddasource.', "Case Structure'Case Structure':Unwired selector", "SubVl'TrackNbeadsfour-foldover-kernel-v3.vi':reguired input'ImageIn'isnotwired", 'This wire is not connected to anything.', 'Wire: Wire has loose ends.'], ['You have connected an output loop tunnel to an input of Subvl. Change the input to an 
+  GATE PASS  A bed md5 unchanged  
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c139_1_run.py", line 106, in <module>
+    main()
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c139_1_run.py", line 103, in main
+    stepA(); ldump(); g.reset(); D.bench_prep.restart_labview(); g.reset(); time.sleep(3); stepB()   # noqa: E702
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c139_1_run.py", line 54, in stepB
+    FMN = g.loop_in("for", TGT, g._uid_index(TGT, "Diagram", wb), (250, 150)); fmb = sorted(g.uids(TGT, "Diagram") - d2)[0]   # noqa: E702
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 1536, in loop_in
+    raise RuntimeError(f"loop_in({kind}): {err} (new {new})")
+RuntimeError: loop_in(for): error 1055: To More Specific Class in OpForLoopIn_v0.vi (new [])
+  GATE FAIL  the run completed without an unhandled exception  RuntimeError('loop_in(for): error 1055: To More Specific Class in OpForLoopIn_v0.vi (new [])')
+  GATE PASS  C LabVIEW gone  
+  GATE PASS  C scratch files deleted  ['C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c139_1_bed_184347.vi', 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c139_1_bdon_184347.vi', 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c139_1_for_184347.vi']
+  GATE PASS  C bed md5 unchanged  
+=== GATES: 8 pass / 2 fail; failing: ['A exactly one item new vs the 51 baseline', 'the run completed without an unhandled exception']
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":8,"fail":2},"first_fail":"A exactly one item new vs the 51 baseline","artefacts":[]}
+BGRUN END rc=1 after 826s

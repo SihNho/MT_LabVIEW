@@ -1,0 +1,55 @@
+{
+ "schema": "task/1",
+ "id": "139-3",
+ "kind": "measure",
+ "goal": "Scratch only: build claudeDev DonorBoolF_v0.vi (Boolean False const); rerun the For-loop min group in a While body with one unwired SubVI on the scratch, loop_in called as stagexec.py:2653.",
+ "why": "139-1 B stopped on our scratch: loop_in default src_cls 'SubVI' (gscript.py:1524) needs a SubVI the empty scratch lacks; the bed has one. PD314: StopAll is born on a False const, no Boolean donor exists (prep_c139_p1_facts.md:30).",
+ "inputs": [
+  {"path": "tools/bench/diag_c139_1_run.py", "md5": "3edc80b047491e4c479b355508a7aeef"},
+  {"path": "tools/bench/diag_c139_1_facts.md", "md5": "73dd889e6e8f1cad95d056b774adffae"},
+  {"path": "tools/bench/diag_c138_6_run.py", "md5": "18404a03432f035689f69af8c632d008"},
+  {"path": "tools/bench/plan_ring_p4_v10.json", "md5": "9032dfcd256fbdd351b80b58cd88eb06"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorI32Max_v0.vi"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/gscript.py"},
+  {"kind": "verb", "name": "loop_in", "where": "tools/gscript.py"}
+ ],
+ "pass": [
+  "1 claudeDev DonorBoolF_v0.vi saved (as DonorI32Max_v0 in diag_c138_6_run.py), ExecState 1: one Boolean constant, value False read back; uid recorded",
+  "2 scratch: one unwired SubVI (DonorI32Max_v0) on the top level, a While, then loop_in('for') in its body with stagexec.py:2653's arguments",
+  "3 group as 139-1 pass 1: I32[20]+Bool[20] auto-indexed in, scalar Select(f = uid 127 donor), out -> Array Max & Min; IndexMode of 3 tunnels read back",
+  "4 every wire Is Broken? False; ExecState 1; runs Num=[-1,5,3,9,...] last 2 -> 3, all <= last -> 2147483647; scratch_verify record written",
+  "5 LabVIEW gone, scratch deleted; facts tools/bench/diag_c139_3_facts.md (<=40 lines) + OPEN line"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorBoolF_v0.vi",
+  "tools/bench/diag_c139_3_facts.md",
+  "tools/bench/cards/result_139-3.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": true,
+  "write": [
+   "tools/bench/diag_c139_3*",
+   "tools/bench/scratch_verify/*c139*",
+   "tools/bench/prerun_records*",
+   "tools/bench/cards/result_139-3*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/DonorBoolF*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/scratch_c139_3*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 45},
+ "rules": [
+  "run_vi ONLY for the scratch VI and the donor (no instrument); the bed is not opened",
+  "No tools/*.py edit (an offline card runs beside); script from diag_c139_1_run.py, <=120 lines on stagekit",
+  "Return at the first unexpected result after finishing that step (LabVIEW closed); facts + OPEN line only"
+ ],
+ "advances": ["M3", "R1"]
+}
