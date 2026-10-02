@@ -1,0 +1,18 @@
+BGRUN START 2026-10-03 00:25:50 limit 5.0 min: py -u tools/bench/selftest_gateclass_s2.py
+BGRUN PID 2804
+BGRUN REAP marked KILLED: s2_regress_before2.log pid=3192
+  PASS  G1 semantic +1 stops  ['stop', 'stop', 'stop', 'stop', 'stop', 'stop']
+  PASS  G2 non-semantic +3 logs  ['log', 'log']
+  PASS  G3 non-semantic +40% stops; tolerance(30)=8, tolerance(4)=5  (('stop', 'non-semantic Terminal: |+42 - +30| = 12 > max(5, 25%) = 8'), 8, 5)
+  PASS  G4 a name mismatch logs  ['log', 'log', 'log']
+  PASS  G5 a STOP gate stops (also with a census-shaped detail)  ['stop', 'stop', 'stop', 'stop', 'stop', 'stop']
+  PASS  G6 TD 141-2 logs; with an unwired terminal stops  ('Terminal rows lost 6 vs plan deletes 8, symmetric difference [28004, 28979]: non-semantic Terminal: |+10 - +8| = 2 <= max(5, 25%) = 5', 'TD: base terminal(s) lost their wire [12345] (lost data wire)')
+  PASS  G7 Stage.gate: soft CEN2 -> True/softs/1 line/SOFT print; semantic -> FAIL; fatal LOG-only no raise; fatal STOP raises  (True, False, True, True, ['CEN2 new-object census', 'NG names'], ['CEN2 new-object census semantic', 'FR frames'], 2)
+  PASS  G8 bind_new: name-only FSOT difference binds by (class, direction) + 1 soft line; repeated name-free key stops  ({-10: 500}, None, {-11: 501, -12: 502}, 1, "BINDING: FlatSequenceOuterTunnel terminal keys sim {('Terminal', False, ''): 2, ('Terminal', True, ''): 1} vs real {('Te")
+  PASS  G9 guard_peer: soft-only log -> no review owed; mixed -> owed; soft + exception -> owed  [False, True, True]
+  PASS  G10 census_predict: Terminal derived 0 vs declared +3 is SOFT, overall not FAIL; Function 0 vs 1 is FAIL  ({'Function': 'PASS', 'Terminal': 'SOFT'}, 'PASS', 'FAIL')
+  PASS  G11 Error List: loose ends +2 logs; a non-loose-end extra stops  (('log', 'Error List loose ends extra 2 missing 0: 2 item(s) <= max(5, 25%) = 5'), ('stop', "non-loose-end Error List class differs: ['Insert Into Array: Contains unwired or bad terminal']"))
+  PASS  G12 every soft line carries cycle/card/script/gate/expected/measured/class/rule  3
+=== GATES: 12 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":12,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

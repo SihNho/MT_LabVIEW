@@ -208,6 +208,7 @@ delivered step that later items build on; it is in force as a fact, not as an or
 - PD324(a)-(d) v16 36981c83 + prim gates accepted; CREATE-FIRST repair order ratified (delete-first unroutable on FS faces); p4_eq_seq gets a surviving bed `Equal?` donor (v17, ops 1..24 unchanged); s01 f4831031 24 actions, X10 669.3/674.4, EL 51 — docs/d1/ring-p4b.md:43
 - PD325(a)-(e) s01 scratch real == sim, prim gate 3/3, peak 601.4; TD FAIL = LabVIEW re-used deleted uids → key terminals by (uid, owner, name) + self-test; measured census into s01 pred; retry 141-3 then gated launch; v17 e19d7e14 / s02 5e483ea6 accepted, s02 cut re-checked after rebase — docs/d1/ring-p4b.md:55
 - PD326(a)-(e) P4 SESSION 1 DELIVERED `D1_ring_p4s01_20261002_232547.vi` dc61e193 (EL 51 OK, peak 605.0, graph `graph_ring_p4s01_20261002_234419.json`, load 596.5); term_identity_gates accepted; X10 not recalibrated yet (start 596.5 for s02); binding raw-uid carry; cycle 142 = s02 rebase → scratch → gated launch ‖ s03 prep — docs/d1/ring-p4b.md:73
+- PD327(a)-(e) STOP vs LOG-only gates in one table `tools/gateclass.py`: names and non-semantic counts within max(5, 25 %) log to `gate_soft_log.jsonl` and continue; semantic classes, cdiff, wires, md5, MEMSTOP stop; guard_peer skips soft-only logs — docs/d1/tooling.md:112
 - PD268(d) 130-2 accepted; open tooling queue fp-20/21/22/24/25, guard_cycle:40, stop_record H1–H3 — docs/d1/tooling.md:34
 
 ### Older items that PD238+ cite as still applying

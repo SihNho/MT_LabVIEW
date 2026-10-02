@@ -155,6 +155,7 @@ MAX_AGE_S = 6 * 3600          # only recent failures gate; an old log is history
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 import logclass  # noqa: E402
 import protocol  # noqa: E402
+import gateclass  # noqa: E402  card chat-S2: soft-only logs owe no review
 
 # C6 (session protocol v1, user-approved 2026-09-24). A run's verdict is its own `RESULT {...}` line(s) - any
 # status != PASS or gates.fail > 0 - and, when it printed none, its exit code (`BGRUN END rc!=0` / TIMEOUT). The
@@ -173,6 +174,12 @@ def log_failure(text, mtime=None):
         if m:
             return True, (seg[m.start():].splitlines() or [""])[0].strip()
         v = protocol.run_verdict(seg)
+        # card chat-S2 (PD327, user 2026-10-03): a run whose ONLY failures are LOG-only gate lines (tools/gateclass.py - names,
+        # non-semantic counts within max(5, 25 %), the check script's own arithmetic, stale fixtures) is not a failed
+        # prediction: it owes no hypothesis review. Any STOP-gate line, exception, STOP or timeout still does.
+        if v["failed"] and not v.get("timeout") and v.get("rc") in (None, 0, 1) and gateclass.soft_only(
+                seg, protocol.all_result_lines(seg)):
+            return False, None
         return bool(v["failed"]), v.get("first_fail") or "(see the log)"
     # LEGACY: a pre-switch run without a RESULT line, or not a bgrun run at all - EXACTLY the old reading, including
     # its segmentation (after the last `BGRUN START` substring), so no historical verdict changes.

@@ -25,6 +25,9 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
+if HERE not in sys.path:
+    sys.path.insert(0, HERE)
+import gateclass as _gateclass                                                     # noqa: E402  card chat-S2
 DEFAULT_SAMPLES = os.path.join(ROOT, "tools", "bench", "census_samples.json")
 
 
@@ -145,8 +148,12 @@ def predict(plan, pred, samples):
         elif x is None:
             v = "CENSUS-UNDECLARED"
         else:
-            v = "PASS" if d == x else "FAIL"
+            # card chat-S2 (PD327): a non-semantic class within max(5, 25 % of declared) is SOFT (LOG-only), not FAIL
+            cv, rule = _gateclass.count_verdict(c, d, x)
+            v = {"ok": "PASS", "log": "SOFT", "stop": "FAIL"}[cv]
         per.append({"class": c, "derived": d, "declared": x, "verdict": v})
+        if v == "SOFT":
+            per[-1]["rule"] = rule
     if any(p["verdict"] == "FAIL" for p in per):
         overall = "FAIL"
     elif unpredicted:
@@ -278,6 +285,8 @@ def main(argv):
     for p in rep["classes"]:
         print("  CLASS %-24s derived %+4d declared %5s  %s" % (
             p["class"], p["derived"], "-" if p["declared"] is None else "%+d" % p["declared"], p["verdict"]))
+        if p["verdict"] == "SOFT":                       # card chat-S2: one soft-log line per LOG-only class
+            _gateclass.soft_record("CENSUS %s" % os.path.basename(plan_p), p["class"], p["declared"], p["derived"], p.get("rule"))
     print("CENSUS VERDICT %s%s" % (rep["overall"], ("  unpredicted rows %s" % rep["unpredicted"]) if rep["unpredicted"] else ""))
     arts = []
     if out_p:

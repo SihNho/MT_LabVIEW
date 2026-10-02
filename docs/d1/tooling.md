@@ -109,3 +109,17 @@ How to add: see the 5-line note at the top of `docs/d1/INDEX.md`.
        ops and no Executor plan stays UNMEASURED = FAIL (PD268(a) unchanged). Self-test both sides; drain fp-29.
      - **(b) Card 132-4 chains:** fix → reader dry/prerun → graph read → offline diff → `--rebase` P3b-2 → dry 39/39 + prerun
        → `errorlist_expect_p3b2.py` on the rebased plan → `--scratch-required`. Scratch and launch are cards 132-5 / 132-6.
+327. **(chat card chat-S2, 2026-10-03 — USER: "가, 나 둘 다 적용" · "+-1개는 너무 적은듯")** STOP gates vs LOG-only gates.
+     USER-RULES: the user approved the design and the tolerance; the chat may change the numbers only with the user.
+     - **(a) One table, `tools/gateclass.py`**, imported by `stagekit.Stage.gate` / `census_gate`, `stagexec` (NAME-GATE,
+       binding), `stage_prerun` (dry gate, X15 census), `census_predict`, `errorlist_check` and `hooks/guard_peer.py`.
+     - **(b) STOP (unchanged):** PRIM/X17 class, Is Broken?/ExecState, cdiff (E3, PB), lost data wires (D, W1, TD's
+       `unwired`), input/bed md5, MEMSTOP, Error List per class except loose ends, any count difference of a SEMANTIC class.
+       Fail-closed: a class not in `NON_SEMANTIC_CLASSES`, a gate id not in `GATE_TABLE`, an unreadable detail = STOP.
+     - **(c) LOG-only:** names (NG, NAME-GATE, BINDING-NAME); non-semantic counts (Terminal, Inner/Outer/ParameterTerminal,
+       Invoke, loose ends) within max(5, 25 % of the predicted delta); labels ARITH (the check script's own arithmetic) and
+       FIXTURE (stale fixture). Printed `  SOFT  `, never fatal, not a fail; one line each in `tools/bench/gate_soft_log.jsonl`
+       (cycle, card, script, gate, expected, measured, class, rule) for the cycle-end batch review. Beyond tolerance = STOP.
+     - **(d) guard_peer:** a log whose only FAIL lines are LOG-only owes no hypothesis review; any STOP line, exception,
+       STOP-at-gate or timeout still owes one. Self-test `tools/bench/selftest_gateclass_s2.py` 12/0.
+     - **(e) Replay of 130-141** (`tools/bench/s2_replay.log`): 49 non-PASS → 6 LOG (would continue), 38 STOP, 5 not a gate.

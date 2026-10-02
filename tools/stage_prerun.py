@@ -113,6 +113,9 @@ import types
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
+if HERE not in sys.path:
+    sys.path.insert(0, HERE)
+import gateclass as _gateclass                                                     # noqa: E402  card chat-S2: STOP vs LOG-only
 BENCH = os.path.join(HERE, "bench")
 RECORDS = os.environ.get("PRERUN_RECORDS") or os.path.join(BENCH, "prerun_records.jsonl")
 LOG_DIR = os.environ.get("PRERUN_LOG_DIR") or BENCH
@@ -724,7 +727,7 @@ def patch_stagekit():
         D.input_md5, D.input_vi = self.input_md5, self.input_vi
         D.works.append(self.work)
 
-    def gate(self, label, ok, detail="", fatal=False):
+    def gate(self, label, ok, detail="", fatal=False, kind=None):
         if isinstance(ok, Fake):
             D.gate_taint = D.taint
             D.unverified.append(label)
@@ -746,9 +749,11 @@ def patch_stagekit():
             print("  UNVERIFIED  {0}  (dry: stub input{1})".format(label, ", after mutation " + D.mutated if D.mutated
                                                                     else ""), flush=True)
             return False
-        if not ok:
+        # card chat-S2 (PD327): a LOG-only mismatch (tools/gateclass.py, the ONE table shared with stagekit.Stage.gate) does not
+        # fail the dry either; Stage.gate itself prints it SOFT and writes the soft log line.
+        if not ok and _gateclass.classify_gate(label, detail, kind)["verdict"] != "log":
             D.fails.append("GATE " + label)
-        return orig["gate"](self, label, ok, detail, fatal)
+        return orig["gate"](self, label, ok, detail, fatal, kind) if kind else orig["gate"](self, label, ok, detail, fatal)
 
     def op(self, verb, fn, detail=""):
         D.ops.append(verb)
@@ -2456,6 +2461,12 @@ def census_gate(plan_paths, pred_override=None, samples_path=None, out=print):
                 c["plan"], c["unpredicted"] or "[classes never measured]"))
         else:
             lines.append("INFO  CENSUS {0} {1} ({2})".format(c["overall"], c["plan"], c["pred"]))
+        if c is not None:                                # card chat-S2 (PD327): LOG-only classes, recorded, not failures
+            for p_ in c["rep"]["classes"]:
+                if p_["verdict"] == "SOFT":
+                    lines.append("CENSUS SOFT {0} {1} derived {2:+d} declared {3:+d} [LOG-only: {4}]".format(
+                        c["plan"], p_["class"], p_["derived"], p_["declared"], p_.get("rule")))
+                    _gateclass.soft_record("X15 CENSUS " + c["plan"], p_["class"], p_["declared"], p_["derived"], p_.get("rule"))
     for ln in lines:
         out("  " + ln)
     return ok, det or "no derived != declared class", lines

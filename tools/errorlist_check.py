@@ -621,6 +621,16 @@ def main():
             HANDLE_TOL), flush=True)
         read_ok = all(R["gates"].values())
         verdict = ("OK" if not (R["extra"] or R["missing"]) else "MISMATCH") if read_ok else "FAIL"
+        if verdict == "MISMATCH":
+            # card chat-S2 (PD327, user 2026-10-03): per-class exactness stays STOP for every class EXCEPT loose ends; a
+            # mismatch made only of loose-end items within max(5, 25 %) is LOG-only (gate_soft_log.jsonl), verdict OK
+            import gateclass as _GC
+            ev, erule = _GC.errorlist_verdict(R["extra"], R["missing"])
+            if ev == "log":
+                R["soft"] = erule
+                _GC.soft_record("EL-LOOSE " + os.path.basename(bed), "LooseEnds", R["missing"], R["extra"], erule)
+                print("SOFT  Error List loose-end mismatch is LOG-only: %s" % erule, flush=True)
+                verdict = "OK"
     R["verdict"], R["seconds"] = verdict, round(time.time() - t0, 1)
     with open(out, "w", encoding="utf-8") as f:
         json.dump(R, f, indent=1, ensure_ascii=False, default=str)

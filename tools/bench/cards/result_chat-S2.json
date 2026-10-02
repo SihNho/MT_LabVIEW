@@ -1,19 +1,80 @@
-{"schema":"result/1","id":"chat-S2","status":"FAIL","gates":{"pass":42,"fail":1},
-"first_fail":"sim_l7_split C5 L7-R: simulated end uid-edges vs recorded reference, diff count 22 (all only_ref)",
-"blocked_by":null,
-"artefacts":[{"path":"tools/stagesim.py","md5":"482523c23015ebad7ed53ebc4566bbd8"},{"path":"docs/protocol/stageplan.json","md5":"1d505ab9e9bc5c820fb65095b23bfb73"},{"path":"tools/bench/selftest_stagesim.log","md5":"5557ee1d58d7bdbabd8fbb1178d4aa5e"},{"path":"tools/bench/sim_l7_split.log","md5":"47afa06b32f32b48b270af0d024d4495"},{"path":"tools/bench/plan_l7_split.json","md5":"998c52e700caead4d100fe82b4607c98"},{"path":"tools/bench/sim_l7_split.py","md5":"49fb81d9323479c1b667d56677a35ff2"}],
-"facts":["selftest_stagesim.log: 32 pass / 0 fail on synthetic 2-loop graphs (cut set, chain tagging, candidates, SR pair delete, finalize, first-divergent, refusals, opmodel source)",
-"sim_l7_split.log: 45-action L7 replay applies with no error; move cut set == all 12 wires of #376; new half-wires == the 12 diag_c71 observed",
-"sim_l7_split.log: uid-edge diff vs recorded reference = 0 at L7-1a (step 3) and L7-1 (step 18); 22 at end (step 45)",
-"sim_l7_split.log: cdiff rows match recorded - L7-1: the 8 rows; end: [(376,'current frame data array in')]; plan_l7_split.json final=false, first divergent step 1 (move_in)",
-"All 22 end diffs = remove_bad_wires clearing 13 base wires whose source is one Diagram terminal read TWICE (e.g. term 13410); review archive/peer/2026-09-24-chat-s2-rbw.md",
-"Review (hypothesis, ANSWERED): claim holds, 15+7=22 exact; proposes dedupe on term_uid at LOAD (vigraph.build4 flags also count raw rows, vigraph.py:290-292)",
-"No D1_s4_loop17 terminal graph exists on disk; reference rebuilt from gate-verified diffs: stage_d1_l7_1a.log:97, stage_d1_l7_1b_r3.log:347, l7_r_prediction.json (PC1/PC2 pass)",
-"Op models: tools/bench/opmodels/ absent at run time; every step ran the provisional rule, source recorded per step (stagesim.py PROVISIONAL)",
-"L7 replay produced 18 candidate rows (cut rows with >1 mechanism) in tools/bench/sim/l7_split/candidates.json; simulator decided none",
-"Could not write the review's 'What was done with it': card write flag excludes archive/peer; disposition text is in this result's open[0]"],
-"open":["Accept the review's fix? Dedupe terminal rows on term_uid at load (stagesim.base_state) or in vigraph.build4 flags; then rerun sim_l7_split (expect diff 0, removed_wires [1581,3629,4517]). Budget 2 spent, not rerun.",
-"Fill archive/peer/2026-09-24-chat-s2-rbw.md 'What was done with it' (blocked by write flag).",
-"Provisional gaps to confirm vs chat-S1 models: SR pair rename on cut, tunnel auto-drop on delete_wire, sink detach from sourceless half-wire."],
-"cost":{"usd":1.27,"minutes":60,"labview_runs":0},
-"note":"Commit 7678b58. Step files (~1 MB each) gitignored under tools/bench/sim/*/step_*.json."}
+{
+ "schema": "result/1",
+ "id": "chat-S2",
+ "status": "PASS",
+ "gates": {
+  "pass": 4,
+  "fail": 0
+ },
+ "first_fail": null,
+ "blocked_by": null,
+ "artefacts": [
+  {
+   "path": "tools/gateclass.py",
+   "md5": "5628108ee36757449bf2b3580a83453b"
+  },
+  {
+   "path": "tools/stagekit.py",
+   "md5": "3269214b374db7297c927ef6fafa9c97"
+  },
+  {
+   "path": "tools/stagexec.py",
+   "md5": "0e3e9c35bd391b3fd6b57741a10c78c0"
+  },
+  {
+   "path": "tools/stage_prerun.py",
+   "md5": "89362f328376f0839a6ee7e89a4d05b4"
+  },
+  {
+   "path": "tools/hooks/guard_peer.py",
+   "md5": "7219ad0aed7afec3554902bc27b9ce5c"
+  },
+  {
+   "path": "tools/census_predict.py",
+   "md5": "d71e42c147769371080394d4125d4e95"
+  },
+  {
+   "path": "tools/errorlist_check.py",
+   "md5": "cdbdb249080e61495b9bb9fa32f092f2"
+  },
+  {
+   "path": "tools/bench/selftest_gateclass_s2.py",
+   "md5": "884222f6c1327b66c9e0a4f9e504bb5c"
+  },
+  {
+   "path": "tools/bench/s2_replay.log",
+   "md5": "a1f00a676eff5c678b7c99f1e74060f4"
+  },
+  {
+   "path": "tools/bench/gate_soft_log.jsonl",
+   "md5": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  {
+   "path": "docs/d1/tooling.md",
+   "md5": "1f554af9463f8f5b00917968f1421629"
+  }
+ ],
+ "facts": [
+  "LabVIEW INCIDENT: selftest_stagekit.py case J reached real LabVIEW by COM despite the c125 tripwire (s2_regress_before2.log:9); COM-launched LabVIEW pid 14464 (00:20:43) LEFT RUNNING",
+  "Killing pid 14464 (and then even listing it) was denied by the permission classifier; it was not closed - the chat/user must close it; selftest_stagekit excluded from s2_regress.py:21-23",
+  "One table tools/gateclass.py (GATE_TABLE :52, NON_SEMANTIC_CLASSES :41, tolerance :72); used by stagekit.py:242, stagexec.py:997,2160, stage_prerun.py:754,2464, guard_peer.py:180",
+  "LOG-only rows print '  SOFT  ', never fatal, not counted as fail; one JSON line per mismatch in tools/bench/gate_soft_log.jsonl (created empty); recipes unchanged (no fatal flag on NG/TD/CEN2)",
+  "selftest_gateclass_s2.py 12/0 (selftest_gateclass_s2_final.log): sem +1 stop, Terminal +3 log, +40% stop, names log, STOP stays, TD 141-2 log, Stage.gate, bind_new, guard_peer",
+  "After edits 23/28 PASS (s2_regress_after.log): stagexec 136/0, stagexec_gate 13/0, namegate 5/0, census 14/0 12/0, 13 stage_prerun green; guard_peer budget/failre/ladder rc 0, no RESULT line",
+  "Red, not from this diff: c106e E1 = X17 r7_wait donor (gate of card 141-1); c114 R4 = plan_ring_p4_v10.json flags (cycle 139 data); stage_prerun hunks only :116-120,:730-756,:2464-2469",
+  "HEAD discriminator s2_headcmp.log FAILED as a tool: HEAD copies preloaded from %TEMP% move __file__/BENCH paths (HEAD 6 and 3 fails); no measured before/after for c106e/c114",
+  "Replay 130-141 (s2_replay.log): 49 non-PASS -> 6 LOG would continue (130-1,130-6,131-5,132-4,133-4,141-2), 38 STOP, 5 not a stage gate; 130-1/131-5/133-4 continue only if scripts label ARITH/FIXTURE",
+  "Decision PD327 written docs/d1/tooling.md:112 (+ INDEX line); last PD in docs/d1 was 326 (ring-p4b.md:73); doc_lint 4 FAIL all pre-existing (ring-p3b 419 lines, chat-handoff 420, L2/L6/L8)"
+ ],
+ "open": [
+  "Tunnel OBJECT classes (LoopTunnel, FlatSequence*Tunnel, SelectorTunnel) are in neither user list, so gateclass treats them as SEMANTIC (STOP); confirm or move them to LOG-only",
+  "E1 per-step structural diffs (only_sim/real_terms on tunnel faces) stay STOP; only names (NAME-GATE, binding by name) became LOG-only - should face-row-only E1 diffs also log?",
+  "Who closes the stray COM-launched LabVIEW pid 14464 (beside chat-M1), and should selftest_stagekit case J be fixed or removed from offline use?"
+ ],
+ "cost": {
+  "usd": null,
+  "minutes": 34,
+  "labview_runs": 0
+ },
+ "note": "labview_runs 0 by intent; the two unintended COM contacts came from selftest_stagekit.py inside offline regression runs. No STATUS edit (status_edit false)."
+}

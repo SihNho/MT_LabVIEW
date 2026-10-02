@@ -70,6 +70,7 @@ for _p in (HERE, os.path.join(HERE, "bench"), os.path.join(HERE, "recipes")):
         sys.path.insert(0, _p)
 
 import gscript as g                                                                # noqa: E402
+import gateclass as _gateclass                                                     # noqa: E402  card chat-S2: STOP vs LOG-only
 
 BENCH = os.path.join(HERE, "bench")
 CLAUDEDEV = g.CLAUDEDEV
@@ -221,6 +222,7 @@ class Stage(object):
         self.work = os.path.join(work_dir, work_name or "{0}_{1}.vi".format(name, self.stamp))
         self.out_json = out_json or os.path.join(BENCH, "{0}.json".format(name))
         self.passes, self.fails, self.facts, self.rows = [], [], [], []
+        self.softs = []                   # card chat-S2: LOG-only mismatches (gateclass), recorded, not failures
         self.scratches = []
         self.planned_rows = []            # `plan_rows()`; NOT `self.rows`, which is the non-gate ROW record
         self.sym = {}                     # from_decision symbols: "$name" -> what an earlier row created
@@ -237,8 +239,19 @@ class Stage(object):
     def head(self, text):
         print("\n---------- {0}".format(_a(text)), flush=True)
 
-    def gate(self, label, ok, detail="", fatal=False):
+    def gate(self, label, ok, detail="", fatal=False, kind=None):
         ok = bool(ok)
+        if not ok:
+            # card chat-S2 (PD327, user 2026-10-03): a LOG-only mismatch (tools/gateclass.py, the ONE table) is recorded in
+            # tools/bench/gate_soft_log.jsonl and the run CONTINUES - printed `  SOFT  `, never `  FAIL  `, not counted as
+            # a fail, never fatal. Every other failing gate is unchanged (FAIL, fatal stays fatal).
+            c = _gateclass.classify_gate(label, detail, kind)
+            if c["verdict"] == "log":
+                self.softs.append(label)
+                _gateclass.record_classified(label, c, detail)
+                print(_a("  SOFT  {0}{1}  [LOG-only: {2}]".format(label, ("  " + str(detail)) if detail else "",
+                                                                   c["rule"])), flush=True)
+                return True
         (self.passes if ok else self.fails).append(label)
         print(_a("  {0}  {1}{2}".format("PASS" if ok else "FAIL", label,
                                         ("  " + str(detail)) if detail else "")), flush=True)
@@ -292,7 +305,7 @@ class Stage(object):
             got[after[u]] = got.get(after[u], 0) + 1
         diff = dict((c, (got.get(c, 0), int(declared.get(c, 0)))) for c in set(got) | set(declared or {})
                     if got.get(c, 0) != int((declared or {}).get(c, 0)))
-        self.gate(label, not diff, {"measured": got, "declared": declared, "diff (measured, declared)": diff})
+        self.gate(label, not diff, {"measured": got, "declared": declared, "diff (measured, declared)": diff}, kind="census")
         return got
 
     def safe(self, label, fn, default=None):
@@ -307,7 +320,8 @@ class Stage(object):
         return self.deadline_s - (time.time() - self.t0) - self.reserve_s
 
     def dump(self):
-        self.R["gates"] = {"pass": len(self.passes), "fail": len(self.fails), "failing": self.fails}
+        self.R["gates"] = {"pass": len(self.passes), "fail": len(self.fails), "failing": self.fails,
+                           "soft": list(getattr(self, "softs", []))}
         self.R["facts"] = self.facts
         self.R["rows"] = self.rows
         self.R["elapsed_s"] = round(time.time() - self.t0, 1)
@@ -319,6 +333,9 @@ class Stage(object):
         print("=== GATES: {0} pass / {1} fail{2}".format(
             len(self.passes), len(self.fails),
             ("; failing: " + ", ".join(self.fails)) if self.fails else ""), flush=True)
+        if getattr(self, "softs", None):
+            print("=== SOFT (LOG-only, not failures, gate_soft_log.jsonl): {0}: {1}".format(len(self.softs), ", ".join(self.softs)),
+                  flush=True)
         print("JSON: {0}   elapsed {1:.1f} s".format(self.out_json, time.time() - self.t0), flush=True)
         _C6["stage"], _C6["sig"] = self, (len(self.passes), len(self.fails))
         print(_c6_line(self), flush=True)                  # C6: the RESULT line is the LAST line

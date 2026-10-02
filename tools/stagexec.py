@@ -53,8 +53,9 @@ for _p in (HERE, BENCH, os.path.join(HERE, "recipes")):
 import stagesim as SS          # noqa: E402
 import vigraph as V            # noqa: E402
 import protocol                # noqa: E402
+import gateclass               # noqa: E402  card chat-S2 (PD327): STOP vs LOG-only, the one table
 
-SR_CLS = ("RightShiftRegister", "LeftShiftRegister")
+SR_CLS =("RightShiftRegister", "LeftShiftRegister")
 FP = "ControlTerminal"
 
 
@@ -975,7 +976,9 @@ def bind_new(prev_real, real, sim_prev, sim_now, bind):
             raise ExecStop("BINDING: {0} new {1} objects in one op - ambiguous".format(len(su), cls))
         s_rows, r_rows = new_sim[su[0]], new_real[ru[0]]
         key = lambda r: r["term_class"]                                            # noqa: E731
+        named_key = False
         if any(v != 1 for v in collections.Counter(key(r) for r in s_rows).values()):
+            named_key = True
             # card 100-3: a created primitive has several ParameterTerminals - bind by (class, direction, NAME);
             # registers/tunnels keep the class-only key (their names are not stable, stage_d1_l7_1b.log:274)
             key = lambda r: (r["term_class"], bool(r["is_source"]), r["term_name"])  # noqa: E731
@@ -991,6 +994,16 @@ def bind_new(prev_real, real, sim_prev, sim_now, bind):
         rep = [k for k, v in ks.items() if v != 1]
         unnamed_ok = (bool(rep) and all(isinstance(k, tuple) for k in rep)
                       and all(not r.get("wire_uid") for r in s_rows + r_rows if key(r) in rep))
+        if ks != kr and named_key:
+            # card chat-S2 (PD327, user 2026-10-03): when the keys differ ONLY by terminal NAME (stage_d1_ring_p3b1_scratch_pin3
+            # .log:370, FSOT sim '' vs real 'Image Out'), bind by (term_class, direction) if that key is unique and equal on
+            # both sides, and record the name mismatch as LOG-only. A repeated or unequal name-free key still stops.
+            nf = lambda r: (r["term_class"], bool(r["is_source"]))                 # noqa: E731
+            ks2, kr2 = collections.Counter(nf(r) for r in s_rows), collections.Counter(nf(r) for r in r_rows)
+            if ks2 == kr2 and all(v == 1 for v in ks2.values()) and gateclass.classify_gate("BINDING-NAME")["verdict"] == "log":
+                gateclass.soft_record("BINDING-NAME {0} #{1}->#{2}".format(cls, su[0], ru[0]), "name",
+                                      sorted(str(k) for k in ks), sorted(str(k) for k in kr), "terminal NAMES are LOG-only (PD327)")
+                key, ks, kr = nf, ks2, kr2
         if ks != kr or (any(v != 1 for v in ks.values()) and not unnamed_ok):
             raise ExecStop("BINDING: {0} terminal keys sim {1} vs real {2}".format(cls, dict(ks), dict(kr)))
         bind["obj"][su[0]] = ru[0]
@@ -2144,9 +2157,17 @@ class Executor(object):
                     self.log("  NAMEGATE op {0} {1}: sim {2} real {3}".format(k, "ok" if ok_n else "MISMATCH", det_n["sim"],
                                                                          det_n["real"]))
                 if not ok_n:
-                    raise ExecStop("NAME-GATE: op {0} ({1}, acts {2}) new tunnel names sim {3} vs real {4}".format(
+                    msg_n = "NAME-GATE: op {0} ({1}, acts {2}) new tunnel names sim {3} vs real {4}".format(
                         k, op["kind"], op["acts"], dict((x, det_n["sim"].get(x)) for x in det_n["mismatch"]),
-                        dict((x, det_n["real"].get(x)) for x in det_n["mismatch"])))
+                        dict((x, det_n["real"].get(x)) for x in det_n["mismatch"]))
+                    # card chat-S2 (PD327, user 2026-10-03): terminal/tunnel NAMES are LOG-only - recorded, the run continues
+                    # (binding never keys names: bind_new falls back to (class, direction), stage_prerun.rebind is name-free)
+                    if gateclass.classify_gate("NAME-GATE")["verdict"] != "log":
+                        raise ExecStop(msg_n)
+                    for x in det_n["mismatch"]:
+                        gateclass.soft_record("NAME-GATE op {0} {1}".format(k, x), "name", det_n["sim"].get(x), det_n["real"].get(x),
+                                              "terminal/tunnel NAMES are LOG-only (PD327)")
+                    self.log("  NAMEGATE SOFT op {0} (LOG-only, recorded in gate_soft_log.jsonl): {1}".format(k, msg_n[:600]))
             if op["kind"] in BIND_KINDS:
                 # card 120-3 R2: a created case selector / case tunnel first ({} for every other op), then bind_new as before
                 made.update(bind_fs_tunnel(real, real_new, prev["terminals"], after["state"]["terminals"], self.bind))
