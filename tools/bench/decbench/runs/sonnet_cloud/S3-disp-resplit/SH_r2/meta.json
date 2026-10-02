@@ -1,0 +1,40 @@
+{
+ "case": "S3-disp-resplit",
+ "arm": "SH",
+ "rep": 2,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "attempt": 1,
+ "usd": 0.1941,
+ "minutes": 0.47,
+ "cell_minutes": 0.47,
+ "turns": 6,
+ "tools": 5,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-sonnet-5-5",
+   "effort": "high",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.47,
+   "usd": 0.1940826,
+   "turns": 6,
+   "tools": 5,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5-5"
+   ]
+  }
+ ],
+ "answer": "**Verdict: change NEXT.** The NEXT prescription is not wrong in its details. It repeats a full-length one-shot attempt that CLAUDE.md's own split rule forbids.\n\n**Why the one-shot run is the wrong shape**\n- CLAUDE.md's \"Big or blocked work is SPLIT\" rule says a step isn't done until it leaves a file. Default granularity is 10–15 rows per batch. It also says a stage that ends without a saved artefact makes the next cycle's first act a decomposition plan (CLAUDE.md, rule 3).\n- This stage has now ended with no file in several cycles. Cycle 100 ran two LabVIEW runs, and both stopped without saving: run 1 at E1 PARITY and run 2 at op 2 (STATUS.md:77-82; plan:1751-1756). Cycle 101's run r5 did ops 1–25 and stopped inside op 26 with \"NO FILE\" (STATUS.md:64; plan:1789). The log files `stage_d1_disp_r2…r5.log` exist.\n- NEXT still schedules a single record-mode run of all 47 ops (STATUS.md:60). The recipe saves only when every checkpoint matches. Otherwise \"NOTHING saved\" (`tools/recipes/stage_d1_disp.py:80-90`). That is exactly the pattern the 2026-09-19 rule was written against: a long in-memory edit that dies and leaves nothing to inspect.\n- The plan's own header says a stage that fails twice is decomposed before any retry (plan:15). No decomposition of the display stage's 47 ops is written. PD213 and PD214 only repair the simulator and rerun.\n- Part of the reason is already visible. r5 got through 25 ops and only stopped on a verb bug that was found and fixed (plan:1789). Splitting at that point would have saved that progress as a file instead of discarding it.\n\n**Other problems with NEXT as written**\n- Record mode (PD214(c)) loosens the per-step comparison so that sourceless half-wire differences become WARN. The only-source half-wire rule it relies on is still an open question and is still to be measured (plan:1790-1793). My earlier \"primitive deletes / SubVI keeps\" rule was refuted (STATUS.md:66). Loosening the check before the rule is settled is the same inference-over-measurement fault that was just logged. The end gates (cdiff against the 21 open rows, ExecState 1) still protect rule 1a, but a long run that ends in failure would have taught nothing again.\n- Both escalation rungs are spent and D-2026-09-27-01, \"continue as planned?\", is open for the user (STATUS.md:65). NEXT does not carry that open decision. A repeat of the same shape should wait on it.\n\n**What the next cycle should do**\n1. Do NEXT's step 1 (measure the only-source rule offline, then replay r5's k1–k25) and step 2 (the 214(c) WARN rule and the tunnel-flip seed fix). These are the prerequisites that apply regardless of the split, and the tooling is already in hand.\n2. Write a one-page decomposition of the 47 ops into 3–4 sub-stages of 10–15 ops each. Each sub-stage has a named saved file (a broken intermediate saved by GUI per rule 6, with its md5) and a pass criterion. Natural cut points are ops 1–25, which r5 already showed run through, then ops 26 onward.\n3. Run only the first sub-stage from `D1_s1_copy.vi`. Start each later sub-stage from the saved file in a fresh LabVIEW instance. Run the ABBA only after the end gates pass on the last one.\n4. Put the cycle-101 `D-2026-09-27-01` item in front of the user in the report.\n\nVERDICT: change NEXT\nNEXT ACT: Finish the offline simulator measurements and fixes, then write a split of the 47-op display stage into 10–15-op sub-stages that each save an intermediate file, and run only the first one.",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0,
+  "B1": 0.0,
+  "B2": 1.0
+ }
+}

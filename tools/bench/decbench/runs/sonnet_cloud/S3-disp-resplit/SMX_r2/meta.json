@@ -1,0 +1,40 @@
+{
+ "case": "S3-disp-resplit",
+ "arm": "SMX",
+ "rep": 2,
+ "model": "claude-sonnet-5-5",
+ "effort": "max",
+ "attempt": 1,
+ "usd": 2.2571,
+ "minutes": 8.47,
+ "cell_minutes": 8.47,
+ "turns": 47,
+ "tools": 46,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-sonnet-5-5",
+   "effort": "max",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 8.47,
+   "usd": 2.2570922000000007,
+   "turns": 47,
+   "tools": 46,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5-5"
+   ]
+  }
+ ],
+ "answer": "**Right goal, wrong shape — change NEXT.**\n\nThe display loop is the user's own direction (PD210, `docs/d1-loop12-17-split-plan.md:1568-1589`). The steer also demands a saved file (`archive/peer/2026-09-26-outcome-review-20260926.md:183`). But NEXT (`STATUS.md:57-60`) prescribes a sixth full-length, all-or-nothing run.\n\n1. **The user's split rule has already fired.** `CLAUDE.md:481-490`: a stage ending without a saved artefact makes the next cycle's first act a decomposition plan, and a full-length retry is forbidden. This stage has had five real runs and no file (`tools/bench/stage_runs.jsonl:28-32`). Another stage was re-split after two (`docs/cycle27-plan.md:2198-2207`). Neither NEXT nor D-2026-09-27-01 (\"retries the same build\", `tools/bench/decisions_pending.json:164`) mentions the rule.\n\n2. **One LabVIEW instance probably can't finish (my projection from measured rows).** r5 was at 647.3 MB after 25 ops (`tools/bench/stage_d1_disp_r5.log:447`). Late reads cost about 4.1 MB each and are never released (`:439-447`), and 17 checkpoint reads remain (`:41`). That is about 717 MB before op loads, against `MEM_STOP_MB = 700` (`tools/stagexec.py:64,86-88`), which the recipe doesn't override (`tools/recipes/stage_d1_disp.py:61`). Expect MEMSTOP around ops 35-42, with nothing saved.\n\n3. **Record mode doesn't make it safe.** It absorbs only STEP-DIFFs. Op errors, binding stops and MEMSTOP still end the run (`tools/stagexec.py:1105-1112,1164-1176`), and any diff blocks the save (`tools/recipes/stage_d1_disp.py:80-89`). Ops 26-47 use verbs with no successful real run: `create_local_read` (×6) has one log line, a failure (`stage_d1_disp_r5.log:452`; `tools/bench/cards/result_101-4.json:23`). The last four runs each stopped at a new op's first real contact (`archive/peer/2026-09-27-retrospective-cycle101.md:254`).\n\n4. **NEXT's offline prelude is the detour that retrospective priced** (13 min, about $2; `:279-285`). With PD214(c)'s WARN rule the half-wire question can't block a save. r5's only diff healed by k24 (`result_101-4.json:21`).\n\n**Instead:**\n- The first act is a one-page decomposition, prior-art-reviewed once, into 2-3 saved sub-stages. Each starts from the previous file in a fresh instance, with a memory budget taken from r5's meter rows.\n- Sub-stage A is ops 1-25 as r5 ran them, plus only the WARN rule. It is saved broken-by-design via the approved GUI-save route (`CLAUDE.md` rule 6).\n- B and C finish locals, tunnels, RBW, ES 1, the 21-row cdiff and the script save.\n- Run A in the same cycle: it is the likeliest route to the file the steer requires.\n- Defer the half-wire replay, flip-seed fix and provenance check until B/C records need them.\n- Don't wait on D-2026-09-27-01 (rule 2c). Re-ask it with the split recommended.\n\nCaveat: the lenient \"different place each time\" reading (`docs/d1-loop12-17-split-plan.md:407-410`) argues otherwise, but the trigger's second clause is place-independent. This was an offline read only; nothing was run.\n\nVERDICT: change NEXT\nNEXT ACT: Write the one-page decomposition of the display stage into saved sub-stages (A = ops 1-25, saved via gui_save), prior-art-review it once, then run sub-stage A.",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0,
+  "B1": 0.0,
+  "B2": 1.0
+ }
+}

@@ -1,0 +1,40 @@
+{
+ "case": "R3-chat-synthesis",
+ "arm": "H",
+ "rep": 2,
+ "model": "claude-opus-5-5",
+ "effort": "high",
+ "attempt": 1,
+ "usd": 0.1819,
+ "minutes": 0.55,
+ "cell_minutes": 0.55,
+ "turns": 4,
+ "tools": 3,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.55,
+   "usd": 0.18191980000000002,
+   "turns": 4,
+   "tools": 3,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-opus-5-5"
+   ]
+  }
+ ],
+ "answer": "The summary does not hold up. Its third bullet is wrong, the second uses numbers no file records, and the first leaves out part of the data.\n\n**1. Strongest reason it is wrong (bullet 3).** It sets $17.59 against $15.24, but the two totals cover different numbers of runs. Fable low's $17.59 covers 5 cells, one per task (`tools/bench/matbench/report_v1.md:65,77`). Opus high's $15.24 covers 10 cells, two repeats per task (`report_v1.md:17`). Per cell, Fable costs about $3.52 and Opus high about $1.52, so Fable is about 2.3 times as expensive, not \"about the same\". Fable is also slower: 3.48 min per cell against 2.56 (`report_v1.md:17,77`). The \"5/5\" score was also reached in a different way. Those are v0 Fable runs re-scored with the v1 scorer, one repeat each, from an earlier batch (`report_v1.md:34,65`), so the score and cost are not paired with Opus high's.\n\n**Bullet 2 numbers have no source.** The only recorded result of the A/B is \"high PASS 2.5 vs 2.0 per cycle, $33 vs $39, n=4/5, not decisive but never worse\" (`CLAUDE.md:384`, repeated in `tools/bench/cards/brief_chat-N4.md:14`). The figures 2.17, 1.57, $37.18 and $38.24 appear in no doc or JSON in the checkout; a search for them found only unrelated numeric hits in bench data files. The JUDGE-AB log lines only record which effort each cycle was assigned. They contain no PASS counts or costs (`tools/bench/cycle_runner.log:346-456`). \"High is also cheaper\" also drops the warning that matters: n=4/5 is \"not decisive\" (`CLAUDE.md:384`).\n\n**Bullet 1 leaves out data.** T2's mean score also changed with effort: low 0.5, medium 1, high 1, max 0.5 (`report_v1.md:27`). So the score did not change \"only on T1 and T3\". The half that says \"only T1 exceeded repeat noise\" is correct (`report_v1.md:34`).\n\n**2. Alternative explanation of the same evidence.**\n- **Bullet 2:** the log shows the A/B kept running after cycle 97, through cycle 103, with overrides at cycles 102 and 103 (`cycle_runner.log:470-545`). The summary's numbers may come from a wider or different window of cycles than the stated 89–97, rather than from a recount of 89–97.\n- **Bullet 3:** Fable's 5/5 next to Opus high's 8/10 can be explained by noise. T2 and T3 vary between repeats (`report_v1.md:27-28`), and Fable got one draw per task where Opus got two.\n\n**3. What would falsify the claim.** Bullet 3 would survive only if Fable low's cost per cell, measured with two repeats under v1, came out close to Opus high's $1.52. Bullet 2 would survive only if a per-cycle record for cycles 89–97 gave 2.17/1.57 and $37.18/$38.24.\n\n**4. Cheapest test that separates claim from alternative.** Divide each total by its number of cells, using only what is already in the report: $17.59 / 5 against $15.24 / 10. No new runs are needed. For bullet 2, recount PASS results and cost per cycle for cycles 89–97 from the cycle cards. Then compare with `CLAUDE.md:384`, and check whether the summary's figures appear only when the window extends past cycle 97.\n\nDEFECT: major - The Fable-vs-Opus cost claim compares a 5-cell total with a 10-cell total, which hides that Fable low costs about 2.3 times as much per cell, and the A/B figures contradict the only recorded result ($33 vs $39, 2.5 vs 2.0, n=4/5, not decisive).",
+ "mech": {
+  "M1": 1.0,
+  "M2": 0.0,
+  "M3": 1.0,
+  "F1": 0.0,
+  "B1": 1.0
+ }
+}

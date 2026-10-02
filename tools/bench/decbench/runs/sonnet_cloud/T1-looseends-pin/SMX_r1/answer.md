@@ -1,0 +1,18 @@
+**The build is not at fault.** The scratch ran the recipe's own body and passed 43/0 (`diag_c116b_scratch.log:340`). The graph lost exactly the 11 stubs and 13 tunnels (`:279-285`). `extra == []`, and every class except loose matches the pin (`diag_c116b_scratch_el.log:114-116`). The window itself reads 53 (`:27`).
+
+**The pin is arithmetic, not a measurement.** `plan_l2r2_make.log:44` computes 24 − 11 stubs + 13 cut nets − 2 "already loose".
+- Its ±1 coefficients come from R1's identity 23 − 6 + 7 = 24 (`STATUS.md:88`), which fixes only the difference of two counts.
+- R1's expected file says which stub held which loose-ends item "is not measured" (`errorlist_expected_D1_l2_r1_20260928_055441.json:7`). It also calls the dangling-branch locations "INFERRED, not measured" (`:75`).
+- A free segment is invisible to `Wire.Terms[]` (`archive/peer/2026-09-28-c115e-sel.md:53`).
+- The swap alternative was returned OPEN (`c115e-sel.md:106-112,157-159`), and its separator was never run (`STATUS.md:92`).
+
+So the graph gates cannot see this class at all. Net of the −11 stubs, the cuts yielded 9 new items, not 11: 24 − 11 + 9 = 22.
+
+**Which two?** The logs cannot say. The plan marks one 2-element subset: #2294 and #3644 have no inner stub (`plan_l2r2_make.log:26-27`) and are acts 1–2 (`plan_l2r2.json:13-24`). If their cuts add nothing, the arithmetic is exact: −11 + (11 − 2 overlap) = −2.
+
+**Alternatives.**
+- Two other stubbed nets were already loose in R1 (the open swap). This is weaker. R1 has 16 source-only wires (computed from `graph_l2r1_20260928.json` terminals). Under the same one-item-per-stub model, that leaves 8 live-net items for the 7 PD230 nets plus B3's one residual (`errorlist_expected_D1_l2_b3_20260928_032703.json:114-116`), room for at most one.
+- Reader truncation. The reader stops at the OCR'd header count with no end-of-list check (`tools/lv_errorlist.py:619-626,737-739`). A 55→53 misread would drop tail loose items. It is unlikely, and the saved `errwin_*_b0.png` header capture (`lv_errorlist.py:562`) rules it out for free.
+
+ROOT CAUSE: The pinned 24 is an unmeasured accounting model (−1 per stub, +1 per cut net, inherited from R1's inferred 23−6+7) rather than a measurement, and it over-credits exactly two loose-end items — most plausibly the cuts of the two stub-less tunnels #2294/#3644 — so the scratch build is faithful and the pin is wrong.
+TEST: On a byte copy of R1 apply only plan acts 1–2 (delete #2294, #3644; two deletes, header-only Error List read) and read the header count: 55 (loose stays 24) confirms those two cuts add no item, while 57 refutes it and moves the missing two onto the stubbed nets.

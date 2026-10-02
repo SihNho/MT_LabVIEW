@@ -1,0 +1,17 @@
+**Verdict: I think the claim is wrong. The pin of 22 does not come from per-net evidence. The wire reader accounts for 21 items, and the 22nd is an unidentified item carried forward from R1 without being measured.**
+
+**1. Strongest reason it's wrong.** The decode log reads loose joints on **23** wires before (R1's Error List says 24) and **21** after (the scratch Error List says 22) (`tools/bench/diag_c116d_decode.log:41-42`). The arithmetic 24 − 11 + 9 only reaches 22 by assuming R1's unexplained 24th item survives L2-R2 unchanged. That item has never been identified. Pre-decided 231(c) says so itself: "R1's residual 1 (23 read vs 24 listed) is unexplained", because the v0 reader failed after read 536 (`docs/d1-loop12-17-split-plan.md:2104`). Coverage confirms it: the before sweep read only 536 of 1,945 wires, and the after sweep read 0 of them, only the 26 targets (`diag_c116d_decode.log:3,40,47`). So 21 of the 22 are measured and 1 is assumed. The pin was also set after the scratch showed 22, when the plan had predicted 24 (`diag_c116b_scratch_el.log:115`). That makes it a fit to the observation, not a prediction.
+
+**2. Alternative explanation of the same evidence.**
+- **A swap.** R1's residual item disappears, and L2-R2 creates a different loose item somewhere the reader never looked. The count stays 22 but the set of items differs. The plan already admits that R1 itself might be a swap (`d1-loop12-17-split-plan.md:2072`).
+- **The gate can't see a swap.** Error List items carry no wire ID (`"uid": null`, the Selection List op is not built: the scratch `_raw.json`). The class gate matches message text only. Its own bookkeeping already contradicts the per-net story: it fills "PD230 dangling branches **7 used 5**" (`diag_c116b_scratch_el.log:113`), yet the decode reads all 7 PD230 nets as still loose and unchanged (`decode.log:18-38`). The 9 newly loose outer-net branches were simply absorbed into R1's licence classes. That is why "NC extra == []" passed (`:116`).
+
+**3. What would falsify the claim.** A whole-graph sweep on the L2-R2 file whose loose-wire set is not exactly R1's 23 named wires + the residual wire − the 11 stubs + the 9 outer nets. Either the residual is gone and another wire is loose, or the residual sits on a deleted stub or tunnel net.
+
+**4. Cheapest discriminating test.** This is already owed as STEP 0 (231(e), `:2109-2112`), but the gate does not use it. Run the `OpWireJoints_v1` sweep on R1, name the 24th item, then repeat the sweep on the L2-R2 output, and gate on **set equality of loose-wire IDs** (22 named IDs), not on a count of 22. If the residual turns out to be an item that is not a wire (a wire item the reader cannot attribute), name it from the Error List screenshot before launch.
+
+What would change my mind: the v1 sweep names the residual as a wire outside every net L2-R2 touches, and it shows as loose in both files.
+
+Rule 1a is not in doubt. The terminal counts drop by exactly 1 on each of the 13 nets, and each source and its sinks stay intact (`decode.log:46`). The defect is in the gating, not in the computation.
+
+DEFECT: major - The pin of 22 includes one loose-ends item that was never identified (only 21 are measured on named wires), and the Error List gate only counts items by message text, so a swap that keeps the count at 22 would still pass.

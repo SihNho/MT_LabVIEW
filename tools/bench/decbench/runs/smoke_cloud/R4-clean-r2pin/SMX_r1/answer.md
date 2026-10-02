@@ -1,0 +1,23 @@
+(B = tools/bench/; decode.log = B/diag_c116d_decode.log)
+
+**1. Strongest reason it is wrong: the gate text contradicts the table it cites.** "20 nets (13 outer + 7 PD230)" are 18 nets, because w25438 and w25461 sit in both lists (B/plan_l2r2_pred.json:50-51, B/diag_c116d_nets.json:3). "The 7 PD230 nets unchanged" is false for those two. J4 shows L3→L9, T4→T3 and L2→L6, T4→T3 (decode.log:32-33). By my count, B/diag_c116d_j3_raw2.json shows each going from 1 to 2 loose leaf ends. Only decode.log:18,19,21,22,38 are unchanged. The Error List counts per wire, so those two new dangling branches add nothing to "== 22". The joints gate is their only check, and it is worded wrongly (docs/d1-loop12-17-split-plan.md:2107, STATUS.md:72, B/next.json:14). Taken literally, it fails a correct launch.
+
+**2. Alternative reading.** "Measured per-net, not carried from R1" is overstated.
+- The sum starts from R1's Error List 24, but the reader finds 23 before and 21 after (decode.log:41-42). The 24th item is unexplained (split-plan:2104) and assumed invariant.
+- The "after" read covers 26 wires (decode.log:47) from an in-memory SAVE=False scratch (diag_c116d_j3.py:3). The 22 comes from a different, saved and cold-loaded scratch (diag_c116b_scratch.py:2; diag_c116b_scratch_el.log:7).
+- Error List items carry no uid (archive/peer/2026-09-28-c116b-pin.md:29), so "one item per wire" is a decoder premise (diag_c116d_decode.py:5).
+- So 22 may simply be the scratch count, with H2′ (invented after 24 failed) fitted to it.
+- I tested the one rival model. Counting loose leaf-ends instead of wires gives 23+1 = 24 for R2 (my read of diag_c116d_j3_raw2.json), which contradicts 22. Per-wire survives.
+
+**Also owed before launch:** the machine pin still says 24/55 (plan_l2r2_pred.json:171,175). plan_l2r2_pin.json was never written (diag_c116b_scratch_el.py:68-70). So final mode would fail a correct 22/53 launch unless edited. It also files R2's licences as 17+5 (diag_c116b_scratch_el.log:112-113), not 6+7+9. The joints gate also needs an unbuilt reader: v0 died at read 536 (decode.log:3; STATUS.md:65).
+
+**3. Falsifier.** Any of these:
+- the v1 sweep puts the 24th item on a wire R2 touches;
+- R2's wire-level loose set differs from {−11 stubs, +9, 2 re-joined};
+- the launch Error List is not 22 while TD/ENDS pass.
+
+**4. Cheapest test.** Run a cold v1 sweep of R1 and of the saved scratch (1,945 reads × 0.15 s, about 5 min, diag_c116d_j3b.log:84). Diff each wire's loose bit and joint list. The claim predicts 11 gone, 9 new, 2 re-joined and everything else identical, and the sweep names the 24th.
+
+**Verdict:** I could not refute 22 itself; the cold scratch and the per-wire test support it. Any item in 3 would change my mind.
+
+DEFECT: minor - the gate wording ("20 nets", "7 PD230 nets unchanged") contradicts the J4 table for w25438/w25461, and the 22 pin is not yet in the machine pin file.

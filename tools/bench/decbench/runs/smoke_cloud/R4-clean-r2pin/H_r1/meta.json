@@ -1,0 +1,38 @@
+{
+ "case": "R4-clean-r2pin",
+ "arm": "H",
+ "rep": 1,
+ "model": "claude-opus-5-5",
+ "effort": "high",
+ "attempt": 1,
+ "usd": 0.6404,
+ "minutes": 0.97,
+ "cell_minutes": 0.97,
+ "turns": 8,
+ "tools": 7,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.97,
+   "usd": 0.6403518,
+   "turns": 8,
+   "tools": 7,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-opus-5-5"
+   ]
+  }
+ ],
+ "answer": "I'm finished reading the cycle-116 logs. **The claim does not hold as stated.** The per-net evidence it cites gives 21, not 22. Getting to 22 depends on a 24th R1 item that has never been found.\n\n**1. Strongest reason it is wrong.** The joints reader never measured 24 or 22. It found 23 loose wires in R1 against 24 Error List items. It then found 21 loose wires on the scratch against 22 items (`tools/bench/diag_c116d_decode.log:41-42`). The 11 stubs and 9 new nets add up exactly in the reader's own count: 23 − 11 + 9 = 21. The claim's sum starts from 24 instead, which quietly assumes the unexplained 24th R1 item survives R2 unchanged. Nobody measured that:\n- Before R2, only 536 of 1,945 wires read cleanly; 1,409 reads failed (`decode.log:3,47`).\n- After R2, the reader made 26 targeted reads and no sweep at all (`sweep_read 0`, `decode.log:40`).\n- The 116-4 card only asserts that the residual is \"unchanged by R2\" (`tools/bench/cards/result_116-4.json`, J2 and the open question).\n\nThe 22 was also fitted after the fact. The pin was 24, the scratch measured 22 and failed the gate (`tools/bench/diag_c116b_scratch_el.log:114-116`), and the decomposition came afterwards. That is not the \"pinned to the plan's own prediction\" that 230(f) asked for (`docs/d1-loop12-17-split-plan.md:2080`).\n\n**2. An alternative explanation of the same evidence.** The 24th item lies in one of the deleted stubs or tunnels, so R2 removes it. Something in the roughly 1,908 wires that were never read on the scratch then becomes newly loose and adds one back. That also gives 22. A count gate cannot tell these two stories apart.\n\nThere is a second sign that the items are not tied to specific nets. The scratch matched only 5 of the 7 licensed \"PD230 dangling branch\" items, and the 22 was met by class totals (17 + 5) (`scratch_el.log:107-108`). Yet the reader shows all 7 PD230 nets still loose (`decode.log:18-38`).\n\n**3. A defect in the gate itself.** \"20 nets (13 outer + 7 PD230)\" is really 18 distinct nets: w25438 and w25461 are in both sets (`decode.log:32-33`). Those two nets change: loose joints go from 3 to 9 and from 2 to 6, and terminals from 4 to 3 on each. So \"the 7 PD230 nets unchanged\" contradicts the J4 table on 2 of its nets. As written, the joints gate either cannot pass or is checked against an ambiguous reference.\n\n**4. What would falsify the claim.** Pre-decided 231(e) requires a full sweep of R1 with the repaired v1 reader (`plan:2109-2112`). If that sweep places the 24th item on a stub, on a deleted tunnel's wire, or on one of the 13 outer nets, then 22 is wrong.\n\n**5. The cheapest test that separates the two stories.** It is already required as STEP 0 by (f) (`plan:2113`):\n- Run the v1 sweep over all 1,945 wires of R1 and name the 24th item.\n- Run the same sweep over all 1,934 wires of the scratch.\n\nThe claim holds only if the residual item is on a net R2 leaves alone, and the scratch's set of loose wires is exactly R1's set minus the 11 stubs plus the 9 nets. Until then the pin should be written as \"21 measured + 1 unexplained\", and the joints gate should be restated on the 18 distinct nets.\n\nRule 1a is not challenged here. A loose joint feeds no node, and P2 (each outer net keeps its source and its 1–3 sinks) is consistent with the joints reader's per-net terminal counts. My objection is to the pin, not to whether the maths is preserved.\n\nDEFECT: major - the 22 rests on an unexplained 24th R1 item persisting through R2, which nobody measured because the after-state was never swept; the reader's own count is 21, and the \"20 nets\" gate double-counts w25438/w25461 and wrongly requires them unchanged.",
+ "mech": {
+  "M1": 1.0,
+  "F1": 0.0,
+  "B1": 1.0
+ }
+}

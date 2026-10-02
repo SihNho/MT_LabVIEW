@@ -1,0 +1,40 @@
+{
+ "case": "T2-constvalue-void",
+ "arm": "SMX",
+ "rep": 1,
+ "model": "claude-sonnet-5-5",
+ "effort": "max",
+ "attempt": 1,
+ "usd": 1.3381,
+ "minutes": 5.82,
+ "cell_minutes": 5.82,
+ "turns": 28,
+ "tools": 27,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-sonnet-5-5",
+   "effort": "max",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 5.82,
+   "usd": 1.3381293999999997,
+   "turns": 28,
+   "tools": 27,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5-5"
+   ]
+  }
+ ],
+ "answer": "**What the 20 bytes are.** Decoded with the measured layout (docs/NAMES.md:1153): version `26008000`, nTDs 1, TD length `0004` / code `0000`, one type used (index 0), no data, 0 attributes. TD `0000` is a **void variant**, meaning nothing was read. An empty or short String[] would still carry an array TD plus a count. The same 20 bytes come back whenever a reader's static class doesn't match the constant:\n- Boolean and DigitalNumeric through the base-class reader (tools/bench/diag_constvalue_siblings.log:4-7,12).\n- VISA constants (tools/bench/diag_c105_const.json:353-356).\n- RingConstant #13245 through the numeric-typed reader (tools/bench/diag_c118_p0.json:457,465).\n\nStringConstants read normally (log:10; diag_c118_p0.json:447).\n\n**Why.** `read_str` (tools/bench/diag_c118_p0.py:36,38) runs `OpConstValue_v1.vi` with `Class Name=\"Constant\"`, a `Constant.Value` node cast to the base class. It returns data only for StringConstants. For other classes it returns a void variant without error. The repo's remedy is a node built for the object's most-specific class (docs/NAMES.md:1157-1165; docs/toolkit-capabilities.md:63, \"STRING constants only\"). The empty `err` fits, because a wrong-class cast raises 1055 on the property node, not on the op chain (NAMES.md:1164-1166).\n\nConstant #101 sits on Get Controls' String[] `Control Names` sink (diag_c118_p1.py:33), so it is an array constant. That class is inferred from the sink; the log doesn't print it. So A1b measured the reader's blind spot, and no creator output could have passed it. B2b reuses the same reader (diag_c118_p1.py:96-99) and will fail the same way.\n\n**Alternative.** The creator may have dropped the list. `value=` goes to a variant `Value` control (tools/gscript.py:2823-2824) and was only validated on scalar numeric and Boolean constants (docs/toolkit-capabilities.md:72). The creator did report success (created_uid 101, empty err/inv_err, diag_c118_p1.log:6-7). This is unmeasured, not disproved, and a void read cannot separate it from the reader explanation. Proving the list was applied needs a reader typed for ArrayConstant. The documented readers cover only string and numeric constants (toolkit-capabilities.md:63-64).\n\nROOT CAUSE: A1b read #101, a String[] array constant, with `read_str`/`OpConstValue_v1`, a base-`Constant`-cast reader that returns a void variant (TD 0x0000, no error) for every non-StringConstant class, so the void hex reflects the reader's blind spot, not what `create_const_loop_term(value=list)` wrote.\nTEST: Run the same `read_str` once, read-only, on a pre-existing ArrayConstant in a never-saved byte copy of R2 with no creation: the identical void hex confirms the class-blind reader, while a non-void array TD would instead implicate the creator dropping `Value`.",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0,
+  "B1": 1.0,
+  "B2": 1.0
+ }
+}

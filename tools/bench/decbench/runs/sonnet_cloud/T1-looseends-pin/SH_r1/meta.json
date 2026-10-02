@@ -1,0 +1,40 @@
+{
+ "case": "T1-looseends-pin",
+ "arm": "SH",
+ "rep": 1,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "attempt": 1,
+ "usd": 0.4072,
+ "minutes": 0.98,
+ "cell_minutes": 0.98,
+ "turns": 11,
+ "tools": 10,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-sonnet-5-5",
+   "effort": "high",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.98,
+   "usd": 0.4071774,
+   "turns": 11,
+   "tools": 10,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5-5"
+   ]
+  }
+ ],
+ "answer": "I could not pin the cause to one explanation from the files, so the root cause below is my best-supported hypothesis, not a confirmed finding. `plan_l2r2_make.py` and `stage_d1_l2r2.py` are not in this checkout, so I could not read how the pin was computed. I worked from the pin text and the logs.\n\n**What the files show**\n- The pin is a bookkeeping subtraction, not a measurement: `24 − 11 stubs + 13 shared nets − 2 already loose = 24` (`plan_l2r2_make.log:44`). The first run without the \"−2\" gave 26 (`plan_l2r2_make.log:21`).\n- R1's 24 loose items were never attributed to specific wires. The R1 licence file splits them as 17 B3 items plus 7 \"PD230 dangling branches where a retired SR sink was cut\". It also admits \"Which of B3's three loose-ends entries… held each source-only stub is not measured\" (`errorlist_expected_D1_l2_r1_20260928_055441.json:7,68-74`).\n- The scratch result is a clean −2 relative to R1: the B3 entry matched 17 of 17, but the PD230 entry matched only 5 of its 7 licensed items (`diag_c116b_scratch_el.log:104-105`).\n- Everything else matched exactly: no-source 1, not-connected 20, other 10, and `extra` is empty (`diag_c116b_scratch_el.log:114-115`).\n- Two of the 13 tunnels (#2294 and #3644) have no inner stub wire at all (`plan_l2r2_make.log:3-4`).\n\n**Most plausible cause.** The prediction treats each of the 13 shared nets as a fixed \"+1 loose end\", with a \"−2\" that assumes the two already-loose nets (25438, 25461) stay loose. The \"+1 per tunnel\" assumption does not hold for every net. It only holds when the net keeps another sink after the tunnel's terminal is deleted. If the retired tunnel was the only sink on a net, or the existing dangling branch was the tunnel's own segment, deleting the tunnel removes the loose item instead of creating one. That fits the 7 → 5 drop in the PD230 entry. It also fits the two stub-less nets (#2294, #3644) producing no new loose item. In either version, two nets or stubs contribute 0 rather than +1.\n\n**Alternative explanation.** Two of the 11 stub wires were not counted as \"Wire has loose ends\" in R1. They may have been classed as \"not connected\", but the not-connected count stayed at 20, so I rate this less likely.\n\n**Cheapest test.** It is offline and needs no LabVIEW. Read `graph_l2r1_saved_20260928.json` (the pin's base graph, `plan_l2r2.json:6`) and, for each of the 13 shared nets, count the sinks other than the retired tunnel's outer terminal. The hypothesis predicts exactly two nets with zero remaining sinks, or with the tunnel as the only non-source terminal. Those two should be #2294/#3644 (nets 25238/25225) or 25438/25461.\n\nI did not run that check. If it finds exactly two such nets, the pin was wrong and should be 22. If it finds none, the stub-classification alternative becomes the leading explanation.\n\nROOT CAUSE: The pin assumed every one of the 13 shared nets gains a loose end when its tunnel is deleted, but about two of them (likely the stub-less #2294/#3644, or the two already-loose nets) lose or never gain one, so the prediction is 2 too high (22 observed vs 24 pinned) and the pin, not the build, is wrong.\nTEST: From `graph_l2r1_saved_20260928.json`, count the sinks left on each of the 13 shared nets after removing the retired tunnel's terminal, and check that exactly two nets have none, which would match the −2.",
+ "mech": {
+  "M1": 1.0,
+  "M2": 0.0,
+  "F1": 0.0,
+  "F2": 0.0,
+  "B1": 0.0
+ }
+}

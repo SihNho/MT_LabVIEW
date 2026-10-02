@@ -35,13 +35,16 @@ def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--tag", default="full")
     ap.add_argument("--out", default=os.path.join(HERE, "report_v1.md"))
+    ap.add_argument("--arms", default="H,XH,MX,FL,PAR")
+    ap.add_argument("--title", default="# decbench v1 - decision bench, full run (card chat-B2)")
     ap.add_argument("--embedded", action="store_true", help="called from decbench.py: print REPORT_V1, not RESULT")
     a = ap.parse_args(argv)
     res = json.load(open(os.path.join(HERE, "results_%s.json" % a.tag), encoding="utf-8"))
     cases = {c["id"]: c for c in json.load(open(os.path.join(HERE, "cases.json"), encoding="utf-8"))["cases"]}
-    arms = ["H", "XH", "MX", "FL", "PAR"]
+    arms = a.arms.split(",")
     arm_name = {"H": "Opus 5.5 high", "XH": "Opus 5.5 xhigh", "MX": "Opus 5.5 max", "FL": "Fable 5.1 low",
-                "PAR": "PAR (3 Opus high lenses + 1 synthesiser)"}
+                "PAR": "PAR (3 Opus high lenses + 1 synthesiser)", "SH": "Sonnet 5.5 high", "SMX": "Sonnet 5.5 max"}
+    arm_name = {k: v for k, v in arm_name.items() if k in arms}
     recs = [r for r in res["records"] if not r.get("invalid")]
     invalid = [r for r in res["records"] if r.get("invalid")]
     for r in recs:
@@ -51,9 +54,9 @@ def main(argv=None):
     by = {}
     for r in recs:
         by.setdefault((r["case"], r["arm"]), {})[r["rep"]] = r
-    L = ["# decbench v1 - decision bench, full run (card chat-B2)", "",
-         "Facts only. 10 known-answer cases x 5 arms x %d repeats, --par %s. Arms: %s." % (
-             max((r["rep"] for r in recs), default=0), res.get("par"),
+    L = [a.title, "",
+         "Facts only. 10 known-answer cases x %d arms x %d repeats, --par %s. Arms: %s." % (
+             len(arms), max((r["rep"] for r in recs), default=0), res.get("par"),
              "; ".join("%s = %s" % (k, v) for k, v in arm_name.items())),
          "Score per arm-run = mean(must_hit) - 0.5 x max(forbidden), floored at 0; bonus mean beside it, never added. "
          "blind = one Opus 5.5 high scorer cell per case (answer key + rubric texts, labels shuffled, arm/model hidden); "

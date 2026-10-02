@@ -1,0 +1,38 @@
+{
+ "case": "R4-clean-r2pin",
+ "arm": "SH",
+ "rep": 2,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "attempt": 1,
+ "usd": 0.1368,
+ "minutes": 0.48,
+ "cell_minutes": 0.48,
+ "turns": 5,
+ "tools": 4,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-sonnet-5-5",
+   "effort": "high",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.48,
+   "usd": 0.1367654,
+   "turns": 5,
+   "tools": 4,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5-5"
+   ]
+  }
+ ],
+ "answer": "**Verdict: the arithmetic mostly holds. The weak points are that the pin is circular, the 24 baseline has an unexplained item, and the rule-1a sentence is asserted without a cited read.**\n\n**1. Strongest reason it is wrong: the pin is not independent evidence.**\n- 22 is \"equal to the scratch Error List\" (`docs/d1-loop12-17-split-plan.md:2103`). The scratch build is the same recipe and plan that L2-R2 will launch (`:2099`).\n- So the launch gate \"loose ends == 22\" mostly checks that the build is reproducible. It does not check that the 22 are the right 22.\n- The previous pin of 24 was also a prediction, and it was wrong (`diag_c116b_scratch_el.log:114-116`). The new pin is that observation, relabelled as a prediction.\n- Because the pin is a count, a swap passes it. This is the same exposure review c115e-sel raised for R1 (`:2072`).\n\n**2. Alternative explanation: items versus wires, and an unlocated 24th item.**\n- The decode log reads 23 wires with a loose joint before and 21 after (`diag_c116d_decode.log:SUM`). The Error List counts 24 before and 22 after.\n- The 24 − 11 + 9 = 22 arithmetic works only if the missing item is neither on a deleted stub nor on a net that re-joins. The plan admits R1's \"residual 1 (23 read vs 24 listed) is unexplained\" (`:2103`, `:2111`).\n- The cause is probably the v0 reader's missing `Close Reference` and its error 1055 after 536 reads (`:2111`). The \"before\" read, however, reports \"reads 536 of 1945 wires\".\n- A hidden item could be a second loose joint on one wire, or a segment the reader does not see. If it sat on a stub, the true after-count would be 21 and the scratch's 22 would carry an extra item.\n- The claim therefore rests on an unexplained residual that the plan itself lists as open acceptance work (`:2112`, \"the sweep names R1's residual\").\n- In addition, `OpWireJoints_v1` has not been shown to pass its acceptance (20 calls with flat handles, then the 1,945-wire sweep). The J4 table that the joints gate compares against was measured with the leaking v0 reader (`:2111`). Using v1 as the reader for the gate means comparing against that older table.\n\n**3. Falsifying observation.**\n- A v1 sweep of R1 that finds the 24th item on any wire other than the 23 listed. This would show the baseline carries an extra item that may not survive the edit.\n- Alternatively, a launch where the joints gate passes on all 20 nets but the Error List has 22 items that include one outside the 9 + 13 + PD230 classes.\n\n**4. Rule 1a sentence.**\n- \"Every deleted tunnel was an input tunnel with no consumer\" and \"a loose joint feeds no node\" are asserted in 231(d) (`:2108`) with no cited read in that item.\n- Step 0b compared properties and showed only SR-related differences (`:2098`). That does not show that the tunnels were consumer-less. It relies on 228(g), which I did not trace.\n- The 1–3 sink count (P2) is not tied to a file here.\n- The `Wire.Joints` reader reads topology, not data flow. A \"loose joint feeds no node\" claim is therefore structural.\n\n**5. Cheapest discriminating test.**\nRun `OpWireJoints_v1` on R1 and read all 1,945 wires, which is already acceptance item (e). If the sweep names the 24th item and places it on a non-stub, non-outer-13 wire, the pin of 22 holds. If it cannot place it, or it lands on a stub, re-set the pin. Also pin the item list by uid, not only the count.\n\nI do not hold the claim as written. What would change my mind is the sweep locating the residual item, plus the Error List item set (not just its count) matching the 22 derived from the nets.\n\nDEFECT: major - The pin of 22 is derived from an R1 baseline of 24 that has one unexplained item and was measured with a leaking, partial reader, and it is then validated only against the scratch built from the same plan, so a count match can hide a swap.",
+ "mech": {
+  "M1": 1.0,
+  "F1": 0.0,
+  "B1": 1.0
+ }
+}

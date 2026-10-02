@@ -1,0 +1,40 @@
+{
+ "case": "T2-constvalue-void",
+ "arm": "SMX",
+ "rep": 2,
+ "model": "claude-sonnet-5-5",
+ "effort": "max",
+ "attempt": 1,
+ "usd": 1.0887,
+ "minutes": 4.71,
+ "cell_minutes": 4.71,
+ "turns": 30,
+ "tools": 29,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-sonnet-5-5",
+   "effort": "max",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 4.71,
+   "usd": 1.088661,
+   "turns": 30,
+   "tools": 29,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5-5"
+   ]
+  }
+ ],
+ "answer": "Gate A1b most likely failed because its reader cannot see array constants, not because the names were lost. I could not confirm the reader's blindness for arrays directly, since no array constant has ever been read here.\n\n**Root cause**\n\n`read_str` (`diag_c118_p0.py:32-41`) runs `OpConstValue_v1`, which reads `Constant.Value` through a static `VI Server:Constant` node. The repo has already measured what that node returns for most constant classes.\n- It returns data only for a `StringConstant`. For numeric and Boolean constants it returns a void variant with no error (`docs/NAMES.md:1157-1160`; `docs/toolkit-capabilities.md:63-64`, \"STRING constants only\").\n- The same blob came back for 5+ numeric constants (`build_opconstvalue_v1c.log:44-52`), 4 Boolean constants (`diag_constvalue_siblings.log:4-6`), and 3 VISA constants, including through the base `Constant` route (`diag_c105_const.log:25-30`).\n- It also came back for the ring #13245 in this very card's P0 (`diag_c118_p0.json:457,465`).\n\nThe failing readback decodes, using the layout at `NAMES.md:1153`, to a void variant:\n- version `26008000`, one type descriptor of length 4 with code `0000` (void), one type used at index 0, no data, and 0 attributes.\n- It is byte-identical to the blobs above.\n- A sighted reader would have returned a labelled array type descriptor plus an element count.\n- By contrast, the real StringConstant #23583 returned a typed `4030` descriptor and its data (`diag_c118_p0.json:447`).\n\nThe creator reported success (`diag_c118_p1.log:6-7`) and `read_str` echoed uid 101. So `read_str` read the right object; it just cannot see its contents. A String[] sink gets an array constant, not a `StringConstant`. This blob would be the same whether the 20 names were stored or not, which makes the A1b FAIL a false negative about the reader.\n\n**Most plausible alternative**\n\n`Terminal.Create Constant` silently dropped `value` (`gscript.py:2823-2824`). A Python list could reach the `Value` variant as an array of variants, which does not match String[], leaving an empty constant with no error. This has precedent: the earlier `OpCreateConst_v0` variant route made an empty-valued constant (`toolkit-capabilities.md:71`). `create_const_loop_term` has only been exercised with a numeric and a Boolean value, never with a string or a list.\n\nThis alternative alone does not explain the void blob. An empty but typed String[] would still read as an array descriptor with a count of 0 from a sighted reader. So the reader's blindness is required either way. What stays open is whether the names were stored.\n\n**Cheapest test**\n\nThe test separates the reader from the creator by reading an array constant through the unchanged `read_str` and seeing whether the output depends on content. No new VI is needed.\n\n```\nROOT CAUSE: Gate A1b's reader (read_str → OpConstValue_v1, a static `VI Server:Constant` Value node) returns a void variant (20 bytes, type descriptor 0x0000) for every non-StringConstant class, so it cannot see the String[] array constant #101 whether or not the names were stored.\nTEST: In the same donor session, call `create_const_loop_term` again with `value=None` on a second String[] sink and run the unchanged `read_str` on both constants, or run it on any pre-existing ArrayConstant in a byte copy of R2; if the output is the same `2600800000000001000400000001000000000000` regardless of content, the reader is blind (confirmed), and if it returns a typed array flatten, the creator dropped the list.\n```",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0,
+  "B1": 1.0,
+  "B2": 1.0
+ }
+}

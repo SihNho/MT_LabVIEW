@@ -1,0 +1,18 @@
+**Root cause: the gate read the constant with the wrong reader. It is not evidence that the 20 names failed to land.**
+
+1. **The returned bytes are an empty (void) value, not a short or wrong string array.** The hex `2600800000000001000400000001000000000000` (diag_c118_p1.log:8) begins with `26 00 80 00`, the LabVIEW 2026 version stamp (CLAUDE.md rule 1). It then holds one type descriptor of length `0x0004` with type code `0x00`, which is void, and no data. Even an empty 1D string array would have carried an array-of-string descriptor and a count. This decoding is my reading of the format; no doc spells it out byte by byte.
+
+2. **The reader returns exactly these bytes for constants it cannot read.** In P0, ring constant #13245 was already set and wired, yet the same reader gave the identical 20 bytes through both its `RingConstant` and its `Constant` route (diag_c118_p0.json:451-466). The plan doc already records that "the base-Constant reader returns a void variant for VISA constants" (docs/d1-loop12-17-split-plan.md:1857).
+
+3. **This reader is documented as working on string constants only.** `diag_c118_p0.read_str` drives `OpConstValue_v1.vi` with `Class Name="Constant"` (diag_c118_p0.py:32-41). The toolkit doc says that op reads "**STRING constants only**" (docs/toolkit-capabilities.md:63). Its one proven read here was a single-string constant, `Cam` (diag_c118_p0.json:446-449). The 'Control Names' constant is a string array, which is a different kind of constant, so A1b compared `FLAT` (diag_c118_p1.py:21) against the reader's "can't read" output. Rule 1a: this is a measurement fault, and the write is still unproven either way.
+
+4. **The other explanation: the list never reached the constant.** `create_const_loop_term` passes a Python list through COM `SetControlValue` into the op's `Value` input (gscript.py:2823-2824, labels file opcreateconst_loopterm_labels.json:5). That input has only ever been tested with integers: the For-loop count tests in const_loopterm_77d.log:11 and diag_c99*. A list could arrive as a COM array LabVIEW does not convert, leaving a void or default constant. The run reported no error from the create step (log:6-7), but that only says the constant was created and is consistent with both explanations.
+
+**Cheapest test:** no new tool is needed, only one more call to the existing create function and two reads. In the same scratch donor:
+- Create a second constant on the same 'Control Names' input with `value=None`, so it keeps its default empty array.
+- Read both #101 and the new constant with `read_str`.
+
+If both come back as the same 20 void bytes, the reader cannot see string-array constants and the reader is the root cause. The fix is then a reader for string-array constants, plus re-reading #101. If the `None` constant returns a real string-array descriptor and #101 does not, the reader works and the list was lost on the way in.
+
+ROOT CAUSE: Gate A1b read the string-array constant #101 with `OpConstValue_v1`'s base-`Constant` reader, which is documented as string-only and returns the same 20-byte void value for any constant it cannot read (as it did for the set ring #13245), so the failure says nothing about whether Cam_pool00..19 was written.
+TEST: Create a second 'Control Names' constant with `value=None` in the same donor and read it and #101 with `read_str`: identical void bytes mean the reader is at fault, while an array descriptor on the `None` constant alone means the Python list was lost on write.

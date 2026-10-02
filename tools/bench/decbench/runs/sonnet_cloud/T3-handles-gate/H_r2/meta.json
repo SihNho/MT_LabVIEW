@@ -1,0 +1,39 @@
+{
+ "case": "T3-handles-gate",
+ "arm": "H",
+ "rep": 2,
+ "model": "claude-opus-5-5",
+ "effort": "high",
+ "attempt": 1,
+ "usd": 0.3465,
+ "minutes": 0.98,
+ "cell_minutes": 0.98,
+ "turns": 6,
+ "tools": 5,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.98,
+   "usd": 0.34647360000000005,
+   "turns": 6,
+   "tools": 5,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-opus-5-5"
+   ]
+  }
+ ],
+ "answer": "I've finished reading the card, the result and the three stage logs, and I'm writing up the answer now.\n\n**Answer: the saved VI is not defective, and the evidence does not point to a reference leak. The card's L4 gate (`task_119-4.json`, pass list, L4) applied a \"flat ±100\" handle limit to a stage that adds objects to the diagram. That limit came from R2, a stage that only removed things.**\n\n**What the log shows**\n- **Handles rise only when an object is created, and stay put afterwards.** The count goes up on the `op` lines that add objects: For loop +85, IMAQ Create +35, +79, tunnel +27, +29, +33, +58, and +75 on the connect that briefly made a junk node and deleted it (`stage_d1_qrt_pool.log:50,68,78,115,152,160,189,217`). The `read` and `pre` lines between those ops hold within −9…+5 (`:51,69,79,88,116,218`). A leak in a reading or closing path would show on the read lines too. Here the count only moves when the diagram grows.\n- **The VI Server references balance:** 9 opened, 9 closed, 0 live (`:245-246`).\n- **The handles came back once the VI was closed.** The count was 45607 after opening and 46255 before saving (`:233`), then 34139 after the work and at exit (`:247,257`). That is +177 over the fresh restart (33962, `:29`). The same restart-to-exit gap has ranged from −1927 in R2 (`stage_d1_l2r2.log:27,331`) to +12 in L2A3 (`stage_d1_l2a3.log:33,198`), so +177 is ordinary run-to-run noise.\n- **An earlier create stage behaves the same way.** L2A3 grew 45626 → 46043 (+417) over 6 ops (`stage_d1_l2a3.log:40,50-160`) and returned to 33994 at exit (`:198`). It was never called a leak.\n- **R2 explains why it passed ±100.** R2 only deleted objects and disconnected wires, so it stayed flat: 45765 → 45728 over 24 ops (`stage_d1_l2r2.log:48-267`). Its own handle gate was written for that case (`:299`).\n- The ±100 figure in CLAUDE.md is the acceptance test for a new op: run it 20 times and the count must stay flat. It was never meant as a limit on a stage that adds objects.\n\n**The other possible explanation.** The 9/9 counter only covers references Python opens. A reference leaked *inside* one of the op VIs, for example the purge path in `connect_from_wire` (+75 at k13), would not show up in it.\n\n**The cheapest test that separates the two:**\n1. **Offline first, at no cost.** In this log and L2A3, check whether each `op` step's handle increase lines up with the objects it added and whether the following `read` step stays flat. All of that is already in the logs. It strongly favours normal growth from new objects but is not proof.\n2. **One scratch run to settle it.** Take a byte copy of R2 and run the recipe. Then delete the 13 new objects, or close the VI without saving, and read the handle count.\n   - If it returns to within ±100 of the reading after the first op (45809), the diagram objects own the handles and there is no leak.\n   - If about 322 handles remain while the VI is still loaded, an op VI is leaking. `handle_audit.py` on `connect_from_wire` would then find which one.\n\nThe VI itself is fine either way. What needs fixing is how the card's L4 gate is written, plus a decision on whether to log that through `gate_fp.py`.\n\nROOT CAUSE: The L4 \"handles ±100\" limit was copied from R2's delete-only handle gate onto a stage that creates 13 objects, so handles that each new diagram object rightly owns (+322 while the VI was open, released at close: 34139 vs 33962) were scored as a leak.\nTEST: On a scratch R2 copy, run the recipe, delete the 13 new objects (or close the VI without saving) and read the handle count: a return to within ±100 of 45809 means the objects own the handles, while about +322 remaining means an op-VI leak to trace with `handle_audit.py`.",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 1.0,
+  "B1": 1.0
+ }
+}

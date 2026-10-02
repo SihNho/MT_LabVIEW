@@ -1,0 +1,40 @@
+{
+ "case": "T1-looseends-pin",
+ "arm": "SH",
+ "rep": 2,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "attempt": 1,
+ "usd": 0.3205,
+ "minutes": 1.35,
+ "cell_minutes": 1.35,
+ "turns": 12,
+ "tools": 11,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-sonnet-5-5",
+   "effort": "high",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 1.35,
+   "usd": 0.32050399999999996,
+   "turns": 12,
+   "tools": 11,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5-5"
+   ]
+  }
+ ],
+ "answer": "Root cause: the pinned prediction of 24 is wrong, not the build. Its \"+13 shared nets, −2 already loose\" term assumes each shared net gains exactly one new loose-end item, with only 25438 and 25461 already loose. That assumption was never measured. I did not find a reader that maps Error List items to wire uids; no tool I checked resolves item to wire.\n\n- R1's 24 loose items are an unlocated pool. The expected-file entries read \"LOCATION IS INFERRED, not measured\" (`errorlist_expected_D1_l2_r1_20260928_055441.json:75`). The 17 B3 items are one unlocated entry, and \"Which of B3's three loose-ends entries … held each source-only stub is not measured\" (`:7`).\n- The Error List counts loose ends per wire. In the 13-net table the plan (`plan_l2r2_make.log:44`) lists only 25438 and 25461 as already loose, and nothing in the diag logs or `plan_l2r2_make.log` locates any other shared net's loose status. So up to 2 more shared nets may already carry a loose item, or may not leave a dangling branch when the tunnel goes. That would put the real new-loose count at 9, not 11. This alternative is a new loose item, not one already present, which is why a per-wire count can miss it.\n- The observed class counts fit that: loose 22 and total 53, with no-source 1, not-connected 20 and other 10 unchanged (`diag_c116b_scratch_el.log:114-116`).\n- It is not a build defect. The scratch passed 43/0, the reader gates passed, and `extra == []`. The only failing gate is PIN, which compares counts.\n\nPlausible alternatives:\n- (a) Two of the 11 stubs were not loose items in R1. That would push the count up, not down, so it does not fit.\n- (b) Stub-less tunnels #2294 and #3644 add no loose end. They are the only two shared nets with `\"stubs\": []` (`plan_l2r2_make.log:6-7`). This is the competitor, and the test below separates it from my explanation.\n- (c) The Error List reader dropped 2 items. Rows 9 and 27 were \"not refined\" (`:85`), but the window's own count of 53 matched the items read, so this is unlikely.\n\nROOT CAUSE: The pin assumed 11 of the 13 shared nets would each gain a new loose-end item, but the Error List counts loose ends per wire and R1's loose items were never located, so 2 nets either were already loose (from the unlocated B3 pool) or leave no dangling branch.\n\nTEST: On a scratch copy of the R1 bed, delete only the two stub-less tunnels #2294 and #3644 and read the Error List. Loose = 24 means those two add nothing, so they carry the missing 2 (alternative (b)). Loose = 26 means they add two, so the missing 2 are on other nets, which fits unlocated loose items elsewhere. In both cases the pin needs per-net loose status read from the graph, not inferred.",
+ "mech": {
+  "M1": 1.0,
+  "M2": 0.0,
+  "F1": 0.0,
+  "F2": 1.0,
+  "B1": 1.0
+ }
+}

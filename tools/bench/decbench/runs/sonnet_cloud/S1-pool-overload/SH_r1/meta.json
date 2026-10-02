@@ -1,0 +1,41 @@
+{
+ "case": "S1-pool-overload",
+ "arm": "SH",
+ "rep": 1,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "attempt": 1,
+ "usd": 0.4789,
+ "minutes": 0.75,
+ "cell_minutes": 0.75,
+ "turns": 9,
+ "tools": 8,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-sonnet-5-5",
+   "effort": "high",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.75,
+   "usd": 0.47888620000000004,
+   "turns": 9,
+   "tools": 8,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5-5"
+   ]
+  }
+ ],
+ "answer": "Keep NEXT. The pool is the right first build step, but three points should go into the card brief.\n\n**Why the pool comes first**\n- Queueing R1's single IMAQ refnum would let 1.1 overwrite the buffer before 1.2 reads it. 1.2 could then track a different frame, which breaks rule 1a. PD233(g) O5 decides this (`docs/d1-loop12-17-split-plan.md:2142`).\n- The design already exists: Q_free and Q_work, bound 20, with a full Q_work meaning \"skip this read\" (`docs/d1-build-plan.md:572`). The no-free-slot behaviour is decided in `docs/decisions.md` (the \"no free slot\" row).\n- The bed is clean. R2 was accepted: Error List 53 items, loose ends 22 matching the pin, `current-bed:` moved (`split-plan:2160-2162`).\n- The pool is a precondition for QRT-W. Per the draft's tool inventory, QRT-W has no queue routes or element-type donor yet (`docs/qrtw-plan-draft.md:26-29`).\n- It is a deletion-free, structural-only stage. It touches no hardware and no computation, and it is cheap to verify offline.\n- The card's limits fit the project's rules: rows ≤ 15, one launch, a saved file and an expected Error List file (`split-plan:2171-2175`). The decision to build any missing create route inside the card is already made (`split-plan:2174`).\n\n**Alternatives that don't beat it**\n- A real run is blocked until QRT-W and the stop stage exist. A pool alone cannot be run, so \"deliver something runnable\" gives no reason to reorder.\n- A tooling or gate-fp card has no deliverable to wait on. NEXT already says to batch those behind the deliverable.\n- A STATUS/doc cleanup card has the same problem. STATUS.md is 519 lines against the ~100 limit in CLAUDE.md §4, but that is not blocking.\n\n**Three things to add to the card brief**\n1. **The skip condition is imprecise.** With 20 slots and free + queued + processing = 20, an enqueue to Q_work after a successful dequeue from Q_free can never find Q_work full. The real \"no slot\" signal is the Q_free dequeue timing out at timeout 0. A slot held by 1.2 can empty Q_free while Q_work holds fewer than 20. The wording at `d1-build-plan.md:572` should be implemented as \"Q_free dequeue timeout 0 ⇒ skip\". The slot is returned in the same iteration (`:641`), and a timeout of 0 satisfies rule 1c (`:640`).\n2. **The element-type donor must exist before the loops start** (`d1-build-plan.md:608-615`, 35(a)). The IMAQ Create node in a pre-loop pool For loop is such a donor. The table's state B (`:599-600`) points at exactly this stage. Obtain Queue and IMAQ Create inside the pool For loop must be built from scratch, since no `CREATE_ROUTES` route exists (`qrtw-plan-draft.md:26`). Per the constant-on-terminal row, a timeout-0 constant on a Diagram `#686` terminal has no route (`:33`). That is a likely BLOCKED case. Run the scratch check first.\n3. **Do not decide O6 or O7 inside the card.** The pool needs the Dispose/Release order and the stop sentinel only as hooks (`split-plan:2148-2149`). Leave Release and Dispose to the STOP stage. State in the plan that Q_free and Q_work stay unreleased until then, so a run of this intermediate is explicitly forbidden. This matches \"never run\" for broken-by-design intermediates.\n\n**Residual risk:** the pool-created file will have ExecState 0 by design and will not be tested numerically. Acceptance is only the Error List class counts and a graph diff. The real numeric proof arrives with QRT-W and the replay or ABBA, which is the same ordering used for every earlier stage.\n\nVERDICT: keep NEXT\nNEXT ACT: Build the POOL stage as one Opus-high material card on the R2 graph, with \"Q_free dequeue timeout 0 ⇒ skip\" as the skip rule, the IMAQ Create donor in a pre-loop For loop, and Release/stop left to the STOP stage.",
+ "mech": {
+  "M1": 0.0,
+  "M2": 0.0,
+  "M3": 0.0,
+  "F1": 0.0,
+  "F2": 0.0,
+  "B1": 0.0
+ }
+}

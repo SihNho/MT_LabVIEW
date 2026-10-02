@@ -1,0 +1,41 @@
+{
+ "case": "S1-pool-overload",
+ "arm": "SMX",
+ "rep": 2,
+ "model": "claude-sonnet-5-5",
+ "effort": "max",
+ "attempt": 1,
+ "usd": 3.21,
+ "minutes": 10.44,
+ "cell_minutes": 10.44,
+ "turns": 55,
+ "tools": 53,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-sonnet-5-5",
+   "effort": "max",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 10.44,
+   "usd": 3.2099582000000004,
+   "turns": 55,
+   "tools": 53,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5-5"
+   ]
+  }
+ ],
+ "answer": "**No — keep the pool-first ordering, but not this card as written.**\n\n**What holds.** A pool must precede QRT-W. Queueing R1's single IMAQ refnum lets 1.1 overwrite the frame 1.2 is reading (`docs/d1-loop12-17-split-plan.md:2142`; `docs/qrtw-plan-draft.md:85-89`).\n\n**What doesn't**\n\n1. **The overload cell is incoherent.** With bound 20 = 20 slots, the producer holds a slot when it enqueues, so Q_work can never be full (`docs/stage2-assembly-step-c.md:33-35`). The reachable event is an empty Q_free (`docs/decisions.md:24`; `docs/frame-ownership-design.md:65`). Built literally, the skip branch is dead code.\n\n2. **Skip-on-full is not the user's policy.** The user chose latest-wins, not drop-new (`docs/decisions.md:25`; `docs/frame-ownership-design.md:89-95`). `docs/d1-build-plan.md:1122` says that rule governs the frame path. Skipping equals latest-wins only with `Buffer Number Mode = Last` (`docs/stage2-plan.md:49-54`).\n   - The bed reads sequentially, `LastBufferNumber` +1 per frame (`docs/frame-loop-wire-graph.md:424,447`). I found no plan row that changes this; a grep hits only `docs/pre-rig-master-plan.md:56,87`.\n   - Under overload it would lag up to 20 frames (inference, unmeasured).\n   - Switching to `Last` alters lost-frame accounting (`docs/d1-build-plan.md:518-520`). The saved frame index is the iteration counter `i` (`docs/d1-loop12-17-split-plan.md:2137`), so a skipped iteration's pacing is also a rule-1a choice.\n   - NEXT hands this cell to the card as settled and names only O6/O7 as open (`STATUS.md:66,68`; `docs/d1-loop12-17-split-plan.md:2147-2151`).\n\n3. **Cost and verifiability.** `stagexec` has no queue or IMAQ-create route (`tools/stagexec.py:198-208`), so the card starts with tooling. That is the pattern the steering card warns against (`tools/bench/cards/steer_116.json:10`). The bed cannot run until the QRT wiring stage (`STATUS.md:151`), so the overload branch stays untested.\n\n4. **Stale premise.** M3 was chosen because loss grew with bead count (`docs/d1-loop12-17-split-plan.md:884-885`). The ABBA showed the plot was the cause: 15 beads lost 16/12 frames against 3,359/5,860 (`tools/bench/disp_110_abba.json:19-42`; `docs/d1-loop12-17-split-plan.md:1912-1915`). So at 90 Hz the overload branch should rarely fire.\n   - The user's problem is loss when raising beads or frame rate (`project-requirements/project-description.md:45`).\n   - No 150 Hz run exists (`docs/d1-loop12-17-split-plan.md:878-883`), and R8 is unbuilt (`tools/bench/decisions_pending.json:108-122`).\n   - The 09-28 outcome review calls the ordering stale (`archive/peer/2026-09-28-outcome-review-20260928.md:162-164,198`).\n\nThis is not a halt: the user approved continuing the loop-split builds and faster cycles (`STATUS.md:8,12`).\n\nVERDICT: change NEXT\nNEXT ACT: Cycle 118 fixes the pool's overload contract in a judgement decision (trigger = timed-out Q_free dequeue, readout mode and pacing, lost-frame accounting, user confirms any switch to `Last`) while a LabVIEW card builds R8 on a copy of the display-loop VI and runs 150 Hz once, with the pool planned offline beside it and launched only after both.",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "M3": 1.0,
+  "F1": 0.0,
+  "F2": 0.0,
+  "B1": 1.0
+ }
+}

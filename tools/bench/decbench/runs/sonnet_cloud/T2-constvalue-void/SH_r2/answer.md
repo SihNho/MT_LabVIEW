@@ -1,0 +1,25 @@
+The most likely root cause is that the `Value` input did nothing for this constant. If it did write the list, the read-back still cannot see it. Nothing in the repo settles which of the two happened.
+
+**What the bytes say.** The read-back hex `2600800000000001000400000001000000000000` (`diag_c118_p1.log:8`) decodes with the layout in `docs/NAMES.md:1153-1155`:
+- `26008000` is the version.
+- `00000001` means one type descriptor.
+- `0004 0000` is a type descriptor of length 4 and code 0x0000, which is a void variant.
+- `0001 0000` is one type used, with index 0.
+- `00000000` is zero attributes.
+
+So `read_str` (`diag_c118_p0.py:33-43`) got an empty variant, not an empty string array. The create step itself looked fine: uid 101, no errors (`diag_c118_p1.log:6-7`).
+
+**Why a void read happens.** `read_str` always reads `Constant.Value` through the base `VI Server:Constant` cast (`diag_c118_p0.py:38`). `docs/NAMES.md:1158-1163` says that cast returns the value for a `StringConstant` but a void variant for numeric and Boolean constants, and that this is undocumented LabVIEW 2026 behaviour. The fix there was a node built for the most specific class. A constant created on a `String[]` input is presumably an array constant, though I found no `ArrayConstant` reader in `docs/` or `tools/*.py`. The same cast gap would explain the void result.
+
+**Why the write may have failed.** `gscript.create_const_loop_term` (`gscript.py:2823-2824`) sets the op's `Value` control with the raw Python list and never reads the value back. Earlier `Value` writes in the repo were scalars: `int(value)` in `diag_c90_t0_step3.py:68` and `bool(value)` in `gscript.py:3554`. A list of strings going into a variant through COM is untested here.
+
+The A0 gate passed (`diag_c118_p1.log:4`) because `read_str` does work on a `StringConstant` (`diag_c118_p0.json:445-448`). That shows the reader is not broken in general, but it says nothing about array constants.
+
+**Cheapest test.** Run `diag_c118_p0.read_str` on a populated `String[]` array constant that already exists in the saved R2 copy, one with known non-empty content. This needs no new build and is read-only.
+- A void result means the reader cannot see array constants, so the cast is the cause. Check this before suspecting `Value`.
+- Real bytes mean the reader is fine and the list was never written, so `Value` is the cause.
+
+An optional second check is to create a constant with `value=None` and compare it with the `value=NAMES` read-back. This does not discriminate by itself, because both could read as void.
+
+ROOT CAUSE: `read_str` reads `Constant.Value` through the base `Constant` cast, which returns a void variant for non-`StringConstant` classes (`docs/NAMES.md:1158-1163`), and the constant on the `String[]` input is presumably an array constant; the alternative is that the Python list written into `Value` was never applied.
+TEST: Run `read_str` on an existing populated `String[]` array constant in the saved R2 copy: a void read points to the reader's cast, while real bytes point to the unapplied `Value` write.

@@ -1,0 +1,39 @@
+{
+ "case": "T3-handles-gate",
+ "arm": "SMX",
+ "rep": 1,
+ "model": "claude-sonnet-5-5",
+ "effort": "max",
+ "attempt": 1,
+ "usd": 2.0205,
+ "minutes": 7.99,
+ "cell_minutes": 7.99,
+ "turns": 42,
+ "tools": 41,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-sonnet-5-5",
+   "effort": "max",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 7.99,
+   "usd": 2.0204570000000004,
+   "turns": 42,
+   "tools": 41,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5-5"
+   ]
+  }
+ ],
+ "answer": "**The saved VI is not defective. L4 is a mis-scoped gate, and the +322 is one-time op-load cost, not a leak.** (`log` = stage_d1_qrt_pool.log.)\n\n1. **The metric cannot show a refnum leak.** `labview_handles` is the process's kernel handle count, which \"cannot see VI Server refnums at all\". `refs 9/9` cannot see refnums inside op VIs either (gscript.py:320-331). The file's own gates are clean: cdiff == R2's 16 rows (log:231), 7 new wires and 0 lost (log:226), Error List 53 == 53+0 (result_119-4.json:24). After close the count fell 46,255 → 34,139 (log:233,247; fresh 33,962, log:29).\n\n2. **Growth tracks first calls of op families.** The 13 ops use 8 families (queue Obtain/Enqueue are separate VIs, gscript.py:1339).\n   - First calls cost +85/+35/+79/+27/+29/+33/+58/+75 (k1,2,3,6,8,9,11,13: log:50,68,78,115,152,160,189,217).\n   - Repeats cost 0/0/+2/+1/0 (k4,5,7,10,12: log:87,96,134,168,197).\n   - The seven first calls inside the k1→k13 window sum to +336 against a net +322 (log:51,218). Repeats sum to +3.\n   - k6 and k7 are the same op with the same 91-diagram locator scan (log:104,123), yet +27 vs +2. So neither scans nor object creation leak per call.\n   - k13's +75 matches c97's cold first call of OpConnectFromWire_v0 (+74), whose 20 warm calls were −1 (diag_c97_tools_handles.log:35,128). docs/toolkit-capabilities.md:824 attributes this to first load of op VIs.\n   - L2-B3 showed +222 then 0, 0 (stage_d1_l2b3.log:57,77,97).\n\n3. **The gate came from the wrong stage kind.** R2's k1→last window suits a delete-only stage with two op families (stage_d1_l2r2.py:49-51,95-98).\n   - Pre-decided 176(a): ±100 is the repeated-op-call test. Editing stages RECORD handles, and leaks are judged by the 20-call test on the ops involved (d1-loop12-17-split-plan.md:458-462; CLAUDE.md:225).\n   - The pool recipe obeyed (`PH … RECORDED`, log:233, as L2-B3 did, stage_d1_l2b3.log:128). Card L4 mirrors L2-R's wording (task_119-4.json:32; plan:2045).\n   - The material session rightly did not re-base it (plan:2021) and filed it as `open` (result_119-4.json:27).\n\n**Gap:** loop_in, drop_subvi and Enqueue ran once here, so this log has no repeat evidence for them.\n\nROOT CAUSE: Card 119-4's L4 \"handles ±100\" (a repeated-op-call/delete-stage criterion) was applied to a create stage, whose k1→k13 window still holds seven one-time first loads of op VIs (+336; repeat calls +3), so the +322 is load cost that Pre-decided 176(a) says to record, not a reference leak or a defect in the saved VI.\nTEST: On an R2 byte copy in one fresh LabVIEW (scratch, no save), run the recipe's 13 ops, then call each of the eight op families again (PD176(a)'s repeat test) with METER logging handles: first-load predicts the repeats add ≈0 (each ≤ ~10, total within ±100), while a per-call leak predicts they re-add ≈+336.",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 1.0,
+  "B1": 1.0
+ }
+}

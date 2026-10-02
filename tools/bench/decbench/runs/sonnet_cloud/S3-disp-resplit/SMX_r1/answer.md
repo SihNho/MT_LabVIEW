@@ -1,0 +1,19 @@
+**The direction is right; the shape is wrong.**
+
+The display loop is user-directed (STATUS.md:8; plan:1568-1589), and the steer requires a deliverable build or run (plan:1773-1775), so keep it. But one run of all 47 ops with a single save at the end (STATUS.md:57-60; next.json:3-6) is the wrong form:
+
+1. **It skips the project's own split rule.** A stage that ends without a saved artefact makes the next cycle's first act a decomposition plan: sub-steps, each saving a file, reviewed once (CLAUDE.md:486-490; plan:12-15, 56-58). This stage has had five real runs and no file (stage_runs.jsonl:28-32). They stopped at parity, op 2, 3, 4 and 26 (plan:1752-1756; r3.log:69; r4.log:90; r5.log:456). PD210(f) cites the rule yet plans "one LabVIEW execution" (plan:1587-1589). PD212–214 never evaluate the trigger.
+
+2. **One LabVIEW instance probably cannot finish (a projection from logged numbers).** r5 sat at 647.3 MB after op 25 (r5.log:447). The recipe keeps the default 700 MB MEMSTOP, which stops the run (stage_d1_disp.py:61; stagexec.py:64, 86-88). Seventeen more whole-VI reads are mandatory, because every create/tunnel op needs one (r5.log:41; stagexec.py:954, 958-963). At about +4.2 MB each (r5.log:439, 447) that is roughly 720 MB. It is about 700 even at cycle 85's ~3 MB per read (STATUS.md:230), before the post-batch reads (stage_d1_disp.py:92-102). L2-A1 peaked at 638 MB with 9 reads (STATUS.md:224, 232). The retrospective's run-now counterfactual (retrospective-cycle101.md:279) assumes the run can finish.
+
+3. **Most of ops 26–47 are verbs that have never run.** `create_local_read` crashed on first use (r5.log:452). The retrospective also names tunnel, donor Function and const_row (retrospective-cycle101.md:256). An op error still stops record mode (stagexec.py:966-968). Likely result: another stop, ops 1–25 re-run (~7 min, r5.log:479), no file.
+
+**Instead,** cycle 102 writes a one-page decomposition first.
+- **A** is ops 1–25: loops, nine moves, wires, the BuildArray move, the tunnel delete and two indicators (r5.log:54-446). It runs from `D1_s1_copy.vi` and is saved as an ExecState-0 intermediate by `gui_save` (stagekit.py:1068-1077; CLAUDE.md:493). It passes when the real graph equals the plan's simulated step-25 state (stagexec.py:984-985).
+- **B** is ops 26–47, run from that file in a fresh LabVIEW, where the meter restarts near 567 MB (r5.log:42). It ends with the final script save at ExecState 1.
+- A already ran once with one step difference (plan:1789), so it can run in the same cycle and leave a file.
+- The 214(b)–(d) fixes stay but serve A.
+- Pin one rule: 214(c) forgives diffs that no later row references (plan:1794). But k12's #11365 is a terminal of #11363, which op 23 deletes (r5.log:249, 428).
+
+VERDICT: change NEXT
+NEXT ACT: Write a one-page decomposition of the display stage (A = ops 1–25 → GUI-saved ExecState-0 `D1_s1_disp_a_<ts>.vi`; B = ops 26–47 from that file in a fresh LabVIEW), prior-art-review it once, then run A in the same cycle with the 214(b)–(c) fixes.

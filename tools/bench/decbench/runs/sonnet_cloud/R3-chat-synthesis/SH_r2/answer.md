@@ -1,0 +1,28 @@
+I'm checking the summary's three claims against `report_v1.md` and CLAUDE.md. None of the three is fully supported as written.
+
+**Strongest reason it is wrong: bullet 2's numbers don't appear anywhere in the checkout.**
+- I found no source for 2.17 vs 1.57 PASS/cycle or $37.18 vs $38.24 per cycle. A grep of STATUS, docs, CLAUDE.md and the cards finds none of them. The `JUDGE-AB` log lines record only the arm assignment (e.g. "cycle 90 | high | A/B cycle parity even", `tools/bench/cycle_runner.log`).
+- The only recorded A/B result is CLAUDE.md:384-385: "high PASS 2.5 vs 2.0 per cycle, $33 vs $39, n=4/5, not decisive but never worse". Those figures differ from the summary's, and the summary also drops "not decisive".
+- Cycles 89 and 91 ran alongside the "Fable low" material trial (CLAUDE.md:379-381). That trial, plus runner state, firefighter and ladder overrides, confounds a PASS/cycle comparison. The summary doesn't flag this.
+- With 4 high cycles (90, 92, 94, 96) against 5 medium cycles, "high is also cheaper" rests on a $1 gap. It is also not what CLAUDE.md says.
+
+**Bullet 3 is the clearest misstatement.**
+- `report_v1.md:57-58` gives Fable low as 5 cells for $17.59 and Fable medium as 5 cells for $19.29.
+- Opus high is 10 cells for $15.24 (`report_v1.md:17`). Per cell that is about $3.52 against $1.52, so Fable costs roughly 2.3× as much. "About the same" compares totals over different cell counts.
+- CLAUDE.md:378-380 says "3x cost".
+- The 5/5 score is one repeat from the v0 runs, re-scored with the v1 scorer. It is not comparable to the n=2 Opus cells. It also owes its edge to T1, where every Opus level below max scored 0 and Fable low scored 1 (`report_v1.md:7`, `:49`).
+
+**Bullet 1 is mostly right but loosely worded.**
+- T1 is the only task listed as exceeding repeat noise (`report_v1.md:35`).
+- But the T1 change is max only. Low, medium and high all scored 0 (`report_v1.md:27`), so the summary should say "max".
+- T2 also varied across levels (low 0.5, medium 1, high 1, max 0.5; `report_v1.md:28`). "Only T1 and T3" is therefore inaccurate. T2 is noise, and so is T3, whose between-condition range (1.0) does not exceed its within-condition range (1).
+
+**Alternative explanation:**
+- The A/B differences are explained by task mix and ladder state per cycle.
+- The Fable "parity" is explained by comparing 5-cell totals against 10-cell totals.
+
+**Falsifier:** a per-cycle PASS/cost table for cycles 89-97 that doesn't reproduce 2.17/1.57 and $37.18/$38.24, which is what the checked files suggest. Or normalising Fable and Opus-high cost per cell and still finding them equal.
+
+**Cheapest discriminating test:** read PASS and cost from `result_89-3.json` through the cycle-97 cards and the matching `cycle_NN.json` files, and average by `effort`. Then divide `report_v1.md` totals by cell counts.
+
+DEFECT: major - Bullet 3 calls Fable's cost "about the same" by comparing 5-cell and 10-cell totals ($17.59 vs $15.24), when per cell it is about 2.3× (CLAUDE.md says 3×). Bullet 2's figures don't match the recorded 2.5 vs 2.0 and $33 vs $39, and it drops "not decisive".

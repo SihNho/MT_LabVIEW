@@ -1,0 +1,41 @@
+{
+ "case": "S2-display-loop",
+ "arm": "SH",
+ "rep": 1,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "attempt": 1,
+ "usd": 0.4037,
+ "minutes": 0.56,
+ "cell_minutes": 0.56,
+ "turns": 7,
+ "tools": 6,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-sonnet-5-5",
+   "effort": "high",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.56,
+   "usd": 0.4036882,
+   "turns": 7,
+   "tools": 6,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5-5"
+   ]
+  }
+ ],
+ "answer": "Keeping NEXT. The diagnosis card is cheap, measures instead of guessing, and sits on the only lever still standing.\n\n**Why the gate is the right target**\n- The user's stated problem is frame loss when picking many beads (`project-requirements/project-description.md:31`).\n- Cycle 96 measured where the time goes. At 15 beads the frame loop spends about 9.4–10.9 ms per frame, against an 11.1 ms camera period, on ONE live graph: the Force vs Extension chain in #1359 (`docs/d1-loop12-17-split-plan.md:1408-1409`).\n- That graph feeds only indicator #8323 and its own ring history. Nothing reaches the file writer, the motors or the kernel (`:1402-1407`).\n- The other candidates are closed:\n  - par1359 lost MORE frames (A 3,435 / 3,389 vs B 3,867 / 3,863; `:1391-1394`).\n  - The kernel swap gave no lever (STATUS.md:165).\n  - Display minimisation gave only about −16 % (STATUS.md:155).\n- The design is finished and its tools exist (`:1438-1479`; STATUS.md:70-82).\n- Rule 1a is protected. N = 1 reproduces the original, and the replay at N = 1 comes before acceptance (`:1415`, `:1432-1434`).\n\n**Why a diagnosis card is the right form**\n- Run 97-5 reached ExecState 1 after the wiring and ExecState 0 only after `move_into_frame` (`tools/bench/fgate_97_stage2.log:395`; `:1480-1483`). The two reviews' causes (orphaned severed wires, or an illegal final structure) are arithmetic and unmeasured.\n- The cycle-97 retrospective flagged `inference-over-measurement`, and CLAUDE.md says to build the reader the second time a failure is explained by inference. NEXT reads the Error List, the broken wires with owners, and Remove Bad Wires followed by ExecState on a scratch copy (STATUS.md:58-60).\n- It saves the broken intermediate by `gui_save`, which user rule 6 permits (CLAUDE.md §3, rule 6). That follows the split-and-save rule, so the user has a file to open.\n\n**Caveats**\n1. The plan in this checkout stops at Pre-decided 206 (`:1438-1500`). I found no 207 or 208, so I assessed 205–206 only.\n2. D-2026-09-26-02, whether the user accepts a 10 Hz graph, is still OPEN (`tools/bench/decisions_pending.json:143-157`). NEXT proceeds under the written assumption, default N = 9 with fallback N = 1 (STATUS.md:66), which fits rule 2c. The report should keep asking for the answer. If the answer is no, the lever is lost.\n3. Run `1.L8` has failed in every leg since 92-3 and is unreviewed (STATUS.md:65). The card should not let it be mistaken for a gate regression.\n4. The outcome review warned of \"measurement-without-product\" and about $300 spent for seven INDEX rows. A diagnosis card does not itself ship a file. The risk is bounded by NEXT's order: read, then choose a `move_into_frame` fix or a structure change, then the stage run, the ABBA and the replay (STATUS.md:63).\n\n**One addition that does not change the act:** make \"ExecState read after every diagram-editing verb\" a gate inside `move_into_frame`'s self-test. The cycle-97 retrospective found exactly that gap (STATUS.md:62; `:1485-1488`).\n\nVERDICT: keep NEXT\nNEXT ACT: Re-run `stage_d1_fgate.py` to E3 on a fresh S1 byte copy, `gui_save` the broken file as `D1_s1_fgate_BROKEN_<ts>.vi`, and read its Error List, its broken wires with owner diagrams, and the Remove Bad Wires → ExecState result on a scratch copy.",
+ "mech": {
+  "M1": 0.0,
+  "M2": 0.0,
+  "M3": 0.0,
+  "F1": 1.0,
+  "F2": 0.0,
+  "B1": 1.0
+ }
+}

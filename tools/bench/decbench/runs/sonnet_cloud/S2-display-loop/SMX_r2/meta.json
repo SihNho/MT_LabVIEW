@@ -1,0 +1,41 @@
+{
+ "case": "S2-display-loop",
+ "arm": "SMX",
+ "rep": 2,
+ "model": "claude-sonnet-5-5",
+ "effort": "max",
+ "attempt": 1,
+ "usd": 2.94,
+ "minutes": 11.26,
+ "cell_minutes": 11.26,
+ "turns": 53,
+ "tools": 52,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-sonnet-5-5",
+   "effort": "max",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 11.26,
+   "usd": 2.9399690000000005,
+   "turns": 53,
+   "tools": 52,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5-5"
+   ]
+  }
+ ],
+ "answer": "**Keep NEXT, with tightenings.** The plan ends at PD206, so PD207–208 don't exist (`docs/d1-loop12-17-split-plan.md:1438-1500`, \"split-plan\" below).\n\n**Why it's right**\n- **Best-measured lever left.** #1359's chain feeds only the Force-vs-Extension indicator and its own ring. It takes ~9.4–10.9 ms of a 16.7 ms frame at 15 beads, against an 11.1 ms camera period (`split-plan:1285-1287,1402-1409`). Parallelising #1359 was rejected, +13 % lost frames (`split-plan:1391-1394`).\n- **The deliverable is stuck on one unexplained fact.** ExecState is 1 after wiring and 0 after the moves, and nothing was saved (`tools/bench/fgate_97_stage2.log:288,395,410`; `tools/bench/cards/result_97-5.json:2,34`). Orphaned wires versus an illegal end structure are both unmeasured (`archive/peer/2026-09-26-c97-fgate-es0-r2.md:94`, \"r2\"). CLAUDE.md:444 says a second inferred diagnosis means build the reader. The retrospective made this read the cycle-98 first act (`archive/peer/2026-09-26-retrospective-cycle97.md:296-301`).\n- **The open user question doesn't block a read-only diagnosis** (CLAUDE.md:162). N = 1 stays the rule-1a anchor (`split-plan:1415`).\n\n**Tighten the card (same act)**\n1. Don't re-run the whole stage and read once. An E2 read is uninformative unless UseDefault follows move A (r2:44-48,87). CLAUDE.md:486 wants saved sub-steps after two F6a failures (`result_97-5.json:18-20`). Do the offline wire-count arithmetic first (r2:85). Then read ExecState and a loose-wire census after every edit, save E1 by script, and GUI-save only the broken step.\n2. NEXT's item (2) has no reader: no stand-alone broken-wire op exists (`STATUS.md:223`), so use r2:88's census. The recipe stops at fatal F6a (`tools/recipes/stage_d1_fgate.py:98`). \"Save at E3\" therefore needs a ≤120-line variant with its own dry run, pre-run and prior-art review.\n3. Put D-2026-09-26-02 to the user now (`tools/bench/decisions_pending.json:142-157`, `STATUS.md:67`). The 10 Hz policy covered the live image (`docs/questions-for-user-2026-09-14.md:87-90`). The plan itself calls its extension to this graph an assumption (`split-plan:1418-1420`). A \"no\" kills the lever.\n4. The payoff is unproven. Timing exists only at #1359's output, not per node (`split-plan:1288-1290`). The cycle-96 review suspects ring-fill memory work, which stays ungated (`archive/peer/2026-09-26-c96-par1359-h1.md:62`; `split-plan:1444-1449`). The ABBA on lost frames and the N = 1 replay decide acceptance (`split-plan:1430-1434`). Treat it as a 90 Hz interim:\n   - Every Nth frame still bursts ~10 ms inside the tracking loop. That runs against the recorded principle that display must not shift cost onto acquisition or tracking (`questions-for-user-2026-09-14.md:88-90`).\n   - 150 Hz leaves a 6.7 ms period (`docs/goalmap.json:198`).\n   - L2-B moves #1359 into 1.2 (`split-plan:72`), so the gate must be re-applied there.\n\nVERDICT: keep NEXT\nNEXT ACT: Run one decomposed diagnosis card (offline wire-count check, then a stepwise LabVIEW run with ExecState and a loose-wire census after every edit, saved intermediates, and Remove Bad Wires on a scratch copy) to find why the gated copy breaks, while D-2026-09-26-02 goes to the user.",
+ "mech": {
+  "M1": 0.0,
+  "M2": 0.0,
+  "M3": 0.0,
+  "F1": 1.0,
+  "F2": 0.0,
+  "B1": 1.0
+ }
+}

@@ -27,10 +27,16 @@ import json
 import os
 import re
 import shutil
+import signal
 import subprocess
 import sys
+import tempfile
 import threading
 import time
+
+POSIX = os.name != "nt"                  # cloud port 2026-10-02: Linux runs need TEMP set before matbench/cell_guard read it
+if POSIX:
+    os.environ.setdefault("TEMP", tempfile.gettempdir())
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(os.path.dirname(HERE), "matbench"))
@@ -40,10 +46,14 @@ import score as MS  # noqa: E402
 import dec_score as DS  # noqa: E402
 
 MAIN = MB.MAIN
+if POSIX:                                # no tasklist / LabVIEW on Linux
+    MB.labview_pids = lambda: []
+CLAUDE = "claude" if POSIX else "claude.exe"
 TMP = os.environ.get("TEMP", r"C:\Windows\Temp")
 WTROOT, SCRATCH = os.path.join(TMP, "db"), os.path.join(TMP, "db", "scratch")
-OPUS, FABLE = "claude-opus-5-5", "claude-fable-5-1"
-ARMS = {"H": (OPUS, "high"), "XH": (OPUS, "xhigh"), "MX": (OPUS, "max"), "FL": (FABLE, "low"), "PAR": (OPUS, "high")}
+OPUS, FABLE, SONNET = "claude-opus-5-5", "claude-fable-5-1", "claude-sonnet-5-5"
+ARMS = {"H": (OPUS, "high"), "XH": (OPUS, "xhigh"), "MX": (OPUS, "max"), "FL": (FABLE, "low"), "PAR": (OPUS, "high"),
+        "SH": (SONNET, "high"), "SMX": (SONNET, "max")}
 LENSES = ["LENS: attack CORRECTNESS - is every step of the obvious reading actually true in the files?",
           "LENS: look for an ALTERNATIVE CAUSE or alternative next act that fits the same evidence better.",
           "LENS: ask WHAT WOULD FALSIFY each candidate answer, and check the files for that observation."]
@@ -100,7 +110,8 @@ def prepare(case):
     for f in (os.path.join(os.path.dirname(HERE), "matbench", "cell_guard.py"), os.path.join(HERE, "dec_guard.py")):
         shutil.copy2(f, os.path.join(wt, ".decbench", os.path.basename(f)))
     s.setdefault("hooks", {}).setdefault("PreToolUse", []).insert(0, {"matcher": "*", "hooks": [
-        {"type": "command", "command": 'py "%s/.decbench/dec_guard.py"' % wf, "timeout": 15}]})
+        {"type": "command", "command": '%s "%s/.decbench/dec_guard.py"' % (sys.executable if POSIX else "py", wf),
+         "timeout": 15}]})
     with open(sp, "w", encoding="utf-8") as f:
         json.dump(s, f, ensure_ascii=False, indent=2)
     return wt, copied
@@ -141,7 +152,7 @@ def run_cell(wt, rundir, name, model, effort, prompt, stub, cap_min, attempt):
     scr = os.path.join(SCRATCH, "%s_%s_%d" % (os.path.basename(rundir), name, attempt))
     os.makedirs(scr, exist_ok=True)
     cmd = ([sys.executable, os.path.join(HERE, "stub_dec.py"), "--fixture", stub] if stub else
-           ["claude.exe", "-p", "--model", model, "--effort", effort, "--output-format", "json",
+           [CLAUDE, "-p", "--model", model, "--effort", effort, "--output-format", "json",
             "--permission-mode", "acceptEdits", "--strict-mcp-config", "--disallowedTools",
             "Agent", "Task", "WebSearch", "WebFetch"])
     env = os.environ.copy()
@@ -156,13 +167,17 @@ def run_cell(wt, rundir, name, model, effort, prompt, stub, cap_min, attempt):
             out.write(("BGRUN START %s decbench cell %s %s/%s attempt %d\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), name,
                                                                           model, effort, attempt)).encode())
             out.flush()
-            p = subprocess.Popen(cmd, cwd=wt, env=env, stdin=subprocess.PIPE, stdout=out, stderr=subprocess.STDOUT)
+            p = subprocess.Popen(cmd, cwd=wt, env=env, stdin=subprocess.PIPE, stdout=out, stderr=subprocess.STDOUT,
+                                 start_new_session=POSIX)
             p.stdin.write(prompt.encode("utf-8"))
             p.stdin.close()
             try:
                 rc, tag = p.wait(timeout=cap_min * 60), "END"
             except subprocess.TimeoutExpired:
-                subprocess.run(["taskkill", "/PID", str(p.pid), "/T", "/F"], capture_output=True)
+                if POSIX:
+                    os.killpg(p.pid, signal.SIGKILL)
+                else:
+                    subprocess.run(["taskkill", "/PID", str(p.pid), "/T", "/F"], capture_output=True)
                 rc, tag = p.wait(), "TIMEOUT"
         mins = (time.time() - t0) / 60.0
     with open(log, "ab") as out:

@@ -1,0 +1,19 @@
+The claim is wrong, and the strongest reason comes from the project's own measurement: an existing writer already reached that FSIT terminal sink and connected to it.
+
+**1. Strongest refutation.** On 2026-09-22 a test ran the existing writer `OpConnectFromWire_v0` with its source and sink roles swapped. It handed terminal #7488, the FSIT terminal, to the op's half that looks a terminal up by uid. Right after that call, net 7506 had three source terminals, and the new register #23868 was one of them (`tools/bench/c80_rowd_routeA_r2.log:253-261`). The same log has a passing check that says "THE SWAPPED CALL CONNECTED" (`:262`), and its W1 gate passes with row D's writer bound (`:11`). The plan accepted this: "ROUTE A's VERB IS PROVEN AND NO NEW *WRITER* OP IS NEEDED FOR THE CONNECT" (`docs/cycle27-plan.md:3481-3487`).
+
+The claim also cites the wrong log. `c78_rowd_writer.log` has no W1 gate. It ends with 5 passes and 0 failures (`tools/bench/c78_rowd_writer.log:42`), and it labels the zero-writers count "a FACT, not a gate failure" (`:30`). That run touched files only and never started LabVIEW (`:3`). It read the 4 label maps that declare Connect Wire (`:19-27`), while 25 connect/wire ops sit on disk (`:33`). An empty result from that file census does not show that a call is impossible.
+
+**2. Alternative explanation of the same evidence.** "Zero" only means that no label map addresses its sink by uid. The sink could still be reached through the uid-addressed source half, by swapping the roles. That is exactly what `c80_rowd_routeA_task.txt` set out to test, and the test succeeded.
+
+The real blocker is a different one: the Connect Wire call adds a branch to the existing net instead of replacing its source. The old source #4334 stays on the net, so the wire reports `Is Broken?` True (`docs/cycle27-plan.md:3487-3490`). On the other ordering, deleting the wire first, the uid lookup then refuses the dead wire with error 1055 (`c80_rowd_routeA_r2.log:119`, cited at `docs/cycle27-plan.md:3490`). That is a problem of ordering and replacement, not of addressing.
+
+**3. What would have falsified it, and did.** The claim predicts that no writer can attach anything to #7488. The A2 walk saw a second source attached to the net at #7488 (`c80_rowd_routeA_r2.log:261`), which is the opposite.
+
+**4. Cheapest test that separates the two.** Building a new op is not the cheap test. Take the A2 state, where #23868 is already joined to net 7506 (no new op needed), and remove only the old source #4334's connection to that net. Then read net 7506 with `OpWireSource_v5` and expect exactly one source, owned by #23868. If that works, addressing was never the blocker. Pre-decided 119 itself says the problem "reduces to REMOVING THE OLD SOURCE #4334" (`c80_rowd_routeA_r2.log:262`).
+
+One more point against the "build first" prescription: the project did build the dedicated op later, `build_opfsinnertunnelconnect_v0.py`. Its run still failed at G4f, "the border terminal went BARE -> NON-ZERO" (`tools/bench/build_opfsinnertunnelconnect_v0.log:366`), and so did the follow-up test matrix (`tools/bench/diag_c83_connect2x2_r2.log:158`). A new writer did not remove the failure, which fits the alternative better than the claim.
+
+What would change my mind: a log in which the swapped call attaches nothing to net 7506 (one source, not three), when run on a fresh copy of the bed.
+
+DEFECT: blocker - It calls a files-only label-map count "the W1 gate", but the machine already showed an existing op connecting at the FSIT terminal (`c80_rowd_routeA_r2.log:261-262`), so the work goes to building a writer when the real fault is that the connect adds a branch instead of replacing the old source.

@@ -1,0 +1,40 @@
+{
+ "case": "T1-looseends-pin",
+ "arm": "H",
+ "rep": 1,
+ "model": "claude-opus-5-5",
+ "effort": "high",
+ "attempt": 1,
+ "usd": 0.8177,
+ "minutes": 1.59,
+ "cell_minutes": 1.59,
+ "turns": 8,
+ "tools": 7,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 1.59,
+   "usd": 0.8177220000000001,
+   "turns": 8,
+   "tools": 7,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-opus-5-5"
+   ]
+  }
+ ],
+ "answer": "**Root cause:** the prediction miscounted two wires that already had loose ends in R1 (`25438` and `25461`), most likely in the opposite direction from the correction it made. The deletion recipe itself is not the problem: it passed 43/0, and the Error List came back with no unexpected items. This is inferred from the logs, not yet measured.\n\n**Facts from the files**\n- The pinned count is 24 − 11 + 13 − 2 = 24 (`tools/bench/plan_l2r2_make.log:44`). The first version of the plan said 26 (`:20`); the \"− 2 already loose\" term was added afterwards, so this part of the count was guessed once already.\n- The scratch VI showed 22 loose ends against 24 pinned. The other three error types matched exactly: no-source 1, not-connected 20, other 10 (`diag_c116b_scratch_el.log:113-115`).\n- The reader's breakdown has two groups of loose ends:\n  - the stub-wire group stayed at 17 (`:111`);\n  - the group of wires left dangling when R1 cut a shift-register sink dropped from 7 to 5 (`:112`). The reader also reports \"missing 2\" (`:58`).\n- `25438` and `25461` belong to that second group: each lost a shift-register sink in R1 (`docs/d1-loop12-17-split-plan.md:2070`). Both still had their retired tunnel's terminal in R1 (`5758` and `5583`, `stage_d1_l2r1.log:210`).\n- The other side checks out:\n  - every shared wire kept its id, its source and its kept sinks (`diag_c116b_scratch.log:284`);\n  - Remove Bad Wires found 29 bad wires, which is the R1 bed's 40 minus the 11 stub wires deleted (`:316-320`).\n  - So the 11 stub wires really went, and no shared wire became wholly bad.\n\n**Most likely root cause:** the plan assumed a wire that already had a loose end keeps exactly one \"Wire has loose ends\" item after it loses its tunnel. Instead, on `25438` and `25461`, deleting the tunnel removed or merged the branch left dangling in R1, so each wire left the list (−1 each). That drop of 2 matches the group falling from 7 to 5.\n\n**Strongest alternative:** two of the other 11 shared wires never gained a loose end, for example because LabVIEW cleaned up the branch when the tunnel was deleted. In that case the 7→5 split would only be an artefact of how the reader assigns items to groups. The Error List items carry no wire id (they show only `object='Wire'`, `:37-57`), so the group counts alone can't separate the two explanations.\n\n**Cheapest test:** on a fresh byte copy of R1, run only rows 21–24 of the plan: delete stub wires `w5746` and `w5979`, then tunnels `#5752` and `#5569` (`plan_l2r2.json:133-156`). Then read the Error List once.\n- The pin's model predicts 24 − 2 = 22 loose ends.\n- The root cause above predicts 20 (the two already-loose wires also drop out).\n- 22 would put the shortfall among the other 11 shared wires.\n\nThat is four deletions and one read; there is no full rebuild and nothing needs to be identified by wire id.\n\nROOT CAUSE: The pin assumed the two already-loose shared nets 25438/25461 (R1 PD230 dangling-branch nets) would each keep exactly one 'Wire has loose ends' item after their tunnel sink was deleted, but deleting the tunnel removed/merged their R1 dangling branch so both dropped off the list, over-predicting loose by 2 (24 vs 22).\nTEST: On a fresh byte copy of R1, run only plan rows 21–24 (delete w5746, #5752, w5979, #5569) and read the Error List: loose = 20 confirms the two already-loose nets lost their loose item, while loose = 22 puts the shortfall among the other 11 shared nets.",
+ "mech": {
+  "M1": 1.0,
+  "M2": 0.0,
+  "F1": 0.0,
+  "F2": 0.0,
+  "B1": 0.0
+ }
+}

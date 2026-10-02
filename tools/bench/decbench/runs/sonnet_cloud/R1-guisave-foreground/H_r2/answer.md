@@ -1,0 +1,30 @@
+I don't think the claim holds. The strongest problem: nothing in this checkout shows that Ctrl+E, Ctrl+S or the title-bar click was ever sent in run 4, so the question of which window received them doesn't come up yet.
+
+**1. Strongest reason it's wrong: no keystroke on record**
+- Every `click` and `keys` call (including `clickprobe`) is written to `tools/gui_actions.log` before it runs (`tools/lv_gui.ps1:631-640`). `gui_save` passes the required approval flags on `^e`, the click and `^s` (`tools/gscript.py:2028,2044,2049`), so each one would leave a row.
+- That log stops at `2026-09-18 18:12:14` (`tools/gui_actions.log:1800`). It has no rows for 2026-09-22 00:22–00:27, and `gui_save` appears nowhere in it. The run-3 review already found this (`archive/peer/2026-09-22-c71-run3.md:126-128`).
+- `gui_save` skips a window without sending anything when `focus` fails (`gscript.py:2033-2034`). It then raises the same "after Ctrl+S on every candidate window" text whether or not a key was sent (`:2058-2060`). The error message is not evidence that keys went out.
+- Step (4), "the VI had only a Front Panel", is asserted, not measured. `gui_save` throws away every `focused:` output, and the run log records none (`tools/bench/build_d1_m3a1.log:2682-2688`).
+
+**2. Alternative explanations for the same evidence**
+- **(a) `focus` failed for every candidate window.** One likely cause: `Get-LVPid` does `[uint32]$p.Id` on `Get-Process -Name LabVIEW` (`lv_gui.ps1:595-597`). If the restart leaves two LabVIEW processes, that is an array, the conversion throws, and the output never contains "focused".
+- **(b) The Getting Started window is always there.** Every healthy prep lists `"LabVIEW"` next to the VI windows (`tools/bench/bench_prep_restart.log:2`, `tools/bench/matrix_run.log:14`). Its being in front is what `open_panel(activate=False)` normally leaves (`gscript.py:1264-1270`), so it says nothing about where keys went.
+- **(c) The "home window gone" observation has other causes.** The real mouse click activates whatever window sits at that point. `Focus` also taps Esc on every call (`lv_gui.ps1:242-244`). Either could close or bury the home window.
+
+**3. What would falsify the claim**
+- `keys ^e` / `keys ^s` rows timestamped in the run-4 save window. If those exist, the claim is back in play.
+- Or a `windows` read at save time showing two LabVIEW processes, or `focus` returning "focused" for the Front Panel. Either would rule out (a).
+- The claim is also dead if the click point `(L+300, T+10)` lies on the VI window itself. A real click there makes it foreground regardless of what held focus before.
+
+**Against the proposed fix**
+- If (a) is the cause, no key is ever sent. A foreground check before each key changes nothing, and the fix still raises "mtime did not move".
+- It also adds a `clickprobe` per candidate window, each one a gated, logged real click, before the actual cause is known.
+- The useful part is "raise with the observed per-candidate record". Do that first, and keep the exact `focus` output for each candidate.
+
+**4. Cheapest test that separates claim (keys misdirected) from (a) (keys never sent)**
+1. On the Windows host, check whether the live `tools/gui_actions.log` has rows after 2026-09-22 00:22. This checkout may be older than the live file.
+2. If there are none, re-run only `gui_save` on a broken scratch copy with logging only: record each candidate's `focus` output, `Get-Process LabVIEW` count, and `windows` / `dialogs`. This needs no new GUI action.
+
+If keys rows do turn up and `clickprobe` then shows the "LabVIEW" window in front at `^s`, I'd accept the claim.
+
+DEFECT: blocker - the claim explains where keystrokes went without any evidence they were sent: the audit log that records every `keys`/`click` before it runs has no run-4 rows, and `gui_save` silently skips windows when `focus` fails.

@@ -1,0 +1,38 @@
+{
+ "case": "R4-clean-r2pin",
+ "arm": "SH",
+ "rep": 1,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "attempt": 1,
+ "usd": 0.2082,
+ "minutes": 0.74,
+ "cell_minutes": 0.74,
+ "turns": 6,
+ "tools": 5,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-sonnet-5-5",
+   "effort": "high",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.74,
+   "usd": 0.2082132,
+   "turns": 6,
+   "tools": 5,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5-5"
+   ]
+  }
+ ],
+ "answer": "**Verdict: the number 22 is probably right. The way it is derived and gated is weaker than the claim says.**\n\n**1. Strongest reason it is wrong: the derivation leaves one loose-ends item unexplained.**\n- The per-net decode finds 23 wires with a loose joint in R1, against 24 Error List items. After the change it finds 21 wires, against 22 items (`tools/bench/diag_c116d_decode.log:41-42`).\n- \"24 − 11 + 9 = 22\" therefore starts from a 24 that includes an unidentified item. The plan admits this: \"R1's residual 1 (23 read vs 24 listed) is unexplained\" (`docs/d1-loop12-17-split-plan.md:2104`).\n- The 22 is a constant-offset extrapolation, not a per-net confirmation. The claim's wording \"measured per-net evidence\" and \"a reader confirmed\" overstates this.\n- If the hidden item sits on, or is merged with, one of the 11 stubs or 13 outer nets, the true count shifts. The pin would still read 22 by luck, or fail for the wrong reason.\n- Per the plan, a sweep of the full graph was meant to name that 24th item (`:2112`). The sweep for this decode read 0 of 1,908 non-target wires in attempt 2 (`diag_c116d_decode.log:40`).\n\n**2. Alternative explanations of the same evidence.**\n- **The pin was fitted to the scratch result.** The earlier pin of 24 failed on the scratch build, which read 22 (`diag_c116b_scratch_el.log:115`). The new pin copies that reading, so \"equals the scratch Error List\" is circular. It shows the launch repeats the scratch, not that 22 is correct.\n- **The decode and the Error List were read at different points.**\n  - The decode's \"after\" joints are read after all rows but before Remove Bad Wires (`diag_c116d_j3.log`, J3).\n  - The 22 comes from the Error List of the saved scratch file, after Remove Bad Wires.\n  - Two numbers off by the same 1 at different points can agree by coincidence.\n- **The Error List may count differently from the decode.** The decode's loose-joint counts for w25438 (3→9) and w25461 (2→6) change while the item count presumably does not. The plan's earlier accounting (`:2073`, \"23 − 6 stub items + 7\") also differs from this one (11 stubs).\n\n**3. What would falsify it.**\n- The real L2-R2 launch gives a loose-ends count ≠ 22. That would show the scratch and the launch differ.\n- A full-graph read that identifies the unexplained item and finds it on a net R2 touches, or on a net that is not loose after the change.\n- The joints read gives a different loose/not-loose pattern from the decode on any of the 20 nets. Only 9 of the 13 outer nets and w25238/w25225 are checked; the other 2 outer nets (w25438, w25461) and the 7 PD230 nets are expected to be unchanged.\n\n**4. Cheapest discriminating test.** `OpWireJoints_v1` is already planned (`:2109-2112`).\n- Run its full sweep of all 1,945 R1 wires, which must succeed with 0 errors.\n- Name R1's 24th loose-ends item.\n- Run the same sweep on the post-R2 scratch, read both before and after Remove Bad Wires, and confirm the unexplained residual is still exactly 1.\n- Only then pin 22.\n\nMaking this a hard precondition of the launch costs one read-only sweep and removes the circularity.\n\n**Rule 1a.** The statement that every deleted tunnel was an input tunnel with no consumer (`:2108`) leans on 228(g) (\"consumer-less\", `:2040`). The decode shows each outer net keeping 2 or more terminals, so the sinks survive (`diag_c116d_decode.log:44`). I found no direct \"input tunnel\" check in the lines I read.\n\n**Net.** I could not find a reason 22 is wrong. A gate that is calibrated on the scratch build and carries an unexplained ±1 should not be described as independently confirmed.\n\nDEFECT: major - the pin of 22 rests on a 24-item baseline with one unidentified item, and it is circular with the scratch Error List it was fitted to; the full-graph sweep that would name the item has not been run.",
+ "mech": {
+  "M1": 1.0,
+  "F1": 0.0,
+  "B1": 1.0
+ }
+}

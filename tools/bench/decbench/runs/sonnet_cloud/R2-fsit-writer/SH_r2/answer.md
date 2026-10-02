@@ -1,0 +1,24 @@
+**1. Strongest reason the claim is wrong.** The log shows a census of existing writers. It does not show that a writer cannot be made.
+- `c78_rowd_writer.log:33` reports "writers whose SINK is addressed by a UID… 0", and the script itself labels this "a FACT, not a gate failure". The run ends "5 pass / 0 fail" (`:39`).
+- The census says no existing op takes a uid sink. It does not say the wire cannot be written.
+- `docs/cycle27-plan.md:3429-3436` (Pre-decided 115) says this outright: the census "proves *'no writer in the fleet takes a uid SINK'*, not *'this wire cannot be written'*."
+- `docs/NAMES.md:849-857` agrees that "invoked on the SINK" is an adopted convention, not a measurement, and that the roles may be exchangeable.
+
+**2. Alternative explanation of the same evidence.** The zero comes from donor lineage. Every writer descends from `OpConnect2_v0` and was written sink-first with index addressing (`NAMES.md:853-855`). The sink only needs to be a *Terminal* reference.
+- `OpFsInnerTunnelTerm_v0` already reads `LeftTerm #7488` on uid 7468 with every error column empty (`NAMES.md:1141`). `OpFsInnerTunnelTerm_v0` is a reader (B2, `:32`), so the terminal uid is obtainable.
+- The wire can be written from the other end. `docs/cycle27-plan.md:3441-3446` (Route A) swaps the roles of `OpConnectFromWire_v0`. `wire_uid=7506` plus the `Wire.Terms[]` index of #7488 supplies the source half, and the Invoke sits on the NEW loop's bare terminal, which is index-addressable. The plan says "NOTHING NEW IS BUILT" if A works.
+- Even Route B, `OpConnectByUid` (`:3447-3454`), is ordered after A and "stops for a fresh cycle".
+
+**3. What would falsify the claim.** Route A succeeding on a scratch copy falsifies "build a new op first". Concretely: a connect with Invoke on `Diagram[19]/Nodes[21]/Terminals[1]` and source from wire 7506, where `OpWireSource_v5` reports the source owner as `WhileLoop #23032` and exactly one source terminal (Pre-decided 117, `:3456-3462`).
+
+**4. Cheapest discriminating test.** Run Route A (Pre-decided 116) on a dated scratch copy of the bed `D1_s3b_m3a3_20260922_081056.vi`, which is cheap. It also needs no new op, which separates it from the claim's "build first".
+- Claim holds if the call errors or leaves wire 7506 sourced from the old loop.
+- My alternative holds if the call succeeds with the owner-identity check passing.
+
+I did not find evidence about whether Route A was already run. `diag_c83_connect2x2_r2.log:77-113` shows error 1055 for the sink *address* after deleting wire 7506 (`cycle27-plan.md:3370-3376`). That is a failure of `UID to GObject Reference` on `#7468`, not of connecting from the other end. Plan item 111a records a competing cause, so the 1055 is unexplained, not a proof of impossibility.
+
+**Citation error in the claim.** The log has no "W1 gate". Its gates are A1, A2 and B1–B3. "W1" is the plan's name for the census (`cycle27-plan.md:3433`). The claim's own source treats it as a fact to attack.
+
+I still believe "no existing writer takes a uid sink" (true, per the log). I do not believe it implies "build a new op before any further row-D run". A Route A run on a scratch copy showing the sink cannot be addressed from either end would change my mind.
+
+DEFECT: major - It treats a census of existing uid-sink writers (zero, an ungated FACT) as proof that row D is undeliverable, when the plan's own Route A could write the wire with no new op.

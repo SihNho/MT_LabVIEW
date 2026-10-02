@@ -1,0 +1,163 @@
+{
+ "schema": "decbench-results/1",
+ "tag": "smoke_cloud",
+ "par": 6,
+ "stub": null,
+ "cases": [
+  "R4-clean-r2pin"
+ ],
+ "per_arm": {
+  "H": {
+   "n": 1,
+   "invalid": 0,
+   "mech_mean": 1.0,
+   "blind_mean": null,
+   "minutes_mean": 0.97,
+   "usd_total": 0.64,
+   "usd_per_run": 0.64,
+   "turns_mean": 8,
+   "tools_mean": 7
+  },
+  "SH": {
+   "n": 1,
+   "invalid": 0,
+   "mech_mean": 1.0,
+   "blind_mean": null,
+   "minutes_mean": 0.79,
+   "usd_total": 0.34,
+   "usd_per_run": 0.342,
+   "turns_mean": 7,
+   "tools_mean": 6
+  },
+  "SMX": {
+   "n": 1,
+   "invalid": 0,
+   "mech_mean": 1.0,
+   "blind_mean": null,
+   "minutes_mean": 14.8,
+   "usd_total": 3.65,
+   "usd_per_run": 3.654,
+   "turns_mean": 53,
+   "tools_mean": 51
+  }
+ },
+ "blind_usd": 0.0,
+ "spent_usd": 4.636,
+ "disagreements": [],
+ "records": [
+  {
+   "case": "R4-clean-r2pin",
+   "arm": "H",
+   "rep": 1,
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "attempt": 1,
+   "usd": 0.6404,
+   "minutes": 0.97,
+   "cell_minutes": 0.97,
+   "turns": 8,
+   "tools": 7,
+   "timeout": false,
+   "cells": [
+    {
+     "name": "c0",
+     "model": "claude-opus-5-5",
+     "effort": "high",
+     "rc": 0,
+     "timeout": false,
+     "minutes": 0.97,
+     "usd": 0.6403518,
+     "turns": 8,
+     "tools": 7,
+     "invalid_ratelimit": false,
+     "models_used": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+     ]
+    }
+   ],
+   "answer": "I'm finished reading the cycle-116 logs. **The claim does not hold as stated.** The per-net evidence it cites gives 21, not 22. Getting to 22 depends on a 24th R1 item that has never been found.\n\n**1. Strongest reason it is wrong.** The joints reader never measured 24 or 22. It found 23 loose wires in R1 against 24 Error List items. It then found 21 loose wires on the scratch against 22 items (`tools/bench/diag_c116d_decode.log:41-42`). The 11 stubs and 9 new nets add up exactly in the reader's own count: 23 − 11 + 9 = 21. The claim's sum starts from 24 instead, which quietly assumes the unexplained 24th R1 item survives R2 unchanged. Nobody measured that:\n- Before R2, only 536 of 1,945 wires read cleanly; 1,409 reads failed (`decode.log:3,47`).\n- After R2, the reader made 26 targeted reads and no sweep at all (`sweep_read 0`, `decode.log:40`).\n- The 116-4 card only asserts that the residual is \"unchanged by R2\" (`tools/bench/cards/result_116-4.json`, J2 and the open question).\n\nThe 22 was also fitted after the fact. The pin was 24, the scratch measured 22 and failed the gate (`tools/bench/diag_c116b_scratch_el.log:114-116`), and the decomposition came afterwards. That is not the \"pinned to the plan's own prediction\" that 230(f) asked for (`docs/d1-loop12-17-split-plan.md:2080`).\n\n**2. An alternative explanation of the same evidence.** The 24th item lies in one of the deleted stubs or tunnels, so R2 removes it. Something in the roughly 1,908 wires that were never read on the scratch then becomes newly loose and adds one back. That also gives 22. A count gate cannot tell these two stories apart.\n\nThere is a second sign that the items are not tied to specific nets. The scratch matched only 5 of the 7 licensed \"PD230 dangling branch\" items, and the 22 was met by class totals (17 + 5) (`scratch_el.log:107-108`). Yet the reader shows all 7 PD230 nets still loose (`decode.log:18-38`).\n\n**3. A defect in the gate itself.** \"20 nets (13 outer + 7 PD230)\" is really 18 distinct nets: w25438 and w25461 are in both sets (`decode.log:32-33`). Those two nets change: loose joints go from 3 to 9 and from 2 to 6, and terminals from 4 to 3 on each. So \"the 7 PD230 nets unchanged\" contradicts the J4 table on 2 of its nets. As written, the joints gate either cannot pass or is checked against an ambiguous reference.\n\n**4. What would falsify the claim.** Pre-decided 231(e) requires a full sweep of R1 with the repaired v1 reader (`plan:2109-2112`). If that sweep places the 24th item on a stub, on a deleted tunnel's wire, or on one of the 13 outer nets, then 22 is wrong.\n\n**5. The cheapest test that separates the two stories.** It is already required as STEP 0 by (f) (`plan:2113`):\n- Run the v1 sweep over all 1,945 wires of R1 and name the 24th item.\n- Run the same sweep over all 1,934 wires of the scratch.\n\nThe claim holds only if the residual item is on a net R2 leaves alone, and the scratch's set of loose wires is exactly R1's set minus the 11 stubs plus the 9 nets. Until then the pin should be written as \"21 measured + 1 unexplained\", and the joints gate should be restated on the 18 distinct nets.\n\nRule 1a is not challenged here. A loose joint feeds no node, and P2 (each outer net keeps its source and its 1–3 sinks) is consistent with the joints reader's per-net terminal counts. My objection is to the pin, not to whether the maths is preserved.\n\nDEFECT: major - the 22 rests on an unexplained 24th R1 item persisting through R2, which nobody measured because the after-state was never swept; the reader's own count is 21, and the \"20 nets\" gate double-counts w25438/w25461 and wrongly requires them unchanged.",
+   "mech": {
+    "M1": 1.0,
+    "F1": 0.0,
+    "B1": 1.0
+   }
+  },
+  {
+   "case": "R4-clean-r2pin",
+   "arm": "SH",
+   "rep": 1,
+   "model": "claude-sonnet-5-5",
+   "effort": "high",
+   "attempt": 1,
+   "usd": 0.3416,
+   "minutes": 0.79,
+   "cell_minutes": 0.79,
+   "turns": 7,
+   "tools": 6,
+   "timeout": false,
+   "cells": [
+    {
+     "name": "c0",
+     "model": "claude-sonnet-5-5",
+     "effort": "high",
+     "rc": 0,
+     "timeout": false,
+     "minutes": 0.79,
+     "usd": 0.34162919999999997,
+     "turns": 7,
+     "tools": 6,
+     "invalid_ratelimit": false,
+     "models_used": [
+      "claude-haiku-4-5-20251001",
+      "claude-sonnet-5-5"
+     ]
+    }
+   ],
+   "answer": "**Strongest reason the claim is wrong: 22 is the scratch result relabelled as a derivation. The derivation needs an unexplained +1 and rests on a partial census.**\n\n1. **The arithmetic only reaches 22 by carrying R1's unexplained residual.**\n   - The measured wire-level result is \"23 wires with a loose joint\" in R1 and \"21\" after. That is 23 − 11 removed + 9 added (`tools/bench/diag_c116d_decode.log:41-42`).\n   - The claim says 24 − 11 + 9 = 22. The extra item is B1's \"1 unexplained residual\" (`archive/peer/2026-09-28-c116b-pin.md:54`).\n   - The log says R1 read 23 wires against 24 listed. The plan admits that residual is \"unexplained\" (`docs/d1-loop12-17-split-plan.md:2104`).\n   - The claim assumes that item sits on a net R2 does not touch. Nothing shows this. If it sits on a deleted stub or an outer net, the true expectation is 21 or 23.\n   - The plan's own planned acceptance test, `OpWireJoints_v1` naming the 24th item (`:2109-2112`), has not run yet. Pin 22 therefore depends on a fact that is still open.\n\n2. **The \"before\" census is partial.**\n   - The v0 reader returned clean reads only for wires 0-535. From read 536 on, 1409 of 1945 reads failed with error 1055 (`diag_c116d_decode.log:3`, final `VALID` line).\n   - The 23-wire set comes from 37 targets plus 536 swept wires. A loose wire among the other ~1400 would be invisible in both \"before\" and \"after\".\n   - \"24 loose-end items in R1\" therefore comes from the Error List, not from the per-net evidence the claim cites.\n\n3. **The 22 is a post-hoc fit, not a prediction.**\n   - The pre-launch pin was 24, and the scratch Error List gave 22 (`diag_c116b_scratch_el.log:114-116`, PIN gate FAIL).\n   - The pin was then re-set to the observed value. The J4 table was read from that same scratch build.\n   - So the launch gates check \"R2 reproduces the scratch\". They do not test the rule-1a statement that each outer net keeps its source and 1-3 sinks.\n   - The terminal diff in 230(f) carries that statement, not these gates.\n\n4. **Counting unit.** The unit is one item per wire. A single stub wire has L15 loose joints (`diag_c116d_decode.log:15`). R1 showed 11 stubs removed but only 6 stub items gone (`split-plan.md:2072`), so item counts do not map one-to-one to wires. The NI page the earlier review fetched does not say whether an item is per wire or per segment (`c115e-sel.md:129-130`). A joint change inside one wire could shift the count by ±1 with no rule-1a effect.\n\n5. **The gate depends on the repaired reader.** The 20-net joints gate uses the repaired reader (`OpWireJoints_v1`, `split-plan.md:2109`), which is not yet built or tested. Its predecessor leaks references.\n\n**Alternative explanation of the same evidence:** the residual item sits on one of the 9 newly-loose or 2 re-joining nets, and the sum 22 is a coincidence of offsetting miscounts. The scratch count would be unchanged, but a launch could still differ.\n\n**What falsifies the claim:** the 24th R1 item is located on a touched net, or v1's whole-graph sweep of all 1,945 R1 wires finds loose wires outside the 23.\n\n**Cheapest discriminating test:** run `OpWireJoints_v1` over all 1,945 R1 wires. This is already planned as 231(e). It must show 24 loose items, name the 24th item's net, and show that net is not among the 11 stubs or 20 target nets. If the 24th is on an untouched net, 22 holds. If it is on a touched net, the pin must be re-derived.\n\nI could not shake points 1-2. The 22 may well be right, but it is not independently established. Launch should wait on 231(e).\n\nDEFECT: major - the 24 − 11 + 9 = 22 derivation absorbs an unlocated residual item, and the 23-wire \"before\" census covers only 536 of 1945 wires, so the pin is the scratch count refitted rather than an independent prediction.",
+   "mech": {
+    "M1": 1.0,
+    "F1": 0.0,
+    "B1": 1.0
+   }
+  },
+  {
+   "case": "R4-clean-r2pin",
+   "arm": "SMX",
+   "rep": 1,
+   "model": "claude-sonnet-5-5",
+   "effort": "max",
+   "attempt": 1,
+   "usd": 3.654,
+   "minutes": 14.8,
+   "cell_minutes": 14.8,
+   "turns": 53,
+   "tools": 51,
+   "timeout": false,
+   "cells": [
+    {
+     "name": "c0",
+     "model": "claude-sonnet-5-5",
+     "effort": "max",
+     "rc": 0,
+     "timeout": false,
+     "minutes": 14.8,
+     "usd": 3.6539857999999996,
+     "turns": 53,
+     "tools": 51,
+     "invalid_ratelimit": false,
+     "models_used": [
+      "claude-haiku-4-5-20251001",
+      "claude-sonnet-5-5"
+     ]
+    }
+   ],
+   "answer": "(B = tools/bench/; decode.log = B/diag_c116d_decode.log)\n\n**1. Strongest reason it is wrong: the gate text contradicts the table it cites.** \"20 nets (13 outer + 7 PD230)\" are 18 nets, because w25438 and w25461 sit in both lists (B/plan_l2r2_pred.json:50-51, B/diag_c116d_nets.json:3). \"The 7 PD230 nets unchanged\" is false for those two. J4 shows L3→L9, T4→T3 and L2→L6, T4→T3 (decode.log:32-33). By my count, B/diag_c116d_j3_raw2.json shows each going from 1 to 2 loose leaf ends. Only decode.log:18,19,21,22,38 are unchanged. The Error List counts per wire, so those two new dangling branches add nothing to \"== 22\". The joints gate is their only check, and it is worded wrongly (docs/d1-loop12-17-split-plan.md:2107, STATUS.md:72, B/next.json:14). Taken literally, it fails a correct launch.\n\n**2. Alternative reading.** \"Measured per-net, not carried from R1\" is overstated.\n- The sum starts from R1's Error List 24, but the reader finds 23 before and 21 after (decode.log:41-42). The 24th item is unexplained (split-plan:2104) and assumed invariant.\n- The \"after\" read covers 26 wires (decode.log:47) from an in-memory SAVE=False scratch (diag_c116d_j3.py:3). The 22 comes from a different, saved and cold-loaded scratch (diag_c116b_scratch.py:2; diag_c116b_scratch_el.log:7).\n- Error List items carry no uid (archive/peer/2026-09-28-c116b-pin.md:29), so \"one item per wire\" is a decoder premise (diag_c116d_decode.py:5).\n- So 22 may simply be the scratch count, with H2′ (invented after 24 failed) fitted to it.\n- I tested the one rival model. Counting loose leaf-ends instead of wires gives 23+1 = 24 for R2 (my read of diag_c116d_j3_raw2.json), which contradicts 22. Per-wire survives.\n\n**Also owed before launch:** the machine pin still says 24/55 (plan_l2r2_pred.json:171,175). plan_l2r2_pin.json was never written (diag_c116b_scratch_el.py:68-70). So final mode would fail a correct 22/53 launch unless edited. It also files R2's licences as 17+5 (diag_c116b_scratch_el.log:112-113), not 6+7+9. The joints gate also needs an unbuilt reader: v0 died at read 536 (decode.log:3; STATUS.md:65).\n\n**3. Falsifier.** Any of these:\n- the v1 sweep puts the 24th item on a wire R2 touches;\n- R2's wire-level loose set differs from {−11 stubs, +9, 2 re-joined};\n- the launch Error List is not 22 while TD/ENDS pass.\n\n**4. Cheapest test.** Run a cold v1 sweep of R1 and of the saved scratch (1,945 reads × 0.15 s, about 5 min, diag_c116d_j3b.log:84). Diff each wire's loose bit and joint list. The claim predicts 11 gone, 9 new, 2 re-joined and everything else identical, and the sweep names the 24th.\n\n**Verdict:** I could not refute 22 itself; the cold scratch and the per-wire test support it. Any item in 3 would change my mind.\n\nDEFECT: minor - the gate wording (\"20 nets\", \"7 PD230 nets unchanged\") contradicts the J4 table for w25438/w25461, and the 22 pin is not yet in the machine pin file.",
+   "mech": {
+    "M1": 1.0,
+    "F1": 0.0,
+    "B1": 1.0
+   }
+  }
+ ]
+}

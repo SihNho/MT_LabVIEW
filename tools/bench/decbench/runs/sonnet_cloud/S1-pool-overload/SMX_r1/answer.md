@@ -1,0 +1,28 @@
+**Answer: change NEXT.** Pool-before-QRT-W is the right order inside QRT (`docs/d1-loop12-17-split-plan.md:2142`), but not as written and not now.
+
+**1. "Full Q_work ⇒ skip" is the drop-new policy the user overruled.** NEXT takes it from `docs/d1-build-plan.md:572` (STATUS.md:65-69). `docs/decisions.md:25` records the user's ruling: latest-wins, "discard the backlog". Drop-new leaves the tracker "contiguous but lagged" (`docs/frame-ownership-design.md:89-91`).
+
+The later reconciliation says skipping is harmless under `Buffer Number Mode = Last` (`:92-94`). That does not carry into D1. D1 reuses the original `#6810` (`docs/d1-build-plan.md:515-517`), which requests `LastBufferNumber+1` sequentially (`docs/stage2-plan.md:19,68`), and no D1 document adopts Last. A 20-slot FIFO under sustained overload would therefore leave tracking ~20 frames behind (my inference).
+
+The plan itself calls latest-wins "the overload rule for the frame path". It exempted Q_focus only behind a drop-count gate (`docs/d1-build-plan.md:1121-1126`). NEXT has no overload test and sends only O6/O7 to judgement (STATUS.md:68).
+
+**2. Ordering.**
+- The 2026-09-28 outcome review (refuted) calls the work order stale. It wants hand-off, R8 (camera rate set inside the VI) and a 150 Hz run before more L2 work (`archive/peer/2026-09-28-outcome-review-20260928.md:158-165,191-205`).
+- The display-loop VI already loses 16/12 frames at 15 beads, 90 Hz, against 3,359/5,860 for the original copy (`archive/benchmarks/INDEX.md:79`).
+- The user runs 8 beads, sometimes 15, and wants maximum rate (`tools/bench/decisions_pending.json:52`).
+- 150 Hz never ran; those cells were 90 Hz repeats (`INDEX.md:69`). R8, which the user chose (`decisions_pending.json:121`), is open (`docs/goalmap.json:72,194`).
+- "Keep splitting" was given while real runs were blocked (`decisions_pending.json:229`). They are allowed again (STATUS.md:11).
+- The pool adds one more unrunnable file. ExecState 1 waits for QRT, STOP, ROT and FIN (STATUS.md:151; `docs/d1-loop12-17-split-plan.md:75-78`).
+- Cycle 117's steer "follow" is nominal (review `:163-165`).
+
+**3. Card size.** Queue-op create routes and constants on Diagram #686 are missing, and no create pattern is proven (`docs/qrtw-plan-draft.md:26-29,33,77`). One recipe would carry tooling, a stage and an undecided policy. That is the shape of cycle 112 ($54, 151 min; review `:136-150`).
+
+**Instead,** pipeline one cycle:
+- Judgement first fixes the overload rule: consumer-side drain to newest, or the user's explicit OK for a lagged FIFO.
+- The LabVIEW slot adds R8 to a copy of the accepted display-loop VI and measures 8 and 15 beads at 90 and 150 Hz.
+- The user gets the owed plain-language hand-off (`decisions_pending.json:104`).
+
+Build the pool only if those numbers show loss on the 1.1/1.2 side. If they are lossless, ask the user whether `docs/decisions.md:18`'s acquisition/tracking split is still wanted.
+
+VERDICT: change NEXT
+NEXT ACT: Hold the pool build; decide its overload rule against the user's latest-wins ruling, and use the LabVIEW slot to add R8 to the accepted display-loop VI and measure lost frames at 8 and 15 beads at 90 and 150 Hz.
