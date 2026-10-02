@@ -1,0 +1,13 @@
+BGRUN START 2026-10-02 08:33:15 limit 6.0 min: py -u tools/bench/selftest_c133_1_fsroutes.py
+BGRUN PID 15952
+  FACT  input plan md5 98992a598c9551e56a57393489c469d7
+PASS  R1 rebase on the real P3b-1 graph -> ok, final  rebased C:/Users/KimLab/AppData/Local/Temp/st_c133_1_9cwhltw3/plan_ring_p3b2.json: 116 uid(s) bound, base -> C:/Users/KimLab/AppData/Local/Temp/st_c133_1_9cwhltw3/ring_p3b2_base_real_fsmap.json; re-simulated on the real base: final=True failed=None
+PASS  R2 route check PASS, 39 rows, none unroutable; dry PASS with no unbound uid  ('PASS', 39, 'None', 'PASS', 'None', [])
+  FACT  fs_routes {'24': {'how': 'fs_border', 'variant': 'case_frame_to_fs_frame_branch', 'id': 'p3b_x_i_f1'}, '26': {'how': 'fs_inner_branch', 'variant': None, 'id': 'p3b_x_i_rat1'}, '28': {'how': 'fs_inner_branch', 'variant': None, 'id': 'p3b_x_i_rar1'}, '30': {'how': 'fs_inner_branch', 'variant': None, 'id': 'p3b_x_i_raf1'}, '32': {'how': 'fs_inner_branch', 'variant': None, 'id': 'p3b_x_bn_latest'}, '34': {'how': 'fs_border', 'variant': 'loop_body_wired_src_to_fs_frame_in_case', 'id': 'p3b_x_trans'}, '36': {'how': 'fs_border', 'variant': 'loop_body_wired_src_to_fs_frame_in_case', 'id': 'p3b_x_rot'}, '38': {'how': 'fs_border', 'variant': 'loop_body_wired_src_to_fs_frame_in_case', 'id': 'p3b_x_fidx'}}
+  FACT  ops of the crossings [(24, ('connect_term_uid', 'fs_border')), (26, ('connect_term_uid', 'fs_border_inner_branch')), (28, ('connect_term_uid', 'fs_border_inner_branch')), (30, ('connect_term_uid', 'fs_border_inner_branch')), (32, ('connect_term_uid', 'fs_border_inner_branch')), (34, ('connect_term_uid', 'fs_border')), (36, ('connect_term_uid', 'fs_border')), (38, ('connect_term_uid', 'fs_border'))]; BIND ops [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 24, 26, 28, 30, 32, 34, 36, 38]
+PASS  R3 fs_routes == the 8 crossing actions; each compiles to connect_term_uid fs_*  (['24', '26', '28', '30', '32', '34', '36', '38'], [24, 26, 28, 30, 32, 34, 36, 38])
+PASS  R4 op 24 binds the created FlatSequenceOuterTunnel  ({-50: 10000052}, 0)
+PASS  N1 without fs_routes: op 24 compiles to connect and the dry FAILS at op 24 with 'unbound'  STEP-DIFF after real op 24 (connect, plan actions [24] ['p3b_x_i_f1']): {"only_sim_terms": [-52, -51], "only_real_terms": [10000053, 10000054], "only_sim_edges": [[-52, 10000006], [27401, -51]], "only_real_edges": [[27401, 10000053], [10000054, 10000006]], "unbound": [-52, -51], "who": {"-52": [-50,
+PASS  P1 P3b-1 re-sim: final, route check PASS, compile ops == the stored plan's  (True, 'PASS', 6)
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":6,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 109s

@@ -37,6 +37,8 @@ ROOT = os.path.dirname(os.path.dirname(HERE))
 HOOKS = os.path.join(ROOT, "tools", "hooks")
 GUARD_SESSION = os.path.join(HOOKS, "guard_session.py")
 GUARD_BASH = os.path.join(HOOKS, "guard_bash.py")
+if "--candidate" in sys.argv:                   # card 133-4: CLI form of GS_UNDER_TEST (env prefixes are auto-denied)
+    os.environ["GS_UNDER_TEST"] = os.path.abspath(sys.argv[sys.argv.index("--candidate") + 1])
 sys.path.insert(0, HOOKS)
 import guard_session  # noqa: E402
 
@@ -59,7 +61,12 @@ def call(script, payload, cycle=False):
     env.pop("CYCLE_SESSION", None)
     if cycle:
         env["CYCLE_SESSION"] = "1"
-    p = subprocess.run([sys.executable, script], input=json.dumps(payload), text=True,
+    cand = os.environ.get("GS_UNDER_TEST")      # card 133-4: run a candidate file as if it sat at the live path
+    cmd = [sys.executable, script]
+    if cand and script == GUARD_SESSION:
+        cmd = [sys.executable, "-c", "import sys; p, L = sys.argv[1], sys.argv[2]; sys.argv = [L]; exec(compile(open("
+               "p, encoding='utf-8').read(), L, 'exec'), {'__name__': '__main__', '__file__': L})", cand, script]
+    p = subprocess.run(cmd, input=json.dumps(payload), text=True,
                        capture_output=True, encoding="utf-8", errors="replace", timeout=60, env=env)
     return p.returncode, (p.stderr or "")
 

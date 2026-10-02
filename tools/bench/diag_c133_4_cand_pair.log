@@ -1,0 +1,16 @@
+BGRUN START 2026-10-02 08:53:22 limit 6.0 min: py -u tools/bench/selftest_guard_session_pairing.py --candidate C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/18bd8632-d0f4-4504-b48c-77c1d5dca41f/scratchpad/guard_session.py
+BGRUN PID 2224
+under test: C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\18bd8632-d0f4-4504-b48c-77c1d5dca41f\scratchpad\guard_session.py
+  BAD  P1 132-1 then 132-2 refused                                    (0, '')
+  BAD  P2 132-2 then 132-1 refused                                    (0, '')
+  ok   P3 LabVIEW + offline tools/bench/** allowed, write recorded    (0, '', [{'id': 'gsp-bench', 'labview': 'none', 't': 1790898803.6860082, 'card': 'C:\\Users\\KimLab\\AppData\\Local\\Temp\\gsp_eihj9m91\\task_gsp-benc
+  ok   P4 two offline cards (one writes stagexec.py) allowed          (0, 0, '')
+  ok   P5 legacy entry judged from its card file -> refused           (2, 'BLOCKED by tools/hooks/guard_session.py: LabVIEW CARD BESIDE A GATE-TOOL EDIT.\n  LabVIEW card zz_LabView (labview read) ')
+  ok   P6 legacy entry, unreadable card -> refused, names it          (2, 'BLOCKED by tools/hooks/guard_session.py: GATE-TOOL PAIRING CHECK CANNOT READ live card gsp-gone\n  (C:\\Users\\KimLab\\AppDa')
+  ok   P7 legacy entry writing only tools/bench/** -> allowed         (0, '')
+  ok   P8 offline tools/** beside LabVIEW refused                     (2, 'BLOCKED by tools/hooks/guard_session.py: GATE-TOOL EDIT BESIDE A LabVIEW CARD.\n  card gsp-all (flags.write reaches tools')
+  ok   P9 recorded payload (132-2) alone -> exit 0                    (0, '')
+  ok   P10 recorded payloads 132-1 then 132-2 -> exit 0 then 2        (0, 2, 'BLOCKED by tools/hooks/guard_session.py: LabVIEW CARD BESIDE A GATE-TOOL EDIT.\n  LabVIEW card 132-2 ')
+SUMMARY 8/10 gates pass
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":8,"fail":2},"first_fail":"P1 132-1 then 132-2 refused","artefacts":[]}
+BGRUN END rc=1 after 2s

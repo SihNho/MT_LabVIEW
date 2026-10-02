@@ -135,3 +135,143 @@ How to add: see the 5-line note at the top of `docs/d1/INDEX.md` (next number = 
        `stagesim_c132_6_recover_p3b2.log:42-44`) although cycle 131 finalized b25c1ecb — measure whether 132-1's `stagexec.py`
        or 132-6's `stagesim.py` edit regressed finalize (git 83dd0e70). Route-check ALL 39 ops; fp-21 and the op-24 stop are one
        class (binding simulator-made uids). Rerun `diag_c131_5_stubs.py` and record its result whatever it is.
+282. **(cycle 133 judgement, 2026-10-02 08:3x — at cycle start, before cards 133-1 / 133-2; steer `tools/bench/cards/steer_132.json` FOLLOWED)**
+     USER-RULES: U1 (relied on: card order, tool plumbing and where a verification read runs; the plan's 39 actions and the
+     final graph are unchanged; none contradicted).
+     - **(a) Steer followed:** this cycle's work is the P3b-2 build (the ring that loop 1.2 reads from, M3); the next act written
+       at cycle end is a build or run of the deliverable, never tooling. A third half of P3b, if it is ever needed, is a user
+       question and goes to `decisions_pending.json` (PD281(b)); no other user question is waiting.
+     - **(b) Cards:** 133-1 (offline, material) = PD280(c)(d) + PD281(c) through dry/prerun, plus the gate-fp drain (fp-21 is the
+       route-check binding class, PD281(c); fp-28 needs a `gate_fp.py` close verb, PD276(d)) — ONE card answers the DUE gate-fp
+       line. 133-2 (log-reader, read-only) beside it = the memory meter sequence of P3b-1's launch and scratch pin4, the X10
+       start term's definition, 132-4's reader numbers, every recorded error-2 point.
+     - **(c) Refines PD281(b):** before a third half is asked, judgement checks a launch FORM that keeps ONE stage file — the
+       heavy end-of-run reads (last checkpoint read, CEN2 census) run in a FRESH LabVIEW instance on the saved file (rule-6 GUI
+       save first; the file becomes the bed only if those gates pass, as PD274(c) already requires of the final Error List
+       read). Decided on 133-2's facts (PD283), built in 133-3, with X10 modelling the launch instance from the MEASURED load
+       of its input file (P3b-1: 584.1 MB, `diag_c132_2_graph_p3b1.log:24`).
+     - **(d) `wrong-ordering` device decided** (`docs/violation-decisions.md` 2026-10-02 08:25): guard_session pairing check,
+       built in an offline card beside this cycle's LabVIEW card, never as the first act.
+283. **(cycle 133 judgement, 2026-10-02 08:5x — after 133-1 FAIL 2/1 (`stage_prerun_c133_1_p3b2_dry.log`, `diag_c133_1_pred_p3b2.log`) and 133-2 PASS 4/0)**
+     USER-RULES: U1 (relied on: the 39 actions and the final graph are unchanged; only the number of LabVIEW sessions that
+     apply them changes; none contradicted). The 6-file cap (CLAUDE.md "AT MOST 6", user 2026-09-29) is asked as D-2026-10-02-02.
+     - **(a) Accepted from 133-1:** 98992a59's `final: false` is NOT a regression (b25c1ecb was finalized with
+       `route_check=False`, `plan_ring_p3b_split.py:174`; the CLI uses True, `stagesim.py:2031`); 'unbound' on a provisional
+       base dates from 2026-09-25 (`stagexec.py:786`) = fp-21's class, by construction; the op-24 stop was compile_plan
+       placing FS wires from the plan only — fixed by `finalized.fs_routes` (`selftest_c133_1_fsroutes` 6/0, regressions
+       green). Rebased P3b-2 `plan_ring_p3b2.json` 04204133 is final, route 39/39, BIND 22, R 24. Open: L0 refuses it because
+       the rebase records its temp copy as `plan_in` (`plan_ring_p3b2.json:637-640`, `stage_d1_ring_p3b2.py:33`).
+     - **(b) Memory (133-2):** X10's start 570.0 = pin2's k0 = P3a load + op-0 read (`memory_model.json:6`); P3b-1 loads at
+       584.1 (`diag_c132_2_graph_p3b1.log:24`) and an op-0 read adds ~5.9 (`stage_d1_ring_p3b1.log:42-43`) ⇒ P3b-2 starts
+       ≈ 590. X10 = 701.9 MB at start 570 (`diag_c133_1_pred_p3b2.log`) ⇒ ≈ 722 at 590; without the final read still ≈ 704.
+       ONE LabVIEW session cannot apply P3b-2 under 690 MB, and P4/P5 start from bigger files. PD282(c)'s form is not enough.
+     - **(c) DECIDED, under an assumption (CLAUDE.md 2c — safe, copies only, useful under every answer):** P3b-2 is applied in
+       TWO LabVIEW sessions with a saved in-between file, from tools already exercised: split by memory (130-5), rebase onto a
+       real graph (133-1), graph read (132-4). Part a = actions 1..k on the bed, part b = the rest on a's saved file; k from X10
+       per session ≤ 690 with start 590 for a and, for b, a's predicted load + op-0 read (re-checked with the MEASURED load of
+       a's file before b's prerun). Both parts together give 04204133's end graph (cdiff 16). **ASSUMPTION: the in-between file
+       is part of step P3b-2, not counted toward the 6-file cap**; never a bed, never the input of another step, deleted after
+       the step's final file is accepted (md5 kept). The final file is the same under every answer to D-2026-10-02-02.
+     - **(d) One scratch covers both sessions on byte copies (D-2026-10-01-01): a on a bed copy → save → graph read → `--rebase`
+       b → dry + prerun → b → save → Error List count-only in the range of `errorlist_expect_p3b2.py`; then ONE launch of both.**
+       Bed moves to the step's final file → 4 of 6 (under the assumption).
+     - **(e) Card 133-3 (offline):** X10 start from the measured load of the input file (cited per file); `--rebase` records the
+       ORIGINAL `plan_in` (L0); the cut; a finalized on `sim/ring_p3b2_base_real_fsmap.json` with `fs_routes`, b provisional on
+       a's sim end; recipes `stage_d1_ring_p3b2a.py` / `stage_d1_ring_p3b2b.py` from the P3b-2 recipe; a's dry + prerun PASS;
+       gate-fp: fp-28 closed (correct refusal, PD276(d)), fp-21 closed (by design: a provisional base gets its dry only after
+       `--rebase`, PD264(b)); `diag_c131_5_stubs.py` rerun recorded. 04204133 and `stage_d1_ring_p3b2.py` stay as the
+       one-session reference, never launched.
+284. **(cycle 133 judgement, 2026-10-02 09:0x — after 133-3 PASS 5/0 and 133-4 FAIL 3/1, `tools/bench/cards/result_133-{3,4}.json`)**
+     USER-RULES: U1 (relied on: the cut keeps the 39 actions and 04204133's end graph — 10334 objects / 5933 terminals /
+     1974 wires, cdiff 16; none contradicted).
+     - **(a) 133-3 accepted:** X10 start = measured load of the input file + op-0 read 5.9 (`memory_model.json` load_by_vi,
+       `stage_prerun.py:1945,1957`; P3b-1 re-modelled 678.5 vs 680.4 measured). Cut by units: a = actions 1-7, 14-19, 24-27,
+       32-35 (N 21, X10 671.8 at 590.0), b = the rest (N 18, 677.7 at 605.1 = a's predicted load 599.2 + 5.9); a final on the
+       FS-map base (route 21 rows, 0 unbound), dry 21/21, prerun 15/0; b final on a's simulated end (provisional); EL range of
+       the step's final file 49..52 (loose ends 18..21, `errorlist_expect_p3b2ab.json`); `--rebase` keeps the ORIGINAL
+       plan_in. Gate-fp queue drained (fp-21, fp-28 closed).
+     - **(b) X10 must REFUSE an unmeasured input load, not fall back to 570** (133-3 open 1: b today 642.6 vs 677.7) — a
+       silent pass on an unmeasured start is the `device-failed` class of 2026-10-02 02:57. Fixed in the next offline tooling
+       slot, never inside a LabVIEW card; until then the scratch/launch card CHECKS that b's X10 line names the measured
+       load of a's file (load_by_vi entry + its log line).
+     - **(c)** `load_growth` 0.719 MB/op (one pair, P3a → P3b-1) is accepted as a PLANNING term only; b's real start is
+       measured by the graph read of a's file before b's prerun.
+     - **(d) 133-4 accepted:** the pairing check is live (`guard_session.py:75,238,426,432`; 10/10, payload test, 27/27,
+       25/25). Glob semantics accepted: a card whose write glob CAN match a stage tool counts. `selftest_chat_p1` S3-S6 went
+       red because its fixture prep card writes `tools/**` — narrowed to a realistic prep list (`tools/bench/**`,
+       `tools/recipes/**`) as step 0 of card 133-5, which reruns it (46/46 expected).
+     - **(e) Carries (tooling, after the deliverable):** (b); `selftest_rebase_c132_6` / `selftest_rebind_c132_5` fixtures
+       (the provisional plan, now rebased in place) re-pointed to `git show 53737825:tools/bench/plan_ring_p3b2.json`;
+       `diag_c131_5_stubs.py` FAIL 1/1 (our-script-bug, not on P3b-2's path); `guard_session` CARD_RE reads an absolute card
+       path with a space as unreadable — dispatch with the relative path (as done).
+     - **(f) Card 133-5 = the two-session scratch of PD283(d).** Launch = card 133-6 if the scratch passes and time allows,
+       else the next cycle's first act.
+285. **(cycle 133 judgement, 2026-10-02 09:3x — after 133-5 FAIL 12/2, `stage_d1_ring_p3b2a_scratch.log:346-350`)**
+     USER-RULES: U1 (relied on: a recipe GATE is corrected, the 21 edits ran real == sim; no computation or design change).
+     - **(a) Scratch a ran all 21 ops with E1 real == simulated and the name gate PASS (`:348-349`), then stopped at the
+       recipe's FR gate (fatal, before save):** FR builds the set of base frames from terminal rows only
+       (`stage_d1_ring_p3b2a.py:55-57`; same code `stage_d1_ring_p3b2b.py:57-59`), and frame f0 #27641 has 0 terminals BY
+       DESIGN (PD269(b)), so it was taken for a new frame. 27641 is a base frame (`graph_ring_p3b1_20261002_073225.json`
+       fs_frames 27509: [27641, 32464, 27722]). Our gate's bug, not a graph difference. Bed unchanged, scratch deleted.
+     - **(b) Fix:** FR's base-frame set = the base graph's FS frame lists (fs_frames / the plan base's FS map) ∪ the frames of
+       terminal rows; nothing else in the gate changes; both recipes; dry + prerun again (offline, seconds).
+     - **(c) Memory fact:** in the STAGE context the P3b-1 file starts at 564.4 MB, 570.4 after the op-0 read
+       (`stage_d1_ring_p3b2a_scratch.log:50-51`) = the model's old 570, not the reader-context 584.1 + 5.9 = 590 that
+       `load_by_vi` now uses; a's peak 646.7 MB at k21 incl. the final read (`:346`) vs X10 671.8 (−25.1, conservative by the
+       start). At the stage start the unsplit P3b-2 is still 701.9 > 690 (133-1), so the two-session split stands.
+       **Carry:** `load_by_vi` from stage-context METER lines (start/k0), not reader loads — reader loads would force
+       needless splits in P4/P5.
+     - **(d)** The "within 10 MB of X10" check is one-sided: above X10 + 10 is the `device-failed` case; below is conservative.
+     - **(e) Card 133-6 (the cycle's last dispatch, `retry_of_card` 133-5):** FR fix → a dry/prerun → the owed review if
+       guard_peer holds → scratch a again (2nd run, within RETRY_CAP) → 133-5's steps 2-4. The launch is the next cycle's first
+       act.
+286. **(cycle 133 judgement, 2026-10-02 09:5x — after 133-6 FAIL 3/1, `stage_prerun_c133_6_rebase_p3b2b.log:3-4`; cycle closes on the 6-dispatch cap)**
+     USER-RULES: U1 (relied on: binding plumbing only; b's 18 actions and the end graph are unchanged; none contradicted).
+     - **(a) Accepted:** FR fix (`stage_d1_ring_p3b2a.py:30,56`, `_p3b2b.py:32,58`; `selftest_c133_6_fr` 9/0); review
+       `archive/peer/2026-10-02-c133-6-fr-p3b2a.md` confirms our-script-bug and corrects one citation (the P3b-1 graph JSON has
+       NO fs_frames; 27641 = f0 only through carry_fs binding by elimination). **Session a of P3b-2 PASSED as a scratch:**
+       20/0 gates incl. FR, peak 650.9 MB (X10 671.8), bed unchanged (`stage_d1_ring_p3b2a_scratch_c133_6.log:348,386-392`).
+       Its in-between file `claudeDev\scratch_c133_6_ring_p3b2a_20261002_093837.vi` (md5 6cc69221) is KEPT for session b's
+       scratch — a scratch, never a bed, deleted when P3b-2 is accepted. Graph read of it: 588.5 MB after load (reader
+       context), `graph_ring_p3b2a_20261002_094927.json`, `load_by_vi` entry `memory_model.json:16`.
+     - **(b) Session b's rebase refused:** REBIND bound 11 nodes and 13 terminals (8 by connection, 5 by position) but left a's
+       created terminals [-2, -4, -5, -6, -7, -9, -11, -30] unbound; -30 (the source terminal of a's FS outer tunnel -28, made by
+       `p3b_x_i_f1`, border entry `27401|27641`) is in the FS map ⇒ FS-CARRY refuses. Fifth distinct rebase plumbing gap in two
+       cycles (name keys, FS map, route binding, plan_in, created tunnel terminals) — each closed, none repeated.
+     - **(c) Next cycle card 1 (kind build, offline steps first, then LabVIEW):** rebind binds a created terminal through its
+       BOUND owner node by (direction, face/frame, position among that node's terminals) — PD278(c)'s second key, which -30
+       never reached — refusing when ambiguous; self-test on the recorded pair (`sim/ring_p3b2b_base_provisional.json` ↔
+       `graph_ring_p3b2a_20261002_094927.json`): -30 and the 7 others bind, an ambiguous case still refuses → `--rebase` b →
+       b dry + prerun (X10 ≤ 690 at a's measured load) → scratch b on a COPY of the kept in-between → save → Error List
+       count-only in 49..52 → measured census into both preds. If the rebind cannot be closed in that card, it returns and the
+       FS reader of (e) becomes the next act.
+     - **(d) Card 2:** ONE launch of both sessions from the bed: a → save in-between → graph read → `--rebase` b (compare with the
+       scratch's rebased b: equal uids = LabVIEW's uid allocation measured deterministic) → b dry/prerun → b → save → full Error
+       List read; bed moves → 4 of 6 (assumption, D-2026-10-02-02); both in-between files deleted after acceptance.
+     - **(e) Carries (tooling, after the deliverable):** the graph reader records FS frames and border tunnels (one
+       `OpFsDiagrams_v0` read of FS #27509, the review's cheapest test) so FS maps are measured, not bound by elimination;
+       `load_by_vi` from stage-context METER lines (PD285(c)); X10 refuses an unmeasured load (PD284(b)); stale fixtures and
+       CARD_RE (PD284(e)); `decisions_pending.json` item D-2026-09-28-01's question is 613 chars > the validator's 300, so
+       `protocol.py validate` fails the whole file (never re-word an item — the validator needs a legacy exemption).
+287. **(cycle 133 judgement, 2026-10-02 10:1x — after `archive/peer/2026-10-02-retrospective-cycle133.md`: `repeated-failure-class` 20 min, `wrong-ordering` 13 min; SUPERSEDES PD286(c))**
+     USER-RULES: U1 (relied on: a dry rule, a graph READER and where b is finalized; b's 18 actions and the end graph are
+     unchanged; none contradicted).
+     - **(a) Dry rule device first** (`docs/violation-decisions.md` 2026-10-02 10:10): a gate FALSE on simulated data fails the
+       dry; only stub-input gates may be UNVERIFIED and they block the launch unless named; an empty declared census prints
+       UNPREDICTED. Without it session b's dry would run under the rule that hid FR.
+     - **(b) The FS READER replaces a sixth binder patch (CLAUDE.md "guessed twice, build the reader"; retrospective finding
+       1(b)/2):** four of the five rebase gaps and the FR bug were facts about Flat Sequence frames and border tunnels the graph
+       reader does not record (frame owner error 1055, `diag_c132_2_graph_p3b1.log:82`; f0 = 27641 bound by elimination). The
+       graph reader records, per Flat Sequence, its frames in order (one `OpFsDiagrams_v0` read) and each border tunnel's
+       faces with their frames, into the graph JSON as `fs_frames` / border entries; stagesim takes them from the real graph.
+     - **(c) Session b is finalized DIRECTLY on the real graph of a's file read that way** (PD280(d)'s path; b names nothing a
+       creates, PD284(a)), not rebased from a's simulated end — no simulator uid of a's objects (−30) is left to bind. Check:
+       b's simulated end == 04204133's end (10334 objects / 5933 terminals / 1974 wires, cdiff 16). PD286(c) (rebind via the
+       owner node) is SUPERSEDED; it is the fallback only if the reader cannot read frames.
+     - **(d) Slot rule (judgement, no device):** an offline card that may run beside a LabVIEW card goes in the PREP slot; a
+       judgement that departs from its own written decision writes the reason here BEFORE the dispatch.
+     - **(e) Cycle 134 cards:** 1 (kind build) = (a) + (b) + graph read of the kept `claudeDev\scratch_c133_6_ring_p3b2a_20261002_093837.vi`
+       (md5 6cc69221; measured f0 reported) + (c) + b dry + prerun (X10 ≤ 690); 2 = scratch b on a COPY of that file → save →
+       Error List count-only 49..52 → census into both preds; 3 = ONE launch: a from the bed → in-between → FS-reader graph read
+       → b finalized on it → dry/prerun → b → full Error List read; bed → 4 of 6 (assumption, D-2026-10-02-02). Card 2 and the
+       tooling carries of PD286(e) go in the prep slot where they can.

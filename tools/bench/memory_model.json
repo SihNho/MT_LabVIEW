@@ -9,5 +9,13 @@
  "other_mb": {"value": 0.8, "cite": "docs/d1-loop12-17-split-plan.md:2927 (PD265(b): pin2 ~3.9 MB/op = read 2.5 + edit 0.6 + ~0.8 unattributed)"},
  "final_read_mb": {"value": 17.4, "cite": "tools/bench/stage_d1_ring_p3b1_scratch_pin4.log:446-447 (METER op k 31 663.4 MB -> METER read k 31 680.8 MB, d +17.4); launch check tools/bench/stage_d1_ring_p3b1.log:429-430 (663.0 -> 680.4, d +17.4); PD275(a) docs/d1/tooling.md:76-78"},
  "fail_above_mb": {"value": 690.0, "cite": "docs/d1/tooling.md:79-82 (PD275(b): a model WITH the final-read term is compared with PD272(b)'s measured-peak stop 690; was 675 = PD266(b) planning margin for the model without it)"},
+ "op0_read_mb": {"value": 5.9, "cite": "tools/bench/stage_d1_ring_p3b1.log:42-43 (METER start k 0 561.8 MB -> METER read k 0 567.7 MB, d +5.9); pin4 :59-60 +6.0 (result_133-2.json); card 133-3, PD283(b)"},
+ "load_by_vi": {
+  "4dfa44aac8fb32f706b3eb792ee7d3cc": {"value": 561.8, "vi": "P3a bed (graph_ring_p3a_20261001_190155.json md5)", "cite": "tools/bench/stage_d1_ring_p3b1.log:42 (METER start k 0 private 561.8 MB, the P3a bed just loaded)"},
+  "9d7bf28738b7c154280e5e7c2c9d4961": {"value": 584.1, "vi": "claudeDev\\D1_ring_p3b1_20261002_060910.vi", "cite": "tools/bench/diag_c132_2_graph_p3b1.log:24 (MEM after load: 584.1 MB private)"},
+  "6cc6922192b3e330f163561bb95a8115": {"value": 588.5, "vi": "claudeDev\\scratch_c133_6_ring_p3b2a_20261002_093837.vi (P3b-2 session a SCRATCH saved file, card 133-6)", "cite": "tools/bench/diag_c133_6_graph_p3b2a.log:24 (MEM after load: 588.5 MB private)"}
+ },
+ "load_growth_mb_per_op": {"value": 0.719, "cite": "(584.1 - 561.8) / 31: P3a load stage_d1_ring_p3b1.log:42 -> its saved P3b-1 file's load diag_c132_2_graph_p3b1.log:24 over P3b-1's 31 ops (stage_d1_ring_p3b1.log:41); ONE measured pair, used only to PREDICT an unsaved file's load (card 133-3, PD283(c)) - replaced by the measured load once the file exists"},
+ "start_rule": "card 133-3 (PD283(b)(e)): a run's start = load_by_vi[input md5] + op0_read_mb when the input VI's load is measured (stage_prerun.x10_start); else start_mb (570.0 = P3a load + op-0 read, pin2)",
  "note": "never tuned to reach a number (card 130-1 rule 2); the cut is the only free variable"
 }

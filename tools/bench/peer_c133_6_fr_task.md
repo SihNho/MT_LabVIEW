@@ -1,0 +1,11 @@
+ATTACK this claim (card 133-6, failed prediction in tools/bench/stage_d1_ring_p3b2a_scratch.log, script tools/bench/stage_d1_ring_p3b2a_scratch.py which runs tools/recipes/stage_d1_ring_p3b2a.py's body).
+
+FAILURE: gate line (stage_d1_ring_p3b2a_scratch.log:350) "FR the 8 created objects sit on [27641, 27722, 32464] frame(s) of the base, no new frame" -> FAIL, fatal, before save. All 21 ops ran with every checkpoint's real graph == its simulated step (E1 PASS) and the tunnel-name gate PASS (log:348-349).
+
+CLAIM (our script's bug, not a graph difference): the recipe's FR gate built the set of base frames from TERMINAL ROWS only (old code `bf = frames(BASE["terminals"])`, stage_d1_ring_p3b2a.py; same in stage_d1_ring_p3b2b.py). Frame f0 #27641 of Flat Sequence #27509 holds 0 terminals in the base by design (the P3b-1 cut moved f0's whole Num(i)=-1 group into P3b-2, docs/d1/ring-p3b.md PD269(b)), so 27641 was absent from bf and was taken for a "new frame". 27641 IS a frame of the base: the base graph tools/bench/sim/ring_p3b2_base_real_fsmap.json has fs_frames {"27509": [27641, 32464, 27722]}, and the real P3b-1 graph tools/bench/graph_ring_p3b1_20261002_073225.json lists the same frames. Session a's actions 1-7 place the Num(i)=-1 group IN f0, so a created object on 27641 is the plan's intent.
+
+FIX (applied, offline-tested): bf = frames(terminal rows) UNION the base's FS frame lists (`basef` lambda in both recipes); nothing else in the gate changed. tools/bench/selftest_c133_6_fr.py 9/0 (tools/bench/selftest_c133_6_fr.log): 133-5's case passes with the new set, fails with the old one (reproduces log:350), a new frame uid still fails, and the simulator's end frames == the new base set for both recipes.
+
+Already ruled out: (1) a real LabVIEW frame created by an op - E1 says every checkpoint's real graph == sim, and the sim creates no frame; (2) a mis-bound frame uid - 27641 matches the fs_frames list of the real P3b-1 graph read.
+
+Questions for the adversary: is there any way the 8 created objects could legitimately be on a frame that is NOT one of the base FS's frames while E1 still passes (i.e. does the fix make FR vacuous)? Does `frames(real) == bf` (the second clause, unchanged) now hide a lost frame? What is the cheapest test that would falsify "our script's bug"?

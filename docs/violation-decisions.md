@@ -1816,3 +1816,58 @@ dispatched in the same message):
   `hypothesis`.
 - A further guard_peer hold of an offline self-test after this fix is `device-failed` again.
 
+## wrong-ordering — 2026-10-02 08:25 (cycle 133 judgement, after archive/peer/2026-10-02-retrospective-cycle132.md:334)
+
+`VIOLATION: wrong-ordering | loss_min=9 | loss_usd=? | evidence=tools/bench/cards/result_132-2.json:1`: ACCEPTED (the cycle-132
+judgement already wrote the rule, `docs/d1/ring-p3b.md` PD281(a)). Card 132-2 (`flags.labview: "build"`) was dispatched beside
+card 132-1 (`flags.labview: "none"`), which was editing `tools/stage_prerun.py`, the tool whose dry/prerun records 132-2's run
+needed; 132-2 blocked and was re-issued. This is the second time the same class was paid for (retrospective-cycle121's
+disposition "no gate code is edited while a LabVIEW card is live" was a written rule too), so CLAUDE.md "when a rule is broken
+twice, move it into a hook" applies.
+
+DECISION: device — a pairing check in `tools/hooks/guard_session.py`, built in an OFFLINE card of cycle 133 dispatched BESIDE
+the cycle's LabVIEW card (pipeline prep slot, disjoint write list; deliverable first, so it is never the cycle's first act):
+- The live-card record keeps the card's `flags.write` globs. A dispatch is REFUSED when one of the two cards has
+  `flags.labview` != `none` and the other card's `flags.write` matches a stage pre-check tool: `tools/stage_prerun.py`,
+  `tools/stagexec.py`, `tools/stagesim.py`, `tools/stagekit.py`, `tools/hooks/guard_bash.py`, `tools/hooks/guard_peer.py`.
+  Both orders (LabVIEW card first or tool-editing card first). `tools/hooks/guard_session.py` itself is not on the list.
+- Acceptance (offline self-test): the recorded cards 132-1 + 132-2 in either order → refused; a LabVIEW card beside an
+  offline card writing only `tools/bench/**` → allowed; two offline cards, one writing `tools/stagexec.py` → allowed.
+- If a LabVIEW card is again dispatched beside a card editing one of these tools after this check exists, that is
+  `device-failed`.
+
+## repeated-failure-class — 2026-10-02 10:10 (cycle 133 judgement, after archive/peer/2026-10-02-retrospective-cycle133.md:386)
+
+`VIOLATION: repeated-failure-class | loss_min=20 | loss_usd=? | evidence=tools/bench/stage_prerun_c133_3_p3b2a_dry.log:73`:
+ACCEPTED. The dry of P3b-2 session a computed the recipe's FR gate FALSE on simulated data, its after-first-edit rule
+(`tools/stage_prerun.py:726-730`) relabelled it UNVERIFIED and it printed `DRY PASS … unverified 1` (`:83`); card 133-5 then
+spent 891 s of LabVIEW to meet the same FALSE (`stage_d1_ring_p3b2a_scratch.log:350,379`). Third time the relabelling hid a
+real failure (card 108-5 unroutable row, card 130-5 early executor stop — each patched as a symptom, the rule untouched).
+The same class as X10's UNMEASURED-as-PASS (`device-failed` 2026-10-02 02:57) and the census gate CEN2 passing on two empty
+sets (`stage_d1_ring_p3b2a_scratch_c133_6.log:354`): an offline check that answers PASS when it verified nothing.
+
+DECISION: device — fix the RULE, in cycle 134's first card, as its first (offline) step, before any LabVIEW act:
+- `stage_prerun --dry`: a gate evaluated FALSE on simulated (non-stub) data FAILS the dry, whatever op it follows. Only a
+  gate whose inputs are COM stubs may stay UNVERIFIED, and a dry with any UNVERIFIED gate ends `DRY PASS-UNVERIFIED <names>`,
+  which the launch gate refuses unless the card names each unverified gate as expected.
+- stagekit's census gate with an EMPTY declared set prints `UNPREDICTED`, never PASS.
+- Acceptance (offline self-test): 133-3's session-a recipe bytes (md5 `ababd4ed…`) → dry FAIL naming FR; the fixed bytes
+  (`bb5ba064…`) → PASS; a stub-only gate → PASS-UNVERIFIED and a launch refusal without the card's naming; existing dry/prerun
+  self-tests green.
+- A later LabVIEW run that fails on a gate its dry had computed FALSE is `device-failed`.
+
+## wrong-ordering — 2026-10-02 10:10 (cycle 133 judgement, after archive/peer/2026-10-02-retrospective-cycle133.md:387)
+
+`VIOLATION: wrong-ordering | loss_min=13 | loss_usd=? | evidence=tools/bench/cards/guard_card.log:620`: ACCEPTED. The
+08:25 decision above said to build the pairing check in an offline card BESIDE the cycle's LabVIEW card (prep slot,
+separate budget of 3); the judgement dispatched it beside the offline card 133-3 instead, in a main slot, without recording
+why, and the cycle closed on the six-dispatch cap one card short of session b. The unrecorded reason (not editing the
+dispatch hook while a LabVIEW card is dispatched) does not hold: the edit happens after the dispatch was checked.
+
+DECISION: no-device — the deviation was a judgement act against its own written decision; the slot accounting itself is
+already mechanical (`guard_session.py:60,71`). Rule for judgement sessions, recorded in `docs/d1/ring-p3b.md` PD287(d): an
+offline card that may run beside a LabVIEW card is dispatched in the PREP slot; a judgement that departs from its own
+written decision writes the reason into the plan BEFORE the dispatch. A repetition of this exact deviation (a written
+"beside the LabVIEW card" executed in a main slot) makes it a device: guard_session would then refuse a main-slot dispatch
+of a card whose id a decision block names as a prep card.
+

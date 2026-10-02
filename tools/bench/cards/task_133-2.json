@@ -1,0 +1,45 @@
+{
+ "schema": "task/1",
+ "id": "133-2",
+ "kind": "read-log",
+ "goal": "Memory facts for P3b-2's launch form (PD282(c)): P3b-1 launch + pin4 MB meter at each named point, X10 start-term basis, 132-4 reader numbers, error-2 points, each with file:line",
+ "why": "X10 with P3b-1's measured load (584.1 MB) predicts P3b-2 ~695.8 MB > 690 (PD281(b)); judgement must know WHICH reads cost the memory (op-0 read, BIND reads, last checkpoint read, CEN2 census, save, Error List) before choosing a launch form that keeps one stage file.",
+ "inputs": [
+  {"path": "tools/bench/stage_d1_ring_p3b1.log", "md5": "23bddfaa37be0ce5e28b738d04020c08"},
+  {"path": "tools/bench/stage_d1_ring_p3b1_scratch_pin4.log", "md5": "e07b9dacd6446580596bf55b1a9ce411"},
+  {"path": "tools/bench/diag_c132_2_graph_p3b1.log", "md5": "5160d04298cdd1ee6f7c0c26b7575c19"},
+  {"path": "tools/bench/memory_model.json", "md5": "986a72369e5e5b0d189f53204dfcffdc"},
+  {"path": "tools/recipes/stage_d1_ring_p3b1.py"},
+  {"path": "tools/recipes/stage_d1_ring_p3b2.py", "md5": "bbdd03281c4bbf96dddfb7ecb78a2068"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p3b1.log"},
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p3b1_scratch_pin4.log"},
+  {"kind": "file", "name": "tools/bench/diag_c132_2_graph_p3b1.log"},
+  {"kind": "file", "name": "tools/bench/memory_model.json"}
+ ],
+ "pass": [
+  "1 p3b1 launch + pin4 logs: MB + file:line at start, load, c0 census, op-0 read, each BIND read (op), last op, len read, CEN2, PB, save, in-run EL read; 'not logged' if absent",
+  "2 memory_model.json: each term's value, its cited line, and what that line was measured AFTER (load only / + op-0 read / + census)",
+  "3 diag_c132_2_graph_p3b1.log: MB after load and after read (lines) and what the read consisted of",
+  "4 every LabVIEW error 2 / MEMSTOP point in tools/bench/*.log since 2026-09-25: MB, file:line, nearby GDI/USER counts if logged"
+ ],
+ "outputs": ["tools/bench/cards/result_133-2.json"],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": ["tools/bench/cards/result_133-2*"],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 25},
+ "rules": [
+  "Read-only: facts with file:line only, no interpretation of what to do",
+  "Targeted greps; never print a whole log",
+  "Return result/1 with <= 25 fact lines"
+ ],
+ "advances": ["M3", "R1", "R3"]
+}

@@ -1,0 +1,51 @@
+BGRUN START 2026-10-02 08:51:03 limit 2.0 min: py -u tools/bench/diag_c133_3_peek.py
+BGRUN PID 16692
+1 (1, 'create') create p3b_lr_num1 LRN1 Local 27641   
+2 (2, 'create') create p3b_ras_num1 RAN1 GrowableFunction 27641   
+3 (3, 'create') create p3b_k_m1 KM1 DigitalNumericConstant 27641   
+4 (4, 'create') create p3b_lw_num1 LWN1 Local 27641   
+5 (5, 'create') create p3b_lr_transpos LRT1 Local 32464   
+6 (6, 'create') create p3b_ras_transpos RAT1 GrowableFunction 32464   
+7 (7, 'create') create p3b_lw_transpos LWT1 Local 32464   
+8 (8, 'create') create p3b_lr_rotpos LRR1 Local 32464   
+9 (9, 'create') create p3b_ras_rotpos RAR1 GrowableFunction 32464   
+10 (10, 'create') create p3b_lw_rotpos LWR1 Local 32464   
+11 (11, 'create') create p3b_lr_frameidx LRF1 Local 32464   
+12 (12, 'create') create p3b_ras_frameidx RAF1 GrowableFunction 32464   
+13 (13, 'create') create p3b_lw_frameidx LWF1 Local 32464   
+14 (14, 'create') create p3b_lw_latest LWL1 Local 27722   
+15 (15, 'connect') wire p3b_w_n1_arr    new:LRN1.value new:RAN1.array 
+16 (16, 'connect') wire p3b_w_m1_new    new:KM1.value new:RAN1.new element/subarray 
+17 (17, 'connect') wire p3b_w_n1_out    new:RAN1.output array new:LWN1.value 
+18 (18, 'connect') wire p3b_w_t_arr    new:LRT1.value new:RAT1.array 
+19 (19, 'connect') wire p3b_w_t_out    new:RAT1.output array new:LWT1.value 
+20 (20, 'connect') wire p3b_w_r_arr    new:LRR1.value new:RAR1.array 
+21 (21, 'connect') wire p3b_w_r_out    new:RAR1.output array new:LWR1.value 
+22 (22, 'connect') wire p3b_w_f_arr    new:LRF1.value new:RAF1.array 
+23 (23, 'connect') wire p3b_w_f_out    new:RAF1.output array new:LWF1.value 
+24 (24, 'connect_term_uid') wire p3b_x_i_f1    {'uid': 27373, 'term': 'x-y*floor(x/y)'} new:RAN1.index 
+25 (25, 'wire_remove_loose_ends') wire_remove_loose_ends p3b_rle_i_f1      p3b_x_i_f1
+26 (26, 'connect_term_uid') wire p3b_x_i_rat1    {'uid': 27373, 'term': 'x-y*floor(x/y)'} new:RAT1.index 
+27 (27, 'wire_remove_loose_ends') wire_remove_loose_ends p3b_rle_i_rat1      p3b_x_i_rat1
+28 (28, 'connect_term_uid') wire p3b_x_i_rar1    {'uid': 27373, 'term': 'x-y*floor(x/y)'} new:RAR1.index 
+29 (29, 'wire_remove_loose_ends') wire_remove_loose_ends p3b_rle_i_rar1      p3b_x_i_rar1
+30 (30, 'connect_term_uid') wire p3b_x_i_raf1    {'uid': 27373, 'term': 'x-y*floor(x/y)'} new:RAF1.index 
+31 (31, 'wire_remove_loose_ends') wire_remove_loose_ends p3b_rle_i_raf1      p3b_x_i_raf1
+32 (32, 'connect_term_uid') wire p3b_x_bn_latest    {'uid': 6810, 'term': 'current image number'} new:LWL1.value 
+33 (33, 'wire_remove_loose_ends') wire_remove_loose_ends p3b_rle_bn_latest      p3b_x_bn_latest
+34 (34, 'connect_term_uid') wire p3b_x_trans    {'uid': 30117, 'term': 'Value'} new:RAT1.new element/subarray 
+35 (35, 'wire_remove_loose_ends') wire_remove_loose_ends p3b_rle_trans      p3b_x_trans
+36 (36, 'connect_term_uid') wire p3b_x_rot    {'uid': 4580, 'term': 'Value'} new:RAR1.new element/subarray 
+37 (37, 'wire_remove_loose_ends') wire_remove_loose_ends p3b_rle_rot      p3b_x_rot
+38 (38, 'connect_term_uid') wire p3b_x_fidx    {'uid': 639, 'term_uid': 644} new:RAF1.new element/subarray 
+39 (39, 'wire_remove_loose_ends') wire_remove_loose_ends p3b_rle_fidx      p3b_x_fidx
+FINALIZED keys ['at', 'base', 'cdiff_inputs', 'end_cdiff_rows', 'failed', 'first_divergent', 'fs_routes', 'last_step', 'open_rows', 'open_rows_classed', 'open_rows_match', 'open_rows_match_legacy', 'plan_in', 'route_check', 'step_files', 'summary', 'undecided'] route PASS base {'path': 'tools/bench/sim/ring_p3b2_base_real_fsmap.json', 'md5': '75e64374c76f11a36de096afa5ebda37'}
+FS_ROUTES {"24": {"how": "fs_border", "variant": "case_frame_to_fs_frame_branch", "id": "p3b_x_i_f1"}, "26": {"how": "fs_inner_branch", "variant": null, "id": "p3b_x_i_rat1"}, "28": {"how": "fs_inner_branch", "variant": null, "id": "p3b_x_i_rar1"}, "30": {"how": "fs_inner_branch", "variant": null, "id": "p3b_x_i_raf1"}, "32": {"how": "fs_inner_branch", "variant": null, "id": "p3b_x_bn_latest"}, "34": {"how": "fs_border", "variant": "loop_body_wired_src_to_fs_frame_in_case", "id": "p3b_x_trans"}, "36": {"how": "fs_border", "variant": "loop_body_wired_src_to_fs_frame_in_case", "id": "p3b_x_rot"}, "38": {"how": "fs_border", "variant": "loop_body_wired_src_to_fs_frame_in_case", "id": "p3b_x_fidx"}}
+CITE stage_d1_ring_p3b1.log:41:   PASS  L1 the 31 actions compile into 31 real ops == pred kinds, each action once; checkpoints (0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16, 20, 22, 24, 26, 28, 30, 31)  ['wire_remove_loose_ends', 'create', 'create', 'cre
+CITE stage_d1_ring_p3b1.log:42:   METER start  k   0  private 561.8 MB (d -)  handles 45656 (d -)
+CITE stage_d1_ring_p3b1.log:43:   METER read   k   0  private 567.7 MB (d +5.9)  handles 45711 (d +55)
+CITE diag_c132_2_graph_p3b1.log:23:   FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so scratch_c132_2_graph_p3b1_20261002_073225.vi is deleted at close
+CITE diag_c132_2_graph_p3b1.log:24:   FACT  MEM after load: 584.1 MB private
+CITE diag_c132_2_graph_p3b1.log:25:   OBSERVED uid 3628 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#3628 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

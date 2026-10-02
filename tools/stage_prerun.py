@@ -1942,7 +1942,33 @@ def executor_stops(executors):
     return out
 
 
-def x10_model_peak(kinds, checkpoints, stop_after=None, from_step=None, model=None):
+def x10_start(vi_md5, model=None):
+    """card 133-3 (PD283(b)(e)): (start_mb, cite) of a run whose INPUT VI has a measured load: load_by_vi[md5] + op0_read_mb
+    (memory_model.json, each with its log citation). None when that VI's load was never measured (caller keeps start_mb)."""
+    m = model or load_memory_model()
+    L = (m.get("load_by_vi") or {}).get(str(vi_md5 or ""))
+    op0 = m.get("op0_read_mb")
+    if not L or not op0:
+        return None
+    return round(float(L["value"]) + float(op0["value"]), 1), "{0} + op-0 read {1} ({2}; {3})".format(
+        L["value"], op0["value"], L["cite"], op0["cite"])
+
+
+def x10_plan_start(plan_path, model=None):
+    """card 133-3: the measured start of the Executor run of `plan_path`: its (finalized) base graph's `md5` = the input
+    VI's md5 -> x10_start. None for a provisional base (its md5 is inherited from an older bed) or an unknown VI."""
+    try:
+        pl = json.load(REAL_OPEN(plan_path if os.path.isabs(plan_path) else os.path.join(ROOT, plan_path), encoding="utf-8"))
+        b = (pl.get("finalized") or {}).get("base") or pl.get("base") or {}
+        if (pl.get("base") or {}).get("provisional"):
+            return None
+        g = json.load(REAL_OPEN(b["path"] if os.path.isabs(b["path"]) else os.path.join(ROOT, b["path"]), encoding="utf-8"))
+        return x10_start(g.get("md5"), model)
+    except Exception:                                                              # noqa: BLE001
+        return None
+
+
+def x10_model_peak(kinds, checkpoints, stop_after=None, from_step=None, model=None, start_mb=None):
     """card 130-1 (PD267(b)): the predicted private-MB peak of ONE Executor run. N = ops dispatched (from_step+1 ..
     stop_after|end); R = whole-VI reads = {from_step|0} + the checkpoints in the window + the ops the Executor forces
     (every BIND_KINDS op and the last op, stagexec.py:1960); checkpoints None = a read after every op (R = N + 1).
@@ -1959,8 +1985,9 @@ def x10_model_peak(kinds, checkpoints, stop_after=None, from_step=None, model=No
                  | set(k for k in win if kinds[k - 1] in SX.BIND_KINDS) | set([last]))
     N, R = len(win), len(reads)
     v = lambda k: float(m[k]["value"])                                             # noqa: E731
-    peak = round(v("start_mb") + R * v("read_mb") + N * (v("edit_mb") + v("other_mb")) + v("final_read_mb"), 1)
-    return {"N": N, "R": R, "bind": sum(1 for k in win if kinds[k - 1] in SX.BIND_KINDS), "peak_mb": peak,
+    st = float(start_mb) if start_mb is not None else v("start_mb")              # card 133-3: measured start of the input VI
+    peak = round(st + R * v("read_mb") + N * (v("edit_mb") + v("other_mb")) + v("final_read_mb"), 1)
+    return {"N": N, "R": R, "bind": sum(1 for k in win if kinds[k - 1] in SX.BIND_KINDS), "peak_mb": peak, "start_mb": st,
             "fail_above_mb": v("fail_above_mb"), "ok": peak <= v("fail_above_mb"),
             "checkpoints": "every op" if checkpoints is None else sorted(reads)}
 
@@ -2040,7 +2067,9 @@ def x10_gate(recipe, executors, stop_after=None, from_step=None, model=None, tra
             continue
         sa = ex.get("stop_after") if ex.get("stop_after") is not None else stop_after
         fs = ex.get("from_step") if ex.get("from_step") is not None else from_step
-        runs.append(dict(x10_model_peak(ex["kinds"], ex.get("checkpoints"), sa, fs, m), plan=ex.get("plan")))
+        xs = x10_plan_start(ex.get("plan"), m) if ex.get("plan") else None     # card 133-3: measured load of the input VI
+        runs.append(dict(x10_model_peak(ex["kinds"], ex.get("checkpoints"), sa, fs, m, start_mb=xs[0] if xs else None),
+                         plan=ex.get("plan"), start_source=xs[1] if xs else "model start_mb (input VI load not measured)"))
     mm = mem_margin(recipe, stop_after, from_step)
     det = {"model": rel(MEMORY_MODEL), "runs": runs, "not_compiled": bad,
            "recorded": dict((k, mm.get(k)) for k in ("ok", "peak_mb", "source", "why") if mm.get(k) is not None)}
@@ -3352,8 +3381,20 @@ def rebase(plan_path, graph_path, log=print, simulate=True, out_root=None, model
             return False, detail + "; {0} NOT written (md5 {1} kept)".format(rel(plan_path), md5(plan_path))
         outp = S["plan_out"]["path"]
         outp = outp if os.path.isabs(outp) else os.path.join(ROOT, outp)
-        shutil.copyfile(outp, plan_path)
-        return True, detail
+        # card 133-3 (PD283(e), 133-1 first_fail): stagesim records the TEMP copy it simulated as finalized.plan_in; the
+        # recipe's L0 needs the ORIGINAL stage input (`*_in.json`) - record it, and the temp copy's md5 under `rebase`.
+        out = json.load(REAL_OPEN(outp, encoding="utf-8"))
+        fz = out.setdefault("finalized", {})
+        oin = (plan.get("finalized") or {}).get("plan_in") or {}
+        op = oin.get("path") or rel(plan_path)
+        opa = op if os.path.isabs(op) else os.path.join(ROOT, op)
+        fz["rebase"] = {"sim_input": dict(fz.get("plan_in") or {}, path="(temp copy, deleted)"),
+                        "from_plan": {"path": rel(plan_path).replace("\\", "/"), "md5": md5(plan_path)},
+                        "graph": {"path": rel(graph_path).replace("\\", "/"), "md5": md5(graph_path)}}
+        fz["plan_in"] = {"path": op.replace("\\", "/"), "md5": md5(opa) if os.path.isfile(opa) else oin.get("md5")}
+        with REAL_OPEN(plan_path, "w", encoding="utf-8") as f:
+            json.dump(out, f, indent=1)
+        return True, detail + "; plan_in kept = {0}".format(fz["plan_in"]["path"])
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 

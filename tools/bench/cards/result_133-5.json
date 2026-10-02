@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"133-5","status":"FAIL","gates":{"pass":1,"fail":1},
+"first_fail":"1 scratch a: FR the 8 created objects sit on [27641, 27722, 32464] frame(s) of the base, no new frame (FATAL, before save)",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/selftest_chat_p1.py","md5":"44edd536c60d0d01ecce15254686dc08"},
+ {"path":"tools/bench/stage_d1_ring_p3b2a_scratch.py","md5":"dfcc8f51d4a4aeb7ed0a3886a40d17d3"},
+ {"path":"tools/bench/stage_d1_ring_p3b2a_scratch.json","md5":"06e26f8a1f3c92650469ba1e3f06affd"},
+ {"path":"tools/bench/stage_d1_ring_p3b2b_scratch.py","md5":"303928c534c011d05ab5fc135370b70c"},
+ {"path":"tools/bench/diag_c133_5_graph_p3b2a.py","md5":"9595f8d81e78bd4ae6fd67fc851d4828"},
+ {"path":"tools/bench/diag_c133_5_pred_p3b2b.py","md5":"9a86381f743c74c597c6bf0584389c50"},
+ {"path":"tools/bench/plan_ring_p3b2b_provisional_c133_5.json","md5":"1451ba90aadc594fe74f97793eb04e92"}],
+"facts":[
+ "0 PASS: selftest_chat_p1 46/0 (selftest_chat_p1_c133_5.log:59); none-card fixture writes bench/recipes only (selftest_chat_p1.py:69-73); review not refuted (2026-10-02-c133-5-chatp1-fixture.md:38)",
+ "1 wrapper a dry PASS + prerun 15/0, X10 671.8 (stage_prerun_c133_5_p3b2a_scr_prerun2.log:113-118); 1st prerun FAIL X2 = wrapper lacked the PLAN literal, fixed",
+ "1 scratch a: E1 PASS (all 21 ops real==sim), NG PASS ops 14,20 (stage_d1_ring_p3b2a_scratch.log:348-349); FR FAIL fatal (log:350) -> D/CEN2/TD/PB/HB/PS not run, nothing saved",
+ "FR: 27641 = frame f0 of FS #27509 (graph_ring_p3b1_20261002_073225.json fs_frames 27509:[27641,32464,27722]); 0 terminal rows in sim/ring_p3b2_base_real_fsmap.json (27722:18, 32464:16)",
+ "FR takes base frames from terminal rows only: bf = frames(BASE['terminals']), gate set(on)<=bf (stage_d1_ring_p3b2a.py:55-57); same code in stage_d1_ring_p3b2b.py:57-59",
+ "memory: peak 646.7 MB at METER read k21 (stage_d1_ring_p3b2a_scratch.log:346), X10 671.8 (d -25.1); the run stopped before the save, so <=690 PASS and the within-10 check FAIL",
+ "hygiene: input md5 9d7bf287 unchanged (log:359), scratch deleted (log:358), pins hold (log:365), LabVIEW gone (log:374; tasklist empty), refs 8/8 (log:356); 12 pass / 2 fail (log:371)",
+ "steps 2-4 NOT run. Prepared, not run: diag_c133_5_graph_p3b2a.py(+_plan.json), diag_c133_5_pred_p3b2b.py, stage_d1_ring_p3b2b_scratch.py",
+ "b plan/pred provisional copies saved (*_provisional_c133_5.json, md5 1451ba90/2df75fd3) because --rebase refuses a non-provisional base (stage_prerun.py:3271)",
+ "JEV: stage_d1_ring_p3b2a_scratch.log | no JEV-LADDER row yet (grep jev_gate.log empty) | - | recorded only | FAIL 12/2"],
+"open":[
+ "FR counts an empty base frame (FS f0 #27641, 0 terminals) as not-a-base frame. Fix FR in recipes a and b to use the FS frame list / Diagram objs (new sha, so dry+prerun again), or treat FR as a false positive (gate_fp)?",
+ "The within-10 MB check could not be judged because the run stopped before PB and the save. Rerun the scratch after the FR decision?",
+ "guard_peer will likely require a hypothesis review on stage_d1_ring_p3b2a_scratch.log before the next LabVIEW run"],
+"cost":{"usd":null,"minutes":24,"labview_runs":1},
+"note":"Returned at the first unexpected result (card chat-P2). Bed D1_ring_p3b1_20261002_060910.vi untouched; no scratch VI left in claudeDev; no STATUS edit."}

@@ -1,0 +1,10 @@
+ATTACK this claim about a failed self-test.
+
+Failing log: tools/bench/selftest_chat_p1_c133_3.log (script tools/bench/selftest_chat_p1.py), result 42 pass / 4 fail, failing gates S3-S6 (first: "S3 offline card allowed as PREP, dispatches unchanged").
+
+Claim (judgement session, docs/d1/ring-p3b.md PD284(d)): S3-S6 went red NOT because guard_session.py is wrong but because card 133-4 added a pairing check to tools/hooks/guard_session.py (lines ~75, 238, 426, 432: a card whose write globs CAN match a stage tool - tools/stage_prerun.py, tools/stagexec.py, tools/stagesim.py - is never live beside a LabVIEW card). The self-test's fixture helper card() (selftest_chat_p1.py:66-76) copies the flags of tools/bench/cards/task_chat-P1.json, whose write list is ["tools/**", "docs/**", ".claude/agents/**"]; "tools/**" matches tools/stage_prerun.py, so the offline "prep" card C is (correctly) refused beside LabVIEW card A, and S4-S6 cascade from that. The fix applied: card() now narrows the write list of a labview:"none" fixture card to ["tools/bench/**", "tools/recipes/**"] (a realistic prep card), and the self-test is rerun expecting 46/46.
+
+Questions:
+1. Is the fixture the cause, or does guard_session's pairing check have a real defect (e.g. glob semantics wrong, a prep card that does NOT touch stage tools refused anyway)? Read guard_session.py's pairing code and the fixture.
+2. Does narrowing the fixture hide a regression that a real prep card would hit (e.g. a real prep card that writes tools/bench/** being refused)?
+3. Name the cheapest discriminating test.

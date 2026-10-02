@@ -1,0 +1,36 @@
+BGRUN START 2026-10-02 09:06:54 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c133-5-chatp1-fixture -TaskFile tools/bench/peer_c133_5_chatp1_task.txt
+BGRUN PID 9160
+OUTCOME: ANSWERED (91s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-02-c133-5-chatp1-fixture.md
+COST: $1.2279  in 18 / out 7298 / cache-create 111437 / cache-read 951644  (87s, 17 turn(s))
+--- ANSWER ---
+**I could not refute the claim.** The four red gates are explained by the fixture meeting a working pairing check. I found no defect in `guard_session.py`'s pairing code. One gap remains: the 46/46 rerun has not happened, so the fix itself is still unchecked.
+
+**1. Strongest attack, and why it fails.** My best attack was that the S3 refusal's reason was never recorded. The log prints only `(2, None, 1)` for S3 (`tools/bench/selftest_chat_p1_c133_3.log:6`), not its error text. Two other checks in `decide()` could also return 2 before pairing: economy mode (`guard_session.py:405`) and `escalation_refusal` (`:386`). The S4 line rules that out. D was refused with "GATE-TOOL EDIT BESIDE A LabVIEW CARD" (log line 7) while only A was live, because C had already been refused. D's dispatch therefore got past the economy check with a non-empty live list, and the C dispatch made milliseconds earlier ran under the same mode. The S6 tuple `('E', 2, False)…` (log line 10) is the same pairing refusal repeating, not a prep-budget refusal.
+
+**2. Glob semantics are correct.** `_glob_re` (`tools/protocol.py:460-476`) turns `tools/**` into `^tools/.*$`, which matches `tools/stage_prerun.py`. It turns `tools/bench/**` into `^tools/bench/.*$`, which cannot match any of the six tools listed at `guard_session.py:75-76`. Matching ignores case (`re.I` plus `normcase`), which is right on Windows.
+
+**3. The narrowing hides no regression.**
+- A dedicated test already covers both sides of the check (`tools/bench/selftest_guard_session_pairing.py:12,17`):
+  - **P3:** an offline card that writes only `tools/bench/**` beside a build card is allowed. That is exactly what a real prep card does.
+  - **P8:** an offline card with `tools/**` beside a build card is refused. That is the old fixture's case.
+- So `selftest_chat_p1` losing that path costs no coverage.
+- Real prep cards mostly list narrow paths (e.g. `task_123-2.json:47-55`, `task_122-6.json:43-53`) and pass.
+- Cards that do write stage tools would be refused beside a LabVIEW card, as intended: `task_123-9.json:43-45` (`stagesim.py`, `stagexec.py`, `stagekit.py`) and `task_124-6.json:46-48`.
+- **Cost the claim does not mention:** the real template `task_chat-P1.json:63-66` (`tools/**`) can no longer run as a prep card. Any future card that copies that broad write list will be refused beside a LabVIEW card. That is a choice about how wide write lists may be, not a bug.
+
+**4. Alternative explanation.** The only competitor is a refusal before the pairing check (economy mode or escalation) on S3. Point 1 rules it out by inference only, because S3's error text was never captured.
+
+**5. What would falsify the claim.**
+- The rerun with the narrowed fixture still shows S3 with rc 2, or
+- S5's live list is anything other than `['p1s-B','p1s-C']`.
+
+Under the new fixture I traced the path by hand:
+- **S3:** passes pairing (`:241-251`). prep=1, dispatch count unchanged.
+- **S4:** blocked by PIPELINE FULL (`:412`), which is checked before pairing.
+- **S5:** B's check reads C's recorded `write` key (`:253`) and finds no stage tool.
+- **S6:** E and F take prep counts 2 and 3; G fails at 4 > 3 with PREP BUDGET (`:435`).
+
+So 46/46 is the correct prediction.
+
+**6. Cheapest test.** Rerun `py -u tools/bench/selftest_chat_p1.py` with the narrowed fixture. It takes about 6 s and needs no LabVIEW. To also settle point 1 directly, print `err[:90]` in the S3 gate's detail so a refusal reason is always captured. Then run the existing `selftest_guard_session_pairing.py` (10 gates) as a cross-check that P3 passes and P8 refuses. If both are green, the claim stands. The claims here are all about local code, so no web search was needed and there are no URLs to cite.
+BGRUN END rc=0 after 92s

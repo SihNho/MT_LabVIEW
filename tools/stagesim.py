@@ -2027,6 +2027,20 @@ def route_report(plan_out_path, model_dir=OPMODEL_DIR, log=print, require_final=
     return {"status": st_, "first_fail": ff, "rows": rows}
 
 
+FS_BORDER_HOWS = ("fs_border", "fs_inner_branch")
+
+
+def fs_routes_of(steps):
+    """card 133-1: {str(action n): {"how", "variant", "id"}} for every simulated `wire` step whose effect is a Flat Sequence
+    BORDER route (_fs_border_wire: how 'fs_border' / 'fs_inner_branch'). Read by stagexec.compile_plan (finalized.fs_routes)."""
+    out = {}
+    for s in steps:
+        e = s.get("effect_summary") or {}
+        if s.get("op") == "wire" and not s.get("error") and e.get("how") in FS_BORDER_HOWS:
+            out[str(s["n"])] = {"how": e["how"], "variant": e.get("variant"), "id": s.get("id")}
+    return out
+
+
 def simulate(plan_path, graph_path, out_root=SIM_ROOT, plan_out_dir=BENCH, model_dir=OPMODEL_DIR, labels=None,
              log=print, route_check=True):
     plan = _j(plan_path)
@@ -2156,6 +2170,11 @@ def simulate(plan_path, graph_path, out_root=SIM_ROOT, plan_out_dir=BENCH, model
                              "step_files": [{"n": s["n"], "op": s["op"], "path": _rel(s["file"]["path"]),
                                              "md5": s["file"]["md5"]} for s in steps if s.get("file")],
                              "undecided": len(undecided), "at": time.strftime("%Y-%m-%d %H:%M:%S")}
+    # card 133-1 (PD280(c), docs/d1/ring-p3b.md:118-122): the Flat Sequence BORDER routes this simulation applied, per wire
+    # action, from the graph. stagexec.compile_plan reads them for a wire its plan-only fs_wire_ops cannot place (a sink on a
+    # frame of a Flat Sequence the plan did NOT create - a carried/base FS, P3b-2 on P3b-1's FS), so that wire compiles to
+    # the measured connect_term_uid route (a BIND op) instead of a plain connect (stage_prerun_c132_6_rebase_p3b2.log:76).
+    out_plan["finalized"]["fs_routes"] = fs_routes_of(steps)
     pp = os.path.join(plan_out_dir, "plan_{0}.json".format(stage))
     with open(pp, "w", encoding="utf-8") as f:
         json.dump(out_plan, f, indent=1, default=str)

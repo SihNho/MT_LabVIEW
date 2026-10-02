@@ -1,0 +1,124 @@
+BGRUN START 2026-10-02 08:11:20 limit 20.0 min: C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe -u G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\outcome_review.py
+BGRUN PID 10360
+   cadence: 5 cycle retrospectives since 2026-10-01-outcome-review-20261001.md (every 5)
+   task written to C:\Users\KimLab\AppData\Local\Temp\outcome-review-20261002.txt (7683 chars)
+   review card tools\bench\cards\review_outcome-review-20261002.json
+OUTCOME: ANSWERED (127s)  model: fable (effort medium; peer.ps1 default for role outcome)  archived: archive\peer\2026-10-02-outcome-review-20261002.md
+COST: $3.3472  in 226 / out 11319 / cache-create 131594 / cache-read 588359  (126s, 33 turn(s))
+VERDICT-CARD: VERDICT-CARD outcome-review-20261002 verdict=refuted -> tools\bench\cards\verdict_outcome-review-20261002.json
+--- ANSWER ---
+**Verdict on the claim: refuted.** Five cycles since the 2026-10-01 review (128 through 132) produced one more structural file that has never executed, and nothing the user can run today that they could not run yesterday. This is the fourth consecutive refutation.
+
+Limits: `claudeDev\` is outside the repository, so file states are as the logs record them. Cycle costs come from the runner log and exclude the chat's doc-reorganisation card chat-D1, whose cost is not logged. No external claims were needed.
+
+## 1. Deliverable
+
+Nothing new is runnable.
+
+| File | Cycle | Evidence offered | Source |
+|---|---|---|---|
+| `D1_ring_p3b1_20261002_060910.vi` | 131 | 22/0 build gates, peak 680.4 MB, Error List 53, "STRUCTURAL, ExecState 0 by design, never run" | `STATUS.md:105`, `docs/d1/INDEX.md:26` |
+| none | 128, 129, 130, 132 | tool ops, memory model, tunnel-naming table, rebase plumbing, plan files | `STATUS.md:58-89` |
+
+An Error List count and a memory peak are build checks, not runs. The benchmark catalogue still ends at row 59 dated 2026-09-27 (`archive/benchmarks/INDEX.md:80`), the same count as at the last three reviews. The only product with run evidence remains the display-loop VI accepted in cycle 110, lost frames 16 and 12 against 3,359 and 5,860 for the original at 15 beads (`archive/2026-10-01-status-cycle123-relocate.md:28`). It was untouched in this window.
+
+The counted output again names `Track_v6_CPU_core_v0.vi` and `Track_v6_CPU_queue_v0.vi`. A search of the whole `2. Tracking` tree finds neither. That counter has reported phantom files for four reviews.
+
+## 2. Goal alignment
+
+Against `project-requirements/parallelization-requirement.md:10-18` and `docs/goalmap.json`:
+
+- **1, split the post-pick loop.** Structural only. The ring chain is at P3b-1 of P2 to P6; the first run is P6 (`docs/d1/INDEX.md:33-44`).
+- **2.1 motor control.** Met in the original.
+- **2.2 motor reading, the bottleneck the user named.** `open`, unmoved since 2026-08-24 (`goalmap.json:21`).
+- **2.3 camera acquisition in its own loop.** `open` (`goalmap.json:27`). Five build steps have not produced a loop that runs.
+- **2.4 scheduler.** `open`, unmoved since project start (`goalmap.json:33`).
+- **2.5 merge and save.** On the unrun chain only.
+- **3, functions in parallel.** No running VI has more loops than the display-loop VI.
+- **Frame loss at load (R4).** Still `open`; 150 Hz never run (`goalmap.json:199`).
+- **R8, camera settings inside the VI.** User chose this 2026-09-25 (`decisions_pending.json:121`). `open`, nothing built, seven days later (`goalmap.json:75`).
+
+Unmoved since the project began: motor reading, scheduler, camera acquisition as a running loop, 150 Hz, in-VI frame rate.
+
+## 3. Cost versus product
+
+| Cycle | Cost | Minutes | Bought | Source |
+|---|---|---|---|---|
+| 128 | $26.45 | 64 | donor search, binder, fp fixes; no file | `cycle_runner.log:929` |
+| 129 | $39.00 | 123 | memory per read measured, two killed or stopped scratch runs; no file | `:945` |
+| 130 | $34.58 | 101 | memory model X10, scratch stopped at op 26; no file | `:962` |
+| 131 | $32.70 | 118 | P3b-1 file, unrun | `:977` |
+| 132 | $29.84 | 80 | rebase plumbing, graph read; no file | `:991` |
+| Total | $162.57 | 486 | 1 unrun file, 0 runs, 0 measurements of frame loss | |
+
+The ratio is not defensible. A competent engineer would have skipped:
+
+- **Cycles 128, 130 and 132 entirely.** Each built or repaired the build pipeline (binder, memory model, tunnel-name gate, rebase, FS-map carry) so that the next structural edit could pass its own checks (`STATUS.md:58-62,70-75,85-89`). None brought a run closer.
+- **The three-way tunnel-naming investigation** across cycles 129 to 131 (`STATUS.md:64,74,79`). Its product is a rule about how LabVIEW names a tunnel, consumed only by the simulator.
+- **The P3b split into halves sized by a memory model** (`docs/d1/INDEX.md:137-141`). The model exists because whole-VI reads during a build cost 2.53 MB each. A build that reads less would not need the model.
+- **The card chat-D1 documentation reorganisation** run between cycles 129 and 130 (`STATUS.md:7-8`), a plan index and freeze of plan files that still describe an unrun chain.
+
+Project scale is now 324 op VIs, 198 recipes and 1,052 peer exchanges behind one measured improvement.
+
+## 4. Ordering at project scale
+
+The work order is unchanged and still wrong. `STATUS.md:56-57` fixes it as P3b-2, then P4, P5, P6, then an interface-contract step, then the other tracks. PD281(b) already predicts P3b-2 may exceed the 690 MB stop, which would force a third half and another user decision (`docs/d1/ring-p3b.md:131-133`). The first run of the chain is still P6, now at least three steps and one likely re-split away.
+
+What should come first, as the last review said and nothing changed:
+
+- **R8, in-VI frame-rate control** on the display-loop VI, so 150 Hz can be measured at all.
+- **The hand-off of the display-loop VI.** It is the one artefact that beat the original and it lives only in an archive file.
+- **One 150 Hz run** to show whether tracking cost is the next limit before another $160 goes into the ring.
+
+The steering mechanism meant to enforce this has fired nine times and been marked FOLLOWED nine times (`cycle_runner.log:242,293,333,455,528,629,694,768,932`). Cycle 128 was "FOLLOWED" while four of its five cards were offline tool cards (`STATUS.md:85-88`). The chat's own hand-off notes that the steering check cannot fail (`docs/chat-handoff.md:135`). FOLLOWED is a label, not a change of act.
+
+## 5. Stale decisions
+
+`decisions_pending.json` has one open item, D-2026-10-02-01, a guard hook for helper agents (`:286-297`). It is about process. The stale items are still the ones never asked:
+
+| Item | Open since | Blocks | Source |
+|---|---|---|---|
+| Plain-language description of a built VI, owed before asking for a supervised run | 09-25 | any hand-off | `decisions_pending.json:104` |
+| "Will you run the display-loop VI with beads while you watch?" | never asked since 09-27 | the only path to a used product | last three reviews |
+| R8 build | 09-25 | 150 Hz measurement | `decisions_pending.json:121`, `goalmap.json:75` |
+| OPEN 53, controller zero vs physical zero | 09-18 | trust in the motor envelope | `STATUS.md:49` |
+| OPEN 58, autofocus limits | answered 09-25, still listed | nothing; remove it | `STATUS.md:53`, `decisions_pending.json:87` |
+
+The user was reachable throughout: they relaunched the cycles on 10-01 and approved the doc reorganisation on 10-02 (`STATUS.md:7-9`). What they have not been shown is that four reviews in a row say the cycles are not moving the deliverable. The 10-01 review's "What was done with it" is blank (`archive/peer/2026-10-02-retrospective-cycle128.md:160`). The 09-28 review's annotation cites a 2026-09-23 ruling that repetition does not stop the runner (`archive/peer/2026-09-28-outcome-review-20260928.md:235`). That ruling predates all four refutations and has never been put back to the user with these numbers.
+
+## 6. The experiment test
+
+**The original.** The display-loop VI is the only alternative, and it has never run with a real sample, its longest run is 120 s, the user has not been told what the file is, it has no in-VI frame-rate control, and STATUS says it is not used in experiments until the user says so (`archive/2026-10-01-status-cycle123-relocate.md:28`). Nothing in cycles 128 to 132 touched any of that.
+
+## 7. Termination
+
+Shortest path, unchanged for the fourth review:
+
+1. Write one page describing `D1_s1_disp_20260927_041648.vi` in the user's terms. No LabVIEW needed.
+2. Ask for one supervised bead run at 8 and 15 beads, minutes long.
+3. Add the R8 frame-rate control to that VI and run 150 Hz once.
+4. Resume the ring chain only if step 3 loses frames, and only on the loop the numbers name.
+
+Abandon or park: P3b-2 and P4 to P6 until step 3 has a number, the rebase and route-check plumbing, the memory model, Error List pinning on broken beds, and the interface-contract procedure.
+
+The project's own rule says a repeated outcome verdict means stop and re-plan with the user. This is the fourth repetition. The steering card has demonstrably not changed the next act. The honest move is to stop the runner and show the user the five-review table above.
+
+Mapping notes:
+- `goal-requirement-not-advanced`: 2.2, 2.3, 2.4, R8, 150 Hz unmoved.
+- `product-not-runnable`: P3b-1 is ExecState 0 by design, never run.
+- `tooling-over-delivery`: cycles 128, 130, 132 and the naming investigation.
+- `ordering-stale`: R8 and the hand-off unscheduled; a likely third P3b half pushes the first run further out.
+- `decision-starved`: description and supervised run never asked; four refutations never shown to the user.
+- Not flagged: `scope-inflation`, `measurement-without-product`. No off-goal benchmark ran in this window.
+
+OUTCOME-VIOLATION: goal-requirement-not-advanced
+OUTCOME-VIOLATION: product-not-runnable
+OUTCOME-VIOLATION: tooling-over-delivery
+OUTCOME-VIOLATION: ordering-stale
+OUTCOME-VIOLATION: decision-starved
+
+VERDICT {"schema":"verdict/1","id":"outcome-review-20261002","verdict":"refuted","alternative":"P3b-1 is a necessary step toward a camera/tracking split that pays off at 150 Hz. Unsupported: no 150 Hz run exists, the display-loop VI already loses 12-16 frames at 15 beads/90 Hz, and the first ring run is 3+ steps and a likely re-split away (PD281(b)).","discriminating_test":"Add the R8 frame-rate control to D1_s1_disp_20260927_041648.vi and run 150 Hz at 8 and 15 picks, plus one supervised bead run of minutes. Loss near 0 => hand off, park the ring. Loss at 150 Hz => resume the ring on the loop the numbers name.","violations":[{"slug":"wrong-ordering","loss_min":486,"loss_usd":162.57,"evidence":"tools/bench/cycle_runner.log:929,945,962,977,991; STATUS.md:56-57,105; docs/d1/INDEX.md:26,40-43"}],"sources":["STATUS.md:7","STATUS.md:49","STATUS.md:53","STATUS.md:56","STATUS.md:58","STATUS.md:85","STATUS.md:105","docs/d1/INDEX.md:26","docs/d1/INDEX.md:33","docs/d1/ring-p3b.md:131","archive/benchmarks/INDEX.md:80","archive/2026-10-01-status-cycle123-relocate.md:28","docs/goalmap.json:21","docs/goalmap.json:27","docs/goalmap.json:33","docs/goalmap.json:75","docs/goalmap.json:199","tools/bench/decisions_pending.json:104","tools/bench/decisions_pending.json:121","tools/bench/decisions_pending.json:286","tools/bench/cycle_runner.log:929","tools/bench/cycle_runner.log:932","tools/bench/cards/steer_127.json:12","docs/chat-handoff.md:135","archive/peer/2026-10-02-retrospective-cycle128.md:160","archive/peer/2026-09-28-outcome-review-20260928.md:235"],"note":"Cycles 128-132: 1 file (P3b-1), ExecState 0 never run; 0 INDEX rows; $162.57 / 486 min. Steering card marked FOLLOWED 9 times with no change of act. Display-loop VI untouched; user not asked. Fourth consecutive refutation => stop and re-plan with the user."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-outcome-review-20261002.md
+   STEER: tools\bench\cards\steer_132.json (repeated: ['decision-starved', 'goal-requirement-not-advanced', 'ordering-stale', 'product-not-runnable', 'tooling-over-delivery'])
+   Now annotate it: 'why asked' and 'verdict', and act on the OUTCOME-VIOLATION lines.
+BGRUN END rc=0 after 129s

@@ -1,0 +1,621 @@
+{
+ "schema": "stageplan/1",
+ "context": {
+  "s1_key": "D1_s1_copy"
+ },
+ "open_rows": [
+  {
+   "node": 376,
+   "term": "current frame data array in",
+   "why": "carried from R2 (plan_l2r2_in.json): QRT (PD175)"
+  },
+  {
+   "node": 376,
+   "term": "frame index",
+   "why": "carried from R2: QRT (PD175)"
+  },
+  {
+   "node": 2626,
+   "term": "array",
+   "why": "carried from R2: licensed rename (plan_l2b1_licence.json)"
+  },
+  {
+   "node": 2626,
+   "term": "element",
+   "why": "carried from R2: QRT (PD182(c)/D5)"
+  },
+  {
+   "node": 5058,
+   "term": "Image In",
+   "why": "carried from R2: QRT (PD177(e))"
+  },
+  {
+   "node": 8634,
+   "term": "index (col)",
+   "why": "carried from R2: QRT (D5)"
+  },
+  {
+   "node": 11261,
+   "term": "array",
+   "why": "carried from R2: PD227(d)"
+  },
+  {
+   "node": 11261,
+   "term": "element",
+   "why": "carried from R2: QRT (D5)"
+  },
+  {
+   "node": 28083,
+   "term": "Magnet position",
+   "why": "carried from R2: QRT (D5)"
+  },
+  {
+   "node": 29625,
+   "term": "index (col)",
+   "why": "carried from R2: QRT (D5)"
+  },
+  {
+   "node": 29973,
+   "term": "element",
+   "why": "carried from R2: QRT (D5)"
+  }
+ ],
+ "stage": "ring_p3b2b",
+ "goal": "RING P3b-2 session b (card 133-3, PD283(c)): actions [8, 9, 10, 11, 12, 13, 20, 21, 22, 23, 28, 29, 30, 31, 36, 37, 38, 39] of plan_ring_p3b2.json 04204133 on session a's END graph (provisional until a's artefact exists; stage_prerun --rebase)",
+ "base": {
+  "path": "tools/bench/sim/ring_p3b2b_base_provisional.json",
+  "md5": "d8aa6ca31fc34cb464fddf520c915b2e",
+  "provisional": true,
+  "sim_of": {
+   "plan": "tools/bench/plan_ring_p3b2a.json",
+   "md5": "a419f23f29760447da8b43e1154fa470"
+  }
+ },
+ "actions": [
+  {
+   "op": "create",
+   "id": "p3b_lr_rotpos",
+   "class": "Local",
+   "diagram": 32464,
+   "as": "LRR1",
+   "label": "RotPos",
+   "mode": "read",
+   "pos": [
+    20,
+    360
+   ],
+   "terminals": [
+    {
+     "name": "RotPos",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE local_read (create_local_read + move_in) | PRECEDENT | PD246(c) A2 | run on loop body #639 (plan_l2a3_in.json:16); placement in a FS frame never run"
+  },
+  {
+   "op": "create",
+   "id": "p3b_ras_rotpos",
+   "class": "GrowableFunction",
+   "diagram": 32464,
+   "as": "RAR1",
+   "pos": [
+    120,
+    360
+   ],
+   "prim": "Replace Array Subset",
+   "donor": {
+    "donor": "$work",
+    "uid": 29157
+   },
+   "terminals": [
+    {
+     "name": "array",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "output array",
+     "is_source": true,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "index",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "new element/subarray",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE primitive $work donor #29157 | PRECEDENT | PD246(c) A2 Replace Array Subset | route measured in P3a (stage_d1_ring_p3a.log, Equal?/Increment/Q&R); class GrowableFunction never copied: census UNPREDICTED"
+  },
+  {
+   "op": "create",
+   "id": "p3b_lw_rotpos",
+   "class": "Local",
+   "diagram": 32464,
+   "as": "LWR1",
+   "label": "RotPos",
+   "mode": "write",
+   "pos": [
+    220,
+    360
+   ],
+   "terminals": [
+    {
+     "name": "RotPos",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE local_write (create_local_write -> dest diagram) | PRECEDENT | PD246(c) A2 | stagexec.py:206 route; placement in a FS frame never run"
+  },
+  {
+   "op": "create",
+   "id": "p3b_lr_frameidx",
+   "class": "Local",
+   "diagram": 32464,
+   "as": "LRF1",
+   "label": "FrameIdx",
+   "mode": "read",
+   "pos": [
+    20,
+    140
+   ],
+   "terminals": [
+    {
+     "name": "FrameIdx",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE local_read (create_local_read + move_in) | PRECEDENT | PD246(c) A2 | run on loop body #639 (plan_l2a3_in.json:16); placement in a FS frame never run"
+  },
+  {
+   "op": "create",
+   "id": "p3b_ras_frameidx",
+   "class": "GrowableFunction",
+   "diagram": 32464,
+   "as": "RAF1",
+   "pos": [
+    120,
+    140
+   ],
+   "prim": "Replace Array Subset",
+   "donor": {
+    "donor": "$work",
+    "uid": 29157
+   },
+   "terminals": [
+    {
+     "name": "array",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "output array",
+     "is_source": true,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "index",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "new element/subarray",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE primitive $work donor #29157 | PRECEDENT | PD246(c) A2 Replace Array Subset | route measured in P3a (stage_d1_ring_p3a.log, Equal?/Increment/Q&R); class GrowableFunction never copied: census UNPREDICTED"
+  },
+  {
+   "op": "create",
+   "id": "p3b_lw_frameidx",
+   "class": "Local",
+   "diagram": 32464,
+   "as": "LWF1",
+   "label": "FrameIdx",
+   "mode": "write",
+   "pos": [
+    220,
+    140
+   ],
+   "terminals": [
+    {
+     "name": "FrameIdx",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE local_write (create_local_write -> dest diagram) | PRECEDENT | PD246(c) A2 | stagexec.py:206 route; placement in a FS frame never run"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_w_r_arr",
+   "src": "new:LRR1.value",
+   "dst": "new:RAR1.array",
+   "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD246(c) A2 frame 2 | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_w_r_out",
+   "src": "new:RAR1.output array",
+   "dst": "new:LWR1.value",
+   "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD246(c) A2 frame 2 | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_w_f_arr",
+   "src": "new:LRF1.value",
+   "dst": "new:RAF1.array",
+   "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD246(c) A2 frame 2 | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_w_f_out",
+   "src": "new:RAF1.output array",
+   "dst": "new:LWF1.value",
+   "why": "ROUTE connect same-diagram (connect_nested_v1) | PRECEDENT | PD246(c) A2 frame 2 | same-frame wire, as p3a_w_k20 in case frame 27219; inside a FS frame never run"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_x_i_rar1",
+   "src": {
+    "uid": 27373,
+    "term": "x-y*floor(x/y)"
+   },
+   "dst": "new:RAR1.index",
+   "why": "ROUTE connect_term_uid ACROSS FS border (27219 -> f1), BRANCH into f1 already entered | MEASURED | PD246(c) i | PD257(d)/PD258(a) INNER-FACE branch of the entry FS tunnel (census {} n=3, diag_c127_1_fsinner.log:81-109)"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p3b_rle_i_rar1",
+   "of": "p3b_x_i_rar1",
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0; diag_c126_4_op.log:52-60; diag_c126_6_cross.log:61-65 | PD256(b) every wire of crossing p3b_x_i_rar1"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_x_i_raf1",
+   "src": {
+    "uid": 27373,
+    "term": "x-y*floor(x/y)"
+   },
+   "dst": "new:RAF1.index",
+   "why": "ROUTE connect_term_uid ACROSS FS border (27219 -> f1), BRANCH into f1 already entered | MEASURED | PD246(c) i | PD257(d)/PD258(a) INNER-FACE branch of the entry FS tunnel (census {} n=3, diag_c127_1_fsinner.log:81-109)"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p3b_rle_i_raf1",
+   "of": "p3b_x_i_raf1",
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0; diag_c126_4_op.log:52-60; diag_c126_6_cross.log:61-65 | PD256(b) every wire of crossing p3b_x_i_raf1"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_x_rot",
+   "src": {
+    "uid": 4580,
+    "term": "Value"
+   },
+   "dst": "new:RAR1.new element/subarray",
+   "why": "ROUTE connect_term_uid ACROSS case border (639 -> 27219) + FS border (-> f1) | MEASURED | PD238(c) RotPos(i) = #4580 Value t4728 | census_samples.json connect_term_uid loop_body_wired_src_to_fs_frame_in_case (diag_c126_6_cross.log:49,60): source net RE-CREATED (PD256(c)) (form) | PD257(a) RELEASED"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p3b_rle_rot",
+   "of": "p3b_x_rot",
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0; diag_c126_4_op.log:52-60; diag_c126_6_cross.log:61-65 | PD256(b) every wire of crossing p3b_x_rot"
+  },
+  {
+   "op": "wire",
+   "id": "p3b_x_fidx",
+   "src": {
+    "uid": 639,
+    "term_uid": 644
+   },
+   "dst": "new:RAF1.new element/subarray",
+   "why": "ROUTE connect_term_uid ACROSS case border (639 -> 27219) + FS border (-> f1) | MEASURED | PD240(a) FrameIdx(i) = #637 i t644 | census_samples.json connect_term_uid loop_body_wired_src_to_fs_frame_in_case (diag_c126_6_cross.log:49,60): source net RE-CREATED (PD256(c)) B2 exact"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p3b_rle_fidx",
+   "of": "p3b_x_fidx",
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0; diag_c126_4_op.log:52-60; diag_c126_6_cross.log:61-65 | PD256(b) every wire of crossing p3b_x_fidx"
+  }
+ ],
+ "final": true,
+ "finalized": {
+  "base": {
+   "path": "tools/bench/sim/ring_p3b2b_base_provisional.json",
+   "md5": "d8aa6ca31fc34cb464fddf520c915b2e"
+  },
+  "plan_in": {
+   "path": "tools/bench/plan_ring_p3b2b_in.json",
+   "md5": "74578ae78f6d99ca345295364e166c18"
+  },
+  "last_step": {
+   "path": "tools/bench/sim/ring_p3b2b/step_18_wire_remove_loose_ends.json",
+   "md5": "f8870db26798893d48996179c404f497"
+  },
+  "summary": {
+   "path": "tools/bench/sim/ring_p3b2b/summary.json",
+   "md5": "692fe4cc15e4a3048902fa143ee25d24"
+  },
+  "end_cdiff_rows": [
+   "11261|Terminal|array|0",
+   "11261|Terminal|element|0",
+   "2626|Terminal|array|0",
+   "2626|Terminal|array|1",
+   "2626|Terminal|array|2",
+   "2626|Terminal|array|3",
+   "2626|Terminal|element|0",
+   "2626|Terminal|element|1",
+   "2626|Terminal|element|2",
+   "28083|Terminal|Magnet position|0",
+   "29625|Terminal|index (col)|0",
+   "29973|Terminal|element|1",
+   "376|Terminal|current frame data array in|0",
+   "376|Terminal|frame index|0",
+   "5058|Terminal|Image In|0",
+   "8634|Terminal|index (col)|0"
+  ],
+  "failed": null,
+  "first_divergent": {
+   "n": 0,
+   "op": "base",
+   "id": null,
+   "rows_from_here": 16
+  },
+  "open_rows": [
+   [
+    376,
+    "current frame data array in"
+   ],
+   [
+    376,
+    "frame index"
+   ],
+   [
+    2626,
+    "array"
+   ],
+   [
+    2626,
+    "element"
+   ],
+   [
+    5058,
+    "Image In"
+   ],
+   [
+    8634,
+    "index (col)"
+   ],
+   [
+    11261,
+    "array"
+   ],
+   [
+    11261,
+    "element"
+   ],
+   [
+    28083,
+    "Magnet position"
+   ],
+   [
+    29625,
+    "index (col)"
+   ],
+   [
+    29973,
+    "element"
+   ]
+  ],
+  "open_rows_match": true,
+  "open_rows_match_legacy": true,
+  "open_rows_classed": {
+   "ok": false,
+   "want": [],
+   "c4_n": 0,
+   "c4_keys": 0,
+   "c4_bad": [],
+   "unclassed": [
+    [
+     376,
+     "current frame data array in"
+    ],
+    [
+     376,
+     "frame index"
+    ],
+    [
+     2626,
+     "array"
+    ],
+    [
+     2626,
+     "element"
+    ],
+    [
+     5058,
+     "Image In"
+    ],
+    [
+     8634,
+     "index (col)"
+    ],
+    [
+     11261,
+     "array"
+    ],
+    [
+     11261,
+     "element"
+    ],
+    [
+     28083,
+     "Magnet position"
+    ],
+    [
+     29625,
+     "index (col)"
+    ],
+    [
+     29973,
+     "element"
+    ]
+   ]
+  },
+  "cdiff_inputs": {
+   "labels": "node_labels_default",
+   "labels_n": 626,
+   "fs_pairs": "state",
+   "fs_pairs_n": 578
+  },
+  "step_files": [
+   {
+    "n": 0,
+    "op": "base",
+    "path": "tools/bench/sim/ring_p3b2b/step_00_base.json",
+    "md5": "0bf9f8d8f433e02be7ccfc0c686dff07"
+   },
+   {
+    "n": 1,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p3b2b/step_01_create.json",
+    "md5": "4586d0d2720c64604b1100182cb08aee"
+   },
+   {
+    "n": 2,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p3b2b/step_02_create.json",
+    "md5": "82791e7f018290723468dc2863657c05"
+   },
+   {
+    "n": 3,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p3b2b/step_03_create.json",
+    "md5": "e7c96e963b51f7a821a256d7931e0797"
+   },
+   {
+    "n": 4,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p3b2b/step_04_create.json",
+    "md5": "4753df16511bf0b5ebbb7d6a1ddd2192"
+   },
+   {
+    "n": 5,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p3b2b/step_05_create.json",
+    "md5": "353d0b55463dd1530af64e64386869f3"
+   },
+   {
+    "n": 6,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p3b2b/step_06_create.json",
+    "md5": "e1c75ed11032d79cb27552398ac9b2cb"
+   },
+   {
+    "n": 7,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3b2b/step_07_wire.json",
+    "md5": "5c957f31b02875e21b00e11241a89a04"
+   },
+   {
+    "n": 8,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3b2b/step_08_wire.json",
+    "md5": "4200ee8ce301717f5e5e14d18fee6c5d"
+   },
+   {
+    "n": 9,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3b2b/step_09_wire.json",
+    "md5": "c7fc01dec15d60e82415d64c8257245b"
+   },
+   {
+    "n": 10,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3b2b/step_10_wire.json",
+    "md5": "91d33ac38e7b74c83e29c2deeffb43bd"
+   },
+   {
+    "n": 11,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3b2b/step_11_wire.json",
+    "md5": "786ec2939284437efcbd4041f6043070"
+   },
+   {
+    "n": 12,
+    "op": "wire_remove_loose_ends",
+    "path": "tools/bench/sim/ring_p3b2b/step_12_wire_remove_loose_ends.json",
+    "md5": "75d3804d4000f0cc82239013671201e4"
+   },
+   {
+    "n": 13,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3b2b/step_13_wire.json",
+    "md5": "d344cffbe0dfbc06a10f6e92736247be"
+   },
+   {
+    "n": 14,
+    "op": "wire_remove_loose_ends",
+    "path": "tools/bench/sim/ring_p3b2b/step_14_wire_remove_loose_ends.json",
+    "md5": "b0686ac8d9f884569f4073e205239280"
+   },
+   {
+    "n": 15,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3b2b/step_15_wire.json",
+    "md5": "e7885ac27c6fc693ee1ee5b96b90cabd"
+   },
+   {
+    "n": 16,
+    "op": "wire_remove_loose_ends",
+    "path": "tools/bench/sim/ring_p3b2b/step_16_wire_remove_loose_ends.json",
+    "md5": "e36ee771b11ea5ef98a1b606104cdf1e"
+   },
+   {
+    "n": 17,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p3b2b/step_17_wire.json",
+    "md5": "74b377dcd71092770d9bf4d63d384505"
+   },
+   {
+    "n": 18,
+    "op": "wire_remove_loose_ends",
+    "path": "tools/bench/sim/ring_p3b2b/step_18_wire_remove_loose_ends.json",
+    "md5": "f8870db26798893d48996179c404f497"
+   }
+  ],
+  "undecided": 0,
+  "at": "2026-10-02 08:56:12",
+  "fs_routes": {
+   "11": {
+    "how": "fs_inner_branch",
+    "variant": null,
+    "id": "p3b_x_i_rar1"
+   },
+   "13": {
+    "how": "fs_inner_branch",
+    "variant": null,
+    "id": "p3b_x_i_raf1"
+   },
+   "15": {
+    "how": "fs_border",
+    "variant": "loop_body_wired_src_to_fs_frame_in_case",
+    "id": "p3b_x_rot"
+   },
+   "17": {
+    "how": "fs_border",
+    "variant": "loop_body_wired_src_to_fs_frame_in_case",
+    "id": "p3b_x_fidx"
+   }
+  }
+ }
+}

@@ -14,6 +14,9 @@ drains the queue in one batch when the runner says it is due (cycle_runner.gates
   drain --id <fp-n> --fixed <path:line> --selftest <name>
         Closes one entry: the fix must exist (path under the project) and the self-test must exist
         (tools/bench/<name>.py). status -> "drained".
+  close --id <fp-n> --reason "<why, citing an existing path:line>"
+        card 133-1: closes an entry that is NOT a false positive (a correct refusal, or superseded) - no fix exists, so
+        drain does not fit. status -> "closed". Self-test: tools/bench/selftest_c133_1_gatefp_close.py.
   list  [--open]            print the queue
   due                       exit 1 when a batch drain is due (>= DUE_OPEN open, oldest >= DUE_CYCLES cycles, or one
                             entry BLOCKING a card: a result_<id>.json with blocked_by.device == "gate-fp:<fp id>")
@@ -144,6 +147,28 @@ def drain(fp_id, fixed, selftest, path=None):
     return None, "no entry %s" % fp_id
 
 
+def close(fp_id, reason, path=None):
+    """card 133-1 (PD276(d), PD282(b)): close an OPEN entry that is NOT a false positive (the refusal was CORRECT, or the
+    entry is superseded) - no fix, no self-test. `reason` must cite at least one EXISTING <path>:<line> (the review / log
+    that decided it). status -> "closed". (entry, None) or (None, why)."""
+    cites = CITE_RE.findall(reason or "")
+    real = [c for c in cites if os.path.isfile(c.rsplit(":", 1)[0] if os.path.isabs(c.rsplit(":", 1)[0])
+                                               else os.path.join(ROOT, c.rsplit(":", 1)[0]))]
+    if not real:
+        return None, "--reason must cite an existing <path>:<line> (got %s)" % (cites or "none")
+    with P.file_lock((path or QUEUE) + ".lock"):
+        rows = read_queue(path)
+        for r in rows:
+            if r.get("id") == fp_id:
+                if r.get("status") != "open":
+                    return None, "%s is already %s" % (fp_id, r.get("status"))
+                r.update({"status": "closed", "close_reason": reason.strip()[:600], "closed_t": time.time(),
+                          "closed_iso": time.strftime("%Y-%m-%d %H:%M:%S")})
+                _write_queue(rows, path)
+                return r, None
+    return None, "no entry %s" % fp_id
+
+
 def note(fp_id, text, path=None):
     """card 131-2: attach a NOTE to an entry (why it stays open, who owns it). (entry, None) or (None, why). Status is
     not changed; a later note replaces the earlier one."""
@@ -258,10 +283,17 @@ def main(argv=None):
     nt = sub.add_parser("note")
     nt.add_argument("--id", required=True)
     nt.add_argument("--text", required=True)
+    cl = sub.add_parser("close")
+    cl.add_argument("--id", required=True)
+    cl.add_argument("--reason", required=True)
     ls = sub.add_parser("list")
     ls.add_argument("--open", action="store_true")
     sub.add_parser("due")
     a = ap.parse_args(argv)
+    if a.cmd == "close":
+        e, why = close(a.id, a.reason)
+        print(("CLOSED %s" % e["id"]) if e else "REFUSED: %s" % why)
+        return 0 if e else 2
     if a.cmd == "note":
         e, why = note(a.id, a.text)
         print(("NOTED %s" % e["id"]) if e else "REFUSED: %s" % why)

@@ -5909,3 +5909,112 @@ VIOLATION: wrong-ordering | loss_min=9 | loss_usd=? | evidence=tools/bench/cards
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle132","verdict":"refuted","alternative":"The two BLOCKs were cheap (9 card-min) and the cycle would still have stalled at the op-24 route-check gap, so no structural fault: the dispatch cap, not the ordering, set the end.","discriminating_test":"Replay: with the X10 reader branch in 132-1 and the graph read after it, count dispatches to reach the op-24 refusal (expect 4 of 6); then check whether one card closes the route-check binding (cycle 133 card 1).","violations":[{"slug":"wrong-ordering","loss_min":9,"loss_usd":"?","evidence":"tools/bench/cards/result_132-2.json:1"}],"sources":["tools/bench/cards/result_132-2.json:1","tools/bench/cards/result_132-3.json:1","tools/hooks/material_marker.log:3045","tools/bench/cards/brief_132-2.md:5","docs/d1/tooling.md:101-102","tools/bench/diag_c132_2_graph_p3b1_prerun.log:21","tools/bench/diag_c132_2_graph_p3b1.log:24","tools/bench/memory_model.json:6","tools/bench/stage_prerun_c129_1_p3b2_dry.log:23","tools/bench/stagesim_c132_6_recover_p3b2.log:42"],"note":"Findings: X10 start term 570 vs measured P3b-1 load 584.1 (P3b-2 margin 8.3 MB, not recomputed); recovered plan is final=false; dry-path 'unbound' predates 132-1 (c129 log) but stagesim finalize regressed in-cycle; no device failed."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle132.md
 BGRUN END rc=0 after 343s
+BGRUN START 2026-10-02 09:58:42 limit 10.0 min: py tools/retrospective.py --cycle 133
+BGRUN PID 8604
+   window 2026-10-02 08:09:54 .. 2026-10-02 09:58:43 (109 min); 59 build logs, 8 machinery logs, 47 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle133.txt (37588 chars)
+   review card tools\bench\cards\review_retrospective-cycle133.json
+OUTCOME: ANSWERED (462s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-10-02-retrospective-cycle133.md
+COST: $2.6709  in 48 / out 46024 / cache-create 150156 / cache-read 2745052  (460s, 49 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle133 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle133.json
+--- ANSWER ---
+# Retrospective: cycle 133 (window 08:09:54 to 09:58:43)
+
+**Window check.** The evidence fits the window. The judgement session started at 08:13:29 (`tools/bench/cycle_133.log:1`). The first card was bound at 08:26:28 and the last at 09:30:14 (`tools/bench/cards/guard_card.log:616-622`). The last fact is the rebase refusal at 09:52 (`tools/bench/stage_prerun_c133_6_rebase_p3b2b.log:4`). The four blank reviews A4 lists are not this cycle's work: three are cycle-130 files, charged here because A4 counts by day. Only the outcome review (written 08:1x, before the session) falls inside the window.
+
+**The claim is refuted.** The cycle ended on the six-dispatch cap with session b not run (`docs/d1/ring-p3b.md:228`). Two faults each used up one of those six slots, and they are of the same size.
+
+## Fault 1 (largest): the dry run saw the FR failure, labelled it UNVERIFIED and passed anyway; third time this class has occurred
+
+**What happened**
+- At 08:58 the dry run of recipe a computed the FR gate as **false**. Because this came after the first edit operation, the dry's rule (`tools/stage_prerun.py:726-730`) relabels any false gate as UNVERIFIED (`stage_prerun_c133_3_p3b2a_dry.log:73`). It then printed `DRY PASS … unverified 1` (`:83`).
+- The same line appears in the prerun and in all four wrapper dry/prerun logs of card 133-5 (`stage_prerun_c133_5_p3b2a_scr_*.log:85`).
+- The run itself did not need LabVIEW to show this: the other gates evaluated on the same simulated state (D, TD, PB) passed. After the fix, the dry shows FR as PASS (`result_133-6.json:16`).
+- Card 133-5 then ran 21 LabVIEW edits (all matching the simulation) and stopped on exactly that gate: `FAIL FR` (`stage_d1_ring_p3b2a_scratch.log:350`), ending `rc=1 after 891s` (`:379`).
+- The failing log then required a hypothesis review: $1.3199, 154 s (`peer_c133_6_fr.log:4,58`). The scratch run was repeated: 559 s (`stage_d1_ring_p3b2a_scratch_c133_6.log:394`).
+- The fix's own self-test reproduced the failure offline in 1 s (`archive/peer/2026-10-02-c133-6-fr-p3b2a.md:76`).
+
+**Why this is a repeated class.** The same relabelling hid a real failure twice before:
+- Card 108-5: an unroutable row (`tools/stage_prerun.py:906-910`).
+- Card 130-5: the executor stopped at op 48 of 63 (`:911-915`; `docs/d1/tooling.md:27-29`).
+
+Each time, only that one symptom was patched. The relabelling rule itself has never changed. The approach should have changed at the second occurrence (130-5): a gate that is false on data that is not a stub should fail the dry, or at least block the launch until a card records a decision on it.
+
+**It is still unfixed and unrecorded.** Card 133-6 reported it (`result_133-6.json:16`), but decision PD286 carries no fix (`ring-p3b.md:228-255`). Session b's dry next cycle will run under the same rule.
+
+- **Slug:** repeated-failure-class
+- **Loss:** about 20 min (891 s of LabVIEW, 154 s of review, about 2 min repeating dry/prerun). The only logged dollar figure is the $1.32 review, which is a floor. The material-session time has no cost line, so the dollar loss is unknown.
+- **Counterfactual:** had the 08:58 dry failed on FR, the fix would have been step 0 of card 133-5. Scratch a would have passed around 09:21, and the graph read and rebase of b would have been reached around 09:35. The −30 refusal would then have arrived in the fifth dispatch, not the sixth. That leaves the sixth for the rebind + scratch-b card (PD286(c)), which is now cycle 134's first act (`STATUS.md:57`).
+
+## Fault 2 (same size): the new guard_session device card used a main dispatch slot instead of a prep slot
+
+**What the cycle's own decisions said.** Both say to build the guard_session pairing device "in an OFFLINE card … BESIDE the cycle's LabVIEW card (pipeline prep slot)" (`docs/violation-decisions.md:1828-1829`, and PD282(d) at `ring-p3b.md:153-154`).
+
+**What happened instead**
+- Card 133-4 was dispatched at 08:49:04 beside 133-3, which is also an offline card (`guard_card.log:620`).
+- So it counted toward the cap of six (`tools/hooks/guard_session.py:60`) instead of the separate budget of three for prep cards (`:71`, `:434-442`).
+- No reason is recorded in PD283 or PD284.
+
+**Consequence.** The cycle closed on the six-dispatch cap (`ring-p3b.md:228`) about 75 minutes into its 180-minute budget.
+
+- **Slug:** wrong-ordering
+- **Loss:** about 13 min, used as a stand-in. That is what this cycle spent before its first dispatch (08:13:29 to 08:26:28), and the deferred card now pays it again in cycle 134. No log carries a dollar figure.
+- **Counterfactual:** had 133-4 been dispatched together with 133-5 at 09:05:28, the count at 09:5x would have been 5 of 6. The PD286(c) card could then have been dispatched around 09:55, inside this cycle.
+
+## Findings
+
+1. **Repeated failure**
+   - (a) Fault 1 above.
+   - (b) The rebase step has hit five different gaps in two cycles. PD286(b) calls them "each closed, none repeated" (`ring-p3b.md:239-240`). As a class they are one thing: four of the five, plus the FR bug, are facts about the Flat Sequence (FS) frame and border structure that the graph reader does not record.
+     - The reader got error 1055 on the frame owner (`diag_c132_2_graph_p3b1.log:82`).
+     - The frame map is filled in by `carry_fs` by elimination (review `:43-51`).
+   - The approach should have changed at 133-1, the third FS-related gap. The next act is a sixth binder patch (`STATUS.md:57`).
+2. **Missing tool.** A graph reader that records FS frames and border tunnels (one `OpFsDiagrams_v0` read, about 1 minute of LabVIEW, review `:82`). It would have answered:
+   - FR's proxy: base frames taken from terminal rows only (`stage_d1_ring_p3b2a.py:55-57` before the fix).
+   - Whether frame f0 is really 27641 (review `:45`).
+   - Probably the −30 FS-CARRY refusal.
+
+   CLAUDE.md:480-481 ("second time … by inference … the next build is the READER") applies. PD286(e) defers it again to "after the deliverable".
+3. **Decided without measuring**
+   - Frame f0 = 27641 is still assigned by elimination. The 1-minute read could have been folded into 133-6's scratch run at 09:38, as the review suggested; it was not.
+   - The census gate CEN2 passed while comparing two empty sets (`measured {} == declared {}`, `stage_d1_ring_p3b2a_scratch_c133_6.log:354`), even though the run created 8 objects. It checked nothing.
+4. **Rule compliance**
+   - Broken: CLAUDE.md:480-481 (build the reader after a second guess) and CLAUDE.md:553 (a rule broken twice goes into a hook); fault 1 is the third occurrence.
+   - Satisfied only formally:
+     - The PRERUN-GATE refusal at 09:48:11 (`material_marker.log:3094`) was cleared by passing a stand-in graph with a different md5 (`stage_prerun_c133_6_graph_dry2.log:1,7`, 22 of 54 lines covered). It was not queued as a gate false positive; `gate_fp_queue.jsonl` ends at fp-29. The same stand-in was used in cycle 132 (`diag_c132_2_graph_p3b1_prerun.log:1`).
+     - The steer was followed in form: the next act is labelled `build`, but its first step is a binder tool fix.
+   - Kept: the retry cap, returning at the first unexpected result (all four FAIL cards did), the USER-RULES lines, the 40-row rule for P3b (CLAUDE.md:519), and LabVIEW was closed each time.
+   - Audit A3: `wait_runner_event.log` is the chat's watcher, not a build, so A3 counts it wrongly.
+   - **What the audit does not cover:**
+     - DRY PASS results that carry UNVERIFIED gates (this cycle's main fault is invisible to it).
+     - Whether a card used a main dispatch slot or a prep slot.
+     - Gates that pass on nothing (CEN2).
+     - Stand-in graphs.
+     - Whether a judgement decision (PD282(d)) was actually carried out.
+5. **Ordering.** Otherwise defensible: offline work came before LabVIEW, the memory split before the scratch run, and the deliverable first. The exception is fault 2.
+6. **What the summaries hid**
+   - Card 133-3's result reports "dry PASS 21/21; prerun 15/0" with no mention of "unverified 1" (`result_133-3.json:19`).
+   - STATUS (`STATUS.md:62`) says only that "our FR gate refused" and leaves out both the 891 s of LabVIEW and the fact that the dry had already seen the failure.
+   - The review itself wrongly says the gate "was never evaluated against the simulated end state" (`:76`).
+   - The judgement session's own cost is not in the window (C4c shows 0), so C5 understates total cost.
+7. **Judgement inside a material session**
+   - 133-4: the material session left a live hook in place that turned a self-test red, and called it a "judgement call" (`result_133-4.json:1`, note). It was ratified afterwards in PD284(d).
+   - 133-6: the material session wrote "Class ACCEPTED as our-script-bug" (review `:98`). It then went on to the LabVIEW scratch run without returning to judgement, because the brief scripted review-then-run in sequence (`task_133-6.json:39-40`). It correctly declined the review's 1-minute test because it was outside the card's scope (`:104`).
+   - Neither cost anything (judgement agreed in PD286(a)), so these are findings, not faults.
+
+## Device effect
+
+No listed device failed within its decided scope inside the window:
+- **Pairing check (08:25):** after it was built, 133-5 and 133-6 each ran alone (`guard_card.log:621-622`).
+- **No SendMessage resume:** none in `guard_card.log`.
+- **X10 memory gate:** it fired correctly on the unsplit plan (701.9 MB > 690, `diag_c133_1_pred_p3b2.log`), and both scratch peaks stayed under its prediction (646.7 and 650.9 MB vs 671.8). Its known hole, falling back to 570 MB when the input load is unmeasured (PD284(b)), was never used for a launch.
+- **bgrun failure codes:** they worked (`rc=1` at `:379`, `rc=2` on the rebase).
+- **Stop record, prior-art and launch gates:** there was no recipe launch, only scratch wrappers.
+- **Dry-run "collect every failure" device (2026-09-25 / 2026-09-27 20:20):** its decided scope is address, checkpoint and routing failures. FR is a recipe gate, so fault 1 falls outside the letter of that device and is reported as a repeated class, not a device failure.
+- **Prerun gate:** it was cleared formally through its own `--graph` option, which caused no loss. It is recorded under finding 4.
+
+VIOLATION: repeated-failure-class | loss_min=20 | loss_usd=? | evidence=tools/bench/stage_prerun_c133_3_p3b2a_dry.log:73
+VIOLATION: wrong-ordering | loss_min=13 | loss_usd=? | evidence=tools/bench/cards/guard_card.log:620
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle133","verdict":"refuted","alternative":"FR was an ordinary recipe bug that the mandated scratch run exists to catch, and the dry is not designed to judge gates after an edit; the cycle still ended on the cap because the -30 rebase gap was unknowable until a's real file existed.","discriminating_test":"Re-run stage_prerun --dry on stage_d1_ring_p3b2a.py md5 ababd4ed with the after-edit relabelling disabled for gates computed on non-stub data: if FR alone FAILs offline in seconds, the 891 s LabVIEW run was avoidable.","violations":[{"slug":"repeated-failure-class","loss_min":20,"loss_usd":"?","evidence":"tools/bench/stage_prerun_c133_3_p3b2a_dry.log:73"},{"slug":"wrong-ordering","loss_min":13,"loss_usd":"?","evidence":"tools/bench/cards/guard_card.log:620"}],"sources":["tools/bench/stage_prerun_c133_3_p3b2a_dry.log:73","tools/bench/stage_d1_ring_p3b2a_scratch.log:350","tools/bench/stage_d1_ring_p3b2a_scratch.log:379","tools/stage_prerun.py:726","tools/stage_prerun.py:906","docs/d1/tooling.md:27","tools/bench/peer_c133_6_fr.log:4","docs/violation-decisions.md:1828","tools/bench/cards/guard_card.log:620","tools/hooks/guard_session.py:71","docs/d1/ring-p3b.md:228"],"note":"Unfixed: the after-edit relabelling (stage_prerun.py:726-730) will apply to session b's dry in cycle 134; PD286 carries no fix. FS frame/border reader still deferred despite CLAUDE.md:480 reader rule."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle133.md
+BGRUN END rc=0 after 468s

@@ -1,0 +1,51 @@
+{
+ "schema": "task/1",
+ "id": "133-4",
+ "kind": "build",
+ "goal": "wrong-ordering device (docs/violation-decisions.md 2026-10-02 08:25): guard_session refuses pairing a LabVIEW card with a card that writes a stage pre-check tool, both orders",
+ "why": "132-2 (labview build) ran beside 132-1 (editing tools/stage_prerun.py) and blocked; second time this class was paid for (retrospective-cycle132:334). Built before this cycle's LabVIEW card so the hook is not edited during that dispatch.",
+ "inputs": [
+  {"path": "docs/violation-decisions.md"},
+  {"path": "tools/hooks/guard_session.py"},
+  {"path": "tools/bench/cards/task_132-1.json"},
+  {"path": "tools/bench/cards/task_132-2.json"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/hooks/guard_session.py"},
+  {"kind": "file", "name": "tools/bench/cards/task_132-1.json"},
+  {"kind": "file", "name": "tools/bench/cards/task_132-2.json"}
+ ],
+ "pass": [
+  "1 refused when one card has labview != none and the other's flags.write matches stage_prerun/stagexec/stagesim/stagekit.py or hooks/guard_bash.py/guard_peer.py; both orders",
+  "2 a live entry recorded before the change (no write globs) is judged by reading its card file; unreadable card = fail closed, message names the card",
+  "3 self-test: 132-1+132-2 both orders refused; LabVIEW + offline card writing only tools/bench/** allowed; two offline cards allowed; existing guard_session self-tests green",
+  "4 hook payload check: a recorded Agent tool_input piped to guard_session.py in a subprocess exits 0 for an allowed card and 2 for a refused pair"
+ ],
+ "outputs": ["tools/hooks/guard_session.py", "tools/bench/cards/result_133-4.json"],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/hooks/guard_session.py",
+   "tools/bench/selftest_guard_session*",
+   "tools/bench/diag_c133_4*",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_133-4*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "outcome", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 30},
+ "rules": [
+  "Write the new guard_session.py to a temp path, self-test it, then replace the live file in one move",
+  "Do not change the existing limits (MAX_LIVE 2, one LabVIEW card, PREP_BUDGET 3, dispatch caps)",
+  "Offline; no other hook or tool edited; return at the first unexpected result; no STATUS edit"
+ ],
+ "unblocks": "M3"
+}

@@ -1,0 +1,31 @@
+BGRUN START 2026-10-02 08:54:33 limit 6.0 min: py -u tools/bench/selftest_guard_session.py
+BGRUN PID 26180
+  ok   G1 dispatch 1 (material) allowed               exit 0
+  ok   G2 dispatch 2 (log-reader) allowed             exit 0
+  ok   G3 dispatch 3 (material-fable-low) allowed     exit 0
+  ok   G4 dispatch 4 (material) allowed               exit 0
+  ok   G5 dispatch 5 (material-fable-medium) allowed  exit 0
+  ok   G6 dispatch 6 (log-reader) allowed             exit 0
+  ok   G7 counter reached 6 (Fable rungs counted)     counter 6
+  ok   G9 seventh dispatch refused                    exit 2, counter 6
+  ok   G8 seventh as a Fable rung refused too         exit 2
+  ok   G10 uncounted subagent_type allowed            exit 0, counter 6
+  ok   G11 non-Agent tool allowed                     exit 0
+  ok   G12 retrospective allowed and recorded         exit 0, retro_done True
+  ok   G13 dispatch after retrospective refused       exit 2
+  ok   G14 v1 and grep do not close the cycle         retro_done False
+  ok   G15 SendMessage to an agent refused in cycle   exit 2
+  ok   G16 SendMessage to log-reader refused in cycle exit 2
+  ok   G17 interactive SendMessage allowed AND counted exit 0, counter 0 -> 1
+  ok   G18 SendMessage to main allowed in cycle       exit 0
+  ok   G19 chat SendMessage past 6 allowed            exit 0
+  ok   G20 chat SendMessage after retro mark allowed  exit 0
+  ok   G21 chat: 8 dispatches allowed and counted     exit 0, counter 8
+  ok   G22 chat context bound DISABLED: 600k-token chat still dispatches exit 0
+  ok   G23 chat, unreadable transcript -> fail open   exit 0
+  ok   G24 chat after a retro mark allowed            exit 0
+  ok   G25 cycle session ignores the chat context rule (cap refuses) exit 2
+  ok   G26 cycle: Workflow counted, 7th refused       exit 0 / 2
+  ok   G27 chat: Workflow allowed at any context (bound disabled) exit 0 / 0
+SUMMARY 27/27 gates pass
+BGRUN END rc=0 after 6s (NO RESULT LINE)

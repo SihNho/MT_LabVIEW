@@ -89,7 +89,9 @@ def l0_conditions(tag):
 
 # card 132-1 (PD275(a)): the model gained final_read_mb 17.4 (memory_model.json) - both peaks +17.4 (728.9 -> 746.3,
 # 688.5 -> 705.9); verdicts unchanged (both > fail_above_mb 690).
-for tag, text, want in (("T1 129-1 bytes (read after every op)", r1, 746.3), ("T2 129-8 bytes ({0, len} | BIND)", r8, 705.9)):
+# card 133-3 (PD283(e)): the start is the MEASURED load of the input VI (P3a bed 561.8 + op-0 read 5.9 = 567.7, memory_model.json
+# load_by_vi / op0_read_mb) instead of start_mb 570.0 - both peaks -2.3 (746.3 -> 744.0, 705.9 -> 703.6); verdicts unchanged.
+for tag, text, want in (("T1 129-1 bytes (read after every op)", r1, 744.0), ("T2 129-8 bytes ({0, len} | BIND)", r8, 703.6)):
     gate("{0} L0 atoms on the fixtures: all 8 TRUE".format(tag[:2]), l0_conditions(tag[:2]))
     ok, det = x10(probe_copy(text, tag[:2] + ".py"))
     runs = det.get("runs") or []
@@ -106,7 +108,7 @@ gate("T4 stage_d1_ring_p3a.py (passed cycle 124): X10 PASSES", ok is True and le
      [dict((k, r[k]) for k in ("N", "bind", "R", "peak_mb")) for r in runs] or det)
 m = SP.load_memory_model()
 gate("T5 memory_model.json: start/read/edit/other/fail each {value, cite}", all(m[k]["cite"] for k in
-     ("start_mb", "read_mb", "edit_mb", "other_mb", "fail_above_mb")), dict((k, m[k]["value"]) for k in m if isinstance(m[k], dict)))
+     ("start_mb", "read_mb", "edit_mb", "other_mb", "fail_above_mb")), dict((k, m[k]["value"]) for k in m if isinstance(m[k], dict) and "value" in m[k]))   # card 133-3: load_by_vi has no value
 npass, nfail = sum(1 for _n, c in res if c), sum(1 for _n, c in res if not c)
 print(P.result_line(P.make_result(npass, nfail, next((n for n, c in res if not c), None))), flush=True)
 sys.stdout.flush()

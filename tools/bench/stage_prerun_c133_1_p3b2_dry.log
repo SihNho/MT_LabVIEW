@@ -1,0 +1,21 @@
+BGRUN START 2026-10-02 08:38:08 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_ring_p3b2.py
+BGRUN PID 18600
+stage_d1_ring_p3b2 - card 129-1 (WRITTEN, NOT LAUNCHED), RING P3b-2 (d1-loop12-17-split-plan.md PD246(c) A2, PD238(c), PD240(a),
+PD257(a), PD258(a), PD261(d), PD263(b)): on P3b-1's SAVED artefact, in the Flat Sequence P3b-1 built on case #22694's False frame,
+add TransPos/RotPos/FrameIdx at i in frame f1 (local read -> Replace Array Subset -> local write; i by the INNER-FACE branch of
+P3b-1's entry tunnel; values #30117 Value, #4580 Value, #637 i) and Latest = BufNum in frame f2 (inner branch of P3b-1's BufNum
+tunnel); wire_remove_loose_ends after every crossing. BASE IS PROVISIONAL (P3b-1's simulated end, stage_prerun refuses the launch):
+`py tools/stage_prerun.py --rebase tools/bench/plan_ring_p3b2.json --graph <graph of P3b-1's saved VI>` first, then the pred again.
+FRESH LabVIEW -> claudeDev\D1_ring_p3b2_<ts>.vi (rule-6 GUI save, ExecState 0 by design) + errorlist_expected (54 + 0 own).
+ROWS ONLY FROM plan_ring_p3b2.json (stagesim FINAL of plan_ring_p3b2_in.json, plan_ring_p3b_split.py); expected values only from
+plan_ring_p3b2_pred.json. PRIOR ART: stage_d1_ring_p3b1.py / stage_d1_ring_p3a.py (same skeleton and gates). No new op.
+PREDICTION: L1 30 actions -> pred ops; E1 every checkpoint == sim; NG (card 132-1, PD275(c)) every crossing op's new tunnel
+names == the step files' (a mismatch = ExecStop NAME-GATE at that op); FR every created object sits on a frame of the base's FS, no
+new frame; D new/lost wires == sim's; TD every base terminal that was wired stays wired; CEN2 == pred census; PB cdiff(S1, end)
+== the 16 rows (FATAL, before save); HB handles <= +700; PS saved, input unchanged; EL 54.
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/stage_d1_ring_p3b2.log -- py -u tools/recipes/stage_d1_ring_p3b2.py
+  FAIL  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p3b2_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan  ('04204133d6c55929f368ec3761f70445', {'path': 'tools/bench/sim/ring_p3b2_base_real_fsmap.json', 'md5': '75e64374c76f11a36de096afa5ebda37'}, '9d7bf28738b7c154280e5e7c2c9d4961')
+
+=== DRY FAIL: first_fail=GATE L0 plan FINAL, open_rows_match, plan_in = plan_ring_p3b2_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan coverage 26/79 lines, first mutation None, unverified 0, graph None
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"GATE L0 plan FINAL, open_rows_match, plan_in = plan_ring_p3b2_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan","artefacts":[]}
+BGRUN END rc=1 after 1s

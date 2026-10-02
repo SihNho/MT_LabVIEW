@@ -1,0 +1,90 @@
+{
+ "schema": "task/1",
+ "id": "133-1",
+ "kind": "build",
+ "goal": "P3b-2 plan READY on P3b-1's real graph: finalize/'unbound' origin measured, route check binds all 39 ops (or PD280(d)), dry 39/39 + prerun, EL range; gate-fp fp-21/fp-28 drained",
+ "why": "132-6: re-sim 39/39 but route check stops after op 24 (stage_prerun_c132_6_rebase_p3b2.log:76); recovered plan 98992a59 final:false (stagesim_c132_6_recover_p3b2.log:42-44). PD280(c)(d), PD281(c), PD282(b). Launch form + X10 start = card 133-3.",
+ "inputs": [
+  {"path": "docs/d1/ring-p3b.md"},
+  {"path": "tools/bench/cards/result_132-6.json"},
+  {"path": "tools/stagexec.py", "md5": "6b4d32e13e3f1bdb70fd27169c12057c"},
+  {"path": "tools/stagesim.py", "md5": "6c26525962ec3b67fd77f15a433df7ab"},
+  {"path": "tools/stage_prerun.py", "md5": "df14bfefeaca16f8fa8926a6468e4eba"},
+  {"path": "tools/gate_fp.py", "md5": "dd21e1d2b65c2befc4ed57fb96433248"},
+  {"path": "tools/bench/plan_ring_p3b2.json", "md5": "98992a598c9551e56a57393489c469d7"},
+  {"path": "tools/bench/plan_ring_p3b2_in.json", "md5": "4df60e63ae0cb220345f1ee6d437868f"},
+  {"path": "tools/bench/sim/ring_p3b2_base_real_fsmap.json", "md5": "75e64374c76f11a36de096afa5ebda37"},
+  {"path": "tools/bench/graph_ring_p3b1_20261002_073225.json", "md5": "6cfa6ecb25d9bd98fe31a6cb703679cb"},
+  {"path": "tools/recipes/stage_d1_ring_p3b2.py", "md5": "bbdd03281c4bbf96dddfb7ecb78a2068"},
+  {"path": "tools/bench/errorlist_expect_p3b2.py", "md5": "3a06d26c9b37033afd7a295f24bdfc1b"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/gate_fp.py"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3b2.json"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3b2_in.json"},
+  {"kind": "file", "name": "tools/bench/sim/ring_p3b2_base_real_fsmap.json"},
+  {"kind": "file", "name": "tools/bench/graph_ring_p3b1_20261002_073225.json"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p3b2.py"},
+  {"kind": "file", "name": "tools/bench/errorlist_expect_p3b2.py"},
+  {"kind": "file", "name": "tools/bench/diag_c131_5_stubs.py"},
+  {"kind": "file", "name": "tools/bench/c125_1_offline_measure.py"}
+ ],
+ "pass": [
+  "1 measured w/ log lines: why 98992a59 is final:false (git diff 83dd0e70 vs stagesim_c132_6_recover_p3b2.log:42-44); 'unbound' origin (stagexec.py:786,1864-1869) before/after 132-1",
+  "2 route check binds the op-24 FSOT on the carried FS (sim -50/-51/-52 vs 10000052/53/54): self-test, P3b-1 still PASS, 0 unbound over 39 ops; OR PD280(d) direct finalize, same 39 actions",
+  "3 plan_ring_p3b2.json final:true + pred regenerated; recipe --dry 39/39; --prerun every X PASS but X10 (value + terms reported); EL range on the final plan; --scratch-required exit",
+  "4 fp-21 drained if the fix covers it (else reason); gate_fp.py close verb, fp-28 closed; diag_c131_5_stubs rerun recorded; c125_1 + stagesim/stagexec/rebase/rebind/chat_p1 self-test counts"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p3b2.json",
+  "tools/bench/plan_ring_p3b2_pred.json",
+  "tools/bench/cards/result_133-1.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/stage_prerun.py",
+   "tools/gate_fp.py",
+   "tools/recipes/stage_d1_ring_p3b2.py",
+   "tools/bench/selftest_*",
+   "tools/bench/diag_c133_1*",
+   "tools/bench/diag_c131_5_stubs*",
+   "tools/bench/*ring_p3b2*",
+   "tools/bench/errorlist_expect_p3b2*",
+   "tools/bench/sim/**",
+   "tools/bench/prerun/**",
+   "tools/bench/stage_prerun*",
+   "tools/bench/stagesim*",
+   "tools/bench/c125_1*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prior_art*",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_133-1*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "outcome", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "Offline only: LabVIEW is never opened; the bed D1_ring_p3b1_20261002_060910.vi is never touched",
+  "A regression from 132-1/132-6 is reverted, never worked around; never re-simulate the half-rebased 31bea1c5 in place",
+  "A pre-existing WRONG refusal on P3b-2's path is logged via gate_fp.py and fixed here with a self-test",
+  "X10 FAIL is reported, not fixed here (launch form + X10 start term = card 133-3, PD282(c)); it does not stop steps 3-4",
+  "Every stagexec/stagesim/stage_prerun edit reruns c125_1_offline_measure.py and the existing self-tests (PD252(a))",
+  "Steps in order; return at the first unexpected result with the step finished and files saved; no STATUS edit",
+  "Never end the turn while a run you started lacks BGRUN END"
+ ],
+ "advances": ["M3", "R1", "R3"]
+}

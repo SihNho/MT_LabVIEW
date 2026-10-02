@@ -42,11 +42,14 @@ m = SP.load_memory_model()
 gate("T2 memory_model final_read_mb == measured pin4 d {0}; fail_above_mb 690".format(pin4_d),
      m["final_read_mb"]["value"] == pin4_d and m["fail_above_mb"]["value"] == 690.0,
      (m["final_read_mb"]["value"], m["fail_above_mb"]["value"], pin4_mb))
-ok, det = x10(os.path.join(ROOT, "tools", "recipes", "stage_d1_ring_p3b2.py"))
-runs = det.get("runs") or []
-print("  FACT  X10 P3b-2 (provisional plan): ok {0}, runs {1}, why {2}".format(
-    ok, [dict((k, r[k]) for k in ("plan", "N", "bind", "R", "peak_mb", "fail_above_mb")) for r in runs], det.get("why")), flush=True)
-gate("T3 stage_d1_ring_p3b2.py: X10 returns a model run (prediction printed above)", len(runs) >= 1, det.get("why"))
+# card 133-3 (PD283(e)): stage_d1_ring_p3b2.py is the one-session REFERENCE (never launched; its plan 04204133 keeps the rebase
+# temp plan_in, so its L0 stops the dry before the Executor). T3 now probes the two session recipes that replace it.
+for rn in ("stage_d1_ring_p3b2a.py", "stage_d1_ring_p3b2b.py"):
+    ok, det = x10(os.path.join(ROOT, "tools", "recipes", rn))
+    runs = det.get("runs") or []
+    print("  FACT  X10 {0}: ok {1}, runs {2}, why {3}".format(rn, ok, [dict((k, r.get(k)) for k in (
+        "plan", "N", "bind", "R", "start_mb", "start_source", "peak_mb", "fail_above_mb")) for r in runs], det.get("why")), flush=True)
+    gate("T3 {0}: X10 returns a model run (prediction printed above)".format(rn), len(runs) >= 1, det.get("why"))
 npass, nfail = sum(1 for _n, c in res if c), sum(1 for _n, c in res if not c)
 print(P.result_line(P.make_result(npass, nfail, next((n for n, c in res if not c), None))), flush=True)
 sys.stdout.flush()

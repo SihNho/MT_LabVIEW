@@ -30,6 +30,13 @@ Prose cannot enforce "now stop" on the session that is enjoying itself. So two r
       once the chat's last turn used more than CHAT_CONTEXT_LIMIT tokens (write docs/chat-handoff.md, open a new chat).
       The Workflow tool (multi-agent orchestration) is a counted dispatch too: one in a cycle session, and subject to
       the same context rule in the chat. (c)-(e) are unchanged.
+  (g) NO GATE-TOOL EDIT BESIDE A LabVIEW CARD (docs/violation-decisions.md "wrong-ordering - 2026-10-02 08:25", card
+      133-4): a pipeline pair is REFUSED when one card has flags.labview != "none" and the other card's flags.write
+      matches a stage pre-check tool (STAGE_TOOLS: stage_prerun/stagexec/stagesim/stagekit.py, hooks/guard_bash.py,
+      hooks/guard_peer.py), in either dispatch order. A glob counts when it MATCHES the tool path (`tools/**` does).
+      The live record keeps the card's write globs; an entry recorded before this change (no "write" key) is judged
+      by re-reading its card file, and an unreadable card fails CLOSED with a message naming it. Card 132-2 (build)
+      ran beside 132-1 (editing tools/stage_prerun.py) and blocked - the second time this class was paid for.
 
 STATE: `tools/bench/session_<session_id>.json` = {"dispatches": n, "retro_done": bool, ...}. A file, not a
 memory - CLAUDE.md: "a rule whose counter is my memory is not a rule at all". `.json`, so no log gate globs it.
@@ -64,6 +71,9 @@ MAX_LIVE = 2                # card chat-P1 (1): one LabVIEW card + one offline p
 PREP_BUDGET = 3             # offline cards dispatched while a LabVIEW card is live
 LIVE_FACTOR = 1.5           # a card with no result is dead after budget.minutes x this
 CARD_RE = re.compile(r"^\s*CARD\s+(\S+)", re.M)
+# (g) the tools a LabVIEW card's launch gates read; guard_session.py itself is deliberately not on the list
+STAGE_TOOLS = ("tools/stage_prerun.py", "tools/stagexec.py", "tools/stagesim.py", "tools/stagekit.py",
+               "tools/hooks/guard_bash.py", "tools/hooks/guard_peer.py")
 WORKFLOW_TOOLS = ("Workflow",)  # (f) multi-agent orchestration counts as one dispatch
 # (f) DISABLED 2026-10-02 (user: "세션이 50% 넘으면 새 세션 열도록 강요하지 말고 그냥 문맥 압축하는 방향으로 가자" -
 # the user is remote and cannot open a new chat): the chat runs on and relies on automatic context compaction. Was
@@ -206,6 +216,62 @@ def prune_live(live, now=None):
             continue
         out.append(e)
     return out
+
+
+def card_writes(card):
+    """(g) flags.write of a card dict as a list; None for an unreadable card ({}), which the caller treats as
+    'may write anything' (fail closed)."""
+    if not card:
+        return None
+    w = (card.get("flags") or {}).get("write") or []
+    return [str(g) for g in (w if isinstance(w, list) else [w])]
+
+
+def tool_hits(globs):
+    """(g) the STAGE_TOOLS a write-glob list reaches. None (unknown writes) reaches all of them."""
+    if globs is None:
+        return list(STAGE_TOOLS)
+    import protocol
+    return [t for t in STAGE_TOOLS if protocol.path_in_globs(os.path.join(ROOT, t), globs)]
+
+
+def pairing_refusal(cid, lv, writes, live):
+    """(g) refusal text for dispatching card `cid` (labview `lv`, write globs `writes`) beside the `live` entries,
+    or ''. Both orders: a live LabVIEW card vs this card's writes, and this LabVIEW card vs each live card's writes."""
+    for e in live:
+        eid, elv = e.get("id"), str(e.get("labview") or "none")
+        if elv != "none":
+            hits = tool_hits(writes)
+            if hits:
+                return ("BLOCKED by tools/hooks/guard_session.py: GATE-TOOL EDIT BESIDE A LabVIEW CARD.\n"
+                        "  card %s (flags.write reaches %s) while LabVIEW card %s (labview %s) is live.\n\n"
+                        "docs/violation-decisions.md wrong-ordering 2026-10-02 08:25: 132-2 (build) ran beside 132-1\n"
+                        "(editing tools/stage_prerun.py) and blocked. Wait for %s's result_<id>.json, or narrow %s's\n"
+                        "flags.write so it reaches none of: %s.\n"
+                        % (cid, ", ".join(hits), eid, elv, eid, cid, ", ".join(STAGE_TOOLS)))
+        if lv != "none":
+            if "write" in e:
+                ew, src = e.get("write"), "live record"
+            else:                                   # recorded before (g): read the card; unreadable = fail closed
+                try:
+                    with open(e.get("card") or "", encoding="utf-8") as f:
+                        c = json.load(f)
+                    ew, src = card_writes(c if isinstance(c, dict) else {}), "card file"
+                except (OSError, ValueError):
+                    c = None
+                if c is None or ew is None:
+                    return ("BLOCKED by tools/hooks/guard_session.py: GATE-TOOL PAIRING CHECK CANNOT READ live card %s\n"
+                            "  (%s). Its flags.write is unknown, so LabVIEW card %s (labview %s) is refused (fail\n"
+                            "  closed, docs/violation-decisions.md wrong-ordering 2026-10-02 08:25). Wait for %s to\n"
+                            "  return, or restore its card file.\n" % (eid, e.get("card"), cid, lv, eid))
+            hits = tool_hits(ew)
+            if hits:
+                return ("BLOCKED by tools/hooks/guard_session.py: LabVIEW CARD BESIDE A GATE-TOOL EDIT.\n"
+                        "  LabVIEW card %s (labview %s) while live card %s (flags.write, from its %s) reaches %s.\n\n"
+                        "docs/violation-decisions.md wrong-ordering 2026-10-02 08:25: 132-2 (build) ran beside 132-1\n"
+                        "(editing tools/stage_prerun.py) and blocked. Wait for %s's result_<id>.json first.\n"
+                        % (cid, lv, eid, src, ", ".join(hits), eid))
+    return ""
 
 
 def send_message_refusal(data):
@@ -356,8 +422,14 @@ def decide(sid, sub, ti):
                 "One COM client at a time: card %s has flags.labview=%r. Only a labview:none card may run beside a\n"
                 "LabVIEW card (card chat-P1 pipeline).\n" % (lv_live[0].get("id"), lv_live[0].get("labview"), cid, lv))
             return 2
+        writes = card_writes(card)
+        why = pairing_refusal(cid, lv, writes, live)          # (g) no gate-tool edit beside a LabVIEW card
+        if why:
+            sys.stderr.write(why)
+            return 2
         entry = {"id": cid, "labview": lv, "t": time.time(), "card": cpath,
-                 "minutes": (card.get("budget") or {}).get("minutes") if card else None}
+                 "minutes": (card.get("budget") or {}).get("minutes") if card else None,
+                 "write": writes if writes is not None else ["**"]}
         if lv == "none" and lv_live:
             p = int(st.get("prep", 0)) + 1
             if p > PREP_BUDGET:

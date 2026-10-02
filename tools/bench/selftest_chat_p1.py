@@ -67,6 +67,11 @@ def card(path, cid, labview, minutes=60):
     d = json.load(open(CARD_P1, encoding="utf-8"))
     d["id"] = cid
     d["flags"] = dict(d["flags"], labview=labview)
+    if labview == "none":
+        # PD284(d): a realistic offline PREP card writes bench/recipe files only; the source card's `tools/**` can match a
+        # stage tool, which guard_session's pairing check (PD281(a), guard_session.py:75,238) rightly refuses beside a
+        # LabVIEW card.
+        d["flags"]["write"] = ["tools/bench/**", "tools/recipes/**"]
     d["budget"] = {"failures": 2, "minutes": minutes}
     return wj(path, d)
 

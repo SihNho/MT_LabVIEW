@@ -262,6 +262,7 @@ ROUTE_VERBS = {
 }
 # card 127-2: the simulated effect `how` each Flat Sequence border variant must carry (Executor.execute cross-check)
 FS_VARIANT_HOW = {"fs_border": "fs_border", "fs_border_inner_branch": "fs_inner_branch"}
+FS_HOW_VARIANT = dict((v, k) for k, v in FS_VARIANT_HOW.items())          # card 133-1: finalized.fs_routes how -> variant
 # card 124-2: the class-count (census) delta of a non-create route, per variant. card 124-6: MEASURED by card 124-5 on a P2b
 # byte copy (tools/bench/census_samples.json ops connect_term_uid / case_frame_wire; diag_c124_p3a_scratch.log:53,61 R1/R2,
 # :71 R3 new_wire, :77,80 R4 branch). census_predict (a separate tool) still resolves only the rows it has rules for.
@@ -641,7 +642,16 @@ def compile_plan(plan):
     A = plan["actions"]
     check_symbols(A)
     fsw = fs_wire_ops(A)                                 # card 126-3: Flat Sequence wires (pure, from the plan)
-    created = {}                                         # 'new:X' -> ('sr'|'tunnel'|'loop', action index)
+    # card 133-1 (PD280(c)): a wire into a frame of a Flat Sequence the plan did NOT create (carried / base FS) cannot be
+    # placed from the plan alone; the finalized plan carries the border route stagesim applied from the graph
+    # (finalized.fs_routes, stagesim.fs_routes_of). Used only where fs_wire_ops is silent; Executor.execute still
+    # cross-checks the compiled variant against the step effect (FS_VARIANT_HOW).
+    for k_, r_ in ((plan.get("finalized") or {}).get("fs_routes") or {}).items():
+        i_ = int(k_)
+        v_ = FS_HOW_VARIANT.get((r_ or {}).get("how"))
+        if v_ and i_ not in fsw and 1 <= i_ <= len(A) and A[i_ - 1]["op"] == "wire":
+            fsw[i_] = {"variant": v_, "fs": None, "from": "finalized.fs_routes"}
+    created = {}                                       # 'new:X' -> ('sr'|'tunnel'|'loop', action index)
     for i, a in enumerate(A, 1):
         if a["op"] == "add_shift_reg":
             nm = a.get("as")

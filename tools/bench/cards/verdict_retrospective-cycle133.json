@@ -1,0 +1,35 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle133",
+ "verdict": "refuted",
+ "alternative": "FR was an ordinary recipe bug that the mandated scratch run exists to catch, and the dry is not designed to judge gates after an edit; the cycle still ended on the cap because the -30 rebase gap was unknowable until a's real file existed.",
+ "discriminating_test": "Re-run stage_prerun --dry on stage_d1_ring_p3b2a.py md5 ababd4ed with the after-edit relabelling disabled for gates computed on non-stub data: if FR alone FAILs offline in seconds, the 891 s LabVIEW run was avoidable.",
+ "violations": [
+  {
+   "slug": "repeated-failure-class",
+   "loss_min": 20,
+   "loss_usd": null,
+   "evidence": "tools/bench/stage_prerun_c133_3_p3b2a_dry.log:73"
+  },
+  {
+   "slug": "wrong-ordering",
+   "loss_min": 13,
+   "loss_usd": null,
+   "evidence": "tools/bench/cards/guard_card.log:620"
+  }
+ ],
+ "sources": [
+  "tools/bench/stage_prerun_c133_3_p3b2a_dry.log:73",
+  "tools/bench/stage_d1_ring_p3b2a_scratch.log:350",
+  "tools/bench/stage_d1_ring_p3b2a_scratch.log:379",
+  "tools/stage_prerun.py:726",
+  "tools/stage_prerun.py:906",
+  "docs/d1/tooling.md:27",
+  "tools/bench/peer_c133_6_fr.log:4",
+  "docs/violation-decisions.md:1828",
+  "tools/bench/cards/guard_card.log:620",
+  "tools/hooks/guard_session.py:71",
+  "docs/d1/ring-p3b.md:228"
+ ],
+ "note": "Unfixed: the after-edit relabelling (stage_prerun.py:726-730) will apply to session b's dry in cycle 134; PD286 carries no fix. FS frame/border reader still deferred despite CLAUDE.md:480 reader rule."
+}

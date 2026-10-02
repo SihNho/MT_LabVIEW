@@ -1,17 +1,17 @@
 {
  "schema": "ring-p3b-pred/1",
- "card": "130-1",
- "note": "P3b-2: PROVISIONAL base (P3b-1's simulated end); bed/bed_md5 are the P3a bed's, inherited by the simulated state - replaced at stage_prerun --rebase onto P3b-1's saved artefact",
+ "card": "133-1",
+ "note": "P3b-2 REBASED onto P3b-1's saved artefact (stage_prerun --rebase, card 133-1); FS crossings compile to connect_term_uid from finalized.fs_routes",
  "plan": {
   "path": "tools/bench/plan_ring_p3b2.json",
-  "md5": "b25c1ecbc53f44158426b904beddf5c2"
+  "md5": "04204133d6c55929f368ec3761f70445"
  },
  "graph": {
-  "path": "tools/bench/sim/ring_p3b2_base_provisional.json",
-  "md5": "93d600e26c0694761e4a16e59441712a"
+  "path": "tools/bench/sim/ring_p3b2_base_real_fsmap.json",
+  "md5": "75e64374c76f11a36de096afa5ebda37"
  },
- "bed": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3a_20261001_180540.vi",
- "bed_md5": "4dfa44aac8fb32f706b3eb792ee7d3cc",
+ "bed": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b1_20261002_060910.vi",
+ "bed_md5": "9d7bf28738b7c154280e5e7c2c9d4961",
  "census": {},
  "census_overall": "UNPREDICTED",
  "census_unpredicted": [
@@ -393,21 +393,21 @@
   "connect",
   "connect",
   "connect",
-  "connect",
+  "connect_term_uid",
   "wire_remove_loose_ends",
-  "connect",
+  "connect_term_uid",
   "wire_remove_loose_ends",
-  "connect",
+  "connect_term_uid",
   "wire_remove_loose_ends",
-  "connect",
+  "connect_term_uid",
   "wire_remove_loose_ends",
-  "connect",
+  "connect_term_uid",
   "wire_remove_loose_ends",
-  "connect",
+  "connect_term_uid",
   "wire_remove_loose_ends",
-  "connect",
+  "connect_term_uid",
   "wire_remove_loose_ends",
-  "connect",
+  "connect_term_uid",
   "wire_remove_loose_ends"
  ],
  "cdiff_rows": [
@@ -429,17 +429,18 @@
   "8634|Terminal|index (col)|0"
  ],
  "errorlist": {
-  "bed_total": 54,
+  "bed_total": 53,
   "removed": {},
   "new_items_predicted": 0,
-  "predicted_total": 54,
-  "base_file": "P3b-1's errorlist_expected (after its launch)",
+  "predicted_total": 53,
+  "base_file": "tools/bench/errorlist_expected_D1_ring_p3b1_20261002_060910.json",
+  "unwired_created_sinks": [],
+  "alternative": "+0 if LabVIEW flags an unwired created sink above as an item",
+  "class_range": "tools/bench/errorlist_expect_p3b2.json (errorlist_expect_p3b2.py, computed after this pred)",
   "row_sources": {
    "crossings + their RLE rows": "0 (as P3b-1)",
    "T/R/F + Latest creates and wires": "0: every created sink wired"
-  },
-  "unwired_created_sinks": [],
-  "alternative": "+0 if LabVIEW flags an unwired created sink above as an item"
+  }
  },
  "readback": {
   "row": "p3b_w_ub_sel",
@@ -448,7 +449,7 @@
   "decided": "PD262(b)"
  },
  "memory_pred": {
-  "card": "130-1",
+  "card": "133-1",
   "checkpoints": [
    0,
    1,
@@ -465,9 +466,17 @@
    12,
    13,
    14,
+   24,
+   26,
+   28,
+   30,
+   32,
+   34,
+   36,
+   38,
    39
   ],
-  "R": 16,
+  "R": 24,
   "N": 39,
   "bind_ops": [
    1,
@@ -483,7 +492,15 @@
    11,
    12,
    13,
-   14
+   14,
+   24,
+   26,
+   28,
+   30,
+   32,
+   34,
+   36,
+   38
   ],
   "op_kinds": [
    "create",
@@ -509,31 +526,35 @@
    "connect",
    "connect",
    "connect",
-   "connect",
+   "connect_term_uid",
    "wire_remove_loose_ends",
-   "connect",
+   "connect_term_uid",
    "wire_remove_loose_ends",
-   "connect",
+   "connect_term_uid",
    "wire_remove_loose_ends",
-   "connect",
+   "connect_term_uid",
    "wire_remove_loose_ends",
-   "connect",
+   "connect_term_uid",
    "wire_remove_loose_ends",
-   "connect",
+   "connect_term_uid",
    "wire_remove_loose_ends",
-   "connect",
+   "connect_term_uid",
    "wire_remove_loose_ends",
-   "connect",
+   "connect_term_uid",
    "wire_remove_loose_ends"
   ],
-  "peak_mb": 664.3,
-  "fail_above_mb": 675.0,
-  "below_fail": true,
+  "peak_mb": 701.9,
+  "fail_above_mb": 690.0,
+  "below_fail": false,
   "model": {
    "path": "tools/bench/memory_model.json",
-   "md5": "3203ca935da5efb4dd95523ac97e79c7"
+   "md5": "986a72369e5e5b0d189f53204dfcffdc"
   },
   "how": "stage_prerun.x10_model_peak on the compiled plan, checkpoints {0, len} | BIND (the recipe's set)",
-  "note": "report only; the set and the model are not tuned to the number (card 130-1 rule 2)"
+  "note": "report only; start term / launch form = card 133-3 (PD282(c))"
+ },
+ "summary": {
+  "path": "tools/bench/sim/ring_p3b2/summary.json",
+  "md5": "a142d29e9e025ec7dc75bb03a9e1282b"
  }
 }

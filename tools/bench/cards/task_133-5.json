@@ -1,0 +1,92 @@
+{
+ "schema": "task/1",
+ "id": "133-5",
+ "kind": "build",
+ "goal": "PD283(d) two-session scratch of P3b-2 on byte copies: a -> save -> graph read -> rebase b -> dry/prerun -> b -> save -> Error List count-only in 49..52; bed untouched",
+ "why": "133-3 PASS: P3b-2 cut into a (21, X10 671.8) / b (18, 677.7); a dry 21/21 + prerun 15/0, b provisional. D-2026-10-01-01: a full scratch run before the real build. PD283, PD284.",
+ "inputs": [
+  {"path": "docs/d1/ring-p3b.md"},
+  {"path": "tools/bench/cards/result_133-3.json"},
+  {"path": "tools/recipes/stage_d1_ring_p3b2a.py", "md5": "ababd4ed46d98ab35eddbf76d26e29b6"},
+  {"path": "tools/recipes/stage_d1_ring_p3b2b.py", "md5": "e0eed58c680ee930dd01f0f06d21d1a5"},
+  {"path": "tools/bench/plan_ring_p3b2a.json", "md5": "a419f23f29760447da8b43e1154fa470"},
+  {"path": "tools/bench/plan_ring_p3b2b.json", "md5": "1451ba90aadc594fe74f97793eb04e92"},
+  {"path": "tools/bench/errorlist_expect_p3b2ab.json", "md5": "3a06345781c5678a78f968958e3ada6d"},
+  {"path": "tools/bench/memory_model.json", "md5": "87268eeb1a364ac07cf342968b6d88df"},
+  {"path": "tools/stage_prerun.py", "md5": "5478c4450554645a5529385ce2c272b0"},
+  {"path": "tools/bench/stage_d1_ring_p3b1_scratch.py"},
+  {"path": "tools/bench/diag_c132_2_graph_p3b1.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p3b1_20261002_060910.vi", "md5": "9d7bf28738b7c154280e5e7c2c9d4961"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p3b2a.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p3b2b.py"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3b2a.json"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3b2b.json"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3b2a_pred.json"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p3b2b_pred.json"},
+  {"kind": "file", "name": "tools/bench/errorlist_expect_p3b2ab.json"},
+  {"kind": "file", "name": "tools/bench/stage_d1_ring_p3b1_scratch.py"},
+  {"kind": "file", "name": "tools/bench/diag_c132_2_graph_p3b1.py"},
+  {"kind": "file", "name": "tools/bench/selftest_chat_p1.py"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/wait_logs.py"},
+  {"kind": "file", "name": "tools/lv_gui.ps1"},
+  {"kind": "file", "name": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_ring_p3b1_20261002_060910.vi"}
+ ],
+ "pass": [
+  "0 selftest_chat_p1 fixture prep-card write narrowed to tools/bench/**, tools/recipes/** (PD284(d)); selftest_chat_p1 46/46",
+  "1 a on a byte copy of the bed (scratch): every gate PASS incl. E1, name gate, FS counts; peak <= 690 MB and within 10 of X10 671.8; scratch in-between saved (rule-6), md5",
+  "2 graph read of a's scratch file in a fresh LabVIEW: MB after load -> load_by_vi (cited); --rebase b onto it PASS; b --dry + --prerun every X PASS; b's X10 line names that measured load",
+  "3 b on a's scratch file in a fresh LabVIEW (scratch): every gate PASS incl. PB cdiff 16; peak <= 690 and within 10 of b's X10; scratch final saved, md5",
+  "4 Error List count-only (--role scratch) of the scratch final: total in 49..52, per-class counts; measured census into both preds (PD264(c)); scratch files deleted; bed unchanged; LabVIEW gone"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p3b2a_pred.json",
+  "tools/bench/plan_ring_p3b2b_pred.json",
+  "tools/bench/plan_ring_p3b2b.json",
+  "tools/bench/cards/result_133-5.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/selftest_chat_p1*",
+   "tools/recipes/stage_d1_ring_p3b2a.py",
+   "tools/recipes/stage_d1_ring_p3b2b.py",
+   "tools/bench/*ring_p3b2a*",
+   "tools/bench/*ring_p3b2b*",
+   "tools/bench/graph_ring_p3b2*",
+   "tools/bench/memory_model.json",
+   "tools/bench/sim/**",
+   "tools/bench/prerun/**",
+   "tools/bench/stage_prerun*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/errorlist*",
+   "tools/bench/stagesim*",
+   "tools/bench/diag_c133_5*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prior_art*",
+   "tools/bench/peer_*",
+   "tools/bench/cards/result_133-5*",
+   "tools/bench/cards/review_*",
+   "tools/bench/cards/verdict_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "outcome", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "Byte copies only: the bed is never edited or saved; scratch files get a scratch_ name in claudeDev, deleted after md5s",
+  "rule-6 GUI save via lv_gui.ps1 -Exception Approved; capture, locate, act, capture, confirm",
+  "No stage tool edited in this card (stage_prerun/stagexec/stagesim/stagekit); a tool gap = return",
+  "Each LabVIEW session closed and verified gone before the next; ONE Error List read, at the end (PD258(a))",
+  "Steps in order; return at the first unexpected result, LabVIEW closed, files saved; NO launch; no STATUS edit",
+  "Never end the turn while a run lacks BGRUN END; wait with wait_logs.py ticks (material.md:92-98)"
+ ],
+ "advances": ["M3", "R1", "R3"]
+}

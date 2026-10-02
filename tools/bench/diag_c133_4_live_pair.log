@@ -1,0 +1,16 @@
+BGRUN START 2026-10-02 08:54:40 limit 6.0 min: py -u tools/bench/selftest_guard_session_pairing.py
+BGRUN PID 7632
+under test: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\hooks\guard_session.py
+  ok   P1 132-1 then 132-2 refused                                    (2, 'BLOCKED by tools/hooks/guard_session.py: LabVIEW CARD BESIDE A GATE-TOOL EDIT.\n  LabVIEW card 132-2 (labview build) whil')
+  ok   P2 132-2 then 132-1 refused                                    (2, 'BLOCKED by tools/hooks/guard_session.py: GATE-TOOL EDIT BESIDE A LabVIEW CARD.\n  card 132-1 (flags.write reaches tools/s')
+  ok   P3 LabVIEW + offline tools/bench/** allowed, write recorded    (0, '', [{'id': 'gsp-bench', 'labview': 'none', 't': 1790898881.4525232, 'card': 'C:\\Users\\KimLab\\AppData\\Local\\Temp\\gsp_mrorcgji\\task_gsp-benc
+  ok   P4 two offline cards (one writes stagexec.py) allowed          (0, 0, '')
+  ok   P5 legacy entry judged from its card file -> refused           (2, 'BLOCKED by tools/hooks/guard_session.py: LabVIEW CARD BESIDE A GATE-TOOL EDIT.\n  LabVIEW card 132-2 (labview build) whil')
+  ok   P6 legacy entry, unreadable card -> refused, names it          (2, 'BLOCKED by tools/hooks/guard_session.py: GATE-TOOL PAIRING CHECK CANNOT READ live card gsp-gone\n  (C:\\Users\\KimLab\\AppDa')
+  ok   P7 legacy entry writing only tools/bench/** -> allowed         (0, '')
+  ok   P8 offline tools/** beside LabVIEW refused                     (2, 'BLOCKED by tools/hooks/guard_session.py: GATE-TOOL EDIT BESIDE A LabVIEW CARD.\n  card gsp-all (flags.write reaches tools')
+  ok   P9 recorded payload (132-2) alone -> exit 0                    (0, '')
+  ok   P10 recorded payloads 132-1 then 132-2 -> exit 0 then 2        (0, 2, 'BLOCKED by tools/hooks/guard_session.py: LabVIEW CARD BESIDE A GATE-TOOL EDIT.\n  LabVIEW card 132-2 ')
+SUMMARY 10/10 gates pass
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":10,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 2s

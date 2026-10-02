@@ -1,0 +1,58 @@
+BGRUN START 2026-10-02 09:33:28 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c133-6-fr-p3b2a -TaskFile tools/bench/peer_c133_6_fr_task.md
+BGRUN PID 24368
+OUTCOME: ANSWERED (153s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-02-c133-6-fr-p3b2a.md
+COST: $1.3199  in 24 / out 13322 / cache-create 101858 / cache-read 1192633  (149s, 19 turn(s))
+--- ANSWER ---
+**Verdict: the claim mostly holds. "Our script's bug" is the right class for this failure. But one piece of its evidence is false, and the fix makes FR (the frame gate) rest on the same assumption as E1 (the real-vs-simulated comparison), so FR no longer checks it independently.**
+
+## 1. Strongest reason the claim is wrong
+
+**The real P3b-1 graph does not list FS #27509's frames.** `tools/bench/graph_ring_p3b1_20261002_073225.json` has no `fs_frames` key; a grep for it finds nothing. What it does record is `{"uid": 27641, "class": "Diagram", "owner": "FlatSequenceFrame"}`, with owners entry `"27641": ["FlatSequenceFrame", 0]`. The owner-chain read failed at that point: `diag_c132_2_graph_p3b1.log:82` ("owner 'FlatSequenceFrame' uid 0 … error 1055"). The `fs_frames {"27509": [27641, 32464, 27722]}` entry in `sim/ring_p3b2_base_real_fsmap.json` was carried in by `stage_prerun.carry_fs` (`tools/stage_prerun.py:3164-3172`), through the plan's own binding. The cycle-132 judgement says the same at `docs/d1/ring-p3b.md:100-102`.
+
+That binding is weak exactly for f0. In `diag_c132_5_frames.log:21-27`, frames −3 and −4 are bound by their 16 and 18 terminal rows. Frame −2 (f0) has 0 rows (`:23`), so it gets 27641 **by elimination**: it is the third new Diagram object. So:
+
+- The plan puts the 8 objects on 27641 (`diag_c133_3_peek.log:3-6`, `"diagram": 27641`).
+- E1 compares frames through the same binding (`tools/stagexec.py:977`).
+- The new FR accepts 27641 because the carried map says it is a frame of #27509.
+
+All three rest on one inference. None of them has measured that 27641 is f0 of #27509. The correct statement of the evidence is "27641 is a new frame diagram that P3b-1 created", not "the real graph lists it".
+
+## 2. Alternative explanation of the same evidence
+
+`carry_fs` could have bound −2 to the wrong empty frame diagram. The real graph has many diagrams owned by `['FlatSequenceFrame', 0]`, all with the same unresolved owner (27425, 27723, 32410, 33688, 43928, 44125, 44169, 81548, …). If 27641 were not FS #27509's leftmost frame, the 8 objects would sit in the wrong frame, and E1, NG (the tunnel-name check) and the new FR would all still pass.
+
+The evidence against this alternative is real but indirect:
+
+- In P3b-1, exactly 3 new Diagram objects appeared (`diag_c132_5_frames.log:24-27`), and P3b-1 created only one Flat Sequence.
+- In the earlier scratch runs, the copied FS #27509 brought 27641 as its own first, leftmost frame (`diag_c125_5_fsscr.log:27,32`; `diag_c127_1_fsinner.log:33`).
+- The middle frame differed between runs: 28470 in the scratch runs, 32464 in P3b-1. Uids are not reproduced between runs, so the scratch runs do not prove 27641's role in P3b-1.
+- 27641 reports position `[0, 0]`, while the other two frames report real coordinates. That does not show which frame it is.
+
+## 3. Answers to your three questions
+
+**Does the fix make FR vacuous?** No, but it is now mostly redundant with E1.
+- For the 8 created objects to land on a frame outside the base set while E1 passes, the plan itself would have to create a structure (new diagrams). P3b-2a creates only locals, a function and constants, so that cannot happen here. A new frame uid still fails (self-test F2).
+- FR no longer independently checks "frame of the base's FS", because that set now comes from the plan's own binding. It catches unplanned diagrams only.
+
+**Does `frames(real) == bf` now hide a lost frame?** No, it got stricter.
+- It now requires every carried FS frame to hold at least one terminal at the end of the run.
+- A frame that held terminals and was deleted still fails the check. In run a, 27641 cannot be lost while also holding the objects.
+- The limit: neither clause reads the real FS's frame list, because the reader cannot (owner uid 0). An FS frame that is supposed to end empty would fail falsely.
+- The second clause is covered for 133-5 only through a chain: `STEPX 21 … diff 0` (`stage_d1_ring_p3b2a_scratch.log:347`) says real == simulated at the last checkpoint, and self-test F3 says the simulated end frames equal the new base set. F3 uses the simulated end state, not the real rows of 133-5.
+
+**Process point:** `selftest_c133_6_fr` reproduced the failure offline in 1 s (F1' FAIL, `selftest_c133_6_fr.log:6`). The recipe's own gate condition was never evaluated against the simulated end state before the LabVIEW scratch run. That offline check is what was missing, not a LabVIEW fact.
+
+## 4. What would falsify the claim, and the cheapest test
+
+**Falsifying observation:** a read of FS #27509's frame list in the P3b-1 file (or in scratch a's file) that does not return 27641 as the leftmost frame, i.e. not `[27641, 32464, 27722]`.
+
+**Cheapest test:** one read-only call of the existing frames read (`OpFsDiagrams_v0`, the op behind "FRAMES left->right" in `diag_c125_5_fsscr.log:32`) on a byte copy of the P3b-1 file. That costs about one minute of LabVIEW. Fold it into the next scratch run instead of buying a separate session.
+- If it returns `[27641, 32464, 27722]`: the claim holds fully. Record it, so the base-frame set is backed by a measurement and not only by the binding.
+- If it does not: the carried FS map is wrong, and P3b-2a's placement must be re-checked before launch.
+
+**Fully offline alternative:** confirm in `carry_fs`'s binding log that exactly one new Flat Sequence and exactly three new FlatSequenceFrame-owned diagrams appeared in P3b-1. That makes the elimination argument airtight short of a read.
+
+**What would change my mind:** the frames read above returning `[27641, 32464, 27722]`. Then the claim is fully right and only the "the real graph lists the frames" wording needs correcting.
+
+No web search was needed. Every point here is about this project's own code and logs, cited by file:line; none rests on an external LabVIEW API fact. Several connectors need authorization (claude.ai Figma; amplitude, amplitude-eu, atlassian, bigquery, hex) and `plugin:data:definite` failed to connect. None was needed for this review.
+BGRUN END rc=0 after 154s
