@@ -20,7 +20,16 @@ THE RULE
     classifier cannot read is STOP. Tunnel OBJECT classes (LoopTunnel, FlatSequence*Tunnel, SelectorTunnel, Tunnel) are in
     neither user list and therefore STOP (card chat-S2 OPEN).
 
-Self-test: tools/bench/selftest_gateclass_s2.py.
+USER, 2026-10-03 (card chat-S3, PD328(b)(c)): "메모리 낮추고 터널 개수차이로 멈춤은 유지하고 터널 단자행만 다를 경우 기록하자".
+  (b) Tunnel OBJECT count differences STAY STOP - TUNNEL_OBJECT_CLASSES below is the explicit list, kept disjoint from
+      NON_SEMANTIC_CLASSES (asserted at import), so count_verdict on any of them is a STOP.
+  (c) An E1 per-step diff (stagexec.compare) made ONLY of tunnel FACE/terminal ROWS - only_sim_terms / only_real_terms whose
+      owner is a tunnel object that exists, with the same class, on BOTH sides - and no edge, dangling or unbound difference
+      is LOG-only (step_face_rows_verdict -> soft log line, the run continues). A row owned by a non-tunnel object, an owner
+      present on one side only (an extra/missing tunnel OBJECT), an owner whose class differs, or any wire difference
+      in the same step STOPs.
+
+Self-test: tools/bench/selftest_gateclass_s2.py, tools/bench/selftest_gateclass_s3.py.
 """
 import ast
 import json
@@ -44,6 +53,16 @@ NON_SEMANTIC_CLASSES = frozenset(("Terminal", "InnerTerminal", "OuterTerminal", 
 SEMANTIC_EXAMPLES = ("Function", "GrowableFunction", "SubVI", "Node", "IndexArray", "Unbundler", "Bundler", "Local", "Wire",
                      "ControlTerminal", "DigitalNumericConstant", "ArrayConstant", "BooleanConstant", "WhileLoop", "ForLoop",
                      "CaseStructure", "FlatSequence", "Diagram")
+# card chat-S3 (PD328(b)), USER 2026-10-03 "터널 개수차이로 멈춤은 유지": tunnel OBJECTS are semantic - a count difference of any
+# of these classes STOPS (they are not in NON_SEMANTIC_CLASSES, asserted below). Their face ROWS are the PD328(c) LOG case.
+TUNNEL_OBJECT_CLASSES = frozenset(("LoopTunnel", "FlatSequenceInnerTunnel", "FlatSequenceOuterTunnel", "SelectorTunnel",
+                                   "Tunnel"))
+assert not (TUNNEL_OBJECT_CLASSES & NON_SEMANTIC_CLASSES), "tunnel object classes must stay semantic (PD328(b))"
+
+
+def is_tunnel_class(cls):
+    c = str(cls or "")
+    return c in TUNNEL_OBJECT_CLASSES or (c.startswith("FlatSequence") and c.endswith("Tunnel"))
 
 # Gate id (the label's first token) -> kind. Order matters: first match wins. Kinds:
 #   name   - terminal/tunnel/face NAME comparison                       -> LOG
@@ -279,3 +298,47 @@ def errorlist_verdict(extra, missing, predicted_loose=0):
     n, tol = len(extra) + len(missing), tolerance(predicted_loose)
     return ("log" if n <= tol else "stop"), "Error List loose ends extra {0} missing {1}: {2} item(s) {3} max(5, 25%) = {4}".format(
         len(extra), len(missing), n, "<=" if n <= tol else ">", tol)
+
+
+# ------------------------------------------------------------------------------------------------ E1 step diff (PD328(c))
+STEP_HARD_KEYS = ("only_sim_edges", "only_real_edges", "dangling_sim_only", "dangling_real_only", "unbound")
+
+
+def step_face_rows_verdict(d, sim_rows, real_rows):
+    """card chat-S3 (PD328(c), user 2026-10-03 "터널 단자행만 다를 경우 기록하자"): verdict on ONE E1 per-step diff
+    (stagexec.compare's dict). sim_rows = the simulated terminal rows AFTER binding translation, real_rows = the real read;
+    each row {term_uid, owner_uid, owner_class, term_name, ...}. Returns {'verdict': 'log'|'stop', 'rule', 'rows'}:
+    'log' only when the diff is ONLY terminal rows (only_sim_terms / only_real_terms) on tunnel faces whose owner tunnel
+    exists with the same class on BOTH sides, and nothing else differs (no edge, dangling or unbound entry). Fail-closed."""
+    d = d or {}
+    hard = [k for k in STEP_HARD_KEYS if d.get(k)]
+    if hard:
+        return {"verdict": "stop", "rule": "step diff has wire/binding differences {0}".format(hard), "rows": []}
+    os_, or_ = list(d.get("only_sim_terms") or []), list(d.get("only_real_terms") or [])
+    if not os_ and not or_:
+        return {"verdict": "stop", "rule": "no terminal-row difference to classify (fail-closed)", "rows": []}
+    s_term = dict((r["term_uid"], r) for r in sim_rows or [])
+    r_term = dict((r["term_uid"], r) for r in real_rows or [])
+    s_own = dict((r["owner_uid"], r["owner_class"]) for r in sim_rows or [])
+    r_own = dict((r["owner_uid"], r["owner_class"]) for r in real_rows or [])
+    rows, bad = [], []
+    for side, uids, mine, other in (("only_sim", os_, s_term, r_own), ("only_real", or_, r_term, s_own)):
+        for t in uids:
+            r = mine.get(t)
+            if r is None:
+                bad.append("{0} term #{1}: row not found (fail-closed)".format(side, t))
+                continue
+            o, c = r.get("owner_uid"), r.get("owner_class")
+            rows.append({"side": side, "term_uid": t, "owner_uid": o, "owner_class": c, "term_name": r.get("term_name"),
+                         "term_class": r.get("term_class")})
+            if not is_tunnel_class(c):
+                bad.append("{0} term #{1} on a {2} (not a tunnel face)".format(side, t, c))
+            elif o not in other:
+                bad.append("{0} term #{1}: tunnel #{2} ({3}) exists on one side only (tunnel OBJECT difference, PD328(b))".format(
+                    side, t, o, c))
+            elif other[o] != c:
+                bad.append("{0} term #{1}: tunnel #{2} class {3} vs {4} on the other side".format(side, t, o, c, other[o]))
+    if bad:
+        return {"verdict": "stop", "rule": "; ".join(bad[:6])[:400], "rows": rows}
+    return {"verdict": "log", "rule": "tunnel face rows only: {0} sim-only, {1} real-only on tunnel(s) {2} (PD328(c))".format(
+        len(os_), len(or_), sorted(set(r["owner_uid"] for r in rows))[:8]), "rows": rows}

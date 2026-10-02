@@ -123,3 +123,22 @@ How to add: see the 5-line note at the top of `docs/d1/INDEX.md`.
      - **(d) guard_peer:** a log whose only FAIL lines are LOG-only owes no hypothesis review; any STOP line, exception,
        STOP-at-gate or timeout still owes one. Self-test `tools/bench/selftest_gateclass_s2.py` 12/0.
      - **(e) Replay of 130-141** (`tools/bench/s2_replay.log`): 49 non-PASS → 6 LOG (would continue), 38 STOP, 5 not a gate.
+328. **(chat card chat-S3, 2026-10-03 — USER: "메모리 낮추고 터널 개수차이로 멈춤은 유지하고 터널 단자행만 다를 경우 기록하자")**
+     Three answers after chat-M2 (LabVIEW error 2 measured at 704.8 MB private, `tools/bench/diag_chat_m1_mem.log:170-173`)
+     and PD327's open items. USER-RULES: numbers changed only with the user.
+     - **(a) Memory limits lower:** X10 FAIL threshold 690 → **680 MB**, run-time MEMSTOP 700 → **695 MB**. ONE source:
+       `tools/bench/memory_model.json` `fail_above_mb` / `memstop_mb`; `stagexec.MEM_STOP_MB` / `X10_FAIL_MB` and
+       `stage_prerun.X10_FAIL_MB` read it (missing entry = error at import). The P4 session-2 scratch recipe (not launched)
+       sets its stop to `SX.X10_FAIL_MB`; recipes of finished/released stages (the s01 scratch is held by the prior-art
+       launch gate's sha record) and archived bench scripts keep their literals (history, not re-run).
+       Consequence: the cycle-131 P3b-1 bytes (predicted 683.6) would now be refused (`selftest_x10_c132_1.py` T1 re-pinned).
+       The card-level launch limit 675 (PD321(c)) is below 680 and unchanged.
+     - **(b) Tunnel OBJECT count differences stay STOP:** `gateclass.TUNNEL_OBJECT_CLASSES` (LoopTunnel,
+       FlatSequenceInner/OuterTunnel, SelectorTunnel, Tunnel), asserted disjoint from `NON_SEMANTIC_CLASSES`.
+     - **(c) E1 face-row-only diffs are LOG-only:** a step diff whose only entries are terminal rows on tunnel faces, every
+       owner tunnel present with the same class on both sides, and no edge / dangling / unbound entry, is LOG-only
+       (`gateclass.step_face_rows_verdict`, `stagexec.compare` → `face_rows`, Executor prints `  SOFT  E1 …` and writes one
+       `gate_soft_log.jsonl` line per new row, the run continues; record mode classes it `log`). `bind_new` no longer counts
+       a new row on a tunnel that existed before the op as a new object. Face rows + an extra tunnel object, or + a wire
+       difference, or a row on a non-tunnel owner, STOP. Self-tests `selftest_gateclass_s3.py` 13/0, `stagexec selftest`
+       141/0 (T120–T124).

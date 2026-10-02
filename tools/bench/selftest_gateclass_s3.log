@@ -1,0 +1,18 @@
+BGRUN START 2026-10-03 07:25:07 limit 5.0 min: py -u tools/bench/selftest_gateclass_s3.py
+BGRUN PID 21856
+  PASS  M1 memory_model fail_above_mb 680 / memstop_mb 695, cited  [680.0, 695.0]
+  PASS  M2 one source: SX.MEM_STOP_MB 695, SX.X10_FAIL_MB 680, SP.X10_FAIL_MB 680  [695.0, 680.0, 680.0]
+  PASS  M3 Meter default stop 695: 694.9 passes, 695.0 raises MEMSTOP  "MEMSTOP: LabVIEW private bytes 695.0 MB >= 695.0 MB at op k 2 (error 2 measured at 704.8 MB, diag_chat_m1_mem.log:170-17"
+  PASS  M4 mem_margin margin 15: checkpoint 680.0 -> ok False, 679.9 -> ok True  [false, true, 15.0, 680.0]
+  PASS  T1 tunnel OBJECT classes +1 STOP, disjoint from NON_SEMANTIC (PD328(b))  ["FlatSequenceInnerTunnel", "FlatSequenceOuterTunnel", "LoopTunnel", "SelectorTunnel", "Tunnel"]
+  PASS  T2 census LoopTunnel 3 vs 2 beside Terminal +3 -> STOP  {"verdict": "stop", "rows": [{"class": "LoopTunnel", "measured": 3, "predicted": 2, "verdict": "stop", "rule": "semantic class LoopTunnel: any difference stops (+3 vs +2)"}, {"class": "Terminal", "measured": 12, "predicted": 9, "verdict": "log", "rule": "non-semantic Terminal: |+12 - +9| = 3 <= max(5, 25%) = 5"}]}
+  PASS  F1 only_real face row on a LoopTunnel present on both sides -> log  {"verdict": "log", "rule": "tunnel face rows only: 0 sim-only, 1 real-only on tunnel(s) [100] (PD328(c))", "rows": [{"side": "only_real", "term_uid": 3, "owner_uid": 100, "owner_class": "LoopTunnel", "term_name": "", "term_class": "InnerTerminal"}]}
+  PASS  F2 face rows on both sides (FSOT sim-only, SelectorTunnel real-only) -> log  {"verdict": "log", "rule": "tunnel face rows only: 1 sim-only, 1 real-only on tunnel(s) [300, 400] (PD328(c))", "rows": [{"side": "only_sim", "term_uid": 13, "owner_uid": 300, "owner_class": "FlatSequenceOuterTunnel", "term_name": "", "term_class": "Terminal"}, {"side": "only_real", "term_uid": 14, "owner_uid": 400, "owner_class": "SelectorTunnel", "term_name": "", "term_class": "InnerTerminal"}]}
+  PASS  F3 NEGATIVE face row + an extra tunnel OBJECT #999 -> stop  {"verdict": "stop", "rule": "only_real term #21: tunnel #999 (LoopTunnel) exists on one side only (tunnel OBJECT difference, PD328(b))", "rows": [{"side": "only_real", "term_uid": 3, "owner_uid": 100, "owner_class": "LoopTunnel", "term_name": "", "term_class": "InnerTerminal"}, {"side": "only_real", "term_uid": 21, "owner_uid": 999, "owner_class": "LoopTunnel", "term_name": "", "term_class": "Oute
+  PASS  F4 NEGATIVE face row + a wire diff -> stop  {"verdict": "stop", "rule": "step diff has wire/binding differences ['only_real_edges']", "rows": []}
+  PASS  F5 NEGATIVE non-tunnel owner -> stop; owner class LoopTunnel vs Tunnel -> stop  ["only_real term #6 on a Function (not a tunnel face)", "only_real term #3: tunnel #100 class Tunnel vs LoopTunnel on the other side"]
+  PASS  F6 stagexec.compare: extra unwired face row -> face_rows log, classify_step_diff ('log', [])  {"only_sim_terms": [], "only_real_terms": [3], "only_sim_edges": [], "only_real_edges": [], "dangling_sim_only": [], "dangling_real_only": [], "unbound": [], "n": 1, "who": {"3": [100, "LoopTunnel", ""]}, "face_rows": {"verdict": "log", "rule": "tunnel face rows only: 0 sim-only, 1 real-only on tunnel(s) [100] (PD328(c))", "rows": [{"side": "only_real", "term_uid": 3, "owner_uid": 100, "owner_clas
+  PASS  F7 bind_new: new face row on an existing tunnel binds nothing (no stop); a new tunnel OBJECT -> BINDING stop  [{}, "BINDING: simulated new objects {} != real new objects {'LoopTunnel': 1} (real owners [999])"]
+=== GATES: 13 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

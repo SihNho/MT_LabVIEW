@@ -62,6 +62,9 @@ PRE-RUN (decision 2, 3, 8), all offline, on the same graph JSON + the dry run's 
      checkpoint set, peak = start + R*read + N*(edit+other) (tools/bench/memory_model.json, each value cited); FAIL above
      its fail_above_mb (675); FAIL UNMEASURED when nothing compiles and no recorded meter covers the run (x10_gate).
      card 132-1 (PD275(a)(b)): + final_read_mb (17.4, the run's last whole-VI read) and fail_above_mb 690.
+     card chat-S3 (PD328(a), user 2026-10-03): fail_above_mb 680 and MEMSTOP 695 (error 2 measured at 704.8 MB); both live
+     ONLY in memory_model.json (X10_FAIL_MB and stagexec.MEM_STOP_MB read it). The 690/675 numbers in older comments below
+     are history.
     card 132-4 (PD277(a), fp-29): a 0-edit script with no Executor (x10_readonly) is modelled N 0, R 1 + its whole-VI
     read call sites, + final_read_mb; an edit-op script without an Executor stays UNMEASURED = FAIL.
     card 136-2 (fp-33): ... unless its dry trace carries the ops and the opened VI's load is measured (x10_edit): N = dry
@@ -1856,7 +1859,10 @@ def meter_records(recipe, log_dir=None):
 # card 106-5 (PD219(c) DECIDED): a predicted checkpoint >= 690 MB FAILS X10 - LabVIEW error 2 was seen at 695 MB in cycle
 # 85, so margin 0 against MEMSTOP 700 would pass a value above the error-2 point. mem_predict's rule is
 # ok = peak < memstop - margin_mb, hence the default margin = MEMSTOP - 690 (700.0 - 10.0 = 690.0 exactly).
-X10_FAIL_MB = 690.0
+# card chat-S3 (PD328(a), user 2026-10-03 "메모리 낮추고"; error 2 measured at 704.8 MB, diag_chat_m1_mem.log:170-173):
+# 690 -> 680 and MEMSTOP 700 -> 695 (margin 15). ONE SOURCE: memory_model.json `fail_above_mb` (the same value the X10
+# model compares against, and stagexec.X10_FAIL_MB); no literal here.
+X10_FAIL_MB = float(json.load(REAL_OPEN(os.path.join(BENCH, "memory_model.json"), encoding="utf-8"))["fail_above_mb"]["value"])
 
 
 def mem_margin(recipe, stop_after=None, from_step=None, log_dir=None, records=None, margin_mb=None):

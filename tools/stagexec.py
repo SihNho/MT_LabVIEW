@@ -67,7 +67,29 @@ class ExecStop(Exception):
 # (.claude/skills/labview-automation/references/com-driving.md:310; a restart dropped it to ~410 MB). The loud stop sits
 # 70 MB below that observation so the run ends with a report instead of an error-2 cascade (unroutable_l2a1_85.log:562).
 # Handles are logged beside it but gate nothing: the handle count is blind to VI Server refnums (stagekit.py:178).
-MEM_STOP_MB = 700.0
+# card chat-S3 (PD328(a), user 2026-10-03 "메모리 낮추고"): error 2 was MEASURED at 704.8 MB private (chat-M2,
+# tools/bench/diag_chat_m1_mem.log:170-173), so MEMSTOP 700 -> 695 and the X10 fail threshold 690 -> 680. ONE SOURCE OF
+# TRUTH: tools/bench/memory_model.json `memstop_mb` / `fail_above_mb`; stage_prerun.X10_FAIL_MB is this X10_FAIL_MB. A
+# missing or malformed entry raises at import (no silent default).
+MEMORY_MODEL_PATH = os.path.join(BENCH, "memory_model.json")
+
+
+def _mem_limits(path=MEMORY_MODEL_PATH):
+    import io
+    with io.open(path, encoding="utf-8") as f:
+        m = json.load(f)
+    out = []
+    for k in ("memstop_mb", "fail_above_mb"):
+        v = (m.get(k) or {}).get("value") if isinstance(m.get(k), dict) else None
+        if not isinstance(v, (int, float)) or not (m.get(k) or {}).get("cite"):
+            raise ValueError("memory_model.json {0}: needs {{value, cite}} (card chat-S3, PD328(a))".format(k))
+        out.append(float(v))
+    if not out[1] < out[0]:
+        raise ValueError("memory_model.json: fail_above_mb {0} must be below memstop_mb {1}".format(out[1], out[0]))
+    return tuple(out)
+
+
+MEM_STOP_MB, X10_FAIL_MB = _mem_limits()
 
 
 class Meter(object):
@@ -90,8 +112,8 @@ class Meter(object):
         self.log("  METER {0:<6} k {1!s:>3}  private {2} MB (d {3})  handles {4} (d {5})".format(
             tag, k, mb, "{0:+.1f}".format(d_mb) if d_mb is not None else "-", hc, "{0:+d}".format(d_h) if d_h is not None else "-"))
         if self.stop_mb and mb is not None and mb >= self.stop_mb:
-            raise ExecStop("MEMSTOP: LabVIEW private bytes {0} MB >= {1} MB at {2} k {3} (error 2 observed ~770 MB, "
-                           "com-driving.md:310)".format(mb, self.stop_mb, tag, k))
+            raise ExecStop("MEMSTOP: LabVIEW private bytes {0} MB >= {1} MB at {2} k {3} (error 2 measured at 704.8 MB, "
+                           "diag_chat_m1_mem.log:170-173)".format(mb, self.stop_mb, tag, k))
         if mb is not None and mb >= MEM_STOP_MB and self.warned is None:
             self.warned = row
             self.log("  METER WARN private bytes {0} MB crossed {1} MB at {2} k {3} (warn-only run)".format(mb, MEM_STOP_MB, tag, k))
@@ -867,7 +889,19 @@ def compare(sim_terms, real_terms, bind, allow_either=()):
     out["n"] = sum(len(v) for v in out.values())
     out["who"] = dict((str(t), info.get(t)) for k in ("only_sim_terms", "only_real_terms", "dangling_sim_only",
                                                       "dangling_real_only") for t in out[k][:12])
+    # card chat-S3 (PD328(c), user 2026-10-03 "터널 단자행만 다를 경우 기록하자"): a diff made ONLY of tunnel face rows on
+    # tunnels present on both sides is LOG-only (gateclass decides; the Executor soft-logs it and continues)
+    if out["n"] and (out["only_sim_terms"] or out["only_real_terms"]) and not any(out[k] for k in gateclass.STEP_HARD_KEYS):
+        out["face_rows"] = gateclass.step_face_rows_verdict(out, S, R)
     return out
+
+
+def step_soft(d):
+    """card chat-S3 (PD328(c)): True when this step diff is LOG-only by gateclass (tunnel face rows only)."""
+    return ((d or {}).get("face_rows") or {}).get("verdict") == "log"
+
+
+SOFT_STEP_CLASSES = ("warn", "log")      # PD214(c) dangling-only WARN, PD328(c) tunnel-face-rows LOG
 
 
 def _ints_in(o, out):
@@ -889,7 +923,10 @@ def classify_step_diff(plan, last_act, d):
     `dangling_sim_only` / `dangling_real_only` - whose uids NO LATER plan action references by uid is a WARN, not a
     save blocker: a sourceless half-wire carries no data (rule 1a) and the symbolic binding is untouched. Anything
     else (a terminal, an edge, an unbound id) stays 'fail'. Returns (class, later_refs): later_refs are the dangling
-    uids some later action (index > last_act) does name, which makes the diff 'fail'. Read from the plan, never by hand."""
+    uids some later action (index > last_act) does name, which makes the diff 'fail'. Read from the plan, never by hand.
+    card chat-S3 (PD328(c)): a diff gateclass marks tunnel-face-rows-only returns ('log', [])."""
+    if step_soft(d):
+        return "log", []
     if any(d.get(x) for x in ("only_sim_terms", "only_real_terms", "only_sim_edges", "only_real_edges", "unbound")):
         return "fail", []
     uids = set(d.get("dangling_sim_only") or []) | set(d.get("dangling_real_only") or [])
@@ -945,8 +982,14 @@ def bind_new(prev_real, real, sim_prev, sim_now, bind):
         if n < 0 and n not in sp and n not in bind["obj"] and n not in dg:
             new_sim.setdefault(n, []).append(r)
     old_t = set(r["term_uid"] for r in prev_real)
+    # card chat-S3 (PD328(c)): a NEW face row on a tunnel that EXISTED before the op is not a new object (the sim side
+    # already skips nodes present in sim_prev, `sp`); it is left to the E1 compare, where gateclass logs it when it is a
+    # face-row-only difference. A new tunnel OBJECT still has a fresh uid and still binds/stops here (PD328(b)).
+    old_tun = set(V.node_of(r) for r in prev_real if gateclass.is_tunnel_class(r.get("owner_class")))
     new_real = collections.OrderedDict()
     for r in real:
+        if V.node_of(r) in old_tun:
+            continue
         if r["term_uid"] not in old_t and V.node_of(r) not in bind["obj"].values() and V.node_of(r) not in dg.values():
             new_real.setdefault(V.node_of(r), []).append(r)
     bkey = lambda r: (r["term_class"], bool(r["is_source"]), r["term_name"])        # noqa: E731
@@ -1887,12 +1930,29 @@ class Executor(object):
     def step(self, n):
         return _j(_abs(self.step_paths[n]))
 
+    def face_soft(self, k, kind, d):
+        """card chat-S3 (PD328(c)): an E1 step diff of tunnel face rows only. One `  SOFT  ` line per step and one
+        gate_soft_log.jsonl line per face row NOT logged earlier in this run (a persisting row is logged once)."""
+        fr = d.get("face_rows") or {}
+        seen = self.__dict__.setdefault("_face_seen", set())
+        new = [r for r in fr.get("rows") or [] if (r["side"], r["term_uid"]) not in seen]
+        for r in new:
+            seen.add((r["side"], r["term_uid"]))
+            row = "#{0} {1!r} ({2}) on {3} #{4}".format(r["term_uid"], r.get("term_name"), r.get("term_class"),
+                                                       r.get("owner_class"), r.get("owner_uid"))
+            gateclass.soft_record("E1 op {0} {1} tunnel face row {2}".format(k, kind, r["side"]), "TunnelFace",
+                                  row if r["side"] == "only_sim" else None, row if r["side"] == "only_real" else None,
+                                  fr.get("rule"))
+        self.log("  SOFT  E1 op {0} {1}: {2}; {3} new row(s) logged to gate_soft_log.jsonl".format(
+            k, kind, fr.get("rule"), len(new)))
+        return new
+
     def part_a_record(self):
         """card 103-1 PART-A (PD215(b)), after run() with stop_after=k: (a1, a2, detail, binding).
         a1 = ops 1..k executed and nothing after; a2 = every recorded diff is a PD214(c) WARN and step k was READ and equals the
         simulated step k (or its own diff is a WARN); binding = what Part B binds instead of re-executing (JSON-safe keys)."""
         k, last = self.stop_after, (self.report[-1] if self.report else {})
-        fails = [d for d in self.diffs if d.get("class") != "warn"]
+        fails = [d for d in self.diffs if d.get("class") not in SOFT_STEP_CLASSES]
         a1 = k is not None and self.stopped_after == k and (self.cur or {}).get("k") == k and last.get("k") == k
         a2 = bool(a1 and not fails and not last["diff"].get("skipped") and (last["diff"]["n"] == 0 or self.diffs[-1]["k"] == k))
         detail = {"stopped_after": self.stopped_after, "cur": self.cur, "step_diff_n": last.get("diff", {}).get("n"),
@@ -1973,7 +2033,9 @@ class Executor(object):
                 fs, s_act, d["n"]))
             if d["n"]:
                 cls, hit = classify_step_diff(self.plan, s_act, d)
-                if not (self.record and cls == "warn"):
+                if cls == "log":                                     # card chat-S3 (PD328(c)): tunnel face rows only
+                    self.face_soft(fs, "from_step", d)
+                if not (cls == "log" or (self.record and cls == "warn")):
                     raise ExecStop("FROM-STEP BASE: the Part-A file's graph differs from simulated step {0} ({1}): {2}".format(
                         s_act, cls, json.dumps({k: v[:6] for k, v in d.items() if isinstance(v, list) and v}, default=str)[:1200]))
                 self.diffs.append({"k": fs, "op": "from_step", "acts": [s_act], "ids": [], "diff": d, "class": cls,
@@ -2203,8 +2265,11 @@ class Executor(object):
                 msg = "STEP-DIFF after real op {0} ({1}, plan actions {2} {3}): {4}".format(
                     k, op["kind"], op["acts"], rec["ids"], json.dumps({x: y for x, y in d.items() if y and x != "n"},
                                                                        default=str)[:1500])
-                if not self.record:
+                if step_soft(d):                     # card chat-S3 (PD328(c)): tunnel face rows only -> soft log, continue
+                    self.face_soft(k, op["kind"], d)
+                elif not self.record:
                     raise ExecStop(msg)
+            if d["n"] and self.record:
                 prev = self.diffs[-1]["diff"] if self.diffs else {}
                 new = dict((x, sorted(set(map(json.dumps, y)) - set(map(json.dumps, prev.get(x) or []))))
                            for x, y in d.items() if isinstance(y, list) and y)
@@ -2214,6 +2279,7 @@ class Executor(object):
                                    "new_since_last_diff": dict((x, [json.loads(v) for v in y]) for x, y in new.items() if y),
                                    "ops_since_last_read": list(range(last_read_k + 1, k + 1))})
                 self.log("  RECORD {0} ".format("WARN (dangling only, no later uid reference)" if cls == "warn" else
+                                                "LOG (tunnel face rows only, PD328(c))" if cls == "log" else
                                                 "STEP-DIFF" + (" later refs {0}".format(hit) if hit else "")) + msg[:1600])
             last_read_k = k
             real = real_new
@@ -3216,6 +3282,19 @@ class SimBackend(object):
                         r["wire_uid"] = 0
             elif f.get("kind") == "sim_error":                  # card 127-4: a simulator fault inside the dry backend
                 raise SS.SimError("injected simulator fault at act {0}".format(f["at"]))
+            ks = set(str(f.get("kind") or "").split("+"))      # card chat-S3 (PD328): combinable faults, 'face_row+edge'
+            if "face_row" in ks:                               # LabVIEW grew one unwired face row on an EXISTING tunnel
+                t = next(r for r in self.st["terminals"] if gateclass.is_tunnel_class(r["owner_class"]))
+                self.st["terminals"].append({"term_uid": 99999990, "term_name": "", "is_source": False, "wire_uid": 0,
+                                             "owner_uid": t["owner_uid"], "owner_class": t["owner_class"],
+                                             "frame_diagram": t.get("frame_diagram", 0), "term_class": "InnerTerminal"})
+            if "tunnel_obj" in ks:                             # an extra tunnel OBJECT the plan did not make
+                self.st["terminals"].append({"term_uid": 99999980, "term_name": "", "is_source": False, "wire_uid": 0,
+                                             "owner_uid": 99999981, "owner_class": "LoopTunnel", "frame_diagram": 0,
+                                             "term_class": "OuterTerminal"})
+            if "edge" in ks:                                   # one edge fewer (as drop_edge)
+                r = next(r for r in self.st["terminals"] if r["wire_uid"] and not r["is_source"])
+                r["wire_uid"] = 0
         return {"applied": op["acts"], "check": check}
 
     def _check(self, real, term, is_source, loop_of=None):
@@ -3711,10 +3790,10 @@ def log_step_diffs(s, x):
     no later uid reference)."""
     for d in x.diffs:
         s.fact("STEP-{0} k {1} {2} ids {3} ops since last read {4} later_refs {5}: new {6} | whole {7}".format(
-            "WARN" if d.get("class") == "warn" else "DIFF", d["k"], d["op"], d["ids"], d["ops_since_last_read"], d.get("later_refs"),
+            {"warn": "WARN", "log": "LOG"}.get(d.get("class"), "DIFF"), d["k"], d["op"], d["ids"], d["ops_since_last_read"], d.get("later_refs"),
             json.dumps(d["new_since_last_diff"], default=str)[:CUT],
             json.dumps(dict((a, b) for a, b in d["diff"].items() if b and a not in ("n", "who")), default=str)[:CUT]))
-    return [d for d in x.diffs if d.get("class") != "warn"]
+    return [d for d in x.diffs if d.get("class") not in SOFT_STEP_CLASSES]
 
 
 def b1_gate(s, x, from_step):
@@ -3723,7 +3802,7 @@ def b1_gate(s, x, from_step):
     r0 = x.report[0]
     s.gate("B1 PART-B entry: read == simulated step {0} (or a WARN), gates re-read, parity {1}, PRIME ok; first op {2}".format(
         from_step, r0.get("parity", {}).get("n"), x.report[1]["k"] if len(x.report) > 1 else None), r0["op"] == "from_step" and
-        (r0["diff"]["n"] == 0 or all(d["class"] == "warn" for d in x.diffs if d["k"] == from_step)) and x.report[1]["k"] == from_step + 1,
+        (r0["diff"]["n"] == 0 or all(d["class"] in SOFT_STEP_CLASSES for d in x.diffs if d["k"] == from_step)) and x.report[1]["k"] == from_step + 1,
         {"diff_n": r0["diff"]["n"], "regate": r0.get("regate"), "primed": r0.get("primed")})
 
 
@@ -4619,6 +4698,42 @@ def selftest():
         gate("T39 record mode: the dropped edge is RECORDED and the run CONTINUES to the last op", False, str(e)[:200])
     gate("T39e a dropped-edge diff (an edge entry) is classed 'fail' by PD214(c)",
          exr.diffs and exr.diffs[0].get("class") == "fail", [d.get("class") for d in exr.diffs][:3])
+    # card chat-S3 (PD328(c)): E1 face-row-only diff -> LOG and the run continues; + a tunnel object or + a wire diff -> STOP
+    sl_old = os.environ.get("GATE_SOFT_LOG")
+    sl_tmp = os.path.join(tmp, "soft_s3.jsonl")
+    os.environ["GATE_SOFT_LOG"] = sl_tmp
+    gateclass.SOFT_LOG = sl_tmp
+    try:
+        exfr = Executor(fin, mkbe({"at": 5, "kind": "face_row"}), log=q)
+        try:
+            exfr.run()
+            soft = [json.loads(x) for x in open(sl_tmp, encoding="utf-8")] if os.path.exists(sl_tmp) else []
+            gate("T120 (PD328(c)) a face-row-only E1 diff (extra unwired row on an existing LoopTunnel at act 5) is LOG-only: "
+                 "the non-record run reaches its last op and ONE soft line is written for the persisting row",
+                 exfr.cur["k"] == len(opsx) and len(soft) == 1 and soft[0]["class"] == "TunnelFace" and
+                 soft[0]["measured"] and "only_real" in soft[0]["gate"], soft)
+        except ExecStop as e:
+            gate("T120 (PD328(c)) a face-row-only E1 diff is LOG-only", False, str(e)[:300])
+        for kind_, lab_ in (("face_row+tunnel_obj", "T121 NEGATIVE face rows + an extra tunnel OBJECT"),
+                            ("face_row+edge", "T122 NEGATIVE face rows + a wire diff")):
+            try:
+                Executor(fin, mkbe({"at": 5, "kind": kind_}), log=q).run()
+                gate(lab_ + " STOPS", False, "ran clean")
+            except ExecStop as e:
+                gate(lab_ + " STOPS ({0})".format(str(e).split(":")[0]), str(e).startswith(("STEP-DIFF", "BINDING")), str(e)[:200])
+        exrr = Executor(fin, mkbe({"at": 5, "kind": "face_row"}), log=q, record=True)
+        exrr.run()
+        gate("T123 record mode: a face-row-only diff is recorded with class 'log' and is not a fail (log_step_diffs filter)",
+             exrr.diffs and all(d.get("class") == "log" for d in exrr.diffs) and
+             not [d for d in exrr.diffs if d.get("class") not in SOFT_STEP_CLASSES], [d.get("class") for d in exrr.diffs][:4])
+    finally:
+        if sl_old is None:
+            os.environ.pop("GATE_SOFT_LOG", None)
+        else:
+            os.environ["GATE_SOFT_LOG"] = sl_old
+        gateclass.SOFT_LOG = sl_old or os.path.join(gateclass.ROOT, "tools", "bench", "gate_soft_log.jsonl")
+    gate("T124 (PD328(a)) MEMSTOP 695 and X10 fail 680 come from memory_model.json (one source)",
+         MEM_STOP_MB == 695.0 and X10_FAIL_MB == 680.0 and _mem_limits() == (MEM_STOP_MB, X10_FAIL_MB), (MEM_STOP_MB, X10_FAIL_MB))
     # PD214(c) (cycle 102): a dangling-only diff is WARN unless a later action names the uid
     planj = _j(fin)
     dd = {"only_sim_terms": [], "only_real_terms": [], "only_sim_edges": [], "only_real_edges": [], "unbound": [],

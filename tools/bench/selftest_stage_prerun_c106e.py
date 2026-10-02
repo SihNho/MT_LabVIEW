@@ -5,7 +5,8 @@ stubbed, in a child process, reading the base VI's md5 only).
 Existing pieces used: stage_prerun.mem_margin / find_graph / plan_base_graphs / launched_py / result_first, the recipe
 tools/recipes/stage_d1_disp.py with its PART-B mode, tools/bench/stage_d1_dispA.json, plan_disp.json's base pin.
 PREDICTION CONTRACT (all must hold):
-  M1 a recorded checkpoint at 690.0 MB -> X10 ok False ; M2 at 689.9 MB -> ok True ; M3 no covering record -> ok None
+  M1 a recorded checkpoint at 680.0 MB -> X10 ok False ; M2 at 679.9 MB -> ok True ; M3 no covering record -> ok None
+     (card chat-S3, PD328(a): was 690.0 / 689.9 before the threshold moved to 680)
   M4 result_first: PASS + warn -> the WARN text ; FAIL + warn -> the failing gate first, '[X10 WARN unmeasured]' appended, <=200
   G1 find_graph(S1 md5) with no plan graphs -> None (unchanged glob behaviour, selftest_stage_prerun_graphload pin)
   G2 find_graph(S1 md5, plan_base_graphs(recipe)) -> tools/bench/par1359_95_graph.json
@@ -47,9 +48,10 @@ def rec(mb):
              "rows": [{"tag": "read", "k": 0, "mb": 600.0}, {"tag": "op", "k": 1, "mb": mb}, {"tag": "read", "k": 2, "mb": 650.0}]}]
 
 
-m1, m2 = SP.mem_margin(RECIPE, records=rec(690.0)), SP.mem_margin(RECIPE, records=rec(689.9))
-gate("M1 checkpoint 690.0 MB -> X10 ok False", m1["ok"] is False and m1["peak_mb"] == 690.0, m1)
-gate("M2 checkpoint 689.9 MB -> X10 ok True", m2["ok"] is True and m2["peak_mb"] == 689.9, m2)
+# card chat-S3 (PD328(a), user 2026-10-03): threshold 690 -> 680 (memory_model.json fail_above_mb); pins moved with it
+m1, m2 = SP.mem_margin(RECIPE, records=rec(680.0)), SP.mem_margin(RECIPE, records=rec(679.9))
+gate("M1 checkpoint 680.0 MB -> X10 ok False (PD328(a))", m1["ok"] is False and m1["peak_mb"] == 680.0, m1)
+gate("M2 checkpoint 679.9 MB -> X10 ok True (PD328(a))", m2["ok"] is True and m2["peak_mb"] == 679.9, m2)
 m3 = SP.mem_margin(RECIPE, records=[])
 gate("M3 no covering record -> ok None (UNMEASURED)", m3["ok"] is None and "UNMEASURED" in m3["why"], m3)
 w = "X10 WARN unmeasured: UNMEASURED: no recorded meter"

@@ -39,13 +39,16 @@ ok, det = x10(os.path.join(ROOT, "tools", "recipes", "stage_d1_ring_p3b1.py"))
 runs = det.get("runs") or []
 # card 138-2 (PD299(b)): peak_mb now adds the script's source-counted reads (2 census_snapshot via `snap`); the launch METER
 # (stage_d1_ring_p3b1.log:430) measured inside the Executor run, so T1 compares the Executor-only figure exec_peak_mb.
-gate("T1 stage_d1_ring_p3b1.py: X10 PASS, Executor-only predicted {0} within 3 MB of the launch's measured {1} (total {2})".format(
+# card chat-S3 (PD328(a), user 2026-10-03): fail_above_mb 690 -> 680. The P3b-1 bytes (total predicted 683.6, measured 680.4)
+# PASSED under 690 and are REFUSED under 680 - T1 now pins the refusal; the 3-MB model-accuracy check is unchanged.
+gate("T1 stage_d1_ring_p3b1.py: X10 FAIL under 680 (PD328(a)), Executor-only predicted {0} within 3 MB of the launch's measured {1} (total {2})".format(
     runs[0].get("exec_peak_mb") if runs else None, launch_mb, runs[0]["peak_mb"] if runs else None),
-    ok is True and len(runs) == 1 and launch_mb is not None and abs(runs[0]["exec_peak_mb"] - launch_mb) <= 3.0,
+    ok is False and len(runs) == 1 and runs[0]["peak_mb"] > runs[0]["fail_above_mb"] == 680.0 and launch_mb is not None
+    and abs(runs[0]["exec_peak_mb"] - launch_mb) <= 3.0,
     [dict((k, r.get(k)) for k in ("N", "bind", "exec_R", "R", "exec_peak_mb", "peak_mb", "fail_above_mb")) for r in runs] or det)
 m = SP.load_memory_model()
-gate("T2 memory_model final_read_mb == measured pin4 d {0}; fail_above_mb 690".format(pin4_d),
-     m["final_read_mb"]["value"] == pin4_d and m["fail_above_mb"]["value"] == 690.0,
+gate("T2 memory_model final_read_mb == measured pin4 d {0}; fail_above_mb 680 (PD328(a), was 690)".format(pin4_d),
+     m["final_read_mb"]["value"] == pin4_d and m["fail_above_mb"]["value"] == 680.0,
      (m["final_read_mb"]["value"], m["fail_above_mb"]["value"], pin4_mb))
 # card 133-3 (PD283(e)): stage_d1_ring_p3b2.py is the one-session REFERENCE (never launched; its plan 04204133 keeps the rebase
 # temp plan_in, so its L0 stops the dry before the Executor). T3 now probes the two session recipes that replace it.

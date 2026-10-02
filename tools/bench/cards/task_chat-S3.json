@@ -1,70 +1,16 @@
 {
- "schema": "task/1",
- "id": "chat-S3",
- "kind": "build",
- "goal": "Simulator step 3: executor with per-step comparison + uid binding; measured op models; open-rows finalize rule; only-sink ambiguity measured; bench = L7 split re-executed from D1_s3_loop15",
- "why": "S1 (models 132/0) and S2b (core, diff 0) are done. User: 시뮬레이터 먼저 완성하자. The bench proves the whole chain on LabVIEW before any new stage is built.",
- "inputs": [
-  {
-   "path": "tools/stagesim.py",
-   "md5": "f94a3f81dfd4ca34402cf3c6e58adb56"
-  },
-  {
-   "path": "tools/bench/opmodels/move_in.json",
-   "md5": "d7c089d2b7aa366738f29505160d547b"
-  },
-  {
-   "path": "tools/bench/plan_l7_split.json",
-   "md5": "eb3a883cd3c50f7ead1153b2c5cf3cb0"
-  },
-  {
-   "path": "docs/stage-simulator-plan.md",
-   "md5": "d278bec8c3b2d1c2ec5e435624561d7b"
-  }
- ],
+ "schema": "task/1", "id": "chat-S3", "kind": "build",
+ "goal": "Apply user answers: X10 fail 680 MB, MEMSTOP 695 MB; tunnel object counts stay STOP; E1 tunnel face-row-only diffs LOG-only; self-tests; PD in tooling.md",
+ "why": "User 2026-10-03 after chat-M2 (error 2 at 704.8 MB) and chat-S2 open items. Detail: brief_chat-S3.md",
+ "inputs": [{"path": "tools/bench/cards/brief_chat-S3.md", "md5": "4715367997e490daecf89fff516eeb03"}],
  "pass": [
-  "stagesim loads tools/bench/opmodels/*.json as the models (source=measured per step); sim_l7_split rerun stays diff 0 at all checkpoints",
-  "finalize rule: a plan may declare open_rows (rows left for a later stage, e.g. 376 current frame data array in, PD175); final iff end cdiff rows == open_rows",
-  "only-sink ambiguity: >=4 more scratch measurements that separate the hypotheses (constant vs node source, tunnel vs terminal)",
-  "only-sink rule written into move_in.json / delete_object.json, or kept ambiguous with both outcomes allowed by the executor",
-  "executor tools/stagexec.py runs a FINAL plan on a dated scratch copy action by action under stagekit",
-  "after each action the executor reads the real graph, compares to that step file, stops at the first difference with a step-diff report",
-  "binding: before/after terminal-table diff around each create action binds new:<id> to real uids; count/class mismatch stops",
-  "launch gate: stagexec runs are recipes under the gate (dry + prerun records for the plan md5); prerun accepts a final plan file",
-  "BENCH: execute plan_l7_split from a scratch copy of D1_s3_loop15.vi (md5 1a11d92a); every step matches its sim file",
-  "BENCH end: graph equals the D1_s4_loop17 graph up to uid naming; ExecState 1 warm; scratch deleted; both beds unchanged",
-  "RESULT lines; self-tests green; docs/stage-simulator-plan.md build order rows 3-6 marked with evidence paths; commit"
+  "every 690/700 memory threshold definition moved to 680/695 with one source of truth; pinned self-tests updated and green",
+  "tunnel object classes confirmed STOP with a comment; E1 face-row-only diff logs, +tunnel object or +wire diff stops (self-test)",
+  "gateclass, stagexec, stage_prerun X10, guard_peer self-tests green or explained; PD recorded in tooling.md and INDEX"
  ],
- "outputs": [
-  "tools/stagexec.py",
-  "tools/bench/stagexec_l7_bench.log",
-  "tools/bench/opmodels_onlysink.log"
- ],
- "flags": {
-  "labview": "build",
-  "gui": false,
-  "hardware": "none",
-  "run_vi": false,
-  "write": [
-   "tools/**",
-   "docs/stage-simulator-plan.md",
-   "docs/protocol/**"
-  ],
-  "status_edit": false,
-  "git_commit": true,
-  "peers": [
-   "hypothesis",
-   "priorart"
-  ]
- },
- "budget": {
-  "failures": 2,
-  "minutes": 180
- },
- "unblocks": "M3",
- "rules": [
-  "Stages are SIMULATED and PRE-RUN OFFLINE",
-  "Reference hygiene",
-  "Big or blocked work is SPLIT"
- ]
+ "outputs": ["tools/gateclass.py"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/**", "docs/d1/tooling.md", "docs/d1/INDEX.md"], "status_edit": false, "git_commit": true, "peers": ["audit"]},
+ "budget": {"failures": 2, "minutes": 60}, "unblocks": "M4",
+ "rules": ["Runner stopped; offline only", "Edit tool only", "Do not edit CLAUDE.md"]
 }

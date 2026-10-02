@@ -28,7 +28,10 @@ TESTS = [("tools/stagexec.py", ["selftest"])] + [("tools/bench/" + n, []) for n 
     "selftest_census_predict.py", "selftest_census_hookin_c123.py",
     "selftest_guard_peer_77_measure.py", "selftest_guard_peer_budget.py", "selftest_guard_peer_failre.py",
     "selftest_guard_peer_jev.py", "selftest_guard_peer_ladder.py", "selftest_guard_peer_samerow.py",
-    "selftest_guard_peer_scan_tmp.py", "selftest_gateclass_s2.py")]
+    "selftest_guard_peer_scan_tmp.py", "selftest_gateclass_s2.py",
+    # card chat-S3 (PD328): the gateclass/memory self-test and every X10 self-test that pins a memory threshold
+    "selftest_gateclass_s3.py", "selftest_x10_c130_1.py", "selftest_x10_c132_1.py", "selftest_x10_c132_4.py",
+    "selftest_x10_c136_2.py", "selftest_x10_chat_m2.py")]
 RES_RE = re.compile(r"^RESULT (\{.*\})\s*$", re.M)
 TRIP = os.path.join(HERE, "c125_1_offline_measure.py")
 

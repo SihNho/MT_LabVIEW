@@ -7,7 +7,7 @@ claudeDev\scratch_c141_p4s02_<ts>.vi of session 1's in-between file (the plan's 
 LVBackend (per-op census + Is Broken? + the run-time PRIM gate), every recipe gate and the ExecState read. No VI is run; the input
 file is never edited. SAVE on (rule-6 gui_save of the work copy) so the Error List can be read count-only next; the scratch file is
 deleted after that read. Until the rebase the plan's base is PROVISIONAL and the launch gate refuses this file.
-PREDICTION (numbers in plan_ring_p4_s02_pred.json): every recipe gate PASS incl. PRIM; peak private MB <= 690 and <= X10 + 10 and,
+PREDICTION (numbers in plan_ring_p4_s02_pred.json): every recipe gate PASS incl. PRIM; peak private MB <= SX.X10_FAIL_MB (680, PD328(a)) and <= X10 + 10 and,
 for the launch, <= 675 (PD321(c)); input md5 unchanged; LabVIEW gone. Error List (next, separate run) == pred predicted_total.
     py tools/bgrun.py --material --max-min 50 --log tools/bench/diag_c141_p4s02_scratch.log -- py -u tools/recipes/stage_d1_ring_p4_s02_scratch.py"""
 import json, os, re, sys                                                            # noqa: E401
@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import stagekit as K, stagexec as SX                                                # noqa: E401,E402
 import stage_d1_ring_p4_s02 as R                                                    # noqa: E402
-SX.MEM_STOP_MB = 690.0
+SX.MEM_STOP_MB = SX.X10_FAIL_MB            # card chat-S3 (PD328(a)): the scratch stop = X10 fail threshold (memory_model.json, 680; was 690)
 PLAN = os.path.join(K.BENCH, "plan_ring_p4_s02.json")                               # the recipe's plan (stage_prerun.plan_files reads it)
 PREDF = os.path.join(K.BENCH, "plan_ring_p4_s02_pred.json")
 LOG = os.path.join(K.BENCH, "diag_c141_p4s02_scratch.log")
@@ -77,9 +77,9 @@ if __name__ == "__main__":
         fin = (st.R.get("ring_p4_s02") or {}).get("final")
         print("SCRATCH-P4S02 peak {0} MB (X10 {1}, d {2}); final {3} md5 {4}; input md5 {5}".format(
             peak, X, None if peak is None or X is None else round(peak - X, 1), fin, (st.R.get("ring_p4_s02") or {}).get("md5"), K.md5(R.BASE["vi"])), flush=True)
-        ok_mem = peak is not None and X is not None and peak <= 690.0 and peak <= X + 10.0
+        ok_mem = peak is not None and X is not None and peak <= SX.X10_FAIL_MB and peak <= X + 10.0
         ok_in = K.md5(R.BASE["vi"]) == R.BASE["md5"]
-        print("GATE MEM peak <= 690 and peak <= X10 + 10 (PD285(d)): {0}".format("PASS" if ok_mem else "FAIL"), flush=True)
+        print("GATE MEM peak <= {1} and peak <= X10 + 10 (PD285(d), PD328(a)): {0}".format("PASS" if ok_mem else "FAIL", SX.X10_FAIL_MB), flush=True)
         print("GATE MEML peak <= 675 (launch condition, PD321(c)): {0}".format("PASS" if peak is not None and peak <= 675.0 else "FAIL"), flush=True)
         print("GATE IN input md5 unchanged: {0}".format("PASS" if ok_in else "FAIL"), flush=True)
         print("GATE GONE LabVIEW gone: {0}".format("PASS" if gone else "FAIL"), flush=True)
