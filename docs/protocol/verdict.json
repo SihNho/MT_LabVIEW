@@ -8,8 +8,8 @@
     "schema": {"const": "verdict/1"},
     "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,40}$"},
     "verdict": {"enum": ["refuted", "supported", "unverified", "novel", "settled-already", "none"]},
-    "alternative": {"type": "string", "maxLength": 300},
-    "discriminating_test": {"type": "string", "maxLength": 300},
+    "alternative": {"type": "string", "maxLength": 300, "x-prose": true, "x-limit": true},
+    "discriminating_test": {"type": "string", "maxLength": 300, "x-prose": true, "x-limit": true},
     "violations": {"type": "array", "maxItems": 2, "items": {
       "type": "object", "additionalProperties": false, "required": ["slug", "evidence"],
       "properties": {"slug": {"enum": ["repeated-failure-class", "tool-not-built", "inference-over-measurement",
@@ -19,6 +19,6 @@
                      "loss_usd": {"type": ["number", "null"], "minimum": 0},
                      "evidence": {"type": "string", "maxLength": 200}}}},
     "sources": {"type": "array", "items": {"type": "string", "maxLength": 300}},
-    "note": {"type": "string", "maxLength": 300}
+    "note": {"type": "string", "maxLength": 300, "x-prose": true, "x-limit": true}
   }
 }

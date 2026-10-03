@@ -497,6 +497,25 @@ def read_mode(count_only, role):
     return "count" if (count_only and role == "scratch") else "full"
 
 
+def by_design(R, expected, plan, record=True):
+    """card chat-S5 (PD337(c), the user's "S1" item 3): a MISMATCH whose only difference is extra session-boundary items
+    (unwired Local read, While conditional terminal) that the FIXED rule (tools/elrule.py) re-derives from the bed's own plan
+    -> ('log', rule, detail) and one gate_soft_log.jsonl line; anything else ('stop', why, detail). Pure, offline: it reads
+    R['extra'] / R['missing'] / R['items'] and the plan's step files only."""
+    import elrule as ELR
+    import gateclass as _GC
+    base_total = sum(int(e.get("count", 1)) for e in expected or [])
+    measured = len(R.get("items") or []) if R.get("items") is not None else R.get("n_reported")
+    texts = []
+    for raw in R.get("extra") or []:
+        it = next((i for i in R.get("items") or [] if i.get("raw") == raw), {})
+        texts.append("%s %s" % (raw or "", it.get("detail") or ""))
+    bv, brule, bdet = ELR.by_design_verdict(texts, R.get("missing"), measured, base_total, plan=plan)
+    if bv == "log" and record:
+        _GC.soft_record("EL-BYDESIGN " + os.path.basename(str(R.get("bed") or "")), "ErrorList", base_total, measured, brule)
+    return bv, brule, bdet
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--vi", default="")
@@ -631,6 +650,15 @@ def main():
                 _GC.soft_record("EL-LOOSE " + os.path.basename(bed), "LooseEnds", R["missing"], R["extra"], erule)
                 print("SOFT  Error List loose-end mismatch is LOG-only: %s" % erule, flush=True)
                 verdict = "OK"
+            else:
+                bv, brule, bdet = by_design(R, expected, plan)
+                R["by_design"] = {"verdict": bv, "rule": brule, "detail": bdet}
+                if bv == "log":
+                    R["soft"] = brule
+                    print("SOFT  Error List by-design difference, prediction re-derived: %s" % brule, flush=True)
+                    verdict = "OK"
+                else:
+                    print("BY-DESIGN check: STOP - %s" % brule, flush=True)
     R["verdict"], R["seconds"] = verdict, round(time.time() - t0, 1)
     with open(out, "w", encoding="utf-8") as f:
         json.dump(R, f, indent=1, ensure_ascii=False, default=str)

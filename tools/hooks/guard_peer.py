@@ -180,6 +180,12 @@ def log_failure(text, mtime=None):
         if v["failed"] and not v.get("timeout") and v.get("rc") in (None, 0, 1) and gateclass.soft_only(
                 seg, protocol.all_result_lines(seg)):
             return False, None
+        # card chat-S5 (PD337(b), the user's "S1"): a run whose ONLY failures tier (a) of the mismatch check classifies as
+        # address/format mismatches (gateclass.address_only) owes no hypothesis review either; rc 2 is the rebase CLI's
+        # refusal code. Timeouts, exceptions, STOP lines and any other failing gate still do.
+        if v["failed"] and not v.get("timeout") and v.get("rc") in (None, 0, 1, 2) and gateclass.address_only(
+                seg, protocol.all_result_lines(seg)):
+            return False, None
         return bool(v["failed"]), v.get("first_fail") or "(see the log)"
     # LEGACY: a pre-switch run without a RESULT line, or not a bgrun run at all - EXACTLY the old reading, including
     # its segmentation (after the last `BGRUN START` substring), so no historical verdict changes.

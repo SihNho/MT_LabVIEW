@@ -20,7 +20,7 @@
     "advances": {"type": "array", "items": {"$ref": "#/definitions/goalid"}},
     "unblocks": {"$ref": "#/definitions/milestoneid"},
     "steer": {"$ref": "#/definitions/steerreply"},
-    "note": {"type": "string", "maxLength": 300}
+    "note": {"type": "string", "maxLength": 300, "x-prose": true, "x-limit": true}
   },
   "definitions": {
     "goalid": {"type": "string", "pattern": "^(R[0-9]+(\\.[0-9]+)*|M[0-9]+[a-z]?)$"},
@@ -33,7 +33,7 @@
                                   "response": {"enum": ["follow", "refuse"]},
                                   "evidence": {"type": "array", "items": {"type": "string", "minLength": 3, "maxLength": 200}}}},
     "blocked": {"type": "object", "additionalProperties": false, "required": ["device", "message"],
-                "properties": {"device": {"type": "string", "maxLength": 120}, "message": {"type": "string", "maxLength": 300}}},
+                "properties": {"device": {"type": "string", "maxLength": 120}, "message": {"type": "string", "maxLength": 300, "x-prose": true, "x-limit": true}}},
     "fileref": {"type": "object", "additionalProperties": false, "required": ["path"],
                 "properties": {"path": {"type": "string", "minLength": 1, "maxLength": 400},
                                "md5": {"type": ["string", "null"], "pattern": "^[0-9a-f]{32}$"}}}

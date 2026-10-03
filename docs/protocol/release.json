@@ -1,0 +1,18 @@
+{
+ "$id": "release/1",
+ "description": "card chat-S5 (PD337(d), user 2026-10-03 'S1'): ONE release of a blocking prior-art / review verdict, written by tools/protocol.py write_release (CLI: py tools/protocol.py release ...) into the review file's '## What was done with it' section as a `RELEASE {json}` line followed by the legacy `FIXED:` / `REFUTED:` line every existing reader (guard_cycle.released_slugs, stop_record) keeps reading. `slug` is checked AT WRITE TIME against the slugs the review itself issued (its PRIOR-ART: lines) and guard_cycle.PRIOR_ART_SLUGS; a FIXED path must exist and post-date the review (guard_cycle.review_time). 143-1 lost a launch to a FIXED line with a review slug that stop_record refused.",
+ "type": "object",
+ "additionalProperties": false,
+ "required": ["schema", "kind", "slug", "review", "cite", "what"],
+ "properties": {
+  "schema": {"const": "release/1"},
+  "kind": {"enum": ["FIXED", "REFUTED"]},
+  "slug": {"type": "string", "pattern": "^[a-z][a-z-]*$", "maxLength": 40},
+  "review": {"type": "string", "minLength": 1, "maxLength": 400},
+  "cite": {"type": "object", "additionalProperties": false, "required": ["path", "line"],
+           "properties": {"path": {"type": "string", "minLength": 1, "maxLength": 400},
+                          "line": {"type": "integer", "minimum": 1}}},
+  "what": {"type": "string", "minLength": 1, "x-prose": true},
+  "at": {"type": "string", "maxLength": 40}
+ }
+}

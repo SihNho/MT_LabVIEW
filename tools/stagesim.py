@@ -701,6 +701,7 @@ def resolve_addr(st, a, want_source):
     """The ONE terminal row an address names. Selector order: term_uid, then name; `inner`/`outer` (or `side`)
     pick the tunnel/register face by class when no terminal carries that name. Exactly one row or SimError -
     this is the plan-time addressability check (a wire-walked uid lookup failing mid-run was stage_d1_l7_1b_r2)."""
+    a0 = a
     a = parse_addr(a)
     uid = resolve_uid(st, a["uid"])
     rows = node_rows(st, uid)
@@ -765,7 +766,20 @@ def resolve_addr(st, a, want_source):
         raise SimError("address {0} ({1}) resolves to {2} {3} terminal(s): {4}".format(
             a, uid, len(uniq), "source" if want_source else "sink",
             sorted((r["term_uid"], r["term_name"], r["term_class"]) for r in uniq.values())[:6]))
-    return list(uniq.values())[0]
+    hit = list(uniq.values())[0]
+    if ADDR_POS is not None:
+        # card chat-S5 (PD337(a)): record the POSITION TRIPLE of every resolved end, so a later rebase can find the same
+        # terminal when the real graph labels it differently ('value' vs the Local's variable name, 143-4)
+        import addrcheck as AC
+        t = AC.triple(st["terminals"], hit["term_uid"]) or {}
+        ADDR_POS.append({"n": ADDR_STEP[0], "addr": AC.addr_key(a0), "source": bool(want_source), "owner": uid,
+                         "index": t.get("index"), "class": hit.get("term_class", ""), "name": hit.get("term_name", "")})
+    return hit
+
+
+# card chat-S5 (PD337(a)): simulate() sets ADDR_POS to a list for the run; resolve_addr appends one triple per resolved end
+ADDR_POS = None
+ADDR_STEP = [0]
 
 
 def graph(st, labels=None, fs_pairs=None):
@@ -2417,15 +2431,21 @@ def simulate(plan_path, graph_path, out_root=SIM_ROOT, plan_out_dir=BENCH, model
     cd0 = V.computation_diff(S1, g_end) if S1 is not None else None
     steps.append({"n": 0, "op": "base", "file": prev, "cdiff_rows": cdiff_keys(cd0) if cd0 else None})
     failed = None
+    global ADDR_POS
+    ADDR_POS = addr_pos = []                                   # card chat-S5: position triples of resolved ends
     for n, a in enumerate(plan["actions"], 1):
         st = _j(prev["path"])["state"]                         # the next action reads the previous STEP FILE
         P, src, ev, gaps = model_for(a["op"], models)
         t0 = time.time()
+        ADDR_STEP[0] = n
         try:
             effect, cands = OPS[a["op"]](st, a, P, S1, labels)
             err = None
         except SimError as e:
             effect, cands, err = None, [], str(e)
+        except BaseException:
+            ADDR_POS = None
+            raise
         for c in cands:
             c["step"] = n
         all_cands += cands
@@ -2451,6 +2471,7 @@ def simulate(plan_path, graph_path, out_root=SIM_ROOT, plan_out_dir=BENCH, model
         if err:
             failed = {"n": n, "op": a["op"], "id": a.get("id"), "error": err}
             break
+    ADDR_POS = None
     last = steps[-1]
     end_rows = last.get("cdiff_rows") if not failed else None
     undecided = [c for c in all_cands if c.get("undecided")]
@@ -2513,6 +2534,7 @@ def simulate(plan_path, graph_path, out_root=SIM_ROOT, plan_out_dir=BENCH, model
     # frame of a Flat Sequence the plan did NOT create - a carried/base FS, P3b-2 on P3b-1's FS), so that wire compiles to
     # the measured connect_term_uid route (a BIND op) instead of a plain connect (stage_prerun_c132_6_rebase_p3b2.log:76).
     out_plan["finalized"]["fs_routes"] = fs_routes_of(steps)
+    out_plan["finalized"]["addr_pos"] = addr_pos               # card chat-S5 (PD337(a)): read by stage_prerun.rebase
     # card 134-2 (PD288(b)): gate B scoped - an UNMEASURED border tunnel of a measured base graph may sit in the graph, but a
     # plan action, an FS route or a carried / end-state border entry that names it refuses the finalize
     gj = _j(graph_path)

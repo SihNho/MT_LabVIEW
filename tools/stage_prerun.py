@@ -2786,6 +2786,17 @@ def prerun(recipe, graph=None, stop_after=None, from_step=None):
     # card 141-1 (PD322(d)/PD323(b)): the offline prim gate - every created primitive's donor label == its declared prim
     x17_ok, x17_det = x17_gate([pl or json.load(open(p, encoding="utf-8")) for p, (_ok, _d, pl, _o) in spc.items()])
     gate("X17 every created primitive's donor label == its declared prim (PD323(b))", x17_ok, x17_det)
+    # card chat-S5 (PD337(a)): tier (a) of the 3-tier mismatch check - every numeric-owner address against the base graph's
+    # terminal table (input md5s and machine-field schema are already X2's load_final_plan). A FACT line, not a gate: the
+    # binding refusal stays where it was (stagesim's resolve at plan time, rebase at bind time); an unresolved item gets the
+    # advisory tiers (b)/(c) and is printed so the judgement session sees it before the launch.
+    for p, (_ok, _d, pl, _o) in spc.items():
+        try:
+            ac_ = address_report(pl or json.load(open(p, encoding="utf-8")))
+        except Exception as e:                                                     # noqa: BLE001
+            print("  ADDRESS-CHECK {0}: not run ({1}: {2})".format(rel(p), type(e).__name__, str(e)[:200]), flush=True)
+            continue
+        print("  ADDRESS-CHECK {0}: {1}".format(rel(p), ac_["line"]), flush=True)
     # card 123-7 (PD247(e)): the census of every stageplan that carries a prediction file; a gate only when one does
     cen_plans = [p for p in sps if census_check(p) is not None]
     if cen_plans:
@@ -3453,6 +3464,56 @@ def plan_named_uids(plan):
     return set(u for u in out if u > 0)
 
 
+def address_report(plan, log=print, advise=True):
+    """card chat-S5 (PD337(a)): tier (a) over a stageplan against its base graph's terminal table (finalized.base, else base)
+    -> {resolved, unresolved, skipped, line}. Unresolved items go to addrcheck.advise (tiers (b)/(c), log lines only)."""
+    import addrcheck as AC
+    b = ((plan.get("finalized") or {}).get("base") or plan.get("base") or {})
+    if not b.get("path"):
+        return {"resolved": [], "unresolved": [], "skipped": [], "line": "no base graph named"}
+    bp = b["path"] if os.path.isabs(b["path"]) else os.path.join(ROOT, b["path"])
+    _d, rows = _terms(bp)
+    rep = AC.check_plan(plan, rows, (plan.get("finalized") or {}).get("addr_pos"))
+    hows = collections.Counter(r.get("how") for r in rep["resolved"])
+    rep["line"] = "resolved {0} {1}; unresolved {2} {3}; skipped {4} (symbolic/created/at)".format(
+        len(rep["resolved"]), dict(hows), len(rep["unresolved"]),
+        [(u["id"], u["addr"], [(c["term_uid"], c["name"]) for c in u.get("candidates") or []][:4]) for u in rep["unresolved"]][:6],
+        len(rep["skipped"]))
+    if advise and rep["unresolved"]:
+        AC.advise([u for u in rep["unresolved"] if "planned" in u], log=log)
+    return rep
+
+
+def negative_uids_left(plan):
+    """card chat-S5 (PD337(d)): every negative uid still in a plan's MACHINE fields - the "no negative uid left" check of a
+    rebased plan, done structurally over protocol.machine_view (prose fields such as `why` are never scanned; 143-5 found
+    '-1' in the text 'I32[20] -1' of a why). Returns the sorted negatives (ints in uid fields and '<uid>.<term>' strings)."""
+    import protocol as PR
+    mv = PR.machine_view(plan, "stageplan")
+    out = set()
+    for a in mv.get("actions") or []:
+        for f in UID_FIELDS:
+            v = a.get(f)
+            if isinstance(v, int) and not isinstance(v, bool) and v < 0:
+                out.add(v)
+        for f in ADDR_FIELDS:
+            v = a.get(f)
+            if isinstance(v, dict):
+                for k in ("uid", "term_uid"):
+                    if isinstance(v.get(k), int) and not isinstance(v.get(k), bool) and v[k] < 0:
+                        out.add(v[k])
+            elif isinstance(v, str):
+                mm = re.match(r"^(-\d+)\.", v)
+                if mm:
+                    out.add(int(mm.group(1)))
+        if isinstance(a.get("nodes"), list):
+            out.update(x for x in a["nodes"] if isinstance(x, int) and not isinstance(x, bool) and x < 0)
+    for r in mv.get("open_rows") or []:
+        if isinstance(r.get("node"), int) and r["node"] < 0:
+            out.add(r["node"])
+    return sorted(out)
+
+
 def _reuse_uid(line):
     m = re.search(r"#(\d+)", line)
     return int(m.group(1)) if m else None
@@ -3872,18 +3933,18 @@ def rebase(plan_path, graph_path, log=print, simulate=True, out_root=None, model
     srow = dict((r["term_uid"], r) for r in prov)
     rrow = dict((r["term_uid"], r) for r in real)
     refs, named = set(), []
-    for a in plan.get("actions") or []:
+    for an, a in enumerate(plan.get("actions") or [], 1):
         for f in ADDR_FIELDS:
             v = a.get(f)
             if isinstance(v, dict):
                 if isinstance(v.get("term_uid"), int) and v["term_uid"] < 0:
                     refs.add(v["term_uid"])
                 if isinstance(v.get("uid"), int) and v["uid"] < 0 and isinstance(v.get("term"), str):
-                    named.append((v["uid"], v["term"]))
+                    named.append((v["uid"], v["term"], f, an, v))
             elif isinstance(v, str):
                 mm = re.match(r"^(-\d+)\.(.*)$", v)
                 if mm:
-                    named.append((int(mm.group(1)), mm.group(2)))
+                    named.append((int(mm.group(1)), mm.group(2), f, an, v))
         for f in UID_FIELDS:
             if isinstance(a.get(f), int) and a[f] < 0 and a[f] in srow:
                 refs.add(a[f])
@@ -3892,18 +3953,51 @@ def rebase(plan_path, graph_path, log=print, simulate=True, out_root=None, model
         return False, "REBASE REFUSED: plan-referenced terminal(s) not bound by connectivity: {0}".format(
             ["#{0} {1!r} by {2}".format(t, srow[t].get("term_name"), info["mode"].get(t, "unbound")) for t in weak[:8]])
     rename = {}
-    for n, nm in named:
+    # card chat-S5 (PD337(a), the user's "S1"): tier (a) of the 3-tier mismatch check. By NAME as before; when the name does
+    # not bind uniquely, by the POSITION TRIPLE (owner, terminal index, terminal class [, direction]) - the one stagesim
+    # recorded when it resolved this address (plan finalized.addr_pos), else stagesim's own selector rule (addrcheck.resolve:
+    # name / name#k / side / 'value' alias) on the provisional base - and then on the REAL side only when the bound real row
+    # sits at the same position (addrcheck.real_match: unique (class, direction) on both owners, or the same index). Never
+    # a guess: anything else is UNRESOLVED (candidates listed, tiers (b)/(c) advise), and the rebase refuses as before.
+    import addrcheck as AC
+    apos = dict(((r.get("n"), r.get("addr")), r) for r in ((plan.get("finalized") or {}).get("addr_pos") or [])
+                if isinstance(r, dict))
+    unresolved = []
+    for n, nm, fld, an, v in named:
         mk = re.match(r"^(.*)#(\d+)$", nm)                  # '<name>#k' = k-th (0-based) same-named row, stagesim.py:471
         base_nm, k = (mk.group(1), int(mk.group(2))) if mk else (nm, None)
         ss = [r for r in prov if r["owner_uid"] == n and r.get("term_name", "") == base_nm]
         st = (ss[0]["term_uid"] if len(ss) == 1 else None) if k is None else (ss[k]["term_uid"] if k < len(ss) else None)
+        how_s = "name" if st is not None else None
+        if st is None:
+            r_, how_s, _c = AC.resolve(prov, n, nm, want_source=(fld in AC.SRC_FIELDS), pos=apos.get((an, AC.addr_key(v))))
+            st = r_["term_uid"] if r_ is not None else None
         rt = M.get(st) if st is not None else None
         rn = rrow[rt].get("term_name", "") if rt in rrow else None
         same = [r for r in real if r["owner_uid"] == M.get(n) and r.get("term_name", "") == rn]
-        if st is None or rt is None or len(same) != 1 or (rn != base_nm and info["mode"].get(st) != "conn"):
-            return False, ("REBASE REFUSED: plan-referenced terminal #{0}.{1!r} does not bind uniquely ({2} sim row(s), "
-                           "by {3}, real name {4!r} x{5})").format(n, nm, len(ss), info["mode"].get(st, "unbound"), rn, len(same))
+        ok_name = st is not None and rt is not None and len(same) == 1 and (rn == base_nm or info["mode"].get(st) == "conn")
+        ok_pos, how_r = (False, None)
+        if not ok_name and st is not None and rt is not None and len(same) == 1:
+            ok_pos, how_r = AC.real_match(prov, st, real, rt, M.get(n))
+        if not (ok_name or ok_pos):
+            rc = [AC._short(r) for r in AC.owner_rows(real, M.get(n)) if bool(r.get("is_source")) == (fld in AC.SRC_FIELDS)][:6]
+            unresolved.append({"id": "a{0}:{1}".format(an, fld), "planned": {"owner": n, "name": nm, "source": fld in AC.SRC_FIELDS,
+                               "owner_class": (srow.get(st) or {}).get("owner_class")},
+                               "candidates": rc, "why": "{0} sim row(s), by {1}, real name {2!r} x{3}".format(
+                                   len(ss), info["mode"].get(st, "unbound"), rn, len(same)), "n": n, "nm": nm})
+            continue
+        if ok_pos:
+            log("ADDRESS-RESOLVED #{0}.{1!r} a{2}:{3} -> real #{4} {5!r} by position (sim {6}, real {7}; card chat-S5 tier (a))".format(
+                n, nm, an, fld, rt, rn, how_s, how_r))
         rename[(n, nm)] = rn
+    if unresolved:
+        for u in unresolved:
+            log("ADDRESS-UNRESOLVED {0} #{1}.{2!r}: {3}; real candidates {4}".format(
+                u["id"], u["n"], u["nm"], u["why"], [(c["term_uid"], c["name"]) for c in u["candidates"]]))
+        AC.advise(unresolved, log=log)                       # tiers (b)/(c): advisory lines only, nothing binds here
+        u = unresolved[0]
+        return False, ("REBASE REFUSED: plan-referenced terminal #{0}.{1!r} does not bind uniquely ({2}; ADDRESS-UNRESOLVED x{3})"
+                       ).format(u["n"], u["nm"], u["why"], len(unresolved))
     known = set()
     for r in real:
         known.update(x for x in (r.get("owner_uid"), r.get("term_uid"), r.get("frame_diagram"), r.get("wire_uid"))

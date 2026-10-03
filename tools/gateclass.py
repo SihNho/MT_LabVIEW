@@ -282,6 +282,31 @@ def soft_only(segment, results):
     return sum(int((d.get("gates") or {}).get("fail", 0)) for d in bad) == len(fails)
 
 
+# ------------------------------------------------------------------------------------------------ address-only (PD337(b))
+# card chat-S5 (the user's "S1" item 2): a failure that tier (a) of the mismatch check (tools/addrcheck.py) classifies as an
+# ADDRESS or FORMAT mismatch - a plan address that does not bind to the real terminal table, or a prose field over a length
+# limit - is a plan-text problem with a mechanical fix, not a failed hypothesis: it owes no hypothesis review. Any other
+# failing line, an exception marker, a timeout or a STOP still owes one.
+ADDR_FAIL_RE = re.compile(r"ADDRESS-UNRESOLVED|does not bind uniquely|plan does not validate against stageplan/1: \$[^:\s]*"
+                          r"\.(?:why|goal|note): \d+ chars > limit")
+
+
+def address_only(segment, results):
+    """True when every failing RESULT line's first_fail, and every printed FAIL / GATE FAIL line, is an address/format
+    mismatch (ADDR_FAIL_RE) or a LOG-only gate line, with no hard marker. `results` = protocol.all_result_lines(segment)."""
+    seg = segment or ""
+    if HARD_MARK_RE.search(seg):
+        return False
+    bad = [d for d in results or [] if d.get("status") not in ("PASS", "SKIP") or int((d.get("gates") or {}).get("fail", 1)) > 0]
+    if not bad or any(not ADDR_FAIL_RE.search(str(d.get("first_fail") or "")) for d in bad):
+        return False
+    for ln in seg.splitlines():
+        if FAIL_LINE_RE.match(ln) or re.match(r"^\s*GATE FAIL\b", ln):
+            if not ADDR_FAIL_RE.search(ln) and classify_line(ln) != "log":
+                return False
+    return True
+
+
 # ------------------------------------------------------------------------------------------------ Error List
 LOOSE_RE = re.compile(r"loose\s*ends?", re.I)
 

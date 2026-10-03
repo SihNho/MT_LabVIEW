@@ -180,3 +180,46 @@ How to add: see the 5-line note at the top of `docs/d1/INDEX.md`.
 as OLD only when its identity (term uid, owner uid, name) is in stage N's base (same key as `stagekit.term_key`, PD325(b)); a uid
 LabVIEW re-issued to a created node binds like any created terminal and is logged as `re-issued uid(s)` on the REBIND line.
 Self-test `tools/bench/selftest_rebind_c142_5.py` (142-P1's case): before 1/3 (`selftest_rebind_c142_5_before.log`), after 4/0.
+
+337. **(chat card chat-S5, 2026-10-03 — USER: "좋아. 지금 수정 내용을 S1이라고 할게", after the chat measured cycles 142-143: ~44
+     of ~175 min were our checkers refusing good work, results 143-1/3/4/5)** Brief `tools/bench/cards/brief_chat-S5.md`.
+     OFFLINE, STRUCTURAL; replay `tools/bench/replay_s5.log` 8/0, self-test `tools/bench/selftest_s5.log` 21/0.
+     USER-RULES: U1 (relied on; checker/binder/protocol code only — no computation, no design change; Jev stays advisory).
+     - **(a) ADDRESS BY POSITION (143-4):** `tools/addrcheck.py` is tier (a). Selector order = stagesim's: name → `<name>#k` →
+       inner/outer → `value` alias → the POSITION TRIPLE (owner uid, terminal index, terminal class, direction) that
+       `stagesim.simulate` now records per resolved end in `finalized.addr_pos`. `stage_prerun.rebase` resolves by name as
+       before and, when the name does not bind uniquely, by that rule on the provisional base AND then only when the bound real
+       row sits at the same position (`real_match`: unique class+direction on both owners, or the same index) — logged
+       `ADDRESS-RESOLVED`. Anything else is `ADDRESS-UNRESOLVED` with the real candidates and the rebase refuses as before
+       (never a guess). `--prerun` prints one `ADDRESS-CHECK` fact line per stageplan (advisory; X2's load_final_plan already
+       checks input md5s and the schema).
+     - **(b) 3 TIERS:** (a) code as above; (b) Jev "same terminal?" per unresolved item with its candidates — MEASURED on
+       `tools/bench/addrcheck_labelled.json` (18 items from cycles 128-143): accuracy 0.611, 7 unknown
+       (`tools/bench/addrcheck_jev_measure.json`, `jev_addr_measure_s5.log`) < 0.85 → NOT switched on (advisory stays off;
+       re-measure to switch it on); (c) every item without one confident YES prints `ADDRESS-LLM-OWED` for the judgement
+       session — no card re-review. `gateclass.address_only` + `guard_peer.log_failure`: a failed run whose ONLY failures are
+       address/format mismatches (`ADDRESS-UNRESOLVED`, "does not bind uniquely", a prose field over a length limit) owes no
+       hypothesis review; a traceback, timeout, STOP or any other failing gate still does.
+     - **(c) BY-DESIGN EL DIFFERENCE (143-1/143-2):** the fixed EL rule moved to `tools/elrule.py` (the bench file re-exports).
+       `errorlist_check` on a MISMATCH that is not loose-ends: `by_design` re-derives the prediction from the bed's own plan
+       step files; verdict OK + `EL-BYDESIGN` soft line only when nothing is missing, every extra is an unwired-Local or
+       While-cond item, per class ≤ the re-derived new items, and re-derived total == measured. Otherwise STOP. Census
+       differences stay under PD327's tolerance (unchanged).
+     - **(d) PROSE vs MACHINE FIELDS (143-5, 143-1):** schemas mark prose fields `"x-prose": true`; the validator skips their
+       length gate unless the schema also says `"x-limit": true` (kept on result/task/next/verdict/... as the communication
+       budget; dropped on stageplan `why`/`goal`). `protocol.machine_view` / `prose_fields` are the one helper;
+       `stage_prerun.negative_uids_left` replaces the per-script token scan (4 pred scripts patched). Releases: `py
+       tools/protocol.py release <review> --kind FIXED|REFUTED --slug --path --line --what` writes a validated `release/1`
+       record (`docs/protocol/release.json`; slug ∈ the review's own PRIOR-ART slugs; FIXED path exists and post-dates the
+       review) + the legacy line, which guard_cycle/stop_record keep reading; nothing is written on a failed check.
+     - **(e) BIND-TIME INPUT MD5 (143-P1):** `protocol.bind` refuses a NEW binding whose task/1 `inputs[].md5` differs from the
+       file on disk (a re-bind of a started card is not re-checked).
+     - Replay (offline, `replay_s5.log`): 143-3 + 143-4's plan ('value') rebases on eda9db40 with REUSE-NOTED 23276 and
+       ADDRESS-RESOLVED (value-alias / unique-dir), actions == 143-5's rebased da66a030 in every machine field → 143-4 and
+       143-5's fix card not needed; 143-5's 545-char why validates and its RB scan finds no negative uid → 143-5's two failures
+       not needed; 143-1's read vs the 51-entry expectation → by-design log, re-derived 53 == 53 → no FAIL. 143-3 needed 143-4's
+       PD334(b) uid fix as well (already in).
+     - Existing self-tests (`run_selftests_s5.log`) 42/5; all 5 failures predate S5: stagekit J1 (same as
+       `selftest_stagekit_c112d.log`), stage_prerun c106e E1 and c114 R4 (same in `s4_regress.log`, 08:18 today),
+       `selftest_rebase_uidreuse_c143_4` (its fixture plan was rebased by 143-5: "base is not provisional"),
+       `selftest_guard_peer_scan_tmp` (a throwaway census with a non-schema RESULT line).

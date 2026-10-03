@@ -135,7 +135,9 @@ def _check(v, s, root, path):
     if isinstance(v, str):
         if "minLength" in s and len(v) < s["minLength"]:
             return "%s: shorter than %d chars" % (path, s["minLength"])
-        if "maxLength" in s and len(v) > s["maxLength"]:
+        # card chat-S5 (PD337(d)): a PROSE field (`"x-prose": true`) has no length gate unless its schema says so
+        # (`"x-limit": true` - the communication budget of result/task/next cards); 143-5 lost a rebase to a 545-char `why`
+        if "maxLength" in s and len(v) > s["maxLength"] and (not s.get("x-prose") or s.get("x-limit")):
             return "%s: %d chars > limit %d" % (path, len(v), s["maxLength"])
         if "pattern" in s and not re.search(s["pattern"], v):
             return "%s: %r does not match %s" % (path, v[:60], s["pattern"])
@@ -176,6 +178,70 @@ def goal_ids(path=GOALMAP):
         return {r["id"] for r in g.get("requirements", [])} | {m["id"] for m in g.get("milestones", [])}
     except Exception:                                                               # noqa: BLE001
         return None
+
+
+# ----------------------------------------------------------------------------- prose vs machine fields (card chat-S5)
+# USER 2026-10-03 (the "S1" fix, brief_chat-S5.md section 4): a schema marks its PROSE fields with "x-prose": true (why,
+# note, goal, message, detail, question, ...). No gate and no token scan reads a prose field: callers scan
+# machine_view(doc, schema) instead of the raw document (143-5: the rebased-plan check tokenised a `why` and found '-1').
+def _resolve(s, root):
+    while isinstance(s, dict) and "$ref" in s and str(s["$ref"]).startswith("#/definitions/"):
+        s = root["definitions"][s["$ref"].split("/")[-1]]
+    return s
+
+
+def _strip_prose(v, s, root):
+    s = _resolve(s, root)
+    if not isinstance(s, dict):
+        return v
+    if isinstance(v, dict):
+        props = s.get("properties") or {}
+        out = {}
+        for k, x in v.items():
+            sub = _resolve(props.get(k), root) if k in props else None
+            if isinstance(sub, dict) and sub.get("x-prose"):
+                continue
+            out[k] = _strip_prose(x, sub, root) if sub is not None else x
+        return out
+    if isinstance(v, list) and isinstance(s.get("items"), dict):
+        return [_strip_prose(x, s["items"], root) for x in v]
+    return v
+
+
+def machine_view(doc, schema_name=None):
+    """A deep copy of `doc` without the fields its schema marks "x-prose": true. schema_name: 'stageplan' or
+    'stageplan/1' (default: doc['schema']). Unknown schema -> the doc unchanged (copy)."""
+    import copy
+    name = schema_name or (doc or {}).get("schema")
+    if name and "/" not in str(name):
+        name = "%s/1" % name
+    try:
+        root = load_schema(name)
+    except (ValueError, OSError):
+        return copy.deepcopy(doc)
+    return _strip_prose(copy.deepcopy(doc), root, root)
+
+
+def prose_fields(schema_name):
+    """Dotted paths of every x-prose field of a schema (definitions included) - for the self-test and the docs."""
+    if "/" not in str(schema_name):
+        schema_name = "%s/1" % schema_name
+    root = load_schema(schema_name)
+    out = []
+
+    def walk(s, p):
+        if not isinstance(s, dict):
+            return
+        for k, sub in (s.get("properties") or {}).items():
+            if isinstance(sub, dict) and sub.get("x-prose"):
+                out.append(p + "." + k)
+            walk(sub, p + "." + k)
+        if isinstance(s.get("items"), dict):
+            walk(s["items"], p + "[]")
+    walk(root, "$")
+    for dn, d in (root.get("definitions") or {}).items():
+        walk(d, "#" + dn)
+    return out
 
 
 def validate_obj(obj, goal_ids=None):
@@ -568,6 +634,83 @@ def _abs(p):
     return p if os.path.isabs(p) else os.path.join(ROOT, p)
 
 
+def write_release(review, kind, slug, cite_path, cite_line, what, now=None):
+    """card chat-S5 (PD337(d)): write ONE release/1 record + its legacy line into a review file, VALIDATED FIRST.
+    Returns (ok, message). The enum is the review's own verdict slugs (its `PRIOR-ART: <slug>` lines) ∩ PRIOR_ART_SLUGS;
+    FIXED also needs cite_path to exist and to be newer than the review (guard_cycle.review_time). Nothing is written
+    when a check fails."""
+    sys.path.insert(0, os.path.join(HERE, "hooks"))
+    import guard_cycle as GC
+    rp = _abs(review)
+    try:
+        with open(rp, encoding="utf-8") as f:
+            body = f.read()
+    except OSError as e:
+        return False, "review %s unreadable: %s" % (review, e)
+    issued = sorted(set(GC.PRIOR_ART_RE.findall(body)) & set(GC.PRIOR_ART_SLUGS) - {"novel"})
+    if slug not in issued:
+        return False, "slug %r is not one this review issued (its verdict slugs: %s)" % (slug, issued or "none")
+    rec = {"schema": "release/1", "kind": kind, "slug": slug, "review": _rel(rp).replace("\\", "/"),
+           "cite": {"path": str(cite_path).replace("\\", "/"), "line": int(cite_line)}, "what": str(what).strip(),
+           "at": now or time.strftime("%Y-%m-%d %H:%M:%S")}
+    ok, why = validate_obj(rec)
+    if not ok:
+        return False, "release/1 invalid: " + why
+    fp = _abs(rec["cite"]["path"])
+    if kind == "FIXED":
+        if not os.path.isfile(fp):
+            return False, "FIXED cites %s, which does not exist" % rec["cite"]["path"]
+        rt, basis = GC.review_time(rp, body)
+        if os.path.getmtime(fp) <= rt:
+            return False, "FIXED cites %s, last changed before the review (%s)" % (rec["cite"]["path"], basis)
+        legacy = "FIXED: %s - %s:%d - %s" % (slug, rec["cite"]["path"], rec["cite"]["line"], rec["what"].splitlines()[0])
+    else:
+        legacy = "REFUTED: %s - %s:%d %s" % (slug, rec["cite"]["path"], rec["cite"]["line"], rec["what"].splitlines()[0])
+    add = "\nRELEASE %s\n%s\n" % (json.dumps(rec, ensure_ascii=True, separators=(",", ":")), legacy)
+    if GC.DISPOSITION_MARK not in body:
+        add = "\n\n%s\n%s" % (GC.DISPOSITION_MARK, add)
+    with open(rp, "a", encoding="utf-8") as f:
+        f.write(add)
+    with open(rp, encoding="utf-8") as f:
+        rel_, rej = GC.released_slugs(rp, f.read())
+    if slug not in rel_:
+        return False, "written, but guard_cycle does not release %r: %s" % (slug, rej[:3])
+    return True, "RELEASED %s %s in %s" % (kind, slug, rec["review"])
+
+
+def read_releases(body):
+    """[release/1 dict] from the `RELEASE {...}` lines of a review body (old reviews: [] - their FIXED:/REFUTED: lines
+    are still read by guard_cycle as before)."""
+    out = []
+    for m in re.finditer(r"^RELEASE (\{.*\})\s*$", body or "", re.M):
+        try:
+            d = json.loads(m.group(1))
+        except ValueError:
+            continue
+        if validate_obj(d)[0]:
+            out.append(d)
+    return out
+
+
+def input_md5_changes(card):
+    """card chat-S5 (PD337(e)): ['<path>: card <md5> != disk <md5>' | '<path>: missing'] for every task/1 input that names
+    an md5. An input without an md5 is not checked."""
+    import hashlib
+    bad = []
+    for it in card.get("inputs") or []:
+        if not isinstance(it, dict) or not it.get("md5") or not it.get("path"):
+            continue
+        p = _abs(it["path"])
+        if not os.path.isfile(p):
+            bad.append("%s: missing" % it["path"])
+            continue
+        with open(p, "rb") as f:
+            m = hashlib.md5(f.read()).hexdigest()
+        if m != it["md5"]:
+            bad.append("%s: card %s != disk %s" % (it["path"], it["md5"][:8], m[:8]))
+    return bad
+
+
 def bind(agent_id, agent_type, card_path, goals="default"):
     """Record the binding. Returns (ok, message). The card must be a VALID task/1."""
     p = _abs(card_path)
@@ -577,6 +720,14 @@ def bind(agent_id, agent_type, card_path, goals="default"):
         return False, "card %s is not a valid task/1: %s" % (card_path, str(e)[:200])
     if card.get("schema") != "task/1":
         return False, "card %s is %s, not task/1" % (card_path, card.get("schema"))
+    prev0 = _load_active().get(agent_id) or {}
+    if prev0.get("id") != card["id"]:                       # a RE-bind of a started card is not re-checked
+        bad = input_md5_changes(card)
+        if bad:
+            # card chat-S5 (PD337(e)): 143-P1 copied a pair that 143-1 had changed meanwhile - a card whose named input
+            # changed after it was written must be re-issued with the new md5, not started on stale assumptions
+            return False, ("card %s REFUSED at bind: input md5 changed since the card was written: %s - re-issue the card "
+                           "with the current md5" % (card_path, "; ".join(bad[:4])))
     try:
         with file_lock(ACTIVE + ".lock"):        # card chat-P1 1(a): two binds in one message must both survive
             d = _load_active()
@@ -1532,7 +1683,18 @@ def main(argv=None):
     q = sub.add_parser("requires", help="card chat-N1 (4a): check a task/1 card's `requires` OFFLINE")
     q.add_argument("card")
     q.add_argument("--cards-dir", default="")
+    rl = sub.add_parser("release", help="card chat-S5: write a VALIDATED release/1 record + legacy line into a review")
+    rl.add_argument("review")
+    rl.add_argument("--kind", choices=("FIXED", "REFUTED"), required=True)
+    rl.add_argument("--slug", required=True)
+    rl.add_argument("--path", required=True)
+    rl.add_argument("--line", type=int, required=True)
+    rl.add_argument("--what", required=True)
     a = ap.parse_args(argv)
+    if a.cmd == "release":
+        ok, msg = write_release(a.review, a.kind, a.slug, a.path, a.line, a.what)
+        print(msg)
+        return 0 if ok else 2
     fn = {"validate": _cmd_validate, "new": _cmd_new, "result-line": _cmd_result_line, "verdict": _cmd_verdict,
           "requires": _cmd_requires,
           "bind": _cmd_bind, "parse-verdict": _cmd_parse_verdict, "render-review": _cmd_render_review}

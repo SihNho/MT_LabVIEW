@@ -36,7 +36,7 @@ def gate(label, ok, d=""):
 p = J(RRP)
 fz = p.get("finalized") or {}
 bp = (fz.get("base") or p.get("base") or {})
-neg = [v for a in p["actions"] for v in json.dumps(a).replace(",", " ").replace("}", " ").split() if v.lstrip("-").isdigit() and v.startswith("-")]
+neg = SPR.negative_uids_left(p)          # card chat-S5 (PD337(d)): machine fields only - the old token scan read `why` text
 gate("RB plan rebased: base {0} not provisional, FINAL, open_rows_match, {1} actions; no negative uid left".format(bp.get("path"), len(p["actions"])),
      not (p.get("base") or {}).get("provisional") and p.get("final") is True and fz.get("open_rows_match") is True and len(p["actions"]) == 34 and not neg,
      {"base": p.get("base"), "rebase": fz.get("rebase"), "neg": neg[:6]})

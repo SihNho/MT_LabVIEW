@@ -1,0 +1,25 @@
+BGRUN START 2026-10-03 16:04:25 limit 5.0 min: py -u tools/bench/selftest_s5.py
+BGRUN PID 3768
+GATE PASS | A1 143-4: plan 'value' on Local -20 resolves to -21 by stagesim's alias | value-alias
+GATE PASS | A2 143-4: bound real #23310 'StopAll' sits at the same position (unique class+direction) | unique-dir
+GATE PASS | A3 an unknown name on that Local stays UNRESOLVED (never guessed), candidates listed | [{'term_uid': -21, 'name': 'StopAll', 'class': 'Terminal', 'source': True}]
+GATE PASS | A4 recorded triple (index 1, Terminal, sink) picks #2 'y' when the name does not bind | triple
+GATE PASS | A5 a triple whose class disagrees resolves nothing | None
+GATE PASS | A6 'value' alias refuses on a node with TWO sinks (not unique) | None
+GATE PASS | A7 real_match: same index on a two-sink node -> 'index'; other index -> refused | 
+GATE PASS | B1 check_plan: 2 resolved (alias, name), 1 unresolved with candidates, 1 symbolic skipped | {'resolved': [{'id': 'w1:src', 'addr': {'uid': 6902, 'term': 'value'}, 'how': 'value-alias', 'term_uid': 23310}, {'id': 'w1:dst', 'addr': {'uid': 9, 'term': 'x'}, 'how': 'name', 'term_uid': 1}], 'unresolved': [{'id': 'w2:src', 'addr': '6902.Nope', 'planned': {'owner': 6902, 'name': 'Nope', 'source': True}, 'candidates': [{'term_uid': 23310, 'name': 'StopAll', 'class': 'Terminal', 'source': True}]}
+GATE PASS | B2 address_only: a rebase refused only on an address -> True (no hypothesis review owed) | 
+GATE PASS | B3 address_only: + a Traceback, or + another failing gate -> False (STOP gates kept) | 
+GATE PASS | B4 guard_peer.log_failure: that rebase log is not a failed prediction | (False, None)
+GATE PASS | C1 143-1: 2 extra session-boundary items, re-derived 53 == measured 53 -> log | by-design session-boundary items {'local': 1, 'cond': 1}: re-derived prediction 53 == measured 53 (fixed rule tools/elrule.py, PD336(c))
+GATE PASS | C2 unexplained: another class / a missing item / a total the rule does not reproduce -> stop | ["extra item(s) of another class ['Insert Into Array: Contains unwired or bad terminal']", "Error List items MISSING ['x'] - never by design", 're-derived total 53 != measured 52']
+GATE PASS | D1 stageplan: a 551-char `why` validates (prose, no length gate) | (True, 'OK stageplan/1')
+GATE PASS | D2 result/1: a 400-char note still FAILS (x-limit: the communication budget the schema states) | (False, '$.note: 400 chars > limit 300')
+GATE PASS | D3 machine_view drops `why`; negative_uids_left ignores '-1' in prose and finds -5 in an address | 
+GATE PASS | D4 prose_fields(stageplan) lists goal, open_rows[].why, action.why | ['$.goal', '$.open_rows[].why', '#action.why']
+GATE PASS | D5 release: a slug the review did not issue is refused and NOTHING written | slug 'contradicted' is not one this review issued (its verdict slugs: ['helper-exists'])
+GATE PASS | D6 release: a valid FIXED writes a release/1 record + the legacy line, and guard_cycle releases it | RELEASED FIXED helper-exists in C:/Users/KimLab/AppData/Local/Temp/s5_relu08n4/review.md
+GATE PASS | D7 bind refuses a card whose input md5 changed (nothing bound) | card C:\Users\KimLab\AppData\Local\Temp\s5_relu08n4\task_s5.json REFUSED at bind: input md5 changed since the card was written: tools/bench/cards/brief_chat-S5.md: card 00000000 != disk 1586003f - re-issue the card with the current md5
+GATE PASS | D8 input_md5_changes: the current md5 -> no change | []
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":21,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s
