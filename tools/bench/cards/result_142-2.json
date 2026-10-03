@@ -1,0 +1,17 @@
+{"schema":"result/1","id":"142-2","status":"FAIL","gates":{"pass":16,"fail":1},
+"first_fail":"T one terminal {'owner_uid': 3, 'is_source': True} (scaffold-end re-read, build_ringpickslot_v1.log:39)",
+"blocked_by":null,
+"artefacts":[{"path":"tools/bench/build_ringpickslot_v1.py","md5":"146dd8f2ba471ac8a0a0acf5cefa6964"},{"path":"tools/bench/build_ringpickslot_v1.log","md5":"26b034335ee45d9dbdb7e42f04f6eb58"},{"path":"tools/bench/diag_c142_2_out.json","md5":"881acb10391a087f0c8f25ea069a6778"},{"path":"tools/bench/diag_c142_2_facts.md","md5":"ac265aa04511201f9ea5b659c0514a66"}],
+"facts":[
+"142-1 fault fixed: scaffold deletes (verify=False, gone uids skipped) ran clean, Constant traverse ended empty (build_ringpickslot_v1.log:14-21)",
+"Constant traverse after For delete had 7 uids [50,59,75,84,100,127,138]; deletes #50/#59/#84/#127 each removed >1 entry; uids 59..127 unidentified (log:15-21)",
+"New fail is our script: lo = owner_uid of the last control's source row = 3 (TopLevelDiagram), so one(owner_uid=3,is_source) hit both controls #202,#84 (log:32,39; build_ringpickslot_v1.py:43)",
+"Same lookup bug sits in v0 (build_ringpickslot_v0.py:55,57); v0 never reached it. Fix = use the terminal row's term_uid #84, not owner_uid",
+"Measured end state matches prediction where read: GT.y #166 unwired, GT.x #169 wired 212, KMX2 src #51 unwired, last #84 wire 0, helper #64 deleted (log:34-39)",
+"uid reuse: #84 was a Constant in C0 and is the 'last' ControlTerminal afterwards (log:15,29)",
+"LabVIEW gone, scratch bed copy + unsaved RingPickSlot_v0.vi deleted, bed + s01 md5 unchanged (log:41-42); no saved artefact",
+"Jev ladder: no JEV-LADDER row for build_ringpickslot_v1.log in tools/bench/jev_gate.log yet | NEXT-ACTION n/a | nothing | -"
+],
+"open":["Retry with lo/last taken as the terminal row (term_uid 84 / owner match by term uid) - judgement: same card goal, our-script-bug?"],
+"cost":{"usd":null,"minutes":6,"labview_runs":1},
+"note":"Failure budget 1 spent on the first run; returned per chat-P2. Not reached: FMN group, indicators, pane, save, 7 runs, fresh re-runs. git commit was denied by the permission layer; files are uncommitted."}

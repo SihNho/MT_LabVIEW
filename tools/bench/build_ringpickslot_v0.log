@@ -1,0 +1,35 @@
+BGRUN START 2026-10-03 09:22:10 limit 40.0 min: py -u tools/bench/build_ringpickslot_v0.py
+BGRUN PID 25484
+  GATE PASS  bed + s01 md5 before  
+  GATE PASS  bed byte copy md5 == bed  
+  GATE PASS  target does not exist yet  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\RingPickSlot_v0.vi
+  OBSERVED uid 138 -> owner 'Diagram' uid 114 | self 'DigitalNumericConstant'#138 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 156 -> owner 'TopLevelDiagram' uid 3 | self 'Comparison'#156 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  GATE PASS  T one terminal {'owner_uid': 156, 'term_name': 'y'}  [(166, 'y', 0)]
+  GATE PASS  T one terminal {'owner_uid': 138, 'is_source': True}  [(137, '', 0)]
+  FACT  WIRE scaffold GT.y <- k0 (generator For out): {'wire_uid': 180, 'broken': False, 'sink_echo': 166, 'src_echo': 137, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  wire scaffold GT.y <- k0 (generator For out) err '' and Is Broken? False  {'wire_uid': 180, 'broken': False, 'sink_echo': 166, 'src_echo': 137, 'err': '', 'purged': 0, 'invoke_left': []}
+  FACT  PANEL Num: {'ret': ([{'i': 0, 'class': 'ControlTerminal', 'uid': 202, 'pos': (246, 136), 'owner': 'TopLevelDiagram'}], 'x'), 'panel': [{'label': 'x', 'indicator': False, 'uid': 150, 'is_source': True, 'wire': 212, 'term_err': 0, 'wire_err': 0}]}
+  GATE PASS  panel object Num created and wired  [{'label': 'x', 'indicator': False, 'uid': 150, 'is_source': True, 'wire': 212, 'term_err': 0, 'wire_err': 0}]
+  FACT  DELETE #43 ForLoop: {43}
+  FACT  DELETE #50 Constant: {50}
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\build_ringpickslot_v0.py", line 114, in <module>
+    main()
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\build_ringpickslot_v0.py", line 108, in main
+    gate("bed + s01 md5 before", md5(BED) == BEDM and md5(S01) == S01M); build(); runs("runs", range(7))   # noqa: E702
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\build_ringpickslot_v0.py", line 49, in build
+    delete(FG, "ForLoop"); [delete(u, "Constant") for u in sorted(g.uids(TGT, "Constant"))]; fact("RBW 1", g.remove_bad_wires_scripted(TGT))   # noqa: E702
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\build_ringpickslot_v0.py", line 49, in <listcomp>
+    delete(FG, "ForLoop"); [delete(u, "Constant") for u in sorted(g.uids(TGT, "Constant"))]; fact("RBW 1", g.remove_bad_wires_scripted(TGT))   # noqa: E702
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\build_ringpickslot_v0.py", line 39, in delete
+    gone = g.delete_object(TGT, cls, g._uid_index(TGT, cls, u)); fact("DELETE #%s %s" % (u, cls), gone); return gone   # noqa: E702
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 2854, in delete_object
+    raise RuntimeError(f"delete_object({cls}[{index}]): expected 1 object gone, got {len(gone)}")
+RuntimeError: delete_object(Constant[0]): expected 1 object gone, got 2
+  GATE FAIL  the run completed without an unhandled exception  RuntimeError('delete_object(Constant[0]): expected 1 object gone, got 2')
+  GATE PASS  Z LabVIEW gone  
+  GATE PASS  scratch files deleted; bed + s01 md5 unchanged  ['C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c142_1_bdon_092211.vi', 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\RingPickSlot_v0.vi']
+=== GATES: 9 pass / 1 fail; failing: ['the run completed without an unhandled exception']
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":9,"fail":1},"first_fail":"the run completed without an unhandled exception","artefacts":[]}
+BGRUN END rc=1 after 67s

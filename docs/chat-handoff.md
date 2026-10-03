@@ -333,6 +333,49 @@ step-end checks unchanged (awaiting objection; proceed as proposed if none). Car
 `task_chat-S2.json` (gates, offline, 120 min) and `task_chat-M1.json` (memory ceiling, LabVIEW scratch, 90 min).
 Dispatch BOTH (M1 is the only LabVIEW one) as soon as cycle 141's rerun ends and the runner has stopped (STOP line
 stays). Then propose new memory limits from M1 to the user; restart only on the user's word.
+**00:10 user: "싸이클 141 멈추자"** → chat killed the sleeping runner (pid 23984 tree; allowed this time), ran
+finish_orphan_cycle (GIT committed 5a579592, MOTOR-LIMITS released + read back, no LabVIEW); supervisor real stop.
+**chat-S2 PASS 4/0 (34 min, commit e8199b38):** tools/gateclass.py = one STOP/LOG table used by stagekit, stagexec,
+stage_prerun, guard_peer; soft log tools/bench/gate_soft_log.jsonl; PD327 in docs/d1/tooling.md:112. Replay of 49
+non-PASS results 130-141: only 6 would have continued (12 %), 38 are real STOPs — the chat's earlier "more than half"
+estimate was WRONG and was corrected to the user. Open (asked the user): tunnel OBJECT counts stay STOP (chat rec);
+E1 face-row-only diffs → LOG (chat rec). Incident: selftest_stagekit case J launched real LabVIEW by COM (pid 14464);
+the agent's kill was refused; it was gone when the chat checked; the test is excluded from s2_regress (fix later).
+chat-M1 (memory ceiling) dispatched 00:5x after S2 (the pairing guard refused running them together).
+chat-M1 BLOCKED by X10 (looped reads = UNMEASURED, fp-35) before LabVIEW opened → chat-M2 PASS 14/0 (56 min, commits
+4c5fbe16 07d89e30 a748456b): X10 PROBE-EXEMPT release (declared scratch-only probe, dry saves 0; self-tests green;
+fp-35 drained) + ONE probe run: **LabVIEW error 2 at 704.8 MB** on whole-VI read #64 (64-bit LabVIEW notwithstanding);
+load 577 MB, +1.95 MB/read, ~21.5 s/read; closing the scratch does NOT return memory; MB/edit unmeasured (leg 2 skipped).
+So option (나) cannot raise the limit; the chat's 64-bit expectation was WRONG (corrected to the user). Agent suggests a
+safe ceiling 680 MB. Asked the user: lower fail_above/MEMSTOP to 680/695? Plus S2's two open items (tunnel object
+counts stay STOP — rec; E1 face-row-only diffs → LOG — rec). The lever left is fewer whole-VI reads (merge BIND reads,
+29 → 14 in P4 session 1, card 140-1).
+**User 2026-10-03 ~02:xx:** memory 680/695, tunnel object counts stay STOP, E1 face-row-only → LOG → card chat-S3
+dispatched. Then on process speed: **(A) adopt the passing scratch file as the stage result, (B) per-node reads instead
+of whole-VI reads per BIND, and resume from the stop point within a cycle — APPROVED**; brief_chat-S4.md written, card
+to be dispatched right after chat-S3 (same tool files). **SubVI question:** user asked "subVI해도 local variable을 직접
+노드에 꽂아주면 되는거 아님?" → chat: yes — caller keeps the local reads/writes in seqlock order, subVIs are pure
+functions (slot selection; overwrite check + rollback Selects) → P4 in-main edits ~235 → tens. Design change: awaiting
+the user's go for P4 (chat rec: from P4 on; P2/P3 unchanged). **User: "P4부터 그렇개 진행하자" → recorded in
+docs/d1/ring-p4b.md (end, USER DECISIONS 2026-10-03) + INDEX line; supersedes PD326(e)'s session-2 plan.** Note: cycle 141's
+first attempt had SAVED P4 session 1 `D1_ring_p4s01_20261002_232547.vi` (RAS repair; in-between, kept).
+**chat-S3 PASS 3/0** (commits f1b39287 4d8e2f58): memory_model.json fail_above 680 / memstop 695 (single source),
+tunnel objects STOP, E1 face-row-only LOG (bind_new skips new rows on a pre-existing tunnel), PD328. Open: s02 card
+limit 675 vs 680 → left to the next judgement (P4 is being re-planned with subVIs anyway).
+**chat-S4 FAIL 3/1** (39 min, commits 9a11b013 cc58792d): A (adopt passing scratch, second run refused) and RESUME
+within a cycle DONE with self-tests; B (partial reads) proven equal in dry runs but NOT usable on LabVIEW: whole
+read_live measured 24.7–105.7 s (+4–7 MB), per-node route ~0.9 s ~0 MB, yet only 11/30 owner kinds are addressable via
+Nodes[] (constants, tunnels, shift registers are not) and no op reads term_class per owner → Executor falls back to
+whole reads. Needs a new op (LabVIEW build card); chat recommends the next judgement decides after the subVI re-plan.
+Leftovers for the next cycle: X17 vs labels-file donor fixture (plan_disp r7_wait/r7_max), review dispositions of
+archive/peer/2026-10-03-s4-c106e-x17-fixture.md and -s4-selftest-a7-b4.md. Scratch recipes still to be wired to
+SAVE + adopt in the next stage card. **All process changes approved today are applied; runner stays stopped (weekly
+90 % STOP) until the user says start.**
+**ONE TRIAL CYCLE (user 2026-10-03 09:0x "한 싸이클망 시범으로 실행해보자", weekly 93 %):** next.json act redirected to
+the subVI re-plan (old copy tools/bench/next_before_chat_20261003.json); STATUS usage STOP turned into history + a
+"ONE TRIAL CYCLE" line; cycle_runner launched DIRECTLY with --cycles 1 --budget-min 300 (no supervisor, so no
+relaunch), log tools/bench/cycle_runner_main_20261003_0910.log; cycle 142 started 09:11. After it ends: report, then
+put the STOP line back (weekly usage) unless the user says otherwise.
 **CLOUD PLAN DROPPED (user 2026-09-29 ~20:0x KST: "그럼 클라우드는 그냥 잊어버리자").** No Linux port of benches/hooks;
 benches stay local. Both probe routines were run-once and are spent. Open next: user asked whether to bring Gemini back
 for web search; chat proposed (awaiting answer) a headless-permission fix test + a 6–8 question known-answer comparison

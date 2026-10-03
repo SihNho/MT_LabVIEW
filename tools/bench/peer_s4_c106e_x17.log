@@ -1,0 +1,31 @@
+BGRUN START 2026-10-03 07:46:09 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug s4-c106e-x17-fixture -TaskFile tools/bench/peer_task_s4_c106e.txt
+BGRUN PID 10660
+OUTCOME: ANSWERED (109s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-03-s4-c106e-x17-fixture.md
+COST: $1.2963  in 22 / out 7532 / cache-create 117529 / cache-read 1026765  (105s, 20 turn(s))
+--- ANSWER ---
+The claim is only half right. X17 is what fails, but saying it "behaves as designed" is wrong, and the log cannot rule out a regression from the S2/S3 changes.
+
+**1. Strongest reason it's wrong: X17 rejects a donor it already knows to be correct.**
+- `r7_wait` in `tools/bench/sim/disp/plan_disp.json:628-646` has no `donor` and no `donor_uid`. Its donor is found when the plan runs: `gscript.create_primitive_nested` looks up `donors[prim_name]` in the labels file when no donor is passed (`tools/gscript.py:4801`).
+- That lookup returns `OpWaitDonor_v0.vi` uid 163 (`tools/bench/facts_c100_oplabels.json:266-269`).
+- X17's own table lists that exact donor, measured with the label `'Wait (ms)'` (`tools/stage_prerun.py:2638-2639`).
+- `prim_donor_check` only accepts a donor written into the plan. When there isn't one, it refuses at `:2674-2676` without looking in the labels file the build will actually use.
+- So this is a gap in X17, not a stale test. Any current plan that relies on the labels-file donor lookup will be refused the same way. If the fix goes into the self-test, or into a "legacy plan" exemption, X17 stays blind to that lookup route.
+
+**2. Other explanations the same evidence allows:**
+- **(a) A regression could be hidden.** The self-test's E1 needs every gate to pass, but the log only keeps `first_fail`. X17 runs at `:2779`; X10, the gate S3 changed, runs later at `:2880`. The X10 lines the test collects (`x10l[:3]`) were cut off by the 400-character limit, so they are missing from `s3_regress_c132_1.log:4`. A broken X10 after S3 would look exactly like this log.
+- **(b) "Red before the S2 change" was never measured.** `result_chat-S2.json:64` asserts it, but the next line says the comparison against the last commit (HEAD) "FAILED as a tool … no measured before/after for c106e" (`:65`). `s2_headcmp.log:3` shows the HEAD run failing 6 gates for path reasons, so it says nothing about E1.
+- **(c) There are probably more refusals.** `r7_max` (`'Max & Min'`, `plan_disp.json:654`) has the same missing-donor shape, and its labels-file donor (uid 43) is not in the X17 donor table. The detail shows only `bad[:6]`, cut at 400 characters, so "only `r7_wait`" is not established.
+
+**3. What would falsify the claim:** if X17 is made to find `r7_wait` (and `r7_max`) through the labels file the same way `create_primitive_nested` does, and E1 then fails on X10 or any other gate, the "not a regression" half is wrong. If, with the same change, every gate including X10 (model peak shown) passes, the claim holds. Even then, the fix belongs in X17, not in the test.
+
+**4. Cheapest test that separates the two (offline, no LabVIEW):** run the E1 command on its own and read every gate line, not just `first_fail`:
+```
+PRERUN_LOG_DIR=<empty tmp> py -u tools/stage_prerun.py --prerun tools/recipes/stage_d1_disp.py --no-record --from-step 33 --base <stage_d1_dispA.json partA.file>
+```
+Then search the output for `FAIL ` and `X10`. If X17 is the only failure and the X10 lines read `PASS  X10 predicted` / `FACT  X10 … predicted peak`, the regression worry is gone. Then run `prim_donor_check(plan_disp)` once with the labels file's `donors` resolved, to see whether `r7_max` also turns up as an unmeasured external donor.
+
+**What would change my mind:** that full output showing X10 passing with a model peak, plus a written design decision that X17 is meant to require an explicit donor in the plan. In that case the test (and plan_disp) would be the right place for the fix.
+
+I made no external claims. Everything above is this project's own code and logs, cited by file and line, so I did no web search. I did not take the LabVIEW lock, run anything or edit any file.
+BGRUN END rc=0 after 110s

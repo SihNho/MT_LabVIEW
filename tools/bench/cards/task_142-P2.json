@@ -1,0 +1,32 @@
+{
+ "schema": "task/1", "id": "142-P2", "kind": "measure",
+ "goal": "OFFLINE: P4 plan v18 = v17 with S1/S2 groups replaced by two SubVI nodes (brief_142-P2.md); replay + compile_plan, cdiff vs v17, X10 session table at 596.5",
+ "why": "PD330(a)/(e), docs/d1/ring-p4b.md:109; S1 RingPickSlot_v0.vi delivered by 142-3 (terminal names measured), S2 being built by 142-4",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_142-P2.md", "md5": "06ef76b82887dbd24136ee793975ba03"},
+  {"path": "tools/bench/plan_ring_p4_v17.json", "md5": "e19d7e142fef66f9e118ae4061e9e718"},
+  {"path": "tools/bench/prep_c142_p1_subvi_table.md", "md5": "2e032d3c8923131ebcc8f7e8b8933e5e"},
+  {"path": "tools/bench/build_ringpickslot_v2.log", "md5": "4337475f29bafa7b719597fa966b2cb0"}
+ ],
+ "pass": [
+  "plan_ring_p4_v18.json written; S2 terminal names marked provisional; action count v17 -> v18 reported",
+  "stagesim SubVI-from-file support: YES with file:line, or the exact gap (no tool edit); replay END + compile_plan result",
+  "end cdiff v18 vs v17 differs only on the replaced nodes; X10 session table of the non-repair part at start 596.5"
+ ],
+ "outputs": ["tools/bench/plan_ring_p4_v18.json", "tools/bench/prep_c142_p2_facts.md"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/prep_c142_p2*", "tools/bench/plan_ring_p4_v18*", "tools/bench/sim/**"],
+  "status_edit": false, "git_commit": true, "peers": ["priorart"]},
+ "budget": {"failures": 2, "minutes": 75},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/plan_ring_p4_v17.json"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\RingPickSlot_v0.vi"},
+  {"kind": "verb", "name": "drop_subvi", "where": "tools/gscript.py"}
+ ],
+ "rules": [
+  "Offline only; do not edit stagexec/stagekit/stagesim/stage_prerun",
+  "Facts only; a gap is reported, not built",
+  "Return at the first unexpected result"
+ ]
+}

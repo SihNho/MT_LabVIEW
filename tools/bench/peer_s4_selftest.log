@@ -1,0 +1,49 @@
+BGRUN START 2026-10-03 08:01:13 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug s4-selftest-a7-b4 -TaskFile tools/bench/peer_task_s4_selftest.txt
+BGRUN PID 17692
+OUTCOME: ANSWERED (170s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-03-s4-selftest-a7-b4.md
+COST: $1.6429  in 36 / out 14567 / cache-create 118903 / cache-read 2000737  (166s, 24 turn(s))
+--- ANSWER ---
+**The A7 explanation probably holds, but the logged evidence can't separate it from a competing cause. The B4 explanation is a guess: the run never printed the error message.** I only read files. Nothing was edited or run, and the plan file couldn't be written because file writing is disabled in this session.
+
+## 1. Strongest reason the claim is wrong
+
+**B4:** the explanation says the stop at op 31 was the binding check ("BINDING ... naming owner 99999998"). The log doesn't show that. Line 39 records only `"stopped at op 31 after partial reads [28, 29, 30]"`, and the script never printed the exception text (selftest_stagexec_s4.py:173-174). The new assertion was loosened to fit a message nobody has read. That is a conclusion drawn by reasoning, not from the machine's record.
+
+**A7:** the empty explanation text on log line 25 is also what you get when the stage recipe *is* found, `adopted_record` returns None, and the rest of the gate passes. That path ends at `return True, ""` (tools/stage_prerun.py:4341). The current plan md5 (f4831031) has passing dry-run and pre-run records for the stage recipe (tools/bench/prerun_records.jsonl:709-711). So if the recipe's sha256 still matches dff1f…, the alternative produces exactly the observed output: `okL=True`, `whyL=""`.
+
+## 2. Alternative explanations of the same evidence
+
+- **A7:** the gate found the units and the adoption lookup missed. Some suspected causes don't hold up in the code:
+  - The default-argument trap doesn't apply. `ADOPT_LOG` is read as a module global when the function is called (stage_prerun.py:4232, 4238), so `SPR.ADOPT_LOG = alog` does take effect.
+  - The md5 and stage key match. Both sides call `plan_md5s` on the same absolute path, and `adopt_stage_key` strips `_scratch` (stagexec.py:3774-3779, 3874-3880).
+
+  So the alternative is weak in the code, but the logged output alone does not rule it out.
+- **B4:** B4 builds its simulated backend with `mk()`, which skips `seed_base_flips_modelled`. B1 applies it (selftest lines 141-142). No run has ever combined partial reads, no fault and no seeding. The stop at op 31, the tunnel op that falls back to a whole read, could come from the partial-read bookkeeping rather than the injected object. For example, the patched `real` list built at stagexec.py:2276 could feed `bind_new` a stale previous state.
+
+## 3. What would falsify the claim
+
+- **A7:** `launched_stage_scripts(<run-2 command>)` returns a non-empty list. The code reading supports the claim: `shlex.split(posix=False)` splits the unquoted path at "zz_LabView VI", and the next word doesn't end in `.py`, so no unit is recorded (tools/launchunit.py:44-49, 103-109).
+- **B4:** either of these:
+  - The full message does not contain 99999998 or 99999999.
+  - The same construction with `fault=None` also stops at op 31.
+
+One more limit: the test script on disk already uses the relative path (line 59) and the loosened B4 check (line 173). The file isn't tracked by git, so nothing records what run 2 actually executed.
+
+## 4. Cheapest discriminating test (offline, seconds, no LabVIEW)
+
+1. **A7:**
+   - `py -c "import sys; sys.path.insert(0,'tools'); import stage_prerun as S; print(S.launched_stage_scripts(r'py tools/bgrun.py --material --max-min 50 --log x.log -- py -u G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\stage_d1_ring_p4_s01.py'))"`
+   - The claim predicts `[]`.
+   - Then run `check_launch` on the relative command without setting `ADOPT_LOG`. That shows what the alternative path returns today.
+2. **B4:** run the B4 construction twice.
+   - With the fault, printing `str(e6)` in full.
+   - With `fault=None, partial_reads=True`. It must reach op 47 with no stop.
+
+   If the first message shows BINDING naming 99999998 and the second run is clean, the B4 claim holds.
+
+## Where I'd still hold the claim
+
+**A7:** I'd accept it once check 1 returns `[]`. The rerun with the relative path (now at line 59) should then refuse with "ADOPTED". Before that it could still be stopped by `provisional_plans` (stage_prerun.py:4268, which comes before the adoption check) or by a missing file, since the existence check is resolved against the current working folder.
+
+**B4:** I wouldn't accept it until check 2 is run. Separately, the loosened assertion accepts "BINDING" anywhere. It should also check that op 25 was a partial read and that k=31 is the first whole read after it. Otherwise it can pass on an unrelated binding stop at a later op.
+BGRUN END rc=0 after 171s

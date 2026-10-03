@@ -1,0 +1,32 @@
+{
+ "schema": "task/1", "id": "142-P1", "kind": "measure",
+ "goal": "OFFLINE: (1) subVI decomposition table of plan v17's non-repair actions; (2) the remaining slot-write repair actions as one bed session plan rebased on the s01 graph, dry + prerun + X10",
+ "why": "User 2026-10-03: P4 re-planned with subVIs (docs/d1/ring-p4b.md:94-103); the RAS repair and the session-1 file are kept as they are. Judgement decides the subVI list and the bed plan from these facts.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_142-P1.md", "md5": "0a8cadf2412f253e66f13d6a5f382ee1"},
+  {"path": "tools/bench/plan_ring_p4_v17.json", "md5": "e19d7e142fef66f9e118ae4061e9e718"},
+  {"path": "tools/bench/plan_ring_p4_s01.json", "md5": "f4831031c738c997391b5bcace19d9f0"},
+  {"path": "tools/bench/graph_ring_p4s01_20261002_234419.json", "md5": "f697a0b21c3bdb481207318812a0adad"}
+ ],
+ "pass": [
+  "(1) prep_c142_p1_subvi_table.md/.json per brief_142-P1.md: v17 non-repair actions grouped, inputs/outputs + types, PURE vs bed glue, counts; 142-1's group boundary confirmed or corrected",
+  "(2) plan_ring_p4_rasrest.json per brief: remaining p4_rp* actions rebased on the s01 graph, dry PASS + prerun PASS, X10 at 596.5 reported, EL predicted, recipe pair made",
+  "no LabVIEW, no stage-tool edits; c125_1 not needed"
+ ],
+ "outputs": ["tools/bench/prep_c142_p1_subvi_table.md", "tools/bench/plan_ring_p4_rasrest.json", "tools/bench/prep_c142_p1_facts.md"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/prep_c142_p1*", "tools/bench/plan_ring_p4_rasrest*", "tools/bench/sim/**", "tools/recipes/stage_d1_ring_p4_rasrest*"],
+  "status_edit": false, "git_commit": true, "peers": ["priorart"]},
+ "budget": {"failures": 2, "minutes": 90},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/plan_ring_p4_v17.json"},
+  {"kind": "file", "name": "tools/bench/graph_ring_p4s01_20261002_234419.json"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p4_s02.py"}
+ ],
+ "rules": [
+  "Offline only (labview none); do not edit stagexec/stagekit/stagesim/stage_prerun",
+  "State facts; the subVI list and the bed plan are decided by judgement",
+  "Return at the first unexpected result"
+ ]
+}

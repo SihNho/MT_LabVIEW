@@ -1,0 +1,38 @@
+{
+ "schema": "task/1", "id": "142-3", "kind": "build",
+ "goal": "Escalation 1 of 142-1/142-2: build claudeDev RingPickSlot_v0.vi per brief_142-1.md; RUN 7 vectors, re-run 2 from the saved file in a fresh instance",
+ "why": "142-1 and 142-2 both FAILED on our build script (strict per-delete count; then a terminal lookup by owner_uid=3 matched two controls, build_ringpickslot_v1.log:39). Failure budget spent; PD330(c). Facts: diag_c142_1_facts.md, result_142-2.json",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_142-1.md", "md5": "5e7ec275b68707a49c815dd51ad3609d"},
+  {"path": "tools/bench/plan_ring_p4_v17.json", "md5": "e19d7e142fef66f9e118ae4061e9e718"},
+  {"path": "tools/bench/build_ringpickslot_v1.py", "md5": "146dd8f2ba471ac8a0a0acf5cefa6964"},
+  {"path": "tools/bench/build_ringpickslot_v1.log", "md5": "26b034335ee45d9dbdb7e42f04f6eb58"}
+ ],
+ "pass": [
+  "every terminal addressed by its own term uid read back after creation, never by owner_uid of a diagram; the script desk-checked against both earlier logs before the run",
+  "RingPickSlot_v0.vi saved, ExecState 1, census as brief_142-1.md, prim gate PASS, conpane read back 2 in / 3 out",
+  "7 vectors got == Python reference; 2 re-run from the saved file in a fresh instance equal; bed + s01 md5 unchanged; handles flat; LabVIEW gone"
+ ],
+ "outputs": ["C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\RingPickSlot_v0.vi", "tools/bench/diag_c142_3_facts.md"],
+ "flags": {"labview": "build", "gui": true, "hardware": "none", "run_vi": true,
+  "write": ["tools/bench/diag_c142_3*", "tools/bench/build_ringpickslot*", "tools/recipes/build_ringpickslot*", "tools/bench/scratch_verify/**", "docs/toolkit-capabilities.md"],
+  "status_edit": false, "git_commit": true, "peers": ["hypothesis"]},
+ "budget": {"failures": 2, "minutes": 90},
+ "advances": ["M3", "R1"],
+ "escalation": 1,
+ "retry_of_card": "142-2",
+ "requires": [
+  {"kind": "file", "name": "EMPTY_v0.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "DonorErrSel_MergeErrors.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "DonorI32Max_v0.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "verb", "name": "create_control", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "create_indicator", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "conpane_assign", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "save", "where": "tools/gscript.py"}
+ ],
+ "rules": [
+  "Script <=120 lines (a _v2); Edit/Write tools only",
+  "Never open the bed or the s01 file for editing; $work donors from a byte copy of the bed",
+  "Return at the first result that differs from the prediction (finish the step, LabVIEW closed)"
+ ]
+}

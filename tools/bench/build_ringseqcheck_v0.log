@@ -1,0 +1,236 @@
+BGRUN START 2026-10-03 10:09:44 limit 40.0 min: py -u tools/bench/build_ringseqcheck_v0.py
+BGRUN PID 2148
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\build_ringseqcheck_v0.py", line 27, in <module>
+    WIRES = [a for a in PL["actions"] if a.get("op") == "wire" and (nt(a["src"]).split(".")[0] in AS or nt(a["dst"]).split(".")[0] in AS)]
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\build_ringseqcheck_v0.py", line 27, in <listcomp>
+    WIRES = [a for a in PL["actions"] if a.get("op") == "wire" and (nt(a["src"]).split(".")[0] in AS or nt(a["dst"]).split(".")[0] in AS)]
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\build_ringseqcheck_v0.py", line 26, in nt
+    def nt(s): return s[4:] if s.startswith("new:") else s                                         # noqa: E704
+AttributeError: 'dict' object has no attribute 'startswith'
+BGRUN END rc=1 after 1s (NO RESULT LINE)
+BGRUN START 2026-10-03 10:10:25 limit 40.0 min: py -u tools/bench/build_ringseqcheck_v0.py
+BGRUN PID 1996
+  FACT  v17 external inputs (name -> pins): {'n1': ['EQ2.x', 'GT2.x', 'SLL1.t'], 'n2': ['EQ2.y'], 'last': ['GT2.y'], 'Latest': ['DEC1.x'], 'discards': ['INC2.x', 'SLD1.t']}
+  GATE PASS  v17 external input wires == brief (no difference)  ({'n1': ['EQ2.x', 'GT2.x', 'SLL1.t'], 'n2': ['EQ2.y'], 'last': ['GT2.y'], 'Latest': ['DEC1.x'], 'discards': ['INC2.x', 'SLD1.t']}, {'n1': ['EQ2.x', 'GT2.x', 'SLL1.t'], 'n2': ['EQ2.y'], 'last': ['GT2.y'], 'Latest': ['DEC1.x'], 'discards': ['INC2.x', 'SLD1.t']})
+  GATE PASS  every group input pin is fed by a group node or EXT  {('GT2', 'y'): 'SL1L.inner', ('EQ2', 'x'): 'TN1.outer', ('GT2', 'x'): 'TN1.outer', ('AND1', 'x'): 'EQ2.x = y?', ('AND1', 'y'): 'GT2.x > y?', ('DEC1', 'x'): 'LRL1.value', ('SLL1', 'f'): 'DEC1.x-1', ('SLL1', 't'): 'TN1.outer', ('SLL1', 's'): 'AND1.x .and. y?', ('INC2', 'x'): 'SD1L.inner', ('SLD1', 't'): 'SD1L.inner', ('SLD1', 'f'): 'INC2.x+1', ('SLD1', 's'): 'AND1.x .and. y?', ('EQ2', 'y'): 'IAN1.el
+  FACT  v17 wires carrying valid out of the group: [('p4_rbA_s', 'RB1.s'), ('p4_rbB_s', 'RB2.s'), ('p4_rbC_s', 'RB3.s'), ('p4_rbD_s', 'RB4.s'), ('p4_rbE_s', 'RB5.s'), ('p4_rbF_s', 'RB6.s'), ('p4_rbR_s', 'RB7.s')]
+  GATE PASS  valid reaches the 7 rollback Selects' s (p4_rb*_s)  [('p4_rbA_s', 'RB1.s'), ('p4_rbB_s', 'RB2.s'), ('p4_rbC_s', 'RB3.s'), ('p4_rbD_s', 'RB4.s'), ('p4_rbE_s', 'RB5.s'), ('p4_rbF_s', 'RB6.s'), ('p4_rbR_s', 'RB7.s')]
+  GATE PASS  group outputs == OUTN  ['AND1.x .and. y?', 'SLD1.s? t:f', 'SLL1.s? t:f']
+  FACT  REFERENCE FORMULA (from v17 wires): {'next last': '(n1 if ((n1 == n2) and (n1 > last)) else (Latest - 1))', 'next discards': '(discards if ((n1 == n2) and (n1 > last)) else (discards + 1))', 'valid': '((n1 == n2) and (n1 > last))'}
+  GATE PASS  bed + s01 md5 before  
+  GATE PASS  bed byte copy md5 == bed  
+  GATE PASS  target does not exist yet  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\RingSeqCheck_v0.vi
+  OBSERVED uid 52 -> owner 'TopLevelDiagram' uid 3 | self 'DigitalNumericConstant'#52 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  FACT  TERMS K #52: [(51, '', True)]
+  GATE PASS  T K. unique on #52  [{'term_uid': 51, 'term_name': '', 'is_source': True, 'wire_uid': 0, 'owner_uid': 52, 'owner_class': 'DigitalNumericConstant', 'frame_diagram': 3}]
+  OBSERVED uid 64 -> owner 'TopLevelDiagram' uid 3 | self 'Comparison'#64 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  FACT  TERMS H #64: [(71, 'x < y?', True), (74, 'y', False), (77, 'x', False)]
+  GATE PASS  T H.x < y? unique on #64  [{'term_uid': 71, 'term_name': 'x < y?', 'is_source': True, 'wire_uid': 0, 'owner_uid': 64, 'owner_class': 'Comparison', 'frame_diagram': 3}]
+  GATE PASS  T H.x unique on #64  [{'term_uid': 77, 'term_name': 'x', 'is_source': False, 'wire_uid': 0, 'owner_uid': 64, 'owner_class': 'Comparison', 'frame_diagram': 3}]
+  GATE PASS  T H.y unique on #64  [{'term_uid': 74, 'term_name': 'y', 'is_source': False, 'wire_uid': 0, 'owner_uid': 64, 'owner_class': 'Comparison', 'frame_diagram': 3}]
+  GATE PASS  T H.y = #74  [(74, 64, 'y', 0)]
+  GATE PASS  T K. = #51  [(51, 52, '', 0)]
+  FACT  WIRE scaffold H.y <- K (n1): {'wire_uid': 88, 'broken': False, 'sink_echo': 74, 'src_echo': 51, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  wire scaffold H.y <- K (n1) err '' and Is Broken? False  {'wire_uid': 88, 'broken': False, 'sink_echo': 74, 'src_echo': 51, 'err': '', 'purged': 0, 'invoke_left': []}
+  FACT  PANEL n1: {'ret': ([{'i': 0, 'class': 'ControlTerminal', 'uid': 84, 'pos': (146, 46), 'owner': 'TopLevelDiagram'}], 'x'), 'panel': [{'label': 'x', 'indicator': False, 'uid': 61, 'is_source': True, 'wire': 97, 'term_err': 0, 'wire_err': 0}], 'echo': 64}
+  GATE PASS  panel object n1: node echo #64, one new panel object wired, one new ControlTerminal  (64, [{'label': 'x', 'indicator': False, 'uid': 61, 'is_source': True, 'wire': 97, 'term_err': 0, 'wire_err': 0}], [{'i': 0, 'class': 'ControlTerminal', 'uid': 84, 'pos': (146, 46), 'owner': 'TopLevelDiagram'}])
+  FACT  DELETE #64 Comparison sent (index 0): [64]
+  FACT  RBW n1: (0, 1)
+  OBSERVED uid 44 -> owner 'TopLevelDiagram' uid 3 | self 'Comparison'#44 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  FACT  TERMS H #44: [(70, 'x < y?', True), (73, 'y', False), (76, 'x', False)]
+  GATE PASS  T H.x < y? unique on #44  [{'term_uid': 70, 'term_name': 'x < y?', 'is_source': True, 'wire_uid': 0, 'owner_uid': 44, 'owner_class': 'Comparison', 'frame_diagram': 3}]
+  GATE PASS  T H.x unique on #44  [{'term_uid': 76, 'term_name': 'x', 'is_source': False, 'wire_uid': 0, 'owner_uid': 44, 'owner_class': 'Comparison', 'frame_diagram': 3}]
+  GATE PASS  T H.y unique on #44  [{'term_uid': 73, 'term_name': 'y', 'is_source': False, 'wire_uid': 0, 'owner_uid': 44, 'owner_class': 'Comparison', 'frame_diagram': 3}]
+  GATE PASS  T H.y = #73  [(73, 44, 'y', 0)]
+  GATE PASS  T K. = #51  [(51, 52, '', 0)]
+  FACT  WIRE scaffold H.y <- K (n2): {'wire_uid': 93, 'broken': False, 'sink_echo': 73, 'src_echo': 51, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  wire scaffold H.y <- K (n2) err '' and Is Broken? False  {'wire_uid': 93, 'broken': False, 'sink_echo': 73, 'src_echo': 51, 'err': '', 'purged': 0, 'invoke_left': []}
+  FACT  PANEL n2: {'ret': ([{'i': 1, 'class': 'ControlTerminal', 'uid': 100, 'pos': (146, 166), 'owner': 'TopLevelDiagram'}], 'x 2'), 'panel': [{'label': 'x 2', 'indicator': False, 'uid': 86, 'is_source': True, 'wire': 110, 'term_err': 0, 'wire_err': 0}], 'echo': 44}
+  GATE PASS  panel object n2: node echo #44, one new panel object wired, one new ControlTerminal  (44, [{'label': 'x 2', 'indicator': False, 'uid': 86, 'is_source': True, 'wire': 110, 'term_err': 0, 'wire_err': 0}], [{'i': 1, 'class': 'ControlTerminal', 'uid': 100, 'pos': (146, 166), 'owner': 'TopLevelDiagram'}])
+  FACT  DELETE #44 Comparison sent (index 0): [44]
+  FACT  RBW n2: (0, 1)
+  OBSERVED uid 44 -> owner 'TopLevelDiagram' uid 3 | self 'Comparison'#44 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  FACT  TERMS H #44: [(70, 'x < y?', True), (73, 'y', False), (76, 'x', False)]
+  GATE PASS  T H.x < y? unique on #44  [{'term_uid': 70, 'term_name': 'x < y?', 'is_source': True, 'wire_uid': 0, 'owner_uid': 44, 'owner_class': 'Comparison', 'frame_diagram': 3}]
+  GATE PASS  T H.x unique on #44  [{'term_uid': 76, 'term_name': 'x', 'is_source': False, 'wire_uid': 0, 'owner_uid': 44, 'owner_class': 'Comparison', 'frame_diagram': 3}]
+  GATE PASS  T H.y unique on #44  [{'term_uid': 73, 'term_name': 'y', 'is_source': False, 'wire_uid': 0, 'owner_uid': 44, 'owner_class': 'Comparison', 'frame_diagram': 3}]
+  GATE PASS  T H.y = #73  [(73, 44, 'y', 0)]
+  GATE PASS  T K. = #51  [(51, 52, '', 0)]
+  FACT  WIRE scaffold H.y <- K (last): {'wire_uid': 106, 'broken': False, 'sink_echo': 73, 'src_echo': 51, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  wire scaffold H.y <- K (last) err '' and Is Broken? False  {'wire_uid': 106, 'broken': False, 'sink_echo': 73, 'src_echo': 51, 'err': '', 'purged': 0, 'invoke_left': []}
+  FACT  PANEL last: {'ret': ([{'i': 2, 'class': 'ControlTerminal', 'uid': 113, 'pos': (146, 286), 'owner': 'TopLevelDiagram'}], 'x 3'), 'panel': [{'label': 'x 3', 'indicator': False, 'uid': 93, 'is_source': True, 'wire': 123, 'term_err': 0, 'wire_err': 0}], 'echo': 44}
+  GATE PASS  panel object last: node echo #44, one new panel object wired, one new ControlTerminal  (44, [{'label': 'x 3', 'indicator': False, 'uid': 93, 'is_source': True, 'wire': 123, 'term_err': 0, 'wire_err': 0}], [{'i': 2, 'class': 'ControlTerminal', 'uid': 113, 'pos': (146, 286), 'owner': 'TopLevelDiagram'}])
+  FACT  DELETE #44 Comparison sent (index 0): [44]
+  FACT  RBW last: (0, 1)
+  OBSERVED uid 44 -> owner 'TopLevelDiagram' uid 3 | self 'Comparison'#44 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  FACT  TERMS H #44: [(70, 'x < y?', True), (73, 'y', False), (76, 'x', False)]
+  GATE PASS  T H.x < y? unique on #44  [{'term_uid': 70, 'term_name': 'x < y?', 'is_source': True, 'wire_uid': 0, 'owner_uid': 44, 'owner_class': 'Comparison', 'frame_diagram': 3}]
+  GATE PASS  T H.x unique on #44  [{'term_uid': 76, 'term_name': 'x', 'is_source': False, 'wire_uid': 0, 'owner_uid': 44, 'owner_class': 'Comparison', 'frame_diagram': 3}]
+  GATE PASS  T H.y unique on #44  [{'term_uid': 73, 'term_name': 'y', 'is_source': False, 'wire_uid': 0, 'owner_uid': 44, 'owner_class': 'Comparison', 'frame_diagram': 3}]
+  GATE PASS  T H.y = #73  [(73, 44, 'y', 0)]
+  GATE PASS  T K. = #51  [(51, 52, '', 0)]
+  FACT  WIRE scaffold H.y <- K (Latest): {'wire_uid': 119, 'broken': False, 'sink_echo': 73, 'src_echo': 51, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  wire scaffold H.y <- K (Latest) err '' and Is Broken? False  {'wire_uid': 119, 'broken': False, 'sink_echo': 73, 'src_echo': 51, 'err': '', 'purged': 0, 'invoke_left': []}
+  FACT  PANEL Latest: {'ret': ([{'i': 3, 'class': 'ControlTerminal', 'uid': 126, 'pos': (146, 406), 'owner': 'TopLevelDiagram'}], 'x 4'), 'panel': [{'label': 'x 4', 'indicator': False, 'uid': 106, 'is_source': True, 'wire': 136, 'term_err': 0, 'wire_err': 0}], 'echo': 44}
+  GATE PASS  panel object Latest: node echo #44, one new panel object wired, one new ControlTerminal  (44, [{'label': 'x 4', 'indicator': False, 'uid': 106, 'is_source': True, 'wire': 136, 'term_err': 0, 'wire_err': 0}], [{'i': 3, 'class': 'ControlTerminal', 'uid': 126, 'pos': (146, 406), 'owner': 'TopLevelDiagram'}])
+  FACT  DELETE #44 Comparison sent (index 0): [44]
+  FACT  RBW Latest: (0, 1)
+  OBSERVED uid 44 -> owner 'TopLevelDiagram' uid 3 | self 'Comparison'#44 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  FACT  TERMS H #44: [(70, 'x < y?', True), (73, 'y', False), (76, 'x', False)]
+  GATE PASS  T H.x < y? unique on #44  [{'term_uid': 70, 'term_name': 'x < y?', 'is_source': True, 'wire_uid': 0, 'owner_uid': 44, 'owner_class': 'Comparison', 'frame_diagram': 3}]
+  GATE PASS  T H.x unique on #44  [{'term_uid': 76, 'term_name': 'x', 'is_source': False, 'wire_uid': 0, 'owner_uid': 44, 'owner_class': 'Comparison', 'frame_diagram': 3}]
+  GATE PASS  T H.y unique on #44  [{'term_uid': 73, 'term_name': 'y', 'is_source': False, 'wire_uid': 0, 'owner_uid': 44, 'owner_class': 'Comparison', 'frame_diagram': 3}]
+  GATE PASS  T H.y = #73  [(73, 44, 'y', 0)]
+  GATE PASS  T K. = #51  [(51, 52, '', 0)]
+  FACT  WIRE scaffold H.y <- K (discards): {'wire_uid': 132, 'broken': False, 'sink_echo': 73, 'src_echo': 51, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  wire scaffold H.y <- K (discards) err '' and Is Broken? False  {'wire_uid': 132, 'broken': False, 'sink_echo': 73, 'src_echo': 51, 'err': '', 'purged': 0, 'invoke_left': []}
+  FACT  PANEL discards: {'ret': ([{'i': 4, 'class': 'ControlTerminal', 'uid': 139, 'pos': (146, 526), 'owner': 'TopLevelDiagram'}], 'x 5'), 'panel': [{'label': 'x 5', 'indicator': False, 'uid': 119, 'is_source': True, 'wire': 149, 'term_err': 0, 'wire_err': 0}], 'echo': 44}
+  GATE PASS  panel object discards: node echo #44, one new panel object wired, one new ControlTerminal  (44, [{'label': 'x 5', 'indicator': False, 'uid': 119, 'is_source': True, 'wire': 149, 'term_err': 0, 'wire_err': 0}], [{'i': 4, 'class': 'ControlTerminal', 'uid': 139, 'pos': (146, 526), 'owner': 'TopLevelDiagram'}])
+  FACT  DELETE #44 Comparison sent (index 0): [44]
+  FACT  RBW discards: (0, 1)
+  FACT  DELETE #52 Constant sent (index 0): [52]
+  FACT  RBW K: (0, 1)
+  GATE PASS  T n1 = #84  [(84, 3, 'x', 0)]
+  GATE PASS  T n2 = #100  [(100, 3, 'x 2', 0)]
+  GATE PASS  T last = #113  [(113, 3, 'x 3', 0)]
+  GATE PASS  T Latest = #126  [(126, 3, 'x 4', 0)]
+  GATE PASS  T discards = #139  [(139, 3, 'x 5', 0)]
+  GATE PASS  scaffold end: Constant {} Comparison {}, 5 controls unwired  {'const': [], 'cmp': [], 'wires': {'n1': 0, 'n2': 0, 'last': 0, 'Latest': 0, 'discards': 0}}
+  OBSERVED uid 43 -> owner 'TopLevelDiagram' uid 3 | self 'Comparison'#43 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  FACT  TERMS EQ2 #43: [(52, 'x = y?', True), (55, 'y', False), (58, 'x', False)]
+  GATE PASS  T EQ2.x = y? unique on #43  [{'term_uid': 52, 'term_name': 'x = y?', 'is_source': True, 'wire_uid': 0, 'owner_uid': 43, 'owner_class': 'Comparison', 'frame_diagram': 3}]
+  GATE PASS  T EQ2.y unique on #43  [{'term_uid': 55, 'term_name': 'y', 'is_source': False, 'wire_uid': 0, 'owner_uid': 43, 'owner_class': 'Comparison', 'frame_diagram': 3}]
+  GATE PASS  T EQ2.x unique on #43  [{'term_uid': 58, 'term_name': 'x', 'is_source': False, 'wire_uid': 0, 'owner_uid': 43, 'owner_class': 'Comparison', 'frame_diagram': 3}]
+  OBSERVED uid 71 -> owner 'TopLevelDiagram' uid 3 | self 'Comparison'#71 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  FACT  TERMS GT2 #71: [(78, 'x > y?', True), (133, 'y', False), (142, 'x', False)]
+  GATE PASS  T GT2.x > y? unique on #71  [{'term_uid': 78, 'term_name': 'x > y?', 'is_source': True, 'wire_uid': 0, 'owner_uid': 71, 'owner_class': 'Comparison', 'frame_diagram': 3}]
+  GATE PASS  T GT2.y unique on #71  [{'term_uid': 133, 'term_name': 'y', 'is_source': False, 'wire_uid': 0, 'owner_uid': 71, 'owner_class': 'Comparison', 'frame_diagram': 3}]
+  GATE PASS  T GT2.x unique on #71  [{'term_uid': 142, 'term_name': 'x', 'is_source': False, 'wire_uid': 0, 'owner_uid': 71, 'owner_class': 'Comparison', 'frame_diagram': 3}]
+  OBSERVED uid 148 -> owner 'TopLevelDiagram' uid 3 | self 'Function'#148 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  FACT  TERMS AND1 #148: [(155, 'x .and. y?', True), (158, 'y', False), (161, 'x', False)]
+  GATE PASS  T AND1.x .and. y? unique on #148  [{'term_uid': 155, 'term_name': 'x .and. y?', 'is_source': True, 'wire_uid': 0, 'owner_uid': 148, 'owner_class': 'Function', 'frame_diagram': 3}]
+  GATE PASS  T AND1.y unique on #148  [{'term_uid': 158, 'term_name': 'y', 'is_source': False, 'wire_uid': 0, 'owner_uid': 148, 'owner_class': 'Function', 'frame_diagram': 3}]
+  GATE PASS  T AND1.x unique on #148  [{'term_uid': 161, 'term_name': 'x', 'is_source': False, 'wire_uid': 0, 'owner_uid': 148, 'owner_class': 'Function', 'frame_diagram': 3}]
+  OBSERVED uid 167 -> owner 'TopLevelDiagram' uid 3 | self 'Function'#167 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  FACT  TERMS DEC1 #167: [(174, 'x-1', True), (177, 'x', False)]
+  GATE PASS  T DEC1.x-1 unique on #167  [{'term_uid': 174, 'term_name': 'x-1', 'is_source': True, 'wire_uid': 0, 'owner_uid': 167, 'owner_class': 'Function', 'frame_diagram': 3}]
+  GATE PASS  T DEC1.x unique on #167  [{'term_uid': 177, 'term_name': 'x', 'is_source': False, 'wire_uid': 0, 'owner_uid': 167, 'owner_class': 'Function', 'frame_diagram': 3}]
+  OBSERVED uid 183 -> owner 'TopLevelDiagram' uid 3 | self 'Function'#183 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  FACT  TERMS SLL1 #183: [(189, 's? t:f', True), (192, 'f', False), (195, 's', False), (198, 't', False)]
+  GATE PASS  T SLL1.s? t:f unique on #183  [{'term_uid': 189, 'term_name': 's? t:f', 'is_source': True, 'wire_uid': 0, 'owner_uid': 183, 'owner_class': 'Function', 'frame_diagram': 3}]
+  GATE PASS  T SLL1.f unique on #183  [{'term_uid': 192, 'term_name': 'f', 'is_source': False, 'wire_uid': 0, 'owner_uid': 183, 'owner_class': 'Function', 'frame_diagram': 3}]
+  GATE PASS  T SLL1.s unique on #183  [{'term_uid': 195, 'term_name': 's', 'is_source': False, 'wire_uid': 0, 'owner_uid': 183, 'owner_class': 'Function', 'frame_diagram': 3}]
+  GATE PASS  T SLL1.t unique on #183  [{'term_uid': 198, 'term_name': 't', 'is_source': False, 'wire_uid': 0, 'owner_uid': 183, 'owner_class': 'Function', 'frame_diagram': 3}]
+  OBSERVED uid 204 -> owner 'TopLevelDiagram' uid 3 | self 'Function'#204 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  FACT  TERMS SLD1 #204: [(210, 's? t:f', True), (213, 'f', False), (216, 's', False), (219, 't', False)]
+  GATE PASS  T SLD1.s? t:f unique on #204  [{'term_uid': 210, 'term_name': 's? t:f', 'is_source': True, 'wire_uid': 0, 'owner_uid': 204, 'owner_class': 'Function', 'frame_diagram': 3}]
+  GATE PASS  T SLD1.f unique on #204  [{'term_uid': 213, 'term_name': 'f', 'is_source': False, 'wire_uid': 0, 'owner_uid': 204, 'owner_class': 'Function', 'frame_diagram': 3}]
+  GATE PASS  T SLD1.s unique on #204  [{'term_uid': 216, 'term_name': 's', 'is_source': False, 'wire_uid': 0, 'owner_uid': 204, 'owner_class': 'Function', 'frame_diagram': 3}]
+  GATE PASS  T SLD1.t unique on #204  [{'term_uid': 219, 'term_name': 't', 'is_source': False, 'wire_uid': 0, 'owner_uid': 204, 'owner_class': 'Function', 'frame_diagram': 3}]
+  OBSERVED uid 225 -> owner 'TopLevelDiagram' uid 3 | self 'Function'#225 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  FACT  TERMS INC2 #225: [(232, 'x+1', True), (235, 'x', False)]
+  GATE PASS  T INC2.x+1 unique on #225  [{'term_uid': 232, 'term_name': 'x+1', 'is_source': True, 'wire_uid': 0, 'owner_uid': 225, 'owner_class': 'Function', 'frame_diagram': 3}]
+  GATE PASS  T INC2.x unique on #225  [{'term_uid': 235, 'term_name': 'x', 'is_source': False, 'wire_uid': 0, 'owner_uid': 225, 'owner_class': 'Function', 'frame_diagram': 3}]
+  FACT  created (as -> uid, label): ({'EQ2': 43, 'GT2': 71, 'AND1': 148, 'DEC1': 167, 'SLL1': 183, 'SLD1': 204, 'INC2': 225}, {'EQ2': 'Equal?', 'GT2': 'Greater?', 'AND1': 'And', 'DEC1': 'Decrement', 'SLL1': 'Select', 'SLD1': 'Select', 'INC2': 'Increment'})
+  GATE PASS  PRIM gate: every created node's label == v17 prim  {'EQ2': 'Equal?', 'GT2': 'Greater?', 'AND1': 'And', 'DEC1': 'Decrement', 'SLL1': 'Select', 'SLD1': 'Select', 'INC2': 'Increment'}
+  GATE PASS  T DEC1.x = #177  [(177, 167, 'x', 0)]
+  GATE PASS  T Latest = #126  [(126, 3, 'x 4', 0)]
+  FACT  WIRE DEC1.x <- LRL1.value: {'wire_uid': 70, 'broken': False, 'sink_echo': 177, 'src_echo': 126, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  wire DEC1.x <- LRL1.value err '' and Is Broken? False  {'wire_uid': 70, 'broken': False, 'sink_echo': 177, 'src_echo': 126, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  T EQ2.x = #58  [(58, 43, 'x', 0)]
+  GATE PASS  T n1 = #84  [(84, 3, 'x', 0)]
+  FACT  WIRE EQ2.x <- TN1.outer: {'wire_uid': 74, 'broken': False, 'sink_echo': 58, 'src_echo': 84, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  wire EQ2.x <- TN1.outer err '' and Is Broken? False  {'wire_uid': 74, 'broken': False, 'sink_echo': 58, 'src_echo': 84, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  T EQ2.y = #55  [(55, 43, 'y', 0)]
+  GATE PASS  T n2 = #100  [(100, 3, 'x 2', 0)]
+  FACT  WIRE EQ2.y <- IAN1.element: {'wire_uid': 146, 'broken': False, 'sink_echo': 55, 'src_echo': 100, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  wire EQ2.y <- IAN1.element err '' and Is Broken? False  {'wire_uid': 146, 'broken': False, 'sink_echo': 55, 'src_echo': 100, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  T GT2.x = #142  [(142, 71, 'x', 0)]
+  GATE PASS  T n1 = #84  [(84, 3, 'x', 74)]
+  FACT  WIRE GT2.x <- TN1.outer: {'wire_uid': 74, 'broken': False, 'sink_echo': 142, 'src_echo': 84, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  wire GT2.x <- TN1.outer err '' and Is Broken? False  {'wire_uid': 74, 'broken': False, 'sink_echo': 142, 'src_echo': 84, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  T GT2.y = #133  [(133, 71, 'y', 0)]
+  GATE PASS  T last = #113  [(113, 3, 'x 3', 0)]
+  FACT  WIRE GT2.y <- SL1L.inner: {'wire_uid': 150, 'broken': False, 'sink_echo': 133, 'src_echo': 113, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  wire GT2.y <- SL1L.inner err '' and Is Broken? False  {'wire_uid': 150, 'broken': False, 'sink_echo': 133, 'src_echo': 113, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  T INC2.x = #235  [(235, 225, 'x', 0)]
+  GATE PASS  T discards = #139  [(139, 3, 'x 5', 0)]
+  FACT  WIRE INC2.x <- SD1L.inner: {'wire_uid': 164, 'broken': False, 'sink_echo': 235, 'src_echo': 139, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  wire INC2.x <- SD1L.inner err '' and Is Broken? False  {'wire_uid': 164, 'broken': False, 'sink_echo': 235, 'src_echo': 139, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  T AND1.x = #161  [(161, 148, 'x', 0)]
+  GATE PASS  T EQ2.x = y? = #52  [(52, 43, 'x = y?', 0)]
+  FACT  WIRE AND1.x <- EQ2.x = y?: {'wire_uid': 168, 'broken': False, 'sink_echo': 161, 'src_echo': 52, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  wire AND1.x <- EQ2.x = y? err '' and Is Broken? False  {'wire_uid': 168, 'broken': False, 'sink_echo': 161, 'src_echo': 52, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  T AND1.y = #158  [(158, 148, 'y', 0)]
+  GATE PASS  T GT2.x > y? = #78  [(78, 71, 'x > y?', 0)]
+  FACT  WIRE AND1.y <- GT2.x > y?: {'wire_uid': 171, 'broken': False, 'sink_echo': 158, 'src_echo': 78, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  wire AND1.y <- GT2.x > y? err '' and Is Broken? False  {'wire_uid': 171, 'broken': False, 'sink_echo': 158, 'src_echo': 78, 'err': '', 'purged': 0, 'invoke_left': []}
+  FACT  PANEL valid: {'ret': [{'i': 5, 'class': 'ControlTerminal', 'uid': 207, 'pos': (980, 69), 'owner': 'TopLevelDiagram'}], 'panel': [{'label': 'x .and. y?', 'indicator': True, 'uid': 182, 'is_source': False, 'wire': 238, 'term_err': 0, 'wire_err': 0}], 'echo': 148}
+  GATE PASS  panel object valid: node echo #148, one new panel object wired, one new ControlTerminal  (148, [{'label': 'x .and. y?', 'indicator': True, 'uid': 182, 'is_source': False, 'wire': 238, 'term_err': 0, 'wire_err': 0}], [{'i': 5, 'class': 'ControlTerminal', 'uid': 207, 'pos': (980, 69), 'owner': 'TopLevelDiagram'}])
+  GATE PASS  T SLD1.f = #213  [(213, 204, 'f', 0)]
+  GATE PASS  T INC2.x+1 = #232  [(232, 225, 'x+1', 0)]
+  FACT  WIRE SLD1.f <- INC2.x+1: {'wire_uid': 201, 'broken': False, 'sink_echo': 213, 'src_echo': 232, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  wire SLD1.f <- INC2.x+1 err '' and Is Broken? False  {'wire_uid': 201, 'broken': False, 'sink_echo': 213, 'src_echo': 232, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  T SLD1.s = #216  [(216, 204, 's', 0)]
+  GATE PASS  T AND1.x .and. y? = #155  [(155, 148, 'x .and. y?', 238)]
+  FACT  WIRE SLD1.s <- AND1.x .and. y?: {'wire_uid': 238, 'broken': False, 'sink_echo': 216, 'src_echo': 155, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  wire SLD1.s <- AND1.x .and. y? err '' and Is Broken? False  {'wire_uid': 238, 'broken': False, 'sink_echo': 216, 'src_echo': 155, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  T SLD1.t = #219  [(219, 204, 't', 0)]
+  GATE PASS  T discards = #139  [(139, 3, 'x 5', 164)]
+  FACT  WIRE SLD1.t <- SD1L.inner: {'wire_uid': 164, 'broken': False, 'sink_echo': 219, 'src_echo': 139, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  wire SLD1.t <- SD1L.inner err '' and Is Broken? False  {'wire_uid': 164, 'broken': False, 'sink_echo': 219, 'src_echo': 139, 'err': '', 'purged': 0, 'invoke_left': []}
+  FACT  PANEL next discards: {'ret': [{'i': 6, 'class': 'ControlTerminal', 'uid': 247, 'pos': (763, 294), 'owner': 'TopLevelDiagram'}], 'panel': [{'label': 's? t:f', 'indicator': True, 'uid': 223, 'is_source': False, 'wire': 258, 'term_err': 0, 'wire_err': 0}], 'echo': 204}
+  GATE PASS  panel object next discards: node echo #204, one new panel object wired, one new ControlTerminal  (204, [{'label': 's? t:f', 'indicator': True, 'uid': 223, 'is_source': False, 'wire': 258, 'term_err': 0, 'wire_err': 0}], [{'i': 6, 'class': 'ControlTerminal', 'uid': 247, 'pos': (763, 294), 'owner': 'TopLevelDiagram'}])
+  GATE PASS  T SLL1.f = #192  [(192, 183, 'f', 0)]
+  GATE PASS  T DEC1.x-1 = #174  [(174, 167, 'x-1', 0)]
+  FACT  WIRE SLL1.f <- DEC1.x-1: {'wire_uid': 249, 'broken': False, 'sink_echo': 192, 'src_echo': 174, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  wire SLL1.f <- DEC1.x-1 err '' and Is Broken? False  {'wire_uid': 249, 'broken': False, 'sink_echo': 192, 'src_echo': 174, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  T SLL1.s = #195  [(195, 183, 's', 0)]
+  GATE PASS  T AND1.x .and. y? = #155  [(155, 148, 'x .and. y?', 238)]
+  FACT  WIRE SLL1.s <- AND1.x .and. y?: {'wire_uid': 238, 'broken': False, 'sink_echo': 195, 'src_echo': 155, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  wire SLL1.s <- AND1.x .and. y? err '' and Is Broken? False  {'wire_uid': 238, 'broken': False, 'sink_echo': 195, 'src_echo': 155, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  T SLL1.t = #198  [(198, 183, 't', 0)]
+  GATE PASS  T n1 = #84  [(84, 3, 'x', 74)]
+  FACT  WIRE SLL1.t <- TN1.outer: {'wire_uid': 74, 'broken': False, 'sink_echo': 198, 'src_echo': 84, 'err': '', 'purged': 0, 'invoke_left': []}
+  GATE PASS  wire SLL1.t <- TN1.outer err '' and Is Broken? False  {'wire_uid': 74, 'broken': False, 'sink_echo': 198, 'src_echo': 84, 'err': '', 'purged': 0, 'invoke_left': []}
+  FACT  PANEL next last: {'ret': [{'i': 7, 'class': 'ControlTerminal', 'uid': 266, 'pos': (543, 294), 'owner': 'TopLevelDiagram'}], 'panel': [{'label': 's? t:f 2', 'indicator': True, 'uid': 252, 'is_source': False, 'wire': 277, 'term_err': 0, 'wire_err': 0}], 'echo': 183}
+  GATE PASS  panel object next last: node echo #183, one new panel object wired, one new ControlTerminal  (183, [{'label': 's? t:f 2', 'indicator': True, 'uid': 252, 'is_source': False, 'wire': 277, 'term_err': 0, 'wire_err': 0}], [{'i': 7, 'class': 'ControlTerminal', 'uid': 266, 'pos': (543, 294), 'owner': 'TopLevelDiagram'}])
+  FACT  input pin types: {'EQ2.x': ('I32', ''), 'EQ2.y': ('I32', ''), 'GT2.y': ('I32', ''), 'DEC1.x': ('I32', ''), 'INC2.x': ('I32', '')}
+  GATE PASS  the 5 control-fed pins are I32  {'EQ2.x': ('I32', ''), 'EQ2.y': ('I32', ''), 'GT2.y': ('I32', ''), 'DEC1.x': ('I32', ''), 'INC2.x': ('I32', '')}
+  FACT  panel: [(61, 'n1', False, 74), (86, 'n2', False, 146), (93, 'last', False, 150), (106, 'Latest', False, 70), (119, 'discards', False, 164), (182, 'valid', True, 238), (223, 'next discards', True, 258), (252, 'next last', True, 277)]
+  GATE PASS  panel == 5 controls + 3 indicators, all wired  [(61, 'n1', False, 74), (86, 'n2', False, 146), (93, 'last', False, 150), (106, 'Latest', False, 70), (119, 'discards', False, 164), (182, 'valid', True, 238), (223, 'next discards', True, 258), (252, 'next last', True, 277)]
+  GATE PASS  every wire Is Broken? False (12 wires)  []
+  FACT  node labels (top): {43: 'Equal?', 71: 'Greater?', 148: 'And', 167: 'Decrement', 183: 'Select', 204: 'Select', 225: 'Increment'}
+  GATE PASS  census: node labels == Equal? 1 Greater? 1 And 1 Decrement 1 Select 2 Increment 1  ['And', 'Decrement', 'Equal?', 'Greater?', 'Increment', 'Select', 'Select']
+  GATE PASS  census: no Constant, no For/While  
+  GATE PASS  ExecState 1  1
+  GATE PASS  pane assign n1 -> 11 err ''  None
+  GATE PASS  pane assign n2 -> 10 err ''  None
+  GATE PASS  pane assign last -> 9 err ''  None
+  GATE PASS  pane assign Latest -> 8 err ''  None
+  GATE PASS  pane assign discards -> 7 err ''  None
+  GATE PASS  pane assign next last -> 3 err ''  None
+  GATE PASS  pane assign next discards -> 2 err ''  None
+  GATE PASS  pane assign valid -> 1 err ''  None
+  FACT  pane read back / saved md5: ({0: None, 1: 'valid', 2: 'next discards', 3: 'next last', 4: None, 5: None, 6: None, 7: 'discards', 8: 'Latest', 9: 'last', 10: 'n2', 11: 'n1'}, '0295a8d349a3b61151cd87797119b9b1')
+  GATE PASS  pane read back: 5 in (11..7) / 3 out (3..1), others free  {0: None, 1: 'valid', 2: 'next discards', 3: 'next last', 4: None, 5: None, 6: None, 7: 'discards', 8: 'Latest', 9: 'last', 10: 'n2', 11: 'n1'}
+  GATE PASS  runs vector 1 (5, 5, 4, 9, 0) -> [5, 0, True] (got [5, 0, True])  
+  GATE PASS  runs vector 2 (5, 5, 5, 9, 0) -> [8, 1, False] (got [8, 1, False])  
+  GATE PASS  runs vector 3 (5, 6, 4, 9, 3) -> [8, 4, False] (got [8, 4, False])  
+  GATE PASS  runs vector 4 (-1, -1, 4, 9, 0) -> [8, 1, False] (got [8, 1, False])  
+  GATE PASS  runs vector 5 (25, 25, 4, 30, 2) -> [25, 2, True] (got [25, 2, True])  
+  GATE PASS  runs vector 6 (0, 0, -1, 0, 0) -> [0, 0, True] (got [0, 0, True])  
+  GATE PASS  runs vector 7 (7, 7, 6, 7, 1) -> [7, 1, True] (got [7, 1, True])  
+  GATE PASS  runs handles flat over the runs (+-100)  [31380, 31388]
+  FACT  handles h0/h1, peak MB: (34001, 31386, '673.6171875')
+  GATE PASS  A LabVIEW gone  
+  GATE PASS  fresh: saved md5 unchanged, ExecState 1  
+  GATE PASS  fresh vector 2 (5, 5, 5, 9, 0) -> [8, 1, False] (got [8, 1, False])  
+  GATE PASS  fresh vector 5 (25, 25, 4, 30, 2) -> [25, 2, True] (got [25, 2, True])  
+  GATE PASS  fresh handles flat over the runs (+-100)  [34016, 34017]
+  GATE PASS  Z LabVIEW gone  
+  GATE PASS  scratch files deleted; bed + s01 md5 unchanged  ['C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c142_4_bdon_101026.vi']
+=== GATES: 121 pass / 0 fail; failing: []
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":121,"fail":0},"first_fail":null,"artefacts":[{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\RingSeqCheck_v0.vi","md5":"0295a8d349a3b61151cd87797119b9b1"}]}
+BGRUN END rc=0 after 197s

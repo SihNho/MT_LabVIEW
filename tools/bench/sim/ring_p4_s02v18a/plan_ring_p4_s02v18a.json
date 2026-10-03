@@ -1,0 +1,649 @@
+{
+ "schema": "stageplan/1",
+ "context": {
+  "s1_key": "D1_s1_copy"
+ },
+ "stage": "ring_p4_s02v18a",
+ "goal": "card 142-5 PASS A: P4 v18 session 2 (ops 25..58), no open_rows",
+ "base": {
+  "path": "tools/bench/sim/ring_p4_s02_s01end/base_provisional.json",
+  "md5": "2d0c2c99a5525713edd638f89229e028",
+  "provisional": true,
+  "sim_of": {
+   "plan": "tools/bench/plan_ring_p4_s01.json",
+   "md5": "f4831031c738c997391b5bcace19d9f0"
+  }
+ },
+ "actions": [
+  {
+   "op": "delete_wire",
+   "id": "p4_rp29048_dwo",
+   "wire_uid": 29168,
+   "why": "ROUTE delete_wire | MEASURED | the old node's output wire (its only other end #29095 t29103); delete_wire = p4_dw_23310 (launched P2a); PD322(b)/PD323(a) repair of bed #29048 (Insert Into Array, diag_c140_4_facts.md) on frame #32464; endpoints from graph_ring_p3b2b_20261002_133824.json (prep_c141_1_census.log)"
+  },
+  {
+   "op": "delete_object",
+   "id": "p4_rp29048_do",
+   "uid": 29048,
+   "why": "ROUTE delete_object | MEASURED | old Insert Into Array #29048; every input wire now also feeds RX3 (no wire loses its last sink, PD321); delete_object = p4_do_10171 (140-3 scratch op 3)"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rp29048_rle_arr",
+   "wire_uid": 29154,
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0 on a wire that KEEPS a sink (RX3.array) - the P3b form (PD256(b)); PD323(a)"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rp29048_rle_idx",
+   "wire_uid": 28367,
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0 on a wire that KEEPS a sink (RX3.index) - the P3b form (PD256(b)); PD323(a)"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rp29048_rle_new",
+   "wire_uid": 28871,
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0 on a wire that KEEPS a sink (RX3.new element/subarray) - the P3b form (PD256(b)); PD323(a)"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rp29048_out",
+   "src": {
+    "uid": -13,
+    "term": "output array"
+   },
+   "dst": {
+    "uid": 29095,
+    "term_uid": 29103
+   },
+   "why": "ROUTE connect same-diagram (connect_nested_v1, bare node source) | MEASURED | P3b p3b_w_*_out pattern; sink = the old output's sink #29095 Local t29103; PD322(b)/PD323(a) repair of bed #29048 (Insert Into Array, diag_c140_4_facts.md) on frame #32464; endpoints from graph_ring_p3b2b_20261002_133824.json (prep_c141_1_census.log)"
+  },
+  {
+   "op": "create",
+   "id": "p4_rp29265_c",
+   "class": "GrowableFunction",
+   "diagram": 32464,
+   "as": "RX4",
+   "prim": "Replace Array Subset",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRAS1D_v0.vi",
+    "uid": 175
+   },
+   "terminals": [
+    {
+     "name": "array",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "output array",
+     "is_source": true,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "index",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "new element/subarray",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE create primitive | MEASURED donor | DonorRAS1D_v0.vi uid 175 label 'Replace Array Subset' run 0..19/3/99 -> len 20 (diag_c140_5_facts.md:11-21); external-donor create_primitive_nested route as DonorErrSel #529 (P3b-1); PD322(b)/PD323(a) repair of bed #29265 (Insert Into Array, diag_c140_4_facts.md) on frame #32464; endpoints from graph_ring_p3b2b_20261002_133824.json (prep_c141_1_census.log)"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rp29265_arr",
+   "src": {
+    "uid": 29264,
+    "term_uid": 29274
+   },
+   "dst": "new:RX4.array",
+   "why": "ROUTE cfw same-diagram BRANCH | MEASURED | source #29264 Local t29274 is WIRED (w29383 -> old #29265) -> connect_route 'cfw' (OpConnectFromWire_v0); same-diagram cfw branch keeps the wire (140-3 scratch op 7 p4_w_stopall_639, diag_c140_3_facts.md:22); PD322(b)/PD323(a) repair of bed #29265 (Insert Into Array, diag_c140_4_facts.md) on frame #32464; endpoints from graph_ring_p3b2b_20261002_133824.js"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rp29265_idx",
+   "src": {
+    "uid": 28413,
+    "term_uid": 28428
+   },
+   "dst": "new:RX4.index",
+   "why": "ROUTE cfw same-diagram BRANCH | UNMEASURED (FS tunnel face source) | source #28413 FlatSequenceOuterTunnel t28428 is WIRED (w28367 -> old #29265) -> connect_route 'cfw' (OpConnectFromWire_v0); same-diagram cfw branch keeps the wire (140-3 scratch op 7 p4_w_stopall_639, diag_c140_3_facts.md:22); PD322(b)/PD323(a) repair of bed #29265 (Insert Into Array, diag_c140_4_facts.md) on frame #32464; endpoi"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rp29265_new",
+   "src": {
+    "uid": 29408,
+    "term_uid": 29410
+   },
+   "dst": "new:RX4.new element/subarray",
+   "why": "ROUTE cfw same-diagram BRANCH | UNMEASURED (FS tunnel face source) | source #29408 FlatSequenceOuterTunnel t29410 is WIRED (w29401 -> old #29265) -> connect_route 'cfw' (OpConnectFromWire_v0); same-diagram cfw branch keeps the wire (140-3 scratch op 7 p4_w_stopall_639, diag_c140_3_facts.md:22); PD322(b)/PD323(a) repair of bed #29265 (Insert Into Array, diag_c140_4_facts.md) on frame #32464; endpoi"
+  },
+  {
+   "op": "delete_wire",
+   "id": "p4_rp29265_dwo",
+   "wire_uid": 29391,
+   "why": "ROUTE delete_wire | MEASURED | the old node's output wire (its only other end #29312 t29332); delete_wire = p4_dw_23310 (launched P2a); PD322(b)/PD323(a) repair of bed #29265 (Insert Into Array, diag_c140_4_facts.md) on frame #32464; endpoints from graph_ring_p3b2b_20261002_133824.json (prep_c141_1_census.log)"
+  },
+  {
+   "op": "delete_object",
+   "id": "p4_rp29265_do",
+   "uid": 29265,
+   "why": "ROUTE delete_object | MEASURED | old Insert Into Array #29265; every input wire now also feeds RX4 (no wire loses its last sink, PD321); delete_object = p4_do_10171 (140-3 scratch op 3)"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rp29265_rle_arr",
+   "wire_uid": 29383,
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0 on a wire that KEEPS a sink (RX4.array) - the P3b form (PD256(b)); PD323(a)"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rp29265_rle_idx",
+   "wire_uid": 28367,
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0 on a wire that KEEPS a sink (RX4.index) - the P3b form (PD256(b)); PD323(a)"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rp29265_rle_new",
+   "wire_uid": 29401,
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0 on a wire that KEEPS a sink (RX4.new element/subarray) - the P3b form (PD256(b)); PD323(a)"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rp29265_out",
+   "src": "new:RX4.output array",
+   "dst": {
+    "uid": 29312,
+    "term_uid": 29332
+   },
+   "why": "ROUTE connect same-diagram (connect_nested_v1, bare node source) | MEASURED | P3b p3b_w_*_out pattern; sink = the old output's sink #29312 Local t29332; PD322(b)/PD323(a) repair of bed #29265 (Insert Into Array, diag_c140_4_facts.md) on frame #32464; endpoints from graph_ring_p3b2b_20261002_133824.json (prep_c141_1_census.log)"
+  },
+  {
+   "op": "create",
+   "id": "p4_rp29316_c",
+   "class": "GrowableFunction",
+   "diagram": 32464,
+   "as": "RX5",
+   "prim": "Replace Array Subset",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRAS1D_v0.vi",
+    "uid": 175
+   },
+   "terminals": [
+    {
+     "name": "array",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "output array",
+     "is_source": true,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "index",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "new element/subarray",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE create primitive | MEASURED donor | DonorRAS1D_v0.vi uid 175 label 'Replace Array Subset' run 0..19/3/99 -> len 20 (diag_c140_5_facts.md:11-21); external-donor create_primitive_nested route as DonorErrSel #529 (P3b-1); PD322(b)/PD323(a) repair of bed #29316 (Insert Into Array, diag_c140_4_facts.md) on frame #32464; endpoints from graph_ring_p3b2b_20261002_133824.json (prep_c141_1_census.log)"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rp29316_arr",
+   "src": {
+    "uid": 29313,
+    "term_uid": 29342
+   },
+   "dst": "new:RX5.array",
+   "why": "ROUTE cfw same-diagram BRANCH | MEASURED | source #29313 Local t29342 is WIRED (w29394 -> old #29316) -> connect_route 'cfw' (OpConnectFromWire_v0); same-diagram cfw branch keeps the wire (140-3 scratch op 7 p4_w_stopall_639, diag_c140_3_facts.md:22); PD322(b)/PD323(a) repair of bed #29316 (Insert Into Array, diag_c140_4_facts.md) on frame #32464; endpoints from graph_ring_p3b2b_20261002_133824.js"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rp29316_idx",
+   "src": {
+    "uid": 28413,
+    "term_uid": 28428
+   },
+   "dst": "new:RX5.index",
+   "why": "ROUTE cfw same-diagram BRANCH | UNMEASURED (FS tunnel face source) | source #28413 FlatSequenceOuterTunnel t28428 is WIRED (w28367 -> old #29316) -> connect_route 'cfw' (OpConnectFromWire_v0); same-diagram cfw branch keeps the wire (140-3 scratch op 7 p4_w_stopall_639, diag_c140_3_facts.md:22); PD322(b)/PD323(a) repair of bed #29316 (Insert Into Array, diag_c140_4_facts.md) on frame #32464; endpoi"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rp29316_new",
+   "src": {
+    "uid": 29411,
+    "term_uid": 29414
+   },
+   "dst": "new:RX5.new element/subarray",
+   "why": "ROUTE cfw same-diagram BRANCH | UNMEASURED (FS tunnel face source) | source #29411 FlatSequenceOuterTunnel t29414 is WIRED (w29244 -> old #29316) -> connect_route 'cfw' (OpConnectFromWire_v0); same-diagram cfw branch keeps the wire (140-3 scratch op 7 p4_w_stopall_639, diag_c140_3_facts.md:22); PD322(b)/PD323(a) repair of bed #29316 (Insert Into Array, diag_c140_4_facts.md) on frame #32464; endpoi"
+  },
+  {
+   "op": "delete_wire",
+   "id": "p4_rp29316_dwo",
+   "wire_uid": 29397,
+   "why": "ROUTE delete_wire | MEASURED | the old node's output wire (its only other end #29380 t29388); delete_wire = p4_dw_23310 (launched P2a); PD322(b)/PD323(a) repair of bed #29316 (Insert Into Array, diag_c140_4_facts.md) on frame #32464; endpoints from graph_ring_p3b2b_20261002_133824.json (prep_c141_1_census.log)"
+  },
+  {
+   "op": "delete_object",
+   "id": "p4_rp29316_do",
+   "uid": 29316,
+   "why": "ROUTE delete_object | MEASURED | old Insert Into Array #29316; every input wire now also feeds RX5 (no wire loses its last sink, PD321); delete_object = p4_do_10171 (140-3 scratch op 3)"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rp29316_rle_arr",
+   "wire_uid": 29394,
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0 on a wire that KEEPS a sink (RX5.array) - the P3b form (PD256(b)); PD323(a)"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rp29316_rle_idx",
+   "wire_uid": 28367,
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0 on a wire that KEEPS a sink (RX5.index) - the P3b form (PD256(b)); PD323(a)"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rp29316_rle_new",
+   "wire_uid": 29244,
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0 on a wire that KEEPS a sink (RX5.new element/subarray) - the P3b form (PD256(b)); PD323(a)"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rp29316_out",
+   "src": "new:RX5.output array",
+   "dst": {
+    "uid": 29380,
+    "term_uid": 29388
+   },
+   "why": "ROUTE connect same-diagram (connect_nested_v1, bare node source) | MEASURED | P3b p3b_w_*_out pattern; sink = the old output's sink #29380 Local t29388; PD322(b)/PD323(a) repair of bed #29316 (Insert Into Array, diag_c140_4_facts.md) on frame #32464; endpoints from graph_ring_p3b2b_20261002_133824.json (prep_c141_1_census.log)"
+  },
+  {
+   "op": "delete_wire",
+   "id": "p4_dw_23310",
+   "wire_uid": 23310,
+   "why": "ROUTE delete_wire | MEASURED | PD295(c) scaffold stop #10171 x=y? -> #10170 cond #23246 (graph step_18: w23310); delete_wire route launched in P2a (plan_ring_p2a_in.json actions 1-4, stage_d1_ring_p2a.log:124)"
+  },
+  {
+   "op": "delete_wire",
+   "id": "p4_dw_23255",
+   "wire_uid": 23255,
+   "why": "ROUTE delete_wire | MEASURED | PD321(b): w23255 (tunnel #23417 inner -> #10171 x,y; graph: its only 2 sinks are #10171's, prep_c140_3_gate.log) deleted BEFORE #10171 instead of RLE after it (RLE -> error 1055, diag_c140_2_scratch.log:72-75); delete_wire route = op 1 p4_dw_23310 (launched P2a)"
+  },
+  {
+   "op": "delete_object",
+   "id": "p4_do_10171",
+   "uid": 10171,
+   "why": "ROUTE delete_object | MEASURED | PD295(c) #10171 = S2 scaffold (stage_d1_s2_loops.log:61-69), not original; delete_object launched in P2a (plan_ring_p2a_in.json actions 5-8; scratch_verify/stagexec.ring_p2a_deletes_pin_20260928_185329.json)"
+  },
+  {
+   "op": "create",
+   "id": "p4_c_stopall_f",
+   "class": "BooleanConstant",
+   "diagram": 4866,
+   "as": "KSF1",
+   "prim": "const_donor",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorBoolF_v0.vi",
+    "uid": 126
+   },
+   "terminals": [
+    {
+     "name": "",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE create const_donor | MEASURED donor | PD313(d)/PD240(b)(c): False constant on FS1 frame #4866 (P2b p2b_c_Num form, launched); DonorBoolF_v0.vi md5 2346e9d8 BooleanConstant uid 126 value False (card 139-3, diag_c139_3_facts.md:11-14, PD315(a))"
+  },
+  {
+   "op": "create",
+   "id": "p4_i_stopall_k",
+   "class": "ControlTerminal",
+   "diagram": 4866,
+   "as": "ISK1",
+   "label": "StopAll",
+   "indicator": true,
+   "born_on": {
+    "uid": "new:KSF1"
+   },
+   "why": "ROUTE create indicator on const | PRECEDENT | PD314: non-latch Boolean indicator StopAll born on its False constant KSF1 on FS1 frame #4866 (initial value False every run, PD313(d)); P2b const-indicator form p2b_i_Num (plan_ring_p2b.json, launched, stage_d1_ring_p2b.py const_born_on -> create_indicator_on_const); replaces v10 p4_i_stopall (UNROUTABLE on CT t642)"
+  },
+  {
+   "op": "create",
+   "id": "p4_lw_stopall_639",
+   "class": "Local",
+   "diagram": 639,
+   "as": "LWS2",
+   "label": "StopAll",
+   "mode": "write",
+   "terminals": [
+    {
+     "name": "StopAll",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE local_write | PRECEDENT | PD314: ONE writer of StopAll = #637 body #639 owning 'stop (end)' t642, written every iteration; local_write in a loop body = v8 p4_lw_bufdiff form (32464); on #639 UNMEASURED"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_stopall_639",
+   "src": {
+    "uid": 642,
+    "term_uid": 642
+   },
+   "dst": "new:LWS2.value",
+   "why": "ROUTE branch | PRECEDENT | PD314: 'stop (end)' t642 (w6929 -> #11639, sink kept) -> LWS2.value, same-diagram BRANCH on #639; src form of v10 p4_x_fd (control t8936 {uid, term_uid})"
+  },
+  {
+   "op": "create",
+   "id": "p4_lr_stop12",
+   "class": "Local",
+   "diagram": 23166,
+   "as": "LRS2",
+   "label": "StopAll",
+   "mode": "read",
+   "terminals": [
+    {
+     "name": "StopAll",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE local_read | PRECEDENT | PD312(d)/PD298(e) LATCH branch: 'stop (end)' Mechanical Action 4 (diag_c138_5_facts.md, OpStopModeB_v0) -> Local of the non-latch indicator StopAll (U4); local of a plan-made indicator = P3b-2 p3b_lr_rotpos (v8 p4_lr_bufdiff11 form); local_read on a base While body ran (plan_l2a3_in.json:16)"
+  }
+ ],
+ "final": false,
+ "finalized": {
+  "base": {
+   "path": "tools/bench/sim/ring_p4_s02_s01end/base_provisional.json",
+   "md5": "2d0c2c99a5525713edd638f89229e028"
+  },
+  "plan_in": {
+   "path": "tools/bench/sim/ring_p4_s02v18a/plan_ring_p4_s02v18a_in.json",
+   "md5": "b58ba518bba8ba1cc487ee9f38f7ca4d"
+  },
+  "last_step": {
+   "path": "tools/bench/sim/ring_p4_s02v18a/step_34_create.json",
+   "md5": "1b2a1dc8b42602128e1a6e8736357735"
+  },
+  "summary": {
+   "path": "tools/bench/sim/ring_p4_s02v18a/summary.json",
+   "md5": "3c909eb6239d314b9c3e4208c9321ad5"
+  },
+  "end_cdiff_rows": [
+   "11261|Terminal|array|0",
+   "11261|Terminal|element|0",
+   "2626|Terminal|array|0",
+   "2626|Terminal|array|1",
+   "2626|Terminal|array|2",
+   "2626|Terminal|array|3",
+   "2626|Terminal|element|0",
+   "2626|Terminal|element|1",
+   "2626|Terminal|element|2",
+   "28083|Terminal|Magnet position|0",
+   "29625|Terminal|index (col)|0",
+   "29973|Terminal|element|1",
+   "376|Terminal|current frame data array in|0",
+   "376|Terminal|frame index|0",
+   "5058|Terminal|Image In|0",
+   "8634|Terminal|index (col)|0"
+  ],
+  "failed": null,
+  "first_divergent": {
+   "n": 0,
+   "op": "base",
+   "id": null,
+   "rows_from_here": 16
+  },
+  "open_rows": [],
+  "open_rows_match": false,
+  "open_rows_match_legacy": false,
+  "open_rows_classed": {
+   "ok": false,
+   "want": [],
+   "c4_n": 0,
+   "c4_keys": 0,
+   "c4_bad": [],
+   "unclassed": []
+  },
+  "cdiff_inputs": {
+   "labels": "node_labels_default",
+   "labels_n": 626,
+   "fs_pairs": "state",
+   "fs_pairs_n": 576
+  },
+  "step_files": [
+   {
+    "n": 0,
+    "op": "base",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_00_base.json",
+    "md5": "c4bdb6b888d70e1210fdae2b4643bb8a"
+   },
+   {
+    "n": 1,
+    "op": "delete_wire",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_01_delete_wire.json",
+    "md5": "b946ab8a98e40651590984d7bf350a75"
+   },
+   {
+    "n": 2,
+    "op": "delete_object",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_02_delete_object.json",
+    "md5": "eda8831d1fe4b3d905d5bb606714d153"
+   },
+   {
+    "n": 3,
+    "op": "wire_remove_loose_ends",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_03_wire_remove_loose_ends.json",
+    "md5": "6dd270f6a128fc38058fec7fa9cfaef9"
+   },
+   {
+    "n": 4,
+    "op": "wire_remove_loose_ends",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_04_wire_remove_loose_ends.json",
+    "md5": "e5dcc24cf314d07305138f0bf7a81948"
+   },
+   {
+    "n": 5,
+    "op": "wire_remove_loose_ends",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_05_wire_remove_loose_ends.json",
+    "md5": "3e7f131b7900c7596321b5d8fbf35f70"
+   },
+   {
+    "n": 6,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_06_wire.json",
+    "md5": "6b3378848e0d869c6fe1117591c1a1c4"
+   },
+   {
+    "n": 7,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_07_create.json",
+    "md5": "1c3c92ef145f588dc79f79e5fc6e7236"
+   },
+   {
+    "n": 8,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_08_wire.json",
+    "md5": "bfb8bd5b16c5623ab7436d379d8d4922"
+   },
+   {
+    "n": 9,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_09_wire.json",
+    "md5": "b28e53f4952487710cbccc6d3063ad34"
+   },
+   {
+    "n": 10,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_10_wire.json",
+    "md5": "2f8e63bbbba54530d7c7415269d883ec"
+   },
+   {
+    "n": 11,
+    "op": "delete_wire",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_11_delete_wire.json",
+    "md5": "7c5a1d41d86f8256d81725dc65b80aa5"
+   },
+   {
+    "n": 12,
+    "op": "delete_object",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_12_delete_object.json",
+    "md5": "458c0929c331a3e22d019b2aa07cf743"
+   },
+   {
+    "n": 13,
+    "op": "wire_remove_loose_ends",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_13_wire_remove_loose_ends.json",
+    "md5": "c9cfaca892588a9d18ea580c84ddb356"
+   },
+   {
+    "n": 14,
+    "op": "wire_remove_loose_ends",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_14_wire_remove_loose_ends.json",
+    "md5": "0c03224278f56162889b0a806d90053d"
+   },
+   {
+    "n": 15,
+    "op": "wire_remove_loose_ends",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_15_wire_remove_loose_ends.json",
+    "md5": "9052acef1ef60749ac700d01bf3dbbfc"
+   },
+   {
+    "n": 16,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_16_wire.json",
+    "md5": "c06823ff88bef41c88c98be55ca7893c"
+   },
+   {
+    "n": 17,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_17_create.json",
+    "md5": "d6430542e474d8d27590c5dff9f442d4"
+   },
+   {
+    "n": 18,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_18_wire.json",
+    "md5": "8fb4f068bc1298dc33679f7e8aac3feb"
+   },
+   {
+    "n": 19,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_19_wire.json",
+    "md5": "98490a8b7c3cc3076fe3d02e5e16e126"
+   },
+   {
+    "n": 20,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_20_wire.json",
+    "md5": "c9b3206a76fccdfed41dc8e7716a4ba5"
+   },
+   {
+    "n": 21,
+    "op": "delete_wire",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_21_delete_wire.json",
+    "md5": "2ff0ef0c85569556c2317c12eb59c8b2"
+   },
+   {
+    "n": 22,
+    "op": "delete_object",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_22_delete_object.json",
+    "md5": "683967f81fa5a16f80df804398d9f29c"
+   },
+   {
+    "n": 23,
+    "op": "wire_remove_loose_ends",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_23_wire_remove_loose_ends.json",
+    "md5": "108605c1963ec1caa5e6fe0f3e0402e4"
+   },
+   {
+    "n": 24,
+    "op": "wire_remove_loose_ends",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_24_wire_remove_loose_ends.json",
+    "md5": "b6ea35ff6522d8988ecc1eeadfe8e249"
+   },
+   {
+    "n": 25,
+    "op": "wire_remove_loose_ends",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_25_wire_remove_loose_ends.json",
+    "md5": "78cbac4449e0ab7895fe0a4889203598"
+   },
+   {
+    "n": 26,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_26_wire.json",
+    "md5": "81235f49b502d78e96568d5f06ee2e20"
+   },
+   {
+    "n": 27,
+    "op": "delete_wire",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_27_delete_wire.json",
+    "md5": "088f73188a674bb921a1cc09fa6796e9"
+   },
+   {
+    "n": 28,
+    "op": "delete_wire",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_28_delete_wire.json",
+    "md5": "30f0ea858cb7a548c12bbddd6aa7d27e"
+   },
+   {
+    "n": 29,
+    "op": "delete_object",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_29_delete_object.json",
+    "md5": "ee5350bd32b91f6501c4462e7954f4e3"
+   },
+   {
+    "n": 30,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_30_create.json",
+    "md5": "bcec56a10a30d3b352a8d47d98d04840"
+   },
+   {
+    "n": 31,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_31_create.json",
+    "md5": "e88914f9f9e5aa91ee717ba4744ac91d"
+   },
+   {
+    "n": 32,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_32_create.json",
+    "md5": "c56cbd23a2d448a187d6857235c69f59"
+   },
+   {
+    "n": 33,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_33_wire.json",
+    "md5": "c4eda81f04f0576f2604dd4285545f21"
+   },
+   {
+    "n": 34,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_s02v18a/step_34_create.json",
+    "md5": "1b2a1dc8b42602128e1a6e8736357735"
+   }
+  ],
+  "undecided": 0,
+  "at": "2026-10-03 10:30:53",
+  "fs_routes": {},
+  "fs_border_gate": {
+   "status": "PASS",
+   "unmeasured": [],
+   "used": {},
+   "note": "graph has no fs_measured"
+  }
+ }
+}

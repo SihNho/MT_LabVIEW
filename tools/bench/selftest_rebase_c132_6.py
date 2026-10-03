@@ -32,6 +32,9 @@ def gate(name, ok, val=""):
 PLAN = "tools/bench/plan_ring_p3b2.json"
 GRAPH = os.path.join(R, "tools/bench/graph_ring_p3b1_20261002_073225.json")
 plan = J(PLAN)
+if not (plan.get("base") or {}).get("sim_of"):        # card 142-5: plan_ring_p3b2.json was rebased in 133-3 (no sim_of since);
+    PLAN = "tools/bench/plan_ring_p3b2_in.json"         # its provisional stage input holds the same 39 actions (selftest_rebase_c133_3 T4)
+    plan = J(PLAN)
 print("  FACT  plan {0} md5 {1} base {2}".format(PLAN, SP.md5(os.path.join(R, PLAN)), plan["base"]), flush=True)
 pv = J(plan["base"]["path"])
 pn = J(plan["base"]["sim_of"]["plan"])

@@ -1,0 +1,33 @@
+{
+ "schema": "task/1", "id": "142-5", "kind": "build",
+ "goal": "OFFLINE tooling, ALONE: rebind keys terminals by (uid, owner, name) + self-test from 142-P1's refusal; then v18 session 2 rebased on the s01 graph, dry + prerun + X10 + EL + recipes",
+ "why": "PD330(d)/PD331(d), docs/d1/ring-p4b.md:109,134. --rebase refused on s01's re-used terminal uids 28004/28979 (prep_c142_p1_rebase.log:3; PD325(a)). Next cycle's first act is the session-2 LabVIEW build, so it must be launch-ready.",
+ "inputs": [
+  {"path": "docs/d1/ring-p4b.md", "md5": "5d5e899007d76bcdd2ec58a7a7a5627e"},
+  {"path": "tools/bench/prep_c142_p1_rebase.log", "md5": "3d09104da783d33c495a4cc52a1986e4"},
+  {"path": "tools/bench/plan_ring_p4_v18.json", "md5": "2ea6cafa7d368dc7a054346d398daa3e"},
+  {"path": "tools/bench/prep_c142_p2_sessions.json", "md5": "bed4b9f445f30495423caf96e7ab8a7a"},
+  {"path": "tools/bench/graph_ring_p4s01_20261002_234419.json", "md5": "f697a0b21c3bdb481207318812a0adad"}
+ ],
+ "pass": [
+  "rebind/rebase binding compares terminals by (uid, owner, name); new self-test fails before / passes after on the 142-P1 case; old rebind/rebase self-tests + c125_1 green or explained",
+  "plan_ring_p4_s02v18.json = v18 ops 25..cut (longest dependency-closed prefix with X10 <= 680 at start 596.5), --rebase on the s01 graph PASS, dry PASS, prerun PASS",
+  "pred file with Error List count (one item per created node with an unwired input) + recipe pair stage_d1_ring_p4_s02v18.py/_scratch.py dry-run; --scratch-required exit code reported"
+ ],
+ "outputs": ["tools/bench/plan_ring_p4_s02v18.json", "tools/bench/prep_c142_5_facts.md"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/stage_prerun.py", "tools/stagexec.py", "tools/stagekit.py", "tools/stagesim.py", "tools/bench/selftest_rebind*", "tools/bench/selftest_rebase*", "tools/bench/c125_1*", "tools/bench/prep_c142_5*", "tools/bench/plan_ring_p4_s02v18*", "tools/bench/sim/**", "tools/recipes/stage_d1_ring_p4_s02v18*", "docs/d1/tooling.md"],
+  "status_edit": false, "git_commit": true, "peers": ["hypothesis", "audit"]},
+ "budget": {"failures": 2, "minutes": 60},
+ "unblocks": "M3",
+ "requires": [
+  {"kind": "file", "name": "tools/bench/selftest_rebind_c132_5.py"},
+  {"kind": "file", "name": "tools/bench/c125_1_offline_measure.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p4_s02.py"}
+ ],
+ "rules": [
+  "Offline only; no LabVIEW card runs beside this one (PD281(a))",
+  "Edit/Write tools only; each new script <=120 lines on stagekit",
+  "Return at the first unexpected result; the cut is reported, judgement accepts it"
+ ]
+}

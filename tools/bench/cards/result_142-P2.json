@@ -1,0 +1,27 @@
+{"schema": "result/1", "id": "142-P2", "status": "PASS", "gates": {"pass": 13, "fail": 0}, "first_fail": null, "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/plan_ring_p4_v18.json", "md5": "2ea6cafa7d368dc7a054346d398daa3e"},
+  {"path": "tools/bench/plan_ring_p4_v18_in.json", "md5": "ae6861c6bb36d8c44eee3634240f6eb2"},
+  {"path": "tools/bench/plan_ring_p4_v18_meta.json", "md5": "8425195c5d894446dd06723af4143f55"},
+  {"path": "tools/bench/prep_c142_p2_sessions.json", "md5": "bed4b9f445f30495423caf96e7ab8a7a"},
+  {"path": "tools/bench/prep_c142_p2_facts.md", "md5": "eee2029e9f9ae014e170ee8b2413d5e8"}
+ ],
+ "facts": [
+  "v18: 235 -> 202 actions (-35 +2), 217 -> 190 ops; PS1 op 79, SQ1 op 88; 19 boundary wires re-pointed by name (prep_c142_p2_mk.log REPOINT lines)",
+  "S1 PS1: 12 terminals, pane slots 1 found/2 min slot/3 min Num/10 last/11 Num + 7 '' sinks, MEASURED (build_ringpickslot_v2.log pane read back)",
+  "S2 SQ1: 8 names PROVISIONAL, flagged in why + plan_ring_p4_v18_meta.json 'provisional' (stageplan/1 forbids extra keys); file existed at run 2 (mk.log:6)",
+  "stagesim SubVI-from-file: YES via the plan's declared terminals (stagesim.py:2092,2156-2165; stagexec.py:438-441); the .vi is never read offline",
+  "Replay END 202 steps no error; final false, open_rows_match false, route_check PASS - same as v17 (mk.log RP/FACT lines)",
+  "End cdiff rows v18 == v17 (24 == 24, none differ) (mk.log gate E)",
+  "End edges v17 7932/v18 7927: 127 differ, all name a removed alias/PS1/SQ1 except FMN1's count Tunnel thru-edge (mk.log gate ED)",
+  "X10 at 596.5, limit 680: 6 sessions over ops 51-190, peaks 679.7/677.8/678.8/679.7/679.7/640.3; at 675 also 6 (prep_c142_p2_sessions.json)",
+  "Run 1 FAIL 12/1 was the ED checker ('new:' prefix not stripped); fixed predicate, rerun 13/0 (prep_c142_p2_mk.py touch)",
+  "Memory model has no term for loading the two subVI files when dropped (UNMODELLED)"
+ ],
+ "open": [
+  "SQ1's 8 terminal names/pane must be re-read from RingSeqCheck_v0.vi (card 142-4) before v18 is launched",
+  "Which cut limit for the session table: 680 (memory_model fail_above_mb) or 675 (ring-p4b.md:90)? both give 6 sessions",
+  "NOT committed: git add/commit were refused by the permission layer (flags.git_commit true); the caller commits the listed artefacts"
+ ],
+ "cost": {"usd": null, "minutes": 19, "labview_runs": 0},
+ "note": "Offline only. Files: tools/bench/prep_c142_p2_facts.md, prep_c142_p2_mk.py/.log, prep_c142_p2_q1.py/.log (q1's G2/G5 gate failed on the table's JSON shape, a dump helper defect; data used from its ACT lines)."}

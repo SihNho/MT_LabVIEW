@@ -175,3 +175,8 @@ How to add: see the 5-line note at the top of `docs/d1/INDEX.md`.
        boolean / string / GenClassTagRef constants, every tunnel class, shift registers, Diagram-owned control terminals; and
        the route returns no term_class / owner_class / frame_diagram, which binding needs. So `LVBackend` has NO `read_owners`
        yet: partial reads stay off on LabVIEW until an owner-uid reader op exists (a build card; OPEN in result_chat-S4).
+
+**Tool change, card 142-5 (2026-10-03; applies PD330(d)/PD331(d), no new decision):** `stage_prerun.rebind` files a real terminal
+as OLD only when its identity (term uid, owner uid, name) is in stage N's base (same key as `stagekit.term_key`, PD325(b)); a uid
+LabVIEW re-issued to a created node binds like any created terminal and is logged as `re-issued uid(s)` on the REBIND line.
+Self-test `tools/bench/selftest_rebind_c142_5.py` (142-P1's case): before 1/3 (`selftest_rebind_c142_5_before.log`), after 4/0.

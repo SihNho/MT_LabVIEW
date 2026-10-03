@@ -1,0 +1,36 @@
+{
+ "schema": "task/1", "id": "142-1", "kind": "build",
+ "goal": "Build claudeDev RingPickSlot_v0.vi (P4 slot selection, smallest Num > last = v17 group, see brief) in its own file; RUN it on 7 known vectors, re-run 2 from the saved file in a fresh instance",
+ "why": "User 2026-10-03: P4 is built with subVIs, each RUN on known values before it enters the bed (docs/d1/ring-p4b.md:94-103). Detail and prediction contract: brief_142-1.md",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_142-1.md", "md5": "5e7ec275b68707a49c815dd51ad3609d"},
+  {"path": "tools/bench/plan_ring_p4_v17.json", "md5": "e19d7e142fef66f9e118ae4061e9e718"}
+ ],
+ "pass": [
+  "RingPickSlot_v0.vi saved under claudeDev, ExecState 1, census = Greater? 1 / For 1 / Select 1 / I32 const 2 / Array Max & Min 1 / Less? 1, prim gate PASS, conpane read back (2 in, 3 out)",
+  "7 run vectors got == Python reference exactly; 2 vectors re-run from the saved file in a fresh LabVIEW instance equal",
+  "bed and P4 session-1 file untouched (md5 395118775a52bc90073f4449b99f899d / dc61e193e0376ce760f88fdfcda7087b); handles flat +-100; LabVIEW closed and verified gone"
+ ],
+ "outputs": ["C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\RingPickSlot_v0.vi", "tools/bench/diag_c142_1_facts.md"],
+ "flags": {"labview": "build", "gui": true, "hardware": "none", "run_vi": true,
+  "write": ["tools/bench/diag_c142_1*", "tools/bench/build_ringpickslot*", "tools/recipes/build_ringpickslot*", "tools/bench/scratch_verify/**", "docs/toolkit-capabilities.md"],
+  "status_edit": false, "git_commit": true, "peers": ["hypothesis"]},
+ "budget": {"failures": 2, "minutes": 90},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "EMPTY_v0.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "DonorErrSel_MergeErrors.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "DonorI32Max_v0.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "verb", "name": "create_control", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "create_indicator", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "conpane_assign", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "conpane", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "save", "where": "tools/gscript.py"}
+ ],
+ "rules": [
+  "Never open the bed or the P4 session-1 file for editing; a $work donor is taken from a BYTE COPY of the bed",
+  "Return at the first result that differs from the prediction (finish the step, LabVIEW closed)",
+  "Every new script <=120 lines; Edit/Write tools only, never a heredoc patch",
+  "No motor, no camera, no instrument: the subVI has no I/O"
+ ]
+}

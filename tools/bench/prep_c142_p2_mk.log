@@ -1,0 +1,404 @@
+BGRUN START 2026-10-03 10:08:54 limit 20.0 min: py -u tools/bench/prep_c142_p2_mk.py
+BGRUN PID 26252
+GATE PASS | M0 input md5 == card; RingPickSlot_v0.vi 6fcf153f | {'plan_ring_p4_v17.json': 'e19d7e142fef66f9e118ae4061e9e718', 'brief_142-P2.md': '06ef76b82887dbd24136ee793975ba03', 'prep_c142_p1_subvi_table.md': '2e032d3c8923131ebcc8f7e8b8933e5e', 'build_ringpickslot_v2.log': '4337475f29bafa7b719597fa966b2cb0', 'graph_ring_p3b2b_20261002_133824.json': '50595c62d0332a94bf066538cf20c0ae', 'RingPickSlot_v0.vi': '6fcf153f7b8fecda727f5dcf944faab9'}
+GATE PASS | M1 v17 end step file on its pin | {'path': 'tools/bench/sim/ring_p4_v17/ring_p4_v3/step_235_wire_remove_loose_ends.json', 'md5': 'fdb8e34c60d94ab9121cc7c8ec8ec570'}
+FACT v17 final False | failed None | open_rows_match False | undecided 0 | route_check PASS
+FACT RingSeqCheck_v0.vi exists now: False
+GATE PASS | R0 every named id is in v17 (35 remove, 19 re-point) | []
+FACT removed aliases: ['AMM1', 'AND1', 'DEC1', 'EQ2', 'FMN1', 'GT1', 'GT2', 'INC2', 'KMX1', 'KMX2', 'LT1', 'SLD1', 'SLL1', 'SW1', 'TFB1', 'TFN1', 'TFS1']
+REPOINT ('p4_w_last_gt', 'dst', 'new:GT2.y', 'new:SQ1.last')
+REPOINT ('p4_t_last_out', 'dst', 'new:GT1.y', 'new:PS1.last')
+REPOINT ('p4_w_num_gt', 'dst', 'new:GT1.x', 'new:PS1.Num')
+REPOINT ('p4_w_lt_or', 'src', 'new:LT1.x < y?', 'new:PS1.found')
+REPOINT ('p4_t_n1_in', 'src', 'new:AMM1.min value', 'new:PS1.min Num')
+REPOINT ('p4_t_n1_out', 'dst', 'new:EQ2.x', 'new:SQ1.n1')
+REPOINT ('p4_t_slot_in', 'src', 'new:AMM1.min index (indices)', 'new:PS1.min slot')
+REPOINT ('p4_w_lat_dec', 'dst', 'new:DEC1.x', 'new:SQ1.Latest')
+REPOINT ('p4_w_sel_last', 'src', 'new:SLL1.s? t:f', 'new:SQ1.next last')
+REPOINT ('p4_w_disc_inc', 'dst', 'new:INC2.x', 'new:SQ1.discards')
+REPOINT ('p4_w_seld_r', 'src', 'new:SLD1.s? t:f', 'new:SQ1.next discards')
+REPOINT ('p4_rbA_s', 'src', 'new:AND1.x .and. y?', 'new:SQ1.valid')
+REPOINT ('p4_rbB_s', 'src', 'new:AND1.x .and. y?', 'new:SQ1.valid')
+REPOINT ('p4_rbC_s', 'src', 'new:AND1.x .and. y?', 'new:SQ1.valid')
+REPOINT ('p4_rbD_s', 'src', 'new:AND1.x .and. y?', 'new:SQ1.valid')
+REPOINT ('p4_rbE_s', 'src', 'new:AND1.x .and. y?', 'new:SQ1.valid')
+REPOINT ('p4_rbF_s', 'src', 'new:AND1.x .and. y?', 'new:SQ1.valid')
+REPOINT ('p4_rbR_s', 'src', 'new:AND1.x .and. y?', 'new:SQ1.valid')
+REPOINT ('p4_x_n2_out', 'dst', 'new:EQ2.y', 'new:SQ1.n2')
+GATE PASS | R removed 35 = S1 19 + S2 16; added 2; v18 202 actions (v17 235); re-pointed 19 = S1 5 + S2 14 | 
+GATE PASS | DEP no kept action names a removed alias | []
+GATE PASS | V v18_in validates (stageplan/1) | OK stageplan/1
+GATE PASS | RP replay END (base + 202 steps, no error) | (203, None)
+FACT v18 final False | open_rows_match False | undecided 0 | route_check PASS None | fs_border_gate PASS
+GATE PASS | E end cdiff rows v18 == v17's (24 vs 24) | {'only18': [], 'only17': []}
+ED only17 ('thru', 'NEW:Tunnel', '', 0, 'NEW:Tunnel', '', 0)
+ED only17 ('thru', 'new:AMM1', 'array', 0, 'new:AMM1', 'max index (indices)', 0)
+ED only17 ('thru', 'new:AMM1', 'array', 0, 'new:AMM1', 'max value', 0)
+ED only17 ('thru', 'new:AMM1', 'array', 0, 'new:AMM1', 'min index (indices)', 0)
+ED only17 ('thru', 'new:AMM1', 'array', 0, 'new:AMM1', 'min value', 0)
+ED only17 ('thru', 'new:AND1', 'x', 0, 'new:AND1', 'x .and. y?', 0)
+ED only17 ('thru', 'new:AND1', 'y', 0, 'new:AND1', 'x .and. y?', 0)
+ED only17 ('thru', 'new:DEC1', 'x', 0, 'new:DEC1', 'x-1', 0)
+ED only17 ('thru', 'new:EQ2', 'x', 0, 'new:EQ2', 'x = y?', 0)
+ED only17 ('thru', 'new:EQ2', 'y', 0, 'new:EQ2', 'x = y?', 0)
+ED only17 ('thru', 'new:GT1', 'x', 0, 'new:GT1', 'x > y?', 0)
+ED only17 ('thru', 'new:GT1', 'y', 0, 'new:GT1', 'x > y?', 0)
+ED only17 ('thru', 'new:GT2', 'x', 0, 'new:GT2', 'x > y?', 0)
+ED only17 ('thru', 'new:GT2', 'y', 0, 'new:GT2', 'x > y?', 0)
+ED only17 ('thru', 'new:INC2', 'x', 0, 'new:INC2', 'x+1', 0)
+ED only17 ('thru', 'new:LT1', 'x', 0, 'new:LT1', 'x < y?', 0)
+ED only17 ('thru', 'new:LT1', 'y', 0, 'new:LT1', 'x < y?', 0)
+ED only17 ('thru', 'new:SLD1', 'f', 0, 'new:SLD1', 's? t:f', 0)
+ED only17 ('thru', 'new:SLD1', 's', 0, 'new:SLD1', 's? t:f', 0)
+ED only17 ('thru', 'new:SLD1', 't', 0, 'new:SLD1', 's? t:f', 0)
+ED only17 ('thru', 'new:SLL1', 'f', 0, 'new:SLL1', 's? t:f', 0)
+ED only17 ('thru', 'new:SLL1', 's', 0, 'new:SLL1', 's? t:f', 0)
+ED only17 ('thru', 'new:SLL1', 't', 0, 'new:SLL1', 's? t:f', 0)
+ED only17 ('thru', 'new:SW1', 'f', 0, 'new:SW1', 's? t:f', 0)
+ED only17 ('thru', 'new:SW1', 's', 0, 'new:SW1', 's? t:f', 0)
+ED only17 ('thru', 'new:SW1', 't', 0, 'new:SW1', 's? t:f', 0)
+ED only17 ('thru', 'new:TFB1', '', 0, 'new:TFB1', '', 0)
+ED only17 ('thru', 'new:TFN1', '', 0, 'new:TFN1', '', 0)
+ED only17 ('thru', 'new:TFS1', '', 0, 'new:TFS1', '', 0)
+ED only17 ('wire', 'NEW:FlatSequenceOuterTunnel', 'Index of closest\ncal image slice, bead 2', 0, 'new:EQ2', 'y', 0)
+ED only17 ('wire', 'new:AMM1', 'min index (indices)', 0, 'new:TS1', '', 0)
+ED only17 ('wire', 'new:AMM1', 'min value', 0, 'new:LT1', 'x', 0)
+ED only17 ('wire', 'new:AMM1', 'min value', 0, 'new:TN1', '', 0)
+ED only17 ('wire', 'new:AND1', 'x .and. y?', 0, 'new:RB1', 's', 0)
+ED only17 ('wire', 'new:AND1', 'x .and. y?', 0, 'new:RB2', 's', 0)
+ED only17 ('wire', 'new:AND1', 'x .and. y?', 0, 'new:RB3', 's', 0)
+ED only17 ('wire', 'new:AND1', 'x .and. y?', 0, 'new:RB4', 's', 0)
+ED only17 ('wire', 'new:AND1', 'x .and. y?', 0, 'new:RB5', 's', 0)
+ED only17 ('wire', 'new:AND1', 'x .and. y?', 0, 'new:RB6', 's', 0)
+ED only17 ('wire', 'new:AND1', 'x .and. y?', 0, 'new:RB7', 's', 0)
+ED only17 ('wire', 'new:AND1', 'x .and. y?', 0, 'new:SLD1', 's', 0)
+ED only17 ('wire', 'new:AND1', 'x .and. y?', 0, 'new:SLL1', 's', 0)
+ED only17 ('wire', 'new:DEC1', 'x-1', 0, 'new:SLL1', 'f', 0)
+ED only17 ('wire', 'new:EQ2', 'x = y?', 0, 'new:AND1', 'x', 0)
+ED only17 ('wire', 'new:GT1', 'x > y?', 0, 'new:TFB1', '', 0)
+ED only17 ('wire', 'new:GT2', 'x > y?', 0, 'new:AND1', 'y', 0)
+ED only17 ('wire', 'new:INC2', 'x+1', 0, 'new:SLD1', 'f', 0)
+ED only17 ('wire', 'new:KMX1', '', 0, 'new:SW1', 'f', 0)
+ED only17 ('wire', 'new:KMX2', '', 0, 'new:LT1', 'y', 0)
+ED only17 ('wire', 'new:LRL1', 'Latest', 0, 'new:DEC1', 'x', 0)
+ED only17 ('wire', 'new:LRN4', 'Num', 0, 'new:GT1', 'x', 0)
+ED only17 ('wire', 'new:LRN4', 'Num', 0, 'new:TFN1', '', 0)
+ED only17 ('wire', 'new:LT1', 'x < y?', 0, 'new:OR1', 'x', 0)
+ED only17 ('wire', 'new:SD1L', '', 0, 'new:INC2', 'x', 0)
+ED only17 ('wire', 'new:SD1L', '', 0, 'new:SLD1', 't', 0)
+ED only17 ('wire', 'new:SL1L', '', 0, 'new:GT2', 'y', 0)
+ED only17 ('wire', 'new:SLD1', 's? t:f', 0, 'new:SD1R', '', 0)
+ED only17 ('wire', 'new:SLL1', 's? t:f', 0, 'new:SL1R', '', 0)
+ED only17 ('wire', 'new:SW1', 's? t:f', 0, 'new:TFS1', '', 0)
+ED only17 ('wire', 'new:TFB1', '', 0, 'new:SW1', 's', 0)
+ED only17 ('wire', 'new:TFN1', '', 0, 'new:SW1', 't', 0)
+ED only17 ('wire', 'new:TFS1', '', 0, 'new:AMM1', 'array', 0)
+ED only17 ('wire', 'new:TL1', '', 0, 'new:GT1', 'y', 0)
+ED only17 ('wire', 'new:TN1', '', 0, 'new:EQ2', 'x', 0)
+ED only17 ('wire', 'new:TN1', '', 0, 'new:GT2', 'x', 0)
+ED only17 ('wire', 'new:TN1', '', 0, 'new:SLL1', 't', 0)
+ED only18 ('thru', 'new:PS1', '', 0, 'new:PS1', 'found', 0)
+ED only18 ('thru', 'new:PS1', '', 0, 'new:PS1', 'min Num', 0)
+ED only18 ('thru', 'new:PS1', '', 0, 'new:PS1', 'min slot', 0)
+ED only18 ('thru', 'new:PS1', '', 1, 'new:PS1', 'found', 0)
+ED only18 ('thru', 'new:PS1', '', 1, 'new:PS1', 'min Num', 0)
+ED only18 ('thru', 'new:PS1', '', 1, 'new:PS1', 'min slot', 0)
+ED only18 ('thru', 'new:PS1', '', 2, 'new:PS1', 'found', 0)
+ED only18 ('thru', 'new:PS1', '', 2, 'new:PS1', 'min Num', 0)
+ED only18 ('thru', 'new:PS1', '', 2, 'new:PS1', 'min slot', 0)
+ED only18 ('thru', 'new:PS1', '', 3, 'new:PS1', 'found', 0)
+ED only18 ('thru', 'new:PS1', '', 3, 'new:PS1', 'min Num', 0)
+ED only18 ('thru', 'new:PS1', '', 3, 'new:PS1', 'min slot', 0)
+ED only18 ('thru', 'new:PS1', '', 4, 'new:PS1', 'found', 0)
+ED only18 ('thru', 'new:PS1', '', 4, 'new:PS1', 'min Num', 0)
+ED only18 ('thru', 'new:PS1', '', 4, 'new:PS1', 'min slot', 0)
+ED only18 ('thru', 'new:PS1', '', 5, 'new:PS1', 'found', 0)
+ED only18 ('thru', 'new:PS1', '', 5, 'new:PS1', 'min Num', 0)
+ED only18 ('thru', 'new:PS1', '', 5, 'new:PS1', 'min slot', 0)
+ED only18 ('thru', 'new:PS1', '', 6, 'new:PS1', 'found', 0)
+ED only18 ('thru', 'new:PS1', '', 6, 'new:PS1', 'min Num', 0)
+ED only18 ('thru', 'new:PS1', '', 6, 'new:PS1', 'min slot', 0)
+ED only18 ('thru', 'new:PS1', 'Num', 0, 'new:PS1', 'found', 0)
+ED only18 ('thru', 'new:PS1', 'Num', 0, 'new:PS1', 'min Num', 0)
+ED only18 ('thru', 'new:PS1', 'Num', 0, 'new:PS1', 'min slot', 0)
+ED only18 ('thru', 'new:PS1', 'last', 0, 'new:PS1', 'found', 0)
+ED only18 ('thru', 'new:PS1', 'last', 0, 'new:PS1', 'min Num', 0)
+ED only18 ('thru', 'new:PS1', 'last', 0, 'new:PS1', 'min slot', 0)
+ED only18 ('thru', 'new:SQ1', 'Latest', 0, 'new:SQ1', 'next discards', 0)
+ED only18 ('thru', 'new:SQ1', 'Latest', 0, 'new:SQ1', 'next last', 0)
+ED only18 ('thru', 'new:SQ1', 'Latest', 0, 'new:SQ1', 'valid', 0)
+ED only18 ('thru', 'new:SQ1', 'discards', 0, 'new:SQ1', 'next discards', 0)
+ED only18 ('thru', 'new:SQ1', 'discards', 0, 'new:SQ1', 'next last', 0)
+ED only18 ('thru', 'new:SQ1', 'discards', 0, 'new:SQ1', 'valid', 0)
+ED only18 ('thru', 'new:SQ1', 'last', 0, 'new:SQ1', 'next discards', 0)
+ED only18 ('thru', 'new:SQ1', 'last', 0, 'new:SQ1', 'next last', 0)
+ED only18 ('thru', 'new:SQ1', 'last', 0, 'new:SQ1', 'valid', 0)
+ED only18 ('thru', 'new:SQ1', 'n1', 0, 'new:SQ1', 'next discards', 0)
+ED only18 ('thru', 'new:SQ1', 'n1', 0, 'new:SQ1', 'next last', 0)
+ED only18 ('thru', 'new:SQ1', 'n1', 0, 'new:SQ1', 'valid', 0)
+ED only18 ('thru', 'new:SQ1', 'n2', 0, 'new:SQ1', 'next discards', 0)
+ED only18 ('thru', 'new:SQ1', 'n2', 0, 'new:SQ1', 'next last', 0)
+ED only18 ('thru', 'new:SQ1', 'n2', 0, 'new:SQ1', 'valid', 0)
+ED only18 ('wire', 'NEW:FlatSequenceOuterTunnel', 'Index of closest\ncal image slice, bead 2', 0, 'new:SQ1', 'n2', 0)
+ED only18 ('wire', 'new:LRL1', 'Latest', 0, 'new:SQ1', 'Latest', 0)
+ED only18 ('wire', 'new:LRN4', 'Num', 0, 'new:PS1', 'Num', 0)
+ED only18 ('wire', 'new:PS1', 'found', 0, 'new:OR1', 'x', 0)
+ED only18 ('wire', 'new:PS1', 'min Num', 0, 'new:TN1', '', 0)
+ED only18 ('wire', 'new:PS1', 'min slot', 0, 'new:TS1', '', 0)
+ED only18 ('wire', 'new:SD1L', '', 0, 'new:SQ1', 'discards', 0)
+ED only18 ('wire', 'new:SL1L', '', 0, 'new:SQ1', 'last', 0)
+ED only18 ('wire', 'new:SQ1', 'next discards', 0, 'new:SD1R', '', 0)
+ED only18 ('wire', 'new:SQ1', 'next last', 0, 'new:SL1R', '', 0)
+ED only18 ('wire', 'new:SQ1', 'valid', 0, 'new:RB1', 's', 0)
+ED only18 ('wire', 'new:SQ1', 'valid', 0, 'new:RB2', 's', 0)
+ED only18 ('wire', 'new:SQ1', 'valid', 0, 'new:RB3', 's', 0)
+ED only18 ('wire', 'new:SQ1', 'valid', 0, 'new:RB4', 's', 0)
+ED only18 ('wire', 'new:SQ1', 'valid', 0, 'new:RB5', 's', 0)
+ED only18 ('wire', 'new:SQ1', 'valid', 0, 'new:RB6', 's', 0)
+ED only18 ('wire', 'new:SQ1', 'valid', 0, 'new:RB7', 's', 0)
+ED only18 ('wire', 'new:TL1', '', 0, 'new:PS1', 'last', 0)
+ED only18 ('wire', 'new:TN1', '', 0, 'new:SQ1', 'n1', 0)
+GATE FAIL | ED end edges v17 7932 / v18 7927: 66 only in v17, 61 only in v18; every one touches a removed alias / PS1 / SQ1 (127 do not, 3 of them alias-less new objects) | [('thru', 'NEW:Tunnel', '', 0, 'NEW:Tunnel', '', 0), ('thru', 'new:AMM1', 'array', 0, 'new:AMM1', 'max index (indices)', 0), ('thru', 'new:AMM1', 'array', 0, 'new:AMM1', 'max value', 0), ('thru', 'new:AMM1', 'array', 0, 'new:AMM1', 'min index (indices)', 0), ('thru', 'new:AMM1', 'array', 0, 'new:AMM1', 'min value', 0), ('thru', 'new:AND1', 'x', 0, 'new:AND1', 'x .and. y?', 0), ('thru', 'new:AND1', 'y', 0, 'new:AND1', 'x .and. y?', 0), ('thru', 'new:DEC1', 'x', 0, 'new:DEC1', 'x-1', 0), ('thru', 'new:EQ2', 'x', 0, 'new:EQ2', 'x = y?', 0), ('thru', 'new:EQ2', 'y', 0, 'new:EQ2', 'x = y?', 0), ('thru', 'new:GT1', 'x', 0, 'new:GT1', 'x > y?', 0), ('thru', 'new:GT1', 'y', 0, 'new:GT1', 'x > y?', 0)]
+GATE PASS | C compile_plan v18: 190 ops (v17 217); every action once | 
+OP 79 create ['p4_s1_pickslot']
+OP 88 create ['p4_s2_seqcheck']
+OP 91 wire_sr ['p4_w_last_gt']
+OP 92 tunnel ['p4_t_last', 'p4_t_last_in', 'p4_t_last_out']
+OP 93 connect ['p4_w_num_gt']
+OP 94 connect ['p4_w_lt_or']
+OP 97 tunnel ['p4_t_n1', 'p4_t_n1_in', 'p4_t_n1_out']
+OP 98 tunnel ['p4_t_slot', 'p4_t_slot_in', 'p4_t_slot_out']
+OP 101 connect ['p4_w_lat_dec']
+OP 102 wire_sr ['p4_w_sel_last']
+OP 103 wire_sr ['p4_w_disc_inc']
+OP 104 wire_sr ['p4_w_seld_r']
+OP 140 connect ['p4_rbA_s']
+OP 148 connect ['p4_rbB_s']
+OP 155 connect ['p4_rbC_s']
+OP 161 connect ['p4_rbD_s']
+OP 168 connect ['p4_rbE_s']
+OP 174 connect ['p4_rbF_s']
+OP 182 connect ['p4_rbR_s']
+OP 189 connect_term_uid ['p4_x_n2_out']
+FACT op kinds v17 {'create': 58, 'connect': 88, 'delete_wire': 14, 'delete_object': 6, 'wire_remove_loose_ends': 20, 'stop': 2, 'connect_term_uid': 5, 'add_sr': 2, 'wire_sr': 5, 'tunnel': 9, 'branch': 6, 'move_in': 2}
+FACT op kinds v18 {'create': 46, 'connect': 79, 'delete_wire': 14, 'delete_object': 6, 'wire_remove_loose_ends': 20, 'stop': 2, 'connect_term_uid': 5, 'add_sr': 2, 'wire_sr': 4, 'tunnel': 6, 'branch': 4, 'move_in': 2}
+GATE PASS | XR repair actions = ops 1..50, none mixed with a non-repair action | []
+X10 limit 680.0 | {"session": 1, "ops": [51, 72], "first": "p4_dw_23310", "last": "p4_k_last", "actions": 22, "N": 22, "R": 14, "start_mb": 596.5, "peak_mb": 679.7, "kinds": {"delete_wire": 2, "delete_object": 1, "create": 10, "connect": 3, "stop": 1, "connect_term_uid": 2, "wire_remove_loose_ends": 2, "add_sr": 1}}
+X10 limit 680.0 | {"session": 2, "ops": [73, 89], "first": "p4_w_klast", "last": "p4_lr_latest", "actions": 17, "N": 17, "R": 16, "start_mb": 596.5, "peak_mb": 677.8, "kinds": {"connect": 2, "add_sr": 1, "create": 14}}
+X10 limit 680.0 | {"session": 3, "ops": [90, 114], "first": "p4_ia_n2sink", "last": "p4_ia_frameidx", "actions": 33, "N": 25, "R": 12, "start_mb": 596.5, "peak_mb": 678.8, "kinds": {"create": 7, "wire_sr": 4, "tunnel": 4, "connect": 7, "stop": 1, "branch": 2}}
+X10 limit 680.0 | {"session": 4, "ops": [115, 147], "first": "p4_w_arr_frameidx", "last": "p4_rbB_f", "actions": 37, "N": 33, "R": 8, "start_mb": 596.5, "peak_mb": 679.7, "kinds": {"connect": 21, "branch": 2, "move_in": 2, "tunnel": 2, "create": 4, "delete_wire": 2}}
+X10 limit 680.0 | {"session": 5, "ops": [148, 180], "first": "p4_rbB_s", "last": "p4_rbR_t", "actions": 33, "N": 33, "R": 8, "start_mb": 596.5, "peak_mb": 679.7, "kinds": {"connect": 22, "delete_wire": 5, "create": 6}}
+X10 limit 680.0 | {"session": 6, "ops": [181, 190], "first": "p4_rbR_f", "last": "p4_rle_x_n2_out", "actions": 10, "N": 10, "R": 5, "start_mb": 596.5, "peak_mb": 640.3, "kinds": {"connect": 4, "connect_term_uid": 3, "wire_remove_loose_ends": 3}}
+X10 limit 675.0 | {"session": 1, "ops": [51, 70], "first": "p4_dw_23310", "last": "p4_rle_bufdiff", "actions": 20, "N": 20, "R": 13, "start_mb": 596.5, "peak_mb": 674.4, "kinds": {"delete_wire": 2, "delete_object": 1, "create": 9, "connect": 3, "stop": 1, "connect_term_uid": 2, "wire_remove_loose_ends": 2}}
+X10 limit 675.0 | {"session": 2, "ops": [71, 86], "first": "p4_sr_last", "last": "p4_lr_num_b", "actions": 16, "N": 16, "R": 15, "start_mb": 596.5, "peak_mb": 673.9, "kinds": {"add_sr": 2, "create": 12, "connect": 2}}
+X10 limit 675.0 | {"session": 3, "ops": [87, 108], "first": "p4_ia_n2", "last": "p4_w_idx_transpos", "actions": 30, "N": 22, "R": 12, "start_mb": 596.5, "peak_mb": 674.6, "kinds": {"create": 6, "wire_sr": 4, "tunnel": 4, "connect": 6, "stop": 1, "branch": 1}}
+X10 limit 675.0 | {"session": 4, "ops": [109, 133], "first": "p4_lr_rotpos", "last": "p4_rbA_dw", "actions": 29, "N": 25, "R": 10, "start_mb": 596.5, "peak_mb": 673.7, "kinds": {"create": 6, "connect": 11, "branch": 3, "move_in": 2, "tunnel": 2, "delete_wire": 1}}
+X10 limit 675.0 | {"session": 5, "ops": [134, 165], "first": "p4_rbA_re0", "last": "p4_rbE_sel", "actions": 32, "N": 32, "R": 6, "start_mb": 596.5, "peak_mb": 673.2, "kinds": {"connect": 23, "create": 5, "delete_wire": 4}}
+X10 limit 675.0 | {"session": 6, "ops": [166, 190], "first": "p4_rbE_t", "last": "p4_rle_x_n2_out", "actions": 25, "N": 25, "R": 8, "start_mb": 596.5, "peak_mb": 668.6, "kinds": {"connect": 14, "delete_wire": 2, "create": 3, "connect_term_uid": 3, "wire_remove_loose_ends": 3}}
+GATE PASS | X10 session table at 596.5: 6 sessions at 680.0 (memory_model fail_above_mb), 6 at 675; no session without a cut | 
+GATE PASS | U v17 untouched | 
+V18 md5 5f6f0c70c816cd79b33a867e9b8656d3 actions 202 ops 190
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":12,"fail":1},"first_fail":"ED end edges v17 7932 / v18 7927: 66 only in v17, 61 only in v18; every one touches a removed alias / PS1 / SQ1 (127 do not, 3 of them alias-less new objects)","artefacts":[{"path":"tools/bench/plan_ring_p4_v18.json","md5":"5f6f0c70c816cd79b33a867e9b8656d3"},{"path":"tools/bench/plan_ring_p4_v18_in.json","md5":"ae6861c6bb36d8c44eee3634240f6eb2"},{"path":"tools/bench/plan_ring_p4_v18_meta.json","md5":"8425195c5d894446dd06723af4143f55"},{"path":"tools/bench/prep_c142_p2_sessions.json","md5":"e7d9c117600b65015e3d942dc2be065c"}]}
+BGRUN END rc=1 after 317s
+BGRUN START 2026-10-03 10:14:59 limit 20.0 min: py -u tools/bench/prep_c142_p2_mk.py
+BGRUN PID 892
+GATE PASS | M0 input md5 == card; RingPickSlot_v0.vi 6fcf153f | {'plan_ring_p4_v17.json': 'e19d7e142fef66f9e118ae4061e9e718', 'brief_142-P2.md': '06ef76b82887dbd24136ee793975ba03', 'prep_c142_p1_subvi_table.md': '2e032d3c8923131ebcc8f7e8b8933e5e', 'build_ringpickslot_v2.log': '4337475f29bafa7b719597fa966b2cb0', 'graph_ring_p3b2b_20261002_133824.json': '50595c62d0332a94bf066538cf20c0ae', 'RingPickSlot_v0.vi': '6fcf153f7b8fecda727f5dcf944faab9'}
+GATE PASS | M1 v17 end step file on its pin | {'path': 'tools/bench/sim/ring_p4_v17/ring_p4_v3/step_235_wire_remove_loose_ends.json', 'md5': 'fdb8e34c60d94ab9121cc7c8ec8ec570'}
+FACT v17 final False | failed None | open_rows_match False | undecided 0 | route_check PASS
+FACT RingSeqCheck_v0.vi exists now: True
+GATE PASS | R0 every named id is in v17 (35 remove, 19 re-point) | []
+FACT removed aliases: ['AMM1', 'AND1', 'DEC1', 'EQ2', 'FMN1', 'GT1', 'GT2', 'INC2', 'KMX1', 'KMX2', 'LT1', 'SLD1', 'SLL1', 'SW1', 'TFB1', 'TFN1', 'TFS1']
+REPOINT ('p4_w_last_gt', 'dst', 'new:GT2.y', 'new:SQ1.last')
+REPOINT ('p4_t_last_out', 'dst', 'new:GT1.y', 'new:PS1.last')
+REPOINT ('p4_w_num_gt', 'dst', 'new:GT1.x', 'new:PS1.Num')
+REPOINT ('p4_w_lt_or', 'src', 'new:LT1.x < y?', 'new:PS1.found')
+REPOINT ('p4_t_n1_in', 'src', 'new:AMM1.min value', 'new:PS1.min Num')
+REPOINT ('p4_t_n1_out', 'dst', 'new:EQ2.x', 'new:SQ1.n1')
+REPOINT ('p4_t_slot_in', 'src', 'new:AMM1.min index (indices)', 'new:PS1.min slot')
+REPOINT ('p4_w_lat_dec', 'dst', 'new:DEC1.x', 'new:SQ1.Latest')
+REPOINT ('p4_w_sel_last', 'src', 'new:SLL1.s? t:f', 'new:SQ1.next last')
+REPOINT ('p4_w_disc_inc', 'dst', 'new:INC2.x', 'new:SQ1.discards')
+REPOINT ('p4_w_seld_r', 'src', 'new:SLD1.s? t:f', 'new:SQ1.next discards')
+REPOINT ('p4_rbA_s', 'src', 'new:AND1.x .and. y?', 'new:SQ1.valid')
+REPOINT ('p4_rbB_s', 'src', 'new:AND1.x .and. y?', 'new:SQ1.valid')
+REPOINT ('p4_rbC_s', 'src', 'new:AND1.x .and. y?', 'new:SQ1.valid')
+REPOINT ('p4_rbD_s', 'src', 'new:AND1.x .and. y?', 'new:SQ1.valid')
+REPOINT ('p4_rbE_s', 'src', 'new:AND1.x .and. y?', 'new:SQ1.valid')
+REPOINT ('p4_rbF_s', 'src', 'new:AND1.x .and. y?', 'new:SQ1.valid')
+REPOINT ('p4_rbR_s', 'src', 'new:AND1.x .and. y?', 'new:SQ1.valid')
+REPOINT ('p4_x_n2_out', 'dst', 'new:EQ2.y', 'new:SQ1.n2')
+GATE PASS | R removed 35 = S1 19 + S2 16; added 2; v18 202 actions (v17 235); re-pointed 19 = S1 5 + S2 14 | 
+GATE PASS | DEP no kept action names a removed alias | []
+GATE PASS | V v18_in validates (stageplan/1) | OK stageplan/1
+GATE PASS | RP replay END (base + 202 steps, no error) | (203, None)
+FACT v18 final False | open_rows_match False | undecided 0 | route_check PASS None | fs_border_gate PASS
+GATE PASS | E end cdiff rows v18 == v17's (24 vs 24) | {'only18': [], 'only17': []}
+ED only17 ('thru', 'NEW:Tunnel', '', 0, 'NEW:Tunnel', '', 0)
+ED only17 ('thru', 'new:AMM1', 'array', 0, 'new:AMM1', 'max index (indices)', 0)
+ED only17 ('thru', 'new:AMM1', 'array', 0, 'new:AMM1', 'max value', 0)
+ED only17 ('thru', 'new:AMM1', 'array', 0, 'new:AMM1', 'min index (indices)', 0)
+ED only17 ('thru', 'new:AMM1', 'array', 0, 'new:AMM1', 'min value', 0)
+ED only17 ('thru', 'new:AND1', 'x', 0, 'new:AND1', 'x .and. y?', 0)
+ED only17 ('thru', 'new:AND1', 'y', 0, 'new:AND1', 'x .and. y?', 0)
+ED only17 ('thru', 'new:DEC1', 'x', 0, 'new:DEC1', 'x-1', 0)
+ED only17 ('thru', 'new:EQ2', 'x', 0, 'new:EQ2', 'x = y?', 0)
+ED only17 ('thru', 'new:EQ2', 'y', 0, 'new:EQ2', 'x = y?', 0)
+ED only17 ('thru', 'new:GT1', 'x', 0, 'new:GT1', 'x > y?', 0)
+ED only17 ('thru', 'new:GT1', 'y', 0, 'new:GT1', 'x > y?', 0)
+ED only17 ('thru', 'new:GT2', 'x', 0, 'new:GT2', 'x > y?', 0)
+ED only17 ('thru', 'new:GT2', 'y', 0, 'new:GT2', 'x > y?', 0)
+ED only17 ('thru', 'new:INC2', 'x', 0, 'new:INC2', 'x+1', 0)
+ED only17 ('thru', 'new:LT1', 'x', 0, 'new:LT1', 'x < y?', 0)
+ED only17 ('thru', 'new:LT1', 'y', 0, 'new:LT1', 'x < y?', 0)
+ED only17 ('thru', 'new:SLD1', 'f', 0, 'new:SLD1', 's? t:f', 0)
+ED only17 ('thru', 'new:SLD1', 's', 0, 'new:SLD1', 's? t:f', 0)
+ED only17 ('thru', 'new:SLD1', 't', 0, 'new:SLD1', 's? t:f', 0)
+ED only17 ('thru', 'new:SLL1', 'f', 0, 'new:SLL1', 's? t:f', 0)
+ED only17 ('thru', 'new:SLL1', 's', 0, 'new:SLL1', 's? t:f', 0)
+ED only17 ('thru', 'new:SLL1', 't', 0, 'new:SLL1', 's? t:f', 0)
+ED only17 ('thru', 'new:SW1', 'f', 0, 'new:SW1', 's? t:f', 0)
+ED only17 ('thru', 'new:SW1', 's', 0, 'new:SW1', 's? t:f', 0)
+ED only17 ('thru', 'new:SW1', 't', 0, 'new:SW1', 's? t:f', 0)
+ED only17 ('thru', 'new:TFB1', '', 0, 'new:TFB1', '', 0)
+ED only17 ('thru', 'new:TFN1', '', 0, 'new:TFN1', '', 0)
+ED only17 ('thru', 'new:TFS1', '', 0, 'new:TFS1', '', 0)
+ED only17 ('wire', 'NEW:FlatSequenceOuterTunnel', 'Index of closest\ncal image slice, bead 2', 0, 'new:EQ2', 'y', 0)
+ED only17 ('wire', 'new:AMM1', 'min index (indices)', 0, 'new:TS1', '', 0)
+ED only17 ('wire', 'new:AMM1', 'min value', 0, 'new:LT1', 'x', 0)
+ED only17 ('wire', 'new:AMM1', 'min value', 0, 'new:TN1', '', 0)
+ED only17 ('wire', 'new:AND1', 'x .and. y?', 0, 'new:RB1', 's', 0)
+ED only17 ('wire', 'new:AND1', 'x .and. y?', 0, 'new:RB2', 's', 0)
+ED only17 ('wire', 'new:AND1', 'x .and. y?', 0, 'new:RB3', 's', 0)
+ED only17 ('wire', 'new:AND1', 'x .and. y?', 0, 'new:RB4', 's', 0)
+ED only17 ('wire', 'new:AND1', 'x .and. y?', 0, 'new:RB5', 's', 0)
+ED only17 ('wire', 'new:AND1', 'x .and. y?', 0, 'new:RB6', 's', 0)
+ED only17 ('wire', 'new:AND1', 'x .and. y?', 0, 'new:RB7', 's', 0)
+ED only17 ('wire', 'new:AND1', 'x .and. y?', 0, 'new:SLD1', 's', 0)
+ED only17 ('wire', 'new:AND1', 'x .and. y?', 0, 'new:SLL1', 's', 0)
+ED only17 ('wire', 'new:DEC1', 'x-1', 0, 'new:SLL1', 'f', 0)
+ED only17 ('wire', 'new:EQ2', 'x = y?', 0, 'new:AND1', 'x', 0)
+ED only17 ('wire', 'new:GT1', 'x > y?', 0, 'new:TFB1', '', 0)
+ED only17 ('wire', 'new:GT2', 'x > y?', 0, 'new:AND1', 'y', 0)
+ED only17 ('wire', 'new:INC2', 'x+1', 0, 'new:SLD1', 'f', 0)
+ED only17 ('wire', 'new:KMX1', '', 0, 'new:SW1', 'f', 0)
+ED only17 ('wire', 'new:KMX2', '', 0, 'new:LT1', 'y', 0)
+ED only17 ('wire', 'new:LRL1', 'Latest', 0, 'new:DEC1', 'x', 0)
+ED only17 ('wire', 'new:LRN4', 'Num', 0, 'new:GT1', 'x', 0)
+ED only17 ('wire', 'new:LRN4', 'Num', 0, 'new:TFN1', '', 0)
+ED only17 ('wire', 'new:LT1', 'x < y?', 0, 'new:OR1', 'x', 0)
+ED only17 ('wire', 'new:SD1L', '', 0, 'new:INC2', 'x', 0)
+ED only17 ('wire', 'new:SD1L', '', 0, 'new:SLD1', 't', 0)
+ED only17 ('wire', 'new:SL1L', '', 0, 'new:GT2', 'y', 0)
+ED only17 ('wire', 'new:SLD1', 's? t:f', 0, 'new:SD1R', '', 0)
+ED only17 ('wire', 'new:SLL1', 's? t:f', 0, 'new:SL1R', '', 0)
+ED only17 ('wire', 'new:SW1', 's? t:f', 0, 'new:TFS1', '', 0)
+ED only17 ('wire', 'new:TFB1', '', 0, 'new:SW1', 's', 0)
+ED only17 ('wire', 'new:TFN1', '', 0, 'new:SW1', 't', 0)
+ED only17 ('wire', 'new:TFS1', '', 0, 'new:AMM1', 'array', 0)
+ED only17 ('wire', 'new:TL1', '', 0, 'new:GT1', 'y', 0)
+ED only17 ('wire', 'new:TN1', '', 0, 'new:EQ2', 'x', 0)
+ED only17 ('wire', 'new:TN1', '', 0, 'new:GT2', 'x', 0)
+ED only17 ('wire', 'new:TN1', '', 0, 'new:SLL1', 't', 0)
+ED only18 ('thru', 'new:PS1', '', 0, 'new:PS1', 'found', 0)
+ED only18 ('thru', 'new:PS1', '', 0, 'new:PS1', 'min Num', 0)
+ED only18 ('thru', 'new:PS1', '', 0, 'new:PS1', 'min slot', 0)
+ED only18 ('thru', 'new:PS1', '', 1, 'new:PS1', 'found', 0)
+ED only18 ('thru', 'new:PS1', '', 1, 'new:PS1', 'min Num', 0)
+ED only18 ('thru', 'new:PS1', '', 1, 'new:PS1', 'min slot', 0)
+ED only18 ('thru', 'new:PS1', '', 2, 'new:PS1', 'found', 0)
+ED only18 ('thru', 'new:PS1', '', 2, 'new:PS1', 'min Num', 0)
+ED only18 ('thru', 'new:PS1', '', 2, 'new:PS1', 'min slot', 0)
+ED only18 ('thru', 'new:PS1', '', 3, 'new:PS1', 'found', 0)
+ED only18 ('thru', 'new:PS1', '', 3, 'new:PS1', 'min Num', 0)
+ED only18 ('thru', 'new:PS1', '', 3, 'new:PS1', 'min slot', 0)
+ED only18 ('thru', 'new:PS1', '', 4, 'new:PS1', 'found', 0)
+ED only18 ('thru', 'new:PS1', '', 4, 'new:PS1', 'min Num', 0)
+ED only18 ('thru', 'new:PS1', '', 4, 'new:PS1', 'min slot', 0)
+ED only18 ('thru', 'new:PS1', '', 5, 'new:PS1', 'found', 0)
+ED only18 ('thru', 'new:PS1', '', 5, 'new:PS1', 'min Num', 0)
+ED only18 ('thru', 'new:PS1', '', 5, 'new:PS1', 'min slot', 0)
+ED only18 ('thru', 'new:PS1', '', 6, 'new:PS1', 'found', 0)
+ED only18 ('thru', 'new:PS1', '', 6, 'new:PS1', 'min Num', 0)
+ED only18 ('thru', 'new:PS1', '', 6, 'new:PS1', 'min slot', 0)
+ED only18 ('thru', 'new:PS1', 'Num', 0, 'new:PS1', 'found', 0)
+ED only18 ('thru', 'new:PS1', 'Num', 0, 'new:PS1', 'min Num', 0)
+ED only18 ('thru', 'new:PS1', 'Num', 0, 'new:PS1', 'min slot', 0)
+ED only18 ('thru', 'new:PS1', 'last', 0, 'new:PS1', 'found', 0)
+ED only18 ('thru', 'new:PS1', 'last', 0, 'new:PS1', 'min Num', 0)
+ED only18 ('thru', 'new:PS1', 'last', 0, 'new:PS1', 'min slot', 0)
+ED only18 ('thru', 'new:SQ1', 'Latest', 0, 'new:SQ1', 'next discards', 0)
+ED only18 ('thru', 'new:SQ1', 'Latest', 0, 'new:SQ1', 'next last', 0)
+ED only18 ('thru', 'new:SQ1', 'Latest', 0, 'new:SQ1', 'valid', 0)
+ED only18 ('thru', 'new:SQ1', 'discards', 0, 'new:SQ1', 'next discards', 0)
+ED only18 ('thru', 'new:SQ1', 'discards', 0, 'new:SQ1', 'next last', 0)
+ED only18 ('thru', 'new:SQ1', 'discards', 0, 'new:SQ1', 'valid', 0)
+ED only18 ('thru', 'new:SQ1', 'last', 0, 'new:SQ1', 'next discards', 0)
+ED only18 ('thru', 'new:SQ1', 'last', 0, 'new:SQ1', 'next last', 0)
+ED only18 ('thru', 'new:SQ1', 'last', 0, 'new:SQ1', 'valid', 0)
+ED only18 ('thru', 'new:SQ1', 'n1', 0, 'new:SQ1', 'next discards', 0)
+ED only18 ('thru', 'new:SQ1', 'n1', 0, 'new:SQ1', 'next last', 0)
+ED only18 ('thru', 'new:SQ1', 'n1', 0, 'new:SQ1', 'valid', 0)
+ED only18 ('thru', 'new:SQ1', 'n2', 0, 'new:SQ1', 'next discards', 0)
+ED only18 ('thru', 'new:SQ1', 'n2', 0, 'new:SQ1', 'next last', 0)
+ED only18 ('thru', 'new:SQ1', 'n2', 0, 'new:SQ1', 'valid', 0)
+ED only18 ('wire', 'NEW:FlatSequenceOuterTunnel', 'Index of closest\ncal image slice, bead 2', 0, 'new:SQ1', 'n2', 0)
+ED only18 ('wire', 'new:LRL1', 'Latest', 0, 'new:SQ1', 'Latest', 0)
+ED only18 ('wire', 'new:LRN4', 'Num', 0, 'new:PS1', 'Num', 0)
+ED only18 ('wire', 'new:PS1', 'found', 0, 'new:OR1', 'x', 0)
+ED only18 ('wire', 'new:PS1', 'min Num', 0, 'new:TN1', '', 0)
+ED only18 ('wire', 'new:PS1', 'min slot', 0, 'new:TS1', '', 0)
+ED only18 ('wire', 'new:SD1L', '', 0, 'new:SQ1', 'discards', 0)
+ED only18 ('wire', 'new:SL1L', '', 0, 'new:SQ1', 'last', 0)
+ED only18 ('wire', 'new:SQ1', 'next discards', 0, 'new:SD1R', '', 0)
+ED only18 ('wire', 'new:SQ1', 'next last', 0, 'new:SL1R', '', 0)
+ED only18 ('wire', 'new:SQ1', 'valid', 0, 'new:RB1', 's', 0)
+ED only18 ('wire', 'new:SQ1', 'valid', 0, 'new:RB2', 's', 0)
+ED only18 ('wire', 'new:SQ1', 'valid', 0, 'new:RB3', 's', 0)
+ED only18 ('wire', 'new:SQ1', 'valid', 0, 'new:RB4', 's', 0)
+ED only18 ('wire', 'new:SQ1', 'valid', 0, 'new:RB5', 's', 0)
+ED only18 ('wire', 'new:SQ1', 'valid', 0, 'new:RB6', 's', 0)
+ED only18 ('wire', 'new:SQ1', 'valid', 0, 'new:RB7', 's', 0)
+ED only18 ('wire', 'new:TL1', '', 0, 'new:PS1', 'last', 0)
+ED only18 ('wire', 'new:TN1', '', 0, 'new:SQ1', 'n1', 0)
+GATE PASS | ED end edges v17 7932 / v18 7927: 66 only in v17, 61 only in v18; every one touches a removed alias / PS1 / SQ1 (1 do not, 1 of them alias-less new objects) | [('thru', 'NEW:Tunnel', '', 0, 'NEW:Tunnel', '', 0)]
+GATE PASS | C compile_plan v18: 190 ops (v17 217); every action once | 
+OP 79 create ['p4_s1_pickslot']
+OP 88 create ['p4_s2_seqcheck']
+OP 91 wire_sr ['p4_w_last_gt']
+OP 92 tunnel ['p4_t_last', 'p4_t_last_in', 'p4_t_last_out']
+OP 93 connect ['p4_w_num_gt']
+OP 94 connect ['p4_w_lt_or']
+OP 97 tunnel ['p4_t_n1', 'p4_t_n1_in', 'p4_t_n1_out']
+OP 98 tunnel ['p4_t_slot', 'p4_t_slot_in', 'p4_t_slot_out']
+OP 101 connect ['p4_w_lat_dec']
+OP 102 wire_sr ['p4_w_sel_last']
+OP 103 wire_sr ['p4_w_disc_inc']
+OP 104 wire_sr ['p4_w_seld_r']
+OP 140 connect ['p4_rbA_s']
+OP 148 connect ['p4_rbB_s']
+OP 155 connect ['p4_rbC_s']
+OP 161 connect ['p4_rbD_s']
+OP 168 connect ['p4_rbE_s']
+OP 174 connect ['p4_rbF_s']
+OP 182 connect ['p4_rbR_s']
+OP 189 connect_term_uid ['p4_x_n2_out']
+FACT op kinds v17 {'create': 58, 'connect': 88, 'delete_wire': 14, 'delete_object': 6, 'wire_remove_loose_ends': 20, 'stop': 2, 'connect_term_uid': 5, 'add_sr': 2, 'wire_sr': 5, 'tunnel': 9, 'branch': 6, 'move_in': 2}
+FACT op kinds v18 {'create': 46, 'connect': 79, 'delete_wire': 14, 'delete_object': 6, 'wire_remove_loose_ends': 20, 'stop': 2, 'connect_term_uid': 5, 'add_sr': 2, 'wire_sr': 4, 'tunnel': 6, 'branch': 4, 'move_in': 2}
+GATE PASS | XR repair actions = ops 1..50, none mixed with a non-repair action | []
+X10 limit 680.0 | {"session": 1, "ops": [51, 72], "first": "p4_dw_23310", "last": "p4_k_last", "actions": 22, "N": 22, "R": 14, "start_mb": 596.5, "peak_mb": 679.7, "kinds": {"delete_wire": 2, "delete_object": 1, "create": 10, "connect": 3, "stop": 1, "connect_term_uid": 2, "wire_remove_loose_ends": 2, "add_sr": 1}}
+X10 limit 680.0 | {"session": 2, "ops": [73, 89], "first": "p4_w_klast", "last": "p4_lr_latest", "actions": 17, "N": 17, "R": 16, "start_mb": 596.5, "peak_mb": 677.8, "kinds": {"connect": 2, "add_sr": 1, "create": 14}}
+X10 limit 680.0 | {"session": 3, "ops": [90, 114], "first": "p4_ia_n2sink", "last": "p4_ia_frameidx", "actions": 33, "N": 25, "R": 12, "start_mb": 596.5, "peak_mb": 678.8, "kinds": {"create": 7, "wire_sr": 4, "tunnel": 4, "connect": 7, "stop": 1, "branch": 2}}
+X10 limit 680.0 | {"session": 4, "ops": [115, 147], "first": "p4_w_arr_frameidx", "last": "p4_rbB_f", "actions": 37, "N": 33, "R": 8, "start_mb": 596.5, "peak_mb": 679.7, "kinds": {"connect": 21, "branch": 2, "move_in": 2, "tunnel": 2, "create": 4, "delete_wire": 2}}
+X10 limit 680.0 | {"session": 5, "ops": [148, 180], "first": "p4_rbB_s", "last": "p4_rbR_t", "actions": 33, "N": 33, "R": 8, "start_mb": 596.5, "peak_mb": 679.7, "kinds": {"connect": 22, "delete_wire": 5, "create": 6}}
+X10 limit 680.0 | {"session": 6, "ops": [181, 190], "first": "p4_rbR_f", "last": "p4_rle_x_n2_out", "actions": 10, "N": 10, "R": 5, "start_mb": 596.5, "peak_mb": 640.3, "kinds": {"connect": 4, "connect_term_uid": 3, "wire_remove_loose_ends": 3}}
+X10 limit 675.0 | {"session": 1, "ops": [51, 70], "first": "p4_dw_23310", "last": "p4_rle_bufdiff", "actions": 20, "N": 20, "R": 13, "start_mb": 596.5, "peak_mb": 674.4, "kinds": {"delete_wire": 2, "delete_object": 1, "create": 9, "connect": 3, "stop": 1, "connect_term_uid": 2, "wire_remove_loose_ends": 2}}
+X10 limit 675.0 | {"session": 2, "ops": [71, 86], "first": "p4_sr_last", "last": "p4_lr_num_b", "actions": 16, "N": 16, "R": 15, "start_mb": 596.5, "peak_mb": 673.9, "kinds": {"add_sr": 2, "create": 12, "connect": 2}}
+X10 limit 675.0 | {"session": 3, "ops": [87, 108], "first": "p4_ia_n2", "last": "p4_w_idx_transpos", "actions": 30, "N": 22, "R": 12, "start_mb": 596.5, "peak_mb": 674.6, "kinds": {"create": 6, "wire_sr": 4, "tunnel": 4, "connect": 6, "stop": 1, "branch": 1}}
+X10 limit 675.0 | {"session": 4, "ops": [109, 133], "first": "p4_lr_rotpos", "last": "p4_rbA_dw", "actions": 29, "N": 25, "R": 10, "start_mb": 596.5, "peak_mb": 673.7, "kinds": {"create": 6, "connect": 11, "branch": 3, "move_in": 2, "tunnel": 2, "delete_wire": 1}}
+X10 limit 675.0 | {"session": 5, "ops": [134, 165], "first": "p4_rbA_re0", "last": "p4_rbE_sel", "actions": 32, "N": 32, "R": 6, "start_mb": 596.5, "peak_mb": 673.2, "kinds": {"connect": 23, "create": 5, "delete_wire": 4}}
+X10 limit 675.0 | {"session": 6, "ops": [166, 190], "first": "p4_rbE_t", "last": "p4_rle_x_n2_out", "actions": 25, "N": 25, "R": 8, "start_mb": 596.5, "peak_mb": 668.6, "kinds": {"connect": 14, "delete_wire": 2, "create": 3, "connect_term_uid": 3, "wire_remove_loose_ends": 3}}
+GATE PASS | X10 session table at 596.5: 6 sessions at 680.0 (memory_model fail_above_mb), 6 at 675; no session without a cut | 
+GATE PASS | U v17 untouched | 
+V18 md5 2ea6cafa7d368dc7a054346d398daa3e actions 202 ops 190
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/plan_ring_p4_v18.json","md5":"2ea6cafa7d368dc7a054346d398daa3e"},{"path":"tools/bench/plan_ring_p4_v18_in.json","md5":"ae6861c6bb36d8c44eee3634240f6eb2"},{"path":"tools/bench/plan_ring_p4_v18_meta.json","md5":"8425195c5d894446dd06723af4143f55"},{"path":"tools/bench/prep_c142_p2_sessions.json","md5":"bed4b9f445f30495423caf96e7ab8a7a"}]}
+BGRUN END rc=0 after 274s

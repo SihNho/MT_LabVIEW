@@ -3453,14 +3453,21 @@ def rebind(before, prov, real, prov_doc=None, real_doc=None, before_doc=None, in
     ru = SX.uid_reuse(before, real)
     if ru:
         return None, "UID-REUSE between N's base and the real graph: {0}".format(ru[:6])
-    old_t = set(r["term_uid"] for r in before)
+    # card 142-5 (PD330(d), PD325(b)): a terminal is OLD only when its IDENTITY (term uid, owner uid, name) is in N's base -
+    # LabVIEW re-issues a deleted terminal's uid to a NEW node of the same class inside one session (s01: 28004/28979 of the
+    # deleted #27928/#28916 came back on the new #6942/#6805, prep_c142_5_probe.log), which uid_reuse cannot see (same classes)
+    # and a raw-uid key filed as old (prep_c142_p1_rebase.log:3). Same key as stagekit.term_key (not imported: line 689).
+    tkey = lambda r: (r["term_uid"], r.get("owner_uid"), str(r.get("term_name") or ""))   # noqa: E731
+    old_t = set(tkey(r) for r in before)
     sim_new, real_new = collections.OrderedDict(), collections.OrderedDict()
     for r in prov:
         if V.node_of(r) < 0:
             sim_new.setdefault(V.node_of(r), []).append(r)
     for r in real:
-        if r["term_uid"] not in old_t:
+        if tkey(r) not in old_t:
             real_new.setdefault(V.node_of(r), []).append(r)
+    info["recycled"] = sorted(r["term_uid"] for rows in real_new.values() for r in rows
+                              if r["term_uid"] in set(k[0] for k in old_t))
     dirk = lambda r: (r.get("term_class", ""), bool(r["is_source"]))               # noqa: E731
 
     def shape(rows):
@@ -3482,7 +3489,8 @@ def rebind(before, prov, real, prov_doc=None, real_doc=None, before_doc=None, in
             rwire[r["wire_uid"]].append(r)
     real_new_t = set(r["term_uid"] for rows in real_new.values() for r in rows)
     new_rf = set(r.get("frame_diagram") for r in real) - set(r.get("frame_diagram") for r in before)
-    T = dict((u, u) for u in srow if u > 0 and u in rrow)       # pre-existing terminals: themselves
+    T = dict((u, u) for u in srow if u > 0 and u in rrow and u not in real_new_t)   # pre-existing terminals: themselves
+    # (card 142-5: a uid the real graph re-issued to a created node is NOT pre-existing - it binds like any created terminal)
     Tinv = dict(T)
     N, Ninv, D, Dinv, mode = {}, {}, {}, {}, info["mode"]
 
@@ -3806,9 +3814,10 @@ def rebase(plan_path, graph_path, log=print, simulate=True, out_root=None, model
     if M is None:
         return False, "REBASE REFUSED: " + why
     modes = collections.Counter(info["mode"].values())
-    log("REBIND {0} node(s), {1} frame(s), terminals by {2}; unbound created terminals {3}; frames {4}".format(
+    log("REBIND {0} node(s), {1} frame(s), terminals by {2}; unbound created terminals {3}; frames {4}; re-issued uid(s) {5}".format(
         len(info["nodes"]), len(info["frames"]), dict(modes), info["unbound_terms"][:12],
-        dict((k, "{0} ({1})".format(v, info["how_frame"].get(k, "?"))) for k, v in sorted(info["frames"].items()))))
+        dict((k, "{0} ({1})".format(v, info["how_frame"].get(k, "?"))) for k, v in sorted(info["frames"].items())),
+        info.get("recycled", [])[:12]))
     for st, rt, cls, sn_, rn_ in info["labels"]:
         log("LABEL-DIFF {0} #{1} -> #{2}: sim {3!r} real {4!r} (by {5})".format(cls, st, rt, sn_, rn_, info["mode"].get(st)))
     # PD278(c): a terminal the plan REFERENCES binds by connectivity (or is pre-existing), else REFUSE

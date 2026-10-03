@@ -1,0 +1,56 @@
+BGRUN START 2026-10-03 07:51:39 limit 5.0 min: py -u tools/stage_prerun.py --prerun tools/bench/diag_s4_readcost.py --graph tools/bench/graph_ring_p4s01_20261002_234419.json
+BGRUN PID 19920
+diag_s4_readcost - card chat-S4 item B, the LabVIEW MEASUREMENT: what one per-BIND whole-VI read costs today (seconds and
+private MB), split into its parts, and what the nearest EXISTING per-node route costs and returns, on a never-saved byte copy of
+the P4 session-1 file (path + md5 from diag_s4_readcost_plan.json). READ-ONLY: no edit, no save, no VI run; the copy is deleted
+at close (s.discard_work) and LabVIEW is killed at exit.
+EXISTING TOOLS FOUND FIRST: the whole read = wiki_build.read_live:233 (report_all GObject census + allterms.read_terms
+OpAllTerms_v1 + join); NO op reads ONE owner's terminals by uid - the 137-3 "read_terms by owner uid" row was a WHOLE read_terms
+filtered in Python (diag_c137_3_lookup.py:50-52). The nearest per-node route is report_all('Diagram') -> gscript.node_labels(d)
+(Diagram.Nodes[] uid order, gscript.py:3639) -> gscript.node_terms_uids(d, i) (OpNodeTermsUid_v0, gscript.py:1223): name /
+is_source / wire / term uid, but NOT term_class / owner_class / frame_diagram; a Constant is not in Nodes[] (diag_c137_3_lookup.log:39-43).
+PREDICTION: whole read_live 15-30 s and ~+2 MB each (diag_chat_m1_mem.log basis); the per-node route < 3 s and ~0 MB per node; per-node
+rows equal the whole read's (term_uid, name, is_source, wire) for Nodes[] owners; tunnels / registers / Diagram-owned control
+terminals not addressable this way. Gates check only that the measurement completed; the numbers are FACTS.
+    py tools/bgrun.py --material --max-min 40 --log tools/bench/diag_s4_readcost.log -- py -u tools/bench/diag_s4_readcost.py
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == dc61e193e0376ce760f88fdfcda7087b  got dc61e193e0376ce760f88fdfcda7087b
+  PASS  DRY graph JSON for input md5 dc61e193e0376ce760f88fdfcda7087b  tools/bench/graph_ring_p4s01_20261002_234419.json
+METER start private None MB
+COST whole read_live #1                       secs    0.03  dMB None  private None
+COST whole read_live #2                       secs    0.02  dMB None  private None
+COST whole read_live #3                       secs    0.02  dMB None  private None
+COST part report_all GObject #1               secs    0.00  dMB None  private None
+COST part report_all GObject #2               secs    0.00  dMB None  private None
+COST part read_terms OpAllTerms_v1 #1         secs    0.00  dMB None  private None
+COST part read_terms OpAllTerms_v1 #2         secs    0.00  dMB None  private None
+COST route report_all Diagram #1              secs    0.00  dMB None  private None
+COST route report_all Diagram #2              secs    0.00  dMB None  private None
+  UNVERIFIED  W the whole read returned rows (the recorded graph holds 5967)  (dry: stub input)
+  PASS  N every sampled owner was measured (0 owners, 0 classes)
+  FACT  J measurement json -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_s4_readcost.json
+GATE GONE LabVIEW gone: PASS
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  PASS-UNVERIFIED ['W the whole read returned rows (the recorded graph holds 5967)'] (launch needs a card naming each)
+  PASS  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['tools/bench/diag_s4_readcost_plan.json']
+  PASS  X3 every plan row decided  5 rows + 0 stageplan actions
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  0 stageplan(s)
+  PASS  X11 no row wires one Build Array input while a sibling input is an open row (unless pb-licence/1)  0 stageplan(s)
+  PASS  X12 no row names a wire uid an earlier border-crossing connect re-created (connect_from_wire.json:266)  0 stageplan(s), 0 re-created source wire(s), none named later
+  PASS  X13 opmodel conformance: every recorded sample of the plan ops' model files replays in stagesim  0 op(s) []; files {}
+  PASS  X16 every declared terminal of a created primitive carries term_class (PD251(b))  0 non-const_donor create action(s) with declared terminals, all classed
+  PASS  X17 every created primitive's donor label == its declared prim (PD323(b))  0 primitive create action(s), every donor label == its prim
+  PASS  X4 every end addressable offline (0 ends)  []
+  PASS  X5 wiring ops executed in the dry run == plan wire rows  ops 0 vs plan wire rows 0 + stageplan wiring real ops 0 (covering 0/0 wire actions); delete ops {} vs plan delete rows {}; RLE ops 0 vs plan RLE rows 0
+  PASS  X6 ast lint: no re-typed uid / terminal name  uids []; names []
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_s4_readcost_20261003_075140.vi; decisions rows NOT dispatched (recipe calls neither run_rows nor from_decision)
+  FACT  X10 read-only tools/bench/diag_s4_readcost.py: N 0 ops, BIND 0, R 10 reads, predicted peak 612.7 MB (fail above 680.0)
+  FACT  X10 whole-VI reads: source 9 [read_live@44x1, read_live@45x1, read_live@46x1, report_all@47x1, report_all@48x1, read_terms@49x1, read_terms@50x1, report_all@51x1, report_all@52x1]; dry executed 5; sessions 1
+  PASS  X10 predicted LabVIEW private MB <= model fail_above_mb, from the compiled plan + checkpoint set (peak 612.7 MB)  {'peak_mb': 612.7, 'recorded': {'why': 'UNMEASURED: no recorded meter of diag_s4_readcost.py covers ops 1..end (0 record(s))'}, 'model': 'tools/bench/memory_model.json'}
+  INFO  X14 rows 5, budget 25 (proven: diag_c118_r1v.py, diag_c132_2_graph_p3b1.py, diag_c133_5_graph_p3b2a.py, diag_c136_1_graph.py, diag_c141_3_graph.py)
+
+=== DRY PASS-UNVERIFIED W the whole read returned rows (the recorded graph holds 5967): first_fail=None coverage 49/73 lines, first mutation None, unverified 1, graph tools/bench/graph_ring_p4s01_20261002_234419.json
+=== PRERUN PASS: 15 pass / 0 fail; first None
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":15,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 3s

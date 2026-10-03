@@ -1,0 +1,230 @@
+BGRUN START 2026-10-03 07:49:16 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/bench/diag_s4_readcost.py --graph tools/bench/graph_ring_p4s01_20261002_234419.json
+BGRUN PID 916
+diag_s4_readcost - card chat-S4 item B, the LabVIEW MEASUREMENT: what one per-BIND whole-VI read costs today (seconds and
+private MB), split into its parts, and what the nearest EXISTING per-node route costs and returns, on a byte copy of the P4
+session-1 file claudeDev\D1_ring_p4s01_20261002_232547.vi (dc61e193). READ-ONLY on the copy: no edit, no save, no VI run;
+the copy is deleted at close (s.discard_work) and LabVIEW is killed at exit.
+EXISTING TOOLS FOUND FIRST (card chat-S4 rule "check what exists"): the whole read = wiki_build.read_live:233 (report_all
+GObject census + allterms.read_terms OpAllTerms_v1 + join); NO op reads ONE owner's terminals by uid - the 137-3 "read_terms by
+owner uid" row was a WHOLE read_terms filtered in Python (diag_c137_3_lookup.py:50-52). The nearest per-node route is
+report_all('Diagram') -> gscript.node_labels(d) (Diagram.Nodes[] uid order, gscript.py:3639) -> gscript.node_terms_uids(d, i)
+(OpNodeTermsUid_v0, gscript.py:1223), which returns name / is_source / wire / term uid but NOT term_class / owner_class /
+frame_diagram, and cannot address a Constant (diag_c137_3_lookup.log:39-43).
+PREDICTION: whole read_live 15-30 s and ~+2 MB each (diag_chat_m1_mem.log basis); report_all GObject and read_terms each a part
+of that; the per-node route < 3 s per node; per-node rows equal the whole read's (term_uid, name, is_source, wire) for plain
+Nodes[] owners; Constants / tunnels / Diagram-owned control terminals NOT addressable this way. Gates check only that every
+measurement completed; the numbers are FACTS.
+    py tools/bgrun.py --material --max-min 40 --log tools/bench/diag_s4_readcost.log -- py -u tools/bench/diag_s4_readcost.py
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == dc61e193e0376ce760f88fdfcda7087b  got dc61e193e0376ce760f88fdfcda7087b
+  PASS  DRY graph JSON for input md5 dc61e193e0376ce760f88fdfcda7087b  tools/bench/graph_ring_p4s01_20261002_234419.json
+METER start private -1.0 MB
+COST whole read_live #1                 secs    0.03  dMB None  private None
+COST whole read_live #2                 secs    0.02  dMB None  private None
+COST whole read_live #3                 secs    0.02  dMB None  private None
+COST part report_all GObject #1         secs    0.00  dMB None  private None
+COST part report_all GObject #2         secs    0.00  dMB None  private None
+COST part read_terms OpAllTerms_v1 #1   secs    0.00  dMB None  private None
+COST part read_terms OpAllTerms_v1 #2   secs    0.00  dMB None  private None
+COST route report_all Diagram #1        secs    0.00  dMB None  private None
+COST route report_all Diagram #2        secs    0.00  dMB None  private None
+COST route report_all Constant (uids)   secs    0.00  dMB None  private None
+  PASS  W the whole read returned rows (the recorded graph holds 5967)  5937
+COST node_labels d8 (owner #8 Property) secs    0.00  dMB None  private None
+COST node_terms_uids #8 Property        secs    0.00  dMB None  private None
+NODE {"owner": 8, "class": "Property", "n_whole": 6, "term_classes": ["Terminal"], "frame": 113, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[305, "reference", false, 0], [447, "reference out", true, 0], [455, "error in (no error)", false, 0], [472, "error out", true, 0], [489, "Scale.Minimum", false, 3030], [2608, "Scale.Maximum", false, 1150]]}
+COST node_labels d8 (owner #16 Function) secs    0.00  dMB None  private None
+NODE {"owner": 16, "class": "Function", "n_whole": 2, "term_classes": ["ParameterTerminal"], "frame": 113, "addressable": "not in Diagram[8].Nodes[] (92 nodes)"}
+COST node_labels d33 (owner #22 Property) secs    0.00  dMB None  private None
+COST node_terms_uids #22 Property       secs    0.00  dMB None  private None
+NODE {"owner": 22, "class": "Property", "n_whole": 5, "term_classes": ["Terminal"], "frame": 25392, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[29981, "reference", false, 0], [29984, "reference out", true, 0], [29987, "error in (no error)", false, 0], [29990, "error out", true, 0], [29993, "Value", true, 26432]]}
+COST node_labels d16 (owner #37 ControlReferenceConstant) secs    0.00  dMB None  private None
+COST node_terms_uids #37 ControlReferenceConstant secs    0.00  dMB None  private None
+NODE {"owner": 37, "class": "ControlReferenceConstant", "n_whole": 1, "term_classes": ["Terminal"], "frame": 3121, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[371, "- Inc (PgDn)", true, 2823]]}
+COST node_labels d30 (owner #48 SubVI)  secs    0.00  dMB None  private None
+COST node_terms_uids #48 SubVI          secs    0.00  dMB None  private None
+NODE {"owner": 48, "class": "SubVI", "n_whole": 7, "term_classes": ["Terminal"], "frame": 23058, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[483, "-Inc reference", false, 23804], [490, "+Inc reference", false, 23811], [495, "Focus inc reference", false, 23820], [566, "VISA resource name", false, 23985], [576, "In position", false, 24002], [698, "Out position", true, 23838]]}
+COST node_labels d65 (owner #50 IndexArray) secs    0.00  dMB None  private None
+COST node_terms_uids #50 IndexArray     secs    0.00  dMB None  private None
+NODE {"owner": 50, "class": "IndexArray", "n_whole": 4, "term_classes": ["Terminal"], "frame": 32166, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[10013, "disabled index (col)", false, 0], [28535, "array", false, 5929], [28549, "subarray", true, 10121], [28567, "index (row)", false, 10087]]}
+COST node_labels d56 (owner #63 DigitalNumericConstant) secs    0.00  dMB None  private None
+COST node_terms_uids #63 DigitalNumericConstant secs    0.00  dMB None  private None
+NODE {"owner": 63, "class": "DigitalNumericConstant", "n_whole": 1, "term_classes": ["Terminal"], "frame": 639, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[11390, "", true, 12108]]}
+COST node_labels d95 (owner #66 GenClassTagRefConstant) secs    0.00  dMB None  private None
+COST node_terms_uids #66 GenClassTagRefConstant secs    0.00  dMB None  private None
+NODE {"owner": 66, "class": "GenClassTagRefConstant", "n_whole": 1, "term_classes": ["Terminal"], "frame": 13236, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[1164, "Session In", true, 1169]]}
+COST node_labels d16 (owner #72 ControlReferenceConstant) secs    0.00  dMB None  private None
+COST node_terms_uids #72 ControlReferenceConstant secs    0.00  dMB None  private None
+NODE {"owner": 72, "class": "ControlReferenceConstant", "n_whole": 1, "term_classes": ["Terminal"], "frame": 3121, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[1126, "Image", true, 29572]]}
+COST node_labels d8 (owner #113 Diagram) secs    0.00  dMB None  private None
+NODE {"owner": 113, "class": "Diagram", "n_whole": 2, "term_classes": ["ControlTerminal"], "frame": 113, "addressable": "not in Diagram[8].Nodes[] (92 nodes)"}
+COST node_labels d0 (owner #123 FlatSequenceInnerTunnel) secs    0.00  dMB None  private None
+COST node_terms_uids #123 FlatSequenceInnerTunnel secs    0.00  dMB None  private None
+NODE {"owner": 123, "class": "FlatSequenceInnerTunnel", "n_whole": 4, "term_classes": ["Terminal"], "frame": 536, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[151, "", true, 3427], [876, "", false, 882], [891, "", false, 482], [895, "", true, 882]]}
+COST node_labels d9 (owner #124 Diagram) secs    0.00  dMB None  private None
+NODE {"owner": 124, "class": "Diagram", "n_whole": 3, "term_classes": ["ControlTerminal"], "frame": 124, "addressable": "not in Diagram[9].Nodes[] (99 nodes)"}
+COST node_labels d19 (owner #194 Function) secs    0.00  dMB None  private None
+NODE {"owner": 194, "class": "Function", "n_whole": 3, "term_classes": ["OverridableParameterTerminal", "ParameterTerminal"], "frame": 686, "addressable": "not in Diagram[19].Nodes[] (112 nodes)"}
+COST node_labels d56 (owner #270 Tunnel) secs    0.00  dMB None  private None
+NODE {"owner": 270, "class": "Tunnel", "n_whole": 3, "term_classes": ["InnerTerminal", "OuterTerminal"], "frame": 639, "addressable": "not in Diagram[56].Nodes[] (114 nodes)"}
+COST node_labels d0 (owner #317 FlatSequenceInnerTunnel) secs    0.00  dMB None  private None
+COST node_terms_uids #317 FlatSequenceInnerTunnel secs    0.00  dMB None  private None
+NODE {"owner": 317, "class": "FlatSequenceInnerTunnel", "n_whole": 4, "term_classes": ["Terminal"], "frame": 536, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[320, "", true, 3873], [334, "", false, 357], [3649, "", false, 3666], [3657, "", true, 357]]}
+COST node_labels d20 (owner #376 SubVI) secs    0.00  dMB None  private None
+COST node_terms_uids #376 SubVI         secs    0.00  dMB None  private None
+NODE {"owner": 376, "class": "SubVI", "n_whole": 12, "term_classes": ["Terminal"], "frame": 23405, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[3934, "error out", true, 24264], [3954, "total data array out", true, 24300], [5683, "error in", false, 24285], [5704, "file progress", true, 10362], [5739, "file number to append out", true, 25232], [5754, "current frame data array in", false, 0]]}
+COST node_labels d14 (owner #451 DigitalNumericConstant) secs    0.00  dMB None  private None
+COST node_terms_uids #451 DigitalNumericConstant secs    0.00  dMB None  private None
+NODE {"owner": 451, "class": "DigitalNumericConstant", "n_whole": 1, "term_classes": ["Terminal"], "frame": 3293, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[521, "In Set Position", true, 1992]]}
+COST node_labels d19 (owner #580 RightShiftRegister) secs    0.00  dMB None  private None
+NODE {"owner": 580, "class": "RightShiftRegister", "n_whole": 2, "term_classes": ["InnerTerminal", "OuterTerminal"], "frame": 686, "addressable": "not in Diagram[19].Nodes[] (112 nodes)"}
+COST node_labels d19 (owner #649 LoopTunnel) secs    0.00  dMB None  private None
+NODE {"owner": 649, "class": "LoopTunnel", "n_whole": 2, "term_classes": ["InnerTerminal", "OuterTerminal"], "frame": 686, "addressable": "not in Diagram[19].Nodes[] (112 nodes)"}
+COST node_labels d19 (owner #665 LoopTunnel) secs    0.00  dMB None  private None
+NODE {"owner": 665, "class": "LoopTunnel", "n_whole": 2, "term_classes": ["InnerTerminal", "OuterTerminal"], "frame": 686, "addressable": "not in Diagram[19].Nodes[] (112 nodes)"}
+COST node_labels d19 (owner #781 GrowableFunction) secs    0.00  dMB None  private None
+COST node_terms_uids #781 GrowableFunction secs    0.00  dMB None  private None
+NODE {"owner": 781, "class": "GrowableFunction", "n_whole": 4, "term_classes": ["Terminal"], "frame": 686, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[1537, "element", false, 3865], [1842, "initialized array", true, 3543], [1846, "dimension size", false, 25238], [4459, "dimension size", false, 8424]]}
+COST node_labels d13 (owner #790 InRangeAndCoerce) secs    0.00  dMB None  private None
+NODE {"owner": 790, "class": "InRangeAndCoerce", "n_whole": 5, "term_classes": ["ParameterTerminal"], "frame": 3371, "addressable": "not in Diagram[13].Nodes[] (88 nodes)"}
+COST node_labels d19 (owner #862 RightShiftRegister) secs    0.00  dMB None  private None
+NODE {"owner": 862, "class": "RightShiftRegister", "n_whole": 2, "term_classes": ["InnerTerminal", "OuterTerminal"], "frame": 686, "addressable": "not in Diagram[19].Nodes[] (112 nodes)"}
+COST node_labels d56 (owner #1034 SelectorTunnel) secs    0.00  dMB None  private None
+NODE {"owner": 1034, "class": "SelectorTunnel", "n_whole": 3, "term_classes": ["InnerTerminal", "OuterTerminal"], "frame": 639, "addressable": "not in Diagram[56].Nodes[] (114 nodes)"}
+COST node_labels d1 (owner #1165 Tunnel) secs    0.00  dMB None  private None
+NODE {"owner": 1165, "class": "Tunnel", "n_whole": 3, "term_classes": ["InnerTerminal", "OuterTerminal"], "frame": 3628, "addressable": "not in Diagram[1].Nodes[] (99 nodes)"}
+COST node_labels d29 (owner #1207 BooleanConstant) secs    0.00  dMB None  private None
+COST node_terms_uids #1207 BooleanConstant secs    0.00  dMB None  private None
+NODE {"owner": 1207, "class": "BooleanConstant", "n_whole": 1, "term_classes": ["Terminal"], "frame": 5592, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[5880, "Reset tracking", true, 5888]]}
+COST node_labels d56 (owner #1445 SelectorTunnel) secs    0.00  dMB None  private None
+NODE {"owner": 1445, "class": "SelectorTunnel", "n_whole": 3, "term_classes": ["InnerTerminal", "OuterTerminal"], "frame": 639, "addressable": "not in Diagram[56].Nodes[] (114 nodes)"}
+COST node_labels d93 (owner #1652 StringConstant) secs    0.00  dMB None  private None
+COST node_terms_uids #1652 StringConstant secs    0.00  dMB None  private None
+NODE {"owner": 1652, "class": "StringConstant", "n_whole": 1, "term_classes": ["Terminal"], "frame": 1610, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[1627, "message", true, 11520]]}
+COST node_labels d62 (owner #1753 IndexArray) secs    0.00  dMB None  private None
+COST node_terms_uids #1753 IndexArray   secs    0.00  dMB None  private None
+NODE {"owner": 1753, "class": "IndexArray", "n_whole": 4, "term_classes": ["Terminal"], "frame": 2603, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[23234, "index (col)", false, 24549], [29542, "array", false, 9597], [29545, "element", true, 24127], [29549, "index (row)", false, 30052]]}
+COST node_labels d19 (owner #1755 LeftShiftRegister) secs    0.00  dMB None  private None
+NODE {"owner": 1755, "class": "LeftShiftRegister", "n_whole": 2, "term_classes": ["InnerTerminal", "OuterTerminal"], "frame": 686, "addressable": "not in Diagram[19].Nodes[] (112 nodes)"}
+  PASS  N every sampled owner was measured (30 owners, 18 classes)  30
+  FAIL  J measurement json written  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_s4_readcost.json
+
+=== DRY FAIL: first_fail=GATE J measurement json written coverage 72/76 lines, first mutation None, unverified 0, graph tools/bench/graph_ring_p4s01_20261002_234419.json
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"GATE J measurement json written","artefacts":[]}
+BGRUN END rc=1 after 1s
+BGRUN START 2026-10-03 07:49:59 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/bench/diag_s4_readcost.py --graph tools/bench/graph_ring_p4s01_20261002_234419.json
+BGRUN PID 24388
+diag_s4_readcost - card chat-S4 item B, the LabVIEW MEASUREMENT: what one per-BIND whole-VI read costs today (seconds and
+private MB), split into its parts, and what the nearest EXISTING per-node route costs and returns, on a byte copy of the P4
+session-1 file claudeDev\D1_ring_p4s01_20261002_232547.vi (dc61e193). READ-ONLY on the copy: no edit, no save, no VI run;
+the copy is deleted at close (s.discard_work) and LabVIEW is killed at exit.
+EXISTING TOOLS FOUND FIRST (card chat-S4 rule "check what exists"): the whole read = wiki_build.read_live:233 (report_all
+GObject census + allterms.read_terms OpAllTerms_v1 + join); NO op reads ONE owner's terminals by uid - the 137-3 "read_terms by
+owner uid" row was a WHOLE read_terms filtered in Python (diag_c137_3_lookup.py:50-52). The nearest per-node route is
+report_all('Diagram') -> gscript.node_labels(d) (Diagram.Nodes[] uid order, gscript.py:3639) -> gscript.node_terms_uids(d, i)
+(OpNodeTermsUid_v0, gscript.py:1223), which returns name / is_source / wire / term uid but NOT term_class / owner_class /
+frame_diagram, and cannot address a Constant (diag_c137_3_lookup.log:39-43).
+PREDICTION: whole read_live 15-30 s and ~+2 MB each (diag_chat_m1_mem.log basis); report_all GObject and read_terms each a part
+of that; the per-node route < 3 s per node; per-node rows equal the whole read's (term_uid, name, is_source, wire) for plain
+Nodes[] owners; Constants / tunnels / Diagram-owned control terminals NOT addressable this way. Gates check only that every
+measurement completed; the numbers are FACTS.
+    py tools/bgrun.py --material --max-min 40 --log tools/bench/diag_s4_readcost.log -- py -u tools/bench/diag_s4_readcost.py
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == dc61e193e0376ce760f88fdfcda7087b  got dc61e193e0376ce760f88fdfcda7087b
+  PASS  DRY graph JSON for input md5 dc61e193e0376ce760f88fdfcda7087b  tools/bench/graph_ring_p4s01_20261002_234419.json
+METER start private -1.0 MB
+COST whole read_live #1                 secs    0.04  dMB None  private None
+COST whole read_live #2                 secs    0.02  dMB None  private None
+COST whole read_live #3                 secs    0.02  dMB None  private None
+COST part report_all GObject #1         secs    0.00  dMB None  private None
+COST part report_all GObject #2         secs    0.00  dMB None  private None
+COST part read_terms OpAllTerms_v1 #1   secs    0.00  dMB None  private None
+COST part read_terms OpAllTerms_v1 #2   secs    0.00  dMB None  private None
+COST route report_all Diagram #1        secs    0.00  dMB None  private None
+COST route report_all Diagram #2        secs    0.00  dMB None  private None
+COST route report_all Constant (uids)   secs    0.00  dMB None  private None
+  PASS  W the whole read returned rows (the recorded graph holds 5967)  5937
+COST node_labels d8 (owner #8 Property) secs    0.00  dMB None  private None
+COST node_terms_uids #8 Property        secs    0.00  dMB None  private None
+NODE {"owner": 8, "class": "Property", "n_whole": 6, "term_classes": ["Terminal"], "frame": 113, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[305, "reference", false, 0], [447, "reference out", true, 0], [455, "error in (no error)", false, 0], [472, "error out", true, 0], [489, "Scale.Minimum", false, 3030], [2608, "Scale.Maximum", false, 1150]]}
+COST node_labels d8 (owner #16 Function) secs    0.00  dMB None  private None
+NODE {"owner": 16, "class": "Function", "n_whole": 2, "term_classes": ["ParameterTerminal"], "frame": 113, "addressable": "not in Diagram[8].Nodes[] (92 nodes)"}
+COST node_labels d33 (owner #22 Property) secs    0.00  dMB None  private None
+COST node_terms_uids #22 Property       secs    0.00  dMB None  private None
+NODE {"owner": 22, "class": "Property", "n_whole": 5, "term_classes": ["Terminal"], "frame": 25392, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[29981, "reference", false, 0], [29984, "reference out", true, 0], [29987, "error in (no error)", false, 0], [29990, "error out", true, 0], [29993, "Value", true, 26432]]}
+COST node_labels d16 (owner #37 ControlReferenceConstant) secs    0.00  dMB None  private None
+COST node_terms_uids #37 ControlReferenceConstant secs    0.00  dMB None  private None
+NODE {"owner": 37, "class": "ControlReferenceConstant", "n_whole": 1, "term_classes": ["Terminal"], "frame": 3121, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[371, "- Inc (PgDn)", true, 2823]]}
+COST node_labels d30 (owner #48 SubVI)  secs    0.00  dMB None  private None
+COST node_terms_uids #48 SubVI          secs    0.00  dMB None  private None
+NODE {"owner": 48, "class": "SubVI", "n_whole": 7, "term_classes": ["Terminal"], "frame": 23058, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[483, "-Inc reference", false, 23804], [490, "+Inc reference", false, 23811], [495, "Focus inc reference", false, 23820], [566, "VISA resource name", false, 23985], [576, "In position", false, 24002], [698, "Out position", true, 23838]]}
+COST node_labels d65 (owner #50 IndexArray) secs    0.00  dMB None  private None
+COST node_terms_uids #50 IndexArray     secs    0.00  dMB None  private None
+NODE {"owner": 50, "class": "IndexArray", "n_whole": 4, "term_classes": ["Terminal"], "frame": 32166, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[10013, "disabled index (col)", false, 0], [28535, "array", false, 5929], [28549, "subarray", true, 10121], [28567, "index (row)", false, 10087]]}
+COST node_labels d56 (owner #63 DigitalNumericConstant) secs    0.00  dMB None  private None
+COST node_terms_uids #63 DigitalNumericConstant secs    0.00  dMB None  private None
+NODE {"owner": 63, "class": "DigitalNumericConstant", "n_whole": 1, "term_classes": ["Terminal"], "frame": 639, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[11390, "", true, 12108]]}
+COST node_labels d95 (owner #66 GenClassTagRefConstant) secs    0.00  dMB None  private None
+COST node_terms_uids #66 GenClassTagRefConstant secs    0.00  dMB None  private None
+NODE {"owner": 66, "class": "GenClassTagRefConstant", "n_whole": 1, "term_classes": ["Terminal"], "frame": 13236, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[1164, "Session In", true, 1169]]}
+COST node_labels d16 (owner #72 ControlReferenceConstant) secs    0.00  dMB None  private None
+COST node_terms_uids #72 ControlReferenceConstant secs    0.00  dMB None  private None
+NODE {"owner": 72, "class": "ControlReferenceConstant", "n_whole": 1, "term_classes": ["Terminal"], "frame": 3121, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[1126, "Image", true, 29572]]}
+COST node_labels d8 (owner #113 Diagram) secs    0.00  dMB None  private None
+NODE {"owner": 113, "class": "Diagram", "n_whole": 2, "term_classes": ["ControlTerminal"], "frame": 113, "addressable": "not in Diagram[8].Nodes[] (92 nodes)"}
+COST node_labels d0 (owner #123 FlatSequenceInnerTunnel) secs    0.00  dMB None  private None
+COST node_terms_uids #123 FlatSequenceInnerTunnel secs    0.00  dMB None  private None
+NODE {"owner": 123, "class": "FlatSequenceInnerTunnel", "n_whole": 4, "term_classes": ["Terminal"], "frame": 536, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[151, "", true, 3427], [876, "", false, 882], [891, "", false, 482], [895, "", true, 882]]}
+COST node_labels d9 (owner #124 Diagram) secs    0.00  dMB None  private None
+NODE {"owner": 124, "class": "Diagram", "n_whole": 3, "term_classes": ["ControlTerminal"], "frame": 124, "addressable": "not in Diagram[9].Nodes[] (99 nodes)"}
+COST node_labels d19 (owner #194 Function) secs    0.00  dMB None  private None
+NODE {"owner": 194, "class": "Function", "n_whole": 3, "term_classes": ["OverridableParameterTerminal", "ParameterTerminal"], "frame": 686, "addressable": "not in Diagram[19].Nodes[] (112 nodes)"}
+COST node_labels d56 (owner #270 Tunnel) secs    0.00  dMB None  private None
+NODE {"owner": 270, "class": "Tunnel", "n_whole": 3, "term_classes": ["InnerTerminal", "OuterTerminal"], "frame": 639, "addressable": "not in Diagram[56].Nodes[] (114 nodes)"}
+COST node_labels d0 (owner #317 FlatSequenceInnerTunnel) secs    0.00  dMB None  private None
+COST node_terms_uids #317 FlatSequenceInnerTunnel secs    0.00  dMB None  private None
+NODE {"owner": 317, "class": "FlatSequenceInnerTunnel", "n_whole": 4, "term_classes": ["Terminal"], "frame": 536, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[320, "", true, 3873], [334, "", false, 357], [3649, "", false, 3666], [3657, "", true, 357]]}
+COST node_labels d20 (owner #376 SubVI) secs    0.00  dMB None  private None
+COST node_terms_uids #376 SubVI         secs    0.00  dMB None  private None
+NODE {"owner": 376, "class": "SubVI", "n_whole": 12, "term_classes": ["Terminal"], "frame": 23405, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[3934, "error out", true, 24264], [3954, "total data array out", true, 24300], [5683, "error in", false, 24285], [5704, "file progress", true, 10362], [5739, "file number to append out", true, 25232], [5754, "current frame data array in", false, 0]]}
+COST node_labels d14 (owner #451 DigitalNumericConstant) secs    0.00  dMB None  private None
+COST node_terms_uids #451 DigitalNumericConstant secs    0.00  dMB None  private None
+NODE {"owner": 451, "class": "DigitalNumericConstant", "n_whole": 1, "term_classes": ["Terminal"], "frame": 3293, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[521, "In Set Position", true, 1992]]}
+COST node_labels d19 (owner #580 RightShiftRegister) secs    0.00  dMB None  private None
+NODE {"owner": 580, "class": "RightShiftRegister", "n_whole": 2, "term_classes": ["InnerTerminal", "OuterTerminal"], "frame": 686, "addressable": "not in Diagram[19].Nodes[] (112 nodes)"}
+COST node_labels d19 (owner #649 LoopTunnel) secs    0.00  dMB None  private None
+NODE {"owner": 649, "class": "LoopTunnel", "n_whole": 2, "term_classes": ["InnerTerminal", "OuterTerminal"], "frame": 686, "addressable": "not in Diagram[19].Nodes[] (112 nodes)"}
+COST node_labels d19 (owner #665 LoopTunnel) secs    0.00  dMB None  private None
+NODE {"owner": 665, "class": "LoopTunnel", "n_whole": 2, "term_classes": ["InnerTerminal", "OuterTerminal"], "frame": 686, "addressable": "not in Diagram[19].Nodes[] (112 nodes)"}
+COST node_labels d19 (owner #781 GrowableFunction) secs    0.00  dMB None  private None
+COST node_terms_uids #781 GrowableFunction secs    0.00  dMB None  private None
+NODE {"owner": 781, "class": "GrowableFunction", "n_whole": 4, "term_classes": ["Terminal"], "frame": 686, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[1537, "element", false, 3865], [1842, "initialized array", true, 3543], [1846, "dimension size", false, 25238], [4459, "dimension size", false, 8424]]}
+COST node_labels d13 (owner #790 InRangeAndCoerce) secs    0.00  dMB None  private None
+NODE {"owner": 790, "class": "InRangeAndCoerce", "n_whole": 5, "term_classes": ["ParameterTerminal"], "frame": 3371, "addressable": "not in Diagram[13].Nodes[] (88 nodes)"}
+COST node_labels d19 (owner #862 RightShiftRegister) secs    0.00  dMB None  private None
+NODE {"owner": 862, "class": "RightShiftRegister", "n_whole": 2, "term_classes": ["InnerTerminal", "OuterTerminal"], "frame": 686, "addressable": "not in Diagram[19].Nodes[] (112 nodes)"}
+COST node_labels d56 (owner #1034 SelectorTunnel) secs    0.00  dMB None  private None
+NODE {"owner": 1034, "class": "SelectorTunnel", "n_whole": 3, "term_classes": ["InnerTerminal", "OuterTerminal"], "frame": 639, "addressable": "not in Diagram[56].Nodes[] (114 nodes)"}
+COST node_labels d1 (owner #1165 Tunnel) secs    0.00  dMB None  private None
+NODE {"owner": 1165, "class": "Tunnel", "n_whole": 3, "term_classes": ["InnerTerminal", "OuterTerminal"], "frame": 3628, "addressable": "not in Diagram[1].Nodes[] (99 nodes)"}
+COST node_labels d29 (owner #1207 BooleanConstant) secs    0.00  dMB None  private None
+COST node_terms_uids #1207 BooleanConstant secs    0.00  dMB None  private None
+NODE {"owner": 1207, "class": "BooleanConstant", "n_whole": 1, "term_classes": ["Terminal"], "frame": 5592, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[5880, "Reset tracking", true, 5888]]}
+COST node_labels d56 (owner #1445 SelectorTunnel) secs    0.00  dMB None  private None
+NODE {"owner": 1445, "class": "SelectorTunnel", "n_whole": 3, "term_classes": ["InnerTerminal", "OuterTerminal"], "frame": 639, "addressable": "not in Diagram[56].Nodes[] (114 nodes)"}
+COST node_labels d93 (owner #1652 StringConstant) secs    0.00  dMB None  private None
+COST node_terms_uids #1652 StringConstant secs    0.00  dMB None  private None
+NODE {"owner": 1652, "class": "StringConstant", "n_whole": 1, "term_classes": ["Terminal"], "frame": 1610, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[1627, "message", true, 11520]]}
+COST node_labels d62 (owner #1753 IndexArray) secs    0.00  dMB None  private None
+COST node_terms_uids #1753 IndexArray   secs    0.00  dMB None  private None
+NODE {"owner": 1753, "class": "IndexArray", "n_whole": 4, "term_classes": ["Terminal"], "frame": 2603, "addressable": "yes", "echo": "<dry:g.node_terms_uids[0]>", "n_node": 0, "equal": false, "only_node": [], "only_whole": [[23234, "index (col)", false, 24549], [29542, "array", false, 9597], [29545, "element", true, 24127], [29549, "index (row)", false, 30052]]}
+COST node_labels d19 (owner #1755 LeftShiftRegister) secs    0.00  dMB None  private None
+NODE {"owner": 1755, "class": "LeftShiftRegister", "n_whole": 2, "term_classes": ["InnerTerminal", "OuterTerminal"], "frame": 686, "addressable": "not in Diagram[19].Nodes[] (112 nodes)"}
+  PASS  N every sampled owner was measured (30 owners, 18 classes)  30
+  FACT  J measurement json -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_s4_readcost.json
+
+=== DRY FAIL: first_fail=PY RuntimeError: dry run: subprocess.run is blocked (module level) coverage 72/76 lines, first mutation None, unverified 0, graph tools/bench/graph_ring_p4s01_20261002_234419.json
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"PY RuntimeError: dry run: subprocess.run is blocked (module level)","artefacts":[]}
+BGRUN END rc=1 after 1s

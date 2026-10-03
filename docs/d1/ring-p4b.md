@@ -90,3 +90,81 @@ How to add: see the 5-line note at the top of `docs/d1/INDEX.md`.
        graph_ring_p4s01_20261002_234419.json`, cut re-checked at start 596.5 (≤ 675, else re-cut by PD320(c) before the scratch), dry/prerun,
        ONE scratch on a byte copy of the session-1 file, gated launch (all PASS + EL == pred + peak ≤ 675) saving `D1_ring_p4s02_*.vi`, load +
        graph read. Beside it: offline prep of session 3 (provisional on stagesim's end of s02).
+
+**USER DECISIONS 2026-10-03 (chat, recorded verbatim; the next judgement agent numbers them as the next PD and plans by them):**
+- **P4 FROM HERE ON IS BUILT WITH SUBVIs** ("P4부터 그렇개 진행하자", after "Subvi해도 local variable을 직접 노드에 꽂아주면
+  되는거 아님?"). The caller (loop 1.2 in the bed) keeps the LOCAL reads/writes and their seqlock ORDER (n1 = Num(i) read →
+  track → n2 = Num(i) read; Latest/`last` handling; StopAll); the pure computation becomes small subVIs built and verified
+  in their OWN small VI files under claudeDev (inputs → outputs, no locals, no refs): e.g. slot selection (smallest
+  Num > last, jump to newest on overwrite) and the overwrite check + rollback Selects (the 43-action block). The bed then
+  only gets the subVI nodes + the local reads/writes + their wires. Each subVI is RUN on known values (functional) before it
+  is dropped into the bed. P2/P3 (camera side) and the saved P4 session-1 file `D1_ring_p4s01_20261002_232547.vi` (the
+  RAS repair) are kept as they are. This supersedes (e) above (session 2 of the per-node plan v17): re-plan P4 around
+  the subVIs first.
+- Process (cards chat-S2/S3/S4): STOP vs LOG gate table `tools/gateclass.py`; memory limits 680 MB predicted / 695 MB
+  MEMSTOP (LabVIEW error 2 measured at 704.8 MB); tunnel OBJECT count differences stay STOP; tunnel face-row-only step
+  diffs are LOG; adopt a fully passing scratch file as the stage result (no re-run on the bed); per-node reads instead of
+  per-BIND whole-VI reads; resume from the stop point within a cycle.
+
+330. **(cycle 142 judgement, 2026-10-03 — the user's 2026-10-03 subVI decision above; after 142-1 FAIL 9/1
+     (`tools/bench/diag_c142_1_facts.md`), 142-P1 FAIL 17/1 (`tools/bench/prep_c142_p1_facts.md`, table
+     `tools/bench/prep_c142_p1_subvi_table.md`))**
+     USER-RULES: U1 (relied on: a subVI holds exactly the plan's primitives and wires, checked by running it against a Python
+     reference of the same plan group; X/Y/Z equivalence still only at P6), U4 (relied on: locals stay in the caller; a subVI
+     has no locals, refs or registers), U9/U13 (relied on: seqlock order n1 → track → n2 stays in the bed, untouched); none
+     contradicted.
+     - **(a) The P4 subVI list = TWO subVIs.** v17's 185 non-repair actions hold 6 pure groups (55 actions); only two are
+       more than one node: **S1 `RingPickSlot_v0.vi`** = G2 minus `p4_or_w1` (Greater?, For + Select + I32-MAX, Array Max &
+       Min, Less?; in `Num`, `last`; out `min Num`, `min slot`, `found`) — the `Or` with the `StopAll` local is W1's stop and
+       stays in the bed; **S2 `RingSeqCheck_v0.vi`** = G5's scalar core (`p4_eq_seq`, `p4_gt_n1`, `p4_and`, `p4_dec`,
+       `p4_sel_last`, `p4_sel_disc`, `p4_inc_disc` and their inner wires; in n1, n2, last, Latest, discard count; out valid,
+       next last, next discard count). Exact terminals are read from v17's wires by the build card, never re-typed.
+     - **(b) The seven rollback Selects (`p4_rb*`) and the single Index Arrays (G7–G10) stay bed primitives:** each is one
+       node, their types differ per register (arrays/clusters of the original, unstated in plan and graph), and a typed
+       subVI per register would add a file and a connector pane for zero removed nodes.
+     - **(c) Each subVI is accepted FUNCTIONALLY in its own file:** built from `EMPTY_v0.vi`, ExecState 1, run on fixed
+       vectors whose expected outputs come from a Python reference of the plan group, re-run from the saved file in a fresh
+       instance (brief `tools/bench/cards/brief_142-1.md`). Only then is it dropped into the bed (`drop_subvi`).
+     - **(d) The remaining slot-write repair (v17 #25..#50, 26 actions) is one bed session** `plan_ring_p4_rasrest.json`
+       4ad2d288, unchanged by the subVIs. Its `--rebase` onto the s01 graph is refused by the binder's raw-uid key (s01's
+       re-used terminal uids 28004/28979, PD325(a)): fix the REBIND key to (uid, owner, name) as PD325(b) did for TD, with a
+       self-test from this case — a stage-tool card, run ALONE (PD281(a)). Not planning rasrest on the real graph by hand.
+     - **(e) 142-1's failure = our script** (strict per-delete count after a For delete); retry 142-2 checks the scaffold
+       cleanup by one end census. Then v18 = v17 with S1/S2 groups replaced by two subVI nodes + boundary wires (prep card).
+331. **(cycle 142 judgement, 2026-10-03 — after 142-3 PASS 87/0 (`tools/bench/diag_c142_3_facts.md`), 142-4 PASS 121/0
+     (`tools/bench/diag_c142_4_facts.md`), 142-P2 PASS 13/0 (`tools/bench/prep_c142_p2_facts.md`))**
+     USER-RULES: U1 (relied on: each subVI's outputs equal a Python reference DERIVED FROM v17's wires on 7 vectors; v18's end
+     cdiff == v17's), U4, U9/U13 (relied on: locals and seqlock order untouched in the bed); none contradicted.
+     - **(a) BOTH P4 subVIs DELIVERED, FUNCTIONAL in their own files:** `claudeDev\RingPickSlot_v0.vi` md5 `6fcf153f…`
+       (pane 11 Num / 10 last → 3 min Num / 2 min slot / 1 found) and `claudeDev\RingSeqCheck_v0.vi` md5 `0295a8d3…`
+       (pane 11 n1 / 10 n2 / 9 last / 8 Latest / 7 discards → 3 next last / 2 next discards / 1 valid; valid = n1==n2 AND
+       n1>last, next last = valid ? n1 : Latest−1, next discards = valid ? discards : discards+1 — v17's arithmetic). Each ran
+       7/7 vectors == reference and 2 vectors again from the saved file in a fresh instance. They are not broken
+       intermediates (ExecState 1) and do not count toward the 6-file cap.
+     - **(b) ACCEPTED: plan v18 `plan_ring_p4_v18.json` 2ea6cafa** (202 actions, 190 ops; PS1 op 79, SQ1 op 88; replay END;
+       end cdiff == v17's 24 rows). S2's provisional names equal the measured pane (142-4 log:199) — the provisional mark is
+       discharged; v18 needs no re-make for names.
+     - **(c) X10 cut limit = `memory_model.json` (680, PD328)**, which supersedes PD326(e)'s 675; the launch MEMSTOP stays 695.
+       Loading a subVI file at drop is UNMODELLED: the scratch run's measured peak is the check (PD323(c) precedent).
+     - **(d) Rebind key fix now, ALONE (PD330(d)):** card 142-5 (offline, edits stage tools) — rebind compares terminals by
+       (uid, owner, name), self-test from 142-P1's refusal, `c125_1_offline_measure.py` rerun (PD252(a)); then session 2 of
+       v18 = ops 25..(cut at 680) rebased on `graph_ring_p4s01_20261002_234419.json`, dry + prerun + X10 + EL prediction +
+       recipe pair. `plan_ring_p4_rasrest.json` is superseded by that session (same 26 repair actions at its head).
+     - **(e) Open notes kept as notes:** `gscript.for_loop` leaves 3 junk constants per call — per-caller delete stays (no
+       shared-tool change now; documented `docs/toolkit-capabilities.md:60`); gate-fp fp-36 (guard_peer lacks the reverse of
+       RULE-OFFLINE-CARD) is queued.
+332. **(cycle 142 judgement, 2026-10-03 — after 142-5 PASS (`tools/bench/prep_c142_5_facts.md`))**
+     USER-RULES: U1 (relied on: session 2's 34 actions are v18's, unchanged; only the binder's key changed); none contradicted.
+     - **(a) ACCEPTED:** rebind key (uid, owner, name) (`tools/stage_prerun.py:3456-3471,3492-3493`, self-test
+       `selftest_rebind_c142_5.py` 1/3 before → 4/0 after; old rebind/rebase/c125_1 green). Cause MEASURED: 28004/28979 were
+       `output array` of deleted #27928/#28916, re-issued to new #6942/#6805.
+     - **(b) ACCEPTED: P4 session 2 = `plan_ring_p4_s02v18.json` e941ebbf** = v18 ops 25..58 (34 actions: the 26 remaining
+       slot-write repair actions + the first reader actions), rebased on the s01 graph, dry PASS, prerun 16/0, X10 678.5 ≤ 680
+       at 596.5. `plan_ring_p4_s02.json` (v17) and `plan_ring_p4_rasrest.json` are SUPERSEDED — never launch them.
+     - **(c) Census:** derived {} (all 34 census-unpredicted) ⇒ `--scratch-required` exit 3: the scratch run is required and
+       its MEASURED census becomes the launch prediction (PD261(c)/PD325(c) precedent). Error List predicted 51, alternative 52
+       (#23166 newly unwired) — the scratch decides which; a third value is a return.
+     - **(d) The prior-art review of `stage_d1_ring_p4_s02v18.py` is owed before its scratch** (not a proven pattern: the
+       repair has one clean launch). Cycle 143's LabVIEW card dispatches it first (peers `priorart`), then the scratch on a
+       byte copy of `D1_ring_p4s01_20261002_232547.vi`; when the scratch passes every gate it is ADOPTED as session 2's file
+       (PD329(a)) — no second run on the s01 file; full Error List, load + graph read in a fresh instance.

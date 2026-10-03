@@ -1,0 +1,62 @@
+BGRUN START 2026-10-03 09:46:33 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c142-3-hyp-rps1 -TaskFile tools/bench/diag_c142_3_hyp_task.md
+BGRUN PID 19236
+OUTCOME: ANSWERED (185s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-03-c142-3-hyp-rps1.md
+COST: $1.5874  in 22 / out 13884 / cache-create 131893 / cache-read 1159955  (181s, 19 turn(s))
+--- ANSWER ---
+# Review of the card 142-3 diagnosis (RingPickSlot v1 failure)
+
+**Claim A is correct about why the gate failed, but it overstates what was measured.** The v2 plan also has two holes the claim hides: nobody has measured `Num`'s data type, and the plan's "re-check the name" step will break once the controls are relabelled. B1 is mostly supported by evidence. B2 is supported by one log line from a different op. B3 is right, with one condition.
+
+## 1. Strongest reason the claim is wrong: "the measured end state otherwise matched the prediction" is false
+The scaffold-end census at `build_ringpickslot_v1.py:48-50` is one dict literal. The `one()` call for `"last"` raises `Stop` while the dict is still being built, so `OUT["scaffold_end"]` is never assigned. Nothing was saved: `diag_c142_2_out.json` has no `scaffold_end` key, only `scaffold_consts`. That means three things the claim calls matched were never observed:
+- no ForLoop left
+- `Constant == {KMX2}`
+- the helper Less? (H) gone
+
+Only the four terminal wire values at log :36-39 were seen. Whether copying KMX2 (#52) or the Less? helper (#64) left extra constants behind is unknown. That is exactly the question B1's attribution depends on.
+
+## 2. Alternative explanations
+**(a) For Q1: `Num` may not be a 1-D I32 array.** It was created by Create Control on GT.x while GT.y was fed through a tunnel that `connect_term_uid` created automatically on the generator For loop (log :10). That tunnel's IndexMode has never been read on this route: `diag_c138_6_facts.md:33-34` says "IndexMode NOT read". NI documents that For loop output tunnels auto-index by default when created in the editor ([NI docs](https://www.ni.com/docs/en-US/bundle/labview/page/processing-individual-elements-in-an-array-or-a-collection-with-a-loop.html)). Nothing confirms that a tunnel created by `Terminal.Connect Wire` behaves the same way. Two separate unknowns sit here:
+- Whether the tunnel indexes at all.
+- The type Create Control picks for a polymorphic Greater?.x input.
+
+If `Num` came out as a scalar I32, then GT.y ← `last` still wires cleanly, but the run fails later (FMN tunnels, `min index`) and looks like a new mystery. v1 deletes the scaffold before checking `Num`'s type, and v2 inherits that order.
+
+**(b) For B1: the five constants could be split between `for_loop` and `create_const_loop_term`.** No Constant traverse was taken between the two calls (v1.py:37-38). Uid order proves nothing here: uids are reused. Constant #84, deleted at log :18, comes back as the `last` ControlTerminal #84 at log :29. Two pieces of evidence still favour B1:
+- `probe_opforloop.log:12-16` shows three `Create Constant.vi` nodes chained off the target's top-level `Diagram` (Property Node output 1126).
+- `diag_c138_6_facts.md:15-16` reports `create_const_loop_term` making "exactly one new constant".
+
+So B1 is plausible but not measured in this run.
+
+**(c) For B3: the junk numeric constant can become N.** In the probe, Create Constant #1027's Terminal feeds `Select.t`. `Select.s` is the `Loop Count?` control and Select's output goes to `Loop Count Terminal` (`probe_opforloop.log:16-17,15`). The junk constant is unwired only because `gscript.for_loop` never sets `Loop Count?` (`tools/gscript.py:1562-1574`). If anyone sets that control, the constant becomes N and deleting it breaks the loop.
+
+## 3. What would falsify the claims
+- **B1:** after the second `for_loop`, the new Constant entries are not exactly {1 DigitalNumeric + 2 ArrayConstants, each with one element (numeric / boolean per the probe's types)}, or one of them is wired. Also falsified if a fresh read taken right after the KMX2 and Less? copies shows extra constants.
+- **The silent premise behind Claim A:** `Num` reads back as anything other than a 1-D array of I32.
+- **B2:** its evidence is `OpForLoopIn_v0` (`stage_d1_qrt_pool_scratch.log:52`), not `OpForLoop_v0`. The label of a For made by `for_loop` has not been read directly.
+
+## Answers to the three questions
+1. **Not the whole story.** Beyond the type hole in 2(a), plan item (1) re-checks each control or indicator terminal by "name" in the latest terminal table. For a ControlTerminal that name is the label: `'x 2'` at log :32. Line 68 relabels the terminals to `Num`, `last` and so on, so any re-check after that line fails. Re-check by uid, owner and direction only, or move the relabel to the end. Uid reuse is real (#84), so never look up a uid from a list read before a delete, such as `OUT["scaffold_consts"]`.
+2. Evidence on the other ops:
+   - **Constant copies (k0) and the Greater? copy (GT):** no extra constants. The traverse at log :15 holds only 50–127 plus #138 and contains nothing new from them.
+   - **`create_control`:** no new constant appears either.
+   - **`connect_term_uid`, the second copy batch, `create_indicator`:** never measured for constants.
+3. **The separating read, before any delete:** for each candidate, read class, owner, Position and its terminal's `wire_uid`. Junk from `Create Constant.vi` is unwired, has an unwired `location` input (so it likely sits at diagram (0,0), probe :12-16), and is owned by TopLevelDiagram or ArrayConstant. A constant LabVIEW made for a terminal is wired by construction. Delete only rows that are unwired and match the measured signature.
+
+## Cheapest test that separates the claims from the alternatives
+Run one scratch on a byte copy of `EMPTY_v0` with no deletes:
+1. Constant traverse.
+2. `for_loop`.
+3. Traverse again, with class, owner, Position and wire for each new entry.
+4. `create_const_loop_term`.
+5. Traverse again.
+6. Repeat the v1 scaffold up to `create_control(Num)`, then read the IndexMode of the generator loop's tunnel and `Num`'s type (class plus element representation).
+
+That is about 10 reads and settles B1 (where the junk comes from and what it looks like), B3 (N unwired), and the `Num` type risk before a `_v2` is written.
+
+**What would change my mind:** if that run shows exactly the five-constant signature appearing at `for_loop`, and `Num` reading back as a 1-D I32 array with the tunnel at IndexMode 1, then Claims A and B hold. v2 then only needs the relabel-ordering fix and the read-before-delete gate.
+
+Sources:
+- [NI: Processing Individual Elements in an Array with a Loop](https://www.ni.com/docs/en-US/bundle/labview/page/processing-individual-elements-in-an-array-or-a-collection-with-a-loop.html)
+- [LabVIEW MakerHub: Loops passing data](https://www.labviewmakerhub.com/doku.php?id=learn%3Atutorials%3Alabview%3Abasics%3Aloops_passing_data)
+BGRUN END rc=0 after 186s

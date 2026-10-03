@@ -1,0 +1,1552 @@
+{
+ "card": "142-P1",
+ "plan": {
+  "path": "tools/bench/plan_ring_p4_v17.json",
+  "md5": "e19d7e142fef66f9e118ae4061e9e718"
+ },
+ "graph": {
+  "path": "tools/bench/graph_ring_p4s01_20261002_234419.json",
+  "md5": "f697a0b21c3bdb481207318812a0adad"
+ },
+ "groups": [
+  {
+   "group": "G1",
+   "pure": false,
+   "flags": [
+    "border-crossing wire (RLE)"
+   ],
+   "diagrams": [
+    "32464"
+   ],
+   "nodes": [
+    {
+     "key": "RAB1",
+     "action": "p4_ras_bufdiff",
+     "class": "GrowableFunction",
+     "prim": "Replace Array Subset"
+    }
+   ],
+   "actions": [
+    "p4_ras_bufdiff"
+   ],
+   "n_actions": 1,
+   "inputs": [
+    {
+     "wire": "p4_w_b_arr",
+     "from": "LRB1.value",
+     "from_kind": "local",
+     "to": "RAB1.array",
+     "types": []
+    },
+    {
+     "wire": "p4_x_i_rab1",
+     "from": "#27373 Function t- 'x-y*floor(x/y)'",
+     "from_kind": "bed Function",
+     "to": "RAB1.index",
+     "types": []
+    },
+    {
+     "wire": "p4_x_bufdiff",
+     "from": "#5119 Function t- 'x-y'",
+     "from_kind": "bed Function",
+     "to": "RAB1.new element/subarray",
+     "types": []
+    }
+   ],
+   "outputs": [
+    {
+     "wire": "p4_w_b_out",
+     "from": "RAB1.output array",
+     "to": "LWB1.value",
+     "to_kind": "local",
+     "types": []
+    }
+   ],
+   "links": [],
+   "boundary_rle": [
+    "p4_rle_i_rab1",
+    "p4_rle_bufdiff"
+   ]
+  },
+  {
+   "group": "G2",
+   "pure": true,
+   "flags": [],
+   "diagrams": [
+    "new:FMN1.body",
+    "new:W1.body"
+   ],
+   "nodes": [
+    {
+     "key": "GT1",
+     "action": "p4_gt_last",
+     "class": "Comparison",
+     "prim": "Greater?"
+    },
+    {
+     "key": "FMN1",
+     "action": "p4_f_min",
+     "class": "ForLoop",
+     "prim": ""
+    },
+    {
+     "key": "SW1",
+     "action": "p4_sel_mask",
+     "class": "Function",
+     "prim": "Select"
+    },
+    {
+     "key": "KMX1",
+     "action": "p4_k_max",
+     "class": "DigitalNumericConstant",
+     "prim": "const_donor"
+    },
+    {
+     "key": "KMX2",
+     "action": "p4_k_max_found",
+     "class": "DigitalNumericConstant",
+     "prim": "const_donor"
+    },
+    {
+     "key": "AMM1",
+     "action": "p4_amm",
+     "class": "Function",
+     "prim": "Array Max & Min"
+    },
+    {
+     "key": "LT1",
+     "action": "p4_lt_found",
+     "class": "Comparison",
+     "prim": "Less?"
+    },
+    {
+     "key": "OR1",
+     "action": "p4_or_w1",
+     "class": "Function",
+     "prim": "Or"
+    }
+   ],
+   "actions": [
+    "p4_gt_last",
+    "p4_f_min",
+    "p4_sel_mask",
+    "p4_k_max",
+    "p4_k_max_found",
+    "p4_amm",
+    "p4_lt_found",
+    "p4_or_w1",
+    "p4_t_fnum",
+    "p4_t_fnum_out",
+    "p4_t_fgt",
+    "p4_t_fgt_in",
+    "p4_t_fgt_out",
+    "p4_w_max_sel",
+    "p4_t_fsel",
+    "p4_t_fsel_in",
+    "p4_t_fsel_out",
+    "p4_w_min_lt",
+    "p4_w_max_lt",
+    "p4_w_lt_or"
+   ],
+   "n_actions": 20,
+   "inputs": [
+    {
+     "wire": "p4_t_last_out",
+     "from": "TL1.inner",
+     "from_kind": "tunnel of W1",
+     "to": "GT1.y",
+     "types": []
+    },
+    {
+     "wire": "p4_w_num_gt",
+     "from": "LRN4.value",
+     "from_kind": "local",
+     "to": "GT1.x",
+     "types": []
+    },
+    {
+     "wire": "p4_t_fnum_in",
+     "from": "LRN4.value",
+     "from_kind": "local",
+     "to": "TFN1.outer (For tunnel)",
+     "types": []
+    },
+    {
+     "wire": "p4_w_stop_or",
+     "from": "LRS1.value",
+     "from_kind": "local",
+     "to": "OR1.y",
+     "types": []
+    }
+   ],
+   "outputs": [
+    {
+     "wire": "p4_w_or_cond",
+     "from": "OR1.x .or. y?",
+     "to": "W1.cond",
+     "to_kind": "plan-made While (W1)",
+     "types": []
+    },
+    {
+     "wire": "p4_t_n1_in",
+     "from": "AMM1.min value",
+     "to": "TN1.inner",
+     "to_kind": "tunnel of W1",
+     "types": []
+    },
+    {
+     "wire": "p4_t_slot_in",
+     "from": "AMM1.min index (indices)",
+     "to": "TS1.inner",
+     "to_kind": "tunnel of W1",
+     "types": []
+    }
+   ],
+   "links": [],
+   "boundary_rle": []
+  },
+  {
+   "group": "G3",
+   "pure": false,
+   "flags": [
+    "IMAQ/refnum passes through"
+   ],
+   "diagrams": [
+    "23166"
+   ],
+   "nodes": [
+    {
+     "key": "IAI1",
+     "action": "p4_ia_img",
+     "class": "IndexArray",
+     "prim": "Index Array"
+    }
+   ],
+   "actions": [
+    "p4_ia_img"
+   ],
+   "n_actions": 1,
+   "inputs": [
+    {
+     "wire": "p4_t_slot_out",
+     "from": "TS1.outer",
+     "from_kind": "tunnel of W1",
+     "to": "IAI1.index",
+     "types": []
+    },
+    {
+     "wire": "p4_w_pool_in",
+     "from": "TP1.inner",
+     "from_kind": "tunnel of #10170",
+     "to": "IAI1.array",
+     "types": []
+    }
+   ],
+   "outputs": [
+    {
+     "wire": "p4_w_img_trk",
+     "from": "IAI1.element",
+     "to": "#5058 SubVI t- 'Image In'",
+     "to_kind": "bed SubVI",
+     "types": []
+    }
+   ],
+   "links": [],
+   "boundary_rle": []
+  },
+  {
+   "group": "G4",
+   "pure": false,
+   "flags": [
+    "Flat Sequence frame (node inside FS4.f0)",
+    "border-crossing wire (RLE)"
+   ],
+   "diagrams": [
+    "new:FS4.f0"
+   ],
+   "nodes": [
+    {
+     "key": "IAN1",
+     "action": "p4_ia_n2",
+     "class": "IndexArray",
+     "prim": "Index Array"
+    }
+   ],
+   "actions": [
+    "p4_ia_n2"
+   ],
+   "n_actions": 1,
+   "inputs": [
+    {
+     "wire": "p4_w_n2_arr",
+     "from": "LRN5.value",
+     "from_kind": "local",
+     "to": "IAN1.array",
+     "types": []
+    },
+    {
+     "wire": "p4_x_slot_fs",
+     "from": "TS1.outer",
+     "from_kind": "tunnel of W1",
+     "to": "IAN1.index",
+     "types": []
+    }
+   ],
+   "outputs": [],
+   "links": [
+    {
+     "wire": "p4_x_n2_out",
+     "from": "IAN1.element",
+     "to": "EQ2.y"
+    }
+   ],
+   "boundary_rle": [
+    "p4_rle_x_slot_fs"
+   ]
+  },
+  {
+   "group": "G5",
+   "pure": true,
+   "flags": [],
+   "diagrams": [
+    "23166"
+   ],
+   "nodes": [
+    {
+     "key": "EQ2",
+     "action": "p4_eq_seq",
+     "class": "Comparison",
+     "prim": "Equal?"
+    },
+    {
+     "key": "GT2",
+     "action": "p4_gt_n1",
+     "class": "Comparison",
+     "prim": "Greater?"
+    },
+    {
+     "key": "AND1",
+     "action": "p4_and",
+     "class": "Function",
+     "prim": "And"
+    },
+    {
+     "key": "DEC1",
+     "action": "p4_dec",
+     "class": "Function",
+     "prim": "Decrement"
+    },
+    {
+     "key": "SLL1",
+     "action": "p4_sel_last",
+     "class": "Function",
+     "prim": "Select"
+    },
+    {
+     "key": "SLD1",
+     "action": "p4_sel_disc",
+     "class": "Function",
+     "prim": "Select"
+    },
+    {
+     "key": "INC2",
+     "action": "p4_inc_disc",
+     "class": "Function",
+     "prim": "Increment"
+    },
+    {
+     "key": "RB1",
+     "action": "p4_rbA_sel",
+     "class": "Function",
+     "prim": "Select"
+    },
+    {
+     "key": "RB2",
+     "action": "p4_rbB_sel",
+     "class": "Function",
+     "prim": "Select"
+    },
+    {
+     "key": "RB3",
+     "action": "p4_rbC_sel",
+     "class": "Function",
+     "prim": "Select"
+    },
+    {
+     "key": "RB4",
+     "action": "p4_rbD_sel",
+     "class": "Function",
+     "prim": "Select"
+    },
+    {
+     "key": "RB5",
+     "action": "p4_rbE_sel",
+     "class": "Function",
+     "prim": "Select"
+    },
+    {
+     "key": "RB6",
+     "action": "p4_rbF_sel",
+     "class": "Function",
+     "prim": "Select"
+    },
+    {
+     "key": "RB7",
+     "action": "p4_rbR_sel",
+     "class": "Function",
+     "prim": "Select"
+    }
+   ],
+   "actions": [
+    "p4_eq_seq",
+    "p4_gt_n1",
+    "p4_and",
+    "p4_dec",
+    "p4_sel_last",
+    "p4_sel_disc",
+    "p4_inc_disc",
+    "p4_w_eq_and",
+    "p4_w_gt_and",
+    "p4_w_dec_sel",
+    "p4_w_and_sel",
+    "p4_w_inc_sel",
+    "p4_w_and_seld",
+    "p4_rbA_sel",
+    "p4_rbA_s",
+    "p4_rbB_sel",
+    "p4_rbB_s",
+    "p4_rbC_sel",
+    "p4_rbC_s",
+    "p4_rbD_sel",
+    "p4_rbD_s",
+    "p4_rbE_sel",
+    "p4_rbE_s",
+    "p4_rbF_sel",
+    "p4_rbF_s",
+    "p4_rbR_sel",
+    "p4_rbR_s"
+   ],
+   "n_actions": 27,
+   "inputs": [
+    {
+     "wire": "p4_w_last_gt",
+     "from": "SL1L.inner",
+     "from_kind": "shift register (#10170)",
+     "to": "GT2.y",
+     "types": []
+    },
+    {
+     "wire": "p4_t_n1_out",
+     "from": "TN1.outer",
+     "from_kind": "tunnel of W1",
+     "to": "EQ2.x",
+     "types": []
+    },
+    {
+     "wire": "p4_w_n1_gt",
+     "from": "TN1.outer",
+     "from_kind": "tunnel of W1",
+     "to": "GT2.x",
+     "types": []
+    },
+    {
+     "wire": "p4_w_lat_dec",
+     "from": "LRL1.value",
+     "from_kind": "local",
+     "to": "DEC1.x",
+     "types": []
+    },
+    {
+     "wire": "p4_w_n1_sel",
+     "from": "TN1.outer",
+     "from_kind": "tunnel of W1",
+     "to": "SLL1.t",
+     "types": []
+    },
+    {
+     "wire": "p4_w_disc_inc",
+     "from": "SD1L.inner",
+     "from_kind": "shift register (#10170)",
+     "to": "INC2.x",
+     "types": []
+    },
+    {
+     "wire": "p4_w_disc_sel",
+     "from": "SD1L.inner",
+     "from_kind": "shift register (#10170)",
+     "to": "SLD1.t",
+     "types": []
+    },
+    {
+     "wire": "p4_rbA_t",
+     "from": "#5058 SubVI t5171 'pos in cal image out'",
+     "from_kind": "bed SubVI",
+     "to": "RB1.t",
+     "types": []
+    },
+    {
+     "wire": "p4_rbA_f",
+     "from": "#23792 LeftShiftRegister t23853 ''",
+     "from_kind": "bed LeftShiftRegister",
+     "to": "RB1.f",
+     "types": []
+    },
+    {
+     "wire": "p4_rbB_t",
+     "from": "#5058 SubVI t5124 'x,y,z array out'",
+     "from_kind": "bed SubVI",
+     "to": "RB2.t",
+     "types": []
+    },
+    {
+     "wire": "p4_rbB_f",
+     "from": "#25240 LeftShiftRegister t25312 ''",
+     "from_kind": "bed LeftShiftRegister",
+     "to": "RB2.f",
+     "types": []
+    },
+    {
+     "wire": "p4_rbC_t",
+     "from": "#5058 SubVI t5111 'Bead is good? array out'",
+     "from_kind": "bed SubVI",
+     "to": "RB3.t",
+     "types": []
+    },
+    {
+     "wire": "p4_rbC_f",
+     "from": "#25344 LeftShiftRegister t25361 ''",
+     "from_kind": "bed LeftShiftRegister",
+     "to": "RB3.f",
+     "types": []
+    },
+    {
+     "wire": "p4_rbD_t",
+     "from": "#11336 SelectorTunnel t11346 'Value'",
+     "from_kind": "bed SelectorTunnel",
+     "to": "RB4.t",
+     "types": []
+    },
+    {
+     "wire": "p4_rbD_f",
+     "from": "#25382 LeftShiftRegister t25396 'Auto-reset zero'",
+     "from_kind": "bed LeftShiftRegister",
+     "to": "RB4.f",
+     "types": []
+    },
+    {
+     "wire": "p4_rbE_t",
+     "from": "#9227 LoopTunnel t9234 ''",
+     "from_kind": "bed LoopTunnel",
+     "to": "RB5.t",
+     "types": []
+    },
+    {
+     "wire": "p4_rbE_f",
+     "from": "#10544 LeftShiftRegister t25587 ''",
+     "from_kind": "bed LeftShiftRegister",
+     "to": "RB5.f",
+     "types": []
+    },
+    {
+     "wire": "p4_rbF_t",
+     "from": "#29616 LoopTunnel t29624 ''",
+     "from_kind": "bed LoopTunnel",
+     "to": "RB6.t",
+     "types": []
+    },
+    {
+     "wire": "p4_rbF_f",
+     "from": "#25582 LeftShiftRegister t25605 ''",
+     "from_kind": "bed LeftShiftRegister",
+     "to": "RB6.f",
+     "types": []
+    },
+    {
+     "wire": "p4_rbR_t",
+     "from": "#9647 Function t9668 'x .and. y?'",
+     "from_kind": "bed Function",
+     "to": "RB7.t",
+     "types": []
+    },
+    {
+     "wire": "p4_rbR_f",
+     "from": "LRR1.autofocus reseed flag (1.2 to 1.1)",
+     "from_kind": "local",
+     "to": "RB7.f",
+     "types": []
+    }
+   ],
+   "outputs": [
+    {
+     "wire": "p4_w_sel_last",
+     "from": "SLL1.s? t:f",
+     "to": "SL1R.inner",
+     "to_kind": "shift register (#10170)",
+     "types": []
+    },
+    {
+     "wire": "p4_w_seld_r",
+     "from": "SLD1.s? t:f",
+     "to": "SD1R.inner",
+     "to_kind": "shift register (#10170)",
+     "types": []
+    },
+    {
+     "wire": "p4_rbA_out",
+     "from": "RB1.s? t:f",
+     "to": "#23508 RightShiftRegister t23798 ''",
+     "to_kind": "bed RightShiftRegister",
+     "types": []
+    },
+    {
+     "wire": "p4_rbA_sel_t10871",
+     "from": "RB1.s? t:f",
+     "to": "#10757 IndexArray t10871 'array'",
+     "to_kind": "bed IndexArray",
+     "types": []
+    },
+    {
+     "wire": "p4_rbB_out",
+     "from": "RB2.s? t:f",
+     "to": "#10850 RightShiftRegister t25246 ''",
+     "to_kind": "bed RightShiftRegister",
+     "types": []
+    },
+    {
+     "wire": "p4_rbB_sel_t4168",
+     "from": "RB2.s? t:f",
+     "to": "#2626 BuildArray t4168 'array'",
+     "to_kind": "bed BuildArray",
+     "types": []
+    },
+    {
+     "wire": "p4_rbC_out",
+     "from": "RB3.s? t:f",
+     "to": "#25339 RightShiftRegister t25347 ''",
+     "to_kind": "bed RightShiftRegister",
+     "types": []
+    },
+    {
+     "wire": "p4_rbD_out",
+     "from": "RB4.s? t:f",
+     "to": "#25371 RightShiftRegister t25385 'Auto-reset zero'",
+     "to_kind": "bed RightShiftRegister",
+     "types": []
+    },
+    {
+     "wire": "p4_rbD_sel_t25573",
+     "from": "RB4.s? t:f",
+     "to": "#25573 ControlTerminal t25573 'autofocus reset count (1.2 to 1.1)'",
+     "to_kind": "bed ControlTerminal",
+     "types": []
+    },
+    {
+     "wire": "p4_rbE_out",
+     "from": "RB5.s? t:f",
+     "to": "#9603 RightShiftRegister t22281 ''",
+     "to_kind": "bed RightShiftRegister",
+     "types": []
+    },
+    {
+     "wire": "p4_rbF_out",
+     "from": "RB6.s? t:f",
+     "to": "#25545 RightShiftRegister t25596 ''",
+     "to_kind": "bed RightShiftRegister",
+     "types": []
+    },
+    {
+     "wire": "p4_rbR_out",
+     "from": "RB7.s? t:f",
+     "to": "#25557 ControlTerminal t25557 'autofocus reseed flag (1.2 to 1.1)'",
+     "to_kind": "bed ControlTerminal",
+     "types": []
+    }
+   ],
+   "links": [
+    {
+     "wire": "p4_x_n2_out",
+     "from": "IAN1.element",
+     "to": "EQ2.y"
+    }
+   ],
+   "boundary_rle": []
+  },
+  {
+   "group": "G6",
+   "pure": false,
+   "flags": [
+    "Flat Sequence frame (node inside FS4.f0)",
+    "border-crossing wire (RLE)"
+   ],
+   "diagrams": [
+    "new:FS4.f0"
+   ],
+   "nodes": [
+    {
+     "key": "IAZ1",
+     "action": "p4_ia_n2sink",
+     "class": "IndexArray",
+     "prim": "Index Array"
+    }
+   ],
+   "actions": [
+    "p4_ia_n2sink"
+   ],
+   "n_actions": 1,
+   "inputs": [
+    {
+     "wire": "p4_x_n2_order",
+     "from": "#5058 SubVI t5111 'Bead is good? array out'",
+     "from_kind": "bed SubVI",
+     "to": "IAZ1.array",
+     "types": []
+    }
+   ],
+   "outputs": [],
+   "links": [],
+   "boundary_rle": [
+    "p4_rle_x_n2_order"
+   ]
+  },
+  {
+   "group": "G7",
+   "pure": true,
+   "flags": [],
+   "diagrams": [
+    "23166"
+   ],
+   "nodes": [
+    {
+     "key": "IAVT1",
+     "action": "p4_ia_transpos",
+     "class": "IndexArray",
+     "prim": "Index Array"
+    }
+   ],
+   "actions": [
+    "p4_ia_transpos"
+   ],
+   "n_actions": 1,
+   "inputs": [
+    {
+     "wire": "p4_w_arr_transpos",
+     "from": "LRVT1.value",
+     "from_kind": "local",
+     "to": "IAVT1.array",
+     "types": []
+    },
+    {
+     "wire": "p4_w_idx_transpos",
+     "from": "TS1.outer",
+     "from_kind": "tunnel of W1",
+     "to": "IAVT1.index",
+     "types": []
+    }
+   ],
+   "outputs": [
+    {
+     "wire": "p4_w_tp_mag",
+     "from": "IAVT1.element",
+     "to": "#9503 LoopTunnel t9508 'Value'",
+     "to_kind": "bed LoopTunnel",
+     "types": []
+    },
+    {
+     "wire": "p4_w_tp_row",
+     "from": "IAVT1.element",
+     "to": "#2626 BuildArray t4160 'array'",
+     "to_kind": "bed BuildArray",
+     "types": []
+    }
+   ],
+   "links": [],
+   "boundary_rle": []
+  },
+  {
+   "group": "G8",
+   "pure": true,
+   "flags": [],
+   "diagrams": [
+    "23166"
+   ],
+   "nodes": [
+    {
+     "key": "IAVR1",
+     "action": "p4_ia_rotpos",
+     "class": "IndexArray",
+     "prim": "Index Array"
+    }
+   ],
+   "actions": [
+    "p4_ia_rotpos"
+   ],
+   "n_actions": 1,
+   "inputs": [
+    {
+     "wire": "p4_w_arr_rotpos",
+     "from": "LRVR1.value",
+     "from_kind": "local",
+     "to": "IAVR1.array",
+     "types": []
+    },
+    {
+     "wire": "p4_w_idx_rotpos",
+     "from": "TS1.outer",
+     "from_kind": "tunnel of W1",
+     "to": "IAVR1.index",
+     "types": []
+    }
+   ],
+   "outputs": [
+    {
+     "wire": "p4_w_rp_row",
+     "from": "IAVR1.element",
+     "to": "#2626 BuildArray t4165 'array'",
+     "to_kind": "bed BuildArray",
+     "types": []
+    }
+   ],
+   "links": [],
+   "boundary_rle": []
+  },
+  {
+   "group": "G9",
+   "pure": true,
+   "flags": [],
+   "diagrams": [
+    "23166"
+   ],
+   "nodes": [
+    {
+     "key": "IAVF1",
+     "action": "p4_ia_frameidx",
+     "class": "IndexArray",
+     "prim": "Index Array"
+    },
+    {
+     "key": "bed:10068",
+     "action": "p4_mv_10068",
+     "class": "Function",
+     "prim": "bed #10068 (moved in)"
+    },
+    {
+     "key": "bed:29240",
+     "action": "p4_mv_29240",
+     "class": "Function",
+     "prim": "bed #29240 (moved in)"
+    }
+   ],
+   "actions": [
+    "p4_ia_frameidx",
+    "p4_mv_10068",
+    "p4_mv_29240",
+    "p4_w_fi_10068",
+    "p4_w_fi_29240"
+   ],
+   "n_actions": 5,
+   "inputs": [
+    {
+     "wire": "p4_w_arr_frameidx",
+     "from": "LRVF1.value",
+     "from_kind": "local",
+     "to": "IAVF1.array",
+     "types": []
+    },
+    {
+     "wire": "p4_w_idx_frameidx",
+     "from": "TS1.outer",
+     "from_kind": "tunnel of W1",
+     "to": "IAVF1.index",
+     "types": []
+    },
+    {
+     "wire": "p4_w_fd_in",
+     "from": "TFD1.inner",
+     "from_kind": "tunnel of #10170",
+     "to": "#10068.y",
+     "types": []
+    },
+    {
+     "wire": "p4_w_dt_in",
+     "from": "TDT1.inner",
+     "from_kind": "tunnel of #10170",
+     "to": "#29240.y",
+     "types": []
+    }
+   ],
+   "outputs": [
+    {
+     "wire": "p4_w_10068_out",
+     "from": "#10068.x-y*floor(x/y)",
+     "to": "#10177 LoopTunnel t10182 ''",
+     "to_kind": "bed LoopTunnel",
+     "types": []
+    },
+    {
+     "wire": "p4_w_29240_out",
+     "from": "#29240.x-y*floor(x/y)",
+     "to": "#29777 LoopTunnel t29782 ''",
+     "to_kind": "bed LoopTunnel",
+     "types": []
+    }
+   ],
+   "links": [],
+   "boundary_rle": []
+  },
+  {
+   "group": "G10",
+   "pure": true,
+   "flags": [],
+   "diagrams": [
+    "23166"
+   ],
+   "nodes": [
+    {
+     "key": "IAVB1",
+     "action": "p4_ia_bufdiff",
+     "class": "IndexArray",
+     "prim": "Index Array"
+    }
+   ],
+   "actions": [
+    "p4_ia_bufdiff"
+   ],
+   "n_actions": 1,
+   "inputs": [
+    {
+     "wire": "p4_w_arr_bufdiff",
+     "from": "LRVB1.value",
+     "from_kind": "local",
+     "to": "IAVB1.array",
+     "types": []
+    },
+    {
+     "wire": "p4_w_idx_bufdiff",
+     "from": "TS1.outer",
+     "from_kind": "tunnel of W1",
+     "to": "IAVB1.index",
+     "types": []
+    }
+   ],
+   "outputs": [
+    {
+     "wire": "p4_w_bd_row",
+     "from": "IAVB1.element",
+     "to": "#2626 BuildArray t2832 'array'",
+     "to_kind": "bed BuildArray",
+     "types": []
+    }
+   ],
+   "links": [],
+   "boundary_rle": []
+  }
+ ],
+ "glue": [
+  {
+   "action": "p4_dw_23310",
+   "kind": "delete_wire"
+  },
+  {
+   "action": "p4_dw_23255",
+   "kind": "delete_wire"
+  },
+  {
+   "action": "p4_do_10171",
+   "kind": "delete_object"
+  },
+  {
+   "action": "p4_c_stopall_f",
+   "kind": "indicator donor constant (born_on)"
+  },
+  {
+   "action": "p4_i_stopall_k",
+   "kind": "panel terminal"
+  },
+  {
+   "action": "p4_lw_stopall_639",
+   "kind": "local"
+  },
+  {
+   "action": "p4_w_stopall_639",
+   "kind": "bed-to-bed / glue-to-glue wire"
+  },
+  {
+   "action": "p4_lr_stop12",
+   "kind": "local"
+  },
+  {
+   "action": "p4_w_stop12",
+   "kind": "bed-to-bed / glue-to-glue wire"
+  },
+  {
+   "action": "p4_c_bufdiff",
+   "kind": "indicator donor constant (born_on)"
+  },
+  {
+   "action": "p4_i_bufdiff",
+   "kind": "panel terminal"
+  },
+  {
+   "action": "p4_lr_bufdiff11",
+   "kind": "local"
+  },
+  {
+   "action": "p4_lw_bufdiff",
+   "kind": "local"
+  },
+  {
+   "action": "p4_sr_last",
+   "kind": "shift register"
+  },
+  {
+   "action": "p4_k_last",
+   "kind": "init constant -> shift register (#10170)"
+  },
+  {
+   "action": "p4_w_klast",
+   "kind": "bed-to-bed / glue-to-glue wire"
+  },
+  {
+   "action": "p4_sr_disc",
+   "kind": "shift register"
+  },
+  {
+   "action": "p4_k_disc",
+   "kind": "init constant -> shift register (#10170)"
+  },
+  {
+   "action": "p4_w_kdisc",
+   "kind": "bed-to-bed / glue-to-glue wire"
+  },
+  {
+   "action": "p4_w1",
+   "kind": "plan-made While (W1)"
+  },
+  {
+   "action": "p4_lr_num_a",
+   "kind": "local"
+  },
+  {
+   "action": "p4_wait",
+   "kind": "wait"
+  },
+  {
+   "action": "p4_wait_k",
+   "kind": "constant on wait"
+  },
+  {
+   "action": "p4_lr_stop_w1",
+   "kind": "local"
+  },
+  {
+   "action": "p4_fs_n2",
+   "kind": "Flat Sequence"
+  },
+  {
+   "action": "p4_lr_num_b",
+   "kind": "local"
+  },
+  {
+   "action": "p4_lr_latest",
+   "kind": "local"
+  },
+  {
+   "action": "p4_t_last",
+   "kind": "tunnel of W1"
+  },
+  {
+   "action": "p4_t_last_in",
+   "kind": "bed-to-bed / glue-to-glue wire"
+  },
+  {
+   "action": "p4_t_n1",
+   "kind": "tunnel of W1"
+  },
+  {
+   "action": "p4_t_slot",
+   "kind": "tunnel of W1"
+  },
+  {
+   "action": "p4_t_pool",
+   "kind": "tunnel of #10170"
+  },
+  {
+   "action": "p4_x_pool",
+   "kind": "bed-to-bed / glue-to-glue wire"
+  },
+  {
+   "action": "p4_lr_transpos",
+   "kind": "local"
+  },
+  {
+   "action": "p4_lr_rotpos",
+   "kind": "local"
+  },
+  {
+   "action": "p4_lr_frameidx",
+   "kind": "local"
+  },
+  {
+   "action": "p4_t_fd",
+   "kind": "tunnel of #10170"
+  },
+  {
+   "action": "p4_x_fd",
+   "kind": "bed-to-bed / glue-to-glue wire"
+  },
+  {
+   "action": "p4_t_dt",
+   "kind": "tunnel of #10170"
+  },
+  {
+   "action": "p4_x_dt",
+   "kind": "bed-to-bed / glue-to-glue wire"
+  },
+  {
+   "action": "p4_lr_bufdiff12",
+   "kind": "local"
+  },
+  {
+   "action": "p4_rbA_dw",
+   "kind": "delete_wire"
+  },
+  {
+   "action": "p4_rbA_re0",
+   "kind": "bed-to-bed / glue-to-glue wire"
+  },
+  {
+   "action": "p4_rbA_re1",
+   "kind": "bed-to-bed / glue-to-glue wire"
+  },
+  {
+   "action": "p4_rbA_re2",
+   "kind": "bed-to-bed / glue-to-glue wire"
+  },
+  {
+   "action": "p4_rbB_dw",
+   "kind": "delete_wire"
+  },
+  {
+   "action": "p4_rbB_re0",
+   "kind": "bed-to-bed / glue-to-glue wire"
+  },
+  {
+   "action": "p4_rbC_dw",
+   "kind": "delete_wire"
+  },
+  {
+   "action": "p4_rbD_dw",
+   "kind": "delete_wire"
+  },
+  {
+   "action": "p4_rbE_dw",
+   "kind": "delete_wire"
+  },
+  {
+   "action": "p4_rbF_dw",
+   "kind": "delete_wire"
+  },
+  {
+   "action": "p4_rbR_dw",
+   "kind": "delete_wire"
+  },
+  {
+   "action": "p4_rbR_re0",
+   "kind": "bed-to-bed / glue-to-glue wire"
+  },
+  {
+   "action": "p4_rbR_lr",
+   "kind": "local"
+  }
+ ],
+ "links": [
+  {
+   "wire": "p4_x_n2_out",
+   "from": "IAN1.element",
+   "to": "EQ2.y"
+  }
+ ],
+ "counts": {
+  "non_repair": 185,
+  "in_groups": 59,
+  "in_pure_groups": 55,
+  "boundary_wires_rle": 72,
+  "glue": 54,
+  "groups": 10,
+  "pure_groups": 6,
+  "glue_kinds": {
+   "delete_wire": 9,
+   "delete_object": 1,
+   "indicator donor constant (born_on)": 2,
+   "panel terminal": 2,
+   "local": 13,
+   "bed-to-bed / glue-to-glue wire": 13,
+   "shift register": 2,
+   "init constant -> shift register (#10170)": 2,
+   "plan-made While (W1)": 1,
+   "wait": 1,
+   "constant on wait": 1,
+   "Flat Sequence": 1,
+   "tunnel of W1": 3,
+   "tunnel of #10170": 3
+  }
+ },
+ "boundary": [
+  {
+   "action": "p4_w_b_arr",
+   "group": "G1"
+  },
+  {
+   "action": "p4_w_b_out",
+   "group": "G1"
+  },
+  {
+   "action": "p4_x_i_rab1",
+   "group": "G1"
+  },
+  {
+   "action": "p4_rle_i_rab1",
+   "group": "G1"
+  },
+  {
+   "action": "p4_x_bufdiff",
+   "group": "G1"
+  },
+  {
+   "action": "p4_rle_bufdiff",
+   "group": "G1"
+  },
+  {
+   "action": "p4_w_last_gt",
+   "group": "G5"
+  },
+  {
+   "action": "p4_t_last_out",
+   "group": "G2"
+  },
+  {
+   "action": "p4_w_num_gt",
+   "group": "G2"
+  },
+  {
+   "action": "p4_t_fnum_in",
+   "group": "G2"
+  },
+  {
+   "action": "p4_w_stop_or",
+   "group": "G2"
+  },
+  {
+   "action": "p4_w_or_cond",
+   "group": "G2"
+  },
+  {
+   "action": "p4_t_n1_in",
+   "group": "G2"
+  },
+  {
+   "action": "p4_t_n1_out",
+   "group": "G5"
+  },
+  {
+   "action": "p4_t_slot_in",
+   "group": "G2"
+  },
+  {
+   "action": "p4_t_slot_out",
+   "group": "G3"
+  },
+  {
+   "action": "p4_w_pool_in",
+   "group": "G3"
+  },
+  {
+   "action": "p4_w_img_trk",
+   "group": "G3"
+  },
+  {
+   "action": "p4_w_n1_gt",
+   "group": "G5"
+  },
+  {
+   "action": "p4_w_lat_dec",
+   "group": "G5"
+  },
+  {
+   "action": "p4_w_n1_sel",
+   "group": "G5"
+  },
+  {
+   "action": "p4_w_sel_last",
+   "group": "G5"
+  },
+  {
+   "action": "p4_w_disc_inc",
+   "group": "G5"
+  },
+  {
+   "action": "p4_w_disc_sel",
+   "group": "G5"
+  },
+  {
+   "action": "p4_w_seld_r",
+   "group": "G5"
+  },
+  {
+   "action": "p4_w_arr_transpos",
+   "group": "G7"
+  },
+  {
+   "action": "p4_w_idx_transpos",
+   "group": "G7"
+  },
+  {
+   "action": "p4_w_arr_rotpos",
+   "group": "G8"
+  },
+  {
+   "action": "p4_w_idx_rotpos",
+   "group": "G8"
+  },
+  {
+   "action": "p4_w_arr_frameidx",
+   "group": "G9"
+  },
+  {
+   "action": "p4_w_idx_frameidx",
+   "group": "G9"
+  },
+  {
+   "action": "p4_w_tp_mag",
+   "group": "G7"
+  },
+  {
+   "action": "p4_w_tp_row",
+   "group": "G7"
+  },
+  {
+   "action": "p4_w_rp_row",
+   "group": "G8"
+  },
+  {
+   "action": "p4_w_fd_in",
+   "group": "G9"
+  },
+  {
+   "action": "p4_w_dt_in",
+   "group": "G9"
+  },
+  {
+   "action": "p4_w_10068_out",
+   "group": "G9"
+  },
+  {
+   "action": "p4_w_29240_out",
+   "group": "G9"
+  },
+  {
+   "action": "p4_w_arr_bufdiff",
+   "group": "G10"
+  },
+  {
+   "action": "p4_w_idx_bufdiff",
+   "group": "G10"
+  },
+  {
+   "action": "p4_w_bd_row",
+   "group": "G10"
+  },
+  {
+   "action": "p4_rbA_t",
+   "group": "G5"
+  },
+  {
+   "action": "p4_rbA_f",
+   "group": "G5"
+  },
+  {
+   "action": "p4_rbA_out",
+   "group": "G5"
+  },
+  {
+   "action": "p4_rbA_sel_t10871",
+   "group": "G5"
+  },
+  {
+   "action": "p4_rbB_t",
+   "group": "G5"
+  },
+  {
+   "action": "p4_rbB_f",
+   "group": "G5"
+  },
+  {
+   "action": "p4_rbB_out",
+   "group": "G5"
+  },
+  {
+   "action": "p4_rbB_sel_t4168",
+   "group": "G5"
+  },
+  {
+   "action": "p4_rbC_t",
+   "group": "G5"
+  },
+  {
+   "action": "p4_rbC_f",
+   "group": "G5"
+  },
+  {
+   "action": "p4_rbC_out",
+   "group": "G5"
+  },
+  {
+   "action": "p4_rbD_t",
+   "group": "G5"
+  },
+  {
+   "action": "p4_rbD_f",
+   "group": "G5"
+  },
+  {
+   "action": "p4_rbD_out",
+   "group": "G5"
+  },
+  {
+   "action": "p4_rbD_sel_t25573",
+   "group": "G5"
+  },
+  {
+   "action": "p4_rbE_t",
+   "group": "G5"
+  },
+  {
+   "action": "p4_rbE_f",
+   "group": "G5"
+  },
+  {
+   "action": "p4_rbE_out",
+   "group": "G5"
+  },
+  {
+   "action": "p4_rbF_t",
+   "group": "G5"
+  },
+  {
+   "action": "p4_rbF_f",
+   "group": "G5"
+  },
+  {
+   "action": "p4_rbF_out",
+   "group": "G5"
+  },
+  {
+   "action": "p4_rbR_t",
+   "group": "G5"
+  },
+  {
+   "action": "p4_rbR_f",
+   "group": "G5"
+  },
+  {
+   "action": "p4_rbR_out",
+   "group": "G5"
+  },
+  {
+   "action": "p4_w_n2_arr",
+   "group": "G4"
+  },
+  {
+   "action": "p4_x_n2_order",
+   "group": "G6"
+  },
+  {
+   "action": "p4_rle_x_n2_order",
+   "group": "G6"
+  },
+  {
+   "action": "p4_x_slot_fs",
+   "group": "G4"
+  },
+  {
+   "action": "p4_rle_x_slot_fs",
+   "group": "G4"
+  },
+  {
+   "action": "p4_x_n2_out",
+   "group": "G4->G5"
+  },
+  {
+   "action": "p4_rle_x_n2_out",
+   "group": "G4->G5"
+  }
+ ],
+ "set_142_1": {
+  "members": [
+   "AMM1",
+   "FMN1",
+   "GT1",
+   "KMX1",
+   "KMX2",
+   "LT1",
+   "SW1"
+  ],
+  "group": [
+   "G2"
+  ],
+  "group_extra_members": [
+   "OR1"
+  ],
+  "cross_wires": [
+   {
+    "wire": "p4_t_last_out",
+    "dir": "in",
+    "from": "TL1.inner",
+    "to": "GT1.y",
+    "other_kind": "tunnel of W1",
+    "named_in_142_1": true
+   },
+   {
+    "wire": "p4_w_num_gt",
+    "dir": "in",
+    "from": "LRN4.value",
+    "to": "GT1.x",
+    "other_kind": "local",
+    "named_in_142_1": true
+   },
+   {
+    "wire": "p4_t_fnum_in",
+    "dir": "in",
+    "from": "LRN4.value",
+    "to": "TFN1.outer (For tunnel)",
+    "other_kind": "local",
+    "named_in_142_1": true
+   },
+   {
+    "wire": "p4_w_lt_or",
+    "dir": "out",
+    "from": "LT1.x < y?",
+    "to": "OR1.x",
+    "other_kind": "compute",
+    "named_in_142_1": true
+   },
+   {
+    "wire": "p4_t_n1_in",
+    "dir": "out",
+    "from": "AMM1.min value",
+    "to": "TN1.inner",
+    "other_kind": "tunnel of W1",
+    "named_in_142_1": true
+   },
+   {
+    "wire": "p4_t_slot_in",
+    "dir": "out",
+    "from": "AMM1.min index (indices)",
+    "to": "TS1.inner",
+    "other_kind": "tunnel of W1",
+    "named_in_142_1": true
+   }
+  ],
+  "unnamed": []
+ }
+}

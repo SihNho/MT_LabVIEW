@@ -1,0 +1,37 @@
+BGRUN START 2026-10-03 07:52:44 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/bench/diag_s4_readcost.py --graph tools/bench/graph_ring_p4s01_20261002_234419.json
+BGRUN PID 10020
+diag_s4_readcost - card chat-S4 item B, the LabVIEW MEASUREMENT: what one per-BIND whole-VI read costs today (seconds and
+private MB), split into its parts, and what the nearest EXISTING per-node route costs and returns, on a never-saved byte copy of
+the P4 session-1 file (path + md5 from diag_s4_readcost_plan.json). READ-ONLY: no edit, no save, no VI run; the copy is deleted
+at close (s.discard_work) and LabVIEW is killed at exit.
+EXISTING TOOLS FOUND FIRST: the whole read = wiki_build.read_live:233 (report_all GObject census + allterms.read_terms
+OpAllTerms_v1 + join); NO op reads ONE owner's terminals by uid - the 137-3 "read_terms by owner uid" row was a WHOLE read_terms
+filtered in Python (diag_c137_3_lookup.py:50-52). The nearest per-node route is report_all('Diagram') -> gscript.node_labels(d)
+(Diagram.Nodes[] uid order, gscript.py:3639) -> gscript.node_terms_uids(d, i) (OpNodeTermsUid_v0, gscript.py:1223): name /
+is_source / wire / term uid, but NOT term_class / owner_class / frame_diagram; a Constant is not in Nodes[] (diag_c137_3_lookup.log:39-43).
+PREDICTION: whole read_live 15-30 s and ~+2 MB each (diag_chat_m1_mem.log basis); the per-node route < 3 s and ~0 MB per node; per-node
+rows equal the whole read's (term_uid, name, is_source, wire) for Nodes[] owners; tunnels / registers / Diagram-owned control
+terminals not addressable this way. Gates check only that the measurement completed; the numbers are FACTS.
+    py tools/bgrun.py --material --max-min 40 --log tools/bench/diag_s4_readcost.log -- py -u tools/bench/diag_s4_readcost.py
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == dc61e193e0376ce760f88fdfcda7087b  got dc61e193e0376ce760f88fdfcda7087b
+  PASS  DRY graph JSON for input md5 dc61e193e0376ce760f88fdfcda7087b  tools/bench/graph_ring_p4s01_20261002_234419.json
+METER start private None MB
+COST whole read_live #1                       secs    0.03  dMB None  private None
+COST whole read_live #2                       secs    0.02  dMB None  private None
+COST whole read_live #3                       secs    0.02  dMB None  private None
+COST part report_all GObject #1               secs    0.00  dMB None  private None
+COST part report_all GObject #2               secs    0.00  dMB None  private None
+COST part read_terms OpAllTerms_v1 #1         secs    0.00  dMB None  private None
+COST part read_terms OpAllTerms_v1 #2         secs    0.00  dMB None  private None
+COST route report_all Diagram #1              secs    0.00  dMB None  private None
+COST route report_all Diagram #2              secs    0.00  dMB None  private None
+  FACT  W the whole read returned 0 rows (the recorded graph holds 5967)
+  PASS  N every sampled owner was measured (0 owners, 0 classes)
+  FACT  J measurement json -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_s4_readcost.json
+GATE GONE LabVIEW gone: PASS
+
+=== DRY PASS: first_fail=None coverage 49/73 lines, first mutation None, unverified 0, graph tools/bench/graph_ring_p4s01_20261002_234419.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

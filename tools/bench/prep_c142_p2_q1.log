@@ -1,0 +1,124 @@
+BGRUN START 2026-10-03 10:05:20 limit 5.0 min: py -u tools/bench/prep_c142_p2_q1.py
+BGRUN PID 16916
+GATE PASS | v17 md5 | e19d7e142fef66f9e118ae4061e9e718
+KEYS ['actions', 'base', 'context', 'final', 'finalized', 'goal', 'open_rows', 'schema', 'stage']
+TOP base {"path": "tools/bench/graph_ring_p3b2b_20261002_133824.json", "md5": "50595c62d0332a94bf066538cf20c0ae"}
+TOP context {"s1_key": "D1_s1_copy"}
+TOP final false
+TOP finalized {"base": {"path": "tools/bench/graph_ring_p3b2b_20261002_133824.json", "md5": "50595c62d0332a94bf066538cf20c0ae"}, "plan_in": {"path": "tools/bench/plan_ring_p4_v17_in.json", "md5": "57b87e42b42796810a987de14207bea0"}, "last_step": {"path": "tools/bench/sim/ring_p4_v17/ring_p4_v3/step_235_wire_remove_loose_ends.json", "md5": "fdb8e34c60d94ab9121cc7c8ec8ec570"}, "summary": {"path": "tools/bench/sim/ring_p4_v17/ring_p4_v3/summary.json", "md5": "90afca0234306e6832c519120bef937c"}, "end_cdiff_rows": ["10068|ParameterTerminal|x|0", "10150|ParameterTerminal|x|0", "10382|ParameterTerminal|x|0", "10757|Terminal|array|0", "11261|Terminal|array|0", "11261|Terminal|element|0", "11529|ParameterTerminal|
+TOP goal "P4 v17 (card 141-P1, PD324(c)): v16 36981c83 with p4_eq_seq's $work donor #10171 (deleted by p4_do_10171) -> #10019 'Equal?'; fs_routes regenerated; never launched"
+TOP open_rows [{"node": 376, "term": "current frame data array in", "why": "carried from R2 (plan_l2r2_in.json): QRT (PD175)"}, {"node": 376, "term": "frame index", "why": "carried from R2: QRT (PD175)"}, {"node": 2626, "term": "array", "why": "carried from R2: licensed rename (plan_l2b1_licence.json)"}, {"node": 2626, "term": "element", "why": "carried from R2: QRT (PD182(c)/D5)"}, {"node": 5058, "term": "Image In", "why": "carried from R2: QRT (PD177(e))"}, {"node": 8634, "term": "index (col)", "why": "carried from R2: QRT (D5)"}, {"node": 11261, "term": "array", "why": "carried from R2: PD227(d)"}, {"node": 11261, "term": "element", "why": "carried from R2: QRT (D5)"}, {"node": 28083, "term": "Magnet p
+TOP schema "stageplan/1"
+TOP stage "ring_p4_v3"
+TABKEYS ['boundary', 'card', 'counts', 'glue', 'graph', 'groups', 'links', 'plan', 'set_142_1']
+GROUPS {None: 1}
+ALIASES {'GT1': 'p4_gt_last', 'FMN1': 'p4_f_min', 'SW1': 'p4_sel_mask', 'KMX1': 'p4_k_max', 'KMX2': 'p4_k_max_found', 'AMM1': 'p4_amm', 'LT1': 'p4_lt_found', 'EQ2': 'p4_eq_seq', 'GT2': 'p4_gt_n1', 'AND1': 'p4_and', 'DEC1': 'p4_dec', 'SLL1': 'p4_sel_last', 'SLD1': 'p4_sel_disc', 'INC2': 'p4_inc_disc'}
+ACT #79 {"op": "create", "id": "p4_gt_last", "class": "Comparison", "diagram": "new:W1.body", "as": "GT1", "prim": "Greater?", "donor": {"donor": "$work", "uid": 11721}, "terminals": [{"name": "x > y?", "is_source": true, "term_class": "Terminal"}, {"name": "y", "is_source": false, "term_class": "Terminal"}, {"name": "x", "is_source": false, "term_class": "Terminal"}]}
+   why: ROUTE create | PRECEDENT | $work donor #11721 Comparison 'x > y?' (only Greater? in the bed, diagram 12617) [draft d9d66246]
+ACT #80 {"op": "create", "id": "p4_f_min", "class": "ForLoop", "diagram": "new:W1.body", "as": "FMN1"}
+   why: ROUTE create | PRECEDENT | PD311(b) For loop on W1's body: loop_in('for') OpForLoopIn_v0 (stagexec.py:204); For in a plan-made While body = plan_disp.json:36-43 r2_dlf, created stage_d1_disp_r3.log:62-63 (ForLoop +1); N unwired (count = auto-indexed input length 20) UNMEASURED
+ACT #81 {"op": "create", "id": "p4_sel_mask", "class": "Function", "diagram": "new:FMN1.body", "as": "SW1", "prim": "Select", "donor": {"donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorErrSel_MergeErrors.vi", "uid": 529}, "terminals": [{"name": "s? t:f", "is_source": true, "term_class": "ParameterTerminal"}, {"name": "f", "is_source": false, "term_class": "ParameterTerminal"}, {"name": "s", "is_source": false, "term_class": "ParameterTerminal"}, {"name": "t", "is_source": false, "term_class": "ParameterTerminal"}]}
+   why: ROUTE create | MEASURED | vilib donor DonorErrSel_MergeErrors #529 Select, SCALAR s (P3b-1 p3b_sel launched; diag_c128_2_donors.log:61-63); PD311(b) s = b[i] scalar (PD311(a)); created inside a plan-made For body never run
+ACT #82 {"op": "create", "id": "p4_k_max", "class": "DigitalNumericConstant", "diagram": "new:FMN1.body", "as": "KMX1", "prim": "const_donor", "donor": {"donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorI32Max_v0.vi", "uid": 127}, "terminals": [{"name": "", "is_source": true, "term_class": "Terminal"}]}
+   why: ROUTE create | MEASURED | PD313(a)/PD312(c) ONE donor claudeDev\DonorI32Max_v0.vi (md5 c0c8db65) constant uid 127, I32 2147483647, ExecState 1, read back by card 138-6 (tools/bench/diag_c138_6_facts.md) - for KMX1 AND KMX2; KMX1 = Select.f inside the For
+ACT #83 {"op": "create", "id": "p4_k_max_found", "class": "DigitalNumericConstant", "diagram": "new:W1.body", "as": "KMX2", "prim": "const_donor", "donor": {"donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorI32Max_v0.vi", "uid": 127}, "terminals": [{"name": "", "is_source": true, "term_class": "Terminal"}]}
+   why: ROUTE create | MEASURED | PD313(a)/PD312(c) ONE donor claudeDev\DonorI32Max_v0.vi (md5 c0c8db65) constant uid 127, I32 2147483647, ExecState 1, read back by card 138-6 (tools/bench/diag_c138_6_facts.md) - for KMX1 AND KMX2; KMX2 = LT1.y; const_row REFUTED (DBL diag_c137_7_types.log:218)
+ACT #84 {"op": "create", "id": "p4_amm", "class": "Function", "diagram": "new:W1.body", "as": "AMM1", "prim": "Array Max & Min", "donor": {"donor": "$work", "uid": 10969}, "terminals": [{"name": "array", "is_source": false, "term_class": "Terminal"}, {"name": "max value", "is_source": true, "term_class": "Terminal"}, {"name": "max index (indices)", "is_source": true, "term_class": "Terminal"}, {"name": "min value", "is_source": true, "term_class": "Terminal"}, {"name": "min index (indices)", "is_source": true, "term_class": "Terminal"}]}
+   why: ROUTE create | PRECEDENT | $work donor #10969 Array Max & Min (on #23166 itself) [draft d9d66246]
+ACT #85 {"op": "create", "id": "p4_lt_found", "class": "Comparison", "diagram": "new:W1.body", "as": "LT1", "prim": "Less?", "donor": {"donor": "$work", "uid": 10950}, "terminals": [{"name": "x < y?", "is_source": true, "term_class": "Terminal"}, {"name": "y", "is_source": false, "term_class": "Terminal"}, {"name": "x", "is_source": false, "term_class": "Terminal"}]}
+   why: ROUTE create | PRECEDENT | $work donor #10950 Comparison 'x < y?' (found = min < MAX; no Not Equal? donor in the bed) [draft d9d66246]
+ACT #94 {"op": "create", "id": "p4_eq_seq", "class": "Comparison", "diagram": 23166, "as": "EQ2", "prim": "Equal?", "donor": {"donor": "$work", "uid": 10019}, "terminals": [{"name": "x = y?", "is_source": true, "term_class": "Terminal"}, {"name": "y", "is_source": false, "term_class": "Terminal"}, {"name": "x", "is_source": false, "term_class": "Terminal"}]}
+   why: ROUTE create | PRECEDENT | card 141-P1 (PD324(c)): $work donor #10019 'Equal?' (main_vi_node_labels.json; bed diagram 639; never deleted by the plan) replaces #10171 (deleted by p4_do_10171, X17); measured $work duplicate of #10019: docs/NAMES.md:1387
+ACT #95 {"op": "create", "id": "p4_gt_n1", "class": "Comparison", "diagram": 23166, "as": "GT2", "prim": "Greater?", "donor": {"donor": "$work", "uid": 11721}, "terminals": [{"name": "x > y?", "is_source": true, "term_class": "Terminal"}, {"name": "y", "is_source": false, "term_class": "Terminal"}, {"name": "x", "is_source": false, "term_class": "Terminal"}]}
+   why: ROUTE create | PRECEDENT | $work donor #11721 'x > y?' (n1 > -1 == n1 >= 0; no 'x >= 0?' in the bed) [draft d9d66246]
+ACT #96 {"op": "create", "id": "p4_and", "class": "Function", "diagram": 23166, "as": "AND1", "prim": "And", "donor": {"donor": "$work", "uid": 9647}, "terminals": [{"name": "x .and. y?", "is_source": true, "term_class": "Terminal"}, {"name": "y", "is_source": false, "term_class": "Terminal"}, {"name": "x", "is_source": false, "term_class": "Terminal"}]}
+   why: ROUTE create | PRECEDENT | $work donor #9647 And (on #23166) [draft d9d66246]
+ACT #98 {"op": "create", "id": "p4_dec", "class": "Function", "diagram": 23166, "as": "DEC1", "prim": "Decrement", "donor": {"donor": "$work", "uid": 9179}, "terminals": [{"name": "x-1", "is_source": true, "term_class": "Terminal"}, {"name": "x", "is_source": false, "term_class": "Terminal"}]}
+   why: ROUTE create | PRECEDENT | $work donor #9179 Decrement (on #686) [draft d9d66246]
+ACT #99 {"op": "create", "id": "p4_sel_last", "class": "Function", "diagram": 23166, "as": "SLL1", "prim": "Select", "donor": {"donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorErrSel_MergeErrors.vi", "uid": 529}, "terminals": [{"name": "s? t:f", "is_source": true, "term_class": "ParameterTerminal"}, {"name": "f", "is_source": false, "term_class": "ParameterTerminal"}, {"name": "s", "is_source": false, "term_class": "ParameterTerminal"}, {"name": "t", "is_source": false, "term_class": "ParameterTerminal"}]}
+   why: ROUTE create | MEASURED | vilib donor #529 Select, scalar s (P3b-1) [draft d9d66246]
+ACT #100 {"op": "create", "id": "p4_sel_disc", "class": "Function", "diagram": 23166, "as": "SLD1", "prim": "Select", "donor": {"donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorErrSel_MergeErrors.vi", "uid": 529}, "terminals": [{"name": "s? t:f", "is_source": true, "term_class": "ParameterTerminal"}, {"name": "f", "is_source": false, "term_class": "ParameterTerminal"}, {"name": "s", "is_source": false, "term_class": "ParameterTerminal"}, {"name": "t", "is_source": false, "term_class": "ParameterTerminal"}]}
+   why: ROUTE create | MEASURED | vilib donor #529 Select, scalar s (P3b-1) [draft d9d66246]
+ACT #101 {"op": "create", "id": "p4_inc_disc", "class": "Function", "diagram": 23166, "as": "INC2", "prim": "Increment", "donor": {"donor": "$work", "uid": 1978}, "terminals": [{"name": "x+1", "is_source": true, "term_class": "Terminal"}, {"name": "x", "is_source": false, "term_class": "Terminal"}]}
+   why: ROUTE create | PRECEDENT | $work donor #1978 Increment (P3a p3a_inc) [draft d9d66246]
+ACT #103 {"op": "wire", "id": "p4_w_last_gt", "src": "new:SL1L.inner", "dst": "new:GT2.y"}
+   why: ROUTE wire_sr | MEASURED | wire_sr LeftIn (P3a) | card 139-4 (PD315(c)): MOVED before p4_t_last so the register inner face SL1L.inner is WIRED when the p4_t_last group runs (group route cfw = p4_t_n1 form); PD293(c) GT2.y = last unchanged
+ACT #106 {"op": "wire", "id": "p4_t_last_out", "src": "new:TL1.inner", "dst": "new:GT1.y"}
+   why: ROUTE in_group | PRECEDENT | tunnel group into a plan-made While (P3a TI1 was a case tunnel); register inner face -> new loop tunnel never run [draft d9d66246]
+ACT #107 {"op": "wire", "id": "p4_w_num_gt", "src": "new:LRN4.value", "dst": "new:GT1.x"}
+   why: ROUTE connect | PRECEDENT | same-diagram connect [draft d9d66246]
+ACT #108 {"op": "tunnel", "id": "p4_t_fnum", "loop": "new:FMN1", "body": "new:FMN1.body", "parent": "new:W1.body", "dir": "in", "as": "TFN1", "indexing": true}
+   why: ROUTE tunnel | PRECEDENT | PD311(b) Num array -> Num[i] (auto-index IN): form plan_disp.json:425-468, For in plan-made While stage_d1_disp_r3.log:62-63 | PD312(c) IndexMode GATE TI-TFN1: recipe calls be.index_mode_fix(tunnel, True) after Executor.run + read-back == 1 (PD235(c) stage_d1_qrt_pool.py:4
+ACT #110 {"op": "wire", "id": "p4_t_fnum_out", "src": "new:TFN1.inner", "dst": "new:SW1.t"}
+   why: ROUTE in_group | PRECEDENT | PD311(b) Num[i] -> Select t (scalar I32)
+ACT #111 {"op": "tunnel", "id": "p4_t_fgt", "loop": "new:FMN1", "body": "new:FMN1.body", "parent": "new:W1.body", "dir": "in", "as": "TFB1", "indexing": true}
+   why: ROUTE tunnel | PRECEDENT | PD311(b) Num > last Boolean[] -> b[i] (auto-index IN): form plan_disp.json:425-468, For in plan-made While stage_d1_disp_r3.log:62-63 | PD312(c) IndexMode GATE TI-TFB1: recipe calls be.index_mode_fix(tunnel, True) after Executor.run + read-back == 1 (PD235(c) stage_d1_qrt_
+ACT #112 {"op": "wire", "id": "p4_t_fgt_in", "src": "new:GT1.x > y?", "dst": "new:TFB1.outer"}
+   why: ROUTE in_group | PRECEDENT | PD311(b) GT1 Array1D<Boolean> (diag_c137_7_types.log:224) -> For IN tunnel
+ACT #113 {"op": "wire", "id": "p4_t_fgt_out", "src": "new:TFB1.inner", "dst": "new:SW1.s"}
+   why: ROUTE in_group | PRECEDENT | PD311(b)(a) SCALAR Boolean b[i] -> Select s (scalar s unbroken C5, diag_c137_7_types.log:171-189)
+ACT #114 {"op": "wire", "id": "p4_w_max_sel", "src": "new:KMX1.value", "dst": "new:SW1.f"}
+   why: ROUTE connect | PRECEDENT | PD311(b) MAX -> Select f, same For body (const route 188(c), stagexec.py:1330-1338: the constant by report_all(class), PD307(a) MEASURED findable that way)
+ACT #115 {"op": "tunnel", "id": "p4_t_fsel", "loop": "new:FMN1", "body": "new:FMN1.body", "parent": "new:W1.body", "dir": "out", "as": "TFS1", "indexing": true}
+   why: ROUTE tunnel | PRECEDENT | PD311(b) Select out -> I32 array (auto-index OUT): form plan_disp.json:425-468, For in plan-made While stage_d1_disp_r3.log:62-63 | PD312(c) IndexMode GATE TI-TFS1: recipe calls be.index_mode_fix(tunnel, True) after Executor.run + read-back == 1 (PD235(c) stage_d1_qrt_pool
+ACT #116 {"op": "wire", "id": "p4_t_fsel_in", "src": "new:SW1.s? t:f", "dst": "new:TFS1.inner"}
+   why: ROUTE in_group | PRECEDENT | PD311(b)(d) Select 's? t:f' (diag_c128_2_donors.log:62) -> For OUT tunnel
+ACT #117 {"op": "wire", "id": "p4_t_fsel_out", "src": "new:TFS1.outer", "dst": "new:AMM1.array"}
+   why: ROUTE in_group | PRECEDENT | PD311(b) I32 array -> Array Max & Min (min value = smallest Num > last, MAX when none)
+ACT #118 {"op": "wire", "id": "p4_w_min_lt", "src": "new:AMM1.min value", "dst": "new:LT1.x"}
+   why: ROUTE connect | PRECEDENT | same-diagram connect [draft d9d66246]
+ACT #119 {"op": "wire", "id": "p4_w_max_lt", "src": "new:KMX2.value", "dst": "new:LT1.y"}
+   why: ROUTE connect | PRECEDENT | PD311(b) found = min < MAX: KMX2 (W1 body) -> LT1.y (const route 188(c))
+ACT #120 {"op": "wire", "id": "p4_w_lt_or", "src": "new:LT1.x < y?", "dst": "new:OR1.x"}
+   why: ROUTE connect | PRECEDENT | PD293(d) found -> Or x (replaces draft p4_w_stop LT1 -> W1.cond)
+ACT #124 {"op": "wire", "id": "p4_t_n1_in", "src": "new:AMM1.min value", "dst": "new:TN1.inner"}
+   why: ROUTE in_group | PRECEDENT | output tunnel of a plan-made While (last value) never run [draft d9d66246]
+ACT #125 {"op": "wire", "id": "p4_t_n1_out", "src": "new:TN1.outer", "dst": "new:EQ2.x"}
+   why: ROUTE in_group | PRECEDENT | output tunnel of a plan-made While (last value) never run [draft d9d66246]
+ACT #127 {"op": "wire", "id": "p4_t_slot_in", "src": "new:AMM1.min index (indices)", "dst": "new:TS1.inner"}
+   why: ROUTE in_group | PRECEDENT | output tunnel of a plan-made While never run [draft d9d66246]
+ACT #133 {"op": "wire", "id": "p4_w_n1_gt", "src": "new:TN1.outer", "dst": "new:GT2.x"}
+   why: ROUTE branch | PRECEDENT | branch of plan-made tunnel outer face [draft d9d66246]
+ACT #134 {"op": "wire", "id": "p4_w_eq_and", "src": "new:EQ2.x = y?", "dst": "new:AND1.x"}
+   why: ROUTE connect | PRECEDENT | same-diagram connect [draft d9d66246]
+ACT #135 {"op": "wire", "id": "p4_w_gt_and", "src": "new:GT2.x > y?", "dst": "new:AND1.y"}
+   why: ROUTE connect | PRECEDENT | same-diagram connect [draft d9d66246]
+ACT #136 {"op": "wire", "id": "p4_w_lat_dec", "src": "new:LRL1.value", "dst": "new:DEC1.x"}
+   why: ROUTE connect | PRECEDENT | same-diagram connect [draft d9d66246]
+ACT #137 {"op": "wire", "id": "p4_w_dec_sel", "src": "new:DEC1.x-1", "dst": "new:SLL1.f"}
+   why: ROUTE connect | PRECEDENT | same-diagram connect [draft d9d66246]
+ACT #138 {"op": "wire", "id": "p4_w_n1_sel", "src": "new:TN1.outer", "dst": "new:SLL1.t"}
+   why: ROUTE branch | PRECEDENT | branch of plan-made tunnel outer face [draft d9d66246]
+ACT #139 {"op": "wire", "id": "p4_w_and_sel", "src": "new:AND1.x .and. y?", "dst": "new:SLL1.s"}
+   why: ROUTE connect | PRECEDENT | same-diagram connect [draft d9d66246]
+ACT #140 {"op": "wire", "id": "p4_w_sel_last", "src": "new:SLL1.s? t:f", "dst": "new:SL1R.inner"}
+   why: ROUTE wire_sr | MEASURED | wire_sr RightIn (P3a p3a_w_bn_r) [draft d9d66246]
+ACT #141 {"op": "wire", "id": "p4_w_disc_inc", "src": "new:SD1L.inner", "dst": "new:INC2.x"}
+   why: ROUTE wire_sr | MEASURED | wire_sr LeftIn (P3a) [draft d9d66246]
+ACT #142 {"op": "wire", "id": "p4_w_disc_sel", "src": "new:SD1L.inner", "dst": "new:SLD1.t"}
+   why: ROUTE wire_sr | MEASURED | wire_sr LeftIn branch [draft d9d66246]
+ACT #143 {"op": "wire", "id": "p4_w_inc_sel", "src": "new:INC2.x+1", "dst": "new:SLD1.f"}
+   why: ROUTE connect | PRECEDENT | same-diagram connect [draft d9d66246]
+ACT #144 {"op": "wire", "id": "p4_w_and_seld", "src": "new:AND1.x .and. y?", "dst": "new:SLD1.s"}
+   why: ROUTE connect | PRECEDENT | same-diagram branch [draft d9d66246]
+ACT #145 {"op": "wire", "id": "p4_w_seld_r", "src": "new:SLD1.s? t:f", "dst": "new:SD1R.inner"}
+   why: ROUTE wire_sr | MEASURED | wire_sr RightIn [draft d9d66246]
+ACT #185 {"op": "wire", "id": "p4_rbA_s", "src": "new:AND1.x .and. y?", "dst": "new:RB1.s"}
+   why: ROUTE connect | PRECEDENT | PD293(b) SR A (#23508/#23792 on #10170, graph step_18) new = #5058 'pos in cal image out': valid -> Select s (branch)
+ACT #193 {"op": "wire", "id": "p4_rbB_s", "src": "new:AND1.x .and. y?", "dst": "new:RB2.s"}
+   why: ROUTE connect | PRECEDENT | PD293(b) SR B (#10850/#25240 on #10170, graph step_18) new = #5058 'x,y,z array out': valid -> Select s (branch)
+ACT #200 {"op": "wire", "id": "p4_rbC_s", "src": "new:AND1.x .and. y?", "dst": "new:RB3.s"}
+   why: ROUTE connect | PRECEDENT | PD293(b) SR C (#25339/#25344 on #10170, graph step_18) new = #5058 'Bead is good? array out': valid -> Select s (branch)
+ACT #206 {"op": "wire", "id": "p4_rbD_s", "src": "new:AND1.x .and. y?", "dst": "new:RB4.s"}
+   why: ROUTE connect | PRECEDENT | PD293(b) SR D (#25371/#25382 on #10170, graph step_18) new = SelectorTunnel #11336 'Value' (Auto-reset zero): valid -> Select s (branch)
+ACT #213 {"op": "wire", "id": "p4_rbE_s", "src": "new:AND1.x .and. y?", "dst": "new:RB5.s"}
+   why: ROUTE connect | PRECEDENT | PD293(b) SR E (#9603/#10544 on #10170, graph step_18) new = For LoopTunnel #9227: valid -> Select s (branch)
+ACT #219 {"op": "wire", "id": "p4_rbF_s", "src": "new:AND1.x .and. y?", "dst": "new:RB6.s"}
+   why: ROUTE connect | PRECEDENT | PD293(b) SR F (#25545/#25582 on #10170, graph step_18) new = For LoopTunnel #29616: valid -> Select s (branch)
+ACT #227 {"op": "wire", "id": "p4_rbR_s", "src": "new:AND1.x .and. y?", "dst": "new:RB7.s"}
+   why: ROUTE connect | PRECEDENT | PD300(b)/PD308(a) reseed flag t25557 (from #9647 'x .and. y?' t9668, w25415; not a register): valid -> Select s (branch, as v6 p4_rbA_s)
+ACT #234 {"op": "wire", "id": "p4_x_n2_out", "src": "new:IAN1.element", "dst": "new:EQ2.y"}
+   why: ROUTE connect_term_uid | UNMEASURED | FS frame -> enclosing body EXIT (only entries and frame_to_frame measured) [draft d9d66246]
+GATE FAIL | G2 20 / G5 27 in table | {None: 1}
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":1,"fail":1},"first_fail":"G2 20 / G5 27 in table","artefacts":[]}
+BGRUN END rc=1 after 1s (RESULT: status=FAIL gates 1/1 first_fail=G2 20 / G5 27 in table; the process itself said 0)

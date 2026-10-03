@@ -1,0 +1,272 @@
+{
+ "schema": "stageplan/1",
+ "context": {
+  "s1_key": "D1_s1_copy"
+ },
+ "stage": "ring_p4_rasresta",
+ "goal": "card 142-P1 PASS A: rest of the slot-write repair (v17 #25..#50), no open_rows",
+ "base": {
+  "path": "tools/bench/sim/ring_p4_s02_s01end/base_provisional.json",
+  "md5": "2d0c2c99a5525713edd638f89229e028",
+  "provisional": true,
+  "sim_of": {
+   "plan": "tools/bench/plan_ring_p4_s01.json",
+   "md5": "f4831031c738c997391b5bcace19d9f0"
+  }
+ },
+ "actions": [
+  {
+   "op": "delete_wire",
+   "id": "p4_rp29048_dwo",
+   "wire_uid": 29168,
+   "why": "ROUTE delete_wire | MEASURED | the old node's output wire (its only other end #29095 t29103); delete_wire = p4_dw_23310 (launched P2a); PD322(b)/PD323(a) repair of bed #29048 (Insert Into Array, diag_c140_4_facts.md) on frame #32464; endpoints from graph_ring_p3b2b_20261002_133824.json (prep_c141_1_census.log)"
+  },
+  {
+   "op": "delete_object",
+   "id": "p4_rp29048_do",
+   "uid": 29048,
+   "why": "ROUTE delete_object | MEASURED | old Insert Into Array #29048; every input wire now also feeds RX3 (no wire loses its last sink, PD321); delete_object = p4_do_10171 (140-3 scratch op 3)"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rp29048_rle_arr",
+   "wire_uid": 29154,
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0 on a wire that KEEPS a sink (RX3.array) - the P3b form (PD256(b)); PD323(a)"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rp29048_rle_idx",
+   "wire_uid": 28367,
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0 on a wire that KEEPS a sink (RX3.index) - the P3b form (PD256(b)); PD323(a)"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rp29048_rle_new",
+   "wire_uid": 28871,
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0 on a wire that KEEPS a sink (RX3.new element/subarray) - the P3b form (PD256(b)); PD323(a)"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rp29048_out",
+   "src": {
+    "uid": -13,
+    "term": "output array"
+   },
+   "dst": {
+    "uid": 29095,
+    "term_uid": 29103
+   },
+   "why": "ROUTE connect same-diagram (connect_nested_v1, bare node source) | MEASURED | P3b p3b_w_*_out pattern; sink = the old output's sink #29095 Local t29103; PD322(b)/PD323(a) repair of bed #29048 (Insert Into Array, diag_c140_4_facts.md) on frame #32464; endpoints from graph_ring_p3b2b_20261002_133824.json (prep_c141_1_census.log)"
+  },
+  {
+   "op": "create",
+   "id": "p4_rp29265_c",
+   "class": "GrowableFunction",
+   "diagram": 32464,
+   "as": "RX4",
+   "prim": "Replace Array Subset",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRAS1D_v0.vi",
+    "uid": 175
+   },
+   "terminals": [
+    {
+     "name": "array",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "output array",
+     "is_source": true,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "index",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "new element/subarray",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE create primitive | MEASURED donor | DonorRAS1D_v0.vi uid 175 label 'Replace Array Subset' run 0..19/3/99 -> len 20 (diag_c140_5_facts.md:11-21); external-donor create_primitive_nested route as DonorErrSel #529 (P3b-1); PD322(b)/PD323(a) repair of bed #29265 (Insert Into Array, diag_c140_4_facts.md) on frame #32464; endpoints from graph_ring_p3b2b_20261002_133824.json (prep_c141_1_census.log)"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rp29265_arr",
+   "src": {
+    "uid": 29264,
+    "term_uid": 29274
+   },
+   "dst": "new:RX4.array",
+   "why": "ROUTE cfw same-diagram BRANCH | MEASURED | source #29264 Local t29274 is WIRED (w29383 -> old #29265) -> connect_route 'cfw' (OpConnectFromWire_v0); same-diagram cfw branch keeps the wire (140-3 scratch op 7 p4_w_stopall_639, diag_c140_3_facts.md:22); PD322(b)/PD323(a) repair of bed #29265 (Insert Into Array, diag_c140_4_facts.md) on frame #32464; endpoints from graph_ring_p3b2b_20261002_133824.js"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rp29265_idx",
+   "src": {
+    "uid": 28413,
+    "term_uid": 28428
+   },
+   "dst": "new:RX4.index",
+   "why": "ROUTE cfw same-diagram BRANCH | UNMEASURED (FS tunnel face source) | source #28413 FlatSequenceOuterTunnel t28428 is WIRED (w28367 -> old #29265) -> connect_route 'cfw' (OpConnectFromWire_v0); same-diagram cfw branch keeps the wire (140-3 scratch op 7 p4_w_stopall_639, diag_c140_3_facts.md:22); PD322(b)/PD323(a) repair of bed #29265 (Insert Into Array, diag_c140_4_facts.md) on frame #32464; endpoi"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rp29265_new",
+   "src": {
+    "uid": 29408,
+    "term_uid": 29410
+   },
+   "dst": "new:RX4.new element/subarray",
+   "why": "ROUTE cfw same-diagram BRANCH | UNMEASURED (FS tunnel face source) | source #29408 FlatSequenceOuterTunnel t29410 is WIRED (w29401 -> old #29265) -> connect_route 'cfw' (OpConnectFromWire_v0); same-diagram cfw branch keeps the wire (140-3 scratch op 7 p4_w_stopall_639, diag_c140_3_facts.md:22); PD322(b)/PD323(a) repair of bed #29265 (Insert Into Array, diag_c140_4_facts.md) on frame #32464; endpoi"
+  },
+  {
+   "op": "delete_wire",
+   "id": "p4_rp29265_dwo",
+   "wire_uid": 29391,
+   "why": "ROUTE delete_wire | MEASURED | the old node's output wire (its only other end #29312 t29332); delete_wire = p4_dw_23310 (launched P2a); PD322(b)/PD323(a) repair of bed #29265 (Insert Into Array, diag_c140_4_facts.md) on frame #32464; endpoints from graph_ring_p3b2b_20261002_133824.json (prep_c141_1_census.log)"
+  },
+  {
+   "op": "delete_object",
+   "id": "p4_rp29265_do",
+   "uid": 29265,
+   "why": "ROUTE delete_object | MEASURED | old Insert Into Array #29265; every input wire now also feeds RX4 (no wire loses its last sink, PD321); delete_object = p4_do_10171 (140-3 scratch op 3)"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rp29265_rle_arr",
+   "wire_uid": 29383,
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0 on a wire that KEEPS a sink (RX4.array) - the P3b form (PD256(b)); PD323(a)"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rp29265_rle_idx",
+   "wire_uid": 28367,
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0 on a wire that KEEPS a sink (RX4.index) - the P3b form (PD256(b)); PD323(a)"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rp29265_rle_new",
+   "wire_uid": 29401,
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0 on a wire that KEEPS a sink (RX4.new element/subarray) - the P3b form (PD256(b)); PD323(a)"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rp29265_out",
+   "src": "new:RX4.output array",
+   "dst": {
+    "uid": 29312,
+    "term_uid": 29332
+   },
+   "why": "ROUTE connect same-diagram (connect_nested_v1, bare node source) | MEASURED | P3b p3b_w_*_out pattern; sink = the old output's sink #29312 Local t29332; PD322(b)/PD323(a) repair of bed #29265 (Insert Into Array, diag_c140_4_facts.md) on frame #32464; endpoints from graph_ring_p3b2b_20261002_133824.json (prep_c141_1_census.log)"
+  },
+  {
+   "op": "create",
+   "id": "p4_rp29316_c",
+   "class": "GrowableFunction",
+   "diagram": 32464,
+   "as": "RX5",
+   "prim": "Replace Array Subset",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRAS1D_v0.vi",
+    "uid": 175
+   },
+   "terminals": [
+    {
+     "name": "array",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "output array",
+     "is_source": true,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "index",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "new element/subarray",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE create primitive | MEASURED donor | DonorRAS1D_v0.vi uid 175 label 'Replace Array Subset' run 0..19/3/99 -> len 20 (diag_c140_5_facts.md:11-21); external-donor create_primitive_nested route as DonorErrSel #529 (P3b-1); PD322(b)/PD323(a) repair of bed #29316 (Insert Into Array, diag_c140_4_facts.md) on frame #32464; endpoints from graph_ring_p3b2b_20261002_133824.json (prep_c141_1_census.log)"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rp29316_arr",
+   "src": {
+    "uid": 29313,
+    "term_uid": 29342
+   },
+   "dst": "new:RX5.array",
+   "why": "ROUTE cfw same-diagram BRANCH | MEASURED | source #29313 Local t29342 is WIRED (w29394 -> old #29316) -> connect_route 'cfw' (OpConnectFromWire_v0); same-diagram cfw branch keeps the wire (140-3 scratch op 7 p4_w_stopall_639, diag_c140_3_facts.md:22); PD322(b)/PD323(a) repair of bed #29316 (Insert Into Array, diag_c140_4_facts.md) on frame #32464; endpoints from graph_ring_p3b2b_20261002_133824.js"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rp29316_idx",
+   "src": {
+    "uid": 28413,
+    "term_uid": 28428
+   },
+   "dst": "new:RX5.index",
+   "why": "ROUTE cfw same-diagram BRANCH | UNMEASURED (FS tunnel face source) | source #28413 FlatSequenceOuterTunnel t28428 is WIRED (w28367 -> old #29316) -> connect_route 'cfw' (OpConnectFromWire_v0); same-diagram cfw branch keeps the wire (140-3 scratch op 7 p4_w_stopall_639, diag_c140_3_facts.md:22); PD322(b)/PD323(a) repair of bed #29316 (Insert Into Array, diag_c140_4_facts.md) on frame #32464; endpoi"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rp29316_new",
+   "src": {
+    "uid": 29411,
+    "term_uid": 29414
+   },
+   "dst": "new:RX5.new element/subarray",
+   "why": "ROUTE cfw same-diagram BRANCH | UNMEASURED (FS tunnel face source) | source #29411 FlatSequenceOuterTunnel t29414 is WIRED (w29244 -> old #29316) -> connect_route 'cfw' (OpConnectFromWire_v0); same-diagram cfw branch keeps the wire (140-3 scratch op 7 p4_w_stopall_639, diag_c140_3_facts.md:22); PD322(b)/PD323(a) repair of bed #29316 (Insert Into Array, diag_c140_4_facts.md) on frame #32464; endpoi"
+  },
+  {
+   "op": "delete_wire",
+   "id": "p4_rp29316_dwo",
+   "wire_uid": 29397,
+   "why": "ROUTE delete_wire | MEASURED | the old node's output wire (its only other end #29380 t29388); delete_wire = p4_dw_23310 (launched P2a); PD322(b)/PD323(a) repair of bed #29316 (Insert Into Array, diag_c140_4_facts.md) on frame #32464; endpoints from graph_ring_p3b2b_20261002_133824.json (prep_c141_1_census.log)"
+  },
+  {
+   "op": "delete_object",
+   "id": "p4_rp29316_do",
+   "uid": 29316,
+   "why": "ROUTE delete_object | MEASURED | old Insert Into Array #29316; every input wire now also feeds RX5 (no wire loses its last sink, PD321); delete_object = p4_do_10171 (140-3 scratch op 3)"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rp29316_rle_arr",
+   "wire_uid": 29394,
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0 on a wire that KEEPS a sink (RX5.array) - the P3b form (PD256(b)); PD323(a)"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rp29316_rle_idx",
+   "wire_uid": 28367,
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0 on a wire that KEEPS a sink (RX5.index) - the P3b form (PD256(b)); PD323(a)"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rp29316_rle_new",
+   "wire_uid": 29244,
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0 on a wire that KEEPS a sink (RX5.new element/subarray) - the P3b form (PD256(b)); PD323(a)"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rp29316_out",
+   "src": "new:RX5.output array",
+   "dst": {
+    "uid": 29380,
+    "term_uid": 29388
+   },
+   "why": "ROUTE connect same-diagram (connect_nested_v1, bare node source) | MEASURED | P3b p3b_w_*_out pattern; sink = the old output's sink #29380 Local t29388; PD322(b)/PD323(a) repair of bed #29316 (Insert Into Array, diag_c140_4_facts.md) on frame #32464; endpoints from graph_ring_p3b2b_20261002_133824.json (prep_c141_1_census.log)"
+  }
+ ]
+}

@@ -1,0 +1,36 @@
+{
+ "schema": "task/1", "id": "142-4", "kind": "build",
+ "goal": "Build claudeDev RingSeqCheck_v0.vi (P4 subVI S2, PD330(a)) in its own file; RUN 7 vectors vs a Python reference from v17's wires; re-run 2 from the saved file in a fresh instance",
+ "why": "PD330(a)/(c), docs/d1/ring-p4b.md:109. S1 RingPickSlot_v0.vi PASSED by card 142-3 (87/0); its script build_ringpickslot_v2.py is the pattern (terminals by their own uid). Detail: brief_142-4.md",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_142-4.md", "md5": "dc02569a7b84bdbbca95c68b1ec903eb"},
+  {"path": "tools/bench/plan_ring_p4_v17.json", "md5": "e19d7e142fef66f9e118ae4061e9e718"},
+  {"path": "tools/bench/build_ringpickslot_v2.py", "md5": "6fcbbb01588a9a2d7c890b58b900b773"},
+  {"path": "tools/bench/prep_c142_p1_subvi_table.md", "md5": "2e032d3c8923131ebcc8f7e8b8933e5e"}
+ ],
+ "pass": [
+  "RingSeqCheck_v0.vi saved by COM, ExecState 1, census Equal? 1 / Greater? 1 / And 1 / Decrement 1 / Select 2 / Increment 1, prim gate PASS, conpane read back 5 in / 3 out",
+  "the Python reference formula derived from v17 wires is printed; 7 vectors got == reference; 2 re-run from the saved file in a fresh instance equal",
+  "the v17 wire that carries 'valid' to the rollback Selects named; bed + s01 md5 unchanged; handles flat +-100; LabVIEW gone"
+ ],
+ "outputs": ["C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\RingSeqCheck_v0.vi", "tools/bench/diag_c142_4_facts.md"],
+ "flags": {"labview": "build", "gui": true, "hardware": "none", "run_vi": true,
+  "write": ["tools/bench/diag_c142_4*", "tools/bench/build_ringseqcheck*", "tools/bench/scratch_verify/**", "docs/toolkit-capabilities.md"],
+  "status_edit": false, "git_commit": true, "peers": ["hypothesis"]},
+ "budget": {"failures": 2, "minutes": 75},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "EMPTY_v0.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "DonorErrSel_MergeErrors.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "tools/bench/build_ringpickslot_v2.py"},
+  {"kind": "verb", "name": "create_control", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "create_indicator", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "conpane_assign", "where": "tools/gscript.py"},
+  {"kind": "verb", "name": "save", "where": "tools/gscript.py"}
+ ],
+ "rules": [
+  "Script <=120 lines; every terminal addressed by its own uid read back after creation (142-3 pattern)",
+  "Never open the bed or the s01 file for editing; $work donors from a byte copy of the bed",
+  "Return at the first result that differs from the prediction (finish the step, LabVIEW closed)"
+ ]
+}

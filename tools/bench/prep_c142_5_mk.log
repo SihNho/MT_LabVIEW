@@ -1,0 +1,15 @@
+BGRUN START 2026-10-03 10:30:20 limit 10.0 min: py -u tools/bench/prep_c142_5_mk.py
+BGRUN PID 556
+GATE PASS | M0 input md5 == card | {'plan_ring_p4_v18.json': '2ea6cafa7d368dc7a054346d398daa3e', 'plan_ring_p4_s01.json': 'f4831031c738c997391b5bcace19d9f0', 'plan_ring_p4_s02.json': '5e483ea6ccf9897f37da71b975bcde29', 'plan_ring_p4_rasrest.json': '4ad2d288de6bf6a0ee3d6a41306af73a', 'base_provisional.json': '2d0c2c99a5525713edd638f89229e028'}
+GATE PASS | S1 v18 ops 1..24 = s01's 24 ids | 
+GATE PASS | CUT ops 25..58: peak 678.5 <= 680.0 at start 596.5; op 59 would be 682.4 | 
+FACT session 2 = 34 actions p4_rp29048_dwo..p4_lr_stop12; groups [(67, 68), (69, 70), (185, 186), (187, 188), (189, 190)]
+GATE PASS | C2 1 cross ref(s) to s01 symbols -> negative provisional uids [('p4_rp29048_out', -13)] | []
+GATE PASS | RR v18 #25..#50 after cross-ref == rasrest_in's 26 actions | []
+GATE PASS | SA pass A replays to its end | None
+GATE PASS | TIE every end row (16) tied to a session-2 action or a step-0 declared pair | []
+GATE PASS | SB plan FINAL on the provisional base, end rows == pass A, open_rows_match (11 pairs) | {'final': True, 'failed': None}
+GATE PASS | X10s compiled plan: N 34 R 7 peak 678.5 == table 678.5 <= 680.0; kinds == v18 ops 25..58 | {'delete_wire': 5, 'delete_object': 4, 'wire_remove_loose_ends': 9, 'connect': 10, 'create': 6}
+GATE PASS | U v18 / s01 / s02 / rasrest / provisional base untouched | 
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":10,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/sim/ring_p4_s02v18a/plan_ring_p4_s02v18a_in.json","md5":"b58ba518bba8ba1cc487ee9f38f7ca4d"},{"path":"tools/bench/plan_ring_p4_s02v18_in.json","md5":"4313cddc678217b2e9f7265c51478f57"},{"path":"tools/bench/plan_ring_p4_s02v18.json","md5":"a797f577aad2ef2b31fc128b9eea08a7"}]}
+BGRUN END rc=0 after 66s
