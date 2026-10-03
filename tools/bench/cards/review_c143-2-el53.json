@@ -1,0 +1,22 @@
+{
+ "schema": "review/1",
+ "id": "c143-2-el53",
+ "role": "hypothesis",
+ "claim": "H: the 2 extra Error List items (EL 53 vs 51/52) of D1_ring_p4s02_20261003_110001.vi are by-design session-boundary state: While #10170 cond #23246 emptied by planned cut p4_dw_23310, and Local #6902 (StopAll read) wired only by s03 action 1 p4_w_stop12. diag_c143_2_offline.log H-a FAIL: script bug",
+ "predicted": "Error List 51/52 items after session 2 (plan_ring_p4_s02v18 prediction); offline script run 1: exactly one While with an unwired cond, = #10170.",
+ "observed": "Error List 53 items; extra = exactly those two messages, missing [] (errorlist_..._110836.json:5638-5642, no uids). Graph: only While #10170 cond #23246 and only Local #6902 unwired; s01->s02 newly unwired = 2, both planned deletes; same open in the sim end. Full list: diag_c143_2_facts.md.",
+ "ruled_out": [
+  "an unplanned wire cut in s02: the only two s01->s02 newly-unwired terminals are both explicit p4_dw_* deletes of the plan",
+  "the session-2 edits missing from the file: E5 PASS (6 made, 4 deleted nodes, 5 deleted wires, 4 new wires) diag_c143_1_graph.log:295",
+  "UNTESTED: s03 action 1 addresses #6902's terminal as 'value'; the measured name is 'StopAll' (plan_ring_p4_s03v18.json:80)"
+ ],
+ "attachments": [
+  {"path": "tools/bench/diag_c143_2_facts.md", "md5": "fe1a4f07648870396f610020062cd166"},
+  {"path": "tools/bench/diag_c143_2_offline.log", "md5": "2ad3a0cd4b636c64ad089db8d663296d"},
+  {"path": "tools/bench/diag_c143_2_offline.py", "md5": "9689ecde80b6bea67f013bdc9f33a5e4"},
+  {"path": "tools/bench/plan_ring_p4_s02v18.json", "md5": "e941ebbfaa3d98099bcd10d8c6237ef4"},
+  {"path": "tools/bench/plan_ring_p4_s03v18.json", "md5": "9d5049d8cda65cb861aef12cefa4212a"},
+  {"path": "tools/bench/diag_c143_1_graph.log", "md5": "6888c137d1e9bb6a8455a614583cf107"}
+ ],
+ "ask": "refute"
+}

@@ -1,0 +1,34 @@
+{
+ "schema": "task/1", "id": "143-6", "kind": "build",
+ "goal": "OFFLINE: finish s03 checks on rebased plan da66a030: pred script scans uids outside why/notes; X10 at 596.0; EL pred (fixed rule); dry + prerun both recipes; scratch-required",
+ "why": "143-5: rebase PASS (final da66a030) but our pred script's RB gate tokenised why text ('-1'); its RB2 must check fs_carried.real_graph == eda9db40. Our-script-bug: patch + rerun, no review.",
+ "inputs": [
+  {"path": "tools/bench/plan_ring_p4_s03v18.json", "md5": "da66a0300851133d93881be3c28f2fdc"},
+  {"path": "tools/bench/prep_c143_5_pred.py", "md5": "8abfedf43e34cd810c46f0d50fb84573"},
+  {"path": "tools/bench/prep_c143_5_facts.md", "md5": "818c5f72799a0f0e9c1838665198401d"},
+  {"path": "tools/bench/sim/ring_p4_s03v18_base_real_fsmap.json", "md5": "c4a11939695fe80bf8f419246b9337fa"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s03v18.py", "md5": "d420f951d49d8ef57d0d630624ee7b8b"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s03v18_scratch.py", "md5": "573b8537e3a0481f4727fa0951e1f9fe"}
+ ],
+ "pass": [
+  "pred script: negative-uid scan over action fields only (not why/notes); RB2 checks fs_carried.real_graph md5 eda9db40",
+  "pred file for da66a030: X10 at 596.0 <= 680 (or re-cut reported), EL prediction from the fixed rule + basis",
+  "dry + prerun on both s03v18 recipes (counts); whether 'new:LRB1.value'/'new:LWB1.value' resolve vs 'BufDiff'",
+  "--prerun ... --scratch-required exit code"
+ ],
+ "outputs": ["tools/bench/plan_ring_p4_s03v18_pred.json", "tools/bench/prep_c143_6_facts.md"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/prep_c143_6*", "tools/bench/prep_c143_5_pred*", "tools/bench/plan_ring_p4_s03v18_pred.json", "tools/bench/sim/**", "tools/bench/gate_fp_queue.jsonl"],
+  "status_edit": false, "git_commit": true, "peers": []},
+ "budget": {"failures": 2, "minutes": 30},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/prep_c143_5_pred.py"},
+  {"kind": "file", "name": "tools/bench/prep_c143_3_elrule.py"}
+ ],
+ "rules": [
+  "Offline only; do NOT edit stagexec/stagekit/stagesim/stage_prerun/gscript; plan da66a030 is not edited",
+  "Never launch",
+  "Return at the first unexpected result"
+ ]
+}

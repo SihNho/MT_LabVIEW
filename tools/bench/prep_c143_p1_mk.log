@@ -1,0 +1,18 @@
+BGRUN START 2026-10-03 10:54:27 limit 10.0 min: py -u tools/bench/prep_c143_p1_mk.py
+BGRUN PID 22276
+GATE PASS | M0 input md5 == card / pins | {'plan_ring_p4_v18.json': '2ea6cafa7d368dc7a054346d398daa3e', 'plan_ring_p4_s01.json': 'f4831031c738c997391b5bcace19d9f0', 'plan_ring_p4_s02v18.json': 'e941ebbfaa3d98099bcd10d8c6237ef4', 'step_34_create.json': '5f74a80438da12ed6079f15d109b3762'}
+GATE PASS | E2 s02v18 finalized last step file == tools/bench/sim/ring_p4_s02v18/step_34_create.json (pinned md5), state has sym/neg | {'n': 34, 'op': 'create', 'path': 'tools/bench/sim/ring_p4_s02v18/step_34_create.json', 'md5': '5f74a80438da12ed6079f15d109b3762'}
+GATE PASS | E2b END state sym/neg present | ({'new:RX4': -2, 'new:RX5': -8, 'new:KSF1': -14, 'new:ISK1': -16, 'new:LWS2': -18, 'new:LRS2': -20}, -21)
+FACT provisional base tools/bench/sim/ring_p4_s03v18_s02end/base_provisional.json 1181117690431ea67c9a8847266a2192 sym {"new:RX4": -2, "new:RX5": -8, "new:KSF1": -14, "new:ISK1": -16, "new:LWS2": -18, "new:LRS2": -20} neg -21 vi md5 dc61e193e0376ce760f88fdfcda7087b
+GATE PASS | S2 v18 ops 1..58 = s01's 24 + s02v18's 34 ids | 
+GATE PASS | CUT ops 59..78: peak 676.9 <= 680.0 at start 596.5; op 79 would be 680.8; first op over the limit 79 | 
+FACT session 3 = 20 actions p4_w_stop12..p4_lr_num_a; ops 59..78; peak 676.9; margin 3.1 MB; next op 79 peak 680.8; cuts refused by 'of' groups below the limit []; subVI drops {'PS1': {'op': 79, 'in_session': False}, 'SQ1': {'op': 88, 'in_session': False}}
+GATE PASS | C2 1 cross ref(s) to s01/s02 symbols -> negative provisional uids [('p4_w_stop12', 'new:LRS2.value', -20)]; no ref to a later session's symbol | {'bad': [], 'late': []}
+GATE PASS | S0 pass-A input validates (20 actions) | OK stageplan/1
+GATE PASS | SA pass A replays to its end | None
+GATE PASS | TIE every end row (16) tied to a session-3 action or an s02v18 open row | []
+GATE PASS | SB plan FINAL on the provisional base, end rows == pass A, open_rows_match (11 pairs) | {'final': True, 'failed': None}
+GATE PASS | X10s compiled plan: N 20 R 14 peak 676.9 == table 676.9 <= 680.0; kinds == v18 ops 59..78 | {'stop': 1, 'create': 9, 'connect': 4, 'connect_term_uid': 2, 'wire_remove_loose_ends': 2, 'add_sr': 2}
+GATE PASS | U v18 / s01 / s02v18 / s02 END step file untouched | 
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":12,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/sim/ring_p4_s03v18_s02end/base_provisional.json","md5":"1181117690431ea67c9a8847266a2192"},{"path":"tools/bench/sim/ring_p4_s03v18a/plan_ring_p4_s03v18a_in.json","md5":"4811d324255acb86ccf246e6f51b9e18"},{"path":"tools/bench/plan_ring_p4_s03v18_in.json","md5":"afb1e79aa40c7a7f4c38a146c114f6c8"},{"path":"tools/bench/plan_ring_p4_s03v18.json","md5":"9d5049d8cda65cb861aef12cefa4212a"},{"path":"tools/bench/prep_c143_p1_session.json","md5":"0c6a1eb227259df69b4459e6b3271b49"}]}
+BGRUN END rc=0 after 49s

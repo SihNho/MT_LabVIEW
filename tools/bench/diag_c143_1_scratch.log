@@ -1,0 +1,431 @@
+BGRUN START 2026-10-03 11:00:00 limit 50.0 min: py -u tools/recipes/stage_d1_ring_p4_s02v18_scratch.py
+BGRUN PID 12340
+BGRUN STAGE-RUN recorded stage_d1_ring_p4_s02v18_scratch.py cycle='cycle 143' card=None pid=21752 -> stage_runs.jsonl
+stage_d1_ring_p4_s02v18_scratch - card 142-5 (WRITTEN, NOT LAUNCHED): the ONE SCRATCH RUN of RING P4 v18 LabVIEW SESSION 2
+(PD331(c)(d), D-2026-10-01-01). COPIED from stage_d1_ring_p4_s01_scratch.py (card 141-3) with names changed (log, scratch name,
+out/sum json, card id, recipe) and the launch-memory line MEML 675 -> 680 (PD331(c): the X10 cut limit is memory_model.json's 680,
+superseding PD326(e)'s 675; scratch MEM_STOP_MB 690 -> SX.X10_FAIL_MB 680 in card 143-1 per PD328(a)). x10() takes the limit from the md5-PINNED pred file
+(plan_ring_p4_s02v18_pred.json memory_pred.peak_mb, used only when pred.plan.md5 == md5(plan_ring_p4_s02v18.json)).
+Runs tools/recipes/stage_d1_ring_p4_s02v18.py's OWN body (imported UNCHANGED) with plan_ring_p4_s02v18.json on a dated byte copy
+claudeDev\D1_ring_p4s02_<ts>.vi (card 143-1; was scratch_c142_p4s02v18_<ts>.vi) of session 1's file D1_ring_p4s01_20261002_232547.vi (dc61e193) - same Executor, LVBackend
+(per-op census + Is Broken? + the run-time PRIM gate), every recipe gate and the ExecState read. No VI is run; the bed is never
+edited. SAVE on (rule-6 gui_save of the work copy) so the Error List can be read count-only next.
+PREDICTION (numbers in plan_ring_p4_s02v18_pred.json): every recipe gate PASS incl. PRIM; peak private MB <= SX.X10_FAIL_MB (680) and <= X10 + 10 and,
+for the launch, <= 680 (PD331(c)); bed md5 unchanged; LabVIEW gone. Error List (next, separate run) == pred predicted_total.
+CARD 143-1 EDIT (PD329(a), PD332(d)) - names only: log/out/sum -> diag_c143_1_scratch*, card id 143-1, and the work copy is SAVED
+under the stage's normal name claudeDev\D1_ring_p4s02_<ts>.vi (Stage(work_name=...)) so that, when every gate passes, it is ADOPTED
+as session 2's file by `py tools/stagexec.py adopt` (no second run on the s01 file). Edits, gates and limits unchanged.
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/diag_c143_1_scratch.log -- py -u tools/recipes/stage_d1_ring_p4_s02v18_scratch.py
+MEM_STOP_MB 680.0; X10 from the md5-pinned pred 678.5
+stage_d1_ring_p4_s02v18 - card 142-5 (WRITTEN, NOT LAUNCHED), RING P4 LabVIEW SESSION 2 of plan v18 (PD330(d), PD331(b)(c)(d);
+D-2026-10-01-01, D-2026-10-02-02/04): on session 1's SAVED in-between file claudeDev\D1_ring_p4s01_20261002_232547.vi (graph
+graph_ring_p4s01_20261002_234419.json f697a0b2), apply the actions of plan_ring_p4_s02v18.json = v18 ops 25..58 (the rest of the
+slot-write repair, v17/v18 #25..#50, then the first non-repair ops up to the X10 cut 678.5 <= 680 at start 596.5), planned on session 1's
+simulated end and REBASED onto the real graph by stage_prerun --rebase (rebind key (uid, owner, name), card 142-5).
+COPIED from stage_d1_ring_p4_s01.py (card 141-3, identity-keyed D / TD) with ONLY names changed (plan, pred, card id, out json, stage
+name, docstring). FRESH LabVIEW -> claudeDev\D1_ring_p4s02v18_<ts>.vi (rule-6 GUI save, ExecState 0 by design) = an IN-BETWEEN file of
+step P4 (not counted, D-2026-10-02-02/04). The FIRST run is the full SCRATCH run on a byte copy (stage_d1_ring_p4_s02v18_scratch.py).
+ROWS ONLY FROM plan_ring_p4_s02v18.json; expected values only from plan_ring_p4_s02v18_pred.json. No new op.
+PREDICTION (numbers in the pred file): L1 actions -> pred ops; E1 every checkpoint == sim; NG crossing tunnel names == step files';
+PRIM every created primitive's label == plan prim; FR created objects on the sim end's frames; D new/lost wires == sim's; TD every base
+terminal that was wired stays wired, identities lost == plan deletes; CEN2 == pred census; PB cdiff(S1, end) == pred rows (FATAL, before save); HB handles <= +700;
+PS saved, input unchanged. X10 = pred memory_pred. Error List of the end = pred errorlist.predicted_total (PD322(e) per-node rule).
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/launch_c142_p4s02v18.log -- py -u tools/recipes/stage_d1_ring_p4_s02v18.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p4_s02v18_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan  ('e941ebbfaa3d98099bcd10d8c6237ef4', {'path': 'tools/bench/sim/ring_p4_s02v18_base_real_fsmap.json', 'md5': '830fa6c7c22f94ead4fc5795c4280ef5'}, 'dc61e193e0376ce760f88fdfcda7087b')
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 333 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == dc61e193e0376ce760f88fdfcda7087b  got dc61e193e0376ce760f88fdfcda7087b
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33995
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  D1_ring_p4s02_20261003_110001.vi
+  FACT  ExecState [after open] D1_ring_p4s02_20261003_110001.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so D1_ring_p4s02_20261003_110001.vi is deleted at close
+  PASS  L1 the 34 actions compile into 34 real ops == pred kinds, each action once; checkpoints (0, 7, 17, 30, 31, 32, 34)  ['delete_wire', 'delete_object', 'wire_remove_loose_ends', 'wire_remove_loose_ends', 'wire_remove_loose_ends', 'connect', 'create', 'connect', 'connect', 'connect', 'delete_wire', 'delete_object', 'wire_remove_loose_ends', 'wire_remove_loose_ends', 'wire_remove_loose_ends', 'connect', 'create', 'connect', 'connect', 'connect', 'delete_wire', 'delete_object', 'wire_remove_loose_ends', 'wire_remove_loose_ends', 'wire_remove_loose_ends', 'connect', 'delete_wire', 'delete_wire', 'delete_object', 'create', 'create', 'create', 'connect', 'create']
+  METER start  k   0  private 580.1 MB (d -)  handles 45721 (d -)
+  METER read   k   0  private 586.0 MB (d +5.9)  handles 45751 (d +30)
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 4 touched diagram(s) [639, 4866, 23166, 32464]: one-side-only Nodes[] entries 0
+  PRIME 3 terminal indexes proved at base; 1 ControlTerminal end(s) by 179(b); unprovable []
+  CHECKPOINTS whole-VI read+diff after ops [7, 17, 30, 31, 32, 34] of 34
+  METER pre    k   1  private 564.8 MB (d -21.2)  handles 45807 (d +56)
+  FACT  delete_wire node census: 665 rows
+      stagexecdeleted wire w29168
+  FACT  OP delete_wire w29168 -> err '' (1.9 s)
+  FACT  delete_wire w29168 (plan w29168) AFTER node census: 665 rows
+  FACT  delete_wire w29168 (plan w29168) CENSUS DIFF: Node 665 -> 665 ; 0 new uid(s): []
+  METER op     k   1  private 564.8 MB (d +0.0)  handles 45826 (d +19)
+  STEPX 01 delete_wire    acts [1] ids ['p4_rp29048_dwo'] diff skipped (not a checkpoint)
+  METER pre    k   2  private 564.8 MB (d +0.0)  handles 45823 (d -3)
+  FACT  delete_object node census: 665 rows
+      stagexecdeleted GrowableFunction #29048 -> gone [29048]
+  FACT  OP delete_object GrowableFunction #29048 -> err '' (0.6 s)
+  FACT  delete_object GrowableFunction #29048 AFTER node census: 664 rows
+  FACT  delete_object GrowableFunction #29048 CENSUS DIFF: Node 665 -> 664 ; 0 new uid(s): []
+  METER op     k   2  private 565.6 MB (d +0.8)  handles 45827 (d +4)
+  STEPX 02 delete_object  acts [2] ids ['p4_rp29048_do'] diff skipped (not a checkpoint)
+  METER pre    k   3  private 565.6 MB (d +0.0)  handles 45827 (d +0)
+  FACT  wire_remove_loose_ends node census: 664 rows
+  FACT  OP wire_remove_loose_ends wire_remove_loose_ends w29154 -> err '' (1.8 s)
+  FACT  wire_remove_loose_ends w29154 AFTER node census: 664 rows
+  FACT  wire_remove_loose_ends w29154 CENSUS DIFF: Node 664 -> 664 ; 0 new uid(s): []
+  METER op     k   3  private 565.6 MB (d +0.0)  handles 45840 (d +13)
+  STEPX 03 wire_remove_loose_ends acts [3] ids ['p4_rp29048_rle_arr'] diff skipped (not a checkpoint)
+  METER pre    k   4  private 565.6 MB (d +0.0)  handles 45840 (d +0)
+  FACT  wire_remove_loose_ends node census: 664 rows
+  FACT  OP wire_remove_loose_ends wire_remove_loose_ends w28367 -> err '' (1.8 s)
+  FACT  wire_remove_loose_ends w28367 AFTER node census: 664 rows
+  FACT  wire_remove_loose_ends w28367 CENSUS DIFF: Node 664 -> 664 ; 0 new uid(s): []
+  METER op     k   4  private 565.8 MB (d +0.2)  handles 45839 (d -1)
+  STEPX 04 wire_remove_loose_ends acts [4] ids ['p4_rp29048_rle_idx'] diff skipped (not a checkpoint)
+  METER pre    k   5  private 565.8 MB (d +0.0)  handles 45839 (d +0)
+  FACT  wire_remove_loose_ends node census: 664 rows
+  FACT  OP wire_remove_loose_ends wire_remove_loose_ends w28871 -> err '' (1.8 s)
+  FACT  wire_remove_loose_ends w28871 AFTER node census: 664 rows
+  FACT  wire_remove_loose_ends w28871 CENSUS DIFF: Node 664 -> 664 ; 0 new uid(s): []
+  METER op     k   5  private 565.8 MB (d +0.0)  handles 45839 (d +0)
+  STEPX 05 wire_remove_loose_ends acts [5] ids ['p4_rp29048_rle_new'] diff skipped (not a checkpoint)
+  METER pre    k   6  private 565.8 MB (d +0.0)  handles 45839 (d +0)
+  STALE-ADDRESS op 6: fresh read + one retry (ADDRESS: #29103 'TransPos' on node #29095: 0 (name,dir,wire) matches in [('TransPos', False, 0)])
+  METER read_retry k   6  private 571.5 MB (d +5.7)  handles 45833 (d -6)
+  FACT  connect_nested_v1 node census: 664 rows
+      op readback {'UID': 29095, 'Name': 'TransPos', 'UID 2': 0, 'Is Broken?': False}
+      junk Invoke purge: 1 purged, left []
+  FACT  OP connect_nested_v1 D[59].N[3].t0 <- D[59].N[10].t1 -> err '' (0.5 s)
+  FACT  connect #28929->#29103 AFTER node census: 664 rows
+  FACT  connect #28929->#29103 CENSUS DIFF: Node 664 -> 664 ; 0 new uid(s): []
+  METER op     k   6  private 572.1 MB (d +0.6)  handles 45923 (d +90)
+  STEPX 06 connect        acts [6] ids ['p4_rp29048_out'] diff skipped (not a checkpoint)
+  METER pre    k   7  private 572.1 MB (d +0.0)  handles 45923 (d +0)
+  FACT  create_primitive_nested node census: 664 rows
+  OBSERVED uid 6869 -> owner 'Diagram' uid 32464 | self 'GrowableFunction'#6869 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'Replace Array Subset' on #32464 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRAS1D_v0.vi', 'uid': 175} -> err '' (2.0 s)
+  FACT  create primitive p4_rp29265_c AFTER node census: 665 rows
+  FACT  create primitive p4_rp29265_c CENSUS DIFF: Node 664 -> 665 ; 1 new uid(s): [(6869, 'GrowableFunction', (7166, 2575))]
+  FACT  create primitive p4_rp29265_c new #6869 #6869 lives at: {'diagram_index': 59, 'diagram_uid': 32464, 'diagram_class': 'Diagram', 'nodes_index': 11, 'nodes_on_diagram': 12, 'label': 'Replace Array Subset'}  (60 diagram(s) scanned of 179, 2.3 s)
+  FACT  create primitive p4_rp29265_c new #6869 terminal table of #6869 (Diagram idx 59, Nodes[11], echo 6869): 4 terminal(s)
+  FACT      create primitive p4_rp29265_c new #6869 t0  'array'                            is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive p4_rp29265_c new #6869 t1  'output array'                     is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive p4_rp29265_c new #6869 t2  'new element/subarray'             is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive p4_rp29265_c new #6869 t3  'index'                            is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT  create primitive p4_rp29265_c NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #6869 class 'GrowableFunction' label 'Replace Array Subset', 4 terminal(s), 0 wired - REPORTED, left alone
+  PASS  PRIM created node label/class == plan prim (p4_rp29265_c)  PRIM-GATE PASS p4_rp29265_c: plan prim 'Replace Array Subset' class 'GrowableFunction' | read back #6869 label 'Replace Array Subset' class 'GrowableFunction'
+  METER op     k   7  private 575.7 MB (d +3.6)  handles 46001 (d +78)
+  METER read   k   7  private 578.4 MB (d +2.7)  handles 46002 (d +1)
+  STEPX 07 create         acts [7] ids ['p4_rp29265_c'] bound {-2: 6869} diff 0
+  METER pre    k   8  private 578.3 MB (d -0.1)  handles 46001 (d -1)
+  FACT  connect_from_wire node census: 665 rows
+  FACT  OP connect_from_wire sink D[59].N[11].t0 <- w29383[0] -> err '' (0.5 s)
+  FACT  connect #29274->#29071 AFTER node census: 665 rows
+  FACT  connect #29274->#29071 CENSUS DIFF: Node 665 -> 665 ; 0 new uid(s): []
+  METER op     k   8  private 579.6 MB (d +1.3)  handles 46079 (d +78)
+  STEPX 08 connect        acts [8] ids ['p4_rp29265_arr'] diff skipped (not a checkpoint)
+  METER pre    k   9  private 579.6 MB (d +0.0)  handles 46079 (d +0)
+  FACT  connect_from_wire node census: 665 rows
+  FACT  OP connect_from_wire sink D[59].N[11].t3 <- w28367[0] -> err '' (0.5 s)
+  FACT  connect #28428->#29436 AFTER node census: 665 rows
+  FACT  connect #28428->#29436 CENSUS DIFF: Node 665 -> 665 ; 0 new uid(s): []
+  METER op     k   9  private 579.5 MB (d -0.1)  handles 46078 (d -1)
+  STEPX 09 connect        acts [9] ids ['p4_rp29265_idx'] diff skipped (not a checkpoint)
+  METER pre    k  10  private 579.5 MB (d +0.0)  handles 46077 (d -1)
+  FACT  connect_from_wire node census: 665 rows
+  FACT  OP connect_from_wire sink D[59].N[11].t2 <- w29401[0] -> err '' (0.5 s)
+  FACT  connect #29410->#29168 AFTER node census: 665 rows
+  FACT  connect #29410->#29168 CENSUS DIFF: Node 665 -> 665 ; 0 new uid(s): []
+  METER op     k  10  private 579.6 MB (d +0.1)  handles 46078 (d +1)
+  STEPX 10 connect        acts [10] ids ['p4_rp29265_new'] diff skipped (not a checkpoint)
+  METER pre    k  11  private 579.6 MB (d +0.0)  handles 46078 (d +0)
+  FACT  delete_wire node census: 665 rows
+      stagexecdeleted wire w29391
+  FACT  OP delete_wire w29391 -> err '' (1.9 s)
+  FACT  delete_wire w29391 (plan w29391) AFTER node census: 665 rows
+  FACT  delete_wire w29391 (plan w29391) CENSUS DIFF: Node 665 -> 665 ; 0 new uid(s): []
+  METER op     k  11  private 579.6 MB (d +0.0)  handles 46078 (d +0)
+  STEPX 11 delete_wire    acts [11] ids ['p4_rp29265_dwo'] diff skipped (not a checkpoint)
+  METER pre    k  12  private 579.6 MB (d +0.0)  handles 46077 (d -1)
+  FACT  delete_object node census: 665 rows
+      stagexecdeleted GrowableFunction #29265 -> gone [29265]
+  FACT  OP delete_object GrowableFunction #29265 -> err '' (0.6 s)
+  FACT  delete_object GrowableFunction #29265 AFTER node census: 664 rows
+  FACT  delete_object GrowableFunction #29265 CENSUS DIFF: Node 665 -> 664 ; 0 new uid(s): []
+  METER op     k  12  private 582.2 MB (d +2.6)  handles 46077 (d +0)
+  STEPX 12 delete_object  acts [12] ids ['p4_rp29265_do'] diff skipped (not a checkpoint)
+  METER pre    k  13  private 582.2 MB (d +0.0)  handles 46077 (d +0)
+  FACT  wire_remove_loose_ends node census: 664 rows
+  FACT  OP wire_remove_loose_ends wire_remove_loose_ends w29383 -> err '' (1.8 s)
+  FACT  wire_remove_loose_ends w29383 AFTER node census: 664 rows
+  FACT  wire_remove_loose_ends w29383 CENSUS DIFF: Node 664 -> 664 ; 0 new uid(s): []
+  METER op     k  13  private 582.2 MB (d +0.0)  handles 46077 (d +0)
+  STEPX 13 wire_remove_loose_ends acts [13] ids ['p4_rp29265_rle_arr'] diff skipped (not a checkpoint)
+  METER pre    k  14  private 582.2 MB (d +0.0)  handles 46077 (d +0)
+  FACT  wire_remove_loose_ends node census: 664 rows
+  FACT  OP wire_remove_loose_ends wire_remove_loose_ends w28367 -> err '' (1.8 s)
+  FACT  wire_remove_loose_ends w28367 AFTER node census: 664 rows
+  FACT  wire_remove_loose_ends w28367 CENSUS DIFF: Node 664 -> 664 ; 0 new uid(s): []
+  METER op     k  14  private 582.7 MB (d +0.5)  handles 46078 (d +1)
+  STEPX 14 wire_remove_loose_ends acts [14] ids ['p4_rp29265_rle_idx'] diff skipped (not a checkpoint)
+  METER pre    k  15  private 582.7 MB (d +0.0)  handles 46077 (d -1)
+  FACT  wire_remove_loose_ends node census: 664 rows
+  FACT  OP wire_remove_loose_ends wire_remove_loose_ends w29401 -> err '' (1.8 s)
+  FACT  wire_remove_loose_ends w29401 AFTER node census: 664 rows
+  FACT  wire_remove_loose_ends w29401 CENSUS DIFF: Node 664 -> 664 ; 0 new uid(s): []
+  METER op     k  15  private 582.6 MB (d -0.1)  handles 46072 (d -5)
+  STEPX 15 wire_remove_loose_ends acts [15] ids ['p4_rp29265_rle_new'] diff skipped (not a checkpoint)
+  METER pre    k  16  private 582.6 MB (d +0.0)  handles 46072 (d +0)
+  STALE-ADDRESS op 16: fresh read + one retry (ADDRESS: #29332 'RotPos' on node #29312: 0 (name,dir,wire) matches in [('RotPos', False, 0)])
+  METER read_retry k  16  private 587.2 MB (d +4.6)  handles 46071 (d -1)
+  FACT  connect_nested_v1 node census: 664 rows
+      op readback {'UID': 29312, 'Name': 'RotPos', 'UID 2': 0, 'Is Broken?': False}
+      junk Invoke purge: 1 purged, left []
+  FACT  OP connect_nested_v1 D[59].N[5].t0 <- D[59].N[10].t1 -> err '' (0.5 s)
+  FACT  connect #29075->#29332 AFTER node census: 664 rows
+  FACT  connect #29075->#29332 CENSUS DIFF: Node 664 -> 664 ; 0 new uid(s): []
+  METER op     k  16  private 587.6 MB (d +0.4)  handles 46072 (d +1)
+  STEPX 16 connect        acts [16] ids ['p4_rp29265_out'] diff skipped (not a checkpoint)
+  METER pre    k  17  private 587.7 MB (d +0.1)  handles 46072 (d +0)
+  FACT  create_primitive_nested node census: 664 rows
+  OBSERVED uid 6859 -> owner 'Diagram' uid 32464 | self 'GrowableFunction'#6859 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'Replace Array Subset' on #32464 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRAS1D_v0.vi', 'uid': 175} -> err '' (1.9 s)
+  FACT  create primitive p4_rp29316_c AFTER node census: 665 rows
+  FACT  create primitive p4_rp29316_c CENSUS DIFF: Node 664 -> 665 ; 1 new uid(s): [(6859, 'GrowableFunction', (7166, 2575))]
+  FACT  create primitive p4_rp29316_c new #6859 #6859 lives at: {'diagram_index': 59, 'diagram_uid': 32464, 'diagram_class': 'Diagram', 'nodes_index': 11, 'nodes_on_diagram': 12, 'label': 'Replace Array Subset'}  (60 diagram(s) scanned of 179, 2.2 s)
+  FACT  create primitive p4_rp29316_c new #6859 terminal table of #6859 (Diagram idx 59, Nodes[11], echo 6859): 4 terminal(s)
+  FACT      create primitive p4_rp29316_c new #6859 t0  'array'                            is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive p4_rp29316_c new #6859 t1  'output array'                     is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive p4_rp29316_c new #6859 t2  'new element/subarray'             is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive p4_rp29316_c new #6859 t3  'index'                            is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT  create primitive p4_rp29316_c NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #6859 class 'GrowableFunction' label 'Replace Array Subset', 4 terminal(s), 0 wired - REPORTED, left alone
+  PASS  PRIM created node label/class == plan prim (p4_rp29316_c)  PRIM-GATE PASS p4_rp29316_c: plan prim 'Replace Array Subset' class 'GrowableFunction' | read back #6859 label 'Replace Array Subset' class 'GrowableFunction'
+  METER op     k  17  private 589.1 MB (d +1.4)  handles 46072 (d +0)
+  METER read   k  17  private 594.1 MB (d +5.0)  handles 46073 (d +1)
+  STEPX 17 create         acts [17] ids ['p4_rp29316_c'] bound {-8: 6859} diff 0
+  METER pre    k  18  private 594.1 MB (d +0.0)  handles 46073 (d +0)
+  FACT  connect_from_wire node census: 665 rows
+  FACT  OP connect_from_wire sink D[59].N[11].t0 <- w29394[0] -> err '' (0.5 s)
+  FACT  connect #29342->#9590 AFTER node census: 665 rows
+  FACT  connect #29342->#9590 CENSUS DIFF: Node 665 -> 665 ; 0 new uid(s): []
+  METER op     k  18  private 599.5 MB (d +5.4)  handles 46074 (d +1)
+  STEPX 18 connect        acts [18] ids ['p4_rp29316_arr'] diff skipped (not a checkpoint)
+  METER pre    k  19  private 599.5 MB (d +0.0)  handles 46074 (d +0)
+  FACT  connect_from_wire node census: 665 rows
+  FACT  OP connect_from_wire sink D[59].N[11].t3 <- w28367[0] -> err '' (0.5 s)
+  FACT  connect #28428->#29304 AFTER node census: 665 rows
+  FACT  connect #28428->#29304 CENSUS DIFF: Node 665 -> 665 ; 0 new uid(s): []
+  METER op     k  19  private 599.5 MB (d +0.0)  handles 46073 (d -1)
+  STEPX 19 connect        acts [19] ids ['p4_rp29316_idx'] diff skipped (not a checkpoint)
+  METER pre    k  20  private 599.5 MB (d +0.0)  handles 46074 (d +1)
+  FACT  connect_from_wire node census: 665 rows
+  FACT  OP connect_from_wire sink D[59].N[11].t2 <- w29244[0] -> err '' (0.5 s)
+  FACT  connect #29414->#29299 AFTER node census: 665 rows
+  FACT  connect #29414->#29299 CENSUS DIFF: Node 665 -> 665 ; 0 new uid(s): []
+  METER op     k  20  private 599.6 MB (d +0.1)  handles 46074 (d +0)
+  STEPX 20 connect        acts [20] ids ['p4_rp29316_new'] diff skipped (not a checkpoint)
+  METER pre    k  21  private 599.6 MB (d +0.0)  handles 46073 (d -1)
+  FACT  delete_wire node census: 665 rows
+      stagexecdeleted wire w29397
+  FACT  OP delete_wire w29397 -> err '' (1.8 s)
+  FACT  delete_wire w29397 (plan w29397) AFTER node census: 665 rows
+  FACT  delete_wire w29397 (plan w29397) CENSUS DIFF: Node 665 -> 665 ; 0 new uid(s): []
+  METER op     k  21  private 599.6 MB (d +0.0)  handles 46074 (d +1)
+  STEPX 21 delete_wire    acts [21] ids ['p4_rp29316_dwo'] diff skipped (not a checkpoint)
+  METER pre    k  22  private 599.6 MB (d +0.0)  handles 46074 (d +0)
+  FACT  delete_object node census: 665 rows
+      stagexecdeleted GrowableFunction #29316 -> gone [29316]
+  FACT  OP delete_object GrowableFunction #29316 -> err '' (0.7 s)
+  FACT  delete_object GrowableFunction #29316 AFTER node census: 664 rows
+  FACT  delete_object GrowableFunction #29316 CENSUS DIFF: Node 665 -> 664 ; 0 new uid(s): []
+  METER op     k  22  private 599.5 MB (d -0.1)  handles 46073 (d -1)
+  STEPX 22 delete_object  acts [22] ids ['p4_rp29316_do'] diff skipped (not a checkpoint)
+  METER pre    k  23  private 599.5 MB (d +0.0)  handles 46073 (d +0)
+  FACT  wire_remove_loose_ends node census: 664 rows
+  FACT  OP wire_remove_loose_ends wire_remove_loose_ends w29394 -> err '' (1.8 s)
+  FACT  wire_remove_loose_ends w29394 AFTER node census: 664 rows
+  FACT  wire_remove_loose_ends w29394 CENSUS DIFF: Node 664 -> 664 ; 0 new uid(s): []
+  METER op     k  23  private 599.6 MB (d +0.1)  handles 46074 (d +1)
+  STEPX 23 wire_remove_loose_ends acts [23] ids ['p4_rp29316_rle_arr'] diff skipped (not a checkpoint)
+  METER pre    k  24  private 599.5 MB (d -0.1)  handles 46073 (d -1)
+  FACT  wire_remove_loose_ends node census: 664 rows
+  FACT  OP wire_remove_loose_ends wire_remove_loose_ends w28367 -> err '' (1.8 s)
+  FACT  wire_remove_loose_ends w28367 AFTER node census: 664 rows
+  FACT  wire_remove_loose_ends w28367 CENSUS DIFF: Node 664 -> 664 ; 0 new uid(s): []
+  METER op     k  24  private 599.6 MB (d +0.1)  handles 46073 (d +0)
+  STEPX 24 wire_remove_loose_ends acts [24] ids ['p4_rp29316_rle_idx'] diff skipped (not a checkpoint)
+  METER pre    k  25  private 599.6 MB (d +0.0)  handles 46073 (d +0)
+  FACT  wire_remove_loose_ends node census: 664 rows
+  FACT  OP wire_remove_loose_ends wire_remove_loose_ends w29244 -> err '' (1.8 s)
+  FACT  wire_remove_loose_ends w29244 AFTER node census: 664 rows
+  FACT  wire_remove_loose_ends w29244 CENSUS DIFF: Node 664 -> 664 ; 0 new uid(s): []
+  METER op     k  25  private 599.6 MB (d +0.0)  handles 46073 (d +0)
+  STEPX 25 wire_remove_loose_ends acts [25] ids ['p4_rp29316_rle_new'] diff skipped (not a checkpoint)
+  METER pre    k  26  private 599.6 MB (d +0.0)  handles 46074 (d +1)
+  STALE-ADDRESS op 26: fresh read + one retry (ADDRESS: #29388 'FrameIdx' on node #29380: 0 (name,dir,wire) matches in [('FrameIdx', False, 0)])
+  METER read_retry k  26  private 600.9 MB (d +1.3)  handles 46074 (d +0)
+  FACT  connect_nested_v1 node census: 664 rows
+      op readback {'UID': 29380, 'Name': 'FrameIdx', 'UID 2': 0, 'Is Broken?': False}
+      junk Invoke purge: 1 purged, left []
+  FACT  OP connect_nested_v1 D[59].N[7].t0 <- D[59].N[10].t1 -> err '' (0.5 s)
+  FACT  connect #29268->#29388 AFTER node census: 664 rows
+  FACT  connect #29268->#29388 CENSUS DIFF: Node 664 -> 664 ; 0 new uid(s): []
+  METER op     k  26  private 601.1 MB (d +0.2)  handles 46074 (d +0)
+  STEPX 26 connect        acts [26] ids ['p4_rp29316_out'] diff skipped (not a checkpoint)
+  METER pre    k  27  private 601.1 MB (d +0.0)  handles 46074 (d +0)
+  FACT  delete_wire node census: 664 rows
+      stagexecdeleted wire w23310
+  FACT  OP delete_wire w23310 -> err '' (1.9 s)
+  FACT  delete_wire w23310 (plan w23310) AFTER node census: 664 rows
+  FACT  delete_wire w23310 (plan w23310) CENSUS DIFF: Node 664 -> 664 ; 0 new uid(s): []
+  METER op     k  27  private 601.0 MB (d -0.1)  handles 46073 (d -1)
+  STEPX 27 delete_wire    acts [27] ids ['p4_dw_23310'] diff skipped (not a checkpoint)
+  METER pre    k  28  private 601.0 MB (d +0.0)  handles 46073 (d +0)
+  FACT  delete_wire node census: 664 rows
+      stagexecdeleted wire w23255
+  FACT  OP delete_wire w23255 -> err '' (1.9 s)
+  FACT  delete_wire w23255 (plan w23255) AFTER node census: 664 rows
+  FACT  delete_wire w23255 (plan w23255) CENSUS DIFF: Node 664 -> 664 ; 0 new uid(s): []
+  METER op     k  28  private 601.0 MB (d +0.0)  handles 46073 (d +0)
+  STEPX 28 delete_wire    acts [28] ids ['p4_dw_23255'] diff skipped (not a checkpoint)
+  METER pre    k  29  private 601.0 MB (d +0.0)  handles 46072 (d -1)
+  FACT  delete_object node census: 664 rows
+      stagexecdeleted Comparison #10171 -> gone [10171]
+  FACT  OP delete_object Comparison #10171 -> err '' (0.3 s)
+  FACT  delete_object Comparison #10171 AFTER node census: 663 rows
+  FACT  delete_object Comparison #10171 CENSUS DIFF: Node 664 -> 663 ; 0 new uid(s): []
+  METER op     k  29  private 601.0 MB (d +0.0)  handles 46073 (d +1)
+  STEPX 29 delete_object  acts [29] ids ['p4_do_10171'] diff skipped (not a checkpoint)
+  METER pre    k  30  private 601.0 MB (d +0.0)  handles 46073 (d +0)
+  FACT  create_primitive_nested node census: 663 rows
+  OBSERVED uid 6850 -> owner 'Diagram' uid 4866 | self 'BooleanConstant'#6850 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'const_donor' on #4866 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorBoolF_v0.vi', 'uid': 126} -> err '' (2.2 s)
+  FACT  create primitive p4_c_stopall_f AFTER node census: 663 rows
+  FACT  create primitive p4_c_stopall_f CENSUS DIFF: Node 663 -> 663 ; 0 new uid(s): []
+  METER op     k  30  private 601.4 MB (d +0.4)  handles 46073 (d +0)
+  METER read   k  30  private 606.1 MB (d +4.7)  handles 46073 (d +0)
+  STEPX 30 create         acts [30] ids ['p4_c_stopall_f'] bound {-14: 6850} diff 0
+  METER pre    k  31  private 606.1 MB (d +0.0)  handles 46072 (d -1)
+  FACT  indicator_on_const node census: 663 rows
+  FACT  OP indicator_on_const BooleanConstant #6850 terminal #6849 (gscript.create_indicator_on_const -> OpConstInd_v0 (Constant.Terminal -> Terminal.Create Indicator, card 122-3)) -> err '' (0.9 s)
+  FACT  create indicator p4_i_stopall_k AFTER node census: 663 rows
+  FACT  create indicator p4_i_stopall_k CENSUS DIFF: Node 663 -> 663 ; 0 new uid(s): []
+  METER op     k  31  private 612.1 MB (d +6.0)  handles 46137 (d +65)
+  METER read   k  31  private 612.1 MB (d +0.0)  handles 46138 (d +1)
+  STEPX 31 create         acts [31] ids ['p4_i_stopall_k'] bound {-16: 29516} diff 0
+  METER pre    k  32  private 612.1 MB (d +0.0)  handles 46138 (d +0)
+  FACT  create_local_write node census: 663 rows
+  OBSERVED uid 6899 -> owner 'Diagram' uid 639 | self 'Local'#6899 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_local_write 'StopAll' panel[123] -> Diagram #639 -> err '' (0.9 s)
+  FACT  create local_write p4_lw_stopall_639 AFTER node census: 665 rows
+  FACT  create local_write p4_lw_stopall_639 CENSUS DIFF: Node 663 -> 665 ; 2 new uid(s): [(4249, 'Invoke', (3271, 1029)), (6899, 'Local', (3311, 1069))]
+  FACT  create local_write p4_lw_stopall_639 new #4249 #4249 lives at: {'diagram_index': 56, 'diagram_uid': 639, 'diagram_class': 'Diagram', 'nodes_index': 55, 'nodes_on_diagram': 56, 'label': 'Invoke Node'}  (57 diagram(s) scanned of 179, 2.2 s)
+  FACT  create local_write p4_lw_stopall_639 new #4249 terminal table of #4249 (Diagram idx 56, Nodes[55], echo 4249): 6 terminal(s)
+  FACT      create local_write p4_lw_stopall_639 new #4249 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_write p4_lw_stopall_639 new #4249 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_write p4_lw_stopall_639 new #4249 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_write p4_lw_stopall_639 new #4249 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_write p4_lw_stopall_639 new #4249 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_write p4_lw_stopall_639 new #4249 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  create local_write p4_lw_stopall_639 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  create local_write p4_lw_stopall_639 purge delete Node #4249 at index 219: gone [4249], error '', census 665 -> 664, still present False (1.36 s)
+  FACT  create local_write p4_lw_stopall_639 new #6899 #6899 lives at: {'diagram_index': 56, 'diagram_uid': 639, 'diagram_class': 'Diagram', 'nodes_index': 54, 'nodes_on_diagram': 55, 'label': 'D1_ring_p4s02_20261003_110001.vi'}  (57 diagram(s) scanned of 179, 2.2 s)
+  FACT  create local_write p4_lw_stopall_639 new #6899 terminal table of #6899 (Diagram idx 56, Nodes[54], echo 6899): 1 terminal(s)
+  FACT      create local_write p4_lw_stopall_639 new #6899 t0  'StopAll'                          is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT  create local_write p4_lw_stopall_639 NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #6899 class 'Local' label 'D1_ring_p4s02_20261003_110001.vi', 1 terminal(s), 0 wired - REPORTED, left alone
+  FACT  create local_write p4_lw_stopall_639 AFTER THE PURGE node census: 664 rows
+  FACT  create local_write p4_lw_stopall_639 purge arithmetic: Node 663 -> 665 -> 664
+  METER op     k  32  private 616.2 MB (d +4.1)  handles 46176 (d +38)
+  METER read   k  32  private 616.2 MB (d +0.0)  handles 46175 (d -1)
+  STEPX 32 create         acts [32] ids ['p4_lw_stopall_639'] bound {-18: 6899} diff 0
+  METER pre    k  33  private 616.2 MB (d +0.0)  handles 46175 (d +0)
+  FACT  connect_from_wire node census: 664 rows
+  FACT  OP connect_from_wire sink D[56].N[54].t0 <- w6929[0] -> err '' (0.5 s)
+  FACT  connect #642->#23276 AFTER node census: 664 rows
+  FACT  connect #642->#23276 CENSUS DIFF: Node 664 -> 664 ; 0 new uid(s): []
+  METER op     k  33  private 616.2 MB (d +0.0)  handles 46173 (d -2)
+  STEPX 33 connect        acts [33] ids ['p4_w_stopall_639'] diff skipped (not a checkpoint)
+  METER pre    k  34  private 616.2 MB (d +0.0)  handles 46173 (d +0)
+  FACT  create_local_read node census: 664 rows
+  OBSERVED uid 6902 -> owner 'TopLevelDiagram' uid 536 | self 'Local'#6902 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  FACT  OP create_local_read 'StopAll' panel[123] (READ mode) -> err '' (0.2 s)
+  FACT  create local_read p4_lr_stop12 AFTER node census: 665 rows
+  FACT  create local_read p4_lr_stop12 CENSUS DIFF: Node 664 -> 665 ; 1 new uid(s): [(6902, 'Local', (3966, 1220))]
+  FACT  create local_read p4_lr_stop12 new #6902 #6902 lives at: {'diagram_index': 0, 'diagram_uid': 536, 'diagram_class': 'TopLevelDiagram', 'nodes_index': 0, 'nodes_on_diagram': 1, 'label': 'D1_ring_p4s02_20261003_110001.vi'}  (1 diagram(s) scanned of 179, 0.2 s)
+  FACT  create local_read p4_lr_stop12 new #6902 terminal table of #6902 (Diagram idx 0, Nodes[0], echo 6902): 1 terminal(s)
+  FACT      create local_read p4_lr_stop12 new #6902 t0  'StopAll'                          is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  create local_read p4_lr_stop12 NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #6902 class 'Local' label 'D1_ring_p4s02_20261003_110001.vi', 1 terminal(s), 0 wired - REPORTED, left alone
+  FACT  move_in node census: 665 rows
+  FACT  OP move_in #6902 -> Diagram[21] at (40, 40) -> err '' (0.1 s)
+  FACT  create local_read p4_lr_stop12 move_in AFTER node census: 666 rows
+  FACT  create local_read p4_lr_stop12 move_in CENSUS DIFF: Node 665 -> 666 ; 1 new uid(s): [(4249, 'Invoke', (5430, 5819))]
+  FACT  create local_read p4_lr_stop12 move_in new #4249 #4249 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 18, 'nodes_on_diagram': 19, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 179, 1.0 s)
+  FACT  create local_read p4_lr_stop12 move_in new #4249 terminal table of #4249 (Diagram idx 21, Nodes[18], echo 4249): 6 terminal(s)
+  FACT      create local_read p4_lr_stop12 move_in new #4249 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_read p4_lr_stop12 move_in new #4249 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_read p4_lr_stop12 move_in new #4249 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_read p4_lr_stop12 move_in new #4249 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_read p4_lr_stop12 move_in new #4249 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create local_read p4_lr_stop12 move_in new #4249 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  create local_read p4_lr_stop12 move_in the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  create local_read p4_lr_stop12 move_in purge delete Node #4249 at index 98: gone [4249], error '', census 666 -> 665, still present False (1.38 s)
+  FACT  create local_read p4_lr_stop12 move_in AFTER THE PURGE node census: 665 rows
+  FACT  create local_read p4_lr_stop12 move_in purge arithmetic: Node 665 -> 666 -> 665
+  METER op     k  34  private 616.3 MB (d +0.1)  handles 46174 (d +1)
+  METER read   k  34  private 620.3 MB (d +4.0)  handles 46173 (d -1)
+  STEPX 34 create         acts [34] ids ['p4_lr_stop12'] bound {-20: 6902} diff 0
+  PASS  E1 every checkpoint's real graph == its simulated step (34 ops)
+  PASS  NG every crossing op's NEW tunnel names == the simulator's (stagexec.tunnel_name_check, per op, from the step files): 0 op(s) []
+  PASS  FR the 6 created objects sit on [639, 4866, 23166, 32464] frame(s) of the simulated end; real frames == the sim end's  {'on': [639, 4866, 23166, 32464], 'extra': [], 'missing': []}
+  PASS  D new wires 4 == sim's 4; lost 5 == sim's 5 (wire uid + source identity, stagekit.wire_keys)  {'new': ['29529', '6864', '6908', '9614'], 'lost': ['23255', '23310', '29168', '29391', '29397']}
+  UNPREDICTED  CEN2 new-object census (classes of the pred) == plan_ring_p4_s02v18_pred.json census  (declared set empty {}; measured {})
+  CENSUS-ALL net delta (every class) {"BooleanConstant": 1, "Comparison": -1, "ControlTerminal": 1, "GrowableFunction": -1, "Local": 2, "ParameterTerminal": -3, "Terminal": -1, "Wire": -1}
+  CENSUS-ALL new uids by class (every class) {"BooleanConstant": 1, "ControlTerminal": 1, "GrowableFunction": 2, "Local": 2, "Terminal": 6, "Wire": 4}
+  CENSUS-ALL lost uids 19
+  PASS  TD every base terminal the sim keeps wired is still wired; identities lost == the plan's deletes (key uid/owner/name, stagekit.term_identity_gates)  {'unwired': [], 'lost': [(23276, 10171, 'x = y?'), (23283, 10171, 'y'), (23292, 10171, 'x'), (29067, 29048, 'array'), (29071, 29048, 'output array'), (29074, 29048, 'index'), (29087, 29048, 'new element/subarray'), (29285, 29265, 'array'), (29299, 29265, 'output array'), (29303, 29265, 'index'), (29307, 29265, 'new element/subarray'), (29345, 29316, 'array'), (29360, 29316, 'output array'), (29366, 29316, 'index'), (29372, 29316, 'new element/subarray')], 'plan_deletes': [(23276, 10171, 'x = y?'), (23283, 10171, 'y'), (23292, 10171, 'x'), (29067, 29048, 'array'), (29071, 29048, 'output array'), (29074, 29048, 'index'), (29087, 29048, 'new element/subarray'), (29285, 29265, 'array'), (29299, 29265, 'output array'), (29303, 29265, 'index'), (29307, 29265, 'new element/subarray'), (29345, 29316, 'array'), (29360, 29316, 'output array'), (29366, 29316, 'index'), (29372, 29316, 'new element/subarray')], 'recycled_uids': [23276, 29071, 29299], 'raw_lost': [23283, 23292, 29067, 29074, 29087, 29285, 29303, 29307, 29345, 29360, 29366, 29372]}
+  FACT  ExecState [after all rows (ExecState 0 expected: session 1's in-between file is broken by design)] D1_ring_p4s02_20261003_110001.vi = 0
+  PASS  PB frame-keyed cdiff(S1, real end) == the pred's 16 rows and the plan's 11 open (node, term) pairs (FATAL, before save)  {'extra': [], 'missing': []}
+  FACT  PH handles: post-open 45657 -> before-save 46173
+  PASS  HB open->save handle growth <= +700 (PD236(b) band; refs balance is H5)  (45657, 46173)
+
+---------- [SAVE] D1_ring_p4s02_20261003_110001.vi
+  FACT  ExecState [before the save] D1_ring_p4s02_20261003_110001.vi = 0
+  FACT  SAVE ROUTE = gui_save, the APPROVED broken-intermediate route (CLAUDE.md split-rule 6; evidence "user 2026-09-22 broken-intermediate save"). The artefact is BROKEN BY DESIGN and is NEVER RUN (34(f)).
+  PASS  S1 the save returned without raising (gui_save route)
+  FACT  SAVED ARTEFACT: D1_ring_p4s02_20261003_110001.vi md5 84cac48781c7c915c8f0d7e8fb079341 size 315545 B; version bytes [0, 38]
+  PASS  S2 the artefact is on disk and non-empty  315545 B
+  FACT  S3 COLD re-open check SKIPPED BY RULE: ExecState was 0, and a broken-saved VI is never cold-loaded headless (recompile spin).
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  84cac48781c7c915c8f0d7e8fb079341
+
+---------- [H] HYGIENE
+  FACT  gscript ref_counts: {'opened': 17, 'closed': 17, 'live': 0, 'cached_op_vis': 0}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 17, 'closed': 17, 'live': 0, 'cached_op_vis': 0}
+  FACT  LabVIEW handle count AFTER the work: 34117
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before dc61e193e0376ce760f88fdfcda7087b / after dc61e193e0376ce760f88fdfcda7087b
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: ['D1_ring_p4s02_20261003_110001.vi']  (removed: [])
+  PASS  H6 the files left on disk == ['D1_ring_p4s02_20261003_110001.vi'] and nothing was removed  added ['D1_ring_p4s02_20261003_110001.vi'] removed []
+  FACT  LabVIEW handle count at exit: 34118
+
+====================================================================================================
+=== GATES: 21 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c143_1_scratch.json   elapsed 472.3 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":21,"fail":0},"first_fail":null,"artefacts":[{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p4s02_20261003_110001.vi","md5":"84cac48781c7c915c8f0d7e8fb079341"}]}
+LabVIEW gone at exit: True
+SCRATCH-P4S02V18 peak 620.3 MB (X10 678.5, d -58.2); final C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_ring_p4s02_20261003_110001.vi md5 84cac48781c7c915c8f0d7e8fb079341; bed md5 dc61e193e0376ce760f88fdfcda7087b
+GATE MEM peak <= 680.0 and peak <= X10 + 10 (PD285(d), PD328(a)): PASS
+GATE MEML peak <= 680 (launch condition, PD331(c)): PASS
+GATE IN bed md5 unchanged: PASS
+GATE GONE LabVIEW gone: PASS
+BGRUN END rc=0 after 478s

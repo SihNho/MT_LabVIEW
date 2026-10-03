@@ -461,3 +461,9 @@ medium-low. Measured basis: cycles 114–120 (cards 93 % of time; reviews 22 %; 
   runs the end hooks and writes the CYCLE line to BOTH logs (the next cycle number comes from tools/bench/cycle_runner.log).
 - Do not use `cmd &` in Bash for waiters (no wake-up). Use run_in_background.
 - Never infer a start after a design discussion; wait for "시작"/"진행해".
+
+## 2026-10-03 10:4x - trial cycle 142 ended (exit 0, $45.42, 87 min); STOP restored
+- Delivered and run: RingPickSlot_v0.vi (142-3, Opus max after 2 Opus-high fails, 7/7 vectors) and RingSeqCheck_v0.vi (142-4, 7/7 vectors, ExecState 1). Plan v18 (142-P2): 235 -> 202 actions, cdiff == v17, 6 LabVIEW sessions at 680 MB. 142-5: rebind fix + session-2 script (ops 25..58) dry/prerun PASS.
+- next.json: P4 session 2 (prior-art review, one scratch on a byte copy of the s01 file, adopt if gates pass).
+- Open for a tooling batch: fp-36 (guard_peer blocks a LabVIEW card on an offline card's failing log), fp-37 (scratch-required plain form refused), CEN2 vacuous (census {}), subVI file load not in memory model, SQ1 names to re-read from RingSeqCheck_v0.vi.
+- STATUS top line = STOP (weekly 93 %). Runner/supervisor not running. Restart only on the user's word (reset 10-05 07:00 KST).

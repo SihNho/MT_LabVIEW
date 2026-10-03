@@ -1,0 +1,41 @@
+BGRUN START 2026-10-03 10:57:20 limit 10.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_ring_p4_s03v18_scratch.py
+BGRUN PID 4332
+stage_d1_ring_p4_s03v18_scratch - card 143-P1 (WRITTEN, NOT LAUNCHED; PROVISIONAL plan): the ONE SCRATCH RUN of RING P4 v18 LabVIEW
+SESSION 3 (PD331(c)(d), D-2026-10-01-01). COPIED from stage_d1_ring_p4_s02v18_scratch.py (card 142-5) with names changed (log, scratch
+name, out/sum json, card id, recipe); launch-memory line MEML 680 kept (PD331(c)); scratch MEM_STOP_MB 690 kept as copied. x10() takes
+the limit from the md5-PINNED pred file (plan_ring_p4_s03v18_pred.json memory_pred.peak_mb, used only when pred.plan.md5 ==
+md5(plan_ring_p4_s03v18.json)).
+Runs tools/recipes/stage_d1_ring_p4_s03v18.py's OWN body (imported UNCHANGED) with plan_ring_p4_s03v18.json on a dated byte copy
+claudeDev\scratch_c143_p4s03v18_<ts>.vi of session 2's saved file (after --rebase) - same Executor, LVBackend (per-op census + Is
+Broken? + the run-time PRIM gate), every recipe gate and the ExecState read. No VI is run; the bed is never edited. SAVE on (rule-6
+gui_save of the work copy) so the Error List can be read count-only next.
+PREDICTION (numbers in plan_ring_p4_s03v18_pred.json): every recipe gate PASS incl. PRIM; peak private MB <= 690 and <= X10 + 10 and,
+for the launch, <= 680 (PD331(c)); bed md5 unchanged; LabVIEW gone. Error List (next, separate run) == pred predicted_total.
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/diag_c143_p4s03v18_scratch.log -- py -u tools/recipes/stage_d1_ring_p4_s03v18_scratch.py
+MEM_STOP_MB 690.0; X10 from the md5-pinned pred 676.9
+stage_d1_ring_p4_s03v18 - card 143-P1 (WRITTEN, NOT LAUNCHED; PROVISIONAL plan - never launched before --rebase), RING P4 LabVIEW
+SESSION 3 of plan v18 (PD330(d), PD331(c); D-2026-10-01-01, D-2026-10-02-02/04): on session 2's SAVED in-between file (adopted by card
+143-1), apply the actions of plan_ring_p4_s03v18.json = v18 ops 59..78 (20 actions, p4_w_stop12..p4_lr_num_a, up to the X10 cut 676.9
+<= 680 at the provisional start 596.5), planned on session 2's simulated end and to be REBASED onto session 2's real graph by stage_prerun
+--rebase (then --dry/--prerun again; this .py is unchanged by a rebase).
+COPIED from stage_d1_ring_p4_s02v18.py (card 142-5, identity-keyed D / TD) with ONLY names changed (plan, pred, card id, out json, stage
+name, docstring). FRESH LabVIEW -> claudeDev\D1_ring_p4s03v18_<ts>.vi (rule-6 GUI save, ExecState 0 by design) = an IN-BETWEEN file of
+step P4 (not counted, D-2026-10-02-02/04). The FIRST run is the full SCRATCH run on a byte copy (stage_d1_ring_p4_s03v18_scratch.py).
+ROWS ONLY FROM plan_ring_p4_s03v18.json; expected values only from plan_ring_p4_s03v18_pred.json. No new op.
+PREDICTION (numbers in the pred file): L1 actions -> pred ops; E1 every checkpoint == sim; NG crossing tunnel names == step files';
+PRIM every created primitive's label == plan prim; FR created objects on the sim end's frames; D new/lost wires == sim's; TD every base
+terminal that was wired stays wired, identities lost == plan deletes; CEN2 == pred census; PB cdiff(S1, end) == pred rows (FATAL, before save); HB handles <= +700;
+PS saved, input unchanged. X10 = pred memory_pred. Error List of the end = pred errorlist.predicted_total (PD322(e) per-node rule).
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/launch_c143_p4s03v18.log -- py -u tools/recipes/stage_d1_ring_p4_s03v18.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p4_s03v18_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan  ('9d5049d8cda65cb861aef12cefa4212a', {'path': 'tools/bench/sim/ring_p4_s03v18_s02end/base_provisional.json', 'md5': '1181117690431ea67c9a8847266a2192'}, 'dc61e193e0376ce760f88fdfcda7087b')
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == dc61e193e0376ce760f88fdfcda7087b  got dc61e193e0376ce760f88fdfcda7087b
+  PASS  DRY graph JSON for input md5 dc61e193e0376ce760f88fdfcda7087b  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\sim\ring_p4_s03v18_s02end\base_provisional.json
+  PASS  L1 the 20 actions compile into 20 real ops == pred kinds, each action once; checkpoints (0, 2, 3, 4, 5, 6, 9, 11, 13, 14, 16, 17, 19, 20)  ['stop', 'create', 'create', 'create', 'create', 'create', 'connect', 'connect', 'connect_term_uid', 'wire_remove_loose_ends', 'connect_term_uid', 'wire_remove_loose_ends', 'add_sr', 'create', 'connect', 'add_sr', 'create', 'connect', 'create', 'create']
+  STEPX 00 base read vs step_00: diff 12
+  FAIL  E1 the run reached its last op (record mode; stopped IN op None)  BASE: the scratch copy's graph differs from the plan's base graph: {'unbound': [-21, -19, -16, -15, -12, -11]}
+
+=== DRY FAIL: first_fail=EXECUTOR-STOP tools/bench/plan_ring_p4_s03v18.json: executed 0 of 20 ops, stopped IN op {'k': None, 'op': None, 'ids': None}: ExecStop: BASE: the scratch copy's graph differs from the plan's base graph: {'unbound': [-21, -19, -16, -15, -12, -11]} coverage 33/66 lines, first mutation None, unverified 0, graph tools/bench/sim/ring_p4_s03v18_s02end/base_provisional.json
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"EXECUTOR-STOP tools/bench/plan_ring_p4_s03v18.json: executed 0 of 20 ops, stopped IN op {'k': None, 'op': None, 'ids': None}: ExecStop: BASE: the scratch copy's graph differs from the plan's base grap","artefacts":[]}
+BGRUN END rc=1 after 3s

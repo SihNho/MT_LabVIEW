@@ -1,0 +1,35 @@
+{
+ "schema": "task/1", "id": "143-5", "kind": "build",
+ "goal": "OFFLINE (PD335(b)): correct s03 Local terminal addresses to the measured names by script; rebase on the s02 graph; X10 at 596.0; EL pred (fixed rule); dry; prerun; scratch-required",
+ "why": "143-4: rebase now passes UID-REUSE but refuses #-20.'value' (base and real graph name it 'StopAll'). Plan address fix, then the s03 checks owed since 143-3.",
+ "inputs": [
+  {"path": "tools/bench/plan_ring_p4_s03v18.json", "md5": "9d5049d8cda65cb861aef12cefa4212a"},
+  {"path": "tools/bench/prep_c143_4_facts.md", "md5": "b03a7fa2934ab7eeab050e5bdbe59dab"},
+  {"path": "tools/stage_prerun.py", "md5": "03cdd8c668d400f21228d7d6f7461e82"},
+  {"path": "tools/bench/prep_c143_3_pred.py", "md5": "f7b6547cb842e835b50c676b038f9028"},
+  {"path": "tools/bench/graph_ring_p4s02_20261003_112505.json", "md5": "eda9db4088d1be89623e6333268e09ff"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s03v18.py", "md5": "d420f951d49d8ef57d0d630624ee7b8b"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s03v18_scratch.py", "md5": "573b8537e3a0481f4727fa0951e1f9fe"}
+ ],
+ "pass": [
+  "script lists every s03 action end on a Local whose term name differs from the base row name; rewrites to the base name",
+  "--rebase on eda9db40 PASS (REBIND/REUSE-NOTED lines); X10 at 596.0 <= 680 or re-cut + new last op",
+  "EL prediction from prep_c143_3_pred.py (fixed rule) with basis",
+  "dry + prerun on both s03v18 recipes PASS (counts); --scratch-required exit code"
+ ],
+ "outputs": ["tools/bench/plan_ring_p4_s03v18.json", "tools/bench/plan_ring_p4_s03v18_pred.json", "tools/bench/prep_c143_5_facts.md"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/prep_c143_5*", "tools/bench/plan_ring_p4_s03v18*", "tools/bench/prep_c143_3_pred*", "tools/bench/sim/**", "tools/bench/gate_fp_queue.jsonl"],
+  "status_edit": false, "git_commit": true, "peers": []},
+ "budget": {"failures": 2, "minutes": 40},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/prep_c143_3_pred.py"},
+  {"kind": "file", "name": "tools/bench/sim/ring_p4_s03v18_s02end/base_provisional.json"}
+ ],
+ "rules": [
+  "Offline only; do NOT edit stagexec/stagekit/stagesim/stage_prerun/gscript",
+  "Names come from the base/real graph rows by script, never typed; only term ADDRESSES change",
+  "Return at the first unexpected result"
+ ]
+}

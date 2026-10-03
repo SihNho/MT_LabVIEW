@@ -1,0 +1,33 @@
+{
+ "schema": "task/1", "id": "143-P2", "kind": "build",
+ "goal": "OFFLINE: port 143-1's three accepted s02v18 recipe changes into the s03v18 pair; dry + prerun; prior-art review of the changed s03 recipe (brief_143-P2.md)",
+ "why": "143-P1 copied the OLD s02v18 pair; 143-1 changed it after prior-art r1/r2 (MEM_STOP, work_name, save_for_resume). Independent of 143-2's outcome.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_143-P2.md", "md5": "74d0e88d515055959b0d9ab0cd7384a1"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s02v18.py", "md5": "4af581f48ffd312b44d85b5839e4a106"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s02v18_scratch.py", "md5": "7d80df4d3db2e8ede2e4e76468c17aa3"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s03v18.py", "md5": "345b2c8b6c1693f3548545f54e0a7617"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s03v18_scratch.py", "md5": "003788925b1df444e1aeeb07e1a5a224"},
+  {"path": "tools/bench/plan_ring_p4_s03v18.json", "md5": "9d5049d8cda65cb861aef12cefa4212a"}
+ ],
+ "pass": [
+  "the same three changes applied to the s03v18 pair (work_name D1_ring_p4s03_<ts>.vi), diff reported file:line",
+  "dry + prerun outcome on both (provisional-base E1 stop is expected and reported)",
+  "prior-art review of the changed s03 recipe archived, verdict recorded"
+ ],
+ "outputs": ["tools/recipes/stage_d1_ring_p4_s03v18.py", "tools/recipes/stage_d1_ring_p4_s03v18_scratch.py", "tools/bench/prep_c143_p2_facts.md"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/prep_c143_p2*", "tools/recipes/stage_d1_ring_p4_s03v18*", "tools/bench/prior_art*", "archive/peer/**", "tools/bench/gate_fp_queue.jsonl"],
+  "status_edit": false, "git_commit": true, "peers": ["priorart"]},
+ "budget": {"failures": 2, "minutes": 40},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p4_s03v18.py"},
+  {"kind": "file", "name": "tools/prior_art_review.py"}
+ ],
+ "rules": [
+  "Offline only; do NOT edit stagexec/stagekit/stagesim/stage_prerun/gscript",
+  "Never launch; a provisional plan is never launched",
+  "Return at the first unexpected result"
+ ]
+}

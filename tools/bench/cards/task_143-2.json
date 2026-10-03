@@ -1,0 +1,37 @@
+{
+ "schema": "task/1", "id": "143-2", "kind": "measure",
+ "goal": "Read-only: fresh-instance load + graph read of the s02 scratch file; identify the 2 extra Error List items by uid offline; then the failed-prediction review (brief_143-2.md)",
+ "why": "143-1 EL 53 vs 51/52; both extra items lack uids. Judgement hypothesis: by-design session-boundary state (LR #6902 output, 1.2 cond) wired by s03's first action. Measure before adopting.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_143-2.md", "md5": "3d268c832667e6fedbb53d9c17a404c6"},
+  {"path": "tools/bench/diag_c143_1_graph.py", "md5": "afdab6d84fcb30caf9c2fa54a6f6072a"},
+  {"path": "tools/bench/diag_c143_1_graph_plan.json", "md5": "351ff7993b308bbe3fa9a4ddd1cfe44c"},
+  {"path": "tools/bench/errorlist_D1_ring_p4s02_20261003_110001_20261003_110836.json", "md5": "16132ddced20a5ec548bb6e2e4c6a7e3"},
+  {"path": "tools/bench/graph_ring_p4s01_20261002_234419.json", "md5": "f697a0b21c3bdb481207318812a0adad"},
+  {"path": "tools/bench/sim/ring_p4_s03v18_s02end/base_provisional.json", "md5": "1181117690431ea67c9a8847266a2192"},
+  {"path": "tools/bench/plan_ring_p4_s03v18.json", "md5": "9d5049d8cda65cb861aef12cefa4212a"}
+ ],
+ "pass": [
+  "s02 file loaded in a fresh instance (MB) + graph_ring_p4s02_20261003_110001.json written with md5; s02 md5 unchanged",
+  "offline lists: unwired While cond terminals, Locals with unwired terminals, #23166 '' state, newly unwired vs s01 (uids)",
+  "per item: open in the s02v18 sim end too (yes/no) and wired by s03's first action (yes/no), with file:line",
+  "hypothesis review card c143-2-el53 dispatched and its verdict file recorded",
+  "LabVIEW closed and verified gone; handles flat"
+ ],
+ "outputs": ["tools/bench/graph_ring_p4s02_20261003_110001.json", "tools/bench/diag_c143_2_facts.md"],
+ "flags": {"labview": "read", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/diag_c143_2*", "tools/bench/diag_c143_1_graph*", "tools/bench/graph_ring_p4s02_*", "tools/bench/cards/review_c143-2*", "tools/bench/cards/verdict_c143-2*", "archive/peer/**", "tools/bench/gate_fp_queue.jsonl"],
+  "status_edit": false, "git_commit": true, "peers": ["hypothesis"]},
+ "budget": {"failures": 2, "minutes": 60},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "D1_ring_p4s02_20261003_110001.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "tools/bench/diag_c143_1_graph.py"},
+  {"kind": "file", "name": "tools/peer.ps1"}
+ ],
+ "rules": [
+  "Read-only: the s02 file is never edited or saved; bed and s01 untouched",
+  "Measurement only: no adoption, no disposition that adopts - judgement decides",
+  "Return at the first unexpected result (LabVIEW closed)"
+ ]
+}

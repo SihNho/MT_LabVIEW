@@ -1,0 +1,23 @@
+{"schema":"result/1","id":"143-2","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/graph_ring_p4s02_20261003_112505.json","md5":"eda9db4088d1be89623e6333268e09ff"},
+ {"path":"tools/bench/diag_c143_2_facts.md","md5":"3160f30cd6e7347e195dfaad3d53345c"},
+ {"path":"tools/bench/diag_c143_2_offline.json","md5":"4ceacc14e783e1ec68aaf2a4565856cb"},
+ {"path":"tools/bench/cards/verdict_c143-2-el53.json","md5":"25848f15eb97203b07dbfb7df678825a"},
+ {"path":"archive/peer/2026-10-03-c143-2-el53.md","md5":"ca29fa73bef3489befcf6370f6be1590"}],
+"facts":[
+ "Load in fresh LabVIEW: 596.0 MB after load, 607.6 after read; 15/0 gates, E5 PASS, s02 md5 84cac487 unchanged, LabVIEW gone (diag_c143_1_graph.log:24,271,295,304,327)",
+ "Graph named graph_ring_p4s02_20261003_112505.json (read time), not _110001; handles 45625->45899 (+274) across one script's reads (diag_c143_1_graph.log:296-297)",
+ "(a) Of 6 While bodies only #23166 (While #10170) has its cond (the '' sink #23246, body-Diagram-owned) unwired; s01 had w23310 (diag_c143_2_offline2.log:7,13)",
+ "(b) Only Local #6902 (StopAll READ, term #23310 = reused uid of deleted wire 23310) is unwired; s01 had 0 of 23 (diag_c143_2_offline2.log:9)",
+ "(c) #23166 '' terms: #23225 (i) wire 0 in s01/s02/sim alike; #23246 (cond) wire 0 in s02 and sim, w23310 in s01 (diag_c143_2_offline2.log:10,14,20)",
+ "(d) s01-wired->s02-unwired = 2: #23246 (w23310) and LoopTunnel #23417 inner #23435 (w23255), both planned deletes plan_ring_p4_s02v18.json:325-333",
+ "Step 3: #10170 cond and Local #6902 (-20) open in the sim end too: yes/yes; wired by s03 action 1 p4_w_stop12 (plan_ring_p4_s03v18.json:77-84): yes/yes; #23435 open in sim, not wired by s03 a1",
+ "Review c143-2-el53 ANSWERED, verdict supported: failure = predictor bug, unwired_in() sink-only + cut cond only in alternative_total (prep_c142_5_pred.py:65-87; same in prep_c143_p1_pred.py:44-89)",
+ "Reviewer: s03 term 'value' vs measured 'StopAll' is no risk, documented alias tools/stagesim.py:735-736; proposed offline test: recompute s02 EL prediction -> expect 53 (not run)",
+ "Jev ladder | diag_c143_2_offline.log | new-problem p=0.810 | hypothesis review owed | dispatched c143-2-el53 (script lookup bug fixed) | rerun offline2 4/0 PASS"],
+"open":[
+ "Adopt D1_ring_p4s02_20261003_110001.vi as the s02 file given EL 53 = by-design (verdict supported)?",
+ "Fix the EL predictor (source-only Locals, newly cut While conds as certain; gone_unw) before s03, so its EL check does not pass by cancellation?"],
+"cost":{"usd":null,"minutes":14,"labview_runs":1},
+"note":"Dry/prerun used --graph graph_ring_p4s01 as stand-in (precedent diag_c141_3_graph_dry.log:12). Offline run 1 H-a FAIL = the script's own owner lookup, fixed + rerun. No git commit: git add needs approval here; left for the runner's cycle-end commit."}

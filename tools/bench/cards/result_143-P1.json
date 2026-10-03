@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"143-P1","status":"FAIL","gates":{"pass":3,"fail":1},
+"first_fail":"dry PASS: recipe --dry rc 1, E1 BASE unbound [-21,-19,-16,-15,-12,-11] (s02-simulated objects of the provisional base) - same as 140-P1/141-P1",
+"blocked_by":null,
+"artefacts":[
+{"path":"tools/bench/plan_ring_p4_s03v18.json","md5":"9d5049d8cda65cb861aef12cefa4212a"},
+{"path":"tools/bench/plan_ring_p4_s03v18_in.json","md5":"afb1e79aa40c7a7f4c38a146c114f6c8"},
+{"path":"tools/bench/plan_ring_p4_s03v18_pred.json","md5":"e2e69c049dac704f5887e742cb62a392"},
+{"path":"tools/bench/sim/ring_p4_s03v18_s02end/base_provisional.json","md5":"1181117690431ea67c9a8847266a2192"},
+{"path":"tools/recipes/stage_d1_ring_p4_s03v18.py","md5":"345b2c8b6c1693f3548545f54e0a7617"},
+{"path":"tools/recipes/stage_d1_ring_p4_s03v18_scratch.py","md5":"003788925b1df444e1aeeb07e1a5a224"},
+{"path":"tools/bench/prep_c143_p1_session.json","md5":"0c6a1eb227259df69b4459e6b3271b49"}],
+"facts":[
+"Session 3 = v18 ops 59..78, 20 actions p4_w_stop12..p4_lr_num_a; mk 12/0 (prep_c143_p1_mk.log); base = s02v18 END step 34 (5f74a804), provisional, sim_of e941ebbf",
+"X10 676.9 <= 680 at provisional start 596.5, margin 3.1 MB; next op 79 = 680.8; no 'of' group limits the cut (prep_c143_p1_mk.log CUT/FACT lines)",
+"subVI drops PS1 (op 79) and SQ1 (op 88) are both OUTSIDE session 3; op 79 is the first op over the limit (prep_c143_p1_session.json)",
+"One cross ref: p4_w_stop12 new:LRS2.value -> -20 (s02-made); none to s01 or later symbols; 16 end rows tied, 11 open pairs, plan FINAL provisional",
+"Pred e2e69c04 6/0: census derived {} (all 20 UNPREDICTED); Error List 54 = s02 PREDICTED 51 + 3 (-48 SL1R, -57 SD1R, -67 W1.body = a diagram, unmeasured) (prep_c143_p1_pred.log)",
+"Dry FAIL rc 1 both recipes (prep_c143_p1_dry.log, _scr_dry.log); prerun 13/3 both: X1 dry stop, X5 cascade, X10 UNMEASURED provisional (prep_c143_p1_prerun.log:24-25,42,46)",
+"Same dry/prerun outcome as provisional plans 140-P1 and 141-P1 (prep_c140_p1_facts.md:22-25, prep_c141_p1_facts.md:22-24): reached only after --rebase",
+"--prerun ... --scratch-required exit 3, CENSUS-UNPREDICTED rows 1..20 (prep_c143_p1_scrreq.log:3)",
+"Recipes copy the card-pinned s02v18 pair (758b1673/fdf58b0a); 143-1 since changed it (now 4af581f4/7d80df4d) per priorart r1/r2 (archive/peer/2026-10-03-priorart-c143-1-p4s02v18-r3.md:473-478)",
+"Prior-art settled-already: no MEM_STOP=X10_FAIL_MB, work_name, save_for_resume (PD328(a), PD329(a)(b)); STOP records armed, not released (archive/peer/2026-10-03-priorart-c143-p1-p4s03v18.md)"],
+"open":[
+"Port 143-1's three accepted s02v18 changes (MEM_STOP=X10_FAIL_MB, work_name D1_ring_p4s03_<ts>.vi, save_for_resume) into the s03v18 pair and re-review? (brief said copy the pinned pair)",
+"Re-cut after 143-1 measures s02's real load: margin is 3.1 MB at 596.5; op 79 (PS1 drop) is the next op at 680.8",
+"Error List item for -67 (new While Loop's body diagram, unwired '' terminal): count it or not? prediction 54 vs 53"],
+"cost":{"usd":null,"minutes":11,"labview_runs":0},
+"note":"Offline only; nothing launched; no tool edited. NOT COMMITTED: git add naming the recipes was refused by the stop_record launch gate (logged gate-fp fp-38), git add without them was denied by the permission layer; files left untracked."}

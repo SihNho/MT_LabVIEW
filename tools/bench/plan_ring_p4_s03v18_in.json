@@ -1,0 +1,334 @@
+{
+ "schema": "stageplan/1",
+ "context": {
+  "s1_key": "D1_s1_copy"
+ },
+ "stage": "ring_p4_s03v18",
+ "goal": "RING P4 v18 LabVIEW session 3 (card 143-P1, PD330(d)/PD331(c)): v18 ops 59..78 (20 actions) on session 2's SIMULATED end (provisional; stage_prerun --rebase onto session 2's saved in-between file's graph)",
+ "base": {
+  "path": "tools/bench/sim/ring_p4_s03v18_s02end/base_provisional.json",
+  "md5": "1181117690431ea67c9a8847266a2192",
+  "provisional": true,
+  "sim_of": {
+   "plan": "tools/bench/plan_ring_p4_s02v18.json",
+   "md5": "e941ebbfaa3d98099bcd10d8c6237ef4"
+  }
+ },
+ "open_rows": [
+  {
+   "node": 11261,
+   "term": "array",
+   "why": "c143-P1: open at step 0 = declared open row of plan_ring_p4_s02v18.json"
+  },
+  {
+   "node": 11261,
+   "term": "element",
+   "why": "c143-P1: open at step 0 = declared open row of plan_ring_p4_s02v18.json"
+  },
+  {
+   "node": 2626,
+   "term": "array",
+   "why": "c143-P1: open at step 0 = declared open row of plan_ring_p4_s02v18.json"
+  },
+  {
+   "node": 2626,
+   "term": "element",
+   "why": "c143-P1: open at step 0 = declared open row of plan_ring_p4_s02v18.json"
+  },
+  {
+   "node": 28083,
+   "term": "Magnet position",
+   "why": "c143-P1: open at step 0 = declared open row of plan_ring_p4_s02v18.json"
+  },
+  {
+   "node": 29625,
+   "term": "index (col)",
+   "why": "c143-P1: open at step 0 = declared open row of plan_ring_p4_s02v18.json"
+  },
+  {
+   "node": 29973,
+   "term": "element",
+   "why": "c143-P1: open at step 0 = declared open row of plan_ring_p4_s02v18.json"
+  },
+  {
+   "node": 376,
+   "term": "current frame data array in",
+   "why": "c143-P1: open at step 0 = declared open row of plan_ring_p4_s02v18.json"
+  },
+  {
+   "node": 376,
+   "term": "frame index",
+   "why": "c143-P1: open at step 0 = declared open row of plan_ring_p4_s02v18.json"
+  },
+  {
+   "node": 5058,
+   "term": "Image In",
+   "why": "c143-P1: open at step 0 = declared open row of plan_ring_p4_s02v18.json"
+  },
+  {
+   "node": 8634,
+   "term": "index (col)",
+   "why": "c143-P1: open at step 0 = declared open row of plan_ring_p4_s02v18.json"
+  }
+ ],
+ "actions": [
+  {
+   "op": "wire",
+   "id": "p4_w_stop12",
+   "src": {
+    "uid": -20,
+    "term": "StopAll"
+   },
+   "dst": {
+    "uid": 10170,
+    "term": "cond"
+   },
+   "why": "ROUTE stop | MEASURED verb | card 139-5 (PD316(b)): base While #10170 (owner of body #23166, graph owners) cond <- LRS2.value; compile kind 'stop' (stagexec.base_cond) = OpStopFromNode_v0 by WhileLoop index (ran onto #23246 in S2, stage_d1_s2_loops.log:61-69); the scaffold wire w23310 on the cond is deleted by p4_dw_23310 (action 1, prep_c139_5_probe.log); was dst {\"uid\": 23166, \"term_uid\": 23246}"
+  },
+  {
+   "op": "create",
+   "id": "p4_c_bufdiff",
+   "class": "ArrayConstant",
+   "diagram": 4866,
+   "as": "K6",
+   "prim": "const_donor",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRingConst_v0.vi",
+    "uid": 130
+   },
+   "terminals": [
+    {
+     "name": "",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE create const_donor | PRECEDENT | PD295(a)/PD240: like P2b p2b_c_Num (DonorRingConst_v0 #130 I32[20] -1, launched); TYPE of #5119 x-y NOT readable offline (no Terminal.Data Type reader, d1-loop12-17-split-plan.md:1922) - I32[20] is PROVISIONAL"
+  },
+  {
+   "op": "create",
+   "id": "p4_i_bufdiff",
+   "class": "ControlTerminal",
+   "diagram": 4866,
+   "as": "I6",
+   "label": "BufDiff",
+   "indicator": true,
+   "born_on": {
+    "uid": "new:K6"
+   },
+   "why": "ROUTE create OpConstInd_v0 | MEASURED | PD295(a)/PD240(a)(c): indicator born on its constant on FS1 frame #4866 = P2b p2b_i_Num route (census_samples.json OpConstInd_v0)"
+  },
+  {
+   "op": "create",
+   "id": "p4_lr_bufdiff11",
+   "class": "Local",
+   "diagram": 32464,
+   "as": "LRB1",
+   "label": "BufDiff",
+   "mode": "read",
+   "terminals": [
+    {
+     "name": "BufDiff",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE local_read | MEASURED | P3b-2 p3b_lr_rotpos same frame 32464 (local_read in a FS frame)"
+  },
+  {
+   "op": "create",
+   "id": "p4_ras_bufdiff",
+   "class": "GrowableFunction",
+   "diagram": 32464,
+   "as": "RAB1",
+   "prim": "Replace Array Subset",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRAS1D_v0.vi",
+    "uid": 175
+   },
+   "terminals": [
+    {
+     "name": "array",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "output array",
+     "is_source": true,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "index",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "new element/subarray",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE create primitive | MEASURED donor | card 141-1 (PD322(b)): donor DonorRAS1D_v0.vi uid 175 'Replace Array Subset' (diag_c140_5_facts.md:11-21) replaces $work #29157 = Insert Into Array (diag_c140_4_facts.md); same frame 32464"
+  },
+  {
+   "op": "create",
+   "id": "p4_lw_bufdiff",
+   "class": "Local",
+   "diagram": 32464,
+   "as": "LWB1",
+   "label": "BufDiff",
+   "mode": "write",
+   "terminals": [
+    {
+     "name": "BufDiff",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE local_write | MEASURED | P3b-2 p3b_lw_rotpos same frame 32464 (local_write)"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_b_arr",
+   "src": "new:LRB1.value",
+   "dst": "new:RAB1.array",
+   "why": "ROUTE connect | MEASURED | P3b-2 p3b_w_r_arr pattern"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_b_out",
+   "src": "new:RAB1.output array",
+   "dst": "new:LWB1.value",
+   "why": "ROUTE connect | MEASURED | P3b-2 p3b_w_r_out pattern"
+  },
+  {
+   "op": "wire",
+   "id": "p4_x_i_rab1",
+   "src": {
+    "uid": 27373,
+    "term": "x-y*floor(x/y)"
+   },
+   "dst": "new:RAB1.index",
+   "why": "ROUTE connect_term_uid | MEASURED | P3b-2 p3b_x_i_rar1: INNER-FACE branch of the entry FS tunnel (diag_c127_1_fsinner.log:81-109)"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rle_i_rab1",
+   "of": "p4_x_i_rab1",
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0; PD256(b)"
+  },
+  {
+   "op": "wire",
+   "id": "p4_x_bufdiff",
+   "src": {
+    "uid": 5119,
+    "term": "x-y"
+   },
+   "dst": "new:RAB1.new element/subarray",
+   "why": "ROUTE connect_term_uid | MEASURED | PD295(a) BufDiff(i) = #5119 x-y t6323 (on #639, w16483 wired); = P3b-2 p3b_x_rot route loop_body_wired_src_to_fs_frame_in_case (census_samples.json connect_term_uid)"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rle_bufdiff",
+   "of": "p4_x_bufdiff",
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972; PD256(b)"
+  },
+  {
+   "op": "add_shift_reg",
+   "id": "p4_sr_last",
+   "loop": 10170,
+   "body": 23166,
+   "parent": 686,
+   "as": "SL1",
+   "why": "ROUTE add_sr | MEASURED | plan_ring_p3a_in_v3.json actions 3-5/11-13 (launched P3a, stage_d1_ring_p3a); census_samples.json add_shift_reg while_body n=2 | context: While #10170 (P3a was #637) [draft d9d66246]"
+  },
+  {
+   "op": "create",
+   "id": "p4_k_last",
+   "class": "DigitalNumericConstant",
+   "diagram": 686,
+   "as": "KL1",
+   "prim": "const_donor",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRingConst_v0.vi",
+    "uid": 249
+   },
+   "terminals": [
+    {
+     "name": "",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE create | MEASURED | P3a p3a_k_prev (DonorRingConst_v0 #249, I32 -1) [draft d9d66246]"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_klast",
+   "src": "new:KL1.value",
+   "dst": "new:SL1L.outer",
+   "why": "ROUTE connect | MEASURED | P3a p3a_w_kprev (const_sr) [draft d9d66246]"
+  },
+  {
+   "op": "add_shift_reg",
+   "id": "p4_sr_disc",
+   "loop": 10170,
+   "body": 23166,
+   "parent": 686,
+   "as": "SD1",
+   "why": "ROUTE add_sr | MEASURED | plan_ring_p3a_in_v3.json actions 3-5/11-13 (launched P3a, stage_d1_ring_p3a); census_samples.json add_shift_reg while_body n=2 [draft d9d66246]"
+  },
+  {
+   "op": "create",
+   "id": "p4_k_disc",
+   "class": "DigitalNumericConstant",
+   "diagram": 686,
+   "as": "KD1",
+   "prim": "const_donor",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorSRInit_v0.vi",
+    "uid": 248
+   },
+   "terminals": [
+    {
+     "name": "",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE create | MEASURED | P3a p3a_k_cnt (DonorSRInit_v0 #248, I32 0) [draft d9d66246]"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_kdisc",
+   "src": "new:KD1.value",
+   "dst": "new:SD1L.outer",
+   "why": "ROUTE connect | MEASURED | P3a p3a_w_kcnt (const_sr) [draft d9d66246]"
+  },
+  {
+   "op": "create",
+   "id": "p4_w1",
+   "class": "WhileLoop",
+   "diagram": 23166,
+   "as": "W1",
+   "why": "ROUTE create | PRECEDENT | loop_in('while') OpWhileLoopIn_v0, sim/disp/plan_disp.json:31 (DL1 on #686); inside a While BODY never run [draft d9d66246]"
+  },
+  {
+   "op": "create",
+   "id": "p4_lr_num_a",
+   "class": "Local",
+   "diagram": "new:W1.body",
+   "as": "LRN4",
+   "label": "Num",
+   "mode": "read",
+   "terminals": [
+    {
+     "name": "Num",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE create | PRECEDENT | local_read route (stagexec.py:205); P3b-1/2 local reads in FS frames; inside a plan-made While never run [draft d9d66246]"
+  }
+ ]
+}

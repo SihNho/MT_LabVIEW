@@ -1,0 +1,37 @@
+{
+ "schema": "task/1", "id": "143-4", "kind": "build",
+ "goal": "OFFLINE tooling (PD334): census + fix raw-uid cross-graph keys on the rebase path (uid_reuse in --rebase); self-tests; then s03 rebase, X10, pred, dry, prerun",
+ "why": "143-3: --rebase refused UID-REUSE #23276, a one-op guard applied across 34 ops with planned deletes. Third raw-uid-across-deletes defect (PD325(b), PD332(a)); close the class.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_143-4.md", "md5": "e00910b894ef5acb01ae538d9b8a7947"},
+  {"path": "tools/stagexec.py", "md5": "7e1f7cc580f2c73458f687559d286cc9"},
+  {"path": "tools/stage_prerun.py", "md5": "5f0dd8fc7124751d4e03e3807bb46223"},
+  {"path": "tools/bench/prep_c143_3_facts.md", "md5": "5bb331bea389eb97eaaddcd56946193a"},
+  {"path": "tools/bench/prep_c143_3_pred.py", "md5": "f7b6547cb842e835b50c676b038f9028"},
+  {"path": "tools/bench/graph_ring_p4s02_20261003_112505.json", "md5": "eda9db4088d1be89623e6333268e09ff"},
+  {"path": "tools/bench/graph_ring_p4s01_20261002_234419.json", "md5": "f697a0b21c3bdb481207318812a0adad"},
+  {"path": "tools/bench/plan_ring_p4_s03v18.json", "md5": "9d5049d8cda65cb861aef12cefa4212a"}
+ ],
+ "pass": [
+  "census table of raw-uid cross-graph comparisons (file:line, graphs, delete between, keyed) in the facts file",
+  "rebase-path fix per PD334(b); self-test new 3 cases PASS; old rebind/rebase self-tests + c125_1 counts reported",
+  "s03 rebased on eda9db40; X10 at 596.0 (or re-cut); EL prediction via the fixed rule + basis",
+  "dry + prerun on both s03v18 recipes; --scratch-required exit code"
+ ],
+ "outputs": ["tools/stage_prerun.py", "tools/bench/selftest_rebase_uidreuse_c143_4.py", "tools/bench/plan_ring_p4_s03v18.json", "tools/bench/plan_ring_p4_s03v18_pred.json", "tools/bench/prep_c143_4_facts.md"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/stage_prerun.py", "tools/stagexec.py", "tools/stagekit.py", "tools/bench/selftest_*", "tools/bench/prep_c143_4*", "tools/bench/prep_c143_3_pred*", "tools/bench/plan_ring_p4_s03v18*", "tools/bench/sim/**", "tools/bench/c125_1*", "tools/bench/gate_fp_queue.jsonl"],
+  "status_edit": false, "git_commit": true, "peers": []},
+ "budget": {"failures": 2, "minutes": 60},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "verb", "name": "uid_reuse", "where": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/bench/c125_1_offline_measure.py"},
+  {"kind": "file", "name": "tools/bench/selftest_rebind_c142_5.py"}
+ ],
+ "rules": [
+  "Offline only, ALONE (edits stage tools, PD281(a)); never touch LabVIEW or launch",
+  "Execution-time uid_reuse callers unchanged; non-rebase census sites listed, not changed",
+  "Return at the first unexpected result"
+ ]
+}

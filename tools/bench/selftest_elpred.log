@@ -1,0 +1,13 @@
+BGRUN START 2026-10-03 11:43:04 limit 3.0 min: py -u tools/bench/selftest_elpred.py
+BGRUN PID 26556
+GATE PASS | U1 an unwired created Local adds 1 (10 -> 11) | [['local', -2]]
+GATE PASS | U2 a While cond cut adds 1 (10 -> 11) | [['cond', 100]]
+GATE PASS | U3 an open Local wired at the end is debited (10 -> 9) | [['local', 11]]
+GATE PASS | U4 a created node with an unwired input adds 1 (PD322(e) kept) | [['input', -4]]
+SELFTEST s02 re-derived = 53 (base 51, new [['cond', 23166], ['local', -20]], closed []; steps tools/bench/sim/ring_p4_s02v18/step_00_base.json -> tools/bench/sim/ring_p4_s02v18/step_34_create.json; created [-20, -18, -16, -14, -8, -2]; uncertain []; detail_end {'cond': [[23166, 10170, 23246]], 'local': [[-20, ['StopAll']]]})
+GATE PASS | S02 re-derived s02 == 53 (measured) | 53
+GATE PASS | S02b new items == [cond 23166, local -20] | [['cond', 23166], ['local', -20]]
+SELFTEST s01 re-derived = 51 (base 51, new [], closed []; steps tools/bench/sim/ring_p4_s01/ring_p4_s01/step_00_base.json -> tools/bench/sim/ring_p4_s01/ring_p4_s01/step_24_wire.json; created [-13, -7, -1]; uncertain []; open_at_start [])
+GATE PASS | S01 re-derived s01 == 51 (measured) | 51
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":7,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

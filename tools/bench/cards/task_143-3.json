@@ -1,0 +1,37 @@
+{
+ "schema": "task/1", "id": "143-3", "kind": "build",
+ "goal": "OFFLINE (PD333): adopt the s02 file + expected EL 53; fix the EL predictor (s02 -> 53, s01 -> 51); rebase s03 on the s02 graph, X10 at 596.0, pred, dry, prerun",
+ "why": "143-2 measured the 2 extra EL items as by-design (review supported); the predictor counted only unwired inputs. s03 must be predicted by a correct rule on the real s02 graph before its scratch.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_143-3.md", "md5": "57f3ece2f5b8930859117ee161b3560e"},
+  {"path": "tools/bench/graph_ring_p4s02_20261003_112505.json", "md5": "eda9db4088d1be89623e6333268e09ff"},
+  {"path": "tools/bench/diag_c143_2_facts.md", "md5": "3160f30cd6e7347e195dfaad3d53345c"},
+  {"path": "tools/bench/errorlist_D1_ring_p4s02_20261003_110001_20261003_110836.json", "md5": "16132ddced20a5ec548bb6e2e4c6a7e3"},
+  {"path": "tools/bench/prep_c142_5_pred.py", "md5": "2e667839e28543dc86f6e4be61a9858f"},
+  {"path": "tools/bench/prep_c143_p1_pred.py", "md5": "8ee208deafb341b313e501418a33ddac"},
+  {"path": "tools/bench/plan_ring_p4_s03v18.json", "md5": "9d5049d8cda65cb861aef12cefa4212a"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s03v18.py", "md5": "d420f951d49d8ef57d0d630624ee7b8b"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s03v18_scratch.py", "md5": "573b8537e3a0481f4727fa0951e1f9fe"}
+ ],
+ "pass": [
+  "adopted_scratch.jsonl entry for 84cac487 via the PD329 writer; expected EL file for the s02 file (53)",
+  "fixed predictor self-test: s02 re-derived = 53, s01 re-derived = 51 (log lines)",
+  "s03 rebased on eda9db40 (REBIND line), X10 at 596.0 <= 680 or re-cut reported, EL prediction + basis",
+  "dry + prerun on both s03v18 recipes; --scratch-required exit code"
+ ],
+ "outputs": ["tools/bench/plan_ring_p4_s03v18.json", "tools/bench/plan_ring_p4_s03v18_pred.json", "tools/bench/prep_c143_3_facts.md"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/prep_c143_3*", "tools/bench/prep_c142_5_pred*", "tools/bench/prep_c143_p1_pred*", "tools/bench/selftest_elpred*", "tools/bench/plan_ring_p4_s03v18*", "tools/bench/plan_ring_p4_s02v18_pred.json", "tools/bench/adopted_scratch.jsonl", "tools/bench/errorlist_expected_D1_ring_p4s02*", "tools/bench/sim/**", "tools/bench/gate_fp_queue.jsonl"],
+  "status_edit": false, "git_commit": true, "peers": []},
+ "budget": {"failures": 2, "minutes": 50},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "verb", "name": "adopt_cli", "where": "tools/stagexec.py"}
+ ],
+ "rules": [
+  "Offline only; do NOT edit stagexec/stagekit/stagesim/stage_prerun/gscript",
+  "Never launch; report facts, judgement decides",
+  "Return at the first unexpected result"
+ ]
+}

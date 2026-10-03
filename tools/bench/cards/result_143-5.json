@@ -1,0 +1,27 @@
+{"schema": "result/1", "id": "143-5", "status": "FAIL",
+ "gates": {"pass": 2, "fail": 2},
+ "first_fail": "prep_c143_5_pred.py RB: 'no negative uid left' found '-1' - text in p4_c_bufdiff why (plan_ring_p4_s03v18.json:101), gate tokenises why",
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/plan_ring_p4_s03v18.json", "md5": "da66a0300851133d93881be3c28f2fdc"},
+  {"path": "tools/bench/plan_ring_p4_s03v18_in.json", "md5": "2c2c0edb0457567d6407ea1f1e061b11"},
+  {"path": "tools/bench/sim/ring_p4_s03v18_base_real_fsmap.json", "md5": "c4a11939695fe80bf8f419246b9337fa"},
+  {"path": "tools/bench/prep_c143_5_fix.py", "md5": "4a59bf2e140850b39ac1fcab044d84c7"},
+  {"path": "tools/bench/prep_c143_5_pred.py", "md5": "8abfedf43e34cd810c46f0d50fb84573"},
+  {"path": "tools/bench/prep_c143_5_facts.md", "md5": "818c5f72799a0f0e9c1838665198401d"}
+ ],
+ "facts": [
+  "fix 13/0: one base-Local end, p4_w_stop12 src #-20 'value' -> base row #-21 'StopAll'; rewritten in plan + _in (prep_c143_5_fix.log)",
+  "s03-created Locals still address 'new:LRB1.value'/'new:LWB1.value' vs declared 'BufDiff'; not rewritten; re-sim accepted them (prep_c143_5_fix.log)",
+  "rebase #1 refused: my why note made actions[0].why 545 > 400 chars (prep_c143_5_rebase.log); note removed = failure 1",
+  "rebase #2 PASS: REUSE-NOTED 23276; REBIND conn 9 shape 3; final=True; 20 uids bound; a1 src {6902,'StopAll'} (prep_c143_5_rebase2.log:3-4, end)",
+  "rebased base = fsmap c4a11939 (vi 84cac487, fs_carried.real_graph eda9db40), so 143-3 pred RB2 md5==eda9db40 cannot pass; copy prep_c143_5_pred.py checks fs_carried",
+  "pred FAIL 0/1 (prep_c143_5_pred.log:3): RB neg ['-1'] = text 'I32[20] -1' in p4_c_bufdiff why (plan_ring_p4_s03v18.json:101) = failure 2, budget spent",
+  "NOT done: X10 at 596.0, EL fixed-rule pred, pred file (still e2e69c04, stale plan md5), dry/prerun both s03v18 recipes, --scratch-required",
+  "Jev ladder: log prep_c143_5_pred.log | no JEV-LADDER row yet (jev_gate.log) | - | returned per chat-P2 | -"
+ ],
+ "open": [
+  "RB gate in prep_c143_5_pred.py (copied from prep_c143_3_pred.py) scans why text: exclude `why` from the negative-uid token scan and rerun pred -> dry/prerun?"
+ ],
+ "cost": {"usd": null, "minutes": 6, "labview_runs": 0},
+ "note": "Offline only. Plan is now REBASED and final (da66a030); only the pred step and the recipe dry/prerun remain."}

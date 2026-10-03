@@ -3400,7 +3400,8 @@ def new_structure_classes(recipe, runs=None, recs=None, sig=None):
 #      appeared between N's base graph and the real graph - card 132-5 (PD278(c)): by CONNECTIVITY first, then position
 #      inside a bound node, then a unique name-free shape; names are LOGGED (LABEL-DIFF), never keyed; a terminal the plan
 #      references must bind by connectivity, else REFUSE; wires and new frame diagrams through the bound terminals (an
-#      empty FS frame by elimination); a uid LabVIEW re-issued to another object (stagexec.uid_reuse) refuses;
+#      empty FS frame by elimination); a uid LabVIEW re-issued to another object (stagexec.uid_reuse) refuses ONLY when
+#      N+1's plan names it (card 143-4, PD334(b)); otherwise it is logged REUSE-NOTED and binding goes by identity;
 #   3. rewrites N+1's uid fields through that binding (stagexec.translate's rule, applied to the plan's fields), refuses
 #      an unbound negative or a positive uid the real graph does not hold, sets base = the real graph {path, md5} and
 #      drops provisional / sim_of / final / finalized;
@@ -3434,8 +3435,37 @@ def _terms(path):
     return d, [dict(r) for r in d.get("terminals") or []]
 
 
-def rebind(before, prov, real, prov_doc=None, real_doc=None, before_doc=None, info=None):
+def _obj_id(doc):
+    """{uid: (class, owner)} over a graph doc's objs - an OBJECT's identity across two graphs (card 143-4, PD334(b)): a uid
+    LabVIEW re-issued to another object between N's base and the real graph is NEW, never 'already there'."""
+    return dict((o["uid"], (o.get("class"), o.get("owner"))) for o in (doc or {}).get("objs") or []
+                if isinstance(o, dict) and isinstance(o.get("uid"), int))
+
+
+def plan_named_uids(plan):
+    """Every positive int the plan's actions, open rows or bindings name (stagexec._ints_in over those keys) - the uids a
+    re-issue would make the plan act on the wrong object (card 143-4, PD334(b)). Over-inclusive by design (an int field
+    that is not a uid can only add a refusal, never hide one)."""
+    import stagexec as SX
+    out = set()
+    for k in ("actions", "open_rows", "bindings", "binding", "bind"):
+        SX._ints_in(plan.get(k), out)
+    return set(u for u in out if u > 0)
+
+
+def _reuse_uid(line):
+    m = re.search(r"#(\d+)", line)
+    return int(m.group(1)) if m else None
+
+
+def rebind(before, prov, real, prov_doc=None, real_doc=None, before_doc=None, info=None, named=None):
     """(M: {negative uid -> real uid} | None, why). See the block comment, step 2.
+    card 143-4 (PD334(b), docs/d1/ring-p4b.md:187): `named` = the uids the plan being rebased names (plan_named_uids; rebase
+    passes it). stagexec.uid_reuse is a ONE-OP guard; here N's base and the real graph lie many ops and planned deletes apart,
+    where LabVIEW re-issuing freed uids is expected. With `named`: a re-issued uid (uid_reuse hit, or a terminal uid whose
+    OWNER changed) is FATAL only when the plan names it; otherwise it is recorded in info['reuse_noted'] (rebase logs
+    `REUSE-NOTED <uid> <old>-><new>`) and binding goes by (uid, owner, name). Without `named` (a direct call) every
+    uid_reuse hit refuses, as before.
     card 132-5 (PD278(c), docs/d1/ring-p3b.md:87-91): names are NEVER keyed - stagesim labels FS inner tunnels '' (real
     'error out') and the donor Unbundler's outputs 'element' (real code/source/status), diag_c132_4_rebind_keys.log:4-7.
     Order: (A) CONNECTIVITY - a created sim terminal on a wire whose other end is already bound takes the unique real
@@ -3449,10 +3479,21 @@ def rebind(before, prov, real, prov_doc=None, real_doc=None, before_doc=None, in
     import stagexec as SX
     import vigraph as V
     info = {} if info is None else info
-    info.update({"mode": {}, "labels": [], "nodes": {}, "frames": {}, "how_frame": {}, "unbound_terms": []})
+    info.update({"mode": {}, "labels": [], "nodes": {}, "frames": {}, "how_frame": {}, "unbound_terms": [], "reuse_noted": []})
     ru = SX.uid_reuse(before, real)
-    if ru:
+    if ru and named is None:
         return None, "UID-REUSE between N's base and the real graph: {0}".format(ru[:6])
+    if ru:
+        hit = [x for x in ru if _reuse_uid(x) in named]
+        if hit:
+            return None, "UID-REUSE between N's base and the real graph on uid(s) the plan NAMES: {0}".format(hit[:6])
+        info["reuse_noted"] = ru
+    if named is not None:                                   # same class, OWNER changed (28004-type re-issue) and named
+        ob = dict((r["term_uid"], r.get("owner_uid")) for r in before)
+        moved = sorted(set(r["term_uid"] for r in real if r["term_uid"] in ob and r.get("owner_uid") != ob[r["term_uid"]]))
+        hit = [u for u in moved if u in named]
+        if hit:
+            return None, "UID-REUSE between N's base and the real graph: terminal uid(s) the plan NAMES now sit on another owner: {0}".format(hit[:6])
     # card 142-5 (PD330(d), PD325(b)): a terminal is OLD only when its IDENTITY (term uid, owner uid, name) is in N's base -
     # LabVIEW re-issues a deleted terminal's uid to a NEW node of the same class inside one session (s01: 28004/28979 of the
     # deleted #27928/#28916 came back on the new #6942/#6805, prep_c142_5_probe.log), which uid_reuse cannot see (same classes)
@@ -3489,6 +3530,9 @@ def rebind(before, prov, real, prov_doc=None, real_doc=None, before_doc=None, in
             rwire[r["wire_uid"]].append(r)
     real_new_t = set(r["term_uid"] for rows in real_new.values() for r in rows)
     new_rf = set(r.get("frame_diagram") for r in real) - set(r.get("frame_diagram") for r in before)
+    if before_doc and real_doc:                              # card 143-4: a frame uid re-issued to another object is NEW
+        bo_, ro_ = _obj_id(before_doc), _obj_id(real_doc)
+        new_rf |= set(f for f in set(r.get("frame_diagram") for r in real) if f in bo_ and f in ro_ and bo_[f] != ro_[f])
     T = dict((u, u) for u in srow if u > 0 and u in rrow and u not in real_new_t)   # pre-existing terminals: themselves
     # (card 142-5: a uid the real graph re-issued to a created node is NOT pre-existing - it binds like any created terminal)
     Tinv = dict(T)
@@ -3593,8 +3637,9 @@ def rebind(before, prov, real, prov_doc=None, real_doc=None, before_doc=None, in
         return None, "BINDING: created object(s) not bound by connectivity, position or a unique shape: {0}".format(
             ["#{0} {1}".format(n, V.node_class(sim_new[n][0])) for n in unb_n[:8]])
     if prov_doc and real_doc:                                                 # (D) FS frames without rows
-        bo = set(o.get("uid") for o in (before_doc or {}).get("objs") or [] if isinstance(o, dict))
-        newf = [o["uid"] for o in real_doc.get("objs") or [] if isinstance(o, dict) and o.get("uid") not in bo
+        bo = _obj_id(before_doc)                             # card 143-4: by (uid, class, owner), not raw uid
+        newf = [o["uid"] for o in real_doc.get("objs") or [] if isinstance(o, dict)
+                and bo.get(o.get("uid")) != (o.get("class"), o.get("owner"))
                 and o.get("class") == "Diagram" and o.get("owner") == "FlatSequenceFrame"]
         for _fs, frs in sorted((prov_doc.get("fs_frames") or {}).items()):
             left = [f for f in frs if isinstance(f, int) and f < 0 and f not in D]
@@ -3701,9 +3746,9 @@ def carry_fs(prov_doc, real_doc, before_doc, M, info=None):
     if not fsf:
         return None, None
     M = dict(M)
-    bo = set(o.get("uid") for o in (before_doc or {}).get("objs") or [] if isinstance(o, dict))
+    bo = _obj_id(before_doc)                                 # card 143-4: by (uid, class, owner), not raw uid
     new_fs = [o["uid"] for o in real_doc.get("objs") or [] if isinstance(o, dict) and o.get("class") == "FlatSequence"
-              and o.get("uid") not in bo]
+              and bo.get(o.get("uid")) != (o.get("class"), o.get("owner"))]
     sim_fs = [int(k) for k in fsf if int(k) < 0 and int(k) not in M]
     free = [u for u in new_fs if u not in M.values()]
     if sim_fs:
@@ -3810,9 +3855,12 @@ def rebase(plan_path, graph_path, log=print, simulate=True, out_root=None, model
     _gp, prov = _terms(b["path"] if os.path.isabs(b["path"]) else os.path.join(ROOT, b["path"]))
     greal, real = _terms(graph_path)
     info = {}
-    M, why = rebind(before, prov, real, prov_doc=_gp, real_doc=greal, before_doc=_gb, info=info)
+    M, why = rebind(before, prov, real, prov_doc=_gp, real_doc=greal, before_doc=_gb, info=info, named=plan_named_uids(plan))
     if M is None:
         return False, "REBASE REFUSED: " + why
+    for x in info.get("reuse_noted") or []:                  # card 143-4 (PD334(b)): re-issued, not named by the plan
+        u = _reuse_uid(x)
+        log("REUSE-NOTED {0} {1}".format(u, x.split("#{0} ".format(u), 1)[-1]))
     modes = collections.Counter(info["mode"].values())
     log("REBIND {0} node(s), {1} frame(s), terminals by {2}; unbound created terminals {3}; frames {4}; re-issued uid(s) {5}".format(
         len(info["nodes"]), len(info["frames"]), dict(modes), info["unbound_terms"][:12],

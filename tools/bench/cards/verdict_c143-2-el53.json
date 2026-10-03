@@ -1,0 +1,18 @@
+{
+ "schema": "verdict/1",
+ "id": "c143-2-el53",
+ "verdict": "supported",
+ "alternative": "The VI is in the plan's state; the failed prediction is a predictor bug: unwired_in() counts sink terminals only (misses a source-only Local read) and the newly cut While cond went only into alternative_total. Same bug is in prep_c143_p1_pred.py (gone_unw not subtracted).",
+ "discriminating_test": "Offline: recompute the s02 EL prediction counting source-only Locals and newly unwired While conds as certain -> expect 53. Item-to-node mapping already confirmed by bd_110935_after0.png and bd_111155_after12.png (StopAll read + unwired cond in one body).",
+ "violations": [],
+ "sources": [
+  "tools/bench/plan_ring_p4_s02v18_pred.json:115-131",
+  "tools/bench/prep_c142_5_pred.py:65-87",
+  "tools/bench/prep_c143_p1_pred.py:44-89",
+  "tools/bench/errorlist_D1_ring_p4s02_20261003_110001_20261003_110836.json:70,577,5638-5642",
+  "tools/stagesim.py:735-736,763",
+  "tools/stagexec.py:3074-3090",
+  "https://labviewwiki.org/wiki/Local_Variable"
+ ],
+ "note": "'value' vs 'StopAll' is no risk: documented alias. Fix the EL rule before s03 or its check passes by cancellation (51+new) or false-fails if rebased to the measured 53."
+}

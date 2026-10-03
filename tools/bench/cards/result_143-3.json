@@ -1,0 +1,26 @@
+{"schema":"result/1","id":"143-3","status":"FAIL","gates":{"pass":13,"fail":1},"first_fail":"REBASE REFUSED: UID-REUSE term #23276 ('ParameterTerminal','Comparison')->('Terminal','Local') (prep_c143_3_rebase.log:3, rc 2)","blocked_by":null,
+"artefacts":[
+{"path":"tools/bench/prep_c143_3_facts.md","md5":"5bb331bea389eb97eaaddcd56946193a"},
+{"path":"tools/bench/adopted_scratch.jsonl","md5":"a5c93bba79dc183c3ab8b8a22df1df79"},
+{"path":"tools/bench/errorlist_expected_D1_ring_p4s02_20261003_110001.json","md5":"1d90bde905ca07b8e7cb7f9b90dc27f0"},
+{"path":"tools/bench/plan_ring_p4_s02v18_pred.json","md5":"8f8b465cbc501507236350d8cdb16413"},
+{"path":"tools/bench/prep_c143_3_elrule.py","md5":"c5217e664d88e266b97d309c8a196562"},
+{"path":"tools/bench/selftest_elpred.py","md5":"f5594fb3041ad3678c767ca6b526abbb"},
+{"path":"tools/bench/prep_c142_5_pred.py","md5":"b7336524b48a68ba73dcc0f5789cee15"},
+{"path":"tools/bench/prep_c143_p1_pred.py","md5":"7477d8eda4ec4bff24a0d09bef0c84a9"},
+{"path":"tools/bench/prep_c143_3_pred.py","md5":"f7b6547cb842e835b50c676b038f9028"}],
+"facts":[
+"ADOPTED 84cac487 via stagexec.adopt_scratch (E1,FR,D,TD,PB,PS PASS, input dc61e193, plan e941ebbf); adopted_launch returns it (prep_c143_3_adopt.log 2/0)",
+"CLI 'stagexec.py adopt' refused by guard_bash under labview none: gate FP fp-39 logged; same writer called by import (prep_c143_3_adopt.py)",
+"Expected EL 53 = P3b-2b 10 entries + Local-not-connected + While-cond; compare(read) extra [] missing [] (prep_c143_3_s02.log 4/0)",
+"Fixed rule tools/bench/prep_c143_3_elrule.py (L Local all-unwired, C While cond, A created input; closed debited); selftest_elpred.log 7/0",
+"SELFTEST s02 re-derived = 53 (new cond 23166 + local -20) and s01 re-derived = 51 (selftest_elpred.log)",
+"s02 pred errorlist -> predicted 53 measured 53 checked, other keys unchanged, 67c3bf29->8f8b465c; prep_c142_5/c143_p1 pred scripts use the module (not re-run)",
+"Rebase s03 onto eda9db40 REFUSED rc 2: UID-REUSE #23276 (stage_prerun.py:3453-3455 -> stagexec.uid_reuse :942)",
+"Real s02 graph: #23276 = 'StopAll' sink of Local #6899 (s02's -18 write); base: ParameterTerminal of Comparison #10171 deleted by s02 (diag_c143_1_scratch.log:391 recycled_uids)",
+"Not done (need the rebase): X10 at 596.0, s03 EL pred, dry/prerun both s03v18 recipes, --scratch-required; prep_c143_3_pred.py written, not run; s03 plan 9d5049d8 unchanged",
+"log | ladder | NEXT-ACTION | did | result: prep_c143_3_rebase.log | no JEV-LADDER row | - | returned (chat-P2) | -"],
+"open":[
+"Is the UID-REUSE refusal right here (LabVIEW re-issued deleted Comparison #10171's term uid 23276 to the new Local #6899 within s02), or a gate false positive to release so the rebase can bind?"],
+"cost":{"usd":null,"minutes":9,"labview_runs":0},
+"note":"Offline only; no LabVIEW. Return at the first unexpected result (rebase refusal); no diagnosis or retry inside the card. git add/commit needs approval in this agent: files left for the runner's cycle-end auto-commit."}

@@ -44,6 +44,10 @@ def body(s):
     try:
         real = x.run(); s.gate("E1 every checkpoint's real graph == its simulated step ({0} ops)".format(len(x.ops)), True)   # noqa: E702
     except SX.ExecStop as e:
+        try:                                                                        # card 143-1 (PD329(b), prior-art c143-1-r2): keep ops 1..k-1 for a same-cycle resume
+            SX.save_for_resume(s, x, e)
+        except Exception as ee:                                                     # noqa: BLE001 - the stop report must still be written
+            s.fact("RESUME save failed: {0!r}".format(ee))
         return SX.report_stop(s, x, be, e)
     s.R["stagexec"] = x.report
     s.gate("NG every crossing op's NEW tunnel names == the simulator's (stagexec.tunnel_name_check, per op, from the step files): {0} op(s) {1}".format(

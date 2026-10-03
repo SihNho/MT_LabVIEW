@@ -1,0 +1,51 @@
+BGRUN START 2026-10-03 11:29:15 limit 3.0 min: py -u tools/bench/diag_c143_2_offline.py
+BGRUN PID 4300
+== s02 real: 6 While loops, 25 Locals (1 with an unwired terminal or no row)
+== s01 real: 6 While loops, 23 Locals (0 with an unwired terminal or no row)
+== s02v18 sim end: 6 While loops, 25 Locals (1 with an unwired terminal or no row)
+-- s02 (a) While loops with cond unwired / no cond row:
+   While #637: rows 0 names [] cond_rows []
+   While #10170: rows 0 names [] cond_rows []
+   While #15173: rows 0 names [] cond_rows []
+   While #23032: rows 0 names [] cond_rows []
+   While #23041: rows 0 names [] cond_rows []
+   While #25380: rows 0 names [] cond_rows []
+-- s02 (b) Locals with unwired terminals:
+   Local #6902: [{'term_uid': 23310, 'term_name': 'StopAll', 'is_source': True, 'wire_uid': 0, 'owner_uid': 6902, 'owner_class': 'Local', 'frame_diagram': 23166, 'term_class': 'Terminal'}]
+-- s02 (c) #23166 '' rows: [{'term_uid': 23225, 'term_name': '', 'is_source': True, 'wire_uid': 0, 'owner_uid': 23166, 'owner_class': 'Diagram', 'frame_diagram': 23166, 'term_class': 'Terminal'}, {'term_uid': 23225, 'term_name': '', 'is_source': True, 'wire_uid': 0, 'owner_uid': 23166, 'owner_class': 'Diagram', 'frame_diagram': 23166, 'term_class': 'Terminal'}, {'term_uid': 23246, 'term_name': '', 'is_source': False, 'wire_uid': 0, 'owner_uid': 23166, 'owner_class': 'Diagram', 'frame_diagram': 23166, 'term_class': 'Terminal'}, {'term_uid': 23246, 'term_name': '', 'is_source': False, 'wire_uid': 0, 'owner_uid': 23166, 'owner_class': 'Diagram', 'frame_diagram': 23166, 'term_class': 'Terminal'}]
+-- s01 (a) While loops with cond unwired / no cond row:
+   While #637: rows 0 names [] cond_rows []
+   While #10170: rows 0 names [] cond_rows []
+   While #15173: rows 0 names [] cond_rows []
+   While #23032: rows 0 names [] cond_rows []
+   While #23041: rows 0 names [] cond_rows []
+   While #25380: rows 0 names [] cond_rows []
+-- s01 (b) Locals with unwired terminals:
+-- s01 (c) #23166 '' rows: [{'term_uid': 23225, 'term_name': '', 'is_source': True, 'wire_uid': 0, 'owner_uid': 23166, 'owner_class': 'Diagram', 'frame_diagram': 23166, 'term_class': 'Terminal'}, {'term_uid': 23225, 'term_name': '', 'is_source': True, 'wire_uid': 0, 'owner_uid': 23166, 'owner_class': 'Diagram', 'frame_diagram': 23166, 'term_class': 'Terminal'}, {'term_uid': 23246, 'term_name': '', 'is_source': False, 'wire_uid': 23310, 'owner_uid': 23166, 'owner_class': 'Diagram', 'frame_diagram': 23166, 'term_class': 'Terminal'}, {'term_uid': 23246, 'term_name': '', 'is_source': False, 'wire_uid': 23310, 'owner_uid': 23166, 'owner_class': 'Diagram', 'frame_diagram': 23166, 'term_class': 'Terminal'}]
+-- sim (a) While loops with cond unwired / no cond row:
+   While #637: rows 0 names [] cond_rows []
+   While #10170: rows 0 names [] cond_rows []
+   While #15173: rows 0 names [] cond_rows []
+   While #23032: rows 0 names [] cond_rows []
+   While #23041: rows 0 names [] cond_rows []
+   While #25380: rows 0 names [] cond_rows []
+-- sim (b) Locals with unwired terminals:
+   Local #-20: [{'term_uid': -21, 'term_name': 'StopAll', 'is_source': True, 'wire_uid': 0, 'owner_uid': -20, 'owner_class': 'Local', 'frame_diagram': 23166, 'term_class': 'Terminal'}]
+-- sim (c) #23166 '' rows: [{'term_uid': 23225, 'term_name': '', 'is_source': True, 'wire_uid': 0, 'owner_uid': 23166, 'owner_class': 'Diagram', 'frame_diagram': 23166, 'term_class': 'Terminal'}, {'term_uid': 23246, 'term_name': '', 'is_source': False, 'wire_uid': 0, 'owner_uid': 23166, 'owner_class': 'Diagram', 'frame_diagram': 23166, 'term_class': 'Terminal'}]
+-- (d) unwired in s02, wired in s01 (key term_uid, owner_uid, name): 2
+    {'term_uid': 23246, 'term_name': '', 'is_source': False, 'wire_uid': 0, 'owner_uid': 23166, 'owner_class': 'Diagram', 'frame_diagram': 23166, 'term_class': 'Terminal', 's01_wire': 23310}
+    {'term_uid': 23435, 'term_name': '', 'is_source': True, 'wire_uid': 0, 'owner_uid': 23417, 'owner_class': 'LoopTunnel', 'frame_diagram': 23166, 'term_class': 'InnerTerminal', 's01_wire': 23255}
+-- s02v18 plan keys: ['schema', 'context', 'stage', 'goal', 'base', 'open_rows', 'actions', 'final', 'finalized']
+-- s03v18 first 3 actions:
+    1 {"op": "wire", "id": "p4_w_stop12", "src": {"uid": -20, "term": "value"}, "dst": {"uid": 10170, "term": "cond"}, "why": "ROUTE stop | MEASURED verb | card 139-5 (PD316(b)): base While #10170 (owner of body #23166, graph owners) cond <- LRS2.value; compile kind 'stop' (stagexec.base_cond) = OpStopFromNode_v0 by WhileLoop index (ran onto #23246 in S2, stage_d1_s2_loops.log:61-69); the scaffold wire w23310 on the cond is deleted by p4_dw_23310 (action 1, prep_c139_5_probe.log); was dst {\"uid\": 23
+    2 {"op": "create", "id": "p4_c_bufdiff", "class": "ArrayConstant", "diagram": 4866, "as": "K6", "prim": "const_donor", "donor": {"donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRingConst_v0.vi", "uid": 130}, "terminals": [{"name": "", "is_source": true, "term_class": "Terminal"}], "why": "ROUTE create const_donor | PRECEDENT | PD295(a)/PD240: like P2b p2b_c_Num (DonorRingConst_v0 #130 I32[20] -1, launched); TYPE of #5119 x-y NOT readable offline (no Termi
+    3 {"op": "create", "id": "p4_i_bufdiff", "class": "ControlTerminal", "diagram": 4866, "as": "I6", "label": "BufDiff", "indicator": true, "born_on": {"uid": "new:K6"}, "why": "ROUTE create OpConstInd_v0 | MEASURED | PD295(a)/PD240(a)(c): indicator born on its constant on FS1 frame #4866 = P2b p2b_i_Num route (census_samples.json OpConstInd_v0)"}
+FACT s02 open While [637, 10170, 15173, 23032, 23041, 25380]; open Locals [6902]; sim open While [637, 10170, 15173, 23032, 23041, 25380] (symbols mapped); sim open Locals [6902]
+FACT s03 first action p4_w_stop12: src {'uid': -20, 'term': 'value'} (real #6902) -> dst #10170.cond
+WROTE tools/bench/diag_c143_2_offline.json
+  FAIL  H-a s02 open While == [10170]
+  PASS  H-b s02 open Locals == [6902]
+  PASS  H-sim s02 open sets also open in the sim end
+  PASS  H-s03 first action wires #6902 -> #10170
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":3,"fail":1},"first_fail":"H-a s02 open While == [10170]","artefacts":[{"path":"tools/bench/diag_c143_2_offline.json","md5":"e6f2d2b172bd610119a8100f2ae28859"}]}
+BGRUN END rc=1 after 1s (RESULT: status=FAIL gates 3/1 first_fail=H-a s02 open While == [10170]; the process itself said 0)

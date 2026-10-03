@@ -1,0 +1,45 @@
+BGRUN START 2026-10-03 10:52:09 limit 20.0 min: py tools/prior_art_review.py --plan-file docs/d1/ring-p4b.md --slug c143-1-p4s02v18 --trigger cycle-start --recipe tools/recipes/stage_d1_ring_p4_s02v18.py --recipe tools/recipes/stage_d1_ring_p4_s02v18_scratch.py
+BGRUN PID 21480
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c143-1-p4s02v18.txt (84570 chars)
+   review card tools\bench\cards\review_priorart-c143-1-p4s02v18.json
+OUTCOME: ANSWERED (70s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-03-priorart-c143-1-p4s02v18.md
+COST: $1.5265  in 14 / out 6369 / cache-create 153580 / cache-read 852090  (67s, 14 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c143-1-p4s02v18 verdict=settled-already -> tools\bench\cards\verdict_priorart-c143-1-p4s02v18.json
+--- ANSWER ---
+I've read both recipes, the earlier P4 recipes, the memory-limit and scratch-adoption decisions (PD328 and PD329), and `stagexec.py`. Here is the review.
+
+**Verdict: not novel.** The build direction is new, but the scratch recipe contradicts a decision already written down (PD328(a)), and an existing recipe already has the correct form.
+
+## PART A: direction
+- **A1/A2:** No earlier attempt. This session-2 plan (v18, with the two subVIs) has never run. There is no launch or scratch log for it or for the plans it replaces: Glob of `tools/bench/*p4s02*` returns only the current prior-art log, and `*rasrest*` returns plan files only. `archive/peer/` has no exchange that mentions `s02v18`, `p4s02` or `rasrest`. The direction follows PD330–PD332 (`docs/d1/ring-p4b.md:110-170`) and does not repeat a refuted one.
+- **A3: contradicted.** The scratch run's memory stop disagrees with PD328(a).
+  - `docs/d1/tooling.md:129-132` (PD328(a), 2026-10-03, user): *"X10 FAIL threshold 690 → **680 MB** … The P4 session-2 scratch recipe (not launched) sets its stop to `SX.X10_FAIL_MB`"*.
+  - `tools/recipes/stage_d1_ring_p4_s02v18_scratch.py:18`: `SX.MEM_STOP_MB = 690.0`. Its docstring at line 4 admits this: *"scratch MEM_STOP_MB 690 kept as copied"*.
+  - The memory gate at `:80` and `:82` also passes up to `peak <= 690.0`.
+  - Cause: the v18 scratch recipe was copied from the s01 scratch (`stage_d1_ring_p4_s01_scratch.py:21`). PD328(a) deliberately left that file at its old 690 as history. The v18 file is now "the P4 session-2 scratch recipe" PD328(a) refers to, and it reverted to the old limit.
+  - Separate gate `MEML` (`:83`) still checks ≤ 680 for the launch. But the run-time stop and the `MEM` gate let a scratch run reach 680–690 MB, where PD328 says it should stop at 680.
+- **A3: contradicted (smaller).** The saved scratch file's name differs from what PD329 and STATUS expect.
+  - PD329(a) (`docs/d1/tooling.md:152-153`): *"The scratch recipe must SAVE its work copy under the stage's normal name (`Stage(work_name=...)`)"*. `stagexec.adopt_scratch` (`tools/stagexec.py:3827-3828`) says the same: *"Nothing is copied or renamed … so the file IS the stage file"*.
+  - STATUS NEXT: *"ADOPT the scratch as `D1_ring_p4s02_*.vi`"*.
+  - The recipe (`stage_d1_ring_p4_s02v18_scratch.py:69`) builds `K.Stage(..., "scratch_c142_p4s02v18", ...)` with no `work_name`. The adopted file would therefore be `claudeDev\scratch_c142_p4s02v18_<ts>.vi`.
+  - `adopt_scratch` does not check the name (`:3836-3841`), so this does not break adoption. It does contradict PD329(a) and the name STATUS gives the in-between file.
+- **A4:** `docs/d1/tooling.md:126-170` (PD328 and PD329) is the evidence that was missed. The recipe cites PD331(c) but not PD328(a)'s explicit instruction for this recipe.
+
+## PART B: artifact
+- **B1/B2:** No earlier build failed with these plan bytes. The main recipe (`stage_d1_ring_p4_s02v18.py`) is the s01 recipe with names changed. s01 launched cleanly at 23/0 (PD326(a)), and the identity-keyed terminal check `term_identity_gates` is in use (`:59`). Nothing there repeats a recorded failure.
+- **B3: helper-exists.** `tools/recipes/stage_d1_ring_p4_s02_scratch.py:18,80,82` already has the PD328(a) form: `SX.MEM_STOP_MB = SX.X10_FAIL_MB`, with the `MEM` gate on `SX.X10_FAIL_MB`. That is the superseded v17 plan's scratch recipe, but the memory lines are the correct ones to copy. `stagexec.py:5047-5048` (T124) asserts that `memory_model.json` is the one source for these limits.
+- **B4:** Not already measured. This scratch run is what measures session 2's census and Error List (51 or 52), per PD332(c).
+
+## PART C: user rules
+Nothing found. The recipe applies plan edits to a byte copy, runs no VI, and adds no queue, serial call or per-bead maths. U1, U4 and U13 are relied on correctly.
+
+## Release
+One `FIXED:` line releases this: copy lines 18/80/82 from `stage_d1_ring_p4_s02_scratch.py`, and pass `work_name="D1_ring_p4s02_<ts>.vi"` at `:69`. Or `REFUTED:` can argue that 690 < 695 MEMSTOP is acceptable for a scratch run. Even so, PD328(a)'s sentence names this recipe and says 680.
+
+PRIOR-ART: contradicted
+PRIOR-ART: helper-exists
+VERDICT {"schema":"verdict/1","id":"priorart-c143-1-p4s02v18","verdict":"settled-already","alternative":"Scratch stop should be SX.X10_FAIL_MB (680) per PD328(a), as stage_d1_ring_p4_s02_scratch.py:18 already does; save the scratch under work_name D1_ring_p4s02_<ts>.vi per PD329(a).","discriminating_test":"grep MEM_STOP_MB in stage_d1_ring_p4_s02v18_scratch.py: 690.0 at :18 vs tooling.md:131-132 'P4 session-2 scratch recipe sets its stop to SX.X10_FAIL_MB'.","violations":[],"sources":["docs/d1/tooling.md:129-132","tools/recipes/stage_d1_ring_p4_s02v18_scratch.py:4,18,69,80","tools/recipes/stage_d1_ring_p4_s02_scratch.py:18,80,82","docs/d1/tooling.md:152-153","tools/stagexec.py:3827-3828"],"note":"Direction itself is novel (no prior s02v18/rasrest run); findings are a stale 690 memory stop and a missing work_name, both one-line fixes."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c143-1-p4s02v18.md
+   STOP RECORD armed: tools/recipes/stage_d1_ring_p4_s02v18.py sha 5a9d683eb454 verdict contradicted, helper-exists -> launching it is refused until a FIXED:/REFUTED: line releases it
+   STOP RECORD armed: tools/recipes/stage_d1_ring_p4_s02v18_scratch.py sha baa320cf09c8 verdict contradicted, helper-exists -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 73s

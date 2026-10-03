@@ -1,0 +1,44 @@
+{
+ "schema": "task/1", "id": "143-1", "kind": "build",
+ "goal": "P4 session 2 (PD332(d)): prior-art review of the s02v18 recipe, ONE scratch on a byte copy of the s01 file, adopt if all gates pass, full Error List, fresh-instance load + graph read",
+ "why": "s02v18 rebased on the s01 graph, dry PASS, prerun 16/0, X10 678.5 at 596.5 (prep_c142_5_facts.md). Census unpredicted => scratch required (PD332(c)); its measured census is the prediction. Not a proven pattern => prior-art owed (cycle card gates_due).",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_143-1.md", "md5": "e392fc9eeea21e612d9b906fe489261f"},
+  {"path": "tools/bench/plan_ring_p4_s02v18.json", "md5": "e941ebbfaa3d98099bcd10d8c6237ef4"},
+  {"path": "tools/bench/plan_ring_p4_s02v18_pred.json", "md5": "518b01b8e4ec7046af7bb8ed781e62c6"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s02v18.py", "md5": "758b1673ee6f264cb1c52bd11f5bf650"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s02v18_scratch.py", "md5": "fdf58b0a75f50084fa9a127e6ae77e1c"},
+  {"path": "tools/bench/graph_ring_p4s01_20261002_234419.json", "md5": "f697a0b21c3bdb481207318812a0adad"},
+  {"path": "tools/bench/prep_c142_5_facts.md", "md5": "fef8c3b0974241f0f5ce57aeb1dfb13b"}
+ ],
+ "pass": [
+  "prior-art review archived: verdict novel, or released by a cited REFUTED:/FIXED: line (brief step 1)",
+  "scratch: all ops real == sim, prim + D/TD gates PASS, peak <= 680, EL 51 or 52 (#23166 only) (brief step 3)",
+  "measured census written into the s02v18 pred by a script citing the log line",
+  "adopted D1_ring_p4s02_<stamp>.vi + md5, final EL, fresh-instance load MB, graph_ring_p4s02_<stamp>.json + md5",
+  "bed + s01 md5 unchanged; handles flat; LabVIEW closed and verified gone"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p4s02_<stamp>.vi",
+  "tools/bench/graph_ring_p4s02_<stamp>.json",
+  "tools/bench/diag_c143_1_facts.md"
+ ],
+ "flags": {"labview": "build", "gui": true, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/diag_c143_1*", "tools/bench/launch_*c143*", "tools/bench/scratch_*c143*", "tools/bench/plan_ring_p4_s02v18_pred.json", "tools/bench/graph_ring_p4s02_*", "tools/bench/errorlist_*p4s02*", "tools/bench/adopted_scratch.jsonl", "tools/bench/prior_art*", "archive/peer/**", "tools/recipes/stage_d1_ring_p4_s02v18*", "tools/bench/gate_fp_queue.jsonl"],
+  "status_edit": false, "git_commit": true, "peers": ["priorart"]},
+ "budget": {"failures": 2, "minutes": 120},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "D1_ring_p4s01_20261002_232547.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "tools/prior_art_review.py"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p4_s02v18_scratch.py"}
+ ],
+ "rules": [
+  "Bed and s01 file never opened for editing; the scratch edits a byte copy only",
+  "Prior-art review FIRST; a false gate refusal goes to tools/gate_fp.py (fp-37 already queued)",
+  "ONE scratch run; return at the first result that differs from the prediction (LabVIEW closed, files saved)",
+  "Never launch plan_ring_p4_s02.json (v17) or plan_ring_p4_rasrest.json (SUPERSEDED, PD332(b))",
+  "result/1 carries the JEV-LADDER row for any failing log"
+ ]
+}

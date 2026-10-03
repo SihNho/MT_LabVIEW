@@ -1,0 +1,18 @@
+{
+ "schema": "verdict/1",
+ "id": "priorart-c143-1-p4s02v18-r2",
+ "verdict": "settled-already",
+ "alternative": "r1 findings fixed (scratch.py:21,73). New: ExecStop handler stage_d1_ring_p4_s02v18.py:46-47 calls only report_stop; PD329(b)/user 10-03 resume-in-cycle needs SX.save_for_resume(s,x,e) first (stagexec.py:3941).",
+ "discriminating_test": "grep save_for_resume tools/recipes/: no caller; report_stop (stagexec.py:4087-4097) neither saves the scratch nor writes a resume record, so a MEMSTOP (680 stop vs X10 678.5) loses ops 1..k-1.",
+ "violations": [],
+ "sources": [
+  "docs/d1/ring-p4b.md:107",
+  "docs/d1/tooling.md:156-162",
+  "tools/stagexec.py:3941-3962",
+  "tools/stagexec.py:4087-4097",
+  "tools/stagexec.py:115",
+  "tools/recipes/stage_d1_ring_p4_s02v18.py:46-47",
+  "tools/recipes/stage_d1_ring_p4_s02v18_scratch.py:21"
+ ],
+ "note": "Direction novel; r1's 690 stop and work_name are fixed. One-line fix: SX.save_for_resume(s, x, e) before report_stop. Docstrings scratch.py:7 / recipe:7 still show old names (cosmetic)."
+}

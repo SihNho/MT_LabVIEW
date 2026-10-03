@@ -1,0 +1,25 @@
+BGRUN START 2026-10-03 11:53:52 limit 3.0 min: py -u tools/bench/selftest_rebase_uidreuse_c143_4.py
+BGRUN PID 16548
+BGRUN STAGE-RUN record FAILED: SyntaxError: unterminated string literal (detected at line 3470) (stage_prerun.py, line 3470)
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\selftest_rebase_uidreuse_c143_4.py", line 19, in <module>
+    import protocol as P, stage_prerun as SP                                           # noqa: E401,E402
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stage_prerun.py", line 3470
+    'error out') and the donor Unbundler's outputs 'element' (real code/source/status), diag_c132_4_rebind_keys.log:4-7.
+                                                           ^
+SyntaxError: unterminated string literal (detected at line 3470)
+BGRUN END rc=1 after 1s (NO RESULT LINE)
+BGRUN START 2026-10-03 11:54:05 limit 3.0 min: py -u tools/bench/selftest_rebase_uidreuse_c143_4.py
+BGRUN PID 25608
+  LOG   REUSE-NOTED 23276 ('ParameterTerminal', 'Comparison')->('Terminal', 'Local')
+  LOG   REBIND 6 node(s), 0 frame(s), terminals by {'conn': 9, 'shape': 3}; unbound created terminals []; frames {}; re-issued uid(s) [23276, 29071, 29299]
+FAIL  U1 s03 rebase on s02 graph PASSES and logs REUSE-NOTED 23276  REBASE REFUSED: plan-referenced terminal #-20.'value' does not bind uniquely (0 sim row(s), by unbound, real name None x0)
+PASS  U2 a plan naming re-issued uid 23276 is REFUSED (UID-REUSE ... NAMES)  REBASE REFUSED: UID-REUSE between N's base and the real graph on uid(s) the plan NAMES: ["term #23276 ('ParameterTerminal', 'Comparison')->('Terminal', 'Local')"]
+PASS  U3 owner-changed uid 28004 named -> REFUSED; rasrest's own named set -> binds  ("UID-REUSE between N's base and the real graph: terminal uid(s) the plan NAMES now sit on another owner: [28004]", None)
+  LOG   REBIND 3 node(s), 0 frame(s), terminals by {'conn': 11, 'pos': 1}; unbound created terminals []; frames {}; re-issued uid(s) [28004, 28979]
+  LOG   FS-CARRY fs None; fs_frames {'681': [3628, 81548, 113, 124, 5031, 3121, 1817, 4866, 686, 759], '2499': [18402, 32410, 33688], '12938': [12960, 13236, 14840, 15041, 19687, 19887, 20261, 21134, 25769, 26117], '14682': [14037, 14435], '16543': [16565], '17398': [17020, 17299], '17710': [17471, 17664], 
+PASS  U4 rasrest rebase PASSES, 28004/28979 bound, no negative uid left  ('rebased C:/Users/KimLab/AppData/Local/Temp/c143_4_uidreuse_ukzv2185/ras_u4.json: 17 uid(s) bound, base -> C:/Users/KimLab/AppData/Local/Temp/c143_4_uidreuse_ukzv2185/ring_p4_rasrest_base_real_fsmap.js', [])
+PASS  U5 direct rebind without named still refuses UID-REUSE (default unchanged)  UID-REUSE between N's base and the real graph: ["term #23276 ('ParameterTerminal', 'Comparison')->('Terminal', 'Local')"]
+PASS  U6 _obj_id: a uid re-issued to another class is NEW (FS identity, not raw uid)  ({900001: ('Comparison', 'Diagram')}, {900001: ('FlatSequence', 'TopLevelDiagram')})
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":5,"fail":1},"first_fail":"U1 s03 rebase on s02 graph PASSES and logs REUSE-NOTED 23276","artefacts":[]}
+BGRUN END rc=1 after 2s

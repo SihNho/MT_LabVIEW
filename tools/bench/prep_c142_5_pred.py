@@ -76,15 +76,21 @@ base_new = sorted((u, u2[u]) for u in u2 if u not in madeu and u not in u0)
 gone_unw = sorted(u for u in u0 if u not in u2)
 print("EL created nodes with an unwired input", created_unw, "| base nodes newly unwired", base_new, "| nodes unwired at step 0 and gone/wired at end", gone_unw,
       "| sym", json.dumps(last.get("sym")), flush=True)
+# card 143-3 (PD333(b)): the counted total comes from the FIXED predictor (unwired Local + While cond + created input; closed items debited);
+# the PD322(e) lists above stay as report fields. selftest_elpred.py: this session re-derives to the measured 53.
+sys.path.insert(0, B)
+import prep_c143_3_elrule as ELR                                                            # noqa: E402
+ELP = ELR.predict(st0, last, EL_S1, madeu)
+print("EL FIXED", ELP["predicted_total"], "new", ELP["new_items"], "closed", ELP["closed_items"], flush=True)
 pred = {"schema": "ring-p3b-pred/1", "card": "142-5", "note": "P4 v18 session 2 (v18 ops 25..58: rest of the slot-write repair + first non-repair ops) as one "
         "bed session on session 1's saved file; rebased onto its real graph; start = its MEASURED load (PD320(d), PD326(c))",
         "plan": {"path": rel(RRP), "md5": md5(RRP)}, "graph": {"path": bp["path"], "md5": md5(os.path.join(ROOT, bp["path"]))}, "bed": base.get("vi"), "bed_md5": base.get("md5"),
         "census": dict(rep["derived"]), "census_overall": rep["overall"], "census_unpredicted": [p["actions"][k - 1]["id"] for k in rep["unpredicted"]],
         "ops": [o["kind"] for o in ops], "cdiff_rows": sorted(fz.get("end_cdiff_rows") or []), "cross_session_refs": "bound by stage_prerun --rebase (finalized.rebase)",
-        "errorlist": {"bed_total": EL_S1, "new_items_predicted": len(created_unw), "predicted_total": EL_S1 + len(created_unw),
-                      "alternative_total": EL_S1 + len(created_unw) + len(base_new), "created_nodes_unwired_input": [[u, n] for u, n in created_unw],
+        "errorlist": {"bed_total": EL_S1, "new_items_predicted": len(ELP["new_items"]) - len(ELP["closed_items"]), "predicted_total": ELP["predicted_total"],
+                      "alternative_total": None, "fixed": ELP, "created_nodes_unwired_input": [[u, n] for u, n in created_unw],
                       "base_nodes_newly_unwired": [[u, n] for u, n in base_new], "nodes_unwired_at_step0_gone_at_end": gone_unw,
-                      "rule": "PD322(e) per created node; base = " + EL_CITE, "checked": False},
+                      "rule": ELP["rule"] + "; base = " + EL_CITE, "checked": False},
         "memory_pred": {"card": "142-5", "checkpoints": cps, "R": mp["R"], "N": mp["N"], "bind_ops": bind, "op_kinds": [o["kind"] for o in ops],
                         "start_mb": START, "start_cite": START_CITE, "peak_mb": mp["peak_mb"], "fail_above_mb": mp["fail_above_mb"], "below_fail": mp["ok"],
                         "prerun_start": xs, "prerun_peak_mb": mp2 and mp2["peak_mb"], "model": {"path": rel(SPR.MEMORY_MODEL), "md5": md5(SPR.MEMORY_MODEL)}},

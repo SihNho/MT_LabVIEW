@@ -1,0 +1,37 @@
+{
+ "schema": "task/1", "id": "143-P1", "kind": "measure",
+ "goal": "OFFLINE: P4 session-3 plan = v18 ops 59..(X10 cut at 680), provisional on stagesim's end of s02v18; pred, dry, prerun, recipe pair, prior-art review",
+ "why": "Pipeline slot beside 143-1. After 143-1 adopts the s02 file, --rebase re-binds this plan on the real graph. s02's load is unmeasured: use 596.5 MB as provisional start and report the cut's margin so judgement can re-cut.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_143-P1.md", "md5": "e30672e7f5bc6e2eeaa8a46a10f6383e"},
+  {"path": "tools/bench/plan_ring_p4_v18.json", "md5": "2ea6cafa7d368dc7a054346d398daa3e"},
+  {"path": "tools/bench/plan_ring_p4_s02v18.json", "md5": "e941ebbfaa3d98099bcd10d8c6237ef4"},
+  {"path": "tools/bench/prep_c142_5_mk.py", "md5": "7af3a6ca4fff36241ea9924feb776769"},
+  {"path": "tools/bench/prep_c142_5_facts.md", "md5": "fef8c3b0974241f0f5ce57aeb1dfb13b"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s02v18.py", "md5": "758b1673ee6f264cb1c52bd11f5bf650"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s02v18_scratch.py", "md5": "fdf58b0a75f50084fa9a127e6ae77e1c"}
+ ],
+ "pass": [
+  "plan_ring_p4_s03v18.json written per brief step 1; first/last op, actions, X10 peak + next op's peak, subVI drops in/out",
+  "pred file, dry PASS, prerun counts, --scratch-required exit code",
+  "recipe pair s03v18 written (MEML 680), dry + prerun on them; prior-art review verdict recorded",
+  "any stop in make/replay = RETURN with step and line"
+ ],
+ "outputs": ["tools/bench/plan_ring_p4_s03v18.json", "tools/bench/plan_ring_p4_s03v18_pred.json", "tools/recipes/stage_d1_ring_p4_s03v18.py", "tools/recipes/stage_d1_ring_p4_s03v18_scratch.py", "tools/bench/prep_c143_p1_facts.md"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/prep_c143_p1*", "tools/bench/plan_ring_p4_s03v18*", "tools/recipes/stage_d1_ring_p4_s03v18*", "tools/bench/sim/**", "tools/bench/prior_art*", "archive/peer/**", "tools/bench/gate_fp_queue.jsonl"],
+  "status_edit": false, "git_commit": true, "peers": ["priorart"]},
+ "budget": {"failures": 2, "minutes": 75},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/plan_ring_p4_v18.json"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p4_s02v18.json"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/stagesim.py"}
+ ],
+ "rules": [
+  "Offline only; do NOT edit stagexec/stagekit/stagesim/stage_prerun/gscript (LabVIEW card live beside, PD281(a))",
+  "A provisional plan is never launched; facts only, a gap is reported not built",
+  "Return at the first unexpected result"
+ ]
+}

@@ -1,0 +1,22 @@
+{"schema":"result/1","id":"143-6","status":"PASS","gates":{"pass":8,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/plan_ring_p4_s03v18_pred.json","md5":"7fab8cf0fa9104889797414bd1bf3590"},
+ {"path":"tools/bench/prep_c143_6_facts.md","md5":"aac75a1f7f563c31eede84c6d0a0ae0e"},
+ {"path":"tools/bench/prep_c143_6_pred.py","md5":"128ba4a43d66bb58ba97d979095aa0ee"},
+ {"path":"tools/bench/prep_c143_6_probe.py","md5":"a92c16907977dd4cad5864a476505d7a"},
+ {"path":"tools/bench/plan_ring_p4_s03v18.json","md5":"da66a0300851133d93881be3c28f2fdc"}],
+"facts":[
+ "pred 8/0: negative-uid scan now over action fields only (why/notes skipped; text '-1' in p4_c_bufdiff/p4_k_last why); RB2 eda9db40 PASS (prep_c143_6_pred.log)",
+ "X10 at start 596.0: N 20 R 14 peak 676.4 <= 680.0, no re-cut; prerun's own X10 655.5 (recipe) / 650.4 (scratch) (prep_c143_6_pred.log, prep_c143_6_prerun.log:100)",
+ "EL fixed rule on base 53: +5 new (cond/input -46, input -36, -27, local -49), -2 closed (cond 23166, local 6902) -> predicted 56, uncertain [] (prep_c143_6_pred.log)",
+ "pred file plan_ring_p4_s03v18_pred.json md5 7fab8cf0 keyed to plan da66a030; census: all 20 actions UNPREDICTED",
+ "stage_d1_ring_p4_s03v18.py: dry PASS (E1 20 ops, FR, PB 16 rows) prep_c143_6_dry.log:68-75; prerun 16/0 prep_c143_6_prerun.log:107 (WARN X13 x5, X14 20>15)",
+ "_scratch.py: dry PASS prep_c143_6_scr_dry.log:101 (reads X10 676.4 from pred); prerun 16/0 prep_c143_6_scr_prerun.log:127",
+ "--prerun ... --scratch-required: exit 3 SCRATCH-REQUIRED, CENSUS-UNPREDICTED rows 1..20 (prep_c143_6_scrreq.log:3)",
+ "'new:LRB1.value'/'new:LWB1.value' resolve in sim to each Local's only row 'BufDiff' (term -7 src, -14 sink), both wired (prep_c143_6_probe2.log; stagesim.py:735)",
+ "first probe run prep_c143_6_probe.log rc=1 NO RESULT LINE: my probe's KeyError (sym key is 'new:LRB1'); fixed and rerun; offline, no JEV-LADDER row exists",
+ "card inputs 6/6 md5 match; plan, both recipes and stage tools unchanged (md5 da66a030, d420f951, 573b8537)"],
+"open":["X10 margin is 3.6 MB (676.4 vs 680) at the measured 596.0 start: launch as-is or re-cut?",
+ "the real executor's handling of '.value' on a created Local was not read offline (sim only)"],
+"cost":{"usd":null,"minutes":8,"labview_runs":0},
+"note":"OFFLINE; no LabVIEW, no launch. Not committed: `git add` needs approval in this headless session (permission prompt, not a card flag); files left for the runner's cycle-end commit. Exit 3 says the scratch run is required before launch."}

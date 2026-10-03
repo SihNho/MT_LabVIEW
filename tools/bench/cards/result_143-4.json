@@ -1,0 +1,21 @@
+{"schema":"result/1","id":"143-4","status":"FAIL","gates":{"pass":5,"fail":1},
+"first_fail":"U1 s03 rebase on s02 graph: UID-REUSE gone (REUSE-NOTED 23276 logged), then REBASE REFUSED: plan-referenced terminal #-20.'value' does not bind uniquely (0 sim row(s))",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/stage_prerun.py","md5":"03cdd8c668d400f21228d7d6f7461e82"},
+ {"path":"tools/bench/selftest_rebase_uidreuse_c143_4.py","md5":"cf81060d634caa8f0ed50e0fa13aeb4f"},
+ {"path":"tools/bench/prep_c143_4_facts.md","md5":"b03a7fa2934ab7eeab050e5bdbe59dab"}],
+"facts":[
+ "Census: 19 sites in facts table; rebase-path raw cross-delete sites fixed: uid_reuse call stage_prerun.py:3483, new_rf :3532, FS frames bo :3640, carry_fs bo :3749",
+ "rebind(named=None) keeps old refusal; rebase passes plan_named_uids (:3445); named re-issue (uid_reuse or owner-moved term) refuses; else REUSE-NOTED log (:3861-3863)",
+ "stagexec.py and stagekit.py unchanged (md5 7e1f7cc5 for stagexec); execution-time uid_reuse callers untouched",
+ "selftest_rebase_uidreuse_c143_4.log 5/1: U2 named 23276 refused, U3 named 28004 refused, U4 rasrest binds 28004/28979, U5 default refuses, U6 PASS",
+ "U1: REUSE-NOTED 23276 ('ParameterTerminal','Comparison')->('Terminal','Local'), then REBASE REFUSED at stage_prerun.py:3904 on #-20.'value'",
+ "prep_c143_4_probe2.log: provisional base s03v18_s02end holds one row on Local -20: term -21 named 'StopAll'; s03 action p4_w_stop12 src {uid -20, term 'value'}",
+ "Old tests: rebind_c142_5 4/0, rebind_c132_5 7/0, rebase_c132_6 8/0, rebase_c133_3 5/0, c125_1_offline_measure 6/0 (tools/bench/*_c143_4.log)",
+ "Not done (depend on rebase): s03 rebase, X10 at 596.0, EL pred, dry/prerun s03v18 recipes, --scratch-required; plan s03 9d5049d8 and pred e2e69c04 unchanged",
+ "git add/commit refused by the permission layer ('requires approval') - changes left uncommitted for the runner auto-commit",
+ "JEV-LADDER: no row for selftest_rebase_uidreuse_c143_4.log in jev_gate.log | ladder - | NEXT-ACTION - | returned | -"],
+"open":["s03 plan addresses Local -20's terminal as 'value' but the provisional base names it 'StopAll' (-21): fix the plan's address, or let rebase accept a Local's value terminal by connectivity/position?"],
+"cost":{"usd":null,"minutes":11,"labview_runs":0},
+"note":"Facts: tools/bench/prep_c143_4_facts.md. OFFLINE, LabVIEW untouched."}

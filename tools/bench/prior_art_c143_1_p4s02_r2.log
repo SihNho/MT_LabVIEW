@@ -1,0 +1,46 @@
+BGRUN START 2026-10-03 10:54:45 limit 20.0 min: py tools/prior_art_review.py --plan-file docs/d1/ring-p4b.md --slug c143-1-p4s02v18-r2 --trigger cycle-start --recipe tools/recipes/stage_d1_ring_p4_s02v18.py --recipe tools/recipes/stage_d1_ring_p4_s02v18_scratch.py
+BGRUN PID 24152
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c143-1-p4s02v18-r2.txt (84570 chars)
+   review card tools\bench\cards\review_priorart-c143-1-p4s02v18-r2.json
+OUTCOME: ANSWERED (108s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-03-priorart-c143-1-p4s02v18-r2.md
+COST: $1.6555  in 20 / out 8145 / cache-create 151116 / cache-read 1418163  (104s, 13 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c143-1-p4s02v18-r2 verdict=settled-already -> tools\bench\cards\verdict_priorart-c143-1-p4s02v18-r2.json
+--- ANSWER ---
+**Verdict: not novel. One finding blocks the build.** Both r1 findings are fixed and that fix holds. What remains is a helper and a user decision from 2026-10-03 that the session-2 recipe does not use.
+
+## PART A: direction
+- **A1 / A2:** Nothing new. r1 found no earlier run of s02v18 or rasrest and no refuted direction (`archive/peer/2026-10-03-priorart-c143-1-p4s02v18.md:476`). Nothing has changed since: no `diag_c143_1_scratch*` log exists yet. The direction comes from PD330–PD332 (`docs/d1/ring-p4b.md`, lines 175-236 of the r1 question).
+- **A3:** The r1 contradictions are resolved by the two `FIXED:` lines (`archive/peer/2026-10-03-priorart-c143-1-p4s02v18.md:515-516`).
+  - The scratch's run-time memory stop is now `SX.X10_FAIL_MB` (`tools/recipes/stage_d1_ring_p4_s02v18_scratch.py:21`), and the MEM gate tests against it (`:84`), as PD328(a) requires (`docs/d1/tooling.md:131-132`).
+  - The scratch saves its work copy as `work_name="D1_ring_p4s02_<ts>.vi"` (`:73`), as PD329(a) requires (`docs/d1/tooling.md:152-153`).
+  - The override at `:21` runs after `import stage_d1_ring_p4_s02v18` (`:20`). It still takes effect, because the stage recipe reads `SX.MEM_STOP_MB` when `body()` runs (`tools/recipes/stage_d1_ring_p4_s02v18.py:40`), not at import.
+  - Cosmetic only, no slug: the scratch docstring still names the copy `scratch_c142_p4s02v18_<ts>.vi` (`:7`) and the stage recipe's docstring says `D1_ring_p4s02v18_<ts>.vi` (`stage_d1_ring_p4_s02v18.py:7`). Line `:12-14` and the code give the real name.
+- **A3 (new): the resume decision is not applied.**
+  - User decision 2026-10-03, recorded in `docs/d1/ring-p4b.md:107`: *"resume from the stop point within a cycle."* PD329(b) implements it (`docs/d1/tooling.md:156-162`): *"in a recipe's ExecStop handler `stagexec.save_for_resume(s, x, e)` saves the scratch as-is, keeps it, and writes `tools/bench/resume/resume_<stage>_<ts>.json`."*
+  - The recipe's ExecStop handler (`tools/recipes/stage_d1_ring_p4_s02v18.py:46-47`) is only `except SX.ExecStop as e: return SX.report_stop(s, x, be, e)`.
+  - `report_stop` (`tools/stagexec.py:4087-4097`) records the stop and fails E1. It does not save or keep the scratch, and it writes no resume record.
+  - This matters for this run specifically. The run-time stop is now 680 MB (`scratch.py:21`). The plan's X10 prediction is 678.5 MB (`docs/d1/ring-p4b.md` PD332(b)). A memory stop raises `ExecStop` (`tools/stagexec.py:115`). So a mid-run stop is a realistic outcome, and that is exactly the case PD329(b) exists for: a fresh LabVIEW instance resets memory (PD301). Without the call, a stop at op k throws away ops 1..k-1, and the rerun counts against the retry cap.
+- **A4:** `docs/d1/tooling.md:145-177` (PD329) is the unread evidence. Part (a) was applied after r1; part (b) was not. Part (c) needs nothing: partial reads stay off on LabVIEW until an owner-uid reader op exists (`docs/d1/tooling.md:176-177`), so keeping per-BIND checkpoints (`stage_d1_ring_p4_s02v18.py:25-26`) is correct.
+
+## PART B: artifact
+- **B1 / B2:** Nothing found. The stage recipe is the s01 recipe with names changed. s01 launched cleanly (23/0, PD326(a)), and the recipe keeps the identity-keyed D/TD gates (`stage_d1_ring_p4_s02v18.py:58-65`). No recorded failure is repeated.
+- **B3: helper-exists.** `tools/stagexec.py:3941-3962` `save_for_resume(s, x, e, cycle=None)`. Its own docstring says it is *"a recipe's ExecStop handler (before report_stop)"*. Self-test: `tools/bench/selftest_stagexec_s4.py` 24/0 (`docs/d1/tooling.md:147`). A grep of `tools/recipes/` finds no caller, so this recipe is the first P4 session since PD329 and should be the first to use it.
+  - Fix: insert `SX.save_for_resume(s, x, e)` before `SX.report_stop(...)` at `stage_d1_ring_p4_s02v18.py:47`.
+  - `write_resume` refuses the bed (`tools/stagexec.py:3904-3905`), and Stage always works on a dated copy, so the call is safe on both the scratch and the launch.
+- **B4:** Not measured yet. This scratch run is what measures session 2's census and decides the Error List count (51 or 52), per PD332(c).
+
+## PART C: user rules
+Nothing found. The run applies plan edits to a byte copy, runs no VI, and adds no queue, serial call or per-bead maths. U1, U4 and U13 are relied on correctly.
+
+## Release
+Either of these releases the block:
+- `FIXED:` with the one-line `save_for_resume` insertion at `stage_d1_ring_p4_s02v18.py:47`.
+- `REFUTED:` that shows in writing why PD329(b) and the user's resume decision (`ring-p4b.md:107`) do not apply to this recipe.
+
+PRIOR-ART: contradicted
+PRIOR-ART: helper-exists
+VERDICT {"schema":"verdict/1","id":"priorart-c143-1-p4s02v18-r2","verdict":"settled-already","alternative":"r1 findings fixed (scratch.py:21,73). New: ExecStop handler stage_d1_ring_p4_s02v18.py:46-47 calls only report_stop; PD329(b)/user 10-03 resume-in-cycle needs SX.save_for_resume(s,x,e) first (stagexec.py:3941).","discriminating_test":"grep save_for_resume tools/recipes/: no caller; report_stop (stagexec.py:4087-4097) neither saves the scratch nor writes a resume record, so a MEMSTOP (680 stop vs X10 678.5) loses ops 1..k-1.","violations":[],"sources":["docs/d1/ring-p4b.md:107","docs/d1/tooling.md:156-162","tools/stagexec.py:3941-3962","tools/stagexec.py:4087-4097","tools/stagexec.py:115","tools/recipes/stage_d1_ring_p4_s02v18.py:46-47","tools/recipes/stage_d1_ring_p4_s02v18_scratch.py:21"],"note":"Direction novel; r1's 690 stop and work_name are fixed. One-line fix: SX.save_for_resume(s, x, e) before report_stop. Docstrings scratch.py:7 / recipe:7 still show old names (cosmetic)."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c143-1-p4s02v18-r2.md
+   STOP RECORD armed: tools/recipes/stage_d1_ring_p4_s02v18.py sha 5a9d683eb454 verdict contradicted, helper-exists -> launching it is refused until a FIXED:/REFUTED: line releases it
+   STOP RECORD armed: tools/recipes/stage_d1_ring_p4_s02v18_scratch.py sha aca29839c4f6 verdict contradicted, helper-exists -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 111s

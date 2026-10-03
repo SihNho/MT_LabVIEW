@@ -1,0 +1,44 @@
+BGRUN START 2026-10-03 10:57:31 limit 20.0 min: py tools/prior_art_review.py --plan-file docs/d1/ring-p4b.md --slug c143-1-p4s02v18-r3 --trigger cycle-start --recipe tools/recipes/stage_d1_ring_p4_s02v18.py --recipe tools/recipes/stage_d1_ring_p4_s02v18_scratch.py
+BGRUN PID 10796
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c143-1-p4s02v18-r3.txt (84570 chars)
+   review card tools\bench\cards\review_priorart-c143-1-p4s02v18-r3.json
+OUTCOME: ANSWERED (48s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-03-priorart-c143-1-p4s02v18-r3.md
+COST: $1.2662  in 10 / out 4054 / cache-create 133042 / cache-read 603481  (44s, 8 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c143-1-p4s02v18-r3 verdict=novel -> tools\bench\cards\verdict_priorart-c143-1-p4s02v18-r3.json
+--- ANSWER ---
+Verdict: **novel**. Nothing in the project's files has already built, measured, refuted or blocked this scratch-and-adopt run of P4 session 2 (plan v18).
+
+**What changed since the last review (r2).** The r2 review (`archive/peer/2026-10-03-priorart-c143-1-p4s02v18-r2.md`, verdict file `tools/bench/cards/verdict_priorart-c143-1-p4s02v18-r2.json:5-6`) blocked on one point: the stop handler called only `report_stop`. A memory stop would then have thrown away ops 1..k-1, against the user's 2026-10-03 "resume from the stop point within a cycle" decision (`docs/d1/tooling.md:156`). That is now fixed:
+- `tools/recipes/stage_d1_ring_p4_s02v18.py:47-51` calls `SX.save_for_resume(s, x, e)` before `report_stop`.
+- The call matches the function's signature and documented use: "a recipe's ExecStop handler (before report_stop)" (`tools/stagexec.py:3941-3944`).
+- The two findings r1 raised (the 690 MB stop and the work-file name) stay fixed:
+  - The scratch's memory stop is `SX.MEM_STOP_MB = SX.X10_FAIL_MB` (`stage_d1_ring_p4_s02v18_scratch.py:21`). That limit is the 680 MB loaded from `memory_model.json` (`stagexec.py:92`).
+  - The work copy is saved as `D1_ring_p4s02_<ts>.vi` (`scratch.py:73`). That fits the adopt contract in `stagexec.py:3823-3828` and `docs/d1/tooling.md:148-154`.
+
+**Part A, the direction**
+- **A1 – already decided:** yes, and the plan follows that decision rather than repeating old work. PD332(b)–(d) (2026-10-03) orders exactly this act.
+- **A2 – already refuted:** no. The plans that were dropped, `plan_ring_p4_s02.json` (v17) and `plan_ring_p4_rasrest.json`, are marked never to be launched, and this recipe uses neither.
+- **A3 – contradicted:** nothing that blocks. One cosmetic mismatch remains: the recipe's docstring (`stage_d1_ring_p4_s02v18.py:7`) still names the output `D1_ring_p4s02v18_<ts>.vi`. The file that actually runs, the scratch, saves `D1_ring_p4s02_<ts>.vi` (`scratch.py:73`). r2 already noted this.
+- **A4 – documents that should have been read:** none missing.
+
+**Part B, the files under review**
+- **B1 – already built:** no. There is no adoption record and no scratch or launch log for p4s02 (`adopted_scratch.jsonl`, `diag_c143_1_scratch*.log`, `launch_c142_p4s02v18*.log`), so this run has not happened.
+- **B2 – already failed:** the earlier causes of failure are dealt with:
+  - raw-uid comparison in the D/TD gates and in the rebind step: both now compare terminals by (uid, owner, name) (PD326(b), PD332(a));
+  - delete-first repair order: replaced by create-first (PD324(b));
+  - wrong slot-write function (Insert Into Array instead of Replace Array Subset): the prim gate now checks every created node's function.
+- **B3 – existing helper ignored:** no. The recipe uses `K.term_identity_gates`, `SX.Executor`, `SX.save_for_resume` and `SX.report_stop`, and the scratch keeps using the adopt CLI.
+- **B4 – already measured:** no. This session's object census has not been measured (`--scratch-required` exit 3, PD332(c)), and the Error List outcome (51 or 52) is still open.
+
+**Part C, the user's rules:** none contradicted. The plan only edits the tracking loop's slot-write and reader nodes. It adds no queue (U4, U13), puts no serial call anywhere (U3), never makes the camera loop wait (U6), and changes no per-bead number (U1).
+
+**One open point, not prior art:** the predicted memory peak is 678.5 MB against a 680 MB stop, a margin of 1.5 MB. If the run does stop on memory, the new resume save now covers it.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c143-1-p4s02v18-r3","verdict":"novel","alternative":"r2's only finding (no resume save in the ExecStop handler) is fixed at stage_d1_ring_p4_s02v18.py:47-51; r1's 690 stop and work name stay fixed (scratch.py:21,73). No adoption or scratch log for p4s02 exists.","discriminating_test":"After the scratch: adopted_scratch.jsonl has one adopt/1 record for stage_d1_ring_p4_s02v18 with plan md5 e941ebbf; on a memory stop, a resume record plus a saved scratch exist (stagexec.py:3941-3962).","violations":[],"sources":["tools/recipes/stage_d1_ring_p4_s02v18.py:47-51","tools/recipes/stage_d1_ring_p4_s02v18_scratch.py:21","tools/recipes/stage_d1_ring_p4_s02v18_scratch.py:73","tools/stagexec.py:3941-3944","tools/stagexec.py:3823-3828","docs/d1/tooling.md:148-156","tools/bench/cards/verdict_priorart-c143-1-p4s02v18-r2.json:5-6"],"note":"Cosmetic: recipe docstring line 7 still names the output D1_ring_p4s02v18_<ts>.vi; the scratch saves D1_ring_p4s02_<ts>.vi. Memory margin 1.5 MB (X10 678.5 vs stop 680), now backed by the resume save."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c143-1-p4s02v18-r3.md
+   STOP RECORD: none - 2026-10-03-priorart-c143-1-p4s02v18-r3.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_ring_p4_s02v18.py sha 31d1a272b115 -> these bytes are released by this review; editing them again re-arms the gate
+   NOVEL RECORD written: tools/recipes/stage_d1_ring_p4_s02v18_scratch.py sha 13f0772661b3 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 51s

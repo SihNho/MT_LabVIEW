@@ -1,0 +1,24 @@
+{"schema":"result/1","id":"143-1","status":"FAIL","gates":{"pass":3,"fail":1},"first_fail":"Error List 53 (extra 2, missing 0) vs predicted 51 / alternative 52 (errorlist_c143_1_p4s02.log, JSON :5638-5642)","blocked_by":null,
+"artefacts":[
+{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p4s02_20261003_110001.vi","md5":"84cac48781c7c915c8f0d7e8fb079341"},
+{"path":"tools/bench/plan_ring_p4_s02v18_pred.json","md5":"67c3bf2923f5c4c49ec07f0ea0dd30e4"},
+{"path":"tools/bench/errorlist_D1_ring_p4s02_20261003_110001_20261003_110836.json","md5":"16132ddced20a5ec548bb6e2e4c6a7e3"},
+{"path":"tools/recipes/stage_d1_ring_p4_s02v18.py","md5":"4af581f48ffd312b44d85b5839e4a106"},
+{"path":"tools/recipes/stage_d1_ring_p4_s02v18_scratch.py","md5":"7d80df4d3db2e8ede2e4e76468c17aa3"},
+{"path":"tools/bench/diag_c143_1_facts.md","md5":"2d3d9c86cc89c396e056cab78039bdb1"}],
+"facts":[
+"Prior-art r1/r2 settled-already (690 stop vs PD328(a); no work_name; no save_for_resume), FIXED scratch.py:21,73 + recipe:47-51; r3 novel (archive/peer/2026-10-03-priorart-c143-1-p4s02v18-r3.md)",
+"Release lines must use the verdict slugs (FIXED: contradicted / helper-exists); a review-slug FIXED line was refused by stop_record on the first launch try",
+"Scratch diag_c143_1_scratch.log RESULT 21/0 (:424): E1 34 ops, PRIM 2/2, FR 6, D 4/5, TD, PB 16 rows, PS; MEM/MEML/IN/GONE PASS (:427-430)",
+"Peak 620.3 MB vs X10 678.5 (d -58.2) (diag_c143_1_scratch.log:426); handles 45657->46173",
+"Saved D1_ring_p4s02_20261003_110001.vi md5 84cac487 (gui_save, ExecState 0); bound 6869/6859 RAS, 6850 BoolConst, 29516 StopAll ind, 6899 LW, 6902 LR (:125-382)",
+"Census measured {BooleanConstant 1, ControlTerminal 1, GrowableFunction 2, Local 2, Terminal 6, Wire 4} (scratch log :389) written into pred 518b01b8->67c3bf29 (diag_c143_1_census.log 5/0)",
+"Error List 53 != 51/52: extra 'Local Variable ... not connected to anything' + 'While Loop: Conditional terminal is not wired', missing 0 (errorlist JSON :5638-5642)",
+"Neither extra item carries a uid (Selection List op unbuilt); LR #6902 (op 34) and pred's #23166 term '' are candidates, UNVERIFIED; PD322(e) counts only unwired INPUTS",
+"Not adopted, no graph read; bed 39511877, s01 dc61e193, s02 84cac487 unchanged; no _elc_, no LabVIEW (diag_c143_1_check.log 5/0)",
+"JEV-LADDER: no row for errorlist_c143_1_p4s02.log in jev_gate.log | NEXT-ACTION none | returned per chat-P2 | -"],
+"open":[
+"Are the 2 extra EL items (unwired Local read, While conditional terminal) the by-design session-boundary state, i.e. re-predict EL = 53 and adopt 84cac487 without a rerun?",
+"Should PD322(e)'s EL predictor also count created nodes with an unwired OUTPUT (Local read) and base loops whose stop terminal is newly unwired?"],
+"cost":{"usd":null,"minutes":32,"labview_runs":2},
+"note":"Graph-read script + plan prepared, not run (tools/bench/diag_c143_1_graph.py, diag_c143_1_graph_plan.json). Prior-art cost 3 dispatches. git add/commit was denied by the permission layer: files left for the runner's cycle-end auto-commit."}

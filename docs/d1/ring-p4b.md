@@ -168,3 +168,62 @@ How to add: see the 5-line note at the top of `docs/d1/INDEX.md`.
        repair has one clean launch). Cycle 143's LabVIEW card dispatches it first (peers `priorart`), then the scratch on a
        byte copy of `D1_ring_p4s01_20261002_232547.vi`; when the scratch passes every gate it is ADOPTED as session 2's file
        (PD329(a)) — no second run on the s01 file; full Error List, load + graph read in a fresh instance.
+333. **(cycle 143 judgement, 2026-10-03 — after 143-1 FAIL 3/1 (`tools/bench/diag_c143_1_facts.md`), 143-2 PASS 5/0
+     (`tools/bench/diag_c143_2_facts.md`, review `archive/peer/2026-10-03-c143-2-el53.md` verdict supported), 143-P1/P2)**
+     USER-RULES: U1 (relied on: the s02 file's 34 actions are v18's, real == sim, no computation change; only the Error
+     List PREDICTOR was wrong); none contradicted.
+     - **(a) ADOPTED: `claudeDev\D1_ring_p4s02_20261003_110001.vi` md5 `84cac487…` = P4 session 2's file (PD329(a))**, Error
+       List **53** = the by-design session-boundary state, MEASURED by uid: the 1.2 While `#10170` conditional terminal
+       (`#23246`, its scaffold wire w23310 deleted by plan) and the StopAll READ Local `#6902` (output unwired) are both open
+       in the s02v18 simulated end and both wired by s03's first action `p4_w_stop12`. Graph `graph_ring_p4s02_20261003_112505.json`
+       eda9db40, load 596.0 MB. In-between file, not counted (D-2026-10-02-02/-04).
+     - **(b) The EL predictor is fixed BEFORE s03's scratch** (`prep_c142_5_pred.py:65-87`, same in `prep_c143_p1_pred.py`):
+       a created node with an unwired OUTPUT (source-only Local) and a base loop whose cond wire the plan deletes count as
+       CERTAIN items, and an item that disappears is debited; re-deriving s02 must give 53. Otherwise s03's check (54 on a
+       51 base) could pass by cancellation.
+     - **(c) Session 3 = `plan_ring_p4_s03v18.json`** (v18 ops 59..78, 20 actions; recipes ported, 143-P2): `--rebase` onto
+       the s02 graph, X10 at the measured 596.0 (provisional margin was 3.1 MB at 596.5), dry + prerun, EL prediction from
+       the fixed predictor; then ONE scratch on a byte copy of the s02 file and adoption on full PASS (PD329(a)).
+334. **(cycle 143 judgement, 2026-10-03 — after 143-3 FAIL 13/1 (`tools/bench/prep_c143_3_facts.md`))**
+     USER-RULES: U1 (relied on: a binder/guard change alters no plan action; s03's 20 actions stay v18's); none contradicted.
+     - **(a) DONE by 143-3:** s02 ADOPTED (`adopted_scratch.jsonl`, `adopt_scratch` by import — the CLI form was refused
+       under `labview: none`, gate-fp fp-39); expected EL file 53 (compare extra [] missing []); EL rule
+       `tools/bench/prep_c143_3_elrule.py` (self-test `selftest_elpred.py` 7/0: s02 → 53, s01 → 51).
+     - **(b) The `--rebase` refusal is a misapplied guard, not a plan defect.** `stagexec.uid_reuse` (`stagexec.py:942-962`)
+       is written for TWO CONSECUTIVE reads around ONE op; `--rebase` (`stage_prerun.py:3453-3455`) feeds it the s01 base vs
+       the real s02 graph, 34 ops apart, across planned deletes — where LabVIEW re-issuing a freed uid is EXPECTED (NI; uid
+       23276 = deleted Comparison #10171's term → new Local #6899's `StopAll` sink, s02 scratch log :391 recycled_uids).
+       Same class as PD325(b) (TD) and PD332(a) (rebind): a raw-uid key across a delete boundary. Rule: in `--rebase`
+       a re-issued uid is FATAL only when the plan being rebased names that uid (actions or bindings); otherwise it is
+       logged `REUSE-NOTED` and binding goes by (uid, owner, name). Execution-time use of `uid_reuse` is UNCHANGED.
+     - **(c) Close the class, not the instance:** the tooling card lists EVERY cross-graph comparison in stagexec /
+       stage_prerun / stagekit that keys terminals or owners by raw uid (file:line, which graphs it compares, whether a
+       delete can lie between them), fixes those on the rebase/rebind path by the same rule, and reports the rest
+       without changing them. Self-test from this case + the 28004/28979 case; `c125_1_offline_measure.py` rerun (PD252(a)).
+       Stage-tool card, ALONE (PD281(a)). Then s03's rebase → X10 at 596.0 → pred → dry/prerun → scratch-required.
+335. **(cycle 143 judgement, 2026-10-03 — after 143-4 FAIL 5/1 (`tools/bench/prep_c143_4_facts.md`))**
+     USER-RULES: U1 (relied on: only the terminal ADDRESS of s03's actions changes, to the measured name; no action is
+     added, removed or rewired); none contradicted.
+     - **(a) ACCEPTED: PD334's rebase fix** (`stage_prerun.py` 03cdd8c6: rebase passes the plan's named uids; a named re-issue
+       refuses, an unnamed one logs REUSE-NOTED; census 19 sites, 4 rebase-path sites fixed; self-test
+       `selftest_rebase_uidreuse_c143_4.py` U2–U6 PASS; old rebind/rebase self-tests + c125_1 green; stagexec unchanged).
+     - **(b) The s03 plan's address is corrected to the MEASURED name**, not aliased in the binder: `p4_w_stop12`'s source
+       `{uid -20, term 'value'}` → `term 'StopAll'` (provisional base row -21 and the real s02 graph both name the Local's
+       terminal `StopAll`; `stagesim.py:735-736`'s `value` alias is a simulator convenience the binder does not share).
+       Every other s03 action that addresses a Local terminal by `value` is corrected the same way, by a script that reads
+       the name from the base rows (never typed). U1 then must PASS; dry and prerun confirm the executor resolves it.
+336. **(cycle 143 judgement, 2026-10-03 — after 143-5 FAIL 2/2 (our pred script tokenised `why` text), 143-6 PASS 8/0
+     (`tools/bench/prep_c143_6_facts.md`))**
+     USER-RULES: U1 (relied on: s03 = v18 ops 59..78 unchanged except PD335(b)'s measured address); none contradicted.
+     - **(a) P4 SESSION 3 LAUNCH-READY:** plan `plan_ring_p4_s03v18.json` da66a030 (rebased on the s02 graph eda9db40, final,
+       20 uids bound, REUSE-NOTED 23276), pred `plan_ring_p4_s03v18_pred.json` 7fab8cf0: X10 676.4 ≤ 680 at the measured
+       596.0, **Error List predicted 56** (53 − 2 closed by `p4_w_stop12` + 5 new, uncertain []); recipes
+       `stage_d1_ring_p4_s03v18.py` d420f951 / `_scratch.py` 573b8537 dry PASS, prerun 16/0 each; `--scratch-required` exit 3
+       (census unpredicted) ⇒ ONE scratch on a byte copy of `D1_ring_p4s02_20261003_110001.vi` (84cac487), measured census
+       into the pred, ADOPT on full PASS (PD329(a)) + full EL + fresh-instance load + graph read. Prior-art: NOVEL for both
+       s03 recipes (`archive/peer/2026-10-03-priorart-c143-p2-p4s03v18.md`).
+     - **(b) The 3.6 MB X10 margin is accepted:** X10 ran 58.2 MB above s02's measured peak (678.5 vs 620.3) and MEMSTOP 695
+       guards the run. `new:LRB1.value` / `new:LWB1.value` on CREATED Locals resolve in the sim only (`stagesim.py:735`);
+       the scratch is the measurement — a refusal there is a return, and the fix is PD335(b)'s measured-name rule.
+     - **(c) EL predictor rule in force: `tools/bench/prep_c143_3_elrule.py`** (unwired outputs of created nodes, plan-cut
+       loop conds certain; closed items debited) — every later P4 session's pred uses it.
