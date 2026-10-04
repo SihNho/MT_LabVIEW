@@ -54,6 +54,12 @@ prose brief. Prose that arrives beside it does not widen it.
   `$env:MATERIAL='1'; py ...`) is AUTO-DENIED by the permission layer under `claude -p` and can never run
   (measured 2026-09-18; retrospective-cycle89 finding 1(b)) — do not use it. Never patch files with a heredoc;
   use the Edit/Write tools.
+- **Every new script starts with a scope header** (user 2026-10-04, card chat-E3, PD338) — `# ---` / `# labview: none|read|build`
+  / `# hardware: none|camera|motor` / optional `# offline-args:` + `# evidence:` / `# ---`, at the TOP of a new file
+  (existing files carry it at the end so file:line citations stay valid). It must be TRUE: `tools/hooks/guard_write.py`
+  checks it the moment you write the file (header, compile, honesty against LabVIEW imports, JSON schema/length, pinned
+  md5s, release slugs) and hands the error back in the same turn - fix it there, before any launch; the launch gates
+  judge your script by this header against your card's flags.
 - **Before creating any new op, tool, or recipe**, check what already exists (`docs/toolkit-capabilities.md`,
   `grep "^def " tools/gscript.py`, `ls tools/recipes tools/bench`) and say in the docstring what you found.
   Most of this project's cost has been rebuilding things it already owned.

@@ -293,6 +293,18 @@ background notification is a full turn over the whole conversation. Standing rul
    not started by a person and not continued in a chat. `tools/cycle_runner.py` loops: spawn a fresh `claude -p`
    judgement session (**Opus, effort max** — not Fable; **AMENDED 2026-09-23 by the user: `claude-opus-5-5` pinned by id at effort HIGH** — the Artificial Analysis index shows high→max = +4 points at 3.3× cost (news.hada.io/topic?id=34142); hypothesis reviews max→high, priorart 5.5/medium, material 5.5/medium, log-reader 5.5/low — **re-set 14:xx to the table the user approved ("오케이 테이블대로 반영하자") after the measured fact that Opus 5.5's effort scale differs: its medium scores as Opus 5's max on the Artificial Analysis index and is its default (platform.claude.com/docs/en/build-with-claude/effort); judgement = medium**; the alias `opus` resolved to `claude-opus-5` and is no longer used, so a later alias change cannot silently move the comparison baseline; needs Claude Code ≥ 2.1.280) that reads STATUS.md + the current plan only, runs ONE cycle
    (delegate → decide → retrospective → STATUS NEXT), exits; the runner checks the exit and NEXT and spawns the next.
+   **PURPOSE FLOW — DEFAULT FROM 2026-10-04 (user: "사이클 기준은 작업지시로 훅을 걸지 말고 목적에 따라서 나누는게
+   맞는듯. 다만, 판단 사이클이 독자적으로 쪼갤 것이 아니라 싸이클 업무 배정 에이전트를 운용하여 유동성을 확보하는게 좋을듯"
+   → cloud bench `tools/bench/assignbench/report_cloud.md` → "세션 규칙 설정은 그렇게 하고"; card chat-A1):** a cycle is
+   ONE PURPOSE. The judgement session (Opus 5.5 high) only writes the purpose (`next.json` act + pass) and judges
+   hand-backs; it dispatches no build cards. An ASSIGNMENT session (`claude-sonnet-5-5` high, top-level `claude -p`
+   spawned by the runner; bench: 0.74 right-next-action at $0.20 vs Opus high 0.62 at $0.35) issues the cards, retries,
+   escalates and runs the pipeline, and ends when every pass item has evidence. **Hand-back to judgement is CODE, not the
+   model's choice** (every arm was weak at it, Opus 0.17): `tools/hooks/guard_assign.py` stops further dispatch on
+   (a) an unexplained failure after one retry, (b) the same failure class twice, (c) a card outside the purpose / plan /
+   memory limits / user rules, (d) a question only the user can answer. Limits per assignment round: 3 h and $60
+   (`tools/bench/assign/assign_config.json`, user-changeable), a 30-card runaway backstop, and process-level hard stops.
+   The six-dispatch cap below applies only to `--flow legacy`.
    Runner stop conditions: a `STOP` marker in STATUS.md (written by the user), the same failure two cycles running,
    the usage-limit rule (renewal + 2 min). `tools/hooks/guard_session.py` (PreToolUse Agent) refuses material
    dispatches after the retrospective has run in that session and above the per-session cap (`MAX_DISPATCHES`, 6 in
@@ -558,6 +570,19 @@ into a hook. Hook commands use forward-slash paths (backslashes are escape-inter
 inside every `claude -p` cell spawned from this directory** — a hook that gives advice ("stalled client,
 stop the task") will be acted on by that cell; gate such hooks on an env var the spawner sets
 (`BENCH_CELL`), as lv_stallcheck.ps1 now does.
+
+**ERRORS ARE CAUGHT AT THE START — every script declares its scope (user 2026-10-04: "훅 작동을 위해서는 프론트매터에 특정
+플래그를 달도록 강제해야겠음" · "이번 훅을 넣는 가장 큰 이유는 초장에 에러 발생을 극소화하여 시간 낭비를 최소화하는게 목적임";
+card chat-E3, PD338).** Every `tools/**` script carries a header `# --- / # labview: none|read|build / # hardware:
+none|camera|motor / [# offline-args: … / # evidence: …] / # ---` (the 1,716 existing files carry it at the END so every
+`file:line` citation stays valid; new files put it at the TOP). `tools/hooks/guard_write.py` (PostToolUse Write|Edit)
+checks a file the moment it is written and hands the error back in the same turn: header present and TRUE (a `none`
+that imports a LabVIEW-run module is refused), compile, JSON schema and machine-field length (prose fields never
+gated), md5 pins of open cards, release slugs. The launch gates (`guard_bash`, `guard_peer`) judge a command by that
+header against the card's flags, not by text patterns; a prep card on a not-yet-built base returns `WAITING`, not FAIL;
+a repeated session script owes prior-art review only on its non-parameter changed lines and new op kinds. Replay of
+cycles 142–143: 9 failure records caught at write/launch time (≈49 card-minutes upper bound); LabVIEW-side faults
+(≈62 min) stay catchable only by a scratch run.
 
 **Patch files with the Edit/Write tools, never with a `py - <<'EOF'` heredoc** (2026-09-09: three heredoc patches
 in one session died on `\U`/`\N` escapes or literal NUL bytes, and because the launch line followed on a new line

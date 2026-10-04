@@ -1869,4 +1869,6 @@ if __name__ == "__main__":
 # ---
 # labview: read
 # hardware: motor
+# offline-args: --dry-run --dry-cmd --no-motor-hooks
+# evidence: tools/protocol.py:1100
 # ---

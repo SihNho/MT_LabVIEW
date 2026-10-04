@@ -467,3 +467,34 @@ medium-low. Measured basis: cycles 114–120 (cards 93 % of time; reviews 22 %; 
 - next.json: P4 session 2 (prior-art review, one scratch on a byte copy of the s01 file, adopt if gates pass).
 - Open for a tooling batch: fp-36 (guard_peer blocks a LabVIEW card on an offline card's failing log), fp-37 (scratch-required plain form refused), CEN2 vacuous (census {}), subVI file load not in memory model, SQ1 names to re-read from RingSeqCheck_v0.vi.
 - STATUS top line = STOP (weekly 93 %). Runner/supervisor not running. Restart only on the user's word (reset 10-05 07:00 KST).
+
+## 2026-10-03 12:2x - trial cycle 143 ended (exit 0, $35.00, 88 min); STOP restored
+- P4 session 2 run once on a byte copy (21/0, peak 620 MB vs predicted 678.5) and ADOPTED (first real use of adopt-scratch): D1_ring_p4s02_20261003_110001.vi md5 84cac487. Error List 53 = by design; predictor fixed (s01 51, s02 53 re-derived).
+- Rebase uid-reuse refusal narrowed (named uids only), Local terminal address fixed; session 3 (20 edits) dry PASS, prerun 16/0, X10 676.4 vs 680, EL predicted 56.
+- next.json: P4 session 3 - ONE scratch on a byte copy of the s02 file, adopt on full PASS. Sessions done 2 of 6.
+- STATUS top line = STOP (weekly 93 %). Restart only on the user's word.
+
+## 2026-10-03 ~13:0x - user's "S1" dispatched as card chat-S5 (offline, material agent, background)
+- User: "좋아. 지금 수정 내용을 S1이라고 할게." = position-based terminal address, 3-tier mismatch check (code -> Jev advisory -> LLM), by-design prediction diffs logged not FAIL, prose vs machine fields + JSON release record + path/md5 refs. Brief tools/bench/cards/brief_chat-S5.md.
+- Further candidates offered to the user (not yet approved): dispatch cap 6 per runner cycle (cycle 143 used 6 = cap, ended with session 3 ready but unlaunched), memory model recalibration (s02 actual 620 vs predicted 678.5), gate false positives fp-36/37/39, prep-on-provisional-base status, prior-art review only on the diff for repeated session scripts.
+- chat-S5 (S1) PASS 4/0 in 40 min, commit 951efd0e, PD337. Replay: 143-3/4/5 and 143-1 would all have passed without a new card. Jev "same terminal?" measured 0.611 on 18 items -> kept OFF (code + LLM only). Open: stale fixture in selftest_rebase_uidreuse_c143_4 (re-point to _in plan); 5 older self-test failures predate S5.
+
+## 2026-10-03 ~14:xx - user design direction (NOT yet started; wait for the user's go)
+- User: "사이클 기준은 작업지시로 훅을 걸지 말고 목적에 따라서 나누는게 맞는듯. 다만, 판단 사이클이 독자적으로 쪼갤 것이 아니라 싸이클 업무 배정 에이전트를 운용하여 유동성을 확보하는게 좋을듯".
+  Chat's proposal: judgement sets the cycle PURPOSE; an assignment agent issues/retries/escalates cards and closes the cycle when the purpose is met; MAX_DISPATCHES=6 replaced by time/cost caps + repeated-failure + hand-back on unexplained failure. Asked the user: caps (e.g. 3 h / $60) and model (Opus medium proposed).
+- Memory: ceiling measured 704.8 MB (limits 680 plan / 695 stop); the conservative part is the per-session PREDICTION (s02 678.5 vs 620.3) - recalibrate after s03.
+- fp-36..39 share one root cause: hooks classify commands by text pattern, not by declared behaviour; fix = scripts declare offline/read/build, failing logs carry card id + labview flag, fp cases become regression tests. Item 5 (prep-on-unbuilt-base shown as FAIL) folded into it.
+- Prior-art on repeated session scripts: diff vs last approved script (parameter-only diff -> no review) + only new op kinds in the plan.
+
+## 2026-10-04 - user: "1번은 클라우드 벤치 돌려볼 것" -> card chat-B6 (assignment-agent bench) dispatched (material, background)
+- Builds ~20 known-answer decision points from cycles 130-143 on decbench, 4 arms (opus-5-5 medium/high, sonnet-5-5 medium/high), stub-proved locally, pushes branch assign-bench-20261004 + cloud_prompt.md; the CHAT then launches the cloud session (Sonnet-bench method).
+- User on the header-flag hook: main purpose = catch errors at the START to cut wasted time ("초장에 에러 발생을 극소화"). Chat re-framed the design as checks at write time (PostToolUse) and launch time; awaiting the user's go.
+- 2026-10-04 09:59 chat-B6 PASS (21 cases; A21 corrected to CLOSE = purpose met; master d9970674 not pushed; branch assign-bench-20261004 = cc3bacf3 pushed). Cloud session launched: session_01CwCE3FBGQHxQnS1FMGZFZB (first try failed "Repo is too large to teleport ... retry", second OK). Report -> tools/bench/assignbench/report_cloud.md on the bench branch. Correction told to the user: cycle 143 ended because its PURPOSE was met, not because of the 6-card cap.
+- 2026-10-04 10:19 ASSIGNBENCH CLOUD DONE (168/0, $51.41 credit, 12 min wall): action match / blind / $ per decision - OM 0.60/0.613/$0.37, OH (baseline) 0.62/0.643/$0.35, SM 0.48/0.518/$0.165, SH 0.74/0.714/$0.195 (0 forbidden). Weak spot = HANDBACK (OM/OH 0.17, SM 0.75, SH 0.42): models keep going when a design question should go back to judgement. Report copied to tools/bench/assignbench/report_cloud.md (branch assign-bench-20261004 650617c5). Chat proposal: Sonnet 5.5 high as assignment agent + MECHANICAL hand-back triggers; awaiting the user.
+
+## 2026-10-04 ~10:3x - user: "세션 규칙 설정은 그렇게 하고 / 에러 잡는 훅도 만들어줘" -> two offline cards in parallel
+- chat-A1: purpose-based cycles; Sonnet 5.5 high ASSIGNMENT session (top-level claude -p from cycle_runner) dispatches cards; Opus judgement sets purpose + judges hand-backs; hand-back triggers in code; 3 h / $60 caps (config) replace MAX_DISPATCHES=6 as the limit. Owns cycle_runner.py, guard_session.py, .claude/agents.
+- chat-E3: declared-scope header in every script, write-time PostToolUse check hook, launch-time checks by header (fp-36..39), WAITING status, prior-art on changed lines only. Owns guard_bash/peer/cycle, settings.json, protocol.py, stage_prerun.
+- After both: the chat updates CLAUDE.md (§3 MAX_DISPATCHES, hooks section) - runner stays STOPPED until the user says start.
+- chat-A1 PASS 3/0 (commit d60ddbc0): purpose flow default; guard_assign.py hand-back a-d; caps in tools/bench/assign/assign_config.json; nested subagents measured possible, assignment kept top-level. Chat updated tools/cycle_prompt.md (purpose-flow header + legacy note on the six-cap) and CLAUDE.md §3 item 2. fp-40 (E3 headers vs stub self-tests) forwarded to chat-E3.
+- chat-E3 PASS 3/0 (commit e86181ad, PD338): header in 1716 scripts (at END), guard_write PostToolUse, launch by header, fp-36..40 drained (62/0), WAITING, prior-art diff. Replay: 9 records caught early (~49 card-min upper bound). Chat added offline-args to cycle_runner.py header, header rule in .claude/agents/material*.md, CLAUDE.md hooks paragraph. Runner still STOPPED.
