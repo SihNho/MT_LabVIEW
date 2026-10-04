@@ -41,6 +41,12 @@ USAGE LIMIT (CLAUDE.md's protocol): a rate/usage-limit message in the session's 
 runner sleeps until the renewal time + 2 min and RERUNS THE SAME CYCLE from the beginning ("rerun, don't resume";
 a cycle interrupted mid-run is void). The partial attempt is logged as a non-result.
 
+PURPOSE FLOW (default since card chat-A1, user 2026-10-04; `--flow legacy` = the single-session cycle above): a cycle is
+ONE PURPOSE - judgement session (CYCLE_ROLE=judgement, writes next.json = the purpose, dispatches no material card) ->
+ASSIGNMENT session (claude-sonnet-5-5 high, CYCLE_ROLE=assign, tools/bench/assign/) -> PURPOSE_MET, or HANDBACK (decided by
+tools/hooks/guard_assign.py: triggers a-d, 3 h / 60 USD caps, backstop) -> judgement on the hand-back -> next round or
+close. Runner log lines ASSIGN | HANDBACK | HANDBACK-JUDGED | HANDBACK-LIMIT. Self-test tools/bench/selftest_assign_flow.py.
+
 SAFETY: this script starts no LabVIEW and touches no instrument. What the spawned session may touch is decided
 by STATUS.md's rig-state banner, which `tools/cycle_prompt.md` forbids it to infer.
 """
@@ -99,9 +105,12 @@ SPAWN_ENV_EXTRA = {"CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS": "0",
                    "CYCLE_SESSION": "1"}  # tools/hooks/report_gate.py exempts runner cells (they are not the chat)
 
 
-def spawn_env():
+def spawn_env(extra=None):
     e = os.environ.copy()
+    for k in ("CYCLE_ROLE", "ASSIGN_STATE", "ASSIGN_RESULT", "PURPOSE_PHASE", "HANDBACK_RECORD"):
+        e.pop(k, None)              # card chat-A1: a role is set per spawned session, never inherited
     e.update(SPAWN_ENV_EXTRA)
+    e.update(extra or {})
     return e
 
 
@@ -1243,6 +1252,249 @@ def _listdir(d):
         return []
 
 
+# ------------------------------------------------------------------------------------------------ the session rerun loop
+def run_session(a, cmd, log, env, n, status_path, runner_log, tag):
+    """ONE session under bgrun, with the usage-limit / API-5xx rerun rule (CLAUDE.md usage-limit protocol: rerun, don't
+    resume). Shared by every session of a cycle since card chat-A1; `tag` prefixes its log lines ("CYCLE 7" keeps the
+    pre-chat-A1 text). -> (rc, fresh output, start stamp, end stamp, start epoch of the last attempt)."""
+    rc, fresh, start, end, t0 = 0, "", "", "", time.time()
+    for attempt in range(1, LIMIT_RETRIES + 1):
+        start = time.strftime("%Y-%m-%d %H:%M:%S")
+        t0 = time.time()
+        before = len(read(log))
+        proc = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True,
+                              encoding="utf-8", errors="replace", env=env)
+        end = time.strftime("%Y-%m-%d %H:%M:%S")
+        rc = proc.returncode
+        fresh = read(log)[before:] or (proc.stdout or "")
+        wait = limit_wait_s(fresh)
+        # TRANSIENT API 5xx (2026-09-22 09:58: two sessions in a row died on "API Error: 500 Internal server
+        # error", the second after 5 s with 0 tokens, and the runner stopped on "non-zero twice"). A server-side
+        # 5xx is not a judgement matter: wait 5 min and RERUN the cycle, like the usage-limit path.
+        if wait is None and rc != 0 and re.search(r"API Error: 5\d\d", fresh):
+            wait = 300.0
+        if wait is None or attempt == LIMIT_RETRIES:
+            break
+        # A STOP MARKER BEATS THE RERUN (2026-10-02 23:50: cycle 141 slept to rerun although usage_stop_watch had
+        # written the user's weekly-90 % STOP at 23:04 - and the chat could not kill the sleeping runner). Checked
+        # before the sleep and again after it; the cycle then ends normally (end hooks below still run).
+        if stop_marker(read(status_path)):
+            log_line(runner_log, "%s | %s | %s | usage-limit attempt %d: rerun SKIPPED - STATUS carries a "
+                                 "STOP marker" % (tag, start, end, attempt))
+            break
+        # RERUN, DON'T RESUME (CLAUDE.md's usage-limit protocol): the partial attempt is a non-result.
+        log_line(runner_log, "%s | %s | %s | usage-limit attempt %d, non-result; sleeping %.0f min "
+                             "(renewal + 2 min) then RERUNNING this cycle"
+                 % (tag, start, end, attempt, wait / 60.0))
+        if a.no_sleep:
+            break
+        time.sleep(wait)
+        if stop_marker(read(status_path)):
+            log_line(runner_log, "%s | %s | rerun SKIPPED after the wait - STATUS carries a STOP marker"
+                     % (tag, time.strftime("%Y-%m-%d %H:%M:%S")))
+            break
+    return rc, fresh, start, end, t0
+
+
+# ------------------------------------------------------------------------------------------------ PURPOSE FLOW
+# Card chat-A1 (user 2026-10-04: "사이클 기준은 작업지시로 훅을 걸지 말고 목적에 따라서 나누는게 맞는듯. 다만, 판단 사이클이 독자적
+# 으로 쪼갤 것이 아니라 싸이클 업무 배정 에이전트를 운용하여 유동성을 확보하는게 좋을듯" -> cloud bench
+# tools/bench/assignbench/report_cloud.md -> "세션 규칙 설정은 그렇게 하고"). A cycle is ONE PURPOSE:
+#   judgement (writes next.json = the purpose: act, pass, plan) -> ASSIGNMENT session (claude-sonnet-5-5 high, top-level
+#   `claude -p`, CYCLE_ROLE=assign, dispatches task/1 cards) -> PURPOSE_MET, or HANDBACK -> judgement (HANDBACK <record>)
+#   -> a revised next.json starts the next assignment round; an unchanged one closes the cycle -> retro_due /
+#   retrospective, hooks, ladder, heartbeat as before.
+# The hand-back is MECHANICAL (tools/hooks/guard_assign.py, called by the registered guard_session hook on every dispatch
+# and by assignment_rounds() after the session): triggers a-d, cap 3 h / 60 USD (tools/bench/assign/assign_config.json,
+# user-changeable), runaway backstop 30 cards. Hard last resorts: bgrun --max-min hard_minutes, claude --max-budget-usd
+# hard_usd. Top-level, not a sub-agent of the judgement session: measured 2026-10-04 (Claude Code 2.1.281) that a
+# sub-agent CAN dispatch sub-agents (docs: up to three layers), so the reason the brief gave is gone - it stays top-level
+# for its own model/effort, its own process (cap, kill, cost envelope) and its own hook role.
+ASSIGN_DIR = os.path.join(HERE, "bench", "assign")
+ASSIGN_PROMPT_FILE = os.path.join(ASSIGN_DIR, "assign_prompt.md")
+PURPOSE_ADDENDUM_FILE = os.path.join(ASSIGN_DIR, "purpose_addendum.md")
+ASSIGN_AGENTS = ["material", "material-opus-max", "material-fable-low", "log-reader"]
+
+
+def _guard_assign():
+    p = os.path.join(HERE, "hooks")
+    if p not in sys.path:
+        sys.path.append(p)
+    import guard_assign
+    return guard_assign
+
+
+def newest_assign_result(cards_dir):
+    fs = [os.path.join(cards_dir, f) for f in _listdir(cards_dir) if f.startswith("assign_result_") and f.endswith(".json")]
+    return max(fs, key=os.path.getmtime) if fs else None
+
+
+def purpose_from_next(card):
+    plan = card.get("plan") if isinstance(card.get("plan"), dict) else None
+    return {"act": str(card.get("act") or "")[:200], "pass": [str(x)[:200] for x in card.get("pass") or []],
+            "plan": ({"path": str(plan.get("path"))[:400], "md5": plan.get("md5")} if plan else None),
+            "advances": [str(x) for x in card.get("advances") or []], "unblocks": card.get("unblocks"),
+            "task_kind": card.get("task_kind"), "note": card.get("note")}
+
+
+def write_assign_card(cards_dir, n, k, purpose, next_md5, cfg, state_path, result_path, handback_in):
+    card = {"schema": "assign/1", "cycle": n, "round": k, "purpose": purpose, "next_md5": next_md5,
+            "caps": {"minutes": float(cfg["cap_minutes"]), "usd": float(cfg["cap_usd"]),
+                     "backstop_cards": int(cfg["backstop_cards"])},
+            "state": protocol._rel(state_path).replace("\\", "/"), "result": protocol._rel(result_path).replace("\\", "/"),
+            "handback_in": protocol._rel(handback_in).replace("\\", "/") if handback_in else None,
+            "agents": ASSIGN_AGENTS}
+    ok, why = protocol.validate_obj(card)
+    if not ok:
+        return None, why
+    p = os.path.join(cards_dir, "assign_%d_%d.json" % (n, k))
+    with open(p, "w", encoding="utf-8") as f:
+        json.dump(card, f, ensure_ascii=False, indent=1)
+    return p, None
+
+
+def write_handback(cards_dir, n, k, trigger, detail, st_path, result_path, next_md5, usd, minutes):
+    GA = _guard_assign()
+    st = GA.state_load(st_path) or {}
+    rec = {"schema": "handback/1", "cycle": n, "round": k, "trigger": trigger, "detail": str(detail)[:400] or "-",
+           "cards": GA.card_rows(st)[:40],
+           "assign_result": protocol._rel(result_path).replace("\\", "/") if os.path.exists(result_path) else None,
+           "next_md5": next_md5, "cost_usd": usd, "minutes": round(minutes, 1)}
+    ok, why = protocol.validate_obj(rec)
+    if not ok:      # never lose a hand-back to a schema detail: record the reason in a minimal valid record
+        rec = {"schema": "handback/1", "cycle": n, "round": k, "trigger": trigger,
+               "detail": ("record did not validate (%s): %s" % (why, detail))[:400], "cards": []}
+    p = os.path.join(cards_dir, "handback_%d_%d.json" % (n, k))
+    with open(p, "w", encoding="utf-8") as f:
+        json.dump(rec, f, ensure_ascii=False, indent=1)
+    return p
+
+
+def assign_cmd(a, cfg, prompt):
+    """The assignment session's command (the bgrun-wrapped part), or None = skip (a dry run without a stand-in)."""
+    if a.dry_run or a.dry_cmd:
+        return a.assign_dry_cmd.split() if a.assign_dry_cmd else None
+    return ["claude.exe", "-p", "--model", str(cfg["model"]), "--effort", str(cfg["effort"]),
+            "--output-format", "json", "--permission-mode", a.permission_mode,
+            "--max-budget-usd", "%.2f" % float(cfg["hard_usd"]), prompt]
+
+
+def assignment_rounds(a, n, bench, runner_log, status_path, judge_prompt, model, effort, judge_rc, next_md5_cycle_start):
+    """The purpose flow after the cycle's first judgement session. -> {'outcome', 'rounds', 'cost'}. Never raises into
+    the loop: an internal error is logged as ASSIGN-ERROR and the cycle ends normally (end hooks still run)."""
+    out = {"outcome": "none", "rounds": 0, "cost": 0.0}
+    try:
+        return _assignment_rounds(a, n, bench, runner_log, status_path, judge_prompt, model, effort, judge_rc,
+                                  next_md5_cycle_start, out)
+    except Exception as e:  # noqa: BLE001
+        log_line(runner_log, "ASSIGN-ERROR | %s | cycle %d | %s: %s" % (time.strftime("%Y-%m-%d %H:%M:%S"), n,
+                                                                       type(e).__name__, str(e)[:300]))
+        out["outcome"] = "error"
+        return out
+
+
+def _assignment_rounds(a, n, bench, runner_log, status_path, judge_prompt, model, effort, judge_rc, md5_start, out):
+    GA = _guard_assign()
+    cfg_path = os.path.abspath(a.assign_config) if a.assign_config else GA.DEFAULT_CONFIG
+    cfg = GA.load_config(cfg_path)
+    cards_dir = os.path.join(bench, "cards")
+    os.makedirs(os.path.join(bench, "assign"), exist_ok=True)
+    os.makedirs(cards_dir, exist_ok=True)
+
+    def stamp():
+        return time.strftime("%Y-%m-%d %H:%M:%S")
+
+    if judge_rc != 0:
+        log_line(runner_log, "ASSIGN | %s | cycle %d | not started: the judgement session exited %d" % (stamp(), n, judge_rc))
+        out["outcome"] = "judge-failed"
+        return out
+    md5, card, why = next_json_reading(bench)
+    if card is None or md5 == md5_start:
+        log_line(runner_log, "ASSIGN | %s | cycle %d | not started: no NEW purpose (next.json %s)"
+                 % (stamp(), n, "unchanged" if card is not None else "absent/invalid: %s" % why))
+        out["outcome"] = "no-purpose"
+        return out
+    handback_in = None
+    k = 0
+    while True:
+        if card.get("stop_requested"):
+            log_line(runner_log, "ASSIGN | %s | cycle %d | not started: next.json sets stop_requested" % (stamp(), n))
+            out["outcome"] = "stop-requested"
+            return out
+        k += 1
+        out["rounds"] = k
+        st_path = os.path.join(bench, "assign", "state_%d_%d.json" % (n, k))
+        res_path = os.path.join(cards_dir, "assign_result_%d_%d.json" % (n, k))
+        for stale in (res_path,):
+            if os.path.exists(stale):
+                os.remove(stale)
+        purpose = purpose_from_next(card)
+        ac_path, ac_why = write_assign_card(cards_dir, n, k, purpose, md5, cfg, st_path, res_path, handback_in)
+        if not ac_path:
+            log_line(runner_log, "ASSIGN | %s | cycle %d round %d | not started: the assign/1 card did not validate (%s)"
+                     % (stamp(), n, k, ac_why))
+            out["outcome"] = "card-invalid"
+            return out
+        inner = assign_cmd(a, cfg, "CARD %s\n\n%s" % (protocol._rel(ac_path).replace("\\", "/"), read(ASSIGN_PROMPT_FILE)))
+        if inner is None:
+            log_line(runner_log, "ASSIGN | %s | cycle %d round %d | skipped (dry run without --assign-dry-cmd)"
+                     % (stamp(), n, k))
+            out["outcome"] = "skipped"
+            return out
+        GA.new_state(st_path, n, k, purpose, md5, os.path.join(bench, "decisions_pending.json"))
+        alog = os.path.join(bench, "cycle_%d_assign_%d.log" % (n, k))
+        log_line(runner_log, "ASSIGN | %s | cycle %d round %d | start %s/%s, caps %s min / %s USD / %s cards (hard %s min / "
+                             "%s USD) | %s" % (stamp(), n, k, cfg["model"], cfg["effort"], cfg["cap_minutes"],
+                                               cfg["cap_usd"], cfg["backstop_cards"], cfg["hard_minutes"], cfg["hard_usd"],
+                                               protocol._rel(ac_path)))
+        cmd = [sys.executable, BGRUN, "--max-min", str(cfg["hard_minutes"]), "--log", alog, "--"] + inner
+        env = spawn_env({"CYCLE_ROLE": "assign", "ASSIGN_STATE": st_path, "ASSIGN_RESULT": res_path,
+                         "ASSIGN_CONFIG": cfg_path})
+        rc, fresh, _s, _e, t_a = run_session(a, cmd, alog, env, n, status_path, runner_log, "CYCLE %d ASSIGN r%d" % (n, k))
+        envj = result_json(fresh)
+        usd = float(envj["total_cost_usd"]) if isinstance(envj, dict) and isinstance(
+            envj.get("total_cost_usd"), (int, float)) else None
+        out["cost"] += usd or 0.0
+        minutes = (time.time() - t_a) / 60.0
+        outcome, trig, detail, _res = GA.runner_verdict(st_path, res_path, usd, rc, cfg)
+        st = GA.state_load(st_path) or {}
+        log_line(runner_log, "ASSIGN | %s | cycle %d round %d | end exit %d | %s | %.0f min | %d card(s) | %s%s | %s"
+                 % (stamp(), n, k, rc, ("$%.4f" % usd) if usd is not None else "$?", minutes, len(st.get("cards") or []),
+                    outcome, (" (%s)" % trig) if trig else "", str(detail)[:200]))
+        if outcome == "PURPOSE_MET":
+            out["outcome"] = "purpose-met"
+            return out
+        hb_path = write_handback(cards_dir, n, k, trig, detail, st_path, res_path, md5, usd, minutes)
+        log_line(runner_log, "HANDBACK | %s | cycle %d round %d | %s | %s | %s"
+                 % (stamp(), n, k, trig, str(detail)[:200], protocol._rel(hb_path)))
+        if k >= int(cfg["max_handbacks_per_cycle"]):
+            log_line(runner_log, "HANDBACK-LIMIT | %s | cycle %d | %d hand-back(s) = max_handbacks_per_cycle; the cycle "
+                                 "closes, the next cycle's judgement reads %s" % (stamp(), n, k, protocol._rel(hb_path)))
+            out["outcome"] = "handback-limit"
+            return out
+        # the judgement session judges the hand-back: a revised next.json -> next round; unchanged -> the cycle closes
+        jlog = os.path.join(bench, "cycle_%d_handback_%d.log" % (n, k))
+        jprompt = judge_prompt + "\nHANDBACK %s\n" % protocol._rel(hb_path).replace("\\", "/")
+        jcmd = ([sys.executable, BGRUN, "--max-min", str(a.max_min), "--log", jlog, "--"]
+                + session_cmd(a, jprompt, model, effort))
+        jenv = spawn_env({"CYCLE_ROLE": "judgement", "PURPOSE_PHASE": "handback", "HANDBACK_RECORD": hb_path})
+        jrc, jfresh, _s, _e, _t = run_session(a, jcmd, jlog, jenv, n, status_path, runner_log, "CYCLE %d HANDBACK r%d" % (n, k))
+        jj = result_json(jfresh)
+        if isinstance(jj, dict) and isinstance(jj.get("total_cost_usd"), (int, float)):
+            out["cost"] += float(jj["total_cost_usd"])
+        md5b, card_b, why_b = next_json_reading(bench)
+        moved = card_b is not None and md5b != md5
+        log_line(runner_log, "HANDBACK-JUDGED | %s | cycle %d round %d | exit %d | next.json %s"
+                 % (stamp(), n, k, jrc, ("CHANGED - assignment round %d" % (k + 1)) if moved and not
+                    card_b.get("stop_requested") else ("stop_requested" if moved else
+                                                       "unchanged - the cycle closes" if card_b is not None else
+                                                       "absent/invalid (%s) - the cycle closes" % why_b)))
+        if not moved or jrc != 0:
+            out["outcome"] = "closed-after-handback"
+            return out
+        md5, card, handback_in = md5b, card_b, hb_path
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--max-min", type=float, default=180.0, help="wall-clock cap for ONE cycle's session")
@@ -1278,6 +1530,14 @@ def main():
     ap.add_argument("--no-labview-close", action="store_true", help="self-test only: skip the cycle-end LabVIEW close (never for a real run)")
     ap.add_argument("--outcome-cmd", default="", help="self-test only (card 108-5): whitespace-split stand-in run under "
                                                         "bgrun instead of outcome_review.py when the outcome review is due")
+    ap.add_argument("--flow", default="purpose", choices=("purpose", "legacy"),
+                    help="purpose (card chat-A1, user 2026-10-04): judgement sets next.json as the cycle's purpose, an "
+                         "assignment session (tools/bench/assign/assign_config.json) dispatches the cards, hand-back is "
+                         "mechanical; legacy: one judgement session does everything (before 2026-10-04)")
+    ap.add_argument("--assign-config", default="", help="assignment config (default tools/bench/assign/assign_config.json)")
+    ap.add_argument("--assign-dry-cmd", default="", help="self-test only: whitespace-split stand-in for the assignment "
+                                                           "session under --dry-run/--dry-cmd (without it a dry run "
+                                                           "skips the assignment phase)")
     a = ap.parse_args()
 
     status_path = os.path.abspath(a.status)
@@ -1465,46 +1725,22 @@ def _loop(a, status_path, bench, runner_log, prompt, run_t0, hb):
         log_line(runner_log, "CYCLE-CARD | %s | cycle %d | wrote %s (cycle/1 valid; next.json before: %s)"
                  % (time.strftime("%Y-%m-%d %H:%M:%S"), n, protocol._rel(card_path), next_md5_before[:12]))
         this_prompt = "CARD %s\n\n" % protocol._rel(card_path).replace("\\", "/") + this_prompt
+        purpose = a.flow == "purpose"
+        if purpose:                       # card chat-A1: the judgement session sets the purpose, it dispatches nothing
+            this_prompt += "\n\n" + read(PURPOSE_ADDENDUM_FILE)
+            prev = newest_assign_result(os.path.join(bench, "cards"))
+            if prev:
+                this_prompt += "\nASSIGN-RESULT %s\n" % protocol._rel(prev).replace("\\", "/")
         cmd = ([sys.executable, BGRUN, "--max-min", str(a.max_min), "--log", cyc_log, "--"]
                + session_cmd(a, this_prompt, model, effort))
         cyc_t0 = time.time()
-        for attempt in range(1, LIMIT_RETRIES + 1):
-            start = time.strftime("%Y-%m-%d %H:%M:%S")
-            t0 = time.time()
-            before = len(read(cyc_log))
-            proc = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True,
-                                  encoding="utf-8", errors="replace", env=spawn_env())
-            end = time.strftime("%Y-%m-%d %H:%M:%S")
-            rc = proc.returncode
-            fresh = read(cyc_log)[before:] or (proc.stdout or "")
-            wait = limit_wait_s(fresh)
-            # TRANSIENT API 5xx (2026-09-22 09:58: two sessions in a row died on "API Error: 500 Internal server
-            # error", the second after 5 s with 0 tokens, and the runner stopped on "non-zero twice"). A server-side
-            # 5xx is not a judgement matter: wait 5 min and RERUN the cycle, like the usage-limit path.
-            if wait is None and rc != 0 and re.search(r"API Error: 5\d\d", fresh):
-                wait = 300.0
-            if wait is None or attempt == LIMIT_RETRIES:
-                break
-            # A STOP MARKER BEATS THE RERUN (2026-10-02 23:50: cycle 141 slept to rerun although usage_stop_watch had
-            # written the user's weekly-90 % STOP at 23:04 - and the chat could not kill the sleeping runner). Checked
-            # before the sleep and again after it; the cycle then ends normally (end hooks below still run).
-            if stop_marker(read(status_path)):
-                log_line(runner_log, "CYCLE %d | %s | %s | usage-limit attempt %d: rerun SKIPPED - STATUS carries a "
-                                     "STOP marker" % (n, start, end, attempt))
-                break
-            # RERUN, DON'T RESUME (CLAUDE.md's usage-limit protocol): the partial attempt is a non-result.
-            log_line(runner_log, "CYCLE %d | %s | %s | usage-limit attempt %d, non-result; sleeping %.0f min "
-                                 "(renewal + 2 min) then RERUNNING this cycle"
-                     % (n, start, end, attempt, wait / 60.0))
-            if a.no_sleep:
-                break
-            time.sleep(wait)
-            if stop_marker(read(status_path)):
-                log_line(runner_log, "CYCLE %d | %s | rerun SKIPPED after the wait - STATUS carries a STOP marker"
-                         % (n, time.strftime("%Y-%m-%d %H:%M:%S")))
-                break
-
+        rc, fresh, start, end, t0 = run_session(a, cmd, cyc_log, spawn_env({"CYCLE_ROLE": "judgement"} if purpose else None),
+                                                n, status_path, runner_log, "CYCLE %d" % n)
         env = result_json(fresh)
+        assign_cost = 0.0
+        if purpose:
+            ar = assignment_rounds(a, n, bench, runner_log, status_path, this_prompt, model, effort, rc, next_md5_before)
+            assign_cost = ar["cost"]
         land_retrospective(bench, runner_log)
         retro_fallback(n, cyc_t0, a, bench, runner_log)       # card chat-P1 2b: due + none archived -> run it here
         # A DRY RUN NEVER COMMITS (2026-09-24, card chat-B3): the self-tests run this runner with --dry-run/--dry-cmd on
@@ -1523,8 +1759,8 @@ def _loop(a, status_path, bench, runner_log, prompt, run_t0, hb):
         ok_lv, why_lv = labview_close_hook(n, a, bench, runner_log, read(status_path))
         # BGRUN REAPER at cycle end (card 92-4): close the record of any bgrun killed from outside during the cycle.
         bgrun_reap_hook(n, bench, runner_log)
-        cost =("$%.4f" % env["total_cost_usd"]) if isinstance(env, dict) and isinstance(
-            env.get("total_cost_usd"), (int, float)) else "?"
+        cost =("$%.4f" % (env["total_cost_usd"] + assign_cost)) if isinstance(env, dict) and isinstance(
+            env.get("total_cost_usd"), (int, float)) else ("$%.4f" % assign_cost if assign_cost else "?")
         # HEARTBEAT at cycle end (card chat-H1): after motor end + LabVIEW close, before any stop decision below
         hb.cycle_end(n, rc, cost)
         if not ok_end:
@@ -1630,3 +1866,7 @@ def _loop(a, status_path, bench, runner_log, prompt, run_t0, hb):
 
 if __name__ == "__main__":
     sys.exit(main())
+# ---
+# labview: read
+# hardware: motor
+# ---

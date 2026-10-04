@@ -1,0 +1,28 @@
+{
+  "$id": "handback/1",
+  "description": "runner -> JUDGEMENT session (card chat-A1): why an assignment round ended without its purpose met. trigger a-d = the user-approved hand-back conditions; cap-* / backstop = the limits; no-result / session / purpose-unproven = what the session itself left. The judgement prompt carries `HANDBACK <this file>`.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "cycle", "round", "trigger", "detail", "cards"],
+  "properties": {
+    "schema": {"const": "handback/1"},
+    "cycle": {"type": "integer", "minimum": 0},
+    "round": {"type": "integer", "minimum": 1},
+    "trigger": {"enum": ["a-unexplained-after-retry", "b-same-class-twice", "c-outside-purpose", "d-user-question",
+                         "cap-time", "cap-usd", "backstop", "no-result", "session", "purpose-unproven", "session-exit"]},
+    "detail": {"type": "string", "minLength": 1, "maxLength": 400},
+    "cards": {"type": "array", "items": {"$ref": "#/definitions/cardrow"}},
+    "assign_result": {"type": ["string", "null"], "maxLength": 400},
+    "next_md5": {"type": ["string", "null"]},
+    "cost_usd": {"type": ["number", "null"]},
+    "minutes": {"type": ["number", "null"]}
+  },
+  "definitions": {
+    "cardrow": {"type": "object", "additionalProperties": false, "required": ["id", "status"],
+                "properties": {"id": {"type": "string", "maxLength": 80},
+                               "status": {"type": "string", "maxLength": 20},
+                               "first_fail": {"type": ["string", "null"], "maxLength": 200},
+                               "class": {"type": ["string", "null"], "maxLength": 120},
+                               "retry_of_card": {"type": ["string", "null"], "maxLength": 80}}}
+  }
+}

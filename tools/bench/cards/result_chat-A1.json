@@ -1,0 +1,40 @@
+{
+ "schema": "result/1",
+ "id": "chat-A1",
+ "status": "PASS",
+ "gates": {"pass": 3, "fail": 0},
+ "first_fail": null,
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/cycle_runner.py", "md5": "62fe35bad181704d7472a67b92f539e4"},
+  {"path": "tools/hooks/guard_session.py", "md5": "e1b661b57b92f266c7fa237f710f2e56"},
+  {"path": "tools/hooks/guard_assign.py", "md5": "b9dc09bb935d23b5649e852886e1ebc7"},
+  {"path": "tools/bench/assign/assign_config.json", "md5": "192b7116ceacab44a95bf444b510a34b"},
+  {"path": "tools/bench/assign/assign_prompt.md", "md5": "3825818f4ba7f09bf9daaabecd01cb3f"},
+  {"path": "tools/bench/assign/purpose_addendum.md", "md5": "955d77e4dd5b93f4271f58340322460f"},
+  {"path": "docs/protocol/assign.json", "md5": "b85f39ea867845719ae925333c5fecca"},
+  {"path": "docs/protocol/assign-result.json", "md5": "8699f914b525cc9978ad840d530ce9af"},
+  {"path": "docs/protocol/handback.json", "md5": "29521c12f9d05e551ad81312537d8e4c"},
+  {"path": "tools/bench/selftest_assign_flow.py", "md5": "675625a232168ba21c21c80ec96f5501"},
+  {"path": "tools/bench/selftest_assign_flow_a1.log", "md5": "a2f8da21862594ee7c31f5428bd55de0"}
+ ],
+ "facts": [
+  "Measured: on Claude Code 2.1.281 a haiku sub-agent dispatched a nested sub-agent (both transcripts under <session>/subagents); docs allow 3 layers. Kept top-level anyway: tools/cycle_runner.py:1310",
+  "Flow: --flow purpose is default (tools/cycle_runner.py:1533); judgement -> assignment_rounds (:1382) -> PURPOSE_MET or HANDBACK -> judgement -> next round/close; HANDBACK-LIMIT at :1471",
+  "Hand-back by code: guard_assign evaluate (tools/hooks/guard_assign.py:235) a,b,d,caps; card_outside (:292) c; check_dispatch (:352) sticky; runner_verdict (:402) overrides a claimed MET",
+  "guard_session: judgement role refuses material dispatch (tools/hooks/guard_session.py:405); MAX_DISPATCHES skipped for assign role (:499); backstop 30 + caps 180 min/60 USD from assign_config.json",
+  "Hard last resorts: bgrun --max-min hard_minutes 300 and claude --max-budget-usd hard_usd 90 (flag present in claude --help 2.1.281): tools/cycle_runner.py:1382",
+  "USD estimate prices: opus-5-5 4/20/0.2/5 per Mtok fitted exactly on 67 local envelopes; sonnet-5-5 2/10/0.2/4 from eesel.ai (third-party): tools/bench/assign/assign_config.json:18",
+  "New self-test 16/16 (H1-H10 hook triggers a-d, caps, backstop, fail-closed; R1-R6 stub runner flows): tools/bench/selftest_assign_flow_a1.log:113",
+  "Existing green: guard_session 27/27 (a1_selftest_guard_session.log:30), pairing 10/10, cycle_runner_ff 5/5, stoprerun 4/4, stoprecord_supersession 36/0 (a1_*.log)",
+  "NOT RUN: selftest_cycle_runner.py, _ladder.py declare labview: read (chat-E3 header), refused under labview:none; protocol CLI too -> gate-fp fp-40 (tools/bench/gate_fp_queue.jsonl)",
+  "cycle_prompt.md (not in my write globs) still tells judgement to dispatch and close; tools/bench/assign/purpose_addendum.md:1 is appended in purpose flow and overrides those bullets"
+ ],
+ "open": [
+  "tools/cycle_prompt.md and CLAUDE.md section 3 still describe the 6-dispatch judgement cycle; the addendum overrides at runtime - should the chat rewrite them before the runner restarts?",
+  "Nested sub-agents work (measured), so the brief's reason for top-level is gone; I kept the assignment session top-level (own model, process caps, cost envelope, hook role). Keep?",
+  "selftest_cycle_runner.py / _ladder.py (labview: read headers) still need one run under a labview:read card, or an offline-args header from chat-E3, to confirm the run_session refactor."
+ ],
+ "cost": {"usd": null, "minutes": 75, "labview_runs": 0},
+ "note": "No real runner run; runner stays stopped. Schemas validated by import (protocol CLI refused, fp-40). Committed own files by explicit path."
+}

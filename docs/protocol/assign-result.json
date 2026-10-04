@@ -1,0 +1,26 @@
+{
+  "$id": "assign-result/1",
+  "description": "ASSIGNMENT session -> runner (card chat-A1): PURPOSE_MET with one evidence row per purpose pass item, or HANDBACK. The runner overrides PURPOSE_MET with HANDBACK whenever tools/hooks/guard_assign.py finds a trigger (a-d, caps) - the hand-back is decided by code, not by this file.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "cycle", "round", "status", "cards"],
+  "properties": {
+    "schema": {"const": "assign-result/1"},
+    "cycle": {"type": "integer", "minimum": 0},
+    "round": {"type": "integer", "minimum": 1},
+    "status": {"enum": ["PURPOSE_MET", "HANDBACK"]},
+    "pass_evidence": {"type": "array", "items": {"$ref": "#/definitions/evidence"}},
+    "cards": {"type": "array", "items": {"type": "string", "maxLength": 80}},
+    "handback": {"anyOf": [{"type": "null"},
+                           {"type": "object", "additionalProperties": false, "required": ["reason"],
+                            "properties": {"reason": {"type": "string", "minLength": 1, "maxLength": 300, "x-prose": true, "x-limit": true},
+                                           "question": {"type": ["string", "null"], "maxLength": 300, "x-prose": true}}}]},
+    "note": {"type": "string", "maxLength": 300, "x-prose": true}
+  },
+  "definitions": {
+    "evidence": {"type": "object", "additionalProperties": false, "required": ["item", "met", "evidence"],
+                 "properties": {"item": {"type": "integer", "minimum": 0},
+                                "met": {"type": "boolean"},
+                                "evidence": {"type": "array", "items": {"type": "string", "minLength": 3, "maxLength": 200}}}}
+  }
+}

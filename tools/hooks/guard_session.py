@@ -38,6 +38,15 @@ Prose cannot enforce "now stop" on the session that is enjoying itself. So two r
       by re-reading its card file, and an unreadable card fails CLOSED with a message naming it. Card 132-2 (build)
       ran beside 132-1 (editing tools/stage_prerun.py) and blocked - the second time this class was paid for.
 
+  (h) PURPOSE FLOW ROLES (card chat-A1, user 2026-10-04 "목적에 따라서 나누는게 맞는듯 ... 싸이클 업무 배정 에이전트를
+      운용"): tools/cycle_runner.py --flow purpose sets CYCLE_ROLE on the sessions it spawns.
+      CYCLE_ROLE=judgement - the judgement session SETS the purpose (next.json) and judges hand-backs; it dispatches no
+        material card (material / -opus-max / -fable-*) - refused. log-reader stays allowed (under the old cap).
+      CYCLE_ROLE=assign - the assignment session (claude-sonnet-5-5 high): MAX_DISPATCHES and the prep budget do NOT bind
+        it; tools/hooks/guard_assign.py check_dispatch() decides instead (hand-back triggers a-d, 3 h / 60 USD caps from
+        tools/bench/assign/assign_config.json, runaway backstop 30 cards). The pipeline rules (d)(e)(g) still apply.
+      No CYCLE_ROLE (legacy runner flow, the chat) - unchanged.
+
 STATE: `tools/bench/session_<session_id>.json` = {"dispatches": n, "retro_done": bool, ...}. A file, not a
 memory - CLAUDE.md: "a rule whose counter is my memory is not a rule at all". `.json`, so no log gate globs it.
 
@@ -330,7 +339,7 @@ def main():
     sid = session_id(data)
     try:
         with _lock(sid):
-            return decide(sid, sub, ti)
+            return decide(sid, sub, ti, data)
     except TimeoutError as e:
         sys.stderr.write("BLOCKED by tools/hooks/guard_session.py: the session state lock is busy (%s) - retry the "
                          "dispatch in a moment.\n" % e)
@@ -367,10 +376,41 @@ def escalation_refusal(sub, card, cpath):
             % (card.get("id"), card.get("retry_of_card"), sub, why, fn, card.get("retry_of_card"), fn, fn))
 
 
-def decide(sid, sub, ti):
+def cycle_role():
+    """(h) '' (legacy / chat) | 'judgement' | 'assign' - only inside a runner cycle session."""
+    return (os.environ.get("CYCLE_ROLE") or "").strip().lower() if in_cycle() else ""
+
+
+MATERIAL_TYPES = {"material", "material-opus-max", "material-fable-low", "material-fable-medium"}
+
+
+def _assign_check(sub, card, cpath, data):
+    """(h) guard_assign.check_dispatch under this hook's lock; a broken module fails CLOSED (refuse, with the reason)."""
+    try:
+        if HERE not in sys.path:                 # run by path from elsewhere (runpy): the hooks dir is not on sys.path
+            sys.path.insert(0, HERE)
+        import guard_assign
+        return guard_assign.check_dispatch(os.environ.get("ASSIGN_STATE"), sub, card, cpath,
+                                           transcript_path=(data or {}).get("transcript_path"))
+    except Exception as e:  # noqa: BLE001
+        return 2, ("BLOCKED by tools/hooks/guard_session.py: guard_assign raised %s: %s - the assignment session's\n"
+                   "dispatches fail closed until it is fixed.\n" % (type(e).__name__, str(e)[:200]))
+
+
+def decide(sid, sub, ti, data=None):
     """The counted-dispatch decision, run under the session-state lock. 0 allow / 2 refuse."""
     st = load(sid)
     cycle = in_cycle()                   # (f) the cap and the retrospective close bind runner cycle sessions only
+    role = cycle_role()                  # (h)
+    if role == "judgement" and sub in MATERIAL_TYPES:
+        sys.stderr.write(
+            "BLOCKED by tools/hooks/guard_session.py: PURPOSE FLOW - THE JUDGEMENT SESSION DISPATCHES NO MATERIAL CARD.\n"
+            "  subagent_type %r refused (card chat-A1, user 2026-10-04).\n\n"
+            "Set the purpose instead: write tools/bench/next.json (act, pass, plan) and end your turn; the runner spawns\n"
+            "the assignment session, which dispatches the cards. log-reader stays available for facts.\n" % sub)
+        return 2
+    assign = role == "assign"
+    assigned = False
     if cycle and st.get("retro_done"):
         sys.stderr.write(
             "BLOCKED by tools/hooks/guard_session.py: THIS SESSION'S CYCLE IS CLOSED BY ITS RETROSPECTIVE.\n"
@@ -427,10 +467,16 @@ def decide(sid, sub, ti):
         if why:
             sys.stderr.write(why)
             return 2
+        if assign:                                            # (h) hand-back triggers, caps, backstop
+            code, why = _assign_check(sub, card, cpath, data)
+            if code:
+                sys.stderr.write(why)
+                return 2
+            assigned = True
         entry = {"id": cid, "labview": lv, "t": time.time(), "card": cpath,
                  "minutes": (card.get("budget") or {}).get("minutes") if card else None,
                  "write": writes if writes is not None else ["**"]}
-        if lv == "none" and lv_live:
+        if lv == "none" and lv_live and not assign:          # (h) no prep budget in the assignment role
             p = int(st.get("prep", 0)) + 1
             if p > PREP_BUDGET:
                 sys.stderr.write(
@@ -444,8 +490,13 @@ def decide(sid, sub, ti):
             st["last_subagent"] = sub
             save(sid, st)
             return 0
+    if assign and not assigned:                              # (h) a dispatch without a card (log-reader, Workflow)
+        code, why = _assign_check(sub, card, cpath, data)
+        if code:
+            sys.stderr.write(why)
+            return 2
     n = int(st.get("dispatches", 0)) + 1
-    if cycle and n > MAX_DISPATCHES:
+    if cycle and not assign and n > MAX_DISPATCHES:          # (h) the assignment role is bounded by guard_assign
         sys.stderr.write(
             "BLOCKED by tools/hooks/guard_session.py: CYCLE DISPATCH CAP REACHED (%d material/log-reader "
             "dispatches).\n"
@@ -466,3 +517,7 @@ def decide(sid, sub, ti):
 
 if __name__ == "__main__":
     sys.exit(main())
+# ---
+# labview: none
+# hardware: none
+# ---

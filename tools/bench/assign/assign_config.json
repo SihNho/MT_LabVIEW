@@ -1,0 +1,24 @@
+{
+ "about": "Purpose-based cycles (card chat-A1, user 2026-10-04 'stage-by-purpose + assignment agent'; caps approved with the design). Read by tools/cycle_runner.py and tools/hooks/guard_assign.py. USER-CHANGEABLE: edit the numbers, the next dispatch / next cycle picks them up.",
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "cap_minutes": 180,
+ "cap_usd": 60,
+ "hard_minutes": 300,
+ "hard_usd": 90,
+ "backstop_cards": 30,
+ "max_handbacks_per_cycle": 3,
+ "protected_globs": ["CLAUDE.md", "Requests.md", "docs/user-rules.md", ".claude/settings.json", ".claude/agents/**",
+                     "tools/hooks/**", "tools/bench/memory_model.json", "tools/bench/assign/assign_config.json"],
+ "memory_tokens": ["MEMSTOP", "X10", "memory_model", "memory limit", "peak cap"],
+ "change_words": ["raise", "lower", "change", "set", "increase", "decrease", "relax", "tighten", "adjust", "modify",
+                  "edit", "bump", "update", "override", "disable", "remove", "올리", "낮추", "변경", "완화", "수정"],
+ "user_question_devices": ["user", "decision", "decisions_pending", "decisions-pending"],
+ "prices_per_mtok": {
+  "about": "USD per million tokens, used ONLY for the mid-session estimate the hook compares with cap_usd (the runner checks the exact envelope total_cost_usd after the session). opus-5-5 and fable fitted exactly on this install's own envelopes (modelUsage costUSD, 67 / 5 sessions, max rel. error 0.0); sonnet-5-5 from eesel.ai/blog/claude-sonnet-5-5-pricing (1-hour cache write); unknown models use 'default'.",
+  "claude-opus-5-5": {"in": 4.0, "out": 20.0, "cache_read": 0.2, "cache_write": 5.0},
+  "claude-sonnet-5-5": {"in": 2.0, "out": 10.0, "cache_read": 0.2, "cache_write": 4.0},
+  "fable": {"in": 10.0, "out": 50.0, "cache_read": 1.0, "cache_write": 20.0},
+  "default": {"in": 10.0, "out": 50.0, "cache_read": 1.0, "cache_write": 20.0}
+ }
+}

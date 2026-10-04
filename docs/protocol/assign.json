@@ -1,0 +1,35 @@
+{
+  "$id": "assign/1",
+  "description": "runner -> ASSIGNMENT session (card chat-A1, user 2026-10-04): the cycle's purpose (copied from next.json), the caps, and where the session's state and result live. The session's prompt is `CARD <this file>`.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "cycle", "round", "purpose", "next_md5", "caps", "state", "result"],
+  "properties": {
+    "schema": {"const": "assign/1"},
+    "cycle": {"type": "integer", "minimum": 0},
+    "round": {"type": "integer", "minimum": 1},
+    "purpose": {"$ref": "#/definitions/purpose"},
+    "next_md5": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+    "caps": {"type": "object", "additionalProperties": false, "required": ["minutes", "usd", "backstop_cards"],
+             "properties": {"minutes": {"type": "number", "minimum": 1}, "usd": {"type": "number", "minimum": 0},
+                            "backstop_cards": {"type": "integer", "minimum": 1}}},
+    "state": {"type": "string", "minLength": 1, "maxLength": 400},
+    "result": {"type": "string", "minLength": 1, "maxLength": 400},
+    "handback_in": {"type": ["string", "null"], "maxLength": 400},
+    "agents": {"type": "array", "items": {"type": "string", "maxLength": 60}},
+    "note": {"type": "string", "maxLength": 300, "x-prose": true}
+  },
+  "definitions": {
+    "purpose": {"type": "object", "additionalProperties": false, "required": ["act", "pass"],
+                "properties": {"act": {"type": "string", "minLength": 1, "maxLength": 200},
+                               "pass": {"type": "array", "items": {"type": "string", "maxLength": 200}},
+                               "plan": {"anyOf": [{"type": "null"},
+                                                  {"type": "object", "additionalProperties": false, "required": ["path"],
+                                                   "properties": {"path": {"type": "string", "minLength": 1, "maxLength": 400},
+                                                                  "md5": {"type": ["string", "null"]}}}]},
+                               "advances": {"type": "array", "items": {"type": "string", "maxLength": 20}},
+                               "unblocks": {"type": ["string", "null"], "maxLength": 20},
+                               "task_kind": {"type": "string", "maxLength": 40},
+                               "note": {"type": ["string", "null"], "maxLength": 300, "x-prose": true}}}
+  }
+}
