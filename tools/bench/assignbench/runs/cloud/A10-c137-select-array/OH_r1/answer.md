@@ -1,0 +1,7 @@
+ACTION: ISSUE
+CARD: On a byte copy of the bed, read base While #10170's conditional terminal mode (Stop If True? / Continue If True) and the stop (end) control's Mechanical Action through VI Server properties. This is a read-only card: one scratch run, results recorded under scratch_verify/ (`*c137_8*`), the bed is never edited, and LabVIEW must be verified gone at the end. Budget 45 min, 2 failures.
+REASON: Three of the four pass items are covered. Pass item 1 is covered by 137-5: U1, U2, U5 and W1 Or PASS; U3 and U6 come back broken (log:108-110, 167-169). Pass item 3 is covered by 137-P1, which names the cause at stagesim.py:681 and vigraph.py:57-60. Pass item 4 is covered by 137-P1's §2 table, with one exception: U05 alone loads 676.9 MB against the 675 limit, so that session goes back to judgement in the closing report.
+Pass item 2 (#10170 Stop If True? and stop Mechanical Action) is the only one not started. It does not depend on U3 or U6.
+The U3 failure (Select only takes a scalar Boolean on s, types.log:244-276) needs a redesign of the reader core. That is a rule-1a design call, so it is not retried here. It goes in the closing report together with 137-6's #10465 stop and step 3 = 41 > 40.
+59 of the 180 card minutes are left and no cost has been reported (usd 0), so one LabVIEW card of 45 min or less fits. No offline prep card goes with it, because every open offline question needs a judgement decision first.
+HANDBACK-QUESTION: -

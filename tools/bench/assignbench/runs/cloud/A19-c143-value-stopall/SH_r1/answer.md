@@ -1,0 +1,7 @@
+ACTION: ISSUE
+CARD: OFFLINE tooling plus s03 prep. Make `--rebase` resolve a plan-referenced Local terminal 'value' to the base's 'StopAll' terminal, using the existing stagesim alias (`tools/stagesim.py:735-736`). Self-test the change, then rebase s03 on the s02 graph. After that, X10 at 596.0, the s03 Error List prediction from the fixed predictor (s02 gives 53), dry and prerun of both s03v18 recipes, and `--scratch-required`.
+REASON: 143-4's U1 got past UID-REUSE (REUSE-NOTED 23276) and then stopped on `#-20.'value'` binding 0 sim rows. The provisional base names that Local terminal -21 'StopAll'.
+REASON: 143-2 already read this naming difference as no risk, a documented alias at `stagesim.py:735-736`. So this is a tool gap on the rebase path, not a plan or computation question, and rule 1a is untouched. Pin the alias to Local-variable terminals only, with no other renames.
+REASON: Purpose items 1-3 are met offline. s02 is adopted as 84cac487 with the Error List expectation corrected to 53 (143-3), and the fresh-instance load and graph read passed (143-2). Only the session-3 prep is open. The two rebase failures (143-3, 143-4) have different causes, so this is not a repeated-failure class.
+REASON: 83 of 180 minutes are used and the last offline cards took 9-11 minutes each. If the rebase fails a third time on a different cause, hand back.
+HANDBACK-QUESTION: -

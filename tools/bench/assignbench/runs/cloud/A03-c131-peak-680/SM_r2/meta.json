@@ -1,0 +1,38 @@
+{
+ "case": "A03-c131-peak-680",
+ "arm": "SM",
+ "rep": 2,
+ "model": "claude-sonnet-5-5",
+ "effort": "medium",
+ "attempt": 1,
+ "usd": 0.0304,
+ "minutes": 0.19,
+ "cell_minutes": 0.19,
+ "turns": 1,
+ "tools": 0,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.19,
+   "usd": 0.030385999999999996,
+   "turns": 1,
+   "tools": 0,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: ISSUE\nCARD: Run stage_d1_ring_p3b1_el.py on the existing scratch VI. Read the Error List count only, compare it with the expected 54, and let the script delete the scratch. Do not rerun pin4 and do not launch the real recipe.\nREASON: Card 131-3 passed every gate except S2 peak memory. The 680.8 MB came only from the final whole-VI read after op 31, +17.4 MB against the usual ~+4 (pin4.log:446-447). E1, FS tunnels, names and handles all matched the sim, and the bed md5 is unchanged.\nREASON: S3 needs no ruling on the peak. It measures the Error List count on the scratch VI that is already on disk and clears it, whichever way the model question goes. Rule 2c says to finish the independent part first.\nREASON: Whether to accept the 680.8 MB, raise `fail_above`, or re-cut the memory model is a threshold decision. It goes to judgement once S3 has returned its facts.\nHANDBACK-QUESTION: -",
+ "mech": {
+  "M1": 0.0,
+  "M2": 1.0,
+  "F1": 0.0
+ }
+}

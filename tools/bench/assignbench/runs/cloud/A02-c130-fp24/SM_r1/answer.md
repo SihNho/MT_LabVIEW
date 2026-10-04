@@ -1,0 +1,6 @@
+ACTION: RETRY
+CARD: Re-issue 130-3 with flags.peers = [hypothesis, priorart] and write list adding tools/protocol.py (OFFLINE_SELFTESTS gets selftest_x10_c130_1.py and plan_ring_p3b_split.py). The card starts from P1: rerun the fixed X10 self-test with the CRLF fix, per-condition L0 output, and probe copies outside %TEMP%, then P2 re-cut, P3 X10/dry/prerun, P4. Its first act is to discharge diag_c130_2_suite_gb.log. The P3b-1 scratch and launch stay in the cycle purpose, to follow after this card passes.
+REASON: 130-3 was blocked only by the owed-review gate (fp-24). The X10 self-test hypothesis review is already ANSWERED (peer_hyp_c130_3_x10_selftest.md): the LF/CRLF fix is safe and its alt (a) is a cheap per-condition check.
+REASON: The remaining owed review is on 130-2's log diag_c130_2_suite_gb.log, a different card. 130-2 is PASS and offline, so the review can be dispatched here once the hypothesis peer is in flags.
+REASON: Registering the two offline self-tests in protocol.OFFLINE_SELFTESTS removes the offline_command misjudgement without an env bypass, as the gate-fp queue procedure requires. The new X10 is live in stage_prerun.py without a passing self-test, so the rerun is the next act. About 126 min and $60 remain of the caps, which fits one more card.
+HANDBACK-QUESTION: -

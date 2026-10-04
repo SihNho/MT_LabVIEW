@@ -1,0 +1,38 @@
+{
+ "case": "A05-c132-seq-block",
+ "arm": "OM",
+ "rep": 2,
+ "model": "claude-opus-5-5",
+ "effort": "medium",
+ "attempt": 1,
+ "usd": 0.3876,
+ "minutes": 0.21,
+ "cell_minutes": 0.21,
+ "turns": 1,
+ "tools": 0,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.21,
+   "usd": 0.3876432,
+   "turns": 1,
+   "tools": 0,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-opus-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: RETRY\nCARD: 132-2 again: the same read-only graph read of the P3b-1 bed (D1_ring_p3b1_20261002_060910.vi). The output is graph_ring_p3b1_<ts>.json, plus memory after load and after the read, plus an offline diff against the sim end. The flag is widened so the card may run `py tools/stage_prerun.py --dry` and then `--prerun` on tools/bench/diag_c132_2_graph_p3b1.py first, using the P3a graph as `--graph`, the same way diag_c125_graph_p3a passed. After that it launches once under bgrun.\nREASON: 132-2 never ran because of a flag, not a defect. guard_bash's prerun_gate needs dry and prerun records, because the script calls discard_work and the gate does that on purpose. The card forbade stage_prerun.py only because 132-1 was editing it, and 132-1 has now finished (stage_prerun.py md5 489d7be9). The P3a precedent passed the same gate (diag_c125_graph_p3a_prerun.log PRERUN PASS 14/0). The real graph read also comes before the `--rebase` of P3b-2, which is on the critical path. Once the rebase is done, the P3b-2 dry runs on a real base. That should take away fp-21's unbound negative uids, the only gate 132-1 failed, without a design decision now. The other things 132-1 left open can wait until after the rebase: the Error List range (50..52) and accepting the E1 re-pin.\nHANDBACK-QUESTION: -",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0
+ }
+}

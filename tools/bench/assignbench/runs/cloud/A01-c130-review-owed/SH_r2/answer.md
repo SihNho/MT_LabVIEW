@@ -1,0 +1,8 @@
+ACTION: RETRY
+CARD: Re-issue 130-1 with `flags.peers = [priorart, hypothesis]`. First dispatch the owed hypothesis review of `selftest_x10_c130_1.log`, with the fixture-CRLF bug and the Jev `new-problem` verdict as the framing. Then rerun the fixed self-test (T0 LF→CRLF before md5). Then run `plan_ring_p3b_split.py` so X10 PASSes both halves of P3b (≤675 MB), and finish with the P3b-1 dry and prerun.
+REASON: 130-1 is BLOCKED by `guard_peer`, not by a design question. It refused the rerun because a hypothesis review is owed (JEV-LADDER new-problem p=0.550) and the card's peers flag allowed only priorart. The card's own flags are what is missing, so no rule or plan decision is needed.
+The review is the mechanical release. The self-test fix is already written (`selftest_x10_c130_1.py:34-38`). The only failing gate was T0, a fixture bug (git LF bytes vs working-file CRLF). T4 (`stage_d1_ring_p3a.py`) PASSed at 654.6 MB, and the other model checks passed.
+The new X10 stays live, so no revert (`stage_prerun.py` md5 88abd9c6 stays unused). It only makes prerun fail closed (>675 or UNMEASURED) until the split lands, and this card is what lands it. A revert would reopen the unmeasured-memory hole that PD267(b) exists to close. The card must also rerun the old `stage_prerun` self-tests, which 130-1 did not.
+Used 37 of 180 min, so there is room. I'm not starting a PREP card now. The next LabVIEW step (P3b-1 scratch, then ONE launch) cannot be cut until the re-cut plans exist. 130-2's open items (guard_cycle.py:40, fp-22, fp-25) are outside this cycle's purpose.
+
+HANDBACK-QUESTION: -

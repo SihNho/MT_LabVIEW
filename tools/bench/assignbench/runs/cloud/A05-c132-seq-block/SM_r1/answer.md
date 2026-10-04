@@ -1,0 +1,6 @@
+ACTION: ISSUE + PREP
+CARD: LabVIEW card: re-issue the P3b-1 graph read (diag_c132_2_graph_p3b1.py). First run `stage_prerun.py --dry` and `--prerun` on that script to get the launch-gate records. Then launch under bgrun, read-only, writing graph_ring_p3b1_<ts>.json and the memory readings. Offline prep card: close the 132-1 fp-21 failure by making the provisional-base dry bind the base's simulated negative uids (renumber in DryPlanBE and seed Executor.bind), or by deferring dry until --rebase if that is the safer fix. Also add the gate_fp close verb.
+REASON: Card 132-2 was BLOCKED only because card 132-1 was editing tools/stage_prerun.py. That card has now finished, so the block is gone. Its stage_prerun.py is at md5 489d7be9..., so the dry and prerun records can now be created.
+REASON: 132-1 passed 3 of 4 gates. The one failure (fp-21) is an offline tooling defect: stagexec.compare flags its own negative uids as unbound (stagexec.py:786), and addressing refuses t<0 (:1851). Fixing it needs no LabVIEW and can run beside the graph read.
+REASON: The P3b-2 rebase needs the real graph from 132-2, and the P3b-2 dry needs the fp-21 fix. Running both at once keeps the cycle's remaining pass items moving within the 180 min / $60 caps (30 min used so far).
+HANDBACK-QUESTION: -

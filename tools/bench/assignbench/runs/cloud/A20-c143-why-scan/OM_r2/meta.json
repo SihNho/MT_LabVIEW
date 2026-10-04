@@ -1,0 +1,38 @@
+{
+ "case": "A20-c143-why-scan",
+ "arm": "OM",
+ "rep": 2,
+ "model": "claude-opus-5-5",
+ "effort": "medium",
+ "attempt": 1,
+ "usd": 0.0528,
+ "minutes": 0.25,
+ "cell_minutes": 0.25,
+ "turns": 1,
+ "tools": 0,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.25,
+   "usd": 0.052775,
+   "turns": 1,
+   "tools": 0,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-opus-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: RETRY\nCARD: OFFLINE (PD335(b), continued): in our own copied script prep_c143_5_pred.py, make the RB check (\"no negative uid left\") skip `why` text and look only at uid fields. Then run the remaining steps on the rebased plan da66a030: X10 at 596.0, the Error List prediction with the fixed rule (prep_c143_3_elrule), the pred file, dry run and prerun of both s03v18 recipes, and --scratch-required.\nREASON: All three pass items for s02 are met. The prior-art review was released (143-1, r3 novel). The scratch passed 21/0 at a peak of 620.3 MB. Its Error List came out at 53, not the predicted 51/52; the review called that a predictor bug, and PD333 accepted 53 as the expected count. 143-3 adopted 84cac487, and 143-2 did the fresh-instance load and graph read with LabVIEW confirmed gone. What is left of the act is the session-3 prep beside it.\n143-5 left the plan rebased and final (da66a030, rebase2 PASS, 20 uids bound). Both of its failures were bugs in our own script, not unexplained ones. The first was its own why note running too long (already removed). The second is the RB check reading the text 'I32[20] -1' at plan_ring_p4_s03v18.json:101 as a uid. The fix is one line in a prep copy and touches no gate or plan, so this is a fixed retry rather than a model escalation.\n89 of 180 minutes used and $0 reported, so a roughly 15-minute offline card fits.\nHANDBACK-QUESTION: -",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0
+ }
+}

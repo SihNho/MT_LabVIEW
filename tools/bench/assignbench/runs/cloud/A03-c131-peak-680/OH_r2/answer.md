@@ -1,0 +1,7 @@
+ACTION: ISSUE
+CARD: P3b-1 scratch S3. Run `stage_d1_ring_p3b1_el.py scratch` on the scratch VI already on disk (`claudeDev\scratch_c129_ring_p3b1_20261002_052136.vi`, found via `scratch_pin.json`). Take only the Error List count, compare it with the expected 54 and delete the scratch VI. No re-run of pin, no real launch, `plan_ring_p3b1_pred.json` left unchanged.
+REASON: 131-3's pin4 run passed its own gates (22/0, RESULT PASS, E1 equal to the simulation through op 31, tunnel names as predicted). The only miss was memory: peak 680.8 MB against a predicted 663.4 and a fail-above of 675 (`pin4.log:446-447`). That came from the final whole-VI read, which added 17.4 MB where earlier reads added about 4.1.
+Whether to accept that peak or re-cut the memory model is a threshold decision, so it goes back to judgement. The Error List count is the third pass item and does not depend on that decision.
+The expected file is already written (54 = 55 − 1 + 0, `pin4.log:590`), S3 was simply not run, and the scratch VI is still sitting on disk waiting for this script to delete it. Under rule 2c the independent part runs now.
+Time is fine: 63 of 180 minutes used. The rig's LabVIEW is free (no process after 131-3).
+HANDBACK-QUESTION: -

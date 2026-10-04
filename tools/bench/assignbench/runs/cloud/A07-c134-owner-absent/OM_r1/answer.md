@@ -1,0 +1,7 @@
+ACTION: ISSUE
+CARD: 134-4 (LabVIEW read only, no VI saved). Extend the 134-1 graph reader so it stores the measured Owner uid of every structure node, at least the 22 Flat Sequences. Re-read a copy of the in-between file 6cc69221, check its md5 and delete the copy afterwards, then check that the read gives FS 27509 an owner that is a uid. Write plan_ring_p3b2b.json back to 1451ba90 using `git show HEAD:<path>` instead of `git restore`. Then finalize P3b-2 session b on the new graph and run b dry + prerun. Stop and return at the first unexpected result.
+REASON: 134-3 explains its failure with facts and offers no guess. The FS node row's owner is only the class string "Diagram", and the `owners` dict is filled only for Diagram-class rows (diag_c134_1_graph.py:40-46). So the reader is missing a field; nothing in the logic is unexplained.
+Rule 1a's "measured, not assumed" and the "build the reader" rule both point to reading the Owner uid from LabVIEW. Inferring it from the tunnels' outer-face 27219 is not needed, so there is no measured-versus-inferred question to hand back.
+134-1 already read this file safely: 25 min, memory below 600 MB, LabVIEW verified gone at exit. We have used 48 of 180 min and $0 of $60.
+The three failures were different (border classification, missing common diagram, owner not stored), so no goal has failed twice and there is nothing to escalate. The plan file has to be restored first because the F-1 check is pinned to 1451ba90.
+HANDBACK-QUESTION: -

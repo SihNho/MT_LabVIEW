@@ -1,0 +1,8 @@
+ACTION: RETRY + PREP
+CARD: RETRY 142-1. Build claudeDev RingPickSlot_v0.vi. Fix our own script first: delete the generator For's N constant #50 before the For, or re-read the whole Constant set after deleting the For and log it before the next delete. Bring the script to 120 lines or fewer. Then run the 7 vectors and re-run 2 of them in a fresh instance. PREP card (offline): rebase plan_ring_p4_s02.json onto graph_ring_p4s01_20261002_234419.json, run the cut check at start 596.5 (X10 must be 675 or less), and run dry + prerun on both s02 recipes. No LabVIEW.
+REASON: The first failure has a clear cause. Deleting ForLoop #43 removed only {43}. Deleting Constant #50 afterwards made 2 Constants vanish, and verify raised (log:14-15,29). The second one is probably k0 #138, which was inside the deleted For. So the fault is an assumption in our script about the traverse, not a design question. The card had a failure budget of 2 and used 1, so this is not an escalation or a handback.
+The partial file was deleted and both originals are unchanged. LabVIEW is closed (log:31-32), so a clean retry is safe.
+The retry logs the Constant set before and after each delete, which measures the k0 guess instead of assuming it.
+The s02 rebase, cut check and dry/prerun steps don't open LabVIEW and their base graph file already exists, so they run beside the retry. The pipeline allows one LabVIEW card plus one offline card.
+Time and cost are well within the caps: 10 of 180 min used, $0 reported.
+HANDBACK-QUESTION: -

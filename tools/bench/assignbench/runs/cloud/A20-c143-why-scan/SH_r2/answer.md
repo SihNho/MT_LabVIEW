@@ -1,0 +1,6 @@
+ACTION: RETRY
+CARD: OFFLINE: finish the s03v18 prep on the rebased plan da66a030. Exclude `why` text from the negative-uid scan in the copy `prep_c143_5_pred.py`, then run the pred (fixed EL rule, X10 at 596.0), dry and prerun on both s03v18 recipes, and `--scratch-required`.
+REASON: 143-5's first_fail is a false positive in our own copied pred script. The RB gate tokenised `I32[20] -1` in the `why` text of p4_c_bufdiff (plan_ring_p4_s03v18.json:101) as a negative uid. The rebase itself PASSED (REBIND conn 9, 20 uids bound, final=True, a1 src {6902,'StopAll'}, prep_c143_5_rebase2.log).
+The card's two failures (a note over the 400-char limit, then this gate) have unrelated causes, both trivial script bugs. They are not the same goal failing on the model, so ESCALATE does not apply. Nothing here needs a design or rule-1a decision.
+The s02 purpose is effectively met. 84cac487 is adopted (143-3, input dc61e193, plan e941ebbf), EL 53 is expected and by-design (143-2 verdict supported), the graph read passed in a fresh instance, and LabVIEW is gone. What remains is the offline session-3 prep, with 89 of 180 min used, so a retry fits the budget.
+HANDBACK-QUESTION: -

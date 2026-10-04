@@ -1,0 +1,7 @@
+ACTION: HANDBACK
+CARD: -
+REASON: Card 140-1 already meets all three pass items for this cycle's purpose: the X10 session table, the BIND-merge count, and a facts file with OPEN lines. Later cards (140-2, 140-3) tried to launch P4 session 1 and failed, so the next step is not launchable without a ruling.
+140-3's scratch run raised the Error List to 52 against the predicted 51 (alt 53). The review c140-3-el52 says the extra item comes from the node of p4_ras_bufdiff (donor #29157), which is an Insert Into Array, while the plan names it Replace Array Subset.
+Whether that node class matches the original's per-slot write, and whether 52 can be accepted as the prediction, is a rule 1a call. It is not a matter of how our own scripts behave.
+Further cards before that ruling would either repeat the same launch gate or build session 2 on an unsettled session 1. Session 2 (140-P1) already failed its dry run on a provisional base that holds session-1 objects.
+HANDBACK-QUESTION: Is the ring's per-slot write node (donor #29157, bed #29265/#29316) an Insert Into Array in the original, so that plan primitive "Replace Array Subset" is wrong under rule 1a? If the class is right, do you accept 52 as session 1's predicted Error List and re-issue the launch? Also decide the open P4 cut items: table A (9 sessions) or B (8 sessions), where to cut the RLE `of` pair, and whether session 1's 678.5 MB against the card's 675 limit is accepted.

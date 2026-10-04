@@ -1,0 +1,5 @@
+ACTION: ISSUE
+CARD: Launch the ONE scratch of plan_ring_p4_s03v18.json (da66a030) on a byte copy of the adopted s02 file D1_ring_p4s02_20261003_110001.vi (84cac487). Check all gates, with Error List 56 as predicted. Record the measured census and peak (≤680). Adopt if every gate passes, then run a fresh-instance load and graph read. LabVIEW must be gone at the end.
+REASON: The purpose's s02 items are not met. Scratch 143-1 ran but failed only on the Error List count (53, not 51/52), and 143-2 ruled that the predictor was wrong. 143-3 adopted 84cac487 with expected Error List 53. The s03 plan was rebased (143-5) and its checks passed (143-6: pred 8/0, dry PASS, prerun 16/0, X10 676.4 ≤ 680). Only `--scratch-required` (exit 3) is still owed before launch. Prior-art for the s03 recipe is novel (143-P2), so no further review is needed. Time used is 97 of 180 minutes, which leaves room for one LabVIEW card of about 35 minutes. The 3.6 MB X10 margin is small, but MEM_STOP at 680 is the safeguard, so the launch does not need a re-cut.
+
+HANDBACK-QUESTION: -

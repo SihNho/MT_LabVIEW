@@ -1,0 +1,8 @@
+ACTION: RETRY
+CARD: Re-run 130-1 with `flags.peers` widened to `[priorart, hypothesis]`. Steps: (1) dispatch the hypothesis review owed for `selftest_x10_c130_1.log`. (2) Rerun the fixed self-test (CRLF fix at `selftest_x10_c130_1.py:34-38`) until 129-1 FAILs at ~723 MB, 129-8 FAILs at 688.5 and the no-plan recipe FAILs as UNMEASURED. (3) Rerun the old `stage_prerun` self-tests. (4) Run `plan_ring_p3b_split.py` so that p3b1 and p3b2 are each ≤40 rows, dependency-closed, X10 PASS ≤675 MB on both, with dry run and prerun PASS. If the self-test still fails, revert `stage_prerun.py` to md5 88abd9c6 before returning.
+REASON: The block was caused by our card flags, not by the work. guard_peer requires a hypothesis review (JEV-LADDER new-problem, p=0.550), and 130-1's flags only allowed priorart, so the review could not be dispatched.
+The failure itself has a known cause and the fix is already written. T0 failed because the fixture compared git's LF bytes (md5 88789b06) with the working file's CRLF bytes (10a0f401). The X10 model was not at fault: T3 and T4 passed, and the T0b recipe hashes match the prerun records.
+This counts as a retry, not an escalation. The model has failed the goal 0 times; it was refused before the fixed version could run.
+130-1's second open question resolves inside this card. A gate whose own self-test has not passed should not stay live, so the card reverts it if the self-test does not pass. No LabVIEW launch is possible before the split passes either way.
+Time used is 37 of 180 min and $0 of $60, so there is room for this card and then the P3b-1 scratch plus one launch.
+HANDBACK-QUESTION: -

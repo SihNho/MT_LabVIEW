@@ -1,0 +1,8 @@
+ACTION: HANDBACK
+CARD: -
+REASON: Card 137-1 failed at the same stop point as 136-3. Its lookup fix passed dry (27/27), but on the real run the ks constant #29466 in the new While body #29431 appeared in none of the 180 Diagram node_labels, so no route U1–U6/W1 was reached. That rules out a stale Diagram index (diag_c137_1_routes.log:36-48).
+Two competing causes remain untested: OpNodeLabels never lists constants made by const_donor, or the Traverse "Diagram" index never reaches the new body.
+Choosing the replacement route is a design call. The options are Stage.address (a report_all Diagram call per lookup, at X10 cost) or allterms.read_terms by owner uid (a whole-VI read). The 137-1 X10 budget leaves 687.2 against a 690 cap, which is almost no margin. Card 137-P1 passed offline with five gates. Its findings: stagesim step 102 fails because vigraph.node_of maps a ControlTerminal row to its own term_uid (stagesim.py:681, vigraph.py:57-60). The v3 session table is in prep_c137_p1_facts.md section 2. Two open design questions also remain from 137-P1 (re-address the plan vs. teach stagesim the owner form; whether {4878} settles c135e).
+Pass items 1 and 2 remain unmet (the P4 routes and the Mechanical Action reader). This is the second consecutive failure of the same lookup, and escalating the model would not address a tool-design gap.
+
+HANDBACK-QUESTION: Should the missing new-body node lookup use Stage.address, which costs one report_all Diagram per call, or allterms.read_terms by owner uid, which is a whole-VI read? Which fits the X10 budget at 687.2 against 690? Should I first run one cheap scratch split to tell the two causes apart, checking OpNodeLabels on the body index against iai on #23166?

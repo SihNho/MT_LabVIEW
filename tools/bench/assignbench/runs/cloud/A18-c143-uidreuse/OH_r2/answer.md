@@ -1,0 +1,9 @@
+ACTION: HANDBACK
+CARD: -
+REASON: The cycle's three pass items are met in substance:
+- **Prior-art review:** answered and released (143-1, r3 novel).
+- **Scratch:** passed 21/0 at a 620.3 MB peak. Its Error List count of 53 differed from the prediction. Review c143-2-el53 found the cause was a bug in the predictor. The predictor was fixed and now gives 53 for s02 and 51 for s01, matching both measured counts (143-3).
+- **Adoption:** 84cac487 was adopted under PD333. The fresh-instance load measured 596.0 MB, the graph read passed 15/0, and LabVIEW was confirmed gone (143-2, 143-3).
+
+What is left is the session-3 prep that runs beside it, and that is stuck at the rebase. The UID-REUSE check refused uid #23276 (stage_prerun.py:3453 → stagexec.uid_reuse:942). Over the 34 ops of s02, LabVIEW gave the terminal uid of the deleted Comparison #10171 to the new Local #6899. Our own graph read confirms this (diag_c143_1_scratch.log:391), and LabVIEW's documentation says it can reuse a deleted object's uid. The uid_reuse docstring says the check was built for "within one op". The identity-key handling below it (PD330(d)) already covers reuse within the same object class. Treating this as a false positive and letting the rebase through would loosen a gate, which is a gate/rule decision and not one for a card.
+HANDBACK-QUESTION: Should rebind's whole-session UID-REUSE refusal let a uid whose old owner the session deleted bind by (term uid, owner uid, name), with the refusal kept only for one-op changes? If so, which card changes and self-tests it before s03 is rebased onto eda9db40? If not, how is s03 rebased?

@@ -1,0 +1,38 @@
+{
+ "case": "A02-c130-fp24",
+ "arm": "SH",
+ "rep": 2,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "attempt": 1,
+ "usd": 0.2147,
+ "minutes": 0.26,
+ "cell_minutes": 0.26,
+ "turns": 1,
+ "tools": 0,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-sonnet-5-5",
+   "effort": "high",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.26,
+   "usd": 0.2147272,
+   "turns": 1,
+   "tools": 0,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: RETRY\nCARD: Re-issue 130-3 with `flags.peers` = [hypothesis, priorart] and `tools/protocol.py` added to the write list. First dispatch the hypothesis review owed for `diag_c130_2_suite_gb.log` (card 130-2's log) and wait for it to be ANSWERED. Then rerun the fixed X10 self-test (T0 LF→CRLF fix, with T1/T2 run so their falsifier lines are read). Then the P3b re-cut so X10 PASSes both halves, then P3b-1 dry/prerun. If the self-test still hits the offline_command false positive (fp-24), add `selftest_x10_c130_1.py` and `plan_ring_p3b_split.py` to `protocol.OFFLINE_SELFTESTS`. Do not bypass the gate.\nREASON: 130-3's block is a review owed on `diag_c130_2_suite_gb.log` (new-problem p=0.712), not on its own log. The card never had that review because the owed log belonged to 130-2, and the review is the legitimate release. 130-1's earlier block (a review owed for `selftest_x10_c130_1.log`, with no peer flag) was already discharged by the P0 review, which was ANSWERED. P1 to P4 were never attempted, and the fixed self-test is written but unrun, so nothing here is a judgement-level failure. Cost: 54 of 180 min used, and the card is budgeted at about 50, so there is room for one more card. Open risk to carry: the new X10 is live in `stage_prerun.py` without a passing self-test. The self-test therefore runs before any `--prerun` of other stages, and the card's closing report states that status.\nHANDBACK-QUESTION: -",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0
+ }
+}

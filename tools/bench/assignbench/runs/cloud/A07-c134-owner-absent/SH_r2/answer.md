@@ -1,0 +1,7 @@
+ACTION: ISSUE
+CARD: LabVIEW read card (labview=read, no VI saved, scratch copy of the in-between file, LabVIEW closed and verified gone). Extend the graph reader to record the measured Owner (class + uid) of every Flat Sequence node and every other non-Diagram object whose owner is currently missing. Re-read the kept in-between file (copy of scratch_c133_6_ring_p3b2a_20261002_093837.vi) into a new graph JSON. Restore plan_ring_p3b2b.json to 1451ba90 by writing `git show HEAD:<path>` to the file, not `git restore`. Feed the owners into the base graph, rerun finalize of P3b-2 session b offline, then run b's dry and prerun. Return at the first unexpected result, with no inference.
+REASON: 134-3 stopped at step 1. The FS 27509 node row has owner class 'Diagram' but no uid, and the `owners` dict has no key for any of the 22 FS (diag_c134_3_owners.log). The reader only fills `owners` for class=='Diagram' objects (diag_c134_1_graph.py:40-46).
+REASON: The 134-2 F1 failure ("no common diagram of #639 and #32464") follows from this gap. The border-tunnel route (27219 → 22694 → 639) is derived from terminal rows, and that derivation already caused the 134-1 "unmeasured tunnel" failure.
+REASON: Reading the FS owner uid from LabVIEW is a measurement and needs no design call. The three cards failed at different places on one missing fact, so this is not a repeat failure and does not call for escalation. 48 of 180 min and no reported USD leave room for one LabVIEW read card.
+PREP: not needed. The plan restore is a single step inside this card.
+HANDBACK-QUESTION: -

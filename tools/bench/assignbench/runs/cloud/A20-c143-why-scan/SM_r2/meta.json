@@ -1,0 +1,38 @@
+{
+ "case": "A20-c143-why-scan",
+ "arm": "SM",
+ "rep": 2,
+ "model": "claude-sonnet-5-5",
+ "effort": "medium",
+ "attempt": 1,
+ "usd": 0.2375,
+ "minutes": 0.13,
+ "cell_minutes": 0.13,
+ "turns": 1,
+ "tools": 0,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.13,
+   "usd": 0.2374532,
+   "turns": 1,
+   "tools": 0,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: ISSUE\nCARD: OFFLINE: fix the RB gate in prep_c143_5_pred.py to exclude `why` text from the negative-uid scan, rerun pred (EL by fixed rule, s03 on the rebased plan da66a030), then X10 at 596.0, dry and prerun of both s03v18 recipes, and `--scratch-required`.\nREASON: 143-5 failed only on the gate's tokenising of `why` text. The rebased plan is final (fix 13/0, rebase PASS with 20 uids bound, plan da66a030). Failure budget was spent on that card, so this is a new card rather than a RETRY. The fix is a mechanical, bounded script edit in our own tool and carries no computation-rule or design question. Judgement need not be consulted. The rest of the chain (pred, X10, dry, prerun, scratch-required) is unblocked and fits the remaining cap of 91 min and $60. No LabVIEW is needed, so no PREP card is required beside it.\nHANDBACK-QUESTION: -",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0
+ }
+}

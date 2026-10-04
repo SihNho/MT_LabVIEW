@@ -1,0 +1,38 @@
+{
+ "case": "A02-c130-fp24",
+ "arm": "OM",
+ "rep": 1,
+ "model": "claude-opus-5-5",
+ "effort": "medium",
+ "attempt": 1,
+ "usd": 0.4097,
+ "minutes": 0.28,
+ "cell_minutes": 0.28,
+ "turns": 1,
+ "tools": 0,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.28,
+   "usd": 0.4097402,
+   "turns": 1,
+   "tools": 0,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-opus-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: RETRY\nCARD: Re-issue 130-3 from P1, with one change. First dispatch the owed hypothesis review of `diag_c130_2_suite_gb.log` (flags.peers already include hypothesis) so guard_peer releases the block, filing the review under 130-2's log. Then:\n- **P1:** rerun the fixed X10 self-test with the L0 gate printing each of its 8 conditions, and record the review's falsifier lines (\"L0 PASS, no K1/DRY line\").\n- **P2:** run the P3b re-cut with `plan_ring_p3b_split.py`.\n- **P3:** run X10, dry and prerun on both halves.\n- **P4:** run the old `stage_prerun` self-tests.\n\nIf P1 does not pass, revert `stage_prerun.py`'s X10 to md5 88abd9c6 and stop before the re-cut.\nREASON: The block in 130-3 is mechanical and the facts explain it. fp-24 shows guard_peer blocking on 130-2's log `diag_c130_2_suite_gb.log` (Jev new-problem p=0.712, review owed, not dispatched), and the one GATE-FP slot this cycle was already used by fp-22. Dispatching that one review is the legitimate release. Changing OFFLINE_SELFTESTS would be a gate edit outside the fp-queue drain.\nThe review in P0 (130-3) found the LF/CRLF fix safe. Its open point, alt (a), is a measurement question: the per-condition L0 lines and the falsifier answer it, so no design decision is needed.\nTime used is 54 of 180 min and no LabVIEW has been touched. The scratch run and launch (pass item 3) remain for a later card once X10 passes.\nHANDBACK-QUESTION: -",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0
+ }
+}

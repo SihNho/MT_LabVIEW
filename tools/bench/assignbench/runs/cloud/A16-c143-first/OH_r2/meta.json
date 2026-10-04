@@ -1,0 +1,39 @@
+{
+ "case": "A16-c143-first",
+ "arm": "OH",
+ "rep": 2,
+ "model": "claude-opus-5-5",
+ "effort": "high",
+ "attempt": 1,
+ "usd": 0.0571,
+ "minutes": 0.25,
+ "cell_minutes": 0.25,
+ "turns": 2,
+ "tools": 1,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.25,
+   "usd": 0.0571338,
+   "turns": 2,
+   "tools": 1,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-opus-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: ISSUE + PREP\nCARD: Run `prior_art_review.py` on `tools/recipes/stage_d1_ring_p4_s02v18.py` and plan_ring_p4_s02v18.json e941ebbf, and get it ANSWERED. Release it with a `novel` verdict or with cited REFUTED/FIXED lines under \"## What was done with it\". Do not touch LabVIEW. || PREP: Prepare session 3 of P4 offline (the v18 ops from 59 to at most 40 edits later): a plan, a predictions file, a stage script on stagekit of 120 lines or fewer and a dry-run. Build it on the provisional s02 base and mark it for `stage_prerun.py --rebase` once s02 is adopted.\nREASON: No cards have run yet this cycle. The first pass item is the prior-art review, and `guard_cycle.py` refuses the scratch build until that review is released, so the scratch can't go first. The stage script `stage_d1_ring_p4_s02v18.py`, its scratch variant and `plan_ring_p4_s02v18{,_in,_pred}.json` are all in the checkout, so the review can start now. Neither card touches LabVIEW, which keeps both within the limits of 2 live cards and 1 LabVIEW card, and the purpose names session-3 prep as the work to run beside. The LabVIEW scratch card goes out once the review is released.\nHANDBACK-QUESTION: -",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0,
+  "B1": 1.0
+ }
+}

@@ -1,0 +1,4 @@
+ACTION: ESCALATE
+CARD: Rung 1 (Opus max) of 142-1/142-2: build claudeDev RingPickSlot_v0.vi per brief_142-1.md, carrying 142-2's scaffold-delete fix and taking `lo`/`last` from the terminal row's term_uid (#84), not `owner_uid`, in both the v0 and v1 lookups. Keep the script ≤120 lines, run the 7 vectors, then re-run 2 of them from the saved file in a fresh instance.
+REASON: The card goal has now failed twice on the default model (142-1, then its retry 142-2), so the next step is rung 1. Both failures are in our own script. 142-1's failure was the delete_object verify; 142-2 fixed it and the Constant traverse ended empty (build_ringpickslot_v1.log:14-21). 142-2 then failed on `owner_uid=3` matching both controls (log:32,39). The same lookup bug is in v0 at :55,57. No LabVIEW behaviour is unexplained, and the boundary is confirmed by 142-P1 (6 crossing wires = brief). 30 of 180 minutes used, $0 reported.
+HANDBACK-QUESTION: -

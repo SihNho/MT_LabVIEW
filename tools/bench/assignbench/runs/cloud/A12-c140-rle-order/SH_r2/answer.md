@@ -1,0 +1,6 @@
+ACTION: ISSUE + PREP
+CARD: (LabVIEW, scratch only, no save of the bed) Find out why op 3 RLE on w23255 fails with error 1055 after op 2 deletes Comparison #10171. On a scratch copy, run the same ops with a before/after read for each variant. (a) After op 2, does uid w23255 still resolve, and is it still a wire reference? (b) Run RLE first, then the delete. (c) Run RLE alone with no delete. Return the facts and an OPEN line. Do not change the plan or the op. PREP (offline): compute X10 for the s01 launch recipe with its 2 census reads dropped or merged, to check against the 675 limit (678.5 now). No tool edits.
+REASON: Card 140-2 failed its first scratch run: error 1055 in OpWireRemoveLooseEnds_v0.vi at op 3, right after op 2 deleted #10171 (diag_c140_2_scratch.log:63-75). The failure budget is not spent and nothing was escalated, so ESCALATE does not apply yet.
+The facts do not say whether the cause is plan order or op behaviour, and the reviews gave no verdict. Fixing the order would be a plan decision, so I only measure the three variants now and hand the choice to judgement.
+The 678.5 MB vs 675 MB question also needs numbers before judgement can decide it, so the offline prep card computes them while LabVIEW is busy.
+HANDBACK-QUESTION: -

@@ -1,0 +1,8 @@
+ACTION: HANDBACK
+CARD: -
+REASON: The cycle's purpose is met. Card 140-1 PASSed 7/0 and delivered every pass item: the X10 tables (A gives 9 sessions, B gives 8), the merged BIND reads (step 1 drops from 29 to 14), and a facts file with OPEN lines.
+The extra build card, 140-3, then stopped at an Error List of 52 against 51 predicted. Review c140-3-el52 says the extra item is the node of p4_ras_bufdiff, copied from donor #29157 and reported as an Insert Into Array. The plan says Replace Array Subset.
+The donor was chosen by terminal names only ("DONOR-CANDIDATE Replace Array Subset: 1 exact-signature owners", diag_c126_5_facts.log / prep_c137_6_inspect.log). So the bed nodes #29265/#29316 made in P3b-2 may be the wrong primitive.
+That is a rule 1a computation question. I can't settle it with another build card or retry. Every further P4 launch depends on it, and so does accepting 52 as the prediction.
+Time used is 97 of 180 min. Another LabVIEW card before this is decided would build on a node that may be wrong.
+HANDBACK-QUESTION: Rule 1a: the ring's per-slot write node (donor #29157, bed #29265/#29316 from P3b-2) was picked by terminal names only. Should the next cycle first run a read-only measurement of its real primitive class against the original's node? If it is Insert Into Array where the original uses Replace Array Subset, do P3b-2 and P4 session 1 need re-planning? Or, if the class is confirmed correct, is it enough to accept 52 as session 1's predicted Error List and launch session 1?

@@ -1,0 +1,38 @@
+{
+ "case": "A03-c131-peak-680",
+ "arm": "OM",
+ "rep": 1,
+ "model": "claude-opus-5-5",
+ "effort": "medium",
+ "attempt": 1,
+ "usd": 0.4112,
+ "minutes": 0.22,
+ "cell_minutes": 0.22,
+ "turns": 1,
+ "tools": 0,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.22,
+   "usd": 0.4112032,
+   "turns": 1,
+   "tools": 0,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-opus-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: ISSUE\nCARD: Run S3 (stage_d1_ring_p3b1_el.py scratch) on the scratch VI already on disk (scratch_pin.json:2902). It takes the Error List count only, compares it with the expected 54 (pin4.log:590), and deletes the scratch VI. No pin rerun, no change to the memory model or the pred file, no real launch.\nREASON: 131-3 S2 passed every other gate: 22/0, E1 matched the simulator through op 31, and the FS frames and tunnel names were as predicted. Its only miss was memory. The final whole-VI read reached 680.8 MB, against 663.4 MB at op 31 and fail_above 675 (pin4.log:446-447). S3 had not run, and the scratch VI is still on disk, so the Error List count (pass item 3) is still unmeasured and the cleanup is still owed. Neither depends on what is decided about the memory threshold, so under rule 2c that work is done now. Whether to accept 680.8 MB, re-cut the memory model or raise the limit is a threshold call for judgement. It goes back to judgement right after this card, and the real launch waits until it is decided. 63 of 180 minutes used.\nHANDBACK-QUESTION: -",
+ "mech": {
+  "M1": 0.0,
+  "M2": 1.0,
+  "F1": 0.0
+ }
+}

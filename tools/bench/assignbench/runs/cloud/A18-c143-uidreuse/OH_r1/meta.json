@@ -1,0 +1,38 @@
+{
+ "case": "A18-c143-uidreuse",
+ "arm": "OH",
+ "rep": 1,
+ "model": "claude-opus-5-5",
+ "effort": "high",
+ "attempt": 1,
+ "usd": 0.6039,
+ "minutes": 0.66,
+ "cell_minutes": 0.66,
+ "turns": 3,
+ "tools": 2,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.66,
+   "usd": 0.6039292,
+   "turns": 3,
+   "tools": 2,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-opus-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: HANDBACK\nCARD: -\nREASON: The cycle's main purpose is met. 143-1 got the s02v18 prior-art review answered and released. 143-1 also ran the one scratch, 21/0 at a peak of 620.3 MB. 143-2 did the fresh-instance load and graph read (15/0, LabVIEW gone). 143-3 adopted 84cac487 with an expected Error List of 53 (compare: extra [], missing []), and the fixed predictor's self-test passed 7/0 (s02 → 53, s01 → 51). Only the session-3 rebase is left, and 143-3 stopped at it: `REBASE REFUSED: UID-REUSE term #23276`, rc 2.\nThe refusal has a clear cause. s02 deleted Comparison #10171. LabVIEW then gave its terminal uid 23276 to the new Local #6899, and the scratch log records that recycling (diag_c143_1_scratch.log:391). `stagexec.uid_reuse` was built to catch reuse inside one op (bind_new). `rebind` also applies it to N's base against the real graph, which spans all 34 ops (`stage_prerun.py:3453-3455`). Under the identity key from PD330(d), (uid, owner, name), #23276 would already count as new, because its owner changed from 10171 to 6899. So this looks like a gate false positive (it would be fp-40). But clearing it means changing what a safety gate refuses, a step that PD330(d) left to judgement for the same-class case. That is a gate-design decision, not a fix to our own script, so it goes back to judgement.\nHANDBACK-QUESTION: In `rebind`, can uid_reuse's class-changed-terminal refusal be replaced by the PD330(d) identity key (uid, owner, name)? It would apply only when the old owner is one s02's plan deletes (#10171) and the new owner is one s02 creates (#6899). Fix that in a tooling card with a self-test and drain fp-40, then rebind s03 on eda9db40 (X10 at 596.0, Error List prediction, dry and prerun of both s03v18 recipes)? Or is the refusal correct, so s03 must be planned differently?",
+ "mech": {
+  "M1": 0.0,
+  "M2": 1.0,
+  "F1": 0.0
+ }
+}

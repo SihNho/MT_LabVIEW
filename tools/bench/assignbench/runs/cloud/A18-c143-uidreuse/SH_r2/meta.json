@@ -1,0 +1,38 @@
+{
+ "case": "A18-c143-uidreuse",
+ "arm": "SH",
+ "rep": 2,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "attempt": 1,
+ "usd": 0.0407,
+ "minutes": 0.27,
+ "cell_minutes": 0.27,
+ "turns": 1,
+ "tools": 0,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-sonnet-5-5",
+   "effort": "high",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.27,
+   "usd": 0.040669,
+   "turns": 1,
+   "tools": 0,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: ISSUE\nCARD: OFFLINE measurement for the 143-3 rebase refusal. (1) Read `stagexec.uid_reuse` (:942) and `stage_prerun.py:3453-3455` to say what the check protects. (2) List every s03v18 plan row, cross ref and pred key that names uid #23276, or the Comparison #10171 / Local #6899 terminals, by uid, owner or name. (3) Re-run the rebase read-only or with the check's output only, and report whether any binding in the plan resolves through #23276. Return facts and an OPEN line. Do not release the gate and do not edit any tool.\nREASON: 143-3 completed the s02 adoption and the EL-predictor fix (13/0 gates) and stopped at the first unexpected result, as its brief required. `uid_reuse` fired because LabVIEW re-issued deleted Comparison #10171's terminal uid 23276 to the new Local #6899 (`diag_c143_1_scratch.log:391` recycled_uids). Whether this is a false positive depends on whether the s03 plan binds anything through that uid, which has not been measured. The result facts do not show it either way. The measurement is cheap (about 10 min) and offline. Whether to release the gate is a judgement call, which the card leaves to the next step. The cycle has used 72 of 180 minutes.\nHANDBACK-QUESTION: -",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0
+ }
+}

@@ -1,0 +1,7 @@
+ACTION: ISSUE
+CARD: Labview-read card: read the Owner of FS 27509 and of every FS in the P3b-2a in-between file (FlatSequence node Owner uid and diagram), extend the graph JSON's owners with measured FS node owners, then restore plan b to 1451ba90, finalize P3b-2 session b on the measured graph, and run b dry + prerun. No VI saved.
+REASON: Card 134-3 stopped at the right place. The FS 27509 node row's owner is the class string 'Diagram' with no uid, and `owners` has no key for any of the 22 FS (diag_c134_3_owners.log).
+REASON: Card 134-2's F1 failure ("no common diagram of #639 and #32464") follows from that gap, so the missing fact is a measurement. The reader has to read the FS node's Owner uid in LabVIEW. Inferring it from the border tunnels' outer-face frame_diagram (8/8 agree on 27219) would be inference where measurement is possible.
+REASON: The two cards already ran on the 134-1 reader fixes (c134_2 gates, dry_rule 2), and 134-3 spent 3 minutes. Time used is 48 of 180 min, so a labview=read card is affordable. This is a first failure of this goal at this step, so there is no escalation yet.
+REASON: The plan restore to 1451ba90 is still owed and goes in this card. Rule 1a is not touched, because the card only reads the graph and the pre-run and nothing in the computation changes.
+HANDBACK-QUESTION: -

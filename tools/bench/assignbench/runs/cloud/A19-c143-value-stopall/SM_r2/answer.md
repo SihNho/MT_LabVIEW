@@ -1,0 +1,6 @@
+ACTION: ISSUE
+CARD: OFFLINE (tooling + plan fix): make the s03 rebase bind Local -20's value terminal by connectivity or position. Alternatively, correct the s03 plan's address of -20's terminal from 'value' to the provisional base's 'StopAll', re-validating the documented alias at tools/stagesim.py:735-736. Then rebase s03 on the s02 graph (eda9db40), re-derive X10 at 596.0, build the s03 EL pred from s02's measured 53, and run dry, prerun, and --scratch-required.
+REASON: 143-4 removed the UID-REUSE refusal. The only remaining blocker is the terminal-address mismatch, 'value' in the plan against 'StopAll' (-21) in the base (prep_c143_4_probe2.log). The sim already treats 'value' as an alias of 'StopAll' (stagesim.py:735-736, from the 143-2 reviewer), so this is a name-binding problem and not a computation change. The plan fixes only an address, so rule 1a is untouched. No design or rule decision is needed.
+Purpose item 1 (prior-art review) is partly done: the s02 review is released, and the s02 file is adopted (84cac487) with EL 53 expected. Items 2 and 3 are no longer needed as written, since the s02 scratch ran and was adopted. The remaining work is the s03 prep for the next session, and the card stays offline.
+Cost so far is 83 of 180 minutes, with no LabVIEW launch needed yet.
+HANDBACK-QUESTION: -

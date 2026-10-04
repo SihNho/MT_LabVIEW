@@ -1,0 +1,38 @@
+{
+ "case": "A19-c143-value-stopall",
+ "arm": "SH",
+ "rep": 1,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "attempt": 1,
+ "usd": 0.2403,
+ "minutes": 0.25,
+ "cell_minutes": 0.25,
+ "turns": 1,
+ "tools": 0,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-sonnet-5-5",
+   "effort": "high",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.25,
+   "usd": 0.24025819999999998,
+   "turns": 1,
+   "tools": 0,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: ISSUE\nCARD: OFFLINE tooling plus s03 prep. Make `--rebase` resolve a plan-referenced Local terminal 'value' to the base's 'StopAll' terminal, using the existing stagesim alias (`tools/stagesim.py:735-736`). Self-test the change, then rebase s03 on the s02 graph. After that, X10 at 596.0, the s03 Error List prediction from the fixed predictor (s02 gives 53), dry and prerun of both s03v18 recipes, and `--scratch-required`.\nREASON: 143-4's U1 got past UID-REUSE (REUSE-NOTED 23276) and then stopped on `#-20.'value'` binding 0 sim rows. The provisional base names that Local terminal -21 'StopAll'.\nREASON: 143-2 already read this naming difference as no risk, a documented alias at `stagesim.py:735-736`. So this is a tool gap on the rebase path, not a plan or computation question, and rule 1a is untouched. Pin the alias to Local-variable terminals only, with no other renames.\nREASON: Purpose items 1-3 are met offline. s02 is adopted as 84cac487 with the Error List expectation corrected to 53 (143-3), and the fresh-instance load and graph read passed (143-2). Only the session-3 prep is open. The two rebase failures (143-3, 143-4) have different causes, so this is not a repeated-failure class.\nREASON: 83 of 180 minutes are used and the last offline cards took 9-11 minutes each. If the rebase fails a third time on a different cause, hand back.\nHANDBACK-QUESTION: -",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0
+ }
+}

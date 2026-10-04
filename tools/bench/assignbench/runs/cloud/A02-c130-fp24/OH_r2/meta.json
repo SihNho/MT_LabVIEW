@@ -1,0 +1,38 @@
+{
+ "case": "A02-c130-fp24",
+ "arm": "OH",
+ "rep": 2,
+ "model": "claude-opus-5-5",
+ "effort": "high",
+ "attempt": 1,
+ "usd": 0.4142,
+ "minutes": 0.29,
+ "cell_minutes": 0.29,
+ "turns": 1,
+ "tools": 0,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.29,
+   "usd": 0.41418020000000005,
+   "turns": 1,
+   "tools": 0,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-opus-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: RETRY\nCARD: Re-issue 130-3 from P1 with flags.peers widened to hypothesis + priorart and a write grant for archive/peer/** review notes. First discharge the review that guard_peer says is owed for diag_c130_2_suite_gb.log, using a hypothesis review, not a bypass. Then rerun the fixed selftest_x10_c130_1.py with per-condition L0 lines printed (the falsifier from review alt (a): is it \"L0 PASS, no K1/DRY line\"?). Rerun the old stage_prerun self-tests. Then do the P2 re-cut of plan_ring_p3b1/p3b2 (X10 ≤675 MB on both halves) and the P3 dry run and prerun.\nREASON: 130-3 did not fail. It stopped at a mechanical gate (fp-24): guard_peer blocks the offline X10 self-test rerun because a review is owed for card 130-2's diag_c130_2_suite_gb.log (Jev new-problem p=0.712). The card had no route to clear it, so this is not a model failure and escalating to a stronger model would not help.\nThe clean way through is to buy the owed hypothesis review. Adding the self-test to protocol.OFFLINE_SELFTESTS would mean changing a gate in the middle of a block. That belongs in the batched fp drain, not here.\nThe 130-1 self-test review (P0) is already ANSWERED, so the LF→CRLF fix is cleared to rerun. Its alt (a) gets answered by measuring the per-condition L0 lines, which needs no design decision.\nX10 has been live without a passing self-test (130-3 facts). This rerun is the fastest way to settle that, either way. Time used is 54 of 180 min and $0 of $60, so there is room before the P3b-1 scratch and the single launch.\nHANDBACK-QUESTION: -",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0
+ }
+}

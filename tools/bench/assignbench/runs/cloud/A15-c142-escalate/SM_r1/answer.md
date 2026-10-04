@@ -1,0 +1,7 @@
+ACTION: RETRY + PREP
+CARD: Retry 142-2 (RingPickSlot_v0.vi per brief_142-1). Take `last` from the control's terminal row, term_uid, not owner_uid (the same fix goes into the v0 lookup). Keep the verify=False scaffold deletes from v1. Keep the script to ≤120 lines. Run the 7 vectors, then re-run 2 from the saved file in a fresh instance. PREP (offline): measure why `--rebase` of plan_ring_p4_rasrest.json onto graph_ring_p4s01 refuses. List the real created terminals for RX1/RX2 with uid, owner and name, and check them against the re-used uids 28004/28979. Report facts only, with no fix chosen.
+REASON: 142-2 failed on our own script bug. The lookup used owner_uid 3 (TopLevelDiagram), which matched two controls (build_ringpickslot_v1.log:39; build_ringpickslot_v1.py:43). The fix is known, and no design or rule-1a question is open.
+REASON: The 142-1 scaffold fault is already fixed (log:14-21), and the end state matched prediction wherever it was read. The card has used 1 of its failure budget, so this is a plain retry and not an escalation.
+REASON: The rasrest rebase refusal (prep_c142_p1_rebase.log:3) is undiagnosed. It blocks the purpose (s02 rebase and X10), and an offline measurement can run beside the LabVIEW card. Choosing the rebind key stays with judgement.
+REASON: 30 of 180 min and $0 of $60 are used, so there is room for both cards.
+HANDBACK-QUESTION: -

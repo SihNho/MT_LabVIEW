@@ -1,0 +1,5 @@
+ACTION: ISSUE + PREP
+CARD: LabVIEW card: prior-art review of stage_d1_ring_p4_s02v18.py (ANSWERED and released), then ONE scratch of plan_ring_p4_s02v18.json e941ebbf on a byte copy of the s01 file. Record the gates (prim, TD by uid/owner/name), the Error List (51 or 52 predicted), the measured census, and peak ≤ 680. If every gate passes, adopt it as claudeDev D1_ring_p4s02_*.vi (PD329). Then run the full Error List and a load-MB and graph read in a fresh instance, and verify LabVIEW is gone. Offline prep card: draft the P4 session-3 plan and script skeleton on a provisional base, to be rebased with `stage_prerun.py --rebase` before launch.
+REASON: No cards are done yet (0 min and $0 used of 180 min and $60), and the purpose gives a clear, ordered chain with no open design question. PD332(d) already decides to adopt if all gates pass. Session-3 prep touches no LabVIEW, so it can run beside the LabVIEW card under the pipeline rule (one LabVIEW card plus one offline card).
+
+HANDBACK-QUESTION: -

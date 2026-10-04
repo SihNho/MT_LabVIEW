@@ -1,0 +1,6 @@
+ACTION: CLOSE
+CARD: -
+REASON: The cycle's 5 pass items are met. (1) 139-3 PASS: the For group inside the While has 3 tunnels with IndexMode 1, Is Broken? is False on all 14 wires, ExecState is 1, and the runs gave 3 and 2147483647 (scratch_verify/for_group_c139_3_190704.json). (2) 139-1 A: item 52 is "Case Structure: Unwired selector", owner the Case with selector #10465. (3) and (5) 139-P1 PASS: v10 replay reached END; v8->v10 shows 4 differing ops, all on added actions; the c138-6 disposition and FIXED line are written. (4) KMX uid 127 is done in v10; StopAll is born False on #4866 in v11/v12, with the Boolean-False donor (DonorBoolF_v0) built as uid 126 in 139-3.
+Cards 139-4 to 139-7 (P4 step 1) went past the purpose. Their failures now wait on judgement: the X10 memory peak is 750.7 > 690 MB, so step 1 must be split by memory or the checkpoint set changed; step 2 is 43 actions, so it must be re-cut or accepted; the reading of PD317(c) open rows is undecided. These go into NEXT for judgement, not another card here.
+Also owed: the "What was done with it" section of archive/peer/2026-10-02-c139-3-hyp-c139-1.md is still empty.
+HANDBACK-QUESTION: -

@@ -1,0 +1,4 @@
+ACTION: ISSUE
+CARD: OFFLINE: fix the RB gate in prep_c143_5_pred.py to exclude `why` text from the negative-uid scan, rerun pred (EL by fixed rule, s03 on the rebased plan da66a030), then X10 at 596.0, dry and prerun of both s03v18 recipes, and `--scratch-required`.
+REASON: 143-5 failed only on the gate's tokenising of `why` text. The rebased plan is final (fix 13/0, rebase PASS with 20 uids bound, plan da66a030). Failure budget was spent on that card, so this is a new card rather than a RETRY. The fix is a mechanical, bounded script edit in our own tool and carries no computation-rule or design question. Judgement need not be consulted. The rest of the chain (pred, X10, dry, prerun, scratch-required) is unblocked and fits the remaining cap of 91 min and $60. No LabVIEW is needed, so no PREP card is required beside it.
+HANDBACK-QUESTION: -

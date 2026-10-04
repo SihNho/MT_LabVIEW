@@ -1,0 +1,5 @@
+ACTION: ISSUE
+CARD: LabVIEW measure card: on a scratch copy of the bed, read #10170's `Stop If True?` setting and the `stop (end)` Mechanical Action on the machine, using a reader built from verified ops. This is pass item 2, the only one with no card yet. Bed untouched, no wire made, one scratch run.
+REASON: Pass item 1 is covered by 137-5. It gave PASS/FAIL with Is Broken? for U1, U2, U5 and W1-Or (PASS) and for U3 and U6 (FAIL), and 137-7 measured why those two fail. Pass item 3 is covered by 137-P1 (step-102 cause, `tools/stagesim.py:681`) and 137-P2. The Stop If True?/Mechanical Action read has no card yet. Time used is 121 of 180 min, so a ~30 min measure card fits.
+REASON: The U3 redesign (Select rejects a Boolean array on `s`), the U6 exit route and the stagesim crossing model are design calls for judgement. Pass item 4 cannot be met as written: U05 alone is 676.9 MB against 675 (`prep_c137_p1_facts.md` section 2). I report that rather than fix it here.
+HANDBACK-QUESTION: -

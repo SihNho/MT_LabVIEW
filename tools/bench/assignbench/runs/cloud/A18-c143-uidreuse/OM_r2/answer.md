@@ -1,0 +1,5 @@
+ACTION: CLOSE
+CARD: -
+REASON: All three pass items are met, with item 2's Error List count changed by judgement. Prior-art review of s02v18 came back novel at r3 and was released by FIXED lines (143-1). The one scratch passed 21/0 gates with a peak of 620.3 MB, under 680. It measured EL 53, not the predicted 51/52. Review c143-2-el53 judged that a predictor bug, and PD333 set the expected EL to 53. 143-3 then adopted 84cac487 through adopt_scratch: compare found nothing extra or missing, and the predictor self-test passed 7/0. The fresh-instance load (596.0 MB) and graph read eda9db40 are done, and LabVIEW is gone (143-2, 15/0).
+The session-3 prep beside it is not a pass item. Its rebase stops on UID-REUSE #23276: LabVIEW re-issued the terminal uid of the Comparison s02 deleted to the new Local #6899. Whether that check should accept it is a gate-rule decision for the next judgement session, not a card to retry here. NEXT should carry 143-3's open line and say the s03 rebase, X10 at 596.0, prediction, dry run and prerun are still owed.
+HANDBACK-QUESTION: -

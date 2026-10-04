@@ -1,0 +1,7 @@
+ACTION: HANDBACK
+CARD: -
+REASON: Card 134-3 stopped at step 1. The FS 27509 node row exists (objs[3439]) but its diagram uid is absent from the measured graph. Its owner is only the class string 'Diagram', and the owners dict has no key for any of the 22 FS nodes.
+The only measured link to its parent is indirect. All 8 border tunnels have outer-face frame_diagram 27219, which resolves through 22694 to 639. Cards 134-2 and 134-3 failed in succession, and 134-1 also failed. Each time the unmeasured owner chain was the cause, so a RETRY would only repeat it.
+Whether to accept an inferred FS parent is a design and rule call. It decides whether finalize b rests on measured data or on a derived chain. The alternative is a LabVIEW read card, which would first need the Owner uid property name verified on LV2026.
+plan_ring_p3b2b.json is still at d2bbd289, and F-1 pins 1451ba90. A git restore needs approval, so the restore is also owed before any finalize.
+HANDBACK-QUESTION: May an FS node's parent diagram be taken from its border tunnels' outer-face frame_diagram (8 of 8 agree on 27219, which chains to 639) as "measured" for finalize b? If not, should a LabVIEW read card re-read the FS node's Owner uid, and who approves restoring plan_ring_p3b2b.json to 1451ba90?

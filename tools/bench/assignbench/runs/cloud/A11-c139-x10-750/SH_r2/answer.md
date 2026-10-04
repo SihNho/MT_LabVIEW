@@ -1,0 +1,8 @@
+ACTION: HANDBACK
+CARD: -
+REASON: The cycle purpose is met, but its last four cards (139-4 to 139-7) ended on plan and threshold decisions, which cards can't make.
+- Purpose evidence: 139-3 passed the scratch For group inside a While (IndexMode 1 on all 3 tunnels, ExecState 1, runs 3 and 2147483647). 139-1 named EL item 52. 139-P1 replayed v10 END and the route compare differed only on added actions. 139-P1 also wrote the review disposition.
+- Current blocker (139-7): the step-1 plan is FINAL, but SP X10 predicts a peak of 750.7 MB against a fail limit of 690. The cause is 29 whole-VI reads (checkpoints {0,end} + bind ops). Whether to split step 1 by memory or reduce its checkpoints changes the staging design and the X10 sizing rule.
+- Step 2 is 43 actions against the ~42 re-cut line in ring-p4.md:184. Re-cutting steps 2-5 should also be checked against X10. The open_rows question (PD317(c)) is a rule reading.
+- Issuing another card now would repeat the failure class of 139-4 to 139-7, which each returned at the first gate.
+HANDBACK-QUESTION: Step 1 of P4 (39 actions, 29 whole-VI reads) is predicted at 750.7 MB against the X10 limit of 690. Do you (a) split it into two memory-bounded sessions, (b) cut the checkpoint set (fewer bind-op reads), or (c) re-derive the X10 limit? Should the 43-action step 2 be re-cut at the same time, so that steps 2-5 are sized by X10 as well as by action count?

@@ -1,0 +1,7 @@
+ACTION: ESCALATE
+CARD: Build claudeDev RingPickSlot_v0.vi per brief_142-1.md on rung 1 (Opus max). Look up `lo`/`last` by the terminal row's `term_uid` (#84), not `owner_uid`. Skip the scaffold-delete handling that 142-2 already proved (`verify=False`, skip gone uids). Keep the script to 120 lines or fewer. Run the 7 vectors, then re-run 2 from the saved file in a fresh instance.
+REASON: This goal has now failed twice on the default model: 142-1 (`delete_object` verify, build_ringpickslot_v0.log:29) and 142-2 (`one(owner_uid=3,is_source)` hit 2 controls, build_ringpickslot_v1.log:39). The ESCALATE rule applies.
+142-2's failure budget is spent, and each retry reached further. 142-2 got past the scaffold and the Constant traverse. The fix is already named in diag_c142_2_facts.md, and 142-1's script (v0) has the same lookup bug at build_ringpickslot_v0.py:55,57.
+Cycle spend is 30 of 180 min and no cost is reported, so there is room for a rung-1 run. The P4 s02 purpose needs RingPickSlot's slot-pick logic.
+I did not add a PREP card beside it. The 142-P1 rebase refusal (rebind key vs the re-used uids 28004/28979) is a tool or design question for the next assignment step.
+HANDBACK-QUESTION: -

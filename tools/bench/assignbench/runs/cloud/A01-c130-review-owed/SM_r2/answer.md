@@ -1,0 +1,7 @@
+ACTION: ISSUE
+CARD: Re-issue 130-1 (X10 memory model + P3b re-cut) with flags.peers including hypothesis, so the owed review for selftest_x10_c130_1.log can be dispatched and the fixed self-test (LF→CRLF md5 fix) can be rerun. The card then re-cuts P3b so X10 passes both halves, and stops at P3b-1 dry/prerun.
+REASON: 130-1 was BLOCKED by guard_peer, not by a design question. The Jev ladder returned new-problem p=0.550, so a hypothesis review is owed, and the card's `peers: [priorart]` made it impossible to dispatch.
+REASON: The failing T0 cause is known and fixed: git LF bytes vs the working-file CRLF md5 mismatch. The fix is written at selftest_x10_c130_1.py:34-38 but has not been rerun. The fix, the model code and the split script are all in place, so this is a retry with a widened flag, not a new design.
+REASON: The open question about leaving X10 live before its self-test passes can be answered inside the card. Its pass items require the old prerun self-tests to go green too, and the card must not end with X10 failing every prerun. If it can't, the card reverts to md5 88abd9c6 and reports that.
+REASON: No LabVIEW is needed until the P3b-1 scratch and launch, which come after this card. 37 of 180 minutes and none of the $60 are used, so there is room.
+HANDBACK-QUESTION: -

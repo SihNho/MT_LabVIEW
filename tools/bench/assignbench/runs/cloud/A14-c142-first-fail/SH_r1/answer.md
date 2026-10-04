@@ -1,0 +1,5 @@
+ACTION: RETRY
+CARD: Re-issue 142-1 (build and run RingPickSlot_v0.vi) with a fix to our own script. Delete the orphan inner constant (k0 #138) explicitly before deleting Constant #50, or re-read the Constant set after deleting the For and delete only what is still present. Cut the script to ≤120 lines. The rest of the card is unchanged: 7 known vectors, 2 re-runs in a fresh instance.
+REASON: The card failed at its first unexpected result, as card chat-P2 requires. The failure is a scripting assumption of ours: deleting ForLoop #43 removed only {43}, then deleting #50 removed two Constants (build_ringpickslot_v0.log:14-15,29). The likely second constant is #138 inside the deleted For, but that is unmeasured (diag_c142_1_facts.md:19-21).
+REASON: The card has used 1 of its 2 failures and 10 of its 90 minutes, and the cycle has used 10 of 180. The Num route and wiring worked (log:10-13), and no computation, threshold or rule-1a question is open. Nothing here needs a design decision, and escalation is not due. The retry should also read back the Constant set after the For delete, which turns the likely cause into a measured fact.
+HANDBACK-QUESTION: -

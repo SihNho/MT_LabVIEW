@@ -1,0 +1,5 @@
+ACTION: CLOSE
+CARD: -
+REASON: Purpose pass items are met by cards 135-4 and 135-5. Session a (via 135-1) and session b (via 135-4) ran on the bed. All gates passed, with peak 645.7 and 620.6 MB, both ≤ 690. The final Error List was 51 items, within 49..52. The bed moved to the P3b-2 final, D1_ring_p3b2b_20261002_130007.vi (39511877). The expected file was written from the final read, and `errorlist_check.reverdict` now returns OK. The in-between files 49cf7f77 and 6cc69221 were deleted. LabVIEW is gone, so the broken-file count is 4 of 6.
+Two items fall short of the literal wording. The first is the "a graph read compared EQUAL" item: the 135-1 compare was DIFFERENT, but 135-2 and the resume runner's C step later showed EQUAL after re-annotation. The second is step 0, where CEN2 matched the prediction exactly. The open question on STATUS.md:93, which still names P3b-1, is minor bookkeeping for the next cycle's retrospective.
+HANDBACK-QUESTION: -

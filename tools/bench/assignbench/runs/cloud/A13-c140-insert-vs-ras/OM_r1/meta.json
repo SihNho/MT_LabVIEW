@@ -1,0 +1,38 @@
+{
+ "case": "A13-c140-insert-vs-ras",
+ "arm": "OM",
+ "rep": 1,
+ "model": "claude-opus-5-5",
+ "effort": "medium",
+ "attempt": 1,
+ "usd": 0.4337,
+ "minutes": 0.28,
+ "cell_minutes": 0.28,
+ "turns": 1,
+ "tools": 0,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.28,
+   "usd": 0.43370320000000007,
+   "turns": 1,
+   "tools": 0,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-opus-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: HANDBACK\nCARD: -\nREASON: The cycle purpose is met. Card 140-1 PASSED 7/0 and covered all three pass items. Table A is 9 sessions with peaks of 659.1–674.8. Table B, with merged reads, is 8 sessions. Merging the step-1 BIND reads takes R from 29 to 14, and the facts file carries the OPEN lines. Cards 140-2/140-3 went past that purpose and stopped on something the facts do not explain. The 140-3 scratch run passed 19/0 with ops real == sim, but its Error List read 52 against a prediction of 51. The extra item is \"Insert Into Array: unwired/bad terminal\" on the node of p4_ras_bufdiff (donor #29157). Review c140-3-el52 says #29157 is an Insert Into Array, while the plan's primitive says Replace Array Subset. That is a rule-1a question about the original's computation, and a card cannot settle it by retrying. The other opens are also judgement calls: 678.5 MB against the 675 limit, removing the stale provisional flag from v14, and how to rebase the provisional base for s02 (140-P1 failed at E1 on unbound session-1 objects).\nHANDBACK-QUESTION: Is the ring's per-slot write node (donor #29157, carried into bed #29265/#29316) an Insert Into Array where the original computes a Replace Array Subset? If it is, does p4_ras_bufdiff keep the donor's class, or does the plan change (rule 1a)? If it is not, should 52 be accepted as session 1's Error List prediction so the gated launch can be re-issued? A cheap offline measurement could come first: read the class of #29157 in the original's graph dump, and of #29265/#29316 in the bed's.",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0
+ }
+}

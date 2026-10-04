@@ -1,0 +1,6 @@
+ACTION: ISSUE
+CARD: Read-only scratch run on a byte copy of the bed: build or reuse a reader for base While #10170's conditional terminal mode (Stop If True? vs Continue If True?) and for the Mechanical Action of the `stop` (end) control, then read both on the machine. Record the results under scratch_verify/. Bed md5 must be the same before and after. No wires, no plan edits.
+REASON: Pass items 1 and 3 are met. Item 1: 137-5 and 137-7 got a measured PASS/FAIL with Is Broken? for every route; U1, U2, U5 and W1-Or pass, U3 and U6 fail. Item 3: 137-P1 named the step-102 cause at vigraph.py:57-60, and 137-P2 confirmed it.
+Item 4 has a table, but not every session fits ≤675 at load 600.2, because U05 alone is 676.9 (137-P1 fact 2). Item 2 (#10170 Stop If True? / Mechanical Action) has not been tried. It does not depend on any open design question, and 59 of 180 minutes are left. Rule 2c: finish the work that doesn't need an answer before handing back.
+The open questions stay for the closing handback, not this card: the Select Boolean-array redesign from 137-7 (rule 1a), the `p4_x_n2_out` route, step 3 at 41 > 40, and #10465 / `p4_rbR_re0`.
+HANDBACK-QUESTION: -

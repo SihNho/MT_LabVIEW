@@ -1,0 +1,4 @@
+ACTION: ISSUE
+CARD: OFFLINE (tooling fix for the 143-4 refusal): make the s03 plan's Local -20 address ('value') bind to the provisional base's 'StopAll' terminal. The accepted route is the documented alias at tools/stagesim.py:735-736. Add a self-test, then run the s03 rebase on the s02 graph, X10 at 596.0, pred (EL from s02's 53), dry, prerun and --scratch-required.
+REASON: 143-4 removed the UID-REUSE refusal but the rebase then stopped at #-20.'value', which the base names 'StopAll'. The 143-2 reviewer found no risk in 'value' versus 'StopAll', because it is a documented alias (stagesim.py:735-736). This is a tooling or address mismatch, not a design or rule-1a question. It needs no judgement and has one clear measurable fix, with 120 min and $60 still in the cycle caps. The real LabVIEW scratch (purpose items 2 and 3) cannot start until the rebase binds, so this card comes first.
+HANDBACK-QUESTION: -

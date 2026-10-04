@@ -1,0 +1,9 @@
+ACTION: CLOSE
+CARD: -
+REASON: All five pass items are met. (1) 139-3: the scratch For group inside a While has 3 LoopTunnels with IndexMode 1, all 14 wires unbroken, ExecState 1, and the runs gave 3 and 2147483647 (record for_group_c139_3_190704.json). (2) 139-1: Error List item 52 is "Case Structure: Unwired selector" on the Case with selector #10465. (3) 139-P1: v10 replays END on 186 steps, and the v8→v10 route compare shows 4 differences, all on added actions. (4) KMX1/KMX2 are bound to uid 127 (P1). StopAll is set False on #4866 in v11/v12, and its donor DonorBoolF_v0 is built and read back as uid 126 (139-3). (5) The c138-6-p1cmp-routes disposition and its FIXED line are written (P1).
+Cards 139-4 to 139-7 went past this cycle's purpose into P4 step 1. Every one stopped on a question only judgement can answer:
+- X10 peak is 750.7 MB against a 690 MB limit (R=29 reads): split step 1 for memory, or change the checkpoint set?
+- After inheritance, step 2 has 43 actions (limit 42): re-cut it, or accept it?
+- How should PD317(c) base open rows be read?
+These go into the close for judgement. Two small items are carried as well: 139-3 left the "What was done with it" section of archive/peer/2026-10-02-c139-3-hyp-c139-1.md unfilled, and the 139-1 A gate needs the compare()/norm_ocr fix.
+HANDBACK-QUESTION: -

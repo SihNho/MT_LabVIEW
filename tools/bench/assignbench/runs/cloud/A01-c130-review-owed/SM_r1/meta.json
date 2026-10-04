@@ -1,0 +1,38 @@
+{
+ "case": "A01-c130-review-owed",
+ "arm": "SM",
+ "rep": 1,
+ "model": "claude-sonnet-5-5",
+ "effort": "medium",
+ "attempt": 1,
+ "usd": 0.1957,
+ "minutes": 0.17,
+ "cell_minutes": 0.17,
+ "turns": 1,
+ "tools": 0,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.17,
+   "usd": 0.1957402,
+   "turns": 1,
+   "tools": 0,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: RETRY\nCARD: Re-issue 130-1 (PD267(b) X10 memory model, then the P3b re-cut with both halves under X10's 675 MB limit, then the P3b-1 dry/prerun). The write list is unchanged. flags.peers is widened to [priorart, hypothesis] so the review owed for selftest_x10_c130_1.log can be dispatched. The card also fixes its own T0 fixture bug (LF to CRLF before the md5), is told to rerun the old stage_prerun self-tests, and keeps X10 behind a switch until its self-test passes.\nREASON: 130-1 is BLOCKED by a device, not by a goal failure. guard_peer's JEV-LADDER ruled \"new-problem\" at p=0.550, so a hypothesis review is owed, and the card's flags.peers = [priorart] could not dispatch one. That is a flag gap on our side, so retrying with the flag widened is a fix of our own and needs no judgement.\nREASON: The T0 failure is a real fixture bug. The fix is already written at selftest_x10_c130_1.py:34-38 and has not been rerun. The new X10 is live in stage_prerun.py without a passing self-test, and the old self-tests have not been rerun. The retry therefore has to run the review, rerun the fixed self-test, and confirm the old self-tests are still green. If it does not, X10 reverts to md5 88abd9c6.\nREASON: This is not a rule-1a matter or a design decision, because the goal and the thresholds (675 MB, 129-1 and 129-8 predictions) are unchanged. 130-2 passed offline and left only the guard_cycle and fp-22 items open. Neither touches this card, so there is no reason to start a prep card or hand back. 37 of 180 minutes are used.\nHANDBACK-QUESTION: -",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0
+ }
+}

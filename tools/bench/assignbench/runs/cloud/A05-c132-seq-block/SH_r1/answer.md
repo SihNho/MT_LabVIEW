@@ -1,0 +1,8 @@
+ACTION: RETRY
+CARD: 132-2 re-issued with the blocker removed. It first runs `py tools/stage_prerun.py --dry` and `--prerun` on `tools/bench/diag_c132_2_graph_p3b1.py`, with `--graph` set to the P3a graph or the sim end, as for the P3a precedent. It then does the bgrun launch of the read-only P3b-1 bed graph read (`graph_ring_p3b1_<ts>.json`, memory after load and after read). Last, it diffs the read against the sim end, including the #6810 loose-end wires. Card 132-1 has finished, so it no longer edits `tools/stage_prerun.py`, and the card may now run that script.
+REASON:
+- 132-2 was BLOCKED only by `guard_bash:prerun_gate`. The script calls `discard_work`, so it needs dry and prerun records, and the card forbade running `stage_prerun.py` while 132-1 was editing it. The P3a precedent passed the same gate (`diag_c125_graph_p3a_prerun.log`, PRERUN PASS 14/0).
+- No design decision is open for this card. The purpose already orders the real graph read before the P3b-2 `--rebase`, and 132-2 produced no artefact, so a LabVIEW card is still owed (30 of 180 min and $60 used).
+- No PREP card beside it, because both cards would touch `tools/stage_prerun.py` and the shared queue files, which is what blocked 132-2. After the read, the next card handles the fp-21 / fp-28 closures and the `--rebase`.
+- 132-1's open items are fp-21 (dry on a provisional base stops at STEPX 00, unbound negative uids), the P3b-2 Error List range, and the c106e E1 re-pin. They are not decided here. The purpose says "then --rebase P3b-2, dry/prerun", so a dry before the rebase is not needed. fp-21 can be closed with that reason, or fixed, once the real graph is read.
+HANDBACK-QUESTION: -

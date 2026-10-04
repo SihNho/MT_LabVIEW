@@ -1,0 +1,38 @@
+{
+ "case": "A05-c132-seq-block",
+ "arm": "OM",
+ "rep": 1,
+ "model": "claude-opus-5-5",
+ "effort": "medium",
+ "attempt": 1,
+ "usd": 0.3867,
+ "minutes": 0.2,
+ "cell_minutes": 0.2,
+ "turns": 1,
+ "tools": 0,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.2,
+   "usd": 0.3867432,
+   "turns": 1,
+   "tools": 0,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-opus-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: RETRY\nCARD: 132-2 again: the read-only graph read of the P3b-1 bed (D1_ring_p3b1_20261002_060910.vi, check md5 9d7bf287 before and after) into graph_ring_p3b1_<ts>.json, with private-bytes after load and after the read, then the offline diff against the sim end including the #6810 loose-end wires. Widened flag: the card may now run `py tools/stage_prerun.py --dry` and `--prerun` on tools/bench/diag_c132_2_graph_p3b1.py (graph = graph_qrt_pool_20260928.json as in P3a) to get the launch-gate records, then launch through bgrun as already written.\nREASON: 132-2 was BLOCKED only by guard_bash:prerun_gate. It had no dry or prerun record, and its card forbade running stage_prerun.py because 132-1 was editing it. 132-1 has now returned with stage_prerun.py at md5 489d7be9, so that conflict is gone. P3a passed the same gate this way (diag_c125_graph_p3a_prerun.log, PRERUN PASS 14/0). The read is pass item 2's prerequisite. A real-graph `--rebase` of P3b-2 also gets past 132-1's fp-21 stop: the dry halted on unbound provisional negative uids [-116..-102], and a real base has none. 132-1's open questions (error-list range, fp-21 binding rule, the c106e re-pin and name-gate scope) are judgement items, but they don't block this read-only measurement.\nHANDBACK-QUESTION: -",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0
+ }
+}

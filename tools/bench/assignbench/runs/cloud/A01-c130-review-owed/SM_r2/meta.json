@@ -1,0 +1,38 @@
+{
+ "case": "A01-c130-review-owed",
+ "arm": "SM",
+ "rep": 2,
+ "model": "claude-sonnet-5-5",
+ "effort": "medium",
+ "attempt": 1,
+ "usd": 0.1946,
+ "minutes": 0.17,
+ "cell_minutes": 0.17,
+ "turns": 1,
+ "tools": 0,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.17,
+   "usd": 0.1946352,
+   "turns": 1,
+   "tools": 0,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: ISSUE\nCARD: Re-issue 130-1 (X10 memory model + P3b re-cut) with flags.peers including hypothesis, so the owed review for selftest_x10_c130_1.log can be dispatched and the fixed self-test (LF→CRLF md5 fix) can be rerun. The card then re-cuts P3b so X10 passes both halves, and stops at P3b-1 dry/prerun.\nREASON: 130-1 was BLOCKED by guard_peer, not by a design question. The Jev ladder returned new-problem p=0.550, so a hypothesis review is owed, and the card's `peers: [priorart]` made it impossible to dispatch.\nREASON: The failing T0 cause is known and fixed: git LF bytes vs the working-file CRLF md5 mismatch. The fix is written at selftest_x10_c130_1.py:34-38 but has not been rerun. The fix, the model code and the split script are all in place, so this is a retry with a widened flag, not a new design.\nREASON: The open question about leaving X10 live before its self-test passes can be answered inside the card. Its pass items require the old prerun self-tests to go green too, and the card must not end with X10 failing every prerun. If it can't, the card reverts to md5 88abd9c6 and reports that.\nREASON: No LabVIEW is needed until the P3b-1 scratch and launch, which come after this card. 37 of 180 minutes and none of the $60 are used, so there is room.\nHANDBACK-QUESTION: -",
+ "mech": {
+  "M1": 0.0,
+  "M2": 1.0,
+  "F1": 0.0
+ }
+}

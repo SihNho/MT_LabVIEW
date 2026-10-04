@@ -1,0 +1,7 @@
+ACTION: ESCALATE
+CARD: Same goal as 142-1/142-2, on rung 1 (Opus max, `material-opus-max.md`). Build claudeDev RingPickSlot_v0.vi per brief_142-1.md and RUN it on 7 known vectors. Re-run 2 from the saved file in a fresh instance. Carry both known script fixes. First, delete the generator For's constants with `verify=False`, skipping uids already gone (the v1 scaffold did this). Second, take `lo`/`last` from the terminal row's `term_uid`, not the source row's `owner_uid` (`build_ringpickslot_v0.py:55,57` and v1 `:43`). Keep the script at or under 120 lines.
+REASON:
+- The goal has now failed twice on the default model (142-1 FAIL, 142-2 FAIL), which is the escalation condition. Both failures were bugs in our own script, not the toolkit: `delete_object` count mismatch (`build_ringpickslot_v0.log:29`) and the `owner_uid=3` lookup that matched two controls (`build_ringpickslot_v1.log:39`).
+- The fixes are already known (142-2 facts), so the escalated card needs no new design decision. The card still has to reach the unreached part: FMN group, indicators, pane, save, 7 runs and the fresh re-runs.
+- 30 of 180 min are used, so time is fine. Two LabVIEW runs have left no saved artefact. Offline prep for the 142-P1 rebase refusal (`prep_c142_p1_rebase.log:3`) can be started beside this card after the escalation is issued. Whether to change the rebind key is a plan decision for judgement if it fails again.
+HANDBACK-QUESTION: -

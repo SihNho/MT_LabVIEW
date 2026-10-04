@@ -1,0 +1,38 @@
+{
+ "case": "A13-c140-insert-vs-ras",
+ "arm": "SM",
+ "rep": 2,
+ "model": "claude-sonnet-5-5",
+ "effort": "medium",
+ "attempt": 1,
+ "usd": 0.2158,
+ "minutes": 0.16,
+ "cell_minutes": 0.16,
+ "turns": 1,
+ "tools": 0,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.16,
+   "usd": 0.2158402,
+   "turns": 1,
+   "tools": 0,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: HANDBACK\nCARD: -\nREASON: Card 140-3 stopped at scratch with Error List 52, but the plan predicted 51 (alt 53). The extra item is an Insert Into Array unwired/bad terminal (diag_c140_3_elcmp.log:3-4).\nThe el52 review is SUPPORTED. It says the node of p4_ras_bufdiff (donor #29157) is an Insert Into Array, while the plan names it Replace Array Subset. Whether that node class is right is a rule 1a question about the original's computation, so I can't settle it by retrying.\nCard 140-2 failed on RLE error 1055, and 140-3 bypassed it with v15. That makes two session-1 failures in a row, but the two failures have different causes, so escalating the same goal would not help.\nCard 140-P1 (prep for session 2) failed because the provisional base holds objects that session 1 creates. That base stays unusable until session 1 produces a real graph, so another prep card would repeat the failure. The scratch ran with 97 card minutes used, so budget is not the constraint.\nHANDBACK-QUESTION: Is the ring's per-slot write node (donor #29157, bed #29265/#29316) meant to be Insert Into Array or Replace Array Subset under rule 1a? If it is Insert Into Array, do you accept 52 as session 1's predicted Error List and allow the launch to be re-issued? If it is Replace Array Subset, the plan primitive is wrong and the plan needs fixing first.",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0
+ }
+}

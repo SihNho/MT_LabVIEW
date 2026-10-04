@@ -1,0 +1,38 @@
+{
+ "case": "A06-c132-fp29",
+ "arm": "OM",
+ "rep": 2,
+ "model": "claude-opus-5-5",
+ "effort": "medium",
+ "attempt": 1,
+ "usd": 0.4114,
+ "minutes": 0.28,
+ "cell_minutes": 0.28,
+ "turns": 1,
+ "tools": 0,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.28,
+   "usd": 0.41142819999999997,
+   "turns": 1,
+   "tools": 0,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-opus-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: HANDBACK\nCARD: -\nREASON: The P3b-2 chain is stuck on two gate questions, and settling either one is a rule decision, not material work.\n(1) Card 132-3 is blocked by fp-29. X10 has refused UNMEASURED since card 130-1 (`tools/stage_prerun.py:1984-1987`). That refusal also catches the read-only graph reader, which has 0 wire/delete/RLE ops (prerun.log:17). The P3a twin of this reader only passed because the old X10 rule gave it a WARN (`diag_c125_graph_p3a_prerun.log:20-21`).\n(2) The graph read is what P3b-2 `--rebase` needs. Once the rebase runs, the dry would bind against the real graph. That could make fp-21 (132-1's FAIL, unbound negative uids on the provisional base) unnecessary to fix, but that is not settled until the rebase is tried.\n(3) Card 132-1 also left three other judgement questions open: how to pin the 50..52 Error List range, the fp-21 approach, and whether to accept the c106e E1 re-pin and the fs_border-only scope of the name gate.\nOnly 35 of 180 minutes are used, but a retry under the current X10 would fail the same way.\nHANDBACK-QUESTION: Should X10 let a read-only reader through (0 edit ops in the dry plan → WARN, not UNMEASURED FAIL; fp-29 drained that way), so the P3b-1 graph read can run and P3b-2 can be rebased on the real graph? Or should the meter for this run come from somewhere else, for example the P3a read's measured memory?",
+ "mech": {
+  "M1": 0.0,
+  "M2": 1.0,
+  "F1": 0.0
+ }
+}

@@ -1,0 +1,38 @@
+{
+ "case": "A09-c137-lookup-twice",
+ "arm": "OH",
+ "rep": 1,
+ "model": "claude-opus-5-5",
+ "effort": "high",
+ "attempt": 1,
+ "usd": 0.3956,
+ "minutes": 0.36,
+ "cell_minutes": 0.36,
+ "turns": 1,
+ "tools": 0,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.36,
+   "usd": 0.3956472,
+   "turns": 1,
+   "tools": 0,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-opus-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: ISSUE\nCARD: Scratch-VI check (≤120 lines, on a byte copy; the bed is never edited) of the lookup that failed twice. Build a minimal VI with one new While loop, place one constant in its body with const_donor, then record: (a) the Diagram indices that Traverse/OpNodeLabels return and whether the new body's uid appears among them; (b) the row count and uids that node_labels returns for that body index, and whether the constant is listed; (c) the same for the existing body #23166. Write PASS/FAIL to scratch_verify/. In the same LabVIEW session, also read #10170 `Stop If True?` and the stop (end) Mechanical Action on the bed. Report facts only; do not choose a route.\nREASON: 137-1 stopped at the same place as 136-3. Node #29466, whose owner is body #29431, is in none of the 180 node_labels lists (diag_c137_1_routes.log:27,36-46). That rules out a stale index. Two candidate causes are still untested: OpNodeLabels does not list constants made by const_donor, or Traverse never reaches the new body. Two runs have now failed on the same scripting function, so the next LabVIEW act must be a scratch-VI check, and the third stage launch is refused until a PASS record exists. The Stop If True?/Mechanical Action read does not depend on that answer, so it goes in the same batch (rule 2c). The card also owes the failed-prediction review: Jev ladder first, then a hypothesis arm if Jev returns new-problem. No prep card this step. Both P1 opens (fix the plan or the simulator; whether c135e §4 is settled) and the choice between Stage.address and allterms are judgement calls. They wait for this measurement and for the closing report. Time used: 19 of 180 min.\nHANDBACK-QUESTION: -",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0
+ }
+}

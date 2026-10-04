@@ -1,0 +1,7 @@
+ACTION: HANDBACK
+CARD: -
+REASON: Card 140-3 stopped at scratch with Error List 52, but the plan predicted 51 (alt 53). The extra item is an Insert Into Array unwired/bad terminal (diag_c140_3_elcmp.log:3-4).
+The el52 review is SUPPORTED. It says the node of p4_ras_bufdiff (donor #29157) is an Insert Into Array, while the plan names it Replace Array Subset. Whether that node class is right is a rule 1a question about the original's computation, so I can't settle it by retrying.
+Card 140-2 failed on RLE error 1055, and 140-3 bypassed it with v15. That makes two session-1 failures in a row, but the two failures have different causes, so escalating the same goal would not help.
+Card 140-P1 (prep for session 2) failed because the provisional base holds objects that session 1 creates. That base stays unusable until session 1 produces a real graph, so another prep card would repeat the failure. The scratch ran with 97 card minutes used, so budget is not the constraint.
+HANDBACK-QUESTION: Is the ring's per-slot write node (donor #29157, bed #29265/#29316) meant to be Insert Into Array or Replace Array Subset under rule 1a? If it is Insert Into Array, do you accept 52 as session 1's predicted Error List and allow the launch to be re-issued? If it is Replace Array Subset, the plan primitive is wrong and the plan needs fixing first.

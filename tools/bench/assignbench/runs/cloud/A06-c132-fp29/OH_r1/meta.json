@@ -1,0 +1,38 @@
+{
+ "case": "A06-c132-fp29",
+ "arm": "OH",
+ "rep": 1,
+ "model": "claude-opus-5-5",
+ "effort": "high",
+ "attempt": 1,
+ "usd": 0.4226,
+ "minutes": 0.38,
+ "cell_minutes": 0.38,
+ "turns": 1,
+ "tools": 0,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.38,
+   "usd": 0.4226132,
+   "turns": 1,
+   "tools": 0,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-opus-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: ISSUE\nCARD: Clear fp-29 and do the P3b-1 graph read in one card. In tools/stage_prerun.py, make X10 predict the peak memory of a reader with no edit ops (X5 = 0 wire/delete/RLE) from memory_model.json, as bed load plus the final_read_mb term (17.4). Do not exempt it, and keep fail at 690. Add a selftest where diag_c132_2_graph_p3b1.py gets a numeric prediction ≤ 690 and P3b-1 still predicts 680.8, then close fp-29 with that reason. Then run dry and prerun (--graph graph_ring_p3a_20261001_190155.json) on diag_c132_2_graph_p3b1.py, and launch the read-only graph read under bgrun. Bed md5 9d7bf287 must stay unchanged. Read memory after load and after the read, then do the offline diff against the sim end.\nREASON: 132-3 was blocked only by prerun X10 UNMEASURED: 13 checks passed, 1 failed (prerun.log:21,25), and X5 shows 0 edit ops. The gate is blocking the very run that would produce its own memory reading. The P3a twin of this reader passed X10 as WARN under the old X10 (diag_c125_graph_p3a_prerun.log:20-21). Card 132-1 already added the final-read term and checked it against the measured P3b-1 launch (680.8 predicted vs 680.4). So predicting this reader's peak from the existing model applies a term we have measured and changes no threshold or rule. stage_prerun.py is free to edit now that 132-1 has finished. The fp-21 provisional-base dry failure is avoided by reading the real graph and running --rebase, which is the order the purpose already sets. The other open questions from 132-1 (the expected Error List range, the c106e re-pin, the name-gate scope) only matter at the P3b-2 scratch and launch, so they wait. Time used: 35 of 180 min.\nHANDBACK-QUESTION: -",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0
+ }
+}

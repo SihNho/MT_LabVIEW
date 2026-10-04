@@ -1,0 +1,6 @@
+ACTION: ISSUE + PREP
+CARD: S3 on the scratch VI already on disk. Run `stage_d1_ring_p3b1_el.py` in scratch mode, record the Error List count against the expected 54, write the census into pred, and delete the scratch. No pin rerun and no real launch. PREP (offline): tabulate the "METER op" vs "final whole-VI read" deltas from every earlier pin and scratch log. Read how the X10 model in `stage_prerun.py` counts that final read. Report facts only.
+REASON: 131-3 failed one gate only. The final whole-VI read gave 680.8 MB against `fail_above` 675.0, while the METER read at op 31 was 663.4 MB, equal to the model. Every other gate passed, including E1 through op 31, tunnel names, FS frames [0,16,18], Error List expected 54 and bed md5 unchanged (pin4.log:446-447, 449-580, 590, 596).
+Raising the memory threshold or re-cutting the model is a design/threshold decision for judgement, not for this card. S3 and the delta tabulation do not depend on that answer, so they should be finished first (rule 2c).
+The cycle has used 63 of 180 minutes. S3 is one short LabVIEW card on a scratch copy of the bed, with the bed md5 already verified unchanged.
+HANDBACK-QUESTION: -

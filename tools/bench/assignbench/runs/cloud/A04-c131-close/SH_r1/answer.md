@@ -1,0 +1,8 @@
+ACTION: HANDBACK
+CARD: -
+REASON: Pass items 1 and 2 are met. Card 131-1 tabled 18 crossings, and its stagesim selftest is 105/0. P3b-1 and P3b-2 were re-finalized with split end equal to unsplit 70, and P3b-1 dry was 31/31 with prerun 15/0.
+Pass item 3 is only partly met. P3b-1 was launched once and saved as `D1_ring_p3b1_20261002_060910.vi` (131-5, 22/0, rc=0). The final Error List was read at 53 items (131-6, 25/0), with the expected file re-pinned from that read.
+Two pass criteria were not met as written. Peak memory was 680.8 MB in scratch and 680.4 MB in the launch, against the pass bar of 663.4 MB. Both runs passed only because the fail_above was raised to 690. The Error List count was 53, where the prediction was 54 and the pin was then redone from the read.
+What is left needs a decision, not a card. That covers accepting the 53 baseline, whose w3040 versus w653/w3747 identity is unverified, and moving current-bed, and also the memory model. Only 51 card-minutes remain of the 180 cap, and a further card would not resolve any of these.
+
+HANDBACK-QUESTION: Do you accept P3b-1 as done under amended criteria: peak about 680 MB against fail_above 690, and Error List 53 pinned from the read, with the loose-end wire identity unverified (the review's alternative is a w3747/w653 branch stub)? If so, move current-bed to `D1_ring_p3b1_20261002_060910.vi` (broken file 3 of 6). Also say whether the memory model should be re-cut from the measured +17.4 MB final read before P3b-2 is launched (predicted 664.3 MB, which would fail the same way).

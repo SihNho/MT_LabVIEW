@@ -1,0 +1,4 @@
+ACTION: CLOSE
+CARD: -
+REASON: The purpose is met. Card 135-4 ran the one resume launch of session b. All 13 gates passed, the peak was 620.6 MB (limit 677/690), and the final Error List read 51 items, inside 49..52. Card 135-5 wrote the expected file from that read, and `errorlist_check.reverdict` returned OK with extra [] and missing []. It moved the current-bed key to `D1_ring_p3b2b_20261002_130007.vi` (md5 39511877), which makes 4 of 6 broken files. It also deleted the a-file 49cf7f77 and the scratch 6cc69221, each after an md5 match, and the runner's GONE/E4 gates passed for LabVIEW. One loose end is not blocking: the `STATUS.md:93` bed narrative still names P3b-1, so judgement should have it updated in the next cycle.
+HANDBACK-QUESTION: -

@@ -1,0 +1,38 @@
+{
+ "case": "A15-c142-escalate",
+ "arm": "SM",
+ "rep": 2,
+ "model": "claude-sonnet-5-5",
+ "effort": "medium",
+ "attempt": 1,
+ "usd": 0.0257,
+ "minutes": 0.13,
+ "cell_minutes": 0.13,
+ "turns": 1,
+ "tools": 0,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.13,
+   "usd": 0.025707199999999996,
+   "turns": 1,
+   "tools": 0,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: RETRY\nCARD: Retry of 142-1/142-2: build claudeDev RingPickSlot_v0.vi per brief_142-1.md. Fix our script's lookup bug by taking the last control from its terminal row (term_uid 84) instead of owner_uid. Keep the v1 scaffold deletes, which ran clean. Then run the 7 vectors and re-run 2 in a fresh instance.\nREASON: 142-2's first fail is our own script. The last-control lookup used owner_uid=3 (TopLevelDiagram), so it matched both controls #202 and #84 (build_ringpickslot_v1.log:32,39; build_ringpickslot_v1.py:43). The fix is already named: use the terminal row's term_uid.\nREASON: The 142-1 delete fault is fixed. The scaffold deletes with verify=False ran clean and the Constant traverse ended empty (log:14-21). The measured end state matched prediction wherever it was read. The goal has failed twice on the default model, but both failures were script-level defects with a known repair and not model capability, so escalating to Opus max would add nothing. A retry is the lower-cost step. The same lookup bug is in v0 (build_ringpickslot_v0.py:55,57), so the retry must fix it in both places.\nREASON: The 142-P1 rebase refusal (GrowableFunction x3 simulated vs x1 real, uid re-use on 28004/28979) needs a rebind-key design decision. That is a judgement item, so it is not run as PREP beside this card. If this retry also fails on a script defect, escalate to Opus max rung 1.\nHANDBACK-QUESTION: -",
+ "mech": {
+  "M1": 0.0,
+  "M2": 1.0,
+  "F1": 1.0
+ }
+}

@@ -1,0 +1,38 @@
+{
+ "case": "A14-c142-first-fail",
+ "arm": "OH",
+ "rep": 2,
+ "model": "claude-opus-5-5",
+ "effort": "high",
+ "attempt": 1,
+ "usd": 0.3761,
+ "minutes": 0.35,
+ "cell_minutes": 0.35,
+ "turns": 1,
+ "tools": 0,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.35,
+   "usd": 0.37614020000000004,
+   "turns": 1,
+   "tools": 0,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-opus-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: RETRY\nCARD: Rebuild claudeDev RingPickSlot_v0.vi (P4 slot selection, smallest Num > last = v17 group) with one change to our own script. Delete the generator For's N constant #50 before deleting ForLoop #43, and read the Constant traverse set again after each delete, logging both sets so the \"2 gone\" count is measured rather than guessed. Trim the script to ≤120 lines. Archive the hypothesis/Jev-ladder review for the failed prediction before relaunching. Then run the 7 known vectors and re-run 2 of them from the saved file in a fresh instance.\nREASON: 142-1 is FAIL on its first attempt, so one of its 2 failures is used. It failed at one scripted step (log:29): `delete_object(Constant[0])` saw 2 objects vanish just after ForLoop #43 was deleted, and that loop held k0 #138. That points to a delete-order or stale-traverse problem in our own script, not a design question. Everything before that step passed: the Num route worked, the GT wires were unbroken, and the For delete removed exactly {43}. Nothing was saved, both md5s are unchanged and LabVIEW is gone, so a retry starts clean. Deleting #50 while the For still exists, then re-reading the set, keeps the build path the same and does not touch the computation (rule 1a), so it is RETRY, not HANDBACK. Building Num another way would be a design choice, so it waits for a second failure. Time used is 10 of 180 min.\nHANDBACK-QUESTION: -",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0
+ }
+}

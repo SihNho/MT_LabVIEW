@@ -1,0 +1,8 @@
+ACTION: ISSUE + PREP
+CARD: LabVIEW card: run S3 (`tools/bench/stage_d1_ring_p3b1_el.py scratch`) on the scratch VI that is already on disk (`claudeDev\scratch_c129_ring_p3b1_20261002_052136.vi`, md5 efb317ef). It counts the Error List items only, compares that count with the expected 54, deletes the scratch VI and confirms LabVIEW is gone. It does not rerun the pin and does not launch. | PREP card, offline: from every recorded scratch/pin log, tabulate the memory reading at the last METER op and at the final whole-VI read, and their difference (each row cited). Then show from the code whether the stage_prerun X10 model includes that final read (its file:line). It measures only and changes no threshold.
+REASON: 131-3 passed 22 gates with E1 equal to the simulator through op 31. Its only miss was the peak: 680.8 MB at the final read, against a predicted 663.4 MB and a fail-above line of 675 (pin4.log:446-447). The METER reading at op 31 was 663.4 MB, which matches the model.
+Whether to accept that peak or change the memory model is a threshold decision for judgement. Under rule 2c, the parts that do not depend on that decision run first.
+S3 is one of those parts: pass item 3 needs its Error List count, and it cleans up the scratch VI that card 131-3 could not delete.
+The prep card gives judgement the measured basis it needs: is +17.4 MB at the final read normal, or a new effect, compared with about +4.1 MB on earlier reads?
+Time used is 63 of 180 minutes and no cost has been reported, so there is room for both cards.
+HANDBACK-QUESTION: -

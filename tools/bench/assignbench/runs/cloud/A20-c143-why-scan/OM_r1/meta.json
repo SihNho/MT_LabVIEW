@@ -1,0 +1,38 @@
+{
+ "case": "A20-c143-why-scan",
+ "arm": "OM",
+ "rep": 1,
+ "model": "claude-opus-5-5",
+ "effort": "medium",
+ "attempt": 1,
+ "usd": 0.4756,
+ "minutes": 0.29,
+ "cell_minutes": 0.29,
+ "turns": 1,
+ "tools": 0,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.29,
+   "usd": 0.4756442,
+   "turns": 1,
+   "tools": 0,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-opus-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: RETRY\nCARD: OFFLINE: in our own prep_c143_5_pred.py, stop the RB \"no negative uid left\" scan from reading the free-text `why` fields (scan uid/term fields only, and log the change to gate_fp_queue). Then on the rebased plan da66a030: X10 at 596.0, Error List prediction with the fixed rule (prep_c143_3_elrule), pred file, dry and prerun of both s03v18 recipes, and --scratch-required.\nREASON: All three pass items are met. The prior-art review was answered and released (143-1, r3 novel). The scratch ran 21/0 with peak 620.3 MB; its Error List of 53 was ruled by-design (143-2 review supported, PD333) and the file 84cac487 was adopted (143-3). The fresh-instance load and graph read were done and LabVIEW is gone (143-2). Only the session-3 prep in the act is still open.\n143-5's second failure was a false positive in our own check: \"I32[20] -1\" in the `why` text at plan_ring_p4_s03v18.json:101 was read as a uid. The rebase itself passed and the plan is final at da66a030 (prep_c143_5_rebase2.log), so the steps left are mechanical.\nThis is a one-line fix to our own script, not a model limit, so ESCALATE does not fit. Card time so far is 89 of 180 minutes and the earlier offline cards took about 6–11 minutes each.\nHANDBACK-QUESTION: -",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0
+ }
+}

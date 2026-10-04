@@ -1,0 +1,7 @@
+ACTION: ISSUE
+CARD: LabVIEW read only, nothing saved. Change the graph reader so it records the real Owner uid of all 22 FS nodes and of their frame diagrams; it records frames as ['FlatSequenceFrame', 0] today. Re-read a copy of the in-between file 6cc69221 and check that FS 27509's owner diagram is 27219. Then base_state takes FS owners from those rows. Restore plan_ring_p3b2b.json to 1451ba90, finalize P3b-2 session b on the new graph, and run b dry + prerun with X10 <= 690.
+REASON: 134-3 showed the reader never records an owner for an FS node. Its owners dict is filled only from Diagram and loop rows (diag_c134_1_graph.py:40-46), and frame owners come back with uid 0. That gap is what makes F1 fail at action 15 ("no common diagram of #639 and #32464").
+The card asked whether the 27219 chain from border tunnels counts as measured. PD289(c) already says owners must come from MEASURED rows. A direct Owner read gives that, so the question goes away and no judgement call is needed. Inferring it instead is the inference-over-measurement pattern.
+134-1 did the same kind of read in 25 min with LabVIEW gone afterwards and the input md5 unchanged. 48 of 180 min are used, so a second read fits.
+Each of the three FAILs had its own cause, found by measurement, and each card stopped early rather than using up its budget. That is not the trigger for escalating, and a stronger model would not supply a missing read.
+HANDBACK-QUESTION: -

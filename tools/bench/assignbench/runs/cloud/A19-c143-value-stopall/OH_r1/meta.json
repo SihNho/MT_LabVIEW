@@ -1,0 +1,38 @@
+{
+ "case": "A19-c143-value-stopall",
+ "arm": "OH",
+ "rep": 1,
+ "model": "claude-opus-5-5",
+ "effort": "high",
+ "attempt": 1,
+ "usd": 0.5108,
+ "minutes": 0.44,
+ "cell_minutes": 0.44,
+ "turns": 2,
+ "tools": 1,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.44,
+   "usd": 0.510791,
+   "turns": 2,
+   "tools": 1,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-opus-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: RETRY\nCARD: OFFLINE tooling (PD334 continued): make the rebase terminal binder in `tools/stage_prerun.py` (the bind that refuses at :3904) follow the simulator's `.value` rule from card 100-3 (`tools/stagesim.py:735-736`). Under that rule, `.value` names a Local's one terminal of the wanted direction. Add a self-test that `#-20.value` binds to the Local's real sink (named 'StopAll') and that an ambiguous `.value` is still refused. Then finish the s03 work on the s02 graph eda9db40: rebase, X10 at 596.0, Error List prediction with prep_c143_3_pred.py, dry run and prerun of both s03v18 recipes, and `--scratch-required`.\nREASON: The s02 pass items are met. 143-1 settled prior-art (r3 novel). Under PD333, 143-3 adopted 84cac487 with an expected Error List of 53 (compare: extra [], missing []). 143-2 did the fresh-instance load at 596.0 MB, read the graph and confirmed LabVIEW is gone. What is left is the s03 prep that runs beside it.\n143-4's own fix worked: the UID-REUSE refusal is gone and REUSE-NOTED 23276 was logged. The rebase then failed on a different, fully explained cause. The s03 plan has `{uid -20, term 'value'}`, but on the base that Local's terminal is named 'StopAll' (prep_c143_4_probe2.log).\nThe simulator already treats `.value` on a Local as its one terminal of the wanted direction (`stagesim.py:735-736`, card 100-3). 143-2's reviewer called this a documented alias and no risk. The rebase binder does not apply the same rule, so this is a gap between our two tools, not a design question. Rule 1a is not affected.\nLeave the plan file untouched: rule 8 says row content comes only from the finalized plan. This is the first failure on this cause, so the failure budget still allows a retry. About 83 of 180 minutes are used, and no LabVIEW work is involved.\nHANDBACK-QUESTION: -",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0
+ }
+}

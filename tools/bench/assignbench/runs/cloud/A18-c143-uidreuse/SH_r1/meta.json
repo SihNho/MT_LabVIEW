@@ -1,0 +1,38 @@
+{
+ "case": "A18-c143-uidreuse",
+ "arm": "SH",
+ "rep": 1,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "attempt": 1,
+ "usd": 0.2308,
+ "minutes": 0.25,
+ "cell_minutes": 0.25,
+ "turns": 1,
+ "tools": 0,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-sonnet-5-5",
+   "effort": "high",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.25,
+   "usd": 0.2307832,
+   "turns": 1,
+   "tools": 0,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: ISSUE\nCARD: OFFLINE read-only measurement of the UID-REUSE refusal (no gate release, no tool edit, no LabVIEW). (1) Quote what `stagexec.uid_reuse` (:942) and `stage_prerun.py:3453-3455` check and what the refusal protects against. (2) List every place the s03v18 plan, pred and recipes, and the s02 sim end state, reference uid 23276 or the Comparison #10171 terminals (symbol, row, role). (3) List every other uid whose (class, name) differs between the s02 sim end and the real s02 graph `eda9db40`, and say whether s03 touches any of them. (4) State whether a rebase bound only to the real graph's `Local #6899` terminal would leave any s03 row ambiguous. Return facts and an `OPEN:` line only.\nREASON: 143-3 failed at its first unexpected result: the rebase was refused by UID-REUSE `#23276` (`prep_c143_3_rebase.log:3`, rc 2). The cause is already known: LabVIEW re-issued the deleted Comparison #10171 terminal uid to the new Local #6899 within s02 (`diag_c143_1_scratch.log:391`). Whether this is a real hazard or a false positive depends on whether s03 references that uid, and nobody has measured that yet. Releasing a launch gate is a judgement call, so this card only gathers the facts for it. All other 143-3 work is done: s02 adopted, EL predictor fixed (s02 -> 53, s01 -> 51), and 143-P2 ported the s03 recipe changes. 108 minutes remain in the cycle.\nHANDBACK-QUESTION: -",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0
+ }
+}

@@ -1,0 +1,38 @@
+{
+ "case": "A17-c143-el53",
+ "arm": "SH",
+ "rep": 1,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "attempt": 1,
+ "usd": 0.2003,
+ "minutes": 0.17,
+ "cell_minutes": 0.17,
+ "turns": 1,
+ "tools": 0,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-sonnet-5-5",
+   "effort": "high",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.17,
+   "usd": 0.20025120000000002,
+   "turns": 1,
+   "tools": 0,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: HANDBACK\nCARD: -\nREASON: Card 143-1 passed every scratch gate (RESULT 21/0, peak 620.3 MB against the 678.5 limit, the saved file D1_ring_p4s02_20261003_110001.vi at md5 84cac487). It failed only on the Error List, which read 53 against the predicted 51 or 52 (errorlist_c143_1_p4s02.log, JSON :5638-5642).\nREASON: The two extra items are an unwired Local-variable read and a While Loop conditional terminal that is not wired. Neither carries a uid, and which node each one belongs to is still unverified. Whether they are the by-design state at the session boundary is not settled by the facts.\nREASON: Adopting 84cac487 with a re-predicted 53 would change the pass criterion (\"51 or 52 as predicted\") and the PD322(e) predictor rules. That is a design and threshold decision, so it belongs to judgement. A rerun would only reproduce 53.\nREASON: Card 143-P1 left a related open item, whether the new While Loop body diagram (-67) counts as an Error List item (predicted 54 against 53). Its s03 pair also still copies the old s02v18 pair (758b1673/fdf58b0a), not the corrected one (4af581f4/7d80df4d). Both depend on the same ruling.\nHANDBACK-QUESTION: Are the two extra Error List items (an unwired Local read and a While Loop conditional terminal that is not wired) the accepted by-design state at the session boundary? If so, should PD322(e) count created-node unwired outputs and loops with a newly unwired stop terminal, re-predict s02 at 53, and adopt 84cac487 without a rerun, then carry the same rule into s03 (54 against 53) and port the 143-1 recipe changes into the s03v18 pair?",
+ "mech": {
+  "M1": 0.0,
+  "M2": 1.0,
+  "F1": 0.0
+ }
+}

@@ -1,0 +1,7 @@
+ACTION: RETRY
+CARD: Re-issue 130-1 (PD267(b) X10 cross-recipe peak model, then the PD266(b) P3b re-cut, then P3b-1 dry/prerun) with `flags.peers` widened to `["priorart","hypothesis"]`. The card dispatches the owed hypothesis review for `selftest_x10_c130_1.log` first (`-Agent claude -Role hypothesis`, adversarial), then reruns the CRLF-fixed self-test and runs the split. It must also rerun the old `stage_prerun` self-tests, since the new X10 is live in `stage_prerun.py`.
+REASON: The block is a gate, not a failed goal. `guard_peer` refused the rerun (JEV-LADDER new-problem p=0.550, hypothesis review owed) because the card could not dispatch that review. Widening the peers flag is the stated fix.
+The first failure is a plain fixture bug: git LF bytes vs the CRLF working file gave md5 88789b06 != 10a0f401. The fix is already written (`selftest_x10_c130_1.py:34-38`). Nothing else failed, so this is neither an escalation nor a handback. The model rung stays the same, and 37 of 180 min used leaves room.
+The card should also keep `tools/stage_prerun.py` at md5 c19cf552 and revert to 88abd9c6 only if the self-test fails twice. A live X10 that fails closed is safe in the meantime.
+Offline prep card (PREP): skipped for now. 130-1 owns the P3b plan files, and the P3b-1 scratch launch stays gated behind X10 PASS.
+HANDBACK-QUESTION: -

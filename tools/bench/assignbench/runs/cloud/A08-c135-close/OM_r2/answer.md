@@ -1,0 +1,7 @@
+ACTION: ISSUE
+CARD: P3b-2 acceptance bookkeeping, offline. Update docs/d1/INDEX.md to name the new bed D1_ring_p3b2b_20261002_130007.vi (md5 39511877, 51 Error List items, expected file eac21f43) and set the broken-file count to 4 of 6. Change STATUS.md:93's bed narrative line from P3b-1 to P3b-2. Check that LabVIEW is gone with tasklist. No LabVIEW, no deletions.
+REASON: Four of the five pass items are met. Step 0 is done (135-1: CEN2 instruments agree). Launch a passed (20/0, peak 645.7). The graph compare is EQUAL after re-annotation (135-2 item 3). Launch b passed (135-4: 11/0, peak 620.6, Error List 51 with loose ends 22→20). The expected file is written and re-verdicted OK, the current-bed key is moved, and 49cf7f77 and 6cc69221 are deleted (135-5).
+One part of the last pass item is still open: "STATUS current-bed + INDEX, broken-file count 4 of 6". 135-5 changed only the STATUS key and comment. Its own OPEN says STATUS.md:93 still names P3b-1, and no card touched INDEX or the broken-file count.
+"LabVIEW gone" was confirmed only by the runner's B2/E4 gates, because the card's own tasklist re-check was denied. This card re-checks it.
+Card time used is 81 of 180 minutes and this is a short offline card, so the cycle can close once it passes.
+HANDBACK-QUESTION: -

@@ -1,0 +1,6 @@
+ACTION: RETRY
+CARD: OFFLINE: in our own prep_c143_5_pred.py, stop the RB "no negative uid left" scan from reading the free-text `why` fields (scan uid/term fields only, and log the change to gate_fp_queue). Then on the rebased plan da66a030: X10 at 596.0, Error List prediction with the fixed rule (prep_c143_3_elrule), pred file, dry and prerun of both s03v18 recipes, and --scratch-required.
+REASON: All three pass items are met. The prior-art review was answered and released (143-1, r3 novel). The scratch ran 21/0 with peak 620.3 MB; its Error List of 53 was ruled by-design (143-2 review supported, PD333) and the file 84cac487 was adopted (143-3). The fresh-instance load and graph read were done and LabVIEW is gone (143-2). Only the session-3 prep in the act is still open.
+143-5's second failure was a false positive in our own check: "I32[20] -1" in the `why` text at plan_ring_p4_s03v18.json:101 was read as a uid. The rebase itself passed and the plan is final at da66a030 (prep_c143_5_rebase2.log), so the steps left are mechanical.
+This is a one-line fix to our own script, not a model limit, so ESCALATE does not fit. Card time so far is 89 of 180 minutes and the earlier offline cards took about 6–11 minutes each.
+HANDBACK-QUESTION: -

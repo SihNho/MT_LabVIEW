@@ -1,0 +1,6 @@
+ACTION: HANDBACK
+CARD: -
+REASON: Cards 130-1 and 130-3 both ended BLOCKED by guard devices, not by the work. 130-1 was blocked by guard_peer (JEV-LADDER new-problem, review owed). 130-3 was blocked by fp-24, where offline_command treats the dry X10 self-test as LabVIEW-touching. The fp-22 slot is already used, and only one GATE-FP is allowed per gate per cycle.
+Nothing in the X10 re-cut has run. The fixed self-test (LF→CRLF) and the P3b re-cut are untested, and the new X10 is live in stage_prerun.py without a passing self-test.
+Releasing the block means changing a gate or tool scope: adding the self-test to protocol.OFFLINE_SELFTESTS, a card whose write list covers guard_peer, or reverting X10. Those are design and rule decisions, so they go to judgement. 130-2 PASSed but left fp-22 and fp-25 open. Used card minutes are 54 of 180.
+HANDBACK-QUESTION: How should the offline-selftest block be released: add selftest_x10_c130_1.py and plan_ring_p3b_split.py to protocol.OFFLINE_SELFTESTS, or fix guard_peer's function-local-import closure (fp-22/fp-24) in a card whose write list covers guard_peer.py? Separately, should the unverified new X10 stay live in stage_prerun.py or be reverted to md5 88abd9c6 until its self-test passes?

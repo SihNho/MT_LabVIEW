@@ -1,0 +1,6 @@
+ACTION: ISSUE
+CARD: OFFLINE (small fix): in prep_c143_5_pred.py, exclude `why` text from the negative-uid token scan in the RB gate (the '-1' in the p4_c_bufdiff why is prose, not a uid); rerun pred on rebased plan da66a030; then X10 at 596.0, EL pred (fixed rule, expect s03 = 53 + 3), pred file, dry, prerun of both s03v18 recipes, --scratch-required.
+REASON: 143-5 left the plan rebased and final (da66a030, rebase PASS, 20 uids bound). Its only failure was a gate that scanned prose in `why`, not a uid, so this is a script defect with a known fix.
+REASON: The card's own `open` question proposes exactly this exclusion. It touches only our pred script, not the computation or any plan row, so no judgement decision is needed.
+REASON: 143-5 spent its failure budget on this one problem, so a new card with a fresh budget is the right step, not a retry. Rule 1a is not touched. The remaining pred, dry and prerun steps are mechanical. 89 of 180 card minutes are used, which leaves room to reach the s03 scratch next.
+HANDBACK-QUESTION: -

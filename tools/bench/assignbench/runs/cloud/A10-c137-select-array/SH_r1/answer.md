@@ -1,0 +1,7 @@
+ACTION: ISSUE
+CARD: LabVIEW measure card, ≤40 min: build the read-only reader for `Stop If True?` on base While #10170 and for the `stop (end)` control's `Mechanical Action`. Run it once on a byte copy of the bed, record PASS/FAIL under `scratch_verify/`, and leave the bed unedited. If the scratch run shows no scriptable read exists, the card records a negative search with the failing call, with no GUI fallback.
+REASON: Pass item 2 is the only purpose item with no card yet. 137-1, 137-5 and 137-7 only ran the routes, and none of them read either property.
+REASON: Pass item 1 is met: 137-5 gave per-route `Is Broken?` for U1, U2, U5 and W1-Or (PASS) and for U3 and U6 (FAIL). 137-7 then measured why U3 and U6 fail. Redesigning the Select/U6 routes is a judgement call, so I am not retrying the routes.
+REASON: Pass item 3 is met by 137-P1, which named the cause at `stagesim.py:681` and `vigraph.py:57-60`. Pass item 4 is partly met. 137-P1 gives a session table from measured loads, but U05 alone is 676.9, above the 675 cap. The 675-vs-690 and option 1/2/3 choice (D-2026-10-02-04) belongs to judgement.
+REASON: 59 of the 180 card minutes remain. The offline cards 137-P2/P3/4/6 all ended on open questions that need design decisions (stagesim model vs re-route, the `p4_dec_reseed` option, the step-3 re-cut), so no PREP card is safe to start beside this one.
+HANDBACK-QUESTION: -

@@ -1,0 +1,5 @@
+ACTION: CLOSE
+CARD: -
+REASON: All three pass items are met. (1) The prior-art review of stage_d1_ring_p4_s02v18.py is ANSWERED and released: r1/r2 by FIXED lines, r3 novel (143-1). (2) There was one scratch: RESULT 21/0, peak 620.3 ≤ 680, census measured into the prediction. The Error List came out at 53, not the 51/52 predicted. Review c143-2-el53 confirmed both extra items are expected at the session boundary and traced the miss to a predictor bug (143-2). 143-3 then fixed the predictor and checked it: the selftest now gives s02 → 53 and s01 → 51. (3) 84cac487 is ADOPTED through adopt_scratch (143-3). The fresh-instance load is 596.0 MB, the graph read is eda9db40, gates are 15/0 and LabVIEW is gone (143-2).
+The rebase refusal in 143-3 (UID-REUSE #23276) belongs to session-3 prep, which is not a pass item. Releasing that gate or calling it a false positive is a judgement decision, so it goes into NEXT with the facts already in prep_c143_3_facts.md. The s03 pair (d420f951/573b8537) is ported and reviewed as novel, but it stays provisional until the rebase binds.
+HANDBACK-QUESTION: -

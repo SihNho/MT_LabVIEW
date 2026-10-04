@@ -1,0 +1,7 @@
+ACTION: RETRY
+CARD: Re-issue 130-3 from P1 with flags.peers widened to hypothesis + priorart and a write grant for archive/peer/** review notes. First discharge the review that guard_peer says is owed for diag_c130_2_suite_gb.log, using a hypothesis review, not a bypass. Then rerun the fixed selftest_x10_c130_1.py with per-condition L0 lines printed (the falsifier from review alt (a): is it "L0 PASS, no K1/DRY line"?). Rerun the old stage_prerun self-tests. Then do the P2 re-cut of plan_ring_p3b1/p3b2 (X10 ≤675 MB on both halves) and the P3 dry run and prerun.
+REASON: 130-3 did not fail. It stopped at a mechanical gate (fp-24): guard_peer blocks the offline X10 self-test rerun because a review is owed for card 130-2's diag_c130_2_suite_gb.log (Jev new-problem p=0.712). The card had no route to clear it, so this is not a model failure and escalating to a stronger model would not help.
+The clean way through is to buy the owed hypothesis review. Adding the self-test to protocol.OFFLINE_SELFTESTS would mean changing a gate in the middle of a block. That belongs in the batched fp drain, not here.
+The 130-1 self-test review (P0) is already ANSWERED, so the LF→CRLF fix is cleared to rerun. Its alt (a) gets answered by measuring the per-condition L0 lines, which needs no design decision.
+X10 has been live without a passing self-test (130-3 facts). This rerun is the fastest way to settle that, either way. Time used is 54 of 180 min and $0 of $60, so there is room before the P3b-1 scratch and the single launch.
+HANDBACK-QUESTION: -

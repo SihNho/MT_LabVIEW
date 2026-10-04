@@ -1,0 +1,38 @@
+{
+ "case": "A17-c143-el53",
+ "arm": "SM",
+ "rep": 1,
+ "model": "claude-sonnet-5-5",
+ "effort": "medium",
+ "attempt": 1,
+ "usd": 0.1954,
+ "minutes": 0.14,
+ "cell_minutes": 0.14,
+ "turns": 1,
+ "tools": 0,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.14,
+   "usd": 0.19542620000000002,
+   "turns": 1,
+   "tools": 0,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: HANDBACK\nCARD: -\nREASON: 143-1 failed its Error List gate. The measured count was 53 against a predicted 51 or 52. The extra two items are an unwired Local Variable read and a While Loop whose conditional terminal is not wired. Neither carries a uid, and the card marks both causes as unverified. The built file (84cac487) is saved but not adopted, and no graph read was done. Deciding whether 53 is the by-design session-boundary state, and so whether to adopt without a rerun, is a prediction and gate decision. It also touches PD322(e) and the Error List predictor. That is not a retry or escalation, since a rerun would likely measure 53 again. Card 143-P1 (the session-3 prep) inherits the same ambiguity. Its own EL prediction of 54 depends on this answer, and it is also stuck on a provisional-base dry failure, which is the same as 140-P1 and 141-P1. It also carries three s02 changes that need porting.\nHANDBACK-QUESTION: Is Error List 53 for s02v18 (extra: unwired Local read and While conditional terminal, missing 0) the by-design session-boundary state, so that the prediction is re-set to 53 and scratch file 84cac487 is adopted without a rerun? And should PD322(e)'s predictor count unwired outputs and newly unwired stop terminals from now on, with s03's prediction (54) and the three s02 changes (MEM_STOP, work_name, save_for_resume) ported into the s03v18 pair?",
+ "mech": {
+  "M1": 0.0,
+  "M2": 1.0,
+  "F1": 0.0
+ }
+}

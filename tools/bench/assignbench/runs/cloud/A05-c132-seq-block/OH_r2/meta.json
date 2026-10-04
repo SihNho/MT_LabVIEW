@@ -1,0 +1,38 @@
+{
+ "case": "A05-c132-seq-block",
+ "arm": "OH",
+ "rep": 2,
+ "model": "claude-opus-5-5",
+ "effort": "high",
+ "attempt": 1,
+ "usd": 0.3952,
+ "minutes": 0.27,
+ "cell_minutes": 0.27,
+ "turns": 1,
+ "tools": 0,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.27,
+   "usd": 0.3951932,
+   "turns": 1,
+   "tools": 0,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-opus-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: RETRY\nCARD: 132-2 (same goal): a read-only graph read of the P3b-1 bed (D1_ring_p3b1_20261002_060910.vi). It writes graph_ring_p3b1_<ts>.json and records memory after load and after the read, then diffs the result offline against the sim end, including the #6810 loose-end wires. The flag is widened: the card may run `py tools/stage_prerun.py --dry` and `--prerun` on tools/bench/diag_c132_2_graph_p3b1.py, with `--graph` set to the P3a graph as in the c125 precedent. It writes only tools/bench/prerun/** and tools/bench/stage_prerun*, and still must not edit stage_prerun.py. After that it makes one bgrun launch and checks that the bed's md5 is unchanged (9d7bf287).\nREASON: 132-2 was blocked only because it had no dry/prerun record and the card forbade running stage_prerun.py while 132-1 was editing it. 132-1 is now finished (stage_prerun.py md5 489d7be9, diag suite 16/16), so that reason is gone. The gate refusal was correct and nothing was wrong with the script. The P3a precedent passed the same gate with PRERUN PASS 14/0 (diag_c125_graph_p3a_prerun.log). The real graph read is the next step in the purpose order (graph read → --rebase → dry/prerun). It also makes 132-1's open fp-21 question moot for this cycle: once the dry runs after --rebase it binds real uids, not the provisional base's negative ones. So I proceed on the assumption that the dry waits for --rebase and flag it for judgement. I'm not running a prep card beside it: the remaining offline items (fp-21 design, the 50..52 Error List rule, the E1 re-pin and name-gate scope) are judgement decisions, not material work. Time used is 30 of 180 min.\nHANDBACK-QUESTION: -",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0
+ }
+}

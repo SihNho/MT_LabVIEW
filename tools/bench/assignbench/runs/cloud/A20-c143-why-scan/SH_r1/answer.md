@@ -1,0 +1,7 @@
+ACTION: RETRY
+CARD: OFFLINE retry of 143-5's remaining steps. Fix our own `prep_c143_5_pred.py` RB gate so the negative-uid scan skips `why` text, using the rebased plan da66a030 unchanged. Then run pred (fixed EL rule, s03 expected from s02 = 53), X10 at 596.0, dry and prerun of both s03v18 recipes, and `--scratch-required`.
+REASON: 143-5 failed on a bug in our own script, not on the plan. The RB gate scans free text in `why`, and p4_c_bufdiff's note "I32[20] -1" (plan_ring_p4_s03v18.json:101) tripped it.
+REASON: The rebase itself passed (fix 13/0, rebase #2 PASS, plan final, 20 uids bound), so only the pred, X10, dry, prerun and scratch-required steps remain.
+REASON: The pass items for s02 are already met. Prior-art r1-r3 are released, the scratch ran 21/0, and 84cac487 was adopted in 143-3. The fresh-instance load and graph read were done in 143-2. Nothing in the retry touches the computation, so rule 1a is not in play.
+REASON: This is a retry rather than an escalation because the failure is a script gate bug, not a capability gap. 91 of 180 minutes remain, and the card's earlier runs took 6 to 11 minutes each. If the retry fails again on a different cause, CLOSE the cycle and leave s03 for the next one.
+HANDBACK-QUESTION: -

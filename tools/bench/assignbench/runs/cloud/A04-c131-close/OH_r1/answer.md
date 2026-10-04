@@ -1,0 +1,4 @@
+ACTION: CLOSE
+CARD: -
+REASON: The cycle's purpose is met. Pass items 1 and 2 are done in 131-1 (crossing table of 18 rows with citations, stagesim self-test 105/0, split end == unsplit 70, dry run 31/31 and prerun 15/0). Pass item 3 is met under the limits judgement set in PD272–274. The scratch pin4 run passed every gate through op 31 (131-3). The single P3b-1 launch passed 22/0 with peak memory 680.4 MB, under the 690 MB limit, and saved D1_ring_p3b1_20261002_060910.vi (131-5). The final full Error List read passed 25/0: 53 items, 0 extra, 0 missing, and the only change from P3a is 2 fewer loose-end wire items (24→22) (131-6). Two questions remain open: the per-wire identity of the #6810 nets and whether to move current-bed, which would be broken file 3 of 6. Both are acceptance decisions that need a STATUS edit, which no card may make, so they belong in judgement's NEXT. 51 of the 180 minutes are left.
+HANDBACK-QUESTION: -

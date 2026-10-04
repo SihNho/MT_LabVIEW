@@ -1,0 +1,38 @@
+{
+ "case": "A09-c137-lookup-twice",
+ "arm": "SM",
+ "rep": 2,
+ "model": "claude-sonnet-5-5",
+ "effort": "medium",
+ "attempt": 1,
+ "usd": 0.0245,
+ "minutes": 0.11,
+ "cell_minutes": 0.11,
+ "turns": 1,
+ "tools": 0,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.11,
+   "usd": 0.0245436,
+   "turns": 1,
+   "tools": 0,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: HANDBACK\nCARD: -\nREASON: Card 137-1 failed at the same stop point as 136-3: ValueError on #29466 (ks const, owner = new WS body #29431). All 180 Diagram indices were scanned and none lists it. So the cause is not a stale Diagram index (diag_c137_1_routes.log:36-48). No route U1-U6/W1 was reached, so pass item 1 has no result. Cause 1: OpNodeLabels does not list a const made by const_donor. Cause 2: the Traverse 'Diagram' index never reaches body #29431. Both are untested.\nREASON: To get past this, the next card must either use Stage.address (report_all per call, X10 cost) or read terminals by owner uid (whole-VI). Either one changes the X10 budget (687.2 against a 690 limit), which is a design and threshold call. Card 137-1 also has its failure budget spent, and this is the second miss on the same lookup.\nREASON: Card 137-P1 passed and gives two more design choices. Step 102 stops because the plan addresses 5 ControlTerminal ends by the Diagram uid plus term_uid, while vigraph.node_of maps a ControlTerminal row to its own term_uid (vigraph.py:57-60). The fix goes either in the plan (re-address by own uid) or in stagesim (teach it the owner form), and that is a plan decision. The session table also needs a choice between opt1, 6 new broken files, and opt2, 2 new, against the cap of 6 broken intermediates (D-2026-10-02-04).\nHANDBACK-QUESTION: Should the node-lookup route be Stage.address or read_terms by owner uid, given the X10 cost? And for step 102, should the plan re-address the 5 CT ends by own uid or should stagesim learn the owner form? Also, should v3 sessions be opt1 or opt2?",
+ "mech": {
+  "M1": 0.0,
+  "M2": 0.0,
+  "F1": 0.0
+ }
+}

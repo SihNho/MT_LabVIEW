@@ -1,0 +1,7 @@
+ACTION: ISSUE + PREP
+CARD: Run the prior-art review (`prior_art_review.py`) on `tools/recipes/stage_d1_ring_p4_s02v18.py` / `plan_ring_p4_s02v18.json` e941ebbf. Pass when it is ANSWERED and released: `novel`, or REFUTED/FIXED lines whose citations check out. Touches no LabVIEW. || PREP (offline): draft the session-3 plan (v18 ops from 59 on) on the expected s02 base. Run `stage_prerun.py` dry-run and pre-run checks against it, and save it as a provisional plan file to be re-checked with `--rebase` once s02 is adopted.
+REASON: No cards have run yet this cycle (`cards_done_in_order` is empty, 0 min / $0 used).
+The first pass item needs the prior-art review released, and `guard_cycle` blocks the scratch build until it is. So the review must come before the LabVIEW scratch card.
+P4 sessions do not yet have two earlier passing launches of this pattern, so the "proven pattern" exemption from the review does not apply.
+The purpose asks for session-3 prep beside this work. Pipeline rules allow 2 live cards with at most one touching LabVIEW, and neither of these touches LabVIEW. The scratch card (one scratch on a byte copy of s01, peak ≤ 680, Error List 51 or 52) is issued once the review is released.
+HANDBACK-QUESTION: -

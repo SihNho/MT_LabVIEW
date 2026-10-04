@@ -1,0 +1,7 @@
+ACTION: HANDBACK
+CARD: -
+REASON: Card 143-1 FAILED at its first gate. The Error List was 53 against a prediction of 51 (alternative 52), with 2 extra items and 0 missing (errorlist_c143_1_p4s02.log, JSON :5638-5642). The scratch passed 21/0, and its census and peak (620.3 MB against X10 678.5) were within bounds.
+REASON: The 2 extras are an unwired Local variable read and an unwired While Loop conditional terminal. Both look like session-boundary states that exist by design, but neither carries a uid. They are not confirmed to be the LR #6902 and #23166 candidates, so this is inference and not a reading from the machine.
+REASON: Adopting 84cac487 and re-predicting 53 without a rerun changes the pass criterion ("51 or 52"). It also changes how PD322(e) counts Error List items, and that counting rule applies to every later session. Both are judgement and design decisions. Card 143-P1 depends on the same answer, because it predicts 54 and has an open question about whether to count -67.
+REASON: Both cards also leave open how to carry 143-1's three accepted s02v18 changes into the s03v18 pair. A rerun would not answer that, because the extras would very likely reappear.
+HANDBACK-QUESTION: Should the 2 extra Error List items (unwired Local read, While conditional terminal) be accepted as the by-design session-boundary state, so that EL = 53 is re-predicted and 84cac487 is adopted without a rerun? If yes, should PD322(e) also count unwired outputs and newly unwired loop stop terminals, which would make the s03 prediction 54 or 55 instead of 54?

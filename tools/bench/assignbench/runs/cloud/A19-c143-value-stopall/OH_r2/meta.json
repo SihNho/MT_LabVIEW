@@ -1,0 +1,38 @@
+{
+ "case": "A19-c143-value-stopall",
+ "arm": "OH",
+ "rep": 2,
+ "model": "claude-opus-5-5",
+ "effort": "high",
+ "attempt": 1,
+ "usd": 0.0962,
+ "minutes": 0.4,
+ "cell_minutes": 0.4,
+ "turns": 2,
+ "tools": 1,
+ "timeout": false,
+ "cells": [
+  {
+   "name": "c0",
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "rc": 0,
+   "timeout": false,
+   "minutes": 0.4,
+   "usd": 0.0961546,
+   "turns": 2,
+   "tools": 1,
+   "invalid_ratelimit": false,
+   "models_used": [
+    "claude-haiku-4-5-20251001",
+    "claude-opus-5-5"
+   ]
+  }
+ ],
+ "answer": "ACTION: ISSUE\nCARD: OFFLINE tooling: make `--rebase` resolve a plan address `#uid.'value'` the same way stagesim does (card 100-3: the Local's one terminal in the wanted direction, so #-20.'value' → the 'StopAll' term). Add a self-test that checks it binds uniquely and that an ambiguous case is still refused, and rerun the old rebind/rebase self-tests. Then finish the s03 prep: rebase on eda9db40, X10 at 596.0, EL prediction with prep_c143_3_elrule (from s02's measured 53), dry + prerun on both s03v18 recipes, and `--scratch-required`.\nREASON: The cycle's purpose is met on all three pass items. 143-1 ran the scratch (21/0 gates, peak 620.3 ≤ 680) and the prior-art review was released. EL 53 was ruled by-design (verdict c143-2-el53, PD333). 143-3 adopted 84cac487, and 143-2 did the fresh-instance load (596.0 MB) and graph read with LabVIEW gone. The session-3 prep we started beside it is still open, and 97 of 180 minutes remain.\n143-4 now stops at `#-20.'value'` binding 0 rows. stagesim.py:735-736 already treats `'value'` as the Local's single terminal by an existing convention (card 100-3), and the 143-2 reviewer named that alias as \"no risk\". The rebase binder just doesn't apply the convention. That is a consistency fix with precedent, not a new design, and the plan's computation is unchanged.\nNot a LabVIEW card, so no limit on running it beside anything else.\nHANDBACK-QUESTION: -",
+ "mech": {
+  "M1": 1.0,
+  "M2": 1.0,
+  "F1": 0.0
+ }
+}
