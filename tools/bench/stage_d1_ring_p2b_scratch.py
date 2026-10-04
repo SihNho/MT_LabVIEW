@@ -43,3 +43,7 @@ if __name__ == "__main__":
             json.dump(dict(common, function=fn.split("_c122")[0], op=opd), open(os.path.join(REC, "{0}_{1}.json".format(fn, st.stamp)), "w", encoding="utf-8"),
                       indent=1, default=str)
     sys.exit(rc if gone else 1)
+# ---
+# labview: read
+# hardware: none
+# ---

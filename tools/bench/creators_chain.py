@@ -6,3 +6,7 @@ run([sys.executable, os.path.join(TOOLS, "lv_restart.py")], 400, "lv_restart")
 for creator, op in (("Create Flatten to String.vi", "OpBuildFlatten_v0"), ("Create Unflatten from String.vi", "OpBuildUnflatten_v0")):
     run([sys.executable, os.path.join(TOOLS, "lv_restart.py")], 400, "lv_restart")          # fresh instance per op: no stale in-memory copies
     run([sys.executable, "-u", os.path.join(TOOLS, "recipes", "build_opcreator.py"), "--creator", creator, "--op", op, "--max-terms", "14"], 900, "build " + op)
+# ---
+# labview: none
+# hardware: none
+# ---

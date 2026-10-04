@@ -154,3 +154,7 @@ S = K.Stage(BED, BED_MD5, "diag_c90_live_endpoints", deadline_min=18.0, reserve_
             out_json=os.path.join(K.BENCH, "diag_c90_live_endpoints.json"),
             task="M3a-4 step 2: read every terminal row the 11 broken wires hold, + positive/negative controls")
 sys.exit(K.run(main, S))
+# ---
+# labview: read
+# hardware: none
+# ---

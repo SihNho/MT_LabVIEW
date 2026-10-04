@@ -18,3 +18,7 @@ MSG = (
 if __name__ == "__main__":
     sys.stdout.write(MSG + "\n")
     sys.exit(0)
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -115,3 +115,7 @@ gate(not DISPATCH, "G0 COM Dispatch never called", len(DISPATCH))
 npass = sum(1 for x in G if x[0]); nfail = len(G) - npass
 print(P.result_line(P.make_result(npass, nfail, next((x[1] for x in G if not x[0]), None))), flush=True)
 sys.exit(0 if nfail == 0 else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

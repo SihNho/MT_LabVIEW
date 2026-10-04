@@ -39,3 +39,7 @@ for a in pl["actions"]:
         print("  ROW", json.dumps(a)[:700])
 print("context", json.dumps(pl["context"])[:800])
 print(P.result_line(P.make_result(1, 0, None)))
+# ---
+# labview: read
+# hardware: none
+# ---

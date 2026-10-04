@@ -24,3 +24,7 @@ for l in ("Error Message 2", "error out", "X Array 2", "Y Array 2"):
         print(f"  {l!r} = {str(vi.GetControlValue(l))[:120]}", flush=True)
     except Exception as e:
         print(f"  {l!r} read err {str(e)[:80]}", flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

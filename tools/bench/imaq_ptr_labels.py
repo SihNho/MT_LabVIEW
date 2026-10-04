@@ -5,3 +5,7 @@ for llb, name in (('Basics.llb', 'IMAQ GetImagePixelPtr'), ('Basics.llb', 'IMAQ 
     p = os.path.join(V, llb, name)
     try: print(name, '->', g.fp_labels(p), flush=True)
     except Exception as e: print(name, 'EXC', str(e)[:160], flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

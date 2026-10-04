@@ -89,3 +89,7 @@ fails = [k for k, ok in gates.items() if not ok]
 print(protocol.result_line(protocol.make_result(len(gates) - len(fails), len(fails), fails[0] if fails else None, arts)),
       flush=True)
 sys.exit(1 if fails else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

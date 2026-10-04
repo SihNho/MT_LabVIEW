@@ -187,3 +187,7 @@ nfail = len(results) - npass
 ff = next((n for n, ok in results if not ok), None)
 print(P.result_line(P.make_result(npass, nfail, first_fail=ff)))
 sys.exit(0 if nfail == 0 else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

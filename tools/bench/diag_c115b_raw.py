@@ -14,3 +14,7 @@ for n in ("delete_object_1", "delete_object_2", "delete_wire_1", "delete_wire_2"
         s = json.dumps(v, default=str)
         print("   diff.", k, (len(v) if isinstance(v, (list, dict)) else ""), s[:900])
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":0,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

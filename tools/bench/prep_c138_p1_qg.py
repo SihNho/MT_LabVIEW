@@ -22,3 +22,7 @@ for k in ("objects", "loops"):
         if any(int(o.get(f) or 0) in want for f in ("uid", "loop_uid", "diagram", "owner_uid") if str(o.get(f) or "0").lstrip("-").isdigit()):
             print(k.upper(), json.dumps(o)[:400])
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

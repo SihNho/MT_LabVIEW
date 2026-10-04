@@ -89,3 +89,7 @@ print("=== GATES: %d pass / %d fail" % (P, F))
 arts = [{"path": os.path.relpath(p, os.path.dirname(TOOLS)).replace("\\", "/"), "md5": EC.md5(p)}
         for p in (EXP, out) if p and os.path.exists(p)]
 print(protocol.result_line(protocol.make_result(P, F, first, arts)))
+# ---
+# labview: none
+# hardware: none
+# ---

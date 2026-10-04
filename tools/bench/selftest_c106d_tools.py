@@ -203,3 +203,7 @@ n = sum(ok for _, ok in G)
 print("\n=== %d PASS / %d FAIL" % (n, len(G) - n), flush=True)
 print(protocol.result_line(protocol.make_result(n, len(G) - n, next((lab for lab, ok in G if not ok), None))))
 sys.exit(0 if n == len(G) else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

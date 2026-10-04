@@ -129,3 +129,7 @@ S = K.Stage(SRC, SRC_MD5, "diag_allterms_donor2", fresh=False, deadline_min=18.0
                  "scratch copies: does ANY op VI carry a To More Specific Class inside a loop body? "
                  "Read-only; every scratch deleted at close. Nothing saved.")
 sys.exit(K.run(main, S))
+# ---
+# labview: read
+# hardware: none
+# ---

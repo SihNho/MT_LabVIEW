@@ -54,3 +54,7 @@ def compare(new, ref):
     if bad:
         diff["reannotation"] = bad
     return not diff, diff, {"new": dict(list(cn.items())[:10]), "ref": dict(list(cr.items())[:10]), "n_new": len(cn), "n_ref": len(cr)}
+# ---
+# labview: none
+# hardware: none
+# ---

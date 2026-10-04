@@ -44,3 +44,7 @@ print((p.stdout or "").strip())
 err = (p.stderr or "").strip()
 if err:
     print(err[-2000:])
+# ---
+# labview: none
+# hardware: none
+# ---

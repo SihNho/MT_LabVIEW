@@ -92,3 +92,7 @@ n = sum(1 for _l, ok in gates if ok)
 ff = next((lab for lab, ok in gates if not ok), None)
 print(protocol.result_line(protocol.make_result(n, len(gates) - n, ff, [{"path": os.path.relpath(p, ROOT), "md5": EC.md5(p)} for p in out])), flush=True)
 sys.exit(0 if ff is None else 1)
+# ---
+# labview: read
+# hardware: none
+# ---

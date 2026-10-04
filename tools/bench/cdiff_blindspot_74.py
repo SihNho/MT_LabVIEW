@@ -105,3 +105,7 @@ fact("elapsed {0:.1f}s".format(time.time() - t0))
 nf = sum(1 for _l, ok in GATES if not ok)
 print(P.result_line(P.make_result(len(GATES) - nf, nf, next((l for l, ok in GATES if not ok), None))), flush=True)
 sys.exit(1 if nf else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

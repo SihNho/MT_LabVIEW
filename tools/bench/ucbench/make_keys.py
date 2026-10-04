@@ -52,3 +52,7 @@ finally:
 print("RESULT " + json.dumps({"schema": "result-line/1", "status": "FAIL" if fails else "PASS",
                               "gates": {"pass": 3 - len(fails), "fail": len(fails)},
                               "first_fail": fails[0] if fails else None, "artefacts": arts}), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

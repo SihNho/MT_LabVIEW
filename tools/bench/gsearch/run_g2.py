@@ -154,3 +154,7 @@ if __name__ == "__main__":
     arts = [{"path": os.path.relpath(p, ROOT), "md5": hashlib.md5(open(p, "rb").read()).hexdigest()}
             for p in (rp, os.path.join(HERE, "cases_g2.json")) if os.path.exists(p)]
     print(protocol.result_line(protocol.make_result(npass, nfail, ff, arts)), flush=True)
+# ---
+# labview: none
+# hardware: camera
+# ---

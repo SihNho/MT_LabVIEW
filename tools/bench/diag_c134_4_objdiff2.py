@@ -51,3 +51,7 @@ if os.path.isfile(pf):
 nf = ok.count(False)
 print(P.result_line(P.make_result(len(ok) - nf, nf, None if not nf else "Q1/Q2 objdiff2", [])), flush=True)
 sys.exit(1 if nf else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

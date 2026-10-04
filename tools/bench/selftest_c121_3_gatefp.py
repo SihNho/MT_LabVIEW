@@ -114,3 +114,7 @@ npass = sum(1 for _l, ok in G if ok); nfail = len(G) - npass
 print("=== GATES: {0} pass / {1} fail".format(npass, nfail), flush=True)
 print(P.result_line(P.make_result(npass, nfail, next((lab for lab, ok in G if not ok), None), status="PASS" if not nfail else "FAIL")), flush=True)
 sys.exit(0 if not nfail else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

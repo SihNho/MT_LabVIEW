@@ -38,3 +38,7 @@ for k in NEED:
         missing.append(k)
 print(protocol.result_line({"status": "PASS" if not missing else "FAIL", "gates": {"pass": len(NEED) - len(missing),
                             "fail": len(missing)}, "first_fail": ("no donor for " + ", ".join(missing)) if missing else None}))
+# ---
+# labview: none
+# hardware: none
+# ---

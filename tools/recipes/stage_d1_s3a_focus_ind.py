@@ -1697,3 +1697,7 @@ if __name__ == "__main__":
         dump()
         print("\n=== GATES %d pass / %d fail (FATAL stop)" % (len(passes), len(fails)), flush=True)
         sys.exit(1)
+# ---
+# labview: build
+# hardware: none
+# ---

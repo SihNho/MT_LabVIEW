@@ -35,3 +35,7 @@ gate(not os.path.exists(SCR), "C1d scratch file gone")
 m = K.md5(BED)
 gate(m == "4dfa44aac8fb32f706b3eb792ee7d3cc", "C1e bed md5 unchanged " + m)
 print(protocol.result_line(protocol.make_result(p, f, None if f == 0 else "cleanup")), flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

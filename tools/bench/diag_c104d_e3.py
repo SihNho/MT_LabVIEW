@@ -32,3 +32,7 @@ for n, c in r["added"]:
 print("objs type", type(objs).__name__, (list(objs.items())[:2] if isinstance(objs, dict) else objs[:2]), flush=True)
 ok = st == "PASS"
 print(protocol.result_line(protocol.make_result(int(ok), int(not ok), None if ok else ff)))
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -8,3 +8,7 @@ for a in d['actions'][:3]:
     print(json.dumps(a)[:400])
 print(sorted(set(k for a in d['actions'] for k in a)))
 print('open_rows', json.dumps(d.get('open_rows'))[:300])
+# ---
+# labview: none
+# hardware: none
+# ---

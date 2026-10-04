@@ -189,3 +189,7 @@ if __name__ == "__main__":
     st = K.Stage(C.S1, C.S1_MD5, "bench_map_b", preload=False, deadline_min=42,
                  task="connectivity-map step 5b B: end-to-end, zero LLM turns, on a scratch of S1")
     sys.exit(K.run(body, st))
+# ---
+# labview: read
+# hardware: none
+# ---

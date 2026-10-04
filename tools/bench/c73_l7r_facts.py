@@ -107,3 +107,7 @@ for r in W['terminals']:
             u = V.key_parts(a)[0]
             print('       src #%s cls=%s %s; collapsed=%s' % (u, G1['cls'].get(u), where(u), sorted(V.effective_sources(G1, key))))
         i += 1
+# ---
+# labview: none
+# hardware: none
+# ---

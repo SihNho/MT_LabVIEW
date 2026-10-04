@@ -65,3 +65,7 @@ if __name__ == "__main__":
     gone = "labview.exe" not in subprocess.run(["tasklist"], capture_output=True, text=True, timeout=60).stdout.lower()
     st.gate("H LabVIEW gone at exit", gone)
     sys.exit(0 if not st.fails else 1)
+# ---
+# labview: read
+# hardware: none
+# ---

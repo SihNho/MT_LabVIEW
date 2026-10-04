@@ -17,3 +17,7 @@ for (m, op), rs in sorted(by.items()):
     px = [r["px_error"] for r in rs if r.get("px_error") is not None and r.get("ok")]
     print(f"{m:14} {op:9} {len(rs):2d} {ok:>4} {secs:6.1f} {acts:7.0f} {shots:10.0f} "
           f"{(statistics.median(px) if px else float('nan')):5.1f}")
+# ---
+# labview: none
+# hardware: none
+# ---

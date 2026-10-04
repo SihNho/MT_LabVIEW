@@ -327,3 +327,7 @@ print(protocol.result_line(protocol.make_result(len(gates) - len(bad), len(bad),
                                                   "md5": SX.md5(os.path.join(ROOT, "tools", "bench", "selftest_c120_stageplan_proposed.json"))}])),
       flush=True)
 sys.exit(1 if bad else 0)
+# ---
+# labview: read
+# hardware: none
+# ---

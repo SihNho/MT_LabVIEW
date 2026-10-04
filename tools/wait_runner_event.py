@@ -30,3 +30,7 @@ while True:
             print("  " + line[:200])
         sys.exit(0)
     time.sleep(30)
+# ---
+# labview: none
+# hardware: none
+# ---

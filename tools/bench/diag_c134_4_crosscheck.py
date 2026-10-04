@@ -45,3 +45,7 @@ for u in (637, 22694):
 nf = ok.count(False)
 print(P.result_line(P.make_result(len(ok) - nf, nf, None if not nf else "X1 _fsot_parent vs fs_parent", [])), flush=True)
 sys.exit(1 if nf else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -54,3 +54,7 @@ for t in (30145, 4728, 644, 6865, 6897, 23289, 27401, 6814):
           r and [(x["term_uid"], x["term_name"], x["owner_class"], x["term_class"], x["is_source"]) for x in byw.get(r["wire_uid"], [])
                  if x["owner_class"] in TUN])
 print(protocol.result_line(protocol.make_result(1, 0, None)))
+# ---
+# labview: none
+# hardware: none
+# ---

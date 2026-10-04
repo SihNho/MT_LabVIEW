@@ -134,3 +134,7 @@ Write-Host "`n`n===== FINAL RESULTS ====="
 foreach ($line in $VerifyOutput) {
     Write-Host $line
 }
+# ---
+# labview: build
+# hardware: none
+# ---

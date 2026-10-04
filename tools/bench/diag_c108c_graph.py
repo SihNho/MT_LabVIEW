@@ -164,3 +164,7 @@ class Graph:
                 else:
                     out.append((e, path))
         return out
+# ---
+# labview: none
+# hardware: none
+# ---

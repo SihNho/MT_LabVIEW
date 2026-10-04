@@ -21,3 +21,7 @@ for tag, sets, extra in VARIANTS:
     alive = subprocess.run(["powershell", "-NoProfile", "-Command", "(Get-Process LabVIEW -ErrorAction SilentlyContinue) -ne $null"],
                            capture_output=True, text=True).stdout.strip()
     print("LabVIEW alive after", tag, ":", alive, flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

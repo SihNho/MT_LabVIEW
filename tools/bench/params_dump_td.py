@@ -12,3 +12,7 @@ except Exception as e:
 td = list(vi.GetControlValue(labs["type string"]) or []); ds = vi.GetControlValue(labs["data string"])
 print("data string", ds.encode("latin-1").hex(), "type string words", len(td), flush=True)
 json.dump(td, open(os.path.join(HERE, "paraminfo_td.json"), "w")); print("td saved", flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

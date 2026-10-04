@@ -91,3 +91,7 @@ print("  FACT  %s" % json.dumps(R, default=str)[:900], flush=True)
 print(protocol.result_line(protocol.make_result(P[0], len(F), F[0] if F else None,
                                                 artefacts=[{"path": MAN, "md5": R["manifest_md5"]}])), flush=True)
 sys.exit(1 if F else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

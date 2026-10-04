@@ -189,3 +189,7 @@ if __name__ == "__main__":
     rc = main()
     sys.stdout.flush()
     os._exit(rc)       # the slow stubs' daemon threads are still sleeping
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -308,3 +308,7 @@ open(OM, "w", encoding="utf-8").write("\n".join(L) + "\n")
 ARTS.extend({"path": rel(p), "md5": md5(p)} for p in (OJ, OM))
 gate("W outputs written", os.path.isfile(OJ) and os.path.isfile(OM))
 done()
+# ---
+# labview: none
+# hardware: none
+# ---

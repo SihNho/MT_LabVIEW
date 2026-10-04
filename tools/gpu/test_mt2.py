@@ -43,3 +43,7 @@ for k in range(0, len(rows), max(1, len(rows) // N)):
 print(f"mt2 over {n_done} frames: worst |dx| {worst[0]:.2e} px |dy| {worst[1]:.2e} px |dz| {worst[2]:.2e} um vs LabVIEW; flips {flips}; "
       f"DLL-internal median {np.median(ts[1:]):.2f} ms; last status {status.value!r}; wall {1e3*dt:.2f} ms")
 lib.mt2_close(ctx)
+# ---
+# labview: none
+# hardware: none
+# ---

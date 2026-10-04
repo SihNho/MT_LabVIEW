@@ -284,3 +284,7 @@ ARTS.extend({"path": rel(p), "md5": md5(p)} for p in (V18, V18IN, META18, TAB))
 gate("U v17 untouched", md5(V17) == WANT[V17])
 print("V18 md5 {0} actions {1} ops {2}".format(md5(V18), len(A18), len(o18)), flush=True)
 done()
+# ---
+# labview: none
+# hardware: none
+# ---

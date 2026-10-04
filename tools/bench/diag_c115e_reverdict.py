@@ -87,3 +87,7 @@ print(protocol.result_line(protocol.make_result(
     artefacts=[{"path": os.path.relpath(EXP, ROOT).replace("\\", "/"), "md5": C.md5(EXP)},
                {"path": os.path.relpath(keep, ROOT).replace("\\", "/"), "md5": C.md5(keep)}])))
 sys.exit(1 if nf else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

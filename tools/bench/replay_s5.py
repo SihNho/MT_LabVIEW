@@ -102,3 +102,7 @@ gate("R6 every input md5 unchanged", after == before, [k for k in P if after[k] 
 shutil.rmtree(tmp, ignore_errors=True)
 print(PR.result_line(PR.make_result(G["pass"], G["fail"], G["first"], [])), flush=True)
 sys.exit(1 if G["fail"] else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -73,3 +73,7 @@ ok = not bad_t
 print("  {0}  O1 0 owners mismatches in the touched set".format("PASS" if ok else "FAIL"), flush=True)
 print(P.result_line(P.make_result(int(ok), int(not ok), None if ok else "O1 touched-set owners mismatches {0}".format(len(bad_t)))), flush=True)
 sys.exit(0 if ok else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

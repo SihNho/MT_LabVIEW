@@ -155,3 +155,7 @@ if __name__ == "__main__":
                  out_json=os.path.join(K.BENCH, "diag_c88_brokenwires.json"),
                  task="read out every broken wire on the clean Row D artefact; nothing built or saved")
     sys.exit(K.run(body, st))
+# ---
+# labview: read
+# hardware: none
+# ---

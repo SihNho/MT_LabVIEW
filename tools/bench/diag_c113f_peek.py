@@ -15,3 +15,7 @@ print('FIN open_rows', len(f['open_rows']))
 d = json.load(open('tools/bench/plan_l2b2b_d4.json', encoding='utf-8'))
 print({k: (v if k != 'scope_nodes' else len(v)) for k, v in d.items()})
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":0,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

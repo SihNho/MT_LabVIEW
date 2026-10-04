@@ -44,3 +44,7 @@ gate("T3 a write outside %TEMP% after the in-process dry lands on disk", on_disk
 np_, nf = sum(1 for _l, c in G if c), sum(1 for _l, c in G if not c)
 print(protocol.result_line(protocol.make_result(np_, nf, next((l for l, c in G if not c), None))), flush=True)
 os._exit(1 if nf else 0)
+# ---
+# labview: read
+# hardware: none
+# ---

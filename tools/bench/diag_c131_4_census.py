@@ -82,3 +82,7 @@ ff = next((lab for lab, ok in gates if not ok), None)
 arts = [{"path": os.path.relpath(x, ROOT), "md5": md5(x)} for x in (PRED, SAMP)] if ff is None else []
 print(protocol.result_line(protocol.make_result(n, len(gates) - n, ff, arts)), flush=True)
 sys.exit(0 if ff is None else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

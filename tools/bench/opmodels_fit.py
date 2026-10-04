@@ -284,3 +284,7 @@ for op, wrapper, chk, spec in MODELS:
 print("=== GATES: {0} pass / {1} fail".format(len(passes), len(fails)))
 print(P.result_line(P.make_result(len(passes), len(fails), fails[0] if fails else None, [])))
 sys.exit(1 if fails else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -28,3 +28,7 @@ if __name__ == "__main__":
         return _orig(*a, **k)
     E.read, sys.argv = _read, [sys.argv[0], "--vi", NEW, "--expected", EXP, "--role", "final"]
     sys.exit(EC.main())
+# ---
+# labview: read
+# hardware: none
+# ---

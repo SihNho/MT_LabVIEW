@@ -46,3 +46,7 @@ if text2 != text:
     with open(DOC, "w", encoding="utf-8") as f:
         f.write(text2)
 print(f"annotated {n_prop} property mentions and {n_node} anonymous nodes in {os.path.basename(DOC)}")
+# ---
+# labview: none
+# hardware: none
+# ---

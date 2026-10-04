@@ -134,3 +134,7 @@ if __name__ == "__main__":
     st = K.Stage(P["m4b"], F["m4b"][1], "q_c68_srpair", preload=False, deadline_min=42, reserve_s=240, pins=pins,
                  task="cycle 68: vigraph SR machine pairing, re-diff, M4b readback, read_live handle series")
     sys.exit(K.run(main, st))
+# ---
+# labview: read
+# hardware: none
+# ---

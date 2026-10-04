@@ -118,3 +118,7 @@ import hashlib                                                                  
 _m = hashlib.md5(open(os.path.join(HERE, "diag_c143_2_offline.json"), "rb").read()).hexdigest()
 print(protocol.result_line(protocol.make_result(npass, len(gates) - npass, next((lab for lab, v in gates if not v), None),
                                                 [{"path": "tools/bench/diag_c143_2_offline.json", "md5": _m}])))
+# ---
+# labview: none
+# hardware: none
+# ---

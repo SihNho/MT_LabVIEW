@@ -283,3 +283,7 @@ gate("U v15 / meta15 untouched", md5(V15) == WANT[V15] and md5(META15) == WANT[M
 ARTS.extend({"path": rel(p), "md5": md5(p)} for p in (V16, V16IN, META16))
 print("V16 actions {0} ops {1} repair {2}".format(len(A16), len(o16), len(REP)))
 done()
+# ---
+# labview: none
+# hardware: none
+# ---

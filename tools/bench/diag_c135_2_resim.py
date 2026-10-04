@@ -56,3 +56,7 @@ print("  FACT  summary.json now {0} (plan b records {1}; not checked by load_fin
     md5(os.path.join(SD, "summary.json")), fz["summary"]["md5"]), flush=True)
 shutil.rmtree(tmp, ignore_errors=True)
 finish()
+# ---
+# labview: none
+# hardware: none
+# ---

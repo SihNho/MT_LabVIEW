@@ -72,3 +72,7 @@ gate("P pred errorlist predicted_total 53 == measured, other keys unchanged",
      {"plan_md5": q["plan"]["md5"], "pred_md5": md5(PP)})
 ARTS.append({"path": rel(PP), "md5": md5(PP)})
 print(protocol.result_line(protocol.make_result(G["pass"], G["fail"], G["first"], ARTS)), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

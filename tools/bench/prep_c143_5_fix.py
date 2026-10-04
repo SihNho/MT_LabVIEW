@@ -106,3 +106,7 @@ for P in PLANS:
     gate("re-scan {0}: 0 differing Local ends (md5 {1} -> {2})".format(rel(P), m0, md5(P)), not [x for x in scan(J(P), base, real)[0] if x["differs"]])
     ARTS.append({"path": rel(P), "md5": md5(P)})
 print(protocol.result_line(protocol.make_result(G["pass"], G["fail"], G["first"], ARTS)), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

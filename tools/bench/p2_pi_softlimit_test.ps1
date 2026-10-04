@@ -30,3 +30,7 @@ try {
     Write-Output "RESULT: unexpected (ERR $e1, no motion)"; exit 9
 }
 finally { if ($sp.IsOpen) { $sp.Close() }; $sp.Dispose() }
+# ---
+# labview: none
+# hardware: motor
+# ---

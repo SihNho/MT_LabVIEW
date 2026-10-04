@@ -141,3 +141,7 @@ def apply_delete_object(terms, node_uid):
 def summary(d):
     return {k: len(d[k]) for k in ("terms_added", "terms_removed", "terms_changed", "objs_added", "objs_removed",
                                    "edges_removed", "edges_added", "edges_rewired")}
+# ---
+# labview: none
+# hardware: none
+# ---

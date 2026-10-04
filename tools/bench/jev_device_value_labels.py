@@ -40,3 +40,7 @@ def measure(path, n=None, ask=None, out_path=None):
 if __name__ == "__main__":
     lab = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, "jev_device_value_labels.json")
     measure(lab, out_path=os.path.join(HERE, "jev_device_value_labels_result.json"))
+# ---
+# labview: read
+# hardware: none
+# ---

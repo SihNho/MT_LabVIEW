@@ -10,3 +10,7 @@ print('real pairs on 28333', [p for p in rp if p.get('uid') == 28333])
 pu = set(p.get('uid') for p in pp if isinstance(p.get('uid'), int) and p['uid'] > 0)
 ru = set(p.get('uid') for p in rp)
 print('pos uids only prov', sorted(pu - ru)[:20], 'only real', sorted(ru - pu)[:20])
+# ---
+# labview: none
+# hardware: none
+# ---

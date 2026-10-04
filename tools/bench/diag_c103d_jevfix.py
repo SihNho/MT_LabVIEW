@@ -12,3 +12,7 @@ print("CALLS", c1); print("LAUNCH", r1[0], r1[1][:200].replace("\n", " | ")); pr
 ok = c1 == ["discard_work"] and r1[0] is False and "chat-N1" in r1[1] and r1 == r2
 print("CLAIM", "HOLDS" if ok else "NOT SHOWN")
 print(protocol.result_line(protocol.make_result(int(ok), int(not ok), None if ok else "claim not shown")))
+# ---
+# labview: none
+# hardware: none
+# ---

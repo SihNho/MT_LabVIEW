@@ -13,3 +13,7 @@ for p in ("tools/bench/plan_ring_p3b2a.json", "tools/bench/plan_ring_p3b2b.json"
     print("  owners type", type(ow).__name__, "fs-ish", {k: v for k, v in (ow.items() if isinstance(ow, dict) else []) if isinstance(v, list) and v and (v[0] in ("FlatSequenceFrame",) or str(v[0]).lstrip("-").isdigit() and int(v[0]) in (27509, -1))})
     print("  terminal frames", tf, "27641 in", 27641 in tf)
 print("RESULT {}".format(json.dumps({"schema": "result-line/1", "status": "PASS", "gates": {"pass": 1, "fail": 0}, "first_fail": None, "artefacts": []})))
+# ---
+# labview: none
+# hardware: none
+# ---

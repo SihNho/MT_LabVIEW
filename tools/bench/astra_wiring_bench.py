@@ -95,3 +95,7 @@ finally:
     g._cache.clear()
     g._lv = None
     gc.collect()
+# ---
+# labview: build
+# hardware: none
+# ---

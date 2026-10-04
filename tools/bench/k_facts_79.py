@@ -110,3 +110,7 @@ out = {'bed': BED, 'bed_md5': M(BED), 'graph': P3, 'graph_file_md5': M(P3), 'wik
 json.dump(out, open('tools/bench/k_facts_79.json', 'w', encoding='utf-8'), indent=1, ensure_ascii=False)
 print(protocol.result_line(protocol.make_result(G['pass'], G['fail'], G['first'],
       [{'path': 'tools/bench/k_facts_79.json', 'md5': M('tools/bench/k_facts_79.json')}])))
+# ---
+# labview: none
+# hardware: none
+# ---

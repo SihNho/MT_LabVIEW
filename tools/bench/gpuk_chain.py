@@ -33,3 +33,7 @@ if rc == 0:
     run(["-u", os.path.join(TOOLS, "bench", "run_timing.py"), f"--n={N}", "--harness=base", "--harness=par", "--harness=gpuk"], 2400, "run_timing")
 else:
     print("harness build failed - timing skipped", flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

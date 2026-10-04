@@ -66,3 +66,7 @@ def dump(name, obj):
     with open(p, "w", encoding="utf-8") as f:
         json.dump(obj, f, indent=1, default=str)
     return p
+# ---
+# labview: read
+# hardware: none
+# ---

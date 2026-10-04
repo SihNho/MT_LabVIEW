@@ -34,3 +34,7 @@ for t in TESTS:
         fails.append(t)
 print(P.result_line(P.make_result(res.count(True), res.count(False), fails[0] if fails else None)), flush=True)
 sys.exit(1 if fails else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

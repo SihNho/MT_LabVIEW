@@ -42,3 +42,7 @@ for n, ok in CHECKS:
     print("  %s  %s" % ("OK  " if ok else "FAIL", n))
 print("guard assertions: %d/%d clear" % (len(CHECKS) - len(bad), len(CHECKS)))
 sys.exit(1 if bad else 0)
+# ---
+# labview: none
+# hardware: camera
+# ---

@@ -31,3 +31,7 @@ for f in (E.run_condition, hash_probe.probe, g.queue_node, g.count, owner_of, te
           wire_source, create_node):
     print("  %-22s %s" % (f.__name__, inspect.signature(f)))
 print("OK")
+# ---
+# labview: read
+# hardware: none
+# ---

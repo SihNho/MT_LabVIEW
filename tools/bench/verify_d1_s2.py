@@ -496,3 +496,7 @@ if __name__ == "__main__":
         print("=== NOTHING WAS BUILT, EDITED OR SAVED; NO VI WAS RUN (34(f)); no motor, no ASI, no camera, no "
               "GUI action.", flush=True)
         sys.exit(rc)
+# ---
+# labview: read
+# hardware: none
+# ---

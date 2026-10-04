@@ -314,3 +314,7 @@ def same_failure_class(summary_a, summary_b, purpose="same-failure-class", n=Non
     p, _spread, err = ask_n({"log_a": summary_a, "log_b": summary_b},
                             {"same_failure_class": SAME_FAILURE_Q}, n=n, purpose=purpose)
     return (p, None) if p is not None else (None, err or "no noul in response")
+# ---
+# labview: none
+# hardware: none
+# ---

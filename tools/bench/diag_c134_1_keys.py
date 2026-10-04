@@ -9,3 +9,7 @@ for f in sys.argv[1:]:
             if k.startswith("fs") or k in ("borders", "base", "finalized", "sim_of", "owners"):
                 print("  ", k, json.dumps(d[k], default=str)[:900])
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -325,3 +325,7 @@ S = K.Stage(SRC, SRC_MD5, "allterms_v1", fresh=True, preload=False, work_name=WO
                  "frame_diagram = Terminal.Diagram 634A002 -> UID, on two new property nodes chained off "
                  "B. No new To More Specific Class; OpAllTerms_v0.vi is left untouched.")
 sys.exit(K.run(main, S))
+# ---
+# labview: build
+# hardware: none
+# ---

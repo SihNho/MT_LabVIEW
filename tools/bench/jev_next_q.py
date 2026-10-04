@@ -37,3 +37,7 @@ MISSING_Q = {
         "none": "Nothing important is missing; the text is startable after all.",
     },
 }
+# ---
+# labview: none
+# hardware: none
+# ---

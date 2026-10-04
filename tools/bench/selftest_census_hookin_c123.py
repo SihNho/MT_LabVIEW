@@ -112,3 +112,7 @@ bad_ = [l for l, ok_ in gates if not ok_]
 print("=== GATES: %d pass / %d fail%s" % (len(gates) - len(bad_), len(bad_), "; failing: " + bad_[0] if bad_ else ""), flush=True)
 print(protocol.result_line(protocol.make_result(len(gates) - len(bad_), len(bad_), bad_[0] if bad_ else None, [])), flush=True)
 sys.exit(1 if bad_ else 0)
+# ---
+# labview: read
+# hardware: none
+# ---

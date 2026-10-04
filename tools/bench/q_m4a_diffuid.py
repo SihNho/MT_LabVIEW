@@ -74,3 +74,7 @@ if __name__ == "__main__":
                  pins=tuple(K.DEFAULT_PINS) + (("M3a-4 bed", BED, BED_MD5), ("M4a", NEW, NEW_MD5)),
                  task="cycle 68: M4a P6b - uid-keyed diff(bed, M4a)")
     sys.exit(K.run(main, st))
+# ---
+# labview: read
+# hardware: none
+# ---

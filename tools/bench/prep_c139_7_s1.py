@@ -199,3 +199,7 @@ print("EL PREDICTED step-1 end total {0} (alternative {1})".format(el.get("total
 gate("SP pred written: ops == compile (each action once), X10 start measured, peak below fail", sorted(n for o in ops1 for n in o["acts"]) ==
      list(range(1, len(keep) + 1)) and bool(start) and bool(mp.get("ok")), (mp.get("peak_mb"), start))
 done()
+# ---
+# labview: none
+# hardware: none
+# ---

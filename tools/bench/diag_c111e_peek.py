@@ -25,3 +25,7 @@ for u in uids:
     for w in sorted(ws):
         print("      wire", w, "->", [(r["owner_uid"], r["owner_class"], r["term_name"], r["is_source"]) for r in T if r["wire_uid"] and int(r["wire_uid"]) == w])
 print(protocol.result_line(dict(status="PASS" if not miss else "FAIL", gates={"pass": len(uids) - miss, "fail": miss}, first_fail=None if not miss else "uid without rows", artefacts=[])))
+# ---
+# labview: none
+# hardware: none
+# ---

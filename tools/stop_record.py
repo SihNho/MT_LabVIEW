@@ -149,7 +149,29 @@ def offline_checker(segment):
     if prog & keys_for(BGRUN_PROGRAM):
         parts = BGRUN_SEP_RE.split(segment[m.end():], maxsplit=1)
         return len(parts) == 2 and offline_checker(parts[1])
-    return bool(prog & keys_for(OFFLINE_CHECKER)) and bool(OFFLINE_FLAG_RE.search(segment[m.end():]))
+    if bool(prog & keys_for(OFFLINE_CHECKER)) and bool(OFFLINE_FLAG_RE.search(segment[m.end():])):
+        return True
+    return declared_offline(m.group(1), segment[m.end():])
+
+
+def declared_offline(prog_path, rest):
+    """card chat-E3 (fp-37): True when the command-position program is a tools/ script whose SCOPE HEADER makes THIS
+    run labview none (tools/scope_header.py: `labview: none`, or an `offline-args` token in its argv) and the header is
+    honest (a `none` script may not import a LabVIEW client, start a recipe in a subprocess, or runpy a file without
+    cited evidence). `stage_prerun.py --scratch-required` was refused as a launch while being a read-only query."""
+    try:
+        if HERE not in sys.path:
+            sys.path.insert(0, HERE)
+        import scope_header as SH
+        p = _abs(prog_path.strip("'\""))
+        if not SH.in_tools(p) or not os.path.isfile(p):
+            return False
+        h, err = SH.read(p)
+        if h is None or err or SH.honesty(p, h):
+            return False
+        return SH.effective(h, SH._tok(rest))[0] == "none"
+    except Exception:                                # noqa: BLE001 - unknown stays a launch (fail closed)
+        return False
 
 
 # ==================================================================================================================
@@ -210,7 +232,9 @@ _KEYWORD_RE = re.compile(r"^\s*(?:(?:do|then|else|elif|if|while|until|!|\{)\s+)+
 _FOR_RE = re.compile(r"^\s*for\s+([A-Za-z_]\w*)\s+in\b")
 _ASSIGN_RE = re.compile(r"^\s*([A-Za-z_]\w*)=")
 VAR_REF_RE = re.compile(r"\$\{?([A-Za-z_]\w*)")
-GIT_READONLY = {"diff", "log", "show", "status", "blame", "grep", "ls-files", "cat-file", "hash-object"}
+# card chat-E3 (fp-38): `git add` / `git commit` of a recipe path stage and record bytes - they never execute the file
+# (cards 143-P1, 142-4 and 143-1 left their recipes uncommitted because this gate refused the add).
+GIT_READONLY = {"diff", "log", "show", "status", "blame", "grep", "ls-files", "cat-file", "hash-object", "add", "commit"}
 PY_READONLY_MODULES = {"py_compile", "ast", "tokenize", "tabnanny"}
 # Inside `py -c "<code>"`: any of these could run the file, so the segment is "build".
 PY_EXEC_RE = re.compile(r"\bexec\b|\beval\b|runpy|subprocess|os\.system|os\.popen|popen|spawn|__import__|"
@@ -442,14 +466,19 @@ def keys_for(path):
 
 
 def sha256_of(path):
+    """card chat-E3: a .py/.ps1 is hashed WITHOUT its scope header block (tools/scope_header.canonical_bytes) - the
+    releases stamped before the header migration still match the same recipe code."""
     try:
         with open(path, "rb") as f:
-            h = hashlib.sha256()
-            for chunk in iter(lambda: f.read(65536), b""):
-                h.update(chunk)
-        return h.hexdigest()
+            b = f.read()
     except OSError:
         return None
+    if str(path).lower().endswith((".py", ".ps1")):
+        if HERE not in sys.path:
+            sys.path.insert(0, HERE)
+        import scope_header
+        b = scope_header.canonical_bytes(b)
+    return hashlib.sha256(b).hexdigest()
 
 
 def _abs(path):
@@ -814,3 +843,7 @@ def _cli(argv):
 
 if __name__ == "__main__":
     sys.exit(_cli(sys.argv[1:]))
+# ---
+# labview: none
+# hardware: none
+# ---

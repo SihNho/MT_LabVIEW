@@ -9,3 +9,7 @@ for p in ("tools/recipes/stage_d1_l2b2a.py", "tools/bench/plan_l2b2a_allow.json"
 cd = r"C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev"
 print("CLAUDEDEV LEFT", sorted(f for f in os.listdir(cd) if f.lower().startswith(("scratch_c112", "d1_l2_b2a"))))
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

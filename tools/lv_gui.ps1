@@ -885,3 +885,7 @@ switch ($Action) {
         Write-Output "$($h.Hash.ToLower())  $($h.Path)"
     }
 }
+# ---
+# labview: read
+# hardware: none
+# ---

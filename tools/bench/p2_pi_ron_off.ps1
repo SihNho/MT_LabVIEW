@@ -9,3 +9,7 @@ Write-Output ("RON 1 0 -> RON?={0} ERR?={1}" -f (Ask 'RON?'), (Ask 'ERR?'))
 $sp.WriteLine('POS 1 0'); Start-Sleep -Milliseconds 300
 Write-Output ("POS 1 0 -> POS?={0} FRF?={1} ERR?={2} TMN?={3} TMX?={4}" -f (Ask 'POS?'), (Ask 'FRF?'), (Ask 'ERR?'), (Ask 'TMN?'), (Ask 'TMX?'))
 $sp.Close(); $sp.Dispose()
+# ---
+# labview: none
+# hardware: motor
+# ---

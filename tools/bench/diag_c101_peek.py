@@ -12,3 +12,7 @@ for i, a in enumerate(P["actions"]):
     print(i + 1, json.dumps(a)[:260])
 print(len(P["actions"]), len(P["open_rows"]))
 print(protocol.result_line("PASS", {"pass": 1, "fail": 0}) if hasattr(protocol, "result_line") else "RESULT {}")
+# ---
+# labview: none
+# hardware: none
+# ---

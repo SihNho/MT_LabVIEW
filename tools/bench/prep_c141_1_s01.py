@@ -251,3 +251,7 @@ gate("SP pred written: {0} ops == compile (each action once), X10 start measured
      sorted(n for o in ops1 for n in o["acts"]) == list(range(1, len(keep) + 1)) and mp.get("peak_mb") is not None and mp["peak_mb"] <= LIMIT
      and abs(mp["peak_mb"] - TABLE[0]["peak_mb"]) < 0.05, (mp.get("N"), mp.get("R"), mp.get("peak_mb"), TABLE[0]["peak_mb"]))
 done()
+# ---
+# labview: none
+# hardware: none
+# ---

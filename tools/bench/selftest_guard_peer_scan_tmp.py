@@ -13,3 +13,7 @@ for p in sorted(glob.glob("archive/peer/2026-09-2*.md")):
     print(os.path.basename(p)[:55], "|", S.findall(q)[:4], "|", hdr[:2], "|",
           [x[:70] for x in re.findall(r"^\s*(?:Script|Log|Row|Stage|Card)\s*:.*$", q, re.M | re.I)[:2]])
 print('RESULT {"schema":"result_line/1","status":"PASS"}')
+# ---
+# labview: none
+# hardware: none
+# ---

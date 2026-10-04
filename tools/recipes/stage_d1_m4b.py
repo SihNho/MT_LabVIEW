@@ -109,3 +109,7 @@ if __name__ == "__main__":
     g.reset()
     g.restore_move_fixtures()
     sys.exit(rc if K.fixtures_check((BED_MD5, IN_MD5, K.md5(FINAL) if os.path.exists(FINAL) else ""), FXL) else 1)
+# ---
+# labview: build
+# hardware: none
+# ---

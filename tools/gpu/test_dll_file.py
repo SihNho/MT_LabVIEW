@@ -23,3 +23,7 @@ for name, hcal in (("GPUTracking_file", C.c_void_p(0)), ("GPUTracking_auto", emp
     C.memmove(vxo[0], xyz.tobytes(), 8 * xyz.size); text = C.create_string_buffer(CAL.encode("mbcs") + b" " * 8, 256)
     t0 = time.perf_counter(); rc = f(0, 0, 0, 0, 0, hx, hy, cross, 10, himg, hxo, hyo, hzo, hcal, hbs, text, htest)
     print(f"    second call (cached) {1e3 * (time.perf_counter() - t0):.1f} ms rc {rc} {text.value!r}")
+# ---
+# labview: none
+# hardware: none
+# ---

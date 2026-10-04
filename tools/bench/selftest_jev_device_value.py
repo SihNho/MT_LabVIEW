@@ -79,3 +79,7 @@ check("C2 every violation item carries a numeric loss_min",
       all(isinstance(i["loss_min"], float) for i in C if i["kind"] == "violation"))
 print("=== SELFTEST: %d pass / %d fail" % (sum(RES), len(RES) - sum(RES)))
 sys.exit(0 if all(RES) else 1)
+# ---
+# labview: read
+# hardware: none
+# ---

@@ -36,3 +36,7 @@ ok = d(ca, S["b"][0]) == d(S["ref"][1], S["b"][1]) and drb == db
 print("{0}  O1 the end diff == the base diff (a real vs a simulated), b's own delta identical on both bases".format(
     "PASS" if ok else "FAIL"), flush=True)
 print(P.result_line(P.make_result(int(ok), int(not ok), None if ok else "O1 objdiff not in the base", [])), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

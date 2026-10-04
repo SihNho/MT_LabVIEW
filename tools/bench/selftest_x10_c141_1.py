@@ -44,3 +44,7 @@ gate("P4 x10_plan_start(copy) is None (unchanged)", SPR.x10_plan_start(COPY) is 
 os.remove(COPY)
 print(protocol.result_line(protocol.make_result(G["pass"], G["fail"], G["first"], [])), flush=True)
 sys.exit(0 if not G["fail"] else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

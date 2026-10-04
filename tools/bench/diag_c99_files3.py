@@ -45,3 +45,7 @@ for w in (6363, 4906):
 json.dump(out, open(B + "diag_c99_files3.json", "w"), indent=1)
 ng = out["gates"]
 print(f"RESULT {json.dumps({'schema':'result-line/1','status':'PASS' if not ng['fail'] else 'FAIL','gates':{'pass':len(ng['pass']),'fail':len(ng['fail'])},'first_fail':ng['fail'][0] if ng['fail'] else None,'artefacts':[]})}")
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -98,3 +98,7 @@ fact("handles at end {0}".format(bench_prep.labview_handles()))
 json.dump(REC, open(OUT, "w", encoding="utf-8"), indent=1)
 print("\n=== GATES: {0} pass / {1} fail   JSON {2}".format(P[0], F[0], OUT), flush=True)
 sys.exit(1 if F[0] else 0)
+# ---
+# labview: read
+# hardware: none
+# ---

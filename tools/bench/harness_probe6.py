@@ -15,3 +15,7 @@ prep = c["real"][29] * 0.8 + 0.3
 o = sh.run(hf, {"prepped I(r)": [float(v) for v in prep], "Real portion of hilbert/bandpass filtered r-shifted claibration image": [[float(v) for v in row] for row in c["real"]]},
            ["Index of closest cal image slice"])
 print("fit-to-cal: LV", o["Index of closest cal image slice"], "np", r.fit_prep_to_cal(prep, c["real"]), flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

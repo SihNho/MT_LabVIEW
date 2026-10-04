@@ -12,3 +12,7 @@ for n in range(40):
     if labels.get(u) in ("Path To String", "Format Into String", "String To Path", "Build Path", "Strip Path"):
         print(f"n{n} uid {u} {labels[u]!r}: {[(r['i'], r['name'], 'S' if r['is_source'] else 's', r['wire']) for r in rows]}", flush=True)
 print("controls:", [(l, ind) for _i, l, ind in g.fp_labels(P)], flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

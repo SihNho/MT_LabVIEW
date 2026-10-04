@@ -21,3 +21,7 @@ for r in ("tools/recipes/stage_d1_ring_p3b2a.py", "tools/recipes/stage_d1_ring_p
     print(r, md5(r))
 print(open("tools/bench/diag_c134_1_graph_plan.json", encoding="utf-8").read()[:1500])
 print(P.result_line(P.make_result(1, 0, None)))
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -131,3 +131,7 @@ finally {
     if ($sp.IsOpen) { $sp.Close() }
     Write-Output "closed $Port"
 }
+# ---
+# labview: none
+# hardware: motor
+# ---

@@ -898,3 +898,7 @@ switch ($outcome) {
     'QUOTA'    { exit 3 }
     default    { exit 4 }
 }
+# ---
+# labview: none
+# hardware: none
+# ---

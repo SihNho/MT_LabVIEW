@@ -45,3 +45,7 @@ for ln in (2614, 2615):
         print("  VERDICT %s" % ("ALLOW" if SR.check_command(c)[0] else "REFUSE"), flush=True)
 npass = sum(1 for g in G if g[0])
 print(P.result_line(P.make_result(npass, len(G) - npass, next((g[1] for g in G if not g[0]), None))), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

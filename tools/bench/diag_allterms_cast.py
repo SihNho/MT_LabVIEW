@@ -135,3 +135,7 @@ S = K.Stage(SRC, SRC_MD5, "diag_allterms_cast", deadline_min=20.0, reserve_s=200
             task="Does a VI Server:Terminal property node accept Traverse's GObject refs without a "
                  "To More Specific Class? If not, D-A's body cannot be built W-side. Nothing saved.")
 sys.exit(K.run(main, S))
+# ---
+# labview: read
+# hardware: none
+# ---

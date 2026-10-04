@@ -111,3 +111,7 @@ if __name__ == "__main__":
     if len(sys.argv) >= 4 and sys.argv[1] == "--child":
         child(sys.argv[2], sys.argv[4:], sys.argv[3])
     sys.exit(main())
+# ---
+# labview: read
+# hardware: none
+# ---

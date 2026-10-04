@@ -96,3 +96,7 @@ if not DRY:
     s.gate("Z2 S1 md5 unchanged at exit", K.md5(s.input_vi) == s.input_md5)
     s.dump(); rc = s.summary()                                                             # noqa: E702
 sys.exit(rc)
+# ---
+# labview: build
+# hardware: none
+# ---

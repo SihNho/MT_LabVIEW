@@ -104,3 +104,7 @@ def fail_rows(logpath, run_index=-1, max_rows=None):
         if max_rows and len(out) >= max_rows:
             break
     return out
+# ---
+# labview: none
+# hardware: none
+# ---

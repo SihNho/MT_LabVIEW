@@ -8,3 +8,7 @@ r = json.load(open(os.path.join(B, "errorlist_D1_l2_b1_20260927_193100_c111_raw.
 print("raw items", len(r["items"]))
 for i, it in enumerate(r["items"]):
     print(i, "|", it.get("raw"), "|", (it.get("detail") or "")[:140].replace("\n", " "))
+# ---
+# labview: none
+# hardware: none
+# ---

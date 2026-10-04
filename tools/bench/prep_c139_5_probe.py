@@ -51,3 +51,7 @@ print("loops[10170] =", L)
 gate(len(L) == 1, "#10170 in the loops table", len(L))
 print(protocol.result_line(protocol.make_result(G["pass"], G["fail"], G["first"], [])), flush=True)
 sys.exit(0 if not G["fail"] else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -73,3 +73,7 @@ try {
     $sp.Dispose()
     Write-Output "closed $Port"
 }
+# ---
+# labview: none
+# hardware: motor
+# ---

@@ -223,3 +223,46 @@ Self-test `tools/bench/selftest_rebind_c142_5.py` (142-P1's case): before 1/3 (`
        `selftest_stagekit_c112d.log`), stage_prerun c106e E1 and c114 R4 (same in `s4_regress.log`, 08:18 today),
        `selftest_rebase_uidreuse_c143_4` (its fixture plan was rebased by 143-5: "base is not provisional"),
        `selftest_guard_peer_scan_tmp` (a throwaway census with a non-schema RESULT line).
+338. **(chat card chat-E3, 2026-10-04 — USER: "훅 작동을 위해서는 프론트매터에 특정 플래그를 달도록 강제해야겠음" · "이번 훅을 넣는
+     가장 큰 이유는 초장에 에러 발생을 극소화하여 시간 낭비를 최소화하는게 목적임" · "에러 잡는 훅도 만들어줘")** Catch errors at
+     WRITE and LAUNCH time. OFFLINE, STRUCTURAL; self-test `tools/bench/selftest_c_e3.log` (fp-36..40 as regression cases),
+     replay `tools/bench/replay_c_e3_142_143.log`, suite vs HEAD `tools/bench/selftest_c_e3_suite.log`.
+     USER-RULES: U1 (relied on: hook / checker / protocol code only - no VI, no computation, no design change).
+     - **(a) SCOPE HEADER on every tools/ script** (`tools/scope_header.py`): `# ---` / `# labview: none|read|build` /
+       `# hardware: none|camera|motor` / optional `# offline-args: <argv tokens>` (+ required `# evidence:`) / `# ---`, at
+       the top (12 lines) or the tail (8 lines). Migration APPENDED it to 1716 tracked scripts (mtime kept, so every
+       `file:line` citation and every mtime-ordered gate is unchanged); inference: import closure (guard_peer v2) +
+       subprocess invocations → none; LabVIEW but no recipe/save/GUI/Run → read; else build (unclear = build).
+       `canonical_bytes` strips the block: `stop_record.sha256_of`, `stage_prerun.sha256` and task/1 input pins hash
+       without it, so every release stamp and dry/prerun record written before still matches (58/58, 338/338 measured).
+     - **(b) WRITE TIME** (`tools/hooks/guard_write.py`, PostToolUse Write|Edit|MultiEdit|NotebookEdit): header valid,
+       compiles (py: compile(); ps1: the PowerShell parser), HONEST (`none` may not import gscript/COM, start a recipe,
+       runpy a file, invoke lv_gui.ps1/LabVIEW.exe, or import stagekit/stagexec whose used part reaches LabVIEW without
+       `evidence:`; `read` may not save/GUI/Run), JSON with a known schema validates (machine-field lengths; prose length
+       stays ungated per PD337(d)), task/1 input md5s match, an OPEN card (no result, < 24 h) pinning the written file at
+       another md5 is named (143-P1), a prior-art release line must use one of that review's verdict slugs (143-1).
+     - **(c) LAUNCH TIME**: `protocol.check_command` judges every tools/ script a command RUNS by its header (declared ≤ card
+       flags; offline-args applied to its own argv; missing/invalid header or a compile error refuses); text heuristics stay
+       only for scripts outside tools/, and LV_CMD_RE only on segments a read-only program does not lead. `guard_bash`
+       refuses a headerless/non-compiling tools script for every session. fp-39: `stagexec.py` declares `offline-args:
+       selftest adopt`. fp-37: `stage_prerun.py` declares build with every offline mode listed (`--dry --prerun
+       --scratch-required --rebase ...`); `stop_record.offline_checker` / `guard_cycle.offline_only` accept any program
+       whose honest header makes THIS run labview none. fp-38: `git add` / `git commit` are read-only for the stop record.
+       fp-36: bgrun puts the launching card into the child's env (CARD_ID / CARD_LABVIEW from the launch ledger) and
+       `protocol.result_line` stamps `card`/`labview` into the RESULT line; `guard_peer` RULE-OTHER-CARD frees a BOUND card
+       from a failing log another card launched (owner = RESULT `card`, else the newest ledger row not after the run's
+       start); the judgement session and the owner are still gated. fp-40 (chat-A1): a NAME of lv_gui.ps1/LabVIEW.exe in a
+       regex or message is not an invocation (23 migrated headers corrected; `protocol.py` = none); a .ps1 is build only when it
+       INVOKES LabVIEW (`& ...lv_gui.ps1`, `-Action`, LabVIEW.exe, `ComObject LabVIEW`), so `peer.ps1` and the
+       `peer_*.ps1` dispatchers are none; the stub-only `selftest_cycle_runner*.py` declare none with evidence.
+     - **(d) WAITING** (`result/1` and `result-line/1` enum): `stage_prerun --dry/--prerun` on a PROVISIONAL base whose only
+       failures are the base's unbound objects (prerun: only X1/X5/X10-provisional) prints RESULT WAITING, gates.fail 0,
+       rc 0, records status WAITING (never a launch PASS); `protocol.result_failed` treats it as not failed → no review owed.
+     - **(e) PRIOR-ART ON THE DIFF** (`tools/priorart_diff.py`): a recipe copied from the last APPROVED script of the same
+       name pattern (digits masked; stop record released/novel for its current bytes) is diffed on CODE lines (docstrings
+       and comments blanked); names/paths/numbers-only lines owe nothing; `guard_cycle` allows (PRIORART-DIFF line) when no
+       substantive line and no new structure class remain, else its refusal names them and `prior_art_review.py
+       --diff-from <sibling>` reviews only those. s03v18 vs s02v18: 9 parameter-only, 0 substantive, new class
+       `create:WhileLoop` → only that class would be reviewed.
+     - cycle_runner.py / guard_session.py belong to chat-A1: `scope_header.KNOWN` supplies cycle_runner's offline modes
+       (`--dry-run --dry-cmd --no-motor-hooks`, allowed since 2026-09-24) until its owner adds them to its header.

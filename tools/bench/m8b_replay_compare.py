@@ -63,3 +63,7 @@ if __name__ == "__main__":
     A = sys.argv[1:]
     o = A[A.index("--out") + 1] if "--out" in A else os.path.join(HERE, "m8b_replay_78.json")
     sys.exit(0 if main(A[0], A[1], o) else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

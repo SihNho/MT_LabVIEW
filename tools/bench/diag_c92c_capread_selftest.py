@@ -17,3 +17,7 @@ g = {"C1 present window read ok": bool(a.get("panel_hwnd")) and a.get("ok") is T
 for k, v in g.items(): print("GATE %s %s" % (k, "PASS" if v else "FAIL"))
 bad = [k for k, v in g.items() if not v]
 print(P.result_line(P.make_result(len(g) - len(bad), len(bad), bad[0] if bad else None)))
+# ---
+# labview: none
+# hardware: none
+# ---

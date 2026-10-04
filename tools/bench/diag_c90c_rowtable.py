@@ -118,3 +118,7 @@ S = K.Stage(CLEAN, CLEAN_MD5, "diag_c90c_rowtable", deadline_min=26.0, reserve_s
             task="the authoritative M3a-4 row table: the 11 wires read whole on the CLEAN artefact, "
                  "terminal index+name on both artefacts, the four replacement-side tunnel owners")
 sys.exit(K.run(main, S))
+# ---
+# labview: read
+# hardware: none
+# ---

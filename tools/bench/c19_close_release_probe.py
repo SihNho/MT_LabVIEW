@@ -166,3 +166,7 @@ miss = [l for l, ok in results if not ok]
 print("PREDICTION CONTRACT: %d/%d HIT" % (len(results) - len(miss), len(results)))
 print("MISSES: %s" % (", ".join(miss) if miss else "none"))
 sys.exit(1 if miss else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -17,3 +17,7 @@ for t in (28378, 2996, 3193):
 E = json.load(open(os.path.join(R, "tools/bench/errorlist_expected_D1_l2_b2b_20260928_015450.json"), encoding="utf-8"))
 print(list(E.keys())); print(json.dumps(E["expected"][:3])[:1500])
 print("RESULT {}")
+# ---
+# labview: none
+# hardware: none
+# ---

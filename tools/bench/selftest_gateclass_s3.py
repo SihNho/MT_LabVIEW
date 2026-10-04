@@ -119,3 +119,7 @@ gate("F7 bind_new: new face row on an existing tunnel binds nothing (no stop); a
 print("=== GATES: {0} pass / {1} fail".format(len(P), len(F)), flush=True)
 print(protocol.result_line(protocol.make_result(len(P), len(F), F[0] if F else None)))
 sys.exit(0 if not F else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

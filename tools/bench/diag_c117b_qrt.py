@@ -159,3 +159,7 @@ json.dump({"schema": "diag/c117b-qrt", "graph": {"path": "tools/bench/graph_l2r1
 gate(os.path.exists(OUT), "G4 written " + OUT)
 print(protocol.result_line(protocol.make_result(npass, nfail, first_fail,
                                                 [{"path": "tools/bench/diag_c117b_qrt.json", "md5": md5(OUT)}])))
+# ---
+# labview: none
+# hardware: none
+# ---

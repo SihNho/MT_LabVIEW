@@ -46,3 +46,7 @@ for rel, names in (("tools/gscript.py", ("def wire_indicators", "def build_index
     txt = open(os.path.join(ROOT, rel), encoding="utf-8").read()
     for n in names:
         print("  [%s]  %s :: %s" % ("ok" if n in txt else "MISSING", rel, n))
+# ---
+# labview: none
+# hardware: none
+# ---

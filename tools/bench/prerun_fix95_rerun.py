@@ -25,3 +25,7 @@ for label, args in RUNS:
         bad.append(label)
 print('RESULT {"schema":"result-line/1","status":"%s","gates":{"pass":%d,"fail":%d},"first_fail":%s,"artefacts":[]}'
       % ("PASS" if not bad else "FAIL", len(RUNS) - len(bad), len(bad), "null" if not bad else '"%s"' % bad[0]))
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -15,3 +15,7 @@ if cur and cur.get("acts"):
         print("  FACT act {0}: {1}".format(n, a), flush=True)
 print(P.result_line(P.make_result(int(st == "PASS"), int(st != "PASS"), ff)), flush=True)
 sys.exit(0 if st == "PASS" else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

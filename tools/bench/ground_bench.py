@@ -166,3 +166,7 @@ def cmd_report(args):
 if __name__ == "__main__":
     a = sys.argv[1:]
     {"run": cmd_run, "record": cmd_record, "report": cmd_report}[a[0]](a[1:])
+# ---
+# labview: none
+# hardware: none
+# ---

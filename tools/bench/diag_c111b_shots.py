@@ -35,3 +35,7 @@ for it in EL:
     n_ok += 1
     print("ITEM %d | %s | selection-blue px %d bbox %s -> %s" % (it["index"], it["raw"][:70], len(blue), box, os.path.basename(out)), flush=True)
 print(protocol.result_line(protocol.make_result(n_ok, len(ITEMS) - n_ok, None if n_ok == len(ITEMS) else "missing capture", [])))
+# ---
+# labview: none
+# hardware: none
+# ---

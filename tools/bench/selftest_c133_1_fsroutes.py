@@ -86,3 +86,7 @@ finally:
     shutil.rmtree(tmp, ignore_errors=True)
 N = 6
 print(P.result_line(P.make_result(NP[0], N - NP[0], NF[0])), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -249,3 +249,7 @@ else:
     print("  FACT  NOT INSTALLED - guard_bash.py unchanged, the .new stays for inspection")
 print(P.result_line(P.make_result(npass, nfail, None if nfail == 0 else "selftest case failed")))
 sys.exit(0 if nfail == 0 else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

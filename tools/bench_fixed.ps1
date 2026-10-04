@@ -107,3 +107,7 @@ for ($i = 1; $i -le 3; $i++) {
 }
 
 Write-Host "All trials complete. Results are in tools/bench/gui_results.jsonl"
+# ---
+# labview: build
+# hardware: none
+# ---

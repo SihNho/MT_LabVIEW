@@ -31,3 +31,7 @@ bad = sum(1 for s in summary if s[1] != 0)
 print('RESULT {"schema":"result-line/1","status":"%s","gates":{"pass":%d,"fail":%d},"first_fail":%s,"artefacts":[]}'
       % ("PASS" if not bad else "FAIL", len(summary) - bad, bad,
          "null" if not bad else '"%s"' % [s[0] for s in summary if s[1] != 0][0]))
+# ---
+# labview: none
+# hardware: none
+# ---

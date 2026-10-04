@@ -161,3 +161,7 @@ if S.get("plan_out"):
     arts.append({"path": "tools/bench/plan_l2b2b_d4.json", "md5": md5(D4P)})
 np_ = sum(1 for _g, ok in gates if ok)
 print(protocol.result_line(protocol.make_result(np_, len(gates) - np_, next((g_ for g_, ok in gates if not ok), None), arts)))
+# ---
+# labview: none
+# hardware: none
+# ---

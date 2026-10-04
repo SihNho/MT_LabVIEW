@@ -120,3 +120,7 @@ n_ok = sum(1 for _l, ok in G if ok)
 print(P.result_line({"status": "PASS" if n_ok == len(G) else "FAIL", "gates": {"pass": n_ok, "fail": len(G) - n_ok},
                      "first_fail": next((l for l, ok in G if not ok), None), "artefacts": []}), flush=True)
 sys.exit(0 if n_ok == len(G) else 1)
+# ---
+# labview: read
+# hardware: none
+# ---

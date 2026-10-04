@@ -626,3 +626,7 @@ out("=" * 92)
 out("%d pass / %d fail   (gates REPORTED, not required)" % (npass, nfail))
 out("readings -> tools/bench/replay_netmap_truncation.json")
 out("=" * 92)
+# ---
+# labview: none
+# hardware: none
+# ---

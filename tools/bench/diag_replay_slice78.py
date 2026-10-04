@@ -38,3 +38,7 @@ common = set(hits.get(0, [])) & set(hits.get(1, [])) & set(hits.get(2, []))
 print("common slice for all three:", sorted(common), flush=True)
 print(P.result_line(P.make_result(1 if common else 0, 0 if common else 1,
                                   None if common else "no 1024-element slice of the source frames matches")), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

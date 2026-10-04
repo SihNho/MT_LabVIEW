@@ -39,3 +39,7 @@ for t, nm, w in nodes[0][2]:
         desc = "read ERR " + str(e)[:60]
     print(f"  t{t} {nm!r}: {kind} label={label!r} value={desc} wires={g.count(DST, 'Wire')} ExecState={g.exec_state(DST)}", flush=True)
 print("saved", g.save(DST, allow_broken=True) if g.exec_state(DST) != 1 else g.save(DST), flush=True)
+# ---
+# labview: build
+# hardware: none
+# ---

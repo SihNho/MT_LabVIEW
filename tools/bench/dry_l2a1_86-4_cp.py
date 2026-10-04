@@ -23,3 +23,7 @@ print("exc", err, "\nreads real", ex.reads_real, "skipped", len(ex.reads_skipped
 ok = [err is None, set(bind) <= set(CP), len(ex.ops) == 42, ex.reads_real == [k for k in CP if k], not be.unroutable]
 print(protocol.result_line(protocol.make_result(sum(ok), len(ok) - sum(ok), None if all(ok) else "checkpoint dry: " + str(ok))))
 sys.exit(0 if all(ok) else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

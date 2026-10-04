@@ -33,3 +33,7 @@ bad = [k for k, v in G.items() if not v]
 art = [{"path": os.path.relpath(out, ROOT), "md5": hashlib.md5(open(out, "rb").read()).hexdigest()}] if os.path.isfile(out) else []
 print(P.result_line(P.make_result(len(G) - len(bad), len(bad), bad[0] if bad else None, art)), flush=True)
 sys.exit(1 if bad else 0)
+# ---
+# labview: read
+# hardware: none
+# ---

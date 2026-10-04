@@ -43,3 +43,7 @@ gate("L adopted_launch(stage_d1_ring_p4_s02v18.py, plan md5s) returns the record
 print(protocol.result_line(protocol.make_result(G["pass"], G["fail"], G["first"],
                                                 [{"path": "tools/bench/adopted_scratch.jsonl", "md5": SX.md5(SX.ADOPT_LOG)}] if ok else [])), flush=True)
 sys.exit(1 if G["fail"] else 0)
+# ---
+# labview: read
+# hardware: none
+# ---

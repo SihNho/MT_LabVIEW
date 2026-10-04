@@ -22,3 +22,7 @@ ok = [os.path.basename(h[1]) for h in hits] == ["DonorRingConst_v0.vi"]
 print("  GATE {0}  M exactly one file in the window == DonorRingConst_v0.vi ({1} files scanned)".format("PASS" if ok else "FAIL", n), flush=True)
 print(protocol.result_line(protocol.make_result(int(ok), int(not ok), None if ok else "M window files != [DonorRingConst_v0.vi]")), flush=True)
 sys.exit(0 if ok else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

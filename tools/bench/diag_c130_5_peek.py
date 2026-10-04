@@ -10,3 +10,7 @@ for f in sys.argv[1:]:
     print('  actions', len(p.get('actions') or []), 'decisions', len(p.get('decisions') or []))
 import protocol as P
 print(P.result_line(P.make_result(1, 0, None)))
+# ---
+# labview: none
+# hardware: none
+# ---

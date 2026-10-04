@@ -21,3 +21,7 @@ try:
     g.close_panel(S); os.remove(S); print("scratch removed", flush=True)
 except Exception as e:
     print("cleanup", str(e)[:50], flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

@@ -150,3 +150,7 @@ for backend in (0, 1):
             if vals:
                 print(f"  backend {backend} {key:>5}: median of repeats {st.median(vals):.2f} ms/frame  (runs {vals})", flush=True)
 print("\nDLL internal (total/upload/kernel/x) medians per repeat:", [r.get("dll_ms") for r in rows], flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

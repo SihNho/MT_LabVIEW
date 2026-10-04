@@ -35,3 +35,7 @@ elif what == 'keys':
         d = d[int(k)] if isinstance(d, list) else d[k]
     print(type(d).__name__, sorted(d) if isinstance(d, dict) else len(d))
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":0,"fail":0}}')
+# ---
+# labview: none
+# hardware: none
+# ---

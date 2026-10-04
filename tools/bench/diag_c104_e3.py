@@ -57,3 +57,7 @@ for lab in out:
     print(lab, "missing == LIVE missing:", sorted(map(tuple, out[lab]["missing"])) == sorted(LIVE))
 json.dump(out, open(os.path.join(BENCH, "diag_c104_e3.json"), "w", encoding="utf-8"), indent=1, default=str)
 print(protocol.result_line(protocol.make_result(1, 0, None)))
+# ---
+# labview: none
+# hardware: none
+# ---

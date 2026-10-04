@@ -93,3 +93,7 @@ if __name__ == "__main__":
         sys.exit(0 if ok == len(cases) else 1)
     else:
         print("%s | %s" % effective())
+# ---
+# labview: none
+# hardware: none
+# ---

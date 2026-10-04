@@ -135,3 +135,7 @@ gate("V5 #23541: ControlTerminal, exactly 1 writer (w23556 from #10757), readers
 print("=== selftest_vigraph_frame_80: {0} pass / {1} fail ({2:.1f} s)".format(N["pass"], N["fail"], time.time() - t0))
 print(PR.result_line(PR.make_result(N["pass"], N["fail"], FF[0] if FF else None)))
 sys.exit(1 if N["fail"] else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -99,3 +99,7 @@ def body(_):
 
 
 sys.exit(K.run(body, s))     # LabVIEW is stopped and verified gone by the calling session after BGRUN END (dry blocks subprocess here)
+# ---
+# labview: read
+# hardware: none
+# ---

@@ -5,3 +5,7 @@ for n in ["D1_s1_t0_20260926_055551.vi", "OpCLFNThread_v0.vi", "D1_s1_copy.vi", 
     p = os.path.join(cd, n)
     print(hashlib.md5(open(p, "rb").read()).hexdigest(), os.path.getsize(p), n)
 print(sorted(os.path.basename(x) for x in glob.glob(cd + r"\D1_s1_t0*") + glob.glob(cd + r"\OpCLFN*")))
+# ---
+# labview: none
+# hardware: none
+# ---

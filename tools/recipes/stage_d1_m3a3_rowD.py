@@ -137,3 +137,7 @@ if __name__ == "__main__":
     st = K.Stage(INPUT, INPUT_MD5, "D1_s3b_m3a3b_rowD", fresh=True, pins=C82.PINS, deadline_min=40,
                  reserve_s=300, task="M3a-3b Row D: 7506 out, #23868 -> FSIT #7468 LeftTerm #7488")
     sys.exit(K.run(work, st))
+# ---
+# labview: build
+# hardware: none
+# ---

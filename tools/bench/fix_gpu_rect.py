@@ -36,3 +36,7 @@ if es != 1 or not label:
     print("STOP: not saving", flush=True); sys.exit(3)
 print("saved", g.save(OP), flush=True)
 lab = json.load(open(LABELS)); lab["controls"]["Optional Rectangle"] = label; json.dump(lab, open(LABELS, "w"), indent=1); print("labels updated", flush=True)
+# ---
+# labview: build
+# hardware: none
+# ---

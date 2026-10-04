@@ -205,3 +205,7 @@ def leg_loop(order, run_leg, log=print, max_legs=None):
         if max_legs is not None and slot >= max_legs and slot < len(order):
             stop = {"slot": slot, "arm": arm, "reason": "--max-legs %d" % max_legs}; log("LEGLOOP STOP at slot %d: --max-legs %d" % (slot, max_legs)); break
     return finals, stop
+# ---
+# labview: read
+# hardware: none
+# ---

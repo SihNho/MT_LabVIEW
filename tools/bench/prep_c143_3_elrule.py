@@ -7,3 +7,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from elrule import owners_map, items, unwired_inputs, predict  # noqa: E402,F401
+# ---
+# labview: none
+# hardware: none
+# ---

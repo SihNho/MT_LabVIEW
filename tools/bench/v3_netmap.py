@@ -14,3 +14,7 @@ print(f"=== PARALLEL_kernel_v3 diagram {diag}: {len(nodes)} nodes, {len(nets)} w
 g.print_net_map(nodes, nets)
 json.dump({"nodes": {str(k): v for k, v in nodes.items()}, "nets": {str(k): v for k, v in nets.items()}},
           open(os.path.join(HERE, f"v3_netmap_diag{diag}.json"), "w"), indent=1)
+# ---
+# labview: read
+# hardware: none
+# ---

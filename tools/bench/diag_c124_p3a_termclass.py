@@ -27,3 +27,7 @@ for f in sorted(glob.glob("tools/bench/plan_*.json")):
                 n += 1
                 print("DECL", f, a.get("id"), a.get("class"), a.get("prim"), repr(t.get("name")), t["term_class"])
 print(P.result_line(P.make_result(1, 0, None)), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

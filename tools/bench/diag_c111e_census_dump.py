@@ -30,3 +30,7 @@ for k in BV:
                     print("   BV", k, json.dumps(e)[:300])
 print(protocol.result_line(dict(status="PASS", gates={"pass": 2, "fail": 0}, first_fail=None, artefacts=[])))
 print("COUNTS RS rows {0}, BV cut rows {1}".format(n1, n2))
+# ---
+# labview: none
+# hardware: none
+# ---

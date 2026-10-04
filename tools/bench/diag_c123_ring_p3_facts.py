@@ -120,3 +120,7 @@ F["loop11_diagram_classes"] = sorted(set(r["owner_class"] for r in T if int(r["f
 OUT = "tools/bench/facts_c123_p3.json"
 json.dump(F, open(os.path.join(ROOT, OUT), "w", encoding="utf-8"), indent=1, default=str)
 print(protocol.result_line(protocol.make_result(G["pass"], G["fail"], G["first"], artefacts=[{"path": OUT, "md5": md5(OUT)}])), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

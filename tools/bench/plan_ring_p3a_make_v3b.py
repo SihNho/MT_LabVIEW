@@ -104,3 +104,7 @@ gate("M7 pred file untouched", md5(PRED) == PRED_MD5, md5(PRED))
 np_, nf = sum(1 for _n, c in ok if c), sum(1 for _n, c in ok if not c)
 print(P.result_line(P.make_result(np_, nf, next((n for n, c in ok if not c), None))), flush=True)
 sys.exit(1 if nf else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

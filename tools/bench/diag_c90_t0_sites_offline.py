@@ -143,3 +143,7 @@ json.dump({"input": rec["file"], "input_md5": rec["md5"], "source": "docs/wiki/s
 print("=== GATES: %d pass / %d fail%s" % (len(P), len(F), ("; failing: " + ", ".join(F)) if F else ""))
 print(protocol.result_line(protocol.make_result(len(P), len(F), F[0] if F else None, [{"path": OUT}])))
 sys.exit(0 if not F else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

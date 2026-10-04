@@ -113,3 +113,7 @@ print("=== GATES: {0} pass / {1} fail".format(npass, nfail))
 print('RESULT {"schema":"result-line/1","status":"%s","gates":{"pass":%d,"fail":%d},"first_fail":null,"artefacts":[]}'
       % ("PASS" if not nfail else "FAIL", npass, nfail))
 sys.exit(0 if not nfail else 1)
+# ---
+# labview: read
+# hardware: none
+# ---

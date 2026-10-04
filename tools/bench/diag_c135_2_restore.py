@@ -39,3 +39,7 @@ if gate("R1 snapshot plan b md5 == ae6b6111", md5(src[names[0]]) == PB_MD5, md5(
 np_, nf = sum(1 for _n, c in ok if c), sum(1 for _n, c in ok if not c)
 print(P.result_line(P.make_result(np_, nf, next((n for n, c in ok if not c), None), arts)), flush=True)
 sys.exit(1 if nf else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

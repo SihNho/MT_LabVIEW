@@ -155,3 +155,7 @@ bad = [k for k, v in PM.items() if not v] + ([] if ok else ["drive_m8 M-gates"])
 print(P.result_line(P.make_result(len(PM) + (1 if ok else 0), len(bad), bad[0] if bad else None,
                                   [{"path": os.path.relpath(jp, ROOT), "md5": drive_m8.md5(jp)}])), flush=True)
 sys.stdout.flush(); os._exit(0 if not bad else 1)
+# ---
+# labview: read
+# hardware: none
+# ---

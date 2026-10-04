@@ -74,3 +74,7 @@ print("AST OK  %s  %d lines, %d gate sites"
 print("gscript verbs called (all must pre-exist): %s" % (gverbs,))
 print("imported names: %s" % (sorted(imported),))
 print("guard assertions: %s" % ("ALL CLEAR" if not bad else bad))
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -551,3 +551,7 @@ if __name__ == "__main__":
               "judgement session). NO VI WAS RUN (34(f)); no motor, no ASI, no camera, no GUI action.",
               flush=True)
         sys.exit(rc)
+# ---
+# labview: build
+# hardware: none
+# ---

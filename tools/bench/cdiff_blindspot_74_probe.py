@@ -18,3 +18,7 @@ for p in ['opmodels/bed_s4_loop17.json', 'opmodels/bed_l7_1a.json', 'opmodels/be
     s = json.dumps(d)
     print("   mentions 060431:", "060431" in s, " D1_s4_loop17.vi:", "D1_s4_loop17.vi" in s)
 print(P.result_line(P.make_result(1, 0)))
+# ---
+# labview: none
+# hardware: none
+# ---

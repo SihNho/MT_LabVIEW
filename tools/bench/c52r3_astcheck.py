@@ -38,3 +38,7 @@ for f in (g.count, g.report_all, g.node_terms_uid, g.fp_labels, g.op, g.open_pan
           A.wire_present, B.census):
     print("  %-22s %s" % (f.__name__, inspect.signature(f)))
 print("OK")
+# ---
+# labview: read
+# hardware: none
+# ---

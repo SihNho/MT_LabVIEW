@@ -49,3 +49,7 @@ nf = sum(1 for _n, ok in checks if not ok)
 print('RESULT ' + json.dumps({'schema': 'result-line/1', 'status': 'FAIL' if nf else 'PASS',
                               'gates': {'pass': len(checks) - nf, 'fail': nf},
                               'first_fail': next((n for n, ok in checks if not ok), None), 'artefacts': []}))
+# ---
+# labview: none
+# hardware: none
+# ---

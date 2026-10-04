@@ -36,3 +36,7 @@ for name, cmd in (("BG", BG), ("BG-other", BG.replace("diag_c88_brokenwires", "d
     print("CASE %s code %s" % (name, rc))
     print("STDERR " + buf.getvalue().replace("\n", "\n       "))
 print(protocol.result_line(protocol.make_result(1, 0)))
+# ---
+# labview: none
+# hardware: none
+# ---

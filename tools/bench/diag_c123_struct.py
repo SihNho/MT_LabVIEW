@@ -85,3 +85,7 @@ if __name__ == "__main__":
     rc = K.run(body, s)
     DRY or K.mod("stagexec").kill_labview_at_exit()
     sys.exit(rc)
+# ---
+# labview: build
+# hardware: none
+# ---

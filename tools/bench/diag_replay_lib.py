@@ -205,3 +205,7 @@ def tail(s, fxl=None, bad=()):
 
 def frame_paths():
     return [os.path.join(FR, "f{0:05d}.tif".format(i)) for i in range(N_FR)]
+# ---
+# labview: read
+# hardware: camera
+# ---

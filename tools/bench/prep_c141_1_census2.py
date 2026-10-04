@@ -37,3 +37,7 @@ for t in (28395, 29235, 28413, 29243, 29408, 29411):
 print("owners 32464", gr["owners"].get("32464"), "27722", gr["owners"].get("27722"), "27641", gr["owners"].get("27641"))
 print("fs_measured keys", list((gr.get("fs_measured") or {}).keys())[:10])
 print(protocol.result_line(protocol.make_result(1, 0, None, [])), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

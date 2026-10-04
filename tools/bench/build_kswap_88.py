@@ -81,3 +81,7 @@ time.sleep(6); s.gate("K10 pins unchanged after", s.pin_check("AFTER"))  # noqa:
 s.gate("K11 LabVIEW gone at exit", "LabVIEW.exe" not in subprocess.run(["tasklist"], capture_output=True, text=True, errors="replace").stdout)
 if os.path.exists(T): s.fact("DELIVERABLE {0} md5 {1} bytes {2}".format(T, K.md5(T), os.path.getsize(T)))
 s.dump(); sys.exit(s.summary())
+# ---
+# labview: build
+# hardware: none
+# ---

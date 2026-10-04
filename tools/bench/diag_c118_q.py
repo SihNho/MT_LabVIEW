@@ -32,3 +32,7 @@ if len(sys.argv) > 5:
         print("loops sample", L)
 print("sample term", G['terminals'][0]); print("sample obj", G['objs'][0])
 print(P.result_line(P.make_result(1, 0, None)))
+# ---
+# labview: none
+# hardware: none
+# ---

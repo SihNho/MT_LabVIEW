@@ -110,3 +110,7 @@ if __name__ == "__main__":
     s.gate("M4 LabVIEW process gone at the end", "labview.exe" not in tl)
     s.summary()
     sys.exit(1 if s.fails else 0)
+# ---
+# labview: read
+# hardware: none
+# ---

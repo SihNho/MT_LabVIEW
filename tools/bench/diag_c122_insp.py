@@ -16,3 +16,7 @@ for k, v in sorted(G["owners"].items(), key=lambda kv: int(kv[0])):
 labs = sorted(set(str(o.get("label")) for o in G["objs"] if o.get("label") is not None))
 print("LABELS", len(labs), [x for x in labs if x in ("Num", "TransPos", "RotPos", "FrameIdx", "Latest")])
 print(protocol.result_line(protocol.make_result(1, 0, None)))
+# ---
+# labview: none
+# hardware: none
+# ---

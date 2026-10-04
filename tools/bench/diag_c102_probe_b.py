@@ -51,3 +51,7 @@ for label, rule in (("keep", {"constant": "delete", "default": "keep"}), ("node:
         print("   step12 flips", (st12.get("effect") or {}).get("tunnel_flips"), "terms", dict((u, w.get(u)) for u in (11365, 11369, 11270)))
     print("   FLIP-OF-11363 calls:", json.dumps(LOG, default=str)[:1500])
 shutil.rmtree(tmp, ignore_errors=True)
+# ---
+# labview: none
+# hardware: none
+# ---

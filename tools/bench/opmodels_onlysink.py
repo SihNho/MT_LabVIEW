@@ -127,3 +127,7 @@ def body(s):
 if __name__ == "__main__":
     st = K.Stage(BED, BED_MD5, "opmodels_onlysink", preload=False, deadline_min=27, pins=PINS)
     sys.exit((K.run(body, st), K.mod("bench_prep").restart_labview())[0])
+# ---
+# labview: read
+# hardware: none
+# ---

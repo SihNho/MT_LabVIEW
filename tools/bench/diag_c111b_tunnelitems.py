@@ -92,3 +92,7 @@ if __name__ == "__main__":
                    "delta": (st.R.get("c111b") or {}).get("delta"), "log": "tools/bench/diag_c111b_tunnelitems.log"},
                   open(os.path.join(REC_DIR, "{0}_{1}.json".format(FUNC, st.stamp)), "w", encoding="utf-8"), indent=1)
     sys.exit(rc)
+# ---
+# labview: read
+# hardware: none
+# ---

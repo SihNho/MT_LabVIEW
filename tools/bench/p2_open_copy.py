@@ -35,3 +35,7 @@ print("md5 original AFTER ", md5(ORIG), flush=True)
 hold = float(sys.argv[1]) if len(sys.argv) > 1 else 3600
 print("holding references %.0f s (the user runs the VI by hand now)" % hold, flush=True)
 time.sleep(hold)
+# ---
+# labview: read
+# hardware: none
+# ---

@@ -20,3 +20,7 @@ g._run(vi)
 for _, l, ind in g.fp_labels(path):
     v = vi.GetControlValue(l); a = np.array(v)
     print(f"  {l!r} ind={ind}: shape {a.shape} {a.ravel()[:4]}", flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

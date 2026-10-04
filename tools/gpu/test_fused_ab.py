@@ -44,3 +44,7 @@ for (k, a, gin), (_, b, _), pa, pb, ga, gb in zip(o1, o0, p1, p0, g1, g0):
 print(f"A/B over {n} frames: worst |fused - classic| {worst_ab:.2e} (x,y px / z um); index/good mismatches {flips}", flush=True)
 print(f"fused vs LabVIEW: worst |dx| {worst_lv[0]:.2e} px |dy| {worst_lv[1]:.2e} px |dz| {worst_lv[2]:.2e} um", flush=True)
 print(f"DLL-internal median: fused {np.median(t1[1:]):.2f} ms (GPU event {np.median(e1[1:]):.2f}) | classic {np.median(t0[1:]):.2f} ms (GPU event {np.median(e0[1:]):.2f})", flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

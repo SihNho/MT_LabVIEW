@@ -60,3 +60,7 @@ print("AST OK  %s  %d lines, %d gate sites" % (os.path.basename(TGT), len(src.sp
 print("gscript verbs called: %s" % (verbs,))
 print("delete_object call sites: %d (all routed through delete_by_uid)" % len(dels))
 print("guard assertions: %s" % ("ALL CLEAR" if not bad else bad))
+# ---
+# labview: none
+# hardware: none
+# ---

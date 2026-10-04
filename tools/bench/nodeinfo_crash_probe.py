@@ -88,3 +88,7 @@ for name, src, copy, probe in CELLS:
                            capture_output=True, text=True, timeout=60).stdout.strip()
     print(f"   LabVIEW after the cell: {alive}", flush=True)
 print("\nDONE", flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

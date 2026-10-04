@@ -146,3 +146,7 @@ print("[G] WROTE %s (%d B)" % (OUT, OUT.stat().st_size))
 nf = [l for ok, l in gates if not ok]
 print("GATE: %d pass / %d fail%s" % (len(gates) - len(nf), len(nf), ("; failing: " + " | ".join(nf)) if nf else ""))
 sys.exit(1 if nf else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

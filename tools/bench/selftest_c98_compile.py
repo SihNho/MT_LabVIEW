@@ -30,3 +30,7 @@ for f in FILES:
             os.remove(c)
 print(protocol.result_line(protocol.make_result(npass, len(fails), fails[0] if fails else None)), flush=True)
 sys.exit(1 if fails else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

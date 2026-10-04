@@ -245,3 +245,7 @@ finally:
     print("=== GATES: %d pass / %d fail; failing: %s" % (len(PASS), len(FAIL), FAIL))
     print(P.result_line({"status": "PASS" if not FAIL else "FAIL", "gates": {"pass": len(PASS), "fail": len(FAIL)},
                          "first_fail": FAIL[0][:180] if FAIL else None, "artefacts": []}))
+# ---
+# labview: read
+# hardware: none
+# ---

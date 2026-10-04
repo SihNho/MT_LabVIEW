@@ -371,3 +371,7 @@ if __name__ == "__main__":
     for it in ({"src": 4344, "dst": 48, "replace": True}, {"src": 23499, "dst": {"structure": 10407}}):
         c = candidates(G, it)
         print(json.dumps({k: v for k, v in c.items() if k != "pairs"}), len(c["pairs"]))
+# ---
+# labview: none
+# hardware: none
+# ---

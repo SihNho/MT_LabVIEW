@@ -136,3 +136,7 @@ if __name__ == "__main__":
         if nf:
             print("failing: " + ", ".join(n for n, ok in PASS if not ok), flush=True)
     sys.exit(0 if (rc == 0 and not any(not ok for _n, ok in PASS)) else 1)
+# ---
+# labview: read
+# hardware: none
+# ---

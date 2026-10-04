@@ -53,3 +53,7 @@ for n in range(len(nodes)):
     print(f"  Nodes[{n}] uid {nodes[n]['uid']} {nodes[n]['class']} @ {nodes[n]['pos']}: unwired inputs {names}", flush=True)
 print("\nfp:", [l for _, l, _ in g.fp_labels(OP)], flush=True)
 print("final ExecState", g.exec_state(OP), "wires", g.count(OP, "Wire"), flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

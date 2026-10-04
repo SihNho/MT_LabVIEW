@@ -118,3 +118,7 @@ if __name__ == "__main__":
             work_name=os.path.basename(g.MOVE_DST), pins=tuple(K.DEFAULT_PINS[:1]) + L.pins(), task="77-4",
             out_json=os.path.join(K.BENCH, "replay_vis_77.json"))
     sys.exit(K.run(body, st))
+# ---
+# labview: build
+# hardware: camera
+# ---

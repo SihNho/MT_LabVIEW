@@ -112,3 +112,7 @@ for k in range(0, len(rows), max(1, len(rows) // N)):
     n_done += 1
 print(f"sweep {n_done} frames (cluster route): worst |dx| {worst[0]:.2e} px |dy| {worst[1]:.2e} px |dz| {worst[2]:.2e} um vs LabVIEW; "
       f"index flips {flips}; {1e3 * t_sum / n_done:.2f} ms/frame", flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

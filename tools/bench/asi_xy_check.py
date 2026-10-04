@@ -28,3 +28,7 @@ for off_mm, expect in ((-0.4, 0), (-2.0, 3), (0.4, 0), (2.0, 3), (0.0, 0)):
             break
 print("SUMMARY axis %s: %d unexpected" % (axis, bad))
 sys.exit(1 if bad else 0)
+# ---
+# labview: none
+# hardware: motor
+# ---

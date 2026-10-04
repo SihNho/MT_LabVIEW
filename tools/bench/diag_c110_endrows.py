@@ -21,3 +21,7 @@ if len(sys.argv) > 3:
         if json.dumps(r, sort_keys=True) not in pk:
             print("  NEW/CHANGED {0}".format(r), flush=True)
 print(P.result_line(P.make_result(1, 0, None)), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

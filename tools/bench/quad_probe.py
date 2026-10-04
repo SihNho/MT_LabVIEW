@@ -27,3 +27,7 @@ for name, ph in cases.items():
     z = float(r["bead z pos as a cal image index"]); out[name] = {"phases": [float(v) for v in ph], "lv": z}
     print(f"{name:34s} phases {np.array2string(ph, precision=5)} -> LV {z:.10f}", flush=True)
 json.dump(out, open(os.path.join(HERE, "quad_probe.json"), "w"), indent=1)
+# ---
+# labview: read
+# hardware: none
+# ---

@@ -133,3 +133,7 @@ if __name__ == "__main__" and "--compose" in sys.argv:
         data = compose(PARAMS[:1]); open(out.replace(".hex", "_ret.hex"), "w").write(data.hex()); print("ret-only", len(data), "bytes")
     if "--bool" in sys.argv:
         data = compose(PARAMS_B); open(out.replace(".hex", "_b.hex"), "w").write(data.hex()); print("bool variant", len(data), "bytes")
+# ---
+# labview: none
+# hardware: none
+# ---

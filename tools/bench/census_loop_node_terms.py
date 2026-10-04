@@ -24,3 +24,7 @@ print("tunnels:", flush=True)
 for o in g.report_all(OP, "LoopTunnel"):
     t = g.tunnels(OP, o["i"])
     print(f"   tunnel {t['uid']}: mode {t['index_mode']} outer {t['out_name']!r} src={t['out_is_source']} wire {t['out_wire']} inner {t['in_wires']}", flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

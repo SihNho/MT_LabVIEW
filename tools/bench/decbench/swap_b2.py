@@ -37,3 +37,7 @@ print("CASES", ids)
 print("RESULT " + json.dumps({"schema": "result-line/1", "status": "FAIL" if fails else "PASS",
                               "gates": {"pass": 0 if fails else 1, "fail": len(fails)},
                               "first_fail": fails[0] if fails else None, "artefacts": []}))
+# ---
+# labview: none
+# hardware: none
+# ---

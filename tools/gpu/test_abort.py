@@ -77,3 +77,7 @@ track_once(ctx, 1); s3 = lib.mt_gpu_keepalive_state()                         # 
 print(f"  state after track {s1} (1 = running) | after 2.5 s idle {s2} (2 = parked) | after next track {s3} (1)", flush=True)
 lib.mt2_close(ctx)
 print("  verdict:", "OK" if (s1, s2, s3) == (1, 2, 1) else f"UNEXPECTED {(s1, s2, s3)}", flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

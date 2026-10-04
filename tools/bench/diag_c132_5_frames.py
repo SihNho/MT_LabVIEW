@@ -58,3 +58,7 @@ print("{0}  F1 three new real Diagram objects  {1}".format("PASS" if ok else "FA
 print(P.result_line(P.make_result(int(ok), int(not ok), None if ok else "F1")), flush=True)
 sys.stdout.flush()
 os._exit(0 if ok else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

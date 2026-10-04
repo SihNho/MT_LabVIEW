@@ -121,3 +121,7 @@ gate("C8 guard_cycle.main on `cp a.py tools/recipes/b.py` exits 0 (not gated)", 
      "rc %s %s" % (cp.returncode, cp.stderr[:200]))
 print("=== GATES: %d pass / %d fail" % (sum(res), len(res) - sum(res)))
 print(P.result_line(P.make_result(sum(res), len(res) - sum(res), None if all(res) else "see FAIL lines")), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

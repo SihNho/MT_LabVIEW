@@ -8,3 +8,7 @@ import stagekit as K                                                            
 
 print("  FACT  Moving-Objects *.vi listing: {0}".format(K.fixture_listing()))
 sys.exit(0 if K.fixtures_check(bad_md5s=("fdd6d74ac8a5ba0c1a545ad89ff2996f",)) else 1)
+# ---
+# labview: read
+# hardware: none
+# ---

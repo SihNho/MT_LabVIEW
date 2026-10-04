@@ -43,3 +43,7 @@ for u in (23148, 26131):
 print("OWNER 13236", G["owners"].get("13236"), "OWNER 23093", [o for o in objs if int(o["uid"]) == 23093])
 ok = bool(cp) and bool(ia)
 print(P.result_line(P.make_result(int(ok), int(not ok), None if ok else "no IMAQ Copy / IndexArray rows")))
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -20,3 +20,7 @@ for fn in ["diag_c126_6_cross.log", "diag_c127_1_fsinner.log", "diag_c126_4_fs.l
                       [(f[2], f[3], f[4], f[5]) for f in faces])
 import protocol
 print(protocol.result_line(protocol.make_result(1 if n_rec else 0, 0 if n_rec else 1, None if n_rec else "no tunnel records")))
+# ---
+# labview: none
+# hardware: none
+# ---

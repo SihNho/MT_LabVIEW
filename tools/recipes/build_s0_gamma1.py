@@ -439,3 +439,7 @@ if __name__ == "__main__":
             g.reset()
         except Exception:
             pass
+# ---
+# labview: build
+# hardware: none
+# ---

@@ -25,3 +25,7 @@ rc = run(["-u", os.path.join(BENCH, "diagram_tree_main.py")], 3000, "main walk")
 if rc == 1 or rc == 4:
     print("partial walk; the checkpoint lets a rerun resume", flush=True)
 sys.exit(0)
+# ---
+# labview: none
+# hardware: none
+# ---

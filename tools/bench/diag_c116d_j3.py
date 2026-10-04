@@ -95,3 +95,7 @@ if __name__ == "__main__":
                 time.sleep(3)
         print("  FACT  attempt-1 leftover {0} deleted: {1}".format(NETS["leftover"], not os.path.exists(lo)), flush=True)
     sys.exit(rc if gone else 1)
+# ---
+# labview: read
+# hardware: none
+# ---

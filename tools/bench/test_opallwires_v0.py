@@ -172,3 +172,7 @@ S = K.Stage(BED, BED_MD5, "test_opallwires_v0", deadline_min=22.0, reserve_s=240
             task="STEP 2: call OpAllWires_v0 on the bed - row count, Is Broken? set, seconds per call, "
                  "handle flatness over 20 calls, and a second target. Read-only, nothing saved.")
 sys.exit(K.run(main, S))
+# ---
+# labview: read
+# hardware: none
+# ---

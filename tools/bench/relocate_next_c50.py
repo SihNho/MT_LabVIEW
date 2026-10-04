@@ -77,3 +77,7 @@ gate(5, before_md5 == after_md5, "STATUS.md unmodified md5 %s" % after_md5)
 print("ARCHIVE %s bytes=%d" % (OUT, os.path.getsize(OUT)))
 print("FAILS %d" % fails)
 sys.exit(1 if fails else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

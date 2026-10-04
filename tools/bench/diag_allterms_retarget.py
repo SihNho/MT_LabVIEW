@@ -157,3 +157,7 @@ S = K.Stage(SRC, "", "diag_allterms_retarget", fresh=False, deadline_min=18.0, r
                  "Pre-decided 139 permits turns on this. Scratch only; nothing saved.")
 S.input_md5 = K.md5(SRC)          # the donor's CURRENT bytes are the pin; it is never written
 sys.exit(K.run(main, S))
+# ---
+# labview: read
+# hardware: none
+# ---

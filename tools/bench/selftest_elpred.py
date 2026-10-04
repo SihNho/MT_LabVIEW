@@ -66,3 +66,7 @@ gate("S01 re-derived s01 == 51 (measured)", r1["predicted_total"] == 51, r1["pre
 json.dump({"s02": r2, "s01": r1}, open(os.path.join(ROOT, "tools", "bench", "selftest_elpred.json"), "w", encoding="utf-8"), indent=1)
 print(protocol.result_line(protocol.make_result(G["pass"], G["fail"], G["first"], [])), flush=True)
 sys.exit(1 if G["fail"] else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

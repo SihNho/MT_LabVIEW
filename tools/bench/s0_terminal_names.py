@@ -101,3 +101,7 @@ if __name__ == "__main__":
         traceback.print_exc()
         print(f"\nGATES: {_P} PASS / {_F} FAIL (raised)", flush=True)
         sys.exit(1)
+# ---
+# labview: read
+# hardware: none
+# ---

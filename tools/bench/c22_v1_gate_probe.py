@@ -81,3 +81,7 @@ rec_of("term_v1.py", "[v1 record 3]")
 print("store mtime AFTER : %s" % os.path.getmtime(STORE), flush=True)
 print("\nBOTH GATES ALLOW: %s" % (bool(allow1) and p.returncode == 0), flush=True)
 sys.exit(0 if (allow1 and p.returncode == 0) else 2)
+# ---
+# labview: none
+# hardware: none
+# ---

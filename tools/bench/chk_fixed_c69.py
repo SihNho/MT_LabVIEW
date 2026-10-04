@@ -8,3 +8,7 @@ b = open(p, encoding="utf-8").read()
 ok, paths, bad = g.fixed_citations(p, b)
 print("OK", sorted(ok))
 print("BAD", bad)
+# ---
+# labview: none
+# hardware: none
+# ---

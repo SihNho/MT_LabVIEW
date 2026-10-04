@@ -24,3 +24,7 @@ for opt in (8, 0):
     print("opt", opt, "Call ->", res if res else "TIMEOUT 20s", flush=True)
     if "out" in res:
         break
+# ---
+# labview: read
+# hardware: none
+# ---

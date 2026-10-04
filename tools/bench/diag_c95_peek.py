@@ -14,3 +14,7 @@ if f:
     print(b[:k][-600:])
     r, c = struct.unpack("<ii", b[k:k + 8]); a = np.frombuffer(b[k + 8:], dtype="<f8").reshape(r, c)
     print(r, c, a[:5, :4]); dt = np.diff(a[:, 0]); print("dt median", np.median(dt), np.percentile(dt, 95), a[-1, 0] - a[0, 0])
+# ---
+# labview: none
+# hardware: none
+# ---

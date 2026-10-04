@@ -109,3 +109,7 @@ n7 = K.term_identity_gates(base, sim, r7)
 gate("T7 kept base wire w{0} lost in real -> NEW D FAILS".format(W), not n7["d_ok"], {"lost_w": n7["lost_w"], "sim_lost_w": n7["sim_lost_w"]})
 print(protocol.result_line(protocol.make_result(G["pass"], G["fail"], G["first"], [])), flush=True)
 sys.exit(0 if not G["fail"] else 1)
+# ---
+# labview: read
+# hardware: none
+# ---

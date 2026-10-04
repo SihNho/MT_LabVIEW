@@ -59,3 +59,7 @@ for lab, ok in g:
 n = sum(1 for _l, ok in g if ok)
 print(protocol.result_line(protocol.make_result(n, len(g) - n, next((l for l, ok in g if not ok), None))), flush=True)
 sys.exit(0 if n == len(g) else 1)
+# ---
+# labview: read
+# hardware: none
+# ---

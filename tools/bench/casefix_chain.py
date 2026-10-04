@@ -9,3 +9,7 @@ for tag, args, to in (("lv_restart", [os.path.join(TOOLS, "lv_restart.py")], 400
     except subprocess.TimeoutExpired:
         rc = "TIMEOUT"
     print(f"{tag} rc {rc}", flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

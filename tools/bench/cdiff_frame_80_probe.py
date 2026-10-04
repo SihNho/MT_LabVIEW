@@ -19,3 +19,7 @@ for name, T, O in (("S1", w.get("terminals"), w.get("objs")), ("K", g["terminals
 for k in ("case_frames", "frames", "structures"):
     if k in w:
         print(k, str(w[k])[:600])
+# ---
+# labview: none
+# hardware: none
+# ---

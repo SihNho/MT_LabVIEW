@@ -22,3 +22,7 @@ ins = [t for t in bo[11576] if not t['is_source'] and t['wire_uid']]
 from protocol import result_line, make_result
 ok = len(ins) == 1
 print(result_line(make_result(int(ok), int(not ok), None if ok else 'G1 11576 inputs %d' % len(ins), [])))
+# ---
+# labview: none
+# hardware: none
+# ---

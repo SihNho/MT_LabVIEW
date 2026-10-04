@@ -166,3 +166,7 @@ print("RESULT " + json.dumps({"schema": "result-line/1", "status": "PASS" if ok 
                               "gates": {"pass": int(ok), "fail": int(not ok)},
                               "first_fail": None if ok else "key sizes %s" % sizes, "artefacts": [
                                   {"path": "tools/bench/ucbench/tasks.json"}]}))
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -11,3 +11,7 @@ for f in F:
 cd = r"C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev"
 print("claudeDev l2_r1/scratch_c115:", [n for n in os.listdir(cd) if "l2_r1" in n or "scratch_c115" in n])
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":0,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

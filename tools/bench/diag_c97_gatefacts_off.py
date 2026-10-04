@@ -122,3 +122,7 @@ from protocol import result_line, make_result
 npass = sum(1 for x in gates if x[1]); nfail = len(gates) - npass
 print(result_line(make_result(npass, nfail, next((x[0] for x in gates if not x[1]), None),
                               [{'path': 'tools/bench/f1359_gate_facts_97_offline.json'}])))
+# ---
+# labview: none
+# hardware: none
+# ---

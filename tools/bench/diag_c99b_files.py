@@ -163,3 +163,7 @@ try:
                                                     [{"path": "tools/bench/diag_c99b_files.json", "md5": None}])))
 except Exception as e:                                                               # noqa: BLE001
     print('RESULT {"status":"%s","gates":{"pass":%d,"fail":%d},"note":"protocol.result_line unavailable: %s"}' % ("PASS" if not F else "FAIL", len(P), len(F), type(e).__name__))
+# ---
+# labview: none
+# hardware: none
+# ---

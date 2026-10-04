@@ -41,3 +41,7 @@ bad = [k for k, v in G.items() if not v]
 print(P.result_line(P.make_result(len(G) - len(bad), len(bad), bad[0] if bad else None,
                                   [{"path": os.path.relpath(p, ROOT), "md5": drive_m8.md5(p)} for p in sorted(glob.glob(os.path.join(OUT, "*.bin")))][:12])), flush=True)
 sys.stdout.flush(); os._exit(0 if not bad else 1)
+# ---
+# labview: read
+# hardware: none
+# ---

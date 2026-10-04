@@ -31,3 +31,7 @@ for tag, p in (("buf", L.BUF), ("cal", L.CAL)):
     s.row("{0} E1 vs E2".format(tag), vals, "E2: ('Control Names' len 1, 'Control Names 2' len 10044, y 10044)")
     s.gate("{0} md5 unchanged by the read".format(tag), K.md5(p) == md)
 L.tail(s); sys.exit(s.summary())
+# ---
+# labview: read
+# hardware: none
+# ---

@@ -16,3 +16,7 @@ for cx, cy in ((72.4, 71.7), (72.0, 72.0), (71.55, 72.3)):
         lv = np.array(o["radial intensity profile"]); out[f"{name}|{cx}|{cy}"] = lv
         print(f"{name} cx={cx} cy={cy}: {np.array2string(lv[:6], precision=9)} ... {np.array2string(lv[-3:], precision=9)}", flush=True)
 np.savez(os.path.join(HERE, "radial_probe_synth.npz"), **out); print("saved", flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

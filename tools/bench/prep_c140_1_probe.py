@@ -16,3 +16,7 @@ for t in ('table_A', 'table_B'):
         if r['uses_cut']:
             print(t, r['session'], 'uses_cut', r['uses_cut'][:8])
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":0,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

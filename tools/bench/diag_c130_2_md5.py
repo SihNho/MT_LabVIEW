@@ -16,3 +16,7 @@ for p in FS:
     else:
         print("MISSING", p, flush=True)
 print(PR.result_line(PR.make_result(ok, len(FS) - ok)), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

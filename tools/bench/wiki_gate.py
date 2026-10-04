@@ -99,3 +99,7 @@ gate("G3b the touched entry's md5 is back to the file's own",
 
 print("\n=== GATES: {0} pass / {1} fail".format(P[0], F[0]), flush=True)
 sys.exit(1 if F[0] else 0)
+# ---
+# labview: read
+# hardware: none
+# ---

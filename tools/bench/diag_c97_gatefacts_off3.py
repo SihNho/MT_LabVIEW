@@ -46,3 +46,7 @@ print('29240 terms', [(t['term_name'], t['is_source'], t['wire_uid'], peers(t['w
 from protocol import result_line, make_result
 n = sum(x[1] for x in gates)
 print(result_line(make_result(n, len(gates) - n, next((x[0] for x in gates if not x[1]), None), [])))
+# ---
+# labview: none
+# hardware: none
+# ---

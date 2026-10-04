@@ -183,3 +183,7 @@ def indicator_by_label(uid, wanted, max_terms=12):
 
 if __name__ == "__main__":
     sys.exit(main())
+# ---
+# labview: build
+# hardware: none
+# ---

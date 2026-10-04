@@ -21,3 +21,7 @@ for p in OUT:
     print("OUTPUT", m, p, sum(1 for _ in open(os.path.join(ROOT, p), encoding="utf-8")), "lines")
 bad = len(WANT) - ok
 print(protocol.result_line(dict(status="PASS" if not bad else "FAIL", gates={"pass": ok, "fail": bad}, first_fail=None if not bad else "input md5 changed", artefacts=arts)))
+# ---
+# labview: none
+# hardware: none
+# ---

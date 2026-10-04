@@ -140,3 +140,7 @@ Write-Host "`n===== RESULTS ====="
 foreach ($result in $Results) {
     Write-Host $result
 }
+# ---
+# labview: build
+# hardware: none
+# ---

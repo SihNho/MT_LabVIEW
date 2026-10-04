@@ -32,3 +32,7 @@ for u in eq:
     print("EQ", u, "in_graph", rows is not None, "deleted", u in deleted,
           [(r.get("term_name"), r.get("term_type") or r.get("type"), r.get("wire_uid"), r.get("frame_diagram"), r.get("owner_class")) for r in rows or []])
 print(protocol.result_line(protocol.make_result(1, 0, None, [])))
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -432,3 +432,7 @@ if __name__ == "__main__":
         print("=== SCRATCH: %s" % SCRATCH, flush=True)
         print("=== NO VI WAS RUN (34(f)); no new op; no motor, no ASI, no camera, no GUI action.", flush=True)
         sys.exit(rc)
+# ---
+# labview: read
+# hardware: none
+# ---

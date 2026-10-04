@@ -196,3 +196,7 @@ def module_arg_segment(seg, whole_cmd="", root=None):
     if any(PY_PROG_RE.match(os.path.basename(t)) for t in rest):
         return False                                              # a second interpreter inside the segment
     return cd_only_to_root(whole_cmd or seg, root)
+# ---
+# labview: none
+# hardware: none
+# ---

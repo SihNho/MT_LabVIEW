@@ -31,3 +31,7 @@ left = sorted(f for f in os.listdir(CD) if "c140_3" in f)
 print("claudeDev files named c140_3:", left)
 print(protocol.result_line(protocol.make_result(G["pass"], G["fail"], G["first"], [])), flush=True)
 sys.exit(0 if not G["fail"] else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -81,3 +81,7 @@ first = next((n for n, o in res if not o), None)
 print(P.result_line({"status": "PASS" if npass == len(res) else "FAIL", "gates": {"pass": npass, "fail": len(res) - npass},
                      "first_fail": first, "artefacts": []}), flush=True)
 sys.exit(0 if npass == len(res) else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

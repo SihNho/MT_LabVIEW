@@ -46,3 +46,7 @@ for argv in RUNS:
         "" if good else " || ".join(x[:220] for x in tail)), flush=True)
 print(PR.result_line(PR.make_result(ok_n, len(bad), ("selftests failing: " + ", ".join(os.path.basename(b) for b in bad))[:190] if bad else None,
                                     [])), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

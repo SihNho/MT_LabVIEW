@@ -19,3 +19,7 @@ print(f"ast.parse OK / py_compile OK   {P}")
 print(f"lines {len(text.splitlines())}   bytes {len(src)}   sha256 {hashlib.sha256(src).hexdigest()}")
 print(f"md5 {hashlib.md5(src).hexdigest()}")
 sys.exit(0)
+# ---
+# labview: none
+# hardware: none
+# ---

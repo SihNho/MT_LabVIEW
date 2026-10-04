@@ -133,3 +133,7 @@ if __name__ == "__main__":
         arts = [{"path": p, "md5": C.md5(p)} for p in (OPA, OPB) if os.path.exists(p)]
         print(protocol.result_line(protocol.make_result(len(P), len(F), F[0] if F else None, arts)), flush=True)
     sys.exit(1 if F else 0)
+# ---
+# labview: build
+# hardware: none
+# ---

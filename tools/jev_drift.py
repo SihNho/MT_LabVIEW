@@ -280,3 +280,7 @@ if __name__ == "__main__":
     if is_run_command(c):
         pp, ww, ee = judge(c)
         print("p=%s what=%s err=%s" % (pp, ww, ee))
+# ---
+# labview: none
+# hardware: none
+# ---

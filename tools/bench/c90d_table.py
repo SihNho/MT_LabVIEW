@@ -54,3 +54,7 @@ def assemble(s, R, src, outp, logp, inputs):
           and all("disposition_evidence" in r for r in v2["task1"].values()))
     s.gate("G5 the v2 row table exists and all 11 rows carry a disposition_evidence block", ok, outp)
     return v2
+# ---
+# labview: read
+# hardware: none
+# ---

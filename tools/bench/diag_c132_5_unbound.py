@@ -44,3 +44,7 @@ print("{0}  U1 rows printed  {1}".format("PASS" if ok else "FAIL", n), flush=Tru
 print(P.result_line(P.make_result(int(ok), int(not ok), None if ok else "U1")), flush=True)
 sys.stdout.flush()
 os._exit(0 if ok else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -81,3 +81,7 @@ if S.get("plan_out") and S["final"]:
     gate("P2 D4 scope = 20 nodes (namediff_l2b2b.json, unchanged)", len(d4["scope_nodes"]) == 20, len(d4["scope_nodes"]))
 np_ = sum(1 for _g, ok in gates if ok)
 print(protocol.result_line(protocol.make_result(np_, len(gates) - np_, next((g_ for g_, ok in gates if not ok), None), arts)))
+# ---
+# labview: none
+# hardware: none
+# ---

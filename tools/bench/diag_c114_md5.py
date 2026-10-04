@@ -11,3 +11,7 @@ for p in ["tools/stage_prerun.py", "tools/bench/selftest_stage_prerun_c114.py", 
     print(hashlib.md5(open(p, "rb").read()).hexdigest(), p)
 print("labview running:", "labview.exe" in subprocess.run(["tasklist"], capture_output=True, text=True).stdout.lower())
 sys.exit(0)
+# ---
+# labview: none
+# hardware: none
+# ---

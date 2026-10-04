@@ -29,3 +29,7 @@ for k in sorted(set(e) - set(b)):
     if not e[k][0] or not e[k][1]:
         print("NEWSTUB w{0} src/snk {1}/{2} terms {3}".format(k, e[k][0], e[k][1], e[k][2][:4]))
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":0,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

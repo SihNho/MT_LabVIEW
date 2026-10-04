@@ -207,3 +207,7 @@ try {
     Write-Output "RESULT: NOT at target - final=$final target=$target  (ERR right after send was $err)"; Write-Output "FAIL: PI MOV NOT at target (final=$final target=$target)"; exit 8
 }
 finally { if ($sp.IsOpen) { $sp.Close() }; $sp.Dispose() }
+# ---
+# labview: none
+# hardware: motor
+# ---

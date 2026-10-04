@@ -79,3 +79,7 @@ def summarize(raw):
 
 if __name__ == "__main__":
     summarize(sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, "t0_step4v2_94_raw.json"))
+# ---
+# labview: none
+# hardware: none
+# ---

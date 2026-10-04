@@ -123,3 +123,7 @@ def write_report(path, per_arm, records, dis, header):
     L += ["", "## Mechanical vs blind disagreements (|diff| >= 0.5)", ""] + ["- " + x for x in dis or ["none"]]
     with open(path, "w", encoding="utf-8") as f:
         f.write("\n".join(L) + "\n")
+# ---
+# labview: none
+# hardware: none
+# ---

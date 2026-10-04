@@ -11,3 +11,7 @@ if run([sys.executable, "-u", os.path.join(TOOLS, "bench", "patch_gpu_harness.py
     sys.exit(1)
 run([sys.executable, os.path.join(TOOLS, "lv_restart.py")], 400, "lv_restart")
 sys.exit(run([sys.executable, "-u", os.path.join(TOOLS, "bench", "run_timing.py"), "--n=200", "--harness=base", "--harness=gpu"], 2400, "run_timing gpu"))
+# ---
+# labview: none
+# hardware: none
+# ---

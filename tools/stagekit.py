@@ -1493,3 +1493,7 @@ def run(fn, stage):
     except Exception as e:                                                         # noqa: BLE001
         stage.gate("H-HYGIENE the hygiene phase completed", False, str(e)[:150])
         return stage.summary()
+# ---
+# labview: build
+# hardware: none
+# ---

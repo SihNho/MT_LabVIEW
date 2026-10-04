@@ -297,3 +297,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "--child":
         sys.exit(child(sys.argv[2], sys.argv[3], sys.argv[4] == "1"))
     sys.exit(main())
+# ---
+# labview: read
+# hardware: none
+# ---

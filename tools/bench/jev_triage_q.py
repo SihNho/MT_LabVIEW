@@ -35,3 +35,7 @@ TRIAGE_Q = {
             "run produced the fact it existed to produce, and rc != 0 only records the refuted prediction."),
     },
 }
+# ---
+# labview: none
+# hardware: none
+# ---

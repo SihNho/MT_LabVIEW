@@ -7,3 +7,7 @@ os.environ["MT_GPU_KEEPALIVE"] = os.environ.get("MT_GPU_KEEPALIVE", "0"); print(
 run([sys.executable, os.path.join(TOOLS, "lv_restart.py")], 400, "lv_restart")
 shutil.copyfile(DLL_SRC, DLL_DST); print("deployed", os.path.getsize(DLL_DST), flush=True)
 sys.exit(run([sys.executable, "-u", os.path.join(TOOLS, "bench", "run_timing.py"), "--n=200", "--harness=base", "--harness=gpu"], 2400, "run_timing gpu"))
+# ---
+# labview: none
+# hardware: none
+# ---

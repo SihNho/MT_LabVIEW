@@ -127,3 +127,7 @@ bad = [k for k, v in gates.items() if not v]
 print(P.result_line(P.make_result(len(gates) - len(bad), len(bad), bad[0] if bad else None,
                                   [{"path": os.path.relpath(jp, ROOT), "md5": md5(jp)}])), flush=True)
 sys.exit(1 if bad else 0)
+# ---
+# labview: none
+# hardware: camera
+# ---

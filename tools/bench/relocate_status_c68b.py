@@ -40,3 +40,7 @@ g2 = len(open(ST, "rb").read().decode("utf-8").split("\n")) == n0 - (B - A + 1) 
 print("POST archive-verbatim", "PASS" if g1 else "FAIL")
 print("POST status-linecount", "PASS" if g2 else "FAIL", len(new))
 sys.exit(0 if g1 and g2 else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

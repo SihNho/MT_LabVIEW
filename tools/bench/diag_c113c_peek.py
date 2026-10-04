@@ -14,3 +14,7 @@ for p in P:
     print("MD5", hashlib.md5(open(f, "rb").read()).hexdigest(), p)
 print("B2b files in claudeDev:", [x for x in os.listdir(r"C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev") if x.startswith(("D1_l2_b2b", "scratch_c113"))])
 print(protocol.result_line(protocol.make_result(1, 0, None, [])))
+# ---
+# labview: none
+# hardware: none
+# ---

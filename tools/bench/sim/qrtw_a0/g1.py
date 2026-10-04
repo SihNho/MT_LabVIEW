@@ -11,3 +11,7 @@ for k, v in d.items():
     else:
         print(k, repr(v)[:200])
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -118,3 +118,7 @@ def body(_):
     json.dump(OUT, open(os.path.join(HERE, "diag_c137_1_routes_out.json"), "w", encoding="utf-8"), default=str, indent=1); s.dump()   # noqa: E702
 if __name__ == "__main__":
     rc = K.run(body, s); DRY or K.mod("stagexec").kill_labview_at_exit(); sys.exit(rc)     # noqa: E702
+# ---
+# labview: read
+# hardware: none
+# ---

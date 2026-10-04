@@ -46,3 +46,7 @@ for half in ("p3b1", "p3b2"):
     out[half] = {"R": R, "N": N, "peak": peak}
 print(PR.result_line(PR.make_result(npass, nfail, ff, [a for a in arts if a["md5"]])), flush=True)
 sys.exit(1 if nfail else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

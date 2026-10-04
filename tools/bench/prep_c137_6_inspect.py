@@ -21,3 +21,7 @@ for r in g['terminals']:
 for lp in g['loops']:
     if lp.get('loop_uid') in (10170, 639, 637):
         print('LOOP', json.dumps(lp)[:300])
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -15,3 +15,7 @@ for ln in (53, 57):
     s = open(R + r"\tools\bench\diag_c126_4_fs.log", encoding='utf-8', errors='replace').read().splitlines()[ln-1]
     print(ln, s[:2500])
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":0,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

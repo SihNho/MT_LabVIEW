@@ -21,3 +21,7 @@ for rel, want in W.items():
 for p in EXTRA:
     print("MD5 %s  %s" % (h(p), p))
 print(P.result_line(P.make_result(len(W) - len(bad), len(bad), bad[0] if bad else None, [])))
+# ---
+# labview: none
+# hardware: camera
+# ---

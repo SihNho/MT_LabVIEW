@@ -109,3 +109,7 @@ if __name__ == "__main__":
     rc = K.run(body, s)
     DRY or SX.kill_labview_at_exit()
     sys.exit(rc)
+# ---
+# labview: read
+# hardware: none
+# ---

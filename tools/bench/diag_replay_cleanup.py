@@ -29,3 +29,7 @@ gate("C3 LabVIEW.exe absent", "LabVIEW.exe" not in tl)
 print(protocol.result_line({"status": "PASS" if not fails else "FAIL", "gates": {"pass": ok, "fail": len(fails)},
                             "first_fail": fails[0] if fails else None, "artefacts": []}))
 sys.exit(0 if not fails else 1)
+# ---
+# labview: read
+# hardware: camera
+# ---

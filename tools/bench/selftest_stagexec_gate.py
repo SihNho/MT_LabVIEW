@@ -141,3 +141,7 @@ print("=== GATES: {0} pass / {1} fail{2}".format(n_pass, len(G) - n_pass, "; fai
 print(P.result_line(P.make_result(n_pass, len(G) - n_pass, first)))
 shutil.rmtree(SAND, ignore_errors=True)
 sys.exit(0 if n_pass == len(G) else 1)
+# ---
+# labview: read
+# hardware: none
+# ---

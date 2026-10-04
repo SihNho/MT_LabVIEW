@@ -16,3 +16,7 @@ if len(sys.argv) > 2:
     print(json.dumps(d, indent=1)[:6000])
 else:
     print(f, hashlib.md5(open(f, "rb").read()).hexdigest(), shape(d))
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -15,3 +15,7 @@ for f in F:
     arts.append({"path": f, "md5": m})
 ok = all(a["md5"] for a in arts)
 print(protocol.result_line(protocol.make_result(len(arts) if ok else 0, 0 if ok else 1, None if ok else "missing file", arts)), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

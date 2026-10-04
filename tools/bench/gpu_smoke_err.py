@@ -15,3 +15,7 @@ for name in ("error out", "Error Message 2", "X Output 2", "Y Array 2", "Bead Is
         print(name, "=", repr(vi.GetControlValue(name))[:300], flush=True)
     except Exception as e:
         print(name, "EXC", str(e)[:100], flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

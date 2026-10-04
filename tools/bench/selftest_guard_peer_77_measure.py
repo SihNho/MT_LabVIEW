@@ -45,3 +45,7 @@ print("FACT same_row_review -> %s" % (sr,))
 print("\n=== selftest_guard_peer_77_measure: %d pass / %d fail ===" % (NP, NF))
 print(protocol.result_line(protocol.make_result(NP, NF, FIRST)))
 sys.exit(0 if NF == 0 else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

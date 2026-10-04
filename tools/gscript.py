@@ -5200,3 +5200,7 @@ def case_frame_wire(target, case_uid, frame_index, src, dst):
     if left or not out["wire_uid"]:
         raise RuntimeError("case_frame_wire: %r" % out)
     return out
+# ---
+# labview: build
+# hardware: none
+# ---

@@ -99,3 +99,7 @@ if __name__ == "__main__":
                    "CaseStructure Terms[] (OpCreateIndicatorNested_v0)", "fixture": "TRACK_kernel_v1.vi byte copy",
                    "log": "tools/bench/diag_c108d_selind.log"}, open(rec, "w", encoding="utf-8"), indent=1)
     sys.exit(rc)
+# ---
+# labview: read
+# hardware: none
+# ---

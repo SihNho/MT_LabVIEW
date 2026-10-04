@@ -31,3 +31,7 @@ om = hashlib.md5(open(OUT, "rb").read()).hexdigest()
 print(protocol.result_line(protocol.make_result(int(ok), int(not ok), None if ok else "M1 dry of the unsplit 70",
                                                 [{"path": os.path.relpath(OUT, ROOT).replace("\\", "/"), "md5": om}])), flush=True)
 sys.exit(0 if ok else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

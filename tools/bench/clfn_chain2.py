@@ -7,3 +7,7 @@ if run([sys.executable, "-u", os.path.join(TOOLS, "recipes", "build_opclfnpre.py
     sys.exit(1)
 run([sys.executable, os.path.join(TOOLS, "lv_restart.py")], 400, "lv_restart")
 run([sys.executable, "-u", os.path.join(TOOLS, "bench", "clfn_sample.py")], 600, "clfn sample")
+# ---
+# labview: none
+# hardware: none
+# ---

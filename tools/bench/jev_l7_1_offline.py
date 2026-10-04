@@ -92,3 +92,7 @@ json.dump(table, open(os.path.join(HERE, "jev_l7_1_offline.json"), "w", encoding
 ok = all(r["n"] and r["n"] >= 10 for r in table)
 print("=== GATES: {0} pass / {1} fail  (every case >= 10 answered samples)".format(int(ok), int(not ok)))
 sys.exit(0 if ok else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

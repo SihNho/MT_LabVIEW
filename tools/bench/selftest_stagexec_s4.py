@@ -190,3 +190,7 @@ gate("A7a the absolute (space-containing) path is not a launch unit; the relativ
 shutil.rmtree(tmp, ignore_errors=True)
 print(protocol.result_line(protocol.make_result(P[0], len(F), F[0] if F else None)))
 sys.exit(1 if F else 0)
+# ---
+# labview: read
+# hardware: none
+# ---

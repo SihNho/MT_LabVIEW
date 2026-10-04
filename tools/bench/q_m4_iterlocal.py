@@ -126,3 +126,7 @@ S = K.Stage(BED, BED_MD5, "q_m4_iterlocal", deadline_min=18.0, reserve_s=240.0,
             out_json=os.path.join(K.BENCH, "q_m4_iterlocal.json"),
             task="cycle 68 Q4: #644 -> write-Local in #639 by existing verbs, on a scratch")
 sys.exit(K.run(main, S))
+# ---
+# labview: read
+# hardware: none
+# ---

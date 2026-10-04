@@ -118,3 +118,7 @@ print("=== GATES: {0} pass / {1} fail".format(n, len(G) - n), flush=True)
 print(P.result_line(P.make_result(n, len(G) - n, next((l for l, o in G if not o), None))), flush=True)
 sys.stdout.flush()
 os._exit(0 if n == len(G) else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

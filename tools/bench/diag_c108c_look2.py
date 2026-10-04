@@ -22,3 +22,7 @@ for f in ("graph_l2a1_bed_20260927.json", "par1359_95_graph.json"):
         print(" PRE", s, seq[:10])
     ow = g.get("owners", {})
     print(" owners for tunnels", {k: ow.get(k) for k in ("9087", "9227", "11363", "31051", "2276", "29172", "7911", "2235", "29894")})
+# ---
+# labview: none
+# hardware: none
+# ---

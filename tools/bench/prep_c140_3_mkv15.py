@@ -173,3 +173,7 @@ gate("MT meta15: every v15 id stepped; p4_dw_23255 step 1 session 1.1; p4_rle_w2
 gate("U v14 / meta14 untouched", md5(V14) == WANT[V14] and md5(META14) == WANT[META14])
 ARTS.extend({"path": rel(p), "md5": md5(p)} for p in (V15, V15IN, META15))
 done()
+# ---
+# labview: none
+# hardware: none
+# ---

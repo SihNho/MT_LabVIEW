@@ -39,3 +39,7 @@ for rec in S.load_records():
     print("_released     :", rel)
     print("release line  :", line)
     print("why not       :", why)
+# ---
+# labview: none
+# hardware: none
+# ---

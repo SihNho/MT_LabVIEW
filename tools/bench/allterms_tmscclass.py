@@ -77,3 +77,7 @@ def main():
 
 
 sys.exit(main())
+# ---
+# labview: read
+# hardware: none
+# ---

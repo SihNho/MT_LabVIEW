@@ -9,3 +9,7 @@ CMD = "py tools/bgrun.py --material --max-min 50 --log tools/bench/stage_d1_ring
 r = GC.premature_build(CMD)
 print("PAGATE premature_build -> {0}".format("ALLOWED (None)" if r is None else "REFUSED: " + r.replace("\n", " | ")[:600]), flush=True)
 print(PR.result_line(PR.make_result(1, 0, None if r is None else "prior-art demanded: " + r.splitlines()[0][:150])), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

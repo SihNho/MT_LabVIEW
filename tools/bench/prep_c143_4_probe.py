@@ -40,3 +40,7 @@ print("FACT prov objs -20:", [o for o in pv.get("objs") or [] if isinstance(o, d
 print("FACT s03 actions naming -20:", [a["id"] for a in p["actions"] if "-20" in json.dumps({k: v for k, v in a.items() if k != "why"})])
 
 
+# ---
+# labview: none
+# hardware: none
+# ---

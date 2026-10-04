@@ -99,3 +99,7 @@ import protocol  # noqa: E402
 first = next((lbl for lbl, ok in gates if not ok), None)
 print(protocol.result_line(protocol.make_result(len(gates) - n_fail, n_fail, first)))
 sys.exit(0 if n_fail == 0 else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

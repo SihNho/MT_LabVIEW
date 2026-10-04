@@ -53,3 +53,7 @@ with open(OUT, "w", encoding="utf-8") as f:
     json.dump(REC, f, indent=1)
 print("\n  FACT  wrote {0}".format(OUT), flush=True)
 print("=== GATES: 0 pass / 0 fail (fact-only dump)", flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

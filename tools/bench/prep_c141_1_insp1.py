@@ -12,3 +12,7 @@ for i, a in enumerate(A, 1):
 print(json.dumps(p['finalized'], default=str)[:2500])
 ops = sorted(set(a['op'] for a in A))
 print(ops)
+# ---
+# labview: none
+# hardware: none
+# ---

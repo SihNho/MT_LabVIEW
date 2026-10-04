@@ -28,3 +28,7 @@ for f in fss:
     print("FS", u, "owner", f["owner"], "pos", f["pos"], "tunnels", sum(1 for k, v in tun_owner.items() if str(v) == str(u) or v == u),
           "frame diagrams via tunnels", sorted(fd.get(u, []) or fd.get(str(u), [])))
 print(P.result_line(P.make_result(1 if fss else 0, 0 if fss else 1, None if fss else "no FlatSequence", [])))
+# ---
+# labview: none
+# hardware: none
+# ---

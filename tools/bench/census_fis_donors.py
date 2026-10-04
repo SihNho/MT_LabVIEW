@@ -23,3 +23,7 @@ for f in sorted(os.listdir(BG)):
         if labels.get(u) == "Format Into String":
             args = [r["name"] for r in rows if r["name"].startswith("input ")]
             print(f"{f}: n{n} uid {u} args={len(args)} {args}  wired={[(r['name'], r['wire']) for r in rows if r['wire']]}", flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

@@ -599,14 +599,24 @@ BGRUN_NAME = "bgrun.py"          # the deadline runner: its CHILD is what runs; 
 def offline_command(cmd):
     """True when every python script `cmd` launches (protocol._launched_scripts) is the bgrun wrapper, an OFFLINE_MODES
     tool in its offline mode, or a script whose import closure never reaches LabVIEW (script_touches_labview False).
-    No launched script at all -> False (nothing to judge, the old gate applies)."""
+    No launched script at all -> False (nothing to judge, the old gate applies).
+    card chat-E3: a tools/ script is judged by its DECLARED SCOPE HEADER (tools/scope_header.py, offline-args applied
+    to its own argv): effectively labview none = offline, anything else = not; no valid header = not offline."""
+    import scope_header as SH
     scripts = protocol._launched_scripts(cmd or "")
+    declared = {os.path.normcase(p): (lv, prob) for p, lv, _hw, prob in
+                SH.launch_scope(cmd or "", [p for p in scripts if SH.in_tools(p)])}
     judged = 0
     for s in scripts:
         b = os.path.basename(s).lower()
         if b == BGRUN_NAME:
             continue
         judged += 1
+        d = declared.get(os.path.normcase(SH._abs(s)))
+        if d is not None:
+            if d[1] or d[0] != "none":
+                return False
+            continue
         mode = OFFLINE_MODES.get(b)
         if mode is not None and mode.search(cmd):
             continue
@@ -656,6 +666,26 @@ def offline_cmd_lv_card(payload, cmd, log_path):
     if protocol.card_owns_log(card.get("id"), log_path):
         return None
     return card.get("id"), lv
+
+
+def other_card_log(payload, log_path, text=None):
+    """card chat-E3 (fp-36): (caller's card id, owner card id) when the caller is bound to a card and the failing log was
+    launched by a DIFFERENT card (protocol.log_owner); else None."""
+    aid = (payload or {}).get("agent_id")
+    if not aid:
+        return None
+    try:
+        b = protocol.binding(aid)
+        if not b:
+            return None
+        with open(protocol._abs(b["card"]), encoding="utf-8") as f:
+            mine = json.load(f).get("id")              # the id only; a card that fails validation still has one
+        owner = protocol.log_owner(log_path, text)
+    except Exception:                    # noqa: BLE001 - unreadable binding/card/ledger: not exempt
+        return None
+    if not mine or not owner or owner == mine:
+        return None
+    return mine, owner
 
 
 def failure_names(path, text):
@@ -1169,6 +1199,17 @@ def main():
         sys.stderr.write(line + "\n")
         _gate_log(line)
         return 0
+    # --- RULE-OTHER-CARD (card chat-E3, gate-fp fp-36): a caller BOUND to a card is held only by a failing log of ITS
+    # card. The owner is the log's RESULT line `card` field (bgrun sets CARD_ID) or the launch ledger; an unknown owner
+    # (the judgement session's own run, a pre-ledger log) still gates every caller, and the judgement session - which
+    # has no card - is gated by every failing log as before, so the review is still owed, just not by the wrong card.
+    oo = other_card_log(payload, path, text)
+    if oo:
+        line = "RULE-OTHER-CARD | %s | %s not gated for card %s (log launched by card %s)" % (
+            time.strftime("%Y-%m-%d %H:%M:%S"), _rel(path), oo[0], oo[1])
+        sys.stderr.write(line + "\n")
+        _gate_log(line)
+        return 0
 
     # --- ONE REVIEW PER ROW PER CYCLE (the rule above; BEFORE the ladder, because it costs nothing) ---------
     sr = same_row_review(path, text)
@@ -1315,3 +1356,7 @@ if __name__ == "__main__":
     except Exception:                    # noqa: BLE001
         pass
     os._exit(_rc)
+# ---
+# labview: none
+# hardware: none
+# ---

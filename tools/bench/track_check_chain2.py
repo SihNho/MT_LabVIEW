@@ -64,3 +64,7 @@ print("\n===== SUMMARY", flush=True)
 for r in rows:
     print(f"  backend {r['backend']}: DLL log +{r['dll_log_lines_added']} lines | kernel ms {r.get('kernel_ms')} | worst dev {r.get('worst_dev')}", flush=True)
 json.dump(rows, open(os.path.join(HERE, "track_check2_results.json"), "w"), indent=1)
+# ---
+# labview: none
+# hardware: none
+# ---

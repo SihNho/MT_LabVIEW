@@ -39,3 +39,7 @@ for k, v in neg.items():
     print(k, sorted(v), 'unbound', sorted(x for x in v if x not in M))
 print('loops', [(L['loop_uid'], L.get('right_uids'), L.get('left_of')) for L in st.get('loops') or [] if int(L['loop_uid']) < 0])
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":0,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -80,3 +80,7 @@ json.dump({"rows": [{"wire": w, "role": ro, "before": b, "after": a} for w, ro, 
            "coverage": RAW["coverage"]}, open(os.path.join(HERE, "diag_c116d_decode.json"), "w", encoding="utf-8"), indent=1)
 print("VALID before reads {0} of 1945 wires; after reads {1}".format(sum(1 for r in B.values() if r), sum(1 for r in A.values() if r)), flush=True)
 print(P.result_line(P.make_result(1, 0, None, [])), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

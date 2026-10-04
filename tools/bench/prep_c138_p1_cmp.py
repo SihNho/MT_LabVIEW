@@ -27,3 +27,7 @@ for d in diff:
 bad = [d for d in diff if d[0] != ("p4_i_stopall",)]
 print(protocol.result_line(protocol.make_result(1 if not bad else 0, 1 if bad else 0,
                                                 None if not bad else "op route changed outside p4_i_stopall", [])))
+# ---
+# labview: none
+# hardware: none
+# ---

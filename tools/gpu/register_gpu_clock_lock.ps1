@@ -5,3 +5,7 @@ $trigger = New-ScheduledTaskTrigger -AtLogOn
 $principal = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" -LogonType Interactive -RunLevel Highest
 Register-ScheduledTask -TaskName "GPU clock lock (LabVIEW tracking)" -Action $action -Trigger $trigger -Principal $principal -Force
 Write-Output "registered: nvidia-smi -lgc 1365,1905 at logon (highest privileges). Remove with: Unregister-ScheduledTask -TaskName 'GPU clock lock (LabVIEW tracking)'"
+# ---
+# labview: none
+# hardware: none
+# ---

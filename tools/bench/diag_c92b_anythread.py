@@ -184,3 +184,7 @@ json.dump({"schema": "t0at-build/1", "card": "92-2 PD199(a)", "copy": COPY, "cop
 arts[0]["md5"] = md5(OUT); bad = [k for k, v in G.items() if not v]
 print(P.result_line(P.make_result(len(G) - len(bad), len(bad), bad[0] if bad else None, arts)), flush=True)
 sys.exit(1 if bad else 0)
+# ---
+# labview: build
+# hardware: none
+# ---

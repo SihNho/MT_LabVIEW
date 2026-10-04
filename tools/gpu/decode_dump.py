@@ -16,3 +16,7 @@ while o + 32 <= len(b):
     print("  i32:", i32[:16].tolist()); print("  f32:", [f"{v:.6g}" for v in f32[:16]]); print("  u64:", [f"0x{v:x}" for v in u64[:8]]); print("  f64:", [f"{v:.6g}" for v in f64[:8]])
     if tag == "text":
         print("  str:", data.split(b"\0")[0][:100])
+# ---
+# labview: none
+# hardware: none
+# ---

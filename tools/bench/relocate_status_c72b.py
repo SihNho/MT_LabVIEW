@@ -42,3 +42,7 @@ for i, l in enumerate(lines):
     new.append(l)
 io.open(ST, "w", encoding="utf-8", newline="\n").write("\n".join(new))
 print("moved %d paragraphs; STATUS %d -> %d lines" % (len(idx), len(lines), len(new)))
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -62,3 +62,7 @@ bad = [t for t, ok, _ in res if not ok]
 print("=== %d pass / %d fail: %s" % (len(res) - len(bad), len(bad), bad), flush=True)
 print(P.result_line(P.make_result(len(res) - len(bad), len(bad), bad[0] if bad else None)), flush=True)
 sys.exit(1 if bad else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

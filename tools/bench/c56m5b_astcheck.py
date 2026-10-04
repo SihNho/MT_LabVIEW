@@ -7,3 +7,7 @@ TGT = os.path.join(HERE, "diag_s56_transport3b.py")
 src = open(TGT, encoding="utf-8").read()
 ast.parse(src)
 print("AST OK  %s  %d lines, %d gate sites" % (os.path.basename(TGT), len(src.splitlines()), src.count("gate(")))
+# ---
+# labview: none
+# hardware: none
+# ---

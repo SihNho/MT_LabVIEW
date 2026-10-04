@@ -194,3 +194,7 @@ S = K.Stage(BED, BED_MD5, "diag_c90b_coverage", deadline_min=20.0, reserve_s=240
             out_json=os.path.join(K.BENCH, "diag_c90b_coverage.json"),
             task="M3a-4 step 3: do M3a-1's replacement wires carry the severed rows' owner pairs?")
 sys.exit(K.run(main, S))
+# ---
+# labview: read
+# hardware: none
+# ---

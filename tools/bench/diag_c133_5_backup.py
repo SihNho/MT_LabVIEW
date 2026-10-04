@@ -9,3 +9,7 @@ for src, dst in (("plan_ring_p3b2b.json", "plan_ring_p3b2b_provisional_c133_5.js
         shutil.copyfile(s, d)
     for p in (s, d):
         print(hashlib.md5(open(p, "rb").read()).hexdigest(), os.path.basename(p))
+# ---
+# labview: none
+# hardware: none
+# ---

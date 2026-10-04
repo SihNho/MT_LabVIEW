@@ -4,3 +4,7 @@ B = r"C:\Program Files\National Instruments\LabVIEW 2026\resource\importtools\sh
 for p in sorted(glob.glob(os.path.join(B, "**", "*.vi"), recursive=True)):
     try: print(os.path.relpath(p, B), "->", g.fp_labels(p), flush=True)
     except Exception as e: print(os.path.relpath(p, B), "EXC", str(e)[:120], flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

@@ -6,3 +6,7 @@ for rel in ("Attribute\Function Name.vi", "Attribute\Path.vi", "Attribute\Callin
             "Call Library Node\Attribute\Function Dec.vi", "Call Library Node\Attribute\Internal\Current Para Name.vi"):
     try: print(rel, "->", g.fp_labels(os.path.join(B, rel)), flush=True)
     except Exception as e: print(rel, "EXC", str(e)[:160], flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

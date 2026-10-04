@@ -76,3 +76,7 @@ if __name__ == "__main__":
     st = St(L.EMPTY, K.md5(L.EMPTY), "selftest_make_default", preload=False, deadline_min=10, pins=L.pins(), task="76-6",
             out_json=os.path.join(K.BENCH, "selftest_make_default.json"))
     sys.exit(K.run(body, st))
+# ---
+# labview: read
+# hardware: none
+# ---

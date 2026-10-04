@@ -90,3 +90,7 @@ if __name__ == "__main__":
                   open(os.path.join(K.BENCH, "stage_d1_ring_p3b2b_scratch_sum.json"), "w", encoding="utf-8"), indent=1)
         rc = rc or (0 if (ok_mem and ok_in and gone) else 1)
     sys.exit(rc if gone else 1)
+# ---
+# labview: read
+# hardware: none
+# ---

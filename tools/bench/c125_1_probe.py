@@ -12,3 +12,7 @@ for s in ["tools/bench/ring_p2a_md5.py", "tools/bench/selftest_launch_gate.py", 
 cmd = "py tools/bgrun.py --material --max-min 2 --log tools/bench/ring_p2a_md5.log -- py -u tools/bench/ring_p2a_md5.py"
 print("offline_command fp10:", gp.offline_command(cmd))
 print("selftest_exempt fp11:", gp.selftest_exempt("BGRUN START x limit 5.0 min: py -u tools/bench/selftest_case_frame_c124.py"))
+# ---
+# labview: none
+# hardware: none
+# ---

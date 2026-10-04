@@ -24,3 +24,7 @@ for name, val in tests.items():
         print(f"{name}: FAILED {str(e)[:120]}", flush=True)
 # also: what does the radial-profile control give when read back (a DBL array) vs the cosband control default?
 print("radial ctrl readback:", str(vi.GetControlValue(h["controls"]["radial intensity profile"]))[:80], flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

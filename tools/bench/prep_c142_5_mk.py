@@ -145,3 +145,7 @@ gate("X10s compiled plan: N {0} R {1} peak {2} == table {3} <= {4}; kinds == v18
 ARTS.extend({"path": rel(x), "md5": md5(x)} for x in (AIN, IN, OUT))
 gate("U v18 / s01 / s02 / rasrest / provisional base untouched", all(md5(q).startswith(w) for q, w in WANT.items()))
 print(protocol.result_line(protocol.make_result(G["pass"], G["fail"], G["first"], ARTS)), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

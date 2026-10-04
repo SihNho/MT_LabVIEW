@@ -177,3 +177,7 @@ if __name__ == "__main__":
     s.gate("Q1 LabVIEW gone (quit rc %d, forced=%s)" % (r.returncode, not gone), gone)
     s.gate("Q2 md5 pins after quit", s.pin_check("FINAL")); s.dump()
     sys.exit(s.summary())
+# ---
+# labview: build
+# hardware: none
+# ---

@@ -26,3 +26,7 @@ for r in T:
         print("  w{0} t{1} #{2} {3} {4} {5}".format(r["wire_uid"], r["term_uid"], V.node_of(r), r["owner_class"], r["term_class"],
                                                    "src" if r["is_source"] else "snk"))
 print("all single-terminal wires on D1_k:", sum(1 for w, n in byw.items() if n == 1))
+# ---
+# labview: none
+# hardware: none
+# ---

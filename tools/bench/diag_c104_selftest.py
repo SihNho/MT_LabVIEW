@@ -59,3 +59,7 @@ if __name__ == "__main__":
     print("RESULT " + json.dumps({"schema": "result-line/1", "status": "PASS" if n == 2 else "FAIL",
                                   "gates": {"pass": n, "fail": 2 - n}, "first_fail": first, "artefacts": []}))
     sys.exit(0 if n == 2 else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

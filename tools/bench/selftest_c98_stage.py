@@ -88,3 +88,7 @@ if __name__ == "__main__":
         st.gate("LabVIEW gone at exit", "labview.exe" not in subprocess.run(["tasklist"], capture_output=True, text=True, timeout=60).stdout.lower())
         st.dump(); rc = st.summary()                                                                  # noqa: E702
     sys.exit(rc)
+# ---
+# labview: read
+# hardware: none
+# ---

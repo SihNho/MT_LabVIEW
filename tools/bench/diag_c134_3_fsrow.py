@@ -28,3 +28,7 @@ for p, v in hits[:80]:
 print('NHITS', len(hits))
 print('RESULT ' + json.dumps({"schema": "result-line/1", "status": "PASS", "gates": {"pass": 1, "fail": 0},
       "first_fail": None, "artefacts": []}))
+# ---
+# labview: none
+# hardware: none
+# ---

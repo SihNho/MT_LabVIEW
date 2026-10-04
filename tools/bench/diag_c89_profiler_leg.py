@@ -278,3 +278,7 @@ for k, v in PF.items(): print("GATE %-50s %s" % (k, "PASS" if v else "FAIL"), fl
 bad = [k for k, v in PF.items() if not v] + ([] if ok else ["leg/liveness not ok"]) + (["RECOVERY_LOCKED"] if LOCKED else [])
 print(P.result_line(P.make_result(len(PF) + (1 if ok else 0), len(bad), bad[0] if bad else None, [{"path": os.path.relpath(jp, ROOT), "md5": drive_m8.md5(jp)}])), flush=True)
 sys.stdout.flush(); os._exit(0 if not bad else 1)
+# ---
+# labview: build
+# hardware: none
+# ---

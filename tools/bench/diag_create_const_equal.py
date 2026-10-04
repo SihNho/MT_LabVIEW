@@ -97,3 +97,7 @@ if __name__ == "__main__":
     rc = main()
     print(f"elapsed {time.time() - t0:.1f} s", flush=True)
     sys.exit(rc)
+# ---
+# labview: read
+# hardware: none
+# ---

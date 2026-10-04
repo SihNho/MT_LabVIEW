@@ -16,3 +16,7 @@ if pa:
     print({k: (v if not isinstance(v, (dict, list)) else (type(v).__name__, len(v))) for k, v in pa.items()})
     print(json.dumps(pa.get('bind'))[:1500]); print(pa.get('loop_of')); print(json.dumps(pa.get('sym_real'))[:800])
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":0,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

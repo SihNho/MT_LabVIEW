@@ -22,3 +22,7 @@ G["pass" if ok else "fail"] += 1
 G["first"] = None if ok else "LRB1/LWB1 '.value' end = the Local's one row 'BufDiff', wired"
 print("GATE {0} | LRB1/LWB1 '.value' end = the Local's one row named 'BufDiff', wired (steps 7/8)".format("PASS" if ok else "FAIL"))
 print(protocol.result_line(protocol.make_result(G["pass"], G["fail"], G["first"], [])), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

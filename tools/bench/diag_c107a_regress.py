@@ -45,3 +45,7 @@ r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "stage_prerun.py
 print("TEST %-40s code %s  %s" % ("stage_prerun --selftest-control-lint", r.returncode, (r.stdout or "").strip().splitlines()[-1:]), flush=True)
 ok, bad = ok + (r.returncode == 0), bad + (r.returncode != 0)
 print(protocol.result_line(protocol.make_result(ok, bad, fails[0] if fails else (None if r.returncode == 0 else "control-lint"))))
+# ---
+# labview: none
+# hardware: none
+# ---

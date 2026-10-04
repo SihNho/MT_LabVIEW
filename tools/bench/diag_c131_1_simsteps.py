@@ -37,3 +37,7 @@ for k in (16, 20, 22, 24, 26):
             n += 1
             print("   FACE", r["owner_uid"], r["owner_class"], r["term_class"], r["is_source"], repr(r["term_name"]), r["frame_diagram"])
 print(protocol.result_line(protocol.make_result(1 if n else 0, 0 if n else 1, None if n else "no faces")))
+# ---
+# labview: none
+# hardware: none
+# ---

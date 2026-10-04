@@ -129,3 +129,7 @@ shutil.rmtree(tmp, ignore_errors=True)
 print("GATES %d pass / %d fail" % (sum(ok for _, ok in checks), sum(not ok for _, ok in checks)))
 sys.stdout.flush()
 os._exit(0 if all(ok for _, ok in checks) else 1)   # a candidate's cut-off Jev thread must not delay exit
+# ---
+# labview: none
+# hardware: none
+# ---

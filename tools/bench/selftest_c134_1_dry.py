@@ -182,3 +182,7 @@ gate("T7 census_gate declared {} -> UNPREDICTED, no gate call", "UNPREDICTED  CE
 n_f = res.count(False)
 print(P.result_line(P.make_result(res.count(True), n_f, None if not n_f else "selftest_c134_1_dry")), flush=True)
 sys.exit(1 if n_f else 0)
+# ---
+# labview: read
+# hardware: none
+# ---

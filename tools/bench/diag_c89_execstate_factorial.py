@@ -186,3 +186,7 @@ S = K.Stage(BED, BED_MD5, "diag_c89_execstate_factorial", deadline_min=21.0, res
             out_json=os.path.join(K.BENCH, "diag_c89_execstate_factorial.json"),
             task="4-arm ExecState factorial on the Row-D bed; measurement only, nothing saved")
 sys.exit(K.run(main, S))
+# ---
+# labview: read
+# hardware: none
+# ---

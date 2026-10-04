@@ -5,3 +5,7 @@ r = subprocess.run([sys.executable, "-u", os.path.join(TOOLS, "recipes", "build_
 if r.returncode != 0: sys.exit(r.returncode)
 r = subprocess.run([sys.executable, "-u", os.path.join(TOOLS, "bench", "extract_clfn.py")], timeout=1000); print("extract rc", r.returncode, flush=True)
 sys.exit(r.returncode)
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -20,3 +20,7 @@ for k, c in rows:
     print("%-6s stop_record_alone_allows=%s stop_gate_rc=%d  %s" % (k, SR.check_command(c)[0], GB.stop_gate(c, "Bash"), c[:80]),
           flush=True)
 print(P.result_line(P.make_result(len(rows), 0)), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

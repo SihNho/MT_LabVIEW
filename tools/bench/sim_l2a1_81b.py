@@ -141,3 +141,7 @@ if MODE == "sim":
 n_pass = sum(1 for _l, ok in GATES if ok); first = next((l for l, ok in GATES if not ok), None)   # noqa: E702
 print("=== GATES: {0} pass / {1} fail{2}".format(n_pass, len(GATES) - n_pass, "; failing: " + first if first else ""))
 print(protocol.result_line(protocol.make_result(n_pass, len(GATES) - n_pass, first, art)))
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -14,3 +14,7 @@ objs = [x for x in g.get('objs') or [] if isinstance(x, dict) and x.get('uid') i
 print('real objs', objs)
 fsobjs = [x for x in g.get('objs') or [] if isinstance(x, dict) and x.get('class') in ('FlatSequence', 'FlatSequenceStructure')]
 print('real FS objs', fsobjs[:5])
+# ---
+# labview: none
+# hardware: none
+# ---

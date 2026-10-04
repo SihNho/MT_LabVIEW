@@ -100,3 +100,7 @@ print("SUMMARY %d/%d gates pass" % (npass, len(G)), flush=True)
 first = next((l for l, o in G if not o), None)
 print(P.result_line(P.make_result(npass, len(G) - npass, first)), flush=True)
 sys.exit(0 if first is None else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

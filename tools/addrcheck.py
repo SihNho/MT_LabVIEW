@@ -278,3 +278,7 @@ def check_plan(plan, rows, addr_pos=None):
                           "planned": {"owner": owner, "name": name, "source": f in SRC_FIELDS},
                           "candidates": cands})
     return {"resolved": res, "unresolved": unres, "skipped": skip}
+# ---
+# labview: none
+# hardware: none
+# ---

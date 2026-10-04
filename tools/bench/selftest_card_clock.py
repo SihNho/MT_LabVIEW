@@ -83,3 +83,7 @@ finally:
 print("SELFTEST card_clock %d/%d" % (ok, fail))
 print(result_line(make_result(ok, fail, None if fail == 0 else "selftest_card_clock: %d failed" % fail)))
 sys.exit(0 if fail == 0 else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

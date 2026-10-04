@@ -21,3 +21,7 @@ for k, a, b, _i in S1['edges']:
         print('S1 edge', a, '->', b)
 if last: show(last['terminals'], 'END')
 print("RESULT {\"schema\":\"result-line/1\",\"status\":\"PASS\",\"gates\":{\"pass\":0,\"fail\":0},\"first_fail\":null,\"artefacts\":[]}")
+# ---
+# labview: none
+# hardware: none
+# ---

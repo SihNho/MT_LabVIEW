@@ -48,3 +48,7 @@ json.dump({"schema": "facts/1", "card": "123-2", "requires": r, "donor_candidate
           open(os.path.join(ROOT, OUT), "w", encoding="utf-8"), indent=1)
 m5 = hashlib.md5(open(os.path.join(ROOT, OUT), "rb").read()).hexdigest()
 print(protocol.result_line(protocol.make_result(1, 0, None, artefacts=[{"path": OUT, "md5": m5}])), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

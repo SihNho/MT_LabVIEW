@@ -20,3 +20,7 @@ for k, a in enumerate(J("plan_ring_p4_v15.json")["actions"], 1):
 for k, v in sorted(c.items(), key=str):
     print("PRIM", v, k)
 print(protocol.result_line(protocol.make_result(1, 0, None, [])), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

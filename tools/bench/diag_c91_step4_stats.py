@@ -60,3 +60,7 @@ def table(d):
 if __name__ == "__main__":
     for d in sys.argv[1:]:
         print(json.dumps(table(d), indent=1))
+# ---
+# labview: none
+# hardware: none
+# ---

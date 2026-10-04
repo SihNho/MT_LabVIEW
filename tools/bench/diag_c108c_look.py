@@ -25,3 +25,7 @@ for u in B + CTL:
     for t in by_owner.get(u, []):
         others = [(x["owner_uid"], x["owner_class"], x["term_name"], x["is_source"], x["frame_diagram"]) for x in by_wire.get(t["wire_uid"], []) if x is not t]
         print("  t%s %r src=%s w=%s fd=%s -> %s" % (t["term_uid"], t["term_name"], t["is_source"], t["wire_uid"], t["frame_diagram"], others))
+# ---
+# labview: none
+# hardware: none
+# ---

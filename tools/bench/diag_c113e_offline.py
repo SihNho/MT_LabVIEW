@@ -11,3 +11,7 @@ for f in ("tools/bench/graph_l2b2a_20260928.json", "docs/wiki/subvi/D1_s1_copy.j
     for o in G.get("objects") or G.get("objs") or []:
         if int(o.get("uid") or 0) in (11261, 11608, 11363):
             print("OBJ", json.dumps(o, default=str)[:400])
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -94,3 +94,7 @@ if __name__ == "__main__":
     st = K.Stage(S1, S1_MD5, "diag_fstunnel_pairs", preload=False, deadline_min=25,
                  task="connectivity-map step 4b step A: FS tunnel faces read from the machine")
     sys.exit(K.run(body, st))
+# ---
+# labview: read
+# hardware: none
+# ---

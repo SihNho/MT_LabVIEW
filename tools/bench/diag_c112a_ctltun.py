@@ -100,3 +100,7 @@ if __name__ == "__main__":
                    "facts": st.R.get("c112a"), "log": "tools/bench/diag_c112a_ctltun.log"},
                   open(os.path.join(REC_DIR, "{0}_{1}.json".format(FUNC, st.stamp)), "w", encoding="utf-8"), indent=1)
     sys.exit(rc)
+# ---
+# labview: read
+# hardware: none
+# ---

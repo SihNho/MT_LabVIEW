@@ -4,3 +4,7 @@ def run(args, timeout, tag):
     r = subprocess.run(args, timeout=timeout, cwd=ROOT); print(f"{tag} rc {r.returncode}", flush=True); return r.returncode
 run([sys.executable, os.path.join(TOOLS, "lv_restart.py")], 400, "lv_restart")
 run([sys.executable, "-u", os.path.join(TOOLS, "recipes", "build_opclfn.py")], 1500, "build OpCLFNBuild")
+# ---
+# labview: none
+# hardware: none
+# ---

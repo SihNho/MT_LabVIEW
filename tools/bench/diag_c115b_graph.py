@@ -19,3 +19,7 @@ for k in ("fs_tunnel_pairs", "graph_summary"):
 P = json.load(open(os.path.join(B, "plan_l2b3.json"), encoding="utf-8"))
 print("context", P.get("context"), "open_rows n", len(P["open_rows"]))
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":0,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

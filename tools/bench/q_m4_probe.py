@@ -93,3 +93,7 @@ S = K.Stage(BED, BED_MD5, "q_m4_probe", deadline_min=20.0, reserve_s=240.0,
             out_json=os.path.join(K.BENCH, "q_m4_probe.json"),
             task="cycle 68 read-only probe: loop 1.5 / #10407 / #10686 inputs / donors")
 sys.exit(K.run(main, S))
+# ---
+# labview: read
+# hardware: none
+# ---

@@ -21,3 +21,7 @@ for k, v in g.items():
                 print('HIT', k, s[:500])
 from protocol import result_line
 print(result_line({'status': 'PASS', 'gates': {'pass': 1, 'fail': 0}, 'first_fail': None, 'artefacts': []}))
+# ---
+# labview: none
+# hardware: none
+# ---

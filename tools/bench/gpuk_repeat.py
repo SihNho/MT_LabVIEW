@@ -63,3 +63,7 @@ for r in rows:
     print(f"  rep {r['repeat']}: base {s.get('base')} par {s.get('par')} gpuk {s.get('gpuk')} | KERNEL par {k.get('par')} gpuk {k.get('gpuk')}"
           f" | DLL {r.get('dll_ms')} | clocks before {r['clocks_before']}", flush=True)
 json.dump(rows, open(os.path.join(HERE, "gpuk_repeat_results.json"), "w"), indent=1)
+# ---
+# labview: none
+# hardware: none
+# ---

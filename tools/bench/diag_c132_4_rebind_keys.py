@@ -32,3 +32,7 @@ print("{0}  K1 unmatched groups FSIT + Unbundler printed  {1}".format("PASS" if 
 print(P.result_line(P.make_result(int(ok), int(not ok), None if ok else "K1")), flush=True)
 sys.stdout.flush()
 os._exit(0 if ok else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

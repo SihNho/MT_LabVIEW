@@ -115,3 +115,7 @@ t("T18 runner's graph plan: same_rows_as null, fs_watch null, uses_plan == plan 
 nf =sum(1 for _n, c in res if not c)
 print(P.result_line(P.make_result(len(res) - nf, nf, next((n for n, c in res if not c), None))), flush=True)
 sys.exit(1 if nf else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

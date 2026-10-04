@@ -42,3 +42,7 @@ if la is None:
         print("RESULT: CLEAR via JEV discharge")
         sys.exit(0)
 print("RESULT: ARMED - a claude/hypothesis review is owed")
+# ---
+# labview: none
+# hardware: none
+# ---

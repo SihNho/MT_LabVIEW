@@ -35,3 +35,7 @@ def patched_source():
 if __name__ == "__main__":
     code = compile(patched_source(), SRC, "exec")                  # filename = the diag: tracebacks point at its lines
     exec(code, {"__name__": "__main__", "__file__": SRC})            # noqa: S102 - the pinned diag, four literals changed
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -30,3 +30,7 @@ print("MD5 dispA", a, a == pa["md5"], "S1", s1, s1 == "3e3d23cefd3a334001aa9d615
 print("MD5 stagexec", SP.md5(os.path.join(T, "stagexec.py")))
 good = ok and a == pa["md5"] and s1 == "3e3d23cefd3a334001aa9d6156bf1aee"
 print(protocol.result_line(protocol.make_result(int(good), int(not good), None if good else "launch refused or md5 changed")))
+# ---
+# labview: none
+# hardware: none
+# ---

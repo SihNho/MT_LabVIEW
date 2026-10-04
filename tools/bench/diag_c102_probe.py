@@ -58,3 +58,7 @@ for label, rule in (("PROVISIONAL keep", SS.PROVISIONAL["move_in"]["params"]["on
     print("   tunnel_flips", e["tunnel_flips"])
     print("   cleared", e["cleared_term_uids"], "bare_deleted", e["bare_deleted"])
     print("   11365", w.get(11365), "11369", w.get(11369), "11270", w.get(11270), "11316", w.get(11316))
+# ---
+# labview: none
+# hardware: none
+# ---

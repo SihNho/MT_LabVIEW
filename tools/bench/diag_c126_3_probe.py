@@ -21,3 +21,7 @@ print("ROW0", d["terminals"][0])
 print("OBJ0", (d.get("objs") or [None])[0], "n objs", len(d.get("objs") or []))
 print("FS objs", [x for x in d.get("objs") or [] if x.get("class") in ("FlatSequence", "FlatSequenceInnerTunnel")][:4])
 print(protocol.result_line(protocol.make_result(1, 0)))
+# ---
+# labview: none
+# hardware: none
+# ---

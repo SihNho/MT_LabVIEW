@@ -30,3 +30,7 @@ for f in ("tools/bench/plan_ring_p3b2.json", "tools/bench/plan_ring_p3b2b.json")
 for t in ("tools/bench/selftest_c134_2_regress.py", "tools/bench/selftest_c134_2_regress.log"):
     print(t, git("log", "-3", "--format=%h %ci", "--", t).stdout.decode().strip().replace("\n", " | "))
 print(P.result_line(P.make_result(1, 0, None, [])))
+# ---
+# labview: none
+# hardware: none
+# ---

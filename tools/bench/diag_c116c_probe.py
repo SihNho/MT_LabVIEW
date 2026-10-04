@@ -29,3 +29,7 @@ for p in sorted(glob.glob(os.path.join(ROOT, "archive", "peer", "2026-09-2[5-8]-
         for n, t in unb:
             print("     :%d %s" % (n, t))
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

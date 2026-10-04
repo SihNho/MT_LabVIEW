@@ -22,3 +22,7 @@ for k, t in F["terms"].items():
 print('RESULT {{"schema":"result-line/1","status":"{0}","gates":{{"pass":{1},"fail":{2}}},"first_fail":null,"artefacts":[]}}'.format(
     "PASS" if not bad else "FAIL", len(F["terms"]) - bad, bad), flush=True)
 sys.exit(1 if bad else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -40,3 +40,7 @@ from protocol import result_line, make_result
 n = sum(1 for x in gates if x[1])
 print(result_line(make_result(n, len(gates) - n, next((x[0] for x in gates if not x[1]), None),
                               [{'path': 'tools/bench/f1359_gate_facts_97.json'}])))
+# ---
+# labview: none
+# hardware: none
+# ---

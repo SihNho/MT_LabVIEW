@@ -69,3 +69,7 @@ for k, v in names.items():
     print('IIA-TERMSET %s -> %s' % (list(k), v))
 print(result_line({'status': 'PASS' if gf == 0 else 'FAIL', 'gates': {'pass': gp, 'fail': gf},
                    'first_fail': None if gf == 0 else 'see GATE lines', 'artefacts': []}))
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -239,3 +239,7 @@ first = next((k for k, x in gates.items() if not x), None)
 print("=== GATES: %d pass / %d fail%s ; %.0f s" % (n_pass, n_fail, "; failing: " + first if first else "", time.time() - T0))
 print(protocol.result_line(protocol.make_result(n_pass, n_fail, first, arts)))
 sys.exit(0 if n_fail == 0 else 1)
+# ---
+# labview: read
+# hardware: none
+# ---

@@ -19,3 +19,7 @@ json.dump(out, open(p, "w", encoding="utf-8"), indent=0)
 neg = [r for r in st["terminals"] if min(r["owner_uid"], r["term_uid"]) < 0]
 print("wrote", p, "terminals", len(st["terminals"]), "objs", len(out["objs"]), "negative owner/term rows", len(neg), "md5", SX.md5(p))
 print(protocol.result_line(protocol.make_result(int(not neg), int(bool(neg)), None if not neg else "negative uids left")))
+# ---
+# labview: none
+# hardware: none
+# ---

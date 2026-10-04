@@ -22,3 +22,7 @@ regime("15 ms gaps, no keep-alive", 0, 0, 0, 0)
 regime("keep-alive 8 MB copy / 1 ms", 1, 2000, 1, 8)
 regime("keep-alive 64 MB copy / 1 ms", 1, 2000, 1, 64)
 regime("keep-alive 128 MB copy / 0 ms", 1, 2000, 0, 128)
+# ---
+# labview: none
+# hardware: none
+# ---

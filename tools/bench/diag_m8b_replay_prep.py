@@ -92,3 +92,7 @@ tl = subprocess.run(["tasklist", "/FI", "IMAGENAME eq LabVIEW.exe"], capture_out
 s.gate("P5 LabVIEW process gone at exit", "LabVIEW.exe" not in tl, tl.strip()[-80:])
 s.dump()
 sys.exit(s.summary())
+# ---
+# labview: read
+# hardware: camera
+# ---

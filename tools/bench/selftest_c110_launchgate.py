@@ -45,3 +45,7 @@ ff = next((lab for lab, ok in G if not ok), None)
 print("=== GATES: {0} pass / {1} fail".format(npass, nfail))
 print(protocol.result_line(protocol.make_result(npass, nfail, ff)), flush=True)
 sys.exit(0 if nfail == 0 else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

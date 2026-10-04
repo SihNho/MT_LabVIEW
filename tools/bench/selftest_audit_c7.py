@@ -95,3 +95,7 @@ print(f"GATES {npass} pass / {nfail} fail")
 print(protocol.result_line({"status": "PASS" if nfail == 0 else "FAIL", "gates": {"pass": npass, "fail": nfail},
                             "first_fail": next((n for n, ok in gates if not ok), None), "artefacts": []}))
 sys.exit(0 if nfail == 0 else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

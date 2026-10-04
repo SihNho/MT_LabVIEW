@@ -26,3 +26,7 @@ for k in g:
     v = g[k]
     print("GRAPH", k, type(v).__name__, (list(v.items())[:3] if isinstance(v, dict) else (v[:2] if isinstance(v, list) else v)), flush=True)
 print(protocol.result_line(protocol.make_result(1, 0, None, [])), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

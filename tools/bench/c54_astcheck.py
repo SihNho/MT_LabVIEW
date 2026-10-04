@@ -22,3 +22,7 @@ for f in ("D1_s2_loops.vi", "OpConnectNested_v1.vi", "OpConnectFromWire_v0.vi", 
           "OpShiftRegs_v0.vi"):
     p = os.path.join(r"C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev", f)
     print("  [%s]  %s" % ("ok" if os.path.exists(p) else "MISSING", f))
+# ---
+# labview: none
+# hardware: none
+# ---

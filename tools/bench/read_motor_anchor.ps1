@@ -150,3 +150,7 @@ else {
     Write-Output '  (a busy port is recorded as a FACT - nothing is killed and nothing is retried)'
     exit 6
 }
+# ---
+# labview: none
+# hardware: motor
+# ---

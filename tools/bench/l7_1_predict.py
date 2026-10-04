@@ -121,3 +121,7 @@ out = {"rows": [dict(i=r["i"], name=r["name"], wire=r["wire"], cls=CLASS[r["i"]]
 json.dump(out, open(B("l7_1_prediction.json"), "w", encoding="utf-8"), indent=1)
 print("=== GATES: {0} pass / {1} fail".format(sum(PASS), len(PASS) - sum(PASS)))
 sys.exit(0 if all(PASS) else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -295,3 +295,7 @@ npass = sum(1 for g in gates if g[1]); nfail = len(gates) - npass
 ff = next((g[0] + ': ' + g[2] for g in gates if not g[1]), None)
 art = [{'path': 'tools/bench/f1359_consumers_96.json', 'md5': hashlib.md5(open(OUT, 'rb').read()).hexdigest()}]
 print(protocol.result_line(protocol.make_result(npass, nfail, ff, art)))
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -84,3 +84,7 @@ if __name__ == "__main__":
     s.gate("H2 D1_k md5 unchanged", K.md5(D1K) == D1K_MD5)
     s.summary()
     sys.exit(1 if s.fails else 0)
+# ---
+# labview: build
+# hardware: none
+# ---

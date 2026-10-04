@@ -22,3 +22,7 @@ if os.path.exists(c):
     for r in json.load(open(c, encoding="utf-8")) if isinstance(json.load(open(c, encoding="utf-8")), list) else json.load(open(c, encoding="utf-8")).get("candidates", []):
         print("CAND {0}".format(json.dumps(r)[:600]), flush=True)
 print(P.result_line(P.make_result(1, 0, None)), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

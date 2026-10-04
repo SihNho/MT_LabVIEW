@@ -102,3 +102,7 @@ for r in R["rows"]:
 ok = len(R["rows"]) == len(missing)
 print(protocol.result_line(protocol.make_result(int(ok), int(not ok), None if ok else "row dump incomplete",
                                                 [{"path": "tools/bench/facts_c104c_e3.json", "md5": SS.md5_file(os.path.join(BENCH, "facts_c104c_e3.json"))}])))
+# ---
+# labview: none
+# hardware: none
+# ---

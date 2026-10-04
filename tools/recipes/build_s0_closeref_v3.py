@@ -879,3 +879,7 @@ if __name__ == "__main__":
         for tg, r in RESULT.items():
             print(f"ARTEFACT {tg}: {r['path']}  md5 {r['md5']}", flush=True)
     sys.exit(0 if (rc == 0 and not any(not ok for _n, ok in B.PASS)) else 1)
+# ---
+# labview: build
+# hardware: none
+# ---

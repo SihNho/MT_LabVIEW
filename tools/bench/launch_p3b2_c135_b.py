@@ -60,3 +60,7 @@ if __name__ == "__main__":
                    "final_md5": fmd5, "inputs_ok": ok_in, "gone": gone}, open(os.path.join(K.BENCH, "launch_p3b2_c135_b_sum.json"), "w", encoding="utf-8"), indent=1)
         rc = rc or (0 if (ok_mem and ok_in and gone) else 1)
     sys.exit(rc if gone else 1)
+# ---
+# labview: read
+# hardware: none
+# ---

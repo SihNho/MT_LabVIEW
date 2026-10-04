@@ -40,3 +40,7 @@ for k, a in enumerate(json.load(open(V14, encoding="utf-8"))["actions"][:4], 1):
     print("V14 #{0}".format(k), json.dumps(a, ensure_ascii=True)[:500])
 print(protocol.result_line(protocol.make_result(G["pass"], G["fail"], G["first"], [])), flush=True)
 sys.exit(0 if not G["fail"] else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

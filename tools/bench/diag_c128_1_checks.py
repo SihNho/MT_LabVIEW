@@ -84,3 +84,7 @@ np_, nf = sum(1 for _n, c in ok if c), sum(1 for _n, c in ok if not c)
 print(P.result_line(P.make_result(np_, nf, next((n for n, c in ok if not c), None),
                                   [{"path": "tools/bench/plan_ring_p3b_pred.json", "md5": md5(PO)}])), flush=True)
 sys.exit(1 if nf else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

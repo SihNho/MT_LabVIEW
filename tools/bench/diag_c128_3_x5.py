@@ -99,3 +99,7 @@ np_, nf = sum(1 for _n, c in ok if c), sum(1 for _n, c in ok if not c)
 print(P.result_line(P.make_result(np_, nf, next((n for n, c in ok if not c), None),
                                   [{"path": "tools/bench/diag_c128_3_x5.json", "md5": SP.md5(os.path.join(B, "diag_c128_3_x5.json"))}])), flush=True)
 os._exit(1 if nf else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

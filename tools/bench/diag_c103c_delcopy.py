@@ -23,3 +23,7 @@ rl = getattr(protocol, "result_line", None)
 out = {"schema": "result-line/1", "status": "PASS" if all(gates) else "FAIL", "gates": {"pass": sum(gates), "fail": len(gates) - sum(gates)},
        "first_fail": None if all(gates) else "md5 check", "artefacts": []}
 print(rl(**out) if callable(rl) and False else "RESULT " + json.dumps(out))
+# ---
+# labview: none
+# hardware: none
+# ---

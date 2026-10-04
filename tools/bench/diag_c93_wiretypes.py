@@ -92,3 +92,7 @@ first = next((g[0] for g in gates if not g[1]), None)
 md5o = hashlib.md5(open(OUT, "rb").read()).hexdigest()
 print(protocol.result_line({"status": "PASS" if nfail == 0 else "FAIL", "gates": {"pass": npass, "fail": nfail},
                             "first_fail": first, "artefacts": [{"path": os.path.relpath(OUT, ROOT), "md5": md5o}]}))
+# ---
+# labview: none
+# hardware: none
+# ---

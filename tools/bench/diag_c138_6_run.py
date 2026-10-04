@@ -164,3 +164,7 @@ if __name__ == "__main__":
         print("=== GATES: %d pass / %d fail; failing: %s" % (len(S5.G) - len(bad), len(bad), bad), flush=True)
         print(P.result_line(P.make_result(len(S5.G) - len(bad), len(bad), bad[0] if bad else None, arts)), flush=True)
         sys.exit(1 if bad else 0)
+# ---
+# labview: build
+# hardware: none
+# ---

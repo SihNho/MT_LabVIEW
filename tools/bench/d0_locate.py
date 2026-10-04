@@ -291,3 +291,7 @@ if __name__ == "__main__":
     print("DONE BUTTON:", w and w["centre"], "|", why)
     print("candidates passing shape:", sum(1 for c in cands if "centre" in c))
     print("IMAGE DISPLAY:", locate_image_display(png, rect))
+# ---
+# labview: none
+# hardware: none
+# ---

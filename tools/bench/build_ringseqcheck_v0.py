@@ -106,3 +106,7 @@ if __name__ == "__main__":
         json.dump({"function": "RingSeqCheck_v0 subVI build + run", "card": "142-4", "t": time.time(), "log": "tools/bench/build_ringseqcheck_v0.log", "status": "FAIL" if bad else "PASS", "out": OUT}, open(os.path.join(HERE, "scratch_verify", "ringseqcheck_c142_4_%s.json" % TS), "w", encoding="utf-8"), indent=1, default=str)
         arts = [{"path": TGT, "md5": md5(TGT)}] if os.path.exists(TGT) else []; print("=== GATES: %d pass / %d fail; failing: %s" % (len(S5.G) - len(bad), len(bad), bad), flush=True)   # noqa: E702
         print(P.result_line(P.make_result(len(S5.G) - len(bad), len(bad), bad[0] if bad else None, arts)), flush=True); sys.exit(1 if bad else 0)   # noqa: E702
+# ---
+# labview: build
+# hardware: none
+# ---

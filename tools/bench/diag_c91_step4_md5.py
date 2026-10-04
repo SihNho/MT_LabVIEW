@@ -9,3 +9,7 @@ F = ["tools/bench/t0_step4_91.json", "tools/bench/diag_c91_step4.py", "tools/ben
 for f in F + sys.argv[1:]:
     p = f if os.path.isabs(f) else os.path.join(ROOT, f)
     print("%s %s" % (hashlib.md5(open(p, "rb").read()).hexdigest() if os.path.isfile(p) else "MISSING", f))
+# ---
+# labview: none
+# hardware: none
+# ---

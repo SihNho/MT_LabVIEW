@@ -42,3 +42,7 @@ if __name__ == "__main__":
             pins=tuple(K.DEFAULT_PINS[:1]) + L.pins(), task="77-4 graph + #581",
             out_json=os.path.join(K.BENCH, "replay_graph77.json"))
     sys.exit(K.run(body, st))
+# ---
+# labview: read
+# hardware: none
+# ---

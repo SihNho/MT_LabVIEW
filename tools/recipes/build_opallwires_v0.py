@@ -252,3 +252,7 @@ if os.path.exists(S.work):
     except OSError as e:
         print("could not remove the previous {0}: {1}".format(OP_NAME, e), flush=True)
 sys.exit(K.run(main, S))
+# ---
+# labview: build
+# hardware: none
+# ---

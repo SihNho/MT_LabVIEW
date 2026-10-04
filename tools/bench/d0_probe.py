@@ -206,3 +206,7 @@ if __name__ == "__main__":
         print("\n=== D0 probe: %d pass, %d fail ===" % (np, len(ROWS) - np), flush=True)
         json.dump(ROWS, open(os.path.join(HERE, "d0_probe.json"), "w", encoding="utf-8"), indent=1)
     sys.exit(0 if good else 1)
+# ---
+# labview: read
+# hardware: none
+# ---

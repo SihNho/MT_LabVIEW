@@ -16,3 +16,7 @@ for k, o in enumerate(ops, 1):
     print(k, o["kind"], o.get("route"), o["acts"], json.dumps({x: a.get(x) for x in keys if a.get(x) is not None}, default=str)[:400])
 print("RESULT " + json.dumps({"schema": "result-line/1", "status": "PASS", "gates": {"pass": 1, "fail": 0}, "first_fail": None,
                               "artefacts": []}))
+# ---
+# labview: none
+# hardware: none
+# ---

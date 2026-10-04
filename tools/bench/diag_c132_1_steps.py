@@ -17,3 +17,7 @@ for f in fs:
                                                                           e.get("tunnels"), new))
     prev = t
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":0,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

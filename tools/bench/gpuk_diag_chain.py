@@ -43,3 +43,7 @@ if os.path.exists(LOG):
         print("  first 5:", vals[:5], flush=True)
 else:
     print("no DLL log written - MT_GPU_LOG did not reach the LabVIEW process", flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

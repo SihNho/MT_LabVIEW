@@ -71,3 +71,7 @@ n_pass = sum(1 for _l, ok in GATES if ok); first = next((l for l, ok in GATES if
 print("=== GATES: {0} pass / {1} fail{2}".format(n_pass, len(GATES) - n_pass, "; failing: " + first if first else ""))
 print(protocol.result_line(protocol.make_result(n_pass, len(GATES) - n_pass, first, [])))
 sys.exit(0 if first is None else 1)                                                    # card 115-1 B2: rc reflects the gates
+# ---
+# labview: none
+# hardware: none
+# ---

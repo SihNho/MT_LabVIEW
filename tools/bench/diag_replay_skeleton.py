@@ -163,3 +163,7 @@ s.gate("H1 vi.lib GI, lvlib, get-buff md5 unchanged", {k: K.md5(p) for k, p in (
 subprocess.run(["powershell", "-NoProfile", "-Command", "Stop-Process -Name LabVIEW -Force -ErrorAction SilentlyContinue"], capture_output=True)
 time.sleep(6); s.gate("H2 LabVIEW gone", "LabVIEW.exe" not in subprocess.run(["tasklist"], capture_output=True, text=True, errors="replace").stdout)
 s.dump(); sys.exit(s.summary())
+# ---
+# labview: build
+# hardware: camera
+# ---

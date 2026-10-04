@@ -18,3 +18,7 @@ for t in T:
 for i, o in enumerate(O):
     if o['uid'] in (8323, 1359, 637, 639, 7911, 11261, 11363, 25380, 686):
         print('O', i, o)
+# ---
+# labview: none
+# hardware: none
+# ---

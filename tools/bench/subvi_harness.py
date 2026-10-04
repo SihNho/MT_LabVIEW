@@ -82,3 +82,7 @@ def run(h, inputs, outputs):
         vi.SetControlValue(lab(k), v)                                                     # that the builder may have filed
     g._run(vi)                                                                           # under "controls" - same label
     return {k: vi.GetControlValue(lab(k)) for k in outputs}
+# ---
+# labview: build
+# hardware: none
+# ---

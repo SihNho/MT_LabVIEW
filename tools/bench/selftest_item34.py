@@ -194,3 +194,7 @@ npass, nfail = sum(RES), len(RES) - sum(RES)
 print("=== GATES: %d pass / %d fail" % (npass, nfail))
 print(P.result_line(P.make_result(npass, nfail, None if nfail == 0 else "selftest_item34 case failed")))
 sys.exit(0 if nfail == 0 else 1)
+# ---
+# labview: read
+# hardware: none
+# ---

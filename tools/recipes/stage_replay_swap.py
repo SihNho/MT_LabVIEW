@@ -92,3 +92,7 @@ if __name__ == "__main__":
             work_name=os.path.basename(P["copies"][TAG1]).format(ts=TS), pins=pins,
             task=P.get("task", "78-3"), out_json=os.path.join(K.BENCH, P.get("out_json", "stage_replay_swap_78.json")))
     sys.exit(K.run(body, st))
+# ---
+# labview: build
+# hardware: none
+# ---

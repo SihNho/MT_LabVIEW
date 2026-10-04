@@ -26,3 +26,7 @@ for f in FX:
         except Exception as e:
             print("  base ERR", e)
 print(P.result_line(P.make_result(1, 0, None, [])))
+# ---
+# labview: none
+# hardware: none
+# ---

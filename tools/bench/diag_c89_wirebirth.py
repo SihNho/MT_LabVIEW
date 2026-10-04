@@ -158,3 +158,7 @@ S = K.Stage(BED, BED_MD5, "diag_c89_wirebirth", deadline_min=21.5, reserve_s=190
             out_json=os.path.join(K.BENCH, "diag_c89_wirebirth.json"),
             task="0->1 ExecState control + which saved stage artefact first carries broken wires")
 sys.exit(K.run(main, S))
+# ---
+# labview: read
+# hardware: none
+# ---

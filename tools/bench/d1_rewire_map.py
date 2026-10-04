@@ -231,3 +231,7 @@ def _resolve(cut, nt, scan, st0):
 
 if __name__ == "__main__":
     sys.exit(main())
+# ---
+# labview: none
+# hardware: none
+# ---

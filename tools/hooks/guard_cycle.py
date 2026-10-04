@@ -544,6 +544,23 @@ def premature_build(cmd):
             _proven_log("PROVEN-PATTERN | %s | %s | no prior-art review owed: signature covered by clean runs of %s"
                         % (time.strftime("%Y-%m-%d %H:%M:%S"), rel, ", ".join(stages_p)))
             return None
+        # DIFF-ONLY (card chat-E3 item 5, user 2026-10-04): a copy of the last APPROVED script of the same pattern
+        # (tools/priorart_diff.py) owes a review only for its SUBSTANTIVE changed lines and new structure classes; a
+        # parameter-only copy (names, paths, numbers) owes none.
+        try:
+            import priorart_diff
+            dsc = priorart_diff.scope(fp)
+        except Exception:                # noqa: BLE001 - a broken reader never releases (fail closed)
+            dsc = None
+        if dsc is not None and not dsc["review_needed"]:
+            _proven_log("PRIORART-DIFF | %s | %s | no prior-art review owed: %d parameter-only line(s) vs approved %s, "
+                        "no new structure class" % (time.strftime("%Y-%m-%d %H:%M:%S"), rel, dsc["param_only"],
+                                                    dsc["sibling"]))
+            return None
+        diff_hint = ("" if dsc is None else
+                     "  DIFF-ONLY     : copy of approved %s - %d substantive line(s), new classes %s; review only those:\n"
+                     "     add `--diff-from %s` to the prior_art_review.py command below\n"
+                     % (dsc["sibling"], len(dsc["substantive"]), dsc["new_classes"][:6] or "none", dsc["sibling"]))
         # card chat-P2 item 1: name the NEW structure classes (op kinds / create classes no clean stage ran) - such a
         # plan always gets the review, and the review now also asks the user-rules question (docs/user-rules.md).
         try:
@@ -554,7 +571,7 @@ def premature_build(cmd):
                 f"  recipe        : {rel}  (last changed "
                 f"{time.strftime('%Y-%m-%d %H:%M', time.localtime(rmt))})\n"
                 + (f"  NEW structure : {', '.join(new_p[:8])} - no clean stage ran these; a new structure class "
-                   f"always gets the review (card chat-P2)\n" if new_p else "") +
+                   f"always gets the review (card chat-P2)\n" if new_p else "") + diff_hint +
                 f"  newest priorart review : "
                 + (f"{_rel(latest[0])} ({time.strftime('%Y-%m-%d %H:%M', time.localtime(latest[1]))})"
                    if latest else "none archived") + "\n\n"
@@ -765,3 +782,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+# ---
+# labview: none
+# hardware: none
+# ---

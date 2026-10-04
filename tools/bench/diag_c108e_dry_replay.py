@@ -59,3 +59,7 @@ first = None if all(res) else "R%d" % res.index(False)
 print("=== %d pass / %d fail" % (npass, nfail), flush=True)
 print(P.result_line(P.make_result(npass, nfail, first)), flush=True)
 sys.exit(0 if nfail == 0 else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

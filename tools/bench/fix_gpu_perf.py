@@ -18,3 +18,7 @@ g.remove_bad_wires_scripted(OP); es = g.exec_state(OP); print("ExecState", es, "
 if es != 1 or g.count(OP, "Wire") != w0 - 3:
     print("STOP: not saving", flush=True); sys.exit(3)
 print("saved", g.save(OP), flush=True)
+# ---
+# labview: build
+# hardware: none
+# ---

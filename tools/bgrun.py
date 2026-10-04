@@ -224,6 +224,15 @@ def main():
         # ABSOLUTE path on purpose; the audit compares basenames, and an absolute value is also usable by any
         # other child that wants to name the log it is writing into.
         child_env = dict(os.environ, BGRUN_LOG=logp)
+        # card chat-E3 (fp-36): the launching card's id + labview flag, so protocol.result_line stamps the run's owner
+        # into its RESULT line and guard_peer attributes a failing log only to that card.
+        if not child_env.get("CARD_ID"):
+            try:
+                sys.path.insert(0, os.path.join(PROJECT, "tools"))
+                import protocol as _P
+                child_env.update(_P.launch_card_env(logp))
+            except Exception:                       # noqa: BLE001 - attribution is optional, never a failure
+                pass
         p = subprocess.Popen(cmd, cwd=PROJECT, env=child_env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                              text=True, encoding="utf-8", errors="replace", bufsize=1, creationflags=flags)
         # RETRY-CAP RECORDER (card 78-2; docs/violation-decisions.md "device-failed - 2026-09-25 07:05"). A stage run
@@ -360,3 +369,7 @@ if __name__ == "__main__":
             _write_final("BGRUN END rc=%s after %.0fs (runner exited with no terminal line)\n"
                          % (_rc, time.time() - _t_start))
     sys.exit(_rc)
+# ---
+# labview: none
+# hardware: none
+# ---

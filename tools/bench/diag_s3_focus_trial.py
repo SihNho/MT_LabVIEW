@@ -743,3 +743,7 @@ if __name__ == "__main__":
         print("=== THE BRANCH ON THIS READING IS Pre-decided 38(f) AND IS NOT RESOLVED HERE.", flush=True)
         print("=== NO VI WAS RUN (34(f)); no new op; no motor, no ASI, no camera, no GUI action.", flush=True)
         sys.exit(rc)
+# ---
+# labview: read
+# hardware: none
+# ---

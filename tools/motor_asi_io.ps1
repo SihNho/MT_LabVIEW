@@ -107,3 +107,7 @@ try {
     Write-Output "RESULT: NOT at target - $axis=$final target=$target"; Write-Output "FAIL: ASI move NOT at target ($axis=$final target=$target)"; exit 8
 }
 finally { if ($sp.IsOpen) { $sp.Close() }; $sp.Dispose() }
+# ---
+# labview: none
+# hardware: motor
+# ---

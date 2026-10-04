@@ -287,3 +287,7 @@ if __name__ == "__main__":
         print("=== FACTS ONLY - no donor is picked and no queue stage is written. NO VI WAS RUN (34(f)).",
               flush=True)
         sys.exit(rc)
+# ---
+# labview: read
+# hardware: none
+# ---

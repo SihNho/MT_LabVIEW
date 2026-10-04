@@ -66,3 +66,7 @@ def owned_body(loop):
 print("OWNED_BODY", [(o["uid"], owned_body(int(o["uid"]))) for o in OB if o["class"] == "WhileLoop"])
 import protocol
 print(protocol.result_line(protocol.make_result(1, 0, None, [])))
+# ---
+# labview: none
+# hardware: none
+# ---

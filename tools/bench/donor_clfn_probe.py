@@ -18,3 +18,7 @@ try:
     print("node_info:", g.node_info(DST), flush=True)
 except Exception as e:
     print("node_info ERR", str(e)[:100], flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

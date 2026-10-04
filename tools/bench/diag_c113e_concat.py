@@ -93,3 +93,7 @@ if __name__ == "__main__":
     rc = K.run(body, st)
     gone = bool(getattr(g.report_all, "_dry", False)) or SX.kill_labview_at_exit()
     sys.exit(rc if gone else 1)
+# ---
+# labview: read
+# hardware: none
+# ---

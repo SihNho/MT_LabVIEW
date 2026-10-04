@@ -176,3 +176,7 @@ print(protocol.result_line(protocol.make_result(res["pass"], res["fail"], res["f
     {"path": "tools/census_predict.py", "md5": md5(TOOL)},
     {"path": "tools/bench/census_samples.json", "md5": md5(SAMPLES)}])))
 sys.exit(1 if res["fail"] else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -155,3 +155,7 @@ def by_design_verdict(extra, missing, measured_total, base_total, plan=None, pre
         return "stop", "re-derived total {0} != measured {1}".format(P["predicted_total"], measured_total), det
     return "log", ("by-design session-boundary items {0}: re-derived prediction {1} == measured {2} (fixed rule tools/elrule.py, "
                    "PD337(c))").format(dict(have), P["predicted_total"], measured_total), det
+# ---
+# labview: none
+# hardware: none
+# ---

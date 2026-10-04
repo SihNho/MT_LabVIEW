@@ -32,3 +32,7 @@ for u in (3812, 10019, 22284, 22731, 29111):
             print("   {0:8s} w{1} {2} #{3} {4} label={5!r} term={6!r}".format(r["term_name"], w, "<-" if not r["is_source"] else "->", ou,
                   x["owner_class"], labels.get(ou), x["term_name"]))
 print(protocol.result_line(protocol.make_result(1 if ok else 0, 0 if ok else 1, None if ok else "one source per input", [])))
+# ---
+# labview: none
+# hardware: none
+# ---

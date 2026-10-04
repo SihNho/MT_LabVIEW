@@ -102,3 +102,7 @@ for k, v in G.items(): print("GATE %-46s %s" % (k, "PASS" if v else "FAIL"), flu
 bad = [k for k, v in G.items() if not v]
 print(P.result_line(P.make_result(len(G) - len(bad), len(bad), bad[0] if bad else None, [{"path": os.path.relpath(jp, ROOT), "md5": md5(jp)}])), flush=True)
 sys.stdout.flush(); os._exit(1 if bad else 0)
+# ---
+# labview: read
+# hardware: none
+# ---

@@ -40,3 +40,7 @@ next_ptr = ("\u2705 **CYCLES 69\u201371 DONE records + their OLD FIRST ACT / ACT
 new = lines[:lock_idx[0]] + [lock_ptr] + lines[lock_idx[-1] + 1:start] + [next_ptr] + lines[end + 1:]
 io.open(ST, "w", encoding="utf-8", newline="\n").write("\n".join(new))
 print("lock keys %d, NEXT lines %d, STATUS %d -> %d lines" % (len(lock_idx), len(block), len(lines), len(new)))
+# ---
+# labview: none
+# hardware: none
+# ---

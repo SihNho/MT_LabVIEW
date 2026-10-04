@@ -17,3 +17,7 @@ for name in ("HARNESS_base.vi", "HARNESS_copy0.vi"):
         print(f"   {cls}: {len(rows)} {[(o['uid'], o['class']) for o in rows][:12]}", flush=True)
     print(f"   labels: {[(r['uid'], r['label']) for r in g.node_labels(p, 0)]}", flush=True)
     print(f"   panel: {g.fp_labels(p)}", flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

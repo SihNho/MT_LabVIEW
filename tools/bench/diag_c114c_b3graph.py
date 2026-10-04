@@ -118,3 +118,7 @@ def finish(gr):
 
 
 if __name__ == "__main__": sys.exit(main())                                       # noqa: E701
+# ---
+# labview: read
+# hardware: none
+# ---

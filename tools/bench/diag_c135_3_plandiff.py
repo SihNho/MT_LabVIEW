@@ -105,3 +105,7 @@ npass = sum(1 for _, ok in gates if ok)
 ff = next((lab for lab, ok in gates if not ok), None)
 print("SUMMARY A real %d ign %d | B steps with state diff %d (rows %d)" % (len(real), len(ign), n_state_steps, n_state_real))
 print(protocol.result_line(protocol.make_result(npass, len(gates) - npass, ff)))
+# ---
+# labview: none
+# hardware: none
+# ---

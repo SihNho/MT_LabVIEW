@@ -88,3 +88,7 @@ bad = [i for i, ok in enumerate(gates, 1) if not ok]
 print("=== GATES: %d pass / %d fail" % (len(gates) - len(bad), len(bad)), flush=True)
 print(protocol.result_line(protocol.make_result(len(gates) - len(bad), len(bad), ("T%d" % bad[0]) if bad else None, [])), flush=True)
 sys.exit(1 if bad else 0)
+# ---
+# labview: read
+# hardware: none
+# ---

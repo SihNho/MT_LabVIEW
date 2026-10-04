@@ -40,3 +40,7 @@ rc_ok = G.main(["close", "--id", e2["id"], "--reason", "superseded, tools/gate_f
 rc_bad = G.main(["close", "--id", e2["id"], "--reason", "again tools/gate_fp.py:147"])
 gate("C4 due counts 1 open (not the closed); CLI close rc 0 then 2", "1 open" in det and rc_ok == 0 and rc_bad == 2, (det, rc_ok, rc_bad))
 print(P.result_line(P.make_result(NP[0], 4 - NP[0], NF[0])), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

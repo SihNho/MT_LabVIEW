@@ -70,3 +70,7 @@ print(P.result_line(P.make_result(n_pass, len(G) - n_pass, first)))
 shutil.rmtree(SAND, ignore_errors=True)
 sys.stdout.flush()
 os._exit(0 if n_pass == len(G) else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

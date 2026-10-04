@@ -271,3 +271,7 @@ def split(paths):
     for p in paths:
         (builds if is_build_log(p) else machinery).append(p)
     return builds, machinery
+# ---
+# labview: none
+# hardware: none
+# ---

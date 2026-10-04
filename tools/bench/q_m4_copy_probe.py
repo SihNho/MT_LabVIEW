@@ -53,3 +53,7 @@ if __name__ == "__main__":
     g.restore_move_fixtures()
     print("  FACT  Moving-Objects fixtures restored after a restart", flush=True)
     sys.exit(rc)
+# ---
+# labview: read
+# hardware: none
+# ---

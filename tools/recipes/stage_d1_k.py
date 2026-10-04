@@ -118,3 +118,7 @@ def body(s):
 if __name__ == "__main__":
     st = K.Stage(BASE["vi"], BASE["md5"], "D1_k", preload=False, deadline_min=52, out_json=os.path.join(K.BENCH, "stage_d1_k.json"))
     sys.exit(K.run(body, st))
+# ---
+# labview: build
+# hardware: none
+# ---

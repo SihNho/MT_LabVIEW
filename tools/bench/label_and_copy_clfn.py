@@ -32,3 +32,7 @@ print("target CallLibrary:", g.report(TARGET, "CallLibrary"), "nodes", g.count(T
 nodes, nets = g.net_map(TARGET, 0, max_nodes=6, max_terms=40)
 for n, (u, _, terms) in nodes.items():
     print(f"  node {n} uid {u}: {[(t, nm) for t, nm, w in terms]}", flush=True)
+# ---
+# labview: build
+# hardware: none
+# ---

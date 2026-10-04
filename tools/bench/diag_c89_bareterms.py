@@ -159,3 +159,7 @@ S = K.Stage(BED, BED_MD5, "diag_c89_bareterms", deadline_min=16.0, reserve_s=210
             out_json=os.path.join(K.BENCH, "diag_c89_bareterms.json"),
             task="positive control for the ExecState reader + conditional-terminal and bare-input census")
 sys.exit(K.run(main, S))
+# ---
+# labview: read
+# hardware: none
+# ---

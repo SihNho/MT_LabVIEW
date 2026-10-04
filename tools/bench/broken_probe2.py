@@ -13,3 +13,7 @@ w0 = g.count(T, "Wire"); g.remove_bad_wires_scripted(T); print("HARNESS_seq afte
 fp0 = {l for _, l, _ in g.fp_labels(T)}
 new = g.create_indicator(T, 4, 4); labs = [l for _, l, _ in g.fp_labels(T) if l not in fp0]
 print("re-created indicator on t4:", [o['uid'] for o in new], labs, "wires", g.count(T, "Wire"), "ExecState", g.exec_state(T), flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

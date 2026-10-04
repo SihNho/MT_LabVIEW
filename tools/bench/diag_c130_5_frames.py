@@ -19,3 +19,7 @@ for name in ("plan_ring_p3b1.json", "plan_ring_p3b2.json", "plan_ring_p3b.json")
 ok = all(v["terminals"] > 0 for v in res["plan_ring_p3b1.json"].values())
 print(("PASS" if ok else "FAIL") + "  F1 P3b-1 end state: every FS frame holds at least one terminal (FS/FU gates of the recipe)")
 print(P.result_line(P.make_result(int(ok), int(not ok), None if ok else "F1 a P3b-1 FS frame holds no terminal")))
+# ---
+# labview: none
+# hardware: none
+# ---

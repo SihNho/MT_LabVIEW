@@ -384,6 +384,21 @@ def prerun_gate(cmd):
     return 2
 
 
+def scope_gate(cmd):
+    """0 = pass, 2 = refuse: a launched tools/ script without a valid scope header, or a .py that does not compile
+    (tools/scope_header.launch_scope). A broken helper never wedges a command."""
+    try:
+        import scope_header as SH
+        bad = [(p, prob) for p, _lv, _hw, prob in SH.launch_scope(cmd) if prob]
+    except Exception:          # noqa: BLE001
+        return 0
+    if not bad:
+        return 0
+    sys.stderr.write("BLOCKED by tools/hooks/guard_bash.py (scope header, card chat-E3): %s: %s\n"
+                     % (SH._rel(bad[0][0]), bad[0][1]))
+    return 2
+
+
 def retro_closes(cmd, data):
     """True when this retrospective launch really closes the session's cycle (see main)."""
     return not re.search(r"(?:^|\s)--dry-run(?=\s|$)", cmd or "") and not (data or {}).get("agent_id")
@@ -611,6 +626,12 @@ def _main():
     rc = prerun_gate(cmd)
     if rc:
         return rc
+    # SIXTH RULE (card chat-E3, user 2026-10-04 "초장에 에러 발생을 극소화"): every tools/ script a command RUNS carries a
+    # valid scope header and (.py) compiles - for every session, carded or not. Seconds here; a failing log, a review
+    # and a card otherwise. The card's flags against the header are judged above (guard_card -> protocol.check_command).
+    rc = scope_gate(cmd)
+    if rc:
+        return rc
     # Benchmark cells spawned by tools/bench/matrix_run.py inherit this hook via the project
     # settings; their GUI calls are short and sequential by construction, so the driver sets
     # LV_GUARD_OFF=1 in their environment. The main session never has it set.
@@ -670,3 +691,7 @@ def _main():
 
 if __name__ == "__main__":
     sys.exit(main())
+# ---
+# labview: none
+# hardware: none
+# ---

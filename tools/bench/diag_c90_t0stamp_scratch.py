@@ -172,3 +172,7 @@ if __name__ == "__main__":
     quit_and_read()
     s.gate("T10 md5 pins after quit", s.pin_check("FINAL")); s.dump()
     sys.exit(s.summary())
+# ---
+# labview: build
+# hardware: none
+# ---

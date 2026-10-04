@@ -122,3 +122,7 @@ S = K.Stage(BED, BED_MD5, "diag_allwires_probe", deadline_min=14.0, reserve_s=18
             task="STEP 0 for OpAllWires_v0: can Traverse return class Wire on the bed, how many, how "
                  "long; plus the donor census the build recipe needs. Read-only, nothing saved.")
 sys.exit(K.run(main, S))
+# ---
+# labview: read
+# hardware: none
+# ---

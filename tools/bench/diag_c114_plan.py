@@ -150,3 +150,7 @@ if S.get("plan_out") and S["final"]:
     print("  FACT D4 scope {0} nodes: {1}".format(len(scope), scope), flush=True)
 np_ = sum(1 for _g, ok in gates if ok)
 print(protocol.result_line(protocol.make_result(np_, len(gates) - np_, next((g_ for g_, ok in gates if not ok), None), arts)))
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -195,3 +195,7 @@ print("%d/%d PASS" % (n_pass, len(gates)), flush=True)
 print(P.result_line(P.make_result(n_pass, len(gates) - n_pass, first)), flush=True)
 sys.stdout.flush()
 os._exit(0 if n_pass == len(gates) else 1)
+# ---
+# labview: read
+# hardware: none
+# ---

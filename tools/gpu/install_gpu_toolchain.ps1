@@ -36,3 +36,7 @@ Step 'CUDA 12.6.3' $cuda @('-s', '-n', 'nvcc_12.6', 'cudart_12.6', 'cufft_12.6',
 "nvcc: $(Test-Path 'C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.6\bin\nvcc.exe')  cl: $(Get-ChildItem 'C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\*\bin\Hostx64\x64\cl.exe' -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName)" | Tee-Object -FilePath (Join-Path $log 'steps.txt') -Append
 "ALL DONE $(Get-Date -Format 'HH:mm:ss')" | Tee-Object -FilePath (Join-Path $log 'steps.txt') -Append
 Stop-Transcript | Out-Null
+# ---
+# labview: none
+# hardware: none
+# ---

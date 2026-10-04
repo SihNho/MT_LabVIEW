@@ -93,3 +93,7 @@ if __name__ == "__main__":
     gone = DRY or K.mod("stagexec").kill_labview_at_exit()
     print("GATE GONE LabVIEW gone: {0}".format("PASS" if gone else "FAIL"), flush=True)
     sys.exit(rc if gone else 1)
+# ---
+# labview: read
+# hardware: none
+# ---

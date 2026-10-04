@@ -112,3 +112,7 @@ nfail = len(gates) - npass
 say(f"\n=== retro_cycle13 runner: {npass} pass, {nfail} fail ===")
 say(f"=== violations --due rc={rc3}; DUE output is between the markers above ===")
 sys.exit(0 if nfail == 0 else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

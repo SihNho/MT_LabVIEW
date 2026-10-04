@@ -135,3 +135,7 @@ if __name__ == "__main__":
         rc = rc if K.fixtures_check((st.input_md5,), FXL) else 1
         subprocess.run(["taskkill", "/F", "/IM", "LabVIEW.exe"], capture_output=True, text=True, timeout=60); time.sleep(4.0); print("LabVIEW gone at exit:", "labview.exe" not in subprocess.run(["tasklist"], capture_output=True, text=True, timeout=60).stdout.lower(), flush=True)  # noqa: E702
     sys.exit(rc)
+# ---
+# labview: build
+# hardware: none
+# ---

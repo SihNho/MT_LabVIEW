@@ -286,3 +286,7 @@ for f in facts:
 print(f"\n=== test_run_poison: {len(passes)} pass, {len(fails)} fail"
       + (f" -> {', '.join(fails)}" if fails else "") + " ===", flush=True)
 sys.exit(1 if fails else 0)
+# ---
+# labview: read
+# hardware: none
+# ---

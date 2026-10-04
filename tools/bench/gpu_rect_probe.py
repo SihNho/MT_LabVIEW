@@ -15,3 +15,7 @@ for rect in ([0, 0, 1280, 1024], [0, 0, 1279, 1023], [0, 0, 1024, 1280], [0, 0, 
     vi.SetControlValue(C["Error Message"], " " * 64); g._run(vi)
     print(f"  rect {rect}: msg {vi.GetControlValue(lab['outputs']['Error Message out'])!r} | error out {vi.GetControlValue('error out')}", flush=True)
 print("File Path readback:", repr(vi.GetControlValue(C["File Path"])), "Image Name:", repr(vi.GetControlValue(C["Image Name"])), flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

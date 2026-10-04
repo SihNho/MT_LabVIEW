@@ -56,3 +56,7 @@ for ver, arch, p in files:
 print("ERR-LIKE MEMBERS", hit)
 print(protocol.result_line({"status": "PASS" if nf else "FAIL", "gates": {"pass": int(bool(nf)), "fail": int(not nf)},
                             "first_fail": None if nf else "no VirtualInstrument interface read", "artefacts": []}))
+# ---
+# labview: read
+# hardware: none
+# ---

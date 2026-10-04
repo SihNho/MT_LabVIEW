@@ -27,3 +27,7 @@ print("META keys", list(meta.keys()))
 print("META", json.dumps({k: v for k, v in meta.items() if k != "actions"})[:3000])
 print("META actions[:3]", json.dumps(meta["actions"][:3])[:800])
 print(protocol.result_line(protocol.make_result(1, 0, None, [])), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

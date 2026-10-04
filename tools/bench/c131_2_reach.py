@@ -166,3 +166,7 @@ def script_touches_labview(script, _seen=None):
     stack = frozenset({key})
     hit, alias, names = _bind(nodes, _dirs(key), stack)
     return hit or _uses(nodes, alias, names, stack)
+# ---
+# labview: none
+# hardware: none
+# ---

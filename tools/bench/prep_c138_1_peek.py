@@ -58,3 +58,7 @@ elif mode == "graph":
     for u in want:
         if str(u) in own:
             print("OWNER", u, own[str(u)])
+# ---
+# labview: none
+# hardware: none
+# ---

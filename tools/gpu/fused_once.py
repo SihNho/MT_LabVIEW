@@ -19,3 +19,7 @@ gi = np.ones(nb, np.int32); xo = np.zeros(nb); yo = np.zeros(nb); zo = np.zeros(
 rc = lib.mt_gpu_track_any(h, img.ctypes.data_as(C.POINTER(C.c_ubyte)), img.shape[0], img.shape[1], nb, xi.ctypes.data_as(I), yi.ctypes.data_as(I), gi.ctypes.data_as(I),
                           xo.ctypes.data_as(D), yo.ctypes.data_as(D), zo.ctypes.data_as(D), io.ctypes.data_as(I), go.ctypes.data_as(I))
 print("rc", rc, lib.mt_gpu_last_error() if rc else "", "x,y,z", np.c_[xo, yo, zo][:2].round(6).tolist(), "idx", io.tolist(), "good", go.tolist(), "ref", np.array(rows[0]["ff"][:6]).round(6).tolist())
+# ---
+# labview: none
+# hardware: none
+# ---

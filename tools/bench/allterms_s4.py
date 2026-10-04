@@ -159,3 +159,7 @@ S = K.Stage(BED, BED_MD5, "allterms_s4", fresh=True, preload=False, deadline_min
                  "on a scratch of the bed - row count, timing, wire join, the 11 severed wires, four "
                  "known endpoints, an independent cross-check, and the 20-call resource test.")
 sys.exit(K.run(main, S))
+# ---
+# labview: read
+# hardware: none
+# ---

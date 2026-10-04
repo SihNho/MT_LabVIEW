@@ -109,3 +109,7 @@ first = next((l for l, ok in gates if not ok), None)
 print("%d/%d PASS" % (n_pass, len(gates)))
 print(protocol.result_line(protocol.make_result(n_pass, len(gates) - n_pass, first)))
 sys.exit(0 if first is None else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

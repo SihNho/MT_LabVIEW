@@ -139,3 +139,7 @@ if __name__ == "__main__":
                  work_name="D1_s3b_m3a4_{0}.vi".format(time.strftime("%Y%m%d_%H%M%S")),
                  task="connectivity-map step 6: M3a-4 retirement from decision_m3a4_v2.json")
     sys.exit(K.run(body, st))
+# ---
+# labview: build
+# hardware: none
+# ---

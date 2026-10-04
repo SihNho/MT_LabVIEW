@@ -229,3 +229,7 @@ print("COUNTED BY ARM %s" % json.dumps(counted, default=str), flush=True)
 ST, NP, NF, FIRST = LG.refusal_verdict(gates, rows, LOOP_STOP)                 # card 108-5: a VISA-refused leg -> SKIP, not FAIL
 print(P.result_line(P.make_result(NP, NF, FIRST, [{"path": os.path.relpath(jp, ROOT), "md5": md5(jp)}], status=ST)), flush=True)
 sys.exit(1 if ST == "FAIL" else 0)
+# ---
+# labview: read
+# hardware: camera
+# ---

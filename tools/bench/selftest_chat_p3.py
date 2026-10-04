@@ -130,3 +130,7 @@ first = next((l for l, o in RES if not o), None)
 print("=== GATES: %d pass / %d fail" % (n_pass, n_fail))
 print(P.result_line(P.make_result(n_pass, n_fail, first)))
 sys.exit(0 if n_fail == 0 else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

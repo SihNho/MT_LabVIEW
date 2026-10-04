@@ -18,3 +18,7 @@ for DST in (r"C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claude
     shutil.copyfile(SRC, DST)
 print("deployed", os.path.getsize(SRC), "bytes", flush=True)
 run(["-u", os.path.join(TOOLS, "recipes", "build_gpu_kernel.py")], 1500, "build_gpu_kernel")
+# ---
+# labview: none
+# hardware: none
+# ---

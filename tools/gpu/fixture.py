@@ -88,3 +88,7 @@ if __name__ == "__main__":
     print("reference session", ref["meta"], "frames", len(ref["frames"]), "first", ref["frames"][0])
     im = read_image(int(rows[0, 0]))
     print("image", im.shape, im.min(), im.max())
+# ---
+# labview: none
+# hardware: none
+# ---

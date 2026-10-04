@@ -111,3 +111,7 @@ first = next((l for l, ok in gates if not ok), None)
 print("=== GATES: {0} pass / {1} fail{2}".format(n_pass, n_fail, "; failing: " + first if first else ""))
 print(protocol.result_line(protocol.make_result(n_pass, n_fail, first, [S3["plan_out"]])))
 sys.exit(0 if n_fail == 0 else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -50,3 +50,7 @@ gate("G5 Wire object count unchanged by the move (wires survive as half-wires)",
 print("=== GATES: {0} pass / {1} fail".format(len(passes), len(fails)))
 print(P.result_line(P.make_result(len(passes), len(fails), fails[0] if fails else None, [])))
 sys.exit(1 if fails else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

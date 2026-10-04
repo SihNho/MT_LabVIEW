@@ -316,3 +316,7 @@ gate("S7 Error List range of the FINAL file: total {0}..{1}, loose ends {2}..{3}
      {"lost_split": ab["lost"], "lost_unsplit": un["lost"]})
 arts.extend({"path": rel(p), "md5": md5(p)} for p in (PAI, PA, poa, PROVB, PBI, PB, pob, OUT))
 finish()
+# ---
+# labview: none
+# hardware: none
+# ---

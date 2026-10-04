@@ -24,3 +24,7 @@ for r in real:
     if r["owner_class"].endswith("Tunnel"):
         print("REALNEW", r["term_uid"], r["owner_uid"], r["owner_class"], r["term_class"], r["is_source"], repr(r["term_name"]), r["frame"], r["wire"])
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":0,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

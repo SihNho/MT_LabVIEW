@@ -33,3 +33,7 @@ for f in sorted(glob.glob(os.path.join(B, "graph_*.json"))):
     print("GRAPH", os.path.basename(f), "objs", len(cls), "terms", len(G["terminals"]), "meta", json.dumps(meta)[:400], flush=True)
     print("   have", have, "#4580 Value", v4580, "sinks", sinks[:6], flush=True)
 print(P.result_line(P.make_result(n, 0, None)), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

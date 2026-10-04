@@ -38,3 +38,7 @@ import hashlib
 print(P.result_line(P.make_result(len(G) - len(bad), len(bad), bad[0] if bad else None,
                                   [{"path": "tools/bench/diag_camrate_persist83.json", "md5": hashlib.md5(open(jp, "rb").read()).hexdigest()}])), flush=True)
 sys.exit(1 if bad else 0)
+# ---
+# labview: none
+# hardware: camera
+# ---

@@ -20,3 +20,7 @@ for b in (0, 1, 3):
     print("   LV[40:44]", lv[40:44], "\n   sgl [40:44]", r.radial_profile(sub, 72 + sx, 72 + sy, 60, True)[40:44], flush=True)
     # what does LV do with float32 for the whole thing? emulate sum-in-float32 of products rounded to float32
     np.savez(os.path.join(HERE, f"radial_probe_b{b}.npz"), lv=lv, sub=sub, xc=72 + sx, yc=72 + sy)
+# ---
+# labview: read
+# hardware: none
+# ---

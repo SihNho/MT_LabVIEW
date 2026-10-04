@@ -872,3 +872,7 @@ def computation_diff(A, B):
     return {"rows": rows, "computation_nodes_added": added, "computation_nodes_removed": removed,
             "n_computation_nodes": len(ca & cb),
             "assumption": "A (SCHED_OWNER) - judgement 2026-09-23, awaiting the user (plan OPEN A)"}
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -14,3 +14,7 @@ for k in keys:
             print("    ", json.dumps(x)[:500])
     else:
         print(" ", k, json.dumps(v)[:1500])
+# ---
+# labview: none
+# hardware: none
+# ---

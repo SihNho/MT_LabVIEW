@@ -76,3 +76,7 @@ def body(s):
 if __name__ == "__main__":
     st = K.Stage(IN, IN_MD5, "c73_l7r_live", preload=False, deadline_min=17)
     sys.exit(K.run(body, st))
+# ---
+# labview: read
+# hardware: none
+# ---

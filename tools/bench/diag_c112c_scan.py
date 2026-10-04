@@ -26,3 +26,7 @@ for p in sorted(glob.glob(os.path.join(R, "*.json"))):
         print("%-55s terms %5d subvi %3d LSR %2d While %d selCT %d" % (os.path.basename(p)[:55], len(T), oc.get("SubVI", 0),
               oc.get("LeftShiftRegister", 0), wl, selct))
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

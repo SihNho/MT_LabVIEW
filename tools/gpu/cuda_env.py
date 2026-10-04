@@ -14,3 +14,7 @@ for d in glob.glob(os.path.join(sys.prefix, "Lib", "site-packages", "nvidia", "*
         except Exception:
             pass
         _added.append(d)
+# ---
+# labview: none
+# hardware: none
+# ---

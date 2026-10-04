@@ -23,3 +23,7 @@ for n, ok in gates:
 bad = [n for n, ok in gates if not ok]
 print(protocol.result_line({"status": "FAIL" if bad else "PASS", "gates": {"pass": len(gates) - len(bad), "fail": len(bad)},
                             "first_fail": bad[0] if bad else None, "artefacts": []}))
+# ---
+# labview: none
+# hardware: none
+# ---

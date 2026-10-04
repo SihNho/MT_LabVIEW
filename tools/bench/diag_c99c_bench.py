@@ -281,3 +281,7 @@ if __name__ == "__main__":
     except RuntimeError as e:          # the dry run blocks subprocess (stage_prerun fences); a live run never raises here
         print("  (exit kill skipped: %s)" % e)
     s.dump(); sys.exit(s.summary())
+# ---
+# labview: read
+# hardware: none
+# ---

@@ -121,3 +121,7 @@ npass, nfail = sum(res), len(res) - sum(res)
 print("=== GATES: {0} pass / {1} fail".format(npass, nfail))
 print(P.result_line(P.make_result(npass, nfail, None if nfail == 0 else "a replay did not produce a record")))
 sys.exit(0 if nfail == 0 else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

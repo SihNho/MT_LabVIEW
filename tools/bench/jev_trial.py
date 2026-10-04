@@ -627,3 +627,7 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(rescore() if "--rescore" in sys.argv else main())
+# ---
+# labview: none
+# hardware: none
+# ---

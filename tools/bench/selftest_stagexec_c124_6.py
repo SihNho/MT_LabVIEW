@@ -15,3 +15,7 @@ print("=== stagexec selftest", flush=True)
 r2 = stagexec.selftest()
 print("=== WRAPPER stagesim rc {0} / stagexec rc {1}".format(r1, r2), flush=True)
 sys.exit(1 if (r1 or r2) else 0)
+# ---
+# labview: read
+# hardware: none
+# ---

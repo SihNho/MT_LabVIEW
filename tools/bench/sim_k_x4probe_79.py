@@ -24,3 +24,7 @@ print("X4 failures as-is", nb[0], "named", nb[1])
 for u in (6239, 3862, 5659, 3173):
     print("RAW rows of #", u, [(x["term_uid"], x["term_name"], x["is_source"], x["wire_uid"], x.get("term_class"), x.get("frame_diagram")) for x in T if x["owner_uid"] == u])
 print(protocol.result_line(protocol.make_result(1 if nb[1] == 0 else 0, 0 if nb[1] == 0 else 1, None if nb[1] == 0 else "named ends still fail", [])))
+# ---
+# labview: read
+# hardware: none
+# ---

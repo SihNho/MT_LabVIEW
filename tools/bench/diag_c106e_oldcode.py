@@ -50,3 +50,7 @@ n = sum(1 for x in g if x[1])
 print(P.result_line(P.make_result(n, len(g) - n, next((x[0] for x in g if not x[1]), None))), flush=True)
 sys.stdout.flush()
 os._exit(0 if n == len(g) else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

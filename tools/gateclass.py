@@ -367,3 +367,7 @@ def step_face_rows_verdict(d, sim_rows, real_rows):
         return {"verdict": "stop", "rule": "; ".join(bad[:6])[:400], "rows": rows}
     return {"verdict": "log", "rule": "tunnel face rows only: {0} sim-only, {1} real-only on tunnel(s) {2} (PD328(c))".format(
         len(os_), len(or_), sorted(set(r["owner_uid"] for r in rows))[:8]), "rows": rows}
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -32,3 +32,7 @@ out = [l for i, l in enumerate(lines) if i not in idx]
 out.insert(first, ptr)
 io.open(SP, "w", encoding="utf-8", newline="\n").write("\n".join(out))
 print("moved", len(moved), "lines; STATUS", len(lines), "->", len(out))
+# ---
+# labview: none
+# hardware: none
+# ---

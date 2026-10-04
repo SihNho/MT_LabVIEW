@@ -20,3 +20,7 @@ print('FS rows', len(fsl), [(o['uid'], o['owner'], str(o['uid']) in g['owners'])
 print('LOOPS sample', g['loops'][:3])
 print('RESULT ' + json.dumps({"schema": "result-line/1", "status": "PASS", "gates": {"pass": 1, "fail": 0},
       "first_fail": None, "artefacts": []}))
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -51,3 +51,7 @@ verbs = sorted({n.func.attr for n in calls
 print("AST OK  %s  %d lines, %d gate sites" % (os.path.basename(TGT), len(src.splitlines()), src.count("gate(")))
 print("gscript verbs called: %s" % (verbs,))
 print("guard assertions: %s" % ("ALL CLEAR" if not bad else bad))
+# ---
+# labview: none
+# hardware: none
+# ---

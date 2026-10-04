@@ -79,3 +79,7 @@ for k in (gk if isinstance(gk, dict) else {}):
     v = gk[k]
     print("GKKEY", k, type(v).__name__, (len(v) if hasattr(v, "__len__") else ""), json.dumps(v)[:400])
 print(protocol.result_line(protocol.make_result(npass, nfail)), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

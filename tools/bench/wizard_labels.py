@@ -10,3 +10,7 @@ EM = r"C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Erdos Miller\LV
 for n in ("Create Flatten to String.vi", "Create Unflatten from String.vi", "Create Bundle by Name.vi", "Create Constant.vi"):
     try: print(n, "->", g.fp_labels(os.path.join(EM, n)), flush=True)
     except Exception as e: print(n, "EXC", str(e)[:160], flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

@@ -15,3 +15,7 @@ while time.time() - t0 < 25:
         sys.exit(0)
     time.sleep(3)
 print("RUNNING; last line:", (txt.splitlines() or [""])[-1][:160])
+# ---
+# labview: none
+# hardware: none
+# ---

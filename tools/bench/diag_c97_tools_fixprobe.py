@@ -54,3 +54,7 @@ left = [p for p in scr if os.path.exists(p)]
 print("  FACT  LabVIEW gone:", gone, "scratch left:", left)
 print(P.result_line({"status": "PASS" if not nfail and gone and not left else "FAIL", "gates": {"pass": npass, "fail": nfail},
                      "first_fail": None, "artefacts": []}))
+# ---
+# labview: read
+# hardware: none
+# ---

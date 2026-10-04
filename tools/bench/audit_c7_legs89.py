@@ -12,3 +12,7 @@ for f in ['tools/bench/m8_panelmin_89.json', 'tools/bench/m8_panelmin_89b.json']
 for f in ['tools/bench/m8_panelmin_89.log', 'tools/bench/m8_panelmin_89b.log']:
     ls = open(os.path.join(R, f), errors='replace').read().splitlines()
     print(f, [l for l in ls if 'BGRUN END' in l or 'BGRUN TIMEOUT' in l or l.startswith('RESULT') or 'GATES' in l][-4:])
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -139,3 +139,7 @@ print(protocol.result_line(protocol.make_result(
     len(R["gates"]) - len(fails), len(fails), fails[0] if fails else None,
     [{"path": protocol._rel(OUT), "md5": hashlib.md5(open(OUT, "rb").read()).hexdigest()}])), flush=True)
 sys.exit(1 if fails else 0)
+# ---
+# labview: read
+# hardware: none
+# ---

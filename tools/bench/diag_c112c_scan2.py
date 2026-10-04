@@ -16,3 +16,7 @@ for r in T:
 oc = collections.Counter(r.get("owner_class") for r in T)
 print("owner classes", dict(oc))
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

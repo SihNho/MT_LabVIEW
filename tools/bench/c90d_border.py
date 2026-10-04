@@ -114,3 +114,7 @@ def lt_terms(s, p, art, uid, R):
                      for n, b, w in zip(t.get("in_names") or [], t.get("in_is_source") or [],
                                         t.get("in_wires") or [])]
     return rec
+# ---
+# labview: read
+# hardware: none
+# ---

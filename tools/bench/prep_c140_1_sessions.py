@@ -113,3 +113,7 @@ nf = sum(1 for _l, ok in G if not ok)
 print("RESULT " + json.dumps({"schema": "result-line/1", "status": "FAIL" if nf else "PASS", "gates": {"pass": len(G) - nf, "fail": nf},
                               "first_fail": next((l for l, ok in G if not ok), None), "artefacts": [{"path": "tools/bench/diag_c140_1_sessions.json"}]}))
 sys.exit(1 if nf else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

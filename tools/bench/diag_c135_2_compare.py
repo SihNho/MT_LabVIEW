@@ -31,3 +31,7 @@ gate("K2 compare 123012 vs re-annotated 102553: {0}".format("EQUAL" if eq else "
 np_, nf = sum(1 for _n, c in ok if c), sum(1 for _n, c in ok if not c)
 print(P.result_line(P.make_result(np_, nf, next((n for n, c in ok if not c), None), [{"path": "tools/bench/diag_c135_2_compare.json", "md5": md5(out)}])), flush=True)
 sys.exit(1 if nf else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

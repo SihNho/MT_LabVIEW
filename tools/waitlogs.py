@@ -16,3 +16,7 @@ for p in logs:
     print("==", os.path.basename(p), "done" if done(p) else "RUNNING")
     for ln in [l for l in lines if keep.search(l)][-10:]:
         print("  ", ln[:300])
+# ---
+# labview: none
+# hardware: none
+# ---

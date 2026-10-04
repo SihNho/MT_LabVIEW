@@ -14,3 +14,7 @@ L = json.load(open(os.path.join(B, "graph_loops_m4b_20260924.json"), encoding="u
 print("loops md5", L.get("md5"), "unread", L.get("unread_rights"))
 for x in L["loops"]:
     print(" ", x["class"], x["index"], x["loop_uid"], x["right_uids"], x["left_of"])
+# ---
+# labview: none
+# hardware: none
+# ---

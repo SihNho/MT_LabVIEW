@@ -44,3 +44,7 @@ for k, rows in T.items():
 n_pass = sum(1 for _l, ok in G if ok); n_fail = len(G) - n_pass
 print(protocol.result_line(protocol.make_result(n_pass, n_fail, next((l for l, ok in G if not ok), None))))
 sys.exit(0 if not n_fail else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

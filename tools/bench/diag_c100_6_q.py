@@ -9,3 +9,7 @@ for r in d["terminals"]:
 print(sorted(d.keys()))
 print([o for o in d["objs"] if o["uid"] == 9227])
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

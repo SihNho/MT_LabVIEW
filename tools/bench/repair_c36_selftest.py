@@ -270,3 +270,7 @@ print(f"  F4 satisfied (no live cycle_runner AND cycle_21.log has no BGRUN END):
 npass = sum(1 for _, ok, _ in gates if ok)
 print(f"=== repair_c36_selftest: {npass} pass, {len(gates) - npass} fail ===", flush=True)
 sys.exit(0 if npass == len(gates) else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

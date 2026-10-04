@@ -142,3 +142,7 @@ if __name__ == "__main__":
     s.gate("H3 scratch copy deleted", not os.path.exists(s.work), s.work)
     s.summary()
     sys.exit(1 if s.fails else 0)
+# ---
+# labview: read
+# hardware: none
+# ---

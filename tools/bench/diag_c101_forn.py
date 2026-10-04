@@ -36,3 +36,7 @@ try:
 except (OSError, ValueError) as e:
     print("  FACT stage_d1_disp.json unreadable: {0}".format(e), flush=True)
 print(P.result_line(P.make_result(1, 0, None)), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

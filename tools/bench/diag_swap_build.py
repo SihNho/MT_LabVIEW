@@ -113,3 +113,7 @@ import subprocess, time                                                         
 subprocess.run(["powershell", "-NoProfile", "-Command", "Stop-Process -Name LabVIEW -Force -ErrorAction SilentlyContinue"], capture_output=True)
 time.sleep(6); s.fact("LabVIEW gone at exit: {0}".format("LabVIEW.exe" not in subprocess.run(["tasklist"], capture_output=True, text=True, errors="replace").stdout))  # noqa: E702
 s.dump(); sys.exit(s.summary())
+# ---
+# labview: build
+# hardware: none
+# ---

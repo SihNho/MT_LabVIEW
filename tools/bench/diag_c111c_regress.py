@@ -110,3 +110,7 @@ npass = sum(G); nfail = len(G) - npass
 print("=== GATES: {0} pass / {1} fail".format(npass, nfail), flush=True)
 print(P.result_line(P.make_result(npass, nfail, None if not nfail else "R1 regression", status="PASS" if not nfail else "FAIL")), flush=True)
 sys.exit(0 if not nfail else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

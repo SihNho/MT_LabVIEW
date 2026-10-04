@@ -13,3 +13,7 @@ for f in FILES:
         ex = v[0] if isinstance(v, list) and v else (list(v.items())[:2] if isinstance(v, dict) else v)
         print('   ', k, type(v).__name__, n, json.dumps(ex, default=str)[:300])
 sys.stdout.flush()
+# ---
+# labview: none
+# hardware: none
+# ---

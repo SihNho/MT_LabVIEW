@@ -21,3 +21,7 @@ print("W3268", [(r["owner_uid"], r["owner_class"], r["term_name"], r["is_source"
 own = d.get("owners") or {}
 print("owners", own.get("637"), own.get("639"), own.get("7911"), own.get("1359"))
 print("RESULT {\"schema\":\"result-line/1\",\"status\":\"PASS\",\"gates\":{\"pass\":1,\"fail\":0},\"first_fail\":null,\"artefacts\":[]}")
+# ---
+# labview: none
+# hardware: none
+# ---

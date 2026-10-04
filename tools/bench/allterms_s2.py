@@ -435,3 +435,7 @@ S = K.Stage(SRC, SRC_MD5, "allterms_s2", fresh=True, preload=False, work_name=OU
                  "reference for a Quick-Dropped node, then place two To More Specific Class nodes in the "
                  "For-loop body by the commit route that won, and save the broken-by-design intermediate.")
 sys.exit(K.run(main, S))
+# ---
+# labview: build
+# hardware: none
+# ---

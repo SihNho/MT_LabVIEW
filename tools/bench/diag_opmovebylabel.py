@@ -17,3 +17,7 @@ for n in range(60):
         break
     print(f"n{n} uid {u} {labels.get(u)!r}: {[(r['i'], r['name'], 'S' if r['is_source'] else 's', r['wire']) for r in rows]}", flush=True)
 print("classes:", {c: len(g.report_all(OP, c)) for c in ("Function", "SubVI", "IndexArray", "Invoke", "Property", "Constant", "Wire")}, flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

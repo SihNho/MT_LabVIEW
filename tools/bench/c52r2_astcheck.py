@@ -33,3 +33,7 @@ for f in (g.create_control, g.build_index_array, g.drop_subvi, g.queue_node, g.d
           Q.walk_rows, Q.q_attempt, Q.wire_driver):
     print("  %-26s %s" % (f.__name__, inspect.signature(f)))
 print("OK")
+# ---
+# labview: read
+# hardware: none
+# ---

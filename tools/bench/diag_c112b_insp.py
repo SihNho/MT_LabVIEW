@@ -41,3 +41,7 @@ for u in (10170, 1359, 29874, 2222):
 tl = [o for o in objs.values() if o["class"] == "TopLevelDiagram"]
 print("TopLevelDiagram objs:", tl[:3])
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

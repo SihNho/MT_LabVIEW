@@ -48,3 +48,7 @@ for n, a in enumerate(A, 1):
         print("   why:", (a.get("why") or "")[:300])
 gate("G2 20 / G5 27 in table", len(grp.get("G2") or []) == 20 and len(grp.get("G5") or []) == 27, dict((k, len(x or [])) for k, x in grp.items()))
 print(protocol.result_line(protocol.make_result(G["pass"], G["fail"], G["first"], [])), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

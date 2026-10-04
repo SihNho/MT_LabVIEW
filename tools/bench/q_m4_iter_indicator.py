@@ -89,3 +89,7 @@ for key in (JC.S1_KEY, JC.BED_KEY):
                 print(f"(d) {tag}: sink {V.show(k)} eff_src={[V.show(x) for x in V.effective_sources(G, k, memo)][:6]}")
     for k in V.terminals(G, node=4277):
         print(f"(d) Local#4277 'File # Saved' {V.show(k)} eff_src={[V.show(x) for x in V.effective_sources(G, k, memo)][:6]}")
+# ---
+# labview: none
+# hardware: none
+# ---

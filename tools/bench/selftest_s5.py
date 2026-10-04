@@ -108,3 +108,7 @@ card["inputs"][0]["md5"] = PR._md5(os.path.join(ROOT, "tools", "bench", "cards",
 gate("D8 input_md5_changes: the current md5 -> no change", PR.input_md5_changes(card) == [], PR.input_md5_changes(card))
 print(PR.result_line(PR.make_result(G["pass"], G["fail"], G["first"], [])), flush=True)
 sys.exit(1 if G["fail"] else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -203,3 +203,7 @@ def _ctl(OP, n, wanted, max_terms=10):
 
 if __name__ == "__main__":
     sys.exit(main())
+# ---
+# labview: build
+# hardware: none
+# ---

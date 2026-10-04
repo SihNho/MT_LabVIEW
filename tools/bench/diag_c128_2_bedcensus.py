@@ -70,3 +70,7 @@ print("=== GATES: %d pass / %d fail; failing: %s" % (len(passes), len(fails), ";
 print("RESULT " + json.dumps({"schema": "result-line/1", "status": "FAIL" if fails else "PASS", "gates": {"pass": len(passes), "fail": len(fails)},
                               "first_fail": fails[0] if fails else None, "artefacts": [{"path": "tools/bench/diag_c128_2_bedcensus.json"}]}))
 sys.exit(1 if fails else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

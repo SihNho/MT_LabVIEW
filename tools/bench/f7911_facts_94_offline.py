@@ -81,3 +81,7 @@ json.dump(out, open(os.path.join(HERE, "f7911_facts_94_offline.json"), "w"), ind
 npass = sum(1 for _, ok in gates if ok); nfail = len(gates) - npass
 print(protocol.result_line({"status": "PASS" if nfail == 0 else "FAIL", "gates": {"pass": npass, "fail": nfail},
       "first_fail": next((n for n, ok in gates if not ok), None), "artefacts": [{"path": "tools/bench/f7911_facts_94_offline.json", "md5": None}]}), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

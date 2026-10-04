@@ -55,3 +55,7 @@ for line in (
     print("  FACT  CONTRACT " + line, flush=True)
 print("=== GATES: {0} pass / {1} fail".format(int(ok), int(not ok)))
 sys.exit(0 if ok and len(i781) == 1 and len(i4910) == 1 else 1)
+# ---
+# labview: read
+# hardware: none
+# ---

@@ -177,3 +177,7 @@ gate("G12 every soft line carries cycle/card/script/gate/expected/measured/class
 print("=== GATES: {0} pass / {1} fail".format(len(P), len(F)))
 print(protocol.result_line(protocol.make_result(len(P), len(F), F[0] if F else None)))
 sys.exit(0 if not F else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

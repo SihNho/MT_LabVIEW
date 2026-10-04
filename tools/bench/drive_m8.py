@@ -145,3 +145,7 @@ if __name__ == "__main__":
     if "--table" in A: table("--s3" in A); sys.exit(0)
     assert LEG in ("bed", "base", "s3", "s1", "replay_s1", "replay_s3"), "--leg bed|base|s3|s1|replay_s1|replay_s3 (replay_*: --src <swapped copy>)"
     ok = main(); sys.stdout.flush(); os._exit(0 if ok else 1)     # os._exit: v2's COM daemon threads
+# ---
+# labview: read
+# hardware: none
+# ---

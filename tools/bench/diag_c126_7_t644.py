@@ -20,3 +20,7 @@ for k in d[:20]:
 cu = collections.Counter(r["term_uid"] for r in T)
 print("term_uids with >1 rows:", sum(1 for v in cu.values() if v > 1))
 print("objs 637/639:", [o for o in G["objs"] if int(o["uid"]) in (637, 639)])
+# ---
+# labview: none
+# hardware: none
+# ---

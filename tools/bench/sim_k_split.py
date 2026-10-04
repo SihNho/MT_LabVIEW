@@ -195,3 +195,7 @@ fact("plan_out {0}; rows file tools/bench/plan_k_rows.json ({1} decisions)".form
 n_pass = sum(1 for _l, ok in GATES if ok); n_fail = len(GATES) - n_pass; first = next((l for l, ok in GATES if not ok), None)  # noqa: E702
 print("=== GATES: {0} pass / {1} fail{2}".format(n_pass, n_fail, "; failing: " + first if first else ""))
 print(protocol.result_line(protocol.make_result(n_pass, n_fail, first, [{"path": R["plan_out"]["path"], "md5": R["plan_out"]["md5"]}])))
+# ---
+# labview: none
+# hardware: none
+# ---

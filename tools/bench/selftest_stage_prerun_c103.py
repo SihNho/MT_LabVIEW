@@ -67,3 +67,7 @@ if __name__ == "__main__":
         child(sys.argv[sys.argv.index("--case") + 1])
     else:
         sys.exit(main())
+# ---
+# labview: none
+# hardware: none
+# ---

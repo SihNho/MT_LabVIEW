@@ -1,0 +1,33 @@
+{"schema": "result/1", "id": "chat-E3", "status": "PASS",
+ "gates": {"pass": 3, "fail": 0},
+ "first_fail": null, "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/hooks/guard_bash.py", "md5": "76d0995789cdb953503f338a5382c00a"},
+  {"path": "tools/scope_header.py", "md5": "5ee736307c977beb23cc8bf3759a5ddf"},
+  {"path": "tools/hooks/guard_write.py", "md5": "5c7ec80c2652a144089569ed92794e11"},
+  {"path": "tools/priorart_diff.py", "md5": "da776d20ce87d02ca66fd9d30761f40a"},
+  {"path": "tools/bench/selftest_c_e3.py", "md5": "98a4b4535dc78156f405ef2cdc1e1f53"},
+  {"path": "tools/bench/selftest_c_e3.log", "md5": "7491922a501224ea4062963be5e6a62a"},
+  {"path": "tools/bench/replay_c_e3_142_143.log", "md5": "15e9ac04a2031c114e03e4b37197d3c5"},
+  {"path": "tools/bench/selftest_c_e3_suite.log", "md5": "972dc35edfd63d37c030bcc3c9f6ca7c"},
+  {"path": "docs/d1/tooling.md", "md5": "66d5478e3a9d07795bad2e1b6e981ef8"}
+ ],
+ "facts": [
+  "Header appended at the end of 1716 tracked tools scripts, mtime kept; hashes skip it: 58/58 release stamps, 338/338 prerun records still match (tools/scope_header.py:1)",
+  "guard_write.py registered as PostToolUse: header, compile, honesty, schema, open-card md5 pins, release slugs; it fired live in this card (tools/hooks/guard_write.py:1)",
+  "Launch: check_command judges each tools script by its header; scope_gate refuses no header / no compile (tools/protocol.py:1112, tools/hooks/guard_bash.py:387)",
+  "fp-36..40 fixed and drained; regression self-test selftest_c_e3.log 62/0 (tools/hooks/guard_peer.py:1202, tools/stop_record.py:157,237)",
+  "WAITING in result/1 and result-line/1; a dry/prerun on a provisional base failing only on unbound objects ends rc 0, no review (tools/stage_prerun.py:548)",
+  "Prior-art diff: s03v18 vs approved s02v18 = 9 parameter-only lines, 0 substantive; only new class create:WhileLoop needs review (tools/hooks/guard_cycle.py:547)",
+  "Replay caught early: 143-1 release slug, 143-P1 stale pin (11 min), 143-P1/141-P1/140-P1 WAITING, fp-36..39 (replay_c_e3_142_143.log:3-11)",
+  "Replay: 143-5 (6 min), 143-3/4 (20 min) already covered by chat-S5; not caught: 142-4 run-1 data-shape crash, 4 LabVIEW-side fails (replay log :12-19)",
+  "Self-tests vs HEAD worktree: 64 run, 57 pass, 0 new fails, 7 fail same as HEAD; selftest_cycle_runner + _ladder PASS (selftest_c_e3_suite.log)",
+  "fp-40: a LabVIEW name in a regex/message is no longer a run; 23 py headers + peer.ps1 and peer_*.ps1 now none (tools/scope_header.py:399)"
+ ],
+ "open": [
+  "The migration put the header at the END of each existing file so that every file:line citation stays valid; new scripts may put it at the top. Is that acceptable, given that the user said frontmatter?",
+  "cycle_runner.py (chat-A1) has a header without offline-args; scope_header.KNOWN supplies --dry-run/--dry-cmd/--no-motor-hooks until its owner adds them. Should chat-A1 or the chat add that line?",
+  ".claude/agents/material*.md and CLAUDE.md do not mention the header yet; this card was not allowed to edit them."
+ ],
+ "cost": {"usd": null, "minutes": 70, "labview_runs": 0},
+ "note": "Offline only; LabVIEW was never opened. The 1716 header-only files and this card's own files are committed by explicit path list. PD338 is at docs/d1/tooling.md:226 and in INDEX."}

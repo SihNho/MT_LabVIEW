@@ -50,3 +50,7 @@ print("{0}  R1 one created FSIT + one Unbundler each side  {1}".format("PASS" if
 print(P.result_line(P.make_result(int(ok1), int(not ok1), None if ok1 else "R1")), flush=True)
 sys.stdout.flush()
 os._exit(0 if ok1 else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

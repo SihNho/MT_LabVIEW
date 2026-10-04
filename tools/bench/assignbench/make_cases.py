@@ -320,3 +320,7 @@ purpose met, end the cycle | HANDBACK = return to judgement with one question.
 
 if __name__ == "__main__":
     main()
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -80,3 +80,7 @@ if __name__ == "__main__":
         K.mod("stagexec").kill_labview_at_exit()
         print("  FACT  G8 LabVIEW process gone after kill: {0}".format(gone()), flush=True)
     sys.exit(rc)
+# ---
+# labview: read
+# hardware: none
+# ---

@@ -390,3 +390,7 @@ if __name__ == "__main__":
         except Exception:                                                      # noqa: BLE001
             pass
     sys.exit(rc)
+# ---
+# labview: read
+# hardware: none
+# ---

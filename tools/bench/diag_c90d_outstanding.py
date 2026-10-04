@@ -98,3 +98,7 @@ S = K.Stage(BED, BED_MD5, "diag_c90d_outstanding", deadline_min=26.0, reserve_s=
             task="the four unread BED wires, the four old border objects on BED and CLEAN, and the "
                  "disposition_evidence extension of the M3a-4 row table")
 sys.exit(K.run(main, S))
+# ---
+# labview: read
+# hardware: none
+# ---

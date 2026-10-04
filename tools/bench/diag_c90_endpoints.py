@@ -130,3 +130,7 @@ S = K.Stage(BED, BED_MD5, "diag_c90_endpoints", deadline_min=18.0, reserve_s=240
             task="Pre-decided 131 step 2: the live endpoints of the 11 severed half-wires, read off the "
                  "wire with OpWireSource_v5; read-only, nothing saved, no op built")
 sys.exit(K.run(main, S))
+# ---
+# labview: read
+# hardware: none
+# ---

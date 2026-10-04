@@ -46,3 +46,7 @@ for p in sorted(glob.glob(os.path.join(ROOT, "docs", "wiki", "subvi", "*.json"))
         print("VI", os.path.basename(p), "| vi:", G.get("vi") or G.get("source"), "| T2:", t2[:4], "| T1:", t1[:3])
 print("CANDIDATES", n)
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

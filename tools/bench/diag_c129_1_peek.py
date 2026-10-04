@@ -7,3 +7,7 @@ for f in sys.argv[1:]:
         if k == "actions":
             print(" actions", len(v), json.dumps(v[0])[:400]); continue
         print(" ", k, ":", json.dumps(v)[:900])
+# ---
+# labview: none
+# hardware: none
+# ---

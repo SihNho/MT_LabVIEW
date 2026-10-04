@@ -9,3 +9,7 @@ try:
     print(json.dumps({'report':g.report(target,'IndexArray'), 'net':g.net_map(target,max_nodes=5,max_terms=3)}),flush=True)
 finally:
     g._cache.clear(); g._lv=None; gc.collect()
+# ---
+# labview: read
+# hardware: none
+# ---

@@ -96,3 +96,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+# ---
+# labview: read
+# hardware: none
+# ---

@@ -110,3 +110,7 @@ if a and b:
     print("  -> H1 (being the SECOND GPU caller in the pass) explains row 18; the case structure is free on the GPU path too"
           if abs(d) < 0.4 else
           "  -> H2: the cost is real and belongs to TRACK's GPU frame; compare the DLL medians to place it", flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

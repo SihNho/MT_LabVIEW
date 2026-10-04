@@ -86,3 +86,7 @@ NT = 7
 print(P.result_line(P.make_result(NP[0], NT - NP[0], NF[0])), flush=True)
 sys.stdout.flush()
 os._exit(0 if NP[0] == NT else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

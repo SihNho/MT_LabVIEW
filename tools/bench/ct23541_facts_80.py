@@ -77,3 +77,7 @@ gate("C4 no Property/Invoke/ControlReferenceConstant carries label {0!r} ({1} su
 print("=== ct23541_facts_80: {0} pass / {1} fail".format(N["pass"], N["fail"]))
 print(PR.result_line(PR.make_result(N["pass"], N["fail"], FF[0] if FF else None)))
 sys.exit(1 if N["fail"] else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

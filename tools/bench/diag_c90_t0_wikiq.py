@@ -19,3 +19,7 @@ print("GS KEYS", list(gs.keys()) if isinstance(gs, dict) else type(gs))
 # wire 3268 / i-terminal rows for loop 637
 for w in (3268, 19372, 34066):
     print("WIRE", w, [ (r.get("term_uid"), r.get("owner_uid"), r.get("owner_class"), r.get("term_name"), r.get("is_source"), r.get("frame_diagram")) for r in T if int(r.get("wire_uid") or 0) == w])
+# ---
+# labview: none
+# hardware: none
+# ---

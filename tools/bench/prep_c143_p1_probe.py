@@ -63,3 +63,7 @@ for k in range(55, min(len(OPS), 100) + 1):
     print("OP {0} {1} acts {2}".format(k, o["kind"], [A[n - 1]["id"] for n in o["acts"]]), flush=True)
 print("FACT kinds of ops 59..", dict(collections.Counter(o["kind"] for o in OPS[58:])), "BIND_KINDS", sorted(SX.BIND_KINDS), flush=True)
 print(protocol.result_line(protocol.make_result(G["pass"], G["fail"], G["first"], [])), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

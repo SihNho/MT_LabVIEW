@@ -123,3 +123,7 @@ if __name__ == "__main__":
     st = K.Stage(BED, BED_MD5, "p0_c69_census", fresh=False, preload=False, deadline_min=28, reserve_s=240, pins=pins,
                  task="cycle 69 P0: O1 loop node sets, SR TOP collisions, handles open/close, L2/L7 row resolution")
     sys.exit(K.run(main, st))
+# ---
+# labview: read
+# hardware: none
+# ---

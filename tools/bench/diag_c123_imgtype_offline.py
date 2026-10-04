@@ -26,3 +26,7 @@ for r in it:
     print("  IT owner #{0} {1} frame {2} wire {3} -> source {4}".format(r["owner_uid"], r["owner_class"], r["frame_diagram"], r["wire_uid"],
           (s["owner_uid"], s["owner_class"], s["term_name"], s["frame_diagram"]) if s else "UNWIRED/none"))
 print(protocol.result_line(protocol.make_result(1, 0, None, [])), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -106,3 +106,7 @@ run(["tools/stagesim.py", "selftest"], "O1 stagesim selftest")
 run(["tools/bench/selftest_stagesim_fsexit_c138_1.py"], "O2 selftest_stagesim_fsexit_c138_1", 14)
 print(protocol.result_line(protocol.make_result(G["pass"], G["fail"], G["first"], [])), flush=True)
 sys.exit(0 if not G["fail"] else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

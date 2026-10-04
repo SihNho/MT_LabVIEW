@@ -10,3 +10,7 @@ while time.time() - t0 < dl:
 print("DEADLINE %.0fs; last: %s" % (dl, ends[-1].strip() if ends else None))
 peer = sorted(os.listdir("archive/peer"), key=lambda f: os.path.getmtime(os.path.join("archive/peer", f)))[-3:]
 print("newest peer:", peer); sys.exit(1)
+# ---
+# labview: none
+# hardware: none
+# ---

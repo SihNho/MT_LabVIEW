@@ -101,3 +101,7 @@ print("FACT ops", dict(collections.Counter(pred["ops"])), "census", pred["census
 ARTS.extend({"path": rel(x), "md5": md5(x)} for x in (RRP, PP))
 gate("SP pred written, keyed to the plan md5", J(PP)["plan"]["md5"] == md5(RRP))
 done()
+# ---
+# labview: none
+# hardware: none
+# ---

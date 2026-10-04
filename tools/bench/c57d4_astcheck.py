@@ -62,3 +62,7 @@ for rel, names in (("tools/gscript.py", ("def wire_indicators", "def build_index
     for n in names:
         print("  [%s]  %s :: %s" % ("ok" if n in txt else "MISSING", rel, n))
 print("phases defined: %s" % [n.name for n in tree.body if isinstance(n, ast.FunctionDef)])
+# ---
+# labview: none
+# hardware: camera
+# ---

@@ -870,3 +870,7 @@ if __name__ == "__main__":
             pass
         report()
     sys.exit(0 if good else 1)
+# ---
+# labview: build
+# hardware: none
+# ---

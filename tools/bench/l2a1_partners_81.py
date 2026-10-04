@@ -110,3 +110,7 @@ if ct:
 print("=== l2a1_partners_81: {0} pass / {1} fail".format(N["pass"], N["fail"]))
 print(PR.result_line(PR.make_result(N["pass"], N["fail"], FF[0] if FF else None)))
 sys.exit(1 if N["fail"] else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

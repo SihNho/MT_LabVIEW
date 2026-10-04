@@ -38,3 +38,7 @@ for n, a in enumerate(A, 1):
 print(json.dumps(A[16])[:800])
 print(json.dumps(P["finalized"].get("fs_routes"))[:600])
 print("RESULT " + json.dumps({"schema": "result-line/1", "status": "PASS", "gates": {"pass": 0, "fail": 0}, "first_fail": None, "artefacts": []}))
+# ---
+# labview: none
+# hardware: none
+# ---

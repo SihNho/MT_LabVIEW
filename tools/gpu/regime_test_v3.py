@@ -22,3 +22,7 @@ def regime(label, gap, ka, secs=8):
 regime("15 ms gaps", 0.015, 0)
 regime("15 ms gaps + keepalive v3", 0.015, 1)
 regime("tight loop", 0.0, 0)
+# ---
+# labview: none
+# hardware: none
+# ---

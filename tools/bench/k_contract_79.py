@@ -107,3 +107,7 @@ if __name__ == "__main__":
     st = K.Stage(BED, BED_MD5, "k_contract_79", preload=False, deadline_min=27, reserve_s=240, pins=pins,
                  task="card 79-3 S1: base graph + loops of the S4 bed, 177(d) indicator class, 177(c) IndexModes")
     sys.exit(K.run(main, st))
+# ---
+# labview: read
+# hardware: none
+# ---

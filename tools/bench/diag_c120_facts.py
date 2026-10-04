@@ -118,3 +118,7 @@ out = os.path.join(HERE, "facts_c120_qrtw.json"); json.dump(F, open(out, "w", en
 print("  FACT  wrote {0}".format(out), flush=True)
 print(protocol.result_line(protocol.make_result(P[0], P[1], None if not P[1] else "see FAIL lines", [])), flush=True)
 sys.exit(1 if P[1] else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

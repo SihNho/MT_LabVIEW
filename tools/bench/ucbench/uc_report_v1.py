@@ -133,3 +133,7 @@ def by_valid(recs, tid):
 
 if __name__ == "__main__":
     raise SystemExit(main())
+# ---
+# labview: none
+# hardware: none
+# ---

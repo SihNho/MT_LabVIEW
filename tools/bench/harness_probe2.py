@@ -21,3 +21,7 @@ except Exception as e:
 g._run(vi)
 for _, l, ind in g.fp_labels(path):
     a = np.array(vi.GetControlValue(l)); print(f"  {l[:30]!r} ind={ind}: shape {a.shape} {a.ravel()[:3]}", flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

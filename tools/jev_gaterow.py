@@ -109,3 +109,7 @@ def verdicts_for(logpath, run_index=-1, max_rows=5, n=2, timeout=25, retries=1):
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))
+# ---
+# labview: none
+# hardware: none
+# ---

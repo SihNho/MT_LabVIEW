@@ -15,3 +15,7 @@ for f in sys.argv[1:]:
                 print(" ", k, repr(v)[:200])
     else:
         print(" list", len(g), json.dumps(g[0])[:300])
+# ---
+# labview: none
+# hardware: none
+# ---

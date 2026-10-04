@@ -13,3 +13,7 @@ $p = Start-Process -FilePath $f -ArgumentList @('-s','-n','Display.Driver',"-log
 "installer exit code: $($p.ExitCode)  (0 = ok, 1 = ok but reboot needed)"
 Get-CimInstance Win32_VideoController | Where-Object { $_.Name -match 'NVIDIA' } | Select-Object Name,DriverVersion | Format-List
 Read-Host 'done - press Enter'
+# ---
+# labview: none
+# hardware: none
+# ---

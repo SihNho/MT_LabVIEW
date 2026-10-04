@@ -140,3 +140,7 @@ S = K.Stage(BED, BED_MD5, "diag_errorlist_v0", fresh=False, deadline_min=24.0, r
             task="STEP 2: does tools/lv_errorlist.py read EVERY Error List item of a broken VI, "
                  "count-checked against the window's own N. Read-only; no VI run, nothing saved.")
 sys.exit(K.run(main, S))
+# ---
+# labview: read
+# hardware: none
+# ---

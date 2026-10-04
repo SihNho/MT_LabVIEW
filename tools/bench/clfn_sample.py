@@ -100,3 +100,7 @@ try:
     print("target now: CallLibrary", g.count(TGT, "CallLibrary"), "nodes", g.count(TGT, "Node"), "ExecState", g.exec_state(TGT), flush=True)
 except Exception as e:
     print("target read failed (LabVIEW gone?):", str(e)[:100], flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

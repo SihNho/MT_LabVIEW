@@ -141,3 +141,7 @@ finally:
     print(P.result_line(P.make_result(len(G) - len(bad), len(bad), bad[0] if bad else None,
                                       [{"path": os.path.relpath(OUT, ROOT), "md5": md5(OUT)}])), flush=True)
     sys.exit(1 if bad else 0)
+# ---
+# labview: read
+# hardware: none
+# ---

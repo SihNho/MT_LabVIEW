@@ -55,3 +55,7 @@ if __name__ == "__main__":
             pins=tuple(K.DEFAULT_PINS[:1]) + L.pins() + MINE, task="77-4 PD18(a)",
             out_json=os.path.join(K.BENCH, "replay_test77.json"))
     sys.exit(K.run(body, st))
+# ---
+# labview: read
+# hardware: none
+# ---

@@ -47,3 +47,7 @@ for r in T:
                 s[0]["term_uid"], s[0]["term_name"], s[0]["owner_uid"], r["owner_uid"], r["term_uid"], r["wire_uid"], r["frame_diagram"], inner, own, len(w), ok))
 print(P.result_line(P.make_result(int(n1 > 0) + int(n2 > 0), int(n1 == 0) + int(n2 == 0),
                                   None if n1 and n2 else "no usable T1 ({0}) or T2 ({1}) row".format(n1, n2))))
+# ---
+# labview: none
+# hardware: none
+# ---

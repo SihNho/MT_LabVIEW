@@ -56,3 +56,7 @@ bad = [k for k, ok in G if not ok]
 print("=== GATES: %d pass / %d fail" % (len(G) - len(bad), len(bad)), flush=True)
 print(P.result_line(P.make_result(len(G) - len(bad), len(bad), bad[0] if bad else None, [])), flush=True)
 sys.exit(1 if bad else 0)
+# ---
+# labview: read
+# hardware: none
+# ---

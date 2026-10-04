@@ -28,3 +28,7 @@ for name in ("mt_track.dll", "GPU Tracking.dll"):
     shutil.copyfile(os.path.join(TOOLS, "gpu", "cuda", "mt_track.dll"), os.path.join(DEBUG, name))
 open(os.path.join(DEBUG, "mt_track_cal.txt"), "w").write(CAL)
 run(["-u", os.path.join(TOOLS, "bench", "run_timing.py"), f"--n={N}", "--harness=base", "--harness=par", "--harness=track"], 2400, "run_timing")
+# ---
+# labview: none
+# hardware: none
+# ---

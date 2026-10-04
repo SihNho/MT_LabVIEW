@@ -44,3 +44,7 @@ print("SELFTEST refused-in-smoke %d, fixed %d; bad %s" % (len(refused), ok, bad)
 print("RESULT " + json.dumps({"schema": "result-line/1", "status": "FAIL" if bad or not refused else "PASS",
                               "gates": {"pass": ok + 2 - sum(1 for b in bad if "allowed" in b), "fail": len(bad)},
                               "first_fail": bad[0] if bad else None, "artefacts": []}))
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -22,3 +22,7 @@ ok.append(T("T6 fp_labels(copy)", lambda: g.fp_labels(S, 30)))
 ok.append(T("T7 report(OpBuildInvoke_v0 ORIGINAL)", lambda: len(g.report(os.path.join(CD, "OpBuildInvoke_v0.vi"), "SubVI"))))
 ok.append(T("T8 report(copy) LAST (may poison the instance)", lambda: len(g.report(S, "SubVI"))))
 print("RESULTS", ok, flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

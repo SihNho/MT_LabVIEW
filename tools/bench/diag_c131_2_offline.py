@@ -159,3 +159,7 @@ R2.script_touches_labview(os.path.join(B, "selftest_x10_c130_1.py"))
 gate("D cold v2 classification of selftest_x10_c130_1 within the hook budget (10 s)", time.time() - t0 < 5.0,
      "%.2fs" % (time.time() - t0))
 print(P.result_line(P.make_result(sum(res), len(res) - sum(res), None if all(res) else "see FAIL lines")), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

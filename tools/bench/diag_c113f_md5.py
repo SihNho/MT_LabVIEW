@@ -12,3 +12,7 @@ for p in sorted(glob.glob(os.path.join(CD, "*b2b*")) + glob.glob(os.path.join(CD
     print("CD", os.path.basename(p), md5(p), os.path.getsize(p))
 print("LABVIEW", "labview.exe" in subprocess.run(["tasklist"], capture_output=True, text=True).stdout.lower())
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":0,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -24,3 +24,7 @@ cls = sorted(set(r["owner_class"] for r in s3["state"]["terminals"] if r["owner_
 print("  FACT #8775 class {0}; only_sink_fate {1}; move_in params {2}".format(
     cls, [SS.only_sink_fate(dict(SS.PROVISIONAL["move_in"]["params"]), c) for c in cls], SS.PROVISIONAL["move_in"]["params"]), flush=True)
 print(P.result_line(P.make_result(1, 0, None)), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

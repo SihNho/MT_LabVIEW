@@ -36,3 +36,7 @@ gate("L no LabVIEW process", "labview" not in tl.lower())
 print("claudeDev files named c141 / p4s01:", sorted(f for f in os.listdir(CD) if "c141" in f or "p4s01" in f))
 print(protocol.result_line(protocol.make_result(G["pass"], G["fail"], G["first"], [{"path": FIN, "md5": FINM}])), flush=True)
 sys.exit(0 if not G["fail"] else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

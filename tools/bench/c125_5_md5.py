@@ -18,3 +18,7 @@ ok = [hashlib.md5(open(F[0], "rb").read()).hexdigest() == "4dfa44aac8fb32f706b3e
       hashlib.md5(open(F[1], "rb").read()).hexdigest() == "652b1447ebbda761a7d5ba36455a0fa1", not lv, not sc]
 print("CHECK beds unchanged %s %s | LabVIEW absent %s | scratch left %s" % (ok[0], ok[1], not lv, sc))
 print(P.result_line(P.make_result(sum(ok), len(ok) - sum(ok), None if all(ok) else "close-out check", [])))
+# ---
+# labview: none
+# hardware: none
+# ---

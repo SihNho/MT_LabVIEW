@@ -32,3 +32,7 @@ for c in cs:
     done += 1
     if done >= 3:
         break
+# ---
+# labview: none
+# hardware: none
+# ---

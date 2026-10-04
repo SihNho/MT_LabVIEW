@@ -26,3 +26,7 @@ for u in (30146, 10825, 3057, 2136, 10686):
                   "w", t.get(wk), "<-", srcs if not t.get("is_source") else "")
 for w in (31234,):
     pass
+# ---
+# labview: none
+# hardware: none
+# ---

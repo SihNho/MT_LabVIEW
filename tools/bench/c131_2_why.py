@@ -35,3 +35,7 @@ for want in sys.argv[2:]:
     print(want, "entry" if want in ent else "not entry", "bind_hit", h)
     for w in why[:25]:
         print("   ", w)
+# ---
+# labview: none
+# hardware: none
+# ---

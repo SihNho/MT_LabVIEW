@@ -59,3 +59,7 @@ for k, a in enumerate(v15["actions"], 1):
     if hit:
         print("V15", k, a["id"], hit, s[:300])
 print(protocol.result_line(protocol.make_result(G["pass"], G["fail"], G["first"], [])), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

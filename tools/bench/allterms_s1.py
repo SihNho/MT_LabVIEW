@@ -105,3 +105,7 @@ S = K.Stage(SRC, SRC_MD5, "allterms_s1", fresh=False, preload=False, work_name=O
                  "auto-indexed input tunnel + the cast-free GObject/Generic reads) as "
                  "claudeDev\\OpAllTerms_v0_s1.vi, and record the geometry S2's GUI Quick Drop needs.")
 sys.exit(K.run(main, S))
+# ---
+# labview: build
+# hardware: none
+# ---

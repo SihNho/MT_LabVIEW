@@ -37,3 +37,7 @@ for t in TESTS:
         bad += 1
         fails.append(t)
 print(protocol.result_line(protocol.make_result(ok, bad, fails[0] if fails else None)))
+# ---
+# labview: none
+# hardware: none
+# ---

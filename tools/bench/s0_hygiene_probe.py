@@ -706,3 +706,7 @@ if __name__ == "__main__":
     if "--s0bmut" in sys.argv:
         sys.exit(main_s0b_mut())
     sys.exit(main_s0b() if "--s0b" in sys.argv else main())
+# ---
+# labview: read
+# hardware: none
+# ---

@@ -19,3 +19,7 @@ for grp, key in (("cells", "cells"), ("extra", "cells_extra_valid_reruns")):
                 print("      site %-3s n=%5d per_iter med=%s max=%s  delta med=%8.1f p95=%8.1f max=%9.1f min=%7.1f us" % (
                     s, S["stamps"], S["stamps_per_iteration"]["median"], S["stamps_per_iteration"]["max"], S["delta_us"]["median"], S["delta_us"]["p95"], S["delta_us"]["max"], S["delta_us"]["min"]))
 print("slope:", json.dumps(J.get("slope_15_vs_8"), indent=None)[:3000])
+# ---
+# labview: none
+# hardware: none
+# ---

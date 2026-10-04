@@ -55,3 +55,7 @@ with open(DOC, "a", encoding="utf-8") as f:
     f.write("\n".join(lines) + "\n")
 print("\n".join(lines))
 print("\nRot Speed candidates:", [k for k in per_obj if "Rot" in k and "Speed" in k])
+# ---
+# labview: none
+# hardware: none
+# ---

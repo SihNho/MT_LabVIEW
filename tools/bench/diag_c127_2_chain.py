@@ -32,3 +32,7 @@ for d in (13236, 686, 26117, 3628):
 print("RUN3 objs 12938/681/13236/686/536", [o for o in G["objs"] if int(o["uid"]) in (12938, 681, 13236, 686, 536)])
 print("owners rows with class Diagram:", sum(1 for v in own.values() if v[0] == "Diagram"), "of", len(own))
 print(P.result_line(P.make_result(1, 0, None)))
+# ---
+# labview: none
+# hardware: none
+# ---

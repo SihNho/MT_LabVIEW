@@ -49,3 +49,7 @@ td = list(td) if td is not None else []
 print("error out", err, "\ndata string", ds.encode("latin-1").hex() if isinstance(ds, str) else ds, "\ntype string I16 x", len(td), td[:80], flush=True)
 json.dump(td, open(os.path.join(HERE, "paraminfo_td.json"), "w"))
 print("td saved", flush=True)
+# ---
+# labview: build
+# hardware: none
+# ---

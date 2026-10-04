@@ -208,3 +208,7 @@ def stub_expectations(recs):
         if (r["arm"] == "UC") != (wf == 1 and subs == 2):
             bad.append("stub accounting %s %s: workflow %s subagents %s" % (r["task"], r["arm"], wf, subs))
     return bad
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -127,3 +127,7 @@ if not DRY:
     subprocess.run(["taskkill", "/F", "/IM", "LabVIEW.exe"], capture_output=True, text=True, timeout=60); time.sleep(4.0)   # noqa: E702
     print("LabVIEW gone at exit:", "labview.exe" not in subprocess.run(["tasklist"], capture_output=True, text=True, timeout=60).stdout.lower(), flush=True)
 sys.exit(rc)
+# ---
+# labview: build
+# hardware: none
+# ---

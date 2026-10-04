@@ -118,3 +118,7 @@ def body(s):
 if __name__ == "__main__":
     st = K.Stage(IN, IN_MD5, "stage_d1_l7_r", preload=False, deadline_min=37, work_name="D1_s4_loop17.vi", pins=tuple(K.DEFAULT_PINS) + PINS)
     sys.exit((K.run(body, st), K.mod("bench_prep").restart_labview())[0])
+# ---
+# labview: build
+# hardware: none
+# ---

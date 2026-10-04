@@ -27,3 +27,7 @@ for r in T:
         print("NODE-ROW", r["owner_uid"], r["frame_diagram"], r["owner_class"])
         break
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

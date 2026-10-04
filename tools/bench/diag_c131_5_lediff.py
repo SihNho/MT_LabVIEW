@@ -43,3 +43,7 @@ print('ONLY_P3A', json.dumps([dict(s) for s in (a - b).elements()], ensure_ascii
 print('ONLY_SCR', json.dumps([dict(s) for s in (b - a).elements()], ensure_ascii=False)[:3000])
 print('RESULT ' + json.dumps({'schema': 'result-line/1', 'status': 'PASS', 'gates': {'pass': 1, 'fail': 0},
                               'first_fail': None, 'artefacts': []}))
+# ---
+# labview: none
+# hardware: none
+# ---

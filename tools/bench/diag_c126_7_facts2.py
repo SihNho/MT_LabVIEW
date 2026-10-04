@@ -55,3 +55,7 @@ for w in (1961, 653):
     print("#6810 error wire w{0}: {1}".format(w, [(r["owner_uid"], cls.get(r["owner_uid"]), r["term_name"], r["is_source"], r["frame_diagram"]) for r in byw[w]]), flush=True)
 print("owners 6810/30117/4580/3097/3160:", dict((u, own.get(str(u))) for u in (6810, 30117, 4580, 3097, 3160, 759)), flush=True)
 print(P.result_line(P.make_result(n_ok, 4 - n_ok, None if n_ok == 4 else "not every source reaches the record build")), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

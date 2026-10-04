@@ -12,3 +12,7 @@ print("FACT base file md5", hashlib.md5(open(os.path.join(ROOT, fz["base"]["path
 print("FACT final", p.get("final"), "open_rows_match", fz.get("open_rows_match"), "n actions", len(p["actions"]), "step_files", len(fz.get("step_files") or []),
       "end_cdiff_rows", len(fz.get("end_cdiff_rows") or []))
 print("RESULT " + json.dumps({"schema": "result-line/1", "status": "PASS", "gates": {"pass": 0, "fail": 0}, "first_fail": None, "artefacts": []}))
+# ---
+# labview: none
+# hardware: none
+# ---

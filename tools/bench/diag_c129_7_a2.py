@@ -37,3 +37,7 @@ for t in T:
 for k, v in cnt.items():
     print('TERM CIN', k, len(v), v[:12])
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":0,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

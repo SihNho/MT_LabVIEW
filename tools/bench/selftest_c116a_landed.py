@@ -95,3 +95,7 @@ gate(GC.pure_selftest("py tools/stagexec.py selftest"), "C4 no cd -> exempt")
 npass = sum(1 for g in G if g[0]); nfail = len(G) - npass
 print(P.result_line(P.make_result(npass, nfail, next((g[1] for g in G if not g[0]), None))), flush=True)
 sys.exit(0 if nfail == 0 else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

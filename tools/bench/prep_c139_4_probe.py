@@ -38,3 +38,7 @@ print("META head", json.dumps(M)[:1500])
 for f in sorted(glob.glob(os.path.join(B, "plan_ring_p4s*"))) + sorted(glob.glob(os.path.join(ROOT, "tools", "recipes", "stage_d1_ring_p4*"))):
     print("EXISTS", f)
 print(protocol.result_line(protocol.make_result(1, 0, None, [])), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

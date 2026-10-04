@@ -51,3 +51,7 @@ n = sum(1 for ok, _l in G if ok)
 print("=== GATES: %d pass / %d fail" % (n, len(G) - n))
 print(P.result_line(P.make_result(n, len(G) - n, next((l for ok, l in G if not ok), None))), flush=True)
 sys.exit(0 if n == len(G) else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

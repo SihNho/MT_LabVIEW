@@ -21,3 +21,7 @@ try {
     Write-Output ("position after (must be unchanged): X={0} Y={1}" -f (Where1 'X'), (Where1 'Y'))
 }
 finally { $sp.Close(); $sp.Dispose() }
+# ---
+# labview: none
+# hardware: motor
+# ---

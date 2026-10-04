@@ -26,3 +26,7 @@ for fs, fl in sorted(m["fs_frames"].items(), key=lambda x: int(x[0])):
 print("CHAIN 639", SS._diag_chain(st, 639, par)[:10])
 print("CHAIN 27219", SS._diag_chain(st, 27219, par)[:10])
 print(P.result_line(P.make_result(1, 0, None, [])))
+# ---
+# labview: none
+# hardware: none
+# ---

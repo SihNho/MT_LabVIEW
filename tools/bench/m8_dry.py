@@ -32,3 +32,7 @@ def stub(v5, d4, d0):
         v5.FACTS["stop_%s" % tag] = {"mechanism": "VI SERVER SetControlValue (DRY)", "latency_s": 1.0}
         return True
     v5.leg = fake_leg
+# ---
+# labview: none
+# hardware: none
+# ---

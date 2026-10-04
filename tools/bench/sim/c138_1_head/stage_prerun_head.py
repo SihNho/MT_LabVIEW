@@ -4066,3 +4066,7 @@ if __name__ == "__main__":
     rc = main()
     sys.stdout.flush()
     os._exit(rc)
+# ---
+# labview: read
+# hardware: none
+# ---

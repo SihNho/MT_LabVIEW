@@ -17,3 +17,7 @@ print('7911 tail', [(o['uid'], o['class']) for o in objs[i:i + 400] if o['class'
 j = next(k for k in range(idx[639], len(objs)) if objs[k]['class'] == 'CaseStructure')
 print('CASE@', objs[j]['uid'], [(o['uid'], o['class']) for o in objs[j:j + 40]])
 print(protocol.result_line(protocol.make_result(1, 0)))
+# ---
+# labview: none
+# hardware: none
+# ---

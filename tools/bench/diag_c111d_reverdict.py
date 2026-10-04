@@ -62,3 +62,7 @@ print(protocol.result_line(protocol.make_result(len(gates) - nf, nf,
                                                 next((k for k, v in gates.items() if not v), None),
                                                 artefacts=[{"path": os.path.relpath(EXP, ROOT).replace("\\", "/"),
                                                             "md5": C.md5(EXP)}])))
+# ---
+# labview: none
+# hardware: none
+# ---

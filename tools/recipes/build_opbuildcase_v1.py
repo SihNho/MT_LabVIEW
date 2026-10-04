@@ -112,3 +112,7 @@ def _ctl(OP, uid, wanted, purge, max_terms=14):
 
 if __name__ == "__main__":
     sys.exit(main())
+# ---
+# labview: build
+# hardware: none
+# ---

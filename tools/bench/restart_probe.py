@@ -35,3 +35,7 @@ try:
 except Exception as e:
     print("report after open FAIL", str(e)[:60], flush=True)
 print("dialogs now:", g._lv_gui("-Action", "dialogs").strip().replace("\n", " / ")[-90:], flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

@@ -302,3 +302,7 @@ try {
 } catch {
     exit 0   # a broken watchdog must never break the session
 }
+# ---
+# labview: build
+# hardware: none
+# ---

@@ -46,3 +46,7 @@ for u in want:
         print("   ", json.dumps(dict((k, v) for k, v in r.items()))[:300])
 print(protocol.result_line(protocol.make_result(G["pass"], G["fail"], G["first"], [])), flush=True)
 sys.exit(0 if not G["fail"] else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

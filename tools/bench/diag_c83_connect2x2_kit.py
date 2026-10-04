@@ -118,3 +118,7 @@ if __name__ == "__main__":
                  pins=C82.PINS, deadline_min=26, reserve_s=240,
                  task="Pre-decided 103 acceptance: r2's cells R0/R0b/R1 re-cut on stagekit")
     sys.exit(K.run(work, st))
+# ---
+# labview: read
+# hardware: none
+# ---

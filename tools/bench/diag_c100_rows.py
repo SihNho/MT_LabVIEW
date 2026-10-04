@@ -299,3 +299,7 @@ gate("H3 D1_s1_copy md5 end", md5(VI) == S1MD5)
 gate("H4 LabVIEW not running at end", lv_count() == 0)
 print(protocol.result_line(protocol.make_result(npass, nfail, first_fail, artefacts=[
     {"path": os.path.relpath(p, ROOT), "md5": md5(p)} for p in (PLAN, CARD)])), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

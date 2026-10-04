@@ -141,3 +141,7 @@ print("\n" + "=" * 90)
 print("=== GATES: {0} pass / {1} fail".format(len(passes), len(fails)))
 print(PR.result_line(PR.make_result(len(passes), len(fails), fails[0] if fails else None)), flush=True)
 sys.exit(1 if fails else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

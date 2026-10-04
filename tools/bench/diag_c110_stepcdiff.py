@@ -21,3 +21,7 @@ for r in st["terminals"]:
     if want and int(r["owner_uid"]) in want and r["term_name"] in ("x,y,z array", "x,y,z array out", ""):
         print("  T", r, flush=True)
 print(P.result_line(P.make_result(1, 0, None)), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

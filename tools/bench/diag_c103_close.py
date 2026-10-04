@@ -38,3 +38,7 @@ n = sum(1 for _l, ok in gates if ok)
 ff = next((l for l, ok in gates if not ok), None)
 print(P.result_line(P.make_result(n, len(gates) - n, ff, arts)), flush=True)
 sys.exit(0 if ff is None else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

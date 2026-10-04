@@ -20,3 +20,7 @@ for k in sys.argv[2:]:
         x = x[int(p)] if p.lstrip("-").isdigit() and isinstance(x, list) else x[p]
     print("==", k, json.dumps(x)[:4000])
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":0,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

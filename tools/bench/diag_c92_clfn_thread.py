@@ -171,3 +171,7 @@ json.dump({"schema": "t0-clfn-thread/1", "card": "92-1 PD198(c)(1)", "vi": T0VI,
 bad = [k for k, v in G.items() if not v]
 print(P.result_line(P.make_result(len(G) - len(bad), len(bad), bad[0] if bad else None, [{"path": os.path.relpath(OUT, ROOT), "md5": md5(OUT)}])), flush=True)
 sys.exit(1 if bad else 0)
+# ---
+# labview: build
+# hardware: none
+# ---

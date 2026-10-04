@@ -179,3 +179,7 @@ if __name__ == "__main__":
     subprocess.run(["taskkill", "/F", "/IM", "LabVIEW.exe"], capture_output=True, text=True, timeout=60); time.sleep(4.0)   # noqa: E702
     s.gate("F7 LabVIEW process gone at the end", "labview.exe" not in subprocess.run(["tasklist"], capture_output=True, text=True, timeout=60).stdout.lower())
     sys.exit(s.summary())
+# ---
+# labview: read
+# hardware: none
+# ---

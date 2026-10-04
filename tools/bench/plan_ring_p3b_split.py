@@ -329,3 +329,7 @@ gate("S6u unsplit reference pred written: plan md5 == plan file, ops == compile 
      and len(du["cdiff_rows"]) == 16, {"pred": rel(pou), "md5": md5(pou), "ops": len(du["ops"]),
                                       "memory_pred": du["memory_pred"]["peak_mb"]})
 finish([{"path": rel(p), "md5": md5(p)} for p in (P1, P2, po1, po2, PROV, PU, pou)])
+# ---
+# labview: none
+# hardware: none
+# ---

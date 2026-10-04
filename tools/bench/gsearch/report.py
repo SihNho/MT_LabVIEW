@@ -105,3 +105,7 @@ for k, v in sorted(ans.items()):
                                                               v["raw_tail"][-200:].replace("\n", " ")))
 open(os.path.join(HERE, "report_g1.md"), "w", encoding="utf-8").write("\n".join(L) + "\n")
 print(protocol.result_line(protocol.make_result(len(ans) - missing, missing, None if not missing else "missing cells")))
+# ---
+# labview: none
+# hardware: none
+# ---

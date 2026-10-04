@@ -60,3 +60,7 @@ if __name__ == "__main__":
     st = K.Stage(BED, BED_MD5, "diag_c71_l7_1a_tunnels", preload=False, deadline_min=18, work_name="diag_c71_tun_scratch.vi",
                  pins=tuple(K.DEFAULT_PINS) + (("S3 loop15 bed", BED, BED_MD5),))
     sys.exit((K.run(body, st), K.mod("bench_prep").restart_labview())[0])
+# ---
+# labview: read
+# hardware: none
+# ---

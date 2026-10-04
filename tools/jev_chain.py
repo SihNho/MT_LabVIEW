@@ -124,3 +124,7 @@ def build_chain(G, y, z, root_diagram, max_steps=8, n=None, th=None):
 def scope_counts(G, root):
     c = collections.Counter(G["subvi_name"][u] for u in subvi_nodes_in_scope(G, root))
     return dict(c)
+# ---
+# labview: none
+# hardware: none
+# ---

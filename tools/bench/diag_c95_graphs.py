@@ -116,3 +116,7 @@ bad = [k for k, v in G.items() if not v]
 arts = [{"path": os.path.relpath(OUT, ROOT), "md5": md5(OUT)}] + [{"path": R[t]["graph"], "md5": R[t]["graph_md5"]} for t, _p in DONORS if t in R]
 print(P.result_line(P.make_result(len(G) - len(bad), len(bad), bad[0] if bad else None, arts)), flush=True)
 sys.exit(1 if bad else 0)
+# ---
+# labview: read
+# hardware: none
+# ---

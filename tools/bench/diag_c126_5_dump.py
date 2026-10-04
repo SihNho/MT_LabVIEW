@@ -12,3 +12,7 @@ for k in p:
     if k != 'actions':
         print(k, json.dumps(p[k])[:1500])
 print(P.result_line(P.make_result(1, 0, None)))
+# ---
+# labview: none
+# hardware: none
+# ---

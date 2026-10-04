@@ -4,3 +4,7 @@ repeated-failure-class, inference-over-measurement, wrong-ordering). The build b
 tools/bench/diag_c95_opbuild.py - the card's pre-decided "SAME gate path cycle 92 used" (tools/bench/diag_c92b_anythread.py) -
 where the stage_prerun launch gate still classifies it and it carries its own dry + prerun PASS records. One live copy only;
 this file holds no code so it cannot drift from the one that ran."""
+# ---
+# labview: none
+# hardware: none
+# ---

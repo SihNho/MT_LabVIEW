@@ -67,3 +67,7 @@ try:
     g.close_panel(T); os.remove(T); print("\nscratch removed", flush=True)
 except Exception as e:
     print("cleanup:", str(e)[:80], flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

@@ -17,3 +17,7 @@ for f in ("spec_wiring.json", "spec_wiring_more.json"):
             single = [w for w, ends in dg["nets"].items() if len(ends) == 1]
             out.write("   single-ended wires: " + " ".join(single) + "\n")
 out.close(); print("written")
+# ---
+# labview: none
+# hardware: none
+# ---

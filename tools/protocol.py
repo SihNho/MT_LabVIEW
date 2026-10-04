@@ -286,6 +286,13 @@ def result_line(d):
     """The one-line text form. Validated; ASCII-escaped so a cp949 console can always print it."""
     d = dict(d)
     d.setdefault("schema", "result-line/1")
+    # card chat-E3: the run's OWNER. tools/bgrun.py puts the launching card's id and labview flag into the child's
+    # environment (from the launch ledger), so a failing log names its card and guard_peer attributes it only to that
+    # card (fp-36: an offline prep card's failing log held a LabVIEW card that had not launched it).
+    if os.environ.get("CARD_ID") and "card" not in d:
+        d["card"] = os.environ["CARD_ID"][:40]
+    if os.environ.get("CARD_LABVIEW") in ("none", "read", "build") and "labview" not in d:
+        d["labview"] = os.environ["CARD_LABVIEW"]
     ok, why = validate_obj(d)
     if not ok:
         raise ValueError("result_line: " + why)
@@ -328,8 +335,12 @@ def parse_result_line(text):
 def result_failed(d):
     """A RESULT line fails unless its status is PASS or SKIP AND gates.fail == 0. SKIP (card 108-5, review
     archive/peer/2026-09-27-c108a-disp107-visa-refusal.md:90): a run refused before it measured anything (a VISA-refused
-    leg) is not a failed prediction, so it must not arm guard_peer; a SKIP with a failing gate is still a failure."""
-    return d is None or d.get("status") not in ("PASS", "SKIP") or int((d.get("gates") or {}).get("fail", 1)) > 0
+    leg) is not a failed prediction, so it must not arm guard_peer; a SKIP with a failing gate is still a failure.
+    WAITING (card chat-E3): a prep run on a PROVISIONAL base that stopped only on the base's not-yet-built objects
+    (stage_prerun.waiting_reason) - nothing was predicted wrongly, so it owes no review and blocks nothing; it is never
+    a PASS for a launch either (the dry/prerun record says WAITING, check_launch wants PASS)."""
+    return d is None or d.get("status") not in ("PASS", "SKIP", "WAITING") or \
+        int((d.get("gates") or {}).get("fail", 1)) > 0
 
 
 # ----------------------------------------------------------------------------------------- run segments + verdicts
@@ -705,7 +716,12 @@ def input_md5_changes(card):
             bad.append("%s: missing" % it["path"])
             continue
         with open(p, "rb") as f:
-            m = hashlib.md5(f.read()).hexdigest()
+            b = f.read()
+        m = hashlib.md5(b).hexdigest()
+        if m != it["md5"] and p.lower().endswith((".py", ".ps1")):
+            import scope_header                  # card chat-E3: a pin taken before the header migration still matches
+            if hashlib.md5(scope_header.canonical_bytes(b)).hexdigest() == it["md5"]:
+                continue
         if m != it["md5"]:
             bad.append("%s: card %s != disk %s" % (it["path"], it["md5"][:8], m[:8]))
     return bad
@@ -1088,22 +1104,33 @@ def check_command(card, cmd):
     role = peer_role_of(cmd)
     if role and role not in (fl.get("peers") or []):
         return "flags.peers %s does not include %r - this card may not dispatch that review" % (fl.get("peers"), role)
+    # card chat-E3 (user 2026-10-04): a tools/ script's DECLARED SCOPE HEADER decides (tools/scope_header.py) - labview
+    # none|read|build and hardware none|camera|motor against the card's flags, the header present and valid, a .py that
+    # compiles. Offline modes are declared in the header (`offline-args: adopt selftest`, fp-39). The text heuristics
+    # below (recipe path, LabVIEW imports, motor/runner names) now judge only scripts OUTSIDE tools/ (a scratchpad
+    # script), and LV_CMD_RE only command segments a read-only program does not lead (`grep "import gscript" x`).
+    import scope_header as SH
+    why = SH.check_launch(fl, cmd, [p for p in scripts if SH.in_tools(p)])
+    if why:
+        return why
+    legacy = [p for p in scripts if not SH.in_tools(p)]
     if fl.get("hardware", "none") != "gate":
         # INVOKED only (a launched .py, or a .ps1 after & / -File) - `git add tools/cycle_runner.py` is not a run
         # (measured 2026-09-24: the first version refused exactly that commit).
-        ran = " ".join(scripts) + " " + " ".join(
-            re.findall(r"(?:&|-File)\s+[\"']?([^\s\"']*\.ps1)", cmd, re.I))
+        ran = " ".join(legacy) + " " + " ".join(
+            p for p in re.findall(r"(?:&|-File)\s+[\"']?([^\s\"']*\.ps1)", cmd, re.I) if not SH.in_tools(p))
         if MOTOR_CMD_RE.search(ran) and not re.search(r"--dry-run|--help", cmd):
             return "flags.hardware is 'none' - motor_gate / motor senders are refused (a --dry-run is allowed)"
         if RUNNER_CMD_RE.search(ran) and not re.search(r"--dry-run|--dry-cmd|--no-motor-hooks", cmd):
             return "flags.hardware is 'none' - a real cycle_runner run opens the motor session; use --dry-run"
-    recipes = [p for p in scripts if RECIPE_PATH_RE.search(p)]
-    lv_scripts = [p for p in scripts if lv_script(p, cmd, srcs[p])]      # gate-fp fp-12/fp-13: OFFLINE_SELFTESTS
+    recipes = [p for p in legacy if RECIPE_PATH_RE.search(p)]
+    lv_scripts = [p for p in legacy if lv_script(p, cmd, srcs[p])]      # gate-fp fp-12/fp-13: OFFLINE_SELFTESTS
     feats = {p: src_features(srcs[p]) for p in scripts}
     lv = fl.get("labview", "none")
-    if lv == "none" and (LV_CMD_RE.search(cmd) or lv_scripts):
+    lv_txt = LV_CMD_RE.search(_dispatch_text(cmd))
+    if lv == "none" and (lv_txt or lv_scripts):
         return "flags.labview is 'none' - this command touches LabVIEW (%s)" % (
-            _rel(lv_scripts[0]) if lv_scripts else LV_CMD_RE.search(cmd).group(0))
+            _rel(lv_scripts[0]) if lv_scripts else lv_txt.group(0))
     if lv == "read":
         if recipes:
             return "flags.labview is 'read' - recipes are refused (%s)" % _rel(recipes[0])
@@ -1232,6 +1259,62 @@ def card_owns_log(card_id, log_path):
         if r.get("card") == card_id and r.get("log") == name:
             return True
     return False
+
+
+def log_owner(log_path, text=None, max_age_s=None):
+    """card chat-E3 (fp-36): the card that launched `log_path`'s LAST run - the `card` field of its last RESULT line
+    (bgrun puts CARD_ID into the child's environment), else the newest launch-ledger row for that log basename. None =
+    unknown (the judgement session's own run, a pre-ledger log, an unreadable ledger) - the caller then gates as before."""
+    if text is None:
+        try:
+            with io.open(log_path, encoding="utf-8", errors="replace") as f:
+                text = f.read()
+        except OSError:
+            text = ""
+    start, _cmd, seg = last_segment(text or "")
+    for d in reversed(all_result_lines(seg)):
+        if d.get("card"):
+            return d["card"]
+    name = os.path.basename(log_path or "").lower()
+    owner = None
+    try:
+        with io.open(LAUNCHES, encoding="utf-8") as f:
+            for ln in f:
+                try:
+                    r = json.loads(ln)
+                except ValueError:
+                    return None
+                if r.get("log") == name:
+                    if max_age_s is not None or start is not None:
+                        try:
+                            t = time.mktime(time.strptime(str(r.get("t")), "%Y-%m-%d %H:%M:%S"))
+                        except (ValueError, OverflowError):
+                            continue
+                        if max_age_s is not None and time.time() - t > max_age_s:
+                            continue
+                        if start is not None and t > start + 5:
+                            continue      # a ledger row written AFTER this run started did not launch it
+                    owner = r.get("card")
+    except OSError:
+        return None
+    return owner
+
+
+def launch_card_env(log_path):
+    """{CARD_ID, CARD_LABVIEW} for a bgrun child, from the ledger row the PreToolUse hook wrote for this --log (the
+    card's task file gives its labview flag). {} when no card launched it."""
+    owner = log_owner(log_path, text="", max_age_s=120)     # the row the PreToolUse hook wrote for THIS launch
+    if not owner:
+        return {}
+    env = {"CARD_ID": str(owner)}
+    try:
+        with io.open(os.path.join(CARDS_DIR, "task_%s.json" % owner), encoding="utf-8") as f:
+            lv = ((json.load(f).get("flags") or {}).get("labview"))
+        if lv in ("none", "read", "build"):
+            env["CARD_LABVIEW"] = lv
+    except (OSError, ValueError):
+        pass
+    return env
 
 
 # ------------------------------------------------------------------------------------------ C4/C5 review/verdict
@@ -1706,3 +1789,7 @@ def main(argv=None):
 
 if __name__ == "__main__":
     sys.exit(main())
+# ---
+# labview: none
+# hardware: none
+# ---

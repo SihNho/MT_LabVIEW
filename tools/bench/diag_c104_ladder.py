@@ -11,3 +11,7 @@ r = jev_gate.jev_ladder(LOG, fail, write=True)
 print(json.dumps(r, default=str)[:3000])
 print("NEWEST", jev_gate.newest_ladder_line(os.path.basename(LOG)))
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -37,3 +37,7 @@ for lp in GR.get("loops") or []:
     if int(lp.get("loop_uid") or 0) in (637, 10170):
         print("LOOP {0}".format(json.dumps(lp)[:2500]), flush=True)
 print(P.result_line(P.make_result(1, 0, None)), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

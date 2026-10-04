@@ -13,3 +13,7 @@ for i in diff[:3]:
     print(' old', json.dumps(a[i])[:300])
     print(' new', json.dumps(b[i])[:300])
 print('open_rows equal', old.get('open_rows') == new.get('open_rows'), 'base old', old.get('base'), 'base new', new.get('base'))
+# ---
+# labview: none
+# hardware: none
+# ---

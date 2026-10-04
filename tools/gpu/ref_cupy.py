@@ -183,3 +183,7 @@ def track_beads_gpu(image, x_in, y_in, cross, win_rs, win_h, pack, p=DEFAULT):
     ph = phase_in_neighborhood_b(cork, idx, pack.ampl, pack.cork, mask)
     zi = quad_fit_phase_b(ph, idx)
     return {"x": cp.asnumpy(x_new), "y": cp.asnumpy(y_new), "z": cp.asnumpy(zi * pack.z_step), "index": cp.asnumpy(idx), "z_index": cp.asnumpy(zi)}
+# ---
+# labview: none
+# hardware: none
+# ---

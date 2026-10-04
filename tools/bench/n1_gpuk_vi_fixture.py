@@ -290,3 +290,7 @@ if __name__ == "__main__":
             g.reset()
         except Exception:                                     # noqa: BLE001
             pass
+# ---
+# labview: read
+# hardware: none
+# ---

@@ -20,3 +20,7 @@ print("QT obtain", SS.QUEUE_TERM_TABLE.get('obtain'))
 print("QT dequeue", SS.QUEUE_TERM_TABLE.get('dequeue'))
 print("CASE_FRAMES_DEFAULT", getattr(SS, 'CASE_FRAMES_DEFAULT', None))
 print("RESULT " + json.dumps({"schema": "result-line/1", "status": "PASS", "gates": {"pass": 1, "fail": 0}, "first_fail": None, "artefacts": []}))
+# ---
+# labview: none
+# hardware: none
+# ---

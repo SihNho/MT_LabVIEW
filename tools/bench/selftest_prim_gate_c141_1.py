@@ -103,3 +103,7 @@ gate("O5 x17_gate over v15 refuses p4_ras_bufdiff ($work #29157)", not ok5 and "
 print("FACT O5 v15 refusals: {0}".format(json.dumps(d5)[:900]), flush=True)
 print(protocol.result_line(protocol.make_result(G["pass"], G["fail"], G["first"], [])), flush=True)
 sys.exit(0 if not G["fail"] else 1)
+# ---
+# labview: read
+# hardware: none
+# ---

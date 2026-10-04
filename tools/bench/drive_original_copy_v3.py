@@ -451,3 +451,7 @@ if __name__ == "__main__":
             pass
         d0.report()
     sys.exit(0 if good else 1)
+# ---
+# labview: build
+# hardware: none
+# ---

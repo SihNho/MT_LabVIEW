@@ -24,3 +24,7 @@ regime("15 ms gaps", 0.015, 0)
 regime("15 ms gaps + keepalive", 0.015, 1)
 regime("5 ms gaps", 0.005, 0)
 regime("2 ms gaps", 0.002, 0)
+# ---
+# labview: none
+# hardware: none
+# ---

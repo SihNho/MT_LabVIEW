@@ -53,3 +53,7 @@ for n in NAMES:
                                                      time.time() - t0, (" | ".join(fl))[:300] if not good else ""), flush=True)
 print("=== SUITE %s: %d ok / %d fail" % (tag, ok, bad), flush=True)
 print(P.result_line(P.make_result(ok, bad, first)), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

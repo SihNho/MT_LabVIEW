@@ -10,3 +10,7 @@ for n in sorted(os.listdir(d)):
               hashlib.md5(open(p, 'rb').read()).hexdigest(), n)
 print('RESULT ' + json.dumps({"schema": "result-line/1", "status": "PASS", "gates": {"pass": 1, "fail": 0},
                               "first_fail": None, "artefacts": []}))
+# ---
+# labview: none
+# hardware: none
+# ---

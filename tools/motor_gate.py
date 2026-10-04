@@ -640,3 +640,9 @@ if __name__ == "__main__":
         print(fail_line(_rc), flush=True)
     print(result_line(_rc), flush=True)
     sys.exit(_rc)
+# ---
+# labview: none
+# hardware: motor
+# offline-args: --dry-run --help
+# evidence: tools/motor_gate.py:1
+# ---

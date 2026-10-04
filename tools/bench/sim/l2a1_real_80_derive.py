@@ -59,3 +59,7 @@ json.dump(out, open(OUT, "w", encoding="utf-8"), indent=1)
 print("WROTE", OUT, SS.md5_file(OUT))
 print(protocol.result_line(protocol.make_result(1 if ok else 0, 0 if ok else 1, None if ok else "reconstruction not self-consistent")))
 sys.exit(0 if ok else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

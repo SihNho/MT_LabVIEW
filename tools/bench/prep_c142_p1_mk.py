@@ -166,3 +166,7 @@ print("FACT end rows", len(SB.get("end_cdiff_rows") or []), "s02 end rows", len(
 ARTS.extend({"path": rel(x), "md5": md5(x)} for x in (RAIN, RRIN, RRP) if os.path.isfile(x))
 gate("U v17 / s01 / s02 untouched", md5(V17) == WANT[V17] and md5(S01) == WANT[S01] and md5(S02) == WANT[S02])
 done()
+# ---
+# labview: none
+# hardware: none
+# ---

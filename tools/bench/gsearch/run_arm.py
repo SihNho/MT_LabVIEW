@@ -74,3 +74,7 @@ for c in cases:
         nfail += 1
         first_fail = first_fail or "%s %s r%d %s" % (c["id"], a.arm, a.rep, outcome)
 print(protocol.result_line(protocol.make_result(npass, nfail, first_fail, arts[:5])), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

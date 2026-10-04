@@ -35,3 +35,7 @@ if __name__ == "__main__":
                    "facts": st.R.get("qrt_pool"), "log": "tools/bench/stage_d1_qrt_pool_scratch.log"},
                   open(os.path.join(REC, "{0}_{1}.json".format(fn, st.stamp)), "w", encoding="utf-8"), indent=1, default=str)
     sys.exit(rc if gone else 1)
+# ---
+# labview: read
+# hardware: none
+# ---

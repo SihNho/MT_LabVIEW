@@ -30,3 +30,7 @@ for r in rows:
           (src.get("kind"), src.get("uid"), src.get("name") or src.get("out_name")), "COVERED" if hit else "NOT IN BED-DERIVED SET"), flush=True)
 print("TOTAL rewire_sources B rows {0}: covered {1}, not covered {2}: {3}".format(len(rows), agree, len(miss), miss), flush=True)
 print(P.result_line(P.make_result(1, 0, None)), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

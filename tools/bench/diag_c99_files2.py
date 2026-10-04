@@ -101,3 +101,7 @@ print("   bed locals:", [(u, o["class"]) for u, o in b.objs.items() if o["class"
 json.dump(out, open(B + "diag_c99_files2.json", "w"), indent=1)
 ng = out["gates"]
 print(f"RESULT {json.dumps({'schema':'result-line/1','status':'PASS' if not ng['fail'] else 'FAIL','gates':{'pass':len(ng['pass']),'fail':len(ng['fail'])},'first_fail':ng['fail'][0] if ng['fail'] else None,'artefacts':[]})}")
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -327,3 +327,7 @@ except OSError:
 npass = sum(1 for _, ok, _ in gates if ok)
 print(f"=== repair_c37_stall_selftest: {npass} pass, {len(gates) - npass} fail ===", flush=True)
 sys.exit(0 if npass == len(gates) else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

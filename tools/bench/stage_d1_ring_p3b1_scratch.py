@@ -87,3 +87,7 @@ if __name__ == "__main__":
                    "log": "tools/bench/stage_d1_ring_p3b1_scratch_{0}.log".format(LOGTAG)},
                   open(os.path.join(REC, "stagexec.ring_p3b1_fs_{0}_{1}.json".format(MODE, st.stamp)), "w", encoding="utf-8"), indent=1, default=str)
     sys.exit(rc if gone else 1)
+# ---
+# labview: read
+# hardware: none
+# ---

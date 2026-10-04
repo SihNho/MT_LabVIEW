@@ -200,3 +200,7 @@ json.dump(out, open(op, "w", encoding="utf-8"), indent=1, default=str)
 gate(os.path.exists(op), "G3 facts written " + op)
 print(protocol.result_line(protocol.make_result(npass, nfail, first_fail,
                                                 [{"path": "tools/bench/facts_c114e_inventory.json", "md5": md5(op)}])))
+# ---
+# labview: none
+# hardware: none
+# ---

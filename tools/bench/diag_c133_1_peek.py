@@ -25,3 +25,7 @@ for p in ("tools/bench/plan_ring_p3b2.json", "tools/bench/plan_ring_p3b2_rebased
         print("  act", i, json.dumps(P["actions"][i - 1])[:420])
 print("RESULT " + json.dumps({"schema": "result-line/1", "status": "PASS", "gates": {"pass": 1, "fail": 0}, "first_fail": None,
                               "artefacts": []}))
+# ---
+# labview: none
+# hardware: none
+# ---

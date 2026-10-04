@@ -37,3 +37,7 @@ print("wires", w0, "->", w1, "-> after RBW", w2, "| ExecState", es, "Invokes", g
 if es != 1 or w2 != w1 or w1 != w0 + 2:
     print("STOP: image wires rejected - NOT saving", flush=True); sys.exit(4)
 print("saved", g.save(OP), flush=True)
+# ---
+# labview: build
+# hardware: none
+# ---

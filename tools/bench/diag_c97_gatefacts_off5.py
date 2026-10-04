@@ -24,3 +24,7 @@ srcs = [s for s in bw[8319] if s['is_source']]
 from protocol import result_line, make_result
 ok = len(srcs) == 1 and srcs[0]['owner_uid'] == 1114
 print(result_line(make_result(int(ok), int(not ok), None if ok else 'G1 w8319 sources', [])))
+# ---
+# labview: none
+# hardware: none
+# ---

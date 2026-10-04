@@ -57,3 +57,7 @@ n = sum(1 for _l, ok in G if ok)
 print("=== GATES: {0} pass / {1} fail".format(n, len(G) - n))
 print(protocol.result_line(protocol.make_result(n, len(G) - n, next((l for l, ok in G if not ok), None))))
 sys.exit(0 if n == len(G) else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

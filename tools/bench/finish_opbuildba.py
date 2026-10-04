@@ -28,3 +28,7 @@ try:
     g.close_panel(TGT); os.remove(TGT); print("scratch target deleted", flush=True)
 except Exception as e:
     print("scratch cleanup:", str(e)[:80], flush=True)
+# ---
+# labview: build
+# hardware: none
+# ---

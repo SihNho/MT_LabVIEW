@@ -75,3 +75,7 @@ n = sum(1 for _l, ok in G if ok)
 ff = next((lab for lab, ok in G if not ok), None)
 print(protocol.result_line(protocol.make_result(n, len(G) - n, ff, [])), flush=True)
 sys.exit(0 if ff is None else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

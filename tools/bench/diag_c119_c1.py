@@ -30,3 +30,7 @@ if gate("K0 source OpPoolDonor_v0.vi md5 == " + WANT, md5(SRC) == WANT, md5(SRC)
 arts = [{"path": DST, "md5": md5(DST)}] if md5(DST) else []
 print(P.result_line(P.make_result(res.count(True), res.count(False), first, arts, "PASS" if all(res) and len(res) == 3 else "FAIL")), flush=True)
 sys.exit(0 if all(res) and len(res) == 3 else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

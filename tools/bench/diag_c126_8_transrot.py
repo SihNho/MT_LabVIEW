@@ -69,3 +69,7 @@ a, b = facts["graph_l2a3_bed_20260927.json"]["2626_in"], facts["graph_l2b1_20260
 print("DELTA #2626 IN l2a3 -> l2b1: gone", [x for x in a if x not in b], "new", [x for x in b if x not in a], flush=True)
 json.dump(facts, open(os.path.join(B, "diag_c126_8_transrot_out.json"), "w", encoding="utf-8"), indent=1, default=str)
 print(P.result_line(P.make_result(1, 0, None)), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

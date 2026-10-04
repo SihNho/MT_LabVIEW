@@ -136,9 +136,15 @@ CODE_DEFECTS = (NameError, UnboundLocalError, ImportError, SyntaxError)
 
 
 def sha256(path):
+    # card chat-E3: a .py/.ps1 is hashed WITHOUT its scope header block (tools/scope_header.canonical_bytes), so the
+    # records written before the header migration still match the same code
     h = hashlib.sha256()
     with open(path, "rb") as f:
-        h.update(f.read())
+        b = f.read()
+    if str(path).lower().endswith((".py", ".ps1")):
+        import scope_header
+        b = scope_header.canonical_bytes(b)
+    h.update(b)
     return h.hexdigest()
 
 
@@ -533,6 +539,47 @@ def provisional_dry_graph(recipe):
             return None, "provisional base of {0}: {1} missing or off its pin {2}".format(rel(p), b.get("path"), b.get("md5"))
         return os.path.normpath(bp), None
     return None, None
+
+
+WAIT_BASE_RE = re.compile(r"BASE: the scratch copy's graph differs from the plan's base graph: (\{[^{}]*\})")
+WAIT_PRERUN_GATES = ("X1 ", "X5 ", "X10 ")     # the prerun gates that only FOLLOW from a dry stopped on the base
+
+
+def waiting_reason(recipe, tr):
+    """card chat-E3 (brief item 4): the WAITING text when a dry on a PROVISIONAL base (provisional_dry_graph) failed ONLY
+    because that base's not-yet-built objects are unbound - every fail names the BASE compare and its diff is exactly
+    {'unbound': [...]} (143-P1 / 141-P1 / 140-P1: 'E1 BASE unbound'); else None. Nothing was predicted wrongly: the base
+    simply does not exist yet; --rebase after the previous stage is built is the next act."""
+    if tr.get("status") in ("PASS", "PASS-UNVERIFIED"):
+        return None
+    try:
+        pv, err = provisional_dry_graph(recipe)
+    except Exception:                                                              # noqa: BLE001
+        return None
+    fails = [str(f) for f in (tr.get("fails") or [])]
+    if not pv or err or not fails:
+        return None
+    ids = set()
+    for f in fails:
+        m = WAIT_BASE_RE.search(f)
+        if not m:
+            return None
+        try:
+            d = ast.literal_eval(m.group(1))
+        except (ValueError, SyntaxError):
+            return None
+        if not isinstance(d, dict) or set(d) != {"unbound"} or not d["unbound"]:
+            return None
+        ids.update(d["unbound"])
+    return "WAITING: provisional base not built yet - unbound {0}; --rebase after it is built".format(sorted(ids))
+
+
+def waiting_prerun(pr):
+    """True when every FAILING prerun gate is one that follows from a WAITING dry (X1 dry, X5 executed-ops cascade, X10
+    on a provisional base)."""
+    bad = [g for g in (pr.get("gates") or []) if not g[1]]
+    return bool(bad) and all(str(g[0]).startswith(WAIT_PRERUN_GATES) and
+                             (not str(g[0]).startswith("X10 ") or "PROVISIONAL" in str(g[2])) for g in bad)
 
 
 def _graph():
@@ -4633,27 +4680,42 @@ def main(argv=None):
         tr["status"], tr["first_fail"], tr["coverage"][0], tr["coverage"][1], tr["first_mutation"],
         len(tr["unverified"]), tr["graph"], (" " + "; ".join(tr["unverified"])) if tr["status"] == "PASS-UNVERIFIED"
         else ""), flush=True)
+    wait = waiting_reason(recipe, tr)            # card chat-E3: a provisional base that is simply not built yet
+    if wait:
+        print("=== " + wait, flush=True)
     if not a.no_record:
-        write_record("dry", recipe, tr["status"], tr["first_fail"], {"input_md5": tr["input_md5"], "graph": tr["graph"],
-                                                                    "unverified": list(tr["unverified"]),
-                                                                    "dry_rule": DRY_RULE})
+        write_record("dry", recipe, "WAITING" if wait else tr["status"], wait or tr["first_fail"],
+                     {"input_md5": tr["input_md5"], "graph": tr["graph"], "unverified": list(tr["unverified"]),
+                      "dry_rule": DRY_RULE})
     dpass = tr["status"] in ("PASS", "PASS-UNVERIFIED")
     status, npass, nfail, first = ("PASS" if dpass else tr["status"]), int(dpass), int(not dpass), tr["first_fail"]
+    if wait:
+        status, npass, nfail, first = "WAITING", 0, 0, wait
     if a.prerun:
         pr = tr["prerun"]
         print("=== PRERUN {0}: {1} pass / {2} fail; first {3}".format(pr["status"], pr["pass"], pr["fail"], pr["first_fail"]))
+        pwait = bool(wait) and pr["status"] != "PASS" and waiting_prerun(pr)
         if not a.no_record:
-            write_record("prerun", recipe, pr["status"], pr["first_fail"], {"input_md5": tr["input_md5"], "graph": tr["graph"],
-                                                                         "stop_after": sa, "from_step": fk, "warn": pr.get("warn")})
+            write_record("prerun", recipe, "WAITING" if pwait else pr["status"], wait if pwait else pr["first_fail"],
+                         {"input_md5": tr["input_md5"], "graph": tr["graph"], "stop_after": sa, "from_step": fk,
+                          "warn": pr.get("warn")})
         status, npass, nfail, first = pr["status"], pr["pass"], pr["fail"], result_first(pr["first_fail"], pr.get("warn"))
+        if pwait:
+            status, nfail, first = "WAITING", 0, wait
     if a.json_out:
         with REAL_OPEN(a.json_out, "w", encoding="utf-8") as f:
             json.dump(tr, f, indent=1, default=str)
     print(P.result_line(P.make_result(npass, nfail, first, status=status)), flush=True)
-    return 0 if status == "PASS" else 1
+    return 0 if status in ("PASS", "WAITING") else 1
 
 
 if __name__ == "__main__":
     rc = main()
     sys.stdout.flush()
     os._exit(rc)
+# ---
+# labview: build
+# hardware: none
+# offline-args: --dry --prerun --scratch-required --rebase --check-launch --control-lint --selftest-control-lint --buildarray-check --opmodel-conformance
+# evidence: tools/stage_prerun.py:17
+# ---

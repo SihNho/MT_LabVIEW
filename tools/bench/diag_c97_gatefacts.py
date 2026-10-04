@@ -67,3 +67,7 @@ time.sleep(4)
 gone = "LabVIEW.exe" not in subprocess.run(["tasklist"], capture_output=True, text=True).stdout
 s.gate("Z LabVIEW gone after the run", gone); s.dump(); rc = s.summary()
 sys.exit(rc)
+# ---
+# labview: read
+# hardware: none
+# ---

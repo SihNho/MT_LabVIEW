@@ -14,3 +14,7 @@ print("OBJS", [o for o in G.get("objs", []) if int(o.get("uid", 0)) in (23583, 1
 print("OWNER of 13236:", (G.get("owners") or {}).get("13236"), "| parent:", (G.get("diagrams") or {}).get("13236"))
 print("fs_tunnel_pairs n", len(G.get("fs_tunnel_pairs", [])))
 print(P.result_line(P.make_result(1, 0, None)))
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -14,3 +14,7 @@ for n in range(60):
     if not u: break
     if labels.get(u) == "Create For Loop.vi":
         print("Create For Loop terminals:", [(r["name"], "S" if r["is_source"] else "s", r["wire"]) for r in rows], flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

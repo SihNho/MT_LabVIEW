@@ -118,3 +118,7 @@ if __name__ == "__main__":
         fresh_read()
         SX.kill_labview_at_exit()
     sys.exit(rc)
+# ---
+# labview: read
+# hardware: none
+# ---

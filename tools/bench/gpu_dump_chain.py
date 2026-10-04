@@ -7,3 +7,7 @@ run([sys.executable, os.path.join(TOOLS, "lv_restart.py")], 400, "lv_restart")
 shutil.copyfile(DLL_SRC, DLL_DST); print("deployed", os.path.getsize(DLL_DST), flush=True)
 run([sys.executable, "-u", os.path.join(TOOLS, "bench", "gpu_smoke_err.py")], 300, "smoke_err")
 run([sys.executable, "-u", os.path.join(TOOLS, "gpu", "decode_dump.py")], 60, "decode")
+# ---
+# labview: none
+# hardware: none
+# ---

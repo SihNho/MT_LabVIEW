@@ -98,3 +98,7 @@ def m1(s, p, R):
 
 # The border-object terminal readers live in `tools/bench/c90d_border.py` (the <=120-line split), and the
 # v2 row-table assembly in `tools/bench/c90d_table.py`.
+# ---
+# labview: read
+# hardware: none
+# ---

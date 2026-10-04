@@ -133,3 +133,7 @@ if __name__ == "__main__":
     gone = "labview.exe" not in subprocess.run(["tasklist"], capture_output=True, text=True, timeout=60).stdout.lower()
     s.gate("Z LabVIEW gone; R1 and B3 md5 unchanged", gone and K.md5(R1) == R1M and K.md5(B3) == B3M, (gone, K.md5(R1), K.md5(B3)))
     s.dump(); sys.exit(s.summary())
+# ---
+# labview: read
+# hardware: none
+# ---

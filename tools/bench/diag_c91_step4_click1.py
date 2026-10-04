@@ -30,3 +30,7 @@ ts = re.findall(r'"t(?:_press|_down|ime)?":\s*([0-9]{10}\.[0-9]+)', txt); print(
 for click, name in ((-15.12, "click1 (review: 15.12 s before Done)"), (-12.6, "click2 ~"), (-10.1, "click3 ~")):
     around = [(round(rel[i], 3), round(gaps[i] * 1e3, 1)) for i in range(len(gaps)) if abs(rel[i] - click) < 0.5]
     print(name, "ITERATING" if around else "NO STAMPS", "max gap ms within +-0.5 s:", max([g for _, g in around] or [0]), "n stamps:", len(around))
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -158,3 +158,7 @@ S = K.Stage(SRC, SRC_MD5, "diag_allterms_donor", fresh=False, deadline_min=22.0,
                  "Routes (a) donor / (b) loop_in / (c) copy_by_index-to-nested / (S) subVI-in-loop. "
                  "Read-only apart from one dated scratch copy of OpReport_v3.vi. Nothing saved.")
 sys.exit(K.run(main, S))
+# ---
+# labview: read
+# hardware: none
+# ---

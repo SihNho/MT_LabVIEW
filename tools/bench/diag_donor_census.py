@@ -423,3 +423,7 @@ if __name__ == "__main__":
         print("=== SCRATCH (read only, never saved): %s" % SCRATCH, flush=True)
         print("=== NO VI WAS RUN (34(f)); no new op; nothing mutated.", flush=True)
         sys.exit(rc)
+# ---
+# labview: read
+# hardware: none
+# ---

@@ -42,3 +42,7 @@ except Exception as e:  # fall back to a hand-written C6 line
                                   "gates": {"pass": npass, "fail": nfail}, "first_fail": first_fail,
                                   "artefacts": [], "note": f"protocol.result_line unavailable: {e}"}), flush=True)
 sys.exit(0 if nfail == 0 else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -82,3 +82,7 @@ first = next((l for l, ok in G if not ok), None)
 print("=== GATES: {0} pass / {1} fail{2}".format(n, len(G) - n, "; failing: " + first if first else ""))
 print(protocol.result_line(protocol.make_result(n, len(G) - n, first)))
 sys.exit(0 if first is None else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

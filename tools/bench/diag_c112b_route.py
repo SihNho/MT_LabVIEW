@@ -46,3 +46,7 @@ for g_, ok in gates:
     print("  {0}  {1}".format("PASS" if ok else "FAIL", g_))
 np_ = sum(1 for _g, ok in gates if ok)
 print(protocol.result_line(protocol.make_result(np_, len(gates) - np_, next((g_ for g_, ok in gates if not ok), None))))
+# ---
+# labview: none
+# hardware: none
+# ---

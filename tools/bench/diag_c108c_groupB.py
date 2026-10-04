@@ -129,3 +129,7 @@ json.dump(res, open(OUT, "w", encoding="utf-8"), indent=1, default=str)
 npass = sum(1 for g in gates if g[1]); ff = next((g[0] + ": " + g[2] for g in gates if not g[1]), None)
 print(protocol.result_line(protocol.make_result(npass, len(gates) - npass, ff,
       [{"path": "tools/bench/facts_c108c_groupB.json", "md5": hashlib.md5(open(OUT, "rb").read()).hexdigest()}])))
+# ---
+# labview: none
+# hardware: none
+# ---

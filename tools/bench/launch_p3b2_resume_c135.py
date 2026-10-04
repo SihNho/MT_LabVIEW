@@ -96,3 +96,7 @@ if __name__ == "__main__":
     np_, nf = sum(1 for _n, c in gates if c), sum(1 for _n, c in gates if not c)
     print(P.result_line(P.make_result(np_, nf, next((n for n, c in gates if not c), None), [a for a in arts if live and a.get("path")])), flush=True)
     sys.exit(1 if nf else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

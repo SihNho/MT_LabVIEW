@@ -112,3 +112,7 @@ if __name__ == "__main__":
                  out_json=os.path.join(K.BENCH, "diag_c88_nodeside.json"),
                  task="the c88 review's cheapest discriminating test: ask the nodes which wire they carry")
     sys.exit(K.run(body, st))
+# ---
+# labview: read
+# hardware: none
+# ---

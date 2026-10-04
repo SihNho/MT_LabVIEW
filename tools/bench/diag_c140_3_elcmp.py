@@ -29,3 +29,7 @@ for k in sorted(set(a) | set(b)):
 ok = not extra and not missing and len(items) == 51
 print(protocol.result_line(protocol.make_result(1 if ok else 0, 0 if ok else 1, None if ok else "EL scratch 52 != predicted 51 (alt 53)", [])), flush=True)
 sys.exit(0 if ok else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

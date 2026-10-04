@@ -14,3 +14,7 @@ import subprocess
 print("LABVIEW RUNNING:", "labview.exe" in subprocess.run(["tasklist"], capture_output=True, text=True).stdout.lower())
 for p in sorted(glob.glob(os.path.join(CD, "D1_s1_disp_2026092*"))):
     print("EXISTING", m(p), os.path.getsize(p), p)
+# ---
+# labview: none
+# hardware: none
+# ---

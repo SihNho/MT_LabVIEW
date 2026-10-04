@@ -454,3 +454,7 @@ json.dump(res, open(outp, "w", encoding="utf-8"), indent=1, ensure_ascii=False)
 out("")
 out("wrote %s" % outp)
 out("%d pass / %d fail" % (npass, nfail))
+# ---
+# labview: none
+# hardware: none
+# ---

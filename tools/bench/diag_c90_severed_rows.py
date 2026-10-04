@@ -130,3 +130,7 @@ OUT.write_text(json.dumps({"source_log": str(LOG), "last_block_first_line": lo +
 print("[E] WROTE %s (%d B)" % (OUT, OUT.stat().st_size))
 nf = [l for ok, l in gates if not ok]
 print("GATE: %d pass / %d fail%s" % (len(gates) - len(nf), len(nf), ("; failing: " + " | ".join(nf)) if nf else ""))
+# ---
+# labview: none
+# hardware: none
+# ---

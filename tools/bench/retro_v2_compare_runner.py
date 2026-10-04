@@ -201,3 +201,7 @@ npass = sum(1 for _, ok, _ in gates if ok)
 nfail = len(gates) - npass
 say(f"\n=== retro_v2_compare: {npass} pass, {nfail} fail ===")
 sys.exit(0 if nfail == 0 else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -31,3 +31,7 @@ n = sum(1 for _l, ok in gates if ok)
 print(P.result_line(P.make_result(n, len(gates) - n, next((l for l, ok in gates if not ok), None),
                                   artefacts=[{"path": "tools/bench/scratch_c120_base_graph.json", "md5": m}])), flush=True)
 sys.exit(0 if n == len(gates) else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -384,3 +384,7 @@ def write_record(stage, bed_md5, intents, cands, decisions, t0, extra=None):
     with open(p, "w", encoding="utf-8") as f:
         json.dump(rec, f, indent=1)
     return p, rec
+# ---
+# labview: none
+# hardware: none
+# ---

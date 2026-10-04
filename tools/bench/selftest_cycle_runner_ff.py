@@ -99,3 +99,7 @@ sys.path.insert(0, os.path.join(ROOT, "tools"))
 import protocol  # noqa: E402
 print(protocol.result_line(protocol.make_result(ok, N - ok, None if ok == N else "%d/%d modes" % (ok, N))))
 sys.exit(0 if ok == N else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

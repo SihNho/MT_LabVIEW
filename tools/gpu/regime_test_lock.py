@@ -20,3 +20,7 @@ def regime(label, gap, ka, secs=8):
     print(f"{label:28s} calls {n:4d}: t {np.median(ts[n//2:]):.2f} u {np.median(us[n//2:]):.2f} e {np.median(es[n//2:]):.2f} ms | {c.most_common(2)}", flush=True)
     lib.mt_gpu_keepalive(0)
 regime("15 ms gaps under clock lock", 0.015, 0)
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -70,3 +70,7 @@ ff = next((l for l, g_ in gates if not g_), None)
 arts = [{"path": os.path.relpath(p, ROOT), "md5": SS.md5_file(p)} for p in (R4O, po) if p and os.path.exists(p)]
 print(protocol.result_line(protocol.make_result(n, len(gates) - n, ff, arts)), flush=True)
 sys.exit(0 if ff is None else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

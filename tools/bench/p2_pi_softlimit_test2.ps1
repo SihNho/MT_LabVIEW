@@ -37,3 +37,7 @@ try {
     Write-Output 'RESULT: see lines above'; exit 9
 }
 finally { if ($sp.IsOpen) { $sp.Close() }; $sp.Dispose() }
+# ---
+# labview: none
+# hardware: motor
+# ---

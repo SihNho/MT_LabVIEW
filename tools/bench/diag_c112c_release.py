@@ -13,3 +13,7 @@ print("RELEASED", res)
 rel = res[0] if isinstance(res, tuple) else res
 missing = [s for s in slugs if s not in set(rel)]
 print(P.result_line(P.make_result(len(slugs) - len(missing), len(missing), ("unreleased: %s" % missing) if missing else None)))
+# ---
+# labview: none
+# hardware: none
+# ---

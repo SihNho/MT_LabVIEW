@@ -116,3 +116,7 @@ first = next((lab for lab, ok in G if not ok), None)
 print("=== GATES: {0} pass / {1} fail".format(npass, nfail), flush=True)
 print(PR.result_line(PR.make_result(npass, nfail, first, status="PASS" if not nfail else "FAIL")), flush=True)
 sys.exit(0 if not nfail else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

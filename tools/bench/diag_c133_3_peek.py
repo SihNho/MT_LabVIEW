@@ -21,3 +21,7 @@ for f, lines in (("stage_d1_ring_p3b1.log", (41, 42, 43)), ("diag_c132_2_graph_p
     for n in lines:
         print("CITE {0}:{1}: {2}".format(f, n, L[n - 1][:220]), flush=True)
 print(P.result_line(P.make_result(1 if len(ops) == 39 else 0, 0 if len(ops) == 39 else 1, None, [])), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -223,3 +223,7 @@ if __name__ == "__main__":
         if fails:
             print(f"  failing: {fails}", flush=True)
     sys.exit(rc if not fails else (rc or 1))
+# ---
+# labview: read
+# hardware: none
+# ---

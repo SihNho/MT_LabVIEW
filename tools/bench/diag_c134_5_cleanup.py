@@ -34,3 +34,7 @@ n = sum(1 for _l, ok in gates if ok)
 ff = next((lab for lab, ok in gates if not ok), None)
 print(protocol.result_line(protocol.make_result(n, len(gates) - n, ff, [])), flush=True)
 sys.exit(0 if ff is None else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -24,3 +24,7 @@ a, s1 = SP.md5(pa["file"]), SP.md5(r"C:\Program Files\National Instruments\LabVI
 print("MD5 dispA", a, a == pa["md5"], "S1", s1, s1 == "3e3d23cefd3a334001aa9d6156bf1aee")
 good = a == pa["md5"] and s1 == "3e3d23cefd3a334001aa9d6156bf1aee"
 print(protocol.result_line(protocol.make_result(int(good), int(not good), None if good else "md5 changed")))
+# ---
+# labview: none
+# hardware: none
+# ---

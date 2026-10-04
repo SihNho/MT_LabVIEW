@@ -23,3 +23,7 @@ if rc == 0:
     run([sys.executable, "-u", os.path.join(TOOLS, "bench", "run_gpu2.py"), f"--n={N}"], 1500, "run_gpu2")
 else:
     print("build failed - run skipped", flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

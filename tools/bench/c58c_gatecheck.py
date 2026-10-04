@@ -63,3 +63,7 @@ print(p.stdout if p.stdout.strip() else "(empty)")
 print("STDERR VERBATIM:")
 print(p.stderr if p.stderr.strip() else "(empty)")
 print("\n=== VERDICT: %s" % ("BOTH GATES PERMIT" if (allow and p.returncode == 0) else "REFUSED - see above"))
+# ---
+# labview: none
+# hardware: none
+# ---

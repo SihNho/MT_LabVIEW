@@ -10,3 +10,7 @@ print("python:", sys.version, platform.architecture())
 cd = 'C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev'
 print("claudeDev matches:", [f for f in os.listdir(cd) if 't0stamp' in f.lower() or 'clfn' in f.lower() or f.startswith('FPTARGET')])
 print("labview procs:", [l for l in subprocess.run('tasklist', capture_output=True, text=True).stdout.splitlines() if 'labview' in l.lower()])
+# ---
+# labview: none
+# hardware: none
+# ---

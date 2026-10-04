@@ -115,3 +115,7 @@ def selftest():
 
 if __name__ == "__main__":
     sys.exit(selftest() if "--selftest" in sys.argv else main())
+# ---
+# labview: read
+# hardware: none
+# ---

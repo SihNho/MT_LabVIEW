@@ -66,3 +66,7 @@ gate("O7 every measured FS owner == ['Diagram', fs_parent] (border outer faces o
 nf = res.count(False)
 print(P.result_line(P.make_result(res.count(True), nf, None if not nf else "selftest_c134_4_owners")), flush=True)
 sys.exit(1 if nf else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

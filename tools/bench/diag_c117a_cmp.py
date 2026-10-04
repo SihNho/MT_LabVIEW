@@ -22,3 +22,7 @@ l3b = all(eb for w, ea, eb in rows if w in PD and w not in (25438, 25461)) and a
 allafter = all(ea for _w, ea, _eb in rows)
 print("SUM normalised: L3b condition holds {0}; every net raw == 116-4 after-read {1} ({2} nets)".format(l3b, allafter, len(rows)), flush=True)
 print(P.result_line(P.make_result(1, 0, None, [])), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

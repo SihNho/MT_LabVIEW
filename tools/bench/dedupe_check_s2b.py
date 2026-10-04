@@ -74,3 +74,7 @@ gate("D6 A1: the 9 expected mutation rows touch no duplicated terminal (and diff
 n_pass = sum(1 for _l, ok in GATES if ok); n_fail = len(GATES) - n_pass; first = next((l for l, ok in GATES if not ok), None)  # noqa: E702
 print("=== GATES: {0} pass / {1} fail{2}".format(n_pass, n_fail, "; failing: " + first if first else ""))
 print(protocol.result_line(protocol.make_result(n_pass, n_fail, first)))
+# ---
+# labview: none
+# hardware: none
+# ---

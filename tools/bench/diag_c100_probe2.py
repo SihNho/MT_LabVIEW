@@ -73,3 +73,7 @@ for loop, body in ((637, 639), (25380, 25392), (1359, 7911)):
     print("FACT outer faces of #{0}: {1}; K owners[loop] = {2}".format(loop, outs, gk.get(str(loop))))
     gate("K owners[{0}] == [*, {1}]".format(body, loop), bool(kb) and kb[1] == loop, kb)
 print(protocol.result_line(protocol.make_result(npass, nfail)), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

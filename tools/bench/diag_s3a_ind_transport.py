@@ -731,3 +731,7 @@ if __name__ == "__main__":
               "(Pre-decided 45). NO VI WAS RUN (34(f)); no new op; no new device; no motor, no ASI, no "
               "camera, no GUI.", flush=True)
         sys.exit(rc)
+# ---
+# labview: build
+# hardware: none
+# ---

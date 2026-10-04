@@ -30,3 +30,7 @@ for nm, g in (("before", bf), ("prov", pv), ("real", rl)):
                 r.get("is_source"), r.get("wire_uid")))
     ok += 1
 print(P.result_line(P.make_result(ok, 3 - ok, None)), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

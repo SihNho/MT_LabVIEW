@@ -283,3 +283,7 @@ S = K.Stage(SRC, SRC_MD5, "allterms_s3", fresh=True, preload=False, work_name=WO
                  "six-column whole-VI terminal reader - typed seeds, one concern per property node, four "
                  "new auto-indexed output tunnels with typed indicators, labels read off the machine.")
 sys.exit(K.run(main, S))
+# ---
+# labview: build
+# hardware: none
+# ---

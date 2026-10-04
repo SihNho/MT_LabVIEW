@@ -8,3 +8,7 @@ for p in sys.argv[1:]:
     for o in objs:
         if o.get("class") in ("WhileLoop", "ForLoop", "CaseStructure", "Diagram", "TopLevelDiagram"):
             print("   ", {k: o.get(k) for k in ("uid", "class", "owner_uid", "owner_class", "pos")})
+# ---
+# labview: none
+# hardware: none
+# ---

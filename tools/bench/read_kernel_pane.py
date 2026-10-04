@@ -11,3 +11,7 @@ for r in out:
     print(f"  {r['index']:2d} {'IND' if r['indicator'] else 'CTL'} {r['label']!r}", flush=True)
 json.dump(out, open(os.path.join(HERE, "kernel_pane.json"), "w"), indent=1)
 print("nodes", g.count(K, "Node"), "wires", g.count(K, "Wire"), "ExecState", g.exec_state(K), flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

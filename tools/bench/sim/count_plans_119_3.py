@@ -23,3 +23,7 @@ for p, w in bad:
     print("BAD ", p, "|", w[:160])
 print("COUNT ok=%d bad=%d" % (len(ok), len(bad)))
 print(protocol.result_line({"status": "PASS", "gates": {"pass": 1, "fail": 0}, "first_fail": None, "artefacts": []}))
+# ---
+# labview: none
+# hardware: none
+# ---

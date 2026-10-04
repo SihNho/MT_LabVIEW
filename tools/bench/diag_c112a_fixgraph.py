@@ -35,3 +35,7 @@ print("wrote", p, "terminals", len(G["terminals"]), "objs", len(G["objs"]), "own
 st = "PASS" if ok and G["terminals"] else "FAIL"
 print('RESULT {"schema":"result-line/1","status":"%s","gates":{"pass":%d,"fail":%d},"first_fail":%s,"artefacts":[]}'
       % (st, 1 if st == "PASS" else 0, 0 if st == "PASS" else 1, "null" if st == "PASS" else '"md5 or terminals"'))
+# ---
+# labview: none
+# hardware: none
+# ---

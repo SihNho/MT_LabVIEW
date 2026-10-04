@@ -171,3 +171,7 @@ json.dump({"card": "143-P1", "v18": {"path": rel(V18), "md5": md5(V18)}, "ops": 
 ARTS.extend({"path": rel(x), "md5": md5(x)} for x in (PROVB, AIN, IN, OUT, FACTS))
 gate("U v18 / s01 / s02v18 / s02 END step file untouched", all(md5(q) == w for q, w in WANT.items()))
 print(protocol.result_line(protocol.make_result(G["pass"], G["fail"], G["first"], ARTS)), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

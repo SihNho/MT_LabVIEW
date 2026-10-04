@@ -154,3 +154,7 @@ bad = [k for k, v in G.items() if not v]
 out = os.path.join(HERE, "diag_c106b_selftest.json"); json.dump({"gates": G}, open(out, "w"), indent=1)
 print(P.result_line(P.make_result(len(G) - len(bad), len(bad), bad[0] if bad else None, [{"path": os.path.relpath(out, ROOT), "md5": v5.d0.md5(out)}])), flush=True)
 sys.stdout.flush(); os._exit(1 if bad else 0)
+# ---
+# labview: read
+# hardware: none
+# ---

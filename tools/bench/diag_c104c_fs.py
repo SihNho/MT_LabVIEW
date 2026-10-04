@@ -28,3 +28,7 @@ for r in F["rows"]:
           "F_after-before", sorted(set(x["key"] for x in r["F_after_sim"]) - set(x["key"] for x in r["F_before_S1"])),
           "F_before-after", sorted(set(x["key"] for x in r["F_before_S1"]) - set(x["key"] for x in r["F_after_sim"])))
 print(protocol.result_line(protocol.make_result(1, 0, None)))
+# ---
+# labview: none
+# hardware: none
+# ---

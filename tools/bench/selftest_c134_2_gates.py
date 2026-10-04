@@ -102,3 +102,7 @@ np_, nf = sum(1 for _l, c in G if c), sum(1 for _l, c in G if not c)
 print("=== GATES: {0} pass / {1} fail".format(np_, nf), flush=True)
 print(P.result_line(P.make_result(np_, nf, next((l for l, c in G if not c), None))), flush=True)
 sys.exit(1 if nf else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

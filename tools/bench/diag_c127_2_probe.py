@@ -25,3 +25,7 @@ print("LoopTun", [(r["owner_uid"], r["term_uid"], r["term_class"], r["is_source"
 for d in (27219, 639, 23169, 536, 12938, 681):
     print("owner of", d, G["owners"].get(str(d)))
 print(P.result_line(P.make_result(1, 0, None)))
+# ---
+# labview: none
+# hardware: none
+# ---

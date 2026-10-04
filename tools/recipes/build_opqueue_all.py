@@ -14,3 +14,7 @@ for kind in ("obtain", "enqueue", "dequeue", "release"):
         print(f"STOP: {kind} build returned {rc}", flush=True)
         sys.exit(rc)
 print("\nALL FOUR QUEUE OPS BUILT", flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

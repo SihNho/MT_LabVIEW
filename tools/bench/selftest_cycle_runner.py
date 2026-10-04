@@ -193,3 +193,8 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+# ---
+# labview: none
+# hardware: none
+# evidence: tools/bench/selftest_cycle_runner.py:3
+# ---

@@ -22,3 +22,7 @@ g = json.load(open(os.path.join(ROOT, pl["finalized"]["base"]["path"]), encoding
 print("PROV keys", sorted(g)[:30], "md5", g.get("md5"), "vi", g.get("vi"))
 print("PICK", SP.find_graph(g.get("md5"), SP.plan_base_graphs(R)), "SKIPPED", SP.FIND_SKIPPED)
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":0,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -98,3 +98,7 @@ subprocess.run(["powershell", "-NoProfile", "-Command", "Stop-Process -Name LabV
 time.sleep(6); s.gate("P1b pins unchanged after", s.pin_check("AFTER"))  # noqa: E702
 s.gate("P12 LabVIEW gone at exit", "LabVIEW.exe" not in subprocess.run(["tasklist"], capture_output=True, text=True, errors="replace").stdout)
 s.dump(); sys.exit(s.summary())
+# ---
+# labview: build
+# hardware: none
+# ---

@@ -136,3 +136,7 @@ if __name__ == "__main__":
     print(protocol.result_line(protocol.make_result(G_["pass"], G_["fail"], G_["first"],
                                                     [{"path": OP, "md5": md5(OP)}] if os.path.exists(OP) else [])))
     sys.exit(0 if not G_["fail"] else 1)
+# ---
+# labview: build
+# hardware: none
+# ---

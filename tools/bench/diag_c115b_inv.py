@@ -11,3 +11,7 @@ for c in d["candidates"]:
         print("   ", f["term_uid"], f["tclass"], "src" if f["is_source"] else "snk", "w", f["wire"], "diag", f["frame_diagram"],
               "rows", [(r[0], r[1], r[2], r[3][:6]) for r in f["raw_wire_rows"]])
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":0,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

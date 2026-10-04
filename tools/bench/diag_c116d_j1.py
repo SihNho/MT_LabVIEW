@@ -92,3 +92,7 @@ if __name__ == "__main__":
                    "log": "tools/bench/diag_c116d_j1.log"},
                   open(os.path.join(REC, "gscript.wire_joints_{0}.json".format(st.stamp)), "w", encoding="utf-8"), indent=1, default=str)
     sys.exit(rc if gone else 1)
+# ---
+# labview: read
+# hardware: none
+# ---

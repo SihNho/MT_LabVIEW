@@ -103,3 +103,7 @@ if __name__ == "__main__":
             else:
                 npass += 1
     print(protocol.result_line(protocol.make_result(npass, nfail, ff, [])), flush=True)
+# ---
+# labview: none
+# hardware: camera
+# ---

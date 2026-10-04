@@ -13,3 +13,7 @@ for s in ["tools/bench/selftest_c134_2_gates.py", "tools/bench/selftest_c134_1_f
           "tools/stage_prerun.py --prerun tools/recipes/stage_d1_ring_p3b2b.py"]:
     print(s, "->", P.check_command(c, pre + s))
 print(P.result_line(P.make_result(1, 0, None, [])))
+# ---
+# labview: none
+# hardware: none
+# ---

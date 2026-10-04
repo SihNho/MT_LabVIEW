@@ -45,3 +45,7 @@ print("saved", g.save(OP), flush=True)
 lab = json.load(open(LABELS))
 if labs:
     lab["outputs"]["Bead is good? array out"] = labs[-1]; json.dump(lab, open(LABELS, "w"), indent=1); print("labels:", lab["outputs"], flush=True)
+# ---
+# labview: build
+# hardware: none
+# ---

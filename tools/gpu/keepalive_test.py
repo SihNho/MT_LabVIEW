@@ -20,3 +20,7 @@ rows = [r for r in csv.reader(open(CSV)) if len(r) >= 5][1:]; h = len(rows) // 2
 for name, part in (("ON half", rows[:h]), ("OFF half", rows[h:])):
     c = collections.Counter((r[1].strip(), r[2].strip()) for r in part); pw = [float(r[4].replace("W", "")) for r in part if r[4].strip().replace(".", "").replace("W", "").strip().isdigit()]
     print(name, "pstate/clock:", c.most_common(3), "| mean power %.1f W" % (sum(pw) / len(pw)) if pw else "")
+# ---
+# labview: none
+# hardware: none
+# ---

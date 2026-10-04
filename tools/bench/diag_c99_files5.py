@@ -14,3 +14,7 @@ for t in outer:
 print("   obj 23032:", bed.objs.get(23032), " obj 23172:", bed.objs.get(23172))
 ng = out["gates"]
 print(f"RESULT {json.dumps({'schema':'result-line/1','status':'PASS' if not ng['fail'] else 'FAIL','gates':{'pass':len(ng['pass']),'fail':len(ng['fail'])},'first_fail':ng['fail'][0] if ng['fail'] else None,'artefacts':[]})}")
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -282,3 +282,7 @@ if __name__ == "__main__":
         if not same:
             rc = 1
     sys.exit(rc)
+# ---
+# labview: read
+# hardware: none
+# ---

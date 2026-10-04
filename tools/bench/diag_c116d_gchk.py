@@ -9,3 +9,7 @@ for r in rows:
         W.setdefault(int(r["wire_uid"]), []).append((int(r["owner_uid"]), r.get("owner_class") or r.get("term_class"), r["term_name"], bool(r["is_source"]), r.get("frame_diagram")))
 for w, v in sorted(W.items()):
     print(w, v)
+# ---
+# labview: none
+# hardware: none
+# ---

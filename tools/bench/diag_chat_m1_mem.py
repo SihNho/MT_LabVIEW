@@ -215,3 +215,7 @@ if __name__ == "__main__":
     if not DRY:
         SX.kill_labview_at_exit()
     sys.exit(rc)
+# ---
+# labview: read
+# hardware: none
+# ---

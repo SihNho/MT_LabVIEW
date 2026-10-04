@@ -9,3 +9,7 @@ FS = ["recipes/stage_d1_ring_p3b1.py", "recipes/stage_d1_ring_p3b2.py", "bench/s
 for p in FS:
     print(hashlib.md5(open(os.path.join(R, "tools", p), "rb").read()).hexdigest(), "tools/" + p, flush=True)
 print(PR.result_line(PR.make_result(len(FS), 0)), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -31,3 +31,7 @@ print("686 owner", d["owners"].get("686"))
 print("686 constants", [(o["uid"], o["class"]) for o in d["objs"]
                         if "Constant" in o["class"] and any(r["frame_diagram"] == 686 for r in rows_of.get(o["uid"], []))])
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

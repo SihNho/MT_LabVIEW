@@ -173,3 +173,7 @@ ff = next((l for l, ok in results if not ok), None)
 print("SUMMARY %d pass / %d fail" % (n_pass, n_fail))
 print(protocol.result_line(protocol.make_result(n_pass, n_fail, ff)))
 sys.exit(0 if n_fail == 0 else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

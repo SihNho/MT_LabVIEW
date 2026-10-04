@@ -34,3 +34,7 @@ for _ in range(30):
 else:
     print("LabVIEW did not answer within 150 s", flush=True)
     sys.exit(1)
+# ---
+# labview: read
+# hardware: none
+# ---

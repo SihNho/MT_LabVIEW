@@ -12,3 +12,7 @@ for k, v in W.items():
 print([o for o in json.load(open('tools/bench/graph_objs_s1_20260923.json', encoding='utf-8'))['objects'] if o['uid'] == 6810])
 print([t for t in W['terminals'] if t['owner_uid'] == 6810])
 print(P.result_line(P.make_result(1, 0, None)))
+# ---
+# labview: none
+# hardware: none
+# ---

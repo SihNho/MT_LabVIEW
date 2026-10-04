@@ -20,3 +20,7 @@ for n in range(6):
         if name == "" and w == 0 and t > 15: break
         if w or br: rows.append((t, name.replace("\n", " ")[:24], w, "BROKEN" if br else ""))
     print(f"node {n} uid {int(vi.GetControlValue('UID'))}: {rows}", flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

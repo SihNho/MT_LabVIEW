@@ -24,3 +24,7 @@ print("  OPIN (move_in op) ->", getattr(__import__("build_d1_v0"), "OPIN", None)
 for j in ("opcreate_equal_labels.json", "opstopfromnode_labels.json"):
     print("  labels %-30s exists=%s" % (j, os.path.exists(os.path.join(HERE, j))))
 print("CHECK DONE")
+# ---
+# labview: read
+# hardware: none
+# ---

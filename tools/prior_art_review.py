@@ -295,6 +295,10 @@ def main():
                          "no recipe (a plan document, a direction change). The reason is mandatory, must be "
                          "non-empty, and is written verbatim into the archived review file so the opt-out is "
                          "auditable. It is not a release: it stops nothing and frees nothing.")
+    ap.add_argument("--diff-from", dest="diff_from", metavar="APPROVED_SCRIPT",
+                    help="card chat-E3: review only what changed vs this approved sibling (tools/priorart_diff.py) - "
+                         "the substantive lines and the new structure classes of the --recipe; parameter-only lines "
+                         "are not reviewed.")
     a = ap.parse_args()
     reason = (a.no_recipe or "").strip()
     if a.recipe and reason:
@@ -307,6 +311,14 @@ def main():
         plan = a.plan
     else:
         print("need --plan or --plan-file"); return 2
+    if a.diff_from and a.recipe:
+        import priorart_diff
+        sc = priorart_diff.scope(os.path.join(ROOT, a.recipe[0]))
+        if sc is None or os.path.normcase(sc["sibling"]) != os.path.normcase(a.diff_from.replace("\\", "/")):
+            sys.stderr.write("--diff-from %s is not the approved sibling of %s (found %s) - full review needed\n"
+                             % (a.diff_from, a.recipe[0], sc and sc["sibling"]))
+            return 2
+        plan = priorart_diff.task_text(sc) + "\n\n=== THE PLAN (context only; review the lines above) ===\n" + plan
 
     task = build_task(plan, a.trigger, a.index)
     jev_advisory(a.slug, plan)
@@ -407,3 +419,7 @@ def arm_stop_records(slug, recipes, opt_out=""):
 
 if __name__ == "__main__":
     sys.exit(main())
+# ---
+# labview: none
+# hardware: none
+# ---

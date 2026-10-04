@@ -78,3 +78,7 @@ print("  FACT  wrote {0} ({1:.1f} KB) md5 {2}".format(out, os.path.getsize(out) 
 nf = sum(1 for _l, ok in GATES if not ok)
 print(P.result_line(P.make_result(len(GATES) - nf, nf, next((l for l, ok in GATES if not ok), None), [{"path": "tools/bench/m8b_frame_source_75.json", "md5": md5(out)}])), flush=True)  # noqa: E501
 sys.exit(1 if nf else 0)
+# ---
+# labview: none
+# hardware: camera
+# ---

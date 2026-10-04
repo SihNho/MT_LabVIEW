@@ -118,3 +118,7 @@ def cite(n, m):
             n["src"] = m.get(t, "unread (token {0} never reached the log)".format(t))
     for v in (n.values() if isinstance(n, dict) else n if isinstance(n, list) else ()):
         cite(v, m)
+# ---
+# labview: read
+# hardware: none
+# ---

@@ -110,3 +110,7 @@ print("  INFO sim/** stageplan flags (not gated): {0}".format(sorted(set((n, r) 
 npass = sum(1 for g in gates if g[1])
 first = next((g[0] for g in gates if not g[1]), None)
 print(P.result_line(P.make_result(npass, len(gates) - npass, first, status="PASS" if npass == len(gates) else "FAIL")))
+# ---
+# labview: none
+# hardware: none
+# ---

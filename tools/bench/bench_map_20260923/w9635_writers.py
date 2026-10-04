@@ -107,3 +107,7 @@ if __name__ == "__main__":
     st = K.Stage(C.S1, C.S1_MD5, "bench_map_w9635", preload=False, deadline_min=28,
                  task="bench 5b item 4: which existing writer re-makes S1 wire 9635 (LoopTunnel inner -> SelectorTunnel outer)")
     sys.exit(K.run(body, st))
+# ---
+# labview: read
+# hardware: none
+# ---

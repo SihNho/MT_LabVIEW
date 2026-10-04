@@ -166,3 +166,7 @@ if __name__ == "__main__":
     step3()
     say("=== c36_close_runner: %d gate failure(s) ===" % FAILS)
     sys.exit(1 if FAILS else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

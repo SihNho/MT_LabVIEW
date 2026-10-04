@@ -172,3 +172,7 @@ gate("F4 pred written: ops == compile (each action once); X10 peak {0} <= {1}".f
      sorted(n for o in ops for n in o["acts"]) == list(range(1, len(pl["actions"]) + 1)) and mp["ok"], mp["peak_mb"])
 arts.extend({"path": rel(p), "md5": md5(p)} for p in (PBI, PB, po))
 finish()
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -29,3 +29,7 @@ print("RESULT " + json.dumps({"schema": "result-line/1", "status": "PASS" if ver
                               "gates": {"pass": 1 if verdict == "OK" else 0, "fail": 0 if verdict == "OK" else 1},
                               "first_fail": None if verdict == "OK" else "ERRORLIST %s: %d extra" % (verdict, len(R["extra"])),
                               "artefacts": [{"path": os.path.relpath(out, os.path.dirname(HERE)), "md5": EC.md5(out)}]}))
+# ---
+# labview: none
+# hardware: none
+# ---

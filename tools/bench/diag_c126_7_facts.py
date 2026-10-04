@@ -99,3 +99,7 @@ for h in hits[:40]:
     print("  AUTOERR", h[:260], flush=True)
 fact("(f) auto-error-handling mentions in files: {0}".format(len(hits)))
 print(P.result_line(P.make_result(len(facts), 0, None)), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

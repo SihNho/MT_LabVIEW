@@ -192,3 +192,7 @@ if __name__ == "__main__":
     except Exception as e:
         import traceback
         print(f"\nOBSERVED EXC {str(e)[:300]}\n{traceback.format_exc()[-1500:]}", flush=True); sys.exit(1)
+# ---
+# labview: build
+# hardware: none
+# ---

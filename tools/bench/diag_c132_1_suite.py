@@ -27,3 +27,7 @@ npass, nfail = sum(1 for _n, c in res if c), sum(1 for _n, c in res if not c)
 print(P.result_line(P.make_result(npass, nfail, next((n for n, c in res if not c), None))), flush=True)
 sys.stdout.flush()
 os._exit(1 if nfail else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

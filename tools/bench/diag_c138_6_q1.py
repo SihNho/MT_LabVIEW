@@ -21,3 +21,7 @@ for t in terms:
     if t.get("wire_uid") == 25415:
         print("w25415", t)
 print(P.result_line(P.make_result(1, 0, None, [])))
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -22,3 +22,7 @@ for f in ("Finding and Modifying Objects\\Tagging.vi", "Structures\\VI Scripting
             print(f"   {step}: {fn()}", flush=True)
         except Exception as e:
             print(f"   {step}: EXC {str(e)[:160]}", flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

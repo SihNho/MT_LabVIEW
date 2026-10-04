@@ -16,3 +16,7 @@ for i, a in enumerate(v['actions'], 1):
     if any(p.lower() in s.lower() for p in pat):
         print(i, s[:900])
 print('RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}')
+# ---
+# labview: none
+# hardware: none
+# ---

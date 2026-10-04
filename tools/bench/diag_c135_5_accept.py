@@ -159,3 +159,7 @@ if __name__ == "__main__":
     import protocol
     print("mode %s" % mode)
     print(protocol.result_line(protocol.make_result(P, F, first_fail=FIRST)))
+# ---
+# labview: none
+# hardware: none
+# ---

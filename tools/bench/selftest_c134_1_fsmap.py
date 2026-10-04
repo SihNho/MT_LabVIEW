@@ -55,3 +55,7 @@ gate("M6 border tunnels with not one inner + one outer face: listed, not guessed
 nf = res.count(False)
 print(P.result_line(P.make_result(res.count(True), nf, None if not nf else "selftest_c134_1_fsmap")), flush=True)
 sys.exit(1 if nf else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -372,3 +372,7 @@ if __name__ == "__main__":
             g.reset()          # release every cached VI Server reference this client holds (CLAUDE.md hygiene)
         except Exception:
             pass
+# ---
+# labview: read
+# hardware: none
+# ---

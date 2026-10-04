@@ -14,3 +14,7 @@ print("FACT accuracy {0} on {1} items ({2} answered, {3} unknown), switched_on={
 ok = answered == rec["n_items"]
 print(PR.result_line(PR.make_result(1 if ok else 0, 0 if ok else 1, None if ok else "Jev answered {0}/{1}".format(answered, rec["n_items"]),
       [{"path": "tools/bench/addrcheck_jev_measure.json", "md5": PR._md5(AC.MEASURE)}])), flush=True)
+# ---
+# labview: none
+# hardware: none
+# ---

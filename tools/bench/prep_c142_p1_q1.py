@@ -38,3 +38,7 @@ for n, a in enumerate(A, 1):
     print("A{0:03d} {1}".format(n, json.dumps(d, default=str)[:420]))
 print(protocol.result_line(protocol.make_result(G["pass"], G["fail"], G["first"], [])), flush=True)
 sys.exit(0 if not G["fail"] else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

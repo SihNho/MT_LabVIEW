@@ -39,3 +39,7 @@ print("RESULT " + json.dumps({"schema": "result-line/1", "status": "PASS" if not
                               "gates": {"pass": len(g) - nf, "fail": nf},
                               "first_fail": next((l for l, ok in g if not ok), None), "artefacts": []}), flush=True)
 sys.exit(1 if nf else 0)
+# ---
+# labview: read
+# hardware: none
+# ---

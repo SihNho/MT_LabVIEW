@@ -68,3 +68,7 @@ if S.get("plan_out") and S["final"]:
     gate("P2 D4 scope = 20 nodes (unchanged), plan_md5 == new plan", len(d4["scope_nodes"]) == 20 and d4["plan_md5"] == md5(FIN), (len(d4["scope_nodes"]), d4["plan_md5"]))
 np_ = sum(1 for _g, ok in gates if ok)
 print(protocol.result_line(protocol.make_result(np_, len(gates) - np_, next((g_ for g_, ok in gates if not ok), None), arts)))
+# ---
+# labview: none
+# hardware: none
+# ---

@@ -40,3 +40,7 @@ t0 = time.time(); g._run(vi); dt = time.time() - t0
 out = list(vi.GetControlValue(lab["outputs"]["x,y,z array out"])); msg = vi.GetControlValue(lab["outputs"]["Error Message out"])
 print(f"run {dt * 1e3:.0f} ms; msg {msg!r}; out {[round(v, 6) for v in out[:6]]}; ref {[round(v, 6) for v in row['ff'][:6]]}; max|diff| {max(abs(a - b) for a, b in zip(out, row['ff'])):.2e}", flush=True)
 print("pos", vi.GetControlValue(lab["outputs"]["pos in cal image out"]), "good", vi.GetControlValue(lab["outputs"]["Bead is good? array out"]), flush=True)
+# ---
+# labview: build
+# hardware: none
+# ---

@@ -53,3 +53,7 @@ for t in range(0, 10):
             print(f"  t{t}: nothing", flush=True)
 print("final ExecState", g.exec_state(T), "wires", g.count(T, "Wire"), flush=True)
 g.close_panel(T); os.remove(T); print("scratch removed", flush=True)
+# ---
+# labview: read
+# hardware: none
+# ---

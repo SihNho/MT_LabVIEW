@@ -44,3 +44,7 @@ gate("P3b source unchanged", md5(SRC) == EXP)
 gate("P3c sizes equal", os.path.getsize(SRC) == os.path.getsize(DST))
 print("SUMMARY %d fail" % fails)
 sys.exit(1 if fails else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

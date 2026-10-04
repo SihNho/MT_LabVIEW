@@ -69,3 +69,7 @@ if MARK in text:
 with open(DOC, "w", encoding="utf-8") as f:
     f.write(text + "\n".join(lines) + "\n")
 print("\n".join(lines).encode("ascii", "replace").decode())
+# ---
+# labview: none
+# hardware: none
+# ---

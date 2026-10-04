@@ -413,3 +413,7 @@ ARTS.extend({"path": rel(p), "md5": md5(p)} for p in (B1IN, PROVB, S2IN, S2P, PP
 gate("SP pred written: ops == compile, each action once", sorted(n for o in ops2 for n in o["acts"]) == list(range(1, len(keep2) + 1)), len(ops2))
 gate("U v16 / meta16 / s01 untouched", md5(V16) == WANT[V16] and md5(META16) == WANT[META16] and md5(S01) == WANT[S01])
 done()
+# ---
+# labview: none
+# hardware: none
+# ---

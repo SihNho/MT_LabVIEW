@@ -292,3 +292,7 @@ def dialog_button(title, button, open_with=None, bd=None, wait_ms=1500):
     if not closed:
         lv("-Action", "key", "-Key", "esc")
     return {"ok": closed, "opened": True, "closed": closed, "rect": [L, T, R, B]}
+# ---
+# labview: build
+# hardware: none
+# ---

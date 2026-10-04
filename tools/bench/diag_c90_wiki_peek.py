@@ -11,3 +11,7 @@ print("gap frames:", [(u, d[u]["pos"], d[u]["owner"]) for u in (686, 3121, 15041
 print("While loops:", [(o["uid"], o["pos"], o["owner"]) for o in objs if o["class"] == "WhileLoop"])
 print("While bodies:", [(u, d[u]["pos"]) for u in (25392, 639, 15266)])
 print("frames of the top-level FS #681 by y-band 102..140:", [(o["uid"], o["pos"]) for o in objs if o["class"] == "Diagram" and o["owner"] == "FlatSequenceFrame" and 100 <= o["pos"][1] <= 140])
+# ---
+# labview: none
+# hardware: none
+# ---

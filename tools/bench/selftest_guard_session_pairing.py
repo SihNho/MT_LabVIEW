@@ -142,3 +142,7 @@ if __name__ == "__main__":
     print("SUMMARY %d/%d gates pass" % (len(RES) - len(bad), len(RES)), flush=True)
     print(P.result_line(P.make_result(len(RES) - len(bad), len(bad), bad[0] if bad else None)), flush=True)
     sys.exit(1 if bad else 0)
+# ---
+# labview: none
+# hardware: none
+# ---

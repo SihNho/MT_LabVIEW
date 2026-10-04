@@ -43,3 +43,7 @@ for k in V.terminals(G, node=10407):
           "eff", [V.show(x) for x in V.effective_sources(G, k)][:3] if not r.get("is_source") else "")
 for n in (23032, 23058, 637, 639):
     print("   node", n, "class", G["cls"].get(n) or G["cls"].get(str(n)), "terms", len(V.terminals(G, node=n)))
+# ---
+# labview: none
+# hardware: none
+# ---

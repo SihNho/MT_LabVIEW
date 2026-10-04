@@ -85,3 +85,7 @@ print(protocol.result_line(protocol.make_result(n_pass, len(gates) - n_pass, fir
                                                 artefacts=[{"path": "tools/bench/sim/c106c_resim_summary.json",
                                                             "md5": SS.md5_file(OUT)}])))
 sys.exit(0 if first is None else 1)
+# ---
+# labview: none
+# hardware: none
+# ---

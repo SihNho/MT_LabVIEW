@@ -20,3 +20,7 @@ print('S1 note', d['note'])
 print('S1 flags', d['flags'][:3])
 print('S1 edges', d['edges'][:2])
 print('S1 cls', list(d['cls'].items())[:3])
+# ---
+# labview: none
+# hardware: none
+# ---

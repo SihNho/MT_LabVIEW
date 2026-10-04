@@ -60,3 +60,7 @@ for k in ("samples", "ops"):
             print("  SAMPLE", kk, json.dumps(v)[:400])
 ok.append(cls_of.get(22694) == "CaseStructure")
 print(P.result_line(P.make_result(sum(ok), len(ok) - sum(ok), None if all(ok) else "case 22694 class")))
+# ---
+# labview: none
+# hardware: none
+# ---
