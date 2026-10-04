@@ -1,0 +1,16 @@
+{
+ "schema": "task/1", "id": "chat-B6", "kind": "build",
+ "goal": "Bench for a cycle assignment agent on ~20 known-answer decision points from cycles 130-143; stub-proved locally, pushed to a branch for a cloud run",
+ "why": "User 2026-10-04: purpose-based cycles run by an assignment agent; run it as a cloud bench first. Detail: brief_chat-B6.md",
+ "inputs": [{"path": "tools/bench/cards/brief_chat-B6.md", "md5": "ef803323868f5c351cc6dbca893cfcd9"}],
+ "pass": [
+  "cases with history-proved answers (file:line each), unsettled ones dropped; includes the cycle-143 cap case",
+  "4 arms wired (opus-5-5 medium/high, sonnet-5-5 medium/high), mechanical + blind scoring, USD and minutes per case",
+  "stub dry run PASS locally, no real cells locally; branch assign-bench-20261004 pushed with cloud_prompt.md"
+ ],
+ "outputs": ["tools/bench/assignbench/cloud_prompt.md"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/assignbench/**", "tools/bench/decbench/**"], "status_edit": false, "git_commit": true, "peers": []},
+ "budget": {"failures": 2, "minutes": 120}, "unblocks": "M4",
+ "rules": ["Offline only", "Edit tool only", "push only the bench branch"]
+}
