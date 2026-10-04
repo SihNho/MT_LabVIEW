@@ -11,6 +11,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 steps = [["make_cases.py"], ["assignbench.py", "--lock"],
          ["assignbench.py", "--stub", "hit", "--reps", "2", "--par", "8", "--tag", "stub_hit"],
          ["assignbench.py", "--stub", "miss", "--reps", "1", "--par", "8", "--no-blind", "--tag", "stub_miss"]]
+if "--no-miss" in sys.argv:          # chat-B6 follow-up 2026-10-04: re-run make_cases, lock and stub hit only
+    steps = steps[:3]
 fails, rc_all = [], 0
 for st in steps:
     p = subprocess.run([sys.executable, "-u", os.path.join(HERE, st[0])] + st[1:], capture_output=True, text=True,
@@ -24,7 +26,7 @@ for st in steps:
     if st[-1] != "stub_miss" and p.returncode:
         fails.append(" ".join(st))
         break
-if not fails:
+if not fails and len(steps) == 4:
     d = json.load(open(os.path.join(HERE, "results_stub_miss.json"), encoding="utf-8"))
     bad = [r["case"] for r in d["records"] if (r.get("mech") or {}).get("M1")]
     print("STUB MISS M1 hits %d of %d" % (len(bad), len(d["records"])), flush=True)

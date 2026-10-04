@@ -5,7 +5,7 @@ r"""assignbench - bench for a CYCLE ASSIGNMENT AGENT on known-answer decision po
         --stub hit|miss|ratelimit [--reps 1]   dry run: claude replaced by decbench/stub_dec.py (no model calls)
         --reps 2 [--par 6] [--guard-usd 150]   full run (real cells; cloud only per the card)
 
-PREDICTION CONTRACT: cases from make_cases.py (21: RETRY 5, ISSUE 7, HANDBACK 6, CLOSE 2, ESCALATE 1). Arms OM / OH / SM /
+PREDICTION CONTRACT: cases from make_cases.py (21: RETRY 5, ISSUE 6, HANDBACK 6, CLOSE 3, ESCALATE 1). Arms OM / OH / SM /
 SH = claude-opus-5-5 medium / high (OH = today's judgement agent, the baseline) and claude-sonnet-5-5 medium / high.
 Every arm-run is decbench.run_arm (one read-only cell in the case worktree, dec_guard hook, rate-limit re-queue <= 3,
 cap --cap-min), scored by dec_score: mechanical (M1 = the ACTION line matches the known action, M2 = the card/question

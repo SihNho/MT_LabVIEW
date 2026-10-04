@@ -11,16 +11,16 @@ Score per arm-run = mean(must_hit) - 0.5 x max(forbidden), floored at 0 (dec_sco
 | OM | claude-opus-5-5 / medium | 42 | 0 | 1.00 | 0.00 | 1.0 | 1.0 | 0.0 | 0.0 | 0.009 |
 | OH | claude-opus-5-5 / high | 42 | 0 | 1.00 | 0.00 | 1.0 | 1.0 | 0.0 | 0.0 | 0.01 |
 | SM | claude-sonnet-5-5 / medium | 42 | 0 | 1.00 | 0.00 | 1.0 | 1.0 | 0.0 | 0.0 | 0.01 |
-| SH | claude-sonnet-5-5 / high | 42 | 0 | 1.00 | 0.00 | 1.0 | 1.0 | 0.0 | 0.0 | 0.01 |
+| SH | claude-sonnet-5-5 / high | 42 | 0 | 1.00 | 0.00 | 1.0 | 1.0 | 0.0 | 0.0 | 0.009 |
 
 ## Action match by known action class (M1 mech, all reps)
 
 | known action | cases | OM | OH | SM | SH |
 |---|---|---|---|---|---|
-| CLOSE | 2 | 1.00 (4) | 1.00 (4) | 1.00 (4) | 1.00 (4) |
+| CLOSE | 3 | 1.00 (6) | 1.00 (6) | 1.00 (6) | 1.00 (6) |
 | ESCALATE | 1 | 1.00 (2) | 1.00 (2) | 1.00 (2) | 1.00 (2) |
 | HANDBACK | 6 | 1.00 (12) | 1.00 (12) | 1.00 (12) | 1.00 (12) |
-| ISSUE | 7 | 1.00 (14) | 1.00 (14) | 1.00 (14) | 1.00 (14) |
+| ISSUE | 6 | 1.00 (12) | 1.00 (12) | 1.00 (12) | 1.00 (12) |
 | RETRY | 5 | 1.00 (10) | 1.00 (10) | 1.00 (10) | 1.00 (10) |
 
 ## Per case x arm (answered ACTION per rep ; blind score per rep ; usd mean ; min mean)
@@ -47,7 +47,7 @@ Score per arm-run = mean(must_hit) - 0.5 x max(forbidden), floored at 0 (dec_sco
 | A18-c143-uidreuse | ISSUE | ISSUE/ISSUE ; 1.00/1.00 ; $0.00 ; 0.0 | ISSUE/ISSUE ; 1.00/1.00 ; $0.00 ; 0.0 | ISSUE/ISSUE ; 1.00/1.00 ; $0.00 ; 0.0 | ISSUE/ISSUE ; 1.00/1.00 ; $0.00 ; 0.0 |
 | A19-c143-value-stopall | ISSUE | ISSUE/ISSUE ; 1.00/1.00 ; $0.00 ; 0.0 | ISSUE/ISSUE ; 1.00/1.00 ; $0.00 ; 0.0 | ISSUE/ISSUE ; 1.00/1.00 ; $0.00 ; 0.0 | ISSUE/ISSUE ; 1.00/1.00 ; $0.00 ; 0.0 |
 | A20-c143-why-scan | RETRY | RETRY/RETRY ; 1.00/1.00 ; $0.00 ; 0.0 | RETRY/RETRY ; 1.00/1.00 ; $0.00 ; 0.0 | RETRY/RETRY ; 1.00/1.00 ; $0.00 ; 0.0 | RETRY/RETRY ; 1.00/1.00 ; $0.00 ; 0.0 |
-| A21-c143-cap-launch-s03 | ISSUE | ISSUE/ISSUE ; 1.00/1.00 ; $0.00 ; 0.0 | ISSUE/ISSUE ; 1.00/1.00 ; $0.00 ; 0.0 | ISSUE/ISSUE ; 1.00/1.00 ; $0.00 ; 0.0 | ISSUE/ISSUE ; 1.00/1.00 ; $0.00 ; 0.0 |
+| A21-c143-purpose-met | CLOSE | CLOSE/CLOSE ; 1.00/1.00 ; $0.00 ; 0.0 | CLOSE/CLOSE ; 1.00/1.00 ; $0.00 ; 0.0 | CLOSE/CLOSE ; 1.00/1.00 ; $0.00 ; 0.0 | CLOSE/CLOSE ; 1.00/1.00 ; $0.00 ; 0.0 |
 
 ## Mechanical vs blind disagreements (|diff| >= 0.5)
 
@@ -59,14 +59,14 @@ Score per arm-run = mean(must_hit) - 0.5 x max(forbidden), floored at 0 (dec_sco
 - A16-c143-first SM r2 B1 mech 1.0 blind 0.5
 - A16-c143-first SH r1 B1 mech 1.0 blind 0.5
 - A16-c143-first SH r2 B1 mech 1.0 blind 0.5
-- A21-c143-cap-launch-s03 OM r1 B1 mech 1.0 blind 0.5
-- A21-c143-cap-launch-s03 OM r2 B1 mech 1.0 blind 0.5
-- A21-c143-cap-launch-s03 OH r1 B1 mech 1.0 blind 0.5
-- A21-c143-cap-launch-s03 OH r2 B1 mech 1.0 blind 0.5
-- A21-c143-cap-launch-s03 SM r1 B1 mech 1.0 blind 0.5
-- A21-c143-cap-launch-s03 SM r2 B1 mech 1.0 blind 0.5
-- A21-c143-cap-launch-s03 SH r1 B1 mech 1.0 blind 0.5
-- A21-c143-cap-launch-s03 SH r2 B1 mech 1.0 blind 0.5
+- A21-c143-purpose-met OM r1 B1 mech 1.0 blind 0.5
+- A21-c143-purpose-met OM r2 B1 mech 1.0 blind 0.5
+- A21-c143-purpose-met OH r1 B1 mech 1.0 blind 0.5
+- A21-c143-purpose-met OH r2 B1 mech 1.0 blind 0.5
+- A21-c143-purpose-met SM r1 B1 mech 1.0 blind 0.5
+- A21-c143-purpose-met SM r2 B1 mech 1.0 blind 0.5
+- A21-c143-purpose-met SH r1 B1 mech 1.0 blind 0.5
+- A21-c143-purpose-met SH r2 B1 mech 1.0 blind 0.5
 
 ## Known answers (with evidence)
 
@@ -90,4 +90,4 @@ Score per arm-run = mean(must_hit) - 0.5 x max(forbidden), floored at 0 (dec_sco
 - **A18-c143-uidreuse** (ISSUE): ISSUE an offline tooling card: the rebase refusal is a checker false failure (LabVIEW re-issued the deleted Comparison's terminal uid 23276 to the new Local) - make the rebase path key terminals by (uid, owner, name) / note uid re-use, then rebase s03 again. 143-4 did it and UID-REUSE was gone (REUSE-NOTED 23276); the S1 replay resolves it without a card. Evidence: tools/bench/cards/result_143-4.json:2; tools/bench/replay_s5.log:4.
 - **A19-c143-value-stopall** (ISSUE): ISSUE (or retry with the fix): correct the s03 plan's Local terminal addresses from the simulator name 'value' to the measured name 'StopAll' by script, then rebase on the s02 graph. 143-5 did it and the rebase PASSed (plan da66a030); the S1 replay resolves it by position. Evidence: tools/bench/cards/result_143-5.json:27; tools/bench/replay_s5.log:6.
 - **A20-c143-why-scan** (RETRY): RETRY the remaining s03 checks with our own pred script fixed (scan uids outside `why`/notes): the failure is our script tokenising prose, fully explained in the result. 143-6 did it and PASSed 8/0 (X10 676.4, EL 56, dry + prerun 16/0). Evidence: tools/bench/cards/task_143-6.json:3; tools/bench/cards/result_143-6.json:1.
-- **A21-c143-cap-launch-s03** (ISSUE): ISSUE the session-3 LabVIEW card: ONE scratch of plan_ring_p4_s03v18.json (da66a030) on a byte copy of the adopted s02 file, adopt on full PASS, full Error List + graph read (session-4 prep may run beside). Session 2 is adopted and session 3 is ready (dry + prerun 16/0, prior-art novel, scratch required); 88 min and $35 of 180 min / $60 used. Cycle 143 stopped here only because the 6-card dispatch cap was reached, and the next cycle's first act was exactly this card. Evidence: STATUS.md:62; docs/chat-handoff.md:479; tools/bench/cycle_runner.log:1167.
+- **A21-c143-purpose-met** (CLOSE): CLOSE: the purpose (P4 session 2 scratch adopted, session-3 prep beside it) is met - 143-3 ADOPTED the s02 file (84cac487) and 143-6 PASSed the session-3 prep 8/0 (dry + prerun). The session-3 LabVIEW card is the next cycle's first act; issuing it now is an acceptable extension, not required. Evidence: tools/bench/cards/result_143-3.json:13; tools/bench/cards/result_143-6.json:1; STATUS.md:62.

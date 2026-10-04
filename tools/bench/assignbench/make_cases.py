@@ -193,18 +193,19 @@ SPEC = [
       ev=[(C + "task_143-6.json", r'why'), (C + "result_143-6.json", r'"pass": 8')],
       m2=("fix the script's scan of the `why` text and rerun", [r"why"]),
       forbid=act("ESCALATE", "CLOSE", "HANDBACK"), m1=act("RETRY", "ISSUE")),
- dict(id="A21-c143-cap-launch-s03", cycle=143,
-      done=["143-P1", "143-1", "143-2", "143-P2", "143-3", "143-4", "143-5", "143-6"], action="ISSUE",
-      answer="ISSUE the session-3 LabVIEW card: ONE scratch of plan_ring_p4_s03v18.json (da66a030) on a byte copy of the "
-             "adopted s02 file, adopt on full PASS, full Error List + graph read (session-4 prep may run beside). "
-             "Session 2 is adopted and session 3 is ready (dry + prerun 16/0, prior-art novel, scratch required); 88 min "
-             "and $35 of 180 min / $60 used. Cycle 143 stopped here only because the 6-card dispatch cap was reached, and "
-             "the next cycle's first act was exactly this card.",
-      ev=[("STATUS.md", r'FIRST ACT of cycle 144 = P4 SESSION 3'), ("docs/chat-handoff.md", r'cycle 143 used 6 = cap'),
-          ("tools/bench/cycle_runner.log", r'CYCLE 143 \| 2026-10-03 10:47:54')],
-      m2=("the session-3 scratch card on a copy of the s02 file", [r"s03|session[ -]?3"]),
-      bonus=("session-4 prep beside it", [A + "PREP", r"s04|session[ -]?4"]),
-      forbid=act("CLOSE")),
+ # A21 known answer changed ISSUE -> CLOSE by the chat 2026-10-04 (chat-B6 follow-up): the cycle's purpose (s02 adopted
+ # + s03 prepared) was met after 143-6, so under the purpose-based design CLOSE is right; ISSUE s03 is an acceptable
+ # extension (bonus), nothing is forbidden.
+ dict(id="A21-c143-purpose-met", cycle=143,
+      done=["143-P1", "143-1", "143-2", "143-P2", "143-3", "143-4", "143-5", "143-6"], action="CLOSE",
+      answer="CLOSE: the purpose (P4 session 2 scratch adopted, session-3 prep beside it) is met - 143-3 ADOPTED the s02 "
+             "file (84cac487) and 143-6 PASSed the session-3 prep 8/0 (dry + prerun). The session-3 LabVIEW card is the "
+             "next cycle's first act; issuing it now is an acceptable extension, not required.",
+      ev=[(C + "result_143-3.json", r'ADOPTED 84cac487'), (C + "result_143-6.json", r'"pass": 8'),
+          ("STATUS.md", r'FIRST ACT of cycle 144 = P4 SESSION 3')],
+      m2=("states the purpose is met (s02 adopted, s03 prepared)", [r"adopt|purpose|met", r"s0?3|session[ -]?3"]),
+      bonus=("names the session-3 card as the next act", [r"s03|session[ -]?3"]),
+      forbid=None),
 ]
 
 
@@ -261,7 +262,8 @@ def main():
         m1 = s.get("m1") or act(s["action"])
         rubric = {"must_hit": [{"id": "M1", "text": "ACTION is %s" % s["action"], "re": m1},
                                {"id": "M2", "text": s["m2"][0], "re": s["m2"][1]}],
-                  "forbidden": [{"id": "F1", "text": "chooses a forbidden action: %s" % s["forbid"][0], "re": s["forbid"]}]}
+                  "forbidden": ([{"id": "F1", "text": "chooses a forbidden action: %s" % s["forbid"][0], "re": s["forbid"]}]
+                                if s.get("forbid") else [])}
         if s.get("bonus"):
             rubric["bonus"] = [{"id": "B1", "text": s["bonus"][0], "re": s["bonus"][1]}]
         ctx = {"cycle": cyc, "purpose": {"act": nxt.get("act"), "pass": nxt.get("pass"), "advances": nxt.get("advances")},

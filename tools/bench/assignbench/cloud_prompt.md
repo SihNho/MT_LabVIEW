@@ -30,8 +30,8 @@ minutes per arm-run come from each cell's JSON envelope.
    It must end with `RESULT {... "status": "PASS" ...}`. It does not need a new lock: `cases_lock.json` is committed
    and its rubric md5s must match (the run refuses otherwise - do NOT re-lock or edit cases.json or the rubrics).
 4. Smoke (real cells, 1 case x 4 arms x 1 rep, no blind, ~$2):
-   `python3 -u tools/bench/assignbench/assignbench.py --cases A21-c143-cap-launch-s03 --reps 1 --par 4 --no-blind --tag smoke_cloud`
-   Check that each `tools/bench/assignbench/runs/smoke_cloud/A21-c143-cap-launch-s03/*/answer.md` starts with
+   `python3 -u tools/bench/assignbench/assignbench.py --cases A21-c143-purpose-met --reps 1 --par 4 --no-blind --tag smoke_cloud`
+   Check that each `tools/bench/assignbench/runs/smoke_cloud/A21-c143-purpose-met/*/answer.md` starts with
    `ACTION:` and that `meta.json` shows a non-zero `usd` and the arm's model in `cells[0].models_used`.
 5. Full run (21 cases x 4 arms x 2 reps = 168 arm-runs + 21 blind scorer cells; expected ~$60-110, ~1-2 h):
    `python3 -u tools/bench/assignbench/assignbench.py --reps 2 --par 6 --guard-usd 150 --tag cloud 2>&1 | tee tools/bench/assignbench/cloud.log`
