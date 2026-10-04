@@ -41,9 +41,14 @@ def main():
     if fx == "miss":
         print(json.dumps(env("I cannot determine this.\nVERDICT: keep NEXT\nDEFECT: none - stub")))
         return 0
-    cases = json.load(open(os.path.join(HERE, "cases.json"), encoding="utf-8"))["cases"]
+    # card chat-B6: assignbench points DECBENCH_CASES at its own cases file; a case may carry its own stub_answer
+    cases = json.load(open(os.environ.get("DECBENCH_CASES") or os.path.join(HERE, "cases.json"),
+                           encoding="utf-8"))["cases"]
     wt = os.path.basename(os.getcwd())
     c = next((x for x in cases if x["id"] == wt), cases[0])
+    if c.get("stub_answer"):
+        print(json.dumps(env(c["stub_answer"])))
+        return 0
     txt = "\n".join(it["text"] for it in c["rubric"]["must_hit"])
     print(json.dumps(env(txt + "\nVERDICT: change NEXT\nDEFECT: major - stub")))
     return 0
