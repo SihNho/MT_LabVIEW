@@ -9,3 +9,17 @@ CASE S6 resume after one cycle: 1 finished, next 2, cycle length = the measured 
 CASE S7 two cycles finished: next None (collect only): PASS
 RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":7,"fail":0},"first_fail":null,"artefacts":[],"card":"chat-B7","labview":"none"}
 BGRUN END rc=0 after 1s
+BGRUN START 2026-10-06 12:12:53 limit 2.0 min: py -u tools/bench/livebench/lb_state.py selftest
+BGRUN PID 3244
+CASE S1 fresh arm: 0 finished, next 1: PASS
+CASE S2 조립, no LabVIEW, no cutoff -> may start: PASS
+CASE S3 main rig-state 실험중 -> refused: PASS
+CASE S4 LabVIEW running -> refused: PASS
+CASE S5 12:00 + 90 min > 13:00 cutoff -> refused; <= 14:00 -> may start: PASS
+CASE S6 resume after one cycle: 1 finished, next 2, cycle length = the measured 112 min: PASS
+CASE S7 two cycles finished: next None (collect only): PASS
+CASE S8 other writers only (chat-F2 commit, chat STATUS/handoff edits, a chat-F2 card): 0 suspect, all INFO: PASS
+CASE S9 arm-made main paths (cycle_144 log, livebench_runner log, a fence-logged path) are SUSPECT, others INFO: PASS
+CASE S10 a 4-digit number or a chat card id is not mistaken for a cycle: PASS
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":10,"fail":0},"first_fail":null,"artefacts":[],"card":"chat-B7","labview":"none"}
+BGRUN END rc=0 after 1s

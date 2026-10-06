@@ -111,12 +111,28 @@ def patches(main_parent):
          '"LIVEBENCH_CLAUDEDEV") else (os.path.basename(os.path.dirname(str(w))).lower() != "claudedev")):', 1),
         ("tools/wiki_build.py", "W1 wiki scratch", 'os.path.join(g.CLAUDEDEV, "wikipane_',
          'os.path.join(getattr(g, "CLAUDEDEV_OUT", g.CLAUDEDEV), "wikipane_', 1),
+        # R1 (first live launch 2026-10-06 12:07, lb_run_A.log: "BGRUN REAP marked KILLED: cycle_runner_main_20261003_1055.log
+        # pid=23836, wait_runner_event.log pid=25492"): the worktree carries the MAIN repo's bgrun logs as committed at the
+        # base commit, some at START without END; the arm's reaper must never mark or edit them.
+        ("tools/bgrun_reap.py", "R1 reaper skips the logs inherited from the main repo",
+         '        if os.path.normcase(os.path.abspath(p)) in excl:\n            continue\n',
+         '        if os.path.normcase(os.path.abspath(p)) in excl:\n            continue\n'
+         '        if os.path.basename(p) in _livebench_inherited():   # livebench (card chat-B7): main-repo logs, never reaped\n'
+         '            continue\n', 1),
+        ("tools/bgrun_reap.py", "R2 inherited-log list", 'BENCH = os.path.join(PROJECT, "tools", "bench")\n',
+         'BENCH = os.path.join(PROJECT, "tools", "bench")\n\n\ndef _livebench_inherited():\n'
+         '    """livebench (card chat-B7): basenames of the bgrun logs this worktree inherited from the main repo."""\n'
+         '    try:\n        import json as _j\n'
+         '        return set(_j.load(open(os.path.join(PROJECT, ".livebench", "inherited_logs.json"), encoding="utf-8")))\n'
+         '    except (OSError, ValueError):\n        return set()\n', 1),
     ]
 
 
-def apply_patches(wt):
+def apply_patches(wt, only=None):
     done = []
     for rel, label, old, new, count in patches(os.path.dirname(MAIN_DIR)):
+        if only and not label.startswith(tuple(only)):
+            continue
         p = os.path.join(wt, rel)
         src = open(p, encoding="utf-8").read()
         n = src.count(old)
@@ -180,6 +196,7 @@ def apply_state(wt, arm):
                              % (arm, wt, arm, out_dir(arm), MAIN_DIR))
             with open(dst, "w", encoding="utf-8", newline="") as f:
                 f.write("\n".join(lines))
+            set_current_bed(dst)
             txt = open(dst, encoding="utf-8").read()
             head = "\n".join(txt.split("\n")[:60])
             gate("STATE STATUS: %d STOP marker(s) neutralised, none left in the head" % n_stop,
@@ -192,6 +209,60 @@ def apply_state(wt, arm):
             os.remove(p)
         gate("STATE %s absent (as in the main tree)" % rel, not os.path.exists(p))
     return man
+
+
+BED_RE = re.compile(r"^current-bed:\s*(\S+\.vi)", re.M)     # == errorlist_check.current_bed_text's regex
+
+
+def set_current_bed(status_path):
+    """The arm's STATUS names the START VI (its byte copy in claudeDev\\bench\\<arm>) as `current-bed:`, in the exact form
+    errorlist_check.current_bed_text parses (first `^current-bed: <name>.vi` line; the name is joined with the
+    LIVEBENCH_CLAUDEDEV-patched CLAUDEDEV). The start state's own line (D1_ring_p3b2b_..., main STATUS) is replaced."""
+    name = ARMS["start_vi"]["name"]
+    t = open(status_path, encoding="utf-8").read()
+    line = ("current-bed: %s   <!-- livebench (card chat-B7): the arm's bed = the byte copy of the start VI in "
+            "claudeDev\\bench\\<arm>, md5 %s; the Error List REUSE path reads errorlist_%s_*.json + "
+            "errorlist_expected_%s.json -->" % (name, ARMS["start_vi"]["md5"], name[:-3], name[:-3]))
+    if BED_RE.search(t):
+        t = re.sub(r"^current-bed:.*$", lambda _m: line, t, count=1, flags=re.M)
+    else:
+        t = t.rstrip("\n") + "\n" + line + "\n"
+    with open(status_path, "w", encoding="utf-8", newline="") as f:
+        f.write(t)
+    got = BED_RE.search(open(status_path, encoding="utf-8").read())
+    gate("BED STATUS current-bed parses to %s" % name, got and got.group(1) == name)
+
+
+def stage_start_vi(arm):
+    """Byte copy of the start VI into claudeDev\\bench\\<arm> (no LabVIEW), md5-checked; the arm's first bed."""
+    sv = ARMS["start_vi"]
+    out = out_dir(arm)
+    os.makedirs(out, exist_ok=True)
+    dst = os.path.join(out, sv["name"])
+    if not (os.path.exists(dst) and md5(dst) == sv["md5"]):
+        shutil.copyfile(os.path.join(CD_ROOT, sv["name"]), dst)
+    return gate("BED start VI byte copy %s md5 %s" % (dst, sv["md5"][:8]), md5(dst) == sv["md5"])
+
+
+def sync_errorlist(wt):
+    """The main repo's saved Error List reads + expected file for the start VI's stem, byte-identical in the worktree
+    (they are tracked at the base commit; re-copied if main's differ or a newer read exists)."""
+    stem = ARMS["start_vi"]["name"][:-3]
+    n = 0
+    for src in glob.glob(os.path.join(MAIN, "tools", "bench", "errorlist_%s_*.json" % stem)) + \
+            glob.glob(os.path.join(MAIN, "tools", "bench", "errorlist_expected_%s.json" % stem)):
+        dst = os.path.join(wt, "tools", "bench", os.path.basename(src))
+        if not (os.path.exists(dst) and md5(dst) == md5(src)):
+            shutil.copyfile(src, dst)
+        n += md5(dst) == md5(src)
+    gate("BED %d Error List file(s) of %s byte-identical to main (read + raw + expected)" % (n, stem), n >= 3)
+
+
+def record_inherited_logs(wt):
+    names = sorted(os.path.basename(p) for p in glob.glob(os.path.join(wt, "tools", "bench", "*.log")))
+    with open(os.path.join(wt, ".livebench", "inherited_logs.json"), "w", encoding="utf-8") as f:
+        json.dump(names, f, indent=0)
+    gate("REAP %d inherited main-repo bgrun log(s) listed in .livebench/inherited_logs.json" % len(names), len(names) > 0)
 
 
 def sync_ignored(wt):
@@ -253,6 +324,107 @@ def fence(arm):
          not git("status", "--porcelain", cwd=wt))
 
 
+def repair(arm):
+    """Fixes after the first live launch (2026-10-06 12:07, lb_run_A.log) for an EXISTING worktree: reset to the setup
+    baseline (drops the failed launch's runner lines / cycle-144 files; git-ignored sim inputs stay), current-bed = the
+    start VI, Error List reads synced, inherited-log list + reaper patches R1/R2, start VI staged; committed; baseline
+    moved. The failed launch's main-side records go to livebench/failed_launch_<arm>_*/."""
+    wt = wt_path(arm)
+    sp = os.path.join(HERE, "setup_%s.json" % arm)
+    rec = json.load(open(sp, encoding="utf-8"))
+    git("reset", "-q", "--hard", rec["setup_commit"], cwd=wt)
+    git("clean", "-fdq", cwd=wt)
+    gate("REPAIR %s reset to the setup baseline %s, clean" % (arm, rec["setup_commit"][:10]),
+         not git("status", "--porcelain", cwd=wt) and git("rev-parse", "HEAD", cwd=wt) == rec["setup_commit"])
+    moved = []
+    for nm in ("%s_state.json", "%s_run.json", "%s.json", "%s_snapshots.json", "lb_run_%s.log"):
+        p = os.path.join(HERE, nm % arm)
+        if os.path.exists(p):
+            d = os.path.join(HERE, "failed_launch_%s_20261006_1207" % arm)
+            os.makedirs(d, exist_ok=True)
+            shutil.move(p, os.path.join(d, os.path.basename(p)))
+            moved.append(os.path.basename(p))
+    set_current_bed(os.path.join(wt, "STATUS.md"))
+    sync_errorlist(wt)
+    record_inherited_logs(wt)
+    pat = apply_patches(wt, only=("R1", "R2"))
+    stage_start_vi(arm)
+    git("add", "-A", cwd=wt)
+    git("commit", "-q", "-m", "livebench repair (card chat-B7): current-bed = start VI bench copy, Error List reads, "
+        "reaper never touches inherited main-repo logs", cwd=wt)
+    rec["setup_commit"] = git("rev-parse", "HEAD", cwd=wt)
+    rec["patches"] = [p for p in rec["patches"] if not p["label"].startswith(("R1", "R2"))] + pat
+    rec["repair"] = {"t": time.strftime("%Y-%m-%d %H:%M:%S"), "moved_failed_launch_records": moved}
+    with open(sp, "w", encoding="utf-8") as fh:
+        json.dump(rec, fh, indent=1)
+    gate("REPAIR committed, setup baseline moved to %s" % rec["setup_commit"][:10], not git("status", "--porcelain", cwd=wt))
+
+
+def hooks_child(wt, json_out):
+    """In the worktree, with the arm env: the runner's OWN errorlist_hook with subprocess.run made to raise (so the GUI
+    read path cannot start LabVIEW: only the offline REUSE branch can return), then gates_due and the cycle card's bed."""
+    sys.path.insert(0, os.path.join(wt, "tools"))
+    import argparse as _ap
+    import importlib
+    import tempfile
+    CR = importlib.import_module("cycle_runner")
+    assert os.path.normcase(os.path.dirname(CR.__file__)) == os.path.normcase(os.path.join(wt, "tools")), CR.__file__
+    out = {}
+    tmp = tempfile.mkdtemp(prefix="lbhooks_")
+    CR.ERRORLIST_REUSE_OUT = tmp
+    real_run = CR.subprocess.run
+
+    def no_run(*a, **k):
+        raise RuntimeError("GUI-READ path reached (would start LabVIEW): %s" % (a[0] if a else k))
+    CR.subprocess.run = no_run
+    st_text = open(os.path.join(wt, "STATUS.md"), encoding="utf-8").read()
+    rl = os.path.join(tmp, "runner.log")
+    a = _ap.Namespace(dry_run=False, dry_cmd="", no_errorlist_hook=False)
+    try:
+        v, js, why = CR.errorlist_hook(999, a, os.path.join(wt, "tools", "bench"), rl, st_text)
+        out["errorlist"] = {"verdict": v, "json": js, "why": why}
+    except Exception as e:                                                         # noqa: BLE001
+        out["errorlist"] = {"verdict": "RAISED", "why": "%s: %s" % (type(e).__name__, e)}
+    CR.subprocess.run = real_run
+    out["errorlist_log"] = open(rl, encoding="utf-8").read() if os.path.exists(rl) else ""
+    import errorlist_check as EC
+    out["bed"] = EC.current_bed_text(st_text)
+    _m, card, _w = CR.next_json_reading(os.path.join(wt, "tools", "bench"))
+    out["gates_due"] = CR.gates_due(os.path.join(wt, "tools", "bench"), os.path.join(wt, "archive", "peer"), card)
+    with open(json_out, "w", encoding="utf-8") as f:
+        json.dump(out, f, indent=1, default=str)
+
+
+def hooks_check(arm):
+    wt = wt_path(arm)
+    env = dict(os.environ)
+    env.update(arm_env(arm, wt))
+    env["LIVEBENCH_CONTAIN"] = "enforce"
+    env["LIVEBENCH_WRITELOG"] = os.path.join(os.environ.get("TEMP", "."), "lb_hooks_%s_writes.jsonl" % arm)
+    jo = os.path.join(os.environ.get("TEMP", "."), "lb_hooks_%s.json" % arm)
+    if os.path.exists(jo):
+        os.remove(jo)
+    before = git("status", "--porcelain", cwd=wt)
+    r = subprocess.run([sys.executable, "-u", os.path.abspath(__file__), "_hooks_child", "--wt", wt, "--json-out", jo],
+                       cwd=wt, env=env, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=900)
+    if not gate("HOOKS %s: child wrote its record (rc %d)" % (arm, r.returncode), os.path.exists(jo), (r.stderr or "")[-300:]):
+        return
+    d = json.load(open(jo, encoding="utf-8"))
+    print("HOOKS %s: errorlist %s | bed %s | log %s" % (arm, d["errorlist"], d["bed"], d["errorlist_log"].strip()[:300]),
+          flush=True)
+    for g_ in d["gates_due"]:
+        print("   gates_due %-40s due=%s %s" % (g_["gate"], g_["due"], str(g_["detail"])[:120]), flush=True)
+    gate("HOOKS %s: the bed is the start VI's copy in the arm folder" % arm,
+         os.path.normcase(str(d["bed"])) == os.path.normcase(os.path.join(out_dir(arm), ARMS["start_vi"]["name"])))
+    gate("HOOKS %s: errorlist_hook verdict OK via the offline REUSE path (no GUI read, no LabVIEW)" % arm,
+         d["errorlist"]["verdict"] == "OK" and "| REUSE |" in d["errorlist_log"], str(d["errorlist"])[:200])
+    gate("HOOKS %s: gates_due ran every check without an error" % arm,
+         d["gates_due"] and all(g_["due"] is not None for g_ in d["gates_due"]))
+    with open(os.path.join(HERE, "hooks_%s.json" % arm), "w", encoding="utf-8") as f:
+        json.dump(d, f, indent=1, default=str)
+    gate("HOOKS %s: the check left the worktree unchanged" % arm, git("status", "--porcelain", cwd=wt) == before)
+
+
 def apply_karpathy(wt):
     sec = open(os.path.join(HERE, "karpathy_principles.md"), encoding="utf-8").read()
     for rel in ARMS["karpathy_targets"]:
@@ -292,6 +464,9 @@ def setup(arm, name=None, commit=None):
         json.dump({"arm": arm, "name": name, "base_commit": full, "flow": cfg["flow"], "extras": cfg.get("extras", []),
                    "env": env, "card": "chat-B7"}, f, indent=1)
     fence_rec = install_fence(wt)
+    record_inherited_logs(wt)
+    sync_errorlist(wt)
+    stage_start_vi(arm)
     git("add", "-A", cwd=wt)
     git("commit", "-q", "-m", "livebench setup arm %s (card chat-B7): start state, hooks re-pointed, CLAUDEDEV_OUT patches, "
         "write fence%s" % (arm, ", Karpathy section" if "karpathy" in cfg.get("extras", []) else ""), cwd=wt)
@@ -528,8 +703,8 @@ def teardown(name):
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=("snapshot", "setup", "sync-ignored", "fence", "contain-dry", "stub", "teardown",
-                                    "_contain_child"))
+    ap.add_argument("cmd", choices=("snapshot", "setup", "sync-ignored", "fence", "repair", "hooks-check", "contain-dry",
+                                    "stub", "teardown", "_contain_child", "_hooks_child"))
     ap.add_argument("arm", nargs="?")
     ap.add_argument("--commit")
     ap.add_argument("--force", action="store_true")
@@ -541,6 +716,9 @@ def main(argv=None):
     a = ap.parse_args(argv)
     if a.cmd == "_contain_child":
         contain_child(a.wt, a.recipe, a.json_out)
+        return 0
+    if a.cmd == "_hooks_child":
+        hooks_child(a.wt, a.json_out)
         return 0
     if a.cmd == "snapshot":
         snapshot(a.force)
@@ -556,6 +734,10 @@ def main(argv=None):
                 json.dump(rec, f, indent=1)
     elif a.cmd == "fence":
         fence(a.arm)
+    elif a.cmd == "repair":
+        repair(a.arm)
+    elif a.cmd == "hooks-check":
+        hooks_check(a.arm)
     elif a.cmd == "contain-dry":
         contain_dry(a.arm, recipe=a.recipe, counterfactual=a.counterfactual)
     elif a.cmd == "stub":

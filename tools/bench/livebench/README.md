@@ -63,6 +63,39 @@ continue later.
   start. It writes nothing.
 - **No arm was started on 2026-10-06** (user).
 
+## First live launch (2026-10-06 12:07): it stopped in 31 s, and these are the fixes
+
+The record is in `failed_launch_A_20261006_1207/`. Nothing ran: no LabVIEW, $0.
+
+1. **ERRORLIST FAIL 'no bed: None'.** The worktree STATUS still named the main bed (`current-bed:
+   D1_ring_p3b2b_...`), and that file is not in `claudeDev\bench\A`.
+   - Fix: every arm's STATUS now carries `current-bed: D1_ring_p4s02_20261003_110001.vi`, which resolves to the byte
+     copy in `claudeDev\bench\<arm>` (md5 84cac487).
+   - The main repo's saved Error List read for that md5 (`errorlist_D1_ring_p4s02_20261003_110001_20261003_110836.json`
+     + `_raw` + `errorlist_expected_…`) is byte-identical in the worktree.
+   - `lb_setup.py hooks-check <arm>` runs the runner's own `errorlist_hook`, with `subprocess.run` made to raise so the
+     GUI read cannot start. Result: verdict OK through REUSE in A and in B (`lb_hooks_A.log`, `lb_hooks_B.log`).
+     `gates_due` also runs clean.
+   - Note: in both arms, `gates_due` reports outcome, violations, retro-debt and gate-fp as DUE (inherited state). So
+     the first cycle of every arm starts with the same due list, and its runner RUNS a due outcome review before the
+     session spawns.
+2. **The POST gate 'main tree unchanged' failed** because other writers change main concurrently (chat-F2's commits,
+   the chat's STATUS edits).
+   - The gate now flags only main-tree paths this ARM could have caused (`lb_state.arm_caused`): a path a worktree
+     fence logged, a `livebench_runner` log, or a basename carrying one of the arm's cycle numbers (>= 144).
+   - Everything else is printed as INFO.
+   - Self-test cases S8 to S10 (in `lb_state.py selftest`, 10/0).
+   - The claudeDev-outside-bench check is unchanged.
+3. **The worktree reaper edited inherited logs.** `bgrun_reap` marked two copies of MAIN-repo logs that the
+   worktree inherited at its base commit as KILLED. Only the worktree copies were edited; main's files were
+   untouched.
+   - Patches R1/R2: the worktree's reaper skips every log listed in `.livebench/inherited_logs.json` (4,417 names,
+     written at setup).
+   - Dry `reap()` in worktree A: 0 scanned, 0 marked.
+4. `lb_setup.py repair <arm>` applied 1 to 3 to A and B. It reset each worktree to its baseline, which drops the
+   failed launch's runner lines. Each fix is committed in the worktree, and `setup_commit` is moved: A `0beeb250`,
+   B `20f552bb`. New arms get all of it from `setup`.
+
 ## How to run (from the main project root)
 
 ```
@@ -175,4 +208,4 @@ has no Claude transcripts.
   - No write resolves elsewhere under claudeDev or into the main project.
   - The counterfactual dry on the unpatched main tree puts the same work copy in the claudeDev ROOT, which shows the
     patch is what moves it.
-- `lb_state.py selftest` 7/0. `lb_state.py status A|B --not-after 13:40`: 0/2 cycles finished, next cycle 1.
+- `lb_state.py selftest` 10/0. `lb_state.py status A|B --not-after 13:40`: 0/2 cycles finished, next cycle 1.

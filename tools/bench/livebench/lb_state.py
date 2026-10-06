@@ -120,6 +120,39 @@ def may_start_cycle(S, st, not_after, main_status=None, now=None, lv_running=Non
     return None
 
 
+def main_changes(before, after, git_fn=None):
+    """Main-tree paths that changed between two lb_run snapshots: new/changed `git status --porcelain` lines plus the
+    files of commits made in between. [(path, how)]."""
+    git_fn = git_fn or (lambda *a: git(*a))
+    out = []
+    pb, pa = set(before.get("porcelain") or []), after.get("porcelain") or []
+    for ln in pa:
+        if ln not in pb:
+            out.append((ln[3:].strip().strip('"'), "worktree-state " + ln[:2].strip()))
+    if before.get("head") and after.get("head") and before["head"] != after["head"]:
+        for p in git_fn("diff", "--name-only", before["head"], after["head"]).splitlines():
+            if p.strip():
+                out.append((p.strip(), "commit %s..%s" % (before["head"][:8], after["head"][:8])))
+    return out
+
+
+def arm_caused(changes, cycles, fence_paths=(), main_dir=None):
+    """Split main-tree changes into (SUSPECT = could have been written by this arm, INFO = other writers). Suspect:
+    a path a worktree fence logged (event shell/open, class main), a `livebench_runner` log, or a basename carrying one
+    of the arm's cycle numbers (>= 144) as a whole number. Everything else - chat-F2's commits, the chat's STATUS /
+    docs edits - is INFO (user-chat decision 2026-10-06 after lb_run_A.log's false POST FAIL)."""
+    md = os.path.normcase(main_dir or MAIN_DIR)
+    fp = set(os.path.normcase(os.path.relpath(p, md)) if os.path.isabs(p) else os.path.normcase(p) for p in fence_paths)
+    nums = set(str(int(n)) for n in cycles)
+    sus, info = [], []
+    for p, how in changes:
+        base = os.path.basename(p.replace("\\", "/"))
+        hit = (os.path.normcase(p.replace("/", os.sep)) in fp or "livebench_runner" in base
+               or any(n in nums for n in re.findall(r"(?<!\d)(\d{3})(?!\d)", base)))
+        (sus if hit else info).append({"path": p, "how": how})
+    return sus, info
+
+
 def selftest():
     import protocol
     res = []
@@ -156,6 +189,24 @@ def selftest():
     open(log, "a", encoding="utf-8").write("CYCLE 145 | 2026-10-07 11:00:00 | 2026-10-07 12:20:00 | exit 0 | $30 | z\n")
     st = state("T", S, st, start_last=143, write=False)
     case("S7 two cycles finished: next None (collect only)", st["cycles_finished"] == 2 and st["next_cycle"] is None)
+    b = {"head": "a" * 40, "porcelain": [" M STATUS.md", " M docs/chat-handoff.md"]}
+    other = {"head": "b" * 40, "porcelain": [" M STATUS.md", " M docs/chat-handoff.md", " M tools/bench/heartbeat_latest.md",
+                                             "?? tools/bench/cards/result_chat-F2.json"]}
+    fake_git = lambda *a: "tools/gscript.py\ndocs/toolkit-capabilities.md\n"                       # noqa: E731
+    ch = main_changes(b, other, fake_git)
+    sus, info = arm_caused(ch, [144, 145], (), main_dir=tmp)
+    case("S8 other writers only (chat-F2 commit, chat STATUS/handoff edits, a chat-F2 card): 0 suspect, all INFO",
+         not sus and len(info) == 4)
+    arm_w = dict(other, porcelain=other["porcelain"] + ["?? tools/bench/cycle_144_assign_1.log",
+                                                       "?? tools/bench/livebench_runner.log", "?? tools/bench/x_fenced.txt"])
+    ch = main_changes(b, arm_w, fake_git)
+    sus, info = arm_caused(ch, [144, 145], [os.path.join(tmp, "tools", "bench", "x_fenced.txt")], main_dir=tmp)
+    case("S9 arm-made main paths (cycle_144 log, livebench_runner log, a fence-logged path) are SUSPECT, others INFO",
+         sorted(os.path.basename(s["path"]) for s in sus) == ["cycle_144_assign_1.log", "livebench_runner.log",
+                                                               "x_fenced.txt"] and len(info) == 4)
+    case("S10 a 4-digit number or a chat card id is not mistaken for a cycle",
+         not arm_caused([("tools/bench/run_1440.log", "x"), ("tools/bench/cards/task_chat-B7.json", "x")], [144], (),
+                        main_dir=tmp)[0])
     n_ok = sum(1 for _l, ok in res if ok)
     first = next((lab for lab, ok in res if not ok), None)
     print(protocol.result_line(protocol.make_result(n_ok, len(res) - n_ok, first)), flush=True)

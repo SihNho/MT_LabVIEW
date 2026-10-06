@@ -74,22 +74,49 @@ def snap():
             except OSError:
                 continue
             cd[os.path.relpath(p, CD_ROOT)] = [st.st_size, int(st.st_mtime)]
-    porc = git("status", "--porcelain")
-    return {"claudedev": cd, "main": {"head": git("rev-parse", "HEAD").strip(),
-                                      "status_md5": md5(os.path.join(MAIN_DIR, "STATUS.md")),
-                                      "porcelain_md5": hashlib.md5(porc.encode("utf-8")).hexdigest(),
-                                      "porcelain_lines": len(porc.splitlines())}}
+    porc = subprocess.run(["git", "status", "--porcelain", "--untracked-files=all"], cwd=MAIN_DIR, capture_output=True,
+                          text=True, encoding="utf-8", errors="replace").stdout
+    lines = porc.splitlines()
+    for i, ln in enumerate(lines):          # a MODIFIED file that changes again keeps its porcelain line: add its mtime
+        p = os.path.join(MAIN_DIR, ln[3:].strip().strip('"'))
+        try:
+            lines[i] = "%s\t%d" % (ln, int(os.path.getmtime(p)))
+        except OSError:
+            pass
+    return {"claudedev": cd, "main": {"head": git("rev-parse", "HEAD").strip(), "porcelain": lines}}
 
 
-def diff_snaps(a, b):
+def fence_paths(wt, t0):
+    """Main-tree paths a worktree fence logged (Python open/copy or shell) since t0."""
+    out = []
+    p = os.path.join(wt, "tools", "bench", "livebench_writes.jsonl")
+    for ln in (open(p, encoding="utf-8").read().splitlines() if os.path.exists(p) else []):
+        try:
+            r = json.loads(ln)
+            if r.get("class") == "main" and time.mktime(time.strptime(r["t"], "%Y-%m-%d %H:%M:%S")) >= t0 - 1:
+                out.append(r["path"])
+        except (ValueError, KeyError):
+            continue
+    return out
+
+
+def diff_snaps(a, b, cycles=(), fpaths=()):
+    """claudeDev: any change outside bench\\ (fixture excepted) is the arm's (nobody else writes there while an arm
+    runs). Main tree: only changes the ARM could have caused are SUSPECT (lb_state.arm_caused); concurrent work by
+    other writers (chat-F2 commits, the chat's STATUS edits) is INFO."""
     ka, kb = set(a["claudedev"]), set(b["claudedev"])
     changed = sorted(k for k in ka & kb if a["claudedev"][k] != b["claudedev"][k])
+    strip = lambda s: dict(s, porcelain=[ln.split("\t")[0] for ln in s["porcelain"]])   # noqa: E731
+    ch = main_changes(dict(a["main"], porcelain=a["main"]["porcelain"]), dict(b["main"], porcelain=b["main"]["porcelain"]))
+    ch = [(p.split("\t")[0], how) for p, how in ch]
+    sus, info = arm_caused(ch, cycles, fpaths)
     return {"claudedev_added": sorted(kb - ka), "claudedev_removed": sorted(ka - kb), "claudedev_changed": changed,
-            "main_changed": a["main"] != b["main"], "main_before": a["main"], "main_after": b["main"]}
+            "main_suspect": sus, "main_info": info, "main_head": [a["main"]["head"], b["main"]["head"]],
+            "main_porcelain_lines": [len(strip(a["main"])["porcelain"]), len(strip(b["main"])["porcelain"])]}
 
 
 sys.path.insert(0, HERE)
-from lb_state import may_start_cycle, state as write_state   # noqa: E402  RESUME record + STOP SAFETY (selftest 7 cases)
+from lb_state import may_start_cycle, state as write_state, main_changes, arm_caused   # noqa: E402  (selftest 10 cases)
 
 
 def run(arm, max_min=300, no_memory=False, not_after=None):
@@ -159,14 +186,21 @@ def run(arm, max_min=300, no_memory=False, not_after=None):
         finally:
             os.remove(lock)
         t1 = time.time()
-        d = diff_snaps(before, snap())
-        st.setdefault("segments", []).append({"t0": t0, "t1": t1, "rc": rc, "snapshots": d})
+        done_before = set(c["n"] for c in st.get("cycles") or [])
+        st = write_state(arm, S, st)
+        seg_cycles = sorted(set(c["n"] for c in st.get("cycles") or []) - done_before) or \
+            [max([c["n"] for c in st.get("cycles") or []] + [143]) + 1]       # a cycle that stopped early has no CYCLE line
+        d = diff_snaps(before, snap(), seg_cycles, fence_paths(wt, t0))
+        st.setdefault("segments", []).append({"t0": t0, "t1": t1, "rc": rc, "cycles": seg_cycles, "snapshots": d})
         st["t1"] = t1
         st = write_state(arm, S, st)
         gate("POST cycle: nothing in the claudeDev root changed outside bench\\ (fixture excepted)",
              not [k for k in d["claudedev_added"] + d["claudedev_removed"] + d["claudedev_changed"]
                   if not k.lower().startswith("niscriptingexamples")], json.dumps(d)[:300])
-        gate("POST cycle: the main tree is unchanged (HEAD, STATUS, git status)", not d["main_changed"])
+        for x in d["main_info"][:20]:
+            print("INFO main-tree change by another writer (not this arm): %s (%s)" % (x["path"], x["how"]), flush=True)
+        gate("POST cycle: no main-tree change this arm could have caused (cycles %s, fence-logged paths, "
+             "livebench_runner logs)" % seg_cycles, not d["main_suspect"], json.dumps(d["main_suspect"])[:300])
         gate("POST cycle: LabVIEW gone", not labview_running())
         if rc != 0:
             print("RUN %s: the runner exited %d - stopping here (resumable)" % (arm, rc), flush=True)
