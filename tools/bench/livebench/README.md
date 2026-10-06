@@ -90,7 +90,11 @@ py tools/bench/livebench/lb_run.py collect <arm>      # re-collect only
     passed.
   - `.claude/settings*.json` hook paths re-pointed to the worktree (11 hooks).
   - The patches below.
-  - The write fence `.livebench/sitecustomize.py`.
+  - The write fence `.livebench/sitecustomize.py`, and the shell fence `.livebench/guard_fence.py`. For A and B the
+    shell fence was added by `lb_setup.py fence <arm>` in a second worktree commit. `setup_<arm>.json` `setup_commit`
+    = that commit, which is the metrics baseline.
+  - Memory: `lb_run` copies the main project's Claude memory into the worktree's project key by default (chat decision:
+    the arms see MEMORY.md as live cycles do).
 - **next.json** is the fixed cycle-1 purpose, the same for every arm: "P4 session 3 (plan_ring_p4_s03v18.json
   da66a030): ONE scratch on a byte copy of D1_ring_p4s02_20261003_110001.vi, adopt on full PASS…" (md5 in
   `start_state/manifest.json`).
@@ -111,8 +115,18 @@ py tools/bench/livebench/lb_run.py collect <arm>      # re-collect only
   - It REFUSES any file write under the claudeDev root outside `bench\<arm>`, and any write into the main project.
   - It allows writes to gscript's Moving Objects fixture, which gscript restores itself.
   - Every classified write is logged to `<worktree>/tools/bench/livebench_writes.jsonl`.
-  - It does not catch PowerShell or Bash file writes. `lb_run`'s before/after snapshots of the claudeDev root and the
-    main tree catch those.
+- **The shell write fence** `.livebench/guard_fence.py` is registered FIRST in the worktree's PreToolUse
+  Bash|PowerShell hooks. It is in the worktree only, never in the main repo (chat decision 2026-10-06).
+  - It REFUSES (exit 2) a Bash/PowerShell command that writes into the claudeDev root outside `bench\<arm>` (another
+    arm's folder included) or into the main project.
+  - What counts as a write: output redirects; the destination of cp/Copy-Item/robocopy; any path of
+    rm/mv/Remove-Item/Set-Content/Out-File/New-Item/mkdir/…; git write subcommands on main; `[IO.File]` writes.
+  - Reads pass, and so does copying FROM the root INTO the arm folder.
+  - Refusals are logged with `event: shell`, and lb_collect counts them (`containment.shell_refused`).
+  - Self-test (`py .livebench/guard_fence.py --selftest`): 11 refuse + 8 allow + 2 hook-protocol cases, 21/0 in A and
+    21/0 in B (`lb_fence_A.log`, `lb_fence_B.log`).
+  - It cannot resolve shell variables. The Python fence and `lb_run`'s before/after snapshots of the claudeDev root
+    and the main tree (checked after every cycle) remain the backstop.
 - **Runner**: `cycle_runner.py --cycles 2 [--flow legacy]`, run from the worktree with no supervisor. The motor-limit,
   Error List and LabVIEW-close hooks stay on.
 
@@ -153,7 +167,7 @@ has no Claude transcripts.
 ## Evidence so far (card chat-B7)
 
 - `stub_A.json`: the whole runner ran 2 cycles on arm A's setup, with stub sessions, a fake claudeDev root in %TEMP%,
-  and no LabVIEW or motor. All 51 gates passed (`lb_stub_A.log`). The stub worktree was removed afterwards.
+  and no LabVIEW or motor. All 54 gates passed (`lb_stub_A.log`, rerun with the shell fence installed). The stub worktree was removed afterwards.
 - `contain_A.json` / `contain_B.json` (`lb_contain_A.log` 10/0, `lb_contain_B.log` 8/0): `stage_prerun.dry` of
   `stage_d1_ring_p4_s03v18_scratch.py` in each worktree PASSES.
   - The Stage work copy and its save resolve to `claudeDev\bench\<arm>\D1_ring_p4s03_<ts>.vi`.

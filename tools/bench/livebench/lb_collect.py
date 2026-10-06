@@ -415,15 +415,19 @@ def plan_progress(wt, setup, t0, t1, cyc, card_list, adopts, cfg):
 
 
 def containment(writelog, snapshots, t0):
-    res = {"writes_by_class": {}, "refused": [], "writelog": writelog, "snapshots": None}
+    res = {"writes_by_class": {}, "refused": [], "shell_refused": 0, "writelog": writelog, "snapshots": None}
     for ln in read(writelog).splitlines() if writelog else []:
         try:
             r = json.loads(ln)
         except ValueError:
             continue
+        if r.get("t") and epoch(r["t"]) < t0:
+            continue
         res["writes_by_class"][r["class"]] = res["writes_by_class"].get(r["class"], 0) + 1
         if r.get("refused"):
-            res["refused"].append({"path": r["path"], "class": r["class"], "argv0": r.get("argv0"), "t": r.get("t")})
+            res["shell_refused"] += r.get("event") == "shell"
+            res["refused"].append({"path": r["path"], "class": r["class"], "event": r.get("event"),
+                                   "argv0": r.get("argv0"), "why": r.get("why"), "t": r.get("t")})
     if snapshots and os.path.exists(snapshots):
         res["snapshots"] = json.load(open(snapshots, encoding="utf-8"))
     return res

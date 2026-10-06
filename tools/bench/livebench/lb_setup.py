@@ -210,6 +210,49 @@ def sync_ignored(wt):
     return n
 
 
+def install_fence(wt):
+    """The SHELL write fence (chat decision 2026-10-06): .livebench/guard_fence.py, registered FIRST in the worktree's
+    PreToolUse Bash|PowerShell hooks (idempotent), then its self-test (refuse + allow cases) against the worktree's
+    arm.json. Worktree only - the main repo's settings are never touched."""
+    ov = os.path.join(wt, ".livebench")
+    dst = os.path.join(ov, "guard_fence.py")
+    shutil.copyfile(os.path.join(HERE, "overlay", "guard_fence.py"), dst)
+    sp = os.path.join(wt, ".claude", "settings.json")
+    s = json.load(open(sp, encoding="utf-8"))
+    cmd = 'py "%s"' % dst.replace("\\", "/")
+    blk = next((m for m in s["hooks"]["PreToolUse"] if m.get("matcher") == "Bash|PowerShell"), None)
+    blk["hooks"] = [h for h in blk["hooks"] if "guard_fence.py" not in h.get("command", "")]
+    blk["hooks"].insert(0, {"type": "command", "command": cmd, "timeout": 10,
+                            "statusMessage": "livebench fence: no shell write into claudeDev outside this arm or into main"})
+    with open(sp, "w", encoding="utf-8", newline="") as f:
+        json.dump(s, f, indent=2, ensure_ascii=False)
+    gate("FENCE hook registered first in %s" % sp, json.load(open(sp, encoding="utf-8"))["hooks"]["PreToolUse"]
+         [s["hooks"]["PreToolUse"].index(blk)]["hooks"][0]["command"] == cmd)
+    r = subprocess.run([sys.executable, dst, "--selftest"], capture_output=True, text=True, encoding="utf-8",
+                       errors="replace", timeout=120)
+    print(r.stdout.strip(), r.stderr.strip()[-300:], flush=True)
+    m = re.search(r"FENCE-SELFTEST .*: (\d+) pass / (\d+) fail", r.stdout)
+    gate("FENCE self-test in %s: %s" % (wt, m.group(0) if m else "no summary"), r.returncode == 0 and m and m.group(2) == "0")
+    return {"file": ".livebench/guard_fence.py", "md5": md5(dst), "selftest": m.group(0) if m else None}
+
+
+def fence(arm):
+    """Install the shell fence into an EXISTING arm worktree, commit it there, and move setup_<arm>.json's baseline."""
+    wt = wt_path(arm)
+    sp = os.path.join(HERE, "setup_%s.json" % arm)
+    rec = json.load(open(sp, encoding="utf-8"))
+    f = install_fence(wt)
+    git("add", "-A", cwd=wt)
+    if git("status", "--porcelain", cwd=wt):
+        git("commit", "-q", "-m", "livebench shell fence (card chat-B7): .livebench/guard_fence.py first in PreToolUse "
+            "Bash|PowerShell", cwd=wt)
+    rec["setup_commit"], rec["fence"] = git("rev-parse", "HEAD", cwd=wt), f
+    with open(sp, "w", encoding="utf-8") as fh:
+        json.dump(rec, fh, indent=1)
+    gate("FENCE committed in the worktree, setup baseline moved to %s" % rec["setup_commit"][:10],
+         not git("status", "--porcelain", cwd=wt))
+
+
 def apply_karpathy(wt):
     sec = open(os.path.join(HERE, "karpathy_principles.md"), encoding="utf-8").read()
     for rel in ARMS["karpathy_targets"]:
@@ -248,6 +291,7 @@ def setup(arm, name=None, commit=None):
     with open(os.path.join(ov, "arm.json"), "w", encoding="utf-8") as f:
         json.dump({"arm": arm, "name": name, "base_commit": full, "flow": cfg["flow"], "extras": cfg.get("extras", []),
                    "env": env, "card": "chat-B7"}, f, indent=1)
+    fence_rec = install_fence(wt)
     git("add", "-A", cwd=wt)
     git("commit", "-q", "-m", "livebench setup arm %s (card chat-B7): start state, hooks re-pointed, CLAUDEDEV_OUT patches, "
         "write fence%s" % (arm, ", Karpathy section" if "karpathy" in cfg.get("extras", []) else ""), cwd=wt)
@@ -255,7 +299,7 @@ def setup(arm, name=None, commit=None):
     rec = {"schema": "livebench-setup/1", "arm": arm, "name": name, "worktree": wt, "branch": branch,
            "base_commit": full, "setup_commit": setup_commit, "flow": cfg["flow"], "extras": cfg.get("extras", []),
            "claudedev_out": out_dir(arm), "start_state_manifest": man, "settings": settings, "patches": pat,
-           "ignored_inputs_copied": n_ign,
+           "ignored_inputs_copied": n_ign, "fence": fence_rec,
            "overlay_md5": md5(os.path.join(ov, "sitecustomize.py")), "env": env,
            "next_json_md5": md5(os.path.join(wt, "tools", "bench", "next.json")),
            "t": time.strftime("%Y-%m-%d %H:%M:%S")}
@@ -484,7 +528,8 @@ def teardown(name):
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=("snapshot", "setup", "sync-ignored", "contain-dry", "stub", "teardown", "_contain_child"))
+    ap.add_argument("cmd", choices=("snapshot", "setup", "sync-ignored", "fence", "contain-dry", "stub", "teardown",
+                                    "_contain_child"))
     ap.add_argument("arm", nargs="?")
     ap.add_argument("--commit")
     ap.add_argument("--force", action="store_true")
@@ -509,6 +554,8 @@ def main(argv=None):
             rec["ignored_inputs_copied"] = n
             with open(sp, "w", encoding="utf-8") as f:
                 json.dump(rec, f, indent=1)
+    elif a.cmd == "fence":
+        fence(a.arm)
     elif a.cmd == "contain-dry":
         contain_dry(a.arm, recipe=a.recipe, counterfactual=a.counterfactual)
     elif a.cmd == "stub":
