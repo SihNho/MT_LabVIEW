@@ -1,0 +1,42 @@
+BGRUN START 2026-10-07 04:29:18 limit 5.0 min: py -u tools/bench/selftest_fn_f2.py
+BGRUN PID 672
+  PASS  P1a gscript.delete_object removed 1 -> the gone set, outcome ok
+  PASS  P1b gscript.delete_object removed 0 -> PostconditionFailed (a RuntimeError) at the call, outcome no_output, measured removed 0, the old message first
+  PASS  P1c Stage.delete_object #11 first call: err '', outcome ok, the uid removed
+  PASS  P1d Stage.delete_object #11 AGAIN (double delete) fails AT THE CALL: op err PostconditionFailed, outcome no_output, measured removed 0
+  PASS  P1e Stage.delete_wire w21 twice: 1st ok, 2nd op err + outcome no_output (found 0)
+  PASS  P2a term_index with 2 matching rows -> PostconditionValueError (a ValueError) at the call, outcome failed, measured matches 2
+  PASS  P2b term_index with 0 rows -> outcome no_output
+  PASS  P2c one row but the node echo differs -> outcome failed (node_echo)
+  PASS  P2d exactly 1 row -> (di, ni, i, row) unchanged
+POISONED: COM Run did not return within 0.200s and was abandoned alive; the next COM call will raise COMPoisoned instead of blocking behind it.
+  PASS  P3a the REAL _run times out (0.2 s cap) -> the wrapped count's outcome timed_out, module poisoned
+  PASS  P3b next call while poisoned (COMPoisoned) -> Stage._op record outcome timed_out
+  PASS  P3c classify: watchdog text and COMPoisoned -> timed_out, anything else -> failed
+  PASS  P4a wrapped count returns exactly the original's value; outcome ok recorded
+  PASS  P4b record-mode postcondition (broken_after) does NOT raise: same dict returned, err '' - the op record carries outcome failed with measured broken_after 1
+  PASS  P4c connect_term_uid returning wire_uid 0 -> PostconditionFailed, outcome no_output (row on_fail raise)
+  PASS  P9a table coverage: every LabVIEW-touching gscript function and Stage._op verb has a row; no orphan; every `none` row gives a reason
+  PASS  P9b gscript.py's last statement installs the wrappers: FNCONTRACT_WRAPPED = _fc.install(globals(), 'gscript')
+  PASS  P9c install wraps the table's rows, keeps __wrapped__ and signatures, and is idempotent
+  PASS  P9d Stage.delete_object / delete_wire call the declared checks (removed / found)
+  PASS  P10a success: returns the new loop uid, NO precondition read (count not called), outcome ok
+  PASS  P10b no SubVI: PreconditionFailed (a RuntimeError), original 1055 text FIRST, reason src_present 0, outcome failed, count('T.vi','SubVI') read once
+  PASS  P10c precondition HOLDS (1 SubVI): the ORIGINAL RuntimeError unchanged, not PreconditionFailed
+  PASS  P10d explicit src_cls 'WhileLoop' index 2 with 2 present -> PreconditionFailed (needs > index)
+  PASS  P10e install passes the module namespace (a wrapped loop_in measures through its own module's count); describe names the PRE
+  PASS  P5a record fresh-pass, then STALE after the function's body changed; another function unaffected
+  PASS  P5b a record without a plan is refused (plan first)
+  PASS  P6a advisory: allowed, ONE `FN-GATE ADVISORY` line logged naming the unit and the missing functions
+  PASS  P6b mode refuse: refused with the record-gate text
+  PASS  P6c auto switch: condition MET -> mode REFUSE, nothing missing -> allowed
+  PASS  P6d the real config states the switch rule: auto false, required_from = plan_ring_p4_v18 + plan_ring_p4_s03v18 (chat decision 2026-10-07 (2)), every listed plan on disk; mode advisory, or refuse only with the condition MET
+  PASS  P6e stage_prerun.fn_record_gate (the launch gate's hook point) allows and logs one ADVISORY line
+  PASS  P6f every function the P4 v18 plan uses (58) has a written test plan in tools/bench/fn_records
+  PASS  P7a generator: appends once, second run is a no-op, prose before the block byte-identical
+  PASS  P7b the real doc's block is current (generated, no drift)
+  PASS  P8a drift names the function missing from the block, the block row whose function is gone, the STALE record
+  PASS  P8b doc_lint L12 reports the drift as WARN
+=== 36 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":36,"fail":0},"first_fail":null,"artefacts":[],"card":"chat-F3b","labview":"build"}
+BGRUN END rc=0 after 31s

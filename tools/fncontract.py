@@ -37,6 +37,11 @@ THE TABLE (`TABLE`, one row per function, data not prose):
                        there would change what the function does.
   A function whose postcondition cannot be measured cheaply says so: {"none": "<reason>"}, never silently.
 
+PRECONDITIONS (`PRE`, card chat-F3b 2026-10-07): declared per function, checked AT THE CALL on its failure path only (a call
+that raised is re-examined: the precondition measured, and when it does not hold the call fails with PreconditionFailed - a
+RuntimeError naming the reason after the original text - instead of the bare op error). Today: gscript.loop_in's default
+input-tunnel source Traverse('SubVI')[0] needs a SubVI in the VI (error 1055 otherwise, fntest_g1.log run 2).
+
 install(namespace, "gscript") wraps every gscript function the table names (functools.wraps; idempotent; `__wrapped__`
 kept, so inspect.getsource / signature still read the original). Behaviour on success is unchanged except that a
 declared `result` postcondition with on_fail raise can now fail the call - the purpose of the card.
@@ -74,6 +79,15 @@ class PostconditionValueError(ValueError):
 
     def __init__(self, msg, outcome_=None):
         ValueError.__init__(self, msg)
+        self.outcome = outcome_
+
+
+class PreconditionFailed(RuntimeError):
+    """card chat-F3b: a DECLARED precondition (PRE) did not hold when the call failed. A RuntimeError, so every caller that
+    caught the function's own RuntimeError still catches it. `.outcome` = the standard outcome dict (outcome failed)."""
+
+    def __init__(self, msg, outcome_=None):
+        RuntimeError.__init__(self, msg)
         self.outcome = outcome_
 
 
@@ -236,8 +250,58 @@ _EXTRACT = {
 _TLS = threading.local()
 
 
-def contract(fn, f):
-    """Wrap `f` (the function the TABLE row `fn` describes) so every call ends in ONE standard outcome."""
+# ------------------------------------------------------------------------------------------------ preconditions
+# card chat-F3b (chat decision 1, 2026-10-07, after tools/bench/fntest_g1.log run 2): a PRECONDITION is declared per
+# function and checked AT THE CALL. It is MEASURED ON THE CALL'S FAILURE PATH ONLY (when the call raised), so a call that
+# succeeds issues no extra LabVIEW read and its behaviour, return value and read count are unchanged (the X10 memory model
+# counts a stage's reads). When the measurement shows the precondition violated, the wrapper raises PreconditionFailed
+# (a RuntimeError) whose message keeps the original exception's text FIRST (log readers keyed on it stay valid) and
+# appends the clear reason; outcome `failed`. A precondition that holds, or a measurement that itself raises, leaves the
+# original exception exactly as it was (never masked). The wrapped function's own source is never touched.
+#   "pre":     {quantity: (op, want)}            what must hold (OPS)
+#   "measure": fn(ns, args, kwargs) -> {quantity: value, ...}   ns = the wrapped module's globals (install passes it)
+#   "why":     the reason appended to the message when it does not hold
+def _loop_in_src(ns, a, k):
+    target = _arg(a, k, 1, "target")
+    cls = _arg(a, k, 4, "src_cls") or "SubVI"
+    idx = int(_arg(a, k, 5, "src_index", 0) or 0)
+    n = int(ns["count"](target, cls))
+    return {"src_present": 1 if n > idx else 0, "src_cls": cls, "src_index": idx, "count": n}
+
+
+PRE = {
+    "gscript.loop_in": {
+        "pre": {"src_present": ("==", 1)}, "measure": _loop_in_src,
+        "why": "loop_in's input-tunnel source is Traverse(src_cls or 'SubVI')[src_index] (gscript.py:1530): the target VI must "
+               "hold more than src_index objects of that class - with the default source at least ONE SubVI; without it "
+               "OpWhileLoopIn_v0 / OpForLoopIn_v0 stop with error 1055 at To More Specific Class (tools/bench/fntest_g1.log "
+               "run 2, 2026-10-07; PD314(d)) - drop a SubVI on the VI first"},
+}
+
+
+def precondition_error(fn, exc, ns, a, k):
+    """card chat-F3b: `fn`'s declared precondition measured after the call raised `exc` -> a PreconditionFailed (its
+    outcome recorded) when it does not hold, else None (the caller re-raises `exc` unchanged)."""
+    pre = PRE.get(fn)
+    if pre is None or ns is None or isinstance(exc, PreconditionFailed):
+        return None
+    try:
+        m = pre["measure"](ns, a, k)
+    except Exception:                                                              # noqa: BLE001 - never mask `exc`
+        return None
+    _st, bad, expected = evaluate(fn, m, pre["pre"])
+    if not bad:
+        return None
+    tag = "; ".join("%s %s %s, measured %s" % (q, o, w, g_) for q, o, w, g_ in bad)
+    oc = outcome("failed", fn, "precondition: " + tag, m, expected)
+    _record(oc)
+    return PreconditionFailed("%s: %s [precondition %s: %s -> failed: %s]" % (
+        type(exc).__name__, str(exc)[:300], fn, tag, pre["why"]), oc)
+
+
+def contract(fn, f, ns=None):
+    """Wrap `f` (the function the TABLE row `fn` describes) so every call ends in ONE standard outcome. `ns` = the module's
+    globals, needed only by a PRE measurement (install passes it)."""
     if getattr(f, "__fncontract__", None):
         return f
     spec = TABLE.get(fn) or {}
@@ -247,6 +311,9 @@ def contract(fn, f):
         try:
             res = f(*a, **k)
         except Exception as e:                                                     # noqa: BLE001 - re-raised unchanged
+            pe = precondition_error(fn, e, ns, a, k)                               # card chat-F3b: failure path only
+            if pe is not None:
+                raise pe from e
             oc = getattr(e, "outcome", None)
             if not (isinstance(oc, dict) and oc.get("outcome") in OUTCOMES):
                 oc = outcome(classify_exception(e), fn, "%s: %s" % (type(e).__name__, str(e)[:240]))
@@ -287,7 +354,7 @@ def install(namespace, prefix):
         f = namespace.get(fn)
         if not callable(f) or getattr(f, "__fncontract__", None) or isinstance(f, type):
             continue
-        namespace[fn] = contract(name, f)
+        namespace[fn] = contract(name, f, namespace)
         done.append(fn)
     return done
 
@@ -532,11 +599,13 @@ def describe(fn):
     s = TABLE.get(fn)
     if s is None:
         return "MISSING from fncontract.TABLE"
+    pre = ("; PRE " + ", ".join("%s %s %s" % (q, o, w) for q, (o, w) in PRE[fn]["pre"].items()) +
+           " (measured when the call raised)") if fn in PRE else ""
     if "post" not in s:
-        return str(s.get("none"))
+        return str(s.get("none")) + pre
     post = ", ".join("%s %s %s" % (q, o, w) for q, (o, w) in s["post"].items())
-    return "%s [%s, %s]" % (post, s.get("measure", "?"), s.get("on_fail", "raise") if s.get("measure") in
-                            ("inline", "result") else "existing" if s.get("measure") == "existing-raise" else "caller")
+    return "%s [%s, %s]%s" % (post, s.get("measure", "?"), s.get("on_fail", "raise") if s.get("measure") in
+                              ("inline", "result") else "existing" if s.get("measure") == "existing-raise" else "caller", pre)
 
 
 if __name__ == "__main__":

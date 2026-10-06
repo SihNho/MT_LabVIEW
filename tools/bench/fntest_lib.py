@@ -36,8 +36,8 @@ RUNS = os.path.join(R.REG_DIR, "runs")
 
 
 class FT(object):
-    def __init__(self, s, runner):
-        self.s, self.runner = s, runner
+    def __init__(self, s, runner, card=CARD):
+        self.s, self.runner, self.card = s, runner, card
         self.calls, self.neg, self.cases, self.harness = [], [], {}, []
         self._in_neg = None
         orig = FC._record
@@ -125,12 +125,12 @@ class FT(object):
         os.makedirs(RUNS, exist_ok=True)
         v = self.verdicts()
         det = os.path.join(RUNS, "{0}_{1}.json".format(self.runner, self.s.stamp))
-        json.dump({"runner": self.runner, "card": CARD, "log": R.rel(log), "labview": labview, "verdicts": v,
+        json.dump({"runner": self.runner, "card": self.card, "log": R.rel(log), "labview": labview, "verdicts": v,
                    "harness": self.harness, "t": time.strftime("%Y-%m-%d %H:%M:%S")}, open(det, "w", encoding="utf-8"),
                   indent=1, default=str)
         rule = __doc__.split("STATUS RULE (stated in every record's `rule`):")[1].split('"""')[0].strip()[:900]
         for fn, x in sorted(v.items()):
-            R.add_record(fn, x["status"], log, labview=labview, card=CARD)
+            R.add_record(fn, x["status"], log, labview=labview, card=self.card)
             rec = R.load(fn)
             last = rec["records"][-1]
             last.update(runner=self.runner, detail=R.rel(det), rule=rule, measured=_short(x["measured"]))
@@ -145,6 +145,133 @@ class FT(object):
 def _short(m):
     s = json.dumps(m, default=lambda o: sorted(o, key=str) if isinstance(o, (set, frozenset)) else str(o))
     return json.loads(s) if len(s) <= 1500 else {"truncated": s[:1500]}
+
+
+class Bed(object):
+    """card chat-F3b: the live graph of a fntest scratch through stagexec.LVBackend, read the way the Executor reads it
+    between ops (stagexec.py:2224-2317): read() = the whole-VI read (LVBackend.read) + the owners map (PD185 shape) + the
+    register-face retrack (Addr.retrack). The lookups below are HARNESS lookups: a miss returns None and is printed as a
+    LOOKUP fact, so the runner records the dependent case as HARNESS (no record), never as a function FAIL."""
+
+    def __init__(self, s, be):
+        self.s, self.be, self.real = s, be, []
+
+    def read(self):
+        self.real = self.be.read()
+        self.be.addr.owners = owners_of(self.be.last_objs)
+        lost = self.be.addr.retrack()
+        if lost:
+            self.s.fact("RETRACK lost register faces {0}".format(lost))
+        return self.real
+
+    def ts(self, owner, name=None, src=None, cls=None):
+        """THE one terminal uid of node #owner with that name / direction / term class, else None."""
+        if owner is None:
+            return None
+        try:
+            return int(term(self.real, owner, name, src, cls)["term_uid"])
+        except LookupError as e:
+            self.s.fact("LOOKUP {0}".format(str(e)[:300]))
+            return None
+
+    def ct(self, label):
+        """The ControlTerminal (front-panel terminal on a diagram) labelled `label`: its own uid (== term uid), else None."""
+        r = [x for x in self.real if x.get("term_class") == "ControlTerminal" and x["term_name"] == label]
+        if len(r) != 1:
+            self.s.fact("LOOKUP ControlTerminal {0!r}: {1} rows".format(label, len(r)))
+            return None
+        return int(r[0]["term_uid"])
+
+    def wire_of(self, term_uid):
+        r = [x for x in self.real if term_uid is not None and int(x["term_uid"]) == int(term_uid)]
+        return int(r[0]["wire_uid"] or 0) if len(r) == 1 else None
+
+    def cls_of(self, uid):
+        return dict((int(o["uid"]), o["class"]) for o in self.be.last_objs).get(int(uid)) if uid is not None else None
+
+    def wired_after(self, *terms):
+        """(ok, measured) after a fresh read: every terminal in `terms` carries a wire."""
+        self.read()
+        w = dict((t, self.wire_of(t)) for t in terms)
+        return all(w.values()), {"wires": w}
+
+
+class Kit(object):
+    """card chat-F3b: the case builders of a fntest runner, every verb called with the stagexec Executor's call shapes
+    (LVBackend.create / connect, stagexec.py:2377-2485). need() turns a missing input into a HARNESS line (no record);
+    mk() = one create row (the class census +1 when `cls` is given, the returned uid when `uid`); con() = one connect row
+    (both ends wired on the re-read). `LO` = the loop_of map (register uid -> loop uid) the connect routes read."""
+
+    def __init__(self, T, B, be, W, g):
+        self.T, self.B, self.be, self.W, self.g, self.LO = T, B, be, W, g, {}
+
+    def need(self, name, *v):
+        return all(x is not None for x in v) or self.T.harness_err(name, "an input was not created / not found: {0}".format(v))
+
+    def cnt(self, c):
+        return self.g.count(self.W, c)
+
+    def mk(self, fns, name, route, a, args, cls=None, uid=True):
+        if not self.need(name, *args.values()):
+            return None
+        c0 = self.cnt(cls) if cls else None
+        return self.T.case(fns, name, lambda: self.be.create(route, dict(a, id=name), args, list(self.B.real), {}),
+                           lambda o: ((not cls or self.cnt(cls) - c0 == 1) and (not uid or bool(o.get("uid"))),
+                                      {"out": dict((k, o.get(k)) for k in ("uid", "body", "frames", "how")),
+                                       "census": cls and (c0, self.cnt(cls))}))
+
+    def prim(self, name, dg, donor, p, pos, cls_=None):
+        a = dict({"prim": p, "donor": donor}, **({"class": cls_} if cls_ else {}))
+        r = self.mk(["stagekit.op:create_primitive_nested"], name, "primitive", a, {"diagram": dg, "pos": pos})
+        return int(r["uid"]) if r else None
+
+    def con(self, fns, name, src, dst, op=None):
+        return self.need(name, src, dst) and self.T.case(
+            fns, name, lambda: self.be.connect(src, dst, list(self.B.real), self.LO, op or {}),
+            lambda o: self.B.wired_after(src, dst))
+
+    def add_sr(self, name, loop, parent):
+        """The Executor's add_sr sequence (stagexec.py:2228-2316): snap the loop's Terminals[] (on its parent diagram), add
+        the register, read the pair back (shift_reg / shift_reg_left index 0 - the loop's first and only register), bind
+        loop_of, track the two outer faces. Returns ((right, left), right outer term, left outer term) or Nones."""
+        s, g, W, be = self.T.s, self.g, self.W, self.be
+        if not self.need(name, loop) or s.safe("snap_loop", lambda: be.addr.snap_loop(loop, parent))[1]:
+            return None, None, None
+
+        def _sr():
+            be.add_sr(loop, 120, {})
+            li = s.uid_index("WhileLoop", loop)
+            return int(g.shift_reg(W, li, 0)["uid"]), int(g.shift_reg_left(W, li, 0)["left"]["uid"])
+        sr = self.T.case(["stagekit.op:add_shift_reg"], name, _sr,
+                         lambda r: (r[0] > 0 and r[1] > 0, {"right": r[0], "left": r[1]}))
+        if not sr:
+            return None, None, None
+        self.LO.update({sr[0]: loop, sr[1]: loop})
+        self.B.read()
+        ro, lo = self.B.ts(sr[0], None, None, "OuterTerminal"), self.B.ts(sr[1], None, None, "OuterTerminal")
+        s.fact("SR TRACK {0}".format(s.safe("track_new", lambda: be.addr.track_new(loop, ro, lo)) if ro and lo
+                                     else "faces not found"))
+        return sr, ro, lo
+
+    def r0(self):
+        """R0: count / report_all / uids / exec_state agree on the EMPTY scratch (one Diagram). Returns that Diagram's uid."""
+        g, W = self.g, self.W
+        self.T.case(["gscript.count", "gscript.report_all", "gscript.uids", "gscript.exec_state"], "R0 empty bed reads agree",
+                    lambda: (self.cnt("Diagram"), g.report_all(W, "Diagram"), sorted(int(u) for u in g.uids(W, "Diagram")),
+                             g.exec_state(W)),
+                    lambda r: (r[0] == len(r[1]) == len(r[2]) == 1 and sorted(int(x["uid"]) for x in r[1]) == r[2] and
+                               r[3] == 1, {"count": r[0], "report_all": len(r[1]), "uids": r[2], "exec_state": r[3]}))
+        return int(g.report_all(W, "Diagram")[0]["uid"])
+
+    def r1(self):
+        """R1: the node / terminal / panel / wire reads on the built bed (Diagram[0] and [1], node 0)."""
+        g, W = self.g, self.W
+        return self.T.case(["gscript.node_labels", "gscript.node_terms_uid", "gscript.node_terms", "gscript.panel_wiring",
+                            "gscript.wire_health"], "R1 reads on the built bed",
+                           lambda: ([(g.node_labels(W, i), g.node_terms_uid(W, i, 0), g.node_terms(W, i, 0)) for i in range(2)],
+                                    g.panel_wiring(W), g.exec_state(W), g.wire_health(W)),
+                           lambda r: (all(len(a) >= 1 for a, _b, _c in r[0]) and len(r[1]) >= 1,
+                                      {"panel": sorted(x["label"] for x in r[1]), "es": r[2], "wire_health": str(r[3])[:200]}))
 
 
 def owners_of(objs):

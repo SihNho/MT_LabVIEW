@@ -299,3 +299,28 @@ Self-test `tools/bench/selftest_rebind_c142_5.py` (142-P1's case): before 1/3 (`
      - Gate false positive **fp-41** (`checker:stage_prerun:is_vi_modifying`): the first self-test imported stagekit with
        COM stubbed and was refused as a VI-modifying stage; queued, not patched; the self-test now executes the real defs
        from source (ast) without importing gscript/stagekit.
+340. **(card chat-F3b, 2026-10-07 04:1x-04:5x, escalation rung 1 of chat-F3; applies the chat decisions of 2026-10-07 in
+     `tools/bench/cards/brief_chat-F3b.md`)** Real-LabVIEW function records, part 2. LabVIEW ran ONCE (scratch only).
+     USER-RULES: U1 (relied on: a wrapper check + scratch-only tests - no VI of the bed chain or original, no computation).
+     - **(a) PRECONDITION AT THE CALL** (chat decision 1): `tools/fncontract.py` `PRE` (+ `precondition_error`,
+       `PreconditionFailed`, `contract(fn, f, ns)`, `install` passes the module globals). gscript.loop_in declares
+       `src_present == 1` = Traverse(src_cls or 'SubVI')[src_index] exists (gscript.py:1530). MEASURED ON THE FAILURE PATH
+       ONLY: a call that succeeds reads nothing extra (X10's read count unchanged); a call that raised is re-examined and,
+       when the precondition does not hold, fails with PreconditionFailed (a RuntimeError; the original 1055 text first,
+       the reason appended; outcome `failed`); a held precondition re-raises the original error unchanged. gscript.py is
+       untouched (loop_in's record stays fresh). Self-test `tools/bench/selftest_fn_f3b.log` 36/0 (P10 a-e new; P6d re-pinned
+       to the chat-decision (2) rule: required_from = v18 + s03v18, mode advisory unless the switch condition is MET).
+     - **(b) G1 run 3 NOT launched:** fntest_g1.py is at RETRY_CAP 2/2 for 'chat 2026-10-07' (stage_runs.jsonl:109-110) and
+       this card carries no `retry_of` (`stage_prerun.py --check-launch` refusal, measured). The G1 create cases run instead
+       as the BED BUILD of the new runner `tools/bench/fntest_g2.py` (117 lines, FNTEST-EXEMPT; helpers `fntest_lib.Bed` /
+       `Kit`), in the P4 order: SubVI first, a While, a While inside its body, the P4 donors.
+     - **(c) G2 run 1** (`tools/bench/fntest_g2.log`, 136 s): A1 drop_subvi, A2/A3 loop_in (While on D0, While in a While
+       body - both PASS with a SubVI present), 15 create_primitive_nested with the P4 donors (PRIM-GATE read-back: Wait (ms) /
+       Select class 'Function', Replace Array Subset 'GrowableFunction'), A5 fs_create - every case PASS; then STOPPED at the
+       first `Bed.read()`: `fntest_lib.owners_of` (written in chat-F3) takes read_live objs' `owner` as a uid, the value is the
+       owner's CLASS name ('WhileLoop') -> ValueError (our harness, fntest_lib.py:280). Records: 17 PASS written
+       (runs/fntest_g2_20261007_043756.json); gscript.loop_in / stagekit.op:loop_in now fresh-PASS (chat-F3's no-SubVI FAIL
+       kept as history). Hygiene: handles 34418 after work / 33995 at exit, scratch deleted, files left [], LabVIEW gone.
+     - **(d) STATE:** of the 58 functions of the switch scope: 16 fresh-pass, 0 fresh-fail, 42 planned (no record) -> switch
+       condition NOT met, gate_config.json stays ADVISORY; capability block regenerated, drift none. The retry (the owner-uid
+       source of `owners_of`, then fntest_g2.py again - 1 of its 2 cap runs used) is the judgement session's (chat-P2).

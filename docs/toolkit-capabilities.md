@@ -867,7 +867,7 @@ so out loud — as a gate, with a cheap test scheduled before the work that depe
 
 ## Scripting functions - generated from code (card chat-F2)
 
-Outcome of every call: `ok | no_output | failed | timed_out` (tools/fncontract.py). Contract column = the declared postconditions `[measure, on_fail]` or `none - <reason>`. Record = tools/bench/fn_records/ (fresh-pass only while the function's source md5 equals the record's). 152 rows; records: none 66, planned 86.
+Outcome of every call: `ok | no_output | failed | timed_out` (tools/fncontract.py). Contract column = the declared postconditions `[measure, on_fail]` or `none - <reason>`. Record = tools/bench/fn_records/ (fresh-pass only while the function's source md5 equals the record's). 152 rows; records: fresh-pass 17, none 66, planned 69.
 
 | function | arguments | outcome contract | record | source |
 |---|---|---|---|---|
@@ -895,7 +895,7 @@ Outcome of every call: `ok | no_output | failed | timed_out` (tools/fncontract.p
 | `gscript.const_indicator_on_diagram` | target, diagram_uid, donor, label, pos=(40, 40) | none - not on a stagekit/stagexec/P4 path; a postcondition is declared before a plan uses it (fn_records lists it as unrecorded) | none | tools/gscript.py:4571 |
 | `gscript.copy_by_index` | donor, cls, index, target, expect_uid=None, finish=None | none - not on a stagekit/stagexec/P4 path; a postcondition is declared before a plan uses it (fn_records lists it as unrecorded) | none | tools/gscript.py:1837 |
 | `gscript.copy_into` | donor, label, target, prepare=None | none - not on a stagekit/stagexec/P4 path; a postcondition is declared before a plan uses it (fn_records lists it as unrecorded) | none | tools/gscript.py:1757 |
-| `gscript.count` | target, cls | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | planned | tools/gscript.py:1363 |
+| `gscript.count` | target, cls | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | fresh-pass | tools/gscript.py:1363 |
 | `gscript.create_const_loop_term` | target, kind, index, value=None, term_index=0 | none - not on a stagekit/stagexec/P4 path; a postcondition is declared before a plan uses it (fn_records lists it as unrecorded) | none | tools/gscript.py:2983 |
 | `gscript.create_control` | target, node_index, terminal_index | none - not on a stagekit/stagexec/P4 path; a postcondition is declared before a plan uses it (fn_records lists it as unrecorded) | none | tools/gscript.py:2930 |
 | `gscript.create_control_nested` | target, node_uid, terminal_index, value=None | op_err == 0 [result, record] | none | tools/gscript.py:4349 |
@@ -904,26 +904,26 @@ Outcome of every call: `ok | no_output | failed | timed_out` (tools/fncontract.p
 | `gscript.create_indicator_on_const` | target, const_uid, label=None | op_err == 0 [result, record] | planned | tools/gscript.py:4529 |
 | `gscript.create_local_read` | target, panel_index, dest_diagram_uid=None, position=(40, 40) | new_locals == 1, op_err == 0 [result, record] | planned | tools/gscript.py:4707 |
 | `gscript.create_local_write` | target, panel_index, dest_diagram_uid=None, position=(40, 40) | new_locals == 1, op_err == 0 [result, record] | planned | tools/gscript.py:4715 |
-| `gscript.create_primitive_nested` | target, diagram_uid, prim_name, pos, donor=None | new_objects == 1 [existing-raise, existing] | planned | tools/gscript.py:4790 |
+| `gscript.create_primitive_nested` | target, diagram_uid, prim_name, pos, donor=None | new_objects == 1 [existing-raise, existing] | fresh-pass | tools/gscript.py:4790 |
 | `gscript.delete_by_label` | target, label, allow_broken=False | none - not on a stagekit/stagexec/P4 path; a postcondition is declared before a plan uses it (fn_records lists it as unrecorded) | none | tools/gscript.py:2023 |
 | `gscript.delete_object` | target, cls, index, verify=True | removed == 1 [inline, raise] | planned | tools/gscript.py:2808 |
-| `gscript.drop_subvi` | target, subvi_path, diagram_index, location | none at this level - returns only the run time; the new SubVI is measured by the caller (stagexec create 'subvi': SubVI uid diff == 1) | planned | tools/gscript.py:1583 |
-| `gscript.ensure_loaded` | target | none - session / editor state (panel, load, save, revert); no countable diagram effect | planned | tools/gscript.py:1626 |
+| `gscript.drop_subvi` | target, subvi_path, diagram_index, location | none at this level - returns only the run time; the new SubVI is measured by the caller (stagexec create 'subvi': SubVI uid diff == 1) | fresh-pass | tools/gscript.py:1583 |
+| `gscript.ensure_loaded` | target | none - session / editor state (panel, load, save, revert); no countable diagram effect | fresh-pass | tools/gscript.py:1626 |
 | `gscript.ensure_move_files_pristine` |  | none - session / editor state (panel, load, save, revert); no countable diagram effect | none | tools/gscript.py:1965 |
-| `gscript.exec_state` | target | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | planned | tools/gscript.py:2457 |
+| `gscript.exec_state` | target | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | fresh-pass | tools/gscript.py:2457 |
 | `gscript.exit_loop` | target, node_index, output_names, diagram_index, node_class='SubVI' | none - not on a stagekit/stagexec/P4 path; a postcondition is declared before a plan uses it (fn_records lists it as unrecorded) | none | tools/gscript.py:2079 |
 | `gscript.exit_while` | target, stop_control, diagram_index, node_index=0, output_names=(), node_class='SubVI', shift_names=() | none - not on a stagekit/stagexec/P4 path; a postcondition is declared before a plan uses it (fn_records lists it as unrecorded) | none | tools/gscript.py:1441 |
 | `gscript.find_at` | target, cls, pos, tol=40 | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | none | tools/gscript.py:1419 |
 | `gscript.for_loop` | target, location, tunnels=(), indexing=(), parallel=0 | none - not on a stagekit/stagexec/P4 path; a postcondition is declared before a plan uses it (fn_records lists it as unrecorded) | none | tools/gscript.py:1568 |
 | `gscript.fp_labels` | target, max_n=200 | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | none | tools/gscript.py:3058 |
 | `gscript.fs_add_frame` | target, fs_uid, ref_index, after=True | new_frames == 1 [existing-raise, existing] | planned | tools/gscript.py:4933 |
-| `gscript.fs_frames` | target, fs_uid, max_frames=200 | echo == fs_uid [existing-raise, existing] | planned | tools/gscript.py:4910 |
+| `gscript.fs_frames` | target, fs_uid, max_frames=200 | echo == fs_uid [existing-raise, existing] | fresh-pass | tools/gscript.py:4910 |
 | `gscript.gui_save` | target | none - session / editor state (panel, load, save, revert); no countable diagram effect | none | tools/gscript.py:2470 |
 | `gscript.hygiene_run` | op_path, workload, source, total=2000, per_round=100, recycle=True, check=None, warm=None, card='', log='', workload_... | none - session / editor state (panel, load, save, revert); no countable diagram effect | none | tools/gscript.py:366 |
 | `gscript.loop_cast` | target, index, class_name='ForLoop' | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | none | tools/gscript.py:869 |
 | `gscript.loop_diagram` | target, loop_pos, min_margin=4.0 | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | none | tools/gscript.py:1400 |
 | `gscript.loop_face_index` | target, diagram_uid, loop_uid, face_uid | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | none | tools/gscript.py:2362 |
-| `gscript.loop_in` | kind, target, diagram_index, location, src_cls=None, src_index=0, src_names=(), indexing=(), parallel=0 | new_loops == 1 [result, raise] | planned | tools/gscript.py:1513 |
+| `gscript.loop_in` | kind, target, diagram_index, location, src_cls=None, src_index=0, src_names=(), indexing=(), parallel=0 | new_loops == 1 [result, raise]; PRE src_present == 1 (measured when the call raised) | fresh-pass | tools/gscript.py:1513 |
 | `gscript.loop_kernel` | target, location, control_names, kernel_path, input_names, parallel=4 | none - not on a stagekit/stagexec/P4 path; a postcondition is declared before a plan uses it (fn_records lists it as unrecorded) | none | tools/gscript.py:2162 |
 | `gscript.loop_par_set` | target, index, enable, class_name='ForLoop' | none - not on a stagekit/stagexec/P4 path; a postcondition is declared before a plan uses it (fn_records lists it as unrecorded) | none | tools/gscript.py:912 |
 | `gscript.main` |  | none - session / editor state (panel, load, save, revert); no countable diagram effect | none | tools/gscript.py:2664 |
@@ -936,10 +936,10 @@ Outcome of every call: `ok | no_output | failed | timed_out` (tools/fncontract.p
 | `gscript.net_map` | target, diagram_index=0, max_nodes=200, max_terms=40 | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | none | tools/gscript.py:3123 |
 | `gscript.new_since` | target, cls, before | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | none | tools/gscript.py:1382 |
 | `gscript.node_info` | target, max_n=400 | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | none | tools/gscript.py:3080 |
-| `gscript.node_labels` | target, diagram_index, strict=True, **controls | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | planned | tools/gscript.py:830 |
+| `gscript.node_labels` | target, diagram_index, strict=True, **controls | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | fresh-pass | tools/gscript.py:830 |
 | `gscript.node_rank` | target, uid | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | none | tools/gscript.py:2922 |
-| `gscript.node_terms` | target, diagram_index, node_index | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | planned | tools/gscript.py:1153 |
-| `gscript.node_terms_uid` | target, diagram_index, node_index | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | planned | tools/gscript.py:1208 |
+| `gscript.node_terms` | target, diagram_index, node_index | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | fresh-pass | tools/gscript.py:1153 |
+| `gscript.node_terms_uid` | target, diagram_index, node_index | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | fresh-pass | tools/gscript.py:1208 |
 | `gscript.node_terms_uids` | target, diagram_index, node_index | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | none | tools/gscript.py:1229 |
 | `gscript.open_panel` | target, activate=False | none - session / editor state (panel, load, save, revert); no countable diagram effect | none | tools/gscript.py:1599 |
 | `gscript.panel_wiring` | target | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | planned | tools/gscript.py:1109 |
@@ -951,7 +951,7 @@ Outcome of every call: `ok | no_output | failed | timed_out` (tools/fncontract.p
 | `gscript.remove_bad_wires_scripted` | target | none - the number of bad wires is not known in advance; returns the Wire count and ExecState for the caller | planned | tools/gscript.py:3104 |
 | `gscript.replace_object` | target, uid, new_path | none - not on a stagekit/stagexec/P4 path; a postcondition is declared before a plan uses it (fn_records lists it as unrecorded) | none | tools/gscript.py:3396 |
 | `gscript.report` | target, cls | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | none | tools/gscript.py:698 |
-| `gscript.report_all` | target, cls | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | planned | tools/gscript.py:731 |
+| `gscript.report_all` | target, cls | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | fresh-pass | tools/gscript.py:731 |
 | `gscript.revert` | target | none - session / editor state (panel, load, save, revert); no countable diagram effect | none | tools/gscript.py:1751 |
 | `gscript.save` | target, allow_broken=False | saved == 1 [existing-raise, existing] | planned | tools/gscript.py:2595 |
 | `gscript.set_auto_error_handling` | target, enabled | none - session / editor state (panel, load, save, revert); no countable diagram effect | none | tools/gscript.py:3238 |
@@ -963,14 +963,14 @@ Outcome of every call: `ok | no_output | failed | timed_out` (tools/fncontract.p
 | `gscript.shift_reg` | target, loop_index, reg_index, class_name='WhileLoop' | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | planned | tools/gscript.py:1036 |
 | `gscript.shift_reg_left` | target, loop_index, reg_index, left_index=0, class_name='WhileLoop' | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | planned | tools/gscript.py:1069 |
 | `gscript.sr_init_const` | target, loop_uid, face_uid, diagram_uid, donor, pos=(40, 40), loop_cls='WhileLoop' | none - not on a stagekit/stagexec/P4 path; a postcondition is declared before a plan uses it (fn_records lists it as unrecorded) | none | tools/gscript.py:2377 |
-| `gscript.struct_copy_nested` | target, diagram_uid, cls, donor, pos=(40, 40) | new_objects == 1 [existing-raise, existing] | planned | tools/gscript.py:5016 |
+| `gscript.struct_copy_nested` | target, diagram_uid, cls, donor, pos=(40, 40) | new_objects == 1 [existing-raise, existing] | fresh-pass | tools/gscript.py:5016 |
 | `gscript.subvis` | target, diagram_index, purge=False, strict=True, **controls | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | none | tools/gscript.py:768 |
 | `gscript.term_index` | target, diagram_uid, node_uid, name, is_source | matches == 1, node_echo == node_uid [inline, raise] | none | tools/gscript.py:4999 |
 | `gscript.tunnel_indicator` | target, tunnel_index | none - not on a stagekit/stagexec/P4 path; a postcondition is declared before a plan uses it (fn_records lists it as unrecorded) | none | tools/gscript.py:2240 |
 | `gscript.tunnel_use_default` | target, tunnel_uid, value, cls='SelectorTunnel' | none - not on a stagekit/stagexec/P4 path; a postcondition is declared before a plan uses it (fn_records lists it as unrecorded) | none | tools/gscript.py:3749 |
 | `gscript.tunnel_use_default_at` | target, cls, index, value | none - not on a stagekit/stagexec/P4 path; a postcondition is declared before a plan uses it (fn_records lists it as unrecorded) | none | tools/gscript.py:3733 |
 | `gscript.tunnels` | target, index | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | planned | tools/gscript.py:1270 |
-| `gscript.uids` | target, cls | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | planned | tools/gscript.py:1375 |
+| `gscript.uids` | target, cls | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | fresh-pass | tools/gscript.py:1375 |
 | `gscript.vi_ref` | target | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | none | tools/gscript.py:473 |
 | `gscript.while_loop` | target, location, tunnels=(), indexing=() | none - not on a stagekit/stagexec/P4 path; a postcondition is declared before a plan uses it (fn_records lists it as unrecorded) | none | tools/gscript.py:1549 |
 | `gscript.wire` | target, src_cls, src_i, src_term, dst_cls, dst_i, dst_term, branch=False | new_wires >= 1 [existing-raise, existing] | none | tools/gscript.py:1698 |
@@ -1002,19 +1002,19 @@ Outcome of every call: `ok | no_output | failed | timed_out` (tools/fncontract.p
 | `stagekit.op:create_const_on_term` | (Stage._op verb) | none at this level - OpCreateConstOnTerm_v0's readout; bound by the next read | planned | tools/stagekit.py:940 |
 | `stagekit.op:create_local_read` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.create_local_read) | planned | tools/stagekit.py:755 |
 | `stagekit.op:create_local_write` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.create_local_write) | planned | tools/stagekit.py:778 |
-| `stagekit.op:create_primitive_nested` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.create_primitive_nested) | planned | tools/stagexec.py:2858 |
+| `stagekit.op:create_primitive_nested` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.create_primitive_nested) | fresh-pass | tools/stagexec.py:2858 |
 | `stagekit.op:delete_object` | (Stage._op verb) | removed == 1 [inline, raise] | planned | tools/stagekit.py:661 |
 | `stagekit.op:delete_wire` | (Stage._op verb) | found == 1 [inline, raise] | planned | tools/stagekit.py:648 |
-| `stagekit.op:drop_subvi` | (Stage._op verb) | none at this level - stagexec create 'subvi' measures the SubVI uid diff | planned | tools/stagexec.py:2858 |
+| `stagekit.op:drop_subvi` | (Stage._op verb) | none at this level - stagexec create 'subvi' measures the SubVI uid diff | fresh-pass | tools/stagexec.py:2858 |
 | `stagekit.op:fs_add_frame` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.fs_add_frame) | planned | tools/stagexec.py:2858 |
 | `stagekit.op:indicator_nested` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.create_indicator_nested) | planned | tools/stagexec.py:2858 |
 | `stagekit.op:indicator_on_const` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.create_indicator_on_const) | planned | tools/stagexec.py:2858 |
-| `stagekit.op:loop_in` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.loop_in) | planned | tools/stagexec.py:2858 |
+| `stagekit.op:loop_in` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.loop_in) | fresh-pass | tools/stagexec.py:2858 |
 | `stagekit.op:move_in` | (Stage._op verb) | none at this level - recipes.build_d1_v0.move_in; the new owner is read by stagexec's step diff | planned | tools/stagekit.py:674 |
 | `stagekit.op:queue_node` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.queue_node) | planned | tools/stagexec.py:2858 |
 | `stagekit.op:set_index_mode` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.set_index_mode) | planned | tools/stagexec.py:3192 |
 | `stagekit.op:stop_from_node` | (Stage._op verb) | none - OpStopFromNode_v0's error string is returned; the step diff checks the new wire | planned | tools/stagexec.py:3074 |
-| `stagekit.op:struct_copy_nested` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.struct_copy_nested) | planned | tools/stagexec.py:2858 |
+| `stagekit.op:struct_copy_nested` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.struct_copy_nested) | fresh-pass | tools/stagexec.py:2858 |
 | `stagekit.op:wire_const` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.wire_const) | planned | tools/stagexec.py:2725 |
 | `stagekit.op:wire_const_sr` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.wire_const_sr) | planned | tools/stagexec.py:2725 |
 | `stagekit.op:wire_control` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.wire_control) | planned | tools/stagexec.py:2725 |

@@ -30,6 +30,9 @@ PREDICTION (every gate PASS):
   P8 the drift report names a missing row, a gone row and a stale record; doc_lint L12 reports it as WARN.
   P9 table coverage complete; gscript.py ends by installing the wrappers; install is idempotent and keeps signatures;
      Stage.delete_object / delete_wire carry their declared checks (AST).
+  P10 (card chat-F3b) gscript.loop_in's PRECONDITION at the call: measured only when the call raised (a success reads
+     nothing extra); 0 SubVI -> PreconditionFailed (a RuntimeError, the 1055 text first, outcome failed); 1 SubVI -> the
+     original RuntimeError unchanged; install hands the module namespace to the wrapper.
 """
 import ast
 import functools
@@ -317,9 +320,16 @@ def p6(tmp):
     gate("P6c auto switch: condition MET -> mode REFUSE, nothing missing -> allowed", ok3 and line3.startswith(
         "FN-GATE REFUSE") and "switch condition MET" in line3 and "| 0 of %d" % len(fns) in line3, line3[:200])
     real = json.load(open(FR.GATE_CONFIG, encoding="utf-8"))
-    gate("P6d the real config is ADVISORY with the switch condition stated (auto false, required_from = the 3 P4 v18 "
-         "plans)", real["mode"] == "advisory" and real["switch"]["auto"] is False and
-         real["switch"]["required_from"] == list(FR.P4_PLANS) and "fresh pass" in real["switch"]["when"].lower(), real)
+    rf = real["switch"]["required_from"]
+    met_real, _miss = FR.switch_condition(real)
+    # card chat-F3b: required_from = the P4 v18 plan + the existing session plans from s03v18 on (chat decision 2026-10-07
+    # (2) to card chat-F3, gate_config required_from_why); mode is 'advisory' until the switch condition is MET, then the
+    # judgement may set 'refuse' - the self-test checks that rule, not one frozen value
+    gate("P6d the real config states the switch rule: auto false, required_from = plan_ring_p4_v18 + plan_ring_p4_s03v18 "
+         "(chat decision 2026-10-07 (2)), every listed plan on disk; mode advisory, or refuse only with the condition MET",
+         real["switch"]["auto"] is False and rf[:2] == [FR.P4_PLANS[0], FR.P4_PLANS[2]] and
+         all(os.path.isfile(os.path.join(ROOT, p)) for p in rf) and "fresh pass" in real["switch"]["when"].lower() and
+         (real["mode"] == "advisory" or (real["mode"] == "refuse" and met_real)), (real["mode"], rf, met_real))
     import stage_prerun as SP
     real_log = FR.GATE_LOG
     FR.GATE_LOG = os.path.join(tmp, "fn_gate_sp.log")
@@ -394,10 +404,72 @@ def p9():
          '_fc.check("stagekit.op:delete_wire"' in sk and "found=1 if ok else 0" in sk)
 
 
+# ============================================================ P10 precondition at the call (card chat-F3b)
+def p10():
+    """gscript.loop_in's REAL source with fakes: PRE measured only when the call raised; a violated precondition ->
+    PreconditionFailed (a RuntimeError, original text first, outcome failed); a held one -> the original exception."""
+    st = {"err": "", "after": {77}, "n": 0, "counts": []}
+    ns = {"_fc": FC, "os": os, "json": json, "__file__": GSCRIPT, "_LOOPIN_LABELS": {}, "CLAUDEDEV": "C:\\fake",
+          "op": lambda p: FakeVI({}), "_run": lambda vi, **k: 0.0, "_err": lambda vi, name="error out": st["err"],
+          "uids": lambda t, c: set() if st.get("before") is None else st["before"],
+          "count": lambda t, c: st["counts"].append((t, c)) or st["n"]}
+    load_defs(GSCRIPT, ["loop_in"], ns)
+    seq = {"k": 0}
+
+    def uids(t, c):                                     # before = {}, after = st["after"] (one call each per loop_in)
+        seq["k"] += 1
+        return set() if seq["k"] % 2 == 1 else set(st["after"])
+    ns["uids"] = uids
+    w = FC.contract("gscript.loop_in", ns["loop_in"], ns)
+    m = FC.mark()
+    r = w("while", "T.vi", 0, (40, 40))
+    gate("P10a success: returns the new loop uid, NO precondition read (count not called), outcome ok",
+         r == 77 and st["counts"] == [] and [o["outcome"] for o in FC.since(m) if o["fn"] == "gscript.loop_in"] == ["ok"],
+         (r, st["counts"]))
+    st.update(err="error 1055: To More Specific Class in OpWhileLoopIn_v0.vi", after=set(), n=0)
+    try:
+        w("while", "T.vi", 0, (40, 40))
+        gate("P10b no SubVI -> PreconditionFailed", False, "no exception")
+    except FC.PreconditionFailed as e:
+        gate("P10b no SubVI: PreconditionFailed (a RuntimeError), original 1055 text FIRST, reason src_present 0, outcome "
+             "failed, count('T.vi','SubVI') read once", isinstance(e, RuntimeError) and
+             str(e).startswith("RuntimeError: loop_in(while): error 1055") and "src_present == 1, measured 0" in str(e)
+             and "drop a SubVI" in str(e) and e.outcome["outcome"] == "failed" and st["counts"] == [("T.vi", "SubVI")],
+             str(e)[:200])
+    st.update(n=1, counts=[])
+    try:
+        w("while", "T.vi", 0, (40, 40))
+        gate("P10c SubVI present -> the original error", False, "no exception")
+    except Exception as e:                                                         # noqa: BLE001
+        gate("P10c precondition HOLDS (1 SubVI): the ORIGINAL RuntimeError unchanged, not PreconditionFailed",
+             type(e) is RuntimeError and str(e).startswith("loop_in(while): error 1055") and
+             st["counts"] == [("T.vi", "SubVI")], "%s: %s" % (type(e).__name__, str(e)[:160]))
+    st.update(n=2, counts=[])
+    try:
+        w("while", "T.vi", 0, (40, 40), src_cls="WhileLoop", src_index=2)
+        gate("P10d explicit src_cls/index -> PreconditionFailed", False, "no exception")
+    except FC.PreconditionFailed as e:
+        gate("P10d explicit src_cls 'WhileLoop' index 2 with 2 present -> PreconditionFailed (needs > index)",
+             e.outcome["measured"].get("src_cls") == "WhileLoop" and st["counts"] == [("T.vi", "WhileLoop")], str(e)[:160])
+    ns2 = {"loop_in": lambda *a, **k: (_ for _ in ()).throw(RuntimeError("loop_in(while): error 1055")),
+           "count": lambda t, c: 0}
+    FC.install(ns2, "gscript")
+    try:
+        ns2["loop_in"]("while", "T.vi", 0, (1, 1))
+        ok = False
+    except FC.PreconditionFailed:
+        ok = True
+    except Exception:                                                              # noqa: BLE001
+        ok = False
+    gate("P10e install passes the module namespace (a wrapped loop_in measures through its own module's count); "
+         "describe names the PRE", ok and "PRE src_present == 1" in FC.describe("gscript.loop_in"),
+         FC.describe("gscript.loop_in")[-120:])
+
+
 def main():
     tmp = tempfile.mkdtemp(prefix="fnf2_")
     try:
-        for f in (p1, p2, p3, p4, p9):
+        for f in (p1, p2, p3, p4, p9, p10):
             try:
                 f()
             except Exception as e:                                                 # noqa: BLE001
