@@ -76,9 +76,16 @@ The record is in `failed_launch_A_20261006_1207/`. Nothing ran: no LabVIEW, $0.
    - `lb_setup.py hooks-check <arm>` runs the runner's own `errorlist_hook`, with `subprocess.run` made to raise so the
      GUI read cannot start. Result: verdict OK through REUSE in A and in B (`lb_hooks_A.log`, `lb_hooks_B.log`).
      `gates_due` also runs clean.
-   - Note: in both arms, `gates_due` reports outcome, violations, retro-debt and gate-fp as DUE (inherited state). So
-     the first cycle of every arm starts with the same due list, and its runner RUNS a due outcome review before the
-     session spawns.
+   - **Inherited due state is cleared** (chat decision 2026-10-06), identically in every arm, through each gate's own
+     discharge record. No review is faked. `lb_setup.py clear-due <arm>` does this; `setup` does it for new arms.
+     - Violations: a dated `DECISION: no-device` block per due slug in the worktree's `docs/violation-decisions.md`
+       (device-failed, repeated-failure-class).
+     - gate-fp: the worktree's open queue rows (fp-34) are set to `livebench-deferred`.
+     - Outcome and retro-debt were due only because `git worktree add` stamps every file with the checkout time. Each
+       worktree file that is byte-identical to main gets main's mtime back (13,133 files).
+     - What was cleared is recorded in `start_state/manifest.json` `cleared_due`.
+     - `hooks-check`: all four are not due in A and B (`lb_hooks_*.log`, 6/0).
+     - The main repo still owes them separately.
 2. **The POST gate 'main tree unchanged' failed** because other writers change main concurrently (chat-F2's commits,
    the chat's STATUS edits).
    - The gate now flags only main-tree paths this ARM could have caused (`lb_state.arm_caused`): a path a worktree

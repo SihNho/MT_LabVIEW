@@ -324,6 +324,98 @@ def fence(arm):
          not git("status", "--porcelain", cwd=wt))
 
 
+def restore_mtimes(wt):
+    """`git worktree add` stamps every file with the checkout time, so every mtime-ordered check in the arm (outcome
+    cadence, retro-debt, guard_peer's newest failing log) saw 4417 logs 'written today' (hooks_A.json: outcome '11
+    retrospectives since', retro-debt '227 build logs, span 0.0 h' - main says 1/5 and ok). Every worktree file that is
+    byte-identical to its main-repo file gets the main file's mtime back."""
+    n = same = 0
+    for rel in git("ls-files", "-z", cwd=wt).split("\0") + \
+            [os.path.relpath(p, wt) for g_ in ARMS["ignored_inputs"]["globs"] for p in glob.glob(os.path.join(wt, g_))]:
+        if not rel:
+            continue
+        w, m = os.path.join(wt, rel), os.path.join(MAIN, rel)
+        try:
+            if os.path.getsize(w) != os.path.getsize(m):
+                continue
+            if md5(w) != md5(m):
+                continue
+            st = os.stat(m)
+            os.utime(w, (st.st_atime, st.st_mtime))
+            same += 1
+        except OSError:
+            continue
+        n += 1
+    gate("MTIME %d worktree file(s) byte-identical to main got main's mtime back" % same, same > 1000)
+    return same
+
+
+DUE_NOTE = ("inherited from the main repo at the bench start; cleared identically in every arm (chat decision "
+            "2026-10-06: the arms measure build progress, the main repo still owes it separately) - card chat-B7")
+
+
+def clear_due(wt):
+    """Clear the INHERITED due state, identically per arm, through each gate's OWN discharge record (no review is
+    faked): violations -> a dated `DECISION: no-device` block per due slug in docs/violation-decisions.md (violations.py
+    discharges a slug by a decision newer than its newest retrospective); gate-fp -> every open queue row
+    status 'livebench-deferred' (gate_fp.due counts status == open). Outcome and retro-debt are mtime cadences:
+    restore_mtimes() returns them to main's state. Returns the record for the manifest / setup json."""
+    rec = {"mtimes_restored": restore_mtimes(wt), "violations": [], "gate_fp": [], "note": DUE_NOTE}
+    r = subprocess.run([sys.executable, os.path.join("tools", "violations.py"), "--due"], cwd=wt, capture_output=True,
+                       text=True, encoding="utf-8", errors="replace", timeout=120)
+    slugs = re.findall(r"^DUE ([a-z0-9-]+): (\d+) occurrences", r.stdout, re.M)
+    if slugs:
+        stamp = time.strftime("%Y-%m-%d %H:%M")
+        blocks = "".join("\n\n## %s — %s (livebench start state, card chat-B7)\n\nDECISION: no-device — %s "
+                         "(%s occurrences at the bench start).\n" % (s, stamp, DUE_NOTE, n) for s, n in slugs)
+        p = os.path.join(wt, "docs", "violation-decisions.md")
+        with open(p, "a", encoding="utf-8", newline="") as f:
+            f.write(blocks)
+        rec["violations"] = [{"slug": s, "occurrences": int(n), "decision": "no-device", "stamp": stamp} for s, n in slugs]
+    q = os.path.join(wt, "tools", "bench", "gate_fp_queue.jsonl")
+    if os.path.exists(q):
+        rows = [json.loads(ln) for ln in open(q, encoding="utf-8") if ln.strip()]
+        for row in rows:
+            if row.get("status") == "open":
+                row.update({"status": "livebench-deferred", "livebench_note": DUE_NOTE})
+                rec["gate_fp"].append(row.get("id"))
+        with open(q, "w", encoding="utf-8", newline="") as f:
+            f.write("".join(json.dumps(row) + "\n" for row in rows))
+    r2 = subprocess.run([sys.executable, os.path.join("tools", "violations.py"), "--due"], cwd=wt, capture_output=True,
+                        text=True, encoding="utf-8", errors="replace", timeout=120)
+    gate("DUE cleared: violations %s, gate-fp %s; violations --due now lists none" % (
+        [v["slug"] for v in rec["violations"]], rec["gate_fp"]), not re.search(r"^DUE ", r2.stdout, re.M), r2.stdout[:200])
+    return rec
+
+
+def record_cleared(arm, rec):
+    mp = os.path.join(STATE_DIR, "manifest.json")
+    man = json.load(open(mp, encoding="utf-8"))
+    man.setdefault("cleared_due", {"rule": "lb_setup.clear_due at setup/clear-due, identical for every arm: " + DUE_NOTE,
+                                   "arms": {}})
+    man["cleared_due"]["arms"][arm] = {k: v for k, v in rec.items() if k != "note"}
+    with open(mp, "w", encoding="utf-8") as f:
+        json.dump(man, f, indent=1)
+
+
+def clear_due_cmd(arm):
+    wt = wt_path(arm)
+    sp = os.path.join(HERE, "setup_%s.json" % arm)
+    rec = json.load(open(sp, encoding="utf-8"))
+    cd = clear_due(wt)
+    git("add", "-A", cwd=wt)
+    if git("status", "--porcelain", cwd=wt):
+        git("commit", "-q", "-m", "livebench clear inherited due state (card chat-B7): violations decision blocks, "
+            "gate-fp rows deferred; mtimes restored", cwd=wt)
+    restore_mtimes(wt)                       # the commit does not touch mtimes; re-run is cheap insurance
+    rec["setup_commit"], rec["cleared_due"] = git("rev-parse", "HEAD", cwd=wt), cd
+    with open(sp, "w", encoding="utf-8") as fh:
+        json.dump(rec, fh, indent=1)
+    record_cleared(arm, cd)
+    gate("DUE committed in the worktree, setup baseline moved to %s" % rec["setup_commit"][:10],
+         not git("status", "--porcelain", cwd=wt))
+
+
 def repair(arm):
     """Fixes after the first live launch (2026-10-06 12:07, lb_run_A.log) for an EXISTING worktree: reset to the setup
     baseline (drops the failed launch's runner lines / cycle-144 files; git-ignored sim inputs stay), current-bed = the
@@ -420,6 +512,8 @@ def hooks_check(arm):
          d["errorlist"]["verdict"] == "OK" and "| REUSE |" in d["errorlist_log"], str(d["errorlist"])[:200])
     gate("HOOKS %s: gates_due ran every check without an error" % arm,
          d["gates_due"] and all(g_["due"] is not None for g_ in d["gates_due"]))
+    gate("HOOKS %s: no inherited gate is due at the start (outcome / violations / retro-debt / gate-fp)" % arm,
+         not [g_["gate"] for g_ in d["gates_due"] if g_["due"]], str([g_["gate"] for g_ in d["gates_due"] if g_["due"]]))
     with open(os.path.join(HERE, "hooks_%s.json" % arm), "w", encoding="utf-8") as f:
         json.dump(d, f, indent=1, default=str)
     gate("HOOKS %s: the check left the worktree unchanged" % arm, git("status", "--porcelain", cwd=wt) == before)
@@ -467,14 +561,18 @@ def setup(arm, name=None, commit=None):
     record_inherited_logs(wt)
     sync_errorlist(wt)
     stage_start_vi(arm)
+    cd_rec = clear_due(wt)
     git("add", "-A", cwd=wt)
     git("commit", "-q", "-m", "livebench setup arm %s (card chat-B7): start state, hooks re-pointed, CLAUDEDEV_OUT patches, "
         "write fence%s" % (arm, ", Karpathy section" if "karpathy" in cfg.get("extras", []) else ""), cwd=wt)
     setup_commit = git("rev-parse", "HEAD", cwd=wt)
+    restore_mtimes(wt)
+    if not name.startswith("_stub"):
+        record_cleared(name, cd_rec)
     rec = {"schema": "livebench-setup/1", "arm": arm, "name": name, "worktree": wt, "branch": branch,
            "base_commit": full, "setup_commit": setup_commit, "flow": cfg["flow"], "extras": cfg.get("extras", []),
            "claudedev_out": out_dir(arm), "start_state_manifest": man, "settings": settings, "patches": pat,
-           "ignored_inputs_copied": n_ign, "fence": fence_rec,
+           "ignored_inputs_copied": n_ign, "fence": fence_rec, "cleared_due": cd_rec,
            "overlay_md5": md5(os.path.join(ov, "sitecustomize.py")), "env": env,
            "next_json_md5": md5(os.path.join(wt, "tools", "bench", "next.json")),
            "t": time.strftime("%Y-%m-%d %H:%M:%S")}
@@ -703,7 +801,8 @@ def teardown(name):
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=("snapshot", "setup", "sync-ignored", "fence", "repair", "hooks-check", "contain-dry",
+    ap.add_argument("cmd", choices=("snapshot", "setup", "sync-ignored", "fence", "repair", "clear-due", "hooks-check",
+                                    "contain-dry",
                                     "stub", "teardown", "_contain_child", "_hooks_child"))
     ap.add_argument("arm", nargs="?")
     ap.add_argument("--commit")
@@ -736,6 +835,8 @@ def main(argv=None):
         fence(a.arm)
     elif a.cmd == "repair":
         repair(a.arm)
+    elif a.cmd == "clear-due":
+        clear_due_cmd(a.arm)
     elif a.cmd == "hooks-check":
         hooks_check(a.arm)
     elif a.cmd == "contain-dry":
