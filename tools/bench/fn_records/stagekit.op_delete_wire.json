@@ -32,6 +32,92 @@
   "pass_if": "every input's prediction holds AND the call's standard outcome is the predicted one; handle count flat (+-100) over the run",
   "runs_in": "card chat-F3 (real LabVIEW); never this card"
  },
- "records": [],
+ "records": [
+  {
+   "status": "PASS",
+   "date": "2026-10-07T04:50:49",
+   "labview": "LabVIEW 26.3.1f1",
+   "log": "tools/bench/fntest_g2.log",
+   "src_md5": "0d7e508a702ac47d643c8b5a2e50417c",
+   "card": "chat-F3b",
+   "runner": "fntest_g2",
+   "detail": "tools/bench/fn_records/runs/fntest_g2_20261007_044918.json",
+   "rule": "gscript.<fn>  PASS = called >= 1 time on the scratch AND every recorded outcome 'ok' (calls inside a declared NEGATIVE\n                window are judged by that window's own prediction instead); FAIL = any other outcome (counts + first reason).\n  stagekit.op:<verb> / recipes.<fn>  PASS = every declared case ran without an exception, every op the case issued ended\n                outcome 'ok' with err '', and the case's own measured check held; FAIL = the case's numbers.\n  A function no case reached gets NO record (it is listed as not-run, never as FAIL). A harness error (an exception raised\n  before the function under test was called) is reported as HARNESS and records nothing for that case.",
+   "measured": {
+    "cases": [
+     {
+      "case": "D1 delete_wire w330 (Ind1's wire)",
+      "ok": true,
+      "neg": false,
+      "measured": {
+       "err": null,
+       "ops": [
+        [
+         "delete_wire",
+         "ok",
+         ""
+        ]
+       ],
+       "check": {
+        "wire": 330
+       }
+      }
+     },
+     {
+      "case": "D1n delete_wire w330 AGAIN (plan neg-double)",
+      "ok": true,
+      "neg": true,
+      "measured": {
+       "verb": "delete_wire",
+       "err": "ExecStop: delete_wire w330 (plan wNone): op error PostconditionFailed: delete_wire w330: del_wire returned False [postcondition stagekit.op:delete_wire: found == 1, measured 0 -> no_output]",
+       "ops": [
+        [
+         "delete_wire",
+         "no_output",
+         "PostconditionFailed: delete_wire w330: del_wire returned False [postcondition stagekit.op:delete_wire: found == 1, measured 0 -> no_output]"
+        ]
+       ]
+      }
+     },
+     {
+      "case": "D2 delete_wire w346 (Ind2's wire)",
+      "ok": true,
+      "neg": false,
+      "measured": {
+       "err": null,
+       "ops": [
+        [
+         "delete_wire",
+         "ok",
+         ""
+        ]
+       ],
+       "check": {
+        "wire": 346
+       }
+      }
+     },
+     {
+      "case": "D3 delete_wire w361 (Ctl1's wire)",
+      "ok": true,
+      "neg": false,
+      "measured": {
+       "err": null,
+       "ops": [
+        [
+         "delete_wire",
+         "ok",
+         ""
+        ]
+       ],
+       "check": {
+        "wire": 361
+       }
+      }
+     }
+    ]
+   }
+  }
+ ],
  "legacy_evidence": []
 }

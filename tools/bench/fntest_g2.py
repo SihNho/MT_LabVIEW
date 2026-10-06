@@ -64,7 +64,7 @@ def cases(_):
     B.read()
     mk(["stagekit.op:create_const_on_term"], "A11 const 1 on WT1 input (P4 p4_wait_k)", "const_on_term", {"value": 1}, {"diagram": W1B, "on": B.ts(WT1, None, False)}, "Constant", uid=False)
     sr, ro, lo = k.add_sr("A12 add SR on W (P4 p4_sr_last)", WL, D0)
-    B.read(); H["bed"], N0 = bp.labview_handles(), len(T.calls); s.fact("HANDLES after the bed {0} (start {1})".format(H["bed"], H["start"]))   # noqa: E702
+    B.read(); H["bed"], N0 = bp.labview_handles(), len(T.calls); s.fact("HANDLES after the bed {0} (start {1}); OWNERS {2}".format(H["bed"], H["start"], be.addr.owners))   # noqa: E702
     # ---------------------------------------------------------------- B: the routes (each case re-reads after itself)
     con(["stagekit.op:wire_const_sr"], "B1 const_sr K1 -> SR left OUTER face (P4 p4_w_klast)", B.ts(K1, None, True), lo)
     for nm, var, t in (("B2 wire_sr LeftIn: SR left inner -> WT2 input (P4 p4_w_last_gt)", "LeftIn", B.ts(WT[2], None, False)),

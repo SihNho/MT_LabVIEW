@@ -154,11 +154,21 @@ class Bed(object):
     LOOKUP fact, so the runner records the dependent case as HARNESS (no record), never as a function FAIL."""
 
     def __init__(self, s, be):
-        self.s, self.be, self.real = s, be, []
+        self.s, self.be, self.real, self.ocache, self.known, self.mism = s, be, [], {}, {}, {}
 
     def read(self):
         self.real = self.be.read()
-        self.be.addr.owners = owners_of(self.be.last_objs)
+        own = owners_of(self.be.last_objs, lambda u: self.be.B.owner_of(self.s.work, u), self.ocache)
+        # a body / frame the runner CREATED is bound to its structure by the create's own return (Kit.mk -> `known`), the
+        # Executor's source too (stagexec._bind_create); a read that disagrees is printed once and the binding is used
+        for d, v in self.known.items():
+            if own.get(d) != v:
+                if d not in self.mism:
+                    self.mism[d] = own.get(d)
+                    self.s.fact("OWNERS diagram #{0}: read {1}, the create returned {2} - the create's binding is used".format(
+                        d, own.get(d), v))
+                own[d] = v
+        self.be.addr.owners = own
         lost = self.be.addr.retrack()
         if lost:
             self.s.fact("RETRACK lost register faces {0}".format(lost))
@@ -215,10 +225,16 @@ class Kit(object):
         if not self.need(name, *args.values()):
             return None
         c0 = self.cnt(cls) if cls else None
-        return self.T.case(fns, name, lambda: self.be.create(route, dict(a, id=name), args, list(self.B.real), {}),
-                           lambda o: ((not cls or self.cnt(cls) - c0 == 1) and (not uid or bool(o.get("uid"))),
-                                      {"out": dict((k, o.get(k)) for k in ("uid", "body", "frames", "how")),
-                                       "census": cls and (c0, self.cnt(cls))}))
+        r = self.T.case(fns, name, lambda: self.be.create(route, dict(a, id=name), args, list(self.B.real), {}),
+                        lambda o: ((not cls or self.cnt(cls) - c0 == 1) and (not uid or bool(o.get("uid"))),
+                                   {"out": dict((k, o.get(k)) for k in ("uid", "body", "frames", "how")),
+                                    "census": cls and (c0, self.cnt(cls))}))
+        if r and r.get("body") and route in ("while", "for"):           # the create's binding of its body (Bed.read)
+            self.B.known[str(int(r["body"]))] = ["WhileLoop" if route == "while" else "ForLoop", int(r["uid"])]
+        if r and route == "fs_create":
+            for f in r.get("frames") or []:
+                self.B.known[str(int(f))] = ["FlatSequence", int(r["uid"])]
+        return r
 
     def prim(self, name, dg, donor, p, pos, cls_=None):
         a = dict({"prim": p, "donor": donor}, **({"class": cls_} if cls_ else {}))
@@ -274,11 +290,35 @@ class Kit(object):
                                       {"panel": sorted(x["label"] for x in r[1]), "es": r[2], "wire_health": str(r[3])[:200]}))
 
 
-def owners_of(objs):
-    """str(diagram uid) -> [owner class, owner uid] from a read_live objs list (the Executor's PD185 owners map shape)."""
-    cls = dict((o["uid"], o["class"]) for o in objs)
-    return dict((str(o["uid"]), [cls.get(int(o["owner"] or 0), ""), int(o["owner"] or 0)]) for o in objs
-                if o["class"] == "Diagram" and int(o["owner"] or 0) in cls)
+def owners_of(objs, resolve=None, cache=None):
+    """str(diagram uid) -> [owner class, owner uid] for the Diagrams of a read_live objs list (the Executor's PD185 owners
+    map shape). card chat-F3b (chat decision 2026-10-07 (1)): read_live's `owner` field is the owner's CLASS NAME
+    (gscript.report_all's owner column, 'WhileLoop' - tools/bench/fntest_g2.log:257-271), never a uid, so the uid comes from
+    `resolve(diagram uid) -> (owner class, owner uid)` (build_d1_v0.owner_of = OpOwnerChain_v1), asked ONCE per diagram
+    (`cache`: a diagram's owner never changes). An integer `owner` (a reader that carries uids) is used as it is. A diagram
+    whose owner is not an object of this read (the top-level diagram's VI) or cannot be resolved is left out."""
+    cache = {} if cache is None else cache
+    cls = dict((int(o["uid"]), o["class"]) for o in objs)
+    out = {}
+    for o in objs:
+        if o["class"] != "Diagram":
+            continue
+        u, ow = int(o["uid"]), o.get("owner")
+        if u not in cache:
+            if isinstance(ow, int) or (isinstance(ow, str) and ow.strip().isdigit()):
+                cache[u] = (cls.get(int(ow), ""), int(ow))
+            elif resolve is not None:
+                try:
+                    oc, ou = resolve(u)
+                    cache[u] = (oc, int(ou or 0))
+                except Exception:                                                  # noqa: BLE001 - top-level / unreadable
+                    cache[u] = (None, 0)
+            else:
+                cache[u] = (None, 0)
+        oc, ou = cache[u]
+        if ou and ou in cls:
+            out[str(u)] = [cls[ou], ou]
+    return out
 
 
 def term(real, owner, name=None, src=None, cls=None):

@@ -321,6 +321,23 @@ Self-test `tools/bench/selftest_rebind_c142_5.py` (142-P1's case): before 1/3 (`
        owner's CLASS name ('WhileLoop') -> ValueError (our harness, fntest_lib.py:280). Records: 17 PASS written
        (runs/fntest_g2_20261007_043756.json); gscript.loop_in / stagekit.op:loop_in now fresh-PASS (chat-F3's no-SubVI FAIL
        kept as history). Hygiene: handles 34418 after work / 33995 at exit, scratch deleted, files left [], LabVIEW gone.
-     - **(d) STATE:** of the 58 functions of the switch scope: 16 fresh-pass, 0 fresh-fail, 42 planned (no record) -> switch
-       condition NOT met, gate_config.json stays ADVISORY; capability block regenerated, drift none. The retry (the owner-uid
-       source of `owners_of`, then fntest_g2.py again - 1 of its 2 cap runs used) is the judgement session's (chat-P2).
+     - **(d) STATE after run 1 (superseded by (e)):** 16 fresh-pass, 0 fresh-fail, 42 planned of the 58; retry = the chat's.
+     - **(e) CHAT DECISIONS 04:4x (to this card): (1) fix `owners_of`, rerun G2; (2) G2's bed-build records ARE the G1-run-3
+       evidence, no retry card for fntest_g1.py; (3) PRE stays on the failure path.** `fntest_lib.owners_of` now resolves each
+       Diagram's owner UID through `build_d1_v0.owner_of` (OpOwnerChain_v1), once per diagram (cache); a body/frame the runner
+       created is bound by the create's own return (the Executor's `_bind_create` source) - FS frame #291 read no owner and took
+       the create's ['FlatSequence', 281]; offline `tools/bench/selftest_fntest_owners.log` 4/0. **G2 run 2**
+       (fntest_g2.log:298-853, 150 s, gates 22/0): every bed and route case PASS - const_sr, wire_sr LeftIn/RightIn, stop on a
+       new and an outer While, nested in/out of a loop, cfw, branch off an output tunnel, connect_term_uid into an FS frame +
+       RLE (broken_after False), 3 delete_wire, delete_object, ctlsink, wire_control, gscript.delete_object(verify=True),
+       both negative double deletes outcome no_output - EXCEPT **B11 (FINDING): the 'indicator' route (a WIRED source -> a bare
+       indicator terminal) on a bed that is broken by design: gscript.wire_indicators raises 'target BROKEN after wiring' (its
+       ExecState check) and LVBackend.indicator stops because no sink gate was declared** (fntest_g2.log:737; stagexec.py:2844-2852
+       - a P4 recipe that routes a wired source into an indicator must declare a sink gate, check_sink_gates). gscript.close_panel
+       FAIL is OUR runner's double close: S1 closed the save scratch, then stagekit.drop_scratch (stagekit.py:538) closed it
+       again -> LabVIEW 0x47D (fntest_g2.log:765). Handles: 33998 restart, 34013 start, 34743 after the bed, 35040 after the
+       routes (+297 over 323 recorded calls = +18 per 20), 33995 at exit; scratches deleted, files left [], LabVIEW gone.
+     - **(f) COVERAGE of the 58 (switch scope v18 + s03v18):** 55 fresh-pass, 3 fresh-fail (gscript.close_panel,
+       gscript.wire_indicators, stagekit.op:wire_indicators), 0 without a record -> switch condition NOT met, gate_config.json
+       stays ADVISORY (by the stated rule). All 86 plans: 59 fresh-pass, 3 fresh-fail, 24 planned (none in the switch scope).
+       Capability block regenerated, drift none.

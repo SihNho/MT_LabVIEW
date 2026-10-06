@@ -27,6 +27,37 @@
   "pass_if": "every input's prediction holds AND the call's standard outcome is the predicted one; handle count flat (+-100) over the run",
   "runs_in": "card chat-F3 (real LabVIEW); never this card"
  },
- "records": [],
+ "records": [
+  {
+   "status": "FAIL",
+   "date": "2026-10-07T04:50:50",
+   "labview": "LabVIEW 26.3.1f1",
+   "log": "tools/bench/fntest_g2.log",
+   "src_md5": "ee7cfc002b9005ad8bd018ead9969819",
+   "card": "chat-F3b",
+   "runner": "fntest_g2",
+   "detail": "tools/bench/fn_records/runs/fntest_g2_20261007_044918.json",
+   "rule": "gscript.<fn>  PASS = called >= 1 time on the scratch AND every recorded outcome 'ok' (calls inside a declared NEGATIVE\n                window are judged by that window's own prediction instead); FAIL = any other outcome (counts + first reason).\n  stagekit.op:<verb> / recipes.<fn>  PASS = every declared case ran without an exception, every op the case issued ended\n                outcome 'ok' with err '', and the case's own measured check held; FAIL = the case's numbers.\n  A function no case reached gets NO record (it is listed as not-run, never as FAIL). A harness error (an exception raised\n  before the function under test was called) is reported as HARNESS and records nothing for that case.",
+   "measured": {
+    "cases": [
+     {
+      "case": "B11 indicator route: WT3 out (wired) -> Ind1 (bare; P4 p4_rbA_re1)",
+      "ok": false,
+      "neg": false,
+      "measured": {
+       "err": "ExecStop: wire_indicators #107: op error RuntimeError: wire_indicators: target BROKEN after wiring - a source terminal was probably unwired (WI then extends an unrelated wire; revert the target) on sink [92, 'Ind1'] - no declared gate reads that sink (declared sinks: [])",
+       "ops": [
+        [
+         "wire_indicators",
+         "failed",
+         "RuntimeError: wire_indicators: target BROKEN after wiring - a source terminal was probably unwired (WI then extends an unrelated wire; revert the target)"
+        ]
+       ]
+      }
+     }
+    ]
+   }
+  }
+ ],
  "legacy_evidence": []
 }
