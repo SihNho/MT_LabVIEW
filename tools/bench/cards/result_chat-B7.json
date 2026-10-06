@@ -1,0 +1,43 @@
+{
+ "schema": "result/1",
+ "id": "chat-B7",
+ "status": "PASS",
+ "gates": {"pass": 167, "fail": 0},
+ "first_fail": null,
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/livebench/README.md", "md5": "0fadd91e5cc756001cec5058975079dc"},
+  {"path": "tools/bench/livebench/arms.json", "md5": "51009d46eb52fc051a69c3878ee1ef2d"},
+  {"path": "tools/bench/livebench/lb_setup.py", "md5": "fe39508aebb5d67dd91b151e4dc240e2"},
+  {"path": "tools/bench/livebench/lb_collect.py", "md5": "5c679c73bc7979e344da313dffbb1f39"},
+  {"path": "tools/bench/livebench/lb_run.py", "md5": "4599a3a7895d6ef83aadab23c8bb912e"},
+  {"path": "tools/bench/livebench/lb_state.py", "md5": "2f4c3c8743066e4d06274809f442ba9b"},
+  {"path": "tools/bench/livebench/stub_claude.py", "md5": "2ce1b2633c59188768efb5d6d6633102"},
+  {"path": "tools/bench/livebench/overlay/sitecustomize.py", "md5": "7c81931aa5089d41b1428ef844715bd0"},
+  {"path": "tools/bench/livebench/karpathy_principles.md", "md5": "b1891f34397ada8424e0d5d9787c6656"},
+  {"path": "tools/bench/livebench/stub_A.json", "md5": "07a83c15497ce42a2c23313160a5c1bb"},
+  {"path": "tools/bench/livebench/contain_A.json", "md5": "355732974112548cf0b0ed44501624bb"},
+  {"path": "tools/bench/livebench/contain_B.json", "md5": "a2ad32890ff34ec1eda17db68e3f30be"},
+  {"path": "tools/bench/livebench/setup_A.json", "md5": "8c72eabd3a35f66e4d1cc918717d22e2"},
+  {"path": "tools/bench/livebench/setup_B.json", "md5": "ecde683a55e5cfcdbac02bb2ca690fc4"},
+  {"path": "tools/bench/livebench/start_state/manifest.json", "md5": "53238563a30dc258bc011764f9ae6789"}
+ ],
+ "facts": [
+  "Worktrees ..\\V6_bench\\A (bench/A, setup 7e22698c) and B (fee90318) on 0fc16ea0: 42/0 each, 11 hooks re-pointed, 112 ignored sim files copied (lb_setup_A.log:46, lb_setup_B.log:46)",
+  "Containment: s03v18 scratch dry PASSES in A and B, work copy + save in claudeDev\\bench\\<arm>; unpatched main dry puts it in the root (lb_contain_A.log:64-65, lb_contain_B.log:45)",
+  "Worktree lacked git-IGNORED sim step files (tools/bench/sim/.gitignore:3): dry stopped '21 step file(s) missing' (lb_contain_A.log:4-9); fixed by ignored_inputs sync (lb_setup.py:197)",
+  "Stub, arm A: runner 2 purpose-flow cycles with stub sessions; fence refused the outside write; metrics JSON has plan_progress first; 51/0, stub worktree removed (lb_stub_A.log:56)",
+  "plan_progress (primary): goalmap changes, per-cycle goal ids, re-plans, PASS cards per goal, critical path M3>M8>M4..; M3 detail P4 ops 58/190, sessions 2/6 (lb_collect.py:336, arms.json:22)",
+  "Resume/stop: lb_run does --cycles 1 per cycle, <arm>_state.json; refuses rig-state != 조립, LabVIEW running, or --not-after overrun (>=90 min); selftest 7/0 (lb_state.py:103, lb_state_selftest.log:10)",
+  "Karpathy: README says MIT, no root LICENSE, no licence line in CLAUDE.md, so attributed paraphrase, appended for A13K only (karpathy_principles.md:3-7)",
+  "This card wrote nothing in main outside tools/bench/livebench + cards; main STATUS was edited at 11:51 by the chat (tweezers STOP), not here; no arm, LabVIEW or motor started",
+  "lb_run.py (labview build, hardware motor) only compiled, never run; its stop/resume logic is in the tested lb_state.py; start-VI and memory copies happen in lb_run prepare (lb_run.py:1-24)"
+ ],
+ "open": [
+  "A13/A13K: fill arms.json arms.A13.commit after chat-F2/F3, then `lb_setup.py setup A13 --commit <sha>`, setup A13K, contain-dry; if F2 moved a patch anchor, setup stops 'anchor drift'.",
+  "lb_run copies main's ~/.claude memory into each worktree's project key by default (--no-memory turns it off). Should the arms see MEMORY.md as live cycles do?",
+  "Fence gap: Python-only. PowerShell/Bash writes into claudeDev or main are caught after each cycle by lb_run's snapshots, not prevented. Accept, or add a guard_bash rule in the worktrees?"
+ ],
+ "cost": {"usd": null, "minutes": 40, "labview_runs": 0},
+ "note": "Build + stub-test only; no arm started (tweezers today). Order A, B, then A13, A13K; live = a labview build + motor card: lb_run.py run <arm> --not-after HH:MM, one arm at a time."
+}

@@ -1,0 +1,39 @@
+{
+ "schema": "livebench-arms/1",
+ "card": "chat-B7",
+ "bench_root": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_bench",
+ "claudedev_root": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev",
+ "main_project": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop",
+ "start_vi": {"name": "D1_ring_p4s02_20261003_110001.vi", "md5": "84cac48781c7c915c8f0d7e8fb079341"},
+ "cycles": 2,
+ "order": ["A", "B", "A13", "A13K"],
+ "arms": {
+  "A":    {"commit": "0fc16ea0", "flow": "purpose", "extras": [], "agent": "claude-code",
+           "note": "master 0fc16ea0: S1 + early-error hooks (E3) + purpose flow (A1); Sonnet 5.5 high assignment session"},
+  "B":    {"commit": "0fc16ea0", "flow": "legacy", "extras": [], "agent": "claude-code",
+           "note": "same commit as A, --flow legacy: the Opus judgement session dispatches cards itself (6-dispatch cap)"},
+  "A13":  {"commit": null, "commit_rule": "master HEAD after card chat-F2 (+ chat-F3 records) lands - fill in before setup",
+           "flow": "purpose", "extras": [], "agent": "claude-code",
+           "note": "postconditions, test records, generated docs (chat-F2/F3)"},
+  "A13K": {"commit": null, "commit_rule": "the same commit as A13", "flow": "purpose", "extras": ["karpathy"],
+           "agent": "claude-code",
+           "note": "A13 + karpathy_principles.md appended to .claude/agents/material*.md and tools/bench/assign/assign_prompt.md"}
+ },
+ "progress": {
+  "primary": "whole-project plan progress against docs/goalmap.json (user 2026-10-06: not only the ring buffer); only the START state is identical, each arm's judgement may re-plan",
+  "critical_path": ["M3", "M8", "M4", "M5", "M6", "M7", "M11", "M9", "M10"],
+  "m3_detail": {"p4_total_ops": 190, "p4_sessions": 6, "p4_plan": "tools/bench/plan_ring_p4_v18.json",
+                "baseline": {"sessions_adopted": 2, "ops_adopted": 58,
+                             "evidence": "s01 = plan_ring_p4_s01.json 24 actions (docs/d1/ring-p4b.md:53); s02 = plan_ring_p4_s02v18.json 34 actions, adopted tools/bench/adopted_scratch.jsonl:1"},
+                "stage_re": "ring_(p\\d+)(?:_s(\\d+))?"}
+ },
+ "ignored_inputs": {
+  "why": "git-IGNORED files the start state needs (tools/bench/sim/.gitignore ignores */step_*.json): without them the worktree's dry of the cycle-1 recipe stops 'EXECUTOR-NOT-RUN ... 21 step file(s) missing or changed since finalize' (lb_contain_A.log, first contain-dry 2026-10-06 11:48) while the main tree's dry PASSes; byte-copied from the main tree by lb_setup (setup / sync-ignored)",
+  "globs": ["tools/bench/sim/ring_p4_s03v18/step_*.json", "tools/bench/sim/ring_p4_s03v18a/step_*.json",
+            "tools/bench/sim/ring_p4_v18/step_*.json", "tools/bench/sim/ring_p4_s02v18/step_*.json",
+            "tools/bench/sim/ring_p4_s02v18a/step_*.json"]
+ },
+ "karpathy_targets": [".claude/agents/material.md", ".claude/agents/material-opus-max.md",
+                      ".claude/agents/material-fable-low.md", ".claude/agents/material-fable-medium.md",
+                      "tools/bench/assign/assign_prompt.md"]
+}

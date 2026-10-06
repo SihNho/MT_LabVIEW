@@ -1,0 +1,16 @@
+{
+ "schema": "task/1", "id": "chat-B7", "kind": "build",
+ "goal": "Live-cycle bench harness: 4 arms (A, B, A13, A13K) x 2 cycles, each in its own git worktree and claudeDev bench folder, metrics JSON per arm",
+ "why": "User 2026-10-06 asked for a 4-arm bench in bench-only directories before applying to the original. Detail: brief_chat-B7.md",
+ "inputs": [{"path": "tools/bench/cards/brief_chat-B7.md", "md5": "2bfcf15e2ee997f761592ebcd9022471"}],
+ "pass": [
+  "worktrees per arm outside the project, hooks re-pointed, same purpose and start VI; all LabVIEW writes resolve under claudeDev bench arm folder (dry run)",
+  "driver + metrics collector with one schema for any arm incl. a future Codex arm; Karpathy text fetched with its licence recorded",
+  "stub dry run of one arm shows the metrics JSON; README with arms, commits, order; main tree, STATUS and runner untouched"
+ ],
+ "outputs": ["tools/bench/livebench/README.md"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/livebench/**", "tools/bench/cards/**"], "status_edit": false, "git_commit": true, "peers": ["fact"]},
+ "budget": {"failures": 2, "minutes": 150}, "unblocks": "M4",
+ "rules": ["Build and stub-test only, run no arm", "Do not edit files chat-F2 owns", "Edit tool only"]
+}
