@@ -103,6 +103,43 @@ The record is in `failed_launch_A_20261006_1207/`. Nothing ran: no LabVIEW, $0.
    failed launch's runner lines. Each fix is committed in the worktree, and `setup_commit` is moved: A `0beeb250`,
    B `20f552bb`. New arms get all of it from `setup`.
 
+## Line endings (chat, 2026-10-06 19:5x): the worktrees were CRLF, so every md5 pin broke
+
+- **Cause.** The system git config sets `core.autocrlf=true` (`C:/Program Files/Git/etc/gitconfig`), so files git
+  checked out into a worktree were CRLF. Main's working copies are mostly LF, because tools write them; main has
+  7,154 LF and 4,222 CRLF .py/.json/.md files.
+- **Effect.** Every md5-pinned record differed. Arm A lost cycle-1 round 3 and cycle-2 round 1 to
+  `selftest_c134_1_dry` T2a (`V6_bench/A/tools/bench/cards/result_145-b1-2.json`).
+- **Fix, per worktree only** (`lb_setup.set_eol_config`, `sync_bytes`):
+  - `extensions.worktreeConfig=true` and `git config --worktree core.autocrlf=input`. Git then never writes CRLF in
+    the worktree, and a CRLF working file still compares clean against its LF blob. Main's effective `core.autocrlf`
+    stays `true`, and main's checkout is untouched.
+  - Why not `autocrlf=false`: main's CRLF-on-disk files would then show as modified, and the runner would commit them
+    as whole-file changes.
+  - `sync_bytes` copies main's working-copy bytes over every tracked file whose content equals main's up to line
+    endings. Files the setup changed, or that main changed after the base commit, keep their content and take main's
+    line-ending style.
+  - It then rebuilds the index from HEAD (`read-tree` + refresh), because the index cached the CRLF sizes.
+  - GATE: every main-equal file is byte-identical (B: 17,220 files, 212 recipes, 0 mismatches), and git status is
+    clean.
+  - New arms are checked out with `--no-checkout`, then configured, then populated.
+- **B was repaired** (`lb_setup.py repair B`). It has not run.
+- **A is NOT touched** while its cycle 2 runs. After A's cycle 2 ends, the chat runs:
+
+  ```
+  py tools/bgrun.py --material --max-min 30 --log tools/bench/livebench/lb_reset_A.log -- py -u tools/bench/livebench/lb_setup.py reset-arm A --yes
+  ```
+
+  - Without `--yes` it only prints the plan.
+  - It refuses while `RUNNING.json` names A, or while LabVIEW runs.
+  - It keeps run 1 as evidence:
+    - worktree `V6_bench/A_run1_<stamp>` (git worktree move), branch `bench/A_run1_<stamp>`;
+    - `claudeDev\bench\A_run1_<stamp>`;
+    - `livebench/run1_A_<stamp>/` (A_state, A.json, setup_A.json, logs).
+  - Then it runs `setup A` from `0fc16ea0`: the same start VI, the same purpose, A_state 0/2, every fix (bed, Error List
+    copies, due clear with mtime restore, both fences, ignored sim files, line endings). After that it runs
+    `hooks-check A`.
+
 ## How to run (from the main project root)
 
 ```

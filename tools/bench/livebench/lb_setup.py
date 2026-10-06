@@ -135,6 +135,10 @@ def apply_patches(wt, only=None):
             continue
         p = os.path.join(wt, rel)
         src = open(p, encoding="utf-8").read()
+        if new in src:                       # idempotent: a repair on an already patched worktree changes nothing
+            gate("PATCH %s (%s): already applied" % (label, rel), True)
+            done.append({"file": rel, "label": label, "count": count, "already": True})
+            continue
         n = src.count(old)
         if not gate("PATCH %s (%s): anchor found %d time(s), expected %d" % (label, rel, n, count), n == count):
             raise SystemExit("anchor drift in %s - the worktree commit differs from the one the patches were written "
@@ -324,6 +328,88 @@ def fence(arm):
          not git("status", "--porcelain", cwd=wt))
 
 
+def set_eol_config(wt):
+    """chat 2026-10-06 19:5x: the worktrees were checked out under the system core.autocrlf=true (C:/Program Files/Git/
+    etc/gitconfig), so files git wrote are CRLF while main's working copies are mostly LF (tool-written): every md5 pin
+    broke (arm A lost two rounds to selftest_c134_1_dry T2a). Per-WORKTREE config only (extensions.worktreeConfig;
+    main's effective core.autocrlf stays true, its checkout untouched): core.autocrlf=input = git never writes CRLF in
+    the worktree, and a CRLF working file still compares clean against its LF blob (normalised on add), so the runner's
+    per-cycle `git add -A` commits no line-ending noise. (autocrlf=false was the suggestion; it would make main's 4222
+    CRLF-on-disk files show as modified and commit them, which the numstat metrics would count as whole-file changes.)"""
+    git("config", "extensions.worktreeConfig", "true")
+    git("config", "--worktree", "core.autocrlf", "input", cwd=wt)
+    main_eff = git("config", "core.autocrlf", check=False)
+    wt_eff = git("config", "core.autocrlf", cwd=wt, check=False)
+    gate("EOL per-worktree core.autocrlf=%s; main's effective core.autocrlf still %s" % (wt_eff, main_eff),
+         wt_eff == "input" and main_eff == "true")
+
+
+def sync_bytes(wt, base_commit):
+    """Make every tracked worktree file byte-identical to main's WORKING copy when it has the same content up to line
+    endings (main's working copy is the reference the pins were taken on). Files the setup commits changed on purpose,
+    or whose content differs from main (main moved on since the base commit), keep their content and only take main's
+    line-ending style. Then GATE: every tracked file with main-equal content is byte-identical (>= 200, incl. every
+    tools/recipes/*.py) and the worktree's git status is clean."""
+    changed = set(git("diff", "--name-only", base_commit, "HEAD", cwd=wt).splitlines())
+    st = {"identical": 0, "fixed": 0, "eol_adjusted": 0, "content_differs": 0, "missing_in_main": 0}
+    differs, recipes = [], []
+    for rel in git("ls-files", "-z", cwd=wt).split("\0"):
+        if not rel:
+            continue
+        w, m = os.path.join(wt, rel), os.path.join(MAIN, rel)
+        if not (os.path.isfile(w) and os.path.isfile(m)):
+            st["missing_in_main"] += os.path.isfile(w)
+            continue
+        bw, bm = open(w, "rb").read(), open(m, "rb").read()
+        if bw == bm:
+            st["identical"] += 1
+            continue
+        nw, nm = bw.replace(b"\r\n", b"\n"), bm.replace(b"\r\n", b"\n")
+        if nw == nm and rel not in changed:
+            with open(w, "wb") as f:
+                f.write(bm)
+            st["fixed"] += 1
+            continue
+        if b"\r\n" in bm and bm.count(b"\n") == bm.count(b"\r\n"):
+            new = nw.replace(b"\n", b"\r\n")
+        elif b"\r\n" not in bm:
+            new = nw
+        else:
+            new = bw
+        if new != bw:
+            with open(w, "wb") as f:
+                f.write(new)
+            st["eol_adjusted"] += 1
+        if nw != nm:
+            st["content_differs"] += 1
+            differs.append(rel)
+    bad = []
+    for rel in git("ls-files", "-z", cwd=wt).split("\0"):
+        w, m = os.path.join(wt, rel), os.path.join(MAIN, rel)
+        if rel and rel not in changed and os.path.isfile(w) and os.path.isfile(m):
+            bw, bm = open(w, "rb").read(), open(m, "rb").read()
+            if bw.replace(b"\r\n", b"\n") == bm.replace(b"\r\n", b"\n"):
+                if rel.startswith("tools/recipes/") and rel.endswith(".py"):
+                    recipes.append(rel)
+                if bw != bm:
+                    bad.append(rel)
+    n_same = st["identical"] + st["fixed"]
+    gate("BYTES %d tracked file(s) with main-equal content are byte-identical to main's working copy (%d fixed now, "
+         "%d recipes .py), 0 mismatches; %d keep base-commit content (main moved on), %d setup-changed" % (
+             n_same, st["fixed"], len(recipes), st["content_differs"], len(changed)),
+         n_same >= 200 and not bad and len(recipes) > 0, str(bad[:5]))
+    # the index still caches the CRLF checkout's sizes, and git treats a size change as modified without rehashing
+    # (B, 2026-10-06 20:03: 4209 'needs update' with identical blobs). Rebuild the index from HEAD (no stat cache;
+    # everything is committed at this point) and refresh: every file is rehashed through the input conversion.
+    git("read-tree", "HEAD", cwd=wt)
+    git("update-index", "-q", "--refresh", cwd=wt, check=False)
+    stat = git("status", "--porcelain", cwd=wt)
+    gate("BYTES the worktree's git status is clean after the sync (no line-ending noise for the runner's commits)",
+         not stat, stat[:300])
+    st.update({"recipes_identical": len(recipes), "content_differs_sample": differs[:20], "setup_changed": len(changed)})
+    return st
+
+
 def restore_mtimes(wt):
     """`git worktree add` stamps every file with the checkout time, so every mtime-ordered check in the arm (outcome
     cadence, retro-debt, guard_peer's newest failing log) saw 4417 logs 'written today' (hooks_A.json: outcome '11
@@ -423,16 +509,21 @@ def repair(arm):
     moved. The failed launch's main-side records go to livebench/failed_launch_<arm>_*/."""
     wt = wt_path(arm)
     sp = os.path.join(HERE, "setup_%s.json" % arm)
+    if os.path.exists(os.path.join(HERE, "RUNNING.json")) and \
+            json.load(open(os.path.join(HERE, "RUNNING.json"), encoding="utf-8")).get("arm") == arm:
+        raise SystemExit("arm %s is RUNNING (livebench/RUNNING.json) - repair refused" % arm)
     rec = json.load(open(sp, encoding="utf-8"))
+    set_eol_config(wt)                       # before the reset, so git writes no CRLF
     git("reset", "-q", "--hard", rec["setup_commit"], cwd=wt)
     git("clean", "-fdq", cwd=wt)
     gate("REPAIR %s reset to the setup baseline %s, clean" % (arm, rec["setup_commit"][:10]),
          not git("status", "--porcelain", cwd=wt) and git("rev-parse", "HEAD", cwd=wt) == rec["setup_commit"])
     moved = []
+    stamp = time.strftime("%Y%m%d_%H%M")
     for nm in ("%s_state.json", "%s_run.json", "%s.json", "%s_snapshots.json", "lb_run_%s.log"):
         p = os.path.join(HERE, nm % arm)
         if os.path.exists(p):
-            d = os.path.join(HERE, "failed_launch_%s_20261006_1207" % arm)
+            d = os.path.join(HERE, "superseded_%s_%s" % (arm, stamp))
             os.makedirs(d, exist_ok=True)
             shutil.move(p, os.path.join(d, os.path.basename(p)))
             moved.append(os.path.basename(p))
@@ -442,14 +533,56 @@ def repair(arm):
     pat = apply_patches(wt, only=("R1", "R2"))
     stage_start_vi(arm)
     git("add", "-A", cwd=wt)
-    git("commit", "-q", "-m", "livebench repair (card chat-B7): current-bed = start VI bench copy, Error List reads, "
-        "reaper never touches inherited main-repo logs", cwd=wt)
+    if git("status", "--porcelain", cwd=wt):
+        git("commit", "-q", "-m", "livebench repair (card chat-B7): current-bed, Error List reads, inherited-log reaper "
+            "skip, line endings = main's working copy", cwd=wt)
     rec["setup_commit"] = git("rev-parse", "HEAD", cwd=wt)
+    rec["bytes"] = sync_bytes(wt, rec["base_commit"])
+    rec["mtimes_restored"] = restore_mtimes(wt)
     rec["patches"] = [p for p in rec["patches"] if not p["label"].startswith(("R1", "R2"))] + pat
-    rec["repair"] = {"t": time.strftime("%Y-%m-%d %H:%M:%S"), "moved_failed_launch_records": moved}
+    rec.setdefault("repairs", []).append({"t": time.strftime("%Y-%m-%d %H:%M:%S"), "moved_records": moved})
     with open(sp, "w", encoding="utf-8") as fh:
         json.dump(rec, fh, indent=1)
-    gate("REPAIR committed, setup baseline moved to %s" % rec["setup_commit"][:10], not git("status", "--porcelain", cwd=wt))
+    gate("REPAIR done, setup baseline %s, worktree clean" % rec["setup_commit"][:10], not git("status", "--porcelain", cwd=wt))
+
+
+def reset_arm(arm, yes=False):
+    """A FRESH, fixed start for an arm that already ran (prepared for arm A, 2026-10-06 19:5x; the CHAT runs it after A's
+    cycle 2 ends). Keeps the run as evidence: worktree V6_bench/<arm> -> V6_bench/<arm>_run<k>_<stamp> (git worktree move,
+    branch bench/<arm> -> bench/<arm>_run<k>_<stamp>), claudeDev\\bench\\<arm> -> claudeDev\\bench\\<arm>_run<k>_<stamp>,
+    livebench/<arm>*.json + lb_run_<arm>.log -> livebench/run<k>_<arm>_<stamp>/; then `setup <arm>` from the arm's
+    arms.json commit (same start VI, same purpose, A_state 0/2, every fix incl. line endings). Refused while the arm
+    runs (RUNNING.json names it), while LabVIEW runs, or without --yes."""
+    lock = os.path.join(HERE, "RUNNING.json")
+    if os.path.exists(lock) and json.load(open(lock, encoding="utf-8")).get("arm") == arm:
+        raise SystemExit("arm %s is RUNNING (RUNNING.json) - wait for its cycle to end" % arm)
+    if "labview.exe" in subprocess.run(["tasklist"], capture_output=True, text=True, errors="replace").stdout.lower():
+        raise SystemExit("LabVIEW.exe is running - reset refused")
+    k = 1 + len(glob.glob(os.path.join(ARMS["bench_root"], "%s_run*" % arm)))
+    stamp = time.strftime("%Y%m%d_%H%M")
+    tag = "%s_run%d_%s" % (arm, k, stamp)
+    plan = [("worktree", wt_path(arm), wt_path(tag)), ("branch", "bench/%s" % arm, "bench/%s" % tag),
+            ("claudeDev", out_dir(arm), os.path.join(CD_ROOT, "bench", tag)),
+            ("records", HERE, os.path.join(HERE, "run%d_%s_%s" % (k, arm, stamp)))]
+    for p in plan:
+        print("RESET-PLAN %-9s %s -> %s" % p, flush=True)
+    if not yes:
+        print("RESET-DRY: nothing changed (add --yes to run it)", flush=True)
+        return
+    git("worktree", "move", wt_path(arm), wt_path(tag))
+    git("branch", "-m", "bench/%s" % arm, "bench/%s" % tag)
+    if os.path.isdir(out_dir(arm)):
+        os.rename(out_dir(arm), os.path.join(CD_ROOT, "bench", tag))
+    rd = plan[3][2]
+    os.makedirs(rd, exist_ok=True)
+    for nm in ("%s_state.json", "%s_run.json", "%s.json", "%s_snapshots.json", "lb_run_%s.log", "setup_%s.json",
+               "hooks_%s.json", "contain_%s.json"):
+        p = os.path.join(HERE, nm % arm)
+        if os.path.exists(p):
+            shutil.move(p, os.path.join(rd, os.path.basename(p)))
+    gate("RESET %s: run kept as %s" % (arm, tag), os.path.isdir(wt_path(tag)) and not os.path.exists(wt_path(arm)))
+    setup(arm)
+    hooks_check(arm)
 
 
 def hooks_child(wt, json_out):
@@ -542,7 +675,9 @@ def setup(arm, name=None, commit=None):
         raise SystemExit("worktree exists: %s" % wt)
     os.makedirs(ARMS["bench_root"], exist_ok=True)
     full = git("rev-parse", commit)
-    git("worktree", "add", "-b", branch, wt, full)
+    git("worktree", "add", "--no-checkout", "-b", branch, wt, full)
+    set_eol_config(wt)                       # per-worktree core.autocrlf=input BEFORE git writes a single file
+    git("reset", "-q", "--hard", full, cwd=wt)
     gate("SETUP worktree at %s on %s (%s)" % (wt, branch, full[:8]), git("rev-parse", "HEAD", cwd=wt) == full)
     man = apply_state(wt, arm)
     settings = repoint_settings(wt)
@@ -566,13 +701,14 @@ def setup(arm, name=None, commit=None):
     git("commit", "-q", "-m", "livebench setup arm %s (card chat-B7): start state, hooks re-pointed, CLAUDEDEV_OUT patches, "
         "write fence%s" % (arm, ", Karpathy section" if "karpathy" in cfg.get("extras", []) else ""), cwd=wt)
     setup_commit = git("rev-parse", "HEAD", cwd=wt)
+    bytes_rec = sync_bytes(wt, full)
     restore_mtimes(wt)
     if not name.startswith("_stub"):
         record_cleared(name, cd_rec)
     rec = {"schema": "livebench-setup/1", "arm": arm, "name": name, "worktree": wt, "branch": branch,
            "base_commit": full, "setup_commit": setup_commit, "flow": cfg["flow"], "extras": cfg.get("extras", []),
            "claudedev_out": out_dir(arm), "start_state_manifest": man, "settings": settings, "patches": pat,
-           "ignored_inputs_copied": n_ign, "fence": fence_rec, "cleared_due": cd_rec,
+           "ignored_inputs_copied": n_ign, "fence": fence_rec, "cleared_due": cd_rec, "bytes": bytes_rec,
            "overlay_md5": md5(os.path.join(ov, "sitecustomize.py")), "env": env,
            "next_json_md5": md5(os.path.join(wt, "tools", "bench", "next.json")),
            "t": time.strftime("%Y-%m-%d %H:%M:%S")}
@@ -801,13 +937,15 @@ def teardown(name):
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=("snapshot", "setup", "sync-ignored", "fence", "repair", "clear-due", "hooks-check",
+    ap.add_argument("cmd", choices=("snapshot", "setup", "sync-ignored", "fence", "repair", "reset-arm", "clear-due",
+                                    "hooks-check",
                                     "contain-dry",
                                     "stub", "teardown", "_contain_child", "_hooks_child"))
     ap.add_argument("arm", nargs="?")
     ap.add_argument("--commit")
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--keep", action="store_true")
+    ap.add_argument("--yes", action="store_true", help="reset-arm: really do it (default: print the plan only)")
     ap.add_argument("--counterfactual", action="store_true")
     ap.add_argument("--recipe", default=RECIPE)
     ap.add_argument("--wt")
@@ -835,6 +973,8 @@ def main(argv=None):
         fence(a.arm)
     elif a.cmd == "repair":
         repair(a.arm)
+    elif a.cmd == "reset-arm":
+        reset_arm(a.arm, a.yes)
     elif a.cmd == "clear-due":
         clear_due_cmd(a.arm)
     elif a.cmd == "hooks-check":
