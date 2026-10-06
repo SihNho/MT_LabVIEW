@@ -1,0 +1,37 @@
+{
+ "schema": "fnrec/1",
+ "function": "gscript.delete_object",
+ "source": {
+  "file": "tools/gscript.py",
+  "defs": [
+   "delete_object"
+  ],
+  "line": 2808,
+  "md5": "f15235fe94dfe2340ce0f803bcf0ec5f"
+ },
+ "plan": {
+  "written": "2026-10-06T11:34:06",
+  "card": "chat-F2",
+  "bed": "a scratch copy (stagekit.Stage.scratch) of a small claudeDev VI holding one While Loop, one Add, one Case, one Flat Sequence, two panel controls - created and deleted in the run",
+  "inputs": [
+   {
+    "case": "pos",
+    "call": "delete_object(scratch, 'Function', <index of a known Add>, verify=True)",
+    "predict": "removed == 1; outcome ok; the uid absent from uids(scratch,'Function')"
+   },
+   {
+    "case": "neg-double",
+    "call": "the same uid deleted again via stagekit.Stage.delete_object",
+    "predict": "PostconditionFailed at the call, outcome no_output, measured removed 0"
+   }
+  ],
+  "predicted": {
+   "removed": "== 1"
+  },
+  "outcome_contract": "removed == 1 [inline, raise]",
+  "pass_if": "every input's prediction holds AND the call's standard outcome is the predicted one; handle count flat (+-100) over the run",
+  "runs_in": "card chat-F3 (real LabVIEW); never this card"
+ },
+ "records": [],
+ "legacy_evidence": []
+}

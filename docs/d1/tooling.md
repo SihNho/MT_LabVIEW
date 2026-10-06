@@ -266,3 +266,36 @@ Self-test `tools/bench/selftest_rebind_c142_5.py` (142-P1's case): before 1/3 (`
        `create:WhileLoop` → only that class would be reviewed.
      - cycle_runner.py / guard_session.py belong to chat-A1: `scope_header.KNOWN` supplies cycle_runner's offline modes
        (`--dry-run --dry-cmd --no-motor-hooks`, allowed since 2026-09-24) until its owner adds them to its header.
+339. **(chat card chat-F2, 2026-10-06 11:5x — USER: "그러면 1~3번 모두 적용할 가치가 있겠다. 적용하도록 하자", three ideas taken
+     from CLI-Anything; purpose per PD338: catch errors at the START)** Per-function contracts, records and generated docs.
+     OFFLINE, STRUCTURAL; self-test `tools/bench/selftest_fn_f2.log` 31/0; suite vs HEAD `tools/bench/selftest_f2_suite.log`
+     70 tests, 0 NEW failures, 8 pre-existing (stagexec.py selftest included, passes).
+     USER-RULES: U1 (relied on: wrapper / checker / records / doc generator only - no VI, no computation, no design change).
+     - **(a) ONE STANDARD OUTCOME + DECLARED POSTCONDITIONS** (`tools/fncontract.py`): every call ends `ok | no_output |
+       failed | timed_out`; `TABLE` holds one row per LabVIEW-touching public gscript function (113, AST closure) and per
+       `Stage._op` verb (34) - `post` + `measure` (inline / result / existing-raise / caller) + `on_fail` (raise / record),
+       or `none - <reason>` (coverage checked: none missing, none without a reason). The shared `check()` fails AT THE
+       CALL with the measured numbers (old message text first). GENERALISED, not duplicated: gscript.delete_object's
+       `expected 1 object gone` (gscript.py:2861) and term_index's 0/>1 match ValueError (gscript.py:5009, now
+       PostconditionValueError, still a ValueError). gscript wraps every row at import (`FNCONTRACT_WRAPPED`,
+       gscript.py:5218; `__wrapped__` kept). `Stage._op` stores `rec["outcome"]` (stagekit.py:620). NEW CHECKS:
+       Stage.delete_object removed == 1 and Stage.delete_wire found == 1 (stagekit.py:656-669) - a DOUBLE delete used to
+       return False silently and now stops at the call; delete_wire's removal is NOT re-read (an extra whole-VI Wire read
+       per delete would move the X10 model) - stagexec's next step read covers it. `record` rows (wire_remove_loose_ends,
+       set_control_label, the `_opcw_call` wirers, creators returning err) never raise: the dict-returning contract stays.
+     - **(b) TEST PLAN FIRST, RECORD PER FUNCTION** (`tools/fn_records.py`, registry `tools/bench/fn_records/<fn>.json`,
+       schema `fnrec/1`): 86 plans written (every function the P4 v18 plans route through + stagekit/stagexec direct calls +
+       every Stage verb + the 5 recipe functions); 19 cite the old `scratch_verify` records as `legacy_evidence` (no source
+       md5 → never FRESH). A record is fresh only while its `src_md5` == the def's current source md5. ADVISORY GATE:
+       `stage_prerun.fn_record_gate` in `_check_units` (stage_prerun.py:4551) appends `FN-GATE ADVISORY | <unit> | n of m
+       ...` to `tools/bench/fn_gate.log`; config `tools/bench/fn_records/gate_config.json` mode `advisory`, SWITCH
+       CONDITION: every function of the 3 P4 v18 plans has a fresh PASS (card chat-F3); `auto: false` → a judgement session
+       flips `mode` to `refuse` when the line says `switch condition MET`. Records are added by `--add-record` (plan
+       required). The real-LabVIEW runs are card chat-F3.
+     - **(c) CAPABILITY TABLE GENERATED FROM CODE** (`tools/gen_capabilities.py`): a marked block APPENDED at the end of
+       docs/toolkit-capabilities.md (prose above byte-identical; 152 rows: name, args, contract, record, file:line);
+       idempotent. doc_lint **L12** (WARN) reports drift: missing / gone rows, stale records, changed contract/record/line.
+       docs/NAMES.md NOT generated: its terminal names are measured from LabVIEW, not derivable from code or records.
+     - Gate false positive **fp-41** (`checker:stage_prerun:is_vi_modifying`): the first self-test imported stagekit with
+       COM stubbed and was refused as a VI-modifying stage; queued, not patched; the self-test now executes the real defs
+       from source (ast) without importing gscript/stagekit.

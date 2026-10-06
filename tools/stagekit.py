@@ -70,7 +70,8 @@ for _p in (HERE, os.path.join(HERE, "bench"), os.path.join(HERE, "recipes")):
         sys.path.insert(0, _p)
 
 import gscript as g                                                                # noqa: E402
-import gateclass as _gateclass                                                     # noqa: E402  card chat-S2: STOP vs LOG-only
+import fncontract as _fc                                                           # noqa: E402  card chat-F2: standard outcome
+import gateclass as _gateclass                                                    # noqa: E402  card chat-S2: STOP vs LOG-only
 
 BENCH = os.path.join(HERE, "bench")
 CLAUDEDEV = g.CLAUDEDEV
@@ -312,6 +313,7 @@ class Stage(object):
         try:
             return fn(), ""
         except Exception as e:                                                     # noqa: BLE001
+            self._last_exc = e                    # card chat-F2: _op reads its standard outcome (fncontract)
             msg = "{0}: {1}".format(type(e).__name__, str(e)[:250])
             self.fact("{0} raised {1}".format(label, msg))
             return default, msg
@@ -606,11 +608,21 @@ class Stage(object):
         self._rowcheck()          # ADVISORY, once, before the first mutation (docs/jev-integration-plan.md #5)
         self.node_mark(verb)
         t0 = time.time()
+        m0, self._last_exc = _fc.mark(), None
         res, err = self.safe("{0} {1}".format(verb, detail), fn)
         rec = {"verb": verb, "detail": detail, "err": err, "result": res,
                "s": round(time.time() - t0, 1)}
+        # card chat-F2: ONE standard outcome per op (ok | no_output | failed | timed_out, tools/fncontract.py): the
+        # exception's own outcome when it raised, else the worst outcome any wrapped gscript function recorded inside.
+        fn_name = "stagekit.op:" + verb
+        oc = (_fc.outcome_of_exception(self._last_exc, fn_name) if err and self._last_exc is not None else
+              _fc.outcome_of_text(err, fn_name) if err else _fc.worst(_fc.since(m0), fn_name))
+        rec["outcome"] = {"outcome": oc["outcome"], "fn": oc.get("fn"), "reason": oc.get("reason", "")[:200],
+                          "measured": oc.get("measured") or {}}
         self.R["ops"].append(rec)
-        self.fact("OP {0} {1} -> err {2!r} ({3:.1f} s)".format(verb, detail, err, rec["s"]))
+        self.fact("OP {0} {1} -> err {2!r} ({3:.1f} s){4}".format(
+            verb, detail, err, rec["s"], "" if oc["outcome"] == "ok" else " OUTCOME {0} ({1}: {2})".format(
+                oc["outcome"], oc.get("fn"), str(oc.get("reason"))[:120])))
         return rec
 
     def node_mark(self, tag=""):
@@ -636,14 +648,28 @@ class Stage(object):
     def delete_wire(self, wire_uid, tag=""):
         """build_opfsinnertunnelconnect_v0.del_wire:336 - by uid, via the LIVE traverse order."""
         C82 = mod("build_opfsinnertunnelconnect_v0")
-        return self._op("delete_wire", lambda: C82.del_wire(self.work, wire_uid, tag),
-                        "w{0}".format(wire_uid))
+
+        def run():
+            # card chat-F2: postcondition `stagekit.op:delete_wire` found == 1 - del_wire returns False when the uid is
+            # not in its own Wire listing (a DOUBLE delete) and used to pass silently; it now fails at this call.
+            ok = C82.del_wire(self.work, wire_uid, tag)
+            _fc.check("stagekit.op:delete_wire", "delete_wire w{0}: del_wire returned {1!r}".format(wire_uid, ok),
+                      found=1 if ok else 0)
+            return ok
+        return self._op("delete_wire", run, "w{0}".format(wire_uid))
 
     def delete_object(self, cls, uid, tag=""):
         """build_opfsinnertunnelconnect_v0.del_node:346 - uid -> live index -> `g.delete_object`."""
         C82 = mod("build_opfsinnertunnelconnect_v0")
-        return self._op("delete_object", lambda: C82.del_node(self.work, cls, uid, tag),
-                        "{0} #{1}".format(cls, uid))
+
+        def run():
+            # card chat-F2: postcondition `stagekit.op:delete_object` removed == 1 - del_node's own after-read returns
+            # False when the uid was already gone (a DOUBLE delete) or did not disappear; that used to pass silently.
+            ok = C82.del_node(self.work, cls, uid, tag)
+            _fc.check("stagekit.op:delete_object", "delete_object {0} #{1}: del_node returned {2!r}".format(
+                cls, uid, ok), removed=1 if ok else 0)
+            return ok
+        return self._op("delete_object", run, "{0} #{1}".format(cls, uid))
 
     def move_in(self, uid, dest_diagram_index, position):
         """build_d1_v0.move_in:318 - move an object INTO a nested diagram by uid."""

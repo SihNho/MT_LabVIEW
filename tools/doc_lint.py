@@ -529,6 +529,26 @@ def check_frozen_footer(paths=None):
     return bad
 
 
+def check_fn_drift(doc=None):
+    """L12 (card chat-F2, user 2026-10-06): CODE-vs-DOC drift of the generated scripting-function table in
+    docs/toolkit-capabilities.md (tools/gen_capabilities.py): a function in code missing from the block, a block entry
+    whose function is gone, a STALE test record (source changed since the record), a changed contract/record/line.
+    A report, never a FAIL (WARN) - the fix is `py tools/gen_capabilities.py` (and, for a stale record, a re-test)."""
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import gen_capabilities as GC
+        d = GC.drift(doc or GC.DOC)
+        line = GC.drift_line(d)
+    except Exception as e:                                                         # noqa: BLE001
+        say("WARN", "L12 function table matches the code", "drift check raised %s: %s" % (type(e).__name__, str(e)[:160]))
+        return None
+    if line:
+        say("WARN", "L12 function table matches the code", line + " - run py tools/gen_capabilities.py")
+    else:
+        say("PASS", "L12 function table matches the code", "generated block == code + fn_records")
+    return d
+
+
 def run(skip_dispositions=False):
     del RESULT[:]
     check_frontmatter()
@@ -546,6 +566,7 @@ def run(skip_dispositions=False):
     check_user_rules_lines([p for p in active_docs() if not is_frozen(p)])   # frozen items are never edited (chat-D1)
     check_line_cap()
     check_frozen_footer()
+    check_fn_drift()
     return list(RESULT)
 
 

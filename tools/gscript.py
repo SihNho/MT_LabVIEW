@@ -54,6 +54,12 @@ import time
 import pythoncom
 from win32com.client import dynamic
 
+# card chat-F2 (user 2026-10-06): ONE standard outcome + DECLARED postconditions per function (tools/fncontract.py). The
+# table lives there; `_fc.install(globals(), "gscript")` at the end of this file wraps every function it names.
+if os.path.dirname(os.path.abspath(__file__)) not in sys.path:
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import fncontract as _fc                                                          # noqa: E402
+
 PROJECT = r"G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop"
 LV_GUI = os.path.join(PROJECT, "tools", "lv_gui.ps1")
 SHOT_DIR = os.environ.get("TEMP", ".")
@@ -2850,8 +2856,10 @@ def delete_object(target, cls, index, verify=True):
     if not verify:
         return None
     gone = before - uids(target, cls)
-    if len(gone) != 1:
-        raise RuntimeError(f"delete_object({cls}[{index}]): expected 1 object gone, got {len(gone)}")
+    # card chat-F2: the check that was here (`len(gone) != 1` -> RuntimeError) is now the SHARED checker's row
+    # `gscript.delete_object` (tools/fncontract.py TABLE); same message first, the measured numbers appended.
+    _fc.check("gscript.delete_object", f"delete_object({cls}[{index}]): expected 1 object gone, got {len(gone)}",
+              removed=len(gone))
     return gone
 
 
@@ -4996,9 +5004,12 @@ def term_index(target, diagram_uid, node_uid, name, is_source):
     ni = _node_index(target, di, node_uid)
     echo, rows = node_terms_uids(target, di, ni)
     hit = [r for r in rows if str(r["name"]) == str(name) and bool(r["is_source"]) == bool(is_source)]
-    if echo != int(node_uid) or len(hit) != 1:
-        raise ValueError("term_index: node echo %r (want #%s), %d terminal(s) named %r is_source=%s; names %r"
-                         % (echo, node_uid, len(hit), name, is_source, [(r["name"], r["is_source"]) for r in rows]))
+    # card chat-F2: the inline `echo != node_uid or len(hit) != 1 -> ValueError` is now the shared checker's row
+    # `gscript.term_index` (raises fncontract.PostconditionValueError, still a ValueError; same message first).
+    _fc.check("gscript.term_index",
+              "term_index: node echo %r (want #%s), %d terminal(s) named %r is_source=%s; names %r"
+              % (echo, node_uid, len(hit), name, is_source, [(r["name"], r["is_source"]) for r in rows]),
+              matches=len(hit), node_echo=echo, node_uid=int(node_uid))
     return di, ni, int(hit[0]["i"]), hit[0]
 
 
@@ -5200,6 +5211,11 @@ def case_frame_wire(target, case_uid, frame_index, src, dst):
     if left or not out["wire_uid"]:
         raise RuntimeError("case_frame_wire: %r" % out)
     return out
+
+
+# card chat-F2: wrap every function tools/fncontract.py's TABLE names (standard outcome on every call; the `result`
+# postconditions checked from the return value). Idempotent; `__wrapped__` keeps the original for inspect/AST readers.
+FNCONTRACT_WRAPPED = _fc.install(globals(), "gscript")
 # ---
 # labview: build
 # hardware: none

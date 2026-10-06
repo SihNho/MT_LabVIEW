@@ -4259,6 +4259,26 @@ def scratch_pass_after(function, t_after):
     return best[1] if best else None
 
 
+def fn_record_gate(unit):
+    """card chat-F2 (user 2026-10-06): (allow, why) from tools/fn_records.launch_gate - every function the unit uses
+    should have a FRESH PASS record (tools/bench/fn_records/<fn>.json, src md5 == current). Mode from
+    tools/bench/fn_records/gate_config.json: 'advisory' (this card) only appends a `FN-GATE ADVISORY` line to
+    tools/bench/fn_gate.log and allows; 'refuse' (after card chat-F3; the switch condition is stated in that config)
+    refuses. An exception inside the advisory never blocks a launch (logged as FN-GATE ERROR)."""
+    try:
+        import fn_records
+        ok, line = fn_records.launch_gate(unit)
+        return (True, "") if ok else (False, line)
+    except Exception as e:                                                         # noqa: BLE001 - advisory only
+        try:
+            with open(os.path.join(HERE, "bench", "fn_gate.log"), "a", encoding="utf-8") as f:
+                f.write("FN-GATE ERROR | {0} | {1}: {2} | {3}\n".format(rel(unit), type(e).__name__, str(e)[:200],
+                                                                       time.strftime("%Y-%m-%d %H:%M:%S")))
+        except OSError:
+            pass
+        return True, ""
+
+
 def check_scratch(unit, now=None):
     """(allow, why) - refuse a stage run whose last two runs failed on the same function with no newer scratch PASS."""
     key = unit_key(unit)
@@ -4528,6 +4548,9 @@ def _check_units(units, cmd):
         ok_sv, why_sv = check_scratch(plan or s)          # card chat-N4: two failures on one function -> scratch VI
         if not ok_sv:
             return False, why_sv
+        ok_fn, why_fn = fn_record_gate(plan or s)         # card chat-F2: ADVISORY (logged) until chat-F3's records
+        if not ok_fn:
+            return False, why_fn
         if not plan and STAGE_RE.search(s):             # card chat-P3 item A: record a skipped scratch build
             try:
                 req, _why_r, st_r = scratch_requirement(s, runs=runs, recs=recs)

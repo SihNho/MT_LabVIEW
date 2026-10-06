@@ -1,0 +1,42 @@
+{
+ "schema": "result/1",
+ "id": "chat-F2",
+ "status": "PASS",
+ "gates": {"pass": 3, "fail": 0},
+ "first_fail": null,
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/fncontract.py", "md5": "e18294134d431cad8ffd67826e5c3ef1"},
+  {"path": "tools/fn_records.py", "md5": "d56fe6d124d04f679dcd7ca99a7a8a95"},
+  {"path": "tools/gen_capabilities.py", "md5": "41f1e602aaf151b07138f7601496631a"},
+  {"path": "tools/gscript.py", "md5": "1a80236ed35c1876c67f964c72fe820a"},
+  {"path": "tools/stagekit.py", "md5": "ec36bc96e777958ec57122e87b830a31"},
+  {"path": "tools/stage_prerun.py", "md5": "791413d5526fa7659948a638f8f787c6"},
+  {"path": "tools/doc_lint.py", "md5": "7bc72b793ad92ea60f8489ee59029511"},
+  {"path": "tools/bench/selftest_fn_f2.py", "md5": "5e3de27dd9af0648263f47bedd902d3c"},
+  {"path": "tools/bench/selftest_fn_f2.log", "md5": "f37ad47c8c3b32161c24afc739d4f238"},
+  {"path": "tools/bench/selftest_f2_suite.log", "md5": "36a94906181fd7b13e5e21a670a8eb03"},
+  {"path": "tools/bench/fn_records/gate_config.json", "md5": "ae0de86e3d42772e6c72b51b3ebd8c4d"},
+  {"path": "docs/toolkit-capabilities.md", "md5": "c240befe30769989b979da775621ecc0"},
+  {"path": "docs/d1/tooling.md", "md5": "f8e72a132767ef31a80ab3210f4a8146"}
+ ],
+ "facts": [
+  "Postcondition table tools/fncontract.py:366: 113 LabVIEW-touching gscript fns + 34 Stage._op verbs, coverage 0 missing/0 orphan/0 without reason; outcome ok/no_output/failed/timed_out",
+  "delete_object and term_index inline checks generalised to fncontract.check (gscript.py:2861, :5009); wrappers installed at gscript.py:5218; Stage._op stores rec.outcome (stagekit.py:620)",
+  "New: Stage.delete_object removed==1 / delete_wire found==1 (stagekit.py:656-669); double delete used to return False silently, now op err + ExecStop. Removal not re-read (X10 memory model)",
+  "selftest_fn_f2.log: 31 pass / 0 fail (double delete, 2-match lookup, real _run timeout -> timed_out, stale record, advisory gate, generator idempotent, drift)",
+  "selftest_f2_suite.log: 70 tests now vs HEAD, 0 NEW failures, 8 pre-existing (stagexec.py selftest passes)",
+  "86 test plans in tools/bench/fn_records (P4 v18 routes + stagekit/stagexec calls + verbs + 5 recipe fns); 19 cite scratch_verify as legacy evidence (no src md5, never fresh)",
+  "Advisory gate stage_prerun.py:4551 -> fn_gate.log; gate_config.json mode advisory, switch to refuse when every fn of the 3 P4 v18 plans has a fresh PASS (auto false)",
+  "Generated block appended at docs/toolkit-capabilities.md:866 (152 rows), prose above byte-identical; doc_lint L12 PASS, drift none; NAMES.md untouched (names are measured, not derivable)",
+  "Gate false positive fp-41 logged (checker:stage_prerun:is_vi_modifying refused the first self-test that imported stagekit with COM stubbed); not patched; the test now runs the defs from source",
+  "PD339 at docs/d1/tooling.md:269 + docs/d1/INDEX.md; doc_lint FAILs L2/L8/L10 are the same as before the card"
+ ],
+ "open": [
+  "Switch the fn gate to refuse automatically when the condition is met (auto true), or keep the manual flip by judgement after chat-F3?",
+  "Record-mode rows (wire_remove_loose_ends, set_control_label, opcw wirers, creators returning err) only record the outcome. Raise at the call later, or leave the callers (stagexec) to decide?",
+  "fp-41: exempt offline self-tests that stub COM from is_vi_modifying (as selftest_stagekit.py is pinned), in the next tooling batch?"
+ ],
+ "cost": {"usd": null, "minutes": 50, "labview_runs": 0},
+ "note": "Offline only, no LabVIEW. Finished before the 13:40 wrap-up. Peers: none dispatched (no review owed: the one failing self-test run was a test-assertion case bug fixed inside the build step, rerun PASS)."
+}
