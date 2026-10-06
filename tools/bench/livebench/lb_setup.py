@@ -410,6 +410,96 @@ def sync_bytes(wt, base_commit):
     return st
 
 
+def sync_bytes_precycle(wt, main=None):
+    """lb_run, before EVERY cycle (chat 2026-10-06): re-copy main's working bytes onto tracked files that are UNCHANGED in
+    the arm (not in `git diff <setup..HEAD>`... i.e. not changed by any commit since the base, not modified in the
+    working tree) and equal to main's up to line endings - the files a git checkout/reset inside the arm may have
+    rewritten with other line endings. Files the arm committed or edited are never touched (no EOL adjust either).
+    Returns {fixed, identical, skipped_arm_changed, mismatches_after, paths}."""
+    main = main or MAIN
+    base = json.load(open(os.path.join(wt, ".livebench", "arm.json"), encoding="utf-8")).get("base_commit")
+    changed = set(git("diff", "--name-only", base, "HEAD", cwd=wt).splitlines()) if base else set()
+    # content-based (git diff converts and compares blobs); `status --porcelain` is NOT used: a stale index stat cache
+    # (size changed by a line-ending rewrite) reports 'M' without rehashing (selftest-sync P2, first run)
+    dirty = set(git("diff", "--name-only", cwd=wt).splitlines()) | set(git("diff", "--cached", "--name-only", cwd=wt).splitlines())
+    out = {"fixed": 0, "identical": 0, "skipped_arm_changed": 0, "mismatches_after": 0, "paths": []}
+    for rel in git("ls-files", "-z", cwd=wt).split("\0"):
+        if not rel:
+            continue
+        if rel in changed or rel in dirty:
+            out["skipped_arm_changed"] += 1
+            continue
+        w, m = os.path.join(wt, rel), os.path.join(main, rel)
+        if not (os.path.isfile(w) and os.path.isfile(m)):
+            continue
+        bw, bm = open(w, "rb").read(), open(m, "rb").read()
+        if bw == bm:
+            out["identical"] += 1
+        elif bw.replace(b"\r\n", b"\n") == bm.replace(b"\r\n", b"\n"):
+            st = os.stat(m)
+            with open(w, "wb") as f:
+                f.write(bm)
+            os.utime(w, (st.st_atime, st.st_mtime))
+            out["fixed"] += 1
+            out["paths"].append(rel)
+            if open(w, "rb").read() != bm:
+                out["mismatches_after"] += 1
+    if out["fixed"]:
+        git("update-index", "-q", "--refresh", cwd=wt, check=False)
+    out["paths"] = out["paths"][:20]
+    return out
+
+
+def selftest_sync():
+    """A throwaway 'main' repo + worktree under %TEMP%, both with core.autocrlf=true like the real ones: CASES
+    P1 a git-written CRLF copy of an LF main file is restored; P2 a main CRLF-on-disk file stays CRLF; P3 a file the arm
+    COMMITTED is untouched; P4 a file the arm EDITED (uncommitted) is untouched; P5 a file main moved on is untouched;
+    P6 the worktree status after the sync shows only the arm's own edit."""
+    import tempfile
+    t = tempfile.mkdtemp(prefix="lbsync_")
+    mn, wt = os.path.join(t, "main"), os.path.join(t, "wt")
+    os.makedirs(os.path.join(mn, ".livebench"))
+    g = lambda *a, cwd=mn: subprocess.run(["git", "-c", "core.autocrlf=true"] + list(a), cwd=cwd, capture_output=True,   # noqa: E731
+                                          text=True).stdout
+    g("init", "-q")
+    g("config", "user.email", "t@t")
+    g("config", "user.name", "t")
+    files = {"lf.py": b"a\nb\n", "crlf.md": b"x\r\ny\r\n", "armc.py": b"c\n", "arme.py": b"e\n", "moved.py": b"m\n"}
+    for k, v in files.items():
+        open(os.path.join(mn, k), "wb").write(v)
+    g("add", "-A")
+    g("commit", "-q", "-m", "base")
+    base = g("rev-parse", "HEAD").strip()
+    for k, v in files.items():                       # main's working copy as tools leave it (git's add normalised LF)
+        open(os.path.join(mn, k), "wb").write(v)
+    g("worktree", "add", "-q", "-b", "bench/t", wt, base)
+    os.makedirs(os.path.join(wt, ".livebench"), exist_ok=True)
+    json.dump({"base_commit": base}, open(os.path.join(wt, ".livebench", "arm.json"), "w"))
+    g("config", "extensions.worktreeConfig", "true")
+    g("config", "--worktree", "core.autocrlf", "input", cwd=wt)
+    open(os.path.join(wt, "lf.py"), "wb").write(b"a\r\nb\r\n")          # what an autocrlf=true checkout writes
+    open(os.path.join(wt, "crlf.md"), "wb").write(b"x\ny\n")             # what an input checkout writes
+    open(os.path.join(wt, "armc.py"), "wb").write(b"c\nARM\n")
+    g("add", "armc.py", cwd=wt)
+    g("commit", "-q", "-m", "arm", cwd=wt)
+    open(os.path.join(wt, "arme.py"), "wb").write(b"e\r\nEDIT\r\n")
+    open(os.path.join(mn, "moved.py"), "wb").write(b"m\nMAIN MOVED\n")
+    moved_before = open(os.path.join(wt, "moved.py"), "rb").read()
+    r = sync_bytes_precycle(wt, main=mn)
+    rb = lambda p: open(os.path.join(wt, p), "rb").read()               # noqa: E731
+    cases = [("P1 LF main file restored from CRLF", rb("lf.py") == b"a\nb\n"),
+             ("P2 main CRLF file restored to CRLF", rb("crlf.md") == b"x\r\ny\r\n"),
+             ("P3 arm-committed file untouched", rb("armc.py") == b"c\nARM\n"),
+             ("P4 arm-edited file untouched", rb("arme.py") == b"e\r\nEDIT\r\n"),
+             ("P5 file main moved on untouched", rb("moved.py") == moved_before),
+             ("P6 counts: fixed 2, skipped 2, 0 mismatches", r["fixed"] == 2 and r["skipped_arm_changed"] == 2
+              and r["mismatches_after"] == 0)]
+    for lab, ok in cases:
+        gate("SYNC-SELFTEST " + lab, ok, json.dumps({k: v for k, v in r.items() if k != "paths"}))
+    g("worktree", "remove", "--force", wt)
+    shutil.rmtree(t, ignore_errors=True)
+
+
 def restore_mtimes(wt):
     """`git worktree add` stamps every file with the checkout time, so every mtime-ordered check in the arm (outcome
     cadence, retro-debt, guard_peer's newest failing log) saw 4417 logs 'written today' (hooks_A.json: outcome '11
@@ -937,7 +1027,8 @@ def teardown(name):
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=("snapshot", "setup", "sync-ignored", "fence", "repair", "reset-arm", "clear-due",
+    ap.add_argument("cmd", choices=("snapshot", "setup", "sync-ignored", "fence", "repair", "reset-arm", "selftest-sync",
+                                    "clear-due",
                                     "hooks-check",
                                     "contain-dry",
                                     "stub", "teardown", "_contain_child", "_hooks_child"))
@@ -973,6 +1064,8 @@ def main(argv=None):
         fence(a.arm)
     elif a.cmd == "repair":
         repair(a.arm)
+    elif a.cmd == "selftest-sync":
+        selftest_sync()
     elif a.cmd == "reset-arm":
         reset_arm(a.arm, a.yes)
     elif a.cmd == "clear-due":

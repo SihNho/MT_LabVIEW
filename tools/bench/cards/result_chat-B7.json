@@ -2,15 +2,15 @@
  "schema": "result/1",
  "id": "chat-B7",
  "status": "PASS",
- "gates": {"pass": 379, "fail": 0},
+ "gates": {"pass": 385, "fail": 0},
  "first_fail": null,
  "blocked_by": null,
  "artefacts": [
-  {"path": "tools/bench/livebench/README.md", "md5": "41a2e95975dc22f41ffdbd8473d75796"},
+  {"path": "tools/bench/livebench/README.md", "md5": "ed1e3fffcae6c071b288e6b50b0d92e8"},
   {"path": "tools/bench/livebench/arms.json", "md5": "51009d46eb52fc051a69c3878ee1ef2d"},
-  {"path": "tools/bench/livebench/lb_setup.py", "md5": "d578cef7f45d1cf4d6da92916524b053"},
+  {"path": "tools/bench/livebench/lb_setup.py", "md5": "5ccf6814df18e152ee8e12c5527edc1b"},
   {"path": "tools/bench/livebench/lb_collect.py", "md5": "1417ae9a3794c141b5c074c991cc3f20"},
-  {"path": "tools/bench/livebench/lb_run.py", "md5": "2db072554b378c95d45ed33e9483a6af"},
+  {"path": "tools/bench/livebench/lb_run.py", "md5": "d10724fa77fdc5d21bdf52ac112a6885"},
   {"path": "tools/bench/livebench/lb_state.py", "md5": "495d67027fa039b145f8f3f9dab54712"},
   {"path": "tools/bench/livebench/overlay/sitecustomize.py", "md5": "7c81931aa5089d41b1428ef844715bd0"},
   {"path": "tools/bench/livebench/overlay/guard_fence.py", "md5": "51341fac6d6e3a34c8151665ec49bd3e"},
@@ -29,13 +29,13 @@
   "setup now uses worktree add --no-checkout, then EOL config, then reset --hard, + sync_bytes before the mtime restore; stub run through it 68/0 (lb_stub_A.log)",
   "A untouched (still CRLF 7bf35bf0, autocrlf true): reset-arm A prepared (lb_setup.py:549); it refused now because RUNNING.json names A (lb_reset_A_dry.log)",
   "reset-arm A --yes keeps run 1 (worktree/branch/claudeDev/records renamed A_run1_<stamp>), then setup A from 0fc16ea0 (same start VI + purpose, A_state 0/2) + hooks-check",
-  "repair is now idempotent (patches 'already applied'), refuses a RUNNING arm, moves superseded records to livebench/superseded_<arm>_<stamp>/",
+  "lb_run calls sync_bytes_precycle before EVERY cycle, logs SYNC-BYTES counts (lb_run.py:180); arm-changed files skipped by content diff; selftest-sync 6/0; on B 0 fixed (lb_setup.py:413)",
   "Earlier in this card: bed/Error List, POST gate, reaper, due clear, fences, plan_progress metrics, resume/stop safety; no arm, LabVIEW or motor run by this card"
  ],
  "open": [
   "After A's cycle 2 ends the chat runs: py tools/bgrun.py --material --max-min 30 --log tools/bench/livebench/lb_reset_A.log -- py -u tools/bench/livebench/lb_setup.py reset-arm A --yes",
   "A13/A13K: fill arms.json arms.A13.commit after chat-F2/F3, then `lb_setup.py setup A13 --commit <sha>` / A13K (all fixes incl. line endings), hooks-check, contain-dry.",
-  "A git op that rewrites a main-CRLF file inside a worktree (checkout/reset by an arm session) writes LF now; sync_bytes is not re-run per cycle. Re-run it in lb_run before each cycle?"
+  "Arm A's running lb_run process loaded the OLD lb_run (no pre-cycle sync); the new code applies from the next lb_run start (after reset-arm A)."
  ],
  "cost": {"usd": null, "minutes": 85, "labview_runs": 0},
  "note": "Offline only. Arm A not touched while its cycle 2 runs (pid per RUNNING.json); B ready, not started."

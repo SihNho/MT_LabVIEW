@@ -172,6 +172,15 @@ def run(arm, max_min=300, no_memory=False, not_after=None):
             print("RUN-STOPPED %s after %d/%d cycle(s) (resumable): %s" % (arm, st["cycles_finished"], ARMS["cycles"], why),
                   flush=True)
             break
+        # LINE ENDINGS BEFORE EVERY CYCLE (chat 2026-10-06): main-equal, arm-unchanged tracked files get main's working
+        # bytes back (a git checkout/reset inside the arm may have rewritten them); the arm's own files are never touched.
+        import lb_setup
+        sb = lb_setup.sync_bytes_precycle(wt)
+        st.setdefault("sync_bytes", []).append(dict(sb, t=time.strftime("%Y-%m-%d %H:%M:%S")))
+        print("SYNC-BYTES before cycle %d: %d fixed, %d identical, %d arm-changed skipped, %d mismatches after %s"
+              % (st["cycles_finished"] + 1, sb["fixed"], sb["identical"], sb["skipped_arm_changed"], sb["mismatches_after"],
+                 sb["paths"][:5]), flush=True)
+        gate("PRE cycle: sync_bytes left 0 mismatches", sb["mismatches_after"] == 0)
         with open(lock, "w", encoding="utf-8") as f:
             json.dump({"arm": arm, "since": time.strftime("%Y-%m-%d %H:%M:%S"), "pid": os.getpid()}, f)
         before = snap()

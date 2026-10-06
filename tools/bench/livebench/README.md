@@ -123,6 +123,14 @@ The record is in `failed_launch_A_20261006_1207/`. Nothing ran: no LabVIEW, $0.
   - GATE: every main-equal file is byte-identical (B: 17,220 files, 212 recipes, 0 mismatches), and git status is
     clean.
   - New arms are checked out with `--no-checkout`, then configured, then populated.
+- **Before every cycle** (chat decision), `lb_run` calls `lb_setup.sync_bytes_precycle` and logs `SYNC-BYTES before
+  cycle n: <fixed> fixed, …`.
+  - It re-copies main's bytes only onto tracked files that the arm has neither committed nor edited (checked by
+    content diff, not by the stat cache) and that equal main's up to line endings.
+  - The arm's own files are never touched.
+  - Self-test `lb_setup.py selftest-sync` (throwaway main + worktree in %TEMP%): P1 to P6, 6/0 (`lb_selftest_sync.log`).
+    It covers LF and CRLF restore, arm-committed, arm-edited and main-moved files left untouched, and the counts.
+  - On B: 0 fixed, 17,217 identical, 19 setup-changed skipped.
 - **B was repaired** (`lb_setup.py repair B`). It has not run.
 - **A is NOT touched** while its cycle 2 runs. After A's cycle 2 ends, the chat runs:
 
