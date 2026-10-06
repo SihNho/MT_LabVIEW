@@ -2368,6 +2368,101 @@ def x10_edit(recipe, trace, model):
 X10_PROBE_LITERAL = "memory ceiling, scratch only"
 X10_SAVE_RE = re.compile(r"save", re.I)
 
+# card chat-F3 (gate-fp fp-42, chat decision 2026-10-07 (1)): ONE narrow release of the dry/prerun LAUNCH requirement, same
+# pattern as PROBE-EXEMPT. A per-function scratch test BUILDS its own minimal VI from the EMPTY_v0 template, so it has no
+# graph JSON and no decisions plan (the bed-stage contract, fntest_g1_dry.log:6). It passes as FNTEST-EXEMPT ONLY IF the
+# source (ast, never text search) shows ALL of: basename fntest_*.py; the module-level literal FNTEST = FNTEST_LITERAL; the
+# Stage input is a Name assigned os.path.join(<...>, "EMPTY_v0.vi") with the md5 FNTEST_EMPTY_MD5 pinned as a literal; the
+# Stage's work_dir is a module-level Name assigned os.path.join(<...>, "fntest"); NO Stage.scratch() call (it writes in the
+# claudeDev root); discard_work() called (Stage.close deletes the work copy); every save()/copyfile()/copy() target is a Name
+# assigned os.path.join(<that fntest Name>, ...) and that Name is passed to drop_scratch() or os.remove(); no string literal
+# naming the bed chain ("D1_"), claudeDev\bench\, or an original ("Min_Track", "background VIs"). Anything else carrying the
+# literal keeps the dry+prerun requirement (the refusal names why); no literal = behaviour unchanged. Self-test:
+# tools/bench/selftest_fntest_exempt.py.
+FNTEST_LITERAL = "per-function scratch test"
+FNTEST_EMPTY_MD5 = "6544be40470e80763764089fd2767f2a"
+FNTEST_FORBIDDEN = (re.compile(r"(?:^|[\\/])D1_", re.I), re.compile(r"claudeDev[\\/]+bench[\\/]", re.I),
+                    re.compile(r"Min_Track", re.I), re.compile(r"background VIs", re.I))
+FNTEST_LOG = os.path.join(BENCH, "fntest_exempt.log")
+
+
+def _join_last(node):
+    """'x' when node is os.path.join(..., 'x') (last argument a str constant), else None."""
+    if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == "join" and node.args
+            and isinstance(node.args[-1], ast.Constant) and isinstance(node.args[-1].value, str)):
+        return node.args[-1].value
+    return None
+
+
+def fntest_release(path):
+    """card chat-F3 (fp-42): (declared, ok, why list). declared False = no FNTEST literal (the caller's rules stand)."""
+    try:
+        tree = ast.parse(REAL_OPEN(path, encoding="utf-8", errors="replace").read(), filename=path)
+    except (OSError, SyntaxError, ValueError):
+        return False, False, []
+    tops = [n for n in tree.body if isinstance(n, ast.Assign)]
+    lit = [n.value.value for n in tops if isinstance(n.value, ast.Constant)
+           and any(isinstance(t, ast.Name) and t.id == "FNTEST" for t in n.targets)]
+    if not lit and not any(isinstance(n, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "FNTEST" for t in n.targets)
+                           for n in tops):
+        return False, False, []
+    why = []
+    if not re.match(r"fntest_[A-Za-z0-9_]+\.py$", os.path.basename(path)):
+        why.append("basename is not fntest_*.py")
+    if lit != [FNTEST_LITERAL]:
+        why.append("FNTEST must be the module-level literal {0!r} (got {1!r})".format(FNTEST_LITERAL, lit))
+    assigns = {}                                     # Name -> value node, every simple/tuple assignment in the file
+    for n in ast.walk(tree):
+        if isinstance(n, ast.Assign):
+            for t in n.targets:
+                if isinstance(t, ast.Name):
+                    assigns.setdefault(t.id, n.value)
+                elif isinstance(t, ast.Tuple) and isinstance(n.value, ast.Tuple) and len(t.elts) == len(n.value.elts):
+                    for a, b in zip(t.elts, n.value.elts):
+                        if isinstance(a, ast.Name):
+                            assigns.setdefault(a.id, b)
+    consts = [n.value for n in ast.walk(tree) if isinstance(n, ast.Constant) and isinstance(n.value, str)]
+    for rx in FNTEST_FORBIDDEN:
+        bad = [c for c in consts if rx.search(c)]
+        if bad:
+            why.append("string literal {0!r} names the bed chain / claudeDev\\bench / an original".format(bad[0][:80]))
+    fnd = [k for k, v in assigns.items() if k in [t.id for n in tops for t in n.targets if isinstance(t, ast.Name)]
+           and _join_last(v) == "fntest"]
+    calls = [n for n in ast.walk(tree) if isinstance(n, ast.Call)]
+    cname = lambda c: c.func.attr if isinstance(c.func, ast.Attribute) else (c.func.id if isinstance(c.func, ast.Name) else "")  # noqa: E731
+    stages = [c for c in calls if cname(c) == "Stage"]
+    if len(stages) != 1:
+        why.append("{0} Stage(...) call(s), want exactly 1".format(len(stages)))
+    else:
+        st = stages[0]
+        a0 = st.args[0] if st.args else None
+        if not (isinstance(a0, ast.Name) and _join_last(assigns.get(a0.id)) == "EMPTY_v0.vi"):
+            why.append("Stage input is not a Name assigned os.path.join(..., 'EMPTY_v0.vi')")
+        a1 = st.args[1] if len(st.args) > 1 else None
+        v1 = assigns.get(a1.id) if isinstance(a1, ast.Name) else a1
+        if not (isinstance(v1, ast.Constant) and v1.value == FNTEST_EMPTY_MD5):
+            why.append("Stage input md5 is not the pinned literal {0}".format(FNTEST_EMPTY_MD5))
+        wd = [k.value for k in st.keywords if k.arg == "work_dir"]
+        if not (wd and isinstance(wd[0], ast.Name) and wd[0].id in fnd):
+            why.append("Stage work_dir is not a module-level Name assigned os.path.join(..., 'fntest')")
+    if any(cname(c) == "scratch" for c in calls):
+        why.append("Stage.scratch() writes in the claudeDev root - use a byte copy under the fntest folder")
+    if not any(cname(c) == "discard_work" for c in calls):
+        why.append("discard_work() is never called (the work copy would be kept)")
+    under = set(k for k, v in assigns.items() if isinstance(v, ast.Call) and _join_last(v) is not None and v.args
+                and isinstance(v.args[0], ast.Name) and v.args[0].id in fnd)
+    dropped = set(c.args[0].id for c in calls if cname(c) in ("drop_scratch", "remove") and c.args
+                  and isinstance(c.args[0], ast.Name))
+    for c in calls:
+        nm = cname(c)
+        if nm in ("save", "copyfile", "copy", "copy2"):
+            tgt = c.args[1] if nm != "save" and len(c.args) > 1 else (c.args[0] if c.args else None)
+            if not (isinstance(tgt, ast.Name) and tgt.id in under):
+                why.append("{0}() target at line {1} is not a Name under the fntest folder".format(nm, c.lineno))
+            elif tgt.id not in dropped:
+                why.append("{0} ({1}() line {2}) is never deleted (drop_scratch / os.remove)".format(tgt.id, nm, c.lineno))
+    return True, not why, why
+
 
 def x10_probe_release(recipe, trace):
     """card chat-M2 (fp-35): (declared, ok, detail). declared False = no X10_PROBE literal (the caller's rules stand)."""
@@ -4500,6 +4595,17 @@ def _check_units(units, cmd):
                            "\"revoked\": true with the reason.\n").format(
                                what, ad.get("log"), ad.get("iso"), (ad.get("artefact") or {}).get("path"),
                                (ad.get("artefact") or {}).get("md5"), pm, rel(ADOPT_LOG))
+        fx_decl, fx_ok, fx_why = fntest_release(s) if not plan else (False, False, [])
+        if fx_decl and fx_ok:                            # card chat-F3 (fp-42): FNTEST-EXEMPT from dry + prerun only
+            try:
+                with open(FNTEST_LOG, "a", encoding="utf-8") as f:
+                    f.write("FNTEST-EXEMPT | {0} | sha256 {1} | {2}\n".format(rel(s), sha[:12], time.strftime("%Y-%m-%d %H:%M:%S")))
+            except OSError:
+                pass
+            ok_cap, why_cap, _cid = check_cap(cmd, s, runs, ck)
+            if not ok_cap:
+                return False, why_cap
+            continue
         ok = {}
         named_ok, named_why = unverified_card_names(cmd)
         uv_refused, old_rule = [], []
@@ -4536,7 +4642,9 @@ def _check_units(units, cmd):
         if missing:
             return False, ("LAUNCH GATE (CLAUDE.md §3 'Stages are SIMULATED', decisions 1/2): {0} has no {1} PASS "
                            "record for sha256 {2}... and plan md5s {3}. Run first:\n  py tools/stage_prerun.py --dry {0}\n"
-                           "  py tools/stage_prerun.py --prerun {0}\n").format(what, " + ".join(missing), sha[:12], pm)
+                           "  py tools/stage_prerun.py --prerun {0}\n{4}").format(
+                               what, " + ".join(missing), sha[:12], pm,
+                               ("FNTEST declared but NOT exempt (card chat-F3): " + "; ".join(fx_why) + "\n") if fx_decl else "")
         t_ok = min(ok.values())
         bad = last_failed_run_after(s, t_ok)
         if bad:
