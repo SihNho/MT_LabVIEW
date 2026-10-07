@@ -1,0 +1,33 @@
+BGRUN START 2026-10-07 15:08:15 limit 10.0 min: py -u tools/bench/selftest_t4.py
+BGRUN PID 22416
+  INFO  sim -28.'inner' -> #-32 by side; M[-32] = 29582 (mode map-pos); M[-28] = 29548; M[-45] = 16483
+  LOG   MAP-BOUND nodes {-49: 29720, -46: 29699, -42: 29662, -37: 29655, -36: 29648, -33: 29576, -28: 29548, -27: 29403, -21: 29566, -17: 29584, -13: 29683, -8: 29396, -6: 29493, -4: 29636, -2: 29432}; frames {}; row-less {-45: 16483}; terminals 0; unused entries []
+  LOG   FALLBACK-COUNT 27 (nodes 0, terminals 26, frames 1)
+  LOG   REBIND 15 node(s), 1 frame(s), terminals by {'conn': 4, 'map-pos': 22}; unbound created terminals []; frames {-46: '29699 (row #-50)'}; re-issued uid(s) []
+  LOG   ADDRESS-RESOLVED #-28.'inner' a13:src -> real #29548.'inner' (row #29582) by face (sim side; name kept; card chat-T4 PD348)
+  LOG   ADDRESS-RESOLVED #-28.'inner' a15:src -> real #29548.'inner' (row #29582) by face (sim side; name kept; card chat-T4 PD348)
+  LOG   ADDRESS-RESOLVED #-49.'value' a17:src -> real #29734 'Num' by position (sim value-alias, real unique-dir; card chat-S5 tier (a))
+  LOG   ADDRESS-RESOLVED #-45.'cond' a20:dst -> real #16483.'cond' (row #29710) by cond: body [29699] sink #29710 (sim None; name kept; card chat-T4 PD348)
+  PASS  P1 a13/a15 #-28.'inner' -> 29582 by face == the map binding M[-32] (mode map-pos); rebased src keeps 'inner'  helper True face; a13 ["ADDRESS-RESOLVED #-28.'inner' a13:src -> real #29548.'inner' (row #29582) by face (sim side; name kept; card chat-T4 PD348)"]; a15 ["ADDRESS-RESOLVED #-28.'inner' a15:src -> real #29548.'inner' (row #29582) by face (sim side; name kept; card chat-T4 PD348)"]; rebased {'uid': 29548, 'term': 'inner'} {'uid': 29548, 'term': 'inner'}
+  PASS  P2 a20 #-45.'cond' -> {'uid': 16483, 'term': 'cond'}; body 29699, the one unnamed sink 29710  helper 29710 cond: body [29699] sink #29710; a20 ["ADDRESS-RESOLVED #-45.'cond' a20:dst -> real #16483.'cond' (row #29710) by cond: body [29699] sink #29710 (sim None; name kept; card chat-T4 PD348)"]; rebased {'uid': 16483, 'term': 'cond'}
+  PASS  P3 no ADDRESS-UNRESOLVED / LLM-OWED; rebase (simulate=False) ok  rebased C:/Users/KimLab/AppData/Local/Temp/t4_lqrkqvur/nosim/plan_ring_p4_s04v18.json: 49 uid(s) bound, base -> C:/Users/KimLab/AppData/Local/Temp/t4_lqrkqvur/nosim/ring_p4_s04v18_base_real_fsmap.json (not re-simulated)
+  FACT  P4 rebased C:/Users/KimLab/AppData/Local/Temp/t4_lqrkqvur/sim/plan_ring_p4_s04v18.json: 49 uid(s) bound, base -> C:/Users/KimLab/AppData/Local/Temp/t4_lqrkqvur/sim/ring_p4_s04v18_base_real_fsmap.json; completeness PASS; re-simulated on the real base: final=True failed=None; plan_in kept = C:/Users/KimLab/AppData/Local/Temp/t4_lqrkqvur/sim/plan_ring_p4_s04v18.json
+  FACT  P4 STEP lines 23, not ok []; end_cdiff_rows 16; open_rows_match True; open_rows 11; actions 23
+  PASS  P4 rebase WITH re-simulation on the real base: ok, final, 49 uids, completeness PASS, 23 STEP ok, cdiff 16, open_rows_match  rebased C:/Users/KimLab/AppData/Local/Temp/t4_lqrkqvur/sim/plan_ring_p4_s04v18.json: 49 uid(s) bound, base -> C:/Users/KimLab/AppData/Local/Temp/t4_lqrkqvur/sim/ring_p4_s04v18_base_real_fsmap.json; completeness PASS; re-simulated on the real base: final=True failed=None; plan_in kept = C:/Users/KimL
+  PASS  P5 fixtures unchanged; nothing new under tools/bench/sim/ring_p4_s04v18*  []
+  PASS  C1 synthetic face table resolves  
+  PASS  N1 two same-face rows of the wanted direction -> REFUSED  (False, 'face: real owner #100 has 2 InnerTerminal row(s) of that direction [11, 13]')
+  PASS  N2 face row #11 != the map-bound row #12 -> REFUSED  (False, 'face: the real InnerTerminal row #11 != the bound row #12')
+  PASS  N2b bound by shape (not conn/map/map-pos) -> REFUSED  (False, 'face: sim row #-1 bound by shape, not conn/map/map-pos')
+  PASS  C2 synthetic While table resolves (sink #5012)  
+  PASS  N3 'cond' on a real ForLoop -> REFUSED  (None, 'cond: sim #-45 is WhileLoop, real #500 is ForLoop (a While loop is required)')
+  PASS  N3b 'cond' on a sim node that is not a While -> REFUSED  (None, 'cond: sim #-45 is Diagram, real #500 is WhileLoop (a While loop is required)')
+  PASS  N4 real body with 0 unnamed sinks -> REFUSED  (None, 'cond: body sink row(s) sim [-458] on [-46], real [] on [501] (exactly one each)')
+  PASS  N5 real body with 2 unnamed sinks -> REFUSED  (None, 'cond: body sink row(s) sim [-458] on [-46], real [5012, 5013] on [501] (exactly one each)')
+  PASS  N6 the one real body sink is NAMED -> REFUSED  (None, "cond: real body sink #5012 is named 'stop'")
+  PASS  N7 an extra key beside uid/term -> REFUSED  (None, "cond: not the PD316 form {'uid': <loop>, 'term': 'cond'}")
+  PASS  N8 sim sink bound to another real sink -> REFUSED  (None, 'cond: sim sink #-458 is bound to #9999, not the real sink #5012')
+  PASS  R1 addrcheck.resolve unchanged: 'inner' -> #11 by side  ({'term_uid': 11, 'term_name': '', 'is_source': True, 'wire_uid': 0, 'owner_uid': 100, 'owner_class': 'LeftShiftRegister', 'frame_diagram': 1, 'term_class': 'InnerTerminal'}, 'side')
+  PASS  R2 addrcheck.real_match unchanged: unique-dir  
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":19,"fail":0},"first_fail":null,"artefacts":[],"card":"chat-T4","labview":"none"}
+BGRUN END rc=0 after 47s

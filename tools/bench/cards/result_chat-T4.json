@@ -1,0 +1,37 @@
+{
+ "schema": "result/1",
+ "id": "chat-T4",
+ "status": "PASS",
+ "gates": {"pass": 3, "fail": 0},
+ "first_fail": null,
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/addrcheck.py", "md5": "ee6e63b739e2fc76db72b09986d247df"},
+  {"path": "tools/stage_prerun.py", "md5": "f2529415abfcacf667c78b852d41eae8"},
+  {"path": "tools/bench/selftest_t4.py", "md5": "219179d5cf7673a745f944ec321c3867"},
+  {"path": "tools/bench/selftest_t4.log", "md5": "b57a8351c0e31bee3288672457391f5e"},
+  {"path": "tools/bench/prep_t4_s04_sandbox.py", "md5": "7a5dc4f2a8cce8b7cca3ff39df42343e"},
+  {"path": "tools/bench/prep_t4_s04_sandbox.log", "md5": "5f549c7d7352bd6cd77336a85cd45bdd"},
+  {"path": "tools/bench/selftest_t4_regress.log", "md5": "7bb60f6a75e3682e5624b9b5e1f51e64"},
+  {"path": "tools/bench/selftest_t3.py", "md5": "27718c6ec0f05746dfb299173db347c6"},
+  {"path": "docs/d1/tooling.md", "md5": "6bf1ee337216b375abb5b4526290ef72"},
+  {"path": "docs/d1/INDEX.md", "md5": "8c40d658e1ebe47973dccf8e66b6f967"}
+ ],
+ "facts": [
+  "A13K diff vs 298a0030: addrcheck +70/-0 (real_face, cond_bind, cond_sinks, obj_class), rebase face/cond branch; main addrcheck was == A13K base 9527c9bb, so ported verbatim",
+  "Only translation: A13K mode 'record' = main 'map-pos' (BOUND_MODES conn/map/map-pos, addrcheck.py:148); bind-log seeding (145-a1-2) NOT ported, main uses the creation map",
+  "stage_prerun.py:4300-4321 calls the helpers after name/position tiers, keeps 'inner'/'cond'; anything else stays UNRESOLVED (selftest_t4.log N1-N8 refused with reasons)",
+  "selftest_t4.log 19/0: a13/a15 #-28.'inner' -> #29548 row 29582 (=M[-32], map-pos); a20 #-45.'cond' -> #16483 sink 29710 (body 29699); no UNRESOLVED",
+  "Full s04 rebase on fixtures with re-sim: ok, 49 uids, completeness PASS, final=True, 23 steps ok, cdiff 16, open_rows_match True (selftest_t4.log P4)",
+  "prep_t4_s04_sandbox.log run 2 8/0 in %TEMP%: sandbox rebased plan == A13K 4de3fa39 on actions/open_rows/cdiff; dry PASS (E1 19 ops); prerun 16/0, WARN X13 x3 + X14 23>15",
+  "Sandbox run 1 died on my script's missing mkdir of out_root (traceback in the same log, before run 2); no Jev ladder row for it",
+  "Regress (selftest_t4_regress.log): 7 PASS incl. t3 22/0, s5 21/0, stagexec 141/0; 3 FAIL = PD347 carry, same messages (c133_1, uidreuse_c143_4, c106e); 2 skipped labview:read",
+  "selftest_t3.py C7 now given out_root=%TEMP% (it reaches carry_fs, which would write tools/bench/sim/ring_p4_s04v18_base_real_fsmap.json in main)",
+  "Main got no s04 plan/pred/recipe; tooling.md:377 PD348 + INDEX line; no LabVIEW opened"
+ ],
+ "open": [
+  "Dry/prerun used A13K's pred 6a71540e and recipe a5268776 re-pointed in a sandbox: main's own s04 prep must re-make them after main's s03 scratch+adopt (its uids differ) - the next ring card?"
+ ],
+ "cost": {"usd": null, "minutes": 15, "labview_runs": 0},
+ "note": "Offline, structural. Committed by explicit path. selftest_addrcheck_s5.py named in addrcheck docstring never existed - corrected to selftest_s5.py."
+}

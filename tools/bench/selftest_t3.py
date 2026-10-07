@@ -211,8 +211,8 @@ pc["base"]["path"] = os.path.join(FX, "prov_s04_base_provisional.json")
 pp = os.path.join(tmp, "plan_ring_p4_s04v18.json")
 json.dump(pc, open(pp, "w", encoding="utf-8"), indent=1)
 lines = []
-ok7, why7 = SP.rebase(pp, os.path.join(FX, "real_graph_s03.json"), log=lines.append, simulate=False,
-                      creation_map=os.path.join(tmp, "s03.jsonl"))
+ok7, why7 = SP.rebase(pp, os.path.join(FX, "real_graph_s03.json"), log=lines.append, simulate=False, out_root=tmp,
+                      creation_map=os.path.join(tmp, "s03.jsonl"))   # chat-T4: out_root - since PD348 C7 reaches carry_fs
 for x in lines:
     if x.startswith(("CREATION-MAP", "MAP-BOUND", "FALLBACK-COUNT", "REBIND", "ADDRESS-UNRESOLVED")):
         print("  FACT  C7 " + x[:400], flush=True)

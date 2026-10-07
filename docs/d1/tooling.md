@@ -373,3 +373,26 @@ Self-test `tools/bench/selftest_rebind_c142_5.py` (142-P1's case): before 1/3 (`
      USER-RULES: U1 (relied on: checker / executor bookkeeping / rebase binding / collector code only - no VI, no stage
      computation, no design change; the executor's ops and their order are unchanged, the map is a side record) and U2
      (offline only: rig state 실험중, no LabVIEW opened).
+
+348. **(card chat-T4, 2026-10-07 — fault 2 of the user's fix request, PD347 open item: the s04 rebase refused at ADDRESS
+     #-28.'inner' and #-45.'cond'.)** Arm A13K's address fix (its card 145-a3-1, `V6_bench\A13K` diff vs 298a0030) PORTED,
+     only the two address classes; A13K's bind-log seeding (145-a1-2) is NOT ported - main binds by the creation map (PD347(b)).
+     - **(a) Face / 'cond' on the REAL side.** `tools/addrcheck.py:141-214` ADDS `real_face`, `cond_bind`, `cond_sinks`,
+       `obj_class` (A13K's code, `resolve` / `real_match` untouched); `tools/stage_prerun.py:4300-4321` calls them in
+       `rebase` after the name / position tiers and KEEPS the plan's name ('inner' / 'cond'). Face: the sim row is of that
+       face class, bound by conn / map / map-pos, the real owner has exactly ONE row of that face and direction, and it IS
+       the bound row. 'cond': only the PD316 form `{'uid': <While>, 'term': 'cond'}`, sim and real owners WhileLoops, exactly
+       one cond_row sink in each body, the real one unnamed, consistent with any binding of the sim sink. Else UNRESOLVED
+       as before. One translation: A13K's terminal mode `record` = main's `map-pos` (`BOUND_MODES`, addrcheck.py:148).
+     - **(b) Evidence (offline, structural).** `tools/bench/selftest_t4.log` 19/0 on `tools/bench/fixtures/cmap_s03s04`:
+       a13/a15 -> #29548.'inner' (row 29582, M[-32], mode map-pos), a20 -> #16483.'cond' (body 29699, sink 29710), no
+       UNRESOLVED; rebase with re-simulation final, 49 uids, 23 steps, cdiff 16; negatives N1-N8 refused.
+       `tools/bench/prep_t4_s04_sandbox.log` 8/0 (second run; the first died on the script's own missing mkdir): the s04
+       pipeline on main's code in a %TEMP% sandbox - provisional simulate -> rebase (actions / open_rows / cdiff == A13K's
+       rebased plan 4de3fa39) -> A13K's recipe a5268776 + pred 6a71540e with only paths / pins re-pointed -> DRY PASS (E1 19
+       ops) and PRERUN 16/0 (WARN X13 x3, X14 23 > 15), as A13K measured. Main gets NO s04 plan / pred / recipe: main's s03
+       has not run and A13K's s03 graph is not main's.
+     - **(c) Regressions.** `tools/bench/selftest_t4_regress.log` (selftest_t3_regress driver): 7 PASS incl. selftest_t3
+       22/0 (C7 now reaches carry_fs - given `out_root` %TEMP%), selftest_s5 21/0, stagexec 141/0; the 3 FAILs are PD347's
+       carry, same messages at HEAD (c133_1, uidreuse_c143_4: 'base is not provisional'; c106e E1 X17); 2 skipped (labview: read).
+     USER-RULES: U1 (rebase checker code only; no VI, no stage computation) and U2 (offline only, rig state 실험중).

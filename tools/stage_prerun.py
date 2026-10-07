@@ -4297,12 +4297,27 @@ def rebase(plan_path, graph_path, log=print, simulate=True, out_root=None, model
         ok_pos, how_r = (False, None)
         if not ok_name and st is not None and rt is not None and len(same) == 1:
             ok_pos, how_r = AC.real_match(prov, st, real, rt, M.get(n))
-        if not (ok_name or ok_pos):
+        # card chat-T4 (PD348), ported from bench arm A13K card 145-a3-1: the sim side's face selector ('inner'/'outer',
+        # addrcheck.resolve 'side') and the PD316 base-loop 'cond' form (stagesim.cond_target / cond_row, stagexec.base_cond)
+        # on the REAL side (addrcheck.real_face / cond_bind); the plan's name is KEPT. Anything else stays UNRESOLVED.
+        ok_fc, why_fc = False, ""
+        if not (ok_name or ok_pos) and nm in AC.FACE_CLASS and st is not None and rt is not None:
+            ok_fc, why_fc = AC.real_face(prov, st, real, M.get(n), nm, fld in AC.SRC_FIELDS, rt, info["mode"].get(st))
+        elif not (ok_name or ok_pos) and nm == "cond" and st is None and n in M:
+            rt, why_fc = AC.cond_bind(v, _gp, prov, n, greal, real, M[n], M)
+            ok_fc = rt is not None
+        if not (ok_name or ok_pos or ok_fc):
             rc = [AC._short(r) for r in AC.owner_rows(real, M.get(n)) if bool(r.get("is_source")) == (fld in AC.SRC_FIELDS)][:6]
             unresolved.append({"id": "a{0}:{1}".format(an, fld), "planned": {"owner": n, "name": nm, "source": fld in AC.SRC_FIELDS,
                                "owner_class": (srow.get(st) or {}).get("owner_class")},
-                               "candidates": rc, "why": "{0} sim row(s), by {1}, real name {2!r} x{3}".format(
-                                   len(ss), info["mode"].get(st, "unbound"), rn, len(same)), "n": n, "nm": nm})
+                               "candidates": rc, "why": "{0} sim row(s), by {1}, real name {2!r} x{3}{4}".format(
+                                   len(ss), info["mode"].get(st, "unbound"), rn, len(same),
+                                   "; " + why_fc if why_fc else ""), "n": n, "nm": nm})
+            continue
+        if ok_fc:
+            log("ADDRESS-RESOLVED #{0}.{1!r} a{2}:{3} -> real #{4}.{1!r} (row #{5}) by {6} (sim {7}; name kept; card chat-T4 PD348)".format(
+                n, nm, an, fld, M.get(n), rt, why_fc, how_s))
+            rename[(n, nm)] = nm
             continue
         if ok_pos:
             log("ADDRESS-RESOLVED #{0}.{1!r} a{2}:{3} -> real #{4} {5!r} by position (sim {6}, real {7}; card chat-S5 tier (a))".format(

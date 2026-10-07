@@ -18,7 +18,7 @@ THE THREE TIERS (user approved the design, brief_chat-S5.md section 2)
   (c) LLM only for the low-confidence items: the item is printed as `ADDRESS-LLM-OWED` (no whole-card re-review);
       the judgement session reads those lines.
 
-Self-test: tools/bench/selftest_addrcheck_s5.py.
+Self-test: tools/bench/selftest_s5.py (the name selftest_addrcheck_s5.py never existed); face/cond: selftest_t4.py.
 """
 import json
 import os
@@ -136,6 +136,81 @@ def real_match(sim_rows, st, real_rows, rt, rn_owner):
     if ts["index"] == tr["index"]:
         return True, "index"
     return False, None
+
+
+# card chat-T4 (PD348), ported from bench arm A13K card 145-a3-1 (PD346(c) there; A13K tools/addrcheck.py:141-208, md5
+# 96502aaa): the SAME face / 'cond' selectors as the sim side, on the REAL side of a rebind. ADDED helpers - resolve /
+# real_match above are unchanged for every existing caller. One translation, no loosening: A13K's terminal mode 'record'
+# (a terminal paired by position inside a node seeded from the bind log) is main's 'map-pos' (paired by position inside a
+# node bound by the creation map, stage_prerun.rebind, card chat-T3); main's 'map' (the terminal itself recorded) is as
+# strong as 'conn' there (STRONG_MODES).
+FACE_CLASS = {"inner": "InnerTerminal", "outer": "OuterTerminal"}
+BOUND_MODES = ("conn", "map", "map-pos")
+
+
+def real_face(sim_rows, st, real_rows, rn_owner, face, want_source, rt, mode):
+    """(ok, why). A plan address named 'inner'/'outer' binds on the real side only when ALL hold: the sim row `st` is of
+    that face class; rebind bound it by connectivity or by the creation map (`mode` in BOUND_MODES); the real owner has
+    EXACTLY ONE row of that face class and of the wanted direction; and that row IS the bound one (`rt` = M[st]).
+    The caller keeps the name."""
+    cls = FACE_CLASS.get(face)
+    if cls is None:
+        return False, "face: {0!r} is not 'inner'/'outer'".format(face)
+    srow = next((r for r in sim_rows or [] if r["term_uid"] == st), None)
+    if srow is None or srow.get("term_class") != cls:
+        return False, "face: sim row #{0} is {1}, not {2}".format(st, (srow or {}).get("term_class"), cls)
+    if mode not in BOUND_MODES:
+        return False, "face: sim row #{0} bound by {1}, not {2}".format(st, mode, "/".join(BOUND_MODES))
+    side = [r for r in owner_rows(real_rows, rn_owner)
+            if r.get("term_class") == cls and bool(r.get("is_source")) == bool(want_source)]
+    if len(side) != 1:
+        return False, "face: real owner #{0} has {1} {2} row(s) of that direction {3}".format(
+            rn_owner, len(side), cls, [r["term_uid"] for r in side][:6])
+    if side[0]["term_uid"] != rt:
+        return False, "face: the real {0} row #{1} != the bound row #{2}".format(cls, side[0]["term_uid"], rt)
+    return True, "face"
+
+
+def obj_class(doc, uid):
+    """The class of object `uid` in a graph doc's `objs` (None when absent)."""
+    return next((o.get("class") for o in (doc or {}).get("objs") or [] if isinstance(o, dict) and o.get("uid") == uid), None)
+
+
+def cond_sinks(doc, rows, loop):
+    """(body diagrams, sink rows) of While `loop`: stagesim.cond_row's filter (body Diagram = `owners` entry owned by the
+    loop; row owner_class Diagram, term_class Terminal, sink), one row per term uid."""
+    body = [int(b) for b, cu in ((doc or {}).get("owners") or {}).items()
+            if isinstance(cu, (list, tuple)) and len(cu) == 2 and str(cu[1]).lstrip("-").isdigit() and int(cu[1]) == loop]
+    out, seen = [], set()
+    for r in rows or []:
+        if (_node_of(r) in body and r.get("owner_class") == "Diagram" and r.get("term_class") == "Terminal"
+                and not r.get("is_source") and r["term_uid"] not in seen):
+            seen.add(r["term_uid"])
+            out.append(r)
+    return body, out
+
+
+def cond_bind(addr, sim_doc, sim_rows, sim_loop, real_doc, real_rows, real_loop, M):
+    """(real sink uid | None, why). The PD316 base-loop form {'uid': <While>, 'term': 'cond'} (stagexec.base_cond: exactly
+    those two keys) rebinds to {'uid': real_loop, 'term': 'cond'} only when: the sim owner AND the real owner are WhileLoops
+    (stagesim.cond_target); each body has EXACTLY ONE cond_row sink and the real one is unnamed; and when rebind bound the
+    sim sink, it bound it to that real sink."""
+    if not (isinstance(addr, dict) and addr.get("term") == "cond" and not set(addr) - {"uid", "term"}):
+        return None, "cond: not the PD316 form {'uid': <loop>, 'term': 'cond'}"
+    sc, rc = obj_class(sim_doc, sim_loop), obj_class(real_doc, real_loop)
+    if sc != "WhileLoop" or rc != "WhileLoop":
+        return None, "cond: sim #{0} is {1}, real #{2} is {3} (a While loop is required)".format(sim_loop, sc, real_loop, rc)
+    sb, ss = cond_sinks(sim_doc, sim_rows, sim_loop)
+    rb, rs = cond_sinks(real_doc, real_rows, real_loop)
+    if len(ss) != 1 or len(rs) != 1:
+        return None, "cond: body sink row(s) sim {0} on {1}, real {2} on {3} (exactly one each)".format(
+            [r["term_uid"] for r in ss][:6], sb, [r["term_uid"] for r in rs][:6], rb)
+    if rs[0].get("term_name", "") != "":
+        return None, "cond: real body sink #{0} is named {1!r}".format(rs[0]["term_uid"], rs[0].get("term_name"))
+    if ss[0]["term_uid"] in (M or {}) and M[ss[0]["term_uid"]] != rs[0]["term_uid"]:
+        return None, "cond: sim sink #{0} is bound to #{1}, not the real sink #{2}".format(
+            ss[0]["term_uid"], M[ss[0]["term_uid"]], rs[0]["term_uid"])
+    return rs[0]["term_uid"], "cond: body {0} sink #{1}".format(rb, rs[0]["term_uid"])
 
 
 # ------------------------------------------------------------------------------------------------ tier (b) Jev, advisory
