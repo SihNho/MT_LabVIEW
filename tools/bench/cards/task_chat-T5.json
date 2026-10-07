@@ -1,0 +1,16 @@
+{
+ "schema": "task/1", "id": "chat-T5", "kind": "build",
+ "goal": "Fix the Error List predictor double count and the Terminal vs ParameterTerminal class mismatch, offline, on recorded bench data",
+ "why": "User 2026-10-07 '1번 진행': last two tool faults of report_4arms.md. Detail: brief_chat-T5.md",
+ "inputs": [{"path": "tools/bench/cards/brief_chat-T5.md", "md5": "9d38a205d2387c580044bd8d73f51a60"}],
+ "pass": [
+  "elrule: one ported rule re-derives s01 51, s02 53, s03 55 from recordings, no other count changes; self-test",
+  "class: simulator or binder uses the measured LabVIEW class table; B/A13 op-2 case binds, different class refused; self-test",
+  "existing self-tests green or explained; PD in tooling.md + INDEX; committed"
+ ],
+ "outputs": ["tools/elrule.py"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/**", "docs/d1/tooling.md", "docs/d1/INDEX.md"], "status_edit": false, "git_commit": true, "peers": []},
+ "budget": {"failures": 2, "minutes": 120}, "unblocks": "M3",
+ "rules": ["OFFLINE: experiment soon, no LabVIEW", "Edit tool only"]
+}

@@ -1,7 +1,7 @@
 r"""selftest_s5 - card chat-S5 (the user's "S1", PD337): unit self-test of the four parts. OFFLINE, no LabVIEW, no Jev call
 (ADDR_JEV=0). Existed first (checked): selftest_rebase_uidreuse_c143_4.py (UID-REUSE), selftest_elpred.py (EL rule),
 selftest_gateclass_s2/s3.py (soft path) - none covers a name that does not bind, prose fields, releases or the by-design EL.
-PREDICTION CONTRACT: 21 gates PASS, 0 FAIL.
+PREDICTION CONTRACT: 22 gates PASS, 0 FAIL (C3 added by card chat-T5, PD349: by-design SR class).
     py tools/bgrun.py --material --max-min 5 --log tools/bench/selftest_s5.log -- py -u tools/bench/selftest_s5.py"""
 import json, os, sys, tempfile, time                                                   # noqa: E401
 ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
@@ -72,6 +72,15 @@ v3, why3, _d = ELR.by_design_verdict(ex, ["x"], 53, 51, prediction=P)
 v4, why4, _d = ELR.by_design_verdict(ex, [], 52, 51, prediction=P)
 gate("C2 unexplained: another class / a missing item / a total the rule does not reproduce -> stop",
      (v2, v3, v4) == ("stop", "stop", "stop"), [why2, why3, why4])
+# PD349 (card chat-T5): SR class accepted under exactly the same (3)/(4) as L/C (s03: new cond/local/sr/sr, closed cond/local, 53 -> 55)
+P3 = {"new_items": [["cond", -46], ["local", -49], ["sr", -36], ["sr", -27]], "closed_items": [["cond", 23166], ["local", 6902]],
+      "predicted_total": 55}
+SRT = "Shift Register: unwired from inside the loop"
+v5, why5, _d = ELR.by_design_verdict([SRT, SRT], [], 55, 53, prediction=P3)
+v6, why6, _d = ELR.by_design_verdict([SRT, SRT, SRT], [], 55, 53, prediction=P3)
+v7, why7, _d = ELR.by_design_verdict([SRT], [], 54, 53, prediction=P3)
+gate("C3 PD349: 2 SR extras <= re-derived 2 new sr and 55 == 55 -> log; 3 SR extras (> 2) -> stop; total 54 != 55 -> stop",
+     (ELR.item_class(SRT), v5, v6, v7) == ("sr", "log", "stop", "stop"), [why5, why6, why7])
 
 # ---- 4. prose vs machine fields, releases, bind-time md5
 sp = {"schema": "stageplan/1", "stage": "t", "actions": [{"op": "wire", "id": "w1", "src": "1.a", "dst": "2.b", "why": "I32[20] -1 " + "z" * 540}]}

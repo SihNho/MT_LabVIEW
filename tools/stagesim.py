@@ -1183,6 +1183,49 @@ def _new_obj(st, cls, owner, y=0):
     return u
 
 
+# card chat-T5 (PD349(b)): a created node's terminal CLASS comes from the MEASURED table (tools/bench/termclass_table.py over
+# every real graph read), never from a default. Bench arms B and A13 stopped at s04v18 op 2 'p4_wait' on a plan that declared
+# 'Terminal' for Wait (ms) while LabVIEW reports 'ParameterTerminal' (V6_bench/B/tools/bench/diag_c144_p4s04v18_scratch.log:197;
+# 100/100 measured Wait nodes are ParameterTerminal). stagexec.bind_new still compares classes EXACTLY - this only makes the
+# simulated row carry the class LabVIEW gives.
+TERMCLASS_TABLE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench", "termclass_table.json")
+_TCT = {}
+
+
+def termclass_table(path=None):
+    """The measured table (termclass_table/1) or None when absent/unreadable (then measured_term_class keeps the declared class)."""
+    p = path or TERMCLASS_TABLE
+    if p not in _TCT:
+        try:
+            _TCT[p] = _j(p)
+        except (OSError, ValueError):
+            _TCT[p] = None
+    return _TCT[p]
+
+
+def measured_term_class(owner_class, decl, t, table=None):
+    """(term_class, note|None) for declared terminal `t` of a created `owner_class` node whose declared terminal list is `decl`:
+    (1) the node's terminal SET (sorted (name, is_source)) is measured for that owner class with ONE class on this row -> that
+        class (note when it differs from the declared one);
+    (2) else the declared class (default 'Terminal') - behaviour before PD349. Deliberately NOT a SimError: a terminal set no
+        read has measured yet (the Dequeue route, QUEUE_TERM_UNMEASURED; the selftest's synthetic nodes) keeps its declared
+        class, and X16 (declared class required) plus the scratch run stay its guards. Over all 1637 declared create terminals
+        of tools/bench/plan_*.json no row reaches this branch with a class its owner class never reported (card chat-T5 scan);
+    (3) owner class never measured, or no table -> the declared class."""
+    want = t.get("term_class") or "Terminal"
+    tab = table if table is not None else termclass_table()
+    if not tab or owner_class not in (tab.get("owner") or {}):
+        return want, None
+    sig = json.dumps(sorted([x.get("name") or "", bool(x.get("is_source"))] for x in decl))
+    row = ((((tab.get("signature") or {}).get(owner_class) or {}).get(sig) or {})
+           .get("{0}|{1}".format(t.get("name") or "", int(bool(t.get("is_source"))))))
+    if row and len(row) == 1:
+        got = next(iter(row))
+        return got, (None if got == want else "{0} {1!r}: declared {2} -> measured {3} ({4} rows)".format(
+            owner_class, t.get("name"), want, got, row[got]))
+    return want, None
+
+
 def _new_term(st, owner, owner_class, term_class, is_source, diagram, name=""):
     t = new_uid(st)
     st["terminals"].append({"term_uid": t, "term_name": name, "is_source": bool(is_source), "wire_uid": 0,
@@ -2176,7 +2219,10 @@ def op_create(st, a, P, S1, labels):
             raise SimError("create {0} on {1}: sink on diagram {2}, object on {3}".format(cls, a["on"], d["frame_diagram"], dg))
         if not decl:
             decl = [{"name": d["term_name"], "is_source": True}]
-    ts = [_new_term(st, u, cls, t.get("term_class") or "Terminal", t["is_source"], dg, t["name"]) for t in decl]
+    tcs = [measured_term_class(cls, decl, t) for t in decl]                 # PD349(b): measured class, never a default
+    if any(n for _c, n in tcs):
+        eff["termclass_measured"] = [n for _c, n in tcs if n]
+    ts = [_new_term(st, u, cls, c, t["is_source"], dg, t["name"]) for t, (c, _n) in zip(decl, tcs)]
     if a.get("src") is not None and a.get("src_into"):
         # card 118-1 (queue route, gscript.queue_node): the op wires `src` (an existing SOURCE on the same diagram) into
         # the new node's sink named `src_into` - a branch when the source is already wired, else a new wire
