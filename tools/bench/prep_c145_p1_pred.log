@@ -1,0 +1,15 @@
+BGRUN START 2026-10-07 21:28:19 limit 5.0 min: py -u tools/bench/prep_c145_p1_pred.py
+BGRUN PID 21292
+GATE PASS | RB plan FINAL on a provisional base tools/bench/sim/ring_p4_s05v18_s04end/base_provisional.json (sim_of {'plan': 'tools/bench/plan_ring_p4_s04v18.json', 'md5': '9ff46b0ece1f238c831d7786616c4f05'}), open_rows_match, 33 actions == session table 33 | {'base': {'path': 'tools/bench/sim/ring_p4_s05v18_s04end/base_provisional.json', 'md5': 'c159906d89a251f5495072fdf1872509', 'provisional': True, 'sim_of': {'plan': 'tools/bench/plan_ring_p4_s04v18.json', 'md5': '9ff46b0ece1f238c831d7786616c4f05'}}}
+GATE PASS | EL0 s04v18 pred keyed to 9ff46b0e | {'path': 'tools/bench/plan_ring_p4_s04v18.json', 'md5': '9ff46b0ece1f238c831d7786616c4f05'}
+GATE PASS | C compile: 33 actions -> 27 ops, each action once | 
+FACT X10 at start 598.5: N 27 R 10 peak 678.5 fail_above 680.0 ok True | prerun's own start None -> peak None
+GATE PASS | X10 peak 678.5 at start 598.5 <= fail threshold 680.0 (memory_model.json) | {'N': 27, 'R': 10, 'P': 0, 'bind': 9, 'peak_mb': 678.5, 'start_mb': 598.5, 'fail_above_mb': 680.0, 'ok': True, 'checkpoints': [0, 1, 2, 8, 9, 12, 13, 16, 17, 27]}
+FACT SESSIONS-LEFT after s05 (ops 125..190 of 190): 3 session(s) [(125, 155, 678.9), (156, 186, 678.9), (187, 190, 631.5)] at start 598.5 (estimate)
+GATE PASS | X17 over s05v18 | 3 primitive create action(s), every donor label == its prim
+EL PD349 s05: base 60 new [] closed [['local', -47], ['sr', 29403], ['sr', 29648]] -> 57; per class new {} closed {'local': 1, 'sr': 2}; open at start [['local', -47], ['local', -32], ['sr', 29403], ['sr', 29648]]; uncertain [[29240, ['y']]]; detail_end {'local': [[-32, ['Num']]]}; created [-107, -99, -97, -92, -90, -85, -83, -73, -68]; steps tools/bench/sim/ring_p4_s05v18/step_00_base.json -> tools/bench/sim/ring_p4_s05v18/step_33_wire.json
+FACT EL rule: PD333(b) fixed predictor (tools/elrule.py; SR class + narrowed A by PD349): L unwired Local + C While cond + SR RightShiftRegister with an unwired inner sink + A created node with an unwired input other than its C/SR row; items(end) - items(start) added, items(start) - items(end) debited
+FACT ops {'tunnel': 3, 'connect': 13, 'create': 6, 'branch': 3, 'move_in': 2} census {} overall UNPREDICTED unpredicted 33 | EL 57 | end rows 19 open pairs 14
+GATE PASS | SP pred written, keyed to the plan md5 | 
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":6,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/plan_ring_p4_s05v18.json","md5":"b7d27e24e27a196a071c490053feafaa"},{"path":"tools/bench/plan_ring_p4_s05v18_pred.json","md5":"6666a7183fc4a2ca428e62fab5897803"}],"card":"145-a1-P1","labview":"none"}
+BGRUN END rc=0 after 1s

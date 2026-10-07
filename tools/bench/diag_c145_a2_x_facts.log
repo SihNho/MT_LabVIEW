@@ -1,0 +1,48 @@
+BGRUN START 2026-10-07 22:24:56 limit 5.0 min: py -u tools/bench/diag_c145_a2_x_facts.py
+BGRUN PID 21924
+GATE PASS | M0 card inputs md5 == card | {'brief': '60af3bf96f29ace5cb8341863be7a07d', 'v18': '2ea6cafa7d368dc7a054346d398daa3e', 'lic': 'efbc8bcc2208f2673e8f89c9907fd7f3', 's04': 'f349c39a17330531e688ff1f70ce426e'}
+FACT v18 actions 202 ops 190
+FACT s04 actions 23 -> v18 ops 79 .. 97
+GATE PASS | C1 v18 ops 98..124 == s05 plan's 33 actions | (['p4_t_slot', 'p4_t_slot_in', 'p4_t_slot_out'], ['p4_t_fd', 'p4_x_fd', 'p4_w_fd_in'])
+FACT op 115 connect ['p4_w_arr_frameidx']
+FACT op 116 branch ['p4_w_idx_frameidx']
+FACT op 117 connect ['p4_w_tp_mag']
+FACT op 118 connect ['p4_w_tp_row']
+FACT op 119 connect ['p4_w_rp_row']
+FACT op 120 move_in ['p4_mv_10068']
+FACT op 121 move_in ['p4_mv_29240']
+GATE PASS | F1 op 118 = p4_w_tp_row, op 119 = p4_w_rp_row | 
+FACT v18 action #126 id p4_w_tp_row op 118 kind wire side dst/other src "new:IAVT1.element" dst {"uid": 2626, "term_uid": 4160}
+FACT v18 action #127 id p4_w_rp_row op 119 kind wire side dst/other src "new:IAVR1.element" dst {"uid": 2626, "term_uid": 4165}
+FACT v18 action #144 id p4_w_bd_row op 132 kind wire side dst/other src "new:IAVB1.element" dst {"uid": 2626, "term_uid": 2832}
+FACT v18 action #162 id p4_rbB_sel_t4168 op 150 kind wire side dst/other src "new:RB2.s? t:f" dst {"uid": 2626, "term_uid": 4168}
+FACT v18 actions with src uid 2626 (consume #2626 output): NONE
+FACT v18 finalized open_rows contains (2626,'array'): True final: False last_step: tools/bench/sim/ring_p4_v18/ring_p4_v3/step_202_wire_remove_loose_ends.json
+FACT v18 base tools/bench/graph_ring_p3b2b_20261002_133824.json class(2626) = BuildArray
+FACT   #2626 t2813 name 'appended array' is_source True wired None
+FACT   #2626 t2832 name 'array' is_source False wired None
+FACT   #2626 t4160 name 'array' is_source False wired None
+FACT   #2626 t4165 name 'array' is_source False wired None
+FACT   #2626 t4168 name 'array' is_source False wired None
+FACT s05 provisional base tools/bench/sim/ring_p4_s05v18_s04end/base_provisional.json class(2626) = BuildArray
+FACT   #2626 t2813 name 'appended array' is_source True wired None
+FACT   #2626 t2832 name 'array' is_source False wired None
+FACT   #2626 t4160 name 'array' is_source False wired None
+FACT   #2626 t4165 name 'array' is_source False wired None
+FACT   #2626 t4168 name 'array' is_source False wired None
+FACT pb_licences(v18) = {}
+FACT X11 flag v18: row p4_w_tp_row node 2626 wired 'array' open ['array'] licensed None
+FACT X11 flag v18: row p4_w_rp_row node 2626 wired 'array' open ['array'] licensed None
+FACT X11 flag v18: row p4_w_bd_row node 2626 wired 'array' open ['array'] licensed None
+FACT X11 flag v18: row p4_rbB_sel_t4168 node 2626 wired 'array' open ['array'] licensed None
+FACT X11 v18: flags 4, unlicensed 4
+FACT pb_licences(s05) = {}
+FACT X11 flag s05: row p4_w_tp_row node 2626 wired 'array' open ['array'] licensed None
+FACT X11 flag s05: row p4_w_rp_row node 2626 wired 'array' open ['array'] licensed None
+FACT X11 s05: flags 2, unlicensed 2
+FACT pb_licences(l2b1) = {2626: 'tools/bench/plan_l2b1_licence.json'}
+FACT X11 flag l2b1: row rw_5124_4168 node 2626 wired 'array' open ['element'] licensed tools/bench/plan_l2b1_licence.json
+FACT X11 l2b1: flags 1, unlicensed 0
+GATE PASS | U card inputs unchanged after | 
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"artefacts":[],"card":"145-a2-X","labview":"none"}
+BGRUN END rc=0 after 1s

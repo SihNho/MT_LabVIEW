@@ -1,0 +1,38 @@
+{
+ "schema": "task/1", "id": "145-a2-3", "kind": "build",
+ "goal": "RETRY of 145-a2-1: build a WiringRules[] reader op (new claudeDev file), MEASURE pane requiredness of RingPickSlot_v0 / RingSeqCheck_v0 vs wiring at PS1/SQ1; then delete abb76d41",
+ "why": "145-a2-1 adopted s04 and measured all but requiredness; its brief forbade the VI save a reader needs. PD351(b)(e). Cycle 145 pass items 1 and 5.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_145-a2-3.md", "md5": "686da05c9a6f5457ff3a7b73e68084ac"},
+  {"path": "tools/bench/diag_c145_a2_1_facts.md", "md5": "3303b4431f7591710ebfea6732a0f704"},
+  {"path": "tools/bench/graph_ring_p4s04_20261007_223245.json", "md5": "094ba298ba7b2c1d69f92c84d8ecb626"},
+  {"path": "tools/bench/plan_ring_p4_s04v18.json", "md5": "f349c39a17330531e688ff1f70ce426e"},
+  {"path": "tools/bench/plan_ring_p4_s04v18_pred.json", "md5": "a2bbc8bf22da2892556dbcf94ef0b601"}
+ ],
+ "pass": [
+  "reader op saved as a NEW claudeDev file; positive control reads back Required/Recommended/Optional as set; 20 calls leave handles flat +-100; it never saves what it reads",
+  "table: wiring rule of EVERY terminal of RingPickSlot_v0 6fcf153f and RingSeqCheck_v0 0295a8d3 + wired at PS1/SQ1; any unwired Required input = RETURN naming it",
+  "after step 2 succeeded: D1_ring_p4s04_20261007_212230.vi (abb76d41) and its resume record deleted",
+  "95e408ff, s03 282301ca, bed 39511877, both subVIs, plan, pred, recipes unchanged; LabVIEW closed and verified gone"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpWiringRules_v0.vi",
+  "tools/bench/diag_c145_a2_3_facts.md"
+ ],
+ "flags": {"labview": "build", "gui": false, "hardware": "none", "run_vi": true,
+  "write": ["tools/bench/diag_c145_a2_3*", "tools/bench/build_opwiringrules*", "tools/bench/launch_*c145*", "tools/bench/prior_art*", "archive/peer/**", "tools/bench/gate_fp_queue.jsonl"],
+  "status_edit": false, "git_commit": true, "peers": ["hypothesis", "fact"]},
+ "budget": {"failures": 2, "minutes": 90},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "RingPickSlot_v0.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "RingSeqCheck_v0.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "D1_ring_p4s04_20261007_215031.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"}
+ ],
+ "rules": [
+  "Save only the new reader op and scratch files under claudeDev; never the subVIs, s03, s04, bed",
+  "Requiredness is READ from the VI, never assumed; an unwired Required input is a RETURN",
+  "No stage-tool or gscript edit; a missing verb goes into the op's own build script",
+  "Delete abb76d41 and its resume record only after the table succeeded"
+ ]
+}

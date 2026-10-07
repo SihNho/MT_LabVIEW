@@ -1,0 +1,32 @@
+BGRUN START 2026-10-07 22:49:55 limit 40.0 min: py -u tools/bench/build_opwiringrules_v0.py
+BGRUN PID 23360
+  FACT  handles after restart: 34003
+  GATE PASS  0 RingSeqCheck_v0 md5 before  0295a8d349a3b61151cd87797119b9b1
+  FACT  reader REUSED (md5 02beb55feba53feed1acbeb570010e60, labels G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\build_opwiringrules_v0_labels.json): {'data': 'WiringRules[]', 'pn': 322, 'pn1': 112, 'Rules': 'WiringRules[]', 'RErr': 'error out 2', 'controls': ['vi path', 'Class Name', 'Class Name 2', 'Names', 'Names 2', 'index', 'index 2'], 'indicators': ['error out', 'Text', 'Indicator', 'Number of Connection Terminals', 'WiringRules[]', 'error out 2']}
+  GATE PASS  C OpWiringRules_v0 COLD ExecState 1 (fresh LabVIEW)  02beb55feba53feed1acbeb570010e60
+  FACT  P0 scratch RingSeqCheck copy: defaults: {'rules': [0, 2, 2, 2, 0, 0, 0, 2, 2, 2, 2, 2], 'text': '', 'n': 12, 'err': ''}
+  GATE PASS  P0 read: no error, len(rules) == Number of Connection Terminals  {'rules': [0, 2, 2, 2, 0, 0, 0, 2, 2, 2, 2, 2], 'text': '', 'n': 12, 'err': ''}
+  FACT  P0 names per terminal index: {0: '', 1: 'valid', 2: 'next discards', 3: 'next last', 4: '', 5: '', 6: '', 7: 'discards', 8: 'Latest', 9: 'last', 10: 'n2', 11: 'n1'}
+  GATE PASS  P0 pane names 11 n1, 10 n2, 9 last, 8 Latest, 7 discards (build_ringseqcheck_v0.log:216)  {0: '', 1: 'valid', 2: 'next discards', 3: 'next last', 4: '', 5: '', 6: '', 7: 'discards', 8: 'Latest', 9: 'last', 10: 'n2', 11: 'n1'}
+  FACT  P0 rule per index (name, rule): [(0, '', 0), (1, 'valid', 2), (2, 'next discards', 2), (3, 'next last', 2), (4, '', 0), (5, '', 0), (6, '', 0), (7, 'discards', 2), (8, 'Latest', 2), (9, 'last', 2), (10, 'n2', 2), (11, 'n1', 2)]
+  FACT  Wiring Rule:Set data sinks (raw): ['SetWireRule', 'TermIdx', 'Rule']
+  GATE PASS  W setter Invoke has 2 data sinks besides the method-header row 'SetWireRule' (card 145-a2-4)  ['TermIdx', 'Rule']
+  GATE PASS  W setter ExecState 1  
+  FACT  setter labels: {'sinks': {'TermIdx': 'Terminal Index', 'Rule': 'Rule'}, 'WErr': 'error out 3'}
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\build_opwiringrules_v0.py", line 150, in <module>
+    main()
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\build_opwiringrules_v0.py", line 134, in main
+    ws = [setrule(sp, TGT, t, v) for t, v in setv.items()]; r = rd(TGT)               # noqa: E702
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\build_opwiringrules_v0.py", line 134, in <listcomp>
+    ws = [setrule(sp, TGT, t, v) for t, v in setv.items()]; r = rd(TGT)               # noqa: E702
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\build_opwiringrules_v0.py", line 112, in setrule
+    return call(spath, target, 0, {lt: int(term), lr: int(rule)}, werr=s["WErr"])
+KeyError: 'WErr'
+  GATE FAIL  the run completed without an unhandled exception  KeyError('WErr')
+  GATE PASS  E LabVIEW gone  
+  GATE PASS  E scratch files deleted  ['C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c145a23_tgt_224956.vi', 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_c145a23_set_224956.vi']
+  GATE PASS  E RingSeqCheck_v0 md5 unchanged  
+=== GATES: 9 pass / 1 fail; failing: ['the run completed without an unhandled exception']
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":9,"fail":1},"first_fail":"the run completed without an unhandled exception","artefacts":[{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpWiringRules_v0.vi","md5":"02beb55feba53feed1acbeb570010e60"}],"card":"145-a2-4","labview":"build"}
+BGRUN END rc=1 after 127s

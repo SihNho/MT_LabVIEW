@@ -1,0 +1,50 @@
+BGRUN START 2026-10-07 21:30:31 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c145-1-sq1-bind -TaskFile tools/bench/diag_c145_1_hyp_task.md
+BGRUN PID 19768
+OUTCOME: ANSWERED (125s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-07-c145-1-sq1-bind.md
+COST: $1.3551  in 26 / out 8338 / cache-create 114530 / cache-read 1360213  (120s, 16 turn(s))
+--- ANSWER ---
+The claim is mostly right about the cause, but two parts of it are wrong. The pane had already been measured, so no new LabVIEW read is needed. And a stage tool does need a change, because the offline checks let a row marked PROVISIONAL through to LabVIEW.
+
+## 1. Strongest reason the claim is wrong
+**"No stage tool needs a change" is false, and "(pane slots + '' rows unread)" was never true.**
+- **The pane was measured 4 days before this plan was written.** `tools/bench/diag_c142_4_facts.md:22-23`, citing `build_ringseqcheck_v0.log:216-217` (2026-10-03, file md5 `0295a8d3…`), reads the pane back as: 11 n1, 10 n2, 9 last, 8 Latest, 7 discards | 3 next last, 2 next discards, 1 valid; **0 and 4-6 free.** That is exactly the real node at log :231-242, slot for slot: t0 '', t1 valid, t2 next discards, t3 next last, t4-6 '', t7 discards … t11 n1.
+- **The plan row was stale, not unmeasurable.** It still copies names from `brief_142-P2.md` (`plan_ring_p4_s04v18.json:357`), and unlike PS1 (`:139`, md5 6fcf153f) it pins no md5.
+- **The offline checks passed it anyway.**
+  - `stagexec.py:438-441` only checks that a `terminals` list is present.
+  - The offline prerun bound SQ1 to a placeholder uid: `STEPX 10 … bound {-38: 10000038} diff 0` (`prep_c144_a2_2_prerun.log:47`).
+  - Nothing in `stage_prerun.py` compares a `subvi_path` create with its file's measured pane. My grep for subvi there found only `NAME_FIELDS` at `:1108`.
+- The simulator compares the plan with itself, so it can never catch a wrong terminal list on a SubVI. That is a tool gap. A plan correction alone fixes this one row and leaves the next SubVI exposed the same way.
+
+## 2. Alternative explanations, and what the evidence says about each
+- **(a) The binder should ignore '' rows.** The code rules this out on purpose. `stagexec.py:1030-1039` (card 127-3, PD258(d)) accepts repeated '' keys only when **both** sides carry them unwired, paired in read order. A sim with 0 '' rows against a real node with 4 is meant to stop (`:1050-1051`). This is the binder working as designed.
+- **(b) The pane has a different slot count, or the '' rows vary between drops.** The evidence goes against this:
+  - Both drops have 12 rows.
+  - PS1 has 5 assigned + 7 '' (log :67-78, matching the pane cited at plan :139).
+  - SQ1 has 8 assigned + 4 '' (log :231-242, matching `build_ringseqcheck_v0.log:216-217`).
+  - In both, the row index equals the slot index.
+  - **Not settled:** both drops are fresh drops of unchanged files. Nothing shows that the '' count is stable if RingSeqCheck_v0.vi is rebuilt. That is why the md5 pin matters.
+- **(c) uid reuse.** SQ1 got **#29724**, the same uid as the junk Invoke node purged in op 8 (log :192, :202, :228). Op 7 also reused #29721 (log :172 vs :132). This did not cause the stop, since the binding failed on terminal keys, not on uid. But any uid-keyed check in the re-run (creation map, `uid_reuse` at `stage_prerun.py:3773-3775`) can see this again. It should be watched, not assumed harmless.
+
+## 3. What would falsify the claim
+If SQ1 is rebuilt from the measured pane (8 named + 4 '' sinks at slots 0, 4, 5, 6, with md5 pinned) and the next scratch run **still** fails op 10 binding, the claim is falsified.
+
+The claim is also falsified if the current `RingSeqCheck_v0.vi` md5 is no longer `0295a8d3…`. Then the measured pane is stale too, and the cause is file drift, not only the plan.
+
+## 4. Cheapest test that separates them (offline, no LabVIEW)
+1. **Md5 check:** confirm the md5 of `claudeDev\RingSeqCheck_v0.vi` is still `0295a8d349a3b61151cd87797119b9b1`.
+2. **Key comparison:** build the key multiset (Terminal, is_source, name) from `build_ringseqcheck_v0.log:216-217`, putting a '' sink on every free slot. Compare it with the real table at log :231-242.
+   - Expected: equal, giving 8 named + `('Terminal', False, ''): 4`.
+   - Run the same comparison for PS1: plan rows (`plan_ring_p4_s04v18.json`, the PS1 action ending at `:139`) against log :67-78. That checks the rule on the case that bound.
+3. **Replay test for the tool change:** add a prerun check that the terminal multiset of every `subvi_path` create must equal the measured-pane record for that file's md5, and that it refuses when no record exists. Replay this plan through it.
+   - It must refuse op 10 on the current plan.
+   - It must accept the corrected plan.
+
+## What would change my mind
+If the md5 matches, the multisets in step 2 match, and the team decides that a check on SubVI terminal sources is not worth adding, then the claim's fix (correct SQ1 from the measured pane, re-run sim, dry and prerun, regenerate the pred) is enough for this one run.
+
+I'd still state the fix as "use the existing measurement" rather than "take a new measured read". And I'd record that the tooling let a row it had itself labelled PROVISIONAL through to a LabVIEW run. That is a gate gap worth one entry in `gate_fp_queue` or a prerun check.
+
+The Error List block in the pred probably doesn't change, because four unassigned unwired slots shouldn't add errors. That is an expectation, not a measurement.
+
+I couldn't save this as a plan file because Write is disabled in this session, and I ran no web searches. Every point above rests on project files and the log, not on external LabVIEW documentation.
+BGRUN END rc=0 after 126s

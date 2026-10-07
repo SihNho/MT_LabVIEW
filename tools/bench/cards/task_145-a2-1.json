@@ -1,0 +1,45 @@
+{
+ "schema": "task/1", "id": "145-a2-1", "kind": "build",
+ "goal": "ADOPT s04 scratch 95e408ff (EL file, load, graph) and MEASURE pane requiredness of RingPickSlot_v0 / RingSeqCheck_v0 inputs vs wiring at PS1/SQ1; delete abb76d41",
+ "why": "PD351(b)(e): s04 scratch full PASS 24/0, EL 58 vs pred 60 judged EXPLAINED if PS1/SQ1 unwired inputs are not Required; this card measures that cause and adopts the file. Cycle 145 pass items 0, 1, 5.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_145-a2-1.md", "md5": "2cc915475230d5db823e869f93120dab"},
+  {"path": "tools/bench/diag_c145_2_facts.md", "md5": "a73ca3f126ee02eac82e12189268e54d"},
+  {"path": "tools/bench/diag_c145_2_adopt.py", "md5": "7c016f4b42a12386489682654018eb06"},
+  {"path": "tools/bench/diag_c145_2_mkgraph.py", "md5": "aa188343674f0a45ec13670665fb353d"},
+  {"path": "tools/bench/diag_c145_2_graph.py", "md5": "f34d505162faf58d222b7448da3f89e5"},
+  {"path": "tools/bench/errorlist_D1_ring_p4s04_20261007_215031_20261007_220024.json", "md5": "5e53096a3dd25d25141d111dbe2177b8"},
+  {"path": "tools/bench/plan_ring_p4_s04v18.json", "md5": "f349c39a17330531e688ff1f70ce426e"},
+  {"path": "tools/bench/plan_ring_p4_s04v18_pred.json", "md5": "a2bbc8bf22da2892556dbcf94ef0b601"}
+ ],
+ "pass": [
+  "95e408ff adopted by stagexec.adopt_scratch (by import) as D1_ring_p4s04_<stamp>.vi, md5 recorded, adopted_scratch.jsonl entry",
+  "errorlist_expected_D1_ring_p4s04_<stamp>.json built from the 58-item read 5e53096a; fresh-instance load MB; graph_ring_p4s04_<stamp>.json + md5",
+  "table: pane requiredness of EVERY input of RingPickSlot_v0 6fcf153f and RingSeqCheck_v0 0295a8d3 + wired at PS1/SQ1 in the new graph; any unwired Required input = RETURN",
+  "D1_ring_p4s04_20261007_212230.vi (abb76d41) and its resume record deleted after the adoption",
+  "s03 282301ca, bed 39511877, plan, pred, recipes unchanged; handles flat; LabVIEW closed and verified gone"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p4s04_<stamp>.vi",
+  "tools/bench/graph_ring_p4s04_<stamp>.json",
+  "tools/bench/errorlist_expected_D1_ring_p4s04_<stamp>.json",
+  "tools/bench/diag_c145_a2_1_facts.md"
+ ],
+ "flags": {"labview": "build", "gui": true, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/diag_c145_a2_1*", "tools/bench/diag_c145_2_*", "tools/bench/launch_*c145*", "tools/bench/graph_ring_p4s04_*", "tools/bench/errorlist_*p4s04*", "tools/bench/adopted_scratch.jsonl", "tools/bench/prior_art*", "archive/peer/**", "tools/bench/gate_fp_queue.jsonl", "tools/bench/sim/**"],
+  "status_edit": false, "git_commit": true, "peers": ["hypothesis", "fact"]},
+ "budget": {"failures": 2, "minutes": 90},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "D1_ring_p4s04_20261007_215031.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "RingPickSlot_v0.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "RingSeqCheck_v0.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "tools/errorlist_check.py"}
+ ],
+ "rules": [
+  "Bed and s03 never opened for editing; no second scratch; no stage-tool edits (tool fault = RETURN + gate-fp)",
+  "Requiredness is READ from the VI, never assumed; an unwired Required input is a RETURN",
+  "Delete abb76d41 and its resume record only after adoption + requiredness succeeded",
+  "Do not touch s05 files; never launch any earlier plan"
+ ]
+}

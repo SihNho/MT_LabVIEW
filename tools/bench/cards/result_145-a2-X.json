@@ -1,0 +1,18 @@
+{"schema":"result/1","id":"145-a2-X","status":"PASS","gates":{"pass":2,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/bench/diag_c145_a2_x_facts.md","md5":"593cc6f00996c87833327f90fe3ae6a8"},
+{"path":"tools/bench/diag_c145_a2_x_facts.py","md5":"5412f723ee2febda8b3c514c5e204a26"},
+{"path":"tools/bench/diag_c145_a2_x_facts.log","md5":"00a9166502a4585bf9baca7da6a93ac5"}],
+"facts":[
+"Q1: no v18 action consumes #2626 output t2813 (stays wire_uid 0 at v18 sim step_202); v18 finalized open_rows still list (2626,array) (plan_ring_p4_v18.json:2634-2637)",
+"Q1: v18 wires all 4 #2626 'array' inputs: op118 t4160, op119 t4165 (s05=ops 98..124), op132 p4_w_bd_row t2832, op150 p4_rbB_sel_t4168 (after s05) (diag_c145_a2_x_facts.log:15-18)",
+"Q1: in v18 base graph t2832/t4160/t4165 are already named 'array' and UNWIRED, t4168 wired w25283 (graph_ring_p3b2b_20261002_133824.json line 1)",
+"Q2: op118=p4_w_tp_row new:IAVT1.element->#2626 t4160; op119=p4_w_rp_row new:IAVR1.element->#2626 t4165 (plan_ring_p4_v18.json:1646-1665; log:10-11)",
+"Q3: licence plan = tools/bench/plan_l2b1.json only; node 2626 uids [2832,4160,4165], require all UNWIRED else void (plan_l2b1_licence.json:4,8-14)",
+"Q3: 'array' arises in l2b1 from rw_5124_4168 #5058 t5124->#2626 t4168 (plan_l2b1.json:331-343); l2b1's own open row is (2626,element), not array (:361-365)",
+"Q4: NO - pb_licences matches by plan path (stage_prerun.py:1272-1275): v18 {} and s05 {} (log:33,39); ops 118/119 wire 2 of the 3 licensed uids, against its UNWIRED require",
+"Q4: X11 flags: v18 4/4 unlicensed (tp_row, rp_row, bd_row, rbB_sel_t4168), s05 2/2, l2b1 1 licensed (diag_c145_a2_x_facts.log:34-45)",
+"Q5: gate stage_prerun.py:2905-2911 (X11); recorded FAIL prep_c145_p1_prerun.log:31 'FAIL  X11 no row wires one Build Array input while a sibling input is an open row (unless pb-licence/1)'",
+"Op numbering = stagexec.compile_plan 1-based (prep_c145_p1_mk.py:73-75); v18 202 actions/190 ops; 4 card inputs md5 unchanged after (log:3,46)"],
+"open":["X11 on v18 also flags ops 132 and 150 (later sessions), not only s05's 118/119 - one ruling for all four rows, or per session?"],
+"cost":{"usd":null,"minutes":6,"labview_runs":0},
+"note":"offline read-only; no plan/pred/recipe/tool edited; no re-cut proposed"}

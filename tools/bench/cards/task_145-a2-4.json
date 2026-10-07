@@ -1,0 +1,38 @@
+{
+ "schema": "task/1", "id": "145-a2-4", "kind": "build", "retry_of_card": "145-a2-3",
+ "goal": "RETRY 145-a2-3: fix own setter gate (build_opwiringrules_v0.py:79), positive control + hygiene of the WiringRules reader, MEASURE PS1/SQ1 requiredness, delete abb76d41",
+ "why": "145-a2-3 stopped at its own gate (Invoke header row counted as a data sink), reader already built. PD351(b)(e). Cycle 145 pass items 1 and 5.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_145-a2-4.md", "md5": "d27e13cc5e524dc43663c14cb4bcdc3a"},
+  {"path": "tools/bench/cards/brief_145-a2-3.md", "md5": "686da05c9a6f5457ff3a7b73e68084ac"},
+  {"path": "tools/bench/cards/result_145-a2-3.json", "md5": "eed1c07f934666f770cf89e9aec49027"},
+  {"path": "tools/bench/build_opwiringrules_v0.py", "md5": "06f152b16bce9124f6e84b9a437d08a4"},
+  {"path": "tools/bench/diag_c145_a2_3_measure.py", "md5": "5c6c3cfba014ac6792945436b1e99f60"}
+ ],
+ "pass": [
+  "reader OpWiringRules_v0.vi: positive control reads back Required/Recommended/Optional as set; 20 calls leave handles flat +-100; it never saves what it reads",
+  "table: wiring rule of EVERY terminal of RingPickSlot_v0 6fcf153f and RingSeqCheck_v0 0295a8d3 + wired at PS1/SQ1; any unwired Required input = RETURN naming it",
+  "after the table succeeded: D1_ring_p4s04_20261007_212230.vi (abb76d41) and its resume record deleted",
+  "95e408ff, s03 282301ca, bed 39511877, both subVIs, plan, pred, recipes unchanged; LabVIEW closed and verified gone"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpWiringRules_v0.vi",
+  "tools/bench/diag_c145_a2_3_facts.md"
+ ],
+ "flags": {"labview": "build", "gui": false, "hardware": "none", "run_vi": true,
+  "write": ["tools/bench/diag_c145_a2_3*", "tools/bench/build_opwiringrules*", "tools/bench/launch_*c145*", "tools/bench/prior_art*", "archive/peer/**", "tools/bench/gate_fp_queue.jsonl"],
+  "status_edit": false, "git_commit": true, "peers": ["hypothesis", "fact"]},
+ "budget": {"failures": 2, "minutes": 90},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "OpWiringRules_v0.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "RingPickSlot_v0.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "RingSeqCheck_v0.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"}
+ ],
+ "rules": [
+  "Save only the reader op and scratch files under claudeDev; never the subVIs, s03, s04, bed",
+  "Requiredness is READ from the VI, never assumed; an unwired Required input is a RETURN",
+  "No stage-tool or gscript edit; a second failure of the same gate class = RETURN",
+  "Delete abb76d41 and its resume record only after the table succeeded"
+ ]
+}

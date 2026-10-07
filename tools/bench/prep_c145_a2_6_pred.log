@@ -1,0 +1,24 @@
+BGRUN START 2026-10-07 23:18:26 limit 5.0 min: py -u tools/bench/prep_c145_a2_6_pred.py
+BGRUN PID 10048
+FACT old pred md5 6666a7183fc4a2ca428e62fab5897803 (on disk 6666a7183fc4a2ca428e62fab5897803); plan md5 0efd8737f8202f48242dc1ed21e4c641
+GATE PASS | M0 graph 094ba298, EL expected file 1a28fe86, requiredness 13b0d75f md5 == card | ('094ba298ba7b2c1d69f92c84d8ecb626', '1a28fe86db42a982e6828f5ed8e98da1', '13b0d75f6ac66511e43b3b22c898368d')
+GATE PASS | RB plan rebased: base tools/bench/sim/ring_p4_s05v18_base_real_fsmap.json not provisional, FINAL, open_rows_match, 33 actions == session table 33; no negative uid left | {'base': {'path': 'tools/bench/sim/ring_p4_s05v18_base_real_fsmap.json', 'md5': '58a844e8302ab4a90865549d78298acb'}, 'rebase': {'sim_input': {'path': '(temp copy, deleted)', 'md5': '88373796614919b40be7f8e5dd87acd2'}, 'from_plan': {'path': 'tools/bench/plan_ring_p4_s05v18.json', 'md5': '5fb19dceb2f116b6267245a52edfa761'}, 'graph': {'path': 'tools/bench/graph_ring_p4s04_20261007_223245.json', 'md5': '094ba298ba7b2c1d69f92c84d8ecb626'}}, 'neg': []}
+FACT base doc vi C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_ring_p4s04_20261007_215031.vi md5 95e408ff14a406edd3f16b32ba7324f1; real_graph {'path': 'tools/bench/graph_ring_p4s04_20261007_223245.json', 'md5': '094ba298ba7b2c1d69f92c84d8ecb626'}; base file tools/bench/sim/ring_p4_s05v18_base_real_fsmap.json md5 58a844e8302ab4a90865549d78298acb
+GATE PASS | RB2 base doc vi md5 95e408ff.. (s04 file); fs_carried.real_graph md5 == 094ba298 (the graph file) or base IS the graph; base file md5 == plan's | ('95e408ff14a406edd3f16b32ba7324f1', {'path': 'tools/bench/graph_ring_p4s04_20261007_223245.json', 'md5': '094ba298ba7b2c1d69f92c84d8ecb626'}, {'path': 'tools/bench/sim/ring_p4_s05v18_base_real_fsmap.json', 'md5': '58a844e8302ab4a90865549d78298acb'})
+GATE PASS | C compile: 33 actions -> 27 ops, each action once | 
+FACT X10 at start 605.4: N 27 R 10 peak 685.4 fail_above 680.0 ok False margin -5.4; MEMSTOP 695.0 margin 9.6 | prerun's own start None -> peak None | provisional 678.5 at 598.5
+FACT X10 per-op formula at 605.4: ops 98..124 peak 685.4; next op 125 peak 689.3; first op over 680.0 = 121
+GATE FAIL | X10 peak 685.4 at start 605.4 <= fail threshold 680.0 (memory_model.json) | {'N': 27, 'R': 10, 'P': 0, 'bind': 9, 'peak_mb': 685.4, 'start_mb': 605.4, 'fail_above_mb': 680.0, 'ok': False, 'checkpoints': [0, 1, 2, 8, 9, 12, 13, 16, 17, 27]}
+GATE PASS | X17 over s05v18 | 3 primitive create action(s), every donor label == its prim
+EL FIXED s05: base 58 (MEASURED s04 file) new [] closed [['local', 30001], ['sr', 29403], ['sr', 29648]] -> 55 (provisional pred 57); per class new {} closed {'local': 1, 'sr': 2}; open at start [['local', 30001], ['local', 30016], ['sr', 29403], ['sr', 29648]]; open at end [['local', 30016]]; uncertain base [[29240, ['y']]]; uncertain subvi []; subvis {}; detail_end {'local': [[30016, ['Num']]]}; created [-40, -32, -30, -25, -23, -18, -16, -6, -1]; steps tools/bench/sim/ring_p4_s05v18/step_00_base.json -> tools/bench/sim/ring_p4_s05v18/step_33_wire.json
+FACT EL rule: PD333(b) fixed predictor (tools/elrule.py; SR class + narrowed A by PD349; SubVI A by measured pane rule, PD351(c)): L unwired Local + C While cond + SR RightShiftRegister with an unwired inner sink + A created node with an unwired input other than its C/SR row (a created SubVI: only a MEASURED Required pane terminal, tools/bench/subvi_requiredness.json; unknown = uncertain, not counted); items(end) - items(start) added, items(start) - items(end) debited
+FACT ops {'tunnel': 3, 'connect': 13, 'create': 6, 'branch': 3, 'move_in': 2} census {} overall UNPREDICTED unpredicted 33 | EL 55 | end rows 19 open pairs 14
+FACT md5 0efd8737f8202f48242dc1ed21e4c641 tools/bench/plan_ring_p4_s05v18.json
+FACT md5 a052145d5fe2402c14510ee43fb433f2 tools/bench/plan_ring_p4_s05v18_pred.json
+FACT md5 23c08932db7e3ace3ef5a1cd7d547266 tools/recipes/stage_d1_ring_p4_s05v18.py
+FACT md5 cd14eb476d2ccbe314cb8d5d36cbb67d tools/recipes/stage_d1_ring_p4_s05v18_scratch.py
+FACT md5 a5ee7d5c8792ccf5c174e70be022544d tools/elrule.py
+FACT md5 58a844e8302ab4a90865549d78298acb tools/bench/sim/ring_p4_s05v18_base_real_fsmap.json
+GATE PASS | SP pred written, keyed to the plan md5 | 
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":6,"fail":1},"first_fail":"X10 peak 685.4 at start 605.4 <= fail threshold 680.0 (memory_model.json)","artefacts":[{"path":"tools/bench/plan_ring_p4_s05v18.json","md5":"0efd8737f8202f48242dc1ed21e4c641"},{"path":"tools/bench/plan_ring_p4_s05v18_pred.json","md5":"a052145d5fe2402c14510ee43fb433f2"}],"card":"145-a2-6","labview":"none"}
+BGRUN END rc=1 after 1s

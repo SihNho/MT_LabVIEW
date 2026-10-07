@@ -1,0 +1,50 @@
+{
+ "schema": "task/1", "id": "145-a1-2", "kind": "build",
+ "retry_of_card": "145-a1-1",
+ "goal": "RETRY of 145-a1-1: correct the SQ1 terminal row of plan_ring_p4_s04v18.json to the measured 12-row pane, re-derive pred + dry + prerun, then ONE s04 scratch on a byte copy of s03, adopt on full PASS",
+ "why": "145-a1-1 stopped in op 10 on BINDING: plan SQ1 row was PROVISIONAL (8 keys), real drop has 8 named + 4 unnamed sinks (diag_c145_1_facts.md); review ed55e578 ANSWERED. Cycle 145 pass 0-3, 5.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_145-a1-2.md", "md5": "34da12800deb8a7f6e36d6da885ae6c0"},
+  {"path": "tools/bench/cards/brief_145-a1-1.md", "md5": "cb1481dda65a025e1e0ad1ce8d624445"},
+  {"path": "tools/bench/diag_c145_1_facts.md", "md5": "9965456a2d773250bb6303db0855d6ce"},
+  {"path": "archive/peer/2026-10-07-c145-1-sq1-bind.md", "md5": "ed55e578f961732a0505e868583a2fef"},
+  {"path": "tools/bench/plan_ring_p4_s04v18.json", "md5": "9ff46b0ece1f238c831d7786616c4f05"},
+  {"path": "tools/bench/plan_ring_p4_s04v18_pred.json", "md5": "90eff870c8afc31a42bb6f3558ad4923"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s04v18.py", "md5": "fe3f630c428e00143d54e5be0e18631d"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s04v18_scratch.py", "md5": "f5e4bdf823cf206e7701a8673235046d"},
+  {"path": "tools/bench/graph_ring_p4s03_20261007_205535.json", "md5": "5638469b4ea6c259de9802f81e91abd5"},
+  {"path": "tools/bench/diag_c144_2_elexp.log", "md5": "3dd174b0d47241e9bad6521968da9f49"},
+  {"path": "tools/bench/diag_c142_4_facts.md", "md5": "1981382f888332f45f6e0978919c21a6"}
+ ],
+ "pass": [
+  "only the SQ1 plan row changed (4 unnamed sinks); old -> new md5 of changed files; dry + prerun + --scratch-required PASS on new bytes; pred EL 60 by PD349, X10 vs 680",
+  "ONE scratch: every op real == sim, prim + D/TD gates PASS, both subVI drops bind, peak <= 680, MEMSTOP 695 not hit",
+  "Error List == 60 against the pred's EL block; measured census written into the pred by a script citing the log line",
+  "adopted D1_ring_p4s04_<stamp>.vi + md5 by import, full EL + expected file, fresh-instance load MB, graph_ring_p4s04_<stamp>.json + md5",
+  "s03 282301ca and bed 39511877 unchanged; handles flat; LabVIEW closed and verified gone; JEV-LADDER row for any failing log"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p4s04_<stamp>.vi",
+  "tools/bench/graph_ring_p4s04_<stamp>.json",
+  "tools/bench/errorlist_expected_D1_ring_p4s04_<stamp>.json",
+  "tools/bench/diag_c145_2_facts.md"
+ ],
+ "flags": {"labview": "build", "gui": true, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/diag_c145_2*", "tools/bench/diag_c144_p4s04v18*", "tools/bench/launch_*c145*", "tools/bench/scratch_*c145*", "tools/bench/plan_ring_p4_s04v18*", "tools/recipes/stage_d1_ring_p4_s04v18*", "tools/bench/sim/**", "tools/bench/graph_ring_p4s04_*", "tools/bench/errorlist_*p4s04*", "tools/bench/adopted_scratch.jsonl", "tools/bench/prior_art*", "archive/peer/**", "tools/bench/gate_fp_queue.jsonl", "tools/bench/prep_c145_2*"],
+  "status_edit": false, "git_commit": true, "peers": ["priorart", "hypothesis"]},
+ "budget": {"failures": 2, "minutes": 120},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "D1_ring_p4s03_20261007_202957.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "tools/prior_art_review.py"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p4_s04v18_scratch.py"}
+ ],
+ "rules": [
+  "Bed and s03 file never opened for editing; the scratch edits a byte copy only",
+  "Edit only the SQ1 row of the s04 plan; no stage-tool edits; a tool fault is a RETURN plus a gate-fp entry",
+  "ONE scratch run; return at the first result that differs from the prediction",
+  "Do not touch s05 files; do not delete or adopt D1_ring_p4s04_20261007_212230.vi (abb76d41)",
+  "Never launch plan_ring_p4_s03v18.json, plan_ring_p4_s02v18.json, plan_ring_p4_s02.json or plan_ring_p4_rasrest.json"
+ ]
+}

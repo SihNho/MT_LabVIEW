@@ -1,0 +1,48 @@
+BGRUN START 2026-10-07 21:43:24 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c145-2-fix-addrpos -TaskFile tools/bench/diag_c145_2_hyp_task.md
+BGRUN PID 11320
+OUTCOME: ANSWERED (139s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-07-c145-2-fix-addrpos.md
+COST: $1.3718  in 30 / out 11444 / cache-create 104227 / cache-read 1545009  (135s, 20 turn(s))
+--- ANSWER ---
+The uid-shift explanation probably accounts for gate A, but calling the shift harmless is wrong. One plan written this cycle points at the old uid −47, and that uid now names a different object. Everything below comes from reading the files; I ran nothing.
+
+**1. Strongest reason the claim is wrong: the shifted uids are not only used inside the simulator.**
+- `tools/bench/plan_ring_p4_s05v18_in.json:12-15` (card 145-a1-P1) was simulated on session 4's old plan (md5 9ff46b0e).
+- At `:165-174` it addresses `{"uid": -47, "term": "value"}` as the source of `p4_w_lat_dec`. That uid is session 4's `p4_lr_latest`. Session 5 refers to session 4's objects by their simulator uids, not by alias.
+- If the simulator numbers a node's terminals in list order (likely, given `new_uid` at `tools/stagesim.py:564-566`, but unverified), SQ1 is −38 and its 12 terminals are −39..−50. Then −47 is SQ1's t8, which is `'Latest'`, and `p4_lr_latest` moves to −51.
+- What happens to that −47 reference:
+  - A rebase of session 5 is refused, because session 4's plan md5 changed (`tools/stage_prerun.py:4211-4213`). That part is safe.
+  - The refusal message says "re-simulate N+1". A re-simulation that keeps −47 now points at SQ1's `Latest` terminal instead of the local-read node.
+- Old uids still being carried:
+  - The predicted Error List keys its new items by uid (`["local", -47]`, `["input", -49]`, `plan_ring_p4_s04v18_pred.json:89-117`).
+  - The 21:24 creation map lists −47 onward as created objects.
+
+**2. Alternative explanation of the same evidence.** The log cannot tell owner-only drift apart from a created end that now binds to a different terminal. Two things make this possible:
+- The four new `''` sink terminals change how SQ1's rows are matched by index and class.
+- None of the checks that passed look at the wiring of objects the plan creates: `end_cdiff_rows`, `open_rows` and `route_check` are keyed on base uids or route kinds. A TL1/TN1 wire landing on a different face would get past them.
+
+There is also a provenance problem:
+- The script on disk prints `FACT addr_pos non-SQ1 … only-old … only-new` at `:98`, but the log has no such line (`prep_c145_2_fix.log:61→62`).
+- So the script was edited after the run. The file you are about to rerun is not the one that failed.
+
+**3. What would falsify the claim.**
+- In the old plan, only four non-SQ1 `addr_pos` rows have an owner at or below −47: TL1 −54 (n15, n16) and TN1 −63 (n22, n23) (`prep_c145_2_plan_9ff46b0e.json:838-954`).
+- Any of these would falsify it:
+  - A differing row other than those four.
+  - A different number of differing rows.
+  - A changed index, class, name or source on any of them.
+  - An owner change that is not exactly −4.
+
+**4. What the claim gets right.**
+- `addr_pos.owner` is not used when addresses are resolved. `addrcheck.resolve` uses only index, class and source (`tools/addrcheck.py:105-111`). The rebase looks rows up by `(n, addr)` (`stage_prerun.py:4284`).
+- Old creation maps are refused when the plan md5 differs (`stage_prerun.py:3714-3717`). The 9ff46b0e map can never bind the new plan.
+
+**Cheapest discriminating test** (offline, about 30 s): rerun the current script once and read its `only-old`/`only-new` line.
+- **Claim holds:** both lists hold exactly those four rows, owners −54→−58 and −63→−67, every other field equal.
+- **Claim fails:** anything else.
+
+Add these to the narrowed gate:
+1. Fail if session 5's plan or its input file still references any session-4 uid ≤ −47 while its `sim_of` md5 is 9ff46b0e. It has to be remapped (−47 → −51) or re-planned before session 5's prerun.
+2. Regenerate the predicted Error List from the new step files and check that `predicted_total` is still 60. The four unnamed SQ1 inputs could change how many open-input items the predictor counts.
+
+I'd accept the narrowed gate A once the rerun shows the four-row pattern. I would not accept the claim's conclusion that only simulator-internal ids moved.
+BGRUN END rc=0 after 140s

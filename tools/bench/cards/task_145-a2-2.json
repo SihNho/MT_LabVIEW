@@ -1,0 +1,33 @@
+{
+ "schema": "task/1", "id": "145-a2-2", "kind": "build",
+ "goal": "elrule.py: a SubVI's unwired input is an EL item only if its pane terminal is MEASURED Required (table from 145-a2-3 facts); selftest re-derives s01..s04 = 51/53/55/58",
+ "why": "PD351(c): s04 EL read 58 vs pred 60; PS1/SQ1 unwired inputs measured Recommended, not Required. Gate-tool edit, runs alone. Cycle 145 pass item 2.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_145-a2-2.md", "md5": "efb8785dc37f3977de0663b076fdad42"},
+  {"path": "tools/bench/diag_c145_a2_3_facts.md", "md5": "1bea567336db4e797869c533940aae0b"},
+  {"path": "tools/elrule.py", "md5": "dae49641768b7e427f264ebf0227fea8"},
+  {"path": "tools/bench/selftest_elpred.py", "md5": "4a18a36cf69baa82ac4d7d707214221a"},
+  {"path": "tools/bench/plan_ring_p4_s04v18.json", "md5": "f349c39a17330531e688ff1f70ce426e"},
+  {"path": "tools/bench/plan_ring_p4_s04v18_pred.json", "md5": "a2bbc8bf22da2892556dbcf94ef0b601"}
+ ],
+ "pass": [
+  "tools/bench/subvi_requiredness.json built from the measured table; a SubVI A item only for a measured Required terminal; unknown SubVI/terminal is reported uncertain, never defaulted",
+  "selftest_elpred.py: S01/S02/S03/R1 = 51/53/55 still PASS, new S04 re-derives 58 == recorded read 5e53096a, one negative case (Required, unwired) adds 1",
+  "pred's PS1 'required input' item answered as a fact with file:line; plan, pred, recipes and other stage tools byte-identical"
+ ],
+ "outputs": ["tools/bench/subvi_requiredness.json", "tools/bench/diag_c145_a2_2_facts.md"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/elrule.py", "tools/bench/selftest_elpred.py", "tools/bench/subvi_requiredness.json", "tools/bench/diag_c145_a2_2*", "tools/bench/gate_fp_queue.jsonl"],
+  "status_edit": false, "git_commit": true, "peers": []},
+ "budget": {"failures": 2, "minutes": 60},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/elrule.py"},
+  {"kind": "file", "name": "tools/bench/selftest_elpred.py"}
+ ],
+ "rules": [
+  "Offline only: no LabVIEW, camera or motor; runs alone, no other card live",
+  "Do not lower any existing selftest expectation; no default for an unmeasured SubVI",
+  "Edit no plan, pred, recipe or other stage tool; s05 files are the next card"
+ ]
+}

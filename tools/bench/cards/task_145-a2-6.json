@@ -1,0 +1,40 @@
+{
+ "schema": "task/1", "id": "145-a2-6", "kind": "build",
+ "goal": "Re-make s05 (v18 ops 98..124) with --rebase on the REAL s04 graph; EL by the fixed rule; X10 at 605.4 MB; report dry + prerun + scratch-required; NOT launched",
+ "why": "PD351(d): the provisional s05 was built on a simulated s04. s04 is adopted and the EL rule fixed. X11 is expected to refuse 2 rows (no licence): report, do not clear. Cycle 145 pass item 3.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_145-a2-6.md", "md5": "4dd35302b5c04b70575eb2798cca4250"},
+  {"path": "tools/bench/diag_c145_a2_1_facts.md", "md5": "3303b4431f7591710ebfea6732a0f704"},
+  {"path": "tools/bench/diag_c145_a2_x_facts.md", "md5": "593cc6f00996c87833327f90fe3ae6a8"},
+  {"path": "tools/bench/graph_ring_p4s04_20261007_223245.json", "md5": "094ba298ba7b2c1d69f92c84d8ecb626"},
+  {"path": "tools/bench/plan_ring_p4_s04v18.json", "md5": "f349c39a17330531e688ff1f70ce426e"},
+  {"path": "tools/bench/plan_ring_p4_v18.json", "md5": "2ea6cafa7d368dc7a054346d398daa3e"},
+  {"path": "tools/bench/plan_ring_p4_s05v18.json", "md5": "b7d27e24e27a196a071c490053feafaa"},
+  {"path": "tools/bench/plan_ring_p4_s05v18_pred.json", "md5": "6666a7183fc4a2ca428e62fab5897803"},
+  {"path": "tools/bench/prep_c145_p1_mk.py", "md5": "c7fdf26353add468b1660ed866c39cd2"},
+  {"path": "tools/elrule.py", "md5": "a5ee7d5c8792ccf5c174e70be022544d"},
+  {"path": "tools/bench/subvi_requiredness.json", "md5": "13b0d75f6ac66511e43b3b22c898368d"},
+  {"path": "tools/bench/memory_model.json", "md5": "db163e039b89281a1ad178db95da4c72"}
+ ],
+ "pass": [
+  "s05 plan/_in/pred re-made on the real s04 graph via --rebase, ops 98..124; provisional files kept as *_prov; md5s and row count reported",
+  "pred EL total by the FIXED rule (base 58) and X10 at 605.4 MB reported with limits 680/695",
+  "sandbox dry, prerun and --scratch-required run, every refusal quoted (X11 expected 2/2 on tp_row/rp_row), nothing patched around, nothing launched",
+  "s04 plan/pred/recipes, v18, stage tools, licence, s04 file, s03, bed byte-identical; no LabVIEW process"
+ ],
+ "outputs": ["tools/bench/plan_ring_p4_s05v18.json", "tools/bench/plan_ring_p4_s05v18_pred.json", "tools/bench/diag_c145_a2_6_facts.md"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/plan_ring_p4_s05v18*", "tools/bench/sim/ring_p4_s05v18/**", "tools/bench/prep_c145_a2_6*", "tools/bench/diag_c145_a2_6*", "tools/bench/prerun_records.jsonl", "tools/bench/gate_fp_queue.jsonl"],
+  "status_edit": false, "git_commit": true, "peers": []},
+ "budget": {"failures": 2, "minutes": 60},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/graph_ring_p4s04_20261007_223245.json"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p4_s05v18.json"}
+ ],
+ "rules": [
+  "Offline only; nothing launched, no LabVIEW process",
+  "No licence = no re-cut: never edit the plan, licence or X11 gate to clear a refusal",
+  "Edit no s04 file, v18, recipe or stage tool; keep the provisional s05 as *_prov"
+ ]
+}

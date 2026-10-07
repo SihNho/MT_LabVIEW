@@ -1,0 +1,32 @@
+{
+ "schema": "task/1", "id": "145-a2-5", "kind": "build", "retry_of_card": "145-a2-2",
+ "goal": "RETRY 145-a2-2: elrule.item_class must class the empty-raw 'local or global variable is not wired' item as local so selftest R4 passes; no verdict or class of any other recorded item changes",
+ "why": "145-a2-2 met its 3 pass items; its own extra gate R4 fails on one unclassified Local item in the s04 read. Offline, alone. Cycle 145 pass item 2.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_145-a2-5.md", "md5": "2b199cbc9ed2f5801174efb48a8573d2"},
+  {"path": "tools/bench/cards/result_145-a2-2.json", "md5": "47af6f3f78d47fc94a41037f9b7fcc3d"},
+  {"path": "tools/elrule.py", "md5": "50f29adcbc510735f5d0cbedd0409dbb"},
+  {"path": "tools/bench/selftest_elpred.py", "md5": "e0baa236d8aff58a0c9c424a65bc9f45"},
+  {"path": "tools/bench/diag_c145_a2_2_facts.md", "md5": "fddec878b410eb3785761bed7619673d"}
+ ],
+ "pass": [
+  "item_class classes that item as local; class table over every recorded Error List file shows no other item changes class",
+  "selftest_elpred.py S01-S04, R1, R4, U7, U8 all PASS (S04 = 58); selftest_s5 regression stays 22/0, no by-design verdict changes",
+  "plan, pred, recipes and other stage tools byte-identical; facts file appended"
+ ],
+ "outputs": ["tools/bench/diag_c145_a2_2_facts.md"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/elrule.py", "tools/bench/selftest_elpred.py", "tools/bench/diag_c145_a2_2*", "tools/bench/gate_fp_queue.jsonl"],
+  "status_edit": false, "git_commit": true, "peers": []},
+ "budget": {"failures": 2, "minutes": 45},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/elrule.py"},
+  {"kind": "file", "name": "tools/bench/selftest_elpred.py"}
+ ],
+ "rules": [
+  "Offline only; runs alone, no other card live",
+  "Fix the classifier, never weaken R4; any other class or verdict change = RETURN and revert",
+  "Edit no plan, pred, recipe or other stage tool; s05 files are the next card"
+ ]
+}

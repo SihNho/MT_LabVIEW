@@ -1,0 +1,28 @@
+{"schema": "result/1", "id": "145-a1-P1", "status": "PASS", "gates": {"pass": 20, "fail": 0}, "first_fail": null, "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/plan_ring_p4_s05v18.json", "md5": "b7d27e24e27a196a071c490053feafaa"},
+  {"path": "tools/bench/plan_ring_p4_s05v18_pred.json", "md5": "6666a7183fc4a2ca428e62fab5897803"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s05v18.py", "md5": "23c08932db7e3ace3ef5a1cd7d547266"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s05v18_scratch.py", "md5": "cd14eb476d2ccbe314cb8d5d36cbb67d"},
+  {"path": "tools/bench/prep_c145_p1_facts.md", "md5": "47b93b6c240189174917f95b89e183d5"},
+  {"path": "tools/bench/sim/ring_p4_s05v18_s04end/base_provisional.json", "md5": "c159906d89a251f5495072fdf1872509"},
+  {"path": "tools/bench/prep_c145_p1_mk.py", "md5": "c7fdf26353add468b1660ed866c39cd2"}
+ ],
+ "facts": [
+  "s05 = v18 ops 98..124, 33 actions p4_t_slot..p4_w_fd_in, 27 ops; X10 678.5 at provisional 598.5 (margin 1.5); op 125 would be 682.4 (prep_c145_p1_mk.log CUT gate)",
+  "s01..s03 refs bound to REAL uids via s03 creation map, (uid,class) equal: W1 #16483 WhileLoop, body #29699, SL1R 29403, SD1L 29655, SD1R 29648; == s04 rebase (mk.log R3)",
+  "mk 14/0: pass A to end, TIE 19 rows tied, pass B FINAL open_rows_match 14 pairs; wire_sr->connect ops 102-104 (prep_c145_p1_mk.log)",
+  "Sessions left after s05 (estimate, same start): 3 = ops 125..155, 156..186, 187..190 (prep_c145_p1_pred.log FACT SESSIONS-LEFT)",
+  "EL by PD349 rule: base s04 PREDICTED 60 -> 57 (closed local -47, sr 29403, sr 29648; uncertain 29240 'y') (prep_c145_p1_pred.log EL line)",
+  "Dry FAIL both recipes: BASE unbound [-65,-64,-56,-55,-52,-51], 0 of 27 ops - same provisional class as 144-P1 (prep_c145_p1_dry.log:25; prep_c144_p1_dry.log)",
+  "Prerun 12/4 both: X1, X5, X10 UNMEASURED (as 144-P1 13/3) + NEW X11 Build Array #2626: tp_row/rp_row wired, sibling (2626,array) open (prep_c145_p1_prerun.log:31)",
+  "No pb-licence/1 names a P4 plan; only plan_l2b1_licence.json (plan_l2b1.json); v18 open_row (2626,array) cites it (plan_ring_p4_v18.json:24-26)",
+  "--prerun --scratch-required exit 3 SCRATCH-REQUIRED, CENSUS-UNPREDICTED rows 1..33 (prep_c145_p1_scrreq.log)",
+  "Recipe pair = s04v18 copies, names only, MEML 680 kept; no stage tool or s04 file edited (md5 fe3f630c/f5e4bdf8/9ff46b0e unchanged)"
+ ],
+ "open": [
+  "X11 on Build Array #2626 (p4_w_tp_row/p4_w_rp_row wired while (2626,array) is an open row): issue a pb-licence/1 for the P4 session plans, or re-cut/reorder? The gate will hold the s05 launch either way.",
+  "Ladder: dry/prerun logs are the expected provisional failures (precedent 144-P1); no review dispatched, no retry inside the card."
+ ],
+ "cost": {"usd": null, "minutes": 14, "labview_runs": 0},
+ "note": "Provisional plan, never launched; --rebase onto s04's saved graph re-binds it and replaces start 598.5 / EL base 60 with measured values. Not committed: git add needed approval this session (left for the runner's auto-commit)."}

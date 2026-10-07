@@ -17,6 +17,15 @@ The rule, as SETS of item keys so an item that closes is debited and none is cou
                        ANOTHER unwired sink remains (measured: the created body #29699 whose only unwired sink is its cond row gave
                        ONE item, the cond item - the old rule counted it as C AND A, s03 56 vs measured 55 in all four bench arms;
                        the created RSRs gave only the SR item). No per-uid exception.
+                       SUBVI CALLS (card 145-a2-2, PD351(c)): a created node of owner_class 'SubVI' (the class the simulator
+                       writes on its terminal rows, the same field every other class here is told apart by) is an A item ONLY
+                       if one of its unwired sinks is a connector-pane terminal MEASURED Required (rule 1) in
+                       tools/bench/subvi_requiredness.json (measured: every RingPickSlot_v0 / RingSeqCheck_v0 terminal is
+                       Recommended, and the s04 read 58 has no item for PS1/SQ1 where the old rule predicted 60). Which VI a
+                       node calls comes from the plan's create action ('subvi_path', bound through sym 'new:<as>'); a row maps to
+                       its pane index by position when the node's rows align with the table by name, else by a unique name.
+                       A SubVI whose VI is unknown or missing from the table, or a row not in the table, is reported in
+                       `uncertain_subvi_terminals` - never counted, never defaulted.
   items(start) are already in the base total; predicted = base_total + |items(end) - items(start)| - |items(start) - items(end)|.
   Base nodes with a newly unwired INPUT that are not C or SR are REPORTED (`uncertain`), never counted (an optional input gives
   no item).
@@ -39,6 +48,47 @@ import re
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
+REQ_PATH = os.path.join(ROOT, "tools", "bench", "subvi_requiredness.json")   # MEASURED pane rules (card 145-a2-2)
+
+
+def load_requiredness(path=None):
+    """The measured SubVI requiredness table ({'vis': {file name: {'terminals': [...]}}}); an unreadable file gives an EMPTY
+    table, so every created SubVI becomes uncertain (never a default rule)."""
+    try:
+        return json.load(open(path or REQ_PATH, encoding="utf-8"))
+    except (OSError, ValueError):
+        return {"vis": {}}
+
+
+def subvis_from_plan(plan, *states):
+    """{uid: VI file name} for every SubVI the plan creates ('create' action, class SubVI, 'subvi_path'), bound through the
+    sim states' sym map ('new:<as>' -> uid)."""
+    sym = {}
+    for s in states:
+        sym.update((s or {}).get("sym") or {})
+    out = {}
+    for a in (plan or {}).get("actions") or []:
+        if a.get("op") == "create" and a.get("class") == "SubVI" and a.get("subvi_path") and a.get("as"):
+            u = sym.get("new:" + a["as"])
+            if isinstance(u, int):
+                out[u] = os.path.basename(str(a["subvi_path"]).replace("\\", "/"))
+    return out
+
+
+def subvi_rules(rs, vi, table):
+    """([rule or None per row of rs], how) - the measured pane rule of each terminal row of one SubVI node."""
+    ent = ((table or {}).get("vis") or {}).get(vi) if vi else None
+    if not ent:
+        return [None] * len(rs), ("subvi not in table" if vi else "subvi identity unknown")
+    terms = ent.get("terminals") or []
+    names = [r.get("term_name") or "" for r in rs]
+    if len(rs) == len(terms) and names == [t.get("name") or "" for t in terms]:
+        return [t.get("rule") for t in terms], "pane index by position"
+    out = []
+    for n in names:
+        hit = [t for t in terms if n and (t.get("name") or "") == n]
+        out.append(hit[0].get("rule") if len(hit) == 1 else None)
+    return out, "pane terminal by unique name"
 
 
 def owners_map(*states):
@@ -54,8 +104,11 @@ def owners_map(*states):
     return out
 
 
-def items(state, bodies, created=()):
-    """(set of item keys, detail dict) for one state (sim step state or graph json: both carry `terminals` rows)."""
+def items(state, bodies, created=(), subvis=None, table=None):
+    """(set of item keys, detail dict) for one state (sim step state or graph json: both carry `terminals` rows).
+    subvis = {uid: VI file name} of created SubVI calls; table = the measured requiredness table (load_requiredness()).
+    Uncertain SubVI rows go to detail['uncertain_subvi'] = [[uid, vi, [[term_name, why], ...]], ...]."""
+    subvis = subvis or {}
     rows = collections.defaultdict(list)
     for r in state.get("terminals") or []:
         rows[int(r["owner_uid"])].append(r)
@@ -80,7 +133,24 @@ def items(state, bodies, created=()):
                 out.add(("sr", u))
                 det["sr"].append([u, [int(r["term_uid"]) for r in inner]])
                 claimed.update(int(r["term_uid"]) for r in inner)
-        if u in created:
+        if u in created and cls == "SubVI":            # card 145-a2-2: only a MEASURED Required pane terminal is an item
+            vi = subvis.get(u)
+            rules, how = subvi_rules(rs, vi, table)
+            req, unc = [], []
+            for r, rule in zip(rs, rules):
+                if r.get("is_source") or r.get("wire_uid") or r.get("term_class") == "ControlTerminal" \
+                        or int(r["term_uid"]) in claimed:
+                    continue
+                if rule is None:
+                    unc.append([r.get("term_name"), how])
+                elif rule == 1:
+                    req.append(r.get("term_name"))
+            if unc:
+                det["uncertain_subvi"].append([u, vi, unc])
+            if req:
+                out.add(("input", u))
+                det["input"].append([u, req])
+        elif u in created:
             unw = [r.get("term_name") for r in rs if not r.get("is_source") and not r.get("wire_uid")
                    and r.get("term_class") != "ControlTerminal" and int(r["term_uid"]) not in claimed]
             if unw:
@@ -97,12 +167,16 @@ def unwired_inputs(state):
     return out
 
 
-def predict(st0, last, base_total, created, carry=(), extra_owner_states=()):
+def predict(st0, last, base_total, created, carry=(), extra_owner_states=(), subvis=None, table=None):
     """The fixed EL prediction of one session: st0 = its base state (step_00), last = its simulated end, created = uids of the
-    nodes this session makes (sim symbols), carry = uids an earlier session's prediction counted as A items (still open)."""
+    nodes this session makes (sim symbols), carry = uids an earlier session's prediction counted as A items (still open),
+    subvis = {uid: VI file name} of created SubVI calls (subvis_from_plan), table = requiredness table (default: the file)."""
     bodies = owners_map(st0, last, *extra_owner_states)
-    i0, d0 = items(st0, bodies, carry)
-    i1, d1 = items(last, bodies, set(created) | set(carry))
+    table = load_requiredness() if table is None else table
+    i0, d0 = items(st0, bodies, carry, subvis, table)
+    i1, d1 = items(last, bodies, set(created) | set(carry), subvis, table)
+    d0.pop("uncertain_subvi", None)
+    unc_subvi = d1.pop("uncertain_subvi", [])
     new, closed = sorted(i1 - i0), sorted(i0 - i1)
     u0, u1 = unwired_inputs(st0), unwired_inputs(last)
     cond_bodies = set(k[1] for k in i1 if k[0] in ("cond", "sr"))     # owners whose newly unwired sink is a C or SR item
@@ -110,14 +184,16 @@ def predict(st0, last, base_total, created, carry=(), extra_owner_states=()):
     return {"base_total": base_total, "new_items": [list(k) for k in new], "closed_items": [list(k) for k in closed],
             "predicted_total": base_total + len(new) - len(closed), "open_at_start": [list(k) for k in sorted(i0)],
             "open_at_end": [list(k) for k in sorted(i1)], "detail_start": d0, "detail_end": d1,
-            "uncertain_base_newly_unwired_inputs": uncertain, "while_bodies": len(bodies),
-            "rule": "PD333(b) fixed predictor (tools/elrule.py; SR class + narrowed A by PD349): L unwired Local + C While cond "
-                    "+ SR RightShiftRegister with an unwired inner sink + A created node with an unwired input other than its C/SR "
-                    "row; items(end) - items(start) added, items(start) - items(end) debited"}
+            "uncertain_base_newly_unwired_inputs": uncertain, "uncertain_subvi_terminals": unc_subvi, "while_bodies": len(bodies),
+            "rule": "PD333(b) fixed predictor (tools/elrule.py; SR class + narrowed A by PD349; SubVI A by measured pane rule, "
+                    "PD351(c)): L unwired Local + C While cond + SR RightShiftRegister with an unwired inner sink + A created node "
+                    "with an unwired input other than its C/SR row (a created SubVI: only a MEASURED Required pane terminal, "
+                    "tools/bench/subvi_requiredness.json; unknown = uncertain, not counted); items(end) - items(start) added, "
+                    "items(start) - items(end) debited"}
 
 
 # ------------------------------------------------------------------------------------------------ by design (PD337(c))
-L_RE = re.compile(r"local\s*variable.*not\s*connected", re.I | re.S)
+L_RE = re.compile(r"local\s*variable.*not\s*connected|local\s*or\s*global\s*variable\s*is\s*not\s*wired", re.I | re.S)  # 2nd: empty-raw row, card 145-a2-5
 C_RE = re.compile(r"while\s*loop.*conditional\s*terminal.*not\s*wired", re.I | re.S)
 SR_RE = re.compile(r"shift\s*register.*unwired\s*from\s*inside", re.I | re.S)
 
@@ -146,7 +222,7 @@ def session_prediction(plan, base_total):
     st0, last = _j(sf[0]["path"])["state"], _j(sf[-1]["path"])["state"]
     made = (set(int(u) for u in (last.get("sym") or {}).values() if isinstance(u, int))
             - set(int(u) for u in (st0.get("sym") or {}).values() if isinstance(u, int)))
-    return predict(st0, last, base_total, made)
+    return predict(st0, last, base_total, made, subvis=subvis_from_plan(plan, st0, last))
 
 
 def by_design_verdict(extra, missing, measured_total, base_total, plan=None, prediction=None):

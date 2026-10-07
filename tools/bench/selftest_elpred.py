@@ -22,6 +22,15 @@ PREDICTION CONTRACT:
   R3   independent stage: L2 b1 -> b2a recordings hold 2 -> 0 'Shift Register: unwired from inside' items and the re-derived
        plan_l2b2a.json closes exactly 2 'sr' items (the old rule: 0). Over all 45 finalized plans only three re-derived deltas
        change: s03v18 (+3 -> +2), l2b2a (0 -> -2, this gate) and plan_ring_p4s1 (+11 -> +10, never launched, X10-refused, PD319).
+  PD351(c) (card 145-a2-2; created SubVI calls by the MEASURED pane rule, tools/bench/subvi_requiredness.json):
+  U7   NEGATIVE: a created SubVI whose Required (rule 1) terminal is unwired adds ONE 'input' item naming only that terminal
+       (its unwired Recommended terminal adds nothing); the same node with the Required terminal wired adds 0.
+  U8   a created SubVI absent from the table, or with no VI identity, adds 0 and lists its unwired sinks as uncertain.
+  S04  re-derive P4 session 4 (plan_ring_p4_s04v18.json f349c39a, base = s03 measured 55, extra owners = its base doc) == 58,
+       new == [input -53, input -34, input -26, local -51, local -32], closed == [cond 29699, local 29720]; PS1 (-1) and SQ1
+       (-38) are NOT items (all their unwired sinks measured rule 0/2); uncertain_subvi_terminals == [].
+  R4   the RECORDED s04 read (errorlist_D1_ring_p4s04_20261007_215031_20261007_220024.json, md5 5e53096a) counts 58 == re-derived,
+       and its per-class change from s03 equals the re-derived s04 new - closed (local, cond, sr).
     py tools/bgrun.py --material --max-min 3 --log tools/bench/selftest_elpred.log -- py -u tools/bench/selftest_elpred.py"""
 import collections, json, os, sys                                                           # noqa: E401
 ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
@@ -142,7 +151,54 @@ lb2 = rec("tools/bench/errorlist_D1_l2_b2a_20260928_001426_20260928_001821.json"
 gate("R3 L2 b1 -> b2a recorded sr items 2 -> 0 == re-derived plan_l2b2a closes 2 sr (sr delta -2)",
      lb1[1]["sr"] == 2 and lb2[1]["sr"] == 0 and delta(rl2)["sr"] == -2 and len(rl2["closed_items"]) == 2,
      [lb1, lb2, rl2["new_items"], rl2["closed_items"]])
-json.dump({"s02": r2, "s01": r1, "s03": r3, "recordings": R, "l2b2a": rl2},
+# ---- PD351(c), card 145-a2-2: created SubVI calls by the MEASURED pane rule
+SYN = {"vis": {"Syn.vi": {"terminals": [{"name": "req", "rule": 1}, {"name": "rec", "rule": 2}, {"name": "out", "rule": 2}]}}}
+SUB = lambda w: [T(40, -11, "SubVI", "req", False, w), T(41, -11, "SubVI", "rec", False, 0), T(42, -11, "SubVI", "out", True, 0)]  # noqa: E731
+r7 = ELR.predict(base, {"terminals": base["terminals"] + SUB(0), **OWN}, 10, created=[-11], subvis={-11: "Syn.vi"}, table=SYN)
+r7b = ELR.predict(base, {"terminals": base["terminals"] + SUB(9), **OWN}, 10, created=[-11], subvis={-11: "Syn.vi"}, table=SYN)
+gate("U7 NEGATIVE: created SubVI with an unwired Required terminal adds 1 (10 -> 11, item names only 'req'); wired -> 10",
+     r7["predicted_total"] == 11 and r7["new_items"] == [["input", -11]] and r7["detail_end"].get("input") == [[-11, ["req"]]]
+     and r7b["predicted_total"] == 10 and r7b["new_items"] == [],
+     [r7["predicted_total"], r7["new_items"], r7["detail_end"].get("input"), r7b["predicted_total"]])
+r8 = ELR.predict(base, {"terminals": base["terminals"] + SUB(0), **OWN}, 10, created=[-11], subvis={-11: "Other.vi"}, table=SYN)
+r8b = ELR.predict(base, {"terminals": base["terminals"] + SUB(0), **OWN}, 10, created=[-11], table=SYN)
+gate("U8 SubVI not in table / identity unknown: adds 0, its 2 unwired sinks reported uncertain",
+     r8["predicted_total"] == 10 and r8b["predicted_total"] == 10
+     and [len(x[2]) for x in r8["uncertain_subvi_terminals"]] == [2] and [len(x[2]) for x in r8b["uncertain_subvi_terminals"]] == [2],
+     [r8["uncertain_subvi_terminals"], r8b["uncertain_subvi_terminals"]])
+p04 = J("tools/bench/plan_ring_p4_s04v18.json")
+b04 = J(((p04.get("finalized") or {}).get("base") or p04.get("base") or {})["path"])
+sf4 = p04["finalized"]["step_files"]
+st04, last04 = J(sf4[0]["path"])["state"], J(sf4[-1]["path"])["state"]
+made4 = set(int(u) for u in (last04.get("sym") or {}).values() if isinstance(u, int)) - \
+    set(int(u) for u in (st04.get("sym") or {}).values() if isinstance(u, int))
+sv4 = ELR.subvis_from_plan(p04, st04, last04)
+r4 = ELR.predict(st04, last04, 55, made4, extra_owner_states=(b04,), subvis=sv4)
+print("SELFTEST s04 re-derived = {0} (base 55, new {1}, closed {2}; steps {3} -> {4}; created {5}; subvis {6}; uncertain {7} / {8}; "
+      "while_bodies {9}; detail_end {10})".format(r4["predicted_total"], r4["new_items"], r4["closed_items"], sf4[0]["path"],
+                                                  sf4[-1]["path"], sorted(made4), sv4, r4["uncertain_base_newly_unwired_inputs"],
+                                                  r4["uncertain_subvi_terminals"], r4["while_bodies"], r4["detail_end"]), flush=True)
+gate("S04 re-derived s04 == 58 (old rule 60)", r4["predicted_total"] == 58, r4["predicted_total"])
+gate("S04b new == [input -53, input -34, input -26, local -51, local -32]; closed == [cond 29699, local 29720]; PS1 -1 / SQ1 -38 no item",
+     r4["new_items"] == [["input", -53], ["input", -34], ["input", -26], ["local", -51], ["local", -32]]
+     and r4["closed_items"] == [["cond", 29699], ["local", 29720]] and sv4 == {-1: "RingPickSlot_v0.vi", -38: "RingSeqCheck_v0.vi"},
+     [r4["new_items"], r4["closed_items"], sv4])
+gate("S04c uncertain == [] (base inputs and SubVI terminals)",
+     r4["uncertain_base_newly_unwired_inputs"] == [] and r4["uncertain_subvi_terminals"] == [],
+     [r4["uncertain_base_newly_unwired_inputs"], r4["uncertain_subvi_terminals"]])
+REC4 = "tools/bench/errorlist_D1_ring_p4s04_20261007_215031_20261007_220024.json"
+import hashlib                                                                              # noqa: E402
+md4 = hashlib.md5(open(os.path.join(ROOT, REC4), "rb").read()).hexdigest()
+R4 = rec(REC4)
+rd34 = dict((k, R4[1][k] - R["s03"][1][k]) for k in CLS)
+print("SELFTEST s04 recording {0} md5 {1}; per-class s03->s04 {2}; re-derived {3}".format(R4, md4, rd34, delta(r4)), flush=True)
+gate("R4 recorded s04 (5e53096a) counts 58 == re-derived; per-class change s03->s04 == re-derived new - closed",
+     md4.startswith("5e53096a") and R4[0] == 58 == r4["predicted_total"] and rd34 == delta(r4), [md4[:8], R4, rd34, delta(r4)])
+BAD = lambda p: sum(1 for x in (J(p).get("items") or []) if "unwired or bad terminal" in "{0} {1}".format(x.get("raw", ""), x.get("detail", "")).lower())  # noqa: E731
+print("INFO 'unwired or bad terminal' items s03 {0} -> s04 {1} (re-derived input delta {2})".format(
+    BAD(REC["s03"]), BAD(REC4), sum(1 for k in r4["new_items"] if k[0] == "input") - sum(1 for k in r4["closed_items"] if k[0] == "input")),
+    flush=True)
+json.dump({"s02": r2, "s01": r1, "s03": r3, "s04": r4, "recordings": R, "l2b2a": rl2},
           open(os.path.join(ROOT, "tools", "bench", "selftest_elpred.json"), "w", encoding="utf-8"), indent=1)
 print(protocol.result_line(protocol.make_result(G["pass"], G["fail"], G["first"], [])), flush=True)
 sys.exit(1 if G["fail"] else 0)

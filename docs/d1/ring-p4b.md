@@ -227,3 +227,46 @@ How to add: see the 5-line note at the top of `docs/d1/INDEX.md`.
        the scratch is the measurement — a refusal there is a return, and the fix is PD335(b)'s measured-name rule.
      - **(c) EL predictor rule in force: `tools/bench/prep_c143_3_elrule.py`** (unwired outputs of created nodes, plan-cut
        loop conds certain; closed items debited) — every later P4 session's pred uses it.
+350. **(cycle 145 judgement, 2026-10-07 — after cycle 144 PURPOSE_MET (`tools/bench/cards/assign_result_144_2.json`))**
+     USER-RULES: U1 (relied on: s04 = v18 ops 79..97 as rebased, no action changed by this item); none contradicted.
+     - **(a) ACCEPTED: P4 session 3 ADOPTED** — `claudeDev\D1_ring_p4s03_20261007_202957.vi` 282301ca, EL 55 == pred
+       (expected `errorlist_expected_D1_ring_p4s03_20261007_202957.json` 2b8f9f25), fresh load 598.5 MB, graph
+       `graph_ring_p4s03_20261007_205535.json` 5638469b (`tools/bench/diag_c144_2_facts.md`). In-between file, not counted.
+     - **(b) s04's X10 margin −0.1 MB (680.1 vs 680 at 598.5, `prep_c144_a2_2_facts.md:23`) is ACCEPTED without a re-cut.**
+       X10 has not under-predicted a measured P4 peak (s02 678.5 vs 620.3, s03 676.4 vs 673.7); the run is a SCRATCH on a
+       byte copy, so the recipe's runtime stop at 680 MB (`MEM_STOP_MB`, unchanged) is the guard: a stop there is a RETURN,
+       and the pre-decided fix is the re-cut to ops 79..96 (op 97 → s05, EL re-derived by PD349). No memory-model change.
+     - **(c) `diag_c144_2_el.log` rc=1 is a comparison against the SUPERSEDED s02 expected file**; the same Error List
+       compared with the s03 expected file is extra 0 / missing 0 (`diag_c144_2_elexp.log`). If a gate holds s04 on it,
+       follow that gate's own route (Jev ladder NEXT-ACTION, else one hypothesis review citing elexp.log) — never a bypass.
+     - **(d) W1 While #16483 carries the uid of the wire s03 cut (w16483)**: s05+ plans key it by (uid, class); the s04
+       rebase already bound it by the creation map (row-less, no REUSE-NOTED).
+     - **(e) Cycle 145 = ONE s04 scratch → adopt on full PASS (PD329(a)) + beside it the s05 prep** (v18 ops 98.., provisional
+       on stagesim's end of s04, made like `tools/bench/prep_c144_p1_mk.py`, recipes copied from the s04v18 pair).
+351. **(cycle 145 judgement, hand-back 1, 2026-10-07 — after 145-a1-1 FAIL (SQ1 row provisional), 145-a1-2 FAIL 3/1
+     (`tools/bench/diag_c145_2_facts.md`, `tools/bench/diag_c145_2_elfacts.log`))**
+     USER-RULES: U1 (relied on: s04 = v18 ops 79..97, only SQ1's terminal LIST corrected to its measured pane; no action
+     added, removed or rewired); none contradicted.
+     - **(a) ACCEPTED: the SQ1 row fix** (plan 9ff46b0e → f349c39a, 12 measured rows in t-order from the 145-a1-1 read; re-sim
+       FINAL, end cdiff / open rows / fs_routes unchanged; sim ids after SQ1 shift −4). Review `c145-1-sq1-bind`: the missing
+       prerun check (a `subvi_path` create's terminals vs its measured pane) is tool debt, built only if a third subVI drop
+       is planned with an unread pane.
+     - **(b) Error List 58 vs pred 60 is EXPLAINED, not a third unexplained value — s04 scratch 95e408ff is ADOPTED.** Per
+       class against the s03 expected file (55): While cond −1 and local 29720 −1 closed as predicted; locals +2 (−51, −32)
+       as predicted; Index Array +3 = the three created Index Arrays (−53, −34, −26) as predicted; the only predicted items
+       NOT read are the two SubVI drops PS1 (−1) and SQ1 (−38) — no "required input" item appears for either. E1 real == sim
+       at all 19 ops and 24/0 gates are the structural verdict; the Error List is a cross-check and it differs only there.
+       Working cause: LabVIEW lists an unwired SubVI input only when the pane terminal is **Required** (the s03 item
+       `TrackNbeads… required input imageIn is not wired` is such a case); our two subVIs' inputs are presumably
+       Recommended. This cause is MEASURED in the adoption card (pane requiredness of `RingPickSlot_v0.vi` /
+       `RingSeqCheck_v0.vi`); if any of their unwired inputs reads Required, the explanation fails → return.
+     - **(c) EL rule fix (`tools/elrule.py`, PD349):** a SubVI create contributes one item per unwired input whose pane
+       terminal is MEASURED Required (read from the subVI, never assumed); self-test re-derives s01/s02/s03/s04 =
+       51/53/55/58. Stage-tool edit ⇒ its own card, never beside a LabVIEW card (PD281(a)).
+     - **(d) s05 prep is re-made**, not patched: its provisional base was stagesim's end of 9ff46b0e (ids now −4); after s04
+       is adopted, s05 = v18 ops 98..124 is cut on the REAL s04 graph (rebase), X10 at the MEASURED s04 load, EL by (c),
+       dry + prerun + `--scratch-required`. **No s05 launch in cycle 145**: X11 (Build Array #2626 inputs wired by
+       `p4_w_tp_row`/`p4_w_rp_row` while (2626, array) is an open row whose licence names only `plan_l2b1.json`) is a
+       judgement item; the card reports where v18 closes (2626, array) and which session wires it.
+     - **(e) Housekeeping:** the stopped work copy `claudeDev\D1_ring_p4s04_20261007_212230.vi` (abb76d41) is superseded —
+       delete it with its resume record after the adoption; 95e408ff is the adopted file's source.

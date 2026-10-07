@@ -1,0 +1,47 @@
+{
+ "schema": "task/1", "id": "145-a1-1", "kind": "build",
+ "goal": "P4 session 4 (PD350(e)): ONE scratch of plan_ring_p4_s04v18.json on a byte copy of the s03 file, adopt on full PASS, full Error List, fresh-instance load + graph read",
+ "why": "Plan 9ff46b0e (rebased on real s03 graph), pred 90eff870 (EL 60, X10 680.1 at 598.5 accepted by PD350(b)), recipes fe3f630c/f5e4bdf8 dry + prerun 16/0 (144-a2-2); scratch required, its census becomes the prediction. Cycle 145 pass 1-3, 6.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_145-a1-1.md", "md5": "cb1481dda65a025e1e0ad1ce8d624445"},
+  {"path": "tools/bench/plan_ring_p4_s04v18.json", "md5": "9ff46b0ece1f238c831d7786616c4f05"},
+  {"path": "tools/bench/plan_ring_p4_s04v18_pred.json", "md5": "90eff870c8afc31a42bb6f3558ad4923"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s04v18.py", "md5": "fe3f630c428e00143d54e5be0e18631d"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s04v18_scratch.py", "md5": "f5e4bdf823cf206e7701a8673235046d"},
+  {"path": "tools/bench/graph_ring_p4s03_20261007_205535.json", "md5": "5638469b4ea6c259de9802f81e91abd5"},
+  {"path": "tools/bench/diag_c144_2_elexp.log", "md5": "3dd174b0d47241e9bad6521968da9f49"}
+ ],
+ "pass": [
+  "inputs md5-checked before launch (plan, pred, both recipes, s03 file 282301ca, bed 39511877); any changed byte => dry + prerun PASS on the current bytes first",
+  "scratch: every op real == sim, prim + D/TD gates PASS (W1 #16483 by (uid, class)), both subVI drops resolve, peak <= 680 (a MEM_STOP 680 stop = RETURN), MEMSTOP 695 not hit",
+  "Error List == 60 against the pred's EL block (a third value or a binding refusal = RETURN with facts)",
+  "measured census written into the s04v18 pred by a script citing the log line",
+  "adopted D1_ring_p4s04_<stamp>.vi + md5 (adopt_scratch by import), full EL + expected file, fresh-instance load MB, graph_ring_p4s04_<stamp>.json + md5",
+  "s03 md5 282301ca and bed md5 39511877 unchanged; handles flat; LabVIEW closed and verified gone",
+  "a gate holding s04 on diag_c144_2_el.log rc=1 routed by its own route (Jev NEXT-ACTION or one hypothesis review citing diag_c144_2_elexp.log), never bypassed; else n/a"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p4s04_<stamp>.vi",
+  "tools/bench/graph_ring_p4s04_<stamp>.json",
+  "tools/bench/errorlist_expected_D1_ring_p4s04_<stamp>.json",
+  "tools/bench/diag_c145_1_facts.md"
+ ],
+ "flags": {"labview": "build", "gui": true, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/diag_c145_1*", "tools/bench/launch_*c145*", "tools/bench/scratch_*c145*", "tools/bench/plan_ring_p4_s04v18_pred.json", "tools/bench/graph_ring_p4s04_*", "tools/bench/errorlist_*p4s04*", "tools/bench/adopted_scratch.jsonl", "tools/bench/prior_art*", "archive/peer/**", "tools/bench/gate_fp_queue.jsonl"],
+  "status_edit": false, "git_commit": true, "peers": ["priorart", "hypothesis"]},
+ "budget": {"failures": 2, "minutes": 120},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "D1_ring_p4s03_20261007_202957.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "tools/prior_art_review.py"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p4_s04v18_scratch.py"}
+ ],
+ "rules": [
+  "Bed and s03 file never opened for editing; the scratch edits a byte copy only",
+  "ONE scratch run; return at the first result that differs from the prediction (LabVIEW closed, files saved)",
+  "No stage-tool edits; a bench-tool fault is a RETURN plus a gate-fp entry",
+  "Never launch plan_ring_p4_s03v18.json, plan_ring_p4_s02v18.json, plan_ring_p4_s02.json or plan_ring_p4_rasrest.json",
+  "result/1 carries the JEV-LADDER row for any failing log"
+ ]
+}

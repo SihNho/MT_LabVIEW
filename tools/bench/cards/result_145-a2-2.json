@@ -1,0 +1,25 @@
+{"schema":"result/1","id":"145-a2-2","status":"FAIL","gates":{"pass":20,"fail":1},
+ "first_fail":"selftest_elpred R4 (gate added by this card): recorded s04 per-class change s03->s04 {local 0,cond -1,sr 0} != re-derived {local +1,cond -1,sr 0}; total 58 == 58",
+ "blocked_by":null,
+ "artefacts":[
+  {"path":"tools/elrule.py","md5":"50f29adcbc510735f5d0cbedd0409dbb"},
+  {"path":"tools/bench/selftest_elpred.py","md5":"e0baa236d8aff58a0c9c424a65bc9f45"},
+  {"path":"tools/bench/subvi_requiredness.json","md5":"13b0d75f6ac66511e43b3b22c898368d"},
+  {"path":"tools/bench/diag_c145_a2_2_facts.md","md5":"fddec878b410eb3785761bed7619673d"},
+  {"path":"tools/bench/selftest_elpred.log","md5":"d6587526ecb1e35918e35b7fc5c477d7"}],
+ "facts":[
+  "Card pass items 1-3 all met: table built from facts :10-33 (build_table.log 5/0, no rule 1); S04 re-derives 58 == read 5e53096a; U7 negative +1 PASS; S01-S03/R1 51/53/55 PASS",
+  "Rule: created node with owner_class SubVI is an A item only if an unwired sink has measured pane rule 1; VI from plan create subvi_path via sym new:<as> (tools/elrule.py subvis_from_plan)",
+  "Unknown VI / not in table / row not in table -> uncertain_subvi_terminals, never counted (U8 PASS); s04 uncertain [] / [] (S04c PASS)",
+  "pred PS1 item plan_ring_p4_s04v18_pred.json:120-122 ['input',-1] (7 '' free slots, rule 0) and SQ1 :108-110 ['input',-38] (rule 0/2): new rule gives no item for either",
+  "R4 FAIL cause (diag_c145_a2_2_insp.log): s04 read has a Local item with EMPTY raw, detail 'This local or global variable is not wired'; elrule.item_class L_RE (elrule.py:196) classes it None",
+  "With that item counted as local, recorded s03->s04 per class = {local +1, cond -1, sr 0} = re-derived; +3 'Index Array unwired' == re-derived input +3",
+  "selftest_s5 (by-design verdict) regression 22/0 (tools/bench/diag_c145_a2_2_selftest_s5.log)",
+  "Byte-identical 228 files (plan f349c39a, pred a2bbc8bf, stage tools, recipes, s04/s05 stage files): diag_c145_a2_2_md5_after.log M1 PASS",
+  "guard_write stale-pin fires on the card's own edit of its own pinned input: logged fp-48 (elrule.py), fp-49 (selftest_elpred.py)",
+  "git commit refused by the permission layer (git add/commit need approval); files are left uncommitted for the runner auto-commit"],
+ "open":[
+  "R4: re-gate per-class with the empty-raw Local item counted as local, or fix elrule.item_class to also match the detail 'local or global variable is not wired' (by_design_verdict would 'stop' on that item today)?",
+  "Accept this card as PASS on its 3 pass items given R4 is an extra gate failing on the recording's classifier, not the rule?"],
+ "cost":{"usd":null,"minutes":7,"labview_runs":0},
+ "note":"Jev ladder: no JEV-LADDER line for selftest_elpred.log yet (jev_gate.log). No diagnosis/retry after R4 beyond the item-text diff."}
