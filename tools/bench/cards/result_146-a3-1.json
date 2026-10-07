@@ -1,0 +1,19 @@
+{"schema":"result/1","id":"146-a3-1","status":"FAIL","gates":{"pass":2,"fail":1},"first_fail":"no carry from plan+states reaches s05 55 class-exact: best 56 (V1/V3), SubVI 0 vs read -1","blocked_by":null,
+"artefacts":[{"path":"tools/bench/diag_c146_a2_1_facts.md","md5":"bcd051df04b4927687474ef479c3c9de"},{"path":"tools/bench/diag_c146_a2_1_variants.py","md5":"c602cf5ba4a73693df7bdedd1d9be1e4"},{"path":"tools/bench/diag_c146_a2_1_variants.log","md5":"beab96dafe7dde097c11d3b29545e0fa"},{"path":"tools/bench/diag_c146_a2_1_repro.log","md5":"6c93d9caeabf5d700a49942482fe33e2"}],
+"facts":[
+"Reproduced 57: new [input -32, local -30], closed [local 30001, sr 29403, sr 29648]; pred class change IA +1, SubVI 0, local 0, sr -2 (diag_c146_a2_1_repro.log)",
+"READ s04->s05 change: IndexArray 0, BuildArray 0, SubVI -1 ('TrackNbeads...v3 required input Image In'), local 0, sr -2 = -3 (diag_c146_a2_1_variants.log)",
+"Cause: A rule counts only `created` (elrule.py:153-158); session_prediction passes made, no carry (elrule.py:223-225); base nodes closed in s05 are in neither set",
+"Only 3 base nodes get a sink wired in s05 (none in s01..s04): #29843 IA (closes), #5058 SubVI Image In (closes), #29724 SQ1 (rule-2 rows, no item) (diag_c146_a2_1_probe.log)",
+"#29843 was MADE by s04 (s05 start minus s04 start = 13 nodes); the rebased s05 plan keeps no link to s04 (diag_c146_a2_1_probe4.log)",
+"#5058's VI identity and 'Image In' rule 1 exist only in the base EL text; subvi_requiredness.json 13b0d75f has 2 VIs; carried unknown SubVI = uncertain (elrule.py:136-149)",
+"V1 (carry s04-made) and V3 (carry all non-created) give 56, IA class fixed, SubVI 0 vs -1; s01..s04 new/closed identical under both (diag_c146_a2_1_variants.log)",
+"VX = V1+V2 plus a hypothetical table row Image In rule 1 for #5058 gives 55 class-exact: the missing input is that measured requiredness + identity",
+"Self-tests unchanged (no edit): selftest_elpred 21/0, selftest_s5 22/0, selftest_c_e3 64/0 (selftest_c146_before_*.log)",
+"elrule.py a5ee7d5c, selftest_elpred e0baa236, memory_model 559be4cf, read 06a59001, plan s05 1fc9b486, s06 8f33ad75 unchanged; no LabVIEW"],
+"open":[
+"Where should base-SubVI requiredness come from: add Track N beads four-fold over-kernel-v3.vi to subvi_requiredness.json by a measuring card, or bind the base EL 'required input X' text to the start node?",
+"Should session_prediction receive the previous session's start state (V1) or carry every non-created owner (V3, plan-only, but debits a base node whose optional input gets wired)?",
+"Accept 56 for IA via V1/V3 now, with the SubVI class left to a requiredness card?"],
+"cost":{"usd":null,"minutes":12,"labview_runs":0},
+"note":"Returned at the first miss: per card rule, no total-only/partial edit adopted; elrule.py and selftest_elpred.py untouched. Jev ladder N/A (no failing build log; diagnostics all rc=0). Not committed: git add/commit needed approval in this non-interactive session; files left for the runner commit."}

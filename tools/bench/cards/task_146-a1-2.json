@@ -1,0 +1,42 @@
+{
+ "schema": "task/1", "id": "146-a1-2", "kind": "build",
+ "goal": "Re-cut s05 under ONE X10 start (95e408ff load 605.4 recorded); #2626 licence if ops 118/119 stay; dry + prerun of both s05 recipes; hygiene json copied",
+ "why": "Cycle 146 pass items 1-3 and 7 (PD352(b)(d), ring-p4b.md:280-299). Offline, ALONE: edits memory_model.json (one load_by_vi key) and the s05 plan files. No LabVIEW.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_146-a1-2.md", "md5": "778912ba9493e3510e26e7b771e2da1f"},
+  {"path": "tools/bench/memory_model.json", "md5": "db163e039b89281a1ad178db95da4c72"},
+  {"path": "tools/bench/plan_ring_p4_v18.json", "md5": "2ea6cafa7d368dc7a054346d398daa3e"},
+  {"path": "tools/bench/graph_ring_p4s04_20261007_223245.json", "md5": "094ba298ba7b2c1d69f92c84d8ecb626"},
+  {"path": "tools/bench/prep_c145_a2_6_mk.py", "md5": "f7497bb26f87fe753230ac48ecc649b9"},
+  {"path": "tools/bench/diag_c145_a2_6_facts.md", "md5": "736896c1109de6f887c50f0a3dd697fc"},
+  {"path": "tools/bench/diag_c145_a2_x_facts.md", "md5": "593cc6f00996c87833327f90fe3ae6a8"},
+  {"path": "archive/peer/2026-10-07-c145-s05-x10.md", "md5": "c619cf3ab4df218186d27d980ce31982"},
+  {"path": "tools/stage_prerun.py", "md5": "61d6f5902e9d2a05156b0d202d90fdea"},
+  {"path": "tools/elrule.py", "md5": "a5ee7d5c8792ccf5c174e70be022544d"},
+  {"path": "tools/bench/build_opwiringrules_v0_hygiene.json", "md5": "57e3bf4da3f590d2b06dc2a179c37acc"}
+ ],
+ "pass": [
+  "memory_model.json diff = exactly one added load_by_vi key 95e408ff = 605.4; 680/695 and every other parameter unchanged",
+  "prediction script and prerun X10 use the SAME start (gate x10_start at 605.4); any other start computation reported file:line",
+  "s05 re-cut = longest v18 prefix from op 98, no 'of' group split, X10 <= 680; cut op, peak, margins, first op over 680 reported; old files kept as *_prov2",
+  "pred EL by elrule base 58 reported; dry PASS and prerun 0 FAIL on both stage_d1_ring_p4_s05v18 recipes (plain and _scratch)",
+  "ops 118/119 in s05 => plan_ring_p4_s05v18_licence.json (pb-licence/1) and X11 licensed; else X11 PASS unlicensed and the session for 118/119/132/150 named",
+  "hygiene json copied into tools/bench/op_hygiene/ md5 equal; s04 files, v18, s03, bed, stage tools unchanged; no LabVIEW process"
+ ],
+ "outputs": ["tools/bench/diag_c146_a1_2_facts.md"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/plan_ring_p4_s05v18*", "tools/bench/sim/ring_p4_s05v18/**", "tools/bench/prep_c146*", "tools/bench/diag_c146_a1_2*", "tools/bench/memory_model.json", "tools/bench/op_hygiene/**", "tools/bench/gate_fp_queue.jsonl", "tools/bench/prerun_records.jsonl", "tools/recipes/stage_d1_ring_p4_s05v18*"],
+  "status_edit": false, "git_commit": true, "peers": []},
+ "budget": {"failures": 2, "minutes": 60},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/prep_c145_a2_6_mk.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/elrule.py"}
+ ],
+ "rules": [
+  "Offline only; runs ALONE (edits memory_model.json); nothing launched",
+  "One load_by_vi key only; never edit a stage tool, v18 or any s04 file; a refusal is quoted, not patched around",
+  "RETURN with the file:line if a stage tool must change"
+ ]
+}

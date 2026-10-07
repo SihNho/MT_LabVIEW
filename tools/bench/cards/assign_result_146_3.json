@@ -1,0 +1,12 @@
+{"schema": "assign-result/1", "cycle": 146, "round": 3, "status": "HANDBACK", "cards": ["146-a3-1"],
+ "pass_evidence": [
+  {"item": 0, "met": false, "evidence": ["tools/bench/cards/result_146-a3-1.json", "tools/bench/diag_c146_a2_1_facts.md"]},
+  {"item": 1, "met": false, "evidence": ["tools/bench/cards/result_146-a3-1.json"]},
+  {"item": 2, "met": false, "evidence": ["tools/bench/cards/result_146-a3-1.json"]},
+  {"item": 3, "met": false, "evidence": ["tools/bench/cards/result_146-a3-1.json"]},
+  {"item": 4, "met": false, "evidence": ["tools/bench/cards/result_146-a3-1.json"]},
+  {"item": 5, "met": true, "evidence": ["tools/bench/cards/result_146-a3-1.json"]},
+  {"item": 6, "met": true, "evidence": ["tools/bench/cards/result_146-a3-1.json"]},
+  {"item": 7, "met": false, "evidence": ["tools/bench/cards/handback_146_2.json"]}],
+ "handback": {"reason": "146-a3-1 (elrule carry fix) FAIL: no carry derivable from plan+states gives s05 = 55 class-exact (best 56, SubVI 0 vs read -1); the requiredness of base SubVI input Image In (#5058) is not in subvi_requiredness.json. Needs a design decision, not a retry.", "question": null},
+ "note": "Facts: tools/bench/diag_c146_a2_1_facts.md. Cause: elrule.py:153-158 counts only created nodes; session_prediction (:223-225) passes no carry. Variants V1 (carry s04-made nodes) and V3 (carry all non-created) fix the IndexArray class (total 56) but leave SubVI at 0 vs the read's -1: #5058 identity and Image In rule 1 exist only in the base Error List text, and subvi_requiredness.json (13b0d75f) holds 2 VIs. Open for judgement: (1) where base-SubVI requiredness comes from - a measuring card adding Track N beads four-fold over-kernel-v3.vi to subvi_requiredness.json, or binding the base EL 'required input X' text to the start node; (2) V1 (previous session start state) vs V3 (plan-only; debits a base node whose optional input gets wired); (3) accept 56 now, SubVI class left to a requiredness card. elrule.py a5ee7d5c and selftest_elpred e0baa236 untouched; no LabVIEW ran; items 1-4 not attempted (they depend on item 0). The guard_assign false refusal of 146-a2-1 was not logged via gate_fp.py this round (item 7 open)."}

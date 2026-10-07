@@ -235,6 +235,20 @@ try:
     case("WR6 an open card pinning another md5 -> stale-pin problem (143-P1)", any("open card P9" in x for x in GW.decide(tgt)))
     open(os.path.join(CARDS, "result_P9.json"), "w").write("{}")
     case("WR7 a closed card's pin is not reported", not any("open card P9" in x for x in GW.decide(tgt)))
+    # gate-fp fp-43/45/47/48/49/50 (card 146-a1-1): the pinning card's OWN flags.write target is not a stale copy
+    with open(os.path.join(CARDS, "task_P10.json"), "w", encoding="utf-8") as f:
+        json.dump({"schema": "task/1", "id": "P10", "inputs": [{"path": os.path.relpath(tgt, ROOT), "md5": "0" * 32}],
+                   "flags": {"write": ["tools/bench/_e3tmp/pinned*"]}}, f)
+    case("WR10 an open card pinning a file its OWN flags.write covers -> no stale-pin problem (fp-43 class)",
+         not any("open card P10" in x for x in GW.decide(tgt)), GW.decide(tgt))
+    with open(os.path.join(CARDS, "task_P11.json"), "w", encoding="utf-8") as f:
+        json.dump({"schema": "task/1", "id": "P11", "inputs": [{"path": os.path.relpath(tgt, ROOT), "md5": "0" * 32}],
+                   "flags": {"write": ["tools/bench/_e3tmp/other_*", "tools/elrule.py"]}}, f)
+    case("WR11 an open card whose flags.write does NOT cover its pinned file -> still a stale-pin problem",
+         any("open card P11" in x for x in GW.decide(tgt)) and not any("open card P10" in x for x in GW.decide(tgt)),
+         GW.decide(tgt))
+    for _n in ("task_P10.json", "task_P11.json"):
+        os.remove(os.path.join(CARDS, _n))
     tk = put("task_e3x.json", json.dumps({"schema": "task/1", "id": "e3x", "kind": "build", "goal": "g", "why": "w",
                                           "inputs": [{"path": os.path.relpath(tgt, ROOT), "md5": "1" * 32}],
                                           "pass": ["p"], "outputs": [], "flags": {}, "budget": {"failures": 1, "minutes": 5},

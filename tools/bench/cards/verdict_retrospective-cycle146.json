@@ -1,0 +1,32 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle146",
+ "verdict": "refuted",
+ "alternative": "The non-adoption was only bad luck: a guard false positive used a hand-back slot and the predictor fix needed data nobody had, so the order of work did not matter.",
+ "discriminating_test": "Replay round 2 with PD353(d) adopt first and load_by_vi authorised: if 3f9ac26b is adopted without the elrule fix, the order was the cause. Check that no adopt step reads elrule output.",
+ "violations": [
+  {
+   "slug": "repeated-failure-class",
+   "loss_min": 19,
+   "loss_usd": 10.79,
+   "evidence": "tools/bench/cards/result_146-a1-4.json:3"
+  },
+  {
+   "slug": "device-failed",
+   "loss_min": 0,
+   "loss_usd": null,
+   "evidence": "tools/cycle_runner.py:633"
+  }
+ ],
+ "sources": [
+  "tools/bench/cycle_runner_main_20261007_2343.log:19",
+  "docs/d1/ring-p4b.md:318",
+  "tools/bench/next.json:12",
+  "tools/bench/cards/assign_result_146_3.json:12",
+  "tools/bench/cards/handback_145_1.json:25",
+  "tools/hooks/guard_peer.py:1181",
+  "tools/bench/retro.log:6516",
+  "archive/peer/2026-10-03-retrospective-cycle143.md:516"
+ ],
+ "note": "Window spans cycles 144-146. The Error List predictor blocked a passing session 4 times running (s02-s05). The runner launches retrospectives as a child process, past guard_peer's undisposed check. Round-3 purpose contradicted itself (load_by_vi vs memory_model read-only)."
+}

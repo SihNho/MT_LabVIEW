@@ -632,6 +632,37 @@ def offline_command(cmd):
     return judged > 0
 
 
+NEW_PROBLEM_RE = re.compile(r"^JEV-LADDER \| [^|]*\| [^|]*\| new-problem p=")
+
+
+def offline_new_problem(ladder_line, text):
+    """gate-fp fp-44 / fp-46 (card 146-a1-1): '<script> labview none / hardware none' when `ladder_line` is a JEV-LADDER
+    new-problem verdict AND the failing log's LAST run launched only tools/ scripts whose DECLARED scope header is
+    labview none + hardware none (no offline-args shortcut, no missing/invalid header), and that run neither timed out
+    nor stalled; else None."""
+    import scope_header as SH
+    if not ladder_line or not NEW_PROBLEM_RE.match(ladder_line):
+        return None
+    _ts, cmd, seg = protocol.last_segment(text or "")
+    if not cmd or STALL_RE.search(seg) or re.search(r"^BGRUN TIMEOUT\b", seg, re.M):
+        return None
+    scripts = [s for s in protocol._launched_scripts(cmd) if os.path.basename(s).lower() != BGRUN_NAME]
+    if not scripts:
+        return None
+    scope = {os.path.normcase(p): (h, prob) for p, h, prob in
+             ((p, (lv, hw), prob) for p, lv, hw, prob in SH.launch_scope(cmd, [p for p in scripts if SH.in_tools(p)]))}
+    names = []
+    for s in scripts:
+        d = scope.get(os.path.normcase(SH._abs(s)))
+        if d is None or d[1] or d[0] != ("none", "none"):
+            return None
+        hdr, err = SH.read(SH._abs(s))
+        if err or not hdr or hdr.get("labview") != "none" or hdr.get("hardware") != "none":
+            return None                  # the RAW header, not an offline-args reading of it
+        names.append(SH._rel(SH._abs(s)))
+    return "%s labview none / hardware none" % ", ".join(names)
+
+
 def offline_card(payload, cmd):
     """The card id when the CALLER is a sub-agent bound to a task/1 card with flags.labview == 'none' and `cmd` is
     offline_command; else None. The binding is protocol's (tools/bench/cards/active.json), never the prompt text."""
@@ -1310,6 +1341,21 @@ def main():
             sys.stderr.write(jev_gate.ladder_after_discharge(path, jev_line) + "\n")
         except Exception:                # noqa: BLE001 - reporting only; the allow stands
             pass
+        return 0
+    # --- RULE-OFFLINE-NEWPROBLEM (gate-fp fp-44 / fp-46, card 146-a1-1) ----------------------------------------
+    # The ladder called it new-problem, but the failing run itself could observe no machine: every script its LAST
+    # `BGRUN START` launched DECLARES `labview: none` AND `hardware: none` (scope header, honesty-checked at write time
+    # by guard_write) and the run did not time out or stall. Its failure is our offline arithmetic / json reading, a
+    # thing to fix, not a hypothesis about the machine for a peer to attack. Keyed on the log's own command and the
+    # launched scripts' headers, never on a filename list; any other ladder class, no ladder verdict, a header that is
+    # missing / invalid / not none-none, or a LabVIEW-touching script in the run: the block below stands.
+    nl = offline_new_problem(ladder_line, text)
+    if nl:
+        line = "RULE-OFFLINE-NEWPROBLEM | %s | %s not gated: ladder new-problem on an offline run (%s)" % (
+            time.strftime("%Y-%m-%d %H:%M:%S"), _rel(path), nl)
+        sys.stderr.write(line + "\nNEXT-ACTION: patch the script and rerun; no hypothesis review (no machine "
+                         "observed)\n")
+        _gate_log(line)
         return 0
     if ladder_line and ladder_line != jev_line:
         sys.stderr.write(ladder_line + "\n")

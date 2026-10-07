@@ -1,0 +1,69 @@
+BGRUN START 2026-10-08 00:59:55 limit 5.0 min: py -u tools/bench/selftest_c_e3.py
+BGRUN PID 18448
+  PASS  H1 header at the top parses  
+  PASS  H2 header at the tail parses  
+  PASS  H3 unknown key -> invalid  unknown header key 'colour' (allowed: labview, hardware, offline-args, evidence)
+  PASS  H4 bad labview value -> invalid  labview: 'maybe' is not none | read | build
+  PASS  H5 append_block/canonical_bytes round-trip (LF, no final NL, CRLF, empty, shebang)  
+  PASS  H6 stop_record.sha256_of / stage_prerun.sha256 are header-blind  
+  PASS  HON1 none + import gscript -> dishonest  
+  PASS  HON2 none + subprocess py recipe -> dishonest  
+  PASS  HON3 none + recipe path as a git argument -> honest  
+  PASS  HON4 read + gui_save() -> dishonest  
+  PASS  HON5 none + runpy without evidence -> dishonest  
+  PASS  HON6 none + subprocess motor_gate.py -> hardware dishonest  
+  PASS  C1 compile error found  
+  PASS  L1 git add of recipes runs nothing  
+  PASS  L2 py -m py_compile runs nothing  
+  PASS  L3 bgrun child is a run  
+  PASS  L4 powershell -Command '& peer.ps1' is a run  ['peer.ps1']
+  PASS  L5 grep of a recipe runs nothing  
+  PASS  LC1 missing header -> refused  tools/bench/_e3tmp/nohdr.py: no valid scope header (missing) - add `# ---` / `# labview: none|read|build` / `# hardware: none|camera|motor` / `# ---`
+  PASS  LC2 declared build under labview none -> refused  flags.labview is 'none' - tools/bench/_e3tmp/bld.py declares labview: build (scope header)
+  PASS  LC3 declared build under labview read -> refused  flags.labview is 'read' - tools/bench/_e3tmp/bld.py declares labview: build (scope header)
+  PASS  LC4 non-compiling script -> refused at launch  tools/bench/_e3tmp/cmpfail.py: does not compile: SyntaxError: invalid syntax (cmpfail.py, line 5)
+  PASS  LC5 grep naming 'import gscript' is not a LabVIEW command  None
+  PASS  LC6 hardware motor under card hardware none -> refused  flags.hardware is 'none' - tools/bench/_e3tmp/mot.py declares hardware: motor (scope header)
+BLOCKED by tools/hooks/guard_bash.py (scope header, card chat-E3): tools/bench/_e3tmp/nohdr.py: no valid scope header (missing) - add `# ---` / `# labview: none|read|build` / `# hardware: none|camera|motor` / `# ---`
+  PASS  LC7 guard_bash.scope_gate refuses a headerless tools script for any session  
+  PASS  FP39 stagexec adopt under labview none -> allowed  None
+  PASS  FP39b stagexec run under labview none -> still refused  flags.labview is 'none' - tools/stagexec.py declares labview: build (scope header); use selftest / adopt for an offline run
+  PASS  FP37 stage_prerun --scratch-required is an offline checker (stop_record + guard_cycle)  
+  PASS  FP37b a recipe launch under bgrun is not offline  
+  PASS  FP38 git add / commit of recipe paths are read-only for the launch gate  
+  PASS  FP40 protocol CLI and the stub-only runner self-test are offline under labview none  (None, None)
+  PASS  FP40c a peer dispatch (peer.ps1 only NAMES LabVIEW in prompts) is offline under labview none  None
+  PASS  FP40b cycle_runner --dry-run allowed, a real run refused with the offline hint  (None, "flags.labview is 'none' - tools/cycle_runner.py declares labview: read (scope header); use --dry-run / --dry-cmd / --no-motor-hooks for an offline run")
+  PASS  FP37c stage_prerun outside its offline modes is still not offline  flags.labview is 'none' - tools/stage_prerun.py declares labview: build (scope header); use --dry / --prerun / --scratch-required / --rebase / --check-launch / --control-lint / --selftest-control-lint / --buildarray-check / --opmodel-conformance for an offline run
+  PASS  FP36 failing log owner from the ledger  142-P2
+  PASS  FP36 an LV card is not held by another card's failing log (RULE-OTHER-CARD)  ('142-4', '142-P2')
+  PASS  FP36b its OWN failing log still holds it  
+  PASS  FP36e a ledger row written after the run started does not take it over  
+  PASS  FP36c the judgement session (no agent_id) is held by every failing log  
+  PASS  FP36d the RESULT line's card field wins over the ledger  
+  PASS  RL1 result_line stamps card + labview from bgrun's env  RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[],"card":"143-9","labview":"none"}
+  PASS  W1 WAITING result line is valid and not a failure  
+  PASS  W2 result/1 accepts WAITING  
+  PASS  W3 a WAITING run log is not failing (guard_peer reads run_verdict)  
+  PASS  W4 143-P1's dry failure -> WAITING  WAITING: provisional base not built yet - unbound [-21, -19, -16, -15, -12, -11]; --rebase after it is built
+  PASS  W5 a real base difference is not WAITING  
+  PASS  W6 not a provisional base -> never WAITING  
+  PASS  W7 143-P1's prerun failures follow from the base -> WAITING  
+  PASS  W8 an X2 failure is not WAITING  
+  PASS  WR1 headerless tools script -> write problem  
+  PASS  WR2 clean script -> no write problem  []
+  PASS  WR3 dishonest none -> write problem  
+  PASS  WR4 compile error -> write problem  
+  PASS  WR5a a 545-char PROSE why (143-5 failure 1) is no longer a problem (chat-S5 PD337(d))  
+  PASS  WR5b a MACHINE field over its limit (id 81 > 80) -> write problem  ['schema stageplan/1: $.actions[0].id: 81 chars > limit 80']
+  PASS  WR6 an open card pinning another md5 -> stale-pin problem (143-P1)  
+  PASS  WR7 a closed card's pin is not reported  
+  PASS  WR10 an open card pinning a file its OWN flags.write covers -> no stale-pin problem (fp-43 class)  []
+  PASS  WR11 an open card whose flags.write does NOT cover its pinned file -> still a stale-pin problem  ["open card P11 pins tools/bench/_e3tmp/pinned.py at md5 00000000; the file on disk is now 3d688704 - that card works on a stale copy (143-P1's failure): tell its owner, or re-pin"]
+  PASS  WR8 task/1 with a stale input md5 -> problem  ["schema task/1: $.flags: missing required field 'labview'", 'task/1 input pin stale: tools\\bench\\_e3tmp\\pinned.py: card 11111111 != disk a595a77f']
+  PASS  WR9 release line naming a slug the review did not issue (143-1) -> problem  ["FIXED line names slug 'already-failed', which is not one of this review's verdict slugs ['settled-already'] - the launch gate will not release it (143-1); write it with `py tools/protocol.py release ...`", 'FIXED already-failed rejected: cited path does not exist under the project: tools/x.py']
+  PASS  PA1 names/paths/numbers are parameter-only, a changed call is substantive  (3, [(4, 'x = run(PLAN)', 'x = run(PLAN, retry=2)')])
+  PASS  PA2 pattern key masks digit runs  
+  PASS  PA3 s03v18 vs its approved sibling (informational)  sibling tools/recipes/stage_d1_ring_p4_s02v18.py param 9 substantive 0
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":64,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 2s

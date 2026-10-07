@@ -270,3 +270,67 @@ How to add: see the 5-line note at the top of `docs/d1/INDEX.md`.
        judgement item; the card reports where v18 closes (2626, array) and which session wires it.
      - **(e) Housekeeping:** the stopped work copy `claudeDev\D1_ring_p4s04_20261007_212230.vi` (abb76d41) is superseded —
        delete it with its resume record after the adoption; 95e408ff is the adopted file's source.
+352. **(cycle 146 judgement, 2026-10-07 — after cycle 145 PURPOSE_MET (`tools/bench/cards/assign_result_145_2.json`); facts
+     `tools/bench/diag_c145_a2_6_facts.md`, `tools/bench/diag_c145_a2_x_facts.md`; review `archive/peer/2026-10-07-c145-s05-x10.md`)**
+     USER-RULES: U1 (relied on: only the session CUT and an addressing licence change; every v18 action, its sources and sinks
+     stay as accepted in PD331(b), end cdiff == v17); none contradicted.
+     - **(a) ACCEPTED: cycle 145.** s04 ADOPTED (`D1_ring_p4s04_20261007_215031.vi` 95e408ff, EL 58, fresh load 605.4 MB, graph
+       `graph_ring_p4s04_20261007_223245.json`); the two subVIs' inputs measured Recommended, none Required ⇒ PD351(b)'s cause holds;
+       `tools/elrule.py` SubVI = Required inputs only, self-test 21/0 (51/53/55/58). s05 rebased (0efd8737, pred 55) — NOT launchable as cut.
+     - **(b) ONE X10 start rule: the gate tool's own `x10_start` (`tools/stage_prerun.py:2043-2052`, `memory_model.json:69`) =
+       MEASURED fresh load + the op-0 read.** It is the code in force, and s03's metered start (600.7 vs 596.0 load, +4.7) agrees with it
+       within 1.2 MB; the prediction scripts' "start = fresh load" was our inconsistency. s04's metered start 35 MB BELOW its load only
+       makes this rule conservative. So: record 95e408ff's measured load 605.4 in `memory_model.json` `load_by_vi` (a record, no
+       parameter or limit changes — fail_above 680 and MEMSTOP 695 stay), and the prerun's own X10 and the pred then use one start.
+       s05 is RE-CUT: the longest prefix of v18 ops 98.. that splits no 'of' group and has X10 ≤ 680 at that start (review: about
+       op 116); the rest moves to s06. The review's load-only scratch is NOT run: neither of its outcomes changes this cut. The s05
+       scratch's metered start and peak are recorded as calibration data.
+     - **(c) X10 recalibration (PD322(c)'s "≥ 3 measured P4 sessions" is met) is DEFERRED, not skipped:** 4 of 5 points over-predict by
+       58–68 MB but s03 by only 2.8, and the spread comes from the START term (s04: −35 MB vs its load), not from the per-op growth.
+       A fit that never under-predicts is held at s03, so it would gain almost nothing. Recalibrate when two metered starts under rule
+       (b) exist (s05 + s06); then fit the start term, not the growth term.
+     - **(d) X11 on #2626 gets a uid-keyed LICENCE, not a plan change.** The rows that wire #2626 inputs (`p4_w_tp_row` t4160,
+       `p4_w_rp_row` t4165; later `p4_w_bd_row` t2832, `p4_rbB_sel_t4168` t4168) are accepted v18 actions (PD331(b)); X11 protects
+       NAME-keyed addressing from a sibling rename, and every one of these rows and the later rebase/rebind key the open sibling by
+       term uid. The session plan that carries ops 118/119 gets `tools/bench/plan_ring_p4_<session>_licence.json` (`pb-licence/1`,
+       `plan` = that session plan, `rename_by_uid` node 2626, term_uids = its still-open #2626 input uids; `require`: "every listed
+       uid is an input of #2626 in the real end read with the same uid, unwired unless this session wires it, else the licence is
+       void"; `decided_by` = this item). The scratch's end read records #2626's terminal names and types (facts, not a gate), so a
+       rename shows up as data; a changed uid voids the licence ⇒ RETURN. Same rule for whichever later session carries ops 132/150.
+     - **(e) gate-fp drain (DUE, 8 open) = ONE tooling card, ALONE, FIRST:** fp-43/45/47/48/49/50 are one class — `guard_write.py:84`
+       reports a card's own authorised edit of a file it both pins and lists in `flags.write` as a stale copy; fp-44 (Jev ladder
+       `new-problem` on an offline json helper) and fp-46 (a pred log's report-only rc=1 X10 line counted as a failing run) are
+       `guard_peer`. Fixes in `tools/hooks/guard_write.py` / `tools/hooks/guard_peer.py` are authorised by the cycle-146 purpose.
+     - **(f) Cycle-146 order:** (e) alone → s05 re-cut + pred + dry/prerun (X11 PASS or licensed by (d)) → ONE s05 scratch on a byte copy
+       of 95e408ff, ADOPT on full PASS (PD329(a)) + full EL + fresh load + graph read; beside the scratch the s06 prep (provisional on
+       stagesim's end of s05). Housekeeping: copy `tools/bench/build_opwiringrules_v0_hygiene.json` into `tools/bench/op_hygiene/`.
+353. **(cycle 146 judgement, hand-back round 1, 2026-10-08 — `tools/bench/cards/handback_146_1.json`, facts
+     `tools/bench/diag_c146_a1_4_facts.md`, `tools/bench/diag_c146_a1_5_facts.md`, review `archive/peer/2026-10-08-c146-a1-4-el55.md`)**
+     USER-RULES: U1 (relied on: no v18 action, source or sink changes; the s05 bytes are adopted as built; only a PREDICTOR and a
+     maker self-check change); none contradicted.
+     - **(a) ACCEPTED from round 1:** gate-fp fp-43..50 drained (146-a1-1); 605.4 in `load_by_vi`, one X10 start rule, s05 re-cut to
+       v18 ops 98..114 (X10 674.9), dry + prerun PASS (146-a1-3); OpWiringRules hygiene record copied. 146-a1-2 FAIL is superseded.
+     - **(b) The s05 scratch is a STRUCTURAL PASS and its Error List miss is OUR PREDICTOR (as PD351(b)):** 22/0 gates, E1 real == sim at
+       all 17 ops, D new 11 == 11 / lost 1 == 1, PB 11 open pairs; peak 607.7 MB. EL 55 vs pred 57 = 2 items the predictor kept open
+       although s05 rows close them: `elrule.session_prediction` calls `predict` with no `carry` (`tools/elrule.py:217-225`), so base
+       input items closed in this session (#5058 'Image In' by `p4_w_img_trk`; #29843 by `p4_t_slot_out`/`p4_w_pool_in`) are not
+       subtracted. The per-class read agrees: SubVI 'Image In' −1 and Index Array 3 vs 4; SR and Local are as predicted.
+     - **(c) Fix the predictor FIRST, ALONE (stage-tool edit, PD281(a)):** `session_prediction` passes the base's still-open input items
+       as `carry` (or the equivalent subtraction); self-test re-derives s01..s04 = 51/53/55/58 UNCHANGED and s05 = 55 with
+       **per-class counts equal to the read file** `errorlist_D1_ring_p4s05_20261008_002621_20261008_003324.json` (06a59001). A total
+       match with a per-class mismatch is NOT a pass — that is the guard against fitting the predictor to the answer.
+     - **(d) ADOPT the existing s05 work copy, no second run (PD329(a)):** `claudeDev\D1_ring_p4s05_20261008_002621.vi`, md5 3f9ac26b
+       verified unchanged → `D1_ring_p4s05_*.vi` (the prepared `diag_c146_a1_4_adopt.py` / `_mkgraph.py` / `_graph.py` / `_t2626.py`).
+       The full final-role EL read of those same bytes (55) is the expected file; fresh-instance load + graph read; the measured load
+       goes into `memory_model.json` `load_by_vi` (a record; limits unchanged). The metered start 577.8 / peak 607.7 are the
+       first calibration point of PD352(c).
+     - **(e) s06 maker kind gate: `branch` → `connect` is ALLOWED when the source symbol was created in an EARLIER session** (v18 op 116
+       `p4_w_idx_frameidx`, src `new:TS1.outer` = s05 uid). The compiled kind follows the source form (`stagexec.py:808-813`): a
+       symbol from this plan is `branch`, an existing uid is `connect`; it is the exact pair of the already-allowed `wire_sr` → `connect`,
+       and both make the same wire net. The computation check stays the maker's end comparison (s06 sim end == v18's end over the same ops)
+       and the scratch's E1. Connect from an already-wired existing source is the route every base-sourced connect since P3 has used.
+       Fix the gate in the maker script (prep file), not in `stagexec`.
+     - **(f) Then s06 = v18 ops 115.. re-made on the REAL s05 graph:** rebase, X10 start by PD352(b) at s05's MEASURED load (the
+       provisional 623.5 is void), cut = longest group-respecting prefix with X10 ≤ 680, #2626 licence per PD352(d) (t4160 op 118 and
+       t4165 op 119 fall in s06), EL by the fixed rule (c), dry + prerun both recipes, `--scratch-required`; then ONE s06 scratch on a
+       byte copy of the adopted s05 → adopt on full PASS + full EL == pred PER CLASS + fresh load + graph read. A miss = RETURN.

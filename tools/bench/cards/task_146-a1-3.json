@@ -1,0 +1,40 @@
+{
+ "schema": "task/1", "id": "146-a1-3", "kind": "build",
+ "goal": "RETRY of 146-a1-2: re-cut s05 so the MAIN recipe's prerun X10 (Executor + census source reads) is <= 680; redo pred, dry + prerun of both recipes",
+ "why": "Cycle 146 pass item 2. 146-a1-2 cut at op 115 (Executor 678.8) but the main prerun read 683.9 > 680; the purpose requires prerun 0 FAIL on both recipes. Offline, ALONE.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_146-a1-3.md", "md5": "88a6a3f641fa95be7b1d2b8dadd01fc2"},
+  {"path": "tools/bench/diag_c146_a1_2_facts.md", "md5": "bc17922f4461be67066bc6de38820f26"},
+  {"path": "tools/bench/prep_c146_a1_2_mk.py", "md5": "11ce8eeb66d51ef462cd61fb1c8065dd"},
+  {"path": "tools/bench/prep_c146_a1_2_pred.py", "md5": "19270d62bfaf328b4170b4e220eb9ba4"},
+  {"path": "tools/bench/prep_c146_a1_2_session.json", "md5": "f0dd1606aa774a45c5ed3e8e4b9b3353"},
+  {"path": "tools/bench/memory_model.json", "md5": "559be4cf4989e39c84fa584a01a2e503"},
+  {"path": "tools/bench/plan_ring_p4_v18.json", "md5": "2ea6cafa7d368dc7a054346d398daa3e"},
+  {"path": "tools/bench/graph_ring_p4s04_20261007_223245.json", "md5": "094ba298ba7b2c1d69f92c84d8ecb626"},
+  {"path": "tools/stage_prerun.py", "md5": "61d6f5902e9d2a05156b0d202d90fdea"},
+  {"path": "tools/elrule.py", "md5": "a5ee7d5c8792ccf5c174e70be022544d"}
+ ],
+ "pass": [
+  "s05 re-cut = longest v18 prefix from op 98, no 'of' split, MAIN-recipe prerun X10 <= 680 per the gate's own line (op 114 first, then shorter); cut, main/scratch X10, margins reported",
+  "rebase on real s04 graph PASS, FALLBACK 0; *_prov2 copies untouched; memory_model.json unchanged from 559be4cf",
+  "pred EL by elrule base 58 reported; dry PASS and prerun 0 FAIL on both stage_d1_ring_p4_s05v18 recipes (plain and _scratch)",
+  "X11 PASS unlicensed (ops 118/119 not in s05, no licence file); the session carrying 118/119/132/150 named",
+  "protected files (s04, v18, s03, bed, stage tools) unchanged by md5; no LabVIEW process; nothing launched"
+ ],
+ "outputs": ["tools/bench/diag_c146_a1_3_facts.md"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/plan_ring_p4_s05v18*", "tools/bench/sim/ring_p4_s05v18/**", "tools/bench/prep_c146*", "tools/bench/diag_c146_a1_3*", "tools/bench/gate_fp_queue.jsonl", "tools/bench/prerun_records.jsonl", "tools/recipes/stage_d1_ring_p4_s05v18*"],
+  "status_edit": false, "git_commit": false, "peers": []},
+ "budget": {"failures": 2, "minutes": 60},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/prep_c146_a1_2_mk.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/elrule.py"}
+ ],
+ "rules": [
+  "Offline only; runs ALONE; nothing launched",
+  "The prerun's own X10 line decides the cut; edit no stage tool, v18 or s04 file; quote a refusal, never patch around it",
+  "RETURN with the file:line if a stage tool must change"
+ ]
+}

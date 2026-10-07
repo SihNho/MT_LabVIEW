@@ -1,0 +1,57 @@
+BGRUN START 2026-10-08 00:54:45 limit 300.0 min: claude.exe -p --model claude-sonnet-5-5 --effort high --output-format json --permission-mode acceptEdits --max-budget-usd 90.00 CARD tools/bench/cards/assign_146_2.json
+
+You are the ASSIGNMENT session of one cycle of this project (card chat-A1, user 2026-10-04). You were spawned by
+`tools/cycle_runner.py` after the judgement session set the cycle's PURPOSE; when you end your turn the process ends.
+Nobody is watching. The first line of this prompt is `CARD tools/bench/cards/assign_<N>_<k>.json` (`assign/1`): the
+purpose (act, pass items, plan, goal ids), your caps, your state file and the path you must write your result to.
+
+## Read, in this order, and nothing else
+0. The `assign/1` card. If `handback_in` is set, the previous round handed back: read that `handback/1` record — the
+   judgement session has since revised the purpose; do not repeat what it refused.
+1. `CLAUDE.md` (the standing rules bind you), `STATUS.md` (lock, rig-state banner — never infer the rig state).
+2. The plan file named in the purpose, only the sections the purpose names. Not `archive/`, not whole logs.
+
+## What you do: turn the purpose into cards, until every pass item is met
+- Dispatch with the Agent tool, `subagent_type` `material` (Opus 5.5 high), ONE-LINE prompt `CARD <task/1 path>`.
+  Write each card with `py tools/protocol.py new task --id <N>-a<k>-<seq>`, fill goal, inputs (md5), pass, outputs,
+  **flags** (labview / gui / hardware / run_vi / write globs / status_edit / git_commit / peers), budget, rules,
+  `requires`, and **`advances`/`unblocks` copied from the purpose**; then `py tools/protocol.py validate <card>` and
+  `py tools/protocol.py requires <card>`. A brief states the MEASUREMENT, never a result-dependent action.
+- Keep `write` globs NARROW: never the plan file, CLAUDE.md, docs/user-rules.md, Requests.md, `.claude/**`,
+  `tools/hooks/**`, `tools/bench/memory_model.json` — unless the purpose's act/pass names that path. Such a card is a
+  plan / rule / memory-limit change, which is the judgement session's, and the hook hands it back.
+- Read each `result/1` (`status`, `first_fail`, `blocked_by`, the Jev-ladder row in `facts`); never infer from wording.
+- **Retry once, escalate on the existing ladder.** A FAIL the classifiers explain (soft LOG-only gate, address/format
+  mismatch, Error List by-design) or whose Jev row says `our-script-bug` / `already-reviewed-class`: re-issue it as a
+  new card with `retry_of_card: <old id>` applying that NEXT-ACTION. A FAIL with its failure budget spent or its
+  minutes exceeded: `escalation: 1` to `material-opus-max`, then `escalation: 2` to `material-fable-low` (same goal,
+  pass, flags). A REPEATED TOOL FUNCTION is a scratch-VI verification card at the same rung, not an escalation
+  (`guard_session` refuses the escalation). An UNEXPLAINED FAIL gets ONE retry; if that retry fails too, the hook
+  hands the purpose back.
+- **Pipeline:** at most 2 cards live, at most ONE with `flags.labview` != "none"; an offline prep card may run beside
+  a LabVIEW card (two Agent calls in one message). No gate-tool edit beside a LabVIEW card.
+- Dispatch in the foreground and wait for every agent you started before ending your turn. Never end a message
+  expecting to be resumed. Do not run `retrospective.py`, do not write `tools/bench/next.json` or STATUS.md's NEXT —
+  those are the judgement session's and the runner's.
+- A question only the user can answer: do NOT decide it and do not add it to decisions_pending yourself — hand back.
+
+## HAND-BACK is mechanical — obey it
+`tools/hooks/guard_session.py` → `tools/hooks/guard_assign.py` refuses a dispatch with `HANDBACK REQUIRED (<trigger>)`
+when: (a) an unexplained FAIL repeats after its one retry; (b) the same failure class appears twice; (c) a card leaves
+the purpose (plan file, memory limit, user rule, goal ids outside the purpose); (d) a user question appears
+(decisions_pending grew, or a card is BLOCKED on the user); or a cap is reached (time / USD from the card, runaway
+backstop of cards). After that refusal every further dispatch is refused: write the result and end your turn. The
+runner re-checks all of it after you exit, so a PURPOSE_MET you write while a trigger stands is overridden.
+Hand back yourself, too, whenever continuing would need a decision that is not in the purpose.
+
+## Your output — `assign-result/1`, written to the card's `result` path, then validated
+`{"schema":"assign-result/1","cycle":N,"round":k,"status":"PURPOSE_MET"|"HANDBACK","cards":["<card ids>"],
+"pass_evidence":[{"item":0,"met":true,"evidence":["tools/bench/cards/result_<id>.json","<file:line>"]}, ...],
+"handback":null | {"reason":"<one line>","question":null},"note":""}` — `item` is the 0-based index of the purpose's
+`pass` list; PURPOSE_MET needs one `met: true` row with evidence for EVERY pass item, or the runner turns it into a
+hand-back. Check it with `py tools/protocol.py validate <path>`, then end your turn with a one-line summary.
+
+BGRUN PID 2932
+[claude-code:unrecognized_model] {"model":"claude-sonnet-5-5","query_source":"sdk"}
+{"duration_api_ms":80280,"stop_reason":"end_turn","session_id":"ede72bb0-3cc3-4601-8296-422db303acb0","total_cost_usd":1.5970878,"usage":{"input_tokens":32,"cache_creation_input_tokens":121450,"cache_read_input_tokens":2226099,"output_tokens":9007,"output_tokens_details":{"thinking_tokens":1049},"server_tool_use":{"web_search_requests":0,"web_fetch_requests":0},"service_tier":"standard","cache_creation":{"ephemeral_1h_input_tokens":121450,"ephemeral_5m_input_tokens":0},"inference_geo":"not_available","iterations":[{"input_tokens":2,"output_tokens":212,"cache_read_input_tokens":160779,"cache_creation_input_tokens":1078,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":1078},"type":"message"}],"speed":"standard"},"modelUsage":{"claude-sonnet-5-5":{"inputTokens":32,"outputTokens":9007,"cacheReadInputTokens":2226099,"cacheCreationInputTokens":121450,"webSearchRequests":0,"costUSD":1.5970878,"contextWindow":200000,"maxOutputTokens":128000,"thinkingTokens":1049,"canonicalModel":"claude-sonnet-5-5","provider":"firstParty","costBasis":"unknown"}},"permission_denials":[{"tool_name":"Bash","tool_use_id":"toolu_01MVazyvQ41JQjnCxreT2ajF","tool_input":{"command":"sed -n 195,260p tools/elrule.py; md5sum tools/elrule.py tools/bench/selftest_elpred.py tools/bench/memory_model.json","description":"Inspect elrule session_prediction code"}},{"tool_name":"Task","tool_use_id":"toolu_01FWYCoARu4nqZq14NgcXAPf","tool_input":{"description":"Card 146-a2-1 elrule carry fix","prompt":"CARD tools/bench/cards/task_146-a2-1.json","subagent_type":"material","run_in_background":false}}],"terminal_reason":"completed","fast_mode_state":"off","fast_mode_disabled_reason":"sdk_opt_in_required","subagent_stats":{"spawned":0,"requested":{"background":0,"foreground":0,"unset":0},"started_in_background":0,"max_depth":0,"spawned_by_subagents":0,"completed":0,"failed":0,"killed":{"parent":0,"user":0,"system":0},"refused":{"depth_limit":0,"concurrency_limit":0,"budget":0},"by_type":{}},"is_error":false,"num_turns":27,"subtype":"success","api_error_status":null,"result":"Round 2 is handed back. No card ran and no pass item is met. `guard_assign` refused to dispatch card 146-a2-1 with \"HANDBACK REQUIRED (c-outside-purpose)\", so I wrote the result as a HANDBACK, and it validates.\n\nThe refusal looks like a false positive. The card only edits `tools/elrule.py` and its self-tests. Its pass line and brief name `memory_model.json` as \"unchanged\", and the guard read that word beside \"changed\" as a memory-limit change. The card itself validates and its required files exist, so judgement can reissue it with that line reworded, or queue the guard fix.","ttft_ms":2544,"type":"result","duration_ms":102763,"uuid":"0bbd015d-cbe4-4e2f-af8a-2c37bfbff9b9","ttft_stream_ms":2495,"time_to_request_ms":236,"first_content_frame_ms":2496,"queued_turn_count":0,"result_index":0}
+BGRUN END rc=0 after 107s

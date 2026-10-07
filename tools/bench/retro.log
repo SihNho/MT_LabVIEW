@@ -6513,3 +6513,107 @@ VIOLATION: device-failed | loss_min=2 | loss_usd=? | evidence=tools/hooks/materi
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle143","verdict":"refuted","alternative":"Each uid-reuse hit was a distinct code path that could not be foreseen, and the dispatch cap, not the class, ended the cycle; s03 would have slipped anyway because of 143-5's own script bugs.","discriminating_test":"Replay 142-P1's and 143-3's rebase inputs through stage_prerun 03cdd8c6 (post-census): if both bind, a class-wide census at 141-3 would have pre-empted 142-5 and 143-4.","violations":[{"slug":"repeated-failure-class","loss_min":27,"loss_usd":"?","evidence":"docs/d1/ring-p4b.md:196"},{"slug":"device-failed","loss_min":2,"loss_usd":"?","evidence":"tools/hooks/material_marker.log:3333"}],"sources":["docs/d1/ring-p4b.md:128","docs/d1/ring-p4b.md:152","tools/bench/cards/result_143-3.json:1","tools/bench/prep_c143_4_facts.md:29","tools/bench/cards/guard_card.log:708","tools/bench/cycle_143.log:25","tools/hooks/material_marker.log:3332"],"note":"Window spans cycles 141-143 + chat S2-S4; cycle 143 = 10:47-12:15, $35.00 judgement + $9.77 reviews. Stagexec cross-delete raw-uid sites :4008,:4038,:4264 remain open."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle143.md
 BGRUN END rc=0 after 443s
+BGRUN START 2026-10-08 01:08:25 limit 20.0 min: C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\retrospective.py --cycle 146
+BGRUN PID 2028
+   window 2026-10-03 12:22:50 .. 2026-10-08 01:08:26 (6526 min); 198 build logs, 26 machinery logs, 51 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle146.txt (49496 chars)
+   review card tools\bench\cards\review_retrospective-cycle146.json
+OUTCOME: ANSWERED (326s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-10-08-retrospective-cycle146.md
+COST: $2.0710  in 54 / out 31520 / cache-create 112760 / cache-read 2691285  (324s, 42 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle146 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle146.json
+--- ANSWER ---
+I find the claim false. Cycle 146 had one costly structural fault: the Error List predictor missed again, and the purpose kept a finished, structurally passing session 5 waiting on a fix to that predictor. The cycle ended with session 5 not adopted and all three hand-back rounds used. A second, cheap fault is a device that no longer fires: the check that should refuse a new retrospective while the last one is undisposed sits in a hook the runner bypasses.
+
+The evidence window covers runner cycles 144, 145 and 146, plus the chat sessions T3–T5 (2026-10-04..07). The last retrospective was cycle 143's (`tools/bench/cycle_runner_main_20261003_1055.log:8-9`); cycles 144 and 145 were "not due" (`cycle_runner_main_20261007_1952.log:14,35`). I judge the whole window, with cycle 146 weighted most.
+
+## The most costly fault: `repeated-failure-class`
+
+**What happened in cycle 146.**
+- The session-5 scratch run (a trial build on a byte copy) fully passed: 22/0 gates, real graph equal to the simulation at 17/17 steps, peak 607.7 MB, file `3f9ac26b` saved (`tools/bench/cards/result_146-a1-4.json:14-16`).
+- It stopped by design because the Error List read 55 items against a prediction of 57 (`:3`). The adopt, graph and #2626 scripts were already written (`:22`).
+- The judgement (PD353, `docs/d1/ring-p4b.md:318-326`) put "fix the predictor FIRST, ALONE" ahead of adopting session 5. Adopting does not depend on the predictor: the read itself becomes the expected file (`:324`).
+- Round 2 was refused by a false positive (see Q5), which used up a hand-back.
+- Round 3's predictor fix failed. The base subVI #5058's "required input" setting was never measured (`result_146-a3-1.json:9,11`).
+- The assignment session then skipped items 1-4 because "they depend on item 0" (`assign_result_146_3.json:12`). The runner closed the cycle at the hand-back limit (`cycle_runner_main_20261007_2343.log:19`). Session 5 was never adopted.
+
+**Why it is a repeated class, not a one-off.** The same Error List predictor (`elrule`) blocked adoption of a passing session again and again, and each time the answer was one more rule patch:
+- Session 2, cycle 143: read 53 vs predicted 51/52 (`STATUS.md:76-77`).
+- Session 3, cycle 144: the total matched, but the per-type counts did not (`ring-p4b.md:255-258`).
+- Session 4, cycle 145: read 58 vs predicted 60 (`handback_145_1.json:25`).
+- Session 5, cycle 146: read 55 vs predicted 57.
+
+Cycle 145's fix was checked only against past totals 51/53/55/58 (`ring-p4b.md:279`), so it could not catch the next case.
+
+**Loss: 19 min, $10.79.**
+- Cycle 146, after round 1 (00:52:14 → 01:08:25, 16 min): $1.6066 (`cycle_146_handback_1.log:261`) + $1.5971 (`cycle_146_assign_2.log:56`) + $1.2067 (`cycle_146_handback_2.log:261`) + $4.5823 (`cycle_146_assign_3.log:56`) = $8.99. Of round 3's 8 pass items, only the two invariant checks were met; no build item was.
+- Cycle 145's Error List hand-back judgement: $1.7991, about 3 min (`cycle_145_handback_1.log:258`; `cycle_runner_main_20261007_1952.log:30-32`).
+- The bigger cost has no dollar figure: session 5's adoption and all of session 6 move to cycle 147.
+
+**Counterfactual.** Suppose cycle 145's hand-back judgement (22:19) had made the Error List a recorded cross-check instead of an adoption gate: adopt on a structural pass, with the read as the expected file. That is the rule PD353(d) later applied. Then card 146-a1-4 would have adopted `3f9ac26b` inside round 1 at about 00:50. Cycle 146 would have ended with session 5 adopted, instead of at 01:08 with nothing adopted. The cheaper version: at 00:54, PD353 could have put (d) "adopt" first and authorised the `load_by_vi` record. Session 5 would then have been adopted in round 2 or 3.
+
+## Findings
+
+**1. Repeated failure.** The predictor class above occurred four times in a row. The approach should have changed at the third occurrence (session 4, cycle 145, 22:19), to "adopt on structural pass, explain the Error List per type afterwards". Inside cycle 146, card 146-a3-1 was a fix attempt the judgement could have seen was infeasible beforehand (Q3).
+
+**2. Missing tool.** No reader ties an Error List item to its node:
+- `item uids all null` (`result_146-a1-4.json:18`), and which Index Array raises the items was not read (`:21`).
+- `subvi_requiredness.json` holds only 2 VIs (`result_146-a3-1.json:9`).
+- A tool that binds each Error List item to its node, and measures pane "required" status for base subVIs, would have answered both open questions from the session-5 read without a design round.
+
+**3. Unmeasured steps.**
+- PD353(c) required the fixed predictor to match the read exactly by item type (`ring-p4b.md:318-321`). Under the project's own rule (PD351(c), `:263-265`), a subVI item counts only when its input is *measured* Required.
+- #5058 was never measured. Opening the two-entry `subvi_requiredness.json` takes seconds and would have shown the exact match was unreachable.
+- PD353(b) also assigned the Index Array closure to #29843 by inference, although the read carried no item ids.
+
+**4. Rule compliance.**
+- The gate false-positive queue rule (`cycle_146.log:101-105`) was not followed: the `guard_assign` false refusal was never logged (`assign_result_146_3.json:10`).
+- In cycle 144, the judgement ignored "answer these BEFORE the first dispatch" for violations that were DUE (`cycle_144.log:219`). `guard_cycle` then refused the s03 scratch (`handback_144_1.json:18`), costing a hand-back round.
+- Audit A1 lists two logs with no BGRUN line (`fn_gate.log`, `fntest_exempt.log`).
+- Audit A4 lists 5 reviews with a blank disposition, including `2026-10-03-retrospective-cycle143.md:514-516`. That one is formal only: its findings were acted on in `violation-decisions.md` (2026-10-07 20:25) and in card 144-a2-3.
+- Doc lint: STATUS.md is 186 lines (cap 110, L3); `chat-handoff.md` is 546 lines (cap 400, L10).
+- What the audit does not cover:
+  - whether a purpose contradicts itself;
+  - hand-back slots consumed by gate false positives;
+  - whether peers launched by the runner pass `guard_peer`;
+  - the dollar cost of material cards (`cost.usd` is null, `result_146-a1-4.json:29`).
+
+**5. Ordering.**
+- At 00:54, the independent adoption should have come before the predictor fix.
+- At 00:57, the round-3 purpose contradicted itself:
+  - Pass item 1 requires "load in load_by_vi", and `load_by_vi` lives in `memory_model.json:38`.
+  - Pass item 6 says "memory_model.json is READ-ONLY … no card writes it" (`tools/bench/next.json:12,17`).
+  - So that purpose could not be fully met by construction.
+- Round 2 itself was lost to a `guard_assign` false positive. The card listed `memory_model.json` as an *unchanged* invariant, and the guard matched it against the word "change" (`guard_assign.py:50,324-327`; `cycle_146_assign_2.log:56`). That burned one of the three hand-backs.
+
+**6. What was not reported.**
+- The hand-back-2 summary (`cycle_146_handback_2.log:261`) does not mention that its new pass item 6 contradicts item 1.
+- The round-3 note's claim that items 1-4 "depend on item 0" is not true for item 1.
+- The runner records hand-back 2 under trigger `c-outside-purpose` and counts it towards the limit. The fact that it was a false positive appears only in the prose summaries.
+- Material cards carry no dollar figure, so the material share of C4c's $115.54 cannot be separated out.
+
+**7. Judgement inside a material session.** None found in what I read:
+- 146-a1-4 returned at the first miss and listed the adopt-or-fix choice as an open question (`result_146-a1-4.json:25-27`).
+- 146-a3-1 laid out options V1/V3/VX and left the choice to judgement (`result_146-a3-1.json:14-17`).
+- Its hypothesis review was dispatched by the Jev ladder rule (`:20`), which is pre-scripted by the project, not a decision taken in the card.
+- The skip decision (Q6) was made by the assignment session, which is not a material session.
+
+## Device effect
+
+**`repeated-failure-class` (2026-09-16 15:05, guard_peer refuses a new review while the previous one is undisposed): failed — it never fires.**
+- The check lives in a pre-tool hook (`tools/hooks/guard_peer.py:1181-1195`).
+- Since the purpose flow, retrospectives are launched only by the runner, as a direct child process (`tools/cycle_runner.py:633-637`). The session is told not to run them (`cycle_146.log:241`).
+- So this retrospective started (`tools/bench/retro.log:6516`) while the newest archived retrospective still reads "(Claude fills in)" (`archive/peer/2026-10-03-retrospective-cycle143.md:516`).
+- Loss is about 0 here, because the cycle-143 findings were acted on elsewhere. But the device now guards nothing.
+
+**Devices that held:**
+- The `device-failed` decision of 2026-10-07 20:25: the stop-record check on `material_marker.log:3332`/`:3333` was carried out in 144-a2-3 (`diag_c144_a2_3_stoprec.py`).
+- Gate-fp drain: fp-43..50 were drained (146-a1-1, `ring-p4b.md:311`).
+- `gates_due` (2026-09-26 14:10): it fired (`cycle_144.log:219`). The session ignored it, but the `guard_cycle` refusal caught the launch.
+
+**Not checked:** for the remaining devices I found no window evidence either way. I did not open each one's code path.
+
+VIOLATION: repeated-failure-class | loss_min=19 | loss_usd=10.79 | evidence=tools/bench/cards/result_146-a1-4.json:3
+VIOLATION: device-failed | loss_min=0 | loss_usd=? | evidence=tools/cycle_runner.py:633
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle146","verdict":"refuted","alternative":"The non-adoption was only bad luck: a guard false positive used a hand-back slot and the predictor fix needed data nobody had, so the order of work did not matter.","discriminating_test":"Replay round 2 with PD353(d) adopt first and load_by_vi authorised: if 3f9ac26b is adopted without the elrule fix, the order was the cause. Check that no adopt step reads elrule output.","violations":[{"slug":"repeated-failure-class","loss_min":19,"loss_usd":10.79,"evidence":"tools/bench/cards/result_146-a1-4.json:3"},{"slug":"device-failed","loss_min":0,"loss_usd":"?","evidence":"tools/cycle_runner.py:633"}],"sources":["tools/bench/cycle_runner_main_20261007_2343.log:19","docs/d1/ring-p4b.md:318","tools/bench/next.json:12","tools/bench/cards/assign_result_146_3.json:12","tools/bench/cards/handback_145_1.json:25","tools/hooks/guard_peer.py:1181","tools/bench/retro.log:6516","archive/peer/2026-10-03-retrospective-cycle143.md:516"],"note":"Window spans cycles 144-146. The Error List predictor blocked a passing session 4 times running (s02-s05). The runner launches retrospectives as a child process, past guard_peer's undisposed check. Round-3 purpose contradicted itself (load_by_vi vs memory_model read-only)."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle146.md
+BGRUN END rc=0 after 342s

@@ -1,0 +1,23 @@
+{"schema":"result/1","id":"146-a1-1","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+{"path":"tools/hooks/guard_write.py","md5":"391a832448bce5cdbec2233317bf09c1"},
+{"path":"tools/hooks/guard_peer.py","md5":"f30355d144a34cc0cffc47b6b3edfd05"},
+{"path":"tools/bench/selftest_c_e3.py","md5":"428878a5412e479aae33a23a965663b7"},
+{"path":"tools/bench/selftest_guard_peer_c146.py","md5":"63fbc78f073029b35322274b90546675"},
+{"path":"tools/bench/gate_fp_queue.jsonl","md5":"00b7ab89c68d4e2df370fac0732694ec"},
+{"path":"tools/bench/diag_c146_a1_1_facts.md","md5":"f5d9e18e7d6258c4d8021e77241cb8d2"}],
+"facts":[
+"guard_write.py 5c7ec80c->391a8324; guard_peer.py 1c54c874->f30355d1; selftest_c_e3.py 98a4b453->428878a5; queue 42c30eca->00b7ab89",
+"fp-43/45/47/48/49/50 reproduced: each cited card pins its file AND lists it in flags.write -> STALE before, none after (diag_c146_a1_1_repro_before.log:3-8, _after.log:3-8)",
+"negative twin: a pin by a card whose flags.write does not cover the file still reports STALE (repro_after.log:10; selftest_c_e3 WR11)",
+"fp-44 reproduced: diag_c144_2_cls.log:1-23 fails, header none/none, ladder jev_gate.log:4689 new-problem -> main rc 2 before, 0 after",
+"fp-46 reproduced: prep_c145_2_pred.log:11 X10 fails rc 1, header none/none, ladder jev_gate.log:4755 new-problem -> rc 2 before, 0 after",
+"fp-46's log carries NO non-fatal marker (prep_c145_2_pred.py:46-50 prints the same GATE FAIL text either way); released by the fp-44 header rule guard_peer.py:1345-1358",
+"guard_peer rule needs a JEV-LADDER new-problem line + RAW header labview none + hardware none on every script of the last run, no TIMEOUT/STALL (guard_peer.py:638)",
+"old self-tests all rc 0 before (diag_c146_a1_1_before.log) and after: c_e3 62/0->64/0, budget 12/0, failre 29/0, jev 29/0, ladder 21/0, samerow 21/0, scan_tmp rc0, 77 1/0, scrreq 12/0",
+"new selftest_guard_peer_c146 11/0 (A fp-44, B fp-46 positive; C-I negatives: no verdict, other class, build, offline-args, timeout, no header, camera) (diag_c146_a1_1_after2.log:12)",
+"gate_fp.py drain run for fp-43..50; list --open prints 0 lines; git commit refused by the permission layer (not run)"],
+"open":["fp-46 is released by the header rule (labview none + hardware none), not by a log-text 'non-fatal' key as the brief worded it - the log has no such marker; accept that, or should the X10 builder print a non-fatal tag?",
+"git commit was refused by the permission layer in this session; the runner's auto-commit must pick up the 2 hooks, 2 selftests, queue and diag_c146_a1_1_* files"],
+"cost":{"usd":null,"minutes":10,"labview_runs":0},
+"note":"Offline only. Tests: tools/bench/diag_c146_a1_1_run.py (runner), diag_c146_a1_1_repro.py (repro). Facts: tools/bench/diag_c146_a1_1_facts.md"}

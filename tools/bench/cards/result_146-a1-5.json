@@ -1,0 +1,30 @@
+{"schema": "result/1", "id": "146-a1-5", "status": "FAIL",
+ "gates": {"pass": 13, "fail": 1},
+ "first_fail": "mk X10s kinds: v18 op 116 p4_w_idx_frameidx compiles 'branch' in v18 but 'connect' in s06 (src TS1 now an s05 uid -1); gate whitelist allowed only wire_sr->connect",
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/plan_ring_p4_s06v18.json", "md5": "8f33ad758acb6d054c69ae34317dbf7d"},
+  {"path": "tools/bench/plan_ring_p4_s06v18_in.json", "md5": "08b8dbe2b9e9f0c4c1a547b610d5fdad"},
+  {"path": "tools/bench/sim/ring_p4_s06v18/s05end/base_provisional.json", "md5": "a6762a055fed468f1c3a2a6f58beb8f3"},
+  {"path": "tools/bench/prep_c146_a1_5_mk.py", "md5": "94275a2c6d5ba6861ccc64890a982c20"},
+  {"path": "tools/bench/diag_c146_a1_5_facts.md", "md5": "18a7d27441f076b7fadc640229e9ed5a"}
+ ],
+ "facts": [
+  "PROVISIONAL start 623.5 = 605.4 + 0.719/op (memory_model.json:70-73) x 17 s05 ops + op0 5.9; by 21 actions it would be 626.4 (prep_c146_a1_5_mk.log:4-6)",
+  "s06 = v18 ops 115..129, 19 actions p4_w_arr_frameidx..p4_ia_bufdiff, no 'of' split; MAIN X10 679.3 (Exec 674.2), margin 0.7; op 130 = 683.3 (mk.log:11,15,35)",
+  "+-5 MB sensitivity: start 618.5 -> cut 131 (21 actions); 628.5 -> cut 127 (17 actions) (mk.log:12-14)",
+  "C2: 9 cross refs, all s05 symbols -> negative END5 uids; 0 refs to s01..s04; pass A replays, TIE 15/15, pass B FINAL provisional, 10 open pairs (mk.log:39-43)",
+  "FAIL: v18 op 116 is 'branch' (stagexec.py:808-809, TS1 created in the same plan); in s06 src={uid:-1,outer} -> 'connect' (stagexec.py:812-813); mk.log:44,46",
+  "Memory is not affected by the 116 kind change: compiled N 15 R 5, Executor 674.2 == table, MAIN 679.3 <= 680 (mk.log:45)",
+  "#2626 at s05 sim end: unwired inputs t2832/t4160/t4165 ('array'), t4168 wired; s06 wires t4160 (op118) and t4165 (op119); op132 (t2832) is past this cut (probe2.log)",
+  "Not run after the FAIL (chat-P2): pred/EL, s06 recipe pair, licence file, dry/prerun; prep_c146_a1_5_session.json not written",
+  "Protected files byte-identical: 155/155, incl. the s05 tree, v18, memory_model 559be4cf and the stage tools (prep_c146_a1_5_check_after.log:160)",
+  "LabVIEW.exe PID 23484 running (check_after.log:161); not started by this card (absent at 00:22 bind), probably the parallel scratch 146-a1-4"
+ ],
+ "open": [
+  "Is a cross-session 'branch' (src = tunnel made in s05, now a uid) acceptable as 'connect' for op 116, or must the plan or stagexec keep it 'branch'? Decides whether the maker's kind whitelist widens",
+  "Start assumption: per-op growth (623.5, cut 129) or per-action growth (626.4)? Either way the cut stays inside the +-5 MB band 127..131"
+ ],
+ "cost": {"usd": null, "minutes": 9, "labview_runs": 0},
+ "note": "Stopped at the first unexpected gate (card chat-P2). Facts: tools/bench/diag_c146_a1_5_facts.md. Jev ladder: no JEV-LADDER row for prep_c146_a1_5_mk.log yet."
+}

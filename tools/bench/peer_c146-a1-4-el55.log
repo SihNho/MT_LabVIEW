@@ -1,0 +1,45 @@
+BGRUN START 2026-10-08 00:48:03 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c146-a1-4-el55 -TaskFile tools/bench/diag_c146_a1_4_hyp_task.md
+BGRUN PID 14984
+OUTCOME: ANSWERED (122s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-08-c146-a1-4-el55.md
+COST: $1.3684  in 18 / out 10880 / cache-create 122804 / cache-read 841358  (118s, 12 turn(s))
+--- ANSWER ---
+**The claim's total is probably right (55 is consistent with the planned end), but its reasoning is wrong, and it has the cause of the gap wrong.** "No stage tool is wrong" is false: `tools/elrule.py` has one concrete defect, and that defect accounts for both missing items. One part also can't be settled yet, because the read does not record which node each item points to.
+
+### 1. Strongest reason the claim is wrong
+- **The gates can't support "55 is the true Error List".** They check that the real graph matches the simulated graph. The prediction came from `elrule`, which reads that same simulated end. A wrong `elrule` produces a wrong 57 while every gate passes.
+- **The two gaps are one defect, not "two derivation errors".** `session_prediction` calls `predict(st0, last, base_total, made, subvis=…)` **without `carry`** (`tools/elrule.py:225`).
+  - So `items(start)` never counts "input" items on nodes made by earlier sessions, even though the docstring says they count (`tools/elrule.py:13`, `:172`).
+  - #5058 is an original node, so the A rule never looks at it at all (`tools/elrule.py:136`, `:153`).
+  - A base item that an s05 row *closes* is therefore never subtracted. The prediction shows this: `open_at_start` lists only local and shift-register items (`tools/bench/plan_ring_p4_s05v18_pred.json:118-135`).
+  - There is a closing report for base inputs that become *unwired* (`tools/elrule.py:30`, `:183`), but nothing for base inputs that become *wired*.
+- **The plan settles the Index Array question, and not with the branch the claim leans towards.**
+  - s05 wires both inputs of s04's Index Array #29843: `p4_t_slot_out` wires its index and `p4_w_pool_in` wires its array (`tools/bench/plan_ring_p4_s05v18.json:91-128`).
+  - #−32 is created with its array unwired (`plan_ring_p4_s05v18_pred.json:195-202`). The array input of Index Array is required.
+  - So the count is 3 − #29843 + #−32 = 3, and the full total is 58 − 2 (shift registers) − 30001 + (−30) − #29843 + #−32 − Image In = **55**.
+  - "#−32 doesn't raise an item" is the unlikely branch, not an equal alternative.
+
+### 2. Alternative explanation the evidence does not exclude
+- Every item in the read has `uid: null`, and `uid_route` says the Selection List op is not built (`errorlist_D1_ring_p4s05_…_003324.json:96-98`, and the same for every item). So "3 Index Array items" could also be {29843, 29879, 30002} with #−32 silent. That would mean #29843 is still broken even with its pool array and slot index wired, for example through a type problem on the pool wire.
+- The total would still be 55, so the count cannot tell these two cases apart.
+- The s04 expected file's attribution "IA #29843 / #29879 / #30002" (`diag_c146_a1_4_elfacts.log:22`) is a label a session wrote, not a uid read.
+- The 'Image In' disappearance is genuine: the item text names the terminal. It closed because `p4_w_img_trk` wires #29843's element output to #5058 Image In.
+
+### 3. What would falsify the claim
+- A double-click on one of the three Index Array items that selects #29843.
+- Or none of the three selects the new Index Array (#−32).
+
+Either way, the build differs from the plan.
+
+### 4. Cheapest test that tells them apart
+- **Offline first:** re-run `elrule.predict` on the s05 step 0 and end step files with `carry={29843, 29879, 30002}`.
+  - Expected 56, from #29843 closing. Then account for the #5058 'Image In' item and expect 55.
+  - Also confirm that #29843's `array` and `index` rows are unwired at step 0 and wired at the end.
+- **Then look at the existing screenshots** taken when items 5, 6 and 9 were double-clicked (already recorded). Exactly one should highlight the new Index Array on diagram 23166, and none should highlight #29843.
+
+### Side finding
+`errorlist_check --role final` was run against **s04's** expected file (58). That is why its "missing 3" includes the two shift-register items that the prediction itself expected to close. That comparison is against the wrong reference and has to be fixed whichever explanation turns out right.
+
+**The fix to make:** pass `carry` (the uids of nodes created in earlier sessions) in `session_prediction`. Also add a closing count for base A-class items that s05 rows wire, at least for #5058 'Image In'. The scratch build's 55 should be accepted as by design only after one of those screenshots identifies the third Index Array item as #−32.
+
+I couldn't save this review to the plan file because the Write tool is disabled in this session.
+BGRUN END rc=0 after 123s

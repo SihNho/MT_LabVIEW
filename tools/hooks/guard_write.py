@@ -76,6 +76,15 @@ def open_card_pins(path):
             ip = it["path"] if os.path.isabs(it["path"]) else os.path.join(ROOT, it["path"])
             if os.path.normcase(os.path.abspath(ip)) != ap:
                 continue
+            # gate-fp fp-43/45/47/48/49/50 (card 146-a1-1): a file the PINNING card itself lists in flags.write is that
+            # card's authorised edit target - its pin is the pre-edit baseline, not a stale copy. Exempt for THAT card
+            # only; a pin by a card whose flags.write does not cover the file still reports.
+            try:
+                import protocol
+                if protocol.path_in_globs(path, (card.get("flags") or {}).get("write") or []):
+                    continue
+            except Exception:              # noqa: BLE001 - unreadable globs: not exempt
+                pass
             if raw is None:
                 with open(path, "rb") as f:
                     b = f.read()
