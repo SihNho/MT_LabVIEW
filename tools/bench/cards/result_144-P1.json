@@ -1,0 +1,25 @@
+{"schema": "result/1", "id": "144-P1", "status": "PASS", "gates": {"pass": 4, "fail": 0}, "first_fail": null, "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/plan_ring_p4_s04v18.json", "md5": "3353cfc483976702fb8e6b2ee8031ce4"},
+  {"path": "tools/bench/plan_ring_p4_s04v18_pred.json", "md5": "f325cdc95f6531500915031e7dabf9ec"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s04v18.py", "md5": "fe3f630c428e00143d54e5be0e18631d"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s04v18_scratch.py", "md5": "f5e4bdf823cf206e7701a8673235046d"},
+  {"path": "tools/bench/prep_c144_p1_facts.md", "md5": "8d99ca314f94b8ef922cb6c1ba4644b8"},
+  {"path": "tools/bench/prep_c144_p1_mk.py", "md5": "d3eb89fde9f27577c131c12aa992b17d"},
+  {"path": "tools/bench/prep_c144_p1_pred.py", "md5": "b12838936ae9c01966cb6b252bcffd88"}],
+ "facts": [
+  "s04 = v18 ops 79..97, 23 actions p4_s1_pickslot..p4_t_n1_out, 19 ops (create 12, connect 4, tunnel 2, stop 1); maker 12/0 prep_c144_p1_mk.log:19",
+  "X10 peak 677.6 <= 680 at provisional 596.0, margin 2.4 MB; next op 98 = 681.5; no 'of' group refused a cut (prep_c144_p1_mk.log:9-10)",
+  "PS1 RingPickSlot_v0 = op 79, first action; SQ1 RingSeqCheck_v0 = op 88, ALSO in s04 (prep_c144_p1_mk.log:10)",
+  "Base = s03v18 sim END step_20 5f31db45 -> sim/ring_p4_s04v18_s03end/base_provisional.json 9b330384; 13 cross refs, all s03 symbols (mk.log:11)",
+  "v18 op 91 wire_sr (reg SL1L, made in s03) compiles to connect once bound to -28; stagexec routes it to wire_sr at run (stagexec.py:1494-1505,2576-2579)",
+  "Copied X10s gate (kinds == v18) FAILED twice on that op; widened to accept exactly wire_sr->connect on an earlier session's register (prep_c144_p1_mk.py)",
+  "EL pred 60 by PD349 = s03 PREDICTED 55 + new 7 (input -99,-88,-84,-76,-51; local -97,-82) - closed 2 (cond -46, local -49); -51=PS1, -88=SQ1 (prep_c144_p1_pred.log:9)",
+  "Dry FAIL both recipes: E1 BASE unbound [-50,-48,-47,-43,-41,-40] (s03-sim objects), 0 of 19 ops; same as 143-P1 provisional (prep_c144_p1_dry.log:27)",
+  "Prerun 13/3 both (X1, X5, X10 UNMEASURED provisional); WARN X14 rows 23 > 15; PS1 drop NOT reached in dry (prep_c144_p1_prerun.log:27-49)",
+  "--prerun --scratch-required exit 3, CENSUS-UNPREDICTED rows 1..23 (prep_c144_p1_scrreq.log:3); no prior-art gate fired; git commit NOT made (git add needs approval)"],
+ "open": [
+  "Accept the widened X10s kinds check (wire_sr -> connect for an s03-made register at op 91), or require the plan to keep wire_sr?",
+  "Margin is 2.4 MB at 596.0: if 144-2 measures s03's load above 598.4 MB, the cut moves before op 97 at rebase."],
+ "cost": {"usd": null, "minutes": 11, "labview_runs": 0},
+ "note": "Offline only. Pass items 1-3 delivered; item 4 (stop in make/replay) not triggered. Dry/prerun FAIL on the provisional base is the known pattern, reached after --rebase. Commit left to the caller: 21 paths listed in prep_c144_p1_facts.md outputs."}

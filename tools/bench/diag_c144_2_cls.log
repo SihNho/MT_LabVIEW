@@ -1,0 +1,46 @@
+BGRUN START 2026-10-07 20:40:45 limit 2.0 min: py -u tools/bench/diag_c144_2_cls.py
+BGRUN PID 16524
+FACT top keys ['script', 'stamp', 'input', 'input_md5_pin', 'work', 'task', 'no_vi_was_run', 'verification_level', 'es_timeline', 'ops', 'saves', 'H', 'claudedev_before', 'input_md5_before', 'pins_before', 'gates', 'facts', 'rows', 'elapsed_s', 'purges', 'stagexec', 'unpredicted', 'census_all', 'term_identity', 'real_end_rows', 'ring_p4_s03v18', 'input_md5_after', 'pins_after']
+FACT bound {"-49": 29720, "-46": 29699, "-45": 16483, "-42": 29662, "-37": 29655, "-36": 29648, "-33": 29576, "-28": 29548, "-27": 29403, "-21": 29566, "-17": 29584, "-13": 29683, "-8": 29396, "-6": 29493, "-4": 29636, "-2": 29432}
+FACT sym -49 uid 29720 classes ['Local', 'TopLevelDiagram']
+FACT sym -46 uid 29699 classes []
+FACT sym -45 uid 16483 classes ['WhileLoop']
+FACT sym -42 uid 29662 classes []
+FACT sym -37 uid 29655 classes []
+FACT sym -36 uid 29648 classes []
+FACT sym -33 uid 29576 classes []
+FACT sym -28 uid 29548 classes []
+FACT sym -27 uid 29403 classes []
+FACT sym -21 uid 29566 classes []
+FACT sym -17 uid 29584 classes []
+FACT sym -13 uid 29683 classes ['Diagram', 'Local']
+FACT sym -8 uid 29396 classes ['GrowableFunction', 'Invoke', 'Node']
+FACT sym -6 uid 29493 classes ['Local', 'TopLevelDiagram']
+FACT sym -4 uid 29636 classes []
+FACT sym -2 uid 29432 classes []
+GATE FAIL | every bound uid has exactly one class | {-49: ['Local', 'TopLevelDiagram'], -46: [], -45: ['WhileLoop'], -42: [], -37: [], -36: [], -33: [], -28: [], -27: [], -21: [], -17: [], -13: ['Diagram', 'Local'], -8: ['GrowableFunction', 'Invoke', 'Node'], -6: ['Local', 'TopLevelDiagram'], -4: [], -2: []}
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"class per bound uid","artefacts":[],"card":"144-a2-1","labview":"build"}
+BGRUN END rc=1 after 1s (RESULT: status=FAIL gates 0/1 first_fail=class per bound uid; the process itself said 0)
+BGRUN START 2026-10-07 20:42:08 limit 2.0 min: py -u tools/bench/diag_c144_2_cls.py
+BGRUN PID 5888
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c144_2_cls.py", line 33, in <module>
+    print("FACT real_end_rows {0}; row keys {1}".format(len(RR), sorted(RR[0].keys()) if RR else None), flush=True)
+AttributeError: 'list' object has no attribute 'keys'
+BGRUN END rc=1 after 1s (NO RESULT LINE)
+BGRUN START 2026-10-07 20:55:59 limit 2.0 min: py -u tools/bench/diag_c144_2_cls.py
+BGRUN PID 5552
+FACT create p4_c_bufdiff class ArrayConstant STEPX lines [79]
+FACT create p4_i_bufdiff class ControlTerminal STEPX lines [87]
+FACT create p4_lr_bufdiff11 class Local STEPX lines [116]
+FACT create p4_ras_bufdiff class GrowableFunction STEPX lines [133]
+FACT create p4_lw_bufdiff class Local STEPX lines [158]
+FACT create p4_k_last class DigitalNumericConstant STEPX lines [232]
+FACT create p4_k_disc class DigitalNumericConstant STEPX lines [256]
+FACT create p4_w1 class WhileLoop STEPX lines [274]
+FACT create p4_lr_num_a class Local STEPX lines [303]
+FACT uid->class {"16483": "WhileLoop", "29396": "GrowableFunction", "29432": "ArrayConstant", "29493": "Local", "29576": "DigitalNumericConstant", "29636": "ControlTerminal", "29662": "DigitalNumericConstant", "29683": "Local", "29720": "Local"}
+GATE PASS | 9 creates, one STEPX line each, 9 bound uids
+GATE PASS | uid->class == diag_c144_2_graph_plan.json edits.made | {'29432': 'ArrayConstant', '29636': 'ControlTerminal', '29493': 'Local', '29396': 'GrowableFunction', '29683': 'Local', '29576': 'DigitalNumericConstant', '29662': 'DigitalNumericConstant', '16483': 'WhileLoop', '29720': 'Local'}
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":2,"fail":0},"first_fail":null,"artefacts":[],"card":"144-a2-1","labview":"build"}
+BGRUN END rc=0 after 1s

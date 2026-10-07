@@ -1,0 +1,830 @@
+{
+ "schema": "stageplan/1",
+ "context": {
+  "s1_key": "D1_s1_copy"
+ },
+ "stage": "ring_p4_s04v18a",
+ "goal": "card 144-P1 PASS A: P4 v18 session 4 (ops 79..97), no open_rows",
+ "base": {
+  "path": "tools/bench/sim/ring_p4_s04v18_s03end/base_provisional.json",
+  "md5": "9b330384656d5facb0ee341f7635fdb9",
+  "provisional": true,
+  "sim_of": {
+   "plan": "tools/bench/plan_ring_p4_s03v18.json",
+   "md5": "da66a0300851133d93881be3c28f2fdc"
+  }
+ },
+ "actions": [
+  {
+   "op": "create",
+   "id": "p4_s1_pickslot",
+   "class": "SubVI",
+   "diagram": -46,
+   "as": "PS1",
+   "subvi_path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\RingPickSlot_v0.vi",
+   "terminals": [
+    {
+     "name": "",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "found",
+     "is_source": true,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "min slot",
+     "is_source": true,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "min Num",
+     "is_source": true,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "last",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "Num",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE subvi (drop_subvi, stagexec.py:438-441,3047-3054) | MEASURED terminals | PD330(a) S1 RingPickSlot_v0.vi md5 6fcf153f (card 142-3, build_ringpickslot_v2.log 87/0: pane 11 Num, 10 last, 3 min Num, 2 min slot, 1 found; unassigned slots '' sinks as bed SubVI rows) replaces p4_gt_last..p4_lt_found + their For/wires (prep_c142_p1_subvi_table.md G2 minus p4_or_w1)"
+  },
+  {
+   "op": "create",
+   "id": "p4_wait",
+   "class": "Function",
+   "diagram": -46,
+   "as": "WT2",
+   "prim": "Wait (ms)",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpWaitDonor_v0.vi",
+    "uid": 163
+   },
+   "terminals": [
+    {
+     "name": "milliseconds to wait",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "millisecond timer value",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE create | MEASURED | P3a p3a_wait (OpWaitDonor_v0 #163) on #639 [draft d9d66246]"
+  },
+  {
+   "op": "create",
+   "id": "p4_wait_k",
+   "class": "DigitalNumericConstant",
+   "diagram": -46,
+   "as": "WK2",
+   "on": "new:WT2.milliseconds to wait",
+   "value": 1,
+   "why": "ROUTE create | MEASURED | P3a p3a_wait_k (const_on_term value 1) [draft d9d66246]"
+  },
+  {
+   "op": "create",
+   "id": "p4_lr_stop_w1",
+   "class": "Local",
+   "diagram": -46,
+   "as": "LRS1",
+   "label": "StopAll",
+   "mode": "read",
+   "terminals": [
+    {
+     "name": "StopAll",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE local_read | PRECEDENT | PD312(d)/PD298(e) LATCH branch: 'stop (end)' Mechanical Action 4 (diag_c138_5_facts.md, OpStopModeB_v0) -> Local of the non-latch indicator StopAll (U4); local of a plan-made indicator = P3b-2 p3b_lr_rotpos (v8 p4_lr_bufdiff11 form); local_read in new W1.body = v8 LRS1 route; PD293(d) W1 exit"
+  },
+  {
+   "op": "create",
+   "id": "p4_or_w1",
+   "class": "Function",
+   "diagram": -46,
+   "as": "OR1",
+   "prim": "Or",
+   "donor": {
+    "donor": "$work",
+    "uid": 10247
+   },
+   "terminals": [
+    {
+     "name": "x .or. y?",
+     "is_source": true,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "y",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "x",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE create primitive | PRECEDENT | PD293(d) Or(found, stop) -> W1.cond; $work donor #10247 'x .or. y?' (on #23166, graph step_18); no Or create ever run"
+  },
+  {
+   "op": "create",
+   "id": "p4_ia_img",
+   "class": "IndexArray",
+   "diagram": 23166,
+   "as": "IAI1",
+   "prim": "Index Array",
+   "donor": {
+    "donor": "$work",
+    "uid": 3163
+   },
+   "terminals": [
+    {
+     "name": "array",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "element",
+     "is_source": true,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "index",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE create | PRECEDENT | $work donor #3163 Index Array (P3b-1 p3b_ia) [draft d9d66246]"
+  },
+  {
+   "op": "create",
+   "id": "p4_fs_n2",
+   "class": "FlatSequence",
+   "diagram": 23166,
+   "as": "FS4",
+   "why": "ROUTE create | PRECEDENT | fs_create MEASURED on case frame #27219 (P3b-1 p3b_fs); on a While body never run [draft d9d66246]"
+  },
+  {
+   "op": "create",
+   "id": "p4_lr_num_b",
+   "class": "Local",
+   "diagram": "new:FS4.f0",
+   "as": "LRN5",
+   "label": "Num",
+   "mode": "read",
+   "terminals": [
+    {
+     "name": "Num",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE create | PRECEDENT | local_read in a FS frame (P3b-1 p3b_lr_num3) [draft d9d66246]"
+  },
+  {
+   "op": "create",
+   "id": "p4_ia_n2",
+   "class": "IndexArray",
+   "diagram": "new:FS4.f0",
+   "as": "IAN1",
+   "prim": "Index Array",
+   "donor": {
+    "donor": "$work",
+    "uid": 3163
+   },
+   "terminals": [
+    {
+     "name": "array",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "element",
+     "is_source": true,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "index",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE create | PRECEDENT | $work donor #3163 Index Array [draft d9d66246]"
+  },
+  {
+   "op": "create",
+   "id": "p4_s2_seqcheck",
+   "class": "SubVI",
+   "diagram": 23166,
+   "as": "SQ1",
+   "subvi_path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\RingSeqCheck_v0.vi",
+   "terminals": [
+    {
+     "name": "n1",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "n2",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "last",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "Latest",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "discards",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "next last",
+     "is_source": true,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "next discards",
+     "is_source": true,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "valid",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE subvi (drop_subvi) | PROVISIONAL terminals: names n1 n2 last Latest discards / next last, next discards, valid from brief_142-P2.md; card 142-4 builds RingSeqCheck_v0.vi now (pane slots + unassigned '' rows unread) | PD330(a) S2 replaces p4_eq_seq..p4_inc_disc + inner wires (G5 scalar core)"
+  },
+  {
+   "op": "create",
+   "id": "p4_lr_latest",
+   "class": "Local",
+   "diagram": 23166,
+   "as": "LRL1",
+   "label": "Latest",
+   "mode": "read",
+   "terminals": [
+    {
+     "name": "Latest",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE create | PRECEDENT | local_read route [draft d9d66246]"
+  },
+  {
+   "op": "create",
+   "id": "p4_ia_n2sink",
+   "class": "IndexArray",
+   "diagram": "new:FS4.f0",
+   "as": "IAZ1",
+   "prim": "Index Array",
+   "donor": {
+    "donor": "$work",
+    "uid": 3163
+   },
+   "terminals": [
+    {
+     "name": "array",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "element",
+     "is_source": true,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "index",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE create | PRECEDENT | PD298(c) the ONE no-effect consumer inside FS4.f0 (array <- a #5058 output, index + element unwired); $work donor #3163 Index Array = P3b-1 p3b_ia route; created in a plan-made FS frame on a While body never run"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_last_gt",
+   "src": {
+    "uid": -28,
+    "term": "inner"
+   },
+   "dst": "new:SQ1.last",
+   "why": "c142-P2 re-pointed dst new:GT2.y -> new:SQ1.last (PD330(a) subVI terminal by name) | ROUTE wire_sr | MEASURED | wire_sr LeftIn (P3a) | card 139-4 (PD315(c)): MOVED before p4_t_last so the register inner face SL1L.inner is WIRED when the p4_t_last group runs (group route cfw = p4_t_n1 form); PD293(c) GT2.y = last unchanged"
+  },
+  {
+   "op": "tunnel",
+   "id": "p4_t_last",
+   "loop": -45,
+   "body": -46,
+   "parent": 23166,
+   "dir": "in",
+   "as": "TL1",
+   "why": "ROUTE tunnel | PRECEDENT | tunnel group into a plan-made While (P3a TI1 was a case tunnel); register inner face -> new loop tunnel never run [draft d9d66246]"
+  },
+  {
+   "op": "wire",
+   "id": "p4_t_last_in",
+   "src": {
+    "uid": -28,
+    "term": "inner"
+   },
+   "dst": "new:TL1.outer",
+   "why": "ROUTE in_group | PRECEDENT | tunnel group into a plan-made While (P3a TI1 was a case tunnel); register inner face -> new loop tunnel never run [draft d9d66246]"
+  },
+  {
+   "op": "wire",
+   "id": "p4_t_last_out",
+   "src": "new:TL1.inner",
+   "dst": "new:PS1.last",
+   "why": "c142-P2 re-pointed dst new:GT1.y -> new:PS1.last (PD330(a) subVI terminal by name) | ROUTE in_group | PRECEDENT | tunnel group into a plan-made While (P3a TI1 was a case tunnel); register inner face -> new loop tunnel never run [draft d9d66246]"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_num_gt",
+   "src": {
+    "uid": -49,
+    "term": "value"
+   },
+   "dst": "new:PS1.Num",
+   "why": "c142-P2 re-pointed dst new:GT1.x -> new:PS1.Num (PD330(a) subVI terminal by name) | ROUTE connect | PRECEDENT | same-diagram connect [draft d9d66246]"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_lt_or",
+   "src": "new:PS1.found",
+   "dst": "new:OR1.x",
+   "why": "c142-P2 re-pointed src new:LT1.x < y? -> new:PS1.found (PD330(a) subVI terminal by name) | ROUTE connect | PRECEDENT | PD293(d) found -> Or x (replaces draft p4_w_stop LT1 -> W1.cond)"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_stop_or",
+   "src": "new:LRS1.value",
+   "dst": "new:OR1.y",
+   "why": "ROUTE connect | PRECEDENT | PD293(d) program stop -> Or y"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_or_cond",
+   "src": "new:OR1.x .or. y?",
+   "dst": {
+    "uid": -45,
+    "term": "cond"
+   },
+   "why": "ROUTE stop | PRECEDENT | PD293(d) Or -> W1 cond; stop route OpStopFromNode_v0 (stagexec.py:711; plan_disp DL1)"
+  },
+  {
+   "op": "tunnel",
+   "id": "p4_t_n1",
+   "loop": -45,
+   "body": -46,
+   "parent": 23166,
+   "dir": "out",
+   "as": "TN1",
+   "why": "ROUTE tunnel | PRECEDENT | output tunnel of a plan-made While (last value) never run [draft d9d66246]"
+  },
+  {
+   "op": "wire",
+   "id": "p4_t_n1_in",
+   "src": "new:PS1.min Num",
+   "dst": "new:TN1.inner",
+   "why": "c142-P2 re-pointed src new:AMM1.min value -> new:PS1.min Num (PD330(a) subVI terminal by name) | ROUTE in_group | PRECEDENT | output tunnel of a plan-made While (last value) never run [draft d9d66246]"
+  },
+  {
+   "op": "wire",
+   "id": "p4_t_n1_out",
+   "src": "new:TN1.outer",
+   "dst": "new:SQ1.n1",
+   "why": "c142-P2 re-pointed dst new:EQ2.x -> new:SQ1.n1 (PD330(a) subVI terminal by name) | ROUTE in_group | PRECEDENT | output tunnel of a plan-made While (last value) never run [draft d9d66246]"
+  }
+ ],
+ "final": false,
+ "finalized": {
+  "base": {
+   "path": "tools/bench/sim/ring_p4_s04v18_s03end/base_provisional.json",
+   "md5": "9b330384656d5facb0ee341f7635fdb9"
+  },
+  "plan_in": {
+   "path": "tools/bench/sim/ring_p4_s04v18a/plan_ring_p4_s04v18a_in.json",
+   "md5": "731e20b0c35aff9bbf08d1678e0a3f3f"
+  },
+  "last_step": {
+   "path": "tools/bench/sim/ring_p4_s04v18a/step_23_wire.json",
+   "md5": "5c3a68df37e5e8ccdd2d8511dadd37ac"
+  },
+  "summary": {
+   "path": "tools/bench/sim/ring_p4_s04v18a/summary.json",
+   "md5": "96c84627c01421d3b280ff6280c00736"
+  },
+  "end_cdiff_rows": [
+   "11261|Terminal|array|0",
+   "11261|Terminal|element|0",
+   "2626|Terminal|array|0",
+   "2626|Terminal|array|1",
+   "2626|Terminal|array|2",
+   "2626|Terminal|array|3",
+   "2626|Terminal|element|0",
+   "2626|Terminal|element|1",
+   "2626|Terminal|element|2",
+   "28083|Terminal|Magnet position|0",
+   "29625|Terminal|index (col)|0",
+   "29973|Terminal|element|1",
+   "376|Terminal|current frame data array in|0",
+   "376|Terminal|frame index|0",
+   "5058|Terminal|Image In|0",
+   "8634|Terminal|index (col)|0"
+  ],
+  "failed": null,
+  "first_divergent": {
+   "n": 0,
+   "op": "base",
+   "id": null,
+   "rows_from_here": 16
+  },
+  "open_rows": [],
+  "open_rows_match": false,
+  "open_rows_match_legacy": false,
+  "open_rows_classed": {
+   "ok": false,
+   "want": [],
+   "c4_n": 0,
+   "c4_keys": 0,
+   "c4_bad": [],
+   "unclassed": []
+  },
+  "cdiff_inputs": {
+   "labels": "node_labels_default",
+   "labels_n": 626,
+   "fs_pairs": "state",
+   "fs_pairs_n": 576
+  },
+  "step_files": [
+   {
+    "n": 0,
+    "op": "base",
+    "path": "tools/bench/sim/ring_p4_s04v18a/step_00_base.json",
+    "md5": "8f80887396ed81be0c7c818d09b60183"
+   },
+   {
+    "n": 1,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_s04v18a/step_01_create.json",
+    "md5": "c3f2fa35ae43b10ed43328f22dd22b53"
+   },
+   {
+    "n": 2,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_s04v18a/step_02_create.json",
+    "md5": "37bc2750c3a309d3e0a3518819830475"
+   },
+   {
+    "n": 3,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_s04v18a/step_03_create.json",
+    "md5": "127ff8cc731e5ab9b5421475c01311e2"
+   },
+   {
+    "n": 4,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_s04v18a/step_04_create.json",
+    "md5": "e64f0d528880b9e137314c3edc56e364"
+   },
+   {
+    "n": 5,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_s04v18a/step_05_create.json",
+    "md5": "bf52f19e77c793e04e4d7f65cdaf0d8b"
+   },
+   {
+    "n": 6,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_s04v18a/step_06_create.json",
+    "md5": "1e58df2878b60f9c4951a824b1915e73"
+   },
+   {
+    "n": 7,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_s04v18a/step_07_create.json",
+    "md5": "03eb3bcf1046b62a79f10d885b9ce1c5"
+   },
+   {
+    "n": 8,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_s04v18a/step_08_create.json",
+    "md5": "f3ff2e61b9a3cbe2dd94ed8c0c06aede"
+   },
+   {
+    "n": 9,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_s04v18a/step_09_create.json",
+    "md5": "cc0b751022d029f979072b7aa6304bad"
+   },
+   {
+    "n": 10,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_s04v18a/step_10_create.json",
+    "md5": "8a37801064d271e49b327dd3a4c90a01"
+   },
+   {
+    "n": 11,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_s04v18a/step_11_create.json",
+    "md5": "120a31cd860ee1b7f55de2ea626d97f5"
+   },
+   {
+    "n": 12,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_s04v18a/step_12_create.json",
+    "md5": "c4f88e50247aa5ee7d912c817375b400"
+   },
+   {
+    "n": 13,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s04v18a/step_13_wire.json",
+    "md5": "9d1292318e301e0d4afbdaf32ac78d91"
+   },
+   {
+    "n": 14,
+    "op": "tunnel",
+    "path": "tools/bench/sim/ring_p4_s04v18a/step_14_tunnel.json",
+    "md5": "9d03743f4fcecc5e668b5f710b463aae"
+   },
+   {
+    "n": 15,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s04v18a/step_15_wire.json",
+    "md5": "bb94771a8c063112f40ca63f5b01c7df"
+   },
+   {
+    "n": 16,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s04v18a/step_16_wire.json",
+    "md5": "e17aee46c0ac4c47125a1bc4bce13661"
+   },
+   {
+    "n": 17,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s04v18a/step_17_wire.json",
+    "md5": "9f1ff83ca1d4cfab607896809e633f1b"
+   },
+   {
+    "n": 18,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s04v18a/step_18_wire.json",
+    "md5": "a11b8fead90d47a557e8da8b1055a691"
+   },
+   {
+    "n": 19,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s04v18a/step_19_wire.json",
+    "md5": "f8aff94805337592e063406a1f6e466d"
+   },
+   {
+    "n": 20,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s04v18a/step_20_wire.json",
+    "md5": "292a3cb04b1380b1dc3c8f6a53b3c8ad"
+   },
+   {
+    "n": 21,
+    "op": "tunnel",
+    "path": "tools/bench/sim/ring_p4_s04v18a/step_21_tunnel.json",
+    "md5": "1d3e31f5b87d38bb39b486162dd1af69"
+   },
+   {
+    "n": 22,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s04v18a/step_22_wire.json",
+    "md5": "c6e5d416549954f87e17c32ef3b2dbca"
+   },
+   {
+    "n": 23,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s04v18a/step_23_wire.json",
+    "md5": "5c3a68df37e5e8ccdd2d8511dadd37ac"
+   }
+  ],
+  "undecided": 0,
+  "at": "2026-10-07 20:12:58",
+  "fs_routes": {},
+  "addr_pos": [
+   {
+    "n": 3,
+    "addr": "new:WT2.milliseconds to wait",
+    "source": false,
+    "owner": -64,
+    "index": 0,
+    "class": "ParameterTerminal",
+    "name": "milliseconds to wait"
+   },
+   {
+    "n": 13,
+    "addr": "{\"term\":\"inner\",\"uid\":-28}",
+    "source": true,
+    "owner": -28,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 13,
+    "addr": "new:SQ1.last",
+    "source": false,
+    "owner": -88,
+    "index": 2,
+    "class": "Terminal",
+    "name": "last"
+   },
+   {
+    "n": 15,
+    "addr": "{\"term\":\"inner\",\"uid\":-28}",
+    "source": true,
+    "owner": -28,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 15,
+    "addr": "new:TL1.outer",
+    "source": false,
+    "owner": -104,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 16,
+    "addr": "new:TL1.inner",
+    "source": true,
+    "owner": -104,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 16,
+    "addr": "new:PS1.last",
+    "source": false,
+    "owner": -51,
+    "index": 10,
+    "class": "Terminal",
+    "name": "last"
+   },
+   {
+    "n": 17,
+    "addr": "{\"term\":\"value\",\"uid\":-49}",
+    "source": true,
+    "owner": -49,
+    "index": 0,
+    "class": "Terminal",
+    "name": "Num"
+   },
+   {
+    "n": 17,
+    "addr": "new:PS1.Num",
+    "source": false,
+    "owner": -51,
+    "index": 11,
+    "class": "Terminal",
+    "name": "Num"
+   },
+   {
+    "n": 18,
+    "addr": "new:PS1.found",
+    "source": true,
+    "owner": -51,
+    "index": 1,
+    "class": "Terminal",
+    "name": "found"
+   },
+   {
+    "n": 18,
+    "addr": "new:OR1.x",
+    "source": false,
+    "owner": -72,
+    "index": 2,
+    "class": "ParameterTerminal",
+    "name": "x"
+   },
+   {
+    "n": 19,
+    "addr": "new:LRS1.value",
+    "source": true,
+    "owner": -70,
+    "index": 0,
+    "class": "Terminal",
+    "name": "StopAll"
+   },
+   {
+    "n": 19,
+    "addr": "new:OR1.y",
+    "source": false,
+    "owner": -72,
+    "index": 1,
+    "class": "ParameterTerminal",
+    "name": "y"
+   },
+   {
+    "n": 20,
+    "addr": "new:OR1.x .or. y?",
+    "source": true,
+    "owner": -72,
+    "index": 0,
+    "class": "ParameterTerminal",
+    "name": "x .or. y?"
+   },
+   {
+    "n": 22,
+    "addr": "new:PS1.min Num",
+    "source": true,
+    "owner": -51,
+    "index": 3,
+    "class": "Terminal",
+    "name": "min Num"
+   },
+   {
+    "n": 22,
+    "addr": "new:TN1.inner",
+    "source": false,
+    "owner": -113,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 23,
+    "addr": "new:TN1.outer",
+    "source": true,
+    "owner": -113,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 23,
+    "addr": "new:SQ1.n1",
+    "source": false,
+    "owner": -88,
+    "index": 0,
+    "class": "Terminal",
+    "name": "n1"
+   }
+  ],
+  "fs_border_gate": {
+   "status": "PASS",
+   "unmeasured": [],
+   "used": {},
+   "note": "graph has no fs_measured"
+  }
+ }
+}

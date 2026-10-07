@@ -1,0 +1,23 @@
+{"schema":"result/1","id":"144-a2-2","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/plan_ring_p4_s04v18.json","md5":"9ff46b0ece1f238c831d7786616c4f05"},
+ {"path":"tools/bench/plan_ring_p4_s04v18_provisional_3353cfc4.json","md5":"3353cfc483976702fb8e6b2ee8031ce4"},
+ {"path":"tools/bench/plan_ring_p4_s04v18_pred.json","md5":"90eff870c8afc31a42bb6f3558ad4923"},
+ {"path":"tools/bench/sim/ring_p4_s04v18_base_real_fsmap.json","md5":"a63f59294ef4267932b8904336b4ccb8"},
+ {"path":"tools/bench/prep_c144_a2_2_facts.md","md5":"a1499e91aa923a36e091ff352ddcc3d7"}],
+"facts":[
+ "Rebase PASS: plan 3353cfc4 -> 9ff46b0e, 49 uids bound, re-sim final=True; REBIND 15 nodes, 1 frame, 26 terms by map, re-issued [] (prep_c144_a2_2_rebase.log:7,56)",
+ "No REUSE-NOTED line; FALLBACK 1: node #-46 -> #29699 inferred by map, no creation-map entry; W1 -45 -> #16483 row-less (prep_c144_a2_2_rebase.log:4-5)",
+ "X10 at 598.5: peak 680.1 > 680.0, margin -0.1 MB (provisional 677.6 at 596.0); next op 98 = 684.0; first op over 680 = op 97 (prep_c144_a2_2_pred.log)",
+ "Pred script 6/1, the one FAIL = that X10 gate (non-fatal by design, pred written below_fail:false); pred f325cdc9 -> 90eff870 (prep_c144_a2_2_pred.log)",
+ "EL PD349 on MEASURED s03 55: predicted 60 = +7 [input -49,-38,-34,-26,-1; local -47,-32] -2 [cond 29699, local 29720], uncertain [] (prep_c144_a2_2_pred.log)",
+ "Main dry PASS, E1 19 ops == sim; PS1 drop resolves: STEPX 01 p4_s1_pickslot bound {-1:10000001} diff 0 (prep_c144_a2_2_dry.log:29)",
+ "Dry op 14: STALE-ADDRESS #29548 not in Diagram #23166 Nodes[] -> fresh read + 1 retry, then diff 0 (prep_c144_a2_2_dry.log:54)",
+ "Prerun 16/0 main and 16/0 scratch; WARN X13 x3, X14 23 rows > 15; prerun's own X10 656.7 / 651.6 (prep_c144_a2_2_prerun.log:98-101)",
+ "Scratch recipe MEM_STOP_MB 680.0 vs X10 from pred 680.1: the stop sits below the predicted peak (prep_c144_a2_2_scr_dry.log:16)",
+ "--scratch-required exit 3 SCRATCH-REQUIRED, CENSUS-UNPREDICTED rows 1..23 (prep_c144_a2_2_scrreq.log:3)"],
+"open":[
+ "X10 at the measured 598.5 is 680.1 > 680 (margin -0.1, op 97 is the first over): accept, re-cut s04 to ops 79..96, or change the start/limit? Card said report only.",
+ "Scratch stop MEM_STOP_MB 680 is below the pred's 680.1 peak, so a scratch run as written is predicted to hit its own memory stop near the end."],
+"cost":{"usd":null,"minutes":8,"labview_runs":0},
+"note":"Offline only. Facts: tools/bench/prep_c144_a2_2_facts.md. New script tools/bench/prep_c144_a2_2_pred.py (copy of prep_c144_1_pred.py; X10 gate non-fatal per brief step 2). No Jev ladder row for the pred log."}

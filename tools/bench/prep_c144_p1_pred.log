@@ -1,0 +1,14 @@
+BGRUN START 2026-10-07 20:13:54 limit 5.0 min: py -u tools/bench/prep_c144_p1_pred.py
+BGRUN PID 18540
+GATE PASS | RB plan FINAL on a provisional base tools/bench/sim/ring_p4_s04v18_s03end/base_provisional.json (sim_of {'plan': 'tools/bench/plan_ring_p4_s03v18.json', 'md5': 'da66a0300851133d93881be3c28f2fdc'}), open_rows_match, 23 actions == session table 23 | {'base': {'path': 'tools/bench/sim/ring_p4_s04v18_s03end/base_provisional.json', 'md5': '9b330384656d5facb0ee341f7635fdb9', 'provisional': True, 'sim_of': {'plan': 'tools/bench/plan_ring_p4_s03v18.json', 'md5': 'da66a0300851133d93881be3c28f2fdc'}}}
+GATE PASS | EL0 s03v18 pred keyed to da66a030 | {'path': 'tools/bench/plan_ring_p4_s03v18.json', 'md5': 'da66a0300851133d93881be3c28f2fdc'}
+GATE PASS | C compile: 23 actions -> 19 ops, each action once | 
+FACT X10 at start 596.0: N 19 R 15 peak 677.6 fail_above 680.0 ok True | prerun's own start None -> peak None
+GATE PASS | X10 peak 677.6 at start 596.0 <= fail threshold 680.0 (memory_model.json) | {'N': 19, 'R': 15, 'P': 0, 'bind': 14, 'peak_mb': 677.6, 'start_mb': 596.0, 'fail_above_mb': 680.0, 'ok': True, 'checkpoints': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 19]}
+GATE PASS | X17 over s04v18 | 5 primitive create action(s), every donor label == its prim
+EL PD349 s04: base 55 new [['input', -99], ['input', -88], ['input', -84], ['input', -76], ['input', -51], ['local', -97], ['local', -82]] closed [['cond', -46], ['local', -49]] -> 60; per class new {'input': 5, 'local': 2} closed {'cond': 1, 'local': 1}; open at start [['cond', -46], ['local', -49], ['sr', -36], ['sr', -27]]; uncertain []; detail_end {'sr': [[-27, [-29]], [-36, [-38]]], 'input': [[-51, ['', '', '', '', '', '', '']], [-76, ['array', 'index']], [-84, ['array', 'index']], [-88, ['n2', 'Latest', 'discards']], [-99, ['array', 'index']]], 'local': [[-82, ['Num']], [-97, ['Latest']]]}; created [-113, -104, -99, -97, -88, -84, -82, -81, -80, -76, -72, -70, -67, -64, -51]; steps tools/bench/sim/ring_p4_s04v18/step_00_base.json -> tools/bench/sim/ring_p4_s04v18/step_23_wire.json
+FACT EL rule: PD333(b) fixed predictor (tools/elrule.py; SR class + narrowed A by PD349): L unwired Local + C While cond + SR RightShiftRegister with an unwired inner sink + A created node with an unwired input other than its C/SR row; items(end) - items(start) added, items(start) - items(end) debited
+FACT ops {'create': 12, 'connect': 4, 'tunnel': 2, 'stop': 1} census {} overall UNPREDICTED unpredicted 23 | EL 60 | end rows 16 open pairs 11
+GATE PASS | SP pred written, keyed to the plan md5 | 
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":6,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/plan_ring_p4_s04v18.json","md5":"3353cfc483976702fb8e6b2ee8031ce4"},{"path":"tools/bench/plan_ring_p4_s04v18_pred.json","md5":"f325cdc95f6531500915031e7dabf9ec"}],"card":"144-P1","labview":"none"}
+BGRUN END rc=0 after 1s

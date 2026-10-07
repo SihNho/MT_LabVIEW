@@ -1,0 +1,16 @@
+{
+ "schema": "task/1", "id": "chat-A1", "kind": "build",
+ "goal": "Purpose-based cycles: judgement sets the purpose, a Sonnet 5.5 high assignment session dispatches cards, mechanical hand-back, time/USD caps instead of the 6-card cap",
+ "why": "User 2026-10-04 approved after the cloud bench (report_cloud.md). Detail: brief_chat-A1.md",
+ "inputs": [{"path": "tools/bench/cards/brief_chat-A1.md", "md5": "2bc2c7446fd6a76f6c4afab031e0c615"}],
+ "pass": [
+  "runner flow judgement -> assignment -> handback/purpose-met implemented; assignment session claude-sonnet-5-5 high, top-level unless measured otherwise",
+  "hand-back triggers a-d enforced by code; 3 h / 60 USD caps from a config file; runaway backstop; MAX_DISPATCHES no longer the cycle limit",
+  "stub self-tests for each trigger, caps, purpose met; existing cycle_runner/guard_session self-tests green or explained; no real runner run"
+ ],
+ "outputs": ["tools/cycle_runner.py"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/cycle_runner.py", "tools/hooks/guard_session.py", "tools/hooks/guard_assign.py", ".claude/agents/**", "tools/bench/**", "docs/protocol/**"], "status_edit": false, "git_commit": true, "peers": ["fact", "hypothesis"]},
+ "budget": {"failures": 2, "minutes": 180}, "unblocks": "M4",
+ "rules": ["Runner stays stopped", "Do not edit files owned by chat-E3", "Edit tool only"]
+}

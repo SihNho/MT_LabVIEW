@@ -1,0 +1,37 @@
+BGRUN START 2026-10-07 20:01:41 limit 3.0 min: py -u tools/bench/prep_c144_1_probe.py
+BGRUN PID 20012
+FACT plan p4_w_b_arr src new:LRB1.value dst new:RAB1.array | p4_w_b_out src new:RAB1.output array dst new:LWB1.value
+FACT stored step_07_wire.json new:LRB1.value -> owner -6 rows [(-7, 'BufDiff', True, -15, 'Local', 'Terminal')]
+GATE PASS | stored step_07_wire.json: new:LRB1.value = the Local's one row 'BufDiff' (source), wired | [(-7, 'BufDiff', True, -15, 'Local', 'Terminal')]
+FACT stored step_08_wire.json new:LWB1.value -> owner -13 rows [(-14, 'BufDiff', False, -16, 'Local', 'Terminal')]
+GATE PASS | stored step_08_wire.json: new:LWB1.value = the Local's one row 'BufDiff' (sink), wired | [(-14, 'BufDiff', False, -16, 'Local', 'Terminal')]
+  BASE-FLIPS seeded 6 terminal(s) on 3 undirected tunnel(s): [9503, 10177, 29777]
+  STEP 01 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 02 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 03 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 04 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 05 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 06 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 07 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 08 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 09 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 10 wire_remove_loose_ends ok cands=0 cdiff=16 provisional
+  STEP 11 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 12 wire_remove_loose_ends ok cands=0 cdiff=16 provisional
+  STEP 13 add_shift_reg    ok cands=0 cdiff=16 measured:tools/bench/opmodels/add_shift_reg.json@c184ce030aea6aaee181fc7b97eeca83
+  STEP 14 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 15 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 16 add_shift_reg    ok cands=0 cdiff=16 measured:tools/bench/opmodels/add_shift_reg.json@c184ce030aea6aaee181fc7b97eeca83
+  STEP 17 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 18 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 19 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 20 create           ok cands=0 cdiff=16 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+FACT fresh sim (current stagesim + termclass_table): failed None final True open_rows_match True end rows 16
+FACT fresh step_07_wire.json new:LRB1.value -> owner -6 rows [(-7, 'BufDiff', True, -15, 'Local', 'Terminal')]
+GATE PASS | fresh step_07_wire.json: new:LRB1.value = the Local's one row 'BufDiff' (source), wired | [(-7, 'BufDiff', True, -15, 'Local', 'Terminal')]
+FACT fresh step_08_wire.json new:LWB1.value -> owner -13 rows [(-14, 'BufDiff', False, -16, 'Local', 'Terminal')]
+GATE PASS | fresh step_08_wire.json: new:LWB1.value = the Local's one row 'BufDiff' (sink), wired | [(-14, 'BufDiff', False, -16, 'Local', 'Terminal')]
+FACT fresh vs stored step states: 21 compared, differ []
+GATE PASS | fresh simulation states == stored finalize step files (all steps) | []
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"artefacts":[],"card":"144-1","labview":"none"}
+BGRUN END rc=0 after 24s

@@ -1,0 +1,54 @@
+{
+ "schema": "task/1",
+ "id": "chat-F3b",
+ "kind": "build",
+ "goal": "Real-LabVIEW test records for the scripting functions with test plans (P4 v18 routes first); coverage report; gate to refuse mode only if every P4-plan function has a fresh PASS",
+ "why": "Escalation rung 1 of chat-F3 (failure budget spent; loop_in no-SubVI finding). Detail: brief_chat-F3b.md",
+ "inputs": [
+  {
+   "path": "tools/bench/cards/brief_chat-F3b.md",
+   "md5": "0f493a62f7b073da8a96f4c8ca267eb5"
+  },
+  {
+   "path": "tools/bench/cards/brief_chat-F3.md",
+   "md5": "5c9f2e5d1326069f944c0ca0b2ad638e"
+  }
+ ],
+ "pass": [
+  "every function with a plan has a fresh record (PASS or FAIL with measured numbers) from real LabVIEW on scratch VIs; no function changed",
+  "coverage of the s04..s06 plan functions reported; gate mode set by the stated rule; capability block regenerated, drift none",
+  "handles flat, LabVIEW closed, nothing outside scratch written in claudeDev; PD in tooling.md + INDEX; committed"
+ ],
+ "outputs": [
+  "tools/bench/fn_records/gate_config.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": true,
+  "write": [
+   "tools/**",
+   "docs/toolkit-capabilities.md",
+   "docs/d1/tooling.md",
+   "docs/d1/INDEX.md"
+  ],
+  "status_edit": false,
+  "git_commit": true,
+  "peers": [
+   "hypothesis"
+  ]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 180
+ },
+ "unblocks": "M4",
+ "rules": [
+  "Scratch VIs only, never the bed chain or originals",
+  "Do not change functions",
+  "Edit tool only"
+ ],
+ "escalation": 1,
+ "retry_of_card": "chat-F3"
+}

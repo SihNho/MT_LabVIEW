@@ -1,0 +1,32 @@
+{
+ "schema": "task/1", "id": "144-3", "kind": "build",
+ "goal": "TOOLING, run alone: close gate false positives fp-34 (rc 3 counted failed by guard_peer) and fp-41 (selftest_fn_f2 not VI_MOD_EXEMPT) with a verified fix, then gate_fp.py drain --fixed --selftest",
+ "why": "Cycle 144 pass item 4. Both entries are open in tools/bench/gate_fp_queue.jsonl (fp-34 line 34, fp-41 line 41). No LabVIEW card is live: 144-2 was blocked before launch, so a gate-tool edit is allowed now (PD281(a)).",
+ "inputs": [
+  {"path": "tools/bench/gate_fp_queue.jsonl"},
+  {"path": "tools/gate_fp.py"},
+  {"path": "tools/stage_prerun.py", "md5": "f2529415abfcacf667c78b852d41eae8"},
+  {"path": "tools/bench/selftest_fn_f2.py"}
+ ],
+ "pass": [
+  "fp-34: guard_peer rc 3 handling read at hooks/guard_peer.py; fix already in place or named exactly; no hooks edit by this card",
+  "fp-41: selftest_fn_f2.py exempt from the is_vi_modifying check (VI_MOD_EXEMPT_PATHS); dry-check shows the cmd no longer refused",
+  "gate_fp.py drain --fixed --selftest ran: PASS lines quoted; queue shows fp-34 and fp-41 drained",
+  "any item whose fix needs tools/hooks/** = RETURN with file:line and the exact edit, not drained"
+ ],
+ "outputs": ["tools/bench/gate_fp_queue.jsonl", "tools/bench/diag_c144_3_facts.md"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/stage_prerun.py", "tools/bench/gate_fp_queue.jsonl", "tools/bench/diag_c144_3*", "tools/bench/selftest_gate_fp*"],
+  "status_edit": false, "git_commit": true, "peers": []},
+ "budget": {"failures": 2, "minutes": 40},
+ "advances": ["M3"],
+ "requires": [
+  {"kind": "file", "name": "tools/gate_fp.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"}
+ ],
+ "rules": [
+  "Offline only; no LabVIEW; edit only stage_prerun.py and the queue; never tools/hooks/**",
+  "A drain needs a verified fix; a refusal that is correct is noted, not drained",
+  "Return at the first unexpected result"
+ ]
+}

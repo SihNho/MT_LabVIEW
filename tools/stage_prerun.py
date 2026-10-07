@@ -3127,7 +3127,10 @@ VI_MOD_EXEMPT = frozenset(("stage_prerun.py", "stagekit.py", "stagexec.py", "sta
 # save_route / create_local_read on a fake Stage and was refused as a VI-modifying launch (material_marker.log:2185).
 # Exempt BY PROJECT PATH AND BYTES (sha256 pin, archive/peer/2026-09-27-c103d-hooks-before.md s3, accepted): the same bytes
 # under any other path, or other bytes at this path, are still classified.
-VI_MOD_EXEMPT_PATHS = {"tools/bench/selftest_stagekit.py": "82ab60d432900ae916a6ad67a2aad47951a66a3aca98d85b82d3d271bede8b67"}
+VI_MOD_EXEMPT_PATHS = {"tools/bench/selftest_stagekit.py": "82ab60d432900ae916a6ad67a2aad47951a66a3aca98d85b82d3d271bede8b67",
+                       # card 144-3 (fp-41): card chat-F2's offline self-test - COM stubbed, functions loaded from source by
+                       # ast onto fakes (selftest_fn_f2.py:8-14); same class and same byte-pin rule as selftest_stagekit
+                       "tools/bench/selftest_fn_f2.py": "c744f767ef9f3c29f5db4100854858051dff6d17694db0a6d1cd045b7a7ff508"}
 
 
 def vi_modifying_calls(path):

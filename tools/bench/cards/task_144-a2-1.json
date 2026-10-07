@@ -1,0 +1,47 @@
+{
+ "schema": "task/1", "id": "144-a2-1", "kind": "build",
+ "goal": "P4 session 3 (PD336(a)): ONE scratch of plan_ring_p4_s03v18.json on a s02 byte copy, adopt on full PASS, full EL, fresh load + graph read. Re-issue of 144-2 unchanged.",
+ "why": "144-2 was BLOCKED before LabVIEW by guard_cycle; the owed violation decisions are now written. Pred e1ff772c (EL 55, X10 676.4) and both recipes dry PASS + prerun 16/0 by 144-1; the scratch census becomes the prediction (PD336(a)).",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_144-2.md", "md5": "1c38f3662453dd67e2c0e32819b6f17a"},
+  {"path": "tools/bench/plan_ring_p4_s03v18.json", "md5": "da66a0300851133d93881be3c28f2fdc"},
+  {"path": "tools/bench/plan_ring_p4_s03v18_pred.json", "md5": "e1ff772ca320148ceaee0f54dafda8ee"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s03v18.py", "md5": "61b0faf5e0fd327d8abadf51b93f9cea"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s03v18_scratch.py", "md5": "fa6423abbb4b3322d2e4517084d684e3"},
+  {"path": "tools/bench/graph_ring_p4s02_20261003_112505.json", "md5": "eda9db4088d1be89623e6333268e09ff"},
+  {"path": "tools/bench/prep_c144_1_facts.md", "md5": "d292817b49f35a30518a8597b2364e79"}
+ ],
+ "pass": [
+  "inputs md5 re-checked unchanged before the launch (all 7)",
+  "scratch: every op real == sim, prim + D/TD gates PASS, LRB1/LWB1 .value resolve, peak <= 680, MEMSTOP not hit",
+  "Error List == 55 against the pred's EL block (a third value or a refusal on LRB1/LWB1.value or a raw-uid-across-delete refusal = RETURN with facts)",
+  "measured census written into the s03v18 pred by a script citing the log line",
+  "adopted D1_ring_p4s03_<stamp>.vi + md5 (adopt_scratch by import), full EL + expected file, fresh-instance load MB, graph_ring_p4s03_<stamp>.json + md5",
+  "s02 md5 84cac487 and bed md5 unchanged; handles flat; LabVIEW closed and verified gone"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p4s03_<stamp>.vi",
+  "tools/bench/graph_ring_p4s03_<stamp>.json",
+  "tools/bench/errorlist_expected_D1_ring_p4s03_<stamp>.json",
+  "tools/bench/diag_c144_2_facts.md"
+ ],
+ "flags": {"labview": "build", "gui": true, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/diag_c144_2*", "tools/bench/launch_*c144*", "tools/bench/scratch_*c144*", "tools/bench/plan_ring_p4_s03v18_pred.json", "tools/bench/graph_ring_p4s03_*", "tools/bench/errorlist_*p4s03*", "tools/bench/adopted_scratch.jsonl", "tools/bench/prior_art*", "archive/peer/**", "tools/bench/gate_fp_queue.jsonl"],
+  "status_edit": false, "git_commit": true, "peers": ["priorart"]},
+ "budget": {"failures": 2, "minutes": 120},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "D1_ring_p4s02_20261003_110001.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "tools/prior_art_review.py"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p4_s03v18_scratch.py"}
+ ],
+ "rules": [
+  "Bed and s02 file never opened for editing; the scratch edits a byte copy only",
+  "ONE scratch run; return at the first result that differs from the prediction (LabVIEW closed, files saved)",
+  "No stage-tool edits; a bench-tool fault is a RETURN plus a gate-fp entry",
+  "Never launch plan_ring_p4_s02v18.json, plan_ring_p4_s02.json or plan_ring_p4_rasrest.json",
+  "result/1 carries the JEV-LADDER row for any failing log",
+  "If guard_cycle refuses the launch again: RETURN with the refusal text; never edit violation-decisions.md"
+ ]
+}

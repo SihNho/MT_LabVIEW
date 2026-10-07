@@ -1,0 +1,20 @@
+{"schema":"result/1","id":"144-a2-3","status":"PASS","gates":{"pass":32,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+{"path":"tools/hooks/guard_peer.py","md5":"1c54c874a9f9f9f6583dae3260d28aea"},
+{"path":"tools/bench/selftest_guard_peer_scrreq_c144.py","md5":"f24ee465c4760913cc7f285fd00786cb"},
+{"path":"tools/bench/diag_c144_a2_3_stoprec.py","md5":"6db026e3ae199ca32ae7f6cc170f0e09"},
+{"path":"tools/bench/gate_fp_queue.jsonl","md5":"122d785967da551c958fd4b5eed2f4da"},
+{"path":"tools/bench/diag_c144_a2_3_facts.md","md5":"ae5121f0fab8ab265fd49db623eaa3b2"}],
+"facts":[
+"guard_peer.py:189-193 carve-out: rc==3, no RESULT, no timeout, cmd matches stage_prerun.py --scratch-required, ^SCRATCH-REQUIRED | line -> (False, None); return now at :194",
+"selftest_guard_peer_scrreq_c144.log: 12/0 - real prep_c140_2_scrreq_r3.log not failed; rc3 w/o line, rc3 recipe/--rebase/plain -> failed; rc1/rc2 -> BGRUN END rc=1|2 unchanged",
+"gate_fp.py drain printed: DRAINED fp-34 (tools/hooks/guard_peer.py:191, selftest_guard_peer_scrreq_c144)",
+"diag_c144_a2_3_stoprec.log: 20/0, pure replay of guard_bash.stop_gate (save_records/note no-op; stop_records.json unchanged in git)",
+"material_marker.log:3332 git add ... -> stop_gate 0: git add/commit in GIT_READONLY (stop_record.py:237, chat-E3 fp-38); readonly allowed in every state (stop_record.py:207-208,:733)",
+"material_marker.log:3333 git show HEAD:<recipe> | md5sum -> stop_gate 0 (git show GIT_READONLY :237, md5sum READONLY_PROGRAMS :214); logged and reconstructed full forms both 0",
+"bgrun -- py -u tools/recipes/stage_d1_ring_p4_s04v18_scratch.py: classed build (unchanged), rc 0 only because no refusing record exists for it; 7 recorded paths still refused, e.g. stage_d1_s2.py",
+"stop_record.py NOT edited (no refusal to fix); fp-45 logged: guard_write.py:84 flags this card's own authorised guard_peer.py edit as a stale copy (fp-43 class)",
+"git commit NOT made: the permission layer answered 'This command requires approval' to git add (Bash git -C and PowerShell forms); files left modified/untracked"],
+"open":["git_commit flag is true but git add needs interactive approval under this session: who commits guard_peer.py + the selftest/diag files?"],
+"cost":{"usd":null,"minutes":5,"labview_runs":0},
+"note":"Facts file: tools/bench/diag_c144_a2_3_facts.md. No LabVIEW, no other hook, no docs/STATUS touched."}

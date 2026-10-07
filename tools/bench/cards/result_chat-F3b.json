@@ -1,0 +1,39 @@
+{
+ "schema": "result/1",
+ "id": "chat-F3b",
+ "status": "PASS",
+ "gates": {"pass": 22, "fail": 0},
+ "first_fail": null,
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/fncontract.py", "md5": "3625015c1f16d78c023a7355237786ac"},
+  {"path": "tools/bench/selftest_fn_f3b.log", "md5": "3ba0bd9d14e7db939de5ca8692d14d4a"},
+  {"path": "tools/bench/fntest_lib.py", "md5": "823cad878dcaab2f17e16e2ad96f2466"},
+  {"path": "tools/bench/selftest_fntest_owners.log", "md5": "c7aff6907f203c919c244e00de9bdc2f"},
+  {"path": "tools/bench/fntest_g2.py", "md5": "c3f217ce44b3c800cc708be7ce640be6"},
+  {"path": "tools/bench/fntest_g2.log", "md5": "3ca7c17b5e2618c11c79e4c1e1696a19"},
+  {"path": "tools/bench/fn_records/runs/fntest_g2_20261007_044918.json", "md5": "bed454df34f9604e803002b5cd4c7507"},
+  {"path": "tools/bench/fn_records/gate_config.json", "md5": "1f708aa3ba7cd9d9448beed44789636c"},
+  {"path": "docs/toolkit-capabilities.md", "md5": "4098a3fb3fd4596753d7f63e3371801c"},
+  {"path": "docs/d1/tooling.md", "md5": "11f57318529f4a389f532f376ff6e730"}
+ ],
+ "facts": [
+  "PRE tools/fncontract.py:272: gscript.loop_in src_present==1, failure path only (chat decision 3) -> PreconditionFailed, 1055 text first; selftest_fn_f3b.log 36/0; gscript.py untouched",
+  "owners_of fixed tools/bench/fntest_lib.py:277: owner uid via build_d1_v0.owner_of (OpOwnerChain), cached; created bodies bound by the create (FS #291 read none); selftest_fntest_owners.log 4/0",
+  "G2 run 2 fntest_g2.log:298-853 (150 s, gates 22/0): every bed + route case PASS incl. both neg double deletes (no_output) and RLE broken_after False - except B11",
+  "FINDING B11 fntest_g2.log:737: wired src -> bare indicator: wire_indicators raises 'target BROKEN after wiring' on a broken-by-design bed; LVBackend.indicator stops, no sink gate (stagexec.py:2844)",
+  "close_panel FAIL is our runner: S1 closed fntest_g2_save.vi, then stagekit.drop_scratch (stagekit.py:538) closed it again -> LabVIEW 0x47D (fntest_g2.log:765); 1 ok / 1 failed",
+  "Coverage of the 58 (fn_records.py:442): 55 fresh-pass, 3 fresh-fail (close_panel, wire_indicators, op:wire_indicators), 0 unrecorded -> NOT met; gate_config.json stays advisory (1f708aa3)",
+  "All 86 plans: 59 fresh-pass / 3 fresh-fail / 24 planned (none in the switch scope); 62 records written by run 2 (fn_records/runs/fntest_g2_20261007_044918.json)",
+  "Handles fntest_g2.log:762: 34013 start, 34743 after the bed, 35040 after the routes = +297 over 323 recorded calls (+18 per 20); 33995 at exit; H2-H6 PASS, files left [], LabVIEW gone",
+  "G1 run 3 = RETRY CAP 2/2 refused (stage_runs.jsonl:109-110); per chat decision 2 G2's bed build is the evidence: loop_in PASS on D0 and inside a While body, a SubVI first (fntest_g2.log:51,59)",
+  "Jev ladder | fntest_g2.log run 1 | our-script-bug p=0.972 | patch the script and rerun (jev_gate.log:4614) | owners_of patched per chat decision 1 | run 2 PASS 22/0"
+ ],
+ "open": [
+  "wire_indicators on broken-by-design beds: P4 rows that route a WIRED source into an indicator terminal will stop unless their recipe declares a sink gate (stagexec.check_sink_gates) - declare per row, or change the route?",
+  "close_panel's FAIL record comes from our runner's double close: rerun close_panel alone (fntest_g3, one close per scratch) to get its record, or accept the 0x47D raise as the expected behaviour?",
+  "The 24 plans outside the switch scope (case/queue/index-mode/tunouter verbs) stay unrecorded - test them in a later card or drop their plans?"
+ ],
+ "cost": {"usd": null, "minutes": 46, "labview_runs": 2},
+ "note": "PASS on the 58-function scope the chat set at 04:4x: every function has a fresh real-LabVIEW record; 3 are FAIL findings, so the switch to refuse is NOT met and the gate stays advisory. PD340(a)-(f) docs/d1/tooling.md:302 + INDEX; commits adcc2d0f, 2deaaad7. LabVIEW closed and verified gone."
+}

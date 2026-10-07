@@ -1886,3 +1886,33 @@ every FS frame reaches a loop/case/VI diagram through measured links, or is UNME
 extended). Acceptance (offline): the pre-134-4 stagesim on `graph_ring_p3b2a_fs_20261002_102553.json` FAILS the gate before
 step 1 naming FS 27509's frames; the current stagesim PASSES; a failed finalize leaves the plan bytes unchanged. Built in
 cycle 135 after the P3b-2 launch (deliverable first), or before it if the launch runner takes its re-finalize branch.
+
+## repeated-failure-class — 2026-10-07 20:25 (cycle 144 judgement, hand-back round 1, after archive/peer/2026-10-03-retrospective-cycle143.md:506)
+
+`VIOLATION: repeated-failure-class | loss_min=27 | loss_usd=? | evidence=docs/d1/ring-p4b.md:196`: ACCEPTED. A raw-uid key
+compared across a delete boundary failed three times (142-P1, 143-3, 143-4), and the approach changed only at the third hit
+(retrospective :446-447). Same class as PD325(b) and PD332(a).
+
+DECISION: device — ALREADY BUILT, no new build in this cycle. The parts are: (1) PD334(b)/(c) + PD335(a): the census of every
+cross-graph raw-uid comparison (`tools/bench/prep_c143_4_facts.md`, 19 sites) and the rebase rule (a re-issued uid is fatal
+only when the plan names it, else `REUSE-NOTED`), in `tools/stage_prerun.py` 03cdd8c6, self-test
+`selftest_rebase_uidreuse_c143_4.py`; (2) PD347(b): created objects bind by the executor's creation-map RECORD first
+(`tools/bench/selftest_t3.log` 22/0). The sites the census listed but did not change (`prep_c143_4_facts.md:29-32`:
+Part-B `w0_wires`, `retire_ends`, `e3_eval`, `canon_diff`) are on the route-B / finalize / computation-diff paths, not on the
+Executor scratch path that s03 uses. They stay listed and unchanged. Acceptance: the P4 session-3 scratch and the session-4
+rebase. A refusal or wrong binding there that a raw-uid comparison across a delete causes is `device-failed`, and the next
+card fixes the named site by the PD334(b) rule.
+
+## device-failed — 2026-10-07 20:25 (cycle 144 judgement, hand-back round 1, after archive/peer/2026-10-03-retrospective-cycle143.md:507)
+
+`VIOLATION: device-failed | loss_min=2 | loss_usd=? | evidence=tools/hooks/material_marker.log:3333`: ACCEPTED. The stop
+record (the device of the 09-24 05:54 and 09-28 07:05 decisions, "refuse only a segment that EXECUTES the recipe") refused
+two commands that only read or stage recipe bytes: `git add` (:3332) and `git show HEAD:<recipe> | md5sum; diff` (:3333).
+
+DECISION: device — REPAIRED after the review, by card chat-E3 on 2026-10-04: fp-38 was drained with
+`tools/stop_record.py:237` (`GIT_READONLY` now holds `show`, `add` and `commit`; `md5sum` and `diff` are read-only programs
+at :214), self-test `selftest_c_e3.py`. :3333 was never queued as a gate false positive, so the repair was never checked on
+that exact command. The cycle-144 tooling card owes that check, offline: put the full commands of
+`material_marker.log:3332` and `:3333` through the stop-record classifier. Neither may be refused, and a command that
+launches the stopped recipe must still be refused. If either is still refused, fix it in the same card and add a self-test
+case. A later refusal of a read-only `git`/hash/diff segment that names a stopped recipe is `device-failed` again.

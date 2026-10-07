@@ -1,0 +1,36 @@
+{
+ "schema": "task/1", "id": "144-a2-3", "kind": "build",
+ "goal": "TOOLING, ALONE: guard_peer.py rc-3 carve-out for fp-34 + self-test + gate_fp drain; replay stop_record on material_marker.log:3332/:3333",
+ "why": "Cycle 144 round 2 pass items 5-6. The purpose authorises the guard_peer.py edit; 144-3 (round 1) named the exact edit but could not apply it.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_144-a2-3.md", "md5": "460a9930a480a523ed3f1fa99184614e"},
+  {"path": "tools/bench/diag_c144_3_facts.md", "md5": "88b3315c99061155faae2a9f6a33dc5f"},
+  {"path": "tools/hooks/guard_peer.py", "md5": "bfcf3fa881e10a501e538bc04598ca8c"},
+  {"path": "tools/stop_record.py", "md5": "dd29847d95d61a4d2c7c624273806dbe"},
+  {"path": "tools/gate_fp.py", "md5": "1f427fb5b1735584c19a699c2314b826"},
+  {"path": "tools/bench/gate_fp_queue.jsonl"}
+ ],
+ "pass": [
+  "guard_peer.py carve-out in place: rc 3 + SCRATCH-REQUIRED line + no RESULT is not a failed prediction; edit file:line quoted",
+  "self-test 4 cases PASS (real log not failed; rc 3 without the line failed; other rc 3 failed; rc 1/2 unchanged)",
+  "gate_fp.py drain --id fp-34 --fixed ... --selftest PASS line quoted; queue shows fp-34 drained",
+  "stop_record replay: material_marker.log:3332 and :3333 commands NOT refused; a recipe launch still refused (decision rule quoted)",
+  "if one of the two was refused: stop_record.py fixed with a 3-case self-test, line quoted"
+ ],
+ "outputs": ["tools/hooks/guard_peer.py", "tools/bench/selftest_guard_peer_scrreq_c144.py", "tools/bench/gate_fp_queue.jsonl", "tools/bench/diag_c144_a2_3_facts.md"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/hooks/guard_peer.py", "tools/stop_record.py", "tools/bench/selftest_guard_peer_scrreq_c144*", "tools/bench/selftest_stop_record_c144*", "tools/bench/gate_fp_queue.jsonl", "tools/bench/diag_c144_a2_3*"],
+  "status_edit": false, "git_commit": true, "peers": []},
+ "budget": {"failures": 2, "minutes": 45},
+ "advances": ["M3"],
+ "requires": [
+  {"kind": "file", "name": "tools/gate_fp.py"},
+  {"kind": "file", "name": "tools/hooks/guard_peer.py"},
+  {"kind": "file", "name": "tools/stop_record.py"}
+ ],
+ "rules": [
+  "Offline only; no LabVIEW; no other hook, no stage tool, no docs, no STATUS",
+  "A classifier edit must not widen what a recipe launch may do",
+  "Return at the first unexpected result"
+ ]
+}

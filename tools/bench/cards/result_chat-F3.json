@@ -1,0 +1,35 @@
+{
+ "schema": "result/1",
+ "id": "chat-F3",
+ "status": "FAIL",
+ "gates": {"pass": 8, "fail": 1},
+ "first_fail": "G1 run 2: C1 loop_in error 1055 at To More Specific Class in OpWhileLoopIn_v0 (tools/bench/fntest_g1.log), then harness TypeError on the missing loop",
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/stage_prerun.py", "md5": "79741a6cacc4dfe3bdd1310849c43922"},
+  {"path": "tools/bench/selftest_fntest_exempt.py", "md5": "e1715f0e727727dd82f9dbdfceb206f1"},
+  {"path": "tools/bench/fntest_lib.py", "md5": "fb77160b90e3c45f10ecf73d8c8e388e"},
+  {"path": "tools/bench/fntest_g1.py", "md5": "a5719c7df9b60da212c5e9dbc56a0e5a"},
+  {"path": "tools/bench/fntest_g1.log", "md5": "f01104446712b37bd6885e4cc1a99249"},
+  {"path": "tools/bench/fn_records/gate_config.json", "md5": "1f708aa3ba7cd9d9448beed44789636c"},
+  {"path": "tools/bench/fn_records/runs/fntest_g1_20261007_040629.json", "md5": "f9c101149a5699f15d0d9f9cfb321e89"}
+ ],
+ "facts": [
+  "fp-42 released: stage_prerun.py:2397 fntest_release + check_launch FNTEST-EXEMPT; selftest_fntest_exempt 7/0; x10_chat_m2 9/0, launch_gate 29/0, scratch_verify 7/0; fp-42 DRAINED",
+  "selftest_chat_p1 44/2 (t_binds FileNotFoundError active_b1.json; O1 offline card) - card-binding tests, not the launch gate; not shown pre-existing",
+  "Switch scope set: gate_config.json required_from = plan_ring_p4_v18 + s03v18 (s04v18 not on disk); same 58 functions; mode stays advisory",
+  "G1 run 1 FAIL harness: uids() returns a set (JSON dump crash) - fixed in fntest_g1.py:41-44,82 and fntest_lib.py _short; corrupted gscript.count.json restored from git",
+  "G1 run 2 FINDING: be.create('while') on EMPTY_v0 -> loop_in 1055 (TMSC); gscript.py:1530 defaults src_cls to 'SubVI' index 0, and the bed had no SubVI yet",
+  "Records written by run 2: PASS count, ensure_loaded, exec_state, report_all, uids; FAIL gscript.loop_in, stagekit.op:loop_in (no-SubVI input) - fntest_g1_20261007_040629.json",
+  "Switch: 5 fresh-pass, 2 fresh-fail, 51 planned of 58 (fn_records.switch_condition) - NOT met",
+  "Hygiene run 2: handles 34015 start, 34232 after work, 33993 exit; scratch in claudeDev\\fntest deleted (H4), H6 files left []; LabVIEW gone",
+  "Jev ladder fntest_g1.log | our-script-bug p=0.940 | patch the script and rerun | stopped: failure budget 2 spent (2 G1 runs) | FAIL",
+  "Process slip: one patch of fntest_g1.py was made with a py heredoc instead of the Edit tool; Edit tool only since. Commit 22ac60d7"
+ ],
+ "open": [
+  "Retry: drop the PathToStr subVI BEFORE the While (P4 beds always hold SubVIs) so loop_in's default src 'SubVI'[0] resolves, and guard bed creates against None - or treat no-SubVI 1055 as the record?",
+  "G2 (connect/delete/stop/sr/rle/const routes, ~25 functions) is designed but not written; then capability regen + PD/INDEX remain"
+ ],
+ "cost": {"usd": null, "minutes": 21, "labview_runs": 2},
+ "note": "Failure budget 2 spent (G1 run 1 harness set/JSON, run 2 loop_in on no-SubVI bed); returned per chat-P2. Fix for run 3 is a 1-line reorder (C8 subVI before C1). No capability regen / PD yet."
+}

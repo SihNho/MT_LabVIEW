@@ -1,0 +1,23 @@
+BGRUN START 2026-10-07 19:57:47 limit 3.0 min: py -u tools/bench/selftest_elpred.py
+BGRUN PID 20252
+GATE PASS | U1 an unwired created Local adds 1 (10 -> 11) | [['local', -2]]
+GATE PASS | U2 a While cond cut adds 1 (10 -> 11) | [['cond', 100]]
+GATE PASS | U3 an open Local wired at the end is debited (10 -> 9) | [['local', 11]]
+GATE PASS | U4 a created node with an unwired input adds 1 (PD322(e) kept) | [['input', -4]]
+GATE PASS | U5 a created RSR with an unwired inner sink adds ONE 'sr' item (not also 'input'); unwired sources add none | [['sr', -6]]
+GATE PASS | U6 a created body whose only unwired sink is its cond row adds ONE 'cond' item; with another unwired sink also 'input' | [[['cond', -8]], [['cond', -8], ['input', -8]]]
+SELFTEST s02 re-derived = 53 (base 51, new [['cond', 23166], ['local', -20]], closed []; steps tools/bench/sim/ring_p4_s02v18/step_00_base.json -> tools/bench/sim/ring_p4_s02v18/step_34_create.json; created [-20, -18, -16, -14, -8, -2]; uncertain []; detail_end {'cond': [[23166, 10170, 23246]], 'local': [[-20, ['StopAll']]]})
+GATE PASS | S02 re-derived s02 == 53 (measured) | 53
+GATE PASS | S02b new items == [cond 23166, local -20] | [['cond', 23166], ['local', -20]]
+SELFTEST s01 re-derived = 51 (base 51, new [], closed []; steps tools/bench/sim/ring_p4_s01/ring_p4_s01/step_00_base.json -> tools/bench/sim/ring_p4_s01/ring_p4_s01/step_24_wire.json; created [-13, -7, -1]; uncertain []; open_at_start [])
+GATE PASS | S01 re-derived s01 == 51 (measured) | 51
+SELFTEST s03 re-derived = 55 (base 53, new [['cond', -46], ['local', -49], ['sr', -36], ['sr', -27]], closed [['cond', 23166], ['local', 6902]]; steps tools/bench/sim/ring_p4_s03v18/step_00_base.json -> tools/bench/sim/ring_p4_s03v18/step_20_create.json; created [-49, -46, -45, -42, -37, -36, -33, -28, -27, -13, -8, -6, -4, -2]; uncertain []; detail_end {'sr': [[-27, [-29]], [-36, [-38]]], 'cond': [[-46, -45, -48]], 'local': [[-49, ['Num']]]})
+GATE PASS | S03 re-derived s03 == 55 (old rule 56) | 55
+GATE PASS | S03b new == [cond -46, local -49, sr -36, sr -27]; closed == [cond 23166, local 6902] | [[['cond', -46], ['local', -49], ['sr', -36], ['sr', -27]], [['cond', 23166], ['local', 6902]]]
+GATE PASS | UNC uncertain == [] for s01, s02, s03 | [[], [], []]
+SELFTEST recordings {'s01': (51, {'local': 0, 'cond': 0, 'sr': 0}), 's02': (53, {'local': 1, 'cond': 1, 'sr': 0}), 's03': (55, {'local': 1, 'cond': 1, 'sr': 2})}
+GATE PASS | R1 recorded counts s01/s02/s03 == 51/53/55 == re-derived | [[51, 53, 55], [51, 53, 55]]
+GATE PASS | R2 per-class recorded change s01->s02 == re-derived s02 and s02->s03 == re-derived s03 (local, cond, sr) | [{'local': 1, 'cond': 1, 'sr': 0}, {'local': 1, 'cond': 1, 'sr': 0}, {'local': 0, 'cond': 0, 'sr': 2}, {'local': 0, 'cond': 0, 'sr': 2}]
+GATE PASS | R3 L2 b1 -> b2a recorded sr items 2 -> 0 == re-derived plan_l2b2a closes 2 sr (sr delta -2) | [(99, {'local': 0, 'cond': 0, 'sr': 2}), (83, {'local': 0, 'cond': 0, 'sr': 0}), [], [['sr', 9603], ['sr', 25545]]]
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":15,"fail":0},"first_fail":null,"artefacts":[],"card":"144-1","labview":"none"}
+BGRUN END rc=0 after 1s
