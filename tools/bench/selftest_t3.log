@@ -1,0 +1,39 @@
+BGRUN START 2026-10-07 14:44:33 limit 10.0 min: py -u tools/bench/selftest_t3.py
+BGRUN PID 18448
+---------- A adopt reads RESULT / STOP / gate lines only
+  PASS  A1 docstring echo ('ExecStop', 'MEMSTOP' in prose) + PASS gates + RESULT PASS -> adopt ok  []
+  PASS  A2 the recorded s03 scratch log (refused by every arm's adopt) -> ok, 8 required gates PASS  ([], 20)
+  PASS  A3 a real STOP line -> refused  ["1 STOP line(s): ['execstop: STEP-DIFF after real op 4']"]
+  PASS  A4 no RESULT line -> refused  ['no RESULT line']
+  PASS  A5 old-style traceback (RESULT fail 1, no FAIL / STOP line) -> refused by the RESULT count  ["failing RESULT line(s) not covered by LOG-class FAIL lines: ['status FAIL gates.fail 1 > 0 LOG-class FAIL line(s): KeyError: 3']"]
+  PASS  A6 a malformed STOP line still refuses  ["1 STOP line(s): ['malformed: {not json}']"]
+  PASS  A7 a LOG-class FAIL line ('NAME-GATE op 3 x') covering RESULT fail 1 -> ok (PD329 allowance kept)  []
+  PASS  A8 stop_line round trip / unknown kind raises / stop_kind_of  ([{'schema': 'stop-line/1', 'kind': 'memstop', 'message': 'MEMSTOP: 700 MB', 't': '2026-10-07 14:44:34', 'op': 4, 'card': 'chat-T3'}], True)
+  PASS  A9 stagexec.report_stop prints ONE STOP line (kind memstop, op 7)  [{'schema': 'stop-line/1', 'kind': 'memstop', 'message': 'MEMSTOP: private bytes 701 MB', 't': '2026-10-07 14:44:34', 'op': 7, 'op_kind': 'connect', 'card': 'chat-T3'}]
+  PASS  A10 STOP line wired: stagekit.run (gate + exception), excepthook, bgrun TIMEOUT, lv_stallcheck  
+---------- C creation map
+  PASS  C1a writer: header (plan md5, work) + obj -2 (DigitalNumericConstant, owner 23166) + term -3 (owner -2 -> 29432) + step  ({'schema': 'creation-map/1', 'rec': 'run', 'plan': 'tools/bench/plan_ring_p4_s03v18.json', 'plan_md5': 'da66a0300851133d93881be3c28f2fdc', 'stage': 'plan_ring_p4_s03v18', 'work': 'C:\\x\\D1_t.vi', 'from_step': None, 't': 1791351874.4, 'iso': '2026-10-07 14:44:34'}, {'obj': {-2: {'schema': 'creation-map/1', 'rec': 'bind', 'k': 2, 'op': 'create', 'acts': [2], 'ids': ['p4_c_bufdiff'], 'kind': 'obj', 'sim': -2, 'real': 29432, 'class': 'DigitalNumericConstant', 'owner': 23166, 'owner_real': 23166}},
+  PASS  C1b auto mode: no map for SimBackend / wrapped SimBackend, a map for a real backend  
+  PASS  C2a tag switch OFF in tools/bench/creation_tag.json; tag text round trip  claude-plan:ring_p4_s03v18:p4_w1:-45
+  PASS  C2b switch ON + no verbs -> ExecStop; with verbs -> tags recorded, a mismatch recorded (not hidden)  [{'k': 2, 'sim': -2, 'real': 29432, 'class': 'DigitalNumericConstant', 'text': 'claude-plan:plan_ring_p4_s03v18:p4_c_bufdiff:-2', 'back': 'claude-plan:plan_ring_p4_s03v18:p4_c_bufdiff:-2x', 'ok': False}, {'k': 2, 'sim': -3, 'real': 29433, 'class': 'Terminal', 'text': 'claude-plan:plan_ring_p4_s03v18:p4_c_bufdiff:-3', 'back': 'claude-plan:plan_ring_p4_s03v18:p4_c_bufdiff:-3', 'ok': True}]
+  FACT  C0 without a map (inference only, with the ported dedupe): BINDING: created object(s) not bound by connectivity, position or a unique shape: ['#-27 RightShiftRegister', '#-28 LeftShiftRegister', '#-33 DigitalNumericConstant', '#-36 RightShiftRegister', '#-37 LeftShiftRegister', '#-42 DigitalNumericConstant', '#-46 Diagram', '#-49 Local']
+  PASS  C3 s03->s04 rebind WITH the map: every created node bound, 0 node fallbacks, identical pairs / While / body as recorded  {'wrong': {}, 'node_fallbacks': [], 'map_nodes': 15, 'rowless': {-45: 16483}, 'frames': {}}
+  PASS  C4 identical pairs SWAPPED in the map -> refused (never bound wrong)  BINDING: #-35 maps to both 29784 and 29757
+  PASS  C5 entry -33 dropped -> -33 inferred (29576), exactly one node FALLBACK  [('node', -33, 29576, 'conn')]
+  PASS  C6 load_creation_map: found by plan + md5 + VI; none for another md5; explicit wrong md5 refused  (None, 'no creation map for plan tools/bench/plan_ring_p4_s03v18.json md5 00000000000000000000000000000000 and VI C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\bench\\A13K\\D1_ring_p4s03_20261007_102011.vi in C:\\Users\\KimLab\\AppData\\Local\\Temp\\t3_aswifg3t\\cmapdir', 'CREATION-MAP: C:\\Users\\KimLab\\AppData\\Local\\Temp\\t3_aswifg3t\\cmapdir\\ring_p4_s03v18_da66a030_x.jsonl is not the map of this run (plan True, md5 da66a0300851133d93881be3c28f2fdc vs 00000000
+  FACT  C7 CREATION-MAP C:/Users/KimLab/AppData/Local/Temp/t3_aswifg3t/s03.jsonl (entries {'obj': 16, 'diag': 0, 'term': 0}; steps with a diff [])
+  FACT  C7 MAP-BOUND nodes {-49: 29720, -46: 29699, -42: 29662, -37: 29655, -36: 29648, -33: 29576, -28: 29548, -27: 29403, -21: 29566, -17: 29584, -13: 29683, -8: 29396, -6: 29493, -4: 29636, -2: 29432}; frames {}; row-less {-45: 16483}; terminals 0; unused entries []
+  FACT  C7 FALLBACK-COUNT 27 (nodes 0, terminals 26, frames 1)
+  FACT  C7 REBIND 15 node(s), 1 frame(s), terminals by {'conn': 4, 'map-pos': 22}; unbound created terminals []; frames {-46: '29699 (row #-50)'}; re-issued uid(s) []
+  FACT  C7 ADDRESS-UNRESOLVED a13:src #-28.'inner': 0 sim row(s), by map-pos, real name '' x2; real candidates [(29582, '')]
+  FACT  C7 ADDRESS-UNRESOLVED a15:src #-28.'inner': 0 sim row(s), by map-pos, real name '' x2; real candidates [(29582, '')]
+  FACT  C7 ADDRESS-UNRESOLVED a20:dst #-45.'cond': 0 sim row(s), by unbound, real name None x0; real candidates []
+  PASS  C7 full rebase with the map passes the BINDING stage (refusal, if any, is not MAP/BINDING/CONNECTIVITY)  REBASE REFUSED: plan-referenced terminal #-28.'inner' does not bind uniquely (0 sim row(s), by map-pos, real name '' x2; ADDRESS-UNRESOLVED x3)
+  FACT  C7 rebase outcome: False REBASE REFUSED: plan-referenced terminal #-28.'inner' does not bind uniquely (0 sim row(s), by map-pos, real name '' x2; ADDRESS-UNRESOLVED x3)
+---------- W row-less While owner
+  PASS  W1 loop_parent(While 16483) on the recorded real graph (no diagrams map) = 23166 from owners  23166
+  PASS  W2 SimReader lists While 16483 on exactly one diagram (23166), was every diagram  (180, [23166])
+  PASS  W3 no owners entry -> None (unchanged legacy behaviour)  None
+=== GATES: 22 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":22,"fail":0},"first_fail":null,"artefacts":[],"card":"chat-T3","labview":"none"}
+BGRUN END rc=0 after 9s

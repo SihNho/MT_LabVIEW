@@ -328,6 +328,10 @@ def main():
                     f"BGRUN KILL stdout: {(k.stdout or '').strip()[:600]!r}\n"
                     f"BGRUN KILL stderr: {(k.stderr or '').strip()[:600]!r}\n")
                 out(f"BGRUN TIMEOUT killed after {time.time() - t0:.0f}s (limit {a.max_min} min)\n")
+                try:                           # card chat-T3: the structured STOP line (protocol.stop_line) of a timeout
+                    out(protocol.stop_line("timeout", f"killed after {time.time() - t0:.0f}s (limit {a.max_min} min)") + "\n")
+                except Exception:                                                  # noqa: BLE001
+                    pass
                 return 124
         rc = p.wait()
         done.wait(timeout=5)                   # the pump may still hold the last lines (the RESULT line) at exit

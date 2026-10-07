@@ -1,0 +1,42 @@
+{
+ "schema": "gate-flips-explained/1",
+ "card": "chat-T3",
+ "decision": "PD347(a)",
+ "report": {"path": "tools/bench/gate_flips_chat_t3.json", "md5": "f42c72af31d5d18a3d41bbd35fb7a248",
+            "log": "tools/bench/gate_flips_chat_t3.log"},
+ "old": "HEAD c106b2d4 tools/stagexec.py + tools/gateclass.py (adopt_verdict scanned the whole text with gateclass.HARD_MARK_RE)",
+ "new": "working tree: adopt_verdict reads RESULT / STOP / stagekit gate lines only",
+ "corpus": "tools/bench/*.log (main) + V6_bench/{A,B,A13,A13K}/tools/bench/*c14[3-5]*.log; 5017 logs, 16.6 s",
+ "decisions_changed": {"adopt": 399, "soft_only": 0, "address_only": 0, "hard_marker (guard_peer side)": 0},
+ "classes": [
+  {"flip": "refused->accepted", "n": 106, "old_reason": "hard marker 'ExecStop'",
+   "why": "the WORD in prose: recipe docstrings echoed at the top of the log (all four arms' diag_c143_p4s03v18_scratch.log - the bench fault), prerun/dry text naming ExecStop; a real ExecStop also prints a STOP-class FAIL line (E1 fatal) and now a STOP line, so it stays refused"},
+  {"flip": "refused->accepted", "n": 106, "old_reason": "hard marker 'MEMSTOP'",
+   "why": "the WORD in prose: stage_prerun's X10 memory-model lines ('MEMSTOP 695') in prerun / dry logs; a real MEMSTOP is an ExecStop (E1 FAIL + STOP line kind memstop)"},
+  {"flip": "refused->accepted", "n": 1, "old_reason": "OBSERVED: EXC", "log": "V6_bench/A13/tools/bench/diag_c144_a3_2_flips.log",
+   "why": "a flip report QUOTING other logs' lines (RESULT PASS 12/0) - prose"},
+  {"flip": "refused->accepted", "n": 1, "old_reason": "STOP at gate", "log": "V6_bench/A13/tools/bench/selftest_c144_a2_4_hardmark.log",
+   "why": "a hard-mark self-test QUOTING the marker as test data (RESULT PASS) - prose"},
+  {"flip": "refused->accepted", "n": 1, "old_reason": "Traceback", "log": "tools/bench/diag_c106b_live.log",
+   "why": "a REAL traceback in a reader thread (threading, not sys.excepthook) inside a passing non-stagekit diagnostic (RESULT PASS 17/0); not a scratch-run log. Closed for stagekit runs: stagekit now also installs threading.excepthook, which prints the STOP line"},
+  {"flip": "accepted->refused", "n": 184, "new_reason": "failing RESULT line not covered by LOG-class FAIL lines",
+   "why": "the OLD adopt never read the RESULT status (only its presence): logs whose own RESULT said FAIL were 'adoptable' when they printed no stagekit-format FAIL line (build_*, prep_*, rebase / selftest logs). Refusing them is the safe direction; none is an adopted scratch log (the adopt_scratch records in tools/bench/adopted_scratch.jsonl name only scratch logs whose RESULT passed)"}
+ ],
+ "safety": [
+  {"log": "tools/bench/diag_c106b_live.log", "explained": "thread traceback, see class 5 (non-stagekit, passing)"},
+  {"log": "V6_bench/A13/tools/bench/diag_c144_a3_2_flips.log", "explained": "quoted text, class 3"},
+  {"log": "V6_bench/A13(K)/tools/bench/selftest_c144_a2_4_hardmark.log", "explained": "quoted test data, class 4"}
+ ],
+ "other_free_text_gates_swept": [
+  {"where": "tools/gateclass.py HARD_MARK_RE (soft_only / address_only)", "path": "guard_peer review releases", "action": "kept (a RELEASE: over-matching only owes a review); + ^STOP { added; listed"},
+  {"where": "tools/hooks/guard_peer.py:146 FAILURE_RE / :165 STALL_RE", "path": "review gate (is this a failing log)", "action": "listed, not changed (over-matching owes a review, never adopts)"},
+  {"where": "tools/audit_cycle.py:80 FAILURE_RE", "path": "cycle audit counts", "action": "listed"},
+  {"where": "tools/cycle_runner.py:237 GATE_FAIL_RE", "path": "firefighter 'same first failing gate' trigger", "action": "listed"},
+  {"where": "tools/gate_fp.py:55 LV_OBS_RE", "path": "gate-fp release eligibility (a LabVIEW observation never qualifies)", "action": "listed"},
+  {"where": "tools/jev.py:225-226, tools/jev_triage.py:28", "path": "Jev ladder evidence extraction (advisory / review discharge)", "action": "listed"},
+  {"where": "tools/stage_prerun.py:917 UNROUTABLE_RE", "path": "prerun reading its own dry-run output", "action": "listed (reads a line stagexec prints in a fixed form)"},
+  {"where": "tools/waitlogs.py:13", "path": "display filter only, no verdict", "action": "none"},
+  {"where": "tools/stage_prerun.py _run_clean / proven_pattern", "path": "LAUNCH path", "action": "already structured: protocol.run_verdict on the last segment (RESULT lines), no body scan"},
+  {"where": "tools/stage_prerun.py adopted_launch / check_launch", "path": "LAUNCH path", "action": "reads adopt/1 JSON records only"}
+ ]
+}

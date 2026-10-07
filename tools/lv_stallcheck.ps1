@@ -281,6 +281,11 @@ try {
         $record = if ($RecordPath) { $RecordPath } else { Join-Path $PSScriptRoot ('bench\stall_pid{0}_{1}.log' -f $leaf, $start.Substring(8)) }
         if ($dialog -notlike 'MODAL DIALOG PRESENT*') { $record = 'NOT WRITTEN - the dialog check did not return VERDICT: BLOCKED (repair 2026-09-19, cycle 39, judgement-authorised: the gating record is written ONLY on a confirmed modal dialog; precision of this watchdog was 0/6 and every false record cost a paid peer review to clear)' } elseif (-not (Test-Path $record)) {
             $lines = @(('STALL: {0:yyyy-MM-dd HH:mm:ss} {1}' -f $now, ($suspects -join '; ')), ('dialog: ' + $dialog))
+            # card chat-T3: the structured STOP line (tools/protocol.py stop_line, schema stop-line/1) beside the prose
+            $stopMsg = (($suspects -join '; ') -replace '[^\x20-\x7E]', '?')
+            if ($stopMsg.Length -gt 300) { $stopMsg = $stopMsg.Substring(0, 300) }
+            $stopObj = [ordered]@{ schema = 'stop-line/1'; kind = 'stall'; message = $stopMsg; t = ('{0:yyyy-MM-dd HH:mm:ss}' -f $now) }
+            $lines += ('STOP ' + ($stopObj | ConvertTo-Json -Compress))
             for ($i = 0; $i -lt $suspects.Count; $i++) {
                 $kp = $suspectKeys[$i] -split '\|'
                 $spid = [int]$kp[0]

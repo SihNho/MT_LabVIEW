@@ -343,6 +343,57 @@ def result_failed(d):
         int((d.get("gates") or {}).get("fail", 1)) > 0
 
 
+# ---------------------------------------------------------------------------------------------- STOP line (card chat-T3)
+# User 2026-10-07 ("세 가지 다 고치도록"; such flags belong in a fixed format, not in free text): every REAL stop of a run
+# prints ONE `STOP {"schema":"stop-line/1","kind":...,"message":...}` line at the moment it happens - stagekit.run (a fatal
+# gate, an ExecStop / MEMSTOP / other exception), stagekit's excepthook (an uncaught traceback), stagexec.report_stop
+# (ExecStop / MEMSTOP inside Executor.run), bgrun (TIMEOUT) and lv_stallcheck.ps1 (STALL record). Machinery that judges a
+# run (stagexec.adopt_verdict) reads RESULT and STOP lines, never words in the log body: a recipe's docstring echoed at the
+# top of its log ("... report_stop on ExecStop ...") is prose, not a stop (the fault all four bench arms hit, report_4arms.md).
+STOP_PREFIX = "STOP "
+STOP_LINE_RE = re.compile(r"^STOP (\{.*\})\s*$", re.M)
+STOP_KINDS = ("gate", "execstop", "memstop", "exception", "traceback", "timeout", "stall")
+
+
+def stop_kind_of(exc_or_text):
+    """'memstop' | 'execstop' | 'exception' for an exception object (by class name) or its text."""
+    name = type(exc_or_text).__name__ if isinstance(exc_or_text, BaseException) else ""
+    text = str(exc_or_text or "")
+    if text.startswith("MEMSTOP"):
+        return "memstop"
+    if name == "ExecStop":
+        return "execstop"
+    return "exception"
+
+
+def stop_line(kind, message, **extra):
+    """The one-line STOP text: `STOP {json}` (ASCII-escaped, like result_line). kind in STOP_KINDS."""
+    if kind not in STOP_KINDS:
+        raise ValueError("stop_line: kind %r not in %s" % (kind, STOP_KINDS))
+    d = {"schema": "stop-line/1", "kind": kind, "message": str(message or "")[:300],
+         "t": time.strftime("%Y-%m-%d %H:%M:%S")}
+    for k, v in extra.items():
+        d[k] = v
+    if os.environ.get("CARD_ID"):
+        d.setdefault("card", os.environ["CARD_ID"][:40])
+    return STOP_PREFIX + json.dumps(d, ensure_ascii=True, separators=(",", ":"), default=str)
+
+
+def all_stop_lines(text):
+    """Every `STOP {json}` line of `text` as a dict (file order). A STOP line that is not valid stop-line/1 JSON still
+    counts - as {'schema': 'stop-line/1', 'kind': 'malformed', ...}: a stop is never lost to a formatting error."""
+    out = []
+    for m in STOP_LINE_RE.finditer(text or ""):
+        try:
+            d = json.loads(m.group(1))
+        except ValueError:
+            d = None
+        if not isinstance(d, dict) or d.get("schema") != "stop-line/1":
+            d = {"schema": "stop-line/1", "kind": "malformed", "message": m.group(1)[:200]}
+        out.append(d)
+    return out
+
+
 # ----------------------------------------------------------------------------------------- run segments + verdicts
 def segments(text):
     """[(start_epoch_or_None, command_line, segment_text)] - one per `BGRUN START`, in file order."""

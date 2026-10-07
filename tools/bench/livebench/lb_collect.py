@@ -121,9 +121,41 @@ def runner_section(wt, t0, t1):
     return out
 
 
-def costs(wt, t0):
-    sessions, peers = {}, []
-    for p in glob.glob(os.path.join(wt, "tools", "bench", "*.log")):
+TS_ISO_RE = re.compile(r'"timestamp"\s*:\s*"(\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d)(?:\.\d+)?Z"')
+
+
+def transcript_start(sid, projects=None):
+    """(epoch of the first timestamped line, transcript path) of Claude session `sid`, or (None, None). Transcripts are
+    <projects>/<mangled cwd>/<sid>.jsonl (timestamps in UTC, ISO 'Z')."""
+    root = projects or os.path.join(os.path.expanduser("~"), ".claude", "projects")
+    for p in glob.glob(os.path.join(root, "*", "%s.jsonl" % sid)):
+        try:
+            with open(p, encoding="utf-8", errors="replace") as f:
+                for i, ln in enumerate(f):
+                    m = TS_ISO_RE.search(ln)
+                    if m:
+                        return __import__("calendar").timegm(time.strptime(m.group(1), "%Y-%m-%dT%H:%M:%S")), p
+                    if i > 200:
+                        break
+        except OSError:
+            continue
+        return None, p
+    return None, None
+
+
+def costs(wt, t0, t1=None, tdir=None, projects=None):
+    """$ of every `claude -p` envelope in the arm's logs + every peer archive cost line written in the window.
+    card chat-T3 (found 2026-10-07 by the chat's offline check): a log whose FILE mtime is after t0 may ECHO old envelopes
+    (A13's selftest_c144_a3_2_adopt.log quoted cycle_86/91/131 logs of 09-26 / 10-02: $111.12 of main-tree spending counted
+    as A13's). A session is counted only when its transcript STARTED inside [t0, t1], or its transcript sits in the arm's own
+    project folder (`tdir`) and its start cannot be read; a session with no transcript, or a known start outside the window, is
+    listed under `excluded` with its $ and the reason, never silently dropped. A session seen in several logs keeps the
+    label of its OWN log: the earliest-written log holding it as a whole-line envelope."""
+    t1 = t1 or time.time()
+    sessions, peers, excluded = {}, [], {}
+    own_dir = os.path.normcase(os.path.abspath(tdir)) if tdir else None
+    seen = {}
+    for p in sorted(glob.glob(os.path.join(wt, "tools", "bench", "*.log")), key=os.path.getmtime):
         if os.path.getmtime(p) < t0:
             continue
         for ln in read(p).splitlines():
@@ -131,8 +163,27 @@ def costs(wt, t0):
             if not m:
                 continue
             s = SID_RE.search(ln)
+            whole = ln.lstrip().startswith("{")
             key = s.group(1) if s else "%s:%s" % (os.path.basename(p), m.group(1))
-            sessions[key] = {"usd": float(m.group(1)), "log": os.path.basename(p)}
+            prev = seen.get(key)
+            if prev is None or (whole and not prev["whole"]):
+                seen[key] = {"usd": float(m.group(1)), "log": os.path.basename(p), "whole": whole, "sid": bool(s)}
+            elif prev["log"] == os.path.basename(p):
+                prev["usd"] = float(m.group(1))                     # the session's own log: its last envelope wins
+    for key, v in seen.items():
+        if not v["sid"]:
+            excluded[key] = {"usd": v["usd"], "log": v["log"], "why": "no session_id on the cost line"}
+            continue
+        st, tp = transcript_start(key, projects)
+        in_own = bool(tp and own_dir and os.path.normcase(os.path.dirname(os.path.abspath(tp))) == own_dir)
+        rec = {"usd": v["usd"], "log": v["log"],
+               "started": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(st)) if st else None,
+               "transcript_dir": os.path.basename(os.path.dirname(tp)) if tp else None}
+        if (st is not None and t0 <= st <= t1) or (in_own and st is None):
+            sessions[key] = rec                        # a known start outside the window is excluded even in the arm's folder
+        else:
+            excluded[key] = dict(rec, why="no transcript found" if tp is None else
+                                 "transcript started outside the window [t0, t1]" + (" (arm's folder)" if in_own else ""))
     for p in glob.glob(os.path.join(wt, "archive", "peer", "*.md")):
         if os.path.getmtime(p) < t0:
             continue
@@ -142,7 +193,11 @@ def costs(wt, t0):
     p_usd = round(sum(x["usd"] for x in peers if x["usd"] is not None), 4)
     return {"sessions_usd": s_usd, "peers_usd": p_usd, "total_usd": round(s_usd + p_usd, 4),
             "sessions": [dict(v, session=k) for k, v in sorted(sessions.items())], "peers": peers,
-            "peers_without_cost": sum(1 for x in peers if x["usd"] is None)}
+            "peers_without_cost": sum(1 for x in peers if x["usd"] is None),
+            "excluded_usd": round(sum(v["usd"] for v in excluded.values()), 4),
+            "excluded": [dict(v, session=k) for k, v in sorted(excluded.items())],
+            "rule": "card chat-T3: a session counts only if its transcript started in [t0, t1] (or, start unreadable, it is in "
+                    "the arm's own project folder)"}
 
 
 def cards(wt, t0):
@@ -481,7 +536,7 @@ def main(argv=None):
            "delivered_cycles": sum(1 for c in cyc if c.get("delivered")),
            "adoptions": adopts,
            "runner_stops": run["stops"], "runner_hooks": run["hooks"],
-           "usd": costs(wt, a.t0),
+           "usd": costs(wt, a.t0, t1, tdir),
            "cards": card_rec,
            "early_catches": early_catches(wt, a.t0, tdir),
            "handbacks": {"count": len(hb), "triggers": trig, "list": hb},

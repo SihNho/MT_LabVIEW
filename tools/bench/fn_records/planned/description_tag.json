@@ -1,0 +1,29 @@
+{
+ "schema": "fnrec/1",
+ "function": "stagexec.Executor._tag_created",
+ "status_note": "PLANNED ONLY - kept under fn_records/planned/ (not the registry REG_DIR) because the functions it tests do not exist yet: gscript.set_description / gscript.get_description need an op VI (OpDescriptionSet_v0 / OpDescriptionGet_v0) built and measured after the experiment. Move to tools/bench/fn_records/gscript.set_description.json once the op exists.",
+ "source": {
+  "file": "tools/stagexec.py",
+  "defs": ["Executor._tag_created", "LVBackend.set_description", "LVBackend.get_description", "tag_text", "parse_tag"],
+  "line": null,
+  "md5": null
+ },
+ "plan": {
+  "written": "2026-10-07T15:00:00",
+  "card": "chat-T3",
+  "decision": "PD347(b) - IN-VI TAG prepared, switch tools/bench/creation_tag.json enabled=false",
+  "bed": "a scratch copy (stagekit.Stage.scratch) of a small claudeDev VI; in it the run CREATES one object of every class the P4 plans create (measured from the s03/s04 simulated end graphs, card chat-T3): Local (read and write), GrowableFunction (Build Array / Replace Array Subset), LeftShiftRegister + RightShiftRegister pair, DigitalNumericConstant, ArrayConstant, BooleanConstant, SelectorTunnel (on a Case), FlatSequenceOuterTunnel (on a Flat Sequence), WhileLoop, its body Diagram, a Case frame Diagram, a FlatSequenceFrame Diagram - created and deleted in the run",
+  "inputs": [
+   {"case": "write-read", "call": "for each created object: set_description(uid, tag_text(stage, id, sim)) then get_description(uid)", "predict": "the read-back text equals the written text for every class; no error; handle count flat (+-100)"},
+   {"case": "survive-save", "call": "save the scratch, close it, cold-open it in a FRESH LabVIEW, get_description(uid) for every object (uid from the graph read)", "predict": "every tag survives save + reload with the same uid (the property is stored in the VI)"},
+   {"case": "survive-move", "call": "move one tagged node into a loop body (stagekit move_in) and read it back", "predict": "the tag moves with the node (Description is an object property, not position)"},
+   {"case": "terminal", "call": "a terminal of a tagged node: owner = parse_tag(get_description(owner uid)), terminal = index in the owner's terminal list", "predict": "the terminal is found as tagged owner + terminal index (terminals have no Description)"},
+   {"case": "neg-unscriptable", "call": "any class whose Description write errors or does not read back", "predict": "recorded per class as FAIL; that class stays on the creation-map path only (the switch is never enabled for a class that failed)"}
+  ],
+  "predicted": {"note": "Description (VI Scripting property of GObject) is expected writable on nodes, structures and diagrams; NOT measured - that is this plan's purpose"},
+  "pass_if": "write-read, survive-save and survive-move hold for every listed class; then (judgement) creation_tag.json enabled may be set true",
+  "runs_in": "a card AFTER the experiment (rig-state not 실험중), real LabVIEW, scratch only; never on a bed or an original"
+ },
+ "records": [],
+ "legacy_evidence": []
+}

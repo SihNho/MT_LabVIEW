@@ -1,0 +1,42 @@
+{
+ "schema": "result/1",
+ "id": "chat-T3",
+ "status": "PASS",
+ "gates": {"pass": 4, "fail": 0},
+ "first_fail": null,
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/stagexec.py", "md5": "1bab9cf96502dfbe2d9a755e6d4a48b6"},
+  {"path": "tools/stage_prerun.py", "md5": "fd6002302aac55828b36b7fab1a75e8b"},
+  {"path": "tools/stagekit.py", "md5": "9a3fceaf6beead4c37f142a8808a66de"},
+  {"path": "tools/protocol.py", "md5": "a6a6673a0e899e9e059d7e0c75b9de8c"},
+  {"path": "tools/gateclass.py", "md5": "b1dccbc193a9fdf494900e9a731bfaf3"},
+  {"path": "tools/bgrun.py", "md5": "600aceb1599fba734c19310629bcaa7b"},
+  {"path": "tools/gate_flips.py", "md5": "078fb373a96aa51698e896a1181fe09c"},
+  {"path": "tools/bench/livebench/lb_collect.py", "md5": "7907f1ade4d2d954fb480f5866dcc862"},
+  {"path": "tools/bench/selftest_t3.py", "md5": "d3474bbd741db58a13cfc2114ca3b783"},
+  {"path": "tools/bench/gate_flips_chat_t3.json", "md5": "f42c72af31d5d18a3d41bbd35fb7a248"},
+  {"path": "tools/bench/gate_flips_chat_t3_explained.json", "md5": "23ac69948be06469f4152cc5a75ba820"},
+  {"path": "tools/bench/livebench/A13.json", "md5": "4639fdab239a4ea4f2d8aa6c127f2e1e"},
+  {"path": "tools/bench/livebench/report_4arms.md", "md5": "0f4aa8f9987a42ce649554388f1eb4b7"}
+ ],
+ "facts": [
+  "1 STOP {json} on every real stop (protocol.py:354-394, stagekit.py:142,171,1536,1542, bgrun.py:332, lv_stallcheck.ps1:287); adopt reads RESULT/STOP/gate lines only (stagexec.py:3969)",
+  "1 gate flips (gate_flips_chat_t3.json, 5017 logs): 215 ref->acc (212 prose ExecStop/MEMSTOP, incl. all 4 arms' s03 log); 184 acc->ref (failing RESULT never read before; none adopted)",
+  "1 SAFETY 3 explained (gate_flips_chat_t3_explained.json): 2 quoted text, 1 thread traceback in a passing non-stagekit diag -> stagekit now hooks threading.excepthook too (stagekit.py:162-180)",
+  "2 creation map written at bind (stagexec.py:1987), read FIRST by --rebase (stage_prerun.py:3665-3740,3850); s03->s04: 15 nodes + row-less While -45->16483 by map, 0 node fallbacks",
+  "2 no map -> rebind refuses (identical SR pairs, consts unbound); pair entries swapped -> refused; -33 dropped -> inferred + 1 FALLBACK line (selftest_t3.log C0,C3-C5)",
+  "2 full s04 rebase with the map passes binding, then refuses at ADDRESS #-28.'inner' and #-45.'cond' (face/cond selector; arm A13K's addrcheck fix not in main) (selftest_t3.log C7)",
+  "3 loop_parent uses owners map for a row-less loop (stagexec.py:1284): While 16483 listed on 1 of 180 diagrams (23166), was 179 (selftest_t3.log W1-W3)",
+  "4 lb_collect counts sessions whose transcript started in [t0,t1] (lb_collect.py:127-210): A13 234.23 -> 123.11 (3 echoed sessions, $111.12, excluded); A/B/A13K same",
+  "regress final: selftest_t3 22/0, stagexec selftest 141/0, rebind/rebase/s5 PASS; c133_1, uidreuse_c143_4, c106e fail the same at HEAD (selftest_t3_regress_head.log)",
+  "No JEV-LADDER row for my rc=1 logs. s4/chat_p1 (labview: read, no COM imports) ran as children of my 1st regress driver; it now skips them (selftest_t3_regress.py:40-48). PID 13848 = user's"
+ ],
+ "open": [
+  "selftest_stagexec_s4 fixture edited (invalid RESULT line; A4 = STOP line, bare word is prose) but not re-run (labview: read header) - run it on a read card?",
+  "s04 rebase still refuses at #-28.'inner' / #-45.'cond': port arm A13K's addrcheck face/cond fix (its card 145-a3-1) as a separate card?",
+  "After the experiment: first real stage run must write a creation map and no stray thread STOP; measure Description (fn_records/planned/description_tag.json)"
+ ],
+ "cost": {"usd": null, "minutes": 36, "labview_runs": 0},
+ "note": "Offline only. PD347 (arms used 341-346). New: creation_tag.json (OFF), fixtures/cmap_s03s04 (from arm A13K), lb_recollect.py, selftest_t3_regress.py. Commit by explicit path."
+}

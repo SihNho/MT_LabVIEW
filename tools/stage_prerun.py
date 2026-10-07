@@ -3562,6 +3562,7 @@ def new_structure_classes(recipe, runs=None, recs=None, sig=None):
 # The plan md5 changes, so --dry and --prerun must run again (offline, seconds); the recipe .py is unchanged, so its
 # prior-art review stays valid.
 UID_FIELDS = ("dest_diagram", "loop", "body", "parent", "uid", "diagram", "wire_uid", "donor_uid")
+STRONG_MODES = ("conn", "map")      # card chat-T3: a terminal bound by a creation-map RECORD is as strong as by connectivity
 ADDR_FIELDS = ("at", "src", "dst", "born_on", "on")
 
 
@@ -3661,8 +3662,82 @@ def _reuse_uid(line):
     return int(m.group(1)) if m else None
 
 
-def rebind(before, prov, real, prov_doc=None, real_doc=None, before_doc=None, info=None, named=None):
+def read_creation_map(path):
+    """(header, {"obj"|"diag"|"term": {sim id: entry}}, steps {k: diff n}) of ONE creation-map/1 file (stagexec
+    Executor._cmap_record). A sim id recorded twice with different real uids (or one real uid for two sim ids of one kind)
+    raises ValueError - a map is a record, never a guess."""
+    head, ent, steps, inv = None, {"obj": {}, "diag": {}, "term": {}}, {}, {"obj": {}, "diag": {}, "term": {}}
+    for ln in REAL_OPEN(path, encoding="utf-8", errors="replace"):
+        try:
+            d = json.loads(ln)
+        except ValueError:
+            continue
+        if not isinstance(d, dict) or d.get("schema") != "creation-map/1":
+            continue
+        if d.get("rec") == "run" and head is None:
+            head = d
+        elif d.get("rec") == "bind" and d.get("kind") in ent:
+            k, s, r = d["kind"], int(d["sim"]), int(d["real"])
+            if ent[k].get(s, d)["real"] != r or inv[k].get(r, s) != s:
+                raise ValueError("creation map {0}: {1} #{2} recorded as #{3} and #{4}".format(path, k, s, ent[k][s]["real"] if s in ent[k] else inv[k].get(r), r))
+            ent[k][s], inv[k][r] = d, s
+        elif d.get("rec") == "step":
+            steps[int(d["k"])] = d.get("diff")
+    if head is None:
+        raise ValueError("creation map {0}: no `run` header".format(path))
+    return head, ent, steps
+
+
+def load_creation_map(sim_of, graph_doc, explicit=None, cmap_dir=None, log=print):
+    """(map | None, why, meta) - the creation map of the run that SAVED stage N's artefact (the real graph). `explicit` = a
+    path given by --creation-map. Otherwise the newest file in tools/bench/creation_map whose header names the plan the
+    provisional base was simulated from (sim_of.plan, same md5) AND whose work file is the real graph's VI (graph 'vi').
+    A map whose plan md5 differs from sim_of.md5, or whose work file is not the graph's VI, is refused even when explicit.
+    No map found -> (None, 'no map', meta): rebase then infers everything, as before, and says so."""
+    import stagexec as SX
+    d = cmap_dir or SX.CMAP_DIR
+    so = sim_of or {}
+    gvi = os.path.normcase(os.path.abspath(str((graph_doc or {}).get("vi") or ""))) if (graph_doc or {}).get("vi") else None
+    want_plan = _norm_rel_path(so.get("plan")) if so.get("plan") else None
+    cands = [explicit] if explicit else sorted(glob.glob(os.path.join(d, "*.jsonl")), key=os.path.getmtime, reverse=True)
+    meta = {"dir": d, "candidates": len(cands), "path": None}
+    for p in cands:
+        try:
+            head, ent, steps = read_creation_map(p)
+        except (OSError, ValueError) as e:
+            if explicit:
+                return None, "CREATION-MAP: {0}".format(e), meta
+            continue
+        ok_plan = want_plan is None or _norm_rel_path(head.get("plan")) == want_plan
+        ok_md5 = not so.get("md5") or head.get("plan_md5") == so.get("md5")
+        ok_vi = gvi is None or (head.get("work") and os.path.normcase(os.path.abspath(head["work"])) == gvi)
+        if ok_plan and ok_md5 and ok_vi:
+            meta.update(path=str(rel(p)).replace("\\", "/"), head=head,
+                        n=dict((k, len(v)) for k, v in ent.items()), steps_nonzero=sorted(k for k, n in steps.items() if n))
+            return ent, None, meta
+        if explicit:
+            return None, "CREATION-MAP: {0} is not the map of this run (plan {1}, md5 {2} vs {3}, work {4} vs graph vi {5})".format(
+                p, ok_plan, head.get("plan_md5"), so.get("md5"), head.get("work"), (graph_doc or {}).get("vi")), meta
+    return None, "no creation map for plan {0} md5 {1} and VI {2} in {3}".format(so.get("plan"), so.get("md5"),
+                                                                                 (graph_doc or {}).get("vi"), d), meta
+
+
+def _norm_rel_path(p):
+    p = str(p or "")
+    return os.path.normcase(os.path.normpath(p if os.path.isabs(p) else os.path.join(ROOT, p)))
+
+
+def rebind(before, prov, real, prov_doc=None, real_doc=None, before_doc=None, info=None, named=None, cmap=None):
     """(M: {negative uid -> real uid} | None, why). See the block comment, step 2.
+    card chat-T3 (PD347(b)): `cmap` = load_creation_map()'s {"obj"|"diag"|"term": {sim id: entry}} - the identities the
+    executor RECORDED when it created N's objects. They bind FIRST (each checked: a node entry must name a node the real graph
+    created, same node class; a terminal entry same class / direction / node class; a frame a real Diagram; a row-less
+    object the same class in the objs), then (A)/(B)/(C)/(D) below infer only what the map does not hold; every object bound
+    by inference is listed in info['fallback'] (rebase logs one FALLBACK line each). Terminals bound by a map entry have mode
+    'map' (as strong as 'conn'); a terminal paired by position inside a map-bound node has mode 'map-pos'. cmap=None: as before.
+    card chat-T3: every side is read with vigraph.dedupe_rows first (ported from bench arm A13K, card 144-a3-2): the live
+    reader files a structure body's Diagram terminals TWICE, byte-identical, so the raw real rows doubled the created While
+    body's shape (s03 -> s04: 'Diagram x0 simulated vs x1 real'); a duplicate uid whose rows DIFFER refuses.
     card 143-4 (PD334(b), docs/d1/ring-p4b.md:187): `named` = the uids the plan being rebased names (plan_named_uids; rebase
     passes it). stagexec.uid_reuse is a ONE-OP guard; here N's base and the real graph lie many ops and planned deletes apart,
     where LabVIEW re-issuing freed uids is expected. With `named`: a re-issued uid (uid_reuse hit, or a terminal uid whose
@@ -3682,7 +3757,16 @@ def rebind(before, prov, real, prov_doc=None, real_doc=None, before_doc=None, in
     import stagexec as SX
     import vigraph as V
     info = {} if info is None else info
-    info.update({"mode": {}, "labels": [], "nodes": {}, "frames": {}, "how_frame": {}, "unbound_terms": [], "reuse_noted": []})
+    info.update({"mode": {}, "labels": [], "nodes": {}, "frames": {}, "how_frame": {}, "unbound_terms": [], "reuse_noted": [],
+                 "map_nodes": {}, "map_frames": {}, "map_rowless": {}, "map_terms": 0, "map_unused": [], "fallback": []})
+    dd = {}
+    before, dd["before"] = V.dedupe_rows(before)
+    prov, dd["prov"] = V.dedupe_rows(prov)
+    real, dd["real"] = V.dedupe_rows(real)
+    info["dedupe"] = dict((k, v["dropped"]) for k, v in dd.items())
+    odd = dict((k, v["nonidentical"]) for k, v in dd.items() if v["nonidentical"])
+    if odd:
+        return None, "BINDING: a terminal uid listed twice with DIFFERENT rows: {0}".format(odd)
     ru = SX.uid_reuse(before, real)
     if ru and named is None:
         return None, "UID-REUSE between N's base and the real graph: {0}".format(ru[:6])
@@ -3762,6 +3846,59 @@ def rebind(before, prov, real, prov_doc=None, real_doc=None, before_doc=None, in
         N[sn], Ninv[rn] = rn, sn
         T[st], Tinv[rt], mode[st] = rt, st, how
         return None
+    rowless = {}
+    if cmap:                                                 # card chat-T3 (PD347(b)): the RECORDED identities first
+        pobj, robj = _obj_id(prov_doc), _obj_id(real_doc)
+        sim_fr = set(r.get("frame_diagram") for r in prov if isinstance(r.get("frame_diagram"), int) and r["frame_diagram"] < 0)
+        sim_fr |= set(u for u, (c, _o) in pobj.items() if u < 0 and c == "Diagram")
+        real_fr = set(r.get("frame_diagram") for r in real) | set(u for u, (c, _o) in robj.items() if c == "Diagram")
+        for s, e in sorted((cmap.get("obj") or {}).items()):
+            r = int(e["real"])
+            if s in sim_new:
+                if r not in real_new:
+                    return None, "MAP: record #{0}->#{1}: #{1} is not a node the real graph created since N's base".format(s, r)
+                if V.node_class(sim_new[s][0]) != V.node_class(real_new[r][0]):
+                    return None, "MAP: record #{0}->#{1}: class sim {2} vs real {3}".format(
+                        s, r, V.node_class(sim_new[s][0]), V.node_class(real_new[r][0]))
+                if N.get(s, r) != r or Ninv.get(r, s) != s:
+                    return None, "MAP: record #{0}->#{1} conflicts with #{2}/#{3}".format(s, r, N.get(s), Ninv.get(r))
+                N[s], Ninv[r] = r, s
+                info["map_nodes"][s] = r
+            elif s in pobj:
+                if r not in robj or robj[r][0] != pobj[s][0]:
+                    return None, "MAP: row-less record #{0}->#{1}: class sim {2} vs real {3}".format(s, r, pobj[s][0], (robj.get(r) or [None])[0])
+                if r in rowless.values():
+                    return None, "MAP: row-less record #{0}->#{1}: #{1} already bound".format(s, r)
+                rowless[s] = r
+                info["map_rowless"][s] = r
+            else:
+                info["map_unused"].append(("obj", s, r))
+        for s, e in sorted((cmap.get("diag") or {}).items()):
+            r = int(e["real"])
+            if s not in sim_fr:
+                info["map_unused"].append(("diag", s, r))
+                continue
+            if r not in real_fr:
+                return None, "MAP: frame record #{0}->#{1}: #{1} is not a Diagram of the real graph".format(s, r)
+            if D.get(s, r) != r or Dinv.get(r, s) != s:
+                return None, "MAP: frame record #{0}->#{1} conflicts with #{2}/#{3}".format(s, r, D.get(s), Dinv.get(r))
+            D[s], Dinv[r] = r, s
+            info["map_frames"][s] = r
+            info["how_frame"][s] = "map"
+        for s, e in sorted((cmap.get("term") or {}).items()):
+            r = int(e["real"])
+            if s not in srow or s > 0 or V.node_of(srow[s]) not in sim_new:
+                info["map_unused"].append(("term", s, r))
+                continue
+            if r not in rrow or r not in real_new_t:
+                return None, "MAP: terminal record #{0}->#{1}: #{1} is not a terminal the real graph created".format(s, r)
+            if dirk(srow[s]) != dirk(rrow[r]) or V.node_class(srow[s]) != V.node_class(rrow[r]):
+                return None, "MAP: terminal record #{0}->#{1}: sim {2}/{3} vs real {4}/{5}".format(
+                    s, r, dirk(srow[s]), V.node_class(srow[s]), dirk(rrow[r]), V.node_class(rrow[r]))
+            e_ = bind_t(s, r, "map")
+            if e_:
+                return None, "MAP: " + e_
+            info["map_terms"] += 1
     snew_t = [r["term_uid"] for rows in sim_new.values() for r in rows]
     for _round in range(10000):
         progress = False
@@ -3835,6 +3972,20 @@ def rebind(before, prov, real, prov_doc=None, real_doc=None, before_doc=None, in
     for st in snew_t:
         if st in T and mode.get(st) == "pos" and V.node_of(srow[st]) in dict(info.get("shape_nodes", [])):
             mode[st] = "shape"
+        elif st in T and mode.get(st) == "pos" and V.node_of(srow[st]) in info["map_nodes"]:
+            mode[st] = "map-pos"
+    if cmap:                                                 # card chat-T3: every object NOT bound by the map, by how
+        shp = dict(info.get("shape_nodes", []))
+        for n in sim_new:
+            if n in N and n not in info["map_nodes"]:
+                hows = sorted(set(mode.get(r["term_uid"], "?") for r in sim_new[n]))
+                info["fallback"].append(("node", n, N[n], "shape" if n in shp else "/".join(hows)))
+        for st in snew_t:
+            if st in T and mode.get(st) not in ("map",):
+                info["fallback"].append(("term", st, T[st], mode.get(st)))
+        for f, rf in D.items():
+            if f not in info["map_frames"]:
+                info["fallback"].append(("frame", f, rf, info["how_frame"].get(f, "?")))
     unb_n = [n for n in sim_new if n not in N]
     if unb_n:
         return None, "BINDING: created object(s) not bound by connectivity, position or a unique shape: {0}".format(
@@ -3855,6 +4006,10 @@ def rebind(before, prov, real, prov_doc=None, real_doc=None, before_doc=None, in
         M[sn] = rn
     for sf, rf in D.items():
         M[sf] = rf
+    for so_, ro_ in rowless.items():                         # card chat-T3: a recorded row-less object (a created While)
+        if ro_ in M.values():
+            return None, "MAP: row-less record #{0}->#{1}: #{1} is already the image of another created uid".format(so_, ro_)
+        M[so_] = ro_
     for st, rt in T.items():
         if st < 0:
             M[st] = rt
@@ -4034,8 +4189,11 @@ def carry_fs(prov_doc, real_doc, before_doc, M, info=None):
     return aug, None
 
 
-def rebase(plan_path, graph_path, log=print, simulate=True, out_root=None, model_dir=None):
+def rebase(plan_path, graph_path, log=print, simulate=True, out_root=None, model_dir=None, creation_map=None, cmap_dir=None):
     """(ok, detail) - see the block comment. Writes the rebased plan to plan_path only when every check passes.
+    card chat-T3 (PD347(b)): the CREATION MAP of the run that saved N's artefact (load_creation_map: `creation_map` = an
+    explicit file, else found in tools/bench/creation_map by sim_of plan + md5 + the graph's VI) binds N's created objects
+    FIRST; one `CREATION-MAP` line says which map (or that none was found), one `FALLBACK` line per object inferred instead.
     card 132-6 (PD279(b)(c)): the provisional base's FS map is CARRIED through the binding into an augmented copy of the
     real graph (`tools/bench/sim/<stage>_base_real_fsmap.json`; carry_fs) which becomes the plan's base when the provisional base
     had a plan-made Flat Sequence; and a re-simulation that is not final NEVER writes plan_path (it simulates a temp copy)."""
@@ -4058,9 +4216,27 @@ def rebase(plan_path, graph_path, log=print, simulate=True, out_root=None, model
     _gp, prov = _terms(b["path"] if os.path.isabs(b["path"]) else os.path.join(ROOT, b["path"]))
     greal, real = _terms(graph_path)
     info = {}
-    M, why = rebind(before, prov, real, prov_doc=_gp, real_doc=greal, before_doc=_gb, info=info, named=plan_named_uids(plan))
+    cmap, cwhy, cmeta = load_creation_map(so, greal, explicit=creation_map, cmap_dir=cmap_dir, log=log)
+    if cmap is None and creation_map:
+        return False, "REBASE REFUSED: " + cwhy
+    log("CREATION-MAP {0}".format("{0} (entries {1}; steps with a diff {2})".format(cmeta["path"], cmeta.get("n"),
+                                                                                    cmeta.get("steps_nonzero")) if cmap else
+                                  "none - every created object is INFERRED ({0})".format(cwhy)))
+    M, why = rebind(before, prov, real, prov_doc=_gp, real_doc=greal, before_doc=_gb, info=info, named=plan_named_uids(plan),
+                    cmap=cmap)
     if M is None:
         return False, "REBASE REFUSED: " + why
+    import vigraph as _V                                     # card chat-T3: the address checks below count real rows
+    real = _V.dedupe_rows(real)[0]                           # with the same load dedupe rebind used (ported from A13K)
+    prov = _V.dedupe_rows(prov)[0]
+    if cmap is not None:
+        log("MAP-BOUND nodes {0}; frames {1}; row-less {2}; terminals {3}; unused entries {4}".format(
+            info["map_nodes"], info["map_frames"], info["map_rowless"], info["map_terms"], info["map_unused"][:12]))
+        fb = info["fallback"]
+        for kind_, s_, r_, how in fb:
+            log("FALLBACK {0} #{1} -> #{2} inferred by {3} (no creation-map entry)".format(kind_, s_, r_, how))
+        log("FALLBACK-COUNT {0} (nodes {1}, terminals {2}, frames {3})".format(
+            len(fb), sum(1 for x in fb if x[0] == "node"), sum(1 for x in fb if x[0] == "term"), sum(1 for x in fb if x[0] == "frame")))
     for x in info.get("reuse_noted") or []:                  # card 143-4 (PD334(b)): re-issued, not named by the plan
         u = _reuse_uid(x)
         log("REUSE-NOTED {0} {1}".format(u, x.split("#{0} ".format(u), 1)[-1]))
@@ -4090,7 +4266,7 @@ def rebase(plan_path, graph_path, log=print, simulate=True, out_root=None, model
         for f in UID_FIELDS:
             if isinstance(a.get(f), int) and a[f] < 0 and a[f] in srow:
                 refs.add(a[f])
-    weak = sorted(t for t in refs if t in srow and info["mode"].get(t) != "conn")
+    weak = sorted(t for t in refs if t in srow and info["mode"].get(t) not in STRONG_MODES)   # chat-T3: + 'map'
     if weak:
         return False, "REBASE REFUSED: plan-referenced terminal(s) not bound by connectivity: {0}".format(
             ["#{0} {1!r} by {2}".format(t, srow[t].get("term_name"), info["mode"].get(t, "unbound")) for t in weak[:8]])
@@ -4117,7 +4293,7 @@ def rebase(plan_path, graph_path, log=print, simulate=True, out_root=None, model
         rt = M.get(st) if st is not None else None
         rn = rrow[rt].get("term_name", "") if rt in rrow else None
         same = [r for r in real if r["owner_uid"] == M.get(n) and r.get("term_name", "") == rn]
-        ok_name = st is not None and rt is not None and len(same) == 1 and (rn == base_nm or info["mode"].get(st) == "conn")
+        ok_name = st is not None and rt is not None and len(same) == 1 and (rn == base_nm or info["mode"].get(st) in STRONG_MODES)
         ok_pos, how_r = (False, None)
         if not ok_name and st is not None and rt is not None and len(same) == 1:
             ok_pos, how_r = AC.real_match(prov, st, real, rt, M.get(n))
@@ -4690,6 +4866,8 @@ def main(argv=None):
     ap.add_argument("--rebase", help="card chat-P1: re-bind a stageplan planned on a PROVISIONAL base (needs --graph = "
                                      "the real graph read of the previous stage's saved artefact); exit 0 / 2")
     ap.add_argument("--no-sim", action="store_true", help="with --rebase: do not re-simulate (self-tests)")
+    ap.add_argument("--creation-map", default=None, help="with --rebase: the creation-map/1 file of the run that saved the "
+                                                          "previous stage (default: found in tools/bench/creation_map)")
     # card 103-1: unknown arguments pass through to the recipe's own sys.argv (e.g. stage_d1_disp.py `--stop-after 40`,
     # PART-A mode), so a recipe mode can be dry-run / pre-run exactly as it will be launched; they must follow the recipe.
     a, rest = ap.parse_known_args(argv)
@@ -4734,7 +4912,8 @@ def main(argv=None):
         if not a.graph:
             ap.error("--rebase needs --graph <real graph JSON of the previous stage's saved artefact>")
         try:
-            ok, why = rebase(os.path.abspath(a.rebase), os.path.abspath(a.graph), simulate=not a.no_sim)
+            ok, why = rebase(os.path.abspath(a.rebase), os.path.abspath(a.graph), simulate=not a.no_sim,
+                             creation_map=os.path.abspath(a.creation_map) if a.creation_map else None)
         except Exception as e:                                                     # noqa: BLE001
             ok, why = False, "rebase raised {0}: {1}".format(type(e).__name__, str(e)[:300])
         print(("REBASED " if ok else "") + why, flush=True)

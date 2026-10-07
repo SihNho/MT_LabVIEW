@@ -137,6 +137,12 @@ def _c6_excepthook(etype, value, tb, _orig=sys.excepthook):
         _C6["exc"] = "{0}: {1}".format(etype.__name__, str(value))[:200]
     elif issubclass(etype, KeyboardInterrupt):
         _C6["exc"] = "KeyboardInterrupt"
+    if _C6["exc"]:                                   # card chat-T3: the structured STOP line of an uncaught exception
+        try:
+            sys.stdout.write(_protocol.stop_line("traceback", _C6["exc"], exc=etype.__name__) + "\n")
+            sys.stdout.flush()
+        except Exception:                                                          # noqa: BLE001
+            pass
     _orig(etype, value, tb)
 
 
@@ -155,7 +161,25 @@ def _c6_atexit():
         pass
 
 
+def _c6_thread_excepthook(args, _orig=getattr(__import__("threading"), "excepthook", None)):
+    """card chat-T3: an exception in a THREAD bypasses sys.excepthook (threading.excepthook, Python 3.8+); it is a real
+    stop too, so it prints the same structured STOP line (kind traceback, the thread's name) - found by the gate-flip report
+    (tools/bench/gate_flips_chat_t3.json SAFETY row diag_c106b_live.log: a reader-thread traceback inside a passing run)."""
+    try:
+        if not issubclass(args.exc_type, SystemExit):
+            msg = "{0}: {1}".format(args.exc_type.__name__, str(args.exc_value))[:200]
+            sys.stdout.write(_protocol.stop_line("traceback", msg, exc=args.exc_type.__name__,
+                                                 thread=getattr(args.thread, "name", None)) + "\n")
+            sys.stdout.flush()
+    except Exception:                                                              # noqa: BLE001
+        pass
+    if _orig is not None:
+        _orig(args)
+
+
 sys.excepthook = _c6_excepthook
+if hasattr(__import__("threading"), "excepthook"):
+    __import__("threading").excepthook = _c6_thread_excepthook
 atexit.register(_c6_atexit)
 
 
@@ -1504,14 +1528,18 @@ def unload_donor(path=None):
 
 def run(fn, stage):
     """The standard main(): run `fn(stage)`, never let an exception skip the hygiene tail."""
+    # card chat-T3: every real stop also prints ONE structured `STOP {json}` line (protocol.stop_line) - the line the adopt
+    # checker reads; the prose lines below stay for people and for the older log readers.
     try:
         fn(stage)
     except Stop as e:
+        print(_protocol.stop_line("gate", str(e)), flush=True)
         stage.gate("STOP at gate: {0}".format(e), False)
     except Exception as e:                                                         # noqa: BLE001
         import traceback
         stage.exc_text = "{0}: {1}".format(type(e).__name__, str(e))[:200]      # C6 first_fail
         stage.R["fatal"] = traceback.format_exc()[-2500:]
+        print(_protocol.stop_line(_protocol.stop_kind_of(e), stage.exc_text, exc=type(e).__name__), flush=True)
         print("\nOBSERVED EXC {0}\n{1}".format(str(e)[:300], traceback.format_exc()[-2000:]), flush=True)
         stage.gate("the run completed without an unhandled exception", False, str(e)[:160])
     try:

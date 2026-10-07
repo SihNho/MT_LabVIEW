@@ -18,7 +18,7 @@ Metrics: tools/bench/livebench/<arm>.json (collector lb_collect.py). Harness: to
 |---|---|---|---|---|---|---|---|---|
 | A | rules S1+E3, purpose flow (Sonnet 5.5 high assignment) | 162 | 82.31 | cycle 2, +152 min | 17 (9) | 15 | 6 | 0/2 |
 | B | same rules, legacy flow (Opus judgement dispatches, 6-card cap) | 206 | 96.26 | cycle 1, +62 min | 15 (3) | 52 | - | 0/2 |
-| A13 | A + per-function postconditions, test records (advisory), generated docs | 290 | 234.23 | cycle 1, +68 min | 26 (15) | 29 | 6 | 0/2 |
+| A13 | A + per-function postconditions, test records (advisory), generated docs | 290 | 123.11 | cycle 1, +68 min | 26 (15) | 29 | 6 | 0/2 |
 | A13K | A13 + Karpathy's 4 principles in the agent prompts | 197 | 80.67 | cycle 2, +109 min | 19 (10) | 23 | 5 | 1/2 |
 
 Whole-project progress (docs/goalmap.json): no requirement or milestone changed state in any arm. M3 detail: every arm
@@ -33,10 +33,14 @@ and the 12:07 / 12:30 launches that stopped on harness faults (no model cost / k
   adopted s03 in different cycles with different costs).
 - Agent change (A vs B): A cost 14 % less, ran LabVIEW 3.5x less and had a higher card pass rate (53 % vs 20 %); B
   adopted s03 sooner. Not decisive.
-- Rules 1-3 (A13 vs A): no progress gain in this run and 2.8x the cost; four material sessions alone cost ~$136
-  (collector attributes them by log name - to verify before concluding).
-- Karpathy (A13K vs A13): same progress at about one third of A13's cost, close to A's cost; the only arm that met a
-  cycle purpose.
+- Rules 1-3 (A13 vs A): no progress gain in this run and 1.5x the cost ($123.11 vs $82.31). CORRECTED 2026-10-07 (card
+  chat-T3): the first collection said $234.23 / 2.8x - the collector counted every cost line in any log written after t0,
+  and A13's selftest_c144_a3_2_adopt.log echoed three OLD main-tree sessions (started 09-25 22:32, 09-26 05:35, 10-02 04:53;
+  $111.12). lb_collect now counts a session only when its transcript started inside the run window (excluded sessions are
+  listed in A13.json `usd.excluded`); the fourth "material session" was cycle_144_assign_2 ($25.36, in the window). A, B
+  and A13K re-collected unchanged.
+- Karpathy (A13K vs A13): same progress at about two thirds of A13's cost (was "one third" before the correction above),
+  close to A's cost; the only arm that met a cycle purpose.
 - Every arm spent most of its time on the SAME tool faults, in the same order: Error List predictor double count (55 vs
   56), adopt checker reading 'ExecStop' in a docstring echo as a stop, created-object binding when rebasing s04,
   a WhileLoop present only in the simulator, Terminal vs ParameterTerminal class names. These are simulator / checker

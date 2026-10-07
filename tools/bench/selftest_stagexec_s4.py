@@ -33,7 +33,11 @@ def gate(label, ok, detail=""):
 
 q = lambda m: None                                                                  # noqa: E731
 tmp = tempfile.mkdtemp(prefix="s4_")
-PASSLOG = "BGRUN START x\n  PASS  E1 every checkpoint == sim\n  PASS  PB cdiff ok\n  PASS  PS saved\nRESULT {\"status\":\"PASS\"}\nBGRUN END rc=0\n"
+# card chat-T3 (PD347(a)): adopt_verdict reads RESULT lines through protocol.all_result_lines, which treats a line that is not
+# a valid result-line/1 as a FAILING one; the old fixture `RESULT {"status":"PASS"}` (no schema / gates) is now a real
+# stagekit line (protocol.result_line - what every run prints).
+PASSLOG = ("BGRUN START x\n  PASS  E1 every checkpoint == sim\n  PASS  PB cdiff ok\n  PASS  PS saved\n" +
+           SX.protocol.result_line(SX.protocol.make_result(3, 0)) + "\nBGRUN END rc=0\n")
 v = SX.adopt_verdict(PASSLOG, ("E1", "PB", "PS"))
 gate("A1 PASS log with E1/PB/PS -> ok", v["ok"], v)
 v = SX.adopt_verdict(PASSLOG.replace("  PASS  PB cdiff ok", "  FAIL  PB frame-keyed cdiff == pred"), ("E1", "PS"))
@@ -41,7 +45,12 @@ gate("A2 a STOP-class FAIL -> not ok", not v["ok"] and v["stop_fails"], v)
 v = SX.adopt_verdict(PASSLOG, ("E1", "EL"))
 gate("A3 required EL without PASS -> not ok (E1 does not match E10)", not v["ok"] and v["missing"] == ["EL"]
      and not SX.adopt_verdict("  PASS  E10 x\nRESULT {}\n", ("E1",))["ok"], v)
-gate("A4 a Traceback in the segment -> not ok", not SX.adopt_verdict(PASSLOG + "Traceback (most recent call last)\n", ("E1",))["ok"])
+# card chat-T3 (PD347(a)): a bare 'Traceback' WORD is prose now (a recipe docstring echo carried such words); a real uncaught
+# exception prints stagekit's excepthook STOP line (+ a failing RESULT at exit), and THAT refuses. Bare word -> no effect.
+gate("A4 a real traceback (its STOP line) in the segment -> not ok; the bare word alone is prose",
+     not SX.adopt_verdict(PASSLOG + SX.protocol.stop_line("traceback", "KeyError: 3") + "\nTraceback (most recent call last)\n",
+                          ("E1",))["ok"]
+     and SX.adopt_verdict(PASSLOG + "Traceback (most recent call last)\n", ("E1",))["ok"])
 cd = os.path.join(tmp, "claudeDev"); os.makedirs(cd)                               # noqa: E702
 art, inp, lg, alog = os.path.join(cd, "D1_x_s01_1.vi"), os.path.join(cd, "bed.vi"), os.path.join(tmp, "scr.log"), os.path.join(tmp, "adopt.jsonl")
 open(art, "wb").write(b"artefact"); open(inp, "wb").write(b"bed"); open(lg, "w").write(PASSLOG)   # noqa: E702

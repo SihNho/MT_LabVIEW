@@ -1281,6 +1281,13 @@ def loop_parent(st, L):
                  and r["term_class"] == "OuterTerminal")
     if not ds:                   # card 100-3: a loop the plan CREATED owns no row; its body's parent is in st['diagrams']
         ds = set(int(v) for k, v in (st.get("diagrams") or {}).items() if k in bodies)
+    if not ds:                   # card chat-T3 (PD347(c)): a ROW-LESS loop with no diagrams entry - its RECORDED owner.
+        # Measured by arm A13 (V6_bench\A13 result_145-a3-1.json): While #16483 (created by s03 op 19, no terminal rows) had
+        # owners['16483'] = ['Diagram', 23166] in every state, but step_00's diagrams map was {} -> loop_parent None ->
+        # node_uids listed it on EVERY diagram (179 of 180), so PRIME parity saw it inside its own body 29699 (sim only).
+        own = (st.get("owners") or {}).get(str(u))
+        if isinstance(own, (list, tuple)) and len(own) >= 2 and own[0] == "Diagram" and int(own[1] or 0):
+            ds = {int(own[1])}
     return ds.pop() if len(ds) == 1 else None
 
 
@@ -1892,7 +1899,13 @@ class Executor(object):
     RETRY_KINDS = ("connect", "tunnel", "wire_sr")
 
     def __init__(self, plan_path, backend, log=print, checkpoints=None, require_final=True, record=False, stop_after=None,
-                 from_step=None, binding=None, name_gate=False, partial_reads=False):
+                 from_step=None, binding=None, name_gate=False, partial_reads=False, creation_map="auto", tag_created=None):
+        # card chat-T3 (PD347(b)): creation_map = "auto" (write tools/bench/creation_map/<stage>_<plan md5[:8]>_<ts>.jsonl when
+        # the backend is a REAL one - never for SimBackend / DryPlanBE), a path (write there), or None/False (never). Every
+        # object an op binds (self.bind obj / term / diag) is appended the moment it is bound; stage_prerun.rebase reads it
+        # FIRST. tag_created = None -> the switch file (tools/bench/creation_tag.json, default OFF); True/False overrides.
+        self._cmap_arg, self.cmap_path, self.cmap_rows = creation_map, None, 0
+        self._tag_arg, self.tags = tag_created, []
         # card chat-S4 B: partial_reads=True -> a checkpoint whose step created only op-returned objects is read per owner
         # (backend.read_owners) and patched into the last read; reads_partial lists those k (reads_real keeps the whole ones)
         self.partial_reads, self.reads_partial, self.partial_fallbacks = bool(partial_reads), [], []
@@ -1932,6 +1945,110 @@ class Executor(object):
 
     def step(self, n):
         return _j(_abs(self.step_paths[n]))
+
+    # ------------------------------------------------------------------ card chat-T3 (PD347(b)): CREATION MAP + in-VI tag
+    def _cmap_on(self):
+        a = self._cmap_arg
+        if a is None or a is False:
+            return False
+        return a != "auto" or is_real_backend(self.be)
+
+    def _cmap_snap(self):
+        return dict((x, set(y)) for x, y in self.bind.items()) if self._cmap_on() else None
+
+    def _cmap_open(self):
+        """Create the map file on the first write: one `run` header (plan, plan md5, stage, work file, from_step) and, for
+        a PART-B / resume run, every binding it INHERITED (rec 'bind', inherited true) - so one file answers for the
+        saved artefact of this run."""
+        if self.cmap_path:
+            return self.cmap_path
+        pm = SS.md5_file(_abs(self.plan_path))
+        stage = os.path.splitext(adopt_stage_key(self.plan_path))[0]
+        if self._cmap_arg not in ("auto", True):
+            p = str(self._cmap_arg)
+        else:
+            p = os.path.join(CMAP_DIR, "{0}_{1}_{2}.jsonl".format(stage, pm[:8], time.strftime("%Y%m%d_%H%M%S")))
+        os.makedirs(os.path.dirname(os.path.abspath(p)), exist_ok=True)
+        work = getattr(getattr(self.be, "s", None), "work", None)
+        head = {"schema": "creation-map/1", "rec": "run", "plan": rel_root(self.plan_path), "plan_md5": pm, "stage": stage,
+                "work": os.path.abspath(work) if work else None, "from_step": self.from_step,
+                "t": round(time.time(), 1), "iso": time.strftime("%Y-%m-%d %H:%M:%S")}
+        with open(p, "a", encoding="utf-8") as fh:
+            fh.write(json.dumps(head) + "\n")
+            if self.from_step is not None:
+                for kind_, m in self.bind.items():
+                    for su, ru in m.items():
+                        fh.write(json.dumps({"schema": "creation-map/1", "rec": "bind", "k": int(self.from_step), "kind": kind_,
+                                             "sim": int(su), "real": int(ru), "inherited": True}) + "\n")
+        self.cmap_path = p
+        self.log("  CREATION-MAP {0} (plan {1} md5 {2}, work {3})".format(p, head["plan"], pm[:8], head["work"]))
+        return p
+
+    def _cmap_record(self, k, op, snap, after_state, ids):
+        """Append every binding op k added (self.bind minus `snap`) to the creation map NOW, with the simulated class and
+        owner of each sim id (after_state) and the bound real owner. Then the (switched-off by default) in-VI tag."""
+        if snap is None:
+            return []
+        rows = []
+        T = after_state.get("terminals") or []
+        own = after_state.get("owners") or {}
+        for kind_, m in self.bind.items():
+            for su, ru in m.items():
+                if su in snap.get(kind_, ()):
+                    continue
+                cls = owner = None
+                if kind_ == "term":
+                    r = next((x for x in T if x["term_uid"] == su), None)
+                    if r is not None:
+                        cls, owner = r.get("term_class"), r.get("owner_uid")
+                else:
+                    r = next((x for x in T if x["owner_uid"] == su), None)
+                    L = next((x for x in after_state.get("loops") or [] if int(x["loop_uid"]) == int(su)), None)
+                    cls = "Diagram" if kind_ == "diag" else ((r or {}).get("owner_class") or (L or {}).get("class"))
+                    ow = own.get(str(su))
+                    owner = int(ow[1]) if isinstance(ow, (list, tuple)) and len(ow) >= 2 and ow[1] is not None else None
+                o_real = None
+                if owner is not None:
+                    o_real = owner if owner > 0 else self.bind["obj"].get(owner, self.bind["diag"].get(owner))
+                rows.append({"schema": "creation-map/1", "rec": "bind", "k": k, "op": op["kind"], "acts": list(op["acts"]),
+                             "ids": ids, "kind": kind_, "sim": int(su), "real": int(ru), "class": cls, "owner": owner,
+                             "owner_real": o_real})
+        if rows:
+            with open(self._cmap_open(), "a", encoding="utf-8") as fh:
+                for r in rows:
+                    fh.write(json.dumps(r) + "\n")
+            self.cmap_rows += len(rows)
+        self._tag_created(k, [r for r in rows if r["kind"] in ("obj", "diag")], ids)
+        return rows
+
+    def _cmap_step(self, k, op, n):
+        if self.cmap_path:
+            with open(self.cmap_path, "a", encoding="utf-8") as fh:
+                fh.write(json.dumps({"schema": "creation-map/1", "rec": "step", "k": k, "op": op["kind"], "diff": n}) + "\n")
+
+    def _tag_on(self):
+        return tag_switch() if self._tag_arg is None else bool(self._tag_arg)
+
+    def _tag_created(self, k, rows, ids):
+        """IN-VI TAG (prepared, OFF by default - tools/bench/creation_tag.json): write tag_text(...) into each created
+        NODE's / diagram's Description and read it back (terminals have no Description: a terminal is found as its tagged
+        owner + terminal index). Whether Description is scriptable for every class we create is NOT measured yet
+        (fn_records plan tools/bench/fn_records/planned/description_tag.json, after the experiment). A backend without
+        set_description/get_description STOPS when the switch is on (never silently untagged)."""
+        if not rows or not self._tag_on():
+            return
+        be = self.be
+        if not (callable(getattr(be, "set_description", None)) and callable(getattr(be, "get_description", None))):
+            raise ExecStop("TAG: the in-VI tag switch is ON but the backend has no set_description/get_description "
+                           "(op VI not built - fn_records plan planned/description_tag.json)")
+        stage = os.path.splitext(adopt_stage_key(self.plan_path))[0]
+        for r in rows:
+            txt = tag_text(stage, (ids or [None])[0], r["sim"])
+            be.set_description(r["real"], txt)
+            back = be.get_description(r["real"])
+            ok = back == txt
+            self.tags.append({"k": k, "sim": r["sim"], "real": r["real"], "class": r.get("class"), "text": txt, "back": back, "ok": ok})
+            self.log("  TAG {0} #{1} -> #{2} {3}: {4}".format("ok" if ok else "MISMATCH", r["sim"], r["real"], r.get("class"), txt))
 
     def face_soft(self, k, kind, d):
         """card chat-S3 (PD328(c)): an E1 step diff of tunnel face rows only. One `  SOFT  ` line per step and one
@@ -2278,6 +2395,7 @@ class Executor(object):
                 meter("read_part", k)
             stale = False
             made = {}
+            cm_snap = self._cmap_snap()                    # card chat-T3: the creation map records what this op binds
             if op["kind"] == "create":                     # card 100-3: a loop owns no row - bound from the op's return
                 made = self._bind_create(op, after["state"], res)
             if (op["kind"] in BIND_KINDS and self.name_gate      # card 132-1 (PD275(c)): per-op tunnel-name gate, crossing ops
@@ -2314,6 +2432,7 @@ class Executor(object):
                         outer[so[0]["owner_class"]] = self.bind["term"][so[0]["term_uid"]]
                     res = dict(res or {}, track=be.addr.track_new(int(a["loop"]), outer["RightShiftRegister"],
                                                                   outer["LeftShiftRegister"]))
+            self._cmap_record(k, op, cm_snap, after["state"], [A[n - 1].get("id") for n in op["acts"]])
             lost = be.addr.retrack() if op["kind"] != "add_sr" else []
             if lost:
                 res = dict(res or {}, lost_register_faces=lost)
@@ -2328,6 +2447,7 @@ class Executor(object):
                    "checkpoint": [A[n - 1].get("checkpoint") for n in op["acts"] if A[n - 1].get("checkpoint")],
                    "result": res, "bound": made, "diff": d, "secs": round(time.time() - t0, 1)}
             self.report.append(rec)
+            self._cmap_step(k, op, d["n"])
             self.log("  STEPX {0:02d} {1:<14} acts {2} ids {3} bound {4} diff {5}{6}".format(
                 k, op["kind"], op["acts"], rec["ids"], made, d["n"],
                 "  CHECKPOINT " + ",".join(rec["checkpoint"]) if rec["checkpoint"] else ""))
@@ -2676,6 +2796,24 @@ class LVBackend(object):
 
     def obj_classes(self, real):
         return classes_of(real, getattr(self, "last_objs", None))
+
+    # card chat-T3 (PD347(b)): the in-VI tag's two verbs. No op VI writes/reads a diagram object's Description yet
+    # (gscript has none; checked `grep -i description tools/gscript.py`), so both refuse until it is built and measured
+    # (fn_records plan tools/bench/fn_records/planned/description_tag.json). Reached only with the tag switch ON.
+    def set_description(self, uid, text):
+        fn = getattr(self.g, "set_description", None)
+        if fn is None:
+            raise ExecStop("TAG: gscript.set_description does not exist yet (measure after the experiment)")
+        rec = fn(self.s.work, int(uid), str(text))
+        if (rec or {}).get("err"):
+            raise ExecStop("TAG: set_description #{0}: {1}".format(uid, rec["err"]))
+        return rec
+
+    def get_description(self, uid):
+        fn = getattr(self.g, "get_description", None)
+        if fn is None:
+            raise ExecStop("TAG: gscript.get_description does not exist yet (measure after the experiment)")
+        return (fn(self.s.work, int(uid)) or {}).get("text")
 
     def _done(self, rec, tag):
         self.last_purge = self.s.junk_purge(tag)       # card 141-1: kept for the created-node prim gate (prim_check)
@@ -3771,6 +3909,55 @@ GATE_LINE_RE = re.compile(r"^\s+(PASS|FAIL)\s{2}(.*)$")
 RESULT_RE = re.compile(r"^RESULT (\{.*\})\s*$")
 
 
+# ============================================================================================ card chat-T3 (user 2026-10-07)
+# "세 가지 다 고치도록" (report_4arms.md): CREATED-OBJECT IDENTITY BY RECORD, NOT BY INFERENCE (PD347(b)). A plan names created
+# objects by simulator ids (-28); stage_prerun.rebase used to GUESS their real uids from connectivity / position / shape, which
+# cannot tell two identical register pairs apart. The executor now writes `sim id -> real uid (+ class, owner)` to a
+# per-stage CREATION MAP the moment it binds them (Executor._cmap_record), and rebase binds from that map FIRST
+# (stage_prerun.load_creation_map / rebind(cmap=)), inferring only what the map does not hold (each such object logged).
+# The IN-VI TAG (the plan id written into each created node's Description) is PREPARED behind tools/bench/creation_tag.json,
+# default OFF: whether Description is scriptable for every class we create is measured in LabVIEW after the experiment.
+CMAP_DIR = os.path.join(BENCH, "creation_map")
+TAG_SWITCH = os.path.join(BENCH, "creation_tag.json")
+TAG_PREFIX = "claude-plan"
+
+
+def rel_root(p):
+    try:
+        return os.path.relpath(os.path.abspath(str(p)), ROOT).replace("\\", "/")
+    except ValueError:
+        return os.path.abspath(str(p))
+
+
+def is_real_backend(be):
+    """True for a backend that drives LabVIEW (LVBackend, possibly wrapped by RetireGuardBE); False for SimBackend and its
+    subclasses (DryPlanBE) - a dry run writes no creation map."""
+    b, n = be, 0
+    while n < 5 and "_be" in getattr(b, "__dict__", {}):
+        b, n = b.__dict__["_be"], n + 1
+    return not isinstance(b, SimBackend)
+
+
+def tag_switch(path=None):
+    """The in-VI tag switch (default OFF): tools/bench/creation_tag.json {"enabled": false}. Missing/unreadable -> OFF."""
+    try:
+        with open(path or TAG_SWITCH, encoding="utf-8") as f:
+            return bool(json.load(f).get("enabled"))
+    except (OSError, ValueError, AttributeError):
+        return False
+
+
+def tag_text(stage, plan_id, sim_uid):
+    """The Description text of a created object: `claude-plan:<stage>:<plan action id>:<sim id>`."""
+    return "{0}:{1}:{2}:{3}".format(TAG_PREFIX, stage, plan_id, sim_uid)
+
+
+def parse_tag(text):
+    """(stage, plan id, sim id) of a tag_text string, else None."""
+    m = re.match(r"^" + TAG_PREFIX + r":([^:]*):([^:]*):(-?\d+)$", str(text or "").strip())
+    return (m.group(1), m.group(2), int(m.group(3))) if m else None
+
+
 def adopt_stage_key(path):
     """The stage a script belongs to: basename, lower case, `_vN` and a `_scratch<N>` suffix stripped
     (stage_d1_ring_p4_s01_scratch.py -> stage_d1_ring_p4_s01.py)."""
@@ -3780,11 +3967,19 @@ def adopt_stage_key(path):
 
 
 def adopt_verdict(text, required=()):
-    """Pure: {ok, why, n_pass, stop_fails, log_fails, missing} for one scratch log segment. ok = a RESULT line exists, no
-    FAIL line that gateclass classifies STOP, no hard marker (exception / timeout / STOP at gate), and every `required`
-    label prefix has a PASS line ('E1' matches 'E1 ...', not 'E10 ...')."""
+    """Pure: {ok, why, n_pass, stop_fails, log_fails, missing, stops, results} for one scratch log segment.
+    card chat-T3 (user 2026-10-07: flags belong in a FIXED FORMAT, not in free text): the verdict reads ONLY structured
+    lines - `RESULT {json}` (protocol.all_result_lines), `STOP {json}` (protocol.all_stop_lines) and stagekit's fixed-format
+    gate lines `  PASS  <label>` / `  FAIL  <label>` (needed for `required` and the PD329 LOG-class allowance). The old body
+    scan (gateclass.HARD_MARK_RE over the whole text) is gone from here: it refused a clean run because the recipe's own
+    docstring, echoed at the top of the log, contained the word 'ExecStop' (all four bench arms, report_4arms.md).
+    ok = at least one RESULT line; no STOP line; no FAIL line gateclass classifies STOP; no RESULT line whose gates.fail
+    exceeds the LOG-class FAIL lines (a failure that is not visible as an allowed gate line - e.g. the +1 an uncaught
+    exception adds in a log written before STOP lines existed; a malformed RESULT counts as a failing one); every
+    `required` label prefix has a PASS line ('E1' matches 'E1 ...', not 'E10 ...')."""
+    t = str(text or "")
     passes, stop_f, log_f = [], [], []
-    for ln in str(text or "").splitlines():
+    for ln in t.splitlines():
         m = GATE_LINE_RE.match(ln)
         if not m:
             continue
@@ -3792,27 +3987,32 @@ def adopt_verdict(text, required=()):
             passes.append(m.group(2).strip())
         else:
             (log_f if gateclass.classify_line(ln) == "log" else stop_f).append(m.group(2).strip()[:200])
-    res = []
-    for ln in str(text or "").splitlines():
-        m = RESULT_RE.match(ln.strip())
-        if m:
-            try:
-                res.append(json.loads(m.group(1)))
-            except ValueError:
-                pass
-    hard = getattr(gateclass, "HARD_MARK_RE", None)
-    hard_hit = bool(hard and hard.search(str(text or "")))
+    res = protocol.all_result_lines(t)
+    stops = protocol.all_stop_lines(t)
+    over = []
+    for d in res:
+        try:
+            nf = int((d.get("gates") or {}).get("fail", 1))
+        except (TypeError, ValueError, AttributeError):
+            nf = 1
+        if protocol.result_failed(d) and max(nf, 1) > len(log_f):
+            over.append("status {0} gates.fail {1} > {2} LOG-class FAIL line(s): {3}".format(
+                d.get("status"), nf, len(log_f), str(d.get("first_fail"))[:120]))
     missing = [p for p in required if not any(x == p or x.startswith(p + " ") for x in passes)]
     why = []
     if not res:
         why.append("no RESULT line")
+    if stops:
+        why.append("{0} STOP line(s): {1}".format(len(stops), ["{0}: {1}".format(s.get("kind"), str(s.get("message"))[:100])
+                                                             for s in stops[:3]]))
     if stop_f:
         why.append("{0} STOP-class FAIL line(s): {1}".format(len(stop_f), stop_f[:3]))
-    if hard_hit:
-        why.append("hard marker in the log ({0})".format(hard.search(str(text)).group(0)[:80]))
+    if over:
+        why.append("failing RESULT line(s) not covered by LOG-class FAIL lines: {0}".format(over[:3]))
     if missing:
         why.append("required step-end gate(s) without a PASS line: {0}".format(missing))
-    return {"ok": not why, "why": why, "n_pass": len(passes), "stop_fails": stop_f, "log_fails": log_f, "missing": missing}
+    return {"ok": not why, "why": why, "n_pass": len(passes), "stop_fails": stop_f, "log_fails": log_f, "missing": missing,
+            "stops": stops, "results": len(res)}
 
 
 def _claudedev():
@@ -4085,7 +4285,10 @@ class RetireGuardBE(object):
 
 
 def report_stop(s, x, be, e):
-    """An ExecStop inside Executor.run: record the report / meter / step diffs, list every unroutable row, FAIL E1 fatally."""
+    """An ExecStop inside Executor.run: record the report / meter / step diffs, list every unroutable row, FAIL E1 fatally.
+    card chat-T3: first prints the structured STOP line (kind execstop | memstop, the op it stopped in)."""
+    print(protocol.stop_line(protocol.stop_kind_of(e), str(e), op=(x.cur or {}).get("k"), op_kind=(x.cur or {}).get("op")),
+          flush=True)
     s.R["stagexec"] = x.report
     s.R["meter"] = getattr(getattr(be, "meter", None), "rows", None)
     s.R["step_diffs"] = x.diffs

@@ -341,3 +341,35 @@ Self-test `tools/bench/selftest_rebind_c142_5.py` (142-P1's case): before 1/3 (`
        gscript.wire_indicators, stagekit.op:wire_indicators), 0 without a record -> switch condition NOT met, gate_config.json
        stays ADVISORY (by the stated rule). All 86 plans: 59 fresh-pass, 3 fresh-fail, 24 planned (none in the switch scope).
        Capability block regenerated, drift none.
+
+347. **(card chat-T3, 2026-10-07 — USER: "세 가지 다 고치도록", on `tools/bench/livebench/report_4arms.md`: every bench arm
+     lost time to the same tool faults and fixed them only inside its own worktree.)** Numbered 347 because PD341–PD346 are
+     the bench arms' own decisions in `V6_bench\<arm>\docs\d1\tooling.md` (cited by `docs/chat-handoff.md`); main skips them.
+     - **(a) STOP lines; adopt reads structured lines only.** Every real stop prints `STOP {"schema":"stop-line/1","kind",
+       "message"}` (`tools/protocol.py:354-394`): stagekit.run on a fatal gate / exception (`tools/stagekit.py:1536,1542`),
+       its sys + thread excepthooks (:142,171), `stagexec.report_stop` (ExecStop / MEMSTOP), bgrun TIMEOUT
+       (`tools/bgrun.py:332`), lv_stallcheck's STALL record. `stagexec.adopt_verdict` (`tools/stagexec.py:3969`) reads ONLY
+       RESULT, STOP and stagekit's fixed-format gate lines: a docstring echo is prose; a STOP line, a STOP-class FAIL, or a
+       failing RESULT not covered by LOG-class FAIL lines refuses. Gate-flip report (`tools/gate_flips.py`, ported from arm
+       A): `tools/bench/gate_flips_chat_t3.json` + `_explained.json` - 5017 logs, 215 refused->accepted (prose 'ExecStop' /
+       'MEMSTOP' x212, incl. all four arms' s03 scratch log), 184 accepted->refused (a FAILING RESULT the old adopt never read;
+       no adopted log among them), soft_only / address_only 0 changed. Other free-text gates swept and LISTED there (guard_peer,
+       audit_cycle, cycle_runner firefighter, gate_fp, jev); the launch path was already structured.
+     - **(b) Created-object identity by RECORD.** The executor appends `sim id -> real uid (+ class, owner)` to
+       `tools/bench/creation_map/<stage>_<plan md5[:8]>_<ts>.jsonl` the moment it binds (`Executor._cmap_record`,
+       :1987; real backends only); `stage_prerun --rebase` finds the map by sim_of plan + md5 + the graph's VI (or
+       `--creation-map`), binds from it FIRST and infers only the rest, one `FALLBACK` line each (`tools/stage_prerun.py:
+       3665-3740,3850,3977`); rebind/rebase rows are dedupe'd (arm A13K's fix). In-VI TAG prepared, OFF
+       (`tools/bench/creation_tag.json`; LabVIEW test plan `tools/bench/fn_records/planned/description_tag.json`).
+     - **(c) Row-less While owner.** `loop_parent` takes a row-less loop's parent from the recorded owners map when nothing
+       else places it (`tools/stagexec.py:1284`): While #16483 is listed on diagram 23166 only (was 179 of 180).
+     - **(d) Bench cost collector.** `lb_collect.costs` counts a session only when its transcript started in the run window
+       (`tools/bench/livebench/lb_collect.py:127-210`); A13 $234.23 -> $123.11 (three echoed 09-25/26, 10-02 sessions excluded);
+       A, B, A13K unchanged; `report_4arms.md` corrected.
+     - Self-tests: `tools/bench/selftest_t3.log` 22/0 (recorded s03 -> s04 graphs of arm A13K: rebind WITH the map binds all
+       15 nodes + the row-less While, 0 node fallbacks; identical pairs swapped in the map -> refused). Owed after the
+       experiment (LabVIEW): the first real stage run writing a creation map; the Description measurement; the s04 rebase's
+       address stage (#-28.'inner', #-45.'cond' unresolved - arm A13K's addrcheck face fix is not in main).
+     USER-RULES: U1 (relied on: checker / executor bookkeeping / rebase binding / collector code only - no VI, no stage
+     computation, no design change; the executor's ops and their order are unchanged, the map is a side record) and U2
+     (offline only: rig state 실험중, no LabVIEW opened).

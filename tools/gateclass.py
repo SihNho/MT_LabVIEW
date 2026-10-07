@@ -248,8 +248,11 @@ def record_classified(label, c, detail=None, script=None, path=None):
 
 # ------------------------------------------------------------------------------------------------ log lines (guard_peer)
 FAIL_LINE_RE = re.compile(r"^\s*(?:->\s*)?\*{0,2}FAIL\*{0,2}\s+(.*)$")
+# card chat-T3: + `^STOP {` (protocol.stop_line, the structured stop every real stop now prints). This regex still scans
+# free text for guard_peer's LOG-only / address-only releases (soft_only, address_only - a release, so over-matching only
+# owes a review); the ADOPT path no longer uses it (stagexec.adopt_verdict reads RESULT / STOP / gate lines only).
 HARD_MARK_RE = re.compile(r"OBSERVED:?\s*EXC|Traceback \(most recent call last\)|VERDICT:\s*BROKEN|^BGRUN TIMEOUT|^STALL:"
-                          r"|STOP at gate|ExecStop|MEMSTOP", re.M)
+                          r"|STOP at gate|ExecStop|MEMSTOP|^STOP \{", re.M)
 
 
 def classify_line(line):
