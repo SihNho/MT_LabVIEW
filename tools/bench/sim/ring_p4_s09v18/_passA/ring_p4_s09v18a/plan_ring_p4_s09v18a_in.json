@@ -1,0 +1,76 @@
+{
+ "schema": "stageplan/1",
+ "context": {
+  "s1_key": "D1_s1_copy"
+ },
+ "stage": "ring_p4_s09v18a",
+ "goal": "card 151-a3-2 PASS A: P4 v18 session 9 (ops 185..190), no open_rows",
+ "base": {
+  "path": "tools/bench/sim/ring_p4_s09v18/s08end/base_provisional.json",
+  "md5": "49cdec8a5fabe6373120dec5d9654d56",
+  "provisional": true,
+  "sim_of": {
+   "plan": "tools/bench/plan_ring_p4_s08v18.json",
+   "md5": "c328fdafa921995af7ff4d43c34d9c5c"
+  }
+ },
+ "actions": [
+  {
+   "op": "wire",
+   "id": "p4_x_n2_order",
+   "src": {
+    "uid": 5058,
+    "term_uid": 5111
+   },
+   "dst": {
+    "uid": 30002,
+    "term": "array"
+   },
+   "why": "ROUTE connect_term_uid | PRECEDENT | PD298(c)/PD295(d): #5058 'Bead is good? array out' t5111 -> FS4 input tunnel -> IAZ1 (no-effect consumer) = FS4 starts only after #5058; fs_border variant case_frame_to_fs_frame_branch (wired source, measured on a CASE frame) - on a While body never run. Placed AFTER rollback C: the crossing re-creates t5111's net (stagesim.py:1906-1912), and p4_rbC_dw deletes "
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rle_x_n2_order",
+   "of": "p4_x_n2_order",
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972; PD256(b) one RLE per crossing"
+  },
+  {
+   "op": "wire",
+   "id": "p4_x_slot_fs",
+   "src": {
+    "uid": 30179,
+    "term": "outer"
+   },
+   "dst": {
+    "uid": 29879,
+    "term": "index"
+   },
+   "why": "ROUTE connect_term_uid | UNMEASURED | branch from a plan-made While tunnel outer face ACROSS a plan-made FS border: no measured variant [draft d9d66246]"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rle_x_slot_fs",
+   "of": "p4_x_slot_fs",
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0; PD255(b)/256(b) one RLE per crossing [draft d9d66246]"
+  },
+  {
+   "op": "wire",
+   "id": "p4_x_n2_out",
+   "src": {
+    "uid": 29879,
+    "term": "element"
+   },
+   "dst": {
+    "uid": 29724,
+    "term": "n2"
+   },
+   "why": "c142-P2 re-pointed dst new:EQ2.y -> new:SQ1.n2 (PD330(a) subVI terminal by name) | ROUTE connect_term_uid | UNMEASURED | FS frame -> enclosing body EXIT (only entries and frame_to_frame measured) [draft d9d66246]"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rle_x_n2_out",
+   "of": "p4_x_n2_out",
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0; PD255(b)/256(b) one RLE per crossing [draft d9d66246]"
+  }
+ ]
+}

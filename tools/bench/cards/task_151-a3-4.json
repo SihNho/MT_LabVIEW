@@ -1,0 +1,54 @@
+{
+ "schema": "task/1",
+ "id": "151-a3-4",
+ "kind": "build",
+ "goal": "Drain gate false positive fp-61 (errorlist_check count_read) by measured self-test; re-run s08 scratch recipe dry+prerun offline; fp-62..70 stay open.",
+ "why": "Cycle 151 pass item 7. fp-61's cause (comtypes/OCR missing in the env) is to be measured gone; no tools/hooks edit; offline only, after the LabVIEW cards.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_151-a3-4.md", "md5": "56b86f29c627f3d5c9eda52beacf5824"},
+  {"path": "tools/gate_fp.py", "md5": "1f427fb5b1735584c19a699c2314b826"},
+  {"path": "tools/bench/gate_fp_queue.jsonl", "md5": "72bd4902add73ce66c0bdb3a149b7502"},
+  {"path": "tools/errorlist_check.py", "md5": "2b466a89335af69efd27a663479eda53"},
+  {"path": "tools/bench/diag_c148_a2_4_el.log", "md5": "f05abefac009a2adf3a33b1291883dce"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s08v18_scratch.py", "md5": "7cab504986726fa211e2a50724aad10b"},
+  {"path": "tools/stagekit.py", "md5": "604529e8e9b68b9c4b370b8f3d5c5ee5"},
+  {"path": "tools/addrcheck.py", "md5": "207beb0d09102c78b1e06d1f076eec7e"}
+ ],
+ "pass": [
+  "fp-61 cause measured (comtypes + OCR import, errorlist_check offline self-test) in diag_c151_a3_4_selftest.log; drain command + rc quoted, or why not drained",
+  "s08 scratch recipe --dry and --prerun re-run offline (never --launch): numbers quoted vs last session dry 1/0, prerun 16/0, X10 651.6",
+  "fp-62..70 still open (gate_fp.py list); invariants md5 before=after (brief step 5); tools/hooks untouched; no LabVIEW process; facts <=30 lines"
+ ],
+ "outputs": [
+  "tools/bench/diag_c151_a3_4_selftest.log",
+  "tools/bench/diag_c151_a3_4_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c151_a3_4*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/sim/ring_p4_s08v18/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 45
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/gate_fp.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p4_s08v18_scratch.py"}
+ ],
+ "rules": [
+  "No tools/hooks edit, no stage-tool edit; NO --launch; offline only",
+  "Drain fp-61 only, and only on a measured fix; if a gate refuses your command text RETURN with the refusal"
+ ]
+}

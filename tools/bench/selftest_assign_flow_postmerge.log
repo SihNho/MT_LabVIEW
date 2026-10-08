@@ -1,0 +1,21 @@
+BGRUN START 2026-10-09 02:47:40 limit 5.0 min: py -u tools/bench/selftest_assign_flow.py
+BGRUN PID 21172
+  ok   H1 judgement refuses material, allows log-reader             (2, 0)
+  ok   H2 eight dispatches allowed in the assign role               [0, 0, 0, 0, 0, 0, 0, 0]
+  ok   H3 unscoped card: plain refusal, no hand-back                2
+  ok   H4 (a) unexplained fail after its one retry -> HANDBACK a, sticky (0, 0, 2, 2)
+  ok   H5 one explained fail passes, the same class twice -> HANDBACK b ('address', 0, 0, 2)
+  ok   H6 (c) plan / CLAUDE.md / hooks / memory limit / scope -> HANDBACK c; purpose-named change allowed ([('plan', 2, True), ('claude', 2, True), ('hooks', 2, True), ('x10', 2, True), ('scope', 2, True)], 0)
+  ok   H7 (d) decisions grew / BLOCKED on user -> HANDBACK d        (0, 2, 2)
+  ok   H8 cap-time / cap-usd (estimate 65.0) / backstop -> HANDBACK (2, 65.0, 2, [0, 0, 0, 2])
+  ok   H9 no ASSIGN_STATE fails closed                              2
+  ok   H10 runner_verdict met / cap-usd / unproven / no-result / sticky wins (('PURPOSE_MET', None), ('HANDBACK', 'cap-usd'), ('HANDBACK', 'purpose-unproven'), ('HANDBACK', 'no-result'), ('HANDBACK', 'b-same-class-twice'))
+  ok   R1 purpose met                                               (0, True)
+  ok   R2 claimed MET overridden -> HANDBACK a -> judged -> round 2 MET (0, True, True, 2, ['judgement|handback|C:\\Users\\KimLab\\AppData\\Local\\Temp\\assignflow_onl2p7xf\\run_hb\\bench\\cards\\handback_1_1.json'])
+  ok   R3 no result -> HANDBACK no-result -> unchanged closes       0
+  ok   R4 always HANDBACK -> HANDBACK-LIMIT after round 2           0
+  ok   R5 envelope 61 USD -> HANDBACK cap-usd                       0
+  ok   R6 legacy: no ASSIGN; dry without stand-in: skipped; unchanged next.json: no NEW purpose (0, 0, 0)
+SUMMARY 16/16 gates pass
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":16,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 47s

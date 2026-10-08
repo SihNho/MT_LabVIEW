@@ -1,0 +1,26 @@
+BGRUN START 2026-10-09 02:48:27 limit 5.0 min: py -u tools/bench/selftest_c147_b1_2.py
+BGRUN PID 10568
+  FAIL  P0 pins before == card inputs (raw or LF-content md5): stagexec.py 1bab9cf9, gscript.py 1a80236e, elrule.py a5ee7d5c, memory_model.json 88eeb037, plan_ring_p4_s06v18.json cfbd9823, plan_ring_p4_s06v18_pred.json c4a6a35a, plan_ring_p4_s06v18_licence.json 7f70bbf9, plan_ring_p4_s06v18_in.json db72d8af, stage_d1_ring_p4_s06v18.py d947df5d, stage_d1_ring_p4_s06v18_scratch.py 31009bfc  {'memory_model.json': ['b4a6eec6', 'd42ccd46'], 'plan_ring_p4_s06v18_pred.json': ['c1bd6b3e', '44e0a50e']}
+  PASS  R1 every sim end row binds to one real end row; base + step file md5 == the plan's pins  []
+  PASS  T0 the NAME key reproduces the run's stored FAIL (td_ok False, d_ok False)  
+  PASS  T0b today's licence file carries the 5 renames -> licence_renames == L5's (5 keys); pb_rename_rows gives the same rows with or without it  [(2832, 2626), (4160, 2626), (4165, 2626), (9505, 9503), (9508, 9503)]
+  PASS  T1 L5 (5 renames) D PASS: new 20 == sim 20, lost 12 == sim 12; reuse_noted (INFO) [23807]  
+  PASS  T1 L5 (5 renames) TD PASS: lost 3 == gone 3, unwired [], moved []; renames (INFO) 4  
+  PASS  T1 L5 (5 renames) PB PASS: cdiff == pred 18 rows and open pairs  {'extra': [], 'missing': [], 'restored': [(2832, 2626, 'element', 'array'), (4160, 2626, 'element', 'array'), (4165, 2626, 'element', 'array'), (9505, 9503, '', 'Value'), (9508, 9503, '', 'Value')]}
+  PASS  T1n NO licence D PASS: new 20 == sim 20, lost 12 == sim 12; reuse_noted (INFO) [23807]  
+  PASS  T1n NO licence TD PASS: lost 3 == gone 3, unwired [], moved []; renames (INFO) 4  
+  PASS  T1n NO licence PB PASS: cdiff == pred 18 rows and open pairs  {'extra': [], 'missing': [], 'restored': [(2832, 2626, 'element', 'array'), (4160, 2626, 'element', 'array'), (4165, 2626, 'element', 'array'), (9505, 9503, '', 'Value'), (9508, 9503, '', 'Value')]}
+  PASS  T2 L3 (2832/4160/4165 only): TD PASSES, the 9503 renames are INFO (renames on nodes [2626, 2626, 2626, 9503]), unlicensed []  
+  FACT  T2 L3 D True; PB True
+  PASS  T3 w23807 keeps sink 9519 (the sim removed it) -> D FAILS: d_ok False, lost 12/12  
+  FACT  T3 same rows, no bind: d_ok False new 20/20 lost 12/12
+  PASS  T4 renamed 2832 changes owner 2626 -> 9503: TD FAILS (lost [(2626, 4, 'Terminal', False), (9503, 0, 'OuterTerminal', False), (9503, 1, 'InnerTerminal', False)], moved [(2626, 1, 'Terminal', False), (2626, 2, 'Terminal', False), (2626, 3, 'Terminal', False)])  
+  PASS  T4b 2832 renamed 'array'->'index' (the licence says 'element'): TD PASSES, the name is INFO [((2626, 1, 'Terminal', False), 'array', 'index')]  
+  PASS  T5 s03 (diag_c143_p4s03v18_scratch.json): name key == stored run verdict (True) and the position key PASSES TD True D True  
+  PASS  T5 s04 (diag_c144_p4s04v18_scratch.json): name key == stored run verdict (True) and the position key PASSES TD True D True  
+  PASS  T5 s05 (diag_c145_p4s05v18_scratch.json): name key == stored run verdict (True) and the position key PASSES TD True D True  
+  PASS  F1 stagekit builds no message with the `%` operator  []
+  PASS  F2 stagekit's own source carries no bold-FAIL marker  
+  PASS  P1 pins after == before  
+RESULT {"status":"FAIL","gates":{"pass":19,"fail":1},"first_fail":"P0 pins before == card inputs (raw or LF-content md5): stagexec.py 1bab9cf9, gscript.py 1a80236e, elrule.py a5ee7d5c, memory_model.json 88eeb037, plan_ring_p4_s06v18.json cfbd9823,","artefacts":[],"schema":"result-line/1"}
+BGRUN END rc=1 after 6s

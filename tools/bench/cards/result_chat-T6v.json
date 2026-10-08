@@ -1,0 +1,22 @@
+{"schema":"result/1","id":"chat-T6v","status":"FAIL","gates":{"pass":5,"fail":3},
+"first_fail":"selftest_c147_b1_2 P0 pins before == card inputs: memory_model.json, plan_ring_p4_s06v18_pred.json md5 differ (tools/bench/selftest_c147_b1_2.py:97)",
+"blocked_by":null,
+"artefacts":[
+{"path":"tools/bench/selftest_t6_regress_postmerge.log","md5":"3822715a51b19a77a0b99fc66658d242"},
+{"path":"tools/bench/selftest_t6_poskey_postmerge.log","md5":"7a1eb5fe45224c4f9cccba1bd5d42d55"},
+{"path":"tools/bench/selftest_assign_flow_postmerge.log","md5":"9a45b4103b66730b013f21f5f1f7c582"},
+{"path":"tools/bench/selftest_c147_b1_2_postmerge.log","md5":"85088479d1b8d46e0e5d66a0f3d80472"},
+{"path":"tools/bench/selftest_td_key_c141_3_postmerge.log","md5":"68aad70aaab32353cb4e18b6bc22cedb"},
+{"path":"tools/bench/selftest_rebind_c150_postmerge.log","md5":"db8ff501de47db26c22b7c2c9d823a96"},
+{"path":"tools/bench/selftest_c150_a3_3_postmerge.log","md5":"a8fb3a4a634e5693830e6272c6f51806"}],
+"facts":[
+"py_compile OK: stagekit.py, addrcheck.py, stage_prerun.py, hooks/guard_assign.py",
+"PASS rc0: t6_poskey 43/0, assign_flow 16/0, td_key_c141_3 9/0, c150_a3_3 4/0 (its 'GATE FAIL old V' lines :7-9 are old-code reproductions)",
+"FAIL rc1 c147_b1_2 19/1: P0 pin (selftest_c147_b1_2.py:97) memory_model.json now b4a6eec6/d42ccd46 vs 88eeb037; plan_ring_p4_s06v18_pred.json c1bd6b3e/44e0a50e vs c4a6a35a (log :3)",
+"FAIL rc1 t6_regress 10/1: only failing child is c147_b1_2 (log :6); stagexec 141/0, stagesim 105/0, s5/t3/t4/t5/rebind_c142_5 pass; selftest_stagekit SKIPPED (labview read)",
+"FAIL rc1 rebind_c150 6/2: R0 HEAD blob of stage_prerun.py c739eb86 != pinned dcd45aba (selftest_rebind_c150.py:78); R1 (:86) old_ref None follows from R0",
+"All 3 failures are pin drift from commit 1449ae07 (cycles 149-150: stage_prerun.py +33/-5, memory_model.json +10, pred.json +25 vs 4d762e7f), not T6 merge 9dbd384b or guard_assign 4d762e7f",
+"Nothing fixed (card rule: no code edits)"],
+"open":["Re-pin selftest_c147_b1_2 PINS and selftest_rebind_c150 R0 to the 1449ae07 blobs, or keep them as frozen-cycle evidence and drop them from the T6 regress set?"],
+"cost":{"usd":null,"minutes":8,"labview_runs":0},
+"note":"offline only; no LabVIEW, no git commit"}

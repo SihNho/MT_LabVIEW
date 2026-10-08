@@ -1,0 +1,48 @@
+{
+ "schema": "assign-result/1",
+ "cycle": 151,
+ "round": 3,
+ "status": "HANDBACK",
+ "cards": ["151-a3-1", "151-a3-2", "151-a3-3", "151-a3-4"],
+ "pass_evidence": [
+  {"item": 0, "met": true, "evidence": [
+   "s08 plan c328fdaf/pred/licence from 150-a3-6; dry 1/0, prerun 16/0 X10 651.6, scratch-required rc 3 (diag_c151_a1_1_facts.md:11-12)",
+   "re-run by 151-a3-4: dry 1/0 (diag_c151_a3_4_scr_dry.log:109-111), prerun 16/0 (scr_prerun.log:128-136); stagekit 604529e8"]},
+  {"item": 1, "met": true, "evidence": [
+   "ONE scratch on new copy of s07 b3f86b32: RESULT 22/0, all gates PASS (diag_c150_p4s08v18_scratch.log:305)",
+   "adopted claudeDev D1_ring_p4s08_20261009_031503.vi md5 f99e8414a2081538552e26ba24ee713d",
+   "metered start 616.7 vs pred 595.3 (+21.4); peak 645.4 vs X10 651.6 (-6.2) (diag_c151_a1_1_facts.md:22)"]},
+  {"item": 2, "met": true, "evidence": [
+   "errorlist_expected_D1_ring_p4s08_20261009_031503.json c19cde96: total 46; s07 was 50 (input -2, local -1, shift-register -1)",
+   "vs pred 48: input -2, total -2 (diag_c151_a1_1_facts.md:26-30)"]},
+  {"item": 3, "met": true, "evidence": [
+   "graph_ring_p4s08_20261009_033522.json 44858dbf, 6091 rows, load 589.1 MB (diag_c151_a1_1_facts.md:35-37)",
+   "FS #29721 frame #29869: #29879 IndexArray array t29882 w30685, element t29885 src, index t29888 (facts.md:40)",
+   "#30002 IndexArray array t30013, element t30025 src, index t30028; #30016 Local Num t30023 w30685 src; 0 border tunnels (:41-42)",
+   "memory_model b4a6eec6 -> a28b6dd7, only load_by_vi/f99e8414 added (diag_c151_a1_1_facts.md:43)"]},
+  {"item": 4, "met": false, "evidence": [
+   "s09 NOT made: ops 185..190 (whole remainder, v18 has 190 ops) refused on the REAL s08 graph (prep_c151_a3_2_mk.log:35)",
+   "stagesim.py:1805-1807: frame #29869 belongs to FS #29721 whose diagram is UNMEASURED (PD289(f)); 0 border tunnels, no owner",
+   "cut would be op 190: START 595.0, MAIN 638.4, margin 41.6 to 680 (+13.6 -> 28.0; +21.4 -> 20.2); no plan, pred, licence or recipe written"]},
+  {"item": 5, "met": false, "evidence": [
+   "no s09 scratch: item 4 not met; the purpose says RETURN when ops 185..190 are not simulable on real s08"]},
+  {"item": 6, "met": true, "evidence": [
+   "151-a3-3 PASS 8/0, stagekit 604529e8 position keys on s07 stored end read: D PASS new 13==sim 13, lost 9==9, reuse 0",
+   "TD PASS renames 0; PB PASS cdiff 19==pred 19, open pairs 17==plan, unlicensed [] (diag_c151_a3_3_rescore.log:7-9)",
+   "original 150 verdicts were already PASS (diag_c150_p4s07v18_scratch.log:363,368,370)"]},
+  {"item": 7, "met": true, "evidence": [
+   "151-a3-4 PASS 3/0: gate_fp.py drain --id fp-61 rc 0 DRAINED; self-test 5/0 (diag_c151_a3_4_selftest.log:4-10)",
+   "s08 scratch --dry 1/0 and --prerun 16/0 X10 651.6 re-run PASS; fp-62..70 still open; no tools/hooks edit"]},
+  {"item": 8, "met": true, "evidence": [
+   "md5 re-read at round end: stagekit 604529e8, addrcheck 207beb0d, stagexec 1bab9cf9, gscript 1a80236e, stage_prerun c739eb86, vigraph 13be0847, stagesim 748bbf30",
+   "s07 b3f86b32 unchanged per 151-a3-3 invariants (diag_c151_a3_3_rescore.log:16) and 151-a3-1 inv_after 33/0"]},
+  {"item": 9, "met": true, "evidence": [
+   "git status tools/hooks: only material_marker.log (hook-appended log); no code edit",
+   "tasklist LabVIEW process count 0 at round end"]}
+ ],
+ "handback": {
+  "reason": "ops 185..190 cannot be simulated on real s08: FS #29721 frame #29869 has no owner, 0 border tunnels, diagram unmeasured (stagesim.py:1805-1807, PD289(f)); the purpose names this as RETURN",
+  "question": null
+ },
+ "note": "s08 built, adopted, documented (f99e8414, EL 46, graph 44858dbf). s09 needs the FS #29721 diagram measured another way or ops 185/187/189 routed differently. For the chat: (1) --el-advisory of the s08 scratch recipe and its gate_fp log were refused by the adopted-scratch launch gate, nothing queued; (2) EL pred missed 2 closures for lack of elrule carry (Select #4538, IndexArray #29879), carry measurement not run; (3) metered start +21.4 MB over pred, no recalibration (PD367(c)); (4) fp-61 drained, but comtypes/rapidocr exist only in the Claude app's MSIX user site, not base Python310 (151-a3-4 OPEN)."
+}

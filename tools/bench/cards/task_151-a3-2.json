@@ -1,0 +1,73 @@
+{
+ "schema": "task/1",
+ "id": "151-a3-2",
+ "kind": "build",
+ "goal": "Make P4 s09 (v18 ops 185..202) on the REAL s08 graph, NOT run: cut, rebase, pred V18E-R', licence, recipes, dry+prerun, scratch-required.",
+ "why": "Cycle 151 pass item 5 (PD367(d)). s08 is adopted (f99e8414, graph 44858dbf); the tail 185..190 sits on FS #29721 frame #29869, now measured in the graph.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_151-a3-2.md", "md5": "4764c807eb1854bf04cc1f8cd873a711"},
+  {"path": "tools/bench/cards/brief_150-a3-6.md", "md5": "27f54256a8b32deb6a8317d0a35ce958"},
+  {"path": "tools/bench/cards/brief_150-a3-5.md", "md5": "e2a3ed3648ab738961c7d3d486b8d96d"},
+  {"path": "tools/bench/diag_c150_a3_6_facts.md", "md5": "c0d96cbefb87840eb79ed070acf485f3"},
+  {"path": "tools/bench/diag_c151_a1_1_facts.md", "md5": "7fb81093590f02eb1a4cbfdc27c7fb8a"},
+  {"path": "tools/bench/prep_c150_a3_6_mk.py", "md5": "f3e6d12c6516bd9972c3de92aa7a8377"},
+  {"path": "tools/bench/prep_c150_a3_6_pred.py", "md5": "7996f5b17f8a30992c2d69afa5293535"},
+  {"path": "tools/bench/prep_c150_a3_6_licence.py", "md5": "efe26399f7751b4e029f87648b177b51"},
+  {"path": "tools/bench/prep_c150_a3_6_check.py", "md5": "4455f2cc3a0d4bd06f50adabf4102474"},
+  {"path": "tools/bench/prep_c150_a3_6_rebase.log", "md5": "0c29825361e708f319424bc992abc25f"},
+  {"path": "tools/bench/plan_ring_p4_s08v18.json", "md5": "c328fdafa921995af7ff4d43c34d9c5c"},
+  {"path": "tools/bench/graph_ring_p4s08_20261009_033522.json", "md5": "44858dbfa0e77628359f7a86727e250f"},
+  {"path": "tools/bench/errorlist_expected_D1_ring_p4s08_20261009_031503.json", "md5": "c19cde968ce0701d557918105ac85a6a"},
+  {"path": "tools/bench/memory_model.json", "md5": "a28b6dd781e6dea8669a6fc81be11ad8"},
+  {"path": "tools/stagekit.py", "md5": "604529e8e9b68b9c4b370b8f3d5c5ee5"},
+  {"path": "tools/addrcheck.py", "md5": "207beb0d09102c78b1e06d1f076eec7e"}
+ ],
+ "pass": [
+  "cut = longest group-respecting prefix of ops 185..202 with X10<=680 (cap removed); START, margins and the +21.4/+13.6 sensitivities quoted; first op not included named",
+  "rebase onto real s08 graph 44858dbf: rc + lines; simulator outcome for ops 185..190 quoted, or RETURN with the refusal verbatim",
+  "pred with V18E-R' 3 checks PASS; EL base 46; carry measurement quoted; X11 CLEAN; licence by script; sink gates by census",
+  "dry + prerun PASS on final bytes of plan + both recipes; --scratch-required rc and --check-launch quoted; NOT launched",
+  "invariants md5 before=after (brief step 6); tools/hooks untouched; no LabVIEW process; facts file <=45 lines"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p4_s09v18.json",
+  "tools/bench/plan_ring_p4_s09v18_pred.json",
+  "tools/bench/plan_ring_p4_s09v18_licence.json",
+  "tools/recipes/stage_d1_ring_p4_s09v18.py",
+  "tools/recipes/stage_d1_ring_p4_s09v18_scratch.py",
+  "tools/bench/diag_c151_a3_2_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p4_s09v18*",
+   "tools/bench/prep_c151_a3_2*",
+   "tools/bench/diag_c151_a3_2*",
+   "tools/recipes/stage_d1_ring_p4_s09v18*",
+   "tools/bench/sim/ring_p4_s09v18/**",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/gate_fp_queue.jsonl"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 90
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/graph_ring_p4s08_20261009_033522.json"},
+  {"kind": "file", "name": "tools/bench/prep_c150_a3_6_mk.py"},
+  {"kind": "file", "name": "D1_ring_p4s08_20261009_031503.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"}
+ ],
+ "rules": [
+  "No tools/hooks edit, no stage-tool edit (stagesim included); NO --launch; offline only",
+  "Do not overwrite any s08 file; RETURN on a second simulator/prerun refusal or a moved md5",
+  "Rule 1a: v18 ops copied as-is; only the cut point changes"
+ ]
+}

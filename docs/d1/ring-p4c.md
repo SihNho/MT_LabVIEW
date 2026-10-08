@@ -352,3 +352,41 @@ How to add: see the 5-line note at the top of `docs/d1/INDEX.md`.
      - **(h) For the chat (chat-T6) — a gate-fp entry:** name-keyed `computation_diff` rows make phantom rows whenever LabVIEW renames a
        terminal on a broken in-between file; the position key chat-T6 brings to D/TD/PB applies here too. steer_149 stays REFUSED
        (PD365(h)); D-2026-10-08-01 is still open.
+
+367. **(cycle 151 judgement, 2026-10-09 — after `tools/bench/cards/assign_result_150_3.json` PURPOSE_MET, `tools/bench/diag_c150_a3_2_facts.md`,
+     `tools/bench/diag_c150_a3_6_facts.md`, D-2026-10-08-01 ANSWERED option 1 (`tools/bench/decisions_pending.json:368`))**
+     USER-RULES: U1 (relied on: no v18 action, source or sink changes; only the session cut and the run order are decided here);
+     none contradicted.
+     - **(a) Accepted: P4 SESSION 7 ADOPTED** `claudeDev\D1_ring_p4s07_20261008_222709.vi` b3f86b32 (scratch 27/0, E1 30 ops
+       real == sim, both PD366(e) sink gates PASS), EL 50 (expected file 42c5718d; item 6 "source void -> sink I32" GONE), graph
+       `graph_ring_p4s07_20261008_224835.json` 71935a84, load 589.4 MB in `memory_model.json`. In-between file, not counted. v18
+       ops 1..165 are built; 37 remain (166..202). The parser device (PD365(f)) and the gate-fp log entries are accepted as reported.
+     - **(b) s08 = the 19-action cut (ops 166..184, plan c328fdaf, pred cf2eccbf, licence 6b978d9e, MAIN ca5a5478 / scratch
+       7cab5049) is ACCEPTED as made.** Action 19 `p4_w_n2_arr` stays: both its terminals already exist on frame #29869 in the base
+       fsmap and the simulator ran it; the scratch's per-op E1 (real == sim) is the measurement. If E1 fails at op 19 the scratch
+       returns (first unexpected result) and the next round cuts s08 to 18 — no pre-emptive re-cut.
+     - **(c) Memory start term:** s07's metered start was +13.6 MB over the prediction while its peak stayed 12 MB under X10; s08
+       with +13.6 is still 670.3 ≤ 680 (`prep_c150_a3_6_mk.log`). No recalibration now; the s08 scratch records metered start vs
+       pred start 595.3 as a second data point, and MEMSTOP stays the hard stop.
+     - **(d) s09 = the tail, ops 185..202 (18 actions), the LAST P4 session,** made on the REAL s08 graph at the measured s08 load,
+       cut by PD320(e) if X10 > 680 (then s09 + s10), licence by PD365(d), V18E-R′ (PD366(c)) in its pred. Ops 185..190 build on FS
+       #29721 / frame #29869, which the simulator could not model from the s07 graph (`diag_c150_a3_6_facts.md:14-17`): the s08 graph
+       read is the measurement — the card quotes FS #29721's frame and border rows found in it. If the simulator still cannot run
+       ops 185..190 on the real s08 graph, the card RETURNS with the stop line and those rows; no `stagesim.py` patch inside it.
+     - **(e) If s09 makes and passes dry + prerun, its ONE scratch runs in this cycle** on a new byte copy of the adopted s08, and is
+       adopted on structural PASS (PD354(a) routes): that file is the end of P4 = the counted broken file 5 of 6 (D-2026-10-02-03
+       answer: one counted file at the end). P5 (results 1.2 → 1.7 FIFO) is the next step; P6 is the first run.
+     - **(f) Gate-fp queue (10 open):** fp-62..69 are hook gates (guard_bash / guard_write / guard_peer / guard_assign) ⇒ the chat
+       drains them between runs (user 2026-10-08). fp-61 (`errorlist_check` count_read) is drained by ONE tooling card AFTER the
+       LabVIEW cards, then s09's dry + prerun are re-run. fp-70 (`computation_diff` name keys) stays queued until P4's last session
+       is adopted — changing the core diff mid-P4 would unpin the s08/s09 recipes.
+     - **(g) steer_149 is FOLLOWED:** the user answered D-2026-10-08-01 with option 1 (finish the ring, P4 → P5 → P6, then the
+       first run), so the cycle's act is the deliverable build of M3's P4 tail; no user question the work waits on is unfiled.
+     - **(h) Hand-back 151/2 (`tools/bench/cards/result_151-a1-1.json`, review `2026-10-09-c151-a1-1-stalepin`):** the stagekit
+       pin 06b8d844 was copied before the chat-T6 merge (9dbd384b). **Base pin = stagekit 604529e8** (T6 = PD366, `result-gates.md`,
+       already in force; the s08/s09 recipes need no edit, PD366(h)); **addrcheck.py 207beb0d is pinned too** (T6's `pos_table`).
+       Review points: (1) addrcheck unpinned → pinned here. (2) the "licence cannot fail" point is PD366(e)/(f) by design: under
+       T6 the acceptance of s08/s09 is the position-key TD / D / PB gates plus E1, the licence is an echo. (3) a kept node whose
+       index shifts on frame #29869 shows as TD `moved` = a FAIL, never a silent pass (PD366(c)) ⇒ the card returns at that first
+       unexpected result; nothing pre-emptive. (4) s07 not re-scored under position keys: an OFFLINE re-score of s07's stored end
+       read with T6 runs AFTER the LabVIEW cards (deliverable first) and is quoted; it is the discriminator if s08's TD / D / PB fail.

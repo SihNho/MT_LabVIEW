@@ -1,0 +1,16 @@
+{
+ "schema": "task/1", "id": "chat-T6v", "kind": "measure",
+ "goal": "Post-merge regression check of card chat-T6 (PD366) and the guard_assign never_in_runner_globs change, main tree, offline",
+ "why": "User 2026-10-08 'apply both'; T6 merged at 9dbd384b, guard_assign changed at 4d762e7f",
+ "inputs": [],
+ "pass": [
+  "py_compile OK: tools/stagekit.py tools/addrcheck.py tools/stage_prerun.py tools/hooks/guard_assign.py",
+  "each of selftest_t6_regress, selftest_t6_poskey, selftest_assign_flow, selftest_c147_b1_2, selftest_td_key_c141_3, selftest_rebind_c150, selftest_c150_a3_3 under bgrun --material: rc + counts",
+  "any failure: first failing line with file:line; nothing fixed"
+ ],
+ "outputs": [],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/*_postmerge.log"], "status_edit": false, "git_commit": false, "peers": []},
+ "budget": {"failures": 2, "minutes": 30}, "unblocks": "M3",
+ "rules": ["OFFLINE", "no code edits"]
+}

@@ -1,0 +1,17 @@
+BGRUN START 2026-10-09 02:55:51 limit 14.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c151-selftest-c147-b1-2-pindrift -TaskFile tools/bench/peer_task_c151_pindrift.md
+BGRUN PID 23848
+OUTCOME: ANSWERED (61s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-09-c151-selftest-c147-b1-2-pindrift.md
+COST: $0.8405  in 12 / out 4949 / cache-create 82340 / cache-read 413521  (57s, 10 turn(s))
+--- ANSWER ---
+Still checking whether the claim survives. So far it holds only in part: what it says changed in `pred.json` doesn't match the file, and one of its "semantic passes" grades itself against the drifted file.
+
+1. **Strongest reason the claim is wrong:** two of its key statements don't hold up.
+   - The current `tools/bench/plan_ring_p4_s06v18_pred.json` has no "V18E" anywhere. What it does have is a census block: `census`, `census_unpredicted` with exactly 25 names, `"census_overall": "MEASURED-SCRATCH"` at lines 15-51, and `census_source` card 148-a2-4 at lines 296-308. The 25 lines look like the census block, not V18E-R' rows.
+   - "Every semantic check passes" is circular for PB. T1/T1n PB compares its result to `PRED["cdiff_rows"]`, which is read from the drifted file (`selftest_c147_b1_2.py:100,122`). PB passing only shows agreement with the new answer key, not with the cycle-147 one.
+2. **Alternative explanation:** commit 1449ae07 also changed `cdiff_rows` (`pred.json:75-94`), and the T6 position-key PB output moved the same way. A regression would then pass PB unseen, and P0 would be its only visible symptom. The log can't tell this apart from the claim.
+3. **What would falsify the claim:** any hunk of `git diff 4d762e7f 1449ae07 -- tools/bench/plan_ring_p4_s06v18_pred.json` that falls inside `cdiff_rows` (lines 75-94). Or: T1 PB fails when `PRED` is loaded from `git show 4d762e7f:tools/bench/plan_ring_p4_s06v18_pred.json`.
+4. **Alternative 3 (the s08 route) fails for `memory_model.json`.** No gate in the script uses it; it appears only in `PINS` at line 29. `plan_ring_p4_s08v18_pred.json:231-232` already pins b4a6eec6, the new md5, so the s08 route matches the new file. The leftover is that `s06v18_pred.json:288-289` still cites 88eeb037. That only matters if s06 is ever launched again.
+5. **Cheapest discriminating test:** run that one-file `git diff` and see where the hunks fall. Also check that the md5 of the 4d762e7f blob starts with c4a6a35a and the `memory_model` blob with 88eeb037. I couldn't run git or md5 myself because this role has no shell.
+
+**Verdict:** "not a regression from the T6 merge" is plausible. The drift comes from 1449ae07, which landed before the merge 9dbd384b. But the evidence offered for it misdescribes the `pred.json` change, and the claim isn't settled until that diff shows `cdiff_rows` unchanged.
+BGRUN END rc=0 after 62s

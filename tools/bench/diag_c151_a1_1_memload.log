@@ -1,0 +1,16 @@
+BGRUN START 2026-10-09 03:38:33 limit 2.0 min: py -u tools/bench/diag_c151_a1_1_memload.py
+BGRUN PID 25948
+GATE PASS | M exactly one 'MEM after load' line in the graph log | [(24, '  FACT  MEM after load: 589.1 MB private; handles 45644')]
+GATE PASS | K md5 f99e8414 not yet a load_by_vi key | ['4dfa44aac8fb32f706b3eb792ee7d3cc', '9d7bf28738b7c154280e5e7c2c9d4961', '6cc6922192b3e330f163561bb95a8115', '49cf7f770fc331e06607687af640ad5e', '395118775a52bc90073f4449b99f899d', '95e408ff14a406edd3f16b32ba7324f1', '3f9ac26b69179eb53c202d90407ce7ee', '569ffbf51eb6051bf0fdb58946f9bb02', 'b3f86b322292a6ec6c67976a589b5b06']
+GATE PASS | D flattened key-by-key diff: only the 3 leaves of load_by_vi/f99e8414 added | {'added': ['/load_by_vi/f99e8414a2081538552e26ba24ee713d/cite', '/load_by_vi/f99e8414a2081538552e26ba24ee713d/value', '/load_by_vi/f99e8414a2081538552e26ba24ee713d/vi'], 'removed': [], 'changed': []}
+GATE PASS | F re-dump of the OLD object reproduces the old file byte for byte (so only the new entry's lines differ) | 
+GATE PASS | T text diff = inserted lines + the previous last entry's closing brace gaining its comma (JSON syntax) | ['+  },', '+  "f99e8414a2081538552e26ba24ee713d": {', '+   "value": 589.1,', '+   "vi": "claudeDev\\\\D1_ring_p4s08_20261009_031503.vi (P4 v18 session 8 ADOPTED scratch work copy, card 151-a3-1; PD329(a), PD354(a), PD367)",', '+   "cite": "tools/bench/diag_c151_a1_1_graph.log:24 (MEM after load: 589.1 MB private)"']
+DIFF +  },
+DIFF +  "f99e8414a2081538552e26ba24ee713d": {
+DIFF +   "value": 589.1,
+DIFF +   "vi": "claudeDev\\D1_ring_p4s08_20261009_031503.vi (P4 v18 session 8 ADOPTED scratch work copy, card 151-a3-1; PD329(a), PD354(a), PD367)",
+DIFF +   "cite": "tools/bench/diag_c151_a1_1_graph.log:24 (MEM after load: 589.1 MB private)"
+FACT memory_model.json md5 b4a6eec651c348c395b2baa01d7f0f5f -> a28b6dd781e6dea8669a6fc81be11ad8; added key load_by_vi/f99e8414a2081538552e26ba24ee713d value 589.1 (cite log :24)
+FACT calibration (no coefficient changed): metered scratch start 616.7 MB (scratch log :67) vs pred start 595.3 (d 21.4); last-segment peak 645.4 MB (:262) vs X10 651.6 (d -6.2); sum peak_mb (whole file) 645.4
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/memory_model.json","md5":"a28b6dd781e6dea8669a6fc81be11ad8"}],"card":"151-a3-1","labview":"build"}
+BGRUN END rc=0 after 1s

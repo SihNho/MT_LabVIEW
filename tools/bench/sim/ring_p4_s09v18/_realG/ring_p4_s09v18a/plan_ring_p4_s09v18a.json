@@ -1,0 +1,170 @@
+{
+ "schema": "stageplan/1",
+ "context": {
+  "s1_key": "D1_s1_copy"
+ },
+ "stage": "ring_p4_s09v18a",
+ "goal": "card 151-a3-2 PASS A: P4 v18 session 9 (ops 185..190), no open_rows",
+ "base": {
+  "path": "tools/bench/sim/ring_p4_s09v18/s08end/base_provisional.json",
+  "md5": "49cdec8a5fabe6373120dec5d9654d56",
+  "provisional": true,
+  "sim_of": {
+   "plan": "tools/bench/plan_ring_p4_s08v18.json",
+   "md5": "c328fdafa921995af7ff4d43c34d9c5c"
+  }
+ },
+ "actions": [
+  {
+   "op": "wire",
+   "id": "p4_x_n2_order",
+   "src": {
+    "uid": 5058,
+    "term_uid": 5111
+   },
+   "dst": {
+    "uid": 30002,
+    "term": "array"
+   },
+   "why": "ROUTE connect_term_uid | PRECEDENT | PD298(c)/PD295(d): #5058 'Bead is good? array out' t5111 -> FS4 input tunnel -> IAZ1 (no-effect consumer) = FS4 starts only after #5058; fs_border variant case_frame_to_fs_frame_branch (wired source, measured on a CASE frame) - on a While body never run. Placed AFTER rollback C: the crossing re-creates t5111's net (stagesim.py:1906-1912), and p4_rbC_dw deletes "
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rle_x_n2_order",
+   "of": "p4_x_n2_order",
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972; PD256(b) one RLE per crossing"
+  },
+  {
+   "op": "wire",
+   "id": "p4_x_slot_fs",
+   "src": {
+    "uid": 30179,
+    "term": "outer"
+   },
+   "dst": {
+    "uid": 29879,
+    "term": "index"
+   },
+   "why": "ROUTE connect_term_uid | UNMEASURED | branch from a plan-made While tunnel outer face ACROSS a plan-made FS border: no measured variant [draft d9d66246]"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rle_x_slot_fs",
+   "of": "p4_x_slot_fs",
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0; PD255(b)/256(b) one RLE per crossing [draft d9d66246]"
+  },
+  {
+   "op": "wire",
+   "id": "p4_x_n2_out",
+   "src": {
+    "uid": 29879,
+    "term": "element"
+   },
+   "dst": {
+    "uid": 29724,
+    "term": "n2"
+   },
+   "why": "c142-P2 re-pointed dst new:EQ2.y -> new:SQ1.n2 (PD330(a) subVI terminal by name) | ROUTE connect_term_uid | UNMEASURED | FS frame -> enclosing body EXIT (only entries and frame_to_frame measured) [draft d9d66246]"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rle_x_n2_out",
+   "of": "p4_x_n2_out",
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0; PD255(b)/256(b) one RLE per crossing [draft d9d66246]"
+  }
+ ],
+ "final": false,
+ "finalized": {
+  "base": {
+   "path": "tools/bench/graph_ring_p4s08_20261009_033522.json",
+   "md5": "44858dbfa0e77628359f7a86727e250f"
+  },
+  "plan_in": {
+   "path": "tools/bench/sim/ring_p4_s09v18/_passA/ring_p4_s09v18a/plan_ring_p4_s09v18a_in.json",
+   "md5": "2117c503ae94dccf038aaf782a58c430"
+  },
+  "last_step": {
+   "path": "tools/bench/sim/ring_p4_s09v18/_realG/ring_p4_s09v18a/step_01_wire.json",
+   "md5": "850e29ad642b090d3b347d79388690a8"
+  },
+  "summary": {
+   "path": "tools/bench/sim/ring_p4_s09v18/_realG/ring_p4_s09v18a/summary.json",
+   "md5": "318e421adac7fc8e949b3cd0e1386b58"
+  },
+  "end_cdiff_rows": null,
+  "failed": {
+   "n": 1,
+   "op": "wire",
+   "id": "p4_x_n2_order",
+   "error": "diagram chain: frame #29869 belongs to FS #29721 whose diagram is UNMEASURED (no border outer face, or faces disagree; PD289(f))"
+  },
+  "first_divergent": null,
+  "open_rows": [],
+  "open_rows_match": false,
+  "open_rows_match_legacy": false,
+  "open_rows_classed": {
+   "ok": false,
+   "want": [],
+   "c4_n": 0,
+   "c4_keys": 0,
+   "c4_bad": [],
+   "unclassed": []
+  },
+  "cdiff_inputs": {
+   "labels": "node_labels_default",
+   "labels_n": 626,
+   "fs_pairs": "state",
+   "fs_pairs_n": 576
+  },
+  "step_files": [
+   {
+    "n": 0,
+    "op": "base",
+    "path": "tools/bench/sim/ring_p4_s09v18/_realG/ring_p4_s09v18a/step_00_base.json",
+    "md5": "e7601c0fce3d3ea24f55dd3636addba5"
+   },
+   {
+    "n": 1,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s09v18/_realG/ring_p4_s09v18a/step_01_wire.json",
+    "md5": "850e29ad642b090d3b347d79388690a8"
+   }
+  ],
+  "undecided": 0,
+  "at": "2026-10-09 03:47:44",
+  "fs_routes": {},
+  "addr_pos": [
+   {
+    "n": 1,
+    "addr": "{\"term_uid\":5111,\"uid\":5058}",
+    "source": true,
+    "owner": 5058,
+    "index": 3,
+    "class": "Terminal",
+    "name": "Bead is good? array out"
+   },
+   {
+    "n": 1,
+    "addr": "{\"term\":\"array\",\"uid\":30002}",
+    "source": false,
+    "owner": 30002,
+    "index": 0,
+    "class": "Terminal",
+    "name": "array"
+   }
+  ],
+  "fs_border_gate": {
+   "status": "PASS",
+   "unmeasured": [
+    14430,
+    31050,
+    34409,
+    34489,
+    43605,
+    44160,
+    44164
+   ],
+   "used": {}
+  }
+ }
+}

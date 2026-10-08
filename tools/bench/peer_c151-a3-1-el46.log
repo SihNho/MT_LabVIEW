@@ -1,0 +1,43 @@
+BGRUN START 2026-10-09 03:32:15 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c151-a3-1-el46 -TaskFile tools/bench/diag_c151_a3_1_review_task.md
+BGRUN PID 25836
+OUTCOME: ANSWERED (129s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-09-c151-a3-1-el46.md
+COST: $1.6029  in 40 / out 10056 / cache-create 122161 / cache-read 2121619  (125s, 26 turn(s))
+--- ANSWER ---
+**Verdict: the outcome holds, the explanation doesn't.** Writing the s08 expected file from the read is fine. But the 2-item shortfall is not noise that the |diff| ≤ 3 tolerance happens to absorb. It is a known, repeating defect in the predictor: it was not told about error items left open by earlier sessions. Both of the "extra" closures are actions the s08 plan wired on purpose.
+
+### 1. Strongest reason the claim is wrong
+The claim treats 46 vs 48 as a count difference inside tolerance. The per-class data says otherwise: the whole gap sits in one class, deterministically.
+- The pred expects `input` to stay at 4 (`plan_ring_p4_s08v18_pred.json:168`) and predicts only `local` 30016 and `sr` 9603 closing (`:92-100`).
+- The read file's licence usage against the 12 s07 entries (`errorlist_D1_ring_p4s08_…_032121.json:4916-4976`) shows four entries short: local 1→0, Index Array 2→1, shift register 1→0, Select 1→0.
+- The two wire classes match the pred exactly (22 / 21), so OCR lost no rows.
+- **The 4 missing vs the s07 file:** the local (#30016), the shift register (#9603), one Index Array, and `Select 'Select'`.
+- **The 2 missing vs the pred:** that Index Array and the Select.
+
+Both closures are planned:
+- The Select is #4538, created in s07 with all four terminals unwired (`diag_c150_p4s07v18_scratch.log:346-352`). The s08 plan wires its t, f and s inputs and its output (`plan_ring_p4_s08v18.json:110-161`, `p4_rbE_t/f/s/out`).
+- The Index Array is #29879, created in s04. Action 19 wires `#30016.value → #29879.array` (`:352-362`). That one wire closes the local's item, which was predicted, and the Index Array's item, which was not.
+
+Why the pred missed them: `elrule.predict` takes a `carry` argument for "uids an earlier session's prediction counted as A items (still open)" (`tools/elrule.py:170-177`). s07's pred did list the Select as open at its end (`plan_ring_p4_s07v18_pred.json:137-149`, as `input -29`). s08's `open_at_start` has only local and sr, so nothing was carried. The only scripts that ever pass `carry` are the card-146 diagnostics (`tools/bench/diag_c146_a2_1_variants.py:5-12`, s05: "V0 as the pred (no carry) → 57").
+
+So this is the same failure class for at least the third time: s05 (card 146), s07 (`input` predicted 5, read 4), s08. That is grounds for a `repeated-failure-class` slug. "Same pattern as the s07 card" is evidence of a systematic bug, not reassurance.
+
+The tolerance argument is dangerous for a concrete reason. The predictor already misses every carried-over `input` item, so the ±3 tolerance is being used up by known-planned closures. A genuinely unplanned closure, or an extra break of up to 1 item, would now pass unnoticed.
+
+### 2. Alternative explanations
+- **(a) Predictor under-count, carry not passed.** This is the explanation above and is strongly supported.
+- **(b) The read verified the count, not which nodes.** Every item has `uid: null` ("needs a Selection List[] op (unbuilt)"). Which Index Array of #29843/#29879/#30002 closed is inferred from the plan, not measured.
+- **(c) A tool defect hiding the diagnosis.** The checker's `missing` list is four `null`s (`:4910-4915`), and the BY-DESIGN line prints three `'None'`s for four missing items (log:81). It cannot name what is missing, which is why this needed a manual diff.
+
+### 3. What would falsify the "planned closures" reading
+- A per-uid read still showing #29879 or #4538 with an unwired input.
+- The s08 simulated end graph (`tools/bench/sim/ring_p4_s08v18/step_19_wire.json`) still showing an unwired sink on #4538 or #29879.
+
+Either would mean the read lost something or an action closed a different item.
+
+### 4. Cheapest test that separates the explanations (offline, no LabVIEW)
+Re-run `elrule.predict` on the s08 base (step_00) and `step_19_wire.json` with `carry={4538, 29843, 29879, 30002, 2626}`.
+- **Expected if (a) is right:** closed = {local 30016, sr 9603, input 4538, input 29879}, predicted_total = 46, per-class `input` 4→2, exact match with the read.
+- **Any other result** (e.g. #29843 or #30002 closing instead) means the read and the plan disagree on which node closed. Then the s08 expected file should not be written from the read.
+
+Fix that follows from this: pass `carry` (the previous pred's `open_at_end` A-items, bound to real uids) every time a session's pred is prepared. The s08 expected file can then record "input 4→2: #4538 and #29879 closed by p4_rbE_* and p4_w_n2_arr", not "within tolerance".
+BGRUN END rc=0 after 130s

@@ -1,0 +1,52 @@
+{
+ "schema": "task/1",
+ "id": "151-a3-3",
+ "kind": "build",
+ "goal": "Re-score s07's STORED scratch end read offline with stagekit 604529e8 position-keyed D/TD/PB gates (no licence); quote verdict and counts.",
+ "why": "Cycle 151 pass item 6 (PD367(f)). s07 was scored with the old name-keyed gates; PD366 re-keyed them by position. Offline, after the LabVIEW cards.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_151-a3-3.md", "md5": "b13bc3f99f0342bfea7ddbe2642fd3a9"},
+  {"path": "tools/bench/diag_c150_p4s07v18_scratch.log", "md5": "81078c1353afdcfc33ce8b200d5ef177"},
+  {"path": "tools/bench/diag_c150_p4s07v18_scratch.json", "md5": "1903778b3a8b7f58283b5b3da75cb643"},
+  {"path": "tools/bench/diag_c150_p4s07v18_scratch_sum.json", "md5": "926df24807c5fc1419b68398220efc59"},
+  {"path": "tools/bench/plan_ring_p4_s07v18.json", "md5": "08c2ad4d2e6dd4bddd4dd5b18326562c"},
+  {"path": "tools/bench/plan_ring_p4_s07v18_pred.json", "md5": "6f46fc3c67b3a7f3c045d07a2fa7163c"},
+  {"path": "tools/bench/plan_ring_p4_s07v18_licence.json", "md5": "aedbe1f168e4cd8c18d300848ce0b788"},
+  {"path": "tools/stagekit.py", "md5": "604529e8e9b68b9c4b370b8f3d5c5ee5"},
+  {"path": "tools/addrcheck.py", "md5": "207beb0d09102c78b1e06d1f076eec7e"}
+ ],
+ "pass": [
+  "s07 stored end read re-scored OFFLINE by stagekit 604529e8 D / TD / PB (script diag_c151_a3_3_rescore.py); verdict + counts per gate quoted",
+  "compared with the s07 original verdict (150 log) and the s08 verdicts (diag_c150_p4s08v18_scratch.log:267,272,274); or the missing input named file:line",
+  "invariants md5 before=after (brief step 4); tools/hooks untouched; no LabVIEW process; facts file <=30 lines"
+ ],
+ "outputs": [
+  "tools/bench/diag_c151_a3_3_rescore.py",
+  "tools/bench/diag_c151_a3_3_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c151_a3_3*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 45
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c150_p4s07v18_scratch.json"},
+  {"kind": "file", "name": "tools/stagekit.py"}
+ ],
+ "rules": [
+  "Offline only; no stage-tool, hook or stagekit edit; no licence; no LabVIEW",
+  "Read the stored files only; RETURN with facts if a gate cannot be called offline"
+ ]
+}

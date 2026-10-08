@@ -1,0 +1,13 @@
+{"schema":"assign-result/1","cycle":151,"round":1,"status":"HANDBACK","cards":["151-a1-1"],
+"pass_evidence":[
+{"item":0,"met":false,"evidence":[]},
+{"item":1,"met":false,"evidence":[]},
+{"item":2,"met":false,"evidence":[]},
+{"item":3,"met":false,"evidence":[]},
+{"item":4,"met":false,"evidence":[]},
+{"item":5,"met":false,"evidence":[]},
+{"item":6,"met":false,"evidence":[]},
+{"item":7,"met":false,"evidence":[]},
+{"item":8,"met":false,"evidence":[]}],
+"handback":{"reason":"guard_assign c-outside-purpose: LabVIEW card 151-a1-1 (s08 scratch+adopt) needs flags.write tools/bench/memory_model.json for pass item 4 (load_by_vi s08 only); the hook refuses that protected path even though the purpose names it. Nothing dispatched.","question":null},
+"note":"Nothing launched, no LabVIEW. Prepared and valid: tools/bench/cards/task_151-a1-1.json + brief_151-a1-1.md (09b0fa28), requires PASS 3/0. Judgement should either (a) state in the purpose/next.json that a card may write memory_model.json for the single load_by_vi s08 entry (then dispatch is allowed as-is), or (b) split it: the LabVIEW card without that glob and the load_by_vi entry as a separate chat/judgement-owned step. Side finding: guard_peer blocked every py command at the start of this session on tools/bench/selftest_c147_b1_2_postmerge.log (a frozen cycle-147 self-test whose P0 pins of memory_model.json and plan_ring_p4_s06v18_pred.json drifted after commit 1449ae07; chat-T6v result calls it pin drift). I paid one hypothesis review (archive/peer/*c151-selftest-c147-b1-2-pindrift*, ANSWERED; it says 'plausible, not settled until the pred.json diff shows cdiff_rows unchanged'). The chat should re-pin or retire that self-test and log the false positive (tools/hooks is not a runner card). Helper script tools/bench/prep_c151_md5s.py was created and is unused."}

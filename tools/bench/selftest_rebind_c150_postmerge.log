@@ -1,0 +1,19 @@
+BGRUN START 2026-10-09 02:48:35 limit 5.0 min: py -u tools/bench/selftest_rebind_c150.py
+BGRUN PID 24928
+PASS  R5 rebase (md5 c739eb86): no rebind of `b` between :4261 and its last read :4415  rebinding lines []
+FAIL  R0 HEAD blob of stage_prerun.py is dcd45aba  c739eb86e0aa3644a1008b8f3fa2af38
+  PHASE post; working stage_prerun md5 c739eb86e0aa3644a1008b8f3fa2af38
+  IN plan_ring_p4_s07v18_prov148.json: sim_of md5 ok True; cmap tools/bench/creation_map/plan_ring_p4_s06v18_cfbd9823_20261008_175325.jsonl
+  IN plan_ring_p4_s07v18_prov148.json: sim_of md5 ok True; cmap tools/bench/creation_map/plan_ring_p4_s06v18_cfbd9823_20261008_175325.jsonl
+FAIL  R1 old code refuses with BINDING (BuildArray x0/x1, LoopTunnel x2/x3)  None
+PASS  R1 new code binds s07 onto the real s06  (None, {-19: 30300, -17: 30294, -10: 30290, -5: 30287})
+PASS  R2 info['renamed_old'] == the 5 measured renames  [(2832, 2626, 'array', 'element'), (4160, 2626, 'array', 'element'), (4165, 2626, 'array', 'element'), (9505, 9503, 'Value', ''), (9508, 9503, 'Value', '')]
+  FLIPPED-OLD s06->s07 count 3: [(29779, 29777, False, True), (9505, 9503, False, True), (10179, 10177, False, True)]
+PASS  R3a class change of old t2813 at the same (uid, owner #2626) refuses  BINDING: the created objects differ (name-free shape): ['BuildArray x0 simulated vs x1 real']
+PASS  R3b direction flip of old non-tunnel t2813 (#2626 BuildArray) = flipped_old info, not a refusal  (None, [(2813, 2626), (29779, 29777), (9505, 9503), (10179, 10177)])
+  IN plan_ring_p4_s06v18_in.json: sim_of md5 ok True; cmap tools/bench/creation_map/plan_ring_p4_s05v18_1fc9b486_20261008_002835.jsonl
+PASS  R4 s05->s06 new map_nodes AND M == pre-edit record  (30, 30, {-32: 30240, -30: 30239, -25: 30216, -23: 30215, -18: 30119, -16: 30116, -6: 30194, -1: 30179})
+  R4 renamed_old []
+COUNT phase post: pass 6 fail 2
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":6,"fail":2},"first_fail":"R0 HEAD blob of stage_prerun.py is dcd45aba","artefacts":[]}
+BGRUN END rc=1 after 2s
