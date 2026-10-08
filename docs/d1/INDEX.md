@@ -305,3 +305,4 @@ delivered step that later items build on; it is in force as a fact, not as an or
 | `docs/d1/ring-p4b.md` | P4 tracking loop 1.2, PD323–PD356 (at the 400-line cap) |
 | `docs/d1/ring-p4c.md` | P4 tracking loop 1.2 from PD357 (and P5/P6 until they get their own file) |
 | `docs/d1/tooling.md` | gates, simulator, prerun, ops and other tool decisions on the D1 path |
+| `docs/d1/result-gates.md` | result gates D / TD / PB key terminals by POSITION, not name / wire uid (card chat-T6, PD366) |
