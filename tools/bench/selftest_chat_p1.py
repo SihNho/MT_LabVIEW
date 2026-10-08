@@ -45,6 +45,8 @@ os.environ["GATE_FP_QUEUE"] = os.path.join(TMP, "gate_fp_queue.jsonl")
 os.environ["RETRO_DUE_RECORD"] = os.path.join(TMP, "retro_due.jsonl")
 os.environ.pop("TYPESAFE_API_KEY", None)
 os.environ.pop("BENCH_CELL", None)
+for _k in ("ASSIGN_STATE", "CYCLE_ROLE", "CYCLE_SESSION"):  # card 148-a2-1 (fp-60): children never inherit an assignment env
+    os.environ.pop(_k, None)
 import protocol as P  # noqa: E402
 
 RES = []

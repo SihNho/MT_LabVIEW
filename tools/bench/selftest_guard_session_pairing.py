@@ -39,6 +39,8 @@ CARDS = os.path.join(HERE, "cards")
 C1, C2 = "tools/bench/cards/task_132-1.json", "tools/bench/cards/task_132-2.json"
 sys.path.insert(0, TOOLS)
 sys.path.insert(0, os.path.join(TOOLS, "hooks"))
+for _k in ("ASSIGN_STATE", "CYCLE_ROLE", "CYCLE_SESSION"):  # card 148-a2-1 (fp-60): children never inherit an assignment env
+    os.environ.pop(_k, None)
 import guard_session as G  # noqa: E402  (state_path/load/save only - unchanged by (g))
 import protocol as P  # noqa: E402
 SHIM = ("import sys; p, L = sys.argv[1], sys.argv[2]; sys.argv = [L]; "

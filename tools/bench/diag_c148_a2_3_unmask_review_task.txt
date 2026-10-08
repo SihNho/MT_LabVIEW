@@ -1,0 +1,32 @@
+Hypothesis review, card 148-a3-1. Attack the claim below. Read-only; project dir is the working directory.
+
+CONTEXT
+tools/bench/diag_c148_a2_3_unmask.py (card 148-a3-1 step 3) runs the same calls with the HEAD (07202624, md5 61d6f590) and the
+disk (dcd45aba) tools/stage_prerun.py, each in its own child interpreter, the module built from the given source with
+__file__ = the main tree's tools/stage_prerun.py (so data paths are identical). Log: tools/bench/diag_c148_a2_3_unmask.log.
+- 4 rebase cases (p3b2_A/B on graph_ring_p3b1_20261002_073225, simulate; s03_A/B on graph_ring_p4s02_20261003_112505,
+  simulate=False), the provisional base restored from plan_ring_p3b2_in.json / plan_ring_p4_s03v18_in.json: all EQUAL
+  (log lines 89/89 and 4/4, both ok=True).
+- c106e_noX17 (`main(["--prerun", tools/recipes/stage_d1_disp.py, "--no-record", "--from-step", "33", "--base", dispA])`,
+  x17_gate replaced by a stub returning ok): both rc 1, 89/89 lines, gate summary 22 PASS / 1 FAIL (X5) / 6 WARN, but marked
+  DIFFERENT. The first differing line (index 55) is:
+  HEAD 'FACT  ExecState [after all rows, BEFORE RBW (recorded)] D1_s1_disp_20261008_161939.vi = <dry:g.exec_state>'
+  DISK 'FACT  ExecState [after all rows, BEFORE RBW (recorded)] D1_s1_disp_20261008_162206.vi = <dry:g.exec_state>'
+  The script's norm() (diag_c148_a2_3_unmask.py, function norm) replaced temp dir names but NOT a yyyymmdd_hhmmss clock stamp;
+  the script printed only the FIRST differing line, so lines 56..88 were not shown.
+
+CLAIM UNDER ATTACK
+"The c106e_noX17 DIFFERENT verdict is a defect of my comparison script (the dry scratch VI name carries the run's wall clock,
+two child runs ~2.5 min apart), not a behaviour difference between the HEAD and disk stage_prerun.py; after normalising
+\d{8}_\d{6} the two outputs are identical. Also: with X17 skipped, E1 of selftest_stage_prerun_c106e would still FAIL at X5
+at HEAD too, i.e. X17 masks an X5 failure that predates cycle 148."
+
+WHAT I WANT FROM YOU
+1. The strongest reason the claim is wrong - in particular, could a cycle-148 edit of stage_prerun.py (lines :592, :848 dry
+   input-graph gate `dry_read_only`; :3150 sha256 pin; :3415 offline_run_of; :3433 check_cap; :4474 record_started; compare
+   `git diff HEAD -- tools/stage_prerun.py`) change any gate line of a --prerun --no-record run AFTER index 55, hidden because
+   only the first differing line was printed?
+2. An alternative explanation of the evidence.
+3. What observation would falsify the claim.
+4. The cheapest discriminating test with no LabVIEW and no tool edit (only tools/bench/diag_c148_a2_3_unmask* may be edited).
+End with one line: VERDICT-LINE: claim REFUTED | claim STANDS | claim UNDETERMINED - <one sentence>.

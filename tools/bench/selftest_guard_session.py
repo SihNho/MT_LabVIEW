@@ -40,6 +40,8 @@ GUARD_BASH = os.path.join(HOOKS, "guard_bash.py")
 if "--candidate" in sys.argv:                   # card 133-4: CLI form of GS_UNDER_TEST (env prefixes are auto-denied)
     os.environ["GS_UNDER_TEST"] = os.path.abspath(sys.argv[sys.argv.index("--candidate") + 1])
 sys.path.insert(0, HOOKS)
+for _k in ("ASSIGN_STATE", "CYCLE_ROLE", "CYCLE_SESSION"):  # card 148-a2-1 (fp-60): children never inherit an assignment env
+    os.environ.pop(_k, None)
 import guard_session  # noqa: E402
 
 SID_A = "selftest-gs-cap"

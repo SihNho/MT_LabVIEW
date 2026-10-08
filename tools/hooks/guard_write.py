@@ -43,6 +43,37 @@ def _rel(p):
         return p
 
 
+RESUME_GOAL_RE = re.compile(r"\bRESUME\s+of\s+(?:killed\s+)?card\s+([\w.-]+)", re.I)
+
+
+def resumed_card_ids(names):
+    """card 148-a1-1 (fp-57): ids of cards a LATER card took over - a task card that HAS a result file and names the id in
+    `retry_of_card` / `resume_of` / `supersedes`, or whose goal reads `RESUME of [killed] card <id>`
+    (task_147-a1-6.json goal; diag_c147_a2_1_facts.md:2). Such a card was killed and closed by its successor: no live
+    session holds its pins, so it is not open."""
+    out = set()
+    for n in names:
+        m = re.match(r"^task_(.+)\.json$", n)
+        if not m or not os.path.exists(os.path.join(CARDS, "result_%s.json" % m.group(1))):
+            continue
+        try:
+            with open(os.path.join(CARDS, n), encoding="utf-8") as f:
+                card = json.load(f)
+        except (OSError, ValueError):
+            continue
+        if not isinstance(card, dict):
+            continue
+        for k in ("retry_of_card", "resume_of", "supersedes"):
+            v = card.get(k)
+            for x in (v if isinstance(v, list) else [v]):
+                if isinstance(x, str) and x.strip():
+                    out.add(re.sub(r"^.*task_(.+)\.json$", r"\1", x.strip().replace("\\", "/")))
+        mm = RESUME_GOAL_RE.search(str(card.get("goal") or ""))
+        if mm:
+            out.add(mm.group(1).rstrip(".,;:)"))
+    return out
+
+
 def open_card_pins(path):
     """['card <id> pins <rel> at <md5>, disk is now <md5>'] for open cards (no result file yet) whose inputs name
     `path` with an md5 that matches neither the raw nor the canonical (header-stripped) bytes."""
@@ -56,9 +87,10 @@ def open_card_pins(path):
         return out
     raw = None
     import time
+    gone = resumed_card_ids(names)
     for n in names:
         m = re.match(r"^task_(.+)\.json$", n)
-        if not m or os.path.exists(os.path.join(CARDS, "result_%s.json" % m.group(1))):
+        if not m or os.path.exists(os.path.join(CARDS, "result_%s.json" % m.group(1))) or m.group(1) in gone:
             continue
         try:                       # OPEN = written in the last 24 h and no result yet (an abandoned old card is not open)
             if time.time() - os.path.getmtime(os.path.join(CARDS, n)) > OPEN_CARD_S:

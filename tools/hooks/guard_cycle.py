@@ -377,6 +377,36 @@ def running_review_recipes(body):
                for g in got)
 
 
+_LOG_NAME_RE = re.compile(r"^(?:[A-Z0-9_]*_)?LOG$")
+
+
+def recipe_named_logs(fp):
+    """card 148-a1-1 (fp-59): BENCH logs the recipe ASSIGNS as its own log (`LOG = ...`/`RUN_LOG = ...` holding a string
+    ending `.log`, read by ast) whose last `BGRUN START` command runs this recipe's file. [] on any read/parse error."""
+    try:
+        import ast
+        tree = ast.parse(open(fp, "r", encoding="utf-8", errors="replace").read())
+    except (OSError, SyntaxError, ValueError):
+        return []
+    names = set()
+    for n in ast.walk(tree):
+        if isinstance(n, ast.Assign) and any(isinstance(t, ast.Name) and _LOG_NAME_RE.match(t.id) for t in n.targets):
+            for c in ast.walk(n.value):
+                if isinstance(c, ast.Constant) and isinstance(c.value, str) and c.value.lower().endswith(".log"):
+                    names.add(os.path.basename(c.value))
+    out = []
+    base = os.path.basename(fp).lower()
+    for nm in sorted(names):
+        p = os.path.join(BENCH, nm)
+        try:
+            last = logclass.last_bgrun_command(p) if os.path.isfile(p) else None
+        except Exception:                # noqa: BLE001 - unreadable log never releases
+            last = None
+        if last and base in last.replace("\\", "/").lower():
+            out.append(p)
+    return out
+
+
 def premature_build(cmd):
     """THE DEVICE FOR `premature-build` (docs/violation-decisions.md, 2026-09-16 19:16, round 3).
 
@@ -509,7 +539,11 @@ def premature_build(cmd):
         if latest:
             stem = os.path.splitext(os.path.basename(fp))[0]
             ran = []
-            for p in glob.glob(os.path.join(BENCH, stem + "*.log")):
+            # card 148-a1-1 (fp-59): a recipe that FIXES its own log name (`LOG = os.path.join(K.BENCH, "diag_x.log")`,
+            # stage_d1_ring_p4_s06v18_scratch.py:36) never matched `<stem>*.log`; that named log counts too, but only
+            # when its own last BGRUN START ran THIS recipe (logclass.last_bgrun_command) - a log the recipe merely reads
+            # does not.
+            for p in sorted(set(glob.glob(os.path.join(BENCH, stem + "*.log"))) | set(recipe_named_logs(fp))):
                 if not logclass.is_build_log(p):
                     continue
                 try:
@@ -622,7 +656,10 @@ def offline_only(cmd):
     splitter). False when any recipe-naming segment is anything else, or when no segment names a recipe."""
     import launchunit
     segs = [s for s in launchunit.segments(cmd) if BUILD_RE.search(s)]
-    return bool(segs) and all(stop_record.offline_checker(s.strip()) for s in segs)
+    # card 148-a1-1 (fp-54): `py -m py_compile tools/recipes/X.py` only READS the recipe (launchunit.module_arg_segment:
+    # a READONLY_MODULES module, no project-file shadow, plain path arguments, no cd away from ROOT) - not a build.
+    return bool(segs) and all(stop_record.offline_checker(s.strip())
+                              or launchunit.module_arg_segment(s.strip(), cmd, ROOT) for s in segs)
 
 
 def main():

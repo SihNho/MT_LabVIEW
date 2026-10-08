@@ -80,6 +80,46 @@ def scenario(tmp, review_age_h=None, log_age_h=None, recipe_age_h=0.0):
     return G.premature_build(cmd)
 
 
+FP59_CMD = ("py tools/bgrun.py --material --max-min 50 --retry-card tools/bench/cards/task_147-c3-3.json "
+            "--log tools/bench/diag_c147_p4s06v18_scratch.log -- py -u tools/recipes/stage_d1_ring_p4_s06v18_scratch.py")
+
+
+def fp59_scenario(tmp, log_age_h, log_cmd_recipe):
+    """card 148-a1-1 (fp-59): the recipe FIXES its log name (`LOG = ...diag_c147_p4s06v18_scratch.log`), which never
+    matched `<stem>*.log`. Review 2 h old, recipe edited just now (so `newer` is empty), the named log `log_age_h` old
+    and its BGRUN START running `log_cmd_recipe`. ROOT/BENCH/PEER -> temp; the exact fp-59 command text is judged."""
+    root = os.path.join(tmp, "fp59")
+    bench, peer, rdir = (os.path.join(root, "bench"), os.path.join(root, "peer"),
+                         os.path.join(root, "tools", "recipes"))
+    for d in (bench, peer, rdir):
+        os.makedirs(d, exist_ok=True)
+        for f in os.listdir(d):
+            os.remove(os.path.join(d, f))
+    touch(os.path.join(rdir, "stage_d1_ring_p4_s06v18_scratch.py"), NOW,
+          'import os\nLOG = os.path.join(K.BENCH, "diag_c147_p4s06v18_scratch.log")\nREAD_ONLY = "other_stage.log"\n')
+    touch(os.path.join(peer, "2026-10-03-priorart-selftest.md"), NOW - 2 * 3600, "- **date:** 2026-10-03\n")
+    touch(os.path.join(bench, "diag_c147_p4s06v18_scratch.log"), NOW - log_age_h * 3600,
+          f"BGRUN START 2026-10-08 12:52:29 limit 50.0 min: py -u tools/recipes/{log_cmd_recipe}\nBGRUN END rc=1\n")
+    old = (G.ROOT, G.BENCH, G.PEER)
+    G.ROOT, G.BENCH, G.PEER = root, bench, peer
+    try:
+        return G.premature_build(FP59_CMD)
+    finally:
+        G.ROOT, G.BENCH, G.PEER = old
+
+
+def fp59_cases(tmp):
+    v5 = fp59_scenario(tmp, 1.0, "stage_d1_ring_p4_s06v18_scratch.py")
+    gate("C5 fp-59 exact command: the recipe's own NAMED log ran it under the review -> ALLOWED", v5 is None,
+         "allowed" if v5 is None else f"blocked: {v5.splitlines()[0][:80]}")
+    v6 = fp59_scenario(tmp, 3.0, "stage_d1_ring_p4_s06v18_scratch.py")
+    gate("C6 same command, named log OLDER than the review -> still REFUSED",
+         bool(v6) and "NO PRIOR-ART REVIEW NEWER THAN ITSELF" in (v6 or ""), "blocked" if v6 else "ALLOWED (wrong)")
+    v7 = fp59_scenario(tmp, 1.0, "stage_other_recipe.py")
+    gate("C7 same command, named log's BGRUN START ran ANOTHER recipe -> still REFUSED",
+         bool(v7) and "NO PRIOR-ART REVIEW NEWER THAN ITSELF" in (v7 or ""), "blocked" if v7 else "ALLOWED (wrong)")
+
+
 def main():
     tmp = tempfile.mkdtemp(prefix="guardcycle_")
     print(f"  temp: {tmp}", flush=True)
@@ -102,6 +142,7 @@ def main():
     gate("C4 (regression) review newer than the recipe -> ALLOWED", v4 is None,
          "allowed" if v4 is None else f"blocked: {v4.splitlines()[0][:80]}")
 
+    fp59_cases(tmp)
     print(f"\n=== selftest_guard_cycle_rerun: {len(passes)} pass, {len(fails)} fail"
           + (f" -> {', '.join(fails)}" if fails else "") + " ===", flush=True)
     return 0 if not fails else 1

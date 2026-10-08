@@ -6626,3 +6626,86 @@ OUTCOME: TIMEOUT (600s)  model: claude-opus-5-5 (effort high; pinned by -Model/-
 VERDICT-CARD: NO-VERDICT: outcome TIMEOUT
    peer.ps1 rc 1; archived as archive/peer/<date>-retrospective-cycle147.md
 BGRUN END rc=1 after 621s
+BGRUN START 2026-10-08 17:34:24 limit 20.0 min: C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\retrospective.py --cycle 148
+BGRUN PID 22412
+   window 2026-10-08 14:24:32 .. 2026-10-08 17:34:25 (190 min); 45 build logs, 13 machinery logs, 53 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle148.txt (40118 chars)
+   review card tools\bench\cards\review_retrospective-cycle148.json
+OUTCOME: ANSWERED (264s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-10-08-retrospective-cycle148.md
+COST: $1.8802  in 48 / out 24082 / cache-create 121700 / cache-read 2123707  (262s, 39 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle148 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle148.json
+--- ANSWER ---
+# Retrospective, cycle 148 (2026-10-08 14:24:32 – 17:34:25)
+
+**Outcome:** the cycle closed on the hand-back limit and the session-6 build never started. Three assignment rounds cost $40.30 between them. Rounds 2 and 3 judged and partly fixed the previous round's failures, and their own diagnostic scripts added new ones. The last of those failures closed the cycle (`tools/bench/cycle_runner.log:1286-1296`).
+
+## The one structural fault
+
+**The round-1 leak came back in round 3, and the cycle closed on it.**
+
+1. **Round 1** was handed back because of "card p1s-A" (`tools/bench/cycle_runner.log:1286`). That name is a test fixture in `selftest_chat_p1.py`, not a real card.
+2. **The 15:24 judgement round** found the mechanism and wrote it into PD359(b) (`docs/d1/ring-p4c.md:74-83`). Self-tests run inside the assignment session inherit its environment variables. Through them, `guard_assign` writes a hand-back into the live state file.
+3. **Round 2's card 148-a2-1** fixed this in the current tree only:
+   - five self-tests now drop the variables;
+   - `guard_assign` refuses card files outside `tools/bench/cards`.
+
+   That card's own runner stripped the variables (`tools/bench/diag_c148_a2_1_run.py:40,65`).
+4. **The 16:09 judgement round** then ordered, in PD360(b) (`docs/d1/ring-p4c.md:105-111`), the four suites to run "on the pre-fix tree", HEAD 07202624. That is the code without the fix. The order did not say the variables had to be stripped first. The briefs `brief_148-a3-1.md` and `brief_148-a3-2.md` do not mention it either.
+5. **The wrapper** `tools/bench/diag_c148_a3_1_suites.py:86-88` copies the whole environment and removes only `CARD_ID`, `CARD_LABVIEW` and `BGRUN_LOG`. The PRE lane therefore ran the old `selftest_chat_p1` and the old `guard_assign` with the live state path set. In addition, `selftest_c_e3_suite.py:29-33` passes the environment on to its own HEAD worktree.
+6. **The timing matches.** The suites started at 16:37:55 (`diag_c148_a3_1_suites.log:1`). The PRE lane finished its first two suites in 249 s + 243 s (`:88`, `:97`) and then started `c_e3`. The hand-back was stamped 1791445665.97, which is **16:47:45** local time (`tools/bench/assign/state_148_3.json:51-55`). Its text is identical to round 1's (`handback_148_3.json:6` = `handback_148_1.json:6`).
+7. **The effect:** when the suites passed (17:29:56), `guard_assign` refused both prepared dispatches: `task_148-a2-4` (session 6) and `task_148-a3-3` (session-7 prep) (`assign_result_148_3.json:13`). That was the third hand-back, so the cycle closed (`cycle_runner.log:1296`).
+
+- **Slug:** `repeated-failure-class`. The same failure class happened twice in one cycle, and the second time its mechanism had already been measured and written down. It is not `device-failed`: none of the devices listed below caused it, and the fp-60 fix did not fail in the code it changed. The old code ran from another tree.
+- **Loss:** about 13 minutes is the measured lower bound. That is the cost of crossing a cycle boundary, measured at the 147→148 boundary (14:14:11 → 14:27:06, `cycle_runner.log:1269-1285`: retrospective, commit, motor limits, a new judgement round). The real loss is that the session-6 deliverable moves to cycle 149, and no log puts a number on that. Round 3 left about $78 of its $90 cap and about 215 of its 300 hard-cap minutes unused (`handback_148_3.json:25-26`). `loss_usd=?`.
+- **Counterfactual:** suppose PD360(b) at 16:09, or the wrapper at line 86, had removed `ASSIGN_STATE`, `CYCLE_ROLE` and `CYCLE_SESSION`, exactly as `diag_c148_a2_1_run.py` already did in round 2. Then the state file would have stayed clean, and at about 17:30 the assignment session would have dispatched `task_148-a2-4`. The cycle would have ended with the session-6 trial run attempted, not at 17:34:24 on the hand-back limit with nothing built.
+
+## Findings
+
+**1. Repeated failure.** Besides the leak, three attempts in a row failed on our own measurement scripts, not on the code being measured:
+- **148-a1-1:** its "pre-fix" E1 run actually ran the edited `stage_prerun` (`archive/peer/2026-10-08-c148-a2-3-t3regress-prefix.md:95`).
+- **148-a2-3:** the wrapper ignored the result of `git worktree add`, then crashed at `:81` (`handback_148_2.json:6`).
+- **148-a3-1:** the unmask script ran the whole recipe instead of E1 (`result_148-a3-1.json:2,14`).
+
+The approach should have changed at attempt 2 (148-a2-3): one checked harness that compares a test run before and after the fix, instead of a new wrapper for each card.
+
+**2. Missing tool.** That harness: it builds a clean HEAD tree, checks every step's return code, and strips the assignment environment. It would have answered a1-1's mis-scoped baseline, a2-3's crash and round 3's leak. A more direct fix: have `tools/bgrun.py --material` remove `ASSIGN_STATE`, `CYCLE_ROLE` and `CYCLE_SESSION` from every child process. That would protect any tree, including HEAD copies. The fp-60 fix protects only the current tree.
+
+**3. Decided by inference.** PD360 treated running the pre-fix tree as safe without checking it against PD359(b)'s own measured leak path. Also, a3-2 declared the suites green on "NOW failures are a subset of PRE failures". But the PRE tree lacks untracked sim files, so 5 of its failures are caused by the baseline itself (`result_148-a3-2.json:15,17`). The `c_e3` NOW run labels 11 tests "absent at HEAD" even though they exist at HEAD (`diag_c148_a3_1_suites.log:61-71`). So that comparison measured nothing, and it was still counted as green.
+
+**4. Rule compliance.**
+- **Rule 3, judgement vs material split** (`CLAUDE.md:365-372`): only formally kept. Material sessions wrote "Accepted: claim REFUTED" and "accepted with both corrections" into review dispositions (`archive/peer/2026-10-08-c148-a3-1-unmask-clockstamp.md:122`; `...-t3regress-prefix.md:95`).
+- **Audit A1** flags `fn_gate.log` and `fntest_exempt.log`. These are gate logs, not builds, so that failure is a false alarm. L2, L8 and L10 are housekeeping.
+- **What the audit misses:** it cannot see a write into a live state file. It cannot see that a hand-back came from a fixture rather than a real card. It cannot see what a child process inherited from its parent's environment.
+
+**5. Ordering.** Draining the gate-fp queue first was required (`cycle_148.log:219`). Re-checking for regressions before a LabVIEW launch through the edited `stage_prerun` was defensible. The problem was the expansion. The work required before session 6 grew in every round:
+- 9 queue entries (PD358);
+- then fp-60 and 12 regression suites (PD359);
+- then the unmask test and worktree cleanup (PD360).
+
+Worktree cleanup did not need to come before the launch.
+
+**6. Not reported.**
+- Two judgement rounds reported that `next.json` "passes validation", but their `validate` call was refused by the permission layer (`cycle_148_handback_1.log:261`, `cycle_148_handback_2.log:261`). The logs do not show it succeeding by another route.
+- `assign_result_148_3.json:13` calls the round-3 trigger "not a card of this round" but does not say that its own PRE lane caused it.
+- `STATUS.md:69` still carries the green "round 2 fixed the fp-60 leak" line.
+
+**7. Judgement inside a material session.**
+- **148-a2-1** resolved a design ambiguity in a hook. PD359(b) said a card outside `tools/bench/cards` is "logged and ignored"; the session implemented a refusal instead. It raised this only as an open item (`result_148-a2-1.json:22`), and PD360(a) accepted the fix without answering it (`docs/d1/ring-p4c.md:98`).
+- Accepting review findings inside material: see item 4.
+
+## Device effect
+
+No device on file failed inside this window:
+- **bgrun inner-FAIL / return-code devices:** `diag_c148_a2_3_suites` ended rc=1 and was reported as a failure (`handback_148_2.json:6`).
+- **Cost-line parsing:** audit C4b, 3 seen / 3 parsed.
+- **Retrospective disposition:** audit A4, 8/8 annotated.
+- **`guard_peer` review-owed refusal:** fired correctly on the `_r2` relaunch (`result_148-a3-1.json:3`).
+- **Scope counter:** audit C7 printed 75 files.
+- **Stop-record / launch gates, op hygiene, memory and plan checks:** not exercised, because no LabVIEW stage ran.
+
+The fp-60 fix is not on the device list. It did not fail on its own terms either: the round-3 write came from a pre-fix copy of `guard_assign`.
+
+VIOLATION: repeated-failure-class | loss_min=13 | loss_usd=? | evidence=tools/bench/diag_c148_a3_1_suites.py:86
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle148","verdict":"refuted","alternative":"The round-3 hand-back was a new, independent leak (e.g. the NOW lane's current code) rather than the PRE lane re-running the pre-fix chat_p1/guard_assign with the inherited ASSIGN_STATE.","discriminating_test":"Offline: run HEAD 07202624's selftest_chat_p1.py with CYCLE_ROLE=assign and ASSIGN_STATE=<copy of state_148_3 without handback>; a p1s-A handback in the copy confirms. Repeat with current-tree code; no write expected.","violations":[{"slug":"repeated-failure-class","loss_min":13,"loss_usd":"?","evidence":"tools/bench/diag_c148_a3_1_suites.py:86"}],"sources":["tools/bench/cycle_runner.log:1286","tools/bench/cycle_runner.log:1294","tools/bench/cycle_runner.log:1296","tools/bench/assign/state_148_3.json:51","docs/d1/ring-p4c.md:76","docs/d1/ring-p4c.md:107","tools/bench/diag_c148_a2_1_run.py:40","tools/bench/cards/assign_result_148_3.json:13"],"note":"Cycle closed on HANDBACK-LIMIT with the s06 card prepared but never dispatched; loss_min is only the measured cycle-boundary cost, the deferred deliverable is unpriced."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle148.md
+BGRUN END rc=0 after 278s

@@ -1,0 +1,79 @@
+{
+ "schema": "task/1",
+ "id": "148-a1-1",
+ "kind": "build",
+ "goal": "PD358(b)(d): drain gate-fp fp-51..59 (fix + self-test or not-a-FP note); fix fp-56 in stage_prerun.py; re-pin selftest_c147_b1_2 P0 (17/0)",
+ "why": "Cycle 147 round 3 was handed back by two gate refusals of one class (fp-56, fp-59); the purpose authorises the hook/checker edits for the drain only, ALONE, before any LabVIEW card.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_148-a1-1.md", "md5": "409ed2368629d609ecbe99d83a06e381"},
+  {"path": "tools/bench/gate_fp_queue.jsonl", "md5": "08c8e657c81999b09f2149cc02572d22"},
+  {"path": "tools/stage_prerun.py", "md5": "61d6f5902e9d2a05156b0d202d90fdea"},
+  {"path": "tools/hooks/guard_cycle.py", "md5": "c080fb7a5f06370b5c989bb6b2b5ce73"},
+  {"path": "tools/hooks/guard_bash.py", "md5": "76d0995789cdb953503f338a5382c00a"},
+  {"path": "tools/hooks/guard_write.py", "md5": "391a832448bce5cdbec2233317bf09c1"},
+  {"path": "tools/hooks/guard_assign.py", "md5": "b9dc09bb935d23b5649e852886e1ebc7"},
+  {"path": "tools/bgrun.py", "md5": "600aceb1599fba734c19310629bcaa7b"},
+  {"path": "tools/gate_fp.py", "md5": "1f427fb5b1735584c19a699c2314b826"},
+  {"path": "tools/bench/selftest_stagekit.py", "md5": "29df9b648353113b0ce965d163877114"},
+  {"path": "tools/bench/selftest_c147_b1_2.py", "md5": "24c56042965eb1d5d5140fc2c3455f17"},
+  {"path": "tools/bench/diag_c147_c3_1_facts.md", "md5": "aba1b82846b48dfd8d17c275d11e6175"},
+  {"path": "tools/stagekit.py", "md5": "06b8d844284deacab535a9ee442d4964"},
+  {"path": "tools/stagexec.py", "md5": "1bab9cf96502dfbe2d9a755e6d4a48b6"},
+  {"path": "tools/gscript.py", "md5": "1a80236ed35c1876c67f964c72fe820a"},
+  {"path": "tools/elrule.py", "md5": "a5ee7d5c8792ccf5c174e70be022544d"},
+  {"path": "tools/bench/memory_model.json", "md5": "88eeb03748e94d422e38be802be2118a"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s06v18.py", "md5": "d947df5d9347b389dc4e4b221bf9d241"},
+  {"path": "tools/bench/plan_ring_p4_s06v18_licence.json", "md5": "7f70bbf9f64de105f25380f260632d56"}
+ ],
+ "pass": [
+  "fp-51..fp-59 each 'drained' in gate_fp_queue.jsonl via tools/gate_fp.py: fix path:line + self-test rc/counts, or cited not-a-FP note (fp-55 = not a FP, PD357(d))",
+  "fp-56 fixed in tools/stage_prerun.py (sha256 pin 0007d034... for selftest_stagekit.py, --dry routing); ONE plain run of selftest_stagekit.py under its header: rc 0, 0 fails, quoted",
+  "fp-59 fixed in tools/hooks/guard_cycle.py with a self-test: the fp-59 command text passes, a command that must still be refused is refused",
+  "every existing self-test of each edited hook/checker re-run green, rc + counts quoted",
+  "selftest_c147_b1_2.py P0 re-pinned to licence 7f70bbf9 + recipe d947df5d, no other line; run 17 pass / 0 fail, rc quoted",
+  "stagekit 06b8d844, stagexec 1bab9cf9, gscript 1a80236e, elrule a5ee7d5c, memory_model 88eeb037, s06 plan/pred/in/licence/recipes unchanged; no LabVIEW process before/after"
+ ],
+ "outputs": [
+  "tools/bench/gate_fp_queue.jsonl",
+  "tools/bench/diag_c148_a1_1_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+    "tools/stage_prerun.py",
+    "tools/hooks/guard_cycle.py",
+    "tools/hooks/guard_bash.py",
+    "tools/hooks/guard_write.py",
+    "tools/hooks/guard_assign.py",
+    "tools/bgrun.py",
+    "tools/bench/selftest_c147_b1_2.py",
+    "tools/bench/selftest_*guard*",
+    "tools/bench/selftest_*prerun*",
+    "tools/bench/diag_c148_a1_1*",
+    "tools/bench/gate_fp_queue.jsonl"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "advances": [
+  "M3",
+  "R1"
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/gate_fp.py"},
+  {"kind": "file", "name": "tools/bench/gate_fp_queue.jsonl"}
+ ],
+ "rules": [
+  "Run ALONE: no other card live; no LabVIEW process may start",
+  "Edit only hooks/checkers fp-51..58 name, for the drain; no plan, licence, recipe or memory_model edit",
+  "Gate false positives go to gate_fp_queue via tools/gate_fp.py, never an env bypass; do not hand-edit the queue"
+ ]
+}

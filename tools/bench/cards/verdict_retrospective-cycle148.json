@@ -1,0 +1,26 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle148",
+ "verdict": "refuted",
+ "alternative": "The round-3 hand-back was a new, independent leak (e.g. the NOW lane's current code) rather than the PRE lane re-running the pre-fix chat_p1/guard_assign with the inherited ASSIGN_STATE.",
+ "discriminating_test": "Offline: run HEAD 07202624's selftest_chat_p1.py with CYCLE_ROLE=assign and ASSIGN_STATE=<copy of state_148_3 without handback>; a p1s-A handback in the copy confirms. Repeat with current-tree code; no write expected.",
+ "violations": [
+  {
+   "slug": "repeated-failure-class",
+   "loss_min": 13,
+   "loss_usd": null,
+   "evidence": "tools/bench/diag_c148_a3_1_suites.py:86"
+  }
+ ],
+ "sources": [
+  "tools/bench/cycle_runner.log:1286",
+  "tools/bench/cycle_runner.log:1294",
+  "tools/bench/cycle_runner.log:1296",
+  "tools/bench/assign/state_148_3.json:51",
+  "docs/d1/ring-p4c.md:76",
+  "docs/d1/ring-p4c.md:107",
+  "tools/bench/diag_c148_a2_1_run.py:40",
+  "tools/bench/cards/assign_result_148_3.json:13"
+ ],
+ "note": "Cycle closed on HANDBACK-LIMIT with the s06 card prepared but never dispatched; loss_min is only the measured cycle-boundary cost, the deferred deliverable is unpriced."
+}

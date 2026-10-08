@@ -1,0 +1,73 @@
+{
+ "schema": "task/1",
+ "id": "148-a3-3",
+ "kind": "build",
+ "goal": "PD358(f)/PD360(d): P4 s07 plan, pred, recipes on the PROVISIONAL s06 base, dry + prerun PASS, X10 quoted; offline, not launched",
+ "why": "Cycle 148 pass item 8. Pipeline: one offline prep card beside the s06 LabVIEW card; rebased on the real s06 graph after adoption (separate card).",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_148-a3-3.md", "md5": "d7257fdb3449db3e5051c07d83210da9"},
+  {"path": "tools/bench/cards/brief_147-a1-2.md", "md5": "0d472fb8df2bcc757bdaaec374c37ccf"},
+  {"path": "tools/bench/prep_c147_a1_2_mk.py", "md5": "d57fdd4f9d038a6f99cc5919e43ca42c"},
+  {"path": "tools/bench/prep_c147_a1_3_mk.py", "md5": "8900e0dfe3f4439774392b598edcd170"},
+  {"path": "tools/bench/prep_c146_a1_2_pred.py", "md5": "19270d62bfaf328b4170b4e220eb9ba4"},
+  {"path": "tools/bench/diag_c147_a1_3_facts.md", "md5": "b0f69147edabc2cdf2a8496104263706"},
+  {"path": "tools/bench/plan_ring_p4_s06v18.json", "md5": "cfbd9823d3b47be39de94f2125ad6b66"},
+  {"path": "tools/bench/plan_ring_p4_s06v18_pred.json", "md5": "c4a6a35aff6f71d508ea2c43c24ec510"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s06v18.py", "md5": "d947df5d9347b389dc4e4b221bf9d241"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s06v18_scratch.py", "md5": "31009bfce0c0487b0600359c3dac2bd0"},
+  {"path": "tools/stage_prerun.py", "md5": "dcd45aba9be99dde809800e7f59bb2f7"},
+  {"path": "tools/stagekit.py", "md5": "06b8d844284deacab535a9ee442d4964"},
+  {"path": "tools/stagexec.py", "md5": "1bab9cf96502dfbe2d9a755e6d4a48b6"},
+  {"path": "tools/elrule.py", "md5": "a5ee7d5c8792ccf5c174e70be022544d"}
+ ],
+ "pass": [
+  "Maker prep_c148_a3_3_mk.py: provisional s06 base, start rule numbers quoted; cut by the prerun's own X10 <= 680 line; MAIN and scratch X10, margins to 680/695, first op over 680 quoted",
+  "s07 sim end == v18 sim over the same ops (cdiff 0); X11 PASS (licensed or not needed); plan marked provisional",
+  "plan_ring_p4_s07v18_pred.json by elrule from the s06 predicted EL: total and per-class quoted",
+  "Recipes stage_d1_ring_p4_s07v18(.py/_scratch.py) = s06 pair with only names/sink-gate list changed; diff by file:line; dry and prerun PASS, --scratch-required exit 3",
+  "Protected md5 unchanged (stage tools, s06 tree, memory_model, claudeDev files); no LabVIEW process; nothing launched"
+ ],
+ "outputs": [
+  "tools/bench/diag_c148_a3_3_facts.md",
+  "tools/bench/plan_ring_p4_s07v18.json",
+  "tools/bench/plan_ring_p4_s07v18_pred.json",
+  "tools/recipes/stage_d1_ring_p4_s07v18.py",
+  "tools/recipes/stage_d1_ring_p4_s07v18_scratch.py"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c148_a3_3*",
+   "tools/bench/prep_c148_a3_3*",
+   "tools/bench/plan_ring_p4_s07v18*",
+   "tools/bench/sim/ring_p4_s07v18/**",
+   "tools/recipes/stage_d1_ring_p4_s07v18*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/gate_fp_queue.jsonl"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 90
+ },
+ "advances": [
+  "M3",
+  "R1"
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/prep_c147_a1_2_mk.py"},
+  {"kind": "file", "name": "tools/bench/prep_c147_a1_3_mk.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"}
+ ],
+ "rules": [
+  "Offline only; no LabVIEW, camera or motor; runs beside the s06 card",
+  "Never touch claudeDev, memory_model.json, adopted_scratch.jsonl, sim/ring_p4_s06v18/** or diag_c148_a2_4*",
+  "No stage-tool, hook or elrule edit; a tool fault is a RETURN with file:line and the refusal"
+ ]
+}

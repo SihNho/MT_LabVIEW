@@ -1,0 +1,31 @@
+BGRUN START 2026-10-08 14:51:43 limit 4.0 min: py -u tools/bench/diag_c148_a1_1_before.py selftest_c125_1.py
+BGRUN PID 21712
+  FACT  tools/stage_prerun.py loaded from HEAD (md5 61d6f590)
+  FACT  tools/hooks/guard_cycle.py loaded from HEAD (md5 c080fb7a)
+  FACT  tools/hooks/guard_write.py loaded from HEAD (md5 391a8324)
+  FACT  tools/hooks/guard_assign.py loaded from HEAD (md5 b9dc09bb)
+  BAD  A1 fp-10 cmd, labview:build card, other card's log: before 2 / after 0 (2, 2, 'JEV-LADDER | 2026-10-08 14:51:47 | c125fake_other_card.log | new-problem p=0.742 | BLOCK (')
+  ok   A2 an LV recipe under the same card is still refused               2
+  ok   A3 the card's OWN failing log (ledger) still gates the offline cmd 2
+  ok   A4 a corrupt ledger reads as owned (fail closed)                   
+  ok   B1 fp-11 selftest_case_frame_c124 exempt: before False / after True (False, True)
+  ok   B2 an unlisted LV self-test (selftest_c118_primnested) is not exempt 
+  BAD  B3 offline_command: listed self-test True, stagexec run False      
+  BAD  C1 fp-12 census hook-in self-test, labview none: before refused / after allowed ("flags.labview is 'none' - tools/bench/selftest_census_hookin_c123.py declares labview: read (scope header)", "flags.labview is 'none' - tools/bench/
+  ok   C2 an LV diagnostic of the same shape (diag_c123_struct) is still refused 
+  ok   C3 an unlisted LV self-test (selftest_c118_primnested) is still refused 
+  BAD  D1 fp-13 stagexec selftest, labview none: before refused / after allowed (None, None)
+  ok   D2 `stagexec.py run <plan>` is still refused                       
+  ok   D3 `stagexec.py selftest; stagexec.py run <plan>` is refused       
+  ok   D4 soft alert: listed self-test not refused, diagnostic still refused (None, 'SOFT ALERT (card chat-P2 item 2, user 2026-09-28): this card was bound 180 min ago (> 60) - no NEW recipe/diagnostic launch (tools\\bench\\dia
+  ok   E1 X16 FAIL: a create terminal without term_class is named         [{'action': 'p3a_wait', 'terminal': 'milliseconds to wait', 'stage': 'ring_p3a'}]
+  ok   E2 X16 PASS: the same plan with the class declared                 4 non-const_donor create action(s) with declared terminals, all classed
+  ok   E3 X16 PASS on plan_ring_p3a.json as committed                     4 non-const_donor create action(s) with declared terminals, all classed
+  ok   E4 X16 PASS: a const_donor create without term_class (card 125-3)  4 non-const_donor create action(s) with declared terminals, all classed
+  ok   E5 X16 PASS on plan_ring_p2b.json (5 const_donor creates, no term_class) 0 non-const_donor create action(s) with declared terminals, all classed
+  ok   E6 X16 FAIL: the same constant create WITHOUT prim const_donor is still refused [{'action': 'p3a_k_prev', 'terminal': '', 'stage': 'ring_p3a'}]
+=== selftest_c125_1: 16 pass / 4 fail
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":16,"fail":4},"first_fail":"A1 fp-10 cmd, labview:build card, other card's log: before 2 / after 0","artefacts":[],"card":"148-a1-1","labview":"none"}
+BEFORE selftest_c125_1.py: rc 1 (non-zero as predicted)
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[],"card":"148-a1-1","labview":"none"}
+BGRUN END rc=1 after 33s (RESULT: status=FAIL gates 16/4 first_fail=A1 fp-10 cmd, labview:build card, other card's log: before 2 / after 0; the process itself said 0)

@@ -1,0 +1,77 @@
+{
+ "schema": "task/1",
+ "id": "148-a2-1",
+ "kind": "build",
+ "goal": "PD359(b)(c): measure the fp-60 env leak on a state copy, fix it (self-tests drop ASSIGN_STATE; hand-back only for cards/), new self-test fails on HEAD, drain fp-60; re-pin T0b (17/0)",
+ "why": "Round 1 was handed back by a fixture card (p1s-A) of selftest_chat_p1.py that the self-test leaked into the live assignment state; the purpose authorises these edits, ALONE, before the stagekit/LabVIEW work.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_148-a2-1.md", "md5": "ee90f331652f5b5aa55acb2ad3119078"},
+  {"path": "tools/hooks/guard_assign.py", "md5": "eb8ba4d644417cd7c702365138329413"},
+  {"path": "tools/hooks/guard_session.py", "md5": "e1b661b57b92f266c7fa237f710f2e56"},
+  {"path": "tools/bench/selftest_assign_flow.py", "md5": "675625a232168ba21c21c80ec96f5501"},
+  {"path": "tools/bench/selftest_chat_p1.py", "md5": "c71df93918baf3708536179468b3a2b5"},
+  {"path": "tools/bench/selftest_chat_p2.py", "md5": "a27743ede524280fadc8b713c1baf9cc"},
+  {"path": "tools/bench/selftest_guard_session_pairing.py", "md5": "09eded12be3af01f865241cee6c7d6dc"},
+  {"path": "tools/bench/selftest_guard_session.py", "md5": "6956b1c42684be9da32d53c2ecba728a"},
+  {"path": "tools/bench/selftest_c147_b1_2.py", "md5": "2166d93ff7afc8575cad750b836cac80"},
+  {"path": "tools/gate_fp.py", "md5": "1f427fb5b1735584c19a699c2314b826"},
+  {"path": "tools/bench/plan_ring_p4_s06v18_licence.json", "md5": "7f70bbf9f64de105f25380f260632d56"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s06v18.py", "md5": "d947df5d9347b389dc4e4b221bf9d241"},
+  {"path": "tools/stagekit.py", "md5": "06b8d844284deacab535a9ee442d4964"},
+  {"path": "tools/stagexec.py", "md5": "1bab9cf96502dfbe2d9a755e6d4a48b6"},
+  {"path": "tools/gscript.py", "md5": "1a80236ed35c1876c67f964c72fe820a"},
+  {"path": "tools/elrule.py", "md5": "a5ee7d5c8792ccf5c174e70be022544d"}
+ ],
+ "pass": [
+  "leak MEASURED before any edit: selftest_chat_p1.py with ASSIGN_STATE on a throwaway state COPY, result quoted; live tools/bench/assign/state_*.json md5s unchanged",
+  "census self-tests drop ASSIGN_STATE/CYCLE_ROLE/CYCLE_SESSION for the child; guard_assign.py hand-back only for a card under tools/bench/cards/ (path:line quoted)",
+  "new tools/bench/selftest_c148_assign_leak.py FAILS on the pre-edit guard_assign.py/self-tests and passes after: rc + counts of both runs quoted",
+  "guard_assign / guard_session / chat_p1 / chat_p2 / assign_flow self-tests: rc 0 or the same counts as pre-fix, before and after quoted",
+  "fp-60 'drained' in gate_fp_queue.jsonl via tools/gate_fp.py",
+  "selftest_c147_b1_2.py T0b ONLY edited to licence 7f70bbf9 (5 rename keys); run 17 pass / 0 fail, rc quoted",
+  "invariants (stagekit 06b8d844, stagexec 1bab9cf9, gscript 1a80236e, elrule a5ee7d5c, licence 7f70bbf9, recipe d947df5d) and edited-file md5 list; no LabVIEW process before/after"
+ ],
+ "outputs": [
+  "tools/bench/diag_c148_a2_1_facts.md",
+  "tools/bench/selftest_c148_assign_leak.py"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/hooks/guard_assign.py",
+   "tools/bench/selftest_assign_flow.py",
+   "tools/bench/selftest_chat_p1.py",
+   "tools/bench/selftest_chat_p2.py",
+   "tools/bench/selftest_guard_session_pairing.py",
+   "tools/bench/selftest_guard_session.py",
+   "tools/bench/selftest_c147_b1_2.py",
+   "tools/bench/selftest_c148_assign_leak.py",
+   "tools/bench/diag_c148_a2_1*",
+   "tools/bench/gate_fp_queue.jsonl"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "advances": [
+  "M3",
+  "R1"
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/gate_fp.py"},
+  {"kind": "file", "name": "tools/bench/gate_fp_queue.jsonl"}
+ ],
+ "rules": [
+  "Run ALONE: no other card live; no LabVIEW process may start",
+  "Measure the leak BEFORE the first edit; never write or point a test at a live tools/bench/assign/state_*.json",
+  "Edit only the write paths; no plan, licence, recipe, stage tool or memory_model edit; T0b only",
+  "fp-60 goes through tools/gate_fp.py, never an env bypass; do not hand-edit the queue"
+ ]
+}

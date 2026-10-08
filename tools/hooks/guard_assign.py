@@ -30,7 +30,9 @@ HAND-BACK TRIGGERS (each one refuses this dispatch AND every later one - `state.
   transcript + its subagents' transcripts x prices_per_mtok), backstop (backstop_cards dispatches). MAX_DISPATCHES (6)
   does not bind this role.
 Plain refusals (fixable by the session, NOT a hand-back): a material dispatch without a `CARD <path>` prompt, an
-unreadable card, a card with neither `advances` nor `unblocks`.
+unreadable card, a card with neither `advances` nor `unblocks`. A card file OUTSIDE tools/bench/cards/ (env
+ASSIGN_CARDS_DIR overrides, for self-tests) is logged to guard_assign_ignored.log beside the state and refused with NO
+state write (card 148-a2-1, gate-fp fp-60).
 
 Config: tools/bench/assign/assign_config.json (env ASSIGN_CONFIG overrides). Self-test: tools/bench/selftest_assign_flow.py.
 """
@@ -320,7 +322,13 @@ def card_outside(card, purpose, cfg):
         " ".join(str(x) for x in card.get("pass") or [])
     for tok in cfg.get("memory_tokens") or []:
         for m in re.finditer(re.escape(tok), body, re.I):
-            win = body[max(0, m.start() - 60): m.end() + 60].lower()
+            # card 148-a1-1 (fp-53): the +-60-char window stops at the token's own CLAUSE ('; ' / '. ' / newline), so a verb
+            # of a neighbouring clause ("... file changed; md5 old -> new reported; ..., memory_model.json, ... unchanged",
+            # task_146-a2-1.json:18) is not read as changing the limit ("unchanged" itself never matches: lookbehind)
+            lo = max([body.rfind(s, 0, m.start()) + len(s) for s in ("; ", ". ", "\n") if body.rfind(s, 0, m.start()) >= 0]
+                     + [max(0, m.start() - 60)])
+            his = [body.find(s, m.end()) for s in ("; ", ". ", "\n") if body.find(s, m.end()) >= 0]
+            win = body[lo: min(his + [m.end() + 60])].lower()
             verb = next((w for w in cfg.get("change_words") or [] if re.search(r"(?<![a-z])%s" % re.escape(w.lower()), win)),
                         None)
             if verb and tok.lower() not in pl:
@@ -349,6 +357,24 @@ def _rel(p):
         return p
 
 
+CARDS_DIR = os.path.join(ROOT, "tools", "bench", "cards")
+
+
+def cards_dir():
+    """The one directory whose cards guard_assign evaluates: tools/bench/cards (env ASSIGN_CARDS_DIR overrides, for a
+    self-test that sets its own throwaway ASSIGN_STATE on purpose)."""
+    return os.path.normcase(os.path.abspath(os.environ.get("ASSIGN_CARDS_DIR") or CARDS_DIR))
+
+
+def card_in_cards_dir(cpath):
+    p = cpath if os.path.isabs(cpath) else os.path.join(ROOT, cpath)
+    p, d = os.path.normcase(os.path.abspath(p)), cards_dir()
+    try:
+        return os.path.commonpath([p, d]) == d
+    except ValueError:          # another drive
+        return False
+
+
 def check_dispatch(st_path, sub, card, cpath, transcript_path=None, now=None, cfg=None):
     """(0, '') allow - the dispatch is recorded in the state; (2, text) refuse. Runs under guard_session's lock."""
     now = time.time() if now is None else now
@@ -358,6 +384,22 @@ def check_dispatch(st_path, sub, card, cpath, transcript_path=None, now=None, cf
         return 2, ("BLOCKED by tools/hooks/guard_session.py -> guard_assign: no readable assignment state (ASSIGN_STATE=%r).\n"
                    "The assignment session is spawned by tools/cycle_runner.py with that file; nothing is dispatched "
                    "without it.\n" % st_path)
+    if cpath and not card_in_cards_dir(cpath):
+        # card 148-a2-1 (gate-fp fp-60): a self-test's fixture card (a temp dir) dispatched under an inherited assignment
+        # env wrote a sticky hand-back into the live state (tools/bench/assign/state_148_1.json:45-50). A card outside
+        # tools/bench/cards is LOGGED and IGNORED: refused, and the state is not written.
+        try:
+            with open(os.path.join(os.path.dirname(os.path.abspath(st_path)), "guard_assign_ignored.log"), "a",
+                      encoding="utf-8") as f:
+                f.write("%s | ignored card outside %s | %s | sub=%s | state=%s\n" % (
+                    time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(now)), _rel(cards_dir()), cpath, sub,
+                    os.path.basename(st_path)))
+        except OSError:
+            pass
+        return 2, ("BLOCKED by tools/hooks/guard_session.py -> guard_assign: card %s is not under tools/bench/cards/ (%s).\n"
+                   "guard_assign evaluates only cards there (card 148-a2-1, fp-60); this dispatch is ignored - no hand-back,\n"
+                   "no state write. Write the card under tools/bench/cards/ and dispatch it again.\n"
+                   % (cpath, _rel(cards_dir())))
     if st.get("handback"):
         return 2, _handback_msg(st["handback"], st_path)
 

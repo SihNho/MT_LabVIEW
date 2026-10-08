@@ -110,6 +110,12 @@ try:
     gate("O4 a dry chained with a launch is REFUSED", rc == 2 and bool(why) and "stop_record" in why[0], (rc, why))
     u = [G.offline_only(c) for c in (DRY, PRE, LAUNCH, CHAIN, "py -u tools/bench/diag_c112a_peek.py x")]
     gate("O5 offline_only: [True, True, False, False, False]", u == [True, True, False, False, False], u)
+    # card 148-a1-1 (fp-54): byte-compiling the unreleased recipe is a READ, not a build; another -m module stays a launch
+    PYC = "py -m py_compile " + R
+    rc, why = hook(PYC)
+    u8 = [G.offline_only(c) for c in (PYC, "py -m somepkg_x " + R, PYC + " && py -u " + R)]
+    gate("O8 fp-54: `py -m py_compile <recipe>` ALLOWED; offline_only [True, False, False] (other module / chained launch)",
+         rc == 0 and u8 == [True, False, False], (rc, why, u8))
     with open(rev, "a", encoding="utf-8") as f:
         f.write(RELEASE)
     allow, msg = stop_record.check_command(LAUNCH)

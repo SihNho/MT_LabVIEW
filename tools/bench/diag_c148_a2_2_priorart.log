@@ -1,0 +1,49 @@
+BGRUN START 2026-10-08 15:51:29 limit 20.0 min: py tools/prior_art_review.py --plan-file tools/bench/diag_c148_a2_2_plan.md --slug c148-s06-scratch --trigger cycle-start --recipe tools/recipes/stage_d1_ring_p4_s06v18_scratch.py --diff-from tools/recipes/stage_d1_ring_p4_s03v18_scratch.py
+BGRUN PID 24284
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c148-s06-scratch.txt (96921 chars)
+   review card tools\bench\cards\review_priorart-c148-s06-scratch.json
+OUTCOME: ANSWERED (61s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-08-priorart-c148-s06-scratch.md
+COST: $1.2827  in 14 / out 4916 / cache-create 128474 / cache-read 782601  (58s, 11 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c148-s06-scratch verdict=novel -> tools\bench\cards\verdict_priorart-c148-s06-scratch.json
+--- ANSWER ---
+The verdict is **novel**: none of the changed lines rebuilds a gate or helper the project already has in a way that should block the build, and none contradicts a decided fact.
+
+**What I checked:** the substantive diff list in `tools/bench/diag_c147_c3_3_proven.log:9-87` against the recipe (`tools/recipes/stage_d1_ring_p4_s06v18_scratch.py:15-104`), `tools/errorlist_check.py`, `tools/stagexec.py`, the PD354/PD355 decisions and the cycle-147 peer archive.
+
+## PART A — the direction
+
+- **A1 (already decided):** both new blocks carry out decisions; they don't reopen them.
+  - The `el_advisory` Error List check carries out PD354(a), decided 2026-10-08 (`docs/d1/INDEX.md:244`): "Error List = recorded cross-check, not an adoption gate (RETURN only on an unseen class or |Δtotal| > 3)". `EL_TOTAL_TOL = 3` and the `RETURN`/`RECORDED` rule in the recipe (lines 85 and 121) copy this word for word.
+  - The single sink-gate assertion (lines 31-32) carries out PD355(b) (`docs/d1/INDEX.md:245`): "ONE recipe sink gate for `[23166, 'Pos within cal image']` … no stagexec/gscript edit".
+  - Following an earlier decision is not "settled-already" in the blocking sense.
+- **A2 (already refuted):** none. The cycle-147 reviews that touched this recipe do not argue against the gate code:
+  - `archive/peer/2026-10-08-c147-a1-4-re1.md` recommended the sink gate.
+  - `archive/peer/2026-10-08-c147-a1-8-re1.md:63-103` traces the a1-8 D/TD/PB failure to name-keyed gates on renamed terminals. That fix lives in stagekit and the licence (`renames`, 7f70bbf9), not in these lines.
+- **A3 (contradicted):** none. The recipe's `MEM_STOP_MB = X10_FAIL_MB` (680, line 33) matches the 680 MB guard in the STATUS round-1 text for cycle 145 and in PD331(c).
+- **A4 (unread evidence):** none found.
+
+## PART B — the artefact
+
+- **B1 / B3 (already built / helper exists), noted but not blocking:**
+  - Recipe lines 84-92 re-implement `errorlist_check.OCR_ALIASES` / `norm` / `ocr_fold` / `norm_ocr` (`tools/errorlist_check.py:315-332`).
+  - The copy is labelled as a copy (`# == errorlist_check.OCR_ALIASES (copied)`, `# == errorlist_check.norm`) and behaves the same: lower-case, strip non-alphanumerics, apply the same two alias swaps in the same order.
+  - Importing `errorlist_check` instead would pull its GUI/OCR module (`E.ocr_lines`, `errorlist_check.py:308`) into a recipe whose advisory modes must not touch LabVIEW (recipe lines 17-21). So this is a deliberate local copy, not an unnoticed duplicate.
+  - The one real risk is drift if `OCR_ALIASES` changes in `errorlist_check.py:322`.
+  - `elcls` reuses `ELR.item_class` (`tools/elrule.py`) and only adds a fallback. `check_sink_gates` is the existing `tools/stagexec.py:2734`, called, not rebuilt.
+- **B2 (already failed):** this recipe family already ran twice as s06 scratches (`diag_c147_p4s06v18_scratch.log`).
+  - The a1-4 run stopped at op 21; the sink gate on lines 31-32 addresses that.
+  - The a1-8 run failed D/TD/PB on name keys. The cause is outside the reviewed lines and is addressed by the licence `renames` plus the stagekit gate fix (PD356/PD357, `docs/d1/ring-p4c.md:41,61`).
+  - The changed lines do not repeat either cause.
+- **B4 (already measured):** none. The Error List advisory is new as code. PD354 decided the rule; nothing has measured it on an s06 read yet.
+
+## PART C — user rules
+
+No contradiction. The changed lines are offline gate and report code: no queue, no camera pacing, no serial, and no change to any per-bead number. Rules U1-U13 are not touched.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c148-s06-scratch","verdict":"novel","alternative":"OCR_ALIASES/norm_ocr at recipe:84-92 duplicate errorlist_check.py:315-332 (labelled copy, same behaviour, kept to avoid importing the GUI/OCR module); drift risk only, not prior art that blocks.","discriminating_test":"Assert recipe.OCR_ALIASES == errorlist_check.OCR_ALIASES and norm_ocr(x)==errorlist_check.norm_ocr(x) on the s05 EL read items, offline.","violations":[],"sources":["tools/errorlist_check.py:315-332","tools/stagexec.py:2734","docs/d1/INDEX.md:244","docs/d1/INDEX.md:245","archive/peer/2026-10-08-c147-a1-8-re1.md:63-103","tools/bench/diag_c147_c3_3_proven.log:9-87"],"note":"Changed gate lines implement PD354(a) (EL advisory) and PD355(b) (one sink gate); a1-8's D/TD/PB failure cause lies outside the diff (licence renames + stagekit fix)."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c148-s06-scratch.md
+   STOP RECORD: none - 2026-10-08-priorart-c148-s06-scratch.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_ring_p4_s06v18_scratch.py sha 1603fb518d6b -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 65s

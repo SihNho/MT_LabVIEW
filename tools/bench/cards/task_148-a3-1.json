@@ -1,0 +1,68 @@
+{
+ "schema": "task/1",
+ "id": "148-a3-1",
+ "kind": "build",
+ "goal": "PD360(b)(c): 4 suites NOW vs pre-fix HEAD export (fixed wrapper), stale worktrees removed, unmask test HEAD vs disk",
+ "why": "Retry of 148-a2-3 (wrapper crashed, git worktree add rc unchecked, no suite ran). Must run ALONE before the s06 launch is gated. Detail: brief_148-a3-1.md.",
+ "retry_of_card": "148-a2-3",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_148-a3-1.md", "md5": "ac16e34a06ffa059e50fe871a6d7b583"},
+  {"path": "tools/bench/diag_c148_a2_3_suites.py", "md5": "9895556183fee22922392c1b4356b980"},
+  {"path": "tools/bench/diag_c148_a2_3_facts.md", "md5": "6e2aa2f88df8df5220a742e3b4d92a7a"},
+  {"path": "tools/bench/diag_c148_a1_2_facts.md", "md5": "8adf2bf5c6db88d9d8e1e8124cf183b6"},
+  {"path": "tools/bench/diag_c148_a1_1_facts.md", "md5": "ccd83eaa373b137d205ebe74361aab70"},
+  {"path": "archive/peer/2026-10-08-c148-a2-3-t3regress-prefix.md", "md5": "3674436d4b6f354042f713201436e105"},
+  {"path": "tools/stage_prerun.py", "md5": "dcd45aba9be99dde809800e7f59bb2f7"},
+  {"path": "tools/bench/plan_ring_p3b2.json", "md5": "04204133d6c55929f368ec3761f70445"},
+  {"path": "tools/bench/plan_ring_p4_s03v18.json", "md5": "da66a0300851133d93881be3c28f2fdc"},
+  {"path": "tools/stagekit.py", "md5": "06b8d844284deacab535a9ee442d4964"},
+  {"path": "tools/stagexec.py", "md5": "1bab9cf96502dfbe2d9a755e6d4a48b6"},
+  {"path": "tools/gscript.py", "md5": "1a80236ed35c1876c67f964c72fe820a"},
+  {"path": "tools/elrule.py", "md5": "a5ee7d5c8792ccf5c174e70be022544d"}
+ ],
+ "pass": [
+  "No LabVIEW process before/during/after (tasklist quoted); stagekit 06b8d844, stagexec 1bab9cf9, gscript 1a80236e, elrule a5ee7d5c unchanged; no tool/hook/plan/recipe/self-test edit",
+  "Wrapper diag_c148_a3_1_suites.py checks every git/subprocess rc and prints stderr; pre-fix tree = HEAD 07202624 export in %TEMP%; PRE md5s of edited modules quoted",
+  "c134_1_a4, c134_2_regress, c_e3_suite, f2_suite NOW and pre-fix (timeout >= 15 min): rc, counts, seconds, failing children quoted; green = rc 0 or same as pre-fix; a NEW difference is returned",
+  "Worktrees e3head_r96iqm4t, f2head_1n3cihvt and empty c148a23head_* removed; git worktree list quoted; main tree and V6_bench untouched",
+  "diag_c148_a2_3_unmask.py: p3b2 + p4_s03v18 copies with provisional base restored, SP.rebase HEAD vs disk, plus c106e with X17 skipped: per-gate output equal, else RETURN"
+ ],
+ "outputs": [
+  "tools/bench/diag_c148_a3_1_facts.md",
+  "tools/bench/diag_c148_a3_1_suites.py",
+  "tools/bench/diag_c148_a2_3_unmask.py"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c148_a3_1*",
+   "tools/bench/diag_c148_a2_3_unmask*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 120
+ },
+ "advances": [
+  "M3",
+  "R1"
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c148_a2_3_suites.py"},
+  {"kind": "file", "name": "tools/bench/selftest_c134_1_a4.py"},
+  {"kind": "file", "name": "tools/bench/selftest_f2_suite.py"}
+ ],
+ "rules": [
+  "ALONE: no other card live; no LabVIEW process may start; tasklist (timeout 20 s) before and after",
+  "Measurements only: edit no tool, hook, plan, licence, recipe or self-test",
+  "A new difference from pre-fix on an edited module is returned, not fixed; no retry after a first unexpected result",
+  "Long jobs under py tools/bgrun.py --material --max-min N --log <log> -- py -u <script>"
+ ]
+}

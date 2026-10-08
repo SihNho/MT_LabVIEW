@@ -1,0 +1,17 @@
+BGRUN START 2026-10-08 14:40:13 limit 3.0 min: py -u tools/bench/diag_c148_a1_1_before.py selftest_c148_guard_fp.py
+BGRUN PID 20792
+  FACT  tools/stage_prerun.py loaded from HEAD (md5 61d6f590)
+  FACT  tools/hooks/guard_cycle.py loaded from HEAD (md5 c080fb7a)
+  FACT  tools/hooks/guard_write.py loaded from HEAD (md5 391a8324)
+  FACT  tools/hooks/guard_assign.py loaded from HEAD (md5 b9dc09bb)
+  FAIL  A1 fp-53: real task_146-a2-1 card not refused as a memory-limit change  card text changes a memory limit: `memory_model` next to `change` (le changed; md5 old -> new reported; plans, preds, recipes, memory_model.json, s03/s04/s05 files and...), and the purpose does not name it
+  PASS  A2 negative: 'raise the X10 limit' still refused  card text changes a memory limit: `X10` next to `raise` (raise the x10 limit to 700 for s06...), and the purpose does not name it
+  PASS  A3 negative: verb in the same clause still refused  card text changes a memory limit: `X10` next to `change` (change x10 and keep memory_model unchanged...), and the purpose does not name it
+  FAIL  W1 fp-57: card K resumed by R (R has a result) -> no open pin  ["open card K pins C:\\Users\\KimLab\\AppData\\Local\\Temp\\c148gw_f9qgk87_\\pinned.json at md5 00000000; the file on disk is now d58f91ef - that card works on a stale copy (143-P1's failure): tell its owner, or re-pin"]
+  PASS  W2 negative: R has no result -> K's stale pin reported  ["open card K pins C:\\Users\\KimLab\\AppData\\Local\\Temp\\c148gw_f9qgk87_\\pinned.json at md5 00000000; the file on disk is now d58f91ef - that card works on a stale copy (143-P1's failure): tell its owner, or re-pin"]
+  PASS  W3 negative: R resumes another card -> K's stale pin reported  ["open card K pins C:\\Users\\KimLab\\AppData\\Local\\Temp\\c148gw_f9qgk87_\\pinned.json at md5 00000000; the file on disk is now d58f91ef - that card works on a stale copy (143-P1's failure): tell its owner, or re-pin"]
+=== GATES: 4 pass / 2 fail
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":4,"fail":2},"first_fail":"A1 fp-53: real task_146-a2-1 card not refused as a memory-limit change","artefacts":[],"card":"148-a1-1","labview":"none"}
+BEFORE selftest_c148_guard_fp.py: rc 1 (non-zero as predicted)
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[],"card":"148-a1-1","labview":"none"}
+BGRUN END rc=1 after 1s (RESULT: status=FAIL gates 4/2 first_fail=A1 fp-53: real task_146-a2-1 card not refused as a memory-limit change; the process itself said 0)

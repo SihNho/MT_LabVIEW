@@ -20,8 +20,8 @@ J = lambda *p: json.load(open(os.path.join(*p), encoding="utf-8"))              
 md5 = lambda p: hashlib.md5(open(os.path.join(ROOT, p), "rb").read()).hexdigest()   # noqa: E731
 PINS = {"tools/stagexec.py": "1bab9cf9", "tools/gscript.py": "1a80236e", "tools/elrule.py": "a5ee7d5c", "tools/bench/memory_model.json": "88eeb037",
         "tools/bench/plan_ring_p4_s06v18.json": "cfbd9823", "tools/bench/plan_ring_p4_s06v18_pred.json": "c4a6a35a",
-        "tools/bench/plan_ring_p4_s06v18_licence.json": "7dce79aa", "tools/bench/plan_ring_p4_s06v18_in.json": "db72d8af",
-        "tools/recipes/stage_d1_ring_p4_s06v18.py": "9150f15b", "tools/recipes/stage_d1_ring_p4_s06v18_scratch.py": "31009bfc"}
+        "tools/bench/plan_ring_p4_s06v18_licence.json": "7f70bbf9", "tools/bench/plan_ring_p4_s06v18_in.json": "db72d8af",
+        "tools/recipes/stage_d1_ring_p4_s06v18.py": "d947df5d", "tools/recipes/stage_d1_ring_p4_s06v18_scratch.py": "31009bfc"}
 T5 = (("s03", "plan_ring_p4_s03v18.json", "diag_c143_p4s03v18_scratch.json", "282301ca"), ("s04", "plan_ring_p4_s04v18.json", "diag_c144_p4s04v18_scratch.json", "95e408ff"),
       ("s05", "plan_ring_p4_s05v18.json", "diag_c145_p4s05v18_scratch.json", "3f9ac26b"))
 L5 = {"renames": [{"node": 2626, "term_uids": [2832, 4160, 4165], "from": "array", "to": "element"}, {"node": 9503, "term_uids": [9505, 9508], "from": "Value", "to": ""}]}
@@ -120,8 +120,9 @@ def main():
     gate("T0 s06 default call == pre-edit code (whole dict) == explicit renames=None, bind=None == run's stored term_identity",
          new0 == old0 == K.term_identity_gates(B, SIM, RE, renames=None, bind=None) and jn(new0) == jn(S["term_identity"]), verdict(new0))
     LF = J(BENCH, "plan_ring_p4_s06v18_licence.json")
-    gate("T0b today's licence file (rename_by_uid only) -> licence_renames None (today's verdicts); pb_rename_rows(.., None) returns the rows untouched",
-         K.licence_renames(LF) is None and K.pb_rename_rows(B, SIM, RE, None) == (RE, [], []))
+    gate("T0b today's licence file 7f70bbf9 carries the 5 renames -> licence_renames == L5's (5 keys); pb_rename_rows(.., None) returns the rows untouched",
+         K.licence_renames(LF) == K.licence_renames(L5) and len(K.licence_renames(LF) or {}) == 5 and K.pb_rename_rows(B, SIM, RE, None) == (RE, [], []),
+         sorted(K.licence_renames(LF) or {}))
 
     # ---- full real rows for PB + the term binding (copied from diag_c147_b1_1_rescore.py:155-182)
     sim_by, re_by = dict((int(r["term_uid"]), r) for r in SIM), dict((int(r["term_uid"]), r) for r in RE)

@@ -39,6 +39,8 @@ sys.path.insert(0, HOOKS)
 TMP = tempfile.mkdtemp(prefix="p2st_")
 os.environ.pop("TYPESAFE_API_KEY", None)
 os.environ.pop("BENCH_CELL", None)
+for _k in ("ASSIGN_STATE", "CYCLE_ROLE", "CYCLE_SESSION"):  # card 148-a2-1 (fp-60): children never inherit an assignment env
+    os.environ.pop(_k, None)
 import protocol as P  # noqa: E402
 
 RES, SIDS = [], []

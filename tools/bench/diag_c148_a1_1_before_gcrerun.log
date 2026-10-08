@@ -1,0 +1,19 @@
+BGRUN START 2026-10-08 14:40:18 limit 3.0 min: py -u tools/bench/diag_c148_a1_1_before.py selftest_guard_cycle_rerun.py
+BGRUN PID 25320
+  FACT  tools/stage_prerun.py loaded from HEAD (md5 61d6f590)
+  FACT  tools/hooks/guard_cycle.py loaded from HEAD (md5 c080fb7a)
+  FACT  tools/hooks/guard_write.py loaded from HEAD (md5 391a8324)
+  FACT  tools/hooks/guard_assign.py loaded from HEAD (md5 b9dc09bb)
+  temp: C:\Users\KimLab\AppData\Local\Temp\guardcycle_o6cgadty
+  PASS  C1 first run after an edit, no log under the review -> REFUSED  blocked
+  PASS  C2 edited after a failed run that ran under the review -> ALLOWED  allowed
+  PASS  C3 no prior-art review at all -> REFUSED  blocked
+  PASS  C4 (regression) review newer than the recipe -> ALLOWED  allowed
+  FAIL  C5 fp-59 exact command: the recipe's own NAMED log ran it under the review -> ALLOWED  blocked: BLOCKED by tools/hooks/guard_cycle.py: this RECIPE HAS NO PRIOR-ART REVIEW NEWER
+  PASS  C6 same command, named log OLDER than the review -> still REFUSED  blocked
+  PASS  C7 same command, named log's BGRUN START ran ANOTHER recipe -> still REFUSED  blocked
+
+=== selftest_guard_cycle_rerun: 6 pass, 1 fail -> C5 fp-59 exact command: the recipe's own NAMED log ran it under the review -> ALLOWED ===
+BEFORE selftest_guard_cycle_rerun.py: rc 1 (non-zero as predicted)
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[],"card":"148-a1-1","labview":"none"}
+BGRUN END rc=0 after 1s

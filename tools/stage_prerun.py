@@ -582,6 +582,21 @@ def waiting_prerun(pr):
                              (not str(g[0]).startswith("X10 ") or "PROVISIONAL" in str(g[2])) for g in bad)
 
 
+# card 148-a1-1 (fp-51): a script whose only VI-modifying stagekit call is discard_work (close the never-saved work copy)
+# READS the input graph; the dry cannot demand a graph JSON of the input md5 when that JSON is the script's own output
+# (diag_c147_a1_1_graph_dry.log:7, diag_c145_2_graph_dry.log:7). It must still CALL a MODIFY verb set within this - a script
+# that calls no stagekit verb at all is not this case.
+DRY_READONLY_VERBS = frozenset(("discard_work",))
+
+
+def dry_read_only(recipe):
+    try:
+        calls = set(vi_modifying_calls(recipe)) if recipe and os.path.isfile(recipe) else set()
+    except Exception:                                                              # noqa: BLE001
+        return False
+    return bool(calls) and calls <= DRY_READONLY_VERBS
+
+
 def _graph():
     if D.graph is None:
         pv, pv_err = (None, None) if D.graph_override or not D.recipe else provisional_dry_graph(D.recipe)
@@ -830,8 +845,11 @@ def patch_stagekit():
         self.R["input_md5_before"] = got
         self.gate("K1 input md5 == {0}".format(self.input_md5), got == self.input_md5, "got {0}".format(got), fatal=True)
         G = _graph()
-        self.gate("DRY graph JSON for input md5 {0}".format(self.input_md5), G is not None,
-                  getattr(D, "graph_error", None) or D.graph_path or "no tools/bench/graph_*.json carries this md5",
+        ro = G is None and not getattr(D, "graph_error", None) and dry_read_only(D.recipe)
+        self.gate("DRY graph JSON for input md5 {0}".format(self.input_md5), G is not None or ro,
+                  ("none needed: read-only graph read (MODIFY_VERBS called <= {0}) - its output IS this md5's graph "
+                   "(card 148-a1-1, fp-51)".format(sorted(DRY_READONLY_VERBS))) if ro else
+                  (getattr(D, "graph_error", None) or D.graph_path or "no tools/bench/graph_*.json carries this md5"),
                   fatal=True)
         self.started = True
         return self.work
@@ -3127,7 +3145,9 @@ VI_MOD_EXEMPT = frozenset(("stage_prerun.py", "stagekit.py", "stagexec.py", "sta
 # save_route / create_local_read on a fake Stage and was refused as a VI-modifying launch (material_marker.log:2185).
 # Exempt BY PROJECT PATH AND BYTES (sha256 pin, archive/peer/2026-09-27-c103d-hooks-before.md s3, accepted): the same bytes
 # under any other path, or other bytes at this path, are still classified.
-VI_MOD_EXEMPT_PATHS = {"tools/bench/selftest_stagekit.py": "82ab60d432900ae916a6ad67a2aad47951a66a3aca98d85b82d3d271bede8b67",
+# card 148-a1-1 (fp-56): re-pinned 82ab60d4.. -> 5708c2d6.. = sha256() above, i.e. WITHOUT the scope header (raw-file sha256
+# 0007d034.., md5 29df9b64: the case-J stub fix of card 147-c3-1); selftest_fn_f2's pin is the same canonical form
+VI_MOD_EXEMPT_PATHS = {"tools/bench/selftest_stagekit.py": "5708c2d6d04fa52c113d616bf6ef93cadfc6905f5ea6a9755a14d8238ff5b404",
                        # card 144-3 (fp-41): card chat-F2's offline self-test - COM stubbed, functions loaded from source by
                        # ast onto fakes (selftest_fn_f2.py:8-14); same class and same byte-pin rule as selftest_stagekit
                        "tools/bench/selftest_fn_f2.py": "c744f767ef9f3c29f5db4100854858051dff6d17694db0a6d1cd045b7a7ff508"}
@@ -3392,8 +3412,26 @@ def retry_card(cmd, key, used):
     return card["id"], None
 
 
+def offline_run_of(cmd, s):
+    """card 148-a1-1 (fp-52, fp-58): True when `cmd` runs script `s` in a mode its OWN scope header declares offline
+    (`# offline-args:` token in its argv -> labview none + hardware none, tools/scope_header.py effective()), e.g. the s06
+    scratch recipe's `--el-advisory-selftest`, which returns before K.Stage. Such a run is not a stage run: it neither
+    takes nor needs a RETRY_CAP slot. Any parse problem -> False (counted, as before)."""
+    try:
+        import scope_header as SH
+        want = os.path.normcase(os.path.abspath(s))
+        for p, lv, hw, prob in SH.launch_scope(cmd or ""):
+            if os.path.normcase(os.path.abspath(p)) == want:
+                return prob is None and lv == "none" and hw == "none"
+    except Exception:                                                              # noqa: BLE001
+        return False
+    return False
+
+
 def check_cap(cmd, s, runs, ck):
     """(allow, why, card id|None) for ONE stage script against RETRY_CAP in cycle `ck`."""
+    if offline_run_of(cmd, s):                       # card 148-a1-1 (fp-58): an offline-args run is not a stage run
+        return True, "", None
     key = stage_key(s)
     mine = [r for r in runs if r.get("stage") == key and r.get("cycle") == ck and r.get("by") == COUNTED_BY]
     if len(mine) < RETRY_CAP:
@@ -4433,6 +4471,7 @@ def record_started(cmdline, log=None, pid=None):
     `retry_card_path` records the flag whenever it was given."""
     units = ([(s, None) for s in launched_stage_scripts(cmdline) + launched_vi_modifying(cmdline)]
              + launched_plan_runs(cmdline))
+    units = [(s, plan) for s, plan in units if plan or not offline_run_of(cmdline, s)]   # card 148-a1-1 (fp-52)
     if not units:
         return []
     runs, ck, out = read_stage_runs(), cycle_key(), []

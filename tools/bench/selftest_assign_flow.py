@@ -50,6 +50,8 @@ GS = os.path.join(HOOKS, "guard_session.py")
 RUNNER = os.path.join(ROOT, "tools", "cycle_runner.py")
 sys.path.insert(0, HOOKS)
 sys.path.insert(0, os.path.join(ROOT, "tools"))
+for _k in ("ASSIGN_STATE", "CYCLE_ROLE", "CYCLE_SESSION"):  # card 148-a2-1 (fp-60): children never inherit an assignment env
+    os.environ.pop(_k, None)
 import guard_assign as GA  # noqa: E402
 import protocol  # noqa: E402
 
@@ -111,7 +113,10 @@ def fresh_state(tmp, name, purpose=None, t0=None, decisions=None):
 
 
 def env_for(st, cfg):
-    return {"CYCLE_ROLE": "assign", "ASSIGN_STATE": st, "ASSIGN_CONFIG": cfg}
+    # card 148-a2-1: guard_assign evaluates only cards under tools/bench/cards; this test's cards sit in <tmp>/cards beside
+    # its own throwaway states, so it names that directory (ASSIGN_CARDS_DIR) on purpose
+    return {"CYCLE_ROLE": "assign", "ASSIGN_STATE": st, "ASSIGN_CONFIG": cfg,
+            "ASSIGN_CARDS_DIR": os.path.join(os.path.dirname(st), "cards")}
 
 
 def hook_tests(tmp, cfg):
@@ -329,6 +334,7 @@ def runner_tests(tmp, cfg):
         env = dict(os.environ)
         for k in ("CYCLE_SESSION", "CYCLE_ROLE", "ASSIGN_STATE", "ASSIGN_CONFIG", "BENCH_CELL"):
             env.pop(k, None)
+        env["ASSIGN_CARDS_DIR"] = os.path.join(bench, "cards")     # card 148-a2-1: the stub writes its cards there
         p = subprocess.run(args, cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace",
                            timeout=900, env=env)
         log = open(os.path.join(bench, "cycle_runner.log"), encoding="utf-8").read() \

@@ -1,0 +1,51 @@
+{
+ "schema": "task/1",
+ "id": "148-a2-2",
+ "kind": "build",
+ "goal": "PD358(c): ONE DIFF-ONLY prior-art review of the s06 scratch recipe, archived and ANSWERED; report the verdict",
+ "why": "The scratch recipe's gate code changed after the last prior-art review; the launch gate owes this review before the s06 scratch (PD358(c), PD359(e)).",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_148-a2-2.md", "md5": "4cc99cc1196963db0a48fb2d6b21a916"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s06v18_scratch.py", "md5": "31009bfce0c0487b0600359c3dac2bd0"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s06v18.py", "md5": "d947df5d9347b389dc4e4b221bf9d241"},
+  {"path": "tools/bench/plan_ring_p4_s06v18.json", "md5": "cfbd9823d3b47be39de94f2125ad6b66"},
+  {"path": "tools/bench/plan_ring_p4_s06v18_licence.json", "md5": "7f70bbf9f64de105f25380f260632d56"}
+ ],
+ "pass": [
+  "ONE prior_art_review.py run for the s06 scratch recipe, diff-only; archive/peer file exists, status ANSWERED, path + md5 quoted",
+  "VERDICT line quoted verbatim; findings with file:line; a verdict other than novel is returned, not released",
+  "the launch gate accepts the archived review (dry check quoted); no tool, plan, licence or recipe edit; LabVIEW process count 0 before/after"
+ ],
+ "outputs": [
+  "tools/bench/diag_c148_a2_2_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c148_a2_2*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 40
+ },
+ "advances": [
+  "M3",
+  "R1"
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/prior_art_review.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p4_s06v18_scratch.py"}
+ ],
+ "rules": [
+  "No LabVIEW process may start; one peer call only",
+  "No edit of any tool, hook, plan, licence or recipe; a non-novel verdict is returned to judgement"
+ ]
+}

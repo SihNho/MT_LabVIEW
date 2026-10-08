@@ -1,0 +1,58 @@
+{
+ "schema": "task/1",
+ "id": "148-a2-3",
+ "kind": "build",
+ "goal": "Retry of 148-a1-2: hypothesis review of the 3 t3_regress failures, then plain t3_regress + the 4 x240 s suites, pre-fix compare of non-zero",
+ "why": "148-a1-2 was blocked by guard_peer after its pre-fix t3_regress log (3 failures equal to pre-existing ones) owed a hypothesis review; PD359(d) measurements are still open.",
+ "retry_of_card": "148-a1-2",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_148-a2-3.md", "md5": "3b4a6e3d0e51b9d84693d542b37610d4"},
+  {"path": "tools/bench/diag_c148_a1_2_facts.md", "md5": "8adf2bf5c6db88d9d8e1e8124cf183b6"},
+  {"path": "tools/bench/diag_c148_a1_2_before_t3_regress.log", "md5": "d7d39a21a6ec10b16e9ee2e339d03f8b"},
+  {"path": "tools/bench/diag_c148_a1_1_facts.md", "md5": "ccd83eaa373b137d205ebe74361aab70"},
+  {"path": "tools/bench/diag_c148_a1_1_before.py", "md5": "19bb6ed26bb0d02cb535e4d466383373"},
+  {"path": "tools/stagekit.py", "md5": "06b8d844284deacab535a9ee442d4964"},
+  {"path": "tools/stagexec.py", "md5": "1bab9cf96502dfbe2d9a755e6d4a48b6"},
+  {"path": "tools/gscript.py", "md5": "1a80236ed35c1876c67f964c72fe820a"},
+  {"path": "tools/elrule.py", "md5": "a5ee7d5c8792ccf5c174e70be022544d"}
+ ],
+ "pass": [
+  "ONE hypothesis peer review of the t3_regress failure claim archived ANSWERED (path + md5); disposition quoted",
+  "plain selftest_t3_regress.py and the 4 suites (c134_1_a4, c134_2_regress, c_e3_suite, f2_suite) run: rc + counts + seconds quoted",
+  "each non-zero result compared with pre-fix blobs (same failing case ids) or shown to load no edited module; a NEW difference is returned",
+  "no tool, hook, plan, licence, recipe or self-test edit; invariants md5; no LabVIEW process before/after"
+ ],
+ "outputs": [
+  "tools/bench/diag_c148_a2_3_facts.md"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c148_a2_3*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "advances": [
+  "M3",
+  "R1"
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/selftest_t3_regress.py"},
+  {"kind": "file", "name": "tools/bench/diag_c148_a1_1_before.py"}
+ ],
+ "rules": [
+  "No LabVIEW process may start; tasklist (timeout 20 s) before and after",
+  "Measurements only: edit no tool, hook, plan, licence, recipe or self-test",
+  "A new difference from pre-fix on an edited module is returned, not fixed"
+ ]
+}

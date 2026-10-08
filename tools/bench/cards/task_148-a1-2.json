@@ -1,0 +1,56 @@
+{
+ "schema": "task/1",
+ "id": "148-a1-2",
+ "kind": "build",
+ "goal": "Retry of 148-a1-1 open runs only: plain selftest_stagekit run (labview read), the 7 unrun x10 self-tests, t3_regress pre-fix compare; no edits",
+ "why": "148-a1-1 drained fp-51..59 but its plain selftest_stagekit run was refused by its own labview none flag and its run-all timed out before the x10 tests.",
+ "retry_of_card": "148-a1-1",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_148-a1-2.md", "md5": "a7966784d7c2c1bc8d1a5aa4423f1943"},
+  {"path": "tools/bench/diag_c148_a1_1_facts.md", "md5": "ccd83eaa373b137d205ebe74361aab70"},
+  {"path": "tools/bench/diag_c148_a1_1_before.py", "md5": "19bb6ed26bb0d02cb535e4d466383373"},
+  {"path": "tools/bench/selftest_stagekit.py", "md5": "29df9b648353113b0ce965d163877114"},
+  {"path": "tools/stage_prerun.py", "md5": "dcd45aba9be99dde809800e7f59bb2f7"},
+  {"path": "tools/stagekit.py", "md5": "06b8d844284deacab535a9ee442d4964"},
+  {"path": "tools/stagexec.py", "md5": "1bab9cf96502dfbe2d9a755e6d4a48b6"},
+  {"path": "tools/gscript.py", "md5": "1a80236ed35c1876c67f964c72fe820a"}
+ ],
+ "pass": [
+  "ONE plain run of selftest_stagekit.py under bgrun and its header: rc 0, 0 fails, count line quoted",
+  "the 7 x10 self-tests run, rc + counts quoted; any non-zero compared with the pre-fix blobs (same or different)",
+  "t3_regress compared with the pre-fix blobs; the four 240 s timeout suites run or listed as not run",
+  "no tool, hook, plan, licence, recipe or selftest edit; invariants and edited-tool md5 list; no LabVIEW process before/after"
+ ],
+ "outputs": [
+  "tools/bench/diag_c148_a1_2_facts.md"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c148_a1_2*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 45
+ },
+ "advances": [
+  "M3",
+  "R1"
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/selftest_stagekit.py"},
+  {"kind": "file", "name": "tools/bench/diag_c148_a1_1_before.py"}
+ ],
+ "rules": [
+  "Run ALONE; no LabVIEW process may start; tasklist before and after",
+  "Measurements only: no edit of any tool, hook, plan, licence, recipe or self-test",
+  "Do not touch selftest_c147_b1_2.py (T0b goes to judgement)"
+ ]
+}

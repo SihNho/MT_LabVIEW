@@ -1,0 +1,26 @@
+{"schema": "result/1", "id": "148-a2-1", "status": "PASS", "gates": {"pass": 7, "fail": 0}, "first_fail": null, "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/diag_c148_a2_1_facts.md", "md5": "14d98d581c108e9c52680f0524dd5ace"},
+  {"path": "tools/bench/selftest_c148_assign_leak.py", "md5": "76c84f49992c2a2318d230204beff6ba"},
+  {"path": "tools/hooks/guard_assign.py", "md5": "bbaa2325563ab45a007dfbfba24310c9"},
+  {"path": "tools/bench/selftest_c147_b1_2.py", "md5": "1dd09f3d1846ef971594b78fc4eaab64"},
+  {"path": "tools/bench/diag_c148_a2_1_run.py", "md5": "5074981ef5669306454ba2f003b6f176"}
+ ],
+ "facts": [
+  "leak measured: state_148_1 copy under CYCLE_ROLE=assign gained handback c naming p1s-A, same text as state_148_1.json:47 (diag_c148_a2_1_measure.log:8-9)",
+  "this material session itself carries CYCLE_SESSION=1 CYCLE_ROLE=assign ASSIGN_STATE=state_148_2.json (diag_c148_a2_1_measure.log:3): inherited env is the leak path",
+  "guard_assign.py:387 card outside tools/bench/cards (ASSIGN_CARDS_DIR overrides) -> logged + refused, no state write; helpers :360-376",
+  "5 census self-tests drop the 3 vars at module level: assign_flow:53 chat_p1:48 chat_p2:42 guard_session:43 pairing:42; assign_flow names its temp cards dir :119,:337",
+  "selftest_c148_assign_leak: pre-edit rc1 2/5 (L1,L4,L5 fail), post rc0 5/5, pre-edit guard_assign copy rc1 3/5 (diag_c148_a2_1_leak_*.log)",
+  "pre==post: assign_flow 16/16, c148_guard_fp 6/6, guard_session 27/27, pairing 10/10 rc0; chat_p1 44/46 rc1, chat_p2 23/24 rc1 both pre-existing (diag_c148_a2_1_pre.log, _post.log)",
+  "fp-60 DRAINED via gate_fp.py drain --fixed tools/hooks/guard_assign.py:387 --selftest selftest_c148_assign_leak",
+  "selftest_c147_b1_2.py:123 T0b re-pinned to licence 7f70bbf9 (5 rename keys == L5): rc 0, 17/0 (diag_c148_a2_1_c147.log)",
+  "invariants unchanged: stagekit 06b8d844 stagexec 1bab9cf9 gscript 1a80236e elrule a5ee7d5c licence 7f70bbf9 recipe d947df5d; all 12 live state_*.json md5 unchanged",
+  "LabVIEW process count 0 before and after every run (each diag_c148_a2_1_*.log)"
+ ],
+ "open": [
+  "guard_assign REFUSES (no state write) a card outside tools/bench/cards; the brief's 'ignored' was read as no-state-write rather than allow - confirm",
+  "selftest_chat_p1 t_binds/O1 and selftest_chat_p2 t_soft_alert fail identically pre and post (FileNotFoundError in TEMP) - not diagnosed in this card"
+ ],
+ "cost": {"usd": null, "minutes": 22, "labview_runs": 0},
+ "note": "Ran alone and offline. Self-tests were launched through diag_c148_a2_1_run.py with the assignment env stripped, so no run could reach a live state file."}

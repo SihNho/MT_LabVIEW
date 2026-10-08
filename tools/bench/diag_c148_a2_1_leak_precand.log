@@ -1,0 +1,20 @@
+BGRUN START 2026-10-08 15:45:50 limit 5.0 min: py -u tools/bench/diag_c148_a2_1_run.py leak precand --guard-assign tools/bench/diag_c148_a2_1_tmp/guard_assign_pre.py
+BGRUN PID 25536
+ENV this process: {'ASSIGN_STATE': 'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\assign\\state_148_2.json', 'CYCLE_ROLE': 'assign', 'CYCLE_SESSION': '1', 'ASSIGN_CONFIG': 'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\assign\\assign_config.json'}
+live state md5 before: {'state_144_1.json': 'a24e2d8e4c9f82a89a9674d5931c3275', 'state_144_2.json': '6bb709c19c0753a03c2cd20db1ced4e0', 'state_145_1.json': '2f7f9fc5a5cc2744f43580a837e24100', 'state_145_2.json': '51e1698accf86df029a3869ceae1e325', 'state_146_1.json': '4cc721ac5d5d4b58ca766484dcd2eec5', 'state_146_2.json': '34cb09d4b1499635c41042eb7d840345', 'state_146_3.json': '94313b981f968ef1e46ac50e2b97025d', 'state_147_1.json': 'e5d5ce165e3894e7b8cdc6f4de51a824', 'state_147_2.json': 'fd69100c1c27a20269133351ca65f6ec', 'state_147_3.json': 'a5b04e076b5b1144f0b1c48626c2cf65', 'state_148_1.json': 'c3edbffdb12fd118021159b4764fefd5', 'state_148_2.json': 'd6cc87794e733bbc1f1ee21144c4c764'}
+  ok   LabVIEW processes before == 0                                  0
+guard_assign under test: tools\bench\diag_c148_a2_1_tmp\guard_assign_pre.py (md5 eb8ba4d644417cd7c702365138329413)
+  BAD  L1 polluted env + fixture card outside tools/bench/cards: temp state unchanged rc 2, handback c-outside-purpose, refusals 0, cards 0
+  ok   L2 control: ASSIGN_CARDS_DIR = fixture dir -> hand-back c naming leak-A (2, 'c-outside-purpose')
+  ok   L3 a card under <ROOT>/tools/bench/cards is still evaluated (hand-back c) (2, 'c-outside-purpose')
+  BAD  L4 the same card at a temp path: refused, state unchanged, reason given (2, False, 'BLOCKED by tools/hooks/guard_session.py -> guard_assign: HANDBACK REQUIRED (c-outside-purpose).\n  card leak-A: flags.wri')
+  ok   L5 census self-tests drop ASSIGN_STATE/CYCLE_ROLE/CYCLE_SESSION at module level []
+SUMMARY 3/5 gates pass; not passing: L1 polluted env + fixture card outside tools/bench/cards: temp state unchanged, L4 the same card at a temp path: refused, state unchanged, reason given
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":3,"fail":2},"first_fail":"L1 polluted env + fixture card outside tools/bench/cards: temp state unchanged","artefacts":[],"card":"148-a2-1","labview":"none"}
+
+LEAK precand {"script": "selftest_c148_assign_leak.py", "rc": 1, "secs": 0.6, "summary": ["SUMMARY 3/5 gates pass; not passing: L1 polluted env + fixture card outside tools/bench/cards: temp state unchanged, L4 the same card at a temp path: refused, state unchanged, reason given"], "result": "{\"schema\":\"result-line/1\",\"status\":\"FAIL\",\"gates\":{\"pass\":3,\"fail\":2},\"first_fail\":\"L1 polluted env + fixture card outside tools/bench/cards: temp state unchanged\",\"artefacts\":[],\"card\":\"148-a2-1\",\"labview\":\"none\"}", "bad": ["BAD  L1 polluted env + fixture card outside tools/bench/cards: temp state unchanged rc 2, handback c-outside-purpose, refusals 0, cards 0", "BAD  L4 the same card at a temp path: refused, state unchanged, reason given (2, False, 'BLOCKED by tools/hooks/guard_session.py -> guard_assign: HANDBACK REQUI"]}
+  ok   L ran (precand) rc recorded                                    1
+  ok   live state_*.json md5 unchanged                                []
+  ok   LabVIEW processes after == 0                                   0
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"artefacts":[],"card":"148-a2-1","labview":"none"}
+BGRUN END rc=1 after 2s (RESULT: status=FAIL gates 3/2 first_fail=L1 polluted env + fixture card outside tools/bench/cards: temp state unchanged; the process itself said 0)
