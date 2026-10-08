@@ -1,0 +1,59 @@
+{
+ "schema": "task/1",
+ "id": "153-b2-1",
+ "kind": "build",
+ "goal": "Drain fp-70 (vigraph.computation_diff keyed by (owner,index,class), s06..s09 + S1-vs-s09 re-scored) and fp-72 (card_clock CITE ignores quoted terminal names).",
+ "why": "Cycle 153 purpose pass items 11-12 (PD370(d)); both were queued as gate false positives, not patched in earlier runner cards.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_153-b2-1.md", "md5": "8e07bc54a878b8ae1506e83bc6dd5608"},
+  {"path": "docs/d1/ring-p4d.md", "md5": "ffd1e90fd624434d52695e8aba8889dc"},
+  {"path": "tools/vigraph.py", "md5": "13be0847aad910571d1de5af1e2071f2"},
+  {"path": "tools/card_clock.py", "md5": "85b9ae7ad0fb5f91b1c806abe3fff2c2"},
+  {"path": "tools/gate_fp.py", "md5": "1f427fb5b1735584c19a699c2314b826"},
+  {"path": "tools/bench/cards/result_152-a2-2.json", "md5": "1a85d772acc20117d2e656b366e2b6a0"}
+ ],
+ "pass": [
+  "fp-70: computation_diff rows keyed by (owner,index,class); rename-only rows no longer lost+new; real lost/new rows still read",
+  "s06..s09 + S1-vs-s09 re-scored: results unchanged except rename-only rows; table quoted",
+  "fp-72: card_clock CITE ignores quoted terminal names; result_152-a2-2.json validates; new self-test quoted",
+  "fp-70 and fp-72 closed with gate_fp.py; drain lines quoted; old vigraph/card_clock self-tests same counts",
+  "other stage-tool md5s unchanged; stagesim.py untouched by this card"
+ ],
+ "outputs": [
+  "tools/vigraph.py",
+  "tools/card_clock.py",
+  "tools/bench/selftest_c153_compdiff_poskey.py",
+  "tools/bench/selftest_c153_cardclock_quoted.py"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/vigraph.py",
+   "tools/card_clock.py",
+   "tools/bench/selftest_c153_*",
+   "tools/bench/diag_c153_b2_1*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 90
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/vigraph.py"},
+  {"kind": "file", "name": "tools/card_clock.py"}
+ ],
+ "rules": [
+  "Only vigraph.py and card_clock.py change; no hook edit; stagesim.py untouched",
+  "No recipe gate-criterion change (PD370(e)); fp-62..69 and fp-71 are the chat's",
+  "No LabVIEW, motor or camera"
+ ]
+}

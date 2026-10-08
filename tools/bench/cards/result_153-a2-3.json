@@ -1,0 +1,30 @@
+{"schema": "result/1", "id": "153-a2-3", "status": "FAIL",
+ "gates": {"pass": 17, "fail": 2},
+ "first_fail": "CARD t6_poskey 43/0 vs converted preds: got 38/5 (5 x N2 PB); c147 got 17/3 (P0 + T1/T1n PB). Rows now match (extra [] missing []); the PB gate's (node,name) vs plan open_rows check fails",
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/selftest_c153_poskey_convert.py", "md5": "5f6f3e24ba3827a930d6f26d48d658ba"},
+  {"path": "tools/bench/diag_c153_a2_3_vigraph_cand.py", "md5": "a7eb58c7e35a134f93df168ea4cdea80"},
+  {"path": "tools/bench/diag_c153_a2_3_run.py", "md5": "24990dd212d3ed76c48079f2e3850265"},
+  {"path": "tools/bench/diag_c153_a2_3_map.json", "md5": "d63ba6f1a98b75e5ecc67da131cbd006"},
+  {"path": "tools/bench/plan_ring_p4_s06v18_pred_poskey_conv_20261009_072039.json", "md5": "5a453b1a876107660f0890291ddcd2dd"},
+  {"path": "tools/bench/plan_ring_p4_s06v18_poskey_conv_20261009_072039.json", "md5": "af540777324f7c4c095435f35608b0e9"}
+ ],
+ "facts": [
+  "Converter (110 lines) self-test 7/0: pair->1 changed, equal-source->0, removal/new stay, passthrough, idempotent, #2626 replica (selftest_c153_poskey_convert.log:9)",
+  "X1 all 5 cases: converted stored pred == candidate rows exactly (s03-s05 16->12, s06 18->14; dropped 2626 array|0..3; extra/missing []) (diag_c153_a2_3_run.log:5-14)",
+  "Converted slots 1-3 of #2626 = one changed row each, element|i (S1) vs array|i (s06); slot 4 gives no row; X2 idempotent, X3 one conversion per pred (diag_c153_a2_3_run.log:5-24)",
+  "Mode A (preds converted only, as card): t6 38/5, all 5 FAILs = N2 PB with extra [] missing []; final RESULT FAIL 38/5 (diag_c153_a2_3_t6_A.log, diag_c153_a2_3_run.log:26)",
+  "Mode A c147 17/3: P0 (old pin drift) + T1/T1n PB, extra [] missing []; final RESULT FAIL 17/3 (diag_c153_a2_3_c147_A.log, diag_c153_a2_3_run.log:27)",
+  "Cause: PB gate also needs rows' (node,name) set == plan open_rows (selftest_t6_poskey.py:149, selftest_c147_b1_2.py:122); plans s03-s06 list (2626,'array'), candidate gives none",
+  "Mode B (FACT only: temp plan copy also drops open pair (2626,'array')): t6 43/0 PASS, c147 19/1 only P0 (diag_c153_a2_3_t6_B.log, diag_c153_a2_3_c147_B.log; run.log:28-29)",
+  "compdiff_poskey 8/0 on candidate copy a7eb58c7 (diag_c153_a2_3_compdiff_A.log); suites run as imported modules with J wrapped to temp files, suite files unedited",
+  "md5 before==after: vigraph 13be0847, stagekit 604529e8, addrcheck 207beb0d, stagesim 78b8d5a1; preds s03 b212bb33 s04 a2bbc8bf s05 d083ff5f s06 c1bd6b3e (run.log:4,33)",
+  "Plans unchanged: s03 da66a030 s04 f349c39a s05 1fc9b486 s06 cfbd9823; suites t6 65adfeaa c147 a4bbfefe compdiff 771aa826 (diag_c153_a2_3_run.log:4,33). Jev ladder: no row for these logs"
+ ],
+ "open": [
+  "PD371(b) says convert the stored PREDS; PB also checks the plan's open_rows (node,name) pairs, still name-keyed ((2626,'array')). Convert open_rows the same way (mode B -> 43/0, 19/1), or change the check?",
+  "If open_rows are converted: by the rule used here (drop a (node,name) pair the conversion removed entirely), or re-derive open pairs per slot? Card 153-a2-4 (adopt) waits on this."
+ ],
+ "cost": {"usd": null, "minutes": 9, "labview_runs": 0},
+ "note": "Stopped at the card's stop rule; no suite loosened, no stored pred or plan edited, tools/vigraph.py not written. Temp files *_poskey_conv_20261009_072039.json (4 preds, 4 mode-B plans) kept as evidence."}

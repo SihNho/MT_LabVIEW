@@ -608,4 +608,21 @@ VERDICT {"schema":"verdict/1","id":"retrospective-cycle152","verdict":"refuted",
 
 ## What was done with it
 
-(Claude fills in)
+Cycle 153 judgement, 2026-10-09 (`docs/d1/ring-p4d.md` PD370, `docs/violation-decisions.md` 2026-10-09 block).
+
+- **`VIOLATION: inference-over-measurement` (19 min) ACCEPTED.** PD368(b)'s claim that the hand-back was the last gap was
+  not checked by a cheap provisional replay. DECISION: device. `stagesim` gets a collect-all replay mode: on an UNMEASURED
+  refusal it puts in the plan's own predicted value, marks the step PROVISIONAL and continues, then lists every refusal. It is
+  never a launch PASS. Built in cycle 153 with a self-test that must list BOTH the op-185 owner refusal and the op-187 naming
+  refusal on the pre-152 fixture. Rule for every purpose from now on: before a purpose orders a LabVIEW measurement to clear a
+  simulator refusal, its first item is a collect-all replay.
+- **Finding 1 (owner class `TopLevelDiagram` vs `Diagram` in two gscript paths): CARRY.** One shared owner-class check in
+  gscript, owed before the next staged use of `struct_copy_nested` on a top-level FS. It is not in this purpose.
+- **Finding 3 (X10 start −33.1 here, +21.4 at s08): ACCEPTED as data.** Recalibration stays deferred, MEMSTOP is the hard
+  stop. PD369(d)'s "one other sink" (five on disk) is noted. It did not change the result.
+- **Finding 4 (RULE-SAME-ROW discharge of the EL 45-vs-46 miss): ACCEPTED as formal only.** PD370(a) judges the miss on
+  substance: one Index Array item was closed by op 187, |Δ| = 1, no unseen class (PD354(a)).
+- **Finding 7 (judgement inside material: b2-1's FR / licence-R gate changes settled by the assignment cell): ACCEPTED.** I
+  rule on them now in PD370(a): they are equivalent for a session that creates nothing. Rule: a change to a recipe gate's pass
+  criterion is handed back to judgement, never settled by the assignment session (PD370(e)).
+- Finding 6 (`card=None` on STAGE-RUN records) = the deferred `bgrun --material` env-drop item; it stays deferred.

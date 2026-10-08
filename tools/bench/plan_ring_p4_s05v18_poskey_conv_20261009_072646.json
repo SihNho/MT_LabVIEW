@@ -1,0 +1,1095 @@
+{
+ "schema": "stageplan/1",
+ "context": {
+  "s1_key": "D1_s1_copy"
+ },
+ "stage": "ring_p4_s05v18",
+ "goal": "RING P4 v18 LabVIEW session 5 (card 146-a1-3, PD352(b)): v18 ops 98..114 (21 actions), RE-CUT so the MAIN recipe's X10 (Executor + source reads) <= 680 under the ONE start x10_start = 611.3, on session 4's SIMULATED end (plan f349c39a; provisional -> stage_prerun --rebase onto session 4's adopted file's graph 094ba298)",
+ "base": {
+  "path": "tools/bench/sim/ring_p4_s05v18_base_real_fsmap.json",
+  "md5": "58a844e8302ab4a90865549d78298acb"
+ },
+ "open_rows": [
+  {
+   "node": 11261,
+   "term": "array",
+   "why": "c146-a1-3: open at step 0 = declared open row of plan_ring_p4_s04v18.json"
+  },
+  {
+   "node": 11261,
+   "term": "element",
+   "why": "c146-a1-3: open at step 0 = declared open row of plan_ring_p4_s04v18.json"
+  },
+  {
+   "node": 2626,
+   "term": "element",
+   "why": "c146-a1-3: open at step 0 = declared open row of plan_ring_p4_s04v18.json"
+  },
+  {
+   "node": 28083,
+   "term": "Magnet position",
+   "why": "c146-a1-3: open at step 0 = declared open row of plan_ring_p4_s04v18.json"
+  },
+  {
+   "node": 29625,
+   "term": "index (col)",
+   "why": "c146-a1-3: open at step 0 = declared open row of plan_ring_p4_s04v18.json"
+  },
+  {
+   "node": 29973,
+   "term": "element",
+   "why": "c146-a1-3: open at step 0 = declared open row of plan_ring_p4_s04v18.json"
+  },
+  {
+   "node": 376,
+   "term": "current frame data array in",
+   "why": "c146-a1-3: open at step 0 = declared open row of plan_ring_p4_s04v18.json"
+  },
+  {
+   "node": 376,
+   "term": "frame index",
+   "why": "c146-a1-3: open at step 0 = declared open row of plan_ring_p4_s04v18.json"
+  },
+  {
+   "node": 5058,
+   "term": "Image In",
+   "why": "c146-a1-3: open at step 0 = declared open row of plan_ring_p4_s04v18.json"
+  },
+  {
+   "node": 8634,
+   "term": "index (col)",
+   "why": "c146-a1-3: open at step 0 = declared open row of plan_ring_p4_s04v18.json"
+  }
+ ],
+ "actions": [
+  {
+   "op": "tunnel",
+   "id": "p4_t_slot",
+   "loop": 16483,
+   "body": 29699,
+   "parent": 23166,
+   "dir": "out",
+   "as": "TS1",
+   "why": "ROUTE tunnel | PRECEDENT | output tunnel of a plan-made While never run [draft d9d66246]"
+  },
+  {
+   "op": "wire",
+   "id": "p4_t_slot_in",
+   "src": {
+    "uid": 29719,
+    "term": "min slot"
+   },
+   "dst": "new:TS1.inner",
+   "why": "c142-P2 re-pointed src new:AMM1.min index (indices) -> new:PS1.min slot (PD330(a) subVI terminal by name) | ROUTE in_group | PRECEDENT | output tunnel of a plan-made While never run [draft d9d66246]"
+  },
+  {
+   "op": "wire",
+   "id": "p4_t_slot_out",
+   "src": "new:TS1.outer",
+   "dst": {
+    "uid": 29843,
+    "term": "index"
+   },
+   "why": "ROUTE in_group | PRECEDENT | output tunnel of a plan-made While never run [draft d9d66246]"
+  },
+  {
+   "op": "tunnel",
+   "id": "p4_t_pool",
+   "loop": 10170,
+   "body": 23166,
+   "parent": 686,
+   "dir": "in",
+   "as": "TP1",
+   "why": "ROUTE tunnel | PRECEDENT | PD298(b): explicit loop-input tunnel on base While #10170 (body 23166, parent FS #681 frame 686, graph_ring_p3b2b_20261002_133824 tree) before the pool wire, as stagesim requires (stagesim.py:1366-1368); tunnel op ran only on plan-made loops"
+  },
+  {
+   "op": "wire",
+   "id": "p4_x_pool",
+   "src": {
+    "uid": 28809,
+    "term_uid": 28816
+   },
+   "dst": "new:TP1.outer",
+   "why": "ROUTE branch | PRECEDENT | PD298(b): the pool array already on 686 = FSOT #28809 source face t28816 (w28794 -> loop 1.1 tunnel #28771 t28791; chain #23099 -> For exit #28975 -> FSOT #28907 -> #28809, P3b-1 p3b_x_pool) -> TP1 outer: same-diagram BRANCH; values unchanged (same IMAQ Create pool, U1)"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_pool_in",
+   "src": "new:TP1.inner",
+   "dst": {
+    "uid": 29843,
+    "term": "array"
+   },
+   "why": "ROUTE connect | PRECEDENT | PD298(b) TP1 inner -> Index Array array (same pattern as p4_t_last_out)"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_img_trk",
+   "src": {
+    "uid": 29843,
+    "term": "element"
+   },
+   "dst": {
+    "uid": 5058,
+    "term": "Image In"
+   },
+   "why": "ROUTE connect | PRECEDENT | same-diagram connect; #5058 Image In t5089 is an open row (PD177(e)) [draft d9d66246]"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_lat_dec",
+   "src": {
+    "uid": 30001,
+    "term": "Latest"
+   },
+   "dst": {
+    "uid": 29724,
+    "term": "Latest"
+   },
+   "why": "c142-P2 re-pointed dst new:DEC1.x -> new:SQ1.Latest (PD330(a) subVI terminal by name) | ROUTE connect | PRECEDENT | same-diagram connect [draft d9d66246]"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_sel_last",
+   "src": {
+    "uid": 29724,
+    "term": "next last"
+   },
+   "dst": {
+    "uid": 29403,
+    "term": "inner"
+   },
+   "why": "c142-P2 re-pointed src new:SLL1.s? t:f -> new:SQ1.next last (PD330(a) subVI terminal by name) | ROUTE wire_sr | MEASURED | wire_sr RightIn (P3a p3a_w_bn_r) [draft d9d66246]"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_disc_inc",
+   "src": {
+    "uid": 29655,
+    "term": "inner"
+   },
+   "dst": {
+    "uid": 29724,
+    "term": "discards"
+   },
+   "why": "c142-P2 re-pointed dst new:INC2.x -> new:SQ1.discards (PD330(a) subVI terminal by name) | ROUTE wire_sr | MEASURED | wire_sr LeftIn (P3a) [draft d9d66246]"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_seld_r",
+   "src": {
+    "uid": 29724,
+    "term": "next discards"
+   },
+   "dst": {
+    "uid": 29648,
+    "term": "inner"
+   },
+   "why": "c142-P2 re-pointed src new:SLD1.s? t:f -> new:SQ1.next discards (PD330(a) subVI terminal by name) | ROUTE wire_sr | MEASURED | wire_sr RightIn [draft d9d66246]"
+  },
+  {
+   "op": "create",
+   "id": "p4_lr_transpos",
+   "class": "Local",
+   "diagram": 23166,
+   "as": "LRVT1",
+   "label": "TransPos",
+   "mode": "read",
+   "terminals": [
+    {
+     "name": "TransPos",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE create | PRECEDENT | local_read route [draft d9d66246]"
+  },
+  {
+   "op": "create",
+   "id": "p4_ia_transpos",
+   "class": "IndexArray",
+   "diagram": 23166,
+   "as": "IAVT1",
+   "prim": "Index Array",
+   "donor": {
+    "donor": "$work",
+    "uid": 3163
+   },
+   "terminals": [
+    {
+     "name": "array",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "element",
+     "is_source": true,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "index",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE create | PRECEDENT | $work donor #3163 Index Array [draft d9d66246]"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_arr_transpos",
+   "src": "new:LRVT1.value",
+   "dst": "new:IAVT1.array",
+   "why": "ROUTE connect | PRECEDENT | same-diagram connect [draft d9d66246]"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_idx_transpos",
+   "src": "new:TS1.outer",
+   "dst": "new:IAVT1.index",
+   "why": "ROUTE branch | PRECEDENT | branch of plan-made tunnel outer face [draft d9d66246]"
+  },
+  {
+   "op": "create",
+   "id": "p4_lr_rotpos",
+   "class": "Local",
+   "diagram": 23166,
+   "as": "LRVR1",
+   "label": "RotPos",
+   "mode": "read",
+   "terminals": [
+    {
+     "name": "RotPos",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE create | PRECEDENT | local_read route [draft d9d66246]"
+  },
+  {
+   "op": "create",
+   "id": "p4_ia_rotpos",
+   "class": "IndexArray",
+   "diagram": 23166,
+   "as": "IAVR1",
+   "prim": "Index Array",
+   "donor": {
+    "donor": "$work",
+    "uid": 3163
+   },
+   "terminals": [
+    {
+     "name": "array",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "element",
+     "is_source": true,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "index",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE create | PRECEDENT | $work donor #3163 Index Array [draft d9d66246]"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_arr_rotpos",
+   "src": "new:LRVR1.value",
+   "dst": "new:IAVR1.array",
+   "why": "ROUTE connect | PRECEDENT | same-diagram connect [draft d9d66246]"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_idx_rotpos",
+   "src": "new:TS1.outer",
+   "dst": "new:IAVR1.index",
+   "why": "ROUTE branch | PRECEDENT | branch of plan-made tunnel outer face [draft d9d66246]"
+  },
+  {
+   "op": "create",
+   "id": "p4_lr_frameidx",
+   "class": "Local",
+   "diagram": 23166,
+   "as": "LRVF1",
+   "label": "FrameIdx",
+   "mode": "read",
+   "terminals": [
+    {
+     "name": "FrameIdx",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE create | PRECEDENT | local_read route [draft d9d66246]"
+  },
+  {
+   "op": "create",
+   "id": "p4_ia_frameidx",
+   "class": "IndexArray",
+   "diagram": 23166,
+   "as": "IAVF1",
+   "prim": "Index Array",
+   "donor": {
+    "donor": "$work",
+    "uid": 3163
+   },
+   "terminals": [
+    {
+     "name": "array",
+     "is_source": false,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "element",
+     "is_source": true,
+     "term_class": "Terminal"
+    },
+    {
+     "name": "index",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE create | PRECEDENT | $work donor #3163 Index Array [draft d9d66246]"
+  }
+ ],
+ "final": true,
+ "finalized": {
+  "base": {
+   "path": "tools/bench/sim/ring_p4_s05v18_base_real_fsmap.json",
+   "md5": "58a844e8302ab4a90865549d78298acb"
+  },
+  "plan_in": {
+   "path": "tools/bench/plan_ring_p4_s05v18_in.json",
+   "md5": "8fe54f0182c014848bd22c1a01d02593"
+  },
+  "last_step": {
+   "path": "tools/bench/sim/ring_p4_s05v18/step_21_create.json",
+   "md5": "ca3661f3e02bcac1749e1edcf0a1f018"
+  },
+  "summary": {
+   "path": "tools/bench/sim/ring_p4_s05v18/summary.json",
+   "md5": "6348aac1b45b577ba023846ebbb61383"
+  },
+  "end_cdiff_rows": [
+   "11261|Terminal|array|0",
+   "11261|Terminal|element|0",
+   "2626|Terminal|array|0",
+   "2626|Terminal|array|1",
+   "2626|Terminal|array|2",
+   "2626|Terminal|array|3",
+   "2626|Terminal|element|0",
+   "2626|Terminal|element|1",
+   "2626|Terminal|element|2",
+   "28083|Terminal|Magnet position|0",
+   "29625|Terminal|index (col)|0",
+   "29973|Terminal|element|1",
+   "376|Terminal|current frame data array in|0",
+   "376|Terminal|frame index|0",
+   "5058|Terminal|Image In|0",
+   "8634|Terminal|index (col)|0"
+  ],
+  "failed": null,
+  "first_divergent": {
+   "n": 0,
+   "op": "base",
+   "id": null,
+   "rows_from_here": 16
+  },
+  "open_rows": [
+   [
+    376,
+    "current frame data array in"
+   ],
+   [
+    376,
+    "frame index"
+   ],
+   [
+    2626,
+    "array"
+   ],
+   [
+    2626,
+    "element"
+   ],
+   [
+    5058,
+    "Image In"
+   ],
+   [
+    8634,
+    "index (col)"
+   ],
+   [
+    11261,
+    "array"
+   ],
+   [
+    11261,
+    "element"
+   ],
+   [
+    28083,
+    "Magnet position"
+   ],
+   [
+    29625,
+    "index (col)"
+   ],
+   [
+    29973,
+    "element"
+   ]
+  ],
+  "open_rows_match": true,
+  "open_rows_match_legacy": true,
+  "open_rows_classed": {
+   "ok": false,
+   "want": [],
+   "c4_n": 0,
+   "c4_keys": 0,
+   "c4_bad": [],
+   "unclassed": [
+    [
+     376,
+     "current frame data array in"
+    ],
+    [
+     376,
+     "frame index"
+    ],
+    [
+     2626,
+     "array"
+    ],
+    [
+     2626,
+     "element"
+    ],
+    [
+     5058,
+     "Image In"
+    ],
+    [
+     8634,
+     "index (col)"
+    ],
+    [
+     11261,
+     "array"
+    ],
+    [
+     11261,
+     "element"
+    ],
+    [
+     28083,
+     "Magnet position"
+    ],
+    [
+     29625,
+     "index (col)"
+    ],
+    [
+     29973,
+     "element"
+    ]
+   ]
+  },
+  "cdiff_inputs": {
+   "labels": "node_labels_default",
+   "labels_n": 626,
+   "fs_pairs": "state",
+   "fs_pairs_n": 576
+  },
+  "step_files": [
+   {
+    "n": 0,
+    "op": "base",
+    "path": "tools/bench/sim/ring_p4_s05v18/step_00_base.json",
+    "md5": "403c5221ad0503bfb210905fa423c88d"
+   },
+   {
+    "n": 1,
+    "op": "tunnel",
+    "path": "tools/bench/sim/ring_p4_s05v18/step_01_tunnel.json",
+    "md5": "ddbcd804a8d400083db2dbb2c21798a6"
+   },
+   {
+    "n": 2,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s05v18/step_02_wire.json",
+    "md5": "4f7fd11877e168c3ba87e1e3c421587b"
+   },
+   {
+    "n": 3,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s05v18/step_03_wire.json",
+    "md5": "f2dd76c821eacb34240167426564cb67"
+   },
+   {
+    "n": 4,
+    "op": "tunnel",
+    "path": "tools/bench/sim/ring_p4_s05v18/step_04_tunnel.json",
+    "md5": "4a1d6045c3678d246394f284c58add1e"
+   },
+   {
+    "n": 5,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s05v18/step_05_wire.json",
+    "md5": "80e593b51046ddb602f7023b4e113e38"
+   },
+   {
+    "n": 6,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s05v18/step_06_wire.json",
+    "md5": "77a9cab352aa4d686d0a44d4ec34dba4"
+   },
+   {
+    "n": 7,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s05v18/step_07_wire.json",
+    "md5": "39e0ad12c24d3331f550e5901da08201"
+   },
+   {
+    "n": 8,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s05v18/step_08_wire.json",
+    "md5": "89c0764ceb66c051f8f9641e986f340b"
+   },
+   {
+    "n": 9,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s05v18/step_09_wire.json",
+    "md5": "8dc2bc94ae7d8210b1b6d3db91c6caca"
+   },
+   {
+    "n": 10,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s05v18/step_10_wire.json",
+    "md5": "33ad3bff06d956d76bc41bc1fa906010"
+   },
+   {
+    "n": 11,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s05v18/step_11_wire.json",
+    "md5": "d7ba6287c17ac4f16dbe0eb446832f64"
+   },
+   {
+    "n": 12,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_s05v18/step_12_create.json",
+    "md5": "f50614c6ec87f0c5faf62e7706cd29a0"
+   },
+   {
+    "n": 13,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_s05v18/step_13_create.json",
+    "md5": "b27f49e29fc831cebb6ae819c4db2e59"
+   },
+   {
+    "n": 14,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s05v18/step_14_wire.json",
+    "md5": "0607563d07acda6a567a539256a36a2a"
+   },
+   {
+    "n": 15,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s05v18/step_15_wire.json",
+    "md5": "5c5f05ab7535dae98b8ee5a11271b6f8"
+   },
+   {
+    "n": 16,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_s05v18/step_16_create.json",
+    "md5": "f5ecccc82e2b01aeecb56f1378f6e57f"
+   },
+   {
+    "n": 17,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_s05v18/step_17_create.json",
+    "md5": "1521d8f10915c581b33ac32cbc5ca777"
+   },
+   {
+    "n": 18,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s05v18/step_18_wire.json",
+    "md5": "37cbef7cbc4d503e6f049a530ae9103c"
+   },
+   {
+    "n": 19,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s05v18/step_19_wire.json",
+    "md5": "dfcc2338c7593f651fe801df7b670784"
+   },
+   {
+    "n": 20,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_s05v18/step_20_create.json",
+    "md5": "8445f7c2f2ea0ac3c27df1169aaea12d"
+   },
+   {
+    "n": 21,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_s05v18/step_21_create.json",
+    "md5": "ca3661f3e02bcac1749e1edcf0a1f018"
+   }
+  ],
+  "undecided": 0,
+  "at": "2026-10-08 00:16:50",
+  "fs_routes": {},
+  "addr_pos": [
+   {
+    "n": 2,
+    "addr": "{\"term\":\"min slot\",\"uid\":29719}",
+    "source": true,
+    "owner": 29719,
+    "index": 2,
+    "class": "Terminal",
+    "name": "min slot"
+   },
+   {
+    "n": 2,
+    "addr": "new:TS1.inner",
+    "source": false,
+    "owner": -1,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 3,
+    "addr": "new:TS1.outer",
+    "source": true,
+    "owner": -1,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 3,
+    "addr": "{\"term\":\"index\",\"uid\":29843}",
+    "source": false,
+    "owner": 29843,
+    "index": 2,
+    "class": "Terminal",
+    "name": "index"
+   },
+   {
+    "n": 5,
+    "addr": "{\"term_uid\":28816,\"uid\":28809}",
+    "source": true,
+    "owner": 28809,
+    "index": 1,
+    "class": "Terminal",
+    "name": ""
+   },
+   {
+    "n": 5,
+    "addr": "new:TP1.outer",
+    "source": false,
+    "owner": -6,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 6,
+    "addr": "new:TP1.inner",
+    "source": true,
+    "owner": -6,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 6,
+    "addr": "{\"term\":\"array\",\"uid\":29843}",
+    "source": false,
+    "owner": 29843,
+    "index": 0,
+    "class": "Terminal",
+    "name": "array"
+   },
+   {
+    "n": 7,
+    "addr": "{\"term\":\"element\",\"uid\":29843}",
+    "source": true,
+    "owner": 29843,
+    "index": 1,
+    "class": "Terminal",
+    "name": "element"
+   },
+   {
+    "n": 7,
+    "addr": "{\"term\":\"Image In\",\"uid\":5058}",
+    "source": false,
+    "owner": 5058,
+    "index": 1,
+    "class": "Terminal",
+    "name": "Image In"
+   },
+   {
+    "n": 8,
+    "addr": "{\"term\":\"Latest\",\"uid\":30001}",
+    "source": true,
+    "owner": 30001,
+    "index": 0,
+    "class": "Terminal",
+    "name": "Latest"
+   },
+   {
+    "n": 8,
+    "addr": "{\"term\":\"Latest\",\"uid\":29724}",
+    "source": false,
+    "owner": 29724,
+    "index": 8,
+    "class": "Terminal",
+    "name": "Latest"
+   },
+   {
+    "n": 9,
+    "addr": "{\"term\":\"next last\",\"uid\":29724}",
+    "source": true,
+    "owner": 29724,
+    "index": 3,
+    "class": "Terminal",
+    "name": "next last"
+   },
+   {
+    "n": 9,
+    "addr": "{\"term\":\"inner\",\"uid\":29403}",
+    "source": false,
+    "owner": 29403,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 10,
+    "addr": "{\"term\":\"inner\",\"uid\":29655}",
+    "source": true,
+    "owner": 29655,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 10,
+    "addr": "{\"term\":\"discards\",\"uid\":29724}",
+    "source": false,
+    "owner": 29724,
+    "index": 7,
+    "class": "Terminal",
+    "name": "discards"
+   },
+   {
+    "n": 11,
+    "addr": "{\"term\":\"next discards\",\"uid\":29724}",
+    "source": true,
+    "owner": 29724,
+    "index": 2,
+    "class": "Terminal",
+    "name": "next discards"
+   },
+   {
+    "n": 11,
+    "addr": "{\"term\":\"inner\",\"uid\":29648}",
+    "source": false,
+    "owner": 29648,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 14,
+    "addr": "new:LRVT1.value",
+    "source": true,
+    "owner": -16,
+    "index": 0,
+    "class": "Terminal",
+    "name": "TransPos"
+   },
+   {
+    "n": 14,
+    "addr": "new:IAVT1.array",
+    "source": false,
+    "owner": -18,
+    "index": 0,
+    "class": "Terminal",
+    "name": "array"
+   },
+   {
+    "n": 15,
+    "addr": "new:TS1.outer",
+    "source": true,
+    "owner": -1,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 15,
+    "addr": "new:IAVT1.index",
+    "source": false,
+    "owner": -18,
+    "index": 2,
+    "class": "Terminal",
+    "name": "index"
+   },
+   {
+    "n": 18,
+    "addr": "new:LRVR1.value",
+    "source": true,
+    "owner": -23,
+    "index": 0,
+    "class": "Terminal",
+    "name": "RotPos"
+   },
+   {
+    "n": 18,
+    "addr": "new:IAVR1.array",
+    "source": false,
+    "owner": -25,
+    "index": 0,
+    "class": "Terminal",
+    "name": "array"
+   },
+   {
+    "n": 19,
+    "addr": "new:TS1.outer",
+    "source": true,
+    "owner": -1,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 19,
+    "addr": "new:IAVR1.index",
+    "source": false,
+    "owner": -25,
+    "index": 2,
+    "class": "Terminal",
+    "name": "index"
+   }
+  ],
+  "fs_border_gate": {
+   "status": "PASS",
+   "unmeasured": [
+    14430,
+    31050,
+    34409,
+    34489,
+    43605,
+    44160,
+    44164
+   ],
+   "used": {}
+  },
+  "route_check": {
+   "status": "PASS",
+   "first_fail": null,
+   "rows": [
+    {
+     "k": 1,
+     "op": "tunnel",
+     "ids": [
+      "p4_t_slot",
+      "p4_t_slot_in",
+      "p4_t_slot_out"
+     ],
+     "route": "nested",
+     "how": "order-proof",
+     "unroutable": null
+    },
+    {
+     "k": 2,
+     "op": "tunnel",
+     "ids": [
+      "p4_t_pool",
+      "p4_x_pool",
+      "p4_w_pool_in"
+     ],
+     "route": "cfw",
+     "how": "order-proof",
+     "unroutable": null
+    },
+    {
+     "k": 3,
+     "op": "connect",
+     "ids": [
+      "p4_w_img_trk"
+     ],
+     "route": "nested",
+     "how": "order-proof",
+     "unroutable": null
+    },
+    {
+     "k": 4,
+     "op": "connect",
+     "ids": [
+      "p4_w_lat_dec"
+     ],
+     "route": "nested",
+     "how": "order-proof",
+     "unroutable": null
+    },
+    {
+     "k": 5,
+     "op": "connect",
+     "ids": [
+      "p4_w_sel_last"
+     ],
+     "route": "wire_sr:RightIn",
+     "how": "order-proof",
+     "unroutable": null
+    },
+    {
+     "k": 6,
+     "op": "connect",
+     "ids": [
+      "p4_w_disc_inc"
+     ],
+     "route": "wire_sr:LeftIn",
+     "how": "order-proof",
+     "unroutable": null
+    },
+    {
+     "k": 7,
+     "op": "connect",
+     "ids": [
+      "p4_w_seld_r"
+     ],
+     "route": "wire_sr:RightIn",
+     "how": "order-proof",
+     "unroutable": null
+    },
+    {
+     "k": 8,
+     "op": "create",
+     "ids": [
+      "p4_lr_transpos"
+     ],
+     "route": "local_read",
+     "how": null,
+     "unroutable": null
+    },
+    {
+     "k": 9,
+     "op": "create",
+     "ids": [
+      "p4_ia_transpos"
+     ],
+     "route": "primitive",
+     "how": null,
+     "unroutable": null
+    },
+    {
+     "k": 10,
+     "op": "connect",
+     "ids": [
+      "p4_w_arr_transpos"
+     ],
+     "route": "nested",
+     "how": "order-proof",
+     "unroutable": null
+    },
+    {
+     "k": 11,
+     "op": "branch",
+     "ids": [
+      "p4_w_idx_transpos"
+     ],
+     "route": "branch",
+     "how": "order-proof",
+     "unroutable": null
+    },
+    {
+     "k": 12,
+     "op": "create",
+     "ids": [
+      "p4_lr_rotpos"
+     ],
+     "route": "local_read",
+     "how": null,
+     "unroutable": null
+    },
+    {
+     "k": 13,
+     "op": "create",
+     "ids": [
+      "p4_ia_rotpos"
+     ],
+     "route": "primitive",
+     "how": null,
+     "unroutable": null
+    },
+    {
+     "k": 14,
+     "op": "connect",
+     "ids": [
+      "p4_w_arr_rotpos"
+     ],
+     "route": "nested",
+     "how": "order-proof",
+     "unroutable": null
+    },
+    {
+     "k": 15,
+     "op": "branch",
+     "ids": [
+      "p4_w_idx_rotpos"
+     ],
+     "route": "branch",
+     "how": "order-proof",
+     "unroutable": null
+    },
+    {
+     "k": 16,
+     "op": "create",
+     "ids": [
+      "p4_lr_frameidx"
+     ],
+     "route": "local_read",
+     "how": null,
+     "unroutable": null
+    },
+    {
+     "k": 17,
+     "op": "create",
+     "ids": [
+      "p4_ia_frameidx"
+     ],
+     "route": "primitive",
+     "how": null,
+     "unroutable": null
+    }
+   ]
+  },
+  "rebase": {
+   "sim_input": {
+    "path": "(temp copy, deleted)",
+    "md5": "db7942811fea705b7b8a3743f681f444"
+   },
+   "from_plan": {
+    "path": "tools/bench/plan_ring_p4_s05v18.json",
+    "md5": "8cef40126a387b4098094975c38d84fe"
+   },
+   "graph": {
+    "path": "tools/bench/graph_ring_p4s04_20261007_223245.json",
+    "md5": "094ba298ba7b2c1d69f92c84d8ecb626"
+   }
+  }
+ },
+ "poskey_conv": {
+  "card": "153-a2-5",
+  "from_md5": "1fc9b486551b3f1fe42f25167375ba30"
+ }
+}

@@ -1,0 +1,18 @@
+BGRUN START 2026-10-09 07:00:32 limit 15.0 min: py -u tools/bench/diag_c153_b2_1_rescore.py
+BGRUN PID 25420
+  PASS  P0 old vigraph = git HEAD tools/vigraph.py md5 13be0847; new vigraph md5 differs (a7eb58c7e35a134f93df168ea4cdea80)  "13be0847aad910571d1de5af1e2071f2"
+  FACT  S1 files graph_objs_s1_20260923.json graph_loops_s1_20260924.json
+  PASS  P1 identity: new computation_diff(S1, S1) == 0 rows, 0 renames  ""
+  FACT  s06: plan cfbd9823 base a4f9e39d graph a3ecb92b md5 field 569ffbf5 scratch saves md5 569ffbf5
+  FAIL  S1 vs s06 PB (pb_rename_rows restored 5): old 18 rows (lost/new [3, 3]) == stored 18: True; new 14 rows (lost/new [0, 0]); removed 4 all rename-only: False; added 0  {"removed": ["2626|Terminal|array|0", "2626|Terminal|array|1", "2626|Terminal|array|2", "2626|Terminal|array|3"], "added": [], "unexplained": ["2626|Terminal|array|1", "2626|Terminal|array|2"]}
+  FACT  s07: plan 08c2ad4d base 765c687c graph 71935a84 md5 field b3f86b32 scratch saves md5 b3f86b32
+  PASS  S1 vs s07 PB (pb_rename_rows restored 0): old 19 rows (lost/new [0, 0]) == stored 19: True; new 19 rows (lost/new [0, 0]); removed 0 all rename-only: True; added 0  {"removed": [], "added": [], "unexplained": []}
+  FACT  s08: plan c328fdaf base a9d35eee graph 44858dbf md5 field f99e8414 scratch saves md5 f99e8414
+  PASS  S1 vs s08 PB (pb_rename_rows restored 0): old 21 rows (lost/new [0, 0]) == stored 21: True; new 21 rows (lost/new [0, 0]); removed 0 all rename-only: True; added 0  {"removed": [], "added": [], "unexplained": []}
+  FACT  s09: plan 9d622c95 base 2f58241c graph 22f967b5 md5 field eb1d0f31 scratch saves md5 eb1d0f31
+  PASS  S1 vs s09 PB (pb_rename_rows restored 0): old 21 rows (lost/new [0, 0]) == stored 21: True; new 21 rows (lost/new [0, 0]); removed 0 all rename-only: True; added 0  {"removed": [], "added": [], "unexplained": []}
+  PASS  S1 vs s09 raw names (no pb_rename_rows): old 21 rows (lost/new [0, 0]); new 21 rows (lost/new [0, 0]); removed 0 all rename-only: True; added 0  {"removed": [], "added": [], "unexplained": []}
+  PASS  INV stage tools + s09 VI + s09 graph md5 before == after  {"stagekit.py": "604529e8", "addrcheck.py": "207beb0d", "stagexec.py": "1bab9cf9", "gscript.py": "1a80236e", "stage_prerun.py": "c739eb86", "D1_ring_p4s09_20261009_060515.vi": "eb1d0f31", "graph_ring_p4s09_20261009_062044.json": "22f967b5"}
+=== GATES: 7 pass / 1 fail
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":7,"fail":1},"first_fail":"S1 vs s06 PB (pb_rename_rows restored 5): old 18 rows (lost/new [3, 3]) == stored 18: True; new 14 rows (lost/new [0, 0]); removed 4 all rename-only: False; added 0","artefacts":[{"path":"tools/bench/diag_c153_b2_1_rescore.json","md5":"2eb3f1ba838b19bbdff29e06a15546ff"}],"card":"153-b2-1","labview":"none"}
+BGRUN END rc=1 after 10s

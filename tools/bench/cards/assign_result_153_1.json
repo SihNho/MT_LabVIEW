@@ -1,0 +1,29 @@
+{
+ "schema": "assign-result/1",
+ "cycle": 153,
+ "round": 1,
+ "status": "HANDBACK",
+ "cards": ["153-a1-1", "153-b1-1", "153-b2-1"],
+ "pass_evidence": [
+  {"item": 0, "met": true, "evidence": ["tools/bench/cards/result_153-a1-1.json", "tools/bench/p5_facts.md:13-27"]},
+  {"item": 1, "met": false, "evidence": ["tools/bench/cards/result_153-a1-1.json", "tools/bench/p5_facts.md:29-40"]},
+  {"item": 2, "met": true, "evidence": ["tools/bench/cards/result_153-a1-1.json", "tools/bench/p5_facts.md"]},
+  {"item": 3, "met": true, "evidence": ["tools/bench/cards/result_153-a1-1.json", "tools/bench/p5_facts.md"]},
+  {"item": 4, "met": true, "evidence": ["tools/bench/cards/result_153-a1-1.json", "tools/bench/p5_facts.md"]},
+  {"item": 5, "met": true, "evidence": ["tools/bench/cards/result_153-a1-1.json", "tools/bench/p5_facts.md"]},
+  {"item": 6, "met": true, "evidence": ["tools/bench/cards/result_153-a1-1.json", "tools/bench/p5_facts.md"]},
+  {"item": 7, "met": true, "evidence": ["tools/bench/cards/result_153-a1-1.json", "tools/bench/p5_facts.md"]},
+  {"item": 8, "met": true, "evidence": ["tools/bench/p5_facts.md", "tools/bench/p5_facts.json", "tools/bench/cards/result_153-a1-1.json"]},
+  {"item": 9, "met": true, "evidence": ["tools/bench/cards/result_153-b1-1.json", "tools/bench/selftest_c153_collect_all.log:40"]},
+  {"item": 10, "met": true, "evidence": ["tools/bench/cards/result_153-b1-1.json", "tools/bench/selftest_c153_collect_all.log:15-19"]},
+  {"item": 11, "met": false, "evidence": ["tools/bench/cards/result_153-b2-1.json", "tools/bench/diag_c153_b2_1_rescore.log:7-14"]},
+  {"item": 12, "met": true, "evidence": ["tools/bench/cards/result_153-b2-1.json", "tools/bench/gate_fp_queue.jsonl:72", "tools/bench/selftest_c153_cardclock_quoted.log:10"]},
+  {"item": 13, "met": true, "evidence": ["tools/bench/cards/result_153-b1-1.json", "tools/bench/diag_c153_b1_1_suite_after.log:4-16"]},
+  {"item": 14, "met": true, "evidence": ["tools/bench/cards/result_153-a1-1.json", "tools/bench/cards/result_153-b1-1.json"]}
+ ],
+ "handback": {
+  "reason": "2 of 15 pass items unmet and each needs a judgement call: F2 per-item uids (reader op unbuilt) and fp-70 (position keys change s06 PB results, a gate-criterion question under PD370(e)); fp-70 left open, vigraph.py reverted to 13be0847.",
+  "question": null
+ },
+ "note": "F2: no Selection List[] 6349400 reader exists, so all 45 Error List items have uid null on disk (el_read.json:96-98); only class-level mapping plus the 22 termless-wire candidates delivered. Building the reader is a tool decision for judgement. fp-70: the position-keyed computation_diff candidate is saved as tools/bench/diag_c153_b2_1_vigraph_poskey.txt (a7eb58c7); re-score s07/s08/s09/S1-vs-s09 unchanged, but s06 PB rows 18 -> 14 (#2626 array|0..3: one rename-only row gone, three lost+new pairs merged into changed rows), and stagekit self-tests t6 43/0 -> 38/5, c147 19/1 -> 17/3 against stored name-keyed preds. Also open: NAMES.md:112 / fixture-recording.md:18 give frame index <- #5119 while the graph reads say #637 i; OpQueue*_v0 have no 20-run handle-hygiene record before any P5 use; card 153-b1-1 asks whether its before-suite was isolated from the concurrent vigraph/card_clock edit (counts matched). Done: F1,F3-F8 facts (LabVIEW reads 0, LabVIEW gone), stagesim collect-all (78b8d5a1, self-test 11/0, old suites same counts), fp-72 drained (card_clock 70f6291b)."
+}

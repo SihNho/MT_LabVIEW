@@ -1,0 +1,61 @@
+{
+ "schema": "task/1",
+ "id": "153-a2-4",
+ "kind": "build",
+ "goal": "Adopt position-keyed tools/vigraph.py (a7eb58c7), run the PB check via its real entry point on stored s06 plan+pred, re-run suites, re-score s06..s09, drain fp-70.",
+ "why": "Cycle 153 round 3 pass items 4-6 (docs/d1/ring-p4d.md PD371(b), PD372(c)(d)); the gate change was proved by 153-a2-3/a2-5 on temp-converted files; the real path on stored name-keyed plans is still unmeasured.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_153-a2-4.md", "md5": "71e86fbad3ad5f36804f68e12c0abfcf"},
+  {"path": "docs/d1/ring-p4d.md", "md5": "3b4cf56803bb2d11687c9c8e2d392fc6"},
+  {"path": "tools/bench/diag_c153_b2_1_vigraph_poskey.txt", "md5": "a7eb58c7e35a134f93df168ea4cdea80"},
+  {"path": "tools/vigraph.py", "md5": "13be0847aad910571d1de5af1e2071f2"},
+  {"path": "tools/bench/diag_c153_b2_1_rescore.py", "md5": "334415a096b2529d197baa22643cee0e"},
+  {"path": "tools/bench/diag_c153_a2_5_run.py", "md5": "dff6d64ea814eec50c619397ce9e0067"},
+  {"path": "tools/bench/selftest_c153_poskey_convert.py", "md5": "9a3b16b66fb092d137b5c58b3e6b231f"}
+ ],
+ "pass": [
+  "tools/vigraph.py md5 == a7eb58c7 (old 13be0847 quoted); selftest_c153_compdiff_poskey 8/0; vigraph frame_80 self-test 12/0 before and after",
+  "PB check via its REAL entry point on stored s06 plan cfbd9823 + pred c1bd6b3e, no temp conversion, adopted vigraph: result quoted; any converter's ONE file:line quoted",
+  "On final bytes: t6_poskey 43/0, c147_b1_2 19/1 (only the pre-existing P0 pins), compdiff_poskey 8/0; stored plan/pred md5s unchanged",
+  "Re-score s06..s09 + S1-vs-s09 (pair, old rows, new rows, removed) quoted; other than rename-only rows => restore 13be0847 and STOP with OPEN",
+  "fp-70 drain line quoted; pins unchanged except vigraph + at most ONE PB caller: stagekit 604529e8 addrcheck 207beb0d stagexec 1bab9cf9 gscript 1a80236e stage_prerun c739eb86 stagesim 78b8d5a1"
+ ],
+ "outputs": [
+  "tools/vigraph.py",
+  "tools/bench/gate_fp_queue.jsonl",
+  "tools/bench/diag_c153_a2_4_rescore.log",
+  "tools/bench/cards/result_153-a2-4.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/vigraph.py",
+   "tools/stagexec.py",
+   "tools/stage_prerun.py",
+   "tools/stagekit.py",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/diag_c153_a2_4*",
+   "tools/bench/cards/result_153-a2-4*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c153_b2_1_vigraph_poskey.txt"},
+  {"kind": "file", "name": "tools/bench/diag_c153_b2_1_rescore.py"},
+  {"kind": "file", "name": "tools/gate_fp.py"},
+  {"kind": "file", "name": "tools/bench/cards/result_153-a2-5.json"}
+ ],
+ "rules": [
+  "Precondition: result_153-a2-5 PASS; otherwise STOP",
+  "Of stagexec/stage_prerun/stagekit change AT MOST ONE, only if the real-path check fails; a second => STOP, OPEN",
+  "No LabVIEW running; never beside a LabVIEW card; fp-62..69 and fp-71 are not yours",
+  "No tools/hooks edit; no stagesim edit; no motor or camera"
+ ]
+}

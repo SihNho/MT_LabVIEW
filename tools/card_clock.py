@@ -17,6 +17,31 @@ sys.path.insert(0, os.path.join(ROOT, "tools"))
 from protocol import make_result, result_line  # noqa: E402
 
 CITE = re.compile(r"budget|minute|\bmin\b|time.?out|deadline", re.I)
+# card 153-b2-1 (gate-fp fp-72): a QUOTED span ('min slot', "x", `y` - a LabVIEW terminal name quoted verbatim) is not a budget
+# citation; it is blanked before CITE runs. A quote opens/closes only at a non-word boundary, so an apostrophe ("card's budget
+# wasn't") quotes nothing. Applied to each string VALUE (and key) of blocked_by, never to its json.dumps text, whose own double
+# quotes would blank every value.
+QUOTED = re.compile(r"(?<!\w)'[^'\n]*'(?!\w)|(?<!\w)\"[^\"\n]*\"(?!\w)|`[^`\n]*`")
+
+
+def _strings(o):
+    if isinstance(o, dict):
+        for k, v in o.items():
+            yield str(k)
+            for s in _strings(v):
+                yield s
+    elif isinstance(o, (list, tuple)):
+        for v in o:
+            for s in _strings(v):
+                yield s
+    elif o is not None:
+        yield str(o)
+
+
+def cite_text(res):
+    """first_fail + blocked_by's strings, each with its quoted spans blanked (fp-72)."""
+    parts = ([str(res.get("first_fail"))] if res.get("first_fail") else []) + list(_strings(res.get("blocked_by")))
+    return " ".join(QUOTED.sub(" ", p) for p in parts)
 
 
 def find_bind(log, cid):
@@ -52,7 +77,7 @@ def clock(result_path, log, cards):
     if reasons:
         verdict, rc = "CLOCK-UNMEASURED", 2
     else:
-        cite = " ".join(str(x) for x in (res.get("first_fail"), json.dumps(res.get("blocked_by"))) if x)
+        cite = cite_text(res)
         if CITE.search(cite) and measured < 0.8 * budget:
             reasons.append("(i) failure text cites budget/minutes but measured %.1f < 0.8*budget %.1f" % (measured, 0.8 * budget))
         if claimed > measured + max(5.0, 0.25 * measured):

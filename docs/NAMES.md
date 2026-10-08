@@ -109,7 +109,7 @@ gaps included. Recon target: the subtract node downstream of `current image numb
 of the trace assembly.
 
 ### save trace.vi pane (verified by probe)
-IN: **`frame index`** (I32 — arrives ALREADY COMPUTED: the current−first subtraction lives in the
+IN: **`frame index`** [2026-10-09 (card 153-a2-7): corrected - frame index is fed by the While loop `i` (wire 3268 <- #644/#639), not #5119 x-y; evidence tools/bench/diag_c153_a2_6_orig_read.log:11-13, docs/cycle27-plan.md:3748-3751] (I32 — arrives ALREADY COMPUTED: the current−first subtraction lives in the
 MAIN while loop, not in this subVI; per the user it also feeds array-indexing/append nodes in the
 trace assembly), `current frame data array in`, `total data array in`, `cal cluster path`,
 `saved file refnum`(?), two-line labels not yet byte-verified: `base path/filename`,

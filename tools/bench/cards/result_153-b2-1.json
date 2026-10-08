@@ -1,0 +1,31 @@
+{"schema": "result/1", "id": "153-b2-1", "status": "FAIL",
+ "gates": {"pass": 3, "fail": 2},
+ "first_fail": "fp-70: S1 vs s06 PB old 18 rows -> new 14; #2626 lost/new pairs at positions 1-3 merged into 3 changed rows (not pure rename-only); stagekit self-tests t6 43/0->38/5, c147 19/1->17/3",
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/card_clock.py", "md5": "70f6291bba9f93565e68df9e4b20cdea"},
+  {"path": "tools/bench/selftest_c153_cardclock_quoted.py", "md5": "7c6771f93dc24f47d1855b4c57875940"},
+  {"path": "tools/bench/selftest_c153_compdiff_poskey.py", "md5": "771aa8265b7744e6251d041478ce0b22"},
+  {"path": "tools/bench/diag_c153_b2_1_vigraph_poskey.txt", "md5": "a7eb58c7e35a134f93df168ea4cdea80"},
+  {"path": "tools/bench/diag_c153_b2_1_rescore.py", "md5": "334415a096b2529d197baa22643cee0e"},
+  {"path": "tools/bench/diag_c153_b2_1_rescore.json", "md5": "2eb3f1ba838b19bbdff29e06a15546ff"},
+  {"path": "tools/bench/diag_c153_b2_1_s06pos.py", "md5": "60190bec1872ec47e06f126f19569653"}
+ ],
+ "facts": [
+  "fp-72 DONE: card_clock blanks quoted spans before CITE (tools/card_clock.py:24); new selftest 6/0 incl. 484 stored results 0 changed (selftest_c153_cardclock_quoted.log:10); old 5/0 -> 5/0",
+  "fp-72 drained: 'DRAINED fp-72 (tools/card_clock.py:24, tools/bench/selftest_c153_cardclock_quoted.py)' (gate_fp_queue.jsonl:72); result_152-a2-2 validate: 'OK result/1', CLOCK verdict=OK",
+  "fp-70 candidate (position-keyed computation_diff, md5 a7eb58c7) saved as tools/bench/diag_c153_b2_1_vigraph_poskey.txt; tools/vigraph.py REVERTED to pinned 13be0847 (another card uses stage tools now)",
+  "Re-score table (old->new rows, removed): s06 PB 18->14, 4 (#2626 array|0..3); s07 19->19, 0; s08 21->21, 0; s09 21->21, 0; S1-vs-s09 raw 21->21, 0; added 0 everywhere (diag_c153_b2_1_rescore.log:7-14)",
+  "s06 old rows == stored 18; rows off #2626 identical old vs new (diag_c153_b2_1_s06pos.log:25)",
+  "s06 #2626 (S1 element x3+array, s06 array x4): pos4 = rename-only, gone; pos1-3 old lost+new pair -> ONE row element|i, sources really differ (diag_c153_b2_1_s06pos.log:21-24)",
+  "Old selftests on candidate: frame_80 12/0->12/0; t6_poskey 43/0->38/5; c147_b1_2 19/1->17/3; each new FAIL = PB missing 2626 array|0..3 vs stored pred (diag_c153_b2_1_post_t6.log:8-31)",
+  "c147_b1_2 pre-existing FAIL P0 (memory_model.json, plan_ring_p4_s06v18_pred.json pins drifted) in both runs (diag_c153_b2_1_pre_c147.log:3)",
+  "New compdiff selftest 8/0 on the candidate (rename sink/source 0 rows; removal/new/unwire 1 row each), selftest_c153_compdiff_poskey.log:12; it needs pos_keys, so it fails on 13be0847",
+  "Invariants same: stagekit 604529e8 addrcheck 207beb0d stagexec 1bab9cf9 gscript 1a80236e stage_prerun c739eb86 s09 VI eb1d0f31 graph 22f967b5 (diag_c153_b2_1_rescore.log:15); stagesim untouched"
+ ],
+ "open": [
+  "Does fp-70 accept the s06 #2626 result: positions 1-3 go from a lost+new pair to one changed row (named with S1's 'element'), so the PB sink names change? This is more than dropping rename-only rows.",
+  "Adopting the candidate changes PB gate results against stored name-keyed preds (t6: 5 FAIL, c147: 2 FAIL, all #2626 array|0..3). Is that a recipe gate-criterion change under PD370(e)? Re-pin the preds/self-tests, or let them carry both keys?"
+ ],
+ "cost": {"usd": null, "minutes": 11, "labview_runs": 0},
+ "note": "Stopped at the first unexpected result as the brief says (STOP + OPEN). Not retried. fp-70 left open. Jev ladder: no JEV-LADDER row for these logs."}

@@ -1,0 +1,13 @@
+BGRUN START 2026-10-09 07:02:08 limit 5.0 min: py -u tools/bench/selftest_c153_compdiff_poskey.py
+BGRUN PID 20420
+  PASS  F fixture: graph md5 22f967b5, a computation node with a wired sourced last sink  {"node": 8, "key": "8|Terminal|Scale.Maximum|0", "wire_uid": 1150}
+  PASS  C0 identity: 0 rows, 0 renames  0
+  PASS  C1 rename-only sink: 0 rows; node 8 in renames  {"rows": [], "renames": [{"node": 8, "sink": "8|Terminal|Scale.Maximum|0", "sink_b": "8|Terminal|Scale.Maximum RENAMED|0"}]}
+  PASS  C2 rename-only SOURCE #10048: 0 rows  []
+  PASS  C3 real removal: exactly 1 row, sink == A's key, after None  [{"node": 8, "class": "Property", "sink": "8|Terminal|Scale.Maximum|0", "before": ["10048|ControlTerminal|# of Points|0"], "after": null}]
+  PASS  C4 real new terminal: exactly 1 row, before None  [{"node": 8, "class": "Property", "sink": "8|Terminal|extra in|0", "before": null, "after": ["10048|ControlTerminal|# of Points|0"]}]
+  PASS  C5 unwired: exactly 1 row, after []  [{"node": 8, "class": "Property", "sink": "8|Terminal|Scale.Maximum|0", "before": ["10048|ControlTerminal|# of Points|0"], "after": []}]
+  PASS  C6 row shape node/class/sink/before/after, sink 'node|class|name|ordinal'  {"node": 8, "class": "Property", "sink": "8|Terminal|Scale.Maximum|0", "before": ["10048|ControlTerminal|# of Points|0"], "after": []}
+=== selftest_c153_compdiff_poskey: 8 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":8,"fail":0},"first_fail":null,"artefacts":[],"card":"153-b2-1","labview":"none"}
+BGRUN END rc=0 after 6s

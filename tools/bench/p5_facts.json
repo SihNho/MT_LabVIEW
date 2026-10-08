@@ -1,0 +1,111 @@
+{
+ "schema": "p5-facts/1",
+ "card": "153-a1-1",
+ "date": "2026-10-09",
+ "pd": "PD370(f) docs/d1/ring-p4d.md:141-161",
+ "labview_reads": 0,
+ "sources": {
+  "s09_graph": {"path": "tools/bench/graph_ring_p4s09_20261009_062044.json", "md5": "22f967b513726a01c9d8f63269f689e6", "bed_md5": "eb1d0f3107bbba49c9ae67a47c0ee50f"},
+  "s09_el_expected": {"path": "tools/bench/errorlist_expected_D1_ring_p4s09_20261009_060515.json", "md5": "5146f980f5a4b58403ce87afc870f9a9"},
+  "s09_el_read": {"path": "tools/bench/errorlist_D1_ring_p4s09_20261009_060515_20261009_061027.json", "md5": "080255ad7e74555784630e4e28b9da5a"},
+  "s1_wiki": {"path": "docs/wiki/subvi/D1_s1_copy.json", "md5": "3e3d23cefd3a334001aa9d6156bf1aee"},
+  "save_trace_wiki": {"path": "docs/wiki/subvi/save trace.json", "md5_of_vi": "9d126b32e6de26aaa7bef48653dd991c"},
+  "memory_model": {"path": "tools/bench/memory_model.json", "md5": "6f2b56872fd593ecaafe63221bf4f1fc"},
+  "logs": ["tools/bench/diag_c153_a1_1_census.log", "tools/bench/diag_c153_a1_1_census2.log", "tools/bench/diag_c153_a1_1_census3.log", "tools/bench/diag_c153_a1_1_census4.log", "tools/bench/c73_l7r_facts.log"]
+ },
+ "F1": {
+  "s1_rows_cite": "tools/bench/c73_l7r_facts.log:92-150",
+  "s09_rows_cite": "tools/bench/diag_c153_a1_1_census.log:4-15",
+  "terminals": [
+   {"t": 0, "name": "error out", "dir": "OUT", "s1": "w541 -> #24 SR (right)", "s09": "t3934 w24264 -> RSR #24083; outer w9610 -> #6384 'error in' (686)", "wired_s09": true},
+   {"t": 1, "name": "total data array out", "dir": "OUT", "s1": "w464 -> #15 SR", "s09": "t3954 w24300 -> RSR #24150; outer w5050 -> #2048 'array' (686)", "wired_s09": true},
+   {"t": 2, "name": "error in", "dir": "IN", "s1": "w4880 <- #1108 LSR 'error out' (init #4910)", "s09": "t5683 w24285 <- LSR #24133; init outer w4969 <- #4910 ClusterConstant (686); #1108 gone", "wired_s09": true},
+   {"t": 3, "name": "file progress", "dir": "OUT", "s1": "w5274 -> #1929 tunnel + #3453 indicator", "s09": "t5704 w10362 -> indicator #3453 (in 1.7 body) + out tunnel #5204; outer w4337 -> #6384 'actual # data points', #2048 'length'", "wired_s09": true},
+   {"t": 4, "name": "file number to append out", "dir": "OUT", "s1": "w5056 -> #5020 tunnel", "s09": "t5739 w25232 -> out tunnel #10404; outer w9636 -> #6384 'file # to append'", "wired_s09": true},
+   {"t": 5, "name": "current frame data array in", "dir": "IN", "s1": "w4517 <- #2626 BuildArray 'appended array' t2813", "type": "Array1D<DBL> (facts_c120_types.json:194-227)", "s09_source_where": "#2626 on 23166 = loop 1.2 #10170 body; its output t2813 w0 (unwired)", "s09": "t5754 w0", "wired_s09": false},
+   {"t": 6, "name": "cal cluster path", "dir": "IN", "s1": "w3629 <- #3644 LoopTunnel (eff. #3391 'string')", "s09": "t5760 w24330 <- in-tunnel #24357; outer w25225 <- #1748 FS inner tunnel (686), shared with #6384; #3644 gone", "wired_s09": true},
+   {"t": 7, "name": "frame index", "dir": "IN", "s1": "w3268 <- #644 = #637 iteration terminal i (owner Diagram #639)", "type": "I32 (facts_c120_types.json:70-95)", "s09_source_where": "#644 still in loop 1.1 (diagram 639), w29454 -> 6 sinks incl. SelectorTunnel #29440 -> FS #29411 -> FrameIdx slot write #6859 (census4.log:3-5, census3.log:16-19)", "s09": "t5763 w0", "wired_s09": false},
+   {"t": 8, "name": "saved file refnum", "dir": "IN", "s1": "w1397 <- #3052 ControlReferenceConstant 'File # Saved' t3060", "type": "control refnum (class ControlReferenceConstant; descriptor UNMEASURED)", "s09_source_where": "#3052 now in loop 1.7 body 23405", "s09": "t5772 w10394 <- #3052 t3060", "wired_s09": true},
+   {"t": 9, "name": "file size", "dir": "IN", "s1": "w1581 <- #2294 LoopTunnel (eff. #1766 '32bit integer')", "s09": "t5778 w24153 <- in-tunnel #24361; outer w25238 <- #2484 FS inner tunnel (686), shared with #6384 'desired # data points', #781 'dimension size'", "wired_s09": true},
+   {"t": 10, "name": "total data array in", "dir": "IN", "s1": "w3497 <- #51 LSR (init #781)", "s09": "t5782 w24312 <- LSR #24187; init outer w3543 <- #781 'initialized array' (686)", "wired_s09": true},
+   {"t": 11, "name": "selected path", "dir": "IN", "s1": "w5090 <- #5096 LoopTunnel (eff. #29551 'path')", "s09": "t5787 w24091 <- in-tunnel #25223; outer w25265 <- #4693 FS inner tunnel (686), shared with #6384, #5096", "wired_s09": true}
+  ],
+  "unmeasured": ["data types of t2/t6/t9/t10/t11 and the t8 refnum descriptor - cheapest: gscript.read_term_type on #376's 12 terminals in ONE read of a byte copy of s09"]
+ },
+ "F2": {
+  "total": 45,
+  "classes": [
+   {"class": "Build Array: Contains unwired or bad terminal", "n": 1, "uid": "#2626 by the expected file's cite (expected.json:17-18); s09: 4 inputs wired, output t2813 w0"},
+   {"class": "two terminals of different types (1D array of Void -> 1D array of cluster of 2)", "n": 1, "uid": "UNMEASURED (cite: B1-new src+sink RBW wires, expected.json:25-26; detail el_read.json:111)"},
+   {"class": "wire not connected to anything", "n": 22, "uid": "s09 has exactly 22 termless Wire objects: 23556 31166 31059 32890 29787 11352 28847 10908 9868 17393 17287 10573 10312 5709 9012 4906 10187 6363 6096 730 5975 5637 (census.log:118-119); per-item pairing UNMEASURED"},
+   {"class": "Wire: Wire has loose ends", "n": 21, "uid": "2 one-sided wires in s09: w12256 (#11608 'output cluster' src only), w10103 (#10114 '# FD points' src only) (census.log:120-121); other 19 UNMEASURED"}
+  ],
+  "per_item_uid": "class level; per-item uids unmeasured (PD371(a), docs/d1/ring-p4d.md:167-171). UNMEASURED: every read item has uid null, uid_route 'needs a Selection List[] 6349400 op (unbuilt)' (el_read.json:96-98)",
+  "loop_17_open_rows": "plan open rows (376,'current frame data array in') and (376,'frame index') (plan_ring_p4_s09v18.json:73-82), both w0 in s09; no expected entry cites #23041/#376; save trace.vi is not in subvi_requiredness.json (census3.log:64) => 0 of 45 items mapped to loop 1.7"
+ },
+ "F3": {
+  "loop": "WhileLoop #23041, body Diagram #23405, owner diagram 686 (probe.log)",
+  "cite": "tools/bench/diag_c153_a1_1_census.log:17-35, census2.log:3-36",
+  "nodes_in_body": ["#376 save trace.vi", "#3052 ControlReferenceConstant 'File # Saved'", "#3453 indicator 'file progress'", "#23042 Equal? (x=y)"],
+  "shift_registers": [{"right": 24083, "left": 24133, "carries": "#376 error out -> error in", "init": "#4910 ClusterConstant (w4969)", "exit": "#6384 'error in' (w9610)"},
+                      {"right": 24150, "left": 24187, "carries": "#376 total data array out -> in", "init": "#781 'initialized array' (w3543)", "exit": "#2048 'array' (w5050)"}],
+  "input_tunnels": {"24357": "cal cluster path", "24361": "file size", "25223": "selected path", "23501": "stop scaffold value (outer w23519 <- #8486 'x+1' on 686)"},
+  "output_tunnels": {"5204": "file progress -> #6384, #2048", "10404": "file number to append out -> #6384"},
+  "stop": "cond t23456 <- #23042 'x = y?' with x and y both on w23460 from tunnel #23501 (scaffold); Stop-if-True (ring-p4.md:263)",
+  "i_terminal": "t23444 unwired",
+  "wait_timing": "no Wait node in the body (all body rows listed census.log:17-30)"
+ },
+ "F4": {
+  "enclosing": "S1: #376 owned directly by Diagram #639 = While #637 body, no case (c73_l7r_facts.log:92); original main VI: on diagram 43 (WhileLoop) (docs/main-vi-subvi-identity.md:98, docs/main-vi-stop-and-save.md:125)",
+  "condition": "no enable input on #376 (12-terminal pane, save trace.json:11-84) => called every #637 iteration",
+  "inside_save_trace": "Q&R(x=frame index w533, y=file size w247): remainder -> Replace Array Subset 'index (row)' (every call, w318) and Equal?(remainder, file size-1) -> case selector (w379,w376); frame d110 runs save N xyz traces.vi #116 + Property 'Value' <- floor(x/y) on 'saved file refnum' (save trace.json:816-1066)",
+  "cadence": "accumulate every call; save N xyz traces every 'file size' calls when remainder == file size-1; selector-value <-> frame (110 = True) is UNMEASURED (frame 101 only passes error)",
+  "order_vs_kernel": "after #5058: #5058 'x,y,z array out' -> #2626 array|0 -> #376 t5 (ring-p4c.md:325-326, c73_l7r_facts.log:94); no path #376 -> #5058 except #376's own SRs (c73_l7r_facts.log:118-127)",
+  "frame_index": "#637 iteration terminal i (#644, I32), the only source of w3268 (cycle27-plan.md:3748-3751; facts_c120_types.json:70-95)",
+  "per_frame_record": "#2626 inputs: array|0 <- #5058 x,y,z array out, element|0 <- #5119 x-y (U32, facts_c120_types.json:100-124), element|1 <- #30117 Value, element|2 <- #4580 Value (ring-p4c.md:325-326)",
+  "doc_conflict": "docs/NAMES.md:112 and docs/fixture-recording.md:18 say 'frame index' is fed by Subtract #5119; the graph reads say #5119 feeds #2626 element|0 and frame index = #637 i; CORRECTED 2026-10-09 (card 153-a2-7): both lines carry a dated note (frame index <- loop i, w3268 <- #644/#639, not #5119; tools/bench/diag_c153_a2_6_orig_read.log:11-13, docs/cycle27-plan.md:3748-3751)"
+ },
+ "F5": {
+  "cite": "tools/bench/diag_c153_a1_1_census.log:37-61, census2.log:37-71",
+  "seqcheck": "RingSeqCheck_v0 SubVI #29724 on 23166: IN n1 t29996 (<- W1 tunnel #30094 'min Num'), n2 t29970 (<- FS tunnel #30743 outer t30768), last t29962 (<- LSR #29548), Latest t29959 (<- Local #30001), discards t29952 (<- LSR #29655); OUT valid t29900 w30457, next last t29907 -> RSR #29403, next discards t29903 -> RSR #29648",
+  "valid_rule": "valid = n1 == n2 AND n1 > last inside RingSeqCheck_v0.vi (PD293(c) ring-p4.md:33; INDEX.md:31) - not visible in the s09 graph",
+  "selects": [
+   {"uid": 4538, "s": 30607, "t": "w30615 <- tunnel #9227", "f": "w25642 <- LSR #10544", "out": "t25638 w30619 -> RSR #9603"},
+   {"uid": 4576, "s": 30646, "t": "w30654 <- tunnel #29616", "f": "w25657 <- LSR #25582", "out": "t30613 w30657 -> RSR #25545"},
+   {"uid": 4577, "s": 30668, "t": "w30601 <- #9647 'x .and. y?'", "f": "w30759 <- Local #30675 reseed flag", "out": "t30661 w30676 -> indicator t25557 'autofocus reseed flag (1.2 to 1.1)'"},
+   {"uid": 4586, "s": 30587, "t": "w30594 <- SelectorTunnel #11336 'Value'", "f": "w25394 <- LSR #25382", "out": "t30408 w30597 -> RSR #25371 + indicator t25573 'autofocus reset count (1.2 to 1.1)'"},
+   {"uid": 4590, "s": 30536, "t": "w30755 <- #5058 'Bead is good? array out'", "f": "w25358 <- LSR #25344", "out": "t30417 w30564 -> RSR #25339"},
+   {"uid": 4594, "s": 30500, "t": "w30419 <- #5058 'x,y,z array out'", "f": "w25309 <- LSR #25240", "out": "t30473 w30522 -> #2626 'array' t4168 + RSR #10850"},
+   {"uid": 30398, "s": 30440, "t": "w23807 <- #5058 'pos in cal image out'", "f": "w23850 <- LSR #23792", "out": "t30424 w30465 -> #10757 'array' + RSR #23508"}
+  ],
+  "record_node": "#2626 BuildArray on 23166: array t4168 <- #4594 (rolled back); element t2832 <- #30300 BufDiff[min slot], t4160 <- #30119 TransPos[min slot], t4165 <- #30216 RotPos[min slot] (raw slot reads, no Select); output 'appended array' t2813 w0",
+  "frame_idx_in_12": "#30240 IndexArray FrameIdx[min slot] element w30278 -> #29240 'x', #10068 'x' (no Select) (census2.log:132)"
+ },
+ "F6": {
+  "cite": "tools/bench/diag_c153_a1_1_census.log:62-116, census3.log:46-48",
+  "loop_11": "cond t648 <- w3457 #11639 CompoundArithmetic result (also -> 'TurnOff'); 'stop (end)' t642 w6929 -> #11639 'value' + Local #6899 StopAll (write, every iteration)",
+  "stop_end_mode": "Mechanical Action 4 (latch); every bed While is Stop-if-True (ring-p4.md:263, diag_c138_5_facts.md)",
+  "loop_12": "cond t23246 <- Local #6902 StopAll (read) w29405",
+  "w1_in_12": "While #16483 body 29699: cond t29710 <- #29818 Or(x = #29719 'found', y = Local #29811 StopAll)",
+  "loop_17": "cond t23456 <- #23042 x=y on one wire (scaffold, #8486 'x+1' value via tunnel #23501); no StopAll read in 1.7",
+  "order": "no wire between 1.7's stop and StopAll or loop 1.2; #6384 on 686 runs after 1.7 exits (needs RSR #24083/#24150 exit values). Run-time shutdown order UNMEASURED (never run; P6)"
+ },
+ "F7": {
+  "created": "QRT POOL stage tools/recipes/stage_d1_qrt_pool.py, plan tools/bench/plan_qrt_pool.json (routes 'queue' x3 :733-753), log stage_d1_qrt_pool.log RESULT 21/0 :262, saved D1_qrt_pool_20260928_141055.vi 93539368",
+  "objects": "Obtain Q_free #23105, Obtain Q_work #23118 (element data type <- #13938 'New Image' w14741 branch), Enqueue #23136 in For #23093, I32 20 const #26017 (max size, donor #214), queue LoopTunnel #25898 (plan_ring_p2a_make.log:3-4)",
+  "removed": "P2a: plan_ring_p2a.json 4 delete_wire + 4 delete_object, retire [23136, 23105, 23118, 26017], auto-removed [25898] (plan_ring_p2a_make.log:9); stage_d1_ring_p2a.log RESULT 27/0 :161 -> D1_ring_p2a_20260928_191739.vi c22a473f",
+  "ops": "gscript.queue_node gscript.py:1480 (obtain/enqueue/dequeue/release via _QUEUE_OPS :1475-1476); stagexec route 'queue' (obtain/enqueue, +dequeue card 120-3) stagexec.py:252-257; no stagexec route for release",
+  "functional_test": "tools/bench/test_opqueue.log:43-51 SUMMARY 7/7 (obtain/enqueue/dequeue/release nodes, ExecState 1, dequeued 1280); build_opqueue.log:260 rc 0",
+  "hygiene": "NO record for OpQueue*_v0 in tools/bench/op_hygiene/ (12 files, none OpQueue) and no 20-run handle record found by grep",
+  "requires": "protocol.check_requires: 11/11 FOUND - 4 ops OpQueue{Obtain,Enqueue,Dequeue,Release}_v0.vi in claudeDev, verbs queue_node gscript.py:1480, delete_object gscript.py:2808, delete_wire stagekit.py:672, 4 opqueue_*_labels.json (census3.log:3-14)",
+  "lint": "stage_prerun control_path_lint knows queue ops/names (stage_prerun.py:1110-1125)"
+ },
+ "F8": {
+  "s09_load_mb": "596.7 (memory_model.json load_by_vi[eb1d0f31...], cite diag_c152_b3_1_graph.log:24)",
+  "start_rule": "load_by_vi[input md5] + op0_read_mb 5.9 (stage_prerun.x10_start)",
+  "formula": "peak_mb = start_mb + R*read_mb + N*(edit_mb + other_mb) + final_read_mb",
+  "params": {"read_mb": 2.53, "edit_mb": 0.58, "other_mb": 0.8, "final_read_mb": 17.4, "fail_above_mb": 680.0, "memstop_mb": 695.0},
+  "cite": "tools/bench/diag_c153_a1_1_census3.log:65-76",
+  "p5_headroom": "UNMEASURED: memory_model.json stores no P5 X10 figure; cheapest = stage_prerun X10 on a P5 plan"
+ }
+}

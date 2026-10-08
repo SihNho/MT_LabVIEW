@@ -15,7 +15,7 @@ Target: `..\Min_Track N beads V6_ParallelLoop.vi` (the user-authorized working c
 | node (uid) | inputs | outputs |
 |---|---|---|
 | IMAQ Write TIFF File 2 (22700) | `Image` <- branch of acquisition `Image Out`; `File Path` <- Build Path; `error in (no error)` <- branch of acquisition `error out` (forces TIFF after acquisition) | `error out` UNWIRED on purpose: an unwired error out that receives an error raises LabVIEW's automatic error dialog = loud stop, acceptable for an attended fixture |
-| Format Into String (22703, class FormatScanString) | `format string` <- constant `img%05d.tif` (made with the node's right-click *Edit Format String...* dialog); `input 1` <- branch of the frame-index subtract `x-y` (uid 5119, the node that feeds 'Save trace'.`frame index`) | `resulting string` -> Build Path |
+| Format Into String (22703, class FormatScanString) | `format string` <- constant `img%05d.tif` (made with the node's right-click *Edit Format String...* dialog); `input 1` <- branch of the frame-index subtract `x-y` (uid 5119, the node that feeds 'Save trace'.`frame index`) [2026-10-09 (card 153-a2-7): corrected - frame index is fed by the While loop `i` (wire 3268 <- #644/#639), not #5119 x-y; evidence tools/bench/diag_c153_a2_6_orig_read.log:11-13, docs/cycle27-plan.md:3748-3751] | `resulting string` -> Build Path |
 | Strip Path (23175) | `path` <- GUI branch of the file-path wire feeding 'Save trace'.`base path/filename` | `stripped path` -> Build Path (= the .tra directory) |
 | Build Path (23020) | `base path`, `name or relative path` | `appended path` -> TIFF `File Path` |
 

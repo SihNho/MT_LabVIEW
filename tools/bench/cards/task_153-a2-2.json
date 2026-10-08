@@ -1,0 +1,55 @@
+{
+ "schema": "task/1",
+ "id": "153-a2-2",
+ "kind": "measure",
+ "goal": "20-call handle hygiene of the 4 OpQueue*_v0 ops via gscript.hygiene_run on a claudeDev scratch VI; one record per op in tools/bench/op_hygiene/; scratch deleted, LabVIEW gone.",
+ "why": "Cycle 153 round 2 purpose pass item 3-4 (docs/d1/ring-p4d.md PD371(d)); CLAUDE.md reference-hygiene rule 5: an op needs a flat-handle record (+-100 over 20 calls) before it is used in a staged build; P5's lossless FIFO will use these ops.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_153-a2-2.md", "md5": "c23c2fca11345332c94cad3174da8e4d"},
+  {"path": "docs/d1/ring-p4d.md", "md5": "3b4cf56803bb2d11687c9c8e2d392fc6"},
+  {"path": "tools/gscript.py", "md5": "1a80236ed35c1876c67f964c72fe820a"},
+  {"path": "tools/stagekit.py", "md5": "604529e8e9b68b9c4b370b8f3d5c5ee5"}
+ ],
+ "pass": [
+  "each of the 4 OpQueue*_v0 ops: 20 calls via gscript.hygiene_run on a claudeDev scratch VI, h_pre/h_post/h_closed quoted, flat within +-100, 0 errors",
+  "one record per op written to tools/bench/op_hygiene/ (OpQueueObtain_v0.json, OpQueueEnqueue_v0.json, OpQueueDequeue_v0.json, OpQueueRelease_v0.json), md5 quoted",
+  "scratch VI deleted, LabVIEW verified gone after (tasklist), op VI md5s and invariant tool md5s unchanged"
+ ],
+ "outputs": [
+  "tools/bench/op_hygiene/OpQueueObtain_v0.json",
+  "tools/bench/op_hygiene/OpQueueEnqueue_v0.json",
+  "tools/bench/op_hygiene/OpQueueDequeue_v0.json",
+  "tools/bench/op_hygiene/OpQueueRelease_v0.json",
+  "tools/bench/diag_c153_a2_2_queue_hygiene.py",
+  "tools/bench/cards/result_153-a2-2.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c153_a2_2*",
+   "tools/bench/op_hygiene/OpQueue*",
+   "tools/bench/hygiene_*c153*",
+   "tools/bench/cards/result_153-a2-2*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/scratch_c153_a2_2*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/recipes/build_opqueue.py"}
+ ],
+ "rules": [
+  "Ops are measured as built; no op VI edited or saved; no bed (D1_ring_*.vi) opened",
+  "Never beside a card that writes tools/vigraph.py or any stage tool",
+  "STOP at the first drift or error after finishing that op with LabVIEW closed; return facts, no fix",
+  "One script, one bgrun (--max-min 40); handle count read before and after; no tools/hooks edit; no motor or camera"
+ ]
+}

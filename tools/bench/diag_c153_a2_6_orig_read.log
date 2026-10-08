@@ -1,0 +1,31 @@
+BGRUN START 2026-10-09 07:34:13 limit 12.0 min: py -u tools/bench/diag_c153_a2_6_orig_read.py
+BGRUN PID 26020
+  FACT  ORIGINAL BEFORE: size 471361 mtime 2026-10-07T15:48:44 md5 2f048e3a18de3b5e3ca8368f6a24dae0
+  FACT  INV BEFORE: all 11 pinned md5s OK
+  PASS  K1 original md5 == 2f048e3a  2f048e3a18de3b5e3ca8368f6a24dae0
+  PASS  K0 no LabVIEW running at start  
+  PASS  C1 ONE byte copy scratch_c153_a2_6_orig.vi: copy md5 == original md5  2f048e3a18de3b5e3ca8368f6a24dae0
+  FACT  loaded copy in 19.3 s; ExecState 0; handles 57667
+  FACT  READ GObject census 9967 objects; OpAllTerms_v1 5738 terminal rows in 42.0 s; handles 57667 -> 51115; refs {'opened': 2, 'closed': 2, 'live': 0, 'cached_op_vis': 2}
+  FACT  OBSERVED #376 class/owner ('SubVI', 'Diagram')
+  FACT  OBSERVED #376 'frame index' row {"term_uid": 5763, "term_name": "frame index", "is_source": false, "wire_uid": 3268, "owner_uid": 376, "owner_class": "SubVI", "frame_diagram": 639}
+  PASS  R1 #376 has ONE 'frame index' sink row  1
+  FACT  OBSERVED SOURCE of w3268: {"term_uid": 644, "term_name": "", "is_source": true, "wire_uid": 3268, "owner_uid": 639, "owner_class": "Diagram", "frame_diagram": 639} | term leaf class 'Terminal' | owner #639 is ('Diagram', 'WhileLoop')
+  FACT  OBSERVED SOURCE of w3268: {"term_uid": 644, "term_name": "", "is_source": true, "wire_uid": 3268, "owner_uid": 639, "owner_class": "Diagram", "frame_diagram": 639} | term leaf class 'Terminal' | owner #639 is ('Diagram', 'WhileLoop')
+  FACT  OBSERVED SINKS of w3268: [(376, 'SubVI', 'frame index'), (1114, 'SubVI', 'index i'), (2136, 'Function', 'x'), (2213, 'LoopTunnel', ''), (3045, 'SelectorTunnel', ''), (10068, 'Function', 'x'), (12195, 'FlatSequenceOuterTunnel', ''), (29240, 'Function', 'x')]
+  PASS  R2 'frame index' wire == 3268 (census + S1 uid)  3268
+  FAIL  R3 ONE source: a Diagram-owned terminal on a WhileLoop body (= the loop's i)  [(644, 639, 'Diagram'), (644, 639, 'Diagram')]
+  FAIL  R4 SAME as S1: source term #644 owner Diagram #639  [(644, 639), (644, 639)]
+  FAIL  R5 w3268 sink owners == census set  [2213, 3045, 3191, 12195]
+  FACT  OBSERVED #5119 'x-y' [(16483, True)] -> sinks [(2626, 'element')]
+  PASS  R6 #5119 'x-y' does not feed #376  [(2626, 'element')]
+  FAIL  H handles flat +-100 over the reads  (57667, 51115)
+  PASS  G LabVIEW gone  
+  PASS  C copy deleted  scratch_c153_a2_6_orig.vi
+  FACT  ORIGINAL AFTER: size 471361 mtime 2026-10-07T15:48:44 md5 2f048e3a18de3b5e3ca8368f6a24dae0
+  PASS  X original md5 after == before  
+  FACT  INV AFTER: all 11 pinned md5s OK
+  PASS  I invariant md5s unchanged before and after  
+OUT G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c153_a2_6_orig_read.json md5 811896012a65955590c1dc712e6826b7
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":10,"fail":4},"first_fail":"R3 ONE source: a Diagram-owned terminal on a WhileLoop body (= the loop's i)","artefacts":[{"path":"tools\\bench\\diag_c153_a2_6_orig_read.json","md5":"811896012a65955590c1dc712e6826b7"}],"card":"153-a2-6","labview":"read"}
+BGRUN END rc=1 after 76s

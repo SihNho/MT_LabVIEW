@@ -1,0 +1,23 @@
+{
+ "schema": "assign-result/1",
+ "cycle": 153,
+ "round": 2,
+ "status": "HANDBACK",
+ "cards": ["153-a2-1", "153-a2-3", "153-a2-5", "153-a2-6"],
+ "pass_evidence": [
+  {"item": 0, "met": true, "evidence": ["tools/bench/cards/result_153-a2-1.json", "tools/bench/p5_facts.md:36", "tools/bench/p5_facts.json:43"]},
+  {"item": 1, "met": true, "evidence": ["tools/bench/cards/result_153-a2-6.json", "tools/bench/diag_c153_a2_6_orig_read.log:11-13", "docs/cycle27-plan.md:3748-3751"]},
+  {"item": 2, "met": false, "evidence": ["tools/bench/cards/result_153-a2-6.json: measurement says SAME as S1, doc correction (NAMES.md:112, fixture-recording.md:18, F4) not applied; card 153-a2-7 written but blocked by the hand-back"]},
+  {"item": 3, "met": false, "evidence": ["tools/bench/cards/task_153-a2-2.json written and validated, not dispatched (blocked by hand-back); no op_hygiene record"]},
+  {"item": 4, "met": false, "evidence": ["tools/bench/cards/result_153-a2-6.json: its claudeDev copy deleted, LabVIEW gone (orig_read.log:23-24); hygiene card not run"]},
+  {"item": 5, "met": true, "evidence": ["tools/bench/cards/result_153-a2-5.json", "tools/bench/diag_c153_a2_5_t6.log", "tools/bench/diag_c153_a2_5_c147.log", "stored pred/plan md5 unchanged (diag_c153_a2_5_run.log:4,29); t6 43/0, c147 19/1 only P0; ASSUMPTION: plan open_rows converted in temp copies"]},
+  {"item": 6, "met": false, "evidence": ["tools/vigraph.py still 13be0847 (candidate a7eb58c7 not adopted); card 153-a2-4 not dispatched; fp-70 not drained"]},
+  {"item": 7, "met": true, "evidence": ["md5sum at hand-back: vigraph 13be0847, stagekit 604529e8, stagexec 1bab9cf9, gscript 1a80236e, stage_prerun c739eb86, stagesim 78b8d5a1, addrcheck 207beb0d"]},
+  {"item": 8, "met": true, "evidence": ["tools/bench/cards/result_153-a2-6.json: original md5 2f048e3a before == after; only one claudeDev byte copy read, then deleted", "no tools/hooks edit, no plan file, no ring-p5.md, no P5 build by any round-2 card"]}
+ ],
+ "handback": {
+  "reason": "a-unexplained-after-retry: card 153-a2-6 (the one retry of 153-a2-1) FAILed on its own script gates (orig_read.log:17 R3 duplicate #644 row, R4, R5 census scope, H handle drop 57667->51115), although the comparison itself came out SAME as S1.",
+  "question": "(1) Accept the 153-a2-6 measurement (original now 2f048e3a, changed 2026-10-07 15:48; #376 'frame index' <- w3268 <- #644/#639 loop i == S1) and apply the NAMES.md:112 / fixture-recording.md:18 / F4 correction (card 153-a2-7 is ready)? (2) Keep the open_rows conversion assumption of 153-a2-5 for adopting vigraph in 153-a2-4 (brief/card a2-4 still point to a2-3's wrapper and need a2-5)? (3) OpQueue hygiene card 153-a2-2 is ready, not run. (4) archive/peer/2026-10-09-c153-a2-6-origmd5.md has no review disposition (outside card write globs)."
+ },
+ "note": "a2-1 FAIL (original md5 changed since census; guard_peer review owed) -> a2-6 retry; a2-3 FAIL (PB gate also checks name-keyed plan open_rows) -> a2-5 retry PASS. Unrun but validated: task_153-a2-2.json, task_153-a2-4.json, task_153-a2-7.json."
+}

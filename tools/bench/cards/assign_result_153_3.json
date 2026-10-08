@@ -1,0 +1,22 @@
+{
+ "schema": "assign-result/1",
+ "cycle": 153,
+ "round": 3,
+ "status": "HANDBACK",
+ "cards": ["153-a2-7", "153-a2-2", "153-a2-8", "153-a2-4"],
+ "pass_evidence": [
+  {"item": 0, "met": true, "evidence": ["tools/bench/cards/result_153-a2-7.json", "docs/NAMES.md:112", "docs/fixture-recording.md:18", "tools/bench/p5_facts.md:57", "tools/bench/p5_facts.json:66"]},
+  {"item": 1, "met": true, "evidence": ["tools/bench/cards/result_153-a2-8.json", "tools/bench/diag_c153_a2_8_queue_hygiene.log:13,18,23,28", "tools/bench/op_hygiene/OpQueueObtain_v0.json", "tools/bench/op_hygiene/OpQueueEnqueue_v0.json", "tools/bench/op_hygiene/OpQueueDequeue_v0.json", "tools/bench/op_hygiene/OpQueueRelease_v0.json"]},
+  {"item": 2, "met": true, "evidence": ["tools/bench/cards/result_153-a2-8.json", "tools/bench/diag_c153_a2_8_queue_hygiene.log:31-36"]},
+  {"item": 3, "met": false, "evidence": ["tools/bench/cards/result_153-a2-4.json", "tools/bench/diag_c153_a2_4_run.log:5-13"]},
+  {"item": 4, "met": false, "evidence": ["tools/bench/diag_c153_a2_4_realpb.log:2"]},
+  {"item": 5, "met": false, "evidence": ["tools/bench/diag_c153_a2_4_run.log:14-15", "tools/bench/diag_c153_a2_4_rescore.log"]},
+  {"item": 6, "met": true, "evidence": ["tools/bench/cards/result_153-a2-4.json", "tools/bench/diag_c153_a2_4_run.log:4"]},
+  {"item": 7, "met": true, "evidence": ["tools/bench/cards/result_153-a2-4.json", "tools/bench/cards/result_153-a2-8.json"]}
+ ],
+ "handback": {
+  "reason": "a2-4: real PB check on stored s06 FAILs with adopted vigraph a7eb58c7 (14 vs 18 rows, diag_c153_a2_4_realpb.log:2); PB reads open_rows inline in recipe bodies (stage_d1_ring_p4_s06v18.py:142-149), beyond PD372(d)'s one caller. fp-70 undrained.",
+  "question": null
+ },
+ "note": "vigraph.py left ADOPTED a7eb58c7; restore to 13be0847 failed OSError 22 (diag_c153_a2_4_run.log:20-27; backup tools/bench/diag_c153_a2_4_vigraph_13be0847.bak). Done:a2-7 PASS (doc correction), a2-2 FAIL (own donor lookup) retried once as a2-8 PASS (4 ops x 20 calls flat, max_dev 1-5, records written, scratch+4 leftover dirs removed, LabVIEW gone). a2-4: vigraph a7eb58c7 adopted, compdiff 8/0, frame_80 12/0, t6 43/0 and c147 19/1 (P0 only) pass ONLY through the a2-5 temp-converted wrapper; re-score s06 18->14 (rename-only 2626 array 0..3), s07/s08/s09/S1-vs-s09 unchanged. For judgement: convert in the P5 recipe / re-key stored preds / accept stored s03-s09 recipes as superseded; keep vigraph a7eb58c7 or restore 13be0847."
+}

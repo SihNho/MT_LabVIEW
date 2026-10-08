@@ -1,0 +1,34 @@
+BGRUN START 2026-10-09 07:26:02 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c153-a2-6-origmd5 -TaskFile tools/bench/diag_c153_a2_6_peer_task.md
+BGRUN PID 1372
+OUTCOME: ANSWERED (233s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-09-c153-a2-6-origmd5.md
+COST: $1.9507  in 52 / out 17494 / cache-create 127386 / cache-read 2661357  (229s, 47 turn(s))
+--- ANSWER ---
+The repo does not support Claim 1. Nothing in this project recorded the original's md5 between 2026-09-18 and today, and nothing checks it regularly. So "saved by the user, outside this project" comes from rule 1, not from any measurement. Claim 2 picks a costlier test than needed: an offline byte comparison should come first.
+
+## 1. Strongest reason Claim 1 is wrong: nothing could have caught a save by this project
+- The per-cycle "originals untouched" check (audit A5) hashes a different file, `Min_Track N beads V6_ParallelLoop.vi` (`tools/audit_cycle.py:68`). It last read `2a78e17c`, mtime 09-01 (`archive/peer/2026-10-09-retrospective-cycle152.md:173`). A peer pointed out this exact gap on 09-18 (`tools/bench/peer_audit_c35.log:57`). `tools/gscript.py:75-77` also calls the V6 file `ORIGINAL`. Cycle 83's K2 gate used that pin while pointing at a 4.5 path that does not exist (`tools/bench/diag_c83_connect2x2_kit.log:10`).
+- The last time anyone actually measured `c39f36e0` was `tools/bench/build_opfstunnelterm_v2_run1.log:239`, on 2026-09-18 at about 13:44. Every later mention of `c39f36e0` repeats an old citation (cycle27-plan, motor-call-site-census, ucbench answers). Searching the repo for `2f048e3a` finds only cycle-153 files. **The change could have happened at any point in a 3-week window that nobody watched.**
+- The project did load this exact file in LabVIEW 2026 many times on 09-18: census, D0 runs, fstunnel diagnostics, and "ExecState 1 … once the ORIGINAL had been opened read-only" (`docs/cycle27-plan.md:154-155`). Opening relinks subVIs and marks the VI dirty; only a save writes that to disk. Each run's before/after md5 covers only that run's own window. Every run I sampled ended in `taskkill`/COM Quit (`tools/cycle_runner.py:711-745`), so there is no project save on record. But "no save on record" is not "no project save", and `gui_save` Ctrl+S presses on 09-22 and 09-23 (`tools/gui_actions.log:1801-1933`) went to whichever window was in front.
+- The md5 cannot say who saved the file. Both sides now use LabVIEW 2026 (memory note: rig standardised on 2026 from 08-31), so the version bytes `26 00 80 00` would look the same either way. **The version-byte test you proposed in (c) will not discriminate here.**
+
+## 2. Alternative explanation of the same evidence
+A resave that changed nothing in the graph. When a subVI changes, LabVIEW recompiles the callers and wants to save them, even with no edit. Unless compiled code is separated from source, that recompiled code is stored inside the VI file ([NI forum: LabVIEW re-saves VIs I haven't changed](https://forums.ni.com/t5/LabVIEW/LabVIEW-re-saves-vi-files-even-though-I-haven-t-changed-them/td-p/4205819), [Hampel: separate compiled code](https://hampel-soft.com/blog/separate-compiled-code-from-source/), [NI doc mirror](https://rajsite.github.io/unofficial-lvdocs/lvhowto/separate_compiled_code.html)). Saved front-panel default values or window positions would do the same. Whoever saved it, **a changed md5 does not mean a changed block diagram**. Claim 1's real-world consequence ("the census can't be trusted") is a separate question from its stated one ("who saved it"), and neither is shown yet.
+
+A smaller possibility: another file was copied over this path. Weak evidence it was a save in place: if Glob lists oldest first (I inferred this from the version order, it is not documented), the 4.5 file is now the newest `.vi` in `2. Tracking\`. It is newer than V6 (09-01) and 4.6. LabVIEW autosave writes to `LVAutoSave` and never overwrites the source ([NI forum](https://forums.ni.com/t5/LabVIEW/Autosave-file-location/td-p/1445524), [LAVA](https://lavag.org/topic/11472-where-does-labview-store-auto-recovery-vis/)), so that cause is excluded.
+
+## 3. What would falsify Claim 1
+- An mtime that falls inside a project LabVIEW window: a BGRUN START→END span of a script that loads this path, or within about a minute of a `gui_actions.log` Ctrl+S.
+- Or a size and content match to a file somewhere else (a copy put back).
+
+## (b) Can a byte-copy read in claudeDev mislead?
+Yes. The census was read from the original in its own folder. A copy in `user.lib\claudeDev` resolves relative subVI paths from a different place. The repo already records this effect for byte-identical copies: "ExecState 0 opened cold … ExecState 1 once the ORIGINAL had been opened" (`docs/cycle27-plan.md:154`, `archive/peer/2026-09-18-execstate-linkage.md:19`). If subVIs fail to link, some nodes can come up with different terminal sets. Whether the census uids (from `gscript.node_terms_uid`, `tools/bench/sweep_nodeterms_3state.py:130`) stay stable across a fresh load is not proven here either. So a mismatch between the copy read and the census would not separate "the file changed" from "the copy linked differently".
+
+## 4. Cheapest discriminating test (offline, no LabVIEW, under a minute)
+1. **Run the stat script that was already written and never run**, `tools/bench/diag_c153_a2_1_origstat.py`. It gives size against the census-time 471,257 B (`docs/cycle27-plan.md:154`), plus mtime and version-byte counts.
+2. **Use the 09-18 snapshot that already exists**: `claudeDev\Track_D0_copy_20260918.vi` was a plain byte copy at `c39f36e0` (`archive/2026-09-18-status-cycle30-d0.md:26`), and it is still on disk. If it still hashes to `c39f36e0`, compare the two files' resource blocks, both being LabVIEW resource-format files.
+   - Only compiled-code, linkage or panel-default blocks differ: a no-edit resave. The census still holds, and no LabVIEW read is needed.
+   - The block-diagram blocks differ: the graph changed, and the read in Claim 2 is justified. It would then be better to read the original in place, read-only, rather than a relocated copy, because of (b).
+3. Compare the mtime against `gui_actions.log` and the BGRUN windows. That separates "the user saved it" from "a project session saved it".
+
+What would change my mind: an mtime that falls clearly inside a user experiment period with no project LabVIEW process alive, together with block-diagram changes in the diff. That would support Claim 1 as stated and make the Claim 2 read the right next step.
+BGRUN END rc=0 after 234s

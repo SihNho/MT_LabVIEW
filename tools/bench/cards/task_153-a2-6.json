@@ -1,0 +1,57 @@
+{
+ "schema": "task/1",
+ "id": "153-a2-6",
+ "kind": "measure",
+ "retry_of_card": "153-a2-1",
+ "goal": "Retry of 153-a2-1: the original's md5 changed since the census; measure #376 'frame index' source by ONE read-only read of a claudeDev byte copy; same as S1 => cited doc fix, different => STOP.",
+ "why": "Cycle 153 round 2 purpose pass items 1-2 (docs/d1/ring-p4d.md PD371(c)); 153-a2-1 stopped because the original now hashes 2f048e3a, not the census-time c39f36e0; explained, one retry.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_153-a2-6.md", "md5": "ed0a37ca54fb44eded91b74ae71c846f"},
+  {"path": "tools/bench/cards/brief_153-a2-1.md", "md5": "c54d2d59ae09326daaa11e1bdc0249e6"},
+  {"path": "tools/bench/cards/result_153-a2-1.json"},
+  {"path": "docs/d1/ring-p4d.md", "md5": "bb0b17cc2f8a6387914c4841add5a1c4"}
+ ],
+ "pass": [
+  "original md5/size/mtime quoted (c39f36e0 -> 2f048e3a); ONE byte copy under claudeDev, copy md5 == original md5; read-only graph read, no edit/save/Run",
+  "ORIGINAL #376 'frame index' source uid+terminal quoted file:line from that read; S1 side w3268 <- #637 i from cycle27-plan.md:3748-3751",
+  "same => NAMES.md:112 + fixture-recording.md:18 carry a dated cited correction and p5_facts F4 cites it; different => no doc edited, STOP with both reads",
+  "copy deleted, LabVIEW gone (tasklist), original md5 before == after, invariant md5s unchanged"
+ ],
+ "outputs": [
+  "tools/bench/p5_facts.md",
+  "tools/bench/p5_facts.json",
+  "tools/bench/diag_c153_a2_6_original_frame_index.md",
+  "tools/bench/cards/result_153-a2-6.json"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/p5_facts.*",
+   "tools/bench/diag_c153_a2_1*",
+   "tools/bench/diag_c153_a2_6*",
+   "docs/NAMES.md",
+   "docs/fixture-recording.md",
+   "tools/bench/cards/result_153-a2-6*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/scratch_c153_a2_6*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/p5_facts.md"},
+  {"kind": "file", "name": "docs/NAMES.md"},
+  {"kind": "file", "name": "docs/fixture-recording.md"}
+ ],
+ "rules": [
+  "Measurement only: no design, no plan file, no docs/d1/ring-p5.md, no Selection List reader",
+  "Original never opened or saved; exactly ONE claudeDev byte copy is read, then deleted",
+  "Different source => edit no doc; return the stop line, both reads quoted",
+  "No stage-tool or hook edits; no motor or camera"
+ ]
+}

@@ -1,0 +1,54 @@
+{
+ "schema": "task/1",
+ "id": "153-a2-5",
+ "kind": "measure",
+ "retry_of_card": "153-a2-3",
+ "goal": "Retry of 153-a2-3: also convert the plans' open_rows in TEMP copies; then t6_poskey 43/0 and c147_b1_2 19/1 pass on converted preds+plans with candidate a7eb58c7 as module copy.",
+ "why": "Cycle 153 round 2 purpose pass item 5 (docs/d1/ring-p4d.md PD371(b)); 153-a2-3 stopped because the PB gate also checks name-keyed plan open_rows; the failure is explained, one retry.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_153-a2-5.md", "md5": "4a44a23473c015a9a27b3d2bba418cb5"},
+  {"path": "tools/bench/cards/result_153-a2-3.json"},
+  {"path": "docs/d1/ring-p4d.md", "md5": "bb0b17cc2f8a6387914c4841add5a1c4"},
+  {"path": "tools/bench/diag_c153_b2_1_vigraph_poskey.txt", "md5": "a7eb58c7e35a134f93df168ea4cdea80"},
+  {"path": "tools/vigraph.py", "md5": "13be0847aad910571d1de5af1e2071f2"}
+ ],
+ "pass": [
+  "converter (+ open_rows function) self-tests pass incl. >=3 new cases: pair dropped, unrelated pair kept, idempotent; file <=120 lines or split named",
+  "selftest_t6_poskey 43/0 and selftest_c147_b1_2 19/1 (only pre-existing P0) on TEMP converted preds+plans + candidate module copy; log paths + final lines quoted",
+  "stored pred/plan/suite md5 before == after, quoted; tools/vigraph.py still 13be0847; selftest_c153_compdiff_poskey 8/0 on candidate copy",
+  "OPEN states the open_rows conversion rule as an ASSUMPTION; any other FAIL => STOP with failing rows, no suite loosened"
+ ],
+ "outputs": [
+  "tools/bench/selftest_c153_poskey_convert.py",
+  "tools/bench/diag_c153_a2_5_run.py",
+  "tools/bench/cards/result_153-a2-5.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/selftest_c153_poskey_convert*",
+   "tools/bench/diag_c153_a2_3*",
+   "tools/bench/diag_c153_a2_5*",
+   "tools/bench/*_poskey_conv_*",
+   "tools/bench/cards/result_153-a2-5*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 45},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/selftest_c153_poskey_convert.py"},
+  {"kind": "file", "name": "tools/bench/diag_c153_a2_3_run.py"},
+  {"kind": "file", "name": "tools/bench/diag_c153_a2_3_vigraph_cand.py"}
+ ],
+ "rules": [
+  "Do not write tools/vigraph.py, tools/stagesim.py or any stage tool; no stored pred, plan or suite edit",
+  "Converted pred/plan copies go to temp files named *_poskey_conv_*, never over a stored file",
+  "No LabVIEW, no tools/hooks edit, no motor or camera"
+ ]
+}

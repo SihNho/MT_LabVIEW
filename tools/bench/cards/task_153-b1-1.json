@@ -1,0 +1,55 @@
+{
+ "schema": "task/1",
+ "id": "153-b1-1",
+ "kind": "build",
+ "goal": "stagesim collect-all replay mode (UNMEASURED -> plan value, step PROVISIONAL, continue, list all; never a PASS) + self-test listing op 185 owner and op 187 naming refusals; default path unchanged.",
+ "why": "Cycle 153 purpose pass items 9-10 (PD370(c)): cycle 152 lost two rounds stopping at one unmeasured refusal at a time (retrospective-cycle152 inference-over-measurement).",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_153-b1-1.md", "md5": "4f1ba025f6af035ac3450f0837ebcbec"},
+  {"path": "docs/d1/ring-p4d.md", "md5": "ffd1e90fd624434d52695e8aba8889dc"},
+  {"path": "tools/stagesim.py", "md5": "128bacfb5710355fe76fabfdde567f38"},
+  {"path": "tools/bench/plan_ring_p4_s09v18.json", "md5": "9d622c95ceadde0c7b46426b250d68a7"},
+  {"path": "tools/bench/graph_ring_p4s08_20261009_033522.json", "md5": "44858dbfa0e77628359f7a86727e250f"},
+  {"path": "tools/bench/fs_tunnel_naming_table.json", "md5": "769ae8d0f4a9c6a273e7c899dc3496a7"}
+ ],
+ "pass": [
+  "stagesim collect-all mode built; default path unchanged; new stagesim md5 quoted",
+  "self-test lists BOTH op 185 owner + op 187 naming refusals; default mode still refuses at op 185",
+  "PROVISIONAL status is never read as PASS by stage_prerun/stagexec/launch gate (grep quoted)",
+  "old stagesim self-tests run before and after, same counts; other stage-tool md5s unchanged"
+ ],
+ "outputs": [
+  "tools/stagesim.py",
+  "tools/bench/selftest_c153_collect_all.py",
+  "tools/bench/selftest_c153_collect_all.log"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagesim.py",
+   "tools/bench/selftest_c153_collect_all*",
+   "tools/bench/diag_c153_b1_1*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 90
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p4_s09v18.json"}
+ ],
+ "rules": [
+  "Only stagesim.py changes among stage tools; no hook edit",
+  "No recipe gate-criterion change (PD370(e)); real naming table never edited",
+  "No LabVIEW, motor or camera"
+ ]
+}

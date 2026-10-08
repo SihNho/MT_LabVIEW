@@ -1,0 +1,15 @@
+BGRUN START 2026-10-09 06:55:58 limit 1.0 min: py -u tools/bench/diag_c153_b1_1_plan.py
+BGRUN PID 26476
+['schema', 'context', 'stage', 'goal', 'base', 'open_rows', 'actions', 'final', 'finalized']
+ring_p4_s09v18 True
+{"s1_key": "D1_s1_copy"}
+1 {"op": "wire", "id": "p4_x_n2_order", "src": {"uid": 5058, "term_uid": 5111}, "dst": {"uid": 30002, "term": "array"}, "why": "ROUTE connect_term_uid | PRECEDENT | PD298(c)/PD295(d): #5058 'Bead is good? array out' t5111 -> FS4 input tunnel -> IAZ1 (no-effect consumer) = FS4 starts only after #5058; fs_border variant case_frame_to_fs_frame_branch (wired source, measured on a CASE frame) - on a While body never run. Placed AFTER rollback C: the crossing re-creates t5111's net (stagesim.py:1906-191
+2 {"op": "wire_remove_loose_ends", "id": "p4_rle_x_n2_order", "of": "p4_x_n2_order", "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972; PD256(b) one RLE per crossing"}
+3 {"op": "wire", "id": "p4_x_slot_fs", "src": {"uid": 30179, "term": "outer"}, "dst": {"uid": 29879, "term": "index"}, "why": "ROUTE connect_term_uid | UNMEASURED | branch from a plan-made While tunnel outer face ACROSS a plan-made FS border: no measured variant [draft d9d66246]"}
+4 {"op": "wire_remove_loose_ends", "id": "p4_rle_x_slot_fs", "of": "p4_x_slot_fs", "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0; PD255(b)/256(b) one RLE per crossing [draft d9d66246]"}
+5 {"op": "wire", "id": "p4_x_n2_out", "src": {"uid": 29879, "term": "element"}, "dst": {"uid": 29724, "term": "n2"}, "why": "c142-P2 re-pointed dst new:EQ2.y -> new:SQ1.n2 (PD330(a) subVI terminal by name) | ROUTE connect_term_uid | UNMEASURED | FS frame -> enclosing body EXIT (only entries and frame_to_frame measured) [draft d9d66246]"}
+6 {"op": "wire_remove_loose_ends", "id": "p4_rle_x_n2_out", "of": "p4_x_n2_out", "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0; PD255(b)/256(b) one RLE per crossing [draft d9d66246]"}
+open_rows [{"node": 10068, "term": "x", "why": "c152-b2-1: open at step 0 = declared open row of plan_ring_p4_s08v18.json"}, {"node": 10150, "term": "x", "why": "c152-b2-1: open at step 0 = declared open row of plan_ring_p4_s08v18.json"}, {"node": 10382, "term": "x", "why": "c152-b2-1: open at step 0 = declar
+{"base": "dict", "plan_in": "dict", "last_step": "dict", "summary": "dict", "end_cdiff_rows": "list", "failed": null, "first_divergent": "dict", "open_rows": "list", "open_rows_match": true, "open_rows_match_legacy": true, "open_rows_classed": "dict", "cdiff_inputs": "dict", "step_files": "list", "undecided": 0, "at": "2026-10-09 05:50:24", "fs_routes": "dict", "addr_pos": "list", "fs_border_gate": "dict", "route_check": "dict", "rebase": "dict"}
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[],"card":"153-b1-1","labview":"none"}
+BGRUN END rc=0 after 1s

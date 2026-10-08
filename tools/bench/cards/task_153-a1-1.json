@@ -1,0 +1,58 @@
+{
+ "schema": "task/1",
+ "id": "153-a1-1",
+ "kind": "measure",
+ "goal": "P5 fact census F1..F8 (PD370(f)) offline from files on disk -> tools/bench/p5_facts.md (<=100 lines) + p5_facts.json; facts only, at most ONE read-only LabVIEW read of a claudeDev copy, named.",
+ "why": "Cycle 153 purpose pass items 0-8 (docs/d1/ring-p4d.md PD370(f)). The next judgement writes docs/d1/ring-p5.md (P5 = loop 1.2 results -> loop 1.7 through a lossless FIFO) from these facts; no P5 build before it.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_153-a1-1.md", "md5": "0b67ffa6063c77912241f6755e3f3316"},
+  {"path": "docs/d1/ring-p4d.md", "md5": "ffd1e90fd624434d52695e8aba8889dc"},
+  {"path": "tools/bench/graph_ring_p4s09_20261009_062044.json", "md5": "22f967b513726a01c9d8f63269f689e6"},
+  {"path": "tools/bench/errorlist_expected_D1_ring_p4s09_20261009_060515.json", "md5": "5146f980f5a4b58403ce87afc870f9a9"},
+  {"path": "tools/bench/memory_model.json", "md5": "6f2b56872fd593ecaafe63221bf4f1fc"}
+ ],
+ "pass": [
+  "F1: each #376 input in S1 (source node/term/wire uid, type) + its s09 location and wired state; w4517, w3268, w1397 at least; file:line cited",
+  "F2: all 45 s09 Error List items (expected 5146f980) mapped to an object uid; 1.7 open rows marked",
+  "F3: loop 1.7 #23041 in s09 - body, shift registers, stop source, timing, per-iteration nodes; cited",
+  "F4: original #376 call - enclosing case, condition, cadence, order vs tracking kernel, what 'frame index' is; from on-disk S1/original reads, cited",
+  "F5: loop 1.2 in s09 - valid-frame boolean (n1==n2 AND n1>last) and rollback Select outputs, uids + terminals",
+  "F6: how loops 1.2 and 1.7 stop in s09 (StopAll local, stop (end) latch) and their shutdown order",
+  "F7: ops/routes/donors that built and removed the pool queues, their hygiene records, protocol.py requires result each",
+  "F8: s09 load 596.7 and X10 headroom for a P5 session, quoted from memory_model.json",
+  "p5_facts.md (<=100 lines, no design) + .json; any LabVIEW read (max ONE, read-only, copy) named; LabVIEW gone after; invariant md5s unchanged"
+ ],
+ "outputs": [
+  "tools/bench/p5_facts.md",
+  "tools/bench/p5_facts.json"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/p5_facts.*",
+   "tools/bench/diag_c153_a1_1*",
+   "tools/bench/graph_ring_p4s09_*_readonly*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 75
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/graph_ring_p4s09_20261009_062044.json"},
+  {"kind": "file", "name": "tools/bench/errorlist_expected_D1_ring_p4s09_20261009_060515.json"}
+ ],
+ "rules": [
+  "Facts only: no design, no options, no docs/d1/ring-p5.md, no plan file",
+  "Originals, bed s09, S1 never edited or saved; at most one read-only LabVIEW read of a claudeDev copy",
+  "No stage-tool or hook edits; no motor or camera"
+ ]
+}

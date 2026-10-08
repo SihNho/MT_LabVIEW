@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"153-a2-6","status":"FAIL","gates":{"pass":3,"fail":1},
+"first_fail":"diag_c153_a2_6_orig_read.log:17 R3 ONE source row - read_terms returns the #644 row twice (:13-14); also R4 (:18), R5 census set (:19), H handles fell 57667->51115 (:22)",
+"blocked_by":null,
+"artefacts":[
+{"path":"tools/bench/diag_c153_a2_6_original_frame_index.md","md5":"4806fc63eb4cef4b7b177ee95ecebaab"},
+{"path":"tools/bench/diag_c153_a2_6_orig_read.py","md5":"5fd2a6e3e7ef57b5b96b7e6183992e89"},
+{"path":"tools/bench/diag_c153_a2_6_orig_read.log","md5":"957024d7b5332f7ad1387455c47ab323"},
+{"path":"tools/bench/diag_c153_a2_6_orig_read.json","md5":"811896012a65955590c1dc712e6826b7"},
+{"path":"tools/bench/diag_c153_a2_6_rsrc.py","md5":"f6c14f135a682bd5b35c045cab247896"},
+{"path":"tools/bench/diag_c153_a2_6_rsrc.log","md5":"e7b735342ea5aa20e75bde52bb2b7e2c"},
+{"path":"tools/bench/diag_c153_a2_6_peer_task.md","md5":"47ffa03458de48cc04bf7b25d09c57e0"}],
+"facts":[
+"Original 4.5 now 471361 B, mtime 2026-10-07 15:48:44, md5 2f048e3a; 09-18 snapshot Track_D0_copy_20260918.vi 471257 B = c39f36e0 (diag_c153_a2_6_rsrc.log:3-4)",
+"RSRC diff: 45=45 blocks, 35 identical, 10 differ incl. BDHb same size 190531 B, FPHb +111, DFDS -1; both LV2026 (rsrc.log:7-10); no project BGRUN 10-07 15:30-16:00",
+"ONE byte copy claudeDev/scratch_c153_a2_6_orig.vi md5 == 2f048e3a, read headless (GObject 9967 + OpAllTerms_v1 5738 rows), no edit/save/Run (orig_read.log:7-9)",
+"ORIGINAL #376 SubVI 'frame index' = term 5763, wire 3268 (orig_read.log:11) <- term #644 leaf Terminal, owner Diagram #639, #639 owner WhileLoop = loop i (:13)",
+"S1: w3268 <- term 644 owner Diagram 639 (D1_s1_copy.json:36385-36392, cycle27-plan.md:3748-3751); S1 has the same 8 sinks incl. 5763/#376 (D1_s1_copy.json:35865-35870)",
+"Data-level comparison: SAME source, same uids, same sink set; #5119 x-y -> w16483 -> #2626 element only (orig_read.log:20)",
+"Gate FAILs are prediction defects of my script: #644 row duplicated (:13-14, S1 json :36395 has the same duplicate); census set wrong scope (:19); handle DROP 6552 (:22)",
+"No doc edited (step returned FAIL): NAMES.md:112, fixture-recording.md:18, p5_facts F4 untouched (p5_facts.md md5 1cc989e0 unchanged)",
+"LabVIEW gone (orig_read.log:23), copy deleted (:24), original md5 before == after 2f048e3a (:3,:25), 11 invariant md5s unchanged (:4,:27)",
+"JEV: diag_c153_a2_6_orig_read.log | no ladder row yet (no gated launch after it) | - | not dispatched | returned. Hyp review for a2_1 log: archive/peer/2026-10-09-c153-a2-6-origmd5.md ANSWERED"],
+"open":[
+"brief pre-scripted: SAME => dated cited correction of NAMES.md:112 + fixture-recording.md:18 and p5_facts F4 cite. Data says SAME (orig_read.log:11,13); gates failed on duplicate row/handle drop. Apply it?",
+"Original changed 2026-10-07 15:48 (BDHb same size, other bytes; FPHb +111 B): no-edit resave or a user edit? Census uids around w3268 still match S1 exactly.",
+"Review disposition for archive/peer/2026-10-09-c153-a2-6-origmd5.md not written: archive/peer is outside this card's write globs (guard_card refused)"],
+"cost":{"usd":null,"minutes":13,"labview_runs":1},
+"note":"stagekit form refused as VI-modifying (gate-fp fp-63, deduped); ran as plain gscript script like diag_c149_a1_3_wire.py. Card pass items: 1 PASS, 2 PASS, 3 FAIL (decision step not taken after the failed run), 4 PASS."}

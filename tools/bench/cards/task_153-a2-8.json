@@ -1,0 +1,57 @@
+{
+ "schema": "task/1",
+ "id": "153-a2-8",
+ "kind": "measure",
+ "retry_of_card": "153-a2-2",
+ "goal": "RETRY of 153-a2-2: read the example's Function rows, fix donor discovery, then 20-call hygiene of the 4 OpQueue*_v0 ops via gscript.hygiene_run; records in tools/bench/op_hygiene/; scratch gone.",
+ "why": "Cycle 153 round 3 pass items 2-3 (docs/d1/ring-p4d.md PD371(d), PD372(e)); hygiene rule 5: flat handles +-100 over 20 calls before P5 uses these ops. 153-a2-2 failed gate D (find_donor None) before any op ran.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_153-a2-8.md", "md5": "1281abf4819abb492847fac5af322538"},
+  {"path": "docs/d1/ring-p4d.md", "md5": "3b4cf56803bb2d11687c9c8e2d392fc6"},
+  {"path": "tools/gscript.py", "md5": "1a80236ed35c1876c67f964c72fe820a"},
+  {"path": "tools/stagekit.py", "md5": "604529e8e9b68b9c4b370b8f3d5c5ee5"}
+ ],
+ "pass": [
+  "step-1 readout of the example (Diagram count, Function row count, node_terms_uid rows) quoted and the donor choice explained from it",
+  "each of the 4 OpQueue*_v0 ops: 20 calls via gscript.hygiene_run on a claudeDev scratch VI, h_pre/h_post/h_closed quoted, flat within +-100, 0 errors",
+  "one record per op written to tools/bench/op_hygiene/ (OpQueueObtain_v0.json, OpQueueEnqueue_v0.json, OpQueueDequeue_v0.json, OpQueueRelease_v0.json), md5 quoted",
+  "scratch VI, its _hyg dir and the 4 empty leftover scratch_c153_a2_2_*_hyg dirs deleted, LabVIEW verified gone after (tasklist), op VI md5s and invariant tool md5s unchanged"
+ ],
+ "outputs": [
+  "tools/bench/op_hygiene/OpQueueObtain_v0.json",
+  "tools/bench/op_hygiene/OpQueueEnqueue_v0.json",
+  "tools/bench/op_hygiene/OpQueueDequeue_v0.json",
+  "tools/bench/op_hygiene/OpQueueRelease_v0.json",
+  "tools/bench/diag_c153_a2_8_queue_hygiene.py",
+  "tools/bench/cards/result_153-a2-8.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c153_a2_8*",
+   "tools/bench/op_hygiene/OpQueue*",
+   "tools/bench/hygiene_*c153*",
+   "tools/bench/cards/result_153-a2-8*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/scratch_c153_a2_*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/recipes/build_opqueue.py"}
+ ],
+ "rules": [
+  "Ops are measured as built; no op VI edited or saved; no bed (D1_ring_*.vi) opened",
+  "Never beside a card that writes tools/vigraph.py or any stage tool",
+  "STOP at the first drift or error after finishing that op with LabVIEW closed; return facts, no fix",
+  "One hygiene script, one bgrun (--max-min 40); handles read before/after; no hooks edit; no motor or camera"
+ ]
+}

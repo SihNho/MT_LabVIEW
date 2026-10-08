@@ -1988,3 +1988,17 @@ pre-fix tree drop `ASSIGN_STATE`/`CYCLE_ROLE`/`CYCLE_SESSION`; prepared as `tool
 finding 2 (`tools/bgrun.py --material` drops the three variables for every child) is weighed when that card is re-issued.
 DEFERRED by PD364(f): it runs ALONE before the next card that runs a pre-fix tree, or with the next gate-fp drain. Until then no
 card runs a pre-fix tree, so the leak cannot re-arm.
+
+## inference-over-measurement — 2026-10-09 07:0x (cycle 153 judgement, after archive/peer/2026-10-09-retrospective-cycle152.md:601)
+
+`VIOLATION: inference-over-measurement | loss_min=19 | loss_usd=? | evidence=docs/d1/ring-p4d.md:29`: ACCEPTED. The cycle-152
+judgement wrote that the missing FS owner was the hand-back's whole cause. It did not run the 9-second provisional replay that
+would have shown op 187's naming refusal too (`prep_c152_a2_2_mk.log:38-41`), so a second hand-back round was spent.
+
+DECISION: device. This is the second occurrence since the 2026-10-02 01:01 decision. Both were the same shape: a gap was assumed
+to be the only one. That is enough to build now rather than wait for a third. `stagesim` gets a collect-all replay mode: on an
+UNMEASURED refusal (owner, tunnel name, terminal class) it puts in the plan's own predicted value, flags the step PROVISIONAL
+with the refusal text, continues, and prints one list of every refusal. A collect-all run is never a dry, prerun or launch PASS.
+Self-test: on the s08 END graph with FS #29721's owner unmeasured and the naming table without the 152-b1-2 row, it must list
+both the op-185 owner refusal and the op-187 naming refusal. Built in cycle 153 (`docs/d1/ring-p4d.md` PD370(c)). Rule for every
+judgement: a purpose that orders a LabVIEW measurement to clear a simulator refusal puts a collect-all replay first.

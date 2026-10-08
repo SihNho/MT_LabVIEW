@@ -844,15 +844,49 @@ def computation_diff_frame(A, B):
     return computation_diff(A, B)
 
 
+def pos_keys(G):
+    """card 153-b2-1 (gate-fp fp-70, docs/d1/ring-p4d.md PD370(d)): {terminal key: POSITION KEY (node, index, term class,
+    is_source)}, index = the terminal's position among its node's rows in READ order (G["by_node"], rows after dedupe_rows) -
+    the key shape of addrcheck.pos_table that stagekit's result gates D / TD / PB use (card chat-T6, docs/d1/INDEX.md:264
+    PD366(b)). The NAME is not in it: LabVIEW renames polymorphic inputs when it wires them (#2626 'array'->'element',
+    #9503 'Value'->''), so a name key read a renamed terminal as one lost + one new row. Not cached in G (tuple keys)."""
+    by = G.get("by_node")
+    if by is None:
+        by = collections.OrderedDict()
+        for r in G["rows"].values():
+            by.setdefault(r["node"], []).append(r)
+    out = {}
+    for node, rs in by.items():
+        for i, r in enumerate(rs):
+            out[r["key"]] = (node, i, r.get("term_class", ""), bool(r.get("is_source")))
+    return out
+
+
+def _pos_src(P, s):
+    """One effective source ("<key>" or, frame-keyed, "<key>@<tunnel uid>/f<ordinal>+...") on its POSITION key; the frame
+    tag is name-free already and stays part of the compared value."""
+    base, tag = s, ""
+    if "@" in s:
+        b, t = s.rsplit("@", 1)
+        if all(x.split("/f")[0].isdigit() and x.split("/f")[-1].isdigit() and "/f" in x for x in t.split("+")):
+            base, tag = b, t
+    p = P.get(base)
+    return (p if p is not None else ("?", base), tag)
+
+
 def computation_diff(A, B):
     """ASSUMPTION A's rule-1a question: for every COMPUTATION node (subVI, primitive, constant,
     front-panel terminal), is every input fed by the SAME computation source in both graphs once
     scheduling relays are collapsed? Returns exactly the rows where it is not.
-    Both graphs must be built in the SAME mode (default or frame_keyed)."""
+    Both graphs must be built in the SAME mode (default or frame_keyed).
+    card 153-b2-1 (fp-70): sinks AND their sources are compared on POSITION keys (pos_keys), never on names, so a rename-only
+    terminal is no row (it is listed in `renames`, INFO); a row's `sink` is A's name key (B's when A lacks the position) and
+    `before` / `after` stay the raw name keys, so every consumer reading `sink` / `node` reads the same shape as before."""
     if bool(A.get("frame_keyed")) != bool(B.get("frame_keyed")):
         raise ValueError("computation_diff: one graph is frame_keyed and the other is not")
     ma, mb = {}, {}
-    rows, added, removed = [], [], []
+    rows, added, removed, renames = [], [], [], []
+    PA, PB = pos_keys(A), pos_keys(B)
     ca = set(n for n in A["cls"] if not is_scheduling(A, n))
     cb = set(n for n in B["cls"] if not is_scheduling(B, n))
     for n in sorted(ca - cb):
@@ -860,17 +894,26 @@ def computation_diff(A, B):
     for n in sorted(cb - ca):
         added.append({"node": n, "class": B["cls"][n]})
     for n in sorted(ca & cb):
-        sinks = set(terminals(A, node=n, is_source=False)) | set(terminals(B, node=n, is_source=False))
-        for key in sorted(sinks):
-            sa = effective_sources(A, key, ma) if key in A["rows"] else None
-            sb = effective_sources(B, key, mb) if key in B["rows"] else None
-            if sa == sb:
+        ka = dict((PA[k], k) for k in terminals(A, node=n, is_source=False))
+        kb = dict((PB[k], k) for k in terminals(B, node=n, is_source=False))
+        out = []
+        for p in set(ka) | set(kb):
+            a, b = ka.get(p), kb.get(p)
+            sa = effective_sources(A, a, ma) if a is not None else None
+            sb = effective_sources(B, b, mb) if b is not None else None
+            na = None if sa is None else set(_pos_src(PA, s) for s in sa)
+            nb = None if sb is None else set(_pos_src(PB, s) for s in sb)
+            if na == nb:
+                if a != b or sa != sb:
+                    renames.append({"node": n, "sink": a, "sink_b": b})
                 continue
-            rows.append({"node": n, "class": A["cls"].get(n) or B["cls"].get(n), "sink": key,
-                         "before": None if sa is None else sorted(sa),
-                         "after": None if sb is None else sorted(sb)})
+            out.append({"node": n, "class": A["cls"].get(n) or B["cls"].get(n), "sink": a if a is not None else b,
+                        "before": None if sa is None else sorted(sa),
+                        "after": None if sb is None else sorted(sb)})
+        rows.extend(sorted(out, key=lambda r: r["sink"]))
     return {"rows": rows, "computation_nodes_added": added, "computation_nodes_removed": removed,
-            "n_computation_nodes": len(ca & cb),
+            "n_computation_nodes": len(ca & cb), "renames": sorted(renames, key=lambda r: (r["node"], str(r["sink"]))),
+            "key": "position (node, index, term class, is_source) - card 153-b2-1 fp-70",
             "assumption": "A (SCHED_OWNER) - judgement 2026-09-23, awaiting the user (plan OPEN A)"}
 # ---
 # labview: none

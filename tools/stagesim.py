@@ -1896,7 +1896,21 @@ def _looptunnel_measured(st, s):
         return False
     loop = ((st.get("owners") or {}).get(str(inner[0]["frame_diagram"])) or [None])[0]
     srcs = [r["owner_class"] for r in wire_rows(st, inner[0]["wire_uid"]) if r["is_source"]]
+    if CROSS_LT_FROM_TABLE is not None:                  # card 153-b1-1: simulate(naming_table=...) - the table's LoopTunnel rows
+        return any((loop, srcs) == (lc, [sc]) for lc, sc in CROSS_LT_FROM_TABLE)
     return (loop, srcs) == (CROSS_LOOPTUNNEL_MEASURED[0], [CROSS_LOOPTUNNEL_MEASURED[1]])
+
+
+# card 153-b1-1 (PD370(c)): None = the in-code CROSS_LOOPTUNNEL_MEASURED (default, unchanged). simulate(naming_table=<path>) sets
+# it, for that one run only, to the (loop_class, inner_src_class) pairs of the table's `src_looptunnel` rows - so a replay on a
+# table WITHOUT row 152-b1-2 refuses the LoopTunnel naming exactly as before card 152-b1-3 measured it.
+CROSS_LT_FROM_TABLE = None
+
+
+def naming_table_lt_pairs(path):
+    """card 153-b1-1: the measured LoopTunnel source shapes recorded in a naming table -> [(loop_class, inner_src_class)]."""
+    return [(r["src_looptunnel"]["loop_class"], r["src_looptunnel"]["inner_src_class"])
+            for r in _j(_abs(path))["rows"] if r.get("src_looptunnel")]
 
 
 def _cross_tunnel_name(st, s, a):
@@ -2510,14 +2524,44 @@ def fs_routes_of(steps):
     return out
 
 
+COLLECT_ALL_VERDICT = "PROVISIONAL"        # card 153-b1-1: the ONLY verdict a collect-all replay has; never a PASS
+
+
+def _plan_predictions(plan):
+    """card 153-b1-1: the plan's OWN predicted step states (finalized.step_files, each md5-checked) -> {n: {path, md5, state,
+    effect}}. A file that is missing or whose md5 differs is not a prediction."""
+    out = {}
+    for s in ((plan.get("finalized") or {}).get("step_files") or []):
+        p = _abs(s.get("path") or "")
+        if s.get("n") and os.path.isfile(p) and md5_file(p) == s.get("md5"):
+            r = _j(p)
+            out[int(s["n"])] = {"path": s["path"], "md5": s["md5"], "state": r["state"], "effect": r.get("effect")}
+    return out
+
+
 def simulate(plan_path, graph_path, out_root=SIM_ROOT, plan_out_dir=BENCH, model_dir=OPMODEL_DIR, labels=None,
-             log=print, route_check=True):
+             log=print, route_check=True, collect_all=False, naming_table=None):
+    """card 153-b1-1 (PD370(c)): `collect_all` (default False = the unchanged replay) - an UNMEASURED refusal takes the plan's own
+    predicted step state, the step is PROVISIONAL, the replay continues and every refusal is listed; verdict PROVISIONAL, final
+    False, no plan_<stage>.json, no route check, step files under <out_root>/<stage>__collect_all. `naming_table` (default None =
+    in-code rule): a naming table whose src_looptunnel rows are the measured LoopTunnel shapes for this run."""
+    global CROSS_LT_FROM_TABLE
+    CROSS_LT_FROM_TABLE = naming_table_lt_pairs(naming_table) if naming_table else None
+    try:
+        return _simulate(plan_path, graph_path, out_root, plan_out_dir, model_dir, labels, log, route_check, collect_all)
+    finally:
+        CROSS_LT_FROM_TABLE = None
+
+
+def _simulate(plan_path, graph_path, out_root, plan_out_dir, model_dir, labels, log, route_check, collect_all):
     plan = _j(plan_path)
     ok, why = protocol.validate_obj(plan)
     if not ok:
         raise SimError("plan does not validate against stageplan/1: " + why)
     stage = plan["stage"]
-    out_dir = os.path.join(out_root, stage)
+    out_dir = os.path.join(out_root, stage + ("__collect_all" if collect_all else ""))
+    predicted = _plan_predictions(plan) if collect_all else {}
+    refusals = []
     os.makedirs(out_dir, exist_ok=True)
     for old in glob.glob(os.path.join(out_dir, "step_*.json")):
         os.remove(old)
@@ -2563,6 +2607,16 @@ def simulate(plan_path, graph_path, out_root=SIM_ROOT, plan_out_dir=BENCH, model
         except BaseException:
             ADDR_POS = None
             raise
+        prov = None
+        if err and collect_all and "unmeasured" in err.lower():
+            # card 153-b1-1: the plan's own predicted state after this step (or, with no prediction, the state before it)
+            pr = predicted.get(n)
+            st = pr["state"] if pr else _j(prev["path"])["state"]
+            prov = {"n": n, "op": a["op"], "id": a.get("id"), "refusal": err,
+                    "prediction": {"path": pr["path"], "md5": pr["md5"]} if pr else None}
+            refusals.append(prov)
+            effect, cands, err = {"provisional": COLLECT_ALL_VERDICT, "refusal": prov["refusal"], "prediction": prov["prediction"],
+                                  "predicted_effect": pr["effect"] if pr else None}, [], None
         for c in cands:
             c["step"] = n
         all_cands += cands
@@ -2572,6 +2626,8 @@ def simulate(plan_path, graph_path, out_root=SIM_ROOT, plan_out_dir=BENCH, model
         rec = {"n": n, "op": a["op"], "id": a.get("id"), "checkpoint": a.get("checkpoint"), "file": prev,
                "model_source": src, "model_evidence": ev, "model_gaps": gaps, "error": err,
                "n_candidates": len(cands), "secs": round(time.time() - t0, 2)}
+        if prov:
+            rec["provisional"] = prov
         if effect:
             rec["effect_summary"] = dict((k, v) for k, v in effect.items() if k not in ("reconnect",))
             if "reconnect" in effect:
@@ -2583,7 +2639,7 @@ def simulate(plan_path, graph_path, out_root=SIM_ROOT, plan_out_dir=BENCH, model
             rec["cdiff_detail"] = cd["rows"]
         steps.append(rec)
         log("  STEP {0:02d} {1:<16} {2} cands={3} cdiff={4} {5}".format(
-            n, a["op"], "ERROR " + err if err else "ok", len(cands),
+            n, a["op"], "ERROR " + err if err else ("PROVISIONAL " + prov["refusal"] if prov else "ok"), len(cands),
             len(rec.get("cdiff_rows") or []) if rec.get("cdiff_rows") is not None else "-", src))
         if err:
             failed = {"n": n, "op": a["op"], "id": a.get("id"), "error": err}
@@ -2629,6 +2685,25 @@ def simulate(plan_path, graph_path, out_root=SIM_ROOT, plan_out_dir=BENCH, model
                "first_divergent": first_div, "n_candidates": len(all_cands), "undecided": len(undecided),
                "candidates": {"path": _rel(cands_path), "md5": md5_file(cands_path)}, "sym": st["sym"],
                "new_classes": dict((str(k), v) for k, v in cls_new.items())}
+    if collect_all:
+        # card 153-b1-1 (PD370(c)): NEVER a PASS - final False, verdict PROVISIONAL, `failed` always set (the stopping error, or
+        # the collect-all marker), no plan_<stage>.json, no route check; the refusals are the product
+        summary["final"] = False
+        summary["verdict"] = COLLECT_ALL_VERDICT
+        summary["collect_all"] = {"refusals": refusals, "n_refusals": len(refusals), "stopped_by": failed,
+                                  "note": "collect-all replay (card 153-b1-1): UNMEASURED steps carry the plan's predicted "
+                                          "state; never a dry, prerun or launch PASS"}
+        summary["failed"] = failed or {"n": refusals[0]["n"] if refusals else None, "op": refusals[0]["op"] if refusals
+                                       else None, "id": refusals[0]["id"] if refusals else None, "provisional": True,
+                                       "error": "{0} collect-all replay: {1} UNMEASURED refusal(s); never a PASS".format(
+                                           COLLECT_ALL_VERDICT, len(refusals))}
+        sp = os.path.join(out_dir, "summary.json")
+        with open(sp, "w", encoding="utf-8") as f:
+            json.dump(summary, f, indent=1, default=str)
+        log("  COLLECT-ALL {0}: {1} UNMEASURED refusal(s) at step(s) {2}; stopped_by {3}".format(
+            COLLECT_ALL_VERDICT, len(refusals), [r["n"] for r in refusals], failed))
+        summary.update(plan_out=None, summary_path=sp, _state=st, _base_nodes=base_nodes, _S1=S1)
+        return summary
     sp = os.path.join(out_dir, "summary.json")
     with open(sp, "w", encoding="utf-8") as f:
         json.dump(summary, f, indent=1, default=str)
@@ -3425,6 +3500,16 @@ def main(argv):
             kw["out_root"] = argv[argv.index("--out-root") + 1]
         if "--plan-out" in argv:
             kw["plan_out_dir"] = argv[argv.index("--plan-out") + 1]
+        if "--naming-table" in argv:
+            kw["naming_table"] = argv[argv.index("--naming-table") + 1]
+        if "--collect-all" in argv:                      # card 153-b1-1: never a PASS; RESULT is FAIL with every refusal
+            S = simulate(argv[2], argv[3], collect_all=True, **kw)
+            rf = S["collect_all"]["refusals"]
+            print("SUMMARY verdict={0} refusals={1} stopped_by={2}".format(S["verdict"], json.dumps(rf, default=str)[:4000],
+                                                                         S["collect_all"]["stopped_by"]))
+            print(protocol.result_line(protocol.make_result(0, max(1, len(rf)), "{0} collect-all: {1} UNMEASURED refusal(s)"
+                                                            .format(S["verdict"], len(rf)))))
+            return 1
         S = simulate(argv[2], argv[3], **kw)
         ok = S["final"]
         print("SUMMARY final={0} failed={1} end_cdiff_rows={2} first_divergent={3} candidates={4}".format(

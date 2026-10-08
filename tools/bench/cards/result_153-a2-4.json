@@ -1,0 +1,35 @@
+{"schema": "result/1", "id": "153-a2-4", "status": "FAIL",
+ "gates": {"pass": 6, "fail": 2},
+ "first_fail": "REAL-PB on stored s06 cfbd9823/c1bd6b3e with adopted vigraph FAILS (14 vs 18 rows, 12/13 pairs); PB reads PRED/open_rows only in the recipe body -> STOP",
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/vigraph.py", "md5": "a7eb58c7e35a134f93df168ea4cdea80"},
+  {"path": "tools/bench/diag_c153_a2_4_run.py", "md5": "32b9db3e47a16416980438aabe329d10"},
+  {"path": "tools/bench/diag_c153_a2_4_run.log", "md5": "ad49a6b2efcc3b48b8104cd5475b3bb4"},
+  {"path": "tools/bench/diag_c153_a2_4_realpb.log", "md5": "59fcd6abb94260ff9a105ee964c1df67"},
+  {"path": "tools/bench/diag_c153_a2_4_rescore.log", "md5": "ee6fde66338b40ff6af1af9d125a17ee"},
+  {"path": "tools/bench/diag_c153_a2_4_rescore.json", "md5": "2eb3f1ba838b19bbdff29e06a15546ff"},
+  {"path": "tools/bench/diag_c153_a2_4_t6.log", "md5": "3fe9ccc83df683c08c97a6e043b21284"},
+  {"path": "tools/bench/diag_c153_a2_4_c147.log", "md5": "04b6d3bb120045a78fff58c47abbd06c"},
+  {"path": "tools/bench/diag_c153_a2_4_compdiff.log", "md5": "a47c5799f4832c7c5c84f3c85e755217"},
+  {"path": "tools/bench/diag_c153_a2_4_vigraph_13be0847.bak", "md5": "13be0847aad910571d1de5af1e2071f2"}
+ ],
+ "facts": [
+  "vigraph ADOPTED: old 13be0847 -> new a7eb58c7 == txt; frame_80 12/0 before + after, compdiff_poskey 8/0 (diag_c153_a2_4_run.log:5-9)",
+  "Real PB entry = recipe body, inline: stage_d1_ring_p4_s06v18.py:142-149 (needs K.Stage); no shared PB fn in stagexec/stage_prerun/stagekit (stagexec.py:4467 = E3)",
+  "REAL-PB replayed verbatim on stored plan cfbd9823 + pred c1bd6b3e, no conversion: FAIL rows 14 vs 18, missing 2626|Terminal|array|0..3, pairs 12 vs 13 (diag_c153_a2_4_realpb.log:2)",
+  "Fix needs BOTH sides in the recipe: pred rows by CV.convert and open_rows by convert_open_rows; in memory the same lines PASS, == a2-5 temp files (diag_c153_a2_4_realpb.log:4)",
+  "No caller changed: stagekit 604529e8 addrcheck 207beb0d stagexec 1bab9cf9 gscript 1a80236e stage_prerun c739eb86 stagesim 78b8d5a1; plans/preds unchanged (run.log:4)",
+  "Adopted bytes, a2-5 temp-converted preds/plans: t6_poskey 43/0, c147_b1_2 19/1 only P0 pins (diag_c153_a2_4_run.log:11-13)",
+  "Rescore (pair old->new): s06 18->14 removed 2626 array|0..3; s07 19->19; s08 21->21; s09 21->21; S1-s09 raw 21->21; none added (diag_c153_a2_4_run.log:14-15)",
+  "Rescore json byte-identical to 153-b2-1's (2eb3f1ba); its own 7/1 (s06 'all rename-only: False') is the same as diag_c153_b2_1_rescore.log:7; my A4 gate asked 0 fails (script bug)",
+  "Planned restore to 13be0847 FAILED: Python OSError 22 opening tools/vigraph.py (run.log:20-27); cp/Copy-Item/git checkout refused by permissions -> vigraph stays a7eb58c7",
+  "fp-70 NOT drained (PD372(d) unmet). Jev ladder: no JEV-LADDER row for diag_c153_a2_4_run.log in jev_gate.log. No LabVIEW, tasklist empty."
+ ],
+ "open": [
+  "Brief STOP rule fired: PB reads PRED/open_rows only in recipe bodies (stage_d1_ring_p4_s06v18.py:147-149 etc.), not an authorised file. Convert there, re-key stored preds, or accept stored s03-s09 as superseded?",
+  "tools/vigraph.py is left ADOPTED (a7eb58c7, git shows M) because the restore could not run; keep it, or restore 13be0847 (bak at tools/bench/diag_c153_a2_4_vigraph_13be0847.bak / git HEAD)?",
+  "Re-run of stage recipes s03-s09 on stored preds would now FAIL PB, and selftest_t6_poskey/c147 pass only through the a2-5 temp-converted J wrapper."
+ ],
+ "cost": {"usd": null, "minutes": 9, "labview_runs": 0},
+ "note": "rescore wrote diag_c153_b2_1_rescore.json, which was put back to its previous bytes. Gate fails: A4 (over-strict script gate; the table matched the brief) and the vigraph restore crash."}

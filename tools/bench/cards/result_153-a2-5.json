@@ -1,0 +1,31 @@
+{"schema": "result/1", "id": "153-a2-5", "status": "PASS",
+ "gates": {"pass": 33, "fail": 0},
+ "first_fail": null,
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/selftest_c153_poskey_convert.py", "md5": "9a3b16b66fb092d137b5c58b3e6b231f"},
+  {"path": "tools/bench/diag_c153_a2_5_run.py", "md5": "dff6d64ea814eec50c619397ce9e0067"},
+  {"path": "tools/bench/diag_c153_a2_5_map.json", "md5": "e9a57dd93de799b53096e8932e7d926d"},
+  {"path": "tools/bench/diag_c153_a2_5_run.log", "md5": "0a4e5c62a5b0e5e944a237f91cec6f2b"},
+  {"path": "tools/bench/diag_c153_a2_5_t6.log", "md5": "f728d3b67838121ef3a3a79cdc762849"},
+  {"path": "tools/bench/diag_c153_a2_5_c147.log", "md5": "0bed641d559e7da6d531ecd3e6d3a193"},
+  {"path": "tools/bench/diag_c153_a2_5_compdiff.log", "md5": "cdbb89a70399c5e90f475e09639ea5d6"},
+  {"path": "tools/bench/plan_ring_p4_s06v18_poskey_conv_20261009_072646.json", "md5": "556fab949385118c89ceeb4c7f863efc"},
+  {"path": "tools/bench/plan_ring_p4_s06v18_pred_poskey_conv_20261009_072646.json", "md5": "09a59db387619ff47ecea87a7808d5fa"}
+ ],
+ "facts": [
+  "Converter 120 lines, +convert_open_rows; self-test 10/0 incl. O1 pair dropped, O2 unrelated kept, O3 idempotent (selftest_c153_poskey_convert_a2_5.log RESULT line)",
+  "X1 converted preds == candidate rows, all 5 cases (s03-s05 16->12, s06 18->14, extra/missing []); X2 idempotent; X3 one conversion per pred (diag_c153_a2_5_run.log:5-22)",
+  "X4 temp plans: open_rows s03-s05 11->10, s06 13->12, only (2626,'array') dropped, == 153-a2-3 mode-B temp plans (diag_c153_a2_5_run.log:14-22)",
+  "t6_poskey 43/0: RESULT PASS 43/0 (tools/bench/diag_c153_a2_5_t6.log; diag_c153_a2_5_run.log:24,27)",
+  "c147_b1_2 19/1, only FAIL = P0 pins (stagexec 1bab9cf9, gscript 1a80236e, elrule a5ee7d5c ...): RESULT FAIL 19/1 (diag_c153_a2_5_c147.log; run.log:25,28)",
+  "compdiff_poskey 8/0 on candidate copy a7eb58c7: RESULT PASS 8/0 (tools/bench/diag_c153_a2_5_compdiff.log; diag_c153_a2_5_run.log:23,26)",
+  "md5 before==after: vigraph 13be0847, stagekit 604529e8, addrcheck 207beb0d, stagesim 78b8d5a1; suites t6 65adfeaa c147 a4bbfefe compdiff 771aa826 (run.log:4,29,30)",
+  "Stored plans s03 da66a030 s04 f349c39a s05 1fc9b486 s06 cfbd9823; preds s03 b212bb33 s04 a2bbc8bf s05 d083ff5f s06 c1bd6b3e, all unchanged (diag_c153_a2_5_run.log:4,29)",
+  "Wrapper diag_c153_a2_5_run.py RESULT PASS 23/0, BGRUN END rc=0 after 56s; temp files *_poskey_conv_20261009_072646.json (4 preds + 4 plans); no LabVIEW (diag_c153_a2_5_run.log:31)"
+ ],
+ "open": [
+  "ASSUMPTION used (brief_153-a2-5.md:14-17): plan open_rows get the pred rule - drop a (node,name) pair the conversion removed entirely (here only (2626,'array')). Keep it for 153-a2-4, or re-derive open pairs per slot?"
+ ],
+ "cost": {"usd": null, "minutes": 6, "labview_runs": 0},
+ "note": "No suite loosened, no stored pred/plan/suite edited, tools/vigraph.py not written. Jev ladder: no failed step, so no ladder row."}

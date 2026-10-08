@@ -1,0 +1,27 @@
+{"schema":"result/1","id":"153-a2-1","status":"FAIL","gates":{"pass":2,"fail":2},
+"first_fail":"original md5 now 2f048e3a18de3b5e3ca8368f6a24dae0, not the census-time c39f36e0 the on-disk read describes (diag_c153_a2_1_md5_before.log:13)",
+"blocked_by":{"device":"guard_peer","message":"diag_c153_a2_1_md5_before.log failed prediction: JEV-LADDER new-problem p=0.898, hypothesis review owed; card flags.peers=[] so not dispatched"},
+"artefacts":[
+{"path":"tools/bench/p5_facts.md","md5":"1cc989e0753fd4ce88aa55acfa7b48eb"},
+{"path":"tools/bench/p5_facts.json","md5":"d39ea5815f1131788254d11473ec25cb"},
+{"path":"tools/bench/diag_c153_a2_1_original_frame_index.md","md5":"c6d129b7c641b5bccfd8d3346f56b39e"},
+{"path":"tools/bench/diag_c153_a2_1_orig_read.py","md5":"8f089bf2d98aa57d78cf99c213a2f6ef"},
+{"path":"tools/bench/diag_c153_a2_1_orig_read.log","md5":"44fc1da8f8a2b855ac7c73735f1a83ab"},
+{"path":"tools/bench/diag_c153_a2_1_md5.py","md5":"db77691b580f96bb87b848de04132c26"},
+{"path":"tools/bench/diag_c153_a2_1_md5_before.log","md5":"086f3f892080cebb4e2996f5fe89f257"}],
+"facts":[
+"F2 wording added: 'class level; per-item uids unmeasured' + PD371(a) cite, p5_facts.md:36, p5_facts.json:43; no Selection List reader built",
+"ORIGINAL on-disk census orig_3state_nodeterms.json (vi=4.5 3StateClamping, md5 c39f36e0 :2-6): #376 t7 'frame index' <- wire 3268 (:12278-12281); LabVIEW reads 0",
+"ORIG w3268: no Node-terminal source; sinks #2136 t3, #3191 t1, #376 t7, #10068 t3, #1114 t0 'index i', #29240 t3 = S1's set (diag_c153_a2_1_orig_read.log:20-21)",
+"ORIG #5119 x-y -> wire 16483 -> #2626 t1 'element' (orig_3state_nodeterms.json:14996-14999, :14876-14879): #5119 does NOT feed frame index",
+"S1: w3268 <- term 644 owner Diagram 639 (#637 i), D1_s1_copy.json:36385-36392 / cycle27-plan.md:3748-3751; V6 also: source Diagram 639 (diag_autofocus_border.log:20)",
+"Comparison at wire level: SAME as S1. Source terminal uid #644 itself not visible in the original census (Node terminals only, frame-loop-wire-graph.md:29)",
+"UNEXPECTED: original 4.5 on disk hashes 2f048e3a now vs c39f36e0 at census (2026-09-18) and in every earlier log (drive_original_copy_v5.log:22); never opened by this card",
+"Stopped: NAMES.md:112, fixture-recording.md:18, p5_facts F4 NOT edited (the census describes an earlier state of the original)",
+"Invariants 10/10 OK: stagekit 604529e8 addrcheck 207beb0d stagexec 1bab9cf9 gscript 1a80236e prerun c739eb86 stagesim 78b8d5a1 vigraph 13be0847 s09 eb1d0f31 graph 22f967b5 (md5_before.log:3-12)",
+"JEV: md5_before.log | new-problem p=0.898 | hypothesis review owed | not dispatched (peers=[]) | returned. My S1-json pin 3e3d23ce was my slip (true 5de014fe). LabVIEW not running"],
+"open":[
+"Original 4.5 md5 changed c39f36e0 -> 2f048e3a after the 2026-09-18 census (user-side save?): does the old census still stand as the rule-1a reference, or is ONE read of a claudeDev byte copy of the current original owed before the doc fix?",
+"If the wire-level match (w3268, same sinks, #5119 elsewhere) is accepted, apply the NAMES.md:112 / fixture-recording.md:18 / F4 correction as pre-written in brief step 3"],
+"cost":{"usd":null,"minutes":9,"labview_runs":0},
+"note":"No LabVIEW, no copy, no doc fix. diag_c153_a2_1_origstat.py (size/mtime/version bytes of the original) was written but refused by guard_peer before it ran."}
