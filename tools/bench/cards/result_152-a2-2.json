@@ -1,0 +1,27 @@
+{"schema": "result/1", "id": "152-a2-2", "status": "FAIL",
+ "gates": {"pass": 2, "fail": 1},
+ "first_fail": "SA pass A replays to its end: op 187 p4_x_slot_fs refused (LoopTunnel source crossing into FS #29721, tunnel naming UNMEASURED)",
+ "blocked_by": {"device": "stagesim", "message": "tools/stagesim.py:1892 wire {'uid': 30179, 'term': 'outer'} -> {'uid': 29879, 'term': 'index'}: source <t30192 name, verbatim in diag_c152_a2_2_facts.md:27> on a LoopTunnel - UNMEASURED tunnel naming for that owner class (card 131-1); fp-72"},
+ "artefacts": [
+  {"path": "tools/bench/diag_c152_a2_2_facts.md", "md5": "2e408b8d8035487cb3e26b1cae865096"},
+  {"path": "tools/bench/prep_c152_a2_2_probe.log", "md5": "bd075963cb083dcd0251bb211ae8462d"},
+  {"path": "tools/bench/prep_c152_a2_2_mk.log", "md5": "19d83311a48170eb670e6558834f4db8"},
+  {"path": "tools/bench/sim/ring_p4_s09v18/s08end/base_provisional_fsowner.json", "md5": "fd84b364182314002be0bb3599159922"},
+  {"path": "tools/bench/prep_c152_a2_2_check_after.log", "md5": "27a6bf510ff9c84b3077b38870f92413"}
+ ],
+ "facts": [
+  "Discriminator EQUAL: measured FS #29721 owner Diagram #23166 (diag_c152_a1_1_owner.log:25) == v18 p4_fs_n2 diagram 23166, base uid; s04 plan + cmap owner_real 23166 (prep_c152_a2_2_probe.log:22)",
+  "Cut = whole remainder, ops 185..190 (6 actions), START 595.0, MAIN 638.4 margin 41.6; +13.6 MB margin 28.0, +21.4 MB margin 20.2 (prep_c152_a2_2_mk.log:14-20)",
+  "Op 185 p4_x_n2_order and op 186 now simulate on derived e26b4d90 and on the provisional base (prep_c152_a2_2_mk.log:38)",
+  "Op 187 p4_x_slot_fs REFUSED: LoopTunnel #30179 outer t30192 'min slot' on diagram 23166 -> #29879.index, frame #29869; stagesim.py:1892, measured classes :1882-1883 (prep_c152_a2_2_mk.log:38)",
+  "Maker (c4), not names-only: provisional = END8 + measured owner 29721->23166, gate PV (prep_c152_a2_2_mk.log:10-11); carry_fs skips positive owners (stage_prerun.py:4215-4217)",
+  "Not reached: rebase, pred + EL-46 carry check, X11, licence, sink census, recipes, dry/prerun/scratch-required/check-launch; no s09 plan written (diag_c152_a2_2_facts.md:37)",
+  "Invariants: 207 files before == after, all brief pins hold, tools/hooks unchanged, no LabVIEW process (prep_c152_a2_2_check_after.log)",
+  "JEV-LADDER for prep_c152_a2_2_mk.log: no row written yet (jev_gate.log:5602-5607 preflight only); card peers [] so no review dispatched"
+ ],
+ "open": [
+  "Op 187 crosses into FS #29721 from a LoopTunnel source ('min slot'); naming of the new FS border tunnel for that source class is unmeasured: measure by a scratch FS crossing, or route op 187 differently?",
+  "Is maker change (c4) acceptable? It puts the measured owner of FS #29721 into the provisional base only. The real base gets it from fs_owner_read alone."
+ ],
+ "cost": {"usd": null, "minutes": 10, "labview_runs": 0},
+ "note": "RETURNED at the first simulator refusal (brief step 4 / card rule). The s09 maker and probe are kept; the unadapted pred/licence copies were deleted."}

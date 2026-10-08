@@ -1,0 +1,23 @@
+{"schema": "result/1", "id": "152-b1-3", "status": "PASS",
+ "gates": {"pass": 4, "fail": 0},
+ "first_fail": null,
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/stagesim.py", "md5": "128bacfb5710355fe76fabfdde567f38"},
+  {"path": "tools/bench/fs_tunnel_naming_table.json", "md5": "769ae8d0f4a9c6a273e7c899dc3496a7"},
+  {"path": "tools/bench/selftest_stagesim_tunnel_naming.py", "md5": "aca2daff0150cfa670180f76b04ab2ad"},
+  {"path": "tools/bench/diag_c152_b1_3_facts.md", "md5": "624d40520c4398773c10e24d1a4851b9"}
+ ],
+ "facts": [
+  "Row added: fs_tunnel_naming_table.json:135 '152-b1-2 X', LoopTunnel src 'min slot' -> FSOT in/out 'min slot'; cites diag_c152_b1_2_cross.log:93,100,105,106,107 verified",
+  "Rule: stagesim.py:1886-1908 CROSS_LOOPTUNNEL_MEASURED (WhileLoop, SubVI) + _looptunnel_measured: Outer source face, inner face on a WhileLoop body fed only by a SubVI",
+  "Other LoopTunnel shapes still hit the old UNMEASURED refusal: selftest_stagesim_tunnel_naming L2 ForLoop, L3 Function inner, L4 non-Outer all refused (diag_c152_b1_3_st_naming.log)",
+  "naming_table_check stagesim.py:1947-1959 builds the inner face from the row's src_looptunnel; G78b stagesim.py:3384 now 16 rule rows",
+  "Self-tests: tunnel_naming 21/0, c152_fsowner 15/0, c134_4_owners 7/0, stagesim selftest 106/0, fsexit 14/0, k79 4/0, l2a1 13/0, pin 10/0, unflip 8/0 (diag_c152_b1_3_st_*.log)",
+  "Real graph op 187 source #30179 matches the measured shape: inner t30183 on #29699 = WhileLoop #16483, net w30197 source SubVI #29719 (diag_c152_b1_3_inspect.log)",
+  "Pins unchanged 12/0 incl. stagekit, addrcheck, stagexec, gscript, stage_prerun, vigraph, memory_model, s08 f99e8414, graph 44858dbf, derived e26b4d90 (diag_c152_b1_3_pins.log)",
+  "No pin drift: no selftest pins stagesim's md5; no LabVIEW process before/after; no tools/hooks edit; replay of ops 185..190 NOT run (next card)"
+ ],
+ "open": ["Rule covers only the one measured shape; a LoopTunnel on a ForLoop, a non-SubVI inner source or an entry tunnel stays refused until a second row is measured - acceptable for op 187's replay?"],
+ "cost": {"usd": null, "minutes": 7, "labview_runs": 0},
+ "note": "Offline only. Two helper scripts written: tools/bench/diag_c152_b1_3_inspect.py (graph read) and diag_c152_b1_3_pins.py (hashlib pin check)."}

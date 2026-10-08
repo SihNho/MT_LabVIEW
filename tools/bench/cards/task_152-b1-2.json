@@ -1,0 +1,63 @@
+{
+ "schema": "task/1",
+ "id": "152-b1-2",
+ "kind": "build",
+ "goal": "Retry of 152-b1-1: ONE scratch-VI crossing mirroring op 187 with the case nested in an outer loop diagram; read every face name before/after.",
+ "why": "Cycle 152 round 2, pass items 1-3 (PD369(d)). 152-b1-1 failed on our own script (FS on the top-level diagram); graph read (item 0) is done.",
+ "retry_of_card": "152-b1-1",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_152-b1-2.md", "md5": "9cd5b4861c6edb393fd7f257e9fd3dfa"},
+  {"path": "tools/bench/cards/brief_152-b1-1.md", "md5": "0f8f6b558128b8d74e99244fbe98cc0f"},
+  {"path": "tools/bench/diag_c152_b1_1_facts.md", "md5": "a3b335c06f23c1d13306df4f9d3bbd47"},
+  {"path": "tools/bench/diag_c152_b1_1_cross.py", "md5": "ccf20b0252477895e685918dc6dbc9e4"},
+  {"path": "tools/bench/diag_c152_b1_1_cross_plan.json", "md5": "4db45eb43923e30e354d97fce94464bb"},
+  {"path": "tools/bench/diag_c152_b1_1_cross.log", "md5": "d977aa94485ecfbea8406f030df95a77"},
+  {"path": "tools/bench/diag_c152_b1_1_graph4.log", "md5": "dd7f525aff6bea1fe2c4b90ac1aadbec"},
+  {"path": "docs/d1/ring-p4d.md", "md5": "cf2ffa4ab8ea3a939988766423f95b39"},
+  {"path": "tools/bench/fs_tunnel_naming_table.json", "md5": "0c0ba43aa2990655ac28ccecd77d7d7f"},
+  {"path": "tools/stagekit.py", "md5": "604529e8e9b68b9c4b370b8f3d5c5ee5"},
+  {"path": "tools/stagesim.py", "md5": "c24bd39aaca3801d232c54ae2c10d520"}
+ ],
+ "pass": [
+  "PD369(d): ONE stagekit scratch-VI run (<=120 lines, new minimal VI, deleted after) mirroring op 187; BGRUN END rc quoted",
+  "PD369(d): every face name of the created FS tunnel + of the net's other tunnels, before/after, strict uid echo, log lines quoted",
+  "PD369(d): no scratch VI left; LabVIEW handle count before/after the scratch run quoted; LabVIEW gone; pins md5 before = after"
+ ],
+ "outputs": [
+  "tools/bench/diag_c152_b1_2_cross.py",
+  "tools/bench/diag_c152_b1_2_cross.log",
+  "tools/bench/diag_c152_b1_2_facts.md"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c152_b1_2*",
+   "tools/bench/launch_*c152*",
+   "tools/bench/errorlist_c152_b1_2*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/jev_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 75
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c152_b1_1_cross.py"},
+  {"kind": "file", "name": "tools/bench/graph_ring_p4s08_20261009_033522.json"}
+ ],
+ "rules": [
+  "No stage-tool, stagesim, table or hook edit; no original touched; the scratch VI is deleted, never a deliverable",
+  "ONE scratch launch; RETURN at the first result differing from the prediction; no retry inside this card",
+  "No motor or camera; close every reference; LabVIEW closed and verified gone"
+ ]
+}

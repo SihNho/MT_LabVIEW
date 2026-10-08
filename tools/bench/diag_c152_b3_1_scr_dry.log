@@ -1,0 +1,89 @@
+BGRUN START 2026-10-09 06:04:03 limit 10.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_ring_p4_s09v18_scratch.py
+BGRUN PID 26096
+stage_d1_ring_p4_s09v18_scratch - card 152-b2-1 (WRITTEN, NOT LAUNCHED): the ONE SCRATCH RUN of RING P4 v18 LabVIEW SESSION 9
+(PD368(e), PD369(f), PD365(d), PD366(e)) on the REBASED plan 9d622c95. COPIED from stage_d1_ring_p4_s08v18_scratch.py (7cab5049) with
+names changed (log, scratch name, work name, out/sum json, card id, recipe); the sink-gate assertion = R's census count (PD366(e): one
+declared gate per s09 census row through wire_indicators, read by R from prep_c152_b2_1_session.json; s09 has ZERO such rows);
+launch-memory line MEML 680 kept (PD331(c)); scratch stop = SX.X10_FAIL_MB (680, PD328(a)).
+x10() takes the limit from the md5-PINNED pred file (plan_ring_p4_s09v18_pred.json memory_pred.peak_mb, used only when
+pred.plan.md5 == md5(plan_ring_p4_s09v18.json)).
+Runs tools/recipes/stage_d1_ring_p4_s09v18.py's OWN body (imported UNCHANGED) with plan_ring_p4_s09v18.json on a dated byte copy
+claudeDev\D1_ring_p4s09_<ts>.vi of session 8's ADOPTED file f99e8414 - same Executor, LVBackend (per-op census + Is Broken? + the
+run-time PRIM gate), every recipe gate and the ExecState read. No VI is run; the bed is never edited. SAVE on (rule-6 gui_save of the work
+copy) so the Error List can be read next; when every STRUCTURAL gate passes the work copy is ADOPTED as session 9's file by
+`py tools/stagexec.py adopt` (PD329(a), PD354(a)).
+ADDED (card 147-a1-3, PD354(a)) - the Error List step is ADVISORY, offline, and changes no structural gate: after the scratch's full EL read
+(errorlist_check.py --role final on the work copy), run this file with `--el-advisory <read json>`: it prints EL-ADVISORY with the total and
+the per-class difference against the pred's errorlist.per_class (classes by elcls(), the same copy as prep_c152_b2_1_pred.py), and exits
+NON-ZERO ONLY when a class appears that is in neither the start read nor the prediction, or |total diff| > 3; any other difference is
+recorded (rc 0). `--el-advisory-selftest` runs three synthetic reads offline. Neither mode opens LabVIEW (they return before K.Stage).
+PREDICTION (numbers in plan_ring_p4_s09v18_pred.json): every recipe gate PASS incl. PRIM; peak private MB <= SX.X10_FAIL_MB (680) and <= X10 + 10 and,
+for the launch, <= 680 (PD331(c)); bed md5 unchanged; LabVIEW gone. Error List (next, separate run) -> EL-ADVISORY (recorded; RETURN only by its rc).
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/diag_c152_p4s09v18_scratch.log -- py -u tools/recipes/stage_d1_ring_p4_s09v18_scratch.py
+MEM_STOP_MB 680.0; X10 from the md5-pinned pred 633.3; declared sink gates []
+stage_d1_ring_p4_s09v18 - card 152-b2-1 (WRITTEN, NOT LAUNCHED), RING P4 LabVIEW SESSION 9 of plan v18 (PD368(e), PD369(f), PD365(d), PD366):
+on session 8's ADOPTED in-between file (claudeDev\D1_ring_p4s08_20261009_031503.vi f99e8414, card 151-a3-1), apply the actions of
+plan_ring_p4_s09v18.json = v18 ops 185..190 (6 actions, p4_x_n2_order..p4_rle_x_n2_out = the whole remainder; MAIN X10 638.4 <= 680 at the start
+595.0 = measured s08 load 589.1 + op-0 read; no subVI drop, no create), planned on session 8's simulated end + the measured FS #29721 owner
+(tools/bench/prep_c152_b2_1_mk.py) and REBASED onto session 8's real graph 44858dbf + fs_owner_read = e26b4d90 (prep_c152_b2_1_rebase.log, plan 9d622c95).
+X11 CLEAN; licence plan_ring_p4_s09v18_licence.json (written by tools/bench/prep_c152_b2_1_licence.py: renames 0 - every s09 dst is name-form).
+COPIED from stage_d1_ring_p4_s08v18.py (ca5a5478) with plan / pred / licence / session-census names, card id, out json, stage name, docstring,
+and ONE gate adapted to this session's shape: FR's non-empty guard `on` becomes `(on or NC == 0)` - s09 creates NO object (NC 0), so the s08
+form would refuse by construction; `len(made) == NC` and `frames(real) == sf` are unchanged (card 152-b2-1, flagged in its facts / OPEN).
+Sink gates: one per s09 census row through wire_indicators, read by script - prep_c152_b2_1_session.json has ZERO such rows.
+FRESH LabVIEW -> claudeDev\D1_ring_p4s09v18_<ts>.vi (rule-6 GUI save, ExecState 0 by design) = an
+IN-BETWEEN file of step P4 (not counted, D-2026-10-02-02/04). The FIRST run is the full SCRATCH run on a byte copy
+(stage_d1_ring_p4_s09v18_scratch.py).
+ROWS ONLY FROM plan_ring_p4_s09v18.json; expected values only from plan_ring_p4_s09v18_pred.json. No new op.
+(PD366(e)): one declared sink gate PER row of prep_c152_b2_1_session.json `sink_gate_census` with needs_sink_gate (read by
+script; measured 0: the census has no ControlTerminal sink), each with PD355(b)'s pass
+rule (sg_read (a)-(d), unchanged); a symbolic source would be resolved on the plan's simulated END state by stagesim.resolve_addr.
+PREDICTION (numbers in the pred file): SG one declared sink gate per census row; L1 actions -> pred ops; E1 every checkpoint == sim; NG crossing tunnel names == step files';
+PRIM every created primitive's label == plan prim; FR created objects on the sim end's frames; D new/lost wires == sim's; TD every base
+terminal that was wired stays wired, identities lost == plan deletes; CEN2 == pred census; PB cdiff(S1, end) == pred rows (FATAL, before save); HB handles <= +700;
+PS saved, input unchanged. X10 = pred memory_pred. Error List of the end = a RECORDED cross-check against pred errorlist (PD354(a)).
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/launch_c152_p4s09v18.log -- py -u tools/recipes/stage_d1_ring_p4_s09v18.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p4_s09v18_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan  ('9d622c95ceadde0c7b46426b250d68a7', {'path': 'tools/bench/sim/ring_p4_s09v18_base_real_fsmap.json', 'md5': '2f58241c143426e75ab5dfa94c5bf11e'}, 'f99e8414a2081538552e26ba24ee713d')
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == f99e8414a2081538552e26ba24ee713d  got f99e8414a2081538552e26ba24ee713d
+  PASS  DRY graph JSON for input md5 f99e8414a2081538552e26ba24ee713d  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\sim\ring_p4_s09v18_base_real_fsmap.json
+  PASS  SG one declared sink gate per census row (0 rows of prep_c152_b2_1_session.json): []; per row: sink term(s), plan action(s), source, source name []
+  PASS  L1 the 6 actions compile into 6 real ops == pred kinds, each action once; checkpoints (0, 1, 3, 5, 6)  ['connect_term_uid', 'wire_remove_loose_ends', 'connect_term_uid', 'wire_remove_loose_ends', 'connect_term_uid', 'wire_remove_loose_ends']
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 2 touched diagram(s) [23166, 29869]: one-side-only Nodes[] entries 0
+  PRIME 0 terminal indexes proved at base; 0 ControlTerminal end(s) by 179(b); unprovable []
+  CHECKPOINTS whole-VI read+diff after ops [1, 3, 5, 6] of 6
+  FACT  OP wire_connect_term_uid [1] -> err '' (0.0 s)
+  NAMEGATE op 1 ok: sim {'FlatSequenceOuterTunnel|Terminal|False': ['Bead is good? array out'], 'FlatSequenceOuterTunnel|Terminal|True': ['Bead is good? array out']} real {'FlatSequenceOuterTunnel|Terminal|False': ['Bead is good? array out'], 'FlatSequenceOuterTunnel|Terminal|True': ['Bead is good? array out']}
+  STEPX 01 connect_term_uid acts [1] ids ['p4_x_n2_order'] bound {-1: 10000003} diff 0
+  FACT  OP wire_remove_loose_ends [2] -> err '' (0.0 s)
+  STEPX 02 wire_remove_loose_ends acts [2] ids ['p4_rle_x_n2_order'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect_term_uid [3] -> err '' (0.0 s)
+  NAMEGATE op 3 ok: sim {'FlatSequenceOuterTunnel|Terminal|False': ['min slot'], 'FlatSequenceOuterTunnel|Terminal|True': ['min slot']} real {'FlatSequenceOuterTunnel|Terminal|False': ['min slot'], 'FlatSequenceOuterTunnel|Terminal|True': ['min slot']}
+  STEPX 03 connect_term_uid acts [3] ids ['p4_x_slot_fs'] bound {-6: 10000008} diff 0
+  FACT  OP wire_remove_loose_ends [4] -> err '' (0.0 s)
+  STEPX 04 wire_remove_loose_ends acts [4] ids ['p4_rle_x_slot_fs'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect_term_uid [5] -> err '' (0.0 s)
+  NAMEGATE op 5 ok: sim {'FlatSequenceOuterTunnel|Terminal|False': ['Index of closest\ncal image slice, bead 2'], 'FlatSequenceOuterTunnel|Terminal|True': ['Index of closest\ncal image slice, bead 2']} real {'FlatSequenceOuterTunnel|Terminal|False': ['Index of closest\ncal image slice, bead 2'], 'FlatSequenceOuterTunnel|Terminal|True': ['Index of closest\ncal image slice, bead 2']}
+  STEPX 05 connect_term_uid acts [5] ids ['p4_x_n2_out'] bound {-11: 10000013} diff 0
+  FACT  OP wire_remove_loose_ends [6] -> err '' (0.0 s)
+  STEPX 06 wire_remove_loose_ends acts [6] ids ['p4_rle_x_n2_out'] bound {} diff 0
+  PASS  E1 every checkpoint's real graph == its simulated step (6 ops)
+  PASS  NG every crossing op's NEW tunnel names == the simulator's (stagexec.tunnel_name_check, per op, from the step files): 3 op(s) [1, 3, 5]  [{'k': 1, 'ok': True, 'sim': {'FlatSequenceOuterTunnel|Terminal|False': ['Bead is good? array out'], 'FlatSequenceOuterTunnel|Terminal|True': ['Bead is good? array out']}, 'real': {'FlatSequenceOuterTunnel|Terminal|False': ['Bead is good? array out'], 'FlatSequenceOuterTunnel|Terminal|True': ['Bead is good? array out']}}, {'k': 3, 'ok': True, 'sim': {'FlatSequenceOuterTunnel|Terminal|False': ['min slot'], 'FlatSequenceOuterTunnel|Terminal|True': ['min slot']}, 'real': {'FlatSequenceOuterTunnel|Terminal|False': ['min slot'], 'FlatSequenceOuterTunnel|Terminal|True': ['min slot']}}, {'k': 5, 'ok': True, 'sim': {'FlatSequenceOuterTunnel|Terminal|False': ['Index of closest\ncal image slice, bead 2'], 'FlatSequenceOuterTunnel|Terminal|True': ['Index of closest\ncal image slice, bead 2']}, 'real': {'FlatSequenceOuterTunnel|Terminal|False': ['Index of closest\ncal image slice, bead 2'], 'FlatSequenceOuterTunnel|Terminal|True': ['Index of closest\ncal image slice, bead 2']}}]
+  PASS  FR the 0 created objects sit on [] frame(s) of the simulated end; real frames == the sim end's  {'on': [], 'nc': 0, 'extra': [], 'missing': []}
+  PASS  D new wires 0 == sim's 0; lost 0 == sim's 0 (wire uid + source identity, stagekit.wire_keys_356); deleted uids re-used: noted [], bad []  {'new': [], 'lost': [], 'reuse_noted': [], 'reuse_bad': []}
+  UNPREDICTED  CEN2 new-object census (classes of the pred) == plan_ring_p4_s09v18_pred.json census  (declared set empty {}; measured not in a dry run)
+  CENSUS-ALL net delta (every class) {}
+  CENSUS-ALL new uids by class (every class) {}
+  CENSUS-ALL lost uids 0
+  PASS  TD every base terminal the sim keeps wired is still wired; identities lost == the plan's deletes (key position (node, index, term class, direction), stagekit.term_identity_gates); renames 0, unlicensed []  {'unwired': [], 'lost': [], 'plan_deletes': [], 'recycled_uids': [], 'raw_lost': [], 'renames': [], 'unlicensed_renames': []}
+  FACT  ExecState [after all rows (ExecState 0 expected: session 8's in-between file is broken by design)] D1_ring_p4s09_20261009_060404.vi = <dry:g.exec_state>
+  PASS  PB frame-keyed cdiff(S1, real end) == the pred's 21 rows and the plan's 19 open (node, term) pairs; no unlicensed rename (FATAL, before save)  {'extra': [], 'missing': [], 'restored': [], 'unlicensed': []}
+  FACT  PH handles: post-open <dry:bench_prep.labview_handles> -> before-save None
+  PASS  HB open->save handle growth <= +700 (PD236(b) band; refs balance is H5)  (<dry:bench_prep.labview_handles>, None)
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  dry0dry0dry0dry0dry0dry0dry0dry0
+
+=== DRY PASS: first_fail=None coverage 59/135 lines, first mutation Stage._op wire_connect_term_uid, unverified 0, graph tools/bench/sim/ring_p4_s09v18_base_real_fsmap.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[],"card":"152-b3-1","labview":"build"}
+BGRUN END rc=0 after 10s

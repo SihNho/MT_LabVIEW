@@ -1,0 +1,25 @@
+{
+ "schema": "assign-result/1",
+ "cycle": 152,
+ "round": 2,
+ "status": "PURPOSE_MET",
+ "cards": ["152-b1-1", "152-b1-2", "152-b1-3", "152-b2-1", "152-b3-1"],
+ "pass_evidence": [
+  {"item": 0, "met": true, "evidence": ["tools/bench/diag_c152_b1_1_facts.md:9 (#30179 owner WhileLoop #16483)", "tools/bench/diag_c152_b1_1_facts.md:10 (inner source SubVI #29719 'min slot')", "tools/bench/diag_c152_b1_1_graph4.log"]},
+  {"item": 1, "met": true, "evidence": ["tools/bench/diag_c152_b1_2_facts.md:34 (BGRUN END rc=0 after 135s; RESULT PASS 44/0)", "tools/bench/diag_c152_b1_2_cross.py (120 lines)"]},
+  {"item": 2, "met": true, "evidence": ["tools/bench/diag_c152_b1_2_facts.md section 2", "tools/bench/diag_c152_b1_2_cross.log:93,100,105,106,108-109 (FS tunnel faces 'min slot' / 'min slot'; source LT faces unchanged)"]},
+  {"item": 3, "met": true, "evidence": ["tools/bench/diag_c152_b1_2_facts.md:35 (handles 34,010 after restart, 33,990 at exit)", "tools/bench/diag_c152_b1_2_facts.md:36 (both scratches deleted; files left [])"]},
+  {"item": 4, "met": true, "evidence": ["tools/bench/fs_tunnel_naming_table.json:135 (row 152-b1-2 X, md5 769ae8d0)", "tools/bench/diag_c152_b1_3_facts.md (cites diag_c152_b1_2_cross.log:93,100,105,106,107)"]},
+  {"item": 5, "met": true, "evidence": ["tools/stagesim.py:1886-1908 (new md5 128bacfb5710355fe76fabfdde567f38)", "tools/bench/diag_c152_b1_3_facts.md: tunnel_naming 21/0, c152_fsowner 15/0, c134_4_owners 7/0"]},
+  {"item": 6, "met": true, "evidence": ["tools/bench/diag_c152_b2_1_facts.md:15-18 (REALSIM on e26b4d90 and pass A reach the end; op 187 step_03_wire, op 189 step_05_wire OK)", "tools/bench/prep_c152_b2_1_mk.log:38-54"]},
+  {"item": 7, "met": true, "evidence": ["tools/bench/diag_c152_b2_1_facts.md:13 (START 595.0 = 589.1 + 5.9; whole remainder ops 185..190)", "tools/bench/prep_c152_b2_1_pred.log:24 (V18E-R' 3 checks PASS)", "tools/bench/prep_c152_b2_1_dry.log:64, prep_c152_b2_1_prerun.log:88 (dry 1/0, prerun 16/0)", "tools/bench/prep_c152_b2_1_scrreq.log:3 (--scratch-required rc 3, rows 1..6)"]},
+  {"item": 8, "met": true, "evidence": ["tools/bench/prep_c152_b2_1_pred.log:31-32 (s08 without carry 48, with carry {4538,29843,29879,30002,2626} 47, measured 46: carry does not reproduce it; not a gate)"]},
+  {"item": 9, "met": true, "evidence": ["tools/bench/diag_c152_b3_1_facts.md:14-22 (scratch RESULT 20/0 on a new byte copy of s08 f99e8414; E1 6 ops incl. 187 and 189; D/TD/PB pass)", "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p4s09_20261009_060515.vi md5 eb1d0f3107bbba49c9ae67a47c0ee50f (adopt 3/0, diag_c152_b3_1_adopt.log:37-39)"]},
+  {"item": 10, "met": true, "evidence": ["tools/bench/diag_c152_b3_1_facts.md:21 (metered start 561.9 vs pred 595.0; peak 590.5 vs X10 633.3)", "tools/bench/errorlist_expected_D1_ring_p4s09_20261009_060515.json 5146f980 (total 45; s08 46; pred 46; input -1)"]},
+  {"item": 11, "met": true, "evidence": ["tools/bench/graph_ring_p4s09_20261009_062044.json md5 22f967b513726a01c9d8f63269f689e6 (load 596.7 MB, diag_c152_b3_1_graph.log 15/0)", "tools/bench/diag_c152_b3_1_memload.log:5,13 (memory_model a28b6dd7 -> 6f2b5687; only /load_by_vi/eb1d0f31 added)"]},
+  {"item": 12, "met": true, "evidence": ["md5 re-read at end: stagekit 604529e8, addrcheck 207beb0d, stagexec 1bab9cf9, gscript 1a80236e, stage_prerun c739eb86, vigraph 13be0847", "tools/bench/diag_c152_b3_1_inv_after.log:3 (s08 f99e8414), :42 (37/0)"]},
+  {"item": 13, "met": true, "evidence": ["STATUS.md:94 current-bed D1_ring_p3b2b_20261002_130007.vi unchanged (no card had status_edit)", "git status tools/hooks: only material_marker.log (hook-appended)", "tools/bench/diag_c152_b3_1_facts.md:41 (tasklist LabVIEW 0; no _elc_/scratch_c152 left)", "no gate-fp drain card; no OpOwnerChain_v1 used"]}
+ ],
+ "handback": null,
+ "note": "Five cards, 3 LabVIEW cards (b1-1 FAIL on own script, b1-2 retry PASS, b3-1 PASS); about $26 of the $60 cap. Broken file 5 of 6 = D1_ring_p4s09_20261009_060515.vi. Assumptions for the judgement session: (1) s09 recipe gate FR changed to '(on or NC == 0)' because s09 creates no object, and licence gate R to 'zero allowed' (brief said so); verification gates only, no computation change. (2) EL 45 equals the carry alternative, not 46; carry as pred default for s10+ is a judgement item. (3) Metered start 561.9 vs pred 595.0 (d -33.1) is reported, no recalibration. (4) Five IndexArray sinks sit on the LoopTunnel net in s08 (b1-1 facts); the scratch had one and the s09 real run matched the sim. (5) Gate-fp queue entries from these cards are for the chat to drain."
+}

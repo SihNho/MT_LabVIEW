@@ -1,0 +1,24 @@
+BGRUN START 2026-10-09 05:49:29 limit 3.0 min: py -u tools/bench/prep_c152_b2_1_probe.py
+BGRUN PID 15824
+INPUTS bad []
+END8 tools\bench\sim\ring_p4_s08v18\step_19_wire.json ccfaa07ca5b2fd8034bc1412a4027b91 fs_unmeasured [2499, 14682, 29721, 43914] owners 29721 None
+S09 existing ['G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\ring_p4_s09v18']
+V18 ops 190 actions 202
+V18OP 185 kind connect_term_uid act #197 p4_x_n2_order op wire refs {"src": {"uid": 5058, "term_uid": 5111}, "dst": "new:IAZ1.array"}
+V18OP 186 kind wire_remove_loose_ends act #198 p4_rle_x_n2_order op wire_remove_loose_ends refs {"of": "p4_x_n2_order"}
+V18OP 187 kind connect_term_uid act #199 p4_x_slot_fs op wire refs {"src": "new:TS1.outer", "dst": "new:IAN1.index"}
+V18OP 188 kind wire_remove_loose_ends act #200 p4_rle_x_slot_fs op wire_remove_loose_ends refs {"of": "p4_x_slot_fs"}
+V18OP 189 kind connect_term_uid act #201 p4_x_n2_out op wire refs {"src": "new:IAN1.element", "dst": "new:SQ1.n2"}
+V18OP 190 kind wire_remove_loose_ends act #202 p4_rle_x_n2_out op wire_remove_loose_ends refs {"of": "p4_x_n2_out"}
+HOP i.1 tools\bench\diag_c152_a1_1_owner.log:25 md5 7ae71ddc2f733a23d35129734e39526f: "OBSERVED uid 29721 -> owner 'Diagram' uid 23166 | self 'FlatSequence'#29721 | 482 says 'Diagram' cast 'Diagram' |" -> owner ('Diagram', 23166), echo ('FlatSequence', 29721)
+HOP i.2 derived graph_ring_p4s08_20261009_033522_fsowner.json md5 e26b4d90924f79791e52329c43a872ca: fs_owner_read[29721] = ['Diagram', 23166]; cite {"read_log": "tools/bench/diag_c152_a1_1_owner.log:25", "op": "OpOwnerChain_v1 via build_opownerchain_v1.read_owner + build_d1_v0.owner_of(strict=True)", "vi_md5": "f99e8414a2081538552e26ba24ee713d", "graph_md5": "44858dbfa0e77628359f7a86727e250f", "echo": ["FlatSequence", 29721], "card": "152-a1-1"}
+HOP i.3 stagesim.base_state(derived): owners[29721] ['Diagram', 23166]; fs_unmeasured [2499, 14682, 43914]; _diag_chain(29869) [29869, 23166]
+HOP ii.1 creation map tools/bench/creation_map/plan_ring_p4_s04v18_9ff46b0e_20261007_212441.jsonl:36 real #29721 <- sim #-30 ids ['p4_fs_n2'] op create; owner 23166 owner_real 23166
+HOP ii.1 creation map tools/bench/creation_map/plan_ring_p4_s04v18_f349c39a_20261007_215246.jsonl:36 real #29721 <- sim #-30 ids ['p4_fs_n2'] op create; owner 23166 owner_real 23166
+HOP ii.2 v18 action p4_fs_n2 (#85): op create class FlatSequence diagram 23166 as FS4
+HOP ii.3 s04 plan (md5 f349c39a17330531e688ff1f70ce426e, rebased True) action p4_fs_n2: diagram 23166 class FlatSequence
+HOP ii.4 v18 target 23166 is a numeric BASE uid (no creation-map / rebase hop)
+HOP ii.5 graph 44858dbf objs #23166: [{'uid': 23166, 'class': 'Diagram', 'pos': [5432, 5813], 'owner': 'WhileLoop'}]; owners[23166] ['WhileLoop', 10170]
+GATE PASS | D measured diagram of FS #29721 = ('Diagram', 23166) (owner log :25, derived fs_owner_read ['Diagram', 23166]) vs v18 create target after rebind = 23166 (v18 23166, s04 plan 23166, creation map owner_real 23166) | equal True
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":2,"fail":0},"first_fail":null,"artefacts":[],"card":"152-b2-1","labview":"none"}
+BGRUN END rc=0 after 1s

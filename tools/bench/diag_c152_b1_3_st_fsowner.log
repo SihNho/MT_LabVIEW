@@ -1,0 +1,22 @@
+BGRUN START 2026-10-09 05:42:26 limit 5.0 min: py -u tools/bench/selftest_c152_fsowner.py
+BGRUN PID 18044
+  FACT  derived fs_owner_read {'29721': ['Diagram', 23166]}; cite echo ['FlatSequence', 29721]
+  PASS  R1 derived: 29721 -> fs_parent 23166, owners ['Diagram', 23166], fs_unmeasured [2499, 14682, 43914]  {'fs_parent': 23166, 'owner': ['Diagram', 23166], 'unmeasured': [2499, 14682, 43914], 'read': {'29721': {'status': 'resolved', 'diagram': 23166, 'faces': []}}}
+  FACT  original graph: 19 faced FS with one agreeing outer diagram; test FS #681 on #536
+  PASS  R2 faced FS #681: read Diagram #1000536 != faces #536 -> UNMEASURED, no owner entry  {'unmeasured': [681, 2499, 14682, 29721, 43914], 'owner': None}
+  PASS  R3 class 'TopLevelDiagram' -> FS #29721 UNMEASURED, no owner entry  {'unmeasured': [2499, 14682, 29721, 43914], 'owner': None, 'read': {'29721': {'status': 'UNMEASURED', 'why': "read class is not 'Diagram'"}}}
+  PASS  R4 uid 0 -> FS #29721 UNMEASURED, no owner entry  {'unmeasured': [2499, 14682, 29721, 43914], 'owner': None, 'read': {'29721': {'status': 'UNMEASURED', 'why': 'read uid is 0'}}}
+  PASS  R5a echo missing -> FS #29721 UNMEASURED, no owner entry  {'unmeasured': [2499, 14682, 29721, 43914], 'owner': None, 'read': {'29721': {'status': 'UNMEASURED', 'why': 'no echo of FlatSequence #29721 in fs_owner_read_cite'}}}
+  PASS  R5b echo uid 29722 != FS -> FS #29721 UNMEASURED, no owner entry  {'unmeasured': [2499, 14682, 29721, 43914], 'owner': None, 'read': {'29721': {'status': 'UNMEASURED', 'why': 'no echo of FlatSequence #29721 in fs_owner_read_cite'}}}
+  PASS  R5c echo class 'Diagram' -> FS #29721 UNMEASURED, no owner entry  {'unmeasured': [2499, 14682, 29721, 43914], 'owner': None, 'read': {'29721': {'status': 'UNMEASURED', 'why': 'no echo of FlatSequence #29721 in fs_owner_read_cite'}}}
+  PASS  R5d no fs_owner_read_cite -> FS #29721 UNMEASURED, no owner entry  {'unmeasured': [2499, 14682, 29721, 43914], 'owner': None, 'read': {'29721': {'status': 'UNMEASURED', 'why': 'no echo of FlatSequence #29721 in fs_owner_read_cite'}}}
+  PASS  R6 faced FS #681: read agrees with faces #536 -> resolved  {'unmeasured': [2499, 14682, 29721, 43914], 'owner': ['Diagram', 536]}
+  PASS  R7 derived minus fs_owner_read(+cite) == original graph == before-dump (fs_measured_state + base_state)  
+  PASS  R8 original graph fs_unmeasured [2499, 14682, 29721, 43914], no owner for 29721  [2499, 14682, 29721, 43914]
+  FACT  _diag_chain(derived, #29869) = [29869, 23166, 686, 536]
+  PASS  R9 _diag_chain from frame #29869 reaches Diagram #23166  [29869, 23166, 686, 536]
+  PASS  R10 original graph: _diag_chain from #29869 raises SimError naming FS #29721  diagram chain: frame #29869 belongs to FS #29721 whose diagram is UNMEASURED (no border outer face, or faces disagree; PD289(f))
+  PASS  R11 a read naming uid 99999999 (not a measured FS) adds nothing; 29721 still resolved  {'99999999': {'status': 'IGNORED', 'why': 'not a measured Flat Sequence'}, '29721': {'status': 'resolved', 'diagram': 23166, 'faces': []}}
+  PASS  R12 faced FS #681 with read class 'TopLevelDiagram' -> UNMEASURED (literal PD368(c))  [681, 2499, 14682, 29721, 43914]
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":15,"fail":0},"first_fail":null,"artefacts":[],"card":"152-b1-3","labview":"none"}
+BGRUN END rc=0 after 3s

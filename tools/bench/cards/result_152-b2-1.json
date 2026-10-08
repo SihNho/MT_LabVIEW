@@ -1,0 +1,25 @@
+{"schema":"result/1","id":"152-b2-1","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+{"path":"tools/bench/plan_ring_p4_s09v18.json","md5":"9d622c95ceadde0c7b46426b250d68a7"},
+{"path":"tools/bench/plan_ring_p4_s09v18_pred.json","md5":"85dbb0ba362c19b48572ddea267d1f2f"},
+{"path":"tools/bench/plan_ring_p4_s09v18_licence.json","md5":"6d003b8daf14b6b8fd41fadd9bafbf16"},
+{"path":"tools/recipes/stage_d1_ring_p4_s09v18.py","md5":"4be3ff2872d7be17badf69c7f7ade48c"},
+{"path":"tools/recipes/stage_d1_ring_p4_s09v18_scratch.py","md5":"b1f6a87cc90f16e13b30ae7206cfbb7d"},
+{"path":"tools/bench/diag_c152_b2_1_facts.md","md5":"69b30f758be0f85e71a9a4af42ba485e"}],
+"facts":[
+"Discriminator EQUAL again: FS #29721 owner Diagram #23166 == v18 p4_fs_n2 target 23166 (prep_c152_b2_1_probe.log:22)",
+"Cut = op 190 (whole remainder, 6 actions); START 595.0; MAIN 638.4, margin 41.6; +13.6 MB -> 28.0 and +21.4 MB -> 20.2 (prep_c152_b2_1_mk.log:14,18-20)",
+"REALSIM (derived e26b4d90) and pass A replay ops 185..190 to the end; op 187 step_03_wire and op 189 step_05_wire OK (prep_c152_b2_1_mk.log:38-54)",
+"Rebase rc 0 onto the derived graph -> plan 9d622c95, base 2f58241c, 17 uids bound, 0 fallback, re-sim final (prep_c152_b2_1_rebase.log:21-22)",
+"Pred 14/0: all 3 V18E-R' checks PASS; X10 Executor 633.3, margin 46.7; EL 46, no carry (prep_c152_b2_1_pred.log:24,27,33,46)",
+"Carry check: s08 without carry gives 48, with carry {4538,29843,29879,30002,2626} gives 47, measured 46, so no carry; s09 with carry would be 45 (prep_c152_b2_1_pred.log:31-32)",
+"X11 CLEAN; licence: rename_by_uid 0, renames 0; all 3 s09 dsts are name-form; gate R changed to 'zero allowed' (prep_c152_b2_1_licence.log:7-11)",
+"Recipe gate FR changed from 'on' to '(on or NC == 0)' because s09 creates no object; the dry FR line PASS (prep_c152_b2_1_dry.log:53)",
+"Main recipe: dry 1/0, prerun 16/0 (X10 638.4). Scratch: dry 1/0, prerun 16/0. --scratch-required rc 3 (census rows 1..6). --check-launch: ALLOW (prep_c152_b2_1_scrreq.log:3)",
+"Invariants: 219 files equal before and after, pins PASS, no LabVIEW process, tools/hooks unchanged, NOT launched (prep_c152_b2_1_check_after.log:292-295)"],
+"open":[
+"Accept the s09-shape change to recipe FR, '(on or NC == 0)' (stage_d1_ring_p4_s09v18.py FR line), or should the copy have refused?",
+"Accept licence gate R 'zero allowed', with the 3 name-form base sinks left unlicensed? (chat-T6 position-keyed TD/PB passed in dry/prerun)",
+"For s08 the elrule carry gives 47, not the measured 46: it closes input #4538 but not IndexArray #29879. Keep the s09 EL at 46 with no carry, or review?"],
+"cost":{"usd":null,"minutes":16,"labview_runs":0},
+"note":"Offline only. The rebase used --graph = the derived e26b4d90 (44858dbf + fs_owner_read), as the brief's REALSIM base. Sim sub-dirs _passAb21/_realGb21 are new; the 152-a2-2 dirs are kept."}

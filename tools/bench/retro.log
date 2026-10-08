@@ -6806,3 +6806,145 @@ VIOLATION: device-failed | loss_min=4 | loss_usd=1.88 | evidence=tools/hooks/gua
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle149","verdict":"refuted","alternative":"The census COV FAIL was only a throughput cap that a retry would clear, and retro-148 being undisposed is a judgement lapse, not a device fault.","discriminating_test":"Offline: parse_type_descriptors on a code-0 TD returns name '0x00' (blind test), and guard_peer.undisposed() on retrospective-cycle148.md returns None despite :371 placeholder.","violations":[{"slug":"inference-over-measurement","loss_min":18,"loss_usd":"?","evidence":"tools/bench/diag_c149_a3_void.py:12"},{"slug":"device-failed","loss_min":4,"loss_usd":1.88,"evidence":"tools/hooks/guard_peer.py:851"}],"sources":["tools/bench/diag_c149_a3_void_s06.log:17","archive/peer/2026-10-08-c149-a3-2-void.md:49","archive/peer/2026-10-08-retrospective-cycle148.md:147","archive/peer/2026-10-08-retrospective-cycle148.md:369","tools/cycle_runner.py:1017","tools/audit_cycle.py:619","tools/hooks/material_marker.log:3595","https://labviewwiki.org/wiki/Type_descriptor"],"note":"Second device failure: guard_bash launch gate refused gate_fp.py log (recipe path only in --cmd arg) twice, the fp-22 class. Audit A4 PASS is false for retro-147/148."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle149.md
 BGRUN END rc=0 after 599s
+BGRUN START 2026-10-09 06:26:17 limit 20.0 min: C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\retrospective.py --cycle 152
+BGRUN PID 5300
+   window 2026-10-08 19:53:14 .. 2026-10-09 06:26:17 (633 min); 209 build logs, 29 machinery logs, 55 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle152.txt (52824 chars)
+   review card tools\bench\cards\review_retrospective-cycle152.json
+OUTCOME: ANSWERED (376s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-10-09-retrospective-cycle152.md
+COST: $2.5176  in 44 / out 36828 / cache-create 157393 / cache-read 2608781  (374s, 40 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle152 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle152.json
+--- ANSWER ---
+# Retrospective, cycle 152 (outcome review)
+
+## The window covers three cycles, not one
+
+The evidence window (2026-10-08 19:53 → 2026-10-09 06:26) spans cycles **150, 151 and 152**. The runner log shows cycle 152 starting at 04:01:17 (`tools/bench/cycle_runner_main_20261009_0250.log:32-36`) and ending at 06:26:16 (`:42`). The `cycle_150*.log` and `cycle_151*.log` files also fall inside the window. That happened because no retrospective was due after cycles 150 or 151.
+
+So the audit's C1–C5 figures are three-cycle totals. For example, C4c's $152.37 comes from 16 logs, and only four of them are cycle 152's. I judge **cycle 152 alone: 04:01–06:26, 145 min, $46.29**:
+
+| Session | Cost | Duration | Source |
+|---|---|---|---|
+| Judgement | $2.31 | 224 s | `cycle_152.log:269-270` |
+| Assignment round 1 | $16.20 | 61 min | `cycle_152_assign_1.log:60` |
+| Hand-back judgement | $1.52 | 162 s | `cycle_152_handback_1.log:271-272` |
+| Assignment round 2 | $26.27 | 78 min | `cycle_152_assign_2.log:60` |
+
+## Result
+
+The cycle delivered what it was for. `D1_ring_p4s09_20261009_060515.vi` (md5 eb1d0f31) was adopted:
+- scratch run 20/0, real == simulated on all 6 ops;
+- Error List 45 items, graph read, `load_by_vi` entry recorded (`tools/bench/cards/assign_result_152_2.json:17-20`).
+
+That file ends P4 and is broken intermediate 5 of 6. It was worth doing; it followed the user's own D-2026-10-08-01 option 1.
+
+It took **two assignment rounds**, though, and the hand-back between them could have been avoided.
+
+## The one structural fault: the second gap was inferred away, not looked for
+
+At 04:01 the judgement read cycle 151's refusal and decided "the hand-back is a missing MEASUREMENT" (`docs/d1/ring-p4d.md:29`). Its summary says `stagesim` "refuses ops 185..190" (`cycle_152.log:269`). Neither claim was measured:
+- The replay stopped at step 1, so ops 186–190 were never simulated (`prep_c151_a3_2_mk.log:35`).
+- The facts that would expose a second gap were already on disk. Op 187's source `new:TS1` is a **LoopTunnel** (`prep_c151_a3_2_mk.log:31,33`).
+- `stagesim` named LoopTunnel sources as unmodelled (`tools/stagesim.py:1868-1870`), and its list of measured source classes did not include LoopTunnel (`:1882-1883`).
+
+A replay of ops 185..190 with FS #29721's owner set provisionally to the v18 create target (#23166) was cheap: the same replay took 9 s (`prep_c152_a2_2_mk.log:41`). The judgement already had that value as its PD368(d) cross-check. Run before the LabVIEW owner read, it would have hit op 187's naming refusal. The proof is that round 1 eventually ran exactly that replay, with the measured owner equal to that value, and failed at step 3 (`prep_c152_a2_2_mk.log:38-39`).
+
+Instead, the purpose carried one LabVIEW measurement. Round 1 handed back at 05:05 and the second measurement went into round 2.
+
+**Loss: about 19 min.**
+- Card a2-2's maker run, ≈13 min (04:53–05:05), was redone by b2-1.
+- The hand-back judgement, 3 min.
+- Round 2's restart, ≈3.5 min.
+
+**Dollars are partly unknown.** The hand-back session logs $1.52. The a2-2 share of round 1's $16.20 is not logged separately, so the dollar loss is reported as `?`.
+
+**Counterfactual:** had the 04:01 purpose put that replay first, op 187 would have shown up by about 04:10. The naming scratch card could then have run in round 1, either beside the offline `stagesim` card a2-1 (the pipeline allows one LabVIEW card plus one offline card) or right after it. The cycle would have ended at about 06:07 instead of 06:26, with no hand-back.
+
+This is the same family as the 2026-09-25 16:10 decision: a replay that stops at its first refusal, so each gap costs its own round. That device was scoped to `stagexec`'s dry run, not to `stagesim`'s real-graph replay. The closest slug is the judgement-side one, inference-over-measurement.
+
+## FINDINGS
+
+**1. Repeated failure.** The class name `TopLevelDiagram` versus `Diagram` failed two cards:
+- Card a1-1's control gate C (`diag_c152_a1_1_owner.log:35`).
+- Card b1-1: `struct_copy_nested` accepts only `('Diagram', uid)` (`gscript.py:5064`), while `create_primitive_nested` also accepts `TopLevelDiagram` (`gscript.py:4864-4867`). See `tools/bench/cards/result_152-b1-1.json:2,16`.
+
+The hand-back judgement had named this case at 05:08 (`docs/d1/ring-p4d.md:68-71`). Yet its PD369(d) ordered "a NEW minimal scratch VI" without saying "not on the top-level diagram". The approach should have changed on the second occurrence, at b1-1's brief: build the FS inside a structure, as the cited skeleton `diag_c127_1_fsinner.py` already does (`brief_152-b1-1.md:13`). b1-1 cost 18 min and one LabVIEW run (`result_152-b1-1.json:25`); b1-2 then passed.
+
+**2. Missing tool.** Two absences cost time here:
+- A `stagesim` replay mode that, on an UNMEASURED refusal, substitutes the plan's own predicted value, flags it and continues, so every downstream refusal is listed. It would have exposed op 187 at round 1 and also op 189, which was first simulated in round 2 (`ring-p4d.md:98`).
+- One shared owner-class check in gscript. It would have prevented b1-1.
+
+**3. Unmeasured steps.**
+- The fault above.
+- PD369(d) said the outer face is "already wired to one other sink". The s08 graph, on disk, shows **five** (`result_152-b1-1.json:13`).
+- X10's start was labelled "MEASURED 595.0" (`prep_c152_a2_2_mk.log:6-7`), but the run metered 561.9 (−33.1 MB). The previous session was +21.4 MB off (`ring-p4d.md:57`). Two runs, two signs: the start model is not a measurement of the run it predicts, and recalibration is deferred again (`assign_result_152_2.json:24`).
+
+**4. Rule compliance.**
+- **Failed-prediction review.** a1-1 was reviewed (`archive/peer/2026-10-09-c152-a1-1-owner-ctl.md`), and b1-1 was legitimately routed by the Jev ladder as `our-script-bug` (`jev_gate.log:5630`). But s09's Error List miss (45 against a predicted 46) was "discharged" by `RULE-SAME-ROW` using cycle 151's el46 review, matched on script name only (`jev_gate.log:5692`). That satisfies the rule formally, not on substance. The −33 MB start miss got no review.
+- **Reference hygiene rule 2.** `OpOwnerChain_v1` grew handles by +102 (`diag_c152_a1_1_owner.log:36`) and has no `op-hygiene/1` record. It ran because it predates the device's cutoff (`gscript.py:271-272`); a warm 20-read check is carried (`ring-p4d.md:100-103`).
+- **Deliverable first.** The `stagesim` edit before the build was the stated exception, because that gate itself refused the launch (`cycle_152.log:269`). That is valid. No hook was edited (`assign_result_152_2.json:21`).
+- **Audit failures that are not cycle 152's.** A1's two non-bgrun logs are a gate log written by a hook (`fn_gate.log`) and the chat's 23:58 relaunch. A4's blank file is a cycle-151 review that the chat owns (`2026-10-09-c151-selftest-c147-b1-2-pindrift.md:54-56`).
+- **What the audit does not see:**
+  - hand-back rounds as a cost unit;
+  - changes to recipe gate criteria;
+  - prediction misses recorded only in facts files;
+  - the fact that its own window spanned three cycles.
+
+**5. Ordering.** Round 1 ran the LabVIEW owner read (a1-1, 04:10) before the 9-second offline replay (a2-2, 05:01) that would show whether the owner was the last gap. It should have been the other way round. Round 2's order was defensible: graph read → scratch → table/`stagesim` → plan → scratch → adopt.
+
+**6. What was not reported.**
+- "Refuses ops 185..190" overstates a one-step result (`cycle_152.log:269` against `prep_c151_a3_2_mk.log:35`).
+- Every `BGRUN STAGE-RUN` record this cycle carries `card=None` (`diag_c152_*.log:3`, five logs). This matches the deferred `bgrun --material` env-drop item (2026-10-08 20:50).
+- Round 2's summary quotes "about $26 of the $60 cap". The cycle's full $46.29 appears only in the runner log.
+- The read of frame #29869 returned error 1055 (`diag_c152_a1_1_owner.log:26,30`). It is recorded as a FACT and not surfaced anywhere else.
+
+**7. Judgement inside a material session.**
+- Card b2-1 (material) loosened two recipe gates: FR from `on` to `(on or NC == 0)`, and licence R to "zero allowed" (`result_152-b2-1.json:16-17`). It asked whether to accept them (`:21-22`). The assignment `claude -p` cell then treated them as settled "s09-shape gate adaptations" (`brief_152-b3-1.md:17`) and launched and adopted before the judgement session ruled. The outcome was unaffected (D/TD/PB pass, `result_152-b3-1.json:12`), but a change to a pass criterion was accepted outside the judgement session.
+- The material session for card a1-1 also wrote the review's disposition and chose between explanations ("script-prediction bug of a KNOWN class", `owner-ctl.md:121-123`). The judgement re-derived it independently (`ring-p4d.md:68-71`).
+
+## DEVICE EFFECT
+
+None of the 41 devices failed inside cycle 152's 04:01–06:26 window. Each was either exercised and worked, or was not exercised:
+
+| Device (decided) | Verdict | Evidence |
+|---|---|---|
+| unreported-fact, rc masking (09-16) | worked | `prep_c152_a2_2_mk.log:39-41`; `diag_c152_a1_1_owner.log:65-67` (failing gates → rc=1) |
+| rule-evaded, confirm-bait (09-16) | not tripped | one review (`peer_c152-a1-1-owner-ctl.log`) |
+| tool-not-built, prior-art (09-16) | no new structure class built | s09 = 6 rows of proven ops |
+| repeated-failure-class, undisposed-review refusal (09-16 15:05) | ok | retro-debt=ok (`cycle_runner_main_20261009_0250.log:35`) |
+| unreported-fact, C3 split (09-16 15:05) | worked | C4b 6/6 |
+| premature-build, guard_cycle (09-16 19:16) | not exercised | — |
+| scope-creep, C7 counter (09-16 19:16) | no scope creep occurred (`stagesim`/table edits authorised, PD369(e)) | its 664 entries over three cycles against a 104-line plan file cannot discriminate; that is noise, not a miss |
+| device-failed, COST regex (09-16 21:07) | worked | C4b 6/6 |
+| device-failed, bgrun FAIL scan (09-17 03:38) | worked | owner.log:35-36 → :67 |
+| repeated-failure-class, OpLoopEndRef reader (09-17 03:38) | not exercised | — |
+| motor FAIL exit (09-24 03:20) | not exercised (limits OK) | runner log :34 |
+| stop-record devices (09-18 00:53; 09-24 ×3; 09-27 07:46, 15:49, 22:20; 09-28 07:05; 10-07 20:25) | not exercised | no refused read-only command this cycle |
+| guard_peer retry path; Jev command scope (09-24 03:53) | ok | `jev_gate.log:5630` |
+| SendMessage refusal (09-24 05:54) | ok | only foreground spawns (`cycle_152_assign_1.log:60`) |
+| selftest exemption (09-25 05:58) | not the failing checker | the a2-1 refusal came from a different check (`scope_header.py:554`), queued as a gate false positive |
+| stage-run count (09-25 07:05) | count worked | carries the cycle; `card=None` is the deferred env-drop |
+| SimReader membership, sink gates (09-25) | n/a / passed | — |
+| graph shape (09-26 13:47) | n/a | — |
+| gates_due cards (09-26 14:10; 09-27 08:30) | written | runner log :35 |
+| launch-gate commands (09-27 01:15, 01:55) | no false refusal | — |
+| row preconditions (09-27 01:55) | dry 1/0 | `prep_c152_b2_1_dry.log:64` |
+| memory prediction (09-27 03:30) | conservative; held | peak 590.5 vs 633.3 |
+| abba harness (09-27 07:40) | n/a | — |
+| collect-all dry (09-27 20:20) | not this phase | scoped to the dry; see the main fault |
+| name-change flag (09-28 02:25) | n/a | — |
+| opmodel replay (09-28 04:35) | n/a | — |
+| op hygiene (09-28 10:37) | grandfathered by design | `gscript.py:271-272` |
+| census, CLOCK, X10, offline cards, LabVIEW-beside-stage-tool, UNVERIFIED gates (10-01, 10-02) | not violated | LabVIEW and tool-edit cards ran sequentially |
+| FS owners gate (10-02) | extended correctly | 15/0 |
+| rebase uid reuse (10-07 20:25) | passed | — |
+| elrule recording (10-08 01:16) | recorded | `prep_c152_b2_1_pred.log:31-32` |
+| retro-undisposed (10-08 01:16) | ok | — |
+| heading parser (10-08 20:50) | read the blank correctly | `pindrift.md:56` |
+| pre-fix tree (10-08 20:50) | deferred | `card=None` is its symptom |
+
+VIOLATION: inference-over-measurement | loss_min=19 | loss_usd=? | evidence=docs/d1/ring-p4d.md:29
+
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle152","verdict":"refuted","alternative":"Op 187's naming gap could only be found after the real owner read, so the hand-back was unavoidable.","discriminating_test":"Replay ops 185..190 on s08 END with owner(29721)=v18 create target 23166 (no LabVIEW): if it stops at op 187 naming, the gap was findable at 04:01. Round 1's measured owner equals 23166 and it stopped there (prep_c152_a2_2_mk.log:38).","violations":[{"slug":"inference-over-measurement","loss_min":19,"loss_usd":"?","evidence":"docs/d1/ring-p4d.md:29"}],"sources":["docs/d1/ring-p4d.md:29","tools/bench/prep_c151_a3_2_mk.log:35","tools/bench/prep_c152_a2_2_mk.log:38","tools/stagesim.py:1868","tools/bench/cycle_runner_main_20261009_0250.log:38","tools/bench/cycle_152_handback_1.log:271"],"note":"Window spans cycles 150-152; judged 152 only (04:01-06:26, $46.29). Deliverable met: s09 adopted, P4 ended. Logged loss part $1.52 (hand-back judgement); a2-2 share of $16.20 unlogged."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle152.md
+BGRUN END rc=0 after 392s

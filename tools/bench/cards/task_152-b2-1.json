@@ -1,0 +1,73 @@
+{
+ "schema": "task/1",
+ "id": "152-b2-1",
+ "kind": "build",
+ "goal": "Re-issue of 152-a2-2: make P4 s09 (v18 ops 185..190) offline now that stagesim 128bacfb knows the LoopTunnel naming: replay, rebase, pred, licence, recipes, dry+prerun.",
+ "why": "Cycle 152 round 2, pass items 6-8 (PD369(f), PD368(e)). 152-a2-2 stopped at op 187; 152-b1-3 recorded the rule.",
+ "retry_of_card": "152-a2-2",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_152-b2-1.md", "md5": "7aa193b8b0ca73351fb29437c2abd076"},
+  {"path": "tools/bench/cards/brief_152-a2-2.md", "md5": "dc780b8b29f29a446186eea24d591b28"},
+  {"path": "tools/bench/diag_c152_a2_2_facts.md", "md5": "2e408b8d8035487cb3e26b1cae865096"},
+  {"path": "tools/bench/diag_c152_b1_3_facts.md", "md5": "624d40520c4398773c10e24d1a4851b9"},
+  {"path": "tools/bench/prep_c152_a2_2_mk.py", "md5": "5c426b717906f1112abbc0ccb9d12ebe"},
+  {"path": "tools/bench/prep_c152_a2_2_probe.py", "md5": "c8ccd0c20c67bc08a910ba2828b6d7a9"},
+  {"path": "tools/bench/prep_c152_a2_2_check.py", "md5": "659d918cd595dea69b9b0f34e8a9c829"},
+  {"path": "tools/bench/prep_c150_a3_6_pred.py", "md5": "7996f5b17f8a30992c2d69afa5293535"},
+  {"path": "tools/bench/prep_c150_a3_6_licence.py", "md5": "efe26399f7751b4e029f87648b177b51"},
+  {"path": "tools/bench/prep_c150_a3_6_check.py", "md5": "4455f2cc3a0d4bd06f50adabf4102474"},
+  {"path": "tools/bench/plan_ring_p4_s08v18.json", "md5": "c328fdafa921995af7ff4d43c34d9c5c"},
+  {"path": "tools/bench/graph_ring_p4s08_20261009_033522.json", "md5": "44858dbfa0e77628359f7a86727e250f"},
+  {"path": "tools/bench/graph_ring_p4s08_20261009_033522_fsowner.json", "md5": "e26b4d90924f79791e52329c43a872ca"},
+  {"path": "tools/bench/errorlist_expected_D1_ring_p4s08_20261009_031503.json", "md5": "c19cde968ce0701d557918105ac85a6a"},
+  {"path": "docs/d1/ring-p4d.md", "md5": "cf2ffa4ab8ea3a939988766423f95b39"},
+  {"path": "tools/stagesim.py", "md5": "128bacfb5710355fe76fabfdde567f38"}
+ ],
+ "pass": [
+  "stagesim pass A + REALSIM on derived e26b4d90 replay ops 185..190 to their end (187, 189 included); step files quoted",
+  "cut + START + margins quoted; rebase rc; pred V18E-R' 3 checks PASS; elrule.predict WITH carry vs s08's 46 quoted; licence by script",
+  "s09 plan = v18 ops 185..190 start 589.1; X11 CLEAN; sink gates by census; recipes written; dry + prerun PASS",
+  "--scratch-required rc and --check-launch quoted; NOT launched; pins md5 before=after; no hooks edit; no LabVIEW"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p4_s09v18.json",
+  "tools/bench/plan_ring_p4_s09v18_pred.json",
+  "tools/bench/plan_ring_p4_s09v18_licence.json",
+  "tools/recipes/stage_d1_ring_p4_s09v18.py",
+  "tools/recipes/stage_d1_ring_p4_s09v18_scratch.py",
+  "tools/bench/diag_c152_b2_1_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p4_s09v18*",
+   "tools/bench/prep_c152_b2_1*",
+   "tools/bench/diag_c152_b2_1*",
+   "tools/recipes/stage_d1_ring_p4_s09v18*",
+   "tools/bench/sim/ring_p4_s09v18/**",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/gate_fp_queue.jsonl"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 90
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/graph_ring_p4s08_20261009_033522_fsowner.json"},
+  {"kind": "file", "name": "tools/bench/prep_c152_a2_2_mk.py"},
+  {"kind": "file", "name": "D1_ring_p4s08_20261009_031503.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"}
+ ],
+ "rules": [
+  "No tools/hooks edit, no stage-tool edit (stagesim included); NO --launch; offline only",
+  "Do not overwrite any s08 file or the derived graph; RETURN on a second simulator/prerun refusal",
+  "Rule 1a: v18 ops copied as-is; only the cut point changes (here the whole remainder)"
+ ]
+}

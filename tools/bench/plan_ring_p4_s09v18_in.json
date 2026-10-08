@@ -1,0 +1,173 @@
+{
+ "schema": "stageplan/1",
+ "context": {
+  "s1_key": "D1_s1_copy"
+ },
+ "stage": "ring_p4_s09v18",
+ "goal": "RING P4 v18 LabVIEW session 9 (card 152-b2-1, made at the measured s08 load, PD368(e)): v18 ops 185..190 (6 actions), cut so the MAIN recipe's X10 (Executor + source reads) <= 680 at the MEASURED start 595.0 (s08 load 589.1 + op-0), no action cap, on session 8's SIMULATED end + the measured FS #29721 owner (plan c328fdaf; provisional -> stage_prerun --rebase onto the adopted s08 file's graph 44858dbf + fs_owner_read = e26b4d90)",
+ "base": {
+  "path": "tools/bench/sim/ring_p4_s09v18/s08end/base_provisional_fsowner.json",
+  "md5": "fd84b364182314002be0bb3599159922",
+  "provisional": true,
+  "sim_of": {
+   "plan": "tools/bench/plan_ring_p4_s08v18.json",
+   "md5": "c328fdafa921995af7ff4d43c34d9c5c"
+  }
+ },
+ "open_rows": [
+  {
+   "node": 10068,
+   "term": "x",
+   "why": "c152-b2-1: open at step 0 = declared open row of plan_ring_p4_s08v18.json"
+  },
+  {
+   "node": 10150,
+   "term": "x",
+   "why": "c152-b2-1: open at step 0 = declared open row of plan_ring_p4_s08v18.json"
+  },
+  {
+   "node": 10382,
+   "term": "x",
+   "why": "c152-b2-1: open at step 0 = declared open row of plan_ring_p4_s08v18.json"
+  },
+  {
+   "node": 10757,
+   "term": "array",
+   "why": "c152-b2-1: open at step 0 = declared open row of plan_ring_p4_s08v18.json"
+  },
+  {
+   "node": 11261,
+   "term": "array",
+   "why": "c152-b2-1: open at step 0 = declared open row of plan_ring_p4_s08v18.json"
+  },
+  {
+   "node": 11261,
+   "term": "element",
+   "why": "c152-b2-1: open at step 0 = declared open row of plan_ring_p4_s08v18.json"
+  },
+  {
+   "node": 11529,
+   "term": "x",
+   "why": "c152-b2-1: open at step 0 = declared open row of plan_ring_p4_s08v18.json"
+  },
+  {
+   "node": 2626,
+   "term": "array",
+   "why": "c152-b2-1: open at step 0 = declared open row of plan_ring_p4_s08v18.json"
+  },
+  {
+   "node": 2626,
+   "term": "element",
+   "why": "c152-b2-1: open at step 0 = declared open row of plan_ring_p4_s08v18.json"
+  },
+  {
+   "node": 28083,
+   "term": "Magnet position",
+   "why": "c152-b2-1: open at step 0 = declared open row of plan_ring_p4_s08v18.json"
+  },
+  {
+   "node": 29240,
+   "term": "x",
+   "why": "c152-b2-1: open at step 0 = declared open row of plan_ring_p4_s08v18.json"
+  },
+  {
+   "node": 29625,
+   "term": "array",
+   "why": "c152-b2-1: open at step 0 = declared open row of plan_ring_p4_s08v18.json"
+  },
+  {
+   "node": 376,
+   "term": "current frame data array in",
+   "why": "c152-b2-1: open at step 0 = declared open row of plan_ring_p4_s08v18.json"
+  },
+  {
+   "node": 376,
+   "term": "frame index",
+   "why": "c152-b2-1: open at step 0 = declared open row of plan_ring_p4_s08v18.json"
+  },
+  {
+   "node": 5058,
+   "term": "Bead is good? array in",
+   "why": "c152-b2-1: open at step 0 = declared open row of plan_ring_p4_s08v18.json"
+  },
+  {
+   "node": 5058,
+   "term": "Image In",
+   "why": "c152-b2-1: open at step 0 = declared open row of plan_ring_p4_s08v18.json"
+  },
+  {
+   "node": 5058,
+   "term": "pos in cal image in",
+   "why": "c152-b2-1: open at step 0 = declared open row of plan_ring_p4_s08v18.json"
+  },
+  {
+   "node": 5058,
+   "term": "x,y,z array",
+   "why": "c152-b2-1: open at step 0 = declared open row of plan_ring_p4_s08v18.json"
+  },
+  {
+   "node": 8634,
+   "term": "array",
+   "why": "c152-b2-1: open at step 0 = declared open row of plan_ring_p4_s08v18.json"
+  }
+ ],
+ "actions": [
+  {
+   "op": "wire",
+   "id": "p4_x_n2_order",
+   "src": {
+    "uid": 5058,
+    "term_uid": 5111
+   },
+   "dst": {
+    "uid": 30002,
+    "term": "array"
+   },
+   "why": "ROUTE connect_term_uid | PRECEDENT | PD298(c)/PD295(d): #5058 'Bead is good? array out' t5111 -> FS4 input tunnel -> IAZ1 (no-effect consumer) = FS4 starts only after #5058; fs_border variant case_frame_to_fs_frame_branch (wired source, measured on a CASE frame) - on a While body never run. Placed AFTER rollback C: the crossing re-creates t5111's net (stagesim.py:1906-1912), and p4_rbC_dw deletes "
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rle_x_n2_order",
+   "of": "p4_x_n2_order",
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972; PD256(b) one RLE per crossing"
+  },
+  {
+   "op": "wire",
+   "id": "p4_x_slot_fs",
+   "src": {
+    "uid": 30179,
+    "term": "outer"
+   },
+   "dst": {
+    "uid": 29879,
+    "term": "index"
+   },
+   "why": "ROUTE connect_term_uid | UNMEASURED | branch from a plan-made While tunnel outer face ACROSS a plan-made FS border: no measured variant [draft d9d66246]"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rle_x_slot_fs",
+   "of": "p4_x_slot_fs",
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0; PD255(b)/256(b) one RLE per crossing [draft d9d66246]"
+  },
+  {
+   "op": "wire",
+   "id": "p4_x_n2_out",
+   "src": {
+    "uid": 29879,
+    "term": "element"
+   },
+   "dst": {
+    "uid": 29724,
+    "term": "n2"
+   },
+   "why": "c142-P2 re-pointed dst new:EQ2.y -> new:SQ1.n2 (PD330(a) subVI terminal by name) | ROUTE connect_term_uid | UNMEASURED | FS frame -> enclosing body EXIT (only entries and frame_to_frame measured) [draft d9d66246]"
+  },
+  {
+   "op": "wire_remove_loose_ends",
+   "id": "p4_rle_x_n2_out",
+   "of": "p4_x_n2_out",
+   "why": "ROUTE wire_remove_loose_ends | MEASURED | gscript.py:4972 OpWireRemoveLooseEnds_v0; PD255(b)/256(b) one RLE per crossing [draft d9d66246]"
+  }
+ ]
+}

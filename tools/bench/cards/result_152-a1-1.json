@@ -1,0 +1,25 @@
+{"schema":"result/1","id":"152-a1-1","status":"FAIL","gates":{"pass":15,"fail":2},
+"first_fail":"C control FS #681 read == face-derived diagram #536, echo == 681 (read TopLevelDiagram #536)",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/diag_c152_a1_1_owner.py","md5":"d6ad9848a6c65118e337e25ac757b197"},
+ {"path":"tools/bench/diag_c152_a1_1_owner_plan.json","md5":"117901786687d015b5afe11cfc566372"},
+ {"path":"tools/bench/diag_c152_a1_1_inv.py","md5":"efdecc0682887e87a9a124b1ebd1199a"},
+ {"path":"tools/bench/graph_ring_p4s08_20261009_033522_fsowner.json","md5":"e26b4d90924f79791e52329c43a872ca"},
+ {"path":"tools/bench/diag_c152_a1_1_facts.md","md5":"a350aa9023a9bf4508ccd11f756d2995"}],
+"facts":[
+ "FS #29721 owner 'Diagram' #23166, echo 'FlatSequence'#29721, no error; gate A + strict owner_of PASS (diag_c152_a1_1_owner.log:25,32,33)",
+ "frame #29869 owner ('FlatSequenceFrame', 0) error 1055, == graph owners (diag_c152_a1_1_owner.log:26,34)",
+ "control FS #681 read 'TopLevelDiagram' #536 echo 681; face-derived #536 -> uid agrees, gate C FAIL on class string 'Diagram' (diag_c152_a1_1_owner.log:27,35)",
+ "handles 45687 -> 45789 (+102) over 4 reads incl. first op-VI load: gate H FAIL; VI-Server counter 4/4 (diag_c152_a1_1_owner.log:36,48)",
+ "derived graph e26b4d90 = graph text + fs_owner_read {29721: [Diagram, 23166]} + cite; loads in base_state/fs_measured_state/vigraph.reach (diag_c152_a1_1_owner.log:39-43)",
+ "s08 f99e8414 before = after; graph 44858dbf unchanged; scratch deleted; files left [] (diag_c152_a1_1_owner.log:37,42,50,51,59)",
+ "inv before 23/0 and after 23/0; tasklist LabVIEW 0 at end (diag_c152_a1_1_inv_after.log:24)",
+ "diagram #23166 is owned by WhileLoop #10170 in graph 44858dbf (graph_ring_p4s08_20261009_033522.json owners)",
+ "review: C is a KNOWN class-name class (gscript.py:4864-4867 accepts TopLevelDiagram for top-level uid); H unmeasured, warm 20-read hygiene owed (archive/peer/2026-10-09-c152-a1-1-owner-ctl.md:58,85)",
+ "| diag_c152_a1_1_owner.log | new-problem 0.798 | hypothesis review owed | dispatched c152-a1-1-owner-ctl, disposed | ANSWERED | (jev_gate.log:5576)"],
+"open":[
+ "PD368(c): accept owner class TopLevelDiagram when its uid is the top-level diagram (as gscript.py:4864-4867), or keep literal 'Diagram'?",
+ "Before stagesim consumes fs_owner_read: owe a warm 20-read OpOwnerChain_v1 hygiene run and one nested-parent control FS read (16543/17398/17710/18024)?"],
+"cost":{"usd":null,"minutes":12,"labview_runs":1},
+"note":"pass items 1-2 met (FS read Diagram/23166/echo 29721; derived file written); run status FAIL from the extra-fact control gate C and handle gate H; no retry inside the card"}

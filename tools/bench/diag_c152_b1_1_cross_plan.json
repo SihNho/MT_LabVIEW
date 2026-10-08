@@ -1,0 +1,19 @@
+{
+ "schema_note": "card 152-b1-1 (PD369(d)): FINALIZED decision-row plan of tools/bench/diag_c152_b1_1_cross.py. The Stage input is the P3b2b bed ONLY as the launch contract (graph JSON for the dry run) and as the Index Array donor (#3163, the P3b/P4 '$work' donor); the measurement is built in a NEW minimal scratch VI = a dated byte copy of claudeDev EMPTY_v0.vi (Stage.scratch, deleted at close). Mirrors v18 op 187 as read off graph 44858dbf (tools/bench/diag_c152_b1_1_graph.log): LoopTunnel #30179 on WhileLoop #16483, inner face fed by SubVI #29719 (RingPickSlot_v0) 'min slot', outer face 'min slot' -> IndexArray.index inside a 1-frame FS with 0 border tunnels on the same diagram. Never saved; LabVIEW killed and gone.",
+ "input": {"vi": "D1_ring_p3b2b_20261002_130007.vi", "md5": "395118775a52bc90073f4449b99f899d", "graph": "tools/bench/graph_ring_p3b2b_20261002_133824.json"},
+ "minimal": "EMPTY_v0.vi",
+ "subvi": "RingPickSlot_v0.vi",
+ "ia_donor_uid": 3163,
+ "terms": {"src": "min slot", "mm": "x", "ia": "index"},
+ "pos": {"while": [60, 60], "subvi": [90, 90], "mm": [260, 90], "ia_o": [520, 360], "fs": [700, 60], "ia_f": [40, 40]},
+ "decisions": [
+  {"id": "D-0", "action": "stage", "what": "stagekit Stage on the P3b2b bed: restart LabVIEW, byte copy = work copy (donor only), discard_work (never saved)"},
+  {"id": "D-1", "action": "stage", "what": "Stage.scratch('min', EMPTY_v0.vi): the NEW minimal scratch VI, deleted at close"},
+  {"id": "C-1", "action": "create", "what": "while_loop on the scratch's top diagram; drop_subvi RingPickSlot_v0 into its body; Max & Min (registry donor) into the body"},
+  {"id": "C-2", "action": "create", "what": "Index Array IA_o on the top diagram (work donor #3163); 1-frame FS (fs_donor) on the top diagram; Index Array IA_f in its frame"},
+  {"id": "W-1", "action": "wire", "what": "P1: connect_term_uid(MM.x <- SubVI 'min slot') in the body (the source becomes WIRED, as #30179's inner source is); wire_remove_loose_ends on new wires"},
+  {"id": "W-2", "action": "wire", "what": "P2: connect_term_uid(IA_o.index <- SubVI 'min slot') across the While border -> one LoopTunnel LT; read every LT face"},
+  {"id": "W-3", "action": "wire", "what": "X (= op 187): connect_term_uid(IA_f.index <- LT outer face); read every face of LT and of the new FS border tunnel before RemoveLooseEnds, then RemoveLooseEnds and read again"},
+  {"id": "X", "action": "discard", "what": "close(): scratch + work deleted, pins unchanged, LabVIEW killed and gone"}
+ ]
+}

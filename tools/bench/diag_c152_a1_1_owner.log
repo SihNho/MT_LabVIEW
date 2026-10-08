@@ -1,0 +1,67 @@
+BGRUN START 2026-10-09 04:12:35 limit 12.0 min: py -u tools/bench/diag_c152_a1_1_owner.py
+BGRUN PID 25904
+BGRUN STAGE-RUN recorded diag_c152_a1_1_owner.py cycle='cycle 152' card=None pid=26200 -> stage_runs.jsonl
+  FACT  input md5 before: f99e8414a2081538552e26ba24ee713d; graph md5 44858dbfa0e77628359f7a86727e250f; control FS #681 face-derived diagram #536 (borders [28377, 28809, 57284, 59090])
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 342 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == f99e8414a2081538552e26ba24ee713d  got f99e8414a2081538552e26ba24ee713d
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 34002
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_c152_a1_1_owner_p4s08_20261009_041236.vi
+  FACT  ExecState [after open] scratch_c152_a1_1_owner_p4s08_20261009_041236.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so scratch_c152_a1_1_owner_p4s08_20261009_041236.vi is deleted at close
+  FACT  MEM after load: 598.3 MB private; handles 45687
+  OBSERVED uid 29721 -> owner 'Diagram' uid 23166 | self 'FlatSequence'#29721 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 29869 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#29869 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 681 -> owner 'TopLevelDiagram' uid 536 | self 'FlatSequence'#681 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  OBSERVED uid 29721 -> owner 'Diagram' uid 23166 | self 'FlatSequence'#29721 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  READ FS uid 29721: class 'Diagram' owner uid 23166 echo 'FlatSequence'#29721 errs '' err ''
+  FACT  READ FRAME uid 29869: class 'FlatSequenceFrame' owner uid 0 echo 'Diagram'#29869 errs 'error 1055: Property Node in OpOwnerChain_v1.vi' err ''
+  FACT  READ CONTROL uid 681: class 'TopLevelDiagram' owner uid 536 echo 'FlatSequence'#681 errs '' err ''
+  PASS  A FS #29721 read: class Diagram, owner uid != 0, echo == 29721  ('Diagram', 23166, 29721, '')
+  PASS  A2 strict owner_of #29721 agrees with the read  (('Diagram', 23166), '')
+  FACT  B frame #29869 read ('FlatSequenceFrame', 0) vs graph owners ['FlatSequenceFrame', 0]
+  FAIL  C control FS #681 read == face-derived diagram #536, echo == 681  ('TopLevelDiagram', 536, 681)
+  FAIL  H handles flat +-100 over the reads  (45687, 45789)
+  PASS  X input md5 unchanged  f99e8414a2081538552e26ba24ee713d
+  PASS  D0 graph text ends with '}'  "src_term": null}}}}
+  PASS  D1 derived file == graph + 2 keys (prefix byte-identical)  ['fs_owner_read', 'fs_owner_read_cite']
+  PASS  D2 derived file loads (base_state, fs_measured_state, vigraph.reach)  ('', '', '')
+  FACT  D2 base_state fs_unmeasured [2499, 14682, 29721, 43914] (stagesim not yet extended, PD368(c)); owners[29721] None
+  PASS  D3 graph 44858dbf unchanged  44858dbfa0e77628359f7a86727e250f
+  FACT  WROTE G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools/bench/graph_ring_p4s08_20261009_033522_fsowner.json md5 e26b4d90924f79791e52329c43a872ca
+
+---------- [H] HYGIENE
+  FACT  close_panel(scratch_c152_a1_1_owner_p4s08_20261009_041236.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 1}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 1}
+  FACT  LabVIEW handle count AFTER the work: 45790
+  PASS  H4 scratch deleted: scratch_c152_a1_1_owner_p4s08_20261009_041236.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c152_a1_1_owner_p4s08_20261009_041236.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before f99e8414a2081538552e26ba24ee713d / after f99e8414a2081538552e26ba24ee713d
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33994
+
+====================================================================================================
+=== GATES: 15 pass / 2 fail; failing: C control FS #681 read == face-derived diagram #536, echo == 681, H handles flat +-100 over the reads
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c152_a1_1_owner.json   elapsed 111.9 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":15,"fail":2},"first_fail":"C control FS #681 read == face-derived diagram #536, echo == 681","artefacts":[],"card":"152-a1-1","labview":"read"}
+LabVIEW gone at exit: True
+BGRUN END rc=1 after 117s

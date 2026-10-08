@@ -426,8 +426,52 @@ def fs_measured_state(graph):
         if b.get("fs") is not None:
             par[b["fs"]].add(b["outer_frame"])
     fs_parent = dict((fs, next(iter(p))) for fs, p in par.items() if len(p) == 1)
-    return {"fs_frames": dict((str(k), v) for k, v in fm.items()), "frame_owner": owner, "borders": borders,
-            "fs_border_entries": entries, "fs_parent": fs_parent}
+    # card 152-a2-1 (PD368(c), docs/d1/ring-p4d.md:34-43): the THIRD measured owner link - an OpOwnerChain_v1 read recorded in
+    # graph['fs_owner_read'] {fs uid: ["Diagram", uid]}, its echo in graph['fs_owner_read_cite']['echo'] = ["FlatSequence", fs uid]
+    # (a dict {fs uid: echo} is read the same way). Valid = class exactly 'Diagram', uid != 0, echo == ('FlatSequence', that FS).
+    # A valid read resolves an FS with NO border outer face; where faces exist they must be ONE outer diagram equal to the read.
+    # Anything else -> the FS is UNMEASURED (no fs_parent entry). A graph without the key is untouched (same return dict).
+    reads = None
+    if isinstance(graph.get("fs_owner_read"), dict):
+        reads = {}
+        cite = graph.get("fs_owner_read_cite") if isinstance(graph.get("fs_owner_read_cite"), dict) else {}
+        for k, v in graph["fs_owner_read"].items():
+            try:
+                fs = int(k)
+            except (TypeError, ValueError):
+                continue
+            if fs not in fm:
+                reads[str(fs)] = {"status": "IGNORED", "why": "not a measured Flat Sequence"}
+                continue
+            echo = cite.get("echo")
+            if isinstance(echo, dict):
+                echo = echo.get(str(fs))
+            try:
+                uid = int(v[1] or 0) if isinstance(v, (list, tuple)) and len(v) == 2 else 0
+                ok_echo = (isinstance(echo, (list, tuple)) and len(echo) == 2 and echo[0] == "FlatSequence"
+                           and int(echo[1] or 0) == fs)
+            except (TypeError, ValueError):
+                uid, ok_echo = 0, False
+            why = None
+            if not (isinstance(v, (list, tuple)) and len(v) == 2 and v[0] == "Diagram"):
+                why = "read class is not 'Diagram'"
+            elif uid == 0:
+                why = "read uid is 0"
+            elif not ok_echo:
+                why = "no echo of FlatSequence #{0} in fs_owner_read_cite".format(fs)
+            elif par.get(fs) and par[fs] != {uid}:
+                why = "border outer faces {0} disagree with the read #{1}".format(sorted(par[fs]), uid)
+            if why:
+                fs_parent.pop(fs, None)
+                reads[str(fs)] = {"status": "UNMEASURED", "why": why}
+            else:
+                fs_parent[fs] = uid
+                reads[str(fs)] = {"status": "resolved", "diagram": uid, "faces": sorted(par.get(fs) or [])}
+    out = {"fs_frames": dict((str(k), v) for k, v in fm.items()), "frame_owner": owner, "borders": borders,
+           "fs_border_entries": entries, "fs_parent": fs_parent}
+    if reads is not None:
+        out["fs_owner_read"] = reads
+    return out
 
 
 def _ints(x, out):
@@ -1837,6 +1881,22 @@ CROSS_NAME_FROM_CLS = ("SelectorTunnel", "LoopTunnel", "RightShiftRegister", "Le
 # like a SubVI, BuildArray gives ''. Any other class with a non-empty terminal name is refused as UNMEASURED.
 CROSS_NAMED_SRC_CLS = ("SubVI", "Property", "Local", "Diagram")
 CROSS_EMPTY_SRC_CLS = ("Function", "BuildArray")
+# card 152-b1-3 (PD369(e)): ONE measured LoopTunnel case - outer source face of a WhileLoop exit tunnel whose inner face is fed
+# by a SubVI terminal names both FSOT faces like the source face (diag_c152_b1_2_cross.log:93,100,105-107); others refused.
+CROSS_LOOPTUNNEL_MEASURED = ("WhileLoop", "SubVI")
+
+
+def _looptunnel_measured(st, s):
+    """card 152-b1-3: True only for the measured LoopTunnel source shape (CROSS_LOOPTUNNEL_MEASURED)."""
+    if s.get("term_class") != "OuterTerminal" or not s.get("is_source"):
+        return False
+    inner = [r for r in st["terminals"] if r["owner_uid"] == s["owner_uid"] and r["term_uid"] != s["term_uid"]
+             and r["term_class"] == "InnerTerminal"]
+    if len(inner) != 1 or not inner[0]["wire_uid"]:
+        return False
+    loop = ((st.get("owners") or {}).get(str(inner[0]["frame_diagram"])) or [None])[0]
+    srcs = [r["owner_class"] for r in wire_rows(st, inner[0]["wire_uid"]) if r["is_source"]]
+    return (loop, srcs) == (CROSS_LOOPTUNNEL_MEASURED[0], [CROSS_LOOPTUNNEL_MEASURED[1]])
 
 
 def _cross_tunnel_name(st, s, a):
@@ -1844,6 +1904,8 @@ def _cross_tunnel_name(st, s, a):
     nm = s["term_name"] or ""
     if nm and s.get("owner_class") in CROSS_EMPTY_SRC_CLS:
         nm = ""
+    elif nm and s.get("owner_class") == "LoopTunnel" and _looptunnel_measured(st, s):
+        pass                                             # card 152-b1-3: named like a SubVI source
     elif nm and s.get("owner_class") not in CROSS_NAMED_SRC_CLS:
         raise SimError("wire {0} -> {1}: source '{2}' on a {3} - UNMEASURED tunnel naming for that owner class (card 131-1, "
                        "fs_tunnel_naming_table.json)".format(a["src"], a["dst"], nm, s.get("owner_class")))
@@ -1882,13 +1944,22 @@ def naming_table_check(path=None):
             res["skipped"].append(lab)
             continue
         w = 900001 if r["src_wired"] else 0
+        lt = r.get("src_looptunnel")                     # card 152-b1-3: the LoopTunnel row's loop + inner-face source
         src = {"term_uid": 800001, "term_name": r["src_name"], "is_source": True, "wire_uid": w, "owner_uid": 800000,
-               "owner_class": r["src_owner_class"], "frame_diagram": 1, "term_class": "Terminal"}
+               "owner_class": r["src_owner_class"], "frame_diagram": 1, "term_class": "OuterTerminal" if lt else "Terminal"}
         rows = [src] + [{"term_uid": 800100 + k, "term_name": nm, "is_source": False, "wire_uid": w, "owner_uid": 800200 + k,
                          "owner_class": "SelectorTunnel", "frame_diagram": 1, "term_class": "OuterTerminal"}
                         for k, nm in enumerate(r["net_tunnel_names"] if w else [])]
+        owners = {}
+        if lt:
+            rows += [{"term_uid": 800002, "term_name": lt["inner_name"], "is_source": False, "wire_uid": 900002,
+                      "owner_uid": 800000, "owner_class": r["src_owner_class"], "frame_diagram": 2, "term_class": "InnerTerminal"},
+                     {"term_uid": 800003, "term_name": lt["inner_src_name"], "is_source": True, "wire_uid": 900002,
+                      "owner_uid": 800300, "owner_class": lt["inner_src_class"], "frame_diagram": 2, "term_class": "Terminal"}]
+            owners = {"2": [lt["loop_class"], 800400]}
         try:
-            got = cross_face_names({"terminals": rows, "objs": [], "neg": 0}, src, {"src": r["src_uid"], "dst": "x"}, r["faces"])
+            got = cross_face_names({"terminals": rows, "objs": [], "neg": 0, "owners": owners}, src,
+                                   {"src": r["src_uid"], "dst": "x"}, r["faces"])
         except SimError as e:
             res["rows"].append((lab, [("refused", str(e))], r["faces_cite"]))
             continue
@@ -3310,7 +3381,7 @@ def selftest():
         gate("G78 naming table row {0}: every known face name == rule ({1})".format(lab, cite[:80]), not bad, bad)
     print("  FACT  G78 rows {0}, face cells {1}, unknown {2}, skipped (FSIT) {3}".format(len(nt["rows"]), nt["cells"],
                                                                                          nt["unknown"], nt["skipped"]))
-    gate("G78b the table has 15 rule rows and 3 FSIT rows", len(nt["rows"]) == 15 and len(nt["skipped"]) == 3,
+    gate("G78b the table has 16 rule rows and 3 FSIT rows", len(nt["rows"]) == 16 and len(nt["skipped"]) == 3,
          (len(nt["rows"]), nt["skipped"]))
     neg = []
     for cls_, nm_, net_ in (("GrowableFunction", "x+y", None), ("SubVI", "Image Out", "other"), ("Function", "x-y*floor(x/y)", "q")):

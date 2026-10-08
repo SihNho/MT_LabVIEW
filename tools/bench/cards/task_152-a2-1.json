@@ -1,0 +1,66 @@
+{
+ "schema": "task/1",
+ "id": "152-a2-1",
+ "kind": "build",
+ "goal": "stagesim uses graph key fs_owner_read for a no-border FS (class Diagram, uid != 0, echo == FS, else UNMEASURED); self-test with new cases; real derived graph resolves FS #29721",
+ "why": "Cycle 152 pass items 1-2 (PD368(c)). Card 152-a1-1 measured FS #29721 owner = Diagram #23166 (echo 29721); stagesim must consume it so s09 ops 185..190 can be simulated.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_152-a2-1.md", "md5": "3ea9dc683d7120af50539c78b465231e"},
+  {"path": "docs/d1/ring-p4d.md", "md5": "b51aba314370480af92b42d33f1a6373"},
+  {"path": "tools/bench/diag_c152_a1_1_facts.md", "md5": "a350aa9023a9bf4508ccd11f756d2995"},
+  {"path": "tools/bench/graph_ring_p4s08_20261009_033522_fsowner.json", "md5": "e26b4d90924f79791e52329c43a872ca"},
+  {"path": "tools/bench/graph_ring_p4s08_20261009_033522.json", "md5": "44858dbfa0e77628359f7a86727e250f"},
+  {"path": "tools/bench/graph_ring_p4s07_20261008_224835.json", "md5": "71935a845efedd8123044aab288cd81c"},
+  {"path": "tools/stagesim.py", "md5": "748bbf30266c8c8eca1f168c75efbe13"},
+  {"path": "tools/bench/selftest_c134_4_owners.py", "md5": "2d04ba97730be8a411915e4549a5f535"},
+  {"path": "tools/bench/selftest_c134_1_fsmap.py", "md5": "bab3c30611c3c31435a754b0793525b9"},
+  {"path": "tools/bench/selftest_c134_1_dry.py", "md5": "10178208ac328a292d3573d1692ac01b"},
+  {"path": "tools/bench/selftest_c134_2_gates.py", "md5": "f388b7ac38231c8b94fc83a5e9e3a816"},
+  {"path": "tools/bench/selftest_c134_2_regress.py", "md5": "1162a8080e3afa144d826cd1a244b5d3"},
+  {"path": "tools/bench/diag_c152_a1_1_inv.py", "md5": "efdecc0682887e87a9a124b1ebd1199a"}
+ ],
+ "pass": [
+  "stagesim.py edited ONLY for fs_owner_read (valid read -> fs_parent for a no-border FS); new md5 quoted; graphs without the key give identical output (44858dbf, 71935a84)",
+  "new selftest_c152_fsowner.py PASS: no-border resolved; disagree-with-faces, class not Diagram, uid 0, echo missing/wrong -> UNMEASURED; selftest_c134_4_owners 7/0 unchanged file",
+  "derived graph e26b4d90: FS #29721 resolved, fs_unmeasured [2499,14682,43914]; _diag_chain from frame #29869 reaches Diagram #23166; original graph still raises (both quoted)",
+  "other 4 baseline stagesim self-tests same counts before/after; md5 inventory: only stagesim.py differs (other tools, s08, graphs, derived file unchanged)"
+ ],
+ "outputs": [
+  "tools/stagesim.py",
+  "tools/bench/selftest_c152_fsowner.py",
+  "tools/bench/diag_c152_a2_1_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagesim.py",
+   "tools/bench/selftest_c152_fsowner*",
+   "tools/bench/diag_c152_a2_1*",
+   "tools/bench/prep_c152_a2_1*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/jev_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 90
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/bench/graph_ring_p4s08_20261009_033522_fsowner.json"}
+ ],
+ "rules": [
+  "Edit stagesim.py with the Edit tool; no other stage tool, no tools/hooks edit; selftest_c134_4_owners.py is not edited",
+  "Rule 1a: this changes only which FS owners count as measured; no per-bead computation is touched",
+  "No LabVIEW, no motor or camera; RETURN on a second refusal or a changed baseline count"
+ ]
+}

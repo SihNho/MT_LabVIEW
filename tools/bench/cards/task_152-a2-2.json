@@ -1,0 +1,75 @@
+{
+ "schema": "task/1",
+ "id": "152-a2-2",
+ "kind": "build",
+ "goal": "Make P4 s09 (v18 ops 185..190) on the real s08 graph + fs_owner_read, NOT run: discriminator, cut, rebase, pred V18E-R', licence, recipes, dry+prerun, scratch-required.",
+ "why": "Cycle 152 pass items 3-5 (PD368(d)(e)). FS #29721 owner is measured (Diagram #23166) and stagesim c24bd39a uses it; s09 can now be made offline.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_152-a2-2.md", "md5": "dc780b8b29f29a446186eea24d591b28"},
+  {"path": "tools/bench/cards/brief_151-a3-2.md", "md5": "4764c807eb1854bf04cc1f8cd873a711"},
+  {"path": "tools/bench/diag_c151_a3_2_facts.md", "md5": "811f4b7b6023654acaebef9fbab21656"},
+  {"path": "tools/bench/diag_c152_a2_1_facts.md", "md5": "8dde5adaf7cc5ea2d25caec6e0c43c01"},
+  {"path": "tools/bench/diag_c152_a1_1_facts.md", "md5": "a350aa9023a9bf4508ccd11f756d2995"},
+  {"path": "docs/d1/ring-p4d.md", "md5": "b51aba314370480af92b42d33f1a6373"},
+  {"path": "tools/bench/prep_c151_a3_2_mk.py", "md5": "04a5cab3b3ebc7f306eeab979e9b1ac8"},
+  {"path": "tools/bench/prep_c151_a3_2_probe.py", "md5": "6cc4085fb60567671b73b8642452a534"},
+  {"path": "tools/bench/prep_c151_a3_2_check.py", "md5": "ef41817985767c41242968af74e193e4"},
+  {"path": "tools/bench/prep_c150_a3_6_pred.py", "md5": "7996f5b17f8a30992c2d69afa5293535"},
+  {"path": "tools/bench/prep_c150_a3_6_licence.py", "md5": "efe26399f7751b4e029f87648b177b51"},
+  {"path": "tools/bench/prep_c150_a3_6_check.py", "md5": "4455f2cc3a0d4bd06f50adabf4102474"},
+  {"path": "tools/bench/prep_c150_a3_6_rebase.log", "md5": "0c29825361e708f319424bc992abc25f"},
+  {"path": "tools/bench/plan_ring_p4_s08v18.json", "md5": "c328fdafa921995af7ff4d43c34d9c5c"},
+  {"path": "tools/bench/graph_ring_p4s08_20261009_033522.json", "md5": "44858dbfa0e77628359f7a86727e250f"},
+  {"path": "tools/bench/graph_ring_p4s08_20261009_033522_fsowner.json", "md5": "e26b4d90924f79791e52329c43a872ca"},
+  {"path": "tools/bench/errorlist_expected_D1_ring_p4s08_20261009_031503.json", "md5": "c19cde968ce0701d557918105ac85a6a"},
+  {"path": "tools/stagesim.py", "md5": "c24bd39aaca3801d232c54ae2c10d520"}
+ ],
+ "pass": [
+  "discriminator: measured diagram of FS #29721 (23166) vs the v18 create target of that FS after rebind, every hop quoted; if different or unresolvable RETURN",
+  "cut + START + margins + sensitivities quoted; rebase onto real s08 graph + fs_owner_read: rc and simulator outcome for ops 185..190 quoted",
+  "pred V18E-R' 3 checks PASS; EL base 46; elrule.predict WITH carry vs s08's 46 quoted; X11 CLEAN; licence by script; sink gates by census",
+  "dry + prerun PASS on final bytes of plan + both recipes; --scratch-required rc and --check-launch quoted; NOT launched",
+  "invariants md5 before=after (brief step 7, stagesim c24bd39a); tools/hooks untouched; no LabVIEW process; facts file <=45 lines"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p4_s09v18.json",
+  "tools/bench/plan_ring_p4_s09v18_pred.json",
+  "tools/bench/plan_ring_p4_s09v18_licence.json",
+  "tools/recipes/stage_d1_ring_p4_s09v18.py",
+  "tools/recipes/stage_d1_ring_p4_s09v18_scratch.py",
+  "tools/bench/diag_c152_a2_2_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p4_s09v18*",
+   "tools/bench/prep_c152_a2_2*",
+   "tools/bench/diag_c152_a2_2*",
+   "tools/recipes/stage_d1_ring_p4_s09v18*",
+   "tools/bench/sim/ring_p4_s09v18/**",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/gate_fp_queue.jsonl"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 90
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/graph_ring_p4s08_20261009_033522_fsowner.json"},
+  {"kind": "file", "name": "tools/bench/prep_c151_a3_2_mk.py"},
+  {"kind": "file", "name": "D1_ring_p4s08_20261009_031503.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"}
+ ],
+ "rules": [
+  "No tools/hooks edit, no stage-tool edit (stagesim included); NO --launch; offline only",
+  "Do not overwrite any s08 file or the derived graph; RETURN on a second simulator/prerun refusal or a moved md5",
+  "Rule 1a: v18 ops copied as-is; only the cut point changes (here the whole remainder)"
+ ]
+}

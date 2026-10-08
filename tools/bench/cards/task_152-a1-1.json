@@ -1,0 +1,65 @@
+{
+ "schema": "task/1",
+ "id": "152-a1-1",
+ "kind": "build",
+ "goal": "Read owner of FS #29721 + frame #29869 on a read-only load of s08 f99e8414 (OpOwnerChain_v1, strict echo); store as fs_owner_read in a DERIVED graph file",
+ "why": "Cycle 152 pass items 0-1 (PD368(c)). stagesim refuses s09 ops 185..190 because FS #29721 has no measured diagram (stagesim.py:1805-1807); the owner read is the third measured link.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_152-a1-1.md", "md5": "74268592f99ea32e2c3e5527969905df"},
+  {"path": "tools/bench/cards/brief_151-a1-1.md", "md5": "09b0fa28521a245c84de12064a3aa2b4"},
+  {"path": "docs/d1/ring-p4d.md", "md5": "b51aba314370480af92b42d33f1a6373"},
+  {"path": "tools/bench/diag_c151_a1_1_facts.md", "md5": "7fb81093590f02eb1a4cbfdc27c7fb8a"},
+  {"path": "tools/bench/diag_c151_a1_1_fs.py", "md5": "5cad0af7cc5d5435ab7a3a91885e45c1"},
+  {"path": "tools/bench/diag_c151_a1_1_graph.py", "md5": "0a229f7ae06326a720b035fe68d08c80"},
+  {"path": "tools/bench/diag_c151_a1_1_inv.py", "md5": "ffbc05794e062485b9cf1894c5991518"},
+  {"path": "tools/bench/diag_c150_a3_2_mkgraph.py", "md5": "c2e6ec8110a3305133d00dbb25c269ea"},
+  {"path": "tools/bench/graph_ring_p4s08_20261009_033522.json", "md5": "44858dbfa0e77628359f7a86727e250f"},
+  {"path": "tools/stagekit.py", "md5": "604529e8e9b68b9c4b370b8f3d5c5ee5"},
+  {"path": "tools/gscript.py", "md5": "1a80236ed35c1876c67f964c72fe820a"},
+  {"path": "tools/stagesim.py", "md5": "748bbf30266c8c8eca1f168c75efbe13"},
+  {"path": "tools/vigraph.py", "md5": "13be0847aad910571d1de5af1e2071f2"}
+ ],
+ "pass": [
+  "OpOwnerChain_v1 (strict echo) read of FS #29721 and frame #29869 on a fresh read-only load of s08 f99e8414: class / uid / echo quoted with the log line; s08 md5 same after (quoted)",
+  "fs_owner_read in a DERIVED graph file (graph 44858dbf unchanged, md5 quoted) ONLY if read is class Diagram, uid != 0, echo == 29721; else no file, RETURN with facts",
+  "control read of one border-bearing FS vs its face-derived diagram quoted (extra fact)",
+  "invariants md5 before = after (stagekit, addrcheck, stagexec, gscript, stage_prerun, vigraph, stagesim, s08, graph); handles before/after recorded; tasklist LabVIEW count 0 at the end"
+ ],
+ "outputs": [
+  "tools/bench/diag_c152_a1_1_owner.py",
+  "tools/bench/graph_ring_p4s08_20261009_033522_fsowner.json",
+  "tools/bench/diag_c152_a1_1_facts.md"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c152_a1_1*",
+   "tools/bench/launch_*c152*",
+   "tools/bench/graph_ring_p4s08_20261009_033522_fsowner.json",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/jev_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 90
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "D1_ring_p4s08_20261009_031503.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "tools/bench/graph_ring_p4s08_20261009_033522.json"}
+ ],
+ "rules": [
+  "s08 is opened READ-ONLY and NEVER saved; no byte copy edited; no stage-tool, stagesim, vigraph or hook edit",
+  "ONE read launch; RETURN at the first result differing from the prediction; no retry inside this card",
+  "No motor or camera; close every reference; LabVIEW closed and verified gone"
+ ]
+}

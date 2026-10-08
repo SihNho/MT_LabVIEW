@@ -1,0 +1,61 @@
+{
+ "schema": "task/1",
+ "id": "152-b1-3",
+ "kind": "build",
+ "goal": "Record the measured LoopTunnel-source FS tunnel naming: ONE fs_tunnel_naming_table row + the stagesim _cross_tunnel_name rule exactly as measured, with selftests.",
+ "why": "Cycle 152 round 2, pass items 4-5 (PD369(e)). Card 152-b1-2 measured it; stagesim still refuses op 187 until the rule is recorded.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_152-b1-3.md", "md5": "87acdd602e5c1eb293d95451ad58ca81"},
+  {"path": "docs/d1/ring-p4d.md", "md5": "cf2ffa4ab8ea3a939988766423f95b39"},
+  {"path": "tools/bench/diag_c152_b1_2_facts.md", "md5": "6080c855835c2edd3ba185746fbf80ab"},
+  {"path": "tools/bench/diag_c152_b1_2_cross.log", "md5": "4e4af3b4da54e5511f07ee47aebb7a34"},
+  {"path": "tools/bench/fs_tunnel_naming_table.json", "md5": "0c0ba43aa2990655ac28ccecd77d7d7f"},
+  {"path": "tools/stagesim.py", "md5": "c24bd39aaca3801d232c54ae2c10d520"},
+  {"path": "tools/bench/selftest_stagesim_tunnel_naming.py", "md5": "237c485d0a6abbe7758c8b5ab003b3f9"},
+  {"path": "tools/bench/selftest_c152_fsowner.py", "md5": "64918ff79340b20775f3fa9221f3b509"},
+  {"path": "tools/bench/selftest_c134_4_owners.py", "md5": "2d04ba97730be8a411915e4549a5f535"}
+ ],
+ "pass": [
+  "PD369(e): fs_tunnel_naming_table.json gets ONE LoopTunnel-source row citing the scratch log lines (verified)",
+  "PD369(e): stagesim _cross_tunnel_name extended exactly as measured; new stagesim md5 quoted",
+  "Selftests tunnel_naming, c152_fsowner 15/0 and c134_4_owners 7/0 PASS; counts quoted",
+  "Pins stagekit, addrcheck, stagexec, gscript, stage_prerun, vigraph, s08, graph unchanged; no LabVIEW; no hooks edit"
+ ],
+ "outputs": [
+  "tools/stagesim.py",
+  "tools/bench/fs_tunnel_naming_table.json",
+  "tools/bench/selftest_stagesim_tunnel_naming.py",
+  "tools/bench/diag_c152_b1_3_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagesim.py",
+   "tools/bench/fs_tunnel_naming_table.json",
+   "tools/bench/selftest_stagesim_tunnel_naming.py",
+   "tools/bench/diag_c152_b1_3*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c152_b1_2_cross.log"},
+  {"kind": "file", "name": "tools/bench/diag_c152_b1_2_facts.md"}
+ ],
+ "rules": [
+  "Only the measured case: LoopTunnel on a WhileLoop, inner SubVI source; other classes stay refused",
+  "No edit of any pinned stage tool or hook; no original touched; no LabVIEW launch",
+  "Frozen selftest failing only on the old stagesim md5 is a pin drift: log it, do not edit it"
+ ]
+}

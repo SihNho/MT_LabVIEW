@@ -1,0 +1,69 @@
+BGRUN START 2026-10-09 04:15:21 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c152-a1-1-owner-ctl -TaskFile tools/bench/diag_c152_a1_1_peer_task.md
+BGRUN PID 25864
+OUTCOME: ANSWERED (170s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-09-c152-a1-1-owner-ctl.md
+COST: $1.4456  in 30 / out 14460 / cache-create 103575 / cache-read 1409121  (166s, 26 turn(s))
+--- ANSWER ---
+**Verdict:** Claim 1 is right but proves less than it says. Claim 2 may be right, but the evidence offered for it is not valid. Claim 3 understates what the literal wording of the rule would do. The facts were all checked against the log, the code and the graph; nothing was run.
+
+## Claim 1 — gate C failed only because of the class string
+
+**Strongest reason it is wrong (in scope, not in fact):** "the read and the faces AGREE" shows that the op works on the easy case only.
+- The literal fact is right. In LabVIEW the class chain is Generic → GObject → AbstractDiagram → Diagram → TopLevelDiagram ([labviewwiki TopLevelDiagram class](https://labviewwiki.org/wiki/TopLevelDiagram_class), [Diagram class](https://labviewwiki.org/wiki/Diagram_class)).
+- The class name was the only failing term in the gate: uid 536 equals the face-derived diagram and the echo is 681 (log:27, 35; script:72-74).
+- This was **already known in the project**. `diag_c124_opconnecttermuid.log:28,36` hit the same 'TopLevelDiagram' versus 'Diagram' mismatch. `gscript.py:4864-4867` has accepted `("TopLevelDiagram", uid)` since card 124-4, but only when the uid is the top-level diagram. The prediction repeated a known failure class; it was not a new surprise.
+- Diagram #536 is the VI's single top-level diagram. Checking it is a weak test of how the op behaves on the nested case that FS #29721 needs.
+- Per the graph, #29721 sits on diagram #23166, which is owned by WhileLoop #10170 (`"23166": ["WhileLoop", 10170]` in graph 44858dbf). That is consistent with the read, but nothing independent checks it. Only one terminal row in the whole graph has `frame_diagram` 23166.
+
+**Alternative explanation:** the op reads the top-level case correctly but has a separate way of failing on nested diagrams.
+- The frame read already shows this: uid #29869 echoes back as class 'Diagram', its owner 'FlatSequenceFrame' has uid 0, and the read ends in error 1055 (log:26).
+- Gate C cannot show whether the 'Diagram' path is right, because it never tested that path.
+
+**What would falsify it:** a control flat sequence (FS) whose face-derived parent is a nested diagram, read as anything other than `('Diagram', fs_parent)` with the correct echo.
+
+**Cheapest test:**
+1. Offline: list `stagesim.fs_measured_state(graph)["fs_parent"]` and pick an FS whose parent is not 536. Candidates are 16543, 17398, 17710, 18024 (from `fs_frames`).
+2. Offline: confirm that OpAllTerms_v1's `frame_diagram` column comes from `Terminal.Diagram`, not from `GObject.Owner`, so the two sides of the comparison are independent.
+3. Then do one read of that FS in the next LabVIEW session.
+
+## Claim 2 — the +102 handles are load cost, not a leak
+
+**Strongest reason it is wrong:** the 4/4 counter is not evidence, by its own documentation.
+- `gscript.py:463-467` says the counter sees only the references Python opens. It explicitly says it must never be cited to rule out reference build-up inside an op VI.
+- Inside the op, `read_owner` sets `vi path` to the work copy and seeds a Traverse with `Class Name "Diagram"` (`build_opownerchain_v1.py:255-258`). Neither of those references ever crosses COM, so the counter cannot see them.
+
+The "first load happened inside the window" part is true: `g.op()` is first called inside `read()`, after h0 is taken (script:58-60). But with one load and only 4 reads, a fixed cost of ~100 cannot be told apart from ~25 handles per read.
+
+**Alternative explanation:** each read adds handles — for example on the error-1055 path, or through the Traverse array.
+- NI says references are closed automatically when the top-level VI goes idle ([Closing References in LabVIEW](https://www.ni.com/en/support/documentation/supplemental/13/closing-references-in-labview.html)). That covers refnums, not OS handles, and nobody measured it here.
+- The exit count of 33994 does not separate the two explanations: it was taken after the work copy closed, which frees either kind.
+- The count also did not fall after hygiene (45789 → 45790).
+- No `op-hygiene/1` record exists for OpOwnerChain_v1 anywhere in `tools/bench`.
+
+**What would falsify it:** handles keep growing over reads 5 to 20 after the op VI is already loaded.
+
+**Cheapest test (needs LabVIEW, no offline route):**
+1. Call `g.op(OP_OWNER)` before taking h0.
+2. Do 20 reads, taking a handle count after each.
+3. Run them through the existing hygiene harness (`gscript.py:377-425`, flat ±100 band) with the error-1055 read included.
+
+That also gives the 20-run proof the reference-hygiene rule requires before an op is accepted.
+
+## Claim 3 — PD368(c) read literally
+
+**Strongest reason it is wrong:** it understates the damage.
+- PD368(c) (`docs/d1/ring-p4d.md:35-37`) uses the read in two ways: alone, for an FS with no border faces, and as a check that must agree wherever border faces exist ("else UNMEASURED").
+- Read literally, if `stagesim` also reads FSs that already have faces, a top-level FS like #681 would read back 'TopLevelDiagram', fail the agreement check, and be **downgraded to UNMEASURED**. Under the claim's own reading it would simply stay unmeasured; the risk is actually that a currently measured FS gets demoted.
+- The claim is right that #29721 meets the rule as written (log:32-33; it is in `fs_unmeasured`, log:41).
+
+**Alternative fix:** accept `TopLevelDiagram` only when its uid is the top-level diagram's uid, as `gscript.py:4864-4867` already does. Do not accept any subclass of Diagram.
+- Note that `diag_c152_a1_1_owner.py:86` writes the literal `"Diagram"` into the derived file. That is safe today only because the write is gated on read A passing.
+- Changing PD368(c)'s wording is a decision for the judgement session; the material session should not make it.
+
+**Cheapest test (offline):** grep `stagesim` and the PD368 extension plan for whether the read is called for FSs that have faces. If it is not, the downgrade case cannot happen, and the claim reduces to a wording fix.
+
+## What would change my mind
+- **Claim 1:** a nested-diagram control FS passes as `('Diagram', fs_parent)`.
+- **Claim 2:** a warm-load run of 20 reads shows flat handles.
+
+Until then, Claim 1 is confirmed only for top-level FSs, and Claim 2 is not measured.
+BGRUN END rc=0 after 171s
