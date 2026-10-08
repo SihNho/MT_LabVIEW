@@ -1345,6 +1345,8 @@ def uid_edges(G, kinds=("wire", "fs")):
 # the old object from the new one: gate TD failed falsely (:280) and could equally hide a real loss. So TD / the unwired check /
 # gate D compare terminals by IDENTITY = (term uid, owner uid, term name), and wires by (wire uid, its source terminals'
 # identities). Pure functions, no LabVIEW. Offline test: tools/bench/selftest_td_key_c141_3.py.
+# SUPERSEDED AS THE GATE KEY by card chat-T6 (docs/d1/result-gates.md): term_identity_gates keys by POSITION (block "POSITION KEYS" below);
+# term_key / wire_keys / term_identity_names stay for reference and comparison only.
 def _iv(v):
     try:
         return int(v)
@@ -1372,19 +1374,18 @@ def wire_keys(rows):
 
 
 def term_identity_gates(base, sim, real, renames=None, bind=None):
-    """TD / unwired / D computed on identities (base = graph rows before, sim = the simulated end rows, real = the read-back
-    end rows). Returns {td_ok, unwired, lost, gone, recycled, raw_lost, d_ok, new, lost_w, sim_new, sim_lost_w}:
-      lost  = base identities absent from real; gone = base identities absent from the sim end (= the plan's deletes);
-      unwired = base identities wired in base, kept AND wired in the sim end, but not wired (or absent) in real;
-      td_ok = not unwired and lost == gone;
-      d_ok  = |new wires| == |sim new| and |lost wires| == |sim lost| (wire_keys);
-      recycled = base uids whose identity is lost while the uid itself is present in real under another owner/name (info);
-      raw_lost = base uids absent from real by raw uid (the old key, info).
-    card 147-b1-2 (PD356(b)), both keywords optional - None (the default) = the code below, unchanged:
-      renames = licence_renames(licence) -> TD keys a terminal by (uid, owner) and a name change passes only when listed;
-      bind = {"term": {sim uid: real uid}, "obj": {...}} -> D's REUSE-NOTED rule. See term_identity_356."""
-    if renames is not None or bind is not None:
-        return term_identity_356(base, sim, real, renames, bind)
+    """TD / unwired / D of a stage's end (base = graph rows before, sim = the simulated end rows, real = the read-back end
+    rows). Card chat-T6 (docs/d1/result-gates.md): keyed by POSITION - see term_identity_pos, whose dict this returns. `renames` (an old
+    pb-licence/1 `renames` list, licence_renames) is still accepted and only REPORTED (`licence_renames_listed`): a name change
+    is INFO, licensed or not. `bind` = {"term": {sim uid: real uid}, "obj": {sim uid: real uid}} maps the sim end's created
+    objects onto the real ones, so D compares the NEW wires as sets, not only as counts. The name-keyed code that stood here
+    (cards 141-3 / 147-b1-2) is kept below as term_identity_names, for reference and comparison only."""
+    return term_identity_pos(base, sim, real, bind=bind, renames=renames)
+
+
+def term_identity_names(base, sim, real):
+    """card 141-3 (PD325(b)) as it stood until card chat-T6 - identity (term uid, owner uid, NAME), wires (wire uid, source
+    identities). NOT a gate any more (docs/d1/result-gates.md); kept so a test can show what the name key would have said."""
     wv = lambda rows: dict((term_key(r), _iv(r.get("wire_uid") or 0)) for r in rows)   # noqa: E731
     on = lambda w: w not in (0, "", "0", "None")                                       # noqa: E731
     bk, sk, rk = wv(base), wv(sim), wv(real)
@@ -1400,18 +1401,116 @@ def term_identity_gates(base, sim, real, renames=None, bind=None):
             "sim_new": sorted(str(k[0]) for k in sim_new), "sim_lost_w": sorted(str(k[0]) for k in sim_lost)}
 
 
-# ---------------------------------------------------------------------------------------------- PD356(b) (card 147-b1-2)
-# Card 147-b1-1 (tools/bench/diag_c147_b1_1_facts.md): the s06 retry built the right graph; D/TD/PB failed on KEYS only.
-# (1) LabVIEW renames polymorphic inputs when they are wired (#2626 'array'->'element', #9503 'Value'->''), so TD's
-# (uid, owner, NAME) key counted them lost and PB's node|class|name|ordinal key ranked them into other ordinals; (2) LabVIEW
-# re-used the deleted wire uid 23807 on the same source with fewer sinks, which wire_keys counts as 'kept'. Rules: TD/PB key
-# a terminal by (uid, owner) and a NAME change passes ONLY for a (uid, owner) the stage's pb-licence/1 lists under `renames`;
-# D counts a plan-deleted wire uid present at the end as REUSE-NOTED only when its sources AND sinks == a sim-end wire and no
-# sink the simulator removed from the base wire is on it - any other re-use FAILS D. Pure functions, no LabVIEW.
-# Offline test: tools/bench/selftest_c147_b1_2.py.
+# ---------------------------------------------------------------------------------------------- POSITION KEYS (card chat-T6, docs/d1/result-gates.md)
+# User 2026-10-08 ("두 가지 모두 적용하자"; "단자 네이밍은 몇 차례나 이야기했던 것 같은데, 왜 아직도 수정이 안되는거임?"). Cycle 147
+# (result_147-a1-8.json): LabVIEW renames polymorphic inputs when it wires them (#2626 'array'->'element', #9503 'Value'->'') and
+# re-issues a deleted wire uid (23807), so the name / wire-uid keys above called a correct build lost, and a renames LICENCE (PD356(b),
+# cards 147-b1-2 / 147-c3-2) had to whitelist each batch's renames. S1 (PD337) already ADDRESSES plan terminals by position; the
+# RESULT gates now compare by it too:
+#   terminal = POSITION KEY (node, index among the node's rows in read order, term class, direction) - addrcheck.pos_table, the
+#              index of addrcheck.triple; the name is a report column (`renames`, INFO; a licence's list is only echoed);
+#   wire     = (frozenset of its source keys, frozenset of its sink keys) - never its uid; a deleted uid LabVIEW re-issues is INFO.
+# Nothing true slips: a base key the sim keeps but the real end lacks = lost (TD FAIL); a kept key that now holds ANOTHER term uid =
+# `moved` (TD FAIL - an index / class swap at one node); a key wired in base and in the sim end but not in real = unwired (TD FAIL);
+# a wire whose source or sinks change = one lost + one new wire the sim does not have (D FAIL: lost wires and the new wires between
+# kept base nodes are compared as SETS, the rest by count - kept_nodes). Pure functions, no LabVIEW.
+# Offline test: tools/bench/selftest_t6_poskey.py.
+def _on(w):
+    return w not in (0, "", "0", "None", None)
+
+
+def _pos_rows(rows, ob=None, tb=None):
+    """{position key: row} of one terminal table (first row of a term uid). The key's node is mapped through `ob` (object
+    uids) and `tb` (term uids - a front-panel terminal is its own node): the sim end's created objects onto the real ones."""
+    ob, tb = ob or {}, tb or {}
+    t = mod("addrcheck").pos_table(rows)
+    seen, out = set(), {}
+    for r in rows or []:
+        u = r["term_uid"]
+        if u in seen or u not in t:
+            continue
+        seen.add(u)
+        node, i, c, s = t[u]
+        n = _iv(node)
+        out[(ob.get(n, tb.get(n, n)), i, c, s)] = r
+    return out
+
+
+def wire_ends_pos(rows, ob=None, tb=None):
+    """{wire uid: (frozenset of source position keys, frozenset of sink position keys)} - a wire as its two ends."""
+    by = {}
+    for k, r in _pos_rows(rows, ob, tb).items():
+        w = _iv(r.get("wire_uid") or 0)
+        if _on(w):
+            by.setdefault(w, (set(), set()))[0 if r.get("is_source") else 1].add(k)
+    return dict((w, (frozenset(a), frozenset(b))) for w, (a, b) in by.items())
+
+
+def kept_nodes(B, gone=()):
+    """The BASE nodes that keep at least one base position key (not all in `gone`). Only these nodes' positions are compared
+    across the sim end and the real end: a CREATED object's terminal order in the sim end is the simulator's, not LabVIEW's
+    (ring P4 s03: the sim lists #29396's 'index' where LabVIEW reads 'new element/subarray', selftest_t6_poskey.log), so its
+    wires count by number and its names are left as read."""
+    g = set(gone)
+    return set(k[0] for k in B if k not in g)
+
+
+def _bind_maps(bind):
+    b = bind or {}
+    return (dict((_iv(k), _iv(v)) for k, v in (b.get("term") or {}).items()),
+            dict((_iv(k), _iv(v)) for k, v in (b.get("obj") or {}).items()))
+
+
+def term_identity_pos(base, sim, real, bind=None, renames=None):
+    """TD / unwired / D on position keys (block comment above). Returns the keys term_identity_gates always returned -
+    {td_ok, unwired, lost, gone, recycled, raw_lost, d_ok, new, lost_w, sim_new, sim_lost_w, d_new, d_lost, reuse_noted,
+    reuse_bad, renames, unlicensed_renames, td_key} - plus moved / extra / d_sets / licence_renames_listed:
+      gone = base keys absent from the sim end (the plan's deletes); lost = base keys absent from real, plus a GONE key that
+      real holds with another term uid (`recycled`: LabVIEW re-used the owner uid); moved = kept keys whose real term uid is
+      not the base one; unwired = base keys wired in base and in the sim end, not wired (or absent) in real;
+      td_ok = not unwired and not moved and lost == gone;
+      d_ok = lost wires == the sim's lost wires (sets, base space), the new wires whose every end is on a kept base node
+      (kept_nodes) == the sim's (sets; `d_new_kept_nodes` = their two sizes), and |new| == |sim new| (a wire touching a
+      created object counts by number - kept_nodes says why); renames (INFO) = kept keys whose real name differs from the sim
+      end's; reuse_noted (INFO) = deleted wire uids present again at the end; extra (INFO) = real keys on a kept base node that
+      neither base nor the sim end has."""
+    tb, ob = _bind_maps(bind)
+    B, S, R = _pos_rows(base), _pos_rows(sim), _pos_rows(real)
+    nm = lambda r: str(r.get("term_name") or "")                                      # noqa: E731
+    wv = lambda r: _iv(r.get("wire_uid") or 0)                                        # noqa: E731
+    gone = set(B) - set(S)
+    both = set(B) & set(R)
+    moved = sorted(k for k in both - gone if _iv(R[k]["term_uid"]) != _iv(B[k]["term_uid"]))
+    recycled = sorted(k for k in both & gone if _iv(R[k]["term_uid"]) != _iv(B[k]["term_uid"]))
+    lost = (set(B) - set(R)) | set(recycled)
+    unw = sorted(k for k in set(B) - gone if _on(wv(B[k])) and _on(wv(S[k])) and not (k in R and _on(wv(R[k]))))
+    ren = sorted((k, nm(S[k]), nm(R[k])) for k in both - gone if k in S and nm(S[k]) != nm(R[k]))
+    kn = kept_nodes(B, gone)
+    Sm = _pos_rows(sim, ob, tb) if bind is not None else S
+    extra = sorted(k for k in set(R) - set(B) - set(Sm) if k[0] in kn)
+    be, se, re_ = wire_ends_pos(base), wire_ends_pos(sim, ob, tb) if bind is not None else wire_ends_pos(sim), wire_ends_pos(real)
+    bw, sw, rw = set(be.values()), set(se.values()), set(re_.values())
+    new, lost_w, sim_new, sim_lost = rw - bw, bw - rw, sw - bw, bw - sw
+    on_kept = lambda E: set(p for p in E if all(k[0] in kn for k in p[0] | p[1]))   # noqa: E731
+    d_ok = lost_w == sim_lost and on_kept(new) == on_kept(sim_new) and len(new) == len(sim_new)
+    uids = lambda E, P: sorted(str(w) for w, p in E.items() if p in P)                # noqa: E731
+    deleted = set(be) - set(se)
+    noted = [{"wire": w, "base_ends": [sorted(x) for x in be[w]], "real_ends": [sorted(x) for x in re_[w]]}
+             for w in sorted(deleted & set(re_), key=str)]
+    ru = set(_iv(r["term_uid"]) for r in real or [])
+    return {"td_ok": not unw and not moved and lost == gone, "unwired": unw, "lost": sorted(lost), "gone": sorted(gone),
+            "moved": moved, "recycled": recycled, "extra": extra,
+            "raw_lost": sorted(set(_iv(r["term_uid"]) for r in base or []) - ru),
+            "d_ok": d_ok, "d_new_kept_nodes": [len(on_kept(new)), len(on_kept(sim_new))], "new": uids(re_, new), "lost_w": uids(be, lost_w), "sim_new": uids(se, sim_new),
+            "sim_lost_w": uids(be, sim_lost), "d_new": len(new), "d_lost": len(lost_w), "reuse_noted": noted, "reuse_bad": [],
+            "renames": ren, "unlicensed_renames": [], "licence_renames_listed": sorted(renames or {}),
+            "td_key": "position (node, index, term class, direction)"}
+
+
 def licence_renames(lic):
     """{(term uid, owner uid): (from, to)} from a pb-licence/1 dict's `renames` list ([{node, term_uids, from?, to?}]);
-    from/to None = any name. None when the dict has no `renames` key (then every gate keeps today's verdicts)."""
+    from/to None = any name. None when the dict has no `renames` key. Since card chat-T6 (docs/d1/result-gates.md) a licence's renames are
+    only READ and echoed (term_identity_gates `licence_renames_listed`); no gate needs them."""
     if not isinstance(lic, dict) or "renames" not in lic:
         return None
     out = {}
@@ -1421,116 +1520,24 @@ def licence_renames(lic):
     return out
 
 
-def _uo(r):
-    return (_iv(r["term_uid"]), _iv(r.get("owner_uid")))
-
-
-def _nm(r):
-    return str(r.get("term_name") or "")
-
-
-def rename_check(base, sim, real, renames):
-    """(renames, unlicensed) over the BASE terminals kept by sim and real, keyed (uid, owner): [(key, sim name, real name)]
-    where the names differ; unlicensed = those `renames` does not list, or lists with another from/to. A created object's
-    terminal name is not checked here (NG's business, as TD's domain is the base terminals)."""
-    renames = renames or {}
-    bk = set(_uo(r) for r in base)
-    sk = dict((_uo(r), r) for r in sim)
-    rk = dict((_uo(r), r) for r in real)
-    ren = sorted((k, _nm(sk[k]), _nm(rk[k])) for k in bk & set(sk) & set(rk) if _nm(sk[k]) != _nm(rk[k]))
-
-    def ok(k, a, b):
-        if k not in renames:
-            return False
-        f, t = renames[k]
-        return (f is None or str(f) == a) and (t is None or str(t) == b)
-    return ren, [x for x in ren if not ok(*x)]
-
-
-def wire_keys_356(rows, renames):
-    """wire_keys with a source identity whose name is '*' for a (uid, owner) listed in `renames`."""
-    src = {}
-    for r in rows:
-        w = _iv(r.get("wire_uid") or 0)
-        if w in (0, "", "0", "None"):
-            continue
-        src.setdefault(w, set())
-        if r.get("is_source"):
-            k = _uo(r)
-            src[w].add(k + (("*",) if k in renames else (_nm(r),)))
-    return set((w, frozenset(s)) for w, s in src.items())
-
-
-def _ends(rows, tb=None, ob=None):
-    """{wire uid: (sorted sources, sorted sinks)} as (term uid, owner uid), sim uids mapped through tb / ob."""
-    tb, ob, by = tb or {}, ob or {}, {}
-    for r in rows:
-        w = _iv(r.get("wire_uid") or 0)
-        if w in (0, "", "0", "None"):
-            continue
-        k = (tb.get(_iv(r["term_uid"]), _iv(r["term_uid"])), ob.get(_iv(r.get("owner_uid")), _iv(r.get("owner_uid"))))
-        by.setdefault(w, ([], []))[0 if r.get("is_source") else 1].append(k)
-    return dict((w, (sorted(a), sorted(b))) for w, (a, b) in by.items())
-
-
-def term_identity_356(base, sim, real, renames=None, bind=None):
-    """term_identity_gates under PD356(b). renames None -> TD on today's (uid, owner, name) key; else TD on (uid, owner) and
-    every name change must be listed (rename_check). bind None -> D as today; else (bind = {"term": {sim uid: real uid},
-    "obj": {sim uid: real uid}}, sim rows mapped through it) every plan-deleted wire uid present at the end is checked:
-    REUSE-NOTED (counted as one lost + one new when wire_keys saw it as kept) only if (a) its (uid, owner) sources and sinks
-    == those of a sim-end wire and (b) none of the sinks the simulator removed from the base wire is on it; otherwise it is
-    REUSE-BAD and D FAILS. Same keys as term_identity_gates plus renames / unlicensed_renames / reuse_noted / reuse_bad."""
-    out = term_identity_gates(base, sim, real)
-    on = lambda w: w not in (0, "", "0", "None")                                       # noqa: E731
-    lic = renames if renames is not None else {}
-    if renames is not None:
-        wv = lambda rows: dict((_uo(r), _iv(r.get("wire_uid") or 0)) for r in rows)   # noqa: E731
-        bk, sk, rk = wv(base), wv(sim), wv(real)
-        lost, gone = set(bk) - set(rk), set(bk) - set(sk)
-        unw = sorted(k for k, w in bk.items() if on(w) and k not in gone and on(sk.get(k, 0)) and not on(rk.get(k, 0)))
-        ren, bad = rename_check(base, sim, real, renames)
-        ru = set(k[0] for k in rk)
-        out.update({"td_ok": not unw and lost == gone and not bad, "unwired": unw, "lost": sorted(lost), "gone": sorted(gone),
-                    "recycled": sorted(k[0] for k in lost if k[0] in ru), "renames": ren, "unlicensed_renames": bad,
-                    "td_key": "uid+owner"})
-    bw, sw, rw = wire_keys_356(base, lic), wire_keys_356(sim, lic), wire_keys_356(real, lic)
-    new, lost_w, sim_new, sim_lost = rw - bw, bw - rw, sw - bw, bw - sw
-    noted, bad_w = [], []
-    if bind is not None:
-        tb = dict((_iv(k), _iv(v)) for k, v in ((bind or {}).get("term") or {}).items())
-        ob = dict((_iv(k), _iv(v)) for k, v in ((bind or {}).get("obj") or {}).items())
-        sim_del = set(k[0] for k in sim_lost) - set(k[0] for k in sw)            # wire uids the plan deleted
-        rkey = dict(rw)
-        se, re_, be = _ends(sim, tb, ob), _ends(real), _ends(base)
-        for w in sorted(sim_del & set(rkey), key=str):
-            rs, rsk = re_.get(w, ([], []))
-            bsk = be.get(w, ([], []))[1]
-            hit = sorted(((su, e) for su, e in se.items() if e == (rs, rsk)), key=lambda x: str(x[0]))
-            removed = sorted(set(bsk) - set(hit[0][1][1])) if hit else None
-            n = {"wire": w, "real_src": rs, "real_sinks": rsk, "base_sinks": bsk, "sim_wire": hit[0][0] if hit else None,
-                 "sim_removed_sinks": removed, "kept_by_key": (w, rkey[w]) in bw}
-            (noted if hit and not set(removed) & set(rsk) else bad_w).append(n)
-    n_new = len(new) + sum(1 for n in noted if n["kept_by_key"])
-    n_lost = len(lost_w) + sum(1 for n in noted if n["kept_by_key"])
-    out.update({"d_ok": n_new == len(sim_new) and n_lost == len(sim_lost) and not bad_w,
-                "new": sorted(str(k[0]) for k in new), "lost_w": sorted(str(k[0]) for k in lost_w),
-                "sim_new": sorted(str(k[0]) for k in sim_new), "sim_lost_w": sorted(str(k[0]) for k in sim_lost),
-                "d_new": n_new, "d_lost": n_lost, "reuse_noted": noted, "reuse_bad": bad_w})
-    return out
-
-
-def pb_rename_rows(base, sim, real, renames):
-    """(rows, restored, unlicensed) for PB's build4 under PD356(b): every LICENSED rename (rename_check) gets the sim end's
-    name back, so PB's node|class|name|ordinal key (vigraph.py:244-245) ranks it as the prediction did; an unlicensed rename
-    is left as read (and reported - a PB gate passes a name change only when `unlicensed` is empty). renames None -> (real,
-    [], []), today's PB."""
-    if renames is None:
-        return real, [], []
-    ren, bad = rename_check(base, sim, real, renames)
-    badk = set(x[0] for x in bad)
-    fix = dict((x[0], x[1]) for x in ren if x[0] not in badk)
-    rows = [dict(r, term_name=fix[_uo(r)]) if _uo(r) in fix else r for r in real]
-    return rows, sorted(fix), bad
+def pb_rename_rows(base, sim, real, renames=None, bind=None):
+    """(rows, restored, unlicensed) for PB's build4 - card chat-T6 (docs/d1/result-gates.md): every real row on a KEPT BASE node (kept_nodes)
+    whose POSITION KEY (_pos_rows) the sim end also has gets the sim end's NAME, so PB's node|class|name|ordinal key
+    (vigraph.py:244-245) ranks it as the prediction did; wires are untouched, so a wiring difference still shows in the cdiff.
+    A created object's rows keep their real names (its sim terminal order is not LabVIEW's - kept_nodes; NG checks those
+    names). restored = [(term uid, owner uid, real name, sim name)] (INFO); unlicensed is always [] (renames - an old licence
+    list - is accepted and ignored). `bind` is accepted for symmetry with term_identity_gates and not needed here."""
+    B, S = _pos_rows(base), _pos_rows(sim)
+    kn = kept_nodes(B, set(B) - set(S))
+    fix, restored = {}, []
+    for k, r in _pos_rows(real).items():
+        if k in S and k[0] in kn:
+            a, b = str(r.get("term_name") or ""), str(S[k].get("term_name") or "")
+            if a != b:
+                fix[_iv(r["term_uid"])] = S[k].get("term_name")
+                restored.append((_iv(r["term_uid"]), _iv(r.get("owner_uid")), a, b))
+    rows = [dict(r, term_name=fix[_iv(r["term_uid"])]) if _iv(r["term_uid"]) in fix else r for r in real]
+    return rows, sorted(restored), []
 
 
 # ---------------------------------------------------------------------------------------------- RULE D4

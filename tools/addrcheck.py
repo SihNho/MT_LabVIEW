@@ -69,6 +69,26 @@ def triple(rows, term_uid):
             "name": r.get("term_name", "")}
 
 
+def pos_table(rows):
+    """card chat-T6 (docs/d1/result-gates.md): {term uid: POSITION KEY (node, index, term class, is_source)} over one terminal table - the
+    index of triple() (position among the node's rows in READ order, node = vigraph.node_of), in one pass after
+    vigraph.dedupe_rows (the first row of a term uid wins, as stagexec.dedupe / vigraph.build4 do). Per-node read order is
+    the machine's: the base and real end reads of ring P4 batches 3-6 differ in 0 nodes' order
+    (tools/bench/selftest_t6_poskey.py gate S0). stagekit's result gates D / TD / PB key terminals by this, never by name."""
+    try:
+        import vigraph as V
+        rows = V.dedupe_rows(list(rows or []))[0]
+    except ImportError:                                                            # pragma: no cover - vigraph ships beside us
+        rows = list(rows or [])
+    n, out = {}, {}
+    for r in rows:
+        node = _node_of(r)
+        k = n.get(node, 0)
+        n[node] = k + 1
+        out[r["term_uid"]] = (node, k, r.get("term_class", ""), bool(r.get("is_source")))
+    return out
+
+
 def _short(r):
     return {"term_uid": r["term_uid"], "name": r.get("term_name", ""), "class": r.get("term_class", ""),
             "source": bool(r.get("is_source"))}
